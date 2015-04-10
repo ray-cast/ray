@@ -1,0 +1,25 @@
+Version changes - here 2.0.2 - must be written into the following files:
+
+libmng.h : 
+=======================
+#define MNG_VERSION_TEXT    "2.0.2"
+
+CMake/vers.cmake:
+=======================
+SET(MNG_VERSION_MAJOR 2)
+SET(MNG_VERSION_MINOR 0)
+SET(MNG_VERSION_PATCH 2)
+
+makefiles/configure.ac :
+=======================
+define([MAJ_NR],[2])
+define([MIN_NR],[0])
+define([REL_NR],[2])
+
+makefiles/version.mak :
+=======================
+MNGMAJ = 2
+MNGMIN = 0
+MNGREL = 2
+MNGVER = 2.0.2
+

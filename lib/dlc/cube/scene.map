@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<scene>
+    <attribute name="cubes"/>
+    <object>
+        <attribute name="first_person_camera"/>
+        <attribute position="0,0,0" />
+        <attribute lookat="0,0,1" />
+        <attribute active="false"/>
+        <component name="camera">
+            <attribute aperture="75.0"/>
+            <attribute ratio="1.7916667"/>
+            <attribute znear="0.1"/>
+            <attribute zfar="1000.0"/>
+            <attribute x="0"/>
+            <attribute y="0"/>
+            <attribute w="1376"/>
+            <attribute h="768"/>
+        </component>
+        <component name="character">
+            <attribute radius="1"/>
+            <attribute height="4"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sky"/>
+        <attribute position="0,0,0" />
+        <attribute scale="2,2,2" />
+        <attribute active="true"/>
+        <attribute layer="1"/>
+        <component name="mesh">
+            <attribute model="dlc:cube/models/sphere.pmx"/>
+        </component>
+        <component name="meshrender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:cube/material/sky.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="grass"/>
+        <attribute position="0,0,0" />
+        <attribute active="false"/>
+        <component name="mesh">
+            <attribute model="dlc:cube/models/cube.pmx"/>
+        </component>
+        <component name="meshrender">
+            <attribute material="dlc:cube/material/grass.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="wood"/>
+        <attribute position="0,0,0" />
+        <attribute active="false"/>
+        <component name="mesh">
+            <attribute model="dlc:cube/models/cube.pmx"/>
+        </component>
+        <component name="meshrender">
+            <attribute material="dlc:cube/material/wood.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="leaf"/>
+        <attribute position="0,0,0" />
+        <attribute active="false"/>
+        <component name="mesh">
+            <attribute model="dlc:cube/models/cube.pmx"/>
+        </component>
+        <component name="meshrender">
+            <attribute material="dlc:cube/material/leaf.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="clound"/>
+        <attribute position="0,0,0" />
+        <attribute active="false"/>
+        <component name="mesh">
+            <attribute model="dlc:cube/models/cube.pmx"/>
+        </component>
+        <component name="meshrender">
+            <attribute material="dlc:cube/material/clound.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="water"/>
+        <attribute position="0,0,0" />
+        <attribute active="false"/>
+        <component name="mesh">
+            <attribute model="dlc:cube/models/cube.pmx"/>
+        </component>
+        <component name="meshrender">
+            <attribute material="dlc:cube/material/water.mat"/>
+            <attribute castshadow="false"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="light"/>
+        <attribute position="0, 50, 5"/>
+        <attribute active="true"/>
+        <component name="light">
+            <attribute type="sun"/>
+            <attribute range="200.0"/>
+            <attribute shadow="true"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="light"/>
+        <attribute position="0, -20, 0"/>
+        <attribute active="false"/>
+        <component name="light">
+            <attribute type="point"/>
+            <attribute range="30.0"/>
+            <attribute intensity="1"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="gui"/>
+        <attribute active="true"/>
+        <component name="script">
+            <attribute name="dlc:cube/script/gui.as"/>
+        </component>
+    </object>
+</scene>

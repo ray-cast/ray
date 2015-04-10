@@ -1,0 +1,41 @@
+project(glew C)
+
+SET(GLEW_NAME "glew")
+
+OPTION(BUILD_GLEW_SHARED  "on for use off for ignore" ON)
+
+# Platform specific differences:
+IF(APPLE)
+  SET(PLATFORM_LIBS "-framework AGL" "-framework OpenGL")
+ELSEIF(WIN32)
+  SET(PLATFORM_LIBS glu32 opengl32)
+ELSE()
+  # any PLATFORM_LIBS required on Linux or other platforms?
+  FIND_PACKAGE(OpenGL REQUIRED)
+  SET(PLATFORM_LIBS ${OPENGL_LIBRARIES})
+ENDIF()
+
+INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/glew/include)
+
+SET(HEADER_LIST
+    include/GL/glew.h
+    include/GL/glxew.h
+    include/GL/wglew.h
+)
+
+SET(SOURCE_LIST
+    src/glew.c
+)
+
+SOURCE_GROUP(${GLEW_NAME} FILES ${HEADER_LIST})
+SOURCE_GROUP(${GLEW_NAME} FILES ${SOURCE_LIST})
+
+IF(BUILD_GLEW_SHARED)
+    ADD_DEFINITIONS(-DGLEW_MX)
+    ADD_DEFINITIONS(-DGLEW_BUILD)
+    ADD_LIBRARY(${GLEW_NAME} SHARED ${HEADER_LIST} ${SOURCE_LIST})
+ELSE()
+    ADD_DEFINITIONS(-DGLEW_STATIC)
+    ADD_LIBRARY(${GLEW_NAME} ${HEADER_LIST} ${SOURCE_LIST})
+ENDIF()
+TARGET_LINK_LIBRARIES(${GLEW_NAME} ${PLATFORM_LIBS})

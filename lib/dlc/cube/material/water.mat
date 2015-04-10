@@ -1,0 +1,4 @@
+<?xml version='1.0'?>
+<material>
+    <attribute shader="dlc:cube/fx/water.glsl"/>
+</material>

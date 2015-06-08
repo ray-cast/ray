@@ -198,7 +198,7 @@ ScriptBindActor::setup(asIScriptEngine* engine) noexcept
     r = engine->RegisterObjectMethod("GameObject", "PhysicsCharacterComponent get_character()", CALLER(GameObject, getComponent<PhysicsCharacterComponent>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 
     r = engine->RegisterObjectMethod("GameObject", "GameObject clone() const", CALLER(GameObject, clone), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-    r = engine->RegisterGlobalFunction("GameObject find(const string& in)", asFUNCTION(GameObject::find), asCALL_CDECL); assert(r >= 0);
+    r = engine->RegisterGlobalFunction("GameObject find(const string& in)", asFUNCTION(GameObject::find<GameObject>), asCALL_CDECL); assert(r >= 0);
 }
 
 _NAME_END

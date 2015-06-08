@@ -34,50 +34,46 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_IOSERVER_H_
-#define _H_IOSERVER_H_
+#ifndef _H_IO_SERVER_H_
+#define _H_IO_SERVER_H_
 
-#include <memory>
-#include <map>
-#include <ray/mstream.h>
 #include <ray/package.h>
 #include <ray/ioassign.h>
 
 _NAME_BEGIN
 
-class EXPORT IoServer
+class EXPORT IoServer : public ios_base
 {
     __DeclareSingleton(IoServer)
 public:
     IoServer() noexcept;
     ~IoServer() noexcept;
 
-    void mountArchives() noexcept;
-    bool mountArchives(std::shared_ptr<Package> package) noexcept;
-    void unmountArchives() noexcept;
+    IoServer& mountArchives() noexcept;
+    IoServer& mountArchives(std::shared_ptr<Package> package) noexcept;
+    IoServer& unmountArchives() noexcept;
 
-    void addAssign(const IoAssign& assign) noexcept;
-    void removeAssign(const std::string& name) noexcept;
-    const std::string& getAssign(const std::string& name) const noexcept;
+    IoServer& addAssign(const IoAssign& assign) noexcept;
+    IoServer& removeAssign(const std::string& name) noexcept;
+    IoServer& getAssign(const std::string& name, std::string& path) noexcept;
+    IoServer& getResolveAssign(const std::string& url, std::string& resolvePath) noexcept;
 
-    bool openFile(const std::string& path, MemoryStream& stream) noexcept;
-    bool openFileFromFileSystem(const std::string& path, MemoryStream& stream) noexcept;
-    bool openFileFromDisk(const std::string& path, MemoryStream& stream) noexcept;
+    IoServer& openFile(const std::string& path, iostream& stream) noexcept;
+    IoServer& openFileFromFileSystem(const std::string& path, iostream& stream) noexcept;
+    IoServer& openFileFromDisk(const std::string& path, iostream& stream) noexcept;
 
-    bool openFile(const std::wstring& path, MemoryStream& stream) noexcept;
-    bool openFileFromFileSystem(const std::wstring& path, MemoryStream& stream) noexcept;
-    bool openFileFromDisk(const std::wstring& path, MemoryStream& stream) noexcept;
+    IoServer& openFile(const std::wstring& path, iostream& stream) noexcept;
+    IoServer& openFileFromFileSystem(const std::wstring& path, iostream& stream) noexcept;
+    IoServer& openFileFromDisk(const std::wstring& path, iostream& stream) noexcept;
 
-    bool deleteFile(const std::string& path) noexcept;
-    bool existsFile(const std::string& path) noexcept;
+    IoServer& deleteFile(const std::string& path) noexcept;
+    IoServer& existsFile(const std::string& path) noexcept;
 
-    bool copyFile(const std::string& path, const std::string& to) const noexcept;
+    IoServer& copyFile(const std::string& path, const std::string& to) const noexcept;
 
-    bool createDirectory(const std::string& path) noexcept;
-    bool deleteDirectory(const std::string& path) noexcept;
-    bool existsDirectory(const std::string& path) noexcept;
-
-    std::string resolveAssignsInString(const std::string& url) noexcept;
+    IoServer& createDirectory(const std::string& path) noexcept;
+    IoServer& deleteDirectory(const std::string& path) noexcept;
+    IoServer& existsDirectory(const std::string& path) noexcept;
 
 private:
 

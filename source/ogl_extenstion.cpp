@@ -52,6 +52,8 @@ PFNGLCREATESTATESNVPROC __glewCreateStatesNV;
 PFNGLDELETESTATESNVPROC __glewDeleteStatesNV;
 PFNGLISSTATENVPROC __glewIsStateNV;
 PFNGLSTATECAPTURENVPROC __glewStateCaptureNV;
+PFNGLDRAWCOMMANDSNVPROC __glewDrawCommandsNV;
+PFNGLDRAWCOMMANDSADDRESSNVPROC __glewDrawCommandsAddressNV;
 PFNGLDRAWCOMMANDSSTATESNVPROC __glewDrawCommandsStatesNV;
 PFNGLDRAWCOMMANDSSTATESADDRESSNVPROC __glewDrawCommandsStatesAddressNV;
 PFNGLCREATECOMMANDLISTSNVPROC __glewCreateCommandListsNV;
@@ -63,20 +65,21 @@ PFNGLCOMPILECOMMANDLISTNVPROC __glewCompileCommandListNV;
 PFNGLCALLCOMMANDLISTNVPROC __glewCallCommandListNV;
 PFNGLGETCOMMANDHEADERNVPROC __glewGetCommandHeaderNV;
 PFNGLGETSTAGEINDEXNVPROC __glewGetStageIndexNV;
-PFNGLDRAWCOMMANDSNVPROC __glewDrawCommandsNV;
 
 static int initWGLExtention = 0;
 static int initedNVcommandList = 0;
-
-bool _EXT_swap_control = 0;
-
-bool _NV_command_list = 0;
 
 bool _ARB_pixel_format = 0;
 bool _ARB_create_context = 0;
 bool _ARB_create_context_robustness = 0;
 bool _ARB_bindless_texture = 0;
+bool _ARB_vertex_array_object = 0;
+bool _ARB_vertex_attrib_binding = 0;
 bool _EXT_direct_state_access = 0;
+bool _EXT_swap_control = 0;
+bool _NV_command_list = 0;
+bool _NV_shader_buffer_load = 0;
+bool _NV_vertex_buffer_unified_memory = 0;
 
 int initWGLExtensions() noexcept
 {
@@ -122,8 +125,12 @@ int initWGLExtensions() noexcept
             _ARB_create_context = true;
     }
 
-    _ARB_bindless_texture = glewIsSupported("GL_ARB_bindless_texture");
-    _EXT_direct_state_access = glewIsSupported("GL_EXT_direct_state_access");
+    _ARB_bindless_texture = GLEW_ARB_bindless_texture;
+    _ARB_vertex_array_object = GLEW_ARB_vertex_array_object;
+    _ARB_vertex_attrib_binding = GLEW_ARB_vertex_attrib_binding;
+    _EXT_direct_state_access = GLEW_EXT_direct_state_access;
+    _NV_shader_buffer_load = GLEW_NV_shader_buffer_load;
+    _NV_vertex_buffer_unified_memory = GLEW_NV_vertex_buffer_unified_memory;
 
     initWGLExtention = true;
 
@@ -141,6 +148,8 @@ int initCommandListNV() noexcept
     __glewDeleteStatesNV = (PFNGLDELETESTATESNVPROC)wglGetProcAddress("glDeleteStatesNV");
     __glewIsStateNV = (PFNGLISSTATENVPROC)wglGetProcAddress("glIsStateNV");
     __glewStateCaptureNV = (PFNGLSTATECAPTURENVPROC)wglGetProcAddress("glStateCaptureNV");
+    __glewDrawCommandsNV = (PFNGLDRAWCOMMANDSNVPROC)wglGetProcAddress("glDrawCommandsNV");
+    __glewDrawCommandsAddressNV = (PFNGLDRAWCOMMANDSADDRESSNVPROC)wglGetProcAddress("glDrawCommandsAddressNV");
     __glewDrawCommandsStatesNV = (PFNGLDRAWCOMMANDSSTATESNVPROC)wglGetProcAddress("glDrawCommandsStatesNV");
     __glewDrawCommandsStatesAddressNV = (PFNGLDRAWCOMMANDSSTATESADDRESSNVPROC)wglGetProcAddress("glDrawCommandsStatesAddressNV");
     __glewCreateCommandListsNV = (PFNGLCREATECOMMANDLISTSNVPROC)wglGetProcAddress("glCreateCommandListsNV");
@@ -152,8 +161,6 @@ int initCommandListNV() noexcept
     __glewCallCommandListNV = (PFNGLCALLCOMMANDLISTNVPROC)wglGetProcAddress("glCallCommandListNV");
     __glewGetCommandHeaderNV = (PFNGLGETCOMMANDHEADERNVPROC)wglGetProcAddress("glGetCommandHeaderNV");
     __glewGetStageIndexNV = (PFNGLGETSTAGEINDEXNVPROC)wglGetProcAddress("glGetStageIndexNV");
-
-    __glewDrawCommandsNV = (PFNGLDRAWCOMMANDSNVPROC)wglGetProcAddress("glDrawCommandsNV");
 
     _NV_command_list = __glewCreateStatesNV != NULL;
 

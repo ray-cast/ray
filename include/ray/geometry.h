@@ -38,7 +38,7 @@
 #define _H_GEOMETRY_H_
 
 #include <ray/render_object.h>
-#include <ray/render_mesh.h>
+#include <ray/render_buffer.h>
 #include <ray/material.h>
 
 _NAME_BEGIN
@@ -52,10 +52,10 @@ public:
     void setMaterial(MaterialPtr material) noexcept;
     MaterialPtr getMaterial() noexcept;
 
-    void setRenderMesh(RenderMeshPtr geometry, RenderablePtr renderable) noexcept;
-    void setRenderMesh(RenderMeshPtr geometry, VertexType type) noexcept;
+    void setRenderBuffer(RenderBufferPtr geometry, RenderablePtr renderable) noexcept;
+    void setRenderBuffer(RenderBufferPtr geometry, VertexType type) noexcept;
 
-    RenderMeshPtr getRenderMesh() noexcept;
+    RenderBufferPtr getRenderBuffer() noexcept;
     RenderablePtr getRenderable() noexcept;
 
     void collection(RenderDataManager& manager) noexcept;
@@ -65,7 +65,7 @@ public:
 private:
 
     MaterialPtr _material;
-    RenderMeshPtr _geometry;
+    RenderBufferPtr _geometry;
     RenderablePtr _renderable;
 };
 

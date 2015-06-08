@@ -131,7 +131,7 @@ template<typename _Dummy> const typename _Iosb<_Dummy>::_Seekdir _Iosb<_Dummy>::
 
 template<typename _Dummy> const streamoff _Iosb<_Dummy>::_BADOFF;
 
-class ios_base : public _Iosb<int>
+class EXPORT ios_base : public _Iosb<int>
 {
 public:
     _INT_BITMASK(_Iostate, iostate);
@@ -145,9 +145,49 @@ public:
     typedef int pos_type;
     typedef int off_type;
 
+public:
+    ios_base() noexcept;
+    ~ios_base() noexcept;
+
+    void setOpenMode(ios_base::openmode mode) noexcept;
+    ios_base::openmode getOpenMode() const noexcept;
+
+    bool good() const noexcept;
+    bool eof() const noexcept;
+    bool fail() const noexcept;
+    bool bad() const noexcept;
+
+    void clear(ios_base::io_state _state);
+    void clear(ios_base::iostate _state = ios_base::goodbit);
+    void clear(ios_base::iostate _state, bool _reraise);
+
+    void setstate(ios_base::iostate _state) noexcept;
+    void setstate(ios_base::io_state _state) noexcept;
+    void setstate(ios_base::iostate _state, bool _exreraise) noexcept;
+    ios_base::iostate rdstate() const noexcept;
+
+    void exceptions(ios_base::iostate _new) noexcept;
+    ios_base::iostate exceptions() const noexcept;
+
+    ios_base::fmtflags flags() const noexcept;
+    void copy(ios_base& other) noexcept;
+
+    bool operator!() const noexcept;
+    operator bool() const noexcept;
+
+protected:
+    void _init(ios_base::openmode mode) noexcept;
+
 private:
     ios_base(const ios_base&) = delete;
     const ios_base& operator=(const ios_base&) = delete;
+
+private:
+
+    ios_base::fmtflags _fmtfl;
+    ios_base::openmode _mode;
+    ios_base::iostate _my_state;
+    ios_base::iostate _my_except;
 };
 
 _NAME_END

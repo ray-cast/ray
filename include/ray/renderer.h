@@ -54,8 +54,8 @@ public:
     bool open(RenderDevicePtr renderDevice) except;
     void close() noexcept;
 
-    void drawMesh(RenderMeshPtr mesh, const Renderable& renderable) noexcept;
-    void updateMesh(RenderMeshPtr mesh, VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept;
+    void drawMesh(RenderBufferPtr mesh, const Renderable& renderable) noexcept;
+    void updateMesh(RenderBufferPtr mesh, VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept;
 
     void renderBegin() noexcept;
     void renderEnd() noexcept;
@@ -80,7 +80,7 @@ public:
     void copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept;
 
     void setShaderObject(ShaderObjectPtr shader) noexcept;
-    void setShaderParamArgs(const ShaderParamArgs& args) noexcept;
+    void setShaderConstantBuffer(ShaderConstantBufferPtr buffer) noexcept;
 
     void present(RenderCanvasPtr canvas) noexcept;
 

@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/ogl_target.h>
-#include <ray/ogl_texture.h>
 
 _NAME_BEGIN
 

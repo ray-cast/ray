@@ -164,14 +164,32 @@ RenderImpl::setRenderCanvas(const RenderCanvasPtr canvas) noexcept
     _renderDevice->setRenderCanvas(canvas);
 }
 
-RenderBufferPtr
-RenderImpl::createRenderBuffer(VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept
+bool
+RenderImpl::createConstantBuffer(ShaderConstantBuffer& buffer) noexcept
 {
-    return _renderDevice->createRenderBuffer(vb, ib);
+    return _renderDevice->createConstantBuffer(buffer);
 }
 
 void
-RenderImpl::destroyRenderBuffer(RenderBufferPtr buffer) noexcept
+RenderImpl::setShaderConstantBuffer(ShaderConstantBufferPtr buffer) noexcept
+{
+    _renderDevice->setShaderConstantBuffer(buffer);
+}
+
+void
+RenderImpl::destroyConstantBuffer(ShaderConstantBuffer& buffer) noexcept
+{
+    _renderDevice->destroyConstantBuffer(buffer);
+}
+
+bool
+RenderImpl::createRenderBuffer(RenderBuffer& buffer) noexcept
+{
+    return _renderDevice->createRenderBuffer(buffer);
+}
+
+void
+RenderImpl::destroyRenderBuffer(RenderBuffer& buffer) noexcept
 {
     _renderDevice->destroyRenderBuffer(buffer);
 }
@@ -183,9 +201,9 @@ RenderImpl::setRenderBuffer(const RenderBufferPtr buffer) noexcept
 }
 
 void
-RenderImpl::updateRenderBuffer(RenderBufferPtr buffer, VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept
+RenderImpl::updateRenderBuffer(RenderBufferPtr buffer) noexcept
 {
-    _renderDevice->updateRenderBuffer(buffer, vb, ib);
+    _renderDevice->updateRenderBuffer(buffer);
 }
 
 void
@@ -270,108 +288,6 @@ void
 RenderImpl::setShaderProgram(ShaderProgramPtr program) noexcept
 {
     _renderDevice->setShaderProgram(program);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const int value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const int2& value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const int3& value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const int4& value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const uint value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const uint2& value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const uint3& value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const uint4& value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const float value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const float2& value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const float3& value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const float4& value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const float2x2& value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const float3x3& value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const float4x4& value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const Texture& value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
-}
-
-void
-RenderImpl::setShaderConstant(ShaderUniformPtr uniform, const std::vector<float>& value) noexcept
-{
-    _renderDevice->setShaderConstant(uniform, value);
 }
 
 _NAME_END

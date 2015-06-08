@@ -38,18 +38,16 @@
 #define _H_GAME_TYPES_H_
 
 #include <ray/object.h>
-#include <ray/instances.h>
 #include <ray/variant.h>
-#include <ray/xmlstream.h>
+#include <ray/ioserver.h>
+#include <ray/iointerface.h>
+#include <ray/xmlreader.h>
+#include <ray/mstream.h>
+#include <ray/timer.h>
 #include <ray/app.h>
 #include <ray/except.h>
-#include <ray/reference.h>
-#include <ray/timer.h>
 
 _NAME_BEGIN
-
-class IoServer;
-class IoInterface;
 
 typedef std::shared_ptr<class Window> WindowPtr;
 

@@ -67,6 +67,8 @@ public:
 
     ios_base::pos_type tellg() noexcept;
 
+    ostream& copy(ostream& other) noexcept;
+
     ostream& operator << (const char* str) noexcept;
     ostream& operator << (const std::string& str) noexcept;
     ostream& operator << (char value) noexcept;

@@ -37,7 +37,8 @@
 #ifndef _H_OGL_RENDERER_H_
 #define _H_OGL_RENDERER_H_
 
-#include <ray/ogl_types.h>
+#include <ray/ogl_state.h>
+#include <ray/ogl_commandlist.h>
 
 _NAME_BEGIN
 
@@ -73,10 +74,14 @@ public:
     virtual void destroyRenderCanvas(RenderCanvasPtr canvas) noexcept;
     virtual void setRenderCanvas(RenderCanvasPtr handle) noexcept;
 
-    virtual RenderBufferPtr createRenderBuffer(VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept;
-    virtual void destroyRenderBuffer(RenderBufferPtr buffer) noexcept;
+    virtual bool createConstantBuffer(ShaderConstantBuffer& buffer) noexcept;
+    virtual void destroyConstantBuffer(ShaderConstantBuffer& buffer) noexcept;
+    virtual void setShaderConstantBuffer(ShaderConstantBufferPtr buffer) noexcept;
+
+    virtual bool createRenderBuffer(RenderBuffer& buffer) noexcept;
+    virtual void destroyRenderBuffer(RenderBuffer& buffer) noexcept;
     virtual void setRenderBuffer(RenderBufferPtr buffer) noexcept;
-    virtual void updateRenderBuffer(RenderBufferPtr buffer, VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept;
+    virtual void updateRenderBuffer(RenderBufferPtr buffer) noexcept;
     virtual void drawRenderBuffer(const Renderable& renderable) noexcept;
 
     virtual FramebufferPtr createFramebuffer(const FramebufferDesc& target) noexcept;
@@ -91,33 +96,20 @@ public:
 
     virtual bool createTexture(Texture& texture) noexcept;
     virtual void destroyTexture(Texture& texture) noexcept;
+    virtual void setTexture(const Texture& value, ShaderUniformPtr uniform) noexcept;
 
     virtual ShaderProgramPtr createShaderProgram(std::vector<ShaderPtr>& shaders) noexcept;
     virtual void destroyShaderProgram(ShaderProgramPtr shader) noexcept;
     virtual void setShaderProgram(ShaderProgramPtr shader) noexcept;
 
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const int value) noexcept;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const int2& value) noexcept;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const int3& value) noexcept;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const int4& value) noexcept;
+private:
+    void initCommandList() noexcept;
+    void initInternals(bool hwsupport, bool bindlessSupport) noexcept;
 
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const uint value) noexcept;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const uint2& value) noexcept;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const uint3& value) noexcept;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const uint4& value) noexcept;
-
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const float value) noexcept;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const float2& value) noexcept;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const float3& value) noexcept;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const float4& value) noexcept;
-
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const float2x2& value) noexcept;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const float3x3& value) noexcept;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const float4x4& value) noexcept;
-
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const Texture& value) noexcept;
-
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const std::vector<float>& value) noexcept;
+    void nvtokenCommandToString(GLenum type, char*& string) noexcept;
+    void nvtokenGetStats(const void* stream, size_t streamSize, int stats[GL_MAX_COMMANDS_NV]) noexcept;
+    void nvtokenDrawCommandState() noexcept;
+    GLenum nvtokenDrawCommandSequence(const void* stream, size_t streamSize, GLenum mode, GLenum type, const StateSystem::State* state) noexcept;
 
     static void checkError() noexcept;
     static void checkFramebuffer() noexcept;
@@ -135,23 +127,6 @@ private:
 
 private:
 
-    Viewport _viewport;
-
-    SwapInterval _interval;
-
-    RenderCanvasPtr _renderCanvas;
-    RenderBufferPtr _renderBuffer;
-    FramebufferPtr _renderTarget;
-    MultiFramebufferPtr _multiFramebuffer;
-    ShaderProgramPtr _shader;
-    RenderStatePtr _state;
-
-    GLint _maxTextures;
-    GLint _maxTextureUnits;
-    GLint _unpackAlignment;
-    std::vector<GLuint> _textureUnits;
-    std::vector<OGLTexture> _textures;
-
     GPUfbconfig _fbconfig;
     GPUctxconfig _ctxconfig;
 
@@ -159,6 +134,47 @@ private:
     RenderRasterState _rasterState;
     RenderDepthState _depthState;
     RenderStencilState _stencilState;
+
+    Viewport _viewport;
+
+    SwapInterval _interval;
+
+    RenderCanvasPtr _renderCanvas;
+    FramebufferPtr _renderTarget;
+    MultiFramebufferPtr _multiFramebuffer;
+    RenderStatePtr _state;
+
+    ShaderProgramPtr _shader;
+    std::vector<OGLConstantBuffer> _constantBuffers;
+
+    GLuint _defaultVAO;
+    RenderBufferPtr _renderBuffer;
+    std::vector<OGLVertexArray> _renderBuffers;
+
+    GLint _maxTextures;
+    GLint _maxTextureUnits;
+    GLint _unpackAlignment;
+    std::vector<GLuint> _textureUnits;
+    std::vector<OGLTexture> _textures;
+
+    // we introduce variables that track when we changed global state
+    StateIncarnation  state;
+    StateIncarnation  captured;
+
+    StateSystem _stateSystem;
+    StateSystem::StateID  _stateIdDraw;
+    StateSystem::StateID  _stateIdDrawGeo;
+
+    // two state objects
+    GLuint _stateObjDraw;
+    GLuint _stateObjDrawGeo;
+
+    GLuint          _tokenBuffer;
+    GLuint          _tokenCmdList;
+    std::string     _tokenData;
+    CommandSequence _tokenSequence;
+    CommandSequence _tokenSequenceList;
+    CommandSequence _tokenSequenceEmu;
 };
 
 _NAME_END

@@ -64,6 +64,8 @@ public:
 
     virtual void close() noexcept = 0;
 
+    virtual void copy(streambuf& other) noexcept = 0;
+
     virtual void lock() noexcept;
     virtual void unlock() noexcept;
 };

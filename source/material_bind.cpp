@@ -39,15 +39,17 @@
 
 _NAME_BEGIN
 
-const ShaderParamArgs&
-MaterialParmBinds::getShaderParamArgs() const noexcept
+ShaderConstantBufferPtr
+MaterialParmBinds::getConstantBuffer() const noexcept
 {
-    return _uniformBindsMap;
+    return _constantBuffer;
 }
 
 void
 MaterialParmBinds::_buildUniformBinds(const MaterialSemantic& semanticList, const ShaderParams& paramList, const ShaderUniforms& uniformList)
 {
+    _constantBuffer = std::make_shared<ShaderConstantBuffer>();
+
     std::map<std::string, ShaderParamPtr> paramMap;
 
     std::size_t size = paramList.size();
@@ -70,7 +72,7 @@ MaterialParmBinds::_buildUniformBinds(const MaterialSemantic& semanticList, cons
                 arg.value = semanticList.getParamPointer(semantic);
                 if (arg.value)
                 {
-                    _uniformBindsMap.push_back(arg);
+                    _constantBuffer->addParamArg(arg);
                 }
             }
             else
@@ -79,7 +81,7 @@ MaterialParmBinds::_buildUniformBinds(const MaterialSemantic& semanticList, cons
                 arg.uniform = it;
                 arg.value = param;
 
-                _uniformBindsMap.push_back(arg);
+                _constantBuffer->addParamArg(arg);
             }
         }
     }

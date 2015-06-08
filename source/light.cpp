@@ -53,7 +53,7 @@ Light::Light() noexcept
     , _lightListener(nullptr)
     , _lightRange(1.0f)
     , _lightIntensity(1.0f)
-    , _lightColor(Vector3(0.8, 0.8, 0.8))
+    , _lightColor(Vector3(1.0, 1.0, 1.0))
     , _lightDirection(-Vector3::UnitY)
     , _spotExponent(1.0f)
     , _spotAngle(cos(M_PI_3))

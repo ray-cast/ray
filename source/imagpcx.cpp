@@ -73,18 +73,17 @@ PCXHandler::doCanRead(istream& stream) const noexcept
 bool
 PCXHandler::doLoad(Image& /*image*/, istream& stream) noexcept
 {
-    PCXTargaHeader pcx;
+    PCXTargaHeader header;
 
-    stream.read((char*)&pcx, sizeof(PCXTargaHeader));
+    stream.read((char*)&header, sizeof(PCXTargaHeader));
 
-    if (pcx.manufacturer != 0x0a ||
-        pcx.version != 5 ||
-        pcx.encoding != 1 ||
-        pcx.bits_per_pixel != 8 ||
-        pcx.xmax >= 1024 ||
-        pcx.ymax >= 1024)
+    if (header.manufacturer != 0x0a ||
+        header.version != 5 ||
+        header.encoding != 1 ||
+        header.bits_per_pixel != 8 ||
+        header.xmax >= 65535 ||
+        header.ymax >= 65535)
     {
-        //DefaultLogger::get()->error(_T("bad pcx file"));
     }
 
     return true;

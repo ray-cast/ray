@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #include <ray/ogl_renderer.h>
 #include <ray/ogl_target.h>
-#include <ray/ogl_buffer.h>
 #include <ray/ogl_shader.h>
 
 _NAME_BEGIN
@@ -44,9 +43,12 @@ _NAME_BEGIN
 __ImplementSubClass(OGLRenderer, RenderDevice)
 
 OGLRenderer::OGLRenderer() noexcept
-    :_viewport(0, 0, 0, 0)
+    : _viewport(0, 0, 0, 0)
+    , _renderBuffers(512)
+    , _constantBuffers(512)
     , _maxTextures(100)
     , _maxTextureUnits(0)
+    , _defaultVAO(0)
 {
     _blendState.blendEnable = false;
     _blendState.blendSeparateEnable = false;
@@ -131,6 +133,11 @@ OGLRenderer::open(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) no
 void
 OGLRenderer::close() noexcept
 {
+    if (_defaultVAO)
+    {
+        glDeleteVertexArrays(1, &_defaultVAO);
+        _defaultVAO = 0;
+    }
 }
 
 void
@@ -444,12 +451,20 @@ void
 OGLRenderer::renderBegin() noexcept
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_FRAMEBUFFER_SRGB);
+    //glEnable(GL_FRAMEBUFFER_SRGB);
+
+    if (_NV_vertex_buffer_unified_memory)
+    {
+        glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
+        glEnableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
+        glEnableClientState(GL_UNIFORM_BUFFER_UNIFIED_NV);
+    }
 }
 
 void
 OGLRenderer::renderEnd() noexcept
 {
+    _renderBuffer = nullptr;
 }
 
 void
@@ -528,6 +543,13 @@ OGLRenderer::createRenderCanvas(WindHandle hwnd) noexcept
 #endif
     }
 
+    if (_ARB_vertex_attrib_binding)
+    {
+        if (!_defaultVAO)
+            glGenVertexArrays(1, &_defaultVAO);
+        glBindVertexArray(_defaultVAO);
+    }
+
     glGetIntegerv(GL_UNPACK_ALIGNMENT, &_unpackAlignment);
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &_maxTextureUnits);
     if (_textureUnits.size() != _maxTextureUnits)
@@ -574,70 +596,378 @@ OGLRenderer::setRenderCanvas(RenderCanvasPtr canvas) noexcept
     }
 }
 
-RenderBufferPtr
-OGLRenderer::createRenderBuffer(VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept
+bool
+OGLRenderer::createConstantBuffer(ShaderConstantBuffer& constant) noexcept
 {
-    OGLVertexArrayPtr result;
+    OGLConstantBuffer buffer;
 
-    result = std::make_shared<OGLVertexArray>();
-    result->setup(vb, ib);
+    glBindBuffer(GL_UNIFORM_BUFFER, buffer.ubo);
+    //glBufferData(GL_UNIFORM_BUFFER, size, 0, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    auto oglVertexArray = std::dynamic_pointer_cast<OGLVertexArray>(_renderBuffer);
-    if (oglVertexArray)
-    {
-        oglVertexArray->bind();
-    }
+    _constantBuffers[buffer.ubo] = buffer;
 
-    return result;
+    return true;
 }
 
 void
-OGLRenderer::destroyRenderBuffer(RenderBufferPtr buffer) noexcept
+OGLRenderer::destroyConstantBuffer(ShaderConstantBuffer& constant) noexcept
 {
-    auto oglVertexArray = std::dynamic_pointer_cast<OGLVertexArray>(buffer);
-    if (oglVertexArray)
+    auto index = constant.getUserData();
+    if (index != 0)
     {
-        oglVertexArray->close();
+        auto& buffer = _constantBuffers[index];
 
-        if (_renderBuffer == buffer)
-            _renderBuffer = nullptr;
-    }
-}
-
-void
-OGLRenderer::setRenderBuffer(RenderBufferPtr buffer) noexcept
-{
-    if (_renderBuffer != buffer)
-    {
-        auto oglVertexArray = std::dynamic_pointer_cast<OGLVertexArray>(buffer);
-        if (oglVertexArray)
+        if (buffer.ubo)
         {
-            oglVertexArray->bind();
+            glDeleteBuffers(1, &buffer.ubo);
+            buffer.ubo = 0;
+        }
+    }
+}
+
+void
+OGLRenderer::setShaderConstantBuffer(ShaderConstantBufferPtr buffer) noexcept
+{
+    auto& args = buffer->getShaderParamArgs();
+
+    for (auto& it : args)
+    {
+        auto type = it.value->getType();
+        auto location = it.uniform->location;
+
+        switch (type)
+        {
+        case ShaderParamType::SPT_BOOL:
+        {
+            glUniform1i(location, (int)it.value->getBool());
+            break;
+        }
+        case ShaderParamType::SPT_INT:
+        {
+            auto i1 = it.uniform->param.getInt();
+            auto i2 = it.value->getInt();
+            if (i1 != i2)
+            {
+                glUniform1i(location, (int)it.value->getInt());
+                it.uniform->param.assign(i2);
+            }
+            break;
+        }
+        case ShaderParamType::SPT_INT2:
+        {
+            glUniform2iv(location, 1, it.value->getInt2().ptr());
+            break;
+        }
+        case ShaderParamType::SPT_FLOAT:
+        {
+            auto f1 = it.uniform->param.getFloat();
+            auto f2 = it.value->getFloat();
+            if (f1 != f2)
+            {
+                glUniform1f(location, f2);
+                it.uniform->param.assign(f2);
+            }
+            break;
+        }
+        case ShaderParamType::SPT_FLOAT2:
+        {
+            glUniform2fv(location, 1, it.value->getFloat2().ptr());
+            break;
+        }
+        case ShaderParamType::SPT_FLOAT3:
+        {
+            glUniform3fv(location, 1, it.value->getFloat3().ptr());
+            break;
+        }
+        case ShaderParamType::SPT_FLOAT4:
+        {
+            glUniform4fv(location, 1, it.value->getFloat4().ptr());
+            break;
+        }
+        case ShaderParamType::SPT_FLOAT3X3:
+        {
+            glUniformMatrix3fv(location, 1, GL_FALSE, it.value->getFloat3x3().ptr());
+            break;
+        }
+        case ShaderParamType::SPT_FLOAT4X4:
+        {
+            glUniformMatrix4fv(location, 1, GL_FALSE, it.value->getFloat4x4().ptr());
+            break;
+        }
+        case ShaderParamType::SPT_FLOAT_ARRAY:
+        {
+            glUniform1fv(location, it.value->getFloatArray().size(), it.value->getFloatArray().data());
+            break;
+        }
+        case ShaderParamType::SPT_TEXTURE:
+        {
+            auto texture = it.value->getTexture();
+            if (texture)
+                this->setTexture(*texture, it.uniform);
+            break;
+        }
+        default:
+            break;
+        }
+    }
+}
+
+bool
+OGLRenderer::createRenderBuffer(RenderBuffer& buffer) noexcept
+{
+    auto vb = buffer.getVertexBuffer();
+    auto ib = buffer.getIndexBuffer();
+
+    OGLVertexArray renderBuffer;
+
+    if (!_ARB_vertex_attrib_binding)
+    {
+        if (_ARB_vertex_array_object)
+        {
+            glGenVertexArrays(1, &renderBuffer.vao);
+            glBindVertexArray(renderBuffer.vao);
+        }
+    }
+
+    if (vb)
+    {
+        renderBuffer.vertexUsage = OGLTypes::asOGLVertexUsage(vb->getVertexUsage());
+        renderBuffer.vertexCount = vb->getVertexCount();
+        renderBuffer.vertexSize = vb->getVertexSize() * renderBuffer.vertexCount;
+        renderBuffer.vertexByteSize = vb->getVertexByteSize();
+
+        glGenBuffers(1, &renderBuffer.vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, renderBuffer.vbo);
+        glBufferData(GL_ARRAY_BUFFER, renderBuffer.vertexSize, vb->data(), renderBuffer.vertexUsage);
+
+        GLuint offset = 0;
+
+        auto& components = vb->getVertexComponents();
+        for (auto& it : components)
+        {
+            auto type = OGLTypes::asOGLVertexDataType(it.getVertexDataType());
+            if (type == GL_INVALID_ENUM)
+            {
+                glDeleteBuffers(1, &renderBuffer.vbo);
+                if (renderBuffer.vao)
+                {
+                    glDeleteVertexArrays(1, &renderBuffer.vao);
+                }
+                assert(false);
+                return false;
+            }
+
+            if (_ARB_vertex_attrib_binding)
+            {
+                glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
+                glVertexAttribFormat(it.getVertexAttrib(), it.getVertexSize(), type, GL_FALSE, 0);
+                glVertexAttribBinding(it.getVertexAttrib(), it.getVertexAttrib());
+
+                glBindVertexBuffer(it.getVertexAttrib(), renderBuffer.vbo, offset, vb->getVertexByteSize());
+            }
+            else
+            {
+                if (_ARB_vertex_array_object)
+                {
+                    glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
+                    glVertexAttribPointer(it.getVertexAttrib(), it.getVertexSize(), type, GL_FALSE, vb->getVertexByteSize(), (void*)offset);
+                }
+            }
+
+            OGLVertexAttrib attrib;
+
+            attrib.attrib = it.getVertexAttrib();
+            attrib.offset = offset;
+            attrib.size = it.getVertexSize();
+            attrib.stride = vb->getVertexByteSize();
+            attrib.type = type;
+
+            renderBuffer.attribs.push_back(attrib);
+
+            offset += it.getVertexByteSize();
+        }
+
+        if (_NV_vertex_buffer_unified_memory)
+        {
+            glGetNamedBufferParameterui64vNV(renderBuffer.vbo, GL_BUFFER_GPU_ADDRESS_NV, &renderBuffer.bindlessVbo);
+            glMakeNamedBufferResidentNV(renderBuffer.vbo, GL_READ_ONLY);
+        }
+    }
+
+    if (ib)
+    {
+        renderBuffer.indexType = OGLTypes::asOGLIndexType(ib->getIndexType());
+        renderBuffer.indexUsage = OGLTypes::asOGLVertexUsage(ib->getIndexUsage());
+        renderBuffer.indexCount = ib->getIndexCount();
+
+        renderBuffer.indexSize = 0;
+        if (renderBuffer.indexType == GL_UNSIGNED_SHORT)
+        {
+            renderBuffer.indexSize = sizeof(std::int16_t) * ib->getIndexCount();
+        }
+        else if (renderBuffer.indexType == GL_UNSIGNED_INT)
+        {
+            renderBuffer.indexSize = sizeof(std::int32_t) * ib->getIndexCount();
         }
         else
         {
-            if (_renderBuffer)
-            {
-                std::dynamic_pointer_cast<OGLVertexArray>(_renderBuffer)->unbind();
-            }
+            assert(false);
         }
 
-        _renderBuffer = buffer;
+        glGenBuffers(1, &renderBuffer.ibo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderBuffer.ibo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, renderBuffer.indexSize, ib->data(), renderBuffer.indexUsage);
+
+        if (_NV_vertex_buffer_unified_memory)
+        {
+            glGetNamedBufferParameterui64vNV(renderBuffer.ibo, GL_BUFFER_GPU_ADDRESS_NV, &renderBuffer.bindlessIbo);
+            glMakeNamedBufferResidentNV(renderBuffer.ibo, GL_READ_ONLY);
+        }
+    }
+
+    if (_renderBuffers.size() < renderBuffer.vbo)
+    {
+        _renderBuffers.resize(renderBuffer.vbo * 2);
+    }
+
+    _renderBuffers[renderBuffer.vbo] = renderBuffer;
+
+    buffer.setUserData(renderBuffer.vbo);
+
+    return true;
+}
+
+void
+OGLRenderer::destroyRenderBuffer(RenderBuffer& renderBuffer) noexcept
+{
+    auto index = renderBuffer.getUserData();
+    if (index != 0)
+    {
+        auto& buffer = _renderBuffers[index];
+
+        if (buffer.vao)
+        {
+            glDeleteVertexArrays(1, &buffer.vao);
+            buffer.vao = 0;
+        }
+
+        if (buffer.vbo)
+        {
+            glDeleteBuffers(1, &buffer.vbo);
+            buffer.vbo = 0;
+        }
+
+        if (buffer.ibo)
+        {
+            glDeleteBuffers(1, &buffer.ibo);
+            buffer.ibo = 0;
+        }
     }
 }
 
 void
-OGLRenderer::updateRenderBuffer(RenderBufferPtr buffer, VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept
+OGLRenderer::setRenderBuffer(RenderBufferPtr renderBuffer) noexcept
 {
-    auto oglVertexArray = std::dynamic_pointer_cast<OGLVertexArray>(buffer);
-    if (oglVertexArray)
+    assert(renderBuffer->getUserData());
+
+    if (_renderBuffer != renderBuffer)
     {
-        oglVertexArray->update(vb, ib);
-        oglVertexArray = std::dynamic_pointer_cast<OGLVertexArray>(_renderBuffer);
-        if (oglVertexArray)
+        auto buffer = _renderBuffers[renderBuffer->getUserData()];
+
+        if (_NV_vertex_buffer_unified_memory)
         {
-            oglVertexArray->bind();
+            if (buffer.bindlessVbo)
+            {
+                for (auto& it : buffer.attribs)
+                {
+                    glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV, it.attrib, buffer.bindlessVbo + it.offset, buffer.vertexSize - it.offset);
+                }
+            }
+
+            if (buffer.bindlessIbo)
+            {
+                glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, buffer.bindlessIbo, buffer.indexSize);
+            }
         }
+        else if (_ARB_vertex_attrib_binding)
+        {
+            for (auto& it : buffer.attribs)
+            {
+                glBindVertexBuffer(it.attrib, buffer.vbo, it.offset, it.stride);
+            }
+
+            if (buffer.ibo)
+            {
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.ibo);
+            }
+        }
+        else if (_ARB_vertex_array_object)
+        {
+            assert(buffer.vao);
+            glBindVertexArray(buffer.vao);
+        }
+        else
+        {
+            glBindBuffer(GL_ARRAY_BUFFER, buffer.vbo);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.ibo);
+
+            for (auto& it : buffer.attribs)
+            {
+                glEnableVertexAttribArray(it.attrib);
+                glVertexAttribPointer(it.attrib, it.size, it.type, GL_FALSE, it.stride, (void*)it.offset);
+            }
+        }
+
+        _renderBuffer = renderBuffer;
+    }
+}
+
+void
+OGLRenderer::updateRenderBuffer(RenderBufferPtr renderBuffer) noexcept
+{
+    assert(renderBuffer->getUserData());
+
+    auto vb = renderBuffer->getVertexBuffer();
+    auto ib = renderBuffer->getIndexBuffer();
+    auto buffer = _renderBuffers[renderBuffer->getUserData()];
+
+    if (vb)
+    {
+        assert(buffer.vbo);
+
+        buffer.vertexUsage = OGLTypes::asOGLVertexUsage(vb->getVertexUsage());
+        buffer.vertexCount = vb->getVertexCount();
+        buffer.vertexSize = vb->getVertexSize() * buffer.vertexCount;
+
+        glBindBuffer(GL_ARRAY_BUFFER, buffer.vbo);
+        glBufferData(GL_ARRAY_BUFFER, buffer.vertexSize, vb->data(), buffer.vertexUsage);
+    }
+
+    if (ib)
+    {
+        assert(buffer.ibo);
+
+        buffer.indexType = OGLTypes::asOGLIndexType(ib->getIndexType());
+        buffer.indexUsage = OGLTypes::asOGLVertexUsage(ib->getIndexUsage());
+        buffer.indexCount = ib->getIndexCount();
+
+        buffer.indexSize = 0;
+        if (buffer.indexType == GL_UNSIGNED_SHORT)
+        {
+            buffer.indexSize = sizeof(std::int16_t) * ib->getIndexCount();
+        }
+        else if (buffer.indexType == GL_UNSIGNED_INT)
+        {
+            buffer.indexSize = sizeof(std::int32_t) * ib->getIndexCount();
+        }
+        else
+        {
+            assert(false);
+        }
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.ibo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer.indexSize, ib->data(), buffer.indexUsage);
     }
 }
 
@@ -646,20 +976,19 @@ OGLRenderer::drawRenderBuffer(const Renderable& renderable) noexcept
 {
     assert(_renderBuffer);
 
-    auto array = std::dynamic_pointer_cast<OGLVertexArray>(_renderBuffer);
+    auto vb = _renderBuffer->getVertexBuffer();
+    auto ib = _renderBuffer->getIndexBuffer();
+    auto buffer = _renderBuffers[_renderBuffer->getUserData()];
 
-    auto vb = array->getVertexBuffer();
-    auto ib = array->getIndexBuffer();
-
-    assert(vb && vb->getVertexCount() >= renderable.startVertice + renderable.numVertices);
+    assert(buffer.vertexCount >= renderable.startVertice + renderable.numVertices);
 
     GLenum drawType = OGLTypes::asOGLVertexType(renderable.type);
 
-    if (ib)
+    if (buffer.indexCount)
     {
-        assert(ib->getIndexCount() >= renderable.startIndice + renderable.numIndices);
+        assert(buffer.indexCount >= renderable.startIndice + renderable.numIndices);
 
-        GLenum indexType = ib->getIndexType();
+        GLenum indexType = buffer.indexType;
 
 #if !defined(EGLAPI)
         if (renderable.numInstances > 0)
@@ -889,6 +1218,11 @@ OGLRenderer::createTexture(Texture& texture) noexcept
         glMakeTextureHandleResidentARB(instance.resident);
     }
 
+    if (_textures.size() < instance.texture)
+    {
+        _renderBuffers.resize(instance.texture * 2);
+    }
+
     _textures[instance.texture] = instance;
 
     return true;
@@ -912,6 +1246,44 @@ OGLRenderer::destroyTexture(Texture& texture) noexcept
     }
 
     texture.setUserData(0);
+}
+
+void
+OGLRenderer::setTexture(const Texture& texture, ShaderUniformPtr uniform) noexcept
+{
+    assert(uniform);
+    assert(uniform->unit < _maxTextureUnits);
+    assert(texture.getUserData() != 0);
+
+    auto location = uniform->location;
+    auto unit = uniform->unit;
+    auto target = OGLTypes::asOGLTarget(texture.getTexDim());
+    auto instance = texture.getUserData();
+    auto resident = _textures[instance].resident;
+
+#if !defined(EGLAPI)
+    if (_ARB_bindless_texture)
+    {
+        glUniformHandleui64ARB(location, _textures[instance].resident);
+    }
+    else if (_EXT_direct_state_access)
+    {
+        glUniform1i(location, unit);
+        glBindMultiTextureEXT(GL_TEXTURE0 + uniform->unit, target, instance);
+    }
+    else
+#endif
+    {
+        glUniform1i(location, unit);
+
+        if (_textureUnits[location] != instance)
+        {
+            glActiveTexture(GL_TEXTURE0 + uniform->unit);
+            glBindTexture(target, instance);
+
+            _textureUnits[location] = instance;
+        }
+    }
 }
 
 ShaderProgramPtr
@@ -959,156 +1331,6 @@ OGLRenderer::setShaderProgram(ShaderProgramPtr shader) noexcept
 
         _shader = shader;
     }
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const int value) noexcept
-{
-    assert(uniform);
-    glUniform1i(uniform->location, value);
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const int2& value) noexcept
-{
-    assert(uniform);
-    glUniform2iv(uniform->location, 1, value.ptr());
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const int3& value) noexcept
-{
-    assert(uniform);
-    glUniform3iv(uniform->location, 1, value.ptr());
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const int4& value) noexcept
-{
-    assert(uniform);
-    glUniform4iv(uniform->location, 1, value.ptr());
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const uint value) noexcept
-{
-    assert(uniform);
-    glUniform1ui(uniform->location, value);
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const uint2& value) noexcept
-{
-    assert(uniform);
-    glUniform2uiv(uniform->location, 1, value.ptr());
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const uint3& value) noexcept
-{
-    assert(uniform);
-    glUniform3uiv(uniform->location, 1, value.ptr());
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const uint4& value) noexcept
-{
-    assert(uniform);
-    glUniform4uiv(uniform->location, 1, value.ptr());
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const float value) noexcept
-{
-    assert(uniform);
-    glUniform1f(uniform->location, value);
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const float2& value) noexcept
-{
-    assert(uniform);
-    glUniform2fv(uniform->location, 1, value.ptr());
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const float3& value) noexcept
-{
-    assert(uniform);
-    glUniform3fv(uniform->location, 1, value.ptr());
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const float4& value) noexcept
-{
-    assert(uniform);
-    glUniform4fv(uniform->location, 1, value.ptr());
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const float2x2& value) noexcept
-{
-    assert(uniform);
-    glUniformMatrix2fv(uniform->location, GL_FALSE, 1, value.ptr());
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const float3x3& value) noexcept
-{
-    assert(uniform);
-    glUniformMatrix3fv(uniform->location, GL_FALSE, 1, value.ptr());
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const float4x4& value) noexcept
-{
-    assert(uniform);
-    glUniformMatrix4fv(uniform->location, 1, GL_FALSE, value.ptr());
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const Texture& texture) noexcept
-{
-    assert(uniform);
-    assert(uniform->unit < _maxTextureUnits);
-    assert(texture.getUserData() != 0);
-
-    auto location = uniform->location;
-    auto unit = uniform->unit;
-    auto target = OGLTypes::asOGLTarget(texture.getTexDim());
-    auto instance = texture.getUserData();
-    auto resident = _textures[instance].resident;
-
-#if !defined(EGLAPI)
-    if (_ARB_bindless_texture)
-    {
-        glUniformHandleui64ARB(location, _textures[instance].resident);
-    }
-    else if (_EXT_direct_state_access)
-    {
-        glUniform1i(location, unit);
-        glBindMultiTextureEXT(GL_TEXTURE0 + uniform->unit, target, instance);
-    }
-    else
-#endif
-    {
-        glUniform1i(location, unit);
-
-        if (_textureUnits[location] != instance)
-        {
-            glActiveTexture(GL_TEXTURE0 + uniform->unit);
-            glBindTexture(target, instance);
-
-            _textureUnits[location] = instance;
-        }
-    }
-}
-
-void
-OGLRenderer::setShaderConstant(ShaderUniformPtr uniform, const std::vector<float>& value) noexcept
-{
-    assert(uniform);
-    glUniform1fv(uniform->location, value.size(), value.data());
 }
 
 void
@@ -1374,6 +1596,377 @@ OGLRenderer::debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severit
     std::cerr << std::endl;
 
     std::cerr << "message : " << message;
+}
+
+void
+OGLRenderer::initCommandList() noexcept
+{
+    initInternals(_NV_command_list, _ARB_bindless_texture);
+
+    _stateSystem.init();
+    _stateSystem.generate(1, &_stateIdDraw);
+    _stateSystem.generate(1, &_stateIdDrawGeo);
+
+    if (_NV_command_list)
+    {
+        glCreateStatesNV(1, &_stateObjDraw);
+        glCreateStatesNV(1, &_stateObjDrawGeo);
+
+        glGenBuffers(1, &_tokenBuffer);
+        glCreateCommandListsNV(1, &_tokenCmdList);
+    }
+}
+
+void
+OGLRenderer::initInternals(bool hwsupport, bool bindlessSupport) noexcept
+{
+    assert(!hwsupport || (hwsupport && bindlessSupport));
+
+    s_nvcmdlist_headerSizes[NVTokenTerminate::ID] = sizeof(NVTokenTerminate);
+    s_nvcmdlist_headerSizes[NVTokenNop::ID] = sizeof(NVTokenNop);
+    s_nvcmdlist_headerSizes[NVTokenDrawElems::ID] = sizeof(NVTokenDrawElems);
+    s_nvcmdlist_headerSizes[NVTokenDrawArrays::ID] = sizeof(NVTokenDrawArrays);
+    s_nvcmdlist_headerSizes[NVTokenDrawElemsStrip::ID] = sizeof(NVTokenDrawElemsStrip);
+    s_nvcmdlist_headerSizes[NVTokenDrawArraysStrip::ID] = sizeof(NVTokenDrawArraysStrip);
+    s_nvcmdlist_headerSizes[NVTokenDrawElemsInstanced::ID] = sizeof(NVTokenDrawElemsInstanced);
+    s_nvcmdlist_headerSizes[NVTokenDrawArraysInstanced::ID] = sizeof(NVTokenDrawArraysInstanced);
+    s_nvcmdlist_headerSizes[NVTokenVbo::ID] = sizeof(NVTokenVbo);
+    s_nvcmdlist_headerSizes[NVTokenIbo::ID] = sizeof(NVTokenIbo);
+    s_nvcmdlist_headerSizes[NVTokenUbo::ID] = sizeof(NVTokenUbo);
+    s_nvcmdlist_headerSizes[NVTokenLineWidth::ID] = sizeof(NVTokenLineWidth);
+    s_nvcmdlist_headerSizes[NVTokenPolygonOffset::ID] = sizeof(NVTokenPolygonOffset);
+    s_nvcmdlist_headerSizes[NVTokenScissor::ID] = sizeof(NVTokenScissor);
+    s_nvcmdlist_headerSizes[NVTokenBlendColor::ID] = sizeof(NVTokenBlendColor);
+    s_nvcmdlist_headerSizes[NVTokenViewport::ID] = sizeof(NVTokenViewport);
+    s_nvcmdlist_headerSizes[NVTokenAlphaRef::ID] = sizeof(NVTokenAlphaRef);
+    s_nvcmdlist_headerSizes[NVTokenStencilRef::ID] = sizeof(NVTokenStencilRef);
+    s_nvcmdlist_headerSizes[NVTokenFrontFace::ID] = sizeof(NVTokenFrontFace);
+
+    for (int i = 0; i < GL_MAX_COMMANDS_NV; i++)
+    {
+        GLuint sz = s_nvcmdlist_headerSizes[i];
+        assert(sz);
+    }
+
+    s_nvcmdlist_bindless = bindlessSupport;
+
+    if (hwsupport)
+    {
+        for (int i = 0; i < GL_MAX_COMMANDS_NV; i++)
+        {
+            s_nvcmdlist_header[i] = glGetCommandHeaderNV(i, s_nvcmdlist_headerSizes[i]);
+        }
+
+        s_nvcmdlist_stages[NVTOKEN_STAGE_VERTEX] = glGetStageIndexNV(GL_VERTEX_SHADER);
+        s_nvcmdlist_stages[NVTOKEN_STAGE_TESS_CONTROL] = glGetStageIndexNV(GL_TESS_CONTROL_SHADER);
+        s_nvcmdlist_stages[NVTOKEN_STAGE_TESS_EVALUATION] = glGetStageIndexNV(GL_TESS_EVALUATION_SHADER);
+        s_nvcmdlist_stages[NVTOKEN_STAGE_GEOMETRY] = glGetStageIndexNV(GL_GEOMETRY_SHADER);
+        s_nvcmdlist_stages[NVTOKEN_STAGE_FRAGMENT] = glGetStageIndexNV(GL_FRAGMENT_SHADER);
+    }
+    else
+    {
+        for (int i = 0; i < GL_MAX_COMMANDS_NV; i++)
+        {
+            s_nvcmdlist_header[i] = nvtokenHeaderSW(i, s_nvcmdlist_headerSizes[i]);
+        }
+
+        for (int i = 0; i < NVTOKEN_STAGES; i++)
+        {
+            s_nvcmdlist_stages[i] = i;
+        }
+    }
+}
+
+void
+OGLRenderer::nvtokenCommandToString(GLenum type, char*& string) noexcept
+{
+    switch (type)
+    {
+    case GL_NOP_COMMAND_NV:
+        string = "GL_NOP_COMMAND_NV";
+    case GL_DRAW_ELEMENTS_INSTANCED_COMMAND_NV:
+        string = "GL_DRAW_ELEMENTS_INSTANCED_COMMAND_NV";
+    case GL_DRAW_ARRAYS_INSTANCED_COMMAND_NV:
+        string = "GL_DRAW_ARRAYS_INSTANCED_COMMAND_NV";
+    case GL_ELEMENT_ADDRESS_COMMAND_NV:
+        string = "GL_ELEMENT_ADDRESS_COMMAND_NV";
+    case GL_ATTRIBUTE_ADDRESS_COMMAND_NV:
+        string = "GL_ATTRIBUTE_ADDRESS_COMMAND_NV";
+    case GL_UNIFORM_ADDRESS_COMMAND_NV:
+        string = "GL_UNIFORM_ADDRESS_COMMAND_NV";
+    case GL_BLEND_COLOR_COMMAND_NV:
+        string = "GL_BLEND_COLOR_COMMAND_NV";
+    case GL_STENCIL_REF_COMMAND_NV:
+        string = "GL_STENCIL_REF_COMMAND_NV";
+    case GL_TERMINATE_SEQUENCE_COMMAND_NV:
+        string = "GL_TERMINATE_SEQUENCE_COMMAND_NV";
+    case GL_LINE_WIDTH_COMMAND_NV:
+        string = "GL_LINE_WIDTH_COMMAND_NV";
+    case GL_POLYGON_OFFSET_COMMAND_NV:
+        string = "GL_POLYGON_OFFSET_COMMAND_NV";
+    case GL_ALPHA_REF_COMMAND_NV:
+        string = "GL_ALPHA_REF_COMMAND_NV";
+    case GL_VIEWPORT_COMMAND_NV:
+        string = "GL_VIEWPORT_COMMAND_NV";
+    case GL_SCISSOR_COMMAND_NV:
+        string = "GL_SCISSOR_COMMAND_NV";
+    case GL_DRAW_ELEMENTS_COMMAND_NV:
+        string = "GL_DRAW_ELEMENTS_COMMAND_NV";
+    case GL_DRAW_ARRAYS_COMMAND_NV:
+        string = "GL_DRAW_ARRAYS_COMMAND_NV";
+    case GL_DRAW_ELEMENTS_STRIP_COMMAND_NV:
+        string = "GL_DRAW_ELEMENTS_STRIP_COMMAND_NV";
+    case GL_DRAW_ARRAYS_STRIP_COMMAND_NV:
+        string = "GL_DRAW_ARRAYS_STRIP_COMMAND_NV";
+    default:
+        string = nullptr;
+    }
+}
+
+void
+OGLRenderer::nvtokenGetStats(const void* stream, size_t streamSize, int stats[GL_MAX_COMMANDS_NV]) noexcept
+{
+    const GLubyte* current = (GLubyte*)stream;
+    const GLubyte* streamEnd = current + streamSize;
+
+    while (current < streamEnd) {
+        const GLuint*             header = (const GLuint*)current;
+
+        GLenum type = nvtokenHeaderCommand(*header);
+        stats[type]++;
+
+        current += s_nvcmdlist_headerSizes[type];
+    }
+}
+
+GLenum
+OGLRenderer::nvtokenDrawCommandSequence(const void* stream, size_t streamSize, GLenum mode, GLenum type, const StateSystem::State* state) noexcept
+{
+    const GLubyte* current = (GLubyte*)stream;
+    const GLubyte* streamEnd = current + streamSize;
+
+    GLenum modeStrip = mode;
+    if (mode == GL_LINES)
+        modeStrip = GL_LINE_STRIP;
+    else if (mode == GL_TRIANGLES)
+        modeStrip = GL_TRIANGLE_STRIP;
+    else if (mode == GL_QUADS)
+        modeStrip = GL_QUAD_STRIP;
+    else if (mode == GL_LINES_ADJACENCY)
+        modeStrip = GL_LINE_STRIP_ADJACENCY;
+    else if (mode == GL_TRIANGLES_ADJACENCY)
+        modeStrip = GL_TRIANGLE_STRIP_ADJACENCY;
+
+    GLenum modeSpecial = mode;
+    if (mode == GL_LINES)
+        modeSpecial = GL_LINE_LOOP;
+    else if (mode == GL_TRIANGLES)
+        modeSpecial = GL_TRIANGLE_FAN;
+
+    while (current < streamEnd)
+    {
+        const GLuint* header = (const GLuint*)current;
+
+        GLenum cmdtype = nvtokenHeaderCommand(*header);
+
+        // if you always use emulation on non-native tokens you can use
+        // cmdtype = nvtokenHeaderCommandSW(header->encoded)
+        switch (cmdtype) {
+        case GL_TERMINATE_SEQUENCE_COMMAND_NV:
+        {
+            return type;
+        }
+        break;
+        case GL_NOP_COMMAND_NV:
+        {
+        }
+        break;
+        case GL_DRAW_ELEMENTS_COMMAND_NV:
+        {
+            const DrawElementsCommandNV* cmd = (const DrawElementsCommandNV*)current;
+            glDrawElementsBaseVertex(mode, cmd->count, type, (const GLvoid*)(cmd->firstIndex * sizeof(GLuint)), cmd->baseVertex);
+        }
+        break;
+        case GL_DRAW_ARRAYS_COMMAND_NV:
+        {
+            const DrawArraysCommandNV* cmd = (const DrawArraysCommandNV*)current;
+            glDrawArrays(mode, cmd->first, cmd->count);
+        }
+        break;
+        case GL_DRAW_ELEMENTS_STRIP_COMMAND_NV:
+        {
+            const DrawElementsCommandNV* cmd = (const DrawElementsCommandNV*)current;
+            glDrawElementsBaseVertex(modeStrip, cmd->count, type, (const GLvoid*)(cmd->firstIndex * sizeof(GLuint)), cmd->baseVertex);
+        }
+        break;
+        case GL_DRAW_ARRAYS_STRIP_COMMAND_NV:
+        {
+            const DrawArraysCommandNV* cmd = (const DrawArraysCommandNV*)current;
+            glDrawArrays(modeStrip, cmd->first, cmd->count);
+        }
+        break;
+        case GL_DRAW_ELEMENTS_INSTANCED_COMMAND_NV:
+        {
+            const DrawElementsInstancedCommandNV* cmd = (const DrawElementsInstancedCommandNV*)current;
+            assert(cmd->mode == mode || cmd->mode == modeStrip || cmd->mode == modeSpecial);
+
+            glDrawElementsIndirect(cmd->mode, type, &cmd->count);
+        }
+        break;
+        case GL_DRAW_ARRAYS_INSTANCED_COMMAND_NV:
+        {
+            const DrawArraysInstancedCommandNV* cmd = (const DrawArraysInstancedCommandNV*)current;
+            assert(cmd->mode == mode || cmd->mode == modeStrip || cmd->mode == modeSpecial);
+
+            glDrawArraysIndirect(cmd->mode, &cmd->count);
+        }
+        break;
+        case GL_ELEMENT_ADDRESS_COMMAND_NV:
+        {
+            const ElementAddressCommandNV* cmd = (const ElementAddressCommandNV*)current;
+            type = cmd->typeSizeInByte == 4 ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
+            if (s_nvcmdlist_bindless)
+            {
+                glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, GLuint64(cmd->addressLo) | (GLuint64(cmd->addressHi) << 32), 0x7FFFFFFF);
+            }
+            else
+            {
+                const ElementAddressCommandEMU* cmd = (const ElementAddressCommandEMU*)current;
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cmd->buffer);
+            }
+        }
+        break;
+        case GL_ATTRIBUTE_ADDRESS_COMMAND_NV:
+        {
+            if (s_nvcmdlist_bindless)
+            {
+                const AttributeAddressCommandNV* cmd = (const AttributeAddressCommandNV*)current;
+                glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV, cmd->index, GLuint64(cmd->addressLo) | (GLuint64(cmd->addressHi) << 32), 0x7FFFFFFF);
+            }
+            else
+            {
+                const AttributeAddressCommandEMU* cmd = (const AttributeAddressCommandEMU*)current;
+                glBindVertexBuffer(cmd->index, cmd->buffer, cmd->offset, state->vertexformat.bindings[cmd->index].stride);
+            }
+        }
+        break;
+        case GL_UNIFORM_ADDRESS_COMMAND_NV:
+        {
+            if (s_nvcmdlist_bindless)
+            {
+                const UniformAddressCommandNV* cmd = (const UniformAddressCommandNV*)current;
+                glBufferAddressRangeNV(GL_UNIFORM_BUFFER_ADDRESS_NV, cmd->index, GLuint64(cmd->addressLo) | (GLuint64(cmd->addressHi) << 32), 0x10000);
+            }
+            else
+            {
+                const UniformAddressCommandEMU* cmd = (const UniformAddressCommandEMU*)current;
+                glBindBufferRange(GL_UNIFORM_BUFFER, cmd->index, cmd->buffer, cmd->offset256 * 256, cmd->size4 * 4);
+            }
+        }
+        break;
+        case GL_BLEND_COLOR_COMMAND_NV:
+        {
+            const BlendColorCommandNV* cmd = (const BlendColorCommandNV*)current;
+            glBlendColor(cmd->red, cmd->green, cmd->blue, cmd->alpha);
+        }
+        break;
+        case GL_STENCIL_REF_COMMAND_NV:
+        {
+            const StencilRefCommandNV* cmd = (const StencilRefCommandNV*)current;
+            glStencilFuncSeparate(GL_FRONT, state->stencil.funcs[StateSystem::FACE_FRONT].func, cmd->frontStencilRef, state->stencil.funcs[StateSystem::FACE_FRONT].mask);
+            glStencilFuncSeparate(GL_BACK, state->stencil.funcs[StateSystem::FACE_BACK].func, cmd->backStencilRef, state->stencil.funcs[StateSystem::FACE_BACK].mask);
+        }
+        break;
+
+        case GL_LINE_WIDTH_COMMAND_NV:
+        {
+            const LineWidthCommandNV* cmd = (const LineWidthCommandNV*)current;
+            glLineWidth(cmd->lineWidth);
+        }
+        break;
+        case GL_POLYGON_OFFSET_COMMAND_NV:
+        {
+            const PolygonOffsetCommandNV* cmd = (const PolygonOffsetCommandNV*)current;
+            glPolygonOffset(cmd->scale, cmd->bias);
+        }
+        break;
+        case GL_ALPHA_REF_COMMAND_NV:
+        {
+            const AlphaRefCommandNV* cmd = (const AlphaRefCommandNV*)current;
+            glAlphaFunc(state->alpha.mode, cmd->alphaRef);
+        }
+        break;
+        case GL_VIEWPORT_COMMAND_NV:
+        {
+            const ViewportCommandNV* cmd = (const ViewportCommandNV*)current;
+            glViewport(cmd->x, cmd->y, cmd->width, cmd->height);
+        }
+        break;
+        case GL_SCISSOR_COMMAND_NV:
+        {
+            const ScissorCommandNV* cmd = (const ScissorCommandNV*)current;
+            glScissor(cmd->x, cmd->y, cmd->width, cmd->height);
+        }
+        break;
+        case GL_FRONT_FACE_COMMAND_NV:
+        {
+            FrontFaceCommandNV* cmd = (FrontFaceCommandNV*)current;
+            glFrontFace(cmd->frontFace ? GL_CW : GL_CCW);
+        }
+        break;
+        }
+
+        GLuint tokenSize = s_nvcmdlist_headerSizes[cmdtype];
+        assert(tokenSize);
+
+        current += tokenSize;
+    }
+
+    return type;
+}
+
+void
+OGLRenderer::nvtokenDrawCommandState() noexcept
+{
+    int lastfbo = ~0;
+
+    auto tokens = (const char*)_tokenData.data();
+    auto count = _tokenSequence.offsets.size();
+    auto states = _tokenSequenceEmu.states.data();
+    auto fbos = _tokenSequenceEmu.fbos.data();
+
+    StateSystem::StateID lastID = StateSystem::INVALID_ID;
+
+    GLenum type = GL_UNSIGNED_SHORT;
+
+    for (GLuint i = 0; i < count; i++)
+    {
+        auto ID = states[i];
+        auto state = &_stateSystem.get(states[i]);
+
+        GLuint fbo;
+        if (fbos[i])
+            fbo = fbos[i];
+        else
+            fbo = state->fbo.fboDraw;
+
+        if (fbo != lastfbo)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+            lastfbo = fbo;
+        }
+
+        _stateSystem.applyGL(ID, lastID, true);
+
+        lastID = ID;
+
+        std::size_t offset = _tokenSequenceEmu.offsets[i];
+        std::size_t size = _tokenSequenceEmu.sizes[i];
+
+        assert(size + offset < _tokenData.size());
+
+        type = nvtokenDrawCommandSequence(&tokens[offset], size, state->basePrimitiveMode, type, state);
+    }
 }
 
 _NAME_END

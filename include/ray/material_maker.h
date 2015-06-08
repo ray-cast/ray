@@ -38,7 +38,7 @@
 #define _H_MATERIAL_MAKETER_H_
 
 #include <ray/material.h>
-#include <ray/xmlstream.h>
+#include <ray/xmlreader.h>
 
 _NAME_BEGIN
 
@@ -52,17 +52,17 @@ public:
     ~MaterialMaker() noexcept;
 
     MaterialPtr load(const std::string& filename) except;
-    MaterialPtr load(XMLReader* reader) except;
+    MaterialPtr load(XMLReader& reader) except;
 
     operator MaterialPtr() noexcept;
 
 private:
 
-    ShaderPtr instanceShader(XMLReader* reader) noexcept;
-    RenderStatePtr instanceState(XMLReader* reader) noexcept;
-    MaterialPassPtr instancePass(XMLReader* reader) noexcept;
-    MaterialTechPtr instanceTech(XMLReader* reader) noexcept;
-    ShaderParamPtr instanceParameter(XMLReader* reader) noexcept;
+    ShaderPtr instanceShader(XMLReader& reader) noexcept;
+    RenderStatePtr instanceState(XMLReader& reader) noexcept;
+    MaterialPassPtr instancePass(XMLReader& reader) noexcept;
+    MaterialTechPtr instanceTech(XMLReader& reader) noexcept;
+    ShaderParamPtr instanceParameter(XMLReader& reader) noexcept;
 
 private:
     MaterialMaker(const MaterialMaker&) noexcept = delete;

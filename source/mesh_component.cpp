@@ -121,13 +121,13 @@ MeshComponent::getNumIndices() const noexcept
 }
 
 void
-MeshComponent::setRenderMesh(RenderMeshPtr mesh) noexcept
+MeshComponent::setRenderBuffer(RenderBufferPtr mesh) noexcept
 {
     _renderMesh = mesh;
 }
 
-RenderMeshPtr
-MeshComponent::getRenderMesh() const noexcept
+RenderBufferPtr
+MeshComponent::getRenderBuffer() const noexcept
 {
     return _renderMesh;
 }
@@ -151,7 +151,7 @@ void
 MeshComponent::onActivate() noexcept
 {
     if (_mesh)
-        buildRenderMesh();
+        buildRenderBuffer();
 }
 
 void
@@ -262,7 +262,7 @@ MeshComponent::buildMesh() noexcept
 }
 
 void
-MeshComponent::buildRenderMesh() noexcept
+MeshComponent::buildRenderBuffer() noexcept
 {
     if (!_vb && !_ib)
     {
@@ -271,7 +271,7 @@ MeshComponent::buildRenderMesh() noexcept
 
     if (_vb || _ib)
     {
-        _renderMesh = std::make_unique<RenderMesh>();
+        _renderMesh = std::make_unique<RenderBuffer>();
         _renderMesh->setup(_vb, _ib);
     }
 }

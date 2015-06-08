@@ -193,36 +193,42 @@ RenderFeatures::instanceMaterial(XMLReader* reader) except
     std::string url = reader->getString("material");
     if (!url.empty())
     {
-        XMLReader stream;
-        if (stream.open(url))
+        MemoryStream stream;
+
+        IoServer::instance()->openFile(url, stream);
+        if (!stream.is_open())
+            return false;
+
+        XMLReader xml;
+        if (xml.open(stream))
         {
             std::string name;
             std::map<std::string, std::string> args;
 
-            if (!stream.setToFirstChild())
+            if (!xml.setToFirstChild())
             {
                 throw failure("The file has been damaged and can't be recovered, so I can't open it" + url);
             }
 
             do
             {
-                auto key = stream.getCurrentNodeName();
+                auto key = xml.getCurrentNodeName();
                 if (key == "attribute")
                 {
-                    auto attributes = stream.getAttrs();
+                    auto attributes = xml.getAttrs();
                     for (auto& it : attributes)
                     {
                         if (it == "shader")
                         {
-                            name = stream.getString(it);
+                            name = xml.getString(it);
                         }
                         else
                         {
-                            args[it] = stream.getString(it);
+                            args[it] = xml.getString(it);
                         }
                     }
                 }
-            } while (stream.setToNextChild());
+            } while (xml.setToNextChild());
 
             if (!name.empty())
             {

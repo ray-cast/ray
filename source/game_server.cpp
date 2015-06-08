@@ -123,10 +123,16 @@ GameServer::openScene(const std::string& sceneName)
 
     if (it == _scenes.end())
     {
+        MemoryStream stream;
+
+        IoServer::instance()->openFile(sceneName, stream);
+        if (!stream.is_open())
+            return false;
+
         XMLReader xml;
-        if (xml.open(sceneName))
+        if (xml.open(stream))
         {
-            auto scene = std::make_shared<GameScene>();
+            auto scene = GameScene::create();
             scene->setName(sceneName);
             scene->_setGameServer(this);
 
@@ -276,7 +282,7 @@ GameServer::onFrameBegin() except
 
     for (auto& it : _scenes)
     {
-        it->onFrameBegin();
+        it->_onFrameBegin();
     }
 
     for (auto& it : _features)
@@ -290,7 +296,7 @@ GameServer::onFrame() except
 {
     for (auto& it : _scenes)
     {
-        it->onFrame();
+        it->_onFrame();
     }
 
     for (auto& it : _features)
@@ -304,7 +310,7 @@ GameServer::onFrameEnd() except
 {
     for (auto& it : _scenes)
     {
-        it->onFrameEnd();
+        it->_onFrameEnd();
     }
 
     for (auto& it : _features)

@@ -99,6 +99,7 @@ SET(PLATFORM_IO_LIST
     ${SOURCE_PATH}/ioassign.cpp
     ${HEADER_PATH}/ioassign.h
     ${HEADER_PATH}/iosbase.h
+    ${SOURCE_PATH}/iosbase.cpp
     ${HEADER_PATH}/iosfwd.h
     ${SOURCE_PATH}/iostream.cpp
     ${HEADER_PATH}/iostream.h
@@ -119,8 +120,8 @@ SET(PLATFORM_IO_LIST
     ${HEADER_PATH}/package.h
     ${SOURCE_PATH}/streambuf.cpp
     ${HEADER_PATH}/streambuf.h
-    ${HEADER_PATH}/xmlstream.h
-    ${SOURCE_PATH}/xmlstream.cpp
+    ${HEADER_PATH}/xmlreader.h
+    ${SOURCE_PATH}/xmlreader.cpp
 )
 SOURCE_GROUP("io" FILES ${PLATFORM_IO_LIST})
 
@@ -342,8 +343,6 @@ SET(RENDERER_CORE
     ${SOURCE_PATH}/shader.cpp
     ${HEADER_PATH}/texture.h
     ${SOURCE_PATH}/texture.cpp
-    ${HEADER_PATH}/render_mesh.h
-    ${SOURCE_PATH}/render_mesh.cpp
     ${HEADER_PATH}/render_texture.h
     ${SOURCE_PATH}/render_texture.cpp
     ${HEADER_PATH}/render_window.h
@@ -356,14 +355,14 @@ SOURCE_GROUP("core" FILES ${RENDERER_CORE})
 SET(RENDERER_OGL
     ${HEADER_PATH}/ogl_types.h
     ${SOURCE_PATH}/ogl_types.cpp
-    ${HEADER_PATH}/ogl_buffer.h
-    ${SOURCE_PATH}/ogl_buffer.cpp
     ${HEADER_PATH}/ogl_renderer.h
     ${SOURCE_PATH}/ogl_renderer.cpp
     ${HEADER_PATH}/ogl_target.h
     ${SOURCE_PATH}/ogl_target.cpp
-    ${HEADER_PATH}/ogl_texture.h
-    ${SOURCE_PATH}/ogl_texture.cpp
+    ${HEADER_PATH}/ogl_commandlist.h
+    ${SOURCE_PATH}/ogl_commandlist.cpp
+    ${HEADER_PATH}/ogl_state.h
+    ${SOURCE_PATH}/ogl_state.cpp
     ${HEADER_PATH}/ogl_shader.h
     ${SOURCE_PATH}/ogl_shader.cpp
     ${HEADER_PATH}/wgl_canvas.h

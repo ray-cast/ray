@@ -1081,24 +1081,6 @@ GameObject::clone() const noexcept
     return instance;
 }
 
-GameObjectPtr
-GameObject::find(const std::string& name) noexcept
-{
-    auto instances = GameObject::instances();
-    for (auto& it : instances)
-    {
-        if (!it)
-            continue;
-
-        if (it->getName() == name)
-        {
-            return it->shared_from_this();
-        }
-    }
-
-    return nullptr;
-}
-
 void
 GameObject::_onFrameBegin() noexcept
 {

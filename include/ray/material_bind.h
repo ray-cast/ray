@@ -45,13 +45,13 @@ class EXPORT MaterialParmBinds
 {
 public:
 
-    const ShaderParamArgs& getShaderParamArgs() const noexcept;
+    ShaderConstantBufferPtr getConstantBuffer() const noexcept;
 
     void _buildUniformBinds(const MaterialSemantic& semantic, const ShaderParams& param, const ShaderUniforms& uniform);
 
 private:
 
-    ShaderParamArgs _uniformBindsMap;
+    ShaderConstantBufferPtr _constantBuffer;
 };
 
 _NAME_END

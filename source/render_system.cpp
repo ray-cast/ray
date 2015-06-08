@@ -80,7 +80,7 @@ RenderSystem::setup(RenderDevicePtr device, RenderWindowPtr window, WindHandle w
     _dynamicBuffers->setup(1, sizeof(SimpleVertex), VertexUsage::GPU_USAGE_DYNAMIC);
     _dynamicBuffers->setVertexComponents(components);
 
-    _renderBuffer = std::make_unique<RenderMesh>();
+    _renderBuffer = std::make_unique<RenderBuffer>();
     _renderBuffer->setup(_dynamicBuffers, nullptr);
 
     float ratio = (float)width / height;
@@ -539,7 +539,7 @@ RenderSystem::renderEnd() noexcept
 
         _renderer->setShaderObject(pass->getShaderObject());
         _renderer->setRenderState(pass->getRenderState());
-        _renderer->setShaderParamArgs(pass->getParamBindings()->getShaderParamArgs());
+        _renderer->setShaderConstantBuffer(pass->getShaderConstantBuffer());
 
         Renderable renderable;
         renderable.type = VertexType::GPU_LINE;
@@ -564,7 +564,7 @@ RenderSystem::renderEnd() noexcept
 
         _renderer->setShaderObject(pass->getShaderObject());
         _renderer->setRenderState(pass->getRenderState());
-        _renderer->setShaderParamArgs(pass->getParamBindings()->getShaderParamArgs());
+        _renderer->setShaderConstantBuffer(pass->getShaderConstantBuffer());
 
         Renderable renderable;
         renderable.type = VertexType::GPU_LINE;

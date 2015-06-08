@@ -43,7 +43,7 @@
 TerrainGrass::TerrainGrass() noexcept
 {
     _grass = std::make_shared<Grass>();
-    _grassObject = ray::GameObject::find("grass");
+    _grassObject = ray::GameObject::find<ray::GameObject>("grass");
 
     this->addItem(_grass);
 }
@@ -61,21 +61,17 @@ bool
 TerrainGrass::visiable(TerrainMapPtr map, int x, int y, int z) noexcept
 {
     int f1 = map->get(x - 1, y, z);
-    f1 = (f1 == 0 || f1 != _grass->getInstance()) ? 1 : 0;
-
     int f2 = map->get(x + 1, y, z);
-    f2 = (f2 == 0 || f2 != _grass->getInstance()) ? 1 : 0;
-
     int f3 = map->get(x, y - 1, z);
-    f3 = ((f3 == 0 || f3 != _grass->getInstance()) && y > 0) ? 1 : 0;
-
     int f4 = map->get(x, y + 1, z);
-    f4 = (f4 == 0 || f4 != _grass->getInstance()) ? 1 : 0;
-
     int f5 = map->get(x, y, z - 1);
-    f5 = (f5 == 0 || f5 != _grass->getInstance()) ? 1 : 0;
-
     int f6 = map->get(x, y, z + 1);
+
+    f1 = (f1 == 0 || f1 != _grass->getInstance()) ? 1 : 0;
+    f2 = (f2 == 0 || f2 != _grass->getInstance()) ? 1 : 0;
+    f3 = ((f3 == 0 || f3 != _grass->getInstance()) && y > 0) ? 1 : 0;
+    f4 = (f4 == 0 || f4 != _grass->getInstance()) ? 1 : 0;
+    f5 = (f5 == 0 || f5 != _grass->getInstance()) ? 1 : 0;
     f6 = (f6 == 0 || f6 != _grass->getInstance()) ? 1 : 0;
 
     return (f1 + f2 + f3 + f4 + f5 + f6) ? true : false;

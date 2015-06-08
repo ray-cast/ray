@@ -42,12 +42,10 @@
 _NAME_BEGIN
 
 class Image;
-class istream;
-class ostream;
 class EXPORT ImageHandler : public image_base
 {
 public:
-    virtual ~ImageHandler() noexcept{};
+    virtual ~ImageHandler() noexcept {};
 
     virtual bool doCanRead(istream& stream) const noexcept = 0;
 

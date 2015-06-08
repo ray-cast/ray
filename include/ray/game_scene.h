@@ -41,8 +41,9 @@
 
 _NAME_BEGIN
 
-class EXPORT GameScene : public Instance<GameScene>
+class EXPORT GameScene : public Object<GameScene>
 {
+    __DeclareClass(GameScene)
 public:
     struct Setting
     {
@@ -64,9 +65,6 @@ public:
     void setActive(bool active) noexcept;
     bool getActive() const noexcept;
 
-    void setName(const std::string& name) noexcept;
-    const std::string& getName() const noexcept;
-
     void setEnvironment(const Setting& setting) noexcept;
     const Setting& getEnvironment() const noexcept;
 
@@ -74,19 +72,20 @@ public:
     void removeGameObject(GameObjectPtr obj) noexcept;
 
     GameObjectPtr getGameObject(const std::string& name) noexcept;
-
-    GameServer* getGameServer() noexcept;
-
     GameObjectPtr getRootObject() noexcept;
 
-    void onFrameBegin() noexcept;
-    void onFrame() noexcept;
-    void onFrameEnd() noexcept;
+    GameScenePtr clone() const noexcept;
+
+    GameServer* getGameServer() noexcept;
 
 private:
 
     friend GameServer;
     void _setGameServer(GameServer* server) noexcept;
+
+    void _onFrameBegin() noexcept;
+    void _onFrame() noexcept;
+    void _onFrameEnd() noexcept;
 
 private:
 

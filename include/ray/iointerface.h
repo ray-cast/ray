@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RES_LOADER_H_
-#define _H_RES_LOADER_H_
+#ifndef _H_IO_INTERFACE_H_
+#define _H_IO_INTERFACE_H_
 
 #include <ray/platform.h>
 

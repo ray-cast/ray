@@ -37,6 +37,8 @@
 #include <ray/image.h>
 #include <ray/imagall.h>
 #include <ray/ioserver.h>
+#include <ray/fstream.h>
+#include <ray/mstream.h>
 
 _NAME_BEGIN
 

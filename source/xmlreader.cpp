@@ -34,8 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/xmlstream.h>
-#include <ray/ioserver.h>
+#include <ray/xmlreader.h>
 
 #include <sstream>
 #include <tinyxml.h>
@@ -53,80 +52,29 @@ XMLReader::~XMLReader() noexcept
 }
 
 bool
-XMLReader::open(const std::string& filename) noexcept
+XMLReader::open(istream& stream) noexcept
 {
     assert(0 == _document);
     assert(0 == _currentNode);
 
-    IoServer::instance()->openFile(filename, *this);
-    if (this->is_open())
+    std::size_t length = stream.size();
+    if (length == 0)
+        return false;
+
+    std::string data;
+    data.resize(length);
+
+    if (!stream.read((char*)data.c_str(), length))
+        return false;
+
+    _document = std::make_unique<TiXmlDocument>();
+    _document->Parse(data.c_str());
+
+    if (!_document->Error())
     {
-        std::size_t length = this->size();
-        if (length == 0)
-        {
-            return false;
-        }
-
-        std::string data;
-        data.resize(length);
-
-        if (!this->read((char*)data.c_str(), length))
-        {
-            return false;
-        }
-
-        _document = std::make_unique<TiXmlDocument>();
-        _document->Parse(data.c_str());
-
-        if (!_document->Error())
-        {
-            _currentNode = _document->RootElement();
-        }
-
+        _currentNode = _document->RootElement();
         if (_currentNode)
-        {
             return true;
-        }
-    }
-
-    return false;
-}
-
-bool
-XMLReader::open(const std::wstring& filename) noexcept
-{
-    assert(0 == _document);
-    assert(0 == _currentNode);
-
-    IoServer::instance()->openFile(filename, *this);
-    if (this->is_open())
-    {
-        std::size_t length = this->size();
-        if (length == 0)
-        {
-            return false;
-        }
-
-        std::string data;
-        data.resize(length);
-
-        if (!this->read((char*)data.c_str(), length))
-        {
-            return false;
-        }
-
-        _document = std::make_unique<TiXmlDocument>();
-        _document->Parse(data.c_str());
-
-        if (!_document->Error())
-        {
-            _currentNode = _document->RootElement();
-        }
-
-        if (_currentNode)
-        {
-            return true;
-        }
     }
 
     return false;
@@ -186,7 +134,7 @@ XMLReader::setToNode(const std::string& path) noexcept
 bool
 XMLReader::setToFirstChild(const std::string& name) noexcept
 {
-    assert(this->is_open());
+    assert(_currentNode);
 
     TiXmlElement* child = 0;
     if (name.empty())
@@ -212,7 +160,7 @@ XMLReader::setToFirstChild(const std::string& name) noexcept
 bool
 XMLReader::setToNextChild(const std::string& name) noexcept
 {
-    assert(this->is_open());
+    assert(_currentNode);
 
     TiXmlElement* next = 0;
     if (name.empty())
@@ -239,8 +187,7 @@ XMLReader::setToNextChild(const std::string& name) noexcept
 bool
 XMLReader::setToParent() noexcept
 {
-    assert(this->is_open());
-    assert(this->_currentNode);
+    assert(_currentNode);
 
     TiXmlNode* parent = _currentNode->Parent();
     if (parent)
@@ -257,7 +204,6 @@ XMLReader::setToParent() noexcept
 bool
 XMLReader::hasAttr(const char* name) const noexcept
 {
-    assert(this->is_open());
     assert(this->_currentNode);
 
     return _currentNode->Attribute(name) ? true : false;
@@ -266,7 +212,6 @@ XMLReader::hasAttr(const char* name) const noexcept
 std::vector<std::string>
 XMLReader::getAttrs() const noexcept
 {
-    assert(this->is_open());
     assert(this->_currentNode);
 
     std::vector<std::string> attrs;

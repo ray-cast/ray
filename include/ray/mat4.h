@@ -923,15 +923,17 @@ public:
         return *this;
     }
 
-    Matrix4x4t<T>& makeViewport(std::size_t width, std::size_t height)
+    Matrix4x4t<T>& makeViewport(std::size_t left, std::size_t top, std::size_t width, std::size_t height)
     {
         T cx = (T)(width >> 1);
         T cy = (T)(height >> 1);
+        T A = cx + left;
+        T B = cy + top;
 
         set(cx, 0.0, 0.0, 0.0,
             0.0, cy, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            cx, cy, 0.0, 1.0);
+            0.0, 0.0, 0.5, 0.0,
+              A,   B, 0.5, 1.0);
 
         return *this;
     }

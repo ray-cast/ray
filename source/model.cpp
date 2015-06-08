@@ -36,9 +36,9 @@
 // +----------------------------------------------------------------------
 #include <ray/model.h>
 #include <ray/modall.h>
-#include <ray/fstream.h>
 #include <ray/ioserver.h>
-#include <map>
+#include <ray/fstream.h>
+#include <ray/mstream.h>
 
 _NAME_BEGIN
 

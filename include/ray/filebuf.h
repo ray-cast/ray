@@ -65,6 +65,8 @@ public:
 
     void close() noexcept;
 
+    void copy(streambuf& other) noexcept;
+
 private:
 
     IOFILE _file;

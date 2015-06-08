@@ -82,141 +82,18 @@ GLXEWContext _glxewctx;
 #define GL_ALPHA_REF_COMMAND_NV                               0x000f
 #define GL_VIEWPORT_COMMAND_NV                                0x0010
 #define GL_SCISSOR_COMMAND_NV                                 0x0011
-#define GL_MAX_COMMANDS_NV                                    0x0012
+#define GL_FRONT_FACE_COMMAND_NV                              0x0012
+#define GL_MAX_COMMANDS_NV                                    0x0013
 
-#pragma pack(push,1)
-
-struct TerminateSequenceCommandNV
-{
-    GLuint  header;
-};
-
-struct NOPCommandNV
-{
-    GLuint  header;
-};
-
-struct DrawElementsCommandNV
-{
-    GLuint  header;
-    GLuint  count;
-    GLuint  firstIndex;
-    GLuint  baseVertex;
-};
-
-struct DrawArraysCommandNV
-{
-    GLuint  header;
-    GLuint  count;
-    GLuint  first;
-};
-
-struct DrawElementsInstancedCommandNV
-{
-    GLuint  header;
-    GLenum  mode;
-    GLuint  count;
-    GLuint  instanceCount;
-    GLuint  firstIndex;
-    GLuint  baseVertex;
-    GLuint  baseInstance;
-};
-
-struct DrawArraysInstancedCommandNV
-{
-    GLuint  header;
-    GLenum  mode;
-    GLuint  count;
-    GLuint  instanceCount;
-    GLuint  first;
-    GLuint  baseInstance;
-};
-
-struct ElementAddressCommandNV
-{
-    GLuint  header;
-    GLuint  addressLo;
-    GLuint  addressHi;
-    GLuint  typeSizeInByte;
-};
-
-struct AttributeAddressCommandNV
-{
-    GLuint  header;
-    GLuint  index;
-    GLuint  addressLo;
-    GLuint  addressHi;
-};
-
-struct UniformAddressCommandNV
-{
-    GLuint    header;
-    GLushort  index;
-    GLushort  stage;
-    GLuint    addressLo;
-    GLuint    addressHi;
-};
-
-struct BlendColorCommandNV
-{
-    GLuint  header;
-    float   red;
-    float   green;
-    float   blue;
-    float   alpha;
-};
-
-struct StencilRefCommandNV
-{
-    GLuint  header;
-    GLuint  frontStencilRef;
-    GLuint  backStencilRef;
-};
-
-struct LineWidthCommandNV
-{
-    GLuint  header;
-    float   lineWidth;
-};
-
-struct PolygonOffsetCommandNV
-{
-    GLuint  header;
-    float   scale;
-    float   bias;
-};
-
-struct AlphaRefCommandNV
-{
-    GLuint  header;
-    float   alphaRef;
-};
-
-struct ViewportCommandNV
-{
-    GLuint  header;
-    GLuint  x;
-    GLuint  y;
-    GLuint  width;
-    GLuint  height;
-};
-
-struct ScissorCommandNV
-{
-    GLuint  header;
-    GLuint  x;
-    GLuint  y;
-    GLuint  width;
-    GLuint  height;
-};
-
-struct FrontFaceCommandNV
-{
-    GLuint  header;
-    GLuint  frontFace;  // 0 for CW, 1 for CCW
-};
-
-#pragma pack(pop)
+#ifndef GL_UNIFORM_BUFFER_UNIFIED_NV
+#define GL_UNIFORM_BUFFER_UNIFIED_NV                        0x936E
+#endif
+#ifndef GL_UNIFORM_BUFFER_ADDRESS_NV
+#define GL_UNIFORM_BUFFER_ADDRESS_NV                        0x936F
+#endif
+#ifndef GL_UNIFORM_BUFFER_LENGTH_NV
+#define GL_UNIFORM_BUFFER_LENGTH_NV                         0x9370
+#endif
 
 typedef BOOL(WINAPI * PFNWGLSWAPBUFFERSPROC) (HDC hdc);
 typedef BOOL(WINAPI * PFNWGLSWAPINTERVALEXTPROC) (int interval);
@@ -254,6 +131,8 @@ typedef void (GLEXT_APIENTRY *PFNGLDELETESTATESNVPROC)(GLsizei n, const GLuint *
 typedef GLboolean(*PFNGLISSTATENVPROC)(GLuint state);
 typedef void (GLEXT_APIENTRY *PFNGLSTATEPROPERTIESDYNAMICNVPROC)(GLuint state, GLsizei count, const GLint *params);
 typedef void (GLEXT_APIENTRY *PFNGLSTATECAPTURENVPROC)(GLuint state, GLenum mode);
+typedef void (GLEXT_APIENTRY *PFNGLDRAWCOMMANDSNVPROC)(GLenum mode, GLenum type, GLuint buffer, const GLintptr* indirects, const GLsizei* sizes, GLuint count);
+typedef void (GLEXT_APIENTRY *PFNGLDRAWCOMMANDSADDRESSNVPROC)(GLenum mode, GLenum type, const GLuint64* indirects, const GLsizei* sizes, GLuint count);
 typedef void (GLEXT_APIENTRY *PFNGLDRAWCOMMANDSSTATESNVPROC)(GLuint buffer, const GLintptr* indirects, const GLsizei* sizes, const GLuint* states, const GLuint* fbos, GLuint count);
 typedef void (GLEXT_APIENTRY *PFNGLDRAWCOMMANDSSTATESADDRESSNVPROC)(const GLuint64* indirects, const GLsizei* sizes, const GLuint* states, const GLuint* fbos, GLuint count);
 typedef void (GLEXT_APIENTRY *PFNGLCREATECOMMANDLISTSNVPROC)(GLsizei n, GLuint *lists);
@@ -265,15 +144,14 @@ typedef void (GLEXT_APIENTRY *PFNGLCOMPILECOMMANDLISTNVPROC)(GLuint list);
 typedef void (GLEXT_APIENTRY *PFNGLCALLCOMMANDLISTNVPROC)(GLuint list);
 typedef GLuint(GLEXT_APIENTRY *PFNGLGETCOMMANDHEADERNVPROC)(GLenum id, GLuint tokenSize);
 typedef GLushort(GLEXT_APIENTRY* PFNGLGETSTAGEINDEXNVPROC)(GLenum shadertype);
-typedef void (GLEXT_APIENTRY *PFNGLDRAWCOMMANDSNVPROC)(GLenum mode, GLenum type, GLuint buffer, const GLintptr* indirects, const GLsizei* sizes, GLuint count);
-typedef void (GLEXT_APIENTRY *PFNGLDRAWCOMMANDSADDRESSNVPROC)(GLenum GLmode, GLenum type, const GLuint64* indirects, const GLsizei* sizes, GLuint count);
 
-extern PFNGLDRAWCOMMANDSNVPROC __glewDrawCommandsNV;
 extern PFNGLCREATESTATESNVPROC __glewCreateStatesNV;
 extern PFNGLDELETESTATESNVPROC __glewDeleteStatesNV;
 extern PFNGLISSTATENVPROC __glewIsStateNV;
 extern PFNGLSTATEPROPERTIESDYNAMICNVPROC __glewStatePropertiesDynamicNV;
 extern PFNGLSTATECAPTURENVPROC __glewStateCaptureNV;
+extern PFNGLDRAWCOMMANDSNVPROC __glewDrawCommandsNV;
+extern PFNGLDRAWCOMMANDSADDRESSNVPROC __glewDrawCommandsAddressNV;
 extern PFNGLDRAWCOMMANDSSTATESNVPROC __glewDrawCommandsStatesNV;
 extern PFNGLDRAWCOMMANDSSTATESADDRESSNVPROC __glewDrawCommandsStatesAddressNV;
 extern PFNGLCREATECOMMANDLISTSNVPROC __glewCreateCommandListsNV;
@@ -285,11 +163,6 @@ extern PFNGLCOMPILECOMMANDLISTNVPROC __glewCompileCommandListNV;
 extern PFNGLCALLCOMMANDLISTNVPROC __glewCallCommandListNV;
 extern PFNGLGETCOMMANDHEADERNVPROC __glewGetCommandHeaderNV;
 extern PFNGLGETSTAGEINDEXNVPROC __glewGetStageIndexNV;
-
-inline void glDrawCommandsNV(GLenum mode, GLenum type, GLuint buffer, const GLintptr* indirects, const GLsizei* sizes, GLuint count)
-{
-    __glewDrawCommandsNV(mode, type, buffer, indirects, sizes, count);
-}
 
 inline void glCreateStatesNV(GLsizei n, GLuint *states)
 {
@@ -314,6 +187,16 @@ inline void glStatePropertiesDynamicNV(GLuint state, GLsizei count, const GLint 
 inline void glStateCaptureNV(GLuint state, GLenum mode)
 {
     __glewStateCaptureNV(state, mode);
+}
+
+inline void glDrawCommandsNV(GLenum mode, GLenum type, GLuint buffer, const GLintptr* indirects, const GLsizei* sizes, GLuint count)
+{
+    __glewDrawCommandsNV(mode, type, buffer, indirects, sizes, count);
+}
+
+inline void glDrawCommandsAddressNV(GLenum mode, GLenum type, const GLuint64* indirects, const GLsizei* sizes, GLuint count)
+{
+    __glewDrawCommandsAddressNV(mode, type, indirects, sizes, count);
 }
 
 inline void glDrawCommandsStatesNV(GLuint buffer, const GLintptr* indirects, const GLsizei* sizes, const GLuint* states, const GLuint* fbos, GLuint count)
@@ -374,14 +257,17 @@ inline GLushort glGetStageIndexNV(GLenum shadertype)
 int initWGLExtensions() noexcept;
 int initCommandListNV() noexcept;
 
-extern bool _EXT_swap_control;
-
 extern bool _ARB_pixel_format;
 extern bool _ARB_create_context;
 extern bool _ARB_create_context_robustness;
 extern bool _ARB_bindless_texture;
+extern bool _ARB_vertex_array_object;
+extern bool _ARB_vertex_attrib_binding;
 extern bool _EXT_direct_state_access;
+extern bool _EXT_swap_control;
 extern bool _NV_command_list;
+extern bool _NV_shader_buffer_load;
+extern bool _NV_vertex_buffer_unified_memory;
 
 _NAME_END
 

@@ -86,17 +86,17 @@ RenderPipeline::setup(std::size_t width, std::size_t height) except
     MeshProperty mesh;
     mesh.makePlane(2, 2, 1, 1);
 
-    _renderSceneQuad = std::make_shared<RenderMesh>();
+    _renderSceneQuad = std::make_shared<RenderBuffer>();
     _renderSceneQuad->setup(mesh);
 
     mesh.makeSphere(1, 16, 12);
 
-    _renderSphere = std::make_shared<RenderMesh>();
+    _renderSphere = std::make_shared<RenderBuffer>();
     _renderSphere->setup(mesh);
 
     mesh.makeCone(1, 1, 16);
 
-    _renderCone = std::make_shared<RenderMesh>();
+    _renderCone = std::make_shared<RenderBuffer>();
     _renderCone->setup(mesh);
 
     _swapMap = RenderTexture::create();
@@ -203,7 +203,7 @@ RenderPipeline::setTechnique(MaterialPassPtr pass) noexcept
 {
     renderer->setRenderState(pass->getRenderState());
     renderer->setShaderObject(pass->getShaderObject());
-    renderer->setShaderParamArgs(pass->getParamBindings()->getShaderParamArgs());
+    renderer->setShaderConstantBuffer(pass->getShaderConstantBuffer());
 }
 
 void

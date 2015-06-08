@@ -56,10 +56,10 @@ Terrain::~Terrain() noexcept
 void
 Terrain::onActivate() except
 {
-    auto player = ray::GameObject::find("first_person_camera");
-    if (player)
+    _player = find<ray::GameObject>("first_person_camera");
+    if (_player)
     {
-        ray::Vector3 translate = player->getTranslate();
+        ray::Vector3 translate = _player->getTranslate();
 
         int x = chunked(translate.x);
         int y = chunked(translate.y);
@@ -78,8 +78,8 @@ Terrain::onActivate() except
             }
         }
 
-        player->addComponent(std::make_shared<FirstPersonCamera>());
-        player->setActive(true);
+        _player->addComponent(std::make_shared<FirstPersonCamera>());
+        _player->setActive(true);
 
         for (std::size_t i = 0; i < 4; i++)
         {
@@ -188,19 +188,15 @@ Terrain::deleteChunks() noexcept
     {
         bool destroy = true;
 
-        auto& cameras = ray::CameraComponent::instances();
-        for (auto& camera : cameras)
+        ray::Vector3 translate = _player->getTranslate();
+
+        int x = chunked(translate.x);
+        int y = chunked(translate.y);
+        int z = chunked(translate.z);
+
+        if ((*it)->distance(x, y, z) < _deleteRadius)
         {
-            ray::Vector3 translate = camera->getGameObject()->getTranslate();
-
-            int x = chunked(translate.x);
-            int y = chunked(translate.y);
-            int z = chunked(translate.z);
-
-            if ((*it)->distance(x, y, z) < _deleteRadius)
-            {
-                destroy = false;
-            }
+            destroy = false;
         }
 
         if (destroy)
@@ -216,69 +212,65 @@ Terrain::deleteChunks() noexcept
 void
 Terrain::createChunks() noexcept
 {
-    auto cameras = ray::CameraComponent::instances();
-    for (auto& camera : cameras)
+    auto& translate = _player->getTranslate();
+    int x = chunked(translate.x);
+    int y = -1;
+    int z = chunked(translate.z);
+
+    ray::Frustum fru;
+    fru.extract(_player->getComponent<ray::CameraComponent>()->getViewProject());
+
+    for (auto& it : _threads)
     {
-        auto& translate = camera->getGameObject()->getTranslate();
-        int x = chunked(translate.x);
-        int y = -1;
-        int z = chunked(translate.z);
+        if (it->state != TerrainThread::IDLE)
+            continue;
 
-        ray::Frustum fru;
-        fru.extract(camera->getViewProject());
+        int bestX = 0;
+        int bestY = -1;
+        int bestZ = 0;
+        int start = std::numeric_limits<int>::max();
+        int bestScore = start;
 
-        for (auto& it : _threads)
+        for (int iq = -_createRadius; iq <= _createRadius; iq++)
         {
-            if (it->state != TerrainThread::IDLE)
-                continue;
-
-            int bestX = 0;
-            int bestY = -1;
-            int bestZ = 0;
-            int start = std::numeric_limits<int>::max();
-            int bestScore = start;
-
-            for (int iq = -_createRadius; iq <= _createRadius; iq++)
+            for (int ip = -_createRadius; ip <= _createRadius; ip++)
             {
-                for (int ip = -_createRadius; ip <= _createRadius; ip++)
+                int dx = x + iq;
+                int dy = y;
+                int dz = z + ip;
+
+                auto chunk = this->findChunk(dx, dy, dz);
+                if (chunk && !chunk->dirt())
+                    continue;
+
+                int invisiable = !this->visiable(fru, dx, dy, dz);
+                int distance = std::max(std::abs(iq), std::abs(ip));
+                int score = (invisiable << 24) | distance;
+                if (score < bestScore)
                 {
-                    int dx = x + iq;
-                    int dy = y;
-                    int dz = z + ip;
-
-                    auto chunk = this->findChunk(dx, dy, dz);
-                    if (chunk && !chunk->dirt())
-                        continue;
-
-                    int invisiable = !this->visiable(fru, dx, dy, dz);
-                    int distance = std::max(std::abs(iq), std::abs(ip));
-                    int score = (invisiable << 24) | distance;
-                    if (score < bestScore)
-                    {
-                        bestScore = score;
-                        bestX = dx;
-                        bestZ = dz;
-                    }
+                    bestScore = score;
+                    bestX = dx;
+                    bestZ = dz;
                 }
             }
-
-            if (start == bestScore)
-                return;
-
-            auto chunk = this->findChunk(bestX, bestY, bestZ);
-            if (!chunk)
-            {
-                chunk = std::make_shared<TerrainChunk>(*this);
-                chunk->init(_size, bestX, bestY, bestZ);
-
-                _chunks.push_back(chunk);
-            }
-
-            it->chunk = chunk;
-            it->chunk->dirt(false);
-            it->state = TerrainThread::BUSY;
-            it->dispose.notify_one();
         }
+
+        if (start == bestScore)
+            return;
+
+        auto chunk = this->findChunk(bestX, bestY, bestZ);
+        if (!chunk)
+        {
+            chunk = std::make_shared<TerrainChunk>(*this);
+            chunk->init(_size, bestX, bestY, bestZ);
+
+            _chunks.push_back(chunk);
+        }
+
+        it->chunk = chunk;
+        it->chunk->dirt(false);
+        it->state = TerrainThread::BUSY;
+        it->dispose.notify_one();
     }
 }
 
@@ -309,7 +301,7 @@ Terrain::hitChunks() noexcept
         auto input = inputFeatures->getInput();
         if (input && input->getButtonDown(ray::InputButton::MOUSE0))
         {
-            auto player = ray::GameObject::find("first_person_camera");
+            auto player = find<ray::GameObject>("first_person_camera");
             auto translate = player->getTranslate();
 
             ray::Vector3 pos;

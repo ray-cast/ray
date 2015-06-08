@@ -1,10 +1,17 @@
 <?xml version='1.0'?>
 <effect version="1270" language="glsl">
-    <parameter name="decal" type="sampler2D" />
-    <parameter name="bloom" type="sampler2D" />
-    <parameter name="avelum" type="float" />
-    <parameter name="key" type="float" />
-    <shader type="vertex" name="mainVS">
+    <parameter name="texSource" type="sampler2D" />
+    <parameter name="texBloom" type="sampler2D" />
+    <parameter name="lumAve" type="float" />
+    <parameter name="lumKey" type="float" />
+    <parameter name="lumMax" type="float" />
+    <parameter name="exposure" type="float" />
+    <parameter name="exposureBias" type="float" />
+    <parameter name="vignetteEnable" type="int" />
+    <parameter name="vignetteInner" type="float" />
+    <parameter name="vignetteOuter" type="float" />
+    <parameter name="gamma" type="float" />
+    <shader type="vertex" name="postprocess">
         <![CDATA[
             #version 330 core
 
@@ -26,16 +33,16 @@
 
             layout(location = 0) out vec4 glsl_FragColor0;
 
-            uniform sampler2D decal;
+            uniform sampler2D texSource;
 
             in vec2 texcoord;
 
             void main()
             {
-                vec4 color = texture2D(decal, texcoord.xy);
-                color += textureOffset(decal, texcoord, ivec2(0, -1));
-                color += textureOffset(decal, texcoord, ivec2(1,  0));
-                color += textureOffset(decal, texcoord, ivec2(1, -1));
+                vec4 color = texture2D(texSource, texcoord.xy);
+                color += textureOffset(texSource, texcoord, ivec2(0, -1));
+                color += textureOffset(texSource, texcoord, ivec2(1,  0));
+                color += textureOffset(texSource, texcoord, ivec2(1, -1));
                 color /= 4.0;
 
                 glsl_FragColor0 = color;
@@ -46,7 +53,7 @@
         <![CDATA[
             #version 330 core
 
-            uniform sampler2D decal;
+            uniform sampler2D texSource;
 
             layout(location = 0) out float glsl_FragColor0;
 
@@ -56,10 +63,10 @@
 
             void main()
             {
-                vec4 color = texture2D(decal, texcoord.xy);
-                color += textureOffset(decal, texcoord, ivec2(0, -1));
-                color += textureOffset(decal, texcoord, ivec2(1,  0));
-                color += textureOffset(decal, texcoord, ivec2(1, -1));
+                vec4 color = texture2D(texSource, texcoord.xy);
+                color += textureOffset(texSource, texcoord, ivec2(0, -1));
+                color += textureOffset(texSource, texcoord, ivec2(1,  0));
+                color += textureOffset(texSource, texcoord, ivec2(1, -1));
                 color /= 4.0;
 
                 glsl_FragColor0 = log(dot(color.rgb, lumfact) + 0.00001);
@@ -70,10 +77,10 @@
         <![CDATA[
             #version 330 core
 
-            layout(location = 0) out vec4 glsl_FragColor0;
+            layout(location = 0) out vec3 glsl_FragColor0;
 
-            uniform sampler2D decal;
-            uniform float avelum;
+            uniform sampler2D texSource;
+            uniform float lumAve;
 
             in vec2 texcoord;
 
@@ -81,18 +88,15 @@
 
             void main()
             {
-               vec4 color = texture2D(decal, texcoord);
+                vec3 color = texture2D(texSource, texcoord).rgb;
 
-                float lum = dot(color.rgb, lumfact);
+                float lum = dot(color, lumfact);
 
-                vec4 L = color * (lum / avelum);
-                L = L / (L + vec4(1));
-
+                vec3 L = color * (lum / lumAve);
+                L = L / (L + vec3(1));
                 float luml = (L.x + L.y + L.z) / 3;
-                if (luml < 0.8)
-                    discard;
 
-                glsl_FragColor0 = L;
+                glsl_FragColor0 = L * mix(1.0, 0.0, pow(max(0.8 - luml, 0), 0.2));
             }
         ]]>
     </shader>
@@ -102,24 +106,24 @@
 
             layout(location = 0) out vec4 glsl_FragColor0;
 
-            uniform sampler2D decal;
+            uniform sampler2D texSource;
 
             in vec2 texcoord;
 
             void main()
             {
                 vec4 color = vec4(0);
-                color += texture2D(decal, texcoord);
-                color += textureOffset(decal, texcoord, ivec2(-5, 0)) * 0.1;
-                color += textureOffset(decal, texcoord, ivec2(-4, 0)) * 0.22;
-                color += textureOffset(decal, texcoord, ivec2(-3, 0)) * 0.358;
-                color += textureOffset(decal, texcoord, ivec2(-2, 0)) * 0.523;
-                color += textureOffset(decal, texcoord, ivec2(-1, 0)) * 0.843;
-                color += textureOffset(decal, texcoord, ivec2( 1, 0)) * 0.843;
-                color += textureOffset(decal, texcoord, ivec2( 2, 0)) * 0.523;
-                color += textureOffset(decal, texcoord, ivec2( 3, 0)) * 0.358;
-                color += textureOffset(decal, texcoord, ivec2( 4, 0)) * 0.22;
-                color += textureOffset(decal, texcoord, ivec2( 5, 0)) * 0.1;
+                color += texture2D(texSource, texcoord);
+                color += textureOffset(texSource, texcoord, ivec2(-5, 0)) * 0.1;
+                color += textureOffset(texSource, texcoord, ivec2(-4, 0)) * 0.22;
+                color += textureOffset(texSource, texcoord, ivec2(-3, 0)) * 0.358;
+                color += textureOffset(texSource, texcoord, ivec2(-2, 0)) * 0.523;
+                color += textureOffset(texSource, texcoord, ivec2(-1, 0)) * 0.843;
+                color += textureOffset(texSource, texcoord, ivec2( 1, 0)) * 0.843;
+                color += textureOffset(texSource, texcoord, ivec2( 2, 0)) * 0.523;
+                color += textureOffset(texSource, texcoord, ivec2( 3, 0)) * 0.358;
+                color += textureOffset(texSource, texcoord, ivec2( 4, 0)) * 0.22;
+                color += textureOffset(texSource, texcoord, ivec2( 5, 0)) * 0.1;
                 color /= 5.0;
 
                 glsl_FragColor0 = color;
@@ -132,24 +136,24 @@
 
             layout(location = 0) out vec4 glsl_FragColor0;
 
-            uniform sampler2D decal;
+            uniform sampler2D texSource;
 
             in vec2 texcoord;
 
             void main()
             {
                 vec4 color = vec4(0);
-                color += texture2D(decal, texcoord);
-                color += textureOffset(decal, texcoord, ivec2(0, -5)) * 0.1;
-                color += textureOffset(decal, texcoord, ivec2(0, -4)) * 0.22;
-                color += textureOffset(decal, texcoord, ivec2(0, -3)) * 0.358;
-                color += textureOffset(decal, texcoord, ivec2(0, -2)) * 0.523;
-                color += textureOffset(decal, texcoord, ivec2(0, -1)) * 0.843;
-                color += textureOffset(decal, texcoord, ivec2(0,  1)) * 0.843;
-                color += textureOffset(decal, texcoord, ivec2(0,  2)) * 0.523;
-                color += textureOffset(decal, texcoord, ivec2(0,  3)) * 0.358;
-                color += textureOffset(decal, texcoord, ivec2(0,  4)) * 0.22;
-                color += textureOffset(decal, texcoord, ivec2(0,  5)) * 0.1;
+                color += texture2D(texSource, texcoord);
+                color += textureOffset(texSource, texcoord, ivec2(0, -5)) * 0.1;
+                color += textureOffset(texSource, texcoord, ivec2(0, -4)) * 0.22;
+                color += textureOffset(texSource, texcoord, ivec2(0, -3)) * 0.358;
+                color += textureOffset(texSource, texcoord, ivec2(0, -2)) * 0.523;
+                color += textureOffset(texSource, texcoord, ivec2(0, -1)) * 0.843;
+                color += textureOffset(texSource, texcoord, ivec2(0,  1)) * 0.843;
+                color += textureOffset(texSource, texcoord, ivec2(0,  2)) * 0.523;
+                color += textureOffset(texSource, texcoord, ivec2(0,  3)) * 0.358;
+                color += textureOffset(texSource, texcoord, ivec2(0,  4)) * 0.22;
+                color += textureOffset(texSource, texcoord, ivec2(0,  5)) * 0.1;
                 color /= 5.0;
 
                 glsl_FragColor0 = color;
@@ -161,6 +165,24 @@
             #version 330 core
 
             layout(location = 0) out vec4 glsl_FragColor0;
+
+            in vec2 texcoord;
+
+            uniform sampler2D texSource;
+            uniform sampler2D texBloom;
+
+            uniform float lumAve;
+            uniform float lumKey;
+            uniform float lumMax;
+
+            uniform float exposure;
+            uniform float exposureBias;
+
+            uniform bool vignetteEnable;
+            uniform float vignetteInner;
+            uniform float vignetteOuter;
+
+            uniform float gamma;
 
             const float A = 0.20; // Shoulder Strength
             const float B = 0.30; // Linear Strength
@@ -175,122 +197,75 @@
                 return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
             }
 
-            vec4 filmicToneMapping(
-                vec2 coord,
-                sampler2D source,
-                sampler2D bloom,
-                vec3 gray,
-                float lumAve,
-                float lumKey,
-                float exposure,
-                float exposureBias,
-                float linearRef,
-                float linearContrast,
-                vec3 linearSaturation,
-                float innerVignette,
-                float outerVignette,
-                float gamma)
-            {
-                vec3 linearColor = texture2D(source, coord).rgb;
-                vec3 linearGrey = vec3(dot(linearColor, gray));
-
-                linearColor = linearColor * (lumKey / lumAve);
-                linearColor = linearColor / (linearColor + vec3(1.0));
-                linearColor = linearColor + texture2D(bloom, coord).rgb;
-                linearColor = linearColor * exposure;
-                linearColor = linearRef + linearContrast * (linearColor - linearRef);
-                linearColor = linearGrey +  linearSaturation * (linearColor - linearGrey);
-                linearColor = clamp(linearColor, 0, 1);
-
-                vec3 curr = exposureBias * uncharted2Tonemap(linearColor);
-                vec3 whiteScale = uncharted2Tonemap(vec3(W));
-                vec3 fimic = curr / whiteScale;
-
-                float L = length(coord * 2.0 - 1.0);
-                float vignette = (1.0 - smoothstep(innerVignette, outerVignette, L));
-
-                fimic *= vignette;
-                fimic = pow(fimic, vec3(gamma));
-
-                return vec4(fimic, linearGrey.r);
-            }
-
-            in vec2 texcoord;
-
-            uniform sampler2D decal;
-            uniform sampler2D bloom;
-            uniform float avelum;
-            uniform float key;
-
-            const float gamma = 2.2;
-            const float exposure = 1.0;
-            const float exposureBias = 3.3;
-            const float linearRef = 0.0;
-            const float linearContrast = 1.0;
-            const vec3 linearSaturation = vec3(1.0, 1.0, 1.0);
             const vec3 lumfact = vec3(0.2125, 0.7154, 0.0721);
-            const float innerVignette = 0.7;
-            const float outerVignette = 2.5;
 
             void main()
             {
-                glsl_FragColor0 = filmicToneMapping(
-                    texcoord,
-                    decal,
-                    bloom,
-                    lumfact,
-                    avelum,
-                    key,
-                    exposure,
-                    exposureBias,
-                    linearRef,
-                    linearContrast,
-                    linearSaturation,
-                    innerVignette,
-                    outerVignette,
-                    gamma
-                );
+                vec3 color = texture2D(texSource, texcoord).rgb;
+                vec3 tone =  texture2D(texBloom, texcoord).rgb;
+
+                float lum = dot(color, lumfact);
+
+                color = color + tone;
+                color = color * (lumKey * lum / lumAve);
+                color = color / (color + vec3(1));
+                color = color * exposure * (exposure / lumMax + 1.0) / (exposure + 1.0);
+
+                vec3 curr = exposureBias * uncharted2Tonemap(color);
+                vec3 whiteScale = uncharted2Tonemap(vec3(W));
+                vec3 fimic = curr / whiteScale;
+
+                if (vignetteEnable)
+                {
+                    float L = length(texcoord * 2.0 - 1.0);
+                    float vignette = (1.0 - smoothstep(vignetteInner, vignetteOuter, L));
+                    fimic *= vignette;
+                }
+
+                fimic = pow(fimic, vec3(gamma));
+
+                glsl_FragColor0 = vec4(fimic, lum);
             }
         ]]>
     </shader>
     <technique name="postprocess">
         <pass name="sample">
-            <state name="vertex" value="mainVS" />
+            <state name="vertex" value="postprocess" />
             <state name="fragment" value="sample" />
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
         </pass>
         <pass name="samplelog">
-            <state name="vertex" value="mainVS" />
+            <state name="vertex" value="postprocess" />
             <state name="fragment" value="samplelog" />
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
         </pass>
         <pass name="bloom">
-            <state name="vertex" value="mainVS" />
+            <state name="vertex" value="postprocess" />
             <state name="fragment" value="bloom" />
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
         </pass>
         <pass name="blurh">
-            <state name="vertex" value="mainVS" />
+            <state name="vertex" value="postprocess" />
             <state name="fragment" value="blurh" />
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
         </pass>
         <pass name="blurv">
-            <state name="vertex" value="mainVS" />
+            <state name="vertex" value="postprocess" />
             <state name="fragment" value="blurv" />
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
         </pass>
         <pass name="tone">
-            <state name="vertex" value="mainVS" />
+            <state name="vertex" value="postprocess" />
             <state name="fragment" value="tone" />
 
             <state name="depthtest" value="false"/>

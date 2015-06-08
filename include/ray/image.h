@@ -40,7 +40,6 @@
 #include <ray/imagbase.h>
 #include <ray/imaghandler.h>
 #include <ray/imagpal.h>
-#include <ray/fstream.h>
 
 _NAME_BEGIN
 

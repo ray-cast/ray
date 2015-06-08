@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_IOSYSTEM_H_
-#define _H_IOSYSTEM_H_
+#ifndef _H_PACKAGE_H_
+#define _H_PACKAGE_H_
 
 #include <ray/iostream.h>
 

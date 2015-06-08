@@ -115,10 +115,66 @@ struct OGLTexture
     }
 };
 
+struct OGLConstantBuffer
+{
+    GLuint ubo;
+    GLuint64 bindlessUbo;
+
+    OGLConstantBuffer() noexcept
+        : ubo(0)
+        , bindlessUbo(0)
+    {
+    }
+};
+
+struct OGLVertexAttrib
+{
+    GLuint attrib;
+    GLenum type;
+    GLuint size;
+    GLsizei stride;
+    GLintptr offset;
+};
+
+struct OGLVertexArray
+{
+    GLuint vao;
+
+    GLuint vbo;
+    GLuint ibo;
+
+    GLuint64 bindlessVbo;
+    GLuint64 bindlessIbo;
+
+    GLuint vertexCount;
+    GLenum vertexUsage;
+    GLsizeiptr vertexSize;
+    GLsizeiptr vertexByteSize;
+
+    GLuint indexCount;
+    GLenum indexType;
+    GLenum indexUsage;
+    GLsizeiptr indexSize;
+
+    std::vector<OGLVertexAttrib> attribs;
+
+    OGLVertexArray() noexcept
+        : vao(GL_NONE)
+        , vbo(GL_NONE)
+        , ibo(GL_NONE)
+        , bindlessVbo(GL_NONE)
+        , bindlessIbo(GL_NONE)
+        , vertexUsage(GL_STATIC_DRAW)
+        , vertexSize(0)
+        , vertexCount(0)
+        , indexType(GL_UNSIGNED_SHORT)
+        , indexUsage(GL_STATIC_DRAW)
+        , indexSize(0)
+    {
+    }
+};
+
 typedef std::shared_ptr<class OGLCanvas> OGLCanvasPtr;
-typedef std::shared_ptr<class OGLVertexBuffer> OGLVertexBufferPtr;
-typedef std::shared_ptr<class OGLIndexBuffer> OGLIndexBufferPtr;
-typedef std::shared_ptr<class OGLVertexArray> OGLVertexArrayPtr;
 typedef std::shared_ptr<class OGLFramebuffer> OGLFramebufferPtr;
 typedef std::shared_ptr<class OGLMultiFramebuffer> OGLMultiFramebufferPtr;
 typedef std::shared_ptr<class OGLShader> OGLShaderPtr;
@@ -130,6 +186,7 @@ public:
 
     static GLenum asOGLVertexType(VertexType type) noexcept;
     static GLenum asOGLVertexUsage(VertexUsage usage) noexcept;
+    static GLenum asOGLVertexDataType(VertexDataType type) noexcept;
     static GLenum asOGLIndexType(IndexType type) noexcept;
     static GLenum asOGLShaderType(ShaderType type) noexcept;
     static GLenum asOGLAttachment(Attachment attrib) noexcept;

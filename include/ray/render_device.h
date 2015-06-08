@@ -76,10 +76,14 @@ public:
     virtual void destroyRenderCanvas(RenderCanvasPtr canvas) noexcept = 0;
     virtual void setRenderCanvas(RenderCanvasPtr handle) noexcept = 0;
 
-    virtual RenderBufferPtr createRenderBuffer(VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept = 0;
-    virtual void destroyRenderBuffer(RenderBufferPtr buffer) noexcept = 0;
+    virtual bool createConstantBuffer(ShaderConstantBuffer& buffer) noexcept = 0;
+    virtual void setShaderConstantBuffer(ShaderConstantBufferPtr buffer) noexcept = 0;
+    virtual void destroyConstantBuffer(ShaderConstantBuffer& buffer) noexcept = 0;
+
+    virtual bool createRenderBuffer(RenderBuffer& buffer) noexcept = 0;
+    virtual void destroyRenderBuffer(RenderBuffer& buffer) noexcept = 0;
     virtual void setRenderBuffer(RenderBufferPtr buffer) noexcept = 0;
-    virtual void updateRenderBuffer(RenderBufferPtr buffer, VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept = 0;
+    virtual void updateRenderBuffer(RenderBufferPtr buffer) noexcept = 0;
     virtual void drawRenderBuffer(const Renderable& renderable) noexcept = 0;
 
     virtual FramebufferPtr createFramebuffer(const FramebufferDesc& desc) noexcept = 0;
@@ -98,29 +102,6 @@ public:
     virtual ShaderProgramPtr createShaderProgram(std::vector<ShaderPtr>& shaders) noexcept = 0;
     virtual void destroyShaderProgram(ShaderProgramPtr shader) noexcept = 0;
     virtual void setShaderProgram(ShaderProgramPtr shader) noexcept = 0;
-
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const int value) noexcept = 0;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const int2& value) noexcept = 0;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const int3& value) noexcept = 0;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const int4& value) noexcept = 0;
-
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const uint value) noexcept = 0;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const uint2& value) noexcept = 0;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const uint3& value) noexcept = 0;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const uint4& value) noexcept = 0;
-
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const float value) noexcept = 0;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const float2& value) noexcept = 0;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const float3& value) noexcept = 0;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const float4& value) noexcept = 0;
-
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const float2x2& value) noexcept = 0;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const float3x3& value) noexcept = 0;
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const float4x4& value) noexcept = 0;
-
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const Texture& value) noexcept = 0;
-
-    virtual void setShaderConstant(ShaderUniformPtr uniform, const std::vector<float>& value) noexcept = 0;
 
 private:
     RenderDevice(const RenderDevice&) noexcept = delete;

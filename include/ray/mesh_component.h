@@ -38,7 +38,7 @@
 #define _H_MESH_COMPONENT_H_
 
 #include <ray/game_component.h>
-#include <ray/render_mesh.h>
+#include <ray/render_buffer.h>
 
 _NAME_BEGIN
 
@@ -51,7 +51,7 @@ public:
 
     void setMesh(MeshPropertyPtr mesh) noexcept;
     void setSharedMesh(MeshPropertyPtr mesh) noexcept;
-    void setRenderMesh(RenderMeshPtr mesh) noexcept;
+    void setRenderBuffer(RenderBufferPtr mesh) noexcept;
     void setBufferData(VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept;
     void setCombieInstnace(const CombineInstance& instance) noexcept;
 
@@ -59,7 +59,7 @@ public:
 
     MeshPropertyPtr getMesh() const noexcept;
     MeshPropertyPtr getSharedMesh() const noexcept;
-    RenderMeshPtr getRenderMesh() const noexcept;
+    RenderBufferPtr getRenderBuffer() const noexcept;
 
     std::size_t getNumVertices() const noexcept;
     std::size_t getNumIndices() const noexcept;
@@ -71,7 +71,7 @@ public:
     GameComponentPtr clone() const noexcept;
 
     void buildMesh() noexcept;
-    void buildRenderMesh() noexcept;
+    void buildRenderBuffer() noexcept;
 
 private:
 
@@ -94,7 +94,7 @@ private:
 
     VertexType _type;
 
-    RenderMeshPtr _renderMesh;
+    RenderBufferPtr _renderMesh;
 };
 
 _NAME_END

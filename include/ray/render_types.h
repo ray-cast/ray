@@ -49,11 +49,13 @@ typedef std::shared_ptr<class RenderDevice> RenderDevicePtr;
 typedef std::shared_ptr<class RenderCanvas> RenderCanvasPtr;
 typedef std::shared_ptr<class RenderState> RenderStatePtr;
 typedef std::shared_ptr<class RenderWindow> RenderWindowPtr;
+typedef std::shared_ptr<class RenderBuffer> RenderBufferPtr;
+typedef std::shared_ptr<class RenderTexture> RenderTexturePtr;
 typedef std::shared_ptr<class Renderer> RendererPtr;
 typedef std::shared_ptr<class RenderSystem> RenderSystemPtr;
+typedef std::shared_ptr<class VertexComponent> VertexComponentPtr;
 typedef std::shared_ptr<class VertexBufferData> VertexBufferDataPtr;
 typedef std::shared_ptr<class IndexBufferData> IndexBufferDataPtr;
-typedef std::shared_ptr<class RenderBuffer> RenderBufferPtr;
 typedef std::shared_ptr<class Texture> TexturePtr;
 typedef std::shared_ptr<class Framebuffer> FramebufferPtr;
 typedef std::shared_ptr<class MultiFramebuffer> MultiFramebufferPtr;
@@ -64,10 +66,10 @@ typedef std::shared_ptr<class ShaderUniformBlock> ShaderUniformBlockPtr;
 typedef std::shared_ptr<class ShaderSubroutine> ShaderSubroutinePtr;
 typedef std::shared_ptr<class ShaderParam> ShaderParamPtr;
 typedef std::shared_ptr<class ShaderProgram> ShaderProgramPtr;
+typedef std::shared_ptr<class ShaderConstantBuffer> ShaderConstantBufferPtr;
 typedef std::shared_ptr<class ShaderObject> ShaderObjectPtr;
-typedef std::shared_ptr<class RenderTexture> RenderTexturePtr;
+typedef std::shared_ptr<class ShaderParamArg> ShaderParamArgPtr;
 typedef std::shared_ptr<class MultiRenderTexture> MultiRenderTexturePtr;
-typedef std::shared_ptr<class RenderMesh> RenderMeshPtr;
 typedef std::shared_ptr<class RenderPostProcess> RenderPostProcessPtr;
 
 typedef std::shared_ptr<class Camera> CameraPtr;
@@ -75,7 +77,7 @@ typedef std::shared_ptr<class Light> LightPtr;
 typedef std::shared_ptr<class Renderable> RenderablePtr;
 typedef std::shared_ptr<class RenderScene> RenderScenePtr;
 
-typedef std::vector<class VertexComponent> VertexComponents;
+typedef std::vector<VertexComponent> VertexComponents;
 typedef std::vector<FramebufferPtr> Framebuffers;
 typedef std::vector<ShaderPtr> Shaders;
 typedef std::vector<ShaderAttributePtr> ShaderAttributes;
@@ -83,7 +85,7 @@ typedef std::vector<ShaderUniformPtr> ShaderUniforms;
 typedef std::vector<ShaderUniformBlockPtr> ShaderUniformBlocks;
 typedef std::vector<ShaderSubroutinePtr> ShaderSubroutines;
 typedef std::vector<ShaderParamPtr> ShaderParams;
-typedef std::vector<class ShaderParamArg> ShaderParamArgs;
+typedef std::vector<ShaderParamArg> ShaderParamArgs;
 typedef std::vector<CameraPtr> Cameras;
 
 _NAME_END

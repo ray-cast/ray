@@ -37,12 +37,12 @@
 #ifndef _H_OBJECT_H_
 #define _H_OBJECT_H_
 
-#include <ray/reference.h>
+#include <ray/instances.h>
 
 _NAME_BEGIN
 
 template<typename T>
-class Object : public Reference<T>
+class Object : public Instance<T>
 {
 public:
     typedef std::shared_ptr<T> pointer;
@@ -66,6 +66,72 @@ public:
     virtual const std::string& getName() const noexcept
     {
         return _name;
+    }
+
+    template<typename S = T>
+    static std::shared_ptr<S> find(const std::string& name) noexcept
+    {
+        auto instances = S::instances();
+        for (auto& it : instances)
+        {
+            if (it)
+            {
+                if (it->getName() == name)
+                    return std::dynamic_pointer_cast<S>(it->shared_from_this());
+            }
+        }
+
+        return nullptr;
+    }
+
+    template<typename S = T>
+    static std::shared_ptr<S> findObjectOfType() noexcept
+    {
+        auto instances = S::instances();
+        for (auto& it : instances)
+        {
+            if (it)
+            {
+                auto type = S::getType();
+
+                if (it->getBaseType() == type ||
+                    it->getDerivedType() == type)
+                {
+                    if (!it->getVisible())
+                        continue;
+
+                    return std::dynamic_pointer_cast<S>(it->shared_from_this());
+                }
+            }
+        }
+
+        return nullptr;
+    }
+
+    template<typename S = T>
+    static std::vector<std::shared_ptr<S>> findObjectsOfType() noexcept
+    {
+        std::vector<std::shared_ptr<S>> result;
+
+        auto instances = S::instances();
+        for (auto& it : instances)
+        {
+            if (it)
+            {
+                auto type = S::getType();
+
+                if (it->getBaseType() == type ||
+                    it->getDerivedType() == type)
+                {
+                    if (!it->getVisible())
+                        continue;
+
+                    result.push_back(std::dynamic_pointer_cast<S>(it->shared_from_this()));
+                }
+            }
+        }
+
+        return result;
     }
 
     virtual pointer clone() const noexcept = 0;

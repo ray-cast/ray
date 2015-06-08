@@ -394,7 +394,7 @@ Camera::unproject(const Vector3& pos) const noexcept
 
     v.x = v.x / w - 1.0f - _viewport.left;
     v.y = v.y / h - 1.0f - _viewport.top;
-    v.z = v.z * 2 - 1.0f;
+    v.z = v.z * 2.0f - 1.0f;
 
     v = _viewProjectInverse * v;
     v /= v.w;

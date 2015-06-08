@@ -63,6 +63,10 @@ public:
     istream& flush() noexcept;
     istream& close() noexcept;
 
+    istream& copy(istream& other) noexcept;
+
+    streamsize size() noexcept;
+
     streamoff tellg() noexcept;
 
     streamsize gcount() const noexcept;

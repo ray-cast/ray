@@ -34,9 +34,13 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/texture_movie.h>
+#include <ray/ogl_commandlist.h>
 
 _NAME_BEGIN
 
-_NAME_END
+GLuint   s_nvcmdlist_header[GL_MAX_COMMANDS_NV] = { 0 };
+GLuint   s_nvcmdlist_headerSizes[GL_MAX_COMMANDS_NV] = { 0 };
+GLushort s_nvcmdlist_stages[NVTOKEN_STAGES] = { 0 };
+bool     s_nvcmdlist_bindless = false;
 
+_NAME_END

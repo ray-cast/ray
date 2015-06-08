@@ -151,7 +151,7 @@ private:
     MaterialPtr _lineMaterial;
 
     VertexBufferDataPtr _dynamicBuffers;
-    RenderMeshPtr _renderBuffer;
+    RenderBufferPtr _renderBuffer;
 
     RendererPtr _renderer;
     RenderWindowPtr _renderWindow;

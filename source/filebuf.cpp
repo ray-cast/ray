@@ -109,4 +109,13 @@ filebuf::close() noexcept
     return _file.close();
 }
 
+void
+filebuf::copy(streambuf& other) noexcept
+{
+    std::vector<char> buffer;
+    buffer.resize(other.size());
+    other.read(buffer.data(), other.size());
+    this->write(buffer.data(), other.size());
+}
+
 _NAME_END

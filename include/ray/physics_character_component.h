@@ -42,7 +42,7 @@
 _NAME_BEGIN
 
 class PhysicsCharacter;
-class EXPORT PhysicsCharacterComponent : public PhysicsShapeComponent
+class EXPORT PhysicsCharacterComponent final : public PhysicsShapeComponent
 {
     __DeclareSubClass(PhysicsCharacterComponent, PhysicsShapeComponent)
 public:

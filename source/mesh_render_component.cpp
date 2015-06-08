@@ -90,7 +90,7 @@ void
 MeshRenderComponent::onFrameEnd() noexcept
 {
     auto mesh = this->getGameObject()->getComponent<MeshComponent>();
-    if (mesh && mesh->getRenderMesh())
+    if (mesh && mesh->getRenderBuffer())
     {
         if (_renderObject)
         {
@@ -144,13 +144,13 @@ MeshRenderComponent::_buildRenderObject() noexcept
     auto mesh = this->getGameObject()->getComponent<MeshComponent>();
     if (mesh)
     {
-        if (!mesh->getRenderMesh())
+        if (!mesh->getRenderBuffer())
         {
-            mesh->buildRenderMesh();
+            mesh->buildRenderBuffer();
         }
 
         _renderObject = std::make_unique<Geometry>();
-        _renderObject->setRenderMesh(mesh->getRenderMesh(), mesh->getVertexType());
+        _renderObject->setRenderBuffer(mesh->getRenderBuffer(), mesh->getVertexType());
         _renderObject->setMaterial(this->getMaterial());
 
         _renderObject->setBoundingBox(mesh->getBoundingBox());

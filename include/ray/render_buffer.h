@@ -38,6 +38,7 @@
 #define _H_RENDER_BUFFER_H_
 
 #include <ray/render_types.h>
+#include <ray/model.h>
 
 _NAME_BEGIN
 
@@ -64,7 +65,8 @@ enum VertexAttrib
     GPU_ATTRIB_SPECULAR,
     GPU_ATTRIB_WEIGHT,
     GPU_ATTRIB_TANGENT,
-    GPU_ATTRIB_BITANGENT
+    GPU_ATTRIB_BITANGENT,
+    GPU_ATTRIB_NUMS,
 };
 
 enum VertexFormat
@@ -80,7 +82,6 @@ enum VertexDataType
     GPU_DATATYPE_BYTE,
     GPU_DATATYPE_SHORT,
     GPU_DATATYPE_INT,
-    GPU_DATATYPE_SIZE_T,
     GPU_DATATYPE_UNSIGNED_BYTE,
     GPU_DATATYPE_UNSIGNED_SHORT,
     GPU_DATATYPE_UNSIGNED_INT,
@@ -136,11 +137,12 @@ class EXPORT VertexComponent final
 {
 public:
     VertexComponent() noexcept;
-    VertexComponent(VertexAttrib attrib, VertexFormat format) noexcept;
+    VertexComponent(VertexAttrib attrib, VertexFormat format, VertexDataType type = VertexDataType::GPU_DATATYPE_FLOAT) noexcept;
     ~VertexComponent() noexcept;
 
     VertexAttrib getVertexAttrib() const noexcept;
     VertexFormat getVertexFormat() const noexcept;
+    VertexDataType getVertexDataType() const noexcept;
 
     int getVertexSize() const noexcept;
     int getVertexByteSize() const noexcept;
@@ -149,6 +151,7 @@ public:
 
     VertexAttrib _attrib;
     VertexFormat _format;
+    VertexDataType _dataType;
 };
 
 class EXPORT VertexLayout final
@@ -246,14 +249,32 @@ private:
     VertexStreams _indexStreams;
 };
 
-class EXPORT RenderBuffer
+class EXPORT RenderBuffer : public Reference<RenderBuffer>
 {
 public:
     RenderBuffer() noexcept;
-    virtual ~RenderBuffer() noexcept;
+    ~RenderBuffer() noexcept;
 
-    virtual void bind() const noexcept;
-    virtual void unbind() const noexcept;
+    void setup(const MeshProperty& mesh) noexcept;
+    void setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept;
+    void close() noexcept;
+
+    std::size_t getNumVertices() const noexcept;
+    std::size_t getNumIndices() const noexcept;
+
+    bool hasIndices() const noexcept;
+
+    const VertexBufferDataPtr getVertexBuffer() const noexcept;
+    const IndexBufferDataPtr getIndexBuffer() const noexcept;
+
+private:
+    RenderBuffer(const RenderBuffer& copy) noexcept = delete;
+    RenderBuffer& operator=(const RenderBuffer&) noexcept = delete;
+
+private:
+
+    VertexBufferDataPtr _bufferVertex;
+    IndexBufferDataPtr  _bufferIndex;
 };
 
 _NAME_END

@@ -37,7 +37,7 @@
 #ifndef _H_IMAGE_CFG_H_
 #define _H_IMAGE_CFG_H_
 
-#include <ray/platform.h>
+#include <ray/iostream.h>
 
 _NAME_BEGIN
 

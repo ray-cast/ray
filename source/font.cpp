@@ -37,7 +37,7 @@
 #include <ray/font.h>
 #include <ray/fontall.h>
 #include <ray/material.h>
-#include <ray/image.h>
+#include <ray/fstream.h>
 
 _NAME_BEGIN
 

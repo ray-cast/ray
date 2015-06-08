@@ -38,6 +38,7 @@
 #include <ray/render_impl.h>
 #include <ray/image.h>
 #include <ray/except.h>
+#include <ray/ioserver.h>
 
 _NAME_BEGIN
 
@@ -76,19 +77,19 @@ MaterialMaker::~MaterialMaker() noexcept
 }
 
 RenderStatePtr
-MaterialMaker::instanceState(XMLReader* reader) noexcept
+MaterialMaker::instanceState(XMLReader& reader) noexcept
 {
     auto state = std::make_shared<RenderState>();
     return state;
 }
 
 ShaderPtr
-MaterialMaker::instanceShader(XMLReader* reader) noexcept
+MaterialMaker::instanceShader(XMLReader& reader) noexcept
 {
     auto shader = std::make_shared<Shader>();
 
-    std::string type = reader->getString("type");
-    std::string text = reader->getText();
+    std::string type = reader.getString("type");
+    std::string text = reader.getText();
 
     shader->setType(type);
     shader->setSource(text);
@@ -99,11 +100,11 @@ MaterialMaker::instanceShader(XMLReader* reader) noexcept
 }
 
 MaterialPassPtr
-MaterialMaker::instancePass(XMLReader* reader) noexcept
+MaterialMaker::instancePass(XMLReader& reader) noexcept
 {
     RenderPass passType;
 
-    std::string name = reader->getString("name");
+    std::string name = reader.getString("name");
 
     if (name == "forward")
         passType = RenderPass::RP_FORWARD;
@@ -121,7 +122,7 @@ MaterialMaker::instancePass(XMLReader* reader) noexcept
     auto pass = std::make_shared<MaterialPass>(passType);
     pass->setName(name);
 
-    if (reader->setToFirstChild())
+    if (reader.setToFirstChild())
     {
         ShaderObjectPtr shaderObject = std::make_shared<ShaderObject>();
         RenderStatePtr state = pass->getRenderState();
@@ -133,11 +134,11 @@ MaterialMaker::instancePass(XMLReader* reader) noexcept
 
         do
         {
-            auto name = reader->getCurrentNodeName();
+            auto name = reader.getCurrentNodeName();
             if (name == "state")
             {
-                std::string name = reader->getString("name");
-                std::string value = reader->getString("value");
+                std::string name = reader.getString("name");
+                std::string value = reader.getString("value");
 
                 if (name == "vertex")
                 {
@@ -156,80 +157,80 @@ MaterialMaker::instancePass(XMLReader* reader) noexcept
                     }
                 }
                 else if (name == "cullmode")
-                    rasterState.cullMode = RenderState::stringToCullMode(reader->getString("value"));
+                    rasterState.cullMode = RenderState::stringToCullMode(reader.getString("value"));
                 else if (name == "fillmode")
-                    rasterState.fillMode = RenderState::stringToFillMode(reader->getString("value"));
+                    rasterState.fillMode = RenderState::stringToFillMode(reader.getString("value"));
                 else if (name == "depthBiasEnable")
-                    rasterState.depthBiasEnable = reader->getBoolean("value");
+                    rasterState.depthBiasEnable = reader.getBoolean("value");
                 else if (name == "slopScaleDepthBias")
-                    rasterState.slopScaleDepthBias = reader->getFloat("value");
+                    rasterState.slopScaleDepthBias = reader.getFloat("value");
                 else if (name == "depthBias")
-                    rasterState.depthBias = reader->getFloat("value");
+                    rasterState.depthBias = reader.getFloat("value");
                 else if (name == "scissorTestEnable")
-                    rasterState.depthBiasEnable = reader->getBoolean("value");
+                    rasterState.depthBiasEnable = reader.getBoolean("value");
                 else if (name == "multisampleEnable")
-                    rasterState.depthBiasEnable = reader->getBoolean("value");
+                    rasterState.depthBiasEnable = reader.getBoolean("value");
                 else if (name == "blend")
-                    blendState.blendEnable = reader->getBoolean("value");
+                    blendState.blendEnable = reader.getBoolean("value");
                 else if (name == "blendSeparate")
-                    blendState.blendSeparateEnable = reader->getBoolean("value");
+                    blendState.blendSeparateEnable = reader.getBoolean("value");
                 else if (name == "blendOp")
-                    blendState.blendOp = RenderState::stringToBlendOperation(reader->getString("value"));
+                    blendState.blendOp = RenderState::stringToBlendOperation(reader.getString("value"));
                 else if (name == "blendsrc")
-                    blendState.blendSrc = RenderState::stringToBlendFactor(reader->getString("value"));
+                    blendState.blendSrc = RenderState::stringToBlendFactor(reader.getString("value"));
                 else if (name == "blenddst")
-                    blendState.blendDest = RenderState::stringToBlendFactor(reader->getString("value"));
+                    blendState.blendDest = RenderState::stringToBlendFactor(reader.getString("value"));
                 else if (name == "blendalphaop")
-                    blendState.blendAlphaOp = RenderState::stringToBlendOperation(reader->getString("value"));
+                    blendState.blendAlphaOp = RenderState::stringToBlendOperation(reader.getString("value"));
                 else if (name == "blendalphasrc")
-                    blendState.blendAlphaSrc = RenderState::stringToBlendFactor(reader->getString("value"));
+                    blendState.blendAlphaSrc = RenderState::stringToBlendFactor(reader.getString("value"));
                 else if (name == "blendalphadest")
-                    blendState.blendAlphaDest = RenderState::stringToBlendFactor(reader->getString("value"));
+                    blendState.blendAlphaDest = RenderState::stringToBlendFactor(reader.getString("value"));
                 else if (name == "colormask")
-                    blendState.colorWriteMask = RenderState::stringToColorMask(reader->getString("value"));
+                    blendState.colorWriteMask = RenderState::stringToColorMask(reader.getString("value"));
                 else if (name == "depthtest")
-                    depthState.depthEnable = reader->getBoolean("value");
+                    depthState.depthEnable = reader.getBoolean("value");
                 else if (name == "depthwrite")
-                    depthState.depthWriteMask = reader->getBoolean("value");
+                    depthState.depthWriteMask = reader.getBoolean("value");
                 else if (name == "depthfunc")
-                    depthState.depthFunc = RenderState::stringToCompareFunc(reader->getString("value"));
+                    depthState.depthFunc = RenderState::stringToCompareFunc(reader.getString("value"));
                 else if (name == "stencilTest")
-                    stencilState.stencilEnable = reader->getBoolean("value");
+                    stencilState.stencilEnable = reader.getBoolean("value");
                 else if (name == "stencilRef")
-                    stencilState.stencilRef = reader->getInteger("value");
+                    stencilState.stencilRef = reader.getInteger("value");
                 else if (name == "stencilFunc")
-                    stencilState.stencilFunc = RenderState::stringToCompareFunc(reader->getString("value"));
+                    stencilState.stencilFunc = RenderState::stringToCompareFunc(reader.getString("value"));
                 else if (name == "stencilReadMask")
-                    stencilState.stencilReadMask = reader->getInteger("value");
+                    stencilState.stencilReadMask = reader.getInteger("value");
                 else if (name == "stencilWriteMask")
-                    stencilState.stencilWriteMask = reader->getInteger("value");
+                    stencilState.stencilWriteMask = reader.getInteger("value");
                 else if (name == "stencilFail")
-                    stencilState.stencilFail = RenderState::stringToStencilOp(reader->getString("value"));
+                    stencilState.stencilFail = RenderState::stringToStencilOp(reader.getString("value"));
                 else if (name == "stencilZFail")
-                    stencilState.stencilZFail = RenderState::stringToStencilOp(reader->getString("value"));
+                    stencilState.stencilZFail = RenderState::stringToStencilOp(reader.getString("value"));
                 else if (name == "stencilPass")
-                    stencilState.stencilPass = RenderState::stringToStencilOp(reader->getString("value"));
+                    stencilState.stencilPass = RenderState::stringToStencilOp(reader.getString("value"));
                 else if (name == "stencilTwoTest")
-                    stencilState.stencilTwoEnable = reader->getBoolean("value");
+                    stencilState.stencilTwoEnable = reader.getBoolean("value");
                 else if (name == "stencilTwoFunc")
-                    stencilState.stencilTwoFunc = RenderState::stringToCompareFunc(reader->getString("value"));
+                    stencilState.stencilTwoFunc = RenderState::stringToCompareFunc(reader.getString("value"));
                 else if (name == "stencilTwoReadMask")
-                    stencilState.stencilTwoReadMask = reader->getInteger("value");
+                    stencilState.stencilTwoReadMask = reader.getInteger("value");
                 else if (name == "stencilTwoWriteMask")
-                    stencilState.stencilTwoWriteMask = reader->getInteger("value");
+                    stencilState.stencilTwoWriteMask = reader.getInteger("value");
                 else if (name == "stencilTwoFail")
-                    stencilState.stencilTwoFail = RenderState::stringToStencilOp(reader->getString("value"));
+                    stencilState.stencilTwoFail = RenderState::stringToStencilOp(reader.getString("value"));
                 else if (name == "stencilTwoZFail")
-                    stencilState.stencilTwoZFail = RenderState::stringToStencilOp(reader->getString("value"));
+                    stencilState.stencilTwoZFail = RenderState::stringToStencilOp(reader.getString("value"));
                 else if (name == "stencilTwoPass")
-                    stencilState.stencilTwoPass = RenderState::stringToStencilOp(reader->getString("value"));
+                    stencilState.stencilTwoPass = RenderState::stringToStencilOp(reader.getString("value"));
 
                 state->setDepthState(depthState);
                 state->setBlendState(blendState);
                 state->setRasterState(rasterState);
                 state->setStencilState(stencilState);
             }
-        } while (reader->setToNextChild());
+        } while (reader.setToNextChild());
 
         pass->setShaderObject(shaderObject);
     }
@@ -238,11 +239,11 @@ MaterialMaker::instancePass(XMLReader* reader) noexcept
 }
 
 MaterialTechPtr
-MaterialMaker::instanceTech(XMLReader* reader) noexcept
+MaterialMaker::instanceTech(XMLReader& reader) noexcept
 {
     RenderQueue queue = Background;
 
-    std::string name = reader->getString("name");
+    std::string name = reader.getString("name");
 
     if (name == "background")
         queue = RenderQueue::Background;
@@ -264,28 +265,28 @@ MaterialMaker::instanceTech(XMLReader* reader) noexcept
 
     auto tech = std::make_shared<MaterialTech>(queue);
 
-    if (reader->setToFirstChild())
+    if (reader.setToFirstChild())
     {
         do
         {
-            auto name = reader->getCurrentNodeName();
+            auto name = reader.getCurrentNodeName();
             if (name == "pass")
             {
                 tech->addPass(instancePass(reader));
             }
-        } while (reader->setToNextChild());
+        } while (reader.setToNextChild());
     }
 
     return tech;
 }
 
 ShaderParamPtr
-MaterialMaker::instanceParameter(XMLReader* reader) noexcept
+MaterialMaker::instanceParameter(XMLReader& reader) noexcept
 {
-    auto name = reader->getString("name");
-    auto type = reader->getString("type");
-    auto semantic = reader->getString("semantic");
-    auto value = reader->getString("value");
+    auto name = reader.getString("name");
+    auto type = reader.getString("type");
+    auto semantic = reader.getString("semantic");
+    auto value = reader.getString("value");
 
     if (name.empty())
         return nullptr;
@@ -369,29 +370,33 @@ MaterialMaker::instanceParameter(XMLReader* reader) noexcept
 MaterialPtr
 MaterialMaker::load(const std::string& filename) except
 {
+    MemoryStream stream;
+
+    IoServer::instance()->openFile(filename, stream);
+    if (!stream.is_open())
+        return false;
+
     XMLReader reader;
-    if (reader.open(filename))
-        return this->load(&reader);
-    else
-        throw failure("No such of file" + filename);
+    if (reader.open(stream))
+        return this->load(reader);
 
     return nullptr;
 }
 
 MaterialPtr
-MaterialMaker::load(XMLReader* reader) except
+MaterialMaker::load(XMLReader& reader) except
 {
     std::string nodeName;
-    nodeName = reader->getCurrentNodeName();
+    nodeName = reader.getCurrentNodeName();
     if (nodeName == "effect")
     {
-        if (reader->setToFirstChild())
+        if (reader.setToFirstChild())
         {
             _material = std::make_shared<Material>();
 
             do
             {
-                std::string name = reader->getCurrentNodeName();
+                std::string name = reader.getCurrentNodeName();
                 if (name == "parameter")
                 {
                     auto param = instanceParameter(reader);
@@ -404,7 +409,7 @@ MaterialMaker::load(XMLReader* reader) except
                 }
                 else if (name == "shader")
                 {
-                    auto name = reader->getString("name");
+                    auto name = reader.getString("name");
                     if (!name.empty())
                     {
                         auto shader = instanceShader(reader);
@@ -416,7 +421,7 @@ MaterialMaker::load(XMLReader* reader) except
                         throw failure("The shader name can not be empty");
                     }
                 }
-            } while (reader->setToNextChild());
+            } while (reader.setToNextChild());
 
             _material->setup();
             return _material;

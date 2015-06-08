@@ -528,6 +528,23 @@ ShaderProgram::getActiveSubroutines() noexcept
     return _activeSubroutines;
 }
 
+void
+ShaderConstantBuffer::addParamArg(ShaderParamArg& arg) noexcept
+{
+    _uniforms.push_back(arg);
+}
+
+void
+ShaderConstantBuffer::removeParamArg(ShaderParamArg& arg) noexcept
+{
+}
+
+const ShaderParamArgs&
+ShaderConstantBuffer::getShaderParamArgs() const noexcept
+{
+    return _uniforms;
+}
+
 ShaderObject::ShaderObject() noexcept
 {
 }

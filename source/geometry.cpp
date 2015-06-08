@@ -82,7 +82,7 @@ Geometry::collection(RenderDataManager& manager) noexcept
 }
 
 void
-Geometry::setRenderMesh(RenderMeshPtr geometry, RenderablePtr renderable) noexcept
+Geometry::setRenderBuffer(RenderBufferPtr geometry, RenderablePtr renderable) noexcept
 {
     assert(geometry);
     assert(renderable);
@@ -92,7 +92,7 @@ Geometry::setRenderMesh(RenderMeshPtr geometry, RenderablePtr renderable) noexce
 }
 
 void
-Geometry::setRenderMesh(RenderMeshPtr geometry, VertexType type) noexcept
+Geometry::setRenderBuffer(RenderBufferPtr geometry, VertexType type) noexcept
 {
     assert(geometry);
 
@@ -109,8 +109,8 @@ Geometry::setRenderMesh(RenderMeshPtr geometry, VertexType type) noexcept
     _renderable->numInstances = 0;
 }
 
-RenderMeshPtr
-Geometry::getRenderMesh() noexcept
+RenderBufferPtr
+Geometry::getRenderBuffer() noexcept
 {
     return _geometry;
 }
@@ -147,7 +147,7 @@ Geometry::render(RendererPtr renderer, RenderQueue queue, RenderPass passType, M
 
         renderer->setRenderState(pass->getRenderState());
         renderer->setShaderObject(pass->getShaderObject());
-        renderer->setShaderParamArgs(pass->getParamBindings()->getShaderParamArgs());
+        renderer->setShaderConstantBuffer(pass->getShaderConstantBuffer());
 
         renderer->drawMesh(_geometry, *_renderable);
     }

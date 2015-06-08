@@ -384,6 +384,8 @@
                 vec4 diffuse = texelFetch(texDiffuse, ivec2(gl_FragCoord.xy), 0);
                 vec4 light = texelFetch(texLight, ivec2(gl_FragCoord.xy), 0);
 
+                diffuse.rgb = pow(diffuse.rgb, vec3(2.2));
+
                 vec3 color = diffuse.rgb;
                 if (light.a > 0)
                     color = diffuse.rgb * lightAmbient + diffuse.rgb * light.rgb;

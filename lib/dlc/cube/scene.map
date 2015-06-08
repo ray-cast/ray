@@ -16,10 +16,10 @@
             <attribute w="1376"/>
             <attribute h="768"/>
         </component>
-        <component name="character">
+        <!--component name="character">
             <attribute radius="1"/>
             <attribute height="4"/>
-        </component>
+        </component-->
     </object>
     <object>
         <attribute name="sky"/>
@@ -94,7 +94,7 @@
     </object>
     <object>
         <attribute name="light"/>
-        <attribute position="0, 50, 5"/>
+        <attribute position="0, 50, 10"/>
         <attribute active="true"/>
         <component name="light">
             <attribute type="sun"/>

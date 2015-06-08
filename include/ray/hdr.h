@@ -65,9 +65,18 @@ private:
 
 private:
 
-    float _lum;
     float _lumAdapt;
     float _lumKey;
+    float _lumMax;
+
+    float _exposure;
+    float _exposureBias;
+
+    float _vignetteEnable;
+    float _vignetteInner;
+    float _vignetteOuter;
+
+    float _gamma;
 
     RenderTexturePtr _texSample4;
     RenderTexturePtr _texSample8;
@@ -77,17 +86,25 @@ private:
 
     MaterialPtr _hdr;
 
-    MaterialPassPtr _sample;
+    MaterialPassPtr _sample4;
+    MaterialPassPtr _sample8;
     MaterialPassPtr _samplelog;
     MaterialPassPtr _bloom;
     MaterialPassPtr _blurh;
     MaterialPassPtr _blurv;
     MaterialPassPtr _tone;
 
-    ShaderParamPtr _decal;
-    ShaderParamPtr _avelum;
+    ShaderParamPtr _toneSource;
     ShaderParamPtr _toneBloom;
-    ShaderParamPtr _toneKey;
+    ShaderParamPtr _toneLumAve;
+    ShaderParamPtr _toneLumKey;
+    ShaderParamPtr _toneLumMax;
+    ShaderParamPtr _toneExposure;
+    ShaderParamPtr _toneExposureBias;
+    ShaderParamPtr _toneVignetteEnable;
+    ShaderParamPtr _toneVignetteInner;
+    ShaderParamPtr _toneVignetteOuter;
+    ShaderParamPtr _toneGamma;
 
     std::vector<float> _data;
 };

@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-class EXPORT CameraComponent final : public GameComponent, public Instance<CameraComponent>
+class EXPORT CameraComponent final : public GameComponent
 {
     __DeclareSubClass(CameraComponent, GameComponent)
 public:

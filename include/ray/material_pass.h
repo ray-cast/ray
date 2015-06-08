@@ -70,7 +70,7 @@ public:
 
     ShaderObjectPtr getShaderObject() noexcept;
     RenderStatePtr getRenderState() noexcept;
-    MaterialParmBindsPtr getParamBindings() noexcept;
+    ShaderConstantBufferPtr getShaderConstantBuffer() noexcept;
 
 private:
 

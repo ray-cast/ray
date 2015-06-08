@@ -73,6 +73,7 @@ private:
 iostream::iostream(streambuf* buf) noexcept
     : istream(buf)
     , ostream(buf)
+    , _count(0)
 {
     stream::_init(buf, ios_base::in | ios_base::out);
 }
@@ -306,6 +307,14 @@ iostream::close() noexcept
     }
 
     return (*this);
+}
+
+iostream&
+iostream::copy(iostream& other) noexcept
+{
+    _count = other._count;
+    stream::copy(other);
+    return *this;
 }
 
 _NAME_END

@@ -258,6 +258,14 @@ ostream::close() noexcept
 }
 
 ostream&
+ostream::copy(ostream& other) noexcept
+{
+    _count = other._count;
+    stream::copy(other);
+    return *this;
+}
+
+ostream&
 ostream::operator << (const char* str) noexcept
 {
     return this->write(str, (std::streamsize)std::strlen(str));

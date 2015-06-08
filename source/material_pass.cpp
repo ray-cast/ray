@@ -97,10 +97,10 @@ MaterialPass::getRenderState() noexcept
     return _renderState;
 }
 
-MaterialParmBindsPtr
-MaterialPass::getParamBindings() noexcept
+ShaderConstantBufferPtr
+MaterialPass::getShaderConstantBuffer() noexcept
 {
-    return _paramBindings;
+    return _paramBindings->getConstantBuffer();
 }
 
 _NAME_END

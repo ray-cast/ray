@@ -226,6 +226,19 @@ istream::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
     return (*this);
 }
 
+streamsize
+istream::size() noexcept
+{
+    const isentry ok(this);
+    if (ok)
+    {
+        if (!this->fail())
+            return this->rdbuf()->size();
+    }
+
+    return (streamsize)ios_base::_BADOFF;
+}
+
 streamoff
 istream::tellg() noexcept
 {
@@ -262,6 +275,14 @@ istream*
 istream::clone() const
 {
     return nullptr;
+}
+
+istream&
+istream::copy(istream& other) noexcept
+{
+    _count = other._count;
+    stream::copy(other);
+    return *this;
 }
 
 _NAME_END

@@ -38,7 +38,7 @@
 #define _H_RENDER_PIPELINE_H_
 
 #include <ray/render_object.h>
-#include <ray/render_mesh.h>
+#include <ray/render_buffer.h>
 #include <ray/renderer.h>
 
 _NAME_BEGIN
@@ -89,9 +89,9 @@ public:
 
 private:
 
-    RenderMeshPtr _renderSceneQuad;
-    RenderMeshPtr _renderSphere;
-    RenderMeshPtr _renderCone;
+    RenderBufferPtr _renderSceneQuad;
+    RenderBufferPtr _renderSphere;
+    RenderBufferPtr _renderCone;
 
     RenderTexturePtr _swapMap;
 

@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class EXPORT GameObject : public Object<GameObject>, public Instance<GameObject>
+class EXPORT GameObject : public Object<GameObject>
 {
 public:
     GameObject() noexcept;
@@ -171,8 +171,6 @@ public:
     void destroy() noexcept;
 
     GameObjectPtr clone() const noexcept;
-
-    static GameObjectPtr find(const std::string& name) noexcept;
 
     virtual GameServer* getGameServer() noexcept;
     virtual GameScene* getGameScene() noexcept;

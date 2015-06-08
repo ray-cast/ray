@@ -42,7 +42,7 @@
 _NAME_BEGIN
 
 template<typename T>
-class Instance
+class Instance : public Reference<T>
 {
 public:
     typedef std::shared_ptr<T> pointer;

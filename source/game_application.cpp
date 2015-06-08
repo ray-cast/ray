@@ -37,9 +37,6 @@
 #include <ray/game_application.h>
 #include <ray/game_server.h>
 
-#include <ray/ioserver.h>
-#include <ray/iointerface.h>
-
 _NAME_BEGIN
 
 GameApplication::GameApplication() noexcept

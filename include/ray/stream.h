@@ -41,43 +41,18 @@
 
 _NAME_BEGIN
 
-class EXPORT stream
+class EXPORT stream : public ios_base
 {
 public:
     stream() noexcept;
     virtual ~stream() noexcept;
 
-    void setOpenMode(ios_base::openmode mode) noexcept;
-    ios_base::openmode getOpenMode() const noexcept;
-
-    bool good() const noexcept;
-    bool eof() const noexcept;
-    bool fail() const noexcept;
-    bool bad() const noexcept;
-
-    void clear(ios_base::io_state _state);
-    void clear(ios_base::iostate _state = ios_base::goodbit);
-    void clear(ios_base::iostate _state, bool _reraise);
-
-    void setstate(ios_base::iostate _state) noexcept;
-    void setstate(ios_base::io_state _state) noexcept;
-    void setstate(ios_base::iostate _state, bool _exreraise) noexcept;
-    ios_base::iostate rdstate() const noexcept;
-
-    void exceptions(ios_base::iostate _new) noexcept;
-    ios_base::iostate exceptions() const noexcept;
-
     streambuf* rdbuf() const noexcept;
     void set_rdbuf(streambuf* buf) noexcept;
 
-    ios_base::fmtflags flags() const noexcept;
-    void swap(stream& other) noexcept;
-
-    bool operator!() const noexcept;
-    operator void*() const noexcept;
+    void copy(stream& other) noexcept;
 
 protected:
-
     void _init(streambuf* _buf, ios_base::openmode mode) noexcept;
 
 private:
@@ -86,11 +61,6 @@ private:
 
 private:
     streambuf* _strbuf;
-
-    ios_base::fmtflags _fmtfl;
-    ios_base::iostate _my_state;
-    ios_base::iostate _my_except;
-    ios_base::openmode _mode;
 };
 
 _NAME_END

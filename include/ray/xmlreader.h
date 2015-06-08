@@ -37,7 +37,7 @@
 #ifndef _H_XMLSTREAM_H_
 #define _H_XMLSTREAM_H_
 
-#include <ray/mstream.h>
+#include <ray/iostream.h>
 #include <ray/math.h>
 
 class TiXmlDocument;
@@ -45,15 +45,13 @@ class TiXmlElement;
 
 _NAME_BEGIN
 
-class EXPORT XMLReader final : public MemoryStream
+class EXPORT XMLReader final
 {
 public:
     XMLReader() noexcept;
     ~XMLReader() noexcept;
 
-    bool open(const std::string& filename) noexcept;
-    bool open(const std::wstring& filename) noexcept;
-
+    bool open(istream& stream) noexcept;
     void close() noexcept;
 
     std::string getCurrentNodeName() const noexcept;

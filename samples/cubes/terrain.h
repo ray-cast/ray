@@ -110,6 +110,8 @@ private:
 
 private:
 
+    ray::GameObjectPtr _player;
+
     std::size_t _maxInstances;
 
     int _size;

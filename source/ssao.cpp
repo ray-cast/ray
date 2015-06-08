@@ -76,7 +76,7 @@ SSAO::SSAO() noexcept
 
     Setting setting;
     setting.radius = 1;
-    setting.bias = 0.05;
+    setting.bias = 0.07;
     setting.epsilon = 0.01;
     setting.intensity = 4.0;
     setting.numSample = 10;

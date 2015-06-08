@@ -205,6 +205,20 @@ private:
     std::string _path;
 };
 
+class EXPORT ShaderConstantBuffer : public Reference<ShaderConstantBuffer>
+{
+public:
+
+    void addParamArg(ShaderParamArg& arg) noexcept;
+    void removeParamArg(ShaderParamArg& arg) noexcept;
+    const ShaderParamArgs& getShaderParamArgs() const noexcept;
+
+private:
+    typedef std::vector<ShaderParamArg> ShaderParamArgs;
+
+    ShaderParamArgs _uniforms;
+};
+
 class EXPORT ShaderProgram
 {
 public:

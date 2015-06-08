@@ -73,6 +73,33 @@ OGLTypes::asOGLVertexUsage(VertexUsage usage) noexcept
 }
 
 GLenum
+OGLTypes::asOGLVertexDataType(VertexDataType type) noexcept
+{
+    switch (type)
+    {
+    case ray::GPU_DATATYPE_BYTE:
+        return GL_BYTE;
+    case ray::GPU_DATATYPE_SHORT:
+        return GL_SHORT;
+    case ray::GPU_DATATYPE_INT:
+        return GL_INT;
+    case ray::GPU_DATATYPE_UNSIGNED_BYTE:
+        return GL_UNSIGNED_BYTE;
+    case ray::GPU_DATATYPE_UNSIGNED_SHORT:
+        return GL_UNSIGNED_SHORT;
+    case ray::GPU_DATATYPE_UNSIGNED_INT:
+        return GL_UNSIGNED_INT;
+    case ray::GPU_DATATYPE_UINT32:
+        return GL_UNSIGNED_INT;
+    case ray::GPU_DATATYPE_FLOAT:
+        return GL_FLOAT;
+    default:
+        assert(false);
+        return GL_INVALID_ENUM;
+    }
+}
+
+GLenum
 OGLTypes::asOGLIndexType(IndexType type) noexcept
 {
     switch (type)

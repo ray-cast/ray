@@ -39,6 +39,8 @@
 
 _NAME_BEGIN
 
+__ImplementClass(GameScene)
+
 GameScene::Setting::Setting() noexcept
     : gravity(0.0f, 9.81f, 0.0f)
     , length(1.0f)
@@ -100,18 +102,6 @@ GameScene::getActive() const noexcept
 }
 
 void
-GameScene::setName(const std::string& name) noexcept
-{
-    _name = name;
-}
-
-const std::string&
-GameScene::getName() const noexcept
-{
-    return _name;
-}
-
-void
 GameScene::setEnvironment(const Setting& setting) noexcept
 {
     _setting = setting;
@@ -160,6 +150,12 @@ GameScene::getRootObject() noexcept
     return _root;
 }
 
+GameScenePtr
+GameScene::clone() const noexcept
+{
+    return nullptr;
+}
+
 void
 GameScene::_setGameServer(GameServer* manager) noexcept
 {
@@ -173,19 +169,19 @@ GameScene::getGameServer() noexcept
 }
 
 void
-GameScene::onFrameBegin() noexcept
+GameScene::_onFrameBegin() noexcept
 {
     _root->_onFrameBegin();
 }
 
 void
-GameScene::onFrame() noexcept
+GameScene::_onFrame() noexcept
 {
     _root->_onFrame();
 }
 
 void
-GameScene::onFrameEnd() noexcept
+GameScene::_onFrameEnd() noexcept
 {
     _root->_onFrameEnd();
 }

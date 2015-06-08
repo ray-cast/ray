@@ -119,9 +119,9 @@ Renderer::getSwapInterval() const noexcept
 }
 
 void
-Renderer::drawMesh(RenderMeshPtr mesh, const Renderable& renderable) noexcept
+Renderer::drawMesh(RenderBufferPtr buffer, const Renderable& renderable) noexcept
 {
-    RenderImpl::instance()->setRenderBuffer(mesh->getRenderBuffer());
+    RenderImpl::instance()->setRenderBuffer(buffer);
     if (_enableWireframe)
     {
         Renderable setting = renderable;
@@ -133,9 +133,9 @@ Renderer::drawMesh(RenderMeshPtr mesh, const Renderable& renderable) noexcept
 }
 
 void
-Renderer::updateMesh(RenderMeshPtr mesh, VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept
+Renderer::updateMesh(RenderBufferPtr buffer, VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept
 {
-    RenderImpl::instance()->updateRenderBuffer(mesh->getRenderBuffer(), vb, ib);
+    RenderImpl::instance()->updateRenderBuffer(buffer);
 }
 
 void
@@ -233,87 +233,9 @@ Renderer::setShaderObject(ShaderObjectPtr shader) noexcept
 }
 
 void
-Renderer::setShaderParamArgs(const ShaderParamArgs& args) noexcept
+Renderer::setShaderConstantBuffer(ShaderConstantBufferPtr args) noexcept
 {
-    for (auto& it : args)
-    {
-        auto type = it.value->getType();
-
-        switch (type)
-        {
-        case ShaderParamType::SPT_BOOL:
-        {
-            RenderImpl::instance()->setShaderConstant(it.uniform, (int)it.value->getBool());
-            break;
-        }
-        case ShaderParamType::SPT_INT:
-        {
-            auto i1 = it.uniform->param.getInt();
-            auto i2 = it.value->getInt();
-            if (i1 != i2)
-            {
-                RenderImpl::instance()->setShaderConstant(it.uniform, it.value->getInt());
-                it.uniform->param.assign(i2);
-            }
-            break;
-        }
-        case ShaderParamType::SPT_INT2:
-        {
-            RenderImpl::instance()->setShaderConstant(it.uniform, it.value->getInt2());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT:
-        {
-            auto f1 = it.uniform->param.getFloat();
-            auto f2 = it.value->getFloat();
-            if (f1 != f2)
-            {
-                RenderImpl::instance()->setShaderConstant(it.uniform, f2);
-                it.uniform->param.assign(f2);
-            }
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT2:
-        {
-            RenderImpl::instance()->setShaderConstant(it.uniform, it.value->getFloat2());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT3:
-        {
-            RenderImpl::instance()->setShaderConstant(it.uniform, it.value->getFloat3());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT4:
-        {
-            RenderImpl::instance()->setShaderConstant(it.uniform, it.value->getFloat4());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT3X3:
-        {
-            RenderImpl::instance()->setShaderConstant(it.uniform, it.value->getFloat3x3());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT4X4:
-        {
-            RenderImpl::instance()->setShaderConstant(it.uniform, it.value->getFloat4x4());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT_ARRAY:
-        {
-            RenderImpl::instance()->setShaderConstant(it.uniform, it.value->getFloatArray());
-            break;
-        }
-        case ShaderParamType::SPT_TEXTURE:
-        {
-            auto texture = it.value->getTexture();
-            assert(texture);
-            RenderImpl::instance()->setShaderConstant(it.uniform, *texture);
-            break;
-        }
-        default:
-            break;
-        }
-    }
+    RenderImpl::instance()->setShaderConstantBuffer(args);
 }
 
 void

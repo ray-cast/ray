@@ -60,6 +60,12 @@ MemoryBuf::open(const wchar_t* filename, const ios_base::openmode mode) noexcept
     return true;
 }
 
+void
+MemoryBuf::close() noexcept
+{
+    _data.clear();
+}
+
 streamsize
 MemoryBuf::read(char_type* src, std::streamsize cnt) noexcept
 {
@@ -131,8 +137,15 @@ MemoryBuf::flush() noexcept
 }
 
 void
-MemoryBuf::close() noexcept
+MemoryBuf::copy(streambuf& other) noexcept
 {
+    assert(other.is_open());
+
+    this->resize(other.size());
+    char* buf = this->map();
+    assert(buf);
+    other.read(buf, other.size());
+    this->unmap();
 }
 
 void

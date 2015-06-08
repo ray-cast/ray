@@ -50,19 +50,25 @@ IoServer::~IoServer() noexcept
 {
 }
 
-void
+IoServer&
 IoServer::mountArchives() noexcept
 {
     _enablePackage = true;
+
+    this->setstate(ios_base::goodbit);
+    return *this;
 }
 
-void
+IoServer&
 IoServer::unmountArchives() noexcept
 {
     _enablePackage = false;
+
+    this->setstate(ios_base::goodbit);
+    return *this;
 }
 
-void
+IoServer&
 IoServer::addAssign(const IoAssign& assign) noexcept
 {
     auto path = assign.getPath();
@@ -72,27 +78,73 @@ IoServer::addAssign(const IoAssign& assign) noexcept
         path += SEPARATOR;
     }
 
-    _assignTable[assign.getName()] = path;
+    if (_assignTable[assign.getName()].empty())
+    {
+        _assignTable[assign.getName()] = path;
+
+        this->setstate(ios_base::goodbit);
+        return *this;
+    }
+
+    this->setstate(ios_base::failbit);
+    return *this;
 }
 
-void
+IoServer&
 IoServer::removeAssign(const std::string& name) noexcept
 {
     auto it = _assignTable.find(name);
     if (it != _assignTable.end())
     {
         _assignTable.erase(it);
+
+        this->setstate(ios_base::goodbit);
+        return *this;
     }
+
+    this->setstate(ios_base::failbit);
+    return *this;
 }
 
-const std::string&
-IoServer::getAssign(const std::string& name) const noexcept
+IoServer&
+IoServer::getAssign(const std::string& name, std::string& path) noexcept
 {
-    return _assignTable.at(name);
+    path = _assignTable.at(name);
+    if (path.empty())
+        this->setstate(ios_base::failbit);
+    else
+        this->setstate(ios_base::goodbit);
+    return *this;
 }
 
-bool
-IoServer::openFile(const std::string& path, MemoryStream& stream) noexcept
+IoServer&
+IoServer::getResolveAssign(const std::string& url, std::string& resolvePath) noexcept
+{
+    std::string result = url;
+
+    int index = url.find_first_of(":", 0);
+    if (index > 1)
+    {
+        std::string path;
+        std::string assign = url.substr(0, index);
+
+        bool success = this->getAssign(assign, path);
+        if (success)
+        {
+            result.replace(result.begin(), result.begin() + index + 1, path);
+            resolvePath = result;
+
+            this->setstate(ios_base::goodbit);
+            return *this;
+        }
+    }
+
+    this->setstate(ios_base::failbit);
+    return *this;
+}
+
+IoServer&
+IoServer::openFile(const std::string& path, iostream& stream) noexcept
 {
     bool result = this->openFileFromFileSystem(path, stream);
     if (!result)
@@ -100,23 +152,30 @@ IoServer::openFile(const std::string& path, MemoryStream& stream) noexcept
         result = this->openFileFromDisk(path, stream);
     }
 
-    return result;
+    return *this;
 }
 
-bool
-IoServer::openFileFromFileSystem(const std::string& path, MemoryStream& stream) noexcept
+IoServer&
+IoServer::openFileFromFileSystem(const std::string& path, iostream& stream) noexcept
 {
-    return false;
+    this->setstate(ios_base::failbit);
+    return *this;
 }
 
-bool
-IoServer::openFileFromDisk(const std::string& path, MemoryStream& stream) noexcept
+IoServer&
+IoServer::openFileFromDisk(const std::string& path, iostream& stream) noexcept
 {
-    auto resolvePath = this->resolveAssignsInString(path);
-    if (resolvePath.empty())
-        return false;
+    std::string resolvePath;
+
+    bool success = this->getResolveAssign(path, resolvePath);
+    if (!success)
+    {
+        this->setstate(ios_base::failbit);
+        return *this;
+    }
 
     fstream fileStream;
+    fileStream.setOpenMode(this->getOpenMode());
 
     if (fileStream.open(resolvePath))
     {
@@ -126,23 +185,21 @@ IoServer::openFileFromDisk(const std::string& path, MemoryStream& stream) noexce
             streamsize size = fileStream.size();
             if (size > 0)
             {
-                stream.resize(size);
-                char* buf = stream.map();
-                assert(buf);
-                fileStream.read(buf, size);
-                stream.unmap();
-                stream.clear(ios_base::goodbit);
-                return  true;
+                if (stream.copy(fileStream))
+                {
+                    this->setstate(ios_base::goodbit);
+                    return *this;
+                }
             }
         }
     }
 
-    stream.setstate(ios_base::failbit);
-    return false;
+    this->setstate(ios_base::failbit);
+    return *this;
 }
 
-bool
-IoServer::openFile(const std::wstring& path, MemoryStream& stream) noexcept
+IoServer&
+IoServer::openFile(const std::wstring& path, iostream& stream) noexcept
 {
     bool result = this->openFileFromFileSystem(path, stream);
     if (!result)
@@ -150,19 +207,21 @@ IoServer::openFile(const std::wstring& path, MemoryStream& stream) noexcept
         result = this->openFileFromDisk(path, stream);
     }
 
-    return result;
+    return *this;
 }
 
-bool
-IoServer::openFileFromFileSystem(const std::wstring& path, MemoryStream& stream) noexcept
+IoServer&
+IoServer::openFileFromFileSystem(const std::wstring& path, iostream& stream) noexcept
 {
-    return false;
+    this->setstate(ios_base::failbit);
+    return *this;
 }
 
-bool
-IoServer::openFileFromDisk(const std::wstring& path, MemoryStream& stream) noexcept
+IoServer&
+IoServer::openFileFromDisk(const std::wstring& path, iostream& stream) noexcept
 {
     fstream fileStream;
+    fileStream.setOpenMode(this->getOpenMode());
 
     if (fileStream.open(path))
     {
@@ -172,67 +231,52 @@ IoServer::openFileFromDisk(const std::wstring& path, MemoryStream& stream) noexc
             streamsize size = fileStream.size();
             if (size > 0)
             {
-                stream.resize(size);
-                char* buf = stream.map();
-                assert(buf);
-                fileStream.read(buf, size);
-                stream.unmap();
-                return  true;
+                if (stream.copy(fileStream))
+                {
+                    this->setstate(ios_base::goodbit);
+                    return *this;
+                }
             }
         }
     }
 
-    return false;
+    this->setstate(ios_base::failbit);
+    return *this;
 }
 
-bool
+IoServer&
 IoServer::deleteFile(const std::string& path) noexcept
 {
-    return false;
+    this->setstate(ios_base::failbit);
+    return *this;
 }
 
-bool
+IoServer&
 IoServer::existsFile(const std::string& path) noexcept
 {
-    return false;
+    this->setstate(ios_base::failbit);
+    return *this;
 }
 
-bool
+IoServer&
 IoServer::createDirectory(const std::string& path) noexcept
 {
-    return false;
+    this->setstate(ios_base::failbit);
+    return *this;
 }
 
-bool
+IoServer&
 IoServer::deleteDirectory(const std::string& path) noexcept
 {
-    return false;
+    this->setstate(ios_base::failbit);
+    return *this;
 }
 
-bool
+IoServer&
 IoServer::existsDirectory(const std::string& path) noexcept
 {
-    return false;
-}
-
-std::string
-IoServer::resolveAssignsInString(const std::string& url) noexcept
-{
-    std::string result = url;
-
-    int index = url.find_first_of(":", 0);
-    if (index > 1)
-    {
-        std::string assign = url.substr(0, index);
-        std::string path = this->getAssign(assign);
-        if (!path.empty())
-        {
-            result.replace(result.begin(), result.begin() + index + 1, path);
-            return result;
-        }
-    }
-
-    return result;
+    this->setstate(ios_base::failbit);
+    return *this;
 }
 
 _NAME_END

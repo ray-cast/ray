@@ -17,7 +17,7 @@
     <parameter name="texAO" type="sampler2D" />
     <parameter name="texColor" type="sampler2D"/>
     <parameter name="texSource" type="sampler2D"/>
-    <parameter name="matViewInverseTranspose" semantic="matViewInverseTranspose" />
+    <parameter name="matView" semantic="matView" />
     <shader type="vertex" name="mainVS">
         <![CDATA[
             #version 330 core
@@ -59,7 +59,7 @@
             uniform sampler2D texDepth;
             uniform sampler2D texNormal;
 
-            uniform mat4 matViewInverseTranspose;
+            uniform mat4 matView;
 
             float heaviside(float x)
             {
@@ -110,7 +110,7 @@
                 ivec2 ssC = ivec2(gl_FragCoord.xy);
 
                 vec3 c = getPosition(coord);
-                vec3 n = mat3(matViewInverseTranspose) * texture2D(texNormal, coord).rgb;
+                vec3 n = mat3(matView) * texture2D(texNormal, coord).rgb;
 
                 float spinAngle = (3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10;
                 float diskRadius = projScale * radius / c.z;

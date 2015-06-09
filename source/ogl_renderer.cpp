@@ -1126,12 +1126,12 @@ OGLRenderer::setMultiFramebuffer(MultiFramebufferPtr target) noexcept
         {
             oglTarget->bind();
 
-            ClearFlags flags = target->getClearFlags();
-
             auto& drawbuffers = oglTarget->getDrawBuffers();
 
             for (auto& it : drawbuffers)
             {
+                ClearFlags flags = it.first->getClearFlags();
+
                 if (it.second == GL_DEPTH_ATTACHMENT)
                 {
                     if (flags & ClearFlags::CLEAR_DEPTH)

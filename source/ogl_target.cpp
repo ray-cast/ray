@@ -261,7 +261,6 @@ OGLMultiFramebuffer::setup(const MultiFramebufferDesc& desc) noexcept
 
     _drawbuffers.clear();
 
-    this->setClearFlags(desc.clearFlags);
     this->setViewport(desc.viewport);
 
     for (auto& it : desc.mrt)

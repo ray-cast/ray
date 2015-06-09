@@ -388,7 +388,9 @@
 
                 vec3 color = diffuse.rgb;
                 if (light.a > 0)
+                {
                     color = diffuse.rgb * lightAmbient + diffuse.rgb * light.rgb;
+                }
 
                 gl_FragColor = vec4(color, diffuse.a);
             }

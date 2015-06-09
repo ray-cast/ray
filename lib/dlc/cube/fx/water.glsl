@@ -3,6 +3,9 @@
     <parameter name="matModel" semantic="matModel" />
     <parameter name="matNormal" semantic="matModelInverseTranspose" />
     <parameter name="matViewProject" semantic="matViewProject" />
+    <parameter name="color" type="float4" />
+    <parameter name="shininess" type="float" />
+    <parameter name="specular" type="float" />
     <shader type="vertex" name="mainVS">
         <![CDATA[
             #version 330
@@ -34,13 +37,16 @@
 
             in vec4 normal;
 
+            uniform vec4 color;
+            uniform float specular;
+            uniform float shininess;
             uniform sampler2D decal;
 
             void main()
             {
-                glsl_FragColor0.rgba = vec4(0, 120.0 / 255, 204.0 / 255.0, 0.75);
+                glsl_FragColor0.rgba = color;
                 glsl_FragColor1.rgb = normalize(normal.xyz);
-                glsl_FragColor1.a   = 32.09;
+                glsl_FragColor1.a = shininess + specular * 0.1;
             }
         ]]>
     </shader>

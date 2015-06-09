@@ -83,8 +83,6 @@ public:
     void readRenderTexture(RenderTexturePtr texture, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
     void copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept;
 
-    void SSAOPostProcess(RenderTexturePtr src) noexcept;
-
     void onPostProcess(RenderTexturePtr src) noexcept;
 
 private:

@@ -12,11 +12,14 @@
             #version 330 core
 
             layout(location = 0) in vec4 glsl_Position;
+            layout(location = 2) in vec2 glsl_Texcoord;
 
             out vec4 position;
+            out vec2 coord;
 
             void main()
             {
+                coord = glsl_Texcoord;
                 gl_Position = position = glsl_Position;
             }
         ]]>
@@ -27,47 +30,47 @@
 
             layout(location = 0) out vec4 glsl_FragColor0;
 
+            in vec2 coord;
+            in vec4 position;
+
             uniform sampler2D texColor;
             uniform sampler2D texDepth;
             uniform sampler2D texNormal;
-
-            uniform vec3 eyePosition;
 
             uniform mat4 matView;
             uniform mat4 matProject;
             uniform mat4 matProjectInverse;
 
-            in vec4 position;
+            uniform vec3 eyePosition;
 
             const float rayStep = 0.25;
             const float minRayStep = 0.1;
-            const float maxSteps = 20;
-            const float searchDist = 5;
-            const float searchDistInv = 0.2;
+            const float maxSteps = 200;
             const int numBinarySearchSteps = 5;
-            const float maxDDepth = 1.0;
-            const float maxDDepthInv = 1.0;
 
-            vec4 unproject(vec2 P, float depth)
+            vec3 unproject(vec2 P, float depth)
             {
                 vec4 result = matProjectInverse * vec4(P, depth, 1.0);
                 result /= result.w;
-                return result;
+                return result.rgb;
             }
 
-            vec2 binarySearch(vec3 dir, inout vec3 hitCoord)
+            vec3 binarySearch(vec3 dir, inout vec3 hitCoord, out float dDepth)
             {
-                for (int i = 0; i < maxSteps; i++)
+                float depth = 0;
+
+                for (int i = 0; i < numBinarySearchSteps; i++)
                 {
                     vec4 projected = matProject * vec4(hitCoord, 1.0);
-                    projected.xyz /= projected.w;
+                    projected.xy /= projected.w;
                     projected.xy = projected.xy * 0.5 + 0.5;
 
-                    float depth = texture2D(texDepth, projected.xy).r * 2.0 - 1.0;
+                    depth = texture2D(texDepth, projected.xy).r * 2.0 - 1.0;
+                    vec3 P = unproject(projected.xy, depth);
 
-                    float dDepth = projected.z - depth;
+                    float dDepth = hitCoord.z - P.z;
 
-                    if (dDepth > 0)
+                    if (dDepth > 0.0)
                         hitCoord += dir;
 
                     dir *= 0.5;
@@ -75,16 +78,14 @@
                 }
 
                 vec4 projected = matProject * vec4(hitCoord, 1.0);
-                projected.xyz /= projected.w;
+                projected.xy = projected.xy / projected.w;
                 projected.xy = projected.xy * 0.5 + 0.5;
 
-                return projected.xy;
+                return vec3(projected.xy, depth);
             }
 
-            bool traceScreenSpaceRay(vec3 R, inout vec3 hitCoord, out vec2 hitPixel)
+            bool traceScreenSpaceRay(vec3 dir, inout vec3 hitCoord, out float dDepth)
             {
-                vec3 dir = R * max(minRayStep, -hitCoord.z) * rayStep;
-
                 for (int i = 0; i < maxSteps; i++)
                 {
                     hitCoord += dir;
@@ -93,12 +94,13 @@
                     projected /= projected.w;
                     projected.xy = projected.xy * 0.5 + 0.5;
 
-                    float depth = texture2D(texDepth, projected.xy).r * 2.0 - 1.0;
-                    float dDepth = projected.z - depth;
+                    float d = texture2D(texDepth, projected.xy).r * 2.0 - 1.0;
+                    vec3 P = unproject(projected.xy, d);
 
-                    if (dDepth > 0.0)
+                    dDepth = hitCoord.z - P.z;
+
+                    if (dDepth < 0.0)
                     {
-                        hitPixel = projected.xy;
                         return true;
                     }
                 }
@@ -108,14 +110,11 @@
 
             void main()
             {
-                vec2 coord = position.xy;
-                coord = coord * 0.5 + 0.5;
-
                 vec4 NS = texture2D(texNormal, coord);
                 vec4 color = texture2D(texColor, coord);
 
                 float specular = fract(NS.a) * 10;
-                if (specular == 0)
+                if (specular == 0.0)
                 {
                     glsl_FragColor0 = color;
                     return;
@@ -123,21 +122,29 @@
 
                 float depth = texture2D(texDepth, coord).r * 2.0 - 1.0;
 
-                vec3 N = mat3(matView) * NS.xyz;
-                vec3 P = unproject(position.xy, depth).xyz;
-                vec3 R = normalize(reflect(P, N));
+                vec3 viewNormal = mat3(matView) * NS.xyz;
+                vec3 viewPosition = unproject(position.xy, depth);
 
-                vec2 hitPixel;
+                vec3 R = normalize(reflect(viewPosition, viewNormal));
+                vec3 I = normalize(viewPosition - eyePosition);
 
-                traceScreenSpaceRay(R, P, hitPixel);
-                if (hitPixel.x < 0 || hitPixel.y < 0 ||
-                    hitPixel.x > 1 || hitPixel.y > 1)
+                vec3 dir = R * max(minRayStep, -viewPosition.z) * rayStep;
+
+                if (traceScreenSpaceRay(dir, viewPosition, depth))
                 {
-                    glsl_FragColor0 = vec4(0);
-                    return;
+                    vec3 coords = binarySearch(dir, viewPosition, depth);
+                    if (coords.x < 1.0 && coords.y < 1.0)
+                    {
+                        vec4 reflectionColor = texture2D(texColor, coords.xy);
+
+                        float fresnel = specular + (1.0 - specular) * pow(1.0 - dot(I, NS.rgb), 5.0);
+
+                        glsl_FragColor0 = mix(color, reflectionColor, fresnel);
+                        return;
+                    }
                 }
 
-                glsl_FragColor0 = texture2D(texColor, hitPixel);
+                glsl_FragColor0 = color;
             }
         ]]>
     </shader>

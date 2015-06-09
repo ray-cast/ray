@@ -181,7 +181,7 @@ SSAO::render(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr
 
     this->shading(pipeline, source, _texAmbient, dest);
 
-    //pipeline->copyRenderTexture(_texAmbient, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 2, 0, 1376, 768 / 2));
+    //pipeline->copyRenderTexture(_texAmbient, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));
     //pipeline->copyRenderTexture(dest, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));
 }
 

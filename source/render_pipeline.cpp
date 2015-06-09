@@ -219,20 +219,16 @@ RenderPipeline::copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& sr
 }
 
 void
-RenderPipeline::SSAOPostProcess(RenderTexturePtr src) noexcept
-{
-    _ssao->render(this, src, _swapMap);
-
-    Viewport v1(0, 0, _swapMap->getWidth(), _swapMap->getHeight());
-    Viewport v2(0, 0, src->getWidth(), src->getHeight());
-    this->copyRenderTexture(_swapMap, v1, src, v2);
-}
-
-void
 RenderPipeline::onPostProcess(RenderTexturePtr src) noexcept
 {
     Viewport v1(0, 0, _swapMap->getWidth(), _swapMap->getHeight());
     Viewport v2(0, 0, src->getWidth(), src->getHeight());
+
+    if (_enableSSAO)
+    {
+        _ssao->render(this, src, _swapMap);
+        this->copyRenderTexture(_swapMap, v1, src, v2);
+    }
 
     if (_enableSSR)
     {

@@ -192,11 +192,6 @@ protected:
 
 struct MultiFramebufferDesc
 {
-    int        clearStencil;
-    float      clearDepth;
-    Color4     clearColor;
-    ClearFlags clearFlags;
-
     Viewport viewport;
 
     std::vector<FramebufferPtr> mrt;
@@ -208,10 +203,7 @@ public:
     MultiFramebuffer() noexcept;
     virtual ~MultiFramebuffer() noexcept;
 
-    void setClearFlags(ClearFlags flags) noexcept;
     void setViewport(const Viewport& view) noexcept;
-
-    ClearFlags getClearFlags() const noexcept;
     const Viewport& getViewport() const noexcept;
 
     void clear() noexcept;
@@ -219,6 +211,7 @@ public:
     void attach(FramebufferPtr rt) noexcept;
     void detach(FramebufferPtr rt) noexcept;
 
+    FramebufferPtr getFramebuffer(Attachment Attachment) const noexcept;
     Framebuffers getFramebuffers() noexcept;
 
 private:
@@ -227,8 +220,6 @@ private:
     MultiFramebuffer& operator=(const MultiFramebuffer&) noexcept = delete;
 
 private:
-
-    ClearFlags _clearFlags;
 
     Viewport _viewport;
 

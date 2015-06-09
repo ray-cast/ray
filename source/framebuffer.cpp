@@ -304,7 +304,6 @@ Framebuffer::getSharedStencilTexture() const noexcept
 
 MultiFramebuffer::MultiFramebuffer() noexcept
     : _viewport(0, 0, 0, 0)
-    , _clearFlags(ClearFlags::CLEAR_ALL)
 {
 }
 
@@ -313,21 +312,9 @@ MultiFramebuffer::~MultiFramebuffer() noexcept
 }
 
 void
-MultiFramebuffer::setClearFlags(ClearFlags flags) noexcept
-{
-    _clearFlags = flags;
-}
-
-void
 MultiFramebuffer::setViewport(const Viewport& view) noexcept
 {
     _viewport = view;
-}
-
-ClearFlags
-MultiFramebuffer::getClearFlags() const noexcept
-{
-    return _clearFlags;
 }
 
 const Viewport&
@@ -361,6 +348,18 @@ MultiFramebuffer::detach(FramebufferPtr rt) noexcept
         if (_mrt[i] == rt)
         {
             _mrt.erase(_mrt.begin() + i);
+        }
+    }
+}
+
+FramebufferPtr
+MultiFramebuffer::getFramebuffer(Attachment attachment) const noexcept
+{
+    for (auto& it : _mrt)
+    {
+        if (it->getAttachment() == attachment)
+        {
+            return it;
         }
     }
 }

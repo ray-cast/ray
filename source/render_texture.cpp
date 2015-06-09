@@ -151,7 +151,7 @@ MultiRenderTexture::~MultiRenderTexture() noexcept
 }
 
 void
-MultiRenderTexture::setup(std::size_t w, std::size_t h, ClearFlags flags, const Color4& color, float depth, int stencil) noexcept
+MultiRenderTexture::setup(std::size_t w, std::size_t h) noexcept
 {
     if (_textures.empty())
         return;
@@ -172,10 +172,6 @@ MultiRenderTexture::setup(std::size_t w, std::size_t h, ClearFlags flags, const 
         }
     }
 
-    desc.clearFlags = flags;
-    desc.clearColor = color;
-    desc.clearDepth = depth;
-    desc.clearStencil = stencil;
     desc.viewport = Viewport(0, 0, w, h);
 
     _renderTarget = RenderImpl::instance()->createMultiFramebuffer(desc);

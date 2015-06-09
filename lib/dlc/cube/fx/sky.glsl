@@ -52,7 +52,7 @@
             void main()
             {
                 glsl_FragColor0.rgba = texture2D(decal, vec2(0.5, uv.t));
-                glsl_FragColor1 = vec4(normal, 1);
+                glsl_FragColor1 = vec4(normal, 32);
             }
         ]]>
     </shader>

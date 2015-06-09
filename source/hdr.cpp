@@ -36,7 +36,6 @@
 // +-----------------------------------------------------------------------
 #include <ray/hdr.h>
 #include <ray/material_maker.h>
-#include <ray/render_texture.h>
 
 _NAME_BEGIN
 

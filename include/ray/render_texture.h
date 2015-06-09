@@ -83,7 +83,7 @@ public:
 
     static MultiRenderTexturePtr create() noexcept;
 
-    void setup(std::size_t w, std::size_t h, ClearFlags flags = ClearFlags::CLEAR_ALL, const Color4& color = Color4::Black, float depth = 1.0, int stencil = 0) noexcept;
+    void setup(std::size_t w, std::size_t h) noexcept;
     void close() noexcept;
 
     void attach(RenderTexturePtr texture, Attachment location) noexcept;

@@ -229,6 +229,3 @@ ADD_SUBDIRECTORY(source)
 
 # 示例
 ADD_SUBDIRECTORY(samples)
-
-# 添加工具
-ADD_SUBDIRECTORY(tools)

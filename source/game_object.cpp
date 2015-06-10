@@ -66,47 +66,47 @@ GameObject::~GameObject() noexcept
 void
 GameObject::setActive(bool active) except
 {
+    assert(this->getGameScene());
+
     if (_active != active)
     {
-        auto scene = this->getGameScene();
-        if (scene)
+        if (active)
         {
-            if (active)
+            auto scene = this->getGameScene();
+            if (scene->getActive())
             {
-                if (scene->getActive())
+                for (auto& it : _children)
                 {
-                    for (auto& it : _children)
-                    {
-                        if (!it->getActive())
-                            continue;
+                    if (!it->getActive())
+                        continue;
 
-                        for (auto& component : it->getComponents())
-                            component->onActivate();
-                    }
+                    for (auto& component : it->getComponents())
+                        component->onActivate();
+                }
 
-                    for (auto& it : _components)
-                    {
-                        it->onActivate();
-                    }
+                for (auto& it : _components)
+                {
+                    it->onActivate();
                 }
             }
-            else
+        }
+        else
+        {
+            auto scene = this->getGameScene();
+            if (!scene->getActive())
             {
-                if (!scene->getActive())
+                for (auto& it : _children)
                 {
-                    for (auto& it : _children)
-                    {
-                        if (!it->getActive())
-                            continue;
+                    if (!it->getActive())
+                        continue;
 
-                        for (auto& component : it->getComponents())
-                            component->onDeactivate();
-                    }
+                    for (auto& component : it->getComponents())
+                        component->onDeactivate();
+                }
 
-                    for (auto& it : _components)
-                    {
-                        it->onDeactivate();
-                    }
+                for (auto& it : _components)
+                {
+                    it->onDeactivate();
                 }
             }
         }
@@ -1064,7 +1064,6 @@ GameObject::clone() const noexcept
 {
     auto instance = std::make_shared<GameObject>();
     instance->setName(this->getName());
-    instance->setActive(false);
     instance->setVisible(this->getVisible());
     instance->setLayer(this->getLayer());
     instance->setLookAt(this->getLookAt());

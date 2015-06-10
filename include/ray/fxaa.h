@@ -47,7 +47,7 @@ public:
     FXAA() noexcept;
     ~FXAA() noexcept;
 
-    void render(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+    void render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept;
 
 private:
 

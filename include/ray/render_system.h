@@ -148,6 +148,12 @@ private:
     std::vector<SimpleVertex> _lines;
     std::vector<SimpleVertex> _polygons;
 
+    bool _enableSSAO;
+    bool _enableSSR;
+    bool _enableDOF;
+    bool _enableHDR;
+    bool _enableFXAA;
+
     MaterialPtr _lineMaterial;
 
     VertexBufferDataPtr _dynamicBuffers;

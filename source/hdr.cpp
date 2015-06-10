@@ -48,7 +48,6 @@ HDR::HDR() except
     , _vignetteEnable(true)
     , _vignetteInner(0.7)
     , _vignetteOuter(1.7)
-    , _gamma(1 / 2.2)
 {
     _texSample4 = RenderTexture::create();
     _texSample4->setup(512, 512, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
@@ -82,7 +81,6 @@ HDR::HDR() except
     _toneVignetteEnable = _hdr->getParameter("vignetteEnable");
     _toneVignetteInner = _hdr->getParameter("vignetteInner");
     _toneVignetteOuter = _hdr->getParameter("vignetteOuter");
-    _toneGamma = _hdr->getParameter("gamma");
 }
 
 HDR::~HDR() noexcept
@@ -176,7 +174,7 @@ HDR::blurv(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr d
 }
 
 void
-HDR::generateToneMapping(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr bloom, RenderTexturePtr dest)
+HDR::generateToneMapping(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr bloom)
 {
     _toneSource->setTexture(source->getResolveTexture());
     _toneBloom->setTexture(bloom->getResolveTexture());
@@ -188,15 +186,14 @@ HDR::generateToneMapping(RenderPipeline* pipeline, RenderTexturePtr source, Rend
     _toneVignetteEnable->assign(_vignetteEnable);
     _toneVignetteInner->assign(_vignetteInner);
     _toneVignetteOuter->assign(_vignetteOuter);
-    _toneGamma->assign(_gamma);
 
-    pipeline->setRenderTexture(dest);
+    pipeline->setRenderTexture(source);
     pipeline->setTechnique(_tone);
     pipeline->drawSceneQuad();
 }
 
 void
-HDR::render(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+HDR::render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept
 {
     this->sample4(pipeline, source, _texSample4);
     this->sample8(pipeline, _texSample4, _texSample8);
@@ -209,7 +206,7 @@ HDR::render(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr 
     this->blurh(pipeline, _texBloom, _texSample4);
     this->blurv(pipeline, _texSample4, _texBloom);
 
-    this->generateToneMapping(pipeline, source, _texBloom, dest);
+    this->generateToneMapping(pipeline, source, _texBloom);
 }
 
 _NAME_END

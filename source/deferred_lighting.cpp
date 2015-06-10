@@ -131,12 +131,12 @@ DeferredLighting::render() noexcept
         this->renderLights();
         this->renderTransparentShading();
 
-        this->onPostProcess(_deferredShadingMap);
+        this->postprocess(_deferredShadingMap);
 
-        /*this->copyRenderTexture(_deferredGraphicMap, camera->getViewport(), 0, Viewport(0, 768 / 2, 1376 / 2, 768));
-        this->copyRenderTexture(_deferredNormalMap, camera->getViewport(), 0, Viewport(1376 / 2, 768 / 2, 1376, 768));
-        this->copyRenderTexture(_deferredLightMap, camera->getViewport(), 0, Viewport(0, 0, 1376 / 2, 768 / 2));
-        this->copyRenderTexture(_deferredShadingMap, camera->getViewport(), 0, Viewport(1376 / 2, 0, 1376, 768 / 2));*/
+        //this->copyRenderTexture(_deferredGraphicMap, camera->getViewport(), 0, Viewport(0, 768 / 2, 1376 / 2, 768));
+        //this->copyRenderTexture(_deferredNormalMap, camera->getViewport(), 0, Viewport(1376 / 2, 768 / 2, 1376, 768));
+        //this->copyRenderTexture(_deferredLightMap, camera->getViewport(), 0, Viewport(0, 0, 1376 / 2, 768 / 2));
+        //this->copyRenderTexture(_deferredShadingMap, camera->getViewport(), 0, Viewport(1376 / 2, 0, 1376, 768 / 2));
         this->copyRenderTexture(_deferredShadingMap, camera->getViewport(), 0, camera->getViewport());
     }
 }

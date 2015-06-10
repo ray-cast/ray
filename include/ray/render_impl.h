@@ -89,9 +89,9 @@ public:
     void copyFramebuffer(FramebufferPtr srcTarget, const Viewport& src, FramebufferPtr destTarget, const Viewport& dest) noexcept;
     void readFramebuffer(FramebufferPtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
 
-    MultiFramebufferPtr createMultiFramebuffer(const MultiFramebufferDesc& desc) noexcept;
-    void destroyMultiFramebuffer(MultiFramebufferPtr) noexcept;
-    void setMultiFramebuffer(MultiFramebufferPtr mrt) noexcept;
+    bool createMultiRenderTexture(MultiRenderTexture& desc) noexcept;
+    void destroyMultiRenderTexture(MultiRenderTexture& target) noexcept;
+    void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept;
 
     bool createTexture(Texture& texture) noexcept;
     void destroyTexture(Texture& texture) noexcept;

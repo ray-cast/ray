@@ -10,7 +10,6 @@
     <parameter name="vignetteEnable" type="int" />
     <parameter name="vignetteInner" type="float" />
     <parameter name="vignetteOuter" type="float" />
-    <parameter name="gamma" type="float" />
     <shader type="vertex" name="postprocess">
         <![CDATA[
             #version 330 core
@@ -182,8 +181,6 @@
             uniform float vignetteInner;
             uniform float vignetteOuter;
 
-            uniform float gamma;
-
             const float A = 0.20; // Shoulder Strength
             const float B = 0.30; // Linear Strength
             const float C = 0.10; // Linear Angle
@@ -221,8 +218,6 @@
                     float vignette = (1.0 - smoothstep(vignetteInner, vignetteOuter, L));
                     fimic *= vignette;
                 }
-
-                fimic = pow(fimic, vec3(gamma));
 
                 glsl_FragColor0 = vec4(fimic, lum);
             }
@@ -270,6 +265,13 @@
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
+
+            <state name="blend" value="true" />
+            <state name="blendSeparate" value="true" />
+            <state name="blendsrc" value="one" />
+            <state name="blenddst" value="zero" />
+            <state name="blendalphasrc" value="one" />
+            <state name="blendalphadst" value="zero" />
         </pass>
     </technique>
 </effect>

@@ -15,9 +15,9 @@
     <parameter name="texDepth" semantic="DepthMap" />
     <parameter name="texNormal" semantic="NormalMap" />
     <parameter name="texAO" type="sampler2D" />
-    <parameter name="texColor" type="sampler2D"/>
     <parameter name="texSource" type="sampler2D"/>
     <parameter name="matView" semantic="matView" />
+    <parameter name="matProjectInverse" semantic="matProjectInverse"/>
     <shader type="vertex" name="mainVS">
         <![CDATA[
             #version 330 core
@@ -75,7 +75,7 @@
             vec3 getPosition(vec2 uv)
             {
                 float d = linearizeDepth(uv);
-                return vec3((projInfo.xy * uv + projInfo.zw) * d, d);
+                return vec3((projInfo.xy * (uv ) + projInfo.zw) * d, d);
             }
 
             vec2 tapLocation(int sampleNumber, float spinAngle, float diskRadius)
@@ -85,43 +85,41 @@
                 return vec2(cos(angle), sin(angle)) * alpha * diskRadius;
             }
 
-            float computeAO(vec3 c, vec3 n, vec3 q)
+            float computeAO(vec3 c, vec3 n, vec3 q, float radius2)
             {
                 vec3 v = q - c;
 
                 float vv = dot(v, v);
                 float vn = dot(v, n);
 
-                float f = max(radius * radius - vv, 0);
+                float f = max(radius2 - vv, 0);
                 return heaviside(f) * max((vn - bias) / (vv + epsilon), 0);
             }
 
-            float sampleAO(int tapIndex, vec2 uv, vec3 c, vec3 n, float spinAngle, float diskRadius)
+            float sampleAO(int tapIndex, vec2 uv, vec3 c, vec3 n, float spinAngle, float diskRadius, float radius2)
             {
                 vec2 offset = tapLocation(tapIndex, spinAngle, diskRadius);
-
                 vec3 q = getPosition(uv + offset);
-
-                return computeAO(c, n, q);
+                return computeAO(c, n, q, radius2);
             }
 
             void main()
             {
+                vec3 viewPosition = getPosition(coord);
+                vec3 viewNormal = mat3(matView) * texture2D(texNormal, coord).rgb;
+
                 ivec2 ssC = ivec2(gl_FragCoord.xy);
-
-                vec3 c = getPosition(coord);
-                vec3 n = mat3(matView) * texture2D(texNormal, coord).rgb;
-
                 float spinAngle = (3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10;
-                float diskRadius = projScale * radius / c.z;
+                float diskRadius = projScale * radius / viewPosition.z;
+                float radius2 = radius * radius;
 
                 float sum = 0.0;
                 for (int i = 0; i < numSample; ++i)
                 {
-                    sum += sampleAO(i, coord, c, n, spinAngle, diskRadius);
+                    sum += sampleAO(i, coord, viewPosition, viewNormal, spinAngle, diskRadius, radius2);
                 }
 
-                float ao = max(0.0, 1.0 - sum / numSample * intensityDivR6);
+                float ao = max(0.0, sum / numSample * intensityDivR6);
 
                 glsl_FragColor0 = ao;
             }
@@ -188,15 +186,12 @@
             layout(location = 0) out vec4 glsl_FragColor0;
 
             uniform sampler2D texAO;
-            uniform sampler2D texColor;
 
             in vec2 coord;
 
             void main()
             {
-                vec4 color = texture2D(texColor, coord);
-                color.rgb *= texture2D(texAO, coord).r;
-                glsl_FragColor0 = color;
+                glsl_FragColor0 = vec4(texture2D(texAO, coord).r);
             }
         ]]>
     </shader>
@@ -213,6 +208,10 @@
         <pass name="copy">
             <state name="vertex" value="mainVS"/>
             <state name="fragment" value="copyPS"/>
+
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="zero" />
+            <state name="blenddest" value="invsrcalpha" />
         </pass>
     </technique>
 </effect>

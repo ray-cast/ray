@@ -133,10 +133,40 @@ OGLRenderer::open(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) no
 void
 OGLRenderer::close() noexcept
 {
-    if (_defaultVAO)
+    for (auto& it : _textures)
+    {
+        if (it.texture != GL_NONE)
+        {
+            glDeleteTextures(1, &it.texture);
+            it.texture = GL_NONE;
+        }
+    }
+
+    for (auto& it : _renderBuffers)
+    {
+        if (it.vao != GL_NONE)
+        {
+            glDeleteVertexArrays(1, &it.vao);
+            it.vao = GL_NONE;
+        }
+
+        if (it.vbo != GL_NONE)
+        {
+            glDeleteBuffers(1, &it.vbo);
+            it.vbo = GL_NONE;
+        }
+
+        if (it.ibo != GL_NONE)
+        {
+            glDeleteBuffers(1, &it.ibo);
+            it.ibo = GL_NONE;
+        }
+    }
+
+    if (_defaultVAO != GL_NONE)
     {
         glDeleteVertexArrays(1, &_defaultVAO);
-        _defaultVAO = 0;
+        _defaultVAO = GL_NONE;
     }
 }
 
@@ -166,6 +196,34 @@ OGLRenderer::clear(ClearFlags flags, const Color4& color, float depth, std::int3
         glClearDepthf(depth);
         glClearStencil(stencil);
         glClear(mode);
+    }
+}
+
+void
+OGLRenderer::clear(std::size_t i, ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept
+{
+    if (flags & ClearFlags::CLEAR_DEPTH)
+    {
+        GLfloat f = depth;
+        glClearBufferfv(GL_DEPTH, i, &f);
+    }
+
+    if (flags & ClearFlags::CLEAR_STENCIL)
+    {
+        GLint s = stencil;
+        glClearBufferiv(GL_STENCIL, i, &s);
+    }
+
+    if (flags & ClearFlags::CLEAR_DEPTH_STENCIL)
+    {
+        GLfloat f = depth;
+        GLint s = stencil;
+        glClearBufferfi(GL_DEPTH_STENCIL, i, f, s);
+    }
+
+    if (flags & ClearFlags::CLEAR_COLOR)
+    {
+        glClearBufferfv(GL_COLOR, i, color.ptr());
     }
 }
 
@@ -451,7 +509,6 @@ void
 OGLRenderer::renderBegin() noexcept
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //glEnable(GL_FRAMEBUFFER_SRGB);
 
     if (_NV_vertex_buffer_unified_memory)
     {
@@ -771,7 +828,7 @@ OGLRenderer::createRenderBuffer(RenderBuffer& buffer) noexcept
                 if (_ARB_vertex_array_object)
                 {
                     glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
-                    glVertexAttribPointer(it.getVertexAttrib(), it.getVertexSize(), type, GL_FALSE, vb->getVertexByteSize(), (void*)offset);
+                    glVertexAttribPointer(it.getVertexAttrib(), it.getVertexSize(), type, GL_FALSE, vb->getVertexByteSize(), (const char*)nullptr + offset);
                 }
             }
 
@@ -846,22 +903,22 @@ OGLRenderer::destroyRenderBuffer(RenderBuffer& renderBuffer) noexcept
     {
         auto& buffer = _renderBuffers[index];
 
-        if (buffer.vao)
+        if (buffer.vao != GL_NONE)
         {
             glDeleteVertexArrays(1, &buffer.vao);
-            buffer.vao = 0;
+            buffer.vao = GL_NONE;
         }
 
-        if (buffer.vbo)
+        if (buffer.vbo != GL_NONE)
         {
             glDeleteBuffers(1, &buffer.vbo);
-            buffer.vbo = 0;
+            buffer.vbo = GL_NONE;
         }
 
-        if (buffer.ibo)
+        if (buffer.ibo != GL_NONE)
         {
             glDeleteBuffers(1, &buffer.ibo);
-            buffer.ibo = 0;
+            buffer.ibo = GL_NONE;
         }
     }
 }
@@ -1044,8 +1101,6 @@ OGLRenderer::setFramebuffer(FramebufferPtr target) noexcept
         if (target)
         {
             std::dynamic_pointer_cast<OGLFramebuffer>(target)->bind();
-            this->clear(target->getClearFlags(), target->getClearColor(), target->getClearDepth(), target->getClearStencil());
-            this->setViewport(target->getViewport());
         }
         else
         {
@@ -1058,6 +1113,9 @@ OGLRenderer::setFramebuffer(FramebufferPtr target) noexcept
         _renderTarget = target;
         _multiFramebuffer = nullptr;
     }
+
+    this->clear(target->getClearFlags(), target->getClearColor(), target->getClearDepth(), target->getClearStencil());
+    this->setViewport(target->getViewport());
 }
 
 void
@@ -1078,7 +1136,7 @@ OGLRenderer::readFramebuffer(FramebufferPtr target, PixelFormat pfd, std::size_t
 {
     assert(target && w && h && data);
 
-    this->setFramebuffer(target);
+    std::dynamic_pointer_cast<OGLFramebuffer>(target)->bind();
 
     GLenum format = OGLTypes::asOGLFormat(pfd);
     GLenum type = OGLTypes::asOGLType(pfd);
@@ -1089,91 +1147,110 @@ OGLRenderer::readFramebuffer(FramebufferPtr target, PixelFormat pfd, std::size_t
     _multiFramebuffer = nullptr;
 }
 
-MultiFramebufferPtr
-OGLRenderer::createMultiFramebuffer(const MultiFramebufferDesc& desc) noexcept
+bool
+OGLRenderer::createMultiRenderTexture(MultiRenderTexture& target) noexcept
 {
-    OGLMultiFramebufferPtr result;
+    OGLRenderTexture instance;
 
-    result = std::make_shared<OGLMultiFramebuffer>();
-    result->setup(desc);
+    auto instanceID = target.getInstanceID();
+
+    glGenFramebuffers(1, &instance.fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, instance.fbo);
+
+    for (auto& it : target.getRenderTextures())
+    {
+        auto oglTarget = std::dynamic_pointer_cast<OGLFramebuffer>(it.texture->getFramebuffer());
+        if (!oglTarget)
+            continue;
+
+        TexturePtr texture = oglTarget->getResolveTexture();
+        if (!texture)
+            continue;
+
+        GLenum attachment = OGLTypes::asOGLAttachment(it.location);
+
+        auto handle = _textures[texture->getInstanceID()].texture;
+        auto resident = _textures[texture->getInstanceID()].resident;
+
+        auto dim = texture->getTexDim();
+        if (dim == TextureDim::DIM_2D)
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0);
+        else if (dim == TextureDim::DIM_2D_ARRAY)
+            glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, handle, 0, 0);
+#if !defined(EGLAPI)
+        else if (dim == TextureDim::DIM_3D)
+            glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_3D, handle, 0, 0);
+#endif
+        else
+            assert(false);
+
+        instance.drawbuffers.push_back(std::make_pair(oglTarget, attachment));
+    }
+
+    std::size_t count = 0;
+    GLenum  draw[Attachment::COLOR15];
+
+    for (auto& it : instance.drawbuffers)
+    {
+        if (it.second != GL_DEPTH_ATTACHMENT &&
+            it.second != GL_DEPTH_STENCIL_ATTACHMENT &&
+            it.second != GL_STENCIL_ATTACHMENT)
+        {
+            draw[count++] = it.second;
+        }
+    }
+
+    if (_EXT_direct_state_access)
+        glFramebufferDrawBuffersEXT(instance.fbo, count, draw);
+    else
+        glDrawBuffers(count, draw);
 
     _renderTarget = nullptr;
     _multiFramebuffer = nullptr;
 
-    return result;
+    if (_framebuffers.size() < instanceID)
+    {
+        _framebuffers.resize(instanceID * 2);
+    }
+
+    _framebuffers[instanceID] = instance;
+
+    return true;
 }
 
 void
-OGLRenderer::destroyMultiFramebuffer(MultiFramebufferPtr target) noexcept
+OGLRenderer::destroyMultiRenderTexture(MultiRenderTexture& target) noexcept
 {
-    auto oglMultiFramebuffer = std::dynamic_pointer_cast<OGLMultiFramebuffer>(target);
-    if (oglMultiFramebuffer)
+    auto instanceID = target.getInstanceID();
+    auto& framebuffer = _framebuffers[instanceID].fbo;
+    if (framebuffer != GL_NONE)
     {
-        oglMultiFramebuffer->close();
-
-        if (_multiFramebuffer = target)
-            _multiFramebuffer = nullptr;
+        glDeleteBuffers(GL_FRAMEBUFFER, &framebuffer);
+        framebuffer = GL_NONE;
     }
 }
 
 void
-OGLRenderer::setMultiFramebuffer(MultiFramebufferPtr target) noexcept
+OGLRenderer::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
 {
     if (_multiFramebuffer != target)
     {
-        auto oglTarget = std::dynamic_pointer_cast<OGLMultiFramebuffer>(target);
-        if (oglTarget)
+        auto instanceID = target->getInstanceID();
+        auto framebuffer = _framebuffers[instanceID].fbo;
+        auto& drawbuffers = _framebuffers[instanceID].drawbuffers;
+
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+        this->setViewport(target->getViewport());
+
+        for (auto& it : drawbuffers)
         {
-            oglTarget->bind();
-
-            auto& drawbuffers = oglTarget->getDrawBuffers();
-
-            for (auto& it : drawbuffers)
-            {
-                ClearFlags flags = it.first->getClearFlags();
-
-                if (it.second == GL_DEPTH_ATTACHMENT)
-                {
-                    if (flags & ClearFlags::CLEAR_DEPTH)
-                    {
-                        GLfloat f = it.first->getClearDepth();
-                        glClearBufferfv(GL_DEPTH, 0, &f);
-                    }
-                }
-                else if (it.second == GL_STENCIL_ATTACHMENT)
-                {
-                    if (flags & ClearFlags::CLEAR_STENCIL)
-                    {
-                        GLint s = it.first->getClearStencil();
-                        glClearBufferiv(GL_STENCIL, 0, &s);
-                    }
-                }
-                else if (it.second == GL_DEPTH_STENCIL_ATTACHMENT)
-                {
-                    if (flags & ClearFlags::CLEAR_DEPTH_STENCIL)
-                    {
-                        GLfloat f = it.first->getClearDepth();
-                        GLint s = it.first->getClearStencil();
-                        glClearBufferfi(GL_DEPTH_STENCIL, 0, f, s);
-                    }
-                }
-                else
-                {
-                    if (flags & ClearFlags::CLEAR_COLOR)
-                    {
-                        glClearBufferfv(GL_COLOR, it.second - GL_COLOR_ATTACHMENT0, it.first->getClearColor().ptr());
-                    }
-                }
-            }
-
-            this->setViewport(target->getViewport());
-        }
-        else
-        {
-            if (_multiFramebuffer)
-            {
-                std::dynamic_pointer_cast<OGLMultiFramebuffer>(target)->unbind();
-            }
+            this->clear(it.second - GL_COLOR_ATTACHMENT0,
+                it.first->getClearFlags(),
+                it.first->getClearColor(),
+                it.first->getClearDepth(),
+                it.first->getClearStencil()
+                );
         }
 
         _multiFramebuffer = target;
@@ -1186,10 +1263,12 @@ OGLRenderer::createTexture(Texture& texture) noexcept
 {
     OGLTexture instance;
 
+    auto instanceID = texture.getInstanceID();
     auto target = OGLTypes::asOGLTarget(texture.getTexDim());
     auto format = OGLTypes::asOGLFormat(texture.getTexFormat());
     auto type = OGLTypes::asOGLType(texture.getTexFormat());
     auto internalFormat = OGLTypes::asOGLInternalformat(texture.getTexFormat());
+    auto buf = texture.getStream();
 
     glGenTextures(1, &instance.texture);
     glBindTexture(target, instance.texture);
@@ -1197,11 +1276,68 @@ OGLRenderer::createTexture(Texture& texture) noexcept
     // set unpack alignment to one byte
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+    GLint level = (GLint)texture.getLevel();
+
     GLsizei w = (GLsizei)texture.getWidth();
     GLsizei h = (GLsizei)texture.getHeight();
     GLsizei depth = (GLsizei)texture.getDepth();
 
-    generateTexture(target, internalFormat, format, type, w, h, depth, (const char*)texture.getStream());
+    texture.setUserData(instance.texture);
+
+    switch (target)
+    {
+    case GL_TEXTURE_2D:
+    {
+        if (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ||
+            format == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT ||
+            format == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
+        {
+            int size = w * h;
+            glCompressedTexImage2D(target, level, internalFormat, w, h, 0, size, buf);
+        }
+        else
+        {
+            if (texture.isMultiSample())
+                glTexImage2DMultisample(target, level, internalFormat, w, h, GL_FALSE);
+            else
+                glTexImage2D(target, level, internalFormat, w, h, 0, format, type, buf);
+        }
+    }
+    break;
+    case GL_TEXTURE_2D_ARRAY:
+    case GL_TEXTURE_3D:
+    {
+        if (texture.isMultiSample())
+            glTexImage3DMultisample(target, level, internalFormat, w, h, depth, GL_FALSE);
+        else
+            glTexImage3D(target, level, internalFormat, w, h, depth, 0, format, type, 0);
+    }
+    break;
+    case GL_TEXTURE_CUBE_MAP:
+    {
+        if (texture.isMultiSample())
+        {
+            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, internalFormat, w, h, GL_FALSE);
+            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, internalFormat, w, h, GL_FALSE);
+            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, internalFormat, w, h, GL_FALSE);
+            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, internalFormat, w, h, GL_FALSE);
+            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, internalFormat, w, h, GL_FALSE);
+            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, internalFormat, w, h, GL_FALSE);
+        }
+        else
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, internalFormat, w, h, 0, format, type, buf);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, internalFormat, w, h, 0, format, type, buf);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, internalFormat, w, h, 0, format, type, buf);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, internalFormat, w, h, 0, format, type, buf);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, internalFormat, w, h, 0, format, type, buf);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, internalFormat, w, h, 0, format, type, buf);
+        }
+    }
+    break;
+    default:
+        break;
+    }
 
     // restore old unpack alignment
     glPixelStorei(GL_UNPACK_ALIGNMENT, _unpackAlignment);
@@ -1210,20 +1346,18 @@ OGLRenderer::createTexture(Texture& texture) noexcept
     applyTextureFilter(target, texture.getTexFilter());
     applyTextureAnis(target, texture.getTexAnisotropy());
 
-    texture.setUserData(instance.texture);
-
     if (_ARB_bindless_texture)
     {
         instance.resident = glGetTextureHandleARB(instance.texture);
         glMakeTextureHandleResidentARB(instance.resident);
     }
 
-    if (_textures.size() < instance.texture)
+    if (_textures.size() < instanceID)
     {
-        _renderBuffers.resize(instance.texture * 2);
+        _renderBuffers.resize(instanceID * 2);
     }
 
-    _textures[instance.texture] = instance;
+    _textures[instanceID] = instance;
 
     return true;
 }
@@ -1231,21 +1365,18 @@ OGLRenderer::createTexture(Texture& texture) noexcept
 void
 OGLRenderer::destroyTexture(Texture& texture) noexcept
 {
-    GLuint instance = texture.getUserData();
+    auto instance = texture.getInstanceID();
     if (instance)
     {
-        glDeleteTextures(1, &instance);
-        for (auto& it : _textureUnits)
-        {
-            if (it == instance)
-                it = 0;
-        }
+        auto handle = _textures[instance].texture;
+        if (handle == 0)
+            return;
 
         _textures[instance].texture = 0;
         _textures[instance].resident = 0;
-    }
 
-    texture.setUserData(0);
+        glDeleteTextures(1, &handle);
+    }
 }
 
 void
@@ -1253,35 +1384,35 @@ OGLRenderer::setTexture(const Texture& texture, ShaderUniformPtr uniform) noexce
 {
     assert(uniform);
     assert(uniform->unit < _maxTextureUnits);
-    assert(texture.getUserData() != 0);
 
     auto location = uniform->location;
     auto unit = uniform->unit;
     auto target = OGLTypes::asOGLTarget(texture.getTexDim());
-    auto instance = texture.getUserData();
+    auto instance = texture.getInstanceID();
+    auto handle = _textures[instance].resident;
     auto resident = _textures[instance].resident;
 
 #if !defined(EGLAPI)
     if (_ARB_bindless_texture)
     {
-        glUniformHandleui64ARB(location, _textures[instance].resident);
+        glUniformHandleui64ARB(location, resident);
     }
     else if (_EXT_direct_state_access)
     {
         glUniform1i(location, unit);
-        glBindMultiTextureEXT(GL_TEXTURE0 + uniform->unit, target, instance);
+        glBindMultiTextureEXT(GL_TEXTURE0 + uniform->unit, target, handle);
     }
     else
 #endif
     {
         glUniform1i(location, unit);
 
-        if (_textureUnits[location] != instance)
+        if (_textureUnits[location] != handle)
         {
             glActiveTexture(GL_TEXTURE0 + uniform->unit);
-            glBindTexture(target, instance);
+            glBindTexture(target, handle);
 
-            _textureUnits[location] = instance;
+            _textureUnits[location] = handle;
         }
     }
 }
@@ -1330,49 +1461,6 @@ OGLRenderer::setShaderProgram(ShaderProgramPtr shader) noexcept
         }
 
         _shader = shader;
-    }
-}
-
-void
-OGLRenderer::generateTexture(GLenum target, GLint internalformat, GLenum format, GLuint type, GLsizei w, GLsizei h, GLsizei depth, const char* buf) noexcept
-{
-    GLint level = 0;
-
-    switch (target)
-    {
-    case GL_TEXTURE_2D:
-    {
-        if (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ||
-            format == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT ||
-            format == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
-        {
-            int size = w * h;
-            glCompressedTexImage2D(target, level, internalformat, w, h, 0, size, buf);
-        }
-        else
-        {
-            glTexImage2D(target, level, internalformat, w, h, 0, format, type, buf);
-        }
-    }
-    break;
-    case GL_TEXTURE_2D_ARRAY:
-    case GL_TEXTURE_3D:
-    {
-        glTexImage3D(target, level, internalformat, w, h, depth, 0, format, type, 0);
-    }
-    break;
-    case GL_TEXTURE_CUBE_MAP:
-    {
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, internalformat, w, h, 0, format, type, buf);
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, internalformat, w, h, 0, format, type, buf);
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, internalformat, w, h, 0, format, type, buf);
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, internalformat, w, h, 0, format, type, buf);
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, internalformat, w, h, 0, format, type, buf);
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, internalformat, w, h, 0, format, type, buf);
-    }
-    break;
-    default:
-        break;
     }
 }
 

@@ -184,7 +184,7 @@ MaterialMaker::instancePass(XMLReader& reader) noexcept
                     blendState.blendAlphaOp = RenderState::stringToBlendOperation(reader.getString("value"));
                 else if (name == "blendalphasrc")
                     blendState.blendAlphaSrc = RenderState::stringToBlendFactor(reader.getString("value"));
-                else if (name == "blendalphadest")
+                else if (name == "blendalphadst")
                     blendState.blendAlphaDest = RenderState::stringToBlendFactor(reader.getString("value"));
                 else if (name == "colormask")
                     blendState.colorWriteMask = RenderState::stringToColorMask(reader.getString("value"));

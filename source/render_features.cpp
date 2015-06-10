@@ -123,6 +123,7 @@ RenderFeatures::onActivate() except
             _renderSystem->setup(_renderDevice, _renderWindow, window->getWindowHandle(), window->getWindowWidth(), window->getWindowHeight());
 
             _renderSystem->setTimer(this->getGameServer()->getTimer());
+            _renderSystem->setSwapInterval(SwapInterval::GPU_FREE);
         }
     }
 }

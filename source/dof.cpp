@@ -98,19 +98,19 @@ DepthOfField::computeNear(RenderPipeline* pipeline, RenderTexturePtr source, Ren
 }
 
 void
-DepthOfField::final(RenderPipeline* pipeline, RenderTexturePtr color, RenderTexturePtr texSmall, RenderTexturePtr large, RenderTexturePtr dest)
+DepthOfField::final(RenderPipeline* pipeline, RenderTexturePtr color, RenderTexturePtr texSmall, RenderTexturePtr large)
 {
     _texColor->setTexture(color->getResolveTexture());
     _texSmall->setTexture(texSmall->getResolveTexture());
     _texLarge->setTexture(large->getResolveTexture());
 
-    pipeline->setRenderTexture(dest);
+    pipeline->setRenderTexture(color);
     pipeline->setTechnique(_final);
     pipeline->drawSceneQuad();
 }
 
 void
-DepthOfField::render(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+DepthOfField::render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept
 {
     _texColor->setTexture(source->getResolveTexture());
 
@@ -123,9 +123,7 @@ DepthOfField::render(RenderPipeline* pipeline, RenderTexturePtr source, RenderTe
 
     this->computeNear(pipeline, source, _texBlur, _texTemp);
 
-    this->final(pipeline, source, _texTemp, _texBlur, dest);
-
-    pipeline->copyRenderTexture(dest, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));
+    this->final(pipeline, source, _texTemp, _texBlur);
 }
 
 _NAME_END

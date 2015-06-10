@@ -1052,6 +1052,10 @@
             <state name="vertex" value="mainVS"/>
             <state name="fragment" value="mainPS"/>
             <state name="depthtest" value="false"/>
+
+            <state name="blend" value="true" />
+            <state name="blendsrc" value="one" />
+            <state name="blenddst" value="zero" />
         </pass>
     </technique>
 </effect>

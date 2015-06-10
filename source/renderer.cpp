@@ -160,21 +160,21 @@ Renderer::setRenderCanvas(RenderCanvasPtr canvas) noexcept
 }
 
 void
-Renderer::setRenderTexture(RenderTexturePtr texture) noexcept
+Renderer::setRenderTexture(RenderTexturePtr target) noexcept
 {
-    if (texture)
-        RenderImpl::instance()->setFramebuffer(texture->getFramebuffer());
+    if (target)
+        RenderImpl::instance()->setFramebuffer(target->getFramebuffer());
     else
         RenderImpl::instance()->setFramebuffer(0);
 }
 
 void
-Renderer::setRenderTexture(MultiRenderTexturePtr texture) noexcept
+Renderer::setRenderTexture(MultiRenderTexturePtr target) noexcept
 {
-    if (texture)
-        RenderImpl::instance()->setMultiFramebuffer(texture->getFramebuffer());
+    if (target)
+        RenderImpl::instance()->setMultiRenderTexture(target);
     else
-        RenderImpl::instance()->setMultiFramebuffer(0);
+        RenderImpl::instance()->setMultiRenderTexture(0);
 }
 
 void

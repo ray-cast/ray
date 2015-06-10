@@ -44,6 +44,8 @@ TextureDesc::TextureDesc() noexcept
     , format(PixelFormat::R8G8B8A8)
     , dim(TextureDim::DIM_2D)
     , mipmap(false)
+    , multisample(false)
+    , level(0)
     , texop(TextureOp::OP_ADD)
     , filter(TextureFilter::GPU_NEAREST)
     , wrap(TextureWrap::CLAMP_TO_EDGE)
@@ -127,6 +129,12 @@ Texture::setTexDim(TextureDim map) noexcept
 }
 
 void
+Texture::setLevel(int level) noexcept
+{
+    _setting.level = level;
+}
+
+void
 Texture::setWidth(int w) noexcept
 {
     _setting.size.x = w;
@@ -195,6 +203,12 @@ Texture::getTexAnisotropy() const noexcept
 }
 
 int
+Texture::getLevel() const noexcept
+{
+    return _setting.level;
+}
+
+int
 Texture::getWidth() const noexcept
 {
     return _setting.size.x;
@@ -242,6 +256,12 @@ Texture::isMipmap() const noexcept
     return _setting.mipmap;
 }
 
+bool
+Texture::isMultiSample() const noexcept
+{
+    return _setting.multisample;
+}
+
 void
 Texture::copy(Texture* other) noexcept
 {
@@ -259,6 +279,12 @@ void
 Texture::copy(TexturePtr other) noexcept
 {
     this->copy(other.get());
+}
+
+TexturePtr
+Texture::clone() const noexcept
+{
+    return std::make_shared<Texture>();
 }
 
 _NAME_END

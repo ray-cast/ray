@@ -47,14 +47,14 @@ public:
     DepthOfField() noexcept;
     ~DepthOfField() noexcept;
 
-    void render(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+    void render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept;
 
     void blurh(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
     void blurv(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
 
     void computeNear(RenderPipeline* pipeline, RenderTexturePtr shrunk, RenderTexturePtr blured, RenderTexturePtr dest) noexcept;
 
-    void final(RenderPipeline* pipeline, RenderTexturePtr color, RenderTexturePtr texSmall, RenderTexturePtr large, RenderTexturePtr dest);
+    void final(RenderPipeline* pipeline, RenderTexturePtr color, RenderTexturePtr texSmall, RenderTexturePtr large);
 
 private:
 

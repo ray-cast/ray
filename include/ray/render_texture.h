@@ -41,9 +41,9 @@
 
 _NAME_BEGIN
 
-class EXPORT RenderTexture final : public Reference<RenderTexture>
+class EXPORT RenderTexture final : public Object<RenderTexture>
 {
-    __DeclareSubClass(RenderTexture, Reference<RenderTexture>)
+    __DeclareSubClass(RenderTexture, Object<RenderTexture>)
 public:
     RenderTexture() noexcept;
     ~RenderTexture() noexcept;
@@ -64,6 +64,8 @@ public:
     FramebufferPtr getShareDepthTarget() const noexcept;
     FramebufferPtr getShareStencilTarget() const noexcept;
 
+    RenderTexturePtr clone() const noexcept;
+
 private:
     RenderTexture(RenderTexture&) noexcept = delete;
     RenderTexture& operator=(const RenderTexture&)noexcept = delete;
@@ -75,13 +77,20 @@ private:
     FramebufferPtr _sharedStencilTarget;
 };
 
-class MultiRenderTexture final : public Reference<MultiRenderTexture>
+struct RenderTarget
 {
+    Attachment location;
+    RenderTexturePtr texture;
+};
+
+typedef std::vector<RenderTarget> RenderTextures;
+
+class MultiRenderTexture final : public Object<MultiRenderTexture>
+{
+    __DeclareSubClass(MultiRenderTexture, Object<MultiRenderTexture>)
 public:
     MultiRenderTexture() noexcept;
     ~MultiRenderTexture() noexcept;
-
-    static MultiRenderTexturePtr create() noexcept;
 
     void setup(std::size_t w, std::size_t h) noexcept;
     void close() noexcept;
@@ -89,19 +98,19 @@ public:
     void attach(RenderTexturePtr texture, Attachment location) noexcept;
     void detach(RenderTexturePtr texture) noexcept;
 
-    MultiFramebufferPtr getFramebuffer() const noexcept;
+    void setViewport(const Viewport& view) noexcept;
+    const Viewport& getViewport() const noexcept;
+
+    RenderTextures& getRenderTextures() noexcept;
+    const RenderTextures& getRenderTextures() const noexcept;
+
+    MultiRenderTexturePtr clone() const noexcept;
 
 private:
 
-    MultiFramebufferPtr _renderTarget;
+    Viewport _viewport;
 
-    struct RenderTextures
-    {
-        RenderTexturePtr texture;
-        Attachment location;
-    };
-
-    std::vector<RenderTextures> _textures;
+    RenderTextures _textures;
 };
 
 _NAME_END

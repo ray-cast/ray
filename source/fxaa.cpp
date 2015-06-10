@@ -53,11 +53,11 @@ FXAA::~FXAA() noexcept
 }
 
 void
-FXAA::render(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+FXAA::render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept
 {
     _texelStep->assign(float2(1.0f / source->getWidth(), 1.0f / source->getHeight()));
 
-    pipeline->setRenderTexture(dest);
+    pipeline->setRenderTexture(source);
     pipeline->setTechnique(_fxaaPass);
     pipeline->drawSceneQuad();
 }

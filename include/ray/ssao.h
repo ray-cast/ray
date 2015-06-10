@@ -65,7 +65,7 @@ public:
     void setSetting(const Setting& set) noexcept;
     const Setting& getSetting() const noexcept;
 
-    void render(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+    void render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept;
 
 private:
 
@@ -73,7 +73,7 @@ private:
     void blurHorizontal(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
     void blurVertical(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
     void blurDirection(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest, const int2& direction) noexcept;
-    void shading(RenderPipeline* pipeline, RenderTexturePtr color, RenderTexturePtr ao, RenderTexturePtr dest) noexcept;
+    void shading(RenderPipeline* pipeline, RenderTexturePtr color, RenderTexturePtr ao) noexcept;
 
 private:
 
@@ -108,7 +108,6 @@ private:
     ShaderParamPtr _blurGaussian;
 
     ShaderParamPtr _copyAmbient;
-    ShaderParamPtr _copyColor;
 };
 
 _NAME_END

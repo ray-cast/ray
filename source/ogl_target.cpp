@@ -40,7 +40,6 @@ _NAME_BEGIN
 
 OGLFramebuffer::OGLFramebuffer() noexcept
     : _framebuffer(0)
-    , _rbo(0)
 {
 }
 
@@ -52,7 +51,7 @@ OGLFramebuffer::~OGLFramebuffer() noexcept
 void
 OGLFramebuffer::setup(const FramebufferDesc& desc) noexcept
 {
-    assert(!_framebuffer && !_rbo);
+    assert(!_framebuffer);
 
     glGenFramebuffers(1, &_framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
@@ -153,17 +152,14 @@ OGLFramebuffer::setup(const FramebufferDesc& desc) noexcept
     else
     {
         this->bindTexture(this->getResolveTexture(), GL_COLOR_ATTACHMENT0);
-        /*if (!_sharedDepth && !_sharedStencil)
-        {
-            glGenRenderbuffers(1, &_rbo);
-            glBindRenderbuffer(GL_RENDERBUFFER, _rbo);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, desc.width, desc.height);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _rbo);
-        }*/
     }
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    GLenum  draw[1] = { GL_COLOR_ATTACHMENT0 };
+
+    if (_EXT_direct_state_access)
+        glFramebufferDrawBuffersEXT(_framebuffer, 1, draw);
+    else
+        glDrawBuffers(1, draw);
 }
 
 void
@@ -185,10 +181,20 @@ OGLFramebuffer::close() noexcept
 void
 OGLFramebuffer::bind() noexcept
 {
-    GLenum  draw[1] = { GL_COLOR_ATTACHMENT0 };
-
     glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
-    glDrawBuffers(1, draw);
+
+    auto format = this->getTexFormat();
+    if (format == PixelFormat::SR8G8B8 ||
+        format == PixelFormat::SR8G8B8A8 ||
+        format == PixelFormat::SRGB ||
+        format == PixelFormat::SRGBA)
+    {
+        glEnable(GL_FRAMEBUFFER_SRGB);
+    }
+    else
+    {
+        glDisable(GL_FRAMEBUFFER_SRGB);
+    }
 }
 
 void
@@ -235,107 +241,7 @@ OGLFramebuffer::bindTexture(TexturePtr texture, GLenum attachment) const noexcep
         break;
     }
 #endif
-    case TextureDim::DIM_CUBE:
-    {
     }
-    }
-}
-
-OGLMultiFramebuffer::OGLMultiFramebuffer() noexcept
-    : _framebuffer(0)
-{
-}
-
-OGLMultiFramebuffer::~OGLMultiFramebuffer() noexcept
-{
-    this->close();
-}
-
-void
-OGLMultiFramebuffer::setup(const MultiFramebufferDesc& desc) noexcept
-{
-    assert(!_framebuffer);
-
-    glGenFramebuffers(1, &_framebuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
-
-    _drawbuffers.clear();
-
-    this->setViewport(desc.viewport);
-
-    for (auto& it : desc.mrt)
-    {
-        auto oglTarget = std::dynamic_pointer_cast<OGLFramebuffer>(it);
-        if (!oglTarget)
-            continue;
-
-        TexturePtr texture = oglTarget->getResolveTexture();
-        if (!texture)
-            continue;
-
-        GLenum attachment = OGLTypes::asOGLAttachment(oglTarget->getAttachment());
-
-        auto dim = texture->getTexDim();
-        if (dim == TextureDim::DIM_2D)
-            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture->getUserData(), 0);
-        else if (dim == TextureDim::DIM_2D_ARRAY)
-            glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, texture->getUserData(), 0, 0);
-#if !defined(EGLAPI)
-        else if (dim == TextureDim::DIM_3D)
-            glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_3D, texture->getUserData(), 0, 0);
-#endif
-        else
-            assert(false);
-
-        _drawbuffers.push_back(std::make_pair(it, attachment));
-
-        this->attach(it);
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void
-OGLMultiFramebuffer::close() noexcept
-{
-    if (_framebuffer)
-    {
-        glDeleteFramebuffers(1, &_framebuffer);
-        _framebuffer = 0;
-    }
-}
-
-void
-OGLMultiFramebuffer::bind() noexcept
-{
-    glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
-
-    std::size_t count = 0;
-    GLenum  draw[Attachment::COLOR15];
-
-    for (auto& it : _drawbuffers)
-    {
-        if (it.second != GL_DEPTH_ATTACHMENT &&
-            it.second != GL_DEPTH_STENCIL_ATTACHMENT &&
-            it.second != GL_STENCIL_ATTACHMENT)
-        {
-            draw[count++] = it.second;
-        }
-    }
-
-    glDrawBuffers(count, draw);
-}
-
-void
-OGLMultiFramebuffer::unbind() noexcept
-{
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-const OGLMultiFramebuffer::DrawBuffers&
-OGLMultiFramebuffer::getDrawBuffers() const noexcept
-{
-    return _drawbuffers;
 }
 
 _NAME_END

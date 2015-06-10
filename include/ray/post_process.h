@@ -47,7 +47,19 @@ public:
     RenderPostProcess() noexcept;
     ~RenderPostProcess() noexcept;
 
-    virtual void render(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr swap) noexcept = 0;
+    void setActive(bool active) except;
+    bool getActive() const except;
+
+    virtual void render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept = 0;
+
+protected:
+
+    void onActivate() except;
+    void onDeactivate() except;
+
+private:
+
+    bool _active;
 };
 
 _NAME_END

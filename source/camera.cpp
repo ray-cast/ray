@@ -94,10 +94,10 @@ Camera::setup(std::size_t width, std::size_t height) noexcept
         _deferredDepthMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::DEPTH24_STENCIL8);
 
         _deferredGraphicMap = RenderTexture::create();
-        _deferredGraphicMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
+        _deferredGraphicMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::SR8G8B8A8, ClearFlags::CLEAR_COLOR);
 
         _deferredNormalMap = RenderTexture::create();
-        _deferredNormalMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
+        _deferredNormalMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F, ClearFlags::CLEAR_COLOR);
 
         _deferredLightMap = RenderTexture::create();
         _deferredLightMap->setShareStencilTarget(_deferredDepthMap);
@@ -111,17 +111,17 @@ Camera::setup(std::size_t width, std::size_t height) noexcept
 
         _renderTexture = std::make_shared<RenderTexture>();
         _renderTexture->setShareStencilTarget(_deferredDepthMap);
-        _renderTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
+        _renderTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::SR8G8B8A8);
 
         _swapTexture = std::make_shared<RenderTexture>();
         _swapTexture->setShareStencilTarget(_deferredDepthMap);
-        _swapTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
+        _swapTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::SR8G8B8A8);
 
         if (_cameraRender == CR_RENDER_TO_CUBEMAP)
         {
             _cubeTexture = std::make_shared<RenderTexture>();
             _cubeTexture->setShareStencilTarget(_deferredDepthMap);
-            _cubeTexture->setup(512, 512, TextureDim::DIM_CUBE, PixelFormat::R16G16B16A16F);
+            _cubeTexture->setup(512, 512, TextureDim::DIM_CUBE, PixelFormat::SR8G8B8A8);
         }
     }
     else
@@ -345,10 +345,10 @@ Camera::makePerspective(float aperture, float ratio, float znear, float zfar) no
     _projLength.x = _project.a1;
     _projLength.y = _project.b2;
 
-    _projConstant.x = -2.0 / _projLength.x;
-    _projConstant.y = -2.0 / _projLength.y;
-    _projConstant.z = 1.0 / _projLength.x;
-    _projConstant.w = 1.0 / _projLength.y;
+    _projConstant.x = -2.0 / (_projLength.x);
+    _projConstant.y = -2.0 / (_projLength.y);
+    _projConstant.z = (1.0 - _project.a3) / _projLength.x;
+    _projConstant.w = (1.0 + _project.b3) / _projLength.y;
 
     _clipConstant.x = (2.0 * _zNear * _zFar);
     _clipConstant.y = _zFar - _zNear;

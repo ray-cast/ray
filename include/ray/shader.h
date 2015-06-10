@@ -205,13 +205,21 @@ private:
     std::string _path;
 };
 
-class EXPORT ShaderConstantBuffer : public Reference<ShaderConstantBuffer>
+class EXPORT ShaderConstantBuffer : public Object<ShaderConstantBuffer>
 {
 public:
+    ShaderConstantBuffer() noexcept;
+    ~ShaderConstantBuffer() noexcept;
 
     void addParamArg(ShaderParamArg& arg) noexcept;
     void removeParamArg(ShaderParamArg& arg) noexcept;
     const ShaderParamArgs& getShaderParamArgs() const noexcept;
+
+    ShaderConstantBufferPtr clone() const noexcept;
+
+private:
+    ShaderConstantBuffer(const ShaderConstantBuffer&) = delete;
+    const ShaderConstantBuffer&operator=(const ShaderConstantBuffer&) = delete;
 
 private:
     typedef std::vector<ShaderParamArg> ShaderParamArgs;

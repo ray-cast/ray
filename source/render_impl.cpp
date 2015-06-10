@@ -242,22 +242,22 @@ RenderImpl::readFramebuffer(FramebufferPtr target, PixelFormat pfd, std::size_t 
     _renderDevice->readFramebuffer(target, pfd, w, h, data);
 }
 
-MultiFramebufferPtr
-RenderImpl::createMultiFramebuffer(const MultiFramebufferDesc& desc) noexcept
+bool
+RenderImpl::createMultiRenderTexture(MultiRenderTexture& desc) noexcept
 {
-    return _renderDevice->createMultiFramebuffer(desc);
+    return _renderDevice->createMultiRenderTexture(desc);
 }
 
 void
-RenderImpl::destroyMultiFramebuffer(MultiFramebufferPtr target) noexcept
+RenderImpl::destroyMultiRenderTexture(MultiRenderTexture& target) noexcept
 {
-    _renderDevice->destroyMultiFramebuffer(target);
+    _renderDevice->destroyMultiRenderTexture(target);
 }
 
 void
-RenderImpl::setMultiFramebuffer(MultiFramebufferPtr mrt) noexcept
+RenderImpl::setMultiRenderTexture(MultiRenderTexturePtr mrt) noexcept
 {
-    _renderDevice->setMultiFramebuffer(mrt);
+    _renderDevice->setMultiRenderTexture(mrt);
 }
 
 bool

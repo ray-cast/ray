@@ -47,12 +47,15 @@ public:
     SSR() noexcept;
     ~SSR() noexcept;
 
-    void render(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+    void render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept;
 
 private:
 
     MaterialPtr _ssr;
     MaterialPassPtr _ssrPass;
+
+    ShaderParamPtr _projInfo;
+    ShaderParamPtr _clipInfo;
 };
 
 _NAME_END

@@ -116,7 +116,7 @@
                 float specular = fract(NS.a) * 10;
                 if (specular == 0.0)
                 {
-                    glsl_FragColor0 = color;
+                    glsl_FragColor0 = vec4(0);
                     return;
                 }
 
@@ -139,12 +139,12 @@
 
                         float fresnel = specular + (1.0 - specular) * pow(1.0 - dot(I, NS.rgb), 5.0);
 
-                        glsl_FragColor0 = mix(color, reflectionColor, fresnel);
+                        glsl_FragColor0 = vec4(reflectionColor.rgb, fresnel);
                         return;
                     }
                 }
 
-                glsl_FragColor0 = color;
+                glsl_FragColor0 = vec4(0);
             }
         ]]>
     </shader>
@@ -153,6 +153,8 @@
             <state name="vertex" value="mainVS"/>
             <state name="fragment" value="mainPS"/>
             <state name="depthtest" value="false"/>
+
+            <state name="blend" value="true"/>
         </pass>
     </technique>
 </effect>

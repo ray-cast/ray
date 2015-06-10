@@ -39,10 +39,41 @@
 _NAME_BEGIN
 
 RenderPostProcess::RenderPostProcess() noexcept
+    :_active(false)
 {
 }
 
 RenderPostProcess::~RenderPostProcess() noexcept
+{
+}
+
+void
+RenderPostProcess::setActive(bool active) except
+{
+    if (_active != active)
+    {
+        if (active)
+            this->onActivate();
+        else
+            this->onDeactivate();
+
+        _active = active;
+    }
+}
+
+bool
+RenderPostProcess::getActive() const except
+{
+    return _active;
+}
+
+void
+RenderPostProcess::onActivate() except
+{
+}
+
+void
+RenderPostProcess::onDeactivate() except
 {
 }
 

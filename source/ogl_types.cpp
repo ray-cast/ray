@@ -244,11 +244,11 @@ OGLTypes::asOGLFormat(PixelFormat format) noexcept
     if (format == PixelFormat::R8G8B8A8 || format == PixelFormat::R4G4B4A4F || format == PixelFormat::R16G16B16A16F || format == PixelFormat::R32G32B32A32F)
         return GL_RGBA;
 
-    if (format == PixelFormat::SR8G8B8F)
-        return GL_SRGB;
+    if (format == PixelFormat::SR8G8B8 || format == PixelFormat::SRGB)
+        return GL_RGB;
 
-    if (format == PixelFormat::SR8G8B8A8F)
-        return GL_SRGB_ALPHA;
+    if (format == PixelFormat::SR8G8B8A8 || format == PixelFormat::SRGBA)
+        return GL_RGBA;
 
     if (format == PixelFormat::R8 || format == PixelFormat::R16F || format == PixelFormat::R32F)
         return GL_RED;
@@ -299,11 +299,11 @@ OGLTypes::asOGLType(PixelFormat format) noexcept
     if (format == PixelFormat::R8G8B8 || format == PixelFormat::R8G8B8A8)
         return GL_UNSIGNED_BYTE;
 
-    if (format == PixelFormat::SR8G8B8F)
-        return GL_FLOAT;
+    if (format == PixelFormat::SR8G8B8 || format == PixelFormat::SRGB)
+        return GL_UNSIGNED_BYTE;
 
-    if (format == PixelFormat::SR8G8B8A8F)
-        return GL_FLOAT;
+    if (format == PixelFormat::SR8G8B8A8 || format == PixelFormat::SRGBA)
+        return GL_UNSIGNED_BYTE;
 
     if (format == PixelFormat::R8)
         return GL_UNSIGNED_BYTE;
@@ -339,10 +339,6 @@ OGLTypes::asOGLInternalformat(PixelFormat format) noexcept
         return GL_LUMINANCE;
     case PixelFormat::LUMINANCE_ALPHA:
         return GL_LUMINANCE_ALPHA;
-    case PixelFormat::SR8G8B8F:
-        return GL_SRGB8;
-    case PixelFormat::SR8G8B8A8F:
-        return GL_SRGB8_ALPHA8;
     case PixelFormat::R8G8B8:
         return GL_RGB;
     case PixelFormat::R8G8B8A8:
@@ -361,6 +357,14 @@ OGLTypes::asOGLInternalformat(PixelFormat format) noexcept
         return GL_RGBA16F;
     case PixelFormat::R32G32B32A32F:
         return GL_RGBA32F;
+    case PixelFormat::SR8G8B8:
+        return GL_SRGB8;
+    case PixelFormat::SR8G8B8A8:
+        return GL_SRGB8_ALPHA8;
+    case PixelFormat::SRGB:
+        return GL_SRGB;
+    case PixelFormat::SRGBA:
+        return GL_SRGB_ALPHA;
     case PixelFormat::R8:
         return GL_RED;
     case PixelFormat::R16F:

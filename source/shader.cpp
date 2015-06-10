@@ -528,6 +528,14 @@ ShaderProgram::getActiveSubroutines() noexcept
     return _activeSubroutines;
 }
 
+ShaderConstantBuffer::ShaderConstantBuffer() noexcept
+{
+}
+
+ShaderConstantBuffer::~ShaderConstantBuffer() noexcept
+{
+}
+
 void
 ShaderConstantBuffer::addParamArg(ShaderParamArg& arg) noexcept
 {
@@ -543,6 +551,12 @@ const ShaderParamArgs&
 ShaderConstantBuffer::getShaderParamArgs() const noexcept
 {
     return _uniforms;
+}
+
+ShaderConstantBufferPtr
+ShaderConstantBuffer::clone() const noexcept
+{
+    return std::make_shared<ShaderConstantBuffer>();
 }
 
 ShaderObject::ShaderObject() noexcept

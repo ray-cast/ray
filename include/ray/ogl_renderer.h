@@ -53,6 +53,7 @@ public:
     virtual void close() noexcept;
 
     virtual void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
+    virtual void clear(std::size_t i, ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
 
     virtual void present(RenderCanvasPtr canvas) noexcept;
 
@@ -90,9 +91,9 @@ public:
     virtual void copyFramebuffer(FramebufferPtr srcTarget, const Viewport& src, FramebufferPtr destTarget, const Viewport& dest) noexcept;
     virtual void readFramebuffer(FramebufferPtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
 
-    virtual MultiFramebufferPtr createMultiFramebuffer(const MultiFramebufferDesc& desc) noexcept;
-    virtual void destroyMultiFramebuffer(MultiFramebufferPtr target) noexcept;
-    virtual void setMultiFramebuffer(MultiFramebufferPtr target) noexcept;
+    virtual bool createMultiRenderTexture(MultiRenderTexture& target) noexcept;
+    virtual void destroyMultiRenderTexture(MultiRenderTexture& target) noexcept;
+    virtual void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept;
 
     virtual bool createTexture(Texture& texture) noexcept;
     virtual void destroyTexture(Texture& texture) noexcept;
@@ -119,8 +120,6 @@ private:
     static void applyTextureFilter(GLenum target, TextureFilter filter) noexcept;
     static void applyTextureAnis(GLenum target, Anisotropy anis) noexcept;
 
-    static void generateTexture(GLenum target, GLint internalformat, GLenum format, GLuint type, GLsizei w, GLsizei h, GLsizei depth, const char* buf) noexcept;
-
 private:
     OGLRenderer(const OGLRenderer&) noexcept = delete;
     OGLRenderer& operator=(const OGLRenderer&) noexcept = delete;
@@ -140,9 +139,11 @@ private:
     SwapInterval _interval;
 
     RenderCanvasPtr _renderCanvas;
-    FramebufferPtr _renderTarget;
-    MultiFramebufferPtr _multiFramebuffer;
     RenderStatePtr _state;
+
+    FramebufferPtr _renderTarget;
+    MultiRenderTexturePtr _multiFramebuffer;
+    std::vector<OGLRenderTexture> _framebuffers;
 
     ShaderProgramPtr _shader;
     std::vector<OGLConstantBuffer> _constantBuffers;

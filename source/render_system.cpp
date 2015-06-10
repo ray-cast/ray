@@ -38,6 +38,11 @@
 #include <ray/material_maker.h>
 #include <ray/forward_shading.h>
 #include <ray/deferred_lighting.h>
+#include <ray/ssao.h>
+#include <ray/ssr.h>
+#include <ray/dof.h>
+#include <ray/hdr.h>
+#include <ray/fxaa.h>
 
 _NAME_BEGIN
 
@@ -45,6 +50,11 @@ __ImplementClass(RenderSystem)
 
 RenderSystem::RenderSystem() noexcept
     : _globalColor(1.0f, 1.0f, 1.0f, 0.5f)
+    , _enableSSAO(true)
+    , _enableSSR(false)
+    , _enableDOF(false)
+    , _enableHDR(true)
+    , _enableFXAA(true)
 {
 }
 
@@ -67,9 +77,6 @@ RenderSystem::setup(RenderDevicePtr device, RenderWindowPtr window, WindHandle w
 
     Material::setMaterialSemantic(std::make_shared<MaterialSemantic>());
 
-    _renderPipeline = std::make_unique<DeferredLighting>();
-    _renderPipeline->setup(width, height);
-
     _lineMaterial = MaterialMaker("sys:fx\\lines.glsl");
 
     VertexComponents components;
@@ -85,6 +92,20 @@ RenderSystem::setup(RenderDevicePtr device, RenderWindowPtr window, WindHandle w
 
     float ratio = (float)width / height;
     _orthoCamera.makeOrtho(-ratio, ratio, -1, 1, 0, 1000);
+
+    _renderPipeline = std::make_unique<DeferredLighting>();
+    _renderPipeline->setup(width, height);
+
+    if (_enableSSAO)
+        _renderPipeline->addPostProcess(std::make_shared<SSAO>());
+    if (_enableSSR)
+        _renderPipeline->addPostProcess(std::make_shared<SSR>());
+    if (_enableDOF)
+        _renderPipeline->addPostProcess(std::make_shared<DepthOfField>());
+    if (_enableHDR)
+        _renderPipeline->addPostProcess(std::make_shared<HDR>());
+    if (_enableFXAA)
+        _renderPipeline->addPostProcess(std::make_shared<FXAA>());
 
     return true;
 }

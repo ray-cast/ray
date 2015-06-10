@@ -61,31 +61,6 @@ private:
 private:
 
     GLuint _framebuffer;
-    GLuint _rbo;
-};
-
-class OGLMultiFramebuffer final : public MultiFramebuffer
-{
-public:
-    typedef std::vector<std::pair<FramebufferPtr, GLenum>> DrawBuffers;
-
-public:
-    OGLMultiFramebuffer() noexcept;
-    ~OGLMultiFramebuffer() noexcept;
-
-    void setup(const MultiFramebufferDesc& desc) noexcept;
-    void close() noexcept;
-
-    void bind() noexcept;
-    void unbind() noexcept;
-
-    const DrawBuffers& getDrawBuffers() const noexcept;
-
-private:
-
-    GLuint _framebuffer;
-
-    DrawBuffers _drawbuffers;
 };
 
 _NAME_END

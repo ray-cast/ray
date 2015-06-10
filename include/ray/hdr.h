@@ -47,7 +47,7 @@ public:
     HDR() except;
     ~HDR() noexcept;
 
-    void render(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+    void render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept;
 
 private:
 
@@ -61,7 +61,7 @@ private:
     void measureLuminance(RenderPipeline* pipeline, RenderTexturePtr source);
 
     void generateBloom(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest);
-    void generateToneMapping(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr bloom, RenderTexturePtr dest);
+    void generateToneMapping(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr bloom);
 
 private:
 
@@ -104,7 +104,6 @@ private:
     ShaderParamPtr _toneVignetteEnable;
     ShaderParamPtr _toneVignetteInner;
     ShaderParamPtr _toneVignetteOuter;
-    ShaderParamPtr _toneGamma;
 
     std::vector<float> _data;
 };

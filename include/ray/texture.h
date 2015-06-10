@@ -80,8 +80,10 @@ enum PixelFormat
     R8G8B8A8F,
     R16G16B16A16F,
     R32G32B32A32F,
-    SR8G8B8F,
-    SR8G8B8A8F,
+    SRGB,
+    SRGBA,
+    SR8G8B8,
+    SR8G8B8A8,
     R8,
     R16F,
     R32F,
@@ -122,8 +124,10 @@ enum TextureDim
 struct EXPORT TextureDesc
 {
     bool mipmap;
+    bool multisample;
 
     int3 size;
+    int level;
 
     PixelFormat format;
     TextureDim dim;
@@ -137,7 +141,7 @@ struct EXPORT TextureDesc
     TextureDesc() noexcept;
 };
 
-class EXPORT Texture final : public Reference<Texture>
+class EXPORT Texture final : public Object<Texture>
 {
 public:
     Texture() noexcept;
@@ -153,6 +157,7 @@ public:
     void setTexWrap(TextureWrap wrap) noexcept;
     void setTexFilter(TextureFilter filter) noexcept;
     void setTexDim(TextureDim mapping) noexcept;
+    void setLevel(int level) noexcept;
     void setAnisotropy(Anisotropy anis) noexcept;
     void setWidth(int w) noexcept;
     void setHeight(int h) noexcept;
@@ -172,16 +177,21 @@ public:
     int getDepth()   const noexcept;
     const int3& getSize()  const noexcept;
 
+    int getLevel() const noexcept;
+
     void* getStream() const noexcept;
 
     void setTextureDesc(const TextureDesc& desc) noexcept;
     const TextureDesc& getTextureDesc() const noexcept;
 
     bool isMipmap() const noexcept;
+    bool isMultiSample() const noexcept;
     bool isCompressed() const noexcept;
 
     void copy(Texture* other) noexcept;
     void copy(TexturePtr other) noexcept;
+
+    TexturePtr clone() const noexcept;
 
 private:
     Texture(const Texture&) noexcept = delete;

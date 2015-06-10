@@ -507,6 +507,12 @@ RenderBuffer::getIndexBuffer() const noexcept
     return _bufferIndex;
 }
 
+RenderBufferPtr
+RenderBuffer::clone() const noexcept
+{
+    return std::make_shared<RenderBuffer>();
+}
+
 std::size_t
 RenderBuffer::getNumVertices() const noexcept
 {

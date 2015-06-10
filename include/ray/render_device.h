@@ -38,7 +38,7 @@
 #define _H_RENDER_DEVICE_H_
 
 #include <ray/render_canvas.h>
-#include <ray/framebuffer.h>
+#include <ray/render_texture.h>
 #include <ray/render_state.h>
 #include <ray/render_buffer.h>
 #include <ray/shader.h>
@@ -92,9 +92,9 @@ public:
     virtual void copyFramebuffer(FramebufferPtr srcTarget, const Viewport& src, FramebufferPtr destTarget, const Viewport& dest) noexcept = 0;
     virtual void readFramebuffer(FramebufferPtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept = 0;
 
-    virtual MultiFramebufferPtr createMultiFramebuffer(const MultiFramebufferDesc& desc) noexcept = 0;
-    virtual void destroyMultiFramebuffer(MultiFramebufferPtr target) noexcept = 0;
-    virtual void setMultiFramebuffer(MultiFramebufferPtr target) noexcept = 0;
+    virtual bool createMultiRenderTexture(MultiRenderTexture& desc) noexcept = 0;
+    virtual void destroyMultiRenderTexture(MultiRenderTexture& target) noexcept = 0;
+    virtual void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept = 0;
 
     virtual bool createTexture(Texture& texture) noexcept = 0;
     virtual void destroyTexture(Texture& texture) noexcept = 0;

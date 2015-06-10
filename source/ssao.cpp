@@ -72,11 +72,10 @@ SSAO::SSAO() noexcept
     _blurGaussian = _ambientOcclusion->getParameter("blurGaussian");
 
     _copyAmbient = _ambientOcclusion->getParameter("texAO");
-    _copyColor = _ambientOcclusion->getParameter("texColor");
 
     Setting setting;
     setting.radius = 1;
-    setting.bias = 0.07;
+    setting.bias = 0.12;
     setting.epsilon = 0.01;
     setting.intensity = 4.0;
     setting.numSample = 10;
@@ -158,18 +157,17 @@ SSAO::blurDirection(RenderPipeline* pipeline, RenderTexturePtr source, RenderTex
 }
 
 void
-SSAO::shading(RenderPipeline* pipeline, RenderTexturePtr color, RenderTexturePtr ao, RenderTexturePtr dest) noexcept
+SSAO::shading(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr ao) noexcept
 {
-    _copyColor->setTexture(color->getResolveTexture());
     _copyAmbient->setTexture(ao->getResolveTexture());
 
-    pipeline->setRenderTexture(dest);
+    pipeline->setRenderTexture(source);
     pipeline->setTechnique(_ambientOcclusionCopyPass);
     pipeline->drawSceneQuad();
 }
 
 void
-SSAO::render(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+SSAO::render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept
 {
     this->computeRawAO(pipeline, _texAmbient);
 
@@ -179,7 +177,7 @@ SSAO::render(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr
         this->blurVertical(pipeline, _texBlur, _texAmbient);
     }
 
-    this->shading(pipeline, source, _texAmbient, dest);
+    this->shading(pipeline, source, _texAmbient);
 
     //pipeline->copyRenderTexture(_texAmbient, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));
     //pipeline->copyRenderTexture(dest, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));

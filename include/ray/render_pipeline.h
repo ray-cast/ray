@@ -37,9 +37,8 @@
 #ifndef _H_RENDER_PIPELINE_H_
 #define _H_RENDER_PIPELINE_H_
 
-#include <ray/render_object.h>
-#include <ray/render_buffer.h>
 #include <ray/renderer.h>
+#include <ray/render_object.h>
 
 _NAME_BEGIN
 
@@ -83,7 +82,10 @@ public:
     void readRenderTexture(RenderTexturePtr texture, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
     void copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept;
 
-    void onPostProcess(RenderTexturePtr src) noexcept;
+    void addPostProcess(RenderPostProcessPtr postprocess) noexcept;
+    void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
+
+    void postprocess(RenderTexturePtr src) noexcept;
 
 private:
 
@@ -91,19 +93,7 @@ private:
     RenderBufferPtr _renderSphere;
     RenderBufferPtr _renderCone;
 
-    RenderTexturePtr _swapMap;
-
-    bool _enableSSAO;
-    bool _enableSSR;
-    bool _enableDOF;
-    bool _enableHDR;
-    bool _enableFXAA;
-
-    RenderPostProcessPtr _ssao;
-    RenderPostProcessPtr _ssr;
-    RenderPostProcessPtr _dof;
-    RenderPostProcessPtr _hdr;
-    RenderPostProcessPtr _fxaa;
+    std::vector<RenderPostProcessPtr> _postprocessors;
 
 public:
     RendererPtr renderer;

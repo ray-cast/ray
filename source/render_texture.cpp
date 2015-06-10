@@ -39,7 +39,8 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(RenderTexture, Reference<RenderTexture>)
+__ImplementSubClass(RenderTexture, Object<RenderTexture>)
+__ImplementSubClass(MultiRenderTexture, Object<MultiRenderTexture>)
 
 RenderTexture::RenderTexture() noexcept
 {
@@ -134,14 +135,13 @@ RenderTexture::getShareStencilTarget() const noexcept
     return _sharedStencilTarget;
 }
 
-MultiRenderTexturePtr
-MultiRenderTexture::create() noexcept
+RenderTexturePtr
+RenderTexture::clone() const noexcept
 {
-    return std::make_shared<MultiRenderTexture>();
+    return std::make_shared<RenderTexture>();
 }
 
 MultiRenderTexture::MultiRenderTexture() noexcept
-    : _renderTarget(nullptr)
 {
 }
 
@@ -153,39 +153,26 @@ MultiRenderTexture::~MultiRenderTexture() noexcept
 void
 MultiRenderTexture::setup(std::size_t w, std::size_t h) noexcept
 {
-    if (_textures.empty())
-        return;
-
-    MultiFramebufferDesc desc;
+    assert(!_textures.empty());
 
     for (auto& it : _textures)
     {
-        if (it.texture->getWidth() == w &&
-            it.texture->getHeight() == h)
-        {
-            it.texture->getFramebuffer()->setAttachment(it.location);
-            desc.mrt.push_back(it.texture->getFramebuffer());
-        }
-        else
+        if (it.texture->getWidth() != w ||
+            it.texture->getHeight() != h)
         {
             assert(false);
         }
     }
 
-    desc.viewport = Viewport(0, 0, w, h);
+    this->setViewport(Viewport(0, 0, w, h));
 
-    _renderTarget = RenderImpl::instance()->createMultiFramebuffer(desc);
+    RenderImpl::instance()->createMultiRenderTexture(*this);
 }
 
 void
 MultiRenderTexture::close() noexcept
 {
-    if (_renderTarget)
-    {
-        RenderImpl::instance()->destroyMultiFramebuffer(_renderTarget);
-        _renderTarget.reset();
-        _renderTarget = nullptr;
-    }
+    RenderImpl::instance()->createMultiRenderTexture(*this);
 }
 
 void
@@ -202,7 +189,7 @@ MultiRenderTexture::attach(RenderTexturePtr texture, Attachment location) noexce
 
     if (it == _textures.end())
     {
-        RenderTextures tex;
+        RenderTarget tex;
         tex.texture = texture;
         tex.location = location;
 
@@ -228,10 +215,34 @@ MultiRenderTexture::detach(RenderTexturePtr texture) noexcept
     }
 }
 
-MultiFramebufferPtr
-MultiRenderTexture::getFramebuffer() const noexcept
+void
+MultiRenderTexture::setViewport(const Viewport& view) noexcept
 {
-    return _renderTarget;
+    _viewport = view;
+}
+
+const Viewport&
+MultiRenderTexture::getViewport() const noexcept
+{
+    return _viewport;
+}
+
+RenderTextures&
+MultiRenderTexture::getRenderTextures() noexcept
+{
+    return _textures;
+}
+
+const RenderTextures&
+MultiRenderTexture::getRenderTextures() const noexcept
+{
+    return _textures;
+}
+
+MultiRenderTexturePtr
+MultiRenderTexture::clone() const noexcept
+{
+    return std::make_shared<MultiRenderTexture>();
 }
 
 _NAME_END

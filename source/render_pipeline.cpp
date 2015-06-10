@@ -35,12 +35,9 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_pipeline.h>
+#include <ray/render_buffer.h>
+#include <ray/post_process.h>
 #include <ray/model.h>
-#include <ray/ssao.h>
-#include <ray/ssr.h>
-#include <ray/dof.h>
-#include <ray/hdr.h>
-#include <ray/fxaa.h>
 
 _NAME_BEGIN
 
@@ -67,11 +64,6 @@ RenderDataManager::clear() noexcept
 }
 
 RenderPipeline::RenderPipeline() noexcept
-    : _enableSSAO(true)
-    , _enableSSR(false)
-    , _enableDOF(false)
-    , _enableHDR(true)
-    , _enableFXAA(true)
 {
 }
 
@@ -98,42 +90,32 @@ RenderPipeline::setup(std::size_t width, std::size_t height) except
 
     _renderCone = std::make_shared<RenderBuffer>();
     _renderCone->setup(mesh);
-
-    _swapMap = RenderTexture::create();
-    _swapMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
-
-    _ssao = std::make_shared<SSAO>();
-    _ssr = std::make_shared<SSR>();
-    //_dof = std::make_shared<DepthOfField>();
-    _hdr = std::make_shared<HDR>();
-    _fxaa = std::make_shared<FXAA>();
 }
 
 void
 RenderPipeline::close() noexcept
 {
-    if (_swapMap)
-    {
-        _swapMap.reset();
-        _swapMap = nullptr;
-    }
-
     if (_renderSceneQuad)
     {
         _renderSceneQuad.reset();
         _renderSceneQuad = nullptr;
     }
 
-    if (_ssao)
+    if (_renderSphere)
     {
-        _ssao.reset();
-        _ssao = nullptr;
+        _renderSphere.reset();
+        _renderSphere = nullptr;
     }
 
-    if (_ssr)
+    if (_renderCone)
     {
-        _ssr.reset();
-        _ssr = nullptr;
+        _renderCone.reset();
+        _renderCone = nullptr;
+    }
+
+    for (auto& it : _postprocessors)
+    {
+        it->setActive(false);
     }
 }
 
@@ -219,39 +201,35 @@ RenderPipeline::copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& sr
 }
 
 void
-RenderPipeline::onPostProcess(RenderTexturePtr src) noexcept
+RenderPipeline::addPostProcess(RenderPostProcessPtr postprocess) noexcept
 {
-    Viewport v1(0, 0, _swapMap->getWidth(), _swapMap->getHeight());
-    Viewport v2(0, 0, src->getWidth(), src->getHeight());
-
-    if (_enableSSAO)
+    auto it = std::find(_postprocessors.begin(), _postprocessors.end(), postprocess);
+    if (it == _postprocessors.end())
     {
-        _ssao->render(this, src, _swapMap);
-        this->copyRenderTexture(_swapMap, v1, src, v2);
+        postprocess->setActive(true);
+
+        _postprocessors.push_back(postprocess);
     }
+}
 
-    if (_enableSSR)
+void
+RenderPipeline::removePostProcess(RenderPostProcessPtr postprocess) noexcept
+{
+    auto it = std::find(_postprocessors.begin(), _postprocessors.end(), postprocess);
+    if (it != _postprocessors.end())
     {
-        _ssr->render(this, src, _swapMap);
-        this->copyRenderTexture(_swapMap, v1, src, v2);
+        postprocess->setActive(false);
+
+        _postprocessors.erase(it);
     }
+}
 
-    if (_enableDOF)
+void
+RenderPipeline::postprocess(RenderTexturePtr src) noexcept
+{
+    for (auto& it : _postprocessors)
     {
-        _dof->render(this, src, _swapMap);
-        this->copyRenderTexture(_swapMap, v1, src, v2);
-    }
-
-    if (_enableHDR)
-    {
-        _hdr->render(this, src, _swapMap);
-        this->copyRenderTexture(_swapMap, v1, src, v2);
-    }
-
-    if (_enableFXAA)
-    {
-        _fxaa->render(this, src, _swapMap);
-        this->copyRenderTexture(_swapMap, v1, src, v2);
+        it->render(this, src);
     }
 }
 

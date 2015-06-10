@@ -249,7 +249,7 @@ private:
     VertexStreams _indexStreams;
 };
 
-class EXPORT RenderBuffer : public Reference<RenderBuffer>
+class EXPORT RenderBuffer : public Object<RenderBuffer>
 {
 public:
     RenderBuffer() noexcept;
@@ -266,6 +266,8 @@ public:
 
     const VertexBufferDataPtr getVertexBuffer() const noexcept;
     const IndexBufferDataPtr getIndexBuffer() const noexcept;
+
+    RenderBufferPtr clone() const noexcept;
 
 private:
     RenderBuffer(const RenderBuffer& copy) noexcept = delete;

@@ -190,42 +190,6 @@ protected:
     FramebufferPtr _sharedStencil;
 };
 
-struct MultiFramebufferDesc
-{
-    Viewport viewport;
-
-    std::vector<FramebufferPtr> mrt;
-};
-
-class MultiFramebuffer
-{
-public:
-    MultiFramebuffer() noexcept;
-    virtual ~MultiFramebuffer() noexcept;
-
-    void setViewport(const Viewport& view) noexcept;
-    const Viewport& getViewport() const noexcept;
-
-    void clear() noexcept;
-
-    void attach(FramebufferPtr rt) noexcept;
-    void detach(FramebufferPtr rt) noexcept;
-
-    FramebufferPtr getFramebuffer(Attachment Attachment) const noexcept;
-    Framebuffers getFramebuffers() noexcept;
-
-private:
-
-    MultiFramebuffer(const MultiFramebuffer&) noexcept = delete;
-    MultiFramebuffer& operator=(const MultiFramebuffer&) noexcept = delete;
-
-private:
-
-    Viewport _viewport;
-
-    std::vector<FramebufferPtr> _mrt;
-};
-
 _NAME_END
 
 #endif

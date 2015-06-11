@@ -100,12 +100,13 @@ public:
     void setTexWrap(TextureWrap wrap) noexcept;
     void setTexOp(TextureOp op) noexcept;
     void setTexDim(TextureDim map) noexcept;
+    void setMultiSample(bool multisample) noexcept;
 
     TextureOp     getTexOp()   const noexcept;
-    PixelFormat getTexFormat()  const noexcept;
     TextureFilter getTexFilter() const noexcept;
     TextureWrap   getTexWrap() const noexcept;
     TextureDim    getTexDim() const noexcept;
+    PixelFormat getTexFormat()  const noexcept;
 
     void setWidth(std::size_t w) noexcept;
     void setHeight(std::size_t h) noexcept;
@@ -130,6 +131,7 @@ public:
     const Viewport& getViewport() const noexcept;
 
     bool isMipmap() const noexcept;
+    bool isMultiSample() const noexcept;
 
     TexturePtr getResolveTexture() const noexcept;
     TexturePtr getResolveDepthTexture() const noexcept;
@@ -160,6 +162,7 @@ private:
     Viewport _viewport;
 
     bool _isMipmap;
+    bool _isMultiSample;
 
     TextureOp     _resolveTexOp;
     PixelFormat   _resolveFormat;

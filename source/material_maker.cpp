@@ -38,6 +38,7 @@
 #include <ray/render_impl.h>
 #include <ray/image.h>
 #include <ray/except.h>
+#include <ray/mstream.h>
 #include <ray/ioserver.h>
 
 _NAME_BEGIN
@@ -77,19 +78,25 @@ MaterialMaker::~MaterialMaker() noexcept
 }
 
 RenderStatePtr
-MaterialMaker::instanceState(XMLReader& reader) noexcept
+MaterialMaker::instanceState(XMLReader& reader) except
 {
     auto state = std::make_shared<RenderState>();
     return state;
 }
 
 ShaderPtr
-MaterialMaker::instanceShader(XMLReader& reader) noexcept
+MaterialMaker::instanceShader(XMLReader& reader) except
 {
     auto shader = std::make_shared<Shader>();
 
     std::string type = reader.getString("type");
     std::string text = reader.getText();
+
+    if (type.empty())
+        throw failure("The shader type can not be empty");
+
+    if (text.empty())
+        throw failure("The shader code can not be empty");
 
     shader->setType(type);
     shader->setSource(text);
@@ -100,11 +107,13 @@ MaterialMaker::instanceShader(XMLReader& reader) noexcept
 }
 
 MaterialPassPtr
-MaterialMaker::instancePass(XMLReader& reader) noexcept
+MaterialMaker::instancePass(XMLReader& reader) except
 {
-    RenderPass passType;
+    RenderPass passType = RenderPass::RP_CUSTOM;
 
     std::string name = reader.getString("name");
+    if (name.empty())
+        throw failure("The pass name can not be empty");
 
     if (name == "forward")
         passType = RenderPass::RP_FORWARD;
@@ -116,7 +125,7 @@ MaterialMaker::instancePass(XMLReader& reader) noexcept
         passType = RenderPass::RP_GBUFFER;
     else if (name == "light")
         passType = RenderPass::RP_LIGHT;
-    else
+    else if (name == "custom")
         passType = RenderPass::RP_CUSTOM;
 
     auto pass = std::make_shared<MaterialPass>(passType);
@@ -125,7 +134,7 @@ MaterialMaker::instancePass(XMLReader& reader) noexcept
     if (reader.setToFirstChild())
     {
         ShaderObjectPtr shaderObject = std::make_shared<ShaderObject>();
-        RenderStatePtr state = pass->getRenderState();
+        RenderStatePtr state = std::make_shared<RenderState>();
 
         RenderDepthState depthState;
         RenderRasterState rasterState;
@@ -232,6 +241,7 @@ MaterialMaker::instancePass(XMLReader& reader) noexcept
             }
         } while (reader.setToNextChild());
 
+        pass->setRenderState(state);
         pass->setShaderObject(shaderObject);
     }
 
@@ -239,11 +249,13 @@ MaterialMaker::instancePass(XMLReader& reader) noexcept
 }
 
 MaterialTechPtr
-MaterialMaker::instanceTech(XMLReader& reader) noexcept
+MaterialMaker::instanceTech(XMLReader& reader) except
 {
     RenderQueue queue = Background;
 
     std::string name = reader.getString("name");
+    if (name.empty())
+        throw failure("The technique name can not be empty");
 
     if (name == "background")
         queue = RenderQueue::Background;
@@ -259,8 +271,7 @@ MaterialMaker::instanceTech(XMLReader& reader) noexcept
         queue = RenderQueue::PostProcess;
     else
     {
-        assert(false);
-        return nullptr;
+        throw failure("Unknown technique name");
     }
 
     auto tech = std::make_shared<MaterialTech>(queue);
@@ -280,8 +291,8 @@ MaterialMaker::instanceTech(XMLReader& reader) noexcept
     return tech;
 }
 
-ShaderParamPtr
-MaterialMaker::instanceParameter(XMLReader& reader) noexcept
+MaterialParamPtr
+MaterialMaker::instanceParameter(XMLReader& reader) except
 {
     auto name = reader.getString("name");
     auto type = reader.getString("type");
@@ -289,9 +300,11 @@ MaterialMaker::instanceParameter(XMLReader& reader) noexcept
     auto value = reader.getString("value");
 
     if (name.empty())
-        return nullptr;
+    {
+        throw failure("The parameter name can not be empty");
+    }
 
-    auto param = std::make_shared<ShaderParam>();
+    auto param = std::make_shared<MaterialParam>();
 
     param->setName(name);
 
@@ -351,11 +364,15 @@ MaterialMaker::instanceParameter(XMLReader& reader) noexcept
                 auto texture = createTexture(value.c_str());
                 if (texture)
                 {
-                    param->setTexture(texture);
+                    param->assign(texture);
                 }
             }
 
             return param;
+        }
+        else
+        {
+            throw failure("Unknown parameter type");
         }
     }
     else if (!semantic.empty())
@@ -405,7 +422,9 @@ MaterialMaker::load(XMLReader& reader) except
                 }
                 else if (name == "technique")
                 {
-                    _material->addTech(instanceTech(reader));
+                    auto tech = instanceTech(reader);
+                    if (tech)
+                        _material->addTech(instanceTech(reader));
                 }
                 else if (name == "shader")
                 {

@@ -35,30 +35,16 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/material_pass.h>
-#include <ray/material.h>
 
 _NAME_BEGIN
 
 MaterialPass::MaterialPass(RenderPass pass) noexcept
     :_pass(pass)
 {
-    _renderState = std::make_shared<RenderState>();
 }
 
 MaterialPass::~MaterialPass() noexcept
 {
-}
-
-void
-MaterialPass::setup(const Material& material) noexcept
-{
-    assert(_shaderObject);
-
-    if (_shaderObject->setup())
-    {
-        _paramBindings = std::make_shared<MaterialParmBinds>();
-        _paramBindings->_buildUniformBinds(*material.getMaterialSemantic(), material.getParameters(), _shaderObject->getActiveUniforms());
-    }
 }
 
 void
@@ -79,6 +65,12 @@ MaterialPass::setShaderObject(ShaderObjectPtr shader) noexcept
     _shaderObject = shader;
 }
 
+void
+MaterialPass::setRenderState(RenderStatePtr state) noexcept
+{
+    _renderState = state;
+}
+
 RenderPass
 MaterialPass::getRenderPass() noexcept
 {
@@ -95,12 +87,6 @@ RenderStatePtr
 MaterialPass::getRenderState() noexcept
 {
     return _renderState;
-}
-
-ShaderConstantBufferPtr
-MaterialPass::getShaderConstantBuffer() noexcept
-{
-    return _paramBindings->getConstantBuffer();
 }
 
 _NAME_END

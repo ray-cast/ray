@@ -185,7 +185,6 @@ RenderPipeline::setTechnique(MaterialPassPtr pass) noexcept
 {
     renderer->setRenderState(pass->getRenderState());
     renderer->setShaderObject(pass->getShaderObject());
-    renderer->setShaderConstantBuffer(pass->getShaderConstantBuffer());
 }
 
 void

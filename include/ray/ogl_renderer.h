@@ -65,15 +65,15 @@ public:
     virtual void destroyRenderCanvas(RenderCanvasPtr canvas) noexcept;
     virtual void setRenderCanvas(RenderCanvasPtr handle) noexcept;
 
-    virtual bool createConstantBuffer(ShaderConstantBuffer& buffer) noexcept;
-    virtual void destroyConstantBuffer(ShaderConstantBuffer& buffer) noexcept;
-    virtual void setShaderConstantBuffer(ShaderConstantBufferPtr buffer) noexcept;
-
     virtual bool createRenderBuffer(RenderBuffer& buffer) noexcept;
     virtual void destroyRenderBuffer(RenderBuffer& buffer) noexcept;
     virtual void setRenderBuffer(RenderBufferPtr buffer) noexcept;
     virtual void updateRenderBuffer(RenderBufferPtr buffer) noexcept;
     virtual void drawRenderBuffer(const Renderable& renderable) noexcept;
+
+    virtual bool createTexture(Texture& texture) noexcept;
+    virtual void destroyTexture(Texture& texture) noexcept;
+    virtual void setTexture(const Texture& value, ShaderUniformPtr uniform) noexcept;
 
     virtual bool createRenderTexture(RenderTexture& target) noexcept;
     virtual void destroyRenderTexture(RenderTexture& target) noexcept;
@@ -86,13 +86,13 @@ public:
     virtual void destroyMultiRenderTexture(MultiRenderTexture& target) noexcept;
     virtual void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept;
 
-    virtual bool createTexture(Texture& texture) noexcept;
-    virtual void destroyTexture(Texture& texture) noexcept;
-    virtual void setTexture(const Texture& value, ShaderUniformPtr uniform) noexcept;
-
     virtual ShaderProgramPtr createShaderProgram(std::vector<ShaderPtr>& shaders) noexcept;
     virtual void destroyShaderProgram(ShaderProgramPtr shader) noexcept;
     virtual void setShaderProgram(ShaderProgramPtr shader) noexcept;
+
+    virtual bool createConstantBuffer(ShaderConstantBuffer& buffer) noexcept;
+    virtual void destroyConstantBuffer(ShaderConstantBuffer& buffer) noexcept;
+    virtual void setShaderConstantBuffer(ShaderConstantBufferPtr buffer) noexcept;
 
     virtual void renderBegin() noexcept;
     virtual void renderEnd() noexcept;
@@ -105,6 +105,8 @@ private:
 
     void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
     void clear(std::size_t i, ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
+
+    void assignActivateUniform(ShaderUniforms& uniform) noexcept;
 
     void setViewport(const Viewport& view) noexcept;
 

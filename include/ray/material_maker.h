@@ -58,11 +58,11 @@ public:
 
 private:
 
-    ShaderPtr instanceShader(XMLReader& reader) noexcept;
-    RenderStatePtr instanceState(XMLReader& reader) noexcept;
-    MaterialPassPtr instancePass(XMLReader& reader) noexcept;
-    MaterialTechPtr instanceTech(XMLReader& reader) noexcept;
-    ShaderParamPtr instanceParameter(XMLReader& reader) noexcept;
+    ShaderPtr instanceShader(XMLReader& reader) except;
+    RenderStatePtr instanceState(XMLReader& reader) except;
+    MaterialPassPtr instancePass(XMLReader& reader) except;
+    MaterialTechPtr instanceTech(XMLReader& reader) except;
+    MaterialParamPtr instanceParameter(XMLReader& reader) except;
 
 private:
     MaterialMaker(const MaterialMaker&) noexcept = delete;

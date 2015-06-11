@@ -113,13 +113,6 @@ RenderSystem::setup(RenderDevicePtr device, RenderWindowPtr window, WindHandle w
 void
 RenderSystem::close() noexcept
 {
-    auto semantic = Material::getMaterialSemantic();
-    if (semantic)
-    {
-        semantic->close();
-        Material::setMaterialSemantic(nullptr);
-    }
-
     if (_lineMaterial)
     {
         _lineMaterial.reset();
@@ -136,6 +129,13 @@ RenderSystem::close() noexcept
     {
         _renderPipeline.reset();
         _renderPipeline = nullptr;
+    }
+
+    auto semantic = Material::getMaterialSemantic();
+    if (semantic)
+    {
+        semantic->close();
+        Material::setMaterialSemantic(nullptr);
     }
 
     if (_renderWindow)
@@ -558,9 +558,8 @@ RenderSystem::renderEnd() noexcept
 
         auto pass = _lineMaterial->getTech(RenderQueue::Opaque)->getPass(RenderPass::RP_GBUFFER);
 
-        _renderer->setShaderObject(pass->getShaderObject());
         _renderer->setRenderState(pass->getRenderState());
-        _renderer->setShaderConstantBuffer(pass->getShaderConstantBuffer());
+        _renderer->setShaderObject(pass->getShaderObject());
 
         Renderable renderable;
         renderable.type = VertexType::GPU_LINE;
@@ -583,9 +582,8 @@ RenderSystem::renderEnd() noexcept
 
         auto pass = _lineMaterial->getTech(RenderQueue::Opaque)->getPass(RenderPass::RP_GBUFFER);
 
-        _renderer->setShaderObject(pass->getShaderObject());
         _renderer->setRenderState(pass->getRenderState());
-        _renderer->setShaderConstantBuffer(pass->getShaderConstantBuffer());
+        _renderer->setShaderObject(pass->getShaderObject());
 
         Renderable renderable;
         renderable.type = VertexType::GPU_LINE;

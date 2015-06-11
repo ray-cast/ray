@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class RenderPostProcess
+class EXPORT RenderPostProcess
 {
 public:
     RenderPostProcess() noexcept;

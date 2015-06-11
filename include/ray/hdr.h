@@ -41,11 +41,31 @@
 
 _NAME_BEGIN
 
-class HDR final : public RenderPostProcess
+class EXPORT HDR final : public RenderPostProcess
 {
+public:
+    struct EXPORT Setting
+    {
+        float lumAdapt;
+        float lumKey;
+        float lumMax;
+
+        float exposure;
+        float exposureBias;
+
+        float vignetteEnable;
+        float vignetteInner;
+        float vignetteOuter;
+
+        Setting() noexcept;
+    };
+
 public:
     HDR() except;
     ~HDR() noexcept;
+
+    void setSetting(const Setting& setting) noexcept;
+    const Setting& getSetting() const noexcept;
 
     void render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept;
 
@@ -65,18 +85,7 @@ private:
 
 private:
 
-    float _lumAdapt;
-    float _lumKey;
-    float _lumMax;
-
-    float _exposure;
-    float _exposureBias;
-
-    float _vignetteEnable;
-    float _vignetteInner;
-    float _vignetteOuter;
-
-    float _gamma;
+    Setting _setting;
 
     RenderTexturePtr _texSample4;
     RenderTexturePtr _texSample8;

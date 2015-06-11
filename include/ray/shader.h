@@ -66,10 +66,13 @@ enum ShaderParamType
     SPT_FLOAT3X3,
     SPT_FLOAT4X4,
     SPT_FLOAT_ARRAY,
+    SPT_FLOAT2_ARRAY,
+    SPT_FLOAT3_ARRAY,
+    SPT_FLOAT4_ARRAY,
     SPT_TEXTURE,
 };
 
-class EXPORT ShaderParam final
+class EXPORT ShaderParam
 {
 public:
     ShaderParam() noexcept;
@@ -89,9 +92,6 @@ public:
     void setSemantic(const std::string& semantic) noexcept;
     const std::string& getSemantic() const noexcept;
 
-    void setTexture(TexturePtr texture) noexcept;
-    TexturePtr getTexture() noexcept;
-
     void assign(bool value) noexcept;
     void assign(int value) noexcept;
     void assign(const int2& value) noexcept;
@@ -102,6 +102,10 @@ public:
     void assign(const float3x3& value) noexcept;
     void assign(const float4x4& value) noexcept;
     void assign(const std::vector<float>& value) noexcept;
+    void assign(const std::vector<float2>& value) noexcept;
+    void assign(const std::vector<float3>& value) noexcept;
+    void assign(const std::vector<float4>& value) noexcept;
+    void assign(TexturePtr texture) noexcept;
 
     const bool getBool() const noexcept;
     const int getInt() const noexcept;
@@ -113,8 +117,15 @@ public:
     const float3x3& getFloat3x3() const noexcept;
     const float4x4& getFloat4x4() const noexcept;
     const std::vector<float>& getFloatArray() const noexcept;
+    const std::vector<float2>& getFloat2Array() const noexcept;
+    const std::vector<float3>& getFloat3Array() const noexcept;
+    const std::vector<float4>& getFloat4Array() const noexcept;
+    TexturePtr getTexture() const noexcept;
 
-    void clear() noexcept;
+protected:
+
+    virtual void onChangeBefore() noexcept;
+    virtual void onChangeAfter() noexcept;
 
 private:
 
@@ -131,6 +142,9 @@ private:
         float3x3* m3;
         float4x4* m4;
         std::vector<float>* farray;
+        std::vector<float2>* farray2;
+        std::vector<float3>* farray3;
+        std::vector<float4>* farray4;
     } _value;
 
     ShaderParamType _type;
@@ -146,11 +160,22 @@ public:
 class EXPORT ShaderUniform
 {
 public:
+    ShaderUniform() noexcept;
+    ~ShaderUniform() noexcept;
+
+    void needUpdate(bool update) noexcept;
+    bool needUpdate() const noexcept;
+
+public:
+
     std::string name;
     int location;
     int unit;
     int type;
-    ShaderParam param;
+
+    bool _needUpdate;
+
+    ShaderParamPtr value;
 };
 
 class EXPORT ShaderUniformBlock
@@ -165,13 +190,6 @@ class EXPORT ShaderSubroutine
 public:
     std::string name;
     int location;
-};
-
-class EXPORT ShaderParamArg
-{
-public:
-    ShaderUniformPtr uniform;
-    ShaderParamPtr value;
 };
 
 class EXPORT Shader
@@ -211,9 +229,9 @@ public:
     ShaderConstantBuffer() noexcept;
     ~ShaderConstantBuffer() noexcept;
 
-    void addParamArg(ShaderParamArg& arg) noexcept;
-    void removeParamArg(ShaderParamArg& arg) noexcept;
-    const ShaderParamArgs& getShaderParamArgs() const noexcept;
+    void addParamArg(ShaderUniformPtr& arg) noexcept;
+    void removeParamArg(ShaderUniformPtr& arg) noexcept;
+    const ShaderUniforms& getShaderParamArgs() const noexcept;
 
     ShaderConstantBufferPtr clone() const noexcept;
 
@@ -222,9 +240,8 @@ private:
     const ShaderConstantBuffer&operator=(const ShaderConstantBuffer&) = delete;
 
 private:
-    typedef std::vector<ShaderParamArg> ShaderParamArgs;
 
-    ShaderParamArgs _uniforms;
+    ShaderUniforms _uniforms;
 };
 
 class EXPORT ShaderProgram

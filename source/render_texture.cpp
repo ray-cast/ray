@@ -47,6 +47,7 @@ RenderTexture::RenderTexture() noexcept
     , _height(0)
     , _depth(0)
     , _isMipmap(false)
+    , _isMultiSample(false)
     , _attachment(Attachment::COLOR0)
     , _viewport(0, 0, 0, 0)
     , _clearFlags(ClearFlags::CLEAR_ALL)
@@ -139,6 +140,12 @@ void
 RenderTexture::setTexDim(TextureDim mapping) noexcept
 {
     _resolveDim = mapping;
+}
+
+void
+RenderTexture::setMultiSample(bool multisample) noexcept
+{
+    _isMultiSample = multisample;
 }
 
 void
@@ -243,6 +250,12 @@ bool
 RenderTexture::isMipmap() const noexcept
 {
     return _isMipmap;
+}
+
+bool
+RenderTexture::isMultiSample() const noexcept
+{
+    return _isMultiSample;
 }
 
 void

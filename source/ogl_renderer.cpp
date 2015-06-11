@@ -536,8 +536,6 @@ OGLRenderer::setRenderState(RenderStatePtr state) noexcept
 void
 OGLRenderer::renderBegin() noexcept
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     if (_NV_vertex_buffer_unified_memory)
     {
         glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
@@ -628,7 +626,7 @@ OGLRenderer::createRenderCanvas(WindHandle hwnd) noexcept
         // disable 131184, 131185
         glDebugMessageControlKHR(GL_DEBUG_SOURCE_API_KHR, GL_DEBUG_TYPE_OTHER_KHR, GL_DONT_CARE, 3, ids, GL_FALSE);
 #endif
-        }
+    }
 
     if (_ARB_vertex_attrib_binding)
     {
@@ -646,7 +644,7 @@ OGLRenderer::createRenderCanvas(WindHandle hwnd) noexcept
 
     _renderCanvas = canvas;
     return canvas;
-    }
+}
 
 void
 OGLRenderer::destroyRenderCanvas(RenderCanvasPtr canvas) noexcept
@@ -680,123 +678,6 @@ OGLRenderer::setRenderCanvas(RenderCanvasPtr canvas) noexcept
         }
 
         _renderCanvas = canvas;
-    }
-}
-
-bool
-OGLRenderer::createConstantBuffer(ShaderConstantBuffer& constant) noexcept
-{
-    OGLConstantBuffer buffer;
-
-    glBindBuffer(GL_UNIFORM_BUFFER, buffer.ubo);
-    //glBufferData(GL_UNIFORM_BUFFER, size, 0, GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-    _constantBuffers[buffer.ubo] = buffer;
-
-    return true;
-}
-
-void
-OGLRenderer::destroyConstantBuffer(ShaderConstantBuffer& constant) noexcept
-{
-    auto index = constant.getUserData();
-    if (index != 0)
-    {
-        auto& buffer = _constantBuffers[index];
-
-        if (buffer.ubo)
-        {
-            glDeleteBuffers(1, &buffer.ubo);
-            buffer.ubo = 0;
-        }
-    }
-}
-
-void
-OGLRenderer::setShaderConstantBuffer(ShaderConstantBufferPtr buffer) noexcept
-{
-    auto& args = buffer->getShaderParamArgs();
-
-    for (auto& it : args)
-    {
-        auto type = it.value->getType();
-        auto location = it.uniform->location;
-
-        switch (type)
-        {
-        case ShaderParamType::SPT_BOOL:
-        {
-            glUniform1i(location, (int)it.value->getBool());
-            break;
-        }
-        case ShaderParamType::SPT_INT:
-        {
-            auto i1 = it.uniform->param.getInt();
-            auto i2 = it.value->getInt();
-            if (i1 != i2)
-            {
-                glUniform1i(location, (int)it.value->getInt());
-                it.uniform->param.assign(i2);
-            }
-            break;
-        }
-        case ShaderParamType::SPT_INT2:
-        {
-            glUniform2iv(location, 1, it.value->getInt2().ptr());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT:
-        {
-            auto f1 = it.uniform->param.getFloat();
-            auto f2 = it.value->getFloat();
-            if (f1 != f2)
-            {
-                glUniform1f(location, f2);
-                it.uniform->param.assign(f2);
-            }
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT2:
-        {
-            glUniform2fv(location, 1, it.value->getFloat2().ptr());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT3:
-        {
-            glUniform3fv(location, 1, it.value->getFloat3().ptr());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT4:
-        {
-            glUniform4fv(location, 1, it.value->getFloat4().ptr());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT3X3:
-        {
-            glUniformMatrix3fv(location, 1, GL_FALSE, it.value->getFloat3x3().ptr());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT4X4:
-        {
-            glUniformMatrix4fv(location, 1, GL_FALSE, it.value->getFloat4x4().ptr());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT_ARRAY:
-        {
-            glUniform1fv(location, it.value->getFloatArray().size(), it.value->getFloatArray().data());
-            break;
-        }
-        case ShaderParamType::SPT_TEXTURE:
-        {
-            auto texture = it.value->getTexture();
-            if (texture)
-                this->setTexture(*texture, it.uniform);
-            break;
-        }
-        default:
-            break;
-        }
     }
 }
 
@@ -1085,13 +966,176 @@ OGLRenderer::drawRenderBuffer(const Renderable& renderable) noexcept
         assert(renderable.startVertice == 0);
         glDrawElements(drawType, numIndice, indexType, (char*)(nullptr) + (startIndice * numIndice));
 #endif
-}
+    }
     else
     {
         if (renderable.numInstances > 0)
             glDrawArraysInstanced(drawType, renderable.startVertice, renderable.numVertices, renderable.numIndices);
         else
             glDrawArrays(drawType, renderable.startVertice, renderable.numVertices);
+    }
+}
+
+bool
+OGLRenderer::createTexture(Texture& texture) noexcept
+{
+    OGLTexture instance;
+
+    auto instanceID = texture.getInstanceID();
+    auto target = OGLTypes::asOGLTarget(texture.getTexDim());
+    auto format = OGLTypes::asOGLFormat(texture.getTexFormat());
+    auto type = OGLTypes::asOGLType(texture.getTexFormat());
+    auto internalFormat = OGLTypes::asOGLInternalformat(texture.getTexFormat());
+    auto buf = texture.getStream();
+
+    glGenTextures(1, &instance.texture);
+    glBindTexture(target, instance.texture);
+
+    // set unpack alignment to one byte
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    GLint level = (GLint)texture.getLevel();
+
+    GLsizei w = (GLsizei)texture.getWidth();
+    GLsizei h = (GLsizei)texture.getHeight();
+    GLsizei depth = (GLsizei)texture.getDepth();
+
+    texture.setUserData(instance.texture);
+
+    switch (target)
+    {
+    case GL_TEXTURE_2D:
+    {
+        if (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ||
+            format == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT ||
+            format == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
+        {
+            int size = w * h;
+            glCompressedTexImage2D(target, level, internalFormat, w, h, 0, size, buf);
+        }
+        else
+        {
+            if (texture.isMultiSample())
+                glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, level, internalFormat, w, h, GL_FALSE);
+            else
+                glTexImage2D(target, level, internalFormat, w, h, 0, format, type, buf);
+        }
+    }
+    break;
+    case GL_TEXTURE_2D_ARRAY:
+    {
+        if (texture.isMultiSample())
+            glTexImage3DMultisample(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, level, internalFormat, w, h, depth, GL_FALSE);
+        else
+            glTexImage3D(target, level, internalFormat, w, h, depth, 0, format, type, 0);
+    }
+    break;
+    case GL_TEXTURE_3D:
+    {
+        glTexImage3D(target, level, internalFormat, w, h, depth, 0, format, type, 0);
+    }
+    break;
+    case GL_TEXTURE_CUBE_MAP:
+    {
+        if (texture.isMultiSample())
+        {
+            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, internalFormat, w, h, GL_FALSE);
+            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, internalFormat, w, h, GL_FALSE);
+            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, internalFormat, w, h, GL_FALSE);
+            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, internalFormat, w, h, GL_FALSE);
+            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, internalFormat, w, h, GL_FALSE);
+            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, internalFormat, w, h, GL_FALSE);
+        }
+        else
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, internalFormat, w, h, 0, format, type, buf);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, internalFormat, w, h, 0, format, type, buf);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, internalFormat, w, h, 0, format, type, buf);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, internalFormat, w, h, 0, format, type, buf);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, internalFormat, w, h, 0, format, type, buf);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, internalFormat, w, h, 0, format, type, buf);
+        }
+    }
+    break;
+    default:
+        break;
+    }
+
+    // restore old unpack alignment
+    glPixelStorei(GL_UNPACK_ALIGNMENT, _unpackAlignment);
+
+    applyTextureWrap(target, texture.getTexWrap());
+    applyTextureFilter(target, texture.getTexFilter());
+    applyTextureAnis(target, texture.getTexAnisotropy());
+
+    if (_ARB_bindless_texture)
+    {
+        instance.resident = glGetTextureHandleARB(instance.texture);
+        glMakeTextureHandleResidentARB(instance.resident);
+    }
+
+    if (_textures.size() < instanceID)
+    {
+        _renderBuffers.resize(instanceID * 2);
+    }
+
+    _textures[instanceID] = instance;
+
+    return true;
+}
+
+void
+OGLRenderer::destroyTexture(Texture& texture) noexcept
+{
+    auto instance = texture.getInstanceID();
+    if (instance)
+    {
+        auto handle = _textures[instance].texture;
+        if (handle == 0)
+            return;
+
+        _textures[instance].texture = 0;
+        _textures[instance].resident = 0;
+
+        glDeleteTextures(1, &handle);
+    }
+}
+
+void
+OGLRenderer::setTexture(const Texture& texture, ShaderUniformPtr uniform) noexcept
+{
+    assert(uniform);
+    assert(uniform->unit < _maxTextureUnits);
+
+    auto location = uniform->location;
+    auto unit = uniform->unit;
+    auto target = OGLTypes::asOGLTarget(texture.getTexDim());
+    auto instance = texture.getInstanceID();
+    auto handle = _textures[instance].resident;
+    auto resident = _textures[instance].resident;
+
+#if !defined(EGLAPI)
+    if (_ARB_bindless_texture)
+    {
+        glUniformHandleui64ARB(location, resident);
+    }
+    else if (_EXT_direct_state_access)
+    {
+        glUniform1i(location, unit);
+        glBindMultiTextureEXT(GL_TEXTURE0 + uniform->unit, target, handle);
+    }
+    else
+#endif
+    {
+        glUniform1i(location, unit);
+
+        if (_textureUnits[location] != handle)
+        {
+            glActiveTexture(GL_TEXTURE0 + uniform->unit);
+            glBindTexture(target, handle);
+
+            _textureUnits[location] = handle;
+        }
     }
 }
 
@@ -1188,7 +1232,10 @@ OGLRenderer::bindRenderTexture(RenderTexturePtr target, Attachment attachment) n
     {
     case TextureDim::DIM_2D:
     {
-        glFramebufferTexture2D(GL_FRAMEBUFFER, attribindex, GL_TEXTURE_2D, handle, 0);
+        if (target->isMultiSample())
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attribindex, GL_TEXTURE_2D_MULTISAMPLE, handle, 0);
+        else
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attribindex, GL_TEXTURE_2D, handle, 0);
         break;
     }
     case TextureDim::DIM_2D_ARRAY:
@@ -1309,7 +1356,6 @@ OGLRenderer::createMultiRenderTexture(MultiRenderTexture& target) noexcept
         GLenum attachment = OGLTypes::asOGLAttachment(it.location);
 
         auto handle = _textures[texture->getInstanceID()].texture;
-        auto resident = _textures[texture->getInstanceID()].resident;
 
         auto dim = texture->getTexDim();
         if (dim == TextureDim::DIM_2D)
@@ -1371,190 +1417,31 @@ OGLRenderer::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
 
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
-        this->setViewport(target->getViewport());
-
-        auto& targets = target->getRenderTextures();
-        for (auto& it : targets)
-        {
-            auto attachment = it.location;
-            if (attachment == Attachment::DEPTH ||
-                attachment == Attachment::STENCIL ||
-                attachment == Attachment::DEPTH_STENCIL)
-            {
-                continue;
-            }
-
-            auto index = attachment - Attachment::COLOR0;
-
-            this->clear(index,
-                it.texture->getClearFlags(),
-                it.texture->getClearColor(),
-                it.texture->getClearDepth(),
-                it.texture->getClearStencil()
-                );
-        }
-
         _multiRenderTexture = target;
         _renderTexture = 0;
     }
-}
 
-bool
-OGLRenderer::createTexture(Texture& texture) noexcept
-{
-    OGLTexture instance;
+    this->setViewport(target->getViewport());
 
-    auto instanceID = texture.getInstanceID();
-    auto target = OGLTypes::asOGLTarget(texture.getTexDim());
-    auto format = OGLTypes::asOGLFormat(texture.getTexFormat());
-    auto type = OGLTypes::asOGLType(texture.getTexFormat());
-    auto internalFormat = OGLTypes::asOGLInternalformat(texture.getTexFormat());
-    auto buf = texture.getStream();
-
-    glGenTextures(1, &instance.texture);
-    glBindTexture(target, instance.texture);
-
-    // set unpack alignment to one byte
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-    GLint level = (GLint)texture.getLevel();
-
-    GLsizei w = (GLsizei)texture.getWidth();
-    GLsizei h = (GLsizei)texture.getHeight();
-    GLsizei depth = (GLsizei)texture.getDepth();
-
-    texture.setUserData(instance.texture);
-
-    switch (target)
+    auto& targets = target->getRenderTextures();
+    for (auto& it : targets)
     {
-    case GL_TEXTURE_2D:
-    {
-        if (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ||
-            format == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT ||
-            format == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
+        auto attachment = it.location;
+        if (attachment == Attachment::DEPTH ||
+            attachment == Attachment::STENCIL ||
+            attachment == Attachment::DEPTH_STENCIL)
         {
-            int size = w * h;
-            glCompressedTexImage2D(target, level, internalFormat, w, h, 0, size, buf);
+            continue;
         }
-        else
-        {
-            if (texture.isMultiSample())
-                glTexImage2DMultisample(target, level, internalFormat, w, h, GL_FALSE);
-            else
-                glTexImage2D(target, level, internalFormat, w, h, 0, format, type, buf);
-        }
-    }
-    break;
-    case GL_TEXTURE_2D_ARRAY:
-    case GL_TEXTURE_3D:
-    {
-        if (texture.isMultiSample())
-            glTexImage3DMultisample(target, level, internalFormat, w, h, depth, GL_FALSE);
-        else
-            glTexImage3D(target, level, internalFormat, w, h, depth, 0, format, type, 0);
-    }
-    break;
-    case GL_TEXTURE_CUBE_MAP:
-    {
-        if (texture.isMultiSample())
-        {
-            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, internalFormat, w, h, GL_FALSE);
-            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, internalFormat, w, h, GL_FALSE);
-            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, internalFormat, w, h, GL_FALSE);
-            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, internalFormat, w, h, GL_FALSE);
-            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, internalFormat, w, h, GL_FALSE);
-            glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, internalFormat, w, h, GL_FALSE);
-        }
-        else
-        {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, internalFormat, w, h, 0, format, type, buf);
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, internalFormat, w, h, 0, format, type, buf);
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, internalFormat, w, h, 0, format, type, buf);
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, internalFormat, w, h, 0, format, type, buf);
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, internalFormat, w, h, 0, format, type, buf);
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, internalFormat, w, h, 0, format, type, buf);
-        }
-    }
-    break;
-    default:
-        break;
-    }
 
-    // restore old unpack alignment
-    glPixelStorei(GL_UNPACK_ALIGNMENT, _unpackAlignment);
+        auto index = attachment - Attachment::COLOR0;
 
-    applyTextureWrap(target, texture.getTexWrap());
-    applyTextureFilter(target, texture.getTexFilter());
-    applyTextureAnis(target, texture.getTexAnisotropy());
-
-    if (_ARB_bindless_texture)
-    {
-        instance.resident = glGetTextureHandleARB(instance.texture);
-        glMakeTextureHandleResidentARB(instance.resident);
-    }
-
-    if (_textures.size() < instanceID)
-    {
-        _renderBuffers.resize(instanceID * 2);
-    }
-
-    _textures[instanceID] = instance;
-
-    return true;
-}
-
-void
-OGLRenderer::destroyTexture(Texture& texture) noexcept
-{
-    auto instance = texture.getInstanceID();
-    if (instance)
-    {
-        auto handle = _textures[instance].texture;
-        if (handle == 0)
-            return;
-
-        _textures[instance].texture = 0;
-        _textures[instance].resident = 0;
-
-        glDeleteTextures(1, &handle);
-    }
-}
-
-void
-OGLRenderer::setTexture(const Texture& texture, ShaderUniformPtr uniform) noexcept
-{
-    assert(uniform);
-    assert(uniform->unit < _maxTextureUnits);
-
-    auto location = uniform->location;
-    auto unit = uniform->unit;
-    auto target = OGLTypes::asOGLTarget(texture.getTexDim());
-    auto instance = texture.getInstanceID();
-    auto handle = _textures[instance].resident;
-    auto resident = _textures[instance].resident;
-
-#if !defined(EGLAPI)
-    if (_ARB_bindless_texture)
-    {
-        glUniformHandleui64ARB(location, resident);
-    }
-    else if (_EXT_direct_state_access)
-    {
-        glUniform1i(location, unit);
-        glBindMultiTextureEXT(GL_TEXTURE0 + uniform->unit, target, handle);
-    }
-    else
-#endif
-    {
-        glUniform1i(location, unit);
-
-        if (_textureUnits[location] != handle)
-        {
-            glActiveTexture(GL_TEXTURE0 + uniform->unit);
-            glBindTexture(target, handle);
-
-            _textureUnits[location] = handle;
-        }
+        this->clear(index,
+            it.texture->getClearFlags(),
+            it.texture->getClearColor(),
+            it.texture->getClearDepth(),
+            it.texture->getClearStencil()
+            );
     }
 }
 
@@ -1586,23 +1473,50 @@ OGLRenderer::setShaderProgram(ShaderProgramPtr shader) noexcept
     if (_shader != shader)
     {
         auto oglShaderObject = std::dynamic_pointer_cast<OGLShaderProgram>(shader);
-        if (shader)
+        if (oglShaderObject)
         {
-            if (shader)
-            {
-                oglShaderObject->bind();
-            }
-            else
-            {
-                if (_shader)
-                {
-                    std::dynamic_pointer_cast<OGLShaderProgram>(_shader)->unbind();
-                }
-            }
+            oglShaderObject->bind();
         }
 
         _shader = shader;
     }
+
+    this->assignActivateUniform(shader->getActiveUniforms());
+}
+
+bool
+OGLRenderer::createConstantBuffer(ShaderConstantBuffer& constant) noexcept
+{
+    OGLConstantBuffer buffer;
+
+    glBindBuffer(GL_UNIFORM_BUFFER, buffer.ubo);
+    //glBufferData(GL_UNIFORM_BUFFER, size, 0, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    _constantBuffers[buffer.ubo] = buffer;
+
+    return true;
+}
+
+void
+OGLRenderer::destroyConstantBuffer(ShaderConstantBuffer& constant) noexcept
+{
+    auto index = constant.getUserData();
+    if (index != 0)
+    {
+        auto& buffer = _constantBuffers[index];
+
+        if (buffer.ubo)
+        {
+            glDeleteBuffers(1, &buffer.ubo);
+            buffer.ubo = 0;
+        }
+    }
+}
+
+void
+OGLRenderer::setShaderConstantBuffer(ShaderConstantBufferPtr buffer) noexcept
+{
 }
 
 void
@@ -1614,7 +1528,7 @@ OGLRenderer::applyTextureWrap(GLenum target, TextureWrap wrap) noexcept
         glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(target, GL_TEXTURE_WRAP_R, GL_REPEAT);
     }
-    else if (TextureWrap::CLAMP_TO_EDGE  & wrap)
+    else if (TextureWrap::CLAMP_TO_EDGE & wrap)
     {
         glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -1826,6 +1740,95 @@ OGLRenderer::debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severit
     std::cerr << std::endl;
 
     std::cerr << "message : " << message;
+}
+
+void
+OGLRenderer::assignActivateUniform(ShaderUniforms& uniform) noexcept
+{
+    for (auto& it : uniform)
+    {
+        assert(it->value);
+
+        if (!it->needUpdate())
+        {
+            continue;
+        }
+
+        it->needUpdate(false);
+
+        auto type = it->value->getType();
+        auto location = it->location;
+
+        switch (type)
+        {
+        case ShaderParamType::SPT_BOOL:
+        {
+            glUniform1i(location, it->value->getBool());
+            break;
+        }
+        case ShaderParamType::SPT_INT:
+        {
+            glUniform1i(location, it->value->getInt());
+            break;
+        }
+        case ShaderParamType::SPT_INT2:
+        {
+            glUniform2iv(location, 1, it->value->getInt2().ptr());
+            break;
+        }
+        case ShaderParamType::SPT_FLOAT:
+        {
+            glUniform1f(location, it->value->getFloat());
+            break;
+        }
+        case ShaderParamType::SPT_FLOAT2:
+        {
+            glUniform2fv(location, 1, it->value->getFloat2().ptr());
+            break;
+        }
+        case ShaderParamType::SPT_FLOAT3:
+        {
+            glUniform3fv(location, 1, it->value->getFloat3().ptr());
+            break;
+        }
+        case ShaderParamType::SPT_FLOAT4:
+        {
+            glUniform4fv(location, 1, it->value->getFloat4().ptr());
+            break;
+        }
+        case ShaderParamType::SPT_FLOAT3X3:
+        {
+            glUniformMatrix3fv(location, 1, GL_FALSE, it->value->getFloat3x3().ptr());
+            break;
+        }
+        case ShaderParamType::SPT_FLOAT4X4:
+        {
+            glUniformMatrix4fv(location, 1, GL_FALSE, it->value->getFloat4x4().ptr());
+            break;
+        }
+        case ShaderParamType::SPT_FLOAT_ARRAY:
+        {
+            glUniform1fv(location, it->value->getFloatArray().size(), it->value->getFloatArray().data());
+            break;
+        }
+        case ShaderParamType::SPT_TEXTURE:
+        {
+            auto texture = it->value->getTexture();
+            if (texture)
+            {
+                this->setTexture(*texture, it);
+
+                if (!_ARB_bindless_texture)
+                {
+                    it->needUpdate(true);
+                }
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
 }
 
 void
@@ -2054,10 +2057,10 @@ OGLRenderer::nvtokenDrawCommandSequence(const void* stream, size_t streamSize, G
         break;
         case GL_ELEMENT_ADDRESS_COMMAND_NV:
         {
-            const ElementAddressCommandNV* cmd = (const ElementAddressCommandNV*)current;
-            type = cmd->typeSizeInByte == 4 ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
             if (s_nvcmdlist_bindless)
             {
+                const ElementAddressCommandNV* cmd = (const ElementAddressCommandNV*)current;
+                type = cmd->typeSizeInByte == 4 ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
                 glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, GLuint64(cmd->addressLo) | (GLuint64(cmd->addressHi) << 32), 0x7FFFFFFF);
             }
             else

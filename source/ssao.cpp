@@ -149,7 +149,7 @@ void
 SSAO::blurDirection(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest, const int2& direction) noexcept
 {
     _blurDirection->assign(direction);
-    _blurTexSource->setTexture(source->getResolveTexture());
+    _blurTexSource->assign(source->getResolveTexture());
 
     pipeline->setRenderTexture(dest);
     pipeline->setTechnique(_ambientOcclusionBlurPass);
@@ -159,7 +159,7 @@ SSAO::blurDirection(RenderPipeline* pipeline, RenderTexturePtr source, RenderTex
 void
 SSAO::shading(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr ao) noexcept
 {
-    _copyAmbient->setTexture(ao->getResolveTexture());
+    _copyAmbient->assign(ao->getResolveTexture());
 
     pipeline->setRenderTexture(source);
     pipeline->setTechnique(_ambientOcclusionCopyPass);

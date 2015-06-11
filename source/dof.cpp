@@ -69,7 +69,7 @@ DepthOfField::~DepthOfField() noexcept
 void
 DepthOfField::blurh(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
 {
-    _texColor->setTexture(source->getResolveTexture());
+    _texColor->assign(source->getResolveTexture());
 
     pipeline->setRenderTexture(dest);
     pipeline->setTechnique(_blurh);
@@ -79,7 +79,7 @@ DepthOfField::blurh(RenderPipeline* pipeline, RenderTexturePtr source, RenderTex
 void
 DepthOfField::blurv(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
 {
-    _texColor->setTexture(source->getResolveTexture());
+    _texColor->assign(source->getResolveTexture());
 
     pipeline->setRenderTexture(dest);
     pipeline->setTechnique(_blurv);
@@ -89,8 +89,8 @@ DepthOfField::blurv(RenderPipeline* pipeline, RenderTexturePtr source, RenderTex
 void
 DepthOfField::computeNear(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr blured, RenderTexturePtr dest) noexcept
 {
-    _texShrunk->setTexture(source->getResolveTexture());
-    _texBlured->setTexture(blured->getResolveTexture());
+    _texShrunk->assign(source->getResolveTexture());
+    _texBlured->assign(blured->getResolveTexture());
 
     pipeline->setRenderTexture(dest);
     pipeline->setTechnique(_computeNear);
@@ -100,9 +100,9 @@ DepthOfField::computeNear(RenderPipeline* pipeline, RenderTexturePtr source, Ren
 void
 DepthOfField::final(RenderPipeline* pipeline, RenderTexturePtr color, RenderTexturePtr texSmall, RenderTexturePtr large)
 {
-    _texColor->setTexture(color->getResolveTexture());
-    _texSmall->setTexture(texSmall->getResolveTexture());
-    _texLarge->setTexture(large->getResolveTexture());
+    _texColor->assign(color->getResolveTexture());
+    _texSmall->assign(texSmall->getResolveTexture());
+    _texLarge->assign(large->getResolveTexture());
 
     pipeline->setRenderTexture(color);
     pipeline->setTechnique(_final);
@@ -112,7 +112,7 @@ DepthOfField::final(RenderPipeline* pipeline, RenderTexturePtr color, RenderText
 void
 DepthOfField::render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept
 {
-    _texColor->setTexture(source->getResolveTexture());
+    _texColor->assign(source->getResolveTexture());
 
     pipeline->setRenderTexture(_texBlur);
     pipeline->setTechnique(_sample4);

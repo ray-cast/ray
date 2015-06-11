@@ -257,7 +257,7 @@ RenderFeatures::instanceMaterial(XMLReader* reader) except
                             break;
                             case ShaderParamType::SPT_TEXTURE:
                             {
-                                param->setTexture(createTexture(arg.second));
+                                param->assign(createTexture(arg.second));
                             }
                             break;
                             }

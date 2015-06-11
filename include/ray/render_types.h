@@ -37,11 +37,11 @@
 #ifndef _H_RENDER_TYPES_H_
 #define _H_RENDER_TYPES_H_
 
-#include <ray/memory.h>
-#include <ray/mstream.h>
 #include <ray/object.h>
+#include <ray/memory.h>
 #include <ray/math.h>
 #include <ray/except.h>
+#include <ray/variant.h>
 
 _NAME_BEGIN
 

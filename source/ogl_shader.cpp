@@ -257,21 +257,24 @@ OGLShaderProgram::_initActiveUniform() noexcept
 
             if (std::strstr(nameUniform.get(), ".") == 0)
             {
-                auto uniform = std::make_shared<ShaderUniform>();
-                uniform->location = glGetUniformLocation(_program, nameUniform.get());
-                uniform->type = type;
-                uniform->unit = 0;
-                uniform->name.assign(nameUniform.get());
-
-                if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
-                    type == GL_SAMPLER_2D_SHADOW ||
-                    type == GL_SAMPLER_2D_ARRAY || type == GL_SAMPLER_CUBE ||
-                    type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
+                if (nameUniform[0] != '_')
                 {
-                    uniform->unit = _numTexUnit++;
-                }
+                    auto uniform = std::make_shared<ShaderUniform>();
+                    uniform->location = glGetUniformLocation(_program, nameUniform.get());
+                    uniform->type = type;
+                    uniform->unit = 0;
+                    uniform->name.assign(nameUniform.get());
 
-                _activeUniforms.push_back(uniform);
+                    if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
+                        type == GL_SAMPLER_2D_SHADOW ||
+                        type == GL_SAMPLER_2D_ARRAY || type == GL_SAMPLER_CUBE ||
+                        type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
+                    {
+                        uniform->unit = _numTexUnit++;
+                    }
+
+                    _activeUniforms.push_back(uniform);
+                }
             }
         }
     }

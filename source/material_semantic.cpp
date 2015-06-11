@@ -53,45 +53,45 @@ MaterialSemantic::setup() noexcept
 {
     _semantics.resize(NumSemantic);
 
-    _semantics[matModel] = std::make_shared<ShaderParam>("matModel", float4x4());
-    _semantics[matModelInverse] = std::make_shared<ShaderParam>("matModelInverse", float4x4());
-    _semantics[matModelInverseTranspose] = std::make_shared<ShaderParam>("matModelInverseTranspose", float4x4());
-    _semantics[matView] = std::make_shared<ShaderParam>("matView", float4x4());
-    _semantics[matViewInverse] = std::make_shared<ShaderParam>("matViewInverse", float4x4());
-    _semantics[matViewInverseTranspose] = std::make_shared<ShaderParam>("matViewInverseTranspose", float4x4());
-    _semantics[matProject] = std::make_shared<ShaderParam>("matProject", float4x4());
-    _semantics[matProjectInverse] = std::make_shared<ShaderParam>("matProjectInverse", float4x4());
-    _semantics[matViewProject] = std::make_shared<ShaderParam>("matViewProject", float4x4());
-    _semantics[matViewProjectInverse] = std::make_shared<ShaderParam>("matViewProjectInverse", float4x4());
+    _semantics[matModel] = std::make_shared<MaterialParam>("matModel", float4x4());
+    _semantics[matModelInverse] = std::make_shared<MaterialParam>("matModelInverse", float4x4());
+    _semantics[matModelInverseTranspose] = std::make_shared<MaterialParam>("matModelInverseTranspose", float4x4());
+    _semantics[matView] = std::make_shared<MaterialParam>("matView", float4x4());
+    _semantics[matViewInverse] = std::make_shared<MaterialParam>("matViewInverse", float4x4());
+    _semantics[matViewInverseTranspose] = std::make_shared<MaterialParam>("matViewInverseTranspose", float4x4());
+    _semantics[matProject] = std::make_shared<MaterialParam>("matProject", float4x4());
+    _semantics[matProjectInverse] = std::make_shared<MaterialParam>("matProjectInverse", float4x4());
+    _semantics[matViewProject] = std::make_shared<MaterialParam>("matViewProject", float4x4());
+    _semantics[matViewProjectInverse] = std::make_shared<MaterialParam>("matViewProjectInverse", float4x4());
 
-    _semantics[CameraAperture] = std::make_shared<ShaderParam>("CameraAperture", float());
-    _semantics[CameraFar] = std::make_shared<ShaderParam>("CameraFar", float());
-    _semantics[CameraNear] = std::make_shared<ShaderParam>("CameraNear", float());
-    _semantics[CameraPosition] = std::make_shared<ShaderParam>("CameraPosition", Vector3());
-    _semantics[CameraView] = std::make_shared<ShaderParam>("CameraView", float3());
+    _semantics[CameraAperture] = std::make_shared<MaterialParam>("CameraAperture", float());
+    _semantics[CameraFar] = std::make_shared<MaterialParam>("CameraFar", float());
+    _semantics[CameraNear] = std::make_shared<MaterialParam>("CameraNear", float());
+    _semantics[CameraPosition] = std::make_shared<MaterialParam>("CameraPosition", Vector3());
+    _semantics[CameraView] = std::make_shared<MaterialParam>("CameraView", float3());
 
-    _semantics[Time] = std::make_shared<ShaderParam>("Time", float());
-    _semantics[TimeFps] = std::make_shared<ShaderParam>("TimeFps", float());
-    _semantics[TimeDelta] = std::make_shared<ShaderParam>("TimeDelta", float());
+    _semantics[Time] = std::make_shared<MaterialParam>("Time", float());
+    _semantics[TimeFps] = std::make_shared<MaterialParam>("TimeFps", float());
+    _semantics[TimeDelta] = std::make_shared<MaterialParam>("TimeDelta", float());
 
-    _semantics[LightAmbient] = std::make_shared<ShaderParam>("LightAmbient", float3());
-    _semantics[LightDiffuse] = std::make_shared<ShaderParam>("LightDiffuse", float3());
-    _semantics[LightPosition] = std::make_shared<ShaderParam>("LightPosition", float3());
-    _semantics[LightDirection] = std::make_shared<ShaderParam>("LightDirection", float3());
-    _semantics[LightRange] = std::make_shared<ShaderParam>("LightRange", float());
-    _semantics[LightIntensity] = std::make_shared<ShaderParam>("LightIntensity", float());
-    _semantics[LightSpotAngle] = std::make_shared<ShaderParam>("LightSpotAngle", float());
-    _semantics[LightSpotInnerCone] = std::make_shared<ShaderParam>("LightSpotInnerCone", float());
-    _semantics[LightSpotOuterCone] = std::make_shared<ShaderParam>("LightSpotOuterCone", float());
+    _semantics[LightAmbient] = std::make_shared<MaterialParam>("LightAmbient", float3());
+    _semantics[LightDiffuse] = std::make_shared<MaterialParam>("LightDiffuse", float3());
+    _semantics[LightPosition] = std::make_shared<MaterialParam>("LightPosition", float3());
+    _semantics[LightDirection] = std::make_shared<MaterialParam>("LightDirection", float3());
+    _semantics[LightRange] = std::make_shared<MaterialParam>("LightRange", float());
+    _semantics[LightIntensity] = std::make_shared<MaterialParam>("LightIntensity", float());
+    _semantics[LightSpotAngle] = std::make_shared<MaterialParam>("LightSpotAngle", float());
+    _semantics[LightSpotInnerCone] = std::make_shared<MaterialParam>("LightSpotInnerCone", float());
+    _semantics[LightSpotOuterCone] = std::make_shared<MaterialParam>("LightSpotOuterCone", float());
 
-    _semantics[DepthMap] = std::make_shared<ShaderParam>("DepthMap", ShaderParamType::SPT_TEXTURE);
-    _semantics[ColorMap] = std::make_shared<ShaderParam>("ColorMap", ShaderParamType::SPT_TEXTURE);
-    _semantics[NormalMap] = std::make_shared<ShaderParam>("NormalMap", ShaderParamType::SPT_TEXTURE);
+    _semantics[DepthMap] = std::make_shared<MaterialParam>("DepthMap", ShaderParamType::SPT_TEXTURE);
+    _semantics[ColorMap] = std::make_shared<MaterialParam>("ColorMap", ShaderParamType::SPT_TEXTURE);
+    _semantics[NormalMap] = std::make_shared<MaterialParam>("NormalMap", ShaderParamType::SPT_TEXTURE);
 
-    _semantics[DeferredDepthMap] = std::make_shared<ShaderParam>("DeferredDepthMap", ShaderParamType::SPT_TEXTURE);
-    _semantics[DeferredGraphicMap] = std::make_shared<ShaderParam>("DeferredGraphicMap", ShaderParamType::SPT_TEXTURE);
-    _semantics[DeferredNormalMap] = std::make_shared<ShaderParam>("DeferredNormalMap", ShaderParamType::SPT_TEXTURE);
-    _semantics[DeferredLightMap] = std::make_shared<ShaderParam>("DeferredLightMap", ShaderParamType::SPT_TEXTURE);
+    _semantics[DeferredDepthMap] = std::make_shared<MaterialParam>("DeferredDepthMap", ShaderParamType::SPT_TEXTURE);
+    _semantics[DeferredGraphicMap] = std::make_shared<MaterialParam>("DeferredGraphicMap", ShaderParamType::SPT_TEXTURE);
+    _semantics[DeferredNormalMap] = std::make_shared<MaterialParam>("DeferredNormalMap", ShaderParamType::SPT_TEXTURE);
+    _semantics[DeferredLightMap] = std::make_shared<MaterialParam>("DeferredLightMap", ShaderParamType::SPT_TEXTURE);
 }
 
 void
@@ -241,7 +241,7 @@ MaterialSemantic::getFloat4ParamSemantic(const std::string& name) const noexcept
 void
 MaterialSemantic::setTexParam(GlobalTexSemantic index, TexturePtr texture) noexcept
 {
-    _semantics[index]->setTexture(texture);
+    _semantics[index]->assign(texture);
 }
 
 TexturePtr
@@ -274,7 +274,7 @@ MaterialSemantic::getTexParamSemantic(const std::string& name) const noexcept
     return (GlobalTexSemantic)NotSemantic;
 }
 
-ShaderParamPtr
+MaterialParamPtr
 MaterialSemantic::getParamPointer(const std::string& name) const noexcept
 {
     for (auto& it : _semantics)

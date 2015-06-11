@@ -253,7 +253,7 @@ DeferredLighting::renderSunLight(const Light& light) noexcept
     {
         _shadowChannel->assign(light.getShadow());
         _shadowMatrix->assign(light.getShadowCamera()->getViewProject());
-        _shadowMap->setTexture(light.getShadowCamera()->getRenderTexture()->getResolveTexture());
+        _shadowMap->assign(light.getShadowCamera()->getRenderTexture()->getResolveTexture());
     }
 
     this->setTechnique(_deferredSunLight);
@@ -324,13 +324,13 @@ DeferredLighting::renderShadow() noexcept
     this->setRenderTexture(camera->getRenderTexture());
     this->drawRenderable(RenderQueue::Shadow, RenderPass::RP_SHADOW, pass);
 
-    _shadowDecal->setTexture(camera->getRenderTexture()->getResolveTexture());
+    _shadowDecal->assign(camera->getRenderTexture()->getResolveTexture());
 
     this->setRenderTexture(camera->getSwapTexture());
     this->setTechnique(_shadowBlurX);
     this->drawSceneQuad();
 
-    _shadowDecal->setTexture(camera->getSwapTexture()->getResolveTexture());
+    _shadowDecal->assign(camera->getSwapTexture()->getResolveTexture());
 
     this->setRenderTexture(camera->getRenderTexture());
     this->setTechnique(_shadowBlurY);

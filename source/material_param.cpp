@@ -34,56 +34,70 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/material_bind.h>
-#include <ray/material_semantic.h>
+#include <ray/material_param.h>
 
 _NAME_BEGIN
 
-ShaderConstantBufferPtr
-MaterialParmBinds::getConstantBuffer() const noexcept
+MaterialParam::MaterialParam() noexcept
 {
-    return _constantBuffer;
+}
+
+MaterialParam::MaterialParam(const std::string& name, float value) noexcept
+    : ShaderParam(name, value)
+{
+}
+
+MaterialParam::MaterialParam(const std::string& name, const float3& value) noexcept
+    : ShaderParam(name, value)
+{
+}
+MaterialParam::MaterialParam(const std::string& name, const Vector4& value) noexcept
+    : ShaderParam(name, value)
+{
+}
+
+MaterialParam::MaterialParam(const std::string& name, const Matrix4x4& value) noexcept
+    : ShaderParam(name, value)
+{
+}
+
+MaterialParam::MaterialParam(const std::string& name, ShaderParamType type) noexcept
+    : ShaderParam(name, type)
+{
+}
+
+MaterialParam::~MaterialParam() noexcept
+{
 }
 
 void
-MaterialParmBinds::_buildUniformBinds(const MaterialSemantic& semanticList, const ShaderParams& paramList, const ShaderUniforms& uniformList)
+MaterialParam::addShaderUniform(ShaderUniformPtr uniform) noexcept
 {
-    _constantBuffer = std::make_shared<ShaderConstantBuffer>();
+    assert(std::find(_uniforms.begin(), _uniforms.end(), uniform) == _uniforms.end());
+    _uniforms.push_back(uniform);
+}
 
-    std::map<std::string, ShaderParamPtr> paramMap;
-
-    std::size_t size = paramList.size();
-    for (std::size_t i = 0; i < size; i++)
+void
+MaterialParam::removeShaderUniform(ShaderUniformPtr uniform) noexcept
+{
+    auto it = std::find(_uniforms.begin(), _uniforms.end(), uniform);
+    if (it != _uniforms.end())
     {
-        paramMap[paramList[i]->getName()] = paramList[i];
+        _uniforms.erase(it);
     }
+}
 
-    for (auto& it : uniformList)
+void
+MaterialParam::onChangeBefore() noexcept
+{
+}
+
+void
+MaterialParam::onChangeAfter() noexcept
+{
+    for (auto& it : _uniforms)
     {
-        auto param = paramMap[it->name];
-        if (param)
-        {
-            auto semantic = param->getSemantic();
-
-            if (!semantic.empty())
-            {
-                ShaderParamArg arg;
-                arg.uniform = it;
-                arg.value = semanticList.getParamPointer(semantic);
-                if (arg.value)
-                {
-                    _constantBuffer->addParamArg(arg);
-                }
-            }
-            else
-            {
-                ShaderParamArg arg;
-                arg.uniform = it;
-                arg.value = param;
-
-                _constantBuffer->addParamArg(arg);
-            }
-        }
+        it->needUpdate(true);
     }
 }
 

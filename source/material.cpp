@@ -46,6 +46,7 @@ Material::Material() noexcept
 
 Material::~Material() noexcept
 {
+    this->close();
 }
 
 void
@@ -53,14 +54,80 @@ Material::setup() noexcept
 {
     for (auto& technique : _techniques)
     {
-        if (technique)
+        auto& passList = technique->getPassList();
+        for (auto& pass : passList)
         {
-            auto& passList = technique->getPassList();
-            for (auto& pass : passList)
+            auto renderState = pass->getRenderState();
+            if (!renderState)
             {
-                if (pass)
+                pass->setRenderState(std::make_shared<RenderState>());
+            }
+
+            auto shaderObject = pass->getShaderObject();
+            if (shaderObject->setup())
+            {
+                auto uniforms = shaderObject->getActiveUniforms();
+                for (auto& it : uniforms)
                 {
-                    pass->setup(*this);
+                    auto param = this->getParameter(it->name);
+                    if (param)
+                    {
+                        auto semantic = param->getSemantic();
+                        if (!semantic.empty())
+                        {
+                            auto parameter = this->getMaterialSemantic()->getParamPointer(semantic);
+                            if (parameter)
+                            {
+                                parameter->addShaderUniform(it);
+                                it->value = parameter;
+                            }
+                        }
+                        else
+                        {
+                            param->addShaderUniform(it);
+
+                            it->value = param;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void
+Material::close() noexcept
+{
+    for (auto& technique : _techniques)
+    {
+        auto& passList = technique->getPassList();
+        for (auto& pass : passList)
+        {
+            auto shaderObject = pass->getShaderObject();
+            if (shaderObject->setup())
+            {
+                auto uniforms = shaderObject->getActiveUniforms();
+                for (auto& it : uniforms)
+                {
+                    auto param = this->getParameter(it->name);
+                    if (param)
+                    {
+                        auto semantic = param->getSemantic();
+                        if (!semantic.empty())
+                        {
+                            auto parameter = this->getMaterialSemantic()->getParamPointer(semantic);
+                            if (parameter)
+                            {
+                                parameter->removeShaderUniform(it);
+                                it->value = nullptr;
+                            }
+                        }
+                        else
+                        {
+                            param->removeShaderUniform(it);
+                            it->value = nullptr;
+                        }
+                    }
                 }
             }
         }
@@ -105,7 +172,7 @@ Material::getTechs() noexcept
 }
 
 void
-Material::addParameter(ShaderParamPtr parameter) noexcept
+Material::addParameter(MaterialParamPtr parameter) noexcept
 {
     if (parameter)
     {
@@ -118,7 +185,7 @@ Material::addParameter(ShaderParamPtr parameter) noexcept
 }
 
 void
-Material::removeParameter(ShaderParamPtr parameter) noexcept
+Material::removeParameter(MaterialParamPtr parameter) noexcept
 {
     if (parameter)
     {
@@ -130,8 +197,8 @@ Material::removeParameter(ShaderParamPtr parameter) noexcept
     }
 }
 
-ShaderParamPtr
-Material::getParameter(const std::string& name) noexcept
+MaterialParamPtr
+Material::getParameter(const std::string& name) const noexcept
 {
     for (auto& it : _parameters)
     {
@@ -144,13 +211,13 @@ Material::getParameter(const std::string& name) noexcept
     return nullptr;
 }
 
-ShaderParams&
+MaterialParams&
 Material::getParameters() noexcept
 {
     return _parameters;
 }
 
-const ShaderParams&
+const MaterialParams&
 Material::getParameters() const noexcept
 {
     return _parameters;

@@ -37,7 +37,7 @@
 #ifndef _H_MATERIAL_SEMANTIC_H_
 #define _H_MATERIAL_SEMANTIC_H_
 
-#include <ray/material_fwd.h>
+#include <ray/material_param.h>
 
 _NAME_BEGIN
 
@@ -147,11 +147,11 @@ public:
     std::string getTexParmName(GlobalTexSemantic index) const noexcept;
     GlobalTexSemantic getTexParamSemantic(const std::string& name) const noexcept;
 
-    ShaderParamPtr getParamPointer(const std::string& name) const noexcept;
+    MaterialParamPtr getParamPointer(const std::string& name) const noexcept;
 
 private:
 
-    std::vector<ShaderParamPtr> _semantics;
+    MaterialParams _semantics;
 };
 
 _NAME_END

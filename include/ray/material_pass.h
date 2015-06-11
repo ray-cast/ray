@@ -37,7 +37,7 @@
 #ifndef _H_MATERIAL_PASS_H_
 #define _H_MATERIAL_PASS_H_
 
-#include <ray/material_bind.h>
+#include <ray/material_fwd.h>
 
 _NAME_BEGIN
 
@@ -58,19 +58,16 @@ public:
     MaterialPass(RenderPass pass) noexcept;
     ~MaterialPass() noexcept;
 
-    void setup(const Material& material) noexcept;
-
     void setName(const std::string& name) noexcept;
     const std::string& getName() const noexcept;
 
-    void setShaderObject(ShaderObjectPtr shader) noexcept;
-    void setRenderState(RenderStatePtr state) noexcept;
-
     RenderPass getRenderPass() noexcept;
 
-    ShaderObjectPtr getShaderObject() noexcept;
+    void setRenderState(RenderStatePtr state) noexcept;
     RenderStatePtr getRenderState() noexcept;
-    ShaderConstantBufferPtr getShaderConstantBuffer() noexcept;
+
+    void setShaderObject(ShaderObjectPtr shader) noexcept;
+    ShaderObjectPtr getShaderObject() noexcept;
 
 private:
 
@@ -80,7 +77,6 @@ private:
 
     ShaderObjectPtr _shaderObject;
     RenderStatePtr _renderState;
-    MaterialParmBindsPtr _paramBindings;
 };
 
 _NAME_END

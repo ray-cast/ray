@@ -59,15 +59,15 @@ public:
     MaterialTech(RenderQueue renderQueue) noexcept;
     ~MaterialTech() noexcept;
 
+    RenderQueue getRenderQueue() const noexcept;
+
     void addPass(MaterialPassPtr pass);
     void removePass(MaterialPassPtr pass);
 
     MaterialPassPtr getPass(RenderPass passType) noexcept;
     MaterialPassPtr getPass(const std::string& name) noexcept;
 
-    RenderQueue getRenderQueue() const noexcept;
-
-    PassList& getPassList() noexcept;
+    MaterialPassList& getPassList() noexcept;
 
     bool empty() const noexcept;
     std::size_t count() const noexcept;
@@ -76,7 +76,7 @@ private:
 
     RenderQueue _renderQueue;
 
-    PassList _passList;
+    MaterialPassList _passList;
 };
 
 _NAME_END

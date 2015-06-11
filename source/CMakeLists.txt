@@ -335,8 +335,6 @@ SET(RENDERER_CORE
     ${SOURCE_PATH}/render_impl.cpp
     ${HEADER_PATH}/render_canvas.h
     ${SOURCE_PATH}/render_canvas.cpp
-    ${HEADER_PATH}/framebuffer.h
-    ${SOURCE_PATH}/framebuffer.cpp
     ${HEADER_PATH}/render_state.h
     ${SOURCE_PATH}/render_state.cpp
     ${HEADER_PATH}/shader.h
@@ -357,8 +355,6 @@ SET(RENDERER_OGL
     ${SOURCE_PATH}/ogl_types.cpp
     ${HEADER_PATH}/ogl_renderer.h
     ${SOURCE_PATH}/ogl_renderer.cpp
-    ${HEADER_PATH}/ogl_target.h
-    ${SOURCE_PATH}/ogl_target.cpp
     ${HEADER_PATH}/ogl_commandlist.h
     ${SOURCE_PATH}/ogl_commandlist.cpp
     ${HEADER_PATH}/ogl_state.h
@@ -398,8 +394,8 @@ SET(RENDERER_MATERIAL
     ${HEADER_PATH}/material.h
     ${SOURCE_PATH}/material.cpp
     ${HEADER_PATH}/material_fwd.h
-    ${HEADER_PATH}/material_bind.h
-    ${SOURCE_PATH}/material_bind.cpp
+    ${HEADER_PATH}/material_param.h
+    ${SOURCE_PATH}/material_param.cpp
     ${HEADER_PATH}/material_semantic.h
     ${SOURCE_PATH}/material_semantic.cpp
     ${HEADER_PATH}/material_pass.h

@@ -92,7 +92,7 @@ MaterialTech::getPass(const std::string& name) noexcept
     return nullptr;
 }
 
-PassList&
+MaterialPassList&
 MaterialTech::getPassList() noexcept
 {
     return _passList;

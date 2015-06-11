@@ -37,21 +37,35 @@
 #ifndef _H_MATERIAL_BIND_H_
 #define _H_MATERIAL_BIND_H_
 
-#include <ray/material_semantic.h>
+#include <ray/material_fwd.h>
 
 _NAME_BEGIN
 
-class EXPORT MaterialParmBinds
+class EXPORT MaterialParam final : public ShaderParam
 {
 public:
+    MaterialParam() noexcept;
+    MaterialParam(const std::string& name, float) noexcept;
+    MaterialParam(const std::string& name, const float3& m) noexcept;
+    MaterialParam(const std::string& name, const Vector4& m) noexcept;
+    MaterialParam(const std::string& name, const Matrix4x4& m) noexcept;
+    MaterialParam(const std::string& name, ShaderParamType type) noexcept;
+    ~MaterialParam() noexcept;
 
-    ShaderConstantBufferPtr getConstantBuffer() const noexcept;
+    void addShaderUniform(ShaderUniformPtr uniform) noexcept;
+    void removeShaderUniform(ShaderUniformPtr uniform) noexcept;
 
-    void _buildUniformBinds(const MaterialSemantic& semantic, const ShaderParams& param, const ShaderUniforms& uniform);
+private:
+    virtual void onChangeBefore() noexcept;
+    virtual void onChangeAfter() noexcept;
+
+private:
+    MaterialParam(const MaterialParam&) = delete;
+    MaterialParam& operator=(const MaterialParam&) = delete;
 
 private:
 
-    ShaderConstantBufferPtr _constantBuffer;
+    ShaderUniforms _uniforms;
 };
 
 _NAME_END

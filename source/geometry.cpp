@@ -147,7 +147,6 @@ Geometry::render(RendererPtr renderer, RenderQueue queue, RenderPass passType, M
 
         renderer->setRenderState(pass->getRenderState());
         renderer->setShaderObject(pass->getShaderObject());
-        renderer->setShaderConstantBuffer(pass->getShaderConstantBuffer());
 
         renderer->drawMesh(_geometry, *_renderable);
     }

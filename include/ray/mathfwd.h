@@ -55,7 +55,7 @@ class Rectt;
 template<typename T = std::uint32_t>
 class Binaryt;
 
-template<typename T = int>
+template<typename T = Float>
 class Viewportt;
 
 template<typename T = Float>

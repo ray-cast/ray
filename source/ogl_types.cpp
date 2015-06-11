@@ -89,8 +89,6 @@ OGLTypes::asOGLVertexDataType(VertexDataType type) noexcept
         return GL_UNSIGNED_SHORT;
     case ray::GPU_DATATYPE_UNSIGNED_INT:
         return GL_UNSIGNED_INT;
-    case ray::GPU_DATATYPE_UINT32:
-        return GL_UNSIGNED_INT;
     case ray::GPU_DATATYPE_FLOAT:
         return GL_FLOAT;
     default:

@@ -486,12 +486,12 @@ public:
     size_type& operator[](int n) noexcept { return ((size_type*)this)[n]; }
     const size_type& operator[](int n) const noexcept { return ((size_type*)this)[n]; }
 
-    explicit operator const T*() const noexcept
+    const T* ptr() const noexcept
     {
         return &left;
     }
 
-    explicit operator T*() noexcept
+    T* ptr() noexcept
     {
         return &left;
     }

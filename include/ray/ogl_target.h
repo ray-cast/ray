@@ -41,28 +41,6 @@
 
 _NAME_BEGIN
 
-class OGLFramebuffer final : public Framebuffer
-{
-public:
-    OGLFramebuffer() noexcept;
-    ~OGLFramebuffer() noexcept;
-
-    void setup(const FramebufferDesc& desc) noexcept;
-    void close() noexcept;
-
-    void bind() noexcept;
-    void unbind() noexcept;
-
-    void bitblit(const Viewport& src, FramebufferPtr target, const Viewport& dest) noexcept;
-
-private:
-    void bindTexture(TexturePtr texture, GLenum attachment) const noexcept;
-
-private:
-
-    GLuint _framebuffer;
-};
-
 _NAME_END
 
 #endif

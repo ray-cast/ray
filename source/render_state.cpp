@@ -59,6 +59,7 @@ RenderRasterState::RenderRasterState() noexcept
     , depthBias(0)
     , scissorTestEnable(false)
     , multisampleEnable(false)
+    , srgbEnable(false)
 {
 }
 

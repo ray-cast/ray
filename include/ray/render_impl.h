@@ -51,10 +51,6 @@ public:
     bool open(RenderDevicePtr renderDevice, const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) except;
     void close() noexcept;
 
-    void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
-
-    void setViewport(const Viewport& view) noexcept;
-
     void setSwapInterval(SwapInterval interval) noexcept;
     SwapInterval getSwapInterval() const noexcept;
 
@@ -63,11 +59,6 @@ public:
     void setDepthState(const RenderDepthState& state) noexcept;
     void setStencilState(const RenderStencilState& state) noexcept;
     void setRenderState(RenderStatePtr state) noexcept;
-
-    void renderBegin() noexcept;
-    void renderEnd() noexcept;
-
-    void present(RenderCanvasPtr canvas) noexcept;
 
     RenderCanvasPtr createRenderCanvas(WindHandle hwnd) noexcept;
     void setRenderCanvas(RenderCanvasPtr canvas) noexcept;
@@ -83,11 +74,11 @@ public:
     void updateRenderBuffer(RenderBufferPtr buffer) noexcept;
     void drawRenderBuffer(const Renderable& renderable) noexcept;
 
-    FramebufferPtr createFramebuffer(const FramebufferDesc& target) noexcept;
-    void setFramebuffer(FramebufferPtr target) noexcept;
-    void destroyFramebuffer(FramebufferPtr target) noexcept;
-    void copyFramebuffer(FramebufferPtr srcTarget, const Viewport& src, FramebufferPtr destTarget, const Viewport& dest) noexcept;
-    void readFramebuffer(FramebufferPtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+    bool createRenderTexture(RenderTexture& target) noexcept;
+    void destroyRenderTexture(RenderTexture& target) noexcept;
+    void setRenderTexture(RenderTexturePtr target) noexcept;
+    void copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept;
+    void readRenderTexture(RenderTexturePtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
 
     bool createMultiRenderTexture(MultiRenderTexture& desc) noexcept;
     void destroyMultiRenderTexture(MultiRenderTexture& target) noexcept;
@@ -99,6 +90,11 @@ public:
     ShaderProgramPtr createShaderProgram(std::vector<ShaderPtr>& shaders) noexcept;
     void destroyShaderProgram(ShaderProgramPtr program) noexcept;
     void setShaderProgram(ShaderProgramPtr program) noexcept;
+
+    void renderBegin() noexcept;
+    void renderEnd() noexcept;
+
+    void present(RenderCanvasPtr canvas) noexcept;
 
 private:
     RenderImpl(const RenderImpl&) noexcept = delete;

@@ -52,13 +52,6 @@ public:
     virtual bool open(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) noexcept;
     virtual void close() noexcept;
 
-    virtual void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
-    virtual void clear(std::size_t i, ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
-
-    virtual void present(RenderCanvasPtr canvas) noexcept;
-
-    virtual void setViewport(const Viewport& view) noexcept;
-
     virtual void setSwapInterval(SwapInterval interval) noexcept;
     virtual SwapInterval getSwapInterval() const noexcept;
 
@@ -67,9 +60,6 @@ public:
     virtual void setDepthState(const RenderDepthState& state) noexcept;
     virtual void setStencilState(const RenderStencilState& state) noexcept;
     virtual void setRenderState(RenderStatePtr state) noexcept;
-
-    virtual void renderBegin() noexcept;
-    virtual void renderEnd() noexcept;
 
     virtual RenderCanvasPtr createRenderCanvas(WindHandle hwnd) noexcept;
     virtual void destroyRenderCanvas(RenderCanvasPtr canvas) noexcept;
@@ -85,11 +75,12 @@ public:
     virtual void updateRenderBuffer(RenderBufferPtr buffer) noexcept;
     virtual void drawRenderBuffer(const Renderable& renderable) noexcept;
 
-    virtual FramebufferPtr createFramebuffer(const FramebufferDesc& target) noexcept;
-    virtual void destroyFramebuffer(FramebufferPtr target) noexcept;
-    virtual void setFramebuffer(FramebufferPtr handle) noexcept;
-    virtual void copyFramebuffer(FramebufferPtr srcTarget, const Viewport& src, FramebufferPtr destTarget, const Viewport& dest) noexcept;
-    virtual void readFramebuffer(FramebufferPtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+    virtual bool createRenderTexture(RenderTexture& target) noexcept;
+    virtual void destroyRenderTexture(RenderTexture& target) noexcept;
+    virtual void setRenderTexture(RenderTexturePtr target) noexcept;
+    virtual void bindRenderTexture(RenderTexturePtr target, Attachment attachment) noexcept;
+    virtual void copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept;
+    virtual void readRenderTexture(RenderTexturePtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
 
     virtual bool createMultiRenderTexture(MultiRenderTexture& target) noexcept;
     virtual void destroyMultiRenderTexture(MultiRenderTexture& target) noexcept;
@@ -103,14 +94,24 @@ public:
     virtual void destroyShaderProgram(ShaderProgramPtr shader) noexcept;
     virtual void setShaderProgram(ShaderProgramPtr shader) noexcept;
 
+    virtual void renderBegin() noexcept;
+    virtual void renderEnd() noexcept;
+
+    virtual void present(RenderCanvasPtr canvas) noexcept;
+
 private:
     void initCommandList() noexcept;
     void initInternals(bool hwsupport, bool bindlessSupport) noexcept;
 
+    void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
+    void clear(std::size_t i, ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
+
+    void setViewport(const Viewport& view) noexcept;
+
     void nvtokenCommandToString(GLenum type, char*& string) noexcept;
     void nvtokenGetStats(const void* stream, size_t streamSize, int stats[GL_MAX_COMMANDS_NV]) noexcept;
     void nvtokenDrawCommandState() noexcept;
-    GLenum nvtokenDrawCommandSequence(const void* stream, size_t streamSize, GLenum mode, GLenum type, const StateSystem::State* state) noexcept;
+    GLenum nvtokenDrawCommandSequence(const void* stream, size_t streamSize, GLenum mode, GLenum type, const State* state) noexcept;
 
     static void checkError() noexcept;
     static void checkFramebuffer() noexcept;
@@ -141,9 +142,10 @@ private:
     RenderCanvasPtr _renderCanvas;
     RenderStatePtr _state;
 
-    FramebufferPtr _renderTarget;
-    MultiRenderTexturePtr _multiFramebuffer;
-    std::vector<OGLRenderTexture> _framebuffers;
+    RenderTexturePtr _renderTexture;
+    MultiRenderTexturePtr _multiRenderTexture;
+    std::vector<OGLRenderTexture> _renderTextures;
+    std::vector<OGLRenderTexture> _multiRenderTextures;
 
     ShaderProgramPtr _shader;
     std::vector<OGLConstantBuffer> _constantBuffers;

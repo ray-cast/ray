@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/ogl_renderer.h>
-#include <ray/ogl_target.h>
 #include <ray/ogl_shader.h>
 
 _NAME_BEGIN
@@ -160,6 +159,24 @@ OGLRenderer::close() noexcept
         {
             glDeleteBuffers(1, &it.ibo);
             it.ibo = GL_NONE;
+        }
+    }
+
+    for (auto& it : _renderTextures)
+    {
+        if (it.fbo != GL_NONE)
+        {
+            glDeleteFramebuffers(1, &it.fbo);
+            it.fbo = GL_NONE;
+        }
+    }
+
+    for (auto& it : _multiRenderTextures)
+    {
+        if (it.fbo != GL_NONE)
+        {
+            glDeleteFramebuffers(1, &it.fbo);
+            it.fbo = GL_NONE;
         }
     }
 
@@ -318,26 +335,36 @@ OGLRenderer::setRasterState(const RenderRasterState& rasterState) noexcept
         {
             glDisable(GL_CULL_FACE);
         }
+
+        _rasterState.cullMode = rasterState.cullMode;
     }
 
     if (rasterState.depthBiasEnable)
     {
 #if !defined(EGLAPI)
         if (!_rasterState.depthBiasEnable)
+        {
             glEnable(GL_POLYGON_OFFSET_EXT);
+            _rasterState.depthBiasEnable = true;
+        }
 #endif
 
         if (_rasterState.depthBias != rasterState.depthBias ||
             _rasterState.slopScaleDepthBias != rasterState.slopScaleDepthBias)
         {
             glPolygonOffset(rasterState.slopScaleDepthBias, rasterState.depthBias);
+            _rasterState.depthBias = rasterState.depthBias;
+            _rasterState.slopScaleDepthBias = rasterState.slopScaleDepthBias;
         }
     }
     else
     {
 #if !defined(EGLAPI)
         if (_rasterState.depthBiasEnable)
+        {
             glDisable(GL_POLYGON_OFFSET_EXT);
+            _rasterState.depthBiasEnable = false;
+        }
 #endif
     }
 
@@ -346,6 +373,7 @@ OGLRenderer::setRasterState(const RenderRasterState& rasterState) noexcept
     {
         GLenum mode = OGLTypes::asFillMode(rasterState.fillMode);
         glPolygonMode(GL_FRONT_AND_BACK, mode);
+        _rasterState.fillMode = rasterState.fillMode;
     }
 #endif
 
@@ -355,9 +383,9 @@ OGLRenderer::setRasterState(const RenderRasterState& rasterState) noexcept
             glEnable(GL_SCISSOR_TEST);
         else
             glDisable(GL_SCISSOR_TEST);
-    }
 
-    _rasterState = rasterState;
+        _rasterState.scissorTestEnable = rasterState.scissorTestEnable;
+    }
 }
 
 void
@@ -522,6 +550,8 @@ void
 OGLRenderer::renderEnd() noexcept
 {
     _renderBuffer = nullptr;
+    _renderTexture = nullptr;
+    _multiRenderTexture = nullptr;
 }
 
 void
@@ -598,7 +628,7 @@ OGLRenderer::createRenderCanvas(WindHandle hwnd) noexcept
         // disable 131184, 131185
         glDebugMessageControlKHR(GL_DEBUG_SOURCE_API_KHR, GL_DEBUG_TYPE_OTHER_KHR, GL_DONT_CARE, 3, ids, GL_FALSE);
 #endif
-    }
+        }
 
     if (_ARB_vertex_attrib_binding)
     {
@@ -616,7 +646,7 @@ OGLRenderer::createRenderCanvas(WindHandle hwnd) noexcept
 
     _renderCanvas = canvas;
     return canvas;
-}
+    }
 
 void
 OGLRenderer::destroyRenderCanvas(RenderCanvasPtr canvas) noexcept
@@ -883,25 +913,25 @@ OGLRenderer::createRenderBuffer(RenderBuffer& buffer) noexcept
         }
     }
 
-    if (_renderBuffers.size() < renderBuffer.vbo)
+    auto instanceID = buffer.getInstanceID();
+
+    if (_renderBuffers.size() < instanceID)
     {
-        _renderBuffers.resize(renderBuffer.vbo * 2);
+        _renderBuffers.resize(instanceID);
     }
 
-    _renderBuffers[renderBuffer.vbo] = renderBuffer;
-
-    buffer.setUserData(renderBuffer.vbo);
+    _renderBuffers[instanceID] = renderBuffer;
 
     return true;
 }
 
 void
-OGLRenderer::destroyRenderBuffer(RenderBuffer& renderBuffer) noexcept
+OGLRenderer::destroyRenderBuffer(RenderBuffer& buffer) noexcept
 {
-    auto index = renderBuffer.getUserData();
-    if (index != 0)
+    auto instanceID = buffer.getInstanceID();
+    if (instanceID != 0)
     {
-        auto& buffer = _renderBuffers[index];
+        auto& buffer = _renderBuffers[instanceID];
 
         if (buffer.vao != GL_NONE)
         {
@@ -924,59 +954,58 @@ OGLRenderer::destroyRenderBuffer(RenderBuffer& renderBuffer) noexcept
 }
 
 void
-OGLRenderer::setRenderBuffer(RenderBufferPtr renderBuffer) noexcept
+OGLRenderer::setRenderBuffer(RenderBufferPtr buffer) noexcept
 {
-    assert(renderBuffer->getUserData());
-
-    if (_renderBuffer != renderBuffer)
+    if (_renderBuffer != buffer)
     {
-        auto buffer = _renderBuffers[renderBuffer->getUserData()];
+        auto instanceID = buffer->getInstanceID();
+        auto& renderBuffer = _renderBuffers[instanceID];
 
         if (_NV_vertex_buffer_unified_memory)
         {
-            if (buffer.bindlessVbo)
+            if (renderBuffer.bindlessVbo)
             {
-                for (auto& it : buffer.attribs)
+                for (auto& it : renderBuffer.attribs)
                 {
-                    glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV, it.attrib, buffer.bindlessVbo + it.offset, buffer.vertexSize - it.offset);
+                    glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV, it.attrib, renderBuffer.bindlessVbo + it.offset, renderBuffer.vertexSize - it.offset);
                 }
             }
 
-            if (buffer.bindlessIbo)
+            if (renderBuffer.bindlessIbo)
             {
-                glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, buffer.bindlessIbo, buffer.indexSize);
+                glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, renderBuffer.bindlessIbo, renderBuffer.indexSize);
             }
         }
         else if (_ARB_vertex_attrib_binding)
         {
-            for (auto& it : buffer.attribs)
+            for (auto& it : renderBuffer.attribs)
             {
-                glBindVertexBuffer(it.attrib, buffer.vbo, it.offset, it.stride);
+                glBindVertexBuffer(it.attrib, renderBuffer.vbo, it.offset, it.stride);
             }
 
-            if (buffer.ibo)
+            if (renderBuffer.ibo)
             {
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.ibo);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderBuffer.ibo);
             }
         }
         else if (_ARB_vertex_array_object)
         {
-            assert(buffer.vao);
-            glBindVertexArray(buffer.vao);
+            assert(renderBuffer.vao);
+            glBindVertexArray(renderBuffer.vao);
         }
         else
         {
-            glBindBuffer(GL_ARRAY_BUFFER, buffer.vbo);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.ibo);
+            glBindBuffer(GL_ARRAY_BUFFER, renderBuffer.vbo);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderBuffer.ibo);
 
-            for (auto& it : buffer.attribs)
+            for (auto& it : renderBuffer.attribs)
             {
                 glEnableVertexAttribArray(it.attrib);
                 glVertexAttribPointer(it.attrib, it.size, it.type, GL_FALSE, it.stride, (void*)it.offset);
             }
         }
 
-        _renderBuffer = renderBuffer;
+        _renderBuffer = buffer;
     }
 }
 
@@ -987,7 +1016,7 @@ OGLRenderer::updateRenderBuffer(RenderBufferPtr renderBuffer) noexcept
 
     auto vb = renderBuffer->getVertexBuffer();
     auto ib = renderBuffer->getIndexBuffer();
-    auto buffer = _renderBuffers[renderBuffer->getUserData()];
+    auto buffer = _renderBuffers[renderBuffer->getInstanceID()];
 
     if (vb)
     {
@@ -1035,7 +1064,7 @@ OGLRenderer::drawRenderBuffer(const Renderable& renderable) noexcept
 
     auto vb = _renderBuffer->getVertexBuffer();
     auto ib = _renderBuffer->getIndexBuffer();
-    auto buffer = _renderBuffers[_renderBuffer->getUserData()];
+    auto buffer = _renderBuffers[_renderBuffer->getInstanceID()];
 
     assert(buffer.vertexCount >= renderable.startVertice + renderable.numVertices);
 
@@ -1056,7 +1085,7 @@ OGLRenderer::drawRenderBuffer(const Renderable& renderable) noexcept
         assert(renderable.startVertice == 0);
         glDrawElements(drawType, numIndice, indexType, (char*)(nullptr) + (startIndice * numIndice));
 #endif
-    }
+}
     else
     {
         if (renderable.numInstances > 0)
@@ -1066,52 +1095,151 @@ OGLRenderer::drawRenderBuffer(const Renderable& renderable) noexcept
     }
 }
 
-FramebufferPtr
-OGLRenderer::createFramebuffer(const FramebufferDesc& rt) noexcept
+bool
+OGLRenderer::createRenderTexture(RenderTexture& target) noexcept
 {
-    OGLFramebufferPtr result;
+    OGLRenderTexture instance;
 
-    result = std::make_shared<OGLFramebuffer>();
-    result->setup(rt);
+    glGenFramebuffers(1, &instance.fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, instance.fbo);
 
-    _renderTarget = nullptr;
-    _multiFramebuffer = nullptr;
+    auto instanceID = target.getInstanceID();
 
-    return result;
+    auto sharedDepthTarget = target.getSharedDepthTexture();
+    auto sharedStencilTarget = target.getSharedStencilTexture();
+
+    if (sharedDepthTarget == sharedStencilTarget)
+    {
+        if (sharedDepthTarget)
+            this->bindRenderTexture(sharedDepthTarget, Attachment::DEPTH_STENCIL);
+    }
+    else
+    {
+        if (sharedDepthTarget)
+        {
+            this->bindRenderTexture(sharedDepthTarget, Attachment::DEPTH);
+        }
+
+        if (sharedStencilTarget)
+        {
+            this->bindRenderTexture(sharedStencilTarget, Attachment::STENCIL);
+        }
+    }
+
+    auto resolveFormat = target.getTexFormat();
+
+    if (resolveFormat == PixelFormat::DEPTH24_STENCIL8 || resolveFormat == PixelFormat::DEPTH32_STENCIL8)
+    {
+        this->bindRenderTexture(target.shared_from_this(), Attachment::DEPTH_STENCIL);
+    }
+    else if (resolveFormat == PixelFormat::DEPTH_COMPONENT16 || resolveFormat == PixelFormat::DEPTH_COMPONENT24 || resolveFormat == PixelFormat::DEPTH_COMPONENT32)
+    {
+        this->bindRenderTexture(target.shared_from_this(), Attachment::DEPTH);
+    }
+    else
+    {
+        this->bindRenderTexture(target.shared_from_this(), Attachment::COLOR0);
+    }
+
+    if (_EXT_direct_state_access)
+        glFramebufferDrawBufferEXT(instance.fbo, GL_COLOR_ATTACHMENT0);
+    else
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+    _renderTexture = nullptr;
+    _multiRenderTexture = nullptr;
+
+    if (_renderTextures.size() <= instanceID)
+    {
+        _renderTextures.resize(instanceID * 2);
+    }
+
+    _renderTextures[instanceID] = instance;
+
+#if defined(_DEBUG)
+    this->checkFramebuffer();
+#endif
+
+    return true;
 }
 
 void
-OGLRenderer::destroyFramebuffer(FramebufferPtr target) noexcept
+OGLRenderer::destroyRenderTexture(RenderTexture& target) noexcept
 {
-    auto oglFramebuffer = std::dynamic_pointer_cast<OGLFramebuffer>(target);
-    if (oglFramebuffer)
+    auto instanceID = target.getInstanceID();
+    auto framebuffer = _renderTextures[instanceID].fbo;
+    if (framebuffer != GL_NONE)
     {
-        oglFramebuffer->close();
-
-        if (_renderTarget == target)
-            _renderTarget = nullptr;
+        glDeleteBuffers(1, &framebuffer);
+        _renderTextures[instanceID].fbo = GL_NONE;
     }
 }
 
 void
-OGLRenderer::setFramebuffer(FramebufferPtr target) noexcept
+OGLRenderer::bindRenderTexture(RenderTexturePtr target, Attachment attachment) noexcept
 {
-    if (_renderTarget != target)
+    auto attribindex = OGLTypes::asOGLAttachment(attachment);
+
+    auto texture = target->getResolveTexture();
+    auto instanceID = texture->getInstanceID();
+    auto handle = _textures[instanceID].texture;
+
+    switch (target->getTexDim())
     {
-        if (target)
+    case TextureDim::DIM_2D:
+    {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attribindex, GL_TEXTURE_2D, handle, 0);
+        break;
+    }
+    case TextureDim::DIM_2D_ARRAY:
+    {
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, attribindex, handle, 0, 0);
+        break;
+    }
+#if !defined(EGLAPI)
+    case TextureDim::DIM_3D:
+    {
+        glFramebufferTexture3D(GL_FRAMEBUFFER, attribindex, GL_TEXTURE_3D, handle, 0, 0);
+        break;
+    }
+#endif
+    }
+}
+
+void
+OGLRenderer::setRenderTexture(RenderTexturePtr target) noexcept
+{
+    assert(target);
+
+    if (_renderTexture != target)
+    {
+        auto instanceID = target->getInstanceID();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, _renderTextures[instanceID].fbo);
+
+        auto format = target->getTexFormat();
+        if (format == PixelFormat::SR8G8B8 ||
+            format == PixelFormat::SR8G8B8A8 ||
+            format == PixelFormat::SRGB ||
+            format == PixelFormat::SRGBA)
         {
-            std::dynamic_pointer_cast<OGLFramebuffer>(target)->bind();
+            if (!_rasterState.srgbEnable)
+            {
+                glEnable(GL_FRAMEBUFFER_SRGB);
+                _rasterState.srgbEnable = true;
+            }
         }
         else
         {
-            if (_renderTarget)
+            if (_rasterState.srgbEnable)
             {
-                std::dynamic_pointer_cast<OGLFramebuffer>(_renderTarget)->unbind();
+                glDisable(GL_FRAMEBUFFER_SRGB);
+                _rasterState.srgbEnable = false;
             }
         }
 
-        _renderTarget = target;
-        _multiFramebuffer = nullptr;
+        _renderTexture = target;
+        _multiRenderTexture = nullptr;
     }
 
     this->clear(target->getClearFlags(), target->getClearColor(), target->getClearDepth(), target->getClearStencil());
@@ -1119,32 +1247,44 @@ OGLRenderer::setFramebuffer(FramebufferPtr target) noexcept
 }
 
 void
-OGLRenderer::copyFramebuffer(FramebufferPtr srcRT, const Viewport& src, FramebufferPtr destRT, const Viewport& dest) noexcept
+OGLRenderer::copyRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderTexturePtr dest, const Viewport& v2) noexcept
 {
-    auto srcTarget = std::dynamic_pointer_cast<OGLFramebuffer>(srcRT);
-    if (srcTarget)
-    {
-        srcTarget->bitblit(src, destRT, dest);
+    assert(src);
 
-        _renderTarget = nullptr;
-        _multiFramebuffer = nullptr;
-    }
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, _renderTextures[src->getInstanceID()].fbo);
+
+    if (dest)
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _renderTextures[dest->getInstanceID()].fbo);
+    else
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+    glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+    _renderTexture = nullptr;
+    _multiRenderTexture = nullptr;
 }
 
 void
-OGLRenderer::readFramebuffer(FramebufferPtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+OGLRenderer::readRenderTexture(RenderTexturePtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
     assert(target && w && h && data);
 
-    std::dynamic_pointer_cast<OGLFramebuffer>(target)->bind();
+    if (_renderTexture != target)
+    {
+        auto instanceID = target->getInstanceID();
+        glBindFramebuffer(GL_FRAMEBUFFER, _renderTextures[instanceID].fbo);
+    }
 
     GLenum format = OGLTypes::asOGLFormat(pfd);
     GLenum type = OGLTypes::asOGLType(pfd);
 
     glReadPixels(0, 0, w, h, format, type, data);
 
-    _renderTarget = target;
-    _multiFramebuffer = nullptr;
+    _renderTexture = target;
+    _multiRenderTexture = nullptr;
 }
 
 bool
@@ -1157,13 +1297,12 @@ OGLRenderer::createMultiRenderTexture(MultiRenderTexture& target) noexcept
     glGenFramebuffers(1, &instance.fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, instance.fbo);
 
+    std::size_t count = 0;
+    GLenum  draw[Attachment::COLOR15];
+
     for (auto& it : target.getRenderTextures())
     {
-        auto oglTarget = std::dynamic_pointer_cast<OGLFramebuffer>(it.texture->getFramebuffer());
-        if (!oglTarget)
-            continue;
-
-        TexturePtr texture = oglTarget->getResolveTexture();
+        TexturePtr texture = it.texture->getResolveTexture();
         if (!texture)
             continue;
 
@@ -1184,19 +1323,11 @@ OGLRenderer::createMultiRenderTexture(MultiRenderTexture& target) noexcept
         else
             assert(false);
 
-        instance.drawbuffers.push_back(std::make_pair(oglTarget, attachment));
-    }
-
-    std::size_t count = 0;
-    GLenum  draw[Attachment::COLOR15];
-
-    for (auto& it : instance.drawbuffers)
-    {
-        if (it.second != GL_DEPTH_ATTACHMENT &&
-            it.second != GL_DEPTH_STENCIL_ATTACHMENT &&
-            it.second != GL_STENCIL_ATTACHMENT)
+        if (attachment != GL_DEPTH_ATTACHMENT &&
+            attachment != GL_DEPTH_STENCIL_ATTACHMENT &&
+            attachment != GL_STENCIL_ATTACHMENT)
         {
-            draw[count++] = it.second;
+            draw[count++] = attachment;
         }
     }
 
@@ -1205,15 +1336,15 @@ OGLRenderer::createMultiRenderTexture(MultiRenderTexture& target) noexcept
     else
         glDrawBuffers(count, draw);
 
-    _renderTarget = nullptr;
-    _multiFramebuffer = nullptr;
+    _renderTexture = nullptr;
+    _multiRenderTexture = nullptr;
 
-    if (_framebuffers.size() < instanceID)
+    if (_multiRenderTextures.size() <= instanceID)
     {
-        _framebuffers.resize(instanceID * 2);
+        _multiRenderTextures.resize(instanceID * 2);
     }
 
-    _framebuffers[instanceID] = instance;
+    _multiRenderTextures[instanceID] = instance;
 
     return true;
 }
@@ -1222,7 +1353,7 @@ void
 OGLRenderer::destroyMultiRenderTexture(MultiRenderTexture& target) noexcept
 {
     auto instanceID = target.getInstanceID();
-    auto& framebuffer = _framebuffers[instanceID].fbo;
+    auto& framebuffer = _multiRenderTextures[instanceID].fbo;
     if (framebuffer != GL_NONE)
     {
         glDeleteBuffers(GL_FRAMEBUFFER, &framebuffer);
@@ -1233,28 +1364,38 @@ OGLRenderer::destroyMultiRenderTexture(MultiRenderTexture& target) noexcept
 void
 OGLRenderer::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
 {
-    if (_multiFramebuffer != target)
+    if (_multiRenderTexture != target)
     {
         auto instanceID = target->getInstanceID();
-        auto framebuffer = _framebuffers[instanceID].fbo;
-        auto& drawbuffers = _framebuffers[instanceID].drawbuffers;
+        auto framebuffer = _multiRenderTextures[instanceID].fbo;
 
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
         this->setViewport(target->getViewport());
 
-        for (auto& it : drawbuffers)
+        auto& targets = target->getRenderTextures();
+        for (auto& it : targets)
         {
-            this->clear(it.second - GL_COLOR_ATTACHMENT0,
-                it.first->getClearFlags(),
-                it.first->getClearColor(),
-                it.first->getClearDepth(),
-                it.first->getClearStencil()
+            auto attachment = it.location;
+            if (attachment == Attachment::DEPTH ||
+                attachment == Attachment::STENCIL ||
+                attachment == Attachment::DEPTH_STENCIL)
+            {
+                continue;
+            }
+
+            auto index = attachment - Attachment::COLOR0;
+
+            this->clear(index,
+                it.texture->getClearFlags(),
+                it.texture->getClearColor(),
+                it.texture->getClearDepth(),
+                it.texture->getClearStencil()
                 );
         }
 
-        _multiFramebuffer = target;
-        _renderTarget = 0;
+        _multiRenderTexture = target;
+        _renderTexture = 0;
     }
 }
 
@@ -1597,6 +1738,7 @@ OGLRenderer::checkFramebuffer() noexcept
             break;
 #endif
         }
+        assert(false);
     }
 #endif
 }
@@ -1828,7 +1970,7 @@ OGLRenderer::nvtokenGetStats(const void* stream, size_t streamSize, int stats[GL
 }
 
 GLenum
-OGLRenderer::nvtokenDrawCommandSequence(const void* stream, size_t streamSize, GLenum mode, GLenum type, const StateSystem::State* state) noexcept
+OGLRenderer::nvtokenDrawCommandSequence(const void* stream, size_t streamSize, GLenum mode, GLenum type, const State* state) noexcept
 {
     const GLubyte* current = (GLubyte*)stream;
     const GLubyte* streamEnd = current + streamSize;
@@ -1859,7 +2001,8 @@ OGLRenderer::nvtokenDrawCommandSequence(const void* stream, size_t streamSize, G
 
         // if you always use emulation on non-native tokens you can use
         // cmdtype = nvtokenHeaderCommandSW(header->encoded)
-        switch (cmdtype) {
+        switch (cmdtype)
+        {
         case GL_TERMINATE_SEQUENCE_COMMAND_NV:
         {
             return type;
@@ -1961,8 +2104,8 @@ OGLRenderer::nvtokenDrawCommandSequence(const void* stream, size_t streamSize, G
         case GL_STENCIL_REF_COMMAND_NV:
         {
             const StencilRefCommandNV* cmd = (const StencilRefCommandNV*)current;
-            glStencilFuncSeparate(GL_FRONT, state->stencil.funcs[StateSystem::FACE_FRONT].func, cmd->frontStencilRef, state->stencil.funcs[StateSystem::FACE_FRONT].mask);
-            glStencilFuncSeparate(GL_BACK, state->stencil.funcs[StateSystem::FACE_BACK].func, cmd->backStencilRef, state->stencil.funcs[StateSystem::FACE_BACK].mask);
+            glStencilFuncSeparate(GL_FRONT, state->stencil.funcs[Faces::FACE_FRONT].func, cmd->frontStencilRef, state->stencil.funcs[Faces::FACE_FRONT].mask);
+            glStencilFuncSeparate(GL_BACK, state->stencil.funcs[Faces::FACE_BACK].func, cmd->backStencilRef, state->stencil.funcs[Faces::FACE_BACK].mask);
         }
         break;
 
@@ -2023,7 +2166,7 @@ OGLRenderer::nvtokenDrawCommandState() noexcept
     auto states = _tokenSequenceEmu.states.data();
     auto fbos = _tokenSequenceEmu.fbos.data();
 
-    StateSystem::StateID lastID = StateSystem::INVALID_ID;
+    StateSystem::StateID lastID = 0;
 
     GLenum type = GL_UNSIGNED_SHORT;
 
@@ -2044,7 +2187,7 @@ OGLRenderer::nvtokenDrawCommandState() noexcept
             lastfbo = fbo;
         }
 
-        _stateSystem.applyGL(ID, lastID, true);
+        _stateSystem.apply(ID, lastID);
 
         lastID = ID;
 

@@ -35,8 +35,68 @@
 
 _NAME_BEGIN
 
+GLenum s_stateEnums[StateBits::NUM_STATEBITS] =
+{
+    GL_BLEND,
+    GL_COLOR_LOGIC_OP,
+    GL_CULL_FACE,
+    GL_DEPTH_CLAMP,
+    GL_DEPTH_TEST,
+    GL_DITHER,
+    GL_FRAMEBUFFER_SRGB,
+    GL_LINE_SMOOTH,
+    GL_MULTISAMPLE,
+    GL_POLYGON_OFFSET_FILL,
+    GL_POLYGON_OFFSET_LINE,
+    GL_POLYGON_OFFSET_POINT,
+    GL_POLYGON_SMOOTH,
+    GL_PRIMITIVE_RESTART,
+    GL_PRIMITIVE_RESTART_FIXED_INDEX,
+    GL_RASTERIZER_DISCARD,
+    GL_SAMPLE_ALPHA_TO_COVERAGE,
+    GL_SAMPLE_ALPHA_TO_ONE,
+    GL_SAMPLE_COVERAGE,
+    GL_SAMPLE_SHADING,
+    GL_SAMPLE_MASK,
+    GL_STENCIL_TEST,
+    GL_SCISSOR_TEST,
+    GL_TEXTURE_CUBE_MAP_SEAMLESS,
+    GL_PROGRAM_POINT_SIZE,
+};
+
+GLenum s_stateEnumsDepr[StateBitsDepr::NUM_STATEBITSDEPR] =
+{
+    GL_ALPHA_TEST,
+    GL_LINE_STIPPLE,
+    GL_POINT_SMOOTH,
+    GL_POINT_SPRITE,
+    GL_POLYGON_STIPPLE,
+};
+
+bool isBitSet(GLbitfield bits, GLuint key)
+{
+    return  (bits & (1 << key)) ? true : false;
+}
+
+void setBit(GLbitfield& bits, GLuint key)
+{
+    bits |= (1 << key);
+}
+
+GLbitfield getBit(GLuint key)
+{
+    return (1 << key);
+}
+
+GLboolean setBitState(GLbitfield& bits, GLuint key, GLboolean state)
+{
+    if (state)  bits |= (1 << key);
+    else        bits &= ~(1 << key);
+    return state;
+}
+
 void
-StateSystem::ClipDistanceState::applyGL() const
+ClipDistanceState::apply() const
 {
     for (GLuint i = 0; i < MAX_CLIPPLANES; i++)
     {
@@ -48,7 +108,7 @@ StateSystem::ClipDistanceState::applyGL() const
 }
 
 void
-StateSystem::ClipDistanceState::getGL()
+ClipDistanceState::get()
 {
     enabled = 0;
     for (GLuint i = 0; i < MAX_CLIPPLANES; i++)
@@ -58,20 +118,20 @@ StateSystem::ClipDistanceState::getGL()
 }
 
 void
-StateSystem::AlphaStateDepr::applyGL() const
+AlphaStateDepr::apply() const
 {
     glAlphaFunc(mode, refvalue);
 }
 
 void
-StateSystem::AlphaStateDepr::getGL()
+AlphaStateDepr::get()
 {
     glGetIntegerv(GL_ALPHA_TEST_FUNC, (GLint*)&mode);
     glGetFloatv(GL_ALPHA_TEST_REF, &refvalue);
 }
 
 void
-StateSystem::StencilState::applyGL() const
+StencilState::apply() const
 {
     glStencilFuncSeparate(GL_FRONT, funcs[FACE_FRONT].func, funcs[FACE_FRONT].refvalue, funcs[FACE_FRONT].mask);
     glStencilFuncSeparate(GL_BACK, funcs[FACE_BACK].func, funcs[FACE_BACK].refvalue, funcs[FACE_BACK].mask);
@@ -80,7 +140,7 @@ StateSystem::StencilState::applyGL() const
 }
 
 void
-StateSystem::StencilState::getGL()
+StencilState::get()
 {
     glGetIntegerv(GL_STENCIL_FUNC, (GLint*)&funcs[FACE_FRONT].func);
     glGetIntegerv(GL_STENCIL_REF, (GLint*)&funcs[FACE_FRONT].refvalue);
@@ -100,7 +160,7 @@ StateSystem::StencilState::getGL()
 }
 
 void
-StateSystem::BlendState::applyGL() const
+BlendState::apply() const
 {
     if (separateEnable)
     {
@@ -127,11 +187,11 @@ StateSystem::BlendState::applyGL() const
         glBlendEquationSeparate(blends[0].rgb.equ, blends[0].alpha.equ);
     }
 
-    //glBlendColor(color[0],color[1],color[2],color[3]);
+    glBlendColor(color[0], color[1], color[2], color[3]);
 }
 
 void
-StateSystem::BlendState::getGL()
+BlendState::get()
 {
     GLuint stateSet = 0;
     separateEnable = 0;
@@ -166,78 +226,79 @@ StateSystem::BlendState::getGL()
 
     useSeparate = numEqual != MAX_DRAWBUFFERS;
 
-    //glGetFloatv(GL_BLEND_COLOR,color);
+    glGetFloatv(GL_BLEND_COLOR, color);
 }
 
 void
-StateSystem::DepthState::applyGL() const
+DepthState::apply() const
 {
     glDepthFunc(func);
 }
 
 void
-StateSystem::DepthState::getGL()
+DepthState::get()
 {
     glGetIntegerv(GL_DEPTH_FUNC, (GLint*)&func);
 }
 
 void
-StateSystem::LogicState::applyGL() const
+LogicState::apply() const
 {
     glLogicOp(op);
 }
 
 void
-StateSystem::LogicState::getGL()
+LogicState::get()
 {
     glGetIntegerv(GL_LOGIC_OP_MODE, (GLint*)&op);
 }
 
 void
-StateSystem::RasterState::applyGL() const
+RasterState::apply() const
 {
-    //glFrontFace(frontFace);
+    glFrontFace(frontFace);
     glCullFace(cullFace);
-    //glPolygonOffset(polyOffsetFactor,polyOffsetUnits);
+    glPolygonOffset(polyOffsetFactor, polyOffsetUnits);
     glPolygonMode(GL_FRONT_AND_BACK, polyMode);
-    //glLineWidth(lineWidth);
+    glLineWidth(lineWidth);
     glPointSize(pointSize);
     glPointParameterf(GL_POINT_FADE_THRESHOLD_SIZE, pointFade);
     glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, pointSpriteOrigin);
 }
 
 void
-StateSystem::RasterState::getGL()
+RasterState::get()
 {
-    //glGetIntegerv(GL_FRONT_FACE, (GLint*)&frontFace);
+    glGetIntegerv(GL_FRONT_FACE, (GLint*)&frontFace);
     glGetIntegerv(GL_CULL_FACE_MODE, (GLint*)&cullFace);
-    //glGetFloatv(GL_POLYGON_OFFSET_FACTOR,&polyOffsetFactor);
-    //glGetFloatv(GL_POLYGON_OFFSET_UNITS,&polyOffsetUnits);
-    //glGetFloatv(GL_LINE_WIDTH,&lineWidth);
+    glGetFloatv(GL_POLYGON_OFFSET_FACTOR, &polyOffsetFactor);
+    glGetFloatv(GL_POLYGON_OFFSET_UNITS, &polyOffsetUnits);
+    glGetFloatv(GL_LINE_WIDTH, &lineWidth);
     glGetFloatv(GL_POINT_SIZE, &pointSize);
     glGetFloatv(GL_POINT_FADE_THRESHOLD_SIZE, &pointFade);
     glGetIntegerv(GL_POINT_SPRITE_COORD_ORIGIN, (GLint*)&pointSpriteOrigin);
 }
 
 void
-StateSystem::RasterStateDepr::applyGL() const
+RasterStateDepr::apply() const
 {
     glLineStipple(lineStippleFactor, lineStipplePattern);
     glShadeModel(shadeModel);
 }
 
 void
-StateSystem::RasterStateDepr::getGL()
+RasterStateDepr::get()
 {
-    GLint pattern;
+    GLint pattern = 0;
     glGetIntegerv(GL_LINE_STIPPLE_PATTERN, &pattern);
     lineStipplePattern = pattern;
+
     glGetIntegerv(GL_LINE_STIPPLE_REPEAT, (GLint*)&lineStippleFactor);
     glGetIntegerv(GL_SHADE_MODEL, (GLint*)&shadeModel);
 }
 
 void
-StateSystem::PrimitiveState::applyGL() const
+PrimitiveState::apply() const
 {
     glPrimitiveRestartIndex(restartIndex);
     glProvokingVertex(provokingVertex);
@@ -245,7 +306,7 @@ StateSystem::PrimitiveState::applyGL() const
 }
 
 void
-StateSystem::PrimitiveState::getGL()
+PrimitiveState::get()
 {
     glGetIntegerv(GL_PRIMITIVE_RESTART_INDEX, (GLint*)&restartIndex);
     glGetIntegerv(GL_PROVOKING_VERTEX, (GLint*)&provokingVertex);
@@ -253,14 +314,14 @@ StateSystem::PrimitiveState::getGL()
 }
 
 void
-StateSystem::SampleState::applyGL() const
+SampleState::apply() const
 {
     glSampleCoverage(coverage, invert);
     glSampleMaski(0, mask);
 }
 
 void
-StateSystem::SampleState::getGL()
+SampleState::get()
 {
     glGetIntegerv(GL_SAMPLE_COVERAGE_VALUE, (GLint*)&coverage);
     glGetIntegerv(GL_SAMPLE_COVERAGE_INVERT, (GLint*)&invert);
@@ -268,7 +329,7 @@ StateSystem::SampleState::getGL()
 }
 
 void
-StateSystem::ViewportState::applyGL() const
+ViewportState::apply() const
 {
     if (useSeparate)
     {
@@ -281,7 +342,7 @@ StateSystem::ViewportState::applyGL() const
 }
 
 void
-StateSystem::ViewportState::getGL()
+ViewportState::get()
 {
     int numEqual = 1;
     for (GLuint i = 0; i < MAX_VIEWPORTS; i++)
@@ -297,7 +358,7 @@ StateSystem::ViewportState::getGL()
 }
 
 void
-StateSystem::DepthRangeState::applyGL() const
+DepthRangeState::apply() const
 {
     if (useSeparate)
     {
@@ -310,7 +371,7 @@ StateSystem::DepthRangeState::applyGL() const
 }
 
 void
-StateSystem::DepthRangeState::getGL()
+DepthRangeState::get()
 {
     GLuint numEqual = 1;
     for (GLuint i = 0; i < MAX_VIEWPORTS; i++)
@@ -326,7 +387,7 @@ StateSystem::DepthRangeState::getGL()
 }
 
 void
-StateSystem::ScissorState::applyGL() const
+ScissorState::apply() const
 {
     if (useSeparate) {
         glScissorArrayv(0, MAX_VIEWPORTS, &scissor[0].x);
@@ -337,7 +398,7 @@ StateSystem::ScissorState::applyGL() const
 }
 
 void
-StateSystem::ScissorState::getGL()
+ScissorState::get()
 {
     GLuint numEqual = 1;
     for (GLuint i = 0; i < MAX_VIEWPORTS; i++) {
@@ -351,7 +412,7 @@ StateSystem::ScissorState::getGL()
 }
 
 void
-StateSystem::ScissorEnableState::applyGL() const
+ScissorEnableState::apply() const
 {
     if (separateEnable)
     {
@@ -366,7 +427,7 @@ StateSystem::ScissorEnableState::applyGL() const
 }
 
 void
-StateSystem::ScissorEnableState::getGL()
+ScissorEnableState::get()
 {
     GLuint stateSet = 0;
     separateEnable = 0;
@@ -381,7 +442,7 @@ StateSystem::ScissorEnableState::getGL()
 }
 
 void
-StateSystem::MaskState::applyGL() const
+MaskState::apply() const
 {
     if (colormaskUseSeparate) {
         for (GLuint i = 0; i < MAX_DRAWBUFFERS; i++) {
@@ -397,7 +458,7 @@ StateSystem::MaskState::applyGL() const
 }
 
 void
-StateSystem::MaskState::getGL()
+MaskState::get()
 {
     glGetBooleanv(GL_DEPTH_WRITEMASK, &depth);
     glGetIntegerv(GL_STENCIL_WRITEMASK, (GLint*)&stencil[FACE_FRONT]);
@@ -418,20 +479,17 @@ StateSystem::MaskState::getGL()
 }
 
 void
-StateSystem::FBOState::applyGL(bool skipFboBinding) const
+FBOState::apply() const
 {
-    if (!skipFboBinding)
-    {
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboDraw);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, fboRead);
-    }
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboDraw);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fboRead);
 
     glDrawBuffers(numBuffers, drawBuffers);
     glReadBuffer(readBuffer);
 }
 
 void
-StateSystem::FBOState::getGL()
+FBOState::get()
 {
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint*)&fboDraw);
     glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, (GLint*)&fboRead);
@@ -449,22 +507,19 @@ StateSystem::FBOState::getGL()
 }
 
 void
-StateSystem::VertexEnableState::applyGL(GLbitfield changed) const
+VertexEnableState::apply() const
 {
     for (GLuint i = 0; i < MAX_VERTEXATTRIBS; i++)
     {
-        if (isBitSet(changed, i))
-        {
-            if (isBitSet(enabled, i))
-                glEnableVertexAttribArray(i);
-            else
-                glDisableVertexAttribArray(i);
-        }
+        if (isBitSet(enabled, i))
+            glEnableVertexAttribArray(i);
+        else
+            glDisableVertexAttribArray(i);
     }
 }
 
 void
-StateSystem::VertexEnableState::getGL()
+VertexEnableState::get()
 {
     enabled = 0;
     for (GLuint i = 0; i < MAX_VERTEXATTRIBS; i++)
@@ -476,19 +531,17 @@ StateSystem::VertexEnableState::getGL()
 }
 
 void
-StateSystem::VertexFormatState::applyGL(GLbitfield changedFormat, GLbitfield changedBinding) const
+VertexFormatState::apply() const
 {
     for (GLuint i = 0; i < MAX_VERTEXATTRIBS; i++)
     {
-        if (!isBitSet(changedFormat, i)) continue;
-
         switch (formats[i].mode)
         {
-        case VERTEXMODE_FLOAT:
+        case VertexDataType::GPU_DATATYPE_FLOAT:
             glVertexAttribFormat(i, formats[i].size, formats[i].type, formats[i].normalized, formats[i].relativeoffset);
             break;
-        case VERTEXMODE_INT:
-        case VERTEXMODE_UINT:
+        case VertexDataType::GPU_DATATYPE_INT:
+        case VertexDataType::GPU_DATATYPE_UNSIGNED_INT:
             glVertexAttribIFormat(i, formats[i].size, formats[i].type, formats[i].relativeoffset);
             break;
         }
@@ -498,16 +551,13 @@ StateSystem::VertexFormatState::applyGL(GLbitfield changedFormat, GLbitfield cha
 
     for (GLuint i = 0; i < MAX_VERTEXBINDINGS; i++)
     {
-        if (!isBitSet(changedBinding, i))
-            continue;
-
         glVertexBindingDivisor(i, bindings[i].divisor);
         glBindVertexBuffer(i, 0, 0, bindings[i].stride);
     }
 }
 
 void
-StateSystem::VertexFormatState::getGL()
+VertexFormatState::get()
 {
     for (GLuint i = 0; i < MAX_VERTEXATTRIBS; i++)
     {
@@ -519,9 +569,9 @@ StateSystem::VertexFormatState::getGL()
         formats[i].normalized = status;
         glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_INTEGER, (GLint*)&status);
         if (status)
-            formats[i].mode = VERTEXMODE_INT;
+            formats[i].mode = VertexDataType::GPU_DATATYPE_INT;
         else
-            formats[i].mode = VERTEXMODE_FLOAT;
+            formats[i].mode = VertexDataType::GPU_DATATYPE_FLOAT;
 
         glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_BINDING, (GLint*)&formats[i].binding);
     }
@@ -534,21 +584,19 @@ StateSystem::VertexFormatState::getGL()
 }
 
 void
-StateSystem::VertexImmediateState::applyGL(GLbitfield changed) const
+VertexImmediateState::apply() const
 {
     for (GLuint i = 0; i < MAX_VERTEXATTRIBS; i++)
     {
-        if (!isBitSet(changed, i)) continue;
-
         switch (data[i].mode)
         {
-        case VERTEXMODE_FLOAT:
+        case VertexDataType::GPU_DATATYPE_FLOAT:
             glVertexAttrib4fv(i, data[i].floats);
             break;
-        case VERTEXMODE_INT:
+        case VertexDataType::GPU_DATATYPE_INT:
             glVertexAttribI4iv(i, data[i].ints);
             break;
-        case VERTEXMODE_UINT:
+        case VertexDataType::GPU_DATATYPE_UNSIGNED_INT:
             glVertexAttribI4uiv(i, data[i].uints);
             break;
         }
@@ -556,19 +604,19 @@ StateSystem::VertexImmediateState::applyGL(GLbitfield changed) const
 }
 
 void
-StateSystem::VertexImmediateState::getGL()
+VertexImmediateState::get()
 {
     for (GLuint i = 0; i < MAX_VERTEXATTRIBS; i++)
     {
         switch (data[i].mode)
         {
-        case VERTEXMODE_FLOAT:
+        case VertexDataType::GPU_DATATYPE_FLOAT:
             glGetVertexAttribfv(i, GL_CURRENT_VERTEX_ATTRIB, data[i].floats);
             break;
-        case VERTEXMODE_INT:
+        case VertexDataType::GPU_DATATYPE_INT:
             glGetVertexAttribIiv(i, GL_CURRENT_VERTEX_ATTRIB, data[i].ints);
             break;
-        case VERTEXMODE_UINT:
+        case VertexDataType::GPU_DATATYPE_UNSIGNED_INT:
             glGetVertexAttribIuiv(i, GL_CURRENT_VERTEX_ATTRIB, data[i].uints);
             break;
         }
@@ -576,63 +624,31 @@ StateSystem::VertexImmediateState::getGL()
 }
 
 void
-StateSystem::ProgramState::applyGL() const
+ProgramState::apply() const
 {
     glUseProgram(program);
 }
 
 void
-StateSystem::ProgramState::getGL()
+ProgramState::get()
 {
     glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&program);
 }
 
-// keep in sync!
-static GLenum s_stateEnums[StateSystem::NUM_STATEBITS] = {
-    GL_BLEND,
-    GL_COLOR_LOGIC_OP,
-    GL_CULL_FACE,
-    GL_DEPTH_CLAMP,
-    GL_DEPTH_TEST,
-    GL_DITHER,
-    GL_FRAMEBUFFER_SRGB,
-    GL_LINE_SMOOTH,
-    GL_MULTISAMPLE,
-    GL_POLYGON_OFFSET_FILL,
-    GL_POLYGON_OFFSET_LINE,
-    GL_POLYGON_OFFSET_POINT,
-    GL_POLYGON_SMOOTH,
-    GL_PRIMITIVE_RESTART,
-    GL_PRIMITIVE_RESTART_FIXED_INDEX,
-    GL_RASTERIZER_DISCARD,
-    GL_SAMPLE_ALPHA_TO_COVERAGE,
-    GL_SAMPLE_ALPHA_TO_ONE,
-    GL_SAMPLE_COVERAGE,
-    GL_SAMPLE_SHADING,
-    GL_SAMPLE_MASK,
-    GL_STENCIL_TEST,
-    GL_SCISSOR_TEST,
-    GL_TEXTURE_CUBE_MAP_SEAMLESS,
-    GL_PROGRAM_POINT_SIZE,
-};
-
 void
-StateSystem::EnableState::applyGL(GLbitfield changedBits) const
+EnableState::apply() const
 {
     for (GLuint i = 0; i < NUM_STATEBITS; i++)
     {
-        if (isBitSet(changedBits, i))
-        {
-            if (isBitSet(stateBits, i))
-                glEnable(s_stateEnums[i]);
-            else
-                glDisable(s_stateEnums[i]);
-        }
+        if (isBitSet(stateBits, i))
+            glEnable(s_stateEnums[i]);
+        else
+            glDisable(s_stateEnums[i]);
     }
 }
 
 void
-StateSystem::EnableState::getGL()
+EnableState::get()
 {
     for (GLuint i = 0; i < NUM_STATEBITS; i++)
     {
@@ -640,32 +656,20 @@ StateSystem::EnableState::getGL()
     }
 }
 
-static GLenum s_stateEnumsDepr[StateSystem::NUM_STATEBITSDEPR] =
-{
-    GL_ALPHA_TEST,
-    GL_LINE_STIPPLE,
-    GL_POINT_SMOOTH,
-    GL_POINT_SPRITE,
-    GL_POLYGON_STIPPLE,
-};
-
 void
-StateSystem::EnableStateDepr::applyGL(GLbitfield changedBits) const
+EnableStateDepr::apply() const
 {
     for (GLuint i = 0; i < NUM_STATEBITSDEPR; i++)
     {
-        if (isBitSet(changedBits, i))
-        {
-            if (isBitSet(stateBitsDepr, i))
-                glEnable(s_stateEnumsDepr[i]);
-            else
-                glDisable(s_stateEnumsDepr[i]);
-        }
+        if (isBitSet(stateBitsDepr, i))
+            glEnable(s_stateEnumsDepr[i]);
+        else
+            glDisable(s_stateEnumsDepr[i]);
     }
 }
 
 void
-StateSystem::EnableStateDepr::getGL()
+EnableStateDepr::get()
 {
     for (GLuint i = 0; i < NUM_STATEBITSDEPR; i++)
     {
@@ -674,61 +678,61 @@ StateSystem::EnableStateDepr::getGL()
 }
 
 void
-StateSystem::State::applyGL(bool coreonly, bool skipFboBinding) const
+State::apply() const
 {
-    enable.applyGL();
-    if (!coreonly) enableDepr.applyGL();
-    program.applyGL();
-    clip.applyGL();
-    if (!coreonly) alpha.applyGL();
-    blend.applyGL();
-    depth.applyGL();
-    stencil.applyGL();
-    logic.applyGL();
-    primitive.applyGL();
-    sample.applyGL();
-    raster.applyGL();
-    if (!coreonly) rasterDepr.applyGL();
+    enable.apply();
+    enableDepr.apply();
+    program.apply();
+    clip.apply();
+    alpha.apply();
+    blend.apply();
+    depth.apply();
+    stencil.apply();
+    logic.apply();
+    primitive.apply();
+    sample.apply();
+    raster.apply();
+    rasterDepr.apply();
     /*if (!isBitSet(dynamicState,DYNAMIC_VIEWPORT)){
-    viewport.applyGL();
+    viewport.apply(system);
     }*/
-    depthrange.applyGL();
+    depthrange.apply();
     /*if (!isBitSet(dynamicState,DYNAMIC_SCISSOR)){
-    scissor.applyGL();
+    scissor.apply(system);
     }*/
-    scissorenable.applyGL();
-    mask.applyGL();
-    fbo.applyGL(skipFboBinding);
-    vertexenable.applyGL();
-    vertexformat.applyGL();
-    verteximm.applyGL();
+    scissorenable.apply();
+    mask.apply();
+    fbo.apply();
+    vertexenable.apply();
+    vertexformat.apply();
+    verteximm.apply();
 }
 
 void
-StateSystem::State::getGL(bool coreonly)
+State::get()
 {
-    enable.getGL();
-    if (!coreonly) enableDepr.applyGL();
-    program.getGL();
-    clip.getGL();
-    if (!coreonly) alpha.applyGL();
-    blend.getGL();
-    depth.getGL();
-    stencil.getGL();
-    logic.getGL();
-    primitive.getGL();
-    sample.getGL();
-    raster.getGL();
-    if (!coreonly) rasterDepr.applyGL();
-    //viewport.getGL();
-    depthrange.getGL();
-    //scissor.getGL();
-    scissorenable.getGL();
-    mask.getGL();
-    fbo.getGL();
-    vertexenable.getGL();
-    vertexformat.getGL();
-    verteximm.getGL();
+    enable.get();
+    enableDepr.get();
+    program.get();
+    clip.get();
+    alpha.get();
+    blend.get();
+    depth.get();
+    stencil.get();
+    logic.get();
+    primitive.get();
+    sample.get();
+    raster.get();
+    rasterDepr.get();
+    //viewport.get();
+    depthrange.get();
+    //scissor.get();
+    scissorenable.get();
+    mask.get();
+    fbo.get();
+    vertexenable.get();
+    vertexformat.get();
+    verteximm.get();
 }
 
 void
@@ -748,18 +752,21 @@ void
 StateSystem::generate(GLuint num, StateID* objects)
 {
     GLuint i;
-    for (i = 0; i < num && !_freeIDs.empty(); i++) {
+    for (i = 0; i < num && !_freeIDs.empty(); i++)
+    {
         objects[i] = _freeIDs.back();
         _freeIDs.pop_back();
     }
 
     GLuint begin = GLuint(_states.size());
 
-    if (i < num) {
+    if (i < num)
+    {
         _states.resize(begin + num - i);
     }
 
-    for (i = i; i < num; i++) {
+    for (i = i; i < num; i++)
+    {
         objects[i] = begin + i;
     }
 }
@@ -780,8 +787,8 @@ StateSystem::set(StateID id, const State& state, GLenum basePrimitiveMode)
     intstate.incarnation++;
     intstate.state = state;
     intstate.state.basePrimitiveMode = basePrimitiveMode;
-
     intstate.usedDiff = 0;
+
     for (int i = 0; i < MAX_DIFFS; i++)
     {
         intstate.others[i].state = INVALID_ID;
@@ -789,7 +796,7 @@ StateSystem::set(StateID id, const State& state, GLenum basePrimitiveMode)
 }
 
 const
-StateSystem::State& StateSystem::get(StateID id) const
+State& StateSystem::get(StateID id) const
 {
     return _states[id].state;
 }
@@ -825,70 +832,71 @@ StateSystem::prepareTransitionCache(StateID prev, StateInternal& to)
 }
 
 void
-StateSystem::applyGL(StateID id, bool skipFboBinding) const
+StateSystem::apply(StateID id)
 {
-    _states[id].state.applyGL(_coreonly, skipFboBinding);
+    _states[id].state.apply();
 }
 
 void
-StateSystem::applyGL(StateID id, StateID prev, bool skipFboBinding)
+StateSystem::apply(StateID id, StateID prev)
 {
     StateInternal& to = _states[id];
 
     if (prev == INVALID_ID) {
-        applyGL(id, skipFboBinding);
+        apply(id);
         return;
     }
 
     int index = prepareTransitionCache(prev, to);
-    applyDiffGL(to.diffs[index], to.state, skipFboBinding);
+
+    applyDiff(to.diffs[index], to.state);
 }
 
 void
-StateSystem::applyDiffGL(const StateDiff& diff, const State &state, bool skipFboBinding)
+StateSystem::applyDiff(const StateDiff& diff, const State &state)
 {
     if (isBitSet(diff.changedContentBits, StateDiff::ENABLE))
-        state.enable.applyGL(diff.changedStateBits);
+        state.enable.apply();
     if (!_coreonly && isBitSet(diff.changedContentBits, StateDiff::ENABLE_DEPR))
-        state.enableDepr.applyGL(diff.changedStateDeprBits);
+        state.enableDepr.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::PROGRAM))
-        state.program.applyGL();
+        state.program.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::CLIP))
-        state.clip.applyGL();
+        state.clip.apply();
     if (!_coreonly && isBitSet(diff.changedContentBits, StateDiff::ALPHA_DEPR))
-        state.alpha.applyGL();
+        state.alpha.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::BLEND))
-        state.blend.applyGL();
+        state.blend.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::DEPTH))
-        state.depth.applyGL();
+        state.depth.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::STENCIL))
-        state.stencil.applyGL();
+        state.stencil.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::LOGIC))
-        state.logic.applyGL();
+        state.logic.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::PRIMITIVE))
-        state.primitive.applyGL();
+        state.primitive.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::RASTER))
-        state.raster.applyGL();
+        state.raster.apply();
     if (!_coreonly && isBitSet(diff.changedContentBits, StateDiff::RASTER_DEPR))
-        state.rasterDepr.applyGL();
+        state.rasterDepr.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::VIEWPORT))
-        state.viewport.applyGL();
+        state.viewport.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::DEPTHRANGE))
-        state.depthrange.applyGL();
+        state.depthrange.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::SCISSOR))
-        state.scissor.applyGL();
+        state.scissor.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::SCISSORENABLE))
-        state.scissorenable.applyGL();
+        state.scissorenable.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::MASK))
-        state.mask.applyGL();
+        state.mask.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::FBO))
-        state.fbo.applyGL(skipFboBinding);
+        state.fbo.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::VERTEXENABLE))
-        state.vertexenable.applyGL(diff.changedVertexEnable);
+        state.vertexenable.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::VERTEXFORMAT))
-        state.vertexformat.applyGL(diff.changedVertexFormat, diff.changedVertexBinding);
+        state.vertexformat.apply();
     if (isBitSet(diff.changedContentBits, StateDiff::VERTEXIMMEDIATE))
-        state.verteximm.applyGL(diff.changedVertexImm);
+        state.verteximm.apply();
 }
 
 void
@@ -901,47 +909,73 @@ StateSystem::makeDiff(StateDiff& diff, const StateInternal &fromInternal, const 
     diff.changedStateDeprBits = from.enableDepr.stateBitsDepr ^ to.enableDepr.stateBitsDepr;
     diff.changedContentBits = 0;
 
-    if (memcmp(&from.enable, &to.enable, sizeof(from.enable)) != 0) setBit(diff.changedContentBits, StateDiff::ENABLE);
-    if (memcmp(&from.enableDepr, &to.enableDepr, sizeof(from.enableDepr)) != 0) setBit(diff.changedContentBits, StateDiff::ENABLE_DEPR);
-    if (memcmp(&from.program, &to.program, sizeof(from.program)) != 0) setBit(diff.changedContentBits, StateDiff::PROGRAM);
-    if (memcmp(&from.clip, &to.clip, sizeof(from.clip)) != 0) setBit(diff.changedContentBits, StateDiff::CLIP);
-    if (memcmp(&from.alpha, &to.alpha, sizeof(from.alpha)) != 0) setBit(diff.changedContentBits, StateDiff::ALPHA_DEPR);
-    if (memcmp(&from.blend, &to.blend, sizeof(from.blend)) != 0) setBit(diff.changedContentBits, StateDiff::BLEND);
-    if (memcmp(&from.depth, &to.depth, sizeof(from.depth)) != 0) setBit(diff.changedContentBits, StateDiff::DEPTH);
-    if (memcmp(&from.stencil, &to.stencil, sizeof(from.stencil)) != 0) setBit(diff.changedContentBits, StateDiff::STENCIL);
-    if (memcmp(&from.logic, &to.logic, sizeof(from.logic)) != 0) setBit(diff.changedContentBits, StateDiff::LOGIC);
-    if (memcmp(&from.primitive, &to.primitive, sizeof(from.primitive)) != 0) setBit(diff.changedContentBits, StateDiff::PRIMITIVE);
-    if (memcmp(&from.raster, &to.raster, sizeof(from.raster)) != 0) setBit(diff.changedContentBits, StateDiff::RASTER);
-    if (memcmp(&from.rasterDepr, &to.rasterDepr, sizeof(from.rasterDepr)) != 0) setBit(diff.changedContentBits, StateDiff::RASTER_DEPR);
-    if (memcmp(&from.viewport, &to.viewport, sizeof(from.viewport)) != 0) setBit(diff.changedContentBits, StateDiff::VIEWPORT);
-    if (memcmp(&from.depth, &to.depth, sizeof(from.depth)) != 0) setBit(diff.changedContentBits, StateDiff::DEPTHRANGE);
-    if (memcmp(&from.scissor, &to.scissor, sizeof(from.scissor)) != 0) setBit(diff.changedContentBits, StateDiff::SCISSOR);
-    if (memcmp(&from.scissorenable, &to.scissorenable, sizeof(from.scissorenable)) != 0) setBit(diff.changedContentBits, StateDiff::SCISSORENABLE);
-    if (memcmp(&from.mask, &to.mask, sizeof(from.mask)) != 0) setBit(diff.changedContentBits, StateDiff::MASK);
-    if (memcmp(&from.fbo, &to.fbo, sizeof(from.fbo)) != 0) setBit(diff.changedContentBits, StateDiff::FBO);
+    if (memcmp(&from.enable, &to.enable, sizeof(from.enable)) != 0)
+        setBit(diff.changedContentBits, StateDiff::ENABLE);
+    if (memcmp(&from.enableDepr, &to.enableDepr, sizeof(from.enableDepr)) != 0)
+        setBit(diff.changedContentBits, StateDiff::ENABLE_DEPR);
+    if (memcmp(&from.program, &to.program, sizeof(from.program)) != 0)
+        setBit(diff.changedContentBits, StateDiff::PROGRAM);
+    if (memcmp(&from.clip, &to.clip, sizeof(from.clip)) != 0)
+        setBit(diff.changedContentBits, StateDiff::CLIP);
+    if (memcmp(&from.alpha, &to.alpha, sizeof(from.alpha)) != 0)
+        setBit(diff.changedContentBits, StateDiff::ALPHA_DEPR);
+    if (memcmp(&from.blend, &to.blend, sizeof(from.blend)) != 0)
+        setBit(diff.changedContentBits, StateDiff::BLEND);
+    if (memcmp(&from.depth, &to.depth, sizeof(from.depth)) != 0)
+        setBit(diff.changedContentBits, StateDiff::DEPTH);
+    if (memcmp(&from.stencil, &to.stencil, sizeof(from.stencil)) != 0)
+        setBit(diff.changedContentBits, StateDiff::STENCIL);
+    if (memcmp(&from.logic, &to.logic, sizeof(from.logic)) != 0)
+        setBit(diff.changedContentBits, StateDiff::LOGIC);
+    if (memcmp(&from.primitive, &to.primitive, sizeof(from.primitive)) != 0)
+        setBit(diff.changedContentBits, StateDiff::PRIMITIVE);
+    if (memcmp(&from.raster, &to.raster, sizeof(from.raster)) != 0)
+        setBit(diff.changedContentBits, StateDiff::RASTER);
+    if (memcmp(&from.rasterDepr, &to.rasterDepr, sizeof(from.rasterDepr)) != 0)
+        setBit(diff.changedContentBits, StateDiff::RASTER_DEPR);
+    if (memcmp(&from.viewport, &to.viewport, sizeof(from.viewport)) != 0)
+        setBit(diff.changedContentBits, StateDiff::VIEWPORT);
+    if (memcmp(&from.depth, &to.depth, sizeof(from.depth)) != 0)
+        setBit(diff.changedContentBits, StateDiff::DEPTHRANGE);
+    if (memcmp(&from.scissor, &to.scissor, sizeof(from.scissor)) != 0)
+        setBit(diff.changedContentBits, StateDiff::SCISSOR);
+    if (memcmp(&from.scissorenable, &to.scissorenable, sizeof(from.scissorenable)) != 0)
+        setBit(diff.changedContentBits, StateDiff::SCISSORENABLE);
+    if (memcmp(&from.mask, &to.mask, sizeof(from.mask)) != 0)
+        setBit(diff.changedContentBits, StateDiff::MASK);
+    if (memcmp(&from.fbo, &to.fbo, sizeof(from.fbo)) != 0)
+        setBit(diff.changedContentBits, StateDiff::FBO);
 
     // special case vertex stuff, more likely to change then rest
 
     diff.changedVertexEnable = from.vertexenable.enabled ^ to.vertexenable.enabled;
-
     diff.changedVertexImm = 0;
     diff.changedVertexFormat = 0;
 
     for (GLint i = 0; i < MAX_VERTEXATTRIBS; i++)
     {
-        if (memcmp(&from.vertexformat.formats[i], &to.vertexformat.formats[i], sizeof(to.vertexformat.formats[i])) != 0)  setBit(diff.changedVertexFormat, i);
-        if (memcmp(&from.verteximm.data[i], &to.verteximm.data[i], sizeof(to.verteximm.data[i])) != 0)                    setBit(diff.changedVertexImm, i);
+        if (memcmp(&from.vertexformat.formats[i], &to.vertexformat.formats[i], sizeof(to.vertexformat.formats[i])) != 0)
+            setBit(diff.changedVertexFormat, i);
+
+        if (memcmp(&from.verteximm.data[i], &to.verteximm.data[i], sizeof(to.verteximm.data[i])) != 0)
+            setBit(diff.changedVertexImm, i);
     }
 
     diff.changedVertexBinding = 0;
     for (GLint i = 0; i < MAX_VERTEXBINDINGS; i++)
     {
-        if (memcmp(&from.vertexformat.bindings[i], &to.vertexformat.bindings[i], sizeof(to.vertexformat.bindings[i])) != 0)  setBit(diff.changedVertexBinding, i);
+        if (memcmp(&from.vertexformat.bindings[i], &to.vertexformat.bindings[i], sizeof(to.vertexformat.bindings[i])) != 0)
+            setBit(diff.changedVertexBinding, i);
     }
 
-    if (diff.changedVertexEnable)                               setBit(diff.changedContentBits, StateDiff::VERTEXENABLE);
-    if (diff.changedVertexBinding || diff.changedVertexFormat)  setBit(diff.changedContentBits, StateDiff::VERTEXFORMAT);
-    if (diff.changedVertexImm)                                  setBit(diff.changedContentBits, StateDiff::VERTEXIMMEDIATE);
+    if (diff.changedVertexEnable)
+        setBit(diff.changedContentBits, StateDiff::VERTEXENABLE);
+
+    if (diff.changedVertexBinding || diff.changedVertexFormat)
+        setBit(diff.changedContentBits, StateDiff::VERTEXFORMAT);
+
+    if (diff.changedVertexImm)
+        setBit(diff.changedContentBits, StateDiff::VERTEXIMMEDIATE);
 }
 
 void

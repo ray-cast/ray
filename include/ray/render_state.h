@@ -138,6 +138,7 @@ struct EXPORT RenderRasterState
     float               depthBias;
     bool                scissorTestEnable;
     bool                multisampleEnable;
+    bool                srgbEnable;
 
     RenderRasterState() noexcept;
 };

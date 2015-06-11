@@ -162,38 +162,27 @@ Renderer::setRenderCanvas(RenderCanvasPtr canvas) noexcept
 void
 Renderer::setRenderTexture(RenderTexturePtr target) noexcept
 {
-    if (target)
-        RenderImpl::instance()->setFramebuffer(target->getFramebuffer());
-    else
-        RenderImpl::instance()->setFramebuffer(0);
+    assert(target);
+    RenderImpl::instance()->setRenderTexture(target);
 }
 
 void
 Renderer::setRenderTexture(MultiRenderTexturePtr target) noexcept
 {
-    if (target)
-        RenderImpl::instance()->setMultiRenderTexture(target);
-    else
-        RenderImpl::instance()->setMultiRenderTexture(0);
+    assert(target);
+    RenderImpl::instance()->setMultiRenderTexture(target);
 }
 
 void
 Renderer::readRenderTexture(RenderTexturePtr texture, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
-    assert(texture && texture->getResolveTexture());
-    RenderImpl::instance()->readFramebuffer(texture->getFramebuffer(), pfd, w, h, data);
+    RenderImpl::instance()->readRenderTexture(texture, pfd, w, h, data);
 }
 
 void
 Renderer::copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept
 {
-    if (srcTarget)
-    {
-        if (destTarget)
-            RenderImpl::instance()->copyFramebuffer(srcTarget->getFramebuffer(), src, destTarget->getFramebuffer(), dest);
-        else
-            RenderImpl::instance()->copyFramebuffer(srcTarget->getFramebuffer(), src, 0, dest);
-    }
+    RenderImpl::instance()->copyRenderTexture(srcTarget, src, destTarget, dest);
 }
 
 void

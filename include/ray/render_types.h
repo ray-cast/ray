@@ -58,7 +58,6 @@ typedef std::shared_ptr<class VertexComponent> VertexComponentPtr;
 typedef std::shared_ptr<class VertexBufferData> VertexBufferDataPtr;
 typedef std::shared_ptr<class IndexBufferData> IndexBufferDataPtr;
 typedef std::shared_ptr<class Texture> TexturePtr;
-typedef std::shared_ptr<class Framebuffer> FramebufferPtr;
 typedef std::shared_ptr<class Shader> ShaderPtr;
 typedef std::shared_ptr<class ShaderAttribute> ShaderAttributePtr;
 typedef std::shared_ptr<class ShaderUniform> ShaderUniformPtr;
@@ -77,7 +76,6 @@ typedef std::shared_ptr<class Renderable> RenderablePtr;
 typedef std::shared_ptr<class RenderScene> RenderScenePtr;
 
 typedef std::vector<VertexComponent> VertexComponents;
-typedef std::vector<FramebufferPtr> Framebuffers;
 typedef std::vector<ShaderPtr> Shaders;
 typedef std::vector<ShaderAttributePtr> ShaderAttributes;
 typedef std::vector<ShaderUniformPtr> ShaderUniforms;

@@ -174,14 +174,10 @@ struct OGLVertexArray
     }
 };
 
-typedef std::vector<std::pair<FramebufferPtr, GLenum>> DrawBuffers;
-
 struct OGLRenderTexture
 {
     GLuint fbo;
     GLuint64 bindlessFbo;
-
-    DrawBuffers drawbuffers;
 
     OGLRenderTexture()
         : fbo(0)
@@ -191,7 +187,7 @@ struct OGLRenderTexture
 };
 
 typedef std::shared_ptr<class OGLCanvas> OGLCanvasPtr;
-typedef std::shared_ptr<class OGLFramebuffer> OGLFramebufferPtr;
+typedef std::shared_ptr<class OGLFramebuffer> OGLRenderTexturePtr;
 typedef std::shared_ptr<class OGLShader> OGLShaderPtr;
 typedef std::shared_ptr<class OGLShaderProgram> OGLShaderProgramPtr;
 

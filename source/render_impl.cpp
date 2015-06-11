@@ -75,18 +75,6 @@ RenderImpl::close() noexcept
 }
 
 void
-RenderImpl::clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept
-{
-    _renderDevice->clear(flags, color, depth, stencil);
-}
-
-void
-RenderImpl::setViewport(const Viewport& view) noexcept
-{
-    _renderDevice->setViewport(view);
-}
-
-void
 RenderImpl::setSwapInterval(SwapInterval interval) noexcept
 {
     _renderDevice->setSwapInterval(interval);
@@ -212,34 +200,34 @@ RenderImpl::drawRenderBuffer(const Renderable& renderable) noexcept
     _renderDevice->drawRenderBuffer(renderable);
 }
 
-FramebufferPtr
-RenderImpl::createFramebuffer(const FramebufferDesc& desc) noexcept
+bool
+RenderImpl::createRenderTexture(RenderTexture& target) noexcept
 {
-    return _renderDevice->createFramebuffer(desc);
+    return _renderDevice->createRenderTexture(target);
 }
 
 void
-RenderImpl::destroyFramebuffer(FramebufferPtr target) noexcept
+RenderImpl::destroyRenderTexture(RenderTexture& target) noexcept
 {
-    _renderDevice->destroyFramebuffer(target);
+    _renderDevice->destroyRenderTexture(target);
 }
 
 void
-RenderImpl::setFramebuffer(FramebufferPtr rt) noexcept
+RenderImpl::setRenderTexture(RenderTexturePtr rt) noexcept
 {
-    _renderDevice->setFramebuffer(rt);
+    _renderDevice->setRenderTexture(rt);
 }
 
 void
-RenderImpl::copyFramebuffer(FramebufferPtr srcTarget, const Viewport& src, FramebufferPtr destTarget, const Viewport& dest) noexcept
+RenderImpl::copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept
 {
-    _renderDevice->copyFramebuffer(srcTarget, src, destTarget, dest);
+    _renderDevice->copyRenderTexture(srcTarget, src, destTarget, dest);
 }
 
 void
-RenderImpl::readFramebuffer(FramebufferPtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+RenderImpl::readRenderTexture(RenderTexturePtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
-    _renderDevice->readFramebuffer(target, pfd, w, h, data);
+    _renderDevice->readRenderTexture(target, pfd, w, h, data);
 }
 
 bool

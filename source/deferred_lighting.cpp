@@ -144,7 +144,7 @@ DeferredLighting::render() noexcept
 void
 DeferredLighting::renderOpaquesDepthOhly() noexcept
 {
-    _deferredDepthMap->getFramebuffer()->setClearFlags(ClearFlags::CLEAR_ALL);
+    _deferredDepthMap->setClearFlags(ClearFlags::CLEAR_ALL);
 
     this->setRenderTexture(_deferredDepthMap);
     this->drawRenderable(RenderQueue::Opaque, RenderPass::RP_DEPTH, _deferredDepthOhly);
@@ -153,8 +153,8 @@ DeferredLighting::renderOpaquesDepthOhly() noexcept
 void
 DeferredLighting::renderOpaques() noexcept
 {
-    _deferredDepthMap->getFramebuffer()->setClearFlags(ClearFlags::CLEAR_NONE);
-    _deferredNormalMap->getFramebuffer()->setClearFlags(ClearFlags::CLEAR_COLOR);
+    _deferredDepthMap->setClearFlags(ClearFlags::CLEAR_NONE);
+    _deferredNormalMap->setClearFlags(ClearFlags::CLEAR_COLOR);
 
     this->setRenderTexture(_deferredGraphicMaps);
     this->drawRenderable(RenderQueue::Opaque, RenderPass::RP_GBUFFER);
@@ -163,7 +163,7 @@ DeferredLighting::renderOpaques() noexcept
 void
 DeferredLighting::renderOpaquesShading() noexcept
 {
-    _deferredShadingMap->getFramebuffer()->setClearFlags(ClearFlags::CLEAR_COLOR_DEPTH);
+    _deferredShadingMap->setClearFlags(ClearFlags::CLEAR_COLOR_DEPTH);
 
     this->setRenderTexture(_deferredShadingMap);
     this->setTechnique(_deferredShading);
@@ -173,7 +173,7 @@ DeferredLighting::renderOpaquesShading() noexcept
 void
 DeferredLighting::renderTransparentDepthOhly() noexcept
 {
-    _deferredDepthMap->getFramebuffer()->setClearFlags(ClearFlags::CLEAR_STENCIL);
+    _deferredDepthMap->setClearFlags(ClearFlags::CLEAR_STENCIL);
 
     this->setRenderTexture(_deferredDepthMap);
     this->drawRenderable(RenderQueue::Transparent, RenderPass::RP_DEPTH, _deferredDepthOhly);
@@ -182,8 +182,8 @@ DeferredLighting::renderTransparentDepthOhly() noexcept
 void
 DeferredLighting::renderTransparent() noexcept
 {
-    _deferredDepthMap->getFramebuffer()->setClearFlags(ClearFlags::CLEAR_NONE);
-    _deferredNormalMap->getFramebuffer()->setClearFlags(ClearFlags::CLEAR_NONE);
+    _deferredDepthMap->setClearFlags(ClearFlags::CLEAR_NONE);
+    _deferredNormalMap->setClearFlags(ClearFlags::CLEAR_NONE);
 
     this->setRenderTexture(_deferredGraphicMaps);
     this->drawRenderable(RenderQueue::Transparent, RenderPass::RP_GBUFFER);
@@ -192,7 +192,7 @@ DeferredLighting::renderTransparent() noexcept
 void
 DeferredLighting::renderTransparentShading() noexcept
 {
-    _deferredShadingMap->getFramebuffer()->setClearFlags(ClearFlags::CLEAR_NONE);
+    _deferredShadingMap->setClearFlags(ClearFlags::CLEAR_NONE);
 
     this->setRenderTexture(_deferredShadingMap);
     this->setTechnique(_deferredShading);
@@ -202,7 +202,7 @@ DeferredLighting::renderTransparentShading() noexcept
 void
 DeferredLighting::renderLights() noexcept
 {
-    _deferredLightMap->getFramebuffer()->setClearFlags(ClearFlags::CLEAR_COLOR);
+    _deferredLightMap->setClearFlags(ClearFlags::CLEAR_COLOR);
 
     this->setRenderTexture(_deferredLightMap);
 

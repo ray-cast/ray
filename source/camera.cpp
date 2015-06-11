@@ -100,7 +100,7 @@ Camera::setup(std::size_t width, std::size_t height) noexcept
         _deferredNormalMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F, ClearFlags::CLEAR_COLOR);
 
         _deferredLightMap = RenderTexture::create();
-        _deferredLightMap->setShareStencilTarget(_deferredDepthMap);
+        _deferredLightMap->setSharedStencilTexture(_deferredDepthMap);
         _deferredLightMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
 
         _deferredGraphicMaps = MultiRenderTexture::create();
@@ -110,17 +110,17 @@ Camera::setup(std::size_t width, std::size_t height) noexcept
         _deferredGraphicMaps->setup(width, height);
 
         _renderTexture = std::make_shared<RenderTexture>();
-        _renderTexture->setShareStencilTarget(_deferredDepthMap);
+        _renderTexture->setSharedStencilTexture(_deferredDepthMap);
         _renderTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::SR8G8B8A8);
 
         _swapTexture = std::make_shared<RenderTexture>();
-        _swapTexture->setShareStencilTarget(_deferredDepthMap);
+        _swapTexture->setSharedStencilTexture(_deferredDepthMap);
         _swapTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::SR8G8B8A8);
 
         if (_cameraRender == CR_RENDER_TO_CUBEMAP)
         {
             _cubeTexture = std::make_shared<RenderTexture>();
-            _cubeTexture->setShareStencilTarget(_deferredDepthMap);
+            _cubeTexture->setSharedStencilTexture(_deferredDepthMap);
             _cubeTexture->setup(512, 512, TextureDim::DIM_CUBE, PixelFormat::SR8G8B8A8);
         }
     }

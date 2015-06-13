@@ -48,10 +48,7 @@ public:
     {
         float radius;
         float bias;
-        float epsilon;
         float intensity;
-
-        int numSample;
 
         bool blur;
         int blurRadius;
@@ -65,15 +62,18 @@ public:
     void setSetting(const Setting& set) noexcept;
     const Setting& getSetting() const noexcept;
 
-    void render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept;
+    void render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
 
 private:
 
-    void computeRawAO(RenderPipeline* pipeline, RenderTexturePtr dest) noexcept;
-    void blurHorizontal(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-    void blurVertical(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-    void blurDirection(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest, const int2& direction) noexcept;
-    void shading(RenderPipeline* pipeline, RenderTexturePtr color, RenderTexturePtr ao) noexcept;
+    void computeRawAO(RenderPipeline& pipeline, RenderTexturePtr dest) noexcept;
+    void blurHorizontal(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+    void blurVertical(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+    void blurDirection(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest, const int2& direction) noexcept;
+    void shading(RenderPipeline& pipeline, RenderTexturePtr color, RenderTexturePtr ao) noexcept;
+
+    void onActivate() except;
+    void onDeactivate() except;
 
 private:
 
@@ -93,9 +93,7 @@ private:
     ShaderParamPtr _projInfo;
     ShaderParamPtr _clipInfo;
     ShaderParamPtr _bias;
-    ShaderParamPtr _epsilon;
     ShaderParamPtr _intensityDivR6;
-    ShaderParamPtr _numSample;
 
     MaterialPassPtr _blurh;
     MaterialPassPtr _blurv;

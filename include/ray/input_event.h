@@ -45,6 +45,7 @@ _NAME_BEGIN
 struct InputKeysym
 {
     InputKey::Code sym;
+    std::uint16_t raw;
     std::uint16_t mod;
     std::uint32_t unused;
 };

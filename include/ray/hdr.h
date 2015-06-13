@@ -67,21 +67,24 @@ public:
     void setSetting(const Setting& setting) noexcept;
     const Setting& getSetting() const noexcept;
 
-    void render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept;
+    void render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
 
 private:
 
-    void sample4(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-    void sample8(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-    void sampleLog(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+    void sample4(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+    void sample8(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+    void sampleLog(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
 
-    void blurh(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-    void blurv(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+    void blurh(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+    void blurv(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
 
-    void measureLuminance(RenderPipeline* pipeline, RenderTexturePtr source);
+    void measureLuminance(RenderPipeline& pipeline, RenderTexturePtr source);
 
-    void generateBloom(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest);
-    void generateToneMapping(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr bloom);
+    void generateBloom(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest);
+    void generateToneMapping(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr bloom);
+
+    void onActivate() except;
+    void onDeactivate() except;
 
 private:
 

@@ -5,61 +5,45 @@
     <parameter name="matViewProject" semantic="matViewProject" />
     <parameter name="timer" semantic="Timer" />
     <parameter name="decal" type="sampler2D"/>
-    <shader type="vertex" name="mainVS">
+    <shader>
         <![CDATA[
-            #version 330
-            precision mediump float;
-
-            layout(location = 0) in vec4 glsl_Vertex;
-            layout(location = 1) in vec4 glsl_Normmal;
-            layout(location = 2) in vec2 glsl_Texcoord;
-
             uniform mat4 matModel;
             uniform mat4 matNormal;
             uniform mat4 matViewProject;
 
             uniform float timer;
 
-            out vec2 uv;
-            out vec3 normal;
-            out float dayTimer;
+            uniform sampler2D decal;
 
-            void main()
+            varying vec2 uv;
+            varying vec3 normal;
+            varying float dayTimer;
+
+#if SHADER_API_VERTEX
+            void SkyVS()
             {
                 dayTimer = timer / 100;
                 dayTimer -= int(dayTimer);
 
                 uv = glsl_Texcoord;
-                normal = (matNormal * glsl_Normmal).xyz;
-                gl_Position = matViewProject * matModel * glsl_Vertex;
+                normal = (matNormal * glsl_Normal).xyz;
+                gl_Position = matViewProject * matModel * glsl_Position;
             }
-        ]]>
-    </shader>
-    <shader type="fragment" name="mainPS">
-        <![CDATA[
-            #version 330
-            precision mediump float;
+#endif
 
-            layout(location = 0) out vec4 glsl_FragColor0;
-            layout(location = 1) out vec4 glsl_FragColor1;
-
-            in vec3 normal;
-            in vec2 uv;
-            in float dayTimer;
-
-            uniform sampler2D decal;
-
-            void main()
+#if SHADER_API_FRAGMENT
+            void SKyPS()
             {
-                glsl_FragColor0.rgba = texture2D(decal, vec2(0.5, uv.t));
+                glsl_FragColor0 = texture2D(decal, vec2(0.5, uv.t));
                 glsl_FragColor1 = vec4(normal, 32);
             }
+#endif
         ]]>
     </shader>
-    <technique name="opaque">
+    <technique name="background">
         <pass name="gbuffer">
-            <state name="vertex" value="mainVS"/>
-            <state name="fragment" value="mainPS"/>
+            <state name="vertex" value="SkyVS"/>
+            <state name="fragment" value="SKyPS"/>
             <state name="depthwrite" value="true"/>
             <state name="cullmode" value="front"/>
         </pass>

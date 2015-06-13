@@ -38,6 +38,7 @@
 #include <ray/render_buffer.h>
 #include <ray/post_process.h>
 #include <ray/model.h>
+#include <ray/render_scene.h>
 
 _NAME_BEGIN
 
@@ -120,6 +121,42 @@ RenderPipeline::close() noexcept
 }
 
 void
+RenderPipeline::setCamera(Camera* camera) noexcept
+{
+    _camera = camera;
+}
+
+Camera*
+RenderPipeline::getCamera() const noexcept
+{
+    return _camera;
+}
+
+void
+RenderPipeline::setRenderer(RendererPtr renderer) noexcept
+{
+    _renderer = renderer;
+}
+
+RendererPtr
+RenderPipeline::getRenderer() const noexcept
+{
+    return _renderer;
+}
+
+void
+RenderPipeline::addRenderData(RenderQueue queue, RenderObject* object) noexcept
+{
+    _renderDataManager.addRenderData(queue, object);
+}
+
+RenderData&
+RenderPipeline::getRenderData(RenderQueue queue) noexcept
+{
+    return _renderDataManager.getRenderData(queue);
+}
+
+void
 RenderPipeline::drawSceneQuad() noexcept
 {
     Renderable renderable;
@@ -129,7 +166,7 @@ RenderPipeline::drawSceneQuad() noexcept
     renderable.startIndice = 0;
     renderable.numIndices = _renderSceneQuad->getNumIndices();
     renderable.numInstances = 0;
-    renderer->drawMesh(_renderSceneQuad, renderable);
+    _renderer->drawMesh(_renderSceneQuad, renderable);
 }
 
 void
@@ -142,7 +179,7 @@ RenderPipeline::drawSphere() noexcept
     renderable.startIndice = 0;
     renderable.numIndices = _renderSphere->getNumIndices();
     renderable.numInstances = 0;
-    renderer->drawMesh(_renderSphere, renderable);
+    _renderer->drawMesh(_renderSphere, renderable);
 }
 
 void
@@ -155,48 +192,48 @@ RenderPipeline::drawCone() noexcept
     renderable.startIndice = 0;
     renderable.numIndices = _renderCone->getNumIndices();
     renderable.numInstances = 0;
-    renderer->drawMesh(_renderCone, renderable);
+    _renderer->drawMesh(_renderCone, renderable);
 }
 
 void
 RenderPipeline::drawRenderable(RenderQueue queue, RenderPass pass, MaterialPassPtr material) noexcept
 {
-    auto& visiable = renderDataManager.getRenderData(queue);
-    for (auto& it : visiable)
+    auto& renderable = _renderDataManager.getRenderData(queue);
+    for (auto& it : renderable)
     {
-        it->render(renderer, queue, pass, material);
+        it->render(_renderer, queue, pass, material);
     }
 }
 
 void
 RenderPipeline::setRenderTexture(RenderTexturePtr texture) noexcept
 {
-    renderer->setRenderTexture(texture);
+    _renderer->setRenderTexture(texture);
 }
 
 void
 RenderPipeline::setRenderTexture(MultiRenderTexturePtr texture) noexcept
 {
-    renderer->setRenderTexture(texture);
+    _renderer->setRenderTexture(texture);
 }
 
 void
 RenderPipeline::setTechnique(MaterialPassPtr pass) noexcept
 {
-    renderer->setRenderState(pass->getRenderState());
-    renderer->setShaderObject(pass->getShaderObject());
+    _renderer->setRenderState(pass->getRenderState());
+    _renderer->setShaderObject(pass->getShaderObject());
 }
 
 void
 RenderPipeline::readRenderTexture(RenderTexturePtr texture, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
-    renderer->readRenderTexture(texture, pfd, w, h, data);
+    _renderer->readRenderTexture(texture, pfd, w, h, data);
 }
 
 void
 RenderPipeline::copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept
 {
-    renderer->copyRenderTexture(srcTarget, src, destTarget, dest);
+    _renderer->copyRenderTexture(srcTarget, src, destTarget, dest);
 }
 
 void
@@ -224,12 +261,97 @@ RenderPipeline::removePostProcess(RenderPostProcessPtr postprocess) noexcept
 }
 
 void
-RenderPipeline::postprocess(RenderTexturePtr src) noexcept
+RenderPipeline::render() noexcept
 {
-    for (auto& it : _postprocessors)
+    assert(_camera);
+
+    RenderListener* renderListener = _camera->getRenderListener();
+    if (renderListener)
+        renderListener->onWillRenderObject();
+
+    _renderDataManager.clear();
+
+    this->assignLight();
+    this->assignVisiable();
+
+    this->onRenderPre();
+    this->onRenderPipeline();
+
+    if (_camera->getCameraOrder() == CameraOrder::CO_MAIN)
     {
-        it->render(this, src);
+        auto renderTexture = _camera->getRenderTexture();
+
+        for (auto& it : _postprocessors)
+        {
+            it->render(*this, renderTexture);
+        }
+
+        this->copyRenderTexture(renderTexture, this->getCamera()->getViewport(), 0, this->getCamera()->getViewport());
     }
+
+    this->onRenderPost();
+
+    if (renderListener)
+        renderListener->onRenderObject();
+}
+
+void
+RenderPipeline::assignVisiable() noexcept
+{
+    assert(_camera);
+
+    RenderScene* scene = _camera->getRenderScene();
+    if (scene)
+    {
+        _visiable.clear();
+
+        scene->computVisiable(_camera, _visiable);
+
+        for (auto& it : _visiable)
+        {
+            auto listener = it->getRenderListener();
+            if (listener)
+                listener->onWillRenderObject();
+
+            it->collection(_renderDataManager);
+        }
+    }
+}
+
+void
+RenderPipeline::assignLight() noexcept
+{
+    RenderScene* scene = this->getCamera()->getRenderScene();
+    if (scene)
+    {
+        _lights.clear();
+
+        scene->computVisiableLight(this->getCamera(), _lights);
+
+        for (auto& it : _lights)
+        {
+            auto listener = it->getRenderListener();
+            if (listener)
+                listener->onWillRenderObject();
+
+            it->collection(_renderDataManager);
+        }
+    }
+}
+
+void
+RenderPipeline::onRenderPre() noexcept
+{
+}
+
+void
+RenderPipeline::onRenderPost() noexcept
+{
+}
+
+void
+RenderPipeline::onRenderPipeline() noexcept
+{
 }
 
 _NAME_END

@@ -67,56 +67,56 @@ DepthOfField::~DepthOfField() noexcept
 }
 
 void
-DepthOfField::blurh(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+DepthOfField::blurh(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
 {
     _texColor->assign(source->getResolveTexture());
 
-    pipeline->setRenderTexture(dest);
-    pipeline->setTechnique(_blurh);
-    pipeline->drawSceneQuad();
+    pipeline.setRenderTexture(dest);
+    pipeline.setTechnique(_blurh);
+    pipeline.drawSceneQuad();
 }
 
 void
-DepthOfField::blurv(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+DepthOfField::blurv(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
 {
     _texColor->assign(source->getResolveTexture());
 
-    pipeline->setRenderTexture(dest);
-    pipeline->setTechnique(_blurv);
-    pipeline->drawSceneQuad();
+    pipeline.setRenderTexture(dest);
+    pipeline.setTechnique(_blurv);
+    pipeline.drawSceneQuad();
 }
 
 void
-DepthOfField::computeNear(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr blured, RenderTexturePtr dest) noexcept
+DepthOfField::computeNear(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr blured, RenderTexturePtr dest) noexcept
 {
     _texShrunk->assign(source->getResolveTexture());
     _texBlured->assign(blured->getResolveTexture());
 
-    pipeline->setRenderTexture(dest);
-    pipeline->setTechnique(_computeNear);
-    pipeline->drawSceneQuad();
+    pipeline.setRenderTexture(dest);
+    pipeline.setTechnique(_computeNear);
+    pipeline.drawSceneQuad();
 }
 
 void
-DepthOfField::final(RenderPipeline* pipeline, RenderTexturePtr color, RenderTexturePtr texSmall, RenderTexturePtr large)
+DepthOfField::final(RenderPipeline& pipeline, RenderTexturePtr color, RenderTexturePtr texSmall, RenderTexturePtr large)
 {
     _texColor->assign(color->getResolveTexture());
     _texSmall->assign(texSmall->getResolveTexture());
     _texLarge->assign(large->getResolveTexture());
 
-    pipeline->setRenderTexture(color);
-    pipeline->setTechnique(_final);
-    pipeline->drawSceneQuad();
+    pipeline.setRenderTexture(color);
+    pipeline.setTechnique(_final);
+    pipeline.drawSceneQuad();
 }
 
 void
-DepthOfField::render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept
+DepthOfField::render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
 {
     _texColor->assign(source->getResolveTexture());
 
-    pipeline->setRenderTexture(_texBlur);
-    pipeline->setTechnique(_sample4);
-    pipeline->drawSceneQuad();
+    pipeline.setRenderTexture(_texBlur);
+    pipeline.setTechnique(_sample4);
+    pipeline.drawSceneQuad();
 
     this->blurh(pipeline, _texBlur, _texTemp);
     this->blurv(pipeline, _texTemp, _texBlur);

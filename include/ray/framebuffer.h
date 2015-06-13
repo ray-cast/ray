@@ -34,18 +34,18 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_FRAMEBUFFER_H_
-#define _H_FRAMEBUFFER_H_
+#ifndef _H_LIGHT_SHAFT_H_
+#define _H_LIGHT_SHAFT_H_
 
-#include <ray/texture.h>
+#include <ray/post_process.h>
 
 _NAME_BEGIN
 
-class Framebuffer
+class LightShaft : public RenderPostProcess
 {
 public:
-    Framebuffer() noexcept;
-    virtual ~Framebuffer() noexcept;
+    LightShaft() noexcept;
+    virtual ~LightShaft() noexcept;
 };
 
 _NAME_END

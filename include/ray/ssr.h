@@ -47,7 +47,7 @@ public:
     SSR() noexcept;
     ~SSR() noexcept;
 
-    void render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept;
+    void render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
 
 private:
 

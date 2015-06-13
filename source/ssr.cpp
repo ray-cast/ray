@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #include <ray/ssr.h>
 #include <ray/material_maker.h>
-#include <ray/camera.h>
 
 _NAME_BEGIN
 
@@ -54,14 +53,14 @@ SSR::~SSR() noexcept
 }
 
 void
-SSR::render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept
+SSR::render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
 {
-    //_projInfo->assign(pipeline->camera->getProjConstant());
-    //_clipInfo->assign(pipeline->camera->getClipConstant());
+    //_projInfo->assign(pipeline.camera->getProjConstant());
+    //_clipInfo->assign(pipeline.camera->getClipConstant());
 
-    pipeline->setRenderTexture(source);
-    pipeline->setTechnique(_ssrPass);
-    pipeline->drawSceneQuad();
+    pipeline.setRenderTexture(source);
+    pipeline.setTechnique(_ssrPass);
+    pipeline.drawSceneQuad();
 }
 
 _NAME_END

@@ -67,7 +67,14 @@ public:
     virtual void setup(std::size_t width, std::size_t height) except;
     virtual void close() noexcept = 0;
 
-    virtual void render() noexcept = 0;
+    void setCamera(Camera* renderer) noexcept;
+    Camera* getCamera() const noexcept;
+
+    void setRenderer(RendererPtr renderer) noexcept;
+    RendererPtr getRenderer() const noexcept;
+
+    void addRenderData(RenderQueue queue, RenderObject* object) noexcept;
+    RenderData& getRenderData(RenderQueue queue) noexcept;
 
     void drawSceneQuad() noexcept;
     void drawSphere() noexcept;
@@ -85,27 +92,32 @@ public:
     void addPostProcess(RenderPostProcessPtr postprocess) noexcept;
     void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
 
-    void postprocess(RenderTexturePtr src) noexcept;
+    void render() noexcept;
 
 private:
+
+    void assignVisiable() noexcept;
+    void assignLight() noexcept;
+
+    virtual void onRenderPre() noexcept;
+    virtual void onRenderPost() noexcept;
+    virtual void onRenderPipeline() noexcept;
+
+private:
+
+    Camera* _camera;
+
+    RendererPtr _renderer;
 
     RenderBufferPtr _renderSceneQuad;
     RenderBufferPtr _renderSphere;
     RenderBufferPtr _renderCone;
 
+    RenderDataManager _renderDataManager;
+
+    std::vector<Light*> _lights;
+    std::vector<RenderObject*> _visiable;
     std::vector<RenderPostProcessPtr> _postprocessors;
-
-public:
-    RendererPtr renderer;
-
-    Camera* camera;
-    RenderScene* scene;
-
-    std::vector<Camera*> shadow;
-    std::vector<Light*> lights;
-    std::vector<RenderObject*> visiable;
-
-    RenderDataManager renderDataManager;
 };
 
 _NAME_END

@@ -49,7 +49,7 @@ OGLShader::~OGLShader() noexcept
 }
 
 bool
-OGLShader::compile()
+OGLShader::compile() except
 {
     assert(!_instance);
     assert(!this->getSource().empty());

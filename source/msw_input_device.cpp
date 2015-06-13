@@ -204,15 +204,6 @@ InputKey::Code toScancode(HWND hwnd, WPARAM wParam, LPARAM lParam)
         return (InputKey::Code)(InputKey::Code::Key0 + wParam - '0');
     }
 
-    if (wParam == VK_PROCESSKEY)
-    {
-        UINT virtualKey = ::ImmGetVirtualKey(hwnd);
-        if (virtualKey != VK_PROCESSKEY)
-        {
-            return toScancode(hwnd, virtualKey, lParam);
-        }
-    }
-
     return InputKey::Code::UNKNOWN;
 }
 
@@ -238,21 +229,24 @@ MSWInputDevice::update() noexcept
         switch (msg.message)
         {
         case WM_KEYDOWN:
-        {
-            inputEvent.event = InputEvent::KeyDown;
-            inputEvent.key.timestamp = ::timeGetTime();
-            inputEvent.key.keysym.sym = toScancode(_window, msg.wParam, msg.lParam);
-            inputEvent.key.state = true;
-
-            this->postEvent(inputEvent);
-        }
-        break;
         case WM_KEYUP:
         {
-            inputEvent.event = InputEvent::KeyUp;
+            inputEvent.event = (msg.message == WM_KEYDOWN) ? InputEvent::KeyDown : InputEvent::KeyUp;
             inputEvent.key.timestamp = ::timeGetTime();
-            inputEvent.key.keysym.sym = toScancode(_window, msg.wParam, msg.lParam);
-            inputEvent.key.state = false;
+            inputEvent.key.state = (msg.message == WM_KEYDOWN) ? true : false;
+
+            if (msg.wParam == VK_PROCESSKEY)
+            {
+                UINT virtualKey = ::ImmGetVirtualKey(msg.hwnd);
+                if (virtualKey != VK_PROCESSKEY)
+                {
+                    inputEvent.key.keysym.sym = toScancode(msg.hwnd, virtualKey, msg.lParam);
+                }
+            }
+            else
+            {
+                inputEvent.key.keysym.sym = toScancode(_window, msg.wParam, msg.lParam);
+            }
 
             this->postEvent(inputEvent);
         }

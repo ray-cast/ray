@@ -1,42 +1,33 @@
 <?xml version='1.0'?>
 <effect language="glsl">
     <parameter name="matProject" semantic="matProject" />
-    <shader type="vertex" name="mainVS">
+    <shader>
         <![CDATA[
-            #version 330
-            precision mediump float;
-
-            layout(location = 0) in vec4 glsl_Vertex;
-            layout(location = 3) in vec4 glsl_Diffuse;
-
             uniform mat4 matProject;
 
-            out vec4 diffuse;
+            varying vec4 diffuse;
 
-            void main()
+#ifdef SHADER_API_VERTEX
+            void LineVS()
             {
                 diffuse = glsl_Diffuse;
-                gl_Position = matProject * glsl_Vertex;
+                gl_Position = matProject * glsl_Position;
             }
-        ]]>
-    </shader>
-    <shader type="fragment" name="mainPS">
-        <![CDATA[
-            #version 330
-            precision mediump float;
+#endif
 
-            in vec4 diffuse;
-
-            void main()
+#ifdef SHADER_API_FRAGMENT
+            void LinePS()
             {
                 gl_FragColor = diffuse;
             }
+#endif
         ]]>
     </shader>
     <technique name="opaque">
         <pass name="gbuffer">
-            <state name="vertex" value="mainVS"/>
-            <state name="fragment" value="mainPS"/>
+            <state name="vertex" value="LineVS"/>
+            <state name="fragment" value="LinePS"/>
+
             <state name="blend" value="true"/>
         </pass>
     </technique>

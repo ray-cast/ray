@@ -126,14 +126,6 @@ private:
 
     void renderCamera(Camera* camera) noexcept;
 
-    void onPreRender(RendererPtr renderer, Camera* camera) noexcept;
-    void onPostRender() noexcept;
-
-    void onRenderPipeline() noexcept;
-
-    void assignVisiable() noexcept;
-    void assignLight() noexcept;
-
 private:
     RenderSystem(const RenderSystem&) noexcept = delete;
     RenderSystem& operator=(const RenderSystem&) noexcept = delete;

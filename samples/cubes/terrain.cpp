@@ -81,6 +81,11 @@ Terrain::onActivate() except
         _player->addComponent(std::make_shared<FirstPersonCamera>());
         _player->setActive(true);
 
+        _player->getComponent<ray::CameraComponent>()->unproject(ray::Vector3(-1.0, -1.0, 1.0));
+        _player->getComponent<ray::CameraComponent>()->unproject(ray::Vector3(1.0, 1.0, 1.0));
+        _player->getComponent<ray::CameraComponent>()->unproject(ray::Vector3(-1.0, 1.0, 1.0));
+        _player->getComponent<ray::CameraComponent>()->unproject(ray::Vector3(1.0, -1.0, 1.0));
+
         for (std::size_t i = 0; i < 4; i++)
         {
             auto thread = std::make_shared<TerrainThread>();

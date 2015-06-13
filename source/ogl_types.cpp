@@ -433,6 +433,24 @@ OGLTypes::asBlendFactor(BlendFactor func) noexcept
         return GL_ONE_MINUS_SRC_ALPHA;
     case ray::GPU_ONEMINUSDSTALPHA:
         return GL_ONE_MINUS_DST_ALPHA;
+    case ray::GPU_CONSTANT_COLOR:
+        return GL_CONSTANT_COLOR;
+    case ray::GPU_CONSTANT_ALPHA:
+        return GL_CONSTANT_ALPHA;
+    case GPU_ONE_MINUS_CONSTANT_COLOR:
+        return GL_CONSTANT_ALPHA;
+    case GPU_ONE_MINUS_CONSTANT_ALPHA:
+        return GL_CONSTANT_ALPHA;
+    case GPU_SRC_ALPHA_SATURATE:
+        return GL_SRC_ALPHA_SATURATE;
+    case GPU_SRC1_COLOR:
+        return GL_SRC1_COLOR;
+    case GPU_SRC1_ALPHA:
+        return GL_SRC1_ALPHA;
+    case GPU_ONE_MINUS_SRC1_COLOR:
+        return GL_ONE_MINUS_SRC1_COLOR;
+    case GPU_ONE_MINUS_SRC1_ALPHA:
+        return GL_ONE_MINUS_SRC1_ALPHA;
     default:
         assert(false);
         return GL_ZERO;

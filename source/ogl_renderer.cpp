@@ -1180,6 +1180,10 @@ OGLRenderer::createRenderTexture(RenderTexture& target) noexcept
     {
         this->bindRenderTexture(target.shared_from_this(), Attachment::DEPTH);
     }
+    else if (resolveFormat == PixelFormat::STENCIL8)
+    {
+        this->bindRenderTexture(target.shared_from_this(), Attachment::STENCIL);
+    }
     else
     {
         this->bindRenderTexture(target.shared_from_this(), Attachment::COLOR0);
@@ -1306,9 +1310,6 @@ OGLRenderer::copyRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderT
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
     glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
     _renderTexture = nullptr;
     _multiRenderTexture = nullptr;

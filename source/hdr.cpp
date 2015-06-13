@@ -53,6 +53,15 @@ HDR::Setting::Setting() noexcept
 
 HDR::HDR() except
 {
+}
+
+HDR::~HDR() noexcept
+{
+}
+
+void
+HDR::onActivate() except
+{
     _texSample4 = RenderTexture::create();
     _texSample4->setup(512, 512, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
 
@@ -96,7 +105,8 @@ HDR::HDR() except
     _toneVignetteOuter->assign(_setting.vignetteOuter);
 }
 
-HDR::~HDR() noexcept
+void
+HDR::onDeactivate() except
 {
 }
 
@@ -122,7 +132,7 @@ HDR::getSetting() const noexcept
 }
 
 void
-HDR::measureLuminance(RenderPipeline* pipeline, RenderTexturePtr source)
+HDR::measureLuminance(RenderPipeline& pipeline, RenderTexturePtr source)
 {
     float delta = Material::getMaterialSemantic()->getFloatParam(GlobalFloatSemantic::TimeDelta);
 
@@ -130,7 +140,7 @@ HDR::measureLuminance(RenderPipeline* pipeline, RenderTexturePtr source)
 
     _data.resize(count);
 
-    pipeline->readRenderTexture(source, PixelFormat::R16F, source->getWidth(), source->getHeight(), _data.data());
+    pipeline.readRenderTexture(source, PixelFormat::R16F, source->getWidth(), source->getHeight(), _data.data());
 
     float lum = 0;
 
@@ -149,78 +159,78 @@ HDR::measureLuminance(RenderPipeline* pipeline, RenderTexturePtr source)
 }
 
 void
-HDR::generateBloom(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest)
+HDR::generateBloom(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest)
 {
     _toneSource->assign(source->getResolveTexture());
 
-    pipeline->setRenderTexture(dest);
-    pipeline->setTechnique(_bloom);
-    pipeline->drawSceneQuad();
+    pipeline.setRenderTexture(dest);
+    pipeline.setTechnique(_bloom);
+    pipeline.drawSceneQuad();
 }
 
 void
-HDR::sample4(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+HDR::sample4(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
 {
     _toneSource->assign(source->getResolveTexture());
 
-    pipeline->setRenderTexture(dest);
-    pipeline->setTechnique(_sample4);
-    pipeline->drawSceneQuad();
+    pipeline.setRenderTexture(dest);
+    pipeline.setTechnique(_sample4);
+    pipeline.drawSceneQuad();
 }
 
 void
-HDR::sample8(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+HDR::sample8(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
 {
     _toneSource->assign(source->getResolveTexture());
 
-    pipeline->setRenderTexture(dest);
-    pipeline->setTechnique(_sample8);
-    pipeline->drawSceneQuad();
+    pipeline.setRenderTexture(dest);
+    pipeline.setTechnique(_sample8);
+    pipeline.drawSceneQuad();
 }
 
 void
-HDR::sampleLog(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+HDR::sampleLog(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
 {
     _toneSource->assign(source->getResolveTexture());
 
-    pipeline->setRenderTexture(dest);
-    pipeline->setTechnique(_samplelog);
-    pipeline->drawSceneQuad();
+    pipeline.setRenderTexture(dest);
+    pipeline.setTechnique(_samplelog);
+    pipeline.drawSceneQuad();
 }
 
 void
-HDR::blurh(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+HDR::blurh(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
 {
     _toneSource->assign(source->getResolveTexture());
 
-    pipeline->setRenderTexture(dest);
-    pipeline->setTechnique(_blurh);
-    pipeline->drawSceneQuad();
+    pipeline.setRenderTexture(dest);
+    pipeline.setTechnique(_blurh);
+    pipeline.drawSceneQuad();
 }
 
 void
-HDR::blurv(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+HDR::blurv(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
 {
     _toneSource->assign(source->getResolveTexture());
 
-    pipeline->setRenderTexture(dest);
-    pipeline->setTechnique(_blurv);
-    pipeline->drawSceneQuad();
+    pipeline.setRenderTexture(dest);
+    pipeline.setTechnique(_blurv);
+    pipeline.drawSceneQuad();
 }
 
 void
-HDR::generateToneMapping(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr bloom)
+HDR::generateToneMapping(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr bloom)
 {
     _toneSource->assign(source->getResolveTexture());
     _toneBloom->assign(bloom->getResolveTexture());
 
-    pipeline->setRenderTexture(source);
-    pipeline->setTechnique(_tone);
-    pipeline->drawSceneQuad();
+    pipeline.setRenderTexture(source);
+    pipeline.setTechnique(_tone);
+    pipeline.drawSceneQuad();
 }
 
 void
-HDR::render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept
+HDR::render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
 {
     this->sample4(pipeline, source, _texSample4);
     this->sample8(pipeline, _texSample4, _texSample8);

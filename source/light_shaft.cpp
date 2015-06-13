@@ -35,28 +35,11 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/light_shaft.h>
-#include <ray/render_target.h>
-
-#include <ray/camera.h>
-#include <ray/geometry.h>
-#include <ray/transform.h>
-#include <ray/gameobj.h>
 
 _NAME_BEGIN
 
-LightShaft::LightShaft(RenderDevice& pipeline)
-: RenderStage(pipeline)
+LightShaft::LightShaft() noexcept
 {
-    /*_framebuffers = std::make_shared<RenderTarget>();
-
-    _effect = std::make_shared<RenderDevice>("light_shaft.glsl");
-
-    _light_shaft = _effect->getTechnique("light_shaft");
-
-    _position = _effect->getParameter("position");
-    _scene_texture = _effect->getParameter("scene_texture");
-
-    _scene_texture->assign(0);*/
 }
 
 LightShaft::~LightShaft() noexcept
@@ -64,58 +47,18 @@ LightShaft::~LightShaft() noexcept
 }
 
 void
-LightShaft::render(const Scene& scene) noexcept
+LightShaft::render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
 {
-    /*
-    auto lights = engine.getLightsObjects();
-    if (lights.size() > 0)
-    {
-        std::vector<Vector2> visiable;
+}
 
-        auto camera = engine.getCamera();
-        if (camera)
-        {
-            for (auto& it : lights)
-            {
-                auto& transform = it->getComponent<Transform>();
-                if (transform)
-                {
-                    Vector3 v = camera->project(transform->getTranslate());
-                    Vector2 project(v.x, v.y);
+void
+LightShaft::onActivate() except
+{
+}
 
-                    const Viewport& view = camera->getViewport();
-
-                    project.x /= view.width;
-                    project.y /= view.height;
-
-                    if (project.x >= 0 && project.x <= 1.0 &&
-                        project.y >= 0 && project.y <= 1.0)
-                    {
-                        visiable.push_back(project);
-                    }
-                }
-            }
-
-            if (visiable.size() > 0)
-            {
-                engine.setRenderTarget(nullptr);
-
-                engine.setViewport(0, 0, 1366, 768);
-
-                engine.getShadingTexture()->apply(0);
-
-                for (auto& it : visiable)
-                {
-                    _position->assign(it);
-
-                    engine.renderObject(*_light_shaft, *engine.plane());
-                }
-
-                return true;
-            }
-        }
-    }
-    */
+void
+LightShaft::onDeactivate() except
+{
 }
 
 _NAME_END

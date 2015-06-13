@@ -41,14 +41,6 @@
 
 _NAME_BEGIN
 
-CameraListener::CameraListener() noexcept
-{
-}
-
-CameraListener::~CameraListener() noexcept
-{
-}
-
 Camera::Camera() noexcept
     : _left(0)
     , _right(0)
@@ -74,7 +66,6 @@ Camera::Camera() noexcept
     , _cameraType(CameraType::CT_PERSPECTIVE)
     , _cameraOrder(CameraOrder::CO_MAIN)
     , _cameraRender(CameraRender::CR_RENDER_TO_TEXTURE)
-    , _cameraListener(nullptr)
     , _renderScene(nullptr)
     , _renderWindow(nullptr)
 {
@@ -94,10 +85,10 @@ Camera::setup(std::size_t width, std::size_t height) noexcept
         _deferredDepthMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::DEPTH24_STENCIL8);
 
         _deferredGraphicMap = RenderTexture::create();
-        _deferredGraphicMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::SR8G8B8A8, ClearFlags::CLEAR_COLOR);
+        _deferredGraphicMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::SR8G8B8A8);
 
         _deferredNormalMap = RenderTexture::create();
-        _deferredNormalMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F, ClearFlags::CLEAR_COLOR);
+        _deferredNormalMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
 
         _deferredLightMap = RenderTexture::create();
         _deferredLightMap->setSharedStencilTexture(_deferredDepthMap);
@@ -110,6 +101,7 @@ Camera::setup(std::size_t width, std::size_t height) noexcept
         _deferredGraphicMaps->setup(width, height);
 
         _renderTexture = std::make_shared<RenderTexture>();
+        _renderTexture->setSharedDepthTexture(_deferredDepthMap);
         _renderTexture->setSharedStencilTexture(_deferredDepthMap);
         _renderTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::SR8G8B8A8);
 
@@ -426,17 +418,6 @@ Camera::setCameraRender(CameraRender render) noexcept
     _cameraRender = render;
 }
 
-void
-Camera::setCameraListener(CameraListener* listener) noexcept
-{
-    if (_cameraListener)
-    {
-        _cameraListener->onChangeListener(this);
-    }
-
-    _cameraListener = listener;
-}
-
 const Viewport&
 Camera::getViewport() const noexcept
 {
@@ -459,12 +440,6 @@ CameraRender
 Camera::getCameraRender() const noexcept
 {
     return _cameraRender;
-}
-
-CameraListener*
-Camera::getCameraListener() const noexcept
-{
-    return _cameraListener;
 }
 
 void

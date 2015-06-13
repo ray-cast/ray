@@ -50,6 +50,12 @@ enum CameraType
 enum CameraOrder
 {
     CO_SHADOW,
+    CO_DEPTH_OPAQUES,
+    CO_DEPTH_TRANSPARENT,
+    CO_COLOR,
+    CO_NORMAL,
+    CO_LIGHT,
+    CO_SHADING,
     CO_CUSTOM,
     CO_MAIN
 };
@@ -58,18 +64,6 @@ enum CameraRender
 {
     CR_RENDER_TO_TEXTURE,
     CR_RENDER_TO_CUBEMAP,
-};
-
-class EXPORT CameraListener
-{
-public:
-    CameraListener() noexcept;
-    virtual ~CameraListener() noexcept;
-
-    virtual void onCameraVisible(Camera* camera) noexcept = 0;
-    virtual void onCameraInvisible(Camera* camera) noexcept = 0;
-
-    virtual void onChangeListener(Camera* camera) noexcept = 0;
 };
 
 class EXPORT Camera final : public RenderObject
@@ -119,7 +113,6 @@ public:
     void setCameraType(CameraType type) noexcept;
     void setCameraOrder(CameraOrder order) noexcept;
     void setCameraRender(CameraRender mode) noexcept;
-    void setCameraListener(CameraListener* listener) noexcept;
 
     void setRenderScene(RenderScene* scene) noexcept;
     void setRenderWindow(RenderWindowPtr vp) noexcept;
@@ -128,7 +121,6 @@ public:
     CameraType getCameraType() const noexcept;
     CameraOrder getCameraOrder() const noexcept;
     CameraRender getCameraRender() const noexcept;
-    CameraListener* getCameraListener() const noexcept;
 
     RenderScene* getRenderScene() const noexcept;
     RenderWindowPtr getRenderWindow() const noexcept;
@@ -182,7 +174,6 @@ private:
     CameraType      _cameraType;
     CameraOrder     _cameraOrder;
     CameraRender    _cameraRender;
-    CameraListener* _cameraListener;
 
     RenderTexturePtr _deferredDepthMap;
     RenderTexturePtr _deferredGraphicMap;

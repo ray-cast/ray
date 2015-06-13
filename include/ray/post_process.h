@@ -50,12 +50,12 @@ public:
     void setActive(bool active) except;
     bool getActive() const except;
 
-    virtual void render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept = 0;
+    virtual void render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept = 0;
 
 protected:
 
-    void onActivate() except;
-    void onDeactivate() except;
+    virtual void onActivate() except;
+    virtual void onDeactivate() except;
 
 private:
 

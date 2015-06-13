@@ -44,10 +44,19 @@ _NAME_BEGIN
 
 SSAO::SSAO() noexcept
 {
-    _texAmbient = std::make_shared<RenderTexture>();
+}
+
+SSAO::~SSAO() noexcept
+{
+}
+
+void
+SSAO::onActivate() except
+{
+    _texAmbient = RenderTexture::create();
     _texAmbient->setup(1376, 768, TextureDim::DIM_2D, PixelFormat::R16F);
 
-    _texBlur = std::make_shared<RenderTexture>();
+    _texBlur = RenderTexture::create();
     _texBlur->setup(1376, 768, TextureDim::DIM_2D, PixelFormat::R16F);
 
     _ambientOcclusion = MaterialMaker("sys:fx\\ssao.glsl");
@@ -60,9 +69,7 @@ SSAO::SSAO() noexcept
     _projInfo = _ambientOcclusion->getParameter("projInfo");
     _clipInfo = _ambientOcclusion->getParameter("clipInfo");
     _bias = _ambientOcclusion->getParameter("bias");
-    _epsilon = _ambientOcclusion->getParameter("epsilon");
     _intensityDivR6 = _ambientOcclusion->getParameter("intensityDivR6");
-    _numSample = _ambientOcclusion->getParameter("numSample");
 
     _blurTexSource = _ambientOcclusion->getParameter("texSource");
     _blurFactor = _ambientOcclusion->getParameter("blurFactor");
@@ -76,9 +83,7 @@ SSAO::SSAO() noexcept
     Setting setting;
     setting.radius = 1;
     setting.bias = 0.12;
-    setting.epsilon = 0.01;
     setting.intensity = 4.0;
-    setting.numSample = 10;
 
     setting.blur = true;
     setting.blurRadius = 8;
@@ -87,7 +92,8 @@ SSAO::SSAO() noexcept
     this->setSetting(setting);
 }
 
-SSAO::~SSAO() noexcept
+void
+SSAO::onDeactivate() except
 {
 }
 
@@ -97,17 +103,13 @@ SSAO::setSetting(const Setting& set) noexcept
     _setting.radius = set.radius;
     _setting.bias = set.bias;
     _setting.intensity = set.intensity;
-    _setting.epsilon = set.epsilon;
-    _setting.numSample = set.numSample;
     _setting.blur = set.blur;
     _setting.blurRadius = set.blurRadius;
     _setting.blurSharpness = set.blurSharpness;
 
     _radius->assign(_setting.radius);
     _bias->assign(_setting.bias);
-    _epsilon->assign(_setting.epsilon);
     _intensityDivR6->assign(_setting.intensity / pow(_setting.radius, 6.0f));
-    _numSample->assign(_setting.numSample);
     _blurRadius->assign(_setting.blurRadius);
     _blurFactor->assign((float)1.0 / (2 * ((_setting.blurRadius + 1) / 2) * ((_setting.blurRadius + 1) / 2)));
     _blurSharpness->assign(_setting.blurSharpness);
@@ -120,54 +122,54 @@ SSAO::getSetting() const noexcept
 }
 
 void
-SSAO::computeRawAO(RenderPipeline* pipeline, RenderTexturePtr dest) noexcept
+SSAO::computeRawAO(RenderPipeline& pipeline, RenderTexturePtr dest) noexcept
 {
-    _projInfo->assign(pipeline->camera->getProjConstant());
-    _projScale->assign(pipeline->camera->getProjLength().y);
-    _clipInfo->assign(pipeline->camera->getClipConstant());
+    _projInfo->assign(pipeline.getCamera()->getProjConstant());
+    _projScale->assign(pipeline.getCamera()->getProjLength().y);
+    _clipInfo->assign(pipeline.getCamera()->getClipConstant());
 
-    pipeline->setRenderTexture(dest);
-    pipeline->setTechnique(_ambientOcclusionPass);
-    pipeline->drawSceneQuad();
+    pipeline.setRenderTexture(dest);
+    pipeline.setTechnique(_ambientOcclusionPass);
+    pipeline.drawSceneQuad();
 }
 
 void
-SSAO::blurHorizontal(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+SSAO::blurHorizontal(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
 {
     int2 direction(2, 0);
     this->blurDirection(pipeline, source, dest, direction);
 }
 
 void
-SSAO::blurVertical(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+SSAO::blurVertical(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
 {
     int2 direction(0, 2);
     this->blurDirection(pipeline, source, dest, direction);
 }
 
 void
-SSAO::blurDirection(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr dest, const int2& direction) noexcept
+SSAO::blurDirection(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest, const int2& direction) noexcept
 {
     _blurDirection->assign(direction);
     _blurTexSource->assign(source->getResolveTexture());
 
-    pipeline->setRenderTexture(dest);
-    pipeline->setTechnique(_ambientOcclusionBlurPass);
-    pipeline->drawSceneQuad();
+    pipeline.setRenderTexture(dest);
+    pipeline.setTechnique(_ambientOcclusionBlurPass);
+    pipeline.drawSceneQuad();
 }
 
 void
-SSAO::shading(RenderPipeline* pipeline, RenderTexturePtr source, RenderTexturePtr ao) noexcept
+SSAO::shading(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr ao) noexcept
 {
     _copyAmbient->assign(ao->getResolveTexture());
 
-    pipeline->setRenderTexture(source);
-    pipeline->setTechnique(_ambientOcclusionCopyPass);
-    pipeline->drawSceneQuad();
+    pipeline.setRenderTexture(source);
+    pipeline.setTechnique(_ambientOcclusionCopyPass);
+    pipeline.drawSceneQuad();
 }
 
 void
-SSAO::render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept
+SSAO::render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
 {
     this->computeRawAO(pipeline, _texAmbient);
 
@@ -179,8 +181,8 @@ SSAO::render(RenderPipeline* pipeline, RenderTexturePtr source) noexcept
 
     this->shading(pipeline, source, _texAmbient);
 
-    //pipeline->copyRenderTexture(_texAmbient, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));
-    //pipeline->copyRenderTexture(dest, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));
+    //pipeline.copyRenderTexture(_texAmbient, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));
+    //pipeline.copyRenderTexture(dest, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));
 }
 
 _NAME_END

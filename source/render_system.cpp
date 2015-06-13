@@ -95,6 +95,7 @@ RenderSystem::setup(RenderDevicePtr device, RenderWindowPtr window, WindHandle w
 
     _renderPipeline = std::make_unique<DeferredLighting>();
     _renderPipeline->setup(width, height);
+    _renderPipeline->setRenderer(_renderer);
 
     if (_enableSSAO)
         _renderPipeline->addPostProcess(std::make_shared<SSAO>());
@@ -422,92 +423,6 @@ RenderSystem::applyTimer(TimerPtr timer) noexcept
 }
 
 void
-RenderSystem::assignVisiable() noexcept
-{
-    RenderScene* scene = _renderPipeline->camera->getRenderScene();
-    if (scene)
-    {
-        _renderPipeline->visiable.clear();
-        _renderPipeline->renderDataManager.clear();
-
-        scene->computVisiable(_renderPipeline->camera, _renderPipeline->visiable);
-
-        for (auto& it : _renderPipeline->visiable)
-        {
-            auto listener = it->getRenderListener();
-            if (listener)
-                listener->onWillRenderObject();
-
-            it->collection(_renderPipeline->renderDataManager);
-        }
-    }
-}
-
-void
-RenderSystem::assignLight() noexcept
-{
-    RenderScene* scene = _renderPipeline->camera->getRenderScene();
-    if (scene)
-    {
-        _renderPipeline->lights.clear();
-
-        scene->computVisiableLight(_renderPipeline->camera, _renderPipeline->lights);
-
-        for (auto& it : _renderPipeline->lights)
-        {
-            auto listener = it->getRenderListener();
-            if (listener)
-                listener->onWillRenderObject();
-
-            auto cameras = it->getShadowCamera();
-            if (cameras)
-            {
-                _renderPipeline->shadow.push_back(cameras.get());
-            }
-        }
-    }
-}
-
-void
-RenderSystem::onPreRender(RendererPtr renderer, Camera* camera) noexcept
-{
-    _renderPipeline->renderer = renderer;
-    _renderPipeline->camera = camera;
-
-    RenderCanvasPtr canvas;
-
-    auto window = camera->getRenderWindow();
-    if (!window)
-        window = this->getRenderWindow();
-
-    _renderer->setRenderCanvas(window->getRenderCanvas());
-
-    CameraListener* cameralistener = camera->getCameraListener();
-    if (cameralistener)
-        cameralistener->onCameraVisible(camera);
-
-    RenderListener* renderListener = camera->getRenderListener();
-    if (renderListener)
-        renderListener->onWillRenderObject();
-}
-
-void
-RenderSystem::onPostRender() noexcept
-{
-    RenderListener* listener = _renderPipeline->camera->getRenderListener();
-    if (listener)
-        listener->onRenderObject();
-
-    _renderPipeline->camera = nullptr;
-}
-
-void
-RenderSystem::onRenderPipeline() noexcept
-{
-    _renderPipeline->render();
-}
-
-void
 RenderSystem::renderBegin() noexcept
 {
     _renderer->renderBegin();
@@ -518,16 +433,14 @@ RenderSystem::renderBegin() noexcept
 void
 RenderSystem::renderCamera(Camera* camera) noexcept
 {
-    this->onPreRender(_renderer, camera);
+    auto window = camera->getRenderWindow();
+    if (!window)
+        window = this->getRenderWindow();
 
-    this->applyCamera(camera);
+    _renderer->setRenderCanvas(window->getRenderCanvas());
 
-    this->assignVisiable();
-    this->assignLight();
-
-    this->onRenderPipeline();
-
-    this->onPostRender();
+    _renderPipeline->setCamera(camera);
+    _renderPipeline->render();
 }
 
 void
@@ -538,9 +451,10 @@ RenderSystem::render() noexcept
         this->applyEnvironment(*scene);
 
         auto& cameras = scene->getCameraList();
-        for (auto& it : cameras)
+        for (auto& camera : cameras)
         {
-            this->renderCamera(it);
+            this->applyCamera(camera);
+            this->renderCamera(camera);
         }
     }
 }

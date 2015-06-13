@@ -132,7 +132,7 @@ RenderScene::removeRenderObject(RenderObject* object) noexcept
 }
 
 void
-RenderScene::computVisiable(const Camera* camera, std::vector<RenderObject*>& object) noexcept
+RenderScene::computVisiable(Camera* camera, std::vector<RenderObject*>& object) noexcept
 {
     Frustum fru;
     fru.extract(camera->getViewProject());
@@ -151,7 +151,7 @@ RenderScene::computVisiable(const Camera* camera, std::vector<RenderObject*>& ob
 }
 
 void
-RenderScene::computVisiableLight(const Camera* camera, std::vector<Light*>& lights) noexcept
+RenderScene::computVisiableLight(Camera* camera, std::vector<Light*>& lights) noexcept
 {
     Frustum fru;
     fru.extract(camera->getViewProject());

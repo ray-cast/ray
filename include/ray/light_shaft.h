@@ -37,29 +37,27 @@
 #ifndef _H_LIGHT_SHAFT_H_
 #define _H_LIGHT_SHAFT_H_
 
-#include <ray/render_device.h>
+#include <ray/post_process.h>
 
 _NAME_BEGIN
 
-class Scene;
-class ShaderObject;
-class Geometry;
-class RenderTarget;
-class Texture;
-class LightShaft : public RenderStage
+class EXPORT LightShaft : public RenderPostProcess
 {
 public:
-    LightShaft(RenderDevice& pipeline);
+    LightShaft() noexcept;
     ~LightShaft() noexcept;
 
-    void render(const Scene& scene) noexcept;
+    void render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
 
 private:
 
-    //std::shared_ptr<RenderTechnique> _light_shaft;
+    void onActivate() except;
+    void onDeactivate() except;
 
-    //std::shared_ptr<ShaderParameter> _position;
-    //std::shared_ptr<ShaderParameter> _scene_texture;
+private:
+
+    MaterialPtr _material;
+    MaterialPassPtr _lightShaft;
 };
 
 _NAME_END

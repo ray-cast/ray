@@ -7,31 +7,10 @@
     <parameter name="matProject" semantic="matProject" />
     <parameter name="matProjectInverse" semantic="matProjectInverse" />
     <parameter name="eyePosition" semantic="CameraPosition" />
-    <shader type="vertex" name="mainVS">
+    <shader>
         <![CDATA[
-            #version 330 core
-
-            layout(location = 0) in vec4 glsl_Position;
-            layout(location = 2) in vec2 glsl_Texcoord;
-
-            out vec4 position;
-            out vec2 coord;
-
-            void main()
-            {
-                coord = glsl_Texcoord;
-                gl_Position = position = glsl_Position;
-            }
-        ]]>
-    </shader>
-    <shader type="fragment" name="mainPS">
-        <![CDATA[
-            #version 330
-
-            layout(location = 0) out vec4 glsl_FragColor0;
-
-            in vec2 coord;
-            in vec4 position;
+            varying vec4 position;
+            varying vec2 coord;
 
             uniform sampler2D texColor;
             uniform sampler2D texDepth;
@@ -108,7 +87,16 @@
                 return false;
             }
 
-            void main()
+#if SHADER_API_VERTEX
+            void ssrVS()
+            {
+                coord = glsl_Texcoord;
+                gl_Position = position = glsl_Position;
+            }
+#endif
+
+#if SHADER_API_FRAGMENT
+            void ssrPS()
             {
                 vec4 NS = texture2D(texNormal, coord);
                 vec4 color = texture2D(texColor, coord);
@@ -146,13 +134,16 @@
 
                 glsl_FragColor0 = vec4(0);
             }
+#endif
         ]]>
     </shader>
     <technique name="postprocess">
         <pass name="ssr">
-            <state name="vertex" value="mainVS"/>
-            <state name="fragment" value="mainPS"/>
+            <state name="vertex" value="ssrVS"/>
+            <state name="fragment" value="ssrPS"/>
+
             <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
 
             <state name="blend" value="true"/>
         </pass>

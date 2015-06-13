@@ -47,7 +47,7 @@ public:
     OGLShader() noexcept;
     ~OGLShader() noexcept;
 
-    bool compile();
+    bool compile() except;
     void close() noexcept;
 
     GLuint getHandle() const noexcept;
@@ -63,7 +63,7 @@ public:
     OGLShaderProgram() noexcept;
     ~OGLShaderProgram() noexcept;
 
-    void setup();
+    void setup() except;
     void close() noexcept;
 
     void bind() noexcept;

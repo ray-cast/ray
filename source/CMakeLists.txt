@@ -361,10 +361,10 @@ SET(RENDERER_OGL
     ${SOURCE_PATH}/ogl_state.cpp
     ${HEADER_PATH}/ogl_shader.h
     ${SOURCE_PATH}/ogl_shader.cpp
-    ${HEADER_PATH}/wgl_canvas.h
-    ${SOURCE_PATH}/wgl_canvas.cpp
     ${HEADER_PATH}/ogl_extenstion.h
     ${SOURCE_PATH}/ogl_extenstion.cpp
+    ${HEADER_PATH}/wgl_canvas.h
+    ${SOURCE_PATH}/wgl_canvas.cpp
 )
 SOURCE_GROUP("core\\device\\OGL" FILES ${RENDERER_OGL})
 

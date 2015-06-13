@@ -89,19 +89,62 @@ MaterialMaker::instanceShader(XMLReader& reader) except
 {
     auto shader = std::make_shared<Shader>();
 
-    std::string type = reader.getString("type");
-    std::string text = reader.getText();
+    std::string name = reader.getString("name");
+    std::string value = reader.getString("value");
 
-    if (type.empty())
-        throw failure("The shader type can not be empty");
+    if (name.empty())
+        throw failure("The shader name can not be empty");
 
-    if (text.empty())
-        throw failure("The shader code can not be empty");
+    if (value.empty())
+        throw failure("The shader value can not be empty");
 
-    shader->setType(type);
-    shader->setSource(text);
+    auto method = _codes;
+    std::size_t off = _codes.find(value.data());
+    assert(off != std::string::npos);
+    method.replace(off, value.size(), "main");
 
-    _codes += text;
+    shader->setType(name);
+
+    std::string before;
+    before += "#version 400 core\n";
+    before += "precision mediump float;\n";
+
+    if (shader->getType() == ShaderType::ST_VERTEX)
+    {
+        before += "#define SHADER_API_VERTEX 1\n";
+        before += "layout(location = 0) in vec4 glsl_Position;\n";
+        before += "layout(location = 1) in vec4 glsl_Normal;\n";
+        before += "layout(location = 2) in vec2 glsl_Texcoord;\n";
+        before += "layout(location = 3) in vec4 glsl_Diffuse;\n";
+
+        auto it = method.find("varying");
+        while (it != std::string::npos)
+        {
+            method.replace(it, 7, "out");
+
+            it = method.find("varying");
+        };
+    }
+    else
+    {
+        before += "#define SHADER_API_FRAGMENT 1\n";
+        before += "layout(location = 0) out vec4 glsl_FragColor0;\n";
+        before += "layout(location = 1) out vec4 glsl_FragColor1;\n";
+        before += "layout(location = 2) out vec4 glsl_FragColor2;\n";
+        before += "layout(location = 3) out vec4 glsl_FragColor3;\n";
+
+        auto it = method.find("varying");
+        while (it != std::string::npos)
+        {
+            method.replace(it, 7, "in");
+
+            it = method.find("varying");
+        };
+    }
+
+    method.insert(0, before);
+
+    shader->setSource(method);
 
     return shader;
 }
@@ -151,7 +194,7 @@ MaterialMaker::instancePass(XMLReader& reader) except
 
                 if (name == "vertex")
                 {
-                    ShaderPtr shader = _shaderList[value];
+                    auto shader = instanceShader(reader);
                     if (shader)
                     {
                         shaderObject->addShader(shader);
@@ -159,7 +202,7 @@ MaterialMaker::instancePass(XMLReader& reader) except
                 }
                 else if (name == "fragment")
                 {
-                    ShaderPtr shader = _shaderList[value];
+                    auto shader = instanceShader(reader);
                     if (shader)
                     {
                         shaderObject->addShader(shader);
@@ -420,25 +463,15 @@ MaterialMaker::load(XMLReader& reader) except
                     if (param)
                         _material->addParameter(param);
                 }
+                else if (name == "shader")
+                {
+                    _codes.append(reader.getText());
+                }
                 else if (name == "technique")
                 {
                     auto tech = instanceTech(reader);
                     if (tech)
                         _material->addTech(instanceTech(reader));
-                }
-                else if (name == "shader")
-                {
-                    auto name = reader.getString("name");
-                    if (!name.empty())
-                    {
-                        auto shader = instanceShader(reader);
-                        if (shader)
-                            _shaderList[name] = shader;
-                    }
-                    else
-                    {
-                        throw failure("The shader name can not be empty");
-                    }
                 }
             } while (reader.setToNextChild());
 

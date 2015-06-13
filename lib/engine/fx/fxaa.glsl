@@ -4,26 +4,6 @@
     <parameter name="texColor" semantic="ColorMap" />
     <shader type="vertex" name="mainVS">
         <![CDATA[
-            #version 330 core
-            precision mediump float;
-
-            layout(location = 0) in vec4 glsl_Vertex;
-            layout(location = 2) in vec2 glsl_Texcoord;
-
-            out vec2 texCoord;
-
-            void main()
-            {
-                texCoord = glsl_Texcoord;
-                gl_Position = glsl_Vertex;
-            }
-        ]]>
-    </shader>
-    <shader type="fragment" name="mainPS">
-        <![CDATA[
-            #version 400 core
-            precision mediump float;
-
             #define FXAA_PC 1
             #define FXAA_GLSL_130 1
             #define FXAA_QUALITY__PRESET 12
@@ -1015,13 +995,21 @@
             /*==========================================================================*/
             #endif
 
-            layout(location = 0) out vec4 glsl_FragColor0;
-
             uniform sampler2D texColor;
             uniform vec2 texelStep;
-            in vec2 texCoord;
 
-            void main(void)
+            varying vec2 texCoord;
+
+#if SHADER_API_VERTEX
+            void fxaaVS()
+            {
+                texCoord = glsl_Texcoord;
+                gl_Position = glsl_Position;
+            }
+#endif
+
+#if SHADER_API_FRAGMENT
+            void fxaaPS(void)
             {
 #if (FXAA_PC == 1)
                 glsl_FragColor0 = FxaaPixelShader(texCoord,
@@ -1045,12 +1033,13 @@
                 glsl_FragColor0 = texture2D(texColor, texCoord);
 #endif
             }
+#endif
         ]]>
     </shader>
     <technique name="postprocess">
         <pass name="fxaa">
-            <state name="vertex" value="mainVS"/>
-            <state name="fragment" value="mainPS"/>
+            <state name="vertex" value="fxaaVS"/>
+            <state name="fragment" value="fxaaPS"/>
             <state name="depthtest" value="false"/>
 
             <state name="blend" value="true" />

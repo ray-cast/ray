@@ -105,6 +105,8 @@ public:
     void setRenderScene(RenderScene* scene) noexcept;
     RenderScene* getRenderScene() const noexcept;
 
+    void collection(RenderDataManager& manager) noexcept;
+
     LightPtr clone() const noexcept;
 
 private:

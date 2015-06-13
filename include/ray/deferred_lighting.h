@@ -50,7 +50,9 @@ public:
     void setup(std::size_t width, std::size_t height) except;
     void close() noexcept;
 
-    void render() noexcept;
+    void onRenderPre() noexcept;
+    void onRenderPipeline() noexcept;
+    void onRenderPost() noexcept;
 
 private:
 
@@ -59,6 +61,8 @@ private:
     void renderOpaquesDepthOhly() noexcept;
     void renderOpaques() noexcept;
     void renderOpaquesShading() noexcept;
+
+    void renderBackground() noexcept;
 
     void renderTransparentDepthOhly() noexcept;
     void renderTransparent() noexcept;
@@ -86,8 +90,8 @@ private:
     MaterialPassPtr _deferredSunLight;
     MaterialPassPtr _deferredSpotLight;
     MaterialPassPtr _deferredPointLight;
-    MaterialPassPtr _deferredShading;
-    MaterialPassPtr _deferredCombine;
+    MaterialPassPtr _deferredShadingOpaques;
+    MaterialPassPtr _deferredShadingTransparents;
 
     ShaderParamPtr _texDepth;
     ShaderParamPtr _texDiffuse;

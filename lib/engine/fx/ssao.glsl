@@ -1,12 +1,10 @@
 <?xml version="1.0"?>
 <effect version="1270" language="glsl">
-    <parameter name="numSample" type="int"/>
     <parameter name="projScale" type="float"/>
     <parameter name="projInfo" type="float4"/>
     <parameter name="clipInfo" type="float4"/>
     <parameter name="radius" type="float"/>
     <parameter name="bias" type="float"/>
-    <parameter name="epsilon" type="float"/>
     <parameter name="intensityDivR6" type="float"/>
     <parameter name="blurFactor" type="float" />
     <parameter name="blurSharpness" type="float" />
@@ -18,48 +16,40 @@
     <parameter name="texSource" type="sampler2D"/>
     <parameter name="matView" semantic="matView" />
     <parameter name="matProjectInverse" semantic="matProjectInverse"/>
-    <shader type="vertex" name="mainVS">
+    <shader>
         <![CDATA[
-            #version 330 core
-
-            layout(location = 0) in vec4 glsl_Position;
-            layout(location = 2) in vec2 glsl_Texcoord;
-
-            out vec4 position;
-            out vec2 coord;
-
-            void main()
-            {
-                coord = glsl_Texcoord;
-                gl_Position = position = glsl_Position;
-            }
-        ]]>
-    </shader>
-    <shader type="fragment" name="aoPS">
-        <![CDATA[
-            #version 330
-
-            layout(location = 0) out float glsl_FragColor0;
-
             #define NUM_SPIRAL_TURNS 7
+            #define NUM_SAMPLE 10
 
-            in vec4 position;
-            in vec2 coord;
+            varying vec4 position;
+            varying vec2 coord;
 
             uniform float radius;
             uniform float projScale;
             uniform float bias;
-            uniform float epsilon;
             uniform float intensityDivR6;
             uniform vec4 projInfo;
             uniform vec4 clipInfo;
 
-            uniform int numSample;
+            uniform int blurRadius;
+            uniform float blurFactor;
+            uniform float blurSharpness;
+            uniform ivec2 blurDirection;
+
+            uniform mat4 matView;
 
             uniform sampler2D texDepth;
             uniform sampler2D texNormal;
+            uniform sampler2D texAO;
+            uniform sampler2D texSource;
 
-            uniform mat4 matView;
+#if SHADER_API_VERTEX
+            void mainVS()
+            {
+                coord = glsl_Texcoord;
+                gl_Position = position = glsl_Position;
+            }
+#endif
 
             float heaviside(float x)
             {
@@ -71,75 +61,6 @@
                 float d = texture2D(texDepth, uv).r * 2.0 - 1.0;
                 return clipInfo.x / (clipInfo.y * d - clipInfo.z);
             }
-
-            vec3 getPosition(vec2 uv)
-            {
-                float d = linearizeDepth(uv);
-                return vec3((projInfo.xy * (uv ) + projInfo.zw) * d, d);
-            }
-
-            vec2 tapLocation(int sampleNumber, float spinAngle, float diskRadius)
-            {
-                float alpha = (sampleNumber + 0.5) * (1.0 / numSample);
-                float angle = alpha * (NUM_SPIRAL_TURNS * 6.28) + spinAngle;
-                return vec2(cos(angle), sin(angle)) * alpha * diskRadius;
-            }
-
-            float computeAO(vec3 c, vec3 n, vec3 q, float radius2)
-            {
-                vec3 v = q - c;
-
-                float vv = dot(v, v);
-                float vn = dot(v, n);
-
-                float f = max(radius2 - vv, 0);
-                return heaviside(f) * max((vn - bias) / (vv + epsilon), 0);
-            }
-
-            float sampleAO(int tapIndex, vec2 uv, vec3 c, vec3 n, float spinAngle, float diskRadius, float radius2)
-            {
-                vec2 offset = tapLocation(tapIndex, spinAngle, diskRadius);
-                vec3 q = getPosition(uv + offset);
-                return computeAO(c, n, q, radius2);
-            }
-
-            void main()
-            {
-                vec3 viewPosition = getPosition(coord);
-                vec3 viewNormal = mat3(matView) * texture2D(texNormal, coord).rgb;
-
-                ivec2 ssC = ivec2(gl_FragCoord.xy);
-                float spinAngle = (3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10;
-                float diskRadius = projScale * radius / viewPosition.z;
-                float radius2 = radius * radius;
-
-                float sum = 0.0;
-                for (int i = 0; i < numSample; ++i)
-                {
-                    sum += sampleAO(i, coord, viewPosition, viewNormal, spinAngle, diskRadius, radius2);
-                }
-
-                float ao = max(0.0, sum / numSample * intensityDivR6);
-
-                glsl_FragColor0 = ao;
-            }
-        ]]>
-    </shader>
-    <shader type="fragment" name="blurPS">
-        <![CDATA[
-            #version 330 core
-
-            layout(location = 0) out float glsl_FragColor0;
-
-            uniform sampler2D texSource;
-            uniform sampler2D texDepth;
-
-            uniform vec4 clipInfo;
-
-            uniform int blurRadius;
-            uniform float blurFactor;
-            uniform float blurSharpness;
-            uniform ivec2 blurDirection;
 
             float linearizeDepth(ivec2 uv)
             {
@@ -154,7 +75,62 @@
                 return exp(-r * r * blurFactor - ddiff * ddiff * blurSharpness);
             }
 
-            void main()
+            vec3 getPosition(vec2 uv)
+            {
+                float d = linearizeDepth(uv);
+                return vec3((projInfo.xy * uv + projInfo.zw) * d, d);
+            }
+
+            vec2 tapLocation(int sampleNumber, float spinAngle, float diskRadius)
+            {
+                float alpha = (sampleNumber + 0.5) * (1.0 / NUM_SAMPLE);
+                float angle = alpha * (NUM_SPIRAL_TURNS * 6.28) + spinAngle;
+                return vec2(cos(angle), sin(angle)) * alpha * diskRadius;
+            }
+
+            float computeAO(vec3 c, vec3 n, vec3 q, float radius2)
+            {
+                vec3 v = q - c;
+
+                float vv = dot(v, v);
+                float vn = dot(v, n);
+
+                float f = max(radius2 - vv, 0);
+
+                const float epsilon = 0.0001;
+                return heaviside(f) * max((vn - bias) / (vv + epsilon), 0);
+            }
+
+            float sampleAO(int tapIndex, vec2 uv, vec3 c, vec3 n, float spinAngle, float diskRadius, float radius2)
+            {
+                vec2 offset = tapLocation(tapIndex, spinAngle, diskRadius);
+                vec3 q = getPosition(uv + offset);
+                return computeAO(c, n, q, radius2);
+            }
+
+#if SHADER_API_FRAGMENT
+            void aoPS()
+            {
+                vec3 viewPosition = getPosition(coord);
+                vec3 viewNormal = mat3(matView) * texture2D(texNormal, coord).rgb;
+
+                ivec2 ssC = ivec2(gl_FragCoord.xy);
+                float spinAngle = (3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10;
+                float diskRadius = projScale * radius / viewPosition.z;
+                float radius2 = radius * radius;
+
+                float sum = 0.0;
+                for (int i = 0; i < NUM_SAMPLE; ++i)
+                {
+                    sum += sampleAO(i, coord, viewPosition, viewNormal, spinAngle, diskRadius, radius2);
+                }
+
+                float ao = max(0.0, 1 - sum / NUM_SAMPLE * intensityDivR6);
+
+                glsl_FragColor0 = vec4(ao);
+            }
+
+            void blurPS()
             {
                 ivec2 ssC = ivec2(gl_FragCoord.xy);
 
@@ -175,31 +151,20 @@
                 }
 
                 const float epsilon = 0.0001;
-                glsl_FragColor0 = sum / (total + epsilon);
+                glsl_FragColor0 = vec4(sum / (total + epsilon));
             }
-        ]]>
-    </shader>
-    <shader type="fragment" name="copyPS">
-        <![CDATA[
-            #version 330 core
 
-            layout(location = 0) out vec4 glsl_FragColor0;
-
-            uniform sampler2D texAO;
-
-            in vec2 coord;
-
-            void main()
+            void copyPS()
             {
                 glsl_FragColor0 = vec4(texture2D(texAO, coord).r);
             }
+#endif
         ]]>
     </shader>
     <technique name="postprocess">
         <pass name="ao">
             <state name="vertex" value="mainVS"/>
             <state name="fragment" value="aoPS"/>
-            <state name="depthtest" value="false"/>
         </pass>
         <pass name="blur">
             <state name="vertex" value="mainVS"/>
@@ -211,7 +176,7 @@
 
             <state name="blend" value="true"/>
             <state name="blendsrc" value="zero" />
-            <state name="blenddest" value="invsrcalpha" />
+            <state name="blenddst" value="srccol" />
         </pass>
     </technique>
 </effect>

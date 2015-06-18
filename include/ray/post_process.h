@@ -57,6 +57,9 @@ protected:
     virtual void onActivate() except;
     virtual void onDeactivate() except;
 
+    virtual void onResolutionChangeBefore() except;
+    virtual void onResolutionChangeAfter() except;
+
 private:
 
     bool _active;

@@ -1,15 +1,16 @@
 <?xml version='1.0'?>
 <effect language="glsl">
     <parameter name="matModel" semantic="matModel" />
-    <parameter name="matNormal" semantic="matModelInverseTranspose" />
-    <parameter name="matViewProject" semantic="matViewProject" />
+    <parameter name="matModelInverseTranspose" semantic="matModelInverseTranspose" />
+    <parameter name="matViewProject" semantic="matViewProject"/>
     <parameter name="color" type="float4" />
     <parameter name="shininess" type="float" />
     <parameter name="specular" type="float" />
     <shader>
         <![CDATA[
             uniform mat4 matModel;
-            uniform mat4 matNormal;
+            uniform mat4 matModelInverseTranspose;
+            uniform mat4 matViewInverseTranspose;
             uniform mat4 matViewProject;
 
             uniform vec4 color;
@@ -22,7 +23,7 @@
 #if SHADER_API_VERTEX
             void BlockVS()
             {
-                normal = matNormal * glsl_Normal;
+                normal = matModelInverseTranspose * glsl_Normal;
                 gl_Position = matViewProject * matModel * glsl_Position;
             }
 #endif
@@ -31,8 +32,8 @@
             void BlockPS()
             {
                 glsl_FragColor0.rgba = color;
-                glsl_FragColor1.rgb = normalize(normal.xyz);
-                glsl_FragColor1.a = shininess + specular * 0.1;
+                glsl_FragColor1.rgb = normalize(normalize(normal).xyz);
+                glsl_FragColor1.a = shininess + specular;
             }
 #endif
         ]]>

@@ -52,6 +52,7 @@ public:
 
         bool blur;
         int blurRadius;
+        float blurScale;
         float blurSharpness;
     };
 
@@ -67,9 +68,9 @@ public:
 private:
 
     void computeRawAO(RenderPipeline& pipeline, RenderTexturePtr dest) noexcept;
-    void blurHorizontal(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-    void blurVertical(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-    void blurDirection(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest, const int2& direction) noexcept;
+    void blurHorizontal(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
+    void blurVertical(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
+    void blurDirection(RenderPipeline& pipeline, RenderTexturePtr source, const float2& direction) noexcept;
     void shading(RenderPipeline& pipeline, RenderTexturePtr color, RenderTexturePtr ao) noexcept;
 
     void onActivate() except;
@@ -80,7 +81,6 @@ private:
     Setting _setting;
 
     RenderTexturePtr _texAmbient;
-    RenderTexturePtr _texBlur;
 
     MaterialPtr _ambientOcclusion;
 
@@ -88,24 +88,22 @@ private:
     MaterialPassPtr _ambientOcclusionBlurPass;
     MaterialPassPtr _ambientOcclusionCopyPass;
 
-    ShaderParamPtr _radius;
-    ShaderParamPtr _projScale;
-    ShaderParamPtr _projInfo;
-    ShaderParamPtr _clipInfo;
-    ShaderParamPtr _bias;
-    ShaderParamPtr _intensityDivR6;
+    MaterialParamPtr _radius;
+    MaterialParamPtr _radius2;
+    MaterialParamPtr _projScale;
+    MaterialParamPtr _projInfo;
+    MaterialParamPtr _clipInfo;
+    MaterialParamPtr _bias;
+    MaterialParamPtr _intensityDivR6;
 
-    MaterialPassPtr _blurh;
-    MaterialPassPtr _blurv;
+    MaterialParamPtr _blurRadius;
+    MaterialParamPtr _blurTexSource;
+    MaterialParamPtr _blurFactor;
+    MaterialParamPtr _blurSharpness;
+    MaterialParamPtr _blurDirection;
+    MaterialParamPtr _blurGaussian;
 
-    ShaderParamPtr _blurRadius;
-    ShaderParamPtr _blurTexSource;
-    ShaderParamPtr _blurFactor;
-    ShaderParamPtr _blurSharpness;
-    ShaderParamPtr _blurDirection;
-    ShaderParamPtr _blurGaussian;
-
-    ShaderParamPtr _copyAmbient;
+    MaterialParamPtr _copyAmbient;
 };
 
 _NAME_END

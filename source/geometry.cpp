@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/geometry.h>
-#include <ray/renderer.h>
 #include <ray/render_pipeline.h>
 
 _NAME_BEGIN
@@ -122,7 +121,7 @@ Geometry::getRenderable() noexcept
 }
 
 void
-Geometry::render(RendererPtr renderer, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept
+Geometry::render(RenderPipeline& renderer, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept
 {
     auto semantic = Material::getMaterialSemantic();
     semantic->setMatrixParam(GlobalMatrixSemantic::matModel, this->getTransform());
@@ -145,10 +144,10 @@ Geometry::render(RendererPtr renderer, RenderQueue queue, RenderPass passType, M
             pass->getRenderState()->setStencilState(stencil);
         }
 
-        renderer->setRenderState(pass->getRenderState());
-        renderer->setShaderObject(pass->getShaderObject());
+        renderer.setRenderState(pass->getRenderState());
+        renderer.setShaderObject(pass->getShaderObject());
 
-        renderer->drawMesh(_geometry, *_renderable);
+        renderer.drawMesh(_geometry, *_renderable);
     }
 }
 

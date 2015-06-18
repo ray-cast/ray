@@ -49,7 +49,7 @@ public:
     OGLRenderer() noexcept;
     ~OGLRenderer() noexcept;
 
-    virtual bool open(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) noexcept;
+    virtual bool open(WindHandle hwnd) except;
     virtual void close() noexcept;
 
     virtual void setSwapInterval(SwapInterval interval) noexcept;
@@ -59,11 +59,8 @@ public:
     virtual void setRasterState(const RenderRasterState& state) noexcept;
     virtual void setDepthState(const RenderDepthState& state) noexcept;
     virtual void setStencilState(const RenderStencilState& state) noexcept;
+    virtual void setClearState(const RenderClearState& state) noexcept;
     virtual void setRenderState(RenderStatePtr state) noexcept;
-
-    virtual RenderCanvasPtr createRenderCanvas(WindHandle hwnd) noexcept;
-    virtual void destroyRenderCanvas(RenderCanvasPtr canvas) noexcept;
-    virtual void setRenderCanvas(RenderCanvasPtr handle) noexcept;
 
     virtual bool createRenderBuffer(RenderBuffer& buffer) noexcept;
     virtual void destroyRenderBuffer(RenderBuffer& buffer) noexcept;
@@ -90,23 +87,21 @@ public:
     virtual void destroyShaderProgram(ShaderProgramPtr shader) noexcept;
     virtual void setShaderProgram(ShaderProgramPtr shader) noexcept;
 
-    virtual bool createConstantBuffer(ShaderConstantBuffer& buffer) noexcept;
-    virtual void destroyConstantBuffer(ShaderConstantBuffer& buffer) noexcept;
-    virtual void setShaderConstantBuffer(ShaderConstantBufferPtr buffer) noexcept;
+    virtual bool createShaderVariant(ShaderVariant& constant) noexcept;
+    virtual void destroyShaderVariant(ShaderVariant& constant) noexcept;
+    virtual void updateShaderVariant(ShaderVariantPtr constant) noexcept;
+    virtual void setShaderVariant(ShaderVariantPtr constant, ShaderUniformPtr uniform) noexcept;
 
     virtual void renderBegin() noexcept;
     virtual void renderEnd() noexcept;
 
-    virtual void present(RenderCanvasPtr canvas) noexcept;
-
 private:
     void initCommandList() noexcept;
-    void initInternals(bool hwsupport, bool bindlessSupport) noexcept;
+    void initDebugControl() noexcept;
+    void initStateSystem() noexcept;
 
     void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
     void clear(std::size_t i, ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
-
-    void assignActivateUniform(ShaderUniforms& uniform) noexcept;
 
     void setViewport(const Viewport& view) noexcept;
 
@@ -132,17 +127,18 @@ private:
     GPUfbconfig _fbconfig;
     GPUctxconfig _ctxconfig;
 
+    OGLCanvasPtr _glcontext;
+
     RenderBlendState _blendState;
     RenderRasterState _rasterState;
     RenderDepthState _depthState;
     RenderStencilState _stencilState;
+    RenderClearState _clearState;
+    RenderStatePtr _state;
 
     Viewport _viewport;
 
     SwapInterval _interval;
-
-    RenderCanvasPtr _renderCanvas;
-    RenderStatePtr _state;
 
     RenderTexturePtr _renderTexture;
     MultiRenderTexturePtr _multiRenderTexture;
@@ -150,7 +146,7 @@ private:
     std::vector<OGLRenderTexture> _multiRenderTextures;
 
     ShaderProgramPtr _shader;
-    std::vector<OGLConstantBuffer> _constantBuffers;
+    std::vector<OGLShaderVariant> _constantBuffers;
 
     GLuint _defaultVAO;
     RenderBufferPtr _renderBuffer;
@@ -159,7 +155,7 @@ private:
     GLint _maxTextures;
     GLint _maxTextureUnits;
     GLint _unpackAlignment;
-    std::vector<GLuint> _textureUnits;
+    std::vector<GLint> _textureUnits;
     std::vector<OGLTexture> _textures;
 
     // we introduce variables that track when we changed global state

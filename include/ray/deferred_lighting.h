@@ -47,8 +47,8 @@ public:
     DeferredLighting() noexcept;
     ~DeferredLighting() noexcept;
 
-    void setup(std::size_t width, std::size_t height) except;
-    void close() noexcept;
+    void onActivate() except;
+    void onDectivate() noexcept;
 
     void onRenderPre() noexcept;
     void onRenderPipeline() noexcept;
@@ -62,13 +62,9 @@ private:
     void renderOpaques() noexcept;
     void renderOpaquesShading() noexcept;
 
-    void renderBackground() noexcept;
-
     void renderTransparentDepthOhly() noexcept;
     void renderTransparent() noexcept;
     void renderTransparentShading() noexcept;
-
-    void renderFinal() noexcept;
 
     void renderLights() noexcept;
     void renderSunLight(const Light& light) noexcept;
@@ -88,26 +84,27 @@ private:
     MaterialPassPtr _deferredDepthOhly;
     MaterialPassPtr _deferredDepthLinear;
     MaterialPassPtr _deferredSunLight;
+    MaterialPassPtr _deferredSunLightShadow;
     MaterialPassPtr _deferredSpotLight;
     MaterialPassPtr _deferredPointLight;
     MaterialPassPtr _deferredShadingOpaques;
     MaterialPassPtr _deferredShadingTransparents;
 
-    ShaderParamPtr _texDepth;
-    ShaderParamPtr _texDiffuse;
-    ShaderParamPtr _texNormal;
-    ShaderParamPtr _texLight;
-    ShaderParamPtr _texOpaques;
-    ShaderParamPtr _texTransparent;
+    MaterialParamPtr _texDepth;
+    MaterialParamPtr _texDiffuse;
+    MaterialParamPtr _texNormal;
+    MaterialParamPtr _texLight;
+    MaterialParamPtr _texOpaques;
+    MaterialParamPtr _texTransparent;
 
-    ShaderParamPtr _shadowDecal;
-    ShaderParamPtr _shadowChannel;
-    ShaderParamPtr _shadowMap;
-    ShaderParamPtr _shadowLitFactor;
-    ShaderParamPtr _shadowFactor;
-    ShaderParamPtr _shadowMatrix;
-    ShaderParamPtr _shadowOffset;
-    ShaderParamPtr _shadowWeight;
+    MaterialParamPtr _shadowDecal;
+    MaterialParamPtr _shadowChannel;
+    MaterialParamPtr _shadowMap;
+    MaterialParamPtr _shadowLitFactor;
+    MaterialParamPtr _shadowFactor;
+    MaterialParamPtr _shadowMatrix;
+    MaterialParamPtr _shadowOffset;
+    MaterialParamPtr _shadowWeight;
 
     RenderTexturePtr _deferredDepthMap;
     RenderTexturePtr _deferredGraphicMap;

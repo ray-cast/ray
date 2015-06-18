@@ -44,8 +44,8 @@ SSR::SSR() noexcept
     _ssr = MaterialMaker("sys:fx/ssr.glsl");
     _ssrPass = _ssr->getTech(RenderQueue::PostProcess)->getPass("ssr");
 
-    _projInfo = _ssr->getParameter("projInfo");
-    _clipInfo = _ssr->getParameter("clipInfo");
+    //_projInfo = _ssr->getParameter("projInfo");
+    //_clipInfo = _ssr->getParameter("clipInfo");
 }
 
 SSR::~SSR() noexcept

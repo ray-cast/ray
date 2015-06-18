@@ -53,14 +53,7 @@ void
 MeshComponent::setMesh(MeshPropertyPtr mesh) noexcept
 {
     _mesh = mesh;
-}
-
-void
-MeshComponent::setBufferData(VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept
-{
-    _vb = vb;
-    _ib = ib;
-    _mesh->clear();
+    _bound = _mesh->getBoundingBox();
 }
 
 void
@@ -70,24 +63,13 @@ MeshComponent::setCombieInstnace(const CombineInstance& instance) noexcept
         _mesh = std::make_shared<MeshProperty>();
 
     _mesh->setCombieInstnace(instance);
+    _bound = _mesh->getBoundingBox();
 }
 
 void
 MeshComponent::clear() noexcept
 {
     _mesh->clear();
-
-    if (_vb)
-    {
-        _vb->close();
-        _vb = nullptr;
-    }
-
-    if (_ib)
-    {
-        _ib->close();
-        _ib = nullptr;
-    }
 }
 
 MeshPropertyPtr
@@ -165,114 +147,12 @@ MeshComponent::onDeactivate() noexcept
 }
 
 void
-MeshComponent::buildMesh() noexcept
-{
-    auto numVertex = _mesh->getNumVertices();
-    auto numIndex = _mesh->getNumIndices();
-
-    if (numVertex == 0 || numIndex == 0)
-        return;
-
-    std::vector<VertexComponent> components;
-
-    auto& vertices = _mesh->getVertexArray();
-    if (!vertices.empty())
-    {
-        if (vertices.size() == numVertex)
-            components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
-        else
-            vertices.clear();
-    }
-
-    auto& normals = _mesh->getNormalArray();
-    if (!normals.empty())
-    {
-        if (normals.size() == numVertex)
-            components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_NORMAL, VertexFormat::GPU_VERTEX_FLOAT3));
-        else
-            normals.clear();
-    }
-
-    auto& texcoords = _mesh->getTexcoordArray();
-    if (!texcoords.empty())
-    {
-        if (texcoords.size() == numVertex)
-            components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_TEXCOORD, VertexFormat::GPU_VERTEX_FLOAT2));
-        else
-            texcoords.clear();
-    }
-
-    auto& faces = _mesh->getFaceArray();
-
-    auto vb = std::make_shared<VertexBufferData>();
-    auto ib = std::make_shared<IndexBufferData>();
-
-    vb->setVertexComponents(components);
-    vb->setup(numVertex, vb->getVertexByteSize(), VertexUsage::GPU_USAGE_STATIC);
-    ib->setup(numIndex, IndexType::GPU_UINT32, VertexUsage::GPU_USAGE_STATIC);
-
-    std::size_t offset = 0;
-    std::size_t stride = vb->getVertexByteSize();
-    if (!vertices.empty())
-    {
-        char* data = (char*)vb->data();
-        for (auto& it : vertices)
-        {
-            std::memcpy(data, &it, sizeof(it));
-            data += stride;
-        }
-
-        offset += sizeof(float3);
-    }
-
-    if (!normals.empty())
-    {
-        char* data = (char*)vb->data() + offset;
-        for (auto& it : normals)
-        {
-            std::memcpy(data, &it, sizeof(it));
-            data += stride;
-        }
-
-        offset += sizeof(float3);
-    }
-
-    if (!texcoords.empty())
-    {
-        char* data = (char*)vb->data() + offset;
-        for (auto& it : texcoords)
-        {
-            std::memcpy(data, &it, sizeof(it));
-            data += stride;
-        }
-
-        offset += sizeof(float2);
-    }
-
-    if (!faces.empty())
-    {
-        std::uint32_t* indices = (std::uint32_t*)ib->data();
-        std::memcpy(indices, faces.data(), faces.size() * sizeof(std::uint32_t));
-    }
-
-    _bound = _mesh->getBoundingBox();
-
-    _vb = vb;
-    _ib = ib;
-}
-
-void
 MeshComponent::buildRenderBuffer() noexcept
 {
-    if (!_vb && !_ib)
-    {
-        this->buildMesh();
-    }
-
-    if (_vb || _ib)
+    if (!_renderMesh)
     {
         _renderMesh = std::make_unique<RenderBuffer>();
-        _renderMesh->setup(_vb, _ib);
+        _renderMesh->setup(*_mesh);
     }
 }
 

@@ -84,14 +84,14 @@ MaterialSemantic::setup() noexcept
     _semantics[LightSpotInnerCone] = std::make_shared<MaterialParam>("LightSpotInnerCone", float());
     _semantics[LightSpotOuterCone] = std::make_shared<MaterialParam>("LightSpotOuterCone", float());
 
-    _semantics[DepthMap] = std::make_shared<MaterialParam>("DepthMap", ShaderParamType::SPT_TEXTURE);
-    _semantics[ColorMap] = std::make_shared<MaterialParam>("ColorMap", ShaderParamType::SPT_TEXTURE);
-    _semantics[NormalMap] = std::make_shared<MaterialParam>("NormalMap", ShaderParamType::SPT_TEXTURE);
+    _semantics[DepthMap] = std::make_shared<MaterialParam>("DepthMap", ShaderVariantType::SPT_TEXTURE);
+    _semantics[ColorMap] = std::make_shared<MaterialParam>("ColorMap", ShaderVariantType::SPT_TEXTURE);
+    _semantics[NormalMap] = std::make_shared<MaterialParam>("NormalMap", ShaderVariantType::SPT_TEXTURE);
 
-    _semantics[DeferredDepthMap] = std::make_shared<MaterialParam>("DeferredDepthMap", ShaderParamType::SPT_TEXTURE);
-    _semantics[DeferredGraphicMap] = std::make_shared<MaterialParam>("DeferredGraphicMap", ShaderParamType::SPT_TEXTURE);
-    _semantics[DeferredNormalMap] = std::make_shared<MaterialParam>("DeferredNormalMap", ShaderParamType::SPT_TEXTURE);
-    _semantics[DeferredLightMap] = std::make_shared<MaterialParam>("DeferredLightMap", ShaderParamType::SPT_TEXTURE);
+    _semantics[DeferredDepthMap] = std::make_shared<MaterialParam>("DeferredDepthMap", ShaderVariantType::SPT_TEXTURE);
+    _semantics[DeferredGraphicMap] = std::make_shared<MaterialParam>("DeferredGraphicMap", ShaderVariantType::SPT_TEXTURE);
+    _semantics[DeferredNormalMap] = std::make_shared<MaterialParam>("DeferredNormalMap", ShaderVariantType::SPT_TEXTURE);
+    _semantics[DeferredLightMap] = std::make_shared<MaterialParam>("DeferredLightMap", ShaderVariantType::SPT_TEXTURE);
 }
 
 void

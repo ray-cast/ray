@@ -40,6 +40,7 @@
 
 #include "terrain.h"
 #include "terrain_items.h"
+#include "first_person_camera.h"
 
 int main()
 {
@@ -53,7 +54,7 @@ int main()
 
         game.open();
 
-        game.addFeatures(std::make_shared<ray::WindowFeatures>("Cube World", 1376, 768));
+        game.addFeatures(std::make_shared<ray::WindowFeatures>("atmospheric scattering", 1376, 768));
         game.addFeatures(std::make_shared<ray::InputFeatures>());
         game.addFeatures(std::make_shared<ray::PhysicFeatures>());
         game.addFeatures(std::make_shared<ray::RenderFeatures>());
@@ -75,6 +76,10 @@ int main()
                 terrainObj->addComponent(terrain);
                 terrainObj->setParent(scene->getRootObject());
                 terrainObj->setActive(true);
+
+                auto player = ray::GameObject::find("first_person_camera");
+                player->addComponent(std::make_shared<FirstPersonCamera>());
+                player->setActive(true);
 
                 while (!game.isQuitRequest())
                 {

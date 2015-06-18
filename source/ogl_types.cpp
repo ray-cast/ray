@@ -283,7 +283,7 @@ OGLTypes::asOGLType(PixelFormat format) noexcept
         return GL_UNSIGNED_BYTE;
 
     if (format == PixelFormat::R8G8B8F)
-        return GL_UNSIGNED_BYTE;
+        return GL_FLOAT;
 
     if (format == PixelFormat::R16G16B16F || format == PixelFormat::R32G32B32F)
         return GL_FLOAT;
@@ -298,10 +298,10 @@ OGLTypes::asOGLType(PixelFormat format) noexcept
         return GL_UNSIGNED_BYTE;
 
     if (format == PixelFormat::SR8G8B8 || format == PixelFormat::SRGB)
-        return GL_UNSIGNED_BYTE;
+        return GL_FLOAT;
 
     if (format == PixelFormat::SR8G8B8A8 || format == PixelFormat::SRGBA)
-        return GL_UNSIGNED_BYTE;
+        return GL_FLOAT;
 
     if (format == PixelFormat::R8)
         return GL_UNSIGNED_BYTE;

@@ -49,6 +49,32 @@ OGLRenderer::OGLRenderer() noexcept
     , _maxTextureUnits(0)
     , _defaultVAO(0)
 {
+    _fbconfig.redSize = 8;
+    _fbconfig.greenSize = 8;
+    _fbconfig.blueSize = 8;
+    _fbconfig.alphaSize = 8;
+    _fbconfig.bufferSize = 32;
+    _fbconfig.depthSize = 24;
+    _fbconfig.stencilSize = 8;
+    _fbconfig.accumSize = 32;
+    _fbconfig.accumRedSize = 8;
+    _fbconfig.accumGreenSize = 8;
+    _fbconfig.accumBlueSize = 8;
+    _fbconfig.accumAlphaSize = 8;
+    _fbconfig.stereo = 0;
+    _fbconfig.samples = 1;
+    _fbconfig.doubleBuffer = 1;
+
+    _ctxconfig.major = 3;
+    _ctxconfig.minor = 3;
+    _ctxconfig.release = 0;
+    _ctxconfig.robustness = 0;
+    _ctxconfig.share = nullptr;
+    _ctxconfig.profile = GPU_GL_CORE_PROFILE;
+    _ctxconfig.forward = 0;
+    _ctxconfig.multithread = false;
+    _ctxconfig.hwnd = nullptr;
+
     _blendState.blendEnable = false;
     _blendState.blendSeparateEnable = false;
     _blendState.blendOp = GPU_ADD;
@@ -61,19 +87,24 @@ OGLRenderer::OGLRenderer() noexcept
     _depthState.depthEnable = false;
     _depthState.depthWriteMask = true;
     _depthState.depthFunc = GPU_ALWAYS;
+    _depthState.depthBias = 0;
+    _depthState.depthBiasEnable = false;
+    _depthState.depthSlopScaleBias = 0;
     _rasterState.cullMode = GPU_CULL_NONE;
-    _rasterState.depthBias = 0;
-    _rasterState.depthBiasEnable = false;
-    _rasterState.slopScaleDepthBias = 0;
     _rasterState.fillMode = GPU_SOLID_MODE;
     _rasterState.multisampleEnable = false;
     _rasterState.scissorTestEnable = false;
+    _rasterState.pointSizeEnable = false;
     _stencilState.stencilEnable = false;
     _stencilState.stencilFunc = GPU_ALWAYS;
     _stencilState.stencilFail = STENCILOP_ZERO;
     _stencilState.stencilZFail = STENCILOP_ZERO;
     _stencilState.stencilPass = STENCILOP_ZERO;
     _stencilState.stencilTwoEnable = false;
+    _clearState.clearFlags = ClearFlags::CLEAR_NONE;
+    _clearState.clearColor = Vector4(0, 0, 0, 0);
+    _clearState.clearDepth = 0.0;
+    _clearState.clearStencil = 0.0;
 
     _textures.resize(_maxTextures);
 }
@@ -84,47 +115,56 @@ OGLRenderer::~OGLRenderer() noexcept
 }
 
 bool
-OGLRenderer::open(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) noexcept
+OGLRenderer::open(WindHandle hwnd) except
 {
-    if ((ctxconfig.major < 1 || ctxconfig.minor < 0) ||
-        (ctxconfig.major == 1 && ctxconfig.minor > 5) ||
-        (ctxconfig.major == 2 && ctxconfig.minor > 1) ||
-        (ctxconfig.major == 3 && ctxconfig.minor > 3))
+    if ((_ctxconfig.major < 1 || _ctxconfig.minor < 0) ||
+        (_ctxconfig.major == 1 && _ctxconfig.minor > 5) ||
+        (_ctxconfig.major == 2 && _ctxconfig.minor > 1) ||
+        (_ctxconfig.major == 3 && _ctxconfig.minor > 3))
     {
         return false;
     }
 
-    if (ctxconfig.profile)
+    if (_ctxconfig.profile)
     {
-        if (ctxconfig.profile != GPU_GL_CORE_PROFILE &&
-            ctxconfig.profile != GPU_GL_COMPAT_PROFILE)
+        if (_ctxconfig.profile != GPU_GL_CORE_PROFILE &&
+            _ctxconfig.profile != GPU_GL_COMPAT_PROFILE)
         {
             return false;
         }
 
-        if (ctxconfig.major < 3 || (ctxconfig.major == 3 && ctxconfig.minor < 2))
+        if (_ctxconfig.major < 3 || (_ctxconfig.major == 3 && _ctxconfig.minor < 2))
         {
             return false;
         }
     }
 
-    if (ctxconfig.forward && ctxconfig.major < 3)
+    if (_ctxconfig.forward && _ctxconfig.major < 3)
     {
         return false;
     }
 
-    if (ctxconfig.robustness)
+    if (_ctxconfig.robustness)
     {
         return false;
     }
 
-    if (ctxconfig.release)
+    if (_ctxconfig.release)
     {
         return false;
     }
 
-    _fbconfig = fbconfig;
-    _ctxconfig = ctxconfig;
+    if (hwnd)
+    {
+        _ctxconfig.hwnd = hwnd;
+    }
+
+    _glcontext = std::make_shared<OGLCanvas>();
+    _glcontext->setup(_fbconfig, _ctxconfig);
+
+    initDebugControl();
+    initCommandList();
+    initStateSystem();
 
     return true;
 }
@@ -184,6 +224,12 @@ OGLRenderer::close() noexcept
     {
         glDeleteVertexArrays(1, &_defaultVAO);
         _defaultVAO = GL_NONE;
+    }
+
+    if (_glcontext)
+    {
+        _glcontext.reset();
+        _glcontext = nullptr;
     }
 }
 
@@ -339,35 +385,6 @@ OGLRenderer::setRasterState(const RenderRasterState& rasterState) noexcept
         _rasterState.cullMode = rasterState.cullMode;
     }
 
-    if (rasterState.depthBiasEnable)
-    {
-#if !defined(EGLAPI)
-        if (!_rasterState.depthBiasEnable)
-        {
-            glEnable(GL_POLYGON_OFFSET_EXT);
-            _rasterState.depthBiasEnable = true;
-        }
-#endif
-
-        if (_rasterState.depthBias != rasterState.depthBias ||
-            _rasterState.slopScaleDepthBias != rasterState.slopScaleDepthBias)
-        {
-            glPolygonOffset(rasterState.slopScaleDepthBias, rasterState.depthBias);
-            _rasterState.depthBias = rasterState.depthBias;
-            _rasterState.slopScaleDepthBias = rasterState.slopScaleDepthBias;
-        }
-    }
-    else
-    {
-#if !defined(EGLAPI)
-        if (_rasterState.depthBiasEnable)
-        {
-            glDisable(GL_POLYGON_OFFSET_EXT);
-            _rasterState.depthBiasEnable = false;
-        }
-#endif
-    }
-
 #if !defined(EGLAPI)
     if (_rasterState.fillMode != rasterState.fillMode)
     {
@@ -385,6 +402,16 @@ OGLRenderer::setRasterState(const RenderRasterState& rasterState) noexcept
             glDisable(GL_SCISSOR_TEST);
 
         _rasterState.scissorTestEnable = rasterState.scissorTestEnable;
+    }
+
+    if (_rasterState.pointSizeEnable != rasterState.pointSizeEnable)
+    {
+        if (rasterState.pointSizeEnable)
+            glEnable(GL_PROGRAM_POINT_SIZE);
+        else
+            glDisable(GL_PROGRAM_POINT_SIZE);
+
+        _rasterState.pointSizeEnable = rasterState.pointSizeEnable;
     }
 }
 
@@ -420,6 +447,31 @@ OGLRenderer::setDepthState(const RenderDepthState& depthState) noexcept
         GLboolean enable = depthState.depthWriteMask ? GL_TRUE : GL_FALSE;
         glDepthMask(enable);
         _depthState.depthWriteMask = depthState.depthWriteMask;
+    }
+
+    if (depthState.depthBiasEnable)
+    {
+        if (!_depthState.depthBiasEnable)
+        {
+            glEnable(GL_POLYGON_OFFSET_FILL);
+            _depthState.depthBiasEnable = true;
+        }
+
+        if (_depthState.depthBias != depthState.depthBias ||
+            _depthState.depthSlopScaleBias != depthState.depthSlopScaleBias)
+        {
+            glPolygonOffset(depthState.depthSlopScaleBias, depthState.depthBias);
+            _depthState.depthBias = depthState.depthBias;
+            _depthState.depthSlopScaleBias = depthState.depthSlopScaleBias;
+        }
+    }
+    else
+    {
+        if (_depthState.depthBiasEnable)
+        {
+            glDisable(GL_POLYGON_OFFSET_FILL);
+            _depthState.depthBiasEnable = false;
+        }
     }
 }
 
@@ -515,6 +567,11 @@ OGLRenderer::setStencilState(const RenderStencilState& stencilState) noexcept
 }
 
 void
+OGLRenderer::setClearState(const RenderClearState& state) noexcept
+{
+}
+
+void
 OGLRenderer::setRenderState(RenderStatePtr state) noexcept
 {
     if (_state != state)
@@ -523,11 +580,13 @@ OGLRenderer::setRenderState(RenderStatePtr state) noexcept
         auto& rasterState = state->getRasterState();
         auto& depthState = state->getDepthState();
         auto& stencilState = state->getStencilState();
+        auto& clearState = state->getClearState();
 
         this->setBlendState(blendState);
         this->setRasterState(rasterState);
         this->setDepthState(depthState);
         this->setStencilState(stencilState);
+        this->setClearState(clearState);
 
         _state = state;
     }
@@ -536,26 +595,25 @@ OGLRenderer::setRenderState(RenderStatePtr state) noexcept
 void
 OGLRenderer::renderBegin() noexcept
 {
-    if (_NV_vertex_buffer_unified_memory)
-    {
-        glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
-        glEnableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
-        glEnableClientState(GL_UNIFORM_BUFFER_UNIFIED_NV);
-    }
 }
 
 void
 OGLRenderer::renderEnd() noexcept
 {
+    assert(_glcontext);
+
     _renderBuffer = nullptr;
     _renderTexture = nullptr;
     _multiRenderTexture = nullptr;
-}
+    _shader = nullptr;
 
-void
-OGLRenderer::present(RenderCanvasPtr canvas) noexcept
-{
-    canvas->present();
+    if (!_depthState.depthWriteMask)
+    {
+        glDepthMask(GL_TRUE);
+        _depthState.depthWriteMask = true;
+    }
+
+    _glcontext->present();
 }
 
 void
@@ -571,14 +629,11 @@ OGLRenderer::setViewport(const Viewport& view) noexcept
 void
 OGLRenderer::setSwapInterval(SwapInterval interval) noexcept
 {
+    assert(_glcontext);
+
     if (_interval != interval)
     {
-        auto oglRenderCanvas = std::dynamic_pointer_cast<OGLCanvas>(_renderCanvas);
-        if (oglRenderCanvas)
-        {
-            oglRenderCanvas->setSwapInterval(interval);
-        }
-
+        _glcontext->setSwapInterval(interval);
         _interval = interval;
     }
 }
@@ -589,98 +644,6 @@ OGLRenderer::getSwapInterval() const noexcept
     return _interval;
 }
 
-RenderCanvasPtr
-OGLRenderer::createRenderCanvas(WindHandle hwnd) noexcept
-{
-    auto canvas = std::make_shared<OGLCanvas>();
-    canvas->setup(hwnd, _fbconfig, _ctxconfig);
-
-    if (_ctxconfig.debug)
-    {
-        // 131184 memory info
-        // 131185 memory allocation info
-        GLuint ids[] =
-        {
-            131184,
-            131185,
-            131076,
-            131169
-        };
-
-#if !defined(EGLAPI)
-        glEnable(GL_DEBUG_OUTPUT);
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback(debugCallBack, nullptr);
-
-        // enable all
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
-        // disable 131184, 131185
-        glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 4, ids, GL_FALSE);
-#else
-        glEnable(GL_DEBUG_OUTPUT_KHR);
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR);
-        //glDebugMessageCallbackKHR(debugCallBack, nullptr);
-
-        // enable all
-        glDebugMessageControlKHR(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
-        // disable 131184, 131185
-        glDebugMessageControlKHR(GL_DEBUG_SOURCE_API_KHR, GL_DEBUG_TYPE_OTHER_KHR, GL_DONT_CARE, 3, ids, GL_FALSE);
-#endif
-    }
-
-    if (_ARB_vertex_attrib_binding)
-    {
-        if (!_defaultVAO)
-            glGenVertexArrays(1, &_defaultVAO);
-        glBindVertexArray(_defaultVAO);
-    }
-
-    glGetIntegerv(GL_UNPACK_ALIGNMENT, &_unpackAlignment);
-    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &_maxTextureUnits);
-    if (_textureUnits.size() != _maxTextureUnits)
-    {
-        _textureUnits.resize(_maxTextureUnits);
-    }
-
-    _renderCanvas = canvas;
-    return canvas;
-}
-
-void
-OGLRenderer::destroyRenderCanvas(RenderCanvasPtr canvas) noexcept
-{
-    auto oglCanvas = std::dynamic_pointer_cast<OGLCanvas>(canvas);
-    if (oglCanvas)
-    {
-        oglCanvas->close();
-
-        if (_renderCanvas == canvas)
-            _renderCanvas = nullptr;
-    }
-}
-
-void
-OGLRenderer::setRenderCanvas(RenderCanvasPtr canvas) noexcept
-{
-    if (_renderCanvas != canvas)
-    {
-        auto wglCanvas = std::dynamic_pointer_cast<OGLCanvas>(canvas);
-        if (wglCanvas)
-        {
-            wglCanvas->bind();
-        }
-        else
-        {
-            if (_renderCanvas)
-            {
-                std::dynamic_pointer_cast<OGLCanvas>(_renderCanvas)->unbind();
-            }
-        }
-
-        _renderCanvas = canvas;
-    }
-}
-
 bool
 OGLRenderer::createRenderBuffer(RenderBuffer& buffer) noexcept
 {
@@ -689,9 +652,9 @@ OGLRenderer::createRenderBuffer(RenderBuffer& buffer) noexcept
 
     OGLVertexArray renderBuffer;
 
-    if (!_ARB_vertex_attrib_binding)
+    if (!OGLExtenstion::isSupport(ARB_vertex_attrib_binding))
     {
-        if (_ARB_vertex_array_object)
+        if (OGLExtenstion::isSupport(ARB_vertex_array_object))
         {
             glGenVertexArrays(1, &renderBuffer.vao);
             glBindVertexArray(renderBuffer.vao);
@@ -726,17 +689,17 @@ OGLRenderer::createRenderBuffer(RenderBuffer& buffer) noexcept
                 return false;
             }
 
-            if (_ARB_vertex_attrib_binding)
+            if (OGLExtenstion::isSupport(ARB_vertex_attrib_binding))
             {
-                glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
+                /*glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
                 glVertexAttribFormat(it.getVertexAttrib(), it.getVertexSize(), type, GL_FALSE, 0);
-                glVertexAttribBinding(it.getVertexAttrib(), it.getVertexAttrib());
+                glVertexAttribBinding(it.getVertexAttrib(), it.getVertexAttrib());*/
 
                 glBindVertexBuffer(it.getVertexAttrib(), renderBuffer.vbo, offset, vb->getVertexByteSize());
             }
             else
             {
-                if (_ARB_vertex_array_object)
+                if (OGLExtenstion::isSupport(ARB_vertex_array_object))
                 {
                     glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
                     glVertexAttribPointer(it.getVertexAttrib(), it.getVertexSize(), type, GL_FALSE, vb->getVertexByteSize(), (const char*)nullptr + offset);
@@ -756,7 +719,7 @@ OGLRenderer::createRenderBuffer(RenderBuffer& buffer) noexcept
             offset += it.getVertexByteSize();
         }
 
-        if (_NV_vertex_buffer_unified_memory)
+        if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
         {
             glGetNamedBufferParameterui64vNV(renderBuffer.vbo, GL_BUFFER_GPU_ADDRESS_NV, &renderBuffer.bindlessVbo);
             glMakeNamedBufferResidentNV(renderBuffer.vbo, GL_READ_ONLY);
@@ -787,7 +750,7 @@ OGLRenderer::createRenderBuffer(RenderBuffer& buffer) noexcept
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderBuffer.ibo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, renderBuffer.indexSize, ib->data(), renderBuffer.indexUsage);
 
-        if (_NV_vertex_buffer_unified_memory)
+        if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
         {
             glGetNamedBufferParameterui64vNV(renderBuffer.ibo, GL_BUFFER_GPU_ADDRESS_NV, &renderBuffer.bindlessIbo);
             glMakeNamedBufferResidentNV(renderBuffer.ibo, GL_READ_ONLY);
@@ -842,7 +805,7 @@ OGLRenderer::setRenderBuffer(RenderBufferPtr buffer) noexcept
         auto instanceID = buffer->getInstanceID();
         auto& renderBuffer = _renderBuffers[instanceID];
 
-        if (_NV_vertex_buffer_unified_memory)
+        if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
         {
             if (renderBuffer.bindlessVbo)
             {
@@ -857,7 +820,7 @@ OGLRenderer::setRenderBuffer(RenderBufferPtr buffer) noexcept
                 glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, renderBuffer.bindlessIbo, renderBuffer.indexSize);
             }
         }
-        else if (_ARB_vertex_attrib_binding)
+        else if (OGLExtenstion::isSupport(ARB_vertex_attrib_binding))
         {
             for (auto& it : renderBuffer.attribs)
             {
@@ -869,7 +832,7 @@ OGLRenderer::setRenderBuffer(RenderBufferPtr buffer) noexcept
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderBuffer.ibo);
             }
         }
-        else if (_ARB_vertex_array_object)
+        else if (OGLExtenstion::isSupport(ARB_vertex_array_object))
         {
             assert(renderBuffer.vao);
             glBindVertexArray(renderBuffer.vao);
@@ -959,9 +922,9 @@ OGLRenderer::drawRenderBuffer(const Renderable& renderable) noexcept
 
 #if !defined(EGLAPI)
         if (renderable.numInstances > 0)
-            glDrawElementsInstancedBaseVertex(drawType, renderable.numIndices, indexType, (char*)nullptr + (renderable.startIndice * renderable.numIndices), renderable.numInstances, renderable.startVertice);
+            glDrawElementsInstancedBaseVertex(drawType, renderable.numIndices, indexType, (char*)nullptr + renderable.startIndice, renderable.numInstances, renderable.startVertice);
         else
-            glDrawElementsBaseVertex(drawType, renderable.numIndices, indexType, (char*)(nullptr) + (renderable.startIndice * renderable.numIndices), renderable.startVertice);
+            glDrawElementsBaseVertex(drawType, renderable.numIndices, indexType, (char*)(nullptr) + renderable.startIndice, renderable.startVertice);
 #else
         assert(renderable.startVertice == 0);
         glDrawElements(drawType, numIndice, indexType, (char*)(nullptr) + (startIndice * numIndice));
@@ -1001,6 +964,10 @@ OGLRenderer::createTexture(Texture& texture) noexcept
     GLsizei depth = (GLsizei)texture.getDepth();
 
     texture.setUserData(instance.texture);
+
+    applyTextureWrap(target, texture.getTexWrap());
+    applyTextureFilter(target, texture.getTexFilter());
+    applyTextureAnis(target, texture.getTexAnisotropy());
 
     switch (target)
     {
@@ -1064,11 +1031,7 @@ OGLRenderer::createTexture(Texture& texture) noexcept
     // restore old unpack alignment
     glPixelStorei(GL_UNPACK_ALIGNMENT, _unpackAlignment);
 
-    applyTextureWrap(target, texture.getTexWrap());
-    applyTextureFilter(target, texture.getTexFilter());
-    applyTextureAnis(target, texture.getTexAnisotropy());
-
-    if (_ARB_bindless_texture)
+    if (OGLExtenstion::isSupport(ARB_bindless_texture))
     {
         instance.resident = glGetTextureHandleARB(instance.texture);
         glMakeTextureHandleResidentARB(instance.resident);
@@ -1105,36 +1068,36 @@ void
 OGLRenderer::setTexture(const Texture& texture, ShaderUniformPtr uniform) noexcept
 {
     assert(uniform);
-    assert(uniform->unit < _maxTextureUnits);
+    assert(uniform->getBindingPoint() < _maxTextureUnits);
 
-    auto location = uniform->location;
-    auto unit = uniform->unit;
+    auto location = uniform->getLocation();
+    auto unit = uniform->getBindingPoint();
     auto target = OGLTypes::asOGLTarget(texture.getTexDim());
     auto instance = texture.getInstanceID();
-    auto handle = _textures[instance].resident;
+    auto handle = _textures[instance].texture;
     auto resident = _textures[instance].resident;
 
 #if !defined(EGLAPI)
-    if (_ARB_bindless_texture)
+    if (OGLExtenstion::isSupport(ARB_bindless_texture))
     {
         glUniformHandleui64ARB(location, resident);
     }
-    else if (_EXT_direct_state_access)
+    else if (OGLExtenstion::isSupport(EXT_direct_state_access))
     {
         glUniform1i(location, unit);
-        glBindMultiTextureEXT(GL_TEXTURE0 + uniform->unit, target, handle);
+        glBindMultiTextureEXT(GL_TEXTURE0 + unit, target, handle);
     }
     else
 #endif
     {
         glUniform1i(location, unit);
 
-        if (_textureUnits[location] != handle)
+        if (_textureUnits[unit] != handle)
         {
-            glActiveTexture(GL_TEXTURE0 + uniform->unit);
+            glActiveTexture(GL_TEXTURE0 + unit);
             glBindTexture(target, handle);
 
-            _textureUnits[location] = handle;
+            _textureUnits[unit] = handle;
         }
     }
 }
@@ -1189,7 +1152,7 @@ OGLRenderer::createRenderTexture(RenderTexture& target) noexcept
         this->bindRenderTexture(target.shared_from_this(), Attachment::COLOR0);
     }
 
-    if (_EXT_direct_state_access)
+    if (OGLExtenstion::isSupport(EXT_direct_state_access))
         glFramebufferDrawBufferEXT(instance.fbo, GL_COLOR_ATTACHMENT0);
     else
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
@@ -1309,7 +1272,7 @@ OGLRenderer::copyRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderT
     else
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-    glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
     _renderTexture = nullptr;
     _multiRenderTexture = nullptr;
@@ -1378,7 +1341,7 @@ OGLRenderer::createMultiRenderTexture(MultiRenderTexture& target) noexcept
         }
     }
 
-    if (_EXT_direct_state_access)
+    if (OGLExtenstion::isSupport(EXT_direct_state_access))
         glFramebufferDrawBuffersEXT(instance.fbo, count, draw);
     else
         glDrawBuffers(count, draw);
@@ -1482,27 +1445,39 @@ OGLRenderer::setShaderProgram(ShaderProgramPtr shader) noexcept
         _shader = shader;
     }
 
-    this->assignActivateUniform(shader->getActiveUniforms());
+    for (auto& it : shader->getActiveUniforms())
+    {
+        this->setShaderVariant(it->getValue(), it);
+    }
 }
 
 bool
-OGLRenderer::createConstantBuffer(ShaderConstantBuffer& constant) noexcept
+OGLRenderer::createShaderVariant(ShaderVariant& constant) noexcept
 {
-    OGLConstantBuffer buffer;
+    if (constant.getType() != ShaderVariantType::SPT_BUFFER)
+        return true;
 
+    OGLShaderVariant buffer;
+
+    glGenBuffers(1, &buffer.ubo);
     glBindBuffer(GL_UNIFORM_BUFFER, buffer.ubo);
-    //glBufferData(GL_UNIFORM_BUFFER, size, 0, GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    glBufferData(GL_UNIFORM_BUFFER, constant.getSize(), 0, GL_DYNAMIC_DRAW);
 
-    _constantBuffers[buffer.ubo] = buffer;
+    if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
+    {
+        glGetNamedBufferParameterui64vNV(buffer.ubo, GL_BUFFER_GPU_ADDRESS_NV, &buffer.bindlessUbo);
+        glMakeNamedBufferResidentNV(buffer.ubo, GL_READ_ONLY);
+    }
+
+    _constantBuffers[constant.getInstanceID()] = buffer;
 
     return true;
 }
 
 void
-OGLRenderer::destroyConstantBuffer(ShaderConstantBuffer& constant) noexcept
+OGLRenderer::destroyShaderVariant(ShaderVariant& constant) noexcept
 {
-    auto index = constant.getUserData();
+    auto index = constant.getInstanceID();
     if (index != 0)
     {
         auto& buffer = _constantBuffers[index];
@@ -1516,8 +1491,233 @@ OGLRenderer::destroyConstantBuffer(ShaderConstantBuffer& constant) noexcept
 }
 
 void
-OGLRenderer::setShaderConstantBuffer(ShaderConstantBufferPtr buffer) noexcept
+OGLRenderer::updateShaderVariant(ShaderVariantPtr constant) noexcept
 {
+    std::vector<char> _data;
+    _data.resize(constant->getSize());
+
+    std::size_t offset = 0;
+
+    for (auto& it : constant->getParameters())
+    {
+        switch (it->getType())
+        {
+        case SPT_BOOL:
+        {
+            auto value = it->getBool();
+            std::memcpy(&_data[offset], &value, it->getSize());
+        }
+        break;
+        case SPT_INT:
+        {
+            auto value = it->getInt();
+            std::memcpy(&_data[offset], &value, it->getSize());
+        }
+        break;
+        case SPT_INT2:
+        {
+            auto value = it->getInt2();
+            std::memcpy(&_data[offset], &value, it->getSize());
+        }
+        break;
+        case SPT_FLOAT:
+        {
+            auto value = it->getFloat();
+            std::memcpy(&_data[offset], &value, it->getSize());
+        }
+        break;
+        case SPT_FLOAT2:
+        {
+            auto value = it->getFloat2();
+            std::memcpy(&_data[offset], &value, it->getSize());
+        }
+        break;
+        case SPT_FLOAT3:
+        {
+            auto value = it->getFloat3();
+            std::memcpy(&_data[offset], &value, it->getSize());
+        }
+        break;
+        case SPT_FLOAT4:
+        {
+            auto value = it->getFloat4();
+            std::memcpy(&_data[offset], &value, it->getSize());
+        }
+        break;
+        case SPT_FLOAT3X3:
+        {
+            auto value = it->getFloat3x3();
+            std::memcpy(&_data[offset], &value, it->getSize());
+        }
+        break;
+        case SPT_FLOAT4X4:
+        {
+            auto value = it->getFloat4x4();
+            std::memcpy(&_data[offset], &value, it->getSize());
+        }
+        break;
+        default:
+            assert(false);
+        }
+
+        offset += it->getSize();
+    }
+
+    auto& buffer = _constantBuffers[constant->getInstanceID()];
+
+    if (OGLExtenstion::isSupport(EXT_direct_state_access))
+    {
+        glNamedBufferSubDataEXT(buffer.ubo, 0, _data.size(), _data.data());
+    }
+    else
+    {
+        glBindBuffer(GL_UNIFORM_BUFFER, buffer.ubo);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, _data.size(), _data.data());
+    }
+}
+
+void
+OGLRenderer::setShaderVariant(ShaderVariantPtr constant, ShaderUniformPtr uniform) noexcept
+{
+    assert(uniform->getValue());
+
+    auto type = uniform->getValue()->getType();
+    auto location = uniform->getLocation();
+
+    switch (type)
+    {
+    case ShaderVariantType::SPT_BOOL:
+    {
+        if (uniform->needUpdate())
+        {
+            glUniform1i(location, uniform->getValue()->getBool());
+            uniform->needUpdate(false);
+        }
+        break;
+    }
+    case ShaderVariantType::SPT_INT:
+    {
+        if (uniform->needUpdate())
+        {
+            glUniform1i(location, uniform->getValue()->getInt());
+            uniform->needUpdate(false);
+        }
+        break;
+    }
+    case ShaderVariantType::SPT_INT2:
+    {
+        if (uniform->needUpdate())
+        {
+            glUniform2iv(location, 1, uniform->getValue()->getInt2().ptr());
+            uniform->needUpdate(false);
+        }
+        break;
+    }
+    case ShaderVariantType::SPT_FLOAT:
+    {
+        if (uniform->needUpdate())
+        {
+            glUniform1f(location, uniform->getValue()->getFloat());
+            uniform->needUpdate(false);
+        }
+        break;
+    }
+    case ShaderVariantType::SPT_FLOAT2:
+    {
+        if (uniform->needUpdate())
+        {
+            glUniform2fv(location, 1, uniform->getValue()->getFloat2().ptr());
+            uniform->needUpdate(false);
+        }
+        break;
+    }
+    case ShaderVariantType::SPT_FLOAT3:
+    {
+        if (uniform->needUpdate())
+        {
+            glUniform3fv(location, 1, uniform->getValue()->getFloat3().ptr());
+            uniform->needUpdate(false);
+        }
+        break;
+    }
+    case ShaderVariantType::SPT_FLOAT4:
+    {
+        if (uniform->needUpdate())
+        {
+            glUniform4fv(location, 1, uniform->getValue()->getFloat4().ptr());
+            uniform->needUpdate(false);
+        }
+        break;
+    }
+    case ShaderVariantType::SPT_FLOAT3X3:
+    {
+        if (uniform->needUpdate())
+        {
+            glUniformMatrix3fv(location, 1, GL_FALSE, uniform->getValue()->getFloat3x3().ptr());
+            uniform->needUpdate(false);
+        }
+        break;
+    }
+    case ShaderVariantType::SPT_FLOAT4X4:
+    {
+        if (uniform->needUpdate())
+        {
+            glUniformMatrix4fv(location, 1, GL_FALSE, uniform->getValue()->getFloat4x4().ptr());
+            uniform->needUpdate(false);
+        }
+        break;
+    }
+    case ShaderVariantType::SPT_FLOAT_ARRAY:
+    {
+        if (uniform->needUpdate())
+        {
+            glUniform1fv(location, uniform->getValue()->getFloatArray().size(), uniform->getValue()->getFloatArray().data());
+            uniform->needUpdate(false);
+        }
+        break;
+    }
+    case ShaderVariantType::SPT_TEXTURE:
+    {
+        if (uniform->needUpdate())
+        {
+            auto texture = uniform->getValue()->getTexture();
+            assert(texture);
+
+            this->setTexture(*texture, uniform);
+            if (OGLExtenstion::isSupport(ARB_bindless_texture))
+            {
+                uniform->needUpdate(false);
+            }
+        }
+
+        break;
+    }
+    case ShaderVariantType::SPT_BUFFER:
+    {
+        if (uniform->needUpdate())
+        {
+            this->updateShaderVariant(constant);
+            uniform->needUpdate(false);
+        }
+
+        auto index = constant->getInstanceID();
+        if (index != 0)
+        {
+            auto& buffer = _constantBuffers[index];
+
+            if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
+            {
+                glBindBufferRange(GL_UNIFORM_BUFFER, location, buffer.ubo, 0, constant->getSize());
+            }
+            else
+            {
+                glBindBufferBase(GL_UNIFORM_BUFFER, location, buffer.ubo);
+            }
+        }
+    }
+    default:
+        break;
+    }
 }
 
 void
@@ -1740,121 +1940,13 @@ OGLRenderer::debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severit
 
     std::cerr << std::endl;
 
-    std::cerr << "message : " << message;
-}
-
-void
-OGLRenderer::assignActivateUniform(ShaderUniforms& uniform) noexcept
-{
-    for (auto& it : uniform)
-    {
-        assert(it->value);
-
-        if (!it->needUpdate())
-        {
-            continue;
-        }
-
-        it->needUpdate(false);
-
-        auto type = it->value->getType();
-        auto location = it->location;
-
-        switch (type)
-        {
-        case ShaderParamType::SPT_BOOL:
-        {
-            glUniform1i(location, it->value->getBool());
-            break;
-        }
-        case ShaderParamType::SPT_INT:
-        {
-            glUniform1i(location, it->value->getInt());
-            break;
-        }
-        case ShaderParamType::SPT_INT2:
-        {
-            glUniform2iv(location, 1, it->value->getInt2().ptr());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT:
-        {
-            glUniform1f(location, it->value->getFloat());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT2:
-        {
-            glUniform2fv(location, 1, it->value->getFloat2().ptr());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT3:
-        {
-            glUniform3fv(location, 1, it->value->getFloat3().ptr());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT4:
-        {
-            glUniform4fv(location, 1, it->value->getFloat4().ptr());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT3X3:
-        {
-            glUniformMatrix3fv(location, 1, GL_FALSE, it->value->getFloat3x3().ptr());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT4X4:
-        {
-            glUniformMatrix4fv(location, 1, GL_FALSE, it->value->getFloat4x4().ptr());
-            break;
-        }
-        case ShaderParamType::SPT_FLOAT_ARRAY:
-        {
-            glUniform1fv(location, it->value->getFloatArray().size(), it->value->getFloatArray().data());
-            break;
-        }
-        case ShaderParamType::SPT_TEXTURE:
-        {
-            auto texture = it->value->getTexture();
-            if (texture)
-            {
-                this->setTexture(*texture, it);
-
-                if (!_ARB_bindless_texture)
-                {
-                    it->needUpdate(true);
-                }
-            }
-            break;
-        }
-        default:
-            break;
-        }
-    }
+    std::cerr << "message : " << message << std::endl;
 }
 
 void
 OGLRenderer::initCommandList() noexcept
 {
-    initInternals(_NV_command_list, _ARB_bindless_texture);
-
-    _stateSystem.init();
-    _stateSystem.generate(1, &_stateIdDraw);
-    _stateSystem.generate(1, &_stateIdDrawGeo);
-
-    if (_NV_command_list)
-    {
-        glCreateStatesNV(1, &_stateObjDraw);
-        glCreateStatesNV(1, &_stateObjDrawGeo);
-
-        glGenBuffers(1, &_tokenBuffer);
-        glCreateCommandListsNV(1, &_tokenCmdList);
-    }
-}
-
-void
-OGLRenderer::initInternals(bool hwsupport, bool bindlessSupport) noexcept
-{
-    assert(!hwsupport || (hwsupport && bindlessSupport));
+    OGLExtenstion::initCommandListNV();
 
     s_nvcmdlist_headerSizes[NVTokenTerminate::ID] = sizeof(NVTokenTerminate);
     s_nvcmdlist_headerSizes[NVTokenNop::ID] = sizeof(NVTokenNop);
@@ -1882,9 +1974,9 @@ OGLRenderer::initInternals(bool hwsupport, bool bindlessSupport) noexcept
         assert(sz);
     }
 
-    s_nvcmdlist_bindless = bindlessSupport;
+    s_nvcmdlist_bindless = OGLExtenstion::isSupport(ARB_bindless_texture);
 
-    if (hwsupport)
+    if (OGLExtenstion::isSupport(NV_command_list))
     {
         for (int i = 0; i < GL_MAX_COMMANDS_NV; i++)
         {
@@ -1909,6 +2001,95 @@ OGLRenderer::initInternals(bool hwsupport, bool bindlessSupport) noexcept
             s_nvcmdlist_stages[i] = i;
         }
     }
+
+    if (OGLExtenstion::isSupport(NV_command_list))
+    {
+        glCreateStatesNV(1, &_stateObjDraw);
+        glCreateStatesNV(1, &_stateObjDrawGeo);
+
+        glGenBuffers(1, &_tokenBuffer);
+        glCreateCommandListsNV(1, &_tokenCmdList);
+    }
+}
+
+void
+OGLRenderer::initDebugControl() noexcept
+{
+#ifdef _DEBUG
+    // 131184 memory info
+    // 131185 memory allocation info
+    GLuint ids[] =
+    {
+        131184,
+        131185,
+        131076,
+        131169
+    };
+
+#if !defined(EGLAPI)
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageCallback(debugCallBack, nullptr);
+
+    // enable all
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
+    // disable 131184, 131185
+    glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 4, ids, GL_FALSE);
+#else
+    glEnable(GL_DEBUG_OUTPUT_KHR);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR);
+    //glDebugMessageCallbackKHR(debugCallBack, nullptr);
+
+    // enable all
+    glDebugMessageControlKHR(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
+    // disable 131184, 131185
+    glDebugMessageControlKHR(GL_DEBUG_SOURCE_API_KHR, GL_DEBUG_TYPE_OTHER_KHR, GL_DONT_CARE, 3, ids, GL_FALSE);
+#endif
+#endif
+}
+
+void
+OGLRenderer::initStateSystem() noexcept
+{
+    _stateSystem.init();
+    _stateSystem.generate(1, &_stateIdDraw);
+    _stateSystem.generate(1, &_stateIdDrawGeo);
+
+    if (OGLExtenstion::isSupport(ARB_vertex_attrib_binding))
+    {
+        if (!_defaultVAO)
+            glGenVertexArrays(1, &_defaultVAO);
+        glBindVertexArray(_defaultVAO);
+
+        glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_POSITION);
+        glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL);
+        glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD);
+
+        glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_POSITION, 3, GL_FLOAT, GL_FALSE, 0);
+        glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0);
+        glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0);
+
+        glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_POSITION, (GLuint)VertexAttrib::GPU_ATTRIB_POSITION);
+        glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL, (GLuint)VertexAttrib::GPU_ATTRIB_NORMAL);
+        glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD, (GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD);
+    }
+
+    if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
+    {
+        glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
+        glEnableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
+        glEnableClientState(GL_UNIFORM_BUFFER_UNIFIED_NV);
+    }
+
+    if (OGLExtenstion::isSupport(ARB_provoking_vertex))
+    {
+        glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
+    }
+
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &_unpackAlignment);
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &_maxTextureUnits);
+
+    _textureUnits.resize(_maxTextureUnits);
 }
 
 void

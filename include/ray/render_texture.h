@@ -38,20 +38,9 @@
 #define _H_RENDER_TEXTURE_H_
 
 #include <ray/texture.h>
+#include <ray/render_state.h>
 
 _NAME_BEGIN
-
-enum ClearFlags
-{
-    CLEAR_NONE,
-    CLEAR_COLOR = 1UL << 0,
-    CLEAR_DEPTH = 1UL << 1,
-    CLEAR_STENCIL = 1UL << 2,
-    CLEAR_COLOR_DEPTH = CLEAR_COLOR | CLEAR_DEPTH,
-    CLEAR_COLOR_STENCIL = CLEAR_COLOR | CLEAR_STENCIL,
-    CLEAR_DEPTH_STENCIL = CLEAR_DEPTH | CLEAR_STENCIL,
-    CLEAR_ALL = CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL
-};
 
 enum Attachment
 {

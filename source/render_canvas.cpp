@@ -34,34 +34,3 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/render_canvas.h>
-
-_NAME_BEGIN
-
-RenderCanvas::RenderCanvas() noexcept
-{
-}
-
-RenderCanvas::~RenderCanvas() noexcept
-{
-}
-
-void
-RenderCanvas::bind()
-{
-    assert(false);
-}
-
-void
-RenderCanvas::unbind() noexcept
-{
-    assert(false);
-}
-
-void
-RenderCanvas::present() noexcept
-{
-    assert(false);
-}
-
-_NAME_END

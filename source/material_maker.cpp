@@ -106,8 +106,7 @@ MaterialMaker::instanceShader(XMLReader& reader) except
     shader->setType(name);
 
     std::string before;
-    before += "#version 400 core\n";
-    before += "precision mediump float;\n";
+    before += "#version 330 core\n";
 
     if (shader->getType() == ShaderType::ST_VERTEX)
     {
@@ -212,16 +211,10 @@ MaterialMaker::instancePass(XMLReader& reader) except
                     rasterState.cullMode = RenderState::stringToCullMode(reader.getString("value"));
                 else if (name == "fillmode")
                     rasterState.fillMode = RenderState::stringToFillMode(reader.getString("value"));
-                else if (name == "depthBiasEnable")
-                    rasterState.depthBiasEnable = reader.getBoolean("value");
-                else if (name == "slopScaleDepthBias")
-                    rasterState.slopScaleDepthBias = reader.getFloat("value");
-                else if (name == "depthBias")
-                    rasterState.depthBias = reader.getFloat("value");
                 else if (name == "scissorTestEnable")
-                    rasterState.depthBiasEnable = reader.getBoolean("value");
+                    rasterState.scissorTestEnable = reader.getBoolean("value");
                 else if (name == "multisampleEnable")
-                    rasterState.depthBiasEnable = reader.getBoolean("value");
+                    rasterState.multisampleEnable = reader.getBoolean("value");
                 else if (name == "blend")
                     blendState.blendEnable = reader.getBoolean("value");
                 else if (name == "blendSeparate")
@@ -246,6 +239,12 @@ MaterialMaker::instancePass(XMLReader& reader) except
                     depthState.depthWriteMask = reader.getBoolean("value");
                 else if (name == "depthfunc")
                     depthState.depthFunc = RenderState::stringToCompareFunc(reader.getString("value"));
+                else if (name == "depthBiasEnable")
+                    depthState.depthBiasEnable = reader.getBoolean("value");
+                else if (name == "depthSlopScaleBias")
+                    depthState.depthSlopScaleBias = reader.getFloat("value");
+                else if (name == "depthBias")
+                    depthState.depthBias = reader.getFloat("value");
                 else if (name == "stencilTest")
                     stencilState.stencilEnable = reader.getBoolean("value");
                 else if (name == "stencilRef")
@@ -347,61 +346,39 @@ MaterialMaker::instanceParameter(XMLReader& reader) except
         throw failure("The parameter name can not be empty");
     }
 
-    auto param = std::make_shared<MaterialParam>();
-
-    param->setName(name);
-
     if (!type.empty())
     {
-        if (type == "float")
+        auto param = std::make_shared<MaterialParam>();
+        param->setName(name);
+        if (type == "bool")
+            param->setType(ShaderVariantType::SPT_BOOL);
+        else if (type == "int")
+            param->setType(ShaderVariantType::SPT_INT);
+        else if (type == "int2")
+            param->setType(ShaderVariantType::SPT_INT2);
+        else if (type == "float")
         {
-            param->setType(ShaderParamType::SPT_FLOAT);
-            return param;
-        }
-        if (type == "float2")
-        {
-            param->setType(ShaderParamType::SPT_FLOAT2);
-            return param;
-        }
-        else if (type == "float3")
-        {
-            param->setType(ShaderParamType::SPT_FLOAT3);
-            return param;
-        }
-        else if (type == "float4")
-        {
-            param->setType(ShaderParamType::SPT_FLOAT4);
-            return param;
-        }
-        else if (type == "mat4")
-        {
-            param->setType(ShaderParamType::SPT_FLOAT4X4);
-            return param;
-        }
-        else if (type == "float[]")
-        {
-            param->setType(ShaderParamType::SPT_FLOAT_ARRAY);
-            return param;
+            param->setType(ShaderVariantType::SPT_FLOAT);
+            if (!value.empty())
+            {
+                param->assign(fast_atof(value.c_str()));
+            }
         }
         else if (type == "float2")
-        {
-            param->setType(ShaderParamType::SPT_FLOAT2);
-            return param;
-        }
-        else if (type == "int")
-        {
-            param->setType(ShaderParamType::SPT_INT);
-            return param;
-        }
-        else if (type == "int2")
-        {
-            param->setType(ShaderParamType::SPT_INT2);
-            return param;
-        }
+            param->setType(ShaderVariantType::SPT_FLOAT2);
+        else if (type == "float3")
+            param->setType(ShaderVariantType::SPT_FLOAT3);
+        else if (type == "float4")
+            param->setType(ShaderVariantType::SPT_FLOAT4);
+        else if (type == "mat4")
+            param->setType(ShaderVariantType::SPT_FLOAT4X4);
+        else if (type == "float[]")
+            param->setType(ShaderVariantType::SPT_FLOAT_ARRAY);
+        else if (type == "float2")
+            param->setType(ShaderVariantType::SPT_FLOAT2);
         else if (type == "sampler2D")
         {
-            param->setType(ShaderParamType::SPT_TEXTURE);
-
+            param->setType(ShaderVariantType::SPT_TEXTURE);
             if (!value.empty())
             {
                 auto texture = createTexture(value.c_str());
@@ -410,18 +387,45 @@ MaterialMaker::instanceParameter(XMLReader& reader) except
                     param->assign(texture);
                 }
             }
-
-            return param;
         }
+        else if (type == "buffer")
+            param->setType(ShaderVariantType::SPT_BUFFER);
         else
         {
+            assert(false);
             throw failure("Unknown parameter type");
         }
+
+        return  param;
     }
     else if (!semantic.empty())
     {
+        auto param = std::make_shared<MaterialParam>();
+        param->setName(name);
         param->setSemantic(semantic);
         return param;
+    }
+
+    return nullptr;
+}
+
+MaterialParamPtr
+MaterialMaker::instanceBuffer(XMLReader& reader) except
+{
+    auto buffer = std::make_shared<MaterialParam>();
+    buffer->setType(ShaderVariantType::SPT_BUFFER);
+    buffer->setName(reader.getString("name"));
+
+    if (reader.setToFirstChild())
+    {
+        do
+        {
+            auto param = instanceParameter(reader);
+            if (param)
+                buffer->addParameter(param);
+        } while (reader.setToNextChild());
+
+        return buffer;
     }
 
     return nullptr;
@@ -462,6 +466,12 @@ MaterialMaker::load(XMLReader& reader) except
                     auto param = instanceParameter(reader);
                     if (param)
                         _material->addParameter(param);
+                }
+                else if (name == "buffer")
+                {
+                    auto buffer = instanceBuffer(reader);
+                    if (buffer)
+                        _material->addParameter(buffer);
                 }
                 else if (name == "shader")
                 {

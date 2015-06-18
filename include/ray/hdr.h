@@ -46,6 +46,9 @@ class EXPORT HDR final : public RenderPostProcess
 public:
     struct EXPORT Setting
     {
+        float bloomFactor;
+        float bloomIntensity;
+
         float lumAdapt;
         float lumKey;
         float lumMax;
@@ -53,7 +56,7 @@ public:
         float exposure;
         float exposureBias;
 
-        float vignetteEnable;
+        bool vignetteEnable;
         float vignetteInner;
         float vignetteOuter;
 
@@ -75,8 +78,8 @@ private:
     void sample8(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
     void sampleLog(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
 
-    void blurh(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-    void blurv(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+    void blurh(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
+    void blurv(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
 
     void measureLuminance(RenderPipeline& pipeline, RenderTexturePtr source);
 
@@ -106,16 +109,21 @@ private:
     MaterialPassPtr _blurv;
     MaterialPassPtr _tone;
 
-    ShaderParamPtr _toneSource;
-    ShaderParamPtr _toneBloom;
-    ShaderParamPtr _toneLumAve;
-    ShaderParamPtr _toneLumKey;
-    ShaderParamPtr _toneLumMax;
-    ShaderParamPtr _toneExposure;
-    ShaderParamPtr _toneExposureBias;
-    ShaderParamPtr _toneVignetteEnable;
-    ShaderParamPtr _toneVignetteInner;
-    ShaderParamPtr _toneVignetteOuter;
+    ShaderVariantPtr _texSizeInv;
+
+    ShaderVariantPtr _bloomFactor;
+    ShaderVariantPtr _bloomIntensity;
+
+    ShaderVariantPtr _toneSource;
+    ShaderVariantPtr _toneBloom;
+    ShaderVariantPtr _toneLumAve;
+    ShaderVariantPtr _toneLumKey;
+    ShaderVariantPtr _toneLumMax;
+    ShaderVariantPtr _toneExposure;
+    ShaderVariantPtr _toneExposureBias;
+    ShaderVariantPtr _toneVignetteEnable;
+    ShaderVariantPtr _toneVignetteInner;
+    ShaderVariantPtr _toneVignetteOuter;
 
     std::vector<float> _data;
 };

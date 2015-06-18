@@ -43,26 +43,27 @@ MaterialParam::MaterialParam() noexcept
 }
 
 MaterialParam::MaterialParam(const std::string& name, float value) noexcept
-    : ShaderParam(name, value)
+    :ShaderVariant(name, value)
 {
 }
 
 MaterialParam::MaterialParam(const std::string& name, const float3& value) noexcept
-    : ShaderParam(name, value)
+    : ShaderVariant(name, value)
 {
 }
+
 MaterialParam::MaterialParam(const std::string& name, const Vector4& value) noexcept
-    : ShaderParam(name, value)
+    : ShaderVariant(name, value)
 {
 }
 
 MaterialParam::MaterialParam(const std::string& name, const Matrix4x4& value) noexcept
-    : ShaderParam(name, value)
+    : ShaderVariant(name, value)
 {
 }
 
-MaterialParam::MaterialParam(const std::string& name, ShaderParamType type) noexcept
-    : ShaderParam(name, type)
+MaterialParam::MaterialParam(const std::string& name, ShaderVariantType type) noexcept
+    : ShaderVariant(name, type)
 {
 }
 

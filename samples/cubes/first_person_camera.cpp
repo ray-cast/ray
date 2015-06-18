@@ -122,59 +122,34 @@ FirstPersonCamera::onFrame() noexcept
             ray::float3 lookat = this->getGameObject()->getLookAt();
             ray::float3 up = this->getGameObject()->getUpVector();
 
-            if (character->canJumping())
+            if (input->getKey(ray::InputKey::Code::W))
             {
-                if (input->getKey(ray::InputKey::Code::W))
-                {
-                    ray::float3 mov = lookat - translate;
-                    mov.normalize();
-                    walkDirection += mov;
-                }
-                if (input->getKey(ray::InputKey::Code::S))
-                {
-                    ray::float3 mov = lookat - translate;
-                    mov.normalize();
-                    walkDirection -= mov;
-                }
-                if (input->getKey(ray::InputKey::Code::A))
-                {
-                    ray::float3 mov = lookat - translate;
-                    mov = mov.cross(up);
-                    mov.normalize();
-                    walkDirection -= mov;
-                }
-                if (input->getKey(ray::InputKey::Code::D))
-                {
-                    ray::float3 mov = lookat - translate;
-                    mov = mov.cross(up);
-                    mov.normalize();
-                    walkDirection += mov;
-                }
-
-                character->setWalkDirection(walkDirection * step);
+                ray::float3 mov = lookat - translate;
+                mov.normalize();
+                walkDirection += mov;
             }
-            else
+            if (input->getKey(ray::InputKey::Code::S))
             {
-                float gravity = _gravity * 0.01 * delta;
-
-                auto direction = character->getWalkDirection();
-                if (direction.x > 0)
-                    direction.x = std::max(direction.x - gravity, 0.0f);
-                if (direction.x < 0)
-                    direction.x = std::min(direction.x + gravity, 0.0f);
-
-                if (direction.y > 0)
-                    direction.y = std::max(direction.y - gravity, 0.0f);
-                if (direction.y < 0)
-                    direction.y = std::min(direction.y + gravity, 0.0f);
-
-                if (direction.z > 0)
-                    direction.z = std::max(direction.z - gravity, 0.0f);
-                if (direction.z < 0)
-                    direction.z = std::min(direction.z + gravity, 0.0f);
-
-                character->setWalkDirection(direction);
+                ray::float3 mov = lookat - translate;
+                mov.normalize();
+                walkDirection -= mov;
             }
+            if (input->getKey(ray::InputKey::Code::A))
+            {
+                ray::float3 mov = lookat - translate;
+                mov = mov.cross(up);
+                mov.normalize();
+                walkDirection -= mov;
+            }
+            if (input->getKey(ray::InputKey::Code::D))
+            {
+                ray::float3 mov = lookat - translate;
+                mov = mov.cross(up);
+                mov.normalize();
+                walkDirection += mov;
+            }
+
+            character->setWalkDirection(walkDirection * step);
 
             if (input->getKey(ray::InputKey::SPACE))
             {

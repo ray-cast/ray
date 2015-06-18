@@ -4,6 +4,8 @@
     <parameter name="texColor" semantic="ColorMap" />
     <shader type="vertex" name="mainVS">
         <![CDATA[
+            #extension GL_ARB_gpu_shader5 : enable
+
             #define FXAA_PC 1
             #define FXAA_GLSL_130 1
             #define FXAA_QUALITY__PRESET 12
@@ -995,24 +997,24 @@
             /*==========================================================================*/
             #endif
 
-            uniform sampler2D texColor;
-            uniform vec2 texelStep;
-
-            varying vec2 texCoord;
+            varying vec2 coord;
 
 #if SHADER_API_VERTEX
             void fxaaVS()
             {
-                texCoord = glsl_Texcoord;
+                coord = glsl_Texcoord;
                 gl_Position = glsl_Position;
             }
 #endif
 
 #if SHADER_API_FRAGMENT
+            uniform sampler2D texColor;
+            uniform vec2 texelStep;
+
             void fxaaPS(void)
             {
 #if (FXAA_PC == 1)
-                glsl_FragColor0 = FxaaPixelShader(texCoord,
+                glsl_FragColor0 = FxaaPixelShader(coord,
                             FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),     // FxaaFloat4 fxaaConsolePosPos,
                             texColor,                               // FxaaTex tex,
                             texColor,                               // FxaaTex fxaaConsole360TexExpBiasNegOne,
@@ -1030,7 +1032,7 @@
                             FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f)      // FxaaFloat fxaaConsole360ConstDir,
                         );
 #else
-                glsl_FragColor0 = texture2D(texColor, texCoord);
+                glsl_FragColor0 = texture2D(texColor, coord);
 #endif
             }
 #endif
@@ -1041,10 +1043,6 @@
             <state name="vertex" value="fxaaVS"/>
             <state name="fragment" value="fxaaPS"/>
             <state name="depthtest" value="false"/>
-
-            <state name="blend" value="true" />
-            <state name="blendsrc" value="one" />
-            <state name="blenddst" value="zero" />
         </pass>
     </technique>
 </effect>

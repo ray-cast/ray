@@ -37,18 +37,17 @@
 #ifndef _H_WGL_CANVAS_H_
 #define _H_WGL_CANVAS_H_
 
-#include <ray/render_device.h>
 #include <ray/ogl_extenstion.h>
 
 _NAME_BEGIN
 
-class WGLCanvas final : public RenderCanvas
+class WGLCanvas final
 {
 public:
     WGLCanvas() noexcept;
     ~WGLCanvas() noexcept;
 
-    bool setup(WindHandle wx, const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig);
+    bool setup(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) except;
     void close() noexcept;
 
     void setSwapInterval(SwapInterval interval) noexcept;

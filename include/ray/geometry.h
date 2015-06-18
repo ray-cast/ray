@@ -60,7 +60,7 @@ public:
 
     void collection(RenderDataManager& manager) noexcept;
 
-    void render(RendererPtr renderer, RenderQueue queue, RenderPass type, MaterialPassPtr pass = nullptr) noexcept;
+    void render(RenderPipeline& renderer, RenderQueue queue, RenderPass type, MaterialPassPtr pass = nullptr) noexcept;
 
 private:
 

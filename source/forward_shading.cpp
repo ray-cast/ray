@@ -47,12 +47,12 @@ ForwardShading::~ForwardShading() noexcept
 }
 
 void
-ForwardShading::setup(std::size_t width, std::size_t height) noexcept
+ForwardShading::onActivate() noexcept
 {
 }
 
 void
-ForwardShading::close() noexcept
+ForwardShading::onDectivate() noexcept
 {
 }
 

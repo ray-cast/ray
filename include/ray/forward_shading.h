@@ -47,8 +47,8 @@ public:
     ForwardShading() noexcept;
     ~ForwardShading() noexcept;
 
-    void setup(std::size_t width, std::size_t height) noexcept;
-    void close() noexcept;
+    void onActivate() noexcept;
+    void onDectivate() noexcept;
 
     void setSharedDepthTexture(RenderTexturePtr texture) noexcept;
     void setSharedColorTexture(RenderTexturePtr texture) noexcept;

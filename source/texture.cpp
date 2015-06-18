@@ -47,7 +47,7 @@ TextureDesc::TextureDesc() noexcept
     , multisample(false)
     , level(0)
     , texop(TextureOp::OP_ADD)
-    , filter(TextureFilter::GPU_NEAREST)
+    , filter(TextureFilter::GPU_LINEAR)
     , wrap(TextureWrap::CLAMP_TO_EDGE)
     , anis(Anisotropy::ANISOTROPY_0)
     , data(nullptr)

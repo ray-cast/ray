@@ -37,7 +37,7 @@
 #ifndef _H_OGL_EXTENSTION_H_
 #define _H_OGL_EXTENSTION_H_
 
-#include <ray/platform.h>
+#include <ray/render_types.h>
 
 #include <GL/glew.h>
 #include <GL/wglew.h>
@@ -84,16 +84,6 @@ GLXEWContext _glxewctx;
 #define GL_SCISSOR_COMMAND_NV                                 0x0011
 #define GL_FRONT_FACE_COMMAND_NV                              0x0012
 #define GL_MAX_COMMANDS_NV                                    0x0013
-
-#ifndef GL_UNIFORM_BUFFER_UNIFIED_NV
-#define GL_UNIFORM_BUFFER_UNIFIED_NV                        0x936E
-#endif
-#ifndef GL_UNIFORM_BUFFER_ADDRESS_NV
-#define GL_UNIFORM_BUFFER_ADDRESS_NV                        0x936F
-#endif
-#ifndef GL_UNIFORM_BUFFER_LENGTH_NV
-#define GL_UNIFORM_BUFFER_LENGTH_NV                         0x9370
-#endif
 
 typedef BOOL(WINAPI * PFNWGLSWAPBUFFERSPROC) (HDC hdc);
 typedef BOOL(WINAPI * PFNWGLSWAPINTERVALEXTPROC) (int interval);
@@ -254,20 +244,51 @@ inline GLushort glGetStageIndexNV(GLenum shadertype)
     return __glewGetStageIndexNV(shadertype);
 }
 
-int initWGLExtensions() noexcept;
-int initCommandListNV() noexcept;
+enum OGLFeatures
+{
+    ARB_pixel_format,
+    ARB_create_context,
+    ARB_create_context_robustness,
+    ARB_bindless_texture,
+    ARB_vertex_array_object,
+    ARB_vertex_attrib_binding,
+    ARB_provoking_vertex,
+    EXT_direct_state_access,
+    EXT_swap_control,
+    NV_command_list,
+    NV_shader_buffer_load,
+    NV_vertex_buffer_unified_memory
+};
 
-extern bool _ARB_pixel_format;
-extern bool _ARB_create_context;
-extern bool _ARB_create_context_robustness;
-extern bool _ARB_bindless_texture;
-extern bool _ARB_vertex_array_object;
-extern bool _ARB_vertex_attrib_binding;
-extern bool _EXT_direct_state_access;
-extern bool _EXT_swap_control;
-extern bool _NV_command_list;
-extern bool _NV_shader_buffer_load;
-extern bool _NV_vertex_buffer_unified_memory;
+class OGLExtenstion
+{
+public:
+    OGLExtenstion() noexcept;
+    ~OGLExtenstion() noexcept;
+
+    static int initWGLExtensions(HDC hdc) except;
+    static int initCommandListNV() noexcept;
+
+    static bool isSupport(OGLFeatures feature) noexcept;
+
+private:
+
+    static int initWGLExtention;
+    static int initedNVcommandList;
+
+    static bool _ARB_pixel_format;
+    static bool _ARB_create_context;
+    static bool _ARB_create_context_robustness;
+    static bool _ARB_bindless_texture;
+    static bool _ARB_vertex_array_object;
+    static bool _ARB_vertex_attrib_binding;
+    static bool _ARB_provoking_vertex;
+    static bool _EXT_direct_state_access;
+    static bool _EXT_swap_control;
+    static bool _NV_command_list;
+    static bool _NV_shader_buffer_load;
+    static bool _NV_vertex_buffer_unified_memory;
+};
 
 _NAME_END
 

@@ -149,20 +149,23 @@ MeshRenderComponent::_buildRenderObject() noexcept
             mesh->buildRenderBuffer();
         }
 
-        _renderObject = std::make_unique<Geometry>();
-        _renderObject->setRenderBuffer(mesh->getRenderBuffer(), mesh->getVertexType());
-        _renderObject->setMaterial(this->getMaterial());
+        if (mesh->getRenderBuffer())
+        {
+            _renderObject = std::make_unique<Geometry>();
+            _renderObject->setRenderBuffer(mesh->getRenderBuffer(), mesh->getVertexType());
+            _renderObject->setMaterial(this->getMaterial());
 
-        _renderObject->setBoundingBox(mesh->getBoundingBox());
+            _renderObject->setBoundingBox(mesh->getBoundingBox());
 
-        _renderObject->setCastShadow(this->getCastShadow());
-        _renderObject->setReceiveShadow(this->getReceiveShadow());
+            _renderObject->setCastShadow(this->getCastShadow());
+            _renderObject->setReceiveShadow(this->getReceiveShadow());
 
-        _renderObject->setTransform(this->getGameObject()->getTransform());
-        _renderObject->setTransformInverse(this->getGameObject()->getTransformInverse());
-        _renderObject->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
+            _renderObject->setTransform(this->getGameObject()->getTransform());
+            _renderObject->setTransformInverse(this->getGameObject()->getTransformInverse());
+            _renderObject->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
 
-        _renderObject->setLayer(this->getGameObject()->getLayer());
+            _renderObject->setLayer(this->getGameObject()->getLayer());
+        }
     }
 }
 

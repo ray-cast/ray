@@ -53,7 +53,7 @@ enum ShaderType
     ST_CG_FRAGMENT,
 };
 
-enum ShaderParamType
+enum ShaderVariantType
 {
     SPT_NONE,
     SPT_BOOL,
@@ -70,27 +70,38 @@ enum ShaderParamType
     SPT_FLOAT3_ARRAY,
     SPT_FLOAT4_ARRAY,
     SPT_TEXTURE,
+    SPT_BUFFER,
 };
 
-class EXPORT ShaderParam
+class EXPORT ShaderVariant : public Instance<ShaderVariant>
 {
 public:
-    ShaderParam() noexcept;
-    ShaderParam(const std::string& name, float) noexcept;
-    ShaderParam(const std::string& name, const float3& m) noexcept;
-    ShaderParam(const std::string& name, const Vector4& m) noexcept;
-    ShaderParam(const std::string& name, const Matrix4x4& m) noexcept;
-    ShaderParam(const std::string& name, ShaderParamType type) noexcept;
-    ~ShaderParam() noexcept;
+    ShaderVariant() noexcept;
+    ShaderVariant(const std::string& name, float value) noexcept;
+    ShaderVariant(const std::string& name, const float3& value) noexcept;
+    ShaderVariant(const std::string& name, const Vector4& value) noexcept;
+    ShaderVariant(const std::string& name, const Matrix4x4& value) noexcept;
+    ShaderVariant(const std::string& name, ShaderVariantType type) noexcept;
+    ~ShaderVariant() noexcept;
+
+    void setup() noexcept;
+    void close() noexcept;
 
     void setName(const std::string& name) noexcept;
     const std::string& getName() const noexcept;
 
-    void setType(ShaderParamType type) noexcept;
-    ShaderParamType getType() const noexcept;
-
     void setSemantic(const std::string& semantic) noexcept;
     const std::string& getSemantic() const noexcept;
+
+    void setType(ShaderVariantType type) noexcept;
+    ShaderVariantType getType() const noexcept;
+
+    void addParameter(ShaderVariantPtr arg) noexcept;
+    void removeParameter(ShaderVariantPtr arg) noexcept;
+    ShaderVariantPtr getParameter(const std::string& name) const noexcept;
+    const ShaderVariants& getParameters() const noexcept;
+
+    std::size_t getSize() const noexcept;
 
     void assign(bool value) noexcept;
     void assign(int value) noexcept;
@@ -147,49 +158,63 @@ private:
         std::vector<float4>* farray4;
     } _value;
 
-    ShaderParamType _type;
+    ShaderVariantType _type;
+
+    ShaderVariants _params;
 };
 
-class EXPORT ShaderAttribute
+class EXPORT ShaderParameter : public Instance<ShaderParameter>
 {
 public:
-    std::string name;
-    int location;
+    ShaderParameter() noexcept;
+    virtual ~ShaderParameter() noexcept;
+
+    void setName(const std::string& name) noexcept;
+    const std::string& getName() const noexcept;
+
+    void setLocation(std::size_t location) noexcept;
+    std::size_t getLocation() const noexcept;
+
+    void needUpdate(bool update) noexcept;
+    bool needUpdate() const noexcept;
+
+private:
+    bool _needUpdate;
+
+    std::string _name;
+    std::size_t _location;
 };
 
-class EXPORT ShaderUniform
+class EXPORT ShaderAttribute : public ShaderParameter
+{
+};
+
+class EXPORT ShaderUniform : public ShaderParameter
 {
 public:
     ShaderUniform() noexcept;
     ~ShaderUniform() noexcept;
 
-    void needUpdate(bool update) noexcept;
-    bool needUpdate() const noexcept;
+    void setType(ShaderVariantType buffer) noexcept;
+    ShaderVariantType getType() const noexcept;
+
+    void setValue(ShaderVariantPtr buffer) noexcept;
+    ShaderVariantPtr getValue() const noexcept;
+
+    void setBindingPoint(std::size_t unit) noexcept;
+    std::size_t getBindingPoint() const noexcept;
 
 public:
 
-    std::string name;
-    int location;
-    int unit;
-    int type;
+    std::size_t _bindingPoint;
 
-    bool _needUpdate;
-
-    ShaderParamPtr value;
+    ShaderVariantType _type;
+    ShaderVariantPtr _value;
 };
 
-class EXPORT ShaderUniformBlock
+class EXPORT ShaderSubroutine : public ShaderParameter
 {
 public:
-    std::string name;
-    int location;
-};
-
-class EXPORT ShaderSubroutine
-{
-public:
-    std::string name;
-    int location;
 };
 
 class EXPORT Shader
@@ -223,27 +248,6 @@ private:
     std::string _path;
 };
 
-class EXPORT ShaderConstantBuffer : public Object<ShaderConstantBuffer>
-{
-public:
-    ShaderConstantBuffer() noexcept;
-    ~ShaderConstantBuffer() noexcept;
-
-    void addParamArg(ShaderUniformPtr& arg) noexcept;
-    void removeParamArg(ShaderUniformPtr& arg) noexcept;
-    const ShaderUniforms& getShaderParamArgs() const noexcept;
-
-    ShaderConstantBufferPtr clone() const noexcept;
-
-private:
-    ShaderConstantBuffer(const ShaderConstantBuffer&) = delete;
-    const ShaderConstantBuffer&operator=(const ShaderConstantBuffer&) = delete;
-
-private:
-
-    ShaderUniforms _uniforms;
-};
-
 class EXPORT ShaderProgram
 {
 public:
@@ -255,18 +259,16 @@ public:
 
     Shaders& getShaders() noexcept;
 
-    ShaderAttributes&    getActiveAttributes() noexcept;
     ShaderUniforms&      getActiveUniforms() noexcept;
-    ShaderUniformBlocks& getActiveUniformBlocks() noexcept;
+    ShaderAttributes&    getActiveAttributes() noexcept;
     ShaderSubroutines&   getActiveSubroutines() noexcept;
 
 protected:
 
     Shaders _shaders;
 
-    ShaderAttributes    _activeAttributes;
     ShaderUniforms      _activeUniforms;
-    ShaderUniformBlocks _activeUniformBlocks;
+    ShaderAttributes    _activeAttributes;
     ShaderSubroutines   _activeSubroutines;
 };
 
@@ -287,7 +289,6 @@ public:
     Shaders& getShaders() noexcept;
     ShaderAttributes&    getActiveAttributes() noexcept;
     ShaderUniforms&      getActiveUniforms() noexcept;
-    ShaderUniformBlocks& getActiveUniformBlocks() noexcept;
     ShaderSubroutines&   getActiveSubroutines() noexcept;
 
 private:

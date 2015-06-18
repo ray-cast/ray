@@ -58,7 +58,7 @@ MaterialShader::getShaders() noexcept
     return _shaders;
 }
 
-ShaderParams&
+ShaderVariants&
 MaterialShader::getParameter() noexcept
 {
     return _parameters;

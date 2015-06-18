@@ -39,107 +39,161 @@
 
 _NAME_BEGIN
 
-ShaderParam::ShaderParam() noexcept
-    : _type(ShaderParamType::SPT_INT)
+ShaderVariant::ShaderVariant() noexcept
+    : _type(ShaderVariantType::SPT_INT)
 {
 }
 
-ShaderParam::ShaderParam(const std::string& name, float f) noexcept
-    : _type(ShaderParamType::SPT_INT)
+ShaderVariant::ShaderVariant(const std::string& name, float f) noexcept
+    : _type(ShaderVariantType::SPT_INT)
 {
     this->setName(name);
     this->assign(f);
 }
 
-ShaderParam::ShaderParam(const std::string& name, const Vector3& v) noexcept
-    : _type(ShaderParamType::SPT_INT)
+ShaderVariant::ShaderVariant(const std::string& name, const Vector3& v) noexcept
+    : _type(ShaderVariantType::SPT_INT)
 {
     this->setName(name);
     this->assign(v);
 }
 
-ShaderParam::ShaderParam(const std::string& name, const Vector4& v) noexcept
-    : _type(ShaderParamType::SPT_INT)
+ShaderVariant::ShaderVariant(const std::string& name, const Vector4& v) noexcept
+    : _type(ShaderVariantType::SPT_INT)
 {
     this->setName(name);
     this->assign(v);
 }
 
-ShaderParam::ShaderParam(const std::string& name, const Matrix4x4& m) noexcept
-    : _type(ShaderParamType::SPT_INT)
+ShaderVariant::ShaderVariant(const std::string& name, const Matrix4x4& m) noexcept
+    : _type(ShaderVariantType::SPT_INT)
 {
     this->setName(name);
     this->assign(m);
 }
 
-ShaderParam::ShaderParam(const std::string& name, ShaderParamType type) noexcept
-    : _type(ShaderParamType::SPT_INT)
+ShaderVariant::ShaderVariant(const std::string& name, ShaderVariantType type) noexcept
+    : _type(ShaderVariantType::SPT_INT)
 {
     this->setName(name);
     this->setType(type);
 }
 
-ShaderParam::~ShaderParam() noexcept
+ShaderVariant::~ShaderVariant() noexcept
 {
-    this->setType(ShaderParamType::SPT_NONE);
+    this->setType(ShaderVariantType::SPT_NONE);
+    this->close();
 }
 
 void
-ShaderParam::setName(const std::string& name) noexcept
+ShaderVariant::setup() noexcept
+{
+    RenderImpl::instance()->createShaderVariant(*this);
+}
+
+void
+ShaderVariant::close() noexcept
+{
+    RenderImpl::instance()->destroyShaderVariant(*this);
+}
+
+void
+ShaderVariant::setName(const std::string& name) noexcept
 {
     _name = name;
 }
 
 const std::string&
-ShaderParam::getName() const noexcept
+ShaderVariant::getName() const noexcept
 {
     return _name;
 }
 
 void
-ShaderParam::setSemantic(const std::string& semantic) noexcept
+ShaderVariant::setSemantic(const std::string& semantic) noexcept
 {
     _semantic = semantic;
 }
 
 const std::string&
-ShaderParam::getSemantic() const noexcept
+ShaderVariant::getSemantic() const noexcept
 {
     return _semantic;
 }
 
+std::size_t
+ShaderVariant::getSize() const noexcept
+{
+    if (_type != SPT_BUFFER)
+    {
+        switch (_type)
+        {
+        case SPT_BOOL:
+            return sizeof(int);
+        case SPT_INT:
+            return sizeof(int);
+        case SPT_INT2:
+            return sizeof(int2);
+        case SPT_FLOAT:
+            return sizeof(float);
+        case SPT_FLOAT2:
+            return sizeof(float2);
+        case SPT_FLOAT3:
+            return sizeof(float3);
+        case SPT_FLOAT4:
+            return sizeof(float4);
+        case SPT_FLOAT3X3:
+            return sizeof(float3x3);
+        case SPT_FLOAT4X4:
+            return sizeof(float4x4);
+        default:
+            assert(false);
+            return 0;
+        }
+    }
+    else
+    {
+        std::size_t size = 0;
+        for (auto& it : _params)
+        {
+            size += it->getSize();
+        }
+        return size;
+    }
+}
+
 void
-ShaderParam::setType(ShaderParamType type) noexcept
+ShaderVariant::setType(ShaderVariantType type) noexcept
 {
     if (_type != type)
     {
-        if (_type == ShaderParamType::SPT_FLOAT_ARRAY)
+        if (_type == ShaderVariantType::SPT_FLOAT_ARRAY)
         {
             delete _value.farray;
             _value.farray = nullptr;
         }
 
-        if (_type == ShaderParamType::SPT_FLOAT3X3)
+        if (_type == ShaderVariantType::SPT_FLOAT3X3)
         {
             delete _value.m3;
             _value.m3 = nullptr;
         }
 
-        if (_type == ShaderParamType::SPT_FLOAT4X4)
+        if (_type == ShaderVariantType::SPT_FLOAT4X4)
         {
             delete _value.m4;
             _value.m4 = nullptr;
         }
 
-        if (type == ShaderParamType::SPT_FLOAT_ARRAY)
+        if (type == ShaderVariantType::SPT_FLOAT_ARRAY)
         {
             _value.farray = new std::vector<float>();
         }
-        else if (type == ShaderParamType::SPT_FLOAT3X3)
+        else if (type == ShaderVariantType::SPT_FLOAT3X3)
         {
             _value.m3 = new Matrix3x3;
         }
-        else if (type == ShaderParamType::SPT_FLOAT4X4)
+        else if (type == ShaderVariantType::SPT_FLOAT4X4)
         {
             _value.m4 = new Matrix4x4;
         }
@@ -148,16 +202,16 @@ ShaderParam::setType(ShaderParamType type) noexcept
     }
 }
 
-ShaderParamType
-ShaderParam::getType() const noexcept
+ShaderVariantType
+ShaderVariant::getType() const noexcept
 {
     return _type;
 }
 
 void
-ShaderParam::assign(bool value) noexcept
+ShaderVariant::assign(bool value) noexcept
 {
-    this->setType(ShaderParamType::SPT_BOOL);
+    this->setType(ShaderVariantType::SPT_BOOL);
     if (_value.b != value)
     {
         this->onChangeBefore();
@@ -167,9 +221,9 @@ ShaderParam::assign(bool value) noexcept
 }
 
 void
-ShaderParam::assign(int value) noexcept
+ShaderVariant::assign(int value) noexcept
 {
-    this->setType(ShaderParamType::SPT_INT);
+    this->setType(ShaderVariantType::SPT_INT);
     if (_value.i[0] != value)
     {
         this->onChangeBefore();
@@ -179,9 +233,9 @@ ShaderParam::assign(int value) noexcept
 }
 
 void
-ShaderParam::assign(const int2& value) noexcept
+ShaderVariant::assign(const int2& value) noexcept
 {
-    this->setType(ShaderParamType::SPT_INT2);
+    this->setType(ShaderVariantType::SPT_INT2);
     if (_value.i[0] != value.x ||
         _value.i[1] != value.y)
     {
@@ -193,9 +247,9 @@ ShaderParam::assign(const int2& value) noexcept
 }
 
 void
-ShaderParam::assign(float value) noexcept
+ShaderVariant::assign(float value) noexcept
 {
-    this->setType(ShaderParamType::SPT_FLOAT);
+    this->setType(ShaderVariantType::SPT_FLOAT);
     if (_value.f[0] != value)
     {
         this->onChangeBefore();
@@ -205,9 +259,9 @@ ShaderParam::assign(float value) noexcept
 }
 
 void
-ShaderParam::assign(const float2& value) noexcept
+ShaderVariant::assign(const float2& value) noexcept
 {
-    this->setType(ShaderParamType::SPT_FLOAT2);
+    this->setType(ShaderVariantType::SPT_FLOAT2);
     if (_value.f[0] != value.x ||
         _value.f[1] != value.y)
     {
@@ -219,9 +273,9 @@ ShaderParam::assign(const float2& value) noexcept
 }
 
 void
-ShaderParam::assign(const float3& value) noexcept
+ShaderVariant::assign(const float3& value) noexcept
 {
-    this->setType(ShaderParamType::SPT_FLOAT3);
+    this->setType(ShaderVariantType::SPT_FLOAT3);
     if (_value.f[0] != value.x ||
         _value.f[1] != value.y ||
         _value.f[2] != value.z)
@@ -235,9 +289,9 @@ ShaderParam::assign(const float3& value) noexcept
 }
 
 void
-ShaderParam::assign(const float4& value) noexcept
+ShaderVariant::assign(const float4& value) noexcept
 {
-    this->setType(ShaderParamType::SPT_FLOAT4);
+    this->setType(ShaderVariantType::SPT_FLOAT4);
     if (_value.f[0] != value.x ||
         _value.f[1] != value.y ||
         _value.f[2] != value.z ||
@@ -253,63 +307,62 @@ ShaderParam::assign(const float4& value) noexcept
 }
 
 void
-ShaderParam::assign(const float3x3& value) noexcept
+ShaderVariant::assign(const float3x3& value) noexcept
 {
-    this->setType(ShaderParamType::SPT_FLOAT3X3);
+    this->setType(ShaderVariantType::SPT_FLOAT3X3);
     this->onChangeBefore();
     *_value.m3 = value;
     this->onChangeAfter();
 }
 
 void
-ShaderParam::assign(const float4x4& value) noexcept
+ShaderVariant::assign(const float4x4& value) noexcept
 {
-    this->setType(ShaderParamType::SPT_FLOAT4X4);
+    this->setType(ShaderVariantType::SPT_FLOAT4X4);
     this->onChangeBefore();
     *_value.m4 = value;
     this->onChangeAfter();
 }
 
 void
-ShaderParam::assign(const std::vector<float>& value) noexcept
+ShaderVariant::assign(const std::vector<float>& value) noexcept
 {
-    this->setType(ShaderParamType::SPT_FLOAT_ARRAY);
+    this->setType(ShaderVariantType::SPT_FLOAT_ARRAY);
     this->onChangeBefore();
     *_value.farray = value;
     this->onChangeAfter();
 }
 
 void
-ShaderParam::assign(const std::vector<float2>& value) noexcept
+ShaderVariant::assign(const std::vector<float2>& value) noexcept
 {
-    this->setType(ShaderParamType::SPT_FLOAT2_ARRAY);
+    this->setType(ShaderVariantType::SPT_FLOAT2_ARRAY);
     this->onChangeBefore();
     *_value.farray2 = value;
     this->onChangeAfter();
 }
 
 void
-ShaderParam::assign(const std::vector<float3>& value) noexcept
+ShaderVariant::assign(const std::vector<float3>& value) noexcept
 {
-    this->setType(ShaderParamType::SPT_FLOAT3_ARRAY);
-    this->onChangeBefore();
+    this->setType(ShaderVariantType::SPT_FLOAT3_ARRAY);
     *_value.farray3 = value;
     this->onChangeAfter();
 }
 
 void
-ShaderParam::assign(const std::vector<float4>& value) noexcept
+ShaderVariant::assign(const std::vector<float4>& value) noexcept
 {
-    this->setType(ShaderParamType::SPT_FLOAT4_ARRAY);
+    this->setType(ShaderVariantType::SPT_FLOAT4_ARRAY);
     this->onChangeBefore();
     *_value.farray4 = value;
     this->onChangeAfter();
 }
 
 void
-ShaderParam::assign(TexturePtr texture) noexcept
+ShaderVariant::assign(TexturePtr texture) noexcept
 {
-    this->setType(ShaderParamType::SPT_TEXTURE);
+    this->setType(ShaderVariantType::SPT_TEXTURE);
     if (_texture != texture)
     {
         this->onChangeBefore();
@@ -319,114 +372,198 @@ ShaderParam::assign(TexturePtr texture) noexcept
 }
 
 const bool
-ShaderParam::getBool() const noexcept
+ShaderVariant::getBool() const noexcept
 {
-    assert(_type == ShaderParamType::SPT_BOOL);
+    assert(_type == ShaderVariantType::SPT_BOOL);
     return _value.b;
 }
 
 const int
-ShaderParam::getInt() const noexcept
+ShaderVariant::getInt() const noexcept
 {
-    assert(_type == ShaderParamType::SPT_INT);
+    assert(_type == ShaderVariantType::SPT_INT);
     return _value.i[0];
 }
 
 const int2&
-ShaderParam::getInt2() const noexcept
+ShaderVariant::getInt2() const noexcept
 {
-    assert(_type == ShaderParamType::SPT_INT2);
+    assert(_type == ShaderVariantType::SPT_INT2);
     return (int2&)_value.i[0];
 }
 
 const float
-ShaderParam::getFloat() const noexcept
+ShaderVariant::getFloat() const noexcept
 {
-    assert(_type == ShaderParamType::SPT_FLOAT);
+    assert(_type == ShaderVariantType::SPT_FLOAT);
     return _value.f[0];
 }
 
 const float2&
-ShaderParam::getFloat2() const noexcept
+ShaderVariant::getFloat2() const noexcept
 {
-    assert(_type == ShaderParamType::SPT_FLOAT2);
+    assert(_type == ShaderVariantType::SPT_FLOAT2);
     return (float2&)_value.f[0];
 }
 
 const float3&
-ShaderParam::getFloat3() const noexcept
+ShaderVariant::getFloat3() const noexcept
 {
-    assert(_type == ShaderParamType::SPT_FLOAT3);
+    assert(_type == ShaderVariantType::SPT_FLOAT3);
     return (float3&)_value.f[0];
 }
 
 const float4&
-ShaderParam::getFloat4() const noexcept
+ShaderVariant::getFloat4() const noexcept
 {
-    assert(_type == ShaderParamType::SPT_FLOAT4);
+    assert(_type == ShaderVariantType::SPT_FLOAT4);
     return (float4&)_value.f[0];
 }
 
 const float3x3&
-ShaderParam::getFloat3x3() const noexcept
+ShaderVariant::getFloat3x3() const noexcept
 {
-    assert(_type == ShaderParamType::SPT_FLOAT3X3);
+    assert(_type == ShaderVariantType::SPT_FLOAT3X3);
     return (float3x3&)*_value.m3;
 }
 
 const float4x4&
-ShaderParam::getFloat4x4() const noexcept
+ShaderVariant::getFloat4x4() const noexcept
 {
-    assert(_type == ShaderParamType::SPT_FLOAT4X4);
+    assert(_type == ShaderVariantType::SPT_FLOAT4X4);
     return (float4x4&)*_value.m4;
 }
 
 const std::vector<float>&
-ShaderParam::getFloatArray() const noexcept
+ShaderVariant::getFloatArray() const noexcept
 {
-    assert(_type == ShaderParamType::SPT_FLOAT_ARRAY);
+    assert(_type == ShaderVariantType::SPT_FLOAT_ARRAY);
     return *_value.farray;
 }
 
 const std::vector<float2>&
-ShaderParam::getFloat2Array() const noexcept
+ShaderVariant::getFloat2Array() const noexcept
 {
-    assert(_type == ShaderParamType::SPT_FLOAT2_ARRAY);
+    assert(_type == ShaderVariantType::SPT_FLOAT2_ARRAY);
     return *_value.farray2;
 }
 
 const std::vector<float3>&
-ShaderParam::getFloat3Array() const noexcept
+ShaderVariant::getFloat3Array() const noexcept
 {
-    assert(_type == ShaderParamType::SPT_FLOAT3_ARRAY);
+    assert(_type == ShaderVariantType::SPT_FLOAT3_ARRAY);
     return *_value.farray3;
 }
 
 const std::vector<float4>&
-ShaderParam::getFloat4Array() const noexcept
+ShaderVariant::getFloat4Array() const noexcept
 {
-    assert(_type == ShaderParamType::SPT_FLOAT4_ARRAY);
+    assert(_type == ShaderVariantType::SPT_FLOAT4_ARRAY);
     return *_value.farray4;
 }
 
 TexturePtr
-ShaderParam::getTexture() const noexcept
+ShaderVariant::getTexture() const noexcept
 {
     return _texture;
 }
 
 void
-ShaderParam::onChangeBefore() noexcept
+ShaderVariant::addParameter(ShaderVariantPtr arg) noexcept
+{
+    assert(std::find(_params.begin(), _params.end(), arg) == _params.end());
+    _params.push_back(arg);
+}
+
+void
+ShaderVariant::removeParameter(ShaderVariantPtr arg) noexcept
+{
+    auto it = std::find(_params.begin(), _params.end(), arg);
+    if (it != _params.end())
+    {
+        _params.erase(it);
+    }
+}
+
+ShaderVariantPtr
+ShaderVariant::getParameter(const std::string& name) const noexcept
+{
+    for (auto& it : _params)
+    {
+        if (it->getName() == name)
+        {
+            return it;
+        }
+    }
+
+    return nullptr;
+}
+
+const ShaderVariants&
+ShaderVariant::getParameters() const noexcept
+{
+    return _params;
+}
+
+void
+ShaderVariant::onChangeBefore() noexcept
 {
 }
 
 void
-ShaderParam::onChangeAfter() noexcept
+ShaderVariant::onChangeAfter() noexcept
 {
 }
 
+ShaderParameter::ShaderParameter() noexcept
+    : _needUpdate(true)
+    , _location(0)
+{
+}
+
+ShaderParameter::~ShaderParameter() noexcept
+{
+}
+
+void
+ShaderParameter::setName(const std::string& name) noexcept
+{
+    _name = name;
+}
+
+const std::string&
+ShaderParameter::getName() const noexcept
+{
+    return _name;
+}
+
+void
+ShaderParameter::setLocation(std::size_t location) noexcept
+{
+    _location = location;
+}
+
+std::size_t
+ShaderParameter::getLocation() const noexcept
+{
+    return _location;
+}
+
+void
+ShaderParameter::needUpdate(bool update) noexcept
+{
+    _needUpdate = update;
+}
+
+bool
+ShaderParameter::needUpdate() const noexcept
+{
+    return _needUpdate;
+}
+
 ShaderUniform::ShaderUniform() noexcept
-    :_needUpdate(true)
+    : _bindingPoint(0)
+    , _type(ShaderVariantType::SPT_NONE)
 {
 }
 
@@ -435,15 +572,43 @@ ShaderUniform::~ShaderUniform()
 }
 
 void
-ShaderUniform::needUpdate(bool update) noexcept
+ShaderUniform::setType(ShaderVariantType type) noexcept
 {
-    _needUpdate = update;
+    _type = type;
 }
 
-bool
-ShaderUniform::needUpdate() const noexcept
+ShaderVariantType
+ShaderUniform::getType() const noexcept
 {
-    return _needUpdate;
+    return _type;
+}
+
+void
+ShaderUniform::setValue(ShaderVariantPtr value) noexcept
+{
+    if (value)
+    {
+        assert(_type == value->getType());
+    }
+    _value = value;
+}
+
+ShaderVariantPtr
+ShaderUniform::getValue() const noexcept
+{
+    return _value;
+}
+
+void
+ShaderUniform::setBindingPoint(std::size_t unit) noexcept
+{
+    _bindingPoint = unit;
+}
+
+std::size_t
+ShaderUniform::getBindingPoint() const noexcept
+{
+    return _bindingPoint;
 }
 
 Shader::Shader() noexcept
@@ -573,47 +738,10 @@ ShaderProgram::getActiveUniforms() noexcept
     return _activeUniforms;
 }
 
-ShaderUniformBlocks&
-ShaderProgram::getActiveUniformBlocks() noexcept
-{
-    return _activeUniformBlocks;
-}
-
 ShaderSubroutines&
 ShaderProgram::getActiveSubroutines() noexcept
 {
     return _activeSubroutines;
-}
-
-ShaderConstantBuffer::ShaderConstantBuffer() noexcept
-{
-}
-
-ShaderConstantBuffer::~ShaderConstantBuffer() noexcept
-{
-}
-
-void
-ShaderConstantBuffer::addParamArg(ShaderUniformPtr& arg) noexcept
-{
-    _uniforms.push_back(arg);
-}
-
-void
-ShaderConstantBuffer::removeParamArg(ShaderUniformPtr& arg) noexcept
-{
-}
-
-const ShaderUniforms&
-ShaderConstantBuffer::getShaderParamArgs() const noexcept
-{
-    return _uniforms;
-}
-
-ShaderConstantBufferPtr
-ShaderConstantBuffer::clone() const noexcept
-{
-    return std::make_shared<ShaderConstantBuffer>();
 }
 
 ShaderObject::ShaderObject() noexcept
@@ -680,12 +808,6 @@ ShaderUniforms&
 ShaderObject::getActiveUniforms() noexcept
 {
     return _program->getActiveUniforms();
-}
-
-ShaderUniformBlocks&
-ShaderObject::getActiveUniformBlocks() noexcept
-{
-    return _program->getActiveUniformBlocks();
 }
 
 ShaderSubroutines&

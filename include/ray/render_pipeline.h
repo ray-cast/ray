@@ -37,7 +37,7 @@
 #ifndef _H_RENDER_PIPELINE_H_
 #define _H_RENDER_PIPELINE_H_
 
-#include <ray/renderer.h>
+#include <ray/render_device.h>
 #include <ray/render_object.h>
 
 _NAME_BEGIN
@@ -64,30 +64,41 @@ public:
     RenderPipeline() noexcept;
     virtual ~RenderPipeline() noexcept;
 
-    virtual void setup(std::size_t width, std::size_t height) except;
-    virtual void close() noexcept = 0;
+    virtual void setup(RenderDevicePtr renderDevice, std::size_t width, std::size_t height) except;
+    virtual void close() noexcept;
 
     void setCamera(Camera* renderer) noexcept;
     Camera* getCamera() const noexcept;
 
-    void setRenderer(RendererPtr renderer) noexcept;
-    RendererPtr getRenderer() const noexcept;
-
     void addRenderData(RenderQueue queue, RenderObject* object) noexcept;
     RenderData& getRenderData(RenderQueue queue) noexcept;
+
+    void drawMesh(RenderBufferPtr mesh, const Renderable& renderable) noexcept;
+    void updateMesh(RenderBufferPtr mesh, VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept;
+
+    void setRenderState(RenderStatePtr state) noexcept;
+
+    void setRenderTexture(RenderTexturePtr texture) noexcept;
+    void setRenderTexture(MultiRenderTexturePtr texture) noexcept;
+    void readRenderTexture(RenderTexturePtr texture, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+    void copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept;
+
+    void setShaderObject(ShaderObjectPtr shader) noexcept;
+    void setShaderVariant(ShaderVariantPtr buffer, ShaderUniformPtr uniform) noexcept;
 
     void drawSceneQuad() noexcept;
     void drawSphere() noexcept;
     void drawCone() noexcept;
     void drawRenderable(RenderQueue type, RenderPass pass, MaterialPassPtr material = nullptr) noexcept;
 
-    void setRenderTexture(RenderTexturePtr texture) noexcept;
-    void setRenderTexture(MultiRenderTexturePtr texture) noexcept;
+    void setWireframeMode(bool enable) noexcept;
+    bool getWireframeMode() const noexcept;
+
+    void setWindowResolution(std::size_t w, std::size_t h) noexcept;
+    std::size_t getWindowWidth() const noexcept;
+    std::size_t getWindowHeight() const noexcept;
 
     void setTechnique(MaterialPassPtr pass) noexcept;
-
-    void readRenderTexture(RenderTexturePtr texture, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
-    void copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept;
 
     void addPostProcess(RenderPostProcessPtr postprocess) noexcept;
     void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
@@ -99,15 +110,23 @@ private:
     void assignVisiable() noexcept;
     void assignLight() noexcept;
 
-    virtual void onRenderPre() noexcept;
-    virtual void onRenderPost() noexcept;
-    virtual void onRenderPipeline() noexcept;
+    virtual void onActivate() except;
+    virtual void onDectivate() except;
+
+    virtual void onRenderPre() except;
+    virtual void onRenderPost() except;
+    virtual void onRenderPipeline() except;
 
 private:
 
+    std::size_t _width;
+    std::size_t _height;
+
+    bool _enableWireframe;
+
     Camera* _camera;
 
-    RendererPtr _renderer;
+    RenderDevicePtr _renderer;
 
     RenderBufferPtr _renderSceneQuad;
     RenderBufferPtr _renderSphere;

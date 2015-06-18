@@ -48,10 +48,6 @@
 #include <ray/image.h>
 #include <ray/model.h>
 
-#if _BUILD_OPENGL
-#   include <ray/ogl_renderer.h>
-#endif
-
 _NAME_BEGIN
 
 RenderFeatures::RenderFeatures() noexcept
@@ -116,11 +112,8 @@ RenderFeatures::onActivate() except
         window = features->getWindow();
         if (window)
         {
-            _renderDevice = OGLRenderer::create();
-            _renderWindow = RenderWindow::create();
-
             _renderSystem = RenderSystem::create();
-            _renderSystem->setup(_renderDevice, _renderWindow, window->getWindowHandle(), window->getWindowWidth(), window->getWindowHeight());
+            _renderSystem->setup(window->getWindowHandle(), window->getWindowWidth(), window->getWindowHeight());
 
             _renderSystem->setTimer(this->getGameServer()->getTimer());
             _renderSystem->setSwapInterval(SwapInterval::GPU_FREE);
@@ -131,9 +124,11 @@ RenderFeatures::onActivate() except
 void
 RenderFeatures::onDeactivate() except
 {
-    _renderWindow.reset();
-    _renderDevice.reset();
-    _renderSystem.reset();
+    if (_renderSystem)
+    {
+        _renderSystem.reset();
+        _renderSystem = nullptr;
+    }
 }
 
 void
@@ -245,17 +240,17 @@ RenderFeatures::instanceMaterial(XMLReader* reader) except
                             auto type = param->getType();
                             switch (type)
                             {
-                            case ShaderParamType::SPT_FLOAT:
+                            case ShaderVariantType::SPT_FLOAT:
                             {
                                 param->assign(parseFloat<Float>(arg.second));
                             }
                             break;
-                            case ShaderParamType::SPT_FLOAT4:
+                            case ShaderVariantType::SPT_FLOAT4:
                             {
                                 param->assign(parseFloat4(arg.second));
                             }
                             break;
-                            case ShaderParamType::SPT_TEXTURE:
+                            case ShaderVariantType::SPT_TEXTURE:
                             {
                                 param->assign(createTexture(arg.second));
                             }

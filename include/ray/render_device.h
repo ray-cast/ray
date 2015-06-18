@@ -37,7 +37,6 @@
 #ifndef _H_RENDER_DEVICE_H_
 #define _H_RENDER_DEVICE_H_
 
-#include <ray/render_canvas.h>
 #include <ray/render_texture.h>
 #include <ray/render_state.h>
 #include <ray/render_buffer.h>
@@ -51,25 +50,13 @@ public:
     RenderDevice() noexcept;
     virtual ~RenderDevice() noexcept;
 
-    virtual bool open(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) noexcept = 0;
+    virtual bool open(WindHandle win) except = 0;
     virtual void close() noexcept = 0;
 
     virtual void setSwapInterval(SwapInterval interval) noexcept = 0;
     virtual SwapInterval getSwapInterval() const noexcept = 0;
 
-    virtual void setBlendState(const RenderBlendState& state) noexcept = 0;
-    virtual void setRasterState(const RenderRasterState& state) noexcept = 0;
-    virtual void setDepthState(const RenderDepthState& state) noexcept = 0;
-    virtual void setStencilState(const RenderStencilState& state) noexcept = 0;
     virtual void setRenderState(RenderStatePtr state) noexcept = 0;
-
-    virtual RenderCanvasPtr createRenderCanvas(WindHandle hwnd) noexcept = 0;
-    virtual void destroyRenderCanvas(RenderCanvasPtr canvas) noexcept = 0;
-    virtual void setRenderCanvas(RenderCanvasPtr handle) noexcept = 0;
-
-    virtual bool createConstantBuffer(ShaderConstantBuffer& buffer) noexcept = 0;
-    virtual void setShaderConstantBuffer(ShaderConstantBufferPtr buffer) noexcept = 0;
-    virtual void destroyConstantBuffer(ShaderConstantBuffer& buffer) noexcept = 0;
 
     virtual bool createRenderBuffer(RenderBuffer& buffer) noexcept = 0;
     virtual void destroyRenderBuffer(RenderBuffer& buffer) noexcept = 0;
@@ -94,10 +81,12 @@ public:
     virtual void destroyShaderProgram(ShaderProgramPtr shader) noexcept = 0;
     virtual void setShaderProgram(ShaderProgramPtr shader) noexcept = 0;
 
+    virtual bool createShaderVariant(ShaderVariant& constant) noexcept = 0;
+    virtual void destroyShaderVariant(ShaderVariant& constant) noexcept = 0;
+    virtual void setShaderVariant(ShaderVariantPtr constant, ShaderUniformPtr uniform) noexcept = 0;
+
     virtual void renderBegin() noexcept = 0;
     virtual void renderEnd() noexcept = 0;
-
-    virtual void present(RenderCanvasPtr canvas) noexcept = 0;
 
 private:
     RenderDevice(const RenderDevice&) noexcept = delete;

@@ -120,6 +120,18 @@ enum StencilOperation
     STENCILOP_DECR_WRAP
 };
 
+enum ClearFlags
+{
+    CLEAR_NONE,
+    CLEAR_COLOR = 1UL << 0,
+    CLEAR_DEPTH = 1UL << 1,
+    CLEAR_STENCIL = 1UL << 2,
+    CLEAR_COLOR_DEPTH = CLEAR_COLOR | CLEAR_DEPTH,
+    CLEAR_COLOR_STENCIL = CLEAR_COLOR | CLEAR_STENCIL,
+    CLEAR_DEPTH_STENCIL = CLEAR_DEPTH | CLEAR_STENCIL,
+    CLEAR_ALL = CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL
+};
+
 struct EXPORT RenderBlendState
 {
     bool           blendEnable;
@@ -142,12 +154,10 @@ struct EXPORT RenderRasterState
 {
     CullMode            cullMode;
     FillMode            fillMode;
-    bool                depthBiasEnable;
-    float               slopScaleDepthBias;
-    float               depthBias;
     bool                scissorTestEnable;
     bool                multisampleEnable;
     bool                srgbEnable;
+    bool                pointSizeEnable;
 
     RenderRasterState() noexcept;
 };
@@ -157,6 +167,10 @@ struct EXPORT RenderDepthState
     bool                depthEnable;
     bool                depthWriteMask;
     CompareFunction     depthFunc;
+
+    bool                depthBiasEnable;
+    float               depthBias;
+    float               depthSlopScaleBias;
 
     RenderDepthState() noexcept;
 };
@@ -183,6 +197,16 @@ struct EXPORT RenderStencilState
     RenderStencilState() noexcept;
 };
 
+struct EXPORT RenderClearState
+{
+    ClearFlags    clearFlags;
+    Vector4       clearColor;
+    float         clearDepth;
+    std::uint32_t clearStencil;
+
+    RenderClearState() noexcept;
+};
+
 class EXPORT RenderState
 {
 public:
@@ -193,11 +217,19 @@ public:
     void setRasterState(const RenderRasterState& state) noexcept;
     void setDepthState(const RenderDepthState& state) noexcept;
     void setStencilState(const RenderStencilState& state) noexcept;
+    void setClearState(const RenderClearState& state) noexcept;
+
+    RenderBlendState& getBlendState() noexcept;
+    RenderRasterState& getRasterState() noexcept;
+    RenderDepthState& getDepthState() noexcept;
+    RenderStencilState& getStencilState() noexcept;
+    RenderClearState& getClearState() noexcept;
 
     const RenderBlendState& getBlendState() const noexcept;
     const RenderRasterState& getRasterState() const noexcept;
     const RenderDepthState& getDepthState() const noexcept;
-    const RenderStencilState& getStencilState() noexcept;
+    const RenderStencilState& getStencilState() const noexcept;
+    const RenderClearState& getClearState() const noexcept;
 
     static CullMode stringToCullMode(const std::string& cullmode) noexcept;
     static FillMode stringToFillMode(const std::string& fillmode) noexcept;
@@ -206,6 +238,7 @@ public:
     static ColorMask stringToColorMask(const std::string& mask) noexcept;
     static CompareFunction stringToCompareFunc(const std::string& func) noexcept;
     static StencilOperation stringToStencilOp(const std::string& stencilop) noexcept;
+    static ClearFlags stringToClearFlags(const std::string& flags) noexcept;
 
 public:
 
@@ -213,6 +246,7 @@ public:
     RenderRasterState _rasterState;
     RenderDepthState _depthState;
     RenderStencilState _stencilState;
+    RenderClearState _clearState;
 };
 
 _NAME_END

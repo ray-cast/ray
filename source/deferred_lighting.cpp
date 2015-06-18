@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/deferred_lighting.h>
-#include <ray/renderer.h>
 #include <ray/camera.h>
 #include <ray/light.h>
 #include <ray/material_maker.h>
@@ -57,12 +56,13 @@ DeferredLighting::~DeferredLighting() noexcept
 }
 
 void
-DeferredLighting::setup(std::size_t width, std::size_t height) except
+DeferredLighting::onActivate() except
 {
     _deferredLighting = MaterialMaker("sys:fx\\deferred_lighting.glsl");
     _deferredDepthOhly = _deferredLighting->getTech(RenderQueue::DeferredLight)->getPass("DeferredDepthOhly");
     _deferredPointLight = _deferredLighting->getTech(RenderQueue::DeferredLight)->getPass("DeferredPointLight");
     _deferredSunLight = _deferredLighting->getTech(RenderQueue::DeferredLight)->getPass("DeferredSunLight");
+    _deferredSunLightShadow = _deferredLighting->getTech(RenderQueue::DeferredLight)->getPass("DeferredSunLightShadow");
     _deferredSpotLight = _deferredLighting->getTech(RenderQueue::DeferredLight)->getPass("DeferredSpotLight");
     _deferredShadingOpaques = _deferredLighting->getTech(RenderQueue::DeferredLight)->getPass("DeferredShadingOpaques");
     _deferredShadingTransparents = _deferredLighting->getTech(RenderQueue::DeferredLight)->getPass("DeferredShadingTransparents");
@@ -86,14 +86,11 @@ DeferredLighting::setup(std::size_t width, std::size_t height) except
 
     _shadowFactor->assign(ESM_FACTOR);
     _shadowLitFactor->assign(ESM_FACTOR);
-
-    RenderPipeline::setup(width, height);
 }
 
 void
-DeferredLighting::close() noexcept
+DeferredLighting::onDectivate() noexcept
 {
-    RenderPipeline::close();
 }
 
 void
@@ -105,6 +102,9 @@ DeferredLighting::onRenderPre() noexcept
     _deferredLightMap = this->getCamera()->getDeferredLightMap();
     _deferredShadingMap = this->getCamera()->getRenderTexture();
     _deferredGraphicMaps = this->getCamera()->getDeferredGraphicsMaps();
+
+    if (_deferredLightMap)
+        _deferredLightMap->setClearFlags(ClearFlags::CLEAR_COLOR);
 
     auto semantic = Material::getMaterialSemantic();
     if (_deferredDepthMap)
@@ -151,20 +151,25 @@ DeferredLighting::onRenderPipeline() noexcept
     break;
     case CO_MAIN:
     {
-        this->renderOpaquesDepthOhly();
-        this->renderOpaques();
-        this->renderLights();
-        this->renderOpaquesShading();
-
-        this->renderBackground();
-
-        auto renderable = this->getRenderData(RenderQueue::Transparent);
-        if (!renderable.empty())
+        auto renderMode = this->getCamera()->getCameraRender();
+        if (renderMode == CameraRender::CR_RENDER_TO_TEXTURE)
         {
-            this->renderTransparentDepthOhly();
-            this->renderTransparent();
+            this->renderOpaquesDepthOhly();
+            this->renderOpaques();
             this->renderLights();
-            this->renderTransparentShading();
+            this->renderOpaquesShading();
+
+            auto renderable = this->getRenderData(RenderQueue::Transparent);
+            if (!renderable.empty())
+            {
+                this->renderTransparentDepthOhly();
+                this->renderTransparent();
+                this->renderLights();
+                this->renderTransparentShading();
+            }
+        }
+        else if (renderMode == CameraRender::CR_RENDER_TO_CUBEMAP)
+        {
         }
     }
     break;
@@ -189,19 +194,25 @@ DeferredLighting::renderOpaquesDepthOhly() noexcept
 {
     _deferredDepthMap->setClearFlags(ClearFlags::CLEAR_DEPTH_STENCIL);
 
+    auto state = _deferredDepthOhly->getRenderState()->getDepthState().depthFunc = CompareFunction::GPU_LESS;
+
     this->setRenderTexture(_deferredDepthMap);
+    this->drawRenderable(RenderQueue::Background, RenderPass::RP_GBUFFER, _deferredDepthOhly);
     this->drawRenderable(RenderQueue::Opaque, RenderPass::RP_DEPTH, _deferredDepthOhly);
+
+    _deferredDepthMap->setClearFlags(ClearFlags::CLEAR_NONE);
 }
 
 void
 DeferredLighting::renderOpaques() noexcept
 {
-    _deferredDepthMap->setClearFlags(ClearFlags::CLEAR_NONE);
     _deferredGraphicMap->setClearFlags(ClearFlags::CLEAR_COLOR);
     _deferredNormalMap->setClearFlags(ClearFlags::CLEAR_COLOR);
 
     this->setRenderTexture(_deferredGraphicMaps);
     this->drawRenderable(RenderQueue::Opaque, RenderPass::RP_GBUFFER);
+
+    _deferredNormalMap->setClearFlags(ClearFlags::CLEAR_NONE);
 }
 
 void
@@ -212,15 +223,10 @@ DeferredLighting::renderOpaquesShading() noexcept
     this->setRenderTexture(_deferredShadingMap);
     this->setTechnique(_deferredShadingOpaques);
     this->drawSceneQuad();
-}
 
-void
-DeferredLighting::renderBackground() noexcept
-{
-    _deferredShadingMap->setClearFlags(ClearFlags::CLEAR_NONE);
-
-    this->setRenderTexture(_deferredShadingMap);
     this->drawRenderable(RenderQueue::Background, RenderPass::RP_GBUFFER);
+
+    _deferredShadingMap->setClearFlags(ClearFlags::CLEAR_NONE);
 }
 
 void
@@ -230,14 +236,13 @@ DeferredLighting::renderTransparentDepthOhly() noexcept
 
     this->setRenderTexture(_deferredDepthMap);
     this->drawRenderable(RenderQueue::Transparent, RenderPass::RP_DEPTH, _deferredDepthOhly);
+
+    _deferredDepthMap->setClearFlags(ClearFlags::CLEAR_NONE);
 }
 
 void
 DeferredLighting::renderTransparent() noexcept
 {
-    _deferredDepthMap->setClearFlags(ClearFlags::CLEAR_NONE);
-    _deferredNormalMap->setClearFlags(ClearFlags::CLEAR_NONE);
-
     this->setRenderTexture(_deferredGraphicMaps);
     this->drawRenderable(RenderQueue::Transparent, RenderPass::RP_GBUFFER);
 }
@@ -245,18 +250,14 @@ DeferredLighting::renderTransparent() noexcept
 void
 DeferredLighting::renderTransparentShading() noexcept
 {
-    _deferredShadingMap->setClearFlags(ClearFlags::CLEAR_NONE);
-
     this->setRenderTexture(_deferredShadingMap);
-    this->setTechnique(_deferredShadingOpaques);
+    this->setTechnique(_deferredShadingTransparents);
     this->drawSceneQuad();
 }
 
 void
 DeferredLighting::renderLights() noexcept
 {
-    _deferredLightMap->setClearFlags(ClearFlags::CLEAR_COLOR);
-
     this->setRenderTexture(_deferredLightMap);
 
     auto& lights = this->getRenderData(RenderQueue::DeferredLight);
@@ -300,20 +301,29 @@ DeferredLighting::renderSunLight(const Light& light) noexcept
     semantic->setFloatParam(LightRange, light.getRange());
     semantic->setFloatParam(LightIntensity, light.getIntensity());
 
-    RenderStencilState stencil = _deferredSunLight->getRenderState()->getStencilState();
-    stencil.stencilRef = 1 << light.getLayer();
-
-    _deferredSunLight->getRenderState()->setStencilState(stencil);
-
     if (light.getShadow())
     {
-        _shadowChannel->assign(light.getShadow());
+        RenderStencilState stencil = _deferredSunLightShadow->getRenderState()->getStencilState();
+        stencil.stencilRef = 1 << light.getLayer();
+
+        _deferredSunLightShadow->getRenderState()->setStencilState(stencil);
+
         _shadowMatrix->assign(light.getShadowCamera()->getViewProject());
         _shadowMap->assign(light.getShadowCamera()->getRenderTexture()->getResolveTexture());
-    }
 
-    this->setTechnique(_deferredSunLight);
-    this->drawSceneQuad();
+        this->setTechnique(_deferredSunLightShadow);
+        this->drawSceneQuad();
+    }
+    else
+    {
+        RenderStencilState stencil = _deferredSunLight->getRenderState()->getStencilState();
+        stencil.stencilRef = 1 << light.getLayer();
+
+        _deferredSunLight->getRenderState()->setStencilState(stencil);
+
+        this->setTechnique(_deferredSunLight);
+        this->drawSceneQuad();
+    }
 }
 
 void
@@ -375,22 +385,26 @@ DeferredLighting::renderAreaLight(const Light& light) noexcept
 void
 DeferredLighting::renderShadow() noexcept
 {
-    auto pass = _shadow->getTech(RenderQueue::Shadow)->getPass(RenderPass::RP_SHADOW);
+    auto renderTexture = this->getCamera()->getRenderTexture();
+    if (renderTexture)
+    {
+        _shadowDecal->assign(renderTexture->getResolveTexture());
 
-    this->setRenderTexture(this->getCamera()->getRenderTexture());
-    this->drawRenderable(RenderQueue::Shadow, RenderPass::RP_SHADOW, pass);
+        renderTexture->setClearFlags(ClearFlags::CLEAR_COLOR);
 
-    _shadowDecal->assign(this->getCamera()->getRenderTexture()->getResolveTexture());
+        this->setRenderTexture(renderTexture);
+        this->drawRenderable(RenderQueue::Shadow, RenderPass::RP_SHADOW, _shadowGenerate);
 
-    this->setRenderTexture(this->getCamera()->getSwapTexture());
-    this->setTechnique(_shadowBlurX);
-    this->drawSceneQuad();
+        renderTexture->setClearFlags(ClearFlags::CLEAR_NONE);
 
-    _shadowDecal->assign(this->getCamera()->getSwapTexture()->getResolveTexture());
+        this->setRenderTexture(renderTexture);
+        this->setTechnique(_shadowBlurX);
+        this->drawSceneQuad();
 
-    this->setRenderTexture(this->getCamera()->getRenderTexture());
-    this->setTechnique(_shadowBlurY);
-    this->drawSceneQuad();
+        this->setRenderTexture(renderTexture);
+        this->setTechnique(_shadowBlurY);
+        this->drawSceneQuad();
+    }
 }
 
 /*void

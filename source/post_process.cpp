@@ -77,4 +77,14 @@ RenderPostProcess::onDeactivate() except
 {
 }
 
+void
+RenderPostProcess::onResolutionChangeBefore() except
+{
+}
+
+void
+RenderPostProcess::onResolutionChangeAfter() except
+{
+}
+
 _NAME_END

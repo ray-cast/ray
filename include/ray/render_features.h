@@ -88,8 +88,6 @@ private:
     typedef std::map<GameScene::InstanceID, RenderScenePtr> RenderScenes;
 
     RenderSystemPtr _renderSystem;
-    RenderDevicePtr _renderDevice;
-    RenderWindowPtr _renderWindow;
     RenderScenes _renderScenes;
 };
 

@@ -39,10 +39,17 @@
 #include <ray/forward_shading.h>
 #include <ray/deferred_lighting.h>
 #include <ray/ssao.h>
+#include <ray/atmospheric.h>
 #include <ray/ssr.h>
 #include <ray/dof.h>
 #include <ray/hdr.h>
 #include <ray/fxaa.h>
+
+#if _BUILD_OPENGL
+#   include <ray/ogl_renderer.h>
+#endif
+
+#include <ray/render_impl.h>
 
 _NAME_BEGIN
 
@@ -51,6 +58,7 @@ __ImplementClass(RenderSystem)
 RenderSystem::RenderSystem() noexcept
     : _globalColor(1.0f, 1.0f, 1.0f, 0.5f)
     , _enableSSAO(true)
+    , _enableSAT(true)
     , _enableSSR(false)
     , _enableDOF(false)
     , _enableHDR(true)
@@ -64,18 +72,29 @@ RenderSystem::~RenderSystem() noexcept
 }
 
 bool
-RenderSystem::setup(RenderDevicePtr device, RenderWindowPtr window, WindHandle win, int width, int height) except
+RenderSystem::setup(WindHandle win, std::size_t width, std::size_t height) except
 {
-    _renderer = Renderer::create();
-    if (!_renderer->open(device))
-        return false;
+    _renderDevice = OGLRenderer::create();
+    _renderDevice->open(win);
 
-    _renderer->setSwapInterval(SwapInterval::GPU_VSYNC);
-
-    _renderWindow = window;
-    _renderWindow->setup(win);
-
+    RenderImpl::instance()->open(_renderDevice);
     Material::setMaterialSemantic(std::make_shared<MaterialSemantic>());
+
+    _renderPipeline = std::make_unique<DeferredLighting>();
+    _renderPipeline->setup(_renderDevice, width, height);
+
+    if (_enableSSAO)
+        _renderPipeline->addPostProcess(std::make_shared<SSAO>());
+    if (_enableSAT)
+        _renderPipeline->addPostProcess(std::make_shared<Atmospheric>());
+    if (_enableSSR)
+        _renderPipeline->addPostProcess(std::make_shared<SSR>());
+    if (_enableDOF)
+        _renderPipeline->addPostProcess(std::make_shared<DepthOfField>());
+    if (_enableHDR)
+        _renderPipeline->addPostProcess(std::make_shared<HDR>());
+    if (_enableFXAA)
+        _renderPipeline->addPostProcess(std::make_shared<FXAA>());
 
     _lineMaterial = MaterialMaker("sys:fx\\lines.glsl");
 
@@ -92,21 +111,6 @@ RenderSystem::setup(RenderDevicePtr device, RenderWindowPtr window, WindHandle w
 
     float ratio = (float)width / height;
     _orthoCamera.makeOrtho(-ratio, ratio, -1, 1, 0, 1000);
-
-    _renderPipeline = std::make_unique<DeferredLighting>();
-    _renderPipeline->setup(width, height);
-    _renderPipeline->setRenderer(_renderer);
-
-    if (_enableSSAO)
-        _renderPipeline->addPostProcess(std::make_shared<SSAO>());
-    if (_enableSSR)
-        _renderPipeline->addPostProcess(std::make_shared<SSR>());
-    if (_enableDOF)
-        _renderPipeline->addPostProcess(std::make_shared<DepthOfField>());
-    if (_enableHDR)
-        _renderPipeline->addPostProcess(std::make_shared<HDR>());
-    if (_enableFXAA)
-        _renderPipeline->addPostProcess(std::make_shared<FXAA>());
 
     return true;
 }
@@ -139,41 +143,23 @@ RenderSystem::close() noexcept
         Material::setMaterialSemantic(nullptr);
     }
 
-    if (_renderWindow)
+    if (_renderDevice)
     {
-        _renderWindow.reset();
-        _renderWindow = nullptr;
-    }
-
-    if (_renderer)
-    {
-        _renderer.reset();
-        _renderer = nullptr;
+        _renderDevice.reset();
+        _renderDevice = nullptr;
     }
 }
 
 void
 RenderSystem::setSwapInterval(SwapInterval interval) noexcept
 {
-    _renderer->setSwapInterval(interval);
+    _renderDevice->setSwapInterval(interval);
 }
 
 SwapInterval
 RenderSystem::getSwapInterval() const noexcept
 {
-    return _renderer->getSwapInterval();
-}
-
-void
-RenderSystem::setRenderWindow(RenderWindowPtr window) noexcept
-{
-    _renderWindow = window;
-}
-
-RenderWindowPtr
-RenderSystem::getRenderWindow() const noexcept
-{
-    return _renderWindow;
+    return _renderDevice->getSwapInterval();
 }
 
 void
@@ -425,7 +411,7 @@ RenderSystem::applyTimer(TimerPtr timer) noexcept
 void
 RenderSystem::renderBegin() noexcept
 {
-    _renderer->renderBegin();
+    _renderDevice->renderBegin();
 
     this->applyTimer(_timer);
 }
@@ -433,12 +419,6 @@ RenderSystem::renderBegin() noexcept
 void
 RenderSystem::renderCamera(Camera* camera) noexcept
 {
-    auto window = camera->getRenderWindow();
-    if (!window)
-        window = this->getRenderWindow();
-
-    _renderer->setRenderCanvas(window->getRenderCanvas());
-
     _renderPipeline->setCamera(camera);
     _renderPipeline->render();
 }
@@ -472,8 +452,8 @@ RenderSystem::renderEnd() noexcept
 
         auto pass = _lineMaterial->getTech(RenderQueue::Opaque)->getPass(RenderPass::RP_GBUFFER);
 
-        _renderer->setRenderState(pass->getRenderState());
-        _renderer->setShaderObject(pass->getShaderObject());
+        _renderPipeline->setRenderState(pass->getRenderState());
+        _renderPipeline->setShaderObject(pass->getShaderObject());
 
         Renderable renderable;
         renderable.type = VertexType::GPU_LINE;
@@ -483,8 +463,8 @@ RenderSystem::renderEnd() noexcept
         renderable.numIndices = _renderBuffer->getNumIndices();
         renderable.numInstances = 0;
 
-        _renderer->updateMesh(_renderBuffer, _dynamicBuffers, nullptr);
-        _renderer->drawMesh(_renderBuffer, renderable);
+        _renderPipeline->updateMesh(_renderBuffer, _dynamicBuffers, nullptr);
+        _renderPipeline->drawMesh(_renderBuffer, renderable);
 
         _lines.clear();
     }
@@ -496,8 +476,8 @@ RenderSystem::renderEnd() noexcept
 
         auto pass = _lineMaterial->getTech(RenderQueue::Opaque)->getPass(RenderPass::RP_GBUFFER);
 
-        _renderer->setRenderState(pass->getRenderState());
-        _renderer->setShaderObject(pass->getShaderObject());
+        _renderPipeline->setRenderState(pass->getRenderState());
+        _renderPipeline->setShaderObject(pass->getShaderObject());
 
         Renderable renderable;
         renderable.type = VertexType::GPU_LINE;
@@ -507,27 +487,13 @@ RenderSystem::renderEnd() noexcept
         renderable.numIndices = _renderBuffer->getNumIndices();
         renderable.numInstances = 0;
 
-        _renderer->updateMesh(_renderBuffer, _dynamicBuffers, nullptr);
-        _renderer->drawMesh(_renderBuffer, renderable);
+        _renderPipeline->updateMesh(_renderBuffer, _dynamicBuffers, nullptr);
+        _renderPipeline->drawMesh(_renderBuffer, renderable);
 
         _polygons.clear();
     }
 
-    for (auto& scene : _sceneList)
-    {
-        auto& cameras = scene->getCameraList();
-        for (auto& it : cameras)
-        {
-            auto window = it->getRenderWindow();
-            if (window)
-            {
-                _renderer->present(window->getRenderCanvas());
-            }
-        }
-    }
-
-    _renderer->present(_renderWindow->getRenderCanvas());
-    _renderer->renderEnd();
+    _renderDevice->renderEnd();
 }
 
 _NAME_END

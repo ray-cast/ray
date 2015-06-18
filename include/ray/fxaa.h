@@ -59,7 +59,7 @@ private:
     MaterialPtr _fxaa;
     MaterialPassPtr _fxaaPass;
 
-    ShaderParamPtr _texelStep;
+    ShaderVariantPtr _texelStep;
 };
 
 _NAME_END

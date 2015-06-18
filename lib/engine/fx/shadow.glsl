@@ -35,7 +35,7 @@
                 glsl_FragColor0 = vec4(exp(factor * position.z));
             }
 
-            void BlurX_PS()
+            void BlurxPS()
             {
                 vec2 texcoord = position.xy;
                 texcoord.xy = texcoord.xy * 0.5 + 0.5;
@@ -53,7 +53,7 @@
                 glsl_FragColor0 = vec4(color);
             }
 
-            void BlurY_PS()
+            void BluryPS()
             {
                 vec2 texcoord = position.xy;
                 texcoord.xy = texcoord.xy * 0.5 + 0.5;
@@ -80,11 +80,11 @@
         </pass>
         <pass name="blurX">
             <state name="vertex" value="BlurVS"/>
-            <state name="fragment" value="BlurX_PS"/>
+            <state name="fragment" value="BlurxPS"/>
         </pass>
         <pass name="blurY">
             <state name="vertex" value="BlurVS"/>
-            <state name="fragment" value="BlurY_PS"/>
+            <state name="fragment" value="BluryPS"/>
         </pass>
     </technique>
 </effect>

@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "terrain.h"
-#include "first_person_camera.h"
 
 Terrain::Terrain() noexcept
     : _createRadius(2)
@@ -70,21 +69,13 @@ Terrain::onActivate() except
             for (int j = z - 1; j < z + 1; j++)
             {
                 auto chunk = std::make_shared<TerrainChunk>(*this);
-                chunk->init(_size, i, -1, j);
+                chunk->init(_size, i, 0, j);
                 chunk->realize();
                 chunk->active(this->getGameObject());
 
                 _chunks.push_back(chunk);
             }
         }
-
-        _player->addComponent(std::make_shared<FirstPersonCamera>());
-        _player->setActive(true);
-
-        _player->getComponent<ray::CameraComponent>()->unproject(ray::Vector3(-1.0, -1.0, 1.0));
-        _player->getComponent<ray::CameraComponent>()->unproject(ray::Vector3(1.0, 1.0, 1.0));
-        _player->getComponent<ray::CameraComponent>()->unproject(ray::Vector3(-1.0, 1.0, 1.0));
-        _player->getComponent<ray::CameraComponent>()->unproject(ray::Vector3(1.0, -1.0, 1.0));
 
         for (std::size_t i = 0; i < 4; i++)
         {
@@ -219,7 +210,7 @@ Terrain::createChunks() noexcept
 {
     auto& translate = _player->getTranslate();
     int x = chunked(translate.x);
-    int y = -1;
+    int y = 0;
     int z = chunked(translate.z);
 
     ray::Frustum fru;
@@ -231,7 +222,7 @@ Terrain::createChunks() noexcept
             continue;
 
         int bestX = 0;
-        int bestY = -1;
+        int bestY = 0;
         int bestZ = 0;
         int start = std::numeric_limits<int>::max();
         int bestScore = start;

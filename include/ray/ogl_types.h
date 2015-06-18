@@ -37,7 +37,7 @@
 #ifndef _H_OGL_TYPES_H_
 #define _H_OGL_TYPES_H_
 
-#include <ray/platform.h>
+#include <ray/render_device.h>
 
 #if defined(_BUILD_PLATFORM_SDL2)
 #    include <ray/sdl_canvas.h>
@@ -115,12 +115,12 @@ struct OGLTexture
     }
 };
 
-struct OGLConstantBuffer
+struct OGLShaderVariant
 {
     GLuint ubo;
     GLuint64 bindlessUbo;
 
-    OGLConstantBuffer() noexcept
+    OGLShaderVariant() noexcept
         : ubo(0)
         , bindlessUbo(0)
     {

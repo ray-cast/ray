@@ -52,9 +52,10 @@ WGLCanvas::~WGLCanvas() noexcept
 }
 
 bool
-WGLCanvas::setup(WindHandle wx, const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig)
+WGLCanvas::setup(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) except
 {
-    _hwnd = (HWND)wx;
+    _hwnd = (HWND)ctxconfig.hwnd;
+    assert(IsWindow(_hwnd));
 
     _hdc = ::GetDC(_hwnd);
     if (!_hdc)
@@ -79,7 +80,7 @@ WGLCanvas::setup(WindHandle wx, const GPUfbconfig& fbconfig, const GPUctxconfig&
     pfd.cBlueShift = 0;
     pfd.cAlphaBits = fbconfig.alphaSize;
     pfd.cAlphaShift = 0;
-    pfd.cAccumBits = fbconfig.sRGB;
+    pfd.cAccumBits = fbconfig.accumSize;
     pfd.cAccumRedBits = fbconfig.accumRedSize;
     pfd.cAccumGreenBits = fbconfig.accumGreenSize;
     pfd.cAccumBlueBits = fbconfig.accumBlueSize;
@@ -109,38 +110,18 @@ WGLCanvas::setup(WindHandle wx, const GPUfbconfig& fbconfig, const GPUctxconfig&
         throw failure("SetPixelFormat fail");
     }
 
-    if (!_ARB_create_context)
-    {
-        HGLRC context = ::wglCreateContext(_hdc);
-        if (!context)
-        {
-            throw failure("wglCreateContext fail");
-        }
-
-        ::wglMakeCurrent(_hdc, context);
-
-        initWGLExtensions();
-        initCommandListNV();
-
-        if (!_ARB_create_context)
-        {
-            ::wglShareLists(context, ctxconfig.share);
-            _context = context;
-            return true;
-        }
-
-        ::wglDeleteContext(context);
-    }
+    OGLExtenstion::initWGLExtensions(_hdc);
 
     int attribs[40];
 
     int index = 0, mask = 0, flags = 0, startegy = 0;
 
+#if _DEBUG
+    flags |= WGL_CONTEXT_DEBUG_BIT_ARB;
+#endif
+
     if (ctxconfig.forward)
         flags |= WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
-
-    if (ctxconfig.debug)
-        flags |= WGL_CONTEXT_DEBUG_BIT_ARB;
 
     if (ctxconfig.profile)
     {
@@ -151,9 +132,9 @@ WGLCanvas::setup(WindHandle wx, const GPUfbconfig& fbconfig, const GPUctxconfig&
             mask = WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
     }
 
-    if (ctxconfig.robustness)
+    if (OGLExtenstion::isSupport(ARB_create_context_robustness))
     {
-        if (_ARB_create_context_robustness)
+        if (ctxconfig.robustness)
         {
             if (ctxconfig.robustness == GPU_GL_REST_NOTIFICATION)
                 startegy = WGL_NO_RESET_NOTIFICATION_ARB;
@@ -234,25 +215,23 @@ WGLCanvas::getWindHandle() const noexcept
 void
 WGLCanvas::setSwapInterval(SwapInterval interval) noexcept
 {
-    if (_EXT_swap_control)
+    switch (interval)
     {
-        switch (interval)
-        {
-        case ray::GPU_FREE:
-            wglSwapInterval(0);
-            break;
-        case ray::GPU_VSYNC:
-            wglSwapInterval(1);
-            break;
-        case ray::GPU_FPS30:
-            wglSwapInterval(2);
-            break;
-        case ray::GPU_FPS15:
-            wglSwapInterval(3);
-            break;
-        default:
-            wglSwapInterval(1);
-        }
+    case ray::GPU_FREE:
+        wglSwapInterval(0);
+        break;
+    case ray::GPU_VSYNC:
+        wglSwapInterval(1);
+        break;
+    case ray::GPU_FPS30:
+        wglSwapInterval(2);
+        break;
+    case ray::GPU_FPS15:
+        wglSwapInterval(3);
+        break;
+    default:
+        assert(false);
+        wglSwapInterval(1);
     }
 }
 

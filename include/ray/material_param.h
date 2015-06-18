@@ -34,22 +34,22 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MATERIAL_BIND_H_
-#define _H_MATERIAL_BIND_H_
+#ifndef _H_MATERIAL_PARAM_H_
+#define _H_MATERIAL_PARAM_H_
 
 #include <ray/material_fwd.h>
 
 _NAME_BEGIN
 
-class EXPORT MaterialParam final : public ShaderParam
+class EXPORT MaterialParam final : public ShaderVariant
 {
 public:
     MaterialParam() noexcept;
-    MaterialParam(const std::string& name, float) noexcept;
-    MaterialParam(const std::string& name, const float3& m) noexcept;
-    MaterialParam(const std::string& name, const Vector4& m) noexcept;
-    MaterialParam(const std::string& name, const Matrix4x4& m) noexcept;
-    MaterialParam(const std::string& name, ShaderParamType type) noexcept;
+    MaterialParam(const std::string& name, float value) noexcept;
+    MaterialParam(const std::string& name, const float3& value) noexcept;
+    MaterialParam(const std::string& name, const Vector4& value) noexcept;
+    MaterialParam(const std::string& name, const Matrix4x4& value) noexcept;
+    MaterialParam(const std::string& name, ShaderVariantType type) noexcept;
     ~MaterialParam() noexcept;
 
     void addShaderUniform(ShaderUniformPtr uniform) noexcept;

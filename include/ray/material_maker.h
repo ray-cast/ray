@@ -63,6 +63,7 @@ private:
     MaterialPassPtr instancePass(XMLReader& reader) except;
     MaterialTechPtr instanceTech(XMLReader& reader) except;
     MaterialParamPtr instanceParameter(XMLReader& reader) except;
+    MaterialParamPtr instanceBuffer(XMLReader& reader) except;
 
 private:
     MaterialMaker(const MaterialMaker&) noexcept = delete;

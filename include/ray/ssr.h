@@ -54,8 +54,8 @@ private:
     MaterialPtr _ssr;
     MaterialPassPtr _ssrPass;
 
-    ShaderParamPtr _projInfo;
-    ShaderParamPtr _clipInfo;
+    MaterialParamPtr _projInfo;
+    MaterialParamPtr _clipInfo;
 };
 
 _NAME_END

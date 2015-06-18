@@ -41,23 +41,6 @@
 
 _NAME_BEGIN
 
-class EXPORT RenderWindow final
-{
-    __DeclareClass(RenderWindow)
-public:
-    RenderWindow() noexcept;
-    ~RenderWindow() noexcept;
-
-    void setup(WindHandle hwnd) noexcept;
-
-    void setRenderCanvas(RenderCanvasPtr canvas) noexcept;
-    RenderCanvasPtr getRenderCanvas() const noexcept;
-
-private:
-
-    RenderCanvasPtr _canvas;
-};
-
 _NAME_END
 
 #endif

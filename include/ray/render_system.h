@@ -37,7 +37,6 @@
 #ifndef _H_RENDER_SYSTEM_H_
 #define _H_RENDER_SYSTEM_H_
 
-#include <ray/renderer.h>
 #include <ray/render_scene.h>
 #include <ray/render_window.h>
 #include <ray/render_pipeline.h>
@@ -68,14 +67,11 @@ public:
     RenderSystem() noexcept;
     ~RenderSystem() noexcept;
 
-    bool setup(RenderDevicePtr device, RenderWindowPtr window, WindHandle win, int width, int height) except;
+    bool setup(WindHandle win, std::size_t width, std::size_t height) except;
     void close() noexcept;
 
     void setSwapInterval(SwapInterval interval) noexcept;
     SwapInterval getSwapInterval() const noexcept;
-
-    void setRenderWindow(RenderWindowPtr window) noexcept;
-    RenderWindowPtr getRenderWindow() const noexcept;
 
     void setTimer(TimerPtr timer) noexcept;
     TimerPtr getTimer() const noexcept;
@@ -141,6 +137,7 @@ private:
     std::vector<SimpleVertex> _polygons;
 
     bool _enableSSAO;
+    bool _enableSAT;
     bool _enableSSR;
     bool _enableDOF;
     bool _enableHDR;
@@ -151,8 +148,7 @@ private:
     VertexBufferDataPtr _dynamicBuffers;
     RenderBufferPtr _renderBuffer;
 
-    RendererPtr _renderer;
-    RenderWindowPtr _renderWindow;
+    RenderDevicePtr _renderDevice;
 
     std::unique_ptr<RenderPipeline> _renderPipeline;
 

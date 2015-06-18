@@ -46,9 +46,7 @@
 _NAME_BEGIN
 
 typedef std::shared_ptr<class RenderDevice> RenderDevicePtr;
-typedef std::shared_ptr<class RenderCanvas> RenderCanvasPtr;
 typedef std::shared_ptr<class RenderState> RenderStatePtr;
-typedef std::shared_ptr<class RenderWindow> RenderWindowPtr;
 typedef std::shared_ptr<class RenderBuffer> RenderBufferPtr;
 typedef std::shared_ptr<class RenderTexture> RenderTexturePtr;
 typedef std::shared_ptr<class MultiRenderTexture> MultiRenderTexturePtr;
@@ -59,15 +57,13 @@ typedef std::shared_ptr<class VertexBufferData> VertexBufferDataPtr;
 typedef std::shared_ptr<class IndexBufferData> IndexBufferDataPtr;
 typedef std::shared_ptr<class Texture> TexturePtr;
 typedef std::shared_ptr<class Shader> ShaderPtr;
+typedef std::shared_ptr<class ShaderVariant> ShaderVariantPtr;
+typedef std::shared_ptr<class ShaderParameter> ShaderParameterPtr;
 typedef std::shared_ptr<class ShaderAttribute> ShaderAttributePtr;
 typedef std::shared_ptr<class ShaderUniform> ShaderUniformPtr;
-typedef std::shared_ptr<class ShaderUniformBlock> ShaderUniformBlockPtr;
 typedef std::shared_ptr<class ShaderSubroutine> ShaderSubroutinePtr;
-typedef std::shared_ptr<class ShaderParam> ShaderParamPtr;
 typedef std::shared_ptr<class ShaderProgram> ShaderProgramPtr;
-typedef std::shared_ptr<class ShaderConstantBuffer> ShaderConstantBufferPtr;
 typedef std::shared_ptr<class ShaderObject> ShaderObjectPtr;
-typedef std::shared_ptr<class ShaderParamArg> ShaderParamArgPtr;
 typedef std::shared_ptr<class RenderPostProcess> RenderPostProcessPtr;
 
 typedef std::shared_ptr<class Camera> CameraPtr;
@@ -79,11 +75,95 @@ typedef std::vector<VertexComponent> VertexComponents;
 typedef std::vector<ShaderPtr> Shaders;
 typedef std::vector<ShaderAttributePtr> ShaderAttributes;
 typedef std::vector<ShaderUniformPtr> ShaderUniforms;
-typedef std::vector<ShaderUniformBlockPtr> ShaderUniformBlocks;
 typedef std::vector<ShaderSubroutinePtr> ShaderSubroutines;
-typedef std::vector<ShaderParamPtr> ShaderParams;
-typedef std::vector<ShaderParamArg> ShaderParamArgs;
+typedef std::vector<ShaderVariantPtr> ShaderVariants;
 typedef std::vector<CameraPtr> Cameras;
+
+typedef void* WindHandle;
+
+enum SwapInterval
+{
+    GPU_FREE,
+    GPU_VSYNC,
+    GPU_FPS30,
+    GPU_FPS15,
+};
+
+enum GLattr
+{
+    GPU_GL_RED_SIZE,
+    GPU_GL_GREEN_SIZE,
+    GPU_GL_BLUE_SIZE,
+    GPU_GL_ALPHA_SIZE,
+    GPU_GL_BUFFER_SIZE,
+    GPU_GL_DOUBLEBUFFER,
+    GPU_GL_DEPTH_SIZE,
+    GPU_GL_STENCIL_SIZE,
+    GPU_GL_ACCUM_RED_SIZE,
+    GPU_GL_ACCUM_GREEN_SIZE,
+    GPU_GL_ACCUM_BLUE_SIZE,
+    GPU_GL_ACCUM_ALPHA_SIZE,
+    GPU_GL_STEREO,
+    GPU_GL_MULTISAMPLEBUFFERS,
+    GPU_GL_MULTISAMPLESAMPLES,
+    GPU_GL_ACCELERATED_VISUAL,
+    GPU_GL_RETAINED_BACKING,
+    GPU_GL_CONTEXT_MAJOR_VERSION,
+    GPU_GL_CONTEXT_MINOR_VERSION,
+    GPU_GL_CONTEXT_EGL,
+    GPU_GL_CONTEXT_FLAGS,
+    GPU_GL_CONTEXT_PROFILE_MASK,
+    GPU_GL_SHARE_WITH_CURRENT_CONTEXT,
+    GPU_GL_FRAMEBUFFER_SRGB_CAPABLE,
+    GPU_GL_DEBUG_FLAG,
+    GPU_GL_CORE_PROFILE,
+    GPU_GL_COMPAT_PROFILE,
+    GPU_GL_REST_NOTIFICATION,
+    GPU_GL_LOSE_CONTEXT_ONREST
+};
+
+enum
+{
+    RENDERDEVICE_D3D,
+    RENDERDEVICE_OPENGL,
+    RENDERDEVICE_OPENGL_ES
+};
+
+struct GPUctxconfig
+{
+    int api;
+    int major;
+    int minor;
+    int forward;
+    int profile;
+    int robustness;
+    int release;
+    int multithread;
+    HGLRC share;
+    WindHandle hwnd;
+};
+
+struct GPUfbconfig
+{
+    int redSize;
+    int greenSize;
+    int blueSize;
+    int alphaSize;
+
+    int bufferSize;
+    int depthSize;
+    int stencilSize;
+
+    int accumSize;
+    int accumRedSize;
+    int accumGreenSize;
+    int accumBlueSize;
+    int accumAlphaSize;
+
+    int stereo;
+    int samples;
+    int doubleBuffer;
+};
 
 _NAME_END
 

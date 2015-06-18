@@ -49,6 +49,7 @@ public:
 };
 
 class RenderDataManager;
+class RenderPipeline;
 class EXPORT RenderObject
 {
 public:
@@ -83,7 +84,7 @@ public:
 
     virtual void collection(RenderDataManager& manager) noexcept;
 
-    virtual void render(RendererPtr renderer, RenderQueue queue, RenderPass pass, MaterialPassPtr material) noexcept;
+    virtual void render(RenderPipeline& renderer, RenderQueue queue, RenderPass pass, MaterialPassPtr material) noexcept;
 
 private:
 

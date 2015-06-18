@@ -188,7 +188,6 @@ OGLShaderProgram::close() noexcept
 
     _activeAttributes.clear();
     _activeUniforms.clear();
-    _activeUniformBlocks.clear();
 }
 
 void
@@ -226,8 +225,8 @@ OGLShaderProgram::_initActiveAttribute() noexcept
             GLint location = glGetAttribLocation(_program, nameAttribute.get());
 
             auto attrib = std::make_shared<ShaderAttribute>();
-            attrib->location = location;
-            attrib->name.assign(nameAttribute.get());
+            attrib->setName(nameAttribute.get());
+            attrib->setLocation(location);
 
             _activeAttributes.push_back(attrib);
         }
@@ -238,45 +237,68 @@ void
 OGLShaderProgram::_initActiveUniform() noexcept
 {
     GLint numUniform = 0;
-    GLint maxUniform = 0;
+    GLint maxUniformLength = 0;
 
     glGetProgramiv(_program, GL_ACTIVE_UNIFORMS, &numUniform);
-    glGetProgramiv(_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniform);
+    glGetProgramiv(_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformLength);
 
-    if (numUniform)
+    if (numUniform == 0)
+        return;
+
+    auto nameUniform = std::make_unique<GLchar[]>(maxUniformLength + 1);
+    nameUniform[maxUniformLength] = 0;
+
+    for (GLint i = 0; i < numUniform; ++i)
     {
-        auto nameUniform = std::make_unique<GLchar[]>(maxUniform + 1);
-        nameUniform[maxUniform] = 0;
+        GLint size;
+        GLenum type;
 
-        for (GLint i = 0; i < numUniform; ++i)
+        glGetActiveUniform(_program, (GLuint)i, maxUniformLength, 0, &size, &type, nameUniform.get());
+
+        if (std::strstr(nameUniform.get(), ".") != 0 || nameUniform[0] == '_')
+            continue;
+
+        GLuint location = glGetUniformLocation(_program, nameUniform.get());
+        if (location == GL_INVALID_INDEX)
+            continue;
+
+        auto uniform = std::make_shared<ShaderUniform>();
+        uniform->setName(nameUniform.get());
+        uniform->setLocation(location);
+
+        if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
+            type == GL_SAMPLER_2D_SHADOW ||
+            type == GL_SAMPLER_2D_ARRAY || type == GL_SAMPLER_CUBE ||
+            type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
         {
-            GLint size;
-            GLenum type;
-
-            glGetActiveUniform(_program, (GLuint)i, maxUniform, 0, &size, &type, nameUniform.get());
-
-            if (std::strstr(nameUniform.get(), ".") == 0)
-            {
-                if (nameUniform[0] != '_')
-                {
-                    auto uniform = std::make_shared<ShaderUniform>();
-                    uniform->location = glGetUniformLocation(_program, nameUniform.get());
-                    uniform->type = type;
-                    uniform->unit = 0;
-                    uniform->name.assign(nameUniform.get());
-
-                    if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
-                        type == GL_SAMPLER_2D_SHADOW ||
-                        type == GL_SAMPLER_2D_ARRAY || type == GL_SAMPLER_CUBE ||
-                        type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
-                    {
-                        uniform->unit = _numTexUnit++;
-                    }
-
-                    _activeUniforms.push_back(uniform);
-                }
-            }
+            uniform->setType(SPT_TEXTURE);
+            uniform->setBindingPoint(_numTexUnit++);
         }
+        else
+        {
+            if (type == GL_BOOL)
+                uniform->setType(SPT_BOOL);
+            else if (type == GL_INT)
+                uniform->setType(SPT_INT);
+            else if (type == GL_INT_VEC2)
+                uniform->setType(SPT_INT2);
+            else if (type == GL_FLOAT)
+                uniform->setType(SPT_FLOAT);
+            else if (type == GL_FLOAT_VEC2)
+                uniform->setType(SPT_FLOAT2);
+            else if (type == GL_FLOAT_VEC3)
+                uniform->setType(SPT_FLOAT3);
+            else if (type == GL_FLOAT_VEC4)
+                uniform->setType(SPT_FLOAT4);
+            else if (type == GL_FLOAT_MAT3)
+                uniform->setType(SPT_FLOAT3X3);
+            else if (type == GL_FLOAT_MAT4)
+                uniform->setType(SPT_FLOAT4X4);
+            else
+                assert(false);
+        }
+
+        _activeUniforms.push_back(uniform);
     }
 }
 
@@ -284,68 +306,64 @@ void
 OGLShaderProgram::_initActiveUniformBlock() noexcept
 {
     GLint numUniformBlock = 0;
-    GLint maxUniformBlock = 0;
+    GLint maxUniformBlockLength = 0;
+    GLint maxUniformLength = 0;
 
     glGetProgramiv(_program, GL_ACTIVE_UNIFORM_BLOCKS, &numUniformBlock);
-    glGetProgramiv(_program, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &maxUniformBlock);
+    glGetProgramiv(_program, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &maxUniformBlockLength);
+    glGetProgramiv(_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformLength);
 
     if (numUniformBlock)
     {
-        auto nameUniformBlock = make_scope<GLchar[]>(numUniformBlock + 1);
-        nameUniformBlock[numUniformBlock] = 0;
+        auto nameUniformBlock = make_scope<GLchar[]>(maxUniformBlockLength + 1);
+        nameUniformBlock[maxUniformBlockLength] = 0;
 
         for (GLint i = 0; i < numUniformBlock; ++i)
         {
             GLsizei lengthUniformBlock;
-            glGetActiveUniformBlockName(_program, (GLuint)i, maxUniformBlock, &lengthUniformBlock, nameUniformBlock.get());
+            glGetActiveUniformBlockName(_program, (GLuint)i, maxUniformBlockLength, &lengthUniformBlock, nameUniformBlock.get());
 
             GLuint location = glGetUniformBlockIndex(_program, nameUniformBlock.get());
+            if (location == GL_INVALID_INDEX)
+                continue;
 
-            GLsizei size;
+            glUniformBlockBinding(_program, location, location);
+
+            GLint size;
             GLint count;
 
             glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_DATA_SIZE, &size);
             glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &count);
 
-            GLint var_count;
-            std::vector<std::string> varlist;
-
-            glGetProgramiv(_program, GL_ACTIVE_UNIFORMS, &var_count);
-            for (GLint j = 0; i < var_count; ++i)
+            if (count)
             {
-                GLsizei length = 0;
-                GLchar name[256];
-                glGetActiveUniformBlockName(_program, (GLuint)j, sizeof(name), &length, name);
-                if (length > lengthUniformBlock)
+                std::vector<GLint> indices(count);
+                glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices.data());
+
+                std::vector<GLint> offset((std::size_t)count);
+                std::vector<GLint> type((std::size_t)count);
+                std::vector<GLint> datasize((std::size_t)count);
+                std::vector<std::string> varlist((std::size_t)count);
+                std::vector<GLchar> name(maxUniformLength);
+
+                glGetActiveUniformsiv(_program, count, (GLuint*)&indices[0], GL_UNIFORM_OFFSET, &offset[0]);
+                glGetActiveUniformsiv(_program, count, (GLuint*)&indices[0], GL_UNIFORM_TYPE, &type[0]);
+                glGetActiveUniformsiv(_program, count, (GLuint*)&indices[0], GL_UNIFORM_SIZE, &datasize[0]);
+
+                for (GLuint j = 0; j < count; ++j)
                 {
-                    if (std::strncmp(name, nameUniformBlock.get(), lengthUniformBlock) == 0)
-                    {
-                        varlist.push_back(name);
-                    }
+                    GLsizei length = 0;
+                    glGetActiveUniformName(_program, indices[j], maxUniformLength, &length, name.data());
+                    varlist[j].append(name.data(), length);
                 }
+
+                auto uniformblock = std::make_shared<ShaderUniform>();
+                uniformblock->setName(nameUniformBlock.get());
+                uniformblock->setType(ShaderVariantType::SPT_BUFFER);
+                uniformblock->setLocation(location);
+
+                _activeUniforms.push_back(uniformblock);
             }
-
-            std::vector<GLuint> indices((std::size_t)count);
-
-            for (std::size_t j = 0; j < varlist.size(); j++)
-            {
-                const char* name = varlist[j].c_str();
-
-                glGetUniformIndices(_program, 1, &name, &indices[j]);
-            }
-
-            std::vector<GLint> offset((std::size_t)count);
-            std::vector<GLint> type((std::size_t)count);
-            std::vector<GLint> datasize((std::size_t)count);
-
-            glGetActiveUniformsiv(_program, count, &indices[0], GL_UNIFORM_OFFSET, &offset[0]);
-            glGetActiveUniformsiv(_program, count, &indices[0], GL_UNIFORM_TYPE, &type[0]);
-            glGetActiveUniformsiv(_program, count, &indices[0], GL_UNIFORM_SIZE, &datasize[0]);
-
-            auto uniformblock = std::make_shared<ShaderUniformBlock>();
-            uniformblock->location = location;
-
-            _activeUniformBlocks.push_back(uniformblock);
         }
     }
 }
@@ -373,8 +391,8 @@ OGLShaderProgram::_initActiveSubroutine() noexcept
             GLint location = glGetSubroutineIndex(_program, type, nameSubroutines.get());
 
             auto subroutines = std::make_shared<ShaderSubroutine>();
-            subroutines->name = nameSubroutines;
-            subroutines->location = location;
+            subroutines->setName(nameSubroutines.get());
+            subroutines->setLocation(location);
 
             _activeSubroutines.push_back(subroutines);
         }

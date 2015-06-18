@@ -200,7 +200,7 @@ RenderObject::collection(RenderDataManager&) noexcept
 }
 
 void
-RenderObject::render(RendererPtr renderer, RenderQueue queue, RenderPass pass, MaterialPassPtr material) noexcept
+RenderObject::render(RenderPipeline& renderer, RenderQueue queue, RenderPass pass, MaterialPassPtr material) noexcept
 {
 }
 

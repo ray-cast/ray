@@ -54,12 +54,10 @@ RenderBlendState::RenderBlendState() noexcept
 RenderRasterState::RenderRasterState() noexcept
     : cullMode(GPU_CULL_BACK)
     , fillMode(GPU_SOLID_MODE)
-    , depthBiasEnable(false)
-    , slopScaleDepthBias(0)
-    , depthBias(0)
     , scissorTestEnable(false)
     , multisampleEnable(false)
     , srgbEnable(false)
+    , pointSizeEnable(false)
 {
 }
 
@@ -67,6 +65,9 @@ RenderDepthState::RenderDepthState() noexcept
     : depthEnable(true)
     , depthWriteMask(true)
     , depthFunc(GPU_LEQUAL)
+    , depthBiasEnable(false)
+    , depthSlopScaleBias(0)
+    , depthBias(0)
 {
 }
 
@@ -86,6 +87,14 @@ RenderStencilState::RenderStencilState() noexcept
     , stencilTwoFail(STENCILOP_KEEP)
     , stencilTwoZFail(STENCILOP_KEEP)
     , stencilTwoPass(STENCILOP_KEEP)
+{
+}
+
+RenderClearState::RenderClearState() noexcept
+    : clearFlags(ClearFlags::CLEAR_COLOR)
+    , clearColor(0, 0, 0, 0)
+    , clearDepth(1)
+    , clearStencil(0)
 {
 }
 
@@ -121,6 +130,36 @@ RenderState::setStencilState(const RenderStencilState& state) noexcept
     _stencilState = state;
 }
 
+RenderBlendState&
+RenderState::getBlendState() noexcept
+{
+    return _blendState;
+}
+
+RenderRasterState&
+RenderState::getRasterState() noexcept
+{
+    return _rasterState;
+}
+
+RenderDepthState&
+RenderState::getDepthState() noexcept
+{
+    return _depthState;
+}
+
+RenderStencilState&
+RenderState::getStencilState() noexcept
+{
+    return _stencilState;
+}
+
+RenderClearState&
+RenderState::getClearState() noexcept
+{
+    return _clearState;
+}
+
 const RenderBlendState&
 RenderState::getBlendState() const noexcept
 {
@@ -140,9 +179,15 @@ RenderState::getDepthState() const noexcept
 }
 
 const RenderStencilState&
-RenderState::getStencilState() noexcept
+RenderState::getStencilState() const noexcept
 {
     return _stencilState;
+}
+
+const RenderClearState&
+RenderState::getClearState() const noexcept
+{
+    return _clearState;
 }
 
 CullMode
@@ -154,8 +199,13 @@ RenderState::stringToCullMode(const std::string& cullmode) noexcept
         return CullMode::GPU_CULL_FRONT;
     else if (cullmode == "frontback")
         return CullMode::GPU_CULL_FRONT_BACK;
-    else
+    else if (cullmode == "none")
         return CullMode::GPU_CULL_NONE;
+    else
+    {
+        assert(false);
+        return CullMode::GPU_CULL_NONE;
+    }
 }
 
 FillMode
@@ -165,8 +215,13 @@ RenderState::stringToFillMode(const std::string& fillmode) noexcept
         return FillMode::GPU_POINT_MODE;
     else if (fillmode == "line")
         return FillMode::GPU_WIREFRAME_MODE;
-    else
+    else if (fillmode == "solid")
         return FillMode::GPU_SOLID_MODE;
+    else
+    {
+        assert(false);
+        return FillMode::GPU_SOLID_MODE;
+    }
 }
 
 BlendOperation
@@ -176,8 +231,13 @@ RenderState::stringToBlendOperation(const std::string& blendop) noexcept
         return GPU_SUBSTRACT;
     else if (blendop == "revsub")
         return GPU_REVSUBTRACT;
-    else
+    else if (blendop == "add")
         return GPU_ADD;
+    else
+    {
+        assert(false);
+        return GPU_ADD;
+    }
 }
 
 BlendFactor
@@ -204,7 +264,10 @@ RenderState::stringToBlendFactor(const std::string& factor) noexcept
     else if (factor == "invdstalpha")
         return GPU_ONEMINUSDSTALPHA;
     else
-        return GPU_ONE;
+    {
+        assert(false);
+        return GPU_ZERO;
+    }
 }
 
 ColorMask
@@ -248,8 +311,13 @@ RenderState::stringToCompareFunc(const std::string& func) noexcept
         return GPU_ALWAYS;
     else if (func == "never")
         return GPU_NEVER;
-    else
+    else if (func == "none")
         return GPU_NONE;
+    else
+    {
+        assert(false);
+        return GPU_NONE;
+    }
 }
 
 StencilOperation
@@ -268,7 +336,34 @@ RenderState::stringToStencilOp(const std::string& stencilop) noexcept
     else if (stencilop == "decwrap")
         return STENCILOP_DECR_WRAP;
     else
+    {
+        assert(false);
         return STENCILOP_KEEP;
+    }
+}
+
+ClearFlags
+RenderState::stringToClearFlags(const std::string& flags) noexcept
+{
+    if (flags == "color")
+        return ClearFlags::CLEAR_COLOR;
+    else if (flags == "depth")
+        return ClearFlags::CLEAR_DEPTH;
+    else if (flags == "stencil")
+        return ClearFlags::CLEAR_STENCIL;
+    else if (flags == "color_depth")
+        return ClearFlags::CLEAR_COLOR_DEPTH;
+    else if (flags == "color_stencil")
+        return ClearFlags::CLEAR_COLOR_STENCIL;
+    else if (flags == "all")
+        return ClearFlags::CLEAR_ALL;
+    else if (flags == "none")
+        return ClearFlags::CLEAR_NONE;
+    else
+    {
+        assert(false);
+        return ClearFlags::CLEAR_NONE;
+    }
 }
 
 _NAME_END

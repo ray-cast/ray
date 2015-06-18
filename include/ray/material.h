@@ -59,6 +59,7 @@ public:
     void addParameter(MaterialParamPtr technique) noexcept;
     void removeParameter(MaterialParamPtr technique) noexcept;
     MaterialParamPtr getParameter(const std::string& name) const noexcept;
+    ShaderVariantPtr getParameterInChildren(const std::string& name) const noexcept;
     MaterialParams& getParameters() noexcept;
     const MaterialParams& getParameters() const noexcept;
 

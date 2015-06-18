@@ -67,7 +67,6 @@ Camera::Camera() noexcept
     , _cameraOrder(CameraOrder::CO_MAIN)
     , _cameraRender(CameraRender::CR_RENDER_TO_TEXTURE)
     , _renderScene(nullptr)
-    , _renderWindow(nullptr)
 {
 }
 
@@ -85,14 +84,14 @@ Camera::setup(std::size_t width, std::size_t height) noexcept
         _deferredDepthMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::DEPTH24_STENCIL8);
 
         _deferredGraphicMap = RenderTexture::create();
-        _deferredGraphicMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::SR8G8B8A8);
+        _deferredGraphicMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::SRGBA);
 
         _deferredNormalMap = RenderTexture::create();
-        _deferredNormalMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
+        _deferredNormalMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R32G32B32A32F);
 
         _deferredLightMap = RenderTexture::create();
         _deferredLightMap->setSharedStencilTexture(_deferredDepthMap);
-        _deferredLightMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
+        _deferredLightMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R32G32B32A32F);
 
         _deferredGraphicMaps = MultiRenderTexture::create();
         _deferredGraphicMaps->attach(_deferredDepthMap, Attachment::DEPTH_STENCIL);
@@ -100,29 +99,25 @@ Camera::setup(std::size_t width, std::size_t height) noexcept
         _deferredGraphicMaps->attach(_deferredNormalMap, Attachment::COLOR1);
         _deferredGraphicMaps->setup(width, height);
 
-        _renderTexture = std::make_shared<RenderTexture>();
-        _renderTexture->setSharedDepthTexture(_deferredDepthMap);
-        _renderTexture->setSharedStencilTexture(_deferredDepthMap);
-        _renderTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::SR8G8B8A8);
-
-        _swapTexture = std::make_shared<RenderTexture>();
-        _swapTexture->setSharedStencilTexture(_deferredDepthMap);
-        _swapTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::SR8G8B8A8);
-
         if (_cameraRender == CR_RENDER_TO_CUBEMAP)
         {
-            _cubeTexture = std::make_shared<RenderTexture>();
-            _cubeTexture->setSharedStencilTexture(_deferredDepthMap);
-            _cubeTexture->setup(512, 512, TextureDim::DIM_CUBE, PixelFormat::SR8G8B8A8);
+            _renderTexture = std::make_shared<RenderTexture>();
+            _renderTexture->setSharedDepthTexture(_deferredDepthMap);
+            _renderTexture->setSharedStencilTexture(_deferredDepthMap);
+            _renderTexture->setup(512, 512, TextureDim::DIM_CUBE, PixelFormat::SRGBA);
+        }
+        else
+        {
+            _renderTexture = std::make_shared<RenderTexture>();
+            _renderTexture->setSharedDepthTexture(_deferredDepthMap);
+            _renderTexture->setSharedStencilTexture(_deferredDepthMap);
+            _renderTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::SRGBA);
         }
     }
     else
     {
         _renderTexture = RenderTexture::create();
         _renderTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::R32F);
-
-        _swapTexture = RenderTexture::create();
-        _swapTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::R32F);
     }
 
     this->makeViewProject();
@@ -165,18 +160,6 @@ Camera::close() noexcept
     {
         _renderTexture.reset();
         _renderTexture = nullptr;
-    }
-
-    if (_swapTexture)
-    {
-        _swapTexture.reset();
-        _swapTexture = nullptr;
-    }
-
-    if (_renderWindow)
-    {
-        _renderWindow.reset();
-        _renderWindow = nullptr;
     }
 
     this->setRenderScene(nullptr);
@@ -332,7 +315,9 @@ Camera::makePerspective(float aperture, float ratio, float znear, float zfar) no
     _zNear = znear;
     _zFar = zfar;
 
-    _projectInverse = _project.makePerspective(_aperture, _ratio, _zNear, _zFar).inverse();
+    _project.makePerspective(_aperture, _ratio, _zNear, _zFar);
+
+    _projectInverse = _project.inverse();
 
     _projLength.x = _project.a1;
     _projLength.y = _project.b2;
@@ -465,33 +450,15 @@ Camera::getRenderScene() const noexcept
 }
 
 void
-Camera::setRenderWindow(RenderWindowPtr view) noexcept
-{
-    _renderWindow = view;
-}
-
-void
 Camera::setRenderTexture(RenderTexturePtr texture) noexcept
 {
     _renderTexture = texture;
-}
-
-RenderWindowPtr
-Camera::getRenderWindow() const noexcept
-{
-    return _renderWindow;
 }
 
 RenderTexturePtr
 Camera::getRenderTexture() const noexcept
 {
     return _renderTexture;
-}
-
-RenderTexturePtr
-Camera::getSwapTexture() const noexcept
-{
-    return _swapTexture;
 }
 
 RenderTexturePtr

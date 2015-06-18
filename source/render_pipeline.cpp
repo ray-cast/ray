@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_pipeline.h>
-#include <ray/render_buffer.h>
 #include <ray/post_process.h>
 #include <ray/model.h>
 #include <ray/render_scene.h>
@@ -65,6 +64,7 @@ RenderDataManager::clear() noexcept
 }
 
 RenderPipeline::RenderPipeline() noexcept
+    : _enableWireframe(false)
 {
 }
 
@@ -74,8 +74,12 @@ RenderPipeline::~RenderPipeline() noexcept
 }
 
 void
-RenderPipeline::setup(std::size_t width, std::size_t height) except
+RenderPipeline::setup(RenderDevicePtr renderDevice, std::size_t width, std::size_t height) except
 {
+    _renderer = renderDevice;
+    _width = width;
+    _height = height;
+
     MeshProperty mesh;
     mesh.makePlane(2, 2, 1, 1);
 
@@ -91,11 +95,15 @@ RenderPipeline::setup(std::size_t width, std::size_t height) except
 
     _renderCone = std::make_shared<RenderBuffer>();
     _renderCone->setup(mesh);
+
+    this->onActivate();
 }
 
 void
 RenderPipeline::close() noexcept
 {
+    this->onDectivate();
+
     if (_renderSceneQuad)
     {
         _renderSceneQuad.reset();
@@ -133,18 +141,6 @@ RenderPipeline::getCamera() const noexcept
 }
 
 void
-RenderPipeline::setRenderer(RendererPtr renderer) noexcept
-{
-    _renderer = renderer;
-}
-
-RendererPtr
-RenderPipeline::getRenderer() const noexcept
-{
-    return _renderer;
-}
-
-void
 RenderPipeline::addRenderData(RenderQueue queue, RenderObject* object) noexcept
 {
     _renderDataManager.addRenderData(queue, object);
@@ -157,71 +153,39 @@ RenderPipeline::getRenderData(RenderQueue queue) noexcept
 }
 
 void
-RenderPipeline::drawSceneQuad() noexcept
+RenderPipeline::drawMesh(RenderBufferPtr buffer, const Renderable& renderable) noexcept
 {
-    Renderable renderable;
-    renderable.type = VertexType::GPU_TRIANGLE;
-    renderable.startVertice = 0;
-    renderable.numVertices = _renderSceneQuad->getNumVertices();
-    renderable.startIndice = 0;
-    renderable.numIndices = _renderSceneQuad->getNumIndices();
-    renderable.numInstances = 0;
-    _renderer->drawMesh(_renderSceneQuad, renderable);
-}
-
-void
-RenderPipeline::drawSphere() noexcept
-{
-    Renderable renderable;
-    renderable.type = VertexType::GPU_TRIANGLE;
-    renderable.startVertice = 0;
-    renderable.numVertices = _renderSphere->getNumVertices();
-    renderable.startIndice = 0;
-    renderable.numIndices = _renderSphere->getNumIndices();
-    renderable.numInstances = 0;
-    _renderer->drawMesh(_renderSphere, renderable);
-}
-
-void
-RenderPipeline::drawCone() noexcept
-{
-    Renderable renderable;
-    renderable.type = VertexType::GPU_TRIANGLE;
-    renderable.startVertice = 0;
-    renderable.numVertices = _renderCone->getNumVertices();
-    renderable.startIndice = 0;
-    renderable.numIndices = _renderCone->getNumIndices();
-    renderable.numInstances = 0;
-    _renderer->drawMesh(_renderCone, renderable);
-}
-
-void
-RenderPipeline::drawRenderable(RenderQueue queue, RenderPass pass, MaterialPassPtr material) noexcept
-{
-    auto& renderable = _renderDataManager.getRenderData(queue);
-    for (auto& it : renderable)
+    _renderer->setRenderBuffer(buffer);
+    if (_enableWireframe)
     {
-        it->render(_renderer, queue, pass, material);
+        Renderable change = renderable;
+        change.type = VertexType::GPU_LINE;
+        _renderer->drawRenderBuffer(change);
+    }
+    else
+    {
+        _renderer->drawRenderBuffer(renderable);
     }
 }
 
 void
-RenderPipeline::setRenderTexture(RenderTexturePtr texture) noexcept
+RenderPipeline::updateMesh(RenderBufferPtr buffer, VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept
 {
-    _renderer->setRenderTexture(texture);
+    _renderer->updateRenderBuffer(buffer);
 }
 
 void
-RenderPipeline::setRenderTexture(MultiRenderTexturePtr texture) noexcept
+RenderPipeline::setRenderTexture(RenderTexturePtr target) noexcept
 {
-    _renderer->setRenderTexture(texture);
+    assert(target);
+    _renderer->setRenderTexture(target);
 }
 
 void
-RenderPipeline::setTechnique(MaterialPassPtr pass) noexcept
+RenderPipeline::setRenderTexture(MultiRenderTexturePtr target) noexcept
 {
-    _renderer->setRenderState(pass->getRenderState());
-    _renderer->setShaderObject(pass->getShaderObject());
+    assert(target);
+    _renderer->setMultiRenderTexture(target);
 }
 
 void
@@ -234,6 +198,117 @@ void
 RenderPipeline::copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept
 {
     _renderer->copyRenderTexture(srcTarget, src, destTarget, dest);
+}
+
+void
+RenderPipeline::setRenderState(RenderStatePtr state) noexcept
+{
+    _renderer->setRenderState(state);
+}
+
+void
+RenderPipeline::setShaderObject(ShaderObjectPtr shader) noexcept
+{
+    _renderer->setShaderProgram(shader->getShaderProgram());
+}
+
+void
+RenderPipeline::setShaderVariant(ShaderVariantPtr constant, ShaderUniformPtr uniform) noexcept
+{
+    _renderer->setShaderVariant(constant, uniform);
+}
+
+void
+RenderPipeline::drawSceneQuad() noexcept
+{
+    Renderable renderable;
+    renderable.type = VertexType::GPU_TRIANGLE;
+    renderable.startVertice = 0;
+    renderable.numVertices = _renderSceneQuad->getNumVertices();
+    renderable.startIndice = 0;
+    renderable.numIndices = _renderSceneQuad->getNumIndices();
+    renderable.numInstances = 0;
+
+    this->drawMesh(_renderSceneQuad, renderable);
+}
+
+void
+RenderPipeline::drawSphere() noexcept
+{
+    Renderable renderable;
+    renderable.type = VertexType::GPU_TRIANGLE;
+    renderable.startVertice = 0;
+    renderable.numVertices = _renderSphere->getNumVertices();
+    renderable.startIndice = 0;
+    renderable.numIndices = _renderSphere->getNumIndices();
+    renderable.numInstances = 0;
+
+    this->drawMesh(_renderSphere, renderable);
+}
+
+void
+RenderPipeline::drawCone() noexcept
+{
+    Renderable renderable;
+    renderable.type = VertexType::GPU_TRIANGLE;
+    renderable.startVertice = 0;
+    renderable.numVertices = _renderCone->getNumVertices();
+    renderable.startIndice = 0;
+    renderable.numIndices = _renderCone->getNumIndices();
+    renderable.numInstances = 0;
+
+    this->drawMesh(_renderCone, renderable);
+}
+
+void
+RenderPipeline::drawRenderable(RenderQueue queue, RenderPass pass, MaterialPassPtr material) noexcept
+{
+    auto& renderable = _renderDataManager.getRenderData(queue);
+    for (auto& it : renderable)
+    {
+        it->render(*this, queue, pass, material);
+    }
+}
+
+void
+RenderPipeline::setTechnique(MaterialPassPtr pass) noexcept
+{
+    this->setRenderState(pass->getRenderState());
+    this->setShaderObject(pass->getShaderObject());
+}
+
+void
+RenderPipeline::setWireframeMode(bool enable) noexcept
+{
+    _enableWireframe = enable;
+}
+
+bool
+RenderPipeline::getWireframeMode() const noexcept
+{
+    return _enableWireframe;
+}
+
+void
+RenderPipeline::setWindowResolution(std::size_t w, std::size_t h) noexcept
+{
+    if (_width != w || _height != h)
+    {
+        _width = w;
+        _height = h;
+    }
+}
+
+std::size_t
+RenderPipeline::getWindowWidth() const noexcept
+{
+    return _width;
+}
+
+std::size_t
+RenderPipeline::getWindowHeight() const noexcept
+{
+    return _height;
 }
 
 void
@@ -280,11 +355,15 @@ RenderPipeline::render() noexcept
     if (_camera->getCameraOrder() == CameraOrder::CO_MAIN)
     {
         auto renderTexture = _camera->getRenderTexture();
+        auto clearFlags = renderTexture->getClearFlags();
+        renderTexture->setClearFlags(ClearFlags::CLEAR_NONE);
 
         for (auto& it : _postprocessors)
         {
             it->render(*this, renderTexture);
         }
+
+        renderTexture->setClearFlags(clearFlags);
 
         this->copyRenderTexture(renderTexture, this->getCamera()->getViewport(), 0, this->getCamera()->getViewport());
     }
@@ -340,17 +419,27 @@ RenderPipeline::assignLight() noexcept
 }
 
 void
-RenderPipeline::onRenderPre() noexcept
+RenderPipeline::onActivate() except
 {
 }
 
 void
-RenderPipeline::onRenderPost() noexcept
+RenderPipeline::onDectivate() except
 {
 }
 
 void
-RenderPipeline::onRenderPipeline() noexcept
+RenderPipeline::onRenderPre() except
+{
+}
+
+void
+RenderPipeline::onRenderPost() except
+{
+}
+
+void
+RenderPipeline::onRenderPipeline() except
 {
 }
 

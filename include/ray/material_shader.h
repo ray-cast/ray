@@ -53,7 +53,7 @@ public:
     void addShader(ShaderPtr shader) noexcept;
 
     Shaders& getShaders() noexcept;
-    ShaderParams& getParameter() noexcept;
+    ShaderVariants& getParameter() noexcept;
 
 private:
     MaterialShader(const MaterialShader&) = delete;
@@ -62,7 +62,7 @@ private:
 private:
 
     Shaders _shaders;
-    ShaderParams _parameters;
+    ShaderVariants _parameters;
 
     ShaderObjectPtr _shaderObject;
 };

@@ -39,11 +39,24 @@
 
 _NAME_BEGIN
 
+float ToneKey(float avg)
+{
+    return 1.03 - 2 / (2 + std::log10(avg + 1.0));
+}
+
+float ToneExposure(float avg)
+{
+    float guess = 1.5 - (1.5 / (avg * 0.1 + 1.0));
+    return 1 / (std::max(0.0f, guess) + 0.1f);
+}
+
 HDR::Setting::Setting() noexcept
-    : lumAdapt(0.5)
+    : lumAdapt(1.0)
     , lumKey(1.0)
     , lumMax(1.0)
-    , exposure(2.0)
+    , bloomFactor(0.50)
+    , bloomIntensity(1.0)
+    , exposure(7.0)
     , exposureBias(2.2)
     , vignetteEnable(true)
     , vignetteInner(0.7)
@@ -63,16 +76,16 @@ void
 HDR::onActivate() except
 {
     _texSample4 = RenderTexture::create();
-    _texSample4->setup(512, 512, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
+    _texSample4->setup(1376 / 4.0, 768 / 4.0, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
 
     _texSample8 = RenderTexture::create();
-    _texSample8->setup(128, 128, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
+    _texSample8->setup(1376 / 8.0, 768 / 8.0, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
 
     _texSampleLog = RenderTexture::create();
     _texSampleLog->setup(32, 32, TextureDim::DIM_2D, PixelFormat::R16F);
 
     _texBloom = RenderTexture::create();
-    _texBloom->setup(512, 512, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
+    _texBloom->setup(1376 / 4.0, 768 / 4.0, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
 
     _hdr = MaterialMaker("sys:fx/hdr.glsl");
 
@@ -83,6 +96,11 @@ HDR::onActivate() except
     _blurh = _hdr->getTech(RenderQueue::PostProcess)->getPass("blurh");
     _blurv = _hdr->getTech(RenderQueue::PostProcess)->getPass("blurv");
     _tone = _hdr->getTech(RenderQueue::PostProcess)->getPass("tone");
+
+    _texSizeInv = _hdr->getParameter("texSizeInv");
+
+    _bloomFactor = _hdr->getParameter("bloomFactor");
+    _bloomIntensity = _hdr->getParameter("bloomIntensity");
 
     _toneSource = _hdr->getParameter("texSource");
     _toneBloom = _hdr->getParameter("texBloom");
@@ -95,6 +113,8 @@ HDR::onActivate() except
     _toneVignetteInner = _hdr->getParameter("vignetteInner");
     _toneVignetteOuter = _hdr->getParameter("vignetteOuter");
 
+    _bloomFactor->assign(_setting.bloomFactor);
+    _bloomIntensity->assign(_setting.bloomIntensity);
     _toneLumAve->assign(_setting.lumAdapt);
     _toneLumKey->assign(_setting.lumKey);
     _toneLumMax->assign(_setting.lumMax);
@@ -113,6 +133,9 @@ HDR::onDeactivate() except
 void
 HDR::setSetting(const Setting& setting) noexcept
 {
+    _bloomFactor->assign(_setting.bloomFactor);
+    _bloomIntensity->assign(_setting.bloomIntensity);
+
     _toneLumAve->assign(setting.lumAdapt);
     _toneLumKey->assign(setting.lumKey);
     _toneLumMax->assign(setting.lumMax);
@@ -156,16 +179,8 @@ HDR::measureLuminance(RenderPipeline& pipeline, RenderTexturePtr source)
     _setting.lumAdapt += 0.001f;
 
     _toneLumAve->assign(_setting.lumAdapt);
-}
-
-void
-HDR::generateBloom(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest)
-{
-    _toneSource->assign(source->getResolveTexture());
-
-    pipeline.setRenderTexture(dest);
-    pipeline.setTechnique(_bloom);
-    pipeline.drawSceneQuad();
+    _toneLumKey->assign(ToneKey(_setting.lumAdapt));
+    _toneExposure->assign(ToneExposure(_setting.lumAdapt));
 }
 
 void
@@ -199,21 +214,33 @@ HDR::sampleLog(RenderPipeline& pipeline, RenderTexturePtr source, RenderTextureP
 }
 
 void
-HDR::blurh(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+HDR::generateBloom(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest)
 {
     _toneSource->assign(source->getResolveTexture());
 
     pipeline.setRenderTexture(dest);
+    pipeline.setTechnique(_bloom);
+    pipeline.drawSceneQuad();
+}
+
+void
+HDR::blurh(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
+{
+    _texSizeInv->assign(float2(1.0 / source->getWidth(), 1.0 / source->getHeight()));
+    _toneSource->assign(source->getResolveTexture());
+
+    pipeline.setRenderTexture(source);
     pipeline.setTechnique(_blurh);
     pipeline.drawSceneQuad();
 }
 
 void
-HDR::blurv(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+HDR::blurv(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
 {
+    _texSizeInv->assign(float2(1.0 / source->getWidth(), 1.0 / source->getHeight()));
     _toneSource->assign(source->getResolveTexture());
 
-    pipeline.setRenderTexture(dest);
+    pipeline.setRenderTexture(source);
     pipeline.setTechnique(_blurv);
     pipeline.drawSceneQuad();
 }
@@ -238,10 +265,14 @@ HDR::render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
 
     this->measureLuminance(pipeline, _texSampleLog);
 
+    _texBloom->setClearFlags(ClearFlags::CLEAR_COLOR);
+
     this->generateBloom(pipeline, _texSample4, _texBloom);
 
-    this->blurh(pipeline, _texBloom, _texSample4);
-    this->blurv(pipeline, _texSample4, _texBloom);
+    _texBloom->setClearFlags(ClearFlags::CLEAR_NONE);
+
+    this->blurh(pipeline, _texBloom);
+    this->blurv(pipeline, _texBloom);
 
     this->generateToneMapping(pipeline, source, _texBloom);
 }

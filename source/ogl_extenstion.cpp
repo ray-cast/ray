@@ -66,22 +66,32 @@ PFNGLCALLCOMMANDLISTNVPROC __glewCallCommandListNV;
 PFNGLGETCOMMANDHEADERNVPROC __glewGetCommandHeaderNV;
 PFNGLGETSTAGEINDEXNVPROC __glewGetStageIndexNV;
 
-static int initWGLExtention = 0;
-static int initedNVcommandList = 0;
+int OGLExtenstion::initWGLExtention = 0;
+int OGLExtenstion::initedNVcommandList = 0;
 
-bool _ARB_pixel_format = 0;
-bool _ARB_create_context = 0;
-bool _ARB_create_context_robustness = 0;
-bool _ARB_bindless_texture = 0;
-bool _ARB_vertex_array_object = 0;
-bool _ARB_vertex_attrib_binding = 0;
-bool _EXT_direct_state_access = 0;
-bool _EXT_swap_control = 0;
-bool _NV_command_list = 0;
-bool _NV_shader_buffer_load = 0;
-bool _NV_vertex_buffer_unified_memory = 0;
+bool OGLExtenstion::_ARB_pixel_format = 0;
+bool OGLExtenstion::_ARB_create_context = 0;
+bool OGLExtenstion::_ARB_create_context_robustness = 0;
+bool OGLExtenstion::_ARB_bindless_texture = 0;
+bool OGLExtenstion::_ARB_vertex_array_object = 0;
+bool OGLExtenstion::_ARB_vertex_attrib_binding = 0;
+bool OGLExtenstion::_ARB_provoking_vertex = 0;
+bool OGLExtenstion::_EXT_direct_state_access = 0;
+bool OGLExtenstion::_EXT_swap_control = 0;
+bool OGLExtenstion::_NV_command_list = 0;
+bool OGLExtenstion::_NV_shader_buffer_load = 0;
+bool OGLExtenstion::_NV_vertex_buffer_unified_memory = 0;
 
-int initWGLExtensions() noexcept
+OGLExtenstion::OGLExtenstion() noexcept
+{
+}
+
+OGLExtenstion::~OGLExtenstion() noexcept
+{
+}
+
+int
+OGLExtenstion::initWGLExtensions(HDC hdc) except
 {
     if (initWGLExtention) return 0;
 
@@ -92,6 +102,14 @@ int initWGLExtensions() noexcept
     __wglSwapIntervalEXT = nullptr;
     __wglGetPixelFormatAttribivARB = nullptr;
     __wglCreateContextAttribsARB = nullptr;
+
+    HGLRC context = ::wglCreateContext(hdc);
+    if (!context)
+    {
+        throw failure("wglCreateContext fail");
+    }
+
+    ::wglMakeCurrent(hdc, context);
 
     glewInit();
 
@@ -125,19 +143,26 @@ int initWGLExtensions() noexcept
             _ARB_create_context = true;
     }
 
+    ::wglDeleteContext(context);
+
     _ARB_bindless_texture = GLEW_ARB_bindless_texture;
     _ARB_vertex_array_object = GLEW_ARB_vertex_array_object;
     _ARB_vertex_attrib_binding = GLEW_ARB_vertex_attrib_binding;
+    _ARB_provoking_vertex = GLEW_ARB_provoking_vertex;
+    _ARB_create_context = WGLEW_ARB_create_context;
+    _ARB_create_context_robustness = WGLEW_ARB_create_context_robustness;
     _EXT_direct_state_access = GLEW_EXT_direct_state_access;
+    _EXT_swap_control = WGLEW_EXT_swap_control;
     _NV_shader_buffer_load = GLEW_NV_shader_buffer_load;
-    _NV_vertex_buffer_unified_memory = GLEW_NV_vertex_buffer_unified_memory;
+    _NV_vertex_buffer_unified_memory = false; //GLEW_NV_vertex_buffer_unified_memory;
 
     initWGLExtention = true;
 
     return __wglSwapBuffers != NULL;
 }
 
-int initCommandListNV() noexcept
+int
+OGLExtenstion::initCommandListNV() noexcept
 {
     if (initedNVcommandList)
         return __glewCreateStatesNV != NULL;
@@ -165,6 +190,40 @@ int initCommandListNV() noexcept
     _NV_command_list = __glewCreateStatesNV != NULL;
 
     return __glewCreateStatesNV != NULL;
+}
+
+bool
+OGLExtenstion::isSupport(OGLFeatures feature) noexcept
+{
+    switch (feature)
+    {
+    case ARB_pixel_format:
+        return _ARB_pixel_format;
+    case ARB_create_context:
+        return _ARB_create_context;
+    case ARB_create_context_robustness:
+        return _ARB_create_context_robustness;
+    case ARB_bindless_texture:
+        return _ARB_bindless_texture;
+    case ARB_vertex_array_object:
+        return _ARB_vertex_array_object;
+    case ARB_vertex_attrib_binding:
+        return _ARB_vertex_attrib_binding;
+    case ARB_provoking_vertex:
+        return _ARB_provoking_vertex;
+    case EXT_direct_state_access:
+        return _EXT_direct_state_access;
+    case EXT_swap_control:
+        return _EXT_swap_control;
+    case NV_command_list:
+        return _NV_command_list;
+    case NV_shader_buffer_load:
+        return _NV_shader_buffer_load;
+    case NV_vertex_buffer_unified_memory:
+        return _NV_vertex_buffer_unified_memory;
+    default:
+        return false;
+    }
 }
 
 _NAME_END

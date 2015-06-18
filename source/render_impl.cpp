@@ -51,16 +51,9 @@ RenderImpl::~RenderImpl() noexcept
 }
 
 bool
-RenderImpl::open(RenderDevicePtr renderDevice, const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) except
+RenderImpl::open(RenderDevicePtr renderDevice) except
 {
-    assert(renderDevice);
-    assert(!_renderDevice);
-
-    if (!renderDevice->open(fbconfig, ctxconfig))
-        return false;
-
     _renderDevice = renderDevice;
-
     return true;
 }
 
@@ -87,30 +80,6 @@ RenderImpl::getSwapInterval() const noexcept
 }
 
 void
-RenderImpl::setBlendState(const RenderBlendState& state) noexcept
-{
-    _renderDevice->setBlendState(state);
-}
-
-void
-RenderImpl::setRasterState(const RenderRasterState& state) noexcept
-{
-    _renderDevice->setRasterState(state);
-}
-
-void
-RenderImpl::setDepthState(const RenderDepthState& state) noexcept
-{
-    _renderDevice->setDepthState(state);
-}
-
-void
-RenderImpl::setStencilState(const RenderStencilState& state) noexcept
-{
-    _renderDevice->setStencilState(state);
-}
-
-void
 RenderImpl::setRenderState(RenderStatePtr state) noexcept
 {
     _renderDevice->setRenderState(state);
@@ -128,46 +97,22 @@ RenderImpl::renderEnd() noexcept
     _renderDevice->renderEnd();
 }
 
-void
-RenderImpl::present(RenderCanvasPtr canvas) noexcept
-{
-    _renderDevice->present(canvas);
-}
-
-RenderCanvasPtr
-RenderImpl::createRenderCanvas(WindHandle hwnd) noexcept
-{
-    return _renderDevice->createRenderCanvas(hwnd);
-}
-
-void
-RenderImpl::destroyRenderCanvas(RenderCanvasPtr canvas) noexcept
-{
-    _renderDevice->destroyRenderCanvas(canvas);
-}
-
-void
-RenderImpl::setRenderCanvas(const RenderCanvasPtr canvas) noexcept
-{
-    _renderDevice->setRenderCanvas(canvas);
-}
-
 bool
-RenderImpl::createConstantBuffer(ShaderConstantBuffer& buffer) noexcept
+RenderImpl::createShaderVariant(ShaderVariant& buffer) noexcept
 {
-    return _renderDevice->createConstantBuffer(buffer);
+    return _renderDevice->createShaderVariant(buffer);
 }
 
 void
-RenderImpl::setShaderConstantBuffer(ShaderConstantBufferPtr buffer) noexcept
+RenderImpl::setShaderVariant(ShaderVariantPtr buffer, ShaderUniformPtr uniform) noexcept
 {
-    _renderDevice->setShaderConstantBuffer(buffer);
+    _renderDevice->setShaderVariant(buffer, uniform);
 }
 
 void
-RenderImpl::destroyConstantBuffer(ShaderConstantBuffer& buffer) noexcept
+RenderImpl::destroyShaderVariant(ShaderVariant& buffer) noexcept
 {
-    _renderDevice->destroyConstantBuffer(buffer);
+    _renderDevice->destroyShaderVariant(buffer);
 }
 
 bool

@@ -333,20 +333,14 @@ SET(RENDERER_CORE
     ${SOURCE_PATH}/render_device.cpp
     ${HEADER_PATH}/render_impl.h
     ${SOURCE_PATH}/render_impl.cpp
-    ${HEADER_PATH}/render_canvas.h
-    ${SOURCE_PATH}/render_canvas.cpp
     ${HEADER_PATH}/render_state.h
     ${SOURCE_PATH}/render_state.cpp
+    ${HEADER_PATH}/render_texture.h
+    ${SOURCE_PATH}/render_texture.cpp
     ${HEADER_PATH}/shader.h
     ${SOURCE_PATH}/shader.cpp
     ${HEADER_PATH}/texture.h
     ${SOURCE_PATH}/texture.cpp
-    ${HEADER_PATH}/render_texture.h
-    ${SOURCE_PATH}/render_texture.cpp
-    ${HEADER_PATH}/render_window.h
-    ${SOURCE_PATH}/render_window.cpp
-    ${HEADER_PATH}/renderer.h
-    ${SOURCE_PATH}/renderer.cpp
 )
 SOURCE_GROUP("core" FILES ${RENDERER_CORE})
 
@@ -424,18 +418,22 @@ SET(RENDERER_MESH
 SOURCE_GROUP("renderer\\mesh" FILES ${RENDERER_MESH})
 
 SET(RENDERER_POST_PROCESS
+    ${HEADER_PATH}/atmospheric.h
+    ${SOURCE_PATH}/atmospheric.cpp
     ${HEADER_PATH}/dof.h
     ${SOURCE_PATH}/dof.cpp
+    ${HEADER_PATH}/fog.h
+    ${SOURCE_PATH}/fog.cpp
     ${HEADER_PATH}/fxaa.h
     ${SOURCE_PATH}/fxaa.cpp
+    ${HEADER_PATH}/hdr.h
+    ${SOURCE_PATH}/hdr.cpp
+    ${HEADER_PATH}/light_shaft.h
+    ${SOURCE_PATH}/light_shaft.cpp
     ${HEADER_PATH}/ssao.h
     ${SOURCE_PATH}/ssao.cpp
     ${HEADER_PATH}/ssr.h
     ${SOURCE_PATH}/ssr.cpp
-    ${HEADER_PATH}/hdr.h
-    ${SOURCE_PATH}/hdr.cpp
-    ${HEADER_PATH}/fog.h
-    ${SOURCE_PATH}/fog.cpp
     ${HEADER_PATH}/post_process.h
     ${SOURCE_PATH}/post_process.cpp
 )
@@ -467,8 +465,6 @@ SET(RENDERER_SYSTEM
     ${SOURCE_PATH}/forward_shading.cpp
     ${HEADER_PATH}/render_pipeline.h
     ${SOURCE_PATH}/render_pipeline.cpp
-    ${HEADER_PATH}/render_pipeline_manager.h
-    ${SOURCE_PATH}/render_pipeline_manager.cpp
     ${HEADER_PATH}/render_system.h
     ${SOURCE_PATH}/render_system.cpp
 )

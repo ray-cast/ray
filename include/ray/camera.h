@@ -115,7 +115,6 @@ public:
     void setCameraRender(CameraRender mode) noexcept;
 
     void setRenderScene(RenderScene* scene) noexcept;
-    void setRenderWindow(RenderWindowPtr vp) noexcept;
     void setRenderTexture(RenderTexturePtr texture) noexcept;
 
     CameraType getCameraType() const noexcept;
@@ -123,9 +122,7 @@ public:
     CameraRender getCameraRender() const noexcept;
 
     RenderScene* getRenderScene() const noexcept;
-    RenderWindowPtr getRenderWindow() const noexcept;
     RenderTexturePtr getRenderTexture() const noexcept;
-    RenderTexturePtr getSwapTexture() const noexcept;
 
     RenderTexturePtr getDeferredDepthMap() const noexcept;
     RenderTexturePtr getDeferredGraphicMap() const noexcept;
@@ -182,12 +179,9 @@ private:
 
     MultiRenderTexturePtr _deferredGraphicMaps;
 
-    RenderTexturePtr _swapTexture;
     RenderTexturePtr _renderTexture;
-    RenderTexturePtr _cubeTexture;
 
     RenderScene*  _renderScene;
-    RenderWindowPtr _renderWindow;
 };
 
 _NAME_END

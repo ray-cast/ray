@@ -47,7 +47,7 @@ GameObject::GameObject() noexcept
     , _rotation(0, 0, 0, 1)
     , _scaling(1, 1, 1)
     , _translate(0, 0, 0)
-    , _lookAt(0, 0, -1)
+    , _lookAt(0, 0, 0)
     , _upVector(0, 1, 0)
     , _parent(nullptr)
 {

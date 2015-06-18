@@ -60,15 +60,15 @@
     </shader>
     <technique name="postprocess">
         <pass name="godray">
-            <state name="zwriteenable" value="false"/>
-            <state name="zenable" value="false"/>
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
 
-                <state name="blend" value="true" />
-                <state name="blendSeparate" value="true" />
-                <state name="blendsrc" value="one" />
-                <state name="blenddst" value="zero" />
-                <state name="blendalphasrc" value="one" />
-                <state name="blendalphadst" value="zero" />
+            <state name="blend" value="true" />
+            <state name="blendSeparate" value="true" />
+            <state name="blendsrc" value="one" />
+            <state name="blenddst" value="zero" />
+            <state name="blendalphasrc" value="one" />
+            <state name="blendalphadst" value="zero" />
         </pass>
     </technique>
 </effect>

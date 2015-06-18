@@ -40,7 +40,7 @@
 _NAME_BEGIN
 
 RenderScene::RenderScene() noexcept
-    : _ambientLight(Vector3(0.4, 0.4, 0.4))
+    : _ambientLight(Vector3(0.2, 0.2, 0.2))
 {
 }
 

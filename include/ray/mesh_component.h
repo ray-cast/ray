@@ -52,7 +52,6 @@ public:
     void setMesh(MeshPropertyPtr mesh) noexcept;
     void setSharedMesh(MeshPropertyPtr mesh) noexcept;
     void setRenderBuffer(RenderBufferPtr mesh) noexcept;
-    void setBufferData(VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept;
     void setCombieInstnace(const CombineInstance& instance) noexcept;
 
     void clear() noexcept;
@@ -70,7 +69,6 @@ public:
 
     GameComponentPtr clone() const noexcept;
 
-    void buildMesh() noexcept;
     void buildRenderBuffer() noexcept;
 
 private:
@@ -88,9 +86,6 @@ private:
     MeshPropertyPtr _sharedMesh;
 
     Bound _bound;
-
-    VertexBufferDataPtr _vb;
-    IndexBufferDataPtr _ib;
 
     VertexType _type;
 

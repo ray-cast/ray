@@ -48,25 +48,17 @@ public:
     RenderImpl() noexcept;
     ~RenderImpl() noexcept;
 
-    bool open(RenderDevicePtr renderDevice, const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) except;
+    bool open(RenderDevicePtr renderDevice) except;
     void close() noexcept;
 
     void setSwapInterval(SwapInterval interval) noexcept;
     SwapInterval getSwapInterval() const noexcept;
 
-    void setBlendState(const RenderBlendState& state) noexcept;
-    void setRasterState(const RenderRasterState& state) noexcept;
-    void setDepthState(const RenderDepthState& state) noexcept;
-    void setStencilState(const RenderStencilState& state) noexcept;
     void setRenderState(RenderStatePtr state) noexcept;
 
-    RenderCanvasPtr createRenderCanvas(WindHandle hwnd) noexcept;
-    void setRenderCanvas(RenderCanvasPtr canvas) noexcept;
-    void destroyRenderCanvas(RenderCanvasPtr canvas) noexcept;
-
-    bool createConstantBuffer(ShaderConstantBuffer& buffer) noexcept;
-    void destroyConstantBuffer(ShaderConstantBuffer& buffer) noexcept;
-    void setShaderConstantBuffer(ShaderConstantBufferPtr buffer) noexcept;
+    bool createShaderVariant(ShaderVariant& buffer) noexcept;
+    void destroyShaderVariant(ShaderVariant& buffer) noexcept;
+    void setShaderVariant(ShaderVariantPtr buffer, ShaderUniformPtr uniform) noexcept;
 
     bool createRenderBuffer(RenderBuffer& buffer) noexcept;
     void destroyRenderBuffer(RenderBuffer& buffer) noexcept;
@@ -93,8 +85,6 @@ public:
 
     void renderBegin() noexcept;
     void renderEnd() noexcept;
-
-    void present(RenderCanvasPtr canvas) noexcept;
 
 private:
     RenderImpl(const RenderImpl&) noexcept = delete;

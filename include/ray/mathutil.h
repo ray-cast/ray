@@ -295,6 +295,18 @@ inline T ceilToPowerOfTwo(T number)
     return test & input;
 }
 
+template<typename T>
+inline T fast_exp2(T x)
+{
+    static const T c[3] = { 5.79526, 12.82461, -2.88611 };
+
+    int e = int(std::round(x));
+    T t = x - e;
+    T m = (t * t + c[0] * t + c[1]) / (c[2] * t * c[1]);
+
+    return std::ldexp<T>(m, e);
+}
+
 EXPORT void randomize();
 EXPORT int random(int min, int max);
 EXPORT float random(float min, float max);

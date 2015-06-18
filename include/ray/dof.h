@@ -65,12 +65,12 @@ private:
     MaterialPassPtr _computeNear;
     MaterialPassPtr _final;
 
-    ShaderParamPtr _texColor;
-    ShaderParamPtr _texDepth;
-    ShaderParamPtr _texShrunk;
-    ShaderParamPtr _texBlured;
-    ShaderParamPtr _texSmall;
-    ShaderParamPtr _texLarge;
+    MaterialParamPtr _texColor;
+    MaterialParamPtr _texDepth;
+    MaterialParamPtr _texShrunk;
+    MaterialParamPtr _texBlured;
+    MaterialParamPtr _texSmall;
+    MaterialParamPtr _texLarge;
 
     RenderTexturePtr _texTemp;
     RenderTexturePtr _texBlur;

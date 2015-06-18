@@ -1030,6 +1030,7 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
     }
 
     this->setMeshType(MeshType::MT_TRIANGLES);
+    this->computeVertexNormals(true);
     this->computeBoundingBox();
 }
 
@@ -1082,6 +1083,9 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
     _vertices.push_back(Vector3(0, 0, 0));
     _vertices.push_back(Vector3(0, height, 0));
 
+    _texcoords[0].push_back(Vector2(0, 0));
+    _texcoords[0].push_back(Vector2(1, 1));
+
     float segment = thetaLength / segments;
 
     for (std::uint32_t i = 0; i <= segments; i++)
@@ -1124,6 +1128,7 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
     }
 
     this->setMeshType(MeshType::MT_TRIANGLES);
+    this->computeVertexNormals(true);
     this->computeBoundingBox();
 }
 

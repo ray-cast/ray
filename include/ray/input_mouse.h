@@ -100,6 +100,9 @@ private:
     int _mouseX;
     int _mouseY;
 
+    int _mouseOffsetX;
+    int _mouseOffsetY;
+
     struct ButtonState
     {
         bool down;

@@ -185,9 +185,9 @@ TerrainGrass::active(ray::GameObject* parent) noexcept
 }
 
 bool
-TerrainGrass::update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID id) noexcept
+TerrainGrass::update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept
 {
-    if (id == _grass->getInstance())
+    if (id == _grass->getInstance() || old == _grass->getInstance())
     {
         auto parent = _object->getParent();
 
@@ -382,7 +382,7 @@ TerrainTree::active(ray::GameObject* parent) noexcept
 }
 
 bool
-TerrainTree::update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID id) noexcept
+TerrainTree::update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept
 {
     return true;
 }
@@ -517,7 +517,7 @@ TerrainClound::active(ray::GameObject* parent) noexcept
 }
 
 bool
-TerrainClound::update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID id) noexcept
+TerrainClound::update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept
 {
     return true;
 }
@@ -655,7 +655,7 @@ TerrainWater::active(ray::GameObject* parent) noexcept
 }
 
 bool
-TerrainWater::update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID id) noexcept
+TerrainWater::update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept
 {
     return false;
 }

@@ -41,7 +41,7 @@ Terrain::Terrain() noexcept
     , _deleteRadius(9)
     , _renderRadius(10)
     , _signRadius(10)
-    , _hitRadius(5)
+    , _hitRadius(100)
     , _size(32)
 {
     _maxInstances = std::numeric_limits<ItemID>::max();
@@ -294,12 +294,12 @@ Terrain::hitChunks() noexcept
     auto inputFeatures = this->getGameServer()->getFeature<ray::InputFeatures>();
     if (inputFeatures)
     {
+        auto player = find<ray::GameObject>("first_person_camera");
+        auto translate = player->getTranslate();
+
         auto input = inputFeatures->getInput();
         if (input && input->getButtonDown(ray::InputButton::MOUSE0))
         {
-            auto player = find<ray::GameObject>("first_person_camera");
-            auto translate = player->getTranslate();
-
             ray::Vector3 pos;
             pos.x = input->getMousePosX();
             pos.y = input->getMousePosY();
@@ -316,6 +316,38 @@ Terrain::hitChunks() noexcept
                 chunk->set(out.x, out.y, out.z, 0);
             }
         }
+        else if (input && input->getButtonDown(ray::InputButton::MOUSE2))
+        {
+            ray::Vector3 pos;
+            pos.x = input->getMousePosX();
+            pos.y = input->getMousePosY();
+            pos.z = 1;
+
+            auto world = player->getComponent<ray::CameraComponent>()->unproject(pos);
+            auto view = world - player->getTranslate();
+            view.normalize();
+
+            ray::int3 out;
+            auto chunk = hitTest(translate, view, out);
+            if (chunk)
+            {
+                ray::float3 cur(out.x, out.y, out.z);
+                ray::int3 block = out;
+
+                while (out == block)
+                {
+                    cur.x -= view.x;
+                    cur.y -= view.y;
+                    cur.z -= view.z;
+
+                    block.x = floorf(cur.x);
+                    block.y = floorf(cur.y);
+                    block.z = floorf(cur.z);
+                }
+
+                chunk->set(block.x, block.y, block.z, 1);
+            }
+        }
     }
 }
 
@@ -326,31 +358,36 @@ Terrain::hitTest(const ray::Vector3& translate, const ray::Vector3& view, ray::i
     int y = chunked(translate.y);
     int z = chunked(translate.z);
 
-    int ox = x;
-    int oy = y;
-    int oz = z;
+    float lastX = x;
+    float lastY = y;
+    float lastZ = z;
 
     float cur = 0;
     float step = view.length();
 
-    ray::Vector3 pos;
-
-    pos.x = (translate.x - unchunk(x)) * 0.5;
-    pos.y = (translate.y - unchunk(y)) * 0.5;
-    pos.z = (translate.z - unchunk(z)) * 0.5;
-
     auto chunk = this->findChunk(x, y, z);
+
+    ray::Vector3 pos;
+    pos.x = roundf((translate.x - unchunk(x)) * 0.5);
+    pos.y = roundf((translate.y - unchunk(y)) * 0.5);
+    pos.z = roundf((translate.z - unchunk(z)) * 0.5);
 
     while (cur < _hitRadius)
     {
-        if (x != ox || y != oy || z != oz)
-            chunk = this->findChunk(ox, oy, oz);
+        if (lastX != x || lastY != y || z != lastZ)
+        {
+            chunk = this->findChunk(x, y, z);
+
+            lastX = x;
+            lastY = y;
+            lastZ = z;
+        }
 
         if (chunk)
         {
-            int nx = roundf(pos.x);
-            int ny = roundf(pos.y);
-            int nz = roundf(pos.z);
+            int nx = floorf(pos.x);
+            int ny = floorf(pos.y);
+            int nz = floorf(pos.z);
 
             if (chunk->get(nx, ny, nz))
             {
@@ -359,18 +396,18 @@ Terrain::hitTest(const ray::Vector3& translate, const ray::Vector3& view, ray::i
                 out.z = nz;
                 return chunk;
             }
-
-            pos.x += view.x;
-            pos.y += view.y;
-            pos.z += view.z;
-
-            if (pos.x < 0) { pos.x = _size; ox--; }
-            if (pos.y < 0) { pos.y = _size; oy--; }
-            if (pos.z < 0) { pos.z = _size; oz--; }
-            if (pos.x > _size) { pos.x = 0; ox++; }
-            if (pos.y > _size) { pos.y = 0; oy++; }
-            if (pos.z > _size) { pos.z = 0; oz++; }
         }
+
+        pos.x += view.x;
+        pos.y += view.y;
+        pos.z += view.z;
+
+        if (pos.x < 0) { pos.x = _size; x--; }
+        if (pos.y < 0) { pos.y = _size; y--; }
+        if (pos.z < 0) { pos.z = _size; z--; }
+        if (pos.x > _size) { pos.x = 0; x++; }
+        if (pos.y > _size) { pos.y = 0; y++; }
+        if (pos.z > _size) { pos.z = 0; z++; }
 
         cur += step;
     }

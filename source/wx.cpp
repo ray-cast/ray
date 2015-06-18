@@ -39,11 +39,6 @@
 _NAME_BEGIN
 
 Window::Window() noexcept
-    : _sizeX(0)
-    , _sizeY(0)
-    , _positionX(0)
-    , _positionY(0)
-    , _title("")
 {
 }
 
@@ -133,140 +128,42 @@ Window::create(const char* title, int x, int y, int w, int h, int flags) noexcep
         TopLevelWindow::getWindowSize(sz);
         TopLevelWindow::getWindowPosition(pt);
 
-        _sizeX = sz.x;
-        _sizeY = sz.y;
-
-        _positionX = pt.x;
-        _positionY = pt.y;
-
         return true;
     }
 
     return false;
 }
 
-void
-Window::setWindowPosition(int x, int y) noexcept
-{
-    assert(this->getWindowHandle());
-
-    _positionX = x;
-    _positionY = y;
-    TopLevelWindow::setWindowPosition(x, y);
-}
-
-void
-Window::setWindowSize(int w, int h) noexcept
-{
-    assert(this->getWindowHandle());
-
-    _sizeX = w;
-    _sizeY = h;
-    TopLevelWindow::setWindowSize(w, h);
-}
-
-#if !defined(_UNICODE_)
-void
-Window::setWindowTitle(const std::string& title) noexcept
-{
-    assert(this->getWindowHandle());
-
-    _title = title;
-    TopLevelWindow::setWindowTitle(_title);
-}
-
-void
-Window::setWindowTitle(const char* title) noexcept
-{
-    assert(this->getWindowHandle());
-
-    _title = title;
-    TopLevelWindow::setWindowTitle(_title);
-}
-#else
-void
-Window::setWindowTitle(const std::wstring& title) noexcept
-{
-    assert(this->getWindowHandle());
-
-    _title = title;
-    TopLevelWindow::setWindowTitle(_title);
-}
-
-void
-Window::setWindowTitle(const wchar_t* title) noexcept
-{
-    assert(this->getWindowHandle());
-
-    _title = title;
-    TopLevelWindow::setWindowTitle(_title);
-}
-#endif
-
 int
 Window::getWindowWidth() const noexcept
 {
-    return _sizeX;
+    Size sz;
+    TopLevelWindow::getWindowSize(sz);
+    return sz.x;
 }
 
 int
 Window::getWindowHeight() const noexcept
 {
-    return _sizeY;
+    Size sz;
+    TopLevelWindow::getWindowSize(sz);
+    return sz.y;
 }
 
 int
 Window::getWindowPosX() const noexcept
 {
-    return _positionX;
+    Point pt;
+    TopLevelWindow::getWindowPosition(pt);
+    return pt.x;
 }
 
 int
 Window::getWindowPosY() const noexcept
 {
-    return _positionY;
+    Point pt;
+    TopLevelWindow::getWindowPosition(pt);
+    return pt.y;
 }
-
-void
-Window::getWindowSize(Size& sz) const noexcept
-{
-    sz.x = _sizeX;
-    sz.y = _sizeY;
-}
-
-void
-Window::getWindowSize(int& w, int& h) const noexcept
-{
-    w = _sizeX;
-    h = _sizeY;
-}
-
-void
-Window::getWindowPosition(Point& pt) const noexcept
-{
-    pt.x = _positionX;
-    pt.y = _positionY;
-}
-
-void
-Window::getWindowPosition(int& x, int& y) const noexcept
-{
-    x = _positionX;
-    y = _positionY;
-}
-
-#if !defined(_UNICODE_)
-const std::string&
-Window::getWindowTitle() const noexcept
-{
-    return _title;
-}
-#else
-const std::string&
-Window::getWindowTitle() const noexcept
-{
-    return _title;
-}
-#endif
 
 _NAME_END

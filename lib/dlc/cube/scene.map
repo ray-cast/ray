@@ -3,8 +3,8 @@
     <attribute name="cubes"/>
     <object>
         <attribute name="first_person_camera"/>
-        <attribute position="0,64,0" />
-        <attribute lookat="0,64,1" />
+        <attribute position="0,63,0" />
+        <attribute lookat="0,63,1" />
         <attribute active="false"/>
         <component name="camera">
             <attribute aperture="75.0"/>

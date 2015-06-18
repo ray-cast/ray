@@ -54,7 +54,7 @@ int main()
 
         game.open();
 
-        game.addFeatures(std::make_shared<ray::WindowFeatures>("atmospheric scattering", 1376, 768));
+        game.addFeatures(std::make_shared<ray::WindowFeatures>("Cube World", 1376, 768));
         game.addFeatures(std::make_shared<ray::InputFeatures>());
         game.addFeatures(std::make_shared<ray::PhysicFeatures>());
         game.addFeatures(std::make_shared<ray::RenderFeatures>());

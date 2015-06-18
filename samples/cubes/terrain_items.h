@@ -52,7 +52,7 @@ public:
 
     bool active(ray::GameObject* parent) noexcept;
 
-    bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID id) noexcept;
+    bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept;
 
     TerrainObjectPtr clone() noexcept;
 
@@ -76,7 +76,7 @@ public:
 
     bool active(ray::GameObject* parent) noexcept;
 
-    bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID id) noexcept;
+    bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept;
 
     TerrainObjectPtr clone() noexcept;
 
@@ -104,7 +104,7 @@ public:
 
     bool active(ray::GameObject* parent) noexcept;
 
-    bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID id) noexcept;
+    bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept;
 
     TerrainObjectPtr clone() noexcept;
 
@@ -128,7 +128,7 @@ public:
 
     bool active(ray::GameObject* parent) noexcept;
 
-    bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID id) noexcept;
+    bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept;
 
     TerrainObjectPtr clone() noexcept;
 

@@ -68,6 +68,8 @@ public:
     virtual void getWindowSize(Size& sz) const noexcept;
     virtual void getWindowPosition(Point& pt) const noexcept;
 
+    virtual void getWindowTitle(std::string& title) const noexcept;
+
     virtual HWND getWindowHandle() const noexcept;
 
 private:

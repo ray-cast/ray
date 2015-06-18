@@ -65,15 +65,14 @@ bool
 TerrainChunk::set(ChunkX x, ChunkY y, ChunkZ z, ItemID id) noexcept
 {
     ItemID temp = _map->get(x, y, z);
-
-    if (_map->set(x, y, z, id))
+    if (temp != id)
     {
+        _map->set(x, y, z, id);
+
         for (auto& it : _objects)
         {
-            it->update(_map, x, y, z, temp);
+            it->update(_map, x, y, z, temp, id);
         }
-
-        return true;
     }
 
     return false;

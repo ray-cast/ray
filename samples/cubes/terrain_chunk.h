@@ -64,9 +64,9 @@ private:
 
 private:
 
-    Terrain& _terrain;
-
     bool _dirt;
+
+    Terrain& _terrain;
 
     TerrainMapPtr _map;
     TerrainObjects _objects;

@@ -76,48 +76,11 @@ public:
     bool create(const std::string& title, int x, int y, int w, int h, int flags);
     bool create(const char* title, int x, int y, int w, int h, int flags) noexcept;
 
-    virtual void setWindowPosition(int x, int y) noexcept;
-    virtual void setWindowSize(int w, int h) noexcept;
-
-#if !defined(__UNICODE__)
-    virtual void setWindowTitle(const char* title) noexcept;
-    virtual void setWindowTitle(const std::string& title) noexcept;
-#else
-    virtual void setWindowTitle(const wchar_t* title) noexcept;
-    virtual void setWindowTitle(const std::wstring& title) noexcept;
-#endif
-
     int getWindowWidth() const noexcept;
     int getWindowHeight() const noexcept;
 
     int getWindowPosX() const noexcept;
     int getWindowPosY() const noexcept;
-
-    void getWindowSize(Size& sz) const noexcept;
-    void getWindowSize(int& w, int& h) const noexcept;
-
-    void getWindowPosition(Point& pt) const noexcept;
-    void getWindowPosition(int& x, int& y) const noexcept;
-
-#if !defined(__UNICODE__)
-    const std::string& getWindowTitle() const noexcept;
-#else
-    const std::string& getWindowTitle() const noexcept;
-#endif
-
-private:
-
-    int _sizeX;
-    int _sizeY;
-
-    int _positionX;
-    int _positionY;
-
-#if defined(__UNICODE__)
-    std::wstring _title;
-#else
-    std::string _title;
-#endif
 };
 
 _NAME_END

@@ -48,8 +48,6 @@ FirstPersonCamera::FirstPersonCamera() noexcept
     , _jumpHeight(10)
     , _lastX(0)
     , _lastY(0)
-    , _lockX(0)
-    , _lockY(0)
 {
 }
 
@@ -63,15 +61,6 @@ FirstPersonCamera::onActivate() noexcept
     auto windowFeature = this->getGameServer()->getFeature<ray::WindowFeatures>();
     _centerX = windowFeature->getWindow()->getWindowWidth() >> 1;
     _centerY = windowFeature->getWindow()->getWindowHeight() >> 1;
-    _lockX = windowFeature->getWindow()->getWindowPosX() + _centerX;
-    _lockY = windowFeature->getWindow()->getWindowPosY() + _centerY;
-
-    auto inputFeature = this->getGameServer()->getFeature<ray::InputFeatures>();
-    if (inputFeature)
-    {
-        inputFeature->getInput()->setMousePos(_lockX, _lockY);
-        inputFeature->getInput()->lockCursor(true);
-    }
 }
 
 void
@@ -171,7 +160,7 @@ FirstPersonCamera::onFrame() noexcept
         {
             if (input->getButton(ray::InputButton::Code::MOUSE0))
             {
-                input->setMousePos(_lockX, _lockY);
+                input->setMousePos(_centerX, _centerY);
                 input->lockCursor(true);
             }
         }

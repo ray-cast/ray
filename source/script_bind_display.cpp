@@ -72,7 +72,7 @@ ScriptBindDisplay::setup(asIScriptEngine* engine) noexcept
     r = engine->RegisterObjectMethod("Display", "int getWindowHeight() const", asMETHOD(ScriptBindDisplay, getWindowHeight), asCALL_THISCALL); assert(r >= 0);
     r = engine->RegisterObjectMethod("Display", "int getWindowPosX() const", asMETHOD(ScriptBindDisplay, getWindowPosX), asCALL_THISCALL); assert(r >= 0);
     r = engine->RegisterObjectMethod("Display", "int getWindowPosY() const", asMETHOD(ScriptBindDisplay, getWindowPosY), asCALL_THISCALL); assert(r >= 0);
-    r = engine->RegisterObjectMethod("Display", "const string& getWindowTitle() const", asMETHOD(ScriptBindDisplay, getWindowTitle), asCALL_THISCALL); assert(r >= 0);
+    r = engine->RegisterObjectMethod("Display", "string getWindowTitle() const", asMETHOD(ScriptBindDisplay, getWindowTitle), asCALL_THISCALL); assert(r >= 0);
 }
 
 void
@@ -147,7 +147,9 @@ const std::string&
 ScriptBindDisplay::getWindowTitle() const noexcept
 {
     assert(_window);
-    return _window->getWindowTitle();
+    std::string title;
+    _window->getWindowTitle(title);
+    return title;
 }
 
 _NAME_END

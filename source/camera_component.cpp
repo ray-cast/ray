@@ -130,6 +130,12 @@ CameraComponent::unproject(const Vector3& pos) const noexcept
     return _camera->unproject(pos);
 }
 
+Vector3
+CameraComponent::sceneToDirection(const Vector2& pos) const noexcept
+{
+    return _camera->sceneToDirection(pos);
+}
+
 void
 CameraComponent::setViewport(const Viewport& viewport) noexcept
 {

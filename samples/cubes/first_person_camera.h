@@ -68,8 +68,6 @@ private:
     float _lastX;
     float _lastY;
 
-    int _lockX;
-    int _lockY;
     int _centerX;
     int _centerY;
 };

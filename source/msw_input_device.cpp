@@ -253,11 +253,14 @@ MSWInputDevice::update() noexcept
         break;
         case WM_MOUSEMOVE:
         {
+            POINT pt;
+            GetCursorPos(&pt);
+
             inputEvent.event = InputEvent::MouseMotion;
             inputEvent.motion.x = LOWORD(msg.lParam);
             inputEvent.motion.y = HIWORD(msg.lParam);
-            inputEvent.motion.xrel = _mouseX;
-            inputEvent.motion.yrel = _mouseY;
+            inputEvent.motion.xrel = pt.x;
+            inputEvent.motion.yrel = pt.y;
             inputEvent.motion.state = _isButtonPress;
             inputEvent.motion.timestamp = ::timeGetTime();
             inputEvent.button.button = _button;

@@ -85,6 +85,26 @@ LRESULT CALLBACK dispose(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             window->postEvent(event);
         }
         break;
+        case WM_SIZE:
+        {
+            AppEvent event;
+            event.event = AppEvent::SizeChange;
+            event.window.w = wParam;
+            event.window.h = lParam;
+
+            window->postEvent(event);
+        }
+        break;
+        case WM_MOVE:
+        {
+            AppEvent event;
+            event.event = AppEvent::Move;
+            event.window.x = (int)(short)LOWORD(lParam);
+            event.window.y = (int)(short)HIWORD(lParam);
+
+            window->postEvent(event);
+        }
+        break;
         case WM_ERASEBKGND:
         {
             return true;

@@ -58,7 +58,7 @@ public:
     }
 
     explicit Vector4t(const Vector3t<T>& copy, T w = (T)(1.0))  noexcept
-        :x(copy.x)
+        : x(copy.x)
         , y(copy.y)
         , z(copy.z)
         , w(w)
@@ -66,7 +66,7 @@ public:
     }
 
     Vector4t(const Vector4t& copy) noexcept
-        :x(copy.x)
+        : x(copy.x)
         , y(copy.y)
         , z(copy.z)
         , w(copy.w)
@@ -74,7 +74,7 @@ public:
     }
 
     Vector4t(T xx, T yy, T zz, T ww = (T)(1.0))  noexcept
-        :x(xx)
+        : x(xx)
         , y(yy)
         , z(zz)
         , w(ww)
@@ -82,10 +82,18 @@ public:
     }
 
     Vector4t(const Vector2t<T>& pt, const Vector2t<T>& sz) noexcept
-        :x(pt.x)
+        : x(pt.x)
         , y(pt.y)
         , z(sz.x)
         , w(sz.y)
+    {
+    }
+
+    Vector4t(const Vector2t<T>& pt, float z, float w = 1.0) noexcept
+        : x(pt.x)
+        , y(pt.y)
+        , z(z)
+        , w(w)
     {
     }
 

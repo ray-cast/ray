@@ -59,7 +59,7 @@ public:
 
     virtual bool active(ray::GameObject* parent) noexcept = 0;
 
-    virtual bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID id) noexcept = 0;
+    virtual bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept = 0;
 
     virtual TerrainObjectPtr clone() noexcept = 0;
 

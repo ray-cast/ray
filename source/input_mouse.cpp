@@ -39,7 +39,11 @@
 _NAME_BEGIN
 
 DefaultInputMouse::DefaultInputMouse() noexcept
-    : _isMouseLock(false)
+    : _mouseX(0)
+    , _mouseY(0)
+    , _mouseOffsetX(0)
+    , _mouseOffsetY(0)
+    , _isMouseLock(false)
     , _isMouseLocked(false)
     , _isMouseHide(false)
 {
@@ -110,21 +114,21 @@ DefaultInputMouse::setPosition(int x, int y) noexcept
 {
     _mouseX = x;
     _mouseY = y;
-    ToplevelInputMouse::setPosition(_mouseX, _mouseY);
+    ToplevelInputMouse::setPosition(_mouseOffsetX + _mouseX, _mouseOffsetY + _mouseY);
 }
 
 void
 DefaultInputMouse::setPositionX(int x) noexcept
 {
     _mouseX = x;
-    ToplevelInputMouse::setPosition(_mouseX, _mouseY);
+    ToplevelInputMouse::setPosition(_mouseOffsetX + _mouseX, _mouseOffsetY + _mouseY);
 }
 
 void
 DefaultInputMouse::setPositionY(int y) noexcept
 {
     _mouseY = y;
-    ToplevelInputMouse::setPosition(_mouseX, _mouseY);
+    ToplevelInputMouse::setPosition(_mouseOffsetX + _mouseX, _mouseOffsetY + _mouseY);
 }
 
 int
@@ -210,6 +214,8 @@ DefaultInputMouse::onEvent(const InputEvent& event) noexcept
     {
         _mouseX = event.motion.x;
         _mouseY = event.motion.y;
+        _mouseOffsetX = event.motion.xrel - event.motion.x;
+        _mouseOffsetY = event.motion.yrel - event.motion.y;
     }
     break;
     case InputEvent::MouseWheelDown:

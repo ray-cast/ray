@@ -379,6 +379,20 @@ Camera::unproject(const Vector3& pos) const noexcept
     return Vector3(v.x, v.y, v.z);
 }
 
+Vector3
+Camera::sceneToDirection(const Vector2& pos) const noexcept
+{
+    int w = (int)_viewport.width >> 1;
+    int h = (int)_viewport.height >> 1;
+
+    Vector4 v(pos, 1.0, 1.0);
+
+    v.x = v.x / w - 1.0f - _viewport.left;
+    v.y = v.y / h - 1.0f - _viewport.top;
+
+    return (_viewInverse * float4((_projectInverse * v).xy(), 1.0f, 1.0f)).xyz();
+}
+
 void
 Camera::setViewport(const Viewport& viewport) noexcept
 {

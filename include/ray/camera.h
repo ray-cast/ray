@@ -107,6 +107,8 @@ public:
     Vector3 project(const Vector3& pos) const noexcept;
     Vector3 unproject(const Vector3& pos) const noexcept;
 
+    Vector3 sceneToDirection(const Vector2& pos) const noexcept;
+
     void setViewport(const Viewport& viewport) noexcept;
     const Viewport&  getViewport() const noexcept;
 

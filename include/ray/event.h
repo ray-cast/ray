@@ -76,6 +76,9 @@ public:
 
         GetFocus,
         LostFocus,
+
+        SizeChange,
+        Move,
     };
 
     Type event;

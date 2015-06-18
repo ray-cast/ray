@@ -136,6 +136,17 @@ MSWTopLevelWindow::getWindowPosition(Point& pt) const noexcept
     pt.y = rc1.top + offsetY + captionHegiht;
 }
 
+void
+MSWTopLevelWindow::getWindowTitle(std::string& title) const noexcept
+{
+    char buffer[MAX_CLASS_NAME];
+    auto length = GetWindowText(_hwnd, buffer, MAX_CLASS_NAME);
+    if (length > 0)
+    {
+        title.assign(buffer, buffer + length);
+    }
+}
+
 HWND
 MSWTopLevelWindow::getWindowHandle() const noexcept
 {

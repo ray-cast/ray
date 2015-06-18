@@ -5,6 +5,8 @@ Ray3D
 
 The aim of the project is to create a lightweight 3D library with a very low level of complexity
 
+![screenshot](https://raw.githubusercontent.com/ray-cast/ray/master/screenshot/atmospheric.png)
+
 ### Building ###
 
 Our build system is CMake, if you already used CMake before there is a good chance you know what to do.

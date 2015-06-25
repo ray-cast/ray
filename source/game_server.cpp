@@ -435,6 +435,10 @@ GameServer::instanceObject(XMLReader* reader, GameScenePtr scene) except
                 {
                     actor->addComponent(component);
                 }
+                else
+                {
+                    throw failure("Unknown component name : " + reader->getString("name"));
+                }
             }
         } while (reader->setToNextChild());
 

@@ -37,7 +37,7 @@
                 float dayTimer = timer / 50;
                 dayTimer -= int(dayTimer);
 
-                glsl_FragColor0 = texture2D(decal, vec2(0.5, uv.t));
+                glsl_FragColor0 = texture2D(decal, vec2(uv.x, uv.y));
                 glsl_FragColor1 = vec4(normalize(normal).xyz, 32);
             }
         ]]>
@@ -47,7 +47,6 @@
             <state name="vertex" value="SkyVS"/>
             <state name="fragment" value="SkyPS"/>
             <state name="cullmode" value="front"/>
-            <state name="depthwrite" value="false"/>
         </pass>
     </technique>
 </effect>

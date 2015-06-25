@@ -111,11 +111,4 @@
             <attribute intensity="1"/>
         </component>
     </object>
-    <object>
-        <attribute name="gui"/>
-        <attribute active="true"/>
-        <component name="script">
-            <attribute name="dlc:cube/script/gui.as"/>
-        </component>
-    </object>
 </scene>

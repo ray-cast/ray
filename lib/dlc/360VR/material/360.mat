@@ -1,0 +1,5 @@
+<?xml version='1.0'?>
+<material>
+    <attribute decal="dlc:360VR\\texture\\demo.jpg" />
+    <attribute shader="dlc:360VR\\fx\\360.glsl"/>
+</material>

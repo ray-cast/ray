@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<scene>
+    <attribute name="360VR"/>
+    <object>
+        <attribute name="first_person_camera"/>
+        <attribute position="0,63,0" />
+        <attribute lookat="0,63,1" />
+        <attribute active="false"/>
+        <component name="camera">
+            <attribute aperture="75.0"/>
+            <attribute ratio="1.7916667"/>
+            <attribute znear="0.1"/>
+            <attribute zfar="65535.0"/>
+            <attribute x="0"/>
+            <attribute y="0"/>
+            <attribute w="1376"/>
+            <attribute h="768"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="360"/>
+        <attribute position="0,0,0" />
+        <attribute scale="1,1,1" />
+        <attribute active="true"/>
+        <component name="mesh">
+            <attribute model="dlc:360VR/models/sphere.pmx"/>
+        </component>
+        <component name="meshrender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:360VR/material/360.mat"/>
+        </component>
+    </object>
+</scene>

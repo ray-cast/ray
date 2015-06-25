@@ -55,7 +55,7 @@ float ToneExposure(float avg)
 #define SAMPLE_LOG_COUNT SAMPLE_LOG_SIZE * SAMPLE_LOG_SIZE
 
 HDR::Setting::Setting() noexcept
-    : bloomFactor(0.5)
+    : bloomFactor(0.55)
     , bloomIntensity(1.0)
     , lumAve(1.0)
     , lumKey(1.0)

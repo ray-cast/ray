@@ -47,14 +47,14 @@ public:
     DepthOfField() noexcept;
     ~DepthOfField() noexcept;
 
-    void render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
+    void render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
 
-    void blurh(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-    void blurv(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+    void blurh(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept;
+    void blurv(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept;
 
-    void computeNear(RenderPipeline& pipeline, RenderTexturePtr shrunk, RenderTexturePtr blured, RenderTexturePtr dest) noexcept;
+    void computeNear(RenderPipeline& pipeline, RenderTargetPtr shrunk, RenderTargetPtr blured, RenderTargetPtr dest) noexcept;
 
-    void final(RenderPipeline& pipeline, RenderTexturePtr color, RenderTexturePtr texSmall, RenderTexturePtr large);
+    void final(RenderPipeline& pipeline, RenderTargetPtr color, RenderTargetPtr texSmall, RenderTargetPtr large);
 
 private:
 
@@ -72,8 +72,8 @@ private:
     MaterialParamPtr _texSmall;
     MaterialParamPtr _texLarge;
 
-    RenderTexturePtr _texTemp;
-    RenderTexturePtr _texBlur;
+    RenderTargetPtr _texTemp;
+    RenderTargetPtr _texBlur;
 };
 
 _NAME_END

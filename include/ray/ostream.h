@@ -54,8 +54,8 @@ public:
     ostream& open(const std::string& filename) noexcept;
     ostream& open(const std::wstring& filename) noexcept;
 
-    ostream& write(const char_type* str, std::streamsize cnt) noexcept;
-    ostream& write(const char_type* str, streamsize size, streamsize cnt) noexcept;
+    ostream& write(const char* str, std::streamsize cnt) noexcept;
+    ostream& write(const char* str, streamsize size, streamsize cnt) noexcept;
 
     ostream& seekg(ios_base::off_type pos) noexcept;
     ostream& seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;

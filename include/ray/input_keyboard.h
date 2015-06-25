@@ -47,10 +47,11 @@
 
 _NAME_BEGIN
 
-class EXPORT DefaultInputKeyboard : public ToplevelInputKeyboard
+class EXPORT DefaultInputKeyboard final : public ToplevelInputKeyboard
 {
 public:
     DefaultInputKeyboard() noexcept;
+    ~DefaultInputKeyboard() noexcept;
 
     virtual bool getKeyDown(InputKey::Code key) const noexcept;
     virtual bool getKeyUp(InputKey::Code key) const noexcept;
@@ -58,11 +59,8 @@ public:
 
 private:
     virtual void onFrameBegin() noexcept;
-
     virtual void onObtainCapture() noexcept;
-
     virtual void onReset() noexcept;
-
     virtual void onEvent(const InputEvent& event) noexcept;
 
 private:

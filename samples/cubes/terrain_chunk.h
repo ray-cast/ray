@@ -55,6 +55,8 @@ public:
 
     int distance(int x, int y, int z) noexcept;
 
+    void getPosition(int& x, int& y, int &z) noexcept;
+
     bool set(ChunkX x, ChunkY y, ChunkZ z, ItemID id) noexcept;
     ItemID get(ChunkX x, ChunkY y, ChunkZ z) noexcept;
 

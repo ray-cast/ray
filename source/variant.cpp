@@ -570,9 +570,6 @@ Variant::operator==(const char* chrPtr) const
     return *this == std::string(chrPtr);
 }
 
-//------------------------------------------------------------------------------
-/**
-*/
 bool
 Variant::operator==(const float4& rhs) const
 {
@@ -883,9 +880,6 @@ Variant::typeToString(Type t)
     }
 }
 
-//------------------------------------------------------------------------------
-/**
-*/
 Variant::Type
 Variant::stringToType(const std::string& str)
 {

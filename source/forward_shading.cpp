@@ -57,12 +57,12 @@ ForwardShading::onDectivate() noexcept
 }
 
 void
-ForwardShading::setSharedDepthTexture(RenderTexturePtr texture) noexcept
+ForwardShading::setSharedDepthTexture(RenderTargetPtr texture) noexcept
 {
 }
 
 void
-ForwardShading::setSharedColorTexture(RenderTexturePtr texture) noexcept
+ForwardShading::setSharedColorTexture(RenderTargetPtr texture) noexcept
 {
 }
 

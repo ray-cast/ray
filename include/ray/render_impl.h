@@ -51,40 +51,8 @@ public:
     bool open(RenderDevicePtr renderDevice) except;
     void close() noexcept;
 
-    void setSwapInterval(SwapInterval interval) noexcept;
-    SwapInterval getSwapInterval() const noexcept;
-
-    void setRenderState(RenderStatePtr state) noexcept;
-
-    bool createShaderVariant(ShaderVariant& buffer) noexcept;
-    void destroyShaderVariant(ShaderVariant& buffer) noexcept;
-    void setShaderVariant(ShaderVariantPtr buffer, ShaderUniformPtr uniform) noexcept;
-
     bool createRenderBuffer(RenderBuffer& buffer) noexcept;
     void destroyRenderBuffer(RenderBuffer& buffer) noexcept;
-    void setRenderBuffer(RenderBufferPtr buffer) noexcept;
-    void updateRenderBuffer(RenderBufferPtr buffer) noexcept;
-    void drawRenderBuffer(const Renderable& renderable) noexcept;
-
-    bool createRenderTexture(RenderTexture& target) noexcept;
-    void destroyRenderTexture(RenderTexture& target) noexcept;
-    void setRenderTexture(RenderTexturePtr target) noexcept;
-    void copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept;
-    void readRenderTexture(RenderTexturePtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
-
-    bool createMultiRenderTexture(MultiRenderTexture& desc) noexcept;
-    void destroyMultiRenderTexture(MultiRenderTexture& target) noexcept;
-    void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept;
-
-    bool createTexture(Texture& texture) noexcept;
-    void destroyTexture(Texture& texture) noexcept;
-
-    ShaderProgramPtr createShaderProgram(std::vector<ShaderPtr>& shaders) noexcept;
-    void destroyShaderProgram(ShaderProgramPtr program) noexcept;
-    void setShaderProgram(ShaderProgramPtr program) noexcept;
-
-    void renderBegin() noexcept;
-    void renderEnd() noexcept;
 
 private:
     RenderImpl(const RenderImpl&) noexcept = delete;

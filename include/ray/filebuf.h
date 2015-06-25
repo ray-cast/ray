@@ -53,8 +53,8 @@ public:
     bool open(const char* filename, const ios_base::openmode mode) noexcept;
     bool open(const wchar_t* filename, const ios_base::openmode mode) noexcept;
 
-    streamsize read(char_type* str, std::streamsize cnt) noexcept;
-    streamsize write(const char_type* str, std::streamsize cnt) noexcept;
+    streamsize read(char* str, std::streamsize cnt) noexcept;
+    streamsize write(const char* str, std::streamsize cnt) noexcept;
 
     streamoff seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
     streamoff tellg() noexcept;

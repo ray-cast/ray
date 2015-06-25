@@ -65,13 +65,13 @@ filebuf::open(const wchar_t* filename, const ios_base::openmode mode) noexcept
 }
 
 streamsize
-filebuf::read(char_type* str, std::streamsize cnt) noexcept
+filebuf::read(char* str, std::streamsize cnt) noexcept
 {
     return _file.read(str, cnt);
 }
 
 streamsize
-filebuf::write(const char_type* str, std::streamsize cnt) noexcept
+filebuf::write(const char* str, std::streamsize cnt) noexcept
 {
     return _file.write(str, cnt);
 }

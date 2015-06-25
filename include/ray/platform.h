@@ -52,25 +52,6 @@
 #       define __WIN32__ 1
 #   endif
 
-#   if defined(_MSC_VER)
-#       define _VISUAL_STUDIO_ _MSC_VER
-#   endif
-
-#   if defined(_VISUAL_STUDIO_) && _VISUAL_STUDIO_ <= 1100
-#       error "IDE not supported!"
-#   elif defined(_VISUAL_STUDIO_) && _VISUAL_STUDIO_ <= 1200
-#       error "IDE not supported!"
-#   elif defined(_VISUAL_STUDIO_) && _VISUAL_STUDIO_ <= 1300
-#       error "IDE not supported!"
-#   elif defined(_VISUAL_STUDIO_) && _VISUAL_STUDIO_ <= 1400
-#       error "IDE not supported!"
-#   elif defined(_VISUAL_STUDIO_) && _VISUAL_STUDIO_ <= 1800
-#   endif
-
-#   if defined(_VISUAL_STUDIO_) && _VISUAL_STUDIO_ >= 1400 && !defined(_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES)
-#        define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
-#   endif
-
 #   undef EXPORT
 #   undef CALL
 
@@ -285,20 +266,6 @@
 #include <ray/rtti.h>
 #include <ray/assert.h>
 #include <ray/singleton.h>
-
-#if defined(_VISUAL_STUDIO_) && (_VISUAL_STUDIO_ <= 1800)
-#   ifndef noexcept
-#       define noexcept throw()
-#   endif
-#endif
-
-#ifndef except
-#	if defined(_VISUAL_STUDIO_) && (_VISUAL_STUDIO_ <= 1800)
-#       define except
-#	else
-#       define except noexcept(false)
-#	endif
-#endif
 
 #if defined(__UNIX__) || defined(__LINUX__)
 #   define final

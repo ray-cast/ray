@@ -155,8 +155,8 @@ struct EXPORT RenderRasterState
     CullMode            cullMode;
     FillMode            fillMode;
     bool                scissorTestEnable;
-    bool                multisampleEnable;
     bool                srgbEnable;
+    bool                multisampleEnable;
     bool                pointSizeEnable;
 
     RenderRasterState() noexcept;
@@ -207,11 +207,14 @@ struct EXPORT RenderClearState
     RenderClearState() noexcept;
 };
 
-class EXPORT RenderState
+class EXPORT RenderState : public Instance<RenderState>
 {
 public:
     RenderState() noexcept;
     virtual ~RenderState() noexcept;
+
+    void setup() noexcept;
+    void close() noexcept;
 
     void setBlendState(const RenderBlendState& state) noexcept;
     void setRasterState(const RenderRasterState& state) noexcept;

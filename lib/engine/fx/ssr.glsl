@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <effect version="1270" language="glsl">
+    <include name="sys:fx/common.glsl"/>
     <parameter name="texColor" semantic="ColorMap"/>
     <parameter name="texDepth" semantic="DepthMap" />
     <parameter name="texNormal" semantic="NormalMap" />
@@ -26,6 +27,16 @@
             const float minRayStep = 0.1;
             const float maxSteps = 200;
             const int numBinarySearchSteps = 5;
+
+#if SHADER_API_VERTEX
+            void ssrVS()
+            {
+                coord = glsl_Texcoord;
+                gl_Position = position = glsl_Position;
+            }
+#endif
+
+#if SHADER_API_FRAGMENT
 
             vec3 unproject(vec2 P, float depth)
             {
@@ -87,15 +98,6 @@
                 return false;
             }
 
-#if SHADER_API_VERTEX
-            void ssrVS()
-            {
-                coord = glsl_Texcoord;
-                gl_Position = position = glsl_Position;
-            }
-#endif
-
-#if SHADER_API_FRAGMENT
             void ssrPS()
             {
                 vec4 NS = texture2D(texNormal, coord);

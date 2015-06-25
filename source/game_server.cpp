@@ -65,7 +65,7 @@ GameServer::close() noexcept
 }
 
 void
-GameServer::setActive(bool active) noexcept
+GameServer::setActive(bool active) except
 {
     if (_isActive != active)
     {
@@ -110,7 +110,7 @@ GameServer::getTimer() const noexcept
 }
 
 bool
-GameServer::openScene(const std::string& sceneName)
+GameServer::openScene(const std::string& sceneName) except
 {
     auto it = _scenes.begin();
     for (; it != _scenes.end(); ++it)
@@ -153,7 +153,7 @@ GameServer::openScene(const std::string& sceneName)
 }
 
 void
-GameServer::closeScene(const std::string& sceneName)
+GameServer::closeScene(const std::string& sceneName) noexcept
 {
     for (auto& it : _scenes)
     {

@@ -66,7 +66,7 @@ private:
     int getWindowPosX() const noexcept;
     int getWindowPosY() const noexcept;
 
-    const std::string& getWindowTitle() const noexcept;
+    std::string getWindowTitle() const noexcept;
 
 private:
 

@@ -62,7 +62,7 @@ GameFeature::getName() const noexcept
 }
 
 void
-GameFeature::setActive(bool active)  noexcept
+GameFeature::setActive(bool active)  except
 {
     if (_isActive != active)
     {

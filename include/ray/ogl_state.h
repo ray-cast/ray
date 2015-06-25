@@ -762,8 +762,8 @@ private:
 private:
 
     bool                          _coreonly;
-    std::vector<StateInternal>    _states;
     std::vector<StateID>          _freeIDs;
+    std::vector<StateInternal>    _states;
 };
 
 _NAME_END

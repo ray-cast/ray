@@ -48,7 +48,7 @@ public:
     Material() noexcept;
     ~Material() noexcept;
 
-    void setup() noexcept;
+    void setup() except;
     void close() noexcept;
 
     void addTech(MaterialTechPtr technique) noexcept;

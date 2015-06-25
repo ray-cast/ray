@@ -41,13 +41,13 @@
 
 _NAME_BEGIN
 
-class EXPORT LightShaft : public RenderPostProcess
+class EXPORT LightShaft final : public RenderPostProcess
 {
 public:
     LightShaft() noexcept;
     ~LightShaft() noexcept;
 
-    void render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
+    void render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
 
 private:
 
@@ -58,6 +58,14 @@ private:
 
     MaterialPtr _material;
     MaterialPassPtr _lightShaft;
+    MaterialPassPtr _lightShaftCopy;
+
+    MaterialParamPtr _illuminationPosition;
+    MaterialParamPtr _illuminationSample;
+    MaterialParamPtr _texSource;
+    MaterialParamPtr _cameraRadio;
+
+    RenderTargetPtr _texSample;
 };
 
 _NAME_END

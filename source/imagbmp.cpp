@@ -158,9 +158,7 @@ BMPHandler::doCanRead(istream& stream) const noexcept
 bool
 BMPHandler::doLoad(Image& image, istream& stream) noexcept
 {
-    stream.seekg(0, ios_base::end);
-    auto size = (std::size_t)stream.tellg();
-    stream.seekg(0, ios_base::beg);
+    auto size = (std::size_t)stream.size();
 
     BITMAPINFO info;
     if (!stream.read((char*)&info, sizeof(info)))

@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-EXPORT TexturePtr createTexture(const std::string& name) noexcept;
+EXPORT TexturePtr createTexture(const std::string& name) except;
 
 class EXPORT MaterialMaker final
 {
@@ -58,12 +58,12 @@ public:
 
 private:
 
-    ShaderPtr instanceShader(XMLReader& reader) except;
     RenderStatePtr instanceState(XMLReader& reader) except;
     MaterialPassPtr instancePass(XMLReader& reader) except;
     MaterialTechPtr instanceTech(XMLReader& reader) except;
     MaterialParamPtr instanceParameter(XMLReader& reader) except;
     MaterialParamPtr instanceBuffer(XMLReader& reader) except;
+    ShaderPtr instanceShader(XMLReader& reader) except;
 
 private:
     MaterialMaker(const MaterialMaker&) noexcept = delete;
@@ -73,9 +73,7 @@ private:
 
     MaterialPtr _material;
 
-    std::string _codes;
-
-    std::map<std::string, ShaderPtr> _shaderList;
+    std::map<std::string, std::string> _shaderCodes;
 };
 
 _NAME_END

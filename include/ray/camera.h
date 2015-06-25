@@ -107,6 +107,7 @@ public:
     Vector3 project(const Vector3& pos) const noexcept;
     Vector3 unproject(const Vector3& pos) const noexcept;
 
+    Vector3 worldToProject(const Vector3& pos) const noexcept;
     Vector3 sceneToDirection(const Vector2& pos) const noexcept;
 
     void setViewport(const Viewport& viewport) noexcept;
@@ -117,21 +118,22 @@ public:
     void setCameraRender(CameraRender mode) noexcept;
 
     void setRenderScene(RenderScene* scene) noexcept;
-    void setRenderTexture(RenderTexturePtr texture) noexcept;
+    void setRenderTarget(RenderTargetPtr texture) noexcept;
 
     CameraType getCameraType() const noexcept;
     CameraOrder getCameraOrder() const noexcept;
     CameraRender getCameraRender() const noexcept;
 
     RenderScene* getRenderScene() const noexcept;
-    RenderTexturePtr getRenderTexture() const noexcept;
+    RenderTargetPtr getRenderTarget() const noexcept;
+    RenderTargetPtr getSwapTexture() const noexcept;
 
-    RenderTexturePtr getDeferredDepthMap() const noexcept;
-    RenderTexturePtr getDeferredGraphicMap() const noexcept;
-    RenderTexturePtr getDeferredNormalMap() const noexcept;
-    RenderTexturePtr getDeferredLightMap() const noexcept;
+    RenderTargetPtr getDeferredDepthMap() const noexcept;
+    RenderTargetPtr getDeferredGraphicMap() const noexcept;
+    RenderTargetPtr getDeferredNormalMap() const noexcept;
+    RenderTargetPtr getDeferredLightMap() const noexcept;
 
-    MultiRenderTexturePtr getDeferredGraphicsMaps() const noexcept;
+    MultiRenderTargetPtr getDeferredGraphicsMaps() const noexcept;
 
     CameraPtr clone() const noexcept;
 
@@ -174,14 +176,15 @@ private:
     CameraOrder     _cameraOrder;
     CameraRender    _cameraRender;
 
-    RenderTexturePtr _deferredDepthMap;
-    RenderTexturePtr _deferredGraphicMap;
-    RenderTexturePtr _deferredNormalMap;
-    RenderTexturePtr _deferredLightMap;
+    RenderTargetPtr _deferredDepthMap;
+    RenderTargetPtr _deferredGraphicMap;
+    RenderTargetPtr _deferredNormalMap;
+    RenderTargetPtr _deferredLightMap;
 
-    MultiRenderTexturePtr _deferredGraphicMaps;
+    MultiRenderTargetPtr _deferredGraphicMaps;
 
-    RenderTexturePtr _renderTexture;
+    RenderTargetPtr _renderTexture;
+    RenderTargetPtr _swapTexture;
 
     RenderScene*  _renderScene;
 };

@@ -1,5 +1,6 @@
 <?xml version='1.0'?>
 <effect version="1270" language="glsl">
+    <include name="sys:fx/common.glsl"/>
     <parameter name="texColor" type="sampler2D" />
     <parameter name="texDepth" semantic="DepthMap" />
     <parameter name="texShrunk" type="sampler2D" />

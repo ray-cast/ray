@@ -186,8 +186,8 @@ LightComponent::onDeactivate() noexcept
 void
 LightComponent::onMoveAfter() noexcept
 {
-    auto dir = getGameObject()->getTranslate() - getGameObject()->getLookAt();
-    _light->setLightDirection(dir);
+    auto dir = this->getGameObject()->getTranslate() - this->getGameObject()->getLookAt();
+    _light->setLightDirection(~dir);
     _light->setTransform(this->getGameObject()->getTransform());
 }
 

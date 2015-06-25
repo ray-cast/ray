@@ -38,8 +38,10 @@
 #include <ray/material_maker.h>
 #include <ray/forward_shading.h>
 #include <ray/deferred_lighting.h>
-#include <ray/ssao.h>
 #include <ray/atmospheric.h>
+#include <ray/light_shaft.h>
+#include <ray/ssao.h>
+#include <ray/ssgi.h>
 #include <ray/ssr.h>
 #include <ray/dof.h>
 #include <ray/hdr.h>
@@ -57,12 +59,14 @@ __ImplementClass(RenderSystem)
 
 RenderSystem::RenderSystem() noexcept
     : _globalColor(1.0f, 1.0f, 1.0f, 0.5f)
-    , _enableSSAO(true)
-    , _enableSAT(true)
+    , _enableSAT(false)
+    , _enableSSAO(false)
+    , _enableSSGI(false)
     , _enableSSR(false)
     , _enableDOF(false)
-    , _enableHDR(true)
-    , _enableFXAA(true)
+    , _enableHDR(false)
+    , _enableFXAA(false)
+    , _enableLightShaft(false)
 {
 }
 
@@ -83,10 +87,12 @@ RenderSystem::setup(WindHandle win, std::size_t width, std::size_t height) excep
     _renderPipeline = std::make_unique<DeferredLighting>();
     _renderPipeline->setup(_renderDevice, width, height);
 
-    if (_enableSSAO)
-        _renderPipeline->addPostProcess(std::make_shared<SSAO>());
     if (_enableSAT)
         _renderPipeline->addPostProcess(std::make_shared<Atmospheric>());
+    if (_enableSSGI)
+        _renderPipeline->addPostProcess(std::make_shared<SSGI>());
+    if (_enableSSAO)
+        _renderPipeline->addPostProcess(std::make_shared<SSAO>());
     if (_enableSSR)
         _renderPipeline->addPostProcess(std::make_shared<SSR>());
     if (_enableDOF)
@@ -95,6 +101,8 @@ RenderSystem::setup(WindHandle win, std::size_t width, std::size_t height) excep
         _renderPipeline->addPostProcess(std::make_shared<HDR>());
     if (_enableFXAA)
         _renderPipeline->addPostProcess(std::make_shared<FXAA>());
+    if (_enableLightShaft)
+        _renderPipeline->addPostProcess(std::make_shared<LightShaft>());
 
     _lineMaterial = MaterialMaker("sys:fx\\lines.glsl");
 

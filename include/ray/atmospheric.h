@@ -63,7 +63,7 @@ public:
     void onActivate() noexcept;
     void onDectivate() noexcept;
 
-    void render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
+    void render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
 
 private:
 

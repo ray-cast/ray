@@ -61,6 +61,12 @@ TerrainChunk::distance(int x, int y, int z) noexcept
     return std::max(std::max(dx, dy), dz);
 }
 
+void
+TerrainChunk::getPosition(int& x, int& y, int &z) noexcept
+{
+    _map->getPosition(x, y, z);
+}
+
 bool
 TerrainChunk::set(ChunkX x, ChunkY y, ChunkZ z, ItemID id) noexcept
 {

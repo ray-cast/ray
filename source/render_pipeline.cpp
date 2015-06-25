@@ -175,29 +175,29 @@ RenderPipeline::updateMesh(RenderBufferPtr buffer, VertexBufferDataPtr vb, Index
 }
 
 void
-RenderPipeline::setRenderTexture(RenderTexturePtr target) noexcept
+RenderPipeline::setRenderTarget(RenderTargetPtr target) noexcept
 {
     assert(target);
-    _renderer->setRenderTexture(target);
+    _renderer->setRenderTarget(target);
 }
 
 void
-RenderPipeline::setRenderTexture(MultiRenderTexturePtr target) noexcept
+RenderPipeline::setRenderTarget(MultiRenderTargetPtr target) noexcept
 {
     assert(target);
-    _renderer->setMultiRenderTexture(target);
+    _renderer->setMultiRenderTarget(target);
 }
 
 void
-RenderPipeline::readRenderTexture(RenderTexturePtr texture, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+RenderPipeline::readRenderTarget(RenderTargetPtr texture, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
-    _renderer->readRenderTexture(texture, pfd, w, h, data);
+    _renderer->readRenderTarget(texture, pfd, w, h, data);
 }
 
 void
-RenderPipeline::copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept
+RenderPipeline::copyRenderTarget(RenderTargetPtr srcTarget, const Viewport& src, RenderTargetPtr destTarget, const Viewport& dest) noexcept
 {
-    _renderer->copyRenderTexture(srcTarget, src, destTarget, dest);
+    _renderer->copyRenderTarget(srcTarget, src, destTarget, dest);
 }
 
 void
@@ -209,13 +209,13 @@ RenderPipeline::setRenderState(RenderStatePtr state) noexcept
 void
 RenderPipeline::setShaderObject(ShaderObjectPtr shader) noexcept
 {
-    _renderer->setShaderProgram(shader->getShaderProgram());
+    _renderer->setShaderObject(shader);
 }
 
 void
 RenderPipeline::setShaderVariant(ShaderVariantPtr constant, ShaderUniformPtr uniform) noexcept
 {
-    _renderer->setShaderVariant(constant, uniform);
+    _renderer->setShaderUniform(uniform, constant);
 }
 
 void
@@ -266,7 +266,7 @@ RenderPipeline::drawRenderable(RenderQueue queue, RenderPass pass, MaterialPassP
     auto& renderable = _renderDataManager.getRenderData(queue);
     for (auto& it : renderable)
     {
-        it->render(*this, queue, pass, material);
+        it->render(*_renderer, queue, pass, material);
     }
 }
 
@@ -312,7 +312,7 @@ RenderPipeline::getWindowHeight() const noexcept
 }
 
 void
-RenderPipeline::addPostProcess(RenderPostProcessPtr postprocess) noexcept
+RenderPipeline::addPostProcess(RenderPostProcessPtr postprocess) except
 {
     auto it = std::find(_postprocessors.begin(), _postprocessors.end(), postprocess);
     if (it == _postprocessors.end())
@@ -354,7 +354,7 @@ RenderPipeline::render() noexcept
 
     if (_camera->getCameraOrder() == CameraOrder::CO_MAIN)
     {
-        auto renderTexture = _camera->getRenderTexture();
+        auto renderTexture = _camera->getRenderTarget();
         auto clearFlags = renderTexture->getClearFlags();
         renderTexture->setClearFlags(ClearFlags::CLEAR_NONE);
 
@@ -365,7 +365,7 @@ RenderPipeline::render() noexcept
 
         renderTexture->setClearFlags(clearFlags);
 
-        this->copyRenderTexture(renderTexture, this->getCamera()->getViewport(), 0, this->getCamera()->getViewport());
+        this->copyRenderTarget(renderTexture, this->getCamera()->getViewport(), 0, this->getCamera()->getViewport());
     }
 
     this->onRenderPost();

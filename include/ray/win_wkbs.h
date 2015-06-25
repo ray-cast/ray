@@ -70,8 +70,8 @@ public:
     static const _Options options_all = (_Options)(symbol | line | module_info | file_version | sym_build_path | sym_use_sym_server);
     static const _Options normal = (_Options)(options_all ^ module_info ^ symbol);
 
-    static const int STACKWALK_MAX_NAMELEN = 1024;
-    static const int MAX_BUFFER_LENGTH = 1024;
+    static const int STACKWALK_MAX_NAMELEN = 2048;
+    static const int MAX_BUFFER_LENGTH = 2048;
 
     struct CallStackVariable
     {

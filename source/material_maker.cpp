@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/material_maker.h>
 #include <ray/render_impl.h>
+#include <ray/render_factory.h>
 #include <ray/image.h>
 #include <ray/except.h>
 #include <ray/mstream.h>
@@ -43,7 +44,7 @@
 
 _NAME_BEGIN
 
-TexturePtr createTexture(const std::string& name) noexcept
+TexturePtr createTexture(const std::string& name) except
 {
     Image image;
     if (image.load(name))
@@ -55,10 +56,18 @@ TexturePtr createTexture(const std::string& name) noexcept
         else if (image.bpp() == 32)
             format = PixelFormat::R8G8B8A8;
 
-        auto texture = std::make_shared<Texture>();
-        texture->setup(image.width(), image.height(), image.data(), TextureDim::DIM_2D, format);
+        auto texture = RenderFactory::createTexture();
+        texture->setSize(image.width(), image.height());
+        texture->setTexDim(TextureDim::DIM_2D);
+        texture->setTexFormat(format);
+        texture->setStream(image.data());
+        texture->setup();
 
         return texture;
+    }
+    else
+    {
+        throw failure("fail to open : " + name);
     }
 
     return nullptr;
@@ -87,62 +96,28 @@ MaterialMaker::instanceState(XMLReader& reader) except
 ShaderPtr
 MaterialMaker::instanceShader(XMLReader& reader) except
 {
-    auto shader = std::make_shared<Shader>();
+    auto shader = RenderFactory::createShader();
 
-    std::string name = reader.getString("name");
+    std::string type = reader.getString("name");
     std::string value = reader.getString("value");
 
-    if (name.empty())
+    if (type.empty())
         throw failure("The shader name can not be empty");
 
     if (value.empty())
         throw failure("The shader value can not be empty");
 
-    auto method = _codes;
-    std::size_t off = _codes.find(value.data());
-    assert(off != std::string::npos);
+    std::string method = _shaderCodes[type];
+    if (method.empty())
+        throw failure("Unknown shader type : " + type);
+
+    std::size_t off = method.find(value.data());
+    if (off == std::string::npos)
+        throw failure("Unknown shader entry point : " + value);
+
     method.replace(off, value.size(), "main");
 
-    shader->setType(name);
-
-    std::string before;
-    before += "#version 330 core\n";
-
-    if (shader->getType() == ShaderType::ST_VERTEX)
-    {
-        before += "#define SHADER_API_VERTEX 1\n";
-        before += "layout(location = 0) in vec4 glsl_Position;\n";
-        before += "layout(location = 1) in vec4 glsl_Normal;\n";
-        before += "layout(location = 2) in vec2 glsl_Texcoord;\n";
-        before += "layout(location = 3) in vec4 glsl_Diffuse;\n";
-
-        auto it = method.find("varying");
-        while (it != std::string::npos)
-        {
-            method.replace(it, 7, "out");
-
-            it = method.find("varying");
-        };
-    }
-    else
-    {
-        before += "#define SHADER_API_FRAGMENT 1\n";
-        before += "layout(location = 0) out vec4 glsl_FragColor0;\n";
-        before += "layout(location = 1) out vec4 glsl_FragColor1;\n";
-        before += "layout(location = 2) out vec4 glsl_FragColor2;\n";
-        before += "layout(location = 3) out vec4 glsl_FragColor3;\n";
-
-        auto it = method.find("varying");
-        while (it != std::string::npos)
-        {
-            method.replace(it, 7, "in");
-
-            it = method.find("varying");
-        };
-    }
-
-    method.insert(0, before);
-
+    shader->setType(type);
     shader->setSource(method);
 
     return shader;
@@ -153,29 +128,29 @@ MaterialMaker::instancePass(XMLReader& reader) except
 {
     RenderPass passType = RenderPass::RP_CUSTOM;
 
-    std::string name = reader.getString("name");
-    if (name.empty())
+    std::string passName = reader.getString("name");
+    if (passName.empty())
         throw failure("The pass name can not be empty");
 
-    if (name == "forward")
+    if (passName == "forward")
         passType = RenderPass::RP_FORWARD;
-    else if (name == "depth")
+    else if (passName == "depth")
         passType = RenderPass::RP_DEPTH;
-    else if (name == "shadow")
+    else if (passName == "shadow")
         passType = RenderPass::RP_SHADOW;
-    else if (name == "gbuffer")
+    else if (passName == "gbuffer")
         passType = RenderPass::RP_GBUFFER;
-    else if (name == "light")
+    else if (passName == "light")
         passType = RenderPass::RP_LIGHT;
-    else if (name == "custom")
+    else if (passName == "custom")
         passType = RenderPass::RP_CUSTOM;
 
     auto pass = std::make_shared<MaterialPass>(passType);
-    pass->setName(name);
+    pass->setName(passName);
 
     if (reader.setToFirstChild())
     {
-        ShaderObjectPtr shaderObject = std::make_shared<ShaderObject>();
+        ShaderObjectPtr shaderObject = RenderFactory::createShaderObject();
         RenderStatePtr state = std::make_shared<RenderState>();
 
         RenderDepthState depthState;
@@ -185,8 +160,8 @@ MaterialMaker::instancePass(XMLReader& reader) except
 
         do
         {
-            auto name = reader.getCurrentNodeName();
-            if (name == "state")
+            auto nodeName = reader.getCurrentNodeName();
+            if (nodeName == "state")
             {
                 std::string name = reader.getString("name");
                 std::string value = reader.getString("value");
@@ -281,6 +256,10 @@ MaterialMaker::instancePass(XMLReader& reader) except
                 state->setRasterState(rasterState);
                 state->setStencilState(stencilState);
             }
+            else
+            {
+                throw failure("Unkonwn node name " + nodeName + reader.getCurrentNodePath());
+            }
         } while (reader.setToNextChild());
 
         pass->setRenderState(state);
@@ -295,25 +274,25 @@ MaterialMaker::instanceTech(XMLReader& reader) except
 {
     RenderQueue queue = Background;
 
-    std::string name = reader.getString("name");
-    if (name.empty())
+    std::string techName = reader.getString("name");
+    if (techName.empty())
         throw failure("The technique name can not be empty");
 
-    if (name == "background")
+    if (techName == "background")
         queue = RenderQueue::Background;
-    else if (name == "shadow")
+    else if (techName == "shadow")
         queue = RenderQueue::Shadow;
-    else if (name == "opaque")
+    else if (techName == "opaque")
         queue = RenderQueue::Opaque;
-    else if (name == "transparent")
+    else if (techName == "transparent")
         queue = RenderQueue::Transparent;
-    else if (name == "deferredlight")
+    else if (techName == "deferredlight")
         queue = RenderQueue::DeferredLight;
-    else if (name == "postprocess")
+    else if (techName == "postprocess")
         queue = RenderQueue::PostProcess;
     else
     {
-        throw failure("Unknown technique name");
+        throw failure("Unknown technique name : " + techName);
     }
 
     auto tech = std::make_shared<MaterialTech>(queue);
@@ -393,7 +372,7 @@ MaterialMaker::instanceParameter(XMLReader& reader) except
         else
         {
             assert(false);
-            throw failure("Unknown parameter type");
+            throw failure("Unknown parameter type : " + name);
         }
 
         return  param;
@@ -434,17 +413,24 @@ MaterialMaker::instanceBuffer(XMLReader& reader) except
 MaterialPtr
 MaterialMaker::load(const std::string& filename) except
 {
-    MemoryStream stream;
+    try
+    {
+        MemoryStream stream;
 
-    IoServer::instance()->openFile(filename, stream);
-    if (!stream.is_open())
-        return false;
+        IoServer::instance()->openFile(filename, stream);
+        if (!stream.is_open())
+            return false;
 
-    XMLReader reader;
-    if (reader.open(stream))
-        return this->load(reader);
+        XMLReader reader;
+        if (reader.open(stream))
+            return this->load(reader);
 
-    return nullptr;
+        return nullptr;
+    }
+    catch (const failure& e)
+    {
+        throw failure("in " + filename + " " + e.message(), e.stack());
+    }
 }
 
 MaterialPtr
@@ -473,15 +459,31 @@ MaterialMaker::load(XMLReader& reader) except
                     if (buffer)
                         _material->addParameter(buffer);
                 }
+                else if (name == "include")
+                {
+                    auto path = reader.getString("name");
+                    if (!path.empty())
+                    {
+                        this->load(path);
+                    }
+                }
                 else if (name == "shader")
                 {
-                    _codes.append(reader.getText());
+                    auto type = reader.getString("name");
+                    if (!type.empty())
+                    {
+                        _shaderCodes[type] += reader.getText();
+                    }
+                    else
+                    {
+                        throw failure("Empty shader name : " + reader.getCurrentNodePath());
+                    }
                 }
                 else if (name == "technique")
                 {
                     auto tech = instanceTech(reader);
                     if (tech)
-                        _material->addTech(instanceTech(reader));
+                        _material->addTech(tech);
                 }
             } while (reader.setToNextChild());
 

@@ -64,11 +64,18 @@ public:
     {
     }
 
-    runtime_error(const std::string& msg, const error_code& code)
+    runtime_error(const std::string& msg, const error_code& code) noexcept
         : _message(msg)
         , _code(code)
     {
         this->printStack();
+    }
+
+    runtime_error(const std::string& msg, const std::string& stack, const error_code& code) noexcept
+        : _message(msg)
+        , _stack(stack)
+        , _code(code)
+    {
     }
 
     virtual ~runtime_error() noexcept
@@ -79,22 +86,18 @@ public:
     {
 #if defined(_WINDOWS_)
         StackWalker stack;
-
-        std::ostringstream ss(_message);
-
-        ss << std::endl;
-        ss << "[MESSAGE]:" << std::endl;
-        ss << _message << std::endl;
-        ss << "[STACK INFO]:" << std::endl;
-        ss << stack.printStack() << std::endl;
-
-        _message.assign(ss.str());
+        _stack = stack.printStack();
 #endif
     }
 
     const std::string& message() const noexcept
     {
         return _message;
+    }
+
+    const std::string& stack() const noexcept
+    {
+        return _stack;
     }
 
     const error_code& code() const noexcept
@@ -104,11 +107,22 @@ public:
 
     const char* what() const noexcept
     {
-        return this->message().c_str();
+        _summary.append("[MESSAGE]: \n");
+        _summary.append(_message);
+        _summary.append("\n");
+        _summary.append("[STACK INFO]: \n");
+        _summary.append(_stack);
+        _summary.append("\n");
+
+        return _summary.c_str();
     }
 
 private:
+
     std::string _message;
+    std::string _stack;
+
+    mutable std::string _summary;
 
     error_code _code;
 };
@@ -132,8 +146,27 @@ public:
     {
     }
 
+    explicit failure(const std::string& _msg, const std::string& _stack, const error_code& _code = make_error_code(error_code::UNKNOWN_ERROR)) noexcept
+        : runtime_error(_msg, _stack, _code)
+    {
+    }
+
     explicit failure(const char* _msg, const error_code& _code = make_error_code(error_code::UNKNOWN_ERROR)) noexcept
         : runtime_error(_msg, _code)
+    {
+    }
+
+    explicit failure(const error_code& _code) noexcept
+        : runtime_error(_code)
+    {
+    }
+
+    explicit failure(const error_code::int_type& _code) noexcept
+        : runtime_error(_code)
+    {
+    }
+
+    virtual ~failure() noexcept
     {
     }
 };

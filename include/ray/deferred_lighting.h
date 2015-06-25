@@ -106,13 +106,13 @@ private:
     MaterialParamPtr _shadowOffset;
     MaterialParamPtr _shadowWeight;
 
-    RenderTexturePtr _deferredDepthMap;
-    RenderTexturePtr _deferredGraphicMap;
-    RenderTexturePtr _deferredNormalMap;
-    RenderTexturePtr _deferredLightMap;
-    RenderTexturePtr _deferredShadingMap;
+    RenderTargetPtr _deferredDepthMap;
+    RenderTargetPtr _deferredGraphicMap;
+    RenderTargetPtr _deferredNormalMap;
+    RenderTargetPtr _deferredLightMap;
+    RenderTargetPtr _deferredShadingMap;
 
-    MultiRenderTexturePtr _deferredGraphicMaps;
+    MultiRenderTargetPtr _deferredGraphicMaps;
 };
 
 _NAME_END

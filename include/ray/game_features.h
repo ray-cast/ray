@@ -50,12 +50,12 @@ public:
     void setName(const std::string& name) noexcept;
     const std::string& getName() const noexcept;
 
-    virtual void setActive(bool active)  noexcept;
+    virtual void setActive(bool active)  except;
     virtual bool getActive() noexcept;
 
     GameServer* getGameServer() noexcept;
 
-    void sendMessage(const std::string& method, const Variant* data...);
+    void sendMessage(const std::string& method, const Variant* data...) except;
 
 protected:
 

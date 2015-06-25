@@ -34,7 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_LIBRARY_LOAD_H_
-#define _H_LIBRARY_LOAD_H_
+#ifndef _H_DEBUG_H_
+#define _H_DEBUG_H_
 
 #endif

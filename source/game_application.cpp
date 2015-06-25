@@ -71,7 +71,9 @@ GameApplication::open() except
     _gameServer->_setGameApp(this);
     _gameServer->open();
 
-    return (_isInitialize = true);
+    _isInitialize = true;
+
+    return _isInitialize;
 }
 
 void

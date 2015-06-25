@@ -150,7 +150,7 @@ ostream::open(const std::wstring& filename) noexcept
 }
 
 ostream&
-ostream::write(const char_type* str, std::streamsize cnt) noexcept
+ostream::write(const char* str, std::streamsize cnt) noexcept
 {
     assert(cnt != 0);
 
@@ -178,7 +178,7 @@ ostream::write(const char_type* str, std::streamsize cnt) noexcept
 }
 
 ostream&
-ostream::write(const char_type* str, streamsize size, streamsize cnt) noexcept
+ostream::write(const char* str, streamsize size, streamsize cnt) noexcept
 {
     return this->write(str, size * cnt);
 }

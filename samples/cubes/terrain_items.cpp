@@ -539,6 +539,14 @@ TerrainWater::TerrainWater() noexcept
 
 TerrainWater::~TerrainWater() noexcept
 {
+    for (auto& it : _objects)
+    {
+        if (it)
+        {
+            it->destroy();
+            it = nullptr;
+        }
+    }
 }
 
 bool

@@ -137,7 +137,9 @@ private:
     std::vector<SimpleVertex> _polygons;
 
     bool _enableSSAO;
+    bool _enableSSGI;
     bool _enableSAT;
+    bool _enableLightShaft;
     bool _enableSSR;
     bool _enableDOF;
     bool _enableHDR;

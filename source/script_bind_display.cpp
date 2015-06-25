@@ -143,7 +143,7 @@ ScriptBindDisplay::getWindowPosY() const noexcept
     return _window->getWindowPosY();
 }
 
-const std::string&
+std::string
 ScriptBindDisplay::getWindowTitle() const noexcept
 {
     assert(_window);

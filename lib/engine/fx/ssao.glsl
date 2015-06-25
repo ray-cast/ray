@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <effect version="1270" language="glsl">
+    <include name="sys:fx/common.glsl"/>
     <parameter name="projScale" type="float"/>
     <parameter name="projInfo" type="float4"/>
     <parameter name="clipInfo" type="float4"/>
@@ -17,7 +18,18 @@
     <parameter name="texSource" type="sampler2D"/>
     <parameter name="matViewInverseTranspose" semantic="matViewInverseTranspose" />
     <parameter name="matProjectInverse" semantic="matProjectInverse"/>
-    <shader>
+    <shader name="vertex">
+        <![CDATA[
+            out vec2 coord;
+
+            void postprocess()
+            {
+                coord = glsl_Texcoord.xy;
+                gl_Position = glsl_Position;
+            }
+        ]]>
+    </shader>
+    <shader name="fragment">
         <![CDATA[
             #define NUM_SPIRAL_TURNS 7
             #define NUM_SAMPLE 10
@@ -52,11 +64,11 @@
 
             float linearizeDepth(vec2 uv)
             {
-                float d = texture(texDepth, uv).r * 2.0 - 1.0;
+                float d = texture2D(texDepth, uv).r * 2.0 - 1.0;
                 return clipInfo.x / (clipInfo.y * d - clipInfo.z);
             }
 
-            float bilateralfilter(vec2 coord, float r, float center_c, float center_d)
+            float bilateralfilter(vec2 coord, float r, float center_d)
             {
                 float d = linearizeDepth(coord);
                 float ddiff = (d - center_d);
@@ -78,75 +90,65 @@
 
             float computeAO(vec3 c, vec3 n, vec3 q)
             {
-                vec3 v = q - c;
+                vec3 v = normalize(q - c);
 
                 float vv = dot(v, v);
                 float vn = dot(v, n);
 
                 float f = max(radius2 - vv, 0);
 
-                const float epsilon = 0.0001;
+                const float epsilon = 0.001;
                 return heaviside(f) * max((vn - bias) / (vv + epsilon), 0);
             }
 
-            float sampleAO(int tapIndex, vec2 uv, vec3 c, vec3 n, float spinAngle, float diskRadius)
-            {
-                vec2 offset = tapLocation(tapIndex, spinAngle, diskRadius);
-                vec3 q = getPosition(uv + offset);
-                return computeAO(c, n, q);
-            }
-
-#if SHADER_API_VERTEX
-            void mainVS()
-            {
-                coord = glsl_Texcoord;
-                gl_Position = position = glsl_Position;
-            }
-#endif
-
-#if SHADER_API_FRAGMENT
             void aoPS()
             {
                 vec4 normal = texture2D(texNormal, coord);
-                if (normal.x == 0 &&
-                    normal.y == 0 &&
-                    normal.z == 0)
+                if (normal.x == 0 && normal.y == 0 && normal.z == 0)
                 {
                     glsl_FragColor0 = vec4(1.0);
                     return;
                 }
 
                 vec3 viewPosition = getPosition(coord);
-                vec4 viewNormal = matViewInverseTranspose * normal;
+                vec3 viewNormal = (matViewInverseTranspose * normal).xyz;
 
                 ivec2 ssC = ivec2(gl_FragCoord.xy);
                 float spinAngle = (3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10;
                 float diskRadius = projScale / viewPosition.z;
 
-                float sum = 0.0;
-                for (int i = 0; i < NUM_SAMPLE; ++i)
+                float sampleAmbient = 0.0;
+                float sampleWeight = 1.0;
+
+                for (int tapIndex = 0; tapIndex < NUM_SAMPLE; ++tapIndex)
                 {
-                    sum += sampleAO(i, coord, viewPosition, viewNormal.xyz, spinAngle, diskRadius);
+                    vec2 sampleOffset = tapLocation(tapIndex, spinAngle, diskRadius);
+                    vec2 sampleCoord = coord + sampleOffset;
+                    vec3 samplePosition = getPosition(sampleCoord);
+                    vec3 sampleDirection = samplePosition - viewPosition;
+                    //float vv = dot(sampleDirection, sampleDirection);
+                    //if (vv <= radius2)
+                    {
+                        sampleAmbient +=  computeAO(viewPosition, viewNormal, samplePosition);
+                        sampleWeight += 1.0;
+                    }
                 }
 
-                float ao = max(0.0, 1 - sum / NUM_SAMPLE * intensityDivR6);
-
-                glsl_FragColor0 = vec4(ao);
+                glsl_FragColor0 = vec4(max(0.0, 1 - sampleAmbient * intensityDivR6 * (1 / sampleWeight)));
             }
 
             void blurPS()
             {
-                float center_c = texture2D(texSource, coord).r;
-                float center_d = linearizeDepth(coord);
-
                 float total_c = 0;
                 float total_w = 0;
+
+                float center_d = linearizeDepth(coord);
 
                 for (int r = -blurRadius; r <= blurRadius; r++)
                 {
                     vec2 offset = coord + blurDirection * r;
 
-                    float bilateralWeight = bilateralfilter(offset, r, center_c, center_d);
+                    float bilateralWeight = bilateralfilter(offset, r, center_d);
 
                     total_c += texture2D(texSource, offset).r * bilateralWeight;
                     total_w += bilateralWeight;
@@ -159,28 +161,33 @@
             {
                 glsl_FragColor0 = vec4(texture2D(texAO, coord).r);
             }
-#endif
         ]]>
     </shader>
     <technique name="postprocess">
         <pass name="ao">
-            <state name="vertex" value="mainVS"/>
+            <state name="vertex" value="postprocess"/>
             <state name="fragment" value="aoPS"/>
-        </pass>
-        <pass name="blur">
-            <state name="vertex" value="mainVS"/>
-            <state name="fragment" value="blurPS"/>
-        </pass>
-        <pass name="copy">
-            <state name="vertex" value="mainVS"/>
-            <state name="fragment" value="copyPS"/>
 
             <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+        <pass name="blur">
+            <state name="vertex" value="postprocess"/>
+            <state name="fragment" value="blurPS"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+        <pass name="copy">
+            <state name="vertex" value="postprocess"/>
+            <state name="fragment" value="copyPS"/>
+
+            <state name="depthtest" value="true"/>
             <state name="depthwrite" value="false"/>
 
             <state name="blend" value="true"/>
             <state name="blendsrc" value="zero" />
-            <state name="blenddst" value="srccol" />
+            <state name="blenddst" value="srcalpha" />
         </pass>
     </technique>
 </effect>

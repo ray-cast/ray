@@ -16,16 +16,16 @@
             <attribute w="1376"/>
             <attribute h="768"/>
         </component>
-        <!--component name="character">
+        <component name="character">
             <attribute radius="1"/>
             <attribute height="4"/>
-        </component-->
+        </component>
     </object>
     <object>
         <attribute name="sky"/>
         <attribute position="0,0,0" />
         <attribute scale="1,1,1" />
-        <attribute active="false"/>
+        <attribute active="true"/>
         <component name="mesh">
             <attribute model="dlc:cube/models/sphere.pmx"/>
         </component>
@@ -92,7 +92,7 @@
         </component>
     </object>
     <object>
-        <attribute name="light"/>
+        <attribute name="sun"/>
         <attribute position="0, 50, 0"/>
         <attribute active="true"/>
         <component name="light">

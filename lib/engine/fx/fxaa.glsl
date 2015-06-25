@@ -1,15 +1,28 @@
 <?xml version='1.0'?>
 <effect language="glsl">
+    <include name="sys:fx/common.glsl"/>
     <parameter name="texelStep" type="float2" />
     <parameter name="texColor" semantic="ColorMap" />
-    <shader type="vertex" name="mainVS">
+    <shader name="vertex">
+        <![CDATA[
+            out vec2 coord;
+
+            void main()
+            {
+                coord = glsl_Texcoord.xy;
+                gl_Position = glsl_Position;
+            }
+        ]]>
+    </shader>
+    <shader name="fragment">
         <![CDATA[
             #extension GL_ARB_gpu_shader5 : enable
 
             #define FXAA_PC 1
             #define FXAA_GLSL_130 1
             #define FXAA_QUALITY__PRESET 12
-            #define FXAA_GREEN_AS_LUMA 0
+            #define FXAA_GREEN_AS_LUMA 1
+            #define FXAA_FAST_PIXEL_OFFSET 1
 
             /*--------------------------------------------------------------------------*/
             #ifndef FXAA_PC_CONSOLE
@@ -997,21 +1010,12 @@
             /*==========================================================================*/
             #endif
 
-            varying vec2 coord;
+            in vec2 coord;
 
-#if SHADER_API_VERTEX
-            void fxaaVS()
-            {
-                coord = glsl_Texcoord;
-                gl_Position = glsl_Position;
-            }
-#endif
-
-#if SHADER_API_FRAGMENT
             uniform sampler2D texColor;
             uniform vec2 texelStep;
 
-            void fxaaPS(void)
+            void main()
             {
 #if (FXAA_PC == 1)
                 glsl_FragColor0 = FxaaPixelShader(coord,
@@ -1035,13 +1039,12 @@
                 glsl_FragColor0 = texture2D(texColor, coord);
 #endif
             }
-#endif
         ]]>
     </shader>
     <technique name="postprocess">
         <pass name="fxaa">
-            <state name="vertex" value="fxaaVS"/>
-            <state name="fragment" value="fxaaPS"/>
+            <state name="vertex" value="main"/>
+            <state name="fragment" value="main"/>
             <state name="depthtest" value="false"/>
         </pass>
     </technique>

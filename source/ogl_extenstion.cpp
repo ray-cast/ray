@@ -76,7 +76,8 @@ bool OGLExtenstion::_ARB_bindless_texture = 0;
 bool OGLExtenstion::_ARB_vertex_array_object = 0;
 bool OGLExtenstion::_ARB_vertex_attrib_binding = 0;
 bool OGLExtenstion::_ARB_provoking_vertex = 0;
-bool OGLExtenstion::_EXT_direct_state_access = 0;
+bool OGLExtenstion::_ARB_direct_state_access = 0;
+bool OGLExtenstion::_ARB_viewport_array = 0;
 bool OGLExtenstion::_EXT_swap_control = 0;
 bool OGLExtenstion::_NV_command_list = 0;
 bool OGLExtenstion::_NV_shader_buffer_load = 0;
@@ -90,7 +91,7 @@ OGLExtenstion::~OGLExtenstion() noexcept
 {
 }
 
-int
+bool
 OGLExtenstion::initWGLExtensions(HDC hdc) except
 {
     if (initWGLExtention) return 0;
@@ -145,23 +146,24 @@ OGLExtenstion::initWGLExtensions(HDC hdc) except
 
     ::wglDeleteContext(context);
 
-    _ARB_bindless_texture = GLEW_ARB_bindless_texture;
-    _ARB_vertex_array_object = GLEW_ARB_vertex_array_object;
-    _ARB_vertex_attrib_binding = GLEW_ARB_vertex_attrib_binding;
-    _ARB_provoking_vertex = GLEW_ARB_provoking_vertex;
-    _ARB_create_context = WGLEW_ARB_create_context;
-    _ARB_create_context_robustness = WGLEW_ARB_create_context_robustness;
-    _EXT_direct_state_access = GLEW_EXT_direct_state_access;
-    _EXT_swap_control = WGLEW_EXT_swap_control;
-    _NV_shader_buffer_load = GLEW_NV_shader_buffer_load;
-    _NV_vertex_buffer_unified_memory = false; //GLEW_NV_vertex_buffer_unified_memory;
+    _ARB_bindless_texture = GLEW_ARB_bindless_texture ? true : false;
+    _ARB_vertex_array_object = GLEW_ARB_vertex_array_object ? true : false;
+    _ARB_vertex_attrib_binding = GLEW_ARB_vertex_attrib_binding ? true : false;
+    _ARB_provoking_vertex = GLEW_ARB_provoking_vertex ? true : false;
+    _ARB_create_context = WGLEW_ARB_create_context ? true : false;
+    _ARB_create_context_robustness = WGLEW_ARB_create_context_robustness ? true : false;
+    _ARB_direct_state_access = GLEW_ARB_direct_state_access ? true : false;
+    _ARB_viewport_array = GLEW_ARB_viewport_array ? true : false;
+    _EXT_swap_control = WGLEW_EXT_swap_control ? true : false;
+    _NV_shader_buffer_load = GLEW_NV_shader_buffer_load ? true : false;
+    _NV_vertex_buffer_unified_memory = false; //GLEW_NV_vertex_buffer_unified_memory ? true : false;
 
     initWGLExtention = true;
 
     return __wglSwapBuffers != NULL;
 }
 
-int
+bool
 OGLExtenstion::initCommandListNV() noexcept
 {
     if (initedNVcommandList)
@@ -211,8 +213,10 @@ OGLExtenstion::isSupport(OGLFeatures feature) noexcept
         return _ARB_vertex_attrib_binding;
     case ARB_provoking_vertex:
         return _ARB_provoking_vertex;
-    case EXT_direct_state_access:
-        return _EXT_direct_state_access;
+    case ARB_direct_state_access:
+        return _ARB_direct_state_access;
+    case ARB_viewport_array:
+        return _ARB_viewport_array;
     case EXT_swap_control:
         return _EXT_swap_control;
     case NV_command_list:

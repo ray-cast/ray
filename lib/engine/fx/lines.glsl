@@ -1,26 +1,28 @@
 <?xml version='1.0'?>
 <effect language="glsl">
+    <include name="sys:fx/common.glsl"/>
     <parameter name="matProject" semantic="matProject" />
-    <shader>
+    <shader name="vertex">
         <![CDATA[
             uniform mat4 matProject;
 
-            varying vec4 diffuse;
+            out vec4 diffuse;
 
-#ifdef SHADER_API_VERTEX
             void LineVS()
             {
                 diffuse = glsl_Diffuse;
                 gl_Position = matProject * glsl_Position;
             }
-#endif
+        ]]>
+    </shader>
+    <shader name="fragment">
+        <![CDATA[
+            in vec4 diffuse;
 
-#ifdef SHADER_API_FRAGMENT
             void LinePS()
             {
                 gl_FragColor = diffuse;
             }
-#endif
         ]]>
     </shader>
     <technique name="opaque">

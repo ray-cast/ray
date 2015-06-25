@@ -43,6 +43,7 @@ WGLCanvas::WGLCanvas() noexcept
     : _hwnd(nullptr)
     , _hdc(nullptr)
     , _context(nullptr)
+    , _interval(SwapInterval::GPU_VSYNC)
 {
 }
 
@@ -51,16 +52,16 @@ WGLCanvas::~WGLCanvas() noexcept
     this->close();
 }
 
-bool
+void
 WGLCanvas::setup(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) except
 {
-    _hwnd = (HWND)ctxconfig.hwnd;
-    assert(IsWindow(_hwnd));
+    assert(ctxconfig.hwnd);
 
+    _hwnd = (HWND)ctxconfig.hwnd;
     _hdc = ::GetDC(_hwnd);
     if (!_hdc)
     {
-        return false;
+        throw failure("GetDC() fail");
     }
 
     PIXELFORMATDESCRIPTOR pfd = {};
@@ -97,20 +98,28 @@ WGLCanvas::setup(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) exc
     int pixelFormat = ::ChoosePixelFormat(_hdc, &pfd);
     if (!pixelFormat)
     {
-        throw failure("ChoosePixelFormat fail");
+        throw failure("ChoosePixelFormat() fail");
     }
 
     if (!::DescribePixelFormat(_hdc, pixelFormat, sizeof(pfd), &pfd))
     {
-        throw failure("DescribePixelFormat fail");
+        throw failure("DescribePixelFormat() fail");
     }
 
     if (!::SetPixelFormat(_hdc, pixelFormat, &pfd))
     {
-        throw failure("SetPixelFormat fail");
+        throw failure("SetPixelFormat() fail");
     }
 
-    OGLExtenstion::initWGLExtensions(_hdc);
+    if (!OGLExtenstion::initWGLExtensions(_hdc))
+    {
+        throw failure("initWGLExtensions() fail");
+    }
+
+    if (!OGLExtenstion::isSupport(ARB_create_context))
+    {
+        throw failure("Platform does not support OpenGL");
+    }
 
     int attribs[40];
 
@@ -185,8 +194,7 @@ WGLCanvas::setup(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) exc
 
     _fbconfig = fbconfig;
     _ctxconfig = ctxconfig;
-
-    return true;
+    _interval = (SwapInterval)wglGetSwapIntervalEXT();
 }
 
 void
@@ -215,24 +223,35 @@ WGLCanvas::getWindHandle() const noexcept
 void
 WGLCanvas::setSwapInterval(SwapInterval interval) noexcept
 {
-    switch (interval)
+    if (_interval != interval)
     {
-    case ray::GPU_FREE:
-        wglSwapInterval(0);
-        break;
-    case ray::GPU_VSYNC:
-        wglSwapInterval(1);
-        break;
-    case ray::GPU_FPS30:
-        wglSwapInterval(2);
-        break;
-    case ray::GPU_FPS15:
-        wglSwapInterval(3);
-        break;
-    default:
-        assert(false);
-        wglSwapInterval(1);
+        switch (interval)
+        {
+        case ray::GPU_FREE:
+            wglSwapInterval(0);
+            break;
+        case ray::GPU_VSYNC:
+            wglSwapInterval(1);
+            break;
+        case ray::GPU_FPS30:
+            wglSwapInterval(2);
+            break;
+        case ray::GPU_FPS15:
+            wglSwapInterval(3);
+            break;
+        default:
+            assert(false);
+            wglSwapInterval(1);
+        }
+
+        _interval = interval;
     }
+}
+
+SwapInterval
+WGLCanvas::getSwapInterval() const noexcept
+{
+    return _interval;
 }
 
 void

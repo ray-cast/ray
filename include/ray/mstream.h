@@ -53,8 +53,8 @@ public:
 
     void close() noexcept;
 
-    streamsize read(char_type* str, std::streamsize cnt) noexcept;
-    streamsize write(const char_type* str, std::streamsize cnt) noexcept;
+    streamsize read(char* str, std::streamsize cnt) noexcept;
+    streamsize write(const char* str, std::streamsize cnt) noexcept;
 
     streamoff seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
     streamoff tellg() noexcept;
@@ -62,7 +62,7 @@ public:
     streamsize size() noexcept;
     void resize(streamsize size) noexcept;
 
-    char_type* map() noexcept;
+    char* map() noexcept;
     void unmap() noexcept;
     bool isMapping() const noexcept;
 
@@ -78,7 +78,7 @@ private:
 
     std::size_t _next;
 
-    std::vector<char_type> _data;
+    std::vector<char> _data;
 };
 
 class EXPORT MemoryStream : public iostream
@@ -89,7 +89,7 @@ public:
 
     void resize(streamsize size) noexcept;
 
-    char_type* map() noexcept;
+    char* map() noexcept;
     void unmap() noexcept;
     bool isMapping() const noexcept;
 

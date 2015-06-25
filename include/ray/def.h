@@ -63,4 +63,39 @@
 #   define _NAME
 #endif
 
+#if defined(_MSC_VER)
+#   if !defined(_VISUAL_STUDIO_)
+#       define _VISUAL_STUDIO_ _MSC_VER
+#   endif
+
+#   if defined(_VISUAL_STUDIO_) && _VISUAL_STUDIO_ <= 1100
+#       error "IDE not supported!"
+#   elif defined(_VISUAL_STUDIO_) && _VISUAL_STUDIO_ <= 1200
+#       error "IDE not supported!"
+#   elif defined(_VISUAL_STUDIO_) && _VISUAL_STUDIO_ <= 1300
+#       error "IDE not supported!"
+#   elif defined(_VISUAL_STUDIO_) && _VISUAL_STUDIO_ <= 1400
+#       error "IDE not supported!"
+#   elif defined(_VISUAL_STUDIO_) && _VISUAL_STUDIO_ <= 1800
+#   endif
+
+#   if defined(_VISUAL_STUDIO_) && _VISUAL_STUDIO_ >= 1400 && !defined(_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES)
+#        define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
+#   endif
+#endif
+
+#if defined(_VISUAL_STUDIO_) && (_VISUAL_STUDIO_ <= 1800)
+#   ifndef noexcept
+#       define noexcept
+#   endif
+#endif
+
+#ifndef except
+#	if defined(_VISUAL_STUDIO_) && (_VISUAL_STUDIO_ <= 1800)
+#       define except
+#	else
+#       define except noexcept(false)
+#	endif
+#endif
+
 #endif

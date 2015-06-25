@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <effect version="1270" language="glsl">
+    <include name="sys:fx/common.glsl"/>
     <parameter name="matViewProject" semantic="matViewProject" />
     <parameter name="eyePosition" semantic="CameraPosition" />
     <parameter name="lightDirection" type="float3" />
@@ -15,7 +16,7 @@
     <parameter name="scaleFactor" type="float" />
     <parameter name="scaleDepth" type="float" />
     <parameter name="scaleOverScaleDepth" type="float" />
-    <shader>
+    <shader name="vertex">
         <![CDATA[
         uniform vec3 eyePosition;
         uniform vec3 lightDirection;
@@ -30,19 +31,17 @@
         uniform float scaleFactor;
         uniform float scaleDepth;
         uniform float scaleOverScaleDepth;
-        const float g = -0.990;
-        const float g2 = g * g;
-
         uniform vec3 invWavelength;
-
         uniform mat4 matViewProject;
 
-        varying vec4 position;
-        varying vec3 c0;
-        varying vec3 c1;
-        varying vec3 d0;
-
         #define NUM_SAMPLES 4
+
+        out vec4 position;
+        out vec2 coord;
+        out vec3 c0;
+        out vec3 c1;
+        out vec3 d0;
+        out vec3 d1;
 
         float scale(float angle)
         {
@@ -50,7 +49,6 @@
             return scaleDepth * exp(-0.00287f + x * (0.459f + x * (3.83f + x * (-6.80f + x * 5.25))));
         }
 
-#if SHADER_API_VERTEX
         void groundVS()
         {
             position = vec4(glsl_Position.xyz * innerRadius,  1.0);
@@ -116,8 +114,7 @@
             }
 
             c0 = sampleColor * (invWavelength * krESun + kmESun);
-            c1 = sampleColor * kmESun;
-            d0 = cameraPosition - world;
+            c1 = sampleColor * 0.25;
 
             gl_Position = matViewProject * position;
         }
@@ -190,32 +187,35 @@
             c0 = sampleColor * (invWavelength * krESun);
             c1 = sampleColor * kmESun;
             d0 = cameraPosition - world;
+            d1 = lightDirection;
 
             gl_Position = matViewProject * position;
         }
-#endif
+        ]]>
+    </shader>
+    <shader name="fragment">
+        <![CDATA[
+        const float g = -0.990;
+        const float g2 = g * g;
 
-#if SHADER_API_FRAGMENT
+        in vec4 position;
+        in vec3 c0;
+        in vec3 c1;
+        in vec3 d0;
+        in vec3 d1;
+
         void groundPS()
         {
-            vec3 final = c0 + c1;
-            final = final / (vec3(1) + final);
-
             glsl_FragColor0.rgb = c0 + c1;
         }
 
         void skyPS()
         {
-            float angle = dot(lightDirection, d0) / length(d0);
-            float rayleighPhase = 0.75f + 0.75 * angle * angle;
+            float angle = dot(d1, d0) / length(d0);
             float miePhase = 1.5f * ((1.0f - g2) / (2.0 + g2)) * (1.0 + angle*angle) / pow(1.0f + g2 - 2.0*g*angle, 1.5f);
 
-            vec3 final =  rayleighPhase * c0 + miePhase * c1;
-            final = final / (vec3(1) + final);
-
-            glsl_FragColor0.rgb = final;
+            glsl_FragColor0.rgb = c0 + miePhase * c1;
         }
-#endif
         ]]>
     </shader>
     <technique name="postprocess">

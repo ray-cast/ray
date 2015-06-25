@@ -78,6 +78,11 @@ public:
         return _instance;
     }
 
+    static pointer getInstance(InstanceID instance) noexcept
+    {
+        return _instance_lists[instance - 1]->shared_from_this();
+    }
+
     static std::vector<T*>& instances() noexcept
     {
         return _instance_lists;

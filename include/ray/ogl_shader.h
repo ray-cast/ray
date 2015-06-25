@@ -47,27 +47,35 @@ public:
     OGLShader() noexcept;
     ~OGLShader() noexcept;
 
-    bool compile() except;
-    void close() noexcept;
+    virtual bool setup() except;
+    virtual void close() noexcept;
 
-    GLuint getHandle() const noexcept;
+    virtual std::size_t getInstanceID() const noexcept;
 
 private:
 
     GLuint _instance;
 };
 
-class OGLShaderProgram final : public ShaderProgram
+class OGLShaderObject final : public ShaderObject
 {
 public:
-    OGLShaderProgram() noexcept;
-    ~OGLShaderProgram() noexcept;
+    OGLShaderObject() noexcept;
+    ~OGLShaderObject() noexcept;
 
-    void setup() except;
-    void close() noexcept;
+    virtual bool setup() except;
+    virtual void close() noexcept;
 
-    void bind() noexcept;
-    void unbind() noexcept;
+    virtual void addShader(ShaderPtr shader) noexcept;
+    virtual void removeShader(ShaderPtr shader) noexcept;
+
+    virtual Shaders& getShaders() noexcept;
+
+    virtual std::size_t getInstanceID() noexcept;
+
+    virtual ShaderAttributes&  getActiveAttributes() noexcept;
+    virtual ShaderUniforms&    getActiveUniforms() noexcept;
+    virtual ShaderSubroutines& getActiveSubroutines() noexcept;
 
 private:
 
@@ -77,8 +85,14 @@ private:
     void _initActiveSubroutine() noexcept;
 
 private:
+
     GLuint _program;
-    GLuint _numTexUnit;
+
+    Shaders _shaders;
+
+    ShaderUniforms      _activeUniforms;
+    ShaderAttributes    _activeAttributes;
+    ShaderSubroutines   _activeSubroutines;
 };
 
 _NAME_END

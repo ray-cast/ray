@@ -113,13 +113,17 @@ XMLReader::getCurrentNodePath() const noexcept
         node = node->Parent();
     }
 
-    std::string path = "/";
-    for (std::size_t i = components.size() - 1; i >= 0; --i)
+    std::string path;
+    std::size_t size = components.size();
+    if (size > 0)
     {
-        path.append(components[i]);
-        if (i > 0)
+        for (int i = size - 1; i >= 0; i--)
         {
-            path.append("/");
+            path.append(components[i]);
+            if (i > 0)
+            {
+                path.append("/");
+            }
         }
     }
 

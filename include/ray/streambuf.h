@@ -50,8 +50,8 @@ public:
     virtual bool open(const char* filename, const ios_base::openmode mode) noexcept = 0;
     virtual bool open(const wchar_t* filename, const ios_base::openmode mode) noexcept = 0;
 
-    virtual streamsize read(char_type* str, std::streamsize cnt) noexcept = 0;
-    virtual streamsize write(const char_type* str, std::streamsize cnt) noexcept = 0;
+    virtual streamsize read(char* str, std::streamsize cnt) noexcept = 0;
+    virtual streamsize write(const char* str, std::streamsize cnt) noexcept = 0;
 
     virtual streamoff seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept = 0;
     virtual streamoff tellg() noexcept = 0;

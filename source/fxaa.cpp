@@ -70,11 +70,11 @@ FXAA::onDeactivate() except
 }
 
 void
-FXAA::render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
+FXAA::render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
 {
     _texelStep->assign(float2(1.0f / source->getWidth(), 1.0f / source->getHeight()));
 
-    pipeline.setRenderTexture(source);
+    pipeline.setRenderTarget(source);
     pipeline.setTechnique(_fxaaPass);
     pipeline.drawSceneQuad();
 }

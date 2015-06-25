@@ -63,15 +63,15 @@ public:
     void setSetting(const Setting& set) noexcept;
     const Setting& getSetting() const noexcept;
 
-    void render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
+    void render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
 
 private:
 
-    void computeRawAO(RenderPipeline& pipeline, RenderTexturePtr dest) noexcept;
-    void blurHorizontal(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
-    void blurVertical(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
-    void blurDirection(RenderPipeline& pipeline, RenderTexturePtr source, const float2& direction) noexcept;
-    void shading(RenderPipeline& pipeline, RenderTexturePtr color, RenderTexturePtr ao) noexcept;
+    void computeRawAO(RenderPipeline& pipeline, RenderTargetPtr dest) noexcept;
+    void blurHorizontal(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept;
+    void blurVertical(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept;
+    void blurDirection(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest, const float2& direction) noexcept;
+    void shading(RenderPipeline& pipeline, RenderTargetPtr color, RenderTargetPtr ao) noexcept;
 
     void onActivate() except;
     void onDeactivate() except;
@@ -80,7 +80,8 @@ private:
 
     Setting _setting;
 
-    RenderTexturePtr _texAmbient;
+    RenderTargetPtr _texAmbient;
+    RenderTargetPtr _texBlur;
 
     MaterialPtr _ambientOcclusion;
 
@@ -97,7 +98,7 @@ private:
     MaterialParamPtr _intensityDivR6;
 
     MaterialParamPtr _blurRadius;
-    MaterialParamPtr _blurTexSource;
+    MaterialParamPtr _blurSource;
     MaterialParamPtr _blurFactor;
     MaterialParamPtr _blurSharpness;
     MaterialParamPtr _blurDirection;

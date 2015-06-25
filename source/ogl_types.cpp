@@ -236,10 +236,10 @@ OGLTypes::asOGLFormat(PixelFormat format) noexcept
     if (format == PixelFormat::STENCIL8)
         return GL_STENCIL_INDEX;
 
-    if (format == PixelFormat::R8G8B8 || format == PixelFormat::R16G16B16F || format == PixelFormat::R32G32B32F)
+    if (format == PixelFormat::R8G8B8 || format == PixelFormat::R8G8B8F || format == PixelFormat::R16G16B16F || format == PixelFormat::R32G32B32F)
         return GL_RGB;
 
-    if (format == PixelFormat::R8G8B8A8 || format == PixelFormat::R4G4B4A4F || format == PixelFormat::R16G16B16A16F || format == PixelFormat::R32G32B32A32F)
+    if (format == PixelFormat::R8G8B8A8 || format == PixelFormat::R8G8B8A8F || format == PixelFormat::R4G4B4A4F || format == PixelFormat::R16G16B16A16F || format == PixelFormat::R32G32B32A32F)
         return GL_RGBA;
 
     if (format == PixelFormat::SR8G8B8 || format == PixelFormat::SRGB)
@@ -253,6 +253,9 @@ OGLTypes::asOGLFormat(PixelFormat format) noexcept
 
     if (format == PixelFormat::RG16F || format == PixelFormat::RG32F)
         return GL_RG;
+
+    if (format == PixelFormat::R11G11B10F)
+        return GL_RGB;
 
     if (format == PixelFormat::DXT1)
         return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
@@ -282,20 +285,20 @@ OGLTypes::asOGLType(PixelFormat format) noexcept
     if (format == PixelFormat::STENCIL8)
         return GL_UNSIGNED_BYTE;
 
-    if (format == PixelFormat::R8G8B8F)
-        return GL_FLOAT;
-
-    if (format == PixelFormat::R16G16B16F || format == PixelFormat::R32G32B32F)
-        return GL_FLOAT;
-
-    if (format == PixelFormat::R16G16B16A16F || format == PixelFormat::R32G32B32A32F)
-        return GL_FLOAT;
-
     if (format == PixelFormat::DEPTH_COMPONENT16 || format == PixelFormat::DEPTH_COMPONENT24 || format == PixelFormat::DEPTH_COMPONENT32)
         return GL_UNSIGNED_BYTE;
 
     if (format == PixelFormat::R8G8B8 || format == PixelFormat::R8G8B8A8)
         return GL_UNSIGNED_BYTE;
+
+    if (format == PixelFormat::R8)
+        return GL_UNSIGNED_BYTE;
+
+    if (format == PixelFormat::R8G8B8F || format == PixelFormat::R16G16B16F || format == PixelFormat::R32G32B32F)
+        return GL_FLOAT;
+
+    if (format == PixelFormat::R8G8B8A8F || format == PixelFormat::R16G16B16A16F || format == PixelFormat::R32G32B32A32F)
+        return GL_FLOAT;
 
     if (format == PixelFormat::SR8G8B8 || format == PixelFormat::SRGB)
         return GL_FLOAT;
@@ -303,13 +306,13 @@ OGLTypes::asOGLType(PixelFormat format) noexcept
     if (format == PixelFormat::SR8G8B8A8 || format == PixelFormat::SRGBA)
         return GL_FLOAT;
 
-    if (format == PixelFormat::R8)
-        return GL_UNSIGNED_BYTE;
-
     if (format == PixelFormat::R16F || format == PixelFormat::R32F)
         return GL_FLOAT;
 
     if (format == PixelFormat::RG16F || format == PixelFormat::RG32F)
+        return GL_FLOAT;
+
+    if (format == PixelFormat::R11G11B10F)
         return GL_FLOAT;
 
     assert(false);
@@ -373,6 +376,8 @@ OGLTypes::asOGLInternalformat(PixelFormat format) noexcept
         return GL_RG16F;
     case PixelFormat::RG32F:
         return GL_RG32F;
+    case PixelFormat::R11G11B10F:
+        return GL_R11F_G11F_B10F;
     default:
         assert(false);
         return GL_RGBA;

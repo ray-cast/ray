@@ -35,12 +35,11 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_scene.h>
-#include <ray/render_system.h>
 
 _NAME_BEGIN
 
 RenderScene::RenderScene() noexcept
-    : _ambientLight(Vector3(0.2, 0.2, 0.2))
+    : _ambientLight(Vector3(0.1, 0.1, 0.1))
 {
 }
 

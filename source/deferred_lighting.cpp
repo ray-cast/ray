@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-const float ESM_FACTOR = 0.7f;
+const float ESM_FACTOR = 0.5f;
 
 DeferredLighting::DeferredLighting() noexcept
     : _deferredGraphicMap(nullptr)
@@ -100,7 +100,7 @@ DeferredLighting::onRenderPre() noexcept
     _deferredGraphicMap = this->getCamera()->getDeferredGraphicMap();
     _deferredNormalMap = this->getCamera()->getDeferredNormalMap();
     _deferredLightMap = this->getCamera()->getDeferredLightMap();
-    _deferredShadingMap = this->getCamera()->getRenderTexture();
+    _deferredShadingMap = this->getCamera()->getRenderTarget();
     _deferredGraphicMaps = this->getCamera()->getDeferredGraphicsMaps();
 
     if (_deferredLightMap)
@@ -180,13 +180,13 @@ void
 DeferredLighting::onRenderPost() noexcept
 {
     /*if (_deferredGraphicMap)
-        this->copyRenderTexture(_deferredGraphicMap, this->getCamera()->getViewport(), 0, Viewport(0, 768 / 2, 1376 / 2, 768));
+        this->copyRenderTarget(_deferredGraphicMap, this->getCamera()->getViewport(), 0, Viewport(0, 768 / 2, 1376 / 2, 768));
     if (_deferredNormalMap)
-        this->copyRenderTexture(_deferredNormalMap, this->getCamera()->getViewport(), 0, Viewport(1376 / 2, 768 / 2, 1376, 768));
+        this->copyRenderTarget(_deferredNormalMap, this->getCamera()->getViewport(), 0, Viewport(1376 / 2, 768 / 2, 1376, 768));
     if (_deferredLightMap)
-        this->copyRenderTexture(_deferredLightMap, this->getCamera()->getViewport(), 0, Viewport(0, 0, 1376 / 2, 768 / 2));
+        this->copyRenderTarget(_deferredLightMap, this->getCamera()->getViewport(), 0, Viewport(0, 0, 1376 / 2, 768 / 2));
     if (_deferredShadingMap)
-        this->copyRenderTexture(_deferredShadingMap, this->getCamera()->getViewport(), 0, Viewport(1376 / 2, 0, 1376, 768 / 2));*/
+        this->copyRenderTarget(_deferredShadingMap, this->getCamera()->getViewport(), 0, Viewport(1376 / 2, 0, 1376, 768 / 2));*/
 }
 
 void
@@ -194,9 +194,7 @@ DeferredLighting::renderOpaquesDepthOhly() noexcept
 {
     _deferredDepthMap->setClearFlags(ClearFlags::CLEAR_DEPTH_STENCIL);
 
-    auto state = _deferredDepthOhly->getRenderState()->getDepthState().depthFunc = CompareFunction::GPU_LESS;
-
-    this->setRenderTexture(_deferredDepthMap);
+    this->setRenderTarget(_deferredDepthMap);
     this->drawRenderable(RenderQueue::Background, RenderPass::RP_GBUFFER, _deferredDepthOhly);
     this->drawRenderable(RenderQueue::Opaque, RenderPass::RP_DEPTH, _deferredDepthOhly);
 
@@ -209,7 +207,7 @@ DeferredLighting::renderOpaques() noexcept
     _deferredGraphicMap->setClearFlags(ClearFlags::CLEAR_COLOR);
     _deferredNormalMap->setClearFlags(ClearFlags::CLEAR_COLOR);
 
-    this->setRenderTexture(_deferredGraphicMaps);
+    this->setRenderTarget(_deferredGraphicMaps);
     this->drawRenderable(RenderQueue::Opaque, RenderPass::RP_GBUFFER);
 
     _deferredNormalMap->setClearFlags(ClearFlags::CLEAR_NONE);
@@ -220,7 +218,7 @@ DeferredLighting::renderOpaquesShading() noexcept
 {
     _deferredShadingMap->setClearFlags(ClearFlags::CLEAR_COLOR);
 
-    this->setRenderTexture(_deferredShadingMap);
+    this->setRenderTarget(_deferredShadingMap);
     this->setTechnique(_deferredShadingOpaques);
     this->drawSceneQuad();
 
@@ -234,7 +232,7 @@ DeferredLighting::renderTransparentDepthOhly() noexcept
 {
     _deferredDepthMap->setClearFlags(ClearFlags::CLEAR_STENCIL);
 
-    this->setRenderTexture(_deferredDepthMap);
+    this->setRenderTarget(_deferredDepthMap);
     this->drawRenderable(RenderQueue::Transparent, RenderPass::RP_DEPTH, _deferredDepthOhly);
 
     _deferredDepthMap->setClearFlags(ClearFlags::CLEAR_NONE);
@@ -243,14 +241,14 @@ DeferredLighting::renderTransparentDepthOhly() noexcept
 void
 DeferredLighting::renderTransparent() noexcept
 {
-    this->setRenderTexture(_deferredGraphicMaps);
+    this->setRenderTarget(_deferredGraphicMaps);
     this->drawRenderable(RenderQueue::Transparent, RenderPass::RP_GBUFFER);
 }
 
 void
 DeferredLighting::renderTransparentShading() noexcept
 {
-    this->setRenderTexture(_deferredShadingMap);
+    this->setRenderTarget(_deferredShadingMap);
     this->setTechnique(_deferredShadingTransparents);
     this->drawSceneQuad();
 }
@@ -258,7 +256,7 @@ DeferredLighting::renderTransparentShading() noexcept
 void
 DeferredLighting::renderLights() noexcept
 {
-    this->setRenderTexture(_deferredLightMap);
+    this->setRenderTarget(_deferredLightMap);
 
     auto& lights = this->getRenderData(RenderQueue::DeferredLight);
     for (auto& it : lights)
@@ -309,7 +307,7 @@ DeferredLighting::renderSunLight(const Light& light) noexcept
         _deferredSunLightShadow->getRenderState()->setStencilState(stencil);
 
         _shadowMatrix->assign(light.getShadowCamera()->getViewProject());
-        _shadowMap->assign(light.getShadowCamera()->getRenderTexture()->getResolveTexture());
+        _shadowMap->assign(light.getShadowCamera()->getRenderTarget()->getResolveTexture());
 
         this->setTechnique(_deferredSunLightShadow);
         this->drawSceneQuad();
@@ -385,23 +383,22 @@ DeferredLighting::renderAreaLight(const Light& light) noexcept
 void
 DeferredLighting::renderShadow() noexcept
 {
-    auto renderTexture = this->getCamera()->getRenderTexture();
+    auto renderTexture = this->getCamera()->getRenderTarget();
+    auto swapTexture = this->getCamera()->getSwapTexture();
     if (renderTexture)
     {
         _shadowDecal->assign(renderTexture->getResolveTexture());
 
-        renderTexture->setClearFlags(ClearFlags::CLEAR_COLOR);
-
-        this->setRenderTexture(renderTexture);
+        this->setRenderTarget(renderTexture);
         this->drawRenderable(RenderQueue::Shadow, RenderPass::RP_SHADOW, _shadowGenerate);
 
-        renderTexture->setClearFlags(ClearFlags::CLEAR_NONE);
-
-        this->setRenderTexture(renderTexture);
+        this->setRenderTarget(this->getCamera()->getSwapTexture());
         this->setTechnique(_shadowBlurX);
         this->drawSceneQuad();
 
-        this->setRenderTexture(renderTexture);
+        _shadowDecal->assign(swapTexture->getResolveTexture());
+
+        this->setRenderTarget(renderTexture);
         this->setTechnique(_shadowBlurY);
         this->drawSceneQuad();
     }

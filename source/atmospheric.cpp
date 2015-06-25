@@ -69,7 +69,7 @@ void
 Atmospheric::onActivate() noexcept
 {
     MeshProperty mesh;
-    mesh.makeSphere(1, 160, 120);
+    mesh.makeSphere(1, 128, 96);
 
     _sphere = std::make_shared<RenderBuffer>();
     _sphere->setup(mesh);
@@ -121,7 +121,7 @@ Atmospheric::onDectivate() noexcept
 }
 
 void
-Atmospheric::render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
+Atmospheric::render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
 {
     Renderable renderable;
     renderable.startVertice = 0;
@@ -138,11 +138,11 @@ Atmospheric::render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
         {
             _lightDirection->assign(light->getLightDirection());
 
-            pipeline.setRenderTexture(source);
+            pipeline.setRenderTarget(source);
             pipeline.setTechnique(_ground);
             pipeline.drawMesh(_sphere, renderable);
 
-            pipeline.setRenderTexture(source);
+            pipeline.setRenderTarget(source);
             pipeline.setTechnique(_sky);
             pipeline.drawMesh(_sphere, renderable);
         }

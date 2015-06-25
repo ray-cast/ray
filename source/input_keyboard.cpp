@@ -43,6 +43,10 @@ DefaultInputKeyboard::DefaultInputKeyboard() noexcept
     std::memset(_keyState, 0, sizeof(_keyState));
 }
 
+DefaultInputKeyboard::~DefaultInputKeyboard() noexcept
+{
+}
+
 bool
 DefaultInputKeyboard::getKeyDown(InputKey::Code key) const noexcept
 {

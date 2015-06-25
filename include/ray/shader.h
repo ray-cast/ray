@@ -175,6 +175,12 @@ public:
     void setLocation(std::size_t location) noexcept;
     std::size_t getLocation() const noexcept;
 
+    void setBindingPoint(std::size_t unit) noexcept;
+    std::size_t getBindingPoint() const noexcept;
+
+    void setBindingProgram(std::size_t program) noexcept;
+    std::size_t getBindingProgram() const noexcept;
+
     void needUpdate(bool update) noexcept;
     bool needUpdate() const noexcept;
 
@@ -183,6 +189,8 @@ private:
 
     std::string _name;
     std::size_t _location;
+    std::size_t _bindingPoint;
+    std::size_t _bindingProgram;
 };
 
 class EXPORT ShaderAttribute : public ShaderParameter
@@ -201,12 +209,7 @@ public:
     void setValue(ShaderVariantPtr buffer) noexcept;
     ShaderVariantPtr getValue() const noexcept;
 
-    void setBindingPoint(std::size_t unit) noexcept;
-    std::size_t getBindingPoint() const noexcept;
-
 public:
-
-    std::size_t _bindingPoint;
 
     ShaderVariantType _type;
     ShaderVariantPtr _value;
@@ -226,75 +229,48 @@ public:
     Shader(const std::wstring& type, const std::string& code) noexcept;
     virtual ~Shader() noexcept;
 
-    void setType(ShaderType type) noexcept;
-    void setType(const std::string& type) noexcept;
-    void setType(const std::wstring& type) noexcept;
+    virtual bool setup() except = 0;
+    virtual void close() noexcept = 0;
 
-    void setSource(const std::string& source) noexcept;
-    void setIncludePath(const std::string& include) noexcept;
+    virtual void setType(ShaderType type) noexcept;
+    virtual void setType(const std::string& type) noexcept;
+    virtual void setType(const std::wstring& type) noexcept;
+    virtual ShaderType  getType() const noexcept;
 
-    ShaderType  getType()   const noexcept;
-    const std::string& getSource() const noexcept;
-    const std::string& getIncludePath() const noexcept;
+    virtual void setSource(const std::string& source) noexcept;
+    virtual const std::string& getSource() const noexcept;
+
+    virtual std::size_t getInstanceID() const noexcept = 0;
 
 private:
-    Shader(const Shader&) = delete;
-    Shader& operator=(const Shader&) = delete;
+    Shader(const Shader&) noexcept = delete;
+    Shader& operator=(const Shader&) noexcept = delete;
 
 private:
 
     ShaderType _type;
     std::string _source;
-    std::string _path;
 };
 
-class EXPORT ShaderProgram
-{
-public:
-    ShaderProgram() noexcept;
-    virtual ~ShaderProgram() noexcept;
-
-    void addShader(ShaderPtr shader) noexcept;
-    void removeShader(ShaderPtr shader) noexcept;
-
-    Shaders& getShaders() noexcept;
-
-    ShaderUniforms&      getActiveUniforms() noexcept;
-    ShaderAttributes&    getActiveAttributes() noexcept;
-    ShaderSubroutines&   getActiveSubroutines() noexcept;
-
-protected:
-
-    Shaders _shaders;
-
-    ShaderUniforms      _activeUniforms;
-    ShaderAttributes    _activeAttributes;
-    ShaderSubroutines   _activeSubroutines;
-};
-
-class EXPORT ShaderObject final
+class EXPORT ShaderObject
 {
 public:
     ShaderObject() noexcept;
-    ~ShaderObject() noexcept;
+    virtual ~ShaderObject() noexcept;
 
-    bool setup() noexcept;
-    void close() noexcept;
+    virtual bool setup() except = 0;
+    virtual void close() noexcept = 0;
 
-    void addShader(ShaderPtr shader) noexcept;
-    void removeShader(ShaderPtr shader) noexcept;
+    virtual void addShader(ShaderPtr shader) noexcept = 0;
+    virtual void removeShader(ShaderPtr shader) noexcept = 0;
 
-    ShaderProgramPtr getShaderProgram() noexcept;
+    virtual Shaders& getShaders() noexcept = 0;
 
-    Shaders& getShaders() noexcept;
-    ShaderAttributes&    getActiveAttributes() noexcept;
-    ShaderUniforms&      getActiveUniforms() noexcept;
-    ShaderSubroutines&   getActiveSubroutines() noexcept;
+    virtual std::size_t getInstanceID() noexcept = 0;
 
-private:
-
-    Shaders _shaders;
-    ShaderProgramPtr _program;
+    virtual ShaderAttributes&  getActiveAttributes() noexcept = 0;
+    virtual ShaderUniforms&    getActiveUniforms() noexcept = 0;
+    virtual ShaderSubroutines& getActiveSubroutines() noexcept = 0;
 };
 
 _NAME_END

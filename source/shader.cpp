@@ -88,13 +88,11 @@ ShaderVariant::~ShaderVariant() noexcept
 void
 ShaderVariant::setup() noexcept
 {
-    RenderImpl::instance()->createShaderVariant(*this);
 }
 
 void
 ShaderVariant::close() noexcept
 {
-    RenderImpl::instance()->destroyShaderVariant(*this);
 }
 
 void
@@ -518,6 +516,8 @@ ShaderVariant::onChangeAfter() noexcept
 ShaderParameter::ShaderParameter() noexcept
     : _needUpdate(true)
     , _location(0)
+    , _bindingPoint(0)
+    , _bindingProgram(0)
 {
 }
 
@@ -550,6 +550,30 @@ ShaderParameter::getLocation() const noexcept
 }
 
 void
+ShaderParameter::setBindingPoint(std::size_t unit) noexcept
+{
+    _bindingPoint = unit;
+}
+
+std::size_t
+ShaderParameter::getBindingPoint() const noexcept
+{
+    return _bindingPoint;
+}
+
+void
+ShaderParameter::setBindingProgram(std::size_t program) noexcept
+{
+    _bindingProgram = program;
+}
+
+std::size_t
+ShaderParameter::getBindingProgram() const noexcept
+{
+    return _bindingProgram;
+}
+
+void
 ShaderParameter::needUpdate(bool update) noexcept
 {
     _needUpdate = update;
@@ -562,12 +586,11 @@ ShaderParameter::needUpdate() const noexcept
 }
 
 ShaderUniform::ShaderUniform() noexcept
-    : _bindingPoint(0)
-    , _type(ShaderVariantType::SPT_NONE)
+    : _type(ShaderVariantType::SPT_NONE)
 {
 }
 
-ShaderUniform::~ShaderUniform()
+ShaderUniform::~ShaderUniform() noexcept
 {
 }
 
@@ -597,18 +620,6 @@ ShaderVariantPtr
 ShaderUniform::getValue() const noexcept
 {
     return _value;
-}
-
-void
-ShaderUniform::setBindingPoint(std::size_t unit) noexcept
-{
-    _bindingPoint = unit;
-}
-
-std::size_t
-ShaderUniform::getBindingPoint() const noexcept
-{
-    return _bindingPoint;
 }
 
 Shader::Shader() noexcept
@@ -671,12 +682,6 @@ Shader::setSource(const std::string& source) noexcept
     _source = source;
 }
 
-void
-Shader::setIncludePath(const std::string& include) noexcept
-{
-    _path = include;
-}
-
 ShaderType
 Shader::getType()const noexcept
 {
@@ -689,131 +694,12 @@ Shader::getSource() const noexcept
     return _source;
 }
 
-const std::string&
-Shader::getIncludePath() const noexcept
-{
-    return _path;
-}
-
-ShaderProgram::ShaderProgram() noexcept
-{
-}
-
-ShaderProgram::~ShaderProgram() noexcept
-{
-}
-
-void
-ShaderProgram::addShader(ShaderPtr shader) noexcept
-{
-    assert(std::find(_shaders.begin(), _shaders.end(), shader) == _shaders.end());
-    _shaders.push_back(shader);
-}
-
-void
-ShaderProgram::removeShader(ShaderPtr shader) noexcept
-{
-    auto it = std::find(_shaders.begin(), _shaders.end(), shader);
-    if (it != _shaders.end())
-    {
-        _shaders.erase(it);
-    }
-}
-
-Shaders&
-ShaderProgram::getShaders() noexcept
-{
-    return _shaders;
-}
-
-ShaderAttributes&
-ShaderProgram::getActiveAttributes() noexcept
-{
-    return _activeAttributes;
-}
-
-ShaderUniforms&
-ShaderProgram::getActiveUniforms() noexcept
-{
-    return _activeUniforms;
-}
-
-ShaderSubroutines&
-ShaderProgram::getActiveSubroutines() noexcept
-{
-    return _activeSubroutines;
-}
-
 ShaderObject::ShaderObject() noexcept
 {
 }
 
 ShaderObject::~ShaderObject() noexcept
 {
-    this->close();
-}
-
-bool
-ShaderObject::setup() noexcept
-{
-    _program = RenderImpl::instance()->createShaderProgram(_shaders);
-    return true;
-}
-
-void
-ShaderObject::close() noexcept
-{
-    if (_program)
-    {
-        RenderImpl::instance()->destroyShaderProgram(_program);
-        _program = nullptr;
-    }
-}
-
-void
-ShaderObject::addShader(ShaderPtr shader) noexcept
-{
-    _shaders.push_back(shader);
-}
-
-void
-ShaderObject::removeShader(ShaderPtr shader) noexcept
-{
-    auto it = std::find(_shaders.begin(), _shaders.end(), shader);
-    if (it != _shaders.end())
-    {
-        _shaders.erase(it);
-    }
-}
-
-Shaders&
-ShaderObject::getShaders() noexcept
-{
-    return _shaders;
-}
-
-ShaderProgramPtr
-ShaderObject::getShaderProgram() noexcept
-{
-    return _program;
-}
-
-ShaderAttributes&
-ShaderObject::getActiveAttributes() noexcept
-{
-    return _program->getActiveAttributes();
-}
-
-ShaderUniforms&
-ShaderObject::getActiveUniforms() noexcept
-{
-    return _program->getActiveUniforms();
-}
-
-ShaderSubroutines&
-ShaderObject::getActiveSubroutines() noexcept
-{
-    return _program->getActiveSubroutines();
 }
 
 _NAME_END

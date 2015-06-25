@@ -78,10 +78,10 @@ public:
 
     void setRenderState(RenderStatePtr state) noexcept;
 
-    void setRenderTexture(RenderTexturePtr texture) noexcept;
-    void setRenderTexture(MultiRenderTexturePtr texture) noexcept;
-    void readRenderTexture(RenderTexturePtr texture, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
-    void copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept;
+    void setRenderTarget(RenderTargetPtr texture) noexcept;
+    void setRenderTarget(MultiRenderTargetPtr texture) noexcept;
+    void readRenderTarget(RenderTargetPtr texture, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+    void copyRenderTarget(RenderTargetPtr srcTarget, const Viewport& src, RenderTargetPtr destTarget, const Viewport& dest) noexcept;
 
     void setShaderObject(ShaderObjectPtr shader) noexcept;
     void setShaderVariant(ShaderVariantPtr buffer, ShaderUniformPtr uniform) noexcept;
@@ -100,7 +100,7 @@ public:
 
     void setTechnique(MaterialPassPtr pass) noexcept;
 
-    void addPostProcess(RenderPostProcessPtr postprocess) noexcept;
+    void addPostProcess(RenderPostProcessPtr postprocess) except;
     void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
 
     void render() noexcept;

@@ -36,8 +36,8 @@
 // +----------------------------------------------------------------------
 #include <ray/camera.h>
 #include <ray/render_scene.h>
-#include <ray/render_window.h>
 #include <ray/render_texture.h>
+#include <ray/render_factory.h>
 
 _NAME_BEGIN
 
@@ -80,44 +80,47 @@ Camera::setup(std::size_t width, std::size_t height) noexcept
 {
     if (_cameraOrder == CameraOrder::CO_MAIN)
     {
-        _deferredDepthMap = RenderTexture::create();
+        _deferredDepthMap = RenderFactory::createRenderTarget();
         _deferredDepthMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::DEPTH24_STENCIL8);
 
-        _deferredGraphicMap = RenderTexture::create();
+        _deferredGraphicMap = RenderFactory::createRenderTarget();
         _deferredGraphicMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::SRGBA);
 
-        _deferredNormalMap = RenderTexture::create();
-        _deferredNormalMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R32G32B32A32F);
+        _deferredNormalMap = RenderFactory::createRenderTarget();
+        _deferredNormalMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
 
-        _deferredLightMap = RenderTexture::create();
+        _deferredLightMap = RenderFactory::createRenderTarget();
         _deferredLightMap->setSharedStencilTexture(_deferredDepthMap);
-        _deferredLightMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R32G32B32A32F);
+        _deferredLightMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
 
-        _deferredGraphicMaps = MultiRenderTexture::create();
+        _deferredGraphicMaps = RenderFactory::createMultiRenderTarget();
         _deferredGraphicMaps->attach(_deferredDepthMap, Attachment::DEPTH_STENCIL);
         _deferredGraphicMaps->attach(_deferredGraphicMap, Attachment::COLOR0);
         _deferredGraphicMaps->attach(_deferredNormalMap, Attachment::COLOR1);
-        _deferredGraphicMaps->setup(width, height);
+        _deferredGraphicMaps->setup();
 
         if (_cameraRender == CR_RENDER_TO_CUBEMAP)
         {
-            _renderTexture = std::make_shared<RenderTexture>();
+            _renderTexture = RenderFactory::createRenderTarget();
             _renderTexture->setSharedDepthTexture(_deferredDepthMap);
             _renderTexture->setSharedStencilTexture(_deferredDepthMap);
-            _renderTexture->setup(512, 512, TextureDim::DIM_CUBE, PixelFormat::SRGBA);
+            _renderTexture->setup(512, 512, TextureDim::DIM_CUBE, PixelFormat::R16G16B16F);
         }
         else
         {
-            _renderTexture = std::make_shared<RenderTexture>();
+            _renderTexture = RenderFactory::createRenderTarget();
             _renderTexture->setSharedDepthTexture(_deferredDepthMap);
             _renderTexture->setSharedStencilTexture(_deferredDepthMap);
-            _renderTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::SRGBA);
+            _renderTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
         }
     }
     else
     {
-        _renderTexture = RenderTexture::create();
+        _renderTexture = RenderFactory::createRenderTarget();
         _renderTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::R32F);
+
+        _swapTexture = RenderFactory::createRenderTarget();
+        _swapTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::R32F);
     }
 
     this->makeViewProject();
@@ -373,10 +376,22 @@ Camera::unproject(const Vector3& pos) const noexcept
     v.y = v.y / h - 1.0f - _viewport.top;
     v.z = v.z * 2.0f - 1.0f;
 
-    v = _viewProjectInverse * v;
+    v = _viewInverse * (_projectInverse * v);
     v /= v.w;
 
     return Vector3(v.x, v.y, v.z);
+}
+
+Vector3
+Camera::worldToProject(const Vector3& pos) const noexcept
+{
+    Vector4 v(pos);
+
+    v = _viewProejct * v;
+    if (v.w != 0)
+        v /= v.w;
+
+    return v.xyz();
 }
 
 Vector3
@@ -464,42 +479,48 @@ Camera::getRenderScene() const noexcept
 }
 
 void
-Camera::setRenderTexture(RenderTexturePtr texture) noexcept
+Camera::setRenderTarget(RenderTargetPtr texture) noexcept
 {
     _renderTexture = texture;
 }
 
-RenderTexturePtr
-Camera::getRenderTexture() const noexcept
+RenderTargetPtr
+Camera::getRenderTarget() const noexcept
 {
     return _renderTexture;
 }
 
-RenderTexturePtr
+RenderTargetPtr
+Camera::getSwapTexture() const noexcept
+{
+    return _swapTexture;
+}
+
+RenderTargetPtr
 Camera::getDeferredDepthMap() const noexcept
 {
     return _deferredDepthMap;
 }
 
-RenderTexturePtr
+RenderTargetPtr
 Camera::getDeferredGraphicMap() const noexcept
 {
     return _deferredGraphicMap;
 }
 
-RenderTexturePtr
+RenderTargetPtr
 Camera::getDeferredNormalMap() const noexcept
 {
     return _deferredNormalMap;
 }
 
-RenderTexturePtr
+RenderTargetPtr
 Camera::getDeferredLightMap() const noexcept
 {
     return _deferredLightMap;
 }
 
-MultiRenderTexturePtr
+MultiRenderTargetPtr
 Camera::getDeferredGraphicsMaps() const noexcept
 {
     return _deferredGraphicMaps;

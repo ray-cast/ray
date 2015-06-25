@@ -74,7 +74,7 @@ FirstPersonCamera::onDectivate() noexcept
 }
 
 void
-FirstPersonCamera::onFrame() noexcept
+FirstPersonCamera::onFrameEnd() noexcept
 {
     float delta = this->getGameServer()->getTimer()->delta();
     float step = _speed * delta;
@@ -158,7 +158,8 @@ FirstPersonCamera::onFrame() noexcept
         }
         else
         {
-            if (input->getButton(ray::InputButton::Code::MOUSE0))
+            if (input->getButtonDown(ray::InputButton::Code::MOUSE0) &&
+                !input->getKey(ray::InputKey::Code::LCTRL))
             {
                 input->setMousePos(_centerX, _centerY);
                 input->lockCursor(true);

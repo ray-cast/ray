@@ -49,50 +49,41 @@ OGLShader::~OGLShader() noexcept
 }
 
 bool
-OGLShader::compile() except
+OGLShader::setup() except
 {
     assert(!_instance);
-    assert(!this->getSource().empty());
 
     GLenum shaderType = OGLTypes::asOGLShaderType(this->getType());
     _instance = glCreateShader(shaderType);
-
-    if (_instance)
+    if (GL_NONE == _instance)
     {
-        const GLchar* codes[1] =
-        {
-            this->getSource().c_str()
-        };
+        throw failure("glCreateShader fail");
+    }
 
-        glShaderSource(_instance, 1, codes, 0);
-        glCompileShader(_instance);
+    if (this->getSource().empty())
+    {
+        throw failure("This shader code cannot be null");
+    }
 
-#if !defined(EGLAPI)
-        auto& include = this->getIncludePath();
-        if (!include.empty())
-        {
-            const GLchar* path[1] =
-            {
-                this->getIncludePath().data()
-            };
+    const GLchar* codes[1] =
+    {
+        this->getSource().c_str()
+    };
 
-            glCompileShaderIncludeARB(_instance, 1, path, 0);
-        }
-#endif
+    glShaderSource(_instance, 1, codes, 0);
+    glCompileShader(_instance);
 
-        GLint result = GL_FALSE;
-        glGetShaderiv(_instance, GL_COMPILE_STATUS, &result);
-        if (GL_FALSE == result)
-        {
-            GLint length = 0;
-            glGetShaderiv(_instance, GL_INFO_LOG_LENGTH, &length);
+    GLint result = GL_FALSE;
+    glGetShaderiv(_instance, GL_COMPILE_STATUS, &result);
+    if (GL_FALSE == result)
+    {
+        GLint length = 0;
+        glGetShaderiv(_instance, GL_INFO_LOG_LENGTH, &length);
 
-            std::string log((std::size_t)length, 0);
-            glGetShaderInfoLog(_instance, length + 1, &length, (char*)log.data());
-            throw failure(log);
+        std::string log((std::size_t)length, 0);
+        glGetShaderInfoLog(_instance, length + 1, &length, (char*)log.data());
 
-            return false;
-        }
+        throw failure(log);
     }
 
     return true;
@@ -108,50 +99,38 @@ OGLShader::close() noexcept
     }
 }
 
-GLuint
-OGLShader::getHandle() const noexcept
+std::size_t
+OGLShader::getInstanceID() const noexcept
 {
     return _instance;
 }
 
-OGLShaderProgram::OGLShaderProgram() noexcept
+OGLShaderObject::OGLShaderObject() noexcept
     : _program(0)
-    , _numTexUnit(0)
 {
 }
 
-OGLShaderProgram::~OGLShaderProgram() noexcept
+OGLShaderObject::~OGLShaderObject() noexcept
 {
     this->close();
 }
 
-void
-OGLShaderProgram::setup()
+bool
+OGLShaderObject::setup() except
 {
     assert(!_program);
 
     _program = glCreateProgram();
-    _numTexUnit = 0;
 
-    auto count = _shaders.size();
-    for (std::size_t i = 0; i < count; i++)
+    for (auto shader : _shaders)
     {
-        auto oglShader = std::dynamic_pointer_cast<OGLShader>(_shaders[i]);
+        auto oglShader = std::dynamic_pointer_cast<OGLShader>(shader);
         if (oglShader)
         {
-            glAttachShader(_program, oglShader->getHandle());
-        }
-        else
-        {
-            auto shader = std::make_shared<OGLShader>();
-            shader->setType(_shaders[i]->getType());
-            shader->setSource(_shaders[i]->getSource());
-            shader->setIncludePath(_shaders[i]->getIncludePath());
-            shader->compile();
+            if (!shader->getInstanceID())
+                shader->setup();
 
-            _shaders[i] = shader;
-
-            glAttachShader(_program, shader->getHandle());
+            glAttachShader(_program, oglShader->getInstanceID());
         }
     }
 
@@ -173,37 +152,74 @@ OGLShaderProgram::setup()
     _initActiveUniform();
     _initActiveUniformBlock();
     _initActiveSubroutine();
+
+    return true;
 }
 
 void
-OGLShaderProgram::close() noexcept
+OGLShaderObject::close() noexcept
 {
-    _shaders.clear();
-
     if (_program)
     {
         glDeleteProgram(_program);
         _program = 0;
     }
 
+    _shaders.clear();
+
     _activeAttributes.clear();
     _activeUniforms.clear();
+    _activeSubroutines.clear();
 }
 
 void
-OGLShaderProgram::bind() noexcept
+OGLShaderObject::addShader(ShaderPtr shader) noexcept
 {
-    glUseProgram(_program);
+    _shaders.push_back(shader);
 }
 
 void
-OGLShaderProgram::unbind() noexcept
+OGLShaderObject::removeShader(ShaderPtr shader) noexcept
 {
-    glUseProgram(0);
+    auto it = std::find(_shaders.begin(), _shaders.end(), shader);
+    if (it != _shaders.end())
+    {
+        _shaders.erase(it);
+    }
+}
+
+Shaders&
+OGLShaderObject::getShaders() noexcept
+{
+    return _shaders;
+}
+
+std::size_t
+OGLShaderObject::getInstanceID() noexcept
+{
+    return _program;
+}
+
+ShaderAttributes&
+OGLShaderObject::getActiveAttributes() noexcept
+{
+    return _activeAttributes;
+}
+
+ShaderUniforms&
+OGLShaderObject::getActiveUniforms() noexcept
+{
+    return _activeUniforms;
+}
+
+ShaderSubroutines&
+OGLShaderObject::getActiveSubroutines() noexcept
+{
+    return _activeSubroutines;
 }
 
 void
-OGLShaderProgram::_initActiveAttribute() noexcept
+OGLShaderObject::_initActiveAttribute() noexcept
 {
     GLint numAttribute = 0;
     GLint maxAttribute = 0;
@@ -234,10 +250,11 @@ OGLShaderProgram::_initActiveAttribute() noexcept
 }
 
 void
-OGLShaderProgram::_initActiveUniform() noexcept
+OGLShaderObject::_initActiveUniform() noexcept
 {
     GLint numUniform = 0;
     GLint maxUniformLength = 0;
+    GLint numTexUnit = 0;
 
     glGetProgramiv(_program, GL_ACTIVE_UNIFORMS, &numUniform);
     glGetProgramiv(_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformLength);
@@ -265,6 +282,7 @@ OGLShaderProgram::_initActiveUniform() noexcept
         auto uniform = std::make_shared<ShaderUniform>();
         uniform->setName(nameUniform.get());
         uniform->setLocation(location);
+        uniform->setBindingProgram(_program);
 
         if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
             type == GL_SAMPLER_2D_SHADOW ||
@@ -272,7 +290,7 @@ OGLShaderProgram::_initActiveUniform() noexcept
             type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
         {
             uniform->setType(SPT_TEXTURE);
-            uniform->setBindingPoint(_numTexUnit++);
+            uniform->setBindingPoint(numTexUnit++);
         }
         else
         {
@@ -303,7 +321,7 @@ OGLShaderProgram::_initActiveUniform() noexcept
 }
 
 void
-OGLShaderProgram::_initActiveUniformBlock() noexcept
+OGLShaderObject::_initActiveUniformBlock() noexcept
 {
     GLint numUniformBlock = 0;
     GLint maxUniformBlockLength = 0;
@@ -350,7 +368,7 @@ OGLShaderProgram::_initActiveUniformBlock() noexcept
                 glGetActiveUniformsiv(_program, count, (GLuint*)&indices[0], GL_UNIFORM_TYPE, &type[0]);
                 glGetActiveUniformsiv(_program, count, (GLuint*)&indices[0], GL_UNIFORM_SIZE, &datasize[0]);
 
-                for (GLuint j = 0; j < count; ++j)
+                for (GLint j = 0; j < count; ++j)
                 {
                     GLsizei length = 0;
                     glGetActiveUniformName(_program, indices[j], maxUniformLength, &length, name.data());
@@ -369,7 +387,7 @@ OGLShaderProgram::_initActiveUniformBlock() noexcept
 }
 
 void
-OGLShaderProgram::_initActiveSubroutine() noexcept
+OGLShaderObject::_initActiveSubroutine() noexcept
 {
 #if !defined(EGLAPI)
     GLint numSubroutines = 0;
@@ -401,7 +419,7 @@ OGLShaderProgram::_initActiveSubroutine() noexcept
 }
 
 /*void
-OGLShaderProgram::onAttachSubroutine(std::shared_ptr<ShaderObject::Subroutine> subroutine) noexcept
+OGLShaderObject::onAttachSubroutine(std::shared_ptr<ShaderObject::Subroutine> subroutine) noexcept
 {
     if (_program)
     {

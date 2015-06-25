@@ -34,12 +34,22 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_OGL_GEOMETRY_H_
-#define _H_OGL_GEOMETRY_H_
+#ifndef _H_OGL_BUFFER_H_
+#define _H_OGL_BUFFER_H_
 
 #include <ray/ogl_types.h>
 
 _NAME_BEGIN
+
+class OGLRenderBuffer final : public RenderBuffer
+{
+public:
+    OGLRenderBuffer();
+    ~OGLRenderBuffer();
+
+    void setup() except;
+    void close() noexcept;
+};
 
 _NAME_END
 

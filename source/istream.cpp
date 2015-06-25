@@ -150,7 +150,7 @@ istream::open(const std::wstring& filename) noexcept
 }
 
 istream&
-istream::read(char_type* str, std::streamsize cnt) noexcept
+istream::read(char* str, std::streamsize cnt) noexcept
 {
     assert(cnt != 0);
 
@@ -179,7 +179,7 @@ istream::read(char_type* str, std::streamsize cnt) noexcept
 }
 
 istream&
-istream::read(char_type* str, streamsize size, streamsize cnt) noexcept
+istream::read(char* str, streamsize size, streamsize cnt) noexcept
 {
     return this->read(str, size * cnt);
 }

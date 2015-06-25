@@ -4,6 +4,7 @@ INCLUDE_DIRECTORIES(${INCLUDE_PATH})
 
 FOREACH(samples
     cubes
+    360vr
 )
 ADD_SUBDIRECTORY(${samples})
 

@@ -43,6 +43,8 @@ Terrain::Terrain() noexcept
     , _signRadius(10)
     , _hitRadius(100)
     , _size(32)
+    , _scale(2)
+    , _dayTimer(0)
 {
     _maxInstances = std::numeric_limits<ItemID>::max();
     _maxChunks = _deleteRadius  * _deleteRadius * _deleteRadius;
@@ -122,6 +124,24 @@ Terrain::onFrame() except
         this->createChunks();
 
     this->hitChunks();
+
+    /*auto sun = this->find<ray::GameObject>("sun");
+    if (sun)
+    {
+        float dayTimer = this->getGameServer()->getTimer()->elapsed() / 50;
+        dayTimer -= int(dayTimer);
+
+        _dayTimer += this->getGameServer()->getTimer()->delta() / 50;
+
+        float sunY = cos(_dayTimer);
+        float sunZ = sin(_dayTimer);
+
+        auto pos = sun->getTranslate();
+        pos.y = sunY * 50;
+        pos.z = sunZ * 50;
+
+        sun->setTranslate(pos);
+    }*/
 }
 
 void
@@ -137,6 +157,103 @@ Terrain::addItem(TerrainItemPtr item) noexcept
 void
 Terrain::removeItem(TerrainItemPtr item) noexcept
 {
+}
+
+bool
+Terrain::addBlockByMousePos(int x, int y) noexcept
+{
+    ray::Vector3 pos(x, y, 1);
+
+    auto player = find<ray::GameObject>("first_person_camera");
+    if (!player)
+        return false;
+
+    auto translate = player->getTranslate();
+
+    auto world = player->getComponent<ray::CameraComponent>()->unproject(pos);
+    auto view = world - player->getTranslate();
+    view.normalize();
+
+    ray::int3 out;
+    auto chunk = hitTest(translate, view, out);
+    if (chunk)
+    {
+        int hw = 0;
+        ray::float3 cur(out.x, out.y, out.z);
+        ray::int3 block = out;
+
+        int x, y, z;
+        chunk->getPosition(x, y, z);
+
+        int ix = x;
+        int iy = y;
+        int iz = z;
+
+        do
+        {
+            cur.x -= view.x;
+            cur.y -= view.y;
+            cur.z -= view.z;
+
+            block.x = roundf(cur.x);
+            block.y = roundf(cur.y);
+            block.z = roundf(cur.z);
+
+            if (block.x > _size) ix++;
+            if (block.y > _size) iy++;
+            if (block.z > _size) iz++;
+            if (block.x < 0) ix--;
+            if (block.y < 0) iy--;
+            if (block.z < 0) iz--;
+
+            if (ix != x || iy != y || iz != z)
+            {
+                chunk = this->findChunk(ix, iy, iz);
+                x = ix;
+                y = iy;
+                z = iz;
+            }
+
+            if (chunk)
+            {
+                hw = chunk->get(block.x, block.y, block.z);
+            }
+        } while (hw);
+
+        if (chunk && hw == 0)
+        {
+            chunk->set(block.x, block.y, block.z, 1);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool
+Terrain::removeBlockByMousePos(int x, int y) noexcept
+{
+    ray::Vector3 pos(x, y, 1);
+
+    auto player = find<ray::GameObject>("first_person_camera");
+    if (!player)
+        return false;
+
+    auto translate = player->getTranslate();
+
+    auto world = player->getComponent<ray::CameraComponent>()->unproject(pos);
+    auto view = world - player->getTranslate();
+    view.normalize();
+
+    ray::int3 out;
+    auto chunk = hitTest(translate, view, out);
+    if (chunk)
+    {
+        chunk->set(out.x, out.y, out.z, 0);
+        return true;
+    }
+
+    return false;
 }
 
 void
@@ -294,59 +411,17 @@ Terrain::hitChunks() noexcept
     auto inputFeatures = this->getGameServer()->getFeature<ray::InputFeatures>();
     if (inputFeatures)
     {
-        auto player = find<ray::GameObject>("first_person_camera");
-        auto translate = player->getTranslate();
-
         auto input = inputFeatures->getInput();
-        if (input && input->getButtonDown(ray::InputButton::MOUSE0))
+        if (input->getButtonDown(ray::InputButton::MOUSE0))
         {
-            ray::Vector3 pos;
-            pos.x = input->getMousePosX();
-            pos.y = input->getMousePosY();
-            pos.z = 1;
-
-            auto world = player->getComponent<ray::CameraComponent>()->unproject(pos);
-            auto view = world - player->getTranslate();
-            view.normalize();
-
-            ray::int3 out;
-            auto chunk = hitTest(translate, view, out);
-            if (chunk)
+            if (input->getKey(ray::InputKey::LCTRL) || input->isLockedCursor())
             {
-                chunk->set(out.x, out.y, out.z, 0);
+                this->removeBlockByMousePos(input->getMousePosX(), input->getMousePosY());
             }
         }
-        else if (input && input->getButtonDown(ray::InputButton::MOUSE2))
+        else if (input->getButtonDown(ray::InputButton::MOUSE2))
         {
-            ray::Vector3 pos;
-            pos.x = input->getMousePosX();
-            pos.y = input->getMousePosY();
-            pos.z = 1;
-
-            auto world = player->getComponent<ray::CameraComponent>()->unproject(pos);
-            auto view = world - player->getTranslate();
-            view.normalize();
-
-            ray::int3 out;
-            auto chunk = hitTest(translate, view, out);
-            if (chunk)
-            {
-                ray::float3 cur(out.x, out.y, out.z);
-                ray::int3 block = out;
-
-                while (out == block)
-                {
-                    cur.x -= view.x;
-                    cur.y -= view.y;
-                    cur.z -= view.z;
-
-                    block.x = floorf(cur.x);
-                    block.y = floorf(cur.y);
-                    block.z = floorf(cur.z);
-                }
-
-                chunk->set(block.x, block.y, block.z, 1);
-            }
+            this->addBlockByMousePos(input->getMousePosX(), input->getMousePosY());
         }
     }
 }
@@ -362,15 +437,21 @@ Terrain::hitTest(const ray::Vector3& translate, const ray::Vector3& view, ray::i
     float lastY = y;
     float lastZ = z;
 
+    int px = 0;
+    int py = 0;
+    int pz = 0;
+
     float cur = 0;
     float step = view.length();
 
     auto chunk = this->findChunk(x, y, z);
 
     ray::Vector3 pos;
-    pos.x = roundf((translate.x - unchunk(x)) * 0.5);
-    pos.y = roundf((translate.y - unchunk(y)) * 0.5);
-    pos.z = roundf((translate.z - unchunk(z)) * 0.5);
+    pos.x = (translate.x - unchunk(x));
+    pos.y = (translate.y - unchunk(y));
+    pos.z = (translate.z - unchunk(z));
+
+    int scaleSize = _size * _scale;
 
     while (cur < _hitRadius)
     {
@@ -385,16 +466,23 @@ Terrain::hitTest(const ray::Vector3& translate, const ray::Vector3& view, ray::i
 
         if (chunk)
         {
-            int nx = floorf(pos.x);
-            int ny = floorf(pos.y);
-            int nz = floorf(pos.z);
-
-            if (chunk->get(nx, ny, nz))
+            int nx = roundf(pos.x * 0.5);
+            int ny = roundf(pos.y * 0.5);
+            int nz = roundf(pos.z * 0.5);
+            if (nx != px || ny != py || nz != pz)
             {
-                out.x = nx;
-                out.y = ny;
-                out.z = nz;
-                return chunk;
+                int hw = chunk->get(nx, ny, nz);
+                if (hw > 0)
+                {
+                    out.x = nx;
+                    out.y = ny;
+                    out.z = nz;
+                    return chunk;
+                }
+
+                px = nx;
+                py = ny;
+                pz = nz;
             }
         }
 
@@ -402,12 +490,12 @@ Terrain::hitTest(const ray::Vector3& translate, const ray::Vector3& view, ray::i
         pos.y += view.y;
         pos.z += view.z;
 
-        if (pos.x < 0) { pos.x = _size; x--; }
-        if (pos.y < 0) { pos.y = _size; y--; }
-        if (pos.z < 0) { pos.z = _size; z--; }
-        if (pos.x > _size) { pos.x = 0; x++; }
-        if (pos.y > _size) { pos.y = 0; y++; }
-        if (pos.z > _size) { pos.z = 0; z++; }
+        if (pos.x < 0) { pos.x = scaleSize; x--; }
+        if (pos.y < 0) { pos.y = scaleSize; y--; }
+        if (pos.z < 0) { pos.z = scaleSize; z--; }
+        if (pos.x > scaleSize) { pos.x = 0; x++; }
+        if (pos.y > scaleSize) { pos.y = 0; y++; }
+        if (pos.z > scaleSize) { pos.z = 0; z++; }
 
         cur += step;
     }
@@ -458,13 +546,13 @@ Terrain::dispose(std::shared_ptr<TerrainThread> ctx) noexcept
 int
 Terrain::chunked(float x) noexcept
 {
-    return  std::floorf(std::roundf(x) / (_size * 2));
+    return  std::floorf(std::roundf(x) / (_size * _scale));
 }
 
 float
 Terrain::unchunk(int x) noexcept
 {
-    return x * _size * 2;
+    return x * _size * _scale;
 }
 
 ray::GameComponentPtr

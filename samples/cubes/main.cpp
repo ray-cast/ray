@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/game_application.h>
-#include <ray/game_object.h>
 #include <ray/game_scene.h>
 
 #include "terrain.h"
@@ -48,7 +47,9 @@ int main()
     {
         ray::Application app;
         if (!app.initialize())
-            return false;
+        {
+            throw ray::failure("App::initialize() fail");
+        }
 
         ray::GameApplication game;
 
@@ -92,6 +93,14 @@ int main()
                     game.update();
                 }
             }
+            else
+            {
+                throw ray::failure("Scene::find('cubes') fail");
+            }
+        }
+        else
+        {
+            throw ray::failure("App::openScene('dlc:cube\\scene.map') fail");
         }
     }
     catch (const std::exception& e)

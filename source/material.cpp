@@ -50,7 +50,7 @@ Material::~Material() noexcept
 }
 
 void
-Material::setup() noexcept
+Material::setup() except
 {
     for (auto& param : _parameters)
     {
@@ -109,6 +109,9 @@ Material::close() noexcept
         for (auto& pass : passList)
         {
             auto shaderObject = pass->getShaderObject();
+            if (!shaderObject)
+                continue;
+
             if (!shaderObject)
                 continue;
 

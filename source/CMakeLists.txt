@@ -26,6 +26,7 @@ SET(HEADER_PATH ${INCLUDE_PATH}/${LIB_NAME})
 SET(SOURCE_PATH ${CODE_PATH})
 
 ADD_DEFINITIONS(-D_BUILD_DLL_EXPORT)
+ADD_DEFINITIONS(-D_ALLOW_KEYWORD_MACROS)
 
 IF(BUILD_GLEW_SHARED)
     ADD_DEFINITIONS(-DGLEW_MX)
@@ -326,17 +327,19 @@ TARGET_LINK_LIBRARIES(libgui
 )
 
 SET(RENDERER_CORE
-    ${HEADER_PATH}/render_types.h
-    ${HEADER_PATH}/render_buffer.h
     ${SOURCE_PATH}/render_buffer.cpp
+    ${HEADER_PATH}/render_buffer.h
     ${HEADER_PATH}/render_device.h
     ${SOURCE_PATH}/render_device.cpp
+    ${HEADER_PATH}/render_factory.h
+    ${SOURCE_PATH}/render_factory.cpp
     ${HEADER_PATH}/render_impl.h
     ${SOURCE_PATH}/render_impl.cpp
     ${HEADER_PATH}/render_state.h
     ${SOURCE_PATH}/render_state.cpp
     ${HEADER_PATH}/render_texture.h
     ${SOURCE_PATH}/render_texture.cpp
+    ${HEADER_PATH}/render_types.h
     ${HEADER_PATH}/shader.h
     ${SOURCE_PATH}/shader.cpp
     ${HEADER_PATH}/texture.h
@@ -345,18 +348,22 @@ SET(RENDERER_CORE
 SOURCE_GROUP("core" FILES ${RENDERER_CORE})
 
 SET(RENDERER_OGL
-    ${HEADER_PATH}/ogl_types.h
-    ${SOURCE_PATH}/ogl_types.cpp
+    ${HEADER_PATH}/ogl_buffer.h
+    ${SOURCE_PATH}/ogl_buffer.cpp
     ${HEADER_PATH}/ogl_renderer.h
     ${SOURCE_PATH}/ogl_renderer.cpp
     ${HEADER_PATH}/ogl_commandlist.h
     ${SOURCE_PATH}/ogl_commandlist.cpp
-    ${HEADER_PATH}/ogl_state.h
-    ${SOURCE_PATH}/ogl_state.cpp
-    ${HEADER_PATH}/ogl_shader.h
-    ${SOURCE_PATH}/ogl_shader.cpp
     ${HEADER_PATH}/ogl_extenstion.h
     ${SOURCE_PATH}/ogl_extenstion.cpp
+    ${HEADER_PATH}/ogl_shader.h
+    ${SOURCE_PATH}/ogl_shader.cpp
+    ${HEADER_PATH}/ogl_state.h
+    ${SOURCE_PATH}/ogl_state.cpp
+    ${HEADER_PATH}/ogl_texture.h
+    ${SOURCE_PATH}/ogl_texture.cpp
+    ${HEADER_PATH}/ogl_types.h
+    ${SOURCE_PATH}/ogl_types.cpp
     ${HEADER_PATH}/wgl_canvas.h
     ${SOURCE_PATH}/wgl_canvas.cpp
 )
@@ -432,6 +439,8 @@ SET(RENDERER_POST_PROCESS
     ${SOURCE_PATH}/light_shaft.cpp
     ${HEADER_PATH}/ssao.h
     ${SOURCE_PATH}/ssao.cpp
+    ${HEADER_PATH}/ssgi.h
+    ${SOURCE_PATH}/ssgi.cpp
     ${HEADER_PATH}/ssr.h
     ${SOURCE_PATH}/ssr.cpp
     ${HEADER_PATH}/post_process.h

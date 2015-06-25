@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <effect version="1270" language="glsl">
+    <include name="sys:fx/common.glsl"/>
     <parameter name="matModel" semantic="matModel" />
     <parameter name="matViewProject" semantic="matViewProject" />
     <parameter name="matViewProjectInverse" semantic="matViewProjectInverse"/>
@@ -23,20 +24,60 @@
     <parameter name="shadowMap" type="sampler2D" />
     <parameter name="shadowFactor" type="float"/>
     <parameter name="shadowMatrix" type="mat4" />
-    <shader>
+    <shader name="vertex">
         <![CDATA[
-            #extension GL_EXT_texture_array : enable
-
             uniform mat4 matModel;
             uniform mat4 matViewProject;
+
+            out vec4 position;
+            out float range;
+            out float spotRange;
+            out vec3 spotDirection;
+
+            uniform vec3 lightDirection;
+            uniform float lightRange;
+
+            void DeferredDepthOhlyVS()
+            {
+                gl_Position = matViewProject * matModel * glsl_Position;
+            }
+
+            void DeferredSunLightVS()
+            {
+                gl_Position = position = glsl_Position;
+            }
+
+            void DeferredSpotLightVS()
+            {
+                spotRange = lightRange;
+                spotDirection = lightDirection;
+
+                vec3 vertex = glsl_Position.xyz * lightRange + lightDirection * lightRange;
+                gl_Position = position = matViewProject * matModel * vec4(vertex, 1.0);
+            }
+
+            void DeferredPointLightVS()
+            {
+                range = lightRange;
+                gl_Position = position = matViewProject * matModel * vec4(glsl_Position.xyz * lightRange, 1.0);
+            }
+
+            void DeferredShadingVS()
+            {
+                gl_Position = glsl_Position;
+            }
+        ]]>
+    </shader>
+    <shader name="fragment">
+        <![CDATA[
+            //#extension GL_EXT_texture_array : enable
+
             uniform mat4 matViewProjectInverse;
 
             uniform vec3 lightColor;
-            uniform vec3 lightDirection;
             uniform vec3 lightPosition;
+            uniform vec3 lightDirection;
             uniform vec3 lightAmbient;
-
-            uniform float lightRange;
             uniform float lightIntensity;
 
             uniform float spotAngle;
@@ -56,12 +97,12 @@
             uniform int  shadowChannel;
             uniform mat4 shadowMatrix;
             uniform sampler2D shadowMap;
-            uniform sampler2DArray shadowArrayMap;
+            //uniform sampler2DArray shadowArrayMap;
 
-            varying vec4 position;
-            varying float range;
-            varying float spotRange;
-            varying vec3 spotDirection;
+            in vec4 position;
+            in float range;
+            in float spotRange;
+            in vec3 spotDirection;
 
             #define PIE 3.1415926
 
@@ -97,7 +138,7 @@
                 return clamp(occluder * exp(-shadowFactor * proj.z), 0, 1);
             }
 
-            float shadowLighting(int index, vec3 world)
+            /*float shadowLighting(int index, vec3 world)
             {
                 vec4 proj = shadowMatrix * vec4(world, 1.0);
                 proj.xy /= proj.w;
@@ -135,7 +176,7 @@
                 }
 
                 return shadowLighting(index, world);
-            }
+            }*/
 
             float fresnelSchlick(float specular, float LdotH)
             {
@@ -182,7 +223,7 @@
                     float F = fresnelSchlick(specular, lh);
                     float G = geometricShadowingSmith(roughness, nl, nv);
 
-                    return (D * F * G) * nl;
+                    return D * F * G * nl;
                 }
 
                 return 0;
@@ -212,7 +253,7 @@
                 vec3 L = normalize(lightDirection);
                 vec3 V = normalize(eyePosition - P);
 
-                return vec4(lightColor * brdfLambert(N, L), brdfCookTorrance(N, V, L, roughness, specular));
+                return vec4(lightColor * (brdfLambert(N, L) + brdfCookTorrance(N, V, L, roughness, specular)), 1.0);
             }
 
             vec4 spotLight(vec3 P, vec3 N, float sp, float sc)
@@ -279,39 +320,6 @@
                 return vec4(lightColor * lighting, 0.0);
             }
 
-#if SHADER_API_VERTEX
-            void DeferredDepthOhlyVS()
-            {
-                gl_Position = matViewProject * matModel * glsl_Position;
-            }
-
-            void DeferredSunLightVS()
-            {
-                gl_Position = position = glsl_Position;
-            }
-
-            void DeferredSpotLightVS()
-            {
-                spotRange = lightRange;
-                spotDirection = lightDirection;
-
-                vec3 vertex = glsl_Position.xyz * lightRange + lightDirection * lightRange;
-                gl_Position = position = matViewProject * matModel * vec4(vertex, 1.0);
-            }
-
-            void DeferredPointLightVS()
-            {
-                range = lightRange;
-                gl_Position = position = matViewProject * matModel * vec4(glsl_Position.xyz * lightRange, 1.0);
-            }
-
-            void DeferredShadingVS()
-            {
-                gl_Position = glsl_Position;
-            }
-#endif
-
-#if SHADER_API_FRAGMENT
             void DeferredDepthOhlyPS()
             {
             }
@@ -336,12 +344,12 @@
 
                 vec4 N = texelFetch(texNormal, ivec2(gl_FragCoord.xy), 0);
 
-                float shininess = floor(N.a);
+                float roughness = floor(N.a);
                 float specular = fract(N.a);
 
                 vec3 world = unproject(position.xy / position.w, depth).xyz;
 
-                glsl_FragColor0 = directionalLight(world, N.rgb, shininess, specular) * shadowLighting(world);
+                glsl_FragColor0 = directionalLight(world, N.rgb, roughness, specular) * shadowLighting(world);
             }
 
             void DeferredSpotLightPS()
@@ -350,12 +358,12 @@
 
                 vec4 N = texelFetch(texNormal, ivec2(gl_FragCoord.xy), 0);
 
-                float shininess = floor(N.a);
+                float roughness = floor(N.a);
                 float specular = fract(N.a);
 
                 vec3 world = unproject(position.xy / position.w, depth).xyz;
 
-                glsl_FragColor0 = spotLight(world, N.rgb, shininess, specular);
+                glsl_FragColor0 = spotLight(world, N.rgb, roughness, specular);
             }
 
             void DeferredPointLightPS()
@@ -364,12 +372,12 @@
 
                 vec4 N = texelFetch(texNormal, ivec2(gl_FragCoord.xy), 0);
 
-                float shininess = floor(N.a);
+                float roughness = floor(N.a);
                 float specular = fract(N.a);
 
                 vec3 world = unproject(position.xy / position.w, depth).xyz;
 
-                glsl_FragColor0 = pointLight(world, N.rgb, shininess, specular);
+                glsl_FragColor0 = pointLight(world, N.rgb, roughness, specular);
             }
 
             void DeferredShadingOpaquesPS()
@@ -377,7 +385,7 @@
                 vec4 diffuse = texelFetch(texDiffuse, ivec2(gl_FragCoord.xy), 0);
                 vec4 light = texelFetch(texLight, ivec2(gl_FragCoord.xy), 0);
 
-                vec3 color = diffuse.rgb * (lightAmbient + light.rgb + light.www);
+                vec3 color = diffuse.rgb * (lightAmbient + light.rgb);
 
                 glsl_FragColor0 = vec4(color, 1.0);
             }
@@ -387,11 +395,10 @@
                 vec4 diffuse = texelFetch(texDiffuse, ivec2(gl_FragCoord.xy), 0);
                 vec4 light = texelFetch(texLight, ivec2(gl_FragCoord.xy), 0);
 
-                vec3 color = diffuse.rgb * (lightAmbient + light.rgb + light.www);
+                vec3 color = diffuse.rgb * (lightAmbient + light.rgb);
 
                 glsl_FragColor0 = vec4(color, diffuse.a);
             }
-#endif
         ]]>
     </shader>
     <technique name="deferredlight">

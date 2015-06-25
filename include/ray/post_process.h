@@ -50,7 +50,7 @@ public:
     void setActive(bool active) except;
     bool getActive() const except;
 
-    virtual void render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept = 0;
+    virtual void render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept = 0;
 
 protected:
 

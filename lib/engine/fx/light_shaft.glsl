@@ -1,74 +1,87 @@
 <?xml version='1.0'?>
 <effect version="1270" language="glsl">
+    <include name="sys:fx/common.glsl"/>
+    <parameter name="texDepth" semantic="DepthMap" />
     <parameter name="texSource" type="sampler2D" />
-    <parameter name="lightPosition" type="float2" />
-    <shader type="vertex">
+    <parameter name="illuminationPosition" type="float2" />
+    <parameter name="illuminationSample" type="float4" />
+    <parameter name="cameraRadio" type="float" />
+    <shader name="vertex">
         <![CDATA[
-            #version 330 core
-
-            layout(location = 0) in vec4 position;
-
             out vec2 texcoord;
 
-            void main()
+            void LightShaftVS()
             {
-                texcoord = position.xy * 0.5 + 0.5;
-                gl_Position = position;
+                texcoord = glsl_Texcoord.xy;
+                gl_Position = glsl_Position;
             }
         ]]>
     </shader>
-    <shader type="fragment">
+    <shader name="fragment">
         <![CDATA[
-            #version 330
-
-            layout(location = 0) out vec3 oColor;
-
             in vec2 texcoord;
 
-            uniform vec2 lightPosition; //scene space
+            uniform vec2 illuminationPosition; //scene space
+            uniform vec4 illuminationSample; // x : number sample; y : inv samples; z : weight w : decay
+            uniform float cameraRadio;
             uniform sampler2D texSource;
+            uniform sampler2D texDepth;
 
-            const int sampleNumber = 50;
-            const float decay    = 0.995;
-            const float density  = 1.0;
-            const float weight   = 1.0;
-            const float exposure = 1 / sampleNumber;
-
-            void main()
+            void LightShaftPS()
             {
-                vec2 delta = vec2(texcoord - lightPosition) * (1 / sampleNumber) * density;
-
-                float illuminationDecay = 1.0;
-
+                vec2 delta = vec2(illuminationPosition - texcoord) * illuminationSample.y;
                 vec2 coord = texcoord;
-                vec3 color = texture2D(texSource, coord).rgb;
+                vec4 color = vec4(0, 0, 0, 0);
 
-                for (int i = 0; i < sampleNumber ; i++)
+                float decay = 1.0;
+
+                for (int i = 0; i < illuminationSample.x; i++)
                 {
-                    coord -= delta;
+                    vec4 sample = vec4(texture2D(texSource, coord).rgb, texture2D(texDepth, coord).r * 2.0 - 1.0);
+                    sample *= decay * illuminationSample.z;
 
-                    vec3 sample = texture2D(texSource, coord).rgb;
-                    sample *= illuminationDecay * weight;
                     color += sample;
-
-                    illuminationDecay *= decay;
+                    coord += delta;
+                    decay -= illuminationSample.w;
                 }
 
-                oColor = color;
+                glsl_FragColor0 = color ;
+            }
+
+            void LightShaftCopy()
+            {
+                vec4 sample = texture2D(texSource, texcoord);
+
+                float alpha = mix(0, 1, sample.w);
+                float dist = length((illuminationPosition - texcoord) * vec2(cameraRadio, 1));
+                float distDecay = smoothstep(0, 1, dist);
+
+                vec4 color = sample * alpha * (1 - distDecay);
+                color.a = mix(0.4 * distDecay, 1, alpha);
+                color.a = mix(color.a, 1, distDecay);
+
+                glsl_FragColor0 = color;
             }
         ]]>
     </shader>
     <technique name="postprocess">
-        <pass name="godray">
+        <pass name="scatter">
+            <state name="vertex" value="LightShaftVS"/>
+            <state name="fragment" value="LightShaftPS"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+        <pass name="copy">
+            <state name="vertex" value="LightShaftVS"/>
+            <state name="fragment" value="LightShaftCopy"/>
+
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
 
-            <state name="blend" value="true" />
-            <state name="blendSeparate" value="true" />
-            <state name="blendsrc" value="one" />
-            <state name="blenddst" value="zero" />
-            <state name="blendalphasrc" value="one" />
-            <state name="blendalphadst" value="zero" />
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="one"/>
+            <state name="blenddst" value="srcalpha"/>
         </pass>
     </technique>
 </effect>

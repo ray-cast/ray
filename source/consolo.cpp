@@ -63,13 +63,13 @@ consolebuf::open(const wchar_t* filename, const ios_base::openmode mode) noexcep
 }
 
 streamsize
-consolebuf::read(char_type* str, std::streamsize cnt) noexcept
+consolebuf::read(char* str, std::streamsize cnt) noexcept
 {
     return std::cin.read(str, cnt).gcount();
 }
 
 streamsize
-consolebuf::write(const char_type* str, std::streamsize cnt) noexcept
+consolebuf::write(const char* str, std::streamsize cnt) noexcept
 {
     std::cout.write(str, cnt);
     return cnt;

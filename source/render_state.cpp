@@ -55,8 +55,8 @@ RenderRasterState::RenderRasterState() noexcept
     : cullMode(GPU_CULL_BACK)
     , fillMode(GPU_SOLID_MODE)
     , scissorTestEnable(false)
-    , multisampleEnable(false)
     , srgbEnable(false)
+    , multisampleEnable(false)
     , pointSizeEnable(false)
 {
 }
@@ -103,6 +103,16 @@ RenderState::RenderState() noexcept
 }
 
 RenderState::~RenderState() noexcept
+{
+}
+
+void
+RenderState::setup() noexcept
+{
+}
+
+void
+RenderState::close() noexcept
 {
 }
 

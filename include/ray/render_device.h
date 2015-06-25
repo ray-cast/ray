@@ -47,46 +47,40 @@ _NAME_BEGIN
 class EXPORT RenderDevice
 {
 public:
-    RenderDevice() noexcept;
+    RenderDevice() except;
     virtual ~RenderDevice() noexcept;
 
     virtual bool open(WindHandle win) except = 0;
     virtual void close() noexcept = 0;
 
+    virtual void renderBegin() except = 0;
+    virtual void renderEnd() except = 0;
+
+    virtual void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept = 0;
+    virtual void clear(std::size_t i, ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept = 0;
+
+    virtual void setViewport(std::size_t i, const Viewport& viewport) noexcept = 0;
+    virtual const Viewport& getViewport(std::size_t i) const noexcept = 0;
+
     virtual void setSwapInterval(SwapInterval interval) noexcept = 0;
     virtual SwapInterval getSwapInterval() const noexcept = 0;
 
-    virtual void setRenderState(RenderStatePtr state) noexcept = 0;
-
-    virtual bool createRenderBuffer(RenderBuffer& buffer) noexcept = 0;
+    virtual bool createRenderBuffer(RenderBuffer& buffer) except = 0;
     virtual void destroyRenderBuffer(RenderBuffer& buffer) noexcept = 0;
+    virtual void updateRenderBuffer(RenderBufferPtr buffer) except = 0;
     virtual void setRenderBuffer(RenderBufferPtr buffer) noexcept = 0;
-    virtual void updateRenderBuffer(RenderBufferPtr buffer) noexcept = 0;
     virtual void drawRenderBuffer(const Renderable& renderable) noexcept = 0;
 
-    virtual bool createRenderTexture(RenderTexture& target) noexcept = 0;
-    virtual void destroyRenderTexture(RenderTexture& target) noexcept = 0;
-    virtual void setRenderTexture(RenderTexturePtr target) noexcept = 0;
-    virtual void copyRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderTexturePtr dest, const Viewport& v2) noexcept = 0;
-    virtual void readRenderTexture(RenderTexturePtr source, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept = 0;
+    virtual void setRenderTarget(RenderTargetPtr target) noexcept = 0;
+    virtual void setMultiRenderTarget(MultiRenderTargetPtr target) except = 0;
+    virtual void copyRenderTarget(RenderTargetPtr src, const Viewport& v1, RenderTargetPtr dest, const Viewport& v2) noexcept = 0;
+    virtual void readRenderTarget(RenderTargetPtr source, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept = 0;
 
-    virtual bool createMultiRenderTexture(MultiRenderTexture& desc) noexcept = 0;
-    virtual void destroyMultiRenderTexture(MultiRenderTexture& target) noexcept = 0;
-    virtual void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept = 0;
+    virtual void setRenderState(RenderStatePtr state) except = 0;
 
-    virtual bool createTexture(Texture& texture) noexcept = 0;
-    virtual void destroyTexture(Texture& texture) noexcept = 0;
-
-    virtual ShaderProgramPtr createShaderProgram(std::vector<ShaderPtr>& shaders) noexcept = 0;
-    virtual void destroyShaderProgram(ShaderProgramPtr shader) noexcept = 0;
-    virtual void setShaderProgram(ShaderProgramPtr shader) noexcept = 0;
-
-    virtual bool createShaderVariant(ShaderVariant& constant) noexcept = 0;
-    virtual void destroyShaderVariant(ShaderVariant& constant) noexcept = 0;
-    virtual void setShaderVariant(ShaderVariantPtr constant, ShaderUniformPtr uniform) noexcept = 0;
-
-    virtual void renderBegin() noexcept = 0;
-    virtual void renderEnd() noexcept = 0;
+    virtual void setShaderObject(ShaderObjectPtr shader) except = 0;
+    virtual void setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constant) except = 0;
+    virtual void setShaderUniform(ShaderUniformPtr uniform, TexturePtr texture) except = 0;
 
 private:
     RenderDevice(const RenderDevice&) noexcept = delete;

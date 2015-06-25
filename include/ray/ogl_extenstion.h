@@ -253,21 +253,22 @@ enum OGLFeatures
     ARB_vertex_array_object,
     ARB_vertex_attrib_binding,
     ARB_provoking_vertex,
-    EXT_direct_state_access,
+    ARB_direct_state_access,
+    ARB_viewport_array,
     EXT_swap_control,
     NV_command_list,
     NV_shader_buffer_load,
     NV_vertex_buffer_unified_memory
 };
 
-class OGLExtenstion
+class OGLExtenstion final
 {
 public:
     OGLExtenstion() noexcept;
     ~OGLExtenstion() noexcept;
 
-    static int initWGLExtensions(HDC hdc) except;
-    static int initCommandListNV() noexcept;
+    static bool initWGLExtensions(HDC hdc) except;
+    static bool initCommandListNV() noexcept;
 
     static bool isSupport(OGLFeatures feature) noexcept;
 
@@ -283,7 +284,8 @@ private:
     static bool _ARB_vertex_array_object;
     static bool _ARB_vertex_attrib_binding;
     static bool _ARB_provoking_vertex;
-    static bool _EXT_direct_state_access;
+    static bool _ARB_direct_state_access;
+    static bool _ARB_viewport_array;
     static bool _EXT_swap_control;
     static bool _NV_command_list;
     static bool _NV_shader_buffer_load;

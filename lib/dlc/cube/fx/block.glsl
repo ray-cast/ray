@@ -1,41 +1,41 @@
 <?xml version='1.0'?>
 <effect language="glsl">
+    <include name="sys:fx/common.glsl"/>
     <parameter name="matModel" semantic="matModel" />
     <parameter name="matModelInverseTranspose" semantic="matModelInverseTranspose" />
     <parameter name="matViewProject" semantic="matViewProject"/>
     <parameter name="color" type="float4" />
     <parameter name="shininess" type="float" />
     <parameter name="specular" type="float" />
-    <shader>
+    <shader name="vertex">
         <![CDATA[
             uniform mat4 matModel;
             uniform mat4 matModelInverseTranspose;
-            uniform mat4 matViewInverseTranspose;
             uniform mat4 matViewProject;
 
-            uniform vec4 color;
-            uniform float specular;
-            uniform float shininess;
-            uniform sampler2D decal;
+            out vec4 normal;
 
-            varying vec4 normal;
-
-#if SHADER_API_VERTEX
             void BlockVS()
             {
                 normal = matModelInverseTranspose * glsl_Normal;
                 gl_Position = matViewProject * matModel * glsl_Position;
             }
-#endif
+        ]]>
+    </shader>
+    <shader name="fragment">
+        <![CDATA[
+            uniform vec4 color;
+            uniform float specular;
+            uniform float shininess;
 
-#if SHADER_API_FRAGMENT
+            in vec4 normal;
+
             void BlockPS()
             {
                 glsl_FragColor0.rgba = color;
                 glsl_FragColor1.rgb = normalize(normalize(normal).xyz);
                 glsl_FragColor1.a = shininess + specular;
             }
-#endif
         ]]>
     </shader>
     <technique name="opaque">

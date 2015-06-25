@@ -52,15 +52,20 @@ public:
     virtual bool open(WindHandle hwnd) except;
     virtual void close() noexcept;
 
+    virtual void renderBegin() noexcept;
+    virtual void renderEnd() noexcept;
+
+    virtual void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
+    virtual void clear(std::size_t i, ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
+
+    virtual void setViewport(std::size_t i, const Viewport& view) noexcept;
+    virtual const Viewport& getViewport(std::size_t i = 0) const noexcept;
+
     virtual void setSwapInterval(SwapInterval interval) noexcept;
     virtual SwapInterval getSwapInterval() const noexcept;
 
-    virtual void setBlendState(const RenderBlendState& state) noexcept;
-    virtual void setRasterState(const RenderRasterState& state) noexcept;
-    virtual void setDepthState(const RenderDepthState& state) noexcept;
-    virtual void setStencilState(const RenderStencilState& state) noexcept;
-    virtual void setClearState(const RenderClearState& state) noexcept;
     virtual void setRenderState(RenderStatePtr state) noexcept;
+    virtual RenderStatePtr getRenderState() const noexcept;
 
     virtual bool createRenderBuffer(RenderBuffer& buffer) noexcept;
     virtual void destroyRenderBuffer(RenderBuffer& buffer) noexcept;
@@ -68,44 +73,24 @@ public:
     virtual void updateRenderBuffer(RenderBufferPtr buffer) noexcept;
     virtual void drawRenderBuffer(const Renderable& renderable) noexcept;
 
-    virtual bool createTexture(Texture& texture) noexcept;
-    virtual void destroyTexture(Texture& texture) noexcept;
-    virtual void setTexture(const Texture& value, ShaderUniformPtr uniform) noexcept;
+    virtual void setRenderTarget(RenderTargetPtr target) noexcept;
+    virtual void setMultiRenderTarget(MultiRenderTargetPtr target) noexcept;
+    virtual void readRenderTarget(RenderTargetPtr src, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+    virtual void copyRenderTarget(RenderTargetPtr src, const Viewport& v1, RenderTargetPtr dest, const Viewport& v2) noexcept;
 
-    virtual bool createRenderTexture(RenderTexture& target) noexcept;
-    virtual void destroyRenderTexture(RenderTexture& target) noexcept;
-    virtual void setRenderTexture(RenderTexturePtr target) noexcept;
-    virtual void bindRenderTexture(RenderTexturePtr target, Attachment attachment) noexcept;
-    virtual void copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept;
-    virtual void readRenderTexture(RenderTexturePtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
-
-    virtual bool createMultiRenderTexture(MultiRenderTexture& target) noexcept;
-    virtual void destroyMultiRenderTexture(MultiRenderTexture& target) noexcept;
-    virtual void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept;
-
-    virtual ShaderProgramPtr createShaderProgram(std::vector<ShaderPtr>& shaders) noexcept;
-    virtual void destroyShaderProgram(ShaderProgramPtr shader) noexcept;
-    virtual void setShaderProgram(ShaderProgramPtr shader) noexcept;
+    virtual void setShaderObject(ShaderObjectPtr shader) noexcept;
+    virtual void setShaderUniform(ShaderUniformPtr uniform, TexturePtr texture) noexcept;
+    virtual void setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constant) noexcept;
 
     virtual bool createShaderVariant(ShaderVariant& constant) noexcept;
     virtual void destroyShaderVariant(ShaderVariant& constant) noexcept;
     virtual void updateShaderVariant(ShaderVariantPtr constant) noexcept;
-    virtual void setShaderVariant(ShaderVariantPtr constant, ShaderUniformPtr uniform) noexcept;
-
-    virtual void renderBegin() noexcept;
-    virtual void renderEnd() noexcept;
 
 private:
     void initCommandList() noexcept;
     void initDebugControl() noexcept;
     void initStateSystem() noexcept;
 
-    void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
-    void clear(std::size_t i, ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
-
-    void setViewport(const Viewport& view) noexcept;
-
-    void nvtokenCommandToString(GLenum type, char*& string) noexcept;
     void nvtokenGetStats(const void* stream, size_t streamSize, int stats[GL_MAX_COMMANDS_NV]) noexcept;
     void nvtokenDrawCommandState() noexcept;
     GLenum nvtokenDrawCommandSequence(const void* stream, size_t streamSize, GLenum mode, GLenum type, const State* state) noexcept;
@@ -113,10 +98,6 @@ private:
     static void checkError() noexcept;
     static void checkFramebuffer() noexcept;
     static void GLAPIENTRY debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept;
-
-    static void applyTextureWrap(GLenum, TextureWrap wrap) noexcept;
-    static void applyTextureFilter(GLenum target, TextureFilter filter) noexcept;
-    static void applyTextureAnis(GLenum target, Anisotropy anis) noexcept;
 
 private:
     OGLRenderer(const OGLRenderer&) noexcept = delete;
@@ -129,38 +110,31 @@ private:
 
     OGLCanvasPtr _glcontext;
 
-    RenderBlendState _blendState;
-    RenderRasterState _rasterState;
-    RenderDepthState _depthState;
-    RenderStencilState _stencilState;
-    RenderClearState _clearState;
-    RenderStatePtr _state;
+    GLint _maxViewports;
+    std::vector<Viewport> _viewport;
 
-    Viewport _viewport;
+    MultiRenderTarget::InstanceID _renderTarget;
+    MultiRenderTarget::InstanceID _multiRenderTarget;
 
-    SwapInterval _interval;
-
-    RenderTexturePtr _renderTexture;
-    MultiRenderTexturePtr _multiRenderTexture;
-    std::vector<OGLRenderTexture> _renderTextures;
-    std::vector<OGLRenderTexture> _multiRenderTextures;
-
-    ShaderProgramPtr _shader;
+    GLuint _program;
     std::vector<OGLShaderVariant> _constantBuffers;
 
     GLuint _defaultVAO;
     RenderBufferPtr _renderBuffer;
     std::vector<OGLVertexArray> _renderBuffers;
 
-    GLint _maxTextures;
     GLint _maxTextureUnits;
-    GLint _unpackAlignment;
     std::vector<GLint> _textureUnits;
-    std::vector<OGLTexture> _textures;
 
     // we introduce variables that track when we changed global state
-    StateIncarnation  state;
-    StateIncarnation  captured;
+    RenderState::InstanceID _state;
+    RenderState::InstanceID _captured;
+
+    RenderBlendState _blendState;
+    RenderRasterState _rasterState;
+    RenderDepthState _depthState;
+    RenderStencilState _stencilState;
+    RenderClearState _clearState;
 
     StateSystem _stateSystem;
     StateSystem::StateID  _stateIdDraw;

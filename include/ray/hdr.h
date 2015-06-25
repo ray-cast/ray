@@ -49,55 +49,50 @@ public:
         float bloomFactor;
         float bloomIntensity;
 
-        float lumAdapt;
+        float lumAve;
         float lumKey;
-        float lumMax;
-
-        float exposure;
-        float exposureBias;
-
-        bool vignetteEnable;
-        float vignetteInner;
-        float vignetteOuter;
+        float lumExposure;
 
         Setting() noexcept;
     };
 
 public:
-    HDR() except;
+    HDR() noexcept;
     ~HDR() noexcept;
 
     void setSetting(const Setting& setting) noexcept;
     const Setting& getSetting() const noexcept;
 
-    void render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
+    void render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
 
 private:
 
-    void sample4(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-    void sample8(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-    void sampleLog(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+    void sample4(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept;
+    void sample8(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept;
+    void sampleLog(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept;
 
-    void blurh(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
-    void blurv(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
+    void measureLuminance(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
 
-    void measureLuminance(RenderPipeline& pipeline, RenderTexturePtr source);
+    void generateBloom(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept;
+    void generateToneMapping(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept;
 
-    void generateBloom(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest);
-    void generateToneMapping(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr bloom);
+    void blurh(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
+    void blurv(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
 
     void onActivate() except;
     void onDeactivate() except;
 
 private:
 
+    float _lumAdapt;
+
     Setting _setting;
 
-    RenderTexturePtr _texSample4;
-    RenderTexturePtr _texSample8;
-    RenderTexturePtr _texSampleLog;
+    RenderTargetPtr _texSample4;
+    RenderTargetPtr _texSample8;
+    RenderTargetPtr _texSampleLog;
 
-    RenderTexturePtr _texBloom;
+    RenderTargetPtr _texBloom;
 
     MaterialPtr _hdr;
 
@@ -118,14 +113,7 @@ private:
     ShaderVariantPtr _toneBloom;
     ShaderVariantPtr _toneLumAve;
     ShaderVariantPtr _toneLumKey;
-    ShaderVariantPtr _toneLumMax;
-    ShaderVariantPtr _toneExposure;
-    ShaderVariantPtr _toneExposureBias;
-    ShaderVariantPtr _toneVignetteEnable;
-    ShaderVariantPtr _toneVignetteInner;
-    ShaderVariantPtr _toneVignetteOuter;
-
-    std::vector<float> _data;
+    ShaderVariantPtr _toneLumExposure;
 };
 
 _NAME_END

@@ -65,23 +65,26 @@ enum Attachment
     DEPTH_STENCIL,
 };
 
-struct RenderTarget
+struct RenderTargetBinding
 {
     Attachment location;
-    RenderTexturePtr texture;
+    RenderTargetPtr texture;
 };
 
-typedef std::vector<RenderTarget> RenderTextures;
+typedef std::vector<RenderTargetBinding> RenderTargetBindings;
 
-class EXPORT RenderTexture final : public Object<RenderTexture>
+class EXPORT RenderTarget
 {
-    __DeclareSubClass(RenderTexture, Object<RenderTexture>)
 public:
-    RenderTexture() noexcept;
-    ~RenderTexture() noexcept;
+    RenderTarget() noexcept;
+    virtual ~RenderTarget() noexcept;
 
     void setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat format, ClearFlags flags = ClearFlags::CLEAR_ALL, const Color4& color = Color4::Black, float depth = 1.0, int stencil = 0) noexcept;
-    void close() noexcept;
+    virtual bool setup() except = 0;
+    virtual void close() noexcept = 0;
+
+    void setActive(bool active) except;
+    bool getActive() const noexcept;
 
     void setTexMipmap(bool enable) noexcept;
     void setTexFormat(PixelFormat format) noexcept;
@@ -125,17 +128,15 @@ public:
     TexturePtr getResolveTexture() const noexcept;
     TexturePtr getResolveDepthTexture() const noexcept;
 
-    void setSharedDepthTexture(RenderTexturePtr target) noexcept;
-    void setSharedStencilTexture(RenderTexturePtr target) noexcept;
+    void setSharedDepthTexture(RenderTargetPtr target) noexcept;
+    void setSharedStencilTexture(RenderTargetPtr target) noexcept;
 
-    RenderTexturePtr getSharedDepthTexture() const noexcept;
-    RenderTexturePtr getSharedStencilTexture() const noexcept;
-
-    RenderTexturePtr clone() const noexcept;
+    RenderTargetPtr getSharedDepthTexture() const noexcept;
+    RenderTargetPtr getSharedStencilTexture() const noexcept;
 
 private:
-    RenderTexture(RenderTexture&) noexcept = delete;
-    RenderTexture& operator=(const RenderTexture&)noexcept = delete;
+    RenderTarget(RenderTarget&) noexcept = delete;
+    RenderTarget& operator=(const RenderTarget&)noexcept = delete;
 
 private:
 
@@ -163,36 +164,37 @@ private:
 
     Attachment _attachment;
 
-    RenderTexturePtr _sharedDepthTexture;
-    RenderTexturePtr _sharedStencilTexture;
+    RenderTargetPtr _sharedDepthTexture;
+    RenderTargetPtr _sharedStencilTexture;
 };
 
-class EXPORT MultiRenderTexture final : public Object<MultiRenderTexture>
+class EXPORT MultiRenderTarget : public Instance<MultiRenderTarget>
 {
-    __DeclareSubClass(MultiRenderTexture, Object<MultiRenderTexture>)
 public:
-    MultiRenderTexture() noexcept;
-    ~MultiRenderTexture() noexcept;
+    MultiRenderTarget() noexcept;
+    virtual ~MultiRenderTarget() noexcept;
 
-    void setup(std::size_t w, std::size_t h) noexcept;
-    void close() noexcept;
+    virtual bool setup() noexcept = 0;
+    virtual void close() noexcept = 0;
 
-    void attach(RenderTexturePtr texture, Attachment location) noexcept;
-    void detach(RenderTexturePtr texture) noexcept;
+    void attach(RenderTargetPtr texture, Attachment location) noexcept;
+    void detach(RenderTargetPtr texture) noexcept;
 
-    void setViewport(const Viewport& view) noexcept;
-    const Viewport& getViewport() const noexcept;
+    void setActive(bool active) except;
+    bool getActive() const noexcept;
 
-    RenderTextures& getRenderTextures() noexcept;
-    const RenderTextures& getRenderTextures() const noexcept;
+    RenderTargetBindings& getRenderTargets() noexcept;
+    const RenderTargetBindings& getRenderTargets() const noexcept;
 
-    MultiRenderTexturePtr clone() const noexcept;
+protected:
+    virtual void onActivate() noexcept = 0;
+    virtual void onDeactivate() noexcept = 0;
 
 private:
 
-    Viewport _viewport;
+    bool _active;
 
-    RenderTextures _textures;
+    RenderTargetBindings _textures;
 };
 
 _NAME_END

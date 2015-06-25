@@ -81,6 +81,9 @@ public:
     void addItem(TerrainItemPtr item) noexcept;
     void removeItem(TerrainItemPtr item) noexcept;
 
+    bool addBlockByMousePos(int x, int y) noexcept;
+    bool removeBlockByMousePos(int x, int y) noexcept;
+
     void addObject(TerrainObjectPtr object) noexcept;
     void removeObject(TerrainObjectPtr object) noexcept;
     TerrainObjects& getObjects() noexcept;
@@ -103,10 +106,10 @@ private:
 
     TerrainChunkPtr hitTest(const ray::Vector3& translate, const ray::Vector3& view, ray::int3& out) noexcept;
 
-    void onActivate();
-    void onDeactivate();
+    void onActivate() except;
+    void onDeactivate() except;
 
-    void onFrame();
+    void onFrame() except;
 
 private:
 
@@ -114,7 +117,10 @@ private:
 
     std::size_t _maxInstances;
 
+    float _dayTimer;
+
     int _size;
+    int _scale;
 
     int _createRadius;
     int _renderRadius;

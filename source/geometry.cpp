@@ -121,7 +121,7 @@ Geometry::getRenderable() noexcept
 }
 
 void
-Geometry::render(RenderPipeline& renderer, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept
+Geometry::render(RenderDevice& renderer, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept
 {
     auto semantic = Material::getMaterialSemantic();
     semantic->setMatrixParam(GlobalMatrixSemantic::matModel, this->getTransform());
@@ -146,8 +146,9 @@ Geometry::render(RenderPipeline& renderer, RenderQueue queue, RenderPass passTyp
 
         renderer.setRenderState(pass->getRenderState());
         renderer.setShaderObject(pass->getShaderObject());
+        renderer.setRenderBuffer(_geometry);
 
-        renderer.drawMesh(_geometry, *_renderable);
+        renderer.drawRenderBuffer(*_renderable);
     }
 }
 

@@ -1,5 +1,6 @@
 <?xml version='1.0'?>
 <effect version="1270" language="glsl">
+    <include name="sys:fx/common.glsl"/>
     <parameter name="texDepth" type="sampler2D" />
     <parameter name="texNormal" type="sampler2D" />
     <parameter name="texSource" type="sampler2D" />

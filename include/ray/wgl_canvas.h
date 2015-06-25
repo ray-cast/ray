@@ -47,10 +47,11 @@ public:
     WGLCanvas() noexcept;
     ~WGLCanvas() noexcept;
 
-    bool setup(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) except;
+    void setup(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) except;
     void close() noexcept;
 
     void setSwapInterval(SwapInterval interval) noexcept;
+    SwapInterval getSwapInterval() const noexcept;
 
     void bind();
     void unbind() noexcept;
@@ -71,6 +72,8 @@ private:
 
     GPUfbconfig _fbconfig;
     GPUctxconfig _ctxconfig;
+
+    SwapInterval _interval;
 };
 
 _NAME_END

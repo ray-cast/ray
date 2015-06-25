@@ -54,8 +54,8 @@ public:
     istream& open(const std::string& filename) noexcept;
     istream& open(const std::wstring& filename) noexcept;
 
-    istream& read(char_type* str, std::streamsize cnt) noexcept;
-    istream& read(char_type* str, streamsize size, streamsize cnt) noexcept;
+    istream& read(char* str, std::streamsize cnt) noexcept;
+    istream& read(char* str, streamsize size, streamsize cnt) noexcept;
 
     istream& seekg(ios_base::off_type pos) noexcept;
     istream& seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;

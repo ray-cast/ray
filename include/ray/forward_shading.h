@@ -50,8 +50,8 @@ public:
     void onActivate() noexcept;
     void onDectivate() noexcept;
 
-    void setSharedDepthTexture(RenderTexturePtr texture) noexcept;
-    void setSharedColorTexture(RenderTexturePtr texture) noexcept;
+    void setSharedDepthTexture(RenderTargetPtr texture) noexcept;
+    void setSharedColorTexture(RenderTargetPtr texture) noexcept;
 
     void render() noexcept;
 };

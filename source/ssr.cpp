@@ -53,12 +53,12 @@ SSR::~SSR() noexcept
 }
 
 void
-SSR::render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
+SSR::render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
 {
     //_projInfo->assign(pipeline.camera->getProjConstant());
     //_clipInfo->assign(pipeline.camera->getClipConstant());
 
-    pipeline.setRenderTexture(source);
+    pipeline.setRenderTarget(source);
     pipeline.setTechnique(_ssrPass);
     pipeline.drawSceneQuad();
 }

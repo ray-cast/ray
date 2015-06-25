@@ -50,7 +50,7 @@ private:
     void onActivate() noexcept;
     void onDectivate() noexcept;
 
-    void onFrame() noexcept;
+    void onFrameEnd() noexcept;
 
     void yawCamera(float speed) noexcept;
     void moveCamera(float speed) noexcept;

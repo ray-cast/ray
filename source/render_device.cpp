@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-RenderDevice::RenderDevice() noexcept
+RenderDevice::RenderDevice() except
 {
 }
 

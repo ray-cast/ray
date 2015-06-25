@@ -46,12 +46,11 @@
 _NAME_BEGIN
 
 typedef std::shared_ptr<class RenderDevice> RenderDevicePtr;
+typedef std::shared_ptr<class RenderSystem> RenderSystemPtr;
 typedef std::shared_ptr<class RenderState> RenderStatePtr;
 typedef std::shared_ptr<class RenderBuffer> RenderBufferPtr;
-typedef std::shared_ptr<class RenderTexture> RenderTexturePtr;
-typedef std::shared_ptr<class MultiRenderTexture> MultiRenderTexturePtr;
-typedef std::shared_ptr<class Renderer> RendererPtr;
-typedef std::shared_ptr<class RenderSystem> RenderSystemPtr;
+typedef std::shared_ptr<class RenderTarget> RenderTargetPtr;
+typedef std::shared_ptr<class MultiRenderTarget> MultiRenderTargetPtr;
 typedef std::shared_ptr<class VertexComponent> VertexComponentPtr;
 typedef std::shared_ptr<class VertexBufferData> VertexBufferDataPtr;
 typedef std::shared_ptr<class IndexBufferData> IndexBufferDataPtr;
@@ -62,7 +61,6 @@ typedef std::shared_ptr<class ShaderParameter> ShaderParameterPtr;
 typedef std::shared_ptr<class ShaderAttribute> ShaderAttributePtr;
 typedef std::shared_ptr<class ShaderUniform> ShaderUniformPtr;
 typedef std::shared_ptr<class ShaderSubroutine> ShaderSubroutinePtr;
-typedef std::shared_ptr<class ShaderProgram> ShaderProgramPtr;
 typedef std::shared_ptr<class ShaderObject> ShaderObjectPtr;
 typedef std::shared_ptr<class RenderPostProcess> RenderPostProcessPtr;
 

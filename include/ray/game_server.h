@@ -50,14 +50,14 @@ public:
     bool open() noexcept;
     void close() noexcept;
 
-    void setActive(bool active) noexcept;
+    void setActive(bool active) except;
     bool getActive() const noexcept;
 
     void setTimer(TimerPtr timer) noexcept;
     TimerPtr getTimer() const noexcept;
 
-    bool openScene(const std::string& sceneName);
-    void closeScene(const std::string& sceneName);
+    bool openScene(const std::string& sceneName) except;
+    void closeScene(const std::string& sceneName) noexcept;
     bool addScene(GameScenePtr scene) noexcept;
     void removeScene(GameScenePtr scene) noexcept;
     GameScenePtr findScene(const std::string& sceneName) noexcept;

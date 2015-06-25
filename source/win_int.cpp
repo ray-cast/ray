@@ -427,14 +427,18 @@ StackWalkerInternal::getSymFromAddr(DWORD64 address, PDWORD64 displacement, PSYM
     {
         TCHAR temp[STACKWALK_MAX_NAMELEN];
 
-        if (::UnDecorateSymbolName(symbol->Name, temp, STACKWALK_MAX_NAMELEN, UNDNAME_NAME_ONLY))
+        DWORD length = 0;
+        
+        length = ::UnDecorateSymbolName(symbol->Name, temp, STACKWALK_MAX_NAMELEN, UNDNAME_NAME_ONLY);
+        if (length > 0)
         {
-            std::strcpy(symbol->Name, temp);
+            std::strncpy(symbol->Name, temp, length);
         }
 
-        if (::UnDecorateSymbolName(symbol->Name, temp, STACKWALK_MAX_NAMELEN, UNDNAME_COMPLETE))
+        length = ::UnDecorateSymbolName(symbol->Name, temp, STACKWALK_MAX_NAMELEN, UNDNAME_COMPLETE);
+        if (length > 0)
         {
-            std::strcpy(symbol->Name, temp);
+            std::strncpy(symbol->Name, temp, length);
         }
 
         return true;

@@ -35,6 +35,10 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/light_shaft.h>
+#include <ray/material_maker.h>
+#include <ray/light.h>
+#include <ray/camera.h>
+#include <ray/render_factory.h>
 
 _NAME_BEGIN
 
@@ -47,18 +51,77 @@ LightShaft::~LightShaft() noexcept
 }
 
 void
-LightShaft::render(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
-{
-}
-
-void
 LightShaft::onActivate() except
 {
+    MaterialMaker maker;
+    _material = maker.load("sys:fx/light_shaft.glsl");
+
+    _texSample = RenderFactory::createRenderTarget();
+    _texSample->setup(688, 384, TextureDim::DIM_2D, PixelFormat::R8G8B8A8F);
+
+    _lightShaft = _material->getTech(RenderQueue::PostProcess)->getPass("scatter");
+    _lightShaftCopy = _material->getTech(RenderQueue::PostProcess)->getPass("copy");
+
+    _illuminationSample = _material->getParameter("illuminationSample");
+    _illuminationPosition = _material->getParameter("illuminationPosition");
+
+    float sampleNumber = 50;
+    float sampleInv = 1 / sampleNumber;
+    float sampleWeight = 1 / sampleNumber;
+    float sampleDecay = 0.0156;
+
+    float4 sample;
+    sample.x = sampleNumber;
+    sample.y = sampleInv;
+    sample.z = sampleWeight;
+    sample.w = sampleDecay;
+
+    _illuminationSample->assign(sample);
+
+    _cameraRadio = _material->getParameter("cameraRadio");
+    _texSource = _material->getParameter("texSource");
 }
 
 void
 LightShaft::onDeactivate() except
 {
+}
+
+void
+LightShaft::render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
+{
+    _cameraRadio->assign(pipeline.getCamera()->getRatio());
+
+    auto lights = pipeline.getRenderData(RenderQueue::DeferredLight);
+    for (auto& it : lights)
+    {
+        auto light = dynamic_cast<Light*>(it);
+
+        if (light->getLightType() == LightType::LT_SUN)
+        {
+            auto sun = pipeline.getCamera()->getTranslate() + light->getTransform().getTranslate();
+            auto view = pipeline.getCamera()->worldToProject(sun);
+            view.x = view.x * 0.5 + 0.5;
+            view.y = view.y * 0.5 + 0.5;
+
+            if (view.x >= -0.5f && view.x <= 2.0f &&
+                view.y >= -0.5f && view.y <= 2.0f && view.z < 1.0f)
+            {
+                _illuminationPosition->assign(Vector2(view.x, view.y));
+
+                _texSource->assign(source->getResolveTexture());
+                pipeline.setRenderTarget(_texSample);
+                pipeline.setTechnique(_lightShaft);
+                pipeline.drawSceneQuad();
+
+                _texSource->assign(_texSample->getResolveTexture());
+
+                pipeline.setRenderTarget(source);
+                pipeline.setTechnique(_lightShaftCopy);
+                pipeline.drawSceneQuad();
+            }
+        }
+    }
 }
 
 _NAME_END

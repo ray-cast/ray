@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/mstream.h>
-#include <vector>
 
 _NAME_BEGIN
 
@@ -67,16 +66,23 @@ MemoryBuf::close() noexcept
 }
 
 streamsize
-MemoryBuf::read(char_type* src, std::streamsize cnt) noexcept
+MemoryBuf::read(char* src, std::streamsize cnt) noexcept
 {
-    assert(_data.size() >= _next + cnt);
+    if (_data.size() < _next + cnt)
+    {
+        cnt = _data.size() - _next;
+        if (cnt == 0)
+            return 0;
+    }
+
     std::memcpy(src, _data.data() + _next, cnt);
     _next += cnt;
+
     return cnt;
 }
 
 streamsize
-MemoryBuf::write(const char_type* src, std::streamsize cnt) noexcept
+MemoryBuf::write(const char* src, std::streamsize cnt) noexcept
 {
     assert(_data.size() >= _next + cnt);
     std::memcpy(_data.data(), src, cnt);
@@ -154,7 +160,7 @@ MemoryBuf::resize(streamsize size) noexcept
     _data.resize(size);
 }
 
-char_type*
+char*
 MemoryBuf::map() noexcept
 {
     if (_data.size())
@@ -193,7 +199,7 @@ MemoryStream::resize(streamsize size) noexcept
     _buf.resize(size);
 }
 
-char_type*
+char*
 MemoryStream::map() noexcept
 {
     return _buf.map();

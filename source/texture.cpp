@@ -35,231 +35,184 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/texture.h>
-#include <ray/render_impl.h>
 
 _NAME_BEGIN
 
-TextureDesc::TextureDesc() noexcept
-    : size(0, 0, 0)
-    , format(PixelFormat::R8G8B8A8)
-    , dim(TextureDim::DIM_2D)
-    , mipmap(false)
-    , multisample(false)
-    , level(0)
-    , texop(TextureOp::OP_ADD)
-    , filter(TextureFilter::GPU_LINEAR)
-    , wrap(TextureWrap::CLAMP_TO_EDGE)
-    , anis(Anisotropy::ANISOTROPY_0)
-    , data(nullptr)
-{
-};
-
 Texture::Texture() noexcept
+    : _size(0, 0, 0)
+    , _format(PixelFormat::R8G8B8A8)
+    , _dim(TextureDim::DIM_2D)
+    , _mipmap(false)
+    , _multisample(false)
+    , _level(0)
+    , _texop(TextureOp::OP_ADD)
+    , _filter(TextureFilter::GPU_LINEAR)
+    , _wrap(TextureWrap::CLAMP_TO_EDGE)
+    , _anis(Anisotropy::ANISOTROPY_0)
+    , _data(nullptr)
 {
 }
 
 Texture::~Texture() noexcept
 {
-    this->close();
-}
-
-bool
-Texture::setup(std::size_t w, std::size_t h, void* data, TextureDim dim, PixelFormat format) noexcept
-{
-    TextureDesc desc;
-    desc.size.x = w;
-    desc.size.y = h;
-    desc.data = data;
-    desc.dim = dim;
-    desc.format = format;
-
-    this->setTextureDesc(desc);
-
-    return RenderImpl::instance()->createTexture(*this);
-}
-
-bool
-Texture::setup(const TextureDesc& desc) noexcept
-{
-    this->setTextureDesc(desc);
-
-    return RenderImpl::instance()->createTexture(*this);
-}
-
-void
-Texture::close() noexcept
-{
-    RenderImpl::instance()->destroyTexture(*this);
 }
 
 void
 Texture::setTexMipmap(bool enable) noexcept
 {
-    _setting.mipmap = enable;
+    _mipmap = enable;
 }
 
 void
 Texture::setTexFormat(PixelFormat format) noexcept
 {
-    _setting.format = format;
+    _format = format;
 }
 
 void
 Texture::setTexOp(TextureOp op) noexcept
 {
-    _setting.texop = op;
+    _texop = op;
 }
 
 void
 Texture::setTexWrap(TextureWrap wrap) noexcept
 {
-    _setting.wrap = wrap;
+    _wrap = wrap;
 }
 
 void
 Texture::setTexFilter(TextureFilter filter) noexcept
 {
-    _setting.filter = filter;
+    _filter = filter;
 }
 
 void
 Texture::setTexDim(TextureDim map) noexcept
 {
-    _setting.dim = map;
+    _dim = map;
 }
 
 void
 Texture::setLevel(int level) noexcept
 {
-    _setting.level = level;
+    _level = level;
 }
 
 void
 Texture::setWidth(int w) noexcept
 {
-    _setting.size.x = w;
+    _size.x = w;
 }
 
 void
 Texture::setHeight(int h) noexcept
 {
-    _setting.size.y = h;
+    _size.y = h;
 }
 
 void
 Texture::setDepth(int d) noexcept
 {
-    _setting.size.z = d;
+    _size.z = d;
 }
 
 void
 Texture::setSize(int w, int h, int depth) noexcept
 {
-    _setting.size.x = w;
-    _setting.size.y = h;
-    _setting.size.z = depth;
+    _size.x = w;
+    _size.y = h;
+    _size.z = depth;
 }
 
 void
 Texture::setStream(void* data) noexcept
 {
-    _setting.data = data;
+    _data = data;
 }
 
 TextureOp
 Texture::getTexOp() const noexcept
 {
-    return _setting.texop;
+    return _texop;
 }
 
 PixelFormat
 Texture::getTexFormat() const noexcept
 {
-    return _setting.format;
+    return _format;
 }
 
 TextureDim
 Texture::getTexDim() const noexcept
 {
-    return _setting.dim;
+    return _dim;
 }
 
 TextureWrap
 Texture::getTexWrap() const noexcept
 {
-    return _setting.wrap;
+    return _wrap;
 }
 
 TextureFilter
 Texture::getTexFilter() const noexcept
 {
-    return _setting.filter;
+    return _filter;
 }
 
 Anisotropy
 Texture::getTexAnisotropy() const noexcept
 {
-    return _setting.anis;
+    return _anis;
 }
 
 int
 Texture::getLevel() const noexcept
 {
-    return _setting.level;
+    return _level;
 }
 
 int
 Texture::getWidth() const noexcept
 {
-    return _setting.size.x;
+    return _size.x;
 }
 
 int
 Texture::getHeight() const noexcept
 {
-    return _setting.size.y;
+    return _size.y;
 }
 
 int
 Texture::getDepth() const noexcept
 {
-    return _setting.size.z;
+    return _size.z;
 }
 
 const int3&
 Texture::getSize() const noexcept
 {
-    return _setting.size;
+    return _size;
 }
 
 void*
 Texture::getStream() const noexcept
 {
-    return _setting.data;
-}
-
-void
-Texture::setTextureDesc(const TextureDesc& desc) noexcept
-{
-    _setting = desc;
-}
-
-const TextureDesc&
-Texture::getTextureDesc() const noexcept
-{
-    return _setting;
+    return _data;
 }
 
 bool
 Texture::isMipmap() const noexcept
 {
-    return _setting.mipmap;
+    return _mipmap;
 }
 
 bool
 Texture::isMultiSample() const noexcept
 {
-    return _setting.multisample;
+    return _multisample;
 }
 
 void
@@ -279,12 +232,6 @@ void
 Texture::copy(TexturePtr other) noexcept
 {
     this->copy(other.get());
-}
-
-TexturePtr
-Texture::clone() const noexcept
-{
-    return std::make_shared<Texture>();
 }
 
 _NAME_END

@@ -69,6 +69,9 @@ public:
 
     GameComponentPtr clone() const noexcept;
 
+    void load(iarchive& reader) noexcept;
+    void save(oarchive& write) noexcept;
+
     void buildRenderBuffer() noexcept;
 
 private:

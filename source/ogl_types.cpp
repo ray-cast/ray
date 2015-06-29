@@ -73,23 +73,26 @@ OGLTypes::asOGLVertexUsage(VertexUsage usage) noexcept
 }
 
 GLenum
-OGLTypes::asOGLVertexDataType(VertexDataType type) noexcept
+OGLTypes::asOGLVertexFormat(VertexFormat format) noexcept
 {
-    switch (type)
+    switch (format)
     {
-    case ray::GPU_DATATYPE_BYTE:
+    case ray::GPU_VERTEX_BYTE:
         return GL_BYTE;
-    case ray::GPU_DATATYPE_SHORT:
+    case ray::GPU_VERTEX_SHORT:
         return GL_SHORT;
-    case ray::GPU_DATATYPE_INT:
+    case ray::GPU_VERTEX_INT:
         return GL_INT;
-    case ray::GPU_DATATYPE_UNSIGNED_BYTE:
+    case ray::GPU_VERTEX_UNSIGNED_BYTE:
         return GL_UNSIGNED_BYTE;
-    case ray::GPU_DATATYPE_UNSIGNED_SHORT:
+    case ray::GPU_VERTEX_UNSIGNED_SHORT:
         return GL_UNSIGNED_SHORT;
-    case ray::GPU_DATATYPE_UNSIGNED_INT:
+    case ray::GPU_VERTEX_UNSIGNED_INT:
         return GL_UNSIGNED_INT;
-    case ray::GPU_DATATYPE_FLOAT:
+    case ray::GPU_VERTEX_FLOAT:
+    case ray::GPU_VERTEX_FLOAT2:
+    case ray::GPU_VERTEX_FLOAT3:
+    case ray::GPU_VERTEX_FLOAT4:
         return GL_FLOAT;
     default:
         assert(false);
@@ -138,55 +141,6 @@ OGLTypes::asOGLShaderType(ShaderType type) noexcept
     default:
         assert(false);
         return GL_VERTEX_SHADER;
-    }
-}
-
-GLenum
-OGLTypes::asOGLAttachment(Attachment location) noexcept
-{
-    switch (location)
-    {
-    case Attachment::COLOR0:
-        return GL_COLOR_ATTACHMENT0;
-    case Attachment::COLOR1:
-        return GL_COLOR_ATTACHMENT1;
-    case Attachment::COLOR2:
-        return GL_COLOR_ATTACHMENT2;
-    case Attachment::COLOR3:
-        return GL_COLOR_ATTACHMENT3;
-    case Attachment::COLOR4:
-        return GL_COLOR_ATTACHMENT4;
-    case Attachment::COLOR5:
-        return GL_COLOR_ATTACHMENT5;
-    case Attachment::COLOR6:
-        return GL_COLOR_ATTACHMENT6;
-    case Attachment::COLOR7:
-        return GL_COLOR_ATTACHMENT7;
-    case Attachment::COLOR8:
-        return GL_COLOR_ATTACHMENT8;
-    case Attachment::COLOR9:
-        return GL_COLOR_ATTACHMENT9;
-    case Attachment::COLOR10:
-        return GL_COLOR_ATTACHMENT10;
-    case Attachment::COLOR11:
-        return GL_COLOR_ATTACHMENT11;
-    case Attachment::COLOR12:
-        return GL_COLOR_ATTACHMENT12;
-    case Attachment::COLOR13:
-        return GL_COLOR_ATTACHMENT13;
-    case Attachment::COLOR14:
-        return GL_COLOR_ATTACHMENT14;
-    case Attachment::COLOR15:
-        return GL_COLOR_ATTACHMENT15;
-    case Attachment::DEPTH:
-        return GL_DEPTH_ATTACHMENT;
-    case Attachment::STENCIL:
-        return GL_STENCIL_ATTACHMENT;
-    case Attachment::DEPTH_STENCIL:
-        return GL_DEPTH_STENCIL_ATTACHMENT;
-    default:
-        assert(false);
-        return GL_COLOR_ATTACHMENT0;
     }
 }
 

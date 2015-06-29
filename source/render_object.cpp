@@ -35,14 +35,12 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_object.h>
-#include <ray/render_scene.h>
 
 _NAME_BEGIN
 
 RenderObject::RenderObject() noexcept
     : _isCastShadow(true)
     , _isReceiveShadow(true)
-    , _renderScene(nullptr)
     , _renderListener(nullptr)
     , _isNeedUpdate(false)
     , _layer(0)
@@ -112,22 +110,6 @@ RenderObject::setRenderListener(RenderListener* listener) noexcept
     _renderListener = listener;
 }
 
-void
-RenderObject::setRenderScene(RenderScene* scene) noexcept
-{
-    if (_renderScene)
-    {
-        _renderScene->removeRenderObject(this);
-    }
-
-    _renderScene = scene;
-
-    if (_renderScene)
-    {
-        _renderScene->addRenderObject(this);
-    }
-}
-
 const Matrix4x4&
 RenderObject::getTransform() const noexcept
 {
@@ -156,12 +138,6 @@ bool
 RenderObject::getCastShadow()  const noexcept
 {
     return _isCastShadow;
-}
-
-RenderScene*
-RenderObject::getRenderScene() const noexcept
-{
-    return _renderScene;
 }
 
 RenderListener*

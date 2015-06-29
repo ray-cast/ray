@@ -41,38 +41,6 @@
 
 _NAME_BEGIN
 
-enum ShaderType
-{
-    ST_VERTEX,
-    ST_FRAGMENT,
-    ST_GEOMETRY,
-    ST_COMPUTE,
-    ST_TESS_EVALUATION,
-    ST_TESS_CONTROL,
-    ST_CG_VERTEX,
-    ST_CG_FRAGMENT,
-};
-
-enum ShaderVariantType
-{
-    SPT_NONE,
-    SPT_BOOL,
-    SPT_INT,
-    SPT_INT2,
-    SPT_FLOAT,
-    SPT_FLOAT2,
-    SPT_FLOAT3,
-    SPT_FLOAT4,
-    SPT_FLOAT3X3,
-    SPT_FLOAT4X4,
-    SPT_FLOAT_ARRAY,
-    SPT_FLOAT2_ARRAY,
-    SPT_FLOAT3_ARRAY,
-    SPT_FLOAT4_ARRAY,
-    SPT_TEXTURE,
-    SPT_BUFFER,
-};
-
 class EXPORT ShaderVariant : public Instance<ShaderVariant>
 {
 public:

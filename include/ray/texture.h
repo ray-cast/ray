@@ -41,87 +41,6 @@
 
 _NAME_BEGIN
 
-enum Anisotropy
-{
-    ANISOTROPY_0,
-    ANISOTROPY_1,
-    ANISOTROPY_2,
-    ANISOTROPY_4,
-    ANISOTROPY_8,
-    ANISOTROPY_16,
-};
-
-enum TextureOp
-{
-    OP_MULTIPLY,    //* T = T1 * T2
-    OP_ADD,         //* T = T1 + T2
-    OP_SUBTRACT,    //* T = T1 - T2
-    OP_DIVIDE,      //* T = T1 / T2
-    OP_SMOOTHADD,   //* T = (T1 + T2) - (T1 * T2)
-    OP_SIGNEDADD,   //* T = T1 + (T2-0.5)
-};
-
-enum PixelFormat
-{
-    STENCIL8,
-    DEPTH_COMPONENT16,
-    DEPTH_COMPONENT24,
-    DEPTH_COMPONENT32,
-    DEPTH24_STENCIL8,
-    DEPTH32_STENCIL8,
-    LUMINANCE,
-    LUMINANCE_ALPHA,
-    R8G8B8,
-    R8G8B8A8,
-    R8G8B8F,
-    R16G16B16F,
-    R32G32B32F,
-    R4G4B4A4F,
-    R8G8B8A8F,
-    R16G16B16A16F,
-    R32G32B32A32F,
-    R11G11B10F,
-    SRGB,
-    SRGBA,
-    SR8G8B8,
-    SR8G8B8A8,
-    R8,
-    R16F,
-    R32F,
-    RG16F,
-    RG32F,
-    DXT1,
-    DXT3,
-    DXT5,
-};
-
-enum TextureWrap
-{
-    REPEAT,
-    CLAMP_TO_EDGE,
-    MODE_MIRROR,
-};
-
-enum TextureFilter
-{
-    GPU_NEAREST,
-    GPU_LINEAR,
-    GPU_NEAREST_MIPMAP_LINEAR,
-    GPU_NEAREST_MIPMAP_NEAREST,
-    GPU_LINEAR_MIPMAP_NEAREST,
-    GPU_LINEAR_MIPMAP_LINEAR,
-};
-
-enum TextureDim
-{
-    DIM_2D,
-    DIM_3D,
-    DIM_2D_ARRAY,
-    DIM_3D_ARRAY,
-    DIM_CUBE,
-    DIM_CUBE_ARRAY,
-};
-
 class EXPORT Texture
 {
 public:
@@ -139,6 +58,7 @@ public:
     void setTexDim(TextureDim mapping) noexcept;
     void setLevel(int level) noexcept;
     void setAnisotropy(Anisotropy anis) noexcept;
+    void setMultisample(bool enable) noexcept;
     void setWidth(int w) noexcept;
     void setHeight(int h) noexcept;
     void setDepth(int d) noexcept;

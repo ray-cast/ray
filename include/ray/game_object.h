@@ -37,12 +37,13 @@
 #ifndef _H_GAME_OBJECT_H_
 #define _H_GAME_OBJECT_H_
 
-#include <ray/game_types.h>
+#include <ray/game_message.h>
 
 _NAME_BEGIN
 
-class EXPORT GameObject : public Object<GameObject>
+class EXPORT GameObject : public GameMessage
 {
+    __DeclareSubClass(GameObject, GameMessage)
 public:
     GameObject() noexcept;
     virtual ~GameObject() noexcept;
@@ -53,13 +54,12 @@ public:
     void setLayer(int layer) noexcept;
     int getLayer() const noexcept;
 
-    void setParent(GameObject* parent) noexcept;
     void setParent(GameObjectPtr parent) noexcept;
-    GameObject* getParent() const noexcept;
+    GameObjectPtr getParent() const noexcept;
 
     void addChild(GameObjectPtr child) noexcept;
 
-    void removeChild(const GameObjectPtr child) noexcept;
+    void removeChild(GameObjectPtr child) noexcept;
     void removeChild(InstanceID instance) noexcept;
 
     void cleanupChildren() noexcept;
@@ -170,7 +170,7 @@ public:
 
     void destroy() noexcept;
 
-    GameObjectPtr clone() const noexcept;
+    GameObjectPtr clone() const except;
 
     virtual GameServer* getGameServer() noexcept;
     virtual GameScene* getGameScene() noexcept;

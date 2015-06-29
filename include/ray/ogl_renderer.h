@@ -44,7 +44,6 @@ _NAME_BEGIN
 
 class EXPORT OGLRenderer final : public RenderDevice
 {
-    __DeclareSubClass(OGLRenderer, RenderDevice)
 public:
     OGLRenderer() noexcept;
     ~OGLRenderer() noexcept;
@@ -56,9 +55,9 @@ public:
     virtual void renderEnd() noexcept;
 
     virtual void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
-    virtual void clear(std::size_t i, ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
+    virtual void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
 
-    virtual void setViewport(std::size_t i, const Viewport& view) noexcept;
+    virtual void setViewport(const Viewport& view, std::size_t i = 0) noexcept;
     virtual const Viewport& getViewport(std::size_t i = 0) const noexcept;
 
     virtual void setSwapInterval(SwapInterval interval) noexcept;
@@ -67,20 +66,22 @@ public:
     virtual void setRenderState(RenderStatePtr state) noexcept;
     virtual RenderStatePtr getRenderState() const noexcept;
 
-    virtual bool createRenderBuffer(RenderBuffer& buffer) noexcept;
-    virtual void destroyRenderBuffer(RenderBuffer& buffer) noexcept;
     virtual void setRenderBuffer(RenderBufferPtr buffer) noexcept;
     virtual void updateRenderBuffer(RenderBufferPtr buffer) noexcept;
     virtual void drawRenderBuffer(const Renderable& renderable) noexcept;
+    virtual RenderBufferPtr getRenderBuffer() const noexcept;
 
     virtual void setRenderTarget(RenderTargetPtr target) noexcept;
     virtual void setMultiRenderTarget(MultiRenderTargetPtr target) noexcept;
     virtual void readRenderTarget(RenderTargetPtr src, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
     virtual void copyRenderTarget(RenderTargetPtr src, const Viewport& v1, RenderTargetPtr dest, const Viewport& v2) noexcept;
+    virtual RenderTargetPtr getRenderTarget() const noexcept;
+    virtual MultiRenderTargetPtr getMultiRenderTarget() const noexcept;
 
     virtual void setShaderObject(ShaderObjectPtr shader) noexcept;
     virtual void setShaderUniform(ShaderUniformPtr uniform, TexturePtr texture) noexcept;
     virtual void setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constant) noexcept;
+    virtual ShaderObjectPtr getShaderObject() const noexcept;
 
     virtual bool createShaderVariant(ShaderVariant& constant) noexcept;
     virtual void destroyShaderVariant(ShaderVariant& constant) noexcept;
@@ -113,15 +114,16 @@ private:
     GLint _maxViewports;
     std::vector<Viewport> _viewport;
 
-    MultiRenderTarget::InstanceID _renderTarget;
-    MultiRenderTarget::InstanceID _multiRenderTarget;
+    GLuint _framebuffer;
+    RenderTargetPtr _renderTarget;
+    MultiRenderTargetPtr _multiRenderTarget;
 
     GLuint _program;
+    ShaderObjectPtr _shaderObject;
     std::vector<OGLShaderVariant> _constantBuffers;
 
     GLuint _defaultVAO;
     RenderBufferPtr _renderBuffer;
-    std::vector<OGLVertexArray> _renderBuffers;
 
     GLint _maxTextureUnits;
     std::vector<GLint> _textureUnits;

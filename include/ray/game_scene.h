@@ -41,9 +41,9 @@
 
 _NAME_BEGIN
 
-class EXPORT GameScene : public Object<GameScene>
+class EXPORT GameScene final : public GameMessage
 {
-    __DeclareClass(GameScene)
+    __DeclareSubClass(GameScene, GameMessage)
 public:
     struct Setting
     {

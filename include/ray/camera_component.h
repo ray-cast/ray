@@ -77,6 +77,9 @@ public:
     CameraType getCameraType() const noexcept;
     CameraOrder getCameraOrder() const noexcept;
 
+    void load(iarchive& reader) noexcept;
+    void save(oarchive& write) noexcept;
+
     virtual GameComponentPtr clone() const noexcept;
 
 private:

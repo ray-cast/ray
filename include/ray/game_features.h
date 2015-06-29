@@ -34,28 +34,26 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GAME_FEATURES_H_
-#define _H_GAME_FEATURES_H_
+#ifndef _H_GAME_FEATURE_H_
+#define _H_GAME_FEATURE_H_
 
-#include <ray/game_types.h>
+#include <ray/game_message.h>
 
 _NAME_BEGIN
 
-class EXPORT GameFeature
+class EXPORT GameFeature : public GameMessage
 {
+    __DeclareSubClass(GameFeature, GameMessage)
 public:
     GameFeature() noexcept;
     virtual ~GameFeature() noexcept;
 
-    void setName(const std::string& name) noexcept;
-    const std::string& getName() const noexcept;
-
-    virtual void setActive(bool active)  except;
-    virtual bool getActive() noexcept;
-
-    GameServer* getGameServer() noexcept;
+    void setActive(bool active)  except;
+    bool getActive() noexcept;
 
     void sendMessage(const std::string& method, const Variant* data...) except;
+
+    GameServer* getGameServer() noexcept;
 
 protected:
 
@@ -73,9 +71,9 @@ protected:
 
     virtual void onEvent(const AppEvent& event) except;
 
-    virtual GameComponentPtr onSerialization(XMLReader* reader) except;
-
     virtual void onMessage(const std::string& method, const Variant* data...) except;
+
+    virtual GameComponentPtr onSerialization(iarchive& reader) except;
 
 private:
     friend GameServer;
@@ -88,8 +86,6 @@ private:
 private:
 
     bool _isActive;
-
-    std::string _name;
 
     GameServer* _server;
 };

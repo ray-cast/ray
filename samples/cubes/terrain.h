@@ -74,6 +74,7 @@ private:
 
 class Terrain : public ray::GameController
 {
+    __DeclareSubClass(Terrain, ray::GameController)
 public:
     Terrain() noexcept;
     ~Terrain() noexcept;

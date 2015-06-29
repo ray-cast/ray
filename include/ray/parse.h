@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-template<typename T = std::size_t>
+template<typename T = std::size_t> inline
 T parseInteger(const char* line)
 {
     T i1 = 0;
@@ -60,7 +60,7 @@ T parseInteger(const char* line)
     return i1;
 }
 
-template<typename T = std::size_t>
+template<typename T = std::size_t> inline
 T parseInteger(const wchar_t* line)
 {
     T i1 = 0;
@@ -78,7 +78,7 @@ T parseInteger(const wchar_t* line)
     return i1;
 }
 
-template<>
+template<> inline
 bool parseInteger<bool>(const char* line)
 {
     if (std::strcmp(line, "true") == 0)
@@ -93,7 +93,7 @@ bool parseInteger<bool>(const char* line)
 template<typename T>
 T parseFloat(const std::string& line);
 
-template<>
+template<> inline
 float parseFloat<float>(const std::string& line)
 {
     float f1 = 0;
@@ -104,7 +104,7 @@ float parseFloat<float>(const std::string& line)
     return f1;
 }
 
-template<>
+template<> inline
 double parseFloat<double>(const std::string& line)
 {
     double f1 = 0;
@@ -115,7 +115,7 @@ double parseFloat<double>(const std::string& line)
     return f1;
 }
 
-template<typename T = float>
+template<typename T = float> inline
 Vector4t<T> parseFloat4(const std::string& line)
 {
     std::string value = line;

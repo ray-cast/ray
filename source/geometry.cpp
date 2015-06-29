@@ -35,11 +35,13 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/geometry.h>
+#include <ray/render_scene.h>
 #include <ray/render_pipeline.h>
 
 _NAME_BEGIN
 
 Geometry::Geometry() noexcept
+    :_renderScene(nullptr)
 {
 }
 
@@ -121,6 +123,28 @@ Geometry::getRenderable() noexcept
 }
 
 void
+Geometry::setRenderScene(RenderScenePtr scene) noexcept
+{
+    if (_renderScene)
+    {
+        _renderScene->removeRenderObject(this);
+    }
+
+    _renderScene = scene.get();
+
+    if (_renderScene)
+    {
+        _renderScene->addRenderObject(this);
+    }
+}
+
+RenderScenePtr
+Geometry::getRenderScene() const noexcept
+{
+    return _renderScene->shared_from_this();
+}
+
+void
 Geometry::render(RenderDevice& renderer, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept
 {
     auto semantic = Material::getMaterialSemantic();
@@ -139,7 +163,7 @@ Geometry::render(RenderDevice& renderer, RenderQueue queue, RenderPass passType,
             stencil.stencilPass = StencilOperation::STENCILOP_REPLACE;
             stencil.stencilFunc = CompareFunction::GPU_ALWAYS;
             stencil.stencilRef = 1 << this->getLayer();
-            stencil.stencilReadMask = 0xFFFF;
+            stencil.stencilReadMask = 0xFFFFFFFF;
 
             pass->getRenderState()->setStencilState(stencil);
         }

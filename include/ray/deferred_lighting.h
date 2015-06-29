@@ -110,6 +110,7 @@ private:
     RenderTargetPtr _deferredGraphicMap;
     RenderTargetPtr _deferredNormalMap;
     RenderTargetPtr _deferredLightMap;
+    RenderTargetPtr _deferredShadowMap;
     RenderTargetPtr _deferredShadingMap;
 
     MultiRenderTargetPtr _deferredGraphicMaps;

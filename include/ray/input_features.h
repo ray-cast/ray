@@ -51,6 +51,8 @@ public:
     void setInput(InputPtr input) noexcept;
     InputPtr getInput() const noexcept;
 
+    GameFeaturePtr clone() const noexcept;
+
 private:
 
     virtual void onActivate() except;

@@ -41,16 +41,25 @@
 
 _NAME_BEGIN
 
-class RenderFactory final
+class EXPORT RenderFactory final
 {
 public:
+
+    static RenderDevicePtr createRenderDevice() noexcept;
 
     static ShaderPtr createShader() noexcept;
     static ShaderObjectPtr createShaderObject() noexcept;
 
     static TexturePtr createTexture() noexcept;
+    static TexturePtr createTexture(const std::string& name) except;
+    static MaterialPtr createMaterial(const std::string& filename) except;
+
     static RenderTargetPtr createRenderTarget() noexcept;
     static MultiRenderTargetPtr createMultiRenderTarget() noexcept;
+
+    static VertexBufferDataPtr createVertexBuffer() noexcept;
+    static IndexBufferDataPtr createIndexBuffer() noexcept;
+    static RenderBufferPtr createRenderBuffer() noexcept;
 };
 
 _NAME_END

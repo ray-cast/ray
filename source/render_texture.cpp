@@ -35,47 +35,26 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_texture.h>
+#include <ray/texture.h>
 #include <ray/render_factory.h>
 
 _NAME_BEGIN
 
 RenderTarget::RenderTarget() noexcept
-    : _width(0)
-    , _height(0)
-    , _depth(0)
-    , _isMipmap(false)
-    , _isMultiSample(false)
-    , _attachment(Attachment::COLOR0)
-    , _viewport(0, 0, 0, 0)
-    , _clearFlags(ClearFlags::CLEAR_ALL)
+    : _viewport(0, 0, 0, 0)
+    , _clearFlags(ClearFlags::CLEAR_NONE)
     , _clearStencil(0)
     , _clearDepth(1.0)
     , _clearColor(0.0, 0.0, 0.0, 1.0)
-    , _resolveTexOp(TextureOp::OP_ADD)
-    , _resolveFormat(PixelFormat::R8G8B8A8)
-    , _resolveFilter(TextureFilter::GPU_NEAREST)
-    , _resolveDim(TextureDim::DIM_2D)
-    , _resolveWrap(TextureWrap::CLAMP_TO_EDGE)
     , _resolveTexture(0)
     , _sharedDepthTexture(0)
     , _sharedStencilTexture(0)
 {
+    _resolveTexture = RenderFactory::createTexture();
 }
 
 RenderTarget::~RenderTarget() noexcept
 {
-}
-
-std::size_t
-RenderTarget::getWidth() const noexcept
-{
-    return _width;
-}
-
-std::size_t
-RenderTarget::getHeight() const noexcept
-{
-    return _height;
 }
 
 void
@@ -105,111 +84,115 @@ RenderTarget::setClearStencil(int stencil) noexcept
 void
 RenderTarget::setTexMipmap(bool enable) noexcept
 {
-    _isMipmap = enable;
+    _resolveTexture->setTexMipmap(enable);
 }
 
 void
 RenderTarget::setTexFormat(PixelFormat format) noexcept
 {
-    _resolveFormat = format;
+    _resolveTexture->setTexFormat(format);
 }
 
 void
 RenderTarget::setTexFilter(TextureFilter filter) noexcept
 {
-    _resolveFilter = filter;
+    _resolveTexture->setTexFilter(filter);
 }
 
 void
 RenderTarget::setTexWrap(TextureWrap wrap) noexcept
 {
-    _resolveWrap = wrap;
+    _resolveTexture->setTexWrap(wrap);
 }
 
 void
 RenderTarget::setTexOp(TextureOp texop) noexcept
 {
-    _resolveTexOp = texop;
+    _resolveTexture->setTexOp(texop);
 }
 
 void
 RenderTarget::setTexDim(TextureDim mapping) noexcept
 {
-    _resolveDim = mapping;
+    _resolveTexture->setTexDim(mapping);
 }
 
 void
 RenderTarget::setMultiSample(bool multisample) noexcept
 {
-    _isMultiSample = multisample;
+    _resolveTexture->setMultisample(multisample);
 }
 
 void
 RenderTarget::setWidth(std::size_t w) noexcept
 {
-    _width = w;
+    _resolveTexture->setWidth(w);
 }
 
 void
 RenderTarget::setHeight(std::size_t h) noexcept
 {
-    _height = h;
+    _resolveTexture->setHeight(h);
 }
 
 void
 RenderTarget::setDepth(std::size_t depth) noexcept
 {
-    _depth = depth;
+    _resolveTexture->setDepth(depth);
 }
 
 void
 RenderTarget::setSize(std::size_t w, std::size_t h, std::size_t depth) noexcept
 {
-    _width = w;
-    _height = h;
-    _depth = depth;
-}
-
-void
-RenderTarget::setViewport(const Viewport& view) noexcept
-{
-    _viewport = view;
+    _resolveTexture->setSize(w, h, depth);
 }
 
 TextureOp
 RenderTarget::getTexOp() const noexcept
 {
-    return _resolveTexOp;
+    return _resolveTexture->getTexOp();
 }
 
 PixelFormat
 RenderTarget::getTexFormat()  const noexcept
 {
-    return _resolveFormat;
+    return _resolveTexture->getTexFormat();
 }
 
 TextureFilter
 RenderTarget::getTexFilter() const noexcept
 {
-    return _resolveFilter;
+    return _resolveTexture->getTexFilter();
 }
 
 TextureWrap
 RenderTarget::getTexWrap() const noexcept
 {
-    return _resolveWrap;
+    return _resolveTexture->getTexWrap();
 }
 
 TextureDim
 RenderTarget::getTexDim() const noexcept
 {
-    return _resolveDim;
+    return _resolveTexture->getTexDim();
+}
+
+std::size_t
+RenderTarget::getWidth() const noexcept
+{
+    return _resolveTexture->getWidth();
+}
+
+std::size_t
+RenderTarget::getHeight() const noexcept
+{
+    return _resolveTexture->getHeight();
 }
 
 std::size_t
 RenderTarget::getDepth() const noexcept
 {
-    return _depth;
+    return _resolveTexture->getDepth();
 }
 
 ClearFlags
@@ -236,22 +219,16 @@ RenderTarget::getClearStencil() const noexcept
     return _clearStencil;
 }
 
-const Viewport&
-RenderTarget::getViewport() const noexcept
-{
-    return _viewport;
-}
-
 bool
 RenderTarget::isMipmap() const noexcept
 {
-    return _isMipmap;
+    return _resolveTexture->isMipmap();
 }
 
 bool
 RenderTarget::isMultiSample() const noexcept
 {
-    return _isMultiSample;
+    return _resolveTexture->isMultiSample();
 }
 
 void
@@ -285,38 +262,18 @@ RenderTarget::getSharedStencilTexture() const noexcept
 }
 
 void
-RenderTarget::setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat format, ClearFlags flags, const Color4& color, float depth, int stencil) noexcept
+RenderTarget::setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat format) noexcept
 {
-    _width = w;
-    _height = h;
-
-    _viewport = Viewport(0, 0, w, h);
-
-    _clearFlags = flags;
-    _clearColor = color;
-    _clearDepth = depth;
-    _clearStencil = stencil;
-
-    _resolveFormat = format;
-    _resolveDim = dim;
-    _resolveFilter = TextureFilter::GPU_LINEAR;
-    _resolveWrap = TextureWrap::CLAMP_TO_EDGE;
-
-    _resolveTexture = RenderFactory::createTexture();
-    _resolveTexture->setSize(this->getWidth(), this->getHeight());
-    _resolveTexture->setTexMipmap(this->isMipmap());
-    _resolveTexture->setTexFormat(this->getTexFormat());
-    _resolveTexture->setTexFilter(this->getTexFilter());
-    _resolveTexture->setTexWrap(this->getTexWrap());
-    _resolveTexture->setTexOp(this->getTexOp());
-    _resolveTexture->setTexDim(this->getTexDim());
+    _resolveTexture->setWidth(w);
+    _resolveTexture->setHeight(h);
+    _resolveTexture->setTexDim(dim);
+    _resolveTexture->setTexFormat(format);
     _resolveTexture->setup();
 
     this->setup();
 }
 
 MultiRenderTarget::MultiRenderTarget() noexcept
-    : _active(false)
 {
 }
 
@@ -325,79 +282,58 @@ MultiRenderTarget::~MultiRenderTarget() noexcept
 }
 
 void
-MultiRenderTarget::setActive(bool active) except
+MultiRenderTarget::attach(RenderTargetPtr texture) noexcept
 {
-    if (_active != active)
-    {
-        if (active)
-        {
-            this->onActivate();
-        }
-        else
-        {
-            this->onDeactivate();
-        }
+    assert(texture);
+    assert(std::find(_textures.begin(), _textures.end(), texture) == _textures.end());
 
-        _active = active;
-    }
-}
-
-bool
-MultiRenderTarget::getActive() const noexcept
-{
-    return _active;
-}
-
-void
-MultiRenderTarget::attach(RenderTargetPtr texture, Attachment location) noexcept
-{
-    auto it = _textures.begin();
-    auto end = _textures.end();
-
-    for (; it != end; ++it)
-    {
-        if (it->texture == texture)
-            break;
-    }
-
-    if (it == _textures.end())
-    {
-        RenderTargetBinding tex;
-        tex.texture = texture;
-        tex.location = location;
-
-        _textures.push_back(tex);
-    }
+    _textures.push_back(texture);
 }
 
 void
 MultiRenderTarget::detach(RenderTargetPtr texture) noexcept
 {
-    auto it = _textures.begin();
-    auto end = _textures.end();
-
-    for (; it != end; ++it)
-    {
-        if (it->texture == texture)
-            break;
-    }
-
+    auto it = std::find(_textures.begin(), _textures.end(), texture);
     if (it != _textures.end())
     {
         _textures.erase(it);
     }
 }
 
-RenderTargetBindings&
+RenderTargets&
 MultiRenderTarget::getRenderTargets() noexcept
 {
     return _textures;
 }
 
-const RenderTargetBindings&
+const RenderTargets&
 MultiRenderTarget::getRenderTargets() const noexcept
 {
     return _textures;
+}
+
+void
+MultiRenderTarget::setSharedDepthTexture(RenderTargetPtr target) noexcept
+{
+    _sharedDepthTexture = target;
+}
+
+void
+MultiRenderTarget::setSharedStencilTexture(RenderTargetPtr target) noexcept
+{
+    _sharedStencilTexture = target;
+}
+
+RenderTargetPtr
+MultiRenderTarget::getSharedDepthTexture() const noexcept
+{
+    return _sharedDepthTexture;
+}
+
+RenderTargetPtr
+MultiRenderTarget::getSharedStencilTexture() const noexcept
+{
+    return _sharedStencilTexture;
 }
 
 _NAME_END

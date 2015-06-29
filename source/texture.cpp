@@ -100,6 +100,18 @@ Texture::setLevel(int level) noexcept
 }
 
 void
+Texture::setAnisotropy(Anisotropy anis) noexcept
+{
+    _anis = anis;
+}
+
+void
+Texture::setMultisample(bool enable) noexcept
+{
+    _multisample = enable;
+}
+
+void
 Texture::setWidth(int w) noexcept
 {
     _size.x = w;

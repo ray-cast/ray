@@ -39,6 +39,7 @@
 
 #include <ray/game_types.h>
 #include <ray/script_binder.h>
+#include <ray/timer.h>
 
 _NAME_BEGIN
 

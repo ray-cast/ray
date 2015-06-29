@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_system.h>
+#include <ray/render_factory.h>
 #include <ray/material_maker.h>
 #include <ray/forward_shading.h>
 #include <ray/deferred_lighting.h>
@@ -47,26 +48,10 @@
 #include <ray/hdr.h>
 #include <ray/fxaa.h>
 
-#if _BUILD_OPENGL
-#   include <ray/ogl_renderer.h>
-#endif
-
-#include <ray/render_impl.h>
-
 _NAME_BEGIN
-
-__ImplementClass(RenderSystem)
 
 RenderSystem::RenderSystem() noexcept
     : _globalColor(1.0f, 1.0f, 1.0f, 0.5f)
-    , _enableSAT(false)
-    , _enableSSAO(false)
-    , _enableSSGI(false)
-    , _enableSSR(false)
-    , _enableDOF(false)
-    , _enableHDR(false)
-    , _enableFXAA(false)
-    , _enableLightShaft(false)
 {
 }
 
@@ -78,31 +63,13 @@ RenderSystem::~RenderSystem() noexcept
 bool
 RenderSystem::setup(WindHandle win, std::size_t width, std::size_t height) except
 {
-    _renderDevice = OGLRenderer::create();
+    _renderDevice = RenderFactory::createRenderDevice();
     _renderDevice->open(win);
 
-    RenderImpl::instance()->open(_renderDevice);
     Material::setMaterialSemantic(std::make_shared<MaterialSemantic>());
 
-    _renderPipeline = std::make_unique<DeferredLighting>();
+    _renderPipeline = std::make_shared<DeferredLighting>();
     _renderPipeline->setup(_renderDevice, width, height);
-
-    if (_enableSAT)
-        _renderPipeline->addPostProcess(std::make_shared<Atmospheric>());
-    if (_enableSSGI)
-        _renderPipeline->addPostProcess(std::make_shared<SSGI>());
-    if (_enableSSAO)
-        _renderPipeline->addPostProcess(std::make_shared<SSAO>());
-    if (_enableSSR)
-        _renderPipeline->addPostProcess(std::make_shared<SSR>());
-    if (_enableDOF)
-        _renderPipeline->addPostProcess(std::make_shared<DepthOfField>());
-    if (_enableHDR)
-        _renderPipeline->addPostProcess(std::make_shared<HDR>());
-    if (_enableFXAA)
-        _renderPipeline->addPostProcess(std::make_shared<FXAA>());
-    if (_enableLightShaft)
-        _renderPipeline->addPostProcess(std::make_shared<LightShaft>());
 
     _lineMaterial = MaterialMaker("sys:fx\\lines.glsl");
 
@@ -110,11 +77,11 @@ RenderSystem::setup(WindHandle win, std::size_t width, std::size_t height) excep
     components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
     components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_DIFFUSE, VertexFormat::GPU_VERTEX_FLOAT4));
 
-    _dynamicBuffers = std::make_shared<VertexBufferData>();
-    _dynamicBuffers->setup(1, sizeof(SimpleVertex), VertexUsage::GPU_USAGE_DYNAMIC);
+    _dynamicBuffers = RenderFactory::createVertexBuffer();
     _dynamicBuffers->setVertexComponents(components);
+    _dynamicBuffers->setup(1, VertexUsage::GPU_USAGE_DYNAMIC);
 
-    _renderBuffer = std::make_unique<RenderBuffer>();
+    _renderBuffer = RenderFactory::createRenderBuffer();
     _renderBuffer->setup(_dynamicBuffers, nullptr);
 
     float ratio = (float)width / height;
@@ -126,6 +93,48 @@ RenderSystem::setup(WindHandle win, std::size_t width, std::size_t height) excep
 void
 RenderSystem::close() noexcept
 {
+    if (_SAT)
+    {
+        _SAT.reset();
+        _SAT = nullptr;
+    }
+
+    if (_SSAO)
+    {
+        _SSAO.reset();
+        _SSAO = nullptr;
+    }
+
+    if (_SSGI)
+    {
+        _SSGI.reset();
+        _SSGI = nullptr;
+    }
+
+    if (_SSR)
+    {
+        _SSR.reset();
+        _SSR = nullptr;
+    }
+
+    if (_DOF)
+    {
+        _DOF.reset();
+        _DOF = nullptr;
+    }
+
+    if (_HDR)
+    {
+        _HDR.reset();
+        _HDR = nullptr;
+    }
+
+    if (_FXAA)
+    {
+        _FXAA.reset();
+        _FXAA = nullptr;
+    }
+
     if (_lineMaterial)
     {
         _lineMaterial.reset();
@@ -156,18 +165,132 @@ RenderSystem::close() noexcept
         _renderDevice.reset();
         _renderDevice = nullptr;
     }
+
+    _setting = RenderSetting();
 }
 
 void
-RenderSystem::setSwapInterval(SwapInterval interval) noexcept
+RenderSystem::setRenderSetting(const RenderSetting& setting) noexcept
 {
-    _renderDevice->setSwapInterval(interval);
+    if (_setting.enableSAT != setting.enableSAT)
+    {
+        if (setting.enableSAT)
+        {
+            _SAT = std::make_shared<Atmospheric>();
+            _renderPipeline->addPostProcess(_SAT);
+        }
+        else
+        {
+            _renderPipeline->removePostProcess(_SAT);
+            _SAT.reset();
+        }
+    }
+
+    if (_setting.enableSSGI != setting.enableSSGI)
+    {
+        if (setting.enableSSGI)
+        {
+            _SSGI = std::make_shared<SSGI>();
+            _renderPipeline->addPostProcess(_SSGI);
+        }
+        else
+        {
+            _renderPipeline->removePostProcess(_SSGI);
+            _SSGI.reset();
+        }
+    }
+
+    if (_setting.enableSSAO != setting.enableSSAO)
+    {
+        if (setting.enableSSGI)
+        {
+            _SSAO = std::make_shared<SSAO>();
+            _renderPipeline->addPostProcess(_SSAO);
+        }
+        else
+        {
+            _renderPipeline->removePostProcess(_SSAO);
+            _SSAO.reset();
+        }
+    }
+
+    if (_setting.enableSSR != setting.enableSSR)
+    {
+        if (setting.enableSSR)
+        {
+            _SSR = std::make_shared<SSR>();
+            _renderPipeline->addPostProcess(_SSR);
+        }
+        else
+        {
+            _renderPipeline->removePostProcess(_SSR);
+            _SSR.reset();
+        }
+    }
+
+    if (_setting.enableDOF != setting.enableDOF)
+    {
+        if (setting.enableDOF)
+        {
+            _DOF = std::make_shared<DepthOfField>();
+            _renderPipeline->addPostProcess(_DOF);
+        }
+        else
+        {
+            _renderPipeline->removePostProcess(_DOF);
+            _DOF.reset();
+        }
+    }
+
+    if (_setting.enableHDR != setting.enableHDR)
+    {
+        if (setting.enableHDR)
+        {
+            _HDR = std::make_shared<HDR>();
+            _renderPipeline->addPostProcess(_HDR);
+        }
+        else
+        {
+            _renderPipeline->removePostProcess(_HDR);
+            _HDR.reset();
+        }
+    }
+
+    if (_setting.enableFXAA != setting.enableFXAA)
+    {
+        if (setting.enableFXAA)
+        {
+            _FXAA = std::make_shared<FXAA>();
+            _renderPipeline->addPostProcess(_FXAA);
+        }
+        else
+        {
+            _renderPipeline->removePostProcess(_FXAA);
+            _FXAA.reset();
+        }
+    }
+
+    if (_setting.enableLightShaft != setting.enableLightShaft)
+    {
+        if (setting.enableLightShaft)
+        {
+            _lightShaft = std::make_shared<LightShaft>();
+            _renderPipeline->addPostProcess(_lightShaft);
+        }
+        else
+        {
+            _renderPipeline->removePostProcess(_lightShaft);
+            _lightShaft.reset();
+        }
+    }
+
+    _renderDevice->setSwapInterval(setting.interval);
 }
 
-SwapInterval
-RenderSystem::getSwapInterval() const noexcept
+const RenderSetting&
+RenderSystem::getRenderSetting() const noexcept
 {
-    return _renderDevice->getSwapInterval();
+    return _setting;
 }
 
 void
@@ -376,7 +499,7 @@ RenderSystem::drawPoints(const Vector3 pt[], std::size_t num) noexcept
 }
 
 void
-RenderSystem::drawText(const std::string& string) noexcept
+RenderSystem::drawText(const Vector3& pt, const std::string& string) noexcept
 {
 }
 

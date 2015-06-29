@@ -35,11 +35,10 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/game_scene.h>
-#include <ray/game_server.h>
 
 _NAME_BEGIN
 
-__ImplementClass(GameScene)
+__ImplementSubClass(GameScene, GameMessage)
 
 GameScene::Setting::Setting() noexcept
     : gravity(0.0f, 9.81f, 0.0f)
@@ -117,11 +116,9 @@ void
 GameScene::addGameObject(GameObjectPtr gameobj) noexcept
 {
     assert(gameobj);
+    assert(!gameobj->getParent());
 
-    if (!gameobj->getParent())
-    {
-        _root->addChild(gameobj);
-    }
+    _root->addChild(gameobj);
 }
 
 void
@@ -129,12 +126,9 @@ GameScene::removeGameObject(GameObjectPtr gameobj) noexcept
 {
     if (gameobj)
     {
-        auto instance = gameobj->getInstanceID();
-        assert(instance != -1);
-
         gameobj->setActive(false);
 
-        _root->removeChild(instance);
+        _root->removeChild(gameobj->getInstanceID());
     }
 }
 

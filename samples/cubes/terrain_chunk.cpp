@@ -129,7 +129,7 @@ TerrainChunk::dirt() const noexcept
 }
 
 void
-TerrainChunk::active(ray::GameObject* gameobj) noexcept
+TerrainChunk::active(ray::GameObjectPtr gameobj) noexcept
 {
     for (auto& it : _objects)
     {

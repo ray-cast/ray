@@ -38,6 +38,7 @@
 #include <ray/material_maker.h>
 #include <ray/light.h>
 #include <ray/camera.h>
+#include <ray/render_factory.h>
 
 _NAME_BEGIN
 
@@ -66,12 +67,12 @@ Atmospheric::~Atmospheric() noexcept
 }
 
 void
-Atmospheric::onActivate() noexcept
+Atmospheric::onActivate(RenderPipeline& pipeline) noexcept
 {
     MeshProperty mesh;
     mesh.makeSphere(1, 128, 96);
 
-    _sphere = std::make_shared<RenderBuffer>();
+    _sphere = RenderFactory::createRenderBuffer();
     _sphere->setup(mesh);
 
     _sat = MaterialMaker("sys:fx/atmospheric.glsl");
@@ -116,12 +117,12 @@ Atmospheric::onActivate() noexcept
 }
 
 void
-Atmospheric::onDectivate() noexcept
+Atmospheric::onDectivate(RenderPipeline& pipeline) noexcept
 {
 }
 
 void
-Atmospheric::render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
+Atmospheric::onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
 {
     Renderable renderable;
     renderable.startVertice = 0;

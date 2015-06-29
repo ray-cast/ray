@@ -40,6 +40,7 @@
 #include <ray/render_scene.h>
 #include <ray/render_window.h>
 #include <ray/render_pipeline.h>
+#include <ray/render_setting.h>
 #include <ray/timer.h>
 
 _NAME_BEGIN
@@ -62,7 +63,6 @@ struct SimpleVertex
 
 class EXPORT RenderSystem final
 {
-    __DeclareClass(RenderSystem)
 public:
     RenderSystem() noexcept;
     ~RenderSystem() noexcept;
@@ -70,14 +70,18 @@ public:
     bool setup(WindHandle win, std::size_t width, std::size_t height) except;
     void close() noexcept;
 
-    void setSwapInterval(SwapInterval interval) noexcept;
-    SwapInterval getSwapInterval() const noexcept;
+    void setRenderSetting(const RenderSetting& setting) noexcept;
+    const RenderSetting& getRenderSetting() const noexcept;
 
     void setTimer(TimerPtr timer) noexcept;
     TimerPtr getTimer() const noexcept;
 
     bool addRenderScene(RenderScenePtr scene) noexcept;
     void removeRenderScene(RenderScenePtr scene) noexcept;
+
+    void renderBegin() noexcept;
+    void render() noexcept;
+    void renderEnd() noexcept;
 
     void drawAABB(const Vector3& min, const Vector3& max, const Vector4& color) noexcept;
     void drawAABB(const Vector3& min, const Vector3& max, const Matrix4x4& trans, const Vector4& color) noexcept;
@@ -108,11 +112,7 @@ public:
     void drawPoint(const Vector3& pt, const Vector4& color) noexcept;
     void drawPoints(const Vector3 pt[], std::size_t num) noexcept;
 
-    void drawText(const std::string& string) noexcept;
-
-    void renderBegin() noexcept;
-    void render() noexcept;
-    void renderEnd() noexcept;
+    void drawText(const Vector3& pt, const std::string& string) noexcept;
 
 private:
 
@@ -128,32 +128,32 @@ private:
 
 private:
 
+    RenderSetting _setting;
+
+    RenderDevicePtr _renderDevice;
+    RenderPipelinePtr _renderPipeline;
+
+    RenderPostProcessPtr _SSGI;
+    RenderPostProcessPtr _SSAO;
+    RenderPostProcessPtr _SAT;
+    RenderPostProcessPtr _SSR;
+    RenderPostProcessPtr _DOF;
+    RenderPostProcessPtr _HDR;
+    RenderPostProcessPtr _FXAA;
+    RenderPostProcessPtr _lightShaft;
+
     TimerPtr _timer;
 
     Vector4 _globalColor;
     Matrix4x4 _orthoCamera;
-
-    std::vector<SimpleVertex> _lines;
-    std::vector<SimpleVertex> _polygons;
-
-    bool _enableSSAO;
-    bool _enableSSGI;
-    bool _enableSAT;
-    bool _enableLightShaft;
-    bool _enableSSR;
-    bool _enableDOF;
-    bool _enableHDR;
-    bool _enableFXAA;
 
     MaterialPtr _lineMaterial;
 
     VertexBufferDataPtr _dynamicBuffers;
     RenderBufferPtr _renderBuffer;
 
-    RenderDevicePtr _renderDevice;
-
-    std::unique_ptr<RenderPipeline> _renderPipeline;
-
+    std::vector<SimpleVertex> _lines;
+    std::vector<SimpleVertex> _polygons;
     std::vector<RenderScenePtr> _sceneList;
 };
 

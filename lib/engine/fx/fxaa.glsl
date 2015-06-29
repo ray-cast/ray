@@ -1045,7 +1045,11 @@
         <pass name="fxaa">
             <state name="vertex" value="main"/>
             <state name="fragment" value="main"/>
+
             <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="front"/>
         </pass>
     </technique>
 </effect>

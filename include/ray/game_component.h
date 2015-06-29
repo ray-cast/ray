@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class EXPORT GameComponent : public Object<GameComponent>
+class EXPORT GameComponent : public GameMessage
 {
     __DeclareInterface(GameComponent)
 public:
@@ -53,6 +53,9 @@ public:
 
     GameServer* getGameServer() noexcept;
     const GameServer* getGameServer() const noexcept;
+
+    virtual void load(iarchive& reader) noexcept;
+    virtual void save(oarchive& write) noexcept;
 
     virtual void sendMessage(const std::string& method, const Variant* data...) except;
     virtual void sendMessageUpwards(const std::string& method, const Variant* data...) except;
@@ -75,6 +78,8 @@ public:
     virtual void onLayerChangeAfter() except;
 
     virtual void onMessage(const std::string& metod, const Variant* data...) except;
+
+    virtual GameComponentPtr clone() const except = 0;
 
 private:
     friend GameObject;

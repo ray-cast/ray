@@ -63,8 +63,6 @@ public:
     void setSetting(const Setting& set) noexcept;
     const Setting& getSetting() const noexcept;
 
-    void render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
-
 private:
 
     void computeRawAO(RenderPipeline& pipeline, RenderTargetPtr dest) noexcept;
@@ -73,8 +71,12 @@ private:
     void blurDirection(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest, const float2& direction) noexcept;
     void shading(RenderPipeline& pipeline, RenderTargetPtr color, RenderTargetPtr ao) noexcept;
 
-    void onActivate() except;
-    void onDeactivate() except;
+private:
+
+    void onActivate(RenderPipeline& pipeline) except;
+    void onDeactivate(RenderPipeline& pipeline) except;
+
+    void onRender(RenderPipeline& pipeline, RenderTargetPtr source) except;
 
 private:
 

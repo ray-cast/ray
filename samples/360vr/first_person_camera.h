@@ -41,6 +41,7 @@
 
 class FirstPersonCamera : public ray::GameController
 {
+    __DeclareSubClass(FirstPersonCamera, ray::GameController)
 public:
     FirstPersonCamera() noexcept;
     ~FirstPersonCamera() noexcept;

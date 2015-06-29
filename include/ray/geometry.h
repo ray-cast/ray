@@ -58,6 +58,9 @@ public:
     RenderBufferPtr getRenderBuffer() noexcept;
     RenderablePtr getRenderable() noexcept;
 
+    void setRenderScene(RenderScenePtr scene) noexcept;
+    RenderScenePtr getRenderScene() const noexcept;
+
     void collection(RenderDataManager& manager) noexcept;
 
     void render(RenderDevice& renderer, RenderQueue queue, RenderPass type, MaterialPassPtr pass = nullptr) noexcept;
@@ -67,6 +70,8 @@ private:
     MaterialPtr _material;
     RenderBufferPtr _geometry;
     RenderablePtr _renderable;
+
+    RenderScene* _renderScene;
 };
 
 _NAME_END

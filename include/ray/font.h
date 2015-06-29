@@ -38,9 +38,7 @@
 #define _H_FONT_H_
 
 #include <ray/gdicmn.h>
-#include <ray/reference.h>
 #include <ray/istream.h>
-#include <map>
 
 _NAME_BEGIN
 
@@ -79,7 +77,7 @@ public:
     void*           palette;
 };
 
-class EXPORT Font final : public Reference<Font>
+class EXPORT Font final
 {
 public:
     typedef std::wstring::value_type value_type;

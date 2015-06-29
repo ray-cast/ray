@@ -39,9 +39,24 @@
 #if _BUILD_OPENGL
 #include <ray/ogl_shader.h>
 #include <ray/ogl_texture.h>
+#include <ray/ogl_buffer.h>
+#include <ray/ogl_renderer.h>
 #endif
 
+#include <ray/image.h>
+#include <ray/ioserver.h>
+#include <ray/mstream.h>
+#include <ray/material_maker.h>
+#include <ray/xmlreader.h>
+#include <ray/parse.h>
+
 _NAME_BEGIN
+
+RenderDevicePtr
+RenderFactory::createRenderDevice() noexcept
+{
+    return std::make_shared<OGLRenderer>();
+}
 
 ShaderPtr
 RenderFactory::createShader() noexcept
@@ -61,6 +76,42 @@ RenderFactory::createTexture() noexcept
     return std::make_shared<OGLTexture>();
 }
 
+TexturePtr
+RenderFactory::createTexture(const std::string& name) except
+{
+    MemoryStream stream;
+    IoServer::instance()->openFile(name, stream);
+
+    if (stream)
+    {
+        Image image;
+        if (image.load(stream))
+        {
+            PixelFormat format = PixelFormat::R8G8B8A8;
+
+            if (image.bpp() == 24)
+                format = PixelFormat::R8G8B8;
+            else if (image.bpp() == 32)
+                format = PixelFormat::R8G8B8A8;
+
+            auto texture = RenderFactory::createTexture();
+            texture->setSize(image.width(), image.height());
+            texture->setTexDim(TextureDim::DIM_2D);
+            texture->setTexFormat(format);
+            texture->setStream(image.data());
+            texture->setup();
+
+            return texture;
+        }
+    }
+    else
+    {
+        throw failure("fail to open : " + name);
+    }
+
+    return nullptr;
+}
+
 RenderTargetPtr
 RenderFactory::createRenderTarget() noexcept
 {
@@ -71,6 +122,105 @@ MultiRenderTargetPtr
 RenderFactory::createMultiRenderTarget() noexcept
 {
     return std::make_shared<OGLMultiRenderTarget>();
+}
+
+VertexBufferDataPtr
+RenderFactory::createVertexBuffer() noexcept
+{
+    return std::make_shared<OGLVertexBuffer>();
+}
+
+IndexBufferDataPtr
+RenderFactory::createIndexBuffer() noexcept
+{
+    return std::make_shared<OGLIndexBuffer>();
+}
+
+RenderBufferPtr
+RenderFactory::createRenderBuffer() noexcept
+{
+    return std::make_shared<OGLRenderBuffer>();
+}
+
+MaterialPtr
+RenderFactory::createMaterial(const std::string& filename) except
+{
+    MemoryStream stream;
+
+    IoServer::instance()->openFile(filename, stream);
+    if (!stream.is_open())
+        return false;
+
+    XMLReader xml;
+    if (xml.open(stream))
+    {
+        std::string name;
+        std::map<std::string, std::string> args;
+
+        if (!xml.setToFirstChild())
+        {
+            throw failure("The file has been damaged and can't be recovered, so I can't open it" + filename);
+        }
+
+        do
+        {
+            auto key = xml.getCurrentNodeName();
+            if (key == "attribute")
+            {
+                auto attributes = xml.getAttrs();
+                for (auto& it : attributes)
+                {
+                    if (it == "shader")
+                    {
+                        name = xml.getString(it);
+                    }
+                    else
+                    {
+                        args[it] = xml.getString(it);
+                    }
+                }
+            }
+        } while (xml.setToNextChild());
+
+        if (!name.empty())
+        {
+            MaterialMaker maker;
+            auto material = maker.load(name);
+            if (material)
+            {
+                for (auto& arg : args)
+                {
+                    auto param = material->getParameter(arg.first);
+                    if (param)
+                    {
+                        auto type = param->getType();
+                        switch (type)
+                        {
+                        case ShaderVariantType::SPT_FLOAT:
+                        {
+                            param->assign(parseFloat<Float>(arg.second));
+                        }
+                        break;
+                        case ShaderVariantType::SPT_FLOAT4:
+                        {
+                            param->assign(parseFloat4(arg.second));
+                        }
+                        break;
+                        case ShaderVariantType::SPT_TEXTURE:
+                        {
+                            param->assign(RenderFactory::createTexture(arg.second));
+                        }
+                        break;
+                        }
+                    }
+                }
+
+                return material;
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 _NAME_END

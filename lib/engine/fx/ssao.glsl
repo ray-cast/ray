@@ -64,8 +64,8 @@
 
             float linearizeDepth(vec2 uv)
             {
-                float d = texture2D(texDepth, uv).r * 2.0 - 1.0;
-                return clipInfo.x / (clipInfo.y * d - clipInfo.z);
+                float d = texture2D(texDepth, uv).r;
+                return clipInfo.x / (clipInfo.z - clipInfo.y * d);
             }
 
             float bilateralfilter(vec2 coord, float r, float center_d)
@@ -168,6 +168,8 @@
             <state name="vertex" value="postprocess"/>
             <state name="fragment" value="aoPS"/>
 
+            <state name="cullmode" value="front"/>
+
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
         </pass>
@@ -175,12 +177,16 @@
             <state name="vertex" value="postprocess"/>
             <state name="fragment" value="blurPS"/>
 
+            <state name="cullmode" value="front"/>
+
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
         </pass>
         <pass name="copy">
             <state name="vertex" value="postprocess"/>
             <state name="fragment" value="copyPS"/>
+
+            <state name="cullmode" value="front"/>
 
             <state name="depthtest" value="true"/>
             <state name="depthwrite" value="false"/>

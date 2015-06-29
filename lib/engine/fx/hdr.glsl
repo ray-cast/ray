@@ -163,6 +163,8 @@
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="front"/>
         </pass>
         <pass name="samplelog">
             <state name="vertex" value="PostProcessVS" />
@@ -170,6 +172,8 @@
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="front"/>
         </pass>
         <pass name="bloom">
             <state name="vertex" value="PostProcessVS" />
@@ -177,6 +181,8 @@
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="front"/>
         </pass>
         <pass name="blurh">
             <state name="vertex" value="BlurhVS" />
@@ -184,6 +190,8 @@
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="front"/>
         </pass>
         <pass name="blurv">
             <state name="vertex" value="BlurvVS" />
@@ -191,6 +199,8 @@
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="front"/>
         </pass>
         <pass name="tone">
             <state name="vertex" value="PostProcessVS" />
@@ -198,6 +208,8 @@
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="front"/>
         </pass>
     </technique>
 </effect>

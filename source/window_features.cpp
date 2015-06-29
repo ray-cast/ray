@@ -38,6 +38,10 @@
 
 _NAME_BEGIN
 
+WindowFeatures::WindowFeatures() noexcept
+{
+}
+
 WindowFeatures::WindowFeatures(const std::string& title, int w, int h) noexcept
     : _title(title)
     , _width(w)
@@ -60,6 +64,12 @@ WindowPtr
 WindowFeatures::getWindow() const noexcept
 {
     return _window;
+}
+
+GameFeaturePtr
+WindowFeatures::clone() const except
+{
+    return std::make_shared<WindowFeatures>(_title, _width, _height);
 }
 
 void

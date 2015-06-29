@@ -41,14 +41,54 @@
 
 _NAME_BEGIN
 
-class OGLRenderBuffer final : public RenderBuffer
+class OGLVertexBuffer final : public VertexBufferData
 {
 public:
-    OGLRenderBuffer();
-    ~OGLRenderBuffer();
+    OGLVertexBuffer() noexcept;
+    ~OGLVertexBuffer() noexcept;
 
     void setup() except;
     void close() noexcept;
+
+    GLuint getInstanceID() noexcept;
+    GLuint64 getInstanceAddr() noexcept;
+
+private:
+
+    GLuint _vbo;
+    GLuint64 _bindlessVbo;
+};
+
+class OGLIndexBuffer final : public IndexBufferData
+{
+public:
+    OGLIndexBuffer() noexcept;
+    ~OGLIndexBuffer() noexcept;
+
+    void setup() noexcept;
+    void close() noexcept;
+
+    GLuint getInstanceID() noexcept;
+    GLuint64 getInstanceAddr() noexcept;
+
+private:
+
+    GLuint _ibo;
+    GLuint64 _bindlessIbo;
+};
+
+class OGLRenderBuffer final : public RenderBuffer
+{
+public:
+    OGLRenderBuffer() noexcept;
+    ~OGLRenderBuffer() noexcept;
+
+    void setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) except;
+    void close() noexcept;
+
+private:
+
+    GLuint _vao;
 };
 
 _NAME_END

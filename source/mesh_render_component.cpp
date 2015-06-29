@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/mesh_render_component.h>
 #include <ray/mesh_component.h>
+#include <ray/material_maker.h>
 #include <ray/game_server.h>
 #include <ray/render_features.h>
 
@@ -51,54 +52,6 @@ MeshRenderComponent::~MeshRenderComponent() noexcept
 {
 }
 
-void
-MeshRenderComponent::onActivate() noexcept
-{
-    if (!_renderObject)
-        _buildRenderObject();
-
-    _attacRenderObject();
-}
-
-void
-MeshRenderComponent::onDeactivate() noexcept
-{
-    _dttachRenderhObject();
-}
-
-void
-MeshRenderComponent::onMoveAfter() noexcept
-{
-    if (_renderObject)
-    {
-        _renderObject->setTransform(this->getGameObject()->getTransform());
-        _renderObject->setTransformInverse(this->getGameObject()->getTransformInverse());
-        _renderObject->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
-    }
-}
-
-void
-MeshRenderComponent::onLayerChangeAfter() noexcept
-{
-    if (_renderObject)
-    {
-        _renderObject->setLayer(this->getGameObject()->getLayer());
-    }
-}
-
-void
-MeshRenderComponent::onFrameEnd() noexcept
-{
-    auto mesh = this->getGameObject()->getComponent<MeshComponent>();
-    if (mesh && mesh->getRenderBuffer())
-    {
-        if (_renderObject)
-        {
-            _renderObject->setBoundingBox(mesh->getBoundingBox());
-        }
-    }
-}
-
 GameComponentPtr
 MeshRenderComponent::clone() const noexcept
 {
@@ -112,6 +65,48 @@ MeshRenderComponent::clone() const noexcept
 }
 
 void
+MeshRenderComponent::onActivate() except
+{
+    RenderComponent::onActivate();
+
+    if (!_renderObject)
+        _buildRenderObject();
+
+    _attacRenderObject();
+}
+
+void
+MeshRenderComponent::onDeactivate() noexcept
+{
+    RenderComponent::onDeactivate();
+
+    if (_renderObject)
+        _dttachRenderhObject();
+}
+
+void
+MeshRenderComponent::onMoveAfter() noexcept
+{
+    RenderComponent::onMoveAfter();
+
+    if (_renderObject)
+    {
+        _renderObject->setTransform(this->getGameObject()->getTransform());
+        _renderObject->setTransformInverse(this->getGameObject()->getTransformInverse());
+        _renderObject->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
+    }
+}
+
+void
+MeshRenderComponent::onLayerChangeAfter() noexcept
+{
+    RenderComponent::onLayerChangeAfter();
+
+    if (_renderObject)
+        _renderObject->setLayer(this->getGameObject()->getLayer());
+}
+
+void
 MeshRenderComponent::_attacRenderObject() noexcept
 {
     if (_renderObject)
@@ -122,7 +117,7 @@ MeshRenderComponent::_attacRenderObject() noexcept
             auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
             if (renderScene)
             {
-                _renderObject->setRenderScene(renderScene.get());
+                _renderObject->setRenderScene(renderScene);
             }
         }
     }
@@ -153,18 +148,18 @@ MeshRenderComponent::_buildRenderObject() noexcept
         {
             _renderObject = std::make_unique<Geometry>();
             _renderObject->setRenderBuffer(mesh->getRenderBuffer(), mesh->getVertexType());
-            _renderObject->setMaterial(this->getMaterial());
-
             _renderObject->setBoundingBox(mesh->getBoundingBox());
+
+            _renderObject->setMaterial(this->getMaterial());
 
             _renderObject->setCastShadow(this->getCastShadow());
             _renderObject->setReceiveShadow(this->getReceiveShadow());
 
+            _renderObject->setLayer(this->getGameObject()->getLayer());
+
             _renderObject->setTransform(this->getGameObject()->getTransform());
             _renderObject->setTransformInverse(this->getGameObject()->getTransformInverse());
             _renderObject->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
-
-            _renderObject->setLayer(this->getGameObject()->getLayer());
         }
     }
 }

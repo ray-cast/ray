@@ -37,6 +37,18 @@
 #ifndef _H_DEF_H_
 #define _H_DEF_H_
 
+#include <cstdint>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
+
+#include <memory>
+#include <vector>
+#include <list>
+#include <map>
+
+#include <iostream>
+
 #ifndef _BYTE_BITMASK
 #   define _BYTE_BITMASK(Enum, Ty) typedef unsigned char Ty
 #endif

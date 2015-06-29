@@ -11,10 +11,6 @@
             <attribute ratio="1.7916667"/>
             <attribute znear="0.1"/>
             <attribute zfar="65535.0"/>
-            <attribute x="0"/>
-            <attribute y="0"/>
-            <attribute w="1376"/>
-            <attribute h="768"/>
         </component>
         <component name="character">
             <attribute radius="1"/>
@@ -25,9 +21,9 @@
         <attribute name="sky"/>
         <attribute position="0,0,0" />
         <attribute scale="1,1,1" />
-        <attribute active="true"/>
+        <attribute active="false"/>
         <component name="mesh">
-            <attribute model="dlc:cube/models/sphere.pmx"/>
+            <attribute name="dlc:cube/models/sphere.pmx"/>
         </component>
         <component name="meshrender">
             <attribute castshadow="false"/>
@@ -40,7 +36,7 @@
         <attribute position="0,0,0" />
         <attribute active="false"/>
         <component name="mesh">
-            <attribute model="dlc:cube/models/cube.pmx"/>
+            <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
         <component name="meshrender">
             <attribute material="dlc:cube/material/grass.mat"/>
@@ -51,7 +47,7 @@
         <attribute position="0,0,0" />
         <attribute active="false"/>
         <component name="mesh">
-            <attribute model="dlc:cube/models/cube.pmx"/>
+            <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
         <component name="meshrender">
             <attribute material="dlc:cube/material/wood.mat"/>
@@ -62,7 +58,7 @@
         <attribute position="0,0,0" />
         <attribute active="false"/>
         <component name="mesh">
-            <attribute model="dlc:cube/models/cube.pmx"/>
+            <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
         <component name="meshrender">
             <attribute material="dlc:cube/material/leaf.mat"/>
@@ -73,7 +69,7 @@
         <attribute position="0,0,0" />
         <attribute active="false"/>
         <component name="mesh">
-            <attribute model="dlc:cube/models/cube.pmx"/>
+            <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
         <component name="meshrender">
             <attribute material="dlc:cube/material/clound.mat"/>
@@ -84,7 +80,7 @@
         <attribute position="0,0,0" />
         <attribute active="false"/>
         <component name="mesh">
-            <attribute model="dlc:cube/models/cube.pmx"/>
+            <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
         <component name="meshrender">
             <attribute material="dlc:cube/material/water.mat"/>

@@ -35,43 +35,13 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/material_maker.h>
-#include <ray/render_impl.h>
 #include <ray/render_factory.h>
-#include <ray/image.h>
+#include <ray/ioserver.h>
 #include <ray/except.h>
 #include <ray/mstream.h>
-#include <ray/ioserver.h>
+#include <ray/xmlreader.h>
 
 _NAME_BEGIN
-
-TexturePtr createTexture(const std::string& name) except
-{
-    Image image;
-    if (image.load(name))
-    {
-        PixelFormat format = PixelFormat::R8G8B8A8;
-
-        if (image.bpp() == 24)
-            format = PixelFormat::R8G8B8;
-        else if (image.bpp() == 32)
-            format = PixelFormat::R8G8B8A8;
-
-        auto texture = RenderFactory::createTexture();
-        texture->setSize(image.width(), image.height());
-        texture->setTexDim(TextureDim::DIM_2D);
-        texture->setTexFormat(format);
-        texture->setStream(image.data());
-        texture->setup();
-
-        return texture;
-    }
-    else
-    {
-        throw failure("fail to open : " + name);
-    }
-
-    return nullptr;
-}
 
 MaterialMaker::MaterialMaker() noexcept
 {
@@ -87,14 +57,14 @@ MaterialMaker::~MaterialMaker() noexcept
 }
 
 RenderStatePtr
-MaterialMaker::instanceState(XMLReader& reader) except
+MaterialMaker::instanceState(iarchive& reader) except
 {
     auto state = std::make_shared<RenderState>();
     return state;
 }
 
 ShaderPtr
-MaterialMaker::instanceShader(XMLReader& reader) except
+MaterialMaker::instanceShader(iarchive& reader) except
 {
     auto shader = RenderFactory::createShader();
 
@@ -124,7 +94,7 @@ MaterialMaker::instanceShader(XMLReader& reader) except
 }
 
 MaterialPassPtr
-MaterialMaker::instancePass(XMLReader& reader) except
+MaterialMaker::instancePass(iarchive& reader) except
 {
     RenderPass passType = RenderPass::RP_CUSTOM;
 
@@ -270,7 +240,7 @@ MaterialMaker::instancePass(XMLReader& reader) except
 }
 
 MaterialTechPtr
-MaterialMaker::instanceTech(XMLReader& reader) except
+MaterialMaker::instanceTech(iarchive& reader) except
 {
     RenderQueue queue = Background;
 
@@ -313,7 +283,7 @@ MaterialMaker::instanceTech(XMLReader& reader) except
 }
 
 MaterialParamPtr
-MaterialMaker::instanceParameter(XMLReader& reader) except
+MaterialMaker::instanceParameter(iarchive& reader) except
 {
     auto name = reader.getString("name");
     auto type = reader.getString("type");
@@ -336,13 +306,7 @@ MaterialMaker::instanceParameter(XMLReader& reader) except
         else if (type == "int2")
             param->setType(ShaderVariantType::SPT_INT2);
         else if (type == "float")
-        {
             param->setType(ShaderVariantType::SPT_FLOAT);
-            if (!value.empty())
-            {
-                param->assign(fast_atof(value.c_str()));
-            }
-        }
         else if (type == "float2")
             param->setType(ShaderVariantType::SPT_FLOAT2);
         else if (type == "float3")
@@ -356,17 +320,7 @@ MaterialMaker::instanceParameter(XMLReader& reader) except
         else if (type == "float2")
             param->setType(ShaderVariantType::SPT_FLOAT2);
         else if (type == "sampler2D")
-        {
             param->setType(ShaderVariantType::SPT_TEXTURE);
-            if (!value.empty())
-            {
-                auto texture = createTexture(value.c_str());
-                if (texture)
-                {
-                    param->assign(texture);
-                }
-            }
-        }
         else if (type == "buffer")
             param->setType(ShaderVariantType::SPT_BUFFER);
         else
@@ -389,7 +343,7 @@ MaterialMaker::instanceParameter(XMLReader& reader) except
 }
 
 MaterialParamPtr
-MaterialMaker::instanceBuffer(XMLReader& reader) except
+MaterialMaker::instanceBuffer(iarchive& reader) except
 {
     auto buffer = std::make_shared<MaterialParam>();
     buffer->setType(ShaderVariantType::SPT_BUFFER);
@@ -434,7 +388,7 @@ MaterialMaker::load(const std::string& filename) except
 }
 
 MaterialPtr
-MaterialMaker::load(XMLReader& reader) except
+MaterialMaker::load(iarchive& reader) except
 {
     std::string nodeName;
     nodeName = reader.getCurrentNodeName();

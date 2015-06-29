@@ -48,13 +48,19 @@ class EXPORT RenderFeatures final : public GameFeature
 {
 public:
     RenderFeatures() noexcept;
+    RenderFeatures(const RenderSetting& setting) noexcept;
     virtual ~RenderFeatures() noexcept;
+
+    void setRenderSetting(const RenderSetting& setting) noexcept;
+    const RenderSetting& getRenderSetting() const noexcept;
 
     void setRenderSystem(RenderSystemPtr renderSystem) noexcept;
     RenderSystemPtr getRenderSystem() const noexcept;
 
     RenderScenePtr getRenderScene(GameScene* scene) noexcept;
     RenderScenePtr getRenderScene(GameScenePtr scene) noexcept;
+
+    GameFeaturePtr clone() const noexcept;
 
 private:
 
@@ -68,16 +74,7 @@ private:
     void onFrame() except;
     void onFrameEnd() except;
 
-    GameComponentPtr onSerialization(XMLReader* reader) except;
-
-private:
-
-    MaterialPtr instanceMaterial(XMLReader* reader) except;
-    GameComponentPtr instanceCamera(XMLReader* reader) except;
-    GameComponentPtr instanceMesh(XMLReader* reader) except;
-    GameComponentPtr instanceMeshRender(XMLReader* reader) except;
-    GameComponentPtr instanceLight(XMLReader* reader) except;
-    GameComponentPtr instanceSky(XMLReader* reader) except;
+    GameComponentPtr onSerialization(iarchive& reader) except;
 
 private:
     RenderFeatures(const RenderFeatures&) = delete;
@@ -88,6 +85,7 @@ private:
     typedef std::map<GameScene::InstanceID, RenderScenePtr> RenderScenes;
 
     RenderSystemPtr _renderSystem;
+    RenderSetting _renderSetting;
     RenderScenes _renderScenes;
 };
 

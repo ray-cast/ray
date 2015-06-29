@@ -57,7 +57,7 @@ public:
     virtual bool create(TerrainMapPtr map) noexcept = 0;
     virtual bool createObject(TerrainMapPtr map) noexcept = 0;
 
-    virtual bool active(ray::GameObject* parent) noexcept = 0;
+    virtual bool active(ray::GameObjectPtr parent) noexcept = 0;
 
     virtual bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept = 0;
 

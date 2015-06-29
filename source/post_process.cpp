@@ -39,7 +39,6 @@
 _NAME_BEGIN
 
 RenderPostProcess::RenderPostProcess() noexcept
-    :_active(false)
 {
 }
 
@@ -48,42 +47,32 @@ RenderPostProcess::~RenderPostProcess() noexcept
 }
 
 void
-RenderPostProcess::setActive(bool active) except
-{
-    if (_active != active)
-    {
-        if (active)
-            this->onActivate();
-        else
-            this->onDeactivate();
-
-        _active = active;
-    }
-}
-
-bool
-RenderPostProcess::getActive() const except
-{
-    return _active;
-}
-
-void
-RenderPostProcess::onActivate() except
+RenderPostProcess::onActivate(RenderPipeline&) except
 {
 }
 
 void
-RenderPostProcess::onDeactivate() except
+RenderPostProcess::onDeactivate(RenderPipeline&) except
 {
 }
 
 void
-RenderPostProcess::onResolutionChangeBefore() except
+RenderPostProcess::onResolutionChangeBefore(RenderPipeline&) except
 {
 }
 
 void
-RenderPostProcess::onResolutionChangeAfter() except
+RenderPostProcess::onResolutionChangeAfter(RenderPipeline&) except
+{
+}
+
+void
+RenderPostProcess::onPreRender(RenderPipeline& pipeline) except
+{
+}
+
+void
+RenderPostProcess::onPostRender(RenderPipeline& pipeline) except
 {
 }
 

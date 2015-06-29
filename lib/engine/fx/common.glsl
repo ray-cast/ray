@@ -18,6 +18,7 @@
             layout(location = 1) out vec4 glsl_FragColor1;
             layout(location = 2) out vec4 glsl_FragColor2;
             layout(location = 3) out vec4 glsl_FragColor3;
+            //layout(origin_upper_left) in vec4 gl_FragCoord;
         ]]>
     </shader>
 </effect>

@@ -39,6 +39,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(GameFeature, GameMessage)
+
 GameFeature::GameFeature() noexcept
     : _isActive(false)
     , _server(nullptr)
@@ -47,18 +49,6 @@ GameFeature::GameFeature() noexcept
 
 GameFeature::~GameFeature() noexcept
 {
-}
-
-void
-GameFeature::setName(const std::string& name) noexcept
-{
-    _name = name;
-}
-
-const std::string&
-GameFeature::getName() const noexcept
-{
-    return _name;
 }
 
 void
@@ -109,7 +99,7 @@ GameFeature::getGameServer() noexcept
 }
 
 GameComponentPtr
-GameFeature::onSerialization(XMLReader*) except
+GameFeature::onSerialization(iarchive&) except
 {
     return nullptr;
 }

@@ -51,6 +51,8 @@ public:
     PhysicsScenePtr getPhysicsScene(GameScene* scene) const noexcept;
     PhysicsScenePtr getPhysicsScene(GameScenePtr scene) const noexcept;
 
+    GameFeaturePtr clone() const noexcept;
+
 private:
 
     void onActivate() noexcept;
@@ -61,17 +63,15 @@ private:
 
     void onFrameBegin() noexcept;
 
-    GameComponentPtr onSerialization(XMLReader* reader) except;
+    GameComponentPtr onSerialization(iarchive& reader) except;
 
 private:
 
-    GameComponentPtr instanceRigidbody(XMLReader* reader) except;
-    GameComponentPtr instanceShapeBox(XMLReader* reader) except;
-    GameComponentPtr instanceCharacter(XMLReader* reader) except;
+    GameComponentPtr instanceRigidbody(iarchive& reader) except;
+    GameComponentPtr instanceShapeBox(iarchive& reader) except;
+    GameComponentPtr instanceCharacter(iarchive& reader) except;
 
 private:
-
-    typedef std::vector<PhysicsScenePtr> PhysicsScenes;
 
     PhysicsSystemPtr _physics;
     PhysicsScenes _physicsScenes;

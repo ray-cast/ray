@@ -535,17 +535,6 @@ VertexFormatState::apply() const
 {
     for (GLuint i = 0; i < MAX_VERTEXATTRIBS; i++)
     {
-        switch (formats[i].mode)
-        {
-        case VertexDataType::GPU_DATATYPE_FLOAT:
-            glVertexAttribFormat(i, formats[i].size, formats[i].type, formats[i].normalized, formats[i].relativeoffset);
-            break;
-        case VertexDataType::GPU_DATATYPE_INT:
-        case VertexDataType::GPU_DATATYPE_UNSIGNED_INT:
-            glVertexAttribIFormat(i, formats[i].size, formats[i].type, formats[i].relativeoffset);
-            break;
-        }
-
         glVertexAttribBinding(i, formats[i].binding);
     }
 
@@ -568,10 +557,6 @@ VertexFormatState::get()
         glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, (GLint*)&status);
         formats[i].normalized = status;
         glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_INTEGER, (GLint*)&status);
-        if (status)
-            formats[i].mode = VertexDataType::GPU_DATATYPE_INT;
-        else
-            formats[i].mode = VertexDataType::GPU_DATATYPE_FLOAT;
 
         glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_BINDING, (GLint*)&formats[i].binding);
     }
@@ -586,41 +571,11 @@ VertexFormatState::get()
 void
 VertexImmediateState::apply() const
 {
-    for (GLuint i = 0; i < MAX_VERTEXATTRIBS; i++)
-    {
-        switch (data[i].mode)
-        {
-        case VertexDataType::GPU_DATATYPE_FLOAT:
-            glVertexAttrib4fv(i, data[i].floats);
-            break;
-        case VertexDataType::GPU_DATATYPE_INT:
-            glVertexAttribI4iv(i, data[i].ints);
-            break;
-        case VertexDataType::GPU_DATATYPE_UNSIGNED_INT:
-            glVertexAttribI4uiv(i, data[i].uints);
-            break;
-        }
-    }
 }
 
 void
 VertexImmediateState::get()
 {
-    for (GLuint i = 0; i < MAX_VERTEXATTRIBS; i++)
-    {
-        switch (data[i].mode)
-        {
-        case VertexDataType::GPU_DATATYPE_FLOAT:
-            glGetVertexAttribfv(i, GL_CURRENT_VERTEX_ATTRIB, data[i].floats);
-            break;
-        case VertexDataType::GPU_DATATYPE_INT:
-            glGetVertexAttribIiv(i, GL_CURRENT_VERTEX_ATTRIB, data[i].ints);
-            break;
-        case VertexDataType::GPU_DATATYPE_UNSIGNED_INT:
-            glGetVertexAttribIuiv(i, GL_CURRENT_VERTEX_ATTRIB, data[i].uints);
-            break;
-        }
-    }
 }
 
 void

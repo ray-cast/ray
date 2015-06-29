@@ -248,22 +248,6 @@
 #   endif
 #endif
 
-#if defined(_VISUAL_STUDIO_) && (_VISUAL_STUDIO_ <= 1600)
-#    include <pstdint.h>
-#else
-#   include <cstdint>
-#   include <cstddef>
-#   include <cstdlib>
-#   include <cstring>
-#endif
-
-#include <iostream>
-#include <memory>
-#include <vector>
-#include <list>
-#include <map>
-
-#include <ray/rtti.h>
 #include <ray/assert.h>
 #include <ray/singleton.h>
 

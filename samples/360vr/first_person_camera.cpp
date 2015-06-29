@@ -41,6 +41,8 @@
 #include <ray/window_features.h>
 #include <ray/physics_character_component.h>
 
+__ImplementSubClass(FirstPersonCamera, ray::GameController)
+
 FirstPersonCamera::FirstPersonCamera() noexcept
     : _speed(10.0)
     , _gravity(15)
@@ -77,7 +79,7 @@ void
 FirstPersonCamera::onFrameEnd() noexcept
 {
     float delta = this->getGameServer()->getTimer()->delta();
-    float step = _speed * delta;
+    float step = _speed * delta * 3;
 
     auto inputFeature = this->getGameServer()->getFeature<ray::InputFeatures>();
     if (inputFeature)
@@ -90,6 +92,18 @@ FirstPersonCamera::onFrameEnd() noexcept
         {
             input->lockCursor(false);
         }
+
+        if (input->getKey(ray::InputKey::Code::W))
+            moveCamera(-step);
+
+        if (input->getKey(ray::InputKey::Code::A))
+            yawCamera(-step);
+
+        if (input->getKey(ray::InputKey::Code::S))
+            moveCamera(step);
+
+        if (input->getKey(ray::InputKey::Code::D))
+            yawCamera(step);
 
         if (input->isLockedCursor())
         {
@@ -162,8 +176,8 @@ FirstPersonCamera::rotateCamera(float mouseX, float mouseY, float lastX, float l
     auto lookat = this->getGameObject()->getLookAt();
     auto up = this->getGameObject()->getUpVector();
 
-    float angleY = (lastX - mouseX) / 100.0;
-    float angleZ = (lastY - mouseY) / 100.0;
+    float angleY = -(lastX - mouseX) / 100.0;
+    float angleZ = -(lastY - mouseY) / 100.0;
 
     ray::float3 view = lookat - translate;
     view.normalize();

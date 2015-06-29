@@ -38,6 +38,7 @@
 #include <ray/camera.h>
 #include <ray/light.h>
 #include <ray/material_maker.h>
+#include <ray/render_factory.h>
 
 _NAME_BEGIN
 
@@ -86,41 +87,86 @@ DeferredLighting::onActivate() except
 
     _shadowFactor->assign(ESM_FACTOR);
     _shadowLitFactor->assign(ESM_FACTOR);
+
+    std::size_t width = this->getWindowWidth();
+    std::size_t height = this->getWindowHeight();
+
+    _deferredDepthMap = RenderFactory::createRenderTarget();
+    _deferredDepthMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::DEPTH24_STENCIL8);
+
+    _deferredGraphicMap = RenderFactory::createRenderTarget();
+    _deferredGraphicMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::SR8G8B8A8);
+
+    _deferredNormalMap = RenderFactory::createRenderTarget();
+    _deferredNormalMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
+
+    _deferredLightMap = RenderFactory::createRenderTarget();
+    _deferredLightMap->setSharedStencilTexture(_deferredDepthMap);
+    _deferredLightMap->setClearFlags(ClearFlags::CLEAR_COLOR);
+    _deferredLightMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R11G11B10F);
+
+    _deferredShadowMap = RenderFactory::createRenderTarget();
+    _deferredShadowMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16F);
+
+    _deferredGraphicMaps = RenderFactory::createMultiRenderTarget();
+    _deferredGraphicMaps->setSharedDepthTexture(_deferredDepthMap);
+    _deferredGraphicMaps->setSharedStencilTexture(_deferredDepthMap);
+    _deferredGraphicMaps->attach(_deferredGraphicMap);
+    _deferredGraphicMaps->attach(_deferredNormalMap);
+    _deferredGraphicMaps->setup();
+
+    _deferredShadingMap = RenderFactory::createRenderTarget();
+    _deferredShadingMap->setSharedDepthTexture(_deferredDepthMap);
+    _deferredShadingMap->setSharedStencilTexture(_deferredDepthMap);
+    _deferredShadingMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
+
+    auto semantic = Material::getMaterialSemantic();
+    semantic->setTexParam(GlobalTexSemantic::DeferredDepthMap, _deferredDepthMap->getResolveTexture());
+    semantic->setTexParam(GlobalTexSemantic::DeferredNormalMap, _deferredNormalMap->getResolveTexture());
+    semantic->setTexParam(GlobalTexSemantic::DeferredGraphicMap, _deferredGraphicMap->getResolveTexture());
+    semantic->setTexParam(GlobalTexSemantic::DeferredLightMap, _deferredLightMap->getResolveTexture());
+    semantic->setTexParam(GlobalTexSemantic::DepthMap, _deferredDepthMap->getResolveTexture());
+    semantic->setTexParam(GlobalTexSemantic::ColorMap, _deferredShadingMap->getResolveTexture());
+    semantic->setTexParam(GlobalTexSemantic::NormalMap, _deferredNormalMap->getResolveTexture());
 }
 
 void
 DeferredLighting::onDectivate() noexcept
 {
+    if (_deferredDepthMap)
+    {
+        _deferredDepthMap.reset();
+        _deferredDepthMap = nullptr;
+    }
+
+    if (_deferredGraphicMap)
+    {
+        _deferredGraphicMap.reset();
+        _deferredGraphicMap = nullptr;
+    }
+
+    if (_deferredNormalMap)
+    {
+        _deferredNormalMap.reset();
+        _deferredNormalMap = nullptr;
+    }
+
+    if (_deferredLightMap)
+    {
+        _deferredLightMap.reset();
+        _deferredLightMap = nullptr;
+    }
+
+    if (_deferredGraphicMaps)
+    {
+        _deferredGraphicMaps.reset();
+        _deferredGraphicMaps = nullptr;
+    }
 }
 
 void
 DeferredLighting::onRenderPre() noexcept
 {
-    _deferredDepthMap = this->getCamera()->getDeferredDepthMap();
-    _deferredGraphicMap = this->getCamera()->getDeferredGraphicMap();
-    _deferredNormalMap = this->getCamera()->getDeferredNormalMap();
-    _deferredLightMap = this->getCamera()->getDeferredLightMap();
-    _deferredShadingMap = this->getCamera()->getRenderTarget();
-    _deferredGraphicMaps = this->getCamera()->getDeferredGraphicsMaps();
-
-    if (_deferredLightMap)
-        _deferredLightMap->setClearFlags(ClearFlags::CLEAR_COLOR);
-
-    auto semantic = Material::getMaterialSemantic();
-    if (_deferredDepthMap)
-        semantic->setTexParam(GlobalTexSemantic::DeferredDepthMap, _deferredDepthMap->getResolveTexture());
-    if (_deferredNormalMap)
-        semantic->setTexParam(GlobalTexSemantic::DeferredNormalMap, _deferredNormalMap->getResolveTexture());
-    if (_deferredGraphicMap)
-        semantic->setTexParam(GlobalTexSemantic::DeferredGraphicMap, _deferredGraphicMap->getResolveTexture());
-    if (_deferredLightMap)
-        semantic->setTexParam(GlobalTexSemantic::DeferredLightMap, _deferredLightMap->getResolveTexture());
-    if (_deferredDepthMap)
-        semantic->setTexParam(GlobalTexSemantic::DepthMap, _deferredDepthMap->getResolveTexture());
-    if (_deferredShadingMap)
-        semantic->setTexParam(GlobalTexSemantic::ColorMap, _deferredShadingMap->getResolveTexture());
-    if (_deferredNormalMap)
-        semantic->setTexParam(GlobalTexSemantic::NormalMap, _deferredNormalMap->getResolveTexture());
 }
 
 void
@@ -152,7 +198,8 @@ DeferredLighting::onRenderPipeline() noexcept
     case CO_MAIN:
     {
         auto renderMode = this->getCamera()->getCameraRender();
-        if (renderMode == CameraRender::CR_RENDER_TO_TEXTURE)
+        if (renderMode == CameraRender::CR_RENDER_TO_TEXTURE ||
+            renderMode == CameraRender::CR_RENDER_TO_SCREEN)
         {
             this->renderOpaquesDepthOhly();
             this->renderOpaques();
@@ -167,6 +214,8 @@ DeferredLighting::onRenderPipeline() noexcept
                 this->renderLights();
                 this->renderTransparentShading();
             }
+
+            this->applyPostProcess(_deferredShadingMap);
         }
         else if (renderMode == CameraRender::CR_RENDER_TO_CUBEMAP)
         {
@@ -179,6 +228,39 @@ DeferredLighting::onRenderPipeline() noexcept
 void
 DeferredLighting::onRenderPost() noexcept
 {
+    if (this->getCamera()->getCameraRender() == CR_RENDER_TO_SCREEN)
+    {
+        auto v1 = Viewport(0, 0, _deferredShadingMap->getWidth(), _deferredShadingMap->getHeight());
+        auto v2 = this->getCamera()->getViewport();
+        if (v2.width == 0 ||
+            v2.height == 0)
+        {
+            v2.left = 0;
+            v2.top = 0;
+            v2.width = this->getWindowWidth();
+            v2.height = this->getWindowHeight();
+        }
+
+        this->copyRenderTarget(_deferredShadingMap, v1, 0, v2);
+    }
+    else if (this->getCamera()->getCameraRender() == CR_RENDER_TO_TEXTURE)
+    {
+        auto target = this->getCamera()->getRenderTarget();
+
+        auto v1 = Viewport(0, 0, _deferredShadingMap->getWidth(), _deferredShadingMap->getHeight());
+        auto v2 = this->getCamera()->getViewport();
+        if (v2.width == 0 ||
+            v2.height == 0)
+        {
+            v2.left = 0;
+            v2.top = 0;
+            v2.width = target->getWidth();
+            v2.height = target->getHeight();
+        }
+
+        this->copyRenderTarget(_deferredShadingMap, v1, target, v2);
+    }
+
     /*if (_deferredGraphicMap)
         this->copyRenderTarget(_deferredGraphicMap, this->getCamera()->getViewport(), 0, Viewport(0, 768 / 2, 1376 / 2, 768));
     if (_deferredNormalMap)
@@ -384,7 +466,6 @@ void
 DeferredLighting::renderShadow() noexcept
 {
     auto renderTexture = this->getCamera()->getRenderTarget();
-    auto swapTexture = this->getCamera()->getSwapTexture();
     if (renderTexture)
     {
         _shadowDecal->assign(renderTexture->getResolveTexture());
@@ -392,11 +473,11 @@ DeferredLighting::renderShadow() noexcept
         this->setRenderTarget(renderTexture);
         this->drawRenderable(RenderQueue::Shadow, RenderPass::RP_SHADOW, _shadowGenerate);
 
-        this->setRenderTarget(this->getCamera()->getSwapTexture());
+        this->setRenderTarget(_deferredShadowMap);
         this->setTechnique(_shadowBlurX);
         this->drawSceneQuad();
 
-        _shadowDecal->assign(swapTexture->getResolveTexture());
+        _shadowDecal->assign(_deferredShadowMap->getResolveTexture());
 
         this->setRenderTarget(renderTexture);
         this->setTechnique(_shadowBlurY);

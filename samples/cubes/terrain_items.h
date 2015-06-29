@@ -50,7 +50,7 @@ public:
     bool create(TerrainMapPtr map) noexcept;
     bool createObject(TerrainMapPtr map) noexcept;
 
-    bool active(ray::GameObject* parent) noexcept;
+    bool active(ray::GameObjectPtr parent) noexcept;
 
     bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept;
 
@@ -74,7 +74,7 @@ public:
     bool create(TerrainMapPtr map) noexcept;
     bool createObject(TerrainMapPtr map) noexcept;
 
-    bool active(ray::GameObject* parent) noexcept;
+    bool active(ray::GameObjectPtr parent) noexcept;
 
     bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept;
 
@@ -102,7 +102,7 @@ public:
     bool create(TerrainMapPtr map) noexcept;
     bool createObject(TerrainMapPtr map) noexcept;
 
-    bool active(ray::GameObject* parent) noexcept;
+    bool active(ray::GameObjectPtr parent) noexcept;
 
     bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept;
 
@@ -126,7 +126,7 @@ public:
     bool create(TerrainMapPtr map) noexcept;
     bool createObject(TerrainMapPtr map) noexcept;
 
-    bool active(ray::GameObject* parent) noexcept;
+    bool active(ray::GameObjectPtr parent) noexcept;
 
     bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept;
 

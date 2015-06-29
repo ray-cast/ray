@@ -36,8 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/script_system.h>
 #include <ray/format.h>
-#include <ray/fstream.h>
-#include <ray/ioserver.h>
+#include <ray/mstream.h>
 #include <ray/script_object.h>
 
 #include <angelscript.h>

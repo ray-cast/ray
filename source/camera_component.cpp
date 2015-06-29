@@ -173,6 +173,34 @@ CameraComponent::getCameraOrder() const noexcept
 }
 
 void
+CameraComponent::load(iarchive& reader) noexcept
+{
+    float aperture = 70.0;
+    float ratio = 1.0;
+    float znear = 0.1;
+    float zfar = 1000.0;
+    int x = 0, y = 0, w = 0, h = 0;
+
+    reader >> static_cast<GameComponent*>(this);
+    reader >> rtti_name(aperture);
+    reader >> rtti_name(ratio);
+    reader >> rtti_name(znear);
+    reader >> rtti_name(zfar);
+    reader >> rtti_name(x);
+    reader >> rtti_name(y);
+    reader >> rtti_name(w);
+    reader >> rtti_name(h);
+
+    this->setViewport(Viewport(x, y, w, h));
+    this->makePerspective(aperture, ratio, znear, zfar);
+}
+
+void
+CameraComponent::save(oarchive& write) noexcept
+{
+}
+
+void
 CameraComponent::onActivate() noexcept
 {
     auto renderer = this->getGameObject()->getGameServer()->getFeature<RenderFeatures>();
@@ -187,10 +215,7 @@ CameraComponent::onActivate() noexcept
                 this->getGameObject()->getUpVector()
                 );
             _camera->makeViewProject();
-
-            auto view = _camera->getViewport();
-            _camera->setup(view.width, view.height);
-            _camera->setRenderScene(renderScene.get());
+            _camera->setRenderScene(renderScene);
         }
     }
 }
@@ -198,7 +223,7 @@ CameraComponent::onActivate() noexcept
 void
 CameraComponent::onDeactivate() noexcept
 {
-    _camera->close();
+    _camera->setRenderScene(nullptr);
 }
 
 void

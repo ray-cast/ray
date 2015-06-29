@@ -38,6 +38,8 @@
 #define _H_RENDER_PIPELINE_H_
 
 #include <ray/render_device.h>
+#include <ray/render_buffer.h>
+#include <ray/render_texture.h>
 #include <ray/render_object.h>
 
 _NAME_BEGIN
@@ -76,6 +78,9 @@ public:
     void drawMesh(RenderBufferPtr mesh, const Renderable& renderable) noexcept;
     void updateMesh(RenderBufferPtr mesh, VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept;
 
+    void setViewport(const Viewport& viewport) noexcept;
+    const Viewport& getViewport() const noexcept;
+
     void setRenderState(RenderStatePtr state) noexcept;
 
     void setRenderTarget(RenderTargetPtr texture) noexcept;
@@ -102,6 +107,7 @@ public:
 
     void addPostProcess(RenderPostProcessPtr postprocess) except;
     void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
+    void applyPostProcess(RenderTargetPtr target) except;
 
     void render() noexcept;
 

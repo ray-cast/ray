@@ -518,8 +518,6 @@ class VertexFormatState : public StateCap
 public:
     struct VertexFormat
     {
-        VertexDataType  mode;
-
         GLboolean normalized;
 
         GLuint    size;
@@ -541,7 +539,6 @@ public:
     VertexFormatState()
     {
         for (GLuint i = 0; i < MAX_VERTEXATTRIBS; i++) {
-            formats[i].mode = VertexDataType::GPU_DATATYPE_FLOAT;
             formats[i].size = 4;
             formats[i].type = GL_FLOAT;
             formats[i].normalized = GL_FALSE;
@@ -564,7 +561,6 @@ class VertexImmediateState : public StateCap
 public:
     struct VertexData
     {
-        VertexDataType  mode;
         union
         {
             float         floats[4];
@@ -579,7 +575,6 @@ public:
     {
         for (GLuint i = 0; i < MAX_VERTEXATTRIBS; i++)
         {
-            data[i].mode = VertexDataType::GPU_DATATYPE_FLOAT;
             data[i].floats[0] = 0;
             data[i].floats[1] = 0;
             data[i].floats[2] = 0;

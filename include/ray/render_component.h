@@ -47,7 +47,7 @@ class EXPORT RenderComponent : public GameComponent
     __DeclareSubInterface(RenderComponent, GameComponent)
 public:
     RenderComponent() noexcept;
-    ~RenderComponent() noexcept;
+    virtual ~RenderComponent() noexcept;
 
     void setCastShadow(bool value) noexcept;
     bool getCastShadow()  const noexcept;
@@ -58,6 +58,13 @@ public:
     void setMaterial(MaterialPtr material) noexcept;
     MaterialPtr getMaterial() const noexcept;
 
+    void load(iarchive& reader) noexcept;
+    void save(oarchive& write) noexcept;
+
+protected:
+    void onActivate() except;
+    void onDectivate() noexcept;
+
 private:
     RenderComponent(const RenderComponent&) = delete;
     RenderComponent& operator=(const RenderComponent&) = delete;
@@ -65,7 +72,7 @@ private:
 private:
 
     bool _isCastShadow;
-    bool _isReceiveShaodw;
+    bool _isReceiveShadow;
 
     MaterialPtr _material;
 };

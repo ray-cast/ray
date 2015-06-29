@@ -60,10 +60,10 @@ public:
     Atmospheric() noexcept;
     ~Atmospheric() noexcept;
 
-    void onActivate() noexcept;
-    void onDectivate() noexcept;
+    void onActivate(RenderPipeline& pipeline) noexcept;
+    void onDectivate(RenderPipeline& pipeline) noexcept;
 
-    void render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
+    void onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
 
 private:
 

@@ -65,12 +65,6 @@ public:
     Image() noexcept;
     Image(size_type width, size_type height, bpp_type bpp, bool clear = false) noexcept;
     Image(size_type width, size_type height, bpp_type bpp, image_buf data, bool static_data = false, bool clear = false) noexcept;
-    Image(const Image& copy) noexcept;
-    Image(FILE* file, image_type type = unknown) noexcept;
-    Image(const char* filename, image_type type = unknown) noexcept;
-    Image(const wchar_t* filename, image_type type = unknown) noexcept;
-    Image(const std::string& filename, image_type type = unknown) noexcept;
-    Image(const std::wstring& filename, image_type type = unknown) noexcept;
     Image(istream& stream, image_type type = unknown) noexcept;
     ~Image() noexcept;
 
@@ -120,16 +114,7 @@ public:
     pass_val& rddata(std::size_t n) noexcept { return this->_data->data[(_data->bpp * n) >> 3]; }
 
 public:
-    bool load(const char* filename, image_type type = unknown) noexcept;
-    bool load(const wchar_t* filename, image_type type = unknown) noexcept;
-    bool load(const std::string& filename, image_type type = unknown) noexcept;
-    bool load(const std::wstring& filename, image_type type = unknown) noexcept;
     bool load(istream& stream, image_type type = unknown) noexcept;
-
-    bool save(const char* filename, image_type type = png) noexcept;
-    bool save(const wchar_t* filename, image_type = png) noexcept;
-    bool save(const std::string& filename, image_type type = png) noexcept;
-    bool save(const std::wstring& filename, image_type type = png) noexcept;
     bool save(ostream& stream, image_type type = png) noexcept;
 
     bool emptyHandler() const noexcept;
@@ -151,7 +136,8 @@ public:
     static void flipImageVertical(char* data, std::size_t width, std::size_t height, std::size_t component) noexcept;
 
 private:
-    Image& operator=(const Image&);
+    Image(const Image&) noexcept = delete;
+    Image& operator=(const Image&) noexcept = delete;
 
 private:
     std::unique_ptr<ImageRefData> _data;

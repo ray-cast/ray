@@ -167,7 +167,7 @@ TerrainGrass::createObject(TerrainMapPtr map) noexcept
 }
 
 bool
-TerrainGrass::active(ray::GameObject* parent) noexcept
+TerrainGrass::active(ray::GameObjectPtr parent) noexcept
 {
     if (parent)
     {
@@ -214,8 +214,8 @@ TerrainTree::TerrainTree() noexcept
     _wood = std::make_shared<Wood>();
     _leaf = std::make_shared<Leaf>();
 
-    _woodObject = ray::GameObject::find("wood");
-    _leafObject = ray::GameObject::find("leaf");
+    _woodObject = ray::GameObject::find<ray::GameObject>("wood");
+    _leafObject = ray::GameObject::find<ray::GameObject>("leaf");
 
     this->addItem(_wood);
     this->addItem(_leaf);
@@ -361,7 +361,7 @@ TerrainTree::createObject(TerrainMapPtr map) noexcept
 }
 
 bool
-TerrainTree::active(ray::GameObject* parent) noexcept
+TerrainTree::active(ray::GameObjectPtr parent) noexcept
 {
     for (auto& it : _objects)
     {
@@ -399,7 +399,7 @@ TerrainTree::clone() noexcept
 TerrainClound::TerrainClound() noexcept
 {
     _clound = std::make_shared<Clound>();
-    _cloundObject = ray::GameObject::find("clound");
+    _cloundObject = ray::GameObject::find<ray::GameObject>("clound");
     this->addItem(_clound);
 }
 
@@ -496,7 +496,7 @@ TerrainClound::createObject(TerrainMapPtr map) noexcept
 }
 
 bool
-TerrainClound::active(ray::GameObject* parent) noexcept
+TerrainClound::active(ray::GameObjectPtr parent) noexcept
 {
     for (auto& it : _objects)
     {
@@ -533,7 +533,7 @@ TerrainClound::clone() noexcept
 TerrainWater::TerrainWater() noexcept
 {
     _water = std::make_shared<Water>();
-    _waterObject = ray::GameObject::find("water");
+    _waterObject = ray::GameObject::find<ray::GameObject>("water");
     this->addItem(_water);
 }
 
@@ -642,7 +642,7 @@ TerrainWater::createObject(TerrainMapPtr map) noexcept
 }
 
 bool
-TerrainWater::active(ray::GameObject* parent) noexcept
+TerrainWater::active(ray::GameObjectPtr parent) noexcept
 {
     for (auto& it : _objects)
     {

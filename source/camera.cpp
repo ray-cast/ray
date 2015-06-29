@@ -36,8 +36,6 @@
 // +----------------------------------------------------------------------
 #include <ray/camera.h>
 #include <ray/render_scene.h>
-#include <ray/render_texture.h>
-#include <ray/render_factory.h>
 
 _NAME_BEGIN
 
@@ -60,111 +58,18 @@ Camera::Camera() noexcept
     , _viewInverseTranspose(Matrix4x4::One)
     , _viewProejct(Matrix4x4::One)
     , _viewProjectInverse(Matrix4x4::One)
+    , _viewport(0, 0, 0, 0)
     , _projLength(0, 0)
     , _projConstant(0, 0, 0, 0)
-    , _viewport(0, 0, 0, 0)
     , _cameraType(CameraType::CT_PERSPECTIVE)
     , _cameraOrder(CameraOrder::CO_MAIN)
-    , _cameraRender(CameraRender::CR_RENDER_TO_TEXTURE)
+    , _cameraRender(CameraRender::CR_RENDER_TO_SCREEN)
     , _renderScene(nullptr)
 {
 }
 
 Camera::~Camera() noexcept
 {
-    this->close();
-}
-
-void
-Camera::setup(std::size_t width, std::size_t height) noexcept
-{
-    if (_cameraOrder == CameraOrder::CO_MAIN)
-    {
-        _deferredDepthMap = RenderFactory::createRenderTarget();
-        _deferredDepthMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::DEPTH24_STENCIL8);
-
-        _deferredGraphicMap = RenderFactory::createRenderTarget();
-        _deferredGraphicMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::SRGBA);
-
-        _deferredNormalMap = RenderFactory::createRenderTarget();
-        _deferredNormalMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
-
-        _deferredLightMap = RenderFactory::createRenderTarget();
-        _deferredLightMap->setSharedStencilTexture(_deferredDepthMap);
-        _deferredLightMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
-
-        _deferredGraphicMaps = RenderFactory::createMultiRenderTarget();
-        _deferredGraphicMaps->attach(_deferredDepthMap, Attachment::DEPTH_STENCIL);
-        _deferredGraphicMaps->attach(_deferredGraphicMap, Attachment::COLOR0);
-        _deferredGraphicMaps->attach(_deferredNormalMap, Attachment::COLOR1);
-        _deferredGraphicMaps->setup();
-
-        if (_cameraRender == CR_RENDER_TO_CUBEMAP)
-        {
-            _renderTexture = RenderFactory::createRenderTarget();
-            _renderTexture->setSharedDepthTexture(_deferredDepthMap);
-            _renderTexture->setSharedStencilTexture(_deferredDepthMap);
-            _renderTexture->setup(512, 512, TextureDim::DIM_CUBE, PixelFormat::R16G16B16F);
-        }
-        else
-        {
-            _renderTexture = RenderFactory::createRenderTarget();
-            _renderTexture->setSharedDepthTexture(_deferredDepthMap);
-            _renderTexture->setSharedStencilTexture(_deferredDepthMap);
-            _renderTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
-        }
-    }
-    else
-    {
-        _renderTexture = RenderFactory::createRenderTarget();
-        _renderTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::R32F);
-
-        _swapTexture = RenderFactory::createRenderTarget();
-        _swapTexture->setup(width, height, TextureDim::DIM_2D, PixelFormat::R32F);
-    }
-
-    this->makeViewProject();
-}
-
-void
-Camera::close() noexcept
-{
-    if (_deferredDepthMap)
-    {
-        _deferredDepthMap.reset();
-        _deferredDepthMap = nullptr;
-    }
-
-    if (_deferredGraphicMap)
-    {
-        _deferredGraphicMap.reset();
-        _deferredGraphicMap = nullptr;
-    }
-
-    if (_deferredNormalMap)
-    {
-        _deferredNormalMap.reset();
-        _deferredNormalMap = nullptr;
-    }
-
-    if (_deferredLightMap)
-    {
-        _deferredLightMap.reset();
-        _deferredLightMap = nullptr;
-    }
-
-    if (_deferredGraphicMaps)
-    {
-        _deferredGraphicMaps.reset();
-        _deferredGraphicMaps = nullptr;
-    }
-
-    if (_renderTexture)
-    {
-        _renderTexture.reset();
-        _renderTexture = nullptr;
-    }
-
     this->setRenderScene(nullptr);
 }
 
@@ -292,7 +197,9 @@ Camera::makeOrtho(float left, float right, float bottom, float top, float znear,
     _top = top;
     _zNear = znear;
     _zFar = zfar;
-    _projectInverse = _project.makeOrtho(_left, _right, _bottom, _top, _zNear, _zFar).inverse();
+
+    _project.makeOrtho(_left, _right, _bottom, _top, _zNear, _zFar).inverse();
+    _projectInverse = _project.inverse();
 
     _projLength.x = _project.a1;
     _projLength.y = _project.b2;
@@ -319,7 +226,6 @@ Camera::makePerspective(float aperture, float ratio, float znear, float zfar) no
     _zFar = zfar;
 
     _project.makePerspective(_aperture, _ratio, _zNear, _zFar);
-
     _projectInverse = _project.inverse();
 
     _projLength.x = _project.a1;
@@ -330,7 +236,7 @@ Camera::makePerspective(float aperture, float ratio, float znear, float zfar) no
     _projConstant.z = (1.0 - _project.a3) / _projLength.x;
     _projConstant.w = (1.0 + _project.b3) / _projLength.y;
 
-    _clipConstant.x = (2.0 * _zNear * _zFar);
+    _clipConstant.x = (2 * _zNear * _zFar);
     _clipConstant.y = _zFar - _zNear;
     _clipConstant.z = _zFar + _zNear;
     _clipConstant.w = 1.0;
@@ -457,14 +363,14 @@ Camera::getCameraRender() const noexcept
 }
 
 void
-Camera::setRenderScene(RenderScene* scene) noexcept
+Camera::setRenderScene(RenderScenePtr scene) noexcept
 {
     if (_renderScene)
     {
         _renderScene->removeCamera(this);
     }
 
-    _renderScene = scene;
+    _renderScene = scene.get();
 
     if (_renderScene)
     {
@@ -472,10 +378,10 @@ Camera::setRenderScene(RenderScene* scene) noexcept
     }
 }
 
-RenderScene*
+RenderScenePtr
 Camera::getRenderScene() const noexcept
 {
-    return _renderScene;
+    return _renderScene->shared_from_this();
 }
 
 void
@@ -488,42 +394,6 @@ RenderTargetPtr
 Camera::getRenderTarget() const noexcept
 {
     return _renderTexture;
-}
-
-RenderTargetPtr
-Camera::getSwapTexture() const noexcept
-{
-    return _swapTexture;
-}
-
-RenderTargetPtr
-Camera::getDeferredDepthMap() const noexcept
-{
-    return _deferredDepthMap;
-}
-
-RenderTargetPtr
-Camera::getDeferredGraphicMap() const noexcept
-{
-    return _deferredGraphicMap;
-}
-
-RenderTargetPtr
-Camera::getDeferredNormalMap() const noexcept
-{
-    return _deferredNormalMap;
-}
-
-RenderTargetPtr
-Camera::getDeferredLightMap() const noexcept
-{
-    return _deferredLightMap;
-}
-
-MultiRenderTargetPtr
-Camera::getDeferredGraphicsMaps() const noexcept
-{
-    return _deferredGraphicMaps;
 }
 
 CameraPtr

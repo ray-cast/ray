@@ -42,14 +42,17 @@
 
 _NAME_BEGIN
 
-class EXPORT WindowFeatures : public GameFeature
+class EXPORT WindowFeatures final : public GameFeature
 {
 public:
+    WindowFeatures() noexcept;
     WindowFeatures(const std::string& title, int w, int h) noexcept;
     ~WindowFeatures() noexcept;
 
     void setWindow(WindowPtr window) noexcept;
     WindowPtr getWindow() const noexcept;
+
+    GameFeaturePtr clone() const except;
 
 private:
 

@@ -182,7 +182,7 @@ ParticleEmitter::simulate(float delta) noexcept
 GameComponentPtr
 ParticleEmitter::clone() const noexcept
 {
-    return ParticleEmitter::create();
+    return std::make_shared<ParticleEmitter>();
 }
 
 _NAME_END

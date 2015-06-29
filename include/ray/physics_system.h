@@ -43,7 +43,6 @@ _NAME_BEGIN
 
 class EXPORT PhysicsSystem
 {
-    __DeclareClass(PhysicsSystem)
 public:
     PhysicsSystem() noexcept;
     ~PhysicsSystem() noexcept;
@@ -58,7 +57,7 @@ public:
 
 private:
 
-    std::vector<PhysicsScenePtr> _sceneList;
+    PhysicsScenes _sceneList;
 };
 
 _NAME_END

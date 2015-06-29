@@ -47,12 +47,12 @@ public:
     LightShaft() noexcept;
     ~LightShaft() noexcept;
 
-    void render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
-
 private:
 
-    void onActivate() except;
-    void onDeactivate() except;
+    void onActivate(RenderPipeline& pipeline) except;
+    void onDeactivate(RenderPipeline& pipeline) except;
+
+    void onRender(RenderPipeline& pipeline, RenderTargetPtr source) except;
 
 private:
 

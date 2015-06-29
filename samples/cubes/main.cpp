@@ -58,7 +58,13 @@ int main()
         game.addFeatures(std::make_shared<ray::WindowFeatures>("Cube World", 1376, 768));
         game.addFeatures(std::make_shared<ray::InputFeatures>());
         game.addFeatures(std::make_shared<ray::PhysicFeatures>());
-        game.addFeatures(std::make_shared<ray::RenderFeatures>());
+
+        ray::RenderSetting setting;
+        setting.enableSAT = true;
+        setting.enableHDR = true;
+        setting.enableFXAA = true;
+
+        game.addFeatures(std::make_shared<ray::RenderFeatures>(setting));
 
         game.start();
 
@@ -78,7 +84,7 @@ int main()
                 terrainObj->setParent(scene->getRootObject());
                 terrainObj->setActive(true);
 
-                auto player = ray::GameObject::find("first_person_camera");
+                auto player = scene->find<ray::GameObject>("first_person_camera");
                 player->addComponent(std::make_shared<FirstPersonCamera>());
                 player->setActive(true);
 

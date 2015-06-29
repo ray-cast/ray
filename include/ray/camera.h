@@ -62,6 +62,7 @@ enum CameraOrder
 
 enum CameraRender
 {
+    CR_RENDER_TO_SCREEN,
     CR_RENDER_TO_TEXTURE,
     CR_RENDER_TO_CUBEMAP,
 };
@@ -71,9 +72,6 @@ class EXPORT Camera final : public RenderObject
 public:
     Camera() noexcept;
     ~Camera() noexcept;
-
-    void setup(std::size_t w, std::size_t h) noexcept;
-    void close() noexcept;
 
     float getAperture() const noexcept;
     float getRatio() const noexcept;
@@ -117,23 +115,15 @@ public:
     void setCameraOrder(CameraOrder order) noexcept;
     void setCameraRender(CameraRender mode) noexcept;
 
-    void setRenderScene(RenderScene* scene) noexcept;
+    void setRenderScene(RenderScenePtr scene) noexcept;
     void setRenderTarget(RenderTargetPtr texture) noexcept;
 
     CameraType getCameraType() const noexcept;
     CameraOrder getCameraOrder() const noexcept;
     CameraRender getCameraRender() const noexcept;
 
-    RenderScene* getRenderScene() const noexcept;
+    RenderScenePtr getRenderScene() const noexcept;
     RenderTargetPtr getRenderTarget() const noexcept;
-    RenderTargetPtr getSwapTexture() const noexcept;
-
-    RenderTargetPtr getDeferredDepthMap() const noexcept;
-    RenderTargetPtr getDeferredGraphicMap() const noexcept;
-    RenderTargetPtr getDeferredNormalMap() const noexcept;
-    RenderTargetPtr getDeferredLightMap() const noexcept;
-
-    MultiRenderTargetPtr getDeferredGraphicsMaps() const noexcept;
 
     CameraPtr clone() const noexcept;
 
@@ -176,15 +166,7 @@ private:
     CameraOrder     _cameraOrder;
     CameraRender    _cameraRender;
 
-    RenderTargetPtr _deferredDepthMap;
-    RenderTargetPtr _deferredGraphicMap;
-    RenderTargetPtr _deferredNormalMap;
-    RenderTargetPtr _deferredLightMap;
-
-    MultiRenderTargetPtr _deferredGraphicMaps;
-
     RenderTargetPtr _renderTexture;
-    RenderTargetPtr _swapTexture;
 
     RenderScene*  _renderScene;
 };

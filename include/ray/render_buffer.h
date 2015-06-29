@@ -38,63 +38,10 @@
 #define _H_RENDER_BUFFER_H_
 
 #include <ray/render_types.h>
-#include <ray/model.h>
 
 _NAME_BEGIN
 
-enum VertexType
-{
-    GPU_POINT,
-    GPU_LINE,
-    GPU_TRIANGLE,
-    GPU_FAN,
-};
-
-enum VertexUsage
-{
-    GPU_USAGE_STATIC,
-    GPU_USAGE_DYNAMIC
-};
-
-enum VertexAttrib
-{
-    GPU_ATTRIB_POSITION,
-    GPU_ATTRIB_NORMAL,
-    GPU_ATTRIB_TEXCOORD,
-    GPU_ATTRIB_DIFFUSE,
-    GPU_ATTRIB_SPECULAR,
-    GPU_ATTRIB_WEIGHT,
-    GPU_ATTRIB_TANGENT,
-    GPU_ATTRIB_BITANGENT,
-    GPU_ATTRIB_NUMS,
-};
-
-enum VertexFormat
-{
-    GPU_VERTEX_FLOAT,
-    GPU_VERTEX_FLOAT2,
-    GPU_VERTEX_FLOAT3,
-    GPU_VERTEX_FLOAT4,
-};
-
-enum VertexDataType
-{
-    GPU_DATATYPE_BYTE,
-    GPU_DATATYPE_SHORT,
-    GPU_DATATYPE_INT,
-    GPU_DATATYPE_UNSIGNED_BYTE,
-    GPU_DATATYPE_UNSIGNED_SHORT,
-    GPU_DATATYPE_UNSIGNED_INT,
-    GPU_DATATYPE_FLOAT,
-};
-
-enum IndexType
-{
-    GPU_UINT16,
-    GPU_UINT32
-};
-
-class Renderable
+class EXPORT Renderable final
 {
 public:
     VertexType type;
@@ -136,21 +83,19 @@ class EXPORT VertexComponent final
 {
 public:
     VertexComponent() noexcept;
-    VertexComponent(VertexAttrib attrib, VertexFormat format, VertexDataType type = VertexDataType::GPU_DATATYPE_FLOAT) noexcept;
+    VertexComponent(VertexAttrib attrib, VertexFormat format) noexcept;
     ~VertexComponent() noexcept;
 
     VertexAttrib getVertexAttrib() const noexcept;
     VertexFormat getVertexFormat() const noexcept;
-    VertexDataType getVertexDataType() const noexcept;
 
+    int getVertexCount() const noexcept;
     int getVertexSize() const noexcept;
-    int getVertexByteSize() const noexcept;
 
 public:
 
     VertexAttrib _attrib;
     VertexFormat _format;
-    VertexDataType _dataType;
 };
 
 class EXPORT VertexLayout final
@@ -159,82 +104,54 @@ public:
     void setVertexComponents(const VertexComponents& component) noexcept;
     const VertexComponents& getVertexComponents() const noexcept;
 
-    std::size_t getVertexByteSize() const noexcept;
+    std::size_t getVertexSize() const noexcept;
 
 private:
     std::size_t _byteSize;
     VertexComponents _components;
 };
 
-class EXPORT VertexBuffer
-{
-public:
-    VertexBuffer() noexcept;
-    virtual ~VertexBuffer() noexcept;
-
-    VertexLayout& getVertexLayout() noexcept;
-    const VertexLayout& getVertexLayout() const noexcept;
-
-private:
-
-    VertexLayout _vertexLayout;
-};
-
-class EXPORT IndexBuffer
-{
-public:
-    IndexBuffer() noexcept;
-    virtual ~IndexBuffer() noexcept;
-
-    void setIndexType(IndexType type) noexcept;
-    IndexType getIndexType() const noexcept;
-
-private:
-
-    IndexType _type;
-};
-
-class EXPORT VertexBufferData final
+class EXPORT VertexBufferData
 {
 public:
     VertexBufferData() noexcept;
-    ~VertexBufferData() noexcept;
+    virtual ~VertexBufferData() noexcept;
 
-    void setup(std::size_t count, std::size_t size, VertexUsage usage) noexcept;
+    void setup(std::size_t count, VertexUsage usage) noexcept;
     void close() noexcept;
-
-    void resize(std::size_t count);
-
-    std::size_t getVertexCount() const noexcept;
-    std::size_t getVertexSize() const noexcept;
-    std::size_t getVertexByteSize() const noexcept;
-
-    VertexUsage getVertexUsage() const noexcept;
-
-    void* data() noexcept;
-    const void* data() const noexcept;
 
     void setVertexComponents(const VertexComponents& components) noexcept;
     const VertexComponents& getVertexComponents() const noexcept;
 
+    std::size_t getVertexCount() const noexcept;
+    std::size_t getVertexSize() const noexcept;
+    std::size_t getVertexDataSize() const noexcept;
+    VertexUsage getVertexUsage() const noexcept;
+
+    void resize(std::size_t count);
+
+    void* data() noexcept;
+    const void* data() const noexcept;
+
 private:
     std::size_t   _vertexCount;
-    std::size_t   _vertexSize;
     VertexUsage   _vertexUsage;
-    VertexStreams _vertexStreams;
     VertexLayout  _vertexLayout;
+    VertexStreams _vertexStreams;
 };
 
-class EXPORT IndexBufferData final
+class EXPORT IndexBufferData
 {
 public:
     IndexBufferData() noexcept;
-    ~IndexBufferData() noexcept;
+    virtual ~IndexBufferData() noexcept;
 
-    void setup(std::size_t num, IndexType type, VertexUsage uages) noexcept;
+    void setup(std::size_t count, IndexType type, VertexUsage uages) noexcept;
     void close() noexcept;
 
     std::size_t getIndexCount() const noexcept;
+    std::size_t getIndexSize() const noexcept;
+    std::size_t getIndexDataSize() const noexcept;
     IndexType getIndexType() const noexcept;
     VertexUsage getIndexUsage() const noexcept;
 
@@ -243,30 +160,32 @@ public:
 
 private:
     std::size_t   _indexCount;
+    std::size_t   _indexSize;
     IndexType     _indexType;
     VertexUsage   _indexUsage;
     VertexStreams _indexStreams;
 };
 
-class EXPORT RenderBuffer : public Object<RenderBuffer>
+class EXPORT RenderBuffer
 {
 public:
     RenderBuffer() noexcept;
     ~RenderBuffer() noexcept;
 
-    void setup(const MeshProperty& mesh) noexcept;
-    void setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept;
-    void close() noexcept;
+    void setup(const MeshProperty& mesh) except;
+    virtual void setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) except = 0;
+    virtual void close() noexcept = 0;
 
     std::size_t getNumVertices() const noexcept;
     std::size_t getNumIndices() const noexcept;
 
     bool hasIndices() const noexcept;
 
-    const VertexBufferDataPtr getVertexBuffer() const noexcept;
-    const IndexBufferDataPtr getIndexBuffer() const noexcept;
+    void setVertexBuffer(VertexBufferDataPtr vb) noexcept;
+    void setIndexBuffer(IndexBufferDataPtr ib) noexcept;
 
-    RenderBufferPtr clone() const noexcept;
+    VertexBufferDataPtr getVertexBuffer() const noexcept;
+    IndexBufferDataPtr getIndexBuffer() const noexcept;
 
 private:
     RenderBuffer(const RenderBuffer& copy) noexcept = delete;

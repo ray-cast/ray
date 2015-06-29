@@ -38,6 +38,7 @@
 #include <ray/post_process.h>
 #include <ray/model.h>
 #include <ray/render_scene.h>
+#include <ray/render_factory.h>
 
 _NAME_BEGIN
 
@@ -83,17 +84,17 @@ RenderPipeline::setup(RenderDevicePtr renderDevice, std::size_t width, std::size
     MeshProperty mesh;
     mesh.makePlane(2, 2, 1, 1);
 
-    _renderSceneQuad = std::make_shared<RenderBuffer>();
+    _renderSceneQuad = RenderFactory::createRenderBuffer();
     _renderSceneQuad->setup(mesh);
 
     mesh.makeSphere(1, 16, 12);
 
-    _renderSphere = std::make_shared<RenderBuffer>();
+    _renderSphere = RenderFactory::createRenderBuffer();
     _renderSphere->setup(mesh);
 
     mesh.makeCone(1, 1, 16);
 
-    _renderCone = std::make_shared<RenderBuffer>();
+    _renderCone = RenderFactory::createRenderBuffer();
     _renderCone->setup(mesh);
 
     this->onActivate();
@@ -124,7 +125,7 @@ RenderPipeline::close() noexcept
 
     for (auto& it : _postprocessors)
     {
-        it->setActive(false);
+        it->onDeactivate(*this);
     }
 }
 
@@ -198,6 +199,18 @@ void
 RenderPipeline::copyRenderTarget(RenderTargetPtr srcTarget, const Viewport& src, RenderTargetPtr destTarget, const Viewport& dest) noexcept
 {
     _renderer->copyRenderTarget(srcTarget, src, destTarget, dest);
+}
+
+void
+RenderPipeline::setViewport(const Viewport& viewport) noexcept
+{
+    _renderer->setViewport(viewport);
+}
+
+const Viewport&
+RenderPipeline::getViewport() const noexcept
+{
+    return _renderer->getViewport();
 }
 
 void
@@ -314,13 +327,11 @@ RenderPipeline::getWindowHeight() const noexcept
 void
 RenderPipeline::addPostProcess(RenderPostProcessPtr postprocess) except
 {
-    auto it = std::find(_postprocessors.begin(), _postprocessors.end(), postprocess);
-    if (it == _postprocessors.end())
-    {
-        postprocess->setActive(true);
+    assert(std::find(_postprocessors.begin(), _postprocessors.end(), postprocess) == _postprocessors.end());
 
-        _postprocessors.push_back(postprocess);
-    }
+    postprocess->onActivate(*this);
+
+    _postprocessors.push_back(postprocess);
 }
 
 void
@@ -329,10 +340,28 @@ RenderPipeline::removePostProcess(RenderPostProcessPtr postprocess) noexcept
     auto it = std::find(_postprocessors.begin(), _postprocessors.end(), postprocess);
     if (it != _postprocessors.end())
     {
-        postprocess->setActive(false);
+        postprocess->onDeactivate(*this);
 
         _postprocessors.erase(it);
     }
+}
+
+void
+RenderPipeline::applyPostProcess(RenderTargetPtr renderTexture) except
+{
+    auto clearFlags = renderTexture->getClearFlags();
+    renderTexture->setClearFlags(ClearFlags::CLEAR_NONE);
+
+    for (auto& it : _postprocessors)
+        it->onPreRender(*this);
+
+    for (auto& it : _postprocessors)
+        it->onRender(*this, renderTexture);
+
+    for (auto& it : _postprocessors)
+        it->onPostRender(*this);
+
+    renderTexture->setClearFlags(clearFlags);
 }
 
 void
@@ -351,23 +380,6 @@ RenderPipeline::render() noexcept
 
     this->onRenderPre();
     this->onRenderPipeline();
-
-    if (_camera->getCameraOrder() == CameraOrder::CO_MAIN)
-    {
-        auto renderTexture = _camera->getRenderTarget();
-        auto clearFlags = renderTexture->getClearFlags();
-        renderTexture->setClearFlags(ClearFlags::CLEAR_NONE);
-
-        for (auto& it : _postprocessors)
-        {
-            it->render(*this, renderTexture);
-        }
-
-        renderTexture->setClearFlags(clearFlags);
-
-        this->copyRenderTarget(renderTexture, this->getCamera()->getViewport(), 0, this->getCamera()->getViewport());
-    }
-
     this->onRenderPost();
 
     if (renderListener)
@@ -379,7 +391,7 @@ RenderPipeline::assignVisiable() noexcept
 {
     assert(_camera);
 
-    RenderScene* scene = _camera->getRenderScene();
+    auto scene = _camera->getRenderScene();
     if (scene)
     {
         _visiable.clear();
@@ -400,7 +412,7 @@ RenderPipeline::assignVisiable() noexcept
 void
 RenderPipeline::assignLight() noexcept
 {
-    RenderScene* scene = this->getCamera()->getRenderScene();
+    auto scene = this->getCamera()->getRenderScene();
     if (scene)
     {
         _lights.clear();

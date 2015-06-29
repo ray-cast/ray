@@ -38,6 +38,7 @@
 #define _H_GAME_SERVER_H_
 
 #include <ray/game_features.h>
+#include <ray/timer.h>
 
 _NAME_BEGIN
 
@@ -88,9 +89,9 @@ public:
 
 private:
 
-    bool load(XMLReader* reader, GameScenePtr scene) except;
+    bool load(iarchive& reader, GameScenePtr scene) except;
 
-    GameObjectPtr instanceObject(XMLReader* reader, GameScenePtr scene) except;
+    GameObjectPtr instanceObject(iarchive& reader, GameScenePtr scene) except;
 
 private:
     friend GameApplication;

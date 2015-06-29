@@ -36,34 +36,11 @@
 // +----------------------------------------------------------------------
 #include <ray/image.h>
 #include <ray/imagall.h>
-#include <ray/ioserver.h>
-#include <ray/fstream.h>
-#include <ray/mstream.h>
 
 _NAME_BEGIN
 
 Image::Image() noexcept
 {
-}
-
-Image::Image(const char* filename, image_type type) noexcept
-{
-    this->load(filename, type);
-}
-
-Image::Image(const wchar_t* filename, image_type type) noexcept
-{
-    this->load(filename, type);
-}
-
-Image::Image(const std::string& filename, image_type type) noexcept
-{
-    this->load(filename, type);
-}
-
-Image::Image(const std::wstring& filename, image_type type) noexcept
-{
-    this->load(filename, type);
 }
 
 Image::Image(istream& stream, image_type type) noexcept
@@ -79,11 +56,6 @@ Image::Image(size_type width, size_type height, bpp_type bpp, bool clear) noexce
 Image::Image(size_type width, size_type height, bpp_type bpp, image_buf data, bool static_data, bool clear) noexcept
 {
     this->create(width, height, bpp, data, static_data, clear);
-}
-
-Image::Image(const Image& copy) noexcept
-{
-    this->create(copy);
 }
 
 Image::~Image() noexcept
@@ -188,44 +160,6 @@ Image::setPalette(PaletteData* pal) noexcept
 }
 
 bool
-Image::load(const char* filename, image_type type) noexcept
-{
-    return this->load(std::string(filename), type);
-}
-
-bool
-Image::load(const wchar_t* filename, image_type type) noexcept
-{
-    return this->load(std::wstring(filename), type);
-}
-
-bool
-Image::load(const std::string& filename, image_type type) noexcept
-{
-    MemoryStream stream;
-    IoServer::instance()->openFile(filename, stream);
-    if (stream.is_open())
-    {
-        return this->load(stream);
-    }
-
-    return false;
-}
-
-bool
-Image::load(const std::wstring& filename, image_type type) noexcept
-{
-    MemoryStream stream;
-    IoServer::instance()->openFile(filename, stream);
-    if (stream.is_open())
-    {
-        return this->load(stream);
-    }
-
-    return false;
-}
-
-bool
 Image::load(istream& stream, image_type type) noexcept
 {
     if (emptyHandler())
@@ -248,32 +182,6 @@ Image::load(istream& stream, image_type type) noexcept
     }
 
     return false;
-}
-
-bool
-Image::save(const char* filename, image_type type) noexcept
-{
-    return this->save(std::string(filename), type);
-}
-
-bool
-Image::save(const wchar_t* filename, image_type type) noexcept
-{
-    return this->save(std::wstring(filename), type);
-}
-
-bool
-Image::save(const std::string& filename, image_type type) noexcept
-{
-    ofstream stream(filename);
-    return this->save(stream, type);
-}
-
-bool
-Image::save(const std::wstring& filename, image_type type) noexcept
-{
-    ofstream stream(filename);
-    return this->save(stream, type);
 }
 
 bool

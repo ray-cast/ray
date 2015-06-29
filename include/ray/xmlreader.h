@@ -34,18 +34,18 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_XMLSTREAM_H_
-#define _H_XMLSTREAM_H_
+#ifndef _H_XMLREADER_H_
+#define _H_XMLREADER_H_
 
+#include <ray/archive.h>
 #include <ray/iostream.h>
-#include <ray/math.h>
 
 class TiXmlDocument;
 class TiXmlElement;
 
 _NAME_BEGIN
 
-class EXPORT XMLReader final
+class EXPORT XMLReader final : public iarchive
 {
 public:
     XMLReader() noexcept;

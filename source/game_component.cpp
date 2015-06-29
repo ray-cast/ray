@@ -80,6 +80,17 @@ GameComponent::getGameServer() const noexcept
 }
 
 void
+GameComponent::load(iarchive& reader) noexcept
+{
+    reader >> static_cast<GameMessage*>(this);
+}
+
+void
+GameComponent::save(oarchive& write) noexcept
+{
+}
+
+void
 GameComponent::sendMessage(const std::string& method, const Variant* data...) except
 {
     if (!_gameObject->getActive())

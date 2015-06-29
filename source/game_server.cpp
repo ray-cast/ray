@@ -36,6 +36,8 @@
 // +----------------------------------------------------------------------
 #include <ray/game_server.h>
 #include <ray/game_scene.h>
+#include <ray/xmlreader.h>
+#include <ray/mstream.h>
 
 _NAME_BEGIN
 
@@ -53,7 +55,7 @@ GameServer::~GameServer() noexcept
 bool
 GameServer::open() noexcept
 {
-    _timer = Timer::create();
+    _timer = std::make_shared<Timer>();
     return _timer->open();
 }
 
@@ -132,7 +134,7 @@ GameServer::openScene(const std::string& sceneName) except
         XMLReader xml;
         if (xml.open(stream))
         {
-            auto scene = GameScene::create();
+            auto scene = std::make_shared<GameScene>();
             scene->setName(sceneName);
             scene->_setGameServer(this);
 
@@ -141,7 +143,7 @@ GameServer::openScene(const std::string& sceneName) except
                 feature->onOpenScene(scene);
             }
 
-            if (this->load(&xml, scene))
+            if (this->load(xml, scene))
             {
                 this->addScene(scene);
                 return true;
@@ -155,16 +157,14 @@ GameServer::openScene(const std::string& sceneName) except
 void
 GameServer::closeScene(const std::string& sceneName) noexcept
 {
-    for (auto& it : _scenes)
+    auto scene = this->findScene(sceneName);
+    if (scene)
     {
-        if (it->getName() == sceneName)
-        {
-            for (auto& feature : _features)
-            {
-                feature->onCloseScene(it);
-            }
+        scene->setActive(false);
 
-            it->setActive(false);
+        for (auto& feature : _features)
+        {
+            feature->onCloseScene(scene);
         }
     }
 }
@@ -234,6 +234,7 @@ GameServer::addFeature(GameFeaturePtr features) noexcept
     if (it == _features.end())
     {
         features->_setGameServer(this);
+
         if (this->getActive())
             features->onActivate();
 
@@ -360,52 +361,52 @@ GameServer::sendMessage(const std::string& method, const Variant* data...) excep
 }
 
 GameObjectPtr
-GameServer::instanceObject(XMLReader* reader, GameScenePtr scene) except
+GameServer::instanceObject(iarchive& reader, GameScenePtr scene) except
 {
-    std::string name = reader->getCurrentNodeName();
+    std::string name = reader.getCurrentNodeName();
     if (name == "object")
     {
         auto actor = std::make_shared<GameObject>();
         scene->addGameObject(actor);
-        reader->setToFirstChild();
+        reader.setToFirstChild();
 
         bool active = false;
 
         do
         {
-            auto key = reader->getCurrentNodeName();
+            auto key = reader.getCurrentNodeName();
             if (key == "attribute")
             {
-                auto attributes = reader->getAttrs();
+                auto attributes = reader.getAttrs();
                 for (auto& it : attributes)
                 {
                     if (it == "name")
                     {
-                        actor->setName(reader->getString(it));
+                        actor->setName(reader.getString(it));
                     }
                     else if (it == "active")
                     {
-                        active = reader->getBoolean(it);
+                        active = reader.getBoolean(it);
                     }
                     else if (it == "position")
                     {
-                        actor->setTranslate(reader->getFloat3(it));
+                        actor->setTranslate(reader.getFloat3(it));
                     }
                     else if (it == "scale")
                     {
-                        actor->setScale(reader->getFloat3(it));
+                        actor->setScale(reader.getFloat3(it));
                     }
                     else if (it == "lookat")
                     {
-                        actor->setLookAt(reader->getFloat3(it));
+                        actor->setLookAt(reader.getFloat3(it));
                     }
                     else if (it == "up")
                     {
-                        actor->setUpVector(reader->getFloat3(it));
+                        actor->setUpVector(reader.getFloat3(it));
                     }
                     else if (it == "rotate")
                     {
-                        float3 value = reader->getFloat3(it);
+                        float3 value = reader.getFloat3(it);
 
                         Quaternion quat;
                         quat.x = value.x;
@@ -416,7 +417,7 @@ GameServer::instanceObject(XMLReader* reader, GameScenePtr scene) except
                     }
                     else if (it == "layer")
                     {
-                        actor->setLayer(reader->getInteger(it));
+                        actor->setLayer(reader.getInteger(it));
                     }
                 }
             }
@@ -437,10 +438,10 @@ GameServer::instanceObject(XMLReader* reader, GameScenePtr scene) except
                 }
                 else
                 {
-                    throw failure("Unknown component name : " + reader->getString("name"));
+                    throw failure("Unknown component name : " + reader.getString("name"));
                 }
             }
-        } while (reader->setToNextChild());
+        } while (reader.setToNextChild());
 
         actor->setActive(active);
         return actor;
@@ -450,25 +451,25 @@ GameServer::instanceObject(XMLReader* reader, GameScenePtr scene) except
 }
 
 bool
-GameServer::load(XMLReader* reader, GameScenePtr scene) except
+GameServer::load(iarchive& reader, GameScenePtr scene) except
 {
     std::string nodeName;
-    nodeName = reader->getCurrentNodeName();
+    nodeName = reader.getCurrentNodeName();
     if (nodeName == "scene")
     {
-        reader->setToFirstChild();
+        reader.setToFirstChild();
 
         do
         {
-            nodeName = reader->getCurrentNodeName();
+            nodeName = reader.getCurrentNodeName();
             if (nodeName == "attribute")
             {
-                auto attributes = reader->getAttrs();
+                auto attributes = reader.getAttrs();
                 for (auto& it : attributes)
                 {
                     if (it == "name")
                     {
-                        scene->setName(reader->getString(it));
+                        scene->setName(reader.getString(it));
                     }
                 }
             }
@@ -476,7 +477,7 @@ GameServer::load(XMLReader* reader, GameScenePtr scene) except
             {
                 instanceObject(reader, scene);
             }
-        } while (reader->setToNextChild());
+        } while (reader.setToNextChild());
     }
 
     return true;

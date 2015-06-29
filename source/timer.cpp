@@ -41,8 +41,6 @@
 
 _NAME_BEGIN
 
-__ImplementClass(Timer)
-
 Timer::Timer() noexcept
     : _appTime(0)
     , _frameTime(0)

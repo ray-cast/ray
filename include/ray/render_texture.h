@@ -37,41 +37,9 @@
 #ifndef _H_RENDER_TEXTURE_H_
 #define _H_RENDER_TEXTURE_H_
 
-#include <ray/texture.h>
-#include <ray/render_state.h>
+#include <ray/render_types.h>
 
 _NAME_BEGIN
-
-enum Attachment
-{
-    COLOR0,
-    COLOR1,
-    COLOR2,
-    COLOR3,
-    COLOR4,
-    COLOR5,
-    COLOR6,
-    COLOR7,
-    COLOR8,
-    COLOR9,
-    COLOR10,
-    COLOR11,
-    COLOR12,
-    COLOR13,
-    COLOR14,
-    COLOR15,
-    DEPTH,
-    STENCIL,
-    DEPTH_STENCIL,
-};
-
-struct RenderTargetBinding
-{
-    Attachment location;
-    RenderTargetPtr texture;
-};
-
-typedef std::vector<RenderTargetBinding> RenderTargetBindings;
 
 class EXPORT RenderTarget
 {
@@ -79,7 +47,7 @@ public:
     RenderTarget() noexcept;
     virtual ~RenderTarget() noexcept;
 
-    void setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat format, ClearFlags flags = ClearFlags::CLEAR_ALL, const Color4& color = Color4::Black, float depth = 1.0, int stencil = 0) noexcept;
+    void setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat format) noexcept;
     virtual bool setup() except = 0;
     virtual void close() noexcept = 0;
 
@@ -119,9 +87,6 @@ public:
     std::size_t getHeight()  const noexcept;
     std::size_t getDepth()   const noexcept;
 
-    void setViewport(const Viewport& view) noexcept;
-    const Viewport& getViewport() const noexcept;
-
     bool isMipmap() const noexcept;
     bool isMultiSample() const noexcept;
 
@@ -140,35 +105,20 @@ private:
 
 private:
 
-    std::size_t _width;
-    std::size_t _height;
-    std::size_t _depth;
+    Viewport _viewport;
 
     int        _clearStencil;
     float      _clearDepth;
     Color4     _clearColor;
     ClearFlags _clearFlags;
 
-    Viewport _viewport;
-
-    bool _isMipmap;
-    bool _isMultiSample;
-
-    TextureOp     _resolveTexOp;
-    PixelFormat   _resolveFormat;
-    TextureFilter _resolveFilter;
-    TextureDim    _resolveDim;
-    TextureWrap   _resolveWrap;
-
     TexturePtr _resolveTexture;
-
-    Attachment _attachment;
 
     RenderTargetPtr _sharedDepthTexture;
     RenderTargetPtr _sharedStencilTexture;
 };
 
-class EXPORT MultiRenderTarget : public Instance<MultiRenderTarget>
+class EXPORT MultiRenderTarget
 {
 public:
     MultiRenderTarget() noexcept;
@@ -177,24 +127,24 @@ public:
     virtual bool setup() noexcept = 0;
     virtual void close() noexcept = 0;
 
-    void attach(RenderTargetPtr texture, Attachment location) noexcept;
+    void attach(RenderTargetPtr texture) noexcept;
     void detach(RenderTargetPtr texture) noexcept;
 
-    void setActive(bool active) except;
-    bool getActive() const noexcept;
+    RenderTargets& getRenderTargets() noexcept;
+    const RenderTargets& getRenderTargets() const noexcept;
 
-    RenderTargetBindings& getRenderTargets() noexcept;
-    const RenderTargetBindings& getRenderTargets() const noexcept;
+    void setSharedDepthTexture(RenderTargetPtr target) noexcept;
+    void setSharedStencilTexture(RenderTargetPtr target) noexcept;
 
-protected:
-    virtual void onActivate() noexcept = 0;
-    virtual void onDeactivate() noexcept = 0;
+    RenderTargetPtr getSharedDepthTexture() const noexcept;
+    RenderTargetPtr getSharedStencilTexture() const noexcept;
 
 private:
 
-    bool _active;
+    RenderTargets _textures;
 
-    RenderTargetBindings _textures;
+    RenderTargetPtr _sharedDepthTexture;
+    RenderTargetPtr _sharedStencilTexture;
 };
 
 _NAME_END

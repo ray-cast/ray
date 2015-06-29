@@ -36,6 +36,8 @@
 // +----------------------------------------------------------------------
 #include "terrain.h"
 
+__ImplementSubClass(Terrain, ray::GameController)
+
 Terrain::Terrain() noexcept
     : _createRadius(2)
     , _deleteRadius(9)
@@ -73,7 +75,7 @@ Terrain::onActivate() except
                 auto chunk = std::make_shared<TerrainChunk>(*this);
                 chunk->init(_size, i, 0, j);
                 chunk->realize();
-                chunk->active(this->getGameObject());
+                chunk->active(std::dynamic_pointer_cast<ray::GameObject>(this->getGameObject()->shared_from_this()));
 
                 _chunks.push_back(chunk);
             }
@@ -397,7 +399,7 @@ Terrain::checkChunks() noexcept
 
         if (it->chunk)
         {
-            it->chunk->active(this->getGameObject());
+            it->chunk->active(std::dynamic_pointer_cast<ray::GameObject>(this->getGameObject()->shared_from_this()));
             it->chunk = nullptr;
         }
 

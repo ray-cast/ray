@@ -38,6 +38,7 @@
 #include <ray/render_texture.h>
 #include <ray/render_scene.h>
 #include <ray/render_pipeline.h>
+#include <ray/render_factory.h>
 
 _NAME_BEGIN
 
@@ -222,12 +223,16 @@ Light::getShadow() const noexcept
 void
 Light::setupShadow(std::size_t size) noexcept
 {
+    auto renderTexture = RenderFactory::createRenderTarget();
+    renderTexture->setup(size, size, TextureDim::DIM_2D, PixelFormat::R16F);
+
     _shadowCamera = std::make_shared<Camera>();
     _shadowCamera->setCameraOrder(CameraOrder::CO_SHADOW);
-    _shadowCamera->setup(size, size);
+    _shadowCamera->setCameraRender(CameraRender::CR_RENDER_TO_TEXTURE);
     _shadowCamera->setViewport(Viewport(0, 0, size, size));
     _shadowCamera->setRenderListener(this);
     _shadowCamera->makePerspective(90.0, 1.0, 0.1, _lightRange);
+    _shadowCamera->makeViewProject();
 
     _updateShadow();
 }
@@ -252,7 +257,7 @@ Light::getShadowCamera() const noexcept
 }
 
 void
-Light::setRenderScene(RenderScene* scene) noexcept
+Light::setRenderScene(RenderScenePtr scene) noexcept
 {
     if (_renderScene)
     {
@@ -261,7 +266,7 @@ Light::setRenderScene(RenderScene* scene) noexcept
             _shadowCamera->setRenderScene(nullptr);
     }
 
-    _renderScene = scene;
+    _renderScene = scene.get();
 
     if (_renderScene)
     {
@@ -271,10 +276,10 @@ Light::setRenderScene(RenderScene* scene) noexcept
     }
 }
 
-RenderScene*
+RenderScenePtr
 Light::getRenderScene() const noexcept
 {
-    return _renderScene;
+    return _renderScene->shared_from_this();
 }
 
 void

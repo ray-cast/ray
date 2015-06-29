@@ -38,6 +38,11 @@
 #define _H_OGL_TYPES_H_
 
 #include <ray/render_device.h>
+#include <ray/render_buffer.h>
+#include <ray/render_texture.h>
+#include <ray/render_state.h>
+#include <ray/shader.h>
+#include <ray/texture.h>
 
 #if defined(_BUILD_PLATFORM_SDL2)
 #    include <ray/sdl_canvas.h>
@@ -47,20 +52,18 @@
 #       include <ray/wgl_canvas.h>
 #       define OGLCanvas WGLCanvas
 #    elif defined(__LINUX__)
-#       include <ray/x11_wx.h>
-#        define TopLevelCanvas TopLevelWindowLINUX
+#       include <ray/x11_canvas.h>
+#       define TopLevelCanvas TopLevelWindowLINUX
 #    elif defined(__APPLE__)
-#       include <ray/x11_wx.h>
-#        define TopLevelCanvas TopLevelWindowAPPLE
+#       include <ray/x11_canvas.h>
+#       define TopLevelCanvas TopLevelWindowAPPLE
+#    elif defined(__ANDROID__)
+#       include <ray/egl_canvas.h>
+#       define EGLCanvas OGLCanvas;
 #    endif
 #endif
 
 _NAME_BEGIN
-
-#if defined(EGLAPI)
-
-typedef EGLCanvas OGLCanvas;
-#endif
 
 struct OGLShaderVariant
 {
@@ -70,53 +73,6 @@ struct OGLShaderVariant
     OGLShaderVariant() noexcept
         : ubo(0)
         , bindlessUbo(0)
-    {
-    }
-};
-
-struct OGLVertexAttrib
-{
-    GLuint attrib;
-    GLenum type;
-    GLuint size;
-    GLsizei stride;
-    GLintptr offset;
-};
-
-struct OGLVertexArray
-{
-    GLuint vao;
-
-    GLuint vbo;
-    GLuint ibo;
-
-    GLuint64 bindlessVbo;
-    GLuint64 bindlessIbo;
-
-    GLuint vertexCount;
-    GLenum vertexUsage;
-    GLsizeiptr vertexSize;
-    GLsizeiptr vertexByteSize;
-
-    GLuint indexCount;
-    GLenum indexType;
-    GLenum indexUsage;
-    GLsizeiptr indexSize;
-
-    std::vector<OGLVertexAttrib> attribs;
-
-    OGLVertexArray() noexcept
-        : vao(GL_NONE)
-        , vbo(GL_NONE)
-        , ibo(GL_NONE)
-        , bindlessVbo(GL_NONE)
-        , bindlessIbo(GL_NONE)
-        , vertexUsage(GL_STATIC_DRAW)
-        , vertexSize(0)
-        , vertexCount(0)
-        , indexType(GL_UNSIGNED_SHORT)
-        , indexUsage(GL_STATIC_DRAW)
-        , indexSize(0)
     {
     }
 };
@@ -132,10 +88,9 @@ public:
 
     static GLenum asOGLVertexType(VertexType type) noexcept;
     static GLenum asOGLVertexUsage(VertexUsage usage) noexcept;
-    static GLenum asOGLVertexDataType(VertexDataType type) noexcept;
+    static GLenum asOGLVertexFormat(VertexFormat format) noexcept;
     static GLenum asOGLIndexType(IndexType type) noexcept;
     static GLenum asOGLShaderType(ShaderType type) noexcept;
-    static GLenum asOGLAttachment(Attachment attrib) noexcept;
     static GLenum asOGLTarget(TextureDim mapping) noexcept;
     static GLenum asOGLFormat(PixelFormat format) noexcept;
     static GLenum asOGLType(PixelFormat format) noexcept;

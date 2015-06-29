@@ -38,11 +38,9 @@
 #define _H_MATERIAL_MAKETER_H_
 
 #include <ray/material.h>
-#include <ray/xmlreader.h>
+#include <ray/archive.h>
 
 _NAME_BEGIN
-
-EXPORT TexturePtr createTexture(const std::string& name) except;
 
 class EXPORT MaterialMaker final
 {
@@ -52,18 +50,18 @@ public:
     ~MaterialMaker() noexcept;
 
     MaterialPtr load(const std::string& filename) except;
-    MaterialPtr load(XMLReader& reader) except;
+    MaterialPtr load(iarchive& reader) except;
 
     operator MaterialPtr() noexcept;
 
 private:
 
-    RenderStatePtr instanceState(XMLReader& reader) except;
-    MaterialPassPtr instancePass(XMLReader& reader) except;
-    MaterialTechPtr instanceTech(XMLReader& reader) except;
-    MaterialParamPtr instanceParameter(XMLReader& reader) except;
-    MaterialParamPtr instanceBuffer(XMLReader& reader) except;
-    ShaderPtr instanceShader(XMLReader& reader) except;
+    RenderStatePtr instanceState(iarchive& reader) except;
+    MaterialPassPtr instancePass(iarchive& reader) except;
+    MaterialTechPtr instanceTech(iarchive& reader) except;
+    MaterialParamPtr instanceParameter(iarchive& reader) except;
+    MaterialParamPtr instanceBuffer(iarchive& reader) except;
+    ShaderPtr instanceShader(iarchive& reader) except;
 
 private:
     MaterialMaker(const MaterialMaker&) noexcept = delete;

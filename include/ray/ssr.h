@@ -47,7 +47,9 @@ public:
     SSR() noexcept;
     ~SSR() noexcept;
 
-    void render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
+private:
+
+    void onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
 
 private:
 

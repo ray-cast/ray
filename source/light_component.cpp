@@ -160,6 +160,49 @@ LightComponent::getLightType() const noexcept
 }
 
 void
+LightComponent::load(iarchive& reader) noexcept
+{
+    std::string lightType;
+    float3 lightColor(1, 1, 1);
+    float lightIntensity = 1.0f;
+    float lightRange = 1.0f;
+    float lightExponent = 1.0f;
+    bool shadow = false;
+
+    reader >> static_cast<GameComponent*>(this);
+    reader >> rtti_alias(lightIntensity, "intensity");
+    reader >> rtti_alias(lightRange, "range");
+    reader >> rtti_alias(lightExponent, "exponent");
+    reader >> rtti_alias(shadow, "shadow");
+    reader >> rtti_alias(lightColor, "color");
+    reader >> rtti_alias(lightType, "type");
+
+    if (lightType == "sun")
+        this->setLightType(LightType::LT_SUN);
+    else if (lightType == "point")
+        this->setLightType(LightType::LT_POINT);
+    else if (lightType == "spot")
+        this->setLightType(LightType::LT_SPOT);
+    else if (lightType == "area")
+        this->setLightType(LightType::LT_AREA);
+    else if (lightType == "hemiSphere")
+        this->setLightType(LightType::LT_HEMI_SPHERE);
+    else
+        this->setLightType(LightType::LT_POINT);
+
+    _light->setLightColor(lightColor);
+    _light->setRange(lightRange);
+    _light->setIntensity(lightIntensity);
+    _light->setExponent(lightExponent);
+    _light->setShadow(shadow);
+}
+
+void
+LightComponent::save(oarchive& write) noexcept
+{
+}
+
+void
 LightComponent::onActivate() noexcept
 {
     auto renderer = this->getGameObject()->getGameServer()->getFeature<RenderFeatures>();
@@ -172,7 +215,7 @@ LightComponent::onActivate() noexcept
             _light->setup();
             _light->setLightDirection(~dir);
             _light->setTransform(this->getGameObject()->getTransform());
-            _light->setRenderScene(renderScene.get());
+            _light->setRenderScene(renderScene);
         }
     }
 }

@@ -111,7 +111,7 @@ DepthOfField::final(RenderPipeline& pipeline, RenderTargetPtr color, RenderTarge
 }
 
 void
-DepthOfField::render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
+DepthOfField::onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
 {
     _texColor->assign(source->getResolveTexture());
 

@@ -60,7 +60,7 @@ public:
 
     virtual void setCastShadow(bool enable) noexcept;
     virtual void setReceiveShadow(bool enable) noexcept;
-    virtual void setRenderScene(RenderScene* scene) noexcept;
+    virtual void setRenderScene(RenderScenePtr scene) noexcept = 0;
     virtual void setRenderListener(RenderListener* listener) noexcept;
     virtual void setBoundingBox(const Bound& bound) noexcept;
 
@@ -71,7 +71,7 @@ public:
     virtual bool getReceiveShadow() const noexcept;
     virtual bool getCastShadow() const noexcept;
 
-    virtual RenderScene* getRenderScene() const noexcept;
+    virtual RenderScenePtr getRenderScene() const noexcept = 0;
     virtual RenderListener* getRenderListener() noexcept;
 
     virtual const Matrix4x4& getTransform() const noexcept;
@@ -105,7 +105,6 @@ private:
     mutable bool _isNeedUpdate;
     mutable Bound _worldBoundingxBox;
 
-    RenderScene*    _renderScene;
     RenderListener* _renderListener;
 };
 

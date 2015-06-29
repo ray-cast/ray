@@ -30,6 +30,7 @@
             uniform mat4 matViewProject;
 
             out vec4 position;
+            out vec4 coord;
             out float range;
             out float spotRange;
             out vec3 spotDirection;
@@ -44,6 +45,7 @@
 
             void DeferredSunLightVS()
             {
+                coord = glsl_Texcoord;
                 gl_Position = position = glsl_Position;
             }
 
@@ -64,7 +66,8 @@
 
             void DeferredShadingVS()
             {
-                gl_Position = glsl_Position;
+                coord = glsl_Texcoord;
+                gl_Position = position = glsl_Position;
             }
         ]]>
     </shader>
@@ -100,6 +103,7 @@
             //uniform sampler2DArray shadowArrayMap;
 
             in vec4 position;
+            in vec4 coord;
             in float range;
             in float spotRange;
             in vec3 spotDirection;
@@ -326,7 +330,7 @@
 
             void DeferredSunLightPS()
             {
-                float depth  = texelFetch(texDepth, ivec2(gl_FragCoord.xy), 0).r * 2.0 - 1.0;
+                float depth  = texelFetch(texDepth, ivec2(gl_FragCoord.xy), 0).r;
 
                 vec4 N = texelFetch(texNormal, ivec2(gl_FragCoord.xy), 0);
 
@@ -340,7 +344,7 @@
 
             void DeferredSunLightShadowPS()
             {
-                float depth  = texelFetch(texDepth, ivec2(gl_FragCoord.xy), 0).r * 2.0 - 1.0;
+                float depth  = texelFetch(texDepth, ivec2(gl_FragCoord.xy), 0).r;
 
                 vec4 N = texelFetch(texNormal, ivec2(gl_FragCoord.xy), 0);
 
@@ -354,7 +358,7 @@
 
             void DeferredSpotLightPS()
             {
-                float depth  = texelFetch(texDepth, ivec2(gl_FragCoord.xy), 0).r * 2.0 - 1.0;
+                float depth  = texelFetch(texDepth, ivec2(gl_FragCoord.xy), 0).r;
 
                 vec4 N = texelFetch(texNormal, ivec2(gl_FragCoord.xy), 0);
 
@@ -368,7 +372,7 @@
 
             void DeferredPointLightPS()
             {
-                float depth  = texelFetch(texDepth, ivec2(gl_FragCoord.xy), 0).r * 2.0 - 1.0;
+                float depth  = texelFetch(texDepth, ivec2(gl_FragCoord.xy), 0).r;
 
                 vec4 N = texelFetch(texNormal, ivec2(gl_FragCoord.xy), 0);
 
@@ -387,7 +391,7 @@
 
                 vec3 color = diffuse.rgb * (lightAmbient + light.rgb);
 
-                glsl_FragColor0 = vec4(color, 1.0);
+                glsl_FragColor0 = vec4(color, diffuse.a);
             }
 
             void DeferredShadingTransparentsPS()
@@ -433,6 +437,8 @@
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
 
+            <state name="cullmode" value="front"/>
+
             <state name="stencilTest" value="true"/>
             <state name="stencilFunc" value="equal"/>
         </pass>
@@ -473,9 +479,11 @@
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
 
+            <state name="cullmode" value="front"/>
+
             <state name="stencilTest" value="true"/>
-            <state name="stencilFunc" value="gequal"/>
-            <state name="stencilRef" value="1" />
+            <state name="stencilFunc" value="notequal"/>
+            <state name="stencilRef" value="0" />
         </pass>
         <pass name="DeferredShadingTransparents">
             <state name="vertex" value="DeferredShadingVS"/>
@@ -484,13 +492,15 @@
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
 
+            <state name="cullmode" value="front"/>
+
             <state name="blend" value="true"/>
             <state name="blendsrc" value="srcalpha"/>
             <state name="blenddst" value="invsrcalpha"/>
 
             <state name="stencilTest" value="true"/>
-            <state name="stencilFunc" value="gequal"/>
-            <state name="stencilRef" value="1" />
+            <state name="stencilFunc" value="notequal"/>
+            <state name="stencilRef" value="0" />
         </pass>
     </technique>
 </effect>

@@ -102,8 +102,8 @@ public:
 
     CameraPtr getShadowCamera() const noexcept;
 
-    void setRenderScene(RenderScene* scene) noexcept;
-    RenderScene* getRenderScene() const noexcept;
+    void setRenderScene(RenderScenePtr scene) noexcept;
+    RenderScenePtr getRenderScene() const noexcept;
 
     void collection(RenderDataManager& manager) noexcept;
 

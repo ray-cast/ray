@@ -72,6 +72,9 @@ public:
     void setShadow(bool shadow) noexcept;
     bool getShadow() const noexcept;
 
+    void load(iarchive& reader) noexcept;
+    void save(oarchive& write) noexcept;
+
     GameComponentPtr clone() const noexcept;
 
 private:

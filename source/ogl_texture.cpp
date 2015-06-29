@@ -265,18 +265,18 @@ OGLRenderTarget::setup() noexcept
     if (sharedDepthTarget == sharedStencilTarget)
     {
         if (sharedDepthTarget)
-            this->bindRenderTarget(sharedDepthTarget->getResolveTexture(), Attachment::DEPTH_STENCIL);
+            this->bindRenderTarget(sharedDepthTarget->getResolveTexture(), GL_DEPTH_STENCIL_ATTACHMENT);
     }
     else
     {
         if (sharedDepthTarget)
         {
-            this->bindRenderTarget(sharedDepthTarget->getResolveTexture(), Attachment::DEPTH);
+            this->bindRenderTarget(sharedDepthTarget->getResolveTexture(), GL_DEPTH_ATTACHMENT);
         }
 
         if (sharedStencilTarget)
         {
-            this->bindRenderTarget(sharedStencilTarget->getResolveTexture(), Attachment::STENCIL);
+            this->bindRenderTarget(sharedStencilTarget->getResolveTexture(), GL_STENCIL_ATTACHMENT);
         }
     }
 
@@ -284,19 +284,19 @@ OGLRenderTarget::setup() noexcept
 
     if (resolveFormat == PixelFormat::DEPTH24_STENCIL8 || resolveFormat == PixelFormat::DEPTH32_STENCIL8)
     {
-        this->bindRenderTarget(this->getResolveTexture(), Attachment::DEPTH_STENCIL);
+        this->bindRenderTarget(this->getResolveTexture(), GL_DEPTH_STENCIL_ATTACHMENT);
     }
     else if (resolveFormat == PixelFormat::DEPTH_COMPONENT16 || resolveFormat == PixelFormat::DEPTH_COMPONENT24 || resolveFormat == PixelFormat::DEPTH_COMPONENT32)
     {
-        this->bindRenderTarget(this->getResolveTexture(), Attachment::DEPTH);
+        this->bindRenderTarget(this->getResolveTexture(), GL_DEPTH_ATTACHMENT);
     }
     else if (resolveFormat == PixelFormat::STENCIL8)
     {
-        this->bindRenderTarget(this->getResolveTexture(), Attachment::STENCIL);
+        this->bindRenderTarget(this->getResolveTexture(), GL_STENCIL_ATTACHMENT);
     }
     else
     {
-        this->bindRenderTarget(this->getResolveTexture(), Attachment::COLOR0);
+        this->bindRenderTarget(this->getResolveTexture(), GL_COLOR_ATTACHMENT0);
     }
 
     if (OGLExtenstion::isSupport(ARB_direct_state_access))
@@ -318,9 +318,8 @@ OGLRenderTarget::close() noexcept
 }
 
 void
-OGLRenderTarget::bindRenderTarget(TexturePtr texture, Attachment attachment) noexcept
+OGLRenderTarget::bindRenderTarget(TexturePtr texture, GLenum attachment) noexcept
 {
-    auto attribindex = OGLTypes::asOGLAttachment(attachment);
     auto handle = std::dynamic_pointer_cast<OGLTexture>(texture)->getInstanceID();
 
     switch (texture->getTexDim())
@@ -328,27 +327,27 @@ OGLRenderTarget::bindRenderTarget(TexturePtr texture, Attachment attachment) noe
     case TextureDim::DIM_2D:
     {
         if (texture->isMultiSample())
-            glFramebufferTexture2D(GL_FRAMEBUFFER, attribindex, GL_TEXTURE_2D_MULTISAMPLE, handle, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, handle, 0);
         else
-            glFramebufferTexture2D(GL_FRAMEBUFFER, attribindex, GL_TEXTURE_2D, handle, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0);
         break;
     }
     case TextureDim::DIM_2D_ARRAY:
     {
-        glFramebufferTextureLayer(GL_FRAMEBUFFER, attribindex, handle, 0, 0);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, handle, 0, 0);
         break;
     }
 #if !defined(EGLAPI)
     case TextureDim::DIM_3D:
     {
-        glFramebufferTexture3D(GL_FRAMEBUFFER, attribindex, GL_TEXTURE_3D, handle, 0, 0);
+        glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_3D, handle, 0, 0);
         break;
     }
 #endif
     }
 }
 
-std::size_t
+GLuint
 OGLRenderTarget::getInstanceID() noexcept
 {
     return _fbo;
@@ -372,36 +371,35 @@ OGLMultiRenderTarget::setup() noexcept
     glGenFramebuffers(1, &_fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 
-    GLenum draw[Attachment::COLOR15];
+    auto sharedDepthTarget = this->getSharedDepthTexture();
+    auto sharedStencilTarget = this->getSharedStencilTexture();
+
+    if (sharedDepthTarget == sharedStencilTarget)
+    {
+        if (sharedDepthTarget)
+            this->bindRenderTarget(sharedDepthTarget, GL_DEPTH_STENCIL_ATTACHMENT);
+    }
+    else
+    {
+        if (sharedDepthTarget)
+        {
+            this->bindRenderTarget(sharedDepthTarget, GL_DEPTH_ATTACHMENT);
+        }
+
+        if (sharedStencilTarget)
+        {
+            this->bindRenderTarget(sharedStencilTarget, GL_STENCIL_ATTACHMENT);
+        }
+    }
+
+    GLenum draw[MAX_COLOR_ATTACHMENTS] = { 0 };
+    GLenum attachment = GL_COLOR_ATTACHMENT0;
     GLsizei count = 0;
 
-    for (auto& it : this->getRenderTargets())
+    for (auto& target : this->getRenderTargets())
     {
-        TexturePtr texture = it.texture->getResolveTexture();
-        if (!texture)
-            continue;
-
-        GLenum attachment = OGLTypes::asOGLAttachment(it.location);
-        GLuint handle = std::dynamic_pointer_cast<OGLTexture>(texture)->getInstanceID();
-
-        auto dim = texture->getTexDim();
-        if (dim == TextureDim::DIM_2D)
-            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0);
-        else if (dim == TextureDim::DIM_2D_ARRAY)
-            glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, handle, 0, 0);
-#if !defined(EGLAPI)
-        else if (dim == TextureDim::DIM_3D)
-            glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_3D, handle, 0, 0);
-#endif
-        else
-            assert(false);
-
-        if (attachment != GL_DEPTH_ATTACHMENT &&
-            attachment != GL_DEPTH_STENCIL_ATTACHMENT &&
-            attachment != GL_STENCIL_ATTACHMENT)
-        {
-            draw[count++] = attachment;
-        }
+        this->bindRenderTarget(target, attachment);
+        draw[count++] = attachment++;
     }
 
     if (OGLExtenstion::isSupport(ARB_direct_state_access))
@@ -422,15 +420,40 @@ OGLMultiRenderTarget::close() noexcept
     }
 }
 
-void
-OGLMultiRenderTarget::onActivate() noexcept
+GLuint
+OGLMultiRenderTarget::getInstanceID() noexcept
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+    return _fbo;
 }
 
 void
-OGLMultiRenderTarget::onDeactivate() noexcept
+OGLMultiRenderTarget::bindRenderTarget(RenderTargetPtr target, GLenum attachment) noexcept
 {
+    auto handle = std::dynamic_pointer_cast<OGLTexture>(target->getResolveTexture())->getInstanceID();
+
+    switch (target->getTexDim())
+    {
+    case TextureDim::DIM_2D:
+    {
+        if (target->isMultiSample())
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, handle, 0);
+        else
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0);
+        break;
+    }
+    case TextureDim::DIM_2D_ARRAY:
+    {
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, handle, 0, 0);
+        break;
+    }
+#if !defined(EGLAPI)
+    case TextureDim::DIM_3D:
+    {
+        glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_3D, handle, 0, 0);
+        break;
+    }
+#endif
+    }
 }
 
 _NAME_END

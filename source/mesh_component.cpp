@@ -35,6 +35,8 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/mesh_component.h>
+#include <ray/model.h>
+#include <ray/render_factory.h>
 
 _NAME_BEGIN
 
@@ -114,6 +116,26 @@ MeshComponent::getRenderBuffer() const noexcept
     return _renderMesh;
 }
 
+void
+MeshComponent::load(iarchive& reader) noexcept
+{
+    reader >> static_cast<GameComponent*>(this);
+
+    Model model;
+    if (model.load(this->getName()))
+    {
+        if (model.hasMeshes())
+        {
+            this->setMesh(model.getMeshsList()[0]);
+        }
+    }
+}
+
+void
+MeshComponent::save(oarchive& write) noexcept
+{
+}
+
 GameComponentPtr
 MeshComponent::clone() const noexcept
 {
@@ -139,6 +161,12 @@ MeshComponent::onActivate() noexcept
 void
 MeshComponent::onDeactivate() noexcept
 {
+    if (_mesh)
+    {
+        _mesh.reset();
+        _mesh = nullptr;
+    }
+
     if (_renderMesh)
     {
         _renderMesh.reset();
@@ -151,7 +179,7 @@ MeshComponent::buildRenderBuffer() noexcept
 {
     if (!_renderMesh)
     {
-        _renderMesh = std::make_unique<RenderBuffer>();
+        _renderMesh = RenderFactory::createRenderBuffer();
         _renderMesh->setup(*_mesh);
     }
 }

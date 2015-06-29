@@ -41,6 +41,8 @@
 #include <ray/window_features.h>
 #include <ray/physics_character_component.h>
 
+__ImplementSubClass(FirstPersonCamera, ray::GameController)
+
 FirstPersonCamera::FirstPersonCamera() noexcept
     : _speed(10.0)
     , _gravity(15)
@@ -93,13 +95,13 @@ FirstPersonCamera::onFrameEnd() noexcept
         if (!character)
         {
             if (input->getKey(ray::InputKey::Code::W))
-                moveCamera(step);
+                moveCamera(-step);
 
             if (input->getKey(ray::InputKey::Code::A))
                 yawCamera(-step);
 
             if (input->getKey(ray::InputKey::Code::S))
-                moveCamera(-step);
+                moveCamera(step);
 
             if (input->getKey(ray::InputKey::Code::D))
                 yawCamera(step);
@@ -115,13 +117,13 @@ FirstPersonCamera::onFrameEnd() noexcept
             {
                 ray::float3 mov = lookat - translate;
                 mov.normalize();
-                walkDirection += mov;
+                walkDirection -= mov;
             }
             if (input->getKey(ray::InputKey::Code::S))
             {
                 ray::float3 mov = lookat - translate;
                 mov.normalize();
-                walkDirection -= mov;
+                walkDirection += mov;
             }
             if (input->getKey(ray::InputKey::Code::A))
             {
@@ -223,8 +225,8 @@ FirstPersonCamera::rotateCamera(float mouseX, float mouseY, float lastX, float l
     auto lookat = this->getGameObject()->getLookAt();
     auto up = this->getGameObject()->getUpVector();
 
-    float angleY = (lastX - mouseX) / 100.0;
-    float angleZ = (lastY - mouseY) / 100.0;
+    float angleY = -(lastX - mouseX) / 100.0;
+    float angleZ = -(lastY - mouseY) / 100.0;
 
     ray::float3 view = lookat - translate;
     view.normalize();
@@ -239,7 +241,7 @@ FirstPersonCamera::rotateCamera(float mouseX, float mouseY, float lastX, float l
         rotateCamera(angleZ, axis);
     }
 
-    rotateCamera(angleY, ray::float3(0, 1, 0));
+    rotateCamera(angleY, ray::float3::UnitY);
 }
 
 ray::GameComponentPtr

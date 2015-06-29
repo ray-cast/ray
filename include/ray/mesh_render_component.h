@@ -53,14 +53,12 @@ public:
 
 private:
 
-    void onActivate() noexcept;
+    void onActivate() except;
     void onDeactivate() noexcept;
 
     void onMoveAfter() noexcept;
 
     void onLayerChangeAfter() noexcept;
-
-    void onFrameEnd() noexcept;
 
 protected:
 

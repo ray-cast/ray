@@ -48,7 +48,7 @@ public:
 
     void init(std::size_t size, int x, int y, int z) noexcept;
     void realize() noexcept;
-    void active(ray::GameObject* parent) noexcept;
+    void active(ray::GameObjectPtr parent) noexcept;
 
     void dirt(bool dirt) noexcept;
     bool dirt() const noexcept;

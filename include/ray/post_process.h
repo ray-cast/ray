@@ -45,24 +45,18 @@ class EXPORT RenderPostProcess
 {
 public:
     RenderPostProcess() noexcept;
-    ~RenderPostProcess() noexcept;
+    virtual ~RenderPostProcess() noexcept;
 
-    void setActive(bool active) except;
-    bool getActive() const except;
+    virtual void onActivate(RenderPipeline& pipeline) except;
+    virtual void onDeactivate(RenderPipeline& pipeline) except;
 
-    virtual void render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept = 0;
+    virtual void onResolutionChangeBefore(RenderPipeline& pipeline) except;
+    virtual void onResolutionChangeAfter(RenderPipeline& pipeline) except;
 
-protected:
+    virtual void onPreRender(RenderPipeline& pipeline) except;
+    virtual void onPostRender(RenderPipeline& pipeline) except;
 
-    virtual void onActivate() except;
-    virtual void onDeactivate() except;
-
-    virtual void onResolutionChangeBefore() except;
-    virtual void onResolutionChangeAfter() except;
-
-private:
-
-    bool _active;
+    virtual void onRender(RenderPipeline& pipeline, RenderTargetPtr source) except = 0;
 };
 
 _NAME_END

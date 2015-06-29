@@ -51,13 +51,16 @@ LightShaft::~LightShaft() noexcept
 }
 
 void
-LightShaft::onActivate() except
+LightShaft::onActivate(RenderPipeline& pipeline) except
 {
+    std::size_t width = pipeline.getWindowWidth();
+    std::size_t height = pipeline.getWindowHeight();
+
     MaterialMaker maker;
     _material = maker.load("sys:fx/light_shaft.glsl");
 
     _texSample = RenderFactory::createRenderTarget();
-    _texSample->setup(688, 384, TextureDim::DIM_2D, PixelFormat::R8G8B8A8F);
+    _texSample->setup(width * 0.5, height * 0.5, TextureDim::DIM_2D, PixelFormat::R8G8B8A8F);
 
     _lightShaft = _material->getTech(RenderQueue::PostProcess)->getPass("scatter");
     _lightShaftCopy = _material->getTech(RenderQueue::PostProcess)->getPass("copy");
@@ -83,12 +86,12 @@ LightShaft::onActivate() except
 }
 
 void
-LightShaft::onDeactivate() except
+LightShaft::onDeactivate(RenderPipeline& pipeline) except
 {
 }
 
 void
-LightShaft::render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
+LightShaft::onRender(RenderPipeline& pipeline, RenderTargetPtr source) except
 {
     _cameraRadio->assign(pipeline.getCamera()->getRatio());
 

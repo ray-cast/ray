@@ -69,7 +69,7 @@ ScriptComponent::onActivate()
     if (!_scriptObject->setInterface("IController"))
         return;
 
-    if (!_scriptObject->construct(this->getGameObject()->shared_from_this()))
+    if (!_scriptObject->construct(std::dynamic_pointer_cast<GameObject>(this->getGameObject()->shared_from_this())))
         return;
 
     if (_scriptObject)

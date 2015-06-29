@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_component.h>
+#include <ray/render_factory.h>
 
 _NAME_BEGIN
 
@@ -42,7 +43,7 @@ __ImplementSubInterface(RenderComponent, GameComponent)
 
 RenderComponent::RenderComponent() noexcept
     : _isCastShadow(true)
-    , _isReceiveShaodw(true)
+    , _isReceiveShadow(true)
 {
 }
 
@@ -57,7 +58,7 @@ RenderComponent::setCastShadow(bool value) noexcept
 }
 
 bool
-RenderComponent::getCastShadow()  const noexcept
+RenderComponent::getCastShadow() const noexcept
 {
     return _isCastShadow;
 }
@@ -65,13 +66,13 @@ RenderComponent::getCastShadow()  const noexcept
 void
 RenderComponent::setReceiveShadow(bool value) noexcept
 {
-    _isReceiveShaodw = value;
+    _isReceiveShadow = value;
 }
 
 bool
 RenderComponent::getReceiveShadow() const noexcept
 {
-    return _isReceiveShaodw;
+    return _isReceiveShadow;
 }
 
 void
@@ -84,6 +85,45 @@ MaterialPtr
 RenderComponent::getMaterial() const noexcept
 {
     return _material;
+}
+
+void
+RenderComponent::load(iarchive& reader) noexcept
+{
+    reader >> static_cast<GameComponent*>(this);
+    reader >> rtti_alias(_isCastShadow, "castshadow");
+    reader >> rtti_alias(_isReceiveShadow, "receiveshadow");
+
+    std::string material;
+    reader >> rtti_name(material);
+
+    this->setName(material);
+}
+
+void
+RenderComponent::save(oarchive& write) noexcept
+{
+    write << rtti_alias(_isCastShadow, "castshadow");
+    write << rtti_alias(_isReceiveShadow, "receiveshadow");
+}
+
+void
+RenderComponent::onActivate() except
+{
+    if (!_material)
+    {
+        _material = RenderFactory::createMaterial(this->getName());
+    }
+}
+
+void
+RenderComponent::onDectivate() noexcept
+{
+    if (!_material)
+    {
+        _material.reset();
+        _material = nullptr;
+    }
 }
 
 _NAME_END

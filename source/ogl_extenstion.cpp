@@ -156,7 +156,7 @@ OGLExtenstion::initWGLExtensions(HDC hdc) except
     _ARB_viewport_array = GLEW_ARB_viewport_array ? true : false;
     _EXT_swap_control = WGLEW_EXT_swap_control ? true : false;
     _NV_shader_buffer_load = GLEW_NV_shader_buffer_load ? true : false;
-    _NV_vertex_buffer_unified_memory = false; //GLEW_NV_vertex_buffer_unified_memory ? true : false;
+    _NV_vertex_buffer_unified_memory = GLEW_NV_vertex_buffer_unified_memory ? true : false;
 
     initWGLExtention = true;
 

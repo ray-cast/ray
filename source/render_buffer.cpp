@@ -35,7 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_buffer.h>
-#include <ray/render_impl.h>
+#include <ray/render_factory.h>
 
 _NAME_BEGIN
 
@@ -92,10 +92,9 @@ VertexComponent::VertexComponent() noexcept
 {
 }
 
-VertexComponent::VertexComponent(VertexAttrib attrib, VertexFormat format, VertexDataType type) noexcept
+VertexComponent::VertexComponent(VertexAttrib attrib, VertexFormat format) noexcept
     : _attrib(attrib)
     , _format(format)
-    , _dataType(type)
 {
 }
 
@@ -115,14 +114,8 @@ VertexComponent::getVertexFormat() const noexcept
     return _format;
 }
 
-VertexDataType
-VertexComponent::getVertexDataType() const noexcept
-{
-    return _dataType;
-}
-
 int
-VertexComponent::getVertexSize() const noexcept
+VertexComponent::getVertexCount() const noexcept
 {
     switch (_format)
     {
@@ -141,7 +134,7 @@ VertexComponent::getVertexSize() const noexcept
 }
 
 int
-VertexComponent::getVertexByteSize() const noexcept
+VertexComponent::getVertexSize() const noexcept
 {
     switch (_format)
     {
@@ -167,7 +160,7 @@ VertexLayout::setVertexComponents(const VertexComponents& component) noexcept
     _byteSize = 0;
     for (auto& it : _components)
     {
-        _byteSize += it.getVertexByteSize();
+        _byteSize += it.getVertexSize();
     }
 }
 
@@ -178,54 +171,13 @@ VertexLayout::getVertexComponents() const noexcept
 }
 
 std::size_t
-VertexLayout::getVertexByteSize() const noexcept
+VertexLayout::getVertexSize() const noexcept
 {
     return _byteSize;
 }
 
-VertexBuffer::VertexBuffer() noexcept
-{
-}
-
-VertexBuffer::~VertexBuffer() noexcept
-{
-}
-
-VertexLayout&
-VertexBuffer::getVertexLayout() noexcept
-{
-    return _vertexLayout;
-}
-
-const VertexLayout&
-VertexBuffer::getVertexLayout() const noexcept
-{
-    return _vertexLayout;
-}
-
-IndexBuffer::IndexBuffer() noexcept
-{
-}
-
-IndexBuffer::~IndexBuffer() noexcept
-{
-}
-
-void
-IndexBuffer::setIndexType(IndexType type) noexcept
-{
-    _type = type;
-}
-
-IndexType
-IndexBuffer::getIndexType() const noexcept
-{
-    return _type;
-}
-
 VertexBufferData::VertexBufferData() noexcept
     : _vertexCount(0)
-    , _vertexSize(0)
     , _vertexUsage(VertexUsage::GPU_USAGE_STATIC)
 {
 }
@@ -236,13 +188,12 @@ VertexBufferData::~VertexBufferData() noexcept
 }
 
 void
-VertexBufferData::setup(std::size_t count, std::size_t size, VertexUsage usage) noexcept
+VertexBufferData::setup(std::size_t count, VertexUsage usage) noexcept
 {
-    assert(0 != count && 0 != size);
+    assert(0 != count && this->getVertexSize() > 0);
     _vertexCount = count;
-    _vertexSize = size;
     _vertexUsage = usage;
-    _vertexStreams.resize(count * size);
+    _vertexStreams.resize(count * this->getVertexSize());
 }
 
 void
@@ -252,10 +203,23 @@ VertexBufferData::close() noexcept
 }
 
 void
+VertexBufferData::setVertexComponents(const VertexComponents& components) noexcept
+{
+    return _vertexLayout.setVertexComponents(components);;
+}
+
+const VertexComponents&
+VertexBufferData::getVertexComponents() const noexcept
+{
+    return _vertexLayout.getVertexComponents();
+}
+
+void
 VertexBufferData::resize(std::size_t count)
 {
-    _vertexStreams.resize(count * _vertexSize);
+    assert(0 != count && this->getVertexSize() > 0);
     _vertexCount = count;
+    _vertexStreams.resize(count * this->getVertexSize());
 }
 
 std::size_t
@@ -267,13 +231,13 @@ VertexBufferData::getVertexCount() const noexcept
 std::size_t
 VertexBufferData::getVertexSize() const noexcept
 {
-    return _vertexSize;
+    return _vertexLayout.getVertexSize();
 }
 
 std::size_t
-VertexBufferData::getVertexByteSize() const noexcept
+VertexBufferData::getVertexDataSize() const noexcept
 {
-    return _vertexLayout.getVertexByteSize();
+    return this->getVertexSize() * this->getVertexCount();
 }
 
 VertexUsage
@@ -292,18 +256,6 @@ const void*
 VertexBufferData::data() const noexcept
 {
     return _vertexStreams.data();
-}
-
-void
-VertexBufferData::setVertexComponents(const VertexComponents& components) noexcept
-{
-    return _vertexLayout.setVertexComponents(components);;
-}
-
-const VertexComponents&
-VertexBufferData::getVertexComponents() const noexcept
-{
-    return _vertexLayout.getVertexComponents();
 }
 
 IndexBufferData::IndexBufferData() noexcept
@@ -327,9 +279,15 @@ IndexBufferData::setup(std::size_t num, IndexType type, VertexUsage usage) noexc
     _indexType = type;
     _indexUsage = usage;
     if (type == IndexType::GPU_UINT16)
-        _indexStreams.resize(num * sizeof(std::int16_t));
+    {
+        _indexSize = sizeof(std::int16_t);
+        _indexStreams.resize(_indexSize * _indexCount);
+    }
     else if (type == IndexType::GPU_UINT32)
-        _indexStreams.resize(num * sizeof(std::int32_t));
+    {
+        _indexSize = sizeof(std::int32_t);
+        _indexStreams.resize(_indexSize * _indexCount);
+    }
 }
 
 void
@@ -342,6 +300,18 @@ std::size_t
 IndexBufferData::getIndexCount() const noexcept
 {
     return _indexCount;
+}
+
+std::size_t
+IndexBufferData::getIndexSize() const noexcept
+{
+    return _indexSize;
+}
+
+std::size_t
+IndexBufferData::getIndexDataSize() const noexcept
+{
+    return _indexSize * _indexCount;
 }
 
 IndexType
@@ -376,11 +346,10 @@ RenderBuffer::RenderBuffer() noexcept
 
 RenderBuffer::~RenderBuffer() noexcept
 {
-    this->close();
 }
 
 void
-RenderBuffer::setup(const MeshProperty& mesh) noexcept
+RenderBuffer::setup(const MeshProperty& mesh) except
 {
     auto numVertex = mesh.getNumVertices();
     auto numIndex = mesh.getNumIndices();
@@ -410,15 +379,15 @@ RenderBuffer::setup(const MeshProperty& mesh) noexcept
 
     auto& faces = mesh.getFaceArray();
 
-    auto vb = std::make_shared<VertexBufferData>();
-    auto ib = std::make_shared<IndexBufferData>();
+    auto vb = RenderFactory::createVertexBuffer();
+    auto ib = RenderFactory::createIndexBuffer();
 
     vb->setVertexComponents(components);
-    vb->setup(numVertex, vb->getVertexByteSize(), VertexUsage::GPU_USAGE_STATIC);
+    vb->setup(numVertex, VertexUsage::GPU_USAGE_STATIC);
     ib->setup(numIndex, IndexType::GPU_UINT32, VertexUsage::GPU_USAGE_STATIC);
 
     std::size_t offset = 0;
-    std::size_t stride = vb->getVertexByteSize();
+    std::size_t stride = vb->getVertexSize();
     if (vertices.size() == numVertex)
     {
         char* data = (char*)vb->data();
@@ -468,49 +437,27 @@ RenderBuffer::setup(const MeshProperty& mesh) noexcept
 }
 
 void
-RenderBuffer::setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept
+RenderBuffer::setVertexBuffer(VertexBufferDataPtr vb) noexcept
 {
-    assert(vb || ib);
-
     _bufferVertex = vb;
-    _bufferIndex = ib;
-    RenderImpl::instance()->createRenderBuffer(*this);
 }
 
 void
-RenderBuffer::close() noexcept
+RenderBuffer::setIndexBuffer(IndexBufferDataPtr ib) noexcept
 {
-    if (_bufferVertex)
-    {
-        _bufferVertex.reset();
-        _bufferVertex = nullptr;
-    }
-
-    if (_bufferIndex)
-    {
-        _bufferIndex.reset();
-        _bufferIndex = nullptr;
-    }
-
-    RenderImpl::instance()->destroyRenderBuffer(*this);
+    _bufferIndex = ib;
 }
 
-const VertexBufferDataPtr
+VertexBufferDataPtr
 RenderBuffer::getVertexBuffer() const noexcept
 {
     return _bufferVertex;
 }
 
-const IndexBufferDataPtr
+IndexBufferDataPtr
 RenderBuffer::getIndexBuffer() const noexcept
 {
     return _bufferIndex;
-}
-
-RenderBufferPtr
-RenderBuffer::clone() const noexcept
-{
-    return std::make_shared<RenderBuffer>();
 }
 
 std::size_t

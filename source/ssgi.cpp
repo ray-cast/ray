@@ -50,55 +50,6 @@ SSGI::~SSGI() noexcept
 }
 
 void
-SSGI::onActivate() except
-{
-    _texAmbient = RenderFactory::createRenderTarget();
-    _texAmbient->setup(1376, 768, TextureDim::DIM_2D, PixelFormat::R8G8B8F);
-
-    _texBlur = RenderFactory::createRenderTarget();
-    _texBlur->setup(1376, 768, TextureDim::DIM_2D, PixelFormat::R8G8B8F);
-
-    _ambientOcclusion = MaterialMaker("sys:fx\\ssgi.glsl");
-    _ambientOcclusionPass = _ambientOcclusion->getTech(RenderQueue::PostProcess)->getPass("ao");
-    _ambientOcclusionBlurPass = _ambientOcclusion->getTech(RenderQueue::PostProcess)->getPass("blur");
-    _ambientOcclusionCopyPass = _ambientOcclusion->getTech(RenderQueue::PostProcess)->getPass("copy");
-
-    _radius = _ambientOcclusion->getParameter("radius");
-    _radius2 = _ambientOcclusion->getParameter("radius2");
-    _projScale = _ambientOcclusion->getParameter("projScale");
-    _projInfo = _ambientOcclusion->getParameter("projInfo");
-    _clipInfo = _ambientOcclusion->getParameter("clipInfo");
-    _bias = _ambientOcclusion->getParameter("bias");
-    _intensityDivR6 = _ambientOcclusion->getParameter("intensityDivR6");
-
-    _blurTexSource = _ambientOcclusion->getParameter("texSource");
-    _blurFactor = _ambientOcclusion->getParameter("blurFactor");
-    _blurSharpness = _ambientOcclusion->getParameter("blurSharpness");
-    _blurRadius = _ambientOcclusion->getParameter("blurRadius");
-    _blurDirection = _ambientOcclusion->getParameter("blurDirection");
-    _blurGaussian = _ambientOcclusion->getParameter("blurGaussian");
-
-    _copyAmbient = _ambientOcclusion->getParameter("texAO");
-
-    Setting setting;
-    setting.radius = 1.0;
-    setting.bias = 0.012;
-    setting.intensity = 4;
-
-    setting.blur = true;
-    setting.blurRadius = 8;
-    setting.blurScale = 2.5;
-    setting.blurSharpness = 4;
-
-    this->setSetting(setting);
-}
-
-void
-SSGI::onDeactivate() except
-{
-}
-
-void
 SSGI::setSetting(const Setting& set) noexcept
 {
     _setting.radius = set.radius;
@@ -142,7 +93,7 @@ void
 SSGI::blurHorizontal(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept
 {
     float2 direction(_setting.blurScale, 0.0f);
-    direction.x /= source->getResolveTexture()->getWidth();
+    direction.x /= source->getWidth();
 
     this->blurDirection(pipeline, source, dest, direction);
 }
@@ -151,7 +102,7 @@ void
 SSGI::blurVertical(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept
 {
     float2 direction(0.0f, _setting.blurScale);
-    direction.y /= source->getResolveTexture()->getHeight();
+    direction.y /= source->getHeight();
 
     this->blurDirection(pipeline, source, dest, direction);
 }
@@ -178,7 +129,56 @@ SSGI::shading(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr 
 }
 
 void
-SSGI::render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
+SSGI::onActivate(RenderPipeline& pipeline) except
+{
+    _texAmbient = RenderFactory::createRenderTarget();
+    _texAmbient->setup(1376, 768, TextureDim::DIM_2D, PixelFormat::R8G8B8F);
+
+    _texBlur = RenderFactory::createRenderTarget();
+    _texBlur->setup(1376, 768, TextureDim::DIM_2D, PixelFormat::R8G8B8F);
+
+    _ambientOcclusion = MaterialMaker("sys:fx\\ssgi.glsl");
+    _ambientOcclusionPass = _ambientOcclusion->getTech(RenderQueue::PostProcess)->getPass("ao");
+    _ambientOcclusionBlurPass = _ambientOcclusion->getTech(RenderQueue::PostProcess)->getPass("blur");
+    _ambientOcclusionCopyPass = _ambientOcclusion->getTech(RenderQueue::PostProcess)->getPass("copy");
+
+    _radius = _ambientOcclusion->getParameter("radius");
+    _radius2 = _ambientOcclusion->getParameter("radius2");
+    _projScale = _ambientOcclusion->getParameter("projScale");
+    _projInfo = _ambientOcclusion->getParameter("projInfo");
+    _clipInfo = _ambientOcclusion->getParameter("clipInfo");
+    _bias = _ambientOcclusion->getParameter("bias");
+    _intensityDivR6 = _ambientOcclusion->getParameter("intensityDivR6");
+
+    _blurTexSource = _ambientOcclusion->getParameter("texSource");
+    _blurFactor = _ambientOcclusion->getParameter("blurFactor");
+    _blurSharpness = _ambientOcclusion->getParameter("blurSharpness");
+    _blurRadius = _ambientOcclusion->getParameter("blurRadius");
+    _blurDirection = _ambientOcclusion->getParameter("blurDirection");
+    _blurGaussian = _ambientOcclusion->getParameter("blurGaussian");
+
+    _copyAmbient = _ambientOcclusion->getParameter("texAO");
+
+    Setting setting;
+    setting.radius = 1.0;
+    setting.bias = 0.012;
+    setting.intensity = 4;
+
+    setting.blur = true;
+    setting.blurRadius = 8;
+    setting.blurScale = 2.5;
+    setting.blurSharpness = 4;
+
+    this->setSetting(setting);
+}
+
+void
+SSGI::onDeactivate(RenderPipeline& pipeline) except
+{
+}
+
+void
+SSGI::onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
 {
     this->computeRawAO(pipeline, _texAmbient);
 

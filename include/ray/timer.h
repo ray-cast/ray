@@ -41,33 +41,32 @@
 
 _NAME_BEGIN
 
-class EXPORT Timer
+class EXPORT Timer final
 {
-    __DeclareClass(Timer)
 public:
     Timer() noexcept;
-    virtual ~Timer() noexcept;
+    ~Timer() noexcept;
 
-    virtual bool open() noexcept;
+    bool open() noexcept;
 
-    virtual float startTime() const noexcept;
+    float startTime() const noexcept;
 
-    virtual float elapsed() const noexcept;
-    virtual float elapsed_max() const noexcept;
-    virtual float elapsed_min() const noexcept;
+    float elapsed() const noexcept;
+    float elapsed_max() const noexcept;
+    float elapsed_min() const noexcept;
 
-    virtual float fps() const noexcept;
-    virtual float averageFps() const noexcept;
-    virtual float appTime() const noexcept;
-    virtual float frameTime() const noexcept;
-    virtual float delta() const noexcept;
-    virtual float vsync() const noexcept;
+    float fps() const noexcept;
+    float averageFps() const noexcept;
+    float appTime() const noexcept;
+    float frameTime() const noexcept;
+    float delta() const noexcept;
+    float vsync() const noexcept;
 
-    virtual void reset() noexcept;
+    void reset() noexcept;
 
-    virtual void sleep(float fps) const noexcept;
+    void sleep(float fps) const noexcept;
 
-    virtual void update() noexcept;
+    void update() noexcept;
 
 private:
     Timer(const Timer&) = delete;

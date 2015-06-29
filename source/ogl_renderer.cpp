@@ -37,19 +37,16 @@
 #include <ray/ogl_renderer.h>
 #include <ray/ogl_shader.h>
 #include <ray/ogl_texture.h>
+#include <ray/ogl_buffer.h>
 
 _NAME_BEGIN
 
-__ImplementSubClass(OGLRenderer, RenderDevice)
-
 OGLRenderer::OGLRenderer() noexcept
-    : _renderBuffers(512)
-    , _constantBuffers(512)
+    : _constantBuffers(512)
     , _maxTextureUnits(32)
     , _maxViewports(4)
     , _state(GL_NONE)
     , _renderTarget(GL_NONE)
-    , _multiRenderTarget(GL_NONE)
     , _defaultVAO(GL_NONE)
 {
     _fbconfig.redSize = 8;
@@ -178,6 +175,30 @@ OGLRenderer::open(WindHandle hwnd) except
 void
 OGLRenderer::close() noexcept
 {
+    if (_renderBuffer)
+    {
+        _renderBuffer.reset();
+        _renderBuffer = nullptr;
+    }
+
+    if (_shaderObject)
+    {
+        _shaderObject.reset();
+        _shaderObject = nullptr;
+    }
+
+    if (_renderTarget)
+    {
+        _renderTarget.reset();
+        _renderTarget = nullptr;
+    }
+
+    if (_multiRenderTarget)
+    {
+        _multiRenderTarget.reset();
+        _multiRenderTarget = nullptr;
+    }
+
     if (_defaultVAO != GL_NONE)
     {
         glDeleteVertexArrays(1, &_defaultVAO);
@@ -203,8 +224,6 @@ OGLRenderer::renderEnd() noexcept
 
     glDepthMask(GL_TRUE);
     _glcontext->present();
-
-    _renderBuffer = nullptr;
 }
 
 void
@@ -237,9 +256,10 @@ OGLRenderer::clear(ClearFlags flags, const Color4& color, float depth, std::int3
 }
 
 void
-OGLRenderer::clear(std::size_t i, ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept
+OGLRenderer::clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
-    if (flags & ClearFlags::CLEAR_DEPTH_STENCIL)
+    if (flags & ClearFlags::CLEAR_DEPTH &&
+        flags & ClearFlags::CLEAR_STENCIL)
     {
         GLfloat f = depth;
         GLint s = stencil;
@@ -267,7 +287,7 @@ OGLRenderer::clear(std::size_t i, ClearFlags flags, const Color4& color, float d
 }
 
 void
-OGLRenderer::setViewport(std::size_t i, const Viewport& view) noexcept
+OGLRenderer::setViewport(const Viewport& view, std::size_t i) noexcept
 {
     if (_viewport[i] != view)
     {
@@ -586,243 +606,68 @@ OGLRenderer::getRenderState() const noexcept
     return RenderState::getInstance(_state);
 }
 
-bool
-OGLRenderer::createRenderBuffer(RenderBuffer& buffer) noexcept
-{
-    auto vb = buffer.getVertexBuffer();
-    auto ib = buffer.getIndexBuffer();
-
-    OGLVertexArray renderBuffer;
-
-    if (!OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
-    {
-        if (OGLExtenstion::isSupport(ARB_vertex_array_object))
-        {
-            glGenVertexArrays(1, &renderBuffer.vao);
-            glBindVertexArray(renderBuffer.vao);
-        }
-    }
-
-    if (vb)
-    {
-        renderBuffer.vertexUsage = OGLTypes::asOGLVertexUsage(vb->getVertexUsage());
-        renderBuffer.vertexCount = vb->getVertexCount();
-        renderBuffer.vertexSize = vb->getVertexSize() * renderBuffer.vertexCount;
-        renderBuffer.vertexByteSize = vb->getVertexByteSize();
-
-        glGenBuffers(1, &renderBuffer.vbo);
-#if !defined(EGLAPI)
-        if (OGLExtenstion::isSupport(OGLFeatures::ARB_direct_state_access))
-        {
-            GLbitfield flags = GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-            if (renderBuffer.vertexUsage == GL_DYNAMIC_DRAW)
-            {
-                flags |= GL_MAP_WRITE_BIT;
-                flags |= GL_DYNAMIC_STORAGE_BIT;
-            }
-
-            glNamedBufferStorageEXT(renderBuffer.vbo, renderBuffer.vertexSize, vb->data(), flags);
-        }
-        else
-#endif
-        {
-            glBindBuffer(GL_ARRAY_BUFFER, renderBuffer.vbo);
-            glBufferData(GL_ARRAY_BUFFER, renderBuffer.vertexSize, vb->data(), renderBuffer.vertexUsage);
-        }
-
-        GLuint offset = 0;
-
-        auto& components = vb->getVertexComponents();
-        for (auto& it : components)
-        {
-            auto type = OGLTypes::asOGLVertexDataType(it.getVertexDataType());
-            if (type == GL_INVALID_ENUM)
-            {
-                glDeleteBuffers(1, &renderBuffer.vbo);
-                if (renderBuffer.vao)
-                {
-                    glDeleteVertexArrays(1, &renderBuffer.vao);
-                }
-                assert(false);
-                return false;
-            }
-
-            if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
-            {
-                glBindVertexBuffer(it.getVertexAttrib(), renderBuffer.vbo, offset, vb->getVertexByteSize());
-            }
-            else if (OGLExtenstion::isSupport(ARB_vertex_attrib_binding))
-            {
-                glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
-                glVertexAttribFormat(it.getVertexAttrib(), it.getVertexSize(), type, GL_FALSE, 0);
-                glVertexAttribBinding(it.getVertexAttrib(), it.getVertexAttrib());
-
-                glBindVertexBuffer(it.getVertexAttrib(), renderBuffer.vbo, offset, vb->getVertexByteSize());
-            }
-            else
-            {
-                if (OGLExtenstion::isSupport(ARB_vertex_array_object))
-                {
-                    glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
-                    glVertexAttribPointer(it.getVertexAttrib(), it.getVertexSize(), type, GL_FALSE, vb->getVertexByteSize(), (const char*)nullptr + offset);
-                }
-            }
-
-            OGLVertexAttrib attrib;
-
-            attrib.attrib = it.getVertexAttrib();
-            attrib.offset = offset;
-            attrib.size = it.getVertexSize();
-            attrib.stride = vb->getVertexByteSize();
-            attrib.type = type;
-
-            renderBuffer.attribs.push_back(attrib);
-
-            offset += it.getVertexByteSize();
-        }
-
-        if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
-        {
-            glGetNamedBufferParameterui64vNV(renderBuffer.vbo, GL_BUFFER_GPU_ADDRESS_NV, &renderBuffer.bindlessVbo);
-            glMakeNamedBufferResidentNV(renderBuffer.vbo, GL_READ_ONLY);
-        }
-    }
-
-    if (ib)
-    {
-        renderBuffer.indexType = OGLTypes::asOGLIndexType(ib->getIndexType());
-        renderBuffer.indexUsage = OGLTypes::asOGLVertexUsage(ib->getIndexUsage());
-        renderBuffer.indexCount = ib->getIndexCount();
-
-        renderBuffer.indexSize = 0;
-        if (renderBuffer.indexType == GL_UNSIGNED_SHORT)
-        {
-            renderBuffer.indexSize = sizeof(std::int16_t) * ib->getIndexCount();
-        }
-        else if (renderBuffer.indexType == GL_UNSIGNED_INT)
-        {
-            renderBuffer.indexSize = sizeof(std::int32_t) * ib->getIndexCount();
-        }
-        else
-        {
-            assert(false);
-        }
-
-        glGenBuffers(1, &renderBuffer.ibo);
-#if !defined(EGLAPI)
-        if (OGLExtenstion::isSupport(OGLFeatures::ARB_direct_state_access))
-        {
-            GLbitfield flags = GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-            if (renderBuffer.vertexUsage == GL_DYNAMIC_DRAW)
-            {
-                flags |= GL_MAP_WRITE_BIT;
-                flags |= GL_DYNAMIC_STORAGE_BIT;
-            }
-
-            glNamedBufferStorageEXT(renderBuffer.ibo, renderBuffer.indexSize, ib->data(), flags);
-        }
-        else
-#endif
-        {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderBuffer.ibo);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, renderBuffer.indexSize, ib->data(), renderBuffer.indexUsage);
-        }
-
-        if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
-        {
-            glGetNamedBufferParameterui64vNV(renderBuffer.ibo, GL_BUFFER_GPU_ADDRESS_NV, &renderBuffer.bindlessIbo);
-            glMakeNamedBufferResidentNV(renderBuffer.ibo, GL_READ_ONLY);
-        }
-    }
-
-    auto instanceID = buffer.getInstanceID();
-
-    if (_renderBuffers.size() < instanceID)
-    {
-        _renderBuffers.resize(instanceID);
-    }
-
-    _renderBuffers[instanceID] = renderBuffer;
-
-    return true;
-}
-
-void
-OGLRenderer::destroyRenderBuffer(RenderBuffer& renderbuffer) noexcept
-{
-    auto instanceID = renderbuffer.getInstanceID();
-    if (instanceID != 0)
-    {
-        auto& buffer = _renderBuffers[instanceID];
-
-        if (buffer.vao != GL_NONE)
-        {
-            glDeleteVertexArrays(1, &buffer.vao);
-            buffer.vao = GL_NONE;
-        }
-
-        if (buffer.vbo != GL_NONE)
-        {
-            glDeleteBuffers(1, &buffer.vbo);
-            buffer.vbo = GL_NONE;
-        }
-
-        if (buffer.ibo != GL_NONE)
-        {
-            glDeleteBuffers(1, &buffer.ibo);
-            buffer.ibo = GL_NONE;
-        }
-    }
-}
-
 void
 OGLRenderer::setRenderBuffer(RenderBufferPtr buffer) noexcept
 {
     if (_renderBuffer != buffer)
     {
-        auto instanceID = buffer->getInstanceID();
-        auto& renderBuffer = _renderBuffers[instanceID];
+        auto vb = std::dynamic_pointer_cast<OGLVertexBuffer>(buffer->getVertexBuffer());
+        auto ib = std::dynamic_pointer_cast<OGLIndexBuffer>(buffer->getIndexBuffer());
 
         if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
         {
-            if (renderBuffer.bindlessVbo)
+            if (vb)
             {
-                for (auto& it : renderBuffer.attribs)
+                auto bindlessVbo = vb->getInstanceAddr();
+                auto vertexSize = vb->getVertexDataSize();
+
+                GLuint64 offset = 0;
+
+                for (auto& it : vb->getVertexComponents())
                 {
-                    glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV, it.attrib, renderBuffer.bindlessVbo + it.offset, renderBuffer.vertexSize - it.offset);
+                    glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV, it.getVertexAttrib(), bindlessVbo + offset, vertexSize - offset);
+
+                    offset += it.getVertexSize();
                 }
             }
 
-            if (renderBuffer.bindlessIbo)
+            if (ib)
             {
-                glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, renderBuffer.bindlessIbo, renderBuffer.indexSize);
+                auto bindlessIbo = ib->getInstanceAddr();
+                auto indexDataSize = ib->getIndexDataSize();
+
+                glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, bindlessIbo, indexDataSize);
             }
         }
         else if (OGLExtenstion::isSupport(ARB_vertex_attrib_binding))
         {
-            for (auto& it : renderBuffer.attribs)
+            if (vb)
             {
-                glBindVertexBuffer(it.attrib, renderBuffer.vbo, it.offset, it.stride);
+                auto vbo = vb->getInstanceID();
+
+                GLuint offset = 0;
+
+                for (auto& it : vb->getVertexComponents())
+                {
+                    glBindVertexBuffer(it.getVertexAttrib(), vbo, offset, vb->getVertexSize());
+
+                    offset += it.getVertexSize();
+                }
             }
 
-            if (renderBuffer.ibo)
+            if (ib)
             {
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderBuffer.ibo);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->getInstanceID());
             }
-        }
-        else if (OGLExtenstion::isSupport(ARB_vertex_array_object))
-        {
-            assert(renderBuffer.vao);
-            glBindVertexArray(renderBuffer.vao);
         }
         else
         {
-            glBindBuffer(GL_ARRAY_BUFFER, renderBuffer.vbo);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, renderBuffer.ibo);
+            glBindBuffer(GL_ARRAY_BUFFER, vb->getInstanceID());
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->getInstanceID());
 
-            for (auto& it : renderBuffer.attribs)
+            for (auto& it : vb->getVertexComponents())
             {
-                glVertexAttribPointer(it.attrib, it.size, it.type, GL_FALSE, it.stride, (void*)it.offset);
+                glVertexAttribPointer(it.getVertexAttrib(), it.getVertexCount(), OGLTypes::asOGLVertexFormat(it.getVertexFormat()), GL_FALSE, vb->getVertexSize(), (void*)it.getVertexSize());
             }
         }
 
@@ -833,48 +678,29 @@ OGLRenderer::setRenderBuffer(RenderBufferPtr buffer) noexcept
 void
 OGLRenderer::updateRenderBuffer(RenderBufferPtr renderBuffer) noexcept
 {
-    assert(renderBuffer->getUserData());
+    auto buffer = renderBuffer;
 
-    auto vb = renderBuffer->getVertexBuffer();
-    auto ib = renderBuffer->getIndexBuffer();
-    auto buffer = _renderBuffers[renderBuffer->getInstanceID()];
+    auto vb = std::dynamic_pointer_cast<OGLVertexBuffer>(buffer->getVertexBuffer());
+    auto ib = std::dynamic_pointer_cast<OGLIndexBuffer>(buffer->getIndexBuffer());
 
     if (vb)
     {
-        assert(buffer.vbo);
+        auto vertexUsage = OGLTypes::asOGLVertexUsage(vb->getVertexUsage());
+        auto vertexCount = vb->getVertexCount();
+        auto vertexSize = vb->getVertexDataSize();
 
-        buffer.vertexUsage = OGLTypes::asOGLVertexUsage(vb->getVertexUsage());
-        buffer.vertexCount = vb->getVertexCount();
-        buffer.vertexSize = vb->getVertexSize() * buffer.vertexCount;
-
-        glBindBuffer(GL_ARRAY_BUFFER, buffer.vbo);
-        glBufferData(GL_ARRAY_BUFFER, buffer.vertexSize, vb->data(), buffer.vertexUsage);
+        glBindBuffer(GL_ARRAY_BUFFER, vb->getInstanceID());
+        glBufferData(GL_ARRAY_BUFFER, vb->getVertexSize(), vb->data(), vertexUsage);
     }
 
     if (ib)
     {
-        assert(buffer.ibo);
+        auto indexType = OGLTypes::asOGLIndexType(ib->getIndexType());
+        auto indexUsage = OGLTypes::asOGLVertexUsage(ib->getIndexUsage());
+        auto indexCount = ib->getIndexCount();
 
-        buffer.indexType = OGLTypes::asOGLIndexType(ib->getIndexType());
-        buffer.indexUsage = OGLTypes::asOGLVertexUsage(ib->getIndexUsage());
-        buffer.indexCount = ib->getIndexCount();
-
-        buffer.indexSize = 0;
-        if (buffer.indexType == GL_UNSIGNED_SHORT)
-        {
-            buffer.indexSize = sizeof(std::int16_t) * ib->getIndexCount();
-        }
-        else if (buffer.indexType == GL_UNSIGNED_INT)
-        {
-            buffer.indexSize = sizeof(std::int32_t) * ib->getIndexCount();
-        }
-        else
-        {
-            assert(false);
-        }
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.ibo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer.indexSize, ib->data(), buffer.indexUsage);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->getInstanceID());
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, ib->getIndexDataSize(), ib->data(), indexUsage);
     }
 }
 
@@ -883,19 +709,18 @@ OGLRenderer::drawRenderBuffer(const Renderable& renderable) noexcept
 {
     assert(_renderBuffer);
 
-    auto vb = _renderBuffer->getVertexBuffer();
-    auto ib = _renderBuffer->getIndexBuffer();
-    auto buffer = _renderBuffers[_renderBuffer->getInstanceID()];
+    auto buffer = _renderBuffer;
 
-    assert(buffer.vertexCount >= renderable.startVertice + renderable.numVertices);
+    assert(buffer->getNumVertices() >= renderable.startVertice + renderable.numVertices);
 
     GLenum drawType = OGLTypes::asOGLVertexType(renderable.type);
 
-    if (buffer.indexCount)
+    auto ib = buffer->getIndexBuffer();
+    if (ib)
     {
-        assert(buffer.indexCount >= renderable.startIndice + renderable.numIndices);
+        assert(ib->getIndexCount() >= renderable.startIndice + renderable.numIndices);
 
-        GLenum indexType = buffer.indexType;
+        GLenum indexType = OGLTypes::asOGLIndexType(ib->getIndexType());
 
 #if !defined(EGLAPI)
         if (renderable.numInstances > 0)
@@ -916,15 +741,21 @@ OGLRenderer::drawRenderBuffer(const Renderable& renderable) noexcept
     }
 }
 
+RenderBufferPtr
+OGLRenderer::getRenderBuffer() const noexcept
+{
+    return _renderBuffer;
+}
+
 void
 OGLRenderer::setRenderTarget(RenderTargetPtr target) noexcept
 {
     assert(target);
 
-    auto renderTarget = std::dynamic_pointer_cast<OGLRenderTarget>(target)->getInstanceID();
-    if (_renderTarget != renderTarget)
+    auto framebuffer = std::dynamic_pointer_cast<OGLRenderTarget>(target)->getInstanceID();
+    if (_framebuffer != framebuffer)
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, renderTarget);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
         auto format = target->getTexFormat();
         if (format == PixelFormat::SR8G8B8 ||
@@ -947,16 +778,13 @@ OGLRenderer::setRenderTarget(RenderTargetPtr target) noexcept
             }
         }
 
-        this->clear(0, target->getClearFlags(), target->getClearColor(), target->getClearDepth(), target->getClearStencil());
-        this->setViewport(0, target->getViewport());
+        this->clear(target->getClearFlags(), target->getClearColor(), target->getClearDepth(), target->getClearStencil());
 
-        _renderTarget = renderTarget;
+        this->setViewport(Viewport(0, 0, target->getWidth(), target->getHeight()));
 
-        if (_multiRenderTarget)
-        {
-            MultiRenderTarget::getInstance(_multiRenderTarget)->setActive(false);
-            _multiRenderTarget = GL_NONE;
-        }
+        _framebuffer = framebuffer;
+        _renderTarget = target;
+        _multiRenderTarget = nullptr;
     }
 }
 
@@ -981,16 +809,28 @@ OGLRenderer::copyRenderTarget(RenderTargetPtr src, const Viewport& v1, RenderTar
     _renderTarget = GL_NONE;
 }
 
+RenderTargetPtr
+OGLRenderer::getRenderTarget() const noexcept
+{
+    return _renderTarget;
+}
+
+MultiRenderTargetPtr
+OGLRenderer::getMultiRenderTarget() const noexcept
+{
+    return _multiRenderTarget;
+}
+
 void
 OGLRenderer::readRenderTarget(RenderTargetPtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
     assert(target && w && h && data);
 
-    auto renderTarget = std::dynamic_pointer_cast<OGLRenderTarget>(target)->getInstanceID();
-    if (_renderTarget != renderTarget)
+    auto framebuffer = std::dynamic_pointer_cast<OGLRenderTarget>(target)->getInstanceID();
+    if (_framebuffer != framebuffer)
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, renderTarget);
-        _renderTarget = renderTarget;
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        _framebuffer = framebuffer;
     }
 
     GLenum format = OGLTypes::asOGLFormat(pfd);
@@ -1002,39 +842,30 @@ OGLRenderer::readRenderTarget(RenderTargetPtr target, PixelFormat pfd, std::size
 void
 OGLRenderer::setMultiRenderTarget(MultiRenderTargetPtr target) noexcept
 {
-    auto renderTarget = target->getInstanceID();
-    if (_multiRenderTarget != renderTarget)
+    auto framebuffer = std::dynamic_pointer_cast<OGLMultiRenderTarget>(target)->getInstanceID();
+    if (_framebuffer != framebuffer)
     {
-        if (_multiRenderTarget)
-            MultiRenderTarget::getInstance(_multiRenderTarget)->setActive(false);
-
-        MultiRenderTarget::getInstance(renderTarget)->setActive(true);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
         auto& targets = target->getRenderTargets();
-        for (auto& it : targets)
+        for (std::size_t index = 0; index < targets.size(); index++)
         {
-            auto attachment = it.location;
-            if (attachment == Attachment::DEPTH ||
-                attachment == Attachment::STENCIL ||
-                attachment == Attachment::DEPTH_STENCIL)
-            {
-                continue;
-            }
+            auto target = targets[index];
 
-            auto index = attachment - Attachment::COLOR0;
-
-            this->clear(index,
-                it.texture->getClearFlags(),
-                it.texture->getClearColor(),
-                it.texture->getClearDepth(),
-                it.texture->getClearStencil()
+            this->clear(
+                target->getClearFlags(),
+                target->getClearColor(),
+                target->getClearDepth(),
+                target->getClearStencil(),
+                index
                 );
-
-            this->setViewport(index, it.texture->getViewport());
+            this->setViewport(Viewport(0, 0, target->getWidth(), target->getHeight()), index);
         }
 
-        _renderTarget = GL_NONE;
-        _multiRenderTarget = renderTarget;
+        _framebuffer = framebuffer;
+
+        _renderTarget = nullptr;
+        _multiRenderTarget = target;
     }
 }
 
@@ -1043,21 +874,24 @@ OGLRenderer::setShaderObject(ShaderObjectPtr shader) noexcept
 {
     assert(shader);
 
-    auto oglShaderObject = std::dynamic_pointer_cast<OGLShaderObject>(shader);
-    if (oglShaderObject)
+    auto program = std::dynamic_pointer_cast<OGLShaderObject>(shader)->getInstanceID();
+    if (_program != program)
     {
-        auto program = oglShaderObject->getInstanceID();
-        if (_program != program)
-        {
-            glUseProgram(program);
-            _program = program;
-        }
+        glUseProgram(program);
+        _program = program;
+        _shaderObject = shader;
     }
 
     for (auto& it : shader->getActiveUniforms())
     {
         this->setShaderUniform(it, it->getValue());
     }
+}
+
+ShaderObjectPtr
+OGLRenderer::getShaderObject() const noexcept
+{
+    return _shaderObject;
 }
 
 bool
@@ -1619,6 +1453,7 @@ OGLRenderer::initStateSystem() noexcept
     _stateSystem.generate(1, &_stateIdDrawGeo);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glFrontFace(GL_CW);
 
     if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
     {

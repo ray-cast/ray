@@ -63,8 +63,6 @@ public:
     void setSetting(const Setting& setting) noexcept;
     const Setting& getSetting() const noexcept;
 
-    void render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
-
 private:
 
     void sample4(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept;
@@ -79,8 +77,12 @@ private:
     void blurh(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
     void blurv(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
 
-    void onActivate() except;
-    void onDeactivate() except;
+private:
+
+    void onActivate(RenderPipeline& pipeline) except;
+    void onDeactivate(RenderPipeline& pipeline) except;
+
+    void onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
 
 private:
 

@@ -40,6 +40,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(GameObject, GameMessage)
+
 GameObject::GameObject() noexcept
     : _active(false)
     , _layer(0)
@@ -141,11 +143,11 @@ GameObject::getLayer() const noexcept
 }
 
 void
-GameObject::setParent(GameObject* parent) noexcept
+GameObject::setParent(GameObjectPtr parent) noexcept
 {
-    assert(this != parent);
+    assert(this != parent.get());
 
-    if (_parent != parent)
+    if (_parent != parent.get())
     {
         if (parent == nullptr)
         {
@@ -165,33 +167,29 @@ GameObject::setParent(GameObject* parent) noexcept
         }
         else
         {
-            _parent = parent;
-            _parent->_children.push_back(this->shared_from_this());
+            _parent = parent.get();
+            _parent->_children.push_back(std::dynamic_pointer_cast<GameObject>(this->shared_from_this()));
         }
     }
 }
 
-void
-GameObject::setParent(GameObjectPtr parent) noexcept
-{
-    this->setParent(parent.get());
-}
-
-GameObject*
+GameObjectPtr
 GameObject::getParent() const noexcept
 {
-    return _parent;
+    if (_parent)
+        return std::dynamic_pointer_cast<GameObject>(_parent->shared_from_this());
+    return nullptr;
 }
 
 void
 GameObject::addChild(GameObjectPtr entity) noexcept
 {
     assert(entity);
-    entity->setParent(this);
+    entity->setParent(std::dynamic_pointer_cast<GameObject>(this->shared_from_this()));
 }
 
 void
-GameObject::removeChild(const GameObjectPtr entity) noexcept
+GameObject::removeChild(GameObjectPtr entity) noexcept
 {
     assert(entity);
     this->removeChild(entity->getInstanceID());
@@ -910,14 +908,14 @@ GameObject::addComponent(GameComponentPtr component) noexcept
 {
     assert(component);
 
-    if (GameComponent::getType() != component->getBaseType())
+    if (GameComponent::getType() != component->getRTTI()->getBaseType())
     {
         auto it = _components.begin();
         auto end = _components.end();
 
         for (;it != end; ++it)
         {
-            if ((*it)->getBaseType() == component->getBaseType())
+            if ((*it)->getRTTI()->getBaseType() == component->getRTTI()->getBaseType())
             {
                 return;
             }
@@ -991,13 +989,14 @@ GameObject::getComponent(RTTIType type) const noexcept
 {
     for (auto& it : _components)
     {
-        if (it->getBaseType() == type ||
-            it->getDerivedType() == type)
+        if (it->getRTTI()->getBaseType() == type ||
+            it->getRTTI()->getDerivedType() == type)
         {
             return it;
         }
     }
 
+    assert(false);
     return nullptr;
 }
 
@@ -1060,7 +1059,7 @@ GameObject::sendMessageDownwards(const std::string& method, const Variant* data.
 }
 
 GameObjectPtr
-GameObject::clone() const noexcept
+GameObject::clone() const except
 {
     auto instance = std::make_shared<GameObject>();
     instance->setName(this->getName());

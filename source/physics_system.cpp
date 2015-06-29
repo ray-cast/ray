@@ -38,8 +38,6 @@
 
 _NAME_BEGIN
 
-__ImplementClass(PhysicsSystem)
-
 PhysicsSystem::PhysicsSystem() noexcept
 {
 }

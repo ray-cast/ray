@@ -57,10 +57,10 @@ private:
     virtual void onFrame() noexcept;
     virtual void onFrameEnd() noexcept;
 
-    virtual GameComponentPtr onSerialization(XMLReader* reader) except;
+    virtual GameComponentPtr onSerialization(iarchive& reader) except;
 
 private:
-    GameComponentPtr instanceScript(XMLReader* reader) except;
+    GameComponentPtr instanceScript(iarchive& reader) except;
 
 private:
 

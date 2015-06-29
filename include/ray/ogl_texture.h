@@ -74,9 +74,9 @@ public:
     virtual bool setup() noexcept;
     virtual void close() noexcept;
 
-    virtual std::size_t getInstanceID() noexcept;
+    GLuint getInstanceID() noexcept;
 private:
-    void bindRenderTarget(TexturePtr texture, Attachment attachment) noexcept;
+    void bindRenderTarget(TexturePtr texture, GLenum attachment) noexcept;
 
 private:
 
@@ -92,8 +92,10 @@ public:
     virtual bool setup() noexcept;
     virtual void close() noexcept;
 
-    virtual void onActivate() noexcept;
-    virtual void onDeactivate() noexcept;
+    GLuint getInstanceID() noexcept;
+
+private:
+    void bindRenderTarget(RenderTargetPtr target, GLenum attachment) noexcept;
 
 private:
 

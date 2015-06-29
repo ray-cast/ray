@@ -57,7 +57,7 @@ PhysicFeatures::~PhysicFeatures() noexcept
 void
 PhysicFeatures::onActivate() noexcept
 {
-    _physics = PhysicsSystem::create();
+    _physics = std::make_shared<PhysicsSystem>();
 }
 
 void
@@ -123,10 +123,16 @@ PhysicFeatures::getPhysicsScene(GameScenePtr scene) const noexcept
     return _physicsScenes[scene->getInstanceID()];
 }
 
-GameComponentPtr
-PhysicFeatures::onSerialization(XMLReader* reader) except
+GameFeaturePtr
+PhysicFeatures::clone() const noexcept
 {
-    auto component = reader->getString("name");
+    return std::make_shared<PhysicFeatures>();
+}
+
+GameComponentPtr
+PhysicFeatures::onSerialization(iarchive& reader) except
+{
+    auto component = reader.getString("name");
     if (component == "box")
         return instanceShapeBox(reader);
     else if (component == "rigidbody")
@@ -138,32 +144,32 @@ PhysicFeatures::onSerialization(XMLReader* reader) except
 }
 
 GameComponentPtr
-PhysicFeatures::instanceRigidbody(XMLReader* reader) except
+PhysicFeatures::instanceRigidbody(iarchive& reader) except
 {
-    if (reader->setToFirstChild())
+    if (reader.setToFirstChild())
     {
         auto body = std::make_shared<PhysicsBodyComponent>();
 
         do
         {
-            auto key = reader->getCurrentNodeName();
+            auto key = reader.getCurrentNodeName();
             if (key == "attribute")
             {
-                auto attributes = reader->getAttrs();
+                auto attributes = reader.getAttrs();
                 for (auto& it : attributes)
                 {
-                    std::string value = reader->getString(it);
+                    std::string value = reader.getString(it);
                     if (it == "sleep")
                     {
-                        body->sleep(reader->getBoolean(it.c_str()));
+                        body->sleep(reader.getBoolean(it.c_str()));
                     }
                     else if (it == "mass")
                     {
-                        body->setMass(reader->getFloat(it.c_str()));
+                        body->setMass(reader.getFloat(it.c_str()));
                     }
                 }
             }
-        } while (reader->setToNextChild());
+        } while (reader.setToNextChild());
 
         return body;
     }
@@ -172,28 +178,28 @@ PhysicFeatures::instanceRigidbody(XMLReader* reader) except
 }
 
 GameComponentPtr
-PhysicFeatures::instanceShapeBox(XMLReader* reader) except
+PhysicFeatures::instanceShapeBox(iarchive& reader) except
 {
-    if (reader->setToFirstChild())
+    if (reader.setToFirstChild())
     {
         auto box = std::make_shared<PhysicsBoxComponent>();
 
         do
         {
-            auto key = reader->getCurrentNodeName();
+            auto key = reader.getCurrentNodeName();
             if (key == "attribute")
             {
-                auto attributes = reader->getAttrs();
+                auto attributes = reader.getAttrs();
                 for (auto& it : attributes)
                 {
-                    std::string value = reader->getString(it);
+                    std::string value = reader.getString(it);
                     if (it == "size")
                     {
-                        box->setSize(reader->getFloat3(it.c_str()));
+                        box->setSize(reader.getFloat3(it.c_str()));
                     }
                 }
             }
-        } while (reader->setToNextChild());
+        } while (reader.setToNextChild());
 
         return box;
     }
@@ -202,32 +208,32 @@ PhysicFeatures::instanceShapeBox(XMLReader* reader) except
 }
 
 GameComponentPtr
-PhysicFeatures::instanceCharacter(XMLReader* reader) except
+PhysicFeatures::instanceCharacter(iarchive& reader) except
 {
-    if (reader->setToFirstChild())
+    if (reader.setToFirstChild())
     {
         auto character = std::make_shared<PhysicsCharacterComponent>();
 
         do
         {
-            auto key = reader->getCurrentNodeName();
+            auto key = reader.getCurrentNodeName();
             if (key == "attribute")
             {
-                auto attributes = reader->getAttrs();
+                auto attributes = reader.getAttrs();
                 for (auto& it : attributes)
                 {
-                    std::string value = reader->getString(it);
+                    std::string value = reader.getString(it);
                     if (it == "radius")
                     {
-                        character->setRadius(reader->getFloat(it.c_str()));
+                        character->setRadius(reader.getFloat(it.c_str()));
                     }
                     else if (it == "height")
                     {
-                        character->setHeight(reader->getFloat(it.c_str()));
+                        character->setHeight(reader.getFloat(it.c_str()));
                     }
                 }
             }
-        } while (reader->setToNextChild());
+        } while (reader.setToNextChild());
 
         return character;
     }

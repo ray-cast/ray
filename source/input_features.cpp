@@ -73,6 +73,12 @@ InputFeatures::getInput() const noexcept
     return _input;
 }
 
+GameFeaturePtr
+InputFeatures::clone() const noexcept
+{
+    return std::make_shared<InputFeatures>();
+}
+
 void
 InputFeatures::onActivate() except
 {
@@ -151,6 +157,8 @@ InputFeatures::onReset() noexcept
 void
 InputFeatures::onInputEvent(const InputEvent& event) noexcept
 {
+    Variant arg(&event);
+    this->sendMessage("onInputEvent", &arg);
 }
 
 void

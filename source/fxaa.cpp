@@ -48,16 +48,15 @@ FXAA::~FXAA() noexcept
 }
 
 void
-FXAA::onActivate() except
+FXAA::onActivate(RenderPipeline& pipeline) except
 {
     _fxaa = MaterialMaker("sys:fx/fxaa.glsl");
     _fxaaPass = _fxaa->getTech(RenderQueue::PostProcess)->getPass("fxaa");
-
     _texelStep = _fxaa->getParameter("texelStep");
 }
 
 void
-FXAA::onDeactivate() except
+FXAA::onDeactivate(RenderPipeline& pipeline) except
 {
     if (_fxaa)
     {
@@ -70,7 +69,7 @@ FXAA::onDeactivate() except
 }
 
 void
-FXAA::render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
+FXAA::onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
 {
     _texelStep->assign(float2(1.0f / source->getWidth(), 1.0f / source->getHeight()));
 

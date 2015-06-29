@@ -73,54 +73,6 @@ HDR::~HDR() noexcept
 }
 
 void
-HDR::onActivate() except
-{
-    _texSample4 = RenderFactory::createRenderTarget();
-    _texSample4->setup(1376 / 4.0, 768 / 4.0, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
-
-    _texSample8 = RenderFactory::createRenderTarget();
-    _texSample8->setup(1376 / 8.0, 768 / 8.0, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
-
-    _texSampleLog = RenderFactory::createRenderTarget();
-    _texSampleLog->setup(SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, TextureDim::DIM_2D, PixelFormat::R16F);
-
-    _texBloom = RenderFactory::createRenderTarget();
-    _texBloom->setup(1376 / 4.0, 768 / 4.0, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
-
-    _hdr = MaterialMaker("sys:fx/hdr.glsl");
-
-    _sample4 = _hdr->getTech(RenderQueue::PostProcess)->getPass("sample");
-    _sample8 = _hdr->getTech(RenderQueue::PostProcess)->getPass("sample");
-    _samplelog = _hdr->getTech(RenderQueue::PostProcess)->getPass("samplelog");
-    _bloom = _hdr->getTech(RenderQueue::PostProcess)->getPass("bloom");
-    _blurh = _hdr->getTech(RenderQueue::PostProcess)->getPass("blurh");
-    _blurv = _hdr->getTech(RenderQueue::PostProcess)->getPass("blurv");
-    _tone = _hdr->getTech(RenderQueue::PostProcess)->getPass("tone");
-
-    _texSizeInv = _hdr->getParameter("texSizeInv");
-
-    _bloomFactor = _hdr->getParameter("bloomFactor");
-    _bloomIntensity = _hdr->getParameter("bloomIntensity");
-
-    _toneSource = _hdr->getParameter("texSource");
-    _toneBloom = _hdr->getParameter("texBloom");
-    _toneLumAve = _hdr->getParameter("lumAve");
-    _toneLumKey = _hdr->getParameter("lumKey");
-    _toneLumExposure = _hdr->getParameter("lumExposure");
-
-    _bloomFactor->assign(_setting.bloomFactor);
-    _bloomIntensity->assign(_setting.bloomIntensity);
-    _toneLumAve->assign(_setting.lumAve);
-    _toneLumKey->assign(_setting.lumKey);
-    _toneLumExposure->assign(_setting.lumExposure);
-}
-
-void
-HDR::onDeactivate() except
-{
-}
-
-void
 HDR::setSetting(const Setting& setting) noexcept
 {
     _bloomFactor->assign(_setting.bloomFactor);
@@ -244,7 +196,58 @@ HDR::generateToneMapping(RenderPipeline& pipeline, RenderTargetPtr source, Rende
 }
 
 void
-HDR::render(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
+HDR::onActivate(RenderPipeline& pipeline) except
+{
+    std::size_t width = pipeline.getWindowWidth();
+    std::size_t height = pipeline.getWindowHeight();
+
+    _texSample4 = RenderFactory::createRenderTarget();
+    _texSample4->setup(width / 4.0, height / 4.0, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
+
+    _texSample8 = RenderFactory::createRenderTarget();
+    _texSample8->setup(width / 8.0, height / 8.0, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
+
+    _texSampleLog = RenderFactory::createRenderTarget();
+    _texSampleLog->setup(SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, TextureDim::DIM_2D, PixelFormat::R16F);
+
+    _texBloom = RenderFactory::createRenderTarget();
+    _texBloom->setup(width / 4.0, height / 4.0, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
+
+    _hdr = MaterialMaker("sys:fx/hdr.glsl");
+
+    _sample4 = _hdr->getTech(RenderQueue::PostProcess)->getPass("sample");
+    _sample8 = _hdr->getTech(RenderQueue::PostProcess)->getPass("sample");
+    _samplelog = _hdr->getTech(RenderQueue::PostProcess)->getPass("samplelog");
+    _bloom = _hdr->getTech(RenderQueue::PostProcess)->getPass("bloom");
+    _blurh = _hdr->getTech(RenderQueue::PostProcess)->getPass("blurh");
+    _blurv = _hdr->getTech(RenderQueue::PostProcess)->getPass("blurv");
+    _tone = _hdr->getTech(RenderQueue::PostProcess)->getPass("tone");
+
+    _texSizeInv = _hdr->getParameter("texSizeInv");
+
+    _bloomFactor = _hdr->getParameter("bloomFactor");
+    _bloomIntensity = _hdr->getParameter("bloomIntensity");
+
+    _toneSource = _hdr->getParameter("texSource");
+    _toneBloom = _hdr->getParameter("texBloom");
+    _toneLumAve = _hdr->getParameter("lumAve");
+    _toneLumKey = _hdr->getParameter("lumKey");
+    _toneLumExposure = _hdr->getParameter("lumExposure");
+
+    _bloomFactor->assign(_setting.bloomFactor);
+    _bloomIntensity->assign(_setting.bloomIntensity);
+    _toneLumAve->assign(_setting.lumAve);
+    _toneLumKey->assign(_setting.lumKey);
+    _toneLumExposure->assign(_setting.lumExposure);
+}
+
+void
+HDR::onDeactivate(RenderPipeline& pipeline) except
+{
+}
+
+void
+HDR::onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
 {
     this->sample4(pipeline, source, _texSample4);
     this->sample8(pipeline, _texSample4, _texSample8);

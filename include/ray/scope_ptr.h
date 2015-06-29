@@ -38,7 +38,6 @@
 #define _H_SCOPE_GUARD_H_
 
 #include <ray/def.h>
-#include <memory>
 
 _NAME_BEGIN
 

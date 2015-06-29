@@ -809,14 +809,14 @@ public:
     {
         T A = (right + left) / (right - left);
         T B = (top + bottom) / (top - bottom);
-        T C = (fabs(zFar) > DBL_MAX) ? -1.0f : -(zFar + zNear) / (zFar - zNear);
+        T C = (fabs(zFar) > DBL_MAX) ? 1.0f : (zFar + zNear) / (zFar - zNear);
         T D = (fabs(zFar) > DBL_MAX) ? -2.0f * zNear : -2.0f * zFar * zNear / (zFar - zNear);
         T cx = 2.0f * zNear / (right - left);
         T cy = 2.0f * zNear / (top - bottom);
 
         set(cx, 0.0, 0.0, 0.0,
             0.0, cy, 0.0, 0.0,
-            A, B, C, -1.0,
+            A, B, C, 1.0,
             0.0, 0.0, D, 0.0);
 
         return *this;
@@ -933,7 +933,7 @@ public:
         set(cx, 0.0, 0.0, 0.0,
             0.0, cy, 0.0, 0.0,
             0.0, 0.0, 0.5, 0.0,
-              A,   B, 0.5, 1.0);
+            A, B, 0.5, 1.0);
 
         return *this;
     }

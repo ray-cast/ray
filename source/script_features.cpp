@@ -54,9 +54,9 @@ ScriptFeatures::~ScriptFeatures() noexcept
 }
 
 GameComponentPtr
-ScriptFeatures::onSerialization(XMLReader* reader) except
+ScriptFeatures::onSerialization(iarchive& reader) except
 {
-    auto component = reader->getString("name");
+    auto component = reader.getString("name");
     if (component == "script")
         return instanceScript(reader);
 
@@ -99,31 +99,31 @@ ScriptFeatures::onFrameEnd() noexcept
 }
 
 GameComponentPtr
-ScriptFeatures::instanceScript(XMLReader* reader) except
+ScriptFeatures::instanceScript(iarchive& reader) except
 {
-    if (reader->setToFirstChild())
+    if (reader.setToFirstChild())
     {
         auto script = std::make_shared<ScriptComponent>();
 
         do
         {
-            auto key = reader->getCurrentNodeName();
+            auto key = reader.getCurrentNodeName();
             if (key == "attribute")
             {
-                auto attributes = reader->getAttrs();
+                auto attributes = reader.getAttrs();
                 for (auto& it : attributes)
                 {
                     if (it == "name")
                     {
-                        script->setName(reader->getString(it));
+                        script->setName(reader.getString(it));
                     }
                     else if (it == "visible")
                     {
-                        script->setVisible(reader->getBoolean(it));
+                        script->setVisible(reader.getBoolean(it));
                     }
                 }
             }
-        } while (reader->setToNextChild());
+        } while (reader.setToNextChild());
 
         return script;
     }

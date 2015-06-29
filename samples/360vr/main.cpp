@@ -39,6 +39,7 @@
 #include <ray/window_features.h>
 #include <ray/input_features.h>
 #include <ray/render_features.h>
+#include <ray/camera_component.h>
 
 #include "first_person_camera.h"
 
@@ -67,7 +68,7 @@ int main()
             auto scene = game.findScene("360VR");
             if (scene)
             {
-                auto player = ray::GameObject::find("first_person_camera");
+                auto player = scene->find<ray::GameObject>("first_person_camera");
                 player->addComponent(std::make_shared<FirstPersonCamera>());
                 player->setActive(true);
 

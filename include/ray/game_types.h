@@ -37,20 +37,20 @@
 #ifndef _H_GAME_TYPES_H_
 #define _H_GAME_TYPES_H_
 
-#include <ray/object.h>
-#include <ray/variant.h>
 #include <ray/ioserver.h>
 #include <ray/iointerface.h>
-#include <ray/xmlreader.h>
-#include <ray/mstream.h>
-#include <ray/timer.h>
+#include <ray/instances.h>
+#include <ray/variant.h>
+#include <ray/archive.h>
 #include <ray/app.h>
 #include <ray/except.h>
+#include <ray/rtti.h>
 
 _NAME_BEGIN
 
 typedef std::shared_ptr<class Window> WindowPtr;
 
+typedef std::shared_ptr<class GameMessage> GameMessagePtr;
 typedef std::shared_ptr<class GameScene> GameScenePtr;
 typedef std::shared_ptr<class GameObject> GameObjectPtr;
 typedef std::shared_ptr<class GameComponent> GameComponentPtr;

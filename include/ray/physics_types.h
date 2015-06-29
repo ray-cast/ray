@@ -79,6 +79,8 @@ typedef std::shared_ptr<class PhysicsShape> PhysicsShapePtr;
 typedef std::shared_ptr<class PhysicsScene> PhysicsScenePtr;
 typedef std::shared_ptr<class PhysicsSystem> PhysicsSystemPtr;
 
+typedef std::vector<PhysicsScenePtr> PhysicsScenes;
+
 _NAME_END
 
 #endif

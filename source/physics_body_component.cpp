@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if _BUILD_PHYSIC
 #include <ray/physics_body_component.h>
 #include <ray/physics_shape_component.h>
 #include <ray/physics_rigidbody.h>
@@ -305,3 +306,4 @@ PhysicsBodyComponent::clone() const noexcept
 }
 
 _NAME_END
+#endif

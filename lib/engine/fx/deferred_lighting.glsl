@@ -121,7 +121,7 @@
                 if (proj.x < 0 || proj.y < 0 ||
                     proj.x > 1 || proj.y > 1)
                 {
-                    return 1;
+                    return vec4(1);
                 }
 
                 float occluder = texture2D(shadowMap, proj.xy).r;
@@ -170,7 +170,7 @@
 
             vec4 samplePosition(vec2 coord)
             {
-                float depth  = texture(texDepth, coord.xy).r;
+                float depth  = textureLod(texDepth, coord.xy, 0).r * 2.0 - 1.0;
                 vec4 result = matViewProjectInverse * vec4(coord * 2.0 - 1.0, depth, 1.0);
                 result /= result.w;
                 return result;
@@ -246,9 +246,9 @@
 
                 vec3 V = normalize(eyePosition - P.xyz);
                 vec3 L = normalize(lightDirection);
-                vec3 lighting = lightColor * BRDF(N.xyz, L, V, floor(N.a), fract(N.a));
+                vec3 lighting = lightColor * BRDF(N.xyz, L, V, floor(N.a), fract(N.a)) * shadowLighting(P.xyz);
 
-                glsl_FragColor0 = vec4(lighting * shadowLighting(P.xyz), 1.0);
+                glsl_FragColor0 = vec4(lighting, 1.0);
             }
 
             void DeferredSpotLightPS()
@@ -304,7 +304,7 @@
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
 
-            <state name="cullmode" value="front"/>
+            <state name="cullmode" value="none"/>
 
             <state name="stencilTest" value="true"/>
             <state name="stencilFunc" value="equal"/>
@@ -316,7 +316,7 @@
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
 
-            <state name="cullmode" value="front"/>
+            <state name="cullmode" value="none"/>
 
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
@@ -331,6 +331,8 @@
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="none"/>
 
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
@@ -357,7 +359,7 @@
             <state name="vertex" value="DeferredShadingVS"/>
             <state name="fragment" value="DeferredShadingOpaquesPS"/>
 
-            <state name="cullmode" value="front"/>
+            <state name="cullmode" value="none"/>
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
@@ -370,7 +372,7 @@
             <state name="vertex" value="DeferredShadingVS"/>
             <state name="fragment" value="DeferredShadingTransparentsPS"/>
 
-            <state name="cullmode" value="front"/>
+            <state name="cullmode" value="none"/>
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>

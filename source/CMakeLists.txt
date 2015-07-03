@@ -567,9 +567,9 @@ SET(PHYSICS_SYSTEM_LIST
     ${SOURCE_PATH}/physics_shape_terrain.cpp
 )
 SOURCE_GROUP("physics" FILES ${PHYSICS_SYSTEM_LIST})
-ADD_LIBRARY(libphysics SHARED ${PHYSICS_SYSTEM_LIST})
-SET_TARGET_ATTRIBUTE(libphysics "core")
-TARGET_LINK_LIBRARIES(libphysics
+ADD_LIBRARY(libphysic SHARED ${PHYSICS_SYSTEM_LIST})
+SET_TARGET_ATTRIBUTE(libphysic "core")
+TARGET_LINK_LIBRARIES(libphysic
     libplatform
     BulletCollision
     BulletDynamics
@@ -731,8 +731,11 @@ TARGET_LINK_LIBRARIES(${LIB_NAME}
     libplatform
     librenderer
     libsound
-    libphysics
 )
+
+IF(RAY_PHYSIC)
+    TARGET_LINK_LIBRARIES(${LIB_NAME} libphysic)
+ENDIF()
 
 IF(BUILD_PLATFORM_SDL2)
     TARGET_LINK_LIBRARIES(${LIB_NAME} SDL2)

@@ -368,34 +368,24 @@ RenderPipeline::render() noexcept
 {
     assert(_camera);
 
-    RenderListener* renderListener = _camera->getRenderListener();
-    if (renderListener)
-        renderListener->onWillRenderObject();
-
     _renderDataManager.clear();
-
-    this->assignLight();
-    this->assignVisiable();
 
     this->onRenderPre();
     this->onRenderPipeline();
     this->onRenderPost();
-
-    if (renderListener)
-        renderListener->onRenderObject();
 }
 
 void
-RenderPipeline::assignVisiable() noexcept
+RenderPipeline::assignVisiable(Camera* camera) noexcept
 {
-    assert(_camera);
+    assert(camera);
 
-    auto scene = _camera->getRenderScene();
+    auto scene = camera->getRenderScene();
     if (scene)
     {
         _visiable.clear();
 
-        scene->computVisiable(_camera, _visiable);
+        scene->computVisiable(camera, _visiable);
 
         for (auto& it : _visiable)
         {
@@ -409,14 +399,14 @@ RenderPipeline::assignVisiable() noexcept
 }
 
 void
-RenderPipeline::assignLight() noexcept
+RenderPipeline::assignLight(Camera* camera) noexcept
 {
-    auto scene = this->getCamera()->getRenderScene();
+    auto scene = camera->getRenderScene();
     if (scene)
     {
         _lights.clear();
 
-        scene->computVisiableLight(this->getCamera(), _lights);
+        scene->computVisiableLight(camera, _lights);
 
         for (auto& it : _lights)
         {

@@ -235,7 +235,7 @@ GameServer::removeScene(GameScenePtr scene) noexcept
 }
 
 void
-GameServer::addFeature(GameFeaturePtr features) noexcept
+GameServer::addFeature(GameFeaturePtr features) except
 {
     assert(features);
 

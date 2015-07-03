@@ -64,7 +64,7 @@ RenderRasterState::RenderRasterState() noexcept
 RenderDepthState::RenderDepthState() noexcept
     : depthEnable(true)
     , depthWriteMask(true)
-    , depthFunc(GPU_LEQUAL)
+    , depthFunc(GPU_LESS)
     , depthBiasEnable(false)
     , depthSlopScaleBias(0)
     , depthBias(0)

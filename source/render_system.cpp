@@ -611,8 +611,15 @@ RenderSystem::render() noexcept
         auto& cameras = scene->getCameraList();
         for (auto& camera : cameras)
         {
+            RenderListener* renderListener = camera->getRenderListener();
+            if (renderListener)
+                renderListener->onWillRenderObject();
+
             this->applyCamera(camera);
             this->renderCamera(camera);
+
+            if (renderListener)
+                renderListener->onRenderObject();
         }
     }
 }

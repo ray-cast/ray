@@ -111,10 +111,10 @@ public:
 
     void render() noexcept;
 
-private:
+protected:
 
-    void assignVisiable() noexcept;
-    void assignLight() noexcept;
+    void assignVisiable(Camera* camera) noexcept;
+    void assignLight(Camera* camera) noexcept;
 
     void collection(RenderObject& object) noexcept;
 

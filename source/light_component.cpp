@@ -212,10 +212,10 @@ LightComponent::onActivate() noexcept
         if (renderScene)
         {
             auto dir = this->getGameObject()->getTranslate() - this->getGameObject()->getLookAt();
-            _light->setup();
             _light->setLightDirection(~dir);
             _light->setTransform(this->getGameObject()->getTransform());
             _light->setRenderScene(renderScene);
+            _light->setup();
         }
     }
 }

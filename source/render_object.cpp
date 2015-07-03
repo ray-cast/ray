@@ -87,7 +87,7 @@ RenderObject::setReceiveShadow(bool enable) noexcept
 }
 
 void
-RenderObject::setLayer(int layer) noexcept
+RenderObject::setLayer(std::int32_t layer) noexcept
 {
     _layer = layer;
 }

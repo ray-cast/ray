@@ -34,7 +34,7 @@ SET_TARGET_ATTRIBUTE(${myplugins} "contrib")
 
 ENDFOREACH()
 
-IF(BUILD_BULLET)
+IF(RAY_PHYSIC)
     ADD_SUBDIRECTORY(bullet)
     SET_TARGET_ATTRIBUTE(BulletCollision "contrib")
     SET_TARGET_ATTRIBUTE(BulletDynamics "contrib")

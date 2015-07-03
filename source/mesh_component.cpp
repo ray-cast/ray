@@ -37,6 +37,7 @@
 #include <ray/mesh_component.h>
 #include <ray/model.h>
 #include <ray/render_factory.h>
+#include <ray/render_buffer.h>
 
 _NAME_BEGIN
 

@@ -66,7 +66,7 @@ public:
     GameScenePtr findScene(const std::string& sceneName) noexcept;
     const GameScenes& getScenes() const noexcept;
 
-    void addFeature(GameFeaturePtr features) noexcept;
+    void addFeature(GameFeaturePtr features) except;
     void removeFeature(GameFeaturePtr features) noexcept;
     GameFeaturePtr getFeature(const std::string& feature) const noexcept;
     template<typename T>

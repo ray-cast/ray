@@ -198,16 +198,23 @@ Camera::makeOrtho(float left, float right, float bottom, float top, float znear,
     _zNear = znear;
     _zFar = zfar;
 
-    _project.makeOrtho_lh(_left, _right, _bottom, _top, _zNear, _zFar).inverse();
+    _project.makeOrtho_lh(_left, _right, _bottom, _top, _zNear, _zFar);
     _projectInverse = _project.inverse();
 
     _projLength.x = _project.a1;
     _projLength.y = _project.b2;
 
-    _projConstant.x = -2.0 / _projLength.x;
+#ifdef _BUILD_OPENGL
+    _projConstant.x = 2.0 / _projLength.x;
+    _projConstant.y = 2.0 / _projLength.y;
+    _projConstant.z = -(1.0 + _project.a3) / _projLength.x;
+    _projConstant.w = -(1.0 + _project.b3) / _projLength.y;
+#else //DirectX
+    _projConstant.x = 2.0 / _projLength.x;
     _projConstant.y = -2.0 / _projLength.y;
-    _projConstant.z = (1.0 - _project.a3) / _projLength.x;
-    _projConstant.w = (1.0 + _project.b3) / _projLength.y;
+    _projConstant.z = -(1.0 + _project.a3) / _projLength.x;
+    _projConstant.w = (1.0 - _project.b3) / _projLength.y;
+#endif
 
     _clipConstant.x = (_zNear * _zFar);
     _clipConstant.y = _zFar - _zNear;

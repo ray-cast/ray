@@ -187,26 +187,16 @@ OGLRenderer::clear(ClearFlags flags, const Color4& color, float depth, std::int3
 void
 OGLRenderer::clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
-    if (flags & ClearFlags::CLEAR_DEPTH &&
-        flags & ClearFlags::CLEAR_STENCIL)
+    if (flags & ClearFlags::CLEAR_DEPTH)
     {
         GLfloat f = depth;
-        GLint s = stencil;
-        glClearBufferfi(GL_DEPTH_STENCIL, i, f, s);
+        glClearBufferfv(GL_DEPTH, 0, &f);
     }
-    else
-    {
-        if (flags & ClearFlags::CLEAR_DEPTH)
-        {
-            GLfloat f = depth;
-            glClearBufferfv(GL_DEPTH, i, &f);
-        }
 
-        if (flags & ClearFlags::CLEAR_STENCIL)
-        {
-            GLint s = stencil;
-            glClearBufferiv(GL_STENCIL, i, &s);
-        }
+    if (flags & ClearFlags::CLEAR_STENCIL)
+    {
+        GLint s = stencil;
+        glClearBufferiv(GL_STENCIL, 0, &s);
     }
 
     if (flags & ClearFlags::CLEAR_COLOR)
@@ -1013,6 +1003,11 @@ OGLRenderer::setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constan
     auto type = uniform->getValue()->getType();
     auto location = uniform->getLocation();
     auto program = uniform->getBindingProgram();
+
+    if (constant->isSemantic())
+    {
+        uniform->needUpdate(true);
+    }
 
     switch (type)
     {

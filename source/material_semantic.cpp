@@ -93,6 +93,11 @@ MaterialSemantic::setup() noexcept
     _semantics[DeferredGraphicMap] = std::make_shared<MaterialParam>("DeferredGraphicMap", ShaderVariantType::SPT_TEXTURE);
     _semantics[DeferredNormalMap] = std::make_shared<MaterialParam>("DeferredNormalMap", ShaderVariantType::SPT_TEXTURE);
     _semantics[DeferredLightMap] = std::make_shared<MaterialParam>("DeferredLightMap", ShaderVariantType::SPT_TEXTURE);
+
+    for (auto& it : _semantics)
+    {
+        it->setSemantic(it->getName());
+    }
 }
 
 void

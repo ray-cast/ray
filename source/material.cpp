@@ -85,14 +85,12 @@ Material::setup() except
                             auto parameter = this->getMaterialSemantic()->getParamPointer(semantic);
                             if (parameter)
                             {
-                                parameter->addShaderUniform(it);
                                 it->setValue(parameter);
                             }
                         }
                         else
                         {
                             param->addShaderUniform(it);
-
                             it->setValue(param);
                         }
                     }

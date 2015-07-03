@@ -60,6 +60,7 @@ public:
 
     void setSemantic(const std::string& semantic) noexcept;
     const std::string& getSemantic() const noexcept;
+    bool isSemantic() const noexcept;
 
     void setType(ShaderVariantType type) noexcept;
     ShaderVariantType getType() const noexcept;

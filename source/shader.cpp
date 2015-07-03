@@ -118,6 +118,12 @@ ShaderVariant::getSemantic() const noexcept
     return _semantic;
 }
 
+bool
+ShaderVariant::isSemantic() const noexcept
+{
+    return !_semantic.empty();
+}
+
 std::size_t
 ShaderVariant::getSize() const noexcept
 {

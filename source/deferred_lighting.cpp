@@ -67,12 +67,13 @@ DeferredLighting::renderOpaquesDepthOhly() noexcept
 void
 DeferredLighting::renderOpaques() noexcept
 {
-    _deferredGraphicMap->setClearFlags(ClearFlags::CLEAR_COLOR);
+    _deferredGraphicMap->setClearFlags(ClearFlags::CLEAR_ALL);
     _deferredNormalMap->setClearFlags(ClearFlags::CLEAR_COLOR);
 
     this->setRenderTarget(_deferredGraphicMaps);
     this->drawRenderable(RenderQueue::Opaque, RenderPass::RP_OPAQUES);
 
+    _deferredGraphicMap->setClearFlags(ClearFlags::CLEAR_NONE);
     _deferredNormalMap->setClearFlags(ClearFlags::CLEAR_NONE);
 }
 
@@ -104,8 +105,12 @@ DeferredLighting::renderTransparentDepthOhly() noexcept
 void
 DeferredLighting::renderTransparent() noexcept
 {
+    _deferredGraphicMap->setClearFlags(ClearFlags::CLEAR_COLOR_STENCIL);
+
     this->setRenderTarget(_deferredGraphicMaps);
     this->drawRenderable(RenderQueue::Transparent, RenderPass::RP_TRANSPARENT);
+
+    _deferredGraphicMap->setClearFlags(ClearFlags::CLEAR_NONE);
 }
 
 void
@@ -251,11 +256,11 @@ DeferredLighting::renderShadow() noexcept
     auto renderTexture = this->getCamera()->getRenderTarget();
     if (renderTexture)
     {
-        _shadowDecal->assign(renderTexture->getResolveTexture());
-
         this->setRenderTarget(renderTexture);
         this->drawRenderable(RenderQueue::Opaque, RenderPass::RP_SHADOW, _shadowGenerate);
         this->drawRenderable(RenderQueue::Transparent, RenderPass::RP_SHADOW, _shadowGenerate);
+
+        /*_shadowDecal->assign(renderTexture->getResolveTexture());
 
         this->setRenderTarget(_deferredShadowMap);
         this->setTechnique(_shadowBlurX);
@@ -265,7 +270,7 @@ DeferredLighting::renderShadow() noexcept
 
         this->setRenderTarget(renderTexture);
         this->setTechnique(_shadowBlurY);
-        this->drawSceneQuad();
+        this->drawSceneQuad();*/
     }
 }
 
@@ -380,6 +385,8 @@ DeferredLighting::onDectivate() noexcept
 void
 DeferredLighting::onRenderPre() noexcept
 {
+    this->assignLight(this->getCamera());
+    this->assignVisiable(this->getCamera());
 }
 
 void
@@ -414,7 +421,6 @@ DeferredLighting::onRenderPipeline() noexcept
         if (renderMode == CameraRender::CR_RENDER_TO_TEXTURE ||
             renderMode == CameraRender::CR_RENDER_TO_SCREEN)
         {
-            this->renderOpaquesDepthOhly();
             this->renderOpaques();
             this->renderLights();
             this->renderOpaquesShading();
@@ -422,7 +428,6 @@ DeferredLighting::onRenderPipeline() noexcept
             auto renderable = this->getRenderData(RenderQueue::Transparent);
             if (!renderable.empty())
             {
-                this->renderTransparentDepthOhly();
                 this->renderTransparent();
                 this->renderLights();
                 this->renderTransparentShading();
@@ -441,47 +446,51 @@ DeferredLighting::onRenderPipeline() noexcept
 void
 DeferredLighting::onRenderPost() noexcept
 {
-    if (this->getCamera()->getCameraRender() == CR_RENDER_TO_SCREEN)
+    CameraOrder mode = this->getCamera()->getCameraOrder();
+    if (mode != CO_SHADOW)
     {
-        auto v1 = Viewport(0, 0, _deferredShadingMap->getWidth(), _deferredShadingMap->getHeight());
-        auto v2 = this->getCamera()->getViewport();
-        if (v2.width == 0 ||
-            v2.height == 0)
+        if (this->getCamera()->getCameraRender() == CR_RENDER_TO_SCREEN)
         {
-            v2.left = 0;
-            v2.top = 0;
-            v2.width = this->getWindowWidth();
-            v2.height = this->getWindowHeight();
+            auto v1 = Viewport(0, 0, _deferredShadingMap->getWidth(), _deferredShadingMap->getHeight());
+            auto v2 = this->getCamera()->getViewport();
+            if (v2.width == 0 ||
+                v2.height == 0)
+            {
+                v2.left = 0;
+                v2.top = 0;
+                v2.width = this->getWindowWidth();
+                v2.height = this->getWindowHeight();
+            }
+
+            this->copyRenderTarget(_deferredShadingMap, v1, 0, v2);
+        }
+        else if (this->getCamera()->getCameraRender() == CR_RENDER_TO_TEXTURE)
+        {
+            auto target = this->getCamera()->getRenderTarget();
+
+            auto v1 = Viewport(0, 0, _deferredShadingMap->getWidth(), _deferredShadingMap->getHeight());
+            auto v2 = this->getCamera()->getViewport();
+            if (v2.width == 0 ||
+                v2.height == 0)
+            {
+                v2.left = 0;
+                v2.top = 0;
+                v2.width = target->getWidth();
+                v2.height = target->getHeight();
+            }
+
+            this->copyRenderTarget(_deferredShadingMap, v1, target, v2);
         }
 
-        this->copyRenderTarget(_deferredShadingMap, v1, 0, v2);
+        /*if (_deferredGraphicMap)
+            this->copyRenderTarget(_deferredGraphicMap, Viewport(0, 0, 1376, 768), 0, Viewport(0, 768 / 2, 1376 / 2, 768));
+        if (_deferredNormalMap)
+            this->copyRenderTarget(_deferredNormalMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 2, 768 / 2, 1376, 768));
+        if (_deferredLightMap)
+            this->copyRenderTarget(_deferredLightMap, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376 / 2, 768 / 2));
+        if (_deferredShadingMap)
+            this->copyRenderTarget(_deferredShadingMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 2, 0, 1376, 768 / 2));*/
     }
-    else if (this->getCamera()->getCameraRender() == CR_RENDER_TO_TEXTURE)
-    {
-        auto target = this->getCamera()->getRenderTarget();
-
-        auto v1 = Viewport(0, 0, _deferredShadingMap->getWidth(), _deferredShadingMap->getHeight());
-        auto v2 = this->getCamera()->getViewport();
-        if (v2.width == 0 ||
-            v2.height == 0)
-        {
-            v2.left = 0;
-            v2.top = 0;
-            v2.width = target->getWidth();
-            v2.height = target->getHeight();
-        }
-
-        this->copyRenderTarget(_deferredShadingMap, v1, target, v2);
-    }
-
-    /*if (_deferredGraphicMap)
-        this->copyRenderTarget(_deferredGraphicMap, Viewport(0, 0, 1376, 768), 0, Viewport(0, 768 / 2, 1376 / 2, 768));
-    if (_deferredNormalMap)
-        this->copyRenderTarget(_deferredNormalMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 2, 768 / 2, 1376, 768));
-    if (_deferredLightMap)
-        this->copyRenderTarget(_deferredLightMap, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376 / 2, 768 / 2));
-    if (_deferredShadingMap)
-        this->copyRenderTarget(_deferredShadingMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 2, 0, 1376, 768 / 2));*/
 }
 
 void

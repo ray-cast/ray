@@ -25,9 +25,9 @@ OPTION(BUILD_PLATFORM_APPLE "on for use off for ignore" OFF)
 OPTION(BUILD_DIRECTX_11 "on for DX11 off for ogl" OFF)
 OPTION(BUILD_OPENGL "on for DX11 off for ogl" ON)
 OPTION(BUILD_GLES "on for use off for ignore" OFF)
-OPTION(BUILD_BULLET "on for DX11 off for ogl" ON)
 OPTION(BUILD_SDL2 "on for use off for ignore" ON)
 OPTION(BUILD_SSE "on for use off for ignore" OFF)
+OPTION(RAY_PHYSIC "on for DX11 off for ogl" ON)
 
 IF(BUILD_PLATFORM_WINDOWS)
     ADD_DEFINITIONS(-DWINDOWS)
@@ -50,6 +50,10 @@ ENDIF()
 
 IF(BUILD_OPENGL)
     ADD_DEFINITIONS(-D_BUILD_OPENGL)
+ENDIF()
+
+IF(RAY_PHYSIC)
+    ADD_DEFINITIONS(-D_BUILD_PHYSIC)
 ENDIF()
 
 IF(BUILD_DEBUG_MODE)

@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if _BUILD_PHYSIC
 #include <ray/physics_features.h>
 #include <ray/physics_system.h>
 #include <ray/physics_body_component.h>
@@ -242,3 +243,4 @@ PhysicFeatures::instanceCharacter(iarchive& reader) except
 }
 
 _NAME_END
+#endif

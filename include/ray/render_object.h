@@ -55,8 +55,8 @@ public:
     RenderObject() noexcept;
     virtual ~RenderObject() noexcept;
 
-    virtual void setLayer(int layer) noexcept;
-    virtual int getLayer() const noexcept;
+    virtual void setLayer(std::int32_t layer) noexcept;
+    virtual std::int32_t getLayer() const noexcept;
 
     virtual void setCastShadow(bool enable) noexcept;
     virtual void setReceiveShadow(bool enable) noexcept;
@@ -96,7 +96,7 @@ private:
 
 private:
 
-    int _layer;
+    std::int32_t _layer;
 
     bool _isCastShadow;
     bool _isReceiveShadow;

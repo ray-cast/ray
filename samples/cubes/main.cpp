@@ -49,10 +49,10 @@ class GameEngine : public ray::GameApplication
 public:
     GameEngine() noexcept
     {
-        _renderSetting.enableSSAO = true;
+        _renderSetting.enableSSAO = false;
         _renderSetting.enableSAT = true;
         _renderSetting.enableFog = false;
-        _renderSetting.enableHDR = true;
+        _renderSetting.enableHDR = false;
         _renderSetting.enableFXAA = true;
         _renderSetting.enableColorGrading = true;
     }
@@ -155,6 +155,8 @@ int main(int argc, char *argv[])
     }
     catch (const std::exception& e)
     {
+        SDL_Quit();
+
         std::cout << e.what();
         std::system("pause");
     }

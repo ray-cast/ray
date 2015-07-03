@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if _BUILD_PHYSIC
 #include <ray/physics_character_component.h>
 #include <ray/physics_character.h>
 #include <ray/physics_features.h>
@@ -150,3 +151,4 @@ PhysicsCharacterComponent::getCollisionShape() noexcept
 }
 
 _NAME_END
+#endif

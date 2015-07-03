@@ -996,7 +996,6 @@ GameObject::getComponent(RTTIType type) const noexcept
         }
     }
 
-    assert(false);
     return nullptr;
 }
 

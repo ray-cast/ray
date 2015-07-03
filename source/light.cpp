@@ -62,6 +62,8 @@ Light::Light() noexcept
     , _spotOuterCone(cos(degrees(40.0f)))
     , _shadow(false)
     , _shadowSize(512)
+    , _shadowTranslate(Vector3::Zero)
+    , _shadowLookAt(Vector3::Zero)
     , _renderScene(nullptr)
 {
 }
@@ -222,16 +224,25 @@ Light::getShadow() const noexcept
 void
 Light::setupShadow(std::size_t size) noexcept
 {
+    assert(!_shadowCamera);
+
+    auto depthTexture = RenderFactory::createRenderTarget();
+    depthTexture->setup(size, size, TextureDim::DIM_2D, PixelFormat::DEPTH_COMPONENT32);
+    depthTexture->setClearFlags(ClearFlags::CLEAR_ALL);
+
     auto renderTexture = RenderFactory::createRenderTarget();
-    renderTexture->setup(size, size, TextureDim::DIM_2D, PixelFormat::R16F);
+    renderTexture->setSharedDepthTexture(depthTexture);
+    renderTexture->setup(size, size, TextureDim::DIM_2D, PixelFormat::R32F);
+    renderTexture->setClearFlags(ClearFlags::CLEAR_ALL);
 
     _shadowCamera = std::make_shared<Camera>();
     _shadowCamera->setCameraOrder(CameraOrder::CO_SHADOW);
     _shadowCamera->setCameraRender(CameraRender::CR_RENDER_TO_TEXTURE);
     _shadowCamera->setViewport(Viewport(0, 0, size, size));
     _shadowCamera->setRenderListener(this);
+    _shadowCamera->setRenderTarget(renderTexture);
     _shadowCamera->makePerspective(90.0, 1.0, 0.1, _lightRange);
-    _shadowCamera->makeViewProject();
+    _shadowCamera->setRenderScene(_renderScene->shared_from_this());
 
     _updateShadow();
 }
@@ -303,18 +314,17 @@ Light::clone() const noexcept
 void
 Light::_updateShadow() noexcept
 {
-    if (this->getShadow())
+    if (_shadowCamera)
     {
-        auto direction = this->getLightDirection();
+        auto direction = -this->getLightDirection();
         auto translate = this->getTransform().getTranslate();
-        auto lookat = -direction * _lightRange + translate;
-        auto up = Vector3(0, 0, 1);
-
-        _shadowCamera->makeLookAt(translate, lookat, up);
-        _shadowCamera->makeViewProject();
+        auto lookat = direction * _lightRange + translate;
 
         _shadowTranslate = translate;
         _shadowLookAt = lookat;
+
+        _shadowCamera->makeLookAt(translate, _shadowLookAt, Vector3::UnitZ);
+        _shadowCamera->makeViewProject();
     }
 }
 
@@ -331,9 +341,7 @@ Light::onWillRenderObject() noexcept
         auto lookat = _shadowLookAt + camera->getTranslate();
         lookat.y = _shadowLookAt.y;
 
-        auto up = Vector3(0, 0, 0.5);
-
-        _shadowCamera->makeLookAt(translate, lookat, up);
+        _shadowCamera->makeLookAt(translate, lookat, Vector3::UnitZ);
         _shadowCamera->makeViewProject();
     }
 }

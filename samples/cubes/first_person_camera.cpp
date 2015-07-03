@@ -38,8 +38,8 @@
 
 #include <ray/game_server.h>
 #include <ray/input_features.h>
-#include <ray/window_features.h>
 #include <ray/physics_character_component.h>
+#include <ray/camera_component.h>
 
 __ImplementSubClass(FirstPersonCamera, ray::GameController)
 
@@ -60,9 +60,9 @@ FirstPersonCamera::~FirstPersonCamera() noexcept
 void
 FirstPersonCamera::onActivate() noexcept
 {
-    auto windowFeature = this->getGameServer()->getFeature<ray::WindowFeatures>();
-    _centerX = windowFeature->getWindow()->getWindowWidth() >> 1;
-    _centerY = windowFeature->getWindow()->getWindowHeight() >> 1;
+    auto camera = this->getGameObject()->getComponent<ray::CameraComponent>();
+    _centerX = camera->getViewport().width *  0.5;
+    _centerY = camera->getViewport().height * 0.5;
 }
 
 void
@@ -95,16 +95,16 @@ FirstPersonCamera::onFrameEnd() noexcept
         if (!character)
         {
             if (input->getKey(ray::InputKey::Code::W))
-                moveCamera(-step);
-
-            if (input->getKey(ray::InputKey::Code::A))
-                yawCamera(-step);
-
-            if (input->getKey(ray::InputKey::Code::S))
                 moveCamera(step);
 
-            if (input->getKey(ray::InputKey::Code::D))
+            if (input->getKey(ray::InputKey::Code::A))
                 yawCamera(step);
+
+            if (input->getKey(ray::InputKey::Code::S))
+                moveCamera(-step);
+
+            if (input->getKey(ray::InputKey::Code::D))
+                yawCamera(-step);
         }
         else
         {
@@ -117,27 +117,27 @@ FirstPersonCamera::onFrameEnd() noexcept
             {
                 ray::float3 mov = lookat - translate;
                 mov.normalize();
-                walkDirection -= mov;
+                walkDirection += mov;
             }
             if (input->getKey(ray::InputKey::Code::S))
             {
                 ray::float3 mov = lookat - translate;
                 mov.normalize();
-                walkDirection += mov;
+                walkDirection -= mov;
             }
             if (input->getKey(ray::InputKey::Code::A))
             {
                 ray::float3 mov = lookat - translate;
                 mov = mov.cross(up);
                 mov.normalize();
-                walkDirection -= mov;
+                walkDirection += mov;
             }
             if (input->getKey(ray::InputKey::Code::D))
             {
                 ray::float3 mov = lookat - translate;
                 mov = mov.cross(up);
                 mov.normalize();
-                walkDirection += mov;
+                walkDirection -= mov;
             }
 
             character->setWalkDirection(walkDirection * step);
@@ -226,7 +226,7 @@ FirstPersonCamera::rotateCamera(float mouseX, float mouseY, float lastX, float l
     auto up = this->getGameObject()->getUpVector();
 
     float angleY = -(lastX - mouseX) / 100.0;
-    float angleZ = -(lastY - mouseY) / 100.0;
+    float angleZ = (lastY - mouseY) / 100.0;
 
     ray::float3 view = lookat - translate;
     view.normalize();

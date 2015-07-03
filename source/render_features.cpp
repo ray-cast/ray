@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/render_features.h>
 #include <ray/render_system.h>
-#include <ray/window_features.h>
+#include <ray/render_factory.h>
 #include <ray/camera_component.h>
 #include <ray/script_component.h>
 #include <ray/light_component.h>
@@ -47,18 +47,29 @@
 _NAME_BEGIN
 
 RenderFeatures::RenderFeatures() noexcept
-{
-    this->setName(typeid(RenderFeatures).name());
-}
-
-RenderFeatures::RenderFeatures(const RenderSetting& setting) noexcept
-    : _renderSetting(setting)
+    : _hwnd(nullptr)
+    , _width(0)
+    , _height(0)
 {
     this->setName(typeid(RenderFeatures).name());
 }
 
 RenderFeatures::~RenderFeatures() noexcept
 {
+}
+
+void
+RenderFeatures::setRenderWindow(WindHandle hwnd, std::size_t w, std::size_t h) noexcept
+{
+    _hwnd = hwnd;
+    _width = w;
+    _height = h;
+}
+
+WindHandle
+RenderFeatures::getRenderWindow() const noexcept
+{
+    return _hwnd;
 }
 
 void
@@ -144,20 +155,14 @@ RenderFeatures::onSerialization(iarchive& reader) except
 void
 RenderFeatures::onActivate() except
 {
-    WindowPtr window = nullptr;
+    _renderWindow = RenderFactory::createRenderWindow();
+    _renderWindow->setWindowResolution(_width, _height);
+    _renderWindow->setup((HWND)_hwnd);
 
-    auto features = this->getGameServer()->getFeature<WindowFeatures>();
-    if (features)
-    {
-        window = features->getWindow();
-        if (window)
-        {
-            _renderSystem = std::make_shared<RenderSystem>();
-            _renderSystem->setup(window->getWindowHandle(), window->getWindowWidth(), window->getWindowHeight());
-            _renderSystem->setRenderSetting(_renderSetting);
-            _renderSystem->setTimer(this->getGameServer()->getTimer());
-        }
-    }
+    _renderSystem = std::make_shared<RenderSystem>();
+    _renderSystem->setup(_renderWindow);
+    _renderSystem->setRenderSetting(_renderSetting);
+    _renderSystem->setTimer(this->getGameServer()->getTimer());
 }
 
 void

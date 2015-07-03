@@ -38,6 +38,7 @@
 #include <ray/material_maker.h>
 #include <ray/camera.h>
 #include <ray/render_factory.h>
+#include <ray/texture.h>
 
 _NAME_BEGIN
 
@@ -64,10 +65,13 @@ SSAO::setSetting(const Setting& set) noexcept
     _radius2->assign(_setting.radius * _setting.radius);
 
     _bias->assign(_setting.bias);
-    _intensityDivR6->assign(_setting.intensity / pow(_setting.radius, 6.0f));
+    _intensity->assign(_setting.intensity);
+
+    const float blurSigma = _setting.blurRadius * 0.5;
+    const float blurFalloff = 1.0 / (2.0 * blurSigma * blurSigma);
 
     _blurRadius->assign(_setting.blurRadius);
-    _blurFactor->assign((float)1.0 / (2 * ((_setting.blurRadius + 1) / 2) * ((_setting.blurRadius + 1) / 2)));
+    _blurFactor->assign(blurFalloff);
     _blurSharpness->assign(_setting.blurSharpness);
 }
 
@@ -83,6 +87,7 @@ SSAO::computeRawAO(RenderPipeline& pipeline, RenderTargetPtr dest) noexcept
     _projInfo->assign(pipeline.getCamera()->getProjConstant());
     _projScale->assign(pipeline.getCamera()->getProjLength().y * _setting.radius);
     _clipInfo->assign(pipeline.getCamera()->getClipConstant());
+    _texSize->assign(float2(dest->getWidth(), dest->getHeight()));
 
     pipeline.setRenderTarget(dest);
     pipeline.setTechnique(_ambientOcclusionPass);
@@ -92,7 +97,7 @@ SSAO::computeRawAO(RenderPipeline& pipeline, RenderTargetPtr dest) noexcept
 void
 SSAO::blurHorizontal(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept
 {
-    float2 direction(_setting.blurScale, 0.0f);
+    float2 direction(2.0, 0.0f);
     direction.x /= source->getWidth();
 
     this->blurDirection(pipeline, source, dest, direction);
@@ -101,7 +106,7 @@ SSAO::blurHorizontal(RenderPipeline& pipeline, RenderTargetPtr source, RenderTar
 void
 SSAO::blurVertical(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept
 {
-    float2 direction(0.0f, _setting.blurScale);
+    float2 direction(0.0f, 2.0);
     direction.y /= source->getHeight();
 
     this->blurDirection(pipeline, source, dest, direction);
@@ -135,7 +140,7 @@ SSAO::onActivate(RenderPipeline& pipeline) except
     std::size_t height = pipeline.getWindowHeight();
 
     _texAmbient = RenderFactory::createRenderTarget();
-    _texAmbient->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16F);
+    _texAmbient->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
 
     _texBlur = RenderFactory::createRenderTarget();
     _texBlur->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16F);
@@ -151,7 +156,8 @@ SSAO::onActivate(RenderPipeline& pipeline) except
     _projInfo = _ambientOcclusion->getParameter("projInfo");
     _clipInfo = _ambientOcclusion->getParameter("clipInfo");
     _bias = _ambientOcclusion->getParameter("bias");
-    _intensityDivR6 = _ambientOcclusion->getParameter("intensityDivR6");
+    _intensity = _ambientOcclusion->getParameter("intensity");
+    _texSize = _ambientOcclusion->getParameter("texSize");
 
     _blurSource = _ambientOcclusion->getParameter("texSource");
     _blurFactor = _ambientOcclusion->getParameter("blurFactor");
@@ -164,13 +170,13 @@ SSAO::onActivate(RenderPipeline& pipeline) except
 
     Setting setting;
     setting.radius = 1.0;
-    setting.bias = 0.012;
-    setting.intensity = 3;
+    setting.bias = 0.002;
+    setting.intensity = 2;
 
     setting.blur = true;
-    setting.blurRadius = 8;
+    setting.blurRadius = 6;
     setting.blurScale = 2.5;
-    setting.blurSharpness = 4;
+    setting.blurSharpness = 2;
 
     this->setSetting(setting);
 }

@@ -37,7 +37,13 @@
 #ifndef _H_OGL_EXTENSTION_H_
 #define _H_OGL_EXTENSTION_H_
 
-#include <ray/render_types.h>
+#include <ray/render_device.h>
+#include <ray/render_buffer.h>
+#include <ray/render_texture.h>
+#include <ray/render_state.h>
+#include <ray/render_window.h>
+#include <ray/shader.h>
+#include <ray/texture.h>
 
 #include <GL/glew.h>
 #include <GL/wglew.h>

@@ -54,8 +54,12 @@
             position = vec4(glsl_Position.xyz * innerRadius,  1.0);
             position.y -= innerRadius;
 
-            vec3 world = position.xyz; world.y += innerRadius;
-            vec3 cameraPosition = eyePosition; cameraPosition.y += innerRadius;
+            vec3 world = position.xyz;
+            world.y += innerRadius;
+
+            vec3 cameraPosition = eyePosition;
+            cameraPosition.y += innerRadius;
+
             vec3 ray = position.xyz - eyePosition;
             float rayLength = length(ray);
             ray /= rayLength;
@@ -122,7 +126,7 @@
         void skyVS()
         {
             position = vec4(glsl_Position.xyz * outerRadius,  1.0);
-            position.y -= (innerRadius);
+            position.y -= innerRadius;
 
             vec3 world = position.xyz; world.y += (innerRadius);
             vec3 cameraPosition = eyePosition; cameraPosition.y += (innerRadius);

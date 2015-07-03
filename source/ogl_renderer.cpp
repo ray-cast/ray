@@ -49,32 +49,6 @@ OGLRenderer::OGLRenderer() noexcept
     , _renderTarget(GL_NONE)
     , _defaultVAO(GL_NONE)
 {
-    _fbconfig.redSize = 8;
-    _fbconfig.greenSize = 8;
-    _fbconfig.blueSize = 8;
-    _fbconfig.alphaSize = 8;
-    _fbconfig.bufferSize = 32;
-    _fbconfig.depthSize = 24;
-    _fbconfig.stencilSize = 8;
-    _fbconfig.accumSize = 32;
-    _fbconfig.accumRedSize = 8;
-    _fbconfig.accumGreenSize = 8;
-    _fbconfig.accumBlueSize = 8;
-    _fbconfig.accumAlphaSize = 8;
-    _fbconfig.stereo = 1;
-    _fbconfig.samples = 1;
-    _fbconfig.doubleBuffer = 1;
-
-    _ctxconfig.major = 3;
-    _ctxconfig.minor = 3;
-    _ctxconfig.release = 0;
-    _ctxconfig.robustness = 0;
-    _ctxconfig.share = nullptr;
-    _ctxconfig.profile = GPU_GL_CORE_PROFILE;
-    _ctxconfig.forward = 0;
-    _ctxconfig.multithread = false;
-    _ctxconfig.hwnd = nullptr;
-
     _blendState.blendEnable = false;
     _blendState.blendSeparateEnable = false;
     _blendState.blendOp = GPU_ADD;
@@ -116,54 +90,9 @@ OGLRenderer::~OGLRenderer() noexcept
 }
 
 bool
-OGLRenderer::open(WindHandle hwnd) except
+OGLRenderer::open(RenderWindowPtr window) except
 {
-    assert(hwnd);
-
-    if ((_ctxconfig.major < 1 || _ctxconfig.minor < 0) ||
-        (_ctxconfig.major == 1 && _ctxconfig.minor > 5) ||
-        (_ctxconfig.major == 2 && _ctxconfig.minor > 1) ||
-        (_ctxconfig.major == 3 && _ctxconfig.minor > 3))
-    {
-        return false;
-    }
-
-    if (_ctxconfig.profile)
-    {
-        if (_ctxconfig.profile != GPU_GL_CORE_PROFILE &&
-            _ctxconfig.profile != GPU_GL_COMPAT_PROFILE)
-        {
-            return false;
-        }
-
-        if (_ctxconfig.major < 3 || (_ctxconfig.major == 3 && _ctxconfig.minor < 2))
-        {
-            return false;
-        }
-    }
-
-    if (_ctxconfig.forward && _ctxconfig.major < 3)
-    {
-        return false;
-    }
-
-    if (_ctxconfig.robustness)
-    {
-        return false;
-    }
-
-    if (_ctxconfig.release)
-    {
-        return false;
-    }
-
-    if (hwnd)
-    {
-        _ctxconfig.hwnd = hwnd;
-    }
-
-    _glcontext = std::make_shared<OGLCanvas>();
-    _glcontext->setup(_fbconfig, _ctxconfig);
+    this->setRenderWindow(window);
 
     initDebugControl();
     initCommandList();
@@ -308,6 +237,22 @@ const Viewport&
 OGLRenderer::getViewport(std::size_t i) const noexcept
 {
     return _viewport[i];
+}
+
+void
+OGLRenderer::setRenderWindow(RenderWindowPtr window) noexcept
+{
+    if (_glcontext != window)
+    {
+        window->bind();
+        _glcontext = window;
+    }
+}
+
+RenderWindowPtr
+OGLRenderer::getRenderWindow() const noexcept
+{
+    return _glcontext;
 }
 
 void

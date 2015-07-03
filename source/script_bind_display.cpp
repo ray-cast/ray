@@ -36,14 +36,12 @@
 // +----------------------------------------------------------------------
 #include <ray/script_bind_display.h>
 #include <ray/render_system.h>
-#include <ray/wx.h>
 
 #include <angelscript.h>
 
 _NAME_BEGIN
 
 ScriptBindDisplay::ScriptBindDisplay() noexcept
-    : _window(nullptr)
 {
 }
 
@@ -78,7 +76,6 @@ ScriptBindDisplay::setup(asIScriptEngine* engine) noexcept
 void
 ScriptBindDisplay::setWindow(WindowPtr wx) noexcept
 {
-    _window = wx;
 }
 
 void
@@ -97,59 +94,46 @@ ScriptBindDisplay::setSwapInterval(int interval) noexcept
 void
 ScriptBindDisplay::setWindowPosition(int x, int y) noexcept
 {
-    assert(_window);
-    _window->setWindowPosition(x, y);
 }
 
 void
 ScriptBindDisplay::setWindowSize(int w, int h) noexcept
 {
-    assert(_window);
-    _window->setWindowSize(w, h);
 }
 
 void
 ScriptBindDisplay::setWindowTitle(const std::string& title) noexcept
 {
-    assert(_window);
-    _window->setWindowTitle(title);
 }
 
 int
 ScriptBindDisplay::getWindowWidth() const noexcept
 {
-    assert(_window);
-    return _window->getWindowWidth();
+    return 0;
 }
 
 int
 ScriptBindDisplay::getWindowHeight() const noexcept
 {
-    assert(_window);
-    return _window->getWindowHeight();
+    return 0;
 }
 
 int
 ScriptBindDisplay::getWindowPosX() const noexcept
 {
-    assert(_window);
-    return _window->getWindowPosX();
+    return 0;
 }
 
 int
 ScriptBindDisplay::getWindowPosY() const noexcept
 {
-    assert(_window);
-    return _window->getWindowPosY();
+    return 0;
 }
 
 std::string
 ScriptBindDisplay::getWindowTitle() const noexcept
 {
-    assert(_window);
-    std::string title;
-    _window->getWindowTitle(title);
-    return title;
+    return "";
 }
 
 _NAME_END

@@ -295,7 +295,7 @@ PhysicsBodyComponent::onMoveAfter() noexcept
 void
 PhysicsBodyComponent::onCollisionStay() noexcept
 {
-    this->sendMessage("onCollisionStay", nullptr);
+    //this->sendMessage("onCollisionStay", nullptr);
 }
 
 GameComponentPtr

@@ -88,8 +88,9 @@ enum GlobalFloat3Semantic
     LightPosition,
     LightDirection,
 
-    CameraPosition,
     CameraView,
+    CameraPosition,
+    CameraDirection,
 
     Float3End
 };

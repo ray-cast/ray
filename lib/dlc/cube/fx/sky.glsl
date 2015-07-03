@@ -43,7 +43,7 @@
         ]]>
     </shader>
     <technique name="background">
-        <pass name="gbuffer">
+        <pass name="opaque">
             <state name="vertex" value="SkyVS"/>
             <state name="fragment" value="SkyPS"/>
             <state name="cullmode" value="front"/>

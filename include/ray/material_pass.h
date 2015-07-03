@@ -44,11 +44,11 @@ _NAME_BEGIN
 enum RenderPass
 {
     RP_CUSTOM,
-    RP_FORWARD,
     RP_DEPTH,
     RP_SHADOW,
-    RP_GBUFFER,
-    RP_LIGHT,
+    RP_OPAQUES,
+    RP_TRANSPARENT,
+    RP_LIGHTS,
     RP_NUMPASS
 };
 

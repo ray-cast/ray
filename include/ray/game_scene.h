@@ -41,9 +41,9 @@
 
 _NAME_BEGIN
 
-class EXPORT GameScene final : public GameMessage
+class EXPORT GameScene final : public GameListener
 {
-    __DeclareSubClass(GameScene, GameMessage)
+    __DeclareSubClass(GameScene, GameListener)
 public:
     struct Setting
     {
@@ -86,6 +86,8 @@ private:
     void _onFrameBegin() noexcept;
     void _onFrame() noexcept;
     void _onFrameEnd() noexcept;
+
+    void onMessage(const GameMessage& message) except;
 
 private:
 

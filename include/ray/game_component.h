@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class EXPORT GameComponent : public GameMessage
+class EXPORT GameComponent : public GameListener
 {
     __DeclareInterface(GameComponent)
 public:
@@ -57,9 +57,9 @@ public:
     virtual void load(iarchive& reader) noexcept;
     virtual void save(oarchive& write) noexcept;
 
-    virtual void sendMessage(const std::string& method, const Variant* data...) except;
-    virtual void sendMessageUpwards(const std::string& method, const Variant* data...) except;
-    virtual void sendMessageDownwards(const std::string& method, const Variant* data...) except;
+    virtual void sendMessage(const GameMessage& message) except;
+    virtual void sendMessageUpwards(const GameMessage& message) except;
+    virtual void sendMessageDownwards(const GameMessage& message) except;
 
     virtual void onAttach() except;
     virtual void onRemove() except;
@@ -76,8 +76,6 @@ public:
 
     virtual void onLayerChangeBefore() except;
     virtual void onLayerChangeAfter() except;
-
-    virtual void onMessage(const std::string& metod, const Variant* data...) except;
 
     virtual GameComponentPtr clone() const except = 0;
 

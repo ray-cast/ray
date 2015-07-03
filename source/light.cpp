@@ -37,7 +37,6 @@
 #include <ray/light.h>
 #include <ray/render_texture.h>
 #include <ray/render_scene.h>
-#include <ray/render_pipeline.h>
 #include <ray/render_factory.h>
 
 _NAME_BEGIN
@@ -280,12 +279,6 @@ RenderScenePtr
 Light::getRenderScene() const noexcept
 {
     return _renderScene->shared_from_this();
-}
-
-void
-Light::collection(RenderDataManager& manager) noexcept
-{
-    manager.addRenderData(RenderQueue::DeferredLight, this);
 }
 
 LightPtr

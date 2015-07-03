@@ -72,8 +72,7 @@ Atmospheric::onActivate(RenderPipeline& pipeline) noexcept
     MeshProperty mesh;
     mesh.makeSphere(1, 128, 96);
 
-    _sphere = RenderFactory::createRenderBuffer();
-    _sphere->setup(mesh);
+    _sphere = RenderFactory::createRenderBuffer(mesh);
 
     _sat = MaterialMaker("sys:fx/atmospheric.glsl");
 
@@ -130,7 +129,7 @@ Atmospheric::onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
     renderable.numVertices = _sphere->getNumVertices();
     renderable.numIndices = _sphere->getNumIndices();
 
-    auto lights = pipeline.getRenderData(RenderQueue::DeferredLight);
+    auto lights = pipeline.getRenderData(RenderQueue::Lighting);
     for (auto& it : lights)
     {
         auto light = dynamic_cast<Light*>(it);

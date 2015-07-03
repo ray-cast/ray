@@ -38,8 +38,6 @@
 #include <ray/script_component.h>
 #include <ray/input_features.h>
 #include <ray/gui_features.h>
-#include <ray/window_features.h>
-#include <ray/wx.h>
 #include <ray/game_server.h>
 
 _NAME_BEGIN
@@ -70,7 +68,6 @@ ScriptFeatures::onActivate() except
 
     ScriptSystem::instance()->setTimer(this->getGameServer()->getTimer());
     ScriptSystem::instance()->setInput(this->getGameServer()->getFeature<InputFeatures>()->getInput());
-    ScriptSystem::instance()->setWindow(this->getGameServer()->getFeature<WindowFeatures>()->getWindow());
     //ScriptSystem::instance()->setGuiSystem(_guiSystem);
 }
 

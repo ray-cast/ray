@@ -138,7 +138,7 @@ Terrain::computeVisiable(TerrainObserverPtr observer, std::vector<TerrainChunkPt
     assert(observer);
 
     Matrix4x4 view;
-    view.makeLookAt(observer->getPosition(), observer->getLookat(), observer->getUpVector());
+    view.makeLookAt_lh(observer->getPosition(), observer->getLookat(), observer->getUpVector());
 
     Frustum fru;
     fru.extract(view);

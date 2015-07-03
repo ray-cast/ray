@@ -75,7 +75,7 @@
             }
       ]]>
     </shader>
-    <technique name="shadow">
+    <technique name="custom">
         <pass name="shadow">
             <state name="vertex" value="ShadowVS"/>
             <state name="fragment" value="ShadowPS"/>

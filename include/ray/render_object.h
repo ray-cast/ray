@@ -81,9 +81,14 @@ public:
     virtual const Bound& getBoundingBox() const noexcept;
     virtual const Bound& getBoundingBoxInWorld() const noexcept;
 
-    virtual void collection(RenderDataManager& manager) noexcept;
+    virtual void setMaterial(MaterialPtr material) noexcept;
+    virtual MaterialPtr getMaterial() noexcept;
 
-    virtual void render(RenderDevice& renderer, RenderQueue queue, RenderPass pass, MaterialPassPtr material) noexcept;
+    virtual void setRenderBuffer(RenderBufferPtr geometry, RenderablePtr renderable) noexcept;
+    virtual void setRenderBuffer(RenderBufferPtr geometry, VertexType type) noexcept;
+
+    virtual RenderBufferPtr getRenderBuffer() noexcept;
+    virtual RenderablePtr getRenderable() noexcept;
 
 private:
 

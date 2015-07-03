@@ -34,3 +34,45 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#include <ray/fog.h>
+#include <ray/material_maker.h>
+#include <ray/camera.h>
+
+_NAME_BEGIN
+
+Fog::Fog() noexcept
+{
+}
+
+Fog::~Fog() noexcept
+{
+}
+
+void
+Fog::onActivate(RenderPipeline& pipeline) except
+{
+    _material = MaterialMaker("sys:fx/fog.glsl");
+    _fog = _material->getTech(RenderQueue::PostProcess)->getPass("fog");
+    _fogFalloff = _material->getParameter("fogFalloff");
+    _fogDensity = _material->getParameter("fogDensity");
+    _fogColor = _material->getParameter("fogColor");
+
+    _fogFalloff->assign(10.0f);
+    _fogDensity->assign(0.0001f);
+    _fogColor->assign(Vector3(0.0, 0.3, 0.99));
+}
+
+void
+Fog::onDeactivate(RenderPipeline& pipeline) except
+{
+}
+
+void
+Fog::onRender(RenderPipeline& pipeline, RenderTargetPtr texture) except
+{
+    pipeline.setRenderTarget(texture);
+    pipeline.setTechnique(_fog);
+    pipeline.drawSceneQuad();
+}
+
+_NAME_END

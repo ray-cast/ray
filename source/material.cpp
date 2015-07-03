@@ -41,6 +41,8 @@ _NAME_BEGIN
 MaterialSemanticPtr Material::_semantic;
 
 Material::Material() noexcept
+    : _shininess(0)
+    , _specular(0)
 {
 }
 
@@ -143,6 +145,30 @@ Material::close() noexcept
 
     _techniques.clear();
     _parameters.clear();
+}
+
+void
+Material::setSpecular(float specular) noexcept
+{
+    _specular = specular;
+}
+
+float
+Material::getSpecular() const noexcept
+{
+    return _specular;
+}
+
+void
+Material::setShininess(float shininess) noexcept
+{
+    _shininess = shininess;
+}
+
+float
+Material::getShininess() const noexcept
+{
+    return _shininess;
 }
 
 void

@@ -48,8 +48,10 @@ class EXPORT RenderFeatures final : public GameFeature
 {
 public:
     RenderFeatures() noexcept;
-    RenderFeatures(const RenderSetting& setting) noexcept;
     virtual ~RenderFeatures() noexcept;
+
+    void setRenderWindow(WindHandle hwnd, std::size_t w, std::size_t h) noexcept;
+    WindHandle getRenderWindow() const noexcept;
 
     void setRenderSetting(const RenderSetting& setting) noexcept;
     const RenderSetting& getRenderSetting() const noexcept;
@@ -84,6 +86,11 @@ private:
 
     typedef std::map<GameScene::InstanceID, RenderScenePtr> RenderScenes;
 
+    WindHandle _hwnd;
+    std::size_t _width;
+    std::size_t _height;
+
+    RenderWindowPtr _renderWindow;
     RenderSystemPtr _renderSystem;
     RenderSetting _renderSetting;
     RenderScenes _renderScenes;

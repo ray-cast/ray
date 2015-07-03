@@ -49,8 +49,6 @@ public:
     ~ScriptBindInput() noexcept;
 
     void setInput(InputPtr input) noexcept;
-    void setWindow(WindowPtr window) noexcept;
-
     InputPtr getInput() const noexcept;
 
     void setup(asIScriptEngine* _engine) noexcept;
@@ -83,7 +81,6 @@ private:
 private:
 
     InputPtr _input;
-    WindowPtr _window;
 };
 
 _NAME_END

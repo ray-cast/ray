@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/script_bind_input.h>
-#include <ray/wx.h>
 #include <angelscript.h>
 
 _NAME_BEGIN
@@ -213,12 +212,6 @@ ScriptBindInput::setInput(InputPtr input) noexcept
     _input = input;
 }
 
-void
-ScriptBindInput::setWindow(WindowPtr window) noexcept
-{
-    _window = window;
-}
-
 InputPtr
 ScriptBindInput::getInput() const noexcept
 {
@@ -243,13 +236,6 @@ void
 ScriptBindInput::setMousePos(int x, int y)  noexcept
 {
     assert(_input);
-
-    if (_window)
-    {
-        x += _window->getWindowPosX();
-        y += _window->getWindowPosY();
-    }
-
     _input->setMousePos(x, y);
 }
 

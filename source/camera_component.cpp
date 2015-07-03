@@ -95,21 +95,39 @@ CameraComponent::getFar() const noexcept
 }
 
 const Matrix4x4&
+CameraComponent::getView() const noexcept
+{
+    return _camera->getView();
+}
+
+const Matrix4x4&
+CameraComponent::getViewInverse() const noexcept
+{
+    return _camera->getViewInverse();
+}
+
+const Matrix4x4&
+CameraComponent::getViewInverseTranspose() const noexcept
+{
+    return _camera->getViewInverseTranspose();
+}
+
+const Matrix4x4&
 CameraComponent::getProject() const noexcept
 {
     return _camera->getProject();
 }
 
 const Matrix4x4&
-CameraComponent::getViewProject() const noexcept
-{
-    return _camera->getViewProject();
-}
-
-const Matrix4x4&
 CameraComponent::getProjectInverse() const noexcept
 {
     return _camera->getProjectInverse();
+}
+
+const Matrix4x4&
+CameraComponent::getViewProject() const noexcept
+{
+    return _camera->getViewProject();
 }
 
 const Matrix4x4&

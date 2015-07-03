@@ -772,7 +772,24 @@ public:
         return *this;
     }
 
-    Matrix4x4t<T>& makeOrtho(T left, T right, T bottom, T top, T zNear, T zFar)
+    Matrix4x4t<T>& makeOrtho_lh(T left, T right, T bottom, T top, T zNear, T zFar)
+    {
+        T tx = -(right + left) / (right - left);
+        T ty = -(top + bottom) / (top - bottom);
+        T tz = -zNear / (zFar - zNear);
+        T cx = 2.0f / (right - left);
+        T cy = 2.0f / (top - bottom);
+        T cz = 1.0f / (zFar - zNear);
+
+        set(cx, 0.0, 0.0, 0.0,
+            0.0, cy, 0.0, 0.0,
+            0.0, 0.0, cz, 0.0,
+            tx, ty, tz, 1.0);
+
+        return *this;
+    }
+
+    Matrix4x4t<T>& makeOrtho_rh(T left, T right, T bottom, T top, T zNear, T zFar)
     {
         T tx = -(right + left) / (right - left);
         T ty = -(top + bottom) / (top - bottom);
@@ -789,7 +806,7 @@ public:
         return *this;
     }
 
-    bool getOrtho(T& left, T& right, T& bottom, T& top, T& zNear, T& zFar) const
+    bool getOrtho_rh(T& left, T& right, T& bottom, T& top, T& zNear, T& zFar) const
     {
         if (a4 != 0.0 || b4 != 0.0 || c4 != 0.0 || c4 != 1.0) return false;
 
@@ -805,12 +822,12 @@ public:
         return true;
     }
 
-    Matrix4x4t<T>& makeFrustumt(T left, T right, T bottom, T top, T zNear, T zFar)
+    Matrix4x4t<T>& makeFrustumt_lh(T left, T right, T bottom, T top, T zNear, T zFar)
     {
-        T A = (right + left) / (right - left);
-        T B = (top + bottom) / (top - bottom);
-        T C = (fabs(zFar) > DBL_MAX) ? 1.0f : (zFar + zNear) / (zFar - zNear);
-        T D = (fabs(zFar) > DBL_MAX) ? -2.0f * zNear : -2.0f * zFar * zNear / (zFar - zNear);
+        T A = (left + right) / (left - right);
+        T B = (bottom + top) / (bottom - top);
+        T C = (fabs(zFar) > DBL_MAX) ? 1.0f : zFar / (zFar - zNear);
+        T D = (fabs(zFar) > DBL_MAX) ? zNear : -zNear * zFar / (zFar - zNear);
         T cx = 2.0f * zNear / (right - left);
         T cy = 2.0f * zNear / (top - bottom);
 
@@ -822,7 +839,24 @@ public:
         return *this;
     }
 
-    bool getFrustumt(T& left, T& right, T& bottom, T& top, T& zNear, T& zFar) const
+    Matrix4x4t<T>& makeFrustumt_rh(T left, T right, T bottom, T top, T zNear, T zFar)
+    {
+        T A = (right + left) / (right - left);
+        T B = (top + bottom) / (top - bottom);
+        T C = (fabs(zFar) > DBL_MAX) ? 1.0f : -(zFar + zNear) / (zFar - zNear);
+        T D = (fabs(zFar) > DBL_MAX) ? zNear : -2.0 * zNear * zFar / (zFar - zNear);
+        T cx = 2.0f * zNear / (right - left);
+        T cy = 2.0f * zNear / (top - bottom);
+
+        set(cx, 0.0, 0.0, 0.0,
+            0.0, cy, 0.0, 0.0,
+            A, B, C, -1.0,
+            0.0, 0.0, D, 0.0);
+
+        return *this;
+    }
+
+    bool getFrustumt_rh(T& left, T& right, T& bottom, T& top, T& zNear, T& zFar) const
     {
         if (a4 != 0.0 || b4 != 0.0 || c4 != -1.0 || c4 != 0.0)
             return false;
@@ -842,7 +876,7 @@ public:
         return true;
     }
 
-    Matrix4x4t<T>& makePerspective(T fovy, T aspectRatio, T zNear, T zFar)
+    Matrix4x4t<T>& makePerspective_lh(T fovy, T aspectRatio, T zNear, T zFar)
     {
         T tan_fovy = tan(degrees(fovy * 0.5f));
         T right = tan_fovy * aspectRatio * zNear;
@@ -850,11 +884,23 @@ public:
         T top = tan_fovy * zNear;
         T bottom = -top;
 
-        makeFrustumt(left, right, bottom, top, zNear, zFar);
+        makeFrustumt_lh(left, right, bottom, top, zNear, zFar);
         return *this;
     }
 
-    bool getPerspective(T& fovy, T& aspectRatio, T& zNear, T& zFar) const
+    Matrix4x4t<T>& makePerspective_rh(T fovy, T aspectRatio, T zNear, T zFar)
+    {
+        T tan_fovy = tan(degrees(fovy * 0.5f));
+        T right = tan_fovy * aspectRatio * zNear;
+        T left = -right;
+        T top = tan_fovy * zNear;
+        T bottom = -top;
+
+        makeFrustumt_rh(left, right, bottom, top, zNear, zFar);
+        return *this;
+    }
+
+    bool getPerspective_rh(T& fovy, T& aspectRatio, T& zNear, T& zFar) const
     {
         T right = 0.0;
         T left = 0.0;
@@ -877,22 +923,68 @@ public:
         return r;
     }
 
-    Matrix4x4t<T>& makeLookAt(const Vector3t<T>& eye, const Vector3t<T>& center, const Vector3t<T>& up)
+    Matrix4x4t<T>& makeLookAt_lh(const Vector3t<T>& eye, const Vector3t<T>& center, const Vector3t<T>& up)
     {
         Vector3t<T> x, y, z;
 
         z = center - eye;
         z.normalize();
 
-        x = z.cross(up);
+        x = up.cross(z);
         x.normalize();
 
-        y = x.cross(z);
+        y = z.cross(x);
         y.normalize();
 
-        set(x.x, y.x, -z.x, 0.0,
-            x.y, y.y, -z.y, 0.0,
-            x.z, y.z, -z.z, 0.0,
+        set(x.x, y.x, z.x, 0.0,
+            x.y, y.y, z.y, 0.0,
+            x.z, y.z, z.z, 0.0,
+            0.0, 0.0, 0.0, 1.0);
+
+        Vector3t<T> tmp = -eye;
+        if (tmp.x != 0)
+        {
+            d1 += tmp.x * a1;
+            d2 += tmp.x * a2;
+            d3 += tmp.x * a3;
+            d4 += tmp.x * a4;
+        }
+
+        if (tmp.y != 0)
+        {
+            d1 += tmp.y * b1;
+            d2 += tmp.y * b2;
+            d3 += tmp.y * b3;
+            d4 += tmp.y * b4;
+        }
+
+        if (tmp.z != 0)
+        {
+            d1 += tmp.z * c1;
+            d2 += tmp.z * c2;
+            d3 += tmp.z * c3;
+            d4 += tmp.z * c4;
+        }
+
+        return *this;
+    }
+
+    Matrix4x4t<T>& makeLookAt_rh(const Vector3t<T>& eye, const Vector3t<T>& center, const Vector3t<T>& up)
+    {
+        Vector3t<T> x, y, z;
+
+        z = eye - center;
+        z.normalize();
+
+        x = up.cross(z);
+        x.normalize();
+
+        y = z.cross(x);
+        y.normalize();
+
+        set(x.x, y.x, z.x, 0.0,
+            x.y, y.y, z.y, 0.0,
+            x.z, y.z, z.z, 0.0,
             0.0, 0.0, 0.0, 1.0);
 
         Vector3t<T> tmp = -eye;

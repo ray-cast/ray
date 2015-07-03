@@ -25,8 +25,8 @@
             }
         ]]>
     </shader>
-    <technique name="opaque">
-        <pass name="gbuffer">
+    <technique name="postprocess">
+        <pass name="lines">
             <state name="vertex" value="LineVS"/>
             <state name="fragment" value="LinePS"/>
 

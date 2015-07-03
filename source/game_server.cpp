@@ -44,6 +44,7 @@ _NAME_BEGIN
 GameServer::GameServer() noexcept
     : _gameApp(nullptr)
     , _isActive(false)
+    , _isQuitRequest(false)
 {
 }
 
@@ -62,8 +63,16 @@ GameServer::open() noexcept
 void
 GameServer::close() noexcept
 {
+    _isQuitRequest = true;
+
     _scenes.clear();
     _features.clear();
+}
+
+bool
+GameServer::isQuitRequest() const noexcept
+{
+    return _isQuitRequest;
 }
 
 void
@@ -277,73 +286,6 @@ GameServer::getGameFeatures() const noexcept
 }
 
 void
-GameServer::onFrameBegin() except
-{
-    _timer->update();
-
-    for (auto& it : _scenes)
-    {
-        it->_onFrameBegin();
-    }
-
-    for (auto& it : _features)
-    {
-        it->onFrameBegin();
-    }
-}
-
-void
-GameServer::onFrame() except
-{
-    for (auto& it : _scenes)
-    {
-        it->_onFrame();
-    }
-
-    for (auto& it : _features)
-    {
-        it->onFrame();
-    }
-}
-
-void
-GameServer::onFrameEnd() except
-{
-    for (auto& it : _scenes)
-    {
-        it->_onFrameEnd();
-    }
-
-    for (auto& it : _features)
-    {
-        it->onFrameEnd();
-    }
-}
-
-void
-GameServer::onEvent(const AppEvent& event) except
-{
-    for (auto& it : _features)
-    {
-        it->onEvent(event);
-    }
-}
-
-void
-GameServer::onMessage(const std::string& method, const Variant* data...) except
-{
-    auto scenes = this->getScenes();
-    for (auto& it : scenes)
-    {
-        auto root = it->getRootObject();
-        if (root)
-        {
-            root->sendMessageDownwards(method, data);
-        }
-    }
-}
-
-void
 GameServer::_setGameApp(GameApplication* app) noexcept
 {
     _gameApp = app;
@@ -356,8 +298,50 @@ GameServer::getGameApp() noexcept
 }
 
 void
-GameServer::sendMessage(const std::string& method, const Variant* data...) except
+GameServer::sendMessage(const GameMessage& message) except
 {
+    if (!_isQuitRequest)
+    {
+        switch (message.event)
+        {
+        case GameEvent::AppQuit:
+        {
+            _isQuitRequest = true;
+        }
+        break;
+        }
+
+        for (auto& it : _features)
+            it->onMessage(message);
+
+        auto scenes = this->getScenes();
+        for (auto& it : scenes)
+            it->sendMessage(message);
+    }
+}
+
+void
+GameServer::postMessage(const GameMessage& event) except
+{
+    GameDispatcher::postMessage(event);
+}
+
+void
+GameServer::update() except
+{
+    if (!_isQuitRequest)
+    {
+        GameMessage event;
+
+        while (this->pollMessages(event))
+        {
+            this->sendMessage(event);
+        }
+
+        this->onFrameBegin();
+        this->onFrame();
+        this->onFrameEnd();
+    }
 }
 
 GameObjectPtr
@@ -481,6 +465,50 @@ GameServer::load(iarchive& reader, GameScenePtr scene) except
     }
 
     return true;
+}
+
+void
+GameServer::onFrameBegin() except
+{
+    _timer->update();
+
+    for (auto& it : _scenes)
+    {
+        it->_onFrameBegin();
+    }
+
+    for (auto& it : _features)
+    {
+        it->onFrameBegin();
+    }
+}
+
+void
+GameServer::onFrame() except
+{
+    for (auto& it : _scenes)
+    {
+        it->_onFrame();
+    }
+
+    for (auto& it : _features)
+    {
+        it->onFrame();
+    }
+}
+
+void
+GameServer::onFrameEnd() except
+{
+    for (auto& it : _scenes)
+    {
+        it->_onFrameEnd();
+    }
+
+    for (auto& it : _features)
+    {
+        it->onFrameEnd();
+    }
 }
 
 _NAME_END

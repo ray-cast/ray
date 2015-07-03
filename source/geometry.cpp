@@ -62,27 +62,6 @@ Geometry::getMaterial() noexcept
 }
 
 void
-Geometry::collection(RenderDataManager& manager) noexcept
-{
-    if (_material)
-    {
-        auto& techiniques = _material->getTechs();
-        for (auto& it : techiniques)
-        {
-            if (it)
-            {
-                manager.addRenderData(it->getRenderQueue(), this);
-            }
-        }
-    }
-
-    if (this->getCastShadow())
-    {
-        manager.addRenderData(RenderQueue::Shadow, this);
-    }
-}
-
-void
 Geometry::setRenderBuffer(RenderBufferPtr geometry, RenderablePtr renderable) noexcept
 {
     assert(geometry);
@@ -142,38 +121,6 @@ RenderScenePtr
 Geometry::getRenderScene() const noexcept
 {
     return _renderScene->shared_from_this();
-}
-
-void
-Geometry::render(RenderDevice& renderer, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept
-{
-    auto semantic = Material::getMaterialSemantic();
-    semantic->setMatrixParam(GlobalMatrixSemantic::matModel, this->getTransform());
-    semantic->setMatrixParam(GlobalMatrixSemantic::matModelInverse, this->getTransformInverse());
-    semantic->setMatrixParam(GlobalMatrixSemantic::matModelInverseTranspose, this->getTransformInverseTranspose());
-
-    auto pass = _pass ? _pass : _material->getTech(queue)->getPass(passType);
-
-    if (pass)
-    {
-        if (!_pass)
-        {
-            RenderStencilState stencil = pass->getRenderState()->getStencilState();
-            stencil.stencilEnable = true;
-            stencil.stencilPass = StencilOperation::STENCILOP_REPLACE;
-            stencil.stencilFunc = CompareFunction::GPU_ALWAYS;
-            stencil.stencilRef = 1 << this->getLayer();
-            stencil.stencilReadMask = 0xFFFFFFFF;
-
-            pass->getRenderState()->setStencilState(stencil);
-        }
-
-        renderer.setRenderState(pass->getRenderState());
-        renderer.setShaderObject(pass->getShaderObject());
-        renderer.setRenderBuffer(_geometry);
-
-        renderer.drawRenderBuffer(*_renderable);
-    }
 }
 
 _NAME_END

@@ -47,10 +47,8 @@
 #include <ray/script_features.h>
 #include <ray/render_features.h>
 #include <ray/physics_features.h>
-#include <ray/window_features.h>
 #include <ray/queue.h>
 #include <ray/format.h>
-#include <ray/wx.h>
 #include <ray/thread.h>
 
 typedef std::shared_ptr<class TerrainItem> TerrainItemPtr;

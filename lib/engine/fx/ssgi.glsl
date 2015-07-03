@@ -35,8 +35,8 @@
             #define NUM_SPIRAL_TURNS 7
             #define NUM_SAMPLE 6
 
-            varying vec4 position;
-            varying vec2 coord;
+            in vec4 position;
+            in vec2 coord;
 
             uniform float radius;
             uniform float radius2;
@@ -66,8 +66,8 @@
 
             float linearizeDepth(vec2 uv)
             {
-                float d = texture(texDepth, uv).r * 2.0 - 1.0;
-                return clipInfo.x / (clipInfo.y * d - clipInfo.z);
+                float d = texture2D(texDepth, uv).r;
+                return clipInfo.x / (clipInfo.z - clipInfo.y * d);
             }
 
             float bilateralfilter(vec2 coord, float r, float center_d)
@@ -124,12 +124,8 @@
                     vec3 sampleDirection = samplePosition - viewPosition;
                     vec3 sampleColor = texture2D(texColor, sampleCoord).rgb;
 
-                    float vv = dot(sampleDirection, sampleDirection);
-                    if (vv <= radius2)
-                    {
-                        sampleAmbient += sampleColor * computeAO(viewPosition, viewNormal, samplePosition);
-                        sampleWeight += 1.0;
-                    }
+                    sampleAmbient += sampleColor * computeAO(viewPosition, viewNormal, samplePosition);
+                    sampleWeight += 1.0;
                 }
 
                 glsl_FragColor0.rgb = sampleAmbient / sampleWeight;
@@ -166,6 +162,8 @@
             <state name="vertex" value="postprocess"/>
             <state name="fragment" value="aoPS"/>
 
+            <state name="cullmode" value="front"/>
+
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
         </pass>
@@ -173,12 +171,16 @@
             <state name="vertex" value="postprocess"/>
             <state name="fragment" value="blurPS"/>
 
+            <state name="cullmode" value="front"/>
+
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
         </pass>
         <pass name="copy">
             <state name="vertex" value="postprocess"/>
             <state name="fragment" value="copyPS"/>
+
+            <state name="cullmode" value="front"/>
 
             <state name="depthtest" value="true"/>
             <state name="depthwrite" value="false"/>

@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-class EXPORT GameServer final
+class EXPORT GameServer final : public GameDispatcher
 {
 public:
     GameServer() noexcept;
@@ -50,6 +50,8 @@ public:
 
     bool open() noexcept;
     void close() noexcept;
+
+    bool isQuitRequest() const noexcept;
 
     void setActive(bool active) except;
     bool getActive() const noexcept;
@@ -77,15 +79,15 @@ public:
 
     GameApplication* getGameApp() noexcept;
 
-    void sendMessage(const std::string& method, const Variant* data...) except;
+    void sendMessage(const GameMessage& message) except;
+    void postMessage(const GameMessage& message) except;
 
+    void update() except;
+
+private:
     void onFrameBegin() except;
     void onFrame() except;
     void onFrameEnd() except;
-
-    void onEvent(const AppEvent& event) except;
-
-    void onMessage(const std::string& method, const Variant* data...) except;
 
 private:
 
@@ -104,6 +106,7 @@ private:
 private:
 
     bool _isActive;
+    bool _isQuitRequest;
 
     TimerPtr _timer;
 

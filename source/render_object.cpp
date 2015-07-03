@@ -160,6 +160,42 @@ RenderObject::getBoundingBoxInWorld() const noexcept
 }
 
 void
+RenderObject::setMaterial(MaterialPtr) noexcept
+{
+    assert(false);
+}
+
+MaterialPtr
+RenderObject::getMaterial() noexcept
+{
+    return nullptr;
+}
+
+void
+RenderObject::setRenderBuffer(RenderBufferPtr geometry, RenderablePtr renderable) noexcept
+{
+    assert(nullptr);
+}
+
+void
+RenderObject::setRenderBuffer(RenderBufferPtr geometry, VertexType type) noexcept
+{
+    assert(nullptr);
+}
+
+RenderBufferPtr
+RenderObject::getRenderBuffer() noexcept
+{
+    return nullptr;
+}
+
+RenderablePtr
+RenderObject::getRenderable() noexcept
+{
+    return nullptr;
+}
+
+void
 RenderObject::updateBoundingBoxInWorld() const noexcept
 {
     if (_isNeedUpdate)
@@ -168,16 +204,6 @@ RenderObject::updateBoundingBoxInWorld() const noexcept
         _worldBoundingxBox.center(_boundingBox.center() + _transform.getTranslate());
         _isNeedUpdate = false;
     }
-}
-
-void
-RenderObject::collection(RenderDataManager&) noexcept
-{
-}
-
-void
-RenderObject::render(RenderDevice& renderer, RenderQueue queue, RenderPass pass, MaterialPassPtr material) noexcept
-{
 }
 
 _NAME_END

@@ -58,6 +58,12 @@ RenderFactory::createRenderDevice() noexcept
     return std::make_shared<OGLRenderer>();
 }
 
+RenderWindowPtr
+RenderFactory::createRenderWindow() noexcept
+{
+    return std::make_shared<OGLCanvas>();
+}
+
 ShaderPtr
 RenderFactory::createShader() noexcept
 {
@@ -140,6 +146,98 @@ RenderBufferPtr
 RenderFactory::createRenderBuffer() noexcept
 {
     return std::make_shared<OGLRenderBuffer>();
+}
+
+RenderBufferPtr
+RenderFactory::createRenderBuffer(const MeshProperty& mesh) except
+{
+    auto buffer = std::make_shared<OGLRenderBuffer>();
+
+    auto numVertex = mesh.getNumVertices();
+    auto numIndex = mesh.getNumIndices();
+
+    std::vector<VertexComponent> components;
+
+    auto& vertices = mesh.getVertexArray();
+    if (!vertices.empty())
+    {
+        if (vertices.size() == numVertex)
+            components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
+    }
+
+    auto& normals = mesh.getNormalArray();
+    if (!normals.empty())
+    {
+        if (normals.size() == numVertex)
+            components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_NORMAL, VertexFormat::GPU_VERTEX_FLOAT3));
+    }
+
+    auto& texcoords = mesh.getTexcoordArray();
+    if (!texcoords.empty())
+    {
+        if (texcoords.size() == numVertex)
+            components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_TEXCOORD, VertexFormat::GPU_VERTEX_FLOAT2));
+    }
+
+    auto& faces = mesh.getFaceArray();
+
+    auto vb = RenderFactory::createVertexBuffer();
+    auto ib = RenderFactory::createIndexBuffer();
+
+    vb->setVertexComponents(components);
+    vb->setup(numVertex, VertexUsage::GPU_USAGE_STATIC);
+    ib->setup(numIndex, IndexType::GPU_UINT32, VertexUsage::GPU_USAGE_STATIC);
+
+    std::size_t offset = 0;
+    std::size_t stride = vb->getVertexSize();
+    if (vertices.size() == numVertex)
+    {
+        char* data = (char*)vb->data();
+        for (auto& it : vertices)
+        {
+            *(float3*)data = it;
+            data += stride;
+        }
+
+        offset += sizeof(float3);
+    }
+
+    if (normals.size() == numVertex)
+    {
+        char* data = (char*)vb->data() + offset;
+        for (auto& it : normals)
+        {
+            *(float3*)data = it;
+            data += stride;
+        }
+
+        offset += sizeof(float3);
+    }
+
+    if (texcoords.size() == numVertex)
+    {
+        char* data = (char*)vb->data() + offset;
+        for (auto& it : texcoords)
+        {
+            *(float2*)data = it;
+            data += stride;
+        }
+
+        offset += sizeof(float2);
+    }
+
+    if (!faces.empty())
+    {
+        std::uint32_t* indices = (std::uint32_t*)ib->data();
+        for (auto& face : faces)
+        {
+            *indices++ = face;
+        }
+    }
+
+    buffer->setup(vb, ib);
+
+    return buffer;
 }
 
 MaterialPtr

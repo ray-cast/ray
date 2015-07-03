@@ -102,18 +102,16 @@ MaterialMaker::instancePass(iarchive& reader) except
     if (passName.empty())
         throw failure("The pass name can not be empty");
 
-    if (passName == "forward")
-        passType = RenderPass::RP_FORWARD;
-    else if (passName == "depth")
-        passType = RenderPass::RP_DEPTH;
+    if (passName == "custom")
+        passType = RenderPass::RP_CUSTOM;
     else if (passName == "shadow")
         passType = RenderPass::RP_SHADOW;
-    else if (passName == "gbuffer")
-        passType = RenderPass::RP_GBUFFER;
+    else if (passName == "opaque")
+        passType = RenderPass::RP_OPAQUES;
+    else if (passName == "transparent")
+        passType = RenderPass::RP_TRANSPARENT;
     else if (passName == "light")
-        passType = RenderPass::RP_LIGHT;
-    else if (passName == "custom")
-        passType = RenderPass::RP_CUSTOM;
+        passType = RenderPass::RP_LIGHTS;
 
     auto pass = std::make_shared<MaterialPass>(passType);
     pass->setName(passName);
@@ -248,16 +246,16 @@ MaterialMaker::instanceTech(iarchive& reader) except
     if (techName.empty())
         throw failure("The technique name can not be empty");
 
-    if (techName == "background")
+    if (techName == "custom")
+        queue = RenderQueue::Custom;
+    else if (techName == "background")
         queue = RenderQueue::Background;
-    else if (techName == "shadow")
-        queue = RenderQueue::Shadow;
     else if (techName == "opaque")
         queue = RenderQueue::Opaque;
     else if (techName == "transparent")
         queue = RenderQueue::Transparent;
-    else if (techName == "deferredlight")
-        queue = RenderQueue::DeferredLight;
+    else if (techName == "lighting")
+        queue = RenderQueue::Lighting;
     else if (techName == "postprocess")
         queue = RenderQueue::PostProcess;
     else
@@ -367,14 +365,14 @@ MaterialMaker::instanceBuffer(iarchive& reader) except
 MaterialPtr
 MaterialMaker::load(const std::string& filename) except
 {
+    MemoryStream stream;
+
+    IoServer::instance()->openFile(filename, stream);
+    if (!stream.is_open())
+        throw failure("Opening file fail:" + filename);
+
     try
     {
-        MemoryStream stream;
-
-        IoServer::instance()->openFile(filename, stream);
-        if (!stream.is_open())
-            return false;
-
         XMLReader reader;
         if (reader.open(stream))
             return this->load(reader);

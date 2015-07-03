@@ -82,7 +82,7 @@ GameComponent::getGameServer() const noexcept
 void
 GameComponent::load(iarchive& reader) noexcept
 {
-    reader >> static_cast<GameMessage*>(this);
+    reader >> static_cast<GameListener*>(this);
 }
 
 void
@@ -91,7 +91,7 @@ GameComponent::save(oarchive& write) noexcept
 }
 
 void
-GameComponent::sendMessage(const std::string& method, const Variant* data...) except
+GameComponent::sendMessage(const GameMessage& message) except
 {
     if (!_gameObject->getActive())
         return;
@@ -100,12 +100,12 @@ GameComponent::sendMessage(const std::string& method, const Variant* data...) ex
     for (auto& it : components)
     {
         if (it.get() != this)
-            it->onMessage(method, data);
+            it->onMessage(message);
     }
 }
 
 void
-GameComponent::sendMessageUpwards(const std::string& method, const Variant* data...) except
+GameComponent::sendMessageUpwards(const GameMessage& message) except
 {
     if (!_gameObject->getActive())
         return;
@@ -114,18 +114,18 @@ GameComponent::sendMessageUpwards(const std::string& method, const Variant* data
     for (auto& it : components)
     {
         if (it.get() != this)
-            it->onMessage(method, data);
+            it->onMessage(message);
     }
 
     auto parent = this->getGameObject()->getParent();
     if (parent)
     {
-        parent->sendMessageUpwards(method, data);
+        parent->sendMessageUpwards(message);
     }
 }
 
 void
-GameComponent::sendMessageDownwards(const std::string& method, const Variant* data...) except
+GameComponent::sendMessageDownwards(const GameMessage& message) except
 {
     if (!_gameObject->getActive())
         return;
@@ -134,13 +134,13 @@ GameComponent::sendMessageDownwards(const std::string& method, const Variant* da
     for (auto& it : components)
     {
         if (it.get() != this)
-            it->onMessage(method, data);
+            it->onMessage(message);
     }
 
     auto& children = this->getGameObject()->getChildren();
     for (auto& it : children)
     {
-        it->sendMessageDownwards(method, data);
+        it->sendMessageDownwards(message);
     }
 }
 
@@ -196,11 +196,6 @@ GameComponent::onLayerChangeBefore() except
 
 void
 GameComponent::onLayerChangeAfter() except
-{
-}
-
-void
-GameComponent::onMessage(const std::string& method, const Variant* data...) except
 {
 }
 

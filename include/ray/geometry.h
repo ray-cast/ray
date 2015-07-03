@@ -61,10 +61,6 @@ public:
     void setRenderScene(RenderScenePtr scene) noexcept;
     RenderScenePtr getRenderScene() const noexcept;
 
-    void collection(RenderDataManager& manager) noexcept;
-
-    void render(RenderDevice& renderer, RenderQueue queue, RenderPass type, MaterialPassPtr pass = nullptr) noexcept;
-
 private:
 
     MaterialPtr _material;

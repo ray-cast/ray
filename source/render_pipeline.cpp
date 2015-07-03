@@ -58,10 +58,10 @@ void
 RenderDataManager::clear() noexcept
 {
     _visiable[RenderQueue::Background].clear();
-    _visiable[RenderQueue::Shadow].clear();
     _visiable[RenderQueue::Opaque].clear();
     _visiable[RenderQueue::Transparent].clear();
-    _visiable[RenderQueue::DeferredLight].clear();
+    _visiable[RenderQueue::Lighting].clear();
+    _visiable[RenderQueue::PostProcess].clear();
 }
 
 RenderPipeline::RenderPipeline() noexcept
@@ -84,18 +84,15 @@ RenderPipeline::setup(RenderDevicePtr renderDevice, std::size_t width, std::size
     MeshProperty mesh;
     mesh.makePlane(2, 2, 1, 1);
 
-    _renderSceneQuad = RenderFactory::createRenderBuffer();
-    _renderSceneQuad->setup(mesh);
+    _renderSceneQuad = RenderFactory::createRenderBuffer(mesh);
 
     mesh.makeSphere(1, 16, 12);
 
-    _renderSphere = RenderFactory::createRenderBuffer();
-    _renderSphere->setup(mesh);
+    _renderSphere = RenderFactory::createRenderBuffer(mesh);
 
     mesh.makeCone(1, 1, 16);
 
-    _renderCone = RenderFactory::createRenderBuffer();
-    _renderCone->setup(mesh);
+    _renderCone = RenderFactory::createRenderBuffer(mesh);
 
     this->onActivate();
 }
@@ -279,7 +276,9 @@ RenderPipeline::drawRenderable(RenderQueue queue, RenderPass pass, MaterialPassP
     auto& renderable = _renderDataManager.getRenderData(queue);
     for (auto& it : renderable)
     {
-        it->render(*_renderer, queue, pass, material);
+        this->onRenderObjectPre(*it, queue, pass, material);
+        this->onRenderObject(*it, queue, pass, material);
+        this->onRenderObjectPost(*it, queue, pass, material);
     }
 }
 
@@ -404,7 +403,7 @@ RenderPipeline::assignVisiable() noexcept
             if (listener)
                 listener->onWillRenderObject();
 
-            it->collection(_renderDataManager);
+            this->collection(*it);
         }
     }
 }
@@ -425,8 +424,71 @@ RenderPipeline::assignLight() noexcept
             if (listener)
                 listener->onWillRenderObject();
 
-            it->collection(_renderDataManager);
+            _renderDataManager.addRenderData(RenderQueue::Lighting, it);
         }
+    }
+}
+
+void
+RenderPipeline::collection(RenderObject& object) noexcept
+{
+    if (this->getCamera()->getCameraOrder() == CameraOrder::CO_SHADOW)
+    {
+        if (object.getCastShadow())
+        {
+        }
+    }
+
+    auto material = object.getMaterial();
+    if (material)
+    {
+        auto& techiniques = material->getTechs();
+        for (auto& technique : techiniques)
+        {
+            auto queue = technique->getRenderQueue();
+            _renderDataManager.addRenderData(queue, &object);
+        }
+    }
+}
+
+void
+RenderPipeline::onRenderObjectPre(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except
+{
+}
+
+void
+RenderPipeline::onRenderObjectPost(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except
+{
+}
+
+void
+RenderPipeline::onRenderObject(RenderObject& object, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) except
+{
+    auto semantic = Material::getMaterialSemantic();
+    semantic->setMatrixParam(GlobalMatrixSemantic::matModel, object.getTransform());
+    semantic->setMatrixParam(GlobalMatrixSemantic::matModelInverse, object.getTransformInverse());
+    semantic->setMatrixParam(GlobalMatrixSemantic::matModelInverseTranspose, object.getTransformInverseTranspose());
+
+    auto pass = _pass ? _pass : object.getMaterial()->getTech(queue)->getPass(passType);
+
+    if (pass)
+    {
+        if (!_pass)
+        {
+            RenderStencilState stencil = pass->getRenderState()->getStencilState();
+            stencil.stencilEnable = true;
+            stencil.stencilPass = StencilOperation::STENCILOP_REPLACE;
+            stencil.stencilFunc = CompareFunction::GPU_ALWAYS;
+            stencil.stencilRef = 1 << object.getLayer();
+            stencil.stencilReadMask = 0xFFFFFFFF;
+
+            pass->getRenderState()->setStencilState(stencil);
+        }
+
+        this->setRenderState(pass->getRenderState());
+        this->setShaderObject(pass->getShaderObject());
+
+        this->drawMesh(object.getRenderBuffer(), *object.getRenderable());
     }
 }
 

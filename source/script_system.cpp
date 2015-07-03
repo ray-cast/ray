@@ -152,7 +152,6 @@ ScriptSystem::setWindow(WindowPtr wx) noexcept
     if (_window != wx)
     {
         _bindDisplay->setWindow(wx);
-        _bindInput->setWindow(wx);
         _window = wx;
     }
 }

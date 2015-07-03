@@ -47,13 +47,6 @@ public:
     DeferredLighting() noexcept;
     ~DeferredLighting() noexcept;
 
-    void onActivate() except;
-    void onDectivate() noexcept;
-
-    void onRenderPre() noexcept;
-    void onRenderPipeline() noexcept;
-    void onRenderPost() noexcept;
-
 private:
 
     void renderShadow() noexcept;
@@ -74,6 +67,16 @@ private:
     void renderAreaLight(const Light& light) noexcept;
 
 private:
+    virtual void onActivate() except;
+    virtual void onDectivate() noexcept;
+
+    virtual void onRenderPre() noexcept;
+    virtual void onRenderPipeline() noexcept;
+    virtual void onRenderPost() noexcept;
+
+    virtual void onRenderObjectPre(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except;
+
+private:
 
     MaterialPtr _shadow;
     MaterialPassPtr _shadowGenerate;
@@ -81,7 +84,7 @@ private:
     MaterialPassPtr _shadowBlurY;
 
     MaterialPtr _deferredLighting;
-    MaterialPassPtr _deferredDepthOhly;
+    MaterialPassPtr _deferredDepthOnly;
     MaterialPassPtr _deferredDepthLinear;
     MaterialPassPtr _deferredSunLight;
     MaterialPassPtr _deferredSunLightShadow;

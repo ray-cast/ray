@@ -58,9 +58,14 @@ public:
     float getNear() const noexcept;
     float getFar() const noexcept;
 
+    const Matrix4x4& getView() const noexcept;
+    const Matrix4x4& getViewInverse() const noexcept;
+    const Matrix4x4& getViewInverseTranspose() const noexcept;
+
     const Matrix4x4& getProject() const noexcept;
-    const Matrix4x4& getViewProject() const noexcept;
     const Matrix4x4& getProjectInverse() const noexcept;
+
+    const Matrix4x4& getViewProject() const noexcept;
     const Matrix4x4& getViewProjectInverse() const noexcept;
 
     Vector3 project(const Vector3& pos) const noexcept;

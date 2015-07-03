@@ -11,6 +11,8 @@
             <attribute ratio="1.7916667"/>
             <attribute znear="0.1"/>
             <attribute zfar="65535.0"/>
+            <attribute w="1376"/>
+            <attribute h="768"/>
         </component>
         <component name="character">
             <attribute radius="1"/>

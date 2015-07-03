@@ -63,13 +63,13 @@ private:
     virtual void onFrameBegin() noexcept;
     virtual void onFrameEnd() noexcept;
 
-    virtual void onEvent(const AppEvent& event) noexcept;
+    virtual void onMessage(const GameMessage& event) noexcept;
 
     virtual void onInputEvent(const InputEvent& event) noexcept;
 
 private:
 
-    void _buildInput(InputDevice::CaptureObject win) noexcept;
+    void _buildInput() noexcept;
 
 private:
     InputFeatures(const InputFeatures&) = delete;

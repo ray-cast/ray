@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GameScene, GameMessage)
+__ImplementSubClass(GameScene, GameListener)
 
 GameScene::Setting::Setting() noexcept
     : gravity(0.0f, 9.81f, 0.0f)
@@ -178,6 +178,16 @@ void
 GameScene::_onFrameEnd() noexcept
 {
     _root->_onFrameEnd();
+}
+
+void
+GameScene::onMessage(const GameMessage& message) except
+{
+    auto root = this->getRootObject();
+    if (root)
+    {
+        root->sendMessageDownwards(message);
+    }
 }
 
 _NAME_END

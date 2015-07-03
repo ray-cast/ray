@@ -7,7 +7,8 @@
     <parameter name="radius" type="float"/>
     <parameter name="radius2" type="float"/>
     <parameter name="bias" type="float"/>
-    <parameter name="intensityDivR6" type="float"/>
+    <parameter name="texSize" type="float2"/>
+    <parameter name="intensity" type="float"/>
     <parameter name="blurFactor" type="float" />
     <parameter name="blurSharpness" type="float" />
     <parameter name="blurRadius" type="int" />
@@ -17,33 +18,35 @@
     <parameter name="texAO" type="sampler2D" />
     <parameter name="texSource" type="sampler2D"/>
     <parameter name="matViewInverseTranspose" semantic="matViewInverseTranspose" />
-    <parameter name="matProjectInverse" semantic="matProjectInverse"/>
+    <parameter name="matProject" semantic="matProject"/>
     <shader name="vertex">
         <![CDATA[
             out vec2 coord;
+            out vec4 position;
 
             void postprocess()
             {
                 coord = glsl_Texcoord.xy;
+                position = vec4(coord.xy * vec2( 2.0f, -2.0f ) + vec2( -1.0f, 1.0f) , 0.0f, 1.0f );
                 gl_Position = glsl_Position;
             }
         ]]>
     </shader>
     <shader name="fragment">
         <![CDATA[
-            #define NUM_SPIRAL_TURNS 7
-            #define NUM_SAMPLE 10
+            #define NUM_SAMPLE 12
 
-            varying vec4 position;
-            varying vec2 coord;
+            in vec4 position;
+            in vec2 coord;
 
             uniform float radius;
             uniform float radius2;
             uniform float projScale;
             uniform float bias;
-            uniform float intensityDivR6;
+            uniform float intensity;
             uniform vec4 projInfo;
             uniform vec4 clipInfo;
+            uniform vec2 texSize;
 
             uniform int blurRadius;
             uniform float blurFactor;
@@ -51,98 +54,85 @@
             uniform vec2 blurDirection;
 
             uniform mat4 matViewInverseTranspose;
+            uniform mat4 matProject;
 
             uniform sampler2D texDepth;
             uniform sampler2D texNormal;
             uniform sampler2D texAO;
             uniform sampler2D texSource;
 
-            float heaviside(float x)
-            {
-                return 0.5 * (1 + sign(x));
-            }
-
             float linearizeDepth(vec2 uv)
             {
-                float d = texture2D(texDepth, uv).r;
+                float d = textureLod(texDepth, uv, 0).r;
                 return clipInfo.x / (clipInfo.z - clipInfo.y * d);
+            }
+
+            vec3 samplePosition(vec2 uv)
+            {
+                float d = linearizeDepth(uv);
+                return vec3(projInfo.xy * uv + projInfo.zw, 1.0) * d;
+            }
+
+            vec3 sampleNormal(vec2 uv)
+            {
+                vec4 normal = textureLod(texNormal, uv, 0);
+                return (matViewInverseTranspose * normal).xyz;
+            }
+
+            vec2 tapLocation(float sampleNumber, float spinAngle, float radius)
+            {
+                float alpha = (sampleNumber + 0.5) * (1.0 / NUM_SAMPLE);
+                float angle = spinAngle + alpha * 6.28 * 7;
+                return vec2(cos(angle), sin(angle)) * alpha * radius;
+            }
+
+            float computeAO(vec3 P, vec3 N, vec3 Q, float depth)
+            {
+                vec3 v = Q - P;
+
+                float vv = dot(v, v);
+                float vn = dot(v, N);
+
+                const float epsilon = 0.01;
+                return max((vn - depth * bias), 0) / (vv + epsilon);
+            }
+
+            void aoPS()
+            {
+                vec3 viewPosition = samplePosition(coord);
+                vec3 viewNormal = sampleNormal(coord);
+
+                float sampleDepth = linearizeDepth(coord);
+                float sampleAngle = fract(pow(coord.x, coord.y) * 43758.5453) * texSize.x;
+                float sampleRadius = projScale / viewPosition.z;
+                float sampleAmbient = 0.0;
+                float sampleWeight = 1.0 / NUM_SAMPLE;
+
+                for (int tapIndex = 0; tapIndex < NUM_SAMPLE; ++tapIndex)
+                {
+                    vec2 sampleOffset = tapLocation(tapIndex, sampleAngle, sampleRadius);
+                    vec2 sampleCoord = coord + sampleOffset;
+                    vec3 samplePosition = samplePosition(sampleCoord);
+
+                    sampleAmbient +=  computeAO(viewPosition, viewNormal, samplePosition, sampleDepth);
+                }
+
+                glsl_FragColor0 = vec4(max(0.0, 1 - sampleAmbient * intensity * sampleWeight));
             }
 
             float bilateralfilter(vec2 coord, float r, float center_d)
             {
                 float d = linearizeDepth(coord);
-                float ddiff = (d - center_d);
-                return exp(-r * r * blurFactor - ddiff * ddiff * blurSharpness);
-            }
-
-            vec3 getPosition(vec2 uv)
-            {
-                float d = linearizeDepth(uv);
-                return vec3((projInfo.xy * uv + projInfo.zw) * d, d);
-            }
-
-            vec2 tapLocation(int sampleNumber, float spinAngle, float diskRadius)
-            {
-                float alpha = (sampleNumber + 0.5) * (1.0 / NUM_SAMPLE);
-                float angle = alpha * (NUM_SPIRAL_TURNS * 6.28) + spinAngle;
-                return vec2(cos(angle), sin(angle)) * alpha * diskRadius;
-            }
-
-            float computeAO(vec3 c, vec3 n, vec3 q)
-            {
-                vec3 v = normalize(q - c);
-
-                float vv = dot(v, v);
-                float vn = dot(v, n);
-
-                float f = max(radius2 - vv, 0);
-
-                const float epsilon = 0.001;
-                return heaviside(f) * max((vn - bias) / (vv + epsilon), 0);
-            }
-
-            void aoPS()
-            {
-                vec4 normal = texture2D(texNormal, coord);
-                if (normal.x == 0 && normal.y == 0 && normal.z == 0)
-                {
-                    glsl_FragColor0 = vec4(1.0);
-                    return;
-                }
-
-                vec3 viewPosition = getPosition(coord);
-                vec3 viewNormal = (matViewInverseTranspose * normal).xyz;
-
-                ivec2 ssC = ivec2(gl_FragCoord.xy);
-                float spinAngle = (3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10;
-                float diskRadius = projScale / viewPosition.z;
-
-                float sampleAmbient = 0.0;
-                float sampleWeight = 1.0;
-
-                for (int tapIndex = 0; tapIndex < NUM_SAMPLE; ++tapIndex)
-                {
-                    vec2 sampleOffset = tapLocation(tapIndex, spinAngle, diskRadius);
-                    vec2 sampleCoord = coord + sampleOffset;
-                    vec3 samplePosition = getPosition(sampleCoord);
-                    vec3 sampleDirection = samplePosition - viewPosition;
-                    //float vv = dot(sampleDirection, sampleDirection);
-                    //if (vv <= radius2)
-                    {
-                        sampleAmbient +=  computeAO(viewPosition, viewNormal, samplePosition);
-                        sampleWeight += 1.0;
-                    }
-                }
-
-                glsl_FragColor0 = vec4(max(0.0, 1 - sampleAmbient * intensityDivR6 * (1 / sampleWeight)));
+                float ddiff = (d - center_d) * blurSharpness;
+                return exp2(-r * r * blurFactor - ddiff * ddiff);
             }
 
             void blurPS()
             {
+                float center_d = linearizeDepth(coord);
+
                 float total_c = 0;
                 float total_w = 0;
-
-                float center_d = linearizeDepth(coord);
 
                 for (int r = -blurRadius; r <= blurRadius; r++)
                 {
@@ -150,7 +140,7 @@
 
                     float bilateralWeight = bilateralfilter(offset, r, center_d);
 
-                    total_c += texture2D(texSource, offset).r * bilateralWeight;
+                    total_c += textureLod(texSource, offset, 0).r * bilateralWeight;
                     total_w += bilateralWeight;
                 }
 
@@ -159,7 +149,7 @@
 
             void copyPS()
             {
-                glsl_FragColor0 = vec4(texture2D(texAO, coord).r);
+                glsl_FragColor0 = textureLod(texAO, coord, 0).rrrr;
             }
         ]]>
     </shader>
@@ -188,7 +178,7 @@
 
             <state name="cullmode" value="front"/>
 
-            <state name="depthtest" value="true"/>
+            <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
 
             <state name="blend" value="true"/>

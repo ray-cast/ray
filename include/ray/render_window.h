@@ -37,9 +37,34 @@
 #ifndef _H_RENDER_WINDOW_H_
 #define _H_RENDER_WINDOW_H_
 
-#include <ray/render_device.h>
+#include <ray/render_types.h>
 
 _NAME_BEGIN
+
+class EXPORT RenderWindow
+{
+public:
+    RenderWindow() noexcept;
+    virtual ~RenderWindow() noexcept;
+
+    virtual void setup(WindHandle hwnd) except = 0;
+    virtual void close() noexcept = 0;
+
+    virtual void setSwapInterval(SwapInterval interval) noexcept = 0;
+    virtual SwapInterval getSwapInterval() const noexcept = 0;
+
+    virtual void bind() = 0;
+    virtual void unbind() noexcept = 0;
+
+    virtual void present() noexcept = 0;
+
+    virtual WindHandle getWindHandle() const noexcept = 0;
+
+    virtual void setWindowResolution(std::size_t w, std::size_t h) noexcept = 0;
+
+    virtual std::size_t getWindowWidth() const noexcept = 0;
+    virtual std::size_t getWindowHeight() const noexcept = 0;
+};
 
 _NAME_END
 

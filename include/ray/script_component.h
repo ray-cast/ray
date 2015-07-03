@@ -61,7 +61,7 @@ public:
     virtual void onFrame();
     virtual void onFrameEnd();
 
-    virtual void onMessage(const std::string& metod, const Variant* data...);
+    virtual void onMessage(const GameMessage& message);
 
     virtual GameComponentPtr clone() const noexcept;
 

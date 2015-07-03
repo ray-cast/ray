@@ -44,12 +44,11 @@ _NAME_BEGIN
 enum RenderQueue
 {
     Background,
-    Shadow,
     Opaque,
     Transparent,
-    DepthPeeling,
-    DeferredLight,
+    Lighting,
     PostProcess,
+    Custom,
     RenderQueueComits,
 };
 

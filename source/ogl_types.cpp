@@ -193,6 +193,9 @@ OGLTypes::asOGLFormat(PixelFormat format) noexcept
     if (format == PixelFormat::R8G8B8 || format == PixelFormat::R8G8B8F || format == PixelFormat::R16G16B16F || format == PixelFormat::R32G32B32F)
         return GL_RGB;
 
+    if (format == PixelFormat::R16G16B16A16_SNORM)
+        return GL_RGBA_SNORM;
+
     if (format == PixelFormat::R8G8B8A8 || format == PixelFormat::R8G8B8A8F || format == PixelFormat::R4G4B4A4F || format == PixelFormat::R16G16B16A16F || format == PixelFormat::R32G32B32A32F)
         return GL_RGBA;
 
@@ -239,7 +242,10 @@ OGLTypes::asOGLType(PixelFormat format) noexcept
     if (format == PixelFormat::STENCIL8)
         return GL_UNSIGNED_BYTE;
 
-    if (format == PixelFormat::DEPTH_COMPONENT16 || format == PixelFormat::DEPTH_COMPONENT24 || format == PixelFormat::DEPTH_COMPONENT32)
+    if (format == PixelFormat::DEPTH_COMPONENT32)
+        return GL_FLOAT;
+
+    if (format == PixelFormat::DEPTH_COMPONENT16 || format == PixelFormat::DEPTH_COMPONENT24)
         return GL_UNSIGNED_BYTE;
 
     if (format == PixelFormat::R8G8B8 || format == PixelFormat::R8G8B8A8)
@@ -249,6 +255,9 @@ OGLTypes::asOGLType(PixelFormat format) noexcept
         return GL_UNSIGNED_BYTE;
 
     if (format == PixelFormat::R8G8B8F || format == PixelFormat::R16G16B16F || format == PixelFormat::R32G32B32F)
+        return GL_FLOAT;
+
+    if (format == PixelFormat::R16G16B16A16_SNORM)
         return GL_FLOAT;
 
     if (format == PixelFormat::R8G8B8A8F || format == PixelFormat::R16G16B16A16F || format == PixelFormat::R32G32B32A32F)
@@ -298,6 +307,8 @@ OGLTypes::asOGLInternalformat(PixelFormat format) noexcept
         return GL_RGB;
     case PixelFormat::R8G8B8A8:
         return GL_RGBA;
+    case PixelFormat::R16G16B16A16_SNORM:
+        return GL_RGBA16_SNORM;
     case PixelFormat::R8G8B8F:
         return GL_RGB8;
     case PixelFormat::R16G16B16F:
@@ -321,7 +332,7 @@ OGLTypes::asOGLInternalformat(PixelFormat format) noexcept
     case PixelFormat::SRGBA:
         return GL_SRGB_ALPHA;
     case PixelFormat::R8:
-        return GL_RED;
+        return GL_R8;
     case PixelFormat::R16F:
         return GL_R16F;
     case PixelFormat::R32F:

@@ -37,15 +37,15 @@
 #ifndef _H_GAME_APPLICATION_H_
 #define _H_GAME_APPLICATION_H_
 
-#include <ray/game_types.h>
+#include <ray/game_message.h>
 
 _NAME_BEGIN
 
-class EXPORT GameApplication final : public EvtHandler
+class EXPORT GameApplication
 {
 public:
     GameApplication() noexcept;
-    ~GameApplication() noexcept;
+    virtual ~GameApplication() noexcept;
 
     bool open() except;
     void close() noexcept;
@@ -69,7 +69,8 @@ public:
     void setFileServicePath(const std::string& path) noexcept;
     void setResDownloadURL(const std::string& path) noexcept;
 
-    void sendEvent(const AppEvent& event) noexcept;
+    void sendMessage(const GameMessage& message) noexcept;
+    void postMessage(const GameMessage& message) noexcept;
 
     void update() except;
 

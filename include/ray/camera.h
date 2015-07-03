@@ -115,15 +115,17 @@ public:
     void setCameraOrder(CameraOrder order) noexcept;
     void setCameraRender(CameraRender mode) noexcept;
 
-    void setRenderScene(RenderScenePtr scene) noexcept;
-    void setRenderTarget(RenderTargetPtr texture) noexcept;
-
     CameraType getCameraType() const noexcept;
     CameraOrder getCameraOrder() const noexcept;
     CameraRender getCameraRender() const noexcept;
 
+    void setRenderScene(RenderScenePtr scene) noexcept;
+    void setRenderTarget(RenderTargetPtr texture) noexcept;
+    void setRenderWindow(RenderWindowPtr window) noexcept;
+
     RenderScenePtr getRenderScene() const noexcept;
     RenderTargetPtr getRenderTarget() const noexcept;
+    RenderWindowPtr getRenderWindow() const noexcept;
 
     CameraPtr clone() const noexcept;
 
@@ -167,6 +169,7 @@ private:
     CameraRender    _cameraRender;
 
     RenderTargetPtr _renderTexture;
+    RenderWindowPtr _renderWindow;
 
     RenderScene*  _renderScene;
 };

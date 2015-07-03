@@ -67,10 +67,6 @@ private:
     int getWindowPosY() const noexcept;
 
     std::string getWindowTitle() const noexcept;
-
-private:
-
-    WindowPtr _window;
 };
 
 _NAME_END

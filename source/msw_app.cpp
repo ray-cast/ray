@@ -128,6 +128,19 @@ LRESULT CALLBACK dispose(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 MSWTopLevelApplication::MSWTopLevelApplication() noexcept
 {
+}
+
+MSWTopLevelApplication::~MSWTopLevelApplication() noexcept
+{
+}
+
+bool
+MSWTopLevelApplication::initialize() noexcept
+{
+    ::SetDllDirectory(".");
+    ::InitCommonControls();
+    ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);
+
     char buffer[MAX_BUFFER_LENGTH];
 
     DWORD size = ::GetModuleFileName(nullptr, buffer, 1024);
@@ -142,18 +155,6 @@ MSWTopLevelApplication::MSWTopLevelApplication() noexcept
             ::SetCurrentDirectory(dir.c_str());
         }
     }
-}
-
-MSWTopLevelApplication::~MSWTopLevelApplication() noexcept
-{
-}
-
-bool
-MSWTopLevelApplication::initialize() noexcept
-{
-    ::SetDllDirectory(".");
-    ::InitCommonControls();
-    ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);
 
     WNDCLASSEX wc;
 
@@ -358,6 +359,16 @@ MSWTopLevelApplication::update() noexcept
     {
         switch (_message.message)
         {
+        case WM_CLOSE:
+        {
+            AppEvent event;
+            event.event = AppEvent::AppQuit;
+            event.quit.timestamp = ::timeGetTime();
+            event.quit.code = _message.wParam;
+
+            this->postEvent(event);
+        }
+        break;
         case WM_QUIT:
         {
             AppEvent event;

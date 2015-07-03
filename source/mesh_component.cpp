@@ -179,8 +179,7 @@ MeshComponent::buildRenderBuffer() noexcept
 {
     if (!_renderMesh)
     {
-        _renderMesh = RenderFactory::createRenderBuffer();
-        _renderMesh->setup(*_mesh);
+        _renderMesh = RenderFactory::createRenderBuffer(*_mesh);
     }
 }
 

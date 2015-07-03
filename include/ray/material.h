@@ -51,6 +51,12 @@ public:
     void setup() except;
     void close() noexcept;
 
+    void setSpecular(float specular) noexcept;
+    float getSpecular() const noexcept;
+
+    void setShininess(float shininess) noexcept;
+    float getShininess() const noexcept;
+
     void addTech(MaterialTechPtr technique) noexcept;
     void removeTech(MaterialTechPtr technique) noexcept;
     MaterialTechPtr getTech(RenderQueue queue) noexcept;
@@ -71,6 +77,9 @@ private:
     Material& operator=(const Material&) noexcept = delete;
 
 private:
+
+    float _specular;
+    float _shininess;
 
     MaterialParams _parameters;
     MaterialTechniques _techniques;

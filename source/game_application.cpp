@@ -109,7 +109,8 @@ GameApplication::stop() noexcept
 bool
 GameApplication::isQuitRequest() const noexcept
 {
-    return _isQuitRequest;
+    assert(_gameServer);
+    return _gameServer->isQuitRequest();
 }
 
 bool
@@ -211,41 +212,24 @@ GameApplication::setResDownloadURL(const std::string& path) noexcept
 }
 
 void
-GameApplication::sendEvent(const AppEvent& event) noexcept
+GameApplication::sendMessage(const GameMessage& message) noexcept
 {
-    if (!_isQuitRequest)
-    {
-        switch (event.event)
-        {
-        case AppEvent::AppQuit:
-        {
-            _isQuitRequest = true;
-        }
-        break;
-        }
+    assert(_gameServer);
+    _gameServer->sendMessage(message);
+}
 
-        _gameServer->onEvent(event);
-    }
+void
+GameApplication::postMessage(const GameMessage& message) noexcept
+{
+    assert(_gameServer);
+    _gameServer->postMessage(message);
 }
 
 void
 GameApplication::update() except
 {
     assert(_gameServer);
-
-    if (!_isQuitRequest)
-    {
-        AppEvent event;
-
-        while (this->pollEvents(event))
-        {
-            this->sendEvent(event);
-        }
-
-        _gameServer->onFrameBegin();
-        _gameServer->onFrame();
-        _gameServer->onFrameEnd();
-    }
+    _gameServer->update();
 }
 
 _NAME_END

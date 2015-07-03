@@ -41,9 +41,9 @@
 
 _NAME_BEGIN
 
-class EXPORT GameFeature : public GameMessage
+class EXPORT GameFeature : public GameListener
 {
-    __DeclareSubClass(GameFeature, GameMessage)
+    __DeclareSubClass(GameFeature, GameListener)
 public:
     GameFeature() noexcept;
     virtual ~GameFeature() noexcept;
@@ -51,7 +51,7 @@ public:
     void setActive(bool active)  except;
     bool getActive() noexcept;
 
-    void sendMessage(const std::string& method, const Variant* data...) except;
+    void sendMessage(const GameMessage& message) except;
 
     GameServer* getGameServer() noexcept;
 
@@ -68,10 +68,6 @@ protected:
     virtual void onFrameBegin() except;
     virtual void onFrame() except;
     virtual void onFrameEnd() except;
-
-    virtual void onEvent(const AppEvent& event) except;
-
-    virtual void onMessage(const std::string& method, const Variant* data...) except;
 
     virtual GameComponentPtr onSerialization(iarchive& reader) except;
 

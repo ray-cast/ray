@@ -38,8 +38,6 @@
 #include <ray/input_device.h>
 #include <ray/input_keyboard.h>
 #include <ray/input_mouse.h>
-#include <ray/window_features.h>
-#include <ray/game_server.h>
 
 _NAME_BEGIN
 
@@ -82,17 +80,7 @@ InputFeatures::clone() const noexcept
 void
 InputFeatures::onActivate() except
 {
-    WindowPtr window = nullptr;
-
-    auto features = this->getGameServer()->getFeature<WindowFeatures>();
-    if (features)
-    {
-        window = features->getWindow();
-        if (window)
-        {
-            this->_buildInput(window->getWindowHandle());
-        }
-    }
+    this->_buildInput();
 }
 
 void
@@ -121,11 +109,11 @@ InputFeatures::onFrameEnd() noexcept
 }
 
 void
-InputFeatures::onEvent(const AppEvent& event) noexcept
+InputFeatures::onMessage(const GameMessage& event) noexcept
 {
     switch (event.event)
     {
-    case AppEvent::LostFocus:
+    case GameEvent::LostFocus:
     {
         if (_input)
         {
@@ -133,7 +121,7 @@ InputFeatures::onEvent(const AppEvent& event) noexcept
         }
     }
     break;
-    case AppEvent::GetFocus:
+    case GameEvent::GetFocus:
     {
         if (_input)
         {
@@ -157,18 +145,16 @@ InputFeatures::onReset() noexcept
 void
 InputFeatures::onInputEvent(const InputEvent& event) noexcept
 {
-    Variant arg(&event);
-    this->sendMessage("onInputEvent", &arg);
+    //Variant arg(&event);
+    //this->sendMessage("onInputEvent", &arg);
 }
 
 void
-InputFeatures::_buildInput(InputDevice::CaptureObject win) noexcept
+InputFeatures::_buildInput() noexcept
 {
     assert(!_input);
 
     _inputDevice = std::make_shared<DefaultInputDevice>();
-    _inputDevice->capture(win);
-
     _inputKeyboard = std::make_shared<DefaultInputKeyboard>();
     _inputMouse = std::make_shared<DefaultInputMouse>();
 

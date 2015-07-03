@@ -43,8 +43,32 @@ WGLCanvas::WGLCanvas() noexcept
     : _hwnd(nullptr)
     , _hdc(nullptr)
     , _context(nullptr)
+    , _width(0)
+    , _height(0)
     , _interval(SwapInterval::GPU_VSYNC)
 {
+    _fbconfig.redSize = 8;
+    _fbconfig.greenSize = 8;
+    _fbconfig.blueSize = 8;
+    _fbconfig.alphaSize = 8;
+    _fbconfig.bufferSize = 32;
+    _fbconfig.depthSize = 24;
+    _fbconfig.stencilSize = 8;
+    _fbconfig.accumSize = 32;
+    _fbconfig.accumRedSize = 8;
+    _fbconfig.accumGreenSize = 8;
+    _fbconfig.accumBlueSize = 8;
+    _fbconfig.accumAlphaSize = 8;
+    _fbconfig.samples = 1;
+
+    _ctxconfig.major = 3;
+    _ctxconfig.minor = 3;
+    _ctxconfig.release = 0;
+    _ctxconfig.robustness = 0;
+    _ctxconfig.share = nullptr;
+    _ctxconfig.profile = GPU_GL_CORE_PROFILE;
+    _ctxconfig.forward = 0;
+    _ctxconfig.multithread = false;
 }
 
 WGLCanvas::~WGLCanvas() noexcept
@@ -53,11 +77,43 @@ WGLCanvas::~WGLCanvas() noexcept
 }
 
 void
-WGLCanvas::setup(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) except
+WGLCanvas::setup(WindHandle hwnd) except
 {
-    assert(ctxconfig.hwnd);
+    assert(hwnd);
 
-    _hwnd = (HWND)ctxconfig.hwnd;
+    if ((_ctxconfig.major < 1 || _ctxconfig.minor < 0) ||
+        (_ctxconfig.major == 1 && _ctxconfig.minor > 5) ||
+        (_ctxconfig.major == 2 && _ctxconfig.minor > 1) ||
+        (_ctxconfig.major == 3 && _ctxconfig.minor > 3))
+    {
+        throw failure("Invlid major and minor");
+    }
+
+    if (_ctxconfig.profile)
+    {
+        if (_ctxconfig.profile != GPU_GL_CORE_PROFILE &&
+            _ctxconfig.profile != GPU_GL_COMPAT_PROFILE)
+        {
+            throw failure("Invlid profile");
+        }
+
+        if (_ctxconfig.major < 3 || (_ctxconfig.major == 3 && _ctxconfig.minor < 2))
+        {
+            throw failure("The version is small");
+        }
+    }
+
+    if (_ctxconfig.forward && _ctxconfig.major < 3)
+    {
+        throw failure("The version is small");
+    }
+
+    if (!IsWindow((HWND)hwnd))
+    {
+        throw failure("Invlid HWND");
+    }
+
+    _hwnd = (HWND)hwnd;
     _hdc = ::GetDC(_hwnd);
     if (!_hdc)
     {
@@ -68,26 +124,24 @@ WGLCanvas::setup(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) exc
 
     pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
     pfd.nVersion = 1;
-    pfd.dwFlags |= PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW;
-    pfd.dwFlags |= fbconfig.stereo ? PFD_STEREO : 0;
-    pfd.dwFlags |= fbconfig.doubleBuffer ? PFD_DOUBLEBUFFER : 0;
+    pfd.dwFlags |= PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER | PFD_STEREO;
     pfd.iPixelType = PFD_TYPE_RGBA;
-    pfd.cColorBits = fbconfig.bufferSize;
-    pfd.cRedBits = fbconfig.redSize;
+    pfd.cColorBits = _fbconfig.bufferSize;
+    pfd.cRedBits = _fbconfig.redSize;
     pfd.cRedShift = 0;
-    pfd.cGreenBits = fbconfig.greenSize;
+    pfd.cGreenBits = _fbconfig.greenSize;
     pfd.cGreenShift = 0;
-    pfd.cBlueBits = fbconfig.blueSize;
+    pfd.cBlueBits = _fbconfig.blueSize;
     pfd.cBlueShift = 0;
-    pfd.cAlphaBits = fbconfig.alphaSize;
+    pfd.cAlphaBits = _fbconfig.alphaSize;
     pfd.cAlphaShift = 0;
-    pfd.cAccumBits = fbconfig.accumSize;
-    pfd.cAccumRedBits = fbconfig.accumRedSize;
-    pfd.cAccumGreenBits = fbconfig.accumGreenSize;
-    pfd.cAccumBlueBits = fbconfig.accumBlueSize;
-    pfd.cAccumAlphaBits = fbconfig.accumAlphaSize;
-    pfd.cDepthBits = fbconfig.depthSize;
-    pfd.cStencilBits = fbconfig.stencilSize;
+    pfd.cAccumBits = _fbconfig.accumSize;
+    pfd.cAccumRedBits = _fbconfig.accumRedSize;
+    pfd.cAccumGreenBits = _fbconfig.accumGreenSize;
+    pfd.cAccumBlueBits = _fbconfig.accumBlueSize;
+    pfd.cAccumAlphaBits = _fbconfig.accumAlphaSize;
+    pfd.cDepthBits = _fbconfig.depthSize;
+    pfd.cStencilBits = _fbconfig.stencilSize;
     pfd.cAuxBuffers = 0;
     pfd.iLayerType = PFD_MAIN_PLANE;
     pfd.bReserved = 0;
@@ -129,38 +183,38 @@ WGLCanvas::setup(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) exc
     flags |= WGL_CONTEXT_DEBUG_BIT_ARB;
 #endif
 
-    if (ctxconfig.forward)
+    if (_ctxconfig.forward)
         flags |= WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
 
-    if (ctxconfig.profile)
+    if (_ctxconfig.profile)
     {
-        if (ctxconfig.profile == GPU_GL_CORE_PROFILE)
+        if (_ctxconfig.profile == GPU_GL_CORE_PROFILE)
             mask = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
 
-        if (ctxconfig.profile == GPU_GL_COMPAT_PROFILE)
+        if (_ctxconfig.profile == GPU_GL_COMPAT_PROFILE)
             mask = WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
     }
 
     if (OGLExtenstion::isSupport(ARB_create_context_robustness))
     {
-        if (ctxconfig.robustness)
+        if (_ctxconfig.robustness)
         {
-            if (ctxconfig.robustness == GPU_GL_REST_NOTIFICATION)
+            if (_ctxconfig.robustness == GPU_GL_REST_NOTIFICATION)
                 startegy = WGL_NO_RESET_NOTIFICATION_ARB;
-            else if (ctxconfig.robustness == GPU_GL_LOSE_CONTEXT_ONREST)
+            else if (_ctxconfig.robustness == GPU_GL_LOSE_CONTEXT_ONREST)
                 startegy = WGL_LOSE_CONTEXT_ON_RESET_ARB;
 
             flags |= WGL_CONTEXT_ROBUST_ACCESS_BIT_ARB;
         }
     }
 
-    if (ctxconfig.major != 1 || ctxconfig.minor != 0)
+    if (_ctxconfig.major != 1 || _ctxconfig.minor != 0)
     {
         attribs[index++] = WGL_CONTEXT_MAJOR_VERSION_ARB;
-        attribs[index++] = ctxconfig.major;
+        attribs[index++] = _ctxconfig.major;
 
         attribs[index++] = WGL_CONTEXT_MINOR_VERSION_ARB;
-        attribs[index++] = ctxconfig.minor;
+        attribs[index++] = _ctxconfig.minor;
     }
 
     if (flags)
@@ -192,8 +246,8 @@ WGLCanvas::setup(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) exc
 
     ::wglMakeCurrent(_hdc, _context);
 
-    _fbconfig = fbconfig;
-    _ctxconfig = ctxconfig;
+    _fbconfig = _fbconfig;
+    _ctxconfig = _ctxconfig;
     _interval = (SwapInterval)wglGetSwapIntervalEXT();
 }
 
@@ -212,6 +266,25 @@ WGLCanvas::close() noexcept
         ::wglDeleteContext(_context);
         _context = nullptr;
     }
+}
+
+void
+WGLCanvas::setWindowResolution(std::size_t w, std::size_t h) noexcept
+{
+    _width = w;
+    _height = h;
+}
+
+std::size_t
+WGLCanvas::getWindowWidth() const noexcept
+{
+    return _width;
+}
+
+std::size_t
+WGLCanvas::getWindowHeight() const noexcept
+{
+    return _height;
 }
 
 WindHandle
@@ -257,10 +330,7 @@ WGLCanvas::getSwapInterval() const noexcept
 void
 WGLCanvas::present() noexcept
 {
-    if (_fbconfig.doubleBuffer)
-        wglSwapBuffers(_hdc);
-    else
-        glFlush();
+    wglSwapBuffers(_hdc);
 }
 
 void

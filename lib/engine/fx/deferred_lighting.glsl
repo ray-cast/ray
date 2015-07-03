@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <effect version="1270" language="glsl">
     <include name="sys:fx/common.glsl"/>
+    <include name="sys:fx/lighting.glsl"/>
     <parameter name="matModel" semantic="matModel" />
     <parameter name="matViewProject" semantic="matViewProject" />
     <parameter name="matViewProjectInverse" semantic="matViewProjectInverse"/>
@@ -38,7 +39,7 @@
             uniform vec3 lightDirection;
             uniform float lightRange;
 
-            void DeferredDepthOhlyVS()
+            void DeferredDepthOnlyVS()
             {
                 gl_Position = matViewProject * matModel * glsl_Position;
             }
@@ -110,25 +111,10 @@
 
             #define PIE 3.1415926
 
-            void depthPeeling(vec2 coord)
-            {
-                float depth = texture2D(texDepth, coord).r;
-                if (depth <= gl_FragCoord.z)
-                {
-                    discard;
-                }
-            }
 
-            vec4 unproject(vec2 P, float depth)
+            float shadowLighting(vec3 P)
             {
-                vec4 result = matViewProjectInverse * vec4(P, depth, 1.0);
-                result /= result.w;
-                return result;
-            }
-
-            float shadowLighting(vec3 world)
-            {
-                vec4 proj = shadowMatrix * vec4(world, 1.0);
+                vec4 proj = shadowMatrix * vec4(P, 1.0);
                 proj.xy /= proj.w;
                 proj.xy = proj.xy * 0.5 + 0.5;
 
@@ -182,118 +168,38 @@
                 return shadowLighting(index, world);
             }*/
 
-            float fresnelSchlick(float specular, float LdotH)
+            vec4 samplePosition(vec2 coord)
             {
-                // https://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel
-                // pow(1 - LdotH, 5)
-                // = exp2(-5.55473 * (LdotH * LdotH)- 6.98316 * LdotH))
-                // = exp2((-5.55473 * LdotH - 6.98316) * LdotH)
-                return specular + (1.0f - specular) * exp2((-5.55473 * LdotH - 6.98316) * LdotH);
+                float depth  = texture(texDepth, coord.xy).r;
+                vec4 result = matViewProjectInverse * vec4(coord * 2.0 - 1.0, depth, 1.0);
+                result /= result.w;
+                return result;
             }
 
-            float roughnessTerm(float NdotH, float roughness)
+            vec4 sampleNormal(vec2 coord)
             {
-                return ((roughness + 2) / 8) * pow(NdotH, roughness);
-            }
-
-            float geometricShadowingSchlickBeckmann(float NdotV, float k)
-            {
-                return NdotV / (NdotV * (1.0 - k) + k);
-            }
-
-            float geometricShadowingSmith(float roughnees, float NdotL, float NdotV)
-            {
-                float k = (roughnees + 1.0) * (roughnees + 1.0) / 8.0;
-                return geometricShadowingSchlickBeckmann(NdotL, k) * geometricShadowingSchlickBeckmann(NdotV, k) / (NdotV * NdotL);
-            }
-
-            float brdfLambert(vec3 N, vec3 L)
-            {
-                return max(dot(N, L), 0);
-            }
-
-            float brdfCookTorrance(vec3 N, vec3 V, vec3 L, float roughness, float specular)
-            {
-                float nl = dot(N, L);
-                float nv = dot(N, V);
-                if (nl > 0.0 && nv > 0.0)
-                {
-                    vec3 H = normalize(L + V);
-
-                    float nh = max(dot(H, N), 0.0f);
-                    float lh = max(dot(L, H), 0.0f);
-
-                    float D = roughnessTerm(nh, roughness);
-                    float F = fresnelSchlick(specular, lh);
-                    float G = geometricShadowingSmith(roughness, nl, nv);
-
-                    return D * F * G * nl;
-                }
-
-                return 0;
-            }
-
-            /*float brdfCookTorrance(vec3 N ,vec3 V, vec3 L, float roughness, float specular)
-            {
-                float nl = dot(N, L);
-                float nv = dot(N, V);
-                if (nl > 0.0 && nv > 0.0)
-                {
-                    float low = floor(roughness);
-                    float high = ceil(roughness);
-                    float fraction = roughness - low;
-
-                    //float prefiltered = mix(specular)
-                    vec2 envBRDF = texture2D(texLUT, vec2(nv, roughness)).xy;
-
-                    return specular * (envBRDF.x + envBRDF.y);
-                }
-
-                return 0;
-            }*/
-
-            vec4 directionalLight(vec3 P, vec3 N, float roughness, float specular)
-            {
-                vec3 L = normalize(lightDirection);
-                vec3 V = normalize(eyePosition - P);
-
-                return vec4(lightColor * (brdfLambert(N, L) + brdfCookTorrance(N, V, L, roughness, specular)), 1.0);
+                return texture(texNormal, coord.xy);
             }
 
             vec4 spotLight(vec3 P, vec3 N, float sp, float sc)
             {
-                vec3 direction = normalize(P - lightPosition);
-                float spotFactor = dot(direction, spotDirection);
-                float spotLength = distance(P, lightPosition);
-                if (spotFactor < spotAngle || (spotRange * 1.414) < spotLength)
-                    discard;
-
                 vec3 L = normalize(lightPosition - P);
-                vec3 V = normalize(eyePosition - P);
-                vec3 H = normalize(L + V);
-
                 float nl = max(dot(N, L), 0);
                 if (nl == 0)
                     return vec4(0,0,0,0);
 
+                vec3 direction = normalize(P - lightPosition);
+                float spotFactor = dot(direction, spotDirection);
+                float spotLength = distance(P, lightPosition);
+                if (spotFactor < spotAngle || (spotRange * 1.414) < spotLength)
+                    return vec4(0,0,0,0);
+
                 float attenuation = smoothstep(spotOuterCone, spotInnerCone, spotFactor);
 
-                float specular = 0;
+                vec3 V = normalize(eyePosition - P);
+                vec3 H = normalize(L + V);
 
-                float nh = dot(N, H);
-                if (nh > 0)
-                {
-                    float k = 2 / sqrt(PIE * (sp + 2));
-
-                    float roughness = (sp + 2) / 8 * pow(nh, sp);
-                    float fresnel = sc + (1 - sc) * pow(1 - dot(H, lightDirection), 5);
-                    float shadowing = 1 / ((nl * (1 - k) + k) * (dot(N, V) * (1 - k) + k));
-
-                    specular = roughness * fresnel * shadowing;
-                }
-
-                float diffuse = nl * (1 - specular);
-                float lighting = attenuation * (diffuse + specular);
+                float lighting = attenuation * BRDF(N, L, V, sp, sc);
 
                 return vec4(lightColor * lighting, 0.0);
             }
@@ -301,8 +207,6 @@
             vec4 pointLight(vec3 world, vec3 N, float sp, float sc)
             {
                 vec3 L = normalize(lightPosition - world);
-                vec3 V = normalize(eyePosition - world);
-                vec3 H = normalize(L + V);
 
                 float nl = max(dot(N, L), 0);
                 if (nl == 0)
@@ -311,77 +215,56 @@
                 float distance = distance(lightPosition, world);
                 float attenuation = max(1 - (distance / range), 0);
 
-                float d = (sp + 2) / 8 * pow(dot(N, H), sp) / 4 * PIE;
-                float f = sc + (1 - sc) * pow(1 - dot(H, L), 5);
-                float k = 2 / sqrt(PIE * (sp + 2));
-                float v = 1 / ((nl * (1 - k) + k) * (dot(N, V) * (1 - k) + k));
+                vec3 V = normalize(eyePosition - world);
+                vec3 H = normalize(L + V);
 
-                float specular = d * f * v;
-                float diffuse = (1 - specular) * nl;
-
-                float lighting = attenuation * (diffuse + specular);
+                float lighting = attenuation * BRDF(N, L, V, sp, sc);
 
                 return vec4(lightColor * lighting, 0.0);
             }
 
-            void DeferredDepthOhlyPS()
+            void DeferredDepthOnlyPS()
             {
             }
 
             void DeferredSunLightPS()
             {
-                float depth  = texelFetch(texDepth, ivec2(gl_FragCoord.xy), 0).r;
+                vec4 N = sampleNormal(coord.xy);
+                vec4 P = samplePosition(coord.xy);
 
-                vec4 N = texelFetch(texNormal, ivec2(gl_FragCoord.xy), 0);
+                vec3 V = normalize(eyePosition - P.xyz);
+                vec3 L = normalize(lightDirection);
+                vec3 lighting = lightColor * BRDF(N.xyz, L, V, floor(N.a), fract(N.a));
 
-                float roughness = floor(N.a);
-                float specular = fract(N.a);
-
-                vec3 world = unproject(position.xy / position.w, depth).xyz;
-
-                glsl_FragColor0 = directionalLight(world, N.rgb, roughness, specular);
+                glsl_FragColor0 = vec4(lighting, 1.0);
             }
 
             void DeferredSunLightShadowPS()
             {
-                float depth  = texelFetch(texDepth, ivec2(gl_FragCoord.xy), 0).r;
+                vec4 N = sampleNormal(coord.xy);
+                vec4 P = samplePosition(coord.xy);
 
-                vec4 N = texelFetch(texNormal, ivec2(gl_FragCoord.xy), 0);
+                vec3 V = normalize(eyePosition - P.xyz);
+                vec3 L = normalize(lightDirection);
+                vec3 lighting = lightColor * BRDF(N.xyz, L, V, floor(N.a), fract(N.a));
 
-                float roughness = floor(N.a);
-                float specular = fract(N.a);
-
-                vec3 world = unproject(position.xy / position.w, depth).xyz;
-
-                glsl_FragColor0 = directionalLight(world, N.rgb, roughness, specular) * shadowLighting(world);
+                glsl_FragColor0 = vec4(lighting * shadowLighting(P.xyz), 1.0);
             }
 
             void DeferredSpotLightPS()
             {
-                float depth  = texelFetch(texDepth, ivec2(gl_FragCoord.xy), 0).r;
+                vec4 N = sampleNormal(coord.xy);
+                vec3 P = samplePosition(coord.xy).xyz;
 
-                vec4 N = texelFetch(texNormal, ivec2(gl_FragCoord.xy), 0);
-
-                float roughness = floor(N.a);
-                float specular = fract(N.a);
-
-                vec3 world = unproject(position.xy / position.w, depth).xyz;
-
-                glsl_FragColor0 = spotLight(world, N.rgb, roughness, specular);
+                glsl_FragColor0 = spotLight(P, N.rgb, floor(N.a), fract(N.a));
             }
 
             void DeferredPointLightPS()
             {
-                float depth  = texelFetch(texDepth, ivec2(gl_FragCoord.xy), 0).r;
+                vec4 N = sampleNormal(coord.xy);
+                vec3 P = samplePosition(coord.xy).xyz;
 
-                vec4 N = texelFetch(texNormal, ivec2(gl_FragCoord.xy), 0);
-
-                float roughness = floor(N.a);
-                float specular = fract(N.a);
-
-                vec3 world = unproject(position.xy / position.w, depth).xyz;
-
-                glsl_FragColor0 = pointLight(world, N.rgb, roughness, specular);
+                glsl_FragColor0 = pointLight(P, N.rgb, floor(N.a), fract(N.a));
             }
 
             void DeferredShadingOpaquesPS()
@@ -405,10 +288,10 @@
             }
         ]]>
     </shader>
-    <technique name="deferredlight">
-        <pass name="DeferredDepthOhly">
-            <state name="vertex" value="DeferredDepthOhlyVS"/>
-            <state name="fragment" value="DeferredDepthOhlyPS"/>
+    <technique name="custom">
+        <pass name="DeferredDepthOnly">
+            <state name="vertex" value="DeferredDepthOnlyVS"/>
+            <state name="fragment" value="DeferredDepthOnlyPS"/>
         </pass>
         <pass name="DeferredPointLight">
             <state name="vertex" value="DeferredPointLightVS"/>
@@ -433,11 +316,11 @@
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
 
+            <state name="cullmode" value="front"/>
+
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
-
-            <state name="cullmode" value="front"/>
 
             <state name="stencilTest" value="true"/>
             <state name="stencilFunc" value="equal"/>
@@ -467,8 +350,6 @@
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
 
-            <state name="cullmode" value="front"/>
-
             <state name="stencilTest" value="true"/>
             <state name="stencilFunc" value="equal"/>
         </pass>
@@ -476,10 +357,10 @@
             <state name="vertex" value="DeferredShadingVS"/>
             <state name="fragment" value="DeferredShadingOpaquesPS"/>
 
+            <state name="cullmode" value="front"/>
+
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
-
-            <state name="cullmode" value="front"/>
 
             <state name="stencilTest" value="true"/>
             <state name="stencilFunc" value="notequal"/>
@@ -489,10 +370,10 @@
             <state name="vertex" value="DeferredShadingVS"/>
             <state name="fragment" value="DeferredShadingTransparentsPS"/>
 
+            <state name="cullmode" value="front"/>
+
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
-
-            <state name="cullmode" value="front"/>
 
             <state name="blend" value="true"/>
             <state name="blendsrc" value="srcalpha"/>

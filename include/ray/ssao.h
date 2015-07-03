@@ -41,6 +41,28 @@
 
 _NAME_BEGIN
 
+struct int16x4
+{
+    int16x4()
+    {
+    }
+
+    int16x4(float4 F)
+    {
+        x = FP32ToInt16SNORM(F.x);
+        y = FP32ToInt16SNORM(F.y);
+        z = FP32ToInt16SNORM(F.z);
+        w = FP32ToInt16SNORM(F.w);
+    }
+
+    std::int16_t FP32ToInt16SNORM(float f)
+    {
+        return (std::int16_t)((1 << 15) * f);
+    }
+
+    std::int16_t x, y, z, w;
+};
+
 class SSAO : public RenderPostProcess
 {
 public:
@@ -97,7 +119,9 @@ private:
     MaterialParamPtr _projInfo;
     MaterialParamPtr _clipInfo;
     MaterialParamPtr _bias;
-    MaterialParamPtr _intensityDivR6;
+    MaterialParamPtr _intensity;
+    MaterialParamPtr _texRandom;
+    MaterialParamPtr _texSize;
 
     MaterialParamPtr _blurRadius;
     MaterialParamPtr _blurSource;

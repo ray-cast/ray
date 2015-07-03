@@ -67,10 +67,10 @@ public:
     RenderSystem() noexcept;
     ~RenderSystem() noexcept;
 
-    bool setup(WindHandle win, std::size_t width, std::size_t height) except;
+    bool setup(RenderWindowPtr window) except;
     void close() noexcept;
 
-    void setRenderSetting(const RenderSetting& setting) noexcept;
+    void setRenderSetting(const RenderSetting& setting) except;
     const RenderSetting& getRenderSetting() const noexcept;
 
     void setTimer(TimerPtr timer) noexcept;
@@ -131,6 +131,7 @@ private:
     RenderSetting _setting;
 
     RenderDevicePtr _renderDevice;
+    RenderWindowPtr _renderWindow;
     RenderPipelinePtr _renderPipeline;
 
     RenderPostProcessPtr _SSGI;
@@ -138,9 +139,11 @@ private:
     RenderPostProcessPtr _SAT;
     RenderPostProcessPtr _SSR;
     RenderPostProcessPtr _DOF;
+    RenderPostProcessPtr _fog;
+    RenderPostProcessPtr _lightShaft;
     RenderPostProcessPtr _HDR;
     RenderPostProcessPtr _FXAA;
-    RenderPostProcessPtr _lightShaft;
+    RenderPostProcessPtr _colorGrading;
 
     TimerPtr _timer;
 
@@ -148,6 +151,7 @@ private:
     Matrix4x4 _orthoCamera;
 
     MaterialPtr _lineMaterial;
+    MaterialPassPtr _linePass;
 
     VertexBufferDataPtr _dynamicBuffers;
     RenderBufferPtr _renderBuffer;

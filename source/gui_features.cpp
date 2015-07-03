@@ -56,7 +56,7 @@ GUIFeatures::setGuiSystem(GuiSystemPtr gui) noexcept
 void
 GUIFeatures::onFrameEnd() noexcept
 {
-    this->sendMessage("void onGUI()", nullptr);
+    //this->sendMessage("void onGUI()", nullptr);
 
     /*auto commands = _gui->getGuiCommands();
     for (auto& it : commands)

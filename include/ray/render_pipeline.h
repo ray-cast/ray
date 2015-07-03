@@ -116,6 +116,12 @@ private:
     void assignVisiable() noexcept;
     void assignLight() noexcept;
 
+    void collection(RenderObject& object) noexcept;
+
+    virtual void onRenderObjectPre(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except;
+    virtual void onRenderObjectPost(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except;
+    virtual void onRenderObject(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except;
+
     virtual void onActivate() except;
     virtual void onDectivate() except;
 

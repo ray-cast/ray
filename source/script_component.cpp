@@ -138,9 +138,9 @@ ScriptComponent::onMoveAfter()
 }
 
 void
-ScriptComponent::onMessage(const std::string& method, const Variant* data...)
+ScriptComponent::onMessage(const GameMessage& message)
 {
-    static asIScriptFunction* myNull = (asIScriptFunction*)-1;
+    /*static asIScriptFunction* myNull = (asIScriptFunction*)-1;
 
     assert(_scriptObject);
     auto& function = _funcMap[method];
@@ -178,7 +178,7 @@ ScriptComponent::onMessage(const std::string& method, const Variant* data...)
         }
 
         _scriptObject->exce(function);
-    }
+    }*/
 }
 
 GameComponentPtr

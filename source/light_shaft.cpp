@@ -95,7 +95,7 @@ LightShaft::onRender(RenderPipeline& pipeline, RenderTargetPtr source) except
 {
     _cameraRadio->assign(pipeline.getCamera()->getRatio());
 
-    auto lights = pipeline.getRenderData(RenderQueue::DeferredLight);
+    auto lights = pipeline.getRenderData(RenderQueue::Lighting);
     for (auto& it : lights)
     {
         auto light = dynamic_cast<Light*>(it);

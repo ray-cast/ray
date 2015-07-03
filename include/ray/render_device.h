@@ -47,7 +47,7 @@ public:
     RenderDevice() except;
     virtual ~RenderDevice() noexcept;
 
-    virtual bool open(WindHandle win) except = 0;
+    virtual bool open(RenderWindowPtr window) except = 0;
     virtual void close() noexcept = 0;
 
     virtual void renderBegin() except = 0;
@@ -55,6 +55,9 @@ public:
 
     virtual void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) except = 0;
     virtual void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil, std::size_t i) except = 0;
+
+    virtual void setRenderWindow(RenderWindowPtr window) except = 0;
+    virtual RenderWindowPtr getRenderWindow() const noexcept = 0;
 
     virtual void setViewport(const Viewport& viewport, std::size_t i = 0) except = 0;
     virtual const Viewport& getViewport(std::size_t i = 0) const noexcept = 0;

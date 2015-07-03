@@ -46,6 +46,7 @@ class EXPORT RenderFactory final
 public:
 
     static RenderDevicePtr createRenderDevice() noexcept;
+    static RenderWindowPtr createRenderWindow() noexcept;
 
     static ShaderPtr createShader() noexcept;
     static ShaderObjectPtr createShaderObject() noexcept;
@@ -60,6 +61,7 @@ public:
     static VertexBufferDataPtr createVertexBuffer() noexcept;
     static IndexBufferDataPtr createIndexBuffer() noexcept;
     static RenderBufferPtr createRenderBuffer() noexcept;
+    static RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) except;
 };
 
 _NAME_END

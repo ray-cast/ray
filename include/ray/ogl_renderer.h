@@ -48,7 +48,7 @@ public:
     OGLRenderer() noexcept;
     ~OGLRenderer() noexcept;
 
-    virtual bool open(WindHandle hwnd) except;
+    virtual bool open(RenderWindowPtr window) except;
     virtual void close() noexcept;
 
     virtual void renderBegin() noexcept;
@@ -59,6 +59,9 @@ public:
 
     virtual void setViewport(const Viewport& view, std::size_t i = 0) noexcept;
     virtual const Viewport& getViewport(std::size_t i = 0) const noexcept;
+
+    virtual void setRenderWindow(RenderWindowPtr window) noexcept;
+    virtual RenderWindowPtr getRenderWindow() const noexcept;
 
     virtual void setSwapInterval(SwapInterval interval) noexcept;
     virtual SwapInterval getSwapInterval() const noexcept;
@@ -106,10 +109,7 @@ private:
 
 private:
 
-    GPUfbconfig _fbconfig;
-    GPUctxconfig _ctxconfig;
-
-    OGLCanvasPtr _glcontext;
+    RenderWindowPtr _glcontext;
 
     GLint _maxViewports;
     std::vector<Viewport> _viewport;

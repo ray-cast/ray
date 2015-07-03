@@ -45,8 +45,10 @@
 #include <ray/ssgi.h>
 #include <ray/ssr.h>
 #include <ray/dof.h>
+#include <ray/fog.h>
 #include <ray/hdr.h>
 #include <ray/fxaa.h>
+#include <ray/color_grading.h>
 
 _NAME_BEGIN
 
@@ -61,17 +63,19 @@ RenderSystem::~RenderSystem() noexcept
 }
 
 bool
-RenderSystem::setup(WindHandle win, std::size_t width, std::size_t height) except
+RenderSystem::setup(RenderWindowPtr window) except
 {
+    _renderWindow = window;
     _renderDevice = RenderFactory::createRenderDevice();
-    _renderDevice->open(win);
+    _renderDevice->open(window);
 
     Material::setMaterialSemantic(std::make_shared<MaterialSemantic>());
 
     _renderPipeline = std::make_shared<DeferredLighting>();
-    _renderPipeline->setup(_renderDevice, width, height);
+    _renderPipeline->setup(_renderDevice, window->getWindowWidth(), window->getWindowHeight());
 
     _lineMaterial = MaterialMaker("sys:fx\\lines.glsl");
+    _linePass = _lineMaterial->getTech(RenderQueue::PostProcess)->getPass("lines");
 
     VertexComponents components;
     components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
@@ -84,8 +88,8 @@ RenderSystem::setup(WindHandle win, std::size_t width, std::size_t height) excep
     _renderBuffer = RenderFactory::createRenderBuffer();
     _renderBuffer->setup(_dynamicBuffers, nullptr);
 
-    float ratio = (float)width / height;
-    _orthoCamera.makeOrtho(-ratio, ratio, -1, 1, 0, 1000);
+    float ratio = (float)window->getWindowWidth() / window->getWindowHeight();
+    _orthoCamera.makeOrtho_lh(-ratio, ratio, -1, 1, 0, 1000);
 
     return true;
 }
@@ -115,6 +119,12 @@ RenderSystem::close() noexcept
     {
         _SSR.reset();
         _SSR = nullptr;
+    }
+
+    if (_fog)
+    {
+        _fog.reset();
+        _fog = nullptr;
     }
 
     if (_DOF)
@@ -170,7 +180,7 @@ RenderSystem::close() noexcept
 }
 
 void
-RenderSystem::setRenderSetting(const RenderSetting& setting) noexcept
+RenderSystem::setRenderSetting(const RenderSetting& setting) except
 {
     if (_setting.enableSAT != setting.enableSAT)
     {
@@ -183,6 +193,20 @@ RenderSystem::setRenderSetting(const RenderSetting& setting) noexcept
         {
             _renderPipeline->removePostProcess(_SAT);
             _SAT.reset();
+        }
+    }
+
+    if (_setting.enableFog != setting.enableFog)
+    {
+        if (setting.enableFog)
+        {
+            _fog = std::make_shared<Fog>();
+            _renderPipeline->addPostProcess(_fog);
+        }
+        else
+        {
+            _renderPipeline->removePostProcess(_fog);
+            _fog.reset();
         }
     }
 
@@ -202,7 +226,7 @@ RenderSystem::setRenderSetting(const RenderSetting& setting) noexcept
 
     if (_setting.enableSSAO != setting.enableSSAO)
     {
-        if (setting.enableSSGI)
+        if (setting.enableSSAO)
         {
             _SSAO = std::make_shared<SSAO>();
             _renderPipeline->addPostProcess(_SSAO);
@@ -242,6 +266,20 @@ RenderSystem::setRenderSetting(const RenderSetting& setting) noexcept
         }
     }
 
+    if (_setting.enableLightShaft != setting.enableLightShaft)
+    {
+        if (setting.enableLightShaft)
+        {
+            _lightShaft = std::make_shared<LightShaft>();
+            _renderPipeline->addPostProcess(_lightShaft);
+        }
+        else
+        {
+            _renderPipeline->removePostProcess(_lightShaft);
+            _lightShaft.reset();
+        }
+    }
+
     if (_setting.enableHDR != setting.enableHDR)
     {
         if (setting.enableHDR)
@@ -270,17 +308,17 @@ RenderSystem::setRenderSetting(const RenderSetting& setting) noexcept
         }
     }
 
-    if (_setting.enableLightShaft != setting.enableLightShaft)
+    if (_setting.enableColorGrading != setting.enableColorGrading)
     {
-        if (setting.enableLightShaft)
+        if (setting.enableColorGrading)
         {
-            _lightShaft = std::make_shared<LightShaft>();
-            _renderPipeline->addPostProcess(_lightShaft);
+            _colorGrading = std::make_shared<ColorGrading>();
+            _renderPipeline->addPostProcess(_colorGrading);
         }
         else
         {
-            _renderPipeline->removePostProcess(_lightShaft);
-            _lightShaft.reset();
+            _renderPipeline->removePostProcess(_colorGrading);
+            _colorGrading.reset();
         }
     }
 
@@ -511,8 +549,9 @@ RenderSystem::applyCamera(Camera* camera) noexcept
     semantic->setFloatParam(GlobalFloatSemantic::CameraNear, camera->getNear());
     semantic->setFloatParam(GlobalFloatSemantic::CameraFar, camera->getFar());
 
-    semantic->setFloat3Param(GlobalFloat3Semantic::CameraPosition, camera->getTranslate());
     semantic->setFloat3Param(GlobalFloat3Semantic::CameraView, camera->getLookAt());
+    semantic->setFloat3Param(GlobalFloat3Semantic::CameraPosition, camera->getTranslate());
+    semantic->setFloat3Param(GlobalFloat3Semantic::CameraDirection, camera->getLookAt() - camera->getTranslate());
 
     semantic->setMatrixParam(GlobalMatrixSemantic::matView, camera->getView());
     semantic->setMatrixParam(GlobalMatrixSemantic::matViewInverse, camera->getViewInverse());
@@ -550,6 +589,14 @@ RenderSystem::renderBegin() noexcept
 void
 RenderSystem::renderCamera(Camera* camera) noexcept
 {
+    auto window = camera->getRenderWindow();
+    if (!window)
+    {
+        window = _renderWindow;
+    }
+
+    _renderDevice->setRenderWindow(window);
+
     _renderPipeline->setCamera(camera);
     _renderPipeline->render();
 }
@@ -581,10 +628,8 @@ RenderSystem::renderEnd() noexcept
         _dynamicBuffers->resize(_lines.size());
         std::memcpy(_dynamicBuffers->data(), _lines.data(), _lines.size() * sizeof(SimpleVertex));
 
-        auto pass = _lineMaterial->getTech(RenderQueue::Opaque)->getPass(RenderPass::RP_GBUFFER);
-
-        _renderPipeline->setRenderState(pass->getRenderState());
-        _renderPipeline->setShaderObject(pass->getShaderObject());
+        _renderPipeline->setRenderState(_linePass->getRenderState());
+        _renderPipeline->setShaderObject(_linePass->getShaderObject());
 
         Renderable renderable;
         renderable.type = VertexType::GPU_LINE;
@@ -605,10 +650,8 @@ RenderSystem::renderEnd() noexcept
         _dynamicBuffers->resize(_polygons.size());
         std::memcpy(_dynamicBuffers->data(), _polygons.data(), _polygons.size() * sizeof(SimpleVertex));
 
-        auto pass = _lineMaterial->getTech(RenderQueue::Opaque)->getPass(RenderPass::RP_GBUFFER);
-
-        _renderPipeline->setRenderState(pass->getRenderState());
-        _renderPipeline->setShaderObject(pass->getShaderObject());
+        _renderPipeline->setRenderState(_linePass->getRenderState());
+        _renderPipeline->setShaderObject(_linePass->getShaderObject());
 
         Renderable renderable;
         renderable.type = VertexType::GPU_LINE;
@@ -622,6 +665,19 @@ RenderSystem::renderEnd() noexcept
         _renderPipeline->drawMesh(_renderBuffer, renderable);
 
         _polygons.clear();
+    }
+
+    for (auto& scene : _sceneList)
+    {
+        auto& cameras = scene->getCameraList();
+        for (auto& camera : cameras)
+        {
+            auto widnow = camera->getRenderWindow();
+            if (widnow)
+            {
+                widnow->present();
+            }
+        }
     }
 
     _renderDevice->renderEnd();

@@ -38,7 +38,7 @@
 
 #include <ray/game_server.h>
 #include <ray/input_features.h>
-#include <ray/window_features.h>
+#include <ray/camera_component.h>
 #include <ray/physics_character_component.h>
 
 __ImplementSubClass(FirstPersonCamera, ray::GameController)
@@ -60,9 +60,9 @@ FirstPersonCamera::~FirstPersonCamera() noexcept
 void
 FirstPersonCamera::onActivate() noexcept
 {
-    auto windowFeature = this->getGameServer()->getFeature<ray::WindowFeatures>();
-    _centerX = windowFeature->getWindow()->getWindowWidth() >> 1;
-    _centerY = windowFeature->getWindow()->getWindowHeight() >> 1;
+    auto camera = this->getGameObject()->getComponent<ray::CameraComponent>();
+    _centerX = camera->getViewport().width *  0.5;
+    _centerY = camera->getViewport().height * 0.5;
 }
 
 void

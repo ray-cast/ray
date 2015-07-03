@@ -41,13 +41,13 @@
 
 _NAME_BEGIN
 
-class WGLCanvas final
+class WGLCanvas final : public RenderWindow
 {
 public:
     WGLCanvas() noexcept;
     ~WGLCanvas() noexcept;
 
-    void setup(const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) except;
+    void setup(WindHandle hwnd) except;
     void close() noexcept;
 
     void setSwapInterval(SwapInterval interval) noexcept;
@@ -57,6 +57,11 @@ public:
     void unbind() noexcept;
 
     void present() noexcept;
+
+    void setWindowResolution(std::size_t w, std::size_t h) noexcept;
+
+    std::size_t getWindowWidth() const noexcept;
+    std::size_t getWindowHeight() const noexcept;
 
     WindHandle getWindHandle() const noexcept;
 
@@ -69,6 +74,9 @@ private:
     HWND _hwnd;
     HDC _hdc;
     HGLRC _context;
+
+    std::size_t _width;
+    std::size_t _height;
 
     GPUfbconfig _fbconfig;
     GPUctxconfig _ctxconfig;

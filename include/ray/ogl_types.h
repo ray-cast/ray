@@ -37,12 +37,7 @@
 #ifndef _H_OGL_TYPES_H_
 #define _H_OGL_TYPES_H_
 
-#include <ray/render_device.h>
-#include <ray/render_buffer.h>
-#include <ray/render_texture.h>
-#include <ray/render_state.h>
-#include <ray/shader.h>
-#include <ray/texture.h>
+#include <ray/platform.h>
 
 #if defined(_BUILD_PLATFORM_SDL2)
 #    include <ray/sdl_canvas.h>

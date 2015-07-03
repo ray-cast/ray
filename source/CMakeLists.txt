@@ -9,7 +9,6 @@ INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/libpng)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/lua/src)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/tinyxml/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/freetype/include)
-INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/gles/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/physx/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/AntTweakBar/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/SDL2/include)
@@ -58,11 +57,12 @@ SET(PLATFORM_CORE_LIST
     ${HEADER_PATH}/version.h
     ${HEADER_PATH}/variant.h
     ${SOURCE_PATH}/variant.cpp
+    ${HEADER_PATH}/rtti.h
+    ${SOURCE_PATH}/rtti.cpp
     ${HEADER_PATH}/memory.h
     ${SOURCE_PATH}/timer.cpp
     ${HEADER_PATH}/timer.h
     ${HEADER_PATH}/reference.h
-    ${HEADER_PATH}/object.h
 )
 SOURCE_GROUP("core" FILES ${PLATFORM_CORE_LIST})
 
@@ -112,6 +112,8 @@ SET(PLATFORM_IO_LIST
     ${HEADER_PATH}/iointerface.h
     ${SOURCE_PATH}/istream.cpp
     ${HEADER_PATH}/istream.h
+    ${SOURCE_PATH}/archive.cpp
+    ${HEADER_PATH}/archive.h
     ${SOURCE_PATH}/ostream.cpp
     ${HEADER_PATH}/ostream.h
     ${SOURCE_PATH}/mstream.cpp
@@ -331,10 +333,8 @@ SET(RENDERER_CORE
     ${HEADER_PATH}/render_buffer.h
     ${HEADER_PATH}/render_device.h
     ${SOURCE_PATH}/render_device.cpp
-    ${HEADER_PATH}/render_factory.h
-    ${SOURCE_PATH}/render_factory.cpp
-    ${HEADER_PATH}/render_impl.h
-    ${SOURCE_PATH}/render_impl.cpp
+    ${HEADER_PATH}/render_window.h
+    ${SOURCE_PATH}/render_window.cpp
     ${HEADER_PATH}/render_state.h
     ${SOURCE_PATH}/render_state.cpp
     ${HEADER_PATH}/render_texture.h
@@ -427,6 +427,8 @@ SOURCE_GROUP("renderer\\mesh" FILES ${RENDERER_MESH})
 SET(RENDERER_POST_PROCESS
     ${HEADER_PATH}/atmospheric.h
     ${SOURCE_PATH}/atmospheric.cpp
+    ${HEADER_PATH}/color_grading.h
+    ${SOURCE_PATH}/color_grading.cpp
     ${HEADER_PATH}/dof.h
     ${SOURCE_PATH}/dof.cpp
     ${HEADER_PATH}/fog.h
@@ -474,8 +476,12 @@ SET(RENDERER_SYSTEM
     ${SOURCE_PATH}/forward_shading.cpp
     ${HEADER_PATH}/render_pipeline.h
     ${SOURCE_PATH}/render_pipeline.cpp
+    ${HEADER_PATH}/render_setting.h
+    ${SOURCE_PATH}/render_setting.cpp
     ${HEADER_PATH}/render_system.h
     ${SOURCE_PATH}/render_system.cpp
+    ${HEADER_PATH}/render_factory.h
+    ${SOURCE_PATH}/render_factory.cpp
 )
 SOURCE_GROUP("renderer" FILES ${RENDERER_SYSTEM})
 
@@ -514,54 +520,6 @@ ENDIF()
 IF(BUILD_PLATFORM_GLES)
     TARGET_LINK_LIBRARIES(librenderer libEGL)
     TARGET_LINK_LIBRARIES(librenderer libGLESv2)
-ENDIF()
-
-SET(MSW_PLATFORM_LIST
-    ${SOURCE_PATH}/msw_app.cpp
-    ${HEADER_PATH}/msw_app.h
-    ${SOURCE_PATH}/msw_wx.cpp
-    ${HEADER_PATH}/msw_wx.h
-)
-SOURCE_GROUP("msw" FILES ${MSW_PLATFORM_LIST})
-
-SET(LINUX_PLATFORM_LIST
-    ${SOURCE_PATH}/linux_app.cpp
-    ${HEADER_PATH}/linux_app.h
-    ${SOURCE_PATH}/linux_wx.cpp
-    ${HEADER_PATH}/linux_wx.h
-)
-SOURCE_GROUP("linux" FILES ${LINUX_PLATFORM_LIST})
-
-SET(SDL_PLATFORM_LIST
-    ${SOURCE_PATH}/sdl_app.cpp
-    ${HEADER_PATH}/sdl_app.h
-    ${SOURCE_PATH}/sdl_wx.cpp
-    ${HEADER_PATH}/sdl_wx.h
-)
-SOURCE_GROUP("sdl" FILES ${SDL_PLATFORM_LIST})
-
-SET(WIN_LIST
-    ${SOURCE_PATH}/appbase.cpp
-    ${HEADER_PATH}/appbase.h
-    ${SOURCE_PATH}/app.cpp
-    ${HEADER_PATH}/app.h
-    ${HEADER_PATH}/event.h
-    ${SOURCE_PATH}/event.cpp
-    ${SOURCE_PATH}/win.cpp
-    ${HEADER_PATH}/win.h
-    ${SOURCE_PATH}/wx.cpp
-    ${HEADER_PATH}/wx.h
-)
-SOURCE_GROUP("window" FILES ${WIN_LIST})
-ADD_LIBRARY(libwindow SHARED ${WIN_LIST} ${MSW_PLATFORM_LIST} ${LINUX_PLATFORM_LIST} ${SDL_PLATFORM_LIST})
-SET_TARGET_ATTRIBUTE(libwindow "core")
-TARGET_LINK_LIBRARIES(libwindow
-    libplatform
-)
-
-IF(BUILD_PLATFORM_WINDOWS)
-    TARGET_LINK_LIBRARIES(libplatform comctl32)
-    TARGET_LINK_LIBRARIES(libplatform winmm)
 ENDIF()
 
 SET(NETWORK_LIST
@@ -625,6 +583,8 @@ SET(GAMEAPP_LIST
     ${HEADER_PATH}/game_application.h
     ${SOURCE_PATH}/game_object.cpp
     ${HEADER_PATH}/game_object.h
+    ${SOURCE_PATH}/game_message.cpp
+    ${HEADER_PATH}/game_message.h
     ${SOURCE_PATH}/game_component.cpp
     ${HEADER_PATH}/game_component.h
     ${SOURCE_PATH}/game_features.cpp
@@ -644,12 +604,6 @@ SET(GUI_FEATURES_LIST
     ${SOURCE_PATH}/gui_features.cpp
 )
 SOURCE_GROUP("system\\gui" FILES ${GUI_FEATURES_LIST})
-
-SET(WINDOW_FEATURES_LIST
-    ${HEADER_PATH}/window_features.h
-    ${SOURCE_PATH}/window_features.cpp
-)
-SOURCE_GROUP("system\\window" FILES ${WINDOW_FEATURES_LIST})
 
 SET(RENDER_FEATURES_LIST
     ${HEADER_PATH}/camera_component.h
@@ -754,7 +708,6 @@ SOURCE_GROUP("system\\script" FILES ${SCRIGPU_SYSTEM_LIST})
 ADD_LIBRARY(${LIB_NAME} SHARED
     ${GAMEAPP_LIST}
     ${GUI_FEATURES_LIST}
-    ${WINDOW_FEATURES_LIST}
     ${RENDER_FEATURES_LIST}
     ${SOUND_FEATURES_LIST}
     ${INPUT_FEATURES_LIST}
@@ -777,7 +730,6 @@ TARGET_LINK_LIBRARIES(${LIB_NAME}
     libnetwork
     libplatform
     librenderer
-    libwindow
     libsound
     libphysics
 )

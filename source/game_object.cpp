@@ -40,7 +40,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GameObject, GameMessage)
+__ImplementSubClass(GameObject, GameListener)
 
 GameObject::GameObject() noexcept
     : _active(false)
@@ -1013,48 +1013,48 @@ GameObject::destroy() noexcept
 }
 
 void
-GameObject::sendMessage(const std::string& method, const Variant* data...) noexcept
+GameObject::sendMessage(const GameMessage& message) noexcept
 {
     if (!this->getActive())
         return;
 
     for (auto& it : _components)
     {
-        it->onMessage(method, data);
+        it->onMessage(message);
     }
 }
 
 void
-GameObject::sendMessageUpwards(const std::string& method, const Variant* data...) noexcept
+GameObject::sendMessageUpwards(const GameMessage& message) noexcept
 {
     if (!this->getActive())
         return;
 
     for (auto& it : _components)
     {
-        it->onMessage(method, data);
+        it->onMessage(message);
     }
 
     if (_parent)
     {
-        _parent->sendMessageDownwards(method, data);
+        _parent->sendMessageDownwards(message);
     }
 }
 
 void
-GameObject::sendMessageDownwards(const std::string& method, const Variant* data...) noexcept
+GameObject::sendMessageDownwards(const GameMessage& message) noexcept
 {
     if (!this->getActive())
         return;
 
     for (auto& it : _components)
     {
-        it->onMessage(method, data);
+        it->onMessage(message);
     }
 
     for (auto& it : _children)
     {
-        it->sendMessageDownwards(method, data);
+        it->sendMessageDownwards(message);
     }
 }
 

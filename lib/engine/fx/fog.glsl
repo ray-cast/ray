@@ -1,74 +1,99 @@
 <?xml version='1.0'?>
 <effect version="1270" language="glsl">
     <include name="sys:fx/common.glsl"/>
-    <parameter name="texDepth" type="sampler2D" />
-    <parameter name="texNormal" type="sampler2D" />
-    <parameter name="texSource" type="sampler2D" />
-    <parameter name="eyePosition" type="CameraPosition"/>
-    <parameter name="eyeDirection" type="CameraDirection"/>
-    <parameter name="matViewProjectInverse" type="matViewProjectInverse"/>
-    <parameter name="fogStart" type="float" />
-    <parameter name="fogEnd" type="float" />
+    <parameter name="matViewProjectInverse" semantic="matViewProjectInverse"/>
+    <parameter name="texDepth" semantic="DepthMap" />
+    <parameter name="eyePosition" semantic="CameraPosition"/>
+    <parameter name="fogFalloff" type="float"/>
+    <parameter name="fogDensity" type="float"/>
     <parameter name="fogColor" type="float3"/>
-    <shader type="vertex" name="mainVS">
+    <shader name="vertex">
         <![CDATA[
-            #version 330
+            out vec4 coord;
 
-            layout(location = 0) in vec4 glsl_Position;
-
-            void main()
+            void FogVS()
             {
+                coord = glsl_Texcoord;
                 gl_Position = glsl_Position;
             }
         ]]>
     </shader>
-    <shader type="fragment" name="mainPS">
+    <shader name="fragment">
         <![CDATA[
-            #version 330 core
-
-            layout(location = 0) out vec4 glsl_FragColor0;
-
             uniform sampler2D texDepth;
-            uniform sampler2D texNormal;
-            uniform sampler2D texSource;
+
+            uniform vec3 eyePosition;
 
             uniform mat4 matViewProjectInverse;
 
-            uniform float fogStart;
-            uniform float fogEnd;
+            uniform float fogFalloff;
+            uniform float fogDensity;
             uniform vec3 fogColor;
-            uniform vec3 eyePosition;
-            uniform vec3 eyeDirection;
 
-            in vec4 position;
+            in vec4 coord;
 
-            void main()
+            vec4 samplePosition(vec2 coord)
             {
-                ivec2 ssC = ivec2(gl_FragCoord.xy);
+                float depth  = textureLod(texDepth, coord.xy, 0).r;
+                vec4 result = matViewProjectInverse * vec4(coord * 2.0 - 1.0, depth, 1.0);
+                result /= result.w;
+                return result;
+            }
 
-                vec3 position = eyePosition * -2.0;
-                vec3 normal = texelFetch(texNormal, ssC, 0).rgb;
+            float fogFactorLinear(float dist, float start, float end)
+            {
+                float fog = (end - dist) / (end - start);
+                return clamp(fog, 0, 1);
+            }
 
-                float depth = texelFetch(texDepth, ssC, 0).r;
-                vec4 source = texelFetch(texSource, ssC, 0).rgba;
+            float fogFactorLinear(float dist, float density)
+            {
+                float fog = 1 - density * dist;
+                return clamp(fog, 0, 1);
+            }
 
-                float z = -50.0625 / (depth - 1.0025);
-                float u = z / dot(normal, position);
+            float fogFactorExp(float dist, float density)
+            {
+                float fog = 1 - exp(-density * dist);
+                return clamp(fog, 0, 1);
+            }
 
-                vec4 world = position + (u * normal);
+            float fogFactorExp2(float dist, float density)
+            {
+                const float LOG2 = -1.442695;
+                float dc = density * dist;
+                float fog = 1 - exp2(dc * dc * LOG2);
+                return clamp(fog, 0, 1);
+            }
 
-                float integral = 0.02 * -(exp(-position.y * 0.01) - exp(-world.y * 0.01));
-                float f = u * integral / (position.y - world.y);
+            float fogFactor(float dist, vec3 rayOrigin, vec3 rayDirection)
+            {
+                float fogAmount = exp((-rayOrigin.y*fogFalloff*fogDensity)) * (1.0-exp(-dist*rayDirection.y*fogFalloff*fogDensity)) / rayDirection.y * fogFalloff;
+                return clamp(fogAmount, 0, 1);
+            }
 
-                glsl_FragColor0.rgb = source.rgb * (1.0 - exp(-f));
-                glsl_FragColor0.a = source.a;
+            void FogPS()
+            {
+                vec3 P = samplePosition(coord.xy).rgb;
+                float dist = distance(eyePosition, P);
+                //glsl_FragColor0 = vec4(fogColor, fogFactor(dist, eyePosition, normalize(P)));
+                glsl_FragColor0 = vec4(fogColor, fogFactorExp(dist, fogFalloff * fogDensity));
             }
         ]]>
     </shader>
-    <technique name="exp">
-        <pass>
-            <state name="vertex" value="mainVS"/>
-            <state name="fragment" value="mainPS"/>
+    <technique name="postprocess">
+        <pass name="fog">
+            <state name="vertex" value="FogVS"/>
+            <state name="fragment" value="FogPS"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="front" />
+
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="srcalpha"/>
+            <state name="blenddst" value="invsrcalpha"/>
         </pass>
     </technique>
 </effect>

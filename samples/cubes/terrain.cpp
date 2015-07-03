@@ -445,6 +445,10 @@ Terrain::hitTest(const ray::Vector3& translate, const ray::Vector3& view, ray::i
 
     float cur = 0;
     float step = view.length();
+    if (std::isnan(step))
+    {
+        return nullptr;
+    }
 
     auto chunk = this->findChunk(x, y, z);
 

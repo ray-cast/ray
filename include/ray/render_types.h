@@ -47,6 +47,7 @@
 _NAME_BEGIN
 
 typedef std::shared_ptr<class RenderDevice> RenderDevicePtr;
+typedef std::shared_ptr<class RenderWindow> RenderWindowPtr;
 typedef std::shared_ptr<class RenderPipeline> RenderPipelinePtr;
 typedef std::shared_ptr<class RenderSystem> RenderSystemPtr;
 typedef std::shared_ptr<class RenderState> RenderStatePtr;
@@ -66,6 +67,7 @@ typedef std::shared_ptr<class ShaderSubroutine> ShaderSubroutinePtr;
 typedef std::shared_ptr<class ShaderObject> ShaderObjectPtr;
 typedef std::shared_ptr<class RenderPostProcess> RenderPostProcessPtr;
 typedef std::shared_ptr<class Material> MaterialPtr;
+typedef std::shared_ptr<class Geometry> GeometryPtr;
 
 typedef std::shared_ptr<class Camera> CameraPtr;
 typedef std::shared_ptr<class Light> LightPtr;
@@ -256,6 +258,7 @@ enum PixelFormat
     LUMINANCE_ALPHA,
     R8G8B8,
     R8G8B8A8,
+    R16G16B16A16_SNORM,
     R8G8B8F,
     R16G16B16F,
     R32G32B32F,
@@ -395,7 +398,6 @@ struct GPUctxconfig
     int release;
     int multithread;
     HGLRC share;
-    WindHandle hwnd;
 };
 
 struct GPUfbconfig
@@ -415,9 +417,7 @@ struct GPUfbconfig
     int accumBlueSize;
     int accumAlphaSize;
 
-    int stereo;
     int samples;
-    int doubleBuffer;
 };
 
 _NAME_END

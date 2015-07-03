@@ -67,8 +67,9 @@ MaterialSemantic::setup() noexcept
     _semantics[CameraAperture] = std::make_shared<MaterialParam>("CameraAperture", float());
     _semantics[CameraFar] = std::make_shared<MaterialParam>("CameraFar", float());
     _semantics[CameraNear] = std::make_shared<MaterialParam>("CameraNear", float());
-    _semantics[CameraPosition] = std::make_shared<MaterialParam>("CameraPosition", Vector3());
     _semantics[CameraView] = std::make_shared<MaterialParam>("CameraView", float3());
+    _semantics[CameraPosition] = std::make_shared<MaterialParam>("CameraPosition", Vector3());
+    _semantics[CameraDirection] = std::make_shared<MaterialParam>("CameraDirection", Vector3());
 
     _semantics[Time] = std::make_shared<MaterialParam>("Time", float());
     _semantics[TimeFps] = std::make_shared<MaterialParam>("TimeFps", float());
@@ -209,8 +210,12 @@ MaterialSemantic::getFloat3ParamSemantic(const std::string& name) const noexcept
         return GlobalFloat3Semantic::LightDiffuse;
     if (getFloat3ParmName(GlobalFloat3Semantic::LightPosition) == name)
         return GlobalFloat3Semantic::LightPosition;
+    if (getFloat3ParmName(GlobalFloat3Semantic::CameraView) == name)
+        return GlobalFloat3Semantic::CameraView;
     if (getFloat3ParmName(GlobalFloat3Semantic::CameraPosition) == name)
         return GlobalFloat3Semantic::CameraPosition;
+    if (getFloat3ParmName(GlobalFloat3Semantic::CameraDirection) == name)
+        return GlobalFloat3Semantic::CameraDirection;
     return (GlobalFloat3Semantic)NotSemantic;
 }
 

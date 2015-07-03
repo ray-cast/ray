@@ -150,9 +150,7 @@
                 vec3 whiteScale = uncharted2Tonemap(vec3(W));
                 vec3 fimic = curr / whiteScale;
 
-                fimic = pow(fimic, vec3(1 / 2.2));
-
-                glsl_FragColor0.rgb = fimic;
+                glsl_FragColor0 = vec4(fimic, 1.0);
             }
         ]]>
     </shader>

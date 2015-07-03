@@ -35,3 +35,15 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_window.h>
+
+_NAME_BEGIN
+
+RenderWindow::RenderWindow() noexcept
+{
+}
+
+RenderWindow::~RenderWindow() noexcept
+{
+}
+
+_NAME_END

@@ -182,7 +182,7 @@ Camera::makeLookAt(const Vector3& pos, const Vector3& lookat, const Vector3& up)
     _lookat = lookat;
     _up = up;
 
-    _viewInverse = _view.makeLookAt(_translate, _lookat, _up).inverse();
+    _viewInverse = _view.makeLookAt_lh(_translate, _lookat, _up).inverse();
     _viewInverseTranspose = Matrix4x4(_viewInverse).transpose();
 }
 
@@ -198,7 +198,7 @@ Camera::makeOrtho(float left, float right, float bottom, float top, float znear,
     _zNear = znear;
     _zFar = zfar;
 
-    _project.makeOrtho(_left, _right, _bottom, _top, _zNear, _zFar).inverse();
+    _project.makeOrtho_lh(_left, _right, _bottom, _top, _zNear, _zFar).inverse();
     _projectInverse = _project.inverse();
 
     _projLength.x = _project.a1;
@@ -206,12 +206,12 @@ Camera::makeOrtho(float left, float right, float bottom, float top, float znear,
 
     _projConstant.x = -2.0 / _projLength.x;
     _projConstant.y = -2.0 / _projLength.y;
-    _projConstant.z = 1.0 / _projLength.x;
-    _projConstant.w = 1.0 / _projLength.y;
+    _projConstant.z = (1.0 - _project.a3) / _projLength.x;
+    _projConstant.w = (1.0 + _project.b3) / _projLength.y;
 
-    _clipConstant.x = (2.0 * _zNear * _zFar);
+    _clipConstant.x = (_zNear * _zFar);
     _clipConstant.y = _zFar - _zNear;
-    _clipConstant.z = _zFar + _zNear;
+    _clipConstant.z = _zFar;
     _clipConstant.w = 1.0;
 }
 
@@ -225,20 +225,28 @@ Camera::makePerspective(float aperture, float ratio, float znear, float zfar) no
     _zNear = znear;
     _zFar = zfar;
 
-    _project.makePerspective(_aperture, _ratio, _zNear, _zFar);
+    _project.makePerspective_lh(_aperture, _ratio, _zNear, _zFar);
+    _project = Matrix4x4().makeTranslate(0, 0, -1) * Matrix4x4().makeScale(1.0, 1.0, 2.0) * _project;
     _projectInverse = _project.inverse();
 
     _projLength.x = _project.a1;
     _projLength.y = _project.b2;
 
-    _projConstant.x = -2.0 / (_projLength.x);
-    _projConstant.y = -2.0 / (_projLength.y);
-    _projConstant.z = (1.0 - _project.a3) / _projLength.x;
-    _projConstant.w = (1.0 + _project.b3) / _projLength.y;
+#ifdef _BUILD_OPENGL
+    _projConstant.x = 2.0 / _projLength.x;
+    _projConstant.y = 2.0 / _projLength.y;
+    _projConstant.z = -(1.0 + _project.a3) / _projLength.x;
+    _projConstant.w = -(1.0 + _project.b3) / _projLength.y;
+#else //DirectX
+    _projConstant.x = 2.0 / _projLength.x;
+    _projConstant.y = -2.0 / _projLength.y;
+    _projConstant.z = -(1.0 + _project.a3) / _projLength.x;
+    _projConstant.w = (1.0 - _project.b3) / _projLength.y;
+#endif
 
-    _clipConstant.x = (2 * _zNear * _zFar);
+    _clipConstant.x = (_zNear * _zFar);
     _clipConstant.y = _zFar - _zNear;
-    _clipConstant.z = _zFar + _zNear;
+    _clipConstant.z = _zFar;
     _clipConstant.w = 1.0;
 }
 
@@ -394,6 +402,18 @@ RenderTargetPtr
 Camera::getRenderTarget() const noexcept
 {
     return _renderTexture;
+}
+
+void
+Camera::setRenderWindow(RenderWindowPtr window) noexcept
+{
+    _renderWindow = window;
+}
+
+RenderWindowPtr
+Camera::getRenderWindow() const noexcept
+{
+    return _renderWindow;
 }
 
 CameraPtr

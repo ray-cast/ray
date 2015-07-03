@@ -25,21 +25,21 @@
     <shader name="fragment">
         <![CDATA[
             uniform vec4 color;
-            uniform float specular;
             uniform float shininess;
+            uniform float specular;
 
             in vec4 normal;
 
             void WaterPS()
             {
-                glsl_FragColor0.rgba = color;
-                glsl_FragColor1.rgb = normalize(normalize(normal).xyz);
+                glsl_FragColor0 = color;
+                glsl_FragColor1.rgb =  normalize(normalize(normal).xyz);
                 glsl_FragColor1.a = shininess + specular * 0.1;
             }
         ]]>
     </shader>
     <technique name="transparent">
-        <pass name="gbuffer">
+        <pass name="transparent">
             <state name="vertex" value="WaterVS"/>
             <state name="fragment" value="WaterPS"/>
         </pass>

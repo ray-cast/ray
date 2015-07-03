@@ -60,6 +60,7 @@ struct WindowEvent
 {
     std::uint32_t type;
     std::uint32_t timestamp;
+    std::uint32_t id;
     std::int32_t x;
     std::int32_t y;
     std::int32_t w;

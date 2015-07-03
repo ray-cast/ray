@@ -172,7 +172,6 @@ public:
     RenderBuffer() noexcept;
     ~RenderBuffer() noexcept;
 
-    void setup(const MeshProperty& mesh) except;
     virtual void setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) except = 0;
     virtual void close() noexcept = 0;
 

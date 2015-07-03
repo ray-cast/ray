@@ -41,9 +41,9 @@
 
 _NAME_BEGIN
 
-class EXPORT GameObject : public GameMessage
+class EXPORT GameObject : public GameListener
 {
-    __DeclareSubClass(GameObject, GameMessage)
+    __DeclareSubClass(GameObject, GameListener)
 public:
     GameObject() noexcept;
     virtual ~GameObject() noexcept;
@@ -164,9 +164,9 @@ public:
     GameComponentPtr getComponent(RTTIType type) const noexcept;
     const GameComponents& getComponents() const noexcept;
 
-    void sendMessage(const std::string& method, const Variant* data...) noexcept;
-    void sendMessageUpwards(const std::string& method, const Variant* data...) noexcept;
-    void sendMessageDownwards(const std::string& method, const Variant* data...) noexcept;
+    void sendMessage(const GameMessage& message) noexcept;
+    void sendMessageUpwards(const GameMessage& message) noexcept;
+    void sendMessageDownwards(const GameMessage& message) noexcept;
 
     void destroy() noexcept;
 

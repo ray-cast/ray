@@ -36,10 +36,11 @@
 // +----------------------------------------------------------------------
 #include <ray/game_features.h>
 #include <ray/game_server.h>
+#include <ray/game_scene.h>
 
 _NAME_BEGIN
 
-__ImplementSubClass(GameFeature, GameMessage)
+__ImplementSubClass(GameFeature, GameListener)
 
 GameFeature::GameFeature() noexcept
     : _isActive(false)
@@ -71,7 +72,7 @@ GameFeature::getActive() noexcept
 }
 
 void
-GameFeature::sendMessage(const std::string& method, const Variant* data...)
+GameFeature::sendMessage(const GameMessage& message) except
 {
     auto& features = this->getGameServer()->getGameFeatures();
     for (auto& it : features)
@@ -79,11 +80,15 @@ GameFeature::sendMessage(const std::string& method, const Variant* data...)
         if (it.get() != this)
         {
             if (it->getActive())
-                it->onMessage(method, data);
+                it->onMessage(message);
         }
     }
 
-    this->getGameServer()->sendMessage(method, data);
+    auto& scene = this->getGameServer()->getScenes();
+    for (auto& it : scene)
+    {
+        it->sendMessage(message);
+    }
 }
 
 void
@@ -141,16 +146,6 @@ GameFeature::onFrame() except
 
 void
 GameFeature::onFrameEnd() except
-{
-}
-
-void
-GameFeature::onEvent(const AppEvent& event) except
-{
-}
-
-void
-GameFeature::onMessage(const std::string& method, const Variant* data...) except
 {
 }
 

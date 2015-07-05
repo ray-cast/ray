@@ -45,36 +45,36 @@ _NAME_BEGIN
 class EXPORT PhysicFeatures final : public GameFeature
 {
 public:
-    PhysicFeatures() noexcept;
-    ~PhysicFeatures() noexcept;
+	PhysicFeatures() noexcept;
+	~PhysicFeatures() noexcept;
 
-    PhysicsScenePtr getPhysicsScene(GameScene* scene) const noexcept;
-    PhysicsScenePtr getPhysicsScene(GameScenePtr scene) const noexcept;
+	PhysicsScenePtr getPhysicsScene(GameScene* scene) const noexcept;
+	PhysicsScenePtr getPhysicsScene(GameScenePtr scene) const noexcept;
 
-    GameFeaturePtr clone() const noexcept;
-
-private:
-
-    void onActivate() noexcept;
-    void onDeactivate() noexcept;
-
-    void onOpenScene(GameScenePtr scene) except;
-    void onCloseScene(GameScenePtr scene) except;
-
-    void onFrameBegin() noexcept;
-
-    GameComponentPtr onSerialization(iarchive& reader) except;
+	GameFeaturePtr clone() const noexcept;
 
 private:
 
-    GameComponentPtr instanceRigidbody(iarchive& reader) except;
-    GameComponentPtr instanceShapeBox(iarchive& reader) except;
-    GameComponentPtr instanceCharacter(iarchive& reader) except;
+	void onActivate() noexcept;
+	void onDeactivate() noexcept;
+
+	void onOpenScene(GameScenePtr scene) except;
+	void onCloseScene(GameScenePtr scene) except;
+
+	void onFrameBegin() noexcept;
+
+	GameComponentPtr onSerialization(iarchive& reader) except;
 
 private:
 
-    PhysicsSystemPtr _physics;
-    PhysicsScenes _physicsScenes;
+	GameComponentPtr instanceRigidbody(iarchive& reader) except;
+	GameComponentPtr instanceShapeBox(iarchive& reader) except;
+	GameComponentPtr instanceCharacter(iarchive& reader) except;
+
+private:
+
+	PhysicsSystemPtr _physics;
+	PhysicsScenes _physicsScenes;
 };
 
 _NAME_END

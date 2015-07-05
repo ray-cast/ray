@@ -45,31 +45,31 @@ _NAME_BEGIN
 class EXPORT ScriptFeatures final : public GameFeature
 {
 public:
-    ScriptFeatures() noexcept;
-    virtual ~ScriptFeatures() noexcept;
+	ScriptFeatures() noexcept;
+	virtual ~ScriptFeatures() noexcept;
 
 private:
 
-    virtual void onActivate() except;
-    virtual void onDeactivate() except;
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
 
-    virtual void onFrameBegin() noexcept;
-    virtual void onFrame() noexcept;
-    virtual void onFrameEnd() noexcept;
+	virtual void onFrameBegin() noexcept;
+	virtual void onFrame() noexcept;
+	virtual void onFrameEnd() noexcept;
 
-    virtual GameComponentPtr onSerialization(iarchive& reader) except;
-
-private:
-    GameComponentPtr instanceScript(iarchive& reader) except;
+	virtual GameComponentPtr onSerialization(iarchive& reader) except;
 
 private:
-
-    ScriptFeatures(const ScriptFeatures&) = delete;
-    ScriptFeatures& operator=(const ScriptFeatures&) = delete;
+	GameComponentPtr instanceScript(iarchive& reader) except;
 
 private:
 
-    ScriptSystem* _scriptManager;
+	ScriptFeatures(const ScriptFeatures&) = delete;
+	ScriptFeatures& operator=(const ScriptFeatures&) = delete;
+
+private:
+
+	ScriptSystem* _scriptManager;
 };
 
 _NAME_END

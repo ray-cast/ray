@@ -42,8 +42,8 @@ _NAME_BEGIN
 __ImplementSubInterface(RenderComponent, GameComponent)
 
 RenderComponent::RenderComponent() noexcept
-    : _isCastShadow(true)
-    , _isReceiveShadow(true)
+	: _isCastShadow(true)
+	, _isReceiveShadow(true)
 {
 }
 
@@ -54,76 +54,94 @@ RenderComponent::~RenderComponent() noexcept
 void
 RenderComponent::setCastShadow(bool value) noexcept
 {
-    _isCastShadow = value;
+	_isCastShadow = value;
 }
 
 bool
 RenderComponent::getCastShadow() const noexcept
 {
-    return _isCastShadow;
+	return _isCastShadow;
 }
 
 void
 RenderComponent::setReceiveShadow(bool value) noexcept
 {
-    _isReceiveShadow = value;
+	_isReceiveShadow = value;
 }
 
 bool
 RenderComponent::getReceiveShadow() const noexcept
 {
-    return _isReceiveShadow;
+	return _isReceiveShadow;
 }
 
 void
-RenderComponent::setMaterial(MaterialPtr material) noexcept
+RenderComponent::addMaterial(MaterialPtr material) noexcept
 {
-    _material = material;
+	assert(material);
+
+	auto it = std::find(_materials.begin(), _materials.end(), material);
+	if (it == _materials.end())
+	{
+		_materials.push_back(material);
+	}
+}
+
+const Materials&
+RenderComponent::getMaterials() const noexcept
+{
+	return _materials;
 }
 
 MaterialPtr
-RenderComponent::getMaterial() const noexcept
+RenderComponent::getMaterial(std::size_t index) const noexcept
 {
-    return _material;
+	if (index < _materials.size())
+		return _materials[index];
+	return nullptr;
 }
 
 void
 RenderComponent::load(iarchive& reader) noexcept
 {
-    reader >> static_cast<GameComponent*>(this);
-    reader >> rtti_alias(_isCastShadow, "castshadow");
-    reader >> rtti_alias(_isReceiveShadow, "receiveshadow");
+	reader >> static_cast<GameComponent*>(this);
+	reader >> rtti_alias(_isCastShadow, "castshadow");
+	reader >> rtti_alias(_isReceiveShadow, "receiveshadow");
 
-    std::string material;
-    reader >> rtti_name(material);
+	std::string material;
+	reader >> rtti_name(material);
 
-    this->setName(material);
+	this->setName(material);
 }
 
 void
 RenderComponent::save(oarchive& write) noexcept
 {
-    write << rtti_alias(_isCastShadow, "castshadow");
-    write << rtti_alias(_isReceiveShadow, "receiveshadow");
+	write << rtti_alias(_isCastShadow, "castshadow");
+	write << rtti_alias(_isReceiveShadow, "receiveshadow");
 }
 
 void
 RenderComponent::onActivate() except
 {
-    if (!_material)
-    {
-        _material = RenderFactory::createMaterial(this->getName());
-    }
+	if (!this->getName().empty())
+	{
+		auto material = RenderFactory::createMaterial(this->getName());
+		if (material)
+			this->addMaterial(material);
+	}
 }
 
 void
 RenderComponent::onDectivate() noexcept
 {
-    if (!_material)
-    {
-        _material.reset();
-        _material = nullptr;
-    }
+	for (auto& it : _materials)
+	{
+		it.reset();
+		it = nullptr;
+	}
+
+	_materials.clear();
 }
 
 _NAME_END

@@ -44,63 +44,63 @@ _NAME_BEGIN
 
 class EXPORT CameraComponent final : public GameComponent
 {
-    __DeclareSubClass(CameraComponent, GameComponent)
+	__DeclareSubClass(CameraComponent, GameComponent)
 public:
-    CameraComponent() noexcept;
-    ~CameraComponent() noexcept;
+	CameraComponent() noexcept;
+	~CameraComponent() noexcept;
 
-    void makeLookAt(const Vector3& pos, const Vector3& lookat, const Vector3& up) noexcept;
-    void makeOrtho(float left, float right, float bottom, float top, float znear, float zfar) noexcept;
-    void makePerspective(float aperture, float ratio, float znear, float zfar) noexcept;
+	void makeLookAt(const Vector3& pos, const Vector3& lookat, const Vector3& up) noexcept;
+	void makeOrtho(float left, float right, float bottom, float top, float znear, float zfar) noexcept;
+	void makePerspective(float aperture, float ratio, float znear, float zfar) noexcept;
 
-    float getAperture() const noexcept;
-    float getRatio() const noexcept;
-    float getNear() const noexcept;
-    float getFar() const noexcept;
+	float getAperture() const noexcept;
+	float getRatio() const noexcept;
+	float getNear() const noexcept;
+	float getFar() const noexcept;
 
-    const Matrix4x4& getView() const noexcept;
-    const Matrix4x4& getViewInverse() const noexcept;
-    const Matrix4x4& getViewInverseTranspose() const noexcept;
+	const Matrix4x4& getView() const noexcept;
+	const Matrix4x4& getViewInverse() const noexcept;
+	const Matrix4x4& getViewInverseTranspose() const noexcept;
 
-    const Matrix4x4& getProject() const noexcept;
-    const Matrix4x4& getProjectInverse() const noexcept;
+	const Matrix4x4& getProject() const noexcept;
+	const Matrix4x4& getProjectInverse() const noexcept;
 
-    const Matrix4x4& getViewProject() const noexcept;
-    const Matrix4x4& getViewProjectInverse() const noexcept;
+	const Matrix4x4& getViewProject() const noexcept;
+	const Matrix4x4& getViewProjectInverse() const noexcept;
 
-    Vector3 project(const Vector3& pos) const noexcept;
-    Vector3 unproject(const Vector3& pos) const noexcept;
+	Vector3 project(const Vector3& pos) const noexcept;
+	Vector3 unproject(const Vector3& pos) const noexcept;
 
-    Vector3 sceneToDirection(const Vector2& pos) const noexcept;
+	Vector3 sceneToDirection(const Vector2& pos) const noexcept;
 
-    void setViewport(const Viewport& viewport) noexcept;
-    const Viewport&  getViewport() const noexcept;
+	void setViewport(const Viewport& viewport) noexcept;
+	const Viewport&  getViewport() const noexcept;
 
-    void setCameraType(CameraType type) noexcept;
-    void setCameraOrder(CameraOrder order) noexcept;
+	void setCameraType(CameraType type) noexcept;
+	void setCameraOrder(CameraOrder order) noexcept;
 
-    CameraType getCameraType() const noexcept;
-    CameraOrder getCameraOrder() const noexcept;
+	CameraType getCameraType() const noexcept;
+	CameraOrder getCameraOrder() const noexcept;
 
-    void load(iarchive& reader) noexcept;
-    void save(oarchive& write) noexcept;
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
 
-    virtual GameComponentPtr clone() const noexcept;
-
-private:
-
-    void onActivate() noexcept;
-    void onDeactivate() noexcept;
-
-    void onMoveAfter() noexcept;
-
-private:
-    CameraComponent(const CameraComponent&) noexcept = delete;
-    CameraComponent& operator=(const CameraComponent&) noexcept = delete;
+	virtual GameComponentPtr clone() const noexcept;
 
 private:
 
-    CameraPtr _camera;
+	void onActivate() noexcept;
+	void onDeactivate() noexcept;
+
+	void onMoveAfter() noexcept;
+
+private:
+	CameraComponent(const CameraComponent&) noexcept = delete;
+	CameraComponent& operator=(const CameraComponent&) noexcept = delete;
+
+private:
+
+	CameraPtr _camera;
 };
 
 _NAME_END

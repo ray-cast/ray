@@ -45,10 +45,10 @@ _NAME_BEGIN
 class ScriptBindActor final : public ScriptBinder
 {
 public:
-    ScriptBindActor() noexcept;
-    ~ScriptBindActor() noexcept;
+	ScriptBindActor() noexcept;
+	~ScriptBindActor() noexcept;
 
-    void setup(asIScriptEngine* _engine) noexcept;
+	void setup(asIScriptEngine* _engine) noexcept;
 };
 
 _NAME_END

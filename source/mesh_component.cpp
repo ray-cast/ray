@@ -35,16 +35,12 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/mesh_component.h>
-#include <ray/model.h>
-#include <ray/render_factory.h>
-#include <ray/render_buffer.h>
 
 _NAME_BEGIN
 
 __ImplementSubClass(MeshComponent, GameComponent)
 
 MeshComponent::MeshComponent() noexcept
-    : _type(VertexType::GPU_TRIANGLE)
 {
 }
 
@@ -55,81 +51,65 @@ MeshComponent::~MeshComponent() noexcept
 void
 MeshComponent::setMesh(MeshPropertyPtr mesh) noexcept
 {
-    _mesh = mesh;
-    _bound = _mesh->getBoundingBox();
-}
-
-void
-MeshComponent::setCombieInstnace(const CombineInstance& instance) noexcept
-{
-    if (!_mesh)
-        _mesh = std::make_shared<MeshProperty>();
-
-    _mesh->setCombieInstnace(instance);
-    _bound = _mesh->getBoundingBox();
+	_mesh = mesh;
+	_mesh->computeBoundingBox();
 }
 
 void
 MeshComponent::clear() noexcept
 {
-    _mesh->clear();
+	_mesh->clear();
 }
 
 MeshPropertyPtr
 MeshComponent::getMesh() const noexcept
 {
-    return _mesh;
+	return _mesh;
 }
 
 void
 MeshComponent::setSharedMesh(MeshPropertyPtr mesh) noexcept
 {
-    _sharedMesh = mesh;
+	_sharedMesh = mesh;
 }
 
 MeshPropertyPtr
 MeshComponent::getSharedMesh() const noexcept
 {
-    return _sharedMesh;
+	return _sharedMesh;
 }
 
 std::size_t
 MeshComponent::getNumVertices() const noexcept
 {
-    return _mesh->getNumVertices();
+	return _mesh->getNumVertices();
 }
 
 std::size_t
 MeshComponent::getNumIndices() const noexcept
 {
-    return _mesh->getNumIndices();
+	return _mesh->getNumIndices();
 }
 
-void
-MeshComponent::setRenderBuffer(RenderBufferPtr mesh) noexcept
+const Bound&
+MeshComponent::getBoundingBox() const noexcept
 {
-    _renderMesh = mesh;
-}
-
-RenderBufferPtr
-MeshComponent::getRenderBuffer() const noexcept
-{
-    return _renderMesh;
+	return _mesh->getBoundingBox();
 }
 
 void
 MeshComponent::load(iarchive& reader) noexcept
 {
-    reader >> static_cast<GameComponent*>(this);
+	reader >> static_cast<GameComponent*>(this);
 
-    Model model;
-    if (model.load(this->getName()))
-    {
-        if (model.hasMeshes())
-        {
-            this->setMesh(model.getMeshsList()[0]);
-        }
-    }
+	Model model;
+	if (model.load(this->getName()))
+	{
+		if (model.hasMeshes())
+		{
+			this->setMesh(model.getMeshsList()[0]);
+		}
+	}
 }
 
 void
@@ -140,60 +120,31 @@ MeshComponent::save(oarchive& write) noexcept
 GameComponentPtr
 MeshComponent::clone() const noexcept
 {
-    auto instance = std::make_shared<MeshComponent>();
-    instance->setName(this->getName());
-    instance->setVisible(this->getVisible());
-    if (_mesh)
-    {
-        instance->setMesh(_mesh->clone());
-        instance->setSharedMesh(_mesh);
-    }
+	auto instance = std::make_shared<MeshComponent>();
+	instance->setName(this->getName());
+	instance->setVisible(this->getVisible());
+	if (_mesh)
+	{
+		instance->setMesh(_mesh->clone());
+		instance->setSharedMesh(_mesh);
+	}
 
-    return instance;
+	return instance;
 }
 
 void
 MeshComponent::onActivate() noexcept
 {
-    if (_mesh)
-        buildRenderBuffer();
 }
 
 void
 MeshComponent::onDeactivate() noexcept
 {
-    if (_mesh)
-    {
-        _mesh.reset();
-        _mesh = nullptr;
-    }
-
-    if (_renderMesh)
-    {
-        _renderMesh.reset();
-        _renderMesh = nullptr;
-    }
-}
-
-void
-MeshComponent::buildRenderBuffer() noexcept
-{
-    if (!_renderMesh)
-    {
-        _renderMesh = RenderFactory::createRenderBuffer(*_mesh);
-    }
-}
-
-const Bound&
-MeshComponent::getBoundingBox() const noexcept
-{
-    return _bound;
-}
-
-VertexType
-MeshComponent::getVertexType() const noexcept
-{
-    return _type;
+	if (_mesh)
+	{
+		_mesh.reset();
+		_mesh = nullptr;
+	}
 }
 
 _NAME_END

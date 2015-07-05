@@ -45,42 +45,42 @@ _NAME_BEGIN
 class EXPORT InputFeatures final : public GameFeature, public InputListener
 {
 public:
-    InputFeatures() noexcept;
-    virtual ~InputFeatures() noexcept;
+	InputFeatures() noexcept;
+	virtual ~InputFeatures() noexcept;
 
-    void setInput(InputPtr input) noexcept;
-    InputPtr getInput() const noexcept;
+	void setInput(InputPtr input) noexcept;
+	InputPtr getInput() const noexcept;
 
-    GameFeaturePtr clone() const noexcept;
-
-private:
-
-    virtual void onActivate() except;
-    virtual void onDeactivate() except;
-
-    virtual void onReset() noexcept;
-
-    virtual void onFrameBegin() noexcept;
-    virtual void onFrameEnd() noexcept;
-
-    virtual void onMessage(const GameMessage& event) noexcept;
-
-    virtual void onInputEvent(const InputEvent& event) noexcept;
+	GameFeaturePtr clone() const noexcept;
 
 private:
 
-    void _buildInput() noexcept;
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
+
+	virtual void onReset() noexcept;
+
+	virtual void onFrameBegin() noexcept;
+	virtual void onFrameEnd() noexcept;
+
+	virtual void onMessage(const GameMessage& event) noexcept;
+
+	virtual void onInputEvent(const InputEvent& event) noexcept;
 
 private:
-    InputFeatures(const InputFeatures&) = delete;
-    InputFeatures& operator=(const InputFeatures&) = delete;
+
+	void _buildInput() noexcept;
+
+private:
+	InputFeatures(const InputFeatures&) = delete;
+	InputFeatures& operator=(const InputFeatures&) = delete;
 
 private:
 
-    InputPtr _input;
-    InputDevicePtr _inputDevice;
-    InputKeyboardPtr _inputKeyboard;
-    InputMousePtr _inputMouse;
+	InputPtr _input;
+	InputDevicePtr _inputDevice;
+	InputKeyboardPtr _inputKeyboard;
+	InputMousePtr _inputMouse;
 };
 
 _NAME_END

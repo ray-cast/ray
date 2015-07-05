@@ -39,7 +39,7 @@
 _NAME_BEGIN
 
 GUIFeatures::GUIFeatures() noexcept
-    : _gui(nullptr)
+	: _gui(nullptr)
 {
 }
 
@@ -50,24 +50,24 @@ GUIFeatures::~GUIFeatures() noexcept
 void
 GUIFeatures::setGuiSystem(GuiSystemPtr gui) noexcept
 {
-    _gui = gui;
+	_gui = gui;
 }
 
 void
 GUIFeatures::onFrameEnd() noexcept
 {
-    //this->sendMessage("void onGUI()", nullptr);
+	//this->sendMessage("void onGUI()", nullptr);
 
-    /*auto commands = _gui->getGuiCommands();
-    for (auto& it : commands)
-    {
-        if (it.type == GuiCommand::CMD_LINE)
-            RenderSystem::instance()->drawLineColor(Vector3(it.line.x0, it.line.y0, 0), Vector3(it.line.x1, it.line.y1, 0), it.col);
-        else if (it.type == GuiCommand::CMD_RECT)
-            RenderSystem::instance()->drawQuad(it.rect.x, it.rect.y, it.rect.w, it.rect.h, it.col);
-    }*/
+	/*auto commands = _gui->getGuiCommands();
+	for (auto& it : commands)
+	{
+		if (it.type == GuiCommand::CMD_LINE)
+			RenderSystem::instance()->drawLineColor(Vector3(it.line.x0, it.line.y0, 0), Vector3(it.line.x1, it.line.y1, 0), it.col);
+		else if (it.type == GuiCommand::CMD_RECT)
+			RenderSystem::instance()->drawQuad(it.rect.x, it.rect.y, it.rect.w, it.rect.h, it.col);
+	}*/
 
-    _gui->resetCommand();
+	_gui->resetCommand();
 }
 
 _NAME_END

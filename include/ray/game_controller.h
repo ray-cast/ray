@@ -43,15 +43,15 @@ _NAME_BEGIN
 
 class EXPORT GameController : public GameComponent
 {
-    __DeclareSubInterface(GameController, GameComponent)
+	__DeclareSubInterface(GameController, GameComponent)
 
 public:
-    GameController() noexcept;
-    virtual ~GameController() noexcept;
+	GameController() noexcept;
+	virtual ~GameController() noexcept;
 
 private:
-    GameController(const GameController&) noexcept = delete;
-    GameController& operator=(const GameController&)noexcept = delete;
+	GameController(const GameController&) noexcept = delete;
+	GameController& operator=(const GameController&)noexcept = delete;
 };
 
 _NAME_END

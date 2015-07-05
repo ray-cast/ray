@@ -54,11 +54,11 @@ _NAME_BEGIN
 class ScriptBinder
 {
 public:
-    virtual void setup(asIScriptEngine* engine) noexcept = 0;
+	virtual void setup(asIScriptEngine* engine) noexcept = 0;
 
-    virtual void onFrameBegin() noexcept;
-    virtual void onFrame() noexcept;
-    virtual void onFrameEnd() noexcept;
+	virtual void onFrameBegin() noexcept;
+	virtual void onFrame() noexcept;
+	virtual void onFrameEnd() noexcept;
 };
 
 _NAME_END

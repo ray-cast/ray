@@ -44,13 +44,13 @@ __ImplementSubClass(PhysicsBoxComponent, PhysicsShapeComponent)
 
 PhysicsBoxComponent::PhysicsBoxComponent() noexcept
 {
-    _shape = std::make_shared<PhysicsShapeBox>();
+	_shape = std::make_shared<PhysicsShapeBox>();
 }
 
 PhysicsBoxComponent::PhysicsBoxComponent(const Vector3& size) noexcept
 {
-    _shape = std::make_shared<PhysicsShapeBox>();
-    _shape->setSize(size);
+	_shape = std::make_shared<PhysicsShapeBox>();
+	_shape->setSize(size);
 }
 
 PhysicsBoxComponent::~PhysicsBoxComponent() noexcept
@@ -60,37 +60,37 @@ PhysicsBoxComponent::~PhysicsBoxComponent() noexcept
 void
 PhysicsBoxComponent::setSize(const Vector3& size) noexcept
 {
-    _shape->setSize(size);
+	_shape->setSize(size);
 }
 
 const Vector3&
 PhysicsBoxComponent::getSize() const noexcept
 {
-    return _shape->getSize();
+	return _shape->getSize();
 }
 
 PhysicsShapePtr
 PhysicsBoxComponent::getCollisionShape() noexcept
 {
-    return _shape;
+	return _shape;
 }
 
 GameComponentPtr
 PhysicsBoxComponent::clone() const noexcept
 {
-    return std::make_shared<PhysicsBoxComponent>(this->getSize());
+	return std::make_shared<PhysicsBoxComponent>(this->getSize());
 }
 
 void
 PhysicsBoxComponent::onActivate() noexcept
 {
-    _shape->setup();
+	_shape->setup();
 }
 
 void
 PhysicsBoxComponent::onDeactivate() noexcept
 {
-    _shape->close();
+	_shape->close();
 }
 
 _NAME_END

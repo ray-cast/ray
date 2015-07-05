@@ -47,53 +47,53 @@ _NAME_BEGIN
 class EXPORT RenderFeatures final : public GameFeature
 {
 public:
-    RenderFeatures() noexcept;
-    virtual ~RenderFeatures() noexcept;
+	RenderFeatures() noexcept;
+	virtual ~RenderFeatures() noexcept;
 
-    void setRenderWindow(WindHandle hwnd, std::size_t w, std::size_t h) noexcept;
-    WindHandle getRenderWindow() const noexcept;
+	void setRenderWindow(WindHandle hwnd, std::size_t w, std::size_t h) noexcept;
+	WindHandle getRenderWindow() const noexcept;
 
-    void setRenderSetting(const RenderSetting& setting) noexcept;
-    const RenderSetting& getRenderSetting() const noexcept;
+	void setRenderSetting(const RenderSetting& setting) noexcept;
+	const RenderSetting& getRenderSetting() const noexcept;
 
-    void setRenderSystem(RenderSystemPtr renderSystem) noexcept;
-    RenderSystemPtr getRenderSystem() const noexcept;
+	void setRenderSystem(RenderSystemPtr renderSystem) noexcept;
+	RenderSystemPtr getRenderSystem() const noexcept;
 
-    RenderScenePtr getRenderScene(GameScene* scene) noexcept;
-    RenderScenePtr getRenderScene(GameScenePtr scene) noexcept;
+	RenderScenePtr getRenderScene(GameScene* scene) noexcept;
+	RenderScenePtr getRenderScene(GameScenePtr scene) noexcept;
 
-    GameFeaturePtr clone() const noexcept;
-
-private:
-
-    void onActivate() except;
-    void onDeactivate() except;
-
-    void onOpenScene(GameScenePtr scene) except;
-    void onCloseScene(GameScenePtr scene) except;
-
-    void onFrameBegin() except;
-    void onFrame() except;
-    void onFrameEnd() except;
-
-    GameComponentPtr onSerialization(iarchive& reader) except;
-
-private:
-    RenderFeatures(const RenderFeatures&) = delete;
-    RenderFeatures& operator=(const RenderFeatures&) = delete;
+	GameFeaturePtr clone() const noexcept;
 
 private:
 
-    typedef std::map<GameScene::InstanceID, RenderScenePtr> RenderScenes;
+	void onActivate() except;
+	void onDeactivate() except;
 
-    WindHandle _hwnd;
-    std::size_t _width;
-    std::size_t _height;
+	void onOpenScene(GameScenePtr scene) except;
+	void onCloseScene(GameScenePtr scene) except;
 
-    RenderWindowPtr _renderWindow;
-    RenderSystemPtr _renderSystem;
-    RenderSetting _renderSetting;
-    RenderScenes _renderScenes;
+	void onFrameBegin() except;
+	void onFrame() except;
+	void onFrameEnd() except;
+
+	GameComponentPtr onSerialization(iarchive& reader) except;
+
+private:
+	RenderFeatures(const RenderFeatures&) = delete;
+	RenderFeatures& operator=(const RenderFeatures&) = delete;
+
+private:
+
+	typedef std::map<GameScene::InstanceID, RenderScenePtr> RenderScenes;
+
+	WindHandle _hwnd;
+	std::size_t _width;
+	std::size_t _height;
+
+	RenderWindowPtr _renderWindow;
+	RenderSystemPtr _renderSystem;
+	RenderSetting _renderSetting;
+	RenderScenes _renderScenes;
 };
 
 _NAME_END

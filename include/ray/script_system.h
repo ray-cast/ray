@@ -52,57 +52,57 @@ _NAME_BEGIN
 class ScriptObject;
 class ScriptSystem final
 {
-    __DeclareSingleton(ScriptSystem)
+	__DeclareSingleton(ScriptSystem)
 public:
-    ScriptSystem() noexcept;
-    ~ScriptSystem() noexcept;
+	ScriptSystem() noexcept;
+	~ScriptSystem() noexcept;
 
-    void open() noexcept;
-    void close() noexcept;
+	void open() noexcept;
+	void close() noexcept;
 
-    void setTimer(TimerPtr timer) noexcept;
-    void setInput(InputPtr input) noexcept;
-    void setWindow(WindowPtr wx) noexcept;
-    void setGuiSystem(GuiSystemPtr gui) noexcept;
+	void setTimer(TimerPtr timer) noexcept;
+	void setInput(InputPtr input) noexcept;
+	void setWindow(WindowPtr wx) noexcept;
+	void setGuiSystem(GuiSystemPtr gui) noexcept;
 
-    void print(const std::string& str) noexcept;
+	void print(const std::string& str) noexcept;
 
-    std::shared_ptr<ScriptObject> createScriptObject();
+	std::shared_ptr<ScriptObject> createScriptObject();
 
-    asIScriptModule* getModule(const std::string& script);
-    asIScriptEngine* getScriptEngine() const noexcept;
-    asIScriptContext* getScriptContext() const noexcept;
+	asIScriptModule* getModule(const std::string& script);
+	asIScriptEngine* getScriptEngine() const noexcept;
+	asIScriptContext* getScriptContext() const noexcept;
 
-    void MessageCallback(const asSMessageInfo* msg, void* param);
+	void MessageCallback(const asSMessageInfo* msg, void* param);
 
-    void onFrameBegin() noexcept;
-    void onFrame() noexcept;
-    void onFrameEnd() noexcept;
+	void onFrameBegin() noexcept;
+	void onFrame() noexcept;
+	void onFrameEnd() noexcept;
 
 private:
 
-    TimerPtr _timer;
-    InputPtr _input;
-    WindowPtr _window;
-    GuiSystemPtr _gui;
-    GameObject* _actor;
+	TimerPtr _timer;
+	InputPtr _input;
+	WindowPtr _window;
+	GuiSystemPtr _gui;
+	GameObject* _actor;
 
-    asIScriptContext* _context;
-    asIScriptEngine* _engine;
-    asCJITCompiler* _jit;
+	asIScriptContext* _context;
+	asIScriptEngine* _engine;
+	asCJITCompiler* _jit;
 
-    std::vector<std::weak_ptr<ScriptObject>> _objects;
+	std::vector<std::weak_ptr<ScriptObject>> _objects;
 
-    std::shared_ptr<ScriptBindCore> _bindCore;
-    std::shared_ptr<ScriptBindMath> _bindMath;
-    std::shared_ptr<ScriptBindString> _bindString;
-    std::shared_ptr<ScriptBindTimer> _bindTimer;
-    std::shared_ptr<ScriptBindInput> _bindInput;
-    std::shared_ptr<ScriptBindActor> _bindActor;
-    std::shared_ptr<ScriptBindDisplay> _bindDisplay;
-    std::shared_ptr<ScriptBindGUI> _bindGUI;
+	std::shared_ptr<ScriptBindCore> _bindCore;
+	std::shared_ptr<ScriptBindMath> _bindMath;
+	std::shared_ptr<ScriptBindString> _bindString;
+	std::shared_ptr<ScriptBindTimer> _bindTimer;
+	std::shared_ptr<ScriptBindInput> _bindInput;
+	std::shared_ptr<ScriptBindActor> _bindActor;
+	std::shared_ptr<ScriptBindDisplay> _bindDisplay;
+	std::shared_ptr<ScriptBindGUI> _bindGUI;
 
-    std::vector<std::shared_ptr<ScriptBinder>> _bindings;
+	std::vector<std::shared_ptr<ScriptBinder>> _bindings;
 };
 
 _NAME_END

@@ -44,7 +44,7 @@ _NAME_BEGIN
 class ScriptBindCore final : public ScriptBinder
 {
 public:
-    void setup(asIScriptEngine* engine) noexcept;
+	void setup(asIScriptEngine* engine) noexcept;
 };
 
 _NAME_END

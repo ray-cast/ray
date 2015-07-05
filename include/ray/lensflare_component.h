@@ -43,14 +43,14 @@ _NAME_BEGIN
 
 class LensflareComponent final : public GameComponent
 {
-    __DeclareSubClass(LensflareComponent, GameComponent)
+	__DeclareSubClass(LensflareComponent, GameComponent)
 public:
-    LensflareComponent() noexcept;
-    ~LensflareComponent() noexcept;
+	LensflareComponent() noexcept;
+	~LensflareComponent() noexcept;
 
-    bool initialize();
+	bool initialize();
 
-    GameComponentPtr clone() const noexcept;
+	GameComponentPtr clone() const noexcept;
 
 private:
 };

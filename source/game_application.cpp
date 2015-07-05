@@ -40,196 +40,196 @@
 _NAME_BEGIN
 
 GameApplication::GameApplication() noexcept
-    : _ioServer(nullptr)
-    , _ioInterface(nullptr)
-    , _isQuitRequest(false)
-    , _isInitialize(false)
-    , _engineDir("..\\..\\engine\\")
-    , _resourceBaseDir("..\\..\\dlc\\")
+	: _ioServer(nullptr)
+	, _ioInterface(nullptr)
+	, _isQuitRequest(false)
+	, _isInitialize(false)
+	, _engineDir("..\\..\\engine\\")
+	, _resourceBaseDir("..\\..\\dlc\\")
 {
 }
 
 GameApplication::~GameApplication() noexcept
 {
-    this->close();
+	this->close();
 }
 
 bool
 GameApplication::open() except
 {
-    assert(!_isInitialize);
+	assert(!_isInitialize);
 
-    _ioServer = IoServer::instance();
-    _ioServer->addAssign(IoAssign("sys", _engineDir));
-    _ioServer->addAssign(IoAssign("dlc", _resourceBaseDir));
-    _ioServer->mountArchives();
+	_ioServer = IoServer::instance();
+	_ioServer->addAssign(IoAssign("sys", _engineDir));
+	_ioServer->addAssign(IoAssign("dlc", _resourceBaseDir));
+	_ioServer->mountArchives();
 
-    _ioInterface = IoInterface::instance();
-    _ioInterface->open();
+	_ioInterface = IoInterface::instance();
+	_ioInterface->open();
 
-    _gameServer = std::make_shared<GameServer>();
-    _gameServer->_setGameApp(this);
-    _gameServer->open();
+	_gameServer = std::make_shared<GameServer>();
+	_gameServer->_setGameApp(this);
+	_gameServer->open();
 
-    _isInitialize = true;
+	_isInitialize = true;
 
-    return _isInitialize;
+	return _isInitialize;
 }
 
 void
 GameApplication::close() noexcept
 {
-    if (_gameServer)
-    {
-        _gameServer.reset();
-        _gameServer = nullptr;
-    }
+	if (_gameServer)
+	{
+		_gameServer.reset();
+		_gameServer = nullptr;
+	}
 
-    if (_ioInterface)
-    {
-        _ioInterface->close();
-        _ioInterface = nullptr;
-    }
+	if (_ioInterface)
+	{
+		_ioInterface->close();
+		_ioInterface = nullptr;
+	}
 }
 
 void
 GameApplication::start() except
 {
-    assert(_gameServer);
-    _gameServer->setActive(true);
+	assert(_gameServer);
+	_gameServer->setActive(true);
 }
 
 void
 GameApplication::stop() noexcept
 {
-    assert(_gameServer);
-    _gameServer->setActive(false);
+	assert(_gameServer);
+	_gameServer->setActive(false);
 }
 
 bool
 GameApplication::isQuitRequest() const noexcept
 {
-    assert(_gameServer);
-    return _gameServer->isQuitRequest();
+	assert(_gameServer);
+	return _gameServer->isQuitRequest();
 }
 
 bool
 GameApplication::openScene(GameScenePtr scene) except
 {
-    assert(_gameServer);
-    return _gameServer->addScene(scene);
+	assert(_gameServer);
+	return _gameServer->addScene(scene);
 }
 
 bool
 GameApplication::openScene(const std::string& name) except
 {
-    assert(_gameServer);
-    return _gameServer->openScene(name);
+	assert(_gameServer);
+	return _gameServer->openScene(name);
 }
 
 void
 GameApplication::closeScene(GameScenePtr name) noexcept
 {
-    assert(_gameServer);
-    return _gameServer->removeScene(name);
+	assert(_gameServer);
+	return _gameServer->removeScene(name);
 }
 
 void
 GameApplication::closeScene(const std::string& name) noexcept
 {
-    assert(_gameServer);
-    _gameServer->closeScene(name);
+	assert(_gameServer);
+	_gameServer->closeScene(name);
 }
 
 GameScenePtr
 GameApplication::findScene(const std::string& name) noexcept
 {
-    assert(_gameServer);
-    return _gameServer->findScene(name);
+	assert(_gameServer);
+	return _gameServer->findScene(name);
 }
 
 void
 GameApplication::addFeatures(GameFeaturePtr feature) except
 {
-    assert(_gameServer);
-    _gameServer->addFeature(feature);
+	assert(_gameServer);
+	_gameServer->addFeature(feature);
 }
 
 void
 GameApplication::removeFeatures(GameFeaturePtr feature) noexcept
 {
-    assert(_gameServer);
-    _gameServer->removeFeature(feature);
+	assert(_gameServer);
+	_gameServer->removeFeature(feature);
 }
 
 GameFeaturePtr
 GameApplication::getFeature(const std::string& name) noexcept
 {
-    assert(_gameServer);
-    return _gameServer->getFeature(name);
+	assert(_gameServer);
+	return _gameServer->getFeature(name);
 }
 
 void
 GameApplication::setFileService(bool enable) noexcept
 {
-    assert(_ioServer);
+	assert(_ioServer);
 
-    if (enable)
-        _ioServer->mountArchives();
-    else
-        _ioServer->unmountArchives();
+	if (enable)
+		_ioServer->mountArchives();
+	else
+		_ioServer->unmountArchives();
 }
 
 void
 GameApplication::setFileServicePath(const std::string& path) noexcept
 {
-    assert(_ioServer);
+	assert(_ioServer);
 
-    auto tmp = path;
-    if (*tmp.rbegin() != '\\' &&
-        *tmp.rbegin() != '/')
-    {
-        tmp += SEPARATOR;
-    }
+	auto tmp = path;
+	if (*tmp.rbegin() != '\\' &&
+		*tmp.rbegin() != '/')
+	{
+		tmp += SEPARATOR;
+	}
 
-    _engineDir = tmp + "engine\\";
-    _resourceBaseDir = tmp + "dlc\\";
+	_engineDir = tmp + "engine\\";
+	_resourceBaseDir = tmp + "dlc\\";
 
-    _ioServer->addAssign(IoAssign("sys", _engineDir));
-    _ioServer->addAssign(IoAssign("dlc", _resourceBaseDir));
+	_ioServer->addAssign(IoAssign("sys", _engineDir));
+	_ioServer->addAssign(IoAssign("dlc", _resourceBaseDir));
 }
 
 void
 GameApplication::setResDownloadURL(const std::string& path) noexcept
 {
-    assert(_ioServer);
+	assert(_ioServer);
 
-    if (_downloadURL != path)
-    {
-        _ioServer->addAssign(IoAssign("url", path));
-        _downloadURL = path;
-    }
+	if (_downloadURL != path)
+	{
+		_ioServer->addAssign(IoAssign("url", path));
+		_downloadURL = path;
+	}
 }
 
 void
 GameApplication::sendMessage(const GameMessage& message) noexcept
 {
-    assert(_gameServer);
-    _gameServer->sendMessage(message);
+	assert(_gameServer);
+	_gameServer->sendMessage(message);
 }
 
 void
 GameApplication::postMessage(const GameMessage& message) noexcept
 {
-    assert(_gameServer);
-    _gameServer->postMessage(message);
+	assert(_gameServer);
+	_gameServer->postMessage(message);
 }
 
 void
 GameApplication::update() except
 {
-    assert(_gameServer);
-    _gameServer->update();
+	assert(_gameServer);
+	_gameServer->update();
 }
 
 _NAME_END

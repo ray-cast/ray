@@ -46,27 +46,27 @@ _NAME_BEGIN
 class ScriptBindTimer final : public ScriptBinder
 {
 public:
-    ScriptBindTimer() noexcept;
-    ~ScriptBindTimer() noexcept;
+	ScriptBindTimer() noexcept;
+	~ScriptBindTimer() noexcept;
 
-    void setup(asIScriptEngine* _engine) noexcept;
+	void setup(asIScriptEngine* _engine) noexcept;
 
-    void setTimer(TimerPtr timer) noexcept;
-
-private:
-    float startTime() noexcept;
-    float elapsed() noexcept;
-    float appTime() noexcept;
-    float delta() noexcept;
-    float vsync() noexcept;
-    float fps() noexcept;
-    float averageFps() noexcept;
-
-    void onFrameEnd() noexcept;
+	void setTimer(TimerPtr timer) noexcept;
 
 private:
+	float startTime() noexcept;
+	float elapsed() noexcept;
+	float appTime() noexcept;
+	float delta() noexcept;
+	float vsync() noexcept;
+	float fps() noexcept;
+	float averageFps() noexcept;
 
-    TimerPtr _timer;
+	void onFrameEnd() noexcept;
+
+private:
+
+	TimerPtr _timer;
 };
 
 _NAME_END

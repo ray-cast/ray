@@ -43,8 +43,8 @@ _NAME_BEGIN
 __ImplementSubClass(GameFeature, GameListener)
 
 GameFeature::GameFeature() noexcept
-    : _isActive(false)
-    , _server(nullptr)
+	: _isActive(false)
+	, _server(nullptr)
 {
 }
 
@@ -55,58 +55,58 @@ GameFeature::~GameFeature() noexcept
 void
 GameFeature::setActive(bool active)  except
 {
-    if (_isActive != active)
-    {
-        if (active)
-            this->onActivate();
-        else
-            this->onDeactivate();
+	if (_isActive != active)
+	{
+		if (active)
+			this->onActivate();
+		else
+			this->onDeactivate();
 
-        _isActive = active;
-    }
+		_isActive = active;
+	}
 }
 bool
 GameFeature::getActive() noexcept
 {
-    return _isActive;
+	return _isActive;
 }
 
 void
 GameFeature::sendMessage(const GameMessage& message) except
 {
-    auto& features = this->getGameServer()->getGameFeatures();
-    for (auto& it : features)
-    {
-        if (it.get() != this)
-        {
-            if (it->getActive())
-                it->onMessage(message);
-        }
-    }
+	auto& features = this->getGameServer()->getGameFeatures();
+	for (auto& it : features)
+	{
+		if (it.get() != this)
+		{
+			if (it->getActive())
+				it->onMessage(message);
+		}
+	}
 
-    auto& scene = this->getGameServer()->getScenes();
-    for (auto& it : scene)
-    {
-        it->sendMessage(message);
-    }
+	auto& scene = this->getGameServer()->getScenes();
+	for (auto& it : scene)
+	{
+		it->sendMessage(message);
+	}
 }
 
 void
 GameFeature::_setGameServer(GameServer* server) noexcept
 {
-    _server = server;
+	_server = server;
 }
 
 GameServer*
 GameFeature::getGameServer() noexcept
 {
-    return _server;
+	return _server;
 }
 
 GameComponentPtr
 GameFeature::onSerialization(iarchive&) except
 {
-    return nullptr;
+	return nullptr;
 }
 
 void

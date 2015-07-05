@@ -44,26 +44,26 @@ _NAME_BEGIN
 class PhysicsShapeMesh;
 class EXPORT PhysicsMeshComponent final : public PhysicsShapeComponent
 {
-    __DeclareSubClass(PhysicsMeshComponent, PhysicsShapeComponent)
+	__DeclareSubClass(PhysicsMeshComponent, PhysicsShapeComponent)
 public:
-    PhysicsMeshComponent() noexcept;
-    ~PhysicsMeshComponent() noexcept;
+	PhysicsMeshComponent() noexcept;
+	~PhysicsMeshComponent() noexcept;
 
 private:
-    virtual void onAttach() noexcept;
-    virtual void onRemove() noexcept;
+	virtual void onAttach() noexcept;
+	virtual void onRemove() noexcept;
 
-    virtual void onActivate() noexcept;
-    virtual void onDeactivate() noexcept;
+	virtual void onActivate() noexcept;
+	virtual void onDeactivate() noexcept;
 
-    virtual PhysicsShapePtr getCollisionShape() noexcept;
-    virtual GameComponentPtr clone() const noexcept;
+	virtual PhysicsShapePtr getCollisionShape() noexcept;
+	virtual GameComponentPtr clone() const noexcept;
 
-    void _buildShapeMesh() noexcept;
+	void _buildShapeMesh() noexcept;
 
 private:
 
-    std::shared_ptr<PhysicsShapeMesh> _shape;
+	std::shared_ptr<PhysicsShapeMesh> _shape;
 };
 
 _NAME_END

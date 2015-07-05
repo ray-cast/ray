@@ -44,14 +44,14 @@ _NAME_BEGIN
 class EXPORT NetworkFeatures final : public GameFeature
 {
 public:
-    NetworkFeatures() noexcept;
+	NetworkFeatures() noexcept;
 
-    virtual void onFrameBegin() noexcept;
-    virtual void onFrameEnd() noexcept;
+	virtual void onFrameBegin() noexcept;
+	virtual void onFrameEnd() noexcept;
 
 private:
-    NetworkFeatures(NetworkFeatures&) noexcept = delete;
-    NetworkFeatures& operator=(NetworkFeatures&) noexcept = delete;
+	NetworkFeatures(NetworkFeatures&) noexcept = delete;
+	NetworkFeatures& operator=(NetworkFeatures&) noexcept = delete;
 };
 
 _NAME_END

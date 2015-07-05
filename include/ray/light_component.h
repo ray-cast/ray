@@ -44,51 +44,51 @@ _NAME_BEGIN
 
 class LightComponent final : public GameComponent
 {
-    __DeclareSubClass(LightComponent, GameComponent)
+	__DeclareSubClass(LightComponent, GameComponent)
 public:
-    LightComponent() noexcept;
-    ~LightComponent() noexcept;
+	LightComponent() noexcept;
+	~LightComponent() noexcept;
 
-    void setLightType(LightType type) noexcept;
-    LightType getLightType() const noexcept;
+	void setLightType(LightType type) noexcept;
+	LightType getLightType() const noexcept;
 
-    void setRange(float range) noexcept;
-    void setIntensity(float intensity) noexcept;
-    void setExponent(float value) noexcept;
-    void setSpotAngle(float value) noexcept;
-    void setSpotInnerCone(float value) noexcept;
-    void setSpotOuterCone(float value) noexcept;
-    void setLightColor(const float3& color) noexcept;
+	void setRange(float range) noexcept;
+	void setIntensity(float intensity) noexcept;
+	void setExponent(float value) noexcept;
+	void setSpotAngle(float value) noexcept;
+	void setSpotInnerCone(float value) noexcept;
+	void setSpotOuterCone(float value) noexcept;
+	void setLightColor(const float3& color) noexcept;
 
-    float getRange() const noexcept;
-    float getIntensity() const noexcept;
-    float getExponent() const noexcept;
-    float getSpotAngle() const noexcept;
-    float getSpotInnerCone() const noexcept;
-    float getSpotOuterCone() const noexcept;
-    float getFallOffExponent() const noexcept;
-    const float3& getLightColor() const noexcept;
+	float getRange() const noexcept;
+	float getIntensity() const noexcept;
+	float getExponent() const noexcept;
+	float getSpotAngle() const noexcept;
+	float getSpotInnerCone() const noexcept;
+	float getSpotOuterCone() const noexcept;
+	float getFallOffExponent() const noexcept;
+	const float3& getLightColor() const noexcept;
 
-    void setShadow(bool shadow) noexcept;
-    bool getShadow() const noexcept;
+	void setShadow(bool shadow) noexcept;
+	bool getShadow() const noexcept;
 
-    void load(iarchive& reader) noexcept;
-    void save(oarchive& write) noexcept;
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
 
-    GameComponentPtr clone() const noexcept;
-
-private:
-
-    void onActivate() noexcept;
-    void onDeactivate() noexcept;
-
-    void onMoveAfter() noexcept;
+	GameComponentPtr clone() const noexcept;
 
 private:
 
-    LightPtr _light;
+	void onActivate() noexcept;
+	void onDeactivate() noexcept;
 
-    RenderScene* _renderScene;
+	void onMoveAfter() noexcept;
+
+private:
+
+	LightPtr _light;
+
+	RenderScene* _renderScene;
 };
 
 _NAME_END

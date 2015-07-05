@@ -44,71 +44,71 @@ _NAME_BEGIN
 
 class EXPORT PhysicsBodyComponent final : public GameComponent, public PhysicsRigidbodyListener
 {
-    __DeclareSubClass(PhysicsBodyComponent, GameComponent)
+	__DeclareSubClass(PhysicsBodyComponent, GameComponent)
 public:
-    PhysicsBodyComponent() noexcept;
-    ~PhysicsBodyComponent() noexcept;
+	PhysicsBodyComponent() noexcept;
+	~PhysicsBodyComponent() noexcept;
 
-    void setMass(float value) noexcept;
-    void setLinearVelocity(const Vector3& value) noexcept;
-    void setAngularVelocity(const Vector3& value) noexcept;
-    void setLinearDamping(float value)  noexcept;
-    void setAngularDamping(float value) noexcept;
-    void setGravity(const Vector3& value) noexcept;
-    void setConstantForce(const Vector3& value) noexcept;
-    void setConstantTorque(const Vector3& value) noexcept;
-    void setConstantVelocity(const Vector3& value) noexcept;
-    void setConstanAngularVelocity(const Vector3& value) noexcept;
+	void setMass(float value) noexcept;
+	void setLinearVelocity(const Vector3& value) noexcept;
+	void setAngularVelocity(const Vector3& value) noexcept;
+	void setLinearDamping(float value)  noexcept;
+	void setAngularDamping(float value) noexcept;
+	void setGravity(const Vector3& value) noexcept;
+	void setConstantForce(const Vector3& value) noexcept;
+	void setConstantTorque(const Vector3& value) noexcept;
+	void setConstantVelocity(const Vector3& value) noexcept;
+	void setConstanAngularVelocity(const Vector3& value) noexcept;
 
-    void sleep(bool sleep) noexcept;
-    bool isSleep() const noexcept;
+	void sleep(bool sleep) noexcept;
+	bool isSleep() const noexcept;
 
-    float getMass() const noexcept;
-    float getLinearDamping() const noexcept;
-    float getAngularDamping() const noexcept;
+	float getMass() const noexcept;
+	float getLinearDamping() const noexcept;
+	float getAngularDamping() const noexcept;
 
-    const Vector3& getGravity() const noexcept;
-    const Vector3& getLinearVelocity() const noexcept;
-    const Vector3& getAngularVelocity() const noexcept;
-    const Vector3& getConstantForce() const noexcept;
-    const Vector3& getConstantTorque() const noexcept;
-    const Vector3& getConstantVelocity() const noexcept;
-    const Vector3& getConstantAngularVelocity() const noexcept;
+	const Vector3& getGravity() const noexcept;
+	const Vector3& getLinearVelocity() const noexcept;
+	const Vector3& getAngularVelocity() const noexcept;
+	const Vector3& getConstantForce() const noexcept;
+	const Vector3& getConstantTorque() const noexcept;
+	const Vector3& getConstantVelocity() const noexcept;
+	const Vector3& getConstantAngularVelocity() const noexcept;
 
-    void addForce(const Vector3& force) noexcept;
-    void addRelativeForce(const Vector3& force, const Vector3& axis) noexcept;
+	void addForce(const Vector3& force) noexcept;
+	void addRelativeForce(const Vector3& force, const Vector3& axis) noexcept;
 
-    void addTorque(const Vector3& force) noexcept;
-    void addImpulse(const Vector3& force, const Vector3& axis) noexcept;
+	void addTorque(const Vector3& force) noexcept;
+	void addImpulse(const Vector3& force, const Vector3& axis) noexcept;
 
-    virtual GameComponentPtr clone() const noexcept;
-
-private:
-
-    void onActivate() noexcept;
-    void onDeactivate() noexcept;
-
-    void onFrame() noexcept;
-    void onFrameEnd() noexcept;
-
-    void onMoveAfter() noexcept;
-
-    void onCollisionStay() noexcept;
-
-private:
-    PhysicsBodyComponent(const PhysicsBodyComponent&) noexcept = delete;
-    PhysicsBodyComponent& operator=(const PhysicsBodyComponent&) noexcept = delete;
+	virtual GameComponentPtr clone() const noexcept;
 
 private:
 
-    bool _enableKinematic;
+	void onActivate() noexcept;
+	void onDeactivate() noexcept;
 
-    Vector3 _constantForce;
-    Vector3 _constantTorque;
-    Vector3 _constantVelocity;
-    Vector3 _constantAngularVelocity;
+	void onFrame() noexcept;
+	void onFrameEnd() noexcept;
 
-    std::unique_ptr<PhysicsRigidbody> _body;
+	void onMoveAfter() noexcept;
+
+	void onCollisionStay() noexcept;
+
+private:
+	PhysicsBodyComponent(const PhysicsBodyComponent&) noexcept = delete;
+	PhysicsBodyComponent& operator=(const PhysicsBodyComponent&) noexcept = delete;
+
+private:
+
+	bool _enableKinematic;
+
+	Vector3 _constantForce;
+	Vector3 _constantTorque;
+	Vector3 _constantVelocity;
+	Vector3 _constantAngularVelocity;
+
+	std::unique_ptr<PhysicsRigidbody> _body;
 };
 
 _NAME_END

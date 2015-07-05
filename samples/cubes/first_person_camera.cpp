@@ -44,12 +44,12 @@
 __ImplementSubClass(FirstPersonCamera, ray::GameController)
 
 FirstPersonCamera::FirstPersonCamera() noexcept
-    : _speed(10.0)
-    , _gravity(15)
-    , _maxVelocityChange(1.0)
-    , _jumpHeight(10)
-    , _lastX(0)
-    , _lastY(0)
+	: _speed(10.0)
+	, _gravity(15)
+	, _maxVelocityChange(1.0)
+	, _jumpHeight(10)
+	, _lastX(0)
+	, _lastY(0)
 {
 }
 
@@ -60,192 +60,192 @@ FirstPersonCamera::~FirstPersonCamera() noexcept
 void
 FirstPersonCamera::onActivate() noexcept
 {
-    auto camera = this->getGameObject()->getComponent<ray::CameraComponent>();
-    _centerX = camera->getViewport().width *  0.5;
-    _centerY = camera->getViewport().height * 0.5;
+	auto camera = this->getGameObject()->getComponent<ray::CameraComponent>();
+	_centerX = camera->getViewport().width *  0.5;
+	_centerY = camera->getViewport().height * 0.5;
 }
 
 void
 FirstPersonCamera::onDectivate() noexcept
 {
-    auto inputFeature = this->getGameServer()->getFeature<ray::InputFeatures>();
-    if (inputFeature)
-    {
-        inputFeature->getInput()->lockCursor(false);
-    }
+	auto inputFeature = this->getGameServer()->getFeature<ray::InputFeatures>();
+	if (inputFeature)
+	{
+		inputFeature->getInput()->lockCursor(false);
+	}
 }
 
 void
 FirstPersonCamera::onFrameEnd() noexcept
 {
-    float delta = this->getGameServer()->getTimer()->delta();
-    float step = _speed * delta;
+	float delta = this->getGameServer()->getTimer()->delta();
+	float step = _speed * delta;
 
-    auto inputFeature = this->getGameServer()->getFeature<ray::InputFeatures>();
-    if (inputFeature)
-    {
-        auto input = inputFeature->getInput();
-        if (!input)
-            return;
+	auto inputFeature = this->getGameServer()->getFeature<ray::InputFeatures>();
+	if (inputFeature)
+	{
+		auto input = inputFeature->getInput();
+		if (!input)
+			return;
 
-        if (input->getKey(ray::InputKey::Code::LSHIFT))
-            step *= 3;
+		if (input->getKey(ray::InputKey::Code::LSHIFT))
+			step *= 3;
 
-        auto character = this->getGameObject()->getComponent<ray::PhysicsCharacterComponent>();
-        if (!character)
-        {
-            if (input->getKey(ray::InputKey::Code::W))
-                moveCamera(step);
+		auto character = this->getGameObject()->getComponent<ray::PhysicsCharacterComponent>();
+		if (!character)
+		{
+			if (input->getKey(ray::InputKey::Code::W))
+				moveCamera(step);
 
-            if (input->getKey(ray::InputKey::Code::A))
-                yawCamera(step);
+			if (input->getKey(ray::InputKey::Code::A))
+				yawCamera(step);
 
-            if (input->getKey(ray::InputKey::Code::S))
-                moveCamera(-step);
+			if (input->getKey(ray::InputKey::Code::S))
+				moveCamera(-step);
 
-            if (input->getKey(ray::InputKey::Code::D))
-                yawCamera(-step);
-        }
-        else
-        {
-            ray::float3 walkDirection(0, 0, 0);
-            ray::float3 translate = this->getGameObject()->getTranslate();
-            ray::float3 lookat = this->getGameObject()->getLookAt();
-            ray::float3 up = this->getGameObject()->getUpVector();
+			if (input->getKey(ray::InputKey::Code::D))
+				yawCamera(-step);
+		}
+		else
+		{
+			ray::float3 walkDirection(0, 0, 0);
+			ray::float3 translate = this->getGameObject()->getTranslate();
+			ray::float3 lookat = this->getGameObject()->getLookAt();
+			ray::float3 up = this->getGameObject()->getUpVector();
 
-            if (input->getKey(ray::InputKey::Code::W))
-            {
-                ray::float3 mov = lookat - translate;
-                mov.normalize();
-                walkDirection += mov;
-            }
-            if (input->getKey(ray::InputKey::Code::S))
-            {
-                ray::float3 mov = lookat - translate;
-                mov.normalize();
-                walkDirection -= mov;
-            }
-            if (input->getKey(ray::InputKey::Code::A))
-            {
-                ray::float3 mov = lookat - translate;
-                mov = mov.cross(up);
-                mov.normalize();
-                walkDirection += mov;
-            }
-            if (input->getKey(ray::InputKey::Code::D))
-            {
-                ray::float3 mov = lookat - translate;
-                mov = mov.cross(up);
-                mov.normalize();
-                walkDirection -= mov;
-            }
+			if (input->getKey(ray::InputKey::Code::W))
+			{
+				ray::float3 mov = lookat - translate;
+				mov.normalize();
+				walkDirection += mov;
+			}
+			if (input->getKey(ray::InputKey::Code::S))
+			{
+				ray::float3 mov = lookat - translate;
+				mov.normalize();
+				walkDirection -= mov;
+			}
+			if (input->getKey(ray::InputKey::Code::A))
+			{
+				ray::float3 mov = lookat - translate;
+				mov = mov.cross(up);
+				mov.normalize();
+				walkDirection += mov;
+			}
+			if (input->getKey(ray::InputKey::Code::D))
+			{
+				ray::float3 mov = lookat - translate;
+				mov = mov.cross(up);
+				mov.normalize();
+				walkDirection -= mov;
+			}
 
-            character->setWalkDirection(walkDirection * step);
+			character->setWalkDirection(walkDirection * step);
 
-            if (input->getKey(ray::InputKey::SPACE))
-            {
-                if (character->canJumping())
-                    character->jump(_jumpHeight);
-            }
-        }
+			if (input->getKey(ray::InputKey::SPACE))
+			{
+				if (character->canJumping())
+					character->jump(_jumpHeight);
+			}
+		}
 
-        if (input->getKey(ray::InputKey::ESCAPE))
-        {
-            input->lockCursor(false);
-        }
+		if (input->getKey(ray::InputKey::ESCAPE))
+		{
+			input->lockCursor(false);
+		}
 
-        if (input->isLockedCursor())
-        {
-            rotateCamera(input->getMousePosX(), input->getMousePosY(), _centerX, _centerY);
-        }
-        else
-        {
-            if (input->getButtonDown(ray::InputButton::Code::MOUSE0) &&
-                !input->getKey(ray::InputKey::Code::LCTRL))
-            {
-                input->setMousePos(_centerX, _centerY);
-                input->lockCursor(true);
-            }
-        }
-    }
+		if (input->isLockedCursor())
+		{
+			rotateCamera(input->getMousePosX(), input->getMousePosY(), _centerX, _centerY);
+		}
+		else
+		{
+			if (input->getButtonDown(ray::InputButton::Code::MOUSE0) &&
+				!input->getKey(ray::InputKey::Code::LCTRL))
+			{
+				input->setMousePos(_centerX, _centerY);
+				input->lockCursor(true);
+			}
+		}
+	}
 }
 
 void
 FirstPersonCamera::yawCamera(float speed) noexcept
 {
-    auto translate = this->getGameObject()->getTranslate();
-    auto lookat = this->getGameObject()->getLookAt();
-    auto up = this->getGameObject()->getUpVector();
+	auto translate = this->getGameObject()->getTranslate();
+	auto lookat = this->getGameObject()->getLookAt();
+	auto up = this->getGameObject()->getUpVector();
 
-    ray::float3 mov = lookat - translate;
-    mov = mov.cross(up);
-    mov.normalize();
-    mov *= speed;
+	ray::float3 mov = lookat - translate;
+	mov = mov.cross(up);
+	mov.normalize();
+	mov *= speed;
 
-    this->getGameObject()->setTranslate(translate + mov);
-    this->getGameObject()->setLookAt(lookat + mov);
+	this->getGameObject()->setTranslate(translate + mov);
+	this->getGameObject()->setLookAt(lookat + mov);
 }
 
 void
 FirstPersonCamera::moveCamera(float speed) noexcept
 {
-    auto translate = this->getGameObject()->getTranslate();
-    auto lookat = this->getGameObject()->getLookAt();
-    auto up = this->getGameObject()->getUpVector();
+	auto translate = this->getGameObject()->getTranslate();
+	auto lookat = this->getGameObject()->getLookAt();
+	auto up = this->getGameObject()->getUpVector();
 
-    ray::float3 mov = lookat - translate;
-    mov.normalize();
-    mov *= speed;
+	ray::float3 mov = lookat - translate;
+	mov.normalize();
+	mov *= speed;
 
-    this->getGameObject()->setTranslate(translate + mov);
-    this->getGameObject()->setLookAt(lookat + mov);
+	this->getGameObject()->setTranslate(translate + mov);
+	this->getGameObject()->setLookAt(lookat + mov);
 }
 
 void
 FirstPersonCamera::rotateCamera(float angle, const ray::float3 axis) noexcept
 {
-    auto translate = this->getGameObject()->getTranslate();
-    auto lookat = this->getGameObject()->getLookAt();
+	auto translate = this->getGameObject()->getTranslate();
+	auto lookat = this->getGameObject()->getLookAt();
 
-    ray::float3x3 rotate;
-    rotate.makeRotate(angle, axis);
+	ray::float3x3 rotate;
+	rotate.makeRotate(angle, axis);
 
-    ray::float3 view = rotate * (lookat - translate);
+	ray::float3 view = rotate * (lookat - translate);
 
-    this->getGameObject()->setLookAt(translate + view);
+	this->getGameObject()->setLookAt(translate + view);
 }
 
 void
 FirstPersonCamera::rotateCamera(float mouseX, float mouseY, float lastX, float lastY) noexcept
 {
-    if (mouseX == lastX && mouseY == lastY)
-        return;
+	if (mouseX == lastX && mouseY == lastY)
+		return;
 
-    auto translate = this->getGameObject()->getTranslate();
-    auto lookat = this->getGameObject()->getLookAt();
-    auto up = this->getGameObject()->getUpVector();
+	auto translate = this->getGameObject()->getTranslate();
+	auto lookat = this->getGameObject()->getLookAt();
+	auto up = this->getGameObject()->getUpVector();
 
-    float angleY = -(lastX - mouseX) / 100.0;
-    float angleZ = (lastY - mouseY) / 100.0;
+	float angleY = -(lastX - mouseX) / 100.0;
+	float angleZ = (lastY - mouseY) / 100.0;
 
-    ray::float3 view = lookat - translate;
-    view.normalize();
+	ray::float3 view = lookat - translate;
+	view.normalize();
 
-    float angle = view.dot(up) + angleZ;
-    if (angle > -1.0 && angle < 1.0)
-    {
-        ray::float3 axis = lookat - translate;
-        axis = axis.cross(up);
-        axis.normalize();
+	float angle = view.dot(up) + angleZ;
+	if (angle > -1.0 && angle < 1.0)
+	{
+		ray::float3 axis = lookat - translate;
+		axis = axis.cross(up);
+		axis.normalize();
 
-        rotateCamera(angleZ, axis);
-    }
+		rotateCamera(angleZ, axis);
+	}
 
-    rotateCamera(angleY, ray::float3::UnitY);
+	rotateCamera(angleY, ray::float3::UnitY);
 }
 
 ray::GameComponentPtr
 FirstPersonCamera::clone() const noexcept
 {
-    return std::make_shared<FirstPersonCamera>();
+	return std::make_shared<FirstPersonCamera>();
 }

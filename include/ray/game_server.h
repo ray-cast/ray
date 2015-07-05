@@ -45,75 +45,75 @@ _NAME_BEGIN
 class EXPORT GameServer final : public GameDispatcher
 {
 public:
-    GameServer() noexcept;
-    ~GameServer() noexcept;
+	GameServer() noexcept;
+	~GameServer() noexcept;
 
-    bool open() noexcept;
-    void close() noexcept;
+	bool open() noexcept;
+	void close() noexcept;
 
-    bool isQuitRequest() const noexcept;
+	bool isQuitRequest() const noexcept;
 
-    void setActive(bool active) except;
-    bool getActive() const noexcept;
+	void setActive(bool active) except;
+	bool getActive() const noexcept;
 
-    void setTimer(TimerPtr timer) noexcept;
-    TimerPtr getTimer() const noexcept;
+	void setTimer(TimerPtr timer) noexcept;
+	TimerPtr getTimer() const noexcept;
 
-    bool openScene(const std::string& sceneName) except;
-    void closeScene(const std::string& sceneName) noexcept;
-    bool addScene(GameScenePtr scene) noexcept;
-    void removeScene(GameScenePtr scene) noexcept;
-    GameScenePtr findScene(const std::string& sceneName) noexcept;
-    const GameScenes& getScenes() const noexcept;
+	bool openScene(const std::string& sceneName) except;
+	void closeScene(const std::string& sceneName) noexcept;
+	bool addScene(GameScenePtr scene) noexcept;
+	void removeScene(GameScenePtr scene) noexcept;
+	GameScenePtr findScene(const std::string& sceneName) noexcept;
+	const GameScenes& getScenes() const noexcept;
 
-    void addFeature(GameFeaturePtr features) except;
-    void removeFeature(GameFeaturePtr features) noexcept;
-    GameFeaturePtr getFeature(const std::string& feature) const noexcept;
-    template<typename T>
-    std::shared_ptr<T> getFeature() const noexcept
-    {
-        return std::dynamic_pointer_cast<T>(this->getFeature(typeid(T).name()));
-    }
+	void addFeature(GameFeaturePtr features) except;
+	void removeFeature(GameFeaturePtr features) noexcept;
+	GameFeaturePtr getFeature(const std::string& feature) const noexcept;
+	template<typename T>
+	std::shared_ptr<T> getFeature() const noexcept
+	{
+		return std::dynamic_pointer_cast<T>(this->getFeature(typeid(T).name()));
+	}
 
-    const GameFeatures& getGameFeatures() const noexcept;
+	const GameFeatures& getGameFeatures() const noexcept;
 
-    GameApplication* getGameApp() noexcept;
+	GameApplication* getGameApp() noexcept;
 
-    void sendMessage(const GameMessage& message) except;
-    void postMessage(const GameMessage& message) except;
+	void sendMessage(const GameMessage& message) except;
+	void postMessage(const GameMessage& message) except;
 
-    void update() except;
-
-private:
-    void onFrameBegin() except;
-    void onFrame() except;
-    void onFrameEnd() except;
+	void update() except;
 
 private:
-
-    bool load(iarchive& reader, GameScenePtr scene) except;
-
-    GameObjectPtr instanceObject(iarchive& reader, GameScenePtr scene) except;
-
-private:
-    friend GameApplication;
-    void _setGameApp(GameApplication* app) noexcept;
-
-private:
-    GameServer(const GameServer&) noexcept = delete;
-    GameServer& operator=(const GameServer&) noexcept = delete;
+	void onFrameBegin() except;
+	void onFrame() except;
+	void onFrameEnd() except;
 
 private:
 
-    bool _isActive;
-    bool _isQuitRequest;
+	bool load(iarchive& reader, GameScenePtr scene) except;
 
-    TimerPtr _timer;
+	GameObjectPtr instanceObject(iarchive& reader, GameScenePtr scene) except;
 
-    GameScenes _scenes;
-    GameFeatures _features;
+private:
+	friend GameApplication;
+	void _setGameApp(GameApplication* app) noexcept;
 
-    GameApplication* _gameApp;
+private:
+	GameServer(const GameServer&) noexcept = delete;
+	GameServer& operator=(const GameServer&) noexcept = delete;
+
+private:
+
+	bool _isActive;
+	bool _isQuitRequest;
+
+	TimerPtr _timer;
+
+	GameScenes _scenes;
+	GameFeatures _features;
+
+	GameApplication* _gameApp;
 };
 
 _NAME_END

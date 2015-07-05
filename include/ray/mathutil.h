@@ -331,23 +331,64 @@ inline std::uint32_t morton(std::uint32_t x, std::uint32_t y, std::uint32_t z)
     return (part1by2(z) << 2) + (part1by2(y) << 1) + part1by2(x);
 }
 
-inline int _hash_int(int key)
+inline constexpr int _hash_int_0(int key)
 {
-    key = ~key + (key << 15);
-    key = key ^ (key >> 12);
-    key = key + (key << 2);
-    key = key ^ (key >> 4);
-    key = key * 2057;
-    key = key ^ (key >> 16);
-    return key;
+    return  ~key + (key << 15);
 }
 
-inline int hash_int(int x, int y, int z)
+inline constexpr int _hash_int_1(int key)
 {
-    x = _hash_int(x);
-    y = _hash_int(y);
-    z = _hash_int(z);
-    return x ^ y ^ z;
+    return key ^ (key >> 12);
+}
+
+inline constexpr int _hash_int_2(int key)
+{
+    return key + (key << 2);
+}
+
+inline constexpr int _hash_int_3(int key)
+{
+    return key ^ (key >> 4);;
+}
+
+inline constexpr int _hash_int_4(int key)
+{
+    return key * 2057;
+}
+
+inline constexpr int _hash_int_5(int key)
+{
+    return key ^ (key >> 16);
+}
+
+inline constexpr int _hash_int(int key)
+{
+    return _hash_int_5(_hash_int_4(_hash_int_3(_hash_int_2(_hash_int_1(_hash_int_0(key))))));
+}
+
+inline constexpr int hash_int(int x, int y, int z)
+{
+    return _hash_int(x) ^ _hash_int(y) ^ _hash_int(z);
+}
+
+inline constexpr float hash_float(float x, float y, float z)
+{
+    return x + y * (1.0f / 255.0f) + z * (1.0f / 65025.0f);
+}
+
+inline constexpr double hash_double(double x, double y, double z)
+{
+    return x + y * (1.0f / 255.0f) + z * (1.0f / 65025.0f);
+}
+
+inline constexpr std::size_t _hash_string(unsigned hash, const char* str)
+{
+    return (!*str ? hash : _hash_string(((hash << 5) + hash) + *str, str + 1));
+}
+
+inline constexpr std::size_t hash_string(const char* str)
+{
+    return (!str ? 0 : _hash_string(5381, str));
 }
 
 inline float cosf(float arg)

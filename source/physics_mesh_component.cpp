@@ -54,14 +54,14 @@ PhysicsMeshComponent::~PhysicsMeshComponent() noexcept
 GameComponentPtr
 PhysicsMeshComponent::clone() const noexcept
 {
-    auto shape = std::make_shared<PhysicsMeshComponent>();
-    return shape;
+	auto shape = std::make_shared<PhysicsMeshComponent>();
+	return shape;
 }
 
 void
 PhysicsMeshComponent::onAttach() noexcept
 {
-    _buildShapeMesh();
+	_buildShapeMesh();
 }
 
 void
@@ -72,37 +72,37 @@ PhysicsMeshComponent::onRemove() noexcept
 void
 PhysicsMeshComponent::onActivate() noexcept
 {
-    _buildShapeMesh();
+	_buildShapeMesh();
 }
 
 void
 PhysicsMeshComponent::onDeactivate() noexcept
 {
-    _shape->close();
+	_shape->close();
 }
 
 PhysicsShapePtr
 PhysicsMeshComponent::getCollisionShape() noexcept
 {
-    return _shape;
+	return _shape;
 }
 
 void
 PhysicsMeshComponent::_buildShapeMesh() noexcept
 {
-    if (_shape)
-        return;
+	if (_shape)
+		return;
 
-    auto component = this->getGameObject()->getComponent<ray::MeshComponent>();
-    if (component)
-    {
-        auto mesh = component->getMesh();
-        if (mesh->getNumVertices() > 0 && mesh->getNumIndices() > 0)
-        {
-            _shape = std::make_shared<PhysicsShapeMesh>();
-            _shape->setup(mesh->getVertexArray(), mesh->getFaceArray(), mesh->getBoundingBox().aabb());
-        }
-    }
+	auto component = this->getGameObject()->getComponent<ray::MeshComponent>();
+	if (component)
+	{
+		auto mesh = component->getMesh();
+		if (mesh->getNumVertices() > 0)
+		{
+			_shape = std::make_shared<PhysicsShapeMesh>();
+			_shape->setup(mesh->getVertexArray(), mesh->getFaceArray(), mesh->getBoundingBox().aabb());
+		}
+	}
 }
 
 _NAME_END

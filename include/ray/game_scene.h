@@ -43,76 +43,76 @@ _NAME_BEGIN
 
 class EXPORT GameScene final : public GameListener
 {
-    __DeclareSubClass(GameScene, GameListener)
+	__DeclareSubClass(GameScene, GameListener)
 public:
-    struct Setting
-    {
-        float length;
-        float mass;
-        float speed;
-        float skinWidth;
-        Vector3 gravity;
+	struct Setting
+	{
+		float length;
+		float mass;
+		float speed;
+		float skinWidth;
+		Vector3 gravity;
 
-        AABB aabb;
+		AABB aabb;
 
-        Setting() noexcept;
-    };
+		Setting() noexcept;
+	};
 
 public:
-    GameScene() noexcept;
-    ~GameScene() noexcept;
+	GameScene() noexcept;
+	~GameScene() noexcept;
 
-    void setActive(bool active) noexcept;
-    bool getActive() const noexcept;
+	void setActive(bool active) noexcept;
+	bool getActive() const noexcept;
 
-    void setEnvironment(const Setting& setting) noexcept;
-    const Setting& getEnvironment() const noexcept;
+	void setEnvironment(const Setting& setting) noexcept;
+	const Setting& getEnvironment() const noexcept;
 
-    void addGameObject(GameObjectPtr obj) noexcept;
-    void removeGameObject(GameObjectPtr obj) noexcept;
+	void addGameObject(GameObjectPtr obj) noexcept;
+	void removeGameObject(GameObjectPtr obj) noexcept;
 
-    GameObjectPtr getGameObject(const std::string& name) noexcept;
-    GameObjectPtr getRootObject() noexcept;
+	GameObjectPtr getGameObject(const std::string& name) noexcept;
+	GameObjectPtr getRootObject() noexcept;
 
-    GameScenePtr clone() const noexcept;
+	GameScenePtr clone() const noexcept;
 
-    GameServer* getGameServer() noexcept;
+	GameServer* getGameServer() noexcept;
 
 private:
 
-    friend GameServer;
-    void _setGameServer(GameServer* server) noexcept;
+	friend GameServer;
+	void _setGameServer(GameServer* server) noexcept;
 
-    void _onFrameBegin() noexcept;
-    void _onFrame() noexcept;
-    void _onFrameEnd() noexcept;
+	void _onFrameBegin() noexcept;
+	void _onFrame() noexcept;
+	void _onFrameEnd() noexcept;
 
-    void onMessage(const GameMessage& message) except;
+	void onMessage(const GameMessage& message) except;
 
 private:
 
-    class RootObject : public GameObject
-    {
-    public:
-        RootObject(GameScene* scene) noexcept;
-        virtual ~RootObject() noexcept;
+	class RootObject : public GameObject
+	{
+	public:
+		RootObject(GameScene* scene) noexcept;
+		virtual ~RootObject() noexcept;
 
-        virtual GameServer* getGameServer() noexcept;
-        virtual GameScene* getGameScene() noexcept;
+		virtual GameServer* getGameServer() noexcept;
+		virtual GameScene* getGameScene() noexcept;
 
-    private:
+	private:
 
-        GameScene* _scene;
-    };
+		GameScene* _scene;
+	};
 
-    bool _isActive;
+	bool _isActive;
 
-    Setting _setting;
+	Setting _setting;
 
-    std::string _name;
+	std::string _name;
 
-    GameObjectPtr  _root;
-    GameServer* _gameServer;
+	GameObjectPtr  _root;
+	GameServer* _gameServer;
 };
 
 _NAME_END

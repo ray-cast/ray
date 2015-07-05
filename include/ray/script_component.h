@@ -46,47 +46,47 @@ _NAME_BEGIN
 class ScriptObject;
 class EXPORT ScriptComponent : public GameComponent
 {
-    __DeclareSubClass(ScriptComponent, GameComponent)
+	__DeclareSubClass(ScriptComponent, GameComponent)
 public:
-    ScriptComponent() noexcept;
-    virtual ~ScriptComponent() noexcept;
+	ScriptComponent() noexcept;
+	virtual ~ScriptComponent() noexcept;
 
-    virtual void onActivate();
-    virtual void onDeactivate();
+	virtual void onActivate();
+	virtual void onDeactivate();
 
-    virtual void onMoveBefore();
-    virtual void onMoveAfter();
+	virtual void onMoveBefore();
+	virtual void onMoveAfter();
 
-    virtual void onFrameBegin();
-    virtual void onFrame();
-    virtual void onFrameEnd();
+	virtual void onFrameBegin();
+	virtual void onFrame();
+	virtual void onFrameEnd();
 
-    virtual void onMessage(const GameMessage& message);
+	virtual void onMessage(const GameMessage& message);
 
-    virtual GameComponentPtr clone() const noexcept;
-
-private:
-    ScriptComponent(const ScriptComponent&) noexcept = delete;
-    ScriptComponent& operator=(const ScriptComponent&) noexcept = delete;
+	virtual GameComponentPtr clone() const noexcept;
 
 private:
+	ScriptComponent(const ScriptComponent&) noexcept = delete;
+	ScriptComponent& operator=(const ScriptComponent&) noexcept = delete;
 
-    std::shared_ptr<ScriptObject> _scriptObject;
+private:
 
-    asIScriptFunction* _onAttach;
-    asIScriptFunction* _onRemove;
+	std::shared_ptr<ScriptObject> _scriptObject;
 
-    asIScriptFunction* _onActivate;
-    asIScriptFunction* _onDeactivate;
+	asIScriptFunction* _onAttach;
+	asIScriptFunction* _onRemove;
 
-    asIScriptFunction* _onFrameBegin;
-    asIScriptFunction* _onFrame;
-    asIScriptFunction* _onFrameEnd;
+	asIScriptFunction* _onActivate;
+	asIScriptFunction* _onDeactivate;
 
-    asIScriptFunction* _onMoveAfter;
-    asIScriptFunction* _onMoveBefore;
+	asIScriptFunction* _onFrameBegin;
+	asIScriptFunction* _onFrame;
+	asIScriptFunction* _onFrameEnd;
 
-    std::map<std::string, asIScriptFunction*> _funcMap;
+	asIScriptFunction* _onMoveAfter;
+	asIScriptFunction* _onMoveBefore;
+
+	std::map<std::string, asIScriptFunction*> _funcMap;
 };
 
 _NAME_END

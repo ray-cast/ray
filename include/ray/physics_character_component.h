@@ -44,38 +44,38 @@ _NAME_BEGIN
 class PhysicsCharacter;
 class EXPORT PhysicsCharacterComponent final : public PhysicsShapeComponent
 {
-    __DeclareSubClass(PhysicsCharacterComponent, PhysicsShapeComponent)
+	__DeclareSubClass(PhysicsCharacterComponent, PhysicsShapeComponent)
 public:
-    PhysicsCharacterComponent() noexcept;
-    ~PhysicsCharacterComponent() noexcept;
+	PhysicsCharacterComponent() noexcept;
+	~PhysicsCharacterComponent() noexcept;
 
-    void setRadius(float radius) noexcept;
-    void setHeight(float height) noexcept;
+	void setRadius(float radius) noexcept;
+	void setHeight(float height) noexcept;
 
-    void setMovePosition(const Vector3& pos) noexcept;
-    void setWalkDirection(const Vector3& direction) noexcept;
-    const Vector3& getWalkDirection() const noexcept;
+	void setMovePosition(const Vector3& pos) noexcept;
+	void setWalkDirection(const Vector3& direction) noexcept;
+	const Vector3& getWalkDirection() const noexcept;
 
-    bool isGrounded() noexcept;
+	bool isGrounded() noexcept;
 
-    const Vector3& getMovePosition() const noexcept;
+	const Vector3& getMovePosition() const noexcept;
 
-    bool canJumping() const noexcept;
-    void jump(float speed) noexcept;
+	bool canJumping() const noexcept;
+	void jump(float speed) noexcept;
 
-    virtual GameComponentPtr clone() const noexcept;
-
-private:
-    virtual void onActivate() noexcept;
-    virtual void onDeactivate() noexcept;
-
-    virtual void onFrameEnd() noexcept;
-
-    virtual PhysicsShapePtr getCollisionShape() noexcept;
+	virtual GameComponentPtr clone() const noexcept;
 
 private:
+	virtual void onActivate() noexcept;
+	virtual void onDeactivate() noexcept;
 
-    std::shared_ptr<PhysicsCharacter> _character;
+	virtual void onFrameEnd() noexcept;
+
+	virtual PhysicsShapePtr getCollisionShape() noexcept;
+
+private:
+
+	std::shared_ptr<PhysicsCharacter> _character;
 };
 
 _NAME_END

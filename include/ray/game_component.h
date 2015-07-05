@@ -43,49 +43,49 @@ _NAME_BEGIN
 
 class EXPORT GameComponent : public GameListener
 {
-    __DeclareInterface(GameComponent)
+	__DeclareInterface(GameComponent)
 public:
-    GameComponent() noexcept;
-    virtual ~GameComponent() noexcept;
+	GameComponent() noexcept;
+	virtual ~GameComponent() noexcept;
 
-    GameObject* getGameObject() noexcept;
-    const GameObject* getGameObject() const noexcept;
+	GameObject* getGameObject() noexcept;
+	const GameObject* getGameObject() const noexcept;
 
-    GameServer* getGameServer() noexcept;
-    const GameServer* getGameServer() const noexcept;
+	GameServer* getGameServer() noexcept;
+	const GameServer* getGameServer() const noexcept;
 
-    virtual void load(iarchive& reader) noexcept;
-    virtual void save(oarchive& write) noexcept;
+	virtual void load(iarchive& reader) noexcept;
+	virtual void save(oarchive& write) noexcept;
 
-    virtual void sendMessage(const GameMessage& message) except;
-    virtual void sendMessageUpwards(const GameMessage& message) except;
-    virtual void sendMessageDownwards(const GameMessage& message) except;
+	virtual void sendMessage(const GameMessage& message) except;
+	virtual void sendMessageUpwards(const GameMessage& message) except;
+	virtual void sendMessageDownwards(const GameMessage& message) except;
 
-    virtual void onAttach() except;
-    virtual void onRemove() except;
+	virtual void onAttach() except;
+	virtual void onRemove() except;
 
-    virtual void onActivate() except;
-    virtual void onDeactivate() except;
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
 
-    virtual void onFrameBegin() except;
-    virtual void onFrame() except;
-    virtual void onFrameEnd() except;
+	virtual void onFrameBegin() except;
+	virtual void onFrame() except;
+	virtual void onFrameEnd() except;
 
-    virtual void onMoveBefore() except;
-    virtual void onMoveAfter() except;
+	virtual void onMoveBefore() except;
+	virtual void onMoveAfter() except;
 
-    virtual void onLayerChangeBefore() except;
-    virtual void onLayerChangeAfter() except;
+	virtual void onLayerChangeBefore() except;
+	virtual void onLayerChangeAfter() except;
 
-    virtual GameComponentPtr clone() const except = 0;
-
-private:
-    friend GameObject;
-    void _setGameObject(GameObject* gameobj) noexcept;
+	virtual GameComponentPtr clone() const except = 0;
 
 private:
+	friend GameObject;
+	void _setGameObject(GameObject* gameobj) noexcept;
 
-    GameObject* _gameObject;
+private:
+
+	GameObject* _gameObject;
 };
 
 _NAME_END

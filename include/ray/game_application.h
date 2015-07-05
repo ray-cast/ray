@@ -44,53 +44,53 @@ _NAME_BEGIN
 class EXPORT GameApplication
 {
 public:
-    GameApplication() noexcept;
-    virtual ~GameApplication() noexcept;
+	GameApplication() noexcept;
+	virtual ~GameApplication() noexcept;
 
-    bool open() except;
-    void close() noexcept;
+	bool open() except;
+	void close() noexcept;
 
-    void start() except;
-    void stop() noexcept;
+	void start() except;
+	void stop() noexcept;
 
-    bool isQuitRequest() const noexcept;
+	bool isQuitRequest() const noexcept;
 
-    bool openScene(GameScenePtr scene) except;
-    bool openScene(const std::string& name) except;
-    void closeScene(GameScenePtr name) noexcept;
-    void closeScene(const std::string& name) noexcept;
-    GameScenePtr findScene(const std::string& name) noexcept;
+	bool openScene(GameScenePtr scene) except;
+	bool openScene(const std::string& name) except;
+	void closeScene(GameScenePtr name) noexcept;
+	void closeScene(const std::string& name) noexcept;
+	GameScenePtr findScene(const std::string& name) noexcept;
 
-    void addFeatures(GameFeaturePtr feature) except;
-    void removeFeatures(GameFeaturePtr feature) noexcept;
-    GameFeaturePtr getFeature(const std::string& name) noexcept;
+	void addFeatures(GameFeaturePtr feature) except;
+	void removeFeatures(GameFeaturePtr feature) noexcept;
+	GameFeaturePtr getFeature(const std::string& name) noexcept;
 
-    void setFileService(bool enable) noexcept;
-    void setFileServicePath(const std::string& path) noexcept;
-    void setResDownloadURL(const std::string& path) noexcept;
+	void setFileService(bool enable) noexcept;
+	void setFileServicePath(const std::string& path) noexcept;
+	void setResDownloadURL(const std::string& path) noexcept;
 
-    void sendMessage(const GameMessage& message) noexcept;
-    void postMessage(const GameMessage& message) noexcept;
+	void sendMessage(const GameMessage& message) noexcept;
+	void postMessage(const GameMessage& message) noexcept;
 
-    void update() except;
-
-private:
-    GameApplication(const GameApplication&) noexcept = delete;
-    GameApplication& operator=(const GameApplication&) noexcept = delete;
+	void update() except;
 
 private:
+	GameApplication(const GameApplication&) noexcept = delete;
+	GameApplication& operator=(const GameApplication&) noexcept = delete;
 
-    bool _isInitialize;
-    bool _isQuitRequest;
+private:
 
-    std::string _engineDir;
-    std::string _resourceBaseDir;
-    std::string _downloadURL;
+	bool _isInitialize;
+	bool _isQuitRequest;
 
-    GameServerPtr _gameServer;
+	std::string _engineDir;
+	std::string _resourceBaseDir;
+	std::string _downloadURL;
 
-    IoServer* _ioServer;
-    IoInterface* _ioInterface;
+	GameServerPtr _gameServer;
+
+	IoServer* _ioServer;
+	IoInterface* _ioInterface;
 };
 
 _NAME_END

@@ -42,273 +42,273 @@
 _NAME_BEGIN
 
 ScriptObject::ScriptObject() noexcept
-    : _module(nullptr)
-    , _object(nullptr)
+	: _module(nullptr)
+	, _object(nullptr)
 {
 }
 
 ScriptObject::~ScriptObject() noexcept
 {
-    this->close();
+	this->close();
 }
 
 bool
 ScriptObject::setup(const std::string& name, bool _throw)
 {
-    assert(!_module);
+	assert(!_module);
 
-    _module = ScriptSystem::instance()->getModule(name);
-    if (!_module)
-    {
-        if (_throw)
-            throw failure("Couldn't create module class for the script " + name + "\n");
-        else
-            ScriptSystem::instance()->print("Couldn't create module class for the script " + name + "\n");
+	_module = ScriptSystem::instance()->getModule(name);
+	if (!_module)
+	{
+		if (_throw)
+			throw failure("Couldn't create module class for the script " + name + "\n");
+		else
+			ScriptSystem::instance()->print("Couldn't create module class for the script " + name + "\n");
 
-        return false;
-    }
+		return false;
+	}
 
-    return true;
+	return true;
 }
 
 void
 ScriptObject::close() noexcept
 {
-    if (_object)
-    {
-        _object->Release();
-        _object = nullptr;
-    }
+	if (_object)
+	{
+		_object->Release();
+		_object = nullptr;
+	}
 }
 
 bool
 ScriptObject::setInterface(const std::string& controller) noexcept
 {
-    assert(_module);
-    assert(!controller.empty());
+	assert(_module);
+	assert(!controller.empty());
 
-    asUINT tc = _module->GetObjectTypeCount();
-    for (asUINT i = 0; i < tc; i++)
-    {
-        bool found = false;
-        asIObjectType* type = _module->GetObjectTypeByIndex(i);
-        asUINT ic = type->GetInterfaceCount();
-        for (asUINT j = 0; j < ic; j++)
-        {
-            if (controller == type->GetInterface(j)->GetName())
-            {
-                found = true;
-                break;
-            }
-        }
+	asUINT tc = _module->GetObjectTypeCount();
+	for (asUINT i = 0; i < tc; i++)
+	{
+		bool found = false;
+		asIObjectType* type = _module->GetObjectTypeByIndex(i);
+		asUINT ic = type->GetInterfaceCount();
+		for (asUINT j = 0; j < ic; j++)
+		{
+			if (controller == type->GetInterface(j)->GetName())
+			{
+				found = true;
+				break;
+			}
+		}
 
-        if (found)
-        {
-            this->_interface = type;
-            break;
-        }
-    }
+		if (found)
+		{
+			this->_interface = type;
+			break;
+		}
+	}
 
-    if (!this->_interface)
-    {
-        ScriptSystem::instance()->print("Couldn't find the interface class for the type " + controller + "\n");
-        return false;
-    }
+	if (!this->_interface)
+	{
+		ScriptSystem::instance()->print("Couldn't find the interface class for the type " + controller + "\n");
+		return false;
+	}
 
-    return true;
+	return true;
 }
 
 bool
 ScriptObject::construct(GameObjectPtr gameobj) noexcept
 {
-    assert(_interface);
+	assert(_interface);
 
-    std::string construct = std::string(_interface->GetName()) + "@ " + _interface->GetName() + "(" + "GameObject& in" + ")";
-    auto factory = _interface->GetFactoryByDecl(construct.c_str());
-    if (factory)
-    {
-        asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
-        if (ctx)
-        {
-            if (ctx->Prepare(factory) != asSUCCESS)
-            {
-                ScriptSystem::instance()->print("Fail to prepare function");
-                return false;
-            }
+	std::string construct = std::string(_interface->GetName()) + "@ " + _interface->GetName() + "(" + "GameObject& in" + ")";
+	auto factory = _interface->GetFactoryByDecl(construct.c_str());
+	if (factory)
+	{
+		asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
+		if (ctx)
+		{
+			if (ctx->Prepare(factory) != asSUCCESS)
+			{
+				ScriptSystem::instance()->print("Fail to prepare function");
+				return false;
+			}
 
-            ctx->SetArgObject(0, &gameobj);
+			ctx->SetArgObject(0, &gameobj);
 
-            int r = ctx->Execute();
-            if (r != asEXECUTION_FINISHED)
-            {
-                if (r == asEXECUTION_EXCEPTION)
-                {
-                    ScriptSystem::instance()->print(format("Exception: %d\n") % ctx->GetExceptionString());
-                    ScriptSystem::instance()->print(format("Function: %d\n") % ctx->GetExceptionFunction()->GetDeclaration());
-                    ScriptSystem::instance()->print(format("Line: %d\n") % ctx->GetExceptionLineNumber());
-                    return false;
-                }
-            }
-            else
-            {
-                _object = *(asIScriptObject**)ctx->GetAddressOfReturnValue();
-                _object->AddRef();
-                return true;
-            }
-        }
-    }
+			int r = ctx->Execute();
+			if (r != asEXECUTION_FINISHED)
+			{
+				if (r == asEXECUTION_EXCEPTION)
+				{
+					ScriptSystem::instance()->print(format("Exception: %d\n") % ctx->GetExceptionString());
+					ScriptSystem::instance()->print(format("Function: %d\n") % ctx->GetExceptionFunction()->GetDeclaration());
+					ScriptSystem::instance()->print(format("Line: %d\n") % ctx->GetExceptionLineNumber());
+					return false;
+				}
+			}
+			else
+			{
+				_object = *(asIScriptObject**)ctx->GetAddressOfReturnValue();
+				_object->AddRef();
+				return true;
+			}
+		}
+	}
 
-    return false;
+	return false;
 }
 
 bool
 ScriptObject::destruct() noexcept
 {
-    return true;
+	return true;
 }
 
 asIScriptFunction*
 ScriptObject::getInterfaceByDecl(const char* decl) noexcept
 {
-    assert(_module);
-    assert(_interface);
+	assert(_module);
+	assert(_interface);
 
-    return _interface->GetMethodByDecl(decl);
+	return _interface->GetMethodByDecl(decl);
 }
 
 asIScriptFunction*
 ScriptObject::getMethodByDecl(const char* decl) noexcept
 {
-    return _module->GetFunctionByName(decl);
+	return _module->GetFunctionByName(decl);
 }
 
 int
 ScriptObject::setArgByte(std::size_t arg, std::uint8_t value) noexcept
 {
-    asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
-    if (ctx)
-    {
-        return ctx->SetArgByte(arg, value);
-    }
+	asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
+	if (ctx)
+	{
+		return ctx->SetArgByte(arg, value);
+	}
 
-    return 0;
+	return 0;
 }
 
 int
 ScriptObject::setArgWord(std::size_t arg, std::uint16_t value) noexcept
 {
-    asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
-    if (ctx)
-    {
-        return ctx->SetArgWord(arg, value);
-    }
+	asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
+	if (ctx)
+	{
+		return ctx->SetArgWord(arg, value);
+	}
 
-    return 0;
+	return 0;
 }
 
 int
 ScriptObject::setArgDWord(std::size_t arg, std::uint32_t value) noexcept
 {
-    asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
-    if (ctx)
-    {
-        return ctx->SetArgDWord(arg, value);
-    }
+	asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
+	if (ctx)
+	{
+		return ctx->SetArgDWord(arg, value);
+	}
 
-    return 0;
+	return 0;
 }
 
 int
 ScriptObject::setArgQWord(std::size_t arg, std::uint64_t value) noexcept
 {
-    asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
-    if (ctx)
-    {
-        return ctx->SetArgQWord(arg, value);
-    }
+	asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
+	if (ctx)
+	{
+		return ctx->SetArgQWord(arg, value);
+	}
 
-    return 0;
+	return 0;
 }
 
 int
 ScriptObject::setArgFloat(std::size_t arg, float value) noexcept
 {
-    asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
-    if (ctx)
-    {
-        return ctx->SetArgFloat(arg, value);
-    }
+	asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
+	if (ctx)
+	{
+		return ctx->SetArgFloat(arg, value);
+	}
 
-    return 0;
+	return 0;
 }
 
 int
 ScriptObject::setArgDouble(std::size_t arg, double value) noexcept
 {
-    asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
-    if (ctx)
-    {
-        return ctx->SetArgDouble(arg, value);
-    }
+	asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
+	if (ctx)
+	{
+		return ctx->SetArgDouble(arg, value);
+	}
 
-    return 0;
+	return 0;
 }
 
 int
 ScriptObject::setArgAddress(std::size_t arg, void* addr) noexcept
 {
-    asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
-    if (ctx)
-    {
-        return ctx->SetArgAddress(arg, addr);
-    }
+	asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
+	if (ctx)
+	{
+		return ctx->SetArgAddress(arg, addr);
+	}
 
-    return 0;
+	return 0;
 }
 
 bool
 ScriptObject::exce(asIScriptFunction* func, bool _throw)
 {
-    assert(func);
+	assert(func);
 
-    asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
-    if (ctx)
-    {
-        if (ctx->Prepare(func) != asSUCCESS)
-        {
-            if (_throw)
-                throw failure("fail to prepare function");
-            else
-                ScriptSystem::instance()->print("fail to prepare function");
+	asIScriptContext* ctx = ScriptSystem::instance()->getScriptContext();
+	if (ctx)
+	{
+		if (ctx->Prepare(func) != asSUCCESS)
+		{
+			if (_throw)
+				throw failure("fail to prepare function");
+			else
+				ScriptSystem::instance()->print("fail to prepare function");
 
-            return false;
-        }
+			return false;
+		}
 
-        if (_object)
-        {
-            ctx->SetObject(_object);
-        }
+		if (_object)
+		{
+			ctx->SetObject(_object);
+		}
 
-        int r = ctx->Execute();
-        if (r != asEXECUTION_FINISHED)
-        {
-            if (r == asEXECUTION_EXCEPTION)
-            {
-                std::string exception = format("Exception: %d\n") % ctx->GetExceptionString();
-                std::string function = format("Function: %d\n") % ctx->GetExceptionFunction()->GetDeclaration();
-                std::string line = format("Line: %d\n") % ctx->GetExceptionLineNumber();
+		int r = ctx->Execute();
+		if (r != asEXECUTION_FINISHED)
+		{
+			if (r == asEXECUTION_EXCEPTION)
+			{
+				std::string exception = format("Exception: %d\n") % ctx->GetExceptionString();
+				std::string function = format("Function: %d\n") % ctx->GetExceptionFunction()->GetDeclaration();
+				std::string line = format("Line: %d\n") % ctx->GetExceptionLineNumber();
 
-                if (_throw)
-                    throw failure(exception + function + line);
-                else
-                    ScriptSystem::instance()->print(exception + function + line);
+				if (_throw)
+					throw failure(exception + function + line);
+				else
+					ScriptSystem::instance()->print(exception + function + line);
 
-                return false;
-            }
-        }
-    }
+				return false;
+			}
+		}
+	}
 
-    return true;
+	return true;
 }
 
 _NAME_END

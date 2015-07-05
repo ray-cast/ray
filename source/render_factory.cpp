@@ -55,270 +55,279 @@ _NAME_BEGIN
 RenderDevicePtr
 RenderFactory::createRenderDevice() noexcept
 {
-    return std::make_shared<OGLRenderer>();
+	return std::make_shared<OGLRenderer>();
 }
 
 RenderWindowPtr
 RenderFactory::createRenderWindow() noexcept
 {
-    return std::make_shared<OGLCanvas>();
+	return std::make_shared<OGLCanvas>();
 }
 
 ShaderPtr
 RenderFactory::createShader() noexcept
 {
-    return std::make_shared<OGLShader>();
+	return std::make_shared<OGLShader>();
 }
 
 ShaderObjectPtr
 RenderFactory::createShaderObject() noexcept
 {
-    return std::make_shared<OGLShaderObject>();
+	return std::make_shared<OGLShaderObject>();
 }
 
 TexturePtr
 RenderFactory::createTexture() noexcept
 {
-    return std::make_shared<OGLTexture>();
+	return std::make_shared<OGLTexture>();
 }
 
 TexturePtr
 RenderFactory::createTexture(const std::string& name) except
 {
-    MemoryStream stream;
-    IoServer::instance()->openFile(name, stream);
+	MemoryStream stream;
+	IoServer::instance()->openFile(name, stream);
 
-    if (stream)
-    {
-        Image image;
-        if (image.load(stream))
-        {
-            PixelFormat format = PixelFormat::R8G8B8A8;
+	if (stream)
+	{
+		Image image;
+		if (image.load(stream))
+		{
+			PixelFormat format = PixelFormat::R8G8B8A8;
 
-            if (image.bpp() == 24)
-                format = PixelFormat::R8G8B8;
-            else if (image.bpp() == 32)
-                format = PixelFormat::R8G8B8A8;
+			if (image.bpp() == 24)
+				format = PixelFormat::R8G8B8;
+			else if (image.bpp() == 32)
+				format = PixelFormat::R8G8B8A8;
 
-            auto texture = RenderFactory::createTexture();
-            texture->setSize(image.width(), image.height());
-            texture->setTexDim(TextureDim::DIM_2D);
-            texture->setTexFormat(format);
-            texture->setStream(image.data());
-            texture->setup();
+			auto texture = RenderFactory::createTexture();
+			texture->setSize(image.width(), image.height());
+			texture->setTexDim(TextureDim::DIM_2D);
+			texture->setTexFormat(format);
+			texture->setStream(image.data());
+			texture->setup();
 
-            return texture;
-        }
-    }
-    else
-    {
-        throw failure("fail to open : " + name);
-    }
+			return texture;
+		}
+	}
+	else
+	{
+		throw failure("fail to open : " + name);
+	}
 
-    return nullptr;
+	return nullptr;
 }
 
 RenderTargetPtr
 RenderFactory::createRenderTarget() noexcept
 {
-    return std::make_shared<OGLRenderTarget>();
+	return std::make_shared<OGLRenderTarget>();
 }
 
 MultiRenderTargetPtr
 RenderFactory::createMultiRenderTarget() noexcept
 {
-    return std::make_shared<OGLMultiRenderTarget>();
+	return std::make_shared<OGLMultiRenderTarget>();
 }
 
 VertexBufferDataPtr
 RenderFactory::createVertexBuffer() noexcept
 {
-    return std::make_shared<OGLVertexBuffer>();
+	return std::make_shared<OGLVertexBuffer>();
 }
 
 IndexBufferDataPtr
 RenderFactory::createIndexBuffer() noexcept
 {
-    return std::make_shared<OGLIndexBuffer>();
+	return std::make_shared<OGLIndexBuffer>();
 }
 
 RenderBufferPtr
 RenderFactory::createRenderBuffer() noexcept
 {
-    return std::make_shared<OGLRenderBuffer>();
+	return std::make_shared<OGLRenderBuffer>();
 }
 
 RenderBufferPtr
 RenderFactory::createRenderBuffer(const MeshProperty& mesh) except
 {
-    auto buffer = std::make_shared<OGLRenderBuffer>();
+	auto buffer = std::make_shared<OGLRenderBuffer>();
 
-    auto numVertex = mesh.getNumVertices();
-    auto numIndex = mesh.getNumIndices();
+	auto numVertex = mesh.getNumVertices();
+	auto numIndex = mesh.getNumIndices();
 
-    std::vector<VertexComponent> components;
+	std::vector<VertexComponent> components;
 
-    auto& vertices = mesh.getVertexArray();
-    if (!vertices.empty())
-    {
-        if (vertices.size() == numVertex)
-            components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
-    }
+	auto& vertices = mesh.getVertexArray();
+	if (!vertices.empty())
+	{
+		if (vertices.size() == numVertex)
+			components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
+	}
 
-    auto& normals = mesh.getNormalArray();
-    if (!normals.empty())
-    {
-        if (normals.size() == numVertex)
-            components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_NORMAL, VertexFormat::GPU_VERTEX_FLOAT3));
-    }
+	auto& normals = mesh.getNormalArray();
+	if (!normals.empty())
+	{
+		if (normals.size() == numVertex)
+			components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_NORMAL, VertexFormat::GPU_VERTEX_FLOAT3));
+	}
 
-    auto& texcoords = mesh.getTexcoordArray();
-    if (!texcoords.empty())
-    {
-        if (texcoords.size() == numVertex)
-            components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_TEXCOORD, VertexFormat::GPU_VERTEX_FLOAT2));
-    }
+	auto& texcoords = mesh.getTexcoordArray();
+	if (!texcoords.empty())
+	{
+		if (texcoords.size() == numVertex)
+			components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_TEXCOORD, VertexFormat::GPU_VERTEX_FLOAT2));
+	}
 
-    auto& faces = mesh.getFaceArray();
+	VertexBufferDataPtr vb;
 
-    auto vb = RenderFactory::createVertexBuffer();
-    auto ib = RenderFactory::createIndexBuffer();
+	if (numVertex)
+	{
+		vb = RenderFactory::createVertexBuffer();
+		vb->setVertexComponents(components);
+		vb->setup(numVertex, VertexUsage::GPU_USAGE_STATIC);
 
-    vb->setVertexComponents(components);
-    vb->setup(numVertex, VertexUsage::GPU_USAGE_STATIC);
-    ib->setup(numIndex, IndexType::GPU_UINT32, VertexUsage::GPU_USAGE_STATIC);
+		std::size_t offset = 0;
+		std::size_t stride = vb->getVertexSize();
+		if (vertices.size() == numVertex)
+		{
+			char* data = (char*)vb->data();
+			for (auto& it : vertices)
+			{
+				*(float3*)data = it;
+				data += stride;
+			}
 
-    std::size_t offset = 0;
-    std::size_t stride = vb->getVertexSize();
-    if (vertices.size() == numVertex)
-    {
-        char* data = (char*)vb->data();
-        for (auto& it : vertices)
-        {
-            *(float3*)data = it;
-            data += stride;
-        }
+			offset += sizeof(float3);
+		}
 
-        offset += sizeof(float3);
-    }
+		if (normals.size() == numVertex)
+		{
+			char* data = (char*)vb->data() + offset;
+			for (auto& it : normals)
+			{
+				*(float3*)data = it;
+				data += stride;
+			}
 
-    if (normals.size() == numVertex)
-    {
-        char* data = (char*)vb->data() + offset;
-        for (auto& it : normals)
-        {
-            *(float3*)data = it;
-            data += stride;
-        }
+			offset += sizeof(float3);
+		}
 
-        offset += sizeof(float3);
-    }
+		if (texcoords.size() == numVertex)
+		{
+			char* data = (char*)vb->data() + offset;
+			for (auto& it : texcoords)
+			{
+				*(float2*)data = it;
+				data += stride;
+			}
 
-    if (texcoords.size() == numVertex)
-    {
-        char* data = (char*)vb->data() + offset;
-        for (auto& it : texcoords)
-        {
-            *(float2*)data = it;
-            data += stride;
-        }
+			offset += sizeof(float2);
+		}
+	}
 
-        offset += sizeof(float2);
-    }
+	IndexBufferDataPtr ib;
 
-    if (!faces.empty())
-    {
-        std::uint32_t* indices = (std::uint32_t*)ib->data();
-        for (auto& face : faces)
-        {
-            *indices++ = face;
-        }
-    }
+	auto& faces = mesh.getFaceArray();
+	if (numIndex > 0)
+	{
+		ib = RenderFactory::createIndexBuffer();
+		ib->setup(numIndex, IndexType::GPU_UINT32, VertexUsage::GPU_USAGE_STATIC);
 
-    buffer->setup(vb, ib);
+		if (!faces.empty())
+		{
+			std::uint32_t* indices = (std::uint32_t*)ib->data();
+			for (auto& face : faces)
+			{
+				*indices++ = face;
+			}
+		}
+	}
 
-    return buffer;
+	buffer->setup(vb, ib);
+
+	return buffer;
 }
 
 MaterialPtr
 RenderFactory::createMaterial(const std::string& filename) except
 {
-    MemoryStream stream;
+	MemoryStream stream;
 
-    IoServer::instance()->openFile(filename, stream);
-    if (!stream.is_open())
-        return false;
+	IoServer::instance()->openFile(filename, stream);
+	if (!stream.is_open())
+		return false;
 
-    XMLReader xml;
-    if (xml.open(stream))
-    {
-        std::string name;
-        std::map<std::string, std::string> args;
+	XMLReader xml;
+	if (xml.open(stream))
+	{
+		std::string name;
+		std::map<std::string, std::string> args;
 
-        if (!xml.setToFirstChild())
-        {
-            throw failure("The file has been damaged and can't be recovered, so I can't open it" + filename);
-        }
+		if (!xml.setToFirstChild())
+		{
+			throw failure("The file has been damaged and can't be recovered, so I can't open it" + filename);
+		}
 
-        do
-        {
-            auto key = xml.getCurrentNodeName();
-            if (key == "attribute")
-            {
-                auto attributes = xml.getAttrs();
-                for (auto& it : attributes)
-                {
-                    if (it == "shader")
-                    {
-                        name = xml.getString(it);
-                    }
-                    else
-                    {
-                        args[it] = xml.getString(it);
-                    }
-                }
-            }
-        } while (xml.setToNextChild());
+		do
+		{
+			auto key = xml.getCurrentNodeName();
+			if (key == "attribute")
+			{
+				auto attributes = xml.getAttrs();
+				for (auto& it : attributes)
+				{
+					if (it == "shader")
+					{
+						name = xml.getString(it);
+					}
+					else
+					{
+						args[it] = xml.getString(it);
+					}
+				}
+			}
+		} while (xml.setToNextChild());
 
-        if (!name.empty())
-        {
-            MaterialMaker maker;
-            auto material = maker.load(name);
-            if (material)
-            {
-                for (auto& arg : args)
-                {
-                    auto param = material->getParameter(arg.first);
-                    if (param)
-                    {
-                        auto type = param->getType();
-                        switch (type)
-                        {
-                        case ShaderVariantType::SPT_FLOAT:
-                        {
-                            param->assign(parseFloat<Float>(arg.second));
-                        }
-                        break;
-                        case ShaderVariantType::SPT_FLOAT4:
-                        {
-                            param->assign(parseFloat4(arg.second));
-                        }
-                        break;
-                        case ShaderVariantType::SPT_TEXTURE:
-                        {
-                            param->assign(RenderFactory::createTexture(arg.second));
-                        }
-                        break;
-                        }
-                    }
-                }
+		if (!name.empty())
+		{
+			MaterialMaker maker;
+			auto material = maker.load(name);
+			if (material)
+			{
+				for (auto& arg : args)
+				{
+					auto param = material->getParameter(arg.first);
+					if (param)
+					{
+						auto type = param->getType();
+						switch (type)
+						{
+						case ShaderVariantType::SPT_FLOAT:
+						{
+							param->assign(parseFloat<Float>(arg.second));
+						}
+						break;
+						case ShaderVariantType::SPT_FLOAT4:
+						{
+							param->assign(parseFloat4(arg.second));
+						}
+						break;
+						case ShaderVariantType::SPT_TEXTURE:
+						{
+							param->assign(RenderFactory::createTexture(arg.second));
+						}
+						break;
+						}
+					}
+				}
 
-                return material;
-            }
-        }
-    }
+				return material;
+			}
+		}
+	}
 
-    return nullptr;
+	return nullptr;
 }
 
 _NAME_END

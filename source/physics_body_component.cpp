@@ -46,246 +46,246 @@ _NAME_BEGIN
 __ImplementSubClass(PhysicsBodyComponent, GameComponent)
 
 PhysicsBodyComponent::PhysicsBodyComponent() noexcept
-    : _constantForce(Vector3::Zero)
-    , _constantTorque(Vector3::Zero)
-    , _constantVelocity(Vector3::Zero)
-    , _constantAngularVelocity(Vector3::Zero)
-    , _enableKinematic(false)
+	: _constantForce(Vector3::Zero)
+	, _constantTorque(Vector3::Zero)
+	, _constantVelocity(Vector3::Zero)
+	, _constantAngularVelocity(Vector3::Zero)
+	, _enableKinematic(false)
 {
-    _body = std::make_unique<PhysicsRigidbody>();
-    _body->setRigidbodyListener(this);
+	_body = std::make_unique<PhysicsRigidbody>();
+	_body->setRigidbodyListener(this);
 }
 
 PhysicsBodyComponent::~PhysicsBodyComponent() noexcept
 {
-    if (_body)
-    {
-        _body.reset();
-        _body = nullptr;
-    }
+	if (_body)
+	{
+		_body.reset();
+		_body = nullptr;
+	}
 }
 
 void
 PhysicsBodyComponent::setMass(float value) noexcept
 {
-    _body->setMass(value);
+	_body->setMass(value);
 }
 
 void
 PhysicsBodyComponent::setLinearVelocity(const Vector3& value) noexcept
 {
-    _body->setLinearVelocity(value);
+	_body->setLinearVelocity(value);
 }
 
 void
 PhysicsBodyComponent::setAngularVelocity(const Vector3& value) noexcept
 {
-    _body->setAngularVelocity(value);
+	_body->setAngularVelocity(value);
 }
 
 void
 PhysicsBodyComponent::setLinearDamping(float value)  noexcept
 {
-    _body->setLinearDamping(value);
+	_body->setLinearDamping(value);
 }
 
 void
 PhysicsBodyComponent::setAngularDamping(float value) noexcept
 {
-    _body->setAngularDamping(value);
+	_body->setAngularDamping(value);
 }
 
 void
 PhysicsBodyComponent::setGravity(const Vector3& value) noexcept
 {
-    _body->setGravity(value);
+	_body->setGravity(value);
 }
 
 void
 PhysicsBodyComponent::setConstantForce(const Vector3& value) noexcept
 {
-    if (_constantForce.length2() > 0.01f)
-        _constantForce = value;
+	if (_constantForce.length2() > 0.01f)
+		_constantForce = value;
 }
 
 void
 PhysicsBodyComponent::setConstantTorque(const Vector3& value) noexcept
 {
-    if (_constantTorque.length2() > 0.01f)
-        _constantTorque = value;
+	if (_constantTorque.length2() > 0.01f)
+		_constantTorque = value;
 }
 
 void
 PhysicsBodyComponent::setConstantVelocity(const Vector3& value) noexcept
 {
-    if (_constantVelocity.length2() > 0.01f)
-        _constantVelocity = value;
+	if (_constantVelocity.length2() > 0.01f)
+		_constantVelocity = value;
 }
 
 void
 PhysicsBodyComponent::setConstanAngularVelocity(const Vector3& value) noexcept
 {
-    if (_constantAngularVelocity.length2() > 0.01f)
-        _constantAngularVelocity = value;
+	if (_constantAngularVelocity.length2() > 0.01f)
+		_constantAngularVelocity = value;
 }
 
 void
 PhysicsBodyComponent::sleep(bool sleep) noexcept
 {
-    _body->sleep(sleep);
+	_body->sleep(sleep);
 }
 
 bool
 PhysicsBodyComponent::isSleep() const noexcept
 {
-    return _body->isSleep();
+	return _body->isSleep();
 }
 
 float
 PhysicsBodyComponent::getMass() const noexcept
 {
-    return _body->getMass();
+	return _body->getMass();
 }
 
 float
 PhysicsBodyComponent::getLinearDamping() const noexcept
 {
-    return _body->getLinearDamping();
+	return _body->getLinearDamping();
 }
 
 float
 PhysicsBodyComponent::getAngularDamping() const noexcept
 {
-    return _body->getAngularDamping();
+	return _body->getAngularDamping();
 }
 
 const Vector3&
 PhysicsBodyComponent::getGravity() const noexcept
 {
-    return _body->getGravity();
+	return _body->getGravity();
 }
 
 const Vector3&
 PhysicsBodyComponent::getLinearVelocity() const noexcept
 {
-    return _body->getLinearVelocity();
+	return _body->getLinearVelocity();
 }
 
 const Vector3&
 PhysicsBodyComponent::getAngularVelocity() const noexcept
 {
-    return _body->getAngularVelocity();
+	return _body->getAngularVelocity();
 }
 
 const Vector3&
 PhysicsBodyComponent::getConstantForce() const noexcept
 {
-    return _constantForce;
+	return _constantForce;
 }
 
 const Vector3&
 PhysicsBodyComponent::getConstantTorque() const noexcept
 {
-    return _constantTorque;
+	return _constantTorque;
 }
 
 const Vector3&
 PhysicsBodyComponent::getConstantVelocity() const noexcept
 {
-    return _constantVelocity;
+	return _constantVelocity;
 }
 
 const Vector3&
 PhysicsBodyComponent::getConstantAngularVelocity() const noexcept
 {
-    return _constantAngularVelocity;
+	return _constantAngularVelocity;
 }
 
 void
 PhysicsBodyComponent::addForce(const Vector3& force) noexcept
 {
-    _body->addForce(force);
+	_body->addForce(force);
 }
 
 void
 PhysicsBodyComponent::addRelativeForce(const Vector3& force, const Vector3& axis) noexcept
 {
-    _body->addRelativeForce(force, axis);
+	_body->addRelativeForce(force, axis);
 }
 
 void
 PhysicsBodyComponent::addTorque(const Vector3& force) noexcept
 {
-    _body->addTorque(force);
+	_body->addTorque(force);
 }
 
 void
 PhysicsBodyComponent::addImpulse(const Vector3& force, const Vector3& axis) noexcept
 {
-    _body->addImpulse(force, axis);
+	_body->addImpulse(force, axis);
 }
 
 void
 PhysicsBodyComponent::onActivate() noexcept
 {
-    auto physics = this->getGameObject()->getGameServer()->getFeature<PhysicFeatures>();
-    if (physics)
-    {
-        auto physicsScene = physics->getPhysicsScene(this->getGameObject()->getGameScene());
-        if (physicsScene)
-        {
-            auto collisionShape = this->getGameObject()->getComponent<PhysicsShapeComponent>();
-            if (collisionShape)
-            {
-                auto shape = collisionShape->getCollisionShape();
-                if (shape)
-                {
-                    _body->setup(shape);
-                    _body->setMovePosition(this->getGameObject()->getTranslate());
-                    _body->setMoveRotation(this->getGameObject()->getRotate());
-                    _body->setPhysicsScene(physicsScene.get());
-                }
-            }
-        }
-    }
+	auto physics = this->getGameObject()->getGameServer()->getFeature<PhysicFeatures>();
+	if (physics)
+	{
+		auto physicsScene = physics->getPhysicsScene(this->getGameObject()->getGameScene());
+		if (physicsScene)
+		{
+			auto collisionShape = this->getGameObject()->getComponent<PhysicsShapeComponent>();
+			if (collisionShape)
+			{
+				auto shape = collisionShape->getCollisionShape();
+				if (shape)
+				{
+					_body->setup(shape);
+					_body->setMovePosition(this->getGameObject()->getTranslate());
+					_body->setMoveRotation(this->getGameObject()->getRotate());
+					_body->setPhysicsScene(physicsScene.get());
+				}
+			}
+		}
+	}
 }
 
 void
 PhysicsBodyComponent::onDeactivate() noexcept
 {
-    if (_body)
-    {
-        _body->close();
-    }
+	if (_body)
+	{
+		_body->close();
+	}
 }
 
 void
 PhysicsBodyComponent::onFrame() noexcept
 {
-    if (_enableKinematic)
-    {
-        _body->addForce(_constantForce);
-        _body->addTorque(_constantTorque);
-        _body->setLinearVelocity(_body->getLinearVelocity() + _constantVelocity);
-        _body->setAngularVelocity(_body->getAngularVelocity() + _constantAngularVelocity);
-    }
+	if (_enableKinematic)
+	{
+		_body->addForce(_constantForce);
+		_body->addTorque(_constantTorque);
+		_body->setLinearVelocity(_body->getLinearVelocity() + _constantVelocity);
+		_body->setAngularVelocity(_body->getAngularVelocity() + _constantAngularVelocity);
+	}
 }
 
 void
 PhysicsBodyComponent::onFrameEnd() noexcept
 {
-    auto& position = _body->getMovePosition();
-    if (position != this->getGameObject()->getTranslate())
-    {
-        auto lookat = this->getGameObject()->getLookAt();
-        auto translate = this->getGameObject()->getTranslate();
-        lookat = lookat - translate;
+	auto& position = _body->getMovePosition();
+	if (position != this->getGameObject()->getTranslate())
+	{
+		auto lookat = this->getGameObject()->getLookAt();
+		auto translate = this->getGameObject()->getTranslate();
+		lookat = lookat - translate;
 
-        this->getGameObject()->setTranslate(position);
-        this->getGameObject()->setLookAt(position + lookat);
-    }
+		this->getGameObject()->setTranslate(position);
+		this->getGameObject()->setLookAt(position + lookat);
+	}
 
-    this->getGameObject()->setRotate(_body->getMoveRotation());
+	this->getGameObject()->setRotate(_body->getMoveRotation());
 }
 
 void
@@ -296,13 +296,13 @@ PhysicsBodyComponent::onMoveAfter() noexcept
 void
 PhysicsBodyComponent::onCollisionStay() noexcept
 {
-    //this->sendMessage("onCollisionStay", nullptr);
+	//this->sendMessage("onCollisionStay", nullptr);
 }
 
 GameComponentPtr
 PhysicsBodyComponent::clone() const noexcept
 {
-    return std::make_shared<PhysicsBodyComponent>();
+	return std::make_shared<PhysicsBodyComponent>();
 }
 
 _NAME_END

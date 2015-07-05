@@ -44,14 +44,14 @@ __ImplementSubClass(PhysicsCapsuleComponent, PhysicsShapeComponent)
 
 PhysicsCapsuleComponent::PhysicsCapsuleComponent() noexcept
 {
-    _shape = std::make_shared<PhysicsShapeCapsule>();
+	_shape = std::make_shared<PhysicsShapeCapsule>();
 }
 
 PhysicsCapsuleComponent::PhysicsCapsuleComponent(float width, float height) noexcept
 {
-    _shape = std::make_shared<PhysicsShapeCapsule>();
-    _shape->setWidth(width);
-    _shape->setHeight(height);
+	_shape = std::make_shared<PhysicsShapeCapsule>();
+	_shape->setWidth(width);
+	_shape->setHeight(height);
 }
 
 PhysicsCapsuleComponent::~PhysicsCapsuleComponent() noexcept
@@ -61,41 +61,41 @@ PhysicsCapsuleComponent::~PhysicsCapsuleComponent() noexcept
 void
 PhysicsCapsuleComponent::setWidth(float width) noexcept
 {
-    _shape->setWidth(width);
+	_shape->setWidth(width);
 }
 
 void
 PhysicsCapsuleComponent::setHeight(float height) noexcept
 {
-    _shape->setHeight(height);
+	_shape->setHeight(height);
 }
 
 void
 PhysicsCapsuleComponent::onActivate() noexcept
 {
-    _shape->setup();
+	_shape->setup();
 }
 
 void
 PhysicsCapsuleComponent::onDeactivate() noexcept
 {
-    _shape->close();
+	_shape->close();
 }
 
 PhysicsShapePtr
 PhysicsCapsuleComponent::getCollisionShape() noexcept
 {
-    return _shape;
+	return _shape;
 }
 
 GameComponentPtr
 PhysicsCapsuleComponent::clone() const noexcept
 {
-    auto component = std::make_shared<PhysicsCapsuleComponent>();
-    component->setWidth(_shape->getWidth());
-    component->setHeight(_shape->getHeight());
+	auto component = std::make_shared<PhysicsCapsuleComponent>();
+	component->setWidth(_shape->getWidth());
+	component->setHeight(_shape->getHeight());
 
-    return component;
+	return component;
 }
 
 _NAME_END

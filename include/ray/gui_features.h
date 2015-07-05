@@ -45,18 +45,18 @@ _NAME_BEGIN
 class EXPORT GUIFeatures : public GameFeature
 {
 public:
-    GUIFeatures() noexcept;
-    ~GUIFeatures() noexcept;
+	GUIFeatures() noexcept;
+	~GUIFeatures() noexcept;
 
-    void setGuiSystem(GuiSystemPtr gui) noexcept;
-
-private:
-
-    virtual void onFrameEnd() noexcept;
+	void setGuiSystem(GuiSystemPtr gui) noexcept;
 
 private:
 
-    GuiSystemPtr _gui;
+	virtual void onFrameEnd() noexcept;
+
+private:
+
+	GuiSystemPtr _gui;
 };
 
 _NAME_END

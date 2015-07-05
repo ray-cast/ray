@@ -52,25 +52,25 @@ ScriptBindDisplay::~ScriptBindDisplay() noexcept
 void
 ScriptBindDisplay::setup(asIScriptEngine* engine) noexcept
 {
-    int r = 0;
+	int r = 0;
 
-    r = engine->RegisterEnum("Interval"); assert(r >= 0);
-    r = engine->RegisterEnumValue("Interval", "free", GPU_FREE); assert(r >= 0);
-    r = engine->RegisterEnumValue("Interval", "vsync", GPU_VSYNC); assert(r >= 0);
-    r = engine->RegisterEnumValue("Interval", "fps30", GPU_FPS30); assert(r >= 0);
-    r = engine->RegisterEnumValue("Interval", "fps15", GPU_FPS15); assert(r >= 0);
+	r = engine->RegisterEnum("Interval"); assert(r >= 0);
+	r = engine->RegisterEnumValue("Interval", "free", GPU_FREE); assert(r >= 0);
+	r = engine->RegisterEnumValue("Interval", "vsync", GPU_VSYNC); assert(r >= 0);
+	r = engine->RegisterEnumValue("Interval", "fps30", GPU_FPS30); assert(r >= 0);
+	r = engine->RegisterEnumValue("Interval", "fps15", GPU_FPS15); assert(r >= 0);
 
-    r = engine->RegisterObjectType("Display", 0, asOBJ_REF | asOBJ_NOHANDLE); assert(r >= 0);
-    r = engine->RegisterGlobalProperty("Display display", this); assert(r >= 0);
-    r = engine->RegisterObjectMethod("Display", "void setSwapInterval(Interval value)", asMETHOD(ScriptBindDisplay, setSwapInterval), asCALL_THISCALL); assert(r >= 0);
-    r = engine->RegisterObjectMethod("Display", "void setWindowPosition(int x, int y)", asMETHOD(ScriptBindDisplay, setWindowPosition), asCALL_THISCALL); assert(r >= 0);
-    r = engine->RegisterObjectMethod("Display", "void setWindowSize(int w, int h)", asMETHOD(ScriptBindDisplay, setWindowSize), asCALL_THISCALL); assert(r >= 0);
-    r = engine->RegisterObjectMethod("Display", "void setWindowTitle(const string& in)", asMETHOD(ScriptBindDisplay, setWindowTitle), asCALL_THISCALL); assert(r >= 0);
-    r = engine->RegisterObjectMethod("Display", "int getWindowWidth() const", asMETHOD(ScriptBindDisplay, getWindowWidth), asCALL_THISCALL); assert(r >= 0);
-    r = engine->RegisterObjectMethod("Display", "int getWindowHeight() const", asMETHOD(ScriptBindDisplay, getWindowHeight), asCALL_THISCALL); assert(r >= 0);
-    r = engine->RegisterObjectMethod("Display", "int getWindowPosX() const", asMETHOD(ScriptBindDisplay, getWindowPosX), asCALL_THISCALL); assert(r >= 0);
-    r = engine->RegisterObjectMethod("Display", "int getWindowPosY() const", asMETHOD(ScriptBindDisplay, getWindowPosY), asCALL_THISCALL); assert(r >= 0);
-    r = engine->RegisterObjectMethod("Display", "string getWindowTitle() const", asMETHOD(ScriptBindDisplay, getWindowTitle), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectType("Display", 0, asOBJ_REF | asOBJ_NOHANDLE); assert(r >= 0);
+	r = engine->RegisterGlobalProperty("Display display", this); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Display", "void setSwapInterval(Interval value)", asMETHOD(ScriptBindDisplay, setSwapInterval), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Display", "void setWindowPosition(int x, int y)", asMETHOD(ScriptBindDisplay, setWindowPosition), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Display", "void setWindowSize(int w, int h)", asMETHOD(ScriptBindDisplay, setWindowSize), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Display", "void setWindowTitle(const string& in)", asMETHOD(ScriptBindDisplay, setWindowTitle), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Display", "int getWindowWidth() const", asMETHOD(ScriptBindDisplay, getWindowWidth), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Display", "int getWindowHeight() const", asMETHOD(ScriptBindDisplay, getWindowHeight), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Display", "int getWindowPosX() const", asMETHOD(ScriptBindDisplay, getWindowPosX), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Display", "int getWindowPosY() const", asMETHOD(ScriptBindDisplay, getWindowPosY), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Display", "string getWindowTitle() const", asMETHOD(ScriptBindDisplay, getWindowTitle), asCALL_THISCALL); assert(r >= 0);
 }
 
 void
@@ -81,14 +81,14 @@ ScriptBindDisplay::setWindow(WindowPtr wx) noexcept
 void
 ScriptBindDisplay::setSwapInterval(int interval) noexcept
 {
-    /*if (interval == GPU_FREE)
-        RenderSystem::instance()->setSwapInterval(GPU_FREE);
-    if (interval == GPU_VSYNC)
-        RenderSystem::instance()->setSwapInterval(GPU_VSYNC);
-    if (interval == GPU_FPS30)
-        RenderSystem::instance()->setSwapInterval(GPU_FPS30);
-    if (interval == GPU_FPS15)
-        RenderSystem::instance()->setSwapInterval(GPU_FPS15);*/
+	/*if (interval == GPU_FREE)
+		RenderSystem::instance()->setSwapInterval(GPU_FREE);
+	if (interval == GPU_VSYNC)
+		RenderSystem::instance()->setSwapInterval(GPU_VSYNC);
+	if (interval == GPU_FPS30)
+		RenderSystem::instance()->setSwapInterval(GPU_FPS30);
+	if (interval == GPU_FPS15)
+		RenderSystem::instance()->setSwapInterval(GPU_FPS15);*/
 }
 
 void
@@ -109,31 +109,31 @@ ScriptBindDisplay::setWindowTitle(const std::string& title) noexcept
 int
 ScriptBindDisplay::getWindowWidth() const noexcept
 {
-    return 0;
+	return 0;
 }
 
 int
 ScriptBindDisplay::getWindowHeight() const noexcept
 {
-    return 0;
+	return 0;
 }
 
 int
 ScriptBindDisplay::getWindowPosX() const noexcept
 {
-    return 0;
+	return 0;
 }
 
 int
 ScriptBindDisplay::getWindowPosY() const noexcept
 {
-    return 0;
+	return 0;
 }
 
 std::string
 ScriptBindDisplay::getWindowTitle() const noexcept
 {
-    return "";
+	return "";
 }
 
 _NAME_END

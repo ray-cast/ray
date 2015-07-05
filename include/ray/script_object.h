@@ -44,45 +44,45 @@ _NAME_BEGIN
 class ScriptObject final
 {
 public:
-    ScriptObject() noexcept;
-    ~ScriptObject() noexcept;
+	ScriptObject() noexcept;
+	~ScriptObject() noexcept;
 
-    bool setup(const std::string& name, bool _throw = true);
-    void close() noexcept;
+	bool setup(const std::string& name, bool _throw = true);
+	void close() noexcept;
 
-    bool setInterface(const std::string& controller) noexcept;
+	bool setInterface(const std::string& controller) noexcept;
 
-    bool construct(GameObjectPtr gameobj) noexcept;
-    bool destruct() noexcept;
+	bool construct(GameObjectPtr gameobj) noexcept;
+	bool destruct() noexcept;
 
-    asIScriptFunction* getInterfaceByDecl(const char* decl) noexcept;
-    asIScriptFunction* getMethodByDecl(const char* decl) noexcept;
+	asIScriptFunction* getInterfaceByDecl(const char* decl) noexcept;
+	asIScriptFunction* getMethodByDecl(const char* decl) noexcept;
 
-    int setArgByte(std::size_t arg, std::uint8_t value) noexcept;
-    int setArgWord(std::size_t arg, std::uint16_t value) noexcept;
-    int setArgDWord(std::size_t arg, std::uint32_t value) noexcept;
-    int setArgQWord(std::size_t arg, std::uint64_t value) noexcept;
-    int setArgFloat(std::size_t arg, float value) noexcept;
-    int setArgDouble(std::size_t arg, double value) noexcept;
-    int setArgAddress(std::size_t arg, void *addr) noexcept;
+	int setArgByte(std::size_t arg, std::uint8_t value) noexcept;
+	int setArgWord(std::size_t arg, std::uint16_t value) noexcept;
+	int setArgDWord(std::size_t arg, std::uint32_t value) noexcept;
+	int setArgQWord(std::size_t arg, std::uint64_t value) noexcept;
+	int setArgFloat(std::size_t arg, float value) noexcept;
+	int setArgDouble(std::size_t arg, double value) noexcept;
+	int setArgAddress(std::size_t arg, void *addr) noexcept;
 
-    bool exce(asIScriptFunction* func, bool _throw = true);
+	bool exce(asIScriptFunction* func, bool _throw = true);
 
-    void onActivate() noexcept;
-    void onDeactivate() noexcept;
+	void onActivate() noexcept;
+	void onDeactivate() noexcept;
 
-    void onFrameBegin() noexcept;
-    void onFrame() noexcept;
-    void onFrameEnd() noexcept;
+	void onFrameBegin() noexcept;
+	void onFrame() noexcept;
+	void onFrameEnd() noexcept;
 
-    void onCollisionStay() noexcept;
+	void onCollisionStay() noexcept;
 
 private:
 
-    asIScriptModule* _module;
+	asIScriptModule* _module;
 
-    asIScriptObject* _object;
-    asIObjectType* _interface;
+	asIScriptObject* _object;
+	asIObjectType* _interface;
 };
 
 _NAME_END

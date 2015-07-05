@@ -44,15 +44,15 @@ _NAME_BEGIN
 class SoundFeatures final : public GameFeature
 {
 public:
-    SoundFeatures() noexcept;
+	SoundFeatures() noexcept;
 
 private:
-    SoundFeatures(const SoundFeatures&) noexcept = delete;
-    SoundFeatures& operator=(const SoundFeatures&) noexcept = delete;
+	SoundFeatures(const SoundFeatures&) noexcept = delete;
+	SoundFeatures& operator=(const SoundFeatures&) noexcept = delete;
 
 private:
 
-    virtual void onFrame() noexcept;
+	virtual void onFrame() noexcept;
 };
 
 _NAME_END

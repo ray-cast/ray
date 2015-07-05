@@ -45,39 +45,39 @@ _NAME_BEGIN
 class ScriptBindGUI final : public ScriptBinder
 {
 public:
-    ScriptBindGUI() noexcept;
-    ~ScriptBindGUI() noexcept;
+	ScriptBindGUI() noexcept;
+	~ScriptBindGUI() noexcept;
 
-    void setGuiSystem(GuiSystemPtr input) noexcept;
-    GuiSystemPtr setGuiSystem() const noexcept;
+	void setGuiSystem(GuiSystemPtr input) noexcept;
+	GuiSystemPtr setGuiSystem() const noexcept;
 
-    void setup(asIScriptEngine* _engine) noexcept;
-
-private:
-    void beginFrame(int x, int y, int but, int scroll) noexcept;
-    void endFrame() noexcept;
-    void beginScrollArea(const std::string& name, int x, int y, int w, int h, int scroll) noexcept;
-    void endScrollArea() noexcept;
-    void button(const std::string& text, bool enabled = true) noexcept;
-    void item(const std::string& text, bool enabled = true) noexcept;
-    void check(const std::string& text, bool checked, bool enabled = true) noexcept;
-    void collapse(const std::string& text, const std::string& subtext, bool checked, bool enabled = true) noexcept;
-    void label(const std::string& text) noexcept;
-    void value(const std::string& text) noexcept;
-    void slider(const std::string& text, float val, float vmin, float vmax, float vinc, bool enabled = true) noexcept;
-    void indent() noexcept;
-    void unindent() noexcept;
-    void separator() noexcept;
-    void separatorLine() noexcept;
-
-    void drawText(int x, int y, int align, const std::string& text, const float4& color) noexcept;
-    void drawLine(float x0, float y0, float x1, float y1, float r, const float4& color) noexcept;
-    void drawRoundedRect(float x, float y, float w, float h, float r, const float4& color) noexcept;
-    void drawRect(float x, float y, float w, float h, const float4& color) noexcept;
+	void setup(asIScriptEngine* _engine) noexcept;
 
 private:
+	void beginFrame(int x, int y, int but, int scroll) noexcept;
+	void endFrame() noexcept;
+	void beginScrollArea(const std::string& name, int x, int y, int w, int h, int scroll) noexcept;
+	void endScrollArea() noexcept;
+	void button(const std::string& text, bool enabled = true) noexcept;
+	void item(const std::string& text, bool enabled = true) noexcept;
+	void check(const std::string& text, bool checked, bool enabled = true) noexcept;
+	void collapse(const std::string& text, const std::string& subtext, bool checked, bool enabled = true) noexcept;
+	void label(const std::string& text) noexcept;
+	void value(const std::string& text) noexcept;
+	void slider(const std::string& text, float val, float vmin, float vmax, float vinc, bool enabled = true) noexcept;
+	void indent() noexcept;
+	void unindent() noexcept;
+	void separator() noexcept;
+	void separatorLine() noexcept;
 
-    GuiSystemPtr _gui;
+	void drawText(int x, int y, int align, const std::string& text, const float4& color) noexcept;
+	void drawLine(float x0, float y0, float x1, float y1, float r, const float4& color) noexcept;
+	void drawRoundedRect(float x, float y, float w, float h, float r, const float4& color) noexcept;
+	void drawRect(float x, float y, float w, float h, const float4& color) noexcept;
+
+private:
+
+	GuiSystemPtr _gui;
 };
 
 _NAME_END

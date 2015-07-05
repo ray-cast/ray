@@ -44,8 +44,8 @@ __ImplementSubClass(CameraComponent, GameComponent)
 
 CameraComponent::CameraComponent() noexcept
 {
-    _camera = std::make_shared<Camera>();
-    _camera->setCameraOrder(CameraOrder::CO_MAIN);
+	_camera = std::make_shared<Camera>();
+	_camera->setCameraOrder(CameraOrder::CO_MAIN);
 }
 
 CameraComponent::~CameraComponent() noexcept
@@ -55,162 +55,162 @@ CameraComponent::~CameraComponent() noexcept
 void
 CameraComponent::makeLookAt(const Vector3& pos, const Vector3& lookat, const Vector3& up) noexcept
 {
-    _camera->makeLookAt(pos, lookat, up);
+	_camera->makeLookAt(pos, lookat, up);
 }
 
 void
 CameraComponent::makeOrtho(float left, float right, float bottom, float top, float znear, float zfar) noexcept
 {
-    _camera->makeOrtho(left, right, bottom, top, znear, zfar);
+	_camera->makeOrtho(left, right, bottom, top, znear, zfar);
 }
 
 void
 CameraComponent::makePerspective(float aperture, float ratio, float znear, float zfar) noexcept
 {
-    _camera->makePerspective(aperture, ratio, znear, zfar);
+	_camera->makePerspective(aperture, ratio, znear, zfar);
 }
 
 float
 CameraComponent::getAperture() const noexcept
 {
-    return _camera->getAperture();
+	return _camera->getAperture();
 }
 
 float
 CameraComponent::getRatio() const noexcept
 {
-    return _camera->getRatio();
+	return _camera->getRatio();
 }
 
 float
 CameraComponent::getNear() const noexcept
 {
-    return _camera->getNear();
+	return _camera->getNear();
 }
 
 float
 CameraComponent::getFar() const noexcept
 {
-    return _camera->getFar();
+	return _camera->getFar();
 }
 
 const Matrix4x4&
 CameraComponent::getView() const noexcept
 {
-    return _camera->getView();
+	return _camera->getView();
 }
 
 const Matrix4x4&
 CameraComponent::getViewInverse() const noexcept
 {
-    return _camera->getViewInverse();
+	return _camera->getViewInverse();
 }
 
 const Matrix4x4&
 CameraComponent::getViewInverseTranspose() const noexcept
 {
-    return _camera->getViewInverseTranspose();
+	return _camera->getViewInverseTranspose();
 }
 
 const Matrix4x4&
 CameraComponent::getProject() const noexcept
 {
-    return _camera->getProject();
+	return _camera->getProject();
 }
 
 const Matrix4x4&
 CameraComponent::getProjectInverse() const noexcept
 {
-    return _camera->getProjectInverse();
+	return _camera->getProjectInverse();
 }
 
 const Matrix4x4&
 CameraComponent::getViewProject() const noexcept
 {
-    return _camera->getViewProject();
+	return _camera->getViewProject();
 }
 
 const Matrix4x4&
 CameraComponent::getViewProjectInverse() const noexcept
 {
-    return _camera->getViewProjectInverse();
+	return _camera->getViewProjectInverse();
 }
 
 Vector3
 CameraComponent::project(const Vector3& pos) const noexcept
 {
-    return _camera->project(pos);
+	return _camera->project(pos);
 }
 
 Vector3
 CameraComponent::unproject(const Vector3& pos) const noexcept
 {
-    return _camera->unproject(pos);
+	return _camera->unproject(pos);
 }
 
 Vector3
 CameraComponent::sceneToDirection(const Vector2& pos) const noexcept
 {
-    return _camera->sceneToDirection(pos);
+	return _camera->sceneToDirection(pos);
 }
 
 void
 CameraComponent::setViewport(const Viewport& viewport) noexcept
 {
-    _camera->setViewport(viewport);
+	_camera->setViewport(viewport);
 }
 
 const Viewport&
 CameraComponent::getViewport() const noexcept
 {
-    return _camera->getViewport();
+	return _camera->getViewport();
 }
 
 void
 CameraComponent::setCameraType(CameraType type) noexcept
 {
-    _camera->setCameraType(type);
+	_camera->setCameraType(type);
 }
 
 void
 CameraComponent::setCameraOrder(CameraOrder order) noexcept
 {
-    _camera->setCameraOrder(order);
+	_camera->setCameraOrder(order);
 }
 
 CameraType
 CameraComponent::getCameraType() const noexcept
 {
-    return _camera->getCameraType();
+	return _camera->getCameraType();
 }
 
 CameraOrder
 CameraComponent::getCameraOrder() const noexcept
 {
-    return _camera->getCameraOrder();
+	return _camera->getCameraOrder();
 }
 
 void
 CameraComponent::load(iarchive& reader) noexcept
 {
-    float aperture = 70.0;
-    float ratio = 1.0;
-    float znear = 0.1;
-    float zfar = 1000.0;
-    int x = 0, y = 0, w = 0, h = 0;
+	float aperture = 70.0;
+	float ratio = 1.0;
+	float znear = 0.1;
+	float zfar = 1000.0;
+	int x = 0, y = 0, w = 0, h = 0;
 
-    reader >> static_cast<GameComponent*>(this);
-    reader >> rtti_name(aperture);
-    reader >> rtti_name(ratio);
-    reader >> rtti_name(znear);
-    reader >> rtti_name(zfar);
-    reader >> rtti_name(x);
-    reader >> rtti_name(y);
-    reader >> rtti_name(w);
-    reader >> rtti_name(h);
+	reader >> static_cast<GameComponent*>(this);
+	reader >> rtti_name(aperture);
+	reader >> rtti_name(ratio);
+	reader >> rtti_name(znear);
+	reader >> rtti_name(zfar);
+	reader >> rtti_name(x);
+	reader >> rtti_name(y);
+	reader >> rtti_name(w);
+	reader >> rtti_name(h);
 
-    this->setViewport(Viewport(x, y, w, h));
-    this->makePerspective(aperture, ratio, znear, zfar);
+	this->setViewport(Viewport(x, y, w, h));
+	this->makePerspective(aperture, ratio, znear, zfar);
 }
 
 void
@@ -221,50 +221,50 @@ CameraComponent::save(oarchive& write) noexcept
 void
 CameraComponent::onActivate() noexcept
 {
-    auto renderer = this->getGameObject()->getGameServer()->getFeature<RenderFeatures>();
-    if (renderer)
-    {
-        auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
-        if (renderScene)
-        {
-            _camera->makeLookAt(
-                this->getGameObject()->getTranslate(),
-                this->getGameObject()->getLookAt(),
-                this->getGameObject()->getUpVector()
-                );
-            _camera->makeViewProject();
-            _camera->setRenderScene(renderScene);
-        }
-    }
+	auto renderer = this->getGameObject()->getGameServer()->getFeature<RenderFeatures>();
+	if (renderer)
+	{
+		auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
+		if (renderScene)
+		{
+			_camera->makeLookAt(
+				this->getGameObject()->getTranslate(),
+				this->getGameObject()->getLookAt(),
+				this->getGameObject()->getUpVector()
+				);
+			_camera->makeViewProject();
+			_camera->setRenderScene(renderScene);
+		}
+	}
 }
 
 void
 CameraComponent::onDeactivate() noexcept
 {
-    _camera->setRenderScene(nullptr);
+	_camera->setRenderScene(nullptr);
 }
 
 void
 CameraComponent::onMoveAfter() noexcept
 {
-    _camera->makeLookAt(
-        this->getGameObject()->getTranslate(),
-        this->getGameObject()->getLookAt(),
-        this->getGameObject()->getUpVector()
-        );
+	_camera->makeLookAt(
+		this->getGameObject()->getTranslate(),
+		this->getGameObject()->getLookAt(),
+		this->getGameObject()->getUpVector()
+		);
 
-    _camera->makeViewProject();
+	_camera->makeViewProject();
 }
 
 GameComponentPtr
 CameraComponent::clone() const noexcept
 {
-    auto instance = std::make_shared<CameraComponent>();
-    instance->setName(this->getName());
-    instance->setVisible(this->getVisible());
-    instance->_camera = _camera->clone();
+	auto instance = std::make_shared<CameraComponent>();
+	instance->setName(this->getName());
+	instance->setVisible(this->getVisible());
+	instance->_camera = _camera->clone();
 
-    return instance;
+	return instance;
 }
 
 _NAME_END

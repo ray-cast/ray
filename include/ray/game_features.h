@@ -43,47 +43,47 @@ _NAME_BEGIN
 
 class EXPORT GameFeature : public GameListener
 {
-    __DeclareSubClass(GameFeature, GameListener)
+	__DeclareSubClass(GameFeature, GameListener)
 public:
-    GameFeature() noexcept;
-    virtual ~GameFeature() noexcept;
+	GameFeature() noexcept;
+	virtual ~GameFeature() noexcept;
 
-    void setActive(bool active)  except;
-    bool getActive() noexcept;
+	void setActive(bool active)  except;
+	bool getActive() noexcept;
 
-    void sendMessage(const GameMessage& message) except;
+	void sendMessage(const GameMessage& message) except;
 
-    GameServer* getGameServer() noexcept;
+	GameServer* getGameServer() noexcept;
 
 protected:
 
-    virtual void onActivate() except;
-    virtual void onDeactivate() except;
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
 
-    virtual void onOpenScene(GameScenePtr scene) except;
-    virtual void onCloseScene(GameScenePtr scene) except;
+	virtual void onOpenScene(GameScenePtr scene) except;
+	virtual void onCloseScene(GameScenePtr scene) except;
 
-    virtual void onReset() except;
+	virtual void onReset() except;
 
-    virtual void onFrameBegin() except;
-    virtual void onFrame() except;
-    virtual void onFrameEnd() except;
+	virtual void onFrameBegin() except;
+	virtual void onFrame() except;
+	virtual void onFrameEnd() except;
 
-    virtual GameComponentPtr onSerialization(iarchive& reader) except;
-
-private:
-    friend GameServer;
-    void _setGameServer(GameServer* server) noexcept;
+	virtual GameComponentPtr onSerialization(iarchive& reader) except;
 
 private:
-    GameFeature(const GameFeature&) noexcept = delete;
-    GameFeature& operator=(const GameFeature&) noexcept = delete;
+	friend GameServer;
+	void _setGameServer(GameServer* server) noexcept;
+
+private:
+	GameFeature(const GameFeature&) noexcept = delete;
+	GameFeature& operator=(const GameFeature&) noexcept = delete;
 
 private:
 
-    bool _isActive;
+	bool _isActive;
 
-    GameServer* _server;
+	GameServer* _server;
 };
 
 _NAME_END

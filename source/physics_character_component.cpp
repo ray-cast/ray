@@ -46,7 +46,7 @@ __ImplementSubClass(PhysicsCharacterComponent, PhysicsShapeComponent)
 
 PhysicsCharacterComponent::PhysicsCharacterComponent() noexcept
 {
-    _character = std::make_shared<PhysicsCharacter>();
+	_character = std::make_shared<PhysicsCharacter>();
 }
 
 PhysicsCharacterComponent::~PhysicsCharacterComponent() noexcept
@@ -56,98 +56,98 @@ PhysicsCharacterComponent::~PhysicsCharacterComponent() noexcept
 void
 PhysicsCharacterComponent::setRadius(float radius) noexcept
 {
-    _character->setRadius(radius);
+	_character->setRadius(radius);
 }
 
 void
 PhysicsCharacterComponent::setHeight(float height) noexcept
 {
-    _character->setHeight(height);
+	_character->setHeight(height);
 }
 
 void
 PhysicsCharacterComponent::setMovePosition(const Vector3& pos) noexcept
 {
-    _character->setMovePosition(pos);
+	_character->setMovePosition(pos);
 }
 
 void
 PhysicsCharacterComponent::setWalkDirection(const Vector3& direction) noexcept
 {
-    _character->setWalkDirection(direction);
+	_character->setWalkDirection(direction);
 }
 
 const Vector3&
 PhysicsCharacterComponent::getWalkDirection() const noexcept
 {
-    return _character->getWalkDirection();
+	return _character->getWalkDirection();
 }
 
 const Vector3&
 PhysicsCharacterComponent::getMovePosition() const noexcept
 {
-    return _character->getMovePosition();
+	return _character->getMovePosition();
 }
 
 bool
 PhysicsCharacterComponent::canJumping() const noexcept
 {
-    return _character->canJumping();
+	return _character->canJumping();
 }
 
 void
 PhysicsCharacterComponent::jump(float speed) noexcept
 {
-    _character->jump(speed);
+	_character->jump(speed);
 }
 
 void
 PhysicsCharacterComponent::onActivate() noexcept
 {
-    auto physics = this->getGameObject()->getGameServer()->getFeature<PhysicFeatures>();
-    if (physics)
-    {
-        auto physicsScene = physics->getPhysicsScene(this->getGameObject()->getGameScene());
-        if (physicsScene)
-        {
-            _character->setup();
-            _character->setMovePosition(this->getGameObject()->getTranslate());
-            _character->setPhysicsScene(physicsScene.get());
-        }
-    }
+	auto physics = this->getGameObject()->getGameServer()->getFeature<PhysicFeatures>();
+	if (physics)
+	{
+		auto physicsScene = physics->getPhysicsScene(this->getGameObject()->getGameScene());
+		if (physicsScene)
+		{
+			_character->setup();
+			_character->setMovePosition(this->getGameObject()->getTranslate());
+			_character->setPhysicsScene(physicsScene.get());
+		}
+	}
 }
 
 void
 PhysicsCharacterComponent::onDeactivate() noexcept
 {
-    _character->close();
+	_character->close();
 }
 
 void
 PhysicsCharacterComponent::onFrameEnd() noexcept
 {
-    auto& position = _character->getMovePosition();
-    if (position != this->getGameObject()->getTranslate())
-    {
-        auto lookat = this->getGameObject()->getLookAt();
-        auto translate = this->getGameObject()->getTranslate();
-        lookat = lookat - translate;
+	auto& position = _character->getMovePosition();
+	if (position != this->getGameObject()->getTranslate())
+	{
+		auto lookat = this->getGameObject()->getLookAt();
+		auto translate = this->getGameObject()->getTranslate();
+		lookat = lookat - translate;
 
-        this->getGameObject()->setTranslate(position);
-        this->getGameObject()->setLookAt(position + lookat);
-    }
+		this->getGameObject()->setTranslate(position);
+		this->getGameObject()->setLookAt(position + lookat);
+	}
 }
 
 GameComponentPtr
 PhysicsCharacterComponent::clone() const noexcept
 {
-    return nullptr;
+	return nullptr;
 }
 
 PhysicsShapePtr
 PhysicsCharacterComponent::getCollisionShape() noexcept
 {
-    return nullptr;
+	return nullptr;
 }
 
 _NAME_END

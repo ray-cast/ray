@@ -51,7 +51,7 @@ LensflareComponent::~LensflareComponent() noexcept
 GameComponentPtr
 LensflareComponent::clone() const noexcept
 {
-    return std::make_shared<LensflareComponent>();
+	return std::make_shared<LensflareComponent>();
 }
 
 _NAME_END

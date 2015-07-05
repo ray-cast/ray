@@ -38,104 +38,102 @@
 #include "terrain.h"
 
 TerrainChunk::TerrainChunk(Terrain& terrain) noexcept
-    : _terrain(terrain)
-    , _dirt(false)
+	: _terrain(terrain)
+	, _dirt(false)
 {
 }
 
 TerrainChunk::~TerrainChunk() noexcept
 {
-    _objects.clear();
-}
-
-int
-TerrainChunk::distance(int x, int y, int z) noexcept
-{
-    int _x, _y, _z;
-    _map->getPosition(_x, _y, _z);
-
-    int dx = abs(_x - x);
-    int dy = abs(_y - y);
-    int dz = abs(_z - z);
-
-    return std::max(std::max(dx, dy), dz);
+	_objects.clear();
 }
 
 void
-TerrainChunk::getPosition(int& x, int& y, int &z) noexcept
+TerrainChunk::init(std::size_t size, ChunkPosition x, ChunkPosition y, ChunkPosition z) noexcept
 {
-    _map->getPosition(x, y, z);
+	_map = std::make_shared<TerrainMap>();
+	_map->create(size, x, y, z, 0x7FFF);
+}
+
+std::size_t
+TerrainChunk::distance(ChunkPosition x, ChunkPosition y, ChunkPosition z) noexcept
+{
+	ChunkPosition _x, _y, _z;
+	_map->getPosition(_x, _y, _z);
+
+	int dx = abs(_x - x);
+	int dy = abs(_y - y);
+	int dz = abs(_z - z);
+
+	return std::max(std::max(dx, dy), dz);
+}
+
+void
+TerrainChunk::getPosition(ChunkPosition& x, ChunkPosition& y, ChunkPosition& z) noexcept
+{
+	_map->getPosition(x, y, z);
 }
 
 bool
-TerrainChunk::set(ChunkX x, ChunkY y, ChunkZ z, ItemID id) noexcept
+TerrainChunk::set(BlockPosition x, BlockPosition y, BlockPosition z, ItemID id) noexcept
 {
-    ItemID temp = _map->get(x, y, z);
-    if (temp != id)
-    {
-        _map->set(x, y, z, id);
-
-        for (auto& it : _objects)
-        {
-            it->update(_map, x, y, z, temp, id);
-        }
-    }
-
-    return false;
+	return _map->set(x, y, z, id);
 }
 
 ItemID
-TerrainChunk::get(ChunkX x, ChunkY y, ChunkZ z) noexcept
+TerrainChunk::get(BlockPosition x, BlockPosition y, BlockPosition z) noexcept
 {
-    return _map->get(x, y, z);
+	return _map->get(x, y, z);
 }
 
 void
-TerrainChunk::init(std::size_t size, int x, int y, int z) noexcept
+TerrainChunk::update() noexcept
 {
-    _map = std::make_shared<TerrainMap>();
-    _map->create(size, x, y, z, 0x7FFF);
+	for (auto& it : _objects)
+	{
+		it->update(_map);
+	}
 }
 
 void
 TerrainChunk::realize() noexcept
 {
-    auto objects = _terrain.getObjects();
-    for (auto& it : objects)
-    {
-        auto object = it->clone();
-        if (object->create(_map))
-        {
-            _objects.push_back(object);
-        }
-    }
+	auto objects = _terrain.getObjects();
+	for (auto& it : objects)
+	{
+		auto object = it->clone();
+		if (object->create(_map))
+		{
+			_objects.push_back(object);
+		}
+	}
 
-    for (auto& it : _objects)
-    {
-        it->createObject(_map);
-    }
+	for (auto& it : _objects)
+	{
+		it->createObject(_map);
+	}
 }
 
 void
 TerrainChunk::dirt(bool dirt) noexcept
 {
-    _dirt = dirt;
+	_dirt = dirt;
 }
 
 bool
 TerrainChunk::dirt() const noexcept
 {
-    return _dirt;
+	return _dirt;
 }
 
 void
 TerrainChunk::active(ray::GameObjectPtr gameobj) noexcept
 {
-    for (auto& it : _objects)
-    {
-        if (it)
-        {
-            it->active(gameobj);
-        }
-    }
+	for (auto& it : _objects)
+	{
+		if (it)
+		{
+			it->active(gameobj);
+		}
+	}
 }

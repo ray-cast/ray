@@ -51,19 +51,19 @@
 #include <ray/format.h>
 #include <ray/thread.h>
 
-typedef std::shared_ptr<class TerrainItem> TerrainItemPtr;
+typedef std::shared_ptr<class Terrain> TerrainPtr;
 typedef std::shared_ptr<class TerrainMap> TerrainMapPtr;
-typedef std::shared_ptr<class TerrainObject> TerrainObjectPtr;
 typedef std::shared_ptr<class TerrainChunk> TerrainChunkPtr;
+typedef std::shared_ptr<class TerrainItem> TerrainItemPtr;
+typedef std::shared_ptr<class TerrainObject> TerrainObjectPtr;
 
 typedef std::vector<TerrainItemPtr> TerrainItems;
 typedef std::vector<TerrainObjectPtr> TerrainObjects;
 typedef std::vector<class MapEntry> MapEntrys;
 
-typedef std::int8_t ChunkX;
-typedef std::int8_t ChunkY;
-typedef std::int8_t ChunkZ;
+typedef std::int32_t ChunkPosition;
+typedef std::int8_t BlockPosition;
 
-typedef std::int8_t ItemID;
+typedef std::int16_t ItemID;
 
 #endif

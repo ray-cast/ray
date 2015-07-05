@@ -96,7 +96,7 @@
         <component name="light">
             <attribute type="sun"/>
             <attribute range="200.0"/>
-            <attribute shadow="false"/>
+            <attribute shadow="true"/>
         </component>
     </object>
     <object>

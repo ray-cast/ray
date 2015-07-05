@@ -45,42 +45,42 @@ _NAME_BEGIN
 class ScriptBindInput final : public ScriptBinder
 {
 public:
-    ScriptBindInput() noexcept;
-    ~ScriptBindInput() noexcept;
+	ScriptBindInput() noexcept;
+	~ScriptBindInput() noexcept;
 
-    void setInput(InputPtr input) noexcept;
-    InputPtr getInput() const noexcept;
+	void setInput(InputPtr input) noexcept;
+	InputPtr getInput() const noexcept;
 
-    void setup(asIScriptEngine* _engine) noexcept;
-
-private:
-
-    void setMousePosX(int x)  noexcept;
-    void setMousePosY(int y) noexcept;
-    void setMousePos(int x, int y)  noexcept;
-
-    int getMousePosX() const noexcept;
-    int getMousePosY() const noexcept;
-
-    bool getKeyDown(InputKey::Code key) const noexcept;
-    bool getKeyUp(InputKey::Code key) const noexcept;
-
-    bool getKey(InputKey::Code key) const noexcept;
-
-    bool getButtonDown(InputButton::Code key) const noexcept;
-    bool getButtonUp(InputButton::Code key) const noexcept;
-
-    bool getButton(InputButton::Code key) const noexcept;
-
-    void showCursor(bool show) noexcept;
-    bool isShowCursor() const noexcept;
-
-    void lockCursor(bool lock) noexcept;
-    bool isLockedCursor() const noexcept;
+	void setup(asIScriptEngine* _engine) noexcept;
 
 private:
 
-    InputPtr _input;
+	void setMousePosX(int x)  noexcept;
+	void setMousePosY(int y) noexcept;
+	void setMousePos(int x, int y)  noexcept;
+
+	int getMousePosX() const noexcept;
+	int getMousePosY() const noexcept;
+
+	bool getKeyDown(InputKey::Code key) const noexcept;
+	bool getKeyUp(InputKey::Code key) const noexcept;
+
+	bool getKey(InputKey::Code key) const noexcept;
+
+	bool getButtonDown(InputButton::Code key) const noexcept;
+	bool getButtonUp(InputButton::Code key) const noexcept;
+
+	bool getButton(InputButton::Code key) const noexcept;
+
+	void showCursor(bool show) noexcept;
+	bool isShowCursor() const noexcept;
+
+	void lockCursor(bool lock) noexcept;
+	bool isLockedCursor() const noexcept;
+
+private:
+
+	InputPtr _input;
 };
 
 _NAME_END

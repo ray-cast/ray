@@ -41,7 +41,7 @@ _NAME_BEGIN
 __ImplementInterface(GameComponent)
 
 GameComponent::GameComponent() noexcept
-    : _gameObject(nullptr)
+	: _gameObject(nullptr)
 {
 }
 
@@ -52,37 +52,37 @@ GameComponent::~GameComponent() noexcept
 void
 GameComponent::_setGameObject(GameObject* gameobj) noexcept
 {
-    _gameObject = gameobj;
+	_gameObject = gameobj;
 }
 
 GameObject*
 GameComponent::getGameObject() noexcept
 {
-    return _gameObject;
+	return _gameObject;
 }
 
 const GameObject*
 GameComponent::getGameObject() const noexcept
 {
-    return _gameObject;
+	return _gameObject;
 }
 
 GameServer*
 GameComponent::getGameServer() noexcept
 {
-    return _gameObject->getGameServer();
+	return _gameObject->getGameServer();
 }
 
 const GameServer*
 GameComponent::getGameServer() const noexcept
 {
-    return _gameObject->getGameServer();
+	return _gameObject->getGameServer();
 }
 
 void
 GameComponent::load(iarchive& reader) noexcept
 {
-    reader >> static_cast<GameListener*>(this);
+	reader >> static_cast<GameListener*>(this);
 }
 
 void
@@ -93,55 +93,55 @@ GameComponent::save(oarchive& write) noexcept
 void
 GameComponent::sendMessage(const GameMessage& message) except
 {
-    if (!_gameObject->getActive())
-        return;
+	if (!_gameObject->getActive())
+		return;
 
-    auto& components = _gameObject->getComponents();
-    for (auto& it : components)
-    {
-        if (it.get() != this)
-            it->onMessage(message);
-    }
+	auto& components = _gameObject->getComponents();
+	for (auto& it : components)
+	{
+		if (it.get() != this)
+			it->onMessage(message);
+	}
 }
 
 void
 GameComponent::sendMessageUpwards(const GameMessage& message) except
 {
-    if (!_gameObject->getActive())
-        return;
+	if (!_gameObject->getActive())
+		return;
 
-    auto& components = _gameObject->getComponents();
-    for (auto& it : components)
-    {
-        if (it.get() != this)
-            it->onMessage(message);
-    }
+	auto& components = _gameObject->getComponents();
+	for (auto& it : components)
+	{
+		if (it.get() != this)
+			it->onMessage(message);
+	}
 
-    auto parent = this->getGameObject()->getParent();
-    if (parent)
-    {
-        parent->sendMessageUpwards(message);
-    }
+	auto parent = this->getGameObject()->getParent();
+	if (parent)
+	{
+		parent->sendMessageUpwards(message);
+	}
 }
 
 void
 GameComponent::sendMessageDownwards(const GameMessage& message) except
 {
-    if (!_gameObject->getActive())
-        return;
+	if (!_gameObject->getActive())
+		return;
 
-    auto& components = _gameObject->getComponents();
-    for (auto& it : components)
-    {
-        if (it.get() != this)
-            it->onMessage(message);
-    }
+	auto& components = _gameObject->getComponents();
+	for (auto& it : components)
+	{
+		if (it.get() != this)
+			it->onMessage(message);
+	}
 
-    auto& children = this->getGameObject()->getChildren();
-    for (auto& it : children)
-    {
-        it->sendMessageDownwards(message);
-    }
+	auto& children = this->getGameObject()->getChildren();
+	for (auto& it : children)
+	{
+		it->sendMessageDownwards(message);
+	}
 }
 
 void

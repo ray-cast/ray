@@ -42,7 +42,7 @@
 _NAME_BEGIN
 
 ScriptBindTimer::ScriptBindTimer() noexcept
-    : _timer(nullptr)
+	: _timer(nullptr)
 {
 }
 
@@ -53,78 +53,78 @@ ScriptBindTimer::~ScriptBindTimer() noexcept
 void
 ScriptBindTimer::setup(asIScriptEngine* _engine) noexcept
 {
-    int r = 0;
+	int r = 0;
 
-    r = _engine->RegisterObjectType("Timer", 0, asOBJ_REF | asOBJ_NOHANDLE); assert(r >= 0);
-    r = _engine->RegisterGlobalProperty("Timer timer", this); assert(r >= 0);
-    r = _engine->RegisterObjectMethod("Timer", "float get_startTime() const", asMETHOD(ScriptBindTimer, startTime), asCALL_THISCALL); assert(r >= 0);
-    r = _engine->RegisterObjectMethod("Timer", "float get_elapsed() const", asMETHOD(ScriptBindTimer, elapsed), asCALL_THISCALL); assert(r >= 0);
-    r = _engine->RegisterObjectMethod("Timer", "float get_appTime() const", asMETHOD(ScriptBindTimer, appTime), asCALL_THISCALL); assert(r >= 0);
-    r = _engine->RegisterObjectMethod("Timer", "float get_delta() const", asMETHOD(ScriptBindTimer, delta), asCALL_THISCALL); assert(r >= 0);
-    r = _engine->RegisterObjectMethod("Timer", "float get_vsync() const", asMETHOD(ScriptBindTimer, vsync), asCALL_THISCALL); assert(r >= 0);
-    r = _engine->RegisterObjectMethod("Timer", "float get_fps() const", asMETHOD(ScriptBindTimer, fps), asCALL_THISCALL); assert(r >= 0);
-    r = _engine->RegisterObjectMethod("Timer", "float get_averageFps() const", asMETHOD(ScriptBindTimer, averageFps), asCALL_THISCALL); assert(r >= 0);
+	r = _engine->RegisterObjectType("Timer", 0, asOBJ_REF | asOBJ_NOHANDLE); assert(r >= 0);
+	r = _engine->RegisterGlobalProperty("Timer timer", this); assert(r >= 0);
+	r = _engine->RegisterObjectMethod("Timer", "float get_startTime() const", asMETHOD(ScriptBindTimer, startTime), asCALL_THISCALL); assert(r >= 0);
+	r = _engine->RegisterObjectMethod("Timer", "float get_elapsed() const", asMETHOD(ScriptBindTimer, elapsed), asCALL_THISCALL); assert(r >= 0);
+	r = _engine->RegisterObjectMethod("Timer", "float get_appTime() const", asMETHOD(ScriptBindTimer, appTime), asCALL_THISCALL); assert(r >= 0);
+	r = _engine->RegisterObjectMethod("Timer", "float get_delta() const", asMETHOD(ScriptBindTimer, delta), asCALL_THISCALL); assert(r >= 0);
+	r = _engine->RegisterObjectMethod("Timer", "float get_vsync() const", asMETHOD(ScriptBindTimer, vsync), asCALL_THISCALL); assert(r >= 0);
+	r = _engine->RegisterObjectMethod("Timer", "float get_fps() const", asMETHOD(ScriptBindTimer, fps), asCALL_THISCALL); assert(r >= 0);
+	r = _engine->RegisterObjectMethod("Timer", "float get_averageFps() const", asMETHOD(ScriptBindTimer, averageFps), asCALL_THISCALL); assert(r >= 0);
 }
 
 void
 ScriptBindTimer::setTimer(TimerPtr timer) noexcept
 {
-    _timer = timer;
+	_timer = timer;
 }
 
 float
 ScriptBindTimer::startTime() noexcept
 {
-    assert(_timer);
-    return _timer->startTime();
+	assert(_timer);
+	return _timer->startTime();
 }
 
 float
 ScriptBindTimer::elapsed() noexcept
 {
-    assert(_timer);
-    return _timer->elapsed();
+	assert(_timer);
+	return _timer->elapsed();
 }
 
 float
 ScriptBindTimer::appTime() noexcept
 {
-    assert(_timer);
-    return _timer->appTime();
+	assert(_timer);
+	return _timer->appTime();
 }
 
 float
 ScriptBindTimer::delta() noexcept
 {
-    assert(_timer);
-    return _timer->delta();
+	assert(_timer);
+	return _timer->delta();
 }
 
 float
 ScriptBindTimer::vsync() noexcept
 {
-    assert(_timer);
-    return _timer->vsync();
+	assert(_timer);
+	return _timer->vsync();
 }
 
 float
 ScriptBindTimer::fps() noexcept
 {
-    assert(_timer);
-    return _timer->fps();
+	assert(_timer);
+	return _timer->fps();
 }
 
 float
 ScriptBindTimer::averageFps() noexcept
 {
-    assert(_timer);
-    return _timer->averageFps();
+	assert(_timer);
+	return _timer->averageFps();
 }
 
 void
 ScriptBindTimer::onFrameEnd() noexcept
 {
-    assert(_timer);
+	assert(_timer);
 }
 
 _NAME_END

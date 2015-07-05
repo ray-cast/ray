@@ -39,39 +39,40 @@
 
 #include "terrain_map.h"
 
-class Terrain;
 class TerrainChunk
 {
 public:
-    TerrainChunk(Terrain& terrain) noexcept;
-    ~TerrainChunk() noexcept;
+	TerrainChunk(Terrain& terrain) noexcept;
+	~TerrainChunk() noexcept;
 
-    void init(std::size_t size, int x, int y, int z) noexcept;
-    void realize() noexcept;
-    void active(ray::GameObjectPtr parent) noexcept;
+	void init(std::size_t size, ChunkPosition x, ChunkPosition y, ChunkPosition z) noexcept;
+	void realize() noexcept;
+	void active(ray::GameObjectPtr parent) noexcept;
 
-    void dirt(bool dirt) noexcept;
-    bool dirt() const noexcept;
+	void dirt(bool dirt) noexcept;
+	bool dirt() const noexcept;
 
-    int distance(int x, int y, int z) noexcept;
+	std::size_t distance(ChunkPosition x, ChunkPosition y, ChunkPosition z) noexcept;
 
-    void getPosition(int& x, int& y, int &z) noexcept;
+	void getPosition(ChunkPosition& x, ChunkPosition& y, ChunkPosition& z) noexcept;
 
-    bool set(ChunkX x, ChunkY y, ChunkZ z, ItemID id) noexcept;
-    ItemID get(ChunkX x, ChunkY y, ChunkZ z) noexcept;
+	bool set(BlockPosition x, BlockPosition y, BlockPosition z, ItemID id) noexcept;
+	ItemID get(BlockPosition x, BlockPosition y, BlockPosition z) noexcept;
 
-private:
-    TerrainChunk(const TerrainChunk&) noexcept = delete;
-    TerrainChunk& operator=(const TerrainChunk&) noexcept = delete;
+	void update() noexcept;
 
 private:
+	TerrainChunk(const TerrainChunk&) noexcept = delete;
+	TerrainChunk& operator=(const TerrainChunk&) noexcept = delete;
 
-    bool _dirt;
+private:
 
-    Terrain& _terrain;
+	bool _dirt;
 
-    TerrainMapPtr _map;
-    TerrainObjects _objects;
+	Terrain& _terrain;
+
+	TerrainMapPtr _map;
+	TerrainObjects _objects;
 };
 
 #endif

@@ -44,8 +44,8 @@ _NAME_BEGIN
 class SoundComponent final : public GameComponent
 {
 public:
-    SoundComponent() noexcept;
-    ~SoundComponent() noexcept;
+	SoundComponent() noexcept;
+	~SoundComponent() noexcept;
 };
 
 _NAME_END

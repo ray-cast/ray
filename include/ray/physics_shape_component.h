@@ -44,14 +44,14 @@ _NAME_BEGIN
 
 class EXPORT PhysicsShapeComponent : public GameComponent
 {
-    __DeclareSubInterface(PhysicsShapeComponent, GameComponent)
+	__DeclareSubInterface(PhysicsShapeComponent, GameComponent)
 public:
-    PhysicsShapeComponent() noexcept;
-    ~PhysicsShapeComponent() noexcept;
+	PhysicsShapeComponent() noexcept;
+	~PhysicsShapeComponent() noexcept;
 
 private:
-    friend class PhysicsBodyComponent;
-    virtual PhysicsShapePtr getCollisionShape() noexcept = 0;
+	friend class PhysicsBodyComponent;
+	virtual PhysicsShapePtr getCollisionShape() noexcept = 0;
 };
 
 _NAME_END

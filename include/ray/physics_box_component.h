@@ -44,29 +44,29 @@ _NAME_BEGIN
 class PhysicsShapeBox;
 class EXPORT PhysicsBoxComponent final : public PhysicsShapeComponent
 {
-    __DeclareSubClass(PhysicsBoxComponent, PhysicsShapeComponent)
+	__DeclareSubClass(PhysicsBoxComponent, PhysicsShapeComponent)
 public:
-    PhysicsBoxComponent() noexcept;
-    PhysicsBoxComponent(const Vector3& size) noexcept;
-    ~PhysicsBoxComponent() noexcept;
+	PhysicsBoxComponent() noexcept;
+	PhysicsBoxComponent(const Vector3& size) noexcept;
+	~PhysicsBoxComponent() noexcept;
 
-    void setSize(const Vector3& size) noexcept;
-    const Vector3& getSize() const noexcept;
-
-private:
-    virtual void onActivate() noexcept;
-    virtual void onDeactivate() noexcept;
-
-    virtual PhysicsShapePtr getCollisionShape() noexcept;
-    virtual GameComponentPtr clone() const noexcept;
+	void setSize(const Vector3& size) noexcept;
+	const Vector3& getSize() const noexcept;
 
 private:
-    PhysicsBoxComponent(const PhysicsBoxComponent&) noexcept = delete;
-    PhysicsBoxComponent& operator=(const PhysicsBoxComponent&)noexcept = delete;
+	virtual void onActivate() noexcept;
+	virtual void onDeactivate() noexcept;
+
+	virtual PhysicsShapePtr getCollisionShape() noexcept;
+	virtual GameComponentPtr clone() const noexcept;
+
+private:
+	PhysicsBoxComponent(const PhysicsBoxComponent&) noexcept = delete;
+	PhysicsBoxComponent& operator=(const PhysicsBoxComponent&)noexcept = delete;
 
 private:
 
-    std::shared_ptr<PhysicsShapeBox> _shape;
+	std::shared_ptr<PhysicsShapeBox> _shape;
 };
 
 _NAME_END

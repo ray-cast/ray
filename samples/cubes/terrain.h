@@ -43,100 +43,101 @@
 class TerrainThread
 {
 public:
-    TerrainThread()
-        : state(IDLE)
-        , isQuitRequest(false)
-    {
-    }
+	TerrainThread()
+		: state(IDLE)
+		, isQuitRequest(false)
+	{
+	}
 
-    bool isQuitRequest;
+	bool isQuitRequest;
 
-    TerrainChunkPtr chunk;
+	TerrainChunkPtr chunk;
 
-    enum State
-    {
-        QUIT,
-        IDLE,
-        BUSY,
-        DONE,
-    };
+	enum State
+	{
+		QUIT,
+		IDLE,
+		BUSY,
+		DONE,
+	};
 
-    std::atomic<State> state;
+	std::atomic<State> state;
 
-    std::mutex mutex;
-    std::condition_variable_any dispose;
-    std::unique_ptr<std::thread> _thread;
+	std::mutex mutex;
+	std::condition_variable_any dispose;
+	std::unique_ptr<std::thread> _thread;
 
 private:
-    TerrainThread(const TerrainThread&) = delete;
-    TerrainThread& operator=(TerrainThread&) = delete;
+	TerrainThread(const TerrainThread&) = delete;
+	TerrainThread& operator=(TerrainThread&) = delete;
 };
 
 class Terrain : public ray::GameController
 {
-    __DeclareSubClass(Terrain, ray::GameController)
+	__DeclareSubClass(Terrain, ray::GameController)
 public:
-    Terrain() noexcept;
-    ~Terrain() noexcept;
+	Terrain() noexcept;
+	~Terrain() noexcept;
 
-    void addItem(TerrainItemPtr item) noexcept;
-    void removeItem(TerrainItemPtr item) noexcept;
+	bool addBlockByMousePos(std::int32_t x, std::int32_t y) noexcept;
+	bool addBlockByRaycast(const ray::Vector3& translate, const ray::Vector3& view) noexcept;
+	bool removeBlockByMousePos(std::int32_t x, std::int32_t y) noexcept;
+	bool removeBlockByRaycast(const ray::Vector3& translate, const ray::Vector3& view) noexcept;
 
-    bool addBlockByMousePos(int x, int y) noexcept;
-    bool removeBlockByMousePos(int x, int y) noexcept;
+	TerrainChunkPtr getChunkByChunkPos(ChunkPosition x, ChunkPosition y, ChunkPosition z) const noexcept;
+	TerrainChunkPtr getChunkByMousePos(std::int32_t x, std::int32_t y, ray::int3& out) const noexcept;
+	TerrainChunkPtr getChunkByRaycast(const ray::Vector3& translate, const ray::Vector3& view, ray::int3& out) const noexcept;
 
-    void addObject(TerrainObjectPtr object) noexcept;
-    void removeObject(TerrainObjectPtr object) noexcept;
-    TerrainObjects& getObjects() noexcept;
+	ChunkPosition chunked(float x) const noexcept;
+	float unchunk(ChunkPosition x) const noexcept;
+	bool visiable(const ray::Frustum& fru, ChunkPosition x, ChunkPosition y, ChunkPosition z) const noexcept;
 
-    ray::GameComponentPtr clone() const noexcept;
+	void addItem(TerrainItemPtr item) noexcept;
+	void removeItem(TerrainItemPtr item) noexcept;
 
-private:
+	void addObject(TerrainObjectPtr object) noexcept;
+	void removeObject(TerrainObjectPtr object) noexcept;
+	TerrainObjects& getObjects() noexcept;
 
-    void deleteChunks() noexcept;
-    void createChunks() noexcept;
-    void checkChunks() noexcept;
-    void hitChunks() noexcept;
-
-    TerrainChunkPtr findChunk(int x, int y, int z) noexcept;
-    bool visiable(const ray::Frustum& fru, int x, int y, int z) noexcept;
-    int chunked(float x) noexcept;
-    float unchunk(int x) noexcept;
-
-    void dispose(std::shared_ptr<TerrainThread> ctx) noexcept;
-
-    TerrainChunkPtr hitTest(const ray::Vector3& translate, const ray::Vector3& view, ray::int3& out) noexcept;
-
-    void onActivate() except;
-    void onDeactivate() except;
-
-    void onFrame() except;
+	ray::GameComponentPtr clone() const noexcept;
 
 private:
 
-    ray::GameObjectPtr _player;
+	void deleteChunks() noexcept;
+	void createChunks() noexcept;
+	void checkChunks() noexcept;
+	void hitChunks() noexcept;
 
-    std::size_t _maxInstances;
+	void dispose(std::shared_ptr<TerrainThread> ctx) noexcept;
 
-    float _dayTimer;
+	void onActivate() except;
+	void onDeactivate() except;
 
-    int _size;
-    int _scale;
+	void onFrame() except;
 
-    int _createRadius;
-    int _renderRadius;
-    int _deleteRadius;
-    int _signRadius;
+private:
 
-    float _hitRadius;
+	static const int MAX_THREADS = 4;
 
-    std::size_t _maxChunks;
+	ray::GameObjectPtr _player;
 
-    std::vector<TerrainItemPtr> _itmes;
-    std::vector<TerrainObjectPtr> _objects;
-    std::vector<TerrainChunkPtr> _chunks;
+	std::int32_t _size;
+	std::int32_t _scale;
 
-    std::vector<std::shared_ptr<TerrainThread>> _threads;
+	std::int32_t _createRadius;
+	std::int32_t _renderRadius;
+	std::int32_t _deleteRadius;
+	std::int32_t _signRadius;
+	std::int32_t _hitRadius;
+
+	std::size_t _maxChunks;
+	std::size_t _maxItem;
+
+	std::vector<TerrainItemPtr> _itmes;
+	std::vector<TerrainObjectPtr> _objects;
+	std::vector<TerrainChunkPtr> _chunks;
+
+	std::vector<std::shared_ptr<TerrainThread>> _threads;
 };
 
 #endif

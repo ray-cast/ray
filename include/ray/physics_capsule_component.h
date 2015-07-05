@@ -44,29 +44,29 @@ _NAME_BEGIN
 class PhysicsShapeCapsule;
 class PhysicsCapsuleComponent : public PhysicsShapeComponent
 {
-    __DeclareSubClass(PhysicsCapsuleComponent, PhysicsShapeComponent)
+	__DeclareSubClass(PhysicsCapsuleComponent, PhysicsShapeComponent)
 public:
-    PhysicsCapsuleComponent() noexcept;
-    PhysicsCapsuleComponent(float width, float height) noexcept;
-    ~PhysicsCapsuleComponent() noexcept;
+	PhysicsCapsuleComponent() noexcept;
+	PhysicsCapsuleComponent(float width, float height) noexcept;
+	~PhysicsCapsuleComponent() noexcept;
 
-    void setWidth(float width) noexcept;
-    void setHeight(float height) noexcept;
-
-private:
-    virtual void onActivate() noexcept;
-    virtual void onDeactivate() noexcept;
-
-    virtual PhysicsShapePtr getCollisionShape() noexcept;
-    virtual GameComponentPtr clone() const noexcept;
+	void setWidth(float width) noexcept;
+	void setHeight(float height) noexcept;
 
 private:
-    PhysicsCapsuleComponent(const PhysicsCapsuleComponent&) noexcept = delete;
-    PhysicsCapsuleComponent& operator=(const PhysicsCapsuleComponent&)noexcept = delete;
+	virtual void onActivate() noexcept;
+	virtual void onDeactivate() noexcept;
+
+	virtual PhysicsShapePtr getCollisionShape() noexcept;
+	virtual GameComponentPtr clone() const noexcept;
+
+private:
+	PhysicsCapsuleComponent(const PhysicsCapsuleComponent&) noexcept = delete;
+	PhysicsCapsuleComponent& operator=(const PhysicsCapsuleComponent&)noexcept = delete;
 
 private:
 
-    std::shared_ptr<PhysicsShapeCapsule> _shape;
+	std::shared_ptr<PhysicsShapeCapsule> _shape;
 };
 
 _NAME_END

@@ -39,60 +39,72 @@
 
 #include "terrain_types.h"
 
+#define EMPTY_ENTRY (-1)
+
 class MapEntry
 {
 public:
-    MapEntry()
-    {
-        x = 0; y = 0; z = 0; instanceID = 0;
-    }
+	MapEntry()
+	{
+		x = EMPTY_ENTRY;
+		y = EMPTY_ENTRY;
+		z = EMPTY_ENTRY;
+		instanceID = 0;
+	}
 
-    bool empty()
-    {
-        return instanceID ? false : true;
-    }
+	bool empty()
+	{
+		return
+			x == EMPTY_ENTRY ||
+			y == EMPTY_ENTRY ||
+			z == EMPTY_ENTRY ? true : false;
+	}
 
-    ChunkX x;
-    ChunkY y;
-    ChunkZ z;
+	BlockPosition x;
+	BlockPosition y;
+	BlockPosition z;
 
-    ItemID instanceID;
+	ItemID instanceID;
 };
 
-class TerrainMap
+class TerrainMap final
 {
 public:
-    TerrainMap();
-    ~TerrainMap();
+	TerrainMap();
+	~TerrainMap();
 
-    void create(std::size_t size, int x, int y, int z, std::size_t mask);
-    void close();
+	void create(std::size_t size, ChunkPosition x, ChunkPosition y, ChunkPosition z, std::size_t mask);
+	void close();
 
-    bool set(ChunkX x, ChunkY y, ChunkZ z, ItemID id);
-    ItemID get(ChunkX x, ChunkY y, ChunkZ z);
+	bool set(BlockPosition x, BlockPosition y, BlockPosition z, ItemID id);
+	ItemID get(BlockPosition x, BlockPosition y, BlockPosition z);
 
-    std::size_t size() const noexcept;
-    std::size_t count() const noexcept;
+	std::size_t size() const noexcept;
+	std::size_t count() const noexcept;
 
-    void getPosition(int& x, int& y, int &z);
+	void getPosition(ChunkPosition& x, ChunkPosition& y, ChunkPosition &z);
 
-    void copy(TerrainMap* map);
+	void copy(TerrainMap* map);
 
-    MapEntrys& getEntrys() noexcept;
+	MapEntrys& getEntrys() noexcept;
 
-    void grow();
+	void grow();
+
+private:
+	TerrainMap(const TerrainMap&) noexcept = delete;
+	TerrainMap& operator=(const TerrainMap&) noexcept = delete;
 
 private:
 
-    int _dx;
-    int _dy;
-    int _dz;
+	ChunkPosition _dx;
+	ChunkPosition _dy;
+	ChunkPosition _dz;
 
-    std::size_t _mask;
-    std::size_t _size;
-    std::size_t _count;
+	std::size_t _mask;
+	std::size_t _size;
+	std::size_t _count;
 
-    std::vector<MapEntry> _data;
+	std::vector<MapEntry> _data;
 };
 
 #endif

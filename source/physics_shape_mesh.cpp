@@ -41,78 +41,109 @@
 _NAME_BEGIN
 
 PhysicsShapeMesh::PhysicsShapeMesh() noexcept
-    : _shape(nullptr)
-    , _array(nullptr)
+	: _shape(nullptr)
+	, _array(nullptr)
 {
-    _array = new btTriangleIndexVertexArray;
 }
 
 PhysicsShapeMesh::~PhysicsShapeMesh() noexcept
 {
-    this->close();
+	this->close();
 }
 
 void
 PhysicsShapeMesh::setup(const Vector3Array& vertices, const std::vector<std::uint32_t>& face, const AABB& aabb) noexcept
 {
-    if (!_shape)
-    {
-        this->addMesh(vertices, face);
+	if (!_shape)
+	{
+		this->addMesh(vertices, face);
 
-        btVector3 min;
-        min.setX(aabb.min.x);
-        min.setY(aabb.min.y);
-        min.setZ(aabb.min.z);
+		btVector3 min;
+		min.setX(aabb.min.x);
+		min.setY(aabb.min.y);
+		min.setZ(aabb.min.z);
 
-        btVector3 max;
-        max.setX(aabb.max.x);
-        max.setY(aabb.max.y);
-        max.setZ(aabb.max.z);
+		btVector3 max;
+		max.setX(aabb.max.x);
+		max.setY(aabb.max.y);
+		max.setZ(aabb.max.z);
 
-        _shape = new btBvhTriangleMeshShape(_array, true, min, max);
-        _shape->setUserPointer(this);
-    }
+		_shape = new btBvhTriangleMeshShape(_array, true, min, max);
+		_shape->setUserPointer(this);
+	}
 }
 
 void
 PhysicsShapeMesh::close() noexcept
 {
-    if (_array)
-    {
-        delete _array;
-        _array = nullptr;
-    }
+	if (_array)
+	{
+		delete _array;
+		_array = nullptr;
+	}
 
-    if (_shape)
-    {
-        delete _shape;
-        _shape = nullptr;
-    }
+	if (_shape)
+	{
+		delete _shape;
+		_shape = nullptr;
+	}
 }
 
 void
 PhysicsShapeMesh::addMesh(const Vector3Array& vertices, const std::vector<std::uint32_t>& face) noexcept
 {
-    _vertexBase = vertices;
-    _indexBase = face;
+	_vertexBase = vertices;
+	_indexBase = face;
 
-    btIndexedMesh mesh;
-    mesh.m_vertexType = PHY_FLOAT;
-    mesh.m_numVertices = _vertexBase.size();
-    mesh.m_vertexStride = sizeof(Vector3);
-    mesh.m_vertexBase = (unsigned char*)_vertexBase.data();
-    mesh.m_indexType = PHY_INTEGER;
-    mesh.m_numTriangles = _indexBase.size() / 3;
-    mesh.m_triangleIndexStride = sizeof(std::uint32_t) * 3;
-    mesh.m_triangleIndexBase = (unsigned char*)_indexBase.data();
+	btIndexedMesh mesh;
+	mesh.m_vertexType = PHY_FLOAT;
+	mesh.m_numVertices = _vertexBase.size();
+	mesh.m_vertexStride = sizeof(Vector3);
+	mesh.m_vertexBase = (unsigned char*)_vertexBase.data();
+	mesh.m_indexType = PHY_INTEGER;
+	mesh.m_numTriangles = _indexBase.size() / 3;
+	mesh.m_triangleIndexStride = sizeof(std::uint32_t) * 3;
+	mesh.m_triangleIndexBase = (unsigned char*)_indexBase.data();
 
-    _array->addIndexedMesh(mesh);
+	if (_indexBase.empty())
+	{
+		auto array = new btTriangleMesh;
+
+		for (std::size_t i = 0; i < mesh.m_numVertices; i += 3)
+		{
+			btVector3 v1;
+			v1.setX(_vertexBase[i].x);
+			v1.setY(_vertexBase[i].y);
+			v1.setZ(_vertexBase[i].z);
+
+			btVector3 v2;
+			v2.setX(_vertexBase[i + 1].x);
+			v2.setY(_vertexBase[i + 1].y);
+			v2.setZ(_vertexBase[i + 1].z);
+
+			btVector3 v3;
+			v3.setX(_vertexBase[i + 2].x);
+			v3.setY(_vertexBase[i + 2].y);
+			v3.setZ(_vertexBase[i + 2].z);
+
+			array->addTriangle(v1, v2, v3);
+		}
+
+		_array = array;
+	}
+	else
+	{
+		auto array = new btTriangleIndexVertexArray;
+		array->addIndexedMesh(mesh);
+
+		_array = array;
+	}
 }
 
 btCollisionShape*
 PhysicsShapeMesh::getCollisionShape() noexcept
 {
-    return _shape;
+	return _shape;
 }
 
 _NAME_END

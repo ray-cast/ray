@@ -44,36 +44,36 @@ _NAME_BEGIN
 class PhysicsShapeTerrain;
 class EXPORT PhysicsHeightMapComponent final : public PhysicsShapeComponent
 {
-    __DeclareSubClass(PhysicsHeightMapComponent, PhysicsShapeComponent)
+	__DeclareSubClass(PhysicsHeightMapComponent, PhysicsShapeComponent)
 public:
-    PhysicsHeightMapComponent() noexcept;
-    ~PhysicsHeightMapComponent() noexcept;
+	PhysicsHeightMapComponent() noexcept;
+	~PhysicsHeightMapComponent() noexcept;
 
-    void setHeightMap(std::size_t w, std::size_t z, int size, const char* data) noexcept;
+	void setHeightMap(std::size_t w, std::size_t z, int size, const char* data) noexcept;
 
-    void setSize(const Vector3& size) noexcept;
-    const Vector3& getSize() const noexcept;
+	void setSize(const Vector3& size) noexcept;
+	const Vector3& getSize() const noexcept;
 
-    void setMinHeight(float min);
-    void setMaxHeight(float max);
-    void setScaleHeight(float scale) noexcept;
+	void setMinHeight(float min);
+	void setMaxHeight(float max);
+	void setScaleHeight(float scale) noexcept;
 
-    float getMinHeight() const noexcept;
-    float getMaxHeight() const noexcept;
-    float getScaleHeight() const noexcept;
+	float getMinHeight() const noexcept;
+	float getMaxHeight() const noexcept;
+	float getScaleHeight() const noexcept;
 
-    virtual PhysicsShapePtr getCollisionShape() noexcept;
+	virtual PhysicsShapePtr getCollisionShape() noexcept;
 
-    virtual GameComponentPtr clone() const noexcept;
-
-private:
-
-    virtual void onActivate() noexcept;
-    virtual void onDeactivate() noexcept;
+	virtual GameComponentPtr clone() const noexcept;
 
 private:
 
-    std::shared_ptr<PhysicsShapeTerrain> _shape;
+	virtual void onActivate() noexcept;
+	virtual void onDeactivate() noexcept;
+
+private:
+
+	std::shared_ptr<PhysicsShapeTerrain> _shape;
 };
 
 _NAME_END

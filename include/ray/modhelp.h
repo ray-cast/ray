@@ -44,18 +44,18 @@ _NAME_BEGIN
 
 enum TextureType
 {
-    TT_NONE,
-    TT_DIFFUSE,
-    TT_SPECULAR,
-    TT_AMBIENT,
-    TT_EMISSIVE,
-    TT_HEIGHT,
-    TT_NORMALS,
-    TT_SHININESS,
-    TT_OPACITY,
-    TT_DISPLACEMENT,
-    TT_LIGHTMAP,
-    TT_REFLECTION,
+	TT_NONE,
+	TT_DIFFUSE,
+	TT_SPECULAR,
+	TT_AMBIENT,
+	TT_EMISSIVE,
+	TT_HEIGHT,
+	TT_NORMALS,
+	TT_SHININESS,
+	TT_OPACITY,
+	TT_DISPLACEMENT,
+	TT_LIGHTMAP,
+	TT_REFLECTION,
 };
 
 #define MATKEY_NAME               "?mat.name",0,0
@@ -93,24 +93,22 @@ enum TextureType
 #define MAX_NUMBER_OF_COLOR_SETS 0x8
 #define MAX_NUMBER_OF_TEXTURECOORDS 0x8
 
-typedef std::uint32_t Face;
-
 enum PropertyTypeInfo
 {
-    PTI_FLOAT = 0x01,
-    PTI_STRING = 0x02,
-    PTI_INTEGER = 0x04,
-    PTI_BUFFER = 0x08,
+	PTI_FLOAT = 0x01,
+	PTI_STRING = 0x02,
+	PTI_INTEGER = 0x04,
+	PTI_BUFFER = 0x08,
 };
 
 enum MeshType
 {
-    MT_POINT,
-    MT_LINE,
-    MT_TRIANGLES,
-    MT_FAN,
-    MT_QUAD,
-    MT_POLYGON,
+	MT_POINT,
+	MT_LINE,
+	MT_TRIANGLES,
+	MT_FAN,
+	MT_QUAD,
+	MT_POLYGON,
 };
 
 class EXPORT AnimationProperty final
@@ -128,144 +126,157 @@ class EXPORT LightProperty final
 class EXPORT TextureProperty final
 {
 public:
-    TextureProperty() noexcept {};
-    TextureProperty(const std::string& filename) noexcept
-        :name(filename)
-    {
-    }
+	TextureProperty() noexcept {};
+	TextureProperty(const std::string& filename) noexcept
+		:name(filename)
+	{
+	}
 
-    TextureProperty(const char* filename, std::size_t length) noexcept
-        : name(filename, length)
-    {
-    }
+	TextureProperty(const char* filename, std::size_t length) noexcept
+		: name(filename, length)
+	{
+	}
 
-    std::string name;
+	std::string name;
 
-    std::uint32_t width;
-    std::uint32_t height;
+	std::uint32_t width;
+	std::uint32_t height;
 };
 
 class EXPORT MaterialProperty final
 {
 public:
-    struct MaterialParam
-    {
-        std::string key;
+	struct MaterialParam
+	{
+		std::string key;
 
-        std::size_t type;
-        std::size_t index;
-        std::size_t length;
-        std::size_t dataType;
+		std::size_t type;
+		std::size_t index;
+		std::size_t length;
+		std::size_t dataType;
 
-        char* data;
-    };
+		char* data;
+	};
 
 public:
-    MaterialProperty() noexcept;
-    ~MaterialProperty() noexcept;
+	MaterialProperty() noexcept;
+	~MaterialProperty() noexcept;
 
-    bool set(const char* key, std::size_t type, std::size_t index, int value) noexcept;
-    bool set(const char* key, std::size_t type, std::size_t index, float value) noexcept;
-    bool set(const char* key, std::size_t type, std::size_t index, Color3& value) noexcept;
-    bool set(const char* key, std::size_t type, std::size_t index, Color4& value) noexcept;
-    bool set(const char* key, std::size_t type, std::size_t index, const char* value) noexcept;
-    bool set(const char* key, std::size_t type, std::size_t index, const unsigned char* value) noexcept;
-    bool set(const char* key, std::size_t type, std::size_t index, const std::string& value) noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, int value) noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, float value) noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, Color3& value) noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, Color4& value) noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, const char* value) noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, const unsigned char* value) noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, const std::string& value) noexcept;
 
-    bool get(const char* key, std::size_t type, std::size_t index, int value) const noexcept;
-    bool get(const char* key, std::size_t type, std::size_t index, float value) const noexcept;
-    bool get(const char* key, std::size_t type, std::size_t index, Color3& value) const noexcept;
-    bool get(const char* key, std::size_t type, std::size_t index, Color4& value) const noexcept;
-    bool get(const char* key, std::size_t type, std::size_t index, std::string& value) const noexcept;
-    bool get(const char* key, std::size_t type, std::size_t index, MaterialParam** out) const noexcept;
+	bool get(const char* key, std::size_t type, std::size_t index, int value) const noexcept;
+	bool get(const char* key, std::size_t type, std::size_t index, float value) const noexcept;
+	bool get(const char* key, std::size_t type, std::size_t index, Color3& value) const noexcept;
+	bool get(const char* key, std::size_t type, std::size_t index, Color4& value) const noexcept;
+	bool get(const char* key, std::size_t type, std::size_t index, std::string& value) const noexcept;
+	bool get(const char* key, std::size_t type, std::size_t index, MaterialParam** out) const noexcept;
 
 private:
-    std::vector<MaterialParam*> _properties;
+	std::vector<MaterialParam*> _properties;
 };
 
-class EXPORT MeshProperty final
+class EXPORT MeshProperty final : public Reference<MeshProperty>
 {
 public:
-    MeshProperty() noexcept;
-    ~MeshProperty() noexcept;
+	MeshProperty() noexcept;
+	~MeshProperty() noexcept;
 
-    void setName(const std::string& name) noexcept;
-    const std::string& getName() const noexcept;
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
 
-    void setMeshType(MeshType type) noexcept;
-    MeshType getMeshType() const noexcept;
+	void setParent(MeshPropertyPtr parent) noexcept;
+	MeshPropertyPtr getParent() const noexcept;
 
-    void setMaterialID(std::size_t index) noexcept;
-    std::size_t getMaterialID() const noexcept;
+	void addChild(MeshPropertyPtr child) noexcept;
+	void removeChild(MeshPropertyPtr child) noexcept;
+	void cleanupChildren() noexcept;
+	MeshPropertyPtr findChild(const std::string& name, bool recurse = true) noexcept;
 
-    std::size_t getNumVertices() const noexcept;
-    std::size_t getNumIndices() const noexcept;
+	std::size_t getChildCount() const noexcept;
+	MeshPropertys& getChildren() noexcept;
 
-    void setVertexArray(const Vector3Array& array) noexcept;
-    void setNormalArray(const Vector3Array& array) noexcept;
-    void setColorArray(const Vector3Array& array, std::size_t i = 0) noexcept;
-    void setTexcoordArray(const std::vector<Vector2>& array, std::size_t i = 0) noexcept;
-    void setFaceArray(const std::vector<std::uint32_t>& array) noexcept;
+	void setMeshType(MeshType type) noexcept;
+	MeshType getMeshType() const noexcept;
 
-    Vector3Array& getVertexArray() noexcept;
-    Vector3Array& getNormalArray() noexcept;
-    Vector3Array& getColorArray(std::size_t i = 0) noexcept;
-    std::vector<Vector2>& getTexcoordArray(std::size_t i = 0) noexcept;
-    std::vector<std::uint32_t>& getFaceArray() noexcept;
+	void setMaterialID(std::size_t index) noexcept;
+	std::size_t getMaterialID() const noexcept;
 
-    const Vector3Array& getVertexArray() const noexcept;
-    const Vector3Array& getNormalArray() const noexcept;
-    const Vector3Array& getColorArray(std::size_t i = 0) const noexcept;
-    const std::vector<Vector2>& getTexcoordArray(std::size_t i = 0) const noexcept;
-    const std::vector<std::uint32_t>& getFaceArray() const noexcept;
+	std::size_t getNumVertices() const noexcept;
+	std::size_t getNumIndices() const noexcept;
 
-    void setCombieInstnace(const CombineInstance& instance) noexcept;
+	void setVertexArray(const Vector3Array& array) noexcept;
+	void setNormalArray(const Vector3Array& array) noexcept;
+	void setColorArray(const Vector3Array& array, std::size_t i = 0) noexcept;
+	void setTexcoordArray(const Vector2Array& array, std::size_t i = 0) noexcept;
+	void setFaceArray(const UintArray& array) noexcept;
 
-    void makeCircle(float radius, std::uint32_t segments, float thetaStart = 0, float thetaLength = M_PI) noexcept;
-    void makePlane(float width, float height, std::uint32_t widthSegments = 1, std::uint32_t heightSegments = 1) noexcept;
-    void makeFloor(float width, float height, std::uint32_t widthSegments = 1, std::uint32_t heightSegments = 1) noexcept;
-    void makeNoise(float width, float height, std::uint32_t widthSegments = 1, std::uint32_t heightSegments = 1) noexcept;
-    void makeCube(float width, float height, float depth, std::uint32_t widthSegments = 1, std::uint32_t heightSegments = 1, std::uint32_t depthSegments = 1) noexcept;
-    void makeRing(float innerRadius, float outerRadius, std::uint32_t thetaSegments, std::uint32_t phiSegments, float thetaStart = 0, float thetaLength = M_PI) noexcept;
-    void makeSphere(float radius, std::uint32_t widthSegments = 8, std::uint32_t heightSegments = 6, float phiStart = 0.0, float phiLength = M_TWO_PI, float thetaStart = 0, float thetaLength = M_PI) noexcept;
-    void makeVolumes(float fovy, float znear, float zfar) noexcept;
-    void makeCone(float radius, float height, std::uint32_t segments, float thetaStart = 0, float thetaLength = M_TWO_PI) noexcept;
-    void makePlane(float width, float height, float depth, std::uint32_t widthSegments, std::uint32_t heightSegments, std::uint32_t depthSegments, unsigned char u, unsigned char v, float udir, float vdir) noexcept;
+	Vector3Array& getVertexArray() noexcept;
+	Vector3Array& getNormalArray() noexcept;
+	Vector3Array& getColorArray(std::size_t i = 0) noexcept;
+	Vector2Array& getTexcoordArray(std::size_t i = 0) noexcept;
+	UintArray& getFaceArray() noexcept;
 
-    void computeCentroids() noexcept;
-    void computeFaceNormals() noexcept;
-    void computeVertexNormals(bool areaWeighted = false) noexcept;
-    void computeVertexNormals(std::size_t width, std::size_t height) noexcept;
-    void computeMorphNormals() noexcept;
-    void computeTangents() noexcept;
-    void computeBoundingBox() noexcept;
+	const Vector3Array& getVertexArray() const noexcept;
+	const Vector3Array& getNormalArray() const noexcept;
+	const Vector3Array& getColorArray(std::size_t i = 0) const noexcept;
+	const Vector2Array& getTexcoordArray(std::size_t i = 0) const noexcept;
+	const UintArray& getFaceArray() const noexcept;
 
-    void mergeVertices() noexcept;
-    void triangulate() noexcept;
+	void makeCircle(float radius, std::uint32_t segments, float thetaStart = 0, float thetaLength = M_PI) noexcept;
+	void makePlane(float width, float height, std::uint32_t widthSegments = 1, std::uint32_t heightSegments = 1) noexcept;
+	void makePlane(float width, float height, float depth, std::uint32_t widthSegments, std::uint32_t heightSegments, std::uint32_t depthSegments, unsigned char u, unsigned char v, float udir, float vdir, bool clear = true) noexcept;
+	void makeFloor(float width, float height, std::uint32_t widthSegments = 1, std::uint32_t heightSegments = 1) noexcept;
+	void makeNoise(float width, float height, std::uint32_t widthSegments = 1, std::uint32_t heightSegments = 1) noexcept;
+	void makeCube(float width, float height, float depth, std::uint32_t widthSegments = 1, std::uint32_t heightSegments = 1, std::uint32_t depthSegments = 1) noexcept;
+	void makeRing(float innerRadius, float outerRadius, std::uint32_t thetaSegments, std::uint32_t phiSegments, float thetaStart = 0, float thetaLength = M_PI) noexcept;
+	void makeSphere(float radius, std::uint32_t widthSegments = 8, std::uint32_t heightSegments = 6, float phiStart = 0.0, float phiLength = M_TWO_PI, float thetaStart = 0, float thetaLength = M_PI) noexcept;
+	void makeVolumes(float fovy, float znear, float zfar) noexcept;
+	void makeCone(float radius, float height, std::uint32_t segments, float thetaStart = 0, float thetaLength = M_TWO_PI) noexcept;
 
-    const Bound& getBoundingBox() const noexcept;
+	void combieInstnace(const CombineInstance& instance) noexcept;
+	void mergeVertices() noexcept;
 
-    void clear() noexcept;
-    MeshPropertyPtr clone() noexcept;
+	void computeCentroids() noexcept;
+	void computeFaceNormals() noexcept;
+	void computeVertexNormals() noexcept;
+	void computeVertexNormals(std::size_t width, std::size_t height) noexcept;
+	void computeMorphNormals() noexcept;
+	void computeTangents() noexcept;
+	void computeBoundingBox() noexcept;
+
+	const Bound& getBoundingBox() const noexcept;
+	const Bound& getBoundingBoxDownwards() const noexcept;
+
+	void clear() noexcept;
+	MeshPropertyPtr clone() noexcept;
 
 private:
 
-    MeshType _type;
+	std::string _name;
+	std::size_t _materialID;
 
-    std::string _name;
+	MeshType _type;
 
-    std::size_t _materialID;
+	Vector3Array _vertices;
+	Vector3Array _normals;
+	Vector3Array _colors[MAX_NUMBER_OF_COLOR_SETS];
+	Vector2Array _texcoords[MAX_NUMBER_OF_TEXTURECOORDS];
+	Vector3Array _centroid;
+	Vector3Array _facesNormal;
 
-    Vector3Array _vertices;
-    Vector3Array _normals;
-    Vector3Array _colors[MAX_NUMBER_OF_COLOR_SETS];
-    std::vector<Vector2> _texcoords[MAX_NUMBER_OF_TEXTURECOORDS];
-    Vector3Array _centroid;
-    Vector3Array _facesNormal;
+	UintArray _faces;
 
-    std::vector<Face> _faces;
+	Bound _boundingBox;
+	Bound _boundingBoxChildren;
 
-    Bound _boundingBox;
+	MeshProperty* _parent;
+	MeshPropertys _children;
 };
 
 _NAME_END

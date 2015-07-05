@@ -43,14 +43,14 @@ _NAME_BEGIN
 __ImplementSubClass(ScriptComponent, GameComponent)
 
 ScriptComponent::ScriptComponent() noexcept
-    : _scriptObject(nullptr)
-    , _onActivate(nullptr)
-    , _onDeactivate(nullptr)
-    , _onFrameBegin(nullptr)
-    , _onFrame(nullptr)
-    , _onFrameEnd(nullptr)
-    , _onMoveAfter(nullptr)
-    , _onMoveBefore(nullptr)
+	: _scriptObject(nullptr)
+	, _onActivate(nullptr)
+	, _onDeactivate(nullptr)
+	, _onFrameBegin(nullptr)
+	, _onFrame(nullptr)
+	, _onFrameEnd(nullptr)
+	, _onMoveAfter(nullptr)
+	, _onMoveBefore(nullptr)
 {
 }
 
@@ -61,134 +61,134 @@ ScriptComponent::~ScriptComponent() noexcept
 void
 ScriptComponent::onActivate()
 {
-    _scriptObject = ScriptSystem::instance()->createScriptObject();
+	_scriptObject = ScriptSystem::instance()->createScriptObject();
 
-    if (!_scriptObject->setup(this->getName()))
-        return;
+	if (!_scriptObject->setup(this->getName()))
+		return;
 
-    if (!_scriptObject->setInterface("IController"))
-        return;
+	if (!_scriptObject->setInterface("IController"))
+		return;
 
-    if (!_scriptObject->construct(std::dynamic_pointer_cast<GameObject>(this->getGameObject()->shared_from_this())))
-        return;
+	if (!_scriptObject->construct(std::dynamic_pointer_cast<GameObject>(this->getGameObject()->shared_from_this())))
+		return;
 
-    if (_scriptObject)
-    {
-        _onActivate = _scriptObject->getInterfaceByDecl("void onActivate()");
-        _onDeactivate = _scriptObject->getInterfaceByDecl("void onDeactivate()");
+	if (_scriptObject)
+	{
+		_onActivate = _scriptObject->getInterfaceByDecl("void onActivate()");
+		_onDeactivate = _scriptObject->getInterfaceByDecl("void onDeactivate()");
 
-        _onFrameBegin = _scriptObject->getInterfaceByDecl("void onFrameBegin()");
-        _onFrame = _scriptObject->getInterfaceByDecl("void onFrame()");
-        _onFrameEnd = _scriptObject->getInterfaceByDecl("void onFrameEnd()");
+		_onFrameBegin = _scriptObject->getInterfaceByDecl("void onFrameBegin()");
+		_onFrame = _scriptObject->getInterfaceByDecl("void onFrame()");
+		_onFrameEnd = _scriptObject->getInterfaceByDecl("void onFrameEnd()");
 
-        _onMoveBefore = _scriptObject->getInterfaceByDecl("void onMoveBefore()");
-        _onMoveAfter = _scriptObject->getInterfaceByDecl("void onMoveAfter()");
-    }
+		_onMoveBefore = _scriptObject->getInterfaceByDecl("void onMoveBefore()");
+		_onMoveAfter = _scriptObject->getInterfaceByDecl("void onMoveAfter()");
+	}
 
-    if (_onActivate)
-        _scriptObject->exce(_onActivate);
+	if (_onActivate)
+		_scriptObject->exce(_onActivate);
 }
 
 void
 ScriptComponent::onDeactivate()
 {
-    if (_onDeactivate)
-        _scriptObject->exce(_onDeactivate);
+	if (_onDeactivate)
+		_scriptObject->exce(_onDeactivate);
 
-    if (_scriptObject)
-    {
-        _scriptObject.reset();
-        _scriptObject = nullptr;
-    }
+	if (_scriptObject)
+	{
+		_scriptObject.reset();
+		_scriptObject = nullptr;
+	}
 }
 
 void
 ScriptComponent::onFrameBegin()
 {
-    if (_onFrameBegin)
-        _scriptObject->exce(_onFrameBegin);
+	if (_onFrameBegin)
+		_scriptObject->exce(_onFrameBegin);
 }
 
 void
 ScriptComponent::onFrame()
 {
-    if (_onFrame)
-        _scriptObject->exce(_onFrame);
+	if (_onFrame)
+		_scriptObject->exce(_onFrame);
 }
 
 void
 ScriptComponent::onFrameEnd()
 {
-    if (_onFrameEnd)
-        _scriptObject->exce(_onFrameEnd);
+	if (_onFrameEnd)
+		_scriptObject->exce(_onFrameEnd);
 }
 
 void
 ScriptComponent::onMoveBefore()
 {
-    if (_onMoveBefore)
-        _scriptObject->exce(_onMoveBefore);
+	if (_onMoveBefore)
+		_scriptObject->exce(_onMoveBefore);
 }
 
 void
 ScriptComponent::onMoveAfter()
 {
-    if (_onMoveAfter)
-        _scriptObject->exce(_onMoveAfter);
+	if (_onMoveAfter)
+		_scriptObject->exce(_onMoveAfter);
 }
 
 void
 ScriptComponent::onMessage(const GameMessage& message)
 {
-    /*static asIScriptFunction* myNull = (asIScriptFunction*)-1;
+	/*static asIScriptFunction* myNull = (asIScriptFunction*)-1;
 
-    assert(_scriptObject);
-    auto& function = _funcMap[method];
-    if (function == nullptr)
-    {
-        function = _scriptObject->getInterfaceByDecl(method.c_str());
-        if (!function)
-            function = myNull;
-    }
+	assert(_scriptObject);
+	auto& function = _funcMap[method];
+	if (function == nullptr)
+	{
+		function = _scriptObject->getInterfaceByDecl(method.c_str());
+		if (!function)
+			function = myNull;
+	}
 
-    if (function && function != myNull)
-    {
-        if (data)
-        {
-            va_list ap;
+	if (function && function != myNull)
+	{
+		if (data)
+		{
+			va_list ap;
 
-            va_start(ap, data);
+			va_start(ap, data);
 
-            for (;;)
-            {
-                Variant* arg = va_arg(ap, Variant*);
-                if (arg)
-                {
-                    switch (arg->getType())
-                    {
-                    }
-                }
-                else
-                {
-                    break;
-                }
-            }
+			for (;;)
+			{
+				Variant* arg = va_arg(ap, Variant*);
+				if (arg)
+				{
+					switch (arg->getType())
+					{
+					}
+				}
+				else
+				{
+					break;
+				}
+			}
 
-            va_end(ap);
-        }
+			va_end(ap);
+		}
 
-        _scriptObject->exce(function);
-    }*/
+		_scriptObject->exce(function);
+	}*/
 }
 
 GameComponentPtr
 ScriptComponent::clone() const noexcept
 {
-    auto instance = std::make_shared<ScriptComponent>();
-    instance->setName(this->getName());
-    instance->setVisible(this->getVisible());
+	auto instance = std::make_shared<ScriptComponent>();
+	instance->setName(this->getName());
+	instance->setVisible(this->getVisible());
 
-    return instance;
+	return instance;
 }
 
 _NAME_END

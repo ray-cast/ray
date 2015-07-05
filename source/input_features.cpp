@@ -43,7 +43,7 @@ _NAME_BEGIN
 
 InputFeatures::InputFeatures() noexcept
 {
-    this->setName(typeid(InputFeatures).name());
+	this->setName(typeid(InputFeatures).name());
 }
 
 InputFeatures::~InputFeatures() noexcept
@@ -53,117 +53,117 @@ InputFeatures::~InputFeatures() noexcept
 void
 InputFeatures::setInput(InputPtr input) noexcept
 {
-    if (_input != input)
-    {
-        if (input)
-            input->addInputListener(this);
+	if (_input != input)
+	{
+		if (input)
+			input->addInputListener(this);
 
-        if (_input)
-            _input->removeInputListener(this);
+		if (_input)
+			_input->removeInputListener(this);
 
-        _input = input;
-    }
+		_input = input;
+	}
 }
 
 InputPtr
 InputFeatures::getInput() const noexcept
 {
-    return _input;
+	return _input;
 }
 
 GameFeaturePtr
 InputFeatures::clone() const noexcept
 {
-    return std::make_shared<InputFeatures>();
+	return std::make_shared<InputFeatures>();
 }
 
 void
 InputFeatures::onActivate() except
 {
-    this->_buildInput();
+	this->_buildInput();
 }
 
 void
 InputFeatures::onDeactivate() except
 {
-    this->setInput(nullptr);
+	this->setInput(nullptr);
 }
 
 void
 InputFeatures::onFrameBegin() noexcept
 {
-    if (_input)
-    {
-        _input->updateBegin();
-        _input->update();
-    }
+	if (_input)
+	{
+		_input->updateBegin();
+		_input->update();
+	}
 }
 
 void
 InputFeatures::onFrameEnd() noexcept
 {
-    if (_input)
-    {
-        _input->updateEnd();
-    }
+	if (_input)
+	{
+		_input->updateEnd();
+	}
 }
 
 void
 InputFeatures::onMessage(const GameMessage& event) noexcept
 {
-    switch (event.event)
-    {
-    case GameEvent::LostFocus:
-    {
-        if (_input)
-        {
-            _input->releaseCapture();
-        }
-    }
-    break;
-    case GameEvent::GetFocus:
-    {
-        if (_input)
-        {
-            _input->obtainCapture();
-        }
-    }
-    default:
-        break;
-    }
+	switch (event.event)
+	{
+	case GameEvent::LostFocus:
+	{
+		if (_input)
+		{
+			_input->releaseCapture();
+		}
+	}
+	break;
+	case GameEvent::GetFocus:
+	{
+		if (_input)
+		{
+			_input->obtainCapture();
+		}
+	}
+	default:
+		break;
+	}
 }
 
 void
 InputFeatures::onReset() noexcept
 {
-    if (_input)
-    {
-        _input->reset();
-    }
+	if (_input)
+	{
+		_input->reset();
+	}
 }
 
 void
 InputFeatures::onInputEvent(const InputEvent& event) noexcept
 {
-    //Variant arg(&event);
-    //this->sendMessage("onInputEvent", &arg);
+	//Variant arg(&event);
+	//this->sendMessage("onInputEvent", &arg);
 }
 
 void
 InputFeatures::_buildInput() noexcept
 {
-    assert(!_input);
+	assert(!_input);
 
-    _inputDevice = std::make_shared<DefaultInputDevice>();
-    _inputKeyboard = std::make_shared<DefaultInputKeyboard>();
-    _inputMouse = std::make_shared<DefaultInputMouse>();
+	_inputDevice = std::make_shared<DefaultInputDevice>();
+	_inputKeyboard = std::make_shared<DefaultInputKeyboard>();
+	_inputMouse = std::make_shared<DefaultInputMouse>();
 
-    auto input = std::make_shared<DefaultInput>();
-    input->open(_inputDevice);
-    input->obtainKeyboardCapture(_inputKeyboard);
-    input->obtainMouseCapture(_inputMouse);
+	auto input = std::make_shared<DefaultInput>();
+	input->open(_inputDevice);
+	input->obtainKeyboardCapture(_inputKeyboard);
+	input->obtainMouseCapture(_inputMouse);
 
-    this->setInput(input);
+	this->setInput(input);
 }
 
 _NAME_END

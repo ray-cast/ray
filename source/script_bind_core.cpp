@@ -42,7 +42,7 @@ _NAME_BEGIN
 void
 ScriptBindCore::setup(asIScriptEngine* engine) noexcept
 {
-    RegisterScriptArray(engine, true);
+	RegisterScriptArray(engine, true);
 }
 
 _NAME_END

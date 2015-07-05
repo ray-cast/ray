@@ -44,29 +44,29 @@ _NAME_BEGIN
 class ScriptBindDisplay final : public ScriptBinder
 {
 public:
-    ScriptBindDisplay() noexcept;
-    ~ScriptBindDisplay() noexcept;
+	ScriptBindDisplay() noexcept;
+	~ScriptBindDisplay() noexcept;
 
-    void setup(asIScriptEngine* engine) noexcept;
+	void setup(asIScriptEngine* engine) noexcept;
 
-    void setWindow(WindowPtr wx) noexcept;
+	void setWindow(WindowPtr wx) noexcept;
 
 private:
 
-    void setSwapInterval(int interval) noexcept;
+	void setSwapInterval(int interval) noexcept;
 
-    void setWindowPosition(int x, int y) noexcept;
-    void setWindowSize(int w, int h) noexcept;
+	void setWindowPosition(int x, int y) noexcept;
+	void setWindowSize(int w, int h) noexcept;
 
-    void setWindowTitle(const std::string& title) noexcept;
+	void setWindowTitle(const std::string& title) noexcept;
 
-    int getWindowWidth() const noexcept;
-    int getWindowHeight() const noexcept;
+	int getWindowWidth() const noexcept;
+	int getWindowHeight() const noexcept;
 
-    int getWindowPosX() const noexcept;
-    int getWindowPosY() const noexcept;
+	int getWindowPosX() const noexcept;
+	int getWindowPosY() const noexcept;
 
-    std::string getWindowTitle() const noexcept;
+	std::string getWindowTitle() const noexcept;
 };
 
 _NAME_END

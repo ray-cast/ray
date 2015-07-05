@@ -43,7 +43,7 @@
 _NAME_BEGIN
 
 ScriptFeatures::ScriptFeatures() noexcept
-    : _scriptManager(nullptr)
+	: _scriptManager(nullptr)
 {
 }
 
@@ -54,78 +54,78 @@ ScriptFeatures::~ScriptFeatures() noexcept
 GameComponentPtr
 ScriptFeatures::onSerialization(iarchive& reader) except
 {
-    auto component = reader.getString("name");
-    if (component == "script")
-        return instanceScript(reader);
+	auto component = reader.getString("name");
+	if (component == "script")
+		return instanceScript(reader);
 
-    return nullptr;
+	return nullptr;
 }
 
 void
 ScriptFeatures::onActivate() except
 {
-    ScriptSystem::instance()->open();
+	ScriptSystem::instance()->open();
 
-    ScriptSystem::instance()->setTimer(this->getGameServer()->getTimer());
-    ScriptSystem::instance()->setInput(this->getGameServer()->getFeature<InputFeatures>()->getInput());
-    //ScriptSystem::instance()->setGuiSystem(_guiSystem);
+	ScriptSystem::instance()->setTimer(this->getGameServer()->getTimer());
+	ScriptSystem::instance()->setInput(this->getGameServer()->getFeature<InputFeatures>()->getInput());
+	//ScriptSystem::instance()->setGuiSystem(_guiSystem);
 }
 
 void
 ScriptFeatures::onDeactivate() except
 {
-    ScriptSystem::instance()->close();
+	ScriptSystem::instance()->close();
 }
 
 void
 ScriptFeatures::onFrameBegin() noexcept
 {
-    ScriptSystem::instance()->onFrameBegin();
+	ScriptSystem::instance()->onFrameBegin();
 }
 
 void
 ScriptFeatures::onFrame() noexcept
 {
-    ScriptSystem::instance()->onFrame();
+	ScriptSystem::instance()->onFrame();
 }
 
 void
 ScriptFeatures::onFrameEnd() noexcept
 {
-    ScriptSystem::instance()->onFrameEnd();
+	ScriptSystem::instance()->onFrameEnd();
 }
 
 GameComponentPtr
 ScriptFeatures::instanceScript(iarchive& reader) except
 {
-    if (reader.setToFirstChild())
-    {
-        auto script = std::make_shared<ScriptComponent>();
+	if (reader.setToFirstChild())
+	{
+		auto script = std::make_shared<ScriptComponent>();
 
-        do
-        {
-            auto key = reader.getCurrentNodeName();
-            if (key == "attribute")
-            {
-                auto attributes = reader.getAttrs();
-                for (auto& it : attributes)
-                {
-                    if (it == "name")
-                    {
-                        script->setName(reader.getString(it));
-                    }
-                    else if (it == "visible")
-                    {
-                        script->setVisible(reader.getBoolean(it));
-                    }
-                }
-            }
-        } while (reader.setToNextChild());
+		do
+		{
+			auto key = reader.getCurrentNodeName();
+			if (key == "attribute")
+			{
+				auto attributes = reader.getAttrs();
+				for (auto& it : attributes)
+				{
+					if (it == "name")
+					{
+						script->setName(reader.getString(it));
+					}
+					else if (it == "visible")
+					{
+						script->setVisible(reader.getBoolean(it));
+					}
+				}
+			}
+		} while (reader.setToNextChild());
 
-        return script;
-    }
+		return script;
+	}
 
-    return nullptr;
+	return nullptr;
 }
 
 _NAME_END

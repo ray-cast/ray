@@ -42,636 +42,607 @@
 
 TerrainGrass::TerrainGrass() noexcept
 {
-    _grass = std::make_shared<Grass>();
-    _grassObject = ray::GameObject::find<ray::GameObject>("grass");
+	_grass = std::make_shared<Grass>();
+	_grassObject = ray::GameObject::find<ray::GameObject>("grass");
 
-    this->addItem(_grass);
+	this->addItem(_grass);
 }
 
 TerrainGrass::~TerrainGrass() noexcept
 {
-    if (_object)
-    {
-        _object->destroy();
-        _object = nullptr;
-    }
-}
-
-bool
-TerrainGrass::visiable(TerrainMapPtr map, int x, int y, int z) noexcept
-{
-    int f1 = map->get(x - 1, y, z);
-    int f2 = map->get(x + 1, y, z);
-    int f3 = map->get(x, y - 1, z);
-    int f4 = map->get(x, y + 1, z);
-    int f5 = map->get(x, y, z - 1);
-    int f6 = map->get(x, y, z + 1);
-
-    f1 = (f1 == 0 || f1 != _grass->getInstance()) ? 1 : 0;
-    f2 = (f2 == 0 || f2 != _grass->getInstance()) ? 1 : 0;
-    f3 = ((f3 == 0 || f3 != _grass->getInstance()) && y > 0) ? 1 : 0;
-    f4 = (f4 == 0 || f4 != _grass->getInstance()) ? 1 : 0;
-    f5 = (f5 == 0 || f5 != _grass->getInstance()) ? 1 : 0;
-    f6 = (f6 == 0 || f6 != _grass->getInstance()) ? 1 : 0;
-
-    return (f1 + f2 + f3 + f4 + f5 + f6) ? true : false;
+	if (_object)
+	{
+		_object->destroy();
+		_object = nullptr;
+	}
 }
 
 bool
 TerrainGrass::create(TerrainMapPtr map) noexcept
 {
-    int size = map->size();
-    int half = size >> 1;
+	int size = map->size();
+	int half = size >> 1;
 
-    int _x, _y, _z;
-    map->getPosition(_x, _y, _z);
+	int _x, _y, _z;
+	map->getPosition(_x, _y, _z);
 
-    int offsetX = _x * size;
-    int offsetZ = _z * size;
+	int offsetX = _x * size;
+	int offsetZ = _z * size;
 
-    for (int x = 0; x < size; x++)
-    {
-        for (int z = 0; z < size; z++)
-        {
-            int dx = offsetX + x;
-            int dz = offsetZ + z;
+	for (int x = 0; x < size; x++)
+	{
+		for (int z = 0; z < size; z++)
+		{
+			int dx = offsetX + x;
+			int dz = offsetZ + z;
 
-            float f = ray::simplex2(dx * 0.01f, dz * 0.01f, 4, 0.5f, 2);
-            float g = ray::simplex2(-dx * 0.01f, -dz * 0.01f, 2, 0.9f, 2);
+			float f = ray::simplex2(dx * 0.01f, dz * 0.01f, 4, 0.5f, 2);
+			float g = ray::simplex2(-dx * 0.01f, -dz * 0.01f, 2, 0.9f, 2);
 
-            int h = f * (g * size + half);
+			int h = f * (g * size + half);
 
-            for (int y = 0; y < h; y++)
-            {
-                map->set(x, y, z, _grass->getInstance());
-            }
-        }
-    }
+			for (int y = 0; y < h; y++)
+			{
+				map->set(x, y, z, _grass->getInstance());
+			}
+		}
+	}
 
-    return true;
+	return true;
 }
 
 bool
 TerrainGrass::createObject(TerrainMapPtr map) noexcept
 {
-    int mx, my, mz;
-    map->getPosition(mx, my, mz);
+	auto mesh = std::make_shared<ray::MeshProperty>();
 
-    int size = map->size();
+	for (auto& it : map->getEntrys())
+	{
+		if (it.empty() || it.instanceID != _grass->getInstance())
+			continue;
 
-    int offsetX = mx * size << 1;
-    int offsetY = my * size << 1;
-    int offsetZ = mz * size << 1;
+		if (it.y <= 0)
+			continue;
 
-    auto mesh = _grassObject->getComponent<ray::MeshComponent>();
+		VisiableFaces faces;
+		int total = this->visiable(map, it, faces);
+		if (total)
+		{
+			int dx = it.x << 1;
+			int dy = it.y << 1;
+			int dz = it.z << 1;
 
-    ray::CombineInstance combines;
+			this->makeCube(mesh, faces, dx, dy, dz, 1);
+		}
+	}
 
-    for (auto& it : map->getEntrys())
-    {
-        if (it.empty() || it.instanceID != _grass->getInstance())
-            continue;
+	if (mesh->getNumVertices())
+	{
+		int mx, my, mz;
+		map->getPosition(mx, my, mz);
 
-        int total = this->visiable(map, it.x, it.y, it.z);
-        if (total)
-        {
-            int dx = it.x << 1;
-            int dy = it.y << 1;
-            int dz = it.z << 1;
+		int size = map->size();
 
-            ray::CombineInstance::Instance instance;
-            instance.mesh = mesh->getMesh();
-            instance.transform.makeTranslate(dx, dy, dz);
+		int offsetX = mx * size << 1;
+		int offsetY = my * size << 1;
+		int offsetZ = mz * size << 1;
 
-            combines.push_back(instance);
-        }
-    }
+		auto gameObject = _grassObject->clone();
+		gameObject->setName(ray::format("chunk_%d_%d_%d") % offsetX % offsetY % offsetZ);
+		gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
+		gameObject->getComponent<ray::MeshComponent>()->setMesh(mesh);
 
-    if (!combines.empty())
-    {
-        auto gameObject = _grassObject->clone();
-        gameObject->setName(ray::format("chunk_%d_%d_%d") % offsetX % offsetY % offsetZ);
-        gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
-        gameObject->getComponent<ray::MeshComponent>()->setCombieInstnace(combines);
+		auto rigidbody = std::make_shared<ray::PhysicsBodyComponent>();
+		gameObject->addComponent(rigidbody);
+		gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
 
-        auto rigidbody = std::make_shared<ray::PhysicsBodyComponent>();
-        gameObject->addComponent(rigidbody);
-        gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
+		_object = gameObject;
 
-        _object = gameObject;
+		return true;
+	}
 
-        return true;
-    }
-
-    return false;
+	return false;
 }
 
 bool
 TerrainGrass::active(ray::GameObjectPtr parent) noexcept
 {
-    if (parent)
-    {
-        _object->setParent(parent);
-        _object->setActive(true);
-        _object->getComponent<ray::MeshComponent>()->clear();
-    }
-    else
-    {
-        _object->setActive(false);
-        _object->setParent(nullptr);
-    }
+	if (_object)
+	{
+		if (parent)
+		{
+			_object->setParent(parent);
+			_object->setActive(true);
+			_object->getComponent<ray::MeshComponent>()->clear();
+		}
+		else
+		{
+			_object->setActive(false);
+			_object->setParent(nullptr);
+		}
 
-    return true;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool
-TerrainGrass::update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept
+TerrainGrass::update(TerrainMapPtr map) noexcept
 {
-    if (id == _grass->getInstance() || old == _grass->getInstance())
-    {
-        auto parent = _object->getParent();
+	auto parent = _object->getParent();
 
-        _object->destroy();
-        _object = nullptr;
+	_object->destroy();
+	_object = nullptr;
 
-        this->createObject(map);
-        this->active(parent);
-    }
+	this->createObject(map);
+	this->active(parent);
 
-    return true;
+	return true;
 }
 
 TerrainObjectPtr
 TerrainGrass::clone() noexcept
 {
-    auto result = std::make_shared<TerrainGrass>();
-    result->_grass = this->_grass;
-    return result;
+	auto result = std::make_shared<TerrainGrass>();
+	result->_grass = this->_grass;
+	return result;
 }
 
 TerrainTree::TerrainTree() noexcept
 {
-    _wood = std::make_shared<Wood>();
-    _leaf = std::make_shared<Leaf>();
+	_wood = std::make_shared<Wood>();
+	_leaf = std::make_shared<Leaf>();
 
-    _woodObject = ray::GameObject::find<ray::GameObject>("wood");
-    _leafObject = ray::GameObject::find<ray::GameObject>("leaf");
+	_woodObject = ray::GameObject::find<ray::GameObject>("wood");
+	_leafObject = ray::GameObject::find<ray::GameObject>("leaf");
 
-    this->addItem(_wood);
-    this->addItem(_leaf);
+	this->addItem(_wood);
+	this->addItem(_leaf);
 }
 
 TerrainTree::~TerrainTree() noexcept
 {
-    for (auto& it : _objects)
-    {
-        if (it)
-        {
-            it->destroy();
-            it = nullptr;
-        }
-    }
+	for (auto& it : _objects)
+	{
+		if (it)
+		{
+			it->destroy();
+			it = nullptr;
+		}
+	}
 }
 
 bool
 TerrainTree::create(TerrainMapPtr map) noexcept
 {
-    int size = map->size();
-    int half = size >> 1;
+	int size = map->size();
+	int half = size >> 1;
 
-    int _x, _y, _z;
-    map->getPosition(_x, _y, _z);
+	int _x, _y, _z;
+	map->getPosition(_x, _y, _z);
 
-    int offsetX = _x * size;
-    int offsetZ = _z * size;
+	int offsetX = _x * size;
+	int offsetZ = _z * size;
 
-    for (int x = 0; x < size; x++)
-    {
-        for (int z = 0; z < size; z++)
-        {
-            int dx = offsetX + x;
-            int dz = offsetZ + z;
+	for (int x = 3; x < size - 3; x++)
+	{
+		for (int z = 3; z < size - 3; z++)
+		{
+			int dx = offsetX + x;
+			int dz = offsetZ + z;
 
-            if (ray::simplex2(dx, dz, 6, 0.5, 2) < 0.86)
-                continue;
+			if (ray::simplex2(dx, dz, 6, 0.5, 2) < 0.86)
+				continue;
 
-            float f = ray::simplex2(dx * 0.01f, dz * 0.01f, 4, 0.5f, 2);
-            float g = ray::simplex2(-dx * 0.01f, -dz * 0.01f, 2, 0.9f, 2);
+			float f = ray::simplex2(dx * 0.01f, dz * 0.01f, 4, 0.5f, 2);
+			float g = ray::simplex2(-dx * 0.01f, -dz * 0.01f, 2, 0.9f, 2);
 
-            int h = f * (g * size + half);
+			int h = f * (g * size + half);
 
-            for (int y = h + 3; y < h + 8; y++)
-            {
-                for (int ox = -3; ox <= 3; ox++)
-                {
-                    for (int oz = -3; oz <= 3; oz++)
-                    {
-                        int d = (ox * ox) + (oz * oz) + (y - (h + 4)) * (y - (h + 4));
-                        if (d < 11)
-                        {
-                            map->set(x + ox, y, z + oz, _leaf->getInstance());
-                        }
-                    }
-                }
-            }
+			for (int y = h + 3; y < h + 8; y++)
+			{
+				for (int ox = -3; ox <= 3; ox++)
+				{
+					for (int oz = -3; oz <= 3; oz++)
+					{
+						int d = (ox * ox) + (oz * oz) + (y - (h + 4)) * (y - (h + 4));
+						if (d < 11)
+						{
+							map->set(x + ox, y, z + oz, _leaf->getInstance());
+						}
+					}
+				}
+			}
 
-            for (int y = h; y < h + 7; y++)
-            {
-                map->set(x, y, z, _wood->getInstance());
-            }
-        }
-    }
+			for (int y = h; y < h + 7; y++)
+			{
+				map->set(x, y, z, _wood->getInstance());
+			}
+		}
+	}
 
-    return true;
+	return true;
 }
 
 bool
 TerrainTree::createObject(TerrainMapPtr map) noexcept
 {
-    int mx, my, mz;
-    map->getPosition(mx, my, mz);
+	auto woods = std::make_shared<ray::MeshProperty>();
+	auto leafs = std::make_shared<ray::MeshProperty>();
 
-    int size = map->size();
+	for (auto& it : map->getEntrys())
+	{
+		if (it.empty())
+			continue;
 
-    int offsetX = mx * size << 1;
-    int offsetY = my * size << 1;
-    int offsetZ = mz * size << 1;
+		if (it.instanceID != _wood->getInstance() &&
+			it.instanceID != _leaf->getInstance())
+			continue;
 
-    auto mesh = _woodObject->getComponent<ray::MeshComponent>();
+		VisiableFaces faces;
+		int total = this->visiable(map, it, faces);
+		if (total)
+		{
+			int dx = it.x << 1;
+			int dy = it.y << 1;
+			int dz = it.z << 1;
 
-    ray::CombineInstance _woods;
-    ray::CombineInstance _leafs;
+			if (it.instanceID == _wood->getInstance())
+				this->makeCube(woods, faces, dx, dy, dz, 1);
 
-    for (auto& it : map->getEntrys())
-    {
-        if (it.empty())
-            continue;
+			if (it.instanceID == _leaf->getInstance())
+				this->makeCube(leafs, faces, dx, dy, dz, 1);
+		}
+	}
 
-        if (it.instanceID != _wood->getInstance() &&
-            it.instanceID != _leaf->getInstance())
-            continue;
+	int mx, my, mz;
+	map->getPosition(mx, my, mz);
 
-        int dx = it.x << 1;
-        int dy = it.y << 1;
-        int dz = it.z << 1;
+	int size = map->size();
 
-        ray::CombineInstance::Instance instance;
-        instance.mesh = mesh->getMesh();
-        instance.transform.makeTranslate(dx, dy, dz);
+	int offsetX = mx * size << 1;
+	int offsetY = my * size << 1;
+	int offsetZ = mz * size << 1;
 
-        if (it.instanceID == _wood->getInstance())
-            _woods.push_back(instance);
+	if (woods->getNumVertices())
+	{
+		auto gameObject = _woodObject->clone();
+		gameObject->setName(ray::format("chunk_wood_%d_%d_%d") % offsetX % offsetY % offsetZ);
+		gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
+		gameObject->getComponent<ray::MeshComponent>()->setMesh(woods);
 
-        if (it.instanceID == _leaf->getInstance())
-            _leafs.push_back(instance);
-    }
+		auto rigidbody = std::make_shared<ray::PhysicsBodyComponent>();
+		gameObject->addComponent(rigidbody);
+		gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
 
-    if (!_woods.empty())
-    {
-        auto gameObject = _woodObject->clone();
-        gameObject->setName(ray::format("chunk_wood_%d_%d_%d") % offsetX % offsetY % offsetZ);
-        gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
-        gameObject->getComponent<ray::MeshComponent>()->setCombieInstnace(_woods);
+		_objects.push_back(gameObject);
+	}
 
-        auto rigidbody = std::make_shared<ray::PhysicsBodyComponent>();
-        gameObject->addComponent(rigidbody);
-        gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
+	if (leafs->getNumVertices())
+	{
+		auto gameObject = _leafObject->clone();
+		gameObject->setName(ray::format("chunk_leaf_%d_%d_%d") % offsetX % offsetY % offsetZ);
+		gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
+		gameObject->getComponent<ray::MeshComponent>()->setMesh(leafs);
 
-        _objects.push_back(gameObject);
-    }
+		auto rigidbody = std::make_shared<ray::PhysicsBodyComponent>();
+		gameObject->addComponent(rigidbody);
+		gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
 
-    if (!_leafs.empty())
-    {
-        auto gameObject = _leafObject->clone();
-        gameObject->setName(ray::format("chunk_leaf_%d_%d_%d") % offsetX % offsetY % offsetZ);
-        gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
-        gameObject->getComponent<ray::MeshComponent>()->setCombieInstnace(_leafs);
+		_objects.push_back(gameObject);
+	}
 
-        auto rigidbody = std::make_shared<ray::PhysicsBodyComponent>();
-        gameObject->addComponent(rigidbody);
-        gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
+	if (!_objects.empty())
+		return true;
 
-        _objects.push_back(gameObject);
-    }
-
-    if (!_objects.empty())
-        return true;
-
-    return false;
+	return false;
 }
 
 bool
 TerrainTree::active(ray::GameObjectPtr parent) noexcept
 {
-    for (auto& it : _objects)
-    {
-        if (parent)
-        {
-            it->setParent(parent);
-            it->setActive(true);
-            it->getComponent<ray::MeshComponent>()->clear();
-        }
-        else
-        {
-            it->setActive(false);
-            it->setParent(nullptr);
-        }
-    }
+	for (auto& it : _objects)
+	{
+		if (parent)
+		{
+			it->setParent(parent);
+			it->setActive(true);
+			it->getComponent<ray::MeshComponent>()->clear();
+		}
+		else
+		{
+			it->setActive(false);
+			it->setParent(nullptr);
+		}
+	}
 
-    return true;
+	return true;
 }
 
 bool
-TerrainTree::update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept
+TerrainTree::update(TerrainMapPtr map) noexcept
 {
-    return true;
+	return true;
 }
 
 TerrainObjectPtr
 TerrainTree::clone() noexcept
 {
-    auto result = std::make_shared<TerrainTree>();
-    result->_leaf = this->_leaf;
-    result->_wood = this->_wood;
-    return result;
+	auto result = std::make_shared<TerrainTree>();
+	result->_leaf = this->_leaf;
+	result->_wood = this->_wood;
+	return result;
 }
 
 TerrainClound::TerrainClound() noexcept
 {
-    _clound = std::make_shared<Clound>();
-    _cloundObject = ray::GameObject::find<ray::GameObject>("clound");
-    this->addItem(_clound);
+	_clound = std::make_shared<Clound>();
+	_cloundObject = ray::GameObject::find<ray::GameObject>("clound");
+	this->addItem(_clound);
 }
 
 TerrainClound::~TerrainClound() noexcept
 {
-    for (auto& it : _objects)
-    {
-        if (it)
-        {
-            it->destroy();
-            it = nullptr;
-        }
-    }
+	if (_cloundObject)
+	{
+		_cloundObject->destroy();
+		_cloundObject = nullptr;
+	}
 }
 
 bool
 TerrainClound::create(TerrainMapPtr map) noexcept
 {
-    int size = map->size();
+	int size = map->size();
 
-    int _x, _y, _z;
-    map->getPosition(_x, _y, _z);
+	int _x, _y, _z;
+	map->getPosition(_x, _y, _z);
 
-    int offsetX = _x * size;
-    int offsetZ = _z * size;
+	int offsetX = _x * size;
+	int offsetZ = _z * size;
 
-    for (int x = 0; x < size; x++)
-    {
-        for (int z = 0; z < size; z++)
-        {
-            int dx = offsetX + x;
-            int dz = offsetZ + z;
+	for (int x = 0; x < size; x++)
+	{
+		for (int z = 0; z < size; z++)
+		{
+			int dx = offsetX + x;
+			int dz = offsetZ + z;
 
-            for (int y = 64; y < 72; y++)
-            {
-                if (ray::simplex3(dx * 0.01f, y * 0.1f, dz * 0.01f, 8, 0.5f, 2) > 0.75)
-                {
-                    map->set(x, y, z, _clound->getInstance());
-                }
-            }
-        }
-    }
+			for (int y = 64; y < 72; y++)
+			{
+				if (ray::simplex3(dx * 0.01f, y * 0.1f, dz * 0.01f, 8, 0.5f, 2) > 0.75)
+				{
+					map->set(x, y, z, _clound->getInstance());
+				}
+			}
+		}
+	}
 
-    return true;
+	return true;
 }
 
 bool
 TerrainClound::createObject(TerrainMapPtr map) noexcept
 {
-    int mx, my, mz;
-    map->getPosition(mx, my, mz);
+	auto mesh = std::make_shared<ray::MeshProperty>();
 
-    int size = map->size();
+	for (auto& it : map->getEntrys())
+	{
+		if (it.empty())
+			continue;
 
-    int offsetX = mx * size << 1;
-    int offsetY = my * size << 1;
-    int offsetZ = mz * size << 1;
+		if (it.instanceID != _clound->getInstance())
+			continue;
 
-    auto mesh = _cloundObject->getComponent<ray::MeshComponent>();
+		VisiableFaces faces;
+		int total = this->visiable(map, it, faces);
+		if (total)
+		{
+			int dx = it.x << 1;
+			int dy = it.y << 1;
+			int dz = it.z << 1;
 
-    ray::CombineInstance combines;
+			this->makeCube(mesh, faces, dx, dy, dz, 1);
+		}
+	}
 
-    for (auto& it : map->getEntrys())
-    {
-        if (it.empty())
-            continue;
+	if (mesh->getNumVertices())
+	{
+		int mx, my, mz;
+		map->getPosition(mx, my, mz);
 
-        if (it.instanceID != _clound->getInstance())
-            continue;
+		int size = map->size();
 
-        int dx = it.x << 1;
-        int dy = it.y << 1;
-        int dz = it.z << 1;
+		int offsetX = mx * size << 1;
+		int offsetY = my * size << 1;
+		int offsetZ = mz * size << 1;
 
-        ray::CombineInstance::Instance instance;
-        instance.mesh = mesh->getMesh();
-        instance.transform.makeTranslate(dx, dy, dz);
+		auto gameObject = _cloundObject->clone();
+		gameObject->setName(ray::format("chunk_%d_%d_%d") % offsetX % offsetY % offsetZ);
+		gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
+		gameObject->getComponent<ray::MeshComponent>()->setMesh(mesh);
 
-        combines.push_back(instance);
-    }
+		auto rigidbody = std::make_shared<ray::PhysicsBodyComponent>();
+		gameObject->addComponent(rigidbody);
+		gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
 
-    if (!combines.empty())
-    {
-        auto gameObject = _cloundObject->clone();
-        gameObject->setName(ray::format("chunk_clound_%d_%d_%d") % offsetX % offsetY % offsetZ);
-        gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
-        gameObject->getComponent<ray::MeshComponent>()->setCombieInstnace(combines);
+		_cloundObject = gameObject;
 
-        _objects.push_back(gameObject);
-        return true;
-    }
+		return true;
+	}
 
-    return false;
+	return false;
 }
 
 bool
 TerrainClound::active(ray::GameObjectPtr parent) noexcept
 {
-    for (auto& it : _objects)
-    {
-        if (parent)
-        {
-            it->setParent(parent);
-            it->setActive(true);
-            it->getComponent<ray::MeshComponent>()->clear();
-        }
-        else
-        {
-            it->setActive(false);
-            it->setParent(nullptr);
-        }
-    }
+	if (parent)
+	{
+		_cloundObject->setParent(parent);
+		_cloundObject->setActive(true);
+		_cloundObject->getComponent<ray::MeshComponent>()->clear();
+	}
+	else
+	{
+		_cloundObject->setActive(false);
+		_cloundObject->setParent(nullptr);
+	}
 
-    return true;
+	return true;
 }
 
 bool
-TerrainClound::update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept
+TerrainClound::update(TerrainMapPtr map) noexcept
 {
-    return true;
+	return true;
 }
 
 TerrainObjectPtr
 TerrainClound::clone() noexcept
 {
-    auto result = std::make_shared<TerrainClound>();
-    result->_clound = this->_clound;
-    return result;
+	auto result = std::make_shared<TerrainClound>();
+	result->_clound = this->_clound;
+	return result;
 }
 
 TerrainWater::TerrainWater() noexcept
 {
-    _water = std::make_shared<Water>();
-    _waterObject = ray::GameObject::find<ray::GameObject>("water");
-    this->addItem(_water);
+	_water = std::make_shared<Water>();
+	_waterObject = ray::GameObject::find<ray::GameObject>("water");
+	this->addItem(_water);
 }
 
 TerrainWater::~TerrainWater() noexcept
 {
-    for (auto& it : _objects)
-    {
-        if (it)
-        {
-            it->destroy();
-            it = nullptr;
-        }
-    }
+	if (_waterObject)
+	{
+		_waterObject->destroy();
+		_waterObject = nullptr;
+	}
 }
 
 bool
 TerrainWater::create(TerrainMapPtr map) noexcept
 {
-    int size = map->size();
-    int half = size >> 1;
+	int size = map->size();
+	int half = size >> 1;
 
-    int _x, _y, _z;
-    map->getPosition(_x, _y, _z);
+	int _x, _y, _z;
+	map->getPosition(_x, _y, _z);
 
-    int offsetX = _x * size;
-    int offsetZ = _z * size;
+	int offsetX = _x * size;
+	int offsetZ = _z * size;
 
-    for (int x = 0; x < size; x++)
-    {
-        for (int z = 0; z < size; z++)
-        {
-            int dx = offsetX + x;
-            int dz = offsetZ + z;
+	for (int x = 0; x < size; x++)
+	{
+		for (int z = 0; z < size; z++)
+		{
+			int dx = offsetX + x;
+			int dz = offsetZ + z;
 
-            float f = ray::simplex2(dx * 0.01f, dz * 0.01f, 4, 0.5f, 2);
-            float g = ray::simplex2(-dx * 0.01f, -dz * 0.01f, 2, 0.9f, 2);
+			float f = ray::simplex2(dx * 0.01f, dz * 0.01f, 4, 0.5f, 2);
+			float g = ray::simplex2(-dx * 0.01f, -dz * 0.01f, 2, 0.9f, 2);
 
-            int h = f * (g * size + half);
+			int h = f * (g * size + half);
 
-            if (h < 10)
-            {
-                for (int y = h; y < 10; y++)
-                {
-                    map->set(x, y, z, _water->getInstance());
-                }
-            }
-        }
-    }
+			if (h < 10)
+			{
+				for (int y = h; y < 10; y++)
+				{
+					map->set(x, y, z, _water->getInstance());
+				}
+			}
+		}
+	}
 
-    return true;
+	return true;
 }
 
 bool
 TerrainWater::createObject(TerrainMapPtr map) noexcept
 {
-    int mx, my, mz;
-    map->getPosition(mx, my, mz);
+	auto mesh = std::make_shared<ray::MeshProperty>();
 
-    int size = map->size();
+	for (auto& it : map->getEntrys())
+	{
+		if (it.empty())
+			continue;
 
-    int offsetX = mx * size << 1;
-    int offsetY = my * size << 1;
-    int offsetZ = mz * size << 1;
+		if (it.instanceID != _water->getInstance())
+			continue;
 
-    auto mesh = _waterObject->getComponent<ray::MeshComponent>();
+		VisiableFaces faces;
+		int total = this->visiable(map, it, faces);
+		if (total)
+		{
+			int dx = it.x << 1;
+			int dy = it.y << 1;
+			int dz = it.z << 1;
 
-    ray::CombineInstance _waters;
+			this->makeCube(mesh, faces, dx, dy, dz, 1);
+		}
+	}
 
-    for (auto& it : map->getEntrys())
-    {
-        if (it.empty())
-            continue;
+	if (mesh->getNumVertices())
+	{
+		int mx, my, mz;
+		map->getPosition(mx, my, mz);
 
-        if (it.instanceID != _water->getInstance())
-            continue;
+		int size = map->size();
 
-        int dx = it.x << 1;
-        int dy = it.y << 1;
-        int dz = it.z << 1;
+		int offsetX = mx * size << 1;
+		int offsetY = my * size << 1;
+		int offsetZ = mz * size << 1;
 
-        ray::CombineInstance::Instance instance;
-        instance.mesh = mesh->getMesh();
-        instance.transform.makeTranslate(dx, dy, dz);
+		auto gameObject = _waterObject->clone();
+		gameObject->setName(ray::format("chunk_%d_%d_%d") % offsetX % offsetY % offsetZ);
+		gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
+		gameObject->getComponent<ray::MeshComponent>()->setMesh(mesh);
 
-        if (it.instanceID == _water->getInstance())
-            _waters.push_back(instance);
-    }
+		auto rigidbody = std::make_shared<ray::PhysicsBodyComponent>();
+		gameObject->addComponent(rigidbody);
+		gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
 
-    if (!_waters.empty())
-    {
-        auto gameObject = _waterObject->clone();
-        gameObject->setName(ray::format("chunk_water_%d_%d_%d") % offsetX % offsetY % offsetZ);
-        gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
-        gameObject->getComponent<ray::MeshComponent>()->setCombieInstnace(_waters);
+		_waterObject = gameObject;
 
-        auto rigidbody = std::make_shared<ray::PhysicsBodyComponent>();
-        gameObject->addComponent(rigidbody);
-        gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
+		return true;
+	}
 
-        _objects.push_back(gameObject);
-
-        return true;
-    }
-
-    return false;
+	return false;
 }
 
 bool
 TerrainWater::active(ray::GameObjectPtr parent) noexcept
 {
-    for (auto& it : _objects)
-    {
-        if (parent)
-        {
-            it->setParent(parent);
-            it->setActive(true);
-            it->getComponent<ray::MeshComponent>()->clear();
-        }
-        else
-        {
-            it->setActive(false);
-            it->setParent(nullptr);
-        }
-    }
+	if (parent)
+	{
+		_waterObject->setParent(parent);
+		_waterObject->setActive(true);
+		_waterObject->getComponent<ray::MeshComponent>()->clear();
+	}
+	else
+	{
+		_waterObject->setActive(false);
+		_waterObject->setParent(nullptr);
+	}
 
-    return true;
+	return true;
 }
 
 bool
-TerrainWater::update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept
+TerrainWater::update(TerrainMapPtr map) noexcept
 {
-    return false;
+	return false;
 }
 
 TerrainObjectPtr
 TerrainWater::clone() noexcept
 {
-    auto result = std::make_shared<TerrainWater>();
-    result->_water = this->_water;
-    return result;
+	auto result = std::make_shared<TerrainWater>();
+	result->_water = this->_water;
+	return result;
 }

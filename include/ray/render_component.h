@@ -44,37 +44,38 @@ _NAME_BEGIN
 
 class EXPORT RenderComponent : public GameComponent
 {
-    __DeclareSubInterface(RenderComponent, GameComponent)
+	__DeclareSubInterface(RenderComponent, GameComponent)
 public:
-    RenderComponent() noexcept;
-    virtual ~RenderComponent() noexcept;
+	RenderComponent() noexcept;
+	virtual ~RenderComponent() noexcept;
 
-    void setCastShadow(bool value) noexcept;
-    bool getCastShadow()  const noexcept;
+	void setCastShadow(bool value) noexcept;
+	bool getCastShadow()  const noexcept;
 
-    void setReceiveShadow(bool value) noexcept;
-    bool getReceiveShadow() const noexcept;
+	void setReceiveShadow(bool value) noexcept;
+	bool getReceiveShadow() const noexcept;
 
-    void setMaterial(MaterialPtr material) noexcept;
-    MaterialPtr getMaterial() const noexcept;
+	void addMaterial(MaterialPtr material) noexcept;
+	const Materials& getMaterials() const noexcept;
+	MaterialPtr getMaterial(std::size_t i) const noexcept;
 
-    void load(iarchive& reader) noexcept;
-    void save(oarchive& write) noexcept;
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
 
 protected:
-    void onActivate() except;
-    void onDectivate() noexcept;
+	void onActivate() except;
+	void onDectivate() noexcept;
 
 private:
-    RenderComponent(const RenderComponent&) = delete;
-    RenderComponent& operator=(const RenderComponent&) = delete;
+	RenderComponent(const RenderComponent&) = delete;
+	RenderComponent& operator=(const RenderComponent&) = delete;
 
 private:
 
-    bool _isCastShadow;
-    bool _isReceiveShadow;
+	bool _isCastShadow;
+	bool _isReceiveShadow;
 
-    MaterialPtr _material;
+	Materials _materials;
 };
 
 _NAME_END

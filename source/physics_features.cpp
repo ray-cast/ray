@@ -46,9 +46,9 @@
 _NAME_BEGIN
 
 PhysicFeatures::PhysicFeatures() noexcept
-    : _physics(nullptr)
+	: _physics(nullptr)
 {
-    this->setName(typeid(PhysicFeatures).name());
+	this->setName(typeid(PhysicFeatures).name());
 }
 
 PhysicFeatures::~PhysicFeatures() noexcept
@@ -58,188 +58,188 @@ PhysicFeatures::~PhysicFeatures() noexcept
 void
 PhysicFeatures::onActivate() noexcept
 {
-    _physics = std::make_shared<PhysicsSystem>();
+	_physics = std::make_shared<PhysicsSystem>();
 }
 
 void
 PhysicFeatures::onDeactivate() noexcept
 {
-    if (_physics)
-    {
-        _physics.reset();
-        _physics = nullptr;
-    }
+	if (_physics)
+	{
+		_physics.reset();
+		_physics = nullptr;
+	}
 }
 
 void
 PhysicFeatures::onFrameBegin() noexcept
 {
-    if (_physics)
-        _physics->simulation(this->getGameServer()->getTimer()->delta());
+	if (_physics)
+		_physics->simulation(this->getGameServer()->getTimer()->delta());
 }
 
 void
 PhysicFeatures::onOpenScene(GameScenePtr scene) except
 {
-    auto instance = scene->getInstanceID();
+	auto instance = scene->getInstanceID();
 
-    if (_physicsScenes.size() < instance)
-    {
-        _physicsScenes.resize(instance * 2);
-    }
+	if (_physicsScenes.size() < instance)
+	{
+		_physicsScenes.resize(instance * 2);
+	}
 
-    auto environment = scene->getEnvironment();
+	auto environment = scene->getEnvironment();
 
-    PhysicsScene::Setting setting;
-    setting.aabb = environment.aabb;
-    setting.gravity = environment.gravity;
-    setting.length = environment.length;
-    setting.mass = environment.mass;
-    setting.skinWidth = environment.skinWidth;
-    setting.speed = environment.speed;
+	PhysicsScene::Setting setting;
+	setting.aabb = environment.aabb;
+	setting.gravity = environment.gravity;
+	setting.length = environment.length;
+	setting.mass = environment.mass;
+	setting.skinWidth = environment.skinWidth;
+	setting.speed = environment.speed;
 
-    _physicsScenes[instance] = std::make_shared<PhysicsScene>();
-    _physicsScenes[instance]->setup(setting);
+	_physicsScenes[instance] = std::make_shared<PhysicsScene>();
+	_physicsScenes[instance]->setup(setting);
 
-    _physics->addPhysicsScene(_physicsScenes[instance]);
+	_physics->addPhysicsScene(_physicsScenes[instance]);
 }
 
 void
 PhysicFeatures::onCloseScene(GameScenePtr scene) except
 {
-    _physics->removePhysicsScene(this->getPhysicsScene(scene));
+	_physics->removePhysicsScene(this->getPhysicsScene(scene));
 
-    _physicsScenes[scene->getInstanceID()] = nullptr;
+	_physicsScenes[scene->getInstanceID()] = nullptr;
 }
 
 PhysicsScenePtr
 PhysicFeatures::getPhysicsScene(GameScene* scene) const noexcept
 {
-    return _physicsScenes[scene->getInstanceID()];
+	return _physicsScenes[scene->getInstanceID()];
 }
 
 PhysicsScenePtr
 PhysicFeatures::getPhysicsScene(GameScenePtr scene) const noexcept
 {
-    return _physicsScenes[scene->getInstanceID()];
+	return _physicsScenes[scene->getInstanceID()];
 }
 
 GameFeaturePtr
 PhysicFeatures::clone() const noexcept
 {
-    return std::make_shared<PhysicFeatures>();
+	return std::make_shared<PhysicFeatures>();
 }
 
 GameComponentPtr
 PhysicFeatures::onSerialization(iarchive& reader) except
 {
-    auto component = reader.getString("name");
-    if (component == "box")
-        return instanceShapeBox(reader);
-    else if (component == "rigidbody")
-        return instanceRigidbody(reader);
-    else if (component == "character")
-        return instanceCharacter(reader);
+	auto component = reader.getString("name");
+	if (component == "box")
+		return instanceShapeBox(reader);
+	else if (component == "rigidbody")
+		return instanceRigidbody(reader);
+	else if (component == "character")
+		return instanceCharacter(reader);
 
-    return nullptr;
+	return nullptr;
 }
 
 GameComponentPtr
 PhysicFeatures::instanceRigidbody(iarchive& reader) except
 {
-    if (reader.setToFirstChild())
-    {
-        auto body = std::make_shared<PhysicsBodyComponent>();
+	if (reader.setToFirstChild())
+	{
+		auto body = std::make_shared<PhysicsBodyComponent>();
 
-        do
-        {
-            auto key = reader.getCurrentNodeName();
-            if (key == "attribute")
-            {
-                auto attributes = reader.getAttrs();
-                for (auto& it : attributes)
-                {
-                    std::string value = reader.getString(it);
-                    if (it == "sleep")
-                    {
-                        body->sleep(reader.getBoolean(it.c_str()));
-                    }
-                    else if (it == "mass")
-                    {
-                        body->setMass(reader.getFloat(it.c_str()));
-                    }
-                }
-            }
-        } while (reader.setToNextChild());
+		do
+		{
+			auto key = reader.getCurrentNodeName();
+			if (key == "attribute")
+			{
+				auto attributes = reader.getAttrs();
+				for (auto& it : attributes)
+				{
+					std::string value = reader.getString(it);
+					if (it == "sleep")
+					{
+						body->sleep(reader.getBoolean(it.c_str()));
+					}
+					else if (it == "mass")
+					{
+						body->setMass(reader.getFloat(it.c_str()));
+					}
+				}
+			}
+		} while (reader.setToNextChild());
 
-        return body;
-    }
+		return body;
+	}
 
-    return nullptr;
+	return nullptr;
 }
 
 GameComponentPtr
 PhysicFeatures::instanceShapeBox(iarchive& reader) except
 {
-    if (reader.setToFirstChild())
-    {
-        auto box = std::make_shared<PhysicsBoxComponent>();
+	if (reader.setToFirstChild())
+	{
+		auto box = std::make_shared<PhysicsBoxComponent>();
 
-        do
-        {
-            auto key = reader.getCurrentNodeName();
-            if (key == "attribute")
-            {
-                auto attributes = reader.getAttrs();
-                for (auto& it : attributes)
-                {
-                    std::string value = reader.getString(it);
-                    if (it == "size")
-                    {
-                        box->setSize(reader.getFloat3(it.c_str()));
-                    }
-                }
-            }
-        } while (reader.setToNextChild());
+		do
+		{
+			auto key = reader.getCurrentNodeName();
+			if (key == "attribute")
+			{
+				auto attributes = reader.getAttrs();
+				for (auto& it : attributes)
+				{
+					std::string value = reader.getString(it);
+					if (it == "size")
+					{
+						box->setSize(reader.getFloat3(it.c_str()));
+					}
+				}
+			}
+		} while (reader.setToNextChild());
 
-        return box;
-    }
+		return box;
+	}
 
-    return nullptr;
+	return nullptr;
 }
 
 GameComponentPtr
 PhysicFeatures::instanceCharacter(iarchive& reader) except
 {
-    if (reader.setToFirstChild())
-    {
-        auto character = std::make_shared<PhysicsCharacterComponent>();
+	if (reader.setToFirstChild())
+	{
+		auto character = std::make_shared<PhysicsCharacterComponent>();
 
-        do
-        {
-            auto key = reader.getCurrentNodeName();
-            if (key == "attribute")
-            {
-                auto attributes = reader.getAttrs();
-                for (auto& it : attributes)
-                {
-                    std::string value = reader.getString(it);
-                    if (it == "radius")
-                    {
-                        character->setRadius(reader.getFloat(it.c_str()));
-                    }
-                    else if (it == "height")
-                    {
-                        character->setHeight(reader.getFloat(it.c_str()));
-                    }
-                }
-            }
-        } while (reader.setToNextChild());
+		do
+		{
+			auto key = reader.getCurrentNodeName();
+			if (key == "attribute")
+			{
+				auto attributes = reader.getAttrs();
+				for (auto& it : attributes)
+				{
+					std::string value = reader.getString(it);
+					if (it == "radius")
+					{
+						character->setRadius(reader.getFloat(it.c_str()));
+					}
+					else if (it == "height")
+					{
+						character->setHeight(reader.getFloat(it.c_str()));
+					}
+				}
+			}
+		} while (reader.setToNextChild());
 
-        return character;
-    }
+		return character;
+	}
 
-    return nullptr;
+	return nullptr;
 }
 
 _NAME_END

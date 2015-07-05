@@ -36,9 +36,13 @@
 // +----------------------------------------------------------------------
 #include <ray/mesh_render_component.h>
 #include <ray/mesh_component.h>
+
+#include <ray/render_features.h>
+#include <ray/render_factory.h>
+#include <ray/render_buffer.h>
+
 #include <ray/material_maker.h>
 #include <ray/game_server.h>
-#include <ray/render_features.h>
 
 _NAME_BEGIN
 
@@ -55,113 +59,145 @@ MeshRenderComponent::~MeshRenderComponent() noexcept
 GameComponentPtr
 MeshRenderComponent::clone() const noexcept
 {
-    auto result = std::make_shared<MeshRenderComponent>();
-    result->setMaterial(this->getMaterial());
-    result->setCastShadow(this->getCastShadow());
-    result->setReceiveShadow(this->getReceiveShadow());
-    result->setName(this->getName());
-    result->setVisible(this->getVisible());
-    return result;
+	auto result = std::make_shared<MeshRenderComponent>();
+	result->setCastShadow(this->getCastShadow());
+	result->setReceiveShadow(this->getReceiveShadow());
+	result->setName(this->getName());
+	result->setVisible(this->getVisible());
+
+	for (auto& it : this->getMaterials())
+	{
+		result->addMaterial(it);
+	}
+
+	return result;
 }
 
 void
 MeshRenderComponent::onActivate() except
 {
-    RenderComponent::onActivate();
+	RenderComponent::onActivate();
 
-    if (!_renderObject)
-        _buildRenderObject();
+	auto mesh = this->getGameObject()->getComponent<MeshComponent>();
+	if (mesh)
+	{
+		_buildRenderObjects(mesh->getMesh());
+	}
 
-    _attacRenderObject();
+	_attacRenderObjects();
 }
 
 void
 MeshRenderComponent::onDeactivate() noexcept
 {
-    RenderComponent::onDeactivate();
+	RenderComponent::onDeactivate();
 
-    if (_renderObject)
-        _dttachRenderhObject();
+	_dttachRenderhObjects();
+
+	if (_renderObjects.empty())
+	{
+		for (auto& it : _renderObjects)
+			it.reset();
+
+		_renderObjects.clear();
+	}
+
+	if (_renderBuffers.empty())
+	{
+		for (auto& it : _renderBuffers)
+			it.reset();
+
+		_renderBuffers.clear();
+	}
 }
 
 void
 MeshRenderComponent::onMoveAfter() noexcept
 {
-    RenderComponent::onMoveAfter();
+	RenderComponent::onMoveAfter();
 
-    if (_renderObject)
-    {
-        _renderObject->setTransform(this->getGameObject()->getTransform());
-        _renderObject->setTransformInverse(this->getGameObject()->getTransformInverse());
-        _renderObject->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
-    }
+	for (auto& it : _renderObjects)
+	{
+		it->setTransform(this->getGameObject()->getTransform());
+		it->setTransformInverse(this->getGameObject()->getTransformInverse());
+		it->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
+	}
 }
 
 void
 MeshRenderComponent::onLayerChangeAfter() noexcept
 {
-    RenderComponent::onLayerChangeAfter();
+	RenderComponent::onLayerChangeAfter();
 
-    if (_renderObject)
-        _renderObject->setLayer(this->getGameObject()->getLayer());
+	for (auto& it : _renderObjects)
+	{
+		it->setLayer(this->getGameObject()->getLayer());
+	}
 }
 
 void
-MeshRenderComponent::_attacRenderObject() noexcept
+MeshRenderComponent::_attacRenderObjects() noexcept
 {
-    if (_renderObject)
-    {
-        auto renderer = this->getGameObject()->getGameServer()->getFeature<RenderFeatures>();
-        if (renderer)
-        {
-            auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
-            if (renderScene)
-            {
-                _renderObject->setRenderScene(renderScene);
-            }
-        }
-    }
+	for (auto& it : _renderObjects)
+	{
+		auto renderer = this->getGameObject()->getGameServer()->getFeature<RenderFeatures>();
+		if (renderer)
+		{
+			auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
+			if (renderScene)
+			{
+				it->setRenderScene(renderScene);
+			}
+		}
+	}
 }
 
 void
-MeshRenderComponent::_dttachRenderhObject() noexcept
+MeshRenderComponent::_dttachRenderhObjects() noexcept
 {
-    if (_renderObject)
-    {
-        _renderObject->setRenderScene(nullptr);
-        _renderObject = nullptr;
-    }
+	for (auto& it : _renderObjects)
+	{
+		it->setRenderScene(nullptr);
+		it = nullptr;
+	}
+
+	_renderObjects.clear();
 }
 
 void
-MeshRenderComponent::_buildRenderObject() noexcept
+MeshRenderComponent::_buildRenderObjects(MeshPropertyPtr mesh) noexcept
 {
-    auto mesh = this->getGameObject()->getComponent<MeshComponent>();
-    if (mesh)
-    {
-        if (!mesh->getRenderBuffer())
-        {
-            mesh->buildRenderBuffer();
-        }
+	assert(mesh);
 
-        if (mesh->getRenderBuffer())
-        {
-            _renderObject = std::make_unique<Geometry>();
-            _renderObject->setRenderBuffer(mesh->getRenderBuffer(), mesh->getVertexType());
-            _renderObject->setBoundingBox(mesh->getBoundingBox());
+	auto material = this->getMaterial(mesh->getMaterialID());
+	if (material)
+	{
+		auto renderBuffer = RenderFactory::createRenderBuffer(*mesh);
+		auto renderObject = std::make_shared<RenderMesh>();
 
-            _renderObject->setMaterial(this->getMaterial());
+		renderObject->setRenderBuffer(renderBuffer, VertexType::GPU_TRIANGLE);
+		renderObject->setBoundingBox(mesh->getBoundingBox());
 
-            _renderObject->setCastShadow(this->getCastShadow());
-            _renderObject->setReceiveShadow(this->getReceiveShadow());
+		renderObject->setMaterial(material);
 
-            _renderObject->setLayer(this->getGameObject()->getLayer());
+		renderObject->setCastShadow(this->getCastShadow());
+		renderObject->setReceiveShadow(this->getReceiveShadow());
 
-            _renderObject->setTransform(this->getGameObject()->getTransform());
-            _renderObject->setTransformInverse(this->getGameObject()->getTransformInverse());
-            _renderObject->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
-        }
-    }
+		renderObject->setLayer(this->getGameObject()->getLayer());
+
+		renderObject->setTransform(this->getGameObject()->getTransform());
+		renderObject->setTransformInverse(this->getGameObject()->getTransformInverse());
+		renderObject->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
+
+		_renderObjects.push_back(renderObject);
+		_renderBuffers.push_back(renderBuffer);
+	}
+
+	auto meshes = mesh->getChildren();
+	for (auto& it : meshes)
+	{
+		this->_buildRenderObjects(it);
+	};
 }
 
 _NAME_END

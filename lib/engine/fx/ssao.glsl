@@ -63,7 +63,7 @@
 
             float linearizeDepth(vec2 uv)
             {
-                float d = textureLod(texDepth, uv, 0).r;
+                float d = textureLod(texDepth, uv, 0).r * 2.0 - 1.0;
                 return clipInfo.x / (clipInfo.z - clipInfo.y * d);
             }
 

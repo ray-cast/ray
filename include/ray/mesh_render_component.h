@@ -38,41 +38,44 @@
 #define _H_MESH_RENDER_COMPONENT_H_
 
 #include <ray/render_component.h>
-#include <ray/geometry.h>
+#include <ray/render_buffer.h>
+#include <ray/render_mesh.h>
 
 _NAME_BEGIN
 
 class EXPORT MeshRenderComponent : public RenderComponent
 {
-    __DeclareSubClass(MeshRenderComponent, RenderComponent)
+	__DeclareSubClass(MeshRenderComponent, RenderComponent)
 public:
-    MeshRenderComponent() noexcept;
-    ~MeshRenderComponent() noexcept;
+	MeshRenderComponent() noexcept;
+	~MeshRenderComponent() noexcept;
 
-    GameComponentPtr clone() const noexcept;
+	GameComponentPtr clone() const noexcept;
 
 private:
 
-    void onActivate() except;
-    void onDeactivate() noexcept;
+	void onActivate() except;
+	void onDeactivate() noexcept;
 
-    void onMoveAfter() noexcept;
+	void onMoveAfter() noexcept;
 
-    void onLayerChangeAfter() noexcept;
+	void onLayerChangeAfter() noexcept;
 
 protected:
 
-    void _attacRenderObject() noexcept;
-    void _dttachRenderhObject() noexcept;
-    void _buildRenderObject() noexcept;
+	void _attacRenderObjects() noexcept;
+	void _dttachRenderhObjects() noexcept;
+
+	void _buildRenderObjects(MeshPropertyPtr mesh) noexcept;
 
 private:
-    MeshRenderComponent(const MeshRenderComponent&) noexcept = delete;
-    MeshRenderComponent& operator=(const MeshRenderComponent&) noexcept = delete;
+	MeshRenderComponent(const MeshRenderComponent&) noexcept = delete;
+	MeshRenderComponent& operator=(const MeshRenderComponent&) noexcept = delete;
 
 private:
 
-    std::unique_ptr<Geometry> _renderObject;
+	RenderBuffers _renderBuffers;
+	RenderMeshes _renderObjects;
 };
 
 _NAME_END

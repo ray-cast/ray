@@ -40,38 +40,38 @@
 #include <ray/physics_shape.h>
 
 class btBvhTriangleMeshShape;
-class btTriangleIndexVertexArray;
+class btStridingMeshInterface;
 
 _NAME_BEGIN
 
 class EXPORT PhysicsShapeMesh final : public PhysicsShape
 {
 public:
-    PhysicsShapeMesh() noexcept;
-    ~PhysicsShapeMesh() noexcept;
+	PhysicsShapeMesh() noexcept;
+	~PhysicsShapeMesh() noexcept;
 
-    void setup(const Vector3Array& vertices, const std::vector<std::uint32_t>& face, const AABB& aabb) noexcept;
-    void close() noexcept;
+	void setup(const Vector3Array& vertices, const std::vector<std::uint32_t>& face, const AABB& aabb) noexcept;
+	void close() noexcept;
 
-    void addMesh(const Vector3Array& vertices, const std::vector<std::uint32_t>& face) noexcept;
-
-private:
-
-    virtual btCollisionShape* getCollisionShape() noexcept;
+	void addMesh(const Vector3Array& vertices, const std::vector<std::uint32_t>& face) noexcept;
 
 private:
 
-    int _numVertices;
-    int _numFaces;
+	virtual btCollisionShape* getCollisionShape() noexcept;
 
-    int _indexStride;
-    int _vertexStride;
+private:
 
-    std::vector<float3> _vertexBase;
-    std::vector<std::uint32_t> _indexBase;
+	int _numVertices;
+	int _numFaces;
 
-    btBvhTriangleMeshShape* _shape;
-    btTriangleIndexVertexArray* _array;
+	int _indexStride;
+	int _vertexStride;
+
+	std::vector<float3> _vertexBase;
+	std::vector<std::uint32_t> _indexBase;
+
+	btBvhTriangleMeshShape* _shape;
+	btStridingMeshInterface* _array;
 };
 
 _NAME_END

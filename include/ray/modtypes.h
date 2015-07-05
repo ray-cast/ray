@@ -40,7 +40,7 @@
 #include <ray/memory.h>
 #include <ray/math.h>
 #include <ray/fstream.h>
-
+#include <ray/reference.h>
 #include <ray/moddef.h>
 
 _NAME_BEGIN
@@ -51,6 +51,8 @@ typedef std::shared_ptr<class CameraProperty> CameraPropertyPtr;
 typedef std::shared_ptr<class LightProperty> LightPropertyPtr;
 typedef std::shared_ptr<class MeshProperty> MeshPropertyPtr;
 typedef std::shared_ptr<class MaterialProperty> MaterialPropertyPtr;
+
+typedef std::vector<MeshPropertyPtr> MeshPropertys;
 
 _NAME_END
 

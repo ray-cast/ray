@@ -44,7 +44,7 @@ _NAME_BEGIN
 class ScriptBindString : public ScriptBinder
 {
 public:
-    virtual void setup(asIScriptEngine* engine) noexcept;
+	virtual void setup(asIScriptEngine* engine) noexcept;
 };
 
 _NAME_END

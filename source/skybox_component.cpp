@@ -47,7 +47,7 @@ SkyBoxComponent::SkyBoxComponent() noexcept
 
 SkyBoxComponent::SkyBoxComponent(MaterialPtr material) noexcept
 {
-    this->setMaterial(material);
+	this->addMaterial(material);
 }
 
 SkyBoxComponent::~SkyBoxComponent() noexcept
@@ -67,11 +67,16 @@ SkyBoxComponent::onDeactivate() noexcept
 GameComponentPtr
 SkyBoxComponent::clone() const noexcept
 {
-    auto sky = std::make_shared<SkyBoxComponent>();
-    sky->setName(this->getName());
-    sky->setVisible(this->getVisible());
-    sky->setMaterial(this->getMaterial());
-    return sky;
+	auto sky = std::make_shared<SkyBoxComponent>();
+	sky->setName(this->getName());
+	sky->setVisible(this->getVisible());
+
+	for (auto& it : this->getMaterials())
+	{
+		sky->addMaterial(it);
+	}
+
+	return sky;
 }
 
 _NAME_END

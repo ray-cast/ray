@@ -38,61 +38,48 @@
 #define _H_MESH_COMPONENT_H_
 
 #include <ray/game_component.h>
-#include <ray/render_buffer.h>
+#include <ray/model.h>
 
 _NAME_BEGIN
 
 class EXPORT MeshComponent final : public GameComponent
 {
-    __DeclareSubClass(MeshComponent, GameComponent)
+	__DeclareSubClass(MeshComponent, GameComponent)
 public:
-    MeshComponent() noexcept;
-    ~MeshComponent() noexcept;
+	MeshComponent() noexcept;
+	~MeshComponent() noexcept;
 
-    void setMesh(MeshPropertyPtr mesh) noexcept;
-    void setSharedMesh(MeshPropertyPtr mesh) noexcept;
-    void setRenderBuffer(RenderBufferPtr mesh) noexcept;
-    void setCombieInstnace(const CombineInstance& instance) noexcept;
+	void setMesh(MeshPropertyPtr mesh) noexcept;
+	void setSharedMesh(MeshPropertyPtr mesh) noexcept;
 
-    void clear() noexcept;
+	MeshPropertyPtr getMesh() const noexcept;
+	MeshPropertyPtr getSharedMesh() const noexcept;
 
-    MeshPropertyPtr getMesh() const noexcept;
-    MeshPropertyPtr getSharedMesh() const noexcept;
-    RenderBufferPtr getRenderBuffer() const noexcept;
+	std::size_t getNumVertices() const noexcept;
+	std::size_t getNumIndices() const noexcept;
 
-    std::size_t getNumVertices() const noexcept;
-    std::size_t getNumIndices() const noexcept;
+	const Bound& getBoundingBox() const noexcept;
 
-    const Bound& getBoundingBox() const noexcept;
+	void clear() noexcept;
 
-    VertexType getVertexType() const noexcept;
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
 
-    GameComponentPtr clone() const noexcept;
-
-    void load(iarchive& reader) noexcept;
-    void save(oarchive& write) noexcept;
-
-    void buildRenderBuffer() noexcept;
+	GameComponentPtr clone() const noexcept;
 
 private:
 
-    void onActivate() noexcept;
-    void onDeactivate() noexcept;
+	void onActivate() noexcept;
+	void onDeactivate() noexcept;
 
 private:
-    MeshComponent(const MeshComponent&) noexcept = delete;
-    MeshComponent& operator=(const MeshComponent&) noexcept = delete;
+	MeshComponent(const MeshComponent&) noexcept = delete;
+	MeshComponent& operator=(const MeshComponent&) noexcept = delete;
 
 private:
 
-    MeshPropertyPtr _mesh;
-    MeshPropertyPtr _sharedMesh;
-
-    Bound _bound;
-
-    VertexType _type;
-
-    RenderBufferPtr _renderMesh;
+	MeshPropertyPtr _mesh;
+	MeshPropertyPtr _sharedMesh;
 };
 
 _NAME_END

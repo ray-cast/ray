@@ -100,6 +100,10 @@
 #   ifndef noexcept
 #       define noexcept
 #   endif
+
+#   ifndef constexpr
+#       define constexpr const
+#   endif
 #endif
 
 #ifndef except

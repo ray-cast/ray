@@ -43,22 +43,18 @@ _NAME_BEGIN
 
 class EXPORT SkyBoxComponent : public MeshRenderComponent
 {
-    __DeclareSubClass(SkyBoxComponent, MeshRenderComponent)
+	__DeclareSubClass(SkyBoxComponent, MeshRenderComponent)
 public:
-    SkyBoxComponent() noexcept;
-    SkyBoxComponent(MaterialPtr material) noexcept;
-    ~SkyBoxComponent() noexcept;
+	SkyBoxComponent() noexcept;
+	SkyBoxComponent(MaterialPtr material) noexcept;
+	~SkyBoxComponent() noexcept;
 
 private:
 
-    void onActivate() noexcept;
-    void onDeactivate() noexcept;
+	void onActivate() noexcept;
+	void onDeactivate() noexcept;
 
-    void _attacRenderObject() noexcept;
-    void _dttachRenderhObject() noexcept;
-    void _buildRenderObject() noexcept;
-
-    GameComponentPtr clone() const noexcept;
+	GameComponentPtr clone() const noexcept;
 };
 
 _NAME_END

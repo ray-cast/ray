@@ -42,103 +42,98 @@
 class TerrainGrass : public TerrainObject
 {
 public:
-    TerrainGrass() noexcept;
-    ~TerrainGrass() noexcept;
+	TerrainGrass() noexcept;
+	~TerrainGrass() noexcept;
 
-    bool visiable(TerrainMapPtr map, int x, int y, int z)noexcept;
+	bool create(TerrainMapPtr map) noexcept;
+	bool createObject(TerrainMapPtr map) noexcept;
 
-    bool create(TerrainMapPtr map) noexcept;
-    bool createObject(TerrainMapPtr map) noexcept;
+	bool active(ray::GameObjectPtr parent) noexcept;
 
-    bool active(ray::GameObjectPtr parent) noexcept;
+	bool update(TerrainMapPtr map) noexcept;
 
-    bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept;
-
-    TerrainObjectPtr clone() noexcept;
+	TerrainObjectPtr clone() noexcept;
 
 private:
-    class Grass : public TerrainItem {};
 
-    std::shared_ptr<Grass> _grass;
+	class Grass : public TerrainItem {};
 
-    ray::GameObjectPtr _grassObject;
-    ray::GameObjectPtr _object;
+	std::shared_ptr<Grass> _grass;
+
+	ray::GameObjectPtr _grassObject;
+	ray::GameObjectPtr _object;
 };
 
 class TerrainTree : public TerrainObject
 {
 public:
-    TerrainTree() noexcept;
-    ~TerrainTree() noexcept;
+	TerrainTree() noexcept;
+	~TerrainTree() noexcept;
 
-    bool create(TerrainMapPtr map) noexcept;
-    bool createObject(TerrainMapPtr map) noexcept;
+	bool create(TerrainMapPtr map) noexcept;
+	bool createObject(TerrainMapPtr map) noexcept;
 
-    bool active(ray::GameObjectPtr parent) noexcept;
+	bool active(ray::GameObjectPtr parent) noexcept;
 
-    bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept;
+	bool update(TerrainMapPtr map) noexcept;
 
-    TerrainObjectPtr clone() noexcept;
+	TerrainObjectPtr clone() noexcept;
 
 private:
-    class Wood : public TerrainItem {};
-    class Leaf : public TerrainItem {};
+	class Wood : public TerrainItem {};
+	class Leaf : public TerrainItem {};
 
-    std::shared_ptr<Wood> _wood;
-    std::shared_ptr<Leaf> _leaf;
+	std::shared_ptr<Wood> _wood;
+	std::shared_ptr<Leaf> _leaf;
 
-    ray::GameObjectPtr _woodObject;
-    ray::GameObjectPtr _leafObject;
+	ray::GameObjectPtr _woodObject;
+	ray::GameObjectPtr _leafObject;
 
-    ray::GameObjects _objects;
+	ray::GameObjects _objects;
 };
 
 class TerrainClound : public TerrainObject
 {
 public:
-    TerrainClound() noexcept;
-    ~TerrainClound() noexcept;
+	TerrainClound() noexcept;
+	~TerrainClound() noexcept;
 
-    bool create(TerrainMapPtr map) noexcept;
-    bool createObject(TerrainMapPtr map) noexcept;
+	bool create(TerrainMapPtr map) noexcept;
+	bool createObject(TerrainMapPtr map) noexcept;
 
-    bool active(ray::GameObjectPtr parent) noexcept;
+	bool active(ray::GameObjectPtr parent) noexcept;
 
-    bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept;
+	bool update(TerrainMapPtr map) noexcept;
 
-    TerrainObjectPtr clone() noexcept;
+	TerrainObjectPtr clone() noexcept;
 
 private:
-    class Clound : public TerrainItem {};
+	class Clound : public TerrainItem {};
 
-    std::shared_ptr<Clound> _clound;
-    ray::GameObjectPtr _cloundObject;
-
-    ray::GameObjects _objects;
+	std::shared_ptr<Clound> _clound;
+	ray::GameObjectPtr _cloundObject;
 };
 
 class TerrainWater : public TerrainObject
 {
 public:
-    TerrainWater() noexcept;
-    ~TerrainWater() noexcept;
+	TerrainWater() noexcept;
+	~TerrainWater() noexcept;
 
-    bool create(TerrainMapPtr map) noexcept;
-    bool createObject(TerrainMapPtr map) noexcept;
+	bool create(TerrainMapPtr map) noexcept;
+	bool createObject(TerrainMapPtr map) noexcept;
 
-    bool active(ray::GameObjectPtr parent) noexcept;
+	bool active(ray::GameObjectPtr parent) noexcept;
 
-    bool update(TerrainMapPtr map, ChunkX x, ChunkY y, ChunkZ z, ItemID old, ItemID id) noexcept;
+	bool update(TerrainMapPtr map) noexcept;
 
-    TerrainObjectPtr clone() noexcept;
+	TerrainObjectPtr clone() noexcept;
 
 private:
-    class Water : public TerrainItem {};
+	class Water : public TerrainItem {};
 
-    std::shared_ptr<Water> _water;
-    ray::GameObjectPtr _waterObject;
-
-    ray::GameObjects _objects;
+	std::shared_ptr<Water> _water;
+	ray::GameObjectPtr _waterObject;
 };
 
 #endif

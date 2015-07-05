@@ -41,18 +41,18 @@ _NAME_BEGIN
 __ImplementSubClass(GameScene, GameListener)
 
 GameScene::Setting::Setting() noexcept
-    : gravity(0.0f, 9.81f, 0.0f)
-    , length(1.0f)
-    , mass(1000.0f)
-    , speed(10.0f)
-    , skinWidth(0.0001f)
+	: gravity(0.0f, 9.81f, 0.0f)
+	, length(1.0f)
+	, mass(1000.0f)
+	, speed(10.0f)
+	, skinWidth(0.0001f)
 {
-    aabb.min = Vector3(-1000, -1000, -1000);
-    aabb.max = Vector3(1000, 1000, 1000);
+	aabb.min = Vector3(-1000, -1000, -1000);
+	aabb.max = Vector3(1000, 1000, 1000);
 }
 
 GameScene::RootObject::RootObject(GameScene* scene) noexcept
-    : _scene(scene)
+	: _scene(scene)
 {
 }
 
@@ -63,131 +63,131 @@ GameScene::RootObject::~RootObject() noexcept
 GameServer*
 GameScene::RootObject::getGameServer() noexcept
 {
-    return _scene->getGameServer();
+	return _scene->getGameServer();
 }
 
 GameScene*
 GameScene::RootObject::getGameScene() noexcept
 {
-    return _scene;
+	return _scene;
 }
 
 GameScene::GameScene() noexcept
-    : _gameServer(nullptr)
-    , _isActive(false)
+	: _gameServer(nullptr)
+	, _isActive(false)
 {
-    _root = std::make_unique<RootObject>(this);
+	_root = std::make_unique<RootObject>(this);
 }
 
 GameScene::~GameScene() noexcept
 {
-    this->setActive(false);
+	this->setActive(false);
 }
 
 void
 GameScene::setActive(bool active) noexcept
 {
-    if (_isActive != active)
-    {
-        _isActive = active;
-        _root->setActive(active);
-    }
+	if (_isActive != active)
+	{
+		_isActive = active;
+		_root->setActive(active);
+	}
 }
 
 bool
 GameScene::getActive() const noexcept
 {
-    return _isActive;
+	return _isActive;
 }
 
 void
 GameScene::setEnvironment(const Setting& setting) noexcept
 {
-    _setting = setting;
+	_setting = setting;
 }
 
 const GameScene::Setting&
 GameScene::getEnvironment() const noexcept
 {
-    return _setting;
+	return _setting;
 }
 
 void
 GameScene::addGameObject(GameObjectPtr gameobj) noexcept
 {
-    assert(gameobj);
-    assert(!gameobj->getParent());
+	assert(gameobj);
+	assert(!gameobj->getParent());
 
-    _root->addChild(gameobj);
+	_root->addChild(gameobj);
 }
 
 void
 GameScene::removeGameObject(GameObjectPtr gameobj) noexcept
 {
-    if (gameobj)
-    {
-        gameobj->setActive(false);
+	if (gameobj)
+	{
+		gameobj->setActive(false);
 
-        _root->removeChild(gameobj->getInstanceID());
-    }
+		_root->removeChild(gameobj->getInstanceID());
+	}
 }
 
 GameObjectPtr
 GameScene::getGameObject(const std::string& name) noexcept
 {
-    return _root->findChild(name);
+	return _root->findChild(name);
 }
 
 GameObjectPtr
 GameScene::getRootObject() noexcept
 {
-    return _root;
+	return _root;
 }
 
 GameScenePtr
 GameScene::clone() const noexcept
 {
-    return nullptr;
+	return nullptr;
 }
 
 void
 GameScene::_setGameServer(GameServer* manager) noexcept
 {
-    _gameServer = manager;
+	_gameServer = manager;
 }
 
 GameServer*
 GameScene::getGameServer() noexcept
 {
-    return _gameServer;
+	return _gameServer;
 }
 
 void
 GameScene::_onFrameBegin() noexcept
 {
-    _root->_onFrameBegin();
+	_root->_onFrameBegin();
 }
 
 void
 GameScene::_onFrame() noexcept
 {
-    _root->_onFrame();
+	_root->_onFrame();
 }
 
 void
 GameScene::_onFrameEnd() noexcept
 {
-    _root->_onFrameEnd();
+	_root->_onFrameEnd();
 }
 
 void
 GameScene::onMessage(const GameMessage& message) except
 {
-    auto root = this->getRootObject();
-    if (root)
-    {
-        root->sendMessageDownwards(message);
-    }
+	auto root = this->getRootObject();
+	if (root)
+	{
+		root->sendMessageDownwards(message);
+	}
 }
 
 _NAME_END

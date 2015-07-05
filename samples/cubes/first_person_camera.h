@@ -41,36 +41,36 @@
 
 class FirstPersonCamera : public ray::GameController
 {
-    __DeclareSubClass(FirstPersonCamera, ray::GameController)
+	__DeclareSubClass(FirstPersonCamera, ray::GameController)
 public:
-    FirstPersonCamera() noexcept;
-    ~FirstPersonCamera() noexcept;
+	FirstPersonCamera() noexcept;
+	~FirstPersonCamera() noexcept;
 
 private:
 
-    void onActivate() noexcept;
-    void onDectivate() noexcept;
+	void onActivate() noexcept;
+	void onDectivate() noexcept;
 
-    void onFrameEnd() noexcept;
+	void onFrameEnd() noexcept;
 
-    void yawCamera(float speed) noexcept;
-    void moveCamera(float speed) noexcept;
-    void rotateCamera(float angle, const ray::float3 axis) noexcept;
-    void rotateCamera(float mouseX, float mouseY, float lastX, float lastY) noexcept;
+	void yawCamera(float speed) noexcept;
+	void moveCamera(float speed) noexcept;
+	void rotateCamera(float angle, const ray::float3 axis) noexcept;
+	void rotateCamera(float mouseX, float mouseY, float lastX, float lastY) noexcept;
 
-    ray::GameComponentPtr clone() const noexcept;
+	ray::GameComponentPtr clone() const noexcept;
 
 private:
 
-    float _speed;
-    float _gravity;
-    float _maxVelocityChange;
-    float _jumpHeight;
-    float _lastX;
-    float _lastY;
+	float _speed;
+	float _gravity;
+	float _maxVelocityChange;
+	float _jumpHeight;
+	float _lastX;
+	float _lastY;
 
-    int _centerX;
-    int _centerY;
+	int _centerX;
+	int _centerY;
 };
 
 #endif

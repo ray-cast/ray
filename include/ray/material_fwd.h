@@ -50,6 +50,7 @@ typedef std::shared_ptr<class MaterialParam> MaterialParamPtr;
 typedef std::shared_ptr<class MaterialParamBinds> MaterialParamBindsPtr;
 typedef std::shared_ptr<class Material> MaterialPtr;
 
+typedef std::vector<MaterialPtr> Materials;
 typedef std::vector<MaterialPassPtr> MaterialPassList;
 typedef std::vector<MaterialTechPtr> MaterialTechniques;
 typedef std::vector<MaterialParamPtr> MaterialParams;

@@ -53,36 +53,36 @@ LightShaft::~LightShaft() noexcept
 void
 LightShaft::onActivate(RenderPipeline& pipeline) except
 {
-    std::size_t width = pipeline.getWindowWidth();
-    std::size_t height = pipeline.getWindowHeight();
+	std::size_t width = pipeline.getWindowWidth();
+	std::size_t height = pipeline.getWindowHeight();
 
-    MaterialMaker maker;
-    _material = maker.load("sys:fx/light_shaft.glsl");
+	MaterialMaker maker;
+	_material = maker.load("sys:fx/light_shaft.glsl");
 
-    _texSample = RenderFactory::createRenderTarget();
-    _texSample->setup(width * 0.5, height * 0.5, TextureDim::DIM_2D, PixelFormat::R8G8B8A8F);
+	_texSample = RenderFactory::createRenderTarget();
+	_texSample->setup(width * 0.5, height * 0.5, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
 
-    _lightShaft = _material->getTech(RenderQueue::PostProcess)->getPass("scatter");
-    _lightShaftCopy = _material->getTech(RenderQueue::PostProcess)->getPass("copy");
+	_lightShaft = _material->getTech(RenderQueue::PostProcess)->getPass("scatter");
+	_lightShaftCopy = _material->getTech(RenderQueue::PostProcess)->getPass("copy");
 
-    _illuminationSample = _material->getParameter("illuminationSample");
-    _illuminationPosition = _material->getParameter("illuminationPosition");
+	_illuminationSample = _material->getParameter("illuminationSample");
+	_illuminationPosition = _material->getParameter("illuminationPosition");
 
-    float sampleNumber = 50;
-    float sampleInv = 1 / sampleNumber;
-    float sampleWeight = 1 / sampleNumber;
-    float sampleDecay = 0.0156;
+	_cameraRadio = _material->getParameter("cameraRadio");
+	_texSource = _material->getParameter("texSource");
 
-    float4 sample;
-    sample.x = sampleNumber;
-    sample.y = sampleInv;
-    sample.z = sampleWeight;
-    sample.w = sampleDecay;
+	float sampleNumber = 150;
+	float sampleInv = 1 / sampleNumber;
+	float sampleWeight = 1 / sampleNumber;
+	float sampleDecay = 0.0056;
 
-    _illuminationSample->assign(sample);
+	float4 sample;
+	sample.x = sampleNumber;
+	sample.y = sampleInv;
+	sample.z = sampleWeight;
+	sample.w = sampleDecay;
 
-    _cameraRadio = _material->getParameter("cameraRadio");
-    _texSource = _material->getParameter("texSource");
+	_illuminationSample->assign(sample);
 }
 
 void
@@ -93,38 +93,38 @@ LightShaft::onDeactivate(RenderPipeline& pipeline) except
 void
 LightShaft::onRender(RenderPipeline& pipeline, RenderTargetPtr source) except
 {
-    _cameraRadio->assign(pipeline.getCamera()->getRatio());
+	_cameraRadio->assign(pipeline.getCamera()->getRatio());
 
-    auto lights = pipeline.getRenderData(RenderQueue::Lighting);
-    for (auto& it : lights)
-    {
-        auto light = dynamic_cast<Light*>(it);
+	auto lights = pipeline.getRenderData(RenderQueue::Lighting);
+	for (auto& it : lights)
+	{
+		auto light = dynamic_cast<Light*>(it);
 
-        if (light->getLightType() == LightType::LT_SUN)
-        {
-            auto sun = pipeline.getCamera()->getTranslate() + light->getTransform().getTranslate();
-            auto view = pipeline.getCamera()->worldToProject(sun);
-            view.x = view.x * 0.5 + 0.5;
-            view.y = view.y * 0.5 + 0.5;
+		if (light->getLightType() == LightType::LT_SUN)
+		{
+			auto sun = pipeline.getCamera()->getTranslate() + light->getTransform().getTranslate();
+			auto view = pipeline.getCamera()->worldToProject(sun);
+			view.x = view.x * 0.5 + 0.5;
+			view.y = view.y * 0.5 + 0.5;
 
-            if (view.x >= -0.5f && view.x <= 2.0f &&
-                view.y >= -0.5f && view.y <= 2.0f && view.z < 1.0f)
-            {
-                _illuminationPosition->assign(Vector2(view.x, view.y));
+			if (view.x >= -0.5f && view.x <= 2.0f &&
+				view.y >= -0.5f && view.y <= 2.0f && view.z < 1.0f)
+			{
+				_illuminationPosition->assign(Vector2(view.x, view.y));
 
-                _texSource->assign(source->getResolveTexture());
-                pipeline.setRenderTarget(_texSample);
-                pipeline.setTechnique(_lightShaft);
-                pipeline.drawSceneQuad();
+				_texSource->assign(source->getResolveTexture());
+				pipeline.setRenderTarget(_texSample);
+				pipeline.setTechnique(_lightShaft);
+				pipeline.drawSceneQuad();
 
-                _texSource->assign(_texSample->getResolveTexture());
+				_texSource->assign(_texSample->getResolveTexture());
 
-                pipeline.setRenderTarget(source);
-                pipeline.setTechnique(_lightShaftCopy);
-                pipeline.drawSceneQuad();
-            }
-        }
-    }
+				pipeline.setRenderTarget(source);
+				pipeline.setTechnique(_lightShaftCopy);
+				pipeline.drawSceneQuad();
+			}
+		}
+	}
 }
 
 _NAME_END

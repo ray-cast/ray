@@ -63,6 +63,7 @@ SET(PLATFORM_CORE_LIST
     ${SOURCE_PATH}/timer.cpp
     ${HEADER_PATH}/timer.h
     ${HEADER_PATH}/reference.h
+    ${HEADER_PATH}/noncopyable.h
 )
 SOURCE_GROUP("core" FILES ${PLATFORM_CORE_LIST})
 
@@ -294,9 +295,15 @@ SET(MODEL_LIST
     ${SOURCE_PATH}/modpmd.cpp
     ${HEADER_PATH}/modpmx.h
     ${SOURCE_PATH}/modpmx.cpp
+    ${HEADER_PATH}/modvmd.h
+    ${SOURCE_PATH}/modvmd.cpp
     ${HEADER_PATH}/modtypes.h
     ${HEADER_PATH}/modutil.h
     ${SOURCE_PATH}/modutil.cpp
+    ${HEADER_PATH}/anim.h
+    ${SOURCE_PATH}/anim.cpp
+    ${HEADER_PATH}/bone.h
+    ${SOURCE_PATH}/bone.cpp
 )
 SOURCE_GROUP("model" FILES ${MODEL_LIST})
 ADD_LIBRARY(libmodel SHARED ${MODEL_LIST})
@@ -305,16 +312,6 @@ SET_TARGET_ATTRIBUTE(libmodel "core")
 TARGET_LINK_LIBRARIES(libmodel
     libplatform
 )
-
-SET(ANIMATION_LIST
-    ${HEADER_PATH}/anim.h
-    ${SOURCE_PATH}/anim.cpp
-    ${HEADER_PATH}/bone.h
-    ${SOURCE_PATH}/bone.cpp
-)
-SOURCE_GROUP("animtion" FILES ${ANIMATION_LIST})
-ADD_LIBRARY(libanimtion SHARED ${ANIMATION_LIST})
-SET_TARGET_ATTRIBUTE(libanimtion "core")
 
 SET(GUI_LIST
     ${HEADER_PATH}/gui.h
@@ -419,8 +416,8 @@ SET(RENDERER_SCENE
 SOURCE_GROUP("renderer\\renderable" FILES ${RENDERER_SCENE})
 
 SET(RENDERER_MESH
-    ${HEADER_PATH}/geometry.h
-    ${SOURCE_PATH}/geometry.cpp
+    ${HEADER_PATH}/render_mesh.h
+    ${SOURCE_PATH}/render_mesh.cpp
 )
 SOURCE_GROUP("renderer\\mesh" FILES ${RENDERER_MESH})
 
@@ -445,6 +442,8 @@ SET(RENDERER_POST_PROCESS
     ${SOURCE_PATH}/ssgi.cpp
     ${HEADER_PATH}/ssr.h
     ${SOURCE_PATH}/ssr.cpp
+    ${HEADER_PATH}/ssss.h
+    ${SOURCE_PATH}/ssss.cpp
     ${HEADER_PATH}/post_process.h
     ${SOURCE_PATH}/post_process.cpp
 )

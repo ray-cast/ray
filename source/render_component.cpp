@@ -87,10 +87,28 @@ RenderComponent::addMaterial(MaterialPtr material) noexcept
 	}
 }
 
+void
+RenderComponent::addSharedMaterial(MaterialPtr material) noexcept
+{
+	assert(material);
+
+	auto it = std::find(_sharedMaterials.begin(), _sharedMaterials.end(), material);
+	if (it == _sharedMaterials.end())
+	{
+		_sharedMaterials.push_back(material);
+	}
+}
+
 const Materials&
 RenderComponent::getMaterials() const noexcept
 {
 	return _materials;
+}
+
+const Materials&
+RenderComponent::getSharedMaterials() const noexcept
+{
+	return _sharedMaterials;
 }
 
 MaterialPtr
@@ -99,6 +117,26 @@ RenderComponent::getMaterial(std::size_t index) const noexcept
 	if (index < _materials.size())
 		return _materials[index];
 	return nullptr;
+}
+
+MaterialPtr
+RenderComponent::getSharedMaterial(std::size_t index) const noexcept
+{
+	if (index < _sharedMaterials.size())
+		return _sharedMaterials[index];
+	return nullptr;
+}
+
+bool
+RenderComponent::hasMaterial() const noexcept
+{
+	return _materials.empty() ? false : true;
+}
+
+bool
+RenderComponent::hasSharedMaterial() const noexcept
+{
+	return _sharedMaterials.empty() ? false : true;
 }
 
 void
@@ -122,18 +160,24 @@ RenderComponent::save(oarchive& write) noexcept
 }
 
 void
-RenderComponent::onActivate() except
+RenderComponent::onAttach() except
 {
-	if (!this->getName().empty())
+	if (!this->hasSharedMaterial())
 	{
-		auto material = RenderFactory::createMaterial(this->getName());
-		if (material)
-			this->addMaterial(material);
+		if (!this->getName().empty())
+		{
+			auto material = RenderFactory::createMaterial(this->getName());
+			if (material)
+			{
+				this->addMaterial(material);
+				this->addSharedMaterial(material);
+			}
+		}
 	}
 }
 
 void
-RenderComponent::onDectivate() noexcept
+RenderComponent::onRemove() noexcept
 {
 	for (auto& it : _materials)
 	{

@@ -33,8 +33,7 @@
             void WaterPS()
             {
                 glsl_FragColor0 = color;
-                glsl_FragColor1.rgb =  normalize(normalize(normal).xyz);
-                glsl_FragColor1.a = shininess + specular * 0.1;
+                glsl_FragColor1 = StoreGBufferRT1(normalize(normal.xyz), shininess);
             }
         ]]>
     </shader>
@@ -42,6 +41,8 @@
         <pass name="transparent">
             <state name="vertex" value="WaterVS"/>
             <state name="fragment" value="WaterPS"/>
+
+            <state name="cullmode" value="none"/>
         </pass>
     </technique>
 </effect>

@@ -43,135 +43,136 @@ _NAME_BEGIN
 
 enum CameraType
 {
-    CT_ORTHO,
-    CT_PERSPECTIVE
+	CT_ORTHO,
+	CT_PERSPECTIVE
 };
 
 enum CameraOrder
 {
-    CO_SHADOW,
-    CO_DEPTH_OPAQUES,
-    CO_DEPTH_TRANSPARENT,
-    CO_COLOR,
-    CO_NORMAL,
-    CO_LIGHT,
-    CO_SHADING,
-    CO_CUSTOM,
-    CO_MAIN
+	CO_SHADOW,
+	CO_DEPTH_OPAQUES,
+	CO_DEPTH_TRANSPARENT,
+	CO_COLOR,
+	CO_NORMAL,
+	CO_LIGHT,
+	CO_SHADING,
+	CO_CUSTOM,
+	CO_MAIN
 };
 
 enum CameraRender
 {
-    CR_RENDER_TO_SCREEN,
-    CR_RENDER_TO_TEXTURE,
-    CR_RENDER_TO_CUBEMAP,
+	CR_RENDER_TO_SCREEN,
+	CR_RENDER_TO_TEXTURE,
+	CR_RENDER_TO_CUBEMAP,
 };
 
 class EXPORT Camera final : public RenderObject
 {
 public:
-    Camera() noexcept;
-    ~Camera() noexcept;
+	Camera() noexcept;
+	~Camera() noexcept;
 
-    float getAperture() const noexcept;
-    float getRatio() const noexcept;
-    float getNear() const noexcept;
-    float getFar() const noexcept;
+	float getAperture() const noexcept;
+	float getRatio() const noexcept;
+	float getNear() const noexcept;
+	float getFar() const noexcept;
 
-    const Vector3& getTranslate() const noexcept;
-    const Vector3& getLookAt() const noexcept;
-    const Vector3& getUpVector() const noexcept;
+	const Vector3& getTranslate() const noexcept;
+	const Vector3& getLookAt() const noexcept;
+	const Vector3& getUpVector() const noexcept;
 
-    const Matrix4x4& getView() const noexcept;
-    const Matrix4x4& getViewInverse() const noexcept;
-    const Matrix4x4& getViewInverseTranspose() const noexcept;
+	const Matrix4x4& getView() const noexcept;
+	const Matrix4x4& getViewInverse() const noexcept;
+	const Matrix4x4& getViewInverseTranspose() const noexcept;
 
-    const Matrix4x4& getProject() const noexcept;
-    const Matrix4x4& getProjectInverse() const noexcept;
+	void setProject(const Matrix4x4& m) noexcept;
+	const Matrix4x4& getProject() const noexcept;
+	const Matrix4x4& getProjectInverse() const noexcept;
 
-    const Matrix4x4& getViewProject() const noexcept;
-    const Matrix4x4& getViewProjectInverse() const noexcept;
+	const Matrix4x4& getViewProject() const noexcept;
+	const Matrix4x4& getViewProjectInverse() const noexcept;
 
-    const Vector2& getProjLength() const noexcept;
-    const Vector4& getProjConstant() const noexcept;
+	const Vector2& getProjLength() const noexcept;
+	const Vector4& getProjConstant() const noexcept;
 
-    const Vector4& getClipConstant() const noexcept;
+	const Vector4& getClipConstant() const noexcept;
 
-    void makeLookAt(const Vector3& pos, const Vector3& lookat, const Vector3& up) noexcept;
-    void makeOrtho(float left, float right, float bottom, float top, float znear, float zfar) noexcept;
-    void makePerspective(float aperture, float ratio, float znear, float zfar) noexcept;
-    void makeViewProject() noexcept;
+	void makeLookAt(const Vector3& pos, const Vector3& lookat, const Vector3& up) noexcept;
+	void makeOrtho(float left, float right, float bottom, float top, float znear, float zfar) noexcept;
+	void makePerspective(float aperture, float ratio, float znear, float zfar) noexcept;
+	void makeViewProject() noexcept;
 
-    Vector3 project(const Vector3& pos) const noexcept;
-    Vector3 unproject(const Vector3& pos) const noexcept;
+	Vector3 project(const Vector3& pos) const noexcept;
+	Vector3 unproject(const Vector3& pos) const noexcept;
 
-    Vector3 worldToProject(const Vector3& pos) const noexcept;
-    Vector3 sceneToDirection(const Vector2& pos) const noexcept;
+	Vector3 worldToProject(const Vector3& pos) const noexcept;
+	Vector3 sceneToDirection(const Vector2& pos) const noexcept;
 
-    void setViewport(const Viewport& viewport) noexcept;
-    const Viewport&  getViewport() const noexcept;
+	void setViewport(const Viewport& viewport) noexcept;
+	const Viewport&  getViewport() const noexcept;
 
-    void setCameraType(CameraType type) noexcept;
-    void setCameraOrder(CameraOrder order) noexcept;
-    void setCameraRender(CameraRender mode) noexcept;
+	void setCameraType(CameraType type) noexcept;
+	void setCameraOrder(CameraOrder order) noexcept;
+	void setCameraRender(CameraRender mode) noexcept;
 
-    CameraType getCameraType() const noexcept;
-    CameraOrder getCameraOrder() const noexcept;
-    CameraRender getCameraRender() const noexcept;
+	CameraType getCameraType() const noexcept;
+	CameraOrder getCameraOrder() const noexcept;
+	CameraRender getCameraRender() const noexcept;
 
-    void setRenderScene(RenderScenePtr scene) noexcept;
-    void setRenderTarget(RenderTargetPtr texture) noexcept;
-    void setRenderWindow(RenderWindowPtr window) noexcept;
+	void setRenderScene(RenderScenePtr scene) noexcept;
+	void setRenderTarget(RenderTargetPtr texture) noexcept;
+	void setRenderWindow(RenderWindowPtr window) noexcept;
 
-    RenderScenePtr getRenderScene() const noexcept;
-    RenderTargetPtr getRenderTarget() const noexcept;
-    RenderWindowPtr getRenderWindow() const noexcept;
+	RenderScenePtr getRenderScene() const noexcept;
+	RenderTargetPtr getRenderTarget() const noexcept;
+	RenderWindowPtr getRenderWindow() const noexcept;
 
-    CameraPtr clone() const noexcept;
-
-private:
-    Camera(const Camera&) noexcept = delete;
-    Camera& operator=(const Camera&) noexcept = delete;
+	CameraPtr clone() const noexcept;
 
 private:
+	Camera(const Camera&) noexcept = delete;
+	Camera& operator=(const Camera&) noexcept = delete;
 
-    float _left;
-    float _right;
-    float _top;
-    float _bottom;
-    float _aperture;
-    float _ratio;
-    float _zNear;
-    float _zFar;
+private:
 
-    Vector3 _translate;
-    Vector3 _lookat;
-    Vector3 _up;
+	float _left;
+	float _right;
+	float _top;
+	float _bottom;
+	float _aperture;
+	float _ratio;
+	float _zNear;
+	float _zFar;
 
-    Vector2 _projLength;
-    Vector4 _projConstant;
-    Vector4 _clipConstant;
+	Vector3 _translate;
+	Vector3 _lookat;
+	Vector3 _up;
 
-    Matrix4x4 _view;
-    Matrix4x4 _viewInverse;
-    Matrix4x4 _viewInverseTranspose;
+	Vector2 _projLength;
+	Vector4 _projConstant;
+	Vector4 _clipConstant;
 
-    Matrix4x4 _project;
-    Matrix4x4 _projectInverse;
+	Matrix4x4 _view;
+	Matrix4x4 _viewInverse;
+	Matrix4x4 _viewInverseTranspose;
 
-    Matrix4x4 _viewProejct;
-    Matrix4x4 _viewProjectInverse;
+	Matrix4x4 _project;
+	Matrix4x4 _projectInverse;
 
-    Viewport _viewport;
+	Matrix4x4 _viewProejct;
+	Matrix4x4 _viewProjectInverse;
 
-    CameraType      _cameraType;
-    CameraOrder     _cameraOrder;
-    CameraRender    _cameraRender;
+	Viewport _viewport;
 
-    RenderTargetPtr _renderTexture;
-    RenderWindowPtr _renderWindow;
+	CameraType      _cameraType;
+	CameraOrder     _cameraOrder;
+	CameraRender    _cameraRender;
 
-    RenderScene*  _renderScene;
+	RenderTargetPtr _renderTexture;
+	RenderWindowPtr _renderWindow;
+
+	RenderScene*  _renderScene;
 };
 
 _NAME_END

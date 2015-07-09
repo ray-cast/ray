@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-const float ESM_FACTOR = 0.5f;
+const float ESM_FACTOR = 1000.0f;
 
 DeferredLighting::DeferredLighting() noexcept
 {
@@ -316,12 +316,12 @@ DeferredLighting::onActivate() except
 	_deferredGraphicMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::SR8G8B8A8);
 
 	_deferredNormalMap = RenderFactory::createRenderTarget();
-	_deferredNormalMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
+	_deferredNormalMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
 
 	_deferredLightMap = RenderFactory::createRenderTarget();
 	_deferredLightMap->setSharedStencilTexture(_deferredDepthMap);
 	_deferredLightMap->setClearFlags(ClearFlags::CLEAR_COLOR);
-	_deferredLightMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R32G32B32F);
+	_deferredLightMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
 
 	_deferredShadowMap = RenderFactory::createRenderTarget();
 	_deferredShadowMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16F);

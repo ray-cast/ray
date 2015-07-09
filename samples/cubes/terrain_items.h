@@ -112,6 +112,8 @@ private:
 
 	std::shared_ptr<Clound> _clound;
 	ray::GameObjectPtr _cloundObject;
+
+	ray::GameObjectPtr _object;
 };
 
 class TerrainWater : public TerrainObject
@@ -134,6 +136,8 @@ private:
 
 	std::shared_ptr<Water> _water;
 	ray::GameObjectPtr _waterObject;
+
+	ray::GameObjectPtr _object;
 };
 
 #endif

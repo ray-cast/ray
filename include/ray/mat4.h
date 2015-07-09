@@ -571,9 +571,9 @@ public:
 		c3 = 1.0f - 2.0f * (q.x * q.x + q.y * q.y);
 		c4 = 0;
 
-		a4 = 0;
-		b4 = 0;
-		c4 = 0;
+		d1 = 0;
+		d2 = 0;
+		d3 = 0;
 		d4 = 1;
 
 		return *this;
@@ -607,9 +607,9 @@ public:
 		c3 = a * c;
 		d3 = 0;
 
-		a4 = 0;
-		b4 = 0;
-		c4 = 0;
+		d1 = 0;
+		d2 = 0;
+		d3 = 0;
 		d4 = 1;
 		return *this;
 	}

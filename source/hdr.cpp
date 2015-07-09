@@ -42,29 +42,29 @@ _NAME_BEGIN
 
 float ToneKey(float avg)
 {
-    return 1.03 - 2 / (2 + std::log10(avg + 1.0));
+	return 1.03 - 2 / (2 + std::log10(avg + 1.0));
 }
 
 float ToneExposure(float avg)
 {
-    float guess = 1.5 - (1.5 / (avg * 0.1 + 1.0));
-    return 1 / (std::max(0.0f, guess) + 0.2f);
+	float guess = 1.5 - (1.5 / (avg * 0.1 + 1.0));
+	return 1 / (std::max(0.0f, guess) + 0.2f);
 }
 
 #define SAMPLE_LOG_SIZE 32
 #define SAMPLE_LOG_COUNT SAMPLE_LOG_SIZE * SAMPLE_LOG_SIZE
 
 HDR::Setting::Setting() noexcept
-    : bloomFactor(0.55)
-    , bloomIntensity(1.0)
-    , lumAve(1.0)
-    , lumKey(1.0)
-    , lumExposure(2.0)
+	: bloomFactor(0.55)
+	, bloomIntensity(1.0)
+	, lumAve(1.0)
+	, lumKey(1.0)
+	, lumExposure(2.0)
 {
 }
 
 HDR::HDR() noexcept
-    : _lumAdapt(0)
+	: _lumAdapt(0)
 {
 }
 
@@ -75,170 +75,170 @@ HDR::~HDR() noexcept
 void
 HDR::setSetting(const Setting& setting) noexcept
 {
-    _bloomFactor->assign(_setting.bloomFactor);
-    _bloomIntensity->assign(_setting.bloomIntensity);
+	_bloomFactor->assign(_setting.bloomFactor);
+	_bloomIntensity->assign(_setting.bloomIntensity);
 
-    _toneLumAve->assign(setting.lumAve);
-    _toneLumKey->assign(setting.lumKey);
-    _toneLumExposure->assign(setting.lumExposure);
+	_toneLumAve->assign(setting.lumAve);
+	_toneLumKey->assign(setting.lumKey);
+	_toneLumExposure->assign(setting.lumExposure);
 
-    _setting = setting;
+	_setting = setting;
 }
 
 const HDR::Setting&
 HDR::getSetting() const noexcept
 {
-    return _setting;
+	return _setting;
 }
 
 void
 HDR::measureLuminance(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
 {
-    float lum = 0;
-    float data[SAMPLE_LOG_COUNT];
-    float delta = Material::getMaterialSemantic()->getFloatParam(GlobalFloatSemantic::TimeDelta);
+	float lum = 0;
+	float data[SAMPLE_LOG_COUNT];
+	float delta = Material::getMaterialSemantic()->getFloatParam(GlobalFloatSemantic::TimeDelta);
 
-    pipeline.readRenderTarget(source, PixelFormat::R16F, source->getWidth(), source->getHeight(), data);
+	pipeline.readRenderTarget(source, PixelFormat::R16F, source->getWidth(), source->getHeight(), data);
 
-    for (std::size_t i = 0; i < SAMPLE_LOG_COUNT; ++i)
-    {
-        lum += data[i];
-    }
+	for (std::size_t i = 0; i < SAMPLE_LOG_COUNT; ++i)
+	{
+		lum += data[i];
+	}
 
-    lum /= SAMPLE_LOG_COUNT;
-    lum = exp(lum);
+	lum /= SAMPLE_LOG_COUNT;
+	lum = exp(lum);
 
-    _lumAdapt = _lumAdapt + ((lum - _lumAdapt) * (1.0f - pow(0.98f, 30.0f * delta)));
-    _lumAdapt += 0.001f;
+	_lumAdapt = _lumAdapt + ((lum - _lumAdapt) * (1.0f - pow(0.98f, 30.0f * delta)));
+	_lumAdapt += 0.001f;
 
-    _toneLumAve->assign(_lumAdapt);
-    _toneLumKey->assign(ToneKey(_lumAdapt));
-    _toneLumExposure->assign(ToneExposure(_lumAdapt));
+	_toneLumAve->assign(_lumAdapt);
+	_toneLumKey->assign(ToneKey(_lumAdapt));
+	_toneLumExposure->assign(ToneExposure(_lumAdapt));
 }
 
 void
 HDR::sample4(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept
 {
-    _toneSource->assign(source->getResolveTexture());
+	_toneSource->assign(source->getResolveTexture());
 
-    pipeline.setRenderTarget(dest);
-    pipeline.setTechnique(_sample4);
-    pipeline.drawSceneQuad();
+	pipeline.setRenderTarget(dest);
+	pipeline.setTechnique(_sample4);
+	pipeline.drawSceneQuad();
 }
 
 void
 HDR::sample8(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept
 {
-    _toneSource->assign(source->getResolveTexture());
+	_toneSource->assign(source->getResolveTexture());
 
-    pipeline.setRenderTarget(dest);
-    pipeline.setTechnique(_sample8);
-    pipeline.drawSceneQuad();
+	pipeline.setRenderTarget(dest);
+	pipeline.setTechnique(_sample8);
+	pipeline.drawSceneQuad();
 }
 
 void
 HDR::sampleLog(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept
 {
-    _toneSource->assign(source->getResolveTexture());
+	_toneSource->assign(source->getResolveTexture());
 
-    pipeline.setRenderTarget(dest);
-    pipeline.setTechnique(_samplelog);
-    pipeline.drawSceneQuad();
+	pipeline.setRenderTarget(dest);
+	pipeline.setTechnique(_samplelog);
+	pipeline.drawSceneQuad();
 }
 
 void
 HDR::generateBloom(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept
 {
-    _texBloom->setClearFlags(ClearFlags::CLEAR_COLOR);
-    _toneSource->assign(source->getResolveTexture());
+	_texBloom->setClearFlags(ClearFlags::CLEAR_COLOR);
+	_toneSource->assign(source->getResolveTexture());
 
-    pipeline.setRenderTarget(dest);
-    pipeline.setTechnique(_bloom);
-    pipeline.drawSceneQuad();
+	pipeline.setRenderTarget(dest);
+	pipeline.setTechnique(_bloom);
+	pipeline.drawSceneQuad();
 
-    _texBloom->setClearFlags(ClearFlags::CLEAR_NONE);
+	_texBloom->setClearFlags(ClearFlags::CLEAR_NONE);
 
-    this->blurh(pipeline, _texBloom);
-    this->blurv(pipeline, _texBloom);
+	this->blurh(pipeline, _texBloom);
+	this->blurv(pipeline, _texBloom);
 }
 
 void
 HDR::blurh(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
 {
-    _texSizeInv->assign(float2(1.0 / source->getWidth(), 1.0 / source->getHeight()));
-    _toneSource->assign(source->getResolveTexture());
+	_texSizeInv->assign(float2(1.0 / source->getWidth(), 1.0 / source->getHeight()));
+	_toneSource->assign(source->getResolveTexture());
 
-    pipeline.setRenderTarget(source);
-    pipeline.setTechnique(_blurh);
-    pipeline.drawSceneQuad();
+	pipeline.setRenderTarget(source);
+	pipeline.setTechnique(_blurh);
+	pipeline.drawSceneQuad();
 }
 
 void
 HDR::blurv(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
 {
-    _texSizeInv->assign(float2(1.0 / source->getWidth(), 1.0 / source->getHeight()));
-    _toneSource->assign(source->getResolveTexture());
+	_texSizeInv->assign(float2(1.0 / source->getWidth(), 1.0 / source->getHeight()));
+	_toneSource->assign(source->getResolveTexture());
 
-    pipeline.setRenderTarget(source);
-    pipeline.setTechnique(_blurv);
-    pipeline.drawSceneQuad();
+	pipeline.setRenderTarget(source);
+	pipeline.setTechnique(_blurv);
+	pipeline.drawSceneQuad();
 }
 
 void
 HDR::generateToneMapping(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept
 {
-    _toneSource->assign(dest->getResolveTexture());
-    _toneBloom->assign(source->getResolveTexture());
+	_toneSource->assign(dest->getResolveTexture());
+	_toneBloom->assign(source->getResolveTexture());
 
-    pipeline.setRenderTarget(dest);
-    pipeline.setTechnique(_tone);
-    pipeline.drawSceneQuad();
+	pipeline.setRenderTarget(dest);
+	pipeline.setTechnique(_tone);
+	pipeline.drawSceneQuad();
 }
 
 void
 HDR::onActivate(RenderPipeline& pipeline) except
 {
-    std::size_t width = pipeline.getWindowWidth();
-    std::size_t height = pipeline.getWindowHeight();
+	std::size_t width = pipeline.getWindowWidth();
+	std::size_t height = pipeline.getWindowHeight();
 
-    _texSample4 = RenderFactory::createRenderTarget();
-    _texSample4->setup(width / 4.0, height / 4.0, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
+	_texSample4 = RenderFactory::createRenderTarget();
+	_texSample4->setup(width / 4.0, height / 4.0, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
 
-    _texSample8 = RenderFactory::createRenderTarget();
-    _texSample8->setup(width / 8.0, height / 8.0, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
+	_texSample8 = RenderFactory::createRenderTarget();
+	_texSample8->setup(width / 8.0, height / 8.0, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
 
-    _texSampleLog = RenderFactory::createRenderTarget();
-    _texSampleLog->setup(SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, TextureDim::DIM_2D, PixelFormat::R16F);
+	_texSampleLog = RenderFactory::createRenderTarget();
+	_texSampleLog->setup(SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, TextureDim::DIM_2D, PixelFormat::R16F);
 
-    _texBloom = RenderFactory::createRenderTarget();
-    _texBloom->setup(width / 4.0, height / 4.0, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
+	_texBloom = RenderFactory::createRenderTarget();
+	_texBloom->setup(width / 4.0, height / 4.0, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
 
-    _hdr = MaterialMaker("sys:fx/hdr.glsl");
+	_hdr = MaterialMaker("sys:fx/hdr.glsl");
 
-    _sample4 = _hdr->getTech(RenderQueue::PostProcess)->getPass("sample");
-    _sample8 = _hdr->getTech(RenderQueue::PostProcess)->getPass("sample");
-    _samplelog = _hdr->getTech(RenderQueue::PostProcess)->getPass("samplelog");
-    _bloom = _hdr->getTech(RenderQueue::PostProcess)->getPass("bloom");
-    _blurh = _hdr->getTech(RenderQueue::PostProcess)->getPass("blurh");
-    _blurv = _hdr->getTech(RenderQueue::PostProcess)->getPass("blurv");
-    _tone = _hdr->getTech(RenderQueue::PostProcess)->getPass("tone");
+	_sample4 = _hdr->getTech(RenderQueue::PostProcess)->getPass("sample");
+	_sample8 = _hdr->getTech(RenderQueue::PostProcess)->getPass("sample");
+	_samplelog = _hdr->getTech(RenderQueue::PostProcess)->getPass("samplelog");
+	_bloom = _hdr->getTech(RenderQueue::PostProcess)->getPass("bloom");
+	_blurh = _hdr->getTech(RenderQueue::PostProcess)->getPass("blurh");
+	_blurv = _hdr->getTech(RenderQueue::PostProcess)->getPass("blurv");
+	_tone = _hdr->getTech(RenderQueue::PostProcess)->getPass("tone");
 
-    _texSizeInv = _hdr->getParameter("texSizeInv");
+	_texSizeInv = _hdr->getParameter("texSizeInv");
 
-    _bloomFactor = _hdr->getParameter("bloomFactor");
-    _bloomIntensity = _hdr->getParameter("bloomIntensity");
+	_bloomFactor = _hdr->getParameter("bloomFactor");
+	_bloomIntensity = _hdr->getParameter("bloomIntensity");
 
-    _toneSource = _hdr->getParameter("texSource");
-    _toneBloom = _hdr->getParameter("texBloom");
-    _toneLumAve = _hdr->getParameter("lumAve");
-    _toneLumKey = _hdr->getParameter("lumKey");
-    _toneLumExposure = _hdr->getParameter("lumExposure");
+	_toneSource = _hdr->getParameter("texSource");
+	_toneBloom = _hdr->getParameter("texBloom");
+	_toneLumAve = _hdr->getParameter("lumAve");
+	_toneLumKey = _hdr->getParameter("lumKey");
+	_toneLumExposure = _hdr->getParameter("lumExposure");
 
-    _bloomFactor->assign(_setting.bloomFactor);
-    _bloomIntensity->assign(_setting.bloomIntensity);
-    _toneLumAve->assign(_setting.lumAve);
-    _toneLumKey->assign(_setting.lumKey);
-    _toneLumExposure->assign(_setting.lumExposure);
+	_bloomFactor->assign(_setting.bloomFactor);
+	_bloomIntensity->assign(_setting.bloomIntensity);
+	_toneLumAve->assign(_setting.lumAve);
+	_toneLumKey->assign(_setting.lumKey);
+	_toneLumExposure->assign(_setting.lumExposure);
 }
 
 void
@@ -249,15 +249,15 @@ HDR::onDeactivate(RenderPipeline& pipeline) except
 void
 HDR::onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
 {
-    this->sample4(pipeline, source, _texSample4);
-    this->sample8(pipeline, _texSample4, _texSample8);
-    this->sampleLog(pipeline, _texSample8, _texSampleLog);
+	this->sample4(pipeline, source, _texSample4);
+	this->sample8(pipeline, _texSample4, _texSample8);
+	this->sampleLog(pipeline, _texSample8, _texSampleLog);
 
-    this->measureLuminance(pipeline, _texSampleLog);
+	this->measureLuminance(pipeline, _texSampleLog);
 
-    this->generateBloom(pipeline, _texSample4, _texBloom);
+	this->generateBloom(pipeline, _texSample4, _texBloom);
 
-    this->generateToneMapping(pipeline, _texBloom, source);
+	this->generateToneMapping(pipeline, _texBloom, source);
 }
 
 _NAME_END

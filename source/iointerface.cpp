@@ -40,195 +40,172 @@ _NAME_BEGIN
 
 __ImplementSingleton(IoInterface);
 
-IIResource::IIResource() noexcept
-    : _cached(true)
-    , _loaded(false)
+IoLoader::IoLoader() noexcept
+	: _cached(true)
+	, _loaded(false)
 {
 }
 
-IIResource::~IIResource() noexcept
+IoLoader::~IoLoader() noexcept
 {
 }
 
 void
-IIResource::cache(bool _cache) noexcept
+IoLoader::setCache(bool _cache) noexcept
 {
-    _cached = _cache;
+	if (_cached != _cache)
+	{
+		if (!_name.empty())
+		{
+			if (_cache)
+				this->doCache();
+			else
+				this->doUnCache();
+		}
+
+		_cached = _cache;
+	}
 }
 
 bool
-IIResource::cache() const noexcept
+IoLoader::getCache() const noexcept
 {
-    return _cached;
-}
-
-void
-IIResource::uncache() noexcept
-{
-    IoInterface::instance()->uncache(*this);
-}
-
-void
-IIResource::load()
-{
-    if (this->doLoad())
-    {
-        _loaded = true;
-    }
+	return _cached;
 }
 
 bool
-IIResource::loaded() const noexcept
+IoLoader::load()
 {
-    return _loaded;
+	if (!_loaded)
+	{
+		if (this->doLoad())
+			_loaded = true;
+	}
+
+	if (_loaded)
+		this->doLoaded();
+
+	return _loaded;
+}
+
+bool
+IoLoader::loaded() const noexcept
+{
+	return _loaded;
 }
 
 void
-IIResource::name(const std::string& str) noexcept
+IoLoader::setName(const std::string& str) noexcept
 {
-    _name = str;
+	_name = str;
 }
 
 const std::string&
-IIResource::name() const noexcept
+IoLoader::getName() const noexcept
 {
-    return _name;
+	return _name;
 }
 
 IoInterface::IoInterface() noexcept
-    : _isPause(false)
-    , _isQuit(false)
+	: _isPause(false)
+	, _isQuit(false)
 {
 }
 
 IoInterface::~IoInterface() noexcept
 {
-    this->close();
+	this->close();
 }
 
 void
 IoInterface::pause() noexcept
 {
-    _isPause = true;
+	_isPause = true;
 }
 
 void
 IoInterface::resume() noexcept
 {
-    _isPause = false;
+	_isPause = false;
 }
 
 bool
 IoInterface::running() noexcept
 {
-    return _isPause;
+	return _isPause;
 }
 
 void
-IoInterface::syncLoad(std::shared_ptr<IIResource> resource)
+IoInterface::load(IoLoader& resource, bool async)
 {
-    assert(resource);
-    resource->load();
-    if (resource->loaded())
-    {
-        if (resource->cache())
-        {
-            _map_string[resource->name()] = resource;
-        }
-    }
-}
-
-void
-IoInterface::asyncLoad(std::shared_ptr<IIResource> resource)
-{
-    if (resource->cache())
-    {
-        _map_string[resource->name()] = resource;
-    }
-
-    _queue.push(resource);
-    _dispose.notify_one();
-}
-
-void
-IoInterface::uncache(const IIResource& res)
-{
-    _map_string[res.name()].reset();
-}
-
-void
-IoInterface::attach(const std::string& path)
-{
-}
-
-void
-IoInterface::remove(const std::string& path)
-{
+	if (async)
+	{
+		_queue.push(resource.clone());
+		_dispose.notify_one();
+	}
+	else
+	{
+		resource.load();
+	}
 }
 
 void
 IoInterface::open() noexcept
 {
-    if (!_disposeThread)
-    {
-        _disposeThread = std::make_unique<std::thread>(std::bind(&IoInterface::dispose, this));
-    }
+	if (!_disposeThread)
+	{
+		_disposeThread = std::make_unique<std::thread>(std::bind(&IoInterface::dispose, this));
+	}
 }
 
 void
 IoInterface::close() noexcept
 {
-    _isQuit = true;
-    if (_disposeThread)
-    {
-        _dispose.notify_one();
-        _disposeThread->join();
-        _disposeThread.reset();
-    }
-}
-
-std::size_t
-IoInterface::size() const noexcept
-{
-    return _queue.size();
+	_isQuit = true;
+	if (_disposeThread)
+	{
+		_dispose.notify_one();
+		_disposeThread->join();
+		_disposeThread.reset();
+	}
 }
 
 void
 IoInterface::dispose()
 {
-    try
-    {
-        while (!_isQuit)
-        {
-            if (!_isPause)
-            {
-                std::unique_lock<std::mutex> _lock(_mutex);
-                if (_queue.empty())
-                {
-                    _dispose.wait(_lock);
-                }
+	try
+	{
+		while (!_isQuit)
+		{
+			if (!_isPause)
+			{
+				std::unique_lock<std::mutex> _lock(_mutex);
+				if (_queue.empty())
+				{
+					_dispose.wait(_lock);
+				}
 
-                if (!_queue.empty())
-                {
-                    auto res = _queue.front();
-                    _queue.pop();
+				if (!_queue.empty())
+				{
+					auto res = _queue.front();
+					_queue.pop();
 
-                    if (res)
-                    {
-                        this->syncLoad(res);
-                    }
-                }
-            }
-            else
-            {
-                std::this_thread::sleep_for(std::chrono::microseconds(60));
-            }
-        }
-    }
-    catch (...)
-    {
-        _isQuit = true;
-    }
+					if (res)
+					{
+						res->load();
+					}
+				}
+			}
+			else
+			{
+				std::this_thread::sleep_for(std::chrono::microseconds(60));
+			}
+		}
+	}
+	catch (...)
+	{
+		_isQuit = true;
+	}
 }
 
 _NAME_END

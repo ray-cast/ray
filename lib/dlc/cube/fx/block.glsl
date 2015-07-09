@@ -33,8 +33,7 @@
             void BlockPS()
             {
                 glsl_FragColor0 = color;
-                glsl_FragColor1.rgb =  normalize(normalize(normal).xyz);
-                glsl_FragColor1.a = shininess + specular * 0.1;
+                glsl_FragColor1 = StoreGBufferRT1(normalize(normal.xyz), shininess);
             }
         ]]>
     </shader>
@@ -42,6 +41,8 @@
         <pass name="opaque">
             <state name="vertex" value="BlockVS"/>
             <state name="fragment" value="BlockPS"/>
+
+            <state name="cullmode" value="none" />
         </pass>
     </technique>
 </effect>

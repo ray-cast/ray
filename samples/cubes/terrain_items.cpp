@@ -386,10 +386,10 @@ TerrainClound::TerrainClound() noexcept
 
 TerrainClound::~TerrainClound() noexcept
 {
-	if (_cloundObject)
+	if (_object)
 	{
-		_cloundObject->destroy();
-		_cloundObject = nullptr;
+		_object->destroy();
+		_object = nullptr;
 	}
 }
 
@@ -469,7 +469,7 @@ TerrainClound::createObject(TerrainMapPtr map) noexcept
 		gameObject->addComponent(rigidbody);
 		gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
 
-		_cloundObject = gameObject;
+		_object = gameObject;
 
 		return true;
 	}
@@ -480,16 +480,19 @@ TerrainClound::createObject(TerrainMapPtr map) noexcept
 bool
 TerrainClound::active(ray::GameObjectPtr parent) noexcept
 {
-	if (parent)
+	if (_object)
 	{
-		_cloundObject->setParent(parent);
-		_cloundObject->setActive(true);
-		_cloundObject->getComponent<ray::MeshComponent>()->clear();
-	}
-	else
-	{
-		_cloundObject->setActive(false);
-		_cloundObject->setParent(nullptr);
+		if (parent)
+		{
+			_object->setParent(parent);
+			_object->setActive(true);
+			_object->getComponent<ray::MeshComponent>()->clear();
+		}
+		else
+		{
+			_object->setActive(false);
+			_object->setParent(nullptr);
+		}
 	}
 
 	return true;
@@ -518,10 +521,10 @@ TerrainWater::TerrainWater() noexcept
 
 TerrainWater::~TerrainWater() noexcept
 {
-	if (_waterObject)
+	if (_object)
 	{
-		_waterObject->destroy();
-		_waterObject = nullptr;
+		_object->destroy();
+		_object = nullptr;
 	}
 }
 
@@ -607,7 +610,7 @@ TerrainWater::createObject(TerrainMapPtr map) noexcept
 		gameObject->addComponent(rigidbody);
 		gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
 
-		_waterObject = gameObject;
+		_object = gameObject;
 
 		return true;
 	}
@@ -618,16 +621,19 @@ TerrainWater::createObject(TerrainMapPtr map) noexcept
 bool
 TerrainWater::active(ray::GameObjectPtr parent) noexcept
 {
-	if (parent)
+	if (_object)
 	{
-		_waterObject->setParent(parent);
-		_waterObject->setActive(true);
-		_waterObject->getComponent<ray::MeshComponent>()->clear();
-	}
-	else
-	{
-		_waterObject->setActive(false);
-		_waterObject->setParent(nullptr);
+		if (parent)
+		{
+			_object->setParent(parent);
+			_object->setActive(true);
+			_object->getComponent<ray::MeshComponent>()->clear();
+		}
+		else
+		{
+			_object->setActive(false);
+			_object->setParent(nullptr);
+		}
 	}
 
 	return true;

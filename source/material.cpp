@@ -41,253 +41,227 @@ _NAME_BEGIN
 MaterialSemanticPtr Material::_semantic;
 
 Material::Material() noexcept
-    : _shininess(0)
-    , _specular(0)
 {
 }
 
 Material::~Material() noexcept
 {
-    this->close();
+	this->close();
 }
 
 void
 Material::setup() except
 {
-    for (auto& param : _parameters)
-    {
-        param->setup();
-    }
+	for (auto& param : _parameters)
+	{
+		param->setup();
+	}
 
-    for (auto& technique : _techniques)
-    {
-        auto& passList = technique->getPassList();
-        for (auto& pass : passList)
-        {
-            auto renderState = pass->getRenderState();
-            if (!renderState)
-            {
-                pass->setRenderState(std::make_shared<RenderState>());
-            }
+	for (auto& technique : _techniques)
+	{
+		auto& passList = technique->getPassList();
+		for (auto& pass : passList)
+		{
+			auto renderState = pass->getRenderState();
+			if (!renderState)
+			{
+				pass->setRenderState(std::make_shared<RenderState>());
+			}
 
-            auto shaderObject = pass->getShaderObject();
-            if (shaderObject->setup())
-            {
-                auto uniforms = shaderObject->getActiveUniforms();
-                for (auto& it : uniforms)
-                {
-                    auto param = this->getParameter(it->getName());
-                    if (param)
-                    {
-                        auto semantic = param->getSemantic();
-                        if (!semantic.empty())
-                        {
-                            auto parameter = this->getMaterialSemantic()->getParamPointer(semantic);
-                            if (parameter)
-                            {
-                                it->setValue(parameter);
-                            }
-                        }
-                        else
-                        {
-                            param->addShaderUniform(it);
-                            it->setValue(param);
-                        }
-                    }
-                }
-            }
-        }
-    }
+			auto shaderObject = pass->getShaderObject();
+			if (shaderObject->setup())
+			{
+				auto uniforms = shaderObject->getActiveUniforms();
+				for (auto& it : uniforms)
+				{
+					auto param = this->getParameter(it->getName());
+					if (param)
+					{
+						auto semantic = param->getSemantic();
+						if (!semantic.empty())
+						{
+							auto parameter = this->getMaterialSemantic()->getParamPointer(semantic);
+							if (parameter)
+							{
+								it->setValue(parameter);
+							}
+						}
+						else
+						{
+							param->addShaderUniform(it);
+							it->setValue(param);
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 void
 Material::close() noexcept
 {
-    for (auto& technique : _techniques)
-    {
-        auto& passList = technique->getPassList();
-        for (auto& pass : passList)
-        {
-            auto shaderObject = pass->getShaderObject();
-            if (!shaderObject)
-                continue;
+	for (auto& technique : _techniques)
+	{
+		auto& passList = technique->getPassList();
+		for (auto& pass : passList)
+		{
+			auto shaderObject = pass->getShaderObject();
+			if (!shaderObject)
+				continue;
 
-            if (!shaderObject)
-                continue;
+			if (!shaderObject)
+				continue;
 
-            auto uniforms = shaderObject->getActiveUniforms();
-            for (auto& it : uniforms)
-            {
-                auto param = this->getParameter(it->getName());
-                if (param)
-                {
-                    auto semantic = param->getSemantic();
-                    if (!semantic.empty())
-                    {
-                        auto parameter = this->getMaterialSemantic()->getParamPointer(semantic);
-                        if (parameter)
-                        {
-                            parameter->removeShaderUniform(it);
-                            it->setValue(nullptr);
-                        }
-                    }
-                    else
-                    {
-                        param->removeShaderUniform(it);
-                        it->setValue(nullptr);
-                    }
-                }
-            }
-        }
-    }
+			auto uniforms = shaderObject->getActiveUniforms();
+			for (auto& it : uniforms)
+			{
+				auto param = this->getParameter(it->getName());
+				if (param)
+				{
+					auto semantic = param->getSemantic();
+					if (!semantic.empty())
+					{
+						auto parameter = this->getMaterialSemantic()->getParamPointer(semantic);
+						if (parameter)
+						{
+							parameter->removeShaderUniform(it);
+							it->setValue(nullptr);
+						}
+					}
+					else
+					{
+						param->removeShaderUniform(it);
+						it->setValue(nullptr);
+					}
+				}
+			}
+		}
+	}
 
-    _techniques.clear();
-    _parameters.clear();
-}
-
-void
-Material::setSpecular(float specular) noexcept
-{
-    _specular = specular;
-}
-
-float
-Material::getSpecular() const noexcept
-{
-    return _specular;
-}
-
-void
-Material::setShininess(float shininess) noexcept
-{
-    _shininess = shininess;
-}
-
-float
-Material::getShininess() const noexcept
-{
-    return _shininess;
+	_techniques.clear();
+	_parameters.clear();
 }
 
 void
 Material::addTech(MaterialTechPtr technique) noexcept
 {
-    assert(std::find(_techniques.begin(), _techniques.end(), technique) == _techniques.end());
-    _techniques.push_back(technique);
+	assert(std::find(_techniques.begin(), _techniques.end(), technique) == _techniques.end());
+	_techniques.push_back(technique);
 }
 
 void
 Material::removeTech(MaterialTechPtr technique) noexcept
 {
-    auto it = std::find(_techniques.begin(), _techniques.end(), technique);
-    if (it != _techniques.end())
-    {
-        _techniques.erase(it);
-    }
+	auto it = std::find(_techniques.begin(), _techniques.end(), technique);
+	if (it != _techniques.end())
+	{
+		_techniques.erase(it);
+	}
 }
 
 MaterialTechPtr
 Material::getTech(RenderQueue queue) noexcept
 {
-    for (auto& it : _techniques)
-    {
-        if (it->getRenderQueue() == queue)
-        {
-            return it;
-        }
-    }
+	for (auto& it : _techniques)
+	{
+		if (it->getRenderQueue() == queue)
+		{
+			return it;
+		}
+	}
 
-    return nullptr;
+	return nullptr;
 }
 
 MaterialTechniques&
 Material::getTechs() noexcept
 {
-    return _techniques;
+	return _techniques;
 }
 
 void
 Material::addParameter(MaterialParamPtr parameter) noexcept
 {
-    if (parameter)
-    {
-        auto it = std::find(_parameters.begin(), _parameters.end(), parameter);
-        if (it == _parameters.end())
-        {
-            _parameters.push_back(parameter);
-        }
-    }
+	if (parameter)
+	{
+		auto it = std::find(_parameters.begin(), _parameters.end(), parameter);
+		if (it == _parameters.end())
+		{
+			_parameters.push_back(parameter);
+		}
+	}
 }
 
 void
 Material::removeParameter(MaterialParamPtr parameter) noexcept
 {
-    if (parameter)
-    {
-        auto it = std::find(_parameters.begin(), _parameters.end(), parameter);
-        if (it != _parameters.end())
-        {
-            _parameters.erase(it);
-        }
-    }
+	if (parameter)
+	{
+		auto it = std::find(_parameters.begin(), _parameters.end(), parameter);
+		if (it != _parameters.end())
+		{
+			_parameters.erase(it);
+		}
+	}
 }
 
 MaterialParamPtr
 Material::getParameter(const std::string& name) const noexcept
 {
-    for (auto& it : _parameters)
-    {
-        if (it->getName() == name)
-        {
-            return it;
-        }
-    }
+	for (auto& it : _parameters)
+	{
+		if (it->getName() == name)
+		{
+			return it;
+		}
+	}
 
-    return nullptr;
+	return nullptr;
 }
 
 ShaderVariantPtr
 Material::getParameterInChildren(const std::string& name) const noexcept
 {
-    for (auto& it : _parameters)
-    {
-        if (it->getName() == name)
-        {
-            return it;
-        }
-        else if (it->getType() == ShaderVariantType::SPT_BUFFER)
-        {
-            auto result = it->getParameter(name);
-            if (result)
-                return result;
-        }
-    }
+	for (auto& it : _parameters)
+	{
+		if (it->getName() == name)
+		{
+			return it;
+		}
+		else if (it->getType() == ShaderVariantType::SPT_BUFFER)
+		{
+			auto result = it->getParameter(name);
+			if (result)
+				return result;
+		}
+	}
 
-    return nullptr;
+	return nullptr;
 }
 
 MaterialParams&
 Material::getParameters() noexcept
 {
-    return _parameters;
+	return _parameters;
 }
 
 const MaterialParams&
 Material::getParameters() const noexcept
 {
-    return _parameters;
+	return _parameters;
 }
 
 void
 Material::setMaterialSemantic(MaterialSemanticPtr semantic) noexcept
 {
-    _semantic = semantic;
+	_semantic = semantic;
 }
 
 MaterialSemanticPtr
 Material::getMaterialSemantic() noexcept
 {
-    return _semantic;
+	return _semantic;
 }
 
 _NAME_END

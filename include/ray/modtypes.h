@@ -51,6 +51,7 @@ typedef std::shared_ptr<class CameraProperty> CameraPropertyPtr;
 typedef std::shared_ptr<class LightProperty> LightPropertyPtr;
 typedef std::shared_ptr<class MeshProperty> MeshPropertyPtr;
 typedef std::shared_ptr<class MaterialProperty> MaterialPropertyPtr;
+typedef std::shared_ptr<class Model> ModelPtr;
 
 typedef std::vector<MeshPropertyPtr> MeshPropertys;
 

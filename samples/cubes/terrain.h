@@ -119,6 +119,8 @@ private:
 
 	static const int MAX_THREADS = 4;
 
+	float _dayTimer;
+
 	ray::GameObjectPtr _player;
 
 	std::int32_t _size;

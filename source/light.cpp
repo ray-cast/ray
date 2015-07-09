@@ -230,17 +230,12 @@ Light::setupShadow(std::size_t size) noexcept
 	depthTexture->setup(size, size, TextureDim::DIM_2D, PixelFormat::DEPTH_COMPONENT32);
 	depthTexture->setClearFlags(ClearFlags::CLEAR_ALL);
 
-	auto renderTexture = RenderFactory::createRenderTarget();
-	renderTexture->setSharedDepthTexture(depthTexture);
-	renderTexture->setup(size, size, TextureDim::DIM_2D, PixelFormat::R32F);
-	renderTexture->setClearFlags(ClearFlags::CLEAR_ALL);
-
 	_shadowCamera = std::make_shared<Camera>();
 	_shadowCamera->setCameraOrder(CameraOrder::CO_SHADOW);
 	_shadowCamera->setCameraRender(CameraRender::CR_RENDER_TO_TEXTURE);
 	_shadowCamera->setViewport(Viewport(0, 0, size, size));
 	_shadowCamera->setRenderListener(this);
-	_shadowCamera->setRenderTarget(renderTexture);
+	_shadowCamera->setRenderTarget(depthTexture);
 	_shadowCamera->setRenderScene(_renderScene->shared_from_this());
 	_shadowCamera->makePerspective(90.0, 1.0, 0.1, _lightRange);
 
@@ -264,6 +259,12 @@ CameraPtr
 Light::getShadowCamera() const noexcept
 {
 	return _shadowCamera;
+}
+
+TexturePtr
+Light::getShadowMap() const noexcept
+{
+	return _shadowCamera->getRenderTarget()->getResolveTexture();
 }
 
 void
@@ -331,7 +332,7 @@ Light::_updateShadow() noexcept
 void
 Light::onWillRenderObject() noexcept
 {
-	if (_lightType == LT_SUN)
+	/*if (_lightType == LT_SUN)
 	{
 		auto camera = *_renderScene->getCameraList().rbegin();
 
@@ -343,7 +344,7 @@ Light::onWillRenderObject() noexcept
 
 		_shadowCamera->makeLookAt(translate, lookat, Vector3::UnitZ);
 		_shadowCamera->makeViewProject();
-	}
+	}*/
 }
 
 void

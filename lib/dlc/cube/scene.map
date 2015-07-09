@@ -3,8 +3,8 @@
     <attribute name="cubes"/>
     <object>
         <attribute name="first_person_camera"/>
-        <attribute position="0,63,0" />
-        <attribute lookat="0,63,1" />
+        <attribute position="0,62,0" />
+        <attribute lookat="0,62,1" />
         <attribute active="false"/>
         <component name="camera">
             <attribute aperture="75.0"/>
@@ -90,13 +90,24 @@
         </component>
     </object>
     <object>
+        <attribute name="miku"/>
+        <attribute position="0, 60, 0"/>
+        <attribute active="true"/>
+        <component name="mesh">
+            <attribute name="dlc:cube/models/luo/luo.pmx"/>
+        </component>
+        <component name="meshrender">
+            <attribute castshadow="true"/>
+        </component>
+    </object>
+    <object>
         <attribute name="sun"/>
-        <attribute position="0, 100, 0"/>
+        <attribute position="0, 180, 0"/>
         <attribute active="true"/>
         <component name="light">
             <attribute type="sun"/>
             <attribute range="200.0"/>
-            <attribute shadow="true"/>
+            <attribute shadow="false"/>
         </component>
     </object>
     <object>

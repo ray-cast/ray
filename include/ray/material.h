@@ -45,46 +45,37 @@ _NAME_BEGIN
 class EXPORT Material final
 {
 public:
-    Material() noexcept;
-    ~Material() noexcept;
+	Material() noexcept;
+	~Material() noexcept;
 
-    void setup() except;
-    void close() noexcept;
+	void setup() except;
+	void close() noexcept;
 
-    void setSpecular(float specular) noexcept;
-    float getSpecular() const noexcept;
+	void addTech(MaterialTechPtr technique) noexcept;
+	void removeTech(MaterialTechPtr technique) noexcept;
+	MaterialTechPtr getTech(RenderQueue queue) noexcept;
+	MaterialTechniques& getTechs() noexcept;
 
-    void setShininess(float shininess) noexcept;
-    float getShininess() const noexcept;
+	void addParameter(MaterialParamPtr technique) noexcept;
+	void removeParameter(MaterialParamPtr technique) noexcept;
+	MaterialParamPtr getParameter(const std::string& name) const noexcept;
+	ShaderVariantPtr getParameterInChildren(const std::string& name) const noexcept;
+	MaterialParams& getParameters() noexcept;
+	const MaterialParams& getParameters() const noexcept;
 
-    void addTech(MaterialTechPtr technique) noexcept;
-    void removeTech(MaterialTechPtr technique) noexcept;
-    MaterialTechPtr getTech(RenderQueue queue) noexcept;
-    MaterialTechniques& getTechs() noexcept;
-
-    void addParameter(MaterialParamPtr technique) noexcept;
-    void removeParameter(MaterialParamPtr technique) noexcept;
-    MaterialParamPtr getParameter(const std::string& name) const noexcept;
-    ShaderVariantPtr getParameterInChildren(const std::string& name) const noexcept;
-    MaterialParams& getParameters() noexcept;
-    const MaterialParams& getParameters() const noexcept;
-
-    static void setMaterialSemantic(MaterialSemanticPtr semantic) noexcept;
-    static MaterialSemanticPtr getMaterialSemantic() noexcept;
+	static void setMaterialSemantic(MaterialSemanticPtr semantic) noexcept;
+	static MaterialSemanticPtr getMaterialSemantic() noexcept;
 
 private:
-    Material(const Material&) noexcept = delete;
-    Material& operator=(const Material&) noexcept = delete;
+	Material(const Material&) noexcept = delete;
+	Material& operator=(const Material&) noexcept = delete;
 
 private:
 
-    float _specular;
-    float _shininess;
+	MaterialParams _parameters;
+	MaterialTechniques _techniques;
 
-    MaterialParams _parameters;
-    MaterialTechniques _techniques;
-
-    static MaterialSemanticPtr _semantic;
+	static MaterialSemanticPtr _semantic;
 };
 
 _NAME_END

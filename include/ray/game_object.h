@@ -212,6 +212,7 @@ private:
 	mutable bool _needUpdates;
 
 	mutable Matrix4x4 _worldTransform;
+
 	mutable Matrix4x4 _transform;
 	mutable Matrix4x4 _transformInverse;
 	mutable Matrix4x4 _transformInverseTranspose;

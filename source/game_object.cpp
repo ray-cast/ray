@@ -888,16 +888,17 @@ GameObject::_updateTransform() const noexcept
 {
 	if (_needUpdates)
 	{
-		_worldTransform.makeRotate(_rotation);
+		Matrix4x4 rotate;
+		rotate.makeRotate(_rotation);
+
+		_worldTransform = rotate;
 		_worldTransform.setTranslate(_translate);
 
-		Matrix4x4 m(_worldTransform);
+		_transform = _worldTransform;
+		_transform.scale(_scaling);
 
-		m.scale(_scaling);
-
-		_transform = m;
-		_transformInverse = m.inverse();
-		_transformInverseTranspose = Matrix4x4(_transformInverse).transpose();
+		_transformInverse = _transform.inverse();
+		_transformInverseTranspose = rotate;
 
 		_needUpdates = false;
 	}

@@ -39,25 +39,25 @@
 _NAME_BEGIN
 
 Bone::Bone() noexcept
-    : _parent(nullptr)
-    , _children(nullptr)
+	: _parent(nullptr)
+	, _children(nullptr)
 {
 }
 
 Bone::Bone(const std::string& name) noexcept
-    : _parent(nullptr)
-    , _children(nullptr)
+	: _parent(nullptr)
+	, _children(nullptr)
 {
-    _name = name;
+	_name = name;
 }
 
 Bone::Bone(const Bone& copy) noexcept
-    : _parent(nullptr)
-    , _children(nullptr)
+	: _parent(nullptr)
+	, _children(nullptr)
 {
-    _name = copy._name;
-    _weights = copy._weights;
-    _offset_matrix = copy._offset_matrix;
+	_name = copy._name;
+	_weights = copy._weights;
+	_offset_matrix = copy._offset_matrix;
 }
 
 Bone::~Bone() noexcept
@@ -67,9 +67,9 @@ Bone::~Bone() noexcept
 void
 Bone::update() noexcept
 {
-    if (_children)
-    {
-    }
+	if (_children)
+	{
+	}
 }
 
 _NAME_END

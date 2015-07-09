@@ -56,15 +56,23 @@ public:
 	bool getReceiveShadow() const noexcept;
 
 	void addMaterial(MaterialPtr material) noexcept;
+	void addSharedMaterial(MaterialPtr material) noexcept;
+
 	const Materials& getMaterials() const noexcept;
-	MaterialPtr getMaterial(std::size_t i) const noexcept;
+	const Materials& getSharedMaterials() const noexcept;
+
+	MaterialPtr getMaterial(std::size_t index) const noexcept;
+	MaterialPtr getSharedMaterial(std::size_t index) const noexcept;
+
+	bool hasMaterial() const noexcept;
+	bool hasSharedMaterial() const noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
 
 protected:
-	void onActivate() except;
-	void onDectivate() noexcept;
+	void onAttach() except;
+	void onRemove() noexcept;
 
 private:
 	RenderComponent(const RenderComponent&) = delete;
@@ -76,6 +84,7 @@ private:
 	bool _isReceiveShadow;
 
 	Materials _materials;
+	Materials _sharedMaterials;
 };
 
 _NAME_END

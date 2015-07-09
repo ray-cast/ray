@@ -17,7 +17,7 @@
     <parameter name="texNormal" semantic="NormalMap" />
     <parameter name="texAO" type="sampler2D" />
     <parameter name="texSource" type="sampler2D"/>
-    <parameter name="matViewInverseTranspose" semantic="matViewInverseTranspose" />
+    <parameter name="matView" semantic="matView" />
     <parameter name="matProject" semantic="matProject"/>
     <shader name="vertex">
         <![CDATA[
@@ -53,7 +53,7 @@
             uniform float blurSharpness;
             uniform vec2 blurDirection;
 
-            uniform mat4 matViewInverseTranspose;
+            uniform mat4 matView;
             uniform mat4 matProject;
 
             uniform sampler2D texDepth;
@@ -76,7 +76,7 @@
             vec3 sampleNormal(vec2 uv)
             {
                 vec4 normal = textureLod(texNormal, uv, 0);
-                return (matViewInverseTranspose * normal).xyz;
+                return mat3(matView) * restoreNormal(normal);
             }
 
             vec2 tapLocation(float sampleNumber, float spinAngle, float radius)

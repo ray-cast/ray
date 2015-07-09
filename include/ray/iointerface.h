@@ -37,7 +37,7 @@
 #ifndef _H_IO_INTERFACE_H_
 #define _H_IO_INTERFACE_H_
 
-#include <ray/platform.h>
+#include <ray/iostream.h>
 
 #include <queue>
 #include <mutex>
@@ -48,183 +48,74 @@
 
 _NAME_BEGIN
 
-class EXPORT IIResource
+class EXPORT IoLoader
 {
-    friend class ResLoader;
 public:
-    IIResource() noexcept;
-    virtual ~IIResource() noexcept;
+	IoLoader() noexcept;
+	virtual ~IoLoader() noexcept;
 
-    void cache(bool _cache) noexcept;
-    bool cache() const noexcept;
+	void setName(const std::string& str) noexcept;
+	const std::string& getName() const noexcept;
 
-    bool loaded() const noexcept;
+	bool loaded() const noexcept;
+	bool load() except;
 
-    void name(const std::string& str) noexcept;
-    const std::string& name() const noexcept;
+	void setCache(bool cache) noexcept;
+	bool getCache() const noexcept;
 
-    void uncache() noexcept;
-
-    void load();
-
-    virtual void* data() const noexcept = 0;
+	virtual std::shared_ptr<IoLoader> clone() const = 0;
 
 protected:
-    virtual bool doLoad() noexcept = 0;
+	virtual bool doLoad() except = 0;
+	virtual void doLoaded() except = 0;
+
+	virtual void doCache() except = 0;
+	virtual void doUnCache() except = 0;
 
 private:
-    IIResource(const IIResource& copy) = delete;
-    IIResource& operator=(const IIResource&) = delete;
+	IoLoader(const IoLoader& copy) = delete;
+	IoLoader& operator=(const IoLoader&) = delete;
 
 private:
-    bool _loaded;
-    bool _cached;
+	bool _loaded;
+	bool _cached;
 
-    std::string _name;
-};
-
-template<typename T>
-class IResource : public IIResource
-{
-public:
-    IResource() noexcept
-    {
-    }
-
-    IResource(const std::string& name, bool async = false)
-    {
-        if (async)
-            this->asyncLoad(name);
-        else
-            this->syncLoad(name);
-    }
-
-    ~IResource() noexcept
-    {
-    }
-
-    void* data() const noexcept
-    {
-        return _resource.get();
-    }
-
-private:
-    bool doLoad() noexcept
-    {
-        if (!_resource)
-        {
-            _resource = std::make_unique<T>();
-        }
-
-        return _resource->load(this->name());
-    }
-
-public:
-    std::unique_ptr<T> _resource;
-};
-
-template<typename T>
-class Resource final
-{
-public:
-    Resource() noexcept {}
-    ~Resource() noexcept {}
-
-    bool loaded() const noexcept
-    {
-        assert(_impl);
-        return _impl->loaded();
-    }
-
-    T& syncLoad(const std::string& name) noexcept
-    {
-        auto result = ResLoader::get().find(name);
-        if (!result)
-        {
-            _impl = std::make_shared<IResource<T>>();
-            _impl->name(name);
-
-            ResLoader::get().syncLoad(_impl);
-        }
-        else
-        {
-            _impl = result;
-        }
-
-        return this->data();
-    }
-
-    void asyncLoad(const std::string& name) noexcept
-    {
-        auto result = ResLoader::get().find(name);
-        if (!result)
-        {
-            _impl = std::make_shared<IResource<T>>();
-            _impl->name(name);
-
-            ResLoader::get().asyncLoad(_impl);
-        }
-        else
-        {
-            _impl = result;
-        }
-    }
-
-    T& data() const
-    {
-        assert(_impl);
-        return *(T*)_impl->data();
-    }
-
-private:
-    Resource(const Resource& copy) = delete;
-    Resource& operator=(const Resource&) = delete;
-
-private:
-    std::shared_ptr<IIResource> _impl;
+	std::string _name;
 };
 
 class EXPORT IoInterface final
 {
-    __DeclareSingleton(IoInterface)
+	__DeclareSingleton(IoInterface);
 public:
-    IoInterface() noexcept;
-    ~IoInterface() noexcept;
+	IoInterface() noexcept;
+	~IoInterface() noexcept;
 
-    void open() noexcept;
-    void close() noexcept;
+	void open() noexcept;
+	void close() noexcept;
 
-    void pause() noexcept;
-    void resume() noexcept;
-    bool running() noexcept;
-    void uncache(const IIResource& resource);
+	void pause() noexcept;
+	void resume() noexcept;
+	bool running() noexcept;
 
-    std::size_t size() const noexcept;
-
-    void syncLoad(std::shared_ptr<IIResource> resource);
-    void asyncLoad(std::shared_ptr<IIResource> resource);
-
-    void attach(const std::string& path);
-    void remove(const std::string& path);
+	void load(IoLoader& resource, bool async = false);
 
 private:
-    void dispose();
+	void dispose();
 
 private:
-    IoInterface(const IoInterface&) noexcept = delete;
-    IoInterface& operator=(const IoInterface&) noexcept = delete;
+	IoInterface(const IoInterface&) noexcept = delete;
+	IoInterface& operator=(const IoInterface&) noexcept = delete;
 
 private:
 
-    bool _isQuit;
-    bool _isPause;
+	bool _isQuit;
+	bool _isPause;
 
-    std::mutex _mutex;
-    std::condition_variable _dispose;
-    std::queue<std::shared_ptr<IIResource>> _queue;
+	std::mutex _mutex;
+	std::condition_variable _dispose;
+	std::queue<std::shared_ptr<IoLoader>> _queue;
 
-    std::unique_ptr<std::thread> _disposeThread;
-    std::unordered_map<std::string, std::shared_ptr<IIResource>> _map_string;
+	std::unique_ptr<std::thread> _disposeThread;
 };
 
 _NAME_END

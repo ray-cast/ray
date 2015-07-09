@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #include <ray/game_application.h>
 #include <ray/game_scene.h>
-#include <ray/window_features.h>
 #include <ray/input_features.h>
 #include <ray/render_features.h>
 #include <ray/camera_component.h>
@@ -45,59 +44,58 @@
 
 int main()
 {
-    try
-    {
-        ray::Application app;
-        if (!app.initialize())
-        {
-            throw ray::failure("App::initialize() fail");
-        }
+	try
+	{
+		ray::Application app;
+		if (!app.initialize())
+		{
+			throw ray::failure("App::initialize() fail");
+		}
 
-        ray::GameApplication game;
+		ray::GameApplication game;
 
-        game.open();
+		game.open();
 
-        game.addFeatures(std::make_shared<ray::WindowFeatures>("360VR", 1376, 768));
-        game.addFeatures(std::make_shared<ray::InputFeatures>());
-        game.addFeatures(std::make_shared<ray::RenderFeatures>());
+		game.addFeatures(std::make_shared<ray::InputFeatures>());
+		game.addFeatures(std::make_shared<ray::RenderFeatures>());
 
-        game.start();
+		game.start();
 
-        if (game.openScene("dlc:360VR\\scene.map"))
-        {
-            auto scene = game.findScene("360VR");
-            if (scene)
-            {
-                auto player = scene->find<ray::GameObject>("first_person_camera");
-                player->addComponent(std::make_shared<FirstPersonCamera>());
-                player->setActive(true);
+		if (game.openScene("dlc:360VR\\scene.map"))
+		{
+			auto scene = game.findScene("360VR");
+			if (scene)
+			{
+				auto player = scene->find<ray::GameObject>("first_person_camera");
+				player->addComponent(std::make_shared<FirstPersonCamera>());
+				player->setActive(true);
 
-                while (!game.isQuitRequest())
-                {
-                    ray::AppEvent event;
-                    while (app.pollEvents(event))
-                    {
-                        game.sendEvent(event);
-                    }
+				while (!game.isQuitRequest())
+				{
+					ray::AppEvent event;
+					while (app.pollEvents(event))
+					{
+						game.sendEvent(event);
+					}
 
-                    game.update();
-                }
-            }
-            else
-            {
-                throw ray::failure("Scene::find('360VR') fail");
-            }
-        }
-        else
-        {
-            throw ray::failure("App::openScene('dlc:360VR\\scene.map') fail");
-        }
-    }
-    catch (const std::exception& e)
-    {
-        std::cout << e.what();
-        std::system("pause");
-    }
+					game.update();
+				}
+			}
+			else
+			{
+				throw ray::failure("Scene::find('360VR') fail");
+			}
+		}
+		else
+		{
+			throw ray::failure("App::openScene('dlc:360VR\\scene.map') fail");
+		}
+	}
+	catch (const std::exception& e)
+	{
+		std::cout << e.what();
+		std::system("pause");
+	}
 
-    return 0;
+	return 0;
 }

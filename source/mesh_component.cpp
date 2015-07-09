@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/mesh_component.h>
+#include <ray/resource.h>
 
 _NAME_BEGIN
 
@@ -51,8 +52,12 @@ MeshComponent::~MeshComponent() noexcept
 void
 MeshComponent::setMesh(MeshPropertyPtr mesh) noexcept
 {
-	_mesh = mesh;
-	_mesh->computeBoundingBox();
+	if (_mesh != mesh)
+	{
+		if (mesh)
+			mesh->computeBoundingBox();
+		_mesh = mesh;
+	}
 }
 
 void
@@ -70,7 +75,12 @@ MeshComponent::getMesh() const noexcept
 void
 MeshComponent::setSharedMesh(MeshPropertyPtr mesh) noexcept
 {
-	_sharedMesh = mesh;
+	if (_sharedMesh != mesh)
+	{
+		if (mesh)
+			mesh->computeBoundingBox();
+		_sharedMesh = mesh;
+	}
 }
 
 MeshPropertyPtr
@@ -102,14 +112,20 @@ MeshComponent::load(iarchive& reader) noexcept
 {
 	reader >> static_cast<GameComponent*>(this);
 
-	Model model;
-	if (model.load(this->getName()))
-	{
-		if (model.hasMeshes())
+	ResLoader<Model> model;
+
+	model.load(this->getName(),
+		[&](std::shared_ptr<ray::Model> model, const std::string& name) {
+		return model->load(name);
+	},
+		[&](std::shared_ptr<ray::Model> model) {
+		if (model->hasMeshes())
 		{
-			this->setMesh(model.getMeshsList()[0]);
+			auto mesh = model->getMeshsList()[0];
+			this->setMesh(mesh->clone());
+			this->setSharedMesh(mesh);
 		}
-	}
+	});
 }
 
 void
@@ -123,10 +139,12 @@ MeshComponent::clone() const noexcept
 	auto instance = std::make_shared<MeshComponent>();
 	instance->setName(this->getName());
 	instance->setVisible(this->getVisible());
-	if (_mesh)
+
+	auto mesh = this->getSharedMesh();
+	if (mesh)
 	{
-		instance->setMesh(_mesh->clone());
-		instance->setSharedMesh(_mesh);
+		instance->setMesh(mesh->clone());
+		instance->setSharedMesh(mesh);
 	}
 
 	return instance;

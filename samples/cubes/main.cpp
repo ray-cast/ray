@@ -51,9 +51,11 @@ public:
 	{
 		_renderSetting.enableSSAO = true;
 		_renderSetting.enableSAT = true;
+		_renderSetting.enableSSSS = true;
 		_renderSetting.enableFog = false;
 		_renderSetting.enableHDR = true;
 		_renderSetting.enableFXAA = true;
+		_renderSetting.enableLightShaft = false;
 		_renderSetting.enableColorGrading = true;
 	}
 

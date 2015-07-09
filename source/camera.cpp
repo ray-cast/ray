@@ -133,6 +133,12 @@ Camera::getViewInverseTranspose() const noexcept
 	return _viewInverseTranspose;
 }
 
+void
+Camera::setProject(const Matrix4x4& m) noexcept
+{
+	_project = m;
+}
+
 const Matrix4x4&
 Camera::getProject() const noexcept
 {

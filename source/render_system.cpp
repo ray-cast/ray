@@ -43,6 +43,7 @@
 #include <ray/light_shaft.h>
 #include <ray/ssao.h>
 #include <ray/ssgi.h>
+#include <ray/ssss.h>
 #include <ray/ssr.h>
 #include <ray/dof.h>
 #include <ray/fog.h>
@@ -53,351 +54,377 @@
 _NAME_BEGIN
 
 RenderSystem::RenderSystem() noexcept
-    : _globalColor(1.0f, 1.0f, 1.0f, 0.5f)
+	: _globalColor(1.0f, 1.0f, 1.0f, 0.5f)
 {
 }
 
 RenderSystem::~RenderSystem() noexcept
 {
-    this->close();
+	this->close();
 }
 
 bool
 RenderSystem::setup(RenderWindowPtr window) except
 {
-    _renderWindow = window;
-    _renderDevice = RenderFactory::createRenderDevice();
-    _renderDevice->open(window);
+	_renderWindow = window;
+	_renderDevice = RenderFactory::createRenderDevice();
+	_renderDevice->open(window);
 
-    Material::setMaterialSemantic(std::make_shared<MaterialSemantic>());
+	Material::setMaterialSemantic(std::make_shared<MaterialSemantic>());
 
-    _renderPipeline = std::make_shared<DeferredLighting>();
-    _renderPipeline->setup(_renderDevice, window->getWindowWidth(), window->getWindowHeight());
+	_renderPipeline = std::make_shared<DeferredLighting>();
+	_renderPipeline->setup(_renderDevice, window->getWindowWidth(), window->getWindowHeight());
 
-    _lineMaterial = MaterialMaker("sys:fx\\lines.glsl");
-    _linePass = _lineMaterial->getTech(RenderQueue::PostProcess)->getPass("lines");
+	_lineMaterial = MaterialMaker("sys:fx\\lines.glsl");
+	_linePass = _lineMaterial->getTech(RenderQueue::PostProcess)->getPass("lines");
 
-    VertexComponents components;
-    components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
-    components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_DIFFUSE, VertexFormat::GPU_VERTEX_FLOAT4));
+	VertexComponents components;
+	components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
+	components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_DIFFUSE, VertexFormat::GPU_VERTEX_FLOAT4));
 
-    _dynamicBuffers = RenderFactory::createVertexBuffer();
-    _dynamicBuffers->setVertexComponents(components);
-    _dynamicBuffers->setup(1, VertexUsage::GPU_USAGE_DYNAMIC);
+	_dynamicBuffers = RenderFactory::createVertexBuffer();
+	_dynamicBuffers->setVertexComponents(components);
+	_dynamicBuffers->setup(1, VertexUsage::GPU_USAGE_DYNAMIC);
 
-    _renderBuffer = RenderFactory::createRenderBuffer();
-    _renderBuffer->setup(_dynamicBuffers, nullptr);
+	_renderBuffer = RenderFactory::createRenderBuffer();
+	_renderBuffer->setup(_dynamicBuffers, nullptr);
 
-    float ratio = (float)window->getWindowWidth() / window->getWindowHeight();
-    _orthoCamera.makeOrtho_lh(-ratio, ratio, -1, 1, 0, 1000);
+	float ratio = (float)window->getWindowWidth() / window->getWindowHeight();
+	_orthoCamera.makeOrtho_lh(-ratio, ratio, -1, 1, 0, 1000);
 
-    return true;
+	return true;
 }
 
 void
 RenderSystem::close() noexcept
 {
-    if (_SAT)
-    {
-        _SAT.reset();
-        _SAT = nullptr;
-    }
+	if (_SAT)
+	{
+		_SAT.reset();
+		_SAT = nullptr;
+	}
 
-    if (_SSAO)
-    {
-        _SSAO.reset();
-        _SSAO = nullptr;
-    }
+	if (_SSAO)
+	{
+		_SSAO.reset();
+		_SSAO = nullptr;
+	}
 
-    if (_SSGI)
-    {
-        _SSGI.reset();
-        _SSGI = nullptr;
-    }
+	if (_SSGI)
+	{
+		_SSGI.reset();
+		_SSGI = nullptr;
+	}
 
-    if (_SSR)
-    {
-        _SSR.reset();
-        _SSR = nullptr;
-    }
+	if (_SSR)
+	{
+		_SSR.reset();
+		_SSR = nullptr;
+	}
 
-    if (_fog)
-    {
-        _fog.reset();
-        _fog = nullptr;
-    }
+	if (_SSSS)
+	{
+		_SSSS.reset();
+		_SSSS = nullptr;
+	}
 
-    if (_DOF)
-    {
-        _DOF.reset();
-        _DOF = nullptr;
-    }
+	if (_fog)
+	{
+		_fog.reset();
+		_fog = nullptr;
+	}
 
-    if (_HDR)
-    {
-        _HDR.reset();
-        _HDR = nullptr;
-    }
+	if (_DOF)
+	{
+		_DOF.reset();
+		_DOF = nullptr;
+	}
 
-    if (_FXAA)
-    {
-        _FXAA.reset();
-        _FXAA = nullptr;
-    }
+	if (_HDR)
+	{
+		_HDR.reset();
+		_HDR = nullptr;
+	}
 
-    if (_lineMaterial)
-    {
-        _lineMaterial.reset();
-        _lineMaterial = nullptr;
-    }
+	if (_lightShaft)
+	{
+		_lightShaft.reset();
+		_lightShaft = nullptr;
+	}
 
-    if (_renderBuffer)
-    {
-        _renderBuffer.reset();
-        _renderBuffer = nullptr;
-    }
+	if (_FXAA)
+	{
+		_FXAA.reset();
+		_FXAA = nullptr;
+	}
 
-    if (_renderPipeline)
-    {
-        _renderPipeline.reset();
-        _renderPipeline = nullptr;
-    }
+	if (_lineMaterial)
+	{
+		_lineMaterial.reset();
+		_lineMaterial = nullptr;
+	}
 
-    auto semantic = Material::getMaterialSemantic();
-    if (semantic)
-    {
-        semantic->close();
-        Material::setMaterialSemantic(nullptr);
-    }
+	if (_renderBuffer)
+	{
+		_renderBuffer.reset();
+		_renderBuffer = nullptr;
+	}
 
-    if (_renderDevice)
-    {
-        _renderDevice.reset();
-        _renderDevice = nullptr;
-    }
+	if (_renderPipeline)
+	{
+		_renderPipeline.reset();
+		_renderPipeline = nullptr;
+	}
 
-    _setting = RenderSetting();
+	auto semantic = Material::getMaterialSemantic();
+	if (semantic)
+	{
+		semantic->close();
+		Material::setMaterialSemantic(nullptr);
+	}
+
+	if (_renderDevice)
+	{
+		_renderDevice.reset();
+		_renderDevice = nullptr;
+	}
+
+	_setting = RenderSetting();
 }
 
 void
 RenderSystem::setRenderSetting(const RenderSetting& setting) except
 {
-    if (_setting.enableSAT != setting.enableSAT)
-    {
-        if (setting.enableSAT)
-        {
-            _SAT = std::make_shared<Atmospheric>();
-            _renderPipeline->addPostProcess(_SAT);
-        }
-        else
-        {
-            _renderPipeline->removePostProcess(_SAT);
-            _SAT.reset();
-        }
-    }
+	if (_setting.enableSAT != setting.enableSAT)
+	{
+		if (setting.enableSAT)
+		{
+			_SAT = std::make_shared<Atmospheric>();
+			_renderPipeline->addPostProcess(_SAT);
+		}
+		else
+		{
+			_renderPipeline->removePostProcess(_SAT);
+			_SAT.reset();
+		}
+	}
 
-    if (_setting.enableFog != setting.enableFog)
-    {
-        if (setting.enableFog)
-        {
-            _fog = std::make_shared<Fog>();
-            _renderPipeline->addPostProcess(_fog);
-        }
-        else
-        {
-            _renderPipeline->removePostProcess(_fog);
-            _fog.reset();
-        }
-    }
+	if (_setting.enableSSAO != setting.enableSSAO)
+	{
+		if (setting.enableSSAO)
+		{
+			_SSAO = std::make_shared<SSAO>();
+			_renderPipeline->addPostProcess(_SSAO);
+		}
+		else
+		{
+			_renderPipeline->removePostProcess(_SSAO);
+			_SSAO.reset();
+		}
+	}
 
-    if (_setting.enableSSGI != setting.enableSSGI)
-    {
-        if (setting.enableSSGI)
-        {
-            _SSGI = std::make_shared<SSGI>();
-            _renderPipeline->addPostProcess(_SSGI);
-        }
-        else
-        {
-            _renderPipeline->removePostProcess(_SSGI);
-            _SSGI.reset();
-        }
-    }
+	if (_setting.enableSSSS != setting.enableSSSS)
+	{
+		if (setting.enableSSSS)
+		{
+			_SSSS = std::make_shared<SSSS>();
+			_renderPipeline->addPostProcess(_SSSS);
+		}
+		else
+		{
+			_renderPipeline->removePostProcess(_SSSS);
+			_SSSS.reset();
+		}
+	}
 
-    if (_setting.enableSSAO != setting.enableSSAO)
-    {
-        if (setting.enableSSAO)
-        {
-            _SSAO = std::make_shared<SSAO>();
-            _renderPipeline->addPostProcess(_SSAO);
-        }
-        else
-        {
-            _renderPipeline->removePostProcess(_SSAO);
-            _SSAO.reset();
-        }
-    }
+	if (_setting.enableFog != setting.enableFog)
+	{
+		if (setting.enableFog)
+		{
+			_fog = std::make_shared<Fog>();
+			_renderPipeline->addPostProcess(_fog);
+		}
+		else
+		{
+			_renderPipeline->removePostProcess(_fog);
+			_fog.reset();
+		}
+	}
 
-    if (_setting.enableSSR != setting.enableSSR)
-    {
-        if (setting.enableSSR)
-        {
-            _SSR = std::make_shared<SSR>();
-            _renderPipeline->addPostProcess(_SSR);
-        }
-        else
-        {
-            _renderPipeline->removePostProcess(_SSR);
-            _SSR.reset();
-        }
-    }
+	if (_setting.enableSSGI != setting.enableSSGI)
+	{
+		if (setting.enableSSGI)
+		{
+			_SSGI = std::make_shared<SSGI>();
+			_renderPipeline->addPostProcess(_SSGI);
+		}
+		else
+		{
+			_renderPipeline->removePostProcess(_SSGI);
+			_SSGI.reset();
+		}
+	}
 
-    if (_setting.enableDOF != setting.enableDOF)
-    {
-        if (setting.enableDOF)
-        {
-            _DOF = std::make_shared<DepthOfField>();
-            _renderPipeline->addPostProcess(_DOF);
-        }
-        else
-        {
-            _renderPipeline->removePostProcess(_DOF);
-            _DOF.reset();
-        }
-    }
+	if (_setting.enableSSR != setting.enableSSR)
+	{
+		if (setting.enableSSR)
+		{
+			_SSR = std::make_shared<SSR>();
+			_renderPipeline->addPostProcess(_SSR);
+		}
+		else
+		{
+			_renderPipeline->removePostProcess(_SSR);
+			_SSR.reset();
+		}
+	}
 
-    if (_setting.enableLightShaft != setting.enableLightShaft)
-    {
-        if (setting.enableLightShaft)
-        {
-            _lightShaft = std::make_shared<LightShaft>();
-            _renderPipeline->addPostProcess(_lightShaft);
-        }
-        else
-        {
-            _renderPipeline->removePostProcess(_lightShaft);
-            _lightShaft.reset();
-        }
-    }
+	if (_setting.enableDOF != setting.enableDOF)
+	{
+		if (setting.enableDOF)
+		{
+			_DOF = std::make_shared<DepthOfField>();
+			_renderPipeline->addPostProcess(_DOF);
+		}
+		else
+		{
+			_renderPipeline->removePostProcess(_DOF);
+			_DOF.reset();
+		}
+	}
 
-    if (_setting.enableHDR != setting.enableHDR)
-    {
-        if (setting.enableHDR)
-        {
-            _HDR = std::make_shared<HDR>();
-            _renderPipeline->addPostProcess(_HDR);
-        }
-        else
-        {
-            _renderPipeline->removePostProcess(_HDR);
-            _HDR.reset();
-        }
-    }
+	if (_setting.enableHDR != setting.enableHDR)
+	{
+		if (setting.enableHDR)
+		{
+			_HDR = std::make_shared<HDR>();
+			_renderPipeline->addPostProcess(_HDR);
+		}
+		else
+		{
+			_renderPipeline->removePostProcess(_HDR);
+			_HDR.reset();
+		}
+	}
 
-    if (_setting.enableFXAA != setting.enableFXAA)
-    {
-        if (setting.enableFXAA)
-        {
-            _FXAA = std::make_shared<FXAA>();
-            _renderPipeline->addPostProcess(_FXAA);
-        }
-        else
-        {
-            _renderPipeline->removePostProcess(_FXAA);
-            _FXAA.reset();
-        }
-    }
+	if (_setting.enableLightShaft != setting.enableLightShaft)
+	{
+		if (setting.enableLightShaft)
+		{
+			_lightShaft = std::make_shared<LightShaft>();
+			_renderPipeline->addPostProcess(_lightShaft);
+		}
+		else
+		{
+			_renderPipeline->removePostProcess(_lightShaft);
+			_lightShaft.reset();
+		}
+	}
 
-    if (_setting.enableColorGrading != setting.enableColorGrading)
-    {
-        if (setting.enableColorGrading)
-        {
-            _colorGrading = std::make_shared<ColorGrading>();
-            _renderPipeline->addPostProcess(_colorGrading);
-        }
-        else
-        {
-            _renderPipeline->removePostProcess(_colorGrading);
-            _colorGrading.reset();
-        }
-    }
+	if (_setting.enableFXAA != setting.enableFXAA)
+	{
+		if (setting.enableFXAA)
+		{
+			_FXAA = std::make_shared<FXAA>();
+			_renderPipeline->addPostProcess(_FXAA);
+		}
+		else
+		{
+			_renderPipeline->removePostProcess(_FXAA);
+			_FXAA.reset();
+		}
+	}
 
-    _renderDevice->setSwapInterval(setting.interval);
+	if (_setting.enableColorGrading != setting.enableColorGrading)
+	{
+		if (setting.enableColorGrading)
+		{
+			_colorGrading = std::make_shared<ColorGrading>();
+			_renderPipeline->addPostProcess(_colorGrading);
+		}
+		else
+		{
+			_renderPipeline->removePostProcess(_colorGrading);
+			_colorGrading.reset();
+		}
+	}
+
+	_renderDevice->setSwapInterval(setting.interval);
 }
 
 const RenderSetting&
 RenderSystem::getRenderSetting() const noexcept
 {
-    return _setting;
+	return _setting;
 }
 
 void
 RenderSystem::setTimer(TimerPtr timer) noexcept
 {
-    _timer = timer;
+	_timer = timer;
 }
 
 TimerPtr
 RenderSystem::getTimer() const noexcept
 {
-    return _timer;
+	return _timer;
 }
 
 bool
 RenderSystem::addRenderScene(RenderScenePtr scene) noexcept
 {
-    auto it = std::find(_sceneList.begin(), _sceneList.end(), scene);
-    if (it == _sceneList.end())
-    {
-        _sceneList.push_back(scene);
-        return true;
-    }
+	auto it = std::find(_sceneList.begin(), _sceneList.end(), scene);
+	if (it == _sceneList.end())
+	{
+		_sceneList.push_back(scene);
+		return true;
+	}
 
-    return false;
+	return false;
 }
 
 void
 RenderSystem::removeRenderScene(RenderScenePtr scene) noexcept
 {
-    auto it = std::find(_sceneList.begin(), _sceneList.end(), scene);
-    if (it != _sceneList.end())
-    {
-        _sceneList.erase(it);
-    }
+	auto it = std::find(_sceneList.begin(), _sceneList.end(), scene);
+	if (it != _sceneList.end())
+	{
+		_sceneList.erase(it);
+	}
 }
 
 void
 RenderSystem::drawAABB(const Vector3& min, const Vector3& max, const Vector4& color) noexcept
 {
-    drawLineColor(Vector3(min[0], min[1], min[2]), Vector3(max[0], min[1], min[2]), color);
-    drawLineColor(Vector3(max[0], min[1], min[2]), Vector3(max[0], max[1], min[2]), color);
-    drawLineColor(Vector3(max[0], max[1], min[2]), Vector3(min[0], max[1], min[2]), color);
-    drawLineColor(Vector3(min[0], max[1], min[2]), Vector3(min[0], min[1], min[2]), color);
-    drawLineColor(Vector3(min[0], min[1], min[2]), Vector3(min[0], min[1], max[2]), color);
-    drawLineColor(Vector3(max[0], min[1], min[2]), Vector3(max[0], min[1], max[2]), color);
-    drawLineColor(Vector3(max[0], max[1], min[2]), Vector3(max[0], max[1], max[2]), color);
-    drawLineColor(Vector3(min[0], max[1], min[2]), Vector3(min[0], max[1], max[2]), color);
-    drawLineColor(Vector3(min[0], min[1], max[2]), Vector3(max[0], min[1], max[2]), color);
-    drawLineColor(Vector3(max[0], min[1], max[2]), Vector3(max[0], max[1], max[2]), color);
-    drawLineColor(Vector3(max[0], max[1], max[2]), Vector3(min[0], max[1], max[2]), color);
-    drawLineColor(Vector3(min[0], max[1], max[2]), Vector3(min[0], min[1], max[2]), color);
+	drawLineColor(Vector3(min[0], min[1], min[2]), Vector3(max[0], min[1], min[2]), color);
+	drawLineColor(Vector3(max[0], min[1], min[2]), Vector3(max[0], max[1], min[2]), color);
+	drawLineColor(Vector3(max[0], max[1], min[2]), Vector3(min[0], max[1], min[2]), color);
+	drawLineColor(Vector3(min[0], max[1], min[2]), Vector3(min[0], min[1], min[2]), color);
+	drawLineColor(Vector3(min[0], min[1], min[2]), Vector3(min[0], min[1], max[2]), color);
+	drawLineColor(Vector3(max[0], min[1], min[2]), Vector3(max[0], min[1], max[2]), color);
+	drawLineColor(Vector3(max[0], max[1], min[2]), Vector3(max[0], max[1], max[2]), color);
+	drawLineColor(Vector3(min[0], max[1], min[2]), Vector3(min[0], max[1], max[2]), color);
+	drawLineColor(Vector3(min[0], min[1], max[2]), Vector3(max[0], min[1], max[2]), color);
+	drawLineColor(Vector3(max[0], min[1], max[2]), Vector3(max[0], max[1], max[2]), color);
+	drawLineColor(Vector3(max[0], max[1], max[2]), Vector3(min[0], max[1], max[2]), color);
+	drawLineColor(Vector3(min[0], max[1], max[2]), Vector3(min[0], min[1], max[2]), color);
 }
 
 void
 RenderSystem::drawAABB(const Vector3& min, const Vector3& max, const Matrix4x4& trans, const Vector4& color) noexcept
 {
-    drawLineColor(trans * Vector3(min[0], min[1], min[2]), trans * Vector3(max[0], min[1], min[2]), color);
-    drawLineColor(trans * Vector3(max[0], min[1], min[2]), trans * Vector3(max[0], max[1], min[2]), color);
-    drawLineColor(trans * Vector3(max[0], max[1], min[2]), trans * Vector3(min[0], max[1], min[2]), color);
-    drawLineColor(trans * Vector3(min[0], max[1], min[2]), trans * Vector3(min[0], min[1], min[2]), color);
-    drawLineColor(trans * Vector3(min[0], min[1], min[2]), trans * Vector3(min[0], min[1], max[2]), color);
-    drawLineColor(trans * Vector3(max[0], min[1], min[2]), trans * Vector3(max[0], min[1], max[2]), color);
-    drawLineColor(trans * Vector3(max[0], max[1], min[2]), trans * Vector3(max[0], max[1], max[2]), color);
-    drawLineColor(trans * Vector3(min[0], max[1], min[2]), trans * Vector3(min[0], max[1], max[2]), color);
-    drawLineColor(trans * Vector3(min[0], min[1], max[2]), trans * Vector3(max[0], min[1], max[2]), color);
-    drawLineColor(trans * Vector3(max[0], min[1], max[2]), trans * Vector3(max[0], max[1], max[2]), color);
-    drawLineColor(trans * Vector3(max[0], max[1], max[2]), trans * Vector3(min[0], max[1], max[2]), color);
-    drawLineColor(trans * Vector3(min[0], max[1], max[2]), trans * Vector3(min[0], min[1], max[2]), color);
+	drawLineColor(trans * Vector3(min[0], min[1], min[2]), trans * Vector3(max[0], min[1], min[2]), color);
+	drawLineColor(trans * Vector3(max[0], min[1], min[2]), trans * Vector3(max[0], max[1], min[2]), color);
+	drawLineColor(trans * Vector3(max[0], max[1], min[2]), trans * Vector3(min[0], max[1], min[2]), color);
+	drawLineColor(trans * Vector3(min[0], max[1], min[2]), trans * Vector3(min[0], min[1], min[2]), color);
+	drawLineColor(trans * Vector3(min[0], min[1], min[2]), trans * Vector3(min[0], min[1], max[2]), color);
+	drawLineColor(trans * Vector3(max[0], min[1], min[2]), trans * Vector3(max[0], min[1], max[2]), color);
+	drawLineColor(trans * Vector3(max[0], max[1], min[2]), trans * Vector3(max[0], max[1], max[2]), color);
+	drawLineColor(trans * Vector3(min[0], max[1], min[2]), trans * Vector3(min[0], max[1], max[2]), color);
+	drawLineColor(trans * Vector3(min[0], min[1], max[2]), trans * Vector3(max[0], min[1], max[2]), color);
+	drawLineColor(trans * Vector3(max[0], min[1], max[2]), trans * Vector3(max[0], max[1], max[2]), color);
+	drawLineColor(trans * Vector3(max[0], max[1], max[2]), trans * Vector3(min[0], max[1], max[2]), color);
+	drawLineColor(trans * Vector3(min[0], max[1], max[2]), trans * Vector3(min[0], min[1], max[2]), color);
 }
 
 void
@@ -413,21 +440,21 @@ RenderSystem::drawArcSolid(float x, float y, float radius, float angle, float an
 void
 RenderSystem::drawArc(const Vector3& center, const Vector3& normal, const Vector3& axis, float radius, float minAngle, float maxAngle, float segments) noexcept
 {
-    const Vector3& vx = axis;
-    Vector3 vy = normal.cross(axis);
-    float step = degrees(segments);
-    int nSteps = (int)((maxAngle - minAngle) / step);
+	const Vector3& vx = axis;
+	Vector3 vy = normal.cross(axis);
+	float step = degrees(segments);
+	int nSteps = (int)((maxAngle - minAngle) / step);
 
-    if (!nSteps) nSteps = 1;
-    Vector3 prev = center + radius * vx * std::cos(minAngle) + radius * vy * std::sin(minAngle);
+	if (!nSteps) nSteps = 1;
+	Vector3 prev = center + radius * vx * std::cos(minAngle) + radius * vy * std::sin(minAngle);
 
-    for (int i = 1; i <= nSteps; i++)
-    {
-        float angle = minAngle + (maxAngle - minAngle) * i / nSteps;
-        Vector3 next = center + radius * vx * std::cos(angle) + radius * vy * std::sin(angle);
-        this->drawLine(prev, next);
-        prev = next;
-    }
+	for (int i = 1; i <= nSteps; i++)
+	{
+		float angle = minAngle + (maxAngle - minAngle) * i / nSteps;
+		Vector3 next = center + radius * vx * std::cos(angle) + radius * vy * std::sin(angle);
+		this->drawLine(prev, next);
+		prev = next;
+	}
 }
 
 void
@@ -443,12 +470,12 @@ RenderSystem::drawCircleSolid(float x, float  y, float radius, float segmenst) n
 void
 RenderSystem::drawQuad(float x, float y, float w, float h, const Vector4& color) noexcept
 {
-    _polygons.push_back(SimpleVertex(Vector3(x, y + h, 0), color));
-    _polygons.push_back(SimpleVertex(Vector3(x, y, 0), color));
-    _polygons.push_back(SimpleVertex(Vector3(x + w, y, 0), color));
-    _polygons.push_back(SimpleVertex(Vector3(x + w, y + h, 0), color));
-    _polygons.push_back(SimpleVertex(Vector3(x, y + h, 0), color));
-    _polygons.push_back(SimpleVertex(Vector3(x + w, y, 0), color));
+	_polygons.push_back(SimpleVertex(Vector3(x, y + h, 0), color));
+	_polygons.push_back(SimpleVertex(Vector3(x, y, 0), color));
+	_polygons.push_back(SimpleVertex(Vector3(x + w, y, 0), color));
+	_polygons.push_back(SimpleVertex(Vector3(x + w, y + h, 0), color));
+	_polygons.push_back(SimpleVertex(Vector3(x, y + h, 0), color));
+	_polygons.push_back(SimpleVertex(Vector3(x + w, y, 0), color));
 }
 
 void
@@ -489,37 +516,37 @@ RenderSystem::drawImageWithUV(float xpos, float ypos, float z, float w, float h,
 void
 RenderSystem::drawLine(const Vector3& pos1, const Vector3& pos2) noexcept
 {
-    this->drawLineColor(pos1, pos2, _globalColor);
+	this->drawLineColor(pos1, pos2, _globalColor);
 }
 
 void
 RenderSystem::drawLineColor(const Vector3& pos1, const Vector3 & pos2, const Vector4& color) noexcept
 {
-    this->drawLineColor(pos1, color, pos2, color);
+	this->drawLineColor(pos1, color, pos2, color);
 }
 
 void
 RenderSystem::drawLineColor(const Vector3& pos1, const Vector4& color1, const Vector3 & pos2, const Vector4& color2) noexcept
 {
-    _lines.push_back(SimpleVertex(pos1, color1));
-    _lines.push_back(SimpleVertex(pos2, color2));
+	_lines.push_back(SimpleVertex(pos1, color1));
+	_lines.push_back(SimpleVertex(pos2, color2));
 }
 
 void
 RenderSystem::drawLines(const Vector3 v[], std::size_t num, const Vector4& col, int flags, float ground) noexcept
 {
-    std::size_t index = 0;
-    for (std::size_t i = 0; i < num; i++)
-    {
-        this->drawLineColor(v[index], col, v[index + 1], col);
-        index += 2;
-    }
+	std::size_t index = 0;
+	for (std::size_t i = 0; i < num; i++)
+	{
+		this->drawLineColor(v[index], col, v[index + 1], col);
+		index += 2;
+	}
 }
 
 void
 RenderSystem::drawPoint(const Vector3& pt) noexcept
 {
-    this->drawPoint(pt, _globalColor);
+	this->drawPoint(pt, _globalColor);
 }
 
 void
@@ -530,10 +557,10 @@ RenderSystem::drawPoint(const Vector3& pt, const Vector4& color) noexcept
 void
 RenderSystem::drawPoints(const Vector3 pt[], std::size_t num) noexcept
 {
-    for (std::size_t i = 0; i < num; i++)
-    {
-        this->drawPoint(pt[i]);
-    }
+	for (std::size_t i = 0; i < num; i++)
+	{
+		this->drawPoint(pt[i]);
+	}
 }
 
 void
@@ -544,150 +571,150 @@ RenderSystem::drawText(const Vector3& pt, const std::string& string) noexcept
 void
 RenderSystem::applyCamera(Camera* camera) noexcept
 {
-    auto semantic = Material::getMaterialSemantic();
-    semantic->setFloatParam(GlobalFloatSemantic::CameraAperture, camera->getAperture());
-    semantic->setFloatParam(GlobalFloatSemantic::CameraNear, camera->getNear());
-    semantic->setFloatParam(GlobalFloatSemantic::CameraFar, camera->getFar());
+	auto semantic = Material::getMaterialSemantic();
+	semantic->setFloatParam(GlobalFloatSemantic::CameraAperture, camera->getAperture());
+	semantic->setFloatParam(GlobalFloatSemantic::CameraNear, camera->getNear());
+	semantic->setFloatParam(GlobalFloatSemantic::CameraFar, camera->getFar());
 
-    semantic->setFloat3Param(GlobalFloat3Semantic::CameraView, camera->getLookAt());
-    semantic->setFloat3Param(GlobalFloat3Semantic::CameraPosition, camera->getTranslate());
-    semantic->setFloat3Param(GlobalFloat3Semantic::CameraDirection, camera->getLookAt() - camera->getTranslate());
+	semantic->setFloat3Param(GlobalFloat3Semantic::CameraView, camera->getLookAt());
+	semantic->setFloat3Param(GlobalFloat3Semantic::CameraPosition, camera->getTranslate());
+	semantic->setFloat3Param(GlobalFloat3Semantic::CameraDirection, camera->getLookAt() - camera->getTranslate());
 
-    semantic->setMatrixParam(GlobalMatrixSemantic::matView, camera->getView());
-    semantic->setMatrixParam(GlobalMatrixSemantic::matViewInverse, camera->getViewInverse());
-    semantic->setMatrixParam(GlobalMatrixSemantic::matViewInverseTranspose, camera->getViewInverseTranspose());
-    semantic->setMatrixParam(GlobalMatrixSemantic::matProject, camera->getProject());
-    semantic->setMatrixParam(GlobalMatrixSemantic::matProjectInverse, camera->getProjectInverse());
-    semantic->setMatrixParam(GlobalMatrixSemantic::matViewProject, camera->getViewProject());
-    semantic->setMatrixParam(GlobalMatrixSemantic::matViewProjectInverse, camera->getViewProjectInverse());
+	semantic->setMatrixParam(GlobalMatrixSemantic::matView, camera->getView());
+	semantic->setMatrixParam(GlobalMatrixSemantic::matViewInverse, camera->getViewInverse());
+	semantic->setMatrixParam(GlobalMatrixSemantic::matViewInverseTranspose, camera->getViewInverseTranspose());
+	semantic->setMatrixParam(GlobalMatrixSemantic::matProject, camera->getProject());
+	semantic->setMatrixParam(GlobalMatrixSemantic::matProjectInverse, camera->getProjectInverse());
+	semantic->setMatrixParam(GlobalMatrixSemantic::matViewProject, camera->getViewProject());
+	semantic->setMatrixParam(GlobalMatrixSemantic::matViewProjectInverse, camera->getViewProjectInverse());
 }
 
 void
 RenderSystem::applyEnvironment(const RenderScene& scene) noexcept
 {
-    auto semantic = Material::getMaterialSemantic();
-    semantic->setFloat3Param(GlobalFloat3Semantic::LightAmbient, scene.getAmbientColor());
+	auto semantic = Material::getMaterialSemantic();
+	semantic->setFloat3Param(GlobalFloat3Semantic::LightAmbient, scene.getAmbientColor());
 }
 
 void
 RenderSystem::applyTimer(TimerPtr timer) noexcept
 {
-    auto semantic = Material::getMaterialSemantic();
-    semantic->setFloatParam(GlobalFloatSemantic::Time, timer->elapsed());
-    semantic->setFloatParam(GlobalFloatSemantic::TimeDelta, timer->delta());
-    semantic->setFloatParam(GlobalFloatSemantic::TimeFps, timer->fps());
+	auto semantic = Material::getMaterialSemantic();
+	semantic->setFloatParam(GlobalFloatSemantic::Time, timer->elapsed());
+	semantic->setFloatParam(GlobalFloatSemantic::TimeDelta, timer->delta());
+	semantic->setFloatParam(GlobalFloatSemantic::TimeFps, timer->fps());
 }
 
 void
 RenderSystem::renderBegin() noexcept
 {
-    _renderDevice->renderBegin();
+	_renderDevice->renderBegin();
 
-    this->applyTimer(_timer);
+	this->applyTimer(_timer);
 }
 
 void
 RenderSystem::renderCamera(Camera* camera) noexcept
 {
-    auto window = camera->getRenderWindow();
-    if (!window)
-    {
-        window = _renderWindow;
-    }
+	auto window = camera->getRenderWindow();
+	if (!window)
+	{
+		window = _renderWindow;
+	}
 
-    _renderDevice->setRenderWindow(window);
+	_renderDevice->setRenderWindow(window);
 
-    _renderPipeline->setCamera(camera);
-    _renderPipeline->render();
+	_renderPipeline->setCamera(camera);
+	_renderPipeline->render();
 }
 
 void
 RenderSystem::render() noexcept
 {
-    for (auto& scene : _sceneList)
-    {
-        this->applyEnvironment(*scene);
+	for (auto& scene : _sceneList)
+	{
+		this->applyEnvironment(*scene);
 
-        auto& cameras = scene->getCameraList();
-        for (auto& camera : cameras)
-        {
-            RenderListener* renderListener = camera->getRenderListener();
-            if (renderListener)
-                renderListener->onWillRenderObject();
+		auto& cameras = scene->getCameraList();
+		for (auto& camera : cameras)
+		{
+			RenderListener* renderListener = camera->getRenderListener();
+			if (renderListener)
+				renderListener->onWillRenderObject();
 
-            this->applyCamera(camera);
-            this->renderCamera(camera);
+			this->applyCamera(camera);
+			this->renderCamera(camera);
 
-            if (renderListener)
-                renderListener->onRenderObject();
-        }
-    }
+			if (renderListener)
+				renderListener->onRenderObject();
+		}
+	}
 }
 
 void
 RenderSystem::renderEnd() noexcept
 {
-    auto semantic = Material::getMaterialSemantic();
-    semantic->setMatrixParam(GlobalMatrixSemantic::matProject, _orthoCamera);
+	auto semantic = Material::getMaterialSemantic();
+	semantic->setMatrixParam(GlobalMatrixSemantic::matProject, _orthoCamera);
 
-    if (!_lines.empty())
-    {
-        _dynamicBuffers->resize(_lines.size());
-        std::memcpy(_dynamicBuffers->data(), _lines.data(), _lines.size() * sizeof(SimpleVertex));
+	if (!_lines.empty())
+	{
+		_dynamicBuffers->resize(_lines.size());
+		std::memcpy(_dynamicBuffers->data(), _lines.data(), _lines.size() * sizeof(SimpleVertex));
 
-        _renderPipeline->setRenderState(_linePass->getRenderState());
-        _renderPipeline->setShaderObject(_linePass->getShaderObject());
+		_renderPipeline->setRenderState(_linePass->getRenderState());
+		_renderPipeline->setShaderObject(_linePass->getShaderObject());
 
-        Renderable renderable;
-        renderable.type = VertexType::GPU_LINE;
-        renderable.startVertice = 0;
-        renderable.numVertices = _renderBuffer->getNumVertices();
-        renderable.startIndice = 0;
-        renderable.numIndices = _renderBuffer->getNumIndices();
-        renderable.numInstances = 0;
+		Renderable renderable;
+		renderable.type = VertexType::GPU_LINE;
+		renderable.startVertice = 0;
+		renderable.numVertices = _renderBuffer->getNumVertices();
+		renderable.startIndice = 0;
+		renderable.numIndices = _renderBuffer->getNumIndices();
+		renderable.numInstances = 0;
 
-        _renderPipeline->updateMesh(_renderBuffer, _dynamicBuffers, nullptr);
-        _renderPipeline->drawMesh(_renderBuffer, renderable);
+		_renderPipeline->updateMesh(_renderBuffer, _dynamicBuffers, nullptr);
+		_renderPipeline->drawMesh(_renderBuffer, renderable);
 
-        _lines.clear();
-    }
+		_lines.clear();
+	}
 
-    if (!_polygons.empty())
-    {
-        _dynamicBuffers->resize(_polygons.size());
-        std::memcpy(_dynamicBuffers->data(), _polygons.data(), _polygons.size() * sizeof(SimpleVertex));
+	if (!_polygons.empty())
+	{
+		_dynamicBuffers->resize(_polygons.size());
+		std::memcpy(_dynamicBuffers->data(), _polygons.data(), _polygons.size() * sizeof(SimpleVertex));
 
-        _renderPipeline->setRenderState(_linePass->getRenderState());
-        _renderPipeline->setShaderObject(_linePass->getShaderObject());
+		_renderPipeline->setRenderState(_linePass->getRenderState());
+		_renderPipeline->setShaderObject(_linePass->getShaderObject());
 
-        Renderable renderable;
-        renderable.type = VertexType::GPU_LINE;
-        renderable.startVertice = 0;
-        renderable.numVertices = _renderBuffer->getNumVertices();
-        renderable.startIndice = 0;
-        renderable.numIndices = _renderBuffer->getNumIndices();
-        renderable.numInstances = 0;
+		Renderable renderable;
+		renderable.type = VertexType::GPU_LINE;
+		renderable.startVertice = 0;
+		renderable.numVertices = _renderBuffer->getNumVertices();
+		renderable.startIndice = 0;
+		renderable.numIndices = _renderBuffer->getNumIndices();
+		renderable.numInstances = 0;
 
-        _renderPipeline->updateMesh(_renderBuffer, _dynamicBuffers, nullptr);
-        _renderPipeline->drawMesh(_renderBuffer, renderable);
+		_renderPipeline->updateMesh(_renderBuffer, _dynamicBuffers, nullptr);
+		_renderPipeline->drawMesh(_renderBuffer, renderable);
 
-        _polygons.clear();
-    }
+		_polygons.clear();
+	}
 
-    for (auto& scene : _sceneList)
-    {
-        auto& cameras = scene->getCameraList();
-        for (auto& camera : cameras)
-        {
-            auto widnow = camera->getRenderWindow();
-            if (widnow)
-            {
-                widnow->present();
-            }
-        }
-    }
+	for (auto& scene : _sceneList)
+	{
+		auto& cameras = scene->getCameraList();
+		for (auto& camera : cameras)
+		{
+			auto widnow = camera->getRenderWindow();
+			if (widnow)
+			{
+				widnow->present();
+			}
+		}
+	}
 
-    _renderDevice->renderEnd();
+	_renderDevice->renderEnd();
 }
 
 _NAME_END

@@ -7,7 +7,7 @@
     <parameter name="matViewProjectInverse" semantic="matViewProjectInverse"/>
     <parameter name="texDepth" semantic="DeferredDepthMap" />
     <parameter name="texDiffuse" semantic="DeferredGraphicMap" />
-    <parameter name="texNormal" semantic="DeferredNormalMap" />
+    <parameter name="texMRT1" semantic="DeferredNormalMap" />
     <parameter name="texLight" semantic="DeferredLightMap" />
     <parameter name="texOpaques" type="sampler2D" />
     <parameter name="texTransparent" type="sampler2D" />
@@ -94,7 +94,7 @@
             uniform sampler2D texBackground;
             uniform sampler2D texLight;
             uniform sampler2D texDiffuse;
-            uniform sampler2D texNormal;
+            uniform sampler2D texMRT1;
             uniform sampler2D texLUT;
 
             uniform float shadowFactor;
@@ -111,21 +111,20 @@
 
             #define PIE 3.1415926
 
-
             float shadowLighting(vec3 P)
             {
                 vec4 proj = shadowMatrix * vec4(P, 1.0);
-                proj.xy /= proj.w;
-                proj.xy = proj.xy * 0.5 + 0.5;
+                proj.xyz /= proj.w;
+                proj.xyz = proj.xyz * 0.5 + 0.5;
 
                 if (proj.x < 0 || proj.y < 0 ||
                     proj.x > 1 || proj.y > 1)
                 {
-                    return vec4(1);
+                    return 1.0;
                 }
 
                 float occluder = texture2D(shadowMap, proj.xy).r;
-                return clamp(occluder * exp(-shadowFactor * proj.z), 0, 1);
+                return clamp(exp(shadowFactor * (occluder - proj.z)), 0, 1);
             }
 
             /*float shadowLighting(int index, vec3 world)
@@ -168,17 +167,12 @@
                 return shadowLighting(index, world);
             }*/
 
-            vec4 samplePosition(vec2 coord)
+            vec3 samplePosition(vec2 coord)
             {
                 float depth  = textureLod(texDepth, coord.xy, 0).r * 2.0 - 1.0;
                 vec4 result = matViewProjectInverse * vec4(coord * 2.0 - 1.0, depth, 1.0);
                 result /= result.w;
-                return result;
-            }
-
-            vec4 sampleNormal(vec2 coord)
-            {
-                return texture(texNormal, coord.xy);
+                return result.xyz;
             }
 
             vec4 spotLight(vec3 P, vec3 N, float sp, float sc)
@@ -201,7 +195,7 @@
 
                 float lighting = attenuation * BRDF(N, L, V, sp, sc);
 
-                return vec4(lightColor * lighting, 0.0);
+                return vec4(lightColor * lighting, brdfLambert(N, L));
             }
 
             vec4 pointLight(vec3 world, vec3 N, float sp, float sc)
@@ -229,42 +223,62 @@
 
             void DeferredSunLightPS()
             {
-                vec4 N = sampleNormal(coord.xy);
-                vec4 P = samplePosition(coord.xy);
+                float4 MRT1 = texture(texMRT1, coord.xy);
 
-                vec3 V = normalize(eyePosition - P.xyz);
-                vec3 L = normalize(lightDirection);
-                vec3 lighting = lightColor * BRDF(N.xyz, L, V, floor(N.a), fract(N.a));
+                float shininess = restoreShininess(MRT1);
+                float specular = restoreSpecular(MRT1);
 
-                glsl_FragColor0 = vec4(lighting, 1.0);
+                float3 N = restoreNormal(MRT1);
+                float3 P = samplePosition(coord.xy);
+
+                float3 V = normalize(eyePosition - P.xyz);
+                float3 L = normalize(lightDirection);
+                float3 lighting = lightColor * BRDF(N, L, V, shininess, specular);
+
+                glsl_FragColor0 = float4(lighting, 1.0);
             }
 
             void DeferredSunLightShadowPS()
             {
-                vec4 N = sampleNormal(coord.xy);
-                vec4 P = samplePosition(coord.xy);
+                float4 MRT1 = texture(texMRT1, coord.xy);
+
+                float shininess = restoreShininess(MRT1);
+                float specular = restoreSpecular(MRT1);
+
+                float3 N = restoreNormal(MRT1);
+                float3 P = samplePosition(coord.xy);
 
                 vec3 V = normalize(eyePosition - P.xyz);
                 vec3 L = normalize(lightDirection);
-                vec3 lighting = lightColor * BRDF(N.xyz, L, V, floor(N.a), fract(N.a)) * shadowLighting(P.xyz);
+                vec3 lighting = lightColor * BRDF(N, L, V, shininess, specular) * shadowLighting(P.xyz);
 
                 glsl_FragColor0 = vec4(lighting, 1.0);
             }
 
             void DeferredSpotLightPS()
             {
-                vec4 N = sampleNormal(coord.xy);
-                vec3 P = samplePosition(coord.xy).xyz;
+                float4 MRT1 = texture(texMRT1, coord.xy);
 
-                glsl_FragColor0 = spotLight(P, N.rgb, floor(N.a), fract(N.a));
+                float shininess = restoreShininess(MRT1);
+                float specular = restoreSpecular(MRT1);
+
+                float3 N = restoreNormal(MRT1);
+                float3 P = samplePosition(coord.xy);
+
+                glsl_FragColor0 = spotLight(P.xyz, N, shininess, specular);
             }
 
             void DeferredPointLightPS()
             {
-                vec4 N = sampleNormal(coord.xy);
-                vec3 P = samplePosition(coord.xy).xyz;
+                float4 MRT1 = texture(texMRT1, coord.xy);
 
-                glsl_FragColor0 = pointLight(P, N.rgb, floor(N.a), fract(N.a));
+                float shininess = restoreShininess(MRT1);
+                float specular = restoreSpecular(MRT1);
+
+                float3 N = restoreNormal(MRT1);
+                float3 P = samplePosition(coord.xy);
+
+                glsl_FragColor0 = pointLight(P.xyz, N, shininess, specular);
             }
 
             void DeferredShadingOpaquesPS()

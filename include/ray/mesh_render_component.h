@@ -54,6 +54,9 @@ public:
 
 private:
 
+	void onAttach() except;
+	void onRemove() noexcept;
+
 	void onActivate() except;
 	void onDeactivate() noexcept;
 
@@ -66,6 +69,7 @@ protected:
 	void _attacRenderObjects() noexcept;
 	void _dttachRenderhObjects() noexcept;
 
+	void _buildMaterials(ModelPtr model) except;
 	void _buildRenderObjects(MeshPropertyPtr mesh) noexcept;
 
 private:

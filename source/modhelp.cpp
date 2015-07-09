@@ -126,7 +126,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, floa
 }
 
 bool
-MaterialProperty::set(const char* key, std::size_t type, std::size_t index, Color3& value) noexcept
+MaterialProperty::set(const char* key, std::size_t type, std::size_t index, const Vector3& value) noexcept
 {
 	assert(nullptr != key);
 
@@ -150,7 +150,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, Colo
 	prop->key = key;
 	prop->type = type;
 	prop->index = index;
-	prop->length = sizeof(Color3);
+	prop->length = sizeof(Vector3);
 	prop->dataType = PTI_FLOAT | PTI_BUFFER;
 	prop->data = new char[prop->length];
 
@@ -162,7 +162,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, Colo
 }
 
 bool
-MaterialProperty::set(const char* key, std::size_t type, std::size_t index, Color4& value) noexcept
+MaterialProperty::set(const char* key, std::size_t type, std::size_t index, const Vector4& value) noexcept
 {
 	assert(nullptr != key);
 
@@ -186,7 +186,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, Colo
 	prop->key = key;
 	prop->type = type;
 	prop->index = index;
-	prop->length = sizeof(Color4);
+	prop->length = sizeof(Vector4);
 	prop->dataType = PTI_FLOAT | PTI_BUFFER;
 	prop->data = new char[prop->length];
 
@@ -252,7 +252,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, cons
 }
 
 bool
-MaterialProperty::get(const char* key, std::size_t type, std::size_t index, int value) const noexcept
+MaterialProperty::get(const char* key, std::size_t type, std::size_t index, int& value) const noexcept
 {
 	assert(nullptr != key);
 
@@ -273,7 +273,7 @@ MaterialProperty::get(const char* key, std::size_t type, std::size_t index, int 
 }
 
 bool
-MaterialProperty::get(const char* key, std::size_t type, std::size_t index, float value) const noexcept
+MaterialProperty::get(const char* key, std::size_t type, std::size_t index, float& value) const noexcept
 {
 	assert(nullptr != key);
 
@@ -294,7 +294,7 @@ MaterialProperty::get(const char* key, std::size_t type, std::size_t index, floa
 }
 
 bool
-MaterialProperty::get(const char* key, std::size_t type, std::size_t index, Color3& value) const noexcept
+MaterialProperty::get(const char* key, std::size_t type, std::size_t index, Vector3& value) const noexcept
 {
 	assert(nullptr != key);
 
@@ -304,7 +304,7 @@ MaterialProperty::get(const char* key, std::size_t type, std::size_t index, Colo
 		if (prop->dataType & PTI_FLOAT &&
 			prop->dataType & PTI_BUFFER)
 		{
-			if (prop->length == sizeof(Color3))
+			if (prop->length == sizeof(Vector3))
 			{
 				std::memcpy(&value, prop->data, prop->length);
 				return true;
@@ -316,7 +316,7 @@ MaterialProperty::get(const char* key, std::size_t type, std::size_t index, Colo
 }
 
 bool
-MaterialProperty::get(const char* key, std::size_t type, std::size_t index, Color4& value) const noexcept
+MaterialProperty::get(const char* key, std::size_t type, std::size_t index, Vector4& value) const noexcept
 {
 	assert(nullptr != key);
 
@@ -326,7 +326,7 @@ MaterialProperty::get(const char* key, std::size_t type, std::size_t index, Colo
 		if (prop->dataType & PTI_FLOAT &&
 			prop->dataType & PTI_BUFFER)
 		{
-			if (prop->length == sizeof(Color4))
+			if (prop->length == sizeof(Vector4))
 			{
 				std::memcpy(&value, prop->data, prop->length);
 				return true;
@@ -530,7 +530,7 @@ MeshProperty::getMeshType() const noexcept
 void
 MeshProperty::setMaterialID(std::size_t index) noexcept
 {
-	_materialID = 0;
+	_materialID = index;
 }
 
 std::size_t
@@ -678,6 +678,12 @@ MeshProperty::clone() noexcept
 	mesh->setTexcoordArray(this->getTexcoordArray());
 	mesh->setFaceArray(this->getFaceArray());
 	mesh->_boundingBox = this->_boundingBox;
+
+	for (auto& it : _children)
+	{
+		mesh->addChild(it->clone());
+	}
+
 	return mesh;
 }
 
@@ -1526,6 +1532,8 @@ MeshProperty::computeBoundingBox() noexcept
 
 	for (auto& it : _children)
 	{
+		it->computeBoundingBox();
+
 		_boundingBoxChildren.encapsulate(it->getBoundingBox());
 	}
 }

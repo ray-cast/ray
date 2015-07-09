@@ -34,24 +34,23 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-// | Author: Xiemoperor <Xiemoperor@gmail.com>
-// +----------------------------------------------------------------------
 #ifndef _H_NONCOPYABLE_H_
 #define _H_NONCOPYABLE_H_
 
 #include <ray/platform.h>
 
-namespace ray
+_NAME_BEGIN
+
+class EXPORT noncopyable
 {
-    class EXPORT noncopyable
-    {
-    protected:
-        noncopyable() {}
-        ~noncopyable() {}
-    private:
-        noncopyable( const noncopyable& );
-        const noncopyable& operator=( const noncopyable& );
-    };
-}
+protected:
+	noncopyable() noexcept {}
+	virtual ~noncopyable() noexcept {}
+private:
+	noncopyable(const noncopyable&) noexcept = delete;
+	const noncopyable& operator=(const noncopyable&) noexcept = delete;
+};
+
+_NAME_END
 
 #endif

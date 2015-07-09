@@ -147,11 +147,11 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 				if (!stream.read((char*)&vertex.BoneWeight.Bone3, pmx.Header.BoneIndexSize)) return false;
 				if (!stream.read((char*)&vertex.BoneWeight.Bone4, pmx.Header.BoneIndexSize)) return false;
 				if (!stream.read((char*)&vertex.BoneWeight.Weight1, sizeof(vertex.BoneWeight.Weight1))) return false;
+				if (!stream.read((char*)&vertex.BoneWeight.Weight2, sizeof(vertex.BoneWeight.Weight2))) return false;
 				if (!stream.read((char*)&vertex.BoneWeight.Weight3, sizeof(vertex.BoneWeight.Weight3))) return false;
-
-				vertex.BoneWeight.Weight2 = 1.0f - vertex.BoneWeight.Weight1;
-				vertex.BoneWeight.Weight4 = 1.0f - vertex.BoneWeight.Weight3;
+				if (!stream.read((char*)&vertex.BoneWeight.Weight4, sizeof(vertex.BoneWeight.Weight4))) return false;
 			}
+			break;
 			case PMX_SDEF:
 			{
 				if (!stream.read((char*)&vertex.BoneWeight.Bone1, pmx.Header.BoneIndexSize)) return false;
@@ -283,10 +283,6 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 
 				if (!stream.read((char*)&bone.Name.name[0], bone.Name.length)) return false;
 			}
-			else
-			{
-				return false;
-			}
 
 			if (!stream.read((char*)&bone.EnglishName.length, sizeof(bone.EnglishName.length))) return false;
 
@@ -296,32 +292,24 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 
 				if (!stream.read((char*)&bone.EnglishName.name[0], bone.EnglishName.length)) return false;
 			}
-			else
-			{
-				return false;
-			}
 
 			if (!stream.read((char*)&bone.Position, sizeof(bone.Position))) return false;
-			if (!stream.read((char*)&bone.Parent, sizeof(bone.Parent))) return false;
+			if (!stream.read((char*)&bone.Parent, pmx.Header.BoneIndexSize)) return false;
 			if (!stream.read((char*)&bone.Level, sizeof(bone.Level))) return false;
 			if (!stream.read((char*)&bone.Flag, sizeof(bone.Flag))) return false;
 
 			if (bone.Flag & PMX_BONE_INDEX)
 			{
-				if (!stream.read((char*)&bone.ConnectedBoneIndex, sizeof(bone.ConnectedBoneIndex))) return false;
+				if (!stream.read((char*)&bone.ConnectedBoneIndex, pmx.Header.BoneIndexSize)) return false;
 			}
 			else if (bone.Flag & PMX_BONE_MOVE)
 			{
 				if (!stream.read((char*)&bone.Offset, sizeof(bone.Offset))) return false;
 			}
-			else
-			{
-				if (!stream.read((char*)&bone.ConnectedBoneIndex, sizeof(bone.ConnectedBoneIndex))) return false;
-			}
 
 			if (bone.Flag & PMX_BONE_PARENT)
 			{
-				if (!stream.read((char*)&bone.ProvidedParentBoneIndex, sizeof(bone.ProvidedParentBoneIndex))) return false;
+				if (!stream.read((char*)&bone.ProvidedParentBoneIndex, pmx.Header.BoneIndexSize)) return false;
 				if (!stream.read((char*)&bone.ProvidedRatio, sizeof(bone.ProvidedRatio))) return false;
 			}
 
@@ -330,9 +318,15 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 				if (!stream.read((char*)&bone.AxisDirection, sizeof(bone.AxisDirection))) return false;
 			}
 
+			if (bone.Flag & PMX_BONE_ROTATE)
+			{
+				if (!stream.read((char*)&bone.DimentionXDirection, sizeof(bone.DimentionXDirection))) return false;
+				if (!stream.read((char*)&bone.DimentionZDirection, sizeof(bone.DimentionZDirection))) return false;
+			}
+
 			if (bone.Flag & PMX_BONE_IK)
 			{
-				if (!stream.read((char*)&bone.IKTargetBoneIndex, sizeof(bone.IKTargetBoneIndex))) return false;
+				if (!stream.read((char*)&bone.IKTargetBoneIndex, pmx.Header.BoneIndexSize)) return false;
 				if (!stream.read((char*)&bone.IKLoopCount, sizeof(bone.IKLoopCount))) return false;
 				if (!stream.read((char*)&bone.IKLimitedRadian, sizeof(bone.IKLimitedRadian))) return false;
 				if (!stream.read((char*)&bone.IKLinkCount, sizeof(bone.IKLinkCount))) return false;
@@ -343,7 +337,7 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 
 					for (std::size_t j = 0; j < bone.IKLinkCount; j++)
 					{
-						if (!stream.read((char*)&bone.IKList[j].BoneIndex, (std::streamsize)sizeof(bone.IKList[j].BoneIndex))) return false;
+						if (!stream.read((char*)&bone.IKList[j].BoneIndex, pmx.Header.BoneIndexSize)) return false;
 						if (!stream.read((char*)&bone.IKList[j].RotateLimited, (std::streamsize)sizeof(bone.IKList[j].RotateLimited))) return false;
 						if (bone.IKList[j].RotateLimited)
 						{
@@ -352,12 +346,6 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 						}
 					}
 				}
-			}
-
-			if (bone.Flag & PMX_BONE_ROTATE)
-			{
-				if (!stream.read((char*)&bone.DimentionXDirection, sizeof(bone.DimentionXDirection))) return false;
-				if (!stream.read((char*)&bone.DimentionZDirection, sizeof(bone.DimentionZDirection))) return false;
 			}
 		}
 	}
@@ -413,8 +401,9 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 	PMX_Index* indices = pmx.IndexList.data();
 	PMX_Vertex* vertices = pmx.VertexList.data();
 
-	auto root = std::make_shared<MeshProperty>();
-	auto mesh = root;
+	MeshPropertyPtr root = std::make_shared<MeshProperty>();
+	MeshPropertyPtr mesh = root;
+	MeshPropertyPtr last = nullptr;
 
 	for (std::size_t index = 0; index < pmx.MaterialList.size(); index++)
 	{
@@ -435,18 +424,19 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 			faces.push_back(i);
 		}
 
-		if (mesh->getParent())
+		if (last == mesh)
 		{
 			mesh = std::make_shared<MeshProperty>();
 			root->addChild(mesh);
 		}
 
 		mesh->setMaterialID(index);
-
 		mesh->setVertexArray(points);
 		mesh->setNormalArray(normals);
 		mesh->setTexcoordArray(texcoords);
 		mesh->setFaceArray(faces);
+
+		last = mesh;
 	}
 
 	model.addMesh(root);

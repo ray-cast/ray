@@ -743,7 +743,7 @@ OGLRenderer::copyRenderTarget(RenderTargetPtr src, const Viewport& v1, RenderTar
 	else
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-	glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 	_renderTarget = GL_NONE;
 }
@@ -1110,12 +1110,13 @@ OGLRenderer::setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constan
 		if (uniform->needUpdate())
 		{
 			auto texture = uniform->getValue()->getTexture();
-			assert(texture);
-
-			this->setShaderUniform(uniform, texture);
-			if (OGLExtenstion::isSupport(ARB_bindless_texture))
+			if (texture)
 			{
-				uniform->needUpdate(false);
+				this->setShaderUniform(uniform, texture);
+				if (OGLExtenstion::isSupport(ARB_bindless_texture))
+				{
+					uniform->needUpdate(false);
+				}
 			}
 		}
 

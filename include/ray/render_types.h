@@ -66,7 +66,6 @@ typedef std::shared_ptr<class ShaderUniform> ShaderUniformPtr;
 typedef std::shared_ptr<class ShaderSubroutine> ShaderSubroutinePtr;
 typedef std::shared_ptr<class ShaderObject> ShaderObjectPtr;
 typedef std::shared_ptr<class RenderPostProcess> RenderPostProcessPtr;
-typedef std::shared_ptr<class Material> MaterialPtr;
 typedef std::shared_ptr<class RenderMesh> RenderMeshPtr;
 
 typedef std::shared_ptr<class Camera> CameraPtr;
@@ -84,7 +83,6 @@ typedef std::vector<CameraPtr> Cameras;
 typedef std::vector<RenderTargetPtr> RenderTargets;
 typedef std::vector<RenderBufferPtr> RenderBuffers;
 typedef std::vector<RenderMeshPtr> RenderMeshes;
-typedef std::vector<MaterialPtr> Materials;
 
 typedef void* WindHandle;
 

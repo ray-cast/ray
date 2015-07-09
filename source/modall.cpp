@@ -49,6 +49,10 @@
 #   include <ray/modpmx.h>
 #endif
 
+#if _BUILD_VMD_HANDLER
+#   include <ray/modvmd.h>
+#endif
+
 // #include "ray/modelx.h"
 // #include "ray/model3ds.h"
 // #include "ray/modelmd3.h"
@@ -90,141 +94,149 @@
 _NAME_BEGIN
 
 #if _BUILD_OBJ_HANDLER
-std::shared_ptr<ModelHandler> objHandle = std::make_shared<ObjHandler>();
+std::shared_ptr<ModelHandler> objHandler = std::make_shared<ObjHandler>();
 #endif
 
 #if _BUILD_PMD_HANDLER
-std::shared_ptr<ModelHandler> pmdHandle = std::make_shared<PMDHandler>();
+std::shared_ptr<ModelHandler> pmdHandler = std::make_shared<PMDHandler>();
 #endif
 
 #if _BUILD_PMX_HANDLER
-std::shared_ptr<ModelHandler> pmxHandle = std::make_shared<PMXHandler>();
+std::shared_ptr<ModelHandler> pmxHandler = std::make_shared<PMXHandler>();
+#endif
+
+#if _BUILD_VMD_HANDLER
+std::shared_ptr<ModelHandler> vmdHandler = std::make_shared<VMDHandler>();
 #endif
 
 void GetModelInstanceList(Model& model)
 {
 #if _BUILD_OBJ_HANDLER
-    model.addHandler(objHandle);
+	model.addHandler(objHandler);
 #endif
 
 #if _BUILD_PMD_HANDLER
-    model.addHandler(pmdHandle);
+	model.addHandler(pmdHandler);
 #endif
 
 #if _BUILD_PMX_HANDLER
-    model.addHandler(pmxHandle);
+	model.addHandler(pmxHandler);
 #endif
-    //     #if (!defined _BUILD_NO_X_HANDLER)
-    //         out.push_back(new XFileLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_3DS_HANDLER)
-    //         out.push_back(new Discreet3DSImporter());
-    //     #endif
-    //     #if (!defined _BUILD_NO_MD3_HANDLER)
-    //         out.push_back(new MD3Loader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_MD2_HANDLER)
-    //         out.push_back(new MD2Loader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_PLY_HANDLER)
-    //         out.push_back(new PLYLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_MDL_HANDLER)
-    //         out.push_back(new MDLLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_ASE_HANDLER)
-    //         out.push_back(new ASELoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_HMP_HANDLER)
-    //         out.push_back(new HMPLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_SMD_HANDLER)
-    //         out.push_back(new SDMLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_MDC_HANDLER)
-    //         out.push_back(new MDCLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_MD5_HANDLER)
-    //         out.push_back(new MD5Loader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_STL_HANDLER)
-    //         out.push_back(new STLLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_LWO_HANDLER)
-    //         out.push_back(new LWOLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_DXF_HANDLER)
-    //         out.push_back(new DXFLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_NFF_HANDLER)
-    //         out.push_back(new NFFLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_RAW_HANDLER)
-    //         out.push_back(new RAWLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_OFF_HANDLER)
-    //         out.push_back(new OFFLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_AC_HANDLER)
-    //         out.push_back(new AC3DLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_BVH_HANDLER)
-    //         out.push_back(new BVHLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_IRRMESH_HANDLER)
-    //         out.push_back(new IRRMeshLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_IRR_HANDLER)
-    //         out.push_back(new IRRLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_Q3D_HANDLER)
-    //         out.push_back(new Q3DLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_B3D_HANDLER)
-    //         out.push_back(new B3DLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_COLLADA_HANDLER)
-    //      out.push_back(new ColladaLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_TERRAGEN_HANDLER)
-    //         out.push_back(new TerragenLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_CSM_HANDLER)
-    //         out.push_back(new CSMLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_3D_HANDLER)
-    //         out.push_back(new UnrealLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_LWS_HANDLER)
-    //         out.push_back(new LWSHandler());
-    //     #endif
-    //     #if (!defined _BUILD_NO_OGRE_HANDLER)
-    //         out.push_back(new Ogre::OgreLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_MS3D_HANDLER)
-    //         out.push_back(new MS3DLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_COB_HANDLER)
-    //         out.push_back(new COBLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_BLEND_HANDLER)
-    //         out.push_back(new BlenderLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_Q3BSP_HANDLER)
-    //         out.push_back(new Q3BSPFileLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_NDO_HANDLER)
-    //         out.push_back(new NDOLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_IFC_HANDLER)
-    //         out.push_back(new IFCLoader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_M3_HANDLER)
-    //         out.push_back(new M3::M3Loader());
-    //     #endif
-    //     #if (!defined _BUILD_NO_XGL_HANDLER)
-    //         out.push_back(new XGLLoader());
-    //     #endif
+
+#if _BUILD_VMD_HANDLER
+	model.addHandler(vmdHandler);
+#endif
+	//     #if (!defined _BUILD_NO_X_HANDLER)
+	//         out.push_back(new XFileLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_3DS_HANDLER)
+	//         out.push_back(new Discreet3DSImporter());
+	//     #endif
+	//     #if (!defined _BUILD_NO_MD3_HANDLER)
+	//         out.push_back(new MD3Loader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_MD2_HANDLER)
+	//         out.push_back(new MD2Loader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_PLY_HANDLER)
+	//         out.push_back(new PLYLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_MDL_HANDLER)
+	//         out.push_back(new MDLLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_ASE_HANDLER)
+	//         out.push_back(new ASELoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_HMP_HANDLER)
+	//         out.push_back(new HMPLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_SMD_HANDLER)
+	//         out.push_back(new SDMLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_MDC_HANDLER)
+	//         out.push_back(new MDCLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_MD5_HANDLER)
+	//         out.push_back(new MD5Loader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_STL_HANDLER)
+	//         out.push_back(new STLLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_LWO_HANDLER)
+	//         out.push_back(new LWOLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_DXF_HANDLER)
+	//         out.push_back(new DXFLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_NFF_HANDLER)
+	//         out.push_back(new NFFLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_RAW_HANDLER)
+	//         out.push_back(new RAWLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_OFF_HANDLER)
+	//         out.push_back(new OFFLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_AC_HANDLER)
+	//         out.push_back(new AC3DLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_BVH_HANDLER)
+	//         out.push_back(new BVHLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_IRRMESH_HANDLER)
+	//         out.push_back(new IRRMeshLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_IRR_HANDLER)
+	//         out.push_back(new IRRLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_Q3D_HANDLER)
+	//         out.push_back(new Q3DLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_B3D_HANDLER)
+	//         out.push_back(new B3DLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_COLLADA_HANDLER)
+	//      out.push_back(new ColladaLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_TERRAGEN_HANDLER)
+	//         out.push_back(new TerragenLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_CSM_HANDLER)
+	//         out.push_back(new CSMLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_3D_HANDLER)
+	//         out.push_back(new UnrealLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_LWS_HANDLER)
+	//         out.push_back(new LWSHandler());
+	//     #endif
+	//     #if (!defined _BUILD_NO_OGRE_HANDLER)
+	//         out.push_back(new Ogre::OgreLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_MS3D_HANDLER)
+	//         out.push_back(new MS3DLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_COB_HANDLER)
+	//         out.push_back(new COBLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_BLEND_HANDLER)
+	//         out.push_back(new BlenderLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_Q3BSP_HANDLER)
+	//         out.push_back(new Q3BSPFileLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_NDO_HANDLER)
+	//         out.push_back(new NDOLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_IFC_HANDLER)
+	//         out.push_back(new IFCLoader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_M3_HANDLER)
+	//         out.push_back(new M3::M3Loader());
+	//     #endif
+	//     #if (!defined _BUILD_NO_XGL_HANDLER)
+	//         out.push_back(new XGLLoader());
+	//     #endif
 }
 
 _NAME_END

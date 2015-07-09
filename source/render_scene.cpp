@@ -39,7 +39,7 @@
 _NAME_BEGIN
 
 RenderScene::RenderScene() noexcept
-    : _ambientLight(Vector3(0.1, 0.1, 0.1))
+	: _ambientLight(Vector3(0.1, 0.1, 0.1))
 {
 }
 
@@ -50,63 +50,63 @@ RenderScene::~RenderScene() noexcept
 void
 RenderScene::addCamera(Camera* camera) noexcept
 {
-    auto it = std::find(_cameraList.begin(), _cameraList.end(), camera);
-    if (it == _cameraList.end())
-    {
-        _cameraList.push_back(camera);
-        this->sortCamera();
-    }
+	auto it = std::find(_cameraList.begin(), _cameraList.end(), camera);
+	if (it == _cameraList.end())
+	{
+		_cameraList.push_back(camera);
+		this->sortCamera();
+	}
 }
 
 void
 RenderScene::removeCamera(Camera* camera) noexcept
 {
-    auto it = std::find(_cameraList.begin(), _cameraList.end(), camera);
-    if (it != _cameraList.end())
-    {
-        _cameraList.erase(it);
-    }
+	auto it = std::find(_cameraList.begin(), _cameraList.end(), camera);
+	if (it != _cameraList.end())
+	{
+		_cameraList.erase(it);
+	}
 }
 
 RenderScene::CameraList&
 RenderScene::getCameraList() noexcept
 {
-    return _cameraList;
+	return _cameraList;
 }
 
 void
 RenderScene::sortCamera() noexcept
 {
-    std::sort(_cameraList.begin(), _cameraList.end(),
-        [](Camera* lhs, Camera* rhs)
-    {
-        return lhs->getCameraOrder() < rhs->getCameraOrder();
-    }
-    );
+	std::sort(_cameraList.begin(), _cameraList.end(),
+		[](Camera* lhs, Camera* rhs)
+	{
+		return lhs->getCameraOrder() < rhs->getCameraOrder();
+	}
+	);
 }
 
 void
 RenderScene::addLight(Light* light) noexcept
 {
-    assert(_lightList.end() == std::find(_lightList.begin(), _lightList.end(), light));
+	assert(_lightList.end() == std::find(_lightList.begin(), _lightList.end(), light));
 
-    _lightList.push_back(light);
+	_lightList.push_back(light);
 }
 
 void
 RenderScene::removeLight(Light* light) noexcept
 {
-    auto it = std::find(_lightList.begin(), _lightList.end(), light);
-    if (it != _lightList.end())
-    {
-        _lightList.erase(it);
-    }
+	auto it = std::find(_lightList.begin(), _lightList.end(), light);
+	if (it != _lightList.end())
+	{
+		_lightList.erase(it);
+	}
 }
 
 RenderScene::LightList&
 RenderScene::getLightList() noexcept
 {
-    return _lightList;
+	return _lightList;
 }
 
 void
@@ -117,101 +117,101 @@ RenderScene::sortLight() noexcept
 void
 RenderScene::addRenderObject(RenderObject* object) noexcept
 {
-    _renderObjectList.push_back(object);
+	_renderObjectList.push_back(object);
 }
 
 void
 RenderScene::removeRenderObject(RenderObject* object) noexcept
 {
-    auto it = std::find(_renderObjectList.begin(), _renderObjectList.end(), object);
-    if (it != _renderObjectList.end())
-    {
-        _renderObjectList.erase(it);
-    }
+	auto it = std::find(_renderObjectList.begin(), _renderObjectList.end(), object);
+	if (it != _renderObjectList.end())
+	{
+		_renderObjectList.erase(it);
+	}
 }
 
 void
 RenderScene::computVisiable(Camera* camera, std::vector<RenderObject*>& object) noexcept
 {
-    Frustum fru;
-    fru.extract(camera->getViewProject());
+	Frustum fru;
+	fru.extract(camera->getViewProject());
 
-    std::size_t visiable1 = 0;
+	std::size_t visiable1 = 0;
 
-    for (auto& it : _renderObjectList)
-    {
-        if (!fru.contains(it->getBoundingBoxInWorld().aabb()))
-            continue;
+	for (auto& it : _renderObjectList)
+	{
+		if (!fru.contains(it->getBoundingBoxInWorld().aabb()))
+			continue;
 
-        visiable1++;
+		visiable1++;
 
-        object.push_back(it);
-    }
+		object.push_back(it);
+	}
 }
 
 void
 RenderScene::computVisiableLight(Camera* camera, std::vector<Light*>& lights) noexcept
 {
-    Frustum fru;
-    fru.extract(camera->getViewProject());
+	Frustum fru;
+	fru.extract(camera->getViewProject());
 
-    for (auto& light : _lightList)
-    {
-        Bound bound;
+	for (auto& light : _lightList)
+	{
+		Bound bound;
 
-        LightType type = light->getLightType();
+		LightType type = light->getLightType();
 
-        auto direction = light->getLightDirection();
-        auto range = light->getRange();
+		auto direction = light->getLightDirection();
+		auto range = light->getRange();
 
-        if (type == LightType::LT_SUN)
-        {
-            float infinity = std::numeric_limits<float>::max();
+		if (type == LightType::LT_SUN)
+		{
+			float infinity = std::numeric_limits<float>::max();
 
-            Vector3 min(-infinity, -infinity, -infinity);
-            Vector3 max(infinity, infinity, infinity);
+			Vector3 min(-infinity, -infinity, -infinity);
+			Vector3 max(infinity, infinity, infinity);
 
-            bound.encapsulate(min);
-            bound.encapsulate(max);
-        }
-        else if (type == LightType::LT_POINT)
-        {
-            Vector3 min(-range, -range, -range);
-            Vector3 max(range, range, range);
+			bound.encapsulate(min);
+			bound.encapsulate(max);
+		}
+		else if (type == LightType::LT_POINT)
+		{
+			Vector3 min(-range, -range, -range);
+			Vector3 max(range, range, range);
 
-            bound.encapsulate(min);
-            bound.encapsulate(max);
-        }
-        else if (type == LightType::LT_AREA ||
-            type == LightType::LT_SPOT ||
-            type == LightType::LT_HEMI_SPHERE)
-        {
-            Vector3 min(-range, -range, -range);
-            Vector3 max(range, range, range);
+			bound.encapsulate(min);
+			bound.encapsulate(max);
+		}
+		else if (type == LightType::LT_AREA ||
+			type == LightType::LT_SPOT ||
+			type == LightType::LT_HEMI_SPHERE)
+		{
+			Vector3 min(-range, -range, -range);
+			Vector3 max(range, range, range);
 
-            bound.encapsulate(min);
-            bound.encapsulate(max);
-        }
+			bound.encapsulate(min);
+			bound.encapsulate(max);
+		}
 
-        light->setBoundingBox(bound);
+		light->setBoundingBox(bound);
 
-        if (fru.contains(light->getBoundingBoxInWorld().aabb()))
-        {
-            lights.push_back(light);
-        }
-    }
+		if (fru.contains(light->getBoundingBoxInWorld().aabb()))
+		{
+			lights.push_back(light);
+		}
+	}
 }
 
 void
 RenderScene::setAmbientColor(const Vector3& color) noexcept
 {
-    _ambientLight = color;
+	_ambientLight = color;
 }
 
 const Vector3&
 RenderScene::getAmbientColor() const noexcept
 {
-    return _ambientLight;
+	return _ambientLight;
 }
 
 _NAME_END

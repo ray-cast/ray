@@ -267,8 +267,9 @@ PMDHandler::doLoad(Model& model, istream& stream) noexcept
 	PMD_Index* indices = _pmd.IndexList.data();
 	PMD_Vertex* vertices = _pmd.VertexList.data();
 
-	auto root = std::make_shared<MeshProperty>();
-	auto mesh = root;
+	MeshPropertyPtr root = std::make_shared<MeshProperty>();
+	MeshPropertyPtr mesh = root;
+	MeshPropertyPtr last = nullptr;
 
 	for (std::size_t index = 0; index < _pmd.MaterialList.size(); index++)
 	{
@@ -289,18 +290,19 @@ PMDHandler::doLoad(Model& model, istream& stream) noexcept
 			faces.push_back(i);
 		}
 
-		if (mesh->getParent())
+		if (last == mesh)
 		{
 			mesh = std::make_shared<MeshProperty>();
 			root->addChild(mesh);
 		}
 
 		mesh->setMaterialID(index);
-
 		mesh->setVertexArray(points);
 		mesh->setNormalArray(normals);
 		mesh->setTexcoordArray(texcoords);
 		mesh->setFaceArray(faces);
+
+		last = mesh;
 	}
 
 	model.addMesh(root);

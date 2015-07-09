@@ -64,6 +64,7 @@ _NAME_BEGIN
 #define _BUILD_PK3_HANDLER   1
 #define _BUILD_PMD_HANDLER   1
 #define _BUILD_PMX_HANDLER   1
+#define _BUILD_VMD_HANDLER   1
 #define _BUILD_X_HANDLER     1
 
 _NAME_END

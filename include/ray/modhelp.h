@@ -164,16 +164,16 @@ public:
 
 	bool set(const char* key, std::size_t type, std::size_t index, int value) noexcept;
 	bool set(const char* key, std::size_t type, std::size_t index, float value) noexcept;
-	bool set(const char* key, std::size_t type, std::size_t index, Color3& value) noexcept;
-	bool set(const char* key, std::size_t type, std::size_t index, Color4& value) noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, const Vector3& value) noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, const Vector4& value) noexcept;
 	bool set(const char* key, std::size_t type, std::size_t index, const char* value) noexcept;
 	bool set(const char* key, std::size_t type, std::size_t index, const unsigned char* value) noexcept;
 	bool set(const char* key, std::size_t type, std::size_t index, const std::string& value) noexcept;
 
-	bool get(const char* key, std::size_t type, std::size_t index, int value) const noexcept;
-	bool get(const char* key, std::size_t type, std::size_t index, float value) const noexcept;
-	bool get(const char* key, std::size_t type, std::size_t index, Color3& value) const noexcept;
-	bool get(const char* key, std::size_t type, std::size_t index, Color4& value) const noexcept;
+	bool get(const char* key, std::size_t type, std::size_t index, int& value) const noexcept;
+	bool get(const char* key, std::size_t type, std::size_t index, float& value) const noexcept;
+	bool get(const char* key, std::size_t type, std::size_t index, Vector3& value) const noexcept;
+	bool get(const char* key, std::size_t type, std::size_t index, Vector4& value) const noexcept;
 	bool get(const char* key, std::size_t type, std::size_t index, std::string& value) const noexcept;
 	bool get(const char* key, std::size_t type, std::size_t index, MaterialParam** out) const noexcept;
 

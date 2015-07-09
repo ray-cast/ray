@@ -46,6 +46,7 @@ Terrain::Terrain() noexcept
 	, _hitRadius(100)
 	, _size(32)
 	, _scale(2)
+	, _dayTimer(0)
 {
 	_maxItem = std::numeric_limits<ItemID>::max();
 	_maxChunks = _deleteRadius  * _deleteRadius * _deleteRadius;
@@ -103,9 +104,9 @@ Terrain::addBlockByRaycast(const ray::Vector3& translate, const ray::Vector3& vi
 			block.y = roundf(cur.y);
 			block.z = roundf(cur.z);
 
-			if (block.x > _size) ix++;
-			if (block.y > _size) iy++;
-			if (block.z > _size) iz++;
+			if (block.x >= _size) ix++;
+			if (block.y >= _size) iy++;
+			if (block.z >= _size) iz++;
 			if (block.x < 0) ix--;
 			if (block.y < 0) iy--;
 			if (block.z < 0) iz--;
@@ -578,18 +579,18 @@ Terrain::onFrame() except
 	/*auto sun = this->find<ray::GameObject>("sun");
 	if (sun)
 	{
-	float dayTimer = this->getGameServer()->getTimer()->elapsed() / 50;
-	dayTimer -= int(dayTimer);
+		float dayTimer = this->getGameServer()->getTimer()->elapsed() / 50;
+		dayTimer -= int(dayTimer);
 
-	_dayTimer += this->getGameServer()->getTimer()->delta() / 50;
+		_dayTimer += this->getGameServer()->getTimer()->delta() / 50;
 
-	float sunY = cos(_dayTimer);
-	float sunZ = sin(_dayTimer);
+		float sunY = cos(_dayTimer);
+		float sunZ = sin(_dayTimer);
 
-	auto pos = sun->getTranslate();
-	pos.y = sunY * 50;
-	pos.z = sunZ * 50;
+		auto pos = sun->getTranslate();
+		pos.y = sunY * 50;
+		pos.z = sunZ * 50;
 
-	sun->setTranslate(pos);
+		sun->setTranslate(pos);
 	}*/
 }

@@ -6,10 +6,10 @@ FOREACH(myplugins
   libjson
   libjpeg
   libpng
+  libiconv
   tinyxml
   angelscript
   freetype
-  mygui
   asJIT
 )
 # 添加参与编译的子目录
@@ -20,13 +20,13 @@ FOREACH(myplugins
   libjson
   libjpeg
   libpng
+  libiconv
   unzip
   zlib
   zlibstatic
   tinyxml
   angelscript
   freetype
-  mygui
   dist
   asJIT
 )
@@ -34,7 +34,7 @@ SET_TARGET_ATTRIBUTE(${myplugins} "contrib")
 
 ENDFOREACH()
 
-IF(RAY_PHYSIC)
+IF(BUILD_PHYSIC)
     ADD_SUBDIRECTORY(bullet)
     SET_TARGET_ATTRIBUTE(BulletCollision "contrib")
     SET_TARGET_ATTRIBUTE(BulletDynamics "contrib")
@@ -50,7 +50,7 @@ IF(RAY_PHYSIC)
     ENDIF()
 ENDIF()
 
-IF(BUILD_PLATFORM_GLES)
+IF(BUILD_PLATFORM_ANDROID)
     ADD_SUBDIRECTORY(gles)
 ENDIF()
 

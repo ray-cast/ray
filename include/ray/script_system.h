@@ -45,7 +45,6 @@
 #include <ray/script_bind_actor.h>
 #include <ray/script_bind_display.h>
 #include <ray/script_bind_core.h>
-#include <ray/script_bind_gui.h>
 
 _NAME_BEGIN
 
@@ -63,7 +62,6 @@ public:
 	void setTimer(TimerPtr timer) noexcept;
 	void setInput(InputPtr input) noexcept;
 	void setWindow(WindowPtr wx) noexcept;
-	void setGuiSystem(GuiSystemPtr gui) noexcept;
 
 	void print(const std::string& str) noexcept;
 
@@ -84,7 +82,6 @@ private:
 	TimerPtr _timer;
 	InputPtr _input;
 	WindowPtr _window;
-	GuiSystemPtr _gui;
 	GameObject* _actor;
 
 	asIScriptContext* _context;
@@ -100,7 +97,6 @@ private:
 	std::shared_ptr<ScriptBindInput> _bindInput;
 	std::shared_ptr<ScriptBindActor> _bindActor;
 	std::shared_ptr<ScriptBindDisplay> _bindDisplay;
-	std::shared_ptr<ScriptBindGUI> _bindGUI;
 
 	std::vector<std::shared_ptr<ScriptBinder>> _bindings;
 };

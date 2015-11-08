@@ -66,6 +66,7 @@ _NAME_BEGIN
 #define _BUILD_PMX_HANDLER   1
 #define _BUILD_VMD_HANDLER   1
 #define _BUILD_X_HANDLER     1
+#define _BUILD_SDKMESH_HANDLER   1
 
 _NAME_END
 

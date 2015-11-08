@@ -45,49 +45,49 @@ _NAME_BEGIN
 template<typename T = std::size_t> inline
 T parseInteger(const char* line)
 {
-    T i1 = 0;
+	T i1 = 0;
 
-    std::istringstream sin(line);
-    if (std::strncmp(line, "0x", 2) == 0)
-    {
-        sin >> std::hex >> i1;
-    }
-    else
-    {
-        sin >> i1;
-    }
+	std::istringstream sin(line);
+	if (std::strncmp(line, "0x", 2) == 0)
+	{
+		sin >> std::hex >> i1;
+	}
+	else
+	{
+		sin >> i1;
+	}
 
-    return i1;
+	return i1;
 }
 
 template<typename T = std::size_t> inline
 T parseInteger(const wchar_t* line)
 {
-    T i1 = 0;
+	T i1 = 0;
 
-    std::wistringstream sin(line);
-    if (std::wcsncmp(line, L"0x", 2) == 0)
-    {
-        sin >> std::hex >> i1;
-    }
-    else
-    {
-        sin >> i1;
-    }
+	std::wistringstream sin(line);
+	if (std::wcsncmp(line, L"0x", 2) == 0)
+	{
+		sin >> std::hex >> i1;
+	}
+	else
+	{
+		sin >> i1;
+	}
 
-    return i1;
+	return i1;
 }
 
 template<> inline
 bool parseInteger<bool>(const char* line)
 {
-    if (std::strcmp(line, "true") == 0)
-        return true;
+	if (std::strcmp(line, "true") == 0)
+		return true;
 
-    if (std::strcmp(line, "1") == 0)
-        return true;
+	if (std::strcmp(line, "1") == 0)
+		return true;
 
-    return false;
+	return false;
 }
 
 template<typename T>
@@ -96,52 +96,107 @@ T parseFloat(const std::string& line);
 template<> inline
 float parseFloat<float>(const std::string& line)
 {
-    float f1 = 0;
+	float f1 = 0;
 
-    std::istringstream sin(line);
-    sin >> f1;
+	std::istringstream sin(line);
+	sin >> f1;
 
-    return f1;
+	return f1;
 }
 
 template<> inline
 double parseFloat<double>(const std::string& line)
 {
-    double f1 = 0;
+	double f1 = 0;
 
-    std::istringstream sin(line);
-    sin >> f1;
+	std::istringstream sin(line);
+	sin >> f1;
 
-    return f1;
+	return f1;
+}
+
+template<typename T = float> inline
+Vector2t<T> parseFloat2(const std::string& line)
+{
+	std::string value = line;
+
+	if (!value.empty())
+	{
+		float f1 = 0;
+		float f2 = 0;
+
+		for (auto& it : value)
+		{
+			if (it == ',')
+			{
+				it = ' ';
+			}
+		}
+
+		std::istringstream sin(value.c_str());
+
+		sin >> f1 >> f2;
+		return float2(f1, f2);
+	}
+
+	return float2(0, 0);
+}
+
+template<typename T = float> inline
+Vector3t<T> parseFloat3(const std::string& line)
+{
+	std::string value = line;
+
+	if (!value.empty())
+	{
+		float f1 = 0;
+		float f2 = 0;
+		float f3 = 0;
+
+		for (auto& it : value)
+		{
+			if (it == ',')
+			{
+				it = ' ';
+			}
+		}
+
+		std::istringstream sin(value.c_str());
+
+		sin >> f1 >> f2 >> f3;
+		return float3(f1, f2, f3);
+	}
+
+	return float3(0, 0, 0);
 }
 
 template<typename T = float> inline
 Vector4t<T> parseFloat4(const std::string& line)
 {
-    std::string value = line;
+	std::string value = line;
 
-    if (!value.empty())
-    {
-        float f1 = 0;
-        float f2 = 0;
-        float f3 = 0;
-        float f4 = 0;
+	if (!value.empty())
+	{
+		float f1 = 0;
+		float f2 = 0;
+		float f3 = 0;
+		float f4 = 0;
 
-        for (auto& it : value)
-        {
-            if (it == ',')
-            {
-                it = ' ';
-            }
-        }
+		for (auto& it : value)
+		{
+			if (it == ',')
+			{
+				it = ' ';
+			}
+		}
 
-        std::istringstream sin(value.c_str());
+		std::istringstream sin(value.c_str());
 
-        sin >> f1 >> f2 >> f3 >> f4;
-        return float4(f1, f2, f3, f4);
-    }
+		sin >> f1 >> f2 >> f3 >> f4;
+		return float4(f1, f2, f3, f4);
+	}
 
-    return float4(0, 0, 0, 0);
+	return float4(0, 0, 0, 0);
 }
 
 _NAME_END

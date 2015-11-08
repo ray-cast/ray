@@ -41,9 +41,9 @@
 #include <ray/physics_character_component.h>
 #include <ray/camera_component.h>
 
-__ImplementSubClass(FirstPersonCamera, ray::GameController)
+__ImplementSubClass(FirstPersonCameraComponent, GameController)
 
-FirstPersonCamera::FirstPersonCamera() noexcept
+FirstPersonCameraComponent::FirstPersonCameraComponent() noexcept
 	: _speed(10.0)
 	, _gravity(15)
 	, _maxVelocityChange(1.0)
@@ -53,12 +53,12 @@ FirstPersonCamera::FirstPersonCamera() noexcept
 {
 }
 
-FirstPersonCamera::~FirstPersonCamera() noexcept
+FirstPersonCameraComponent::~FirstPersonCameraComponent() noexcept
 {
 }
 
 void
-FirstPersonCamera::onActivate() noexcept
+FirstPersonCameraComponent::onActivate() noexcept
 {
 	auto camera = this->getGameObject()->getComponent<ray::CameraComponent>();
 	_centerX = camera->getViewport().width *  0.5;
@@ -66,7 +66,7 @@ FirstPersonCamera::onActivate() noexcept
 }
 
 void
-FirstPersonCamera::onDectivate() noexcept
+FirstPersonCameraComponent::onDectivate() noexcept
 {
 	auto inputFeature = this->getGameServer()->getFeature<ray::InputFeatures>();
 	if (inputFeature)
@@ -76,7 +76,7 @@ FirstPersonCamera::onDectivate() noexcept
 }
 
 void
-FirstPersonCamera::onFrameEnd() noexcept
+FirstPersonCameraComponent::onFrameEnd() noexcept
 {
 	float delta = this->getGameServer()->getTimer()->delta();
 	float step = _speed * delta;
@@ -171,7 +171,7 @@ FirstPersonCamera::onFrameEnd() noexcept
 }
 
 void
-FirstPersonCamera::yawCamera(float speed) noexcept
+FirstPersonCameraComponent::yawCamera(float speed) noexcept
 {
 	auto translate = this->getGameObject()->getTranslate();
 	auto lookat = this->getGameObject()->getLookAt();
@@ -187,7 +187,7 @@ FirstPersonCamera::yawCamera(float speed) noexcept
 }
 
 void
-FirstPersonCamera::moveCamera(float speed) noexcept
+FirstPersonCameraComponent::moveCamera(float speed) noexcept
 {
 	auto translate = this->getGameObject()->getTranslate();
 	auto lookat = this->getGameObject()->getLookAt();
@@ -202,7 +202,7 @@ FirstPersonCamera::moveCamera(float speed) noexcept
 }
 
 void
-FirstPersonCamera::rotateCamera(float angle, const ray::float3 axis) noexcept
+FirstPersonCameraComponent::rotateCamera(float angle, const ray::float3 axis) noexcept
 {
 	auto translate = this->getGameObject()->getTranslate();
 	auto lookat = this->getGameObject()->getLookAt();
@@ -216,7 +216,7 @@ FirstPersonCamera::rotateCamera(float angle, const ray::float3 axis) noexcept
 }
 
 void
-FirstPersonCamera::rotateCamera(float mouseX, float mouseY, float lastX, float lastY) noexcept
+FirstPersonCameraComponent::rotateCamera(float mouseX, float mouseY, float lastX, float lastY) noexcept
 {
 	if (mouseX == lastX && mouseY == lastY)
 		return;
@@ -245,7 +245,7 @@ FirstPersonCamera::rotateCamera(float mouseX, float mouseY, float lastX, float l
 }
 
 ray::GameComponentPtr
-FirstPersonCamera::clone() const noexcept
+FirstPersonCameraComponent::clone() const noexcept
 {
-	return std::make_shared<FirstPersonCamera>();
+	return std::make_shared<FirstPersonCameraComponent>();
 }

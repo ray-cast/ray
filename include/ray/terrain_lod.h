@@ -46,114 +46,114 @@ _NAME_BEGIN
 
 struct Quadnode
 {
-    unsigned int x;
-    unsigned int y;
-    Quadnode() {}
-    Quadnode(unsigned int xx, unsigned int yy) :x(xx), y(yy) {}
+	unsigned int x;
+	unsigned int y;
+	Quadnode() {}
+	Quadnode(unsigned int xx, unsigned int yy) :x(xx), y(yy) {}
 };
 
 template<typename T>
 class Lod : public down_cast<T>
 {
 public:
-    Lod() noexcept
-        : _max_depth(0)
-        , _min_depth(0)
-    {
-    }
+	Lod() noexcept
+		: _max_depth(0)
+		, _min_depth(0)
+	{
+	}
 
-    void setMap(HeightMap* map) noexcept
-    {
-        assert(map);
+	void setMap(HeightMap* map) noexcept
+	{
+		assert(map);
 
-        _map = map;
+		_map = map;
 
-        _size = _map->getSize();
+		_size = _map->getSize();
 
-        _max_depth = (std::uint8_t)bitScanReverse(_size - 1);
+		_max_depth = (std::uint8_t)bitScanReverse(_size - 1);
 
-        _scale = (std::size_t)_map->getCellSize();
-    }
+		_scale = (std::size_t)_map->getCellSize();
+	}
 
-    inline void setFrustum(const Frustum* fru) { _frustum = fru; }
+	inline void setFrustum(const Frustum* fru) { _frustum = fru; }
 
-    inline float getHeight(std::uint32_t x, std::uint32_t y) const { return _map->getHeight(x, y); }
-    inline Vector3 getVertex(std::uint32_t x, std::uint32_t y) const { return _map->getVertex(x, y); }
-    inline std::size_t getScale() const { return _scale; }
-    inline std::uint32_t getSize()  const { return _size; }
-    inline std::uint8_t getDepth() const { return _max_depth; }
+	inline float getHeight(std::uint32_t x, std::uint32_t y) const { return _map->getHeight(x, y); }
+	inline Vector3 getVertex(std::uint32_t x, std::uint32_t y) const { return _map->getVertex(x, y); }
+	inline std::size_t getScale() const { return _scale; }
+	inline std::uint32_t getSize()  const { return _size; }
+	inline std::uint8_t getDepth() const { return _max_depth; }
 
-    inline bool isVisible(const Quadnode& node, std::uint8_t depth) const
-    {
-        assert(_frustum);
-        assert(0 <= node.x && node.x < _size);
-        assert(0 <= node.y && node.y < _size);
+	inline bool isVisible(const Quadnode& node, std::uint8_t depth) const
+	{
+		assert(_frustum);
+		assert(0 <= node.x && node.x < _size);
+		assert(0 <= node.y && node.y < _size);
 
-        std::intptr_t size = 1 << depth;
+		std::intptr_t size = 1 << depth;
 
-        float R = size * _scale * 1.414f; //Ð±±ß
+		float R = size * _scale * 1.414f; //Ð±±ß
 
-        return _frustum->contains(_map->getVertex(node.x, node.y), R);
-    }
+		return _frustum->contains(_map->getVertex(node.x, node.y), R);
+	}
 
-    inline void tessellate()
-    {
-        cur_Nodes.push_back(root_);
+	inline void tessellate()
+	{
+		cur_Nodes.push_back(root_);
 
-        for (std::uint8_t i = _max_depth; i > _max_depth; i--)
-        {
-            std::size_t size = cur_Nodes.size();
+		for (std::uint8_t i = _max_depth; i > _max_depth; i--)
+		{
+			std::size_t size = cur_Nodes.size();
 
-            for (std::size_t j = 0; j < size; j++)
-            {
-                Quadnode node = cur_Nodes[j];
+			for (std::size_t j = 0; j < size; j++)
+			{
+				Quadnode node = cur_Nodes[j];
 
-                if (down_cast<T>::downcast()->split(node, i))
-                {
-                    int d = 1 << (i - 2);
+				if (down_cast<T>::downcast()->split(node, i))
+				{
+					int d = 1 << (i - 2);
 
-                    Quadnode child;
+					Quadnode child;
 
-                    child.x = node.x + d;
-                    child.y = node.y + d;
-                    next_Nodes.push_back(child);
+					child.x = node.x + d;
+					child.y = node.y + d;
+					next_Nodes.push_back(child);
 
-                    child.x = node.x - d;
-                    child.y = node.y + d;
-                    next_Nodes.push_back(child);
+					child.x = node.x - d;
+					child.y = node.y + d;
+					next_Nodes.push_back(child);
 
-                    child.x = node.x + d;
-                    child.y = node.y - d;
-                    next_Nodes.push_back(child);
+					child.x = node.x + d;
+					child.y = node.y - d;
+					next_Nodes.push_back(child);
 
-                    child.x = node.x - d;
-                    child.y = node.y - d;
-                    next_Nodes.push_back(child);
-                }
-            }
+					child.x = node.x - d;
+					child.y = node.y - d;
+					next_Nodes.push_back(child);
+				}
+			}
 
-            cur_Nodes.swap(next_Nodes);
-            next_Nodes.clear();
-        }
-    }
+			cur_Nodes.swap(next_Nodes);
+			next_Nodes.clear();
+		}
+	}
 
-    void render()
-    {
-    }
+	void render()
+	{
+	}
 
 private:
-    std::uint8_t _min_depth;
-    std::uint8_t _max_depth;
+	std::uint8_t _min_depth;
+	std::uint8_t _max_depth;
 
-    std::uint32_t _size;
-    std::uint32_t _scale;
+	std::uint32_t _size;
+	std::uint32_t _scale;
 
-    HeightMap* _map;
-    Quadnode   root_;
-    std::vector<Quadnode> cur_Nodes;
-    std::vector<Quadnode> next_Nodes;
+	HeightMap* _map;
+	Quadnode   root_;
+	std::vector<Quadnode> cur_Nodes;
+	std::vector<Quadnode> next_Nodes;
 
-    Frustum* _frustum;
+	Frustum* _frustum;
 };
 
 _NAME_END

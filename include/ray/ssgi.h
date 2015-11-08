@@ -37,76 +37,76 @@
 #ifndef _H_SSGI_H_
 #define _H_SSGI_H_
 
-#include <ray/post_process.h>
+#include <ray/render_post_process.h>
 
 _NAME_BEGIN
 
 class SSGI : public RenderPostProcess
 {
 public:
-    struct Setting
-    {
-        float radius;
-        float bias;
-        float intensity;
+	struct Setting
+	{
+		float radius;
+		float bias;
+		float intensity;
 
-        bool blur;
-        int blurRadius;
-        float blurScale;
-        float blurSharpness;
-    };
+		bool blur;
+		int blurRadius;
+		float blurScale;
+		float blurSharpness;
+	};
 
 public:
-    SSGI() noexcept;
-    ~SSGI() noexcept;
+	SSGI() noexcept;
+	~SSGI() noexcept;
 
-    void setSetting(const Setting& set) noexcept;
-    const Setting& getSetting() const noexcept;
-
-private:
-
-    void computeRawAO(RenderPipeline& pipeline, RenderTargetPtr dest) noexcept;
-    void blurHorizontal(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept;
-    void blurVertical(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept;
-    void blurDirection(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest, const float2& direction) noexcept;
-    void shading(RenderPipeline& pipeline, RenderTargetPtr color, RenderTargetPtr ao) noexcept;
+	void setSetting(const Setting& set) noexcept;
+	const Setting& getSetting() const noexcept;
 
 private:
 
-    void onActivate(RenderPipeline& pipeline) except;
-    void onDeactivate(RenderPipeline& pipeline) except;
-
-    void onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
+	void computeRawAO(RenderPipeline& pipeline, RenderTexturePtr dest) noexcept;
+	void blurHorizontal(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+	void blurVertical(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+	void blurDirection(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest, const float2& direction) noexcept;
+	void shading(RenderPipeline& pipeline, RenderTexturePtr color, RenderTexturePtr ao) noexcept;
 
 private:
 
-    Setting _setting;
+	void onActivate(RenderPipeline& pipeline) except;
+	void onDeactivate(RenderPipeline& pipeline) except;
 
-    RenderTargetPtr _texAmbient;
-    RenderTargetPtr _texBlur;
+	void onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
 
-    MaterialPtr _ambientOcclusion;
+private:
 
-    MaterialPassPtr _ambientOcclusionPass;
-    MaterialPassPtr _ambientOcclusionBlurPass;
-    MaterialPassPtr _ambientOcclusionCopyPass;
+	Setting _setting;
 
-    MaterialParamPtr _radius;
-    MaterialParamPtr _radius2;
-    MaterialParamPtr _projScale;
-    MaterialParamPtr _projInfo;
-    MaterialParamPtr _clipInfo;
-    MaterialParamPtr _bias;
-    MaterialParamPtr _intensityDivR6;
+	RenderTexturePtr _texAmbient;
+	RenderTexturePtr _texBlur;
 
-    MaterialParamPtr _blurRadius;
-    MaterialParamPtr _blurTexSource;
-    MaterialParamPtr _blurFactor;
-    MaterialParamPtr _blurSharpness;
-    MaterialParamPtr _blurDirection;
-    MaterialParamPtr _blurGaussian;
+	MaterialPtr _ambientOcclusion;
 
-    MaterialParamPtr _copyAmbient;
+	MaterialPassPtr _ambientOcclusionPass;
+	MaterialPassPtr _ambientOcclusionBlurPass;
+	MaterialPassPtr _ambientOcclusionCopyPass;
+
+	MaterialParamPtr _radius;
+	MaterialParamPtr _radius2;
+	MaterialParamPtr _projScale;
+	MaterialParamPtr _projInfo;
+	MaterialParamPtr _clipInfo;
+	MaterialParamPtr _bias;
+	MaterialParamPtr _intensityDivR6;
+
+	MaterialParamPtr _blurRadius;
+	MaterialParamPtr _blurTexSource;
+	MaterialParamPtr _blurFactor;
+	MaterialParamPtr _blurSharpness;
+	MaterialParamPtr _blurDirection;
+	MaterialParamPtr _blurGaussian;
+
+	MaterialParamPtr _copyAmbient;
 };
 
 _NAME_END

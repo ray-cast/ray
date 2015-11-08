@@ -42,55 +42,55 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
-#include <condition_variable>
 #include <queue>
+#include <condition_variable>
 
 _NAME_BEGIN
 
 class EXPORT ThreadLambda final
 {
 public:
-    ThreadLambda() noexcept;
-    ~ThreadLambda() noexcept;
+	ThreadLambda() noexcept;
+	~ThreadLambda() noexcept;
 
-    void start() noexcept;
-    void stop() noexcept;
+	void start() noexcept;
+	void stop() noexcept;
 
-    void exce(std::function<void(void)> func) noexcept;
+	void exce(std::function<void(void)> func) noexcept;
 
-    void join() noexcept;
+	void join() noexcept;
 
-    void flush() noexcept;
-    void finish() noexcept;
+	void flush() noexcept;
+	void finish() noexcept;
 
-    std::exception_ptr exception() const noexcept;
-
-private:
-
-    void signalQuitCond() noexcept;
-    void signalFlushCond() noexcept;
-    void signalFlushFinishCond() noexcept;
-
-    void waitFlushCond() noexcept;
-    void waitFlushFinishedCond() noexcept;
-
-    void dispose() noexcept;
+	std::exception_ptr exception() const noexcept;
 
 private:
 
-    std::mutex _mutex;
-    std::condition_variable _flushRequest;
-    std::condition_variable _finishRequest;
+	void signalQuitCond() noexcept;
+	void signalFlushCond() noexcept;
+	void signalFlushFinishCond() noexcept;
 
-    std::atomic<bool> _isQuitRequest;
-    std::atomic<bool> _isFlushRequest;
+	void waitFlushCond() noexcept;
+	void waitFlushFinishedCond() noexcept;
 
-    std::exception_ptr _exception;
+	void dispose() noexcept;
 
-    std::unique_ptr<std::thread> _thread;
+private:
 
-    std::vector<std::function<void(void)>> _taskUpdate;
-    std::vector<std::function<void(void)>> _taskDispose;
+	std::mutex _mutex;
+	std::condition_variable _flushRequest;
+	std::condition_variable _finishRequest;
+
+	std::atomic<bool> _isQuitRequest;
+	std::atomic<bool> _isFlushRequest;
+
+	std::exception_ptr _exception;
+
+	std::unique_ptr<std::thread> _thread;
+
+	std::vector<std::function<void(void)>> _taskUpdate;
+	std::vector<std::function<void(void)>> _taskDispose;
 };
 
 _NAME_END

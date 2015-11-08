@@ -34,8 +34,6 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-
-// +----------------------------------------------------------------------
 #ifndef _H_ERROR_H_
 #define _H_ERROR_H_
 
@@ -138,27 +136,6 @@ protected:
 private:
     stateval _Mystate;
     stateval _Myexcept;
-};
-
-class EXPORT Error : public runtime_state
-{
-public:
-    typedef Error _Myt;
-
-    _Myt& error(const error_code& code)
-    {
-        _code = code;
-        return *this;
-    }
-
-    const _Myt& error(const error_code& code) const
-    {
-        const_cast<error_code&>(_code) = code;
-        return *this;
-    }
-
-private:
-    error_code _code;
 };
 
 _NAME_END

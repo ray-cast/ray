@@ -54,11 +54,11 @@ public:
     iostream& open(const std::string& filename) noexcept;
     iostream& open(const std::wstring& filename) noexcept;
 
-    iostream& read(char_type* str, std::streamsize cnt) noexcept;
-    iostream& read(char_type* str, streamsize size, streamsize cnt) noexcept;
+    iostream& read(char* str, std::streamsize cnt) noexcept;
+    iostream& read(char* str, streamsize size, streamsize cnt) noexcept;
 
-    iostream& write(const char_type* str, std::streamsize cnt) noexcept;
-    iostream& write(const char_type* str, streamsize size, streamsize cnt) noexcept;
+    iostream& write(const char* str, std::streamsize cnt) noexcept;
+    iostream& write(const char* str, streamsize size, streamsize cnt) noexcept;
 
     iostream& seekg(ios_base::off_type pos) noexcept;
     iostream& seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;

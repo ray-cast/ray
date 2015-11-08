@@ -37,80 +37,87 @@
 #ifndef _H_RENDER_OBJECT_H_
 #define _H_RENDER_OBJECT_H_
 
-#include <ray/material.h>
+#include <ray/render_types.h>
 
 _NAME_BEGIN
 
 class EXPORT RenderListener
 {
 public:
-    virtual void onWillRenderObject() noexcept = 0;
-    virtual void onRenderObject() noexcept = 0;
+	RenderListener() noexcept;
+	virtual ~RenderListener() noexcept;
+
+	virtual void onWillRenderObject() noexcept = 0;
+	virtual void onRenderObject() noexcept = 0;
 };
 
-class RenderDataManager;
-class EXPORT RenderObject
+class EXPORT RenderObject : public Reference<RenderObject>
 {
 public:
-    RenderObject() noexcept;
-    virtual ~RenderObject() noexcept;
+	RenderObject() noexcept;
+	virtual ~RenderObject() noexcept;
 
-    virtual void setLayer(std::int32_t layer) noexcept;
-    virtual std::int32_t getLayer() const noexcept;
+	virtual void setLayer(std::uint8_t layer) noexcept;
+	virtual std::uint8_t getLayer() const noexcept;
 
-    virtual void setCastShadow(bool enable) noexcept;
-    virtual void setReceiveShadow(bool enable) noexcept;
-    virtual void setRenderScene(RenderScenePtr scene) noexcept = 0;
-    virtual void setRenderListener(RenderListener* listener) noexcept;
-    virtual void setBoundingBox(const Bound& bound) noexcept;
+	virtual void setCastShadow(bool enable) noexcept;
+	virtual void setReceiveShadow(bool enable) noexcept;
+	virtual void setRenderScene(RenderScenePtr scene) noexcept = 0;
+	virtual void setRenderListener(RenderListener* listener) noexcept;
+	virtual void setBoundingBox(const Bound& bound) noexcept;
 
-    virtual void setTransform(const Matrix4x4& m) noexcept;
-    virtual void setTransformInverse(const Matrix4x4& m) noexcept;
-    virtual void setTransformInverseTranspose(const Matrix4x4& m) noexcept;
+	virtual void setTransform(const Matrix4x4& m) noexcept;
+	virtual void setTransformInverse(const Matrix4x4& m) noexcept;
+	virtual void setTransformInverseTranspose(const Matrix4x4& m) noexcept;
 
-    virtual bool getReceiveShadow() const noexcept;
-    virtual bool getCastShadow() const noexcept;
+	virtual bool getReceiveShadow() const noexcept;
+	virtual bool getCastShadow() const noexcept;
 
-    virtual RenderScenePtr getRenderScene() const noexcept = 0;
-    virtual RenderListener* getRenderListener() noexcept;
+	virtual RenderScenePtr getRenderScene() const noexcept = 0;
+	virtual RenderListener* getRenderListener() noexcept;
 
-    virtual const Matrix4x4& getTransform() const noexcept;
-    virtual const Matrix4x4& getTransformInverse() const noexcept;
-    virtual const Matrix4x4& getTransformInverseTranspose() const noexcept;
+	virtual const Matrix4x4& getTransform() const noexcept;
+	virtual const Matrix4x4& getTransformInverse() const noexcept;
+	virtual const Matrix4x4& getTransformInverseTranspose() const noexcept;
 
-    virtual const Bound& getBoundingBox() const noexcept;
-    virtual const Bound& getBoundingBoxInWorld() const noexcept;
+	virtual const Bound& getBoundingBox() const noexcept;
+	virtual const Bound& getBoundingBoxInWorld() const noexcept;
 
-    virtual void setMaterial(MaterialPtr material) noexcept;
-    virtual MaterialPtr getMaterial() noexcept;
+	virtual void setMaterial(MaterialPtr material) noexcept;
+	virtual MaterialPtr getMaterial() noexcept;
 
-    virtual void setRenderBuffer(RenderBufferPtr geometry, RenderablePtr renderable) noexcept;
-    virtual void setRenderBuffer(RenderBufferPtr geometry, VertexType type) noexcept;
+	virtual void setRenderBuffer(RenderBufferPtr geometry) noexcept;
+	virtual RenderBufferPtr getRenderBuffer() noexcept;
 
-    virtual RenderBufferPtr getRenderBuffer() noexcept;
-    virtual RenderablePtr getRenderable() noexcept;
+	virtual void setRenderIndirect(RenderIndirectPtr renderable) noexcept;
+	virtual RenderIndirectPtr getRenderIndirect() noexcept;
+
+	void addSubRenderObject(RenderObjectPtr object) noexcept;
+	void removeSubRenderObject(RenderObjectPtr object) noexcept;
+	RenderObjects& getSubeRenderObjects() noexcept;
+
+private:
+	void _updateBoundingBoxInWorld() const noexcept;
 
 private:
 
-    void updateBoundingBoxInWorld() const noexcept;
+	bool _isCastShadow;
+	bool _isReceiveShadow;
 
-private:
+	std::uint8_t _layer;
 
-    std::int32_t _layer;
+	Matrix4x4 _transform;
+	Matrix4x4 _transformInverse;
+	Matrix4x4 _transformInverseTranspose;
 
-    bool _isCastShadow;
-    bool _isReceiveShadow;
+	Bound _boundingBox;
 
-    Matrix4x4 _transform;
-    Matrix4x4 _transformInverse;
-    Matrix4x4 _transformInverseTranspose;
+	mutable bool _needUpdate;
+	mutable Bound _worldBoundingxBox;
 
-    Bound _boundingBox;
+	RenderListener* _renderListener;
 
-    mutable bool _isNeedUpdate;
-    mutable Bound _worldBoundingxBox;
-
-    RenderListener* _renderListener;
+	RenderObjects _renderObjects;
 };
 
 _NAME_END

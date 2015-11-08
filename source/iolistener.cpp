@@ -84,55 +84,55 @@ ioListener::onOpenSuccess(const std::wstring& filename, const ios_base::openmode
 void
 ioListenerPoster::onOpenBefor(const std::string& filename, const ios_base::openmode mode) noexcept
 {
-    for (auto& it : _listeners)
-    {
-        it->onOpenBefor(filename, mode);
-    }
+	for (auto& it : _listeners)
+	{
+		it->onOpenBefor(filename, mode);
+	}
 }
 
 void
 ioListenerPoster::onOpenBefor(const std::wstring& filename, const ios_base::openmode mode) noexcept
 {
-    for (auto& it : _listeners)
-    {
-        it->onOpenBefor(filename, mode);
-    }
+	for (auto& it : _listeners)
+	{
+		it->onOpenBefor(filename, mode);
+	}
 }
 
 void
 ioListenerPoster::onOpenFail(const std::string& filename, const ios_base::openmode mode) noexcept
 {
-    for (auto& it : _listeners)
-    {
-        it->onOpenFail(filename, mode);
-    }
+	for (auto& it : _listeners)
+	{
+		it->onOpenFail(filename, mode);
+	}
 }
 
 void
 ioListenerPoster::onOpenFail(const std::wstring& filename, const ios_base::openmode mode) noexcept
 {
-    for (auto& it : _listeners)
-    {
-        it->onOpenFail(filename, mode);
-    }
+	for (auto& it : _listeners)
+	{
+		it->onOpenFail(filename, mode);
+	}
 }
 
 void
 ioListenerPoster::onOpenSuccess(const std::string& filename, const ios_base::openmode mode) noexcept
 {
-    for (auto& it : _listeners)
-    {
-        it->onOpenSuccess(filename, mode);
-    }
+	for (auto& it : _listeners)
+	{
+		it->onOpenSuccess(filename, mode);
+	}
 }
 
 void
 ioListenerPoster::onOpenSuccess(const std::wstring& filename, const ios_base::openmode mode) noexcept
 {
-    for (auto& it : _listeners)
-    {
-        it->onOpenSuccess(filename, mode);
-    }
+	for (auto& it : _listeners)
+	{
+		it->onOpenSuccess(filename, mode);
+	}
 }
 
 ioListenerRegister::ioListenerRegister() noexcept
@@ -141,29 +141,29 @@ ioListenerRegister::ioListenerRegister() noexcept
 
 ioListenerRegister::~ioListenerRegister() noexcept
 {
-    for (auto& it : _listeners)
-        delete it;
+	for (auto& it : _listeners)
+		delete it;
 }
 
 void
 ioListenerRegister::addListener(ioListener* listener) noexcept
 {
-    if (std::find(_listeners.begin(), _listeners.end(), listener) == _listeners.end())
-    {
-        listener->onAttach();
-        _listeners.push_back(listener);
-    }
+	if (std::find(_listeners.begin(), _listeners.end(), listener) == _listeners.end())
+	{
+		listener->onAttach();
+		_listeners.push_back(listener);
+	}
 }
 
 void
 ioListenerRegister::removeListener(const ioListener* listener) noexcept
 {
-    auto it = std::find(_listeners.begin(), _listeners.end(), listener);
-    if (it != _listeners.end())
-    {
-        (*it)->onRemove();
-        _listeners.erase(it);
-    }
+	auto it = std::find(_listeners.begin(), _listeners.end(), listener);
+	if (it != _listeners.end())
+	{
+		(*it)->onRemove();
+		_listeners.erase(it);
+	}
 }
 
 _NAME_END

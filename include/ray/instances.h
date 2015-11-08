@@ -49,7 +49,7 @@ public:
     typedef const pointer const_pointer;
 
 public:
-    typedef std::size_t InstanceID;
+    typedef std::int32_t InstanceID;
 
     Instance() noexcept
     {

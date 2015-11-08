@@ -36,23 +36,24 @@
 // +----------------------------------------------------------------------
 #include <ray/timer.h>
 #include <ctime>
+#include <cmath>
 #include <limits>
 #include <thread>
 
 _NAME_BEGIN
 
 Timer::Timer() noexcept
-    : _appTime(0)
-    , _frameTime(0)
-    , _accumulateTime(0)
-    , _accumulateFps(0)
-    , _fps(0)
-    , _averageFps(0)
-    , _numFrames(0)
-    , _startTime(0)
-    , _currentFramePerSecond(0)
+	: _appTime(0)
+	, _frameTime(0)
+	, _accumulateTime(0)
+	, _accumulateFps(0)
+	, _fps(0)
+	, _averageFps(0)
+	, _numFrames(0)
+	, _startTime(0)
+	, _currentFramePerSecond(0)
 {
-    this->reset();
+	this->reset();
 }
 
 Timer::~Timer() noexcept
@@ -62,125 +63,125 @@ Timer::~Timer() noexcept
 bool
 Timer::open() noexcept
 {
-    _startTime = (float)std::clock() / (float)CLOCKS_PER_SEC;
-    return true;
+	_startTime = (float)std::clock() / (float)CLOCKS_PER_SEC;
+	return true;
 }
 
 float
 Timer::startTime() const noexcept
 {
-    return _startTime;
+	return _startTime;
 }
 
 float
 Timer::elapsed() const noexcept
 {
-    return float(std::clock()) / CLOCKS_PER_SEC - _startTime;
+	return float(std::clock()) / CLOCKS_PER_SEC - _startTime;
 }
 
 float
 Timer::elapsed_max() const noexcept
 {
-    return float(std::numeric_limits<std::clock_t>::max()) / float(CLOCKS_PER_SEC) - _startTime;
+	return float(std::numeric_limits<std::clock_t>::max()) / float(CLOCKS_PER_SEC) - _startTime;
 }
 
 float
 Timer::elapsed_min() const noexcept
 {
-    return float(1) / float(CLOCKS_PER_SEC);
+	return float(1) / float(CLOCKS_PER_SEC);
 }
 
 float
 Timer::fps() const noexcept
 {
-    return _fps;
+	return _fps;
 }
 
 float
 Timer::averageFps() const noexcept
 {
-    return _averageFps;
+	return _averageFps;
 }
 
 float
 Timer::appTime() const noexcept
 {
-    return _appTime;
+	return _appTime;
 }
 
 float
 Timer::frameTime() const noexcept
 {
-    return _frameTime;
+	return _frameTime;
 }
 
 float
 Timer::delta() const noexcept
 {
-    return _frameTime;
+	return _frameTime;
 }
 
 float
 Timer::vsync() const noexcept
 {
-    return this->delta() * (1 / 0.06f);
+	return this->delta() * (1 / 0.06f);
 }
 
 void
 Timer::reset() noexcept
 {
-    _lastTime = (float)std::clock() / (float)CLOCKS_PER_SEC - _startTime;
+	_lastTime = (float)std::clock() / (float)CLOCKS_PER_SEC - _startTime;
 }
 
 void
 Timer::sleep(float fps) const noexcept
 {
-    float first = CLOCKS_PER_SEC / fps;
-    float second = this->delta() * CLOCKS_PER_SEC;
-    if (first > second)
-    {
-        int sleep = (first - second);
-        if (sleep > 0)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(sleep));
-        }
-    }
+	double first = CLOCKS_PER_SEC / fps;
+	double second = this->delta() * CLOCKS_PER_SEC;
+	if (first > second)
+	{
+		int sleep = std::round(first - second);
+		if (sleep > 0)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(sleep));
+		}
+	}
 }
 
 void
 Timer::update() noexcept
 {
-    _frameTime = this->elapsed() - _lastTime;
+	_frameTime = this->elapsed() - _lastTime;
 
-    _numFrames++;
-    _accumulateTime += _frameTime;
-    _appTime += _frameTime;
+	_numFrames++;
+	_accumulateTime += _frameTime;
+	_appTime += _frameTime;
 
-    if (_accumulateTime > 1)
-    {
-        _fps = _numFrames / _accumulateTime;
+	if (_accumulateTime > 1)
+	{
+		_fps = _numFrames / _accumulateTime;
 
-        _numFrames = 0;
-        _accumulateTime--;
-        _accumulateFps = 0;
+		_numFrames = 0;
+		_accumulateTime--;
+		_accumulateFps = 0;
 
-        _framesPerSecondArray[_currentFramePerSecond] = _fps;
+		_framesPerSecondArray[_currentFramePerSecond] = _fps;
 
-        for (size_t i = 0; i <= _currentFramePerSecond; i++)
-            _accumulateFps += _framesPerSecondArray[i];
+		for (size_t i = 0; i <= _currentFramePerSecond; i++)
+			_accumulateFps += _framesPerSecondArray[i];
 
-        if (_currentFramePerSecond < 9)
-        {
-            _currentFramePerSecond++;
-            _averageFps = _accumulateFps / _currentFramePerSecond;
-        }
-        else
-        {
-            _currentFramePerSecond = 0;
-        }
-    }
+		if (_currentFramePerSecond < 9)
+		{
+			_currentFramePerSecond++;
+			_averageFps = _accumulateFps / _currentFramePerSecond;
+		}
+		else
+		{
+			_currentFramePerSecond = 0;
+		}
+	}
 
-    this->reset();
+	this->reset();
 }
 
 _NAME_END

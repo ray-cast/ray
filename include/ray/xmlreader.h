@@ -52,6 +52,7 @@ public:
     ~XMLReader() noexcept;
 
     bool open(istream& stream) noexcept;
+	bool open(const std::string& filename) noexcept;
     void close() noexcept;
 
     std::string getCurrentNodeName() const noexcept;
@@ -62,6 +63,7 @@ public:
     bool setToNextChild(const std::string& name = "") noexcept;
     bool setToParent() noexcept;
 
+	bool hasChild() const noexcept;
     bool hasAttr(const char* name) const noexcept;
     std::vector<std::string> getAttrs() const noexcept;
 

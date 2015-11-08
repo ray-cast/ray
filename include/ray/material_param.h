@@ -44,28 +44,28 @@ _NAME_BEGIN
 class EXPORT MaterialParam final : public ShaderVariant
 {
 public:
-    MaterialParam() noexcept;
-    MaterialParam(const std::string& name, float value) noexcept;
-    MaterialParam(const std::string& name, const float3& value) noexcept;
-    MaterialParam(const std::string& name, const Vector4& value) noexcept;
-    MaterialParam(const std::string& name, const Matrix4x4& value) noexcept;
-    MaterialParam(const std::string& name, ShaderVariantType type) noexcept;
-    ~MaterialParam() noexcept;
+	MaterialParam() noexcept;
+	MaterialParam(const std::string& name, float value) noexcept;
+	MaterialParam(const std::string& name, const float3& value) noexcept;
+	MaterialParam(const std::string& name, const Vector4& value) noexcept;
+	MaterialParam(const std::string& name, const Matrix4x4& value) noexcept;
+	MaterialParam(const std::string& name, ShaderVariantType type) noexcept;
+	~MaterialParam() noexcept;
 
-    void addShaderUniform(ShaderUniformPtr uniform) noexcept;
-    void removeShaderUniform(ShaderUniformPtr uniform) noexcept;
-
-private:
-    virtual void onChangeBefore() noexcept;
-    virtual void onChangeAfter() noexcept;
+	void addShaderUniform(ShaderUniformPtr uniform) noexcept;
+	void removeShaderUniform(ShaderUniformPtr uniform) noexcept;
 
 private:
-    MaterialParam(const MaterialParam&) = delete;
-    MaterialParam& operator=(const MaterialParam&) = delete;
+	virtual void onChangeBefore() noexcept;
+	virtual void onChangeAfter() noexcept;
+
+private:
+	MaterialParam(const MaterialParam&) = delete;
+	MaterialParam& operator=(const MaterialParam&) = delete;
 
 private:
 
-    ShaderUniforms _uniforms;
+	ShaderUniforms _uniforms;
 };
 
 _NAME_END

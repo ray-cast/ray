@@ -37,20 +37,24 @@
 #ifndef _H_BONE_H_
 #define _H_BONE_H_
 
-#include <ray/math.h>
+#include <ray/modtypes.h>
 
 _NAME_BEGIN
 
-struct AnimeTranslate
+struct EXPORT AnimeTranslate
 {
 	double _time;
 
 	Vector3 _translate;
 
-	AnimeTranslate() {}
+	AnimeTranslate()
+		: _time(0)
+		, _translate(0, 0, 0)
+	{
+	}
 
 	AnimeTranslate(double time, const Vector3& value)
-		:_time(time)
+		: _time(time)
 		, _translate(value)
 	{}
 
@@ -75,13 +79,17 @@ struct AnimeTranslate
 	}
 };
 
-struct AnimeRotation
+struct EXPORT AnimeRotation
 {
 	double _time;
 
 	Quaternion _rotate;
 
-	AnimeRotation() {}
+	AnimeRotation()
+		: _time(0)
+		, _rotate(0, 0, 0, 1)
+	{
+	}
 
 	AnimeRotation(double time, const Quaternion& value)
 		: _time(time)
@@ -111,14 +119,18 @@ struct AnimeRotation
 	}
 };
 
-class AnimeScaling
+class EXPORT AnimeScaling
 {
 public:
 	Vector3 _scale;
 
 	double _time;
 
-	AnimeScaling() {}
+	AnimeScaling()
+		: _time(0)
+		, _scale(1, 1, 1)
+	{
+	}
 
 	AnimeScaling(const AnimeScaling& copy)
 		:_scale(copy._scale)
@@ -159,7 +171,7 @@ public:
 	}
 };
 
-class AnimeFrame
+class EXPORT AnimeFrame
 {
 public:
 	double _time;
@@ -201,52 +213,92 @@ public:
 	}
 };
 
-class VertexWeight
+class EXPORT VertexWeight
 {
 public:
-	VertexWeight() noexcept
-	{
-	}
+	float weight1;
+	float weight2;
+	float weight3;
+	float weight4;
 
-	VertexWeight(std::size_t id, float weight) noexcept
-		: _index(id)
-		, _weight(weight)
-	{
-	}
-
-private:
-
-	float _weight;
-	std::size_t _index;
+	std::int16_t bone1;
+	std::int16_t bone2;
+	std::int16_t bone3;
+	std::int16_t bone4;
 };
 
-class Bone
+class EXPORT IKChild
+{
+public:
+	std::uint16_t BoneIndex;
+	std::uint8_t RotateLimited;
+
+	Vector3 MinimumRadian;
+	Vector3 MaximumRadian;
+};
+
+class EXPORT IKAttr
+{
+public:
+	std::uint16_t IKBoneIndex;
+	std::uint16_t IKTargetBoneIndex;
+	std::uint32_t IKLoopCount;
+	std::uint32_t IKLinkCount;
+
+	float IKLimitedRadian;
+
+	std::vector<IKChild> IKList;
+};
+
+class EXPORT Bone
 {
 public:
 	Bone() noexcept;
 	Bone(const std::string& name) noexcept;
-	Bone(const Bone& copy) noexcept;
 	~Bone() noexcept;
 
-	void update() noexcept;
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
+	void setParent(std::int16_t parent) noexcept;
+	std::int16_t getParent() const noexcept;
+
+	void setChild(std::int16_t child) noexcept;
+	std::int16_t getChild() const noexcept;
+
+	void setPosition(const Vector3& position) noexcept;
+	const Vector3& getPosition() const noexcept;
+
+	void setRotation(const Quaternion& position) noexcept;
+	const Quaternion& getRotation() const noexcept;
+
+	void setScaling(const Vector3& scale) noexcept;
+	const Vector3& getScaling() const noexcept;
+
+	void setWorldTransform(const Matrix4x4& transform) noexcept;
+	const Matrix4x4& getWorldTransform() const noexcept;
+
+	void setLocalTransform(const Matrix4x4& transform) noexcept;
+	const Matrix4x4& getLocalTransform() const noexcept;
+
+	void setTransform(const Matrix4x4& transform) noexcept;
+	const Matrix4x4& getTransform() const noexcept;
 
 private:
 	std::string _name;
 
-	Bone* _parent;
-	Bone* _children;
+	std::int16_t _parent;
+	std::int16_t _child;
 
 	AnimeTranslate _position;
 	AnimeRotation  _rotation;
 	AnimeScaling   _scaling;
 
-	Matrix4x4 _offset_matrix;
-	Matrix4x4 _bone_matrix;
-	Matrix4x4 _node_matrix;
-	Matrix4x4 _final_matrix;
-	Matrix4x4 _anime_matrix;
+	mutable bool _needUpdate;
 
-	std::vector<VertexWeight*> _weights;
+	mutable Matrix4x4 _transform;
+	mutable Matrix4x4 _worldTransform;
+	mutable Matrix4x4 _localTransform;
 };
 
 _NAME_END

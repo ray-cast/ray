@@ -37,29 +37,29 @@
 #ifndef _H_FOG_H_
 #define _H_FOG_H_
 
-#include <ray/post_process.h>
+#include <ray/render_post_process.h>
 
 _NAME_BEGIN
 
 class Fog : public RenderPostProcess
 {
 public:
-    Fog() noexcept;
-    ~Fog() noexcept;
+	Fog() noexcept;
+	~Fog() noexcept;
 
-    virtual void onActivate(RenderPipeline& pipeline) except;
-    virtual void onDeactivate(RenderPipeline& pipeline) except;
+	virtual void onActivate(RenderPipeline& pipeline) except;
+	virtual void onDeactivate(RenderPipeline& pipeline) except;
 
-    virtual void onRender(RenderPipeline& pipeline, RenderTargetPtr texture) except;
+	virtual void onRender(RenderPipeline& pipeline, RenderTexturePtr texture) except;
 
 private:
 
-    MaterialPtr _material;
-    MaterialPassPtr _fog;
+	MaterialPtr _material;
+	MaterialPassPtr _fog;
 
-    MaterialParamPtr _fogFalloff;
-    MaterialParamPtr _fogDensity;
-    MaterialParamPtr _fogColor;
+	MaterialParamPtr _fogFalloff;
+	MaterialParamPtr _fogDensity;
+	MaterialParamPtr _fogColor;
 };
 
 _NAME_END

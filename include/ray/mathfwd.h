@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MATHS_H_
-#define _H_MATHS_H_
+#ifndef _H_MATHFWD_H_
+#define _H_MATHFWD_H_
 
 #include <ray/mathutil.h>
 
@@ -237,10 +237,16 @@ typedef Spheret<double> Sphered;
 typedef PerlinNoise2t<double> PerlinNoise2d;
 
 // int
+typedef short short1;
+typedef Vector2t<std::uint16_t> short2;
+typedef Vector3t<std::uint16_t> short3;
+typedef Vector4t<std::uint16_t> short4;
+
+// int
 typedef int int1;
-typedef Vector2t<int32_t> int2;
-typedef Vector3t<int32_t> int3;
-typedef Vector4t<int32_t> int4;
+typedef Vector2t<std::int32_t> int2;
+typedef Vector3t<std::int32_t> int3;
+typedef Vector4t<std::int32_t> int4;
 
 // uint
 typedef std::uint32_t uint;

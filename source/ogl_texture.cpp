@@ -38,9 +38,112 @@
 
 _NAME_BEGIN
 
+#define MAX_COLOR_ATTACHMENTS 15
+
+OGLTextureSample::OGLTextureSample() noexcept
+	:_sample(0)
+{
+}
+
+OGLTextureSample::~OGLTextureSample() noexcept
+{
+	this->close();
+}
+
+bool 
+OGLTextureSample::setup() except
+{
+	assert(!_sample);
+
+	glGenSamplers(1, &_sample);
+	
+	auto wrap = this->getTexWrap();
+	if (TextureWrap::REPEAT & wrap)
+	{
+		glSamplerParameteri(_sample, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glSamplerParameteri(_sample, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glSamplerParameteri(_sample, GL_TEXTURE_WRAP_R, GL_REPEAT);
+	}
+	else if (TextureWrap::CLAMP_TO_EDGE & wrap)
+	{
+		glSamplerParameteri(_sample, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glSamplerParameteri(_sample, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glSamplerParameteri(_sample, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	}
+	else if (TextureWrap::MODE_MIRROR & wrap)
+	{
+		glSamplerParameteri(_sample, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		glSamplerParameteri(_sample, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		glSamplerParameteri(_sample, GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
+	}
+
+	auto filter = this->getTexFilter();
+	if (filter == TextureFilter::GPU_NEAREST)
+	{
+		glSamplerParameteri(_sample, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glSamplerParameteri(_sample, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	}
+	else if (filter == TextureFilter::GPU_LINEAR)
+	{
+		glSamplerParameteri(_sample, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glSamplerParameteri(_sample, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	}
+	else if (filter == TextureFilter::GPU_NEAREST_MIPMAP_LINEAR)
+	{
+		glSamplerParameteri(_sample, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+		glSamplerParameteri(_sample, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+	}
+	else if (filter == TextureFilter::GPU_NEAREST_MIPMAP_NEAREST)
+	{
+		glSamplerParameteri(_sample, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+		glSamplerParameteri(_sample, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+	}
+	else if (filter == TextureFilter::GPU_LINEAR_MIPMAP_NEAREST)
+	{
+		glSamplerParameteri(_sample, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+		glSamplerParameteri(_sample, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+	}
+	else if (filter == TextureFilter::GPU_LINEAR_MIPMAP_LINEAR)
+	{
+		glSamplerParameteri(_sample, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glSamplerParameteri(_sample, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	}
+
+	auto anis = this->getTexAnisotropy();
+	if (anis == Anisotropy::ANISOTROPY_1)
+		glSamplerParameteri(_sample, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
+	else if (anis == Anisotropy::ANISOTROPY_2)
+		glSamplerParameteri(_sample, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2);
+	else if (anis == Anisotropy::ANISOTROPY_4)
+		glSamplerParameteri(_sample, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
+	else if (anis == Anisotropy::ANISOTROPY_8)
+		glSamplerParameteri(_sample, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
+	else if (anis == Anisotropy::ANISOTROPY_16)
+		glSamplerParameteri(_sample, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
+
+	return true;
+}
+
+void 
+OGLTextureSample::close() noexcept
+{
+	if (_sample)
+	{
+		glDeleteSamplers(1, &_sample);
+		_sample = 0;
+	}
+}
+
+GLuint 
+OGLTextureSample::getInstanceID() noexcept
+{
+	return _sample;
+}
+
 OGLTexture::OGLTexture() noexcept
 	: _texture(0)
 	, _textureAddr(0)
+	, _sampleAddr(0)
 {
 }
 
@@ -53,15 +156,11 @@ bool
 OGLTexture::setup() except
 {
 	auto target = OGLTypes::asOGLTarget(this->getTexDim());
-	auto format = OGLTypes::asOGLFormat(this->getTexFormat());
-	auto type = OGLTypes::asOGLType(this->getTexFormat());
 	auto internalFormat = OGLTypes::asOGLInternalformat(this->getTexFormat());
-	auto buf = this->getStream();
+	auto stream = this->getStream();
 
 	glGenTextures(1, &_texture);
 	glBindTexture(target, _texture);
-
-	GLint level = (GLint)this->getLevel();
 
 	GLsizei w = (GLsizei)this->getWidth();
 	GLsizei h = (GLsizei)this->getHeight();
@@ -71,71 +170,115 @@ OGLTexture::setup() except
 	applyTextureFilter(target, this->getTexFilter());
 	applyTextureAnis(target, this->getTexAnisotropy());
 
-	switch (target)
+	if (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT ||
+		internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ||
+		internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT ||
+		internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT ||
+		internalFormat == GL_COMPRESSED_RG_RGTC2)
 	{
-	case GL_TEXTURE_2D:
-	{
-		if (internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ||
-			internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT ||
-			internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
+		GLint level = (GLint)this->getMipLevel();
+		GLsizei size = this->getMipSize();
+		std::size_t offset = 0;
+		std::size_t blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;
+
+		for (GLint mip = 0; mip < level; mip++) 
 		{
-			int size = w * h;
-			glCompressedTexImage2D(target, level, internalFormat, w, h, 0, size, buf);
+			auto mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
+
+			glCompressedTexImage2D(GL_TEXTURE_2D, mip, internalFormat, w, h, 0, mipSize, (char*)stream + offset);
+
+			w = std::max(w >> 1, 1);
+			h = std::max(h >> 1, 1);
+
+			offset += mipSize;
 		}
-		else
+	}
+	else
+	{
+		auto level = 0;
+		auto format = OGLTypes::asOGLFormat(this->getTexFormat());
+		auto type = OGLTypes::asOGLType(this->getTexFormat());
+
+		switch (target)
 		{
+		case GL_TEXTURE_2D:
+		{
+#if !defined(EGLAPI)
 			if (this->isMultiSample())
 				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, level, internalFormat, w, h, GL_FALSE);
 			else
-				glTexImage2D(target, level, internalFormat, w, h, 0, format, type, buf);
+#endif
+			{
+				glTexImage2D(target, level, internalFormat, w, h, 0, format, type, stream);
+			}
 		}
-	}
-	break;
-	case GL_TEXTURE_2D_ARRAY:
-	{
-		if (this->isMultiSample())
-			glTexImage3DMultisample(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, level, internalFormat, w, h, depth, GL_FALSE);
-		else
-			glTexImage3D(target, level, internalFormat, w, h, depth, 0, format, type, 0);
-	}
-	break;
-	case GL_TEXTURE_3D:
-	{
-		glTexImage3D(target, level, internalFormat, w, h, depth, 0, format, type, 0);
-	}
-	break;
-	case GL_TEXTURE_CUBE_MAP:
-	{
-		if (this->isMultiSample())
-		{
-			glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, internalFormat, w, h, GL_FALSE);
-			glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, internalFormat, w, h, GL_FALSE);
-			glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, internalFormat, w, h, GL_FALSE);
-			glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, internalFormat, w, h, GL_FALSE);
-			glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, internalFormat, w, h, GL_FALSE);
-			glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, internalFormat, w, h, GL_FALSE);
-		}
-		else
-		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, internalFormat, w, h, 0, format, type, buf);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, internalFormat, w, h, 0, format, type, buf);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, internalFormat, w, h, 0, format, type, buf);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, internalFormat, w, h, 0, format, type, buf);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, internalFormat, w, h, 0, format, type, buf);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, internalFormat, w, h, 0, format, type, buf);
-		}
-	}
-	break;
-	default:
 		break;
+		case GL_TEXTURE_2D_ARRAY:
+		{
+#if !defined(EGLAPI)
+			if (this->isMultiSample())
+				glTexImage3DMultisample(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, level, internalFormat, w, h, depth, GL_FALSE);
+			else
+#endif
+			{
+				glTexImage3D(target, level, internalFormat, w, h, depth, 0, format, type, 0);
+			}
+		}
+		break;
+		case GL_TEXTURE_3D:
+		{
+			glTexImage3D(target, level, internalFormat, w, h, depth, 0, format, type, 0);
+		}
+		break;
+		case GL_TEXTURE_CUBE_MAP:
+		{
+#if !defined(EGLAPI)
+			if (this->isMultiSample())
+			{
+				glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, internalFormat, w, h, GL_FALSE);
+				glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, internalFormat, w, h, GL_FALSE);
+				glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, internalFormat, w, h, GL_FALSE);
+				glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, internalFormat, w, h, GL_FALSE);
+				glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, internalFormat, w, h, GL_FALSE);
+				glTexImage2DMultisample(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, internalFormat, w, h, GL_FALSE);
+			}
+			else
+#endif
+			{
+				if (OGLFeatures::ARB_direct_state_access && !stream)
+					glTextureStorage2D(_texture, level + 1, internalFormat, w, h);
+				else
+				{
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, internalFormat, w, h, 0, format, type, stream);
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, internalFormat, w, h, 0, format, type, stream);
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, internalFormat, w, h, 0, format, type, stream);
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, internalFormat, w, h, 0, format, type, stream);
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, internalFormat, w, h, 0, format, type, stream);
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, internalFormat, w, h, 0, format, type, stream);
+				}
+			}
+		}
+		break;
+		default:
+			break;
+		}
+	}
+
+	if (this->isMipmap())
+	{
+		if (OGLFeatures::ARB_direct_state_access)
+			glGenerateTextureMipmap(_texture);
+		else
+			glGenerateMipmap(target);		
 	}
 
 #if !defined(EGLAPI)
-	if (OGLExtenstion::isSupport(ARB_bindless_texture))
+	if (OGLFeatures::ARB_bindless_texture)
 	{
 		_textureAddr = glGetTextureHandleARB(_texture);
 		glMakeTextureHandleResidentARB(_textureAddr);
 	}
+
 #endif
 
 	return true;
@@ -202,25 +345,21 @@ OGLTexture::applyTextureFilter(GLenum target, TextureFilter filter) noexcept
 	}
 	else if (filter == TextureFilter::GPU_NEAREST_MIPMAP_LINEAR)
 	{
-		glGenerateMipmap(target);
 		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 	}
 	else if (filter == TextureFilter::GPU_NEAREST_MIPMAP_NEAREST)
 	{
-		glGenerateMipmap(target);
 		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 	}
 	else if (filter == TextureFilter::GPU_LINEAR_MIPMAP_NEAREST)
 	{
-		glGenerateMipmap(target);
 		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 	}
 	else if (filter == TextureFilter::GPU_LINEAR_MIPMAP_LINEAR)
 	{
-		glGenerateMipmap(target);
 		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	}
@@ -230,29 +369,30 @@ void
 OGLTexture::applyTextureAnis(GLenum target, Anisotropy anis) noexcept
 {
 	if (anis == Anisotropy::ANISOTROPY_1)
-		glTexParameterf(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0);
+		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
 	else if (anis == Anisotropy::ANISOTROPY_2)
-		glTexParameterf(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2.0);
+		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2);
 	else if (anis == Anisotropy::ANISOTROPY_4)
-		glTexParameterf(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0);
+		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
 	else if (anis == Anisotropy::ANISOTROPY_8)
-		glTexParameterf(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8.0);
+		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
 	else if (anis == Anisotropy::ANISOTROPY_16)
-		glTexParameterf(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16.0);
+		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
 }
 
-OGLRenderTarget::OGLRenderTarget() noexcept
+OGLRenderTexture::OGLRenderTexture() noexcept
 	: _fbo(GL_NONE)
+	, _layer(GL_NONE)
 {
 }
 
-OGLRenderTarget::~OGLRenderTarget() noexcept
+OGLRenderTexture::~OGLRenderTexture() noexcept
 {
 	this->close();
 }
 
 bool
-OGLRenderTarget::setup() noexcept
+OGLRenderTexture::setup() noexcept
 {
 	assert(!_fbo);
 
@@ -265,50 +405,43 @@ OGLRenderTarget::setup() noexcept
 	if (sharedDepthTarget == sharedStencilTarget)
 	{
 		if (sharedDepthTarget)
-			this->bindRenderTarget(sharedDepthTarget->getResolveTexture(), GL_DEPTH_STENCIL_ATTACHMENT);
+			this->bindRenderTexture(sharedDepthTarget->getResolveTexture(), GL_DEPTH_STENCIL_ATTACHMENT);
 	}
 	else
 	{
 		if (sharedDepthTarget)
-		{
-			this->bindRenderTarget(sharedDepthTarget->getResolveTexture(), GL_DEPTH_ATTACHMENT);
-		}
+			this->bindRenderTexture(sharedDepthTarget->getResolveTexture(), GL_DEPTH_ATTACHMENT);
 
 		if (sharedStencilTarget)
-		{
-			this->bindRenderTarget(sharedStencilTarget->getResolveTexture(), GL_STENCIL_ATTACHMENT);
-		}
+			this->bindRenderTexture(sharedStencilTarget->getResolveTexture(), GL_STENCIL_ATTACHMENT);
 	}
 
 	auto resolveFormat = this->getTexFormat();
 
 	if (resolveFormat == PixelFormat::DEPTH24_STENCIL8 || resolveFormat == PixelFormat::DEPTH32_STENCIL8)
-	{
-		this->bindRenderTarget(this->getResolveTexture(), GL_DEPTH_STENCIL_ATTACHMENT);
-	}
+		this->bindRenderTexture(this->getResolveTexture(), GL_DEPTH_STENCIL_ATTACHMENT);
 	else if (resolveFormat == PixelFormat::DEPTH_COMPONENT16 || resolveFormat == PixelFormat::DEPTH_COMPONENT24 || resolveFormat == PixelFormat::DEPTH_COMPONENT32)
-	{
-		this->bindRenderTarget(this->getResolveTexture(), GL_DEPTH_ATTACHMENT);
-	}
+		this->bindRenderTexture(this->getResolveTexture(), GL_DEPTH_ATTACHMENT);
 	else if (resolveFormat == PixelFormat::STENCIL8)
-	{
-		this->bindRenderTarget(this->getResolveTexture(), GL_STENCIL_ATTACHMENT);
-	}
+		this->bindRenderTexture(this->getResolveTexture(), GL_STENCIL_ATTACHMENT);
 	else
-	{
-		this->bindRenderTarget(this->getResolveTexture(), GL_COLOR_ATTACHMENT0);
-	}
+		this->bindRenderTexture(this->getResolveTexture(), GL_COLOR_ATTACHMENT0);
 
-	if (OGLExtenstion::isSupport(ARB_direct_state_access))
+#if !defined(EGLAPI)
+	if (OGLFeatures::ARB_direct_state_access)
 		glNamedFramebufferDrawBuffer(_fbo, GL_COLOR_ATTACHMENT0);
 	else
 		glDrawBuffer(GL_COLOR_ATTACHMENT0);
+#else
+	GLenum draw = GL_COLOR_ATTACHMENT0;
+	glDrawBuffers(1, &draw);
+#endif
 
 	return true;
 }
 
 void
-OGLRenderTarget::close() noexcept
+OGLRenderTexture::close() noexcept
 {
 	if (_fbo != GL_NONE)
 	{
@@ -318,7 +451,7 @@ OGLRenderTarget::close() noexcept
 }
 
 void
-OGLRenderTarget::bindRenderTarget(TexturePtr texture, GLenum attachment) noexcept
+OGLRenderTexture::bindRenderTexture(TexturePtr texture, GLenum attachment) noexcept
 {
 	auto handle = std::dynamic_pointer_cast<OGLTexture>(texture)->getInstanceID();
 
@@ -337,6 +470,11 @@ OGLRenderTarget::bindRenderTarget(TexturePtr texture, GLenum attachment) noexcep
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, handle, 0, 0);
 		break;
 	}
+	case TextureDim::DIM_CUBE:
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X, handle, 0);
+		break;
+	}
 #if !defined(EGLAPI)
 	case TextureDim::DIM_3D:
 	{
@@ -347,24 +485,53 @@ OGLRenderTarget::bindRenderTarget(TexturePtr texture, GLenum attachment) noexcep
 	}
 }
 
+void
+OGLRenderTexture::onSetRenderTextureAfter(RenderTexturePtr target) noexcept
+{
+	if (_fbo)
+	{
+		auto resolveFormat = target->getTexFormat();
+		if (resolveFormat == PixelFormat::DEPTH24_STENCIL8 || resolveFormat == PixelFormat::DEPTH32_STENCIL8)
+			this->bindRenderTexture(this->getResolveTexture(), GL_STENCIL_ATTACHMENT);
+		else if (resolveFormat == PixelFormat::DEPTH_COMPONENT16 || resolveFormat == PixelFormat::DEPTH_COMPONENT24 || resolveFormat == PixelFormat::DEPTH_COMPONENT32)
+			this->bindRenderTexture(this->getResolveTexture(), GL_DEPTH_ATTACHMENT);
+		else if (resolveFormat == PixelFormat::STENCIL8)
+			this->bindRenderTexture(this->getResolveTexture(), GL_STENCIL_ATTACHMENT);
+		else
+			this->bindRenderTexture(this->getResolveTexture(), GL_COLOR_ATTACHMENT0);
+	}
+}
+
 GLuint
-OGLRenderTarget::getInstanceID() noexcept
+OGLRenderTexture::getInstanceID() noexcept
 {
 	return _fbo;
 }
 
-OGLMultiRenderTarget::OGLMultiRenderTarget() noexcept
+void 
+OGLRenderTexture::setLayer(GLuint layer) noexcept
+{
+	_layer = layer;
+}
+
+GLuint 
+OGLRenderTexture::getLayer() const noexcept
+{
+	return _layer;
+}
+
+OGLMultiRenderTexture::OGLMultiRenderTexture() noexcept
 	: _fbo(GL_NONE)
 {
 }
 
-OGLMultiRenderTarget::~OGLMultiRenderTarget() noexcept
+OGLMultiRenderTexture::~OGLMultiRenderTexture() noexcept
 {
 	this->close();
 }
 
 bool
-OGLMultiRenderTarget::setup() noexcept
+OGLMultiRenderTexture::setup() noexcept
 {
 	assert(GL_NONE == _fbo);
 
@@ -377,18 +544,18 @@ OGLMultiRenderTarget::setup() noexcept
 	if (sharedDepthTarget == sharedStencilTarget)
 	{
 		if (sharedDepthTarget)
-			this->bindRenderTarget(sharedDepthTarget, GL_DEPTH_STENCIL_ATTACHMENT);
+			this->bindRenderTexture(sharedDepthTarget, GL_DEPTH_STENCIL_ATTACHMENT);
 	}
 	else
 	{
 		if (sharedDepthTarget)
 		{
-			this->bindRenderTarget(sharedDepthTarget, GL_DEPTH_ATTACHMENT);
+			this->bindRenderTexture(sharedDepthTarget, GL_DEPTH_ATTACHMENT);
 		}
 
 		if (sharedStencilTarget)
 		{
-			this->bindRenderTarget(sharedStencilTarget, GL_STENCIL_ATTACHMENT);
+			this->bindRenderTexture(sharedStencilTarget, GL_STENCIL_ATTACHMENT);
 		}
 	}
 
@@ -396,22 +563,26 @@ OGLMultiRenderTarget::setup() noexcept
 	GLenum attachment = GL_COLOR_ATTACHMENT0;
 	GLsizei count = 0;
 
-	for (auto& target : this->getRenderTargets())
+	for (auto& target : this->getRenderTextures())
 	{
-		this->bindRenderTarget(target, attachment);
+		this->bindRenderTexture(target, attachment);
 		draw[count++] = attachment++;
 	}
 
-	if (OGLExtenstion::isSupport(ARB_direct_state_access))
+#if !defined(EGLAPI)
+	if (OGLFeatures::ARB_direct_state_access)
 		glNamedFramebufferDrawBuffers(_fbo, count, draw);
 	else
 		glDrawBuffers(count, draw);
+#else
+	glDrawBuffers(count, draw);
+#endif
 
 	return true;
 }
 
 void
-OGLMultiRenderTarget::close() noexcept
+OGLMultiRenderTexture::close() noexcept
 {
 	if (_fbo != GL_NONE)
 	{
@@ -421,13 +592,13 @@ OGLMultiRenderTarget::close() noexcept
 }
 
 GLuint
-OGLMultiRenderTarget::getInstanceID() noexcept
+OGLMultiRenderTexture::getInstanceID() noexcept
 {
 	return _fbo;
 }
 
 void
-OGLMultiRenderTarget::bindRenderTarget(RenderTargetPtr target, GLenum attachment) noexcept
+OGLMultiRenderTexture::bindRenderTexture(RenderTexturePtr target, GLenum attachment) noexcept
 {
 	auto handle = std::dynamic_pointer_cast<OGLTexture>(target->getResolveTexture())->getInstanceID();
 
@@ -446,13 +617,15 @@ OGLMultiRenderTarget::bindRenderTarget(RenderTargetPtr target, GLenum attachment
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, handle, 0, 0);
 		break;
 	}
-#if !defined(EGLAPI)
 	case TextureDim::DIM_3D:
 	{
+#if !defined(EGLAPI)
 		glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_3D, handle, 0, 0);
 		break;
-	}
+#else
+		assert(false);
 #endif
+	}
 	}
 }
 

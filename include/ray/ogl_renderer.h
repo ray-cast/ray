@@ -37,121 +37,114 @@
 #ifndef _H_OGL_RENDERER_H_
 #define _H_OGL_RENDERER_H_
 
-#include <ray/ogl_state.h>
-#include <ray/ogl_commandlist.h>
+#include <ray/ogl_types.h>
+#include <ray/render_command.h>
 
 _NAME_BEGIN
 
-class EXPORT OGLRenderer final : public RenderDevice
+class OGLRenderer final : public RenderDevice
 {
 public:
-    OGLRenderer() noexcept;
-    ~OGLRenderer() noexcept;
+	OGLRenderer() noexcept;
+	~OGLRenderer() noexcept;
 
-    virtual bool open(RenderWindowPtr window) except;
-    virtual void close() noexcept;
+	virtual bool open(RenderWindowPtr window) except;
+	virtual void close() noexcept;
 
-    virtual void renderBegin() noexcept;
-    virtual void renderEnd() noexcept;
+	virtual void renderBegin() noexcept;
+	virtual void renderEnd() noexcept;
 
-    virtual void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept;
-    virtual void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
+	virtual void setViewport(const Viewport& view, std::size_t i = 0) noexcept;
+	virtual const Viewport& getViewport(std::size_t i = 0) const noexcept;
 
-    virtual void setViewport(const Viewport& view, std::size_t i = 0) noexcept;
-    virtual const Viewport& getViewport(std::size_t i = 0) const noexcept;
+	virtual void setWireframeMode(bool enable) noexcept;
+	virtual bool getWireframeMode() const noexcept;
 
-    virtual void setRenderWindow(RenderWindowPtr window) noexcept;
-    virtual RenderWindowPtr getRenderWindow() const noexcept;
+	virtual void setRenderWindow(RenderWindowPtr window) except;
+	virtual RenderWindowPtr getRenderWindow() const noexcept;
 
-    virtual void setSwapInterval(SwapInterval interval) noexcept;
-    virtual SwapInterval getSwapInterval() const noexcept;
+	virtual void setSwapInterval(SwapInterval interval) except;
+	virtual SwapInterval getSwapInterval() const noexcept;
 
-    virtual void setRenderState(RenderStatePtr state) noexcept;
-    virtual RenderStatePtr getRenderState() const noexcept;
+	virtual void setRenderState(RenderStatePtr state) noexcept;
+	virtual RenderStatePtr getRenderState() const noexcept;
 
-    virtual void setRenderBuffer(RenderBufferPtr buffer) noexcept;
-    virtual void updateRenderBuffer(RenderBufferPtr buffer) noexcept;
-    virtual void drawRenderBuffer(const Renderable& renderable) noexcept;
-    virtual RenderBufferPtr getRenderBuffer() const noexcept;
+	virtual void setRenderBuffer(RenderBufferPtr buffer) noexcept;
+	virtual void updateRenderBuffer(RenderBufferPtr buffer) noexcept;
+	virtual void drawRenderBuffer(const RenderIndirect& renderable) noexcept;
+	virtual void drawRenderBuffer(const RenderIndirects& renderable) noexcept;
+	virtual RenderBufferPtr getRenderBuffer() const noexcept;
 
-    virtual void setRenderTarget(RenderTargetPtr target) noexcept;
-    virtual void setMultiRenderTarget(MultiRenderTargetPtr target) noexcept;
-    virtual void readRenderTarget(RenderTargetPtr src, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
-    virtual void copyRenderTarget(RenderTargetPtr src, const Viewport& v1, RenderTargetPtr dest, const Viewport& v2) noexcept;
-    virtual RenderTargetPtr getRenderTarget() const noexcept;
-    virtual MultiRenderTargetPtr getMultiRenderTarget() const noexcept;
+	virtual void setRenderTexture(RenderTexturePtr target) noexcept;
+	virtual void setRenderTextureLayer(RenderTexturePtr texture, std::int32_t layer) noexcept;
+	virtual void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept;
+	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
+	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
+	virtual void discardRenderTexture() noexcept;
+	virtual void readRenderTexture(RenderTexturePtr src, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	virtual void copyRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderTexturePtr dest, const Viewport& v2) noexcept;
+	virtual RenderTexturePtr getRenderTexture() const noexcept;
+	virtual MultiRenderTexturePtr getMultiRenderTexture() const noexcept;
 
-    virtual void setShaderObject(ShaderObjectPtr shader) noexcept;
-    virtual void setShaderUniform(ShaderUniformPtr uniform, TexturePtr texture) noexcept;
-    virtual void setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constant) noexcept;
-    virtual ShaderObjectPtr getShaderObject() const noexcept;
+	virtual void setShaderObject(ShaderObjectPtr shader) noexcept;
+	virtual ShaderObjectPtr getShaderObject() const noexcept;
 
-    virtual bool createShaderVariant(ShaderVariant& constant) noexcept;
-    virtual void destroyShaderVariant(ShaderVariant& constant) noexcept;
-    virtual void updateShaderVariant(ShaderVariantPtr constant) noexcept;
-
-private:
-    void initCommandList() noexcept;
-    void initDebugControl() noexcept;
-    void initStateSystem() noexcept;
-
-    void nvtokenGetStats(const void* stream, size_t streamSize, int stats[GL_MAX_COMMANDS_NV]) noexcept;
-    void nvtokenDrawCommandState() noexcept;
-    GLenum nvtokenDrawCommandSequence(const void* stream, size_t streamSize, GLenum mode, GLenum type, const State* state) noexcept;
-
-    static void checkError() noexcept;
-    static void checkFramebuffer() noexcept;
-    static void GLAPIENTRY debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept;
-
-private:
-    OGLRenderer(const OGLRenderer&) noexcept = delete;
-    OGLRenderer& operator=(const OGLRenderer&) noexcept = delete;
+	virtual bool createShaderVariant(ShaderVariant& constant) noexcept;
+	virtual void destroyShaderVariant(ShaderVariant& constant) noexcept;
+	virtual void updateShaderVariant(ShaderVariantPtr constant) noexcept;
 
 private:
 
-    RenderWindowPtr _glcontext;
+	void initDebugControl() noexcept;
+	void initStateSystem() noexcept;
+	void initCommandList() noexcept;
 
-    GLint _maxViewports;
-    std::vector<Viewport> _viewport;
+	void setShaderUniform(ShaderUniformPtr uniform, TexturePtr texture, TextureSamplePtr sample = nullptr) noexcept;
+	void setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constant) noexcept;
 
-    GLuint _framebuffer;
-    RenderTargetPtr _renderTarget;
-    MultiRenderTargetPtr _multiRenderTarget;
+	static void checkError() noexcept;
+	static void checkFramebuffer() noexcept;
+	static void GLAPIENTRY debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept;
 
-    GLuint _program;
-    ShaderObjectPtr _shaderObject;
-    std::vector<OGLShaderVariant> _constantBuffers;
+private:
+	OGLRenderer(const OGLRenderer&) noexcept = delete;
+	OGLRenderer& operator=(const OGLRenderer&) noexcept = delete;
 
-    GLuint _defaultVAO;
-    RenderBufferPtr _renderBuffer;
+private:
 
-    GLint _maxTextureUnits;
-    std::vector<GLint> _textureUnits;
+	bool _initOpenGL;
+	bool _enableWireframe;
 
-    // we introduce variables that track when we changed global state
-    RenderState::InstanceID _state;
-    RenderState::InstanceID _captured;
+	Vector4 _clearColor;
+	GLfloat _clearDepth;
+	GLint   _clearStencil;
 
-    RenderBlendState _blendState;
-    RenderRasterState _rasterState;
-    RenderDepthState _depthState;
-    RenderStencilState _stencilState;
-    RenderClearState _clearState;
+	GLuint _defaultVAO;
+	GLuint _maxViewports;
+	GLuint _maxTextureUnits;
 
-    StateSystem _stateSystem;
-    StateSystem::StateID  _stateIdDraw;
-    StateSystem::StateID  _stateIdDrawGeo;
+	RenderTexturePtr _renderTexture;
+	MultiRenderTexturePtr _multiRenderTexture;
 
-    // two state objects
-    GLuint _stateObjDraw;
-    GLuint _stateObjDrawGeo;
+	ShaderObjectPtr _shaderObject;
 
-    GLuint          _tokenBuffer;
-    GLuint          _tokenCmdList;
-    std::string     _tokenData;
-    CommandSequence _tokenSequence;
-    CommandSequence _tokenSequenceList;
-    CommandSequence _tokenSequenceEmu;
+	RenderWindowPtr _glcontext;
+	RenderBufferPtr _renderBuffer;
+	RenderStatePtr _state;
+	RenderStatePtr _stateCaptured;
+
+	GLuint _stateObjDraw;
+	GLuint _stateObjDrawGeo;
+
+	GLuint      _tokenBuffer;
+	GLuint      _tokenCmdList;
+	std::string _tokenData;
+
+	RenderCommand _renderCommands;
+
+	std::vector<GLint> _textureUnits;
+	std::vector<Viewport> _viewport;
+	std::vector<OGLShaderVariant> _constantBuffers;
 };
 
 _NAME_END

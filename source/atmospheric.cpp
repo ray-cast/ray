@@ -44,22 +44,21 @@ _NAME_BEGIN
 
 Atmospheric::Setting::Setting() noexcept
 {
-    outerRadius = 32800.0f;
-    innerRadius = 32000.0f;
+	outerRadius = 32800.0f;
+	innerRadius = 32000.0f;
 
-    //outerRadius = 10.25f * 10.0f;
-    //innerRadius = 10.00f * 10.0f;
-    wavelength.x = 0.650f; // 650 nm for red
-    wavelength.y = 0.570f; // 570 nm for green
-    wavelength.z = 0.475f; // 475 nm for blue
+	wavelength.x = 0.650f; // 650 nm for red
+	wavelength.y = 0.570f; // 570 nm for green
+	wavelength.z = 0.475f; // 475 nm for blue
 
-    kr = 0.0025;
-    km = 0.0025;
-    sun = 16.0f;
+	kr = 0.0025;
+	km = 0.0025;
+	sun = 16.0f;
 };
 
 Atmospheric::Atmospheric() noexcept
 {
+	this->setRenderQueue(RenderQueue::RQ_OPAQUE);
 }
 
 Atmospheric::~Atmospheric() noexcept
@@ -67,86 +66,88 @@ Atmospheric::~Atmospheric() noexcept
 }
 
 void
-Atmospheric::onActivate(RenderPipeline& pipeline) noexcept
+Atmospheric::onActivate(RenderPipeline& pipeline) except
 {
-    MeshProperty mesh;
-    mesh.makeSphere(1, 128, 96);
+	MeshProperty mesh;
+	mesh.makeSphere(1, 128, 96);
 
-    _sphere = RenderFactory::createRenderBuffer(mesh);
+	_sphere = RenderFactory::createRenderBuffer(mesh);
 
-    _sat = MaterialMaker("sys:fx/atmospheric.glsl");
+	_sat = MaterialMaker("sys:fx/atmospheric.glsl");
 
-    _sky = _sat->getTech(RenderQueue::PostProcess)->getPass("sky");
-    _ground = _sat->getTech(RenderQueue::PostProcess)->getPass("ground");
-    _lightDirection = _sat->getParameter("lightDirection");
-    _invWavelength = _sat->getParameter("invWavelength");
-    _outerRadius = _sat->getParameter("outerRadius");
-    _outerRadius2 = _sat->getParameter("outerRadius2");
-    _innerRadius = _sat->getParameter("innerRadius");
-    _innerRadius2 = _sat->getParameter("innerRadius2");
-    _krESun = _sat->getParameter("krESun");
-    _kmESun = _sat->getParameter("kmESun");
-    _kr4PI = _sat->getParameter("kr4PI");
-    _km4PI = _sat->getParameter("km4PI");
-    _scaleFactor = _sat->getParameter("scaleFactor");
-    _scaleDepth = _sat->getParameter("scaleDepth");
-    _scaleOverScaleDepth = _sat->getParameter("scaleOverScaleDepth");
+	_sky = _sat->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("sky");
+	_ground = _sat->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ground");
+	_lightDirection = _sat->getParameter("lightDirection");
+	_invWavelength = _sat->getParameter("invWavelength");
+	_outerRadius = _sat->getParameter("outerRadius");
+	_outerRadius2 = _sat->getParameter("outerRadius2");
+	_innerRadius = _sat->getParameter("innerRadius");
+	_innerRadius2 = _sat->getParameter("innerRadius2");
+	_krESun = _sat->getParameter("krESun");
+	_kmESun = _sat->getParameter("kmESun");
+	_kr4PI = _sat->getParameter("kr4PI");
+	_km4PI = _sat->getParameter("km4PI");
+	_scaleFactor = _sat->getParameter("scaleFactor");
+	_scaleDepth = _sat->getParameter("scaleDepth");
+	_scaleOverScaleDepth = _sat->getParameter("scaleOverScaleDepth");
 
-    float3 invWavelength4;
-    invWavelength4.x = 1.0 / powf(_setting.wavelength.x, 4.0f);
-    invWavelength4.y = 1.0 / powf(_setting.wavelength.y, 4.0f);
-    invWavelength4.z = 1.0 / powf(_setting.wavelength.z, 4.0f);
+	float3 invWavelength4;
+	invWavelength4.x = 1.0 / powf(_setting.wavelength.x, 4.0f);
+	invWavelength4.y = 1.0 / powf(_setting.wavelength.y, 4.0f);
+	invWavelength4.z = 1.0 / powf(_setting.wavelength.z, 4.0f);
 
-    _invWavelength->assign(invWavelength4);
+	_invWavelength->assign(invWavelength4);
 
-    _innerRadius->assign(_setting.innerRadius);
-    _innerRadius2->assign(_setting.innerRadius * _setting.innerRadius);
-    _outerRadius->assign(_setting.outerRadius);
-    _outerRadius2->assign(_setting.outerRadius * _setting.outerRadius);
+	_innerRadius->assign(_setting.innerRadius);
+	_innerRadius2->assign(_setting.innerRadius * _setting.innerRadius);
+	_outerRadius->assign(_setting.outerRadius);
+	_outerRadius2->assign(_setting.outerRadius * _setting.outerRadius);
 
-    _krESun->assign(_setting.kr * _setting.sun);
-    _kmESun->assign(_setting.km * _setting.sun);
+	_krESun->assign(_setting.kr * _setting.sun);
+	_kmESun->assign(_setting.km * _setting.sun);
 
-    _kr4PI->assign(_setting.kr * 4.0f * M_PI);
-    _km4PI->assign(_setting.km * 4.0f * M_PI);
+	_kr4PI->assign(_setting.kr * 4.0f * M_PI);
+	_km4PI->assign(_setting.km * 4.0f * M_PI);
 
-    _scaleFactor->assign(1.0f / (_setting.outerRadius - _setting.innerRadius));
-    _scaleDepth->assign(0.25f);
-    _scaleOverScaleDepth->assign((1.0f / (_setting.outerRadius - _setting.innerRadius)) / 0.25f);
+	_scaleFactor->assign(1.0f / (_setting.outerRadius - _setting.innerRadius));
+	_scaleDepth->assign(0.25f);
+	_scaleOverScaleDepth->assign((1.0f / (_setting.outerRadius - _setting.innerRadius)) / 0.25f);
 }
 
 void
-Atmospheric::onDectivate(RenderPipeline& pipeline) noexcept
+Atmospheric::onDeactivate(RenderPipeline& pipeline) noexcept
 {
 }
 
 void
-Atmospheric::onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
+Atmospheric::onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
 {
-    Renderable renderable;
-    renderable.startVertice = 0;
-    renderable.startIndice = 0;
-    renderable.numVertices = _sphere->getNumVertices();
-    renderable.numIndices = _sphere->getNumIndices();
+	pipeline.setRenderTexture(source);
 
-    auto lights = pipeline.getRenderData(RenderQueue::Lighting);
-    for (auto& it : lights)
-    {
-        auto light = dynamic_cast<Light*>(it);
+	RenderIndirect renderable;
+	renderable.startVertice = 0;
+	renderable.startIndice = 0;
+	renderable.numVertices = _sphere->getNumVertices();
+	renderable.numIndices = _sphere->getNumIndices();
 
-        if (light->getLightType() == LightType::LT_SUN)
-        {
-            _lightDirection->assign(light->getLightDirection());
+	auto lights = pipeline.getRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS);
+	for (auto& it : lights)
+	{
+		auto light = std::dynamic_pointer_cast<Light>(it);
 
-            pipeline.setRenderTarget(source);
-            pipeline.setTechnique(_ground);
-            pipeline.drawMesh(_sphere, renderable);
+		if (light->getLightType() == LightType::LT_SUN)
+		{
+			auto lightDirection = ~(light->getTransform().getTranslate() - light->getLightLookat());
 
-            pipeline.setRenderTarget(source);
-            pipeline.setTechnique(_sky);
-            pipeline.drawMesh(_sphere, renderable);
-        }
-    }
+			_lightDirection->assign(lightDirection);
+
+			pipeline.setMaterialPass(_ground);
+			pipeline.drawMesh(_sphere, renderable);
+
+			pipeline.setMaterialPass(_sky);
+			pipeline.drawMesh(_sphere, renderable);
+		}
+	}
 }
 
 _NAME_END

@@ -49,6 +49,8 @@ public:
 	virtual ~GameObject() noexcept;
 
 	void setActive(bool active) except;
+	void setActiveUpwards(bool active) except;
+	void setActiveDownwards(bool active) except;
 	bool getActive() const noexcept;
 
 	void setLayer(int layer) noexcept;
@@ -69,6 +71,7 @@ public:
 
 	std::size_t getChildCount() const noexcept;
 	GameObjects& getChildren() noexcept;
+	const GameObjects& getChildren() const noexcept;
 
 	void setTranslateX(float dist) noexcept;
 	void setTranslateY(float dist) noexcept;
@@ -154,14 +157,14 @@ public:
 	const Matrix4x4& getTransformInverseTranspose() const noexcept;
 	const Matrix4x4& getWorldTransform() const noexcept;
 
-	void addComponent(GameComponentPtr component) noexcept;
+	void addComponent(GameComponentPtr component) except;
 	void removeComponent(GameComponentPtr component) noexcept;
 	void destroyComponent(GameComponentPtr component) noexcept;
 	void cleanupComponents() noexcept;
 
 	template<typename T>
 	std::shared_ptr<T> getComponent() const noexcept { return std::dynamic_pointer_cast<T>(this->getComponent(T::getType())); }
-	GameComponentPtr getComponent(RTTIType type) const noexcept;
+	GameComponentPtr getComponent(RTTI::HashCode type) const noexcept;
 	const GameComponents& getComponents() const noexcept;
 
 	void sendMessage(const GameMessage& message) noexcept;

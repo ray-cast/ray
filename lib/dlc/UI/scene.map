@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<scene>
+    <attribute name="UI"/>
+    <object>
+        <attribute name="UIRoot"/>
+        <attribute position="0,0,-1" />
+        <attribute lookat="0,0,1" />
+        <attribute active="true"/>
+        <component name="ray::Camera">
+            <attribute type="ortho"/>
+            <attribute left="0"/>
+            <attribute top="0"/>
+            <attribute right="100"/>
+            <attribute bottom="100"/>
+            <attribute znear="0.1"/>
+            <attribute zfar="10.0"/>
+            <attribute w="1376"/>
+            <attribute h="768"/>
+        </component>
+        <component name="ray::GUICamera"/>
+        <object>
+            <attribute name="plane"/>
+            <attribute active="true"/>
+            <component name="ray::GUILayout"/>
+            <component name="ray::GUIPlane"/>
+            <object>
+                <attribute name="button"/>
+                <attribute active="true"/>
+                <attribute position="10,10,0" />
+                <attribute scale="10,6,1" />
+                <component name="ray::GUIButton"/>
+                <component name="ray::GUILabel">
+                    <attribute text="基于distance field的字体能在和点阵字体存储相同结构的情况下获得更好的渲染效果，尤其是支持一定程序上的高质量缩放。"/>
+                    <attribute font="dlc:UI/font/msyh.dff"/>
+                </component>
+            </object>
+        </object>
+    </object>
+</scene>

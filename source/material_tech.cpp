@@ -39,7 +39,7 @@
 _NAME_BEGIN
 
 MaterialTech::MaterialTech(RenderQueue renderQueue) noexcept
-    : _renderQueue(renderQueue)
+	: _renderQueue(renderQueue)
 {
 }
 
@@ -50,70 +50,70 @@ MaterialTech::~MaterialTech() noexcept
 void
 MaterialTech::addPass(MaterialPassPtr pass)
 {
-    assert(std::find(_passList.begin(), _passList.end(), pass) == _passList.end());
-    _passList.push_back(pass);
+	assert(std::find(_passList.begin(), _passList.end(), pass) == _passList.end());
+	_passList.push_back(pass);
 }
 
 void
 MaterialTech::removePass(MaterialPassPtr pass)
 {
-    auto it = std::find(_passList.begin(), _passList.end(), pass);
-    if (it != _passList.end())
-    {
-        _passList.erase(it);
-    }
+	auto it = std::find(_passList.begin(), _passList.end(), pass);
+	if (it != _passList.end())
+	{
+		_passList.erase(it);
+	}
 }
 
 MaterialPassPtr
 MaterialTech::getPass(RenderPass passType) noexcept
 {
-    for (auto& it : _passList)
-    {
-        if (it->getRenderPass() == passType)
-        {
-            return it;
-        }
-    }
+	for (auto& it : _passList)
+	{
+		if (it->getRenderPass() == passType)
+		{
+			return it;
+		}
+	}
 
-    return nullptr;
+	return nullptr;
 }
 
 MaterialPassPtr
 MaterialTech::getPass(const std::string& name) noexcept
 {
-    for (auto& it : _passList)
-    {
-        if (it->getName() == name)
-        {
-            return it;
-        }
-    }
+	for (auto& it : _passList)
+	{
+		if (it->getName() == name)
+		{
+			return it;
+		}
+	}
 
-    return nullptr;
+	return nullptr;
 }
 
 MaterialPassList&
 MaterialTech::getPassList() noexcept
 {
-    return _passList;
+	return _passList;
 }
 
 RenderQueue
 MaterialTech::getRenderQueue() const noexcept
 {
-    return _renderQueue;
+	return _renderQueue;
 }
 
 bool
 MaterialTech::empty() const noexcept
 {
-    return _passList.empty();
+	return _passList.empty();
 }
 
 std::size_t
 MaterialTech::count() const noexcept
 {
-    return _passList.size();
+	return _passList.size();
 }
 
 _NAME_END

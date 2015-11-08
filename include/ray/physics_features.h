@@ -63,13 +63,10 @@ private:
 
 	void onFrameBegin() noexcept;
 
-	GameComponentPtr onSerialization(iarchive& reader) except;
-
 private:
 
 	GameComponentPtr instanceRigidbody(iarchive& reader) except;
 	GameComponentPtr instanceShapeBox(iarchive& reader) except;
-	GameComponentPtr instanceCharacter(iarchive& reader) except;
 
 private:
 

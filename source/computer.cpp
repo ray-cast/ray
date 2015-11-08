@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/computer.h>
 
-#ifdef __LINUX__
+#if defined(__LINUX__) || defined(__GNUWIN__)
 #include <x86intrin.h>
 #include <cpuid.h>
 #else
@@ -49,8 +49,8 @@
 _NAME_BEGIN
 
 Computer::Computer()
-    :_mmx(0)
-    , _sse(0)
+	:_mmx(0)
+	, _sse(0)
 {
 }
 
@@ -62,358 +62,358 @@ static std::jmp_buf* volatile _s_jmpback = nullptr;
 
 void catch_sigill(int sig)
 {
-    if (_s_jmpback)
-        ::longjmp(*_s_jmpback, 1);
+	if (_s_jmpback)
+		::longjmp(*_s_jmpback, 1);
 
-    ::abort();
+	::abort();
 }
 
 bool
 Computer::try_sigill(bool(*pfunc)(void*), void* puserdata)
 {
-    bool result = false;
-    std::jmp_buf jmp;
-    std::jmp_buf* poldjmp = nullptr;
+	bool result = false;
+	std::jmp_buf jmp;
+	std::jmp_buf* poldjmp = nullptr;
 
-    void(*old_signal)(int) = SIG_DFL;
+	void(*old_signal)(int) = SIG_DFL;
 
-    if (0 == setjmp(jmp))
-    {
-        poldjmp = _s_jmpback;
+	if (0 == setjmp(jmp))
+	{
+		poldjmp = _s_jmpback;
 
-        _s_jmpback = &jmp;
+		_s_jmpback = &jmp;
 
-        old_signal = ::signal(SIGILL, catch_sigill);
+		old_signal = ::signal(SIGILL, catch_sigill);
 
-        result = pfunc(puserdata);
-    }
+		result = pfunc(puserdata);
+	}
 
-    _s_jmpback = poldjmp;
+	_s_jmpback = poldjmp;
 
-    ::signal(SIGILL, old_signal);
+	::signal(SIGILL, old_signal);
 
-    return result;
+	return result;
 }
 
 bool
 Computer::try_simd_mmx()
 {
-    /*auto try_mmx_func = [](void*) -> bool
-    {
-        ::_mm_empty();
-        return true;
-    };
+	/*auto try_mmx_func = [](void*) -> bool
+	{
+		::_mm_empty();
+		return true;
+	};
 
-    return this->try_sigill(try_mmx_func, 0) ? true : false;*/
-    return false;
+	return this->try_sigill(try_mmx_func, 0) ? true : false;*/
+	return false;
 }
 
 bool
 Computer::try_simd_sse()
 {
-    auto try_sse_func = [](void*) -> bool
-    {
-        volatile __m128 xmm1 = ::_mm_setzero_ps();
+	auto try_sse_func = [](void*) -> bool
+	{
+		volatile __m128 xmm1 = ::_mm_setzero_ps();
 
-        return 0 == *(int*)&xmm1;
-    };
+		return 0 == *(int*)&xmm1;
+	};
 
-    return this->try_sigill(try_sse_func, 0) ? true : false;
+	return this->try_sigill(try_sse_func, 0) ? true : false;
 }
 
 bool
 Computer::try_mmx()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_MMX);
+	get_cpuid(dwBuf, FLAG_MMX);
 
-    if (dwBuf[EDX] & BIT_MMX)
-    {
-        if (this->try_simd_mmx())
-            _mmx = true;
-    }
+	if (dwBuf[EDX] & BIT_MMX)
+	{
+		if (this->try_simd_mmx())
+			_mmx = true;
+	}
 
-    return false;
+	return false;
 }
 
 bool
 Computer::try_sse()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_SSE);
+	get_cpuid(dwBuf, FLAG_SSE);
 
-    if (dwBuf[EDX] & BIT_SSE)
-        return true;
+	if (dwBuf[EDX] & BIT_SSE)
+		return true;
 
-    return false;
+	return false;
 }
 
 bool
 Computer::try_sse2()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_SSE);
+	get_cpuid(dwBuf, FLAG_SSE);
 
-    if (dwBuf[EDX] & BIT_SSE2)
-        return true;
+	if (dwBuf[EDX] & BIT_SSE2)
+		return true;
 
-    return false;
+	return false;
 }
 
 bool
 Computer::try_sse3()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_SSE);
+	get_cpuid(dwBuf, FLAG_SSE);
 
-    if (dwBuf[EDX] & BIT_SSE3)
-        return true;
+	if (dwBuf[EDX] & BIT_SSE3)
+		return true;
 
-    return false;
+	return false;
 }
 
 bool
 Computer::try_sse3s()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_SSE);
+	get_cpuid(dwBuf, FLAG_SSE);
 
-    if (dwBuf[EDX] & BIT_SSE3S)
-        return true;
+	if (dwBuf[EDX] & BIT_SSE3S)
+		return true;
 
-    return false;
+	return false;
 }
 
 bool
 Computer::try_sse41()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_SSE);
+	get_cpuid(dwBuf, FLAG_SSE);
 
-    if (dwBuf[EDX] & BIT_SSE41)
-        return true;
+	if (dwBuf[EDX] & BIT_SSE41)
+		return true;
 
-    return false;
+	return false;
 }
 
 bool
 Computer::try_sse42()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_SSE);
+	get_cpuid(dwBuf, FLAG_SSE);
 
-    if (dwBuf[EDX] & BIT_SSE42)
-        return true;
+	if (dwBuf[EDX] & BIT_SSE42)
+		return true;
 
-    return false;
+	return false;
 }
 
 bool
 Computer::try_avx()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_AVX);
+	get_cpuid(dwBuf, FLAG_AVX);
 
-    if (dwBuf[ECX] & BIT_XSAVE)
-        return true;
+	if (dwBuf[ECX] & BIT_XSAVE)
+		return true;
 
-    return false;
+	return false;
 }
 
 bool
 Computer::try_avx2()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_AVX2);
+	get_cpuid(dwBuf, FLAG_AVX2);
 
-    if (dwBuf[EBX] & BIT_AVX2)
-        return true;
+	if (dwBuf[EBX] & BIT_AVX2)
+		return true;
 
-    return false;
+	return false;
 }
 
 bool
 Computer::try_xsave()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_XSAVE);
+	get_cpuid(dwBuf, FLAG_XSAVE);
 
-    if (dwBuf[ECX] & BIT_XSAVE)
-        return true;
+	if (dwBuf[ECX] & BIT_XSAVE)
+		return true;
 
-    return false;
+	return false;
 }
 
 bool
 Computer::try_osxsave()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_AVX);
+	get_cpuid(dwBuf, FLAG_AVX);
 
-    if (dwBuf[ECX] & BIT_OSXSAVE)
-        return true;
+	if (dwBuf[ECX] & BIT_OSXSAVE)
+		return true;
 
-    return false;
+	return false;
 }
 
 bool
 Computer::try_ext()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_EXT);
+	get_cpuid(dwBuf, FLAG_EXT);
 
-    if (dwBuf[EAX] & BIT_EXT)
-        return true;
+	if (dwBuf[EAX] & BIT_EXT)
+		return true;
 
-    return false;
+	return false;
 }
 
 bool
 Computer::try_3dnow()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_3DNOW);
+	get_cpuid(dwBuf, FLAG_3DNOW);
 
-    if (dwBuf[EDX] & BIT_3DNOW)
-        return true;
+	if (dwBuf[EDX] & BIT_3DNOW)
+		return true;
 
-    return false;
+	return false;
 }
 
 bool
 Computer::try_xcr0()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_XCRO0);
+	get_cpuid(dwBuf, FLAG_XCRO0);
 
-    if (dwBuf[EDX] & BIT_XCRO)
-        return true;
+	if (dwBuf[EDX] & BIT_XCRO)
+		return true;
 
-    return false;
+	return false;
 }
 
 bool
 Computer::try_xcr0_x87()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_XCRO0);
+	get_cpuid(dwBuf, FLAG_XCRO0);
 
-    if (dwBuf[EDX] & BIT_XCRO_X87)
-        return true;
+	if (dwBuf[EDX] & BIT_XCRO_X87)
+		return true;
 
-    return false;
+	return false;
 }
 
 bool
 Computer::try_xcr0_sse()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_XCRO0);
+	get_cpuid(dwBuf, FLAG_XCRO0);
 
-    if (dwBuf[EDX] & BIT_XCRO_SSE)
-        return true;
+	if (dwBuf[EDX] & BIT_XCRO_SSE)
+		return true;
 
-    return false;
+	return false;
 }
 
 bool
 Computer::try_xcr0_ymm()
 {
-    std::int32_t dwBuf[4] = { 0 };
+	std::int32_t dwBuf[4] = { 0 };
 
-    get_cpuid(dwBuf, FLAG_XCRO0);
+	get_cpuid(dwBuf, FLAG_XCRO0);
 
-    if (dwBuf[EDX] & BIT_XCRO_YMM)
-        return true;
+	if (dwBuf[EDX] & BIT_XCRO_YMM)
+		return true;
 
-    return false;
+	return false;
 }
 
 std::string&
 Computer::getVendorName()
 {
-    if (_vendor_name.empty())
-    {
-        std::int32_t name[4] = { 0 };
+	if (_vendor_name.empty())
+	{
+		std::int32_t name[4] = { 0 };
 
-        get_cpuid(name, FLAG_VENDOR);
+		get_cpuid(name, FLAG_VENDOR);
 
-        std::int32_t vendor[5] =
-        {
-            name[1],
-            name[3],
-            name[2],
-            0
-        };
+		std::int32_t vendor[5] =
+		{
+			name[1],
+			name[3],
+			name[2],
+			0
+		};
 
-        _vendor_name = (char*)vendor;
-    }
+		_vendor_name = (char*)vendor;
+	}
 
-    return _vendor_name;
+	return _vendor_name;
 }
 
 std::string&
 Computer::getBrandName()
 {
-    if (_brand_name.empty())
-    {
-        std::int32_t name[13] = { 0 };
+	if (_brand_name.empty())
+	{
+		std::int32_t name[13] = { 0 };
 
-        get_cpuid(name, FLAG_BRAND);
+		get_cpuid(name, FLAG_BRAND);
 
-        if (name[0] < 0x80000004)
-            return _brand_name;
+		if (name[0] < 0x80000004)
+			return _brand_name;
 
-        get_cpuid(&name[0], 0x80000002);
-        get_cpuid(&name[5], 0x80000002);
-        get_cpuid(&name[9], 0x80000002);
+		get_cpuid(&name[0], 0x80000002);
+		get_cpuid(&name[5], 0x80000002);
+		get_cpuid(&name[9], 0x80000002);
 
-        _brand_name = (char*)name;
-    }
+		_brand_name = (char*)name;
+	}
 
-    return _brand_name;
+	return _brand_name;
 }
 
 bool
 Computer::openOSXSAVE()
 {
-    if (try_xsave() && try_xcr0())
-    {
+	if (try_xsave() && try_xcr0())
+	{
 #ifdef _VISUAL_STUDIO_
-        //        __asm cli
+		//        __asm cli
 
-        //         __asm mov eax, cr4
-        //         __asm or  eax, 18
-        //         __asm mov cr4, eax
+		//         __asm mov eax, cr4
+		//         __asm or  eax, 18
+		//         __asm mov cr4, eax
 #endif
 
-        return true;
-    }
+		return true;
+	}
 
-    return false;
+	return false;
 }
 
 void
 Computer::get_cpuid(std::int32_t info[4], std::int32_t type)
 {
 #ifdef __LINUX__
-    __cpuid(info[0], info[1], info[2], info[3], type);
+	__cpuid(info[0], info[1], info[2], info[3], type);
 #else
 
 #endif

@@ -45,33 +45,42 @@ _NAME_BEGIN
 class EXPORT MaterialMaker final
 {
 public:
-    MaterialMaker() noexcept;
-    MaterialMaker(const std::string& filename) except;
-    ~MaterialMaker() noexcept;
+	MaterialMaker() noexcept;
+	MaterialMaker(const std::string& filename) except;
+	~MaterialMaker() noexcept;
 
-    MaterialPtr load(const std::string& filename) except;
-    MaterialPtr load(iarchive& reader) except;
+	MaterialPtr load(const std::string& filename) except;
+	MaterialPtr load(iarchive& reader) except;
 
-    operator MaterialPtr() noexcept;
-
-private:
-
-    RenderStatePtr instanceState(iarchive& reader) except;
-    MaterialPassPtr instancePass(iarchive& reader) except;
-    MaterialTechPtr instanceTech(iarchive& reader) except;
-    MaterialParamPtr instanceParameter(iarchive& reader) except;
-    MaterialParamPtr instanceBuffer(iarchive& reader) except;
-    ShaderPtr instanceShader(iarchive& reader) except;
-
-private:
-    MaterialMaker(const MaterialMaker&) noexcept = delete;
-    MaterialMaker& operator=(const MaterialMaker&) noexcept = delete;
+	operator MaterialPtr() noexcept;
 
 private:
 
-    MaterialPtr _material;
+	RenderStatePtr instanceState(iarchive& reader) except;
+	MaterialPassPtr instancePass(iarchive& reader) except;
+	MaterialTechPtr instanceTech(iarchive& reader) except;
+	MaterialParamPtr instanceParameter(iarchive& reader) except;
+	MaterialParamPtr instanceBuffer(iarchive& reader) except;
+	ShaderPtr instanceShader(iarchive& reader) except;
 
-    std::map<std::string, std::string> _shaderCodes;
+	static VertexType stringToPrimitive(const std::string& primitive) noexcept;
+	static CullMode stringToCullMode(const std::string& cullmode) noexcept;
+	static FillMode stringToFillMode(const std::string& fillmode) noexcept;
+	static BlendOperation stringToBlendOperation(const std::string& blendop) noexcept;
+	static BlendFactor stringToBlendFactor(const std::string& factor) noexcept;
+	static ColorMask stringToColorMask(const std::string& mask) noexcept;
+	static CompareFunction stringToCompareFunc(const std::string& func) noexcept;
+	static StencilOperation stringToStencilOp(const std::string& stencilop) noexcept;
+
+private:
+	MaterialMaker(const MaterialMaker&) noexcept = delete;
+	MaterialMaker& operator=(const MaterialMaker&) noexcept = delete;
+
+private:
+
+	MaterialPtr _material;
+
+	std::map<std::string, std::string> _shaderCodes;
 };
 
 _NAME_END

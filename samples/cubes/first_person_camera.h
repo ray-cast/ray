@@ -39,12 +39,12 @@
 
 #include <ray/game_controller.h>
 
-class FirstPersonCamera : public ray::GameController
+class FirstPersonCameraComponent : public ray::GameController
 {
-	__DeclareSubClass(FirstPersonCamera, ray::GameController)
+	__DeclareSubClass(FirstPersonCameraComponent, ray::GameController)
 public:
-	FirstPersonCamera() noexcept;
-	~FirstPersonCamera() noexcept;
+	FirstPersonCameraComponent() noexcept;
+	~FirstPersonCameraComponent() noexcept;
 
 private:
 

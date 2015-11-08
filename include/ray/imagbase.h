@@ -78,6 +78,15 @@ public:
 #if _BUILD_TGA_HANDLER
     static const _ImageType tga = (_ImageType)TGA_HANDLER;
 #endif
+#if _BUILD_DDS_HANDLER
+	static const _ImageType dds1 = (_ImageType)DDS1_HANDLER;
+	static const _ImageType dds3 = (_ImageType)DDS3_HANDLER;
+	static const _ImageType dds5 = (_ImageType)DDS5_HANDLER;
+	static const _ImageType bc4u = (_ImageType)BC4U_HANDLER;
+	static const _ImageType bc4s = (_ImageType)BC4S_HANDLER;
+	static const _ImageType bc5s = (_ImageType)BC5S_HANDLER;
+	static const _ImageType ati2 = (_ImageType)ATI2_HANDLER;
+#endif
 #if _BUILD_TIFF_HANDLER
     static const _ImageType tiff = (_ImageType)TIFF_HANDLER;
 #endif

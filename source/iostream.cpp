@@ -155,7 +155,7 @@ iostream::open(const std::wstring& filename) noexcept
 }
 
 iostream&
-iostream::read(char_type* str, std::streamsize cnt) noexcept
+iostream::read(char* str, std::streamsize cnt) noexcept
 {
     assert(cnt != 0);
 
@@ -184,13 +184,13 @@ iostream::read(char_type* str, std::streamsize cnt) noexcept
 }
 
 iostream&
-iostream::read(char_type* str, streamsize size, streamsize cnt) noexcept
+iostream::read(char* str, streamsize size, streamsize cnt) noexcept
 {
     return this->read(str, size * cnt);
 }
 
 iostream&
-iostream::write(const char_type* str, std::streamsize cnt) noexcept
+iostream::write(const char* str, std::streamsize cnt) noexcept
 {
     assert(cnt != 0);
 
@@ -217,7 +217,7 @@ iostream::write(const char_type* str, std::streamsize cnt) noexcept
 }
 
 iostream&
-iostream::write(const char_type* str, streamsize size, streamsize cnt) noexcept
+iostream::write(const char* str, streamsize size, streamsize cnt) noexcept
 {
     return this->write(str, size * cnt);
 }

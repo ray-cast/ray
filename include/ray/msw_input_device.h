@@ -44,33 +44,33 @@ _NAME_BEGIN
 class EXPORT MSWInputDevice : public InputDevice
 {
 public:
-    MSWInputDevice() noexcept;
+	MSWInputDevice() noexcept;
 
-    virtual void capture(CaptureObject window) noexcept;
+	virtual void capture(CaptureObject window) noexcept;
 
-    virtual void peekEvents(InputEvent& event) noexcept;
-    virtual bool pollEvents(InputEvent& event) noexcept;
-    virtual bool waitEvents(InputEvent& event) noexcept;
-    virtual bool waitEvents(InputEvent& event, int timeout) noexcept;
-    virtual void flushEvent() noexcept;
-
-private:
-    virtual void update() noexcept;
+	virtual void peekEvents(InputEvent& event) noexcept;
+	virtual bool pollEvents(InputEvent& event) noexcept;
+	virtual bool waitEvents(InputEvent& event) noexcept;
+	virtual bool waitEvents(InputEvent& event, int timeout) noexcept;
+	virtual void flushEvent() noexcept;
 
 private:
-    MSWInputDevice(const MSWInputDevice&) noexcept = delete;
-    MSWInputDevice& operator=(const MSWInputDevice&) noexcept = delete;
+	virtual void update() noexcept;
+
+private:
+	MSWInputDevice(const MSWInputDevice&) noexcept = delete;
+	MSWInputDevice& operator=(const MSWInputDevice&) noexcept = delete;
 
 private:
 
-    HWND _window;
+	HWND _window;
 
-    bool _isButtonPress;
+	bool _isButtonPress;
 
-    int _button;
+	int _button;
 
-    int _mouseX;
-    int _mouseY;
+	int _mouseX;
+	int _mouseY;
 };
 
 _NAME_END

@@ -35,57 +35,31 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/ogl_renderer.h>
+#include <ray/ogl_state.h>
 #include <ray/ogl_shader.h>
 #include <ray/ogl_texture.h>
 #include <ray/ogl_buffer.h>
+#include <ray/ogl_commandlist.h>
 
 _NAME_BEGIN
 
 OGLRenderer::OGLRenderer() noexcept
-	: _constantBuffers(512)
+	: _initOpenGL(false)
+	, _constantBuffers(512)
 	, _maxTextureUnits(32)
 	, _maxViewports(4)
+	, _clearColor(0.0, 0.0, 0.0)
+	, _clearDepth(0.0)
+	, _clearStencil(0xFFFFFFFF)
 	, _state(GL_NONE)
-	, _renderTarget(GL_NONE)
+	, _renderTexture(GL_NONE)
 	, _defaultVAO(GL_NONE)
+	, _enableWireframe(false)
 {
-	_blendState.blendEnable = false;
-	_blendState.blendSeparateEnable = false;
-	_blendState.blendOp = GPU_ADD;
-	_blendState.blendSrc = GPU_ZERO;
-	_blendState.blendDest = GPU_ZERO;
-	_blendState.blendAlphaOp = GPU_ADD;
-	_blendState.blendAlphaSrc = GPU_ZERO;
-	_blendState.blendAlphaDest = GPU_ZERO;
-	_blendState.colorWriteMask = GPU_COLORMASK_RGBA;
-
-	_depthState.depthEnable = false;
-	_depthState.depthWriteMask = true;
-	_depthState.depthFunc = GPU_ALWAYS;
-	_depthState.depthBias = 0;
-	_depthState.depthBiasEnable = false;
-	_depthState.depthSlopScaleBias = 0;
-
-	_rasterState.cullMode = GPU_CULL_NONE;
-	_rasterState.fillMode = GPU_SOLID_MODE;
-	_rasterState.multisampleEnable = false;
-	_rasterState.scissorTestEnable = false;
-	_rasterState.pointSizeEnable = false;
-
-	_stencilState.stencilEnable = false;
-	_stencilState.stencilFunc = GPU_ALWAYS;
-	_stencilState.stencilFail = STENCILOP_ZERO;
-	_stencilState.stencilZFail = STENCILOP_ZERO;
-	_stencilState.stencilPass = STENCILOP_ZERO;
-	_stencilState.stencilTwoEnable = false;
-
-	_clearState.clearFlags = ClearFlags::CLEAR_NONE;
-	_clearState.clearColor = Vector4(0, 0, 0, 0);
-	_clearState.clearDepth = 0.0;
-	_clearState.clearStencil = 0.0;
-
 	_textureUnits.resize(_maxTextureUnits);
 	_viewport.resize(_maxViewports);
+
+	_stateCaptured = std::make_shared<OGLRenderState>();
 }
 
 OGLRenderer::~OGLRenderer() noexcept
@@ -96,13 +70,18 @@ OGLRenderer::~OGLRenderer() noexcept
 bool
 OGLRenderer::open(RenderWindowPtr window) except
 {
-	this->setRenderWindow(window);
+	if (!_initOpenGL)
+	{
+		this->setRenderWindow(window);
 
-	initDebugControl();
-	initCommandList();
-	initStateSystem();
+		this->initDebugControl();
+		this->initStateSystem();
+		this->initCommandList();
 
-	return true;
+		_initOpenGL = true;
+	}
+
+	return _initOpenGL;
 }
 
 void
@@ -120,16 +99,22 @@ OGLRenderer::close() noexcept
 		_shaderObject = nullptr;
 	}
 
-	if (_renderTarget)
+	if (_renderTexture)
 	{
-		_renderTarget.reset();
-		_renderTarget = nullptr;
+		_renderTexture.reset();
+		_renderTexture = nullptr;
 	}
 
-	if (_multiRenderTarget)
+	if (_multiRenderTexture)
 	{
-		_multiRenderTarget.reset();
-		_multiRenderTarget = nullptr;
+		_multiRenderTexture.reset();
+		_multiRenderTexture = nullptr;
+	}
+
+	if (_state)
+	{
+		_state.reset();
+		_state = nullptr;
 	}
 
 	if (_defaultVAO != GL_NONE)
@@ -154,59 +139,7 @@ void
 OGLRenderer::renderEnd() noexcept
 {
 	assert(_glcontext);
-
-	glDepthMask(GL_TRUE);
 	_glcontext->present();
-}
-
-void
-OGLRenderer::clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) noexcept
-{
-	GLbitfield mode = 0;
-
-	if (flags & ClearFlags::CLEAR_COLOR)
-	{
-		mode |= GL_COLOR_BUFFER_BIT;
-	}
-
-	if (flags & ClearFlags::CLEAR_DEPTH)
-	{
-		mode |= GL_DEPTH_BUFFER_BIT;
-	}
-
-	if (flags & ClearFlags::CLEAR_STENCIL)
-	{
-		mode |= GL_STENCIL_BUFFER_BIT;
-	}
-
-	if (0 != mode)
-	{
-		glClearColor(color.r, color.g, color.b, color.a);
-		glClearDepthf(depth);
-		glClearStencil(stencil);
-		glClear(mode);
-	}
-}
-
-void
-OGLRenderer::clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
-{
-	if (flags & ClearFlags::CLEAR_DEPTH)
-	{
-		GLfloat f = depth;
-		glClearBufferfv(GL_DEPTH, 0, &f);
-	}
-
-	if (flags & ClearFlags::CLEAR_STENCIL)
-	{
-		GLint s = stencil;
-		glClearBufferiv(GL_STENCIL, 0, &s);
-	}
-
-	if (flags & ClearFlags::CLEAR_COLOR)
-	{
-		glClearBufferfv(GL_COLOR, i, color.ptr());
-	}
 }
 
 void
@@ -214,15 +147,25 @@ OGLRenderer::setViewport(const Viewport& view, std::size_t i) noexcept
 {
 	if (_viewport[i] != view)
 	{
-		if (OGLExtenstion::isSupport(ARB_viewport_array))
-		{
-			glViewportIndexedf(i, view.left, view.top, view.width, view.height);
-		}
-		else
-		{
-			glViewport(view.left, view.top, view.width, view.height);
-		}
+#if _USE_RENDER_COMMAND
+		ViewportCommandNV command;
+		command.header = s_nvcmdlist_header[GL_VIEWPORT_COMMAND_NV];
+		command.x = view.left;
+		command.y = view.top;
+		command.width = view.width;
+		command.height = view.height;
 
+		_renderCommands.write(&command, sizeof(command));
+#else
+#	if !defined(EGLAPI)
+		if (OGLFeatures::ARB_viewport_array)
+			glViewportIndexedf(i, view.left, view.top, view.width, view.height);
+		else
+			glViewport(view.left, view.top, view.width, view.height);
+#	else
+		glViewport(view.left, view.top, view.width, view.height);
+#	endif
+#endif
 		_viewport[i] = view;
 	}
 }
@@ -234,12 +177,31 @@ OGLRenderer::getViewport(std::size_t i) const noexcept
 }
 
 void
-OGLRenderer::setRenderWindow(RenderWindowPtr window) noexcept
+OGLRenderer::setWireframeMode(bool enable) noexcept
 {
-	if (_glcontext != window)
+	_enableWireframe = enable;
+}
+
+bool 
+OGLRenderer::getWireframeMode() const noexcept
+{
+	return _enableWireframe;
+}
+
+void
+OGLRenderer::setRenderWindow(RenderWindowPtr glcontext) except
+{
+	assert(glcontext);
+
+	if (_glcontext != glcontext)
 	{
-		window->bind();
-		_glcontext = window;
+		if (_glcontext)
+			_glcontext->setActive(false);
+
+		_glcontext = glcontext;
+
+		if (_glcontext)
+			_glcontext->setActive(true);
 	}
 }
 
@@ -250,7 +212,7 @@ OGLRenderer::getRenderWindow() const noexcept
 }
 
 void
-OGLRenderer::setSwapInterval(SwapInterval interval) noexcept
+OGLRenderer::setSwapInterval(SwapInterval interval) except
 {
 	assert(_glcontext);
 	_glcontext->setSwapInterval(interval);
@@ -266,361 +228,43 @@ OGLRenderer::getSwapInterval() const noexcept
 void
 OGLRenderer::setRenderState(RenderStatePtr state) noexcept
 {
-	auto instance = state->getInstanceID();
-	if (_state != instance)
-	{
-		auto& blendState = state->getBlendState();
-		auto& rasterState = state->getRasterState();
-		auto& depthState = state->getDepthState();
-		auto& stencilState = state->getStencilState();
-		auto& clearState = state->getClearState();
+	assert(state);
 
-		if (blendState.blendEnable)
-		{
-			if (!_blendState.blendEnable)
-			{
-				glEnable(GL_BLEND);
-				_blendState.blendEnable = true;
-			}
+	state->apply(*_stateCaptured);
 
-			if (blendState.blendSeparateEnable)
-			{
-				if (_blendState.blendSrc != blendState.blendSrc ||
-					_blendState.blendDest != blendState.blendDest ||
-					_blendState.blendAlphaSrc != blendState.blendAlphaSrc ||
-					_blendState.blendAlphaDest != blendState.blendAlphaDest)
-				{
-					GLenum sfactorRGB = OGLTypes::asBlendFactor(blendState.blendSrc);
-					GLenum dfactorRGB = OGLTypes::asBlendFactor(blendState.blendDest);
-					GLenum sfactorAlpha = OGLTypes::asBlendFactor(blendState.blendAlphaSrc);
-					GLenum dfactorAlpha = OGLTypes::asBlendFactor(blendState.blendAlphaDest);
+	_stateCaptured->setBlendState(state->getBlendState());
+	_stateCaptured->setDepthState(state->getDepthState());
+	_stateCaptured->setRasterState(state->getRasterState());
+	_stateCaptured->setStencilState(state->getStencilState());
 
-					glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
-
-					_blendState.blendSrc = blendState.blendSrc;
-					_blendState.blendDest = blendState.blendDest;
-					_blendState.blendAlphaSrc = blendState.blendAlphaSrc;
-					_blendState.blendAlphaDest = blendState.blendAlphaDest;
-				}
-
-				if (_blendState.blendOp != blendState.blendOp ||
-					_blendState.blendAlphaOp != blendState.blendAlphaOp)
-				{
-					GLenum modeRGB = OGLTypes::asBlendOperation(blendState.blendOp);
-					GLenum modeAlpha = OGLTypes::asBlendOperation(blendState.blendAlphaOp);
-
-					glBlendEquationSeparate(modeRGB, modeAlpha);
-
-					_blendState.blendOp = blendState.blendOp;
-					_blendState.blendAlphaOp = blendState.blendAlphaOp;
-				}
-			}
-			else
-			{
-				if (_blendState.blendSrc != blendState.blendSrc ||
-					_blendState.blendDest != blendState.blendDest)
-				{
-					GLenum sfactorRGB = OGLTypes::asBlendFactor(blendState.blendSrc);
-					GLenum dfactorRGB = OGLTypes::asBlendFactor(blendState.blendDest);
-
-					glBlendFunc(sfactorRGB, dfactorRGB);
-
-					_blendState.blendSrc = blendState.blendSrc;
-					_blendState.blendDest = blendState.blendDest;
-				}
-
-				if (_blendState.blendOp != blendState.blendOp)
-				{
-					GLenum modeRGB = OGLTypes::asBlendOperation(blendState.blendOp);
-					glBlendEquation(modeRGB);
-
-					_blendState.blendOp = blendState.blendOp;
-				}
-			}
-		}
-		else
-		{
-			if (_blendState.blendEnable)
-			{
-				glDisable(GL_BLEND);
-				_blendState.blendEnable = false;
-			}
-		}
-
-		if (_rasterState.cullMode != rasterState.cullMode)
-		{
-			if (rasterState.cullMode != GPU_CULL_NONE)
-			{
-				GLenum mode = OGLTypes::asCullMode(rasterState.cullMode);
-				glEnable(GL_CULL_FACE);
-				glCullFace(mode);
-			}
-			else
-			{
-				glDisable(GL_CULL_FACE);
-			}
-
-			_rasterState.cullMode = rasterState.cullMode;
-		}
-
-#if !defined(EGLAPI)
-		if (_rasterState.fillMode != rasterState.fillMode)
-		{
-			GLenum mode = OGLTypes::asFillMode(rasterState.fillMode);
-			glPolygonMode(GL_FRONT_AND_BACK, mode);
-			_rasterState.fillMode = rasterState.fillMode;
-		}
-#endif
-
-		if (_rasterState.scissorTestEnable != rasterState.scissorTestEnable)
-		{
-			if (rasterState.scissorTestEnable)
-				glEnable(GL_SCISSOR_TEST);
-			else
-				glDisable(GL_SCISSOR_TEST);
-
-			_rasterState.scissorTestEnable = rasterState.scissorTestEnable;
-		}
-
-		if (_rasterState.pointSizeEnable != rasterState.pointSizeEnable)
-		{
-			if (rasterState.pointSizeEnable)
-				glEnable(GL_PROGRAM_POINT_SIZE);
-			else
-				glDisable(GL_PROGRAM_POINT_SIZE);
-
-			_rasterState.pointSizeEnable = rasterState.pointSizeEnable;
-		}
-
-		if (depthState.depthEnable)
-		{
-			if (!_depthState.depthEnable)
-			{
-				glEnable(GL_DEPTH_TEST);
-				_depthState.depthEnable = true;
-			}
-
-			if (_depthState.depthFunc != depthState.depthFunc)
-			{
-				GLenum func = OGLTypes::asCompareFunction(depthState.depthFunc);
-				glDepthFunc(func);
-				_depthState.depthFunc = depthState.depthFunc;
-			}
-		}
-		else
-		{
-			if (_depthState.depthEnable)
-			{
-				glDisable(GL_DEPTH_TEST);
-				_depthState.depthEnable = false;
-			}
-		}
-
-		if (_depthState.depthWriteMask != depthState.depthWriteMask)
-		{
-			GLboolean enable = depthState.depthWriteMask ? GL_TRUE : GL_FALSE;
-			glDepthMask(enable);
-			_depthState.depthWriteMask = depthState.depthWriteMask;
-		}
-
-		if (depthState.depthBiasEnable)
-		{
-			if (!_depthState.depthBiasEnable)
-			{
-				glEnable(GL_POLYGON_OFFSET_FILL);
-				_depthState.depthBiasEnable = true;
-			}
-
-			if (_depthState.depthBias != depthState.depthBias ||
-				_depthState.depthSlopScaleBias != depthState.depthSlopScaleBias)
-			{
-				glPolygonOffset(depthState.depthSlopScaleBias, depthState.depthBias);
-				_depthState.depthBias = depthState.depthBias;
-				_depthState.depthSlopScaleBias = depthState.depthSlopScaleBias;
-			}
-		}
-		else
-		{
-			if (_depthState.depthBiasEnable)
-			{
-				glDisable(GL_POLYGON_OFFSET_FILL);
-				_depthState.depthBiasEnable = false;
-			}
-		}
-
-		if (stencilState.stencilEnable)
-		{
-			if (!_stencilState.stencilEnable)
-			{
-				glEnable(GL_STENCIL_TEST);
-				_stencilState.stencilEnable = true;
-			}
-
-			if (stencilState.stencilTwoEnable)
-			{
-				_stencilState.stencilTwoEnable = true;
-
-				if (_stencilState.stencilFunc != stencilState.stencilFunc ||
-					_stencilState.stencilRef != stencilState.stencilRef ||
-					_stencilState.stencilReadMask != stencilState.stencilReadMask)
-				{
-					GLenum frontfunc = OGLTypes::asCompareFunction(stencilState.stencilFunc);
-					glStencilFuncSeparate(GL_FRONT, frontfunc, stencilState.stencilRef, stencilState.stencilReadMask);
-
-					GLenum backfunc = OGLTypes::asCompareFunction(stencilState.stencilTwoFunc);
-					glStencilFuncSeparate(GL_BACK, backfunc, stencilState.stencilRef, stencilState.stencilTwoReadMask);
-
-					_stencilState.stencilRef = stencilState.stencilRef;
-					_stencilState.stencilReadMask = stencilState.stencilReadMask;
-					_stencilState.stencilTwoFunc = stencilState.stencilTwoFunc;
-				}
-
-				if (_stencilState.stencilFail != _stencilState.stencilFail ||
-					_stencilState.stencilZFail != _stencilState.stencilZFail ||
-					_stencilState.stencilPass != _stencilState.stencilPass)
-				{
-					GLenum frontfail = OGLTypes::asStencilOperation(_stencilState.stencilFail);
-					GLenum frontzfail = OGLTypes::asStencilOperation(_stencilState.stencilZFail);
-					GLenum frontpass = OGLTypes::asStencilOperation(_stencilState.stencilPass);
-					glStencilOpSeparate(GL_FRONT, frontfail, frontzfail, frontpass);
-
-					GLenum backfail = OGLTypes::asStencilOperation(_stencilState.stencilTwoFail);
-					GLenum backzfail = OGLTypes::asStencilOperation(_stencilState.stencilTwoZFail);
-					GLenum backpass = OGLTypes::asStencilOperation(_stencilState.stencilTwoPass);
-					glStencilOpSeparate(GL_BACK, backfail, backzfail, backpass);
-
-					_stencilState.stencilFail = stencilState.stencilFail;
-					_stencilState.stencilZFail = stencilState.stencilZFail;
-					_stencilState.stencilPass = stencilState.stencilPass;
-					_stencilState.stencilTwoFail = stencilState.stencilTwoFail;
-					_stencilState.stencilTwoZFail = stencilState.stencilTwoZFail;
-					_stencilState.stencilTwoPass = stencilState.stencilTwoPass;
-				}
-			}
-			else
-			{
-				if (_stencilState.stencilFunc != stencilState.stencilFunc ||
-					_stencilState.stencilRef != stencilState.stencilRef ||
-					_stencilState.stencilReadMask != stencilState.stencilReadMask)
-				{
-					GLenum func = OGLTypes::asCompareFunction(stencilState.stencilFunc);
-					glStencilFunc(func, stencilState.stencilRef, stencilState.stencilReadMask);
-
-					_stencilState.stencilFunc = stencilState.stencilFunc;
-					_stencilState.stencilRef = stencilState.stencilRef;
-					_stencilState.stencilReadMask = stencilState.stencilReadMask;
-				}
-
-				if (_stencilState.stencilFail != stencilState.stencilFail ||
-					_stencilState.stencilZFail != stencilState.stencilZFail ||
-					_stencilState.stencilPass != stencilState.stencilPass)
-				{
-					GLenum fail = OGLTypes::asStencilOperation(stencilState.stencilFail);
-					GLenum zfail = OGLTypes::asStencilOperation(stencilState.stencilZFail);
-					GLenum pass = OGLTypes::asStencilOperation(stencilState.stencilPass);
-					glStencilOp(fail, zfail, pass);
-
-					_stencilState.stencilFail = stencilState.stencilFail;
-					_stencilState.stencilZFail = stencilState.stencilZFail;
-					_stencilState.stencilPass = stencilState.stencilPass;
-				}
-			}
-		}
-		else
-		{
-			if (_stencilState.stencilEnable)
-			{
-				glDisable(GL_STENCIL_TEST);
-				_stencilState.stencilEnable = false;
-			}
-		}
-
-		_state = instance;
-	}
+	_state = state;
 }
 
 RenderStatePtr
 OGLRenderer::getRenderState() const noexcept
 {
-	return RenderState::getInstance(_state);
+	return _state;
 }
 
 void
 OGLRenderer::setRenderBuffer(RenderBufferPtr buffer) noexcept
 {
+	assert(buffer);
+
 	if (_renderBuffer != buffer)
 	{
-		auto vb = std::dynamic_pointer_cast<OGLVertexBuffer>(buffer->getVertexBuffer());
-		auto ib = std::dynamic_pointer_cast<OGLIndexBuffer>(buffer->getIndexBuffer());
-
-		if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
-		{
-			if (vb)
-			{
-				auto bindlessVbo = vb->getInstanceAddr();
-				auto vertexSize = vb->getVertexDataSize();
-
-				GLuint64 offset = 0;
-
-				for (auto& it : vb->getVertexComponents())
-				{
-					glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV, it.getVertexAttrib(), bindlessVbo + offset, vertexSize - offset);
-
-					offset += it.getVertexSize();
-				}
-			}
-
-			if (ib)
-			{
-				auto bindlessIbo = ib->getInstanceAddr();
-				auto indexDataSize = ib->getIndexDataSize();
-
-				glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, bindlessIbo, indexDataSize);
-			}
-		}
-		else if (OGLExtenstion::isSupport(ARB_vertex_attrib_binding))
-		{
-			if (vb)
-			{
-				auto vbo = vb->getInstanceID();
-
-				GLuint offset = 0;
-
-				for (auto& it : vb->getVertexComponents())
-				{
-					glBindVertexBuffer(it.getVertexAttrib(), vbo, offset, vb->getVertexSize());
-
-					offset += it.getVertexSize();
-				}
-			}
-
-			if (ib)
-			{
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->getInstanceID());
-			}
-		}
-		else
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, vb->getInstanceID());
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->getInstanceID());
-
-			for (auto& it : vb->getVertexComponents())
-			{
-				glVertexAttribPointer(it.getVertexAttrib(), it.getVertexCount(), OGLTypes::asOGLVertexFormat(it.getVertexFormat()), GL_FALSE, vb->getVertexSize(), (void*)it.getVertexSize());
-			}
-		}
-
 		_renderBuffer = buffer;
+		_renderBuffer->apply();
 	}
 }
 
 void
 OGLRenderer::updateRenderBuffer(RenderBufferPtr renderBuffer) noexcept
 {
-	auto buffer = renderBuffer;
+	/*assert(renderBuffer);
 
-	auto vb = std::dynamic_pointer_cast<OGLVertexBuffer>(buffer->getVertexBuffer());
-	auto ib = std::dynamic_pointer_cast<OGLIndexBuffer>(buffer->getIndexBuffer());
+	auto vb = renderBuffer->getVertexBuffer();
+	auto ib = renderBuffer->getIndexBuffer();
 
 	if (vb)
 	{
@@ -640,35 +284,50 @@ OGLRenderer::updateRenderBuffer(RenderBufferPtr renderBuffer) noexcept
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->getInstanceID());
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, ib->getIndexDataSize(), ib->data(), indexUsage);
-	}
+	}*/
 }
 
 void
-OGLRenderer::drawRenderBuffer(const Renderable& renderable) noexcept
+OGLRenderer::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 {
-	assert(_renderBuffer);
+	assert(_renderBuffer && _stateCaptured);
+	assert(_renderBuffer->getNumVertices() >= renderable.startVertice + renderable.numVertices);
+	assert(_renderBuffer->getNumIndices() >= renderable.startIndice + renderable.numIndices);
 
-	auto buffer = _renderBuffer;
+	auto primitiveType = _stateCaptured->getRasterState().primitiveType;
 
-	assert(buffer->getNumVertices() >= renderable.startVertice + renderable.numVertices);
-
-	GLenum drawType = OGLTypes::asOGLVertexType(renderable.type);
-
-	auto ib = buffer->getIndexBuffer();
+	if (_enableWireframe)
+	{
+		if (primitiveType == GPU_POINT_OR_LINE ||
+			primitiveType == GPU_TRIANGLE_OR_LINE ||
+			primitiveType == GPU_FAN_OR_LINE)
+		{
+			primitiveType = GPU_LINE;
+		}
+	}
+	
+	GLenum drawType = OGLTypes::asOGLVertexType(primitiveType);
+	auto ib = _renderBuffer->getIndexBuffer();
 	if (ib)
 	{
-		assert(ib->getIndexCount() >= renderable.startIndice + renderable.numIndices);
-
 		GLenum indexType = OGLTypes::asOGLIndexType(ib->getIndexType());
 
 #if !defined(EGLAPI)
 		if (renderable.numInstances > 0)
-			glDrawElementsInstancedBaseVertex(drawType, renderable.numIndices, indexType, (char*)nullptr + renderable.startIndice, renderable.numInstances, renderable.startVertice);
+		{
+			auto offsetIndices = _renderBuffer->getIndexBuffer()->getIndexSize() * renderable.startIndice;
+			glDrawElementsInstancedBaseVertex(drawType, renderable.numIndices, indexType, (char*)nullptr + offsetIndices, renderable.numInstances, renderable.startVertice);
+		}
 		else
-			glDrawElementsBaseVertex(drawType, renderable.numIndices, indexType, (char*)(nullptr) + renderable.startIndice, renderable.startVertice);
+		{
+			auto offsetIndices = _renderBuffer->getIndexBuffer()->getIndexSize() * renderable.startIndice;
+			glDrawElementsBaseVertex(drawType, renderable.numIndices, indexType, (char*)nullptr + offsetIndices, renderable.startVertice);
+		}
 #else
-		assert(renderable.startVertice == 0);
-		glDrawElements(drawType, numIndice, indexType, (char*)(nullptr) + (startIndice * numIndice));
+		if (renderable.numInstances > 0)
+			glDrawElements(drawType, renderable.numIndices, indexType, (char*)nullptr + renderable.startIndice);
+		else
+			glDrawElementsInstanced(drawType, renderable.numIndices, indexType, (char*)(nullptr) + renderable.startIndice, renderable.numInstances);
 #endif
 	}
 	else
@@ -680,6 +339,61 @@ OGLRenderer::drawRenderBuffer(const Renderable& renderable) noexcept
 	}
 }
 
+void 
+OGLRenderer::drawRenderBuffer(const RenderIndirects& renderable) noexcept
+{
+	assert(_renderBuffer && _stateCaptured);
+
+	auto primitiveType = _stateCaptured->getRasterState().primitiveType;
+	if (_enableWireframe)
+	{
+		if (primitiveType == GPU_POINT_OR_LINE ||
+			primitiveType == GPU_TRIANGLE_OR_LINE ||
+			primitiveType == GPU_FAN_OR_LINE)
+		{
+			primitiveType = GPU_LINE;
+		}
+	}
+
+	GLenum drawType = OGLTypes::asOGLVertexType(primitiveType);
+	auto ib = _renderBuffer->getIndexBuffer();
+	if (ib)
+	{
+		GLenum indexType = OGLTypes::asOGLIndexType(ib->getIndexType());
+
+		std::vector<DrawElementsCommandNV> commands;
+
+		for (auto& it : renderable)
+		{
+			DrawElementsCommandNV command;
+			command.header = GL_DRAW_ELEMENTS_COMMAND_NV;
+			command.baseVertex = it->startVertice;
+			command.firstIndex = it->startIndice;
+			command.count = it->numIndices;
+
+			commands.push_back(command);
+		}
+
+		glMultiDrawElementsIndirect(drawType, indexType, commands.data(), commands.size(), 0);
+	}
+	else
+	{
+		std::vector<DrawArraysCommandNV> commands;
+
+		for (auto& it : renderable)
+		{
+			DrawArraysCommandNV command;
+			command.header = GL_DRAW_ARRAYS_COMMAND_NV;
+			command.count = it->numVertices;
+			command.first = it->startVertice;
+
+			commands.push_back(command);
+		}
+
+		glMultiDrawArraysIndirect(drawType, commands.data(), commands.size(), 0);
+	}
+}
+
 RenderBufferPtr
 OGLRenderer::getRenderBuffer() const noexcept
 {
@@ -687,57 +401,95 @@ OGLRenderer::getRenderBuffer() const noexcept
 }
 
 void
-OGLRenderer::setRenderTarget(RenderTargetPtr target) noexcept
+OGLRenderer::setRenderTexture(RenderTexturePtr target) noexcept
 {
-	assert(target);
-
-	auto framebuffer = std::dynamic_pointer_cast<OGLRenderTarget>(target)->getInstanceID();
-	if (_framebuffer != framebuffer)
+	if (_renderTexture != target)
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-
-		auto format = target->getTexFormat();
-		if (format == PixelFormat::SR8G8B8 ||
-			format == PixelFormat::SR8G8B8A8 ||
-			format == PixelFormat::SRGB ||
-			format == PixelFormat::SRGBA)
+		if (target)
 		{
-			if (!_rasterState.srgbEnable)
-			{
-				glEnable(GL_FRAMEBUFFER_SRGB);
-				_rasterState.srgbEnable = true;
-			}
+			auto framebuffer = std::dynamic_pointer_cast<OGLRenderTexture>(target)->getInstanceID();
+
+			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+			this->setViewport(Viewport(0, 0, target->getWidth(), target->getHeight()));
 		}
 		else
 		{
-			if (_rasterState.srgbEnable)
-			{
-				glDisable(GL_FRAMEBUFFER_SRGB);
-				_rasterState.srgbEnable = false;
-			}
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
 
-		this->clear(target->getClearFlags(), target->getClearColor(), target->getClearDepth(), target->getClearStencil());
-
-		this->setViewport(Viewport(0, 0, target->getWidth(), target->getHeight()));
-
-		_framebuffer = framebuffer;
-		_renderTarget = target;
-		_multiRenderTarget = nullptr;
+		_renderTexture = target;
+		_multiRenderTexture = nullptr;
 	}
 }
 
 void
-OGLRenderer::copyRenderTarget(RenderTargetPtr src, const Viewport& v1, RenderTargetPtr dest, const Viewport& v2) noexcept
+OGLRenderer::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
+{
+	assert(target);
+
+	auto framebuffer = std::dynamic_pointer_cast<OGLMultiRenderTexture>(target)->getInstanceID();
+	if (_multiRenderTexture != target)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+		auto& targets = target->getRenderTextures();
+		for (std::size_t index = 0; index < targets.size(); index++)
+		{
+			auto target = targets[index];
+			this->setViewport(Viewport(0, 0, target->getWidth(), target->getHeight()), index);
+		}
+
+		_renderTexture = nullptr;
+		_multiRenderTexture = target;
+	}
+}
+
+void
+OGLRenderer::setRenderTextureLayer(RenderTexturePtr renderTexture, std::int32_t layer) noexcept
+{
+	assert(renderTexture);
+
+	if (renderTexture->getTexDim() == TextureDim::DIM_2D_ARRAY ||
+		renderTexture->getTexDim() == TextureDim::DIM_CUBE)
+	{
+		auto texture = std::dynamic_pointer_cast<OGLTexture>(renderTexture->getResolveTexture());
+		auto textureID = texture->getInstanceID();
+
+		GLenum attachment = GL_COLOR_ATTACHMENT0;
+
+		if (_multiRenderTexture)
+		{
+			for (auto& it : _multiRenderTexture->getRenderTextures())
+			{
+				if (it == renderTexture)
+					break;
+				attachment++;
+			}
+		}
+		else if (_renderTexture != renderTexture)
+		{
+			this->setRenderTexture(renderTexture);
+		}
+
+		if (renderTexture->getTexDim() == TextureDim::DIM_2D_ARRAY)
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, 0, layer);
+		else if (renderTexture->getTexDim() == TextureDim::DIM_CUBE)
+			glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer, textureID, 0);
+	}
+}
+
+void
+OGLRenderer::copyRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderTexturePtr dest, const Viewport& v2) noexcept
 {
 	assert(src);
 
-	auto srcTarget = std::dynamic_pointer_cast<OGLRenderTarget>(src)->getInstanceID();
+	auto srcTarget = std::dynamic_pointer_cast<OGLRenderTexture>(src)->getInstanceID();
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, srcTarget);
 
 	if (dest)
 	{
-		auto destTarget = std::dynamic_pointer_cast<OGLRenderTarget>(dest)->getInstanceID();
+		auto destTarget = std::dynamic_pointer_cast<OGLRenderTexture>(dest)->getInstanceID();
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destTarget);
 	}
 	else
@@ -745,33 +497,150 @@ OGLRenderer::copyRenderTarget(RenderTargetPtr src, const Viewport& v1, RenderTar
 
 	glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-	_renderTarget = GL_NONE;
+	_renderTexture = GL_NONE;
+	_multiRenderTexture = GL_NONE;
 }
 
-RenderTargetPtr
-OGLRenderer::getRenderTarget() const noexcept
+RenderTexturePtr
+OGLRenderer::getRenderTexture() const noexcept
 {
-	return _renderTarget;
+	return _renderTexture;
 }
 
-MultiRenderTargetPtr
-OGLRenderer::getMultiRenderTarget() const noexcept
+MultiRenderTexturePtr
+OGLRenderer::getMultiRenderTexture() const noexcept
 {
-	return _multiRenderTarget;
+	return _multiRenderTexture;
 }
 
 void
-OGLRenderer::readRenderTarget(RenderTargetPtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+OGLRenderer::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
+{
+	GLbitfield mode = 0;
+
+	if (flags & ClearFlags::CLEAR_COLOR)
+	{
+		mode |= GL_COLOR_BUFFER_BIT;
+
+		if (_clearColor != color)
+		{
+			glClearColor(color.x, color.y, color.z, color.w);
+			_clearColor = color;
+		}
+	}
+
+	if (flags & ClearFlags::CLEAR_DEPTH)
+	{
+		mode |= GL_DEPTH_BUFFER_BIT;
+
+		if (_clearDepth != depth)
+		{
+			glClearDepthf(depth);
+			_clearDepth = depth;
+		}
+	}
+
+	if (flags & ClearFlags::CLEAR_STENCIL)
+	{
+		mode |= GL_STENCIL_BUFFER_BIT;
+
+		if (_clearStencil != stencil)
+		{
+			glClearStencil(stencil);
+			_clearStencil = stencil;
+		}
+	}
+
+	if (mode != 0)
+	{
+		auto depthWriteMask = _stateCaptured->getDepthState().depthWriteMask;
+		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
+		{
+			glDepthMask(GL_TRUE);
+		}
+
+		glClear(mode);
+
+		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
+		{
+			glDepthMask(GL_FALSE);
+		}
+	}
+}
+
+void
+OGLRenderer::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+{
+	if (flags & ClearFlags::CLEAR_DEPTH)
+	{
+		auto depthWriteMask = _stateCaptured->getDepthState().depthWriteMask;
+		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
+		{
+			glDepthMask(GL_TRUE);
+		}
+
+		GLfloat f = depth;
+		glClearBufferfv(GL_DEPTH, 0, &f);
+
+		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
+		{
+			glDepthMask(GL_FALSE);
+		}
+	}
+
+	if (flags & ClearFlags::CLEAR_STENCIL)
+	{
+		GLint s = stencil;
+		glClearBufferiv(GL_STENCIL, 0, &s);
+	}
+
+	if (flags & ClearFlags::CLEAR_COLOR)
+	{
+		glClearBufferfv(GL_COLOR, i, color.ptr());
+	}
+}
+
+void
+OGLRenderer::discardRenderTexture() noexcept
+{
+	assert(_renderTexture || _multiRenderTexture);
+
+	if (_renderTexture)
+	{
+		GLenum attachment = GL_COLOR_ATTACHMENT0;
+		glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, &attachment);
+	}
+	else if (_multiRenderTexture)
+	{
+		GLenum attachments[24];
+		GLenum attachment = GL_COLOR_ATTACHMENT0;
+
+		auto& targets = _multiRenderTexture->getRenderTextures();
+		auto size = targets.size();
+
+		for (std::size_t i = 0; i < size; i++)
+		{
+			attachments[i] = attachment;
+			attachment++;
+		}
+
+		glInvalidateFramebuffer(GL_FRAMEBUFFER, size, attachments);
+	}
+}
+
+void
+OGLRenderer::readRenderTexture(RenderTexturePtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
 	assert(target && w && h && data);
 
-	auto framebuffer = std::dynamic_pointer_cast<OGLRenderTarget>(target)->getInstanceID();
-	if (_framebuffer != framebuffer)
+	auto framebuffer = std::dynamic_pointer_cast<OGLRenderTexture>(target)->getInstanceID();
+	if (_renderTexture != target)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-		_framebuffer = framebuffer;
+		_renderTexture = target;
+		_multiRenderTexture = nullptr;
 	}
-
+	
 	GLenum format = OGLTypes::asOGLFormat(pfd);
 	GLenum type = OGLTypes::asOGLType(pfd);
 
@@ -779,51 +648,26 @@ OGLRenderer::readRenderTarget(RenderTargetPtr target, PixelFormat pfd, std::size
 }
 
 void
-OGLRenderer::setMultiRenderTarget(MultiRenderTargetPtr target) noexcept
-{
-	auto framebuffer = std::dynamic_pointer_cast<OGLMultiRenderTarget>(target)->getInstanceID();
-	if (_framebuffer != framebuffer)
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-
-		auto& targets = target->getRenderTargets();
-		for (std::size_t index = 0; index < targets.size(); index++)
-		{
-			auto target = targets[index];
-
-			this->clear(
-				target->getClearFlags(),
-				target->getClearColor(),
-				target->getClearDepth(),
-				target->getClearStencil(),
-				index
-				);
-			this->setViewport(Viewport(0, 0, target->getWidth(), target->getHeight()), index);
-		}
-
-		_framebuffer = framebuffer;
-
-		_renderTarget = nullptr;
-		_multiRenderTarget = target;
-	}
-}
-
-void
 OGLRenderer::setShaderObject(ShaderObjectPtr shader) noexcept
 {
-	assert(shader);
-
-	auto program = std::dynamic_pointer_cast<OGLShaderObject>(shader)->getInstanceID();
-	if (_program != program)
+	if (shader)
 	{
-		glUseProgram(program);
-		_program = program;
-		_shaderObject = shader;
+		auto program = std::dynamic_pointer_cast<OGLShaderObject>(shader)->getInstanceID();
+		if (_shaderObject != shader)
+		{
+			glUseProgram(program);
+			_shaderObject = shader;
+		}
+
+		for (auto& it : shader->getActiveUniforms())
+		{
+			this->setShaderUniform(it, it->getValue());
+		}
 	}
-
-	for (auto& it : shader->getActiveUniforms())
+	else
 	{
-		this->setShaderUniform(it, it->getValue());
+		glUseProgram(GL_NONE);
+		_shaderObject = nullptr;
 	}
 }
 
@@ -845,11 +689,13 @@ OGLRenderer::createShaderVariant(ShaderVariant& constant) noexcept
 	glBindBuffer(GL_UNIFORM_BUFFER, buffer.ubo);
 	glBufferData(GL_UNIFORM_BUFFER, constant.getSize(), 0, GL_DYNAMIC_DRAW);
 
-	if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
+#if !defined(EGLAPI)
+	if (OGLFeatures::NV_vertex_buffer_unified_memory)
 	{
 		glGetNamedBufferParameterui64vNV(buffer.ubo, GL_BUFFER_GPU_ADDRESS_NV, &buffer.bindlessUbo);
 		glMakeNamedBufferResidentNV(buffer.ubo, GL_READ_ONLY);
 	}
+#endif
 
 	_constantBuffers[constant.getInstanceID()] = buffer;
 
@@ -947,11 +793,13 @@ OGLRenderer::updateShaderVariant(ShaderVariantPtr constant) noexcept
 
 	auto& buffer = _constantBuffers[constant->getInstanceID()];
 
-	if (OGLExtenstion::isSupport(ARB_direct_state_access))
+#if !defined(EGLAPI)
+	if (OGLFeatures::ARB_direct_state_access)
 	{
 		glNamedBufferSubDataEXT(buffer.ubo, 0, _data.size(), _data.data());
 	}
 	else
+#endif
 	{
 		glBindBuffer(GL_UNIFORM_BUFFER, buffer.ubo);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, _data.size(), _data.data());
@@ -959,12 +807,13 @@ OGLRenderer::updateShaderVariant(ShaderVariantPtr constant) noexcept
 }
 
 void
-OGLRenderer::setShaderUniform(ShaderUniformPtr uniform, TexturePtr texture) noexcept
+OGLRenderer::setShaderUniform(ShaderUniformPtr uniform, TexturePtr texture, TextureSamplePtr sample) noexcept
 {
-	assert(uniform);
+	assert(uniform && texture);
 	assert(uniform->getBindingPoint() < _maxTextureUnits);
 
 	auto _texture = std::dynamic_pointer_cast<OGLTexture>(texture);
+	auto _sample = std::dynamic_pointer_cast<OGLTextureSample>(texture);
 
 	auto location = uniform->getLocation();
 	auto program = uniform->getBindingProgram();
@@ -974,11 +823,11 @@ OGLRenderer::setShaderUniform(ShaderUniformPtr uniform, TexturePtr texture) noex
 	auto textureID = _texture->getInstanceID();
 
 #if !defined(EGLAPI)
-	if (OGLExtenstion::isSupport(ARB_bindless_texture))
+	if (OGLFeatures::ARB_bindless_texture)
 	{
 		glProgramUniformHandleui64ARB(program, location, textureAddr);
 	}
-	else if (OGLExtenstion::isSupport(ARB_direct_state_access))
+	else if (OGLFeatures::ARB_direct_state_access)
 	{
 		glProgramUniform1i(program, location, unit);
 		glBindTextureUnit(GL_TEXTURE0 + unit, textureID);
@@ -995,6 +844,11 @@ OGLRenderer::setShaderUniform(ShaderUniformPtr uniform, TexturePtr texture) noex
 
 			_textureUnits[unit] = textureID;
 		}
+	}
+
+	if (sample)
+	{
+		glBindSampler(GL_TEXTURE0 + unit, _sample->getInstanceID());
 	}
 }
 
@@ -1053,7 +907,7 @@ OGLRenderer::setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constan
 	}
 	case ShaderVariantType::SPT_FLOAT2:
 	{
-		if (uniform->needUpdate())
+		//if (uniform->needUpdate())
 		{
 			glProgramUniform2fv(program, location, 1, uniform->getValue()->getFloat2().ptr());
 			uniform->needUpdate(false);
@@ -1105,18 +959,30 @@ OGLRenderer::setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constan
 		}
 		break;
 	}
-	case ShaderVariantType::SPT_TEXTURE:
+	case ShaderVariantType::SPT_FLOAT2_ARRAY:
 	{
 		if (uniform->needUpdate())
 		{
+			glProgramUniform2fv(program, location, uniform->getValue()->getFloat2Array().size(), (GLfloat*)uniform->getValue()->getFloat2Array().data());
+			uniform->needUpdate(false);
+		}
+		break;
+	}
+	case ShaderVariantType::SPT_TEXTURE:
+	{
+		//if (uniform->needUpdate())
+		{
 			auto texture = uniform->getValue()->getTexture();
+			auto sample = uniform->getValue()->getTextureSample();
 			if (texture)
 			{
-				this->setShaderUniform(uniform, texture);
-				if (OGLExtenstion::isSupport(ARB_bindless_texture))
+				this->setShaderUniform(uniform, texture, sample);
+#if !defined(EGLAPI)
+				if (OGLFeatures::ARB_bindless_texture)
 				{
 					uniform->needUpdate(false);
 				}
+#endif
 			}
 		}
 
@@ -1135,17 +1001,20 @@ OGLRenderer::setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constan
 		{
 			auto& buffer = _constantBuffers[index];
 
-			if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
+#if !defined(EGLAPI)
+			if (OGLFeatures::NV_vertex_buffer_unified_memory)
 			{
 				glBindBufferRange(GL_UNIFORM_BUFFER, location, buffer.ubo, 0, constant->getSize());
 			}
 			else
+#endif
 			{
 				glBindBufferBase(GL_UNIFORM_BUFFER, location, buffer.ubo);
 			}
 		}
 	}
 	default:
+		assert(false);
 		break;
 	}
 }
@@ -1297,114 +1166,72 @@ OGLRenderer::debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severit
 }
 
 void
-OGLRenderer::initCommandList() noexcept
-{
-	OGLExtenstion::initCommandListNV();
-
-	s_nvcmdlist_headerSizes[NVTokenTerminate::ID] = sizeof(NVTokenTerminate);
-	s_nvcmdlist_headerSizes[NVTokenNop::ID] = sizeof(NVTokenNop);
-	s_nvcmdlist_headerSizes[NVTokenDrawElems::ID] = sizeof(NVTokenDrawElems);
-	s_nvcmdlist_headerSizes[NVTokenDrawArrays::ID] = sizeof(NVTokenDrawArrays);
-	s_nvcmdlist_headerSizes[NVTokenDrawElemsStrip::ID] = sizeof(NVTokenDrawElemsStrip);
-	s_nvcmdlist_headerSizes[NVTokenDrawArraysStrip::ID] = sizeof(NVTokenDrawArraysStrip);
-	s_nvcmdlist_headerSizes[NVTokenDrawElemsInstanced::ID] = sizeof(NVTokenDrawElemsInstanced);
-	s_nvcmdlist_headerSizes[NVTokenDrawArraysInstanced::ID] = sizeof(NVTokenDrawArraysInstanced);
-	s_nvcmdlist_headerSizes[NVTokenVbo::ID] = sizeof(NVTokenVbo);
-	s_nvcmdlist_headerSizes[NVTokenIbo::ID] = sizeof(NVTokenIbo);
-	s_nvcmdlist_headerSizes[NVTokenUbo::ID] = sizeof(NVTokenUbo);
-	s_nvcmdlist_headerSizes[NVTokenLineWidth::ID] = sizeof(NVTokenLineWidth);
-	s_nvcmdlist_headerSizes[NVTokenPolygonOffset::ID] = sizeof(NVTokenPolygonOffset);
-	s_nvcmdlist_headerSizes[NVTokenScissor::ID] = sizeof(NVTokenScissor);
-	s_nvcmdlist_headerSizes[NVTokenBlendColor::ID] = sizeof(NVTokenBlendColor);
-	s_nvcmdlist_headerSizes[NVTokenViewport::ID] = sizeof(NVTokenViewport);
-	s_nvcmdlist_headerSizes[NVTokenAlphaRef::ID] = sizeof(NVTokenAlphaRef);
-	s_nvcmdlist_headerSizes[NVTokenStencilRef::ID] = sizeof(NVTokenStencilRef);
-	s_nvcmdlist_headerSizes[NVTokenFrontFace::ID] = sizeof(NVTokenFrontFace);
-
-	for (int i = 0; i < GL_MAX_COMMANDS_NV; i++)
-	{
-		GLuint sz = s_nvcmdlist_headerSizes[i];
-		assert(sz);
-	}
-
-	s_nvcmdlist_bindless = OGLExtenstion::isSupport(ARB_bindless_texture);
-
-	if (OGLExtenstion::isSupport(NV_command_list))
-	{
-		for (int i = 0; i < GL_MAX_COMMANDS_NV; i++)
-		{
-			s_nvcmdlist_header[i] = glGetCommandHeaderNV(i, s_nvcmdlist_headerSizes[i]);
-		}
-
-		s_nvcmdlist_stages[NVTOKEN_STAGE_VERTEX] = glGetStageIndexNV(GL_VERTEX_SHADER);
-		s_nvcmdlist_stages[NVTOKEN_STAGE_TESS_CONTROL] = glGetStageIndexNV(GL_TESS_CONTROL_SHADER);
-		s_nvcmdlist_stages[NVTOKEN_STAGE_TESS_EVALUATION] = glGetStageIndexNV(GL_TESS_EVALUATION_SHADER);
-		s_nvcmdlist_stages[NVTOKEN_STAGE_GEOMETRY] = glGetStageIndexNV(GL_GEOMETRY_SHADER);
-		s_nvcmdlist_stages[NVTOKEN_STAGE_FRAGMENT] = glGetStageIndexNV(GL_FRAGMENT_SHADER);
-	}
-	else
-	{
-		for (int i = 0; i < GL_MAX_COMMANDS_NV; i++)
-		{
-			s_nvcmdlist_header[i] = nvtokenHeaderSW(i, s_nvcmdlist_headerSizes[i]);
-		}
-
-		for (int i = 0; i < NVTOKEN_STAGES; i++)
-		{
-			s_nvcmdlist_stages[i] = i;
-		}
-	}
-
-	if (OGLExtenstion::isSupport(NV_command_list))
-	{
-		glCreateStatesNV(1, &_stateObjDraw);
-		glCreateStatesNV(1, &_stateObjDrawGeo);
-
-		glGenBuffers(1, &_tokenBuffer);
-		glCreateCommandListsNV(1, &_tokenCmdList);
-	}
-}
-
-void
 OGLRenderer::initDebugControl() noexcept
 {
 #ifdef _DEBUG
+	if (!OGLFeatures::KHR_debug)
+		return;
+
 	// 131184 memory info
 	// 131185 memory allocation info
 	GLuint ids[] =
 	{
+		131076,
+		131169,
 		131184,
 		131185,
-		131076,
-		131169
+		131218
 	};
 
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glDebugMessageCallback(debugCallBack, this);
-
+	
 	// enable all
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
 	// disable ids
-	glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 4, ids, GL_FALSE);
+	glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 5, ids, GL_FALSE);
 #endif
+}
+
+void
+OGLRenderer::initCommandList() noexcept
+{
+	OGLExtenstion::initCommandListNV();
 }
 
 void
 OGLRenderer::initStateSystem() noexcept
 {
-	_stateSystem.init();
-	_stateSystem.generate(1, &_stateIdDraw);
-	_stateSystem.generate(1, &_stateIdDrawGeo);
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+	glDepthFunc(GL_LEQUAL);
 
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 	glFrontFace(GL_CW);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-	if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF);
+
+	glBlendEquation(GL_FUNC_ADD);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+#if !defined(EGLAPI)
+	if (OGLFeatures::ARB_provoking_vertex)
 	{
-		if (!_defaultVAO)
-			glGenVertexArrays(1, &_defaultVAO);
+		glProvokingVertex(GL_LAST_VERTEX_CONVENTION);
+	}
+
+	if (OGLFeatures::NV_vertex_buffer_unified_memory)
+	{
+		glGenVertexArrays(1, &_defaultVAO);
 		glBindVertexArray(_defaultVAO);
+
+		glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
+		glEnableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
+		glEnableClientState(GL_UNIFORM_BUFFER_UNIFIED_NV);
 
 		glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_POSITION);
 		glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL);
@@ -1418,267 +1245,7 @@ OGLRenderer::initStateSystem() noexcept
 		glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL, (GLuint)VertexAttrib::GPU_ATTRIB_NORMAL);
 		glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD, (GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD);
 	}
-
-	if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
-	{
-		glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
-		glEnableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
-		glEnableClientState(GL_UNIFORM_BUFFER_UNIFIED_NV);
-	}
-
-	if (OGLExtenstion::isSupport(ARB_provoking_vertex))
-	{
-		glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
-	}
-}
-
-void
-OGLRenderer::nvtokenGetStats(const void* stream, size_t streamSize, int stats[GL_MAX_COMMANDS_NV]) noexcept
-{
-	const GLubyte* current = (GLubyte*)stream;
-	const GLubyte* streamEnd = current + streamSize;
-
-	while (current < streamEnd) {
-		const GLuint*             header = (const GLuint*)current;
-
-		GLenum type = nvtokenHeaderCommand(*header);
-		stats[type]++;
-
-		current += s_nvcmdlist_headerSizes[type];
-	}
-}
-
-GLenum
-OGLRenderer::nvtokenDrawCommandSequence(const void* stream, size_t streamSize, GLenum mode, GLenum type, const State* state) noexcept
-{
-	const GLubyte* current = (GLubyte*)stream;
-	const GLubyte* streamEnd = current + streamSize;
-
-	GLenum modeStrip = mode;
-	if (mode == GL_LINES)
-		modeStrip = GL_LINE_STRIP;
-	else if (mode == GL_TRIANGLES)
-		modeStrip = GL_TRIANGLE_STRIP;
-	else if (mode == GL_QUADS)
-		modeStrip = GL_QUAD_STRIP;
-	else if (mode == GL_LINES_ADJACENCY)
-		modeStrip = GL_LINE_STRIP_ADJACENCY;
-	else if (mode == GL_TRIANGLES_ADJACENCY)
-		modeStrip = GL_TRIANGLE_STRIP_ADJACENCY;
-
-	GLenum modeSpecial = mode;
-	if (mode == GL_LINES)
-		modeSpecial = GL_LINE_LOOP;
-	else if (mode == GL_TRIANGLES)
-		modeSpecial = GL_TRIANGLE_FAN;
-
-	while (current < streamEnd)
-	{
-		const GLuint* header = (const GLuint*)current;
-
-		GLenum cmdtype = nvtokenHeaderCommand(*header);
-
-		// if you always use emulation on non-native tokens you can use
-		// cmdtype = nvtokenHeaderCommandSW(header->encoded)
-		switch (cmdtype)
-		{
-		case GL_TERMINATE_SEQUENCE_COMMAND_NV:
-		{
-			return type;
-		}
-		break;
-		case GL_NOP_COMMAND_NV:
-		{
-		}
-		break;
-		case GL_DRAW_ELEMENTS_COMMAND_NV:
-		{
-			const DrawElementsCommandNV* cmd = (const DrawElementsCommandNV*)current;
-			glDrawElementsBaseVertex(mode, cmd->count, type, (const GLvoid*)(cmd->firstIndex * sizeof(GLuint)), cmd->baseVertex);
-		}
-		break;
-		case GL_DRAW_ARRAYS_COMMAND_NV:
-		{
-			const DrawArraysCommandNV* cmd = (const DrawArraysCommandNV*)current;
-			glDrawArrays(mode, cmd->first, cmd->count);
-		}
-		break;
-		case GL_DRAW_ELEMENTS_STRIP_COMMAND_NV:
-		{
-			const DrawElementsCommandNV* cmd = (const DrawElementsCommandNV*)current;
-			glDrawElementsBaseVertex(modeStrip, cmd->count, type, (const GLvoid*)(cmd->firstIndex * sizeof(GLuint)), cmd->baseVertex);
-		}
-		break;
-		case GL_DRAW_ARRAYS_STRIP_COMMAND_NV:
-		{
-			const DrawArraysCommandNV* cmd = (const DrawArraysCommandNV*)current;
-			glDrawArrays(modeStrip, cmd->first, cmd->count);
-		}
-		break;
-		case GL_DRAW_ELEMENTS_INSTANCED_COMMAND_NV:
-		{
-			const DrawElementsInstancedCommandNV* cmd = (const DrawElementsInstancedCommandNV*)current;
-			assert(cmd->mode == mode || cmd->mode == modeStrip || cmd->mode == modeSpecial);
-
-			glDrawElementsIndirect(cmd->mode, type, &cmd->count);
-		}
-		break;
-		case GL_DRAW_ARRAYS_INSTANCED_COMMAND_NV:
-		{
-			const DrawArraysInstancedCommandNV* cmd = (const DrawArraysInstancedCommandNV*)current;
-			assert(cmd->mode == mode || cmd->mode == modeStrip || cmd->mode == modeSpecial);
-
-			glDrawArraysIndirect(cmd->mode, &cmd->count);
-		}
-		break;
-		case GL_ELEMENT_ADDRESS_COMMAND_NV:
-		{
-			if (s_nvcmdlist_bindless)
-			{
-				const ElementAddressCommandNV* cmd = (const ElementAddressCommandNV*)current;
-				type = cmd->typeSizeInByte == 4 ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT;
-				glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, GLuint64(cmd->addressLo) | (GLuint64(cmd->addressHi) << 32), 0x7FFFFFFF);
-			}
-			else
-			{
-				const ElementAddressCommandEMU* cmd = (const ElementAddressCommandEMU*)current;
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cmd->buffer);
-			}
-		}
-		break;
-		case GL_ATTRIBUTE_ADDRESS_COMMAND_NV:
-		{
-			if (s_nvcmdlist_bindless)
-			{
-				const AttributeAddressCommandNV* cmd = (const AttributeAddressCommandNV*)current;
-				glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV, cmd->index, GLuint64(cmd->addressLo) | (GLuint64(cmd->addressHi) << 32), 0x7FFFFFFF);
-			}
-			else
-			{
-				const AttributeAddressCommandEMU* cmd = (const AttributeAddressCommandEMU*)current;
-				glBindVertexBuffer(cmd->index, cmd->buffer, cmd->offset, state->vertexformat.bindings[cmd->index].stride);
-			}
-		}
-		break;
-		case GL_UNIFORM_ADDRESS_COMMAND_NV:
-		{
-			if (s_nvcmdlist_bindless)
-			{
-				const UniformAddressCommandNV* cmd = (const UniformAddressCommandNV*)current;
-				glBufferAddressRangeNV(GL_UNIFORM_BUFFER_ADDRESS_NV, cmd->index, GLuint64(cmd->addressLo) | (GLuint64(cmd->addressHi) << 32), 0x10000);
-			}
-			else
-			{
-				const UniformAddressCommandEMU* cmd = (const UniformAddressCommandEMU*)current;
-				glBindBufferRange(GL_UNIFORM_BUFFER, cmd->index, cmd->buffer, cmd->offset256 * 256, cmd->size4 * 4);
-			}
-		}
-		break;
-		case GL_BLEND_COLOR_COMMAND_NV:
-		{
-			const BlendColorCommandNV* cmd = (const BlendColorCommandNV*)current;
-			glBlendColor(cmd->red, cmd->green, cmd->blue, cmd->alpha);
-		}
-		break;
-		case GL_STENCIL_REF_COMMAND_NV:
-		{
-			const StencilRefCommandNV* cmd = (const StencilRefCommandNV*)current;
-			glStencilFuncSeparate(GL_FRONT, state->stencil.funcs[Faces::FACE_FRONT].func, cmd->frontStencilRef, state->stencil.funcs[Faces::FACE_FRONT].mask);
-			glStencilFuncSeparate(GL_BACK, state->stencil.funcs[Faces::FACE_BACK].func, cmd->backStencilRef, state->stencil.funcs[Faces::FACE_BACK].mask);
-		}
-		break;
-
-		case GL_LINE_WIDTH_COMMAND_NV:
-		{
-			const LineWidthCommandNV* cmd = (const LineWidthCommandNV*)current;
-			glLineWidth(cmd->lineWidth);
-		}
-		break;
-		case GL_POLYGON_OFFSET_COMMAND_NV:
-		{
-			const PolygonOffsetCommandNV* cmd = (const PolygonOffsetCommandNV*)current;
-			glPolygonOffset(cmd->scale, cmd->bias);
-		}
-		break;
-		case GL_ALPHA_REF_COMMAND_NV:
-		{
-			const AlphaRefCommandNV* cmd = (const AlphaRefCommandNV*)current;
-			glAlphaFunc(state->alpha.mode, cmd->alphaRef);
-		}
-		break;
-		case GL_VIEWPORT_COMMAND_NV:
-		{
-			const ViewportCommandNV* cmd = (const ViewportCommandNV*)current;
-			glViewport(cmd->x, cmd->y, cmd->width, cmd->height);
-		}
-		break;
-		case GL_SCISSOR_COMMAND_NV:
-		{
-			const ScissorCommandNV* cmd = (const ScissorCommandNV*)current;
-			glScissor(cmd->x, cmd->y, cmd->width, cmd->height);
-		}
-		break;
-		case GL_FRONT_FACE_COMMAND_NV:
-		{
-			FrontFaceCommandNV* cmd = (FrontFaceCommandNV*)current;
-			glFrontFace(cmd->frontFace ? GL_CW : GL_CCW);
-		}
-		break;
-		}
-
-		GLuint tokenSize = s_nvcmdlist_headerSizes[cmdtype];
-		assert(tokenSize);
-
-		current += tokenSize;
-	}
-
-	return type;
-}
-
-void
-OGLRenderer::nvtokenDrawCommandState() noexcept
-{
-	int lastfbo = ~0;
-
-	auto tokens = (const char*)_tokenData.data();
-	auto count = _tokenSequenceEmu.offsets.size();
-	auto states = _tokenSequenceEmu.states.data();
-	auto fbos = _tokenSequenceEmu.fbos.data();
-
-	StateSystem::StateID lastID = 0;
-
-	GLenum type = GL_UNSIGNED_SHORT;
-
-	for (GLuint i = 0; i < count; i++)
-	{
-		auto ID = states[i];
-		auto state = &_stateSystem.get(states[i]);
-
-		GLuint fbo;
-		if (fbos[i])
-			fbo = fbos[i];
-		else
-			fbo = state->fbo.fboDraw;
-
-		if (fbo != lastfbo)
-		{
-			glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-			lastfbo = fbo;
-		}
-
-		if (ID != lastID)
-		{
-			_stateSystem.apply(ID, lastID);
-			lastID = ID;
-		}
-
-		std::size_t offset = _tokenSequenceEmu.offsets[i];
-		std::size_t size = _tokenSequenceEmu.sizes[i];
-
-		assert(size + offset < _tokenData.size());
-
-		type = nvtokenDrawCommandSequence(&tokens[offset], size, state->basePrimitiveMode, type, state);
-	}
+#endif	
 }
 
 _NAME_END

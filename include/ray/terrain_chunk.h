@@ -45,18 +45,18 @@ class TerrainChunk
 {
 public:
 
-    int getX() noexcept;
-    int getY() noexcept;
+	int getX() noexcept;
+	int getY() noexcept;
 
-    int distance(int x, int y) noexcept;
-    int visiable(const Frustum& fru, int chunkSize) noexcept;
+	int distance(int x, int y) noexcept;
+	int visiable(const Frustum& fru, int chunkSize) noexcept;
 
-    TerrainMapPtr getMap() const noexcept;
+	TerrainMapPtr getMap() const noexcept;
 
 private:
 
-    int _x;
-    int _y;
+	int _x;
+	int _y;
 };
 
 _NAME_END

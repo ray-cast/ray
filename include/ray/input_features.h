@@ -38,12 +38,15 @@
 #define _H_INPUT_FEATURES_H_
 
 #include <ray/game_features.h>
+#include <ray/game_event.h>
+
 #include <ray/input.h>
 
 _NAME_BEGIN
 
 class EXPORT InputFeatures final : public GameFeature, public InputListener
 {
+	__DeclareSubClass(InputFeatures, GameListener)
 public:
 	InputFeatures() noexcept;
 	virtual ~InputFeatures() noexcept;
@@ -68,19 +71,12 @@ private:
 	virtual void onInputEvent(const InputEvent& event) noexcept;
 
 private:
-
-	void _buildInput() noexcept;
-
-private:
 	InputFeatures(const InputFeatures&) = delete;
 	InputFeatures& operator=(const InputFeatures&) = delete;
 
 private:
 
 	InputPtr _input;
-	InputDevicePtr _inputDevice;
-	InputKeyboardPtr _inputKeyboard;
-	InputMousePtr _inputMouse;
 };
 
 _NAME_END

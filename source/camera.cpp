@@ -45,7 +45,7 @@ Camera::Camera() noexcept
 	, _top(0)
 	, _bottom(0)
 	, _aperture(0)
-	, _ratio(0)
+	, _ratio(1)
 	, _zNear(0)
 	, _zFar(0)
 	, _translate(0, 0, 0)
@@ -53,9 +53,6 @@ Camera::Camera() noexcept
 	, _up(0, 1, 0)
 	, _project(Matrix4x4::One)
 	, _projectInverse(Matrix4x4::One)
-	, _view(Matrix4x4::One)
-	, _viewInverse(Matrix4x4::One)
-	, _viewInverseTranspose(Matrix4x4::One)
 	, _viewProejct(Matrix4x4::One)
 	, _viewProjectInverse(Matrix4x4::One)
 	, _viewport(0, 0, 0, 0)
@@ -64,34 +61,28 @@ Camera::Camera() noexcept
 	, _cameraType(CameraType::CT_PERSPECTIVE)
 	, _cameraOrder(CameraOrder::CO_MAIN)
 	, _cameraRender(CameraRender::CR_RENDER_TO_SCREEN)
-	, _renderScene(nullptr)
+	, _clearFlags(ClearFlags::CLEAR_ALL)
+	, _clearColor(Vector4::Zero)
 {
 }
 
 Camera::~Camera() noexcept
 {
-	this->setRenderScene(nullptr);
 }
 
-float
+float 
 Camera::getAperture() const noexcept
 {
 	return _aperture;
 }
 
-float
-Camera::getRatio() const noexcept
-{
-	return _ratio;
-}
-
-float
+float 
 Camera::getNear() const noexcept
 {
 	return _zNear;
 }
 
-float
+float 
 Camera::getFar() const noexcept
 {
 	return _zFar;
@@ -118,25 +109,19 @@ Camera::getUpVector() const noexcept
 const Matrix4x4&
 Camera::getView() const noexcept
 {
-	return _view;
+	return this->getTransform();
 }
 
 const Matrix4x4&
 Camera::getViewInverse() const noexcept
 {
-	return _viewInverse;
+	return this->getTransformInverse();
 }
 
 const Matrix4x4&
 Camera::getViewInverseTranspose() const noexcept
 {
-	return _viewInverseTranspose;
-}
-
-void
-Camera::setProject(const Matrix4x4& m) noexcept
-{
-	_project = m;
+	return this->getTransformInverseTranspose();
 }
 
 const Matrix4x4&
@@ -184,26 +169,41 @@ Camera::getClipConstant() const noexcept
 void
 Camera::makeLookAt(const Vector3& pos, const Vector3& lookat, const Vector3& up) noexcept
 {
-	_translate = pos;
-	_lookat = lookat;
-	_up = up;
+	float4x4 view;
+	float4x4 viewInverse;
+	float4x4 viewInverseTranspose;
 
-	_viewInverse = _view.makeLookAt_lh(_translate, _lookat, _up).inverse();
-	_viewInverseTranspose = Matrix4x4(_viewInverse).transpose();
+	_up = up;
+	_lookat = lookat;
+	_translate = pos;
+
+	viewInverse = view.makeLookAt_lh(_translate, _lookat, _up);
+	viewInverseTranspose = viewInverse.inverse();
+	viewInverseTranspose.transpose();
+
+	this->setTransform(view);
+	this->setTransformInverse(viewInverse);
+	this->setTransformInverseTranspose(viewInverseTranspose);
+
+	this->makeViewPorject();
 }
 
 void
-Camera::makeOrtho(float left, float right, float bottom, float top, float znear, float zfar) noexcept
+Camera::makeOrtho(float left, float right, float top, float bottom, float znear, float zfar, float ratio) noexcept
 {
 	_left = left;
 	_right = right;
-	_bottom = bottom;
 	_top = top;
+	_bottom = bottom;
+	_ratio = ratio;
 	_zNear = znear;
 	_zFar = zfar;
 
-	_project.makeOrtho_lh(_right - _left, _top - _bottom, _zNear, _zFar);
-	_projectInverse = _project.inverse();
+	_project.makeOrtho_lh(_left, _right, _bottom / ratio, _top / ratio, _zNear, _zFar);
+	_projectInverse = _project;
+	_projectInverse.inverse();
+
+	this->makeViewPorject();
 
 	_projLength.x = _project.a1;
 	_projLength.y = _project.b2;
@@ -229,18 +229,18 @@ Camera::makeOrtho(float left, float right, float bottom, float top, float znear,
 }
 
 void
-Camera::makePerspective(float aperture, float ratio, float znear, float zfar) noexcept
+Camera::makePerspective(float aperture, float znear, float zfar, float ratio) noexcept
 {
-	assert(_cameraType == CameraType::CT_PERSPECTIVE);
-
 	_aperture = aperture;
 	_ratio = ratio;
 	_zNear = znear;
 	_zFar = zfar;
 
 	_project.makePerspective_lh(_aperture, _ratio, _zNear, _zFar);
-	_project = Matrix4x4().makeTranslate(0, 0, -1) * Matrix4x4().makeScale(1.0, 1.0, 2.0) * _project;
-	_projectInverse = _project.inverse();
+	_projectInverse = _project;
+	_projectInverse.inverse();
+
+	this->makeViewPorject();
 
 	_projLength.x = _project.a1;
 	_projLength.y = _project.b2;
@@ -265,48 +265,53 @@ Camera::makePerspective(float aperture, float ratio, float znear, float zfar) no
 	this->setCameraType(CT_PERSPECTIVE);
 }
 
-void
-Camera::makeViewProject() noexcept
+void 
+Camera::makeViewPorject() noexcept
 {
-	_viewProejct = _project * _view;
-	_viewProjectInverse = _viewProejct.inverse();
+	_viewProejct = _project * this->getView();
+	_viewProjectInverse = _viewProejct;
+	_viewProjectInverse.inverse();
+
+#ifdef _BUILD_OPENGL
+	static auto m = (Matrix4x4().makeTranslate(0, 0, -1) * Matrix4x4().makeScale(1.0, 1.0, 2.0));
+	_viewProejct = m * _viewProejct;
+#endif
+}
+
+void 
+Camera::getOrtho(float& left, float& right, float& top, float& bottom, float& ratio, float& znear, float& zfar) noexcept
+{
+	left = _left;
+	right = _right;
+	top = _top;
+	bottom = _bottom;
+	ratio = _ratio;
+	znear = _zNear;
+	zfar = _zFar;
+}
+
+void 
+Camera::getPerspective(float& aperture, float& ratio, float& znear, float& zfar) noexcept
+{
+	aperture = _aperture;
+	ratio = _ratio;
+	znear = _zNear;
+	zfar = _zFar;
 }
 
 Vector3
-Camera::project(const Vector3& pos) const noexcept
+Camera::worldToScreen(const Vector3& pos) const noexcept
 {
-	Vector4 v(pos);
+	int w = (int)_viewport.width >> 1;
+	int h = (int)_viewport.height >> 1;
 
-	v = _viewProejct * v;
+	Vector4 v = _viewProejct * pos;
 	if (v.w != 0)
 		v /= v.w;
 
-	int w = (int)_viewport.width >> 1;
-	int h = (int)_viewport.height >> 1;
-
 	v.x = v.x * w + w + _viewport.left;
 	v.y = v.y * h + h + _viewport.top;
-	v.z = v.z * 0.5f + 0.5f;
-
-	return Vector3(v.x, v.y, v.z);
-}
-
-Vector3
-Camera::unproject(const Vector3& pos) const noexcept
-{
-	Vector4 v(pos);
-
-	int w = (int)_viewport.width >> 1;
-	int h = (int)_viewport.height >> 1;
-
-	v.y = _viewport.height - pos.y;
-
-	v.x = v.x / w - 1.0f - _viewport.left;
-	v.y = v.y / h - 1.0f - _viewport.top;
-	v.z = v.z * 2.0f - 1.0f;
-
-	v = _viewInverse * (_projectInverse * v);
-	v /= v.w;
+	v.z = v.z * 0.5 + 0.5;
 
 	return Vector3(v.x, v.y, v.z);
 }
@@ -324,7 +329,26 @@ Camera::worldToProject(const Vector3& pos) const noexcept
 }
 
 Vector3
-Camera::sceneToDirection(const Vector2& pos) const noexcept
+Camera::screenToWorld(const Vector3& pos) const noexcept
+{
+	int w = (int)_viewport.width >> 1;
+	int h = (int)_viewport.height >> 1;
+
+	Vector4 v(pos);
+	v.y = _viewport.height - pos.y;
+
+	v.x = v.x / w - 1.0f - _viewport.left;
+	v.y = v.y / h - 1.0f - _viewport.top;
+
+	v = _viewProjectInverse * v;
+	if (v.w != 0)
+		v /= v.w;
+
+	return Vector3(v.x, v.y, v.z);
+}
+
+Vector3
+Camera::screenToDirection(const Vector2& pos) const noexcept
 {
 	int w = (int)_viewport.width >> 1;
 	int h = (int)_viewport.height >> 1;
@@ -334,7 +358,31 @@ Camera::sceneToDirection(const Vector2& pos) const noexcept
 	v.x = v.x / w - 1.0f - _viewport.left;
 	v.y = v.y / h - 1.0f - _viewport.top;
 
-	return (_viewInverse * float4((_projectInverse * v).xy(), 1.0f, 1.0f)).xyz();
+	return (this->getViewInverse() * float4((_projectInverse * v).xy(), 1.0f, 1.0f)).xyz();
+}
+
+void
+Camera::setClearFlags(ClearFlags flags) noexcept
+{
+	_clearFlags = flags;
+}
+
+ClearFlags
+Camera::getCameraFlags() const noexcept
+{
+	return _clearFlags;
+}
+
+void
+Camera::setClearColor(const Vector4& color) noexcept
+{
+	_clearColor = color;
+}
+
+const Vector4& 
+Camera::getClearColor() const noexcept
+{
+	return _clearColor;
 }
 
 void
@@ -388,33 +436,34 @@ Camera::getCameraRender() const noexcept
 void
 Camera::setRenderScene(RenderScenePtr scene) noexcept
 {
-	if (_renderScene)
+	auto renderScene = _renderScene.lock();
+	if (renderScene)
 	{
-		_renderScene->removeCamera(this);
+		renderScene->removeCamera(std::dynamic_pointer_cast<Camera>(this->shared_from_this()));
 	}
 
-	_renderScene = scene.get();
+	_renderScene = scene;
 
-	if (_renderScene)
+	if (scene)
 	{
-		_renderScene->addCamera(this);
+		scene->addCamera(std::dynamic_pointer_cast<Camera>(this->shared_from_this()));
 	}
 }
 
 RenderScenePtr
 Camera::getRenderScene() const noexcept
 {
-	return _renderScene->shared_from_this();
+	return _renderScene.lock();
 }
 
 void
-Camera::setRenderTarget(RenderTargetPtr texture) noexcept
+Camera::setRenderTexture(RenderTexturePtr texture) noexcept
 {
 	_renderTexture = texture;
 }
 
-RenderTargetPtr
-Camera::getRenderTarget() const noexcept
+RenderTexturePtr
+Camera::getRenderTexture() const noexcept
 {
 	return _renderTexture;
 }
@@ -445,9 +494,9 @@ Camera::clone() const noexcept
 	camera->makeLookAt(this->getTranslate(), this->getLookAt(), this->getUpVector());
 
 	if (CameraType::CT_PERSPECTIVE == camera->getCameraType())
-		camera->makePerspective(this->getAperture(), this->getRatio(), this->getNear(), this->getFar());
+		camera->makePerspective(_aperture, _ratio, _zNear, _zFar);
 	else if (CameraType::CT_ORTHO == camera->getCameraType())
-		camera->makeOrtho(_left, _right, _bottom, _top, _zNear, _zFar);
+		camera->makeOrtho(_left, _right, _bottom, _top, _ratio, _zNear, _zFar);
 
 	return camera;
 }

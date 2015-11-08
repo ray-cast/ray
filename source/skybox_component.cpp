@@ -69,7 +69,6 @@ SkyBoxComponent::clone() const noexcept
 {
 	auto sky = std::make_shared<SkyBoxComponent>();
 	sky->setName(this->getName());
-	sky->setVisible(this->getVisible());
 
 	for (auto& it : this->getMaterials())
 	{

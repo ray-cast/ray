@@ -43,12 +43,13 @@ _NAME_BEGIN
 __ImplementSubClass(LightComponent, GameComponent)
 
 LightComponent::LightComponent() noexcept
+	:_light(std::make_shared<Light>())
 {
-	_light = std::make_shared<Light>();
 }
 
 LightComponent::~LightComponent() noexcept
 {
+	_light->setRenderScene(nullptr);
 }
 
 void
@@ -61,18 +62,6 @@ void
 LightComponent::setIntensity(float intensity) noexcept
 {
 	_light->setIntensity(intensity);
-}
-
-void
-LightComponent::setExponent(float value) noexcept
-{
-	_light->setExponent(value);
-}
-
-void
-LightComponent::setSpotAngle(float value) noexcept
-{
-	_light->setSpotAngle(value);
 }
 
 void
@@ -97,18 +86,6 @@ float
 LightComponent::getIntensity() const noexcept
 {
 	return _light->getIntensity();
-}
-
-float
-LightComponent::getExponent() const noexcept
-{
-	return _light->getExponent();
-}
-
-float
-LightComponent::getSpotAngle() const noexcept
-{
-	return _light->getSpotAngle();
 }
 
 float
@@ -166,13 +143,12 @@ LightComponent::load(iarchive& reader) noexcept
 	float3 lightColor(1, 1, 1);
 	float lightIntensity = 1.0f;
 	float lightRange = 1.0f;
-	float lightExponent = 1.0f;
 	bool shadow = false;
 
-	reader >> static_cast<GameComponent*>(this);
+	GameComponent::load(reader);
+
 	reader >> rtti_alias(lightIntensity, "intensity");
 	reader >> rtti_alias(lightRange, "range");
-	reader >> rtti_alias(lightExponent, "exponent");
 	reader >> rtti_alias(shadow, "shadow");
 	reader >> rtti_alias(lightColor, "color");
 	reader >> rtti_alias(lightType, "type");
@@ -187,13 +163,14 @@ LightComponent::load(iarchive& reader) noexcept
 		this->setLightType(LightType::LT_AREA);
 	else if (lightType == "hemiSphere")
 		this->setLightType(LightType::LT_HEMI_SPHERE);
+	else if (lightType == "ambient")
+		this->setLightType(LightType::LT_AMBIENT);
 	else
 		this->setLightType(LightType::LT_POINT);
 
 	_light->setLightColor(lightColor);
 	_light->setRange(lightRange);
 	_light->setIntensity(lightIntensity);
-	_light->setExponent(lightExponent);
 	_light->setShadow(shadow);
 }
 
@@ -211,11 +188,10 @@ LightComponent::onActivate() noexcept
 		auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
 		if (renderScene)
 		{
-			auto dir = this->getGameObject()->getTranslate() - this->getGameObject()->getLookAt();
-			_light->setLightDirection(~dir);
+			_light->setLightUp(this->getGameObject()->getUpVector());
+			_light->setLightLookat(this->getGameObject()->getLookAt());
 			_light->setTransform(this->getGameObject()->getTransform());
 			_light->setRenderScene(renderScene);
-			_light->setup();
 		}
 	}
 }
@@ -223,14 +199,14 @@ LightComponent::onActivate() noexcept
 void
 LightComponent::onDeactivate() noexcept
 {
-	_light->close();
+	_light->setRenderScene(nullptr);
 }
 
 void
 LightComponent::onMoveAfter() noexcept
 {
-	auto dir = this->getGameObject()->getTranslate() - this->getGameObject()->getLookAt();
-	_light->setLightDirection(~dir);
+	_light->setLightUp(this->getGameObject()->getUpVector());
+	_light->setLightLookat(this->getGameObject()->getLookAt());
 	_light->setTransform(this->getGameObject()->getTransform());
 }
 

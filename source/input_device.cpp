@@ -39,20 +39,20 @@
 _NAME_BEGIN
 
 DefaultInputDevice::DefaultInputDevice() noexcept
-    : _enableEventPosting(true)
+	: _enableEventPosting(true)
 {
 }
 
 void
 DefaultInputDevice::enableEventPosting(bool enable) noexcept
 {
-    _enableEventPosting = enable;
+	_enableEventPosting = enable;
 }
 
 bool
 DefaultInputDevice::enableEventPosting() const noexcept
 {
-    return _enableEventPosting;
+	return _enableEventPosting;
 }
 
 void
@@ -63,77 +63,83 @@ DefaultInputDevice::sendEvent(const InputEvent& event) noexcept
 void
 DefaultInputDevice::postEvent(const InputEvent& event) noexcept
 {
-    if (_enableEventPosting)
-    {
-        _mutex.lock();
-        _events.push(event);
-        _mutex.unlock();
+	if (_enableEventPosting)
+	{
+		_mutex.lock();
+		_events.push(event);
+		_mutex.unlock();
 
-        _dispose.notify_one();
-    }
+		_dispose.notify_one();
+	}
 }
 
 void
 DefaultInputDevice::peekEvents(InputEvent& event) noexcept
 {
-    ToplevelInputDevice::peekEvents(event);
+	ToplevelInputDevice::peekEvents(event);
 }
 
 bool
 DefaultInputDevice::pollEvents(InputEvent& event) noexcept
 {
-    ToplevelInputDevice::pollEvents(event);
+	ToplevelInputDevice::pollEvents(event);
 
-    std::unique_lock<std::mutex> lock(_mutex);
-    if (lock)
-    {
-        if (!_events.empty())
-        {
-            event = _events.front();
-            _events.pop();
-            return true;
-        }
-    }
+	std::unique_lock<std::mutex> lock(_mutex);
+	if (lock)
+	{
+		if (!_events.empty())
+		{
+			event = _events.front();
+			_events.pop();
+			return true;
+		}
+	}
 
-    return false;
+	return false;
 }
 
 bool
 DefaultInputDevice::waitEvents(InputEvent& event) noexcept
 {
-    ToplevelInputDevice::waitEvents(event);
+	ToplevelInputDevice::waitEvents(event);
 
-    std::unique_lock<std::mutex> lock(_mutex);
-    if (_events.empty())
-    {
-        _dispose.wait(lock);
-    }
+	std::unique_lock<std::mutex> lock(_mutex);
+	if (_events.empty())
+	{
+		_dispose.wait(lock);
+	}
 
-    return this->pollEvents(event);
+	return this->pollEvents(event);
 }
 
 bool
 DefaultInputDevice::waitEvents(InputEvent& event, int timeout) noexcept
 {
-    ToplevelInputDevice::waitEvents(event, timeout);
+	ToplevelInputDevice::waitEvents(event, timeout);
 
-    std::unique_lock<std::mutex> lock(_mutex);
-    if (_events.empty())
-    {
-        _dispose.wait_for(lock, std::chrono::milliseconds(timeout));
-    }
+	std::unique_lock<std::mutex> lock(_mutex);
+	if (_events.empty())
+	{
+		_dispose.wait_for(lock, std::chrono::milliseconds(timeout));
+	}
 
-    return this->pollEvents(event);
+	return this->pollEvents(event);
 }
 
 void
 DefaultInputDevice::flushEvent() noexcept
 {
-    ToplevelInputDevice::flushEvent();
+	ToplevelInputDevice::flushEvent();
 
-    _mutex.lock();
-    _events = std::queue<InputEvent>();
-    _mutex.unlock();
+	_mutex.lock();
+	_events = std::queue<InputEvent>();
+	_mutex.unlock();
+}
+
+InputDevicePtr
+DefaultInputDevice::clone() const noexcept
+{
+	return std::make_shared<DefaultInputDevice>();
 }
 
 _NAME_END

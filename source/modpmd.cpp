@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/modpmd.h>
+#include <iconv.h>
 
 _NAME_BEGIN
 
@@ -126,24 +127,24 @@ PMDHandler::doLoad(Model& model, istream& stream) noexcept
 		}
 	}
 
-	// Face
-	if (!stream.read((char*)&_pmd.FaceCount, sizeof(_pmd.FaceCount))) return false;
+	// Morph
+	if (!stream.read((char*)&_pmd.MorphCount, sizeof(_pmd.MorphCount))) return false;
 
-	if (_pmd.FaceCount > 0)
+	if (_pmd.MorphCount > 0)
 	{
-		_pmd.FaceList.resize(_pmd.FaceCount);
+		_pmd.MorphList.resize(_pmd.MorphCount);
 
-		for (std::size_t i = 0; i < (std::size_t)_pmd.FaceCount; i++)
+		for (std::size_t i = 0; i < (std::size_t)_pmd.MorphCount; i++)
 		{
-			if (!stream.read((char*)&_pmd.FaceList[i].Name, sizeof(_pmd.FaceList[i].Name))) return false;
-			if (!stream.read((char*)&_pmd.FaceList[i].VertexCount, sizeof(_pmd.FaceList[i].VertexCount))) return false;
-			if (!stream.read((char*)&_pmd.FaceList[i].Category, sizeof(_pmd.FaceList[i].Category))) return false;
+			if (!stream.read((char*)&_pmd.MorphList[i].Name, sizeof(_pmd.MorphList[i].Name))) return false;
+			if (!stream.read((char*)&_pmd.MorphList[i].VertexCount, sizeof(_pmd.MorphList[i].VertexCount))) return false;
+			if (!stream.read((char*)&_pmd.MorphList[i].Category, sizeof(_pmd.MorphList[i].Category))) return false;
 
-			if (_pmd.FaceList[i].VertexCount > 0)
+			if (_pmd.MorphList[i].VertexCount > 0)
 			{
-				_pmd.FaceList[i].VertexList.resize(_pmd.FaceList[i].VertexCount);
+				_pmd.MorphList[i].VertexList.resize(_pmd.MorphList[i].VertexCount);
 
-				if (!stream.read((char*)&_pmd.FaceList[i].VertexList[0], (std::streamsize)(sizeof(PMD_FaceVertex)* _pmd.FaceList[i].VertexCount))) return false;
+				if (!stream.read((char*)&_pmd.MorphList[i].VertexList[0], (std::streamsize)(sizeof(PMD_MorphVertex)* _pmd.MorphList[i].VertexCount))) return false;
 			}
 		}
 	}
@@ -196,7 +197,7 @@ PMDHandler::doLoad(Model& model, istream& stream) noexcept
 
 		for (PMD_uint8_t i = 0; i < _pmd.FrameWindow.ExpressionListCount; i++)
 		{
-			PMD_FaceName name;
+			PMD_MorphName name;
 
 			if (!stream.read((char*)&name.Name, sizeof(name))) return false;
 
@@ -278,6 +279,7 @@ PMDHandler::doLoad(Model& model, istream& stream) noexcept
 		Vector3Array points;
 		Vector3Array normals;
 		Vector2Array texcoords;
+		VertexWeights weights;
 		UintArray faces;
 
 		for (PMD_IndexCount i = 0; i < it.FaceVertexCount; i++, indices++)
@@ -288,6 +290,18 @@ PMDHandler::doLoad(Model& model, istream& stream) noexcept
 			normals.push_back(v.Normal);
 			texcoords.push_back(v.UV);
 			faces.push_back(i);
+
+			VertexWeight weight;
+			weight.weight1 = v.Weight / 100.0;
+			weight.weight2 = 1.0 - weight.weight1;
+			weight.weight3 = 0.0f;
+			weight.weight4 = 0.0f;
+			weight.bone1 = v.Bone.Bone1;
+			weight.bone2 = v.Bone.Bone2;
+			weight.bone3 = 0;
+			weight.bone4 = 0;
+
+			weights.push_back(weight);
 		}
 
 		if (last == mesh)
@@ -300,9 +314,67 @@ PMDHandler::doLoad(Model& model, istream& stream) noexcept
 		mesh->setVertexArray(points);
 		mesh->setNormalArray(normals);
 		mesh->setTexcoordArray(texcoords);
+		mesh->setWeightArray(weights);
 		mesh->setFaceArray(faces);
 
 		last = mesh;
+	}
+
+
+	if (_pmd.BoneCount > 0)
+	{
+		Bones bones;
+		InverseKinematics iks;
+
+		for (auto& it : _pmd.BoneList)
+		{
+			Bone bone;
+
+			char inbuf[MAX_PATH + 1] = { 0 };
+			char outbuf[MAX_PATH + 1] = { 0 };
+			char *in = inbuf;
+			char *out = outbuf;
+			std::size_t in_size = (size_t)MAX_PATH;
+			std::size_t out_size = (size_t)MAX_PATH;
+
+			memcpy(in, it.Name.Name, sizeof(it.Name.Name));
+
+			iconv_t ic = iconv_open("GBK", "SJIS");
+			iconv(ic, &in, &in_size, &out, &out_size);
+			iconv_close(ic);
+
+			bone.setName(std::string(outbuf));
+			bone.setPosition(it.Position);
+			bone.setParent(it.Parent);
+			bone.setChild(it.Child);
+
+			bones.push_back(bone);
+		}
+
+		for (auto& it : _pmd.IkList)
+		{
+			IKAttr attr;
+			attr.IKBoneIndex = it.IK;
+			attr.IKTargetBoneIndex = it.Target;
+			attr.IKLimitedRadian = it.LimitOnce;
+			attr.IKLinkCount = it.LinkCount;
+			attr.IKLoopCount = it.LoopCount;
+			for (auto& bone : it.LinkList)
+			{
+				IKChild child;
+				child.BoneIndex = bone;
+				child.MinimumRadian = Vector3::Zero;
+				child.MaximumRadian = Vector3(3.14, 3.14, 3.14);
+				child.RotateLimited = 1;
+
+				attr.IKList.push_back(child);
+			}
+
+			iks.push_back(attr);
+		}
+
+		root->setInverseKinematics(iks);
+		root->setBoneArray(bones);
 	}
 
 	model.addMesh(root);

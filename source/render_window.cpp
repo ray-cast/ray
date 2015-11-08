@@ -46,4 +46,23 @@ RenderWindow::~RenderWindow() noexcept
 {
 }
 
+void 
+RenderWindow::setActive(bool active) except
+{
+	if (_active != active)
+	{
+		if (active)
+			this->onActivate();
+		else
+			this->onDeactivate();
+		_active = active;
+	}
+}
+
+bool 
+RenderWindow::getActive() const noexcept
+{
+	return _active;
+}
+
 _NAME_END

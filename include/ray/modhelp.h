@@ -39,6 +39,7 @@
 
 #include <ray/modcfg.h>
 #include <ray/modutil.h>
+#include <ray/bone.h>
 
 _NAME_BEGIN
 
@@ -109,10 +110,6 @@ enum MeshType
 	MT_FAN,
 	MT_QUAD,
 	MT_POLYGON,
-};
-
-class EXPORT AnimationProperty final
-{
 };
 
 class EXPORT CameraProperty final
@@ -212,20 +209,31 @@ public:
 
 	void setVertexArray(const Vector3Array& array) noexcept;
 	void setNormalArray(const Vector3Array& array) noexcept;
-	void setColorArray(const Vector3Array& array, std::size_t i = 0) noexcept;
+	void setColorArray(const Vector4Array& array, std::size_t i = 0) noexcept;
+	void setTangentArray(const Vector3Array& array) noexcept;
 	void setTexcoordArray(const Vector2Array& array, std::size_t i = 0) noexcept;
+	void setWeightArray(const VertexWeights& array) noexcept;
+	void setBoneArray(const Bones& array) noexcept;
+	void setInverseKinematics(const InverseKinematics& iks) noexcept;
 	void setFaceArray(const UintArray& array) noexcept;
 
 	Vector3Array& getVertexArray() noexcept;
 	Vector3Array& getNormalArray() noexcept;
-	Vector3Array& getColorArray(std::size_t i = 0) noexcept;
+	Vector4Array& getColorArray(std::size_t i = 0) noexcept;
 	Vector2Array& getTexcoordArray(std::size_t i = 0) noexcept;
+	VertexWeights& getWeightArray() noexcept;
+	Bones& getBoneArray() noexcept;
+	InverseKinematics& getInverseKinematics() noexcept;
 	UintArray& getFaceArray() noexcept;
 
 	const Vector3Array& getVertexArray() const noexcept;
 	const Vector3Array& getNormalArray() const noexcept;
-	const Vector3Array& getColorArray(std::size_t i = 0) const noexcept;
+	const Vector3Array& getTangentArray() const noexcept;
+	const Vector4Array& getColorArray(std::size_t i = 0) const noexcept;
 	const Vector2Array& getTexcoordArray(std::size_t i = 0) const noexcept;
+	const VertexWeights& getWeightArray() const noexcept;
+	const Bones& getBoneArray(const Bones& array) const noexcept;
+	const InverseKinematics& getInverseKinematics() const noexcept;
 	const UintArray& getFaceArray() const noexcept;
 
 	void makeCircle(float radius, std::uint32_t segments, float thetaStart = 0, float thetaLength = M_PI) noexcept;
@@ -239,10 +247,9 @@ public:
 	void makeVolumes(float fovy, float znear, float zfar) noexcept;
 	void makeCone(float radius, float height, std::uint32_t segments, float thetaStart = 0, float thetaLength = M_TWO_PI) noexcept;
 
-	void combieInstnace(const CombineInstance& instance) noexcept;
+	void mergeMeshes(const CombineInstance& instance) noexcept;
 	void mergeVertices() noexcept;
 
-	void computeCentroids() noexcept;
 	void computeFaceNormals() noexcept;
 	void computeVertexNormals() noexcept;
 	void computeVertexNormals(std::size_t width, std::size_t height) noexcept;
@@ -265,12 +272,16 @@ private:
 
 	Vector3Array _vertices;
 	Vector3Array _normals;
-	Vector3Array _colors[MAX_NUMBER_OF_COLOR_SETS];
+	Vector4Array _colors[MAX_NUMBER_OF_COLOR_SETS];
 	Vector2Array _texcoords[MAX_NUMBER_OF_TEXTURECOORDS];
-	Vector3Array _centroid;
+	Vector3Array _tangent;
 	Vector3Array _facesNormal;
+	VertexWeights _weights;
 
 	UintArray _faces;
+
+	Bones _bones;
+	InverseKinematics _iks;
 
 	Bound _boundingBox;
 	Bound _boundingBoxChildren;

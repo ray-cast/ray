@@ -48,14 +48,28 @@ public:
 	GameComponent() noexcept;
 	virtual ~GameComponent() noexcept;
 
-	GameObject* getGameObject() noexcept;
-	const GameObject* getGameObject() const noexcept;
+	virtual void setActive(bool active) except;
+	virtual bool getActive() const noexcept;
+
+	virtual void load(iarchive& reader) noexcept;
+	virtual void save(oarchive& write) noexcept;
+
+	virtual GameComponentPtr clone() const except = 0;
+
+	GameObjectPtr getGameObject() noexcept;
+	const GameObjectPtr getGameObject() const noexcept;
 
 	GameServer* getGameServer() noexcept;
 	const GameServer* getGameServer() const noexcept;
 
-	virtual void load(iarchive& reader) noexcept;
-	virtual void save(oarchive& write) noexcept;
+	template<typename T>
+	std::shared_ptr<T> getComponent() const noexcept 
+		{ return std::dynamic_pointer_cast<T>(this->getComponent(T::getType())); }
+
+	GameComponentPtr getComponent(RTTI::HashCode type) const noexcept;
+	const GameComponents& getComponents() const noexcept;
+
+protected:
 
 	virtual void sendMessage(const GameMessage& message) except;
 	virtual void sendMessageUpwards(const GameMessage& message) except;
@@ -77,15 +91,17 @@ public:
 	virtual void onLayerChangeBefore() except;
 	virtual void onLayerChangeAfter() except;
 
-	virtual GameComponentPtr clone() const except = 0;
-
 private:
 	friend GameObject;
 	void _setGameObject(GameObject* gameobj) noexcept;
 
 private:
 
+	bool _active;
+
 	GameObject* _gameObject;
+
+	GameComponents _components;
 };
 
 _NAME_END

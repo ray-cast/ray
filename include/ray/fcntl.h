@@ -43,17 +43,15 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#if defined(__WINDOWS__)
-#    include <dos.h>
-#    include <io.h>
-#endif
-
-#ifdef __LINUX__
-#   include <sys/types.h>
-#   include <sys/io.h>
-#   include <sys/param.h>
-#   include <unistd.h>
-#   include <dirent.h>
+#if defined(_WINDOWS_)
+#   include <dos.h>
+#   include <io.h>
+#elif defined(__LINUX__) || defined(__ANDROID__)
+#	include <sys/types.h>
+#	include <sys/io.h>
+#	include <sys/param.h>
+#	include <unistd.h>
+#	include <dirent.h>
 #endif
 
 _NAME_BEGIN

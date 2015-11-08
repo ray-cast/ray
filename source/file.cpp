@@ -83,7 +83,7 @@ FILE* fopen(const char* filename, ios_base::openmode mode) noexcept
     else if (mode & ios_base::in)
         flags |= O_RDONLY;
     else if (mode & ios_base::out)
-        flags |= O_WRONLY | O_CREAT;
+        flags |= O_WRONLY | O_CREAT | O_TRUNC;
 
     if (mode & ios_base::app)     flags |= O_APPEND;
     if (mode & ios_base::trunc)   flags |= O_TRUNC;
@@ -297,8 +297,8 @@ int fgetc(FILE* stream) noexcept
     stream->_cnt--;
     return (0xff & *stream->_ptr++);
 #else
-    _cnt -= sizeof(wchar_t);
-    return (0xffff & *((wchar_t *)(_ptr))++);
+	stream->_cnt -= sizeof(wchar_t);
+    return (0xffff & *((wchar_t *)(*stream->_ptr++)));
 #endif
 }
 

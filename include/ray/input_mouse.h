@@ -52,66 +52,68 @@ _NAME_BEGIN
 class EXPORT DefaultInputMouse : public ToplevelInputMouse
 {
 public:
-    DefaultInputMouse() noexcept;
+	DefaultInputMouse() noexcept;
 
-    virtual void lockMouse() noexcept;
-    virtual void unlockMouse() noexcept;
-    virtual bool isLockedMouse() const noexcept;
+	virtual void lockMouse() noexcept;
+	virtual void unlockMouse() noexcept;
+	virtual bool isLockedMouse() const noexcept;
 
-    virtual void showMouse() noexcept;
-    virtual void hideMouse() noexcept;
-    virtual bool isShowMouse() noexcept;
+	virtual void showMouse() noexcept;
+	virtual void hideMouse() noexcept;
+	virtual bool isShowMouse() noexcept;
 
-    virtual void setPosition(int x, int y) noexcept;
-    virtual void setPositionX(int x) noexcept;
-    virtual void setPositionY(int y) noexcept;
+	virtual void setPosition(int x, int y) noexcept;
+	virtual void setPositionX(int x) noexcept;
+	virtual void setPositionY(int y) noexcept;
 
-    virtual int getPositionX() const noexcept;
-    virtual int getPositionY() const noexcept;
+	virtual int getPositionX() const noexcept;
+	virtual int getPositionY() const noexcept;
 
-    virtual bool getButtonDown(InputButton::Code key) const noexcept;
-    virtual bool getButtonUp(InputButton::Code key) const noexcept;
+	virtual bool getButtonDown(InputButton::Code key) const noexcept;
+	virtual bool getButtonUp(InputButton::Code key) const noexcept;
 
-    virtual bool getButton(InputButton::Code key) const noexcept;
+	virtual bool getButton(InputButton::Code key) const noexcept;
 
-private:
-    virtual void onFrameBegin() noexcept;
-    virtual void onFrameEnd() noexcept;
-
-    virtual void onObtainCapture() noexcept;
-    virtual void onReleaseCapture() noexcept;
-
-    virtual void onEvent(const InputEvent& event) noexcept;
+	virtual InputMousePtr clone() const noexcept;
 
 private:
-    DefaultInputMouse(const DefaultInputMouse&) noexcept = delete;
-    DefaultInputMouse& operator=(const DefaultInputMouse&) noexcept = delete;
+	virtual void onFrameBegin() noexcept;
+	virtual void onFrameEnd() noexcept;
+
+	virtual void onObtainCapture() noexcept;
+	virtual void onReleaseCapture() noexcept;
+
+	virtual void onEvent(const InputEvent& event) noexcept;
+
+private:
+	DefaultInputMouse(const DefaultInputMouse&) noexcept = delete;
+	DefaultInputMouse& operator=(const DefaultInputMouse&) noexcept = delete;
 
 private:
 
-    bool _isMouseLock;
-    bool _isMouseLocked;
+	bool _isMouseLock;
+	bool _isMouseLocked;
 
-    bool _isMouseHide;
+	bool _isMouseHide;
 
-    int _lockX;
-    int _lockY;
+	int _lockX;
+	int _lockY;
 
-    int _mouseX;
-    int _mouseY;
+	int _mouseX;
+	int _mouseY;
 
-    int _mouseOffsetX;
-    int _mouseOffsetY;
+	int _mouseOffsetX;
+	int _mouseOffsetY;
 
-    struct ButtonState
-    {
-        bool down;
-        bool up;
-        bool pressed;
-        bool click;
-    };
+	struct ButtonState
+	{
+		bool down;
+		bool up;
+		bool pressed;
+		bool click;
+	};
 
-    ButtonState _buttonState[InputButton::NumButtonCodes];
+	ButtonState _buttonState[InputButton::NumButtonCodes];
 };
 
 _NAME_END

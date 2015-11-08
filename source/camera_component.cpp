@@ -35,8 +35,12 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/camera_component.h>
+
 #include <ray/game_server.h>
+#include <ray/game_event.h>
+
 #include <ray/render_features.h>
+#include <ray/render_factory.h>
 
 _NAME_BEGIN
 
@@ -45,11 +49,13 @@ __ImplementSubClass(CameraComponent, GameComponent)
 CameraComponent::CameraComponent() noexcept
 {
 	_camera = std::make_shared<Camera>();
+	_camera->setRenderListener(this);
 	_camera->setCameraOrder(CameraOrder::CO_MAIN);
 }
 
 CameraComponent::~CameraComponent() noexcept
 {
+	_camera->setRenderScene(nullptr);
 }
 
 void
@@ -65,33 +71,9 @@ CameraComponent::makeOrtho(float left, float right, float bottom, float top, flo
 }
 
 void
-CameraComponent::makePerspective(float aperture, float ratio, float znear, float zfar) noexcept
+CameraComponent::makePerspective(float aperture, float znear, float zfar) noexcept
 {
-	_camera->makePerspective(aperture, ratio, znear, zfar);
-}
-
-float
-CameraComponent::getAperture() const noexcept
-{
-	return _camera->getAperture();
-}
-
-float
-CameraComponent::getRatio() const noexcept
-{
-	return _camera->getRatio();
-}
-
-float
-CameraComponent::getNear() const noexcept
-{
-	return _camera->getNear();
-}
-
-float
-CameraComponent::getFar() const noexcept
-{
-	return _camera->getFar();
+	_camera->makePerspective(aperture, znear, zfar);
 }
 
 const Matrix4x4&
@@ -137,21 +119,21 @@ CameraComponent::getViewProjectInverse() const noexcept
 }
 
 Vector3
-CameraComponent::project(const Vector3& pos) const noexcept
+CameraComponent::worldToScreen(const Vector3& pos) const noexcept
 {
-	return _camera->project(pos);
+	return _camera->worldToScreen(pos);
 }
 
 Vector3
-CameraComponent::unproject(const Vector3& pos) const noexcept
+CameraComponent::screenToWorld(const Vector3& pos) const noexcept
 {
-	return _camera->unproject(pos);
+	return _camera->screenToWorld(pos);
 }
 
 Vector3
-CameraComponent::sceneToDirection(const Vector2& pos) const noexcept
+CameraComponent::screenToDirection(const Vector2& pos) const noexcept
 {
-	return _camera->sceneToDirection(pos);
+	return _camera->screenToDirection(pos);
 }
 
 void
@@ -193,24 +175,43 @@ CameraComponent::getCameraOrder() const noexcept
 void
 CameraComponent::load(iarchive& reader) noexcept
 {
+	std::string type;
 	float aperture = 70.0;
-	float ratio = 1.0;
 	float znear = 0.1;
 	float zfar = 1000.0;
+	float left = 0;
+	float right = 0;
+	float top = 0;
+	float bottom = 0;
 	int x = 0, y = 0, w = 0, h = 0;
 
-	reader >> static_cast<GameComponent*>(this);
+	GameComponent::load(reader);
+
+	reader >> rtti_name(type);
 	reader >> rtti_name(aperture);
-	reader >> rtti_name(ratio);
 	reader >> rtti_name(znear);
 	reader >> rtti_name(zfar);
 	reader >> rtti_name(x);
 	reader >> rtti_name(y);
 	reader >> rtti_name(w);
 	reader >> rtti_name(h);
+	reader >> rtti_name(left);
+	reader >> rtti_name(right);
+	reader >> rtti_name(top);
+	reader >> rtti_name(bottom);
 
 	this->setViewport(Viewport(x, y, w, h));
-	this->makePerspective(aperture, ratio, znear, zfar);
+
+	if (type == "ortho")
+	{
+		this->setCameraType(CameraType::CT_ORTHO);
+		this->makeOrtho(left, right, top, bottom, znear, zfar);
+	}
+	else
+	{
+		this->setCameraType(CameraType::CT_PERSPECTIVE);
+		this->makePerspective(aperture, znear, zfar);
+	}
 }
 
 void
@@ -232,7 +233,6 @@ CameraComponent::onActivate() noexcept
 				this->getGameObject()->getLookAt(),
 				this->getGameObject()->getUpVector()
 				);
-			_camera->makeViewProject();
 			_camera->setRenderScene(renderScene);
 		}
 	}
@@ -252,8 +252,20 @@ CameraComponent::onMoveAfter() noexcept
 		this->getGameObject()->getLookAt(),
 		this->getGameObject()->getUpVector()
 		);
+}
 
-	_camera->makeViewProject();
+void 
+CameraComponent::onWillRenderObject() noexcept
+{
+	WillRenderObjectEvent event;
+	this->sendMessage(&event);
+}
+
+void 
+CameraComponent::onRenderObject() noexcept
+{
+	RenderObjectEvent event;
+	this->sendMessage(&event);
 }
 
 GameComponentPtr
@@ -261,7 +273,6 @@ CameraComponent::clone() const noexcept
 {
 	auto instance = std::make_shared<CameraComponent>();
 	instance->setName(this->getName());
-	instance->setVisible(this->getVisible());
 	instance->_camera = _camera->clone();
 
 	return instance;

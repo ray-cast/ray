@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #include <ray/modhelp.h>
 #include <ray/memory.h>
-#include <ctime>
 
 _NAME_BEGIN
 
@@ -564,9 +563,15 @@ MeshProperty::setNormalArray(const Vector3Array& array) noexcept
 }
 
 void
-MeshProperty::setColorArray(const Vector3Array& array, std::size_t i) noexcept
+MeshProperty::setColorArray(const Vector4Array& array, std::size_t i) noexcept
 {
 	_colors[i] = array;
+}
+
+void
+MeshProperty::setTangentArray(const Vector3Array& array) noexcept
+{
+	_tangent = array;
 }
 
 void
@@ -576,9 +581,27 @@ MeshProperty::setTexcoordArray(const std::vector<Vector2>& array, std::size_t i)
 }
 
 void
+MeshProperty::setBoneArray(const Bones& array) noexcept
+{
+	_bones = array;
+}
+
+void
+MeshProperty::setInverseKinematics(const InverseKinematics& iks) noexcept
+{
+	_iks = iks;
+}
+
+void
 MeshProperty::setFaceArray(const UintArray& array) noexcept
 {
 	_faces = array;
+}
+
+void
+MeshProperty::setWeightArray(const VertexWeights& array) noexcept
+{
+	_weights = array;
 }
 
 Vector3Array&
@@ -593,7 +616,7 @@ MeshProperty::getNormalArray() noexcept
 	return _normals;
 }
 
-Vector3Array&
+Vector4Array&
 MeshProperty::getColorArray(std::size_t i) noexcept
 {
 	return _colors[i];
@@ -603,6 +626,24 @@ std::vector<Vector2>&
 MeshProperty::getTexcoordArray(std::size_t i) noexcept
 {
 	return _texcoords[i];
+}
+
+VertexWeights&
+MeshProperty::getWeightArray() noexcept
+{
+	return _weights;
+}
+
+Bones&
+MeshProperty::getBoneArray() noexcept
+{
+	return _bones;
+}
+
+InverseKinematics&
+MeshProperty::getInverseKinematics() noexcept
+{
+	return _iks;
 }
 
 UintArray&
@@ -624,6 +665,12 @@ MeshProperty::getNormalArray() const noexcept
 }
 
 const Vector3Array&
+MeshProperty::getTangentArray() const noexcept
+{
+	return _tangent;
+}
+
+const Vector4Array&
 MeshProperty::getColorArray(std::size_t i) const noexcept
 {
 	return _colors[i];
@@ -633,6 +680,24 @@ const Vector2Array&
 MeshProperty::getTexcoordArray(std::size_t i) const noexcept
 {
 	return _texcoords[i];
+}
+
+const VertexWeights&
+MeshProperty::getWeightArray() const noexcept
+{
+	return _weights;
+}
+
+const Bones&
+MeshProperty::getBoneArray(const Bones& array) const noexcept
+{
+	return _bones;
+}
+
+const InverseKinematics&
+MeshProperty::getInverseKinematics() const noexcept
+{
+	return _iks;
 }
 
 const UintArray&
@@ -658,9 +723,9 @@ MeshProperty::clear() noexcept
 {
 	_vertices = Vector3Array();
 	_normals = Vector3Array();
-	_colors[0] = Vector3Array();
+	_colors[0] = Vector4Array();
 	_texcoords[0] = Vector2Array();
-	_centroid = Vector3Array();
+	_tangent = Vector3Array();
 	_facesNormal = Vector3Array();
 	_faces = UintArray();
 }
@@ -676,8 +741,13 @@ MeshProperty::clone() noexcept
 	mesh->setNormalArray(this->getNormalArray());
 	mesh->setColorArray(this->getColorArray());
 	mesh->setTexcoordArray(this->getTexcoordArray());
+	mesh->setWeightArray(this->getWeightArray());
+	mesh->setTangentArray(this->getTangentArray());
+	mesh->setBoneArray(this->getBoneArray());
+	mesh->setInverseKinematics(this->getInverseKinematics());
 	mesh->setFaceArray(this->getFaceArray());
 	mesh->_boundingBox = this->_boundingBox;
+	mesh->_boundingBoxChildren = this->_boundingBoxChildren;
 
 	for (auto& it : _children)
 	{
@@ -1169,7 +1239,7 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 }
 
 void
-MeshProperty::combieInstnace(const CombineInstance& instance) noexcept
+MeshProperty::mergeMeshes(const CombineInstance& instance) noexcept
 {
 	this->clear();
 
@@ -1238,7 +1308,9 @@ MeshProperty::combieInstnace(const CombineInstance& instance) noexcept
 				}
 				else
 				{
-					auto transformInverse = transform.inverse();
+					auto transformInverse = transform;
+					transformInverse.inverse();
+
 					auto transformInverseTranspose = Matrix4x4(transformInverse).transpose();
 
 					for (auto& v : mesh->getVertexArray())
@@ -1314,15 +1386,6 @@ MeshProperty::mergeVertices() noexcept
 
 	_vertices.swap(changeVertex);
 	_normals.swap(changeNormal);
-}
-
-void
-MeshProperty::computeCentroids() noexcept
-{
-	for (auto& index : _faces)
-	{
-		_centroid.push_back(_vertices.at(index) / 3);
-	}
 }
 
 void
@@ -1518,6 +1581,63 @@ MeshProperty::computeVertexNormals(std::size_t width, std::size_t height) noexce
 void
 MeshProperty::computeTangents() noexcept
 {
+	std::vector<Vector3> tan1;
+	std::vector<Vector3> tan2;
+
+	tan1.resize(_vertices.size(), Vector3::Zero);
+	tan2.resize(_vertices.size(), Vector3::Zero);
+
+	std::size_t size = _faces.size();
+	for (size_t i = 0; i < size; i += 3)
+	{
+		std::uint32_t f1 = (_faces)[i];
+		std::uint32_t f2 = (_faces)[i + 1];
+		std::uint32_t f3 = (_faces)[i + 2];
+
+		auto& vA = _vertices[f1];
+		auto& vB = _vertices[f2];
+		auto& vC = _vertices[f3];
+
+		auto& uvA = _texcoords[0][f1];
+		auto& uvB = _texcoords[0][f2];
+		auto& uvC = _texcoords[0][f3];
+
+		auto x1 = vB.x - vA.x;
+		auto x2 = vC.x - vA.x;
+		auto y1 = vB.y - vA.y;
+		auto y2 = vC.y - vA.y;
+		auto z1 = vB.z - vA.z;
+		auto z2 = vC.z - vA.z;
+
+		auto s1 = uvB.x - uvA.x;
+		auto s2 = uvC.x - uvA.x;
+		auto t1 = uvB.y - uvA.y;
+		auto t2 = uvC.y - uvA.y;
+
+		auto r = 1.0 / (s1 * t2 - s2 * t1);
+
+		Vector3 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
+		Vector3 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
+
+		tan1[f1] += sdir;
+		tan1[f2] += sdir;
+		tan1[f3] += sdir;
+
+		tan2[f1] += tdir;
+		tan2[f2] += tdir;
+		tan2[f3] += tdir;
+	}
+
+	_tangent.resize(_vertices.size());
+
+	for (std::size_t i = 0; i < _vertices.size(); i++)
+	{
+		auto n = _normals[i];
+		auto t = tan1[i];
+
+		_tangent[i] = (t - n * n.dot(t));
+		_tangent[i].normalize();
+	}
 }
 
 void

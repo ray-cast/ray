@@ -37,29 +37,15 @@
 #ifndef _H_OGL_EXTENSTION_H_
 #define _H_OGL_EXTENSTION_H_
 
-#include <ray/render_device.h>
-#include <ray/render_buffer.h>
-#include <ray/render_texture.h>
-#include <ray/render_state.h>
-#include <ray/render_window.h>
-#include <ray/shader.h>
-#include <ray/texture.h>
+#include <ray/platform.h>
 
 #include <GL/glew.h>
-#include <GL/wglew.h>
 
 _NAME_BEGIN
 
 #ifdef GLEW_MX
 extern GLEWContext _glewctx;
 #define glewGetContext() (&_glewctx)
-#ifdef _WIN32
-extern WGLEWContext _wglewctx;
-#define wglewGetContext() (&_wglewctx)
-#elif !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
-GLXEWContext _glxewctx;
-#define glxewGetContext() (&_glxewctx)
-#endif
 #endif
 
 #  if defined(__MINGW32__) || defined(__CYGWIN__)
@@ -89,38 +75,8 @@ GLXEWContext _glxewctx;
 #define GL_VIEWPORT_COMMAND_NV                                0x0010
 #define GL_SCISSOR_COMMAND_NV                                 0x0011
 #define GL_FRONT_FACE_COMMAND_NV                              0x0012
-#define GL_MAX_COMMANDS_NV                                    0x0013
-
-typedef BOOL(WINAPI * PFNWGLSWAPBUFFERSPROC) (HDC hdc);
-typedef BOOL(WINAPI * PFNWGLSWAPINTERVALEXTPROC) (int interval);
-
-typedef HGLRC(WINAPI * PFNWGLCREATECONTEXTATTRIBSARBPROC) (HDC hDC, HGLRC hShareContext, const int* attribList);
-typedef BOOL(WINAPI * PFNWGLGETPIXELFORMATATTRIBIVARBPROC) (HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, const int *piAttributes, int *piValues);
-
-extern PFNWGLSWAPBUFFERSPROC      __wglSwapBuffers;
-extern PFNWGLSWAPINTERVALEXTPROC __wglSwapIntervalEXT;
-extern PFNWGLCREATECONTEXTATTRIBSARBPROC   __wglCreateContextAttribsARB;
-extern PFNWGLGETPIXELFORMATATTRIBIVARBPROC __wglGetPixelFormatAttribivARB;
-
-inline BOOL WINAPI wglSwapBuffers(HDC hdc)
-{
-    return __wglSwapBuffers(hdc);
-}
-
-inline BOOL WINAPI wglSwapInterval(int interval)
-{
-    return __wglSwapIntervalEXT(interval);
-}
-
-inline HGLRC WINAPI wglCreateContextAttribs(HDC hDC, HGLRC hShareContext, const int* attribList)
-{
-    return __wglCreateContextAttribsARB(hDC, hShareContext, attribList);
-}
-
-inline BOOL WINAPI wglGetPixelFormatAttribiv(HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, const int *piAttributes, int *piValues)
-{
-    return __wglGetPixelFormatAttribivARB(hdc, iPixelFormat, iLayerPlane, nAttributes, piAttributes, piValues);
-}
+#define GL_BLEND_ENABLE_COMMAND                               0x0013
+#define GL_MAX_COMMANDS_NV                                    0x0014
 
 typedef void (GLEXT_APIENTRY *PFNGLCREATESTATESNVPROC)(GLsizei n, GLuint *states);
 typedef void (GLEXT_APIENTRY *PFNGLDELETESTATESNVPROC)(GLsizei n, const GLuint *states);
@@ -162,140 +118,156 @@ extern PFNGLGETSTAGEINDEXNVPROC __glewGetStageIndexNV;
 
 inline void glCreateStatesNV(GLsizei n, GLuint *states)
 {
-    __glewCreateStatesNV(n, states);
+	__glewCreateStatesNV(n, states);
 }
 
 inline void glDeleteStatesNV(GLsizei n, const GLuint *states)
 {
-    __glewDeleteStatesNV(n, states);
+	__glewDeleteStatesNV(n, states);
 }
 
 inline GLboolean glIsStateNV(GLuint state)
 {
-    return __glewIsStateNV(state);
+	return __glewIsStateNV(state);
 }
 
 inline void glStatePropertiesDynamicNV(GLuint state, GLsizei count, const GLint *params)
 {
-    __glewStatePropertiesDynamicNV(state, count, params);
+	__glewStatePropertiesDynamicNV(state, count, params);
 }
 
 inline void glStateCaptureNV(GLuint state, GLenum mode)
 {
-    __glewStateCaptureNV(state, mode);
+	__glewStateCaptureNV(state, mode);
 }
 
 inline void glDrawCommandsNV(GLenum mode, GLenum type, GLuint buffer, const GLintptr* indirects, const GLsizei* sizes, GLuint count)
 {
-    __glewDrawCommandsNV(mode, type, buffer, indirects, sizes, count);
+	__glewDrawCommandsNV(mode, type, buffer, indirects, sizes, count);
 }
 
 inline void glDrawCommandsAddressNV(GLenum mode, GLenum type, const GLuint64* indirects, const GLsizei* sizes, GLuint count)
 {
-    __glewDrawCommandsAddressNV(mode, type, indirects, sizes, count);
+	__glewDrawCommandsAddressNV(mode, type, indirects, sizes, count);
 }
 
 inline void glDrawCommandsStatesNV(GLuint buffer, const GLintptr* indirects, const GLsizei* sizes, const GLuint* states, const GLuint* fbos, GLuint count)
 {
-    __glewDrawCommandsStatesNV(buffer, indirects, sizes, states, fbos, count);
+	__glewDrawCommandsStatesNV(buffer, indirects, sizes, states, fbos, count);
 }
 
 inline void glDrawCommandsStatesAddressNV(const GLuint64* indirects, const GLsizei* sizes, const GLuint* states, const GLuint* fbos, GLuint count)
 {
-    __glewDrawCommandsStatesAddressNV(indirects, sizes, states, fbos, count);
+	__glewDrawCommandsStatesAddressNV(indirects, sizes, states, fbos, count);
 }
 
 inline void glCreateCommandListsNV(GLsizei n, GLuint *lists)
 {
-    __glewCreateCommandListsNV(n, lists);
+	__glewCreateCommandListsNV(n, lists);
 }
 
 inline void glDeleteCommandListsNV(GLsizei n, const GLuint *lists)
 {
-    __glewDeleteCommandListsNV(n, lists);
+	__glewDeleteCommandListsNV(n, lists);
 }
 
 inline GLboolean glIsCommandListNV(GLuint list)
 {
-    return __glewIsCommandListNV(list);
+	return __glewIsCommandListNV(list);
 }
 
 inline void glListDrawCommandsStatesClientNV(GLuint list, GLuint segment, const GLvoid** indirects, const GLsizei* sizes, const GLuint* states, const GLuint* fbos, GLuint count)
 {
-    __glewListDrawCommandsStatesClientNV(list, segment, indirects, sizes, states, fbos, count);
+	__glewListDrawCommandsStatesClientNV(list, segment, indirects, sizes, states, fbos, count);
 }
 
 inline void glCommandListSegmentsNV(GLuint list, GLuint segments)
 {
-    __glewCommandListSegmentsNV(list, segments);
+	__glewCommandListSegmentsNV(list, segments);
 }
 
 inline void glCompileCommandListNV(GLuint list)
 {
-    __glewCompileCommandListNV(list);
+	__glewCompileCommandListNV(list);
 }
 
 inline void glCallCommandListNV(GLuint list)
 {
-    __glewCallCommandListNV(list);
+	__glewCallCommandListNV(list);
 }
 
 inline GLuint glGetCommandHeaderNV(GLenum tokenId, GLuint tokenSize)
 {
-    return __glewGetCommandHeaderNV(tokenId, tokenSize);
+	return __glewGetCommandHeaderNV(tokenId, tokenSize);
 }
 
 inline GLushort glGetStageIndexNV(GLenum shadertype)
 {
-    return __glewGetStageIndexNV(shadertype);
+	return __glewGetStageIndexNV(shadertype);
 }
 
-enum OGLFeatures
+struct GPUctxconfig
 {
-    ARB_pixel_format,
-    ARB_create_context,
-    ARB_create_context_robustness,
-    ARB_bindless_texture,
-    ARB_vertex_array_object,
-    ARB_vertex_attrib_binding,
-    ARB_provoking_vertex,
-    ARB_direct_state_access,
-    ARB_viewport_array,
-    EXT_swap_control,
-    NV_command_list,
-    NV_shader_buffer_load,
-    NV_vertex_buffer_unified_memory
+	int api;
+	int major;
+	int minor;
+	int forward;
+	int profile;
+	int robustness;
+	int release;
+	int multithread;
+	HGLRC share;
+};
+
+struct GPUfbconfig
+{
+	int redSize;
+	int greenSize;
+	int blueSize;
+	int alphaSize;
+
+	int bufferSize;
+	int depthSize;
+	int stencilSize;
+
+	int accumSize;
+	int accumRedSize;
+	int accumGreenSize;
+	int accumBlueSize;
+	int accumAlphaSize;
+
+	int samples;
+};
+
+struct OGLFeatures
+{
+	static bool ARB_bindless_texture;
+	static bool ARB_vertex_array_object;
+	static bool ARB_vertex_attrib_binding;
+	static bool ARB_provoking_vertex;
+	static bool ARB_direct_state_access;
+	static bool ARB_viewport_array;
+
+	static bool KHR_debug;
+
+	static bool NV_command_list;
+	static bool NV_shader_buffer_load;
+	static bool NV_vertex_buffer_unified_memory;
 };
 
 class OGLExtenstion final
 {
 public:
-    OGLExtenstion() noexcept;
-    ~OGLExtenstion() noexcept;
+	OGLExtenstion() noexcept;
+	~OGLExtenstion() noexcept;
 
-    static bool initWGLExtensions(HDC hdc) except;
-    static bool initCommandListNV() noexcept;
-
-    static bool isSupport(OGLFeatures feature) noexcept;
+	static bool initExtensions() except;
+	static bool initCommandListNV() noexcept;
 
 private:
 
-    static int initWGLExtention;
-    static int initedNVcommandList;
-
-    static bool _ARB_pixel_format;
-    static bool _ARB_create_context;
-    static bool _ARB_create_context_robustness;
-    static bool _ARB_bindless_texture;
-    static bool _ARB_vertex_array_object;
-    static bool _ARB_vertex_attrib_binding;
-    static bool _ARB_provoking_vertex;
-    static bool _ARB_direct_state_access;
-    static bool _ARB_viewport_array;
-    static bool _EXT_swap_control;
-    static bool _NV_command_list;
-    static bool _NV_shader_buffer_load;
-    static bool _NV_vertex_buffer_unified_memory;
+	static int initExtention;
+	static int initedNVcommandList;
 };
 
 _NAME_END

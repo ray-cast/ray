@@ -42,7 +42,7 @@
             }
         ]]>
     </shader>
-    <technique name="background">
+    <technique name="specific">
         <pass name="opaque">
             <state name="vertex" value="SkyVS"/>
             <state name="fragment" value="SkyPS"/>

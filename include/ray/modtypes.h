@@ -52,8 +52,15 @@ typedef std::shared_ptr<class LightProperty> LightPropertyPtr;
 typedef std::shared_ptr<class MeshProperty> MeshPropertyPtr;
 typedef std::shared_ptr<class MaterialProperty> MaterialPropertyPtr;
 typedef std::shared_ptr<class Model> ModelPtr;
+typedef std::shared_ptr<class Bone> BonePtr;
+typedef std::shared_ptr<class IKAttr> IKAttrPtr;
+typedef std::shared_ptr<class VertexWeight> VertexWeightPtr;
+typedef std::shared_ptr<class MeshProperty> MeshPropertyPtr;
 
+typedef std::vector<VertexWeight> VertexWeights;
 typedef std::vector<MeshPropertyPtr> MeshPropertys;
+typedef std::vector<Bone> Bones;
+typedef std::vector<IKAttr> InverseKinematics;
 
 _NAME_END
 

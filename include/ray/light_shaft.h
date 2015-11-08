@@ -37,35 +37,39 @@
 #ifndef _H_LIGHT_SHAFT_H_
 #define _H_LIGHT_SHAFT_H_
 
-#include <ray/post_process.h>
+#include <ray/render_post_process.h>
 
 _NAME_BEGIN
 
 class EXPORT LightShaft final : public RenderPostProcess
 {
 public:
-    LightShaft() noexcept;
-    ~LightShaft() noexcept;
+	LightShaft() noexcept;
+	~LightShaft() noexcept;
 
 private:
 
-    void onActivate(RenderPipeline& pipeline) except;
-    void onDeactivate(RenderPipeline& pipeline) except;
+	void onActivate(RenderPipeline& pipeline) except;
+	void onDeactivate(RenderPipeline& pipeline) except;
 
-    void onRender(RenderPipeline& pipeline, RenderTargetPtr source) except;
+	void onRender(RenderPipeline& pipeline, RenderTexturePtr source) except;
 
 private:
 
-    MaterialPtr _material;
-    MaterialPassPtr _lightShaft;
-    MaterialPassPtr _lightShaftCopy;
+	float illuminationNumber;
+	float illuminationWeight;
+	float illuminationDecay;
 
-    MaterialParamPtr _illuminationPosition;
-    MaterialParamPtr _illuminationSample;
-    MaterialParamPtr _texSource;
-    MaterialParamPtr _cameraRadio;
+	MaterialPtr _material;
+	MaterialPassPtr _lightShaft;
+	MaterialPassPtr _lightShaftCopy;
 
-    RenderTargetPtr _texSample;
+	MaterialParamPtr _illuminationPosition;
+	MaterialParamPtr _illuminationSample;
+	MaterialParamPtr _illuminationSource;
+	MaterialParamPtr _illuminationRadio;
+
+	RenderTexturePtr _texSample;
 };
 
 _NAME_END

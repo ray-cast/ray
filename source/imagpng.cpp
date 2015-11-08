@@ -141,7 +141,7 @@ PNGHandler::doLoad(Image& image, istream& stream) noexcept
 	if (png_get_sRGB(png_ptr, info_ptr, &intent))
 		png_set_sRGB(png_ptr, info_ptr, intent);
 
-	if (color_type == PNG_COLOR_TYPE_PALETTE)
+	/*if (color_type == PNG_COLOR_TYPE_PALETTE)
 	{
 		png_colorp palette = nullptr;
 
@@ -163,7 +163,7 @@ PNGHandler::doLoad(Image& image, istream& stream) noexcept
 		}
 
 		image.setPalette(pal);
-	}
+	}*/
 
 	std::vector<png_bytep> pointers(height, 0);
 	for (auto& it : pointers)

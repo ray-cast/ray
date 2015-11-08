@@ -37,12 +37,13 @@
 #ifndef _H_EGL_CANVAS_H_
 #define _H_EGL_CANVAS_H_
 
-#include <ray/render_device.h>
+#include <ray/render_window.h>
 
 #include <EGL\egl.h>
-#include <GLES3\gl31.h>
+#include <GLES2\gl2.h>
 #include <GLES2\gl2ext.h>
-#include <GLES3\gl3ext.h>
+#include <GLES3\gl3.h>
+#include <GLES3\gl31.h>
 
 #define GL_DEBUG_OUTPUT_SYNCHRONOUS   GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR
 #define GL_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH GL_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_KHR
@@ -82,32 +83,49 @@
 #define GL_CONTEXT_FLAG_DEBUG_BIT     GL_CONTEXT_FLAG_DEBUG_BIT_KHR
 #define GL_STACK_OVERFLOW             GL_STACK_OVERFLOW_KHR
 #define GL_STACK_UNDERFLOW            GL_STACK_UNDERFLOW_KHR
+#define GL_FRAMEBUFFER_SRGB           GL_FRAMEBUFFER_SRGB_EXT
 
-#define GLDEBUGPROC GL_APIENTRY
+#define GLAPIENTRY GL_APIENTRY
+
+#define glDebugMessageCallback glDebugMessageCallbackKHR
+#define glDebugMessageControl glDebugMessageControlKHR
 
 _NAME_BEGIN
 
-class EGLCanvas final : public RenderCanvas
+class EGLCanvas final : public RenderWindow
 {
 public:
     EGLCanvas() noexcept;
     ~EGLCanvas() noexcept;
 
-    bool setup(WindHandle wx, const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) noexcept;
+    void open(WindHandle hwnd) except;
     void close() noexcept;
 
-    void setSwapInterval(int interval) noexcept;
+    void setSwapInterval(SwapInterval interval) noexcept;
+	SwapInterval getSwapInterval() const noexcept;
 
     void bind() noexcept;
     void unbind() noexcept;
 
     void present() noexcept;
 
+	void setWindowResolution(std::size_t w, std::size_t h) noexcept;
+
+	std::size_t getWindowWidth() const noexcept;
+	std::size_t getWindowHeight() const noexcept;
+
+	WindHandle getWindHandle() const noexcept;
+
 private:
     EGLCanvas(const EGLCanvas&) = delete;
     EGLCanvas& operator=(const EGLCanvas&) = delete;
 
 private:
+	SwapInterval _interval;
+
+	std::size_t _width;
+	std::size_t _height;
+
     EGLNativeWindowType _hwnd;
     EGLNativeDisplayType _hdc;
 

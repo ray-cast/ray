@@ -51,7 +51,7 @@
 #include <ray/format.h>
 #include <ray/thread.h>
 
-typedef std::shared_ptr<class Terrain> TerrainPtr;
+typedef std::shared_ptr<class TerrainComponent> TerrainPtr;
 typedef std::shared_ptr<class TerrainMap> TerrainMapPtr;
 typedef std::shared_ptr<class TerrainChunk> TerrainChunkPtr;
 typedef std::shared_ptr<class TerrainItem> TerrainItemPtr;

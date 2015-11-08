@@ -227,19 +227,11 @@
             <state name="vertex" value="groundVS"/>
             <state name="fragment" value="groundPS"/>
 
-            <state name="blend" value="true"/>
-            <state name="blendsrc" value="one"/>
-            <state name="blenddst" value="one"/>
-
             <state name="cullmode" value="back" />
         </pass>
         <pass name="sky">
             <state name="vertex" value="skyVS"/>
             <state name="fragment" value="skyPS"/>
-
-            <state name="blend" value="true"/>
-            <state name="blendsrc" value="one"/>
-            <state name="blenddst" value="one"/>
 
             <state name="cullmode" value="front" />
         </pass>

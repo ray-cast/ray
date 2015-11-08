@@ -50,32 +50,34 @@ _NAME_BEGIN
 class EXPORT DefaultInputKeyboard final : public ToplevelInputKeyboard
 {
 public:
-    DefaultInputKeyboard() noexcept;
-    ~DefaultInputKeyboard() noexcept;
+	DefaultInputKeyboard() noexcept;
+	~DefaultInputKeyboard() noexcept;
 
-    virtual bool getKeyDown(InputKey::Code key) const noexcept;
-    virtual bool getKeyUp(InputKey::Code key) const noexcept;
-    virtual bool getKey(InputKey::Code key) const noexcept;
+	virtual bool getKeyDown(InputKey::Code key) const noexcept;
+	virtual bool getKeyUp(InputKey::Code key) const noexcept;
+	virtual bool getKey(InputKey::Code key) const noexcept;
 
-private:
-    virtual void onFrameBegin() noexcept;
-    virtual void onObtainCapture() noexcept;
-    virtual void onReset() noexcept;
-    virtual void onEvent(const InputEvent& event) noexcept;
+	virtual InputKeyboardPtr clone() const noexcept;
 
 private:
-    DefaultInputKeyboard(const DefaultInputKeyboard&) noexcept = delete;
-    DefaultInputKeyboard& operator=(const DefaultInputKeyboard&) noexcept = delete;
+	virtual void onFrameBegin() noexcept;
+	virtual void onObtainCapture() noexcept;
+	virtual void onReset() noexcept;
+	virtual void onEvent(const InputEvent& event) noexcept;
 
 private:
-    struct KeyState
-    {
-        bool pressed;
-        bool down;
-        bool up;
-    };
+	DefaultInputKeyboard(const DefaultInputKeyboard&) noexcept = delete;
+	DefaultInputKeyboard& operator=(const DefaultInputKeyboard&) noexcept = delete;
 
-    KeyState _keyState[InputKey::NumKeyCodes];
+private:
+	struct KeyState
+	{
+		bool pressed;
+		bool down;
+		bool up;
+	};
+
+	KeyState _keyState[InputKey::NumKeyCodes];
 };
 
 _NAME_END

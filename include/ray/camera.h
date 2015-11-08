@@ -57,6 +57,7 @@ enum CameraOrder
 	CO_LIGHT,
 	CO_SHADING,
 	CO_CUSTOM,
+	CO_CUBEMAP,
 	CO_MAIN
 };
 
@@ -73,8 +74,15 @@ public:
 	Camera() noexcept;
 	~Camera() noexcept;
 
+	void makeLookAt(const Vector3& pos, const Vector3& lookat, const Vector3& up) noexcept;
+	void makeOrtho(float left, float right, float top, float bottom, float znear, float zfar, float ratio = 1.0) noexcept;
+	void makePerspective(float aperture, float znear, float zfar, float ratio = 1.0) noexcept;
+	void makeViewPorject() noexcept;
+
+	void getOrtho(float& left, float& right, float& top, float& bottom, float& ratio, float& znear, float& zfar) noexcept;
+	void getPerspective(float& aperture, float& ratio, float& znear, float& zfar) noexcept;
+
 	float getAperture() const noexcept;
-	float getRatio() const noexcept;
 	float getNear() const noexcept;
 	float getFar() const noexcept;
 
@@ -82,13 +90,12 @@ public:
 	const Vector3& getLookAt() const noexcept;
 	const Vector3& getUpVector() const noexcept;
 
+	const Matrix4x4& getProject() const noexcept;
+	const Matrix4x4& getProjectInverse() const noexcept;
+
 	const Matrix4x4& getView() const noexcept;
 	const Matrix4x4& getViewInverse() const noexcept;
 	const Matrix4x4& getViewInverseTranspose() const noexcept;
-
-	void setProject(const Matrix4x4& m) noexcept;
-	const Matrix4x4& getProject() const noexcept;
-	const Matrix4x4& getProjectInverse() const noexcept;
 
 	const Matrix4x4& getViewProject() const noexcept;
 	const Matrix4x4& getViewProjectInverse() const noexcept;
@@ -98,16 +105,17 @@ public:
 
 	const Vector4& getClipConstant() const noexcept;
 
-	void makeLookAt(const Vector3& pos, const Vector3& lookat, const Vector3& up) noexcept;
-	void makeOrtho(float left, float right, float bottom, float top, float znear, float zfar) noexcept;
-	void makePerspective(float aperture, float ratio, float znear, float zfar) noexcept;
-	void makeViewProject() noexcept;
-
-	Vector3 project(const Vector3& pos) const noexcept;
-	Vector3 unproject(const Vector3& pos) const noexcept;
-
+	Vector3 worldToScreen(const Vector3& pos) const noexcept;
 	Vector3 worldToProject(const Vector3& pos) const noexcept;
-	Vector3 sceneToDirection(const Vector2& pos) const noexcept;
+
+	Vector3 screenToWorld(const Vector3& pos) const noexcept;
+	Vector3 screenToDirection(const Vector2& pos) const noexcept;
+
+	void setClearFlags(ClearFlags flags) noexcept;
+	ClearFlags getCameraFlags() const noexcept;
+
+	void setClearColor(const Vector4& color) noexcept;
+	const Vector4& getClearColor() const noexcept;
 
 	void setViewport(const Viewport& viewport) noexcept;
 	const Viewport&  getViewport() const noexcept;
@@ -121,11 +129,11 @@ public:
 	CameraRender getCameraRender() const noexcept;
 
 	void setRenderScene(RenderScenePtr scene) noexcept;
-	void setRenderTarget(RenderTargetPtr texture) noexcept;
+	void setRenderTexture(RenderTexturePtr texture) noexcept;
 	void setRenderWindow(RenderWindowPtr window) noexcept;
 
 	RenderScenePtr getRenderScene() const noexcept;
-	RenderTargetPtr getRenderTarget() const noexcept;
+	RenderTexturePtr getRenderTexture() const noexcept;
 	RenderWindowPtr getRenderWindow() const noexcept;
 
 	CameraPtr clone() const noexcept;
@@ -153,10 +161,6 @@ private:
 	Vector4 _projConstant;
 	Vector4 _clipConstant;
 
-	Matrix4x4 _view;
-	Matrix4x4 _viewInverse;
-	Matrix4x4 _viewInverseTranspose;
-
 	Matrix4x4 _project;
 	Matrix4x4 _projectInverse;
 
@@ -165,14 +169,18 @@ private:
 
 	Viewport _viewport;
 
-	CameraType      _cameraType;
-	CameraOrder     _cameraOrder;
-	CameraRender    _cameraRender;
+	ClearFlags _clearFlags;
+	Vector4     _clearColor;
+	TexturePtr  _clearSkybox;
 
-	RenderTargetPtr _renderTexture;
+	CameraType   _cameraType;
+	CameraOrder  _cameraOrder;
+	CameraRender _cameraRender;
+
+	RenderTexturePtr _renderTexture;
 	RenderWindowPtr _renderWindow;
 
-	RenderScene*  _renderScene;
+	RenderSceneWeakPtr  _renderScene;
 };
 
 _NAME_END

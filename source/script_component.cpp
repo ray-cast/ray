@@ -186,7 +186,6 @@ ScriptComponent::clone() const noexcept
 {
 	auto instance = std::make_shared<ScriptComponent>();
 	instance->setName(this->getName());
-	instance->setVisible(this->getVisible());
 
 	return instance;
 }

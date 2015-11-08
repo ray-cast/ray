@@ -39,7 +39,7 @@
 _NAME_BEGIN
 
 MaterialPass::MaterialPass(RenderPass pass) noexcept
-    :_pass(pass)
+	:_pass(pass)
 {
 }
 
@@ -50,43 +50,43 @@ MaterialPass::~MaterialPass() noexcept
 void
 MaterialPass::setName(const std::string& name) noexcept
 {
-    _name = name;
+	_name = name;
 }
 
 const std::string&
 MaterialPass::getName() const noexcept
 {
-    return _name;
+	return _name;
 }
 
 void
 MaterialPass::setShaderObject(ShaderObjectPtr shader) noexcept
 {
-    _shaderObject = shader;
+	_shaderObject = shader;
 }
 
 void
 MaterialPass::setRenderState(RenderStatePtr state) noexcept
 {
-    _renderState = state;
+	_renderState = state;
 }
 
 RenderPass
 MaterialPass::getRenderPass() noexcept
 {
-    return _pass;
+	return _pass;
 }
 
 ShaderObjectPtr
 MaterialPass::getShaderObject() noexcept
 {
-    return _shaderObject;
+	return _shaderObject;
 }
 
 RenderStatePtr
 MaterialPass::getRenderState() noexcept
 {
-    return _renderState;
+	return _renderState;
 }
 
 _NAME_END

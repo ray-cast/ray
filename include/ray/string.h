@@ -57,6 +57,12 @@ typedef wchar_t char_type;
 typedef char char_type;
 #endif
 
+#if _UNICODE
+typedef std::wstring string;
+#else
+typedef std::string string;
+#endif
+
 // the operation specific directory separator
 #ifndef __WINDOWS__
 #   define SEPARATOR '/'
@@ -76,6 +82,14 @@ typedef char char_type;
 #ifndef MAX_PATH
 #   define MAX_PATH 4096
 #endif
+
+#ifndef __TEXT
+#	ifdef  __UNICODE__
+#		define __TEXT(quote) L##quote
+#	else
+#		define __TEXT(quote) quote         
+#	endif  
+#endif 
 
 #if defined(__WINDOWS__)
 

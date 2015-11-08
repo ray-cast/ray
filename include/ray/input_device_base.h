@@ -44,29 +44,31 @@ _NAME_BEGIN
 class EXPORT InputDevice
 {
 public:
-    typedef void* CaptureObject;
+	typedef void* CaptureObject;
 
 public:
-    InputDevice() noexcept;
-    virtual ~InputDevice() noexcept;
+	InputDevice() noexcept;
+	virtual ~InputDevice() noexcept;
 
-    virtual void capture(CaptureObject WinHandle) noexcept = 0;
+	virtual void capture(CaptureObject WinHandle) noexcept = 0;
 
-    virtual void enableEventPosting(bool enable) noexcept = 0;
-    virtual bool enableEventPosting() const noexcept = 0;
+	virtual void enableEventPosting(bool enable) noexcept = 0;
+	virtual bool enableEventPosting() const noexcept = 0;
 
-    virtual void sendEvent(const InputEvent& event) noexcept = 0;
-    virtual void postEvent(const InputEvent& event) noexcept = 0;
+	virtual void sendEvent(const InputEvent& event) noexcept = 0;
+	virtual void postEvent(const InputEvent& event) noexcept = 0;
 
-    virtual void peekEvents(InputEvent& event) noexcept = 0;
-    virtual bool pollEvents(InputEvent& event) noexcept = 0;
-    virtual bool waitEvents(InputEvent& event) noexcept = 0;
-    virtual bool waitEvents(InputEvent& event, int timeout) noexcept = 0;
-    virtual void flushEvent() noexcept = 0;
+	virtual void peekEvents(InputEvent& event) noexcept = 0;
+	virtual bool pollEvents(InputEvent& event) noexcept = 0;
+	virtual bool waitEvents(InputEvent& event) noexcept = 0;
+	virtual bool waitEvents(InputEvent& event, int timeout) noexcept = 0;
+	virtual void flushEvent() noexcept = 0;
+
+	virtual InputDevicePtr clone() const noexcept = 0;
 
 private:
-    InputDevice(const InputDevice&) noexcept = delete;
-    InputDevice& operator=(const InputDevice&) noexcept = delete;
+	InputDevice(const InputDevice&) noexcept = delete;
+	InputDevice& operator=(const InputDevice&) noexcept = delete;
 };
 
 _NAME_END

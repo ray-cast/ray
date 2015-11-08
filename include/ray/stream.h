@@ -47,6 +47,9 @@ public:
     stream() noexcept;
     virtual ~stream() noexcept;
 
+	void setOpenMode(ios_base::openmode mode) noexcept;
+	ios_base::openmode getOpenMode() const noexcept;
+
     streambuf* rdbuf() const noexcept;
     void set_rdbuf(streambuf* buf) noexcept;
 
@@ -61,6 +64,7 @@ private:
 
 private:
     streambuf* _strbuf;
+	ios_base::openmode _mode;
 };
 
 _NAME_END

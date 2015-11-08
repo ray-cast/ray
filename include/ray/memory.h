@@ -41,7 +41,7 @@
 
 namespace std
 {
-#if defined(__GNUWIN__) || defined(__LINUX__)
+#if defined(__MINGW64__) || defined(__MINGW32__) || defined(__LINUX__)
     template<class _Ty,
     class... _Types> inline
         typename std::enable_if<!std::is_array<_Ty>::value,

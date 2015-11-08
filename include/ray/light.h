@@ -44,19 +44,12 @@ _NAME_BEGIN
 enum LightType
 {
 	LT_SUN,
+	LT_DIRECTIONAL,
+	LT_AMBIENT,
 	LT_POINT,
 	LT_SPOT,
 	LT_AREA,
 	LT_HEMI_SPHERE
-};
-
-class EXPORT LightListener
-{
-public:
-	LightListener() noexcept;
-	virtual ~LightListener() noexcept;
-
-	virtual void onRenderShadow(Light* light) noexcept = 0;
 };
 
 class EXPORT Light final : public RenderObject, public RenderListener
@@ -65,39 +58,32 @@ public:
 	Light() noexcept;
 	~Light() noexcept;
 
-	void setup() noexcept;
-	void close() noexcept;
-
-	void setIntensity(float intensity) noexcept;
 	void setRange(float range) noexcept;
-	void setExponent(float value) noexcept;
-	void setSpotAngle(float value) noexcept;
+	void setIntensity(float intensity) noexcept;
 	void setSpotInnerCone(float value) noexcept;
 	void setSpotOuterCone(float value) noexcept;
 
-	float getIntensity() const noexcept;
 	float getRange() const noexcept;
-	float getExponent() const noexcept;
-	float getSpotAngle() const noexcept;
+	float getIntensity() const noexcept;
 	float getSpotInnerCone() const noexcept;
 	float getSpotOuterCone() const noexcept;
 
 	void setLightType(LightType type) noexcept;
-	void setLightListener(LightListener* listener) noexcept;
+	void setLightUp(const Vector3& up) noexcept;
 	void setLightColor(const Vector3& color) noexcept;
-	void setLightDirection(const Vector3& direction) noexcept;
+	void setLightLookat(const Vector3& lookat) noexcept;
+	void setLightAttenuation(const Vector3& attenuation) noexcept;
 
+	const Vector3& getLightUp() const noexcept;
+	const Vector3& getLightLookat() const noexcept;
 	const Vector3& getLightColor() const noexcept;
-	const Vector3& getLightDirection() const noexcept;
+	const Vector3& getLightAttenuation() const noexcept;
 
 	LightType getLightType() const noexcept;
-	LightListener* getLightListener() const noexcept;
 
 	void setShadow(bool enable) noexcept;
 	bool getShadow() const noexcept;
 
-	void setupShadow(std::size_t size = 512) noexcept;
-	void discardShadow() noexcept;
 	void setTransform(const Matrix4x4& m) noexcept;
 
 	CameraPtr getShadowCamera() const noexcept;
@@ -110,7 +96,7 @@ public:
 
 private:
 
-	void _updateShadow() noexcept;
+	void _updateShadow() const noexcept;
 
 	void onWillRenderObject() noexcept;
 	void onRenderObject() noexcept;
@@ -122,28 +108,26 @@ private:
 private:
 
 	LightType      _lightType;
-	LightListener* _lightListener;
 
 	float _lightRange;
 	float _lightIntensity;
 
 	Vector3 _lightColor;
-	Vector3 _lightDirection;
+	Vector3 _lightAttenuation;
 
 	// spot
-	float _spotExponent;
-	float _spotAngle;
 	float _spotInnerCone;
 	float _spotOuterCone;
 
 	// shaodw
 	bool _shadow;
+	mutable bool _shadowUpdated;
 	std::size_t _shadowSize;
-	CameraPtr _shadowCamera;
-	Vector3 _shadowTranslate;
+	Vector3 _shadowUpVector;
 	Vector3 _shadowLookAt;
+	CameraPtr _shadowCamera;
 
-	RenderScene* _renderScene;
+	RenderSceneWeakPtr _renderScene;
 };
 
 _NAME_END

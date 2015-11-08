@@ -41,65 +41,86 @@
 
 _NAME_BEGIN
 
+class OGLTextureSample final : public TextureSample
+{
+public:
+	OGLTextureSample() noexcept;
+	~OGLTextureSample() noexcept;
+
+	bool setup() except;
+	void close() noexcept;
+
+	GLuint getInstanceID() noexcept;
+private:
+
+	GLuint _sample;
+};
+
 class OGLTexture final : public Texture
 {
 public:
-    OGLTexture() noexcept;
-    ~OGLTexture() noexcept;
+	OGLTexture() noexcept;
+	~OGLTexture() noexcept;
 
-    bool setup() except;
-    void close() noexcept;
+	bool setup() except;
+	void close() noexcept;
 
-    GLuint getInstanceID() noexcept;
-    GLuint64 getInstanceAddr() noexcept;
-
-private:
-
-    static void applyTextureWrap(GLenum, TextureWrap wrap) noexcept;
-    static void applyTextureFilter(GLenum target, TextureFilter filter) noexcept;
-    static void applyTextureAnis(GLenum target, Anisotropy anis) noexcept;
+	GLuint getInstanceID() noexcept;
+	GLuint64 getInstanceAddr() noexcept;
 
 private:
 
-    GLuint _texture;
-    GLuint64 _textureAddr;
+	static void applyTextureWrap(GLenum, TextureWrap wrap) noexcept;
+	static void applyTextureFilter(GLenum target, TextureFilter filter) noexcept;
+	static void applyTextureAnis(GLenum target, Anisotropy anis) noexcept;
+
+private:
+
+	GLuint _texture;
+	GLuint64 _textureAddr;
+	GLuint64 _sampleAddr;
 };
 
-class OGLRenderTarget final : public RenderTarget
+class OGLRenderTexture final : public RenderTexture
 {
 public:
-    OGLRenderTarget() noexcept;
-    ~OGLRenderTarget() noexcept;
+	OGLRenderTexture() noexcept;
+	~OGLRenderTexture() noexcept;
 
-    virtual bool setup() noexcept;
-    virtual void close() noexcept;
+	virtual bool setup() noexcept;
+	virtual void close() noexcept;
 
-    GLuint getInstanceID() noexcept;
+	void setLayer(GLuint layer) noexcept;
+	GLuint getLayer() const noexcept;
+
+	GLuint getInstanceID() noexcept;
+
 private:
-    void bindRenderTarget(TexturePtr texture, GLenum attachment) noexcept;
+	void bindRenderTexture(TexturePtr texture, GLenum attachment) noexcept;
+	void onSetRenderTextureAfter(RenderTexturePtr target) noexcept;
 
 private:
-
-    GLuint _fbo;
+	GLuint _fbo;
+	GLuint _layer;
 };
 
-class OGLMultiRenderTarget final : public MultiRenderTarget
+class OGLMultiRenderTexture final : public MultiRenderTexture
 {
 public:
-    OGLMultiRenderTarget() noexcept;
-    ~OGLMultiRenderTarget() noexcept;
+	OGLMultiRenderTexture() noexcept;
+	~OGLMultiRenderTexture() noexcept;
 
-    virtual bool setup() noexcept;
-    virtual void close() noexcept;
+	virtual bool setup() noexcept;
+	virtual void close() noexcept;
 
-    GLuint getInstanceID() noexcept;
-
-private:
-    void bindRenderTarget(RenderTargetPtr target, GLenum attachment) noexcept;
+	GLuint getInstanceID() noexcept;
 
 private:
+	void bindRenderTexture(RenderTexturePtr target, GLenum attachment) noexcept;
 
-    GLuint _fbo;
+private:
+
+	GLuint _fbo;
 };
 
 _NAME_END

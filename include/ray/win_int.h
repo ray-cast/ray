@@ -48,6 +48,16 @@
 
 _NAME_BEGIN
 
+#if __UNICODE__
+typedef IMAGEHLP_LINEW64 IMAGEHLPLINE;
+typedef IMAGEHLP_MODULEW64 IMAGEHLPMODULE;
+typedef PSYMBOL_INFOW PSYMBOLINFO;
+#else
+typedef IMAGEHLP_LINE64 IMAGEHLPLINE;
+typedef IMAGEHLP_MODULE64 IMAGEHLPMODULE;
+typedef PSYMBOL_INFO PSYMBOLINFO;
+#endif
+
 class StackWalker;
 class EXPORT StackWalkerInternal : public WalkerBase
 {
@@ -125,54 +135,54 @@ public:
 
     bool loadModules() noexcept;
     bool loadModules(HANDLE process, DWORD dwProcessId) noexcept;
-    bool loadModule(HANDLE process, const std::string& img, const std::string& mod, DWORD64 baseAddr, DWORD size) noexcept;
+    bool loadModule(HANDLE process, const string& img, const string& mod, DWORD64 baseAddr, DWORD size) noexcept;
 
     bool firstStackFrame(PDWORD imageType, HANDLE thread, LPSTACKFRAME64 StackFrame, PCONTEXT context) noexcept;
     bool nextStackFrame(DWORD imageType, HANDLE thread, LPSTACKFRAME64 StackFrame, PCONTEXT context) noexcept;
 
     bool isModuleLoaded() const noexcept;
 
-    bool getModuleInfo(DWORD64 baseAddr, IMAGEHLP_MODULE64& info) noexcept;
-    bool getSymFromAddr(DWORD64 address, PDWORD64 displacement, PSYMBOL_INFO symbol) noexcept;
-    bool getLineFromAddr(DWORD64 qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE64 Line64) noexcept;
+    bool getModuleInfo(DWORD64 baseAddr, IMAGEHLPMODULE& info) noexcept;
+    bool getSymFromAddr(DWORD64 address, PDWORD64 displacement, PSYMBOLINFO symbol) noexcept;
+    bool getLineFromAddr(DWORD64 qwAddr, PDWORD pdwDisplacement, IMAGEHLPLINE& Line64) noexcept;
     bool getLocalVariable(const PCONTEXT context, VariableList& variable) noexcept;
 
-    std::string getTypeName(PSYMBOL_INFO syminfo) noexcept;
-    std::string getTypeName(DWORD typeID, DWORD64 modBase) noexcept;
-    std::string getTypeValue(PSYMBOL_INFO syminfo, const PCONTEXT context) noexcept;
-    std::string getTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, DWORD size) noexcept;
+    string getTypeName(PSYMBOLINFO syminfo) noexcept;
+    string getTypeName(DWORD typeID, DWORD64 modBase) noexcept;
+    string getTypeValue(PSYMBOLINFO syminfo, const PCONTEXT context) noexcept;
+    string getTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, DWORD size) noexcept;
 
 private:
 
-    bool loadSymbol(const std::string& filepath) noexcept;
+    bool loadSymbol(const string& filepath) noexcept;
 
     bool loadModulesFromTH32(HANDLE process, DWORD pid) noexcept;
     bool loadModulesFromPSAPI(HANDLE process) noexcept;
 
     SymBaseType getBaseType(DWORD typeID, DWORD64 modBase) noexcept;
 
-    std::string getSymTypeName(SYM_TYPE type) noexcept;
-    std::string getBaseTypeName(DWORD typeID, DWORD64 modBase) noexcept;
-    std::string getPointerTypeName(DWORD typeID, DWORD64 modBase) noexcept;
-    std::string getArrayTypeName(DWORD typeID, DWORD64 modBase) noexcept;
-    std::string getUDTTypeName(DWORD typeID, DWORD64 modBase) noexcept;
-    std::string getEnumTypeName(DWORD typeID, DWORD64 modBase) noexcept;
-    std::string getFuncTypeName(DWORD typeID, DWORD64 modBase) noexcept;
+    string getSymTypeName(SYM_TYPE type) noexcept;
+    string getBaseTypeName(DWORD typeID, DWORD64 modBase) noexcept;
+    string getPointerTypeName(DWORD typeID, DWORD64 modBase) noexcept;
+    string getArrayTypeName(DWORD typeID, DWORD64 modBase) noexcept;
+    string getUDTTypeName(DWORD typeID, DWORD64 modBase) noexcept;
+    string getEnumTypeName(DWORD typeID, DWORD64 modBase) noexcept;
+    string getFuncTypeName(DWORD typeID, DWORD64 modBase) noexcept;
 
     BOOL isSimpleType(DWORD typeID, DWORD64 modBase) noexcept;
-    BOOL getDataMemberInfo(DWORD memberID, DWORD64 modBase, DWORD64 address, const BYTE* pData, std::ostringstream& stream) noexcept;
+    BOOL getDataMemberInfo(DWORD memberID, DWORD64 modBase, DWORD64 address, const BYTE* pData, ostringstream& stream) noexcept;
     BOOL VariantEqual(VARIANT var, DWORD baseType, const BYTE* pData) noexcept;
 
-    DWORD64 getTypeAddress(PSYMBOL_INFO syminfo, const PCONTEXT context) noexcept;
+    DWORD64 getTypeAddress(PSYMBOLINFO syminfo, const PCONTEXT context) noexcept;
 
-    std::string getTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept;
-    std::string getBaseTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept;
-    std::string getPointerTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept;
-    std::string getArrayTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept;
-    std::string getUDTTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept;
-    std::string getEnumTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept;
+    string getTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept;
+    string getBaseTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept;
+    string getPointerTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept;
+    string getArrayTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept;
+    string getUDTTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept;
+    string getEnumTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept;
 
-    static BOOL CALL EnumSymCallBack(PSYMBOL_INFO syminfo, ULONG symsize, PVOID data) noexcept;
+    static BOOL CALL EnumSymCallBack(PSYMBOLINFO syminfo, ULONG symsize, PVOID data) noexcept;
 
 private:
     StackWalker* _walker;

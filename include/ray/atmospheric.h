@@ -37,57 +37,57 @@
 #ifndef _H_ATMOSPHERE_H_
 #define _H_ATMOSPHERE_H_
 
-#include <ray/post_process.h>
+#include <ray/render_post_process.h>
 
 _NAME_BEGIN
 
 class EXPORT Atmospheric : public RenderPostProcess
 {
 public:
-    struct EXPORT Setting
-    {
-        float outerRadius;
-        float innerRadius;
-        float kr;
-        float km;
-        float sun;
-        float3 wavelength;
+	struct EXPORT Setting
+	{
+		float outerRadius;
+		float innerRadius;
+		float kr;
+		float km;
+		float sun;
+		float3 wavelength;
 
-        Setting() noexcept;
-    };
+		Setting() noexcept;
+	};
 
 public:
-    Atmospheric() noexcept;
-    ~Atmospheric() noexcept;
+	Atmospheric() noexcept;
+	~Atmospheric() noexcept;
 
-    void onActivate(RenderPipeline& pipeline) noexcept;
-    void onDectivate(RenderPipeline& pipeline) noexcept;
+	void onActivate(RenderPipeline& pipeline) except;
+	void onDeactivate(RenderPipeline& pipeline) noexcept;
 
-    void onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
+	void onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
 
 private:
 
-    Setting _setting;
+	Setting _setting;
 
-    RenderBufferPtr _sphere;
+	RenderBufferPtr _sphere;
 
-    MaterialPtr _sat;
-    MaterialPassPtr _sky;
-    MaterialPassPtr _ground;
+	MaterialPtr _sat;
+	MaterialPassPtr _sky;
+	MaterialPassPtr _ground;
 
-    ShaderVariantPtr _lightDirection;
-    ShaderVariantPtr _invWavelength;
-    ShaderVariantPtr _outerRadius;
-    ShaderVariantPtr _outerRadius2;
-    ShaderVariantPtr _innerRadius;
-    ShaderVariantPtr _innerRadius2;
-    ShaderVariantPtr _krESun;
-    ShaderVariantPtr _kmESun;
-    ShaderVariantPtr _kr4PI;
-    ShaderVariantPtr _km4PI;
-    ShaderVariantPtr _scaleFactor;
-    ShaderVariantPtr _scaleDepth;
-    ShaderVariantPtr _scaleOverScaleDepth;
+	ShaderVariantPtr _lightDirection;
+	ShaderVariantPtr _invWavelength;
+	ShaderVariantPtr _outerRadius;
+	ShaderVariantPtr _outerRadius2;
+	ShaderVariantPtr _innerRadius;
+	ShaderVariantPtr _innerRadius2;
+	ShaderVariantPtr _krESun;
+	ShaderVariantPtr _kmESun;
+	ShaderVariantPtr _kr4PI;
+	ShaderVariantPtr _km4PI;
+	ShaderVariantPtr _scaleFactor;
+	ShaderVariantPtr _scaleDepth;
+	ShaderVariantPtr _scaleOverScaleDepth;
 };
 
 _NAME_END

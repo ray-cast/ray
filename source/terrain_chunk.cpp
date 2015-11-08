@@ -41,35 +41,35 @@ _NAME_BEGIN
 int
 TerrainChunk::getX() noexcept
 {
-    return _x;
+	return _x;
 }
 
 int
 TerrainChunk::getY() noexcept
 {
-    return _y;
+	return _y;
 }
 
 int
 TerrainChunk::distance(int x, int y) noexcept
 {
-    int dx = abs(_x - x);
-    int dy = abs(_y - y);
-    return std::max(dx, dy);
+	int dx = abs(_x - x);
+	int dy = abs(_y - y);
+	return std::max(dx, dy);
 }
 
 int
 TerrainChunk::visiable(const Frustum& fru, int chunkSize) noexcept
 {
-    int dx = _x * chunkSize - 1;
-    int dy = _y * chunkSize - 1;
-    int dz = chunkSize + 1;
+	int dx = _x * chunkSize - 1;
+	int dy = _y * chunkSize - 1;
+	int dz = chunkSize + 1;
 
-    AABB aabb;
-    aabb.min = Vector3(dx, 0, dy);
-    aabb.max = Vector3(dz, dz, dz);
+	AABB aabb;
+	aabb.min = Vector3(dx, 0, dy);
+	aabb.max = Vector3(dz, dz, dz);
 
-    return fru.contains(aabb);
+	return fru.contains(aabb);
 }
 
 _NAME_END

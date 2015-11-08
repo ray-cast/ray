@@ -37,29 +37,29 @@
 #ifndef _H_FXAA_H_
 #define _H_FXAA_H_
 
-#include <ray/post_process.h>
+#include <ray/render_post_process.h>
 
 _NAME_BEGIN
 
 class FXAA : public RenderPostProcess
 {
 public:
-    FXAA() noexcept;
-    ~FXAA() noexcept;
+	FXAA() noexcept;
+	~FXAA() noexcept;
 
 private:
 
-    void onActivate(RenderPipeline& pipeline) except;
-    void onDeactivate(RenderPipeline& pipeline) except;
+	void onActivate(RenderPipeline& pipeline) except;
+	void onDeactivate(RenderPipeline& pipeline) except;
 
-    void onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
+	void onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
 
 private:
 
-    MaterialPtr _fxaa;
-    MaterialPassPtr _fxaaPass;
+	MaterialPtr _fxaa;
+	MaterialPassPtr _fxaaPass;
 
-    ShaderVariantPtr _texelStep;
+	ShaderVariantPtr _texelStep;
 };
 
 _NAME_END

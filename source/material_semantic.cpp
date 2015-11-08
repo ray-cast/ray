@@ -40,262 +40,237 @@ _NAME_BEGIN
 
 MaterialSemantic::MaterialSemantic() noexcept
 {
-    this->setup();
+	this->setup();
 }
 
 MaterialSemantic::~MaterialSemantic() noexcept
 {
-    this->close();
+	this->close();
 }
 
 void
 MaterialSemantic::setup() noexcept
 {
-    _semantics.resize(NumSemantic);
+	_semantics.resize(NumSemantic);
 
-    _semantics[matModel] = std::make_shared<MaterialParam>("matModel", float4x4());
-    _semantics[matModelInverse] = std::make_shared<MaterialParam>("matModelInverse", float4x4());
-    _semantics[matModelInverseTranspose] = std::make_shared<MaterialParam>("matModelInverseTranspose", float4x4());
-    _semantics[matView] = std::make_shared<MaterialParam>("matView", float4x4());
-    _semantics[matViewInverse] = std::make_shared<MaterialParam>("matViewInverse", float4x4());
-    _semantics[matViewInverseTranspose] = std::make_shared<MaterialParam>("matViewInverseTranspose", float4x4());
-    _semantics[matProject] = std::make_shared<MaterialParam>("matProject", float4x4());
-    _semantics[matProjectInverse] = std::make_shared<MaterialParam>("matProjectInverse", float4x4());
-    _semantics[matViewProject] = std::make_shared<MaterialParam>("matViewProject", float4x4());
-    _semantics[matViewProjectInverse] = std::make_shared<MaterialParam>("matViewProjectInverse", float4x4());
+	_semantics[matModel] = std::make_shared<MaterialParam>("matModel", float4x4());
+	_semantics[matModelInverse] = std::make_shared<MaterialParam>("matModelInverse", float4x4());
+	_semantics[matModelInverseTranspose] = std::make_shared<MaterialParam>("matModelInverseTranspose", float4x4());
+	_semantics[matProject] = std::make_shared<MaterialParam>("matProject", float4x4());
+	_semantics[matProjectInverse] = std::make_shared<MaterialParam>("matProjectInverse", float4x4());
+	_semantics[matView] = std::make_shared<MaterialParam>("matView", float4x4());
+	_semantics[matViewInverse] = std::make_shared<MaterialParam>("matViewInverse", float4x4());
+	_semantics[matViewInverseTranspose] = std::make_shared<MaterialParam>("matViewInverseTranspose", float4x4());
+	_semantics[matViewProject] = std::make_shared<MaterialParam>("matViewProject", float4x4());
+	_semantics[matViewProjectInverse] = std::make_shared<MaterialParam>("matViewProjectInverse", float4x4());
 
-    _semantics[CameraAperture] = std::make_shared<MaterialParam>("CameraAperture", float());
-    _semantics[CameraFar] = std::make_shared<MaterialParam>("CameraFar", float());
-    _semantics[CameraNear] = std::make_shared<MaterialParam>("CameraNear", float());
-    _semantics[CameraView] = std::make_shared<MaterialParam>("CameraView", float3());
-    _semantics[CameraPosition] = std::make_shared<MaterialParam>("CameraPosition", Vector3());
-    _semantics[CameraDirection] = std::make_shared<MaterialParam>("CameraDirection", Vector3());
+	_semantics[CameraAperture] = std::make_shared<MaterialParam>("CameraAperture", float());
+	_semantics[CameraFar] = std::make_shared<MaterialParam>("CameraFar", float());
+	_semantics[CameraNear] = std::make_shared<MaterialParam>("CameraNear", float());
+	_semantics[CameraView] = std::make_shared<MaterialParam>("CameraView", float3());
+	_semantics[CameraPosition] = std::make_shared<MaterialParam>("CameraPosition", Vector3());
+	_semantics[CameraDirection] = std::make_shared<MaterialParam>("CameraDirection", Vector3());
 
-    _semantics[Time] = std::make_shared<MaterialParam>("Time", float());
-    _semantics[TimeFps] = std::make_shared<MaterialParam>("TimeFps", float());
-    _semantics[TimeDelta] = std::make_shared<MaterialParam>("TimeDelta", float());
+	_semantics[DepthMap] = std::make_shared<MaterialParam>("DepthMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[ColorMap] = std::make_shared<MaterialParam>("ColorMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[NormalMap] = std::make_shared<MaterialParam>("NormalMap", ShaderVariantType::SPT_TEXTURE);
 
-    _semantics[LightAmbient] = std::make_shared<MaterialParam>("LightAmbient", float3());
-    _semantics[LightDiffuse] = std::make_shared<MaterialParam>("LightDiffuse", float3());
-    _semantics[LightPosition] = std::make_shared<MaterialParam>("LightPosition", float3());
-    _semantics[LightDirection] = std::make_shared<MaterialParam>("LightDirection", float3());
-    _semantics[LightRange] = std::make_shared<MaterialParam>("LightRange", float());
-    _semantics[LightIntensity] = std::make_shared<MaterialParam>("LightIntensity", float());
-    _semantics[LightSpotAngle] = std::make_shared<MaterialParam>("LightSpotAngle", float());
-    _semantics[LightSpotInnerCone] = std::make_shared<MaterialParam>("LightSpotInnerCone", float());
-    _semantics[LightSpotOuterCone] = std::make_shared<MaterialParam>("LightSpotOuterCone", float());
+	_semantics[DeferredDepthMap] = std::make_shared<MaterialParam>("DeferredDepthMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[DeferredGraphicMap] = std::make_shared<MaterialParam>("DeferredGraphicMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[DeferredNormalMap] = std::make_shared<MaterialParam>("DeferredNormalMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[DeferredLightMap] = std::make_shared<MaterialParam>("DeferredLightMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[DeferredShadowMap] = std::make_shared<MaterialParam>("DeferredShadowMap", ShaderVariantType::SPT_TEXTURE);
 
-    _semantics[DepthMap] = std::make_shared<MaterialParam>("DepthMap", ShaderVariantType::SPT_TEXTURE);
-    _semantics[ColorMap] = std::make_shared<MaterialParam>("ColorMap", ShaderVariantType::SPT_TEXTURE);
-    _semantics[NormalMap] = std::make_shared<MaterialParam>("NormalMap", ShaderVariantType::SPT_TEXTURE);
-
-    _semantics[DeferredDepthMap] = std::make_shared<MaterialParam>("DeferredDepthMap", ShaderVariantType::SPT_TEXTURE);
-    _semantics[DeferredGraphicMap] = std::make_shared<MaterialParam>("DeferredGraphicMap", ShaderVariantType::SPT_TEXTURE);
-    _semantics[DeferredNormalMap] = std::make_shared<MaterialParam>("DeferredNormalMap", ShaderVariantType::SPT_TEXTURE);
-    _semantics[DeferredLightMap] = std::make_shared<MaterialParam>("DeferredLightMap", ShaderVariantType::SPT_TEXTURE);
-
-    for (auto& it : _semantics)
-    {
-        it->setSemantic(it->getName());
-    }
+	for (auto& it : _semantics)
+	{
+		it->setSemantic(it->getName());
+	}
 }
 
 void
 MaterialSemantic::close() noexcept
 {
-    _semantics.clear();
+	_semantics.clear();
 }
 
 void
 MaterialSemantic::setMatrixParam(GlobalMatrixSemantic index, const Matrix4x4& m) noexcept
 {
-    _semantics[index]->assign(m);
+	_semantics[index]->assign(m);
 }
 
 const Matrix4x4&
 MaterialSemantic::getMatrixParam(GlobalMatrixSemantic index) noexcept
 {
-    return _semantics[index]->getFloat4x4();
+	return _semantics[index]->getFloat4x4();
 }
 
 std::string
 MaterialSemantic::getMatrixParmName(GlobalMatrixSemantic index) const noexcept
 {
-    return _semantics[index]->getName();
+	return _semantics[index]->getName();
 }
 
 GlobalMatrixSemantic
 MaterialSemantic::getMatrixParamSemantic(const std::string& name) const noexcept
 {
-    if (getMatrixParmName(GlobalMatrixSemantic::matModel) == name)
-        return GlobalMatrixSemantic::matModel;
-    if (getMatrixParmName(GlobalMatrixSemantic::matModelInverse) == name)
-        return  GlobalMatrixSemantic::matModelInverse;
-    if (getMatrixParmName(GlobalMatrixSemantic::matModelInverseTranspose) == name)
-        return GlobalMatrixSemantic::matModelInverseTranspose;
-    if (getMatrixParmName(GlobalMatrixSemantic::matView) == name)
-        return GlobalMatrixSemantic::matView;
-    if (getMatrixParmName(GlobalMatrixSemantic::matViewInverse) == name)
-        return GlobalMatrixSemantic::matViewInverse;
-    if (getMatrixParmName(GlobalMatrixSemantic::matViewInverseTranspose) == name)
-        return GlobalMatrixSemantic::matViewInverseTranspose;
-    if (getMatrixParmName(GlobalMatrixSemantic::matProject) == name)
-        return GlobalMatrixSemantic::matProject;
-    if (getMatrixParmName(GlobalMatrixSemantic::matProjectInverse) == name)
-        return GlobalMatrixSemantic::matProjectInverse;
-    if (getMatrixParmName(GlobalMatrixSemantic::matViewProject) == name)
-        return GlobalMatrixSemantic::matViewProject;
-    if (getMatrixParmName(GlobalMatrixSemantic::matViewProjectInverse) == name)
-        return GlobalMatrixSemantic::matViewProjectInverse;
+	if (getMatrixParmName(GlobalMatrixSemantic::matModel) == name)
+		return GlobalMatrixSemantic::matModel;
+	if (getMatrixParmName(GlobalMatrixSemantic::matModelInverse) == name)
+		return  GlobalMatrixSemantic::matModelInverse;
+	if (getMatrixParmName(GlobalMatrixSemantic::matModelInverseTranspose) == name)
+		return GlobalMatrixSemantic::matModelInverseTranspose;
+	if (getMatrixParmName(GlobalMatrixSemantic::matView) == name)
+		return GlobalMatrixSemantic::matView;
+	if (getMatrixParmName(GlobalMatrixSemantic::matViewInverse) == name)
+		return GlobalMatrixSemantic::matViewInverse;
+	if (getMatrixParmName(GlobalMatrixSemantic::matViewInverseTranspose) == name)
+		return GlobalMatrixSemantic::matViewInverseTranspose;
+	if (getMatrixParmName(GlobalMatrixSemantic::matProject) == name)
+		return GlobalMatrixSemantic::matProject;
+	if (getMatrixParmName(GlobalMatrixSemantic::matProjectInverse) == name)
+		return GlobalMatrixSemantic::matProjectInverse;
+	if (getMatrixParmName(GlobalMatrixSemantic::matViewProject) == name)
+		return GlobalMatrixSemantic::matViewProject;
+	if (getMatrixParmName(GlobalMatrixSemantic::matViewProjectInverse) == name)
+		return GlobalMatrixSemantic::matViewProjectInverse;
 
-    return NotSemantic;
+	return NotSemantic;
 }
 
 void
 MaterialSemantic::setFloatParam(GlobalFloatSemantic index, float v) noexcept
 {
-    _semantics[index]->assign(v);
+	_semantics[index]->assign(v);
 }
 
 float
 MaterialSemantic::getFloatParam(GlobalFloatSemantic index) noexcept
 {
-    return _semantics[index]->getFloat();
+	return _semantics[index]->getFloat();
 }
 
 std::string
 MaterialSemantic::getFloatParmName(GlobalFloatSemantic index) const noexcept
 {
-    return _semantics[index]->getName();
+	return _semantics[index]->getName();
 }
 
 GlobalFloatSemantic
 MaterialSemantic::getFloatParamSemantic(const std::string& name) const noexcept
 {
-    if (getFloatParmName(GlobalFloatSemantic::CameraAperture) == name)
-        return GlobalFloatSemantic::CameraAperture;
-    if (getFloatParmName(GlobalFloatSemantic::CameraFar) == name)
-        return GlobalFloatSemantic::CameraFar;
-    if (getFloatParmName(GlobalFloatSemantic::CameraNear) == name)
-        return GlobalFloatSemantic::CameraNear;
-    if (getFloatParmName(GlobalFloatSemantic::Time) == name)
-        return GlobalFloatSemantic::TimeDelta;
-    if (getFloatParmName(GlobalFloatSemantic::TimeDelta) == name)
-        return GlobalFloatSemantic::TimeDelta;
-    if (getFloatParmName(GlobalFloatSemantic::TimeFps) == name)
-        return GlobalFloatSemantic::TimeFps;
+	if (getFloatParmName(GlobalFloatSemantic::CameraAperture) == name)
+		return GlobalFloatSemantic::CameraAperture;
+	if (getFloatParmName(GlobalFloatSemantic::CameraFar) == name)
+		return GlobalFloatSemantic::CameraFar;
+	if (getFloatParmName(GlobalFloatSemantic::CameraNear) == name)
+		return GlobalFloatSemantic::CameraNear;
 
-    return (GlobalFloatSemantic)NotSemantic;
+	return (GlobalFloatSemantic)NotSemantic;
 }
 
 void
 MaterialSemantic::setFloat3Param(GlobalFloat3Semantic index, const float3& v) noexcept
 {
-    _semantics[index]->assign(v);
+	_semantics[index]->assign(v);
 }
 
 const Vector3&
 MaterialSemantic::getFloat3Param(GlobalFloat3Semantic index) noexcept
 {
-    return _semantics[index]->getFloat3();
+	return _semantics[index]->getFloat3();
 }
 
 std::string
 MaterialSemantic::getFloat3ParmName(GlobalFloat3Semantic index) const noexcept
 {
-    return _semantics[index]->getName();
+	return _semantics[index]->getName();
 }
 
 GlobalFloat3Semantic
 MaterialSemantic::getFloat3ParamSemantic(const std::string& name) const noexcept
 {
-    if (getFloat3ParmName(GlobalFloat3Semantic::LightDirection) == name)
-        return GlobalFloat3Semantic::LightDirection;
-    if (getFloat3ParmName(GlobalFloat3Semantic::LightDiffuse) == name)
-        return GlobalFloat3Semantic::LightDiffuse;
-    if (getFloat3ParmName(GlobalFloat3Semantic::LightPosition) == name)
-        return GlobalFloat3Semantic::LightPosition;
-    if (getFloat3ParmName(GlobalFloat3Semantic::CameraView) == name)
-        return GlobalFloat3Semantic::CameraView;
-    if (getFloat3ParmName(GlobalFloat3Semantic::CameraPosition) == name)
-        return GlobalFloat3Semantic::CameraPosition;
-    if (getFloat3ParmName(GlobalFloat3Semantic::CameraDirection) == name)
-        return GlobalFloat3Semantic::CameraDirection;
-    return (GlobalFloat3Semantic)NotSemantic;
+	if (getFloat3ParmName(GlobalFloat3Semantic::CameraView) == name)
+		return GlobalFloat3Semantic::CameraView;
+	if (getFloat3ParmName(GlobalFloat3Semantic::CameraPosition) == name)
+		return GlobalFloat3Semantic::CameraPosition;
+	if (getFloat3ParmName(GlobalFloat3Semantic::CameraDirection) == name)
+		return GlobalFloat3Semantic::CameraDirection;
+	return (GlobalFloat3Semantic)NotSemantic;
 }
 
 void
 MaterialSemantic::setFloat4Param(GlobalFloat4Semantic index, const float4& v) noexcept
 {
-    _semantics[index]->assign(v);
+	_semantics[index]->assign(v);
 }
 
 const Vector4&
 MaterialSemantic::getFloat4Param(GlobalFloat4Semantic index) noexcept
 {
-    return _semantics[index]->getFloat4();
+	return _semantics[index]->getFloat4();
 }
 
 std::string
 MaterialSemantic::getFloat4ParmName(GlobalFloat4Semantic index) const noexcept
 {
-    return _semantics[index]->getName();
+	return _semantics[index]->getName();
 }
 
 GlobalFloat4Semantic
 MaterialSemantic::getFloat4ParamSemantic(const std::string& name) const noexcept
 {
-    return (GlobalFloat4Semantic)NotSemantic;
+	return (GlobalFloat4Semantic)NotSemantic;
 }
 
 void
 MaterialSemantic::setTexParam(GlobalTexSemantic index, TexturePtr texture) noexcept
 {
-    _semantics[index]->assign(texture);
+	_semantics[index]->assign(texture);
 }
 
 TexturePtr
 MaterialSemantic::getTexParam(GlobalTexSemantic index) noexcept
 {
-    return _semantics[index]->getTexture();
+	return _semantics[index]->getTexture();
 }
 
 std::string
 MaterialSemantic::getTexParmName(GlobalTexSemantic index) const noexcept
 {
-    return _semantics[index]->getName();
+	return _semantics[index]->getName();
 }
 
 GlobalTexSemantic
 MaterialSemantic::getTexParamSemantic(const std::string& name) const noexcept
 {
-    if (getTexParmName(GlobalTexSemantic::DepthMap) == name)
-        return GlobalTexSemantic::DepthMap;
-    if (getTexParmName(GlobalTexSemantic::ColorMap) == name)
-        return GlobalTexSemantic::ColorMap;
-    if (getTexParmName(GlobalTexSemantic::DeferredDepthMap) == name)
-        return GlobalTexSemantic::DeferredDepthMap;
-    if (getTexParmName(GlobalTexSemantic::DeferredGraphicMap) == name)
-        return GlobalTexSemantic::DeferredGraphicMap;
-    if (getTexParmName(GlobalTexSemantic::DeferredNormalMap) == name)
-        return GlobalTexSemantic::DeferredNormalMap;
-    if (getTexParmName(GlobalTexSemantic::DeferredLightMap) == name)
-        return GlobalTexSemantic::DeferredLightMap;
-    return (GlobalTexSemantic)NotSemantic;
+	if (getTexParmName(GlobalTexSemantic::DepthMap) == name)
+		return GlobalTexSemantic::DepthMap;
+	if (getTexParmName(GlobalTexSemantic::ColorMap) == name)
+		return GlobalTexSemantic::ColorMap;
+	if (getTexParmName(GlobalTexSemantic::DeferredDepthMap) == name)
+		return GlobalTexSemantic::DeferredDepthMap;
+	if (getTexParmName(GlobalTexSemantic::DeferredGraphicMap) == name)
+		return GlobalTexSemantic::DeferredGraphicMap;
+	if (getTexParmName(GlobalTexSemantic::DeferredNormalMap) == name)
+		return GlobalTexSemantic::DeferredNormalMap;
+	if (getTexParmName(GlobalTexSemantic::DeferredLightMap) == name)
+		return GlobalTexSemantic::DeferredLightMap;
+	return (GlobalTexSemantic)NotSemantic;
 }
 
 MaterialParamPtr
 MaterialSemantic::getParamPointer(const std::string& name) const noexcept
 {
-    for (auto& it : _semantics)
-    {
-        if (it->getName() == name)
-        {
-            return it;
-        }
-    }
+	for (auto& it : _semantics)
+	{
+		if (it->getName() == name)
+		{
+			return it;
+		}
+	}
 
-    return nullptr;
+	return nullptr;
 }
 
 _NAME_END

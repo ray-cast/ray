@@ -39,10 +39,15 @@
 
 #include <ray/platform.h>
 
-//void* operator new(std::size_t size, const char* file, const std::size_t line);
-//void* operator new[](std::size_t size, const char* file, const std::size_t line);
+#pragma push_macro("new")
+#undef new
 
-//void operator delete(void* pointer, const char* file, const std::size_t line);
-//void operator delete[](void* pointer, const char* file, const std::size_t line);
+void* operator new(std::size_t size, const char* file, const std::size_t line);
+void* operator new[](std::size_t size, const char* file, const std::size_t line);
+
+void operator delete(void* pointer, const char* file, const std::size_t line);
+void operator delete[](void* pointer, const char* file, const std::size_t line);
+
+#pragma pop_macro("new")
 
 #endif

@@ -45,20 +45,20 @@ class TerrainObserver
 {
 public:
 
-    void setPosition(const Vector3& pos) noexcept;
-    const Vector3& getPosition() const noexcept;
+	void setPosition(const Vector3& pos) noexcept;
+	const Vector3& getPosition() const noexcept;
 
-    void setLookat(const Vector3& pos) noexcept;
-    const Vector3& getLookat() const noexcept;
+	void setLookat(const Vector3& pos) noexcept;
+	const Vector3& getLookat() const noexcept;
 
-    void setUpVector(const Vector3& pos) noexcept;
-    const Vector3& getUpVector() const noexcept;
+	void setUpVector(const Vector3& pos) noexcept;
+	const Vector3& getUpVector() const noexcept;
 
 private:
 
-    Vector3 _position;
-    Vector3 _lookat;
-    Vector3 _up;
+	Vector3 _position;
+	Vector3 _lookat;
+	Vector3 _up;
 };
 
 _NAME_END

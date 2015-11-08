@@ -37,27 +37,27 @@
 #ifndef _H_SSR_H_
 #define _H_SSR_H_
 
-#include <ray/post_process.h>
+#include <ray/render_post_process.h>
 
 _NAME_BEGIN
 
 class SSR : public RenderPostProcess
 {
 public:
-    SSR() noexcept;
-    ~SSR() noexcept;
+	SSR() noexcept;
+	~SSR() noexcept;
 
 private:
 
-    void onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
+	void onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
 
 private:
 
-    MaterialPtr _ssr;
-    MaterialPassPtr _ssrPass;
+	MaterialPtr _ssr;
+	MaterialPassPtr _ssrPass;
 
-    MaterialParamPtr _projInfo;
-    MaterialParamPtr _clipInfo;
+	MaterialParamPtr _projInfo;
+	MaterialParamPtr _clipInfo;
 };
 
 _NAME_END

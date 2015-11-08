@@ -41,12 +41,25 @@ _NAME_BEGIN
 __ImplementInterface(GameComponent)
 
 GameComponent::GameComponent() noexcept
-	: _gameObject(nullptr)
+	: _active(false)
 {
 }
 
 GameComponent::~GameComponent() noexcept
 {
+}
+
+GameComponentPtr 
+GameComponent::getComponent(RTTI::HashCode type) const noexcept
+{
+	assert(this->getRTTI()->getDerivedType() != type);
+	return this->getGameObject()->getComponent(type);
+}
+
+const GameComponents& 
+GameComponent::getComponents() const noexcept
+{
+	return this->getGameObject()->getComponents();
 }
 
 void
@@ -55,34 +68,54 @@ GameComponent::_setGameObject(GameObject* gameobj) noexcept
 	_gameObject = gameobj;
 }
 
-GameObject*
+GameObjectPtr
 GameComponent::getGameObject() noexcept
 {
-	return _gameObject;
+	return std::dynamic_pointer_cast<GameObject>(_gameObject->shared_from_this());
 }
 
-const GameObject*
+const GameObjectPtr
 GameComponent::getGameObject() const noexcept
 {
-	return _gameObject;
+	return std::dynamic_pointer_cast<GameObject>(_gameObject->shared_from_this());
 }
 
 GameServer*
 GameComponent::getGameServer() noexcept
 {
-	return _gameObject->getGameServer();
+	return this->getGameObject()->getGameServer();
 }
 
 const GameServer*
 GameComponent::getGameServer() const noexcept
 {
-	return _gameObject->getGameServer();
+	return this->getGameObject()->getGameServer();
+}
+
+void 
+GameComponent::setActive(bool active) except
+{
+	if (_active != active)
+	{
+		if (active)
+			this->onActivate();
+		else
+			this->onDeactivate();
+
+		_active = active;
+	}
+}
+
+bool 
+GameComponent::getActive() const noexcept
+{
+	return _active;
 }
 
 void
 GameComponent::load(iarchive& reader) noexcept
 {
-	reader >> static_cast<GameListener*>(this);
+	GameListener::load(reader);
 }
 
 void
@@ -93,10 +126,7 @@ GameComponent::save(oarchive& write) noexcept
 void
 GameComponent::sendMessage(const GameMessage& message) except
 {
-	if (!_gameObject->getActive())
-		return;
-
-	auto& components = _gameObject->getComponents();
+	auto& components = this->getGameObject()->getComponents();
 	for (auto& it : components)
 	{
 		if (it.get() != this)
@@ -107,10 +137,7 @@ GameComponent::sendMessage(const GameMessage& message) except
 void
 GameComponent::sendMessageUpwards(const GameMessage& message) except
 {
-	if (!_gameObject->getActive())
-		return;
-
-	auto& components = _gameObject->getComponents();
+	auto& components = this->getGameObject()->getComponents();
 	for (auto& it : components)
 	{
 		if (it.get() != this)
@@ -127,10 +154,7 @@ GameComponent::sendMessageUpwards(const GameMessage& message) except
 void
 GameComponent::sendMessageDownwards(const GameMessage& message) except
 {
-	if (!_gameObject->getActive())
-		return;
-
-	auto& components = _gameObject->getComponents();
+	auto& components = this->getGameObject()->getComponents();
 	for (auto& it : components)
 	{
 		if (it.get() != this)

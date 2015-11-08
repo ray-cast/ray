@@ -41,54 +41,65 @@
 
 _NAME_BEGIN
 
-class OGLVertexBuffer final : public VertexBufferData
+class OGLVertexBuffer final
 {
 public:
-    OGLVertexBuffer() noexcept;
-    ~OGLVertexBuffer() noexcept;
+	OGLVertexBuffer() noexcept;
+	~OGLVertexBuffer() noexcept;
 
-    void setup() except;
-    void close() noexcept;
+	void setup(VertexBufferDataPtr vb) except;
+	void close() noexcept;
 
-    GLuint getInstanceID() noexcept;
-    GLuint64 getInstanceAddr() noexcept;
+	GLuint getInstanceID() noexcept;
+	GLuint64 getInstanceAddr() noexcept;
 
 private:
 
-    GLuint _vbo;
-    GLuint64 _bindlessVbo;
+	GLuint _vbo;
+	GLuint64 _bindlessVbo;
+
+	VertexBufferDataPtr _vb;
 };
 
-class OGLIndexBuffer final : public IndexBufferData
+class OGLIndexBuffer final
 {
 public:
-    OGLIndexBuffer() noexcept;
-    ~OGLIndexBuffer() noexcept;
+	OGLIndexBuffer() noexcept;
+	~OGLIndexBuffer() noexcept;
 
-    void setup() noexcept;
-    void close() noexcept;
+	void setup(IndexBufferDataPtr ib) noexcept;
+	void close() noexcept;
 
-    GLuint getInstanceID() noexcept;
-    GLuint64 getInstanceAddr() noexcept;
+	GLuint getInstanceID() noexcept;
+	GLuint64 getInstanceAddr() noexcept;
 
 private:
 
-    GLuint _ibo;
-    GLuint64 _bindlessIbo;
+	GLuint _ibo;
+	GLuint64 _bindlessIbo;
+
+	IndexBufferDataPtr _ib;
 };
 
 class OGLRenderBuffer final : public RenderBuffer
 {
 public:
-    OGLRenderBuffer() noexcept;
-    ~OGLRenderBuffer() noexcept;
+	OGLRenderBuffer() noexcept;
+	~OGLRenderBuffer() noexcept;
 
-    void setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) except;
-    void close() noexcept;
+	void setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) except;
+	void close() noexcept;
+
+	GLuint getInstanceID() noexcept;
+
+	void apply() noexcept;
 
 private:
 
-    GLuint _vao;
+	GLuint _vao;
+
+	std::shared_ptr<OGLVertexBuffer> _vb;
+	std::shared_ptr<OGLIndexBuffer> _ib;
 };
 
 _NAME_END

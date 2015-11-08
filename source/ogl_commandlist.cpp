@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#ifdef _BUILD_PLATFORM_WINDOWS
 #include <ray/ogl_commandlist.h>
 
 _NAME_BEGIN
@@ -44,3 +45,5 @@ GLushort s_nvcmdlist_stages[NVTOKEN_STAGES] = { 0 };
 bool     s_nvcmdlist_bindless = false;
 
 _NAME_END
+
+#endif

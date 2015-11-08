@@ -60,7 +60,7 @@ MaterialMaker::~MaterialMaker() noexcept
 RenderStatePtr
 MaterialMaker::instanceState(iarchive& reader) except
 {
-	auto state = std::make_shared<RenderState>();
+	auto state = RenderFactory::createRenderState();
 	return state;
 }
 
@@ -73,18 +73,18 @@ MaterialMaker::instanceShader(iarchive& reader) except
 	std::string value = reader.getString("value");
 
 	if (type.empty())
-		throw failure("The shader name can not be empty");
+		throw failure(__TEXT("The shader name can not be empty"));
 
 	if (value.empty())
-		throw failure("The shader value can not be empty");
+		throw failure(__TEXT("The shader value can not be empty"));
 
 	std::string method = _shaderCodes[type];
 	if (method.empty())
-		throw failure("Unknown shader type : " + type);
+		throw failure(__TEXT("Unknown shader type : ") + type);
 
 	std::size_t off = method.find(value.data());
 	if (off == std::string::npos)
-		throw failure("Unknown shader entry point : " + value);
+		throw failure(__TEXT("Unknown shader entry point : ") + value);
 
 	method.replace(off, value.size(), "main");
 
@@ -101,7 +101,7 @@ MaterialMaker::instancePass(iarchive& reader) except
 
 	std::string passName = reader.getString("name");
 	if (passName.empty())
-		throw failure("The pass name can not be empty");
+		throw failure(__TEXT("The pass name can not be empty"));
 
 	if (passName == "custom")
 		passType = RenderPass::RP_CUSTOM;
@@ -113,6 +113,10 @@ MaterialMaker::instancePass(iarchive& reader) except
 		passType = RenderPass::RP_TRANSPARENT;
 	else if (passName == "light")
 		passType = RenderPass::RP_LIGHTS;
+	else if (passName == "specific")
+		passType = RenderPass::RP_SPECIFIC;
+	else if (passName == "postprocess")
+		passType = RenderPass::RP_POSTPROCESS;
 
 	auto pass = std::make_shared<MaterialPass>(passType);
 	pass->setName(passName);
@@ -120,7 +124,7 @@ MaterialMaker::instancePass(iarchive& reader) except
 	if (reader.setToFirstChild())
 	{
 		ShaderObjectPtr shaderObject = RenderFactory::createShaderObject();
-		RenderStatePtr state = std::make_shared<RenderState>();
+		RenderStatePtr state = RenderFactory::createRenderState();
 
 		RenderDepthState depthState;
 		RenderRasterState rasterState;
@@ -152,37 +156,41 @@ MaterialMaker::instancePass(iarchive& reader) except
 					}
 				}
 				else if (name == "cullmode")
-					rasterState.cullMode = RenderState::stringToCullMode(reader.getString("value"));
+					rasterState.cullMode = stringToCullMode(reader.getString("value"));
 				else if (name == "fillmode")
-					rasterState.fillMode = RenderState::stringToFillMode(reader.getString("value"));
+					rasterState.fillMode = stringToFillMode(reader.getString("value"));
 				else if (name == "scissorTestEnable")
 					rasterState.scissorTestEnable = reader.getBoolean("value");
+				else if (name == "primitive")
+					rasterState.primitiveType = stringToPrimitive(reader.getString("value"));
 				else if (name == "multisampleEnable")
 					rasterState.multisampleEnable = reader.getBoolean("value");
+				else if (name == "srgbEnable")
+					rasterState.srgbEnable = reader.getBoolean("value");
 				else if (name == "blend")
 					blendState.blendEnable = reader.getBoolean("value");
 				else if (name == "blendSeparate")
 					blendState.blendSeparateEnable = reader.getBoolean("value");
 				else if (name == "blendOp")
-					blendState.blendOp = RenderState::stringToBlendOperation(reader.getString("value"));
+					blendState.blendOp = stringToBlendOperation(reader.getString("value"));
 				else if (name == "blendsrc")
-					blendState.blendSrc = RenderState::stringToBlendFactor(reader.getString("value"));
+					blendState.blendSrc = stringToBlendFactor(reader.getString("value"));
 				else if (name == "blenddst")
-					blendState.blendDest = RenderState::stringToBlendFactor(reader.getString("value"));
+					blendState.blendDest = stringToBlendFactor(reader.getString("value"));
 				else if (name == "blendalphaop")
-					blendState.blendAlphaOp = RenderState::stringToBlendOperation(reader.getString("value"));
+					blendState.blendAlphaOp = stringToBlendOperation(reader.getString("value"));
 				else if (name == "blendalphasrc")
-					blendState.blendAlphaSrc = RenderState::stringToBlendFactor(reader.getString("value"));
+					blendState.blendAlphaSrc = stringToBlendFactor(reader.getString("value"));
 				else if (name == "blendalphadst")
-					blendState.blendAlphaDest = RenderState::stringToBlendFactor(reader.getString("value"));
+					blendState.blendAlphaDest = stringToBlendFactor(reader.getString("value"));
 				else if (name == "colormask")
-					blendState.colorWriteMask = RenderState::stringToColorMask(reader.getString("value"));
+					blendState.colorWriteMask = stringToColorMask(reader.getString("value"));
 				else if (name == "depthtest")
 					depthState.depthEnable = reader.getBoolean("value");
 				else if (name == "depthwrite")
 					depthState.depthWriteMask = reader.getBoolean("value");
 				else if (name == "depthfunc")
-					depthState.depthFunc = RenderState::stringToCompareFunc(reader.getString("value"));
+					depthState.depthFunc = stringToCompareFunc(reader.getString("value"));
 				else if (name == "depthBiasEnable")
 					depthState.depthBiasEnable = reader.getBoolean("value");
 				else if (name == "depthSlopScaleBias")
@@ -194,35 +202,35 @@ MaterialMaker::instancePass(iarchive& reader) except
 				else if (name == "stencilRef")
 					stencilState.stencilRef = reader.getInteger("value");
 				else if (name == "stencilFunc")
-					stencilState.stencilFunc = RenderState::stringToCompareFunc(reader.getString("value"));
+					stencilState.stencilFunc = stringToCompareFunc(reader.getString("value"));
 				else if (name == "stencilReadMask")
 					stencilState.stencilReadMask = reader.getInteger("value");
 				else if (name == "stencilWriteMask")
 					stencilState.stencilWriteMask = reader.getInteger("value");
 				else if (name == "stencilFail")
-					stencilState.stencilFail = RenderState::stringToStencilOp(reader.getString("value"));
+					stencilState.stencilFail = stringToStencilOp(reader.getString("value"));
 				else if (name == "stencilZFail")
-					stencilState.stencilZFail = RenderState::stringToStencilOp(reader.getString("value"));
+					stencilState.stencilZFail = stringToStencilOp(reader.getString("value"));
 				else if (name == "stencilPass")
-					stencilState.stencilPass = RenderState::stringToStencilOp(reader.getString("value"));
+					stencilState.stencilPass = stringToStencilOp(reader.getString("value"));
 				else if (name == "stencilTwoTest")
 					stencilState.stencilTwoEnable = reader.getBoolean("value");
 				else if (name == "stencilTwoFunc")
-					stencilState.stencilTwoFunc = RenderState::stringToCompareFunc(reader.getString("value"));
+					stencilState.stencilTwoFunc = stringToCompareFunc(reader.getString("value"));
 				else if (name == "stencilTwoReadMask")
 					stencilState.stencilTwoReadMask = reader.getInteger("value");
 				else if (name == "stencilTwoWriteMask")
 					stencilState.stencilTwoWriteMask = reader.getInteger("value");
 				else if (name == "stencilTwoFail")
-					stencilState.stencilTwoFail = RenderState::stringToStencilOp(reader.getString("value"));
+					stencilState.stencilTwoFail = stringToStencilOp(reader.getString("value"));
 				else if (name == "stencilTwoZFail")
-					stencilState.stencilTwoZFail = RenderState::stringToStencilOp(reader.getString("value"));
+					stencilState.stencilTwoZFail = stringToStencilOp(reader.getString("value"));
 				else if (name == "stencilTwoPass")
-					stencilState.stencilTwoPass = RenderState::stringToStencilOp(reader.getString("value"));
+					stencilState.stencilTwoPass = stringToStencilOp(reader.getString("value"));
 			}
 			else
 			{
-				throw failure("Unkonwn node name " + nodeName + reader.getCurrentNodePath());
+				throw failure(__TEXT("Unkonwn node name ") + nodeName + reader.getCurrentNodePath());
 			}
 		} while (reader.setToNextChild());
 
@@ -241,27 +249,25 @@ MaterialMaker::instancePass(iarchive& reader) except
 MaterialTechPtr
 MaterialMaker::instanceTech(iarchive& reader) except
 {
-	RenderQueue queue = Background;
+	RenderQueue queue = RenderQueue::RQ_OPAQUE;
 
 	std::string techName = reader.getString("name");
 	if (techName.empty())
-		throw failure("The technique name can not be empty");
+		throw failure(__TEXT("The technique name can not be empty"));
 
 	if (techName == "custom")
-		queue = RenderQueue::Custom;
-	else if (techName == "background")
-		queue = RenderQueue::Background;
+		queue = RenderQueue::RQ_CUSTOM;
 	else if (techName == "opaque")
-		queue = RenderQueue::Opaque;
+		queue = RenderQueue::RQ_OPAQUE;
 	else if (techName == "transparent")
-		queue = RenderQueue::Transparent;
+		queue = RenderQueue::RQ_TRANSPARENT;
 	else if (techName == "lighting")
-		queue = RenderQueue::Lighting;
+		queue = RenderQueue::RQ_LIGHTING;
 	else if (techName == "postprocess")
-		queue = RenderQueue::PostProcess;
+		queue = RenderQueue::RQ_POSTPROCESS;
 	else
 	{
-		throw failure("Unknown technique name : " + techName);
+		throw failure(__TEXT("Unknown technique name : ") + techName);
 	}
 
 	auto tech = std::make_shared<MaterialTech>(queue);
@@ -291,7 +297,7 @@ MaterialMaker::instanceParameter(iarchive& reader) except
 
 	if (name.empty())
 	{
-		throw failure("The parameter name can not be empty");
+		throw failure(__TEXT("The parameter name can not be empty"));
 	}
 
 	if (!type.empty())
@@ -316,6 +322,8 @@ MaterialMaker::instanceParameter(iarchive& reader) except
 			param->setType(ShaderVariantType::SPT_FLOAT4X4);
 		else if (type == "float[]")
 			param->setType(ShaderVariantType::SPT_FLOAT_ARRAY);
+		else if (type == "float2[]")
+			param->setType(ShaderVariantType::SPT_FLOAT2_ARRAY);
 		else if (type == "float2")
 			param->setType(ShaderVariantType::SPT_FLOAT2);
 		else if (type == "sampler2D")
@@ -325,7 +333,7 @@ MaterialMaker::instanceParameter(iarchive& reader) except
 		else
 		{
 			assert(false);
-			throw failure("Unknown parameter type : " + name);
+			throw failure(__TEXT("Unknown parameter type : ") + name);
 		}
 
 		return  param;
@@ -372,7 +380,7 @@ MaterialMaker::load(const std::string& filename) except
 
 		IoServer::instance()->openFile(filename, stream);
 		if (!stream.is_open())
-			throw failure("Opening file fail:" + filename);
+			throw failure(__TEXT("Opening file fail:") + filename);
 
 		XMLReader reader;
 		if (reader.open(stream))
@@ -382,7 +390,7 @@ MaterialMaker::load(const std::string& filename) except
 	}
 	catch (const failure& e)
 	{
-		throw failure("in " + filename + " " + e.message(), e.stack());
+		throw failure(__TEXT("in ") + filename + __TEXT(" ") + e.message(), e.stack());
 	}
 }
 
@@ -430,7 +438,7 @@ MaterialMaker::load(iarchive& reader) except
 					}
 					else
 					{
-						throw failure("Empty shader name : " + reader.getCurrentNodePath());
+						throw failure(__TEXT("Empty shader name : ") + reader.getCurrentNodePath());
 					}
 				}
 				else if (name == "technique")
@@ -452,6 +460,182 @@ MaterialMaker::load(iarchive& reader) except
 MaterialMaker::operator MaterialPtr() noexcept
 {
 	return _material;
+}
+
+VertexType 
+MaterialMaker::stringToPrimitive(const std::string& primitive) noexcept
+{
+	if (primitive == "point")
+		return VertexType::GPU_POINT;
+	else if (primitive == "point_or_line")
+		return VertexType::GPU_POINT_OR_LINE;
+	else if (primitive == "line")
+		return VertexType::GPU_LINE;
+	else if (primitive == "triangle")
+		return VertexType::GPU_TRIANGLE;
+	else if (primitive == "triangle_or_line")
+		return VertexType::GPU_TRIANGLE_OR_LINE;
+	else if (primitive == "fan")
+		return VertexType::GPU_FAN;
+	else if (primitive == "fan_or_line")
+		return VertexType::GPU_FAN_OR_LINE;
+	else
+	{
+		assert(false);
+		return GPU_TRIANGLE;
+	}
+}
+
+CullMode
+MaterialMaker::stringToCullMode(const std::string& cullmode) noexcept
+{
+	if (cullmode == "back")
+		return CullMode::GPU_CULL_BACK;
+	else if (cullmode == "front")
+		return CullMode::GPU_CULL_FRONT;
+	else if (cullmode == "frontback")
+		return CullMode::GPU_CULL_FRONT_BACK;
+	else if (cullmode == "none")
+		return CullMode::GPU_CULL_NONE;
+	else
+	{
+		assert(false);
+		return CullMode::GPU_CULL_NONE;
+	}
+}
+
+FillMode
+MaterialMaker::stringToFillMode(const std::string& fillmode) noexcept
+{
+	if (fillmode == "point")
+		return FillMode::GPU_POINT_MODE;
+	else if (fillmode == "line")
+		return FillMode::GPU_WIREFRAME_MODE;
+	else if (fillmode == "solid")
+		return FillMode::GPU_SOLID_MODE;
+	else
+	{
+		assert(false);
+		return FillMode::GPU_SOLID_MODE;
+	}
+}
+
+BlendOperation
+MaterialMaker::stringToBlendOperation(const std::string& blendop) noexcept
+{
+	if (blendop == "sub")
+		return GPU_SUBSTRACT;
+	else if (blendop == "revsub")
+		return GPU_REVSUBTRACT;
+	else if (blendop == "add")
+		return GPU_ADD;
+	else
+	{
+		assert(false);
+		return GPU_ADD;
+	}
+}
+
+BlendFactor
+MaterialMaker::stringToBlendFactor(const std::string& factor) noexcept
+{
+	if (factor == "zero")
+		return GPU_ZERO;
+	else if (factor == "one")
+		return GPU_ONE;
+	else if (factor == "dstcol")
+		return GPU_DSTCOL;
+	else if (factor == "srccol")
+		return GPU_SRCCOLOR;
+	else if (factor == "srcalpha")
+		return GPU_SRCALPHA;
+	else if (factor == "dstalpha")
+		return GPU_DSTALPHA;
+	else if (factor == "invsrccol")
+		return GPU_ONEMINUSSRCCOL;
+	else if (factor == "invdstcol")
+		return GPU_ONEMINUSDSTCOL;
+	else if (factor == "invsrcalpha")
+		return GPU_ONEMINUSSRCALPHA;
+	else if (factor == "invdstalpha")
+		return GPU_ONEMINUSDSTALPHA;
+	else
+	{
+		assert(false);
+		return GPU_ZERO;
+	}
+}
+
+ColorMask
+MaterialMaker::stringToColorMask(const std::string& mask) noexcept
+{
+	if (mask == "red")
+		return ColorMask::GPU_COLORMASK_RED;
+	else if (mask == "green")
+		return ColorMask::GPU_COLORMASK_GREEN;
+	else if (mask == "blue")
+		return ColorMask::GPU_COLORMASK_BLUE;
+	else if (mask == "alpha")
+		return ColorMask::GPU_COLORMASK_ALPHA;
+	else if (mask == "rgb")
+		return ColorMask::GPU_COLORMASK_RGB;
+	else if (mask == "rgba")
+		return ColorMask::GPU_COLORMASK_RGBA;
+	else
+	{
+		assert(false);
+		return ColorMask::GPU_COLORMASK_RGBA;
+	}
+}
+
+CompareFunction
+MaterialMaker::stringToCompareFunc(const std::string& func) noexcept
+{
+	if (func == "lequal")
+		return GPU_LEQUAL;
+	else if (func == "equal")
+		return GPU_EQUAL;
+	else if (func == "greater")
+		return GPU_GREATER;
+	else if (func == "less")
+		return GPU_LESS;
+	else if (func == "gequal")
+		return GPU_GEQUAL;
+	else if (func == "notequal")
+		return GPU_NOTEQUAL;
+	else if (func == "always")
+		return GPU_ALWAYS;
+	else if (func == "never")
+		return GPU_NEVER;
+	else if (func == "none")
+		return GPU_NONE;
+	else
+	{
+		assert(false);
+		return GPU_NONE;
+	}
+}
+
+StencilOperation
+MaterialMaker::stringToStencilOp(const std::string& stencilop) noexcept
+{
+	if (stencilop == "keep")
+		return STENCILOP_KEEP;
+	else if (stencilop == "replace")
+		return STENCILOP_REPLACE;
+	else if (stencilop == "inc")
+		return STENCILOP_INCR;
+	else if (stencilop == "dec")
+		return STENCILOP_DECR;
+	else if (stencilop == "incwrap")
+		return STENCILOP_INCR_WRAP;
+	else if (stencilop == "decwrap")
+		return STENCILOP_DECR_WRAP;
+	else
+	{
+		assert(false);
+		return STENCILOP_KEEP;
+	}
 }
 
 _NAME_END

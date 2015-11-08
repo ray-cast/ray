@@ -41,180 +41,248 @@
 
 _NAME_BEGIN
 
-typedef std::uint32_t RTTIType;
-typedef std::uint32_t ClassID;
-typedef void*(*ClassFactoryFunc)(ClassID);
-
-template <class T> inline
-std::pair<std::string, T> make_name(const std::string& name, T&& value)
-{
-    return std::pair<const std::string&, T&>(name.c_str(), std::forward<T>(value));
-}
-
-template <class T> inline
-std::pair<const char*, T&> make_name(const char* name, T& value)
-{
-    return std::pair<const char*, T&>(name, value);
-}
-
-#define rtti_name(T) make_name(#T, T)
-#define rtti_alias(T, alias)  make_name(alias, T)
-
-class IRTTI
+class EXPORT RTTI
 {
 public:
-    IRTTI() noexcept {};
-    virtual ~IRTTI() noexcept {}
+	typedef std::size_t HashCode;
+	typedef std::shared_ptr<RTTI> pointer;
+
+public:
+    RTTI() noexcept {};
+    virtual ~RTTI() noexcept {}
 
     virtual void* create() noexcept = 0;
 
-    virtual RTTIType getBaseType() const noexcept = 0;
-    virtual RTTIType getDerivedType() const noexcept = 0;
+	virtual const std::string& getBaseName() const noexcept = 0;
+	virtual const std::string& getDerivedName() const noexcept = 0;
+
+    virtual HashCode getBaseType() const noexcept = 0;
+    virtual HashCode getDerivedType() const noexcept = 0;
 };
 
 template<typename Derived, typename Base = void>
-class RTTI final : public IRTTI
+class RTTIInterface : public RTTI
 {
 public:
-    RTTI(const std::string& derived, const std::string& base = "")
-        : _derived(derived)
-        , _base(base)
-    {
-    }
+	RTTIInterface(const std::string& derived, const std::string& base) noexcept
+		: _derived(derived)
+		, _base(base)
+	{
+	}
 
-    virtual void* create() noexcept
-    {
-        return new Derived;
-    }
+	virtual ~RTTIInterface() noexcept
+	{
+	}
 
-    virtual RTTIType getBaseType() const noexcept
-    {
-        return typeid(Base).hash_code();
-    }
+	virtual void* create() noexcept { assert(nullptr); return nullptr; }
 
-    virtual RTTIType getDerivedType() const noexcept
-    {
-        return typeid(Derived).hash_code();
-    }
+	virtual const std::string& getBaseName() const noexcept { return _base; }
+	virtual const std::string& getDerivedName() const noexcept { return _derived; }
+
+	virtual HashCode getBaseType() const noexcept { return typeid(Base).hash_code(); }
+	virtual HashCode getDerivedType() const noexcept { return typeid(Derived).hash_code(); }
+
+private:
+	RTTIInterface(const RTTIInterface&) noexcept = delete;
+	RTTIInterface& operator=(const RTTIInterface&) noexcept = delete;
 
 private:
 
-    std::string _derived;
-    std::string _base;
+	std::string _derived;
+	std::string _base;
+};
+
+template<typename Derived, typename Base = void>
+class RTTIClass final : public RTTIInterface<Derived, Base>
+{
+public:
+	RTTIClass(const std::string& derived, const std::string& base)
+		: RTTIInterface(derived, base)
+    {
+    }
+
+	virtual void* create() noexcept { return new Derived; }
+
+private:
+	RTTIClass(const RTTIClass&) noexcept = delete;
+	RTTIClass& operator=(const RTTIClass&) noexcept = delete;
 };
 
 class EXPORT RTTIFactory
 {
     __DeclareSingleton(RTTIFactory)
 public:
-    RTTIFactory()
+    RTTIFactory() noexcept
     {
     }
 
-    ~RTTIFactory()
+    ~RTTIFactory() noexcept
     {
-        for (auto& it : _rtti_lists)
-        {
-            delete it.second;
-        }
     }
+
+	template<typename Derived, typename Base>
+	RTTI::pointer createInterface()
+	{
+		auto base = this->getName<Base>();
+		auto derived = this->getName<Derived>();
+		auto instance = std::make_shared<RTTIInterface<Derived, Base>>(derived, base);
+		_rtti_lists[derived] = instance;
+		return instance;
+	}
 
     template<typename Derived, typename Base>
-    IRTTI* createRTTI(const std::string& derived, const std::string& base = "")
+    RTTI::pointer createClass()
     {
-        auto instance = new RTTI<Derived, Base>(derived, base);
+		auto base = this->getName<Base>();
+		auto derived = this->getName<Derived>();
+        auto instance = std::make_shared<RTTIClass<Derived, Base>>(derived, base);
         _rtti_lists[derived] = instance;
         return instance;
     }
 
-    IRTTI* getRTTI(const std::string& name)
+    RTTI::pointer getRTTI(const std::string& name)
     {
         return _rtti_lists[name];
     }
 
-    IRTTI* getRTTI(const char* name)
+    RTTI::pointer getRTTI(const char* name)
     {
         return _rtti_lists[name];
     }
 
-    void* createObject(const std::string& name)
+	template<typename T>
+	std::shared_ptr<T> createObject(const std::string& name)
     {
-        auto rtti = this->getRTTI(name);
-        if (rtti)
-        {
-            return rtti->create();
-        }
+		std::string it = name;
+
+		while (!it.empty())
+		{
+			auto rtti = this->getRTTI(it);
+			if (!rtti)
+				return nullptr;
+
+			if (rtti->getDerivedType() == typeid(T).hash_code())
+			{
+				rtti = this->getRTTI(name);
+				return std::shared_ptr<T>((T*)rtti->create());
+			}
+
+			it = rtti->getBaseName();
+		}
 
         return nullptr;
     }
 
-    void* createObject(const char* name)
+	template<typename T>
+    std::shared_ptr<T> createObject(const char* name)
     {
-        auto rtti = this->getRTTI(name);
-        if (rtti)
-        {
-            return rtti->create();
-        }
-
-        return nullptr;
+		return this->createObject(std::string(name));
     }
 
 private:
-    std::map<std::string, IRTTI*> _rtti_lists;
+
+	template<typename T>
+	std::string getName() const
+	{
+		std::string name = typeid(T).name();
+		std::size_t pos = name.find("class ", 0, 6);
+		if (pos != std::string::npos)
+			name.erase(pos, 6);
+		else
+			name.clear();
+		return name;
+	}
+
+private:
+    std::map<std::string, RTTI::pointer> _rtti_lists;
 };
 
-#define __DeclareInterface(Derived)\
+#define __DeclareInterface(Base)\
 public:\
-    static RTTIType getType() noexcept;\
-    virtual const IRTTI* getRTTI() const noexcept = 0;\
+    static RTTI::HashCode getType() noexcept;\
+    virtual const RTTI::pointer getRTTI() const noexcept = 0;\
+private:\
+    static _NAME RTTI::pointer _rtti;
 
-#define __ImplementInterface(Derived) \
-    RTTIType Derived::getType() noexcept\
+#define __ImplementInterface(Base) \
+    _NAME RTTI::pointer Base::_rtti = _NAME RTTIFactory::instance()->createInterface<Base, void>();\
+    _NAME RTTI::HashCode Base::getType() noexcept\
     {\
-        return typeid(Derived).hash_code();\
+        return typeid(Base).hash_code();\
+    }\
+    const _NAME RTTI::pointer Base::getRTTI() const noexcept\
+    {\
+        return _rtti;\
     }
 
 #define __DeclareSubInterface(Derived, Base)\
 public:\
-    static RTTIType getType() noexcept;\
-    virtual const IRTTI* getRTTI() const noexcept = 0;\
+    static RTTI::HashCode getType() noexcept;\
+    virtual const RTTI::pointer getRTTI() const noexcept = 0;\
+private:\
+    static _NAME RTTI::pointer _rtti;
 
 #define __ImplementSubInterface(Derived, Base) \
-    RTTIType Derived::getType() noexcept\
+    _NAME RTTI::pointer Derived::_rtti = _NAME RTTIFactory::instance()->createInterface<Derived, Base>();\
+    _NAME RTTI::HashCode Derived::getType() noexcept\
     {\
         return typeid(Derived).hash_code();\
     }\
+    const _NAME RTTI::pointer Derived::getRTTI() const noexcept\
+    {\
+        return _rtti;\
+    }
 
 #define __DeclareClass(Base) \
 public:\
-    static const IRTTI& getRTTI() noexcept;\
+    static _NAME RTTI::HashCode getType() noexcept;\
+    virtual const _NAME RTTI::pointer getRTTI() const noexcept;\
 private:\
-    static RTTI<Base> _rtti;
+    static _NAME RTTI::pointer _rtti;
 
 #define __ImplementClass(Base) \
-    _NAME RTTI<Base> Base::_rtti = _NAME RTTI<Base>(#Base);\
-    const IRTTI& Base::getRTTI() noexcept\
+    _NAME RTTI::pointer Base::_rtti = _NAME RTTIFactory::instance()->createClass<Base, void>();\
+    _NAME RTTI::HashCode Derived::getType() noexcept\
+    {\
+        return typeid(Base).hash_code();\
+    }\
+    const _NAME RTTI::pointer Derived::getRTTI() const noexcept\
     {\
         return _rtti;\
     }
 
 #define __DeclareSubClass(Derived, Base)\
 public:\
-    static _NAME RTTIType getType() noexcept;\
-    virtual const _NAME IRTTI* getRTTI() const noexcept;\
+    static _NAME RTTI::HashCode getType() noexcept;\
+    virtual const _NAME RTTI::pointer getRTTI() const noexcept;\
 private:\
-    static _NAME IRTTI* _rtti;
+    static _NAME RTTI::pointer _rtti;
 
 #define __ImplementSubClass(Derived, Base) \
-    _NAME IRTTI* Derived::_rtti = _NAME RTTIFactory::instance()->createRTTI<Derived, Base>(#Derived, #Base);\
-    _NAME RTTIType Derived::getType() noexcept\
+    _NAME RTTI::pointer Derived::_rtti = _NAME RTTIFactory::instance()->createClass<Derived, Base>();\
+    _NAME RTTI::HashCode Derived::getType() noexcept\
     {\
         return typeid(Derived).hash_code();\
     }\
-    const _NAME IRTTI* Derived::getRTTI() const noexcept\
+    const _NAME RTTI::pointer Derived::getRTTI() const noexcept\
     {\
         return _rtti;\
     }
+
+template <class T> inline
+std::pair<std::string, T> make_name(const std::string& name, T&& value)
+{
+	return std::pair<const std::string&, T&>(name.c_str(), std::forward<T>(value));
+}
+
+template <class T> inline
+std::pair<const char*, T&> make_name(const char* name, T& value)
+{
+	return std::pair<const char*, T&>(name, value);
+}
+
+#define rtti_name(T) make_name(#T, T)
+#define rtti_alias(T, alias)  make_name(alias, T)
 
 _NAME_END
 

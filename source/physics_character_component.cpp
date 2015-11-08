@@ -138,6 +138,24 @@ PhysicsCharacterComponent::onFrameEnd() noexcept
 	}
 }
 
+void
+PhysicsCharacterComponent::load(iarchive& reader) noexcept
+{
+	float radius = 1.0;
+	float height = 1.0;
+
+	reader >> rtti_name(radius);
+	reader >> rtti_name(height);
+
+	this->setRadius(radius);
+	this->setHeight(height);
+}
+
+void 
+PhysicsCharacterComponent::save(oarchive& write) noexcept
+{
+}
+
 GameComponentPtr
 PhysicsCharacterComponent::clone() const noexcept
 {

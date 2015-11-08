@@ -44,17 +44,19 @@ _NAME_BEGIN
 class EXPORT InputKeyboard : public InputController
 {
 public:
-    InputKeyboard() noexcept;
-    virtual ~InputKeyboard() noexcept;
+	InputKeyboard() noexcept;
+	virtual ~InputKeyboard() noexcept;
 
-    virtual bool getKeyDown(InputKey::Code key) const noexcept = 0;
-    virtual bool getKeyUp(InputKey::Code key) const noexcept = 0;
-    virtual bool getKey(InputKey::Code key) const noexcept = 0;
-    virtual bool getKeyState(InputKey::Code key) const noexcept = 0;
+	virtual bool getKeyDown(InputKey::Code key) const noexcept = 0;
+	virtual bool getKeyUp(InputKey::Code key) const noexcept = 0;
+	virtual bool getKey(InputKey::Code key) const noexcept = 0;
+	virtual bool getKeyState(InputKey::Code key) const noexcept = 0;
+
+	virtual InputKeyboardPtr clone() const noexcept = 0;
 
 private:
-    InputKeyboard(const InputKeyboard&) noexcept = delete;
-    InputKeyboard& operator=(const InputKeyboard&) noexcept = delete;
+	InputKeyboard(const InputKeyboard&) noexcept = delete;
+	InputKeyboard& operator=(const InputKeyboard&) noexcept = delete;
 };
 
 _NAME_END

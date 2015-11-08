@@ -178,29 +178,29 @@ struct PMD_IK
 	std::vector<PMD_Link> LinkList; // LinkList[LinkCount];
 };
 
-struct PMD_FaceVertex
+struct PMD_MorphVertex
 {
 	PMD_uint32_t Index;    // 皮肤对应的组成顶点
 
 	PMD_Vector3  Offset;   // 顶点位移
 };
 
-struct PMD_FaceName
+struct PMD_MorphName
 {
 	PMD_uint8_t Name[20];
 };
 
-typedef PMD_uint16_t PMD_FaceCount;
+typedef PMD_uint16_t PMD_MorphCount;
 
-struct PMD_Face
+struct PMD_Morph
 {
-	PMD_FaceName Name;        // 表情名字
+	PMD_MorphName Name;        // 表情名字
 
 	PMD_uint32_t VertexCount; // 表情含有的顶点数量
 
 	PMD_uint8_t  Category;    // 分类
 
-	std::vector<PMD_FaceVertex>  VertexList;    // FaceVertex[VertexCount];  // 表情包含的所有顶点信息
+	std::vector<PMD_MorphVertex>  VertexList;    // FaceVertex[VertexCount];  // 表情包含的所有顶点信息
 };
 
 struct PMD_NodeName
@@ -245,7 +245,7 @@ struct PMD_Description
 
 	std::vector<PMD_BoneName> BoneName;  // Name[BoneCount];
 
-	std::vector<PMD_FaceName> FaceName;  // Name[PMD_FrameWindow.ExpressionListCount];
+	std::vector<PMD_MorphName> FaceName;  // Name[PMD_FrameWindow.ExpressionListCount];
 
 	std::vector<PMD_NodeName> FrameName; // Name[PMD_FrameWindow.NodeNameCount];
 };
@@ -338,9 +338,9 @@ struct PMD
 
 	std::vector<PMD_IK>       IkList;
 
-	PMD_FaceCount             FaceCount;
+	PMD_MorphCount            MorphCount;
 
-	std::vector<PMD_Face>     FaceList;
+	std::vector<PMD_Morph>    MorphList;
 
 	PMD_FrameWindow           FrameWindow;
 

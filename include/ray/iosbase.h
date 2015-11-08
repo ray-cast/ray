@@ -149,9 +149,6 @@ public:
     ios_base() noexcept;
     ~ios_base() noexcept;
 
-    void setOpenMode(ios_base::openmode mode) noexcept;
-    ios_base::openmode getOpenMode() const noexcept;
-
     bool good() const noexcept;
     bool eof() const noexcept;
     bool fail() const noexcept;
@@ -176,7 +173,7 @@ public:
     operator bool() const noexcept;
 
 protected:
-    void _init(ios_base::openmode mode) noexcept;
+    void _init() noexcept;
 
 private:
     ios_base(const ios_base&) = delete;
@@ -185,7 +182,7 @@ private:
 private:
 
     ios_base::fmtflags _fmtfl;
-    ios_base::openmode _mode;
+
     ios_base::iostate _my_state;
     ios_base::iostate _my_except;
 };

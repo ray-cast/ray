@@ -43,40 +43,42 @@ _NAME_BEGIN
 
 enum RenderPass
 {
-    RP_CUSTOM,
-    RP_DEPTH,
-    RP_SHADOW,
-    RP_OPAQUES,
-    RP_TRANSPARENT,
-    RP_LIGHTS,
-    RP_NUMPASS
+	RP_CUSTOM,
+	RP_DEPTH,
+	RP_SHADOW,
+	RP_OPAQUES,
+	RP_TRANSPARENT,
+	RP_SPECIFIC,
+	RP_LIGHTS,
+	RP_POSTPROCESS,
+	RP_NUMPASS
 };
 
 class EXPORT MaterialPass final
 {
 public:
-    MaterialPass(RenderPass pass) noexcept;
-    ~MaterialPass() noexcept;
+	MaterialPass(RenderPass pass) noexcept;
+	~MaterialPass() noexcept;
 
-    void setName(const std::string& name) noexcept;
-    const std::string& getName() const noexcept;
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
 
-    RenderPass getRenderPass() noexcept;
+	RenderPass getRenderPass() noexcept;
 
-    void setRenderState(RenderStatePtr state) noexcept;
-    RenderStatePtr getRenderState() noexcept;
+	void setRenderState(RenderStatePtr state) noexcept;
+	RenderStatePtr getRenderState() noexcept;
 
-    void setShaderObject(ShaderObjectPtr shader) noexcept;
-    ShaderObjectPtr getShaderObject() noexcept;
+	void setShaderObject(ShaderObjectPtr shader) noexcept;
+	ShaderObjectPtr getShaderObject() noexcept;
 
 private:
 
-    std::string _name;
+	std::string _name;
 
-    RenderPass _pass;
+	RenderPass _pass;
 
-    ShaderObjectPtr _shaderObject;
-    RenderStatePtr _renderState;
+	ShaderObjectPtr _shaderObject;
+	RenderStatePtr _renderState;
 };
 
 _NAME_END

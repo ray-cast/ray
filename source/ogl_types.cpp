@@ -51,6 +51,12 @@ OGLTypes::asOGLVertexType(VertexType type) noexcept
 		return GL_TRIANGLES;
 	case ray::GPU_FAN:
 		return GL_TRIANGLE_FAN;
+	case ray::GPU_POINT_OR_LINE:
+		return GL_POINTS;
+	case ray::GPU_TRIANGLE_OR_LINE:
+		return GL_TRIANGLES;
+	case ray::GPU_FAN_OR_LINE:
+		return GL_TRIANGLE_FAN;
 	default:
 		assert(false);
 		return GL_TRIANGLES;
@@ -190,13 +196,13 @@ OGLTypes::asOGLFormat(PixelFormat format) noexcept
 	if (format == PixelFormat::STENCIL8)
 		return GL_STENCIL_INDEX;
 
-	if (format == PixelFormat::R8G8B8 || format == PixelFormat::R8G8B8F || format == PixelFormat::R16G16B16F || format == PixelFormat::R32G32B32F)
+	if (format == PixelFormat::R8G8B8 || format == PixelFormat::R16G16B16 || format == PixelFormat::R16G16B16F || format == PixelFormat::R32G32B32F)
 		return GL_RGB;
 
-	if (format == PixelFormat::R16G16B16A16_SNORM)
-		return GL_RGBA_SNORM;
+	if (format == PixelFormat::R8G8B8A8 || format == PixelFormat::R16G16B16A16 || format == PixelFormat::R16G16B16A16F || format == PixelFormat::R32G32B32A32F)
+		return GL_RGBA;
 
-	if (format == PixelFormat::R8G8B8A8 || format == PixelFormat::R8G8B8A8F || format == PixelFormat::R4G4B4A4F || format == PixelFormat::R16G16B16A16F || format == PixelFormat::R32G32B32A32F)
+	if (format == PixelFormat::R16G16B16A16_SNORM)
 		return GL_RGBA;
 
 	if (format == PixelFormat::SR8G8B8 || format == PixelFormat::SRGB)
@@ -239,19 +245,22 @@ OGLTypes::asOGLType(PixelFormat format) noexcept
 	if (format == PixelFormat::DEPTH_COMPONENT16 || format == PixelFormat::DEPTH_COMPONENT24)
 		return GL_UNSIGNED_BYTE;
 
-	if (format == PixelFormat::R8G8B8 || format == PixelFormat::R8G8B8A8)
+	if (format == PixelFormat::R8G8B8 || format == PixelFormat::R16G16B16)
+		return GL_UNSIGNED_BYTE;
+
+	if (format == PixelFormat::R8G8B8A8 || format == PixelFormat::R16G16B16A16)
 		return GL_UNSIGNED_BYTE;
 
 	if (format == PixelFormat::R8)
 		return GL_UNSIGNED_BYTE;
 
-	if (format == PixelFormat::R8G8B8F || format == PixelFormat::R16G16B16F || format == PixelFormat::R32G32B32F)
+	if (format == PixelFormat::R16G16B16F || format == PixelFormat::R32G32B32F)
 		return GL_FLOAT;
 
 	if (format == PixelFormat::R16G16B16A16_SNORM)
 		return GL_FLOAT;
 
-	if (format == PixelFormat::R8G8B8A8F || format == PixelFormat::R16G16B16A16F || format == PixelFormat::R32G32B32A32F)
+	if (format == PixelFormat::R16G16B16A16F || format == PixelFormat::R32G32B32A32F)
 		return GL_FLOAT;
 
 	if (format == PixelFormat::SR8G8B8 || format == PixelFormat::SRGB)
@@ -291,25 +300,28 @@ OGLTypes::asOGLInternalformat(PixelFormat format) noexcept
 	case PixelFormat::DEPTH32_STENCIL8:
 		return GL_DEPTH32F_STENCIL8;
 	case PixelFormat::LUMINANCE:
-		return GL_LUMINANCE;
+		return GL_LUMINANCE8;
 	case PixelFormat::LUMINANCE_ALPHA:
 		return GL_LUMINANCE_ALPHA;
 	case PixelFormat::R8G8B8:
-		return GL_RGB;
+		return GL_RGB8;
 	case PixelFormat::R8G8B8A8:
-		return GL_RGBA;
+		return GL_RGBA8;
+	case PixelFormat::R16G16B16:
+		return GL_RGB16;
+	case PixelFormat::R16G16B16A16:
+		return GL_RGBA16;
+#if !defined(EGLAPI)
 	case PixelFormat::R16G16B16A16_SNORM:
 		return GL_RGBA16_SNORM;
-	case PixelFormat::R8G8B8F:
-		return GL_RGB8;
+#else
+	case PixelFormat::R16G16B16A16_SNORM:
+		return GL_RGBA16_SNORM_EXT;
+#endif
 	case PixelFormat::R16G16B16F:
 		return GL_RGB16F;
 	case PixelFormat::R32G32B32F:
 		return GL_RGB32F;
-	case PixelFormat::R4G4B4A4F:
-		return GL_RGBA4;
-	case PixelFormat::R8G8B8A8F:
-		return GL_RGBA8;
 	case PixelFormat::R16G16B16A16F:
 		return GL_RGBA16F;
 	case PixelFormat::R32G32B32A32F:
@@ -321,7 +333,7 @@ OGLTypes::asOGLInternalformat(PixelFormat format) noexcept
 	case PixelFormat::SRGB:
 		return GL_SRGB;
 	case PixelFormat::SRGBA:
-		return GL_SRGB_ALPHA;
+		return GL_SRGB_ALPHA_EXT;
 	case PixelFormat::R8:
 		return GL_R8;
 	case PixelFormat::R16F:
@@ -335,17 +347,15 @@ OGLTypes::asOGLInternalformat(PixelFormat format) noexcept
 	case PixelFormat::R11G11B10F:
 		return GL_R11F_G11F_B10F;
 	case PixelFormat::RGB_DXT1:
-		return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-	case PixelFormat::RGB_DXT3:
-		return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-	case PixelFormat::RGB_DXT5:
-		return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 	case PixelFormat::RGBA_DXT1:
 		return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 	case PixelFormat::RGBA_DXT3:
 		return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 	case PixelFormat::RGBA_DXT5:
 		return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+	case PixelFormat::RG_ATI2:
+		return GL_COMPRESSED_RG_RGTC2;
 	default:
 		assert(false);
 		return GL_RGBA;
@@ -416,14 +426,6 @@ OGLTypes::asBlendFactor(BlendFactor func) noexcept
 		return GL_CONSTANT_ALPHA;
 	case GPU_SRC_ALPHA_SATURATE:
 		return GL_SRC_ALPHA_SATURATE;
-	case GPU_SRC1_COLOR:
-		return GL_SRC1_COLOR;
-	case GPU_SRC1_ALPHA:
-		return GL_SRC1_ALPHA;
-	case GPU_ONE_MINUS_SRC1_COLOR:
-		return GL_ONE_MINUS_SRC1_COLOR;
-	case GPU_ONE_MINUS_SRC1_ALPHA:
-		return GL_ONE_MINUS_SRC1_ALPHA;
 	default:
 		assert(false);
 		return GL_ZERO;
@@ -437,14 +439,14 @@ OGLTypes::asBlendOperation(BlendOperation blendop) noexcept
 	switch (blendop)
 	{
 	case ray::GPU_ADD:
-		return GL_ADD;
+		return GL_FUNC_ADD;
 	case ray::GPU_SUBSTRACT:
-		return GL_SUBTRACT;
+		return GL_FUNC_SUBTRACT;
 	case ray::GPU_REVSUBTRACT:
 		return GL_FUNC_REVERSE_SUBTRACT;
 	default:
 		assert(false);
-		return GL_ADD;
+		return GL_FUNC_ADD;
 	}
 #else
 	assert(false);

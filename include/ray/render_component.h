@@ -38,11 +38,12 @@
 #define _H_RENDER_COMPONENT_H_
 
 #include <ray/game_component.h>
+#include <ray/render_object.h>
 #include <ray/material.h>
 
 _NAME_BEGIN
 
-class EXPORT RenderComponent : public GameComponent
+class EXPORT RenderComponent : public GameComponent, public RenderListener
 {
 	__DeclareSubInterface(RenderComponent, GameComponent)
 public:
@@ -71,8 +72,26 @@ public:
 	void save(oarchive& write) noexcept;
 
 protected:
-	void onAttach() except;
-	void onRemove() noexcept;
+
+	void _attacRenderObjects() noexcept;
+	void _dettachRenderhObjects() noexcept;
+
+	void _setRenderObject(RenderObjectPtr object) noexcept;
+	RenderObjectPtr _getRenderObject() noexcept;
+
+protected:
+	virtual void onAttach() except;
+	virtual void onRemove() noexcept;
+
+	virtual void onActivate() except;
+	virtual void onDeactivate() noexcept;
+
+	virtual void onWillRenderObject() noexcept;
+	virtual void onRenderObject() noexcept;
+
+	virtual void onMoveAfter() noexcept;
+
+	virtual void onLayerChangeAfter() noexcept;
 
 private:
 	RenderComponent(const RenderComponent&) = delete;
@@ -85,6 +104,8 @@ private:
 
 	Materials _materials;
 	Materials _sharedMaterials;
+
+	RenderObjectPtr _renderObject;
 };
 
 _NAME_END

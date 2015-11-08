@@ -37,7 +37,6 @@
 #ifndef _H_VECTOR3_H_
 #define _H_VECTOR3_H_
 
-#include <ray/gdicmn.h>
 #include <ray/vector2.h>
 
 _NAME_BEGIN
@@ -368,8 +367,6 @@ public:
     const_pointer ptr() const { return (const_pointer)this; }
     pointer data() { return (pointer)this; }
     const_pointer data() const { return (const_pointer)this; }
-
-    void toString() const;
 };
 
 template<typename T> const Vector3t<T> Vector3t<T>::Zero = Vector3t<T>((T)0.0, (T)0.0, (T)0.0);

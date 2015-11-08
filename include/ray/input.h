@@ -44,66 +44,69 @@ _NAME_BEGIN
 class EXPORT DefaultInput final : public Input
 {
 public:
-    DefaultInput() noexcept;
-    ~DefaultInput() noexcept;
+	DefaultInput() noexcept;
+	~DefaultInput() noexcept;
 
-    void open(InputDevicePtr device) noexcept;
+	virtual void open(InputDevicePtr device) noexcept;
+	virtual void close() noexcept;
 
-    void setMousePosX(int x) noexcept;
-    void setMousePosY(int y) noexcept;
-    void setMousePos(int x, int y) noexcept;
+	virtual void setMousePosX(int x) noexcept;
+	virtual void setMousePosY(int y) noexcept;
+	virtual void setMousePos(int x, int y) noexcept;
 
-    int getMousePosX() const noexcept;
-    int getMousePosY() const noexcept;
+	virtual int getMousePosX() const noexcept;
+	virtual int getMousePosY() const noexcept;
 
-    bool getKeyDown(InputKey::Code key) const noexcept;
-    bool getKeyUp(InputKey::Code key) const noexcept;
-    bool getKey(InputKey::Code key) const noexcept;
+	virtual bool getKeyDown(InputKey::Code key) const noexcept;
+	virtual bool getKeyUp(InputKey::Code key) const noexcept;
+	virtual bool getKey(InputKey::Code key) const noexcept;
 
-    bool getButtonDown(InputButton::Code key) const noexcept;
-    bool getButtonUp(InputButton::Code key) const noexcept;
-    bool getButton(InputButton::Code key) const noexcept;
+	virtual bool getButtonDown(InputButton::Code key) const noexcept;
+	virtual bool getButtonUp(InputButton::Code key) const noexcept;
+	virtual bool getButton(InputButton::Code key) const noexcept;
 
-    void showCursor(bool show) noexcept;
-    bool isShowCursor() const noexcept;
+	virtual void showCursor(bool show) noexcept;
+	virtual bool isShowCursor() const noexcept;
 
-    void lockCursor(bool lock) noexcept;
-    bool isLockedCursor() const noexcept;
+	virtual void lockCursor(bool lock) noexcept;
+	virtual bool isLockedCursor() const noexcept;
 
-    void obtainMouseCapture() noexcept;
-    void obtainKeyboardCapture() noexcept;
+	virtual void obtainMouseCapture() noexcept;
+	virtual void obtainKeyboardCapture() noexcept;
 
-    void obtainMouseCapture(InputMousePtr mouse) noexcept;
-    void obtainKeyboardCapture(InputKeyboardPtr key) noexcept;
+	virtual void obtainMouseCapture(InputMousePtr mouse) noexcept;
+	virtual void obtainKeyboardCapture(InputKeyboardPtr key) noexcept;
+	virtual void obtainCapture() noexcept;
 
-    void obtainCapture() noexcept;
+	virtual void releaseMouseCapture() noexcept;
+	virtual void releaseKeyboardCapture() noexcept;
+	virtual void releaseCapture() noexcept;
 
-    void releaseMouseCapture() noexcept;
-    void releaseKeyboardCapture() noexcept;
-    void releaseCapture() noexcept;
+	virtual void reset() noexcept;
 
-    void reset() noexcept;
+	virtual void addInputListener(InputListener* listener) noexcept;
+	virtual void removeInputListener(InputListener* listener) noexcept;
+	virtual void clearInputListener() noexcept;
 
-    void addInputListener(InputListener* listener) noexcept;
-    void removeInputListener(InputListener* listener) noexcept;
+	virtual void updateBegin() noexcept;
+	virtual void update() noexcept;
+	virtual void updateEnd() noexcept;
 
-    void updateBegin() noexcept;
-    void update() noexcept;
-    void updateEnd() noexcept;
+	virtual InputPtr clone() const noexcept;
 
 private:
-    DefaultInput(const DefaultInput&) noexcept = delete;
-    DefaultInput& operator=(const DefaultInput&) noexcept = delete;
+	DefaultInput(const DefaultInput&) noexcept = delete;
+	DefaultInput& operator=(const DefaultInput&) noexcept = delete;
 
 private:
 
-    typedef std::vector<InputListener*> InputListeners;
+	typedef std::vector<InputListener*> InputListeners;
 
-    InputDevicePtr _inputDevice;
-    InputMousePtr _mouseCaptureDevice;
-    InputKeyboardPtr _keyboardCaptureDevice;
+	InputDevicePtr _inputDevice;
+	InputMousePtr _mouseCaptureDevice;
+	InputKeyboardPtr _keyboardCaptureDevice;
 
-    InputListeners _inputListeners;
+	InputListeners _inputListeners;
 };
 
 _NAME_END

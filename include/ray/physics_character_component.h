@@ -63,6 +63,9 @@ public:
 	bool canJumping() const noexcept;
 	void jump(float speed) noexcept;
 
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
+
 	virtual GameComponentPtr clone() const noexcept;
 
 private:

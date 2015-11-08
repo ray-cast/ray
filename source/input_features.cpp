@@ -41,9 +41,19 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(InputFeatures, GameFeatures)
+
 InputFeatures::InputFeatures() noexcept
 {
-	this->setName(typeid(InputFeatures).name());
+	auto inputDevice = std::make_shared<DefaultInputDevice>();
+	auto inputKeyboard = std::make_shared<DefaultInputKeyboard>();
+	auto inputMouse = std::make_shared<DefaultInputMouse>();
+
+	_input = std::make_shared<DefaultInput>();
+	_input->open(inputDevice);
+	_input->addInputListener(this);
+	_input->obtainKeyboardCapture(inputKeyboard);
+	_input->obtainMouseCapture(inputMouse);
 }
 
 InputFeatures::~InputFeatures() noexcept
@@ -74,19 +84,24 @@ InputFeatures::getInput() const noexcept
 GameFeaturePtr
 InputFeatures::clone() const noexcept
 {
-	return std::make_shared<InputFeatures>();
+	auto features = std::make_shared<InputFeatures>();
+	if (_input)
+		features->setInput(_input->clone());
+	return features;
 }
 
 void
 InputFeatures::onActivate() except
 {
-	this->_buildInput();
+	if (_input)
+		_input->obtainCapture();
 }
 
 void
 InputFeatures::onDeactivate() except
 {
-	this->setInput(nullptr);
+	if (_input)
+		_input->releaseCapture();
 }
 
 void
@@ -111,25 +126,19 @@ InputFeatures::onFrameEnd() noexcept
 void
 InputFeatures::onMessage(const GameMessage& event) noexcept
 {
-	switch (event.event)
-	{
-	case GameEvent::LostFocus:
+	if (event.event()->code() == typeid(LostFocusEvent).hash_code())
 	{
 		if (_input)
 		{
 			_input->releaseCapture();
 		}
 	}
-	break;
-	case GameEvent::GetFocus:
+	else if (event.event()->code() == typeid(GetFocusEvent).hash_code())
 	{
 		if (_input)
 		{
 			_input->obtainCapture();
 		}
-	}
-	default:
-		break;
 	}
 }
 
@@ -145,25 +154,42 @@ InputFeatures::onReset() noexcept
 void
 InputFeatures::onInputEvent(const InputEvent& event) noexcept
 {
-	//Variant arg(&event);
-	//this->sendMessage("onInputEvent", &arg);
-}
+	switch (event.event)
+	{
+	case InputEvent::MouseMotion:
+	{
+		MouseMotion motion;
+		motion.mouse.x = event.motion.x;
+		motion.mouse.y = event.motion.y;
+		motion.mouse.xrel = event.motion.xrel;
+		motion.mouse.yrel = event.motion.yrel;
 
-void
-InputFeatures::_buildInput() noexcept
-{
-	assert(!_input);
+		this->sendMessage(&motion);
+	}
+	break;
+	case InputEvent::MouseButtonDown:
+	{
+		MouseButtonDown button;
+		button.mouse.button = event.button.button;
+		button.mouse.x = event.button.x;
+		button.mouse.y = event.button.y;
 
-	_inputDevice = std::make_shared<DefaultInputDevice>();
-	_inputKeyboard = std::make_shared<DefaultInputKeyboard>();
-	_inputMouse = std::make_shared<DefaultInputMouse>();
+		this->sendMessage(&button);
+	}
+	break;
+	case InputEvent::MouseButtonUp:
+	{
+		MouseButtonUp button;
+		button.mouse.button = event.button.button;
+		button.mouse.x = event.button.x;
+		button.mouse.y = event.button.y;
 
-	auto input = std::make_shared<DefaultInput>();
-	input->open(_inputDevice);
-	input->obtainKeyboardCapture(_inputKeyboard);
-	input->obtainMouseCapture(_inputMouse);
-
-	this->setInput(input);
+		this->sendMessage(&button);
+	}
+	break;
+	default:
+		break;
+	}
 }
 
 _NAME_END

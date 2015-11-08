@@ -34,121 +34,124 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_PIPELINE_H_
-#define _H_RENDER_PIPELINE_H_
+#ifndef _H_DEFERRED_LIGHTING_H_
+#define _H_DEFERRED_LIGHTING_H_
 
-#include <ray/render_device.h>
-#include <ray/render_buffer.h>
-#include <ray/render_texture.h>
-#include <ray/render_object.h>
+#include <ray/render_pipeline_layer.h>
 
 _NAME_BEGIN
 
-typedef std::vector<RenderObject*> RenderData;
-class RenderDataManager
+class DefaultRenderPipeline final : public RenderPipelineLayer
 {
 public:
+	DefaultRenderPipeline() except;
+	~DefaultRenderPipeline() noexcept;
 
-    void addRenderData(RenderQueue queue, RenderObject* object) noexcept;
+	void renderShadowMap(CameraPtr camera) noexcept;
 
-    RenderData& getRenderData(RenderQueue queue) noexcept;
+	void renderCubeMap(CameraPtr camera) noexcept;
+	void renderCubeMapLayer(RenderScenePtr scene, CameraPtr camera, int layer) noexcept;
 
-    void clear() noexcept;
+	void renderIrradianceMap(CameraPtr camera) noexcept;
+
+	void render2DEnvMap(CameraPtr camera) noexcept;
+	void render3DEnvMap(CameraPtr camera) noexcept;
+
+	void renderCamera(CameraPtr camera) noexcept;
 
 private:
 
-    RenderData _visiable[RenderQueue::RenderQueueComits];
-};
+	void renderOpaques(MultiRenderTexturePtr target) noexcept;
+	void renderOpaquesDepthLinear(RenderTexturePtr target) noexcept;
+	void renderOpaquesShading(RenderTexturePtr target, int layer = 0) noexcept;
+	void renderOpaquesSpecificShading(RenderTexturePtr target, int layer = 0) noexcept;
 
-class RenderPipeline
-{
-public:
-    RenderPipeline() noexcept;
-    virtual ~RenderPipeline() noexcept;
+	void renderTransparent(MultiRenderTexturePtr target) noexcept;
+	void renderTransparentDepthLinear(RenderTexturePtr target) noexcept;
+	void renderTransparentShading(RenderTexturePtr target, int layer = 0) noexcept;
+	void renderTransparentSpecificShading(RenderTexturePtr target, int layer = 0) noexcept;
 
-    virtual void setup(RenderDevicePtr renderDevice, std::size_t width, std::size_t height) except;
-    virtual void close() noexcept;
-
-    void setCamera(Camera* renderer) noexcept;
-    Camera* getCamera() const noexcept;
-
-    void addRenderData(RenderQueue queue, RenderObject* object) noexcept;
-    RenderData& getRenderData(RenderQueue queue) noexcept;
-
-    void drawMesh(RenderBufferPtr mesh, const Renderable& renderable) noexcept;
-    void updateMesh(RenderBufferPtr mesh, VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept;
-
-    void setViewport(const Viewport& viewport) noexcept;
-    const Viewport& getViewport() const noexcept;
-
-    void setRenderState(RenderStatePtr state) noexcept;
-
-    void setRenderTarget(RenderTargetPtr texture) noexcept;
-    void setRenderTarget(MultiRenderTargetPtr texture) noexcept;
-    void readRenderTarget(RenderTargetPtr texture, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
-    void copyRenderTarget(RenderTargetPtr srcTarget, const Viewport& src, RenderTargetPtr destTarget, const Viewport& dest) noexcept;
-
-    void setShaderObject(ShaderObjectPtr shader) noexcept;
-    void setShaderVariant(ShaderVariantPtr buffer, ShaderUniformPtr uniform) noexcept;
-
-    void drawSceneQuad() noexcept;
-    void drawSphere() noexcept;
-    void drawCone() noexcept;
-    void drawRenderable(RenderQueue type, RenderPass pass, MaterialPassPtr material = nullptr) noexcept;
-
-    void setWireframeMode(bool enable) noexcept;
-    bool getWireframeMode() const noexcept;
-
-    void setWindowResolution(std::size_t w, std::size_t h) noexcept;
-    std::size_t getWindowWidth() const noexcept;
-    std::size_t getWindowHeight() const noexcept;
-
-    void setTechnique(MaterialPassPtr pass) noexcept;
-
-    void addPostProcess(RenderPostProcessPtr postprocess) except;
-    void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
-    void applyPostProcess(RenderTargetPtr target) except;
-
-    void render() noexcept;
-
-protected:
-
-    void assignVisiable(Camera* camera) noexcept;
-    void assignLight(Camera* camera) noexcept;
-
-    void collection(RenderObject& object) noexcept;
-
-    virtual void onRenderObjectPre(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except;
-    virtual void onRenderObjectPost(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except;
-    virtual void onRenderObject(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except;
-
-    virtual void onActivate() except;
-    virtual void onDectivate() except;
-
-    virtual void onRenderPre() except;
-    virtual void onRenderPost() except;
-    virtual void onRenderPipeline() except;
+	void renderLights(RenderTexturePtr target) noexcept;
+	void renderSunLight(const Light& light) noexcept;
+	void renderDirectionalLight(const Light& light) noexcept;
+	void renderAmbientLight(const Light& light) noexcept;
+	void renderPointLight(const Light& light) noexcept;
+	void renderSpotLight(const Light& light) noexcept;
+	void renderHemiSphereLight(const Light& light) noexcept;
+	void renderAreaLight(const Light& light) noexcept;
 
 private:
+	virtual void onActivate() except;
+	virtual void onDeactivate() noexcept;
 
-    std::size_t _width;
-    std::size_t _height;
+	virtual void onRenderPre(CameraPtr camera) noexcept;
+	virtual void onRenderPipeline(CameraPtr camera) noexcept;
+	virtual void onRenderPost(CameraPtr camera) noexcept;
+private:
 
-    bool _enableWireframe;
+	CameraPtr _leftCamera;
+	CameraPtr _rightCamera;
+	CameraPtr _frontCamera;
+	CameraPtr _backCamera;
+	CameraPtr _topCamera;
+	CameraPtr _bottomCamera;
 
-    Camera* _camera;
+	MaterialPtr _deferredLighting;
+	MaterialPassPtr _deferredDepthOnly;
+	MaterialPassPtr _deferredDepthLinear;
+	MaterialPassPtr _deferredSunLight;
+	MaterialPassPtr _deferredSunLightShadow;
+	MaterialPassPtr _deferredDirectionalLight;
+	MaterialPassPtr _deferredDirectionalLightShadow;
+	MaterialPassPtr _deferredSpotLight;
+	MaterialPassPtr _deferredPointLight;
+	MaterialPassPtr _deferredAmbientLight;
+	MaterialPassPtr _deferredShadingOpaques;
+	MaterialPassPtr _deferredShadingTransparents;
+	MaterialPassPtr _deferredDebugLayer;
 
-    RenderDevicePtr _renderer;
+	MaterialParamPtr _texMRT0;
+	MaterialParamPtr _texMRT1;
+	MaterialParamPtr _texDepth;
+	MaterialParamPtr _texLight;
+	MaterialParamPtr _texEnvironmentMap;
 
-    RenderBufferPtr _renderSceneQuad;
-    RenderBufferPtr _renderSphere;
-    RenderBufferPtr _renderCone;
+	MaterialParamPtr _eyePosition;
 
-    RenderDataManager _renderDataManager;
+	MaterialParamPtr _shadowDecal;
+	MaterialParamPtr _shadowChannel;
+	MaterialParamPtr _shadowMap;
+	MaterialParamPtr _shadowArrayMap;
+	MaterialParamPtr _shadowFactor;
+	MaterialParamPtr _shadowMatrix;
+	MaterialParamPtr _shadowOffset;
+	MaterialParamPtr _shadowWeight;
 
-    std::vector<Light*> _lights;
-    std::vector<RenderObject*> _visiable;
-    std::vector<RenderPostProcessPtr> _postprocessors;
+	MaterialParamPtr _lightColor;
+	MaterialParamPtr _lightPosition;
+	MaterialParamPtr _lightDirection;
+	MaterialParamPtr _lightRange;
+	MaterialParamPtr _lightIntensity;
+	MaterialParamPtr _lightAttenuation;
+	MaterialParamPtr _lightSpotInnerCone;
+	MaterialParamPtr _lightSpotOuterCone;
+
+	RenderTexturePtr _deferredDepthMap;
+	RenderTexturePtr _deferredGraphicMap;
+	RenderTexturePtr _deferredNormalMap;
+	RenderTexturePtr _deferredLightMap;
+	RenderTexturePtr _deferredShadingMap;
+
+	RenderTexturePtr _deferredDepthCubeMap;
+	RenderTexturePtr _deferredGraphicCubeMap;
+	RenderTexturePtr _deferredNormalCubeMap;
+	RenderTexturePtr _deferredLightCubeMap;
+	RenderTexturePtr _deferredShadingCubeMap;
+
+	MultiRenderTexturePtr _deferredGraphicMaps;
+	MultiRenderTexturePtr _deferredGraphicCubeMaps;
+
+	//EnvironmentIrradiance _irradiance;
 };
 
 _NAME_END

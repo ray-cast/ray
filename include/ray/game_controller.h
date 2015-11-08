@@ -44,7 +44,6 @@ _NAME_BEGIN
 class EXPORT GameController : public GameComponent
 {
 	__DeclareSubInterface(GameController, GameComponent)
-
 public:
 	GameController() noexcept;
 	virtual ~GameController() noexcept;

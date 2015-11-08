@@ -43,6 +43,7 @@ _NAME_BEGIN
 
 #define _BUILD_BMP_HANDLER   1
 #define _BUILD_ICO_HANDLER   1
+#define _BUILD_DDS_HANDLER   1
 #define _BUILD_JPEG_HANDLER  1
 #define _BUILD_PNG_HANDLER   1
 #define _BUILD_GIF_HANDLER   1

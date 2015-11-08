@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
 <material>
-    <attribute color="0.3, 0.75, 0.0, 1.0" />
-    <attribute specular="0.7" />
-    <attribute shininess="16" />
-    <attribute shader="dlc:cube/fx/block.glsl"/>
+    <attribute diffuse="0.3, 0.75, 0.0, 1.0" />
+    <attribute specular="0.0, 0.0, 0.0, 1.0" />
+    <attribute shininess="0.0" />
+    <attribute shader="sys:fx/opacity.glsl"/>
 </material>

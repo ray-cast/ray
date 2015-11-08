@@ -54,7 +54,7 @@ public:
     }
 
     template <typename T>
-    format& operator % (T in) noexcept
+	_Myt& operator % (T in) noexcept
     {
         _Myosstr ss;
         ss << in;

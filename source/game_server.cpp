@@ -36,6 +36,8 @@
 // +----------------------------------------------------------------------
 #include <ray/game_server.h>
 #include <ray/game_scene.h>
+#include <ray/game_event.h>
+#include <ray/game_component.h>
 #include <ray/xmlreader.h>
 #include <ray/mstream.h>
 
@@ -43,7 +45,7 @@ _NAME_BEGIN
 
 GameServer::GameServer() noexcept
 	: _gameApp(nullptr)
-	, _isActive(false)
+	, _isActive(true)
 	, _isQuitRequest(false)
 {
 }
@@ -54,7 +56,7 @@ GameServer::~GameServer() noexcept
 }
 
 bool
-GameServer::open() noexcept
+GameServer::open() except
 {
 	_timer = std::make_shared<Timer>();
 	return _timer->open();
@@ -121,43 +123,15 @@ GameServer::getTimer() const noexcept
 }
 
 bool
-GameServer::openScene(const std::string& sceneName) except
+GameServer::openScene(const std::string& filename) except
 {
-	auto it = _scenes.begin();
-	for (; it != _scenes.end(); ++it)
+	XMLReader xml;
+	if (xml.open(filename))
 	{
-		if ((*it)->getName() == sceneName)
-		{
-			break;
-		}
-	}
-
-	if (it == _scenes.end())
-	{
-		MemoryStream stream;
-
-		IoServer::instance()->openFile(sceneName, stream);
-		if (!stream.is_open())
-			return false;
-
-		XMLReader xml;
-		if (xml.open(stream))
-		{
-			auto scene = std::make_shared<GameScene>();
-			scene->setName(sceneName);
-			scene->_setGameServer(this);
-
-			for (auto& feature : _features)
-			{
-				feature->onOpenScene(scene);
-			}
-
-			if (this->load(xml, scene))
-			{
-				this->addScene(scene);
-				return true;
-			}
-		}
+		auto scene = std::make_shared<GameScene>();
+		scene->setGameServer(this);
+		scene->load(xml);
+		return true;
 	}
 
 	return false;
@@ -172,9 +146,7 @@ GameServer::closeScene(const std::string& sceneName) noexcept
 		scene->setActive(false);
 
 		for (auto& feature : _features)
-		{
 			feature->onCloseScene(scene);
-		}
 	}
 }
 
@@ -199,18 +171,19 @@ GameServer::getScenes() const noexcept
 }
 
 bool
-GameServer::addScene(GameScenePtr scene) noexcept
+GameServer::addScene(GameScenePtr scene) except
 {
 	auto it = std::find(_scenes.begin(), _scenes.end(), scene);
 	if (it == _scenes.end())
 	{
-		scene->_setGameServer(this);
+		for (auto& feature : _features)
+			feature->onOpenScene(scene);
+
 		if (this->getActive())
-		{
 			scene->setActive(true);
-		}
 
 		_scenes.push_back(scene);
+
 		return true;
 	}
 
@@ -266,11 +239,11 @@ GameServer::removeFeature(GameFeaturePtr features) noexcept
 }
 
 GameFeaturePtr
-GameServer::getFeature(const std::string& name) const noexcept
+GameServer::getFeature(RTTI::HashCode rtti) const noexcept
 {
 	for (auto& it : _features)
 	{
-		if (it->getName() == name)
+		if (it->getRTTI()->getDerivedType() == rtti)
 		{
 			return it;
 		}
@@ -302,14 +275,13 @@ GameServer::sendMessage(const GameMessage& message) except
 {
 	if (!_isQuitRequest)
 	{
-		if (message.event == GameEvent::AppQuit)
+		if (message.event()->code() == typeid(AppQuitEvent).hash_code())
 			_isQuitRequest = true;
 
 		for (auto& it : _features)
 			it->onMessage(message);
 
-		auto scenes = this->getScenes();
-		for (auto& it : scenes)
+		for (auto& it : _scenes)
 			it->sendMessage(message);
 	}
 }
@@ -332,176 +304,19 @@ GameServer::update() except
 			this->sendMessage(event);
 		}
 
-		this->onFrameBegin();
-		this->onFrame();
-		this->onFrameEnd();
-	}
-}
+		_timer->update();
 
-GameObjectPtr
-GameServer::instanceObject(iarchive& reader, GameScenePtr scene) except
-{
-	std::string name = reader.getCurrentNodeName();
-	if (name == "object")
-	{
-		auto actor = std::make_shared<GameObject>();
-		scene->addGameObject(actor);
-		reader.setToFirstChild();
+		for (auto& it : _features)
+			it->onFrameBegin();
 
-		bool active = false;
+		for (auto& scene : _scenes)
+			scene->update();
 
-		do
-		{
-			auto key = reader.getCurrentNodeName();
-			if (key == "attribute")
-			{
-				auto attributes = reader.getAttrs();
-				for (auto& it : attributes)
-				{
-					if (it == "name")
-					{
-						actor->setName(reader.getString(it));
-					}
-					else if (it == "active")
-					{
-						active = reader.getBoolean(it);
-					}
-					else if (it == "position")
-					{
-						actor->setTranslate(reader.getFloat3(it));
-					}
-					else if (it == "scale")
-					{
-						actor->setScale(reader.getFloat3(it));
-					}
-					else if (it == "lookat")
-					{
-						actor->setLookAt(reader.getFloat3(it));
-					}
-					else if (it == "up")
-					{
-						actor->setUpVector(reader.getFloat3(it));
-					}
-					else if (it == "rotate")
-					{
-						float3 value = reader.getFloat3(it);
+		for (auto& it : _features)
+			it->onFrame();
 
-						Quaternion quat;
-						quat.x = value.x;
-						quat.y = value.y;
-						quat.z = value.z;
-
-						actor->setRotate(quat);
-					}
-					else if (it == "layer")
-					{
-						actor->setLayer(reader.getInteger(it));
-					}
-				}
-			}
-			else if (key == "component")
-			{
-				GameComponentPtr component = nullptr;
-
-				for (auto& it : _features)
-				{
-					component = it->onSerialization(reader);
-					if (component)
-						break;
-				}
-
-				if (component)
-				{
-					actor->addComponent(component);
-				}
-				else
-				{
-					throw failure("Unknown component name : " + reader.getString("name"));
-				}
-			}
-		} while (reader.setToNextChild());
-
-		actor->setActive(active);
-		return actor;
-	}
-
-	return nullptr;
-}
-
-bool
-GameServer::load(iarchive& reader, GameScenePtr scene) except
-{
-	std::string nodeName;
-	nodeName = reader.getCurrentNodeName();
-	if (nodeName == "scene")
-	{
-		reader.setToFirstChild();
-
-		do
-		{
-			nodeName = reader.getCurrentNodeName();
-			if (nodeName == "attribute")
-			{
-				auto attributes = reader.getAttrs();
-				for (auto& it : attributes)
-				{
-					if (it == "name")
-					{
-						scene->setName(reader.getString(it));
-					}
-				}
-			}
-			else if (nodeName == "object")
-			{
-				instanceObject(reader, scene);
-			}
-		} while (reader.setToNextChild());
-	}
-
-	return true;
-}
-
-void
-GameServer::onFrameBegin() except
-{
-	_timer->update();
-
-	for (auto& it : _scenes)
-	{
-		it->_onFrameBegin();
-	}
-
-	for (auto& it : _features)
-	{
-		it->onFrameBegin();
-	}
-}
-
-void
-GameServer::onFrame() except
-{
-	for (auto& it : _scenes)
-	{
-		it->_onFrame();
-	}
-
-	for (auto& it : _features)
-	{
-		it->onFrame();
-	}
-}
-
-void
-GameServer::onFrameEnd() except
-{
-	for (auto& it : _scenes)
-	{
-		it->_onFrameEnd();
-	}
-
-	for (auto& it : _features)
-	{
-		it->onFrameEnd();
+		for (auto& it : _features)
+			it->onFrameEnd();
 	}
 }
 

@@ -51,9 +51,11 @@ public:
 	void setActive(bool active)  except;
 	bool getActive() noexcept;
 
-	void sendMessage(const GameMessage& message) except;
-
 	GameServer* getGameServer() noexcept;
+
+protected:
+
+	virtual void sendMessage(const GameMessage& message) except;
 
 protected:
 
@@ -83,7 +85,7 @@ private:
 
 	bool _isActive;
 
-	GameServer* _server;
+	GameServer* _gameServer;
 };
 
 _NAME_END

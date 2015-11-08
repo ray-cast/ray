@@ -37,26 +37,119 @@
 #ifndef _H_ANIM_H_
 #define _H_ANIM_H_
 
-#include <ray/platform.h>
+#include <ray/bone.h>
 
 _NAME_BEGIN
 
-class EXPORT Animation final
+struct Interpolation
+{
+	std::uint8_t interpX[4];
+	std::uint8_t interpY[4];
+	std::uint8_t interpZ[4];
+	std::uint8_t interpW[4];
+};
+
+struct MotionSegment
+{
+	int m0;
+	int m1;
+};
+
+class EXPORT BoneAnimation
 {
 public:
-    Animation() noexcept;
-    ~Animation() noexcept;
+	BoneAnimation() noexcept;
+	~BoneAnimation() noexcept;
 
-    void play(const std::string& name) noexcept;
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
+	void setPosition(const Vector3& position) noexcept;
+	const Vector3& getPosition() const noexcept;
+
+	void setRotation(const Quaternion& position) noexcept;
+	const Quaternion& getRotation() const noexcept;
+
+	void setBoneIndex(const std::size_t) noexcept;
+	std::int32_t getBoneIndex() const noexcept;
+
+	void setFrameNo(std::int32_t frame) noexcept;
+	std::int32_t getFrameNo() const noexcept;
+
+	void setInterpolation(const Interpolation& interp) noexcept;
+	const Interpolation& getInterpolation() const noexcept;
 
 private:
-    Animation(const Animation& copy) = delete;
-    Animation& operator=(const Animation& copy) = delete;
+	std::string _name;
+
+	std::int32_t _bone;
+	std::int32_t _frame;
+
+	Vector3 _position;
+	Quaternion _rotation;
+	Interpolation _interpolation;
+};
+
+class EXPORT MorphAnimation
+{
+public:
+};
+
+class EXPORT AnimationProperty final
+{
+public:
+	AnimationProperty() noexcept;
+	~AnimationProperty() noexcept;
+
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
+	void setCurrentFrame(std::size_t frame) noexcept;
+	std::size_t getCurrentFrame() const noexcept;
+
+	void setBoneArray(Bones bone) noexcept;
+	const Bones& getBoneArray() const noexcept;
+
+	void setIKArray(InverseKinematics ik) noexcept;
+	InverseKinematics getIKArray() noexcept;
+
+	void addBoneAnimation(const BoneAnimation& anim) noexcept;
+	BoneAnimation& getBoneAnimation(std::size_t index) noexcept;
+	const BoneAnimation& getBoneAnimation(std::size_t index) const noexcept;
+	std::size_t getNumBoneAnimation() const noexcept;
+
+	void addMorphAnimation(const MorphAnimation& anim) noexcept;
+	MorphAnimation& getMorphAnimation(std::size_t index) noexcept;
+	const MorphAnimation& getMorphAnimation(std::size_t index) const noexcept;
+	std::size_t getNumMorphAnimation() const noexcept;
+
+	AnimationPropertyPtr clone() noexcept;
+
+	void updateIK() noexcept;
+	void updateIK(const IKAttr& ik) noexcept;
+
+	void updateBoneMotion(Bone& bone, int index);
+	void updateBoneMatrix(Bone& bone);
+
+	void update() noexcept;
+
+	void getCurrentBoneMatrix(Matrix4x4& mat, Bone& bone);
+	void getCurrentBonePosition(Vector3& v, Bone& bone);
+
+	MotionSegment findMotionSegment(int frame, const std::vector<std::size_t>& motions);
+	void interpolateMotion(Quaternion& rotation, Vector3& position, const std::vector<std::size_t>& motions, float frame);
 
 private:
 
-    double _duration;
-    double _ticks_per_second;
+	std::string _name;
+	std::size_t _frame;
+
+	Bones _bones;
+	InverseKinematics _iks;
+
+	std::vector<BoneAnimation> _boneAnimation;
+	std::vector<MorphAnimation> _morphAnimation;
+	std::vector<std::vector<std::size_t>> _bindAnimation;
 };
 
 _NAME_END

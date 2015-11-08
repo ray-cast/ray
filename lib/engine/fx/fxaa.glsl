@@ -16,13 +16,13 @@
     </shader>
     <shader name="fragment">
         <![CDATA[
-            #extension GL_ARB_gpu_shader5 : enable
-
             #define FXAA_PC 1
             #define FXAA_GLSL_130 1
             #define FXAA_QUALITY__PRESET 10
             #define FXAA_GREEN_AS_LUMA 1
             #define FXAA_FAST_PIXEL_OFFSET 1
+            #define FXAA_GATHER4_ALPHA 0
+            //#extension GL_ARB_gpu_shader5 : enable
 
             /*--------------------------------------------------------------------------*/
             #ifndef FXAA_PC_CONSOLE
@@ -1050,6 +1050,8 @@
             <state name="depthwrite" value="false"/>
 
             <state name="cullmode" value="front"/>
+
+            <state name="srgbEnable" value="true"/>
         </pass>
     </technique>
 </effect>

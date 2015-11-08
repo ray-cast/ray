@@ -51,15 +51,15 @@ Fog::~Fog() noexcept
 void
 Fog::onActivate(RenderPipeline& pipeline) except
 {
-    _material = MaterialMaker("sys:fx/fog.glsl");
-    _fog = _material->getTech(RenderQueue::PostProcess)->getPass("fog");
-    _fogFalloff = _material->getParameter("fogFalloff");
-    _fogDensity = _material->getParameter("fogDensity");
-    _fogColor = _material->getParameter("fogColor");
+	_material = MaterialMaker("sys:fx/fog.glsl");
+	_fog = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("fog");
+	_fogFalloff = _material->getParameter("fogFalloff");
+	_fogDensity = _material->getParameter("fogDensity");
+	_fogColor = _material->getParameter("fogColor");
 
-    _fogFalloff->assign(10.0f);
-    _fogDensity->assign(0.0001f);
-    _fogColor->assign(Vector3(0.0, 0.3, 0.99));
+	_fogFalloff->assign(10.0f);
+	_fogDensity->assign(0.0001f);
+	_fogColor->assign(Vector3(0.0, 0.3, 0.99));
 }
 
 void
@@ -68,11 +68,10 @@ Fog::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-Fog::onRender(RenderPipeline& pipeline, RenderTargetPtr texture) except
+Fog::onRender(RenderPipeline& pipeline, RenderTexturePtr texture) except
 {
-    pipeline.setRenderTarget(texture);
-    pipeline.setTechnique(_fog);
-    pipeline.drawSceneQuad();
+	pipeline.setRenderTexture(texture);
+	pipeline.drawSceneQuad(_fog);
 }
 
 _NAME_END

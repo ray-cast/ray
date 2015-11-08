@@ -81,7 +81,6 @@ ScriptSystem::open() noexcept
 	_bindInput = std::make_shared<ScriptBindInput>();
 	_bindDisplay = std::make_shared<ScriptBindDisplay>();
 	_bindActor = std::make_shared<ScriptBindActor>();
-	_bindGUI = std::make_shared<ScriptBindGUI>();
 
 	_bindings.push_back(_bindCore);
 	_bindings.push_back(_bindMath);
@@ -90,7 +89,6 @@ ScriptSystem::open() noexcept
 	_bindings.push_back(_bindInput);
 	_bindings.push_back(_bindActor);
 	_bindings.push_back(_bindDisplay);
-	_bindings.push_back(_bindGUI);
 
 	for (auto& it : _bindings)
 	{
@@ -163,16 +161,6 @@ ScriptSystem::setInput(InputPtr input) noexcept
 	{
 		_bindInput->setInput(input);
 		_input = input;
-	}
-}
-
-void
-ScriptSystem::setGuiSystem(GuiSystemPtr gui) noexcept
-{
-	if (_gui != gui)
-	{
-		_bindGUI->setGuiSystem(gui);
-		_gui = gui;
 	}
 }
 

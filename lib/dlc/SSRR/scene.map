@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<scene>
+    <attribute name="SSRR"/>
+    <object>
+        <attribute name="first_person_camera"/>
+        <attribute position="0,0,-15" />
+        <attribute lookat="0,0,-9" />
+        <attribute active="true"/>
+        <component name="ray::Camera">
+            <attribute aperture="45.0"/>
+            <attribute znear="0.1"/>
+            <attribute zfar="65535.0"/>
+            <attribute w="1376"/>
+            <attribute h="768"/>
+        </component>
+        <component name="FirstPersonCamera">
+        </component>
+        <!--component name="character">
+            <attribute radius="1"/>
+            <attribute height="4"/>
+        </component-->
+    </object>
+    <object>
+        <attribute name="sky"/>
+        <attribute position="0,0,0" />
+        <attribute scale="1,1,1" />
+        <attribute active="true"/>
+        <component name="ray::Mesh">
+            <attribute name="dlc:SSRR/models/sphere.pmx"/>
+        </component>
+        <component name="ray::MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:SSRR/materials/sky.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere1"/>
+        <attribute position="-2.25,0,0" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component name="ray::Mesh">
+            <attribute name="dlc:SSRR/models/sphere.pmx"/>
+        </component>
+        <component name="ray::MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:SSRR/materials/sphere1.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere2"/>
+        <attribute position="-1.75,0,0" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component name="ray::Mesh">
+            <attribute name="dlc:SSRR/models/sphere.pmx"/>
+        </component>
+        <component name="ray::MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:SSRR/materials/sphere2.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere3"/>
+        <attribute position="-1.25,0,0" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component name="ray::Mesh">
+            <attribute name="dlc:SSRR/models/sphere.pmx"/>
+        </component>
+        <component name="ray::MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:SSRR/materials/sphere3.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere4"/>
+        <attribute position="-0.75,0,0" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component name="ray::Mesh">
+            <attribute name="dlc:SSRR/models/sphere.pmx"/>
+        </component>
+        <component name="ray::MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:SSRR/materials/sphere4.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere5"/>
+        <attribute position="-0.25,0,0" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component name="ray::Mesh">
+            <attribute name="dlc:SSRR/models/sphere.pmx"/>
+        </component>
+        <component name="ray::MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:SSRR/materials/sphere5.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere6"/>
+        <attribute position="0.25,0,0" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component name="ray::Mesh">
+            <attribute name="dlc:SSRR/models/sphere.pmx"/>
+        </component>
+        <component name="ray::MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:SSRR/materials/sphere6.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere7"/>
+        <attribute position="0.75,0,0" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component name="ray::Mesh">
+            <attribute name="dlc:SSRR/models/sphere.pmx"/>
+        </component>
+        <component name="ray::MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:SSRR/materials/sphere7.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere8"/>
+        <attribute position="1.25,0,0" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component name="ray::Mesh">
+            <attribute name="dlc:SSRR/models/sphere.pmx"/>
+        </component>
+        <component name="ray::MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:SSRR/materials/sphere8.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere9"/>
+        <attribute position="1.75,0,0" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component name="ray::Mesh">
+            <attribute name="dlc:SSRR/models/sphere.pmx"/>
+        </component>
+        <component name="ray::MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:SSRR/materials/sphere9.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere10"/>
+        <attribute position="2.25,0,0" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component name="ray::Mesh">
+            <attribute name="dlc:SSRR/models/sphere.pmx"/>
+        </component>
+        <component name="ray::MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:SSRR/materials/sphere10.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere11"/>
+        <attribute position="5,0,0" />
+        <attribute scale="0.005,0.005,0.005" />
+        <attribute active="true"/>
+        <component name="ray::Mesh">
+            <attribute name="dlc:SSRR/models/sphere.pmx"/>
+        </component>
+        <component name="ray::MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:SSRR/materials/sphere10.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sun"/>
+        <attribute position="0, 50, -25"/>
+        <attribute active="true"/>
+        <component name="ray::Light">
+            <attribute type="sun"/>
+            <attribute color="1.0,1.0,1.0"/>
+            <attribute range="200.0"/>
+            <attribute intensity="2.0"/>
+            <attribute shadow="false"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="light"/>
+        <attribute position="0, 0, 0"/>
+        <attribute active="false"/>
+        <component name="ray::Light">
+            <attribute type="ambient"/>
+            <attribute color="1.0,1.0,1.0"/>
+            <attribute range="200.0"/>
+            <attribute intensity="1.0"/>
+        </component>
+    </object>
+</scene>

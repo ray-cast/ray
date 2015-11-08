@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_PLATFORM_ANDROID) || defined(_BUILD_PLATFORM_LINUX)
 #include <ray/egl_canvas.h>
 
 _NAME_BEGIN
@@ -43,16 +44,38 @@ EGLCanvas::EGLCanvas() noexcept
     , _surface(EGL_NO_SURFACE)
     , _context(EGL_NO_CONTEXT)
     , _config(0)
+	, _interval(SwapInterval::GPU_VSYNC)
 {
+	_fbconfig.redSize = 8;
+	_fbconfig.greenSize = 8;
+	_fbconfig.blueSize = 8;
+	_fbconfig.alphaSize = 8;
+	_fbconfig.bufferSize = 32;
+	_fbconfig.depthSize = 24;
+	_fbconfig.stencilSize = 8;
+	_fbconfig.accumSize = 32;
+	_fbconfig.accumRedSize = 8;
+	_fbconfig.accumGreenSize = 8;
+	_fbconfig.accumBlueSize = 8;
+	_fbconfig.accumAlphaSize = 8;
+	_fbconfig.samples = 1;
+
+	_ctxconfig.major = 3;
+	_ctxconfig.minor = 3;
+	_ctxconfig.release = 0;
+	_ctxconfig.robustness = 0;
+	_ctxconfig.share = nullptr;
+	_ctxconfig.profile = GPU_GL_CORE_PROFILE;
+	_ctxconfig.forward = 0;
+	_ctxconfig.multithread = false;
 }
 
 EGLCanvas::~EGLCanvas() noexcept
 {
     this->close();
 }
-
-bool
-EGLCanvas::setup(WindHandle hwnd, const GPUfbconfig& fbconfig, const GPUctxconfig& ctxconfig) noexcept
+void
+EGLCanvas::open(WindHandle hwnd) except
 {
 #if defined(__WINDOWS__)
     _hwnd = (EGLNativeWindowType)hwnd;
@@ -62,68 +85,61 @@ EGLCanvas::setup(WindHandle hwnd, const GPUfbconfig& fbconfig, const GPUctxconfi
 
     if (_display == EGL_NO_DISPLAY)
     {
-        return false;
+		throw failure(__TEXT("EGL_NO_DISPLAY"));
     }
 
     if (::eglInitialize(_display, 0, 0) == EGL_FALSE)
     {
-        return false;
+		throw failure(__TEXT("eglInitialize() fail"));
     }
 
     if (::eglBindAPI(EGL_OPENGL_ES_API) != EGL_TRUE)
     {
-        return false;
+		throw failure(__TEXT("eglBindAPI() fail"));
     }
 
     const EGLint pixelformat[] =
     {
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
         EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
-        EGL_RED_SIZE, fbconfig.redSize,
-        EGL_GREEN_SIZE, fbconfig.greenSize,
-        EGL_BLUE_SIZE, fbconfig.blueSize,
-        EGL_ALPHA_SIZE, fbconfig.alphaSize,
-        EGL_BUFFER_SIZE, fbconfig.bufferSize,
-        EGL_DEPTH_SIZE, fbconfig.depthSize,
-        EGL_STENCIL_SIZE, fbconfig.stencilSize,
-        EGL_SAMPLES, fbconfig.samples ? EGL_TRUE : EGL_FALSE,
+        EGL_RED_SIZE, _fbconfig.redSize,
+        EGL_GREEN_SIZE, _fbconfig.greenSize,
+        EGL_BLUE_SIZE, _fbconfig.blueSize,
+        EGL_ALPHA_SIZE, _fbconfig.alphaSize,
+        EGL_BUFFER_SIZE, _fbconfig.bufferSize,
+        EGL_DEPTH_SIZE, _fbconfig.depthSize,
+        EGL_STENCIL_SIZE, _fbconfig.stencilSize,
+        EGL_SAMPLES, _fbconfig.samples ? EGL_TRUE : EGL_FALSE,
         EGL_NONE
     };
 
     EGLint num = 0;
     if (eglChooseConfig(_display, pixelformat, &_config, 1, &num) == EGL_FALSE)
     {
-        return false;
+		throw failure(__TEXT("eglChooseConfig() fail"));
     }
 
     _surface = eglCreateWindowSurface(_display, _config, _hwnd, NULL);
     if (_surface == EGL_NO_SURFACE)
     {
-        return false;
+		throw failure(__TEXT("eglCreateWindowSurface() fail"));
     }
 
     EGLint attribs[80];
-
     EGLint index = 0, mask = 0, startegy = 0;
 
-    if (ctxconfig.forward)
+    if (_ctxconfig.forward)
     {
         attribs[index++] = EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE;
         attribs[index++] = EGL_TRUE;
     }
 
-    if (ctxconfig.debug)
+    if (_ctxconfig.profile)
     {
-        attribs[index++] = EGL_CONTEXT_OPENGL_DEBUG;
-        attribs[index++] = EGL_TRUE;
-    }
-
-    if (ctxconfig.profile)
-    {
-        if (ctxconfig.profile == GPU_GL_CORE_PROFILE)
+        if (_ctxconfig.profile == GPU_GL_CORE_PROFILE)
             mask = EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT;
 
-        if (ctxconfig.profile == GPU_GL_COMPAT_PROFILE)
+        if (_ctxconfig.profile == GPU_GL_COMPAT_PROFILE)
             mask = EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT;
 
         if (mask)
@@ -132,11 +148,12 @@ EGLCanvas::setup(WindHandle hwnd, const GPUfbconfig& fbconfig, const GPUctxconfi
             attribs[index++] = mask;
         }
     }
-    if (ctxconfig.robustness)
+
+    if (_ctxconfig.robustness)
     {
-        if (ctxconfig.robustness == GPU_GL_REST_NOTIFICATION)
+        if (_ctxconfig.robustness == GPU_GL_REST_NOTIFICATION)
             startegy = EGL_NO_RESET_NOTIFICATION;
-        else if (ctxconfig.robustness == GPU_GL_LOSE_CONTEXT_ONREST)
+        else if (_ctxconfig.robustness == GPU_GL_LOSE_CONTEXT_ONREST)
             startegy = EGL_LOSE_CONTEXT_ON_RESET;
 
         if (startegy)
@@ -149,13 +166,13 @@ EGLCanvas::setup(WindHandle hwnd, const GPUfbconfig& fbconfig, const GPUctxconfi
         }
     }
 
-    if (ctxconfig.major != 1 || ctxconfig.minor != 0)
+    if (_ctxconfig.major != 1 || _ctxconfig.minor != 0)
     {
         attribs[index++] = EGL_CONTEXT_MAJOR_VERSION;
-        attribs[index++] = ctxconfig.major;
+        attribs[index++] = _ctxconfig.major;
 
         attribs[index++] = EGL_CONTEXT_MINOR_VERSION;
-        attribs[index++] = ctxconfig.minor;
+        attribs[index++] = _ctxconfig.minor;
     }
 
     attribs[index++] = 0;
@@ -166,18 +183,12 @@ EGLCanvas::setup(WindHandle hwnd, const GPUfbconfig& fbconfig, const GPUctxconfi
         EGL_CONTEXT_CLIENT_TYPE, 3,
         EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE 
     };
-
-    _context = ::eglCreateContext(_display, _config, EGL_NO_CONTEXT, attrib_list);
+	
+    _context = ::eglCreateContext(_display, _config, _ctxconfig.share, attrib_list);
     if (!_context)
     {
-        std::cout << eglGetError();
-        return false;
+		throw failure(__TEXT("eglCreateContext() fail"));
     }
-
-    _fbconfig = fbconfig;
-    _ctxconfig = ctxconfig;
-
-    return true;
 }
 
 void
@@ -203,19 +214,46 @@ EGLCanvas::close() noexcept
 }
 
 void
-EGLCanvas::setSwapInterval(int interval) noexcept
+EGLCanvas::setSwapInterval(SwapInterval interval) noexcept
 {
     assert(_display != EGL_NO_DISPLAY);
-    ::eglSwapInterval(_display, (EGLint)interval);
+
+	if (_interval != interval)
+	{
+		switch (interval)
+		{
+		case ray::GPU_FREE:
+			eglSwapInterval(_display, 0);
+			break;
+		case ray::GPU_VSYNC:
+			eglSwapInterval(_display, 1);
+			break;
+		case ray::GPU_FPS30:
+			eglSwapInterval(_display, 2);
+			break;
+		case ray::GPU_FPS15:
+			eglSwapInterval(_display, 3);
+			break;
+		default:
+			assert(false);
+			eglSwapInterval(_display, 1);
+		}
+
+		_interval = interval;
+	}
+}
+
+SwapInterval
+EGLCanvas::getSwapInterval() const noexcept
+{
+	return _interval;
 }
 
 void
 EGLCanvas::bind() noexcept
 {
-    if (::eglMakeCurrent(_display, _surface, _surface, _context) == EGL_FALSE)
-    {
+    if (!eglMakeCurrent(_display, _surface, _surface, _context))
         assert(false);
-    }
 }
 
 void
@@ -230,17 +268,34 @@ EGLCanvas::present() noexcept
     assert(_display != EGL_NO_DISPLAY);
     assert(_surface != EGL_NO_SURFACE);
 
-    if (_fbconfig.doubleBuffer)
-    {
-        if (eglSwapBuffers(_display, _surface) == EGL_FALSE)
-        {
-            assert(false);
-        }
-    }
-    else
-    {
-        glFlush();
-    }
+	if (!eglSwapBuffers(_display, _surface))
+		assert(false);
+}
+
+void
+EGLCanvas::setWindowResolution(std::size_t w, std::size_t h) noexcept
+{
+	_width = w;
+	_height = h;
+}
+
+std::size_t
+EGLCanvas::getWindowWidth() const noexcept
+{
+	return _width;
+}
+
+std::size_t
+EGLCanvas::getWindowHeight() const noexcept
+{
+	return _height;
+}
+
+WindHandle
+EGLCanvas::getWindHandle() const noexcept
+{
+	return _hwnd;
 }
 
 _NAME_END
+#endif

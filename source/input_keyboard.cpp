@@ -40,7 +40,7 @@ _NAME_BEGIN
 
 DefaultInputKeyboard::DefaultInputKeyboard() noexcept
 {
-    std::memset(_keyState, 0, sizeof(_keyState));
+	std::memset(_keyState, 0, sizeof(_keyState));
 }
 
 DefaultInputKeyboard::~DefaultInputKeyboard() noexcept
@@ -50,93 +50,99 @@ DefaultInputKeyboard::~DefaultInputKeyboard() noexcept
 bool
 DefaultInputKeyboard::getKeyDown(InputKey::Code key) const noexcept
 {
-    return _keyState[key].down;
+	return _keyState[key].down;
 }
 
 bool
 DefaultInputKeyboard::getKeyUp(InputKey::Code key) const noexcept
 {
-    return _keyState[key].up;
+	return _keyState[key].up;
 }
 
 bool
 DefaultInputKeyboard::getKey(InputKey::Code key) const noexcept
 {
-    return _keyState[key].pressed;
+	return _keyState[key].pressed;
 }
 
 void
 DefaultInputKeyboard::onFrameBegin() noexcept
 {
-    for (std::size_t i = 0; i < InputKey::NumKeyCodes; i++)
-    {
-        auto& key = _keyState[i];
+	for (std::size_t i = 0; i < InputKey::NumKeyCodes; i++)
+	{
+		auto& key = _keyState[i];
 
-        if (key.up)
-        {
-            key.pressed = false;
-        }
+		if (key.up)
+		{
+			key.pressed = false;
+		}
 
-        if (key.pressed)
-        {
-            if (!this->getKeyState(InputKey::Code(i)))
-            {
-                key.pressed = false;
-            }
-        }
+		if (key.pressed)
+		{
+			if (!this->getKeyState(InputKey::Code(i)))
+			{
+				key.pressed = false;
+			}
+		}
 
-        key.up = false;
-        key.down = false;
-    }
+		key.up = false;
+		key.down = false;
+	}
 }
 
 void
 DefaultInputKeyboard::onObtainCapture() noexcept
 {
-    for (auto& it : _keyState)
-    {
-        it.down = false;
-        it.pressed = false;
-        it.up = false;
-    }
+	for (auto& it : _keyState)
+	{
+		it.down = false;
+		it.pressed = false;
+		it.up = false;
+	}
 }
 
 void
 DefaultInputKeyboard::onReset() noexcept
 {
-    for (auto& it : _keyState)
-    {
-        it.down = false;
-        it.pressed = false;
-        it.up = false;
-    }
+	for (auto& it : _keyState)
+	{
+		it.down = false;
+		it.pressed = false;
+		it.up = false;
+	}
 }
 
 void
 DefaultInputKeyboard::onEvent(const InputEvent& event) noexcept
 {
-    switch (event.event)
-    {
-    case InputEvent::KeyDown:
-    {
-        auto& key = this->_keyState[event.key.keysym.sym];
-        if (!key.pressed)
-        {
-            key.down = true;
-            key.pressed = true;
-        }
-    }
-    break;
-    case InputEvent::KeyUp:
-    {
-        auto& key = this->_keyState[event.key.keysym.sym];
-        key.up = true;
-        key.pressed = false;
-    }
-    break;
-    default:
-        break;
-    }
+	switch (event.event)
+	{
+	case InputEvent::KeyDown:
+	{
+		auto& key = this->_keyState[event.key.keysym.sym];
+		if (!key.pressed)
+		{
+			key.down = true;
+			key.pressed = true;
+		}
+	}
+	break;
+	case InputEvent::KeyUp:
+	{
+		auto& key = this->_keyState[event.key.keysym.sym];
+		key.up = true;
+		key.pressed = false;
+	}
+	break;
+	default:
+		break;
+	}
+}
+
+InputKeyboardPtr
+DefaultInputKeyboard::clone() const noexcept
+{
+	return std::make_shared<DefaultInputKeyboard>();
 }
 
 _NAME_END

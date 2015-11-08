@@ -547,6 +547,30 @@ inline float safeAcos(float x)
     return acos(x);
 }
 
+template<typename T>
+inline T GaussianDistribution(T x, T y, T r)
+{
+	T g = 1.0f / sqrt(2.0f * M_PI * r * r);
+	g *= exp(-(x * x + y * y) / (2 * r * r));
+	return g;
+}
+
+template<typename T>
+inline void GaussianKernel(std::vector<T>& weights, std::vector<T> offsets, std::size_t radius, T deviation, T size)
+{
+	weights.resize(radius);
+	offsets.resize(radius);
+
+	for (int i = 0; i < radius; ++i)
+		weights[i] = GaussianDistribution(-i, 0.0f, radius / deviation);
+
+	for (std::size_t i = 0; i < weights.size(); ++i)
+		weights[i] /= weights[0];
+
+	for (std::size_t i = 0; i < offsets.size(); ++i)
+		offsets[i] = i / size;
+}
+
 /*
 template<typename T>
 class Rect2

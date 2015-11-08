@@ -37,7 +37,6 @@
 #include <ray/script_features.h>
 #include <ray/script_component.h>
 #include <ray/input_features.h>
-#include <ray/gui_features.h>
 #include <ray/game_server.h>
 
 _NAME_BEGIN
@@ -65,7 +64,6 @@ void
 ScriptFeatures::onActivate() except
 {
 	ScriptSystem::instance()->open();
-
 	ScriptSystem::instance()->setTimer(this->getGameServer()->getTimer());
 	ScriptSystem::instance()->setInput(this->getGameServer()->getFeature<InputFeatures>()->getInput());
 	//ScriptSystem::instance()->setGuiSystem(_guiSystem);
@@ -113,10 +111,6 @@ ScriptFeatures::instanceScript(iarchive& reader) except
 					if (it == "name")
 					{
 						script->setName(reader.getString(it));
-					}
-					else if (it == "visible")
-					{
-						script->setVisible(reader.getBoolean(it));
 					}
 				}
 			}

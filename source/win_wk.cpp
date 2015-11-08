@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#ifdef _BUILD_PLATFORM_WINDOWS
 #include <ray/win_wk.h>
 #include <ray/win_int.h>
 #include <ray/format.h>
@@ -47,247 +48,249 @@ _NAME_BEGIN
 #undef new
 
 StackWalker::CaptureContext::CaptureContext(HANDLE thread) noexcept
-    : _thread(::GetCurrentThread())
+	: _thread(::GetCurrentThread())
 {
-    if (thread == 0)
-    {
-        thread = ::GetCurrentThread();
-    }
+	if (thread == 0)
+	{
+		thread = ::GetCurrentThread();
+	}
 
-    _context = { 0 };
-    _context.ContextFlags = CONTEXT_ALL;
+	_context = { 0 };
+	_context.ContextFlags = CONTEXT_ALL;
 
-    if (thread == _thread)
-    {
-        ::RtlCaptureContext(&_context);
-    }
-    else
-    {
-        ::SuspendThread(_thread);
-        ::GetThreadContext(_thread, &_context);
-    }
+	if (thread == _thread)
+	{
+		::RtlCaptureContext(&_context);
+	}
+	else
+	{
+		::SuspendThread(_thread);
+		::GetThreadContext(_thread, &_context);
+	}
 
-    _thread = thread;
+	_thread = thread;
 }
 
 StackWalker::CaptureContext::~CaptureContext() noexcept
 {
-    if (_thread != ::GetCurrentThread())
-    {
-        ::ResumeThread(_thread);
-    }
+	if (_thread != ::GetCurrentThread())
+	{
+		::ResumeThread(_thread);
+	}
 }
 
-const HANDLE
+HANDLE
 StackWalker::CaptureContext::thread() const noexcept
 {
-    return _thread;
+	return _thread;
 }
 
 CONTEXT&
 StackWalker::CaptureContext::context() noexcept
 {
-    return _context;
+	return _context;
 }
 
 StackWalker::StackWalker(DWORD processid, HANDLE process, Options options) noexcept
-    : _internal(nullptr)
-    , _options(options)
+	: _internal(nullptr)
+	, _options(options)
 {
-    _internal = new(std::nothrow) StackWalkerInternal(this, process);
-    if (_internal)
-    {
-        _internal->loadModules();
-    }
+	_internal = new(std::nothrow) StackWalkerInternal(this, process);
+	if (_internal)
+	{
+		_internal->loadModules();
+	}
 }
 
 StackWalker::~StackWalker() noexcept
 {
-    delete _internal;
+	delete _internal;
 }
 
-const std::string&
+const string&
 StackWalker::printStack(HANDLE thread) noexcept
 {
-    try
-    {
-        if (_internal->isModuleLoaded())
-        {
-            CaptureContext capture(thread);
+	try
+	{
+		if (_internal->isModuleLoaded())
+		{
+			CaptureContext capture(thread);
 
-            this->clear();
+			this->clear();
 
-            this->printStack(capture.thread(), capture.context());
-        }
+			this->printStack(capture.thread(), capture.context());
+		}
 
-        return this->str();
-    }
-    catch (...)
-    {
-        return this->str();
-    }
+		return this->str();
+	}
+	catch (...)
+	{
+		return this->str();
+	}
 }
 
 void
 StackWalker::printStack(const HANDLE thread, CONTEXT& context) noexcept
 {
-    assert(0 != thread);
+	assert(0 != thread);
 
-    DWORD imageType;
-    STACKFRAME64 sf;
+	DWORD imageType;
+	STACKFRAME64 sf;
 
-    BYTE symbolBuf[sizeof(SYMBOL_INFO) + STACKWALK_MAX_NAMELEN];
-    PSYMBOL_INFO symbol = (PSYMBOL_INFO)symbolBuf;
-    symbol->MaxNameLen = STACKWALK_MAX_NAMELEN;
+	BYTE symbolBuf[sizeof(SYMBOL_INFO) + STACKWALK_MAX_NAMELEN];
+	PSYMBOLINFO symbol = (PSYMBOLINFO)symbolBuf;
+	symbol->MaxNameLen = STACKWALK_MAX_NAMELEN;
 
-    if (_internal->firstStackFrame(&imageType, thread, &sf, &context))
-    {
-        do
-        {
-            CallStackEntry entry;
+	if (_internal->firstStackFrame(&imageType, thread, &sf, &context))
+	{
+		do
+		{
+			CallStackEntry entry;
 
-            entry.offset = sf.AddrPC.Offset;
+			entry.offset = sf.AddrPC.Offset;
 
-            if (!_internal->getSymFromAddr(sf.AddrPC.Offset, &entry.offsetFromSmybol, symbol))
-                return;
+			if (!_internal->getSymFromAddr(sf.AddrPC.Offset, &entry.offsetFromSmybol, symbol))
+				return;
 
-            IMAGEHLP_LINE64 line;
-            if (!_internal->getLineFromAddr(sf.AddrPC.Offset, &entry.offsetFromLine, &line))
-                return;
+			IMAGEHLPLINE line;
+			if (!_internal->getLineFromAddr(sf.AddrPC.Offset, &entry.offsetFromLine, line))
+				return;
 
-            IMAGEHLP_MODULE64 module;
-            if (!_internal->getModuleInfo(sf.AddrPC.Offset, module))
-                return;
+			IMAGEHLPMODULE module;
+			if (!_internal->getModuleInfo(sf.AddrPC.Offset, module))
+				return;
 
-            VariableList _variable;
-            if (!_internal->getLocalVariable(&context, _variable))
-                return;
+			VariableList _variable;
+			if (!_internal->getLocalVariable(&context, _variable))
+				return;
 
-            entry.name = symbol->Name;
-            entry.lineNumber = line.LineNumber;
-            entry.lineFileName = line.FileName;
-            entry.moduleName = module.ModuleName;
-            entry.imageName = module.ImageName;
-            entry.baseOfImage = module.BaseOfImage;
-            entry.loadedImageName = module.LoadedImageName;
-            entry.variable = _variable;
+			entry.name = symbol->Name;
+			entry.lineNumber = line.LineNumber;
+			entry.lineFileName = line.FileName;
+			entry.moduleName = module.ModuleName;
+			entry.imageName = module.ImageName;
+			entry.baseOfImage = module.BaseOfImage;
+			entry.loadedImageName = module.LoadedImageName;
+			entry.variable = _variable;
 
-            this->printEntry(entry);
-        } while (_internal->nextStackFrame(imageType, thread, &sf, &context));
-    }
+			this->printEntry(entry);
+		} while (_internal->nextStackFrame(imageType, thread, &sf, &context));
+	}
 }
 
 void
-StackWalker::printModule(const std::string& img, const std::string& mod, DWORD64 baseAddr, DWORD size, DWORD result, const std::string& symType, const std::string& pdbName, ULONGLONG fileVersion) noexcept
+StackWalker::printModule(const string& img, const string& mod, DWORD64 baseAddr, DWORD size, DWORD result, const string& symType, const string& pdbName, ULONGLONG fileVersion) noexcept
 {
-    if (_options & _Mybase::module_info)
-    {
-        if (_options & _Mybase::file_version)
-        {
-            DWORD v4 = (DWORD)(fileVersion)& 0xFFFF;
-            DWORD v3 = (DWORD)(fileVersion >> 16) & 0xFFFF;
-            DWORD v2 = (DWORD)(fileVersion >> 32) & 0xFFFF;
-            DWORD v1 = (DWORD)(fileVersion >> 48) & 0xFFFF;
-            this->print(format("%s:%s (%p), size: %d (result: %d), SymType: '%s', PDB: '%s', fileVersion: %d.%d.%d.%d") % img % mod % baseAddr % size % result % symType % pdbName % v1 % v2 % v3 % v4, _module);
-        }
-        else
-        {
-            this->print(format("%s:%s (%p), size: %d (result: %d), SymType: '%s', PDB: '%s'") % img % mod % baseAddr % size % result % symType % pdbName, _module);
-        }
-    }
+	if (_options & _Mybase::module_info)
+	{
+		if (_options & _Mybase::file_version)
+		{
+			DWORD v4 = (DWORD)(fileVersion)& 0xFFFF;
+			DWORD v3 = (DWORD)(fileVersion >> 16) & 0xFFFF;
+			DWORD v2 = (DWORD)(fileVersion >> 32) & 0xFFFF;
+			DWORD v1 = (DWORD)(fileVersion >> 48) & 0xFFFF;
+			this->print(tformat(__TEXT("%s:%s (%p), size: %d (result: %d), SymType: '%s', PDB: '%s', fileVersion: %d.%d.%d.%d")) % img % mod % baseAddr % size % result % symType % pdbName % v1 % v2 % v3 % v4, _module);
+		}
+		else
+		{
+			this->print(tformat(__TEXT("%s:%s (%p), size: %d (result: %d), SymType: '%s', PDB: '%s'")) % img % mod % baseAddr % size % result % symType % pdbName, _module);
+		}
+	}
 }
 
 void
-StackWalker::printSymbol(const std::string& searchPath, DWORD symOptions, const std::string& username) noexcept
+StackWalker::printSymbol(const string& searchPath, DWORD symOptions, const string& username) noexcept
 {
-    if (_options & _Mybase::symbol)
-    {
-        this->print(format("SymInit: Symbol-SearchPath: '%s', symOptions: %d, UserName: '%s'") % searchPath % symOptions % username, _module);
+	if (_options & _Mybase::symbol)
+	{
+		this->print(tformat(__TEXT("SymInit: Symbol-SearchPath: '%s', symOptions: %d, UserName: '%s'")) % searchPath % symOptions % username, _module);
 
-        OSVERSIONINFOEX ver = { 0 };
-        ver.dwOSVersionInfoSize = sizeof(ver);
+		OSVERSIONINFOEX ver = { 0 };
+		ver.dwOSVersionInfoSize = sizeof(ver);
 
-        DWORDLONG conditionMask = 0;
+		DWORDLONG conditionMask = 0;
 
-        VER_SET_CONDITION(conditionMask, VER_MAJORVERSION, VER_GREATER_EQUAL);
-        VER_SET_CONDITION(conditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
-        VER_SET_CONDITION(conditionMask, VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
+		VER_SET_CONDITION(conditionMask, VER_MAJORVERSION, VER_GREATER_EQUAL);
+		VER_SET_CONDITION(conditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
+		VER_SET_CONDITION(conditionMask, VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
 
-        if (::VerifyVersionInfo(&ver, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, conditionMask))
-        {
-            this->print(format("OS-Version: %d.%d.%d (%s) 0x%x-0x%x") % ver.dwMajorVersion % ver.dwMinorVersion % ver.dwBuildNumber % ver.szCSDVersion % ver.wSuiteMask % ver.wProductType, _module);
-        }
-    }
+		if (::VerifyVersionInfo(&ver, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, conditionMask))
+		{
+			this->print(tformat(__TEXT("OS-Version: %d.%d.%d (%s) 0x%x-0x%x")) % ver.dwMajorVersion % ver.dwMinorVersion % ver.dwBuildNumber % ver.szCSDVersion % ver.wSuiteMask % ver.wProductType, _module);
+		}
+	}
 }
 
 void
 StackWalker::printEntry(CallStackEntry& entry) noexcept
 {
-    if (_options & _Mybase::line)
-    {
-        if (entry.name.empty())
-            entry.name = "(function-name not available)";
+	if (_options & _Mybase::line)
+	{
+		if (entry.name.empty())
+			entry.name = __TEXT("(function-name not available)");
 
-        if (entry.lineFileName.empty())
-            entry.lineFileName = "(filename not available)";
+		if (entry.lineFileName.empty())
+			entry.lineFileName = __TEXT("(filename not available)");
 
-        if (entry.moduleName.empty())
-            entry.moduleName = "(module-name not available)";
+		if (entry.moduleName.empty())
+			entry.moduleName = __TEXT("(module-name not available)");
 
-        /*for (auto& it : entry.variable.list)
-        {
-            this->print(format("%s %s = %s") % it.typeName % it.varName % it.valueName, _entry);
-        }*/
+		/*for (auto& it : entry.variable.list)
+		{
+			this->print(format("%s %s = %s") % it.typeName % it.varName % it.valueName, _entry);
+		}*/
 
-        if (entry.lineNumber == 0)
-        {
-            this->print(format("%P %s: %s!%s") % entry.offset % entry.lineFileName % entry.moduleName % entry.name, _entry);
-        }
-        else
-        {
-            if (entry.moduleName.empty())
-            {
-                this->print(format("%s (%d): %s") % entry.lineFileName % entry.lineNumber % entry.name, _entry);
-            }
-            else
-            {
-                this->print(format("%P %s (%d): %s!%s") % entry.offset % entry.lineFileName % entry.lineNumber % entry.moduleName % entry.name, _entry);
-            }
-        }
-    }
+		if (entry.lineNumber == 0)
+		{
+			this->print(tformat(__TEXT("%P %s: %s!%s")) % entry.offset % entry.lineFileName % entry.moduleName % entry.name, _entry);
+		}
+		else
+		{
+			if (entry.moduleName.empty())
+			{
+				this->print(tformat(__TEXT("%s (%d): %s")) % entry.lineFileName % entry.lineNumber % entry.name, _entry);
+			}
+			else
+			{
+				this->print(tformat(__TEXT("%P %s (%d): %s!%s")) % entry.offset % entry.lineFileName % entry.lineNumber % entry.moduleName % entry.name, _entry);
+			}
+		}
+	}
 }
 
 void
 StackWalker::error(const char* funcName, DWORD gle, DWORD64 addr) noexcept
 {
-    this->print(format("%s, GetLastError: %d (Address: %p)") % funcName % gle % addr, _error);
+	this->print(tformat(__TEXT("%s, GetLastError: %d (Address: %p)")) % funcName % gle % addr, _error);
 }
 
 void
-StackWalker::print(const std::string& text, std::ostringstream& ostream) noexcept
+StackWalker::print(const string& text, ostringstream& ostream) noexcept
 {
-    ostream << text << std::endl;
+	ostream << text << std::endl;
 }
 
 void
 StackWalker::clear() noexcept
 {
-    std::ostringstream null;
+	ostringstream null;
 
-    _entry.copyfmt(null);
+	_entry.copyfmt(null);
 }
 
-const std::string&
+const string&
 StackWalker::str() noexcept
 {
-    if (_error.str().empty())
-    {
-        return (_message = _module.str() + _entry.str());
-    }
-    else
-    {
-        return (_message = _error.str());
-    }
+	if (_error.str().empty())
+	{
+		return (_message = _module.str() + _entry.str());
+	}
+	else
+	{
+		return (_message = _error.str());
+	}
 }
 
 _NAME_END
+
+#endif

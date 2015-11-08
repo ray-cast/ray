@@ -46,18 +46,14 @@
 
 _NAME_BEGIN
 
-typedef std::shared_ptr<class RenderDevice> RenderDevicePtr;
-typedef std::shared_ptr<class RenderWindow> RenderWindowPtr;
-typedef std::shared_ptr<class RenderPipeline> RenderPipelinePtr;
-typedef std::shared_ptr<class RenderSystem> RenderSystemPtr;
-typedef std::shared_ptr<class RenderState> RenderStatePtr;
-typedef std::shared_ptr<class RenderBuffer> RenderBufferPtr;
-typedef std::shared_ptr<class RenderTarget> RenderTargetPtr;
-typedef std::shared_ptr<class MultiRenderTarget> MultiRenderTargetPtr;
 typedef std::shared_ptr<class VertexComponent> VertexComponentPtr;
 typedef std::shared_ptr<class VertexBufferData> VertexBufferDataPtr;
 typedef std::shared_ptr<class IndexBufferData> IndexBufferDataPtr;
+
 typedef std::shared_ptr<class Texture> TexturePtr;
+typedef std::shared_ptr<class TextureSample> TextureSamplePtr;
+typedef std::shared_ptr<class MultiRenderTexture> MultiRenderTexturePtr;
+
 typedef std::shared_ptr<class Shader> ShaderPtr;
 typedef std::shared_ptr<class ShaderVariant> ShaderVariantPtr;
 typedef std::shared_ptr<class ShaderParameter> ShaderParameterPtr;
@@ -65,13 +61,29 @@ typedef std::shared_ptr<class ShaderAttribute> ShaderAttributePtr;
 typedef std::shared_ptr<class ShaderUniform> ShaderUniformPtr;
 typedef std::shared_ptr<class ShaderSubroutine> ShaderSubroutinePtr;
 typedef std::shared_ptr<class ShaderObject> ShaderObjectPtr;
+
+typedef std::shared_ptr<class RenderObject> RenderObjectPtr;
 typedef std::shared_ptr<class RenderPostProcess> RenderPostProcessPtr;
 typedef std::shared_ptr<class RenderMesh> RenderMeshPtr;
+typedef std::shared_ptr<class RenderDevice> RenderDevicePtr;
+typedef std::shared_ptr<class RenderWindow> RenderWindowPtr;
+typedef std::shared_ptr<class RenderPipeline> RenderPipelinePtr;
+typedef std::shared_ptr<class RenderSystem> RenderSystemPtr;
+typedef std::shared_ptr<class RenderState> RenderStatePtr;
+typedef std::shared_ptr<class RenderBuffer> RenderBufferPtr;
+typedef std::shared_ptr<class RenderTexture> RenderTexturePtr;
+typedef std::shared_ptr<class RenderIndirect> RenderIndirectPtr;
+typedef std::shared_ptr<class RenderScene> RenderScenePtr;
+
+typedef std::shared_ptr<class Material> MaterialPtr;
+typedef std::shared_ptr<class MaterialPass> MaterialPassPtr;
 
 typedef std::shared_ptr<class Camera> CameraPtr;
 typedef std::shared_ptr<class Light> LightPtr;
-typedef std::shared_ptr<class Renderable> RenderablePtr;
-typedef std::shared_ptr<class RenderScene> RenderScenePtr;
+
+typedef std::weak_ptr<class Camera> CameraWeakPtr;
+typedef std::weak_ptr<class Light> LightWeakPtr;
+typedef std::weak_ptr<class RenderScene> RenderSceneWeakPtr;
 
 typedef std::vector<VertexComponent> VertexComponents;
 typedef std::vector<ShaderPtr> Shaders;
@@ -79,14 +91,18 @@ typedef std::vector<ShaderAttributePtr> ShaderAttributes;
 typedef std::vector<ShaderUniformPtr> ShaderUniforms;
 typedef std::vector<ShaderSubroutinePtr> ShaderSubroutines;
 typedef std::vector<ShaderVariantPtr> ShaderVariants;
-typedef std::vector<CameraPtr> Cameras;
-typedef std::vector<RenderTargetPtr> RenderTargets;
+
+typedef std::vector<RenderTexturePtr> RenderTextures;
 typedef std::vector<RenderBufferPtr> RenderBuffers;
 typedef std::vector<RenderMeshPtr> RenderMeshes;
+typedef std::vector<RenderObjectPtr> RenderObjects;
+typedef std::vector<RenderScenePtr> RenderScenes;
+typedef std::vector<RenderIndirectPtr> RenderIndirects;
+
+typedef std::vector<CameraPtr> Cameras;
+typedef std::vector<LightPtr> Lights;
 
 typedef void* WindHandle;
-
-#define MAX_COLOR_ATTACHMENTS 15
 
 enum
 {
@@ -165,11 +181,7 @@ enum BlendFactor
 	GPU_CONSTANT_ALPHA,
 	GPU_ONE_MINUS_CONSTANT_COLOR,
 	GPU_ONE_MINUS_CONSTANT_ALPHA,
-	GPU_SRC_ALPHA_SATURATE,
-	GPU_SRC1_COLOR,
-	GPU_SRC1_ALPHA,
-	GPU_ONE_MINUS_SRC1_COLOR,
-	GPU_ONE_MINUS_SRC1_ALPHA,
+	GPU_SRC_ALPHA_SATURATE
 };
 
 enum BlendOperation
@@ -259,12 +271,11 @@ enum PixelFormat
 	LUMINANCE_ALPHA,
 	R8G8B8,
 	R8G8B8A8,
+	R16G16B16,
+	R16G16B16A16,
 	R16G16B16A16_SNORM,
-	R8G8B8F,
 	R16G16B16F,
 	R32G32B32F,
-	R4G4B4A4F,
-	R8G8B8A8F,
 	R16G16B16A16F,
 	R32G32B32A32F,
 	R11G11B10F,
@@ -278,11 +289,10 @@ enum PixelFormat
 	RG16F,
 	RG32F,
 	RGB_DXT1,
-	RGB_DXT3,
-	RGB_DXT5,
 	RGBA_DXT1,
 	RGBA_DXT3,
 	RGBA_DXT5,
+	RG_ATI2,
 };
 
 enum TextureWrap
@@ -318,6 +328,9 @@ enum VertexType
 	GPU_LINE,
 	GPU_TRIANGLE,
 	GPU_FAN,
+	GPU_POINT_OR_LINE,
+	GPU_TRIANGLE_OR_LINE,
+	GPU_FAN_OR_LINE,
 };
 
 enum VertexUsage
@@ -389,39 +402,6 @@ enum ShaderVariantType
 	SPT_FLOAT4_ARRAY,
 	SPT_TEXTURE,
 	SPT_BUFFER,
-};
-
-struct GPUctxconfig
-{
-	int api;
-	int major;
-	int minor;
-	int forward;
-	int profile;
-	int robustness;
-	int release;
-	int multithread;
-	HGLRC share;
-};
-
-struct GPUfbconfig
-{
-	int redSize;
-	int greenSize;
-	int blueSize;
-	int alphaSize;
-
-	int bufferSize;
-	int depthSize;
-	int stencilSize;
-
-	int accumSize;
-	int accumRedSize;
-	int accumGreenSize;
-	int accumBlueSize;
-	int accumAlphaSize;
-
-	int samples;
 };
 
 _NAME_END

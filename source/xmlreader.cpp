@@ -35,6 +35,9 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/xmlreader.h>
+#include <ray/ioserver.h>
+#include <ray/mstream.h>
+#include <ray/utf8.h>
 
 #include <sstream>
 #include <tinyxml.h>
@@ -42,8 +45,8 @@
 _NAME_BEGIN
 
 XMLReader::XMLReader() noexcept
-    : _document(nullptr)
-    , _currentNode(nullptr)
+	: _document(nullptr)
+	, _currentNode(nullptr)
 {
 }
 
@@ -54,80 +57,90 @@ XMLReader::~XMLReader() noexcept
 bool
 XMLReader::open(istream& stream) noexcept
 {
-    assert(0 == _document);
-    assert(0 == _currentNode);
+	assert(0 == _document);
+	assert(0 == _currentNode);
 
-    std::size_t length = stream.size();
-    if (length == 0)
-        return false;
+	std::size_t length = stream.size();
+	if (length == 0)
+		return false;
 
-    std::string data;
-    data.resize(length);
+	std::string data;
+	data.resize(length);
 
-    if (!stream.read((char*)data.c_str(), length))
-        return false;
+	if (!stream.read((char*)data.c_str(), length))
+		return false;
 
-    _document = std::make_unique<TiXmlDocument>();
-    _document->Parse(data.c_str());
+	_document = std::make_unique<TiXmlDocument>();
+	_document->Parse(data.c_str());
 
-    if (!_document->Error())
-    {
-        _currentNode = _document->RootElement();
-        if (_currentNode)
-            return true;
-    }
+	if (!_document->Error())
+	{
+		_currentNode = _document->RootElement();
+		if (_currentNode)
+			return true;
+	}
 
-    return false;
+	return false;
+}
+
+bool
+XMLReader::open(const std::string& filename) noexcept
+{
+	MemoryStream stream;
+	IoServer::instance()->openFile(filename, stream);
+	if (stream.is_open())
+		return this->open(stream);
+	return false;
 }
 
 void
 XMLReader::close() noexcept
 {
-    if (_currentNode)
-    {
-        _currentNode = nullptr;
-    }
+	if (_currentNode)
+	{
+		_currentNode = nullptr;
+	}
 
-    if (_document)
-    {
-        _document.reset();
-        _document = nullptr;
-    }
+	if (_document)
+	{
+		_document.reset();
+		_document = nullptr;
+	}
 }
 
 std::string
 XMLReader::getCurrentNodeName() const noexcept
 {
-    return _currentNode->Value();
+	return _currentNode->Value();
 }
 
 std::string
 XMLReader::getCurrentNodePath() const noexcept
 {
-    std::vector<std::string> components;
+	std::vector<std::string> components;
 
-    TiXmlNode* node = this->_currentNode;
-    while (node != _document.get())
-    {
-        components.push_back(node->Value());
-        node = node->Parent();
-    }
+	TiXmlNode* node = this->_currentNode;
+	while (node != _document.get())
+	{
+		components.push_back(node->Value());
+		node = node->Parent();
+	}
 
-    std::string path;
-    std::size_t size = components.size();
-    if (size > 0)
-    {
-        for (int i = size - 1; i >= 0; i--)
-        {
-            path.append(components[i]);
-            if (i > 0)
-            {
-                path.append("/");
-            }
-        }
-    }
+	std::string path;
+	std::size_t size = components.size();
+	if (size > 0)
+	{
+		for (int i = size - 1; i >= 0; i--)
+		{
+			path.append(components[i]);
+			if (i > 0)
+			{
+				path.append("/");
+			}
+		}
+	}
 
-    return path;
+	return path;
 }
 
 void
@@ -138,277 +151,280 @@ XMLReader::setToNode(const std::string& path) noexcept
 bool
 XMLReader::setToFirstChild(const std::string& name) noexcept
 {
-    assert(_currentNode);
+	assert(_currentNode);
 
-    TiXmlElement* child = 0;
-    if (name.empty())
-    {
-        child = _currentNode->FirstChildElement();
-    }
-    else
-    {
-        child = _currentNode->FirstChildElement(name.c_str());
-    }
+	TiXmlElement* child = 0;
+	if (name.empty())
+	{
+		child = _currentNode->FirstChildElement();
+	}
+	else
+	{
+		child = _currentNode->FirstChildElement(name.c_str());
+	}
 
-    if (child)
-    {
-        _currentNode = child;
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+	if (child)
+	{
+		_currentNode = child;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool
 XMLReader::setToNextChild(const std::string& name) noexcept
 {
-    assert(_currentNode);
+	assert(_currentNode);
 
-    TiXmlElement* next = 0;
-    if (name.empty())
-    {
-        next = _currentNode->NextSiblingElement();
-    }
-    else
-    {
-        next = _currentNode->NextSiblingElement(name.c_str());
-    }
+	TiXmlElement* next = 0;
+	if (name.empty())
+	{
+		next = _currentNode->NextSiblingElement();
+	}
+	else
+	{
+		next = _currentNode->NextSiblingElement(name.c_str());
+	}
 
-    if (next)
-    {
-        _currentNode = next;
-        return true;
-    }
-    else
-    {
-        this->setToParent();
-        return false;
-    }
+	if (next)
+	{
+		_currentNode = next;
+		return true;
+	}
+	else
+	{
+		this->setToParent();
+		return false;
+	}
 }
 
 bool
 XMLReader::setToParent() noexcept
 {
-    assert(_currentNode);
+	assert(_currentNode);
 
-    TiXmlNode* parent = _currentNode->Parent();
-    if (parent)
-    {
-        this->_currentNode = parent->ToElement();
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+	TiXmlNode* parent = _currentNode->Parent();
+	if (parent)
+	{
+		this->_currentNode = parent->ToElement();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool 
+XMLReader::hasChild() const noexcept
+{
+	return _currentNode->NoChildren() ? false : true;
 }
 
 bool
 XMLReader::hasAttr(const char* name) const noexcept
 {
-    assert(this->_currentNode);
+	assert(this->_currentNode);
 
-    return _currentNode->Attribute(name) ? true : false;
+	return _currentNode->Attribute(name) ? true : false;
 }
 
 std::vector<std::string>
 XMLReader::getAttrs() const noexcept
 {
-    assert(this->_currentNode);
+	assert(this->_currentNode);
 
-    std::vector<std::string> attrs;
+	std::vector<std::string> attrs;
 
-    TiXmlAttribute* attr = this->_currentNode->FirstAttribute();
-    while (0 != attr)
-    {
-        attrs.push_back(attr->Name());
-        attr = attr->Next();
-    }
+	TiXmlAttribute* attr = this->_currentNode->FirstAttribute();
+	while (0 != attr)
+	{
+		attrs.push_back(attr->Name());
+		attr = attr->Next();
+	}
 
-    return attrs;
+	return attrs;
 }
 
 std::string
 XMLReader::getString(const char* name) const noexcept
 {
-    auto result = _currentNode->Attribute(name);
-    if (result)
-    {
-        return result;
-    }
+	auto result = _currentNode->Attribute(name);
+	if (result)
+	{
+		return result;
+	}
 
-    return "";
+	return "";
 }
 
 std::string
 XMLReader::getString(const std::string& name) const noexcept
 {
-    return this->getString(name.c_str());
+	return this->getString(name.c_str());
 }
 
 std::string
 XMLReader::getText() const noexcept
 {
-    auto result = _currentNode->GetText();
-    if (result)
-    {
-        return result;
-    }
-
-    return "";
+	auto result = _currentNode->GetText();
+	if (result)
+		return result;
+	return "";
 }
 
 int
 XMLReader::getInteger(const char* name) const noexcept
 {
-    auto value = getString(name);
-    if (!value.empty())
-        return atoi(value.c_str());
+	auto value = getString(name);
+	if (!value.empty())
+		return atoi(value.c_str());
 
-    return 0;
+	return 0;
 }
 
 int
 XMLReader::getInteger(const std::string& name) const noexcept
 {
-    auto value = getString(name.c_str());
-    if (!value.empty())
-        return atoi(value.c_str());
+	auto value = getString(name.c_str());
+	if (!value.empty())
+		return atoi(value.c_str());
 
-    return 0;
+	return 0;
 }
 
 bool
 XMLReader::getBoolean(const char* name) const noexcept
 {
-    auto value = getString(name);
-    if (value == "true" || value == "1")
-        return true;
+	auto value = getString(name);
+	if (value == "true" || value == "1")
+		return true;
 
-    return false;
+	return false;
 }
 
 bool
 XMLReader::getBoolean(const std::string& name) const noexcept
 {
-    return this->getBoolean(name.c_str());
+	return this->getBoolean(name.c_str());
 }
 
 float
 XMLReader::getFloat(const char* name) const noexcept
 {
-    auto value = getString(name);
-    if (!value.empty())
-        return fast_atof(value.c_str());
+	auto value = getString(name);
+	if (!value.empty())
+		return fast_atof(value.c_str());
 
-    return 0.0;
+	return 0.0;
 }
 
 float
 XMLReader::getFloat(const std::string& name) const noexcept
 {
-    return this->getFloat(name.c_str());
+	return this->getFloat(name.c_str());
 }
 
 float2
 XMLReader::getFloat2(const char* name) const noexcept
 {
-    auto value = getString(name);
-    if (!value.empty())
-    {
-        float f1 = 0;
-        float f2 = 0;
+	auto value = getString(name);
+	if (!value.empty())
+	{
+		float f1 = 0;
+		float f2 = 0;
 
-        for (auto& it : value)
-        {
-            if (it == ',')
-            {
-                it = ' ';
-            }
-        }
+		for (auto& it : value)
+		{
+			if (it == ',')
+			{
+				it = ' ';
+			}
+		}
 
-        std::istringstream sin(value.c_str());
+		std::istringstream sin(value.c_str());
 
-        sin >> f1 >> f2;
-        return float2(f1, f2);
-    }
+		sin >> f1 >> f2;
+		return float2(f1, f2);
+	}
 
-    return float2(0, 0);
+	return float2(0, 0);
 }
 
 float2
 XMLReader::getFloat2(const std::string& name) const noexcept
 {
-    return this->getFloat2(name.c_str());
+	return this->getFloat2(name.c_str());
 }
 
 float3
 XMLReader::getFloat3(const char* name) const noexcept
 {
-    auto value = getString(name);
-    if (!value.empty())
-    {
-        float f1 = 0;
-        float f2 = 0;
-        float f3 = 0;
+	auto value = getString(name);
+	if (!value.empty())
+	{
+		float f1 = 0;
+		float f2 = 0;
+		float f3 = 0;
 
-        for (auto& it : value)
-        {
-            if (it == ',')
-            {
-                it = ' ';
-            }
-        }
+		for (auto& it : value)
+		{
+			if (it == ',')
+			{
+				it = ' ';
+			}
+		}
 
-        std::istringstream sin(value);
+		std::istringstream sin(value);
 
-        sin >> f1 >> f2 >> f3;
-        return float3(f1, f2, f3);
-    }
+		sin >> f1 >> f2 >> f3;
+		return float3(f1, f2, f3);
+	}
 
-    return float3(0, 0, 0);
+	return float3(0, 0, 0);
 }
 
 float3
 XMLReader::getFloat3(const std::string& name) const noexcept
 {
-    return this->getFloat3(name.c_str());
+	return this->getFloat3(name.c_str());
 }
 
 float4
 XMLReader::getFloat4(const char* name) const noexcept
 {
-    auto value = getString(name);
-    if (!value.empty())
-    {
-        float f1 = 0;
-        float f2 = 0;
-        float f3 = 0;
-        float f4 = 0;
+	auto value = getString(name);
+	if (!value.empty())
+	{
+		float f1 = 0;
+		float f2 = 0;
+		float f3 = 0;
+		float f4 = 0;
 
-        for (auto& it : value)
-        {
-            if (it == ',')
-            {
-                it = ' ';
-            }
-        }
+		for (auto& it : value)
+		{
+			if (it == ',')
+			{
+				it = ' ';
+			}
+		}
 
-        std::istringstream sin(value.c_str());
+		std::istringstream sin(value.c_str());
 
-        sin >> f1 >> f2 >> f3 >> f4;
-        return float4(f1, f2, f3, f4);
-    }
+		sin >> f1 >> f2 >> f3 >> f4;
+		return float4(f1, f2, f3, f4);
+	}
 
-    return float4(0, 0, 0, 0);
+	return float4(0, 0, 0, 0);
 }
 
 float4
 XMLReader::getFloat4(const std::string& name) const noexcept
 {
-    return this->getFloat4(name.c_str());
+	return this->getFloat4(name.c_str());
 }
 
 _NAME_END

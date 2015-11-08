@@ -54,34 +54,36 @@ _NAME_BEGIN
 class EXPORT DefaultInputDevice final : public ToplevelInputDevice
 {
 public:
-    DefaultInputDevice() noexcept;
+	DefaultInputDevice() noexcept;
 
-    virtual void enableEventPosting(bool enable) noexcept;
-    virtual bool enableEventPosting() const noexcept;
+	virtual void enableEventPosting(bool enable) noexcept;
+	virtual bool enableEventPosting() const noexcept;
 
-    virtual void sendEvent(const InputEvent& event) noexcept;
-    virtual void postEvent(const InputEvent& event) noexcept;
+	virtual void sendEvent(const InputEvent& event) noexcept;
+	virtual void postEvent(const InputEvent& event) noexcept;
 
-    virtual void peekEvents(InputEvent& event) noexcept;
-    virtual bool pollEvents(InputEvent& event) noexcept;
-    virtual bool waitEvents(InputEvent& event) noexcept;
-    virtual bool waitEvents(InputEvent& event, int timeout) noexcept;
-    virtual void flushEvent() noexcept;
+	virtual void peekEvents(InputEvent& event) noexcept;
+	virtual bool pollEvents(InputEvent& event) noexcept;
+	virtual bool waitEvents(InputEvent& event) noexcept;
+	virtual bool waitEvents(InputEvent& event, int timeout) noexcept;
+	virtual void flushEvent() noexcept;
 
-private:
-    DefaultInputDevice(const DefaultInputDevice&) noexcept = delete;
-    DefaultInputDevice& operator=(const DefaultInputDevice&) noexcept = delete;
+	virtual InputDevicePtr clone() const noexcept;
 
 private:
+	DefaultInputDevice(const DefaultInputDevice&) noexcept = delete;
+	DefaultInputDevice& operator=(const DefaultInputDevice&) noexcept = delete;
 
-    typedef std::queue<InputEvent>  InputEvents;
+private:
 
-    InputEvents _events;
+	typedef std::queue<InputEvent>  InputEvents;
 
-    bool _enableEventPosting;
+	InputEvents _events;
 
-    std::mutex _mutex;
-    std::condition_variable _dispose;
+	bool _enableEventPosting;
+
+	std::mutex _mutex;
+	std::condition_variable _dispose;
 };
 
 _NAME_END

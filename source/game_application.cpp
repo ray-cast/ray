@@ -69,9 +69,8 @@ GameApplication::open() except
 
 	_gameServer = std::make_shared<GameServer>();
 	_gameServer->_setGameApp(this);
-	_gameServer->open();
-
-	_isInitialize = true;
+	
+	_isInitialize = _gameServer->open();
 
 	return _isInitialize;
 }
@@ -160,13 +159,6 @@ GameApplication::removeFeatures(GameFeaturePtr feature) noexcept
 {
 	assert(_gameServer);
 	_gameServer->removeFeature(feature);
-}
-
-GameFeaturePtr
-GameApplication::getFeature(const std::string& name) noexcept
-{
-	assert(_gameServer);
-	return _gameServer->getFeature(name);
 }
 
 void

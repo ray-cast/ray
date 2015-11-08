@@ -36,8 +36,9 @@
 // +----------------------------------------------------------------------
 #include "terrain_map.h"
 
-TerrainMap::TerrainMap()
+TerrainMap::TerrainMap(TerrainComponent& terrain)
 	: _mask(0)
+	, _terrain(terrain)
 {
 }
 
@@ -177,7 +178,7 @@ TerrainMap::copy(TerrainMap* map)
 void
 TerrainMap::grow()
 {
-	TerrainMap map;
+	TerrainMap map(_terrain);
 	map.create(_size, _dx, _dy, _dz, _mask << 1 | 1);
 
 	for (auto& it : _data)

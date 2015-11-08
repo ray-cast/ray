@@ -44,49 +44,49 @@ _NAME_BEGIN
 
 class Mipmapping : public Lod<Mipmapping>
 {
-    friend class Lod<Mipmapping>;
+	friend class Lod<Mipmapping>;
 public:
-    enum
-    {
-        LEFT,
-        RIGHT,
-        TOP,
-        BOTTOM,
-    };
+	enum
+	{
+		LEFT,
+		RIGHT,
+		TOP,
+		BOTTOM,
+	};
 
-    Mipmapping();
-    ~Mipmapping();
+	Mipmapping();
+	~Mipmapping();
 
-    bool init(HeightMap* T);        //初始化地形层次细节
+	bool init(HeightMap* T);        //初始化地形层次细节
 
-    void render(); //计算地形的LOD
+	void render(); //计算地形的LOD
 
-    std::size_t buildTrianlges() { return _build_trianlges; }
+	std::size_t buildTrianlges() { return _build_trianlges; }
 
-    void setFactor(float f) { factor_ = f; }
+	void setFactor(float f) { factor_ = f; }
 
 private:
-    bool recursiveTessellate(const Quadnode& node, std::uint8_t depth);
+	bool recursiveTessellate(const Quadnode& node, std::uint8_t depth);
 
-    bool isDivide(const Quadnode& node, std::uint8_t depth);
+	bool isDivide(const Quadnode& node, std::uint8_t depth);
 
-    float initVariant(std::uint8_t level, std::uint32_t x, std::uint32_t y);
-    void  renderNode(const Quadnode& node, std::uint8_t level);
-    void  dividNode(const Quadnode& node, std::uint8_t level);
-    void  disableNode(const Quadnode& node, std::uint8_t level);
-    bool  split(const Quadnode& node, std::uint8_t level);
+	float initVariant(std::uint8_t level, std::uint32_t x, std::uint32_t y);
+	void  renderNode(const Quadnode& node, std::uint8_t level);
+	void  dividNode(const Quadnode& node, std::uint8_t level);
+	void  disableNode(const Quadnode& node, std::uint8_t level);
+	bool  split(const Quadnode& node, std::uint8_t level);
 
-    float factor_;
-    Binary bits_;
-    std::size_t _size;
-    std::size_t _adjct_act[4];
-    std::size_t _build_trianlges;
+	float factor_;
+	Binary bits_;
+	std::size_t _size;
+	std::size_t _adjct_act[4];
+	std::size_t _build_trianlges;
 
-    Quadnode        root_;
-    std::vector<Quadnode> cur_Nodes;
-    std::vector<Quadnode> next_Nodes;
+	Quadnode        root_;
+	std::vector<Quadnode> cur_Nodes;
+	std::vector<Quadnode> next_Nodes;
 
-    std::vector<std::uint32_t>    pVariant_; //节点粗糙
+	std::vector<std::uint32_t>    pVariant_; //节点粗糙
 };
 
 _NAME_END

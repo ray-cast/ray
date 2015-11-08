@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/fxaa.h>
 #include <ray/material_maker.h>
+#include <ray/render_texture.h>
 
 _NAME_BEGIN
 
@@ -50,32 +51,31 @@ FXAA::~FXAA() noexcept
 void
 FXAA::onActivate(RenderPipeline& pipeline) except
 {
-    _fxaa = MaterialMaker("sys:fx/fxaa.glsl");
-    _fxaaPass = _fxaa->getTech(RenderQueue::PostProcess)->getPass("fxaa");
-    _texelStep = _fxaa->getParameter("texelStep");
+	_fxaa = MaterialMaker("sys:fx/fxaa.glsl");
+	_fxaaPass = _fxaa->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("fxaa");
+	_texelStep = _fxaa->getParameter("texelStep");
 }
 
 void
 FXAA::onDeactivate(RenderPipeline& pipeline) except
 {
-    if (_fxaa)
-    {
-        _fxaa.reset();
-        _fxaa = nullptr;
-    }
+	if (_fxaa)
+	{
+		_fxaa.reset();
+		_fxaa = nullptr;
+	}
 
-    _fxaaPass = nullptr;
-    _texelStep = nullptr;
+	_fxaaPass = nullptr;
+	_texelStep = nullptr;
 }
 
 void
-FXAA::onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
+FXAA::onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
 {
-    _texelStep->assign(float2(1.0f / source->getWidth(), 1.0f / source->getHeight()));
+	_texelStep->assign(float2(1.0f / source->getWidth(), 1.0f / source->getHeight()));
 
-    pipeline.setRenderTarget(source);
-    pipeline.setTechnique(_fxaaPass);
-    pipeline.drawSceneQuad();
+	pipeline.setRenderTexture(source);
+	pipeline.drawSceneQuad(_fxaaPass);
 }
 
 _NAME_END

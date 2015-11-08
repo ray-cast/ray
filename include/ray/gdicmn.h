@@ -182,6 +182,7 @@ class Pointt
 {
 public:
     typedef T size_type;
+	typedef T type_type;
     typedef Pointt<T> _Myt;
     typedef Sizet<T> _Mysize;
 

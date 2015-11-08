@@ -37,30 +37,31 @@
 #include <ray/dof.h>
 #include <ray/material_maker.h>
 #include <ray/render_factory.h>
+#include <ray/render_texture.h>
 
 _NAME_BEGIN
 
 DepthOfField::DepthOfField() noexcept
 {
-    _dof = MaterialMaker("sys:fx/dof.glsl");
+	_dof = MaterialMaker("sys:fx/dof.glsl");
 
-    _sample4 = _dof->getTech(RenderQueue::PostProcess)->getPass("sample");
-    _blurh = _dof->getTech(RenderQueue::PostProcess)->getPass("blurh");
-    _blurv = _dof->getTech(RenderQueue::PostProcess)->getPass("blurv");
-    _computeNear = _dof->getTech(RenderQueue::PostProcess)->getPass("computeNear");
-    _final = _dof->getTech(RenderQueue::PostProcess)->getPass("final");
+	_sample4 = _dof->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("sample");
+	_blurh = _dof->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("blurh");
+	_blurv = _dof->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("blurv");
+	_computeNear = _dof->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("computeNear");
+	_final = _dof->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("final");
 
-    _texTemp = RenderFactory::createRenderTarget();
-    _texTemp->setup(512, 512, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
+	_texTemp = RenderFactory::createRenderTexture();
+	_texTemp->setup(512, 512, TextureDim::DIM_2D, PixelFormat::R8G8B8);
 
-    _texBlur = RenderFactory::createRenderTarget();
-    _texBlur->setup(512, 512, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
+	_texBlur = RenderFactory::createRenderTexture();
+	_texBlur->setup(512, 512, TextureDim::DIM_2D, PixelFormat::R8G8B8);
 
-    _texColor = _dof->getParameter("texColor");
-    _texShrunk = _dof->getParameter("texShrunk");
-    _texBlured = _dof->getParameter("texBlured");
-    _texSmall = _dof->getParameter("texSmall");
-    _texLarge = _dof->getParameter("texLarge");
+	_texColor = _dof->getParameter("texColor");
+	_texShrunk = _dof->getParameter("texShrunk");
+	_texBlured = _dof->getParameter("texBlured");
+	_texSmall = _dof->getParameter("texSmall");
+	_texLarge = _dof->getParameter("texLarge");
 }
 
 DepthOfField::~DepthOfField() noexcept
@@ -68,63 +69,58 @@ DepthOfField::~DepthOfField() noexcept
 }
 
 void
-DepthOfField::blurh(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept
+DepthOfField::blurh(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
 {
-    _texColor->assign(source->getResolveTexture());
+	_texColor->assign(source->getResolveTexture());
 
-    pipeline.setRenderTarget(dest);
-    pipeline.setTechnique(_blurh);
-    pipeline.drawSceneQuad();
+	pipeline.setRenderTexture(dest);
+	pipeline.drawSceneQuad(_blurh);
 }
 
 void
-DepthOfField::blurv(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept
+DepthOfField::blurv(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
 {
-    _texColor->assign(source->getResolveTexture());
+	_texColor->assign(source->getResolveTexture());
 
-    pipeline.setRenderTarget(dest);
-    pipeline.setTechnique(_blurv);
-    pipeline.drawSceneQuad();
+	pipeline.setRenderTexture(dest);
+	pipeline.drawSceneQuad(_blurv);
 }
 
 void
-DepthOfField::computeNear(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr blured, RenderTargetPtr dest) noexcept
+DepthOfField::computeNear(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr blured, RenderTexturePtr dest) noexcept
 {
-    _texShrunk->assign(source->getResolveTexture());
-    _texBlured->assign(blured->getResolveTexture());
+	_texShrunk->assign(source->getResolveTexture());
+	_texBlured->assign(blured->getResolveTexture());
 
-    pipeline.setRenderTarget(dest);
-    pipeline.setTechnique(_computeNear);
-    pipeline.drawSceneQuad();
+	pipeline.setRenderTexture(dest);
+	pipeline.drawSceneQuad(_computeNear);
 }
 
 void
-DepthOfField::final(RenderPipeline& pipeline, RenderTargetPtr color, RenderTargetPtr texSmall, RenderTargetPtr large)
+DepthOfField::final(RenderPipeline& pipeline, RenderTexturePtr color, RenderTexturePtr texSmall, RenderTexturePtr large)
 {
-    _texColor->assign(color->getResolveTexture());
-    _texSmall->assign(texSmall->getResolveTexture());
-    _texLarge->assign(large->getResolveTexture());
+	_texColor->assign(color->getResolveTexture());
+	_texSmall->assign(texSmall->getResolveTexture());
+	_texLarge->assign(large->getResolveTexture());
 
-    pipeline.setRenderTarget(color);
-    pipeline.setTechnique(_final);
-    pipeline.drawSceneQuad();
+	pipeline.setRenderTexture(color);
+	pipeline.drawSceneQuad(_final);
 }
 
 void
-DepthOfField::onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
+DepthOfField::onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
 {
-    _texColor->assign(source->getResolveTexture());
+	_texColor->assign(source->getResolveTexture());
 
-    pipeline.setRenderTarget(_texBlur);
-    pipeline.setTechnique(_sample4);
-    pipeline.drawSceneQuad();
+	pipeline.setRenderTexture(_texBlur);
+	pipeline.drawSceneQuad(_sample4);
 
-    this->blurh(pipeline, _texBlur, _texTemp);
-    this->blurv(pipeline, _texTemp, _texBlur);
+	this->blurh(pipeline, _texBlur, _texTemp);
+	this->blurv(pipeline, _texTemp, _texBlur);
 
-    this->computeNear(pipeline, source, _texBlur, _texTemp);
+	this->computeNear(pipeline, source, _texBlur, _texTemp);
 
-    this->final(pipeline, source, _texTemp, _texBlur);
+	this->final(pipeline, source, _texTemp, _texBlur);
 }
 
 _NAME_END

@@ -37,43 +37,43 @@
 #ifndef _H_DEPTH_OF_FIELD_H_
 #define _H_DEPTH_OF_FIELD_H_
 
-#include <ray/post_process.h>
+#include <ray/render_post_process.h>
 
 _NAME_BEGIN
 
 class DepthOfField : public RenderPostProcess
 {
 public:
-    DepthOfField() noexcept;
-    ~DepthOfField() noexcept;
+	DepthOfField() noexcept;
+	~DepthOfField() noexcept;
 
-    void onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept;
+	void onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
 
-    void blurh(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept;
-    void blurv(RenderPipeline& pipeline, RenderTargetPtr source, RenderTargetPtr dest) noexcept;
+	void blurh(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+	void blurv(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
 
-    void computeNear(RenderPipeline& pipeline, RenderTargetPtr shrunk, RenderTargetPtr blured, RenderTargetPtr dest) noexcept;
+	void computeNear(RenderPipeline& pipeline, RenderTexturePtr shrunk, RenderTexturePtr blured, RenderTexturePtr dest) noexcept;
 
-    void final(RenderPipeline& pipeline, RenderTargetPtr color, RenderTargetPtr texSmall, RenderTargetPtr large);
+	void final(RenderPipeline& pipeline, RenderTexturePtr color, RenderTexturePtr texSmall, RenderTexturePtr large);
 
 private:
 
-    MaterialPtr _dof;
-    MaterialPassPtr _sample4;
-    MaterialPassPtr _blurv;
-    MaterialPassPtr _blurh;
-    MaterialPassPtr _computeNear;
-    MaterialPassPtr _final;
+	MaterialPtr _dof;
+	MaterialPassPtr _sample4;
+	MaterialPassPtr _blurv;
+	MaterialPassPtr _blurh;
+	MaterialPassPtr _computeNear;
+	MaterialPassPtr _final;
 
-    MaterialParamPtr _texColor;
-    MaterialParamPtr _texDepth;
-    MaterialParamPtr _texShrunk;
-    MaterialParamPtr _texBlured;
-    MaterialParamPtr _texSmall;
-    MaterialParamPtr _texLarge;
+	MaterialParamPtr _texColor;
+	MaterialParamPtr _texDepth;
+	MaterialParamPtr _texShrunk;
+	MaterialParamPtr _texBlured;
+	MaterialParamPtr _texSmall;
+	MaterialParamPtr _texLarge;
 
-    RenderTargetPtr _texTemp;
-    RenderTargetPtr _texBlur;
+	RenderTexturePtr _texTemp;
+	RenderTexturePtr _texBlur;
 };
 
 _NAME_END

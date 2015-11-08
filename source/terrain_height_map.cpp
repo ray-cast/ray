@@ -44,12 +44,12 @@ HeightMap::HeightMap()
 
 HeightMap::HeightMap(int size, const AABB& world)
 {
-    init(size, world);
+	init(size, world);
 }
 
 HeightMap::HeightMap(std::string szMapName, int size, const AABB& world)
 {
-    init(szMapName, size, world);
+	init(szMapName, size, world);
 }
 
 HeightMap::~HeightMap()
@@ -59,131 +59,131 @@ HeightMap::~HeightMap()
 bool
 HeightMap::init(int size, const AABB& world)
 {
-    assert((ceilToPowerOfTwo(size) == 0) || (ceilToPowerOfTwo(size) == 1));
+	assert((ceilToPowerOfTwo(size) == 0) || (ceilToPowerOfTwo(size) == 1));
 
-    size_ = size;
+	size_ = size;
 
-    cellSize_ = world.size().x / size;
+	cellSize_ = world.size().x / size;
 
-    world_ = world;
+	world_ = world;
 
-    computeVertexMap();
-    computeNormalMap();
+	computeVertexMap();
+	computeNormalMap();
 
-    return true;
+	return true;
 }
 
 bool
 HeightMap::init(std::string szMapName, int size, const AABB& world)
 {
-    assert((ceilToPowerOfTwo(size) == 0) || (ceilToPowerOfTwo(size) == 1));
+	assert((ceilToPowerOfTwo(size) == 0) || (ceilToPowerOfTwo(size) == 1));
 
-    size_ = size;
+	size_ = size;
 
-    world_ = world;
+	world_ = world;
 
-    assert(szMapName.empty());
+	assert(szMapName.empty());
 
-    return true;
+	return true;
 }
 
 void
 HeightMap::computeVertexMap()
 {
-    assert(!_vertices.empty());
+	assert(!_vertices.empty());
 
-    PerlinNoise2 PL;
+	PerlinNoise2 PL;
 
-    float invfre = 0.013f;
+	float invfre = 0.013f;
 
-    for (int y = 0; y < size_; y++)
-    {
-        for (int x = 0; x < size_; x++)
-        {
-            float accum = 0;
+	for (int y = 0; y < size_; y++)
+	{
+		for (int x = 0; x < size_; x++)
+		{
+			float accum = 0;
 
-            accum += PL.noise(x * invfre, y*invfre, 0.8f) * 1.0f;
-            //  accum += PL.noise(x * invfre + 0.3f, y * invfre + 0.3f, 1.0f) * 0.9f;
-            //  accum += PL.noise(x * invfre, y*invfre, 3.0f) * 0.17f;
-            //  accum += PL.noise(x * invfre, y*invfre, 3.4f) * 0.12f;
-            //  accum += PL.noise(x * invfre, y*invfre, 3.7f) * 0.1f;
+			accum += PL.noise(x * invfre, y*invfre, 0.8f) * 1.0f;
+			//  accum += PL.noise(x * invfre + 0.3f, y * invfre + 0.3f, 1.0f) * 0.9f;
+			//  accum += PL.noise(x * invfre, y*invfre, 3.0f) * 0.17f;
+			//  accum += PL.noise(x * invfre, y*invfre, 3.4f) * 0.12f;
+			//  accum += PL.noise(x * invfre, y*invfre, 3.7f) * 0.1f;
 
-            accum *= 0.1f;
-            accum += 0.5f;
+			accum *= 0.1f;
+			accum += 0.5f;
 
-            accum *= world_.size().y;
+			accum *= world_.size().y;
 
-            accum += world_.min.y;
+			accum += world_.min.y;
 
-            _vertices.push_back(makePosition((float)x, accum, (float)y));
-            _texcoord.push_back(getTexture(x, y));
-        }
-    }
+			_vertices.push_back(makePosition((float)x, accum, (float)y));
+			_texcoord.push_back(getTexture(x, y));
+		}
+	}
 }
 
 void
 HeightMap::computeNormalMap()
 {
-    assert(!_vertices.empty());
+	assert(!_vertices.empty());
 
-    Vector3f left;
-    Vector3f right;
-    Vector3f up;
-    Vector3f down;
+	Vector3f left;
+	Vector3f right;
+	Vector3f up;
+	Vector3f down;
 
-    for (std::size_t y = 0; y < size_; ++y)
-    {
-        for (std::size_t x = 0; x < size_; ++x)
-        {
-            Vector3f cur = this->getVertex(x, y);
+	for (std::size_t y = 0; y < size_; ++y)
+	{
+		for (std::size_t x = 0; x < size_; ++x)
+		{
+			Vector3f cur = this->getVertex(x, y);
 
-            if (x > 0)
-                left = this->getVertex(x - 1, y) - cur;
-            if (x + 1 < size_)
-                right = this->getVertex(x + 1, y) - cur;
-            if (y + 1 < size_)
-                up = this->getVertex(x, y + 1) - cur;
-            if (y > 0)
-                down = this->getVertex(x, y - 1) - cur;
+			if (x > 0)
+				left = this->getVertex(x - 1, y) - cur;
+			if (x + 1 < size_)
+				right = this->getVertex(x + 1, y) - cur;
+			if (y + 1 < size_)
+				up = this->getVertex(x, y + 1) - cur;
+			if (y > 0)
+				down = this->getVertex(x, y - 1) - cur;
 
-            Vector3f lu = left.cross(up);
-            Vector3f ru = up.cross(right);
-            Vector3f rd = right.cross(down);
-            Vector3f ld = down.cross(left);
+			Vector3f lu = left.cross(up);
+			Vector3f ru = up.cross(right);
+			Vector3f rd = right.cross(down);
+			Vector3f ld = down.cross(left);
 
-            int average = 0;
+			int average = 0;
 
-            if (x > 0 && y > 0)
-            {
-                ld.normalize();
-                average++;
-            }
+			if (x > 0 && y > 0)
+			{
+				ld.normalize();
+				average++;
+			}
 
-            if (x > 0 && y + 1 < size_)
-            {
-                lu.normalize();
-                average++;
-            }
+			if (x > 0 && y + 1 < size_)
+			{
+				lu.normalize();
+				average++;
+			}
 
-            if (y > 0 && x + 1 < size_)
-            {
-                rd.normalize();
-                average++;
-            }
+			if (y > 0 && x + 1 < size_)
+			{
+				rd.normalize();
+				average++;
+			}
 
-            if (x + 1 < size_ && y + 1 < size_)
-            {
-                ru.normalize();
-                average++;
-            }
+			if (x + 1 < size_ && y + 1 < size_)
+			{
+				ru.normalize();
+				average++;
+			}
 
-            Vector3f cur_normal = (lu + ru + ld + rd) / (float)average;
+			Vector3f cur_normal = (lu + ru + ld + rd) / (float)average;
 
-            cur_normal.normalize();
+			cur_normal.normalize();
 
-            _normals.push_back(cur_normal);
-        }
-    }
+			_normals.push_back(cur_normal);
+		}
+	}
 }
 
 _NAME_END

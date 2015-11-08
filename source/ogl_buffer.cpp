@@ -39,217 +39,314 @@
 _NAME_BEGIN
 
 OGLVertexBuffer::OGLVertexBuffer() noexcept
-    : _vbo(GL_NONE)
-    , _bindlessVbo(GL_NONE)
+	: _vbo(GL_NONE)
+	, _bindlessVbo(GL_NONE)
 {
 }
 
 OGLVertexBuffer::~OGLVertexBuffer() noexcept
 {
-    this->close();
+	this->close();
 }
 
 void
-OGLVertexBuffer::setup() except
+OGLVertexBuffer::setup(VertexBufferDataPtr vb) except
 {
-    auto vertexUsage = OGLTypes::asOGLVertexUsage(this->getVertexUsage());
-    auto vertexDataSize = this->getVertexDataSize();
-    auto vertexByteSize = this->getVertexSize();
+	auto vertexUsage = OGLTypes::asOGLVertexUsage(vb->getVertexUsage());
+	auto vertexDataSize = vb->getVertexDataSize();
+	auto vertexByteSize = vb->getVertexSize();
 
-    glGenBuffers(1, &_vbo);
+	glGenBuffers(1, &_vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+
 #if !defined(EGLAPI)
-    if (OGLExtenstion::isSupport(OGLFeatures::ARB_direct_state_access))
-    {
-        GLbitfield flags = GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        if (vertexUsage == GL_DYNAMIC_DRAW)
-        {
-            flags |= GL_MAP_WRITE_BIT;
-            flags |= GL_DYNAMIC_STORAGE_BIT;
-        }
+	if (OGLFeatures::ARB_direct_state_access)
+	{
+		GLbitfield flags = GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+		if (vertexUsage == GL_DYNAMIC_DRAW)
+		{
+			flags |= GL_MAP_WRITE_BIT;
+			flags |= GL_DYNAMIC_STORAGE_BIT;
+		}
 
-        glNamedBufferStorageEXT(_vbo, vertexDataSize, this->data(), flags);
-    }
-    else
+		glNamedBufferStorage(_vbo, vertexDataSize, vb->data(), flags);
+	}
+	else
 #endif
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertexDataSize, this->data(), vertexUsage);
-    }
+	{
+		glBufferData(GL_ARRAY_BUFFER, vertexDataSize, vb->data(), vertexUsage);
+	}
 
-    GLuint offset = 0;
+	GLuint offset = 0;
 
-    auto& components = this->getVertexComponents();
-    for (auto& it : components)
-    {
-        auto type = OGLTypes::asOGLVertexFormat(it.getVertexFormat());
+	auto& components = vb->getVertexComponents();
+	for (auto& it : components)
+	{
+		auto type = OGLTypes::asOGLVertexFormat(it.getVertexFormat());
 
-        if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
-        {
-            glBindVertexBuffer(it.getVertexAttrib(), _vbo, offset, vertexByteSize);
-        }
-        else if (OGLExtenstion::isSupport(ARB_vertex_attrib_binding))
-        {
-            glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
-            glVertexAttribFormat(it.getVertexAttrib(), it.getVertexCount(), type, GL_FALSE, 0);
-            glVertexAttribBinding(it.getVertexAttrib(), it.getVertexAttrib());
+#if !defined(EGLAPI)
+		if (OGLFeatures::NV_vertex_buffer_unified_memory)
+		{
+			glBindVertexBuffer(it.getVertexAttrib(), _vbo, offset, vertexByteSize);
+		}
+		else if (OGLFeatures::ARB_vertex_attrib_binding)
+		{
+			glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
+			glVertexAttribFormat(it.getVertexAttrib(), it.getVertexCount(), type, GL_FALSE, 0);
+			glVertexAttribBinding(it.getVertexAttrib(), it.getVertexAttrib());
 
-            glBindVertexBuffer(it.getVertexAttrib(), _vbo, offset, vertexByteSize);
-        }
-        else
-        {
-            if (OGLExtenstion::isSupport(ARB_vertex_array_object))
-            {
-                glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
-                glVertexAttribPointer(it.getVertexAttrib(), it.getVertexCount(), type, GL_FALSE, vertexByteSize, (const char*)nullptr + offset);
-            }
-        }
+			glBindVertexBuffer(it.getVertexAttrib(), _vbo, offset, vertexByteSize);
+		}
+		else
+#endif
+		{
+			glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
+			glVertexAttribPointer(it.getVertexAttrib(), it.getVertexCount(), type, GL_FALSE, vertexByteSize, (const char*)nullptr + offset);
+		}
 
-        offset += it.getVertexSize();
-    }
+		offset += it.getVertexSize();
+	}
 
-    if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
-    {
-        glGetNamedBufferParameterui64vNV(_vbo, GL_BUFFER_GPU_ADDRESS_NV, &_bindlessVbo);
-        glMakeNamedBufferResidentNV(_vbo, GL_READ_ONLY);
-    }
+#if !defined(EGLAPI)
+	if (OGLFeatures::NV_vertex_buffer_unified_memory)
+	{
+		glGetNamedBufferParameterui64vNV(_vbo, GL_BUFFER_GPU_ADDRESS_NV, &_bindlessVbo);
+		glMakeNamedBufferResidentNV(_vbo, GL_READ_ONLY);
+	}
+#endif
 }
 
 void
 OGLVertexBuffer::close() noexcept
 {
-    if (_vbo)
-    {
-        glDeleteBuffers(1, &_vbo);
-        _vbo = GL_NONE;
-    }
+	if (_vbo)
+	{
+		glDeleteBuffers(1, &_vbo);
+		_vbo = GL_NONE;
+	}
 }
 
 GLuint
 OGLVertexBuffer::getInstanceID() noexcept
 {
-    return _vbo;
+	return _vbo;
 }
 
 GLuint64
 OGLVertexBuffer::getInstanceAddr() noexcept
 {
-    return _bindlessVbo;
+	return _bindlessVbo;
 }
 
 OGLIndexBuffer::OGLIndexBuffer() noexcept
-    : _ibo(GL_NONE)
-    , _bindlessIbo(GL_NONE)
+	: _ibo(GL_NONE)
+	, _bindlessIbo(GL_NONE)
 {
 }
 
 OGLIndexBuffer::~OGLIndexBuffer() noexcept
 {
-    this->close();
+	this->close();
 }
 
 void
-OGLIndexBuffer::setup() noexcept
+OGLIndexBuffer::setup(IndexBufferDataPtr ib) noexcept
 {
-    auto indexType = OGLTypes::asOGLIndexType(this->getIndexType());
-    auto indexUsage = OGLTypes::asOGLVertexUsage(this->getIndexUsage());
-    auto indexCount = this->getIndexCount();
-    auto indexDataSize = this->getIndexDataSize();
+	auto indexType = OGLTypes::asOGLIndexType(ib->getIndexType());
+	auto indexUsage = OGLTypes::asOGLVertexUsage(ib->getIndexUsage());
+	auto indexCount = ib->getIndexCount();
+	auto indexDataSize = ib->getIndexDataSize();
 
-    glGenBuffers(1, &_ibo);
+	glGenBuffers(1, &_ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ibo);
+
 #if !defined(EGLAPI)
-    if (OGLExtenstion::isSupport(OGLFeatures::ARB_direct_state_access))
-    {
-        GLbitfield flags = GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-        if (indexUsage == GL_DYNAMIC_DRAW)
-        {
-            flags |= GL_MAP_WRITE_BIT;
-            flags |= GL_DYNAMIC_STORAGE_BIT;
-        }
+	if (OGLFeatures::ARB_direct_state_access)
+	{
+		GLbitfield flags = GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+		if (indexUsage == GL_DYNAMIC_DRAW)
+		{
+			flags |= GL_MAP_WRITE_BIT;
+			flags |= GL_DYNAMIC_STORAGE_BIT;
+		}
 
-        glNamedBufferStorageEXT(_ibo, indexDataSize, this->data(), flags);
-    }
-    else
+		glNamedBufferStorageEXT(_ibo, indexDataSize, ib->data(), flags);
+	}
+	else
 #endif
-    {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ibo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, this->data(), indexUsage);
-    }
+	{
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, ib->data(), indexUsage);
+	}
 
-    if (OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
-    {
-        glGetNamedBufferParameterui64vNV(_ibo, GL_BUFFER_GPU_ADDRESS_NV, &_bindlessIbo);
-        glMakeNamedBufferResidentNV(_ibo, GL_READ_ONLY);
-    }
+#if !defined(EGLAPI)
+	if (OGLFeatures::NV_vertex_buffer_unified_memory)
+	{
+		glGetNamedBufferParameterui64vNV(_ibo, GL_BUFFER_GPU_ADDRESS_NV, &_bindlessIbo);
+		glMakeNamedBufferResidentNV(_ibo, GL_READ_ONLY);
+	}
+#endif
 }
 
 void
 OGLIndexBuffer::close() noexcept
 {
-    if (_ibo)
-    {
-        glDeleteBuffers(1, &_ibo);
-        _ibo = GL_NONE;
-    }
+	if (_ibo)
+	{
+		glDeleteBuffers(1, &_ibo);
+		_ibo = GL_NONE;
+	}
 }
 
 GLuint
 OGLIndexBuffer::getInstanceID() noexcept
 {
-    return _ibo;
+	return _ibo;
 }
 
 GLuint64
 OGLIndexBuffer::getInstanceAddr() noexcept
 {
-    return _bindlessIbo;
+	return _bindlessIbo;
 }
 
 OGLRenderBuffer::OGLRenderBuffer() noexcept
-    :_vao(GL_NONE)
+	:_vao(GL_NONE)
 {
 }
 
 OGLRenderBuffer::~OGLRenderBuffer() noexcept
 {
-    this->close();
+	this->close();
 }
 
 void
 OGLRenderBuffer::setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) except
 {
-    assert(GL_NONE == _vao);
+	assert(GL_NONE == _vao);
 
-    if (!OGLExtenstion::isSupport(NV_vertex_buffer_unified_memory))
-    {
-        if (OGLExtenstion::isSupport(ARB_vertex_array_object))
-        {
-            glGenVertexArrays(1, &_vao);
-            glBindVertexArray(_vao);
-        }
-    }
+#if !defined(EGLAPI)
+	if (!OGLFeatures::NV_vertex_buffer_unified_memory)
+	{
+		if (OGLFeatures::ARB_vertex_array_object)
+		{
+			glGenVertexArrays(1, &_vao);
+			glBindVertexArray(_vao);
+		}
+	}
+#else
+	glGenVertexArrays(1, &_vao);
+	glBindVertexArray(_vao);
+#endif
 
-    if (vb)
-    {
-        std::dynamic_pointer_cast<OGLVertexBuffer>(vb)->setup();
-    }
+	if (vb)
+	{
+		_vb = std::make_shared<OGLVertexBuffer>();
+		_vb->setup(vb);
+	}
 
-    if (ib)
-    {
-        std::dynamic_pointer_cast<OGLIndexBuffer>(ib)->setup();
-    }
+	if (ib)
+	{
+		_ib = std::make_shared<OGLIndexBuffer>();
+		_ib->setup(ib);
+	}
 
-    this->setVertexBuffer(vb);
-    this->setIndexBuffer(ib);
+	this->setVertexBuffer(vb);
+	this->setIndexBuffer(ib);
 }
 
 void
 OGLRenderBuffer::close() noexcept
 {
-    if (_vao)
-    {
-        glDeleteVertexArrays(1, &_vao);
-        _vao = GL_NONE;
-    }
+	if (_vao)
+	{
+		glDeleteVertexArrays(1, &_vao);
+		_vao = GL_NONE;
+	}
+}
+
+GLuint
+OGLRenderBuffer::getInstanceID() noexcept
+{
+	return _vao;
+}
+
+void
+OGLRenderBuffer::apply() noexcept
+{
+#if 0
+	if (OGLFeatures::NV_vertex_buffer_unified_memory)
+	{
+		if (vb)
+		{
+			auto bindlessVbo = vb->getInstanceAddr();
+			auto vertexSize = vb->getVertexDataSize();
+
+			GLuint64 offset = 0;
+
+			for (auto& it : vb->getVertexComponents())
+			{
+				glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV, it.getVertexAttrib(), bindlessVbo + offset, vertexSize - offset);
+
+				offset += it.getVertexSize();
+			}
+		}
+
+		if (ib)
+		{
+			auto bindlessIbo = ib->getInstanceAddr();
+			auto indexDataSize = ib->getIndexDataSize();
+
+			glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, bindlessIbo, indexDataSize);
+		}
+	}
+	else if (OGLFeatures::ARB_vertex_attrib_binding)
+	{
+		if (vb)
+		{
+			auto vbo = vb->getInstanceID();
+
+			GLuint offset = 0;
+
+			for (auto& it : vb->getVertexComponents())
+			{
+				glBindVertexBuffer(it.getVertexAttrib(), vbo, offset, vb->getVertexSize());
+
+				offset += it.getVertexSize();
+			}
+		}
+
+		if (ib)
+		{
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->getInstanceID());
+		}
+	}
+	else
+#endif
+	{
+		if (OGLFeatures::ARB_vertex_array_object)
+		{
+			glBindVertexArray(this->getInstanceID());
+		}
+		else
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, _vb->getInstanceID());
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ib->getInstanceID());
+
+			auto vb = this->getVertexBuffer();
+			if (vb)
+			{
+				for (auto& it : vb->getVertexComponents())
+				{
+					glVertexAttribPointer(
+						it.getVertexAttrib(), 
+						it.getVertexCount(), 
+						OGLTypes::asOGLVertexFormat(it.getVertexFormat()),
+						GL_FALSE, vb->getVertexSize(), 
+						(void*)it.getVertexSize());
+				}
+			}
+		}
+	}
 }
 
 _NAME_END

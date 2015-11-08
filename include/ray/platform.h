@@ -38,11 +38,14 @@
 #define _H_PLATFORM_H_
 
 #include <ray/def.h>
+#include <ray/assert.h>
+#include <ray/memory.h>
+#include <ray/singleton.h>
 
 #if defined(_MSC_VER) || defined (_WIN32) || defined(_WIN64)
 #   include <windows.h>
 
-#   if !defined(__WINDOWS__)
+#   ifndef __WINDOWS__
 #       define __WINDOWS__ 1
 #   endif
 
@@ -85,26 +88,6 @@
 
 #if defined(__MINGW64__) || defined(__MINGW32__)
 #   define __GNUWIN__ 1
-#endif
-
-#if defined(_DEBUG) || defined(DEBUG)
-#   ifndef __DEBUG__
-#       define __DEBUG__ 1
-#   endif
-#else
-#   ifndef __RELEASE__
-#       define __RELEASE__ 1
-#   endif
-#endif
-
-#if defined(_UNICODE) || defined(UNICODE)
-#   ifndef _UNICODE_
-#       define __UNICODE__ 1
-#   endif
-
-#   ifndef UNICODE
-#       define UNICODE 1
-#   endif
 #endif
 
 #if defined(_AIX)
@@ -185,7 +168,6 @@
 #   ifndef __ANDROID__
 #       define __ANDROID__ 1
 #   endif
-#   undef __LINUX__
 #endif
 
 #if defined(_M_IX86) || defined(_M_X64) || defined(i386) || defined(__i386) || defined(__i386__)
@@ -248,8 +230,25 @@
 #   endif
 #endif
 
-#include <ray/assert.h>
-#include <ray/singleton.h>
+#if defined(_DEBUG) || defined(DEBUG)
+#   ifndef __DEBUG__
+#       define __DEBUG__ 1
+#   endif
+#else
+#   ifndef __RELEASE__
+#       define __RELEASE__ 1
+#   endif
+#endif
+
+#if defined(_UNICODE) || defined(UNICODE)
+#   ifndef _UNICODE_
+#       define __UNICODE__ 1
+#   endif
+
+#   ifndef UNICODE
+#       define UNICODE 1
+#   endif
+#endif
 
 #if defined(__UNIX__) || defined(__LINUX__)
 #   define final

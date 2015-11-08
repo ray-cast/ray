@@ -55,7 +55,7 @@ public:
     {
     }
 
-    void setUserData(int data) noexcept
+    void setUserData(std::intptr_t data) noexcept
     {
         _data = data;
     }
@@ -65,7 +65,7 @@ public:
         _pointer = pointer;
     }
 
-    int getUserData() const noexcept
+    std::intptr_t getUserData() const noexcept
     {
         return _data;
     }
@@ -77,7 +77,7 @@ public:
 
 private:
 
-    int _data;
+	std::intptr_t _data;
     std::intptr_t* _pointer;
 };
 

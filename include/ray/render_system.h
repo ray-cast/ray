@@ -37,101 +37,50 @@
 #ifndef _H_RENDER_SYSTEM_H_
 #define _H_RENDER_SYSTEM_H_
 
-#include <ray/render_scene.h>
-#include <ray/render_window.h>
-#include <ray/render_pipeline.h>
-#include <ray/render_setting.h>
-#include <ray/timer.h>
+#include <ray/render_system_base.h>
 
 _NAME_BEGIN
 
-struct SimpleVertex
-{
-	SimpleVertex()
-	{
-	}
-
-	SimpleVertex(const Vector3& v, const Vector4& col)
-		:vertex(v)
-		, color(col)
-	{
-	}
-
-	Vector3 vertex;
-	Vector4 color;
-};
-
-class EXPORT RenderSystem final
+class EXPORT DefaultRenderSystem final : public RenderSystem
 {
 public:
-	RenderSystem() noexcept;
-	~RenderSystem() noexcept;
+	DefaultRenderSystem() noexcept;
+	~DefaultRenderSystem() noexcept;
 
-	bool setup(RenderWindowPtr window) except;
+	void open(WindHandle window, std::size_t w, std::size_t h) except;
 	void close() noexcept;
 
 	void setRenderSetting(const RenderSetting& setting) except;
 	const RenderSetting& getRenderSetting() const noexcept;
 
-	void setTimer(TimerPtr timer) noexcept;
-	TimerPtr getTimer() const noexcept;
+	void setRenderPipeline(RenderPipelinePtr pipeline) except;
+	RenderPipelinePtr getRenderPipeline() const noexcept;
+
+	void setWireframeMode(bool enable) noexcept;
+	bool getWireframeMode() const noexcept;
+
+	void setWindowResolution(std::size_t w, std::size_t h) except;
+	void getWindowResolution(std::size_t& w, std::size_t& h) const noexcept;
+
+	void setSwapInterval(SwapInterval interval) except;
+	SwapInterval getSwapInterval() const noexcept;
 
 	bool addRenderScene(RenderScenePtr scene) noexcept;
 	void removeRenderScene(RenderScenePtr scene) noexcept;
 
 	void renderBegin() noexcept;
-	void render() noexcept;
+	void renderScene() noexcept;
 	void renderEnd() noexcept;
 
-	void drawAABB(const Vector3& min, const Vector3& max, const Vector4& color) noexcept;
-	void drawAABB(const Vector3& min, const Vector3& max, const Matrix4x4& trans, const Vector4& color) noexcept;
-
-	void drawArc(float x, float y, float radius, float angle, float angle2, float segments) noexcept;
-	void drawArcSolid(float x, float y, float radius, float angle, float angle2, float segments) noexcept;
-	void drawArc(const Vector3& center, const Vector3& normal, const Vector3& axis, float radius, float minAngle, float maxAngle, float segments) noexcept;
-
-	void drawCircle(float x, float  y, float radius, float segmenst) noexcept;
-	void drawCircleSolid(float x, float  y, float radius, float segmenst) noexcept;
-
-	void drawQuad(float x, float y, float w, float h, const Vector4& color) noexcept;
-	void drawQuad(float dx, float dy, float dz, float x, float y, float z) noexcept;
-	void drawQuad(float x0, float y0, float x1, float y1, float z, float s0, float t0, float s1 = 1, float t1 = 1) noexcept;
-	void drawQuad(const Vector3& right, const Vector3& up, const Vector3& origin, int nFlipMode) noexcept;
-	void drawQuad(const Vector3& v0, const Vector3& v1, const Vector3& v2, const Vector3& v3, float ftx0, float fty0, float ftx1 = 1, float fty1 = 1) noexcept;
-
-	void drawImage(float xpos, float ypos, float w, float h, int textureid, float s0, float t0, float s1, float t1, float r, float g, float b, float a) noexcept;
-	void drawImage(float xpos, float ypos, float z, float w, float h, int textureid, float s0, float t0, float s1, float t1, float angle, float r, float g, float b, float a) noexcept;
-	void drawImageWithUV(float xpos, float ypos, float z, float w, float h, int texture_id, float *s, float *t, float r, float g, float b, float a) noexcept;
-
-	void drawLine(const Vector3& pos1, const Vector3& pos2) noexcept;
-	void drawLineColor(const Vector3& pos1, const Vector3& pos2, const Vector4& color) noexcept;
-	void drawLineColor(const Vector3& pos1, const Vector4& color1, const Vector3 & pos2, const Vector4& color2) noexcept;
-	void drawLines(const Vector3 v[], std::size_t num, const Vector4& col, int flags, float fGround) noexcept;
-
-	void drawPoint(const Vector3& pt) noexcept;
-	void drawPoint(const Vector3& pt, const Vector4& color) noexcept;
-	void drawPoints(const Vector3 pt[], std::size_t num) noexcept;
-
-	void drawText(const Vector3& pt, const std::string& string) noexcept;
-
 private:
-
-	void applyTimer(TimerPtr timer) noexcept;
-	void applyCamera(Camera* camera) noexcept;
-	void applyEnvironment(const RenderScene& scene) noexcept;
-
-	void renderCamera(Camera* camera) noexcept;
-
-private:
-	RenderSystem(const RenderSystem&) noexcept = delete;
-	RenderSystem& operator=(const RenderSystem&) noexcept = delete;
+	DefaultRenderSystem(const DefaultRenderSystem&) noexcept = delete;
+	DefaultRenderSystem& operator=(const DefaultRenderSystem&) noexcept = delete;
 
 private:
 
 	RenderSetting _setting;
 
-	RenderDevicePtr _renderDevice;
-	RenderWindowPtr _renderWindow;
+	RenderScenes _sceneList;
 	RenderPipelinePtr _renderPipeline;
 
 	RenderPostProcessPtr _SSGI;
@@ -141,25 +90,8 @@ private:
 	RenderPostProcessPtr _SSSS;
 	RenderPostProcessPtr _DOF;
 	RenderPostProcessPtr _fog;
-	RenderPostProcessPtr _lightShaft;
-	RenderPostProcessPtr _HDR;
+	RenderPostProcessPtr _fimicToneMapping;
 	RenderPostProcessPtr _FXAA;
-	RenderPostProcessPtr _colorGrading;
-
-	TimerPtr _timer;
-
-	Vector4 _globalColor;
-	Matrix4x4 _orthoCamera;
-
-	MaterialPtr _lineMaterial;
-	MaterialPassPtr _linePass;
-
-	VertexBufferDataPtr _dynamicBuffers;
-	RenderBufferPtr _renderBuffer;
-
-	std::vector<SimpleVertex> _lines;
-	std::vector<SimpleVertex> _polygons;
-	std::vector<RenderScenePtr> _sceneList;
 };
 
 _NAME_END

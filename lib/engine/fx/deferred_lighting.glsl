@@ -3,26 +3,28 @@
     <include name="sys:fx/common.glsl"/>
     <include name="sys:fx/lighting.glsl"/>
     <parameter name="matModel" semantic="matModel" />
+    <parameter name="matView" semantic="matView" />
+    <parameter name="matViewInverse" semantic="matViewInverse" />
     <parameter name="matViewProject" semantic="matViewProject" />
-    <parameter name="matViewProjectInverse" semantic="matViewProjectInverse"/>
-    <parameter name="texDepth" semantic="DeferredDepthMap" />
-    <parameter name="texDiffuse" semantic="DeferredGraphicMap" />
+    <parameter name="matProjectInverse" semantic="matProjectInverse" />
+    <parameter name="matViewProjectInverse" semantic="matViewProjectInverse" />
+    <parameter name="texMRT0" semantic="DeferredGraphicMap" />
     <parameter name="texMRT1" semantic="DeferredNormalMap" />
+    <parameter name="texDepth" semantic="DeferredDepthMap" />
     <parameter name="texLight" semantic="DeferredLightMap" />
-    <parameter name="texOpaques" type="sampler2D" />
-    <parameter name="texTransparent" type="sampler2D" />
-    <parameter name="lightColor" semantic="LightDiffuse" />
-    <parameter name="lightDirection" semantic="LightDirection" />
-    <parameter name="lightPosition" semantic="LightPosition" />
-    <parameter name="lightRange" semantic="LightRange"/>
-    <parameter name="lightIntensity" semantic="LightIntensity"/>
-    <parameter name="lightAmbient" semantic="LightAmbient" />
-    <parameter name="spotAngle" semantic="LightSpotAngle"/>
-    <parameter name="spotInnerCone" semantic="LightSpotInnerCone"/>
-    <parameter name="spotOuterCone" semantic="LightSpotOuterCone"/>
-    <parameter name="eyePosition" semantic="CameraPosition" />
+    <parameter name="texEnvironmentMap" type="sampler2D"/>
+    <parameter name="eyePosition" type="float3" />
+    <parameter name="lightColor" type="float3" />
+    <parameter name="lightDirection" type="float3" />
+    <parameter name="lightPosition" type="float3" />
+    <parameter name="lightAttenuation" type="float3"/>
+    <parameter name="lightRange" type="float"/>
+    <parameter name="lightIntensity" type="float"/>
+    <parameter name="lightSpotInnerCone" type="float"/>
+    <parameter name="lightSpotOuterCone" type="float"/>
     <parameter name="shadowChannel" type="int" />
     <parameter name="shadowMap" type="sampler2D" />
+    <parameter name="shadowArrayMap" type="sampler2D" />
     <parameter name="shadowFactor" type="float"/>
     <parameter name="shadowMatrix" type="mat4" />
     <shader name="vertex">
@@ -30,298 +32,272 @@
             uniform mat4 matModel;
             uniform mat4 matViewProject;
 
-            out vec4 position;
-            out vec4 coord;
-            out float range;
-            out float spotRange;
-            out vec3 spotDirection;
+            out float4 position;
+            out float2 coord;
 
-            uniform vec3 lightDirection;
+            uniform float3 lightDirection;
             uniform float lightRange;
 
             void DeferredDepthOnlyVS()
             {
-                gl_Position = matViewProject * matModel * glsl_Position;
+                gl_Position = mul(matViewProject, mul(matModel, glsl_Position));
             }
 
             void DeferredSunLightVS()
             {
-                coord = glsl_Texcoord;
+                coord = glsl_Texcoord.xy;
+                gl_Position = position = glsl_Position;
+            }
+
+            void DeferredDirectionalLightVS()
+            {
+                coord = glsl_Texcoord.xy;
+                gl_Position = position = glsl_Position;
+            }
+
+            void DeferredAmbientLightVS()
+            {
+                coord = glsl_Texcoord.xy;
                 gl_Position = position = glsl_Position;
             }
 
             void DeferredSpotLightVS()
             {
-                spotRange = lightRange;
-                spotDirection = lightDirection;
-
-                vec3 vertex = glsl_Position.xyz * lightRange + lightDirection * lightRange;
-                gl_Position = position = matViewProject * matModel * vec4(vertex, 1.0);
+                float3 vertex = glsl_Position.xyz * lightRange + lightDirection * lightRange;
+                gl_Position = position = matViewProject * matModel * float4(vertex, 1.0);
             }
 
             void DeferredPointLightVS()
             {
-                range = lightRange;
-                gl_Position = position = matViewProject * matModel * vec4(glsl_Position.xyz * lightRange, 1.0);
+                gl_Position = position = matViewProject * matModel * float4(glsl_Position.xyz * lightRange, 1.0);
             }
 
             void DeferredShadingVS()
             {
-                coord = glsl_Texcoord;
+                coord = glsl_Texcoord.xy;
                 gl_Position = position = glsl_Position;
             }
         ]]>
     </shader>
     <shader name="fragment">
         <![CDATA[
-            //#extension GL_EXT_texture_array : enable
+            #extension GL_NV_shadow_samplers_cube : enable
 
+            uniform mat4 matView;
+            uniform mat4 matViewInverse;
+            uniform mat4 matProjectInverse;
             uniform mat4 matViewProjectInverse;
 
-            uniform vec3 lightColor;
-            uniform vec3 lightPosition;
-            uniform vec3 lightDirection;
-            uniform vec3 lightAmbient;
+            uniform float3 eyePosition;
+
+            uniform float3 lightColor;
+            uniform float3 lightPosition;
+            uniform float3 lightDirection;
+            uniform float3 lightAttenuation;
+
             uniform float lightIntensity;
+            uniform float lightSpotInnerCone;
+            uniform float lightSpotOuterCone;
 
-            uniform float spotAngle;
-            uniform float spotInnerCone;
-            uniform float spotOuterCone;
-
-            uniform vec3 eyePosition;
-
-            uniform sampler2D texDepth;
-            uniform sampler2D texBackground;
-            uniform sampler2D texLight;
-            uniform sampler2D texDiffuse;
+            uniform sampler2D texMRT0;
             uniform sampler2D texMRT1;
-            uniform sampler2D texLUT;
+            uniform sampler2D texDepth;
+            uniform sampler2D texLight;
+            uniform samplerCube texEnvironmentMap;
 
             uniform float shadowFactor;
-            uniform int  shadowChannel;
             uniform mat4 shadowMatrix;
             uniform sampler2D shadowMap;
-            //uniform sampler2DArray shadowArrayMap;
+            uniform sampler2DArray shadowArrayMap;
 
-            in vec4 position;
-            in vec4 coord;
-            in float range;
-            in float spotRange;
-            in vec3 spotDirection;
-
-            #define PIE 3.1415926
-
-            float shadowLighting(vec3 P)
-            {
-                vec4 proj = shadowMatrix * vec4(P, 1.0);
-                proj.xyz /= proj.w;
-                proj.xyz = proj.xyz * 0.5 + 0.5;
-
-                if (proj.x < 0 || proj.y < 0 ||
-                    proj.x > 1 || proj.y > 1)
-                {
-                    return 1.0;
-                }
-
-                float occluder = texture2D(shadowMap, proj.xy).r;
-                return clamp(exp(shadowFactor * (occluder - proj.z)), 0, 1);
-            }
-
-            /*float shadowLighting(int index, vec3 world)
-            {
-                vec4 proj = shadowMatrix * vec4(world, 1.0);
-                proj.xy /= proj.w;
-                proj.xy = proj.xy * 0.5 + 0.5;
-
-                if (proj.x < 0 || proj.y < 0 ||
-                    proj.x > 1 || proj.y > 1)
-                {
-                    return 1;
-                }
-
-                float occluder = texture2DArray(shadowArrayMap, vec3(proj.xy, index)).r;
-                return clamp(occluder * exp(-shadowFactor * proj.z), 0, 1);
-            }
-
-            float shadowCubeLighting(vec3 world)
-            {
-                vec3 L = lightPosition - world;
-
-                float axis[6];
-                axis[0] =  L.x;
-                axis[1] = -L.x;
-                axis[2] =  L.y;
-                axis[3] = -L.y;
-                axis[4] =  L.z;
-                axis[5] = -L.z;
-
-                int index = 0;
-                for (int i = 1; i < 6; i++)
-                {
-                    if (axis[i] > axis[index])
-                    {
-                        index = i;
-                    }
-                }
-
-                return shadowLighting(index, world);
-            }*/
-
-            vec3 samplePosition(vec2 coord)
-            {
-                float depth  = textureLod(texDepth, coord.xy, 0).r * 2.0 - 1.0;
-                vec4 result = matViewProjectInverse * vec4(coord * 2.0 - 1.0, depth, 1.0);
-                result /= result.w;
-                return result.xyz;
-            }
-
-            vec4 spotLight(vec3 P, vec3 N, float sp, float sc)
-            {
-                vec3 L = normalize(lightPosition - P);
-                float nl = max(dot(N, L), 0);
-                if (nl == 0)
-                    return vec4(0,0,0,0);
-
-                vec3 direction = normalize(P - lightPosition);
-                float spotFactor = dot(direction, spotDirection);
-                float spotLength = distance(P, lightPosition);
-                if (spotFactor < spotAngle || (spotRange * 1.414) < spotLength)
-                    return vec4(0,0,0,0);
-
-                float attenuation = smoothstep(spotOuterCone, spotInnerCone, spotFactor);
-
-                vec3 V = normalize(eyePosition - P);
-                vec3 H = normalize(L + V);
-
-                float lighting = attenuation * BRDF(N, L, V, sp, sc);
-
-                return vec4(lightColor * lighting, brdfLambert(N, L));
-            }
-
-            vec4 pointLight(vec3 world, vec3 N, float sp, float sc)
-            {
-                vec3 L = normalize(lightPosition - world);
-
-                float nl = max(dot(N, L), 0);
-                if (nl == 0)
-                    return vec4(0,0,0,0);
-
-                float distance = distance(lightPosition, world);
-                float attenuation = max(1 - (distance / range), 0);
-
-                vec3 V = normalize(eyePosition - world);
-                vec3 H = normalize(L + V);
-
-                float lighting = attenuation * BRDF(N, L, V, sp, sc);
-
-                return vec4(lightColor * lighting, 0.0);
-            }
-
-            void DeferredDepthOnlyPS()
-            {
-            }
+            in float4 position;
+            in float2 coord;
 
             void DeferredSunLightPS()
             {
-                float4 MRT1 = texture(texMRT1, coord.xy);
+                float4 MRT1 = sampleCoord(texMRT1, coord);
+                float4 MRT0 = sampleCoord(texMRT0, coord);
 
                 float shininess = restoreShininess(MRT1);
-                float specular = restoreSpecular(MRT1);
+                float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
-                float3 P = samplePosition(coord.xy);
+                float3 P = restorePosition(texDepth, matProjectInverse, coord);
 
-                float3 V = normalize(eyePosition - P.xyz);
+                float3 V = normalize(eyePosition - P);
                 float3 L = normalize(lightDirection);
-                float3 lighting = lightColor * BRDF(N, L, V, shininess, specular);
 
-                glsl_FragColor0 = float4(lighting, 1.0);
+                float4 lighting;
+                lighting.rgb = lightColor * brdfLambert(N, L);
+                lighting.a = brdfSpecular(N, L, V, shininess, specular);
+
+                glsl_FragColor0 = lighting;
             }
 
             void DeferredSunLightShadowPS()
             {
-                float4 MRT1 = texture(texMRT1, coord.xy);
+                float4 MRT1 = sampleCoord(texMRT1, coord);
+                float4 MRT0 = sampleCoord(texMRT0, coord);
 
                 float shininess = restoreShininess(MRT1);
-                float specular = restoreSpecular(MRT1);
+                float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
-                float3 P = samplePosition(coord.xy);
+                float3 P = restorePosition(texDepth, matProjectInverse, coord);
+                float3 V = normalize(eyePosition - P);
+                float3 L = normalize(lightDirection);
 
-                vec3 V = normalize(eyePosition - P.xyz);
-                vec3 L = normalize(lightDirection);
-                vec3 lighting = lightColor * BRDF(N, L, V, shininess, specular) * shadowLighting(P.xyz);
+                float4 world = mul(matViewInverse, float4(P, 1.0));
+                world /= world.w;
 
-                glsl_FragColor0 = vec4(lighting, 1.0);
+                float4 lighting;
+                lighting.rgb = lightColor * brdfLambert(N, L);
+                lighting.a = brdfSpecular(N, L, V, shininess, specular);
+                lighting *= shadowLighting(shadowMap, shadowMatrix, shadowFactor, world.xyz);
+
+                glsl_FragColor0 = lighting;
+            }
+
+            void DeferredDirectionalLightPS()
+            {
+                float4 MRT1 = sampleCoord(texMRT1, coord);
+                float4 MRT0 = sampleCoord(texMRT0, coord);
+
+                float shininess = restoreShininess(MRT1);
+                float specular = restoreSpecular(MRT0);
+
+                float3 N = restoreNormal(MRT1);
+                float3 P = restorePosition(texDepth, matProjectInverse, coord);
+
+                float3 V = normalize(eyePosition - P);
+                float3 L = normalize(lightDirection);
+
+                float4 lighting;
+                lighting.rgb = lightColor * brdfLambert(N, L);
+                lighting.a = brdfSpecular(N, L, V, shininess, specular);
+
+                glsl_FragColor0 = lighting;
+            }
+
+            void DeferredDirectionalLightShadowPS()
+            {
+                float4 MRT1 = sampleCoord(texMRT1, coord);
+                float4 MRT0 = sampleCoord(texMRT0, coord);
+
+                float shininess = restoreShininess(MRT1);
+                float specular = restoreSpecular(MRT0);
+
+                float3 N = restoreNormal(MRT1);
+                float3 P = restorePosition(texDepth, matProjectInverse, coord);
+                float3 V = normalize(eyePosition - P);
+                float3 L = normalize(lightDirection);
+
+                float4 world = matViewInverse * float4(P, 1.0);
+                world = world / world.w;
+
+                float4 lighting;
+                lighting.rgb = lightColor * brdfLambert(N, L);
+                lighting.a = brdfSpecular(N, L, V, shininess, specular);
+                lighting *= shadowLighting(shadowMap, shadowMatrix, shadowFactor, world.xyz);
+
+                glsl_FragColor0 = lighting;
             }
 
             void DeferredSpotLightPS()
             {
-                float4 MRT1 = texture(texMRT1, coord.xy);
+                float4 MRT1 = sampleCoord(texMRT1, coord);
+                float4 MRT0 = sampleCoord(texMRT0, coord);
 
                 float shininess = restoreShininess(MRT1);
-                float specular = restoreSpecular(MRT1);
+                float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
-                float3 P = samplePosition(coord.xy);
+                float3 P = restorePosition(texDepth, matProjectInverse, coord);
+                float3 V = normalize(eyePosition - P);
+                float3 L = normalize(lightPosition - P);
 
-                glsl_FragColor0 = spotLight(P.xyz, N, shininess, specular);
+                float4 lighting;
+                lighting.rgb = lightColor * brdfLambert(N, L);
+                lighting.a = brdfSpecular(N, L, V, shininess, specular);
+                lighting *= spotLighting(lightPosition, P, lightDirection, lightSpotInnerCone, lightSpotOuterCone, lightAttenuation);
+
+                glsl_FragColor0 = lighting;
             }
 
             void DeferredPointLightPS()
             {
-                float4 MRT1 = texture(texMRT1, coord.xy);
+                float4 MRT1 = sampleCoord(texMRT1, coord);
+                float4 MRT0 = sampleCoord(texMRT0, coord);
 
                 float shininess = restoreShininess(MRT1);
-                float specular = restoreSpecular(MRT1);
+                float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
-                float3 P = samplePosition(coord.xy);
+                float3 P = restorePosition(texDepth, matProjectInverse, coord);
+                float3 V = normalize(eyePosition - P);
+                float3 L = normalize(lightPosition - P);
 
-                glsl_FragColor0 = pointLight(P.xyz, N, shininess, specular);
+                float4 lighting;
+                lighting.rgb = lightColor * brdfLambert(N, L);
+                lighting.a = brdfSpecular(N, L, V, shininess, specular);
+                lighting *= pointLighting(lightPosition, P, lightAttenuation);
+
+                glsl_FragColor0 = lighting;
+            }
+
+            void DeferredAmbientLightPS()
+            {
+                float4 MRT1 = sampleCoord(texMRT1, coord);
+                float4 MRT0 = sampleCoord(texMRT0, coord);
+
+                float shininess = restoreShininess(MRT1);
+                float specular = restoreSpecular(MRT0);
+
+                float3 N = mat3(matViewInverse) * restoreNormal(MRT1);
+                float3 P = restorePosition(texDepth, matViewProjectInverse, coord);
+                float3 V = normalize(eyePosition - P);
+                float3 R = reflect(V, N);
+
+                float3 prefilteredDiffuseColor = textureCube(texEnvironmentMap, N).rgb;
+                float3 prefilteredSpecularolor = textureCube(texEnvironmentMap, R).rgb;
+
+                float4 lighting;
+                lighting.rgb = lightColor;
+                //lighting.rgb = brdfEnvironmentDiffuse(prefilteredDiffuseColor);
+                //lighting.rgb = brdfEnvironmentSpecular(prefilteredSpecularolor, N, V, shininess, specular);
+                lighting.a = 0.0;
+
+                glsl_FragColor0 = lighting;
             }
 
             void DeferredShadingOpaquesPS()
             {
-                vec4 diffuse = texelFetch(texDiffuse, ivec2(gl_FragCoord.xy), 0);
-                vec4 light = texelFetch(texLight, ivec2(gl_FragCoord.xy), 0);
+                float4 MRT0 = sampleCoord(texMRT0, coord);
 
-                vec3 color = diffuse.rgb * (lightAmbient + light.rgb);
+                float3 color = restoreRGB(texMRT0, coord);
+                float4 light = sampleCoord(texLight, coord);
 
-                glsl_FragColor0 = vec4(color, diffuse.a);
+                color = color * light.rgb + light.rgb * light.a;
+
+                glsl_FragColor0 = float4(color, 1.0);
             }
 
             void DeferredShadingTransparentsPS()
             {
-                vec4 diffuse = texelFetch(texDiffuse, ivec2(gl_FragCoord.xy), 0);
-                vec4 light = texelFetch(texLight, ivec2(gl_FragCoord.xy), 0);
+                float4 MRT0 = sampleCoord(texMRT0, coord);
 
-                vec3 color = diffuse.rgb * (lightAmbient + light.rgb);
+                float3 color = restoreRGB(texMRT0, coord);
+                float4 light = sampleCoord(texLight, coord);
 
-                glsl_FragColor0 = vec4(color, diffuse.a);
+                color = color * light.rgb + light.rgb * light.a;
+
+                glsl_FragColor0 = float4(color, restoreAlpha(MRT0));
             }
         ]]>
     </shader>
     <technique name="custom">
         <pass name="DeferredDepthOnly">
             <state name="vertex" value="DeferredDepthOnlyVS"/>
-            <state name="fragment" value="DeferredDepthOnlyPS"/>
-        </pass>
-        <pass name="DeferredPointLight">
-            <state name="vertex" value="DeferredPointLightVS"/>
-            <state name="fragment" value="DeferredPointLightPS"/>
-
-            <state name="depthtest" value="false"/>
-            <state name="depthwrite" value="false"/>
-
-            <state name="blend" value="true"/>
-            <state name="blendsrc" value="one"/>
-            <state name="blenddst" value="one"/>
-
-            <state name="cullmode" value="none"/>
-
-            <state name="stencilTest" value="true"/>
-            <state name="stencilFunc" value="equal"/>
         </pass>
         <pass name="DeferredSunLight">
             <state name="vertex" value="DeferredSunLightVS"/>
@@ -355,6 +331,54 @@
             <state name="stencilTest" value="true"/>
             <state name="stencilFunc" value="equal"/>
         </pass>
+        <pass name="DeferredDirectionalLight">
+            <state name="vertex" value="DeferredDirectionalLightVS"/>
+            <state name="fragment" value="DeferredDirectionalLightPS"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="one"/>
+            <state name="blenddst" value="one"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="equal"/>
+        </pass>
+        <pass name="DeferredDirectionalLightShadow">
+            <state name="vertex" value="DeferredDirectionalLightVS"/>
+            <state name="fragment" value="DeferredDirectionalLightShadowPS"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="one"/>
+            <state name="blenddst" value="one"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="equal"/>
+        </pass>
+        <pass name="DeferredPointLight">
+            <state name="vertex" value="DeferredPointLightVS"/>
+            <state name="fragment" value="DeferredPointLightPS"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="one"/>
+            <state name="blenddst" value="one"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="equal"/>
+        </pass>
         <pass name="DeferredSpotLight">
             <state name="vertex" value="DeferredSpotLightVS"/>
             <state name="fragment" value="DeferredSpotLightPS"/>
@@ -365,6 +389,24 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="equal"/>
+        </pass>
+        <pass name="DeferredAmbientLight">
+            <state name="vertex" value="DeferredAmbientLightVS"/>
+            <state name="fragment" value="DeferredAmbientLightPS"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="one"/>
+            <state name="blenddst" value="one"/>
+
+            <state name="cullmode" value="none"/>
 
             <state name="stencilTest" value="true"/>
             <state name="stencilFunc" value="equal"/>

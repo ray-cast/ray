@@ -48,7 +48,7 @@ public:
 	GameServer() noexcept;
 	~GameServer() noexcept;
 
-	bool open() noexcept;
+	bool open() except;
 	void close() noexcept;
 
 	bool isQuitRequest() const noexcept;
@@ -60,20 +60,19 @@ public:
 	TimerPtr getTimer() const noexcept;
 
 	bool openScene(const std::string& sceneName) except;
+	bool addScene(GameScenePtr scene) except;
 	void closeScene(const std::string& sceneName) noexcept;
-	bool addScene(GameScenePtr scene) noexcept;
 	void removeScene(GameScenePtr scene) noexcept;
 	GameScenePtr findScene(const std::string& sceneName) noexcept;
 	const GameScenes& getScenes() const noexcept;
 
 	void addFeature(GameFeaturePtr features) except;
 	void removeFeature(GameFeaturePtr features) noexcept;
-	GameFeaturePtr getFeature(const std::string& feature) const noexcept;
+	GameFeaturePtr getFeature(RTTI::HashCode rtti) const noexcept;
+
 	template<typename T>
 	std::shared_ptr<T> getFeature() const noexcept
-	{
-		return std::dynamic_pointer_cast<T>(this->getFeature(typeid(T).name()));
-	}
+		{ return std::dynamic_pointer_cast<T>(this->getFeature(T::getType())); }
 
 	const GameFeatures& getGameFeatures() const noexcept;
 
@@ -83,17 +82,6 @@ public:
 	void postMessage(const GameMessage& message) except;
 
 	void update() except;
-
-private:
-	void onFrameBegin() except;
-	void onFrame() except;
-	void onFrameEnd() except;
-
-private:
-
-	bool load(iarchive& reader, GameScenePtr scene) except;
-
-	GameObjectPtr instanceObject(iarchive& reader, GameScenePtr scene) except;
 
 private:
 	friend GameApplication;

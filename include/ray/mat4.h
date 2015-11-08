@@ -154,7 +154,7 @@ public:
 	T* data() { return (T*)&a1; }
 	const T* data() const { return (const T*)&a1; }
 
-	void set(T mt00, T mt01, T mt02, T mt03,
+	Matrix4x4t<T>& set(T mt00, T mt01, T mt02, T mt03,
 		T mt10, T mt11, T mt12, T mt13,
 		T mt20, T mt21, T mt22, T mt23,
 		T mt30, T mt31, T mt32, T mt33)
@@ -175,32 +175,36 @@ public:
 		d2 = static_cast<T>(mt31);
 		d3 = static_cast<T>(mt32);
 		d4 = static_cast<T>(mt33);
+		return *this;
 	}
 
-	void set(const Matrix3x3t<T>& m)
+	Matrix4x4t<T>& set(const Matrix3x3t<T>& m)
 	{
 		a1 = m.a1; a2 = m.a2; a3 = m.a3; a4 = 0.0;
 		b1 = m.b1; b2 = m.b2; b3 = m.b3; b4 = 0.0;
 		c1 = m.c1; c2 = m.c2; c3 = m.c3; c4 = 0.0;
-		d1 = 0.0; d2 = 0.0; d3 = 0.0; d4 = 1.0;
+		return *this;
 	}
 
-	void set(int line, const Vector3t<T>& v)
+	Matrix4x4t<T>& set(int line, const Vector3t<T>& v)
 	{
 		((Vector3t<T>&)(*(*this)[line])) = v;
+		return *this;
 	}
 
-	void set(std::size_t line, const Vector3t<T>& v)
+	Matrix4x4t<T>& set(std::size_t line, const Vector3t<T>& v)
 	{
 		((Vector3t<T>&)(*(*this)[line])) = v;
+		return *this;
 	}
 
-	void loadIdentity()
+	Matrix4x4t<T>& loadIdentity()
 	{
 		set(1, 0, 0, 0,
 			0, 1, 0, 0,
 			0, 0, 1, 0,
 			0, 0, 0, 1);
+		return *this;
 	}
 
 	Matrix4x4t<T>& transpose()
@@ -225,7 +229,7 @@ public:
 			- a4*b2*c3*d1 + a4*b2*c1*d3 - a4*b3*c1*d2 + a4*b3*c2*d1;
 	}
 
-	Matrix4x4t<T> inverse() const
+	Matrix4x4t<T>& inverse() noexcept
 	{
 		Matrix4x4t<T> m;
 
@@ -263,7 +267,8 @@ public:
 		m.d3 = -invdet * (a1 * (b2 * d3 - b3 * d2) + a2 * (b3 * d1 - b1 * d3) + a3 * (b1 * d2 - b2 * d1));
 		m.d4 = invdet * (a1 * (b2 * c3 - b3 * c2) + a2 * (b3 * c1 - b1 * c3) + a3 * (b1 * c2 - b2 * c1));
 
-		return m;
+		*this = m;
+		return *this;
 	}
 
 	bool isOnlyTranslate() const
@@ -394,9 +399,7 @@ public:
 	Matrix4x4t<T>& applyMatrix(const Matrix4x4t<T>& m)
 	{
 		Matrix4x4t matrix(*this);
-
 		multiplyMatrices(matrix, m);
-
 		return *this;
 	}
 	Matrix4x4t<T>& multiplyMatrices(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2)
@@ -519,13 +522,13 @@ public:
 	void scale(T x, T y, T z)
 	{
 		a1 *= x;
-		a2 *= x;
-		a3 *= x;
-		b1 *= y;
+		b1 *= x;
+		c1 *= x;
+		a2 *= y;
 		b2 *= y;
-		b3 *= y;
-		c1 *= z;
-		c2 *= z;
+		c2 *= y;
+		a3 *= z;
+		b3 *= z;
 		c3 *= z;
 	}
 
@@ -542,41 +545,77 @@ public:
 		return *this;
 	}
 
-	void rotate(T angle, const Vector3t<T>& axis)
+	Matrix4x4t<T>& rotate(T angle, const Vector3t<T>& axis)
 	{
 		rotate(angle, axis.x, axis.y, axis.z);
+		return *this;
 	}
 
-	void rotate(T angle, T x, T y, T z)
+	Matrix4x4t<T>& rotate(T angle, T x, T y, T z)
 	{
 		Matrix4x4t<T> m;
 		m.makeRotate(angle, x, y, z);
 		applyMatrix(m);
+		return *this;
+	}
+
+	Matrix4x4t<T>& rotate(const Quaterniont<T>& q)
+	{
+		Matrix4x4t<T> m;
+		m.makeRotate(q);
+		applyMatrix(m);
+		return *this;
 	}
 
 	Matrix4x4t<T>& makeRotate(const Quaterniont<T>& q)
 	{
 		a1 = 1.0f - 2.0f * (q.y * q.y + q.z * q.z);
-		a2 = 2.0f * (q.x * q.y - q.z * q.w);
-		a3 = 2.0f * (q.x * q.z + q.y * q.w);
-		a4 = 0;
+		b1 = 2.0f * (q.x * q.y - q.z * q.w);
+		c1 = 2.0f * (q.x * q.z + q.y * q.w);
+		d1 = 0;
 
-		b1 = 2.0f * (q.x * q.y + q.z * q.w);
+		a2 = 2.0f * (q.x * q.y + q.z * q.w);
 		b2 = 1.0f - 2.0f * (q.x * q.x + q.z * q.z);
-		b3 = 2.0f * (q.y * q.z - q.x * q.w);
-		b4 = 0;
+		c2 = 2.0f * (q.y * q.z - q.x * q.w);
+		d2 = 0;
 
-		c1 = 2.0f * (q.x * q.z - q.y * q.w);
-		c2 = 2.0f * (q.y * q.z + q.x * q.w);
+		a3 = 2.0f * (q.x * q.z - q.y * q.w);
+		b3 = 2.0f * (q.y * q.z + q.x * q.w);
 		c3 = 1.0f - 2.0f * (q.x * q.x + q.y * q.y);
+		d3 = 0;
+
+		a4 = 0;
+		b4 = 0;
 		c4 = 0;
+		d4 = 1;
+
+		return *this;
+	}
+
+	void makeRotate(const EulerAnglest<T>& orientation)
+	{
+		T sh, ch, sp, cp, sb, cb;
+
+		sinCos(&sh, &ch, orientation.heading);
+		sinCos(&sp, &cp, orientation.pitch);
+		sinCos(&sb, &cb, orientation.bank);
+
+		a1 = ch * cb + sh * sp * sb;
+		a2 = -ch * sb + sh * sp * cb;
+		a3 = sh * cp;
+
+		b1 = sb * cp;
+		b2 = cb * cp;
+		b3 = -sp;
+
+		c1 = -sh * cb + ch * sp * sb;
+		c2 = sb * sh + ch * sp * cb;
+		c3 = ch * cp;
 
 		d1 = 0;
 		d2 = 0;
 		d3 = 0;
 		d4 = 1;
-
-		return *this;
 	}
 
 	Matrix4x4t<T>& makeRotate(const Vector3t<T>& axis)
@@ -841,8 +880,8 @@ public:
 	{
 		T A = (left + right) / (left - right);
 		T B = (bottom + top) / (bottom - top);
-		T C = (fabs(zFar) > DBL_MAX) ? 1.0f : zFar / (zFar - zNear);
-		T D = (fabs(zFar) > DBL_MAX) ? zNear : -zNear * zFar / (zFar - zNear);
+		T C = (fabs(zFar) > DBL_MAX) ? 1.0f : (zFar + zNear) / (zFar - zNear);
+		T D = (fabs(zFar) > DBL_MAX) ? zNear : 2.0 * zNear * zFar / (zNear - zFar);
 		T cx = 2.0f * zNear / (right - left);
 		T cy = 2.0f * zNear / (top - bottom);
 
@@ -858,8 +897,8 @@ public:
 	{
 		T A = (right + left) / (right - left);
 		T B = (top + bottom) / (top - bottom);
-		T C = (fabs(zFar) > DBL_MAX) ? 1.0f : -(zFar + zNear) / (zFar - zNear);
-		T D = (fabs(zFar) > DBL_MAX) ? zNear : -2.0 * zNear * zFar / (zFar - zNear);
+		T C = (fabs(zFar) > DBL_MAX) ? 1.0f : (zFar + zNear) / (zFar - zNear);
+		T D = (fabs(zFar) > DBL_MAX) ? zNear : 2.0 * zNear * zFar / (zFar - zNear);
 		T cx = 2.0f * zNear / (right - left);
 		T cy = 2.0f * zNear / (top - bottom);
 
@@ -1043,27 +1082,6 @@ public:
 			A, B, 0.5, 1.0);
 
 		return *this;
-	}
-
-	void setup(const EulerAnglest<T>& orientation)
-	{
-		T sh, ch, sp, cp, sb, cb;
-
-		sinCos(&sh, &ch, orientation.heading);
-		sinCos(&sp, &cp, orientation.pitch);
-		sinCos(&sb, &cb, orientation.bank);
-
-		a1 = ch * cb + sh * sp * sb;
-		a2 = -ch * sb + sh * sp * cb;
-		a3 = sh * cp;
-
-		b1 = sb * cp;
-		b2 = cb * cp;
-		b3 = -sp;
-
-		c1 = -sh * cb + ch * sp * sb;
-		c2 = sb * sh + ch * sp * cb;
-		c3 = ch * cp;
 	}
 
 	void fromInertialToObjectQuaterniont(const Quaterniont<T>& q)

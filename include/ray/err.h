@@ -39,8 +39,6 @@
 
 #include <ray/platform.h>
 #include <ray/string.h>
-#include <ray/memory.h>
-#include <vector>
 
 _NAME_BEGIN
 

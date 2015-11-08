@@ -44,55 +44,55 @@ _NAME_BEGIN
 class OGLShader final : public Shader
 {
 public:
-    OGLShader() noexcept;
-    ~OGLShader() noexcept;
+	OGLShader() noexcept;
+	~OGLShader() noexcept;
 
-    virtual bool setup() except;
-    virtual void close() noexcept;
+	virtual bool setup() except;
+	virtual void close() noexcept;
 
-    virtual std::size_t getInstanceID() const noexcept;
+	virtual std::size_t getInstanceID() const noexcept;
 
 private:
 
-    GLuint _instance;
+	GLuint _instance;
 };
 
 class OGLShaderObject final : public ShaderObject
 {
 public:
-    OGLShaderObject() noexcept;
-    ~OGLShaderObject() noexcept;
+	OGLShaderObject() noexcept;
+	~OGLShaderObject() noexcept;
 
-    virtual bool setup() except;
-    virtual void close() noexcept;
+	virtual bool setup() except;
+	virtual void close() noexcept;
 
-    virtual void addShader(ShaderPtr shader) noexcept;
-    virtual void removeShader(ShaderPtr shader) noexcept;
+	virtual void addShader(ShaderPtr shader) noexcept;
+	virtual void removeShader(ShaderPtr shader) noexcept;
 
-    virtual Shaders& getShaders() noexcept;
+	virtual Shaders& getShaders() noexcept;
 
-    virtual std::size_t getInstanceID() noexcept;
+	virtual std::size_t getInstanceID() noexcept;
 
-    virtual ShaderAttributes&  getActiveAttributes() noexcept;
-    virtual ShaderUniforms&    getActiveUniforms() noexcept;
-    virtual ShaderSubroutines& getActiveSubroutines() noexcept;
-
-private:
-
-    void _initActiveAttribute() noexcept;
-    void _initActiveUniform() noexcept;
-    void _initActiveUniformBlock() noexcept;
-    void _initActiveSubroutine() noexcept;
+	virtual ShaderAttributes&  getActiveAttributes() noexcept;
+	virtual ShaderUniforms&    getActiveUniforms() noexcept;
+	virtual ShaderSubroutines& getActiveSubroutines() noexcept;
 
 private:
 
-    GLuint _program;
+	void _initActiveAttribute() noexcept;
+	void _initActiveUniform() noexcept;
+	void _initActiveUniformBlock() noexcept;
+	void _initActiveSubroutine() noexcept;
 
-    Shaders _shaders;
+private:
 
-    ShaderUniforms      _activeUniforms;
-    ShaderAttributes    _activeAttributes;
-    ShaderSubroutines   _activeSubroutines;
+	GLuint _program;
+
+	Shaders _shaders;
+
+	ShaderUniforms    _activeUniforms;
+	ShaderAttributes  _activeAttributes;
+	ShaderSubroutines _activeSubroutines;
 };
 
 _NAME_END

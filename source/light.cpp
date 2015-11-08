@@ -35,37 +35,31 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/light.h>
+#include <ray/camera.h>
 #include <ray/render_texture.h>
 #include <ray/render_scene.h>
 #include <ray/render_factory.h>
 
 _NAME_BEGIN
 
-LightListener::LightListener() noexcept
-{
-}
-
-LightListener::~LightListener() noexcept
-{
-}
-
 Light::Light() noexcept
 	: _lightType(LightType::LT_POINT)
-	, _lightListener(nullptr)
 	, _lightRange(1.0f)
 	, _lightIntensity(1.0f)
 	, _lightColor(Vector3(1.0, 1.0, 1.0))
-	, _lightDirection(-Vector3::UnitY)
-	, _spotExponent(1.0f)
-	, _spotAngle(cos(M_PI_3))
+	, _lightAttenuation(1, 1, 1)
 	, _spotInnerCone(cos(degrees(20.0f)))
 	, _spotOuterCone(cos(degrees(40.0f)))
 	, _shadow(false)
+	, _shadowUpdated(false)
 	, _shadowSize(512)
-	, _shadowTranslate(Vector3::Zero)
+	, _shadowUpVector(Vector3::UnitY)
 	, _shadowLookAt(Vector3::Zero)
-	, _renderScene(nullptr)
 {
+	_shadowCamera = std::make_shared<Camera>();
+	_shadowCamera->setRenderListener(this);
+	_shadowCamera->setCameraOrder(CameraOrder::CO_SHADOW);
+	_shadowCamera->setCameraRender(CameraRender::CR_RENDER_TO_TEXTURE);
 }
 
 Light::~Light() noexcept
@@ -73,31 +67,9 @@ Light::~Light() noexcept
 }
 
 void
-Light::setup() noexcept
-{
-	if (this->getShadow())
-	{
-		this->setupShadow(_shadowSize);
-	}
-}
-
-void
-Light::close() noexcept
-{
-	this->discardShadow();
-	this->setRenderScene(nullptr);
-}
-
-void
 Light::setLightType(LightType type) noexcept
 {
 	_lightType = type;
-}
-
-void
-Light::setLightListener(LightListener* listener) noexcept
-{
-	_lightListener = listener;
 }
 
 void
@@ -119,18 +91,6 @@ Light::setLightColor(const Vector3& color) noexcept
 }
 
 void
-Light::setExponent(float value) noexcept
-{
-	_spotExponent = value;
-}
-
-void
-Light::setSpotAngle(float value) noexcept
-{
-	_spotAngle = value;
-}
-
-void
 Light::setSpotInnerCone(float value) noexcept
 {
 	_spotInnerCone = value;
@@ -146,12 +106,6 @@ LightType
 Light::getLightType() const noexcept
 {
 	return _lightType;
-}
-
-LightListener*
-Light::getLightListener() const noexcept
-{
-	return _lightListener;
 }
 
 float
@@ -172,29 +126,42 @@ Light::getLightColor() const noexcept
 	return _lightColor;
 }
 
-void
-Light::setLightDirection(const Vector3& direction) noexcept
+void 
+Light::setLightUp(const Vector3& up) noexcept
 {
-	_lightDirection = direction;
-	_updateShadow();
+	_shadowUpVector = up;
+	_shadowUpdated = false;
+}
+
+void
+Light::setLightLookat(const Vector3& lookat) noexcept
+{
+	_shadowLookAt = lookat;
+	_shadowUpdated = false;
+}
+
+void
+Light::setLightAttenuation(const Vector3& attenuation) noexcept
+{
+	_lightAttenuation = attenuation;
 }
 
 const Vector3&
-Light::getLightDirection() const noexcept
+Light::getLightUp() const noexcept
 {
-	return _lightDirection;
+	return _shadowUpVector;
 }
 
-float
-Light::getExponent() const noexcept
+const Vector3&
+Light::getLightLookat() const noexcept
 {
-	return _spotExponent;
+	return _shadowLookAt;
 }
 
-float
-Light::getSpotAngle() const noexcept
+const Vector3&
+Light::getLightAttenuation() const noexcept
 {
-	return _spotAngle;
+	return _lightAttenuation;
 }
 
 float
@@ -212,7 +179,15 @@ Light::getSpotOuterCone() const noexcept
 void
 Light::setShadow(bool shadow) noexcept
 {
-	_shadow = shadow;
+	if (_shadow != shadow)
+	{
+		if (shadow)
+			_shadowCamera->setRenderScene(_renderScene.lock());
+		else
+			_shadowCamera->setRenderScene(nullptr);
+
+		_shadow = shadow;
+	}
 }
 
 bool
@@ -222,75 +197,108 @@ Light::getShadow() const noexcept
 }
 
 void
-Light::setupShadow(std::size_t size) noexcept
-{
-	assert(!_shadowCamera);
-
-	auto depthTexture = RenderFactory::createRenderTarget();
-	depthTexture->setup(size, size, TextureDim::DIM_2D, PixelFormat::DEPTH_COMPONENT32);
-	depthTexture->setClearFlags(ClearFlags::CLEAR_ALL);
-
-	_shadowCamera = std::make_shared<Camera>();
-	_shadowCamera->setCameraOrder(CameraOrder::CO_SHADOW);
-	_shadowCamera->setCameraRender(CameraRender::CR_RENDER_TO_TEXTURE);
-	_shadowCamera->setViewport(Viewport(0, 0, size, size));
-	_shadowCamera->setRenderListener(this);
-	_shadowCamera->setRenderTarget(depthTexture);
-	_shadowCamera->setRenderScene(_renderScene->shared_from_this());
-	_shadowCamera->makePerspective(90.0, 1.0, 0.1, _lightRange);
-
-	_updateShadow();
-}
-
-void
-Light::discardShadow() noexcept
-{
-	_shadowCamera = nullptr;
-}
-
-void
 Light::setTransform(const Matrix4x4& m) noexcept
 {
 	RenderObject::setTransform(m);
-	_updateShadow();
+	_shadowUpdated = false;
 }
 
 CameraPtr
 Light::getShadowCamera() const noexcept
 {
+	_updateShadow();
 	return _shadowCamera;
 }
 
 TexturePtr
 Light::getShadowMap() const noexcept
 {
-	return _shadowCamera->getRenderTarget()->getResolveTexture();
+	_updateShadow();
+	return _shadowCamera->getRenderTexture()->getResolveTexture();
 }
 
 void
 Light::setRenderScene(RenderScenePtr scene) noexcept
 {
-	if (_renderScene)
+	auto renderScene = _renderScene.lock();
+	if (renderScene)
 	{
-		_renderScene->removeLight(this);
-		if (_shadowCamera)
+		if (this->getShadow())
 			_shadowCamera->setRenderScene(nullptr);
+
+		renderScene->removeLight(std::dynamic_pointer_cast<Light>(this->shared_from_this()));
 	}
 
-	_renderScene = scene.get();
+	_renderScene = scene;
 
-	if (_renderScene)
+	if (scene)
 	{
-		_renderScene->addLight(this);
-		if (_shadowCamera)
+		if (this->getShadow())
 			_shadowCamera->setRenderScene(scene);
+
+		scene->addLight(std::dynamic_pointer_cast<Light>(this->shared_from_this()));
 	}
 }
 
 RenderScenePtr
 Light::getRenderScene() const noexcept
 {
-	return _renderScene->shared_from_this();
+	return _renderScene.lock();
+}
+
+void 
+Light::_updateShadow() const noexcept
+{
+	if (_shadowUpdated)
+		return;
+
+	if (this->getShadow())
+	{
+		if (!_shadowCamera->getRenderTexture())
+		{
+			auto depthTexture = RenderFactory::createRenderTexture();
+			depthTexture->setup(_shadowSize, _shadowSize, TextureDim::DIM_2D, PixelFormat::DEPTH_COMPONENT32);
+
+			_shadowCamera->setRenderTexture(depthTexture);
+		}
+	}
+
+	_shadowCamera->setViewport(Viewport(0, 0, _shadowSize, _shadowSize));
+
+	_shadowCamera->makeLookAt(this->getTransform().getTranslate(), _shadowLookAt, _shadowUpVector);
+	_shadowCamera->makePerspective(90.0, 0.1, _lightRange);
+
+	_shadowUpdated = true;
+
+	/*if (_lightType == LT_SUN)
+	{
+	auto camera = *_renderScene->getCameraList().rbegin();
+
+	auto translate = _shadowTranslate + camera->getTranslate();
+	translate.y = _shadowTranslate.y;
+
+	auto lookat = _shadowLookAt + camera->getTranslate();
+	lookat.y = _shadowLookAt.y;
+
+	_shadowCamera->makeLookAt(translate, lookat, Vector3::UnitZ);
+	_shadowCamera->makeViewProject();
+	}*/
+}
+
+void 
+Light::onWillRenderObject() noexcept
+{
+	auto listener = this->getRenderListener();
+	if (listener)
+		listener->onWillRenderObject();
+}
+
+void 
+Light::onRenderObject() noexcept
+{
+	auto listener = this->getRenderListener();
+	if (listener)
+		listener->onRenderObject();
 }
 
 LightPtr
@@ -302,54 +310,12 @@ Light::clone() const noexcept
 	light->setIntensity(this->getIntensity());
 	light->setRange(this->getRange());
 	light->setCastShadow(this->getCastShadow());
-	light->setSpotAngle(this->getSpotAngle());
 	light->setSpotInnerCone(this->getSpotInnerCone());
 	light->setSpotOuterCone(this->getSpotOuterCone());
-	light->setExponent(this->getExponent());
 	light->setTransform(this->getTransform());
 	light->setBoundingBox(this->getBoundingBox());
 
 	return light;
-}
-
-void
-Light::_updateShadow() noexcept
-{
-	if (_shadowCamera)
-	{
-		auto direction = -this->getLightDirection();
-		auto translate = this->getTransform().getTranslate();
-		auto lookat = direction * _lightRange + translate;
-
-		_shadowTranslate = translate;
-		_shadowLookAt = lookat;
-
-		_shadowCamera->makeLookAt(translate, _shadowLookAt, Vector3::UnitZ);
-		_shadowCamera->makeViewProject();
-	}
-}
-
-void
-Light::onWillRenderObject() noexcept
-{
-	/*if (_lightType == LT_SUN)
-	{
-		auto camera = *_renderScene->getCameraList().rbegin();
-
-		auto translate = _shadowTranslate + camera->getTranslate();
-		translate.y = _shadowTranslate.y;
-
-		auto lookat = _shadowLookAt + camera->getTranslate();
-		lookat.y = _shadowLookAt.y;
-
-		_shadowCamera->makeLookAt(translate, lookat, Vector3::UnitZ);
-		_shadowCamera->makeViewProject();
-	}*/
-}
-
-void
-Light::onRenderObject() noexcept
-{
 }
 
 _NAME_END

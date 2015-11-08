@@ -39,9 +39,9 @@
 _NAME_BEGIN
 
 Terrain::Terrain() noexcept
-    : _radiusRender(10)
-    , _radiusDestroy(15)
-    , _radiusCreate(15)
+	: _radiusRender(10)
+	, _radiusDestroy(15)
+	, _radiusCreate(15)
 {
 }
 
@@ -52,42 +52,42 @@ Terrain::~Terrain() noexcept
 void
 Terrain::addObServer(TerrainObserverPtr observer) noexcept
 {
-    auto it = std::find(_observer.begin(), _observer.end(), observer);
-    if (it == _observer.end())
-    {
-        _observer.push_back(observer);
-    }
+	auto it = std::find(_observer.begin(), _observer.end(), observer);
+	if (it == _observer.end())
+	{
+		_observer.push_back(observer);
+	}
 }
 
 void
 Terrain::removeObServer(TerrainObserverPtr observer) noexcept
 {
-    auto it = std::find(_observer.begin(), _observer.end(), observer);
-    if (it != _observer.end())
-    {
-        _observer.erase(it);
-    }
+	auto it = std::find(_observer.begin(), _observer.end(), observer);
+	if (it != _observer.end())
+	{
+		_observer.erase(it);
+	}
 }
 
 TerrainChunkPtr
 Terrain::find(int p, int q)
 {
-    for (auto& it : _chunks)
-    {
-        auto chunk = it;
-        if (chunk->getX() == p == chunk->getY() == q)
-        {
-            return chunk;
-        }
-    }
+	for (auto& it : _chunks)
+	{
+		auto chunk = it;
+		if (chunk->getX() == p == chunk->getY() == q)
+		{
+			return chunk;
+		}
+	}
 
-    return nullptr;
+	return nullptr;
 }
 
 int
 Terrain::convChunked(float x)
 {
-    return floorf(roundf(x) / _chunkSize);
+	return floorf(roundf(x) / _chunkSize);
 }
 
 void
@@ -98,68 +98,68 @@ Terrain::createChunks()
 void
 Terrain::destroyChunks()
 {
-    auto chunk = _chunks.begin();
-    auto chunkEnd = _chunks.end();
+	auto chunk = _chunks.begin();
+	auto chunkEnd = _chunks.end();
 
-    std::vector<ChunkIteraotr> destroyList;
+	std::vector<ChunkIteraotr> destroyList;
 
-    for (; chunk != chunkEnd; ++chunk)
-    {
-        bool destroy = true;
+	for (; chunk != chunkEnd; ++chunk)
+	{
+		bool destroy = true;
 
-        for (auto& it : _observer)
-        {
-            auto pos = it->getPosition();
+		for (auto& it : _observer)
+		{
+			auto pos = it->getPosition();
 
-            int p = convChunked(pos.x);
-            int q = convChunked(pos.z);
+			int p = convChunked(pos.x);
+			int q = convChunked(pos.z);
 
-            if ((*chunk)->distance(p, q) < _radiusDestroy)
-            {
-                destroy = false;
-            }
-        }
+			if ((*chunk)->distance(p, q) < _radiusDestroy)
+			{
+				destroy = false;
+			}
+		}
 
-        if (destroy)
-        {
-            destroyList.push_back(chunk);
-        }
-    }
+		if (destroy)
+		{
+			destroyList.push_back(chunk);
+		}
+	}
 
-    for (auto& it : destroyList)
-    {
-        _chunks.erase(it);
-    }
+	for (auto& it : destroyList)
+	{
+		_chunks.erase(it);
+	}
 }
 
 void
 Terrain::computeVisiable(TerrainObserverPtr observer, std::vector<TerrainChunkPtr>& visiable) noexcept
 {
-    assert(observer);
+	assert(observer);
 
-    Matrix4x4 view;
-    view.makeLookAt_lh(observer->getPosition(), observer->getLookat(), observer->getUpVector());
+	Matrix4x4 view;
+	view.makeLookAt_lh(observer->getPosition(), observer->getLookat(), observer->getUpVector());
 
-    Frustum fru;
-    fru.extract(view);
+	Frustum fru;
+	fru.extract(view);
 
-    for (auto& it : _chunks)
-    {
-        auto pos = observer->getPosition();
+	for (auto& it : _chunks)
+	{
+		auto pos = observer->getPosition();
 
-        int p = convChunked(pos.x);
-        int q = convChunked(pos.z);
+		int p = convChunked(pos.x);
+		int q = convChunked(pos.z);
 
-        if (it->distance(p, q) > _radiusRender)
-        {
-            continue;
-        }
+		if (it->distance(p, q) > _radiusRender)
+		{
+			continue;
+		}
 
-        if (it->visiable(fru, _chunkSize))
-        {
-            visiable.push_back(it);
-        }
-    }
+		if (it->visiable(fru, _chunkSize))
+		{
+			visiable.push_back(it);
+		}
+	}
 }
 
 _NAME_END

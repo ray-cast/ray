@@ -39,25 +39,18 @@
 _NAME_BEGIN
 
 Bone::Bone() noexcept
-	: _parent(nullptr)
-	, _children(nullptr)
+	: _parent(-1)
+	, _child(-1)
+	, _needUpdate(true)
 {
+	_worldTransform.loadIdentity();
+	_localTransform.loadIdentity();
+	_transform.loadIdentity();
 }
 
 Bone::Bone(const std::string& name) noexcept
-	: _parent(nullptr)
-	, _children(nullptr)
 {
 	_name = name;
-}
-
-Bone::Bone(const Bone& copy) noexcept
-	: _parent(nullptr)
-	, _children(nullptr)
-{
-	_name = copy._name;
-	_weights = copy._weights;
-	_offset_matrix = copy._offset_matrix;
 }
 
 Bone::~Bone() noexcept
@@ -65,11 +58,111 @@ Bone::~Bone() noexcept
 }
 
 void
-Bone::update() noexcept
+Bone::setName(const std::string& name) noexcept
 {
-	if (_children)
-	{
-	}
+	_name = name;
+}
+
+const std::string&
+Bone::getName() const noexcept
+{
+	return _name;
+}
+
+void
+Bone::setParent(std::int16_t parent) noexcept
+{
+	_parent = parent;
+}
+
+std::int16_t
+Bone::getParent() const noexcept
+{
+	return _parent;
+}
+
+void
+Bone::setChild(std::int16_t child) noexcept
+{
+	_child = child;
+}
+
+std::int16_t
+Bone::getChild() const noexcept
+{
+	return _child;
+}
+
+void
+Bone::setPosition(const Vector3& position) noexcept
+{
+	_position._translate = position;
+}
+
+const Vector3&
+Bone::getPosition() const noexcept
+{
+	return _position._translate;
+}
+
+void
+Bone::setRotation(const Quaternion& rotate) noexcept
+{
+	_rotation._rotate = rotate;
+}
+
+const Quaternion&
+Bone::getRotation() const noexcept
+{
+	return _rotation._rotate;
+}
+
+void
+Bone::setScaling(const Vector3& scale) noexcept
+{
+	_scaling._scale = scale;
+}
+
+const Vector3&
+Bone::getScaling() const noexcept
+{
+	return _scaling._scale;
+}
+
+void
+Bone::setWorldTransform(const Matrix4x4& transform) noexcept
+{
+	_worldTransform = transform;
+}
+
+const Matrix4x4&
+Bone::getWorldTransform() const noexcept
+{
+	return _worldTransform;
+}
+
+void
+Bone::setLocalTransform(const Matrix4x4& transform) noexcept
+{
+	_localTransform = transform;
+}
+
+const Matrix4x4&
+Bone::getLocalTransform() const noexcept
+{
+	return _localTransform;
+}
+
+void
+Bone::setTransform(const Matrix4x4& transform) noexcept
+{
+	_transform = transform;
+}
+
+const Matrix4x4&
+Bone::getTransform() const noexcept
+{
+	return _transform;
 }
 
 _NAME_END

@@ -48,40 +48,34 @@ class EXPORT Image final : public image_base
 public:
     typedef std::shared_ptr<ImageHandler> _Myhandler;
 
-    struct ImageRefData
-    {
-        size_type width;
-        size_type height;
-
-        bool is_static;
-        bool has_mask;
-
-        image_buf data;
-
-        bpp_type bpp;
-    };
-
 public:
     Image() noexcept;
     Image(size_type width, size_type height, bpp_type bpp, bool clear = false) noexcept;
-    Image(size_type width, size_type height, bpp_type bpp, image_buf data, bool static_data = false, bool clear = false) noexcept;
+    Image(size_type width, size_type height, bpp_type bpp, std::size_t dataSize, image_buf data, bool static_data = false, bool clear = false) noexcept;
     Image(istream& stream, image_type type = unknown) noexcept;
     ~Image() noexcept;
 
-    bool create(size_type width, size_type height, bpp_type bpp, bool clear) noexcept;
-    bool create(size_type width, size_type height, bpp_type bpp, image_buf data = nullptr, bool static_data = false, bool clear = false) noexcept;
+    bool create(size_type width, size_type height, bpp_type bpp, bool clear = false) noexcept;
+	bool create(size_type width, size_type height, bpp_type bpp, std::size_t dataSize, image_buf data, bool staticData = false, bool clear = false) noexcept;
     bool create(const Image& src) noexcept;
 
     void destroy() noexcept;
-    void clear(pass_val value = 0) noexcept { std::memset(this->_data->data, value, (std::size_t)this->size()); }
+    void clear(pass_val value = 0) noexcept { std::memset(_data, value, (std::size_t)this->size()); }
 
-    size_type width()  const noexcept { return _data->width; }
-    size_type height() const noexcept { return _data->height; }
-    size_type size()   const noexcept { return (_data->width * _data->height * _data->bpp) >> 3; }
-    image_buf data()   const noexcept { return _data->data; }
-    image_buf bits()   const noexcept { return _data->data; }
-    bpp_type  bpp()    const noexcept { return _data->bpp; }
+    size_type width()  const noexcept { return _width; }
+    size_type height() const noexcept { return _height; }
+    size_type size()   const noexcept { return _size; }
+    image_buf data()   const noexcept { return _data; }
+    image_buf bits()   const noexcept { return _data; }
+    bpp_type  bpp()    const noexcept { return _bpp; }
     bool      empty()  const noexcept { return _data == nullptr; }
+
+	void setImageType(image_type type) noexcept;
+	image_type  getImageType() const noexcept;
+
+	// for dds
+	void setMipLevel(std::uint8_t level) noexcept;
+	std::uint8_t getMipLevel() const noexcept;
 
     // for gif
     delay_type getFrameDelay() const noexcept;
@@ -111,7 +105,7 @@ public:
     void getColor(std::size_t n, BGR& col)  noexcept { col = (BGR&) this->rddata(n); }
     void getColor(std::size_t n, BGRA& col) noexcept { col = (BGRA&)this->rddata(n); }
 
-    pass_val& rddata(std::size_t n) noexcept { return this->_data->data[(_data->bpp * n) >> 3]; }
+    pass_val& rddata(std::size_t n) noexcept { return _data[(_bpp * n) >> 3]; }
 
 public:
     bool load(istream& stream, image_type type = unknown) noexcept;
@@ -136,15 +130,30 @@ public:
     static void flipImageVertical(char* data, std::size_t width, std::size_t height, std::size_t component) noexcept;
 
 private:
+	void _init() noexcept;
+
+private:
     Image(const Image&) noexcept = delete;
     Image& operator=(const Image&) noexcept = delete;
 
 private:
-    std::unique_ptr<ImageRefData> _data;
+
+	image_type _imageType;
+
+	bool _isStatic;
+	bool _hasMask;
+
+	size_type _width;
+	size_type _height;
+	std::size_t _size;
+
+	image_buf _data;
+
+	bpp_type _bpp;
+
+	std::uint8_t _mipLevel;
 
     std::vector<_Myhandler> _handlers;
-
-    image_type _image_type;
 };
 
 _NAME_END

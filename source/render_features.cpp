@@ -35,23 +35,34 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_features.h>
-#include <ray/render_system.h>
 #include <ray/render_factory.h>
+#include <ray/render_scene.h>
+#include <ray/render_window.h>
 #include <ray/camera_component.h>
 #include <ray/script_component.h>
 #include <ray/light_component.h>
 #include <ray/mesh_component.h>
 #include <ray/skybox_component.h>
 #include <ray/mesh_render_component.h>
+#include <ray/skinned_mesh_render_component.h>
+#include <ray/anim_component.h>
 
 _NAME_BEGIN
+
+__ImplementSubClass(RenderFeatures, GameFeatures)
 
 RenderFeatures::RenderFeatures() noexcept
 	: _hwnd(nullptr)
 	, _width(0)
 	, _height(0)
 {
-	this->setName(typeid(RenderFeatures).name());
+}
+
+RenderFeatures::RenderFeatures(WindHandle hwnd, std::size_t w, std::size_t h) noexcept
+	: _hwnd(hwnd)
+	, _width(w)
+	, _height(h)
+{
 }
 
 RenderFeatures::~RenderFeatures() noexcept
@@ -114,55 +125,15 @@ RenderFeatures::clone() const noexcept
 	return std::make_shared<RenderFeatures>();
 }
 
-GameComponentPtr
-RenderFeatures::onSerialization(iarchive& reader) except
-{
-	auto component = reader.getString("name");
-	if (component == "camera")
-	{
-		auto camera = std::make_shared<CameraComponent>();
-		reader >> camera;
-		return camera;
-	}
-	else if (component == "mesh")
-	{
-		auto mesh = std::make_shared<MeshComponent>();
-		reader >> mesh;
-		return mesh;
-	}
-	else if (component == "meshrender")
-	{
-		auto render = std::make_shared<MeshRenderComponent>();
-		reader >> render;
-		return render;
-	}
-	else if (component == "light")
-	{
-		auto light = std::make_shared<LightComponent>();
-		reader >> light;
-		return light;
-	}
-	else if (component == "sky")
-	{
-		auto sky = std::make_shared<SkyBoxComponent>();
-		reader >> sky;
-		return sky;
-	}
-
-	return nullptr;
-}
-
 void
 RenderFeatures::onActivate() except
 {
-	_renderWindow = RenderFactory::createRenderWindow();
-	_renderWindow->setWindowResolution(_width, _height);
-	_renderWindow->setup((HWND)_hwnd);
-
-	_renderSystem = std::make_shared<RenderSystem>();
-	_renderSystem->setup(_renderWindow);
+	_renderSystem = RenderFactory::createRenderSystem();
+	_renderSystem->open(_hwnd, _width, _height);
 	_renderSystem->setRenderSetting(_renderSetting);
-	_renderSystem->setTimer(this->getGameServer()->getTimer());
+
+	for (auto& it : _renderScenes)
+		_renderSystem->addRenderScene(it.second);
 }
 
 void
@@ -178,14 +149,13 @@ RenderFeatures::onDeactivate() except
 void
 RenderFeatures::onOpenScene(GameScenePtr scene) except
 {
-	if (_renderSystem)
+	if (!_renderScenes[scene->getInstanceID()])
 	{
-		if (!_renderScenes[scene->getInstanceID()])
-		{
-			auto renderScene = std::make_shared<RenderScene>();
+		auto renderScene = std::make_shared<RenderScene>();
+		_renderScenes[scene->getInstanceID()] = renderScene;
+
+		if (_renderSystem)
 			_renderSystem->addRenderScene(renderScene);
-			_renderScenes[scene->getInstanceID()] = renderScene;
-		}
 	}
 }
 
@@ -204,23 +174,22 @@ RenderFeatures::onCloseScene(GameScenePtr scene) except
 }
 
 void
-RenderFeatures::onFrameBegin()
-{
-	if (_renderSystem)
-		_renderSystem->renderBegin();
-}
-
-void
-RenderFeatures::onFrame()
+RenderFeatures::onFrameBegin() except
 {
 }
 
 void
-RenderFeatures::onFrameEnd()
+RenderFeatures::onFrame() except
+{
+}
+
+void
+RenderFeatures::onFrameEnd() except
 {
 	if (_renderSystem)
 	{
-		_renderSystem->render();
+		_renderSystem->renderBegin();
+		_renderSystem->renderScene();
 		_renderSystem->renderEnd();
 	}
 }

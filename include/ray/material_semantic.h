@@ -43,116 +43,102 @@ _NAME_BEGIN
 
 enum GlobalMatrixSemantic
 {
-    NotSemantic = -1,
+	NotSemantic = -1,
 
-    matModel,
-    matModelInverse,
-    matModelInverseTranspose,
+	matModel,
+	matModelInverse,
+	matModelInverseTranspose,
 
-    matView,
-    matViewInverse,
-    matViewInverseTranspose,
+	matProject,
+	matProjectInverse,
 
-    matProject,
-    matProjectInverse,
+	matView,
+	matViewInverse,
+	matViewInverseTranspose,
 
-    matViewProject,
-    matViewProjectInverse,
+	matViewProject,
+	matViewProjectInverse,
 
-    matSemanticEnd
+	matSemanticEnd
 };
 
 enum GlobalFloatSemantic
 {
-    CameraAperture = matSemanticEnd,
-    CameraNear,
-    CameraFar,
+	CameraAperture = matSemanticEnd,
+	CameraNear,
+	CameraFar,
 
-    Time,
-    TimeDelta,
-    TimeFps,
-
-    LightRange,
-    LightIntensity,
-    LightSpotAngle,
-    LightSpotInnerCone,
-    LightSpotOuterCone,
-
-    FloatEnd,
+	FloatEnd,
 };
 
 enum GlobalFloat3Semantic
 {
-    LightAmbient = FloatEnd,
-    LightDiffuse,
-    LightPosition,
-    LightDirection,
+	CameraView = FloatEnd,
+	CameraPosition,
+	CameraDirection,
 
-    CameraView,
-    CameraPosition,
-    CameraDirection,
-
-    Float3End
+	Float3End
 };
 
 enum GlobalFloat4Semantic
 {
-    Float4End = Float3End,
+	Float4End = Float3End,
 };
 
 enum GlobalTexSemantic
 {
-    DepthMap = Float4End,
-    ColorMap,
-    NormalMap,
+	DepthMap = Float4End,
+	ColorMap,
+	NormalMap,
 
-    DeferredDepthMap,
-    DeferredGraphicMap,
-    DeferredNormalMap,
-    DeferredLightMap,
+	DeferredDepthMap,
+	DeferredGraphicMap,
+	DeferredNormalMap,
+	DeferredLightMap,
+	DeferredShadowMap,
 
-    NumSemantic,
+	NumSemantic,
 };
 
 class EXPORT MaterialSemantic final
 {
 public:
-    MaterialSemantic() noexcept;
-    ~MaterialSemantic() noexcept;
+	MaterialSemantic() noexcept;
+	~MaterialSemantic() noexcept;
 
-    void setup() noexcept;
-    void close() noexcept;
+	void setup() noexcept;
+	void close() noexcept;
 
-    void setMatrixParam(GlobalMatrixSemantic index, const Matrix4x4& m) noexcept;
-    const Matrix4x4& getMatrixParam(GlobalMatrixSemantic index) noexcept;
-    std::string getMatrixParmName(GlobalMatrixSemantic index) const noexcept;
-    GlobalMatrixSemantic getMatrixParamSemantic(const std::string& name) const noexcept;
+	void setMatrixParam(GlobalMatrixSemantic index, const Matrix4x4& m) noexcept;
+	const Matrix4x4& getMatrixParam(GlobalMatrixSemantic index) noexcept;
+	std::string getMatrixParmName(GlobalMatrixSemantic index) const noexcept;
+	GlobalMatrixSemantic getMatrixParamSemantic(const std::string& name) const noexcept;
 
-    void setFloatParam(GlobalFloatSemantic index, float v) noexcept;
-    float getFloatParam(GlobalFloatSemantic index) noexcept;
-    std::string getFloatParmName(GlobalFloatSemantic index) const noexcept;
-    GlobalFloatSemantic getFloatParamSemantic(const std::string& name) const noexcept;
+	void setFloatParam(GlobalFloatSemantic index, float v) noexcept;
+	float getFloatParam(GlobalFloatSemantic index) noexcept;
+	std::string getFloatParmName(GlobalFloatSemantic index) const noexcept;
+	GlobalFloatSemantic getFloatParamSemantic(const std::string& name) const noexcept;
 
-    void setFloat3Param(GlobalFloat3Semantic index, const float3& v) noexcept;
-    const Vector3& getFloat3Param(GlobalFloat3Semantic index) noexcept;
-    std::string getFloat3ParmName(GlobalFloat3Semantic index) const noexcept;
-    GlobalFloat3Semantic getFloat3ParamSemantic(const std::string& name) const noexcept;
+	void setFloat3Param(GlobalFloat3Semantic index, const float3& v) noexcept;
+	const Vector3& getFloat3Param(GlobalFloat3Semantic index) noexcept;
+	std::string getFloat3ParmName(GlobalFloat3Semantic index) const noexcept;
+	GlobalFloat3Semantic getFloat3ParamSemantic(const std::string& name) const noexcept;
 
-    void setFloat4Param(GlobalFloat4Semantic index, const float4& v) noexcept;
-    const Vector4& getFloat4Param(GlobalFloat4Semantic index) noexcept;
-    std::string getFloat4ParmName(GlobalFloat4Semantic index) const noexcept;
-    GlobalFloat4Semantic getFloat4ParamSemantic(const std::string& name) const noexcept;
+	void setFloat4Param(GlobalFloat4Semantic index, const float4& v) noexcept;
+	const Vector4& getFloat4Param(GlobalFloat4Semantic index) noexcept;
+	std::string getFloat4ParmName(GlobalFloat4Semantic index) const noexcept;
+	GlobalFloat4Semantic getFloat4ParamSemantic(const std::string& name) const noexcept;
 
-    void setTexParam(GlobalTexSemantic index, TexturePtr v) noexcept;
-    TexturePtr getTexParam(GlobalTexSemantic index) noexcept;
-    std::string getTexParmName(GlobalTexSemantic index) const noexcept;
-    GlobalTexSemantic getTexParamSemantic(const std::string& name) const noexcept;
+	void setTexParam(GlobalTexSemantic index, TexturePtr v) noexcept;
+	TexturePtr getTexParam(GlobalTexSemantic index) noexcept;
+	std::string getTexParmName(GlobalTexSemantic index) const noexcept;
+	GlobalTexSemantic getTexParamSemantic(const std::string& name) const noexcept;
 
-    MaterialParamPtr getParamPointer(const std::string& name) const noexcept;
+	MaterialParamPtr getParamPointer(const std::string& name) const noexcept;
 
 private:
 
-    MaterialParams _semantics;
+	MaterialParams _semantics;
 };
 
 _NAME_END

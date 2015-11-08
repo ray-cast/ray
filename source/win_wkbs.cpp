@@ -34,12 +34,13 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#ifdef _BUILD_PLATFORM_WINDOWS
 #include <ray/win_wkbs.h>
 #include <ray/memory.h>
 
 _NAME_BEGIN
 
-std::string
+string
 WalkerBase::GetCurrentDirectory(void) noexcept
 {
     DWORD length = MAX_BUFFER_LENGTH;
@@ -51,13 +52,13 @@ WalkerBase::GetCurrentDirectory(void) noexcept
         DWORD size = ::GetCurrentDirectory(length, buffer.get());
 
         if (length > size)
-            return std::string(buffer.get(), size);
+            return string(buffer.get(), size);
     }
 
-    return "";
+    return __TEXT("");
 }
 
-std::string
+string
 WalkerBase::GetModuleFileName(HMODULE hModule) noexcept
 {
     DWORD length = MAX_BUFFER_LENGTH;
@@ -69,35 +70,34 @@ WalkerBase::GetModuleFileName(HMODULE hModule) noexcept
         DWORD size = ::GetModuleFileName(hModule, buffer.get(), length);
 
         if (length > size)
-            return std::string(buffer.get(), size);
+            return string(buffer.get(), size);
     }
 
-    return "";
+    return __TEXT("");
 }
 
-std::string
+string
 WalkerBase::GetModuleDirectory(HMODULE hModule) noexcept
 {
-    std::string dir = GetModuleFileName(hModule);
-
-    std::string::size_type pos = dir.find_last_of("\\/:");
+    string dir = GetModuleFileName(hModule);
+    string::size_type pos = dir.find_last_of(__TEXT("\\/:"));
     if (pos != std::string::npos)
     {
         dir.erase(pos, dir.length() - pos);
         return dir;
     }
 
-    return "";
+    return __TEXT("");
 }
 
-std::string
-WalkerBase::GetEnvironmentVariable(const std::string& name) noexcept
+string
+WalkerBase::GetEnvironmentVariable(const string& name) noexcept
 {
     DWORD length = MAX_BUFFER_LENGTH;
 
     for (DWORD i = 0; i < 5; i++)
     {
-        std::unique_ptr<TCHAR[]> buffer(new TCHAR[length]);
+        std::unique_ptr<char_type[]> buffer(new char_type[length]);
 
         DWORD size = ::GetEnvironmentVariable(name.data(), buffer.get(), length);
 
@@ -105,10 +105,12 @@ WalkerBase::GetEnvironmentVariable(const std::string& name) noexcept
             break;
 
         if (length > size)
-            return std::string(buffer.get(), size);
+            return string(buffer.get(), size);
     }
 
-    return "";
+    return __TEXT("");
 }
 
 _NAME_END
+
+#endif

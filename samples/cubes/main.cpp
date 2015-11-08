@@ -41,7 +41,6 @@
 #include <SDL_syswm.h>
 
 #include "terrain.h"
-#include "terrain_items.h"
 #include "first_person_camera.h"
 
 class GameEngine : public ray::GameApplication
@@ -51,12 +50,10 @@ public:
 	{
 		_renderSetting.enableSSAO = true;
 		_renderSetting.enableSAT = true;
-		_renderSetting.enableSSSS = true;
+		_renderSetting.enableSSSS = false;
 		_renderSetting.enableFog = false;
-		_renderSetting.enableHDR = true;
+		_renderSetting.enableFimic = true;
 		_renderSetting.enableFXAA = true;
-		_renderSetting.enableLightShaft = false;
-		_renderSetting.enableColorGrading = true;
 	}
 
 	void setup(HWND hwnd, std::size_t w, std::size_t h)
@@ -71,25 +68,6 @@ public:
 
 		if (!this->openScene("dlc:cube\\scene.map"))
 			throw ray::failure("App::openScene('dlc:cube\\scene.map') fail");
-
-		auto scene = this->findScene("cubes");
-		if (!scene)
-			throw ray::failure("Scene::find('cubes') fail");
-
-		auto terrain = std::make_shared<Terrain>();
-		terrain->addObject(std::make_shared<TerrainGrass>());
-		terrain->addObject(std::make_shared<TerrainTree>());
-		terrain->addObject(std::make_shared<TerrainClound>());
-		terrain->addObject(std::make_shared<TerrainWater>());
-
-		auto terrainObj = std::make_shared<ray::GameObject>();
-		terrainObj->addComponent(terrain);
-		terrainObj->setParent(scene->getRootObject());
-		terrainObj->setActive(true);
-
-		auto player = scene->find<ray::GameObject>("first_person_camera");
-		player->addComponent(std::make_shared<FirstPersonCamera>());
-		player->setActive(true);
 	}
 
 private:
@@ -122,9 +100,8 @@ int main(int argc, char *argv[])
 				{
 				case SDL_QUIT:
 				{
-					ray::GameMessage message;
-					message.event = ray::GameEvent::AppQuit;
-					game.sendMessage(message);
+					ray::AppQuitEvent quit;
+					game.sendMessage(&quit);
 				}
 				break;
 				case SDL_WINDOWEVENT:
@@ -133,18 +110,16 @@ int main(int argc, char *argv[])
 					{
 					case SDL_WINDOWEVENT_FOCUS_GAINED:
 					{
-						ray::GameMessage message;
-						message.event = ray::GameEvent::GetFocus;
-						message.window.id = event.window.windowID;
-						game.sendMessage(message);
+						ray::GetFocusEvent focus;
+						focus.window.id = event.window.windowID;
+						game.sendMessage(&focus);
 					}
 					break;
 					case SDL_WINDOWEVENT_FOCUS_LOST:
 					{
-						ray::GameMessage message;
-						message.event = ray::GameEvent::LostFocus;
-						message.window.id = event.window.windowID;
-						game.sendMessage(message);
+						ray::LostFocusEvent focus;
+						focus.window.id = event.window.windowID;
+						game.sendMessage(&focus);
 					}
 					}
 				}
@@ -155,7 +130,7 @@ int main(int argc, char *argv[])
 			game.update();
 		}
 	}
-	catch (const std::exception& e)
+	catch (const ray::exception& e)
 	{
 		SDL_Quit();
 

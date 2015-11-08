@@ -37,7 +37,7 @@
 #include "terrain_chunk.h"
 #include "terrain.h"
 
-TerrainChunk::TerrainChunk(Terrain& terrain) noexcept
+TerrainChunk::TerrainChunk(TerrainComponent& terrain) noexcept
 	: _terrain(terrain)
 	, _dirt(false)
 {
@@ -51,7 +51,7 @@ TerrainChunk::~TerrainChunk() noexcept
 void
 TerrainChunk::init(std::size_t size, ChunkPosition x, ChunkPosition y, ChunkPosition z) noexcept
 {
-	_map = std::make_shared<TerrainMap>();
+	_map = std::make_shared<TerrainMap>(_terrain);
 	_map->create(size, x, y, z, 0x7FFF);
 }
 

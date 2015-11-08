@@ -44,7 +44,7 @@ __ImplementSubClass(GameFeature, GameListener)
 
 GameFeature::GameFeature() noexcept
 	: _isActive(false)
-	, _server(nullptr)
+	, _gameServer(nullptr)
 {
 }
 
@@ -94,13 +94,13 @@ GameFeature::sendMessage(const GameMessage& message) except
 void
 GameFeature::_setGameServer(GameServer* server) noexcept
 {
-	_server = server;
+	_gameServer = server;
 }
 
 GameServer*
 GameFeature::getGameServer() noexcept
 {
-	return _server;
+	return _gameServer;
 }
 
 GameComponentPtr

@@ -53,9 +53,7 @@ void
 ThreadLambda::start() noexcept
 {
     if (!_thread)
-    {
         _thread = std::make_unique<std::thread>(std::bind(&ThreadLambda::dispose, this));
-    }
 }
 
 void

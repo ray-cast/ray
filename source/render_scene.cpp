@@ -1,4 +1,4 @@
-// +----------------------------------------------------------------------
+﻿// +----------------------------------------------------------------------
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
@@ -39,7 +39,6 @@
 _NAME_BEGIN
 
 RenderScene::RenderScene() noexcept
-	: _ambientLight(Vector3(0.1, 0.1, 0.1))
 {
 }
 
@@ -48,7 +47,7 @@ RenderScene::~RenderScene() noexcept
 }
 
 void
-RenderScene::addCamera(Camera* camera) noexcept
+RenderScene::addCamera(CameraPtr camera) noexcept
 {
 	auto it = std::find(_cameraList.begin(), _cameraList.end(), camera);
 	if (it == _cameraList.end())
@@ -59,7 +58,7 @@ RenderScene::addCamera(Camera* camera) noexcept
 }
 
 void
-RenderScene::removeCamera(Camera* camera) noexcept
+RenderScene::removeCamera(CameraPtr camera) noexcept
 {
 	auto it = std::find(_cameraList.begin(), _cameraList.end(), camera);
 	if (it != _cameraList.end())
@@ -68,8 +67,14 @@ RenderScene::removeCamera(Camera* camera) noexcept
 	}
 }
 
-RenderScene::CameraList&
+Cameras&
 RenderScene::getCameraList() noexcept
+{
+	return _cameraList;
+}
+
+const Cameras&
+RenderScene::getCameraList() const noexcept
 {
 	return _cameraList;
 }
@@ -78,7 +83,7 @@ void
 RenderScene::sortCamera() noexcept
 {
 	std::sort(_cameraList.begin(), _cameraList.end(),
-		[](Camera* lhs, Camera* rhs)
+		[](CameraPtr lhs, CameraPtr rhs)
 	{
 		return lhs->getCameraOrder() < rhs->getCameraOrder();
 	}
@@ -86,7 +91,7 @@ RenderScene::sortCamera() noexcept
 }
 
 void
-RenderScene::addLight(Light* light) noexcept
+RenderScene::addLight(LightPtr light) noexcept
 {
 	assert(_lightList.end() == std::find(_lightList.begin(), _lightList.end(), light));
 
@@ -94,7 +99,7 @@ RenderScene::addLight(Light* light) noexcept
 }
 
 void
-RenderScene::removeLight(Light* light) noexcept
+RenderScene::removeLight(LightPtr light) noexcept
 {
 	auto it = std::find(_lightList.begin(), _lightList.end(), light);
 	if (it != _lightList.end())
@@ -103,7 +108,7 @@ RenderScene::removeLight(Light* light) noexcept
 	}
 }
 
-RenderScene::LightList&
+Lights&
 RenderScene::getLightList() noexcept
 {
 	return _lightList;
@@ -115,13 +120,14 @@ RenderScene::sortLight() noexcept
 }
 
 void
-RenderScene::addRenderObject(RenderObject* object) noexcept
+RenderScene::addRenderObject(RenderObjectPtr object) noexcept
 {
+	assert(std::find(_renderObjectList.begin(), _renderObjectList.end(), object) == _renderObjectList.end());
 	_renderObjectList.push_back(object);
 }
 
 void
-RenderScene::removeRenderObject(RenderObject* object) noexcept
+RenderScene::removeRenderObject(RenderObjectPtr object) noexcept
 {
 	auto it = std::find(_renderObjectList.begin(), _renderObjectList.end(), object);
 	if (it != _renderObjectList.end())
@@ -131,29 +137,41 @@ RenderScene::removeRenderObject(RenderObject* object) noexcept
 }
 
 void
-RenderScene::computVisiable(Camera* camera, std::vector<RenderObject*>& object) noexcept
+RenderScene::computVisiable(const Matrix4x4& viewProject, std::function<void(RenderObjectPtr&)> callback) noexcept
 {
 	Frustum fru;
-	fru.extract(camera->getViewProject());
-
-	std::size_t visiable1 = 0;
+	fru.extract(viewProject);
 
 	for (auto& it : _renderObjectList)
 	{
-		if (!fru.contains(it->getBoundingBoxInWorld().aabb()))
-			continue;
+		if (fru.contains(it->getBoundingBoxInWorld().aabb()))
+		{
+			auto listener = it->getRenderListener();
+			if (listener)
+				listener->onWillRenderObject();
 
-		visiable1++;
+			callback(it);
 
-		object.push_back(it);
+			for (auto& child : it->getSubeRenderObjects())
+			{
+				if (fru.contains(child->getBoundingBoxInWorld().aabb()))
+				{
+					listener = child->getRenderListener();
+					if (listener)
+						listener->onWillRenderObject();
+
+					callback(it);
+				}
+			}
+		}
 	}
 }
 
 void
-RenderScene::computVisiableLight(Camera* camera, std::vector<Light*>& lights) noexcept
+RenderScene::computVisiableLight(const Matrix4x4& viewProject, std::function<void(LightPtr&)> callback) noexcept
 {
 	Frustum fru;
-	fru.extract(camera->getViewProject());
+	fru.extract(viewProject);
 
 	for (auto& light : _lightList)
 	{
@@ -161,10 +179,10 @@ RenderScene::computVisiableLight(Camera* camera, std::vector<Light*>& lights) no
 
 		LightType type = light->getLightType();
 
-		auto direction = light->getLightDirection();
 		auto range = light->getRange();
 
-		if (type == LightType::LT_SUN)
+		if (type == LightType::LT_SUN ||
+			type == LightType::LT_AMBIENT)
 		{
 			float infinity = std::numeric_limits<float>::max();
 
@@ -197,21 +215,13 @@ RenderScene::computVisiableLight(Camera* camera, std::vector<Light*>& lights) no
 
 		if (fru.contains(light->getBoundingBoxInWorld().aabb()))
 		{
-			lights.push_back(light);
+			auto listener = light->getRenderListener();
+			if (listener)
+				listener->onWillRenderObject();
+
+			callback(light);
 		}
 	}
-}
-
-void
-RenderScene::setAmbientColor(const Vector3& color) noexcept
-{
-	_ambientLight = color;
-}
-
-const Vector3&
-RenderScene::getAmbientColor() const noexcept
-{
-	return _ambientLight;
 }
 
 _NAME_END

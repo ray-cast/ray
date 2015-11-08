@@ -1,5 +1,3 @@
-SET(LIB_NAME ray)
-
 INCLUDE_DIRECTORIES(${INCLUDE_PATH})
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/zlib)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/freeglut/include)
@@ -14,14 +12,16 @@ INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/AntTweakBar/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/SDL2/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/bullet/src)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/angelscript/include)
+INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/libiconv/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/asJIT)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/mojoshader)
 
-IF(BUILD_PLATFORM_ANDROID OR BUILD_PLATFORM_IPHONE)
+IF(BUILD_PLATFORM_ANDROID OR BUILD_PLATFORM_LINUX OR BUILD_PLATFORM_IPHONE)
+    INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/gles/include)
     LINK_DIRECTORIES(${DEPENDENCIES_PATH}/gles/lib)
 ENDIF()
 
-SET(HEADER_PATH ${INCLUDE_PATH}/${LIB_NAME})
+SET(HEADER_PATH ${INCLUDE_PATH}/ray)
 SET(SOURCE_PATH ${CODE_PATH})
 
 ADD_DEFINITIONS(-D_BUILD_DLL_EXPORT)
@@ -52,7 +52,8 @@ SET(PLATFORM_CORE_LIST
     ${HEADER_PATH}/interval.hpp
     ${SOURCE_PATH}/string.cpp
     ${HEADER_PATH}/string.h
-    ${SOURCE_PATH}/string.cpp
+    ${SOURCE_PATH}/utf8.cpp
+    ${HEADER_PATH}/utf8.h
     ${SOURCE_PATH}/version.cpp
     ${HEADER_PATH}/version.h
     ${HEADER_PATH}/variant.h
@@ -161,11 +162,13 @@ SET(PLATFORM_MATH_LIST
     ${HEADER_PATH}/vector2.h
     ${HEADER_PATH}/vector3.h
     ${HEADER_PATH}/vector4.h
+    ${HEADER_PATH}/kdtree.h
     ${HEADER_PATH}/zintrin.h
 )
 SOURCE_GROUP("math" FILES ${PLATFORM_MATH_LIST})
 ADD_LIBRARY(libplatform SHARED ${PLATFORM_CORE_LIST} ${PLATFORM_DEBUG_LIST} ${PLATFORM_IO_LIST} ${PLATFORM_MATH_LIST})
 SET_TARGET_ATTRIBUTE(libplatform "core")
+TARGET_LINK_LIBRARIES(libplatform libiconv)
 IF(BUILD_PLATFORM_WINDOWS)
     TARGET_LINK_LIBRARIES(libplatform dbghelp)
     TARGET_LINK_LIBRARIES(libplatform psapi)
@@ -262,6 +265,8 @@ SET(IMAGE_LIST
     ${SOURCE_PATH}/imagraw.cpp
     ${HEADER_PATH}/imagtga.h
     ${SOURCE_PATH}/imagtga.cpp
+    ${HEADER_PATH}/imagdds.h
+    ${SOURCE_PATH}/imagdds.cpp
     ${HEADER_PATH}/imagtiff.h
     ${SOURCE_PATH}/imagtiff.cpp
     ${HEADER_PATH}/imagxpm.h
@@ -297,6 +302,8 @@ SET(MODEL_LIST
     ${SOURCE_PATH}/modpmx.cpp
     ${HEADER_PATH}/modvmd.h
     ${SOURCE_PATH}/modvmd.cpp
+    ${HEADER_PATH}/modsdkmesh.h
+    ${SOURCE_PATH}/modsdkmesh.cpp
     ${HEADER_PATH}/modtypes.h
     ${HEADER_PATH}/modutil.h
     ${SOURCE_PATH}/modutil.cpp
@@ -311,18 +318,7 @@ SET_TARGET_ATTRIBUTE(libmodel "core")
 
 TARGET_LINK_LIBRARIES(libmodel
     libplatform
-)
-
-SET(GUI_LIST
-    ${HEADER_PATH}/gui.h
-    ${SOURCE_PATH}/gui.cpp
-)
-SOURCE_GROUP("gui" FILES ${GUI_LIST})
-ADD_LIBRARY(libgui SHARED ${GUI_LIST})
-SET_TARGET_ATTRIBUTE(libgui "core")
-TARGET_LINK_LIBRARIES(libgui
-    mygui
-    freetype
+    libiconv
 )
 
 SET(RENDERER_CORE
@@ -336,11 +332,11 @@ SET(RENDERER_CORE
     ${SOURCE_PATH}/render_state.cpp
     ${HEADER_PATH}/render_texture.h
     ${SOURCE_PATH}/render_texture.cpp
+    ${HEADER_PATH}/render_command.h
+    ${SOURCE_PATH}/render_command.cpp
     ${HEADER_PATH}/render_types.h
     ${HEADER_PATH}/shader.h
     ${SOURCE_PATH}/shader.cpp
-    ${HEADER_PATH}/texture.h
-    ${SOURCE_PATH}/texture.cpp
 )
 SOURCE_GROUP("core" FILES ${RENDERER_CORE})
 
@@ -363,6 +359,8 @@ SET(RENDERER_OGL
     ${SOURCE_PATH}/ogl_types.cpp
     ${HEADER_PATH}/wgl_canvas.h
     ${SOURCE_PATH}/wgl_canvas.cpp
+    ${HEADER_PATH}/egl_canvas.h
+    ${SOURCE_PATH}/egl_canvas.cpp
 )
 SOURCE_GROUP("core\\device\\OGL" FILES ${RENDERER_OGL})
 
@@ -375,10 +373,10 @@ SOURCE_GROUP("renderer\\camera" FILES ${RENDERER_CAMERA})
 SET(RENDERER_FONT
     ${HEADER_PATH}/font.h
     ${SOURCE_PATH}/font.cpp
-    ${HEADER_PATH}/fontall.h
-    ${SOURCE_PATH}/fontall.cpp
-    ${HEADER_PATH}/fontft.h
-    ${SOURCE_PATH}/fontft.cpp
+    ${HEADER_PATH}/font_bitmap.h
+    ${SOURCE_PATH}/font_bitmap.cpp
+    ${HEADER_PATH}/font_distance_field.h
+    ${SOURCE_PATH}/font_distance_field.cpp
 )
 SOURCE_GROUP("renderer\\font" FILES ${RENDERER_FONT})
 
@@ -432,8 +430,8 @@ SET(RENDERER_POST_PROCESS
     ${SOURCE_PATH}/fog.cpp
     ${HEADER_PATH}/fxaa.h
     ${SOURCE_PATH}/fxaa.cpp
-    ${HEADER_PATH}/hdr.h
-    ${SOURCE_PATH}/hdr.cpp
+    ${HEADER_PATH}/fimic.h
+    ${SOURCE_PATH}/fimic.cpp
     ${HEADER_PATH}/light_shaft.h
     ${SOURCE_PATH}/light_shaft.cpp
     ${HEADER_PATH}/ssao.h
@@ -444,8 +442,8 @@ SET(RENDERER_POST_PROCESS
     ${SOURCE_PATH}/ssr.cpp
     ${HEADER_PATH}/ssss.h
     ${SOURCE_PATH}/ssss.cpp
-    ${HEADER_PATH}/post_process.h
-    ${SOURCE_PATH}/post_process.cpp
+    ${HEADER_PATH}/irradiance.h
+    ${SOURCE_PATH}/irradiance.cpp
 )
 SOURCE_GROUP("renderer\\postprocess" FILES ${RENDERER_POST_PROCESS})
 
@@ -469,18 +467,22 @@ SET(RENDERER_TERRAIN
 SOURCE_GROUP("renderer\\terrain" FILES ${RENDERER_TERRAIN})
 
 SET(RENDERER_SYSTEM
-    ${HEADER_PATH}/deferred_lighting.h
-    ${SOURCE_PATH}/deferred_lighting.cpp
-    ${HEADER_PATH}/forward_shading.h
-    ${SOURCE_PATH}/forward_shading.cpp
     ${HEADER_PATH}/render_pipeline.h
     ${SOURCE_PATH}/render_pipeline.cpp
+    ${HEADER_PATH}/render_pipeline_layer.h
+    ${SOURCE_PATH}/render_pipeline_layer.cpp
+    ${HEADER_PATH}/render_pipeline_base.h
+    ${SOURCE_PATH}/render_pipeline_base.cpp
+    ${HEADER_PATH}/render_post_process.h
+    ${SOURCE_PATH}/render_post_process.cpp
     ${HEADER_PATH}/render_setting.h
     ${SOURCE_PATH}/render_setting.cpp
-    ${HEADER_PATH}/render_system.h
-    ${SOURCE_PATH}/render_system.cpp
     ${HEADER_PATH}/render_factory.h
     ${SOURCE_PATH}/render_factory.cpp
+    ${HEADER_PATH}/render_system_base.h
+    ${SOURCE_PATH}/render_system_base.cpp
+    ${HEADER_PATH}/render_system.h
+    ${SOURCE_PATH}/render_system.cpp
 )
 SOURCE_GROUP("renderer" FILES ${RENDERER_SYSTEM})
 
@@ -516,9 +518,10 @@ IF(BUILD_PLATFORM_WINDOWS)
     TARGET_LINK_LIBRARIES(librenderer glew)
 ENDIF()
 
-IF(BUILD_PLATFORM_GLES)
+IF(BUILD_PLATFORM_ANDROID)
     TARGET_LINK_LIBRARIES(librenderer libEGL)
     TARGET_LINK_LIBRARIES(librenderer libGLESv2)
+    TARGET_LINK_LIBRARIES(librenderer libMaliEmulator)
 ENDIF()
 
 SET(NETWORK_LIST
@@ -570,8 +573,8 @@ ADD_LIBRARY(libphysic SHARED ${PHYSICS_SYSTEM_LIST})
 SET_TARGET_ATTRIBUTE(libphysic "core")
 TARGET_LINK_LIBRARIES(libphysic
     libplatform
-    BulletCollision
     BulletDynamics
+    BulletCollision
     BulletMultiThreaded
     BulletSoftBody
     LinearMath
@@ -598,11 +601,26 @@ SET(GAMEAPP_LIST
 )
 SOURCE_GROUP("system\\app" FILES ${GAMEAPP_LIST})
 
-SET(GUI_FEATURES_LIST
-    ${HEADER_PATH}/gui_features.h
-    ${SOURCE_PATH}/gui_features.cpp
+SET(GUI_LIST
+    ${HEADER_PATH}/gui.h
+    ${HEADER_PATH}/gui_behaviour_component.h
+    ${SOURCE_PATH}/gui_behaviour_component.cpp
+    ${HEADER_PATH}/gui_button_component.h
+    ${SOURCE_PATH}/gui_button_component.cpp
+    ${HEADER_PATH}/gui_camera_component.h
+    ${SOURCE_PATH}/gui_camera_component.cpp
+    ${HEADER_PATH}/gui_listener_component.h
+    ${SOURCE_PATH}/gui_listener_component.cpp
+    ${HEADER_PATH}/gui_plane_component.h
+    ${SOURCE_PATH}/gui_plane_component.cpp
+    ${HEADER_PATH}/gui_layout_component.h
+    ${SOURCE_PATH}/gui_layout_component.cpp
+    ${HEADER_PATH}/gui_text_component.h
+    ${SOURCE_PATH}/gui_text_component.cpp
+    ${HEADER_PATH}/gui_label_component.h
+    ${SOURCE_PATH}/gui_label_component.cpp
 )
-SOURCE_GROUP("system\\gui" FILES ${GUI_FEATURES_LIST})
+SOURCE_GROUP("system\\gui" FILES ${GUI_LIST})
 
 SET(RENDER_FEATURES_LIST
     ${HEADER_PATH}/camera_component.h
@@ -615,6 +633,10 @@ SET(RENDER_FEATURES_LIST
     ${SOURCE_PATH}/mesh_render_component.cpp
     ${HEADER_PATH}/render_component.h
     ${SOURCE_PATH}/render_component.cpp
+    ${HEADER_PATH}/anim_component.h
+    ${SOURCE_PATH}/anim_component.cpp
+    ${HEADER_PATH}/skinned_mesh_render_component.h
+    ${SOURCE_PATH}/skinned_mesh_render_component.cpp
     ${HEADER_PATH}/skybox_component.h
     ${SOURCE_PATH}/skybox_component.cpp
     ${HEADER_PATH}/sprite_component.h
@@ -681,8 +703,6 @@ SET(SCRIGPU_SYSTEM_LIST
     ${HEADER_PATH}/script_bind_filesystem.h
     ${SOURCE_PATH}/script_bind_input.cpp
     ${HEADER_PATH}/script_bind_input.h
-    ${SOURCE_PATH}/script_bind_gui.cpp
-    ${HEADER_PATH}/script_bind_gui.h
     ${SOURCE_PATH}/script_bind_math.cpp
     ${HEADER_PATH}/script_bind_math.h
     ${SOURCE_PATH}/script_bind_string.cpp
@@ -703,10 +723,9 @@ SET(SCRIGPU_SYSTEM_LIST
     ${HEADER_PATH}/script_component.h
 )
 SOURCE_GROUP("system\\script" FILES ${SCRIGPU_SYSTEM_LIST})
-
-ADD_LIBRARY(${LIB_NAME} SHARED
+ADD_LIBRARY(ray SHARED
     ${GAMEAPP_LIST}
-    ${GUI_FEATURES_LIST}
+    ${GUI_LIST}
     ${RENDER_FEATURES_LIST}
     ${SOUND_FEATURES_LIST}
     ${INPUT_FEATURES_LIST}
@@ -714,17 +733,16 @@ ADD_LIBRARY(${LIB_NAME} SHARED
     ${NETWORK_FEATURES_LIST}
     ${SCRIGPU_SYSTEM_LIST}
 )
-
-TARGET_LINK_LIBRARIES(${LIB_NAME}
+SET_TARGET_ATTRIBUTE(ray "engine")
+TARGET_LINK_LIBRARIES(ray
     angelscript
     asJIT
 )
 
-TARGET_LINK_LIBRARIES(${LIB_NAME}
+TARGET_LINK_LIBRARIES(ray
     libimage
     libinput
     libmodel
-    libanimtion
     libgui
     libnetwork
     libplatform
@@ -732,12 +750,10 @@ TARGET_LINK_LIBRARIES(${LIB_NAME}
     libsound
 )
 
-IF(RAY_PHYSIC)
-    TARGET_LINK_LIBRARIES(${LIB_NAME} libphysic)
+IF(BUILD_PHYSIC)
+    TARGET_LINK_LIBRARIES(ray libphysic)
 ENDIF()
 
 IF(BUILD_PLATFORM_SDL2)
-    TARGET_LINK_LIBRARIES(${LIB_NAME} SDL2)
+    TARGET_LINK_LIBRARIES(ray SDL2)
 ENDIF()
-
-SET_TARGET_ATTRIBUTE(${LIB_NAME} "engine")

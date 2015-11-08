@@ -35,7 +35,10 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/new.h>
-/*
+
+#pragma push_macro("new")
+#undef new
+
 void* operator new(std::size_t num_bytes, const char* file, const std::size_t line)
 {
     return ::operator new(num_bytes);
@@ -54,4 +57,6 @@ void operator delete(void* pointer, const char* file, const std::size_t line)
 void operator delete[](void* pointer, const char* file, const std::size_t line)
 {
     delete[] pointer;
-}*/
+}
+
+#pragma pop_macro("new")

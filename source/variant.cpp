@@ -394,8 +394,7 @@ Variant::operator==(const Variant& rhs) const
         case Mat4:
             return this->m == rhs.m;
         default:
-            throw failure("Variant::operator==(): invalid variant type!");
-            return false;
+            throw failure(__TEXT("Variant::operator==(): invalid variant type!"));
         }
     }
     return false;
@@ -426,8 +425,7 @@ Variant::operator>(const Variant& rhs) const
         case Object:
             return (this->object > rhs.object);
         default:
-            throw failure("Variant::operator>(): invalid variant type!");
-            return false;
+            throw failure(__TEXT("Variant::operator>(): invalid variant type!"));
         }
     }
     return false;
@@ -458,8 +456,7 @@ Variant::operator<(const Variant& rhs) const
         case Object:
             return (this->object < rhs.object);
         default:
-            throw failure("Variant::operator<(): invalid variant type!");
-            return false;
+            throw failure(__TEXT("Variant::operator<(): invalid variant type!"));
         }
     }
     return false;
@@ -490,8 +487,7 @@ Variant::operator>=(const Variant& rhs) const
         case Object:
             return (this->object >= rhs.object);
         default:
-            throw failure("Variant::operator>(): invalid variant type!");
-            return false;
+            throw failure(__TEXT("Variant::operator>(): invalid variant type!"));
         }
     }
 
@@ -523,8 +519,7 @@ Variant::operator<=(const Variant& rhs) const
         case Object:
             return (this->object <= rhs.object);
         default:
-            throw failure("Variant::operator<(): invalid variant type!");
-            return false;
+            throw failure(__TEXT("Variant::operator<(): invalid variant type!"));
         }
     }
     return false;
@@ -875,8 +870,7 @@ Variant::typeToString(Type t)
     case Mat4Array:     return "Matrix4x4array";
     case StringArray:   return "stringarray";
     default:
-        throw failure(format("Variant::typeToString(): invalid type enum '%d'!") % t);
-        return 0;
+        throw failure(tformat(__TEXT("Variant::typeToString(): invalid type enum '%d'!")) % t);
     }
 }
 
@@ -902,8 +896,7 @@ Variant::stringToType(const std::string& str)
     else if ("stringarray" == str)      return StringArray;
     else
     {
-        throw failure(format("Variant::stringToType(): invalid type string '%s'!") % str);
-        return Void;
+        throw failure(tformat(__TEXT("Variant::stringToType(): invalid type string!")));
     }
 }
 
@@ -1028,7 +1021,7 @@ Variant::copy(const Variant& rhs)
         this->stringArray = new std::vector<std::string>(*rhs.stringArray);
         break;
     default:
-        throw failure("Variant::copy(): invalid type!");
+        throw failure(__TEXT("Variant::copy(): invalid type!"));
         break;
     }
 }

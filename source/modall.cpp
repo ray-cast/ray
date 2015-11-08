@@ -53,6 +53,10 @@
 #   include <ray/modvmd.h>
 #endif
 
+#if _BUILD_SDKMESH_HANDLER
+#   include <ray/modsdkmesh.h>
+#endif
+
 // #include "ray/modelx.h"
 // #include "ray/model3ds.h"
 // #include "ray/modelmd3.h"
@@ -109,6 +113,10 @@ std::shared_ptr<ModelHandler> pmxHandler = std::make_shared<PMXHandler>();
 std::shared_ptr<ModelHandler> vmdHandler = std::make_shared<VMDHandler>();
 #endif
 
+#if _BUILD_SDKMESH_HANDLER
+std::shared_ptr<ModelHandler> sdkmeshHandler = std::make_shared<SDKMeshHandler>();
+#endif
+
 void GetModelInstanceList(Model& model)
 {
 #if _BUILD_OBJ_HANDLER
@@ -125,6 +133,10 @@ void GetModelInstanceList(Model& model)
 
 #if _BUILD_VMD_HANDLER
 	model.addHandler(vmdHandler);
+#endif
+
+#if _BUILD_SDKMESH_HANDLER
+	model.addHandler(sdkmeshHandler);
 #endif
 	//     #if (!defined _BUILD_NO_X_HANDLER)
 	//         out.push_back(new XFileLoader());

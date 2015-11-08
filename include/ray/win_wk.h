@@ -45,54 +45,53 @@ _NAME_BEGIN
 class StackWalkerInternal;
 class EXPORT StackWalker : public WalkerBase
 {
-    friend StackWalkerInternal;
-    typedef WalkerBase _Mybase;
+	friend StackWalkerInternal;
+	typedef WalkerBase _Mybase;
 
-    class CaptureContext
-    {
-    public:
-        explicit CaptureContext(HANDLE thread) noexcept;
-        ~CaptureContext() noexcept;
+	class CaptureContext
+	{
+	public:
+		explicit CaptureContext(HANDLE thread) noexcept;
+		~CaptureContext() noexcept;
 
-        const HANDLE thread() const noexcept;
-        CONTEXT& context() noexcept;
+		HANDLE thread() const noexcept;
+		CONTEXT& context() noexcept;
 
-    private:
+	private:
 
-        HANDLE _thread;
+		HANDLE _thread;
 
-        CONTEXT _context;
-    };
+		CONTEXT _context;
+	};
 
 public:
-    explicit StackWalker(DWORD processid = 0, HANDLE process = 0, Options options = _Mybase::normal) noexcept;
+	StackWalker(DWORD processid = 0, HANDLE process = 0, Options options = _Mybase::normal) noexcept;
+	~StackWalker() noexcept;
 
-    ~StackWalker() noexcept;
-
-    const std::string& printStack(HANDLE thread = 0) noexcept;
-
-private:
-
-    void printStack(const HANDLE hThread, CONTEXT& context) noexcept;
-    void printSymbol(const std::string& searchPath, DWORD symOptions, const std::string& username) noexcept;
-    void printModule(const std::string& img, const std::string& mod, DWORD64 baseAddr, DWORD size, DWORD result, const std::string& symType, const std::string& pdbName, ULONGLONG fileVersion) noexcept;
-    void printEntry(CallStackEntry& entry) noexcept;
-    void print(const std::string& text, std::ostringstream& ostream) noexcept;
-    void error(const char* funcName, DWORD gle = NO_ERROR, DWORD64 addr = 0x0) noexcept;
-
-    void clear() noexcept;
-    const std::string& str() noexcept;
+	const string& printStack(HANDLE thread = 0) noexcept;
 
 private:
-    StackWalkerInternal* _internal;
 
-    Options _options;
+	void printStack(const HANDLE hThread, CONTEXT& context) noexcept;
+	void printSymbol(const string& searchPath, DWORD symOptions, const string& username) noexcept;
+	void printModule(const string& img, const string& mod, DWORD64 baseAddr, DWORD size, DWORD result, const string& symType, const string& pdbName, ULONGLONG fileVersion) noexcept;
+	void printEntry(CallStackEntry& entry) noexcept;
+	void print(const string& text, ostringstream& ostream) noexcept;
+	void error(const char* funcName, DWORD gle = NO_ERROR, DWORD64 addr = 0x0) noexcept;
 
-    std::string _message;
+	void clear() noexcept;
+	const string& str() noexcept;
 
-    std::ostringstream _module;
-    std::ostringstream _entry;
-    std::ostringstream _error;
+private:
+	StackWalkerInternal* _internal;
+
+	Options _options;
+
+	string _message;
+
+	ostringstream _module;
+	ostringstream _entry;
+	ostringstream _error;
 };
 
 _NAME_END

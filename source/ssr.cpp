@@ -41,11 +41,11 @@ _NAME_BEGIN
 
 SSR::SSR() noexcept
 {
-    _ssr = MaterialMaker("sys:fx/ssr.glsl");
-    _ssrPass = _ssr->getTech(RenderQueue::PostProcess)->getPass("ssr");
+	_ssr = MaterialMaker("sys:fx/ssr.glsl");
+	_ssrPass = _ssr->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ssr");
 
-    //_projInfo = _ssr->getParameter("projInfo");
-    //_clipInfo = _ssr->getParameter("clipInfo");
+	//_projInfo = _ssr->getParameter("projInfo");
+	//_clipInfo = _ssr->getParameter("clipInfo");
 }
 
 SSR::~SSR() noexcept
@@ -53,14 +53,13 @@ SSR::~SSR() noexcept
 }
 
 void
-SSR::onRender(RenderPipeline& pipeline, RenderTargetPtr source) noexcept
+SSR::onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
 {
-    //_projInfo->assign(pipeline.camera->getProjConstant());
-    //_clipInfo->assign(pipeline.camera->getClipConstant());
+	//_projInfo->assign(pipeline.camera->getProjConstant());
+	//_clipInfo->assign(pipeline.camera->getClipConstant());
 
-    pipeline.setRenderTarget(source);
-    pipeline.setTechnique(_ssrPass);
-    pipeline.drawSceneQuad();
+	pipeline.setRenderTexture(source);
+	pipeline.drawSceneQuad(_ssrPass);
 }
 
 _NAME_END

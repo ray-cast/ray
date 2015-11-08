@@ -60,9 +60,10 @@ public:
 
 public:
 	GameScene() noexcept;
+	GameScene(const std::string& name) noexcept;
 	~GameScene() noexcept;
 
-	void setActive(bool active) noexcept;
+	void setActive(bool active) except;
 	bool getActive() const noexcept;
 
 	void setEnvironment(const Setting& setting) noexcept;
@@ -76,16 +77,16 @@ public:
 
 	GameScenePtr clone() const noexcept;
 
+	void setGameServer(GameServer* server) noexcept;
 	GameServer* getGameServer() noexcept;
 
+	void update() noexcept;
+
+	void load(iarchive& reader) except;
+
+	GameObjectPtr instanceObject(iarchive& reader, GameObjectPtr parent) except;
+
 private:
-
-	friend GameServer;
-	void _setGameServer(GameServer* server) noexcept;
-
-	void _onFrameBegin() noexcept;
-	void _onFrame() noexcept;
-	void _onFrameEnd() noexcept;
 
 	void onMessage(const GameMessage& message) except;
 

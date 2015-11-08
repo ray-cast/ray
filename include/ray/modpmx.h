@@ -105,25 +105,37 @@ struct PMX_Header
 
 struct PMX_Description
 {
-	PMX_uint32_t JapanModelLength;        // 模型名长度
+	PMX_uint32_t JapanModelLength;
 
-	std::vector<PMX_char> JapanModelName;     // 模型名称
+	std::vector<PMX_char> JapanModelName;
 
-	PMX_uint32_t EnglishModelLength;      // 模型名长度
+	PMX_uint32_t EnglishModelLength;
 
-	std::vector<PMX_char> EnglishModelName;   // 模型名称
+	std::vector<PMX_char> EnglishModelName;
 
-	PMX_uint32_t JapanCommentLength;      // 概要长度
+	PMX_uint32_t JapanCommentLength;
 
-	std::vector<PMX_char> JapanCommentName;   // 模型说明
+	std::vector<PMX_char> JapanCommentName;
 
-	PMX_uint32_t EnglishCommentLength;    // 概要长度
+	PMX_uint32_t EnglishCommentLength;
 
-	std::vector<PMX_char> EnglishCommentName; // 模型说明
+	std::vector<PMX_char> EnglishCommentName;
 };
 
 struct PMX_BoneWeight
 {
+	PMX_BoneWeight()
+		: Bone1(0)
+		, Bone2(0)
+		, Bone3(0)
+		, Bone4(0)
+		, Weight1(0)
+		, Weight2(0)
+		, Weight3(0)
+		, Weight4(0)
+	{
+	}
+
 	PMX_uint16_t Bone1;    // 骨骼索引
 
 	PMX_uint16_t Bone2;    // 骨骼索引
@@ -269,6 +281,90 @@ struct PMX_Bone
 	std::vector<PMX_IK> IKList;
 };
 
+struct PMX_MorphVertex
+{
+	PMX_uint32_t Index;
+
+	PMX_Vector3  Offset;
+};
+
+struct PMX_MorphBone
+{
+	PMX_uint32_t BoneIndex;
+
+	PMX_Float Weight;
+
+	PMX_Vector3 Position;
+
+	PMX_Vector3 Rotate;
+};
+
+struct PMX_MorphMaterial
+{
+	PMX_uint32_t Index;
+
+	PMX_Float Opacity;
+
+	PMX_Color3  Diffuse;
+
+	PMX_Float   Shininess;
+
+	PMX_Color3  Specular;
+
+	PMX_Color3  Ambient;
+
+	PMX_Vector4 EdgeColor;
+
+	PMX_Float   EdgeSize;
+
+	PMX_Color4  Tex;
+
+	PMX_Color4  Unknown;
+
+	PMX_Color4  Toon;
+};
+
+typedef PMX_uint32_t PMX_MorphCount;
+
+struct PMX_DisplayIndex
+{
+	PMX_uint8_t Type;
+
+	PMX_uint32_t BoneIndex;
+
+	PMX_uint32_t MorphIndex;
+};
+
+struct PMX_DisplaySlot
+{
+	PMX_uint32_t DisplayCount;
+
+	std::vector<PMX_DisplayIndex> Slots;
+};
+
+#pragma pack(pop)
+
+struct PMX_Morph
+{
+	PMX_uint32_t Length;
+
+	PMX_uint8_t Name[20];
+
+	PMX_uint32_t  Unknown;
+
+	PMX_uint8_t  OffsetSize;
+
+	PMX_uint8_t  MorphType;
+
+	PMX_uint32_t MorphCount;
+
+	std::vector<PMX_MorphVertex>  VertexList;
+
+	std::vector<PMX_MorphBone> BoneList;
+
+	std::vector<PMX_MorphMaterial> MaterialList;
+};
+
 struct PMX
 {
 	PMX_Header Header;
@@ -294,9 +390,13 @@ struct PMX
 	PMX_BoneCount BoneCount;
 
 	std::vector<PMX_Bone> BoneList;
-};
 
-#pragma pack(pop)
+	PMX_MorphCount            MorphCount;
+
+	std::vector<PMX_Morph>    MorphList;
+
+	PMX_DisplaySlot DisplaySlot;
+};
 
 class PMXHandler : public ModelHandler
 {

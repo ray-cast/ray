@@ -39,137 +39,58 @@
 
 #include <ray/err.h>
 
-#if defined(_LINUX_)
-#include <execinfo.h>
-#elif defined(_WINDOWS_)
-#include <ray/win_wk.h>
-#endif
-
-#include <sstream>
-
 _NAME_BEGIN
 
-class runtime_error : public std::exception
+class EXPORT exception
 {
 public:
-    runtime_error(const error_code::int_type code) noexcept
-        : _message()
-        , _code(code)
-    {
-    }
+	exception(const error_code::int_type code) noexcept;
+	exception(const error_code& code) noexcept;
+	exception(const string& msg, const error_code& code) noexcept;
+	exception(const string& msg, const string& stack, const error_code& code) noexcept;
 
-    runtime_error(const error_code& code) noexcept
-        : _message()
-        , _code(code)
-    {
-    }
+	virtual ~exception() noexcept;
 
-    runtime_error(const std::string& msg, const error_code& code) noexcept
-        : _message(msg)
-        , _code(code)
-    {
-        this->printStack();
-    }
+	const string& message() const noexcept;
+	const string& stack() const noexcept;
+	const string& what() const noexcept;
 
-    runtime_error(const std::string& msg, const std::string& stack, const error_code& code) noexcept
-        : _message(msg)
-        , _stack(stack)
-        , _code(code)
-    {
-    }
-
-    virtual ~runtime_error() noexcept
-    {
-    }
-
-    void printStack() noexcept
-    {
-#if defined(_WINDOWS_)
-        StackWalker stack;
-        _stack = stack.printStack();
-#endif
-    }
-
-    const std::string& message() const noexcept
-    {
-        return _message;
-    }
-
-    const std::string& stack() const noexcept
-    {
-        return _stack;
-    }
-
-    const error_code& code() const noexcept
-    {
-        return (this->_code);
-    }
-
-    const char* what() const noexcept
-    {
-        _summary.append("[MESSAGE]: \n");
-        _summary.append(_message);
-        _summary.append("\n");
-        _summary.append("[STACK INFO]: \n");
-        _summary.append(_stack);
-        _summary.append("\n");
-
-        return _summary.c_str();
-    }
+	const error_code& code() const noexcept;
 
 private:
 
-    std::string _message;
-    std::string _stack;
+	void printStack() noexcept;
 
-    mutable std::string _summary;
+private:
+
+	string _info;
+    string _stack;
+	string _message;
 
     error_code _code;
+};
+
+class EXPORT failure : public exception
+{
+public:
+	failure(const string& _msg, const error_code& _code = make_error_code(error_code::UNKNOWN_ERROR)) noexcept;
+	failure(const string& _msg, const string& _stack, const error_code& _code = make_error_code(error_code::UNKNOWN_ERROR)) noexcept;
+	failure(const error_code& _code) noexcept;
+	failure(const error_code::int_type& _code) noexcept;
+
+	virtual ~failure() noexcept;
 };
 
 template <typename T>
 inline T InvalidCall()
 {
-    throw runtime_error(error_code::DIDNT_INHERIT_THE_FUNCTION);
+	throw failure(error_code::DIDNT_INHERIT_THE_FUNCTION);
 }
 
 template <>
 inline void InvalidCall<void>()
 {
 }
-
-class failure : public runtime_error
-{
-public:
-    explicit failure(const std::string& _msg, const error_code& _code = make_error_code(error_code::UNKNOWN_ERROR)) noexcept
-        : runtime_error(_msg, _code)
-    {
-    }
-
-    explicit failure(const std::string& _msg, const std::string& _stack, const error_code& _code = make_error_code(error_code::UNKNOWN_ERROR)) noexcept
-        : runtime_error(_msg, _stack, _code)
-    {
-    }
-
-    explicit failure(const char* _msg, const error_code& _code = make_error_code(error_code::UNKNOWN_ERROR)) noexcept
-        : runtime_error(_msg, _code)
-    {
-    }
-
-    explicit failure(const error_code& _code) noexcept
-        : runtime_error(_code)
-    {
-    }
-
-    explicit failure(const error_code::int_type& _code) noexcept
-        : runtime_error(_code)
-    {
-    }
-
-    virtual ~failure() noexcept
-    {
-    }
-};
 
 _NAME_END
 

@@ -1,5 +1,5 @@
 // +----------------------------------------------------------------------
-// | Project : Xiemoperor.
+// | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
 // | Copyright (c) 2013-2014.
@@ -41,37 +41,37 @@ _NAME_BEGIN
 void
 TerrainObserver::setPosition(const Vector3& pos) noexcept
 {
-    _position = pos;
+	_position = pos;
 }
 
 const Vector3&
 TerrainObserver::getPosition() const noexcept
 {
-    return _position;
+	return _position;
 }
 
 void
 TerrainObserver::setLookat(const Vector3& lookat) noexcept
 {
-    _lookat = lookat;
+	_lookat = lookat;
 }
 
 const Vector3&
 TerrainObserver::getLookat() const noexcept
 {
-    return _lookat;
+	return _lookat;
 }
 
 void
 TerrainObserver::setUpVector(const Vector3& up) noexcept
 {
-    _up = up;
+	_up = up;
 }
 
 const Vector3&
 TerrainObserver::getUpVector() const noexcept
 {
-    return _up;
+	return _up;
 }
 
 _NAME_END

@@ -35,3 +35,108 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/except.h>
+
+#if defined(_BUILD_PLATFORM_WINDOWS)
+#	include <ray/win_wk.h>
+#endif
+
+_NAME_BEGIN
+
+exception::exception(const error_code::int_type code) noexcept
+	: _message()
+	, _code(code)
+{
+	this->printStack();
+}
+
+exception::exception(const error_code& code) noexcept
+	: _message()
+	, _code(code)
+{
+	this->printStack();
+}
+
+exception::exception(const string& msg, const error_code& code) noexcept
+	: _message(msg)
+	, _code(code)
+{
+	this->printStack();
+}
+
+exception::exception(const string& msg, const string& stack, const error_code& code) noexcept
+	: _message(msg)
+	, _stack(stack)
+	, _code(code)
+{
+	this->printStack();
+}
+
+exception::~exception() noexcept
+{
+}
+
+void 
+exception::printStack() noexcept
+{
+#ifdef _BUILD_PLATFORM_WINDOWS
+	StackWalker stack;
+	_stack = stack.printStack();
+#endif
+
+	_info.append(__TEXT("[MESSAGE]: \n"));
+	_info.append(_message);
+	_info.append(__TEXT("\n"));
+	_info.append(__TEXT("[STACK INFO]: \n"));
+	_info.append(_stack);
+	_info.append(__TEXT("\n"));
+}
+
+const string& 
+exception::message() const noexcept
+{
+	return _message;
+}
+
+const string& 
+exception::stack() const noexcept
+{
+	return _stack;
+}
+
+const error_code& 
+exception::code() const noexcept
+{
+	return (this->_code);
+}
+
+const string&
+exception::what() const noexcept
+{
+	return _info;
+}
+
+failure::failure(const string& _msg, const error_code& _code) noexcept
+	: exception(_msg, _code)
+{
+}
+
+failure::failure(const string& _msg, const string& _stack, const error_code& _code) noexcept
+	: exception(_msg, _stack, _code)
+{
+}
+
+failure::failure(const error_code& _code) noexcept
+	: exception(_code)
+{
+}
+
+failure::failure(const error_code::int_type& _code) noexcept
+	: exception(_code)
+{
+}
+
+failure::~failure() noexcept
+{
+}
+
+_NAME_END

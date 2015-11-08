@@ -37,12 +37,10 @@
 #include <ray/mesh_render_component.h>
 #include <ray/mesh_component.h>
 
-#include <ray/render_features.h>
 #include <ray/render_factory.h>
 #include <ray/render_buffer.h>
 
 #include <ray/material_maker.h>
-#include <ray/game_server.h>
 #include <ray/resource.h>
 
 _NAME_BEGIN
@@ -64,7 +62,6 @@ MeshRenderComponent::clone() const noexcept
 	result->setCastShadow(this->getCastShadow());
 	result->setReceiveShadow(this->getReceiveShadow());
 	result->setName(this->getName());
-	result->setVisible(this->getVisible());
 
 	for (auto& it : this->getSharedMaterials())
 	{
@@ -76,157 +73,53 @@ MeshRenderComponent::clone() const noexcept
 }
 
 void
-MeshRenderComponent::onAttach() except
+MeshRenderComponent::onActivate() except
 {
-	RenderComponent::onAttach();
-
-	if (!this->hasSharedMaterial())
+	auto component = this->getGameObject()->getComponent<MeshComponent>();
+	if (component)
 	{
-		auto component = this->getGameObject()->getComponent<MeshComponent>();
-		if (!component)
+		auto mesh = component->getMesh();
+		if (!mesh)
 			return;
 
 		auto model = ResLoader<Model>::find(component->getName());
 		if (!model)
 			return;
 
-		_buildMaterials(model);
+		buildMaterials(model);
+		buildRenderObjects(mesh);
+
+		_attacRenderObjects();
 	}
 }
 
 void
-MeshRenderComponent::onRemove() noexcept
+MeshRenderComponent::buildMaterials(ModelPtr model) except
 {
-	RenderComponent::onRemove();
-}
-
-void
-MeshRenderComponent::onActivate() except
-{
-	RenderComponent::onActivate();
-
-	auto component = this->getGameObject()->getComponent<MeshComponent>();
-	if (!component)
+	if (!this->getName().empty())
 		return;
 
-	auto mesh = component->getMesh();
-	if (!mesh)
-		return;
-
-	auto model = ResLoader<Model>::find(component->getName());
-	if (!model)
-		return;
-
-	_buildRenderObjects(mesh);
-	_attacRenderObjects();
-}
-
-void
-MeshRenderComponent::onDeactivate() noexcept
-{
-	RenderComponent::onDeactivate();
-
-	_dttachRenderhObjects();
-
-	if (_renderObjects.empty())
-	{
-		for (auto& it : _renderObjects)
-			it.reset();
-
-		_renderObjects.clear();
-	}
-
-	if (_renderBuffers.empty())
-	{
-		for (auto& it : _renderBuffers)
-			it.reset();
-
-		_renderBuffers.clear();
-	}
-}
-
-void
-MeshRenderComponent::onMoveAfter() noexcept
-{
-	RenderComponent::onMoveAfter();
-
-	for (auto& it : _renderObjects)
-	{
-		it->setTransform(this->getGameObject()->getTransform());
-		it->setTransformInverse(this->getGameObject()->getTransformInverse());
-		it->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
-	}
-}
-
-void
-MeshRenderComponent::onLayerChangeAfter() noexcept
-{
-	RenderComponent::onLayerChangeAfter();
-
-	for (auto& it : _renderObjects)
-	{
-		it->setLayer(this->getGameObject()->getLayer());
-	}
-}
-
-void
-MeshRenderComponent::_attacRenderObjects() noexcept
-{
-	for (auto& it : _renderObjects)
-	{
-		auto renderer = this->getGameObject()->getGameServer()->getFeature<RenderFeatures>();
-		if (renderer)
-		{
-			auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
-			if (renderScene)
-			{
-				it->setRenderScene(renderScene);
-			}
-		}
-	}
-}
-
-void
-MeshRenderComponent::_dttachRenderhObjects() noexcept
-{
-	for (auto& it : _renderObjects)
-	{
-		it->setRenderScene(nullptr);
-		it = nullptr;
-	}
-
-	_renderObjects.clear();
-}
-
-void
-MeshRenderComponent::_buildMaterials(ModelPtr model) except
-{
 	auto materials = model->getMaterialsList();
 	for (auto& it : materials)
 	{
 		std::string diffuseName;
+		std::string normalName;
+		std::string specularName;
 		TexturePtr diffuseTexture;
+		TexturePtr normalTexture;
+		TexturePtr specularTexture;
 
 		float transparent = 1;
 		float shininess = 0;
 		Vector3 diffuse = Vector3::Zero;
 		Vector3 specular = Vector3::Zero;
 		it->get(MATKEY_TEXTURE_DIFFUSE(0), diffuseName);
+		it->get(MATKEY_TEXTURE_NORMALS(0), normalName);
+		it->get(MATKEY_TEXTURE_SPECULAR(0), specularName);
 		it->get(MATKEY_OPACITY, transparent);
 		it->get(MATKEY_SHININESS, shininess);
 		it->get(MATKEY_COLOR_DIFFUSE, diffuse);
 		it->get(MATKEY_COLOR_SPECULAR, specular);
-
-		MaterialPtr material = nullptr;
-
-		MaterialMaker maker;
-		if (transparent == 1)
-			material = maker.load("sys:fx/opacity.glsl");
-		else
-			material = maker.load("sys:fx/transparent.glsl");
-
-		this->addMaterial(material);
-		this->addSharedMaterial(material);
 
 		if (!diffuseName.empty())
 		{
@@ -234,35 +127,144 @@ MeshRenderComponent::_buildMaterials(ModelPtr model) except
 			if (!directory.empty())
 			{
 				diffuseTexture = RenderFactory::createTexture(directory + diffuseName);
-				if (diffuseTexture)
-				{
-					material->getParameter("decal")->assign(diffuseTexture);
-					material->getParameter("diffuse")->assign(Vector4(diffuse, 0));
-				}
+				/*if (diffuseTexture->getTexFormat() == PixelFormat::R8G8B8A8)
+					transparent = 0;*/
 			}
+		}
+
+		if (!normalName.empty())
+		{
+			const std::string& directory = model->getDirectory();
+			if (!directory.empty())
+			{
+				normalTexture = RenderFactory::createTexture(directory + normalName);
+			}
+		}
+
+		if (!specularName.empty())
+		{
+			const std::string& directory = model->getDirectory();
+			if (!directory.empty())
+			{
+				specularTexture = RenderFactory::createTexture(directory + specularName);
+			}
+		}
+
+		MaterialPtr material = nullptr;
+
+		MaterialMaker maker;
+		if (normalTexture)
+		{
+			if (transparent == 1)
+				material = maker.load("sys:fx/opacity_normal.glsl");
+			else
+				material = maker.load("sys:fx/specific.glsl");
+		}
+		else
+		{
+			if (transparent == 1)
+				material = maker.load("sys:fx/opacity.glsl");
+			else
+				material = maker.load("sys:fx/specific.glsl");
+		}
+
+		if (normalTexture)
+		{
+			material->getParameter("texNormal")->assign(normalTexture);
+		}
+
+		if (diffuseTexture)
+		{
+			material->getParameter("diffuse")->assign(Vector4(diffuse, 0));
+			material->getParameter("texDiffuse")->assign(diffuseTexture);
 		}
 		else
 		{
 			material->getParameter("diffuse")->assign(Vector4(diffuse, 1));
 		}
 
-		material->getParameter("opacity")->assign(transparent);
-		material->getParameter("shininess")->assign(shininess);
-		material->getParameter("specular")->assign(specular);
+		if (material->getParameter("opacity"))
+			material->getParameter("opacity")->assign(transparent);
+
+		if (specularTexture)
+		{
+			material->getParameter("texSpecular")->assign(specularTexture);
+			material->getParameter("specular")->assign(Vector4(specular, 0));
+		}
+		else
+		{
+			material->getParameter("shininess")->assign(shininess / 8192);
+			material->getParameter("specular")->assign(Vector4(specular, 1));
+		}
+
+		this->addMaterial(material);
+		this->addSharedMaterial(material);
 	}
 }
 
 void
-MeshRenderComponent::_buildRenderObjects(MeshPropertyPtr mesh) noexcept
+MeshRenderComponent::buildRenderObjects(MeshPropertyPtr mesh) noexcept
+{
+	auto children = mesh->getChildren();
+
+	std::vector<MeshPropertyPtr> meshes;
+	meshes.push_back(mesh);
+	meshes.insert(meshes.end(), children.begin(), children.end());
+
+	auto renderBuffer = RenderFactory::createRenderBuffer(meshes);
+	if (children.empty())
+	{
+		auto renderObject = this->buildRenderObject(mesh, renderBuffer);
+		if (renderObject)
+		{
+			this->_setRenderObject(renderObject);
+		}
+	}
+	else
+	{
+		std::size_t startVertice = 0;
+		std::size_t startIndice = 0;
+
+		RenderObjectPtr root = std::make_shared<RenderMesh>();
+		root->setBoundingBox(mesh->getBoundingBoxDownwards());
+
+		for (auto& it : meshes)
+		{
+			auto submesh = this->buildRenderObject(it, renderBuffer);
+			if (submesh)
+			{
+				auto renderable = submesh->getRenderIndirect();
+
+#if !defined(EGLAPI)
+				renderable->startVertice = startVertice;
+#else
+				renderable->startVertice = 0;
+#endif
+				renderable->startIndice = startIndice;
+				renderable->numVertices = it->getNumVertices();
+				renderable->numIndices = it->getNumIndices();
+
+				startVertice += it->getNumVertices();
+				startIndice += it->getNumIndices();
+
+				root->addSubRenderObject(submesh);
+			}
+		};
+
+		this->_setRenderObject(root);
+	}
+}
+
+RenderObjectPtr
+MeshRenderComponent::buildRenderObject(MeshPropertyPtr mesh, RenderBufferPtr buffer) noexcept
 {
 	auto material = this->getMaterial(mesh->getMaterialID());
 	if (material)
 	{
-		auto renderBuffer = RenderFactory::createRenderBuffer(*mesh);
 		auto renderObject = std::make_shared<RenderMesh>();
-
-		renderObject->setRenderBuffer(renderBuffer, VertexType::GPU_TRIANGLE);
+		renderObject->setRenderBuffer(buffer);
 		renderObject->setBoundingBox(mesh->getBoundingBox());
+		renderObject->setRenderListener(this);
 
 		renderObject->setMaterial(material);
 
@@ -275,15 +277,10 @@ MeshRenderComponent::_buildRenderObjects(MeshPropertyPtr mesh) noexcept
 		renderObject->setTransformInverse(this->getGameObject()->getTransformInverse());
 		renderObject->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
 
-		_renderObjects.push_back(renderObject);
-		_renderBuffers.push_back(renderBuffer);
+		return renderObject;
 	}
 
-	auto meshes = mesh->getChildren();
-	for (std::size_t i = 0; i < meshes.size(); i++)
-	{
-		this->_buildRenderObjects(meshes[i]);
-	};
+	return nullptr;
 }
 
 _NAME_END

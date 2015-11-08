@@ -38,16 +38,24 @@
 
 _NAME_BEGIN
 
-RenderObject::RenderObject() noexcept
-    : _isCastShadow(true)
-    , _isReceiveShadow(true)
-    , _renderListener(nullptr)
-    , _isNeedUpdate(false)
-    , _layer(0)
+RenderListener::RenderListener() noexcept
 {
-    _transform.loadIdentity();
-    _transformInverse.loadIdentity();
-    _transformInverseTranspose.loadIdentity();
+}
+
+RenderListener::~RenderListener() noexcept
+{
+}
+
+RenderObject::RenderObject() noexcept
+	: _layer(0)
+	, _isCastShadow(true)
+	, _isReceiveShadow(true)
+	, _renderListener(nullptr)
+	, _needUpdate(true)
+	, _transform(Matrix4x4::One)
+	, _transformInverse(Matrix4x4::One)
+	, _transformInverseTranspose(Matrix4x4::One)
+{
 }
 
 RenderObject::~RenderObject() noexcept
@@ -57,153 +65,179 @@ RenderObject::~RenderObject() noexcept
 void
 RenderObject::setTransform(const Matrix4x4& transform) noexcept
 {
-    _transform = transform;
-    _isNeedUpdate = true;
+	_transform = transform;
+	_needUpdate = true;
 }
 
 void
 RenderObject::setTransformInverse(const Matrix4x4& transform) noexcept
 {
-    _transformInverse = transform;
+	_transformInverse = transform;
 }
 
 void
 RenderObject::setTransformInverseTranspose(const Matrix4x4& transform) noexcept
 {
-    _transformInverseTranspose = transform;
+	_transformInverseTranspose = transform;
 }
 
 void
 RenderObject::setBoundingBox(const Bound& bound) noexcept
 {
-    _boundingBox = bound;
-    _isNeedUpdate = true;
+	_boundingBox = bound;
+	_needUpdate = true;
 }
 
 void
 RenderObject::setReceiveShadow(bool enable) noexcept
 {
-    _isReceiveShadow = enable;
+	_isReceiveShadow = enable;
 }
 
 void
-RenderObject::setLayer(std::int32_t layer) noexcept
+RenderObject::setLayer(std::uint8_t layer) noexcept
 {
-    _layer = layer;
+	_layer = layer;
 }
 
-int
+std::uint8_t
 RenderObject::getLayer() const noexcept
 {
-    return _layer;
+	return _layer;
 }
 
 void
 RenderObject::setCastShadow(bool value) noexcept
 {
-    _isCastShadow = value;
+	_isCastShadow = value;
 }
 
 void
 RenderObject::setRenderListener(RenderListener* listener) noexcept
 {
-    _renderListener = listener;
+	_renderListener = listener;
 }
 
 const Matrix4x4&
 RenderObject::getTransform() const noexcept
 {
-    return _transform;
+	return _transform;
 }
 
 const Matrix4x4&
 RenderObject::getTransformInverse() const noexcept
 {
-    return _transformInverse;
+	return _transformInverse;
 }
 
 const Matrix4x4&
 RenderObject::getTransformInverseTranspose() const noexcept
 {
-    return _transformInverseTranspose;
+	return _transformInverseTranspose;
 }
 
 bool
 RenderObject::getReceiveShadow() const noexcept
 {
-    return _isReceiveShadow;
+	return _isReceiveShadow;
 }
 
 bool
 RenderObject::getCastShadow()  const noexcept
 {
-    return _isCastShadow;
+	return _isCastShadow;
 }
 
 RenderListener*
 RenderObject::getRenderListener() noexcept
 {
-    return _renderListener;
+	return _renderListener;
 }
 
 const Bound&
 RenderObject::getBoundingBox() const noexcept
 {
-    return _boundingBox;
+	return _boundingBox;
 }
 
 const Bound&
 RenderObject::getBoundingBoxInWorld() const noexcept
 {
-    this->updateBoundingBoxInWorld();
-    return _worldBoundingxBox;
+	this->_updateBoundingBoxInWorld();
+	return _worldBoundingxBox;
 }
 
 void
 RenderObject::setMaterial(MaterialPtr) noexcept
 {
-    assert(false);
+	assert(false);
 }
 
 MaterialPtr
 RenderObject::getMaterial() noexcept
 {
-    return nullptr;
+	return nullptr;
 }
 
 void
-RenderObject::setRenderBuffer(RenderBufferPtr geometry, RenderablePtr renderable) noexcept
+RenderObject::setRenderBuffer(RenderBufferPtr geometry) noexcept
 {
-    assert(nullptr);
-}
-
-void
-RenderObject::setRenderBuffer(RenderBufferPtr geometry, VertexType type) noexcept
-{
-    assert(nullptr);
+	assert(nullptr);
 }
 
 RenderBufferPtr
 RenderObject::getRenderBuffer() noexcept
 {
-    return nullptr;
-}
-
-RenderablePtr
-RenderObject::getRenderable() noexcept
-{
-    return nullptr;
+	return nullptr;
 }
 
 void
-RenderObject::updateBoundingBoxInWorld() const noexcept
+RenderObject::setRenderIndirect(RenderIndirectPtr renderable) noexcept
 {
-    if (_isNeedUpdate)
-    {
-        _worldBoundingxBox = _boundingBox;
-        _worldBoundingxBox.center(_boundingBox.center() + _transform.getTranslate());
-        _isNeedUpdate = false;
-    }
+	assert(nullptr);
+}
+
+RenderIndirectPtr
+RenderObject::getRenderIndirect() noexcept
+{
+	return nullptr;
+}
+
+void 
+RenderObject::addSubRenderObject(RenderObjectPtr object) noexcept
+{
+	auto it = std::find(_renderObjects.begin(), _renderObjects.end(), object);
+	if (it == _renderObjects.end())
+	{
+		_renderObjects.push_back(object);
+	}
+}
+
+void 
+RenderObject::removeSubRenderObject(RenderObjectPtr object) noexcept
+{
+	auto it = std::find(_renderObjects.begin(), _renderObjects.end(), object);
+	if (it != _renderObjects.end())
+	{
+		_renderObjects.erase(it);
+	}
+}
+
+RenderObjects& 
+RenderObject::getSubeRenderObjects() noexcept
+{
+	return _renderObjects;
+}
+
+void
+RenderObject::_updateBoundingBoxInWorld() const noexcept
+{
+	if (_needUpdate)
+	{
+		_worldBoundingxBox = _boundingBox;
+		_worldBoundingxBox.center(_boundingBox.center() + _transform.getTranslate());
+		_needUpdate = false;
+	}
 }
 
 _NAME_END

@@ -37,10 +37,7 @@
 #ifndef _H_WIN_WKBS_H_
 #define _H_WIN_WKBS_H_
 
-#include <ray/platform.h>
-
-#include <string>
-#include <vector>
+#include <ray/string.h>
 
 _NAME_BEGIN
 
@@ -79,9 +76,9 @@ public:
         DWORD typeID;
         ULONG64 modBase;
         DWORD64 address;
-        std::string typeName;
-        std::string varName;
-        std::string valueName;
+        string typeName;
+        string varName;
+        string valueName;
     };
 
     struct VariableList
@@ -96,11 +93,11 @@ public:
         DWORD offsetFromLine;
         DWORD lineNumber;
         DWORD64 baseOfImage;
-        std::string name;
-        std::string lineFileName;
-        std::string moduleName;
-        std::string imageName;
-        std::string loadedImageName;
+        string name;
+        string lineFileName;
+        string moduleName;
+        string imageName;
+        string loadedImageName;
         VariableList variable;
     };
 
@@ -109,15 +106,17 @@ public:
     static const _CallstackEntryType next = (_CallstackEntryType)0x1;
     static const _CallstackEntryType last = (_CallstackEntryType)0x2;
 
+	typedef std::basic_ostringstream<char_type> ostringstream;
+
     _INT_BITMASK(_Options, Options);
     _INT_BITMASK(_CallstackEntryType, EntryType);
 
 protected:
 
-    static std::string GetCurrentDirectory() noexcept;
-    static std::string GetModuleFileName(HMODULE hModule = 0) noexcept;
-    static std::string GetModuleDirectory(HMODULE hModule = 0) noexcept;
-    static std::string GetEnvironmentVariable(const std::string& name) noexcept;
+    static string GetCurrentDirectory() noexcept;
+    static string GetModuleFileName(HMODULE hModule = 0) noexcept;
+    static string GetModuleDirectory(HMODULE hModule = 0) noexcept;
+    static string GetEnvironmentVariable(const string& name) noexcept;
 };
 
 _NAME_END

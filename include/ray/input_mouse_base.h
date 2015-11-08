@@ -45,35 +45,34 @@ _NAME_BEGIN
 class EXPORT InputMouse : public InputController
 {
 public:
-    InputMouse() noexcept;
-    virtual ~InputMouse() noexcept;
+	InputMouse() noexcept;
+	virtual ~InputMouse() noexcept;
 
-    virtual void lockMouse() noexcept = 0;
-    virtual void unlockMouse() noexcept = 0;
-    virtual bool isLockedMouse() const noexcept = 0;
+	virtual void lockMouse() noexcept = 0;
+	virtual void unlockMouse() noexcept = 0;
+	virtual bool isLockedMouse() const noexcept = 0;
 
-    virtual void showMouse() noexcept = 0;
-    virtual void hideMouse() noexcept = 0;
-    virtual bool isShowMouse() noexcept = 0;
+	virtual void showMouse() noexcept = 0;
+	virtual void hideMouse() noexcept = 0;
+	virtual bool isShowMouse() noexcept = 0;
 
-    virtual void setPosition(int x, int y) noexcept = 0;
-    virtual void setPositionX(int x) noexcept = 0;
-    virtual void setPositionY(int y) noexcept = 0;
+	virtual void setPosition(int x, int y) noexcept = 0;
+	virtual void setPositionX(int x) noexcept = 0;
+	virtual void setPositionY(int y) noexcept = 0;
 
-    virtual int getPositionX() const noexcept = 0;
-    virtual int getPositionY() const noexcept = 0;
+	virtual int getPositionX() const noexcept = 0;
+	virtual int getPositionY() const noexcept = 0;
 
-    virtual bool getButtonDown(InputButton::Code key) const noexcept = 0;
-    virtual bool getButtonUp(InputButton::Code key) const noexcept = 0;
+	virtual bool getButtonDown(InputButton::Code key) const noexcept = 0;
+	virtual bool getButtonUp(InputButton::Code key) const noexcept = 0;
 
-    virtual bool getButton(InputButton::Code key) const noexcept = 0;
+	virtual bool getButton(InputButton::Code key) const noexcept = 0;
 
-    virtual void onFrameBegin() noexcept = 0;
-    virtual void onEvent(const InputEvent& event) noexcept = 0;
+	virtual InputMousePtr clone() const noexcept = 0;
 
 private:
-    InputMouse(const InputMouse&) noexcept = delete;
-    InputMouse& operator=(const InputMouse&) noexcept = delete;
+	InputMouse(const InputMouse&) noexcept = delete;
+	InputMouse& operator=(const InputMouse&) noexcept = delete;
 };
 
 _NAME_END

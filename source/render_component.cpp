@@ -36,6 +36,10 @@
 // +----------------------------------------------------------------------
 #include <ray/render_component.h>
 #include <ray/render_factory.h>
+#include <ray/render_features.h>
+
+#include <ray/game_server.h>
+#include <ray/game_event.h>
 
 _NAME_BEGIN
 
@@ -49,6 +53,8 @@ RenderComponent::RenderComponent() noexcept
 
 RenderComponent::~RenderComponent() noexcept
 {
+	if (_renderObject)
+		_renderObject->setRenderScene(nullptr);
 }
 
 void
@@ -142,7 +148,8 @@ RenderComponent::hasSharedMaterial() const noexcept
 void
 RenderComponent::load(iarchive& reader) noexcept
 {
-	reader >> static_cast<GameComponent*>(this);
+	GameComponent::load(reader);
+
 	reader >> rtti_alias(_isCastShadow, "castshadow");
 	reader >> rtti_alias(_isReceiveShadow, "receiveshadow");
 
@@ -157,6 +164,47 @@ RenderComponent::save(oarchive& write) noexcept
 {
 	write << rtti_alias(_isCastShadow, "castshadow");
 	write << rtti_alias(_isReceiveShadow, "receiveshadow");
+}
+
+void
+RenderComponent::_attacRenderObjects() noexcept
+{
+	auto renderer = this->getGameObject()->getGameServer()->getFeature<RenderFeatures>();
+	if (renderer)
+	{
+		auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
+		if (renderScene)
+		{
+			_renderObject->setRenderScene(renderScene);
+		}
+	}
+}
+
+void
+RenderComponent::_dettachRenderhObjects() noexcept
+{
+	if (_renderObject)
+	{
+		_renderObject->setRenderScene(nullptr);
+		_renderObject = nullptr;
+	}
+}
+
+void 
+RenderComponent::_setRenderObject(RenderObjectPtr object) noexcept
+{
+	this->_dettachRenderhObjects();
+
+	_renderObject = object;
+	_renderObject->setRenderListener(this);
+
+	this->_attacRenderObjects();
+}
+
+RenderObjectPtr
+RenderComponent::_getRenderObject() noexcept
+{
+	return _renderObject;
 }
 
 void
@@ -186,6 +234,46 @@ RenderComponent::onRemove() noexcept
 	}
 
 	_materials.clear();
+}
+
+void 
+RenderComponent::onActivate() except
+{
+	this->_attacRenderObjects();
+}
+
+void 
+RenderComponent::onDeactivate() noexcept
+{
+	this->_dettachRenderhObjects();
+}
+
+void
+RenderComponent::onMoveAfter() noexcept
+{
+	_renderObject->setTransform(this->getGameObject()->getTransform());
+	_renderObject->setTransformInverse(this->getGameObject()->getTransformInverse());
+	_renderObject->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
+}
+
+void
+RenderComponent::onLayerChangeAfter() noexcept
+{
+	_renderObject->setLayer(this->getGameObject()->getLayer());
+}
+
+void 
+RenderComponent::onWillRenderObject() noexcept
+{
+	WillRenderObjectEvent event;
+	this->sendMessage(&event);
+}
+
+void 
+RenderComponent::onRenderObject() noexcept
+{
+	RenderObjectEvent event;
+	this->sendMessage(&event);
 }
 
 _NAME_END

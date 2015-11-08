@@ -1,22 +1,11 @@
 <?xml version="1.0"?>
 <effect version="1270" language="glsl">
     <include name="sys:fx/common.glsl"/>
-    <parameter name="matModel" semantic="matModel" />
-    <parameter name="matViewProject" semantic="matViewProject" />
     <parameter name="decal" type="sampler2D" />
     <parameter name="factor" type="float"/>
     <shader name="vertex">
         <![CDATA[
-            uniform mat4 matModel;
-            uniform mat4 matViewProject;
-
             out vec4 position;
-
-            void ShadowVS()
-            {
-                vec4 pos = matViewProject * matModel * glsl_Position;
-                gl_Position = position = pos;
-            }
 
             void BlurVS()
             {
@@ -72,9 +61,6 @@
       ]]>
     </shader>
     <technique name="custom">
-        <pass name="shadow">
-            <state name="vertex" value="ShadowVS"/>
-        </pass>
         <pass name="blurX">
             <state name="vertex" value="BlurVS"/>
             <state name="fragment" value="BlurxPS"/>

@@ -35,10 +35,11 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "terrain.h"
+#include "terrain_items.h"
 
-__ImplementSubClass(Terrain, ray::GameController)
+__ImplementSubClass(TerrainComponent, ray::GameController)
 
-Terrain::Terrain() noexcept
+TerrainComponent::TerrainComponent() noexcept
 	: _createRadius(2)
 	, _deleteRadius(9)
 	, _renderRadius(10)
@@ -50,14 +51,19 @@ Terrain::Terrain() noexcept
 {
 	_maxItem = std::numeric_limits<ItemID>::max();
 	_maxChunks = _deleteRadius  * _deleteRadius * _deleteRadius;
+
+	this->addObject(std::make_shared<TerrainGrass>());
+	this->addObject(std::make_shared<TerrainTree>());
+	this->addObject(std::make_shared<TerrainClound>());
+	this->addObject(std::make_shared<TerrainWater>());
 }
 
-Terrain::~Terrain() noexcept
+TerrainComponent::~TerrainComponent() noexcept
 {
 }
 
 bool
-Terrain::addBlockByMousePos(std::int32_t x, std::int32_t y) noexcept
+TerrainComponent::addBlockByMousePos(std::int32_t x, std::int32_t y) noexcept
 {
 	ray::Vector3 pos(x, y, 1);
 
@@ -67,7 +73,7 @@ Terrain::addBlockByMousePos(std::int32_t x, std::int32_t y) noexcept
 
 	auto translate = player->getTranslate();
 
-	auto world = player->getComponent<ray::CameraComponent>()->unproject(pos);
+	auto world = player->getComponent<ray::CameraComponent>()->screenToWorld(pos);
 	auto view = world - player->getTranslate();
 	view.normalize();
 
@@ -75,7 +81,7 @@ Terrain::addBlockByMousePos(std::int32_t x, std::int32_t y) noexcept
 }
 
 bool
-Terrain::addBlockByRaycast(const ray::Vector3& translate, const ray::Vector3& view) noexcept
+TerrainComponent::addBlockByRaycast(const ray::Vector3& translate, const ray::Vector3& view) noexcept
 {
 	ray::int3 out;
 	auto chunk = this->getChunkByRaycast(translate, view, out);
@@ -137,7 +143,7 @@ Terrain::addBlockByRaycast(const ray::Vector3& translate, const ray::Vector3& vi
 }
 
 bool
-Terrain::removeBlockByMousePos(std::int32_t x, std::int32_t y) noexcept
+TerrainComponent::removeBlockByMousePos(std::int32_t x, std::int32_t y) noexcept
 {
 	ray::int3 out;
 	auto chunk = getChunkByMousePos(x, y, out);
@@ -152,7 +158,7 @@ Terrain::removeBlockByMousePos(std::int32_t x, std::int32_t y) noexcept
 }
 
 bool
-Terrain::removeBlockByRaycast(const ray::Vector3& translate, const ray::Vector3& view) noexcept
+TerrainComponent::removeBlockByRaycast(const ray::Vector3& translate, const ray::Vector3& view) noexcept
 {
 	ray::int3 out;
 	auto chunk = getChunkByRaycast(translate, view, out);
@@ -167,7 +173,7 @@ Terrain::removeBlockByRaycast(const ray::Vector3& translate, const ray::Vector3&
 }
 
 TerrainChunkPtr
-Terrain::getChunkByChunkPos(ChunkPosition x, ChunkPosition y, ChunkPosition z) const noexcept
+TerrainComponent::getChunkByChunkPos(ChunkPosition x, ChunkPosition y, ChunkPosition z) const noexcept
 {
 	for (auto& it : _chunks)
 	{
@@ -184,7 +190,7 @@ Terrain::getChunkByChunkPos(ChunkPosition x, ChunkPosition y, ChunkPosition z) c
 }
 
 TerrainChunkPtr
-Terrain::getChunkByMousePos(std::int32_t x, std::int32_t y, ray::int3& out) const noexcept
+TerrainComponent::getChunkByMousePos(std::int32_t x, std::int32_t y, ray::int3& out) const noexcept
 {
 	ray::Vector3 pos(x, y, 1);
 
@@ -194,7 +200,7 @@ Terrain::getChunkByMousePos(std::int32_t x, std::int32_t y, ray::int3& out) cons
 
 	auto translate = player->getTranslate();
 
-	auto world = player->getComponent<ray::CameraComponent>()->unproject(pos);
+	auto world = player->getComponent<ray::CameraComponent>()->screenToWorld(pos);
 	auto view = world - player->getTranslate();
 	view.normalize();
 
@@ -202,7 +208,7 @@ Terrain::getChunkByMousePos(std::int32_t x, std::int32_t y, ray::int3& out) cons
 }
 
 TerrainChunkPtr
-Terrain::getChunkByRaycast(const ray::Vector3& translate, const ray::Vector3& view, ray::int3& out) const noexcept
+TerrainComponent::getChunkByRaycast(const ray::Vector3& translate, const ray::Vector3& view, ray::int3& out) const noexcept
 {
 	BlockPosition x = chunked(translate.x);
 	BlockPosition y = chunked(translate.y);
@@ -280,19 +286,19 @@ Terrain::getChunkByRaycast(const ray::Vector3& translate, const ray::Vector3& vi
 }
 
 ChunkPosition
-Terrain::chunked(float x) const noexcept
+TerrainComponent::chunked(float x) const noexcept
 {
 	return  std::floorf(x / _scale / _size);
 }
 
 float
-Terrain::unchunk(ChunkPosition x) const noexcept
+TerrainComponent::unchunk(ChunkPosition x) const noexcept
 {
 	return x * _size * _scale;
 }
 
 bool
-Terrain::visiable(const ray::Frustum& fru, ChunkPosition x, ChunkPosition y, ChunkPosition z) const noexcept
+TerrainComponent::visiable(const ray::Frustum& fru, ChunkPosition x, ChunkPosition y, ChunkPosition z) const noexcept
 {
 	ray::AABB aabb;
 
@@ -310,7 +316,7 @@ Terrain::visiable(const ray::Frustum& fru, ChunkPosition x, ChunkPosition y, Chu
 }
 
 void
-Terrain::addItem(TerrainItemPtr item) noexcept
+TerrainComponent::addItem(TerrainItemPtr item) noexcept
 {
 	if (_itmes.size() < _maxItem)
 	{
@@ -320,12 +326,12 @@ Terrain::addItem(TerrainItemPtr item) noexcept
 }
 
 void
-Terrain::removeItem(TerrainItemPtr item) noexcept
+TerrainComponent::removeItem(TerrainItemPtr item) noexcept
 {
 }
 
 void
-Terrain::addObject(TerrainObjectPtr object) noexcept
+TerrainComponent::addObject(TerrainObjectPtr object) noexcept
 {
 	_objects.push_back(object);
 	for (auto& it : object->getItems())
@@ -335,18 +341,18 @@ Terrain::addObject(TerrainObjectPtr object) noexcept
 }
 
 void
-Terrain::removeObject(TerrainObjectPtr object) noexcept
+TerrainComponent::removeObject(TerrainObjectPtr object) noexcept
 {
 }
 
 TerrainObjects&
-Terrain::getObjects() noexcept
+TerrainComponent::getObjects() noexcept
 {
 	return _objects;
 }
 
 void
-Terrain::deleteChunks() noexcept
+TerrainComponent::deleteChunks() noexcept
 {
 	auto it = _chunks.begin();
 	auto end = _chunks.end();
@@ -377,7 +383,7 @@ Terrain::deleteChunks() noexcept
 }
 
 void
-Terrain::createChunks() noexcept
+TerrainComponent::createChunks() noexcept
 {
 	if (_chunks.size() > _maxChunks)
 		return;
@@ -445,7 +451,7 @@ Terrain::createChunks() noexcept
 }
 
 void
-Terrain::checkChunks() noexcept
+TerrainComponent::checkChunks() noexcept
 {
 	for (auto& it : _threads)
 	{
@@ -463,7 +469,7 @@ Terrain::checkChunks() noexcept
 }
 
 void
-Terrain::hitChunks() noexcept
+TerrainComponent::hitChunks() noexcept
 {
 	auto inputFeatures = this->getGameServer()->getFeature<ray::InputFeatures>();
 	if (inputFeatures)
@@ -484,7 +490,7 @@ Terrain::hitChunks() noexcept
 }
 
 void
-Terrain::dispose(std::shared_ptr<TerrainThread> ctx) noexcept
+TerrainComponent::dispose(std::shared_ptr<TerrainThread> ctx) noexcept
 {
 	while (!ctx->isQuitRequest)
 	{
@@ -506,13 +512,13 @@ Terrain::dispose(std::shared_ptr<TerrainThread> ctx) noexcept
 }
 
 ray::GameComponentPtr
-Terrain::clone() const noexcept
+TerrainComponent::clone() const noexcept
 {
 	return nullptr;
 }
 
 void
-Terrain::onActivate() except
+TerrainComponent::onActivate() except
 {
 	_player = find<ray::GameObject>("first_person_camera");
 	if (_player)
@@ -539,7 +545,7 @@ Terrain::onActivate() except
 		for (int i = 0; i < MAX_THREADS; i++)
 		{
 			auto thread = std::make_shared<TerrainThread>();
-			thread->_thread = std::make_unique<std::thread>(std::bind(&Terrain::dispose, this, thread));
+			thread->_thread = std::make_unique<std::thread>(std::bind(&TerrainComponent::dispose, this, thread));
 
 			_threads.push_back(thread);
 		}
@@ -547,7 +553,7 @@ Terrain::onActivate() except
 }
 
 void
-Terrain::onDeactivate() except
+TerrainComponent::onDeactivate() except
 {
 	_chunks.clear();
 	_itmes.clear();
@@ -569,7 +575,7 @@ Terrain::onDeactivate() except
 }
 
 void
-Terrain::onFrame() except
+TerrainComponent::onFrame() except
 {
 	this->deleteChunks();
 	this->checkChunks();

@@ -70,7 +70,7 @@ public:
 class TerrainMap final
 {
 public:
-	TerrainMap();
+	TerrainMap(TerrainComponent& _terrain);
 	~TerrainMap();
 
 	void create(std::size_t size, ChunkPosition x, ChunkPosition y, ChunkPosition z, std::size_t mask);
@@ -95,6 +95,8 @@ private:
 	TerrainMap& operator=(const TerrainMap&) noexcept = delete;
 
 private:
+
+	TerrainComponent& _terrain;
 
 	ChunkPosition _dx;
 	ChunkPosition _dy;

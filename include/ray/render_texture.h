@@ -41,110 +41,190 @@
 
 _NAME_BEGIN
 
-class EXPORT RenderTarget
+class EXPORT Texture
 {
 public:
-    RenderTarget() noexcept;
-    virtual ~RenderTarget() noexcept;
+	Texture() noexcept;
+	virtual ~Texture() noexcept;
 
-    void setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat format) noexcept;
-    virtual bool setup() except = 0;
-    virtual void close() noexcept = 0;
+	virtual bool setup() except = 0;
+	virtual void close() noexcept = 0;
 
-    void setActive(bool active) except;
-    bool getActive() const noexcept;
+	void setTexMipmap(bool enable) noexcept;
+	void setTexFormat(PixelFormat format) noexcept;
+	void setTexOp(TextureOp op) noexcept;
+	void setTexWrap(TextureWrap wrap) noexcept;
+	void setTexFilter(TextureFilter filter) noexcept;
+	void setTexDim(TextureDim mapping) noexcept;
+	void setMipLevel(std::uint8_t level) noexcept;
+	void setMipSize(std::uint32_t size) noexcept;
+	void setAnisotropy(Anisotropy anis) noexcept;
+	void setMultisample(bool enable) noexcept;
+	void setWidth(int w) noexcept;
+	void setHeight(int h) noexcept;
+	void setDepth(int d) noexcept;
+	void setStream(void* data) noexcept;
+	void setSize(int w, int h, int depth = 0) noexcept;
 
-    void setTexMipmap(bool enable) noexcept;
-    void setTexFormat(PixelFormat format) noexcept;
-    void setTexFilter(TextureFilter filter) noexcept;
-    void setTexWrap(TextureWrap wrap) noexcept;
-    void setTexOp(TextureOp op) noexcept;
-    void setTexDim(TextureDim map) noexcept;
-    void setMultiSample(bool multisample) noexcept;
+	TextureOp     getTexOp()   const noexcept;
+	PixelFormat   getTexFormat()  const noexcept;
+	TextureDim    getTexDim() const noexcept;
+	TextureWrap   getTexWrap() const noexcept;
+	TextureFilter getTexFilter() const noexcept;
+	Anisotropy    getTexAnisotropy() const noexcept;
 
-    TextureOp     getTexOp()   const noexcept;
-    TextureFilter getTexFilter() const noexcept;
-    TextureWrap   getTexWrap() const noexcept;
-    TextureDim    getTexDim() const noexcept;
-    PixelFormat getTexFormat()  const noexcept;
+	int getWidth()   const noexcept;
+	int getHeight()  const noexcept;
+	int getDepth()   const noexcept;
+	const int3& getSize()  const noexcept;
 
-    void setWidth(std::size_t w) noexcept;
-    void setHeight(std::size_t h) noexcept;
-    void setDepth(std::size_t d) noexcept;
-    void setSize(std::size_t w, std::size_t h, std::size_t depth = 0) noexcept;
+	std::uint8_t getMipLevel() const noexcept;
+	std::uint32_t getMipSize() const noexcept;
 
-    void setClearFlags(ClearFlags flags) noexcept;
-    void setClearColor(const Color4& color) noexcept;
-    void setClearDepth(float depth) noexcept;
-    void setClearStencil(int stencil) noexcept;
+	void* getStream() const noexcept;
 
-    ClearFlags getClearFlags() const noexcept;
-    Color4 getClearColor() const noexcept;
-    float getClearDepth() const noexcept;
-    int getClearStencil() const noexcept;
+	bool isMipmap() const noexcept;
+	bool isMultiSample() const noexcept;
 
-    std::size_t getWidth()   const noexcept;
-    std::size_t getHeight()  const noexcept;
-    std::size_t getDepth()   const noexcept;
-
-    bool isMipmap() const noexcept;
-    bool isMultiSample() const noexcept;
-
-    TexturePtr getResolveTexture() const noexcept;
-    TexturePtr getResolveDepthTexture() const noexcept;
-
-    void setSharedDepthTexture(RenderTargetPtr target) noexcept;
-    void setSharedStencilTexture(RenderTargetPtr target) noexcept;
-
-    RenderTargetPtr getSharedDepthTexture() const noexcept;
-    RenderTargetPtr getSharedStencilTexture() const noexcept;
+	void copy(TexturePtr other) noexcept;
+	void copy(const Texture& other) noexcept;
 
 private:
-    RenderTarget(RenderTarget&) noexcept = delete;
-    RenderTarget& operator=(const RenderTarget&)noexcept = delete;
+	Texture(const Texture&) noexcept = delete;
+	Texture& operator=(const Texture&) noexcept = delete;
 
 private:
 
-    Viewport _viewport;
+	bool _mipmap;
+	bool _multisample;
 
-    int        _clearStencil;
-    float      _clearDepth;
-    Color4     _clearColor;
-    ClearFlags _clearFlags;
+	int3 _size;
 
-    TexturePtr _resolveTexture;
+	std::uint8_t _mipLevel;
+	std::uint32_t _mipSize;
 
-    RenderTargetPtr _sharedDepthTexture;
-    RenderTargetPtr _sharedStencilTexture;
+	PixelFormat _format;
+	TextureDim _dim;
+	TextureOp _texop;
+	TextureFilter _filter;
+	TextureWrap _wrap;
+	Anisotropy _anis;
+
+	void* _data;
 };
 
-class EXPORT MultiRenderTarget
+class EXPORT TextureSample
 {
 public:
-    MultiRenderTarget() noexcept;
-    virtual ~MultiRenderTarget() noexcept;
+	void setTexWrap(TextureWrap wrap) noexcept;
+	void setTexFilter(TextureFilter filter) noexcept;
+	void setAnisotropy(Anisotropy anis) noexcept;
 
-    virtual bool setup() noexcept = 0;
-    virtual void close() noexcept = 0;
-
-    void attach(RenderTargetPtr texture) noexcept;
-    void detach(RenderTargetPtr texture) noexcept;
-
-    RenderTargets& getRenderTargets() noexcept;
-    const RenderTargets& getRenderTargets() const noexcept;
-
-    void setSharedDepthTexture(RenderTargetPtr target) noexcept;
-    void setSharedStencilTexture(RenderTargetPtr target) noexcept;
-
-    RenderTargetPtr getSharedDepthTexture() const noexcept;
-    RenderTargetPtr getSharedStencilTexture() const noexcept;
+	TextureWrap   getTexWrap() const noexcept;
+	TextureFilter getTexFilter() const noexcept;
+	Anisotropy    getTexAnisotropy() const noexcept;
 
 private:
+	TextureOp _texop;
+	TextureFilter _filter;
+	TextureWrap _wrap;
+	Anisotropy _anis;
+};
 
-    RenderTargets _textures;
+class EXPORT RenderTexture
+{
+public:
+	RenderTexture() noexcept;
+	virtual ~RenderTexture() noexcept;
 
-    RenderTargetPtr _sharedDepthTexture;
-    RenderTargetPtr _sharedStencilTexture;
+	void setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat format) noexcept;
+	void setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, PixelFormat format) noexcept;
+
+	virtual bool setup() except = 0;
+	virtual void close() noexcept = 0;
+
+	void setTexMipmap(bool enable) noexcept;
+	void setTexFormat(PixelFormat format) noexcept;
+	void setTexFilter(TextureFilter filter) noexcept;
+	void setTexWrap(TextureWrap wrap) noexcept;
+	void setTexOp(TextureOp op) noexcept;
+	void setTexDim(TextureDim map) noexcept;
+	void setMultiSample(bool multisample) noexcept;
+
+	TextureOp     getTexOp()   const noexcept;
+	TextureFilter getTexFilter() const noexcept;
+	TextureWrap   getTexWrap() const noexcept;
+	TextureDim    getTexDim() const noexcept;
+	PixelFormat getTexFormat()  const noexcept;
+
+	void setWidth(std::size_t w) noexcept;
+	void setHeight(std::size_t h) noexcept;
+	void setDepth(std::size_t d) noexcept;
+	void setSize(std::size_t w, std::size_t h, std::size_t depth = 0) noexcept;
+
+	std::size_t getWidth()   const noexcept;
+	std::size_t getHeight()  const noexcept;
+	std::size_t getDepth()   const noexcept;
+
+	bool isMipmap() const noexcept;
+	bool isMultiSample() const noexcept;
+
+	TexturePtr getResolveTexture() const noexcept;
+
+	void setSharedDepthTexture(RenderTexturePtr target) noexcept;
+	void setSharedStencilTexture(RenderTexturePtr target) noexcept;
+
+	RenderTexturePtr getSharedDepthTexture() const noexcept;
+	RenderTexturePtr getSharedStencilTexture() const noexcept;
+
+protected:
+
+	virtual void onSetRenderTextureBefore(RenderTexturePtr target) noexcept;
+	virtual void onSetRenderTextureAfter(RenderTexturePtr target) noexcept;
+
+private:
+	RenderTexture(RenderTexture&) noexcept = delete;
+	RenderTexture& operator=(const RenderTexture&)noexcept = delete;
+
+protected:
+
+	TexturePtr _resolveTexture;
+
+	RenderTexturePtr _sharedDepthTexture;
+	RenderTexturePtr _sharedStencilTexture;
+};
+
+class EXPORT MultiRenderTexture
+{
+public:
+	MultiRenderTexture() noexcept;
+	virtual ~MultiRenderTexture() noexcept;
+
+	virtual bool setup() noexcept = 0;
+	virtual void close() noexcept = 0;
+
+	virtual void attach(RenderTexturePtr texture) noexcept;
+	virtual void detach(RenderTexturePtr texture) noexcept;
+
+	virtual RenderTextures& getRenderTextures() noexcept;
+	virtual const RenderTextures& getRenderTextures() const noexcept;
+
+	virtual void setSharedDepthTexture(RenderTexturePtr target) noexcept;
+	virtual void setSharedStencilTexture(RenderTexturePtr target) noexcept;
+
+	virtual RenderTexturePtr getSharedDepthTexture() const noexcept;
+	virtual RenderTexturePtr getSharedStencilTexture() const noexcept;
+
+private:
+	MultiRenderTexture(MultiRenderTexture&) noexcept = delete;
+	MultiRenderTexture& operator=(const MultiRenderTexture&) noexcept = delete;
+
+protected:
+
+	RenderTextures _textures;
+
+	RenderTexturePtr _sharedDepthTexture;
+	RenderTexturePtr _sharedStencilTexture;
 };
 
 _NAME_END

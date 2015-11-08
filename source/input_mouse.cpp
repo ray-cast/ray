@@ -39,214 +39,220 @@
 _NAME_BEGIN
 
 DefaultInputMouse::DefaultInputMouse() noexcept
-    : _mouseX(0)
-    , _mouseY(0)
-    , _mouseOffsetX(0)
-    , _mouseOffsetY(0)
-    , _isMouseLock(false)
-    , _isMouseLocked(false)
-    , _isMouseHide(false)
+	: _mouseX(0)
+	, _mouseY(0)
+	, _mouseOffsetX(0)
+	, _mouseOffsetY(0)
+	, _isMouseLock(false)
+	, _isMouseLocked(false)
+	, _isMouseHide(false)
 {
-    std::memset(_buttonState, 0, sizeof(_buttonState));
+	std::memset(_buttonState, 0, sizeof(_buttonState));
 }
 
 void
 DefaultInputMouse::lockMouse() noexcept
 {
-    if (!isLockedMouse())
-    {
-        this->hideMouse();
+	if (!isLockedMouse())
+	{
+		this->hideMouse();
 
-        _lockX = _mouseX;
-        _lockY = _mouseY;
+		_lockX = _mouseX;
+		_lockY = _mouseY;
 
-        _isMouseLock = true;
-        _isMouseLocked = true;
-    }
+		_isMouseLock = true;
+		_isMouseLocked = true;
+	}
 }
 
 void
 DefaultInputMouse::unlockMouse() noexcept
 {
-    if (isLockedMouse())
-    {
-        this->showMouse();
+	if (isLockedMouse())
+	{
+		this->showMouse();
 
-        _isMouseLock = false;
-        _isMouseLocked = false;
-    }
+		_isMouseLock = false;
+		_isMouseLocked = false;
+	}
 }
 
 bool
 DefaultInputMouse::isLockedMouse() const noexcept
 {
-    return _isMouseLocked;
+	return _isMouseLocked;
 }
 
 void
 DefaultInputMouse::showMouse() noexcept
 {
-    if (_isMouseHide)
-    {
-        ToplevelInputMouse::showMouse();
-        _isMouseHide = false;
-    }
+	if (_isMouseHide)
+	{
+		ToplevelInputMouse::showMouse();
+		_isMouseHide = false;
+	}
 }
 
 void
 DefaultInputMouse::hideMouse() noexcept
 {
-    if (!_isMouseHide)
-    {
-        ToplevelInputMouse::hideMouse();
-        _isMouseHide = true;
-    }
+	if (!_isMouseHide)
+	{
+		ToplevelInputMouse::hideMouse();
+		_isMouseHide = true;
+	}
 }
 
 bool
 DefaultInputMouse::isShowMouse() noexcept
 {
-    return !_isMouseHide;
+	return !_isMouseHide;
 }
 
 void
 DefaultInputMouse::setPosition(int x, int y) noexcept
 {
-    _mouseX = x;
-    _mouseY = y;
-    ToplevelInputMouse::setPosition(_mouseOffsetX + _mouseX, _mouseOffsetY + _mouseY);
+	_mouseX = x;
+	_mouseY = y;
+	ToplevelInputMouse::setPosition(_mouseOffsetX + _mouseX, _mouseOffsetY + _mouseY);
 }
 
 void
 DefaultInputMouse::setPositionX(int x) noexcept
 {
-    _mouseX = x;
-    ToplevelInputMouse::setPosition(_mouseOffsetX + _mouseX, _mouseOffsetY + _mouseY);
+	_mouseX = x;
+	ToplevelInputMouse::setPosition(_mouseOffsetX + _mouseX, _mouseOffsetY + _mouseY);
 }
 
 void
 DefaultInputMouse::setPositionY(int y) noexcept
 {
-    _mouseY = y;
-    ToplevelInputMouse::setPosition(_mouseOffsetX + _mouseX, _mouseOffsetY + _mouseY);
+	_mouseY = y;
+	ToplevelInputMouse::setPosition(_mouseOffsetX + _mouseX, _mouseOffsetY + _mouseY);
 }
 
 int
 DefaultInputMouse::getPositionX() const noexcept
 {
-    return _mouseX;
+	return _mouseX;
 }
 
 int
 DefaultInputMouse::getPositionY() const noexcept
 {
-    return _mouseY;
+	return _mouseY;
 }
 
 bool
 DefaultInputMouse::getButtonDown(InputButton::Code key) const noexcept
 {
-    return _buttonState[key].down;
+	return _buttonState[key].down;
 }
 
 bool
 DefaultInputMouse::getButtonUp(InputButton::Code key) const noexcept
 {
-    return _buttonState[key].up;
+	return _buttonState[key].up;
 }
 
 bool
 DefaultInputMouse::getButton(InputButton::Code key) const noexcept
 {
-    return _buttonState[key].pressed;
+	return _buttonState[key].pressed;
 }
 
 void
 DefaultInputMouse::onFrameBegin() noexcept
 {
-    for (auto& button : _buttonState)
-    {
-        if (button.up)
-        {
-            button.pressed = false;
-        }
+	for (auto& button : _buttonState)
+	{
+		if (button.up)
+		{
+			button.pressed = false;
+		}
 
-        button.up = false;
-        button.down = false;
-    }
+		button.up = false;
+		button.down = false;
+	}
 }
 
 void
 DefaultInputMouse::onFrameEnd() noexcept
 {
-    if (_isMouseLocked)
-    {
-        this->setPosition(_lockX, _lockY);
-    }
+	if (_isMouseLocked)
+	{
+		this->setPosition(_lockX, _lockY);
+	}
 }
 
 void
 DefaultInputMouse::onObtainCapture() noexcept
 {
-    if (_isMouseLock)
-    {
-        this->hideMouse();
-        _isMouseLocked = true;
-    }
+	if (_isMouseLock)
+	{
+		this->hideMouse();
+		_isMouseLocked = true;
+	}
 }
 
 void
 DefaultInputMouse::onReleaseCapture() noexcept
 {
-    if (_isMouseLocked)
-    {
-        this->showMouse();
-        _isMouseLocked = false;
-    }
+	if (_isMouseLocked)
+	{
+		this->showMouse();
+		_isMouseLocked = false;
+	}
 }
 
 void
 DefaultInputMouse::onEvent(const InputEvent& event) noexcept
 {
-    switch (event.event)
-    {
-    case InputEvent::MouseMotion:
-    {
-        _mouseX = event.motion.x;
-        _mouseY = event.motion.y;
-        _mouseOffsetX = event.motion.xrel - event.motion.x;
-        _mouseOffsetY = event.motion.yrel - event.motion.y;
-    }
-    break;
-    case InputEvent::MouseWheelDown:
-    case InputEvent::MouseButtonDown:
-    {
-        auto& key = this->_buttonState[event.button.button];
-        if (!key.pressed)
-        {
-            key.down = true;
-            key.pressed = true;
-        }
-    }
-    break;
-    case InputEvent::MouseWheelUp:
-    case InputEvent::MouseButtonUp:
-    {
-        auto& key = this->_buttonState[event.button.button];
-        key.up = true;
-        key.pressed = false;
-        key.down = false;
-    }
-    break;
-    case InputEvent::MouseButtonDoubleClick:
-    {
-        auto& key = this->_buttonState[event.button.button];
-        key.click = true;
-    }
-    break;
-    default:
-        break;
-    }
+	switch (event.event)
+	{
+	case InputEvent::MouseMotion:
+	{
+		_mouseX = event.motion.x;
+		_mouseY = event.motion.y;
+		_mouseOffsetX = event.motion.xrel - event.motion.x;
+		_mouseOffsetY = event.motion.yrel - event.motion.y;
+	}
+	break;
+	case InputEvent::MouseWheelDown:
+	case InputEvent::MouseButtonDown:
+	{
+		auto& key = this->_buttonState[event.button.button];
+		if (!key.pressed)
+		{
+			key.down = true;
+			key.pressed = true;
+		}
+	}
+	break;
+	case InputEvent::MouseWheelUp:
+	case InputEvent::MouseButtonUp:
+	{
+		auto& key = this->_buttonState[event.button.button];
+		key.up = true;
+		key.pressed = false;
+		key.down = false;
+	}
+	break;
+	case InputEvent::MouseButtonDoubleClick:
+	{
+		auto& key = this->_buttonState[event.button.button];
+		key.click = true;
+	}
+	break;
+	default:
+		break;
+	}
+}
+
+InputMousePtr
+DefaultInputMouse::clone() const noexcept
+{
+	return std::make_shared<DefaultInputMouse>();
 }
 
 _NAME_END

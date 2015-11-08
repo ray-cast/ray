@@ -37,43 +37,50 @@
 #ifndef _H_OGL_TYPES_H_
 #define _H_OGL_TYPES_H_
 
-#include <ray/platform.h>
+#include <ray/render_device.h>
+#include <ray/render_buffer.h>
+#include <ray/render_texture.h>
+#include <ray/render_state.h>
+#include <ray/render_window.h>
+#include <ray/shader.h>
 
 #if defined(_BUILD_PLATFORM_SDL2)
 #    include <ray/sdl_canvas.h>
 #    define OGLCanvas SDLCanvas
 #else
-#    if defined(__WINDOWS__)
+#    if defined(_BUILD_PLATFORM_WINDOWS)
 #       include <ray/wgl_canvas.h>
 #       define OGLCanvas WGLCanvas
-#    elif defined(__LINUX__)
+#    elif defined(_BUILD_PLATFORM_LINUX)
 #       include <ray/x11_canvas.h>
-#       define TopLevelCanvas TopLevelWindowLINUX
-#    elif defined(__APPLE__)
+#       define OGLCanvas X11Canvas
+#    elif defined(_BUILD_PLATFORM_APPLE)
 #       include <ray/x11_canvas.h>
-#       define TopLevelCanvas TopLevelWindowAPPLE
-#    elif defined(__ANDROID__)
+#       define OGLCanvas X11Canvas
+#    elif defined(_BUILD_PLATFORM_ANDROID)
 #       include <ray/egl_canvas.h>
-#       define EGLCanvas OGLCanvas;
+#       define OGLCanvas EGLCanvas
 #    endif
 #endif
 
 _NAME_BEGIN
 
+#define _USE_RENDER_COMMAND 0
+
 struct OGLShaderVariant
 {
-    GLuint ubo;
-    GLuint64 bindlessUbo;
+	GLuint ubo;
+	GLuint64 bindlessUbo;
 
-    OGLShaderVariant() noexcept
-        : ubo(0)
-        , bindlessUbo(0)
-    {
-    }
+	OGLShaderVariant() noexcept
+		: ubo(0)
+		, bindlessUbo(0)
+	{
+	}
 };
 
 typedef std::shared_ptr<class OGLCanvas> OGLCanvasPtr;
-typedef std::shared_ptr<class OGLFramebuffer> OGLRenderTargetPtr;
+typedef std::shared_ptr<class OGLFramebuffer> OGLRenderTexturePtr;
 typedef std::shared_ptr<class OGLShader> OGLShaderPtr;
 typedef std::shared_ptr<class OGLShaderObject> OGLShaderObjectPtr;
 
@@ -81,21 +88,21 @@ class OGLTypes
 {
 public:
 
-    static GLenum asOGLVertexType(VertexType type) noexcept;
-    static GLenum asOGLVertexUsage(VertexUsage usage) noexcept;
-    static GLenum asOGLVertexFormat(VertexFormat format) noexcept;
-    static GLenum asOGLIndexType(IndexType type) noexcept;
-    static GLenum asOGLShaderType(ShaderType type) noexcept;
-    static GLenum asOGLTarget(TextureDim mapping) noexcept;
-    static GLenum asOGLFormat(PixelFormat format) noexcept;
-    static GLenum asOGLType(PixelFormat format) noexcept;
-    static GLint  asOGLInternalformat(PixelFormat format) noexcept;
-    static GLenum asCompareFunction(CompareFunction func) noexcept;
-    static GLenum asBlendFactor(BlendFactor func) noexcept;
-    static GLenum asBlendOperation(BlendOperation op) noexcept;
-    static GLenum asCullMode(CullMode mode) noexcept;
-    static GLenum asFillMode(FillMode mode) noexcept;
-    static GLenum asStencilOperation(StencilOperation stencilop) noexcept;
+	static GLenum asOGLVertexType(VertexType type) noexcept;
+	static GLenum asOGLVertexUsage(VertexUsage usage) noexcept;
+	static GLenum asOGLVertexFormat(VertexFormat format) noexcept;
+	static GLenum asOGLIndexType(IndexType type) noexcept;
+	static GLenum asOGLShaderType(ShaderType type) noexcept;
+	static GLenum asOGLTarget(TextureDim mapping) noexcept;
+	static GLenum asOGLFormat(PixelFormat format) noexcept;
+	static GLenum asOGLType(PixelFormat format) noexcept;
+	static GLint  asOGLInternalformat(PixelFormat format) noexcept;
+	static GLenum asCompareFunction(CompareFunction func) noexcept;
+	static GLenum asBlendFactor(BlendFactor func) noexcept;
+	static GLenum asBlendOperation(BlendOperation op) noexcept;
+	static GLenum asCullMode(CullMode mode) noexcept;
+	static GLenum asFillMode(FillMode mode) noexcept;
+	static GLenum asStencilOperation(StencilOperation stencilop) noexcept;
 };
 
 _NAME_END

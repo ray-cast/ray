@@ -43,122 +43,105 @@ _NAME_BEGIN
 
 struct EXPORT RenderBlendState
 {
-    bool           blendEnable;
-    bool           blendSeparateEnable;
+	bool           blendEnable;
+	bool           blendSeparateEnable;
 
-    BlendOperation blendOp;
-    BlendFactor    blendSrc;
-    BlendFactor    blendDest;
+	BlendOperation blendOp;
+	BlendFactor    blendSrc;
+	BlendFactor    blendDest;
 
-    BlendOperation blendAlphaOp;
-    BlendFactor    blendAlphaSrc;
-    BlendFactor    blendAlphaDest;
+	BlendOperation blendAlphaOp;
+	BlendFactor    blendAlphaSrc;
+	BlendFactor    blendAlphaDest;
 
-    ColorMask      colorWriteMask;
+	ColorMask      colorWriteMask;
 
-    RenderBlendState() noexcept;
+	RenderBlendState() noexcept;
 };
 
 struct EXPORT RenderRasterState
 {
-    CullMode            cullMode;
-    FillMode            fillMode;
-    bool                scissorTestEnable;
-    bool                srgbEnable;
-    bool                multisampleEnable;
-    bool                pointSizeEnable;
+	CullMode            cullMode;
+	FillMode            fillMode;
+	VertexType          primitiveType;
+	bool                scissorTestEnable;
+	bool                srgbEnable;
+	bool                multisampleEnable;
 
-    RenderRasterState() noexcept;
+	RenderRasterState() noexcept;
 };
 
 struct EXPORT RenderDepthState
 {
-    bool                depthEnable;
-    bool                depthWriteMask;
-    CompareFunction     depthFunc;
+	bool                depthEnable;
+	bool                depthWriteMask;
+	CompareFunction     depthFunc;
 
-    bool                depthBiasEnable;
-    float               depthBias;
-    float               depthSlopScaleBias;
+	bool                depthBiasEnable;
+	float               depthBias;
+	float               depthSlopScaleBias;
 
-    RenderDepthState() noexcept;
+	RenderDepthState() noexcept;
 };
 
 struct EXPORT RenderStencilState
 {
-    bool                stencilEnable;
-    int                 stencilRef;
-    CompareFunction     stencilFunc;
-    unsigned int        stencilReadMask;
-    unsigned int        stencilWriteMask;
-    StencilOperation    stencilFail;
-    StencilOperation    stencilZFail;
-    StencilOperation    stencilPass;
+	bool                stencilEnable;
+	int                 stencilRef;
+	CompareFunction     stencilFunc;
+	unsigned int        stencilReadMask;
+	unsigned int        stencilWriteMask;
+	StencilOperation    stencilFail;
+	StencilOperation    stencilZFail;
+	StencilOperation    stencilPass;
 
-    bool                stencilTwoEnable;
-    CompareFunction     stencilTwoFunc;
-    unsigned int        stencilTwoReadMask;
-    unsigned int        stencilTwoWriteMask;
-    StencilOperation    stencilTwoFail;
-    StencilOperation    stencilTwoZFail;
-    StencilOperation    stencilTwoPass;
+	bool                stencilTwoEnable;
+	CompareFunction     stencilTwoFunc;
+	unsigned int        stencilTwoReadMask;
+	unsigned int        stencilTwoWriteMask;
+	StencilOperation    stencilTwoFail;
+	StencilOperation    stencilTwoZFail;
+	StencilOperation    stencilTwoPass;
 
-    RenderStencilState() noexcept;
-};
-
-struct EXPORT RenderClearState
-{
-    ClearFlags    clearFlags;
-    Vector4       clearColor;
-    float         clearDepth;
-    std::uint32_t clearStencil;
-
-    RenderClearState() noexcept;
+	RenderStencilState() noexcept;
 };
 
 class EXPORT RenderState : public Instance<RenderState>
 {
 public:
-    RenderState() noexcept;
-    virtual ~RenderState() noexcept;
+	RenderState() noexcept;
+	virtual ~RenderState() noexcept;
 
-    void setup() noexcept;
-    void close() noexcept;
+	void setup() noexcept;
+	void close() noexcept;
 
-    void setBlendState(const RenderBlendState& state) noexcept;
-    void setRasterState(const RenderRasterState& state) noexcept;
-    void setDepthState(const RenderDepthState& state) noexcept;
-    void setStencilState(const RenderStencilState& state) noexcept;
-    void setClearState(const RenderClearState& state) noexcept;
+	void setBlendState(const RenderBlendState& state) noexcept;
+	void setRasterState(const RenderRasterState& state) noexcept;
+	void setDepthState(const RenderDepthState& state) noexcept;
+	void setStencilState(const RenderStencilState& state) noexcept;
 
-    RenderBlendState& getBlendState() noexcept;
-    RenderRasterState& getRasterState() noexcept;
-    RenderDepthState& getDepthState() noexcept;
-    RenderStencilState& getStencilState() noexcept;
-    RenderClearState& getClearState() noexcept;
+	RenderBlendState& getBlendState() noexcept;
+	RenderRasterState& getRasterState() noexcept;
+	RenderDepthState& getDepthState() noexcept;
+	RenderStencilState& getStencilState() noexcept;
 
-    const RenderBlendState& getBlendState() const noexcept;
-    const RenderRasterState& getRasterState() const noexcept;
-    const RenderDepthState& getDepthState() const noexcept;
-    const RenderStencilState& getStencilState() const noexcept;
-    const RenderClearState& getClearState() const noexcept;
+	const RenderBlendState& getBlendState() const noexcept;
+	const RenderRasterState& getRasterState() const noexcept;
+	const RenderDepthState& getDepthState() const noexcept;
+	const RenderStencilState& getStencilState() const noexcept;
 
-    static CullMode stringToCullMode(const std::string& cullmode) noexcept;
-    static FillMode stringToFillMode(const std::string& fillmode) noexcept;
-    static BlendOperation stringToBlendOperation(const std::string& blendop) noexcept;
-    static BlendFactor stringToBlendFactor(const std::string& factor) noexcept;
-    static ColorMask stringToColorMask(const std::string& mask) noexcept;
-    static CompareFunction stringToCompareFunc(const std::string& func) noexcept;
-    static StencilOperation stringToStencilOp(const std::string& stencilop) noexcept;
-    static ClearFlags stringToClearFlags(const std::string& flags) noexcept;
+	virtual void apply(const RenderState& last) noexcept = 0;
+
+private:
+	RenderState(const RenderState&) noexcept = delete;
+	RenderState& operator=(const RenderState&) noexcept = delete;
 
 public:
 
-    RenderBlendState _blendState;
-    RenderRasterState _rasterState;
-    RenderDepthState _depthState;
-    RenderStencilState _stencilState;
-    RenderClearState _clearState;
+	RenderBlendState _blendState;
+	RenderRasterState _rasterState;
+	RenderDepthState _depthState;
+	RenderStencilState _stencilState;
 };
 
 _NAME_END

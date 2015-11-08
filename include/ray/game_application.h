@@ -63,7 +63,6 @@ public:
 
 	void addFeatures(GameFeaturePtr feature) except;
 	void removeFeatures(GameFeaturePtr feature) noexcept;
-	GameFeaturePtr getFeature(const std::string& name) noexcept;
 
 	void setFileService(bool enable) noexcept;
 	void setFileServicePath(const std::string& path) noexcept;

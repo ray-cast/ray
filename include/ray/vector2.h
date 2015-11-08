@@ -39,34 +39,33 @@
 
 #include <ray/mathfwd.h>
 #include <ray/trait.h>
+#include <ray/gdicmn.h>
 
 _NAME_BEGIN
 
-template<typename _Ty>
+template<typename T>
 class Vector2t
 {
 public:
-    typedef Vector2t<_Ty> _Myt;
-
-    typedef _Ty value_type;
-    typedef typename trait::_typeaddition<_Ty>::pointer pointer;
-    typedef typename trait::_typeaddition<_Ty>::const_pointer const_pointer;
-    typedef typename trait::_typeaddition<_Ty>::reference reference;
-    typedef typename trait::_typeaddition<_Ty>::const_reference const_reference;
+    typedef typename trait::_typeaddition<T>::value_type value_type;
+    typedef typename trait::_typeaddition<T>::pointer pointer;
+    typedef typename trait::_typeaddition<T>::const_pointer const_pointer;
+    typedef typename trait::_typeaddition<T>::reference reference;
+    typedef typename trait::_typeaddition<T>::const_reference const_reference;
 
     value_type x, y;
 
-    static const _Myt Zero;
-    static const _Myt One;
-    static const _Myt UnitX;
-    static const _Myt UnitY;
+    static const Vector2t<T> Zero;
+    static const Vector2t<T> One;
+    static const Vector2t<T> UnitX;
+    static const Vector2t<T> UnitY;
 
     Vector2t() noexcept
     {
     }
 
     Vector2t(value_type xx, value_type yy) noexcept
-        :x(xx)
+        : x(xx)
         , y(yy)
     {
     }
@@ -79,121 +78,69 @@ public:
             this->normalize();
     }
 
-    Vector2t(const _Myt& copy) noexcept
-        :x(copy.x)
+    Vector2t(const Vector2t<T>& copy) noexcept
+        : x(copy.x)
         , y(copy.y)
     {
     }
 
-    _Myt& operator+=(const _Myt& v) noexcept
+    Vector2t<T>& operator+=(const Vector2t<T>& v) noexcept
     {
         x += v.x;
         y += v.y;
         return *this;
     }
 
-    _Myt& operator-=(const _Myt& v) noexcept
+    Vector2t<T>& operator-=(const Vector2t<T>& v) noexcept
     {
         x -= v.x;
         y -= v.y;
         return *this;
     }
 
-    _Myt& operator*=(const _Myt& v) noexcept
+    Vector2t<T>& operator*=(const Vector2t<T>& v) noexcept
     {
         x *= v.x;
         y *= v.y;
         return *this;
     }
 
-    _Myt& operator/=(const _Myt& v) noexcept
+    Vector2t<T>& operator/=(const Vector2t<T>& v) noexcept
     {
         x /= v.x;
         y /= v.y;
         return *this;
     }
 
-    _Myt& operator*=(value_type scale) noexcept
+    Vector2t<T>& operator*=(value_type scale) noexcept
     {
         x *= scale;
         y *= scale;
         return *this;
     }
 
-    _Myt& operator/=(value_type scale) noexcept
+    Vector2t<T>& operator/=(value_type scale) noexcept
     {
         x /= scale;
         y /= scale;
         return *this;
     }
 
-    _Myt operator-() noexcept
-    {
-        return _Myt(-x, -y);
-    }
+    Vector2t<T> operator-() noexcept { return Vector2t<T>(-x, -y); }
 
-    value_type operator[](unsigned int i) const noexcept
-    {
-        return *(&x + i);
-    }
+    value_type operator[](unsigned int i) const noexcept { return *(&x + i); }
+    reference operator[](unsigned int i) noexcept { return *(&x + i); }
 
-    reference operator[](unsigned int i) noexcept
-    {
-        return *(&x + i);
-    }
+    Vector2t<T>& operator= (value_type f) noexcept { x = y = f; return *this; }
 
-    _Myt& operator= (value_type f) noexcept
-    {
-        x = y = f;
-        return *this;
-    }
+    void set(value_type val) noexcept { x = y = val; }
+    void set(value_type xx, value_type yy) noexcept { x = xx; y = yy; }
 
-    void set(value_type val) noexcept
-    {
-        x = y = val;
-    }
+    value_type length() const noexcept { return sqrt(length2()); }
+    value_type length2() const noexcept { return x * x + y * y; }
 
-    void set(value_type xx, value_type yy) noexcept
-    {
-        x = xx;
-        y = yy;
-    }
-
-    void zero() noexcept
-    {
-        this->set(0.0);
-    }
-
-    void one() noexcept
-    {
-        this->set(1.0);
-    }
-
-    void up() noexcept
-    {
-        x = 0.0;
-        y = 1.0;
-    }
-
-    value_type length() const noexcept
-    {
-        return sqrt(length2());
-    }
-
-    value_type length2() const noexcept
-    {
-        return x * x + y * y;
-    }
-
-    value_type distance(const _Myt& v) const noexcept
-    {
-        return (v - *this).length();
-    }
-
-    value_type sqrDistance(const _Myt& v) const noexcept
-    {
-        return (v - *this).dot();
-    }
+    value_type distance(const Vector2t<T>& v) const noexcept { return (v - *this).length(); }
+    value_type distance2(const Vector2t<T>& v) const noexcept { return (v - *this).dot(); }
 
     reference getComponent(unsigned char index) noexcept
     {
@@ -221,366 +168,15 @@ public:
         return magSq;
     }
 
-    _Myt negate() const noexcept
+    Vector2t<T> negate() const noexcept
     {
-        return _Myt(-x, -y);
+        return Vector2t<T>(-x, -y);
     }
 
-    pointer ptr() noexcept
-    {
-        return (pointer)this;
-    }
-
-    const_pointer ptr() const noexcept
-    {
-        return (const_pointer)this;
-    }
-
-    pointer data() noexcept
-    {
-        return (pointer)this;
-    }
-
-    const_pointer data() const noexcept
-    {
-        return (const_pointer)this;
-    }
-};
-
-template<>
-class Vector2t<std::int8_t>
-{
-public:
-    typedef Vector2t<std::int8_t> _Myt;
-
-    typedef std::int8_t int_type;
-    typedef trait::_typeaddition<int_type>::pointer pointer;
-    typedef trait::_typeaddition<int_type>::const_pointer const_pointer;
-    typedef trait::_typeaddition<int_type>::reference reference;
-    typedef trait::_typeaddition<int_type>::const_reference const_reference;
-
-    int_type x, y;
-
-    static const _Myt Zero;
-    static const _Myt One;
-    static const _Myt UnitX;
-    static const _Myt UnitY;
-
-    Vector2t() noexcept
-    {
-    }
-
-    Vector2t(const Vector2t& copy) noexcept
-        :x(copy.x), y(copy.y)
-    {
-    }
-
-    Vector2t(int_type xx, int_type yy) noexcept
-        : x(xx)
-        , y(yy)
-    {
-    }
-
-    explicit Vector2t(int_type v) noexcept
-        : x(v)
-        , y(v)
-    {
-    }
-
-    _Myt& operator+=(const _Myt& v) noexcept
-    {
-        x += v.x;
-        y += v.y;
-        return *this;
-    }
-
-    _Myt& operator-=(const _Myt& v) noexcept
-    {
-        x -= v.x;
-        y -= v.y;
-        return *this;
-    }
-
-    _Myt& operator*=(const _Myt& v) noexcept
-    {
-        x *= v.x;
-        y *= v.y;
-        return *this;
-    }
-
-    _Myt& operator/=(const _Myt& v) noexcept
-    {
-        x /= v.x;
-        y /= v.y;
-        return *this;
-    }
-
-    _Myt& operator*=(int_type scale) noexcept
-    {
-        x *= scale;
-        y *= scale;
-        return *this;
-    }
-
-    _Myt& operator/=(int_type scale) noexcept
-    {
-        x /= scale;
-        y /= scale;
-        return *this;
-    }
-
-    _Myt operator-() noexcept
-    {
-        return Vector2t(-x, -y);
-    }
-
-    void set(int_type val) noexcept
-    {
-        x = y = val;
-    }
-
-    void set(int_type xx, int_type yy) noexcept
-    {
-        x = xx;
-        y = yy;
-    }
-
-    void zero() noexcept
-    {
-        set(0);
-    }
-
-    void one() noexcept
-    {
-        set(1);
-    }
-
-    void up() noexcept
-    {
-        x = 0; y = 1;
-    }
-
-    int_type min() const noexcept
-    {
-        return x < y ? x : y;
-    }
-
-    int_type max() const noexcept
-    {
-        return x > y ? x : y;
-    }
-
-    _Myt negate() const noexcept
-    {
-        return _Myt(-x, -y);
-    }
-
-    int_type& getComponent(int_type index) noexcept
-    {
-        switch (index)
-        {
-        case 0: return x;
-        case 1: return y;
-        case 'x': return x;
-        case 'y': return y;
-        default:
-            assert(false);
-        }
-    }
-
-    pointer ptr() noexcept
-    {
-        return (pointer)this;
-    }
-
-    const_pointer ptr() const noexcept
-    {
-        return (const_pointer)this;
-    }
-
-    pointer data() noexcept
-    {
-        return (pointer)this;
-    }
-
-    const_pointer data() const noexcept
-    {
-        return (const_pointer)this;
-    }
-};
-
-template<>
-class Vector2t<unsigned>
-{
-public:
-    typedef Vector2t<unsigned> _Myt;
-
-    typedef unsigned int_type;
-    typedef trait::_typeaddition<int_type>::pointer pointer;
-    typedef trait::_typeaddition<int_type>::const_pointer const_pointer;
-    typedef trait::_typeaddition<int_type>::reference reference;
-    typedef trait::_typeaddition<int_type>::const_reference const_reference;
-
-    int_type x, y;
-
-    static const _Myt Zero;
-    static const _Myt One;
-    static const _Myt UnitX;
-    static const _Myt UnitY;
-
-    Vector2t() noexcept
-    {
-    }
-
-    Vector2t(const _Myt& copy) noexcept
-        :x(copy.x)
-        , y(copy.y)
-    {
-    }
-
-    Vector2t(int_type xx, int_type yy) noexcept
-        : x(xx)
-        , y(yy)
-    {
-    }
-
-    explicit Vector2t(int_type v) noexcept
-        : x(v)
-        , y(v)
-    {
-    }
-
-    _Myt& operator+=(const _Myt& v) noexcept
-    {
-        x += v.x;
-        y += v.y;
-        return *this;
-    }
-
-    _Myt& operator-=(const _Myt& v) noexcept
-    {
-        x -= v.x;
-        y -= v.y;
-        return *this;
-    }
-
-    _Myt& operator*=(const _Myt& v) noexcept
-    {
-        x *= v.x;
-        y *= v.y;
-        return *this;
-    }
-
-    _Myt& operator/=(const _Myt& v) noexcept
-    {
-        x /= v.x;
-        y /= v.y;
-        return *this;
-    }
-
-    _Myt& operator*=(int_type scale) noexcept
-    {
-        x *= scale;
-        y *= scale;
-        return *this;
-    }
-
-    _Myt& operator/=(int_type scale) noexcept
-    {
-        x /= scale;
-        y /= scale;
-        return *this;
-    }
-
-    void set(int_type val) noexcept
-    {
-        x = y = val;
-    }
-
-    void set(int_type xx, int_type yy) noexcept
-    {
-        x = xx;
-        y = yy;
-    }
-
-    void zero() noexcept
-    {
-        set(0);
-    }
-
-    void one() noexcept
-    {
-        set(1);
-    }
-
-    void up() noexcept
-    {
-        x = 0;
-        y = 1;
-    }
-
-    int_type dot() const noexcept
-    {
-        return x * x + y * y;
-    }
-
-    int_type dot(const _Myt& v) const noexcept
-    {
-        return x * v.x + y * v.y;
-    }
-
-    int_type length2() const noexcept
-    {
-        return dot();
-    }
-
-    int_type sqrDistance(const _Myt& v) const noexcept
-    {
-        return _Myt(v.x - x, v.y - y).dot();
-    }
-
-    int_type min() const noexcept
-    {
-        return std::min(x, y);
-    }
-
-    int_type max() const noexcept
-    {
-        return std::max(x, y);
-    }
-
-    reference getComponent(unsigned char index) noexcept
-    {
-        switch (index)
-        {
-        case 0: return x;
-        case 1: return y;
-        case 'x': return x;
-        case 'y': return y;
-        default:
-            assert(false);
-        }
-    }
-
-    pointer ptr() noexcept
-    {
-        return (pointer)this;
-    }
-
-    const_pointer ptr() const noexcept
-    {
-        return (const_pointer)this;
-    }
-
-    pointer data() noexcept
-    {
-        return (pointer)this;
-    }
-
-    const_pointer data() const noexcept
-    {
-        return (const_pointer)this;
-    }
+    pointer ptr() noexcept { return (pointer)this; }
+    const_pointer ptr() const noexcept { return (const_pointer)this;}
+    pointer data() noexcept { return (pointer)this; }
+    const_pointer data() const noexcept { return (const_pointer)this; }
 };
 
 template<typename T> const Vector2t<T> Vector2t<T>::Zero = Vector2t<T>((T)0, (T)0);

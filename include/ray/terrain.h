@@ -45,38 +45,38 @@ _NAME_BEGIN
 class Terrain final
 {
 public:
-    typedef std::vector<TerrainChunkPtr>::iterator ChunkIteraotr;
+	typedef std::vector<TerrainChunkPtr>::iterator ChunkIteraotr;
 
 public:
-    Terrain() noexcept;
-    ~Terrain() noexcept;
+	Terrain() noexcept;
+	~Terrain() noexcept;
 
-    void addObServer(TerrainObserverPtr observer) noexcept;
-    void removeObServer(TerrainObserverPtr observer) noexcept;
+	void addObServer(TerrainObserverPtr observer) noexcept;
+	void removeObServer(TerrainObserverPtr observer) noexcept;
 
-    void computeVisiable(TerrainObserverPtr observer, std::vector<TerrainChunkPtr>& chunks) noexcept;
+	void computeVisiable(TerrainObserverPtr observer, std::vector<TerrainChunkPtr>& chunks) noexcept;
 
-    void update() noexcept;
-
-private:
-
-    int convChunked(float x);
-
-    void createChunks();
-    void destroyChunks();
-
-    TerrainChunkPtr find(int q, int p);
+	void update() noexcept;
 
 private:
 
-    int _chunkSize;
+	int convChunked(float x);
 
-    int _radiusRender;
-    int _radiusDestroy;
-    int _radiusCreate;
+	void createChunks();
+	void destroyChunks();
 
-    std::vector<TerrainChunkPtr> _chunks;
-    std::vector<TerrainObserverPtr> _observer;
+	TerrainChunkPtr find(int q, int p);
+
+private:
+
+	int _chunkSize;
+
+	int _radiusRender;
+	int _radiusDestroy;
+	int _radiusCreate;
+
+	std::vector<TerrainChunkPtr> _chunks;
+	std::vector<TerrainObserverPtr> _observer;
 };
 
 _NAME_END

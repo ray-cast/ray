@@ -44,50 +44,53 @@ _NAME_BEGIN
 class EXPORT RenderDevice
 {
 public:
-    RenderDevice() except;
-    virtual ~RenderDevice() noexcept;
+	RenderDevice() except;
+	virtual ~RenderDevice() noexcept;
 
-    virtual bool open(RenderWindowPtr window) except = 0;
-    virtual void close() noexcept = 0;
+	virtual bool open(RenderWindowPtr window) except = 0;
+	virtual void close() noexcept = 0;
 
-    virtual void renderBegin() except = 0;
-    virtual void renderEnd() except = 0;
+	virtual void renderBegin() except = 0;
+	virtual void renderEnd() except = 0;
 
-    virtual void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil) except = 0;
-    virtual void clear(ClearFlags flags, const Color4& color, float depth, std::int32_t stencil, std::size_t i) except = 0;
+	virtual void setRenderWindow(RenderWindowPtr window) except = 0;
+	virtual RenderWindowPtr getRenderWindow() const noexcept = 0;
 
-    virtual void setRenderWindow(RenderWindowPtr window) except = 0;
-    virtual RenderWindowPtr getRenderWindow() const noexcept = 0;
+	virtual void setWireframeMode(bool enable) except = 0;
+	virtual bool getWireframeMode() const noexcept = 0;
 
-    virtual void setViewport(const Viewport& viewport, std::size_t i = 0) except = 0;
-    virtual const Viewport& getViewport(std::size_t i = 0) const noexcept = 0;
+	virtual void setViewport(const Viewport& viewport, std::size_t i = 0) except = 0;
+	virtual const Viewport& getViewport(std::size_t i = 0) const noexcept = 0;
 
-    virtual void setSwapInterval(SwapInterval interval) except = 0;
-    virtual SwapInterval getSwapInterval() const noexcept = 0;
+	virtual void setSwapInterval(SwapInterval interval) except = 0;
+	virtual SwapInterval getSwapInterval() const noexcept = 0;
 
-    virtual void setRenderBuffer(RenderBufferPtr buffer) except = 0;
-    virtual void updateRenderBuffer(RenderBufferPtr buffer) except = 0;
-    virtual void drawRenderBuffer(const Renderable& renderable) except = 0;
-    virtual RenderBufferPtr getRenderBuffer() const noexcept = 0;
+	virtual void setRenderBuffer(RenderBufferPtr buffer) except = 0;
+	virtual void updateRenderBuffer(RenderBufferPtr buffer) except = 0;
+	virtual void drawRenderBuffer(const RenderIndirect& renderable) except = 0;
+	virtual void drawRenderBuffer(const RenderIndirects& renderable) except = 0;
+	virtual RenderBufferPtr getRenderBuffer() const noexcept = 0;
 
-    virtual void setRenderTarget(RenderTargetPtr target) except = 0;
-    virtual void setMultiRenderTarget(MultiRenderTargetPtr target) except = 0;
-    virtual void copyRenderTarget(RenderTargetPtr src, const Viewport& v1, RenderTargetPtr dest, const Viewport& v2) except = 0;
-    virtual void readRenderTarget(RenderTargetPtr source, PixelFormat pfd, std::size_t w, std::size_t h, void* data) except = 0;
-    virtual RenderTargetPtr getRenderTarget() const noexcept = 0;
-    virtual MultiRenderTargetPtr getMultiRenderTarget() const noexcept = 0;
+	virtual void setRenderTexture(RenderTexturePtr target) except = 0;
+	virtual void setRenderTextureLayer(RenderTexturePtr target, std::int32_t layer) except = 0;
+	virtual void setMultiRenderTexture(MultiRenderTexturePtr target) except = 0;
+	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) except = 0;
+	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) except = 0;
+	virtual void discardRenderTexture() except = 0;
+	virtual void copyRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderTexturePtr dest, const Viewport& v2) except = 0;
+	virtual void readRenderTexture(RenderTexturePtr source, PixelFormat pfd, std::size_t w, std::size_t h, void* data) except = 0;
+	virtual RenderTexturePtr getRenderTexture() const noexcept = 0;
+	virtual MultiRenderTexturePtr getMultiRenderTexture() const noexcept = 0;
 
-    virtual void setRenderState(RenderStatePtr state) except = 0;
-    virtual RenderStatePtr getRenderState() const noexcept = 0;
+	virtual void setRenderState(RenderStatePtr state) except = 0;
+	virtual RenderStatePtr getRenderState() const noexcept = 0;
 
-    virtual void setShaderObject(ShaderObjectPtr shader) except = 0;
-    virtual void setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constant) except = 0;
-    virtual void setShaderUniform(ShaderUniformPtr uniform, TexturePtr texture) except = 0;
-    virtual ShaderObjectPtr getShaderObject() const noexcept = 0;
+	virtual void setShaderObject(ShaderObjectPtr shader) except = 0;
+	virtual ShaderObjectPtr getShaderObject() const noexcept = 0;
 
 private:
-    RenderDevice(const RenderDevice&) noexcept = delete;
-    RenderDevice& operator=(const RenderDevice&) noexcept = delete;
+	RenderDevice(const RenderDevice&) noexcept = delete;
+	RenderDevice& operator=(const RenderDevice&) noexcept = delete;
 };
 
 _NAME_END

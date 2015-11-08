@@ -40,14 +40,16 @@
 #include <ray/game_features.h>
 #include <ray/game_scene.h>
 #include <ray/game_server.h>
-#include <ray/render_system.h>
+#include <ray/render_system_base.h>
 
 _NAME_BEGIN
 
 class EXPORT RenderFeatures final : public GameFeature
 {
+	__DeclareSubClass(RenderFeatures, GameListener)
 public:
 	RenderFeatures() noexcept;
+	RenderFeatures(WindHandle hwnd, std::size_t w, std::size_t h) noexcept;
 	virtual ~RenderFeatures() noexcept;
 
 	void setRenderWindow(WindHandle hwnd, std::size_t w, std::size_t h) noexcept;
@@ -76,8 +78,6 @@ private:
 	void onFrame() except;
 	void onFrameEnd() except;
 
-	GameComponentPtr onSerialization(iarchive& reader) except;
-
 private:
 	RenderFeatures(const RenderFeatures&) = delete;
 	RenderFeatures& operator=(const RenderFeatures&) = delete;
@@ -90,7 +90,6 @@ private:
 	std::size_t _width;
 	std::size_t _height;
 
-	RenderWindowPtr _renderWindow;
 	RenderSystemPtr _renderSystem;
 	RenderSetting _renderSetting;
 	RenderScenes _renderScenes;

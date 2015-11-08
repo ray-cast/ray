@@ -35,8 +35,11 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_factory.h>
+#include <ray/render_system.h>
+#include <ray/render_pipeline.h>
 
 #if _BUILD_OPENGL
+#include <ray/ogl_state.h>
 #include <ray/ogl_shader.h>
 #include <ray/ogl_texture.h>
 #include <ray/ogl_buffer.h>
@@ -49,6 +52,7 @@
 #include <ray/material_maker.h>
 #include <ray/xmlreader.h>
 #include <ray/parse.h>
+#include <ray/resource.h>
 
 _NAME_BEGIN
 
@@ -62,6 +66,30 @@ RenderWindowPtr
 RenderFactory::createRenderWindow() noexcept
 {
 	return std::make_shared<OGLCanvas>();
+}
+
+RenderWindowPtr
+RenderFactory::createRenderWindow(WindHandle hwnd) noexcept
+{
+	return std::make_shared<OGLCanvas>(hwnd);
+}
+
+RenderSystemPtr 
+RenderFactory::createRenderSystem() noexcept
+{
+	return std::make_shared<DefaultRenderSystem>();
+}
+
+RenderPipelinePtr 
+RenderFactory::createRenderPipeline() noexcept
+{
+	return std::make_shared<DefaultRenderPipeline>();
+}
+
+RenderStatePtr 
+RenderFactory::createRenderState() noexcept
+{
+	return std::make_shared<OGLRenderState>();
 }
 
 ShaderPtr
@@ -85,61 +113,73 @@ RenderFactory::createTexture() noexcept
 TexturePtr
 RenderFactory::createTexture(const std::string& name) except
 {
-	MemoryStream stream;
-	IoServer::instance()->openFile(name, stream);
+	ResLoader<OGLTexture> loader;
 
-	if (stream)
-	{
+	loader.load(name,
+		[&](std::shared_ptr<OGLTexture> texture, const std::string& name) {
+		MemoryStream stream;
+		IoServer::instance()->openFile(name, stream);
 		Image image;
 		if (image.load(stream))
 		{
 			PixelFormat format = PixelFormat::R8G8B8A8;
 
-			if (image.bpp() == 24)
-				format = PixelFormat::R8G8B8;
-			else if (image.bpp() == 32)
-				format = PixelFormat::R8G8B8A8;
+			if (image.getImageType() == Image::dds1)
+				format = PixelFormat::RGBA_DXT1;
+			else if (image.getImageType() == Image::dds3)
+				format = PixelFormat::RGBA_DXT3;
+			else if (image.getImageType() == Image::dds5)
+				format = PixelFormat::RGBA_DXT5;
+			else if (image.getImageType() == Image::ati2)
+				format = PixelFormat::RG_ATI2;
+			else
+			{
+				if (image.bpp() == 24)
+					format = PixelFormat::R8G8B8;
+				else if (image.bpp() == 32)
+					format = PixelFormat::R8G8B8A8;
+				else
+					assert(false);
+			}
 
-			auto texture = RenderFactory::createTexture();
+			texture->setMipLevel(image.getMipLevel());
+			texture->setMipSize(image.size());
 			texture->setSize(image.width(), image.height());
 			texture->setTexDim(TextureDim::DIM_2D);
 			texture->setTexFormat(format);
 			texture->setStream(image.data());
 			texture->setup();
-
-			return texture;
+			return true;
 		}
-	}
-	else
-	{
-		throw failure("fail to open : " + name);
-	}
 
-	return nullptr;
+		return false;
+	});
+
+	return loader.data();
 }
 
-RenderTargetPtr
-RenderFactory::createRenderTarget() noexcept
+RenderTexturePtr
+RenderFactory::createRenderTexture() noexcept
 {
-	return std::make_shared<OGLRenderTarget>();
+	return std::make_shared<OGLRenderTexture>();
 }
 
-MultiRenderTargetPtr
-RenderFactory::createMultiRenderTarget() noexcept
+MultiRenderTexturePtr
+RenderFactory::createMultiRenderTexture() noexcept
 {
-	return std::make_shared<OGLMultiRenderTarget>();
+	return std::make_shared<OGLMultiRenderTexture>();
 }
 
 VertexBufferDataPtr
 RenderFactory::createVertexBuffer() noexcept
 {
-	return std::make_shared<OGLVertexBuffer>();
+	return std::make_shared<VertexBufferData>();
 }
 
 IndexBufferDataPtr
 RenderFactory::createIndexBuffer() noexcept
 {
-	return std::make_shared<OGLIndexBuffer>();
+	return std::make_shared<IndexBufferData>();
 }
 
 RenderBufferPtr
@@ -156,7 +196,7 @@ RenderFactory::createRenderBuffer(const MeshProperty& mesh) except
 	auto numVertex = mesh.getNumVertices();
 	auto numIndex = mesh.getNumIndices();
 
-	std::vector<VertexComponent> components;
+	VertexComponents components;
 
 	auto& vertices = mesh.getVertexArray();
 	if (!vertices.empty())
@@ -164,6 +204,13 @@ RenderFactory::createRenderBuffer(const MeshProperty& mesh) except
 		if (vertices.size() == numVertex)
 			components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
 	}
+
+	auto& colors = mesh.getColorArray();
+	if (!colors.empty())
+	{
+		if (colors.size() == numVertex)
+			components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_DIFFUSE, VertexFormat::GPU_VERTEX_FLOAT4));
+	}	
 
 	auto& normals = mesh.getNormalArray();
 	if (!normals.empty())
@@ -177,6 +224,13 @@ RenderFactory::createRenderBuffer(const MeshProperty& mesh) except
 	{
 		if (texcoords.size() == numVertex)
 			components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_TEXCOORD, VertexFormat::GPU_VERTEX_FLOAT2));
+	}
+
+	auto& tangent = mesh.getTangentArray();
+	if (!tangent.empty())
+	{
+		if (tangent.size() == numVertex)
+			components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_TANGENT, VertexFormat::GPU_VERTEX_FLOAT3));
 	}
 
 	VertexBufferDataPtr vb;
@@ -199,6 +253,18 @@ RenderFactory::createRenderBuffer(const MeshProperty& mesh) except
 			}
 
 			offset += sizeof(float3);
+		}
+
+		if (colors.size() == numVertex)
+		{
+			char* data = (char*)vb->data() + offset;
+			for (auto& it : colors)
+			{
+				*(float4*)data = it;
+				data += stride;
+			}
+
+			offset += sizeof(float4);
 		}
 
 		if (normals.size() == numVertex)
@@ -249,8 +315,158 @@ RenderFactory::createRenderBuffer(const MeshProperty& mesh) except
 	return buffer;
 }
 
+RenderBufferPtr 
+RenderFactory::createRenderBuffer(const std::vector<MeshPropertyPtr> meshes) except
+{
+	auto buffer = std::make_shared<OGLRenderBuffer>();
+
+	auto numVertex = 0;
+	auto numIndex = 0;
+
+	for (auto& it : meshes)
+	{
+		numVertex += it->getNumVertices();
+		numIndex += it->getNumIndices();
+	}
+
+	std::vector<VertexComponent> components;
+
+	if (!meshes.front()->getVertexArray().empty())
+		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
+
+	if (!meshes.front()->getColorArray().empty())
+		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_DIFFUSE, VertexFormat::GPU_VERTEX_FLOAT4));
+
+	if (!meshes.front()->getNormalArray().empty())
+		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_NORMAL, VertexFormat::GPU_VERTEX_FLOAT3));
+
+	if (!meshes.front()->getTexcoordArray().empty())
+		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_TEXCOORD, VertexFormat::GPU_VERTEX_FLOAT2));
+
+	if (!meshes.front()->getTangentArray().empty())
+		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_TANGENT, VertexFormat::GPU_VERTEX_FLOAT3));
+	
+	VertexBufferDataPtr vb;
+
+	if (numVertex)
+	{
+		vb = RenderFactory::createVertexBuffer();
+		vb->setVertexComponents(components);
+		vb->setup(numVertex, VertexUsage::GPU_USAGE_STATIC);
+
+		std::size_t offsetVertices = 0;
+		std::size_t stride = vb->getVertexSize();
+
+		for (auto& mesh : meshes)
+		{
+			auto& vertices = mesh->getVertexArray();
+			auto& colors = mesh->getColorArray();
+			auto& normals = mesh->getNormalArray();
+			auto& tangents = mesh->getTangentArray();
+			auto& texcoords = mesh->getTexcoordArray();
+
+			std::size_t offset1 = 0;
+
+			if (!vertices.empty())
+			{
+				char* data = (char*)vb->data() + offset1 + offsetVertices;
+				for (auto& it : vertices)
+				{
+					*(float3*)data = it;
+					data += stride;
+				}
+
+				offset1 += sizeof(float3);
+			}
+
+			if (!colors.empty())
+			{
+				char* data = (char*)vb->data() + offset1 + offsetVertices;
+				for (auto& it : colors)
+				{
+					*(float4*)data = it;
+					data += stride;
+				}
+
+				offset1 += sizeof(float4);
+			}
+
+			if (!normals.empty())
+			{
+				char* data = (char*)vb->data() + offset1 + offsetVertices;
+				for (auto& it : normals)
+				{
+					*(float3*)data = it;
+					data += stride;
+				}
+
+				offset1 += sizeof(float3);
+			}
+
+			if (!texcoords.empty())
+			{
+				char* data = (char*)vb->data() + offset1 + offsetVertices;
+				for (auto& it : texcoords)
+				{
+					*(float2*)data = it;
+					data += stride;
+				}
+
+				offset1 += sizeof(float2);
+			}
+
+			if (!tangents.empty())
+			{
+				char* data = (char*)vb->data() + offset1 + offsetVertices;
+				for (auto& it : tangents)
+				{
+					*(float3*)data = it;
+					data += stride;
+				}
+
+				offset1 += sizeof(float3);
+			}
+
+			offsetVertices += mesh->getNumVertices() * vb->getVertexSize();
+		}
+	}
+
+	IndexBufferDataPtr ib;
+
+	if (numIndex > 0)
+	{
+		ib = RenderFactory::createIndexBuffer();
+		ib->setup(numIndex, IndexType::GPU_UINT32, VertexUsage::GPU_USAGE_STATIC);
+
+		std::size_t offsetIndices = 0;
+
+		for (auto& it : meshes)
+		{
+			auto& faces = it->getFaceArray();
+			if (!faces.empty())
+			{
+				std::uint32_t* indices = (std::uint32_t*)ib->data() + offsetIndices;
+				for (auto& face : faces)
+				{
+#if !defined(EGLAPI)
+					*indices++ = face;
+#else
+					*indices++ = offsetIndices + face;
+#endif
+				}
+
+				offsetIndices += faces.size();
+			}
+		}
+	}
+
+	buffer->setup(vb, ib);
+
+	return buffer;
+}
+
 MaterialPtr
-RenderFactory::createMaterial(const std::string& filename) except
+RenderFactory::createMaterial(const string& filename) except
 {
 	MemoryStream stream;
 
@@ -266,7 +482,7 @@ RenderFactory::createMaterial(const std::string& filename) except
 
 		if (!xml.setToFirstChild())
 		{
-			throw failure("The file has been damaged and can't be recovered, so I can't open it" + filename);
+			throw failure(__TEXT("The file has been damaged and can't be recovered, so I can't open it") + filename);
 		}
 
 		do
@@ -306,6 +522,16 @@ RenderFactory::createMaterial(const std::string& filename) except
 						case ShaderVariantType::SPT_FLOAT:
 						{
 							param->assign(parseFloat<Float>(arg.second));
+						}
+						break;
+						case ShaderVariantType::SPT_FLOAT2:
+						{
+							param->assign(parseFloat2(arg.second));
+						}
+						break;
+						case ShaderVariantType::SPT_FLOAT3:
+						{
+							param->assign(parseFloat3(arg.second));
 						}
 						break;
 						case ShaderVariantType::SPT_FLOAT4:

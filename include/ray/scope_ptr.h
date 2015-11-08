@@ -45,241 +45,241 @@ template<typename _Ty>
 class scope_base
 {
 public:
-    typedef _Ty* pointer;
-    typedef const _Ty* const_pointer;
-    typedef _Ty& reference;
-    typedef const _Ty& const_reference;
+	typedef _Ty* pointer;
+	typedef const _Ty* const_pointer;
+	typedef _Ty& reference;
+	typedef const _Ty& const_reference;
 
-    scope_base() noexcept
-    {
-        this->_Init();
-    };
+	scope_base() noexcept
+	{
+		this->_Init();
+	};
 
-    scope_base(pointer obj) noexcept
-    {
-        this->_Init(obj);
-    }
+	scope_base(pointer obj) noexcept
+	{
+		this->_Init(obj);
+	}
 
-    scope_base(const scope_base& copy)
-    {
-        this->_Init(copy.dismiss());
-    }
+	scope_base(const scope_base& copy)
+	{
+		this->_Init(copy.dismiss());
+	}
 
-    pointer dismiss() noexcept
-    {
-        _mdismiss = true;
-        return _Myptr;
-    }
+	pointer dismiss() const noexcept
+	{
+		_mdismiss = true;
+		return _Myptr;
+	}
 
-    pointer get() noexcept
-    {
-        return (_Myptr);
-    }
+	pointer get() noexcept
+	{
+		return (_Myptr);
+	}
 
-    const_pointer get() const noexcept
-    {
-        return (_Myptr);
-    }
+	const_pointer get() const noexcept
+	{
+		return (_Myptr);
+	}
 
-    pointer operator->() noexcept
-    {
-        return (this->get());
-    }
+	pointer operator->() noexcept
+	{
+		return (this->get());
+	}
 
-    const_pointer operator->() const noexcept
-    {
-        return (this->get());
-    }
+	const_pointer operator->() const noexcept
+	{
+		return (this->get());
+	}
 
-    reference operator*() noexcept
-    {
-        return *(this->get());
-    }
+	reference operator*() noexcept
+	{
+		return *(this->get());
+	}
 
-    const_reference operator*() const noexcept
-    {
-        return *(this->get());
-    }
+	const_reference operator*() const noexcept
+	{
+		return *(this->get());
+	}
 
-    explicit operator pointer() noexcept
-    {
-        return (this->get());
-    }
+	explicit operator pointer() noexcept
+	{
+		return (this->get());
+	}
 
-    operator bool() const noexcept
-    {
-        return (this->get() != nullptr);
-    }
+	operator bool() const noexcept
+	{
+		return (this->get() != nullptr);
+	}
 
-    scope_base& operator=(scope_base& other)
-    {
-        _mdismiss = other._mdismiss;
-        _Myptr = other.dismiss();
-        return *this;
-    }
+	scope_base& operator=(scope_base& other)
+	{
+		_mdismiss = other._mdismiss;
+		_Myptr = other.dismiss();
+		return *this;
+	}
 
-    bool operator!=(const_pointer other) noexcept
-    {
-        return _Myptr != other;
-    }
+	bool operator!=(const_pointer other) noexcept
+	{
+		return _Myptr != other;
+	}
 
 protected:
 
-    void _Init(pointer ptr = nullptr) noexcept
-    {
-        _Myptr = ptr;
-        _mdismiss = false;
-    }
+	void _Init(pointer ptr = nullptr) noexcept
+	{
+		_Myptr = ptr;
+		_mdismiss = false;
+	}
 
-    pointer _Myptr;
-    bool _mdismiss;
+	pointer _Myptr;
+	mutable bool _mdismiss;
 };
 
 template<typename _Ty, typename S = void>
 class scope_ptr : public scope_base<_Ty>
 {
 public:
-    typedef scope_base<_Ty> _Mybase;
-    typedef scope_ptr<_Ty, S> _Myt;
-    typedef _Ty* pointer;
-    typedef const _Ty* const_pointer;
+	typedef scope_base<_Ty> _Mybase;
+	typedef scope_ptr<_Ty, S> _Myt;
+	typedef _Ty* pointer;
+	typedef const _Ty* const_pointer;
 
-    scope_ptr() noexcept
-    {
-    };
+	scope_ptr() noexcept
+	{
+	};
 
-    scope_ptr(pointer obj) noexcept
-        :_Mybase(obj)
-    {
-    }
+	scope_ptr(pointer obj) noexcept
+		:_Mybase(obj)
+	{
+	}
 
-    scope_ptr(const _Myt& other) noexcept
-    {
-        this->_Init(other.dismiss());
-    }
+	scope_ptr(const _Myt& other) noexcept
+	{
+		_Mybase::_Init(other.dismiss());
+	}
 
-    ~scope_ptr() noexcept
-    {
-        this->_Destroy();
-    }
+	~scope_ptr() noexcept
+	{
+		this->_Destroy();
+	}
 
-    void reset(pointer ptr) noexcept
-    {
-        this->_Destroy();
-        this->_Init(ptr);
-    }
+	void reset(pointer ptr) noexcept
+	{
+		this->_Destroy();
+		_Mybase::_Init(ptr);
+	}
 
-    void release() noexcept
-    {
-        this->_Destroy();
-        this->_Init(nullptr);
-    }
+	void release() noexcept
+	{
+		this->_Destroy();
+		_Mybase::_Init(nullptr);
+	}
 
-    scope_ptr& operator=(pointer other) noexcept
-    {
-        this->reset(other);
-        return *this;
-    }
+	scope_ptr& operator=(pointer other) noexcept
+	{
+		this->reset(other);
+		return *this;
+	}
 
-    scope_ptr& operator=(_Myt&& other) noexcept
-    {
-        this->_Init(other.dismiss());
-        return *this;
-    }
+	scope_ptr& operator=(_Myt&& other) noexcept
+	{
+		_Mybase::_Init(other.dismiss());
+		return *this;
+	}
 
 private:
 
-    void _Destroy() noexcept
-    {
-        if (!_Mybase::_mdismiss)
-        {
-            delete _Mybase::_Myptr;
-            _Mybase::_Myptr = nullptr;
-        }
-    }
+	void _Destroy() noexcept
+	{
+		if (!_Mybase::_mdismiss)
+		{
+			delete _Mybase::_Myptr;
+			_Mybase::_Myptr = nullptr;
+		}
+	}
 };
 
 template<typename _Ty, typename S>
 class scope_ptr<_Ty[], S> : public scope_base<_Ty>
 {
 public:
-    typedef scope_base<_Ty> _Mybase;
-    typedef scope_ptr<_Ty[], S> _Myt;
-    typedef _Ty* pointer;
-    typedef const _Ty* const_pointer;
-    typedef _Ty& reference;
-    typedef const _Ty& const_reference;
+	typedef scope_base<_Ty> _Mybase;
+	typedef scope_ptr<_Ty[], S> _Myt;
+	typedef _Ty* pointer;
+	typedef const _Ty* const_pointer;
+	typedef _Ty& reference;
+	typedef const _Ty& const_reference;
 
-    scope_ptr() noexcept
-    {
-    };
+	scope_ptr() noexcept
+	{
+	};
 
-    scope_ptr(pointer obj) noexcept
-        :_Mybase(obj)
-    {
-    }
+	scope_ptr(pointer obj) noexcept
+		:_Mybase(obj)
+	{
+	}
 
-    scope_ptr(const _Myt& other) noexcept
-    {
-        this->_Init(other.dismiss());
-    }
+	scope_ptr(const _Myt& other) noexcept
+	{
+		this->_Init(other.dismiss());
+	}
 
-    ~scope_ptr() noexcept
-    {
-        this->_Destroy();
-    }
+	~scope_ptr() noexcept
+	{
+		this->_Destroy();
+	}
 
-    void reset(pointer ptr) noexcept
-    {
-        this->_Destroy();
-        this->_Init(ptr);
-    }
+	void reset(pointer ptr) noexcept
+	{
+		this->_Destroy();
+		this->_Init(ptr);
+	}
 
-    void release() noexcept
-    {
-        this->_Destroy();
-        this->_Init(nullptr);
-    }
+	void release() noexcept
+	{
+		this->_Destroy();
+		this->_Init(nullptr);
+	}
 
-    scope_ptr& operator=(pointer other) noexcept
-    {
-        this->reset(other);
-        return *this;
-    }
+	scope_ptr& operator=(pointer other) noexcept
+	{
+		this->reset(other);
+		return *this;
+	}
 
-    scope_ptr& operator=(_Myt& other) noexcept
-    {
-        this->_Init(other.dismiss());
-    }
+	scope_ptr& operator=(_Myt& other) noexcept
+	{
+		this->_Init(other.dismiss());
+	}
 
-    reference operator[](std::size_t n) noexcept
-    {
-        return _Myptr[n];
-    }
+	reference operator[](std::size_t n) noexcept
+	{
+		return _Mybase::_Myptr[n];
+	}
 
 private:
 
-    void _Destroy() noexcept
-    {
-        if (!_Mybase::_mdismiss)
-        {
-            delete[] _Mybase::_Myptr;
-            _Mybase::_Myptr = nullptr;
-        }
-    }
+	void _Destroy() noexcept
+	{
+		if (!_Mybase::_mdismiss)
+		{
+			delete[] _Mybase::_Myptr;
+			_Mybase::_Myptr = nullptr;
+		}
+	}
 };
 
 template<class _Ty, class... _Types> inline
 typename std::enable_if<!std::is_array<_Ty>::value, scope_ptr<_Ty> >::type make_scope(_Types&&... _Args)
 {
-    return (scope_ptr<_Ty>(new _Ty(std::forward<_Types>(_Args)...)));
+	return (scope_ptr<_Ty>(new _Ty(std::forward<_Types>(_Args)...)));
 }
 
 template<class _Ty> inline
 typename std::enable_if<std::is_array<_Ty>::value && std::extent<_Ty>::value == 0, scope_ptr<_Ty>>::type make_scope(std::size_t _Size)
 {
-    typedef typename std::remove_extent<_Ty>::type _Elem;
-    return (scope_ptr<_Ty>(new _Elem[_Size]()));
+	typedef typename std::remove_extent<_Ty>::type _Elem;
+	return (scope_ptr<_Ty>(new _Elem[_Size]()));
 }
 
 _NAME_END

@@ -46,167 +46,167 @@ template<typename T>
 class Spheret
 {
 public:
-    Spheret() noexcept
-    {
-    }
+	Spheret() noexcept
+	{
+	}
 
-    Spheret(const Vector3t<T>& pt, T radius) noexcept
-        : _center(pt)
-        , _radius(r)
-    {
-    }
+	Spheret(const Vector3t<T>& pt, T radius) noexcept
+		: _center(pt)
+		, _radius(radius)
+	{
+	}
 
-    bool empty() const noexcept
-    {
-        return _box.empty();
-    }
+	bool empty() const noexcept
+	{
+		return _box.empty();
+	}
 
-    void reset() noexcept
-    {
-        _radius = 0;
-        _center = Vector3t<T>::Zero;
-        _box.reset();
-    }
+	void reset() noexcept
+	{
+		_radius = 0;
+		_center = Vector3t<T>::Zero;
+		_box.reset();
+	}
 
-    void encapsulate(const Vector3t<T>& pt) noexcept
-    {
-        _box.encapsulate(pt);
-        _center = _box.center();
-        _radius = _box.size().length() * 0.5f;
-    }
+	void encapsulate(const Vector3t<T>& pt) noexcept
+	{
+		_box.encapsulate(pt);
+		_center = _box.center();
+		_radius = _box.size().length() * 0.5f;
+	}
 
-    void encapsulate(const Vector3t<T> pt[], std::size_t n) noexcept
-    {
-        assert(pt);
+	void encapsulate(const Vector3t<T> pt[], std::size_t n) noexcept
+	{
+		assert(pt);
 
-        _box.encapsulate(pt, n);
-        _center = _box.center();
-        _radius = _box.size().length() * 0.5f;
-    }
+		_box.encapsulate(pt, n);
+		_center = _box.center();
+		_radius = _box.size().length() * 0.5f;
+	}
 
-    void encapsulate(const Spheret<T>& sphere) noexcept
-    {
-        _box.encapsulate(sphere._box);
-        _center = _box.center();
-        _radius = _box.size().length() * 0.5f;
-    }
+	void encapsulate(const Spheret<T>& sphere) noexcept
+	{
+		_box.encapsulate(sphere._box);
+		_center = _box.center();
+		_radius = _box.size().length() * 0.5f;
+	}
 
-    void applyMatrix(const Matrix4x4t<T>& m) noexcept
-    {
-        _box.applyMatrix(m);
-        _center = _box.center();
-        _radius = _box.size().length() * 0.5f;
-    }
+	void applyMatrix(const Matrix4x4t<T>& m) noexcept
+	{
+		_box.applyMatrix(m);
+		_center = _box.center();
+		_radius = _box.size().length() * 0.5f;
+	}
 
-    bool contains(const Vector3t<T>& pt) const noexcept
-    {
-        Vector3t<T> p = pt - _center;
+	bool contains(const Vector3t<T>& pt) const noexcept
+	{
+		Vector3t<T> p = pt - _center;
 
-        if (p.x > _radius) { return false; }
-        if (p.y > _radius) { return false; }
-        if (p.z > _radius) { return false; }
+		if (p.x > _radius) { return false; }
+		if (p.y > _radius) { return false; }
+		if (p.z > _radius) { return false; }
 
-        return true;
-    }
+		return true;
+	}
 
-    Vector3t<T> closestPoint(const Vector3t<T> & pt) const noexcept
-    {
-        Vector3t<T>  d = _center - pt;
+	Vector3t<T> closestPoint(const Vector3t<T> & pt) const noexcept
+	{
+		Vector3t<T>  d = _center - pt;
 
-        T len = d.length();
+		T len = d.length();
 
-        T dist = len - _radius;
+		T dist = len - _radius;
 
-        Vector3t<T>  b = dist / len * d;
+		Vector3t<T>  b = dist / len * d;
 
-        return pt + b;
-    }
+		return pt + b;
+	}
 
-    bool intersects(const Spheret<T>& sphere) const noexcept
-    {
-        Vector3t<T>  distance = _center - sphere._center;
+	bool intersects(const Spheret<T>& sphere) const noexcept
+	{
+		Vector3t<T>  distance = _center - sphere._center;
 
-        T dist2 = distance.length2();
+		T dist2 = distance.length2();
 
-        T radiusSum = _radius + sphere._radius;
+		T radiusSum = _radius + sphere._radius;
 
-        return dist2 <= radiusSum * radiusSum;
-    }
+		return dist2 <= radiusSum * radiusSum;
+	}
 
-    bool intersects(const Plane3t<T>& p) const noexcept
-    {
-        float dist = _center.dot(p.normal) - p.distance;
+	bool intersects(const Plane3t<T>& p) const noexcept
+	{
+		float dist = _center.dot(p.normal) - p.distance;
 
-        return abs(dist) <= _radius;
-    }
+		return abs(dist) <= _radius;
+	}
 
-    bool intersects(const AABBt<T>& _box) const noexcept
-    {
-        Vector3t<T>  point = _box.closestPoint(_center);
+	bool intersects(const AABBt<T>& _box) const noexcept
+	{
+		Vector3t<T>  point = _box.closestPoint(_center);
 
-        return center.sqrDistance(point) < _radius * _radius;
-    }
+		return center.sqrDistance(point) < _radius * _radius;
+	}
 
-    bool intersects(const Raycast3t<T>& ray) const noexcept
-    {
-        Vector3 m = ray.origin - _center;
+	bool intersects(const Raycast3t<T>& ray) const noexcept
+	{
+		Vector3 m = ray.origin - _center;
 
-        float c = m.length2() - _radius * _radius;
-        if (c <= 0.0)
-            return true;
+		float c = m.length2() - _radius * _radius;
+		if (c <= 0.0)
+			return true;
 
-        float b = m.dot(ray.normal);
-        if (b > 0.0)
-            return 0;
+		float b = m.dot(ray.normal);
+		if (b > 0.0)
+			return 0;
 
-        float disc = b * b - c;
+		float disc = b * b - c;
 
-        if (disc < 0.0)
-            return 0;
+		if (disc < 0.0)
+			return 0;
 
-        return 1;
-    }
+		return 1;
+	}
 
-    T distance(const Vector3t<T>& pt) const noexcept
-    {
-        Vector3t<T>  d = _center - pt;
-        return d.length() - _radius;
-    }
+	T distance(const Vector3t<T>& pt) const noexcept
+	{
+		Vector3t<T>  d = _center - pt;
+		return d.length() - _radius;
+	}
 
-    T sqrDistance(const Vector3t<T> & pt) const noexcept
-    {
-        Vector3t<T>  d = _center - pt;
+	T sqrDistance(const Vector3t<T> & pt) const noexcept
+	{
+		Vector3t<T>  d = _center - pt;
 
-        return d.length2() - _radius * _radius;
-    }
+		return d.length2() - _radius * _radius;
+	}
 
-    const AABBt<T>& aabb() const noexcept
-    {
-        return _box;
-    }
+	const AABBt<T>& aabb() const noexcept
+	{
+		return _box;
+	}
 
-    float radius() const noexcept
-    {
-        return _radius;
-    }
+	float radius() const noexcept
+	{
+		return _radius;
+	}
 
-    const Vector3t<T>& center() const noexcept
-    {
-        return _center;
-    }
+	const Vector3t<T>& center() const noexcept
+	{
+		return _center;
+	}
 
-    void center(const Vector3t<T>& center) noexcept
-    {
-        _box.min = _box.min - _center + center;
-        _box.max = _box.max - _center + center;
-        _center = center;
-    }
+	void center(const Vector3t<T>& center) noexcept
+	{
+		_box.min = _box.min - _center + center;
+		_box.max = _box.max - _center + center;
+		_center = center;
+	}
 
 private:
 
-    T _radius;
-    Vector3t<T> _center;
-    AABBt<T> _box;
+	T _radius;
+	Vector3t<T> _center;
+	AABBt<T> _box;
 };
 
 _NAME_END

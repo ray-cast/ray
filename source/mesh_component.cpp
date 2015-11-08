@@ -110,18 +110,20 @@ MeshComponent::getBoundingBox() const noexcept
 void
 MeshComponent::load(iarchive& reader) noexcept
 {
-	reader >> static_cast<GameComponent*>(this);
+	GameComponent::load(reader);
 
 	ResLoader<Model> model;
 
 	model.load(this->getName(),
-		[&](std::shared_ptr<ray::Model> model, const std::string& name) {
+		[&](ray::ModelPtr model, const std::string& name) 
+	{
 		return model->load(name);
 	},
-		[&](std::shared_ptr<ray::Model> model) {
+		[&](ray::ModelPtr model) 
+	{
 		if (model->hasMeshes())
 		{
-			auto mesh = model->getMeshsList()[0];
+			auto mesh = model->getMeshsList().back();
 			this->setMesh(mesh->clone());
 			this->setSharedMesh(mesh);
 		}
@@ -138,7 +140,6 @@ MeshComponent::clone() const noexcept
 {
 	auto instance = std::make_shared<MeshComponent>();
 	instance->setName(this->getName());
-	instance->setVisible(this->getVisible());
 
 	auto mesh = this->getSharedMesh();
 	if (mesh)

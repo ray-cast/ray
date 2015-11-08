@@ -52,34 +52,19 @@ public:
 
 	GameComponentPtr clone() const noexcept;
 
+	void buildMaterials(ModelPtr model) except;
+	void buildRenderObjects(MeshPropertyPtr mesh) noexcept;
+
 private:
-
-	void onAttach() except;
-	void onRemove() noexcept;
-
-	void onActivate() except;
-	void onDeactivate() noexcept;
-
-	void onMoveAfter() noexcept;
-
-	void onLayerChangeAfter() noexcept;
+	RenderObjectPtr buildRenderObject(MeshPropertyPtr mesh, RenderBufferPtr buffer) noexcept;
 
 protected:
 
-	void _attacRenderObjects() noexcept;
-	void _dttachRenderhObjects() noexcept;
-
-	void _buildMaterials(ModelPtr model) except;
-	void _buildRenderObjects(MeshPropertyPtr mesh) noexcept;
+	void onActivate() except;
 
 private:
 	MeshRenderComponent(const MeshRenderComponent&) noexcept = delete;
 	MeshRenderComponent& operator=(const MeshRenderComponent&) noexcept = delete;
-
-private:
-
-	RenderBuffers _renderBuffers;
-	RenderMeshes _renderObjects;
 };
 
 _NAME_END

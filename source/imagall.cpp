@@ -45,6 +45,9 @@
 #if _BUILD_GIF_HANDLER
 #include <ray/imaggif.h>
 #endif
+#if _BUILD_DDS_HANDLER
+#include <ray/imagdds.h>
+#endif
 #if _BUILD_IFF_HANDLER
 #include <ray/imagiff.h>
 #endif
@@ -68,6 +71,9 @@ _NAME_BEGIN
 
 #if _BUILD_BMP_HANDLER
 std::shared_ptr<ImageHandler> bmp = std::make_shared<BMPHandler>();
+#endif
+#if _BUILD_DDS_HANDLER
+std::shared_ptr<ImageHandler> dds = std::make_shared<DDSHandler>();
 #endif
 #if _BUILD_JPEG_HANDLER
 std::shared_ptr<ImageHandler> jpeg = std::make_shared<JPEGHandler>();
@@ -95,6 +101,9 @@ void GetImageInstanceList(Image& image)
 #endif
 #if _BUILD_BMP_HANDLER
     image.add(bmp);
+#endif
+#if _BUILD_DDS_HANDLER
+	image.add(dds);
 #endif
 }
 

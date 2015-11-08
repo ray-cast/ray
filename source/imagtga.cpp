@@ -98,7 +98,7 @@ TGAHandler::doLoad(Image& image, istream& stream) noexcept
 	TGAHeader hdr;
 
 	streamsize size = stream.size();
-	if (size < sizeof(TGAHeader))
+	if (size < sizeof(hdr))
 		return false;
 
 	stream.read((char*)&hdr, sizeof(hdr));

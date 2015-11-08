@@ -73,8 +73,8 @@
             float bilateralfilter(vec2 coord, float r, float center_d)
             {
                 float d = linearizeDepth(coord);
-                float ddiff = (d - center_d);
-                return exp(-r * r * blurFactor - ddiff * ddiff * blurSharpness);
+                float ddiff = (d - center_d) * blurSharpness;
+                return exp(-r * r * blurFactor - ddiff * ddiff);
             }
 
             vec3 getPosition(vec2 uv)

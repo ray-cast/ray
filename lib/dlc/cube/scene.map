@@ -5,42 +5,29 @@
         <attribute name="first_person_camera"/>
         <attribute position="0,62,0" />
         <attribute lookat="0,62,1" />
-        <attribute active="false"/>
-        <component name="camera">
+        <attribute active="true"/>
+        <component name="ray::Camera">
             <attribute aperture="75.0"/>
-            <attribute ratio="1.7916667"/>
             <attribute znear="0.1"/>
             <attribute zfar="65535.0"/>
             <attribute w="1376"/>
             <attribute h="768"/>
         </component>
-        <!--component name="character">
+        <component name="FirstPersonCamera">
+        </component>
+        <component name="ray::PhysicsCharacter">
             <attribute radius="1"/>
             <attribute height="4"/>
-        </component-->
-    </object>
-    <object>
-        <attribute name="sky"/>
-        <attribute position="0,0,0" />
-        <attribute scale="1,1,1" />
-        <attribute active="false"/>
-        <component name="mesh">
-            <attribute name="dlc:cube/models/sphere.pmx"/>
-        </component>
-        <component name="meshrender">
-            <attribute castshadow="false"/>
-            <attribute receiveshadow="false"/>
-            <attribute material="dlc:cube/material/sky.mat"/>
         </component>
     </object>
     <object>
         <attribute name="grass"/>
         <attribute position="0,0,0" />
         <attribute active="false"/>
-        <component name="mesh">
+        <component name="ray::Mesh">
             <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
-        <component name="meshrender">
+        <component name="ray::MeshRender">
             <attribute material="dlc:cube/material/grass.mat"/>
         </component>
     </object>
@@ -48,10 +35,10 @@
         <attribute name="wood"/>
         <attribute position="0,0,0" />
         <attribute active="false"/>
-        <component name="mesh">
+        <component name="ray::Mesh">
             <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
-        <component name="meshrender">
+        <component name="ray::MeshRender">
             <attribute material="dlc:cube/material/wood.mat"/>
         </component>
     </object>
@@ -59,10 +46,10 @@
         <attribute name="leaf"/>
         <attribute position="0,0,0" />
         <attribute active="false"/>
-        <component name="mesh">
+        <component name="ray::Mesh">
             <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
-        <component name="meshrender">
+        <component name="ray::MeshRender">
             <attribute material="dlc:cube/material/leaf.mat"/>
         </component>
     </object>
@@ -70,10 +57,10 @@
         <attribute name="clound"/>
         <attribute position="0,0,0" />
         <attribute active="false"/>
-        <component name="mesh">
+        <component name="ray::Mesh">
             <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
-        <component name="meshrender">
+        <component name="ray::MeshRender">
             <attribute material="dlc:cube/material/clound.mat"/>
         </component>
     </object>
@@ -81,43 +68,39 @@
         <attribute name="water"/>
         <attribute position="0,0,0" />
         <attribute active="false"/>
-        <component name="mesh">
+        <component name="ray::Mesh">
             <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
-        <component name="meshrender">
+        <component name="ray::MeshRender">
             <attribute material="dlc:cube/material/water.mat"/>
-            <attribute castshadow="false"/>
-        </component>
-    </object>
-    <object>
-        <attribute name="miku"/>
-        <attribute position="0, 60, 0"/>
-        <attribute active="true"/>
-        <component name="mesh">
-            <attribute name="dlc:cube/models/luo/luo.pmx"/>
-        </component>
-        <component name="meshrender">
-            <attribute castshadow="true"/>
         </component>
     </object>
     <object>
         <attribute name="sun"/>
-        <attribute position="0, 180, 0"/>
+        <attribute position="0, 250, 0"/>
+        <attribute up="0,0,1"/>
         <attribute active="true"/>
-        <component name="light">
+        <component name="ray::Light">
             <attribute type="sun"/>
             <attribute range="200.0"/>
-            <attribute shadow="false"/>
+            <attribute shadow="true"/>
         </component>
     </object>
     <object>
         <attribute name="light"/>
-        <attribute position="0, -20, 0"/>
-        <attribute active="false"/>
-        <component name="light">
-            <attribute type="point"/>
-            <attribute range="30.0"/>
-            <attribute intensity="1"/>
+        <attribute position="0, 0, 0"/>
+        <attribute active="true"/>
+        <component name="ray::Light">
+            <attribute type="ambient"/>
+            <attribute color="1.0,1.0,1.0"/>
+            <attribute range="200.0"/>
+            <attribute intensity="0.1"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="terrain"/>
+        <attribute active="true"/>
+        <component name="Terrain">
         </component>
     </object>
 </scene>

@@ -68,50 +68,41 @@ GameObject::~GameObject() noexcept
 void
 GameObject::setActive(bool active) except
 {
-	assert(this->getGameScene());
-
 	if (_active != active)
 	{
-		if (active)
-		{
-			auto scene = this->getGameScene();
-			if (scene->getActive())
-			{
-				for (auto& it : _children)
-				{
-					if (!it->getActive())
-						continue;
+		for (auto& it : _components)
+			it->setActive(active);
 
-					for (auto& component : it->getComponents())
-						component->onActivate();
-				}
+		_active = active;
+	}
+}
 
-				for (auto& it : _components)
-				{
-					it->onActivate();
-				}
-			}
-		}
-		else
-		{
-			auto scene = this->getGameScene();
-			if (!scene->getActive())
-			{
-				for (auto& it : _children)
-				{
-					if (!it->getActive())
-						continue;
+void 
+GameObject::setActiveUpwards(bool active) except
+{
+	if (_active != active)
+	{
+		for (auto& it : _components)
+			it->setActive(active);
 
-					for (auto& component : it->getComponents())
-						component->onDeactivate();
-				}
+		auto parent = this->getParent();
+		if (parent)
+			parent->setActiveUpwards(active);
 
-				for (auto& it : _components)
-				{
-					it->onDeactivate();
-				}
-			}
-		}
+		_active = active;
+	}
+}
+
+void 
+GameObject::setActiveDownwards(bool active) except
+{
+	if (_active != active)
+	{
+		for (auto& it : _components)
+			it->setActive(active);
+
+		for (auto& it : _children)
+			it->setActiveDownwards(true);
 
 		_active = active;
 	}
@@ -219,10 +210,7 @@ void
 GameObject::cleanupChildren() noexcept
 {
 	for (auto& it : _children)
-	{
-		it->cleanupComponents();
 		it.reset();
-	}
 
 	_children.clear();
 }
@@ -287,6 +275,12 @@ GameObject::getChildCount() const noexcept
 
 GameObjects&
 GameObject::getChildren() noexcept
+{
+	return _children;
+}
+
+const GameObjects&
+GameObject::getChildren() const noexcept
 {
 	return _children;
 }
@@ -835,7 +829,8 @@ void
 GameObject::setTransform(const Matrix4x4& m) noexcept
 {
 	_transform = m;
-	_transformInverse = m.inverse();
+	_transformInverse = m;
+	_transformInverse.inverse();
 	_transformInverseTranspose = Matrix4x4(_transformInverse).transpose();
 }
 
@@ -843,7 +838,8 @@ void
 GameObject::setTransformInverse(const Matrix4x4& m) noexcept
 {
 	_transform = m;
-	_transformInverse = m.inverse();
+	_transformInverse = m;
+	_transformInverse.inverse();
 	_transformInverseTranspose = Matrix4x4(_transformInverse).transpose();
 }
 
@@ -897,7 +893,8 @@ GameObject::_updateTransform() const noexcept
 		_transform = _worldTransform;
 		_transform.scale(_scaling);
 
-		_transformInverse = _transform.inverse();
+		_transformInverse = _transform;
+		_transformInverse.inverse();
 		_transformInverseTranspose = rotate;
 
 		_needUpdates = false;
@@ -905,18 +902,18 @@ GameObject::_updateTransform() const noexcept
 }
 
 void
-GameObject::addComponent(GameComponentPtr component) noexcept
+GameObject::addComponent(GameComponentPtr component) except
 {
 	assert(component);
 
-	if (GameComponent::getType() != component->getRTTI()->getBaseType())
+	if (GameComponent::getType() != component->getRTTI()->getDerivedType())
 	{
 		auto it = _components.begin();
 		auto end = _components.end();
 
 		for (;it != end; ++it)
 		{
-			if ((*it)->getRTTI()->getBaseType() == component->getRTTI()->getBaseType())
+			if ((*it)->getRTTI()->getDerivedType() == component->getRTTI()->getDerivedType())
 			{
 				return;
 			}
@@ -977,7 +974,7 @@ GameObject::cleanupComponents() noexcept
 	{
 		for (auto& it : _components)
 		{
-			it->onDeactivate();
+			it->setActive(false);
 			it->onRemove();
 		}
 	}
@@ -986,7 +983,7 @@ GameObject::cleanupComponents() noexcept
 }
 
 GameComponentPtr
-GameObject::getComponent(RTTIType type) const noexcept
+GameObject::getComponent(RTTI::HashCode type) const noexcept
 {
 	for (auto& it : _components)
 	{
@@ -1019,9 +1016,7 @@ GameObject::sendMessage(const GameMessage& message) noexcept
 		return;
 
 	for (auto& it : _components)
-	{
 		it->onMessage(message);
-	}
 }
 
 void
@@ -1063,7 +1058,6 @@ GameObject::clone() const except
 {
 	auto instance = std::make_shared<GameObject>();
 	instance->setName(this->getName());
-	instance->setVisible(this->getVisible());
 	instance->setLayer(this->getLayer());
 	instance->setLookAt(this->getLookAt());
 	instance->setUpVector(this->getUpVector());

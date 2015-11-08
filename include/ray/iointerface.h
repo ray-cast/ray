@@ -38,13 +38,13 @@
 #define _H_IO_INTERFACE_H_
 
 #include <ray/iostream.h>
+#include <ray/memory.h>
 
 #include <queue>
 #include <mutex>
 #include <thread>
 #include <unordered_map>
 #include <condition_variable>
-#include <memory>
 
 _NAME_BEGIN
 

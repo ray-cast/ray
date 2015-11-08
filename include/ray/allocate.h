@@ -39,8 +39,6 @@
 
 #include <ray/except.h>
 
-#include <new> // for std::nothrow_t
-
 #pragma push_macro("new")
 #undef new
 

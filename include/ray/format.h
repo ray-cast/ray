@@ -58,6 +58,12 @@ typedef basic_format<wchar_t> wformat;
 #undef _FORMAT_UNICODE_
 #undef _FORMAT_TYPE_
 
+#ifdef __UNICODE__
+typedef wformat tformat;
+#else
+typedef format tformat;
+#endif
+
 _NAME_END
 
 #endif

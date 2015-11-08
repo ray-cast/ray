@@ -131,20 +131,6 @@ PhysicFeatures::clone() const noexcept
 }
 
 GameComponentPtr
-PhysicFeatures::onSerialization(iarchive& reader) except
-{
-	auto component = reader.getString("name");
-	if (component == "box")
-		return instanceShapeBox(reader);
-	else if (component == "rigidbody")
-		return instanceRigidbody(reader);
-	else if (component == "character")
-		return instanceCharacter(reader);
-
-	return nullptr;
-}
-
-GameComponentPtr
 PhysicFeatures::instanceRigidbody(iarchive& reader) except
 {
 	if (reader.setToFirstChild())
@@ -203,40 +189,6 @@ PhysicFeatures::instanceShapeBox(iarchive& reader) except
 		} while (reader.setToNextChild());
 
 		return box;
-	}
-
-	return nullptr;
-}
-
-GameComponentPtr
-PhysicFeatures::instanceCharacter(iarchive& reader) except
-{
-	if (reader.setToFirstChild())
-	{
-		auto character = std::make_shared<PhysicsCharacterComponent>();
-
-		do
-		{
-			auto key = reader.getCurrentNodeName();
-			if (key == "attribute")
-			{
-				auto attributes = reader.getAttrs();
-				for (auto& it : attributes)
-				{
-					std::string value = reader.getString(it);
-					if (it == "radius")
-					{
-						character->setRadius(reader.getFloat(it.c_str()));
-					}
-					else if (it == "height")
-					{
-						character->setHeight(reader.getFloat(it.c_str()));
-					}
-				}
-			}
-		} while (reader.setToNextChild());
-
-		return character;
 	}
 
 	return nullptr;

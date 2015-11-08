@@ -37,6 +37,7 @@
 #ifndef _H_WGL_CANVAS_H_
 #define _H_WGL_CANVAS_H_
 
+#include <ray/render_window.h>
 #include <ray/ogl_extenstion.h>
 
 _NAME_BEGIN
@@ -44,44 +45,55 @@ _NAME_BEGIN
 class WGLCanvas final : public RenderWindow
 {
 public:
-    WGLCanvas() noexcept;
-    ~WGLCanvas() noexcept;
+	WGLCanvas() noexcept;
+	WGLCanvas(WindHandle) except;
+	~WGLCanvas() noexcept;
 
-    void setup(WindHandle hwnd) except;
-    void close() noexcept;
+	void open(WindHandle hwnd) except;
+	void close() noexcept;
 
-    void setSwapInterval(SwapInterval interval) noexcept;
-    SwapInterval getSwapInterval() const noexcept;
+	void setSwapInterval(SwapInterval interval) noexcept;
+	SwapInterval getSwapInterval() const noexcept;
 
-    void bind();
-    void unbind() noexcept;
+	void present() noexcept;
 
-    void present() noexcept;
-
-    void setWindowResolution(std::size_t w, std::size_t h) noexcept;
-
-    std::size_t getWindowWidth() const noexcept;
-    std::size_t getWindowHeight() const noexcept;
-
-    WindHandle getWindHandle() const noexcept;
-
-private:
-    WGLCanvas(const WGLCanvas&) noexcept = delete;
-    WGLCanvas& operator=(const WGLCanvas&) noexcept = delete;
+	WindHandle getWindHandle() const noexcept;
 
 private:
 
-    HWND _hwnd;
-    HDC _hdc;
-    HGLRC _context;
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
 
-    std::size_t _width;
-    std::size_t _height;
+private:
 
-    GPUfbconfig _fbconfig;
-    GPUctxconfig _ctxconfig;
+	static bool initWGLExtensions(HDC hdc) except;
+	static void initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept;
 
-    SwapInterval _interval;
+private:
+	WGLCanvas(const WGLCanvas&) noexcept = delete;
+	WGLCanvas& operator=(const WGLCanvas&) noexcept = delete;
+
+private:
+
+	static int initWGLExtention;
+
+	static bool _ARB_pixel_format;
+	static bool _ARB_create_context;
+	static bool _ARB_create_context_robustness;
+
+	static bool _EXT_swap_control;
+
+	HWND _hwnd;
+	HDC _hdc;
+	HGLRC _context;
+
+	std::size_t _width;
+	std::size_t _height;
+
+	GPUfbconfig _fbconfig;
+	GPUctxconfig _ctxconfig;
+
+	SwapInterval _interval;
 };
 
 _NAME_END

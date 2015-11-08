@@ -46,7 +46,8 @@
 #include <vector>
 #include <list>
 #include <map>
-
+#include <algorithm>
+#include <functional>
 #include <iostream>
 
 #ifndef _BYTE_BITMASK
@@ -98,7 +99,7 @@
 
 #if defined(_VISUAL_STUDIO_) && (_VISUAL_STUDIO_ <= 1800)
 #   ifndef noexcept
-#       define noexcept
+#       define noexcept throw()
 #   endif
 
 #   ifndef constexpr

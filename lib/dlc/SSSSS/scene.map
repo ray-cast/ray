@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<scene>
+    <attribute name="SSSSS"/>
+    <object>
+        <attribute name="first_person_camera"/>
+        <attribute position="0,0,-2" />
+        <attribute lookat="0,0,1" />
+        <attribute active="true"/>
+        <component name="ray::Camera">
+            <attribute aperture="45.0"/>
+            <attribute znear="0.1"/>
+            <attribute zfar="65535.0"/>
+            <attribute w="1376"/>
+            <attribute h="768"/>
+        </component>
+        <component name="FirstPersonCamera">
+        </component>
+    </object>
+    <object>
+        <attribute name="head"/>
+        <attribute position="0,0,0" />
+        <attribute rotate="0,0,0"/>
+        <attribute scale="1,1,1" />
+        <attribute active="true"/>
+        <component name="ray::Mesh">
+            <attribute name="dlc:SSSSS/models/head/Head.sdkmesh"/>
+        </component>
+        <component name="ray::MeshRender">
+            <attribute castshadow="true"/>
+            <attribute receiveshadow="false"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sun"/>
+        <attribute position="0,0,-10"/>
+        <attribute lookat="0,0,1" />
+        <attribute active="true"/>
+        <component name="ray::Light">
+            <attribute type="sun"/>
+            <attribute color="1.0,1.0,1.0"/>
+            <attribute range="200.0"/>
+            <attribute intensity="1.0"/>
+            <attribute shadow="false"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="light"/>
+        <attribute position="0, 0, 0"/>
+        <attribute active="false"/>
+        <component name="ray::Light">
+            <attribute type="ambient"/>
+            <attribute color="1.0,1.0,1.0"/>
+            <attribute range="200.0"/>
+            <attribute intensity="0.6"/>
+        </component>
+    </object>
+</scene>

@@ -35,10 +35,11 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/material.h>
+#include <ray/render_factory.h>
 
 _NAME_BEGIN
 
-MaterialSemanticPtr Material::_semantic;
+MaterialSemanticPtr Material::_semantic = std::make_shared<MaterialSemantic>();
 
 Material::Material() noexcept
 {
@@ -65,7 +66,7 @@ Material::setup() except
 			auto renderState = pass->getRenderState();
 			if (!renderState)
 			{
-				pass->setRenderState(std::make_shared<RenderState>());
+				pass->setRenderState(RenderFactory::createRenderState());
 			}
 
 			auto shaderObject = pass->getShaderObject();

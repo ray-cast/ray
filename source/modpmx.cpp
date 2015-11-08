@@ -64,6 +64,8 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 {
 	PMX pmx;
 
+	setlocale(LC_ALL, "");
+
 	if (!stream.read((char*)&pmx.Header, sizeof(pmx.Header))) return false;
 	if (!stream.read((char*)&pmx.Description.JapanModelLength, sizeof(pmx.Description.JapanModelLength))) return false;
 
@@ -302,7 +304,7 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 			{
 				if (!stream.read((char*)&bone.ConnectedBoneIndex, pmx.Header.BoneIndexSize)) return false;
 			}
-			else if (bone.Flag & PMX_BONE_MOVE)
+			else
 			{
 				if (!stream.read((char*)&bone.Offset, sizeof(bone.Offset))) return false;
 			}
@@ -350,6 +352,104 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 		}
 	}
 
+	if (!stream.read((char*)&pmx.MorphCount, sizeof(pmx.MorphCount))) return false;
+
+	if (pmx.MorphCount > 0)
+	{
+		pmx.MorphList.resize(pmx.MorphCount);
+
+		for (std::size_t i = 0; i < (std::size_t)pmx.MorphCount; i++)
+		{
+			if (!stream.read((char*)&pmx.MorphList[i].Length, sizeof(pmx.MorphList[i].Length))) return false;
+			if (!stream.read((char*)&pmx.MorphList[i].Name, pmx.MorphList[i].Length)) return false;
+			if (!stream.read((char*)&pmx.MorphList[i].Unknown, sizeof(pmx.MorphList[i].Unknown))) return false;
+			if (!stream.read((char*)&pmx.MorphList[i].OffsetSize, sizeof(pmx.MorphList[i].OffsetSize))) return false;
+			if (!stream.read((char*)&pmx.MorphList[i].MorphType, sizeof(pmx.MorphList[i].MorphType))) return false;
+			if (!stream.read((char*)&pmx.MorphList[i].MorphCount, sizeof(pmx.MorphList[i].MorphCount))) return false;
+
+			if (pmx.MorphList[i].MorphCount > 0)
+			{
+				if (pmx.MorphList[i].MorphType == 1)
+				{
+					pmx.MorphList[i].VertexList.resize(pmx.MorphList[i].MorphCount);
+
+					for (std::size_t j = 0; j < (std::size_t)pmx.MorphList[i].MorphCount; j++)
+					{
+						if (!stream.read((char*)&pmx.MorphList[i].VertexList[j].Index, pmx.Header.MorphIndexSize)) return false;
+						if (!stream.read((char*)&pmx.MorphList[i].VertexList[j].Offset, sizeof(pmx.MorphList[i].VertexList[j].Offset))) return false;
+					}
+				}
+				else if (pmx.MorphList[i].MorphType == 2)
+				{
+					pmx.MorphList[i].BoneList.resize(pmx.MorphList[i].MorphCount);
+
+					for (std::size_t j = 0; j < (std::size_t)pmx.MorphList[i].MorphCount; j++)
+					{
+						if (!stream.read((char*)&pmx.MorphList[i].BoneList[j].BoneIndex, pmx.Header.BoneIndexSize)) return false;
+						if (!stream.read((char*)&pmx.MorphList[i].BoneList[j].Weight, sizeof(pmx.MorphList[i].BoneList[j].Weight))) return false;
+						if (!stream.read((char*)&pmx.MorphList[i].BoneList[j].Position, sizeof(pmx.MorphList[i].BoneList[j].Position))) return false;
+						if (!stream.read((char*)&pmx.MorphList[i].BoneList[j].Rotate, sizeof(pmx.MorphList[i].BoneList[j].Rotate))) return false;
+					}
+				}
+				else if (pmx.MorphList[i].MorphType == 3)
+				{
+					for (std::size_t j = 0; j < (std::size_t)pmx.MorphList[i].MorphCount; j++)
+					{
+						if (!stream.read((char*)&pmx.MorphList[i].VertexList[j].Index, pmx.Header.MorphIndexSize)) return false;
+						if (!stream.read((char*)&pmx.MorphList[i].VertexList[j].Offset, sizeof(pmx.MorphList[i].VertexList[j].Offset))) return false;
+					}
+				}
+				else if (pmx.MorphList[i].MorphType == 8)
+				{
+					pmx.MorphList[i].MaterialList.resize(pmx.MorphList[i].MorphCount);
+
+					for (std::size_t j = 0; j < (std::size_t)pmx.MorphList[i].MorphCount; j++)
+					{
+						if (!stream.read((char*)&pmx.MorphList[i].MaterialList[j].Index, pmx.Header.MorphIndexSize)) return false;
+						if (!stream.read((char*)&pmx.MorphList[i].MaterialList[j].Diffuse, sizeof(pmx.MorphList[i].MaterialList[j].Diffuse))) return false;
+						if (!stream.read((char*)&pmx.MorphList[i].MaterialList[j].Opacity, sizeof(pmx.MorphList[i].MaterialList[j].Opacity))) return false;
+						if (!stream.read((char*)&pmx.MorphList[i].MaterialList[j].Specular, sizeof(pmx.MorphList[i].MaterialList[j].Specular))) return false;
+						if (!stream.read((char*)&pmx.MorphList[i].MaterialList[j].Shininess, sizeof(pmx.MorphList[i].MaterialList[j].Shininess))) return false;
+						if (!stream.read((char*)&pmx.MorphList[i].MaterialList[j].Ambient, sizeof(pmx.MorphList[i].MaterialList[j].Ambient))) return false;
+						if (!stream.read((char*)&pmx.MorphList[i].MaterialList[j].EdgeColor, sizeof(pmx.MorphList[i].MaterialList[j].EdgeColor))) return false;
+						if (!stream.read((char*)&pmx.MorphList[i].MaterialList[j].EdgeSize, sizeof(pmx.MorphList[i].MaterialList[j].EdgeSize))) return false;
+						if (!stream.read((char*)&pmx.MorphList[i].MaterialList[j].Tex, sizeof(pmx.MorphList[i].MaterialList[j].Tex))) return false;
+						if (!stream.read((char*)&pmx.MorphList[i].MaterialList[j].Unknown, sizeof(pmx.MorphList[i].MaterialList[j].Unknown))) return false;
+						if (!stream.read((char*)&pmx.MorphList[i].MaterialList[j].Toon, sizeof(pmx.MorphList[i].MaterialList[j].Toon))) return false;
+					}
+				}
+			}
+		}
+	}
+
+	if (!stream.read((char*)&pmx.DisplaySlot.DisplayCount, sizeof(pmx.DisplaySlot.DisplayCount))) return false;
+
+	/*if (pmx.DisplaySlot.DisplayCount > 0)
+	{
+		pmx.DisplaySlot.Slots.resize(pmx.DisplaySlot.DisplayCount);
+
+		for (std::size_t i = 0; i < (std::size_t)pmx.DisplaySlot.DisplayCount; i++)
+		{
+			if (!stream.read((char*)&pmx.DisplaySlot.Slots[i].Type, sizeof(pmx.DisplaySlot.Slots[i].Type))) return false;
+
+			if (pmx.DisplaySlot.Slots[i].Type == 0)
+			{
+				if (!stream.read((char*)&pmx.DisplaySlot.Slots[i].BoneIndex, sizeof(pmx.Header.BodyIndexSize)))
+					return false;
+			}
+
+			else if (pmx.DisplaySlot.Slots[i].Type == 1)
+			{
+				if (!stream.read((char*)&pmx.DisplaySlot.Slots[i].MorphIndex, sizeof(pmx.Header.MorphIndexSize)))
+					return false;
+			}
+			else
+			{
+				assert(false);
+			}
+		}
+	}*/
+
 	for (std::size_t index = 0; index < pmx.MaterialList.size(); index++)
 	{
 		auto& it = pmx.MaterialList[index];
@@ -362,9 +462,9 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 			auto length = wcstombs(nullptr, it.Name.name.c_str(), 0);
 			if (length != -1 && length < MAX_PATH)
 			{
-				wcstombs(name, it.Name.name.c_str(), length);
+				wcstombs(name, it.Name.name.c_str(), MAX_PATH);
 
-				material->set(MATKEY_NAME(0), name);
+				material->set(MATKEY_NAME, name);
 			}
 		}
 
@@ -378,21 +478,41 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 		{
 			PMX_Texture& texture = pmx.TextureList[it.TextureIndex];
 
-			std::wstring wname((wchar_t*)texture.name.data(), texture.length >> 1);
-			std::wstring::size_type substr = wname.find_first_of(L"*");
+			std::wstring::size_type substr = texture.name.find_first_of(L"*");
 			if (substr != std::string::npos)
 			{
-				wname.erase(wname.begin() + substr, wname.end());
+				texture.name.erase(texture.name.begin() + substr, texture.name.end());
 			}
 
-			char name[MAX_PATH];
+			if ((texture.length >> 1) < MAX_PATH)
+			{
+				char name[MAX_PATH];
 
-			if ((wname.length() >> 1) > MAX_PATH) return false;
+				wcstombs(name, texture.name.c_str(), MAX_PATH);
 
-			wcstombs(name, wname.c_str(), wname.length() << 1);
+				material->set(MATKEY_TEXTURE_DIFFUSE(0), name);
+				material->set(MATKEY_TEXTURE_AMBIENT(0), name);
+			}
+		}
 
-			material->set(MATKEY_TEXTURE_DIFFUSE(0), name);
-			material->set(MATKEY_TEXTURE_AMBIENT(0), name);
+		if (it.SphereTextureIndex != std::numeric_limits<PMX_uint8_t>::max())
+		{
+			PMX_Texture& texture = pmx.TextureList[it.SphereTextureIndex];
+
+			std::wstring::size_type substr = texture.name.find_first_of(L"*");
+			if (substr != std::string::npos)
+			{
+				texture.name.erase(texture.name.begin() + substr, texture.name.end());
+			}
+
+			if ((texture.length >> 1) < MAX_PATH)
+			{
+				char name[MAX_PATH];
+
+				wcstombs(name, texture.name.c_str(), MAX_PATH);
+
+				material->set(MATKEY_TEXTURE_NORMALS(0), name);
+			}
 		}
 
 		model.addMaterial(material);
@@ -401,9 +521,7 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 	PMX_Index* indices = pmx.IndexList.data();
 	PMX_Vertex* vertices = pmx.VertexList.data();
 
-	MeshPropertyPtr root = std::make_shared<MeshProperty>();
-	MeshPropertyPtr mesh = root;
-	MeshPropertyPtr last = nullptr;
+	MeshPropertyPtr root = nullptr;
 
 	for (std::size_t index = 0; index < pmx.MaterialList.size(); index++)
 	{
@@ -412,6 +530,7 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 		Vector3Array points;
 		Vector3Array normals;
 		Vector2Array texcoords;
+		VertexWeights weights;
 		UintArray faces;
 
 		for (PMX_IndexCount i = 0; i < it.FaceVertexCount; i++, indices++)
@@ -422,21 +541,85 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 			normals.push_back(v.Normal);
 			texcoords.push_back(v.UV);
 			faces.push_back(i);
+
+			VertexWeight weight;
+			weight.weight1 = v.BoneWeight.Weight1;
+			weight.weight2 = v.BoneWeight.Weight2;
+			weight.weight3 = v.BoneWeight.Weight3;
+			weight.weight4 = v.BoneWeight.Weight4;
+			weight.bone1 = v.BoneWeight.Bone1;
+			weight.bone2 = v.BoneWeight.Bone2;
+			weight.bone3 = v.BoneWeight.Bone3;
+			weight.bone4 = v.BoneWeight.Bone4;
+
+			weights.push_back(weight);
 		}
 
-		if (last == mesh)
-		{
-			mesh = std::make_shared<MeshProperty>();
-			root->addChild(mesh);
-		}
-
+		MeshPropertyPtr mesh = std::make_shared<MeshProperty>();
 		mesh->setMaterialID(index);
 		mesh->setVertexArray(points);
 		mesh->setNormalArray(normals);
 		mesh->setTexcoordArray(texcoords);
+		mesh->setWeightArray(weights);
 		mesh->setFaceArray(faces);
 
-		last = mesh;
+		if (root)
+			root->addChild(mesh);
+		else
+			root = mesh;
+	}
+
+	if (pmx.BoneCount > 0)
+	{
+		Bones bones;
+		InverseKinematics iks;
+
+		auto& boneLists = pmx.BoneList;
+		for (std::size_t boneIndex = 0; boneIndex < boneLists.size(); boneIndex++)
+		{
+			auto& it = boneLists[boneIndex];
+
+			char name[MAX_PATH] = { 0 };
+			if ((it.Name.length) > MAX_PATH)
+				return false;
+
+			if (!wcstombs(name, it.Name.name.data(), MAX_PATH))
+				return false;
+
+			Bone bone;
+
+			bone.setName(name);
+			bone.setPosition(it.Position);
+			bone.setParent(it.Parent);
+			bone.setChild(it.ConnectedBoneIndex);
+
+			bones.push_back(bone);
+
+			if (it.Flag & PMX_BONE_IK)
+			{
+				IKAttr attr;
+				attr.IKBoneIndex = boneIndex;
+				attr.IKTargetBoneIndex = it.IKTargetBoneIndex;
+				attr.IKLimitedRadian = it.IKLimitedRadian;
+				attr.IKLinkCount = it.IKLinkCount;
+				attr.IKLoopCount = it.IKLoopCount;
+				for (auto& bone : it.IKList)
+				{
+					IKChild child;
+					child.BoneIndex = bone.BoneIndex;
+					child.MinimumRadian = bone.MinimumRadian;
+					child.MaximumRadian = bone.MaximumRadian;
+					child.RotateLimited = bone.RotateLimited;
+
+					attr.IKList.push_back(child);
+				}
+
+				iks.push_back(attr);
+			}
+		}
+
+		root->setInverseKinematics(iks);
+		root->setBoneArray(bones);
 	}
 
 	model.addMesh(root);

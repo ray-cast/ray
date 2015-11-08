@@ -46,252 +46,252 @@ template<typename T>
 class Frustumt
 {
 public:
-    typedef Frustumt<T> _Myt;
+	typedef Frustumt<T> _Myt;
 
-    enum FRUSTUM_CLASSIFICATIONS
-    {
-        FRUSTUM_LEFT,
-        FRUSTUM_LEFT_INTERSECT,
-        FRUSTUM_RIGHT,
-        FRUSTUM_RIGHT_INTERSECT,
-        FRUSTUM_TOP,
-        FRUSTUM_TOP_INTERSECT,
-        FRUSTUM_BOTTOM,
-        FRUSTUM_BOTTOM_INTERSECT,
-        FRUSTUM_NEAR,
-        FRUSTUM_NEAR_INTERSECT,
-        FRUSTUM_FAR,
-        FRUSTUM_FAR_INTERSECT,
-        FRUSTUM_CONTAINS
-    };
+	enum FRUSTUM_CLASSIFICATIONS
+	{
+		FRUSTUM_LEFT,
+		FRUSTUM_LEFT_INTERSECT,
+		FRUSTUM_RIGHT,
+		FRUSTUM_RIGHT_INTERSECT,
+		FRUSTUM_TOP,
+		FRUSTUM_TOP_INTERSECT,
+		FRUSTUM_BOTTOM,
+		FRUSTUM_BOTTOM_INTERSECT,
+		FRUSTUM_NEAR,
+		FRUSTUM_NEAR_INTERSECT,
+		FRUSTUM_FAR,
+		FRUSTUM_FAR_INTERSECT,
+		FRUSTUM_CONTAINS
+	};
 
-    Frustumt() noexcept
-    {
-    }
+	Frustumt() noexcept
+	{
+	}
 
-    Frustumt(const Matrix4x4t<T>& m) noexcept
-    {
-        this->extract(m);
-    }
+	Frustumt(const Matrix4x4t<T>& m) noexcept
+	{
+		this->extract(m);
+	}
 
-    void makeFrustum(float angle, float ratio, float znear, float zfar, const Vector3& position, const Vector3& lookat, const Vector3& up) noexcept
-    {
-        Vector3 z = position - lookat;
-        z.normalize();
+	void makeFrustum(float angle, float ratio, float znear, float zfar, const Vector3& position, const Vector3& lookat, const Vector3& up) noexcept
+	{
+		Vector3 z = position - lookat;
+		z.normalize();
 
-        Vector3 x = up.cross(z);
-        x.normalize();
+		Vector3 x = up.cross(z);
+		x.normalize();
 
-        Vector3 y = z.cross(x);
+		Vector3 y = z.cross(x);
 
-        Vector3 nc = position - z * znear;
-        Vector3 fc = position - z * zfar;
+		Vector3 nc = position - z * znear;
+		Vector3 fc = position - z * zfar;
 
-        float tang = std::tan(degrees(angle) * 0.5);
-        float nh = znear * tang;
-        float nw = nh * ratio;
-        float fh = zfar  * tang;
-        float fw = fh * ratio;
+		float tang = std::tan(degrees(angle) * 0.5);
+		float nh = znear * tang;
+		float nw = nh * ratio;
+		float fh = zfar  * tang;
+		float fw = fh * ratio;
 
-        Vector3 ntl = nc + y * nh - x * nw;
-        Vector3 ntr = nc + y * nh + x * nw;
-        Vector3 nbl = nc - y * nh - x * nw;
-        Vector3 nbr = nc - y * nh + x * nw;
+		Vector3 ntl = nc + y * nh - x * nw;
+		Vector3 ntr = nc + y * nh + x * nw;
+		Vector3 nbl = nc - y * nh - x * nw;
+		Vector3 nbr = nc - y * nh + x * nw;
 
-        Vector3 ftl = fc + y * fh - x * fw;
-        Vector3 ftr = fc + y * fh + x * fw;
-        Vector3 fbl = fc - y * fh - x * fw;
-        Vector3 fbr = fc - y * fh + x * fw;
+		Vector3 ftl = fc + y * fh - x * fw;
+		Vector3 ftr = fc + y * fh + x * fw;
+		Vector3 fbl = fc - y * fh - x * fw;
+		Vector3 fbr = fc - y * fh + x * fw;
 
-        _top.compute(ntl, ntr, ftl);
-        _bottom.compute(nbr, nbl, fbr);
-        _left.compute(nbl, ntl, fbl);
-        _right.compute(ntr, nbr, fbr);
-        _near.compute(ntr, ntl, nbr);
-        _far.compute(ftl, ftr, fbl);
-    }
+		_top.compute(ntl, ntr, ftl);
+		_bottom.compute(nbr, nbl, fbr);
+		_left.compute(nbl, ntl, fbl);
+		_right.compute(ntr, nbr, fbr);
+		_near.compute(ntr, ntl, nbr);
+		_far.compute(ftl, ftr, fbl);
+	}
 
-    void extract(const Matrix4x4t<T>& m, bool normalize = false) noexcept
-    {
-        _left.normal.x = m.a4 + m.a1;
-        _left.normal.y = m.b4 + m.b1;
-        _left.normal.z = m.c4 + m.c1;
-        _left.distance = m.d4 + m.d1;
+	void extract(const Matrix4x4t<T>& m, bool normalize = false) noexcept
+	{
+		_left.normal.x = m.a4 + m.a1;
+		_left.normal.y = m.b4 + m.b1;
+		_left.normal.z = m.c4 + m.c1;
+		_left.distance = m.d4 + m.d1;
 
-        _right.normal.x = m.a4 - m.a1;
-        _right.normal.y = m.b4 - m.b1;
-        _right.normal.z = m.c4 - m.c1;
-        _right.distance = m.d4 - m.d1;
+		_right.normal.x = m.a4 - m.a1;
+		_right.normal.y = m.b4 - m.b1;
+		_right.normal.z = m.c4 - m.c1;
+		_right.distance = m.d4 - m.d1;
 
-        _bottom.normal.x = m.a4 + m.a2;
-        _bottom.normal.y = m.b4 + m.b2;
-        _bottom.normal.z = m.c4 + m.c2;
-        _bottom.distance = m.d4 + m.d2;
+		_bottom.normal.x = m.a4 + m.a2;
+		_bottom.normal.y = m.b4 + m.b2;
+		_bottom.normal.z = m.c4 + m.c2;
+		_bottom.distance = m.d4 + m.d2;
 
-        _top.normal.x = m.a4 - m.a2;
-        _top.normal.y = m.b4 - m.b2;
-        _top.normal.z = m.c4 - m.c2;
-        _top.distance = m.d4 - m.d2;
+		_top.normal.x = m.a4 - m.a2;
+		_top.normal.y = m.b4 - m.b2;
+		_top.normal.z = m.c4 - m.c2;
+		_top.distance = m.d4 - m.d2;
 
-        _near.normal.x = m.a4 + m.a3;
-        _near.normal.y = m.b4 + m.b3;
-        _near.normal.z = m.c4 + m.c3;
-        _near.distance = m.d4 + m.d3;
+		_near.normal.x = m.a4 + m.a3;
+		_near.normal.y = m.b4 + m.b3;
+		_near.normal.z = m.c4 + m.c3;
+		_near.distance = m.d4 + m.d3;
 
-        _far.normal.x = m.a4 - m.a3;
-        _far.normal.y = m.b4 - m.b3;
-        _far.normal.z = m.c4 - m.c3;
-        _far.distance = m.d4 - m.d3;
+		_far.normal.x = m.a4 - m.a3;
+		_far.normal.y = m.b4 - m.b3;
+		_far.normal.z = m.c4 - m.c3;
+		_far.distance = m.d4 - m.d3;
 
-        if (normalize)
-        {
-            _left.normalize();
-            _right.normalize();
-            _top.normalize();
-            _bottom.normalize();
-            _near.normalize();
-            _far.normalize();
-        }
-    }
+		if (normalize)
+		{
+			_left.normalize();
+			_right.normalize();
+			_top.normalize();
+			_bottom.normalize();
+			_near.normalize();
+			_far.normalize();
+		}
+	}
 
-    bool contains(const Vector3t<T>& pt) const noexcept
-    {
-        if ((_left.getDistance(pt) < 0.0f) ||
-            (_right.getDistance(pt) < 0.0f) ||
-            (_top.getDistance(pt) < 0.0f) ||
-            (_bottom.getDistance(pt) < 0.0f) ||
-            (_near.getDistance(pt) < 0.0f) ||
-            (_far.getDistance(pt) < 0.0f))
-        {
-            return false;
-        }
+	bool contains(const Vector3t<T>& pt) const noexcept
+	{
+		if ((_left.getDistance(pt) < 0.0f) ||
+			(_right.getDistance(pt) < 0.0f) ||
+			(_top.getDistance(pt) < 0.0f) ||
+			(_bottom.getDistance(pt) < 0.0f) ||
+			(_near.getDistance(pt) < 0.0f) ||
+			(_far.getDistance(pt) < 0.0f))
+		{
+			return false;
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    bool contains(const Rect3t<T>& rc) const  noexcept
-    {
-        if (!_left.classify(rc) ||
-            !_right.classify(rc) ||
-            !_top.classify(rc) ||
-            !_bottom.classify(rc) ||
-            !_near.classify(rc) ||
-            !_far.classify(rc))
-        {
-            return false;
-        }
+	bool contains(const Rect3t<T>& rc) const  noexcept
+	{
+		if (!_left.classify(rc) ||
+			!_right.classify(rc) ||
+			!_top.classify(rc) ||
+			!_bottom.classify(rc) ||
+			!_near.classify(rc) ||
+			!_far.classify(rc))
+		{
+			return false;
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    bool contains(const AABBt<T>& box) const noexcept
-    {
-        auto _contains = [](const Plane3t<T>& plane, const AABBt<T>& box)
-        {
-            Vector3 min = box.min;
-            Vector3 max = box.max;
+	bool contains(const AABBt<T>& box) const noexcept
+	{
+		auto _contains = [](const Plane3t<T>& plane, const AABBt<T>& box)
+		{
+			Vector3 min = box.min;
+			Vector3 max = box.max;
 
-            if (plane.normal.x <= 0)
-                std::swap(min.x, max.x);
+			if (plane.normal.x <= 0)
+				std::swap(min.x, max.x);
 
-            if (plane.normal.y <= 0)
-                std::swap(min.y, max.y);
+			if (plane.normal.y <= 0)
+				std::swap(min.y, max.y);
 
-            if (plane.normal.z <= 0)
-                std::swap(min.z, max.z);
+			if (plane.normal.z <= 0)
+				std::swap(min.z, max.z);
 
-            return (plane.normal.dot(max) + plane.distance) < 0 ? false : true;
-        };
+			return (plane.normal.dot(max) + plane.distance) < 0 ? false : true;
+		};
 
-        if (_contains(_left, box) && _contains(_right, box) &&
-            _contains(_top, box) && _contains(_bottom, box) &&
-            _contains(_near, box) && _contains(_far, box))
-        {
-            return true;
-        }
+		if (_contains(_left, box) && _contains(_right, box) &&
+			_contains(_top, box) && _contains(_bottom, box) &&
+			_contains(_near, box) && _contains(_far, box))
+		{
+			return true;
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    bool contains(const Spheret<T>& sphere) const  noexcept
-    {
-        if ((_left.getDistance(sphere.center()) < -sphere.radius()) ||
-            (_right.getDistance(sphere.center()) < -sphere.radius()) ||
-            (_top.getDistance(sphere.center()) < -sphere.radius()) ||
-            (_bottom.getDistance(sphere.center()) < -sphere.radius()) ||
-            (_near.getDistance(sphere.center()) < -sphere.radius()) ||
-            (_far.getDistance(sphere.center()) < -sphere.radius()))
-        {
-            return false;
-        }
+	bool contains(const Spheret<T>& sphere) const  noexcept
+	{
+		if ((_left.getDistance(sphere.center()) < -sphere.radius()) ||
+			(_right.getDistance(sphere.center()) < -sphere.radius()) ||
+			(_top.getDistance(sphere.center()) < -sphere.radius()) ||
+			(_bottom.getDistance(sphere.center()) < -sphere.radius()) ||
+			(_near.getDistance(sphere.center()) < -sphere.radius()) ||
+			(_far.getDistance(sphere.center()) < -sphere.radius()))
+		{
+			return false;
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    bool contains(const Vector3t<T>& p, float radius) const  noexcept
-    {
-        if ((_left.getDistance(p) < -radius) ||
-            (_right.getDistance(p) < -radius) ||
-            (_top.getDistance(p) < -radius) ||
-            (_bottom.getDistance(p) < -radius) ||
-            (_near.getDistance(p) < -radius) ||
-            (_far.getDistance(p) < -radius))
-        {
-            return false;
-        }
+	bool contains(const Vector3t<T>& p, float radius) const  noexcept
+	{
+		if ((_left.getDistance(p) < -radius) ||
+			(_right.getDistance(p) < -radius) ||
+			(_top.getDistance(p) < -radius) ||
+			(_bottom.getDistance(p) < -radius) ||
+			(_near.getDistance(p) < -radius) ||
+			(_far.getDistance(p) < -radius))
+		{
+			return false;
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    int classify(const Vector3t<T>& pt) const  noexcept
-    {
-        if (_left.classify(pt) != PLANE_INTERSECT) { return FRUSTUM_LEFT; }
-        if (_right.classify(pt) != PLANE_INTERSECT) { return FRUSTUM_RIGHT; }
-        if (_top.classify(pt) != PLANE_INTERSECT) { return FRUSTUM_TOP; }
-        if (_bottom.classify(pt) != PLANE_INTERSECT) { return FRUSTUM_BOTTOM; }
-        if (_near.classify(pt) != PLANE_INTERSECT) { return FRUSTUM_NEAR; }
-        if (_far.classify(pt) != PLANE_INTERSECT) { return FRUSTUM_FAR; }
+	int classify(const Vector3t<T>& pt) const  noexcept
+	{
+		if (_left.classify(pt) != Plane3t<T>::PLANE_INTERSECT) { return FRUSTUM_LEFT; }
+		if (_right.classify(pt) != Plane3t<T>::PLANE_INTERSECT) { return FRUSTUM_RIGHT; }
+		if (_top.classify(pt) != Plane3t<T>::PLANE_INTERSECT) { return FRUSTUM_TOP; }
+		if (_bottom.classify(pt) != Plane3t<T>::PLANE_INTERSECT) { return FRUSTUM_BOTTOM; }
+		if (_near.classify(pt) != Plane3t<T>::PLANE_INTERSECT) { return FRUSTUM_NEAR; }
+		if (_far.classify(pt) != Plane3t<T>::PLANE_INTERSECT) { return FRUSTUM_FAR; }
 
-        return FRUSTUM_CONTAINS;
-    }
+		return FRUSTUM_CONTAINS;
+	}
 
-    int classify(const Raycast3t<T>& ray) const  noexcept;
-    int classify(const Line3t<T>& line) const  noexcept;
-    int classify(const Rect3t<T>& rc) const  noexcept
-    {
-        if (!_left.classify(rc)) { return FRUSTUM_LEFT; }
-        if (!_right.classify(rc)) { return FRUSTUM_RIGHT; }
-        if (!_top.classify(rc)) { return FRUSTUM_TOP; }
-        if (!_bottom.classify(rc)) { return FRUSTUM_BOTTOM; }
-        if (!_near.classify(rc)) { return FRUSTUM_NEAR; }
-        if (!_far.classify(rc)) { return FRUSTUM_FAR; }
+	int classify(const Raycast3t<T>& ray) const  noexcept;
+	int classify(const Line3t<T>& line) const  noexcept;
+	int classify(const Rect3t<T>& rc) const  noexcept
+	{
+		if (!_left.classify(rc)) { return FRUSTUM_LEFT; }
+		if (!_right.classify(rc)) { return FRUSTUM_RIGHT; }
+		if (!_top.classify(rc)) { return FRUSTUM_TOP; }
+		if (!_bottom.classify(rc)) { return FRUSTUM_BOTTOM; }
+		if (!_near.classify(rc)) { return FRUSTUM_NEAR; }
+		if (!_far.classify(rc)) { return FRUSTUM_FAR; }
 
-        return FRUSTUM_CONTAINS;
-    }
+		return FRUSTUM_CONTAINS;
+	}
 
-    int classify(const Spheret<T>& sphere) const  noexcept
-    {
-        if ((_left.getDistance(sphere.center) < -sphere.radius) ||
-            (_right.getDistance(sphere.center) < -sphere.radius) ||
-            (_top.getDistance(sphere.center) < -sphere.radius) ||
-            (_far.getDistance(sphere.center) < -sphere.radius) ||
-            (_near.getDistance(sphere.center) < -sphere.radius) ||
-            (_bottom.getDistance(sphere.center) < -sphere.radius))
-        {
-            return classify(sphere.center);
-        }
+	int classify(const Spheret<T>& sphere) const  noexcept
+	{
+		if ((_left.getDistance(sphere.center) < -sphere.radius) ||
+			(_right.getDistance(sphere.center) < -sphere.radius) ||
+			(_top.getDistance(sphere.center) < -sphere.radius) ||
+			(_far.getDistance(sphere.center) < -sphere.radius) ||
+			(_near.getDistance(sphere.center) < -sphere.radius) ||
+			(_bottom.getDistance(sphere.center) < -sphere.radius))
+		{
+			return classify(sphere.center);
+		}
 
-        return FRUSTUM_CONTAINS;
-    }
+		return FRUSTUM_CONTAINS;
+	}
 
 private:
 
-    Plane3t<T> _left;
-    Plane3t<T> _right;
-    Plane3t<T> _top;
-    Plane3t<T> _bottom;
-    Plane3t<T> _near;
-    Plane3t<T> _far;
+	Plane3t<T> _left;
+	Plane3t<T> _right;
+	Plane3t<T> _top;
+	Plane3t<T> _bottom;
+	Plane3t<T> _near;
+	Plane3t<T> _far;
 };
 
 _NAME_END

@@ -35,6 +35,8 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/game_scene.h>
+#include <ray/game_server.h>
+#include <ray/game_component.h>
 
 _NAME_BEGIN
 
@@ -75,8 +77,14 @@ GameScene::RootObject::getGameScene() noexcept
 GameScene::GameScene() noexcept
 	: _gameServer(nullptr)
 	, _isActive(false)
+{	
+}
+
+GameScene::GameScene(const std::string& name) noexcept
+	: _gameServer(nullptr)
+	, _isActive(false)
 {
-	_root = std::make_unique<RootObject>(this);
+	this->setName(name);
 }
 
 GameScene::~GameScene() noexcept
@@ -85,12 +93,14 @@ GameScene::~GameScene() noexcept
 }
 
 void
-GameScene::setActive(bool active) noexcept
+GameScene::setActive(bool active) except
 {
 	if (_isActive != active)
 	{
-		_isActive = active;
+		_root = std::make_unique<RootObject>(this);
 		_root->setActive(active);
+
+		_isActive = active;
 	}
 }
 
@@ -151,9 +161,18 @@ GameScene::clone() const noexcept
 }
 
 void
-GameScene::_setGameServer(GameServer* manager) noexcept
+GameScene::setGameServer(GameServer* server) noexcept
 {
-	_gameServer = manager;
+	if (_gameServer != server)
+	{
+		if (_gameServer)
+			_gameServer->removeScene(std::dynamic_pointer_cast<GameScene>(this->shared_from_this()));
+		
+		_gameServer = server;
+
+		if (_gameServer)
+			_gameServer->addScene(std::dynamic_pointer_cast<GameScene>(this->shared_from_this()));
+	}
 }
 
 GameServer*
@@ -162,21 +181,11 @@ GameScene::getGameServer() noexcept
 	return _gameServer;
 }
 
-void
-GameScene::_onFrameBegin() noexcept
+void 
+GameScene::update() noexcept
 {
 	_root->_onFrameBegin();
-}
-
-void
-GameScene::_onFrame() noexcept
-{
 	_root->_onFrame();
-}
-
-void
-GameScene::_onFrameEnd() noexcept
-{
 	_root->_onFrameEnd();
 }
 
@@ -186,8 +195,126 @@ GameScene::onMessage(const GameMessage& message) except
 	auto root = this->getRootObject();
 	if (root)
 	{
-		root->sendMessageDownwards(message);
+		auto childrens = root->getChildren();
+		for (auto& child : childrens)
+			child->sendMessage(message);
 	}
 }
 
+GameObjectPtr
+GameScene::instanceObject(iarchive& reader, GameObjectPtr parent) except
+{
+	std::string name = reader.getCurrentNodeName();
+	if (name == "object")
+	{
+		auto actor = std::make_shared<GameObject>();
+		actor->setParent(parent);
+
+		reader.setToFirstChild();
+
+		bool active = false;
+
+		do
+		{
+			auto key = reader.getCurrentNodeName();
+			if (key == "attribute")
+			{
+				auto attributes = reader.getAttrs();
+				for (auto& it : attributes)
+				{
+					if (it == "name")
+					{
+						actor->setName(reader.getString(it));
+					}
+					else if (it == "active")
+					{
+						active = reader.getBoolean(it);
+					}
+					else if (it == "position")
+					{
+						actor->setTranslate(reader.getFloat3(it));
+					}
+					else if (it == "scale")
+					{
+						actor->setScale(reader.getFloat3(it));
+					}
+					else if (it == "lookat")
+					{
+						actor->setLookAt(reader.getFloat3(it));
+					}
+					else if (it == "up")
+					{
+						actor->setUpVector(reader.getFloat3(it));
+					}
+					else if (it == "rotate")
+					{
+						float3 value = reader.getFloat3(it);
+						actor->setRotate(Quaternion(value.x, value.y, value.z));
+					}
+					else if (it == "layer")
+					{
+						actor->setLayer(reader.getInteger(it));
+					}
+				}
+			}
+			else if (key == "component")
+			{
+				auto name = reader.getString("name");
+				if (!name.empty())
+				{
+					auto component = RTTIFactory::instance()->createObject<GameComponent>(name + "Component");
+					if (component)
+					{
+						reader >> component;
+						actor->addComponent(component);
+					}
+					else
+					{
+						throw failure("Unknown component name : " + name);
+					}
+				}
+				else
+				{
+					throw failure("empty component name : " + reader.getCurrentNodePath());
+				}
+			}
+			else if (key == "object")
+			{
+				instanceObject(reader, actor);
+			}
+		} while (reader.setToNextChild());
+
+		actor->setActive(active);
+		return actor;
+	}
+
+	return nullptr;
+}
+
+void
+GameScene::load(iarchive& reader) except
+{
+	std::string nodeName;
+	nodeName = reader.getCurrentNodeName();
+	if (nodeName == "scene")
+	{
+		reader.setToFirstChild();
+
+		do
+		{
+			nodeName = reader.getCurrentNodeName();
+			if (nodeName == "attribute")
+			{
+				std::string name = "unknown";
+				reader >> rtti_name(name);
+
+				this->setName(name);
+			}
+			else if (nodeName == "object")
+			{
+				instanceObject(reader, this->getRootObject());
+			}
+		} while (reader.setToNextChild());
+	}
+}
 _NAME_END

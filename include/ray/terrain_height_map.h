@@ -39,93 +39,91 @@
 
 #include <ray/math.h>
 
-#include <vector>
-
 _NAME_BEGIN
 
 class HeightMap
 {
 public:
-    struct Vertex
-    {
-        Vector3f v;
-        Vector2f uv;
-        Vector3f n;
-    };
+	struct Vertex
+	{
+		Vector3f v;
+		Vector2f uv;
+		Vector3f n;
+	};
 
-    HeightMap();
-    HeightMap(int size, const AABB& box);
-    HeightMap(std::string szMapName, int size, const AABB& box);
-    ~HeightMap();
+	HeightMap();
+	HeightMap(int size, const AABB& box);
+	HeightMap(std::string szMapName, int size, const AABB& box);
+	~HeightMap();
 
-    bool init(int size, const AABB& box);
-    bool init(std::string szMapName, int size, const AABB& box);
+	bool init(int size, const AABB& box);
+	bool init(std::string szMapName, int size, const AABB& box);
 
-    const std::uint32_t getSize() const { return size_; }
-    const float       getCellSize() const { return cellSize_; }
+	const std::uint32_t getSize() const { return size_; }
+	const float       getCellSize() const { return cellSize_; }
 
-    const Vector3f makePosition(float x, float y, float z) const
-    {
-        assert(0 <= x && x < size_);
-        assert(0 <= z && z < size_);
+	const Vector3f makePosition(float x, float y, float z) const
+	{
+		assert(0 <= x && x < size_);
+		assert(0 <= z && z < size_);
 
-        float posX = world_.min.x + x * cellSize_;
-        float posZ = world_.min.z + z * cellSize_;
+		float posX = world_.min.x + x * cellSize_;
+		float posZ = world_.min.z + z * cellSize_;
 
-        return Vector3f(posX, (float)y, posZ);
-    }
+		return Vector3f(posX, (float)y, posZ);
+	}
 
-    const Vector3f& getVertex(std::size_t x, std::size_t y) const
-    {
-        return _vertices[y * size_ + x];
-    }
+	const Vector3f& getVertex(std::size_t x, std::size_t y) const
+	{
+		return _vertices[y * size_ + x];
+	}
 
-    Vector3f& getVertex(std::size_t x, std::size_t y)
-    {
-        return _vertices[y * size_ + x];;
-    }
+	Vector3f& getVertex(std::size_t x, std::size_t y)
+	{
+		return _vertices[y * size_ + x];;
+	}
 
-    float getHeight(std::size_t x, std::size_t y) const
-    {
-        return getVertex(x, y).y;
-    }
+	float getHeight(std::size_t x, std::size_t y) const
+	{
+		return getVertex(x, y).y;
+	}
 
-    const Vector2f getTexture(std::size_t x, std::size_t y) const
-    {
-        assert(x < size_);
-        assert(y < size_);
+	const Vector2f getTexture(std::size_t x, std::size_t y) const
+	{
+		assert(x < size_);
+		assert(y < size_);
 
-        float u = (float)x / size_;
-        float v = (float)y / size_;
+		float u = (float)x / size_;
+		float v = (float)y / size_;
 
-        return Vector2f(u, v);
-    }
+		return Vector2f(u, v);
+	}
 
-    std::size_t getVertexStride()   const { return sizeof(Vertex); }
-    std::size_t getTexCoordStride() const { return sizeof(Vertex); }
-    std::size_t getNormalStride()   const { return sizeof(Vertex); }
+	std::size_t getVertexStride()   const { return sizeof(Vertex); }
+	std::size_t getTexCoordStride() const { return sizeof(Vertex); }
+	std::size_t getNormalStride()   const { return sizeof(Vertex); }
 
-    std::size_t getVertexSize()     const { return size_ * size_ * sizeof(Vector3f); }
-    std::size_t getTexCoordSize()   const { return size_ * size_ * sizeof(Vector2f); }
-    std::size_t getNormalSize()     const { return size_ * size_ * sizeof(Vector3f); }
+	std::size_t getVertexSize()     const { return size_ * size_ * sizeof(Vector3f); }
+	std::size_t getTexCoordSize()   const { return size_ * size_ * sizeof(Vector2f); }
+	std::size_t getNormalSize()     const { return size_ * size_ * sizeof(Vector3f); }
 
-    const float* getVertexTable() const { return _vertices[0].ptr(); }
-    const float* getNormalTable() const { return _normals[0].ptr(); }
-    const float* getTexCoordTable() const { return _texcoord[0].ptr(); }
+	const float* getVertexTable() const { return _vertices[0].ptr(); }
+	const float* getNormalTable() const { return _normals[0].ptr(); }
+	const float* getTexCoordTable() const { return _texcoord[0].ptr(); }
 
 private:
-    void computeVertexMap();
-    void computeNormalMap();
+	void computeVertexMap();
+	void computeNormalMap();
 
-    Vector3Array _vertices;
-    Vector3Array _normals;
-    Vector2Array _texcoord;
+	Vector3Array _vertices;
+	Vector3Array _normals;
+	Vector2Array _texcoord;
 
-    std::uint32_t size_;
+	std::uint32_t size_;
 
-    float cellSize_;
+	float cellSize_;
 
-    AABB world_;
+	AABB world_;
 };
 
 _NAME_END

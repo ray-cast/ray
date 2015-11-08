@@ -43,27 +43,27 @@ MaterialParam::MaterialParam() noexcept
 }
 
 MaterialParam::MaterialParam(const std::string& name, float value) noexcept
-    :ShaderVariant(name, value)
+	:ShaderVariant(name, value)
 {
 }
 
 MaterialParam::MaterialParam(const std::string& name, const float3& value) noexcept
-    : ShaderVariant(name, value)
+	: ShaderVariant(name, value)
 {
 }
 
 MaterialParam::MaterialParam(const std::string& name, const Vector4& value) noexcept
-    : ShaderVariant(name, value)
+	: ShaderVariant(name, value)
 {
 }
 
 MaterialParam::MaterialParam(const std::string& name, const Matrix4x4& value) noexcept
-    : ShaderVariant(name, value)
+	: ShaderVariant(name, value)
 {
 }
 
 MaterialParam::MaterialParam(const std::string& name, ShaderVariantType type) noexcept
-    : ShaderVariant(name, type)
+	: ShaderVariant(name, type)
 {
 }
 
@@ -74,18 +74,18 @@ MaterialParam::~MaterialParam() noexcept
 void
 MaterialParam::addShaderUniform(ShaderUniformPtr uniform) noexcept
 {
-    assert(std::find(_uniforms.begin(), _uniforms.end(), uniform) == _uniforms.end());
-    _uniforms.push_back(uniform);
+	assert(std::find(_uniforms.begin(), _uniforms.end(), uniform) == _uniforms.end());
+	_uniforms.push_back(uniform);
 }
 
 void
 MaterialParam::removeShaderUniform(ShaderUniformPtr uniform) noexcept
 {
-    auto it = std::find(_uniforms.begin(), _uniforms.end(), uniform);
-    if (it != _uniforms.end())
-    {
-        _uniforms.erase(it);
-    }
+	auto it = std::find(_uniforms.begin(), _uniforms.end(), uniform);
+	if (it != _uniforms.end())
+	{
+		_uniforms.erase(it);
+	}
 }
 
 void
@@ -96,10 +96,10 @@ MaterialParam::onChangeBefore() noexcept
 void
 MaterialParam::onChangeAfter() noexcept
 {
-    for (auto& it : _uniforms)
-    {
-        it->needUpdate(true);
-    }
+	for (auto& it : _uniforms)
+	{
+		it->needUpdate(true);
+	}
 }
 
 _NAME_END

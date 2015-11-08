@@ -54,19 +54,14 @@ public:
 
 	void setRange(float range) noexcept;
 	void setIntensity(float intensity) noexcept;
-	void setExponent(float value) noexcept;
-	void setSpotAngle(float value) noexcept;
 	void setSpotInnerCone(float value) noexcept;
 	void setSpotOuterCone(float value) noexcept;
 	void setLightColor(const float3& color) noexcept;
 
 	float getRange() const noexcept;
 	float getIntensity() const noexcept;
-	float getExponent() const noexcept;
-	float getSpotAngle() const noexcept;
 	float getSpotInnerCone() const noexcept;
 	float getSpotOuterCone() const noexcept;
-	float getFallOffExponent() const noexcept;
 	const float3& getLightColor() const noexcept;
 
 	void setShadow(bool shadow) noexcept;

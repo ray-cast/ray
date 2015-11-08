@@ -44,27 +44,27 @@ _NAME_BEGIN
 class EXPORT MaterialShader final
 {
 public:
-    typedef std::vector<ShaderPtr> Shaders;
+	typedef std::vector<ShaderPtr> Shaders;
 
 public:
-    MaterialShader() noexcept;
-    ~MaterialShader() noexcept;
+	MaterialShader() noexcept;
+	~MaterialShader() noexcept;
 
-    void addShader(ShaderPtr shader) noexcept;
+	void addShader(ShaderPtr shader) noexcept;
 
-    Shaders& getShaders() noexcept;
-    ShaderVariants& getParameter() noexcept;
-
-private:
-    MaterialShader(const MaterialShader&) = delete;
-    MaterialShader& operator=(const MaterialShader&) = delete;
+	Shaders& getShaders() noexcept;
+	ShaderVariants& getParameter() noexcept;
 
 private:
+	MaterialShader(const MaterialShader&) = delete;
+	MaterialShader& operator=(const MaterialShader&) = delete;
 
-    Shaders _shaders;
-    ShaderVariants _parameters;
+private:
 
-    ShaderObjectPtr _shaderObject;
+	Shaders _shaders;
+	ShaderVariants _parameters;
+
+	ShaderObjectPtr _shaderObject;
 };
 
 _NAME_END

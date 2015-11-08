@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-class EXPORT CameraComponent final : public GameComponent
+class EXPORT CameraComponent final : public GameComponent, public RenderListener
 {
 	__DeclareSubClass(CameraComponent, GameComponent)
 public:
@@ -51,12 +51,7 @@ public:
 
 	void makeLookAt(const Vector3& pos, const Vector3& lookat, const Vector3& up) noexcept;
 	void makeOrtho(float left, float right, float bottom, float top, float znear, float zfar) noexcept;
-	void makePerspective(float aperture, float ratio, float znear, float zfar) noexcept;
-
-	float getAperture() const noexcept;
-	float getRatio() const noexcept;
-	float getNear() const noexcept;
-	float getFar() const noexcept;
+	void makePerspective(float aperture, float znear, float zfar) noexcept;
 
 	const Matrix4x4& getView() const noexcept;
 	const Matrix4x4& getViewInverse() const noexcept;
@@ -68,10 +63,9 @@ public:
 	const Matrix4x4& getViewProject() const noexcept;
 	const Matrix4x4& getViewProjectInverse() const noexcept;
 
-	Vector3 project(const Vector3& pos) const noexcept;
-	Vector3 unproject(const Vector3& pos) const noexcept;
-
-	Vector3 sceneToDirection(const Vector2& pos) const noexcept;
+	Vector3 worldToScreen(const Vector3& pos) const noexcept;
+	Vector3 screenToWorld(const Vector3& pos) const noexcept;
+	Vector3 screenToDirection(const Vector2& pos) const noexcept;
 
 	void setViewport(const Viewport& viewport) noexcept;
 	const Viewport&  getViewport() const noexcept;
@@ -89,10 +83,13 @@ public:
 
 private:
 
-	void onActivate() noexcept;
-	void onDeactivate() noexcept;
+	virtual void onActivate() noexcept;
+	virtual void onDeactivate() noexcept;
 
-	void onMoveAfter() noexcept;
+	virtual void onMoveAfter() noexcept;
+
+	virtual void onWillRenderObject() noexcept;
+	virtual void onRenderObject() noexcept;
 
 private:
 	CameraComponent(const CameraComponent&) noexcept = delete;

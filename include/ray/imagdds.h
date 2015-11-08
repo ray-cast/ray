@@ -1,5 +1,5 @@
 // +----------------------------------------------------------------------
-// | Project : Xiemoperor.
+// | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
 // | Copyright (c) 2013-2015.
@@ -34,3 +34,21 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#ifndef _H_IMAGDDS_H_
+#define _H_IMAGDDS_H_
+
+#include <ray/image.h>
+
+_NAME_BEGIN
+
+class DDSHandler : public ImageHandler
+{
+private:
+	bool doCanRead(istream& stream) const noexcept;
+	bool doLoad(Image& image, istream& stream) noexcept;
+	bool doSave(Image& image, ostream& stream) noexcept;
+};
+
+_NAME_END
+
+#endif

@@ -72,12 +72,12 @@ private:
 	TerrainThread& operator=(TerrainThread&) = delete;
 };
 
-class Terrain : public ray::GameController
+class TerrainComponent : public ray::GameController
 {
-	__DeclareSubClass(Terrain, ray::GameController)
+	__DeclareSubClass(TerrainComponent, ray::GameController)
 public:
-	Terrain() noexcept;
-	~Terrain() noexcept;
+	TerrainComponent() noexcept;
+	~TerrainComponent() noexcept;
 
 	bool addBlockByMousePos(std::int32_t x, std::int32_t y) noexcept;
 	bool addBlockByRaycast(const ray::Vector3& translate, const ray::Vector3& view) noexcept;

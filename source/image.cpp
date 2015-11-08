@@ -41,21 +41,25 @@ _NAME_BEGIN
 
 Image::Image() noexcept
 {
+	this->_init();
 }
 
 Image::Image(istream& stream, image_type type) noexcept
 {
+	this->_init();
     this->load(stream, type);
 }
 
 Image::Image(size_type width, size_type height, bpp_type bpp, bool clear) noexcept
 {
+	this->_init();
     this->create(width, height, bpp, clear);
 }
 
-Image::Image(size_type width, size_type height, bpp_type bpp, image_buf data, bool static_data, bool clear) noexcept
+Image::Image(size_type width, size_type height, bpp_type bpp, std::size_t dataSize, image_buf data, bool staticData, bool clear) noexcept
 {
-    this->create(width, height, bpp, data, static_data, clear);
+	this->_init();
+    this->create(width, height, bpp, dataSize, data, staticData, clear);
 }
 
 Image::~Image() noexcept
@@ -66,61 +70,43 @@ Image::~Image() noexcept
 bool
 Image::create(size_type width, size_type height, bpp_type bpp, bool clear) noexcept
 {
-    return this->create(width, height, bpp, nullptr, false, clear);
+	std::size_t destLength = (width * height * bpp) >> 3;
+
+	this->destroy();
+
+	_width = width;
+	_height = height;
+	_bpp = bpp;
+	_size = destLength;
+	_isStatic = false;
+	_data = new pass_val[destLength];
+
+	this->setImageType(Image::unknown);
+
+	if (clear) this->clear();
+
+	return true;
 }
 
 bool
-Image::create(size_type width, size_type height, bpp_type bpp, image_buf data, bool static_data, bool clear) noexcept
+Image::create(size_type width, size_type height, bpp_type bpp, std::size_t dataSize, image_buf data, bool staticData, bool clear) noexcept
 {
-    if (this->_data == nullptr)
-    {
-        this->_data = std::make_unique<ImageRefData>();
-        this->_data->width = 0;
-        this->_data->height = 0;
-        this->_data->is_static = false;
-        this->_data->has_mask = false;
-        this->_data->data = nullptr;
-        this->_data->bpp = 0;
-    }
+	assert(data);
 
-    if (_data->data && _data->bpp == bpp)
-    {
-        int srcLength = this->size();
+    this->destroy();
 
-        int destLength = (width * height * bpp) >> 3;
+	_width = width;
+	_height = height;
+	_bpp = bpp;
+	_data = data;
+	_size = dataSize;
+	_isStatic = staticData;
 
-        if (srcLength < destLength)
-        {
-            this->destroy();
+	this->setImageType(Image::unknown);
 
-            return this->create(width, height, bpp, data, static_data, clear);
-        }
-    }
-    else
-    {
-        this->destroy();
+	if (clear) this->clear();
 
-        if (nullptr == data)
-        {
-            if (!_data->is_static && _data->data)
-                delete _data->data;
-
-            _data->data = new pass_val[(std::size_t)(width * height * bpp) >> 3];
-            _data->is_static = false;
-        }
-        else
-        {
-            _data->data = data;
-        }
-    }
-
-    _data->width = width;
-    _data->height = height;
-    _data->bpp = bpp;
-
-    if (clear) this->clear();
-
-    return true;
+	return true;
 }
 
 bool
@@ -129,17 +115,45 @@ Image::create(const Image& copy) noexcept
     return this->create(copy.width(), copy.height(), copy.bpp(), false);
 }
 
+void 
+Image::_init() noexcept
+{
+	_data = nullptr;
+	_mipLevel = 0;
+}
+
 void
 Image::destroy() noexcept
 {
-    if (_data)
+    if (_data && !_isStatic)
     {
-        if (_data->data && !_data->is_static)
-        {
-            delete[] _data->data;
-            _data->data = nullptr;
-        }
+		delete[] _data;
+        _data = nullptr;
     }
+}
+
+void
+Image::setImageType(image_type type) noexcept
+{
+	_imageType = type;
+}
+
+Image::image_type
+Image::getImageType() const noexcept
+{
+	return _imageType;
+}
+
+void 
+Image::setMipLevel(std::uint8_t level) noexcept
+{
+	_mipLevel = level;
+}
+
+std::uint8_t 
+Image::getMipLevel() const noexcept
+{
+	return _mipLevel;
 }
 
 Image::delay_type
@@ -166,6 +180,8 @@ Image::load(istream& stream, image_type type) noexcept
         GetImageInstanceList(*this);
 
     _Myhandler impl;
+
+	this->setImageType(type);
 
     if (this->find(stream, type, impl))
     {

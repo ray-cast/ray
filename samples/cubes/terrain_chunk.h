@@ -42,7 +42,7 @@
 class TerrainChunk
 {
 public:
-	TerrainChunk(Terrain& terrain) noexcept;
+	TerrainChunk(TerrainComponent& terrain) noexcept;
 	~TerrainChunk() noexcept;
 
 	void init(std::size_t size, ChunkPosition x, ChunkPosition y, ChunkPosition z) noexcept;
@@ -69,7 +69,7 @@ private:
 
 	bool _dirt;
 
-	Terrain& _terrain;
+	TerrainComponent& _terrain;
 
 	TerrainMapPtr _map;
 	TerrainObjects _objects;

@@ -139,7 +139,9 @@ RenderFactory::createTexture(const std::string& name) except
 				else if (image.bpp() == 32)
 					format = PixelFormat::R8G8B8A8;
 				else
+				{
 					assert(false);
+				}					
 			}
 
 			texture->setMipLevel(image.getMipLevel());

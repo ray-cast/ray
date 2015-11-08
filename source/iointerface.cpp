@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementSingleton(IoInterface);
+__ImplementSingleton(IoInterface)
 
 IoLoader::IoLoader() noexcept
 	: _cached(true)

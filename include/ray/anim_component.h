@@ -69,7 +69,7 @@ private:
 
 private:
 	
-	MeshPropertyPtr _mesh;;
+	MeshPropertyPtr _mesh;
 	MeshPropertyPtr _sharedMesh;
 
 	AnimationPropertyPtr _animtion;

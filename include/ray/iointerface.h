@@ -85,7 +85,7 @@ private:
 
 class EXPORT IoInterface final
 {
-	__DeclareSingleton(IoInterface);
+	__DeclareSingleton(IoInterface)
 public:
 	IoInterface() noexcept;
 	~IoInterface() noexcept;

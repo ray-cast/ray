@@ -97,7 +97,7 @@ class RTTIClass final : public RTTIInterface<Derived, Base>
 {
 public:
 	RTTIClass(const std::string& derived, const std::string& base)
-		: RTTIInterface(derived, base)
+		: RTTIInterface<Derived, Base>(derived, base)
     {
     }
 
@@ -176,7 +176,8 @@ public:
 	template<typename T>
     std::shared_ptr<T> createObject(const char* name)
     {
-		return this->createObject(std::string(name));
+		std::string string(name);
+		return this->createObject<T>(string);
     }
 
 private:

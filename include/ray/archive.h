@@ -166,11 +166,7 @@ public:
 	template<typename T>
 	iarchive& operator << (std::shared_ptr<T>& value)
 	{
-		if (this->setToFirstChild())
-		{
-			value->save(*this);
-			this->setToParent();
-		}
+		assert(false);
 		return *this;
 	}
 

@@ -201,16 +201,6 @@ extern GLuint   s_nvcmdlist_headerSizes[GL_MAX_COMMANDS_NV];
 extern GLushort s_nvcmdlist_stages[NVTOKEN_STAGES];
 
 template <class T>
-inline void nvtokenMakeNop(T & token)
-{
-	NVTokenNop *nop = (NVTokenNop*)&token;
-	for (size_t i = 0; i < (sizeof(T)) / 4; i++)
-	{
-		nop[i] = NVTokenNop();
-	}
-}
-
-template <class T>
 inline size_t nvtokenEnqueue(std::string& queue, T& data)
 {
 	size_t offset = queue.size();

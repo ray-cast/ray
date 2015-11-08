@@ -162,13 +162,13 @@ public:
 
 	void insert(KdimensionNode<_Tx, _Ty>* item, float distanceSqrt) noexcept
 	{
-		_iter.push_back(KdimensionNearest<T>(item, distanceSqrt));
+		_iter.push_back(KdimensionNearest<_Tx, _Ty>(item, distanceSqrt));
 	}
 
 	void sort() noexcept
 	{
 		std::sort(_iter.begin(), _iter.end(),
-			[](const KdimensionNearest<T>& lhs, const KdimensionNearest<T>& rhs)
+			[](const KdimensionNearest<_Tx, _Ty>& lhs, const KdimensionNearest<_Tx, _Ty>& rhs)
 		{
 			return lhs.getDistanceSqrt() < rhs.getDistanceSqrt();
 		}
@@ -325,7 +325,7 @@ private:
 		return ret;
 	}
 
-protected:
+public:
 
 	_Tx _min;
 	_Tx _max;
@@ -347,11 +347,12 @@ public:
 	{
 		std::uint8_t split = 0;
 
-		auto next = &_root;
+		auto root = KdimensionTreeBase<_Tx, void>::_root;
+		auto next = &root;
 
 		while (*next)
 		{
-			split = ((*next)->split + 1) % _dimension;
+			split = ((*next)->split + 1) % KdimensionTreeBase<_Tx, _Ty>::_dimension;
 
 			if (pos[(*next)->split] < (*next)->pos[(*next)->split])
 				next = &(*next)->left;
@@ -365,15 +366,15 @@ public:
 			node->data = data;
 			*next = node;
 
-			for (std::size_t i = 0; i < _dimension; i++)
+			for (std::size_t i = 0; i < KdimensionTreeBase<_Tx, _Ty>::_dimension; i++)
 			{
-				if (pos[i] < _min[i])
-					_min[i] = pos[i];
-				if (pos[i] > _max[i])
-					_max[i] = pos[i];
+				if (pos[i] < KdimensionTreeBase<_Tx, _Ty>::_min[i])
+					KdimensionTreeBase<_Tx, _Ty>::_min[i] = pos[i];
+				if (pos[i] > KdimensionTreeBase<_Tx, _Ty>::_max[i])
+					KdimensionTreeBase<_Tx, _Ty>::_max[i] = pos[i];
 			}
 
-			_count++;
+			KdimensionTreeBase<_Tx, _Ty>::_count++;
 		}
 	}
 };
@@ -386,11 +387,12 @@ public:
 	{
 		std::uint8_t split = 0;
 
-		auto next = &_root;
+		auto root = KdimensionTreeBase<_Tx, void>::_root;
+		auto next = &root;
 
 		while (*next)
 		{
-			split = ((*next)->split + 1) % _dimension;
+			split = ((*next)->split + 1) % KdimensionTreeBase<_Tx, void>::_dimension;
 
 			if (pos[(*next)->split] < (*next)->pos[(*next)->split])
 				next = &(*next)->left;
@@ -402,15 +404,15 @@ public:
 		{
 			*next = new KdimensionNode<_Tx>(pos, split);
 
-			for (std::size_t i = 0; i < _dimension; i++)
+			for (std::size_t i = 0; i < KdimensionTreeBase<_Tx, void>::_dimension; i++)
 			{
-				if (pos[i] < _min[i])
-					_min[i] = pos[i];
-				if (pos[i] > _max[i])
-					_max[i] = pos[i];
+				if (pos[i] < KdimensionTreeBase<_Tx,void>::_min[i])
+					KdimensionTreeBase<_Tx, void>::_min[i] = pos[i];
+				if (pos[i] > KdimensionTreeBase<_Tx, void>::_max[i])
+					KdimensionTreeBase<_Tx, void>::_max[i] = pos[i];
 			}
 
-			_count++;
+			KdimensionTreeBase<_Tx, void>::_count++;
 		}
 	}
 };

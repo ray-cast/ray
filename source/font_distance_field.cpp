@@ -58,7 +58,7 @@ int getGrayBitmap(const FT_BitmapGlyph bitmapGlyph, int x, int y)
 	std::uint8_t array = bitmapGlyph->bitmap.buffer[offset];
 	std::uint8_t index = 7 - (x % 8);
 	return (array >> index) & 0x1;
-};
+}
 
 FontPointBitmap::FontPointBitmap() noexcept
 	: _fontSize(32)

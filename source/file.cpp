@@ -119,7 +119,6 @@ FILE* fopen(const wchar_t* filename, ios_base::openmode mode) noexcept
 
     if (mode & ios_base::app)     flags |= O_APPEND;
     if (mode & ios_base::trunc)   flags |= O_TRUNC;
-    if (mode & ~ios_base::binary) flags |= O_TEXT;
 
     int access = PP_DEFAULT;
 

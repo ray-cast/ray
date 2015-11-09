@@ -520,7 +520,7 @@ ostream::operator << (double value) noexcept
 }
 
 ostream&
-ostream::operator << (ios_base& (__cdecl *function)(ios_base&)) noexcept
+ostream::operator << (ios_base& (*function)(ios_base&)) noexcept
 {    // call ios_base manipulator
     assert(function);
     (*function)(*(ios_base *)this);
@@ -528,7 +528,7 @@ ostream::operator << (ios_base& (__cdecl *function)(ios_base&)) noexcept
 }
 
 ostream&
-ostream::operator << (ostream& (__cdecl *function)(ostream&)) noexcept
+ostream::operator << (ostream& (*function)(ostream&)) noexcept
 {
     assert(function);
     (*function)(*this);

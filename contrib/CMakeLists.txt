@@ -3,21 +3,17 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 FOREACH(myplugins
   unzip
   zlib
-  libjson
   libjpeg
   libpng
   libiconv
   tinyxml
-  angelscript
   freetype
-  asJIT
 )
 # 添加参与编译的子目录
 ADD_SUBDIRECTORY(${myplugins})
 ENDFOREACH()
 
 FOREACH(myplugins
-  libjson
   libjpeg
   libpng
   libiconv
@@ -25,16 +21,15 @@ FOREACH(myplugins
   zlib
   zlibstatic
   tinyxml
-  angelscript
   freetype
-  dist
-  asJIT
 )
 SET_TARGET_ATTRIBUTE(${myplugins} "contrib")
 
 ENDFOREACH()
 
 IF(BUILD_PHYSIC)
+    ADD_DEFINITIONS(-D_BUILD_PHYSIC)
+
     ADD_SUBDIRECTORY(bullet)
     SET_TARGET_ATTRIBUTE(BulletCollision "contrib")
     SET_TARGET_ATTRIBUTE(BulletDynamics "contrib")
@@ -50,22 +45,19 @@ IF(BUILD_PHYSIC)
     ENDIF()
 ENDIF()
 
-IF(BUILD_PLATFORM_ANDROID)
+IF(BUILD_GLES)
     ADD_SUBDIRECTORY(gles)
+ELSEIF()
+    ADD_SUBDIRECTORY(glfw)
+    SET_TARGET_ATTRIBUTE(glfw "contrib")
 ENDIF()
 
-IF(BUILD_PLATFORM_WINDOWS)
+IF(_BUILD_OPENGL)
     ADD_SUBDIRECTORY(glew)
     SET_TARGET_ATTRIBUTE(glew "contrib")
 ENDIF()
 
-IF(BUILD_SDL2)
-  ADD_SUBDIRECTORY(SDL2)
-  IF(SDL_SHARED)
-    SET_TARGET_ATTRIBUTE(SDL2 "contrib")
-  ENDIF()
-  IF(SDL_STATIC)
-    SET_TARGET_ATTRIBUTE(SDL2-static "contrib")
-  ENDIF()
-  SET_TARGET_ATTRIBUTE(SDL2main "contrib")
+IF(_BUILD_SCRIPT)
+    ADD_SUBDIRECTORY(angelscript)
+    SET_TARGET_ATTRIBUTE(angelscript "contrib")
 ENDIF()

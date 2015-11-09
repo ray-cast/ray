@@ -40,7 +40,6 @@
 #include <ray/script_object.h>
 
 #include <angelscript.h>
-#include <as_jit.h>
 
 _NAME_BEGIN
 
@@ -49,7 +48,6 @@ __ImplementSingleton(ScriptSystem)
 ScriptSystem::ScriptSystem() noexcept
 	: _actor(nullptr)
 	, _engine(false)
-	, _jit(0)
 {
 }
 
@@ -63,14 +61,10 @@ ScriptSystem::open() noexcept
 {
 	assert(!_engine);
 
-	_jit = new asCJITCompiler(0);
-
 	_engine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
 	_engine->SetMessageCallback(asMETHOD(ScriptSystem, MessageCallback), this, asCALL_THISCALL);
 
 	_engine->SetEngineProperty(asEP_BUILD_WITHOUT_LINE_CUES, 1);
-	_engine->SetEngineProperty(asEP_INCLUDE_JIT_INSTRUCTIONS, 1);
-	_engine->SetJITCompiler(_jit);
 
 	_context = _engine->CreateContext();
 
@@ -125,12 +119,6 @@ ScriptSystem::close() noexcept
 	{
 		_engine->Release();
 		_engine = nullptr;
-	}
-
-	if (_jit)
-	{
-		delete _jit;
-		_jit = nullptr;
 	}
 }
 
@@ -235,8 +223,6 @@ ScriptSystem::createScriptObject()
 void
 ScriptSystem::onFrameBegin() noexcept
 {
-	_jit->finalizePages();
-
 	for (auto& it : _bindings)
 	{
 		it->onFrameBegin();

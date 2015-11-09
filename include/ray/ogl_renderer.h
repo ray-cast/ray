@@ -37,8 +37,7 @@
 #ifndef _H_OGL_RENDERER_H_
 #define _H_OGL_RENDERER_H_
 
-#include <ray/ogl_types.h>
-#include <ray/render_command.h>
+#include <ray/ogl_canvas.h>
 
 _NAME_BEGIN
 

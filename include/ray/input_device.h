@@ -43,6 +43,8 @@
 #elif defined(_BUILD_PLATFORM_WINDOWS)
 #	include <ray/msw_input_device.h>
 #   define ToplevelInputDevice MSWInputDevice
+#else
+#	error "platform is not support"
 #endif
 
 #include <queue>

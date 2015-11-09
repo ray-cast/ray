@@ -342,56 +342,7 @@ OGLRenderer::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 void 
 OGLRenderer::drawRenderBuffer(const RenderIndirects& renderable) noexcept
 {
-	assert(_renderBuffer && _stateCaptured);
-
-	auto primitiveType = _stateCaptured->getRasterState().primitiveType;
-	if (_enableWireframe)
-	{
-		if (primitiveType == GPU_POINT_OR_LINE ||
-			primitiveType == GPU_TRIANGLE_OR_LINE ||
-			primitiveType == GPU_FAN_OR_LINE)
-		{
-			primitiveType = GPU_LINE;
-		}
-	}
-
-	GLenum drawType = OGLTypes::asOGLVertexType(primitiveType);
-	auto ib = _renderBuffer->getIndexBuffer();
-	if (ib)
-	{
-		GLenum indexType = OGLTypes::asOGLIndexType(ib->getIndexType());
-
-		std::vector<DrawElementsCommandNV> commands;
-
-		for (auto& it : renderable)
-		{
-			DrawElementsCommandNV command;
-			command.header = GL_DRAW_ELEMENTS_COMMAND_NV;
-			command.baseVertex = it->startVertice;
-			command.firstIndex = it->startIndice;
-			command.count = it->numIndices;
-
-			commands.push_back(command);
-		}
-
-		glMultiDrawElementsIndirect(drawType, indexType, commands.data(), commands.size(), 0);
-	}
-	else
-	{
-		std::vector<DrawArraysCommandNV> commands;
-
-		for (auto& it : renderable)
-		{
-			DrawArraysCommandNV command;
-			command.header = GL_DRAW_ARRAYS_COMMAND_NV;
-			command.count = it->numVertices;
-			command.first = it->startVertice;
-
-			commands.push_back(command);
-		}
-
-		glMultiDrawArraysIndirect(drawType, commands.data(), commands.size(), 0);
-	}
+	assert(false);
 }
 
 RenderBufferPtr
@@ -1169,9 +1120,6 @@ void
 OGLRenderer::initDebugControl() noexcept
 {
 #ifdef _DEBUG
-	if (!OGLFeatures::KHR_debug)
-		return;
-
 	// 131184 memory info
 	// 131185 memory allocation info
 	GLuint ids[] =
@@ -1197,7 +1145,9 @@ OGLRenderer::initDebugControl() noexcept
 void
 OGLRenderer::initCommandList() noexcept
 {
+#if defined(_BUILD_OPENGL)
 	OGLExtenstion::initCommandListNV();
+#endif
 }
 
 void

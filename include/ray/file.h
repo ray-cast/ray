@@ -68,8 +68,8 @@ extern streamoff fseek(FILE* stream, streamoff _off, ios_base::seekdir seek) noe
 extern streamoff fgetpos(FILE* stream);
 extern streamoff fsetpos(FILE* stream);
 
-extern int feof(FILE* stream);
-extern int ferror(FILE* stream);
+//extern int feof(FILE* stream);
+//extern int ferror(FILE* stream);
 
 class EXPORT IOFILE
 {

@@ -34,7 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifdef _BUILD_PLATFORM_WINDOWS
+#ifdef _BUILD_OPENGL
 #include <ray/wgl_canvas.h>
 
 #include <GL/wglew.h>
@@ -74,8 +74,6 @@ WGLCanvas::WGLCanvas() noexcept
 	: _hwnd(nullptr)
 	, _hdc(nullptr)
 	, _context(nullptr)
-	, _width(0)
-	, _height(0)
 	, _interval(SwapInterval::GPU_VSYNC)
 {
 	initPixelFormat(_fbconfig, _ctxconfig);
@@ -425,12 +423,12 @@ WGLCanvas::initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexc
 	fbconfig.bufferSize = 32;
 	fbconfig.depthSize = 24;
 	fbconfig.stencilSize = 8;
-	fbconfig.accumSize = 32;
-	fbconfig.accumRedSize = 8;
-	fbconfig.accumGreenSize = 8;
-	fbconfig.accumBlueSize = 8;
-	fbconfig.accumAlphaSize = 8;
-	fbconfig.samples = 1;
+	fbconfig.accumSize = 0;
+	fbconfig.accumRedSize = 0;
+	fbconfig.accumGreenSize = 0;
+	fbconfig.accumBlueSize = 0;
+	fbconfig.accumAlphaSize = 0;
+	fbconfig.samples = 0;
 
 	ctxconfig.major = 3;
 	ctxconfig.minor = 3;

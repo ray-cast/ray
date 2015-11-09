@@ -288,18 +288,18 @@
 
 /* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
    'ptrdiff_t'. */
-#define PTRDIFF_T_SUFFIX 
+#define PTRDIFF_T_SUFFIX
 
 /* Define this to 1 if strerror is broken. */
 #define REPLACE_STRERROR 1
 
 /* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
    'sig_atomic_t'. */
-#define SIG_ATOMIC_T_SUFFIX 
+#define SIG_ATOMIC_T_SUFFIX
 
 /* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
    'size_t'. */
-#define SIZE_T_SUFFIX 
+#define SIZE_T_SUFFIX
 
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
@@ -325,11 +325,11 @@
 
 /* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
    'wchar_t'. */
-#define WCHAR_T_SUFFIX 
+#define WCHAR_T_SUFFIX
 
 /* Define to l, ll, u, ul, ull, etc., as suitable for constants of type
    'wint_t'. */
-#define WINT_T_SUFFIX 
+#define WINT_T_SUFFIX
 
 /* Define if the machine's byte ordering is little endian. */
 #define WORDS_LITTLEENDIAN 1
@@ -382,7 +382,7 @@
 /* Define to the equivalent of the C99 'restrict' keyword, or to
    nothing if this is not supported.  Do not define if restrict is
    supported directly.  */
-#define restrict 
+#define restrict
 /* Work around a bug in Sun C++: it does not support _Restrict, even
    though the corresponding Sun C compiler does, which causes
    "#define restrict _Restrict" in the previous line.  Perhaps some future
@@ -393,7 +393,7 @@
 #endif
 
 /* Define as a signed type of the same size as size_t. */
-#define ssize_t int
+//#define ssize_t int
 
 /* On Windows, variables that may be in a DLL must be marked specially.  */
 #if defined _MSC_VER && defined _DLL
@@ -402,3 +402,4 @@
 # define DLL_VARIABLE
 #endif
 
+#define HAVE_WORKING_O_NOFOLLOW 0

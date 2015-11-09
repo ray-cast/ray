@@ -37,8 +37,9 @@
 #ifndef _H_WGL_CANVAS_H_
 #define _H_WGL_CANVAS_H_
 
-#include <ray/render_window.h>
-#include <ray/ogl_extenstion.h>
+#include <ray/ogl_types.h>
+
+#include <GL\glew.h>
 
 _NAME_BEGIN
 
@@ -86,9 +87,6 @@ private:
 	HWND _hwnd;
 	HDC _hdc;
 	HGLRC _context;
-
-	std::size_t _width;
-	std::size_t _height;
 
 	GPUfbconfig _fbconfig;
 	GPUctxconfig _ctxconfig;

@@ -263,14 +263,18 @@ FT_BEGIN_HEADER
   /*   Do not #undef these macros here since the build system might define */
   /*   them for certain configurations only.                               */
   /*                                                                       */
-#ifdef FT2_BUILD_LIBRARY
-#define FT_EXPORT(x)  __declspec(dllexport) x
-#define FT_EXPORT_DEF(x)  x
+#if defined(ANDROID)
+#	define FT_EXPORT(x)
+#	define FT_EXPORT_DEF(x)
 #else
-#define FT_EXPORT(x)  __declspec(dllimport) x
-#define FT_EXPORT_DEF(x) x
+#	ifdef FT2_BUILD_LIBRARY
+#		define FT_EXPORT(x)  __declspec(dllexport) x
+#		define FT_EXPORT_DEF(x)  x
+#	else
+#		define FT_EXPORT(x)  __declspec(dllimport) x
+#		define FT_EXPORT_DEF(x) x
+#	endif
 #endif
-
   /*************************************************************************/
   /*                                                                       */
   /* Glyph Postscript Names handling                                       */

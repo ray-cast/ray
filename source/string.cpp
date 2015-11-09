@@ -87,14 +87,14 @@ const unsigned long long uitoa10_table[] =
 };
 
 #ifdef __WINDOWS__
-char* fullpath(char * in, const char * out, std::size_t size)
+char* fullpath(char * out, const char * in, std::size_t size)
 {
-	return _fullpath(in, out, size);
+	return _fullpath(out, in, size);
 }
 
-wchar_t* fullpath(wchar_t * in, const wchar_t * out, std::size_t size)
+wchar_t* fullpath(wchar_t * out, const wchar_t * in, std::size_t size)
 {
-	return _wfullpath(in, out, size);
+	return _wfullpath(out, in, size);
 }
 #endif
 

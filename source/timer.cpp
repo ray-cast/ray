@@ -140,7 +140,7 @@ Timer::sleep(float fps) const noexcept
 	double second = this->delta() * CLOCKS_PER_SEC;
 	if (first > second)
 	{
-		int sleep = std::round(first - second);
+		int sleep = round(first - second);
 		if (sleep > 0)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(sleep));

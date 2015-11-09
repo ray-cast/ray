@@ -95,7 +95,7 @@ public:
         if (lock)
         {
             _dispose.wait(lock, [this] { return !_queue.empty(); });
-            value = _queue.front();
+            T value = _queue.front();
             _queue.pop();
             return value;
         }

@@ -6,7 +6,7 @@
         <attribute position="0,0,-2" />
         <attribute lookat="0,0,1" />
         <attribute active="true"/>
-        <component name="ray::Camera">
+        <component name="Camera">
             <attribute aperture="45.0"/>
             <attribute znear="0.1"/>
             <attribute zfar="65535.0"/>
@@ -22,10 +22,10 @@
         <attribute rotate="0,0,0"/>
         <attribute scale="1,1,1" />
         <attribute active="true"/>
-        <component name="ray::Mesh">
+        <component name="Mesh">
             <attribute name="dlc:SSSSS/models/head/Head.sdkmesh"/>
         </component>
-        <component name="ray::MeshRender">
+        <component name="MeshRender">
             <attribute castshadow="true"/>
             <attribute receiveshadow="false"/>
         </component>
@@ -35,7 +35,7 @@
         <attribute position="0,0,-10"/>
         <attribute lookat="0,0,1" />
         <attribute active="true"/>
-        <component name="ray::Light">
+        <component name="Light">
             <attribute type="sun"/>
             <attribute color="1.0,1.0,1.0"/>
             <attribute range="200.0"/>
@@ -47,7 +47,7 @@
         <attribute name="light"/>
         <attribute position="0, 0, 0"/>
         <attribute active="false"/>
-        <component name="ray::Light">
+        <component name="Light">
             <attribute type="ambient"/>
             <attribute color="1.0,1.0,1.0"/>
             <attribute range="200.0"/>

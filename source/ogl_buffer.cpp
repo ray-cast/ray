@@ -323,29 +323,7 @@ OGLRenderBuffer::apply() noexcept
 	else
 #endif
 	{
-		if (OGLFeatures::ARB_vertex_array_object)
-		{
-			glBindVertexArray(this->getInstanceID());
-		}
-		else
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, _vb->getInstanceID());
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ib->getInstanceID());
-
-			auto vb = this->getVertexBuffer();
-			if (vb)
-			{
-				for (auto& it : vb->getVertexComponents())
-				{
-					glVertexAttribPointer(
-						it.getVertexAttrib(), 
-						it.getVertexCount(), 
-						OGLTypes::asOGLVertexFormat(it.getVertexFormat()),
-						GL_FALSE, vb->getVertexSize(), 
-						(void*)it.getVertexSize());
-				}
-			}
-		}
+		glBindVertexArray(_vao);
 	}
 }
 

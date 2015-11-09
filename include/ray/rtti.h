@@ -121,21 +121,21 @@ public:
     }
 
 	template<typename Derived, typename Base>
-	RTTI::pointer createInterface()
+	RTTI::pointer createInterface(const std::string& derived, const std::string& base)
 	{
-		auto base = this->getName<Base>();
-		auto derived = this->getName<Derived>();
-		auto instance = std::make_shared<RTTIInterface<Derived, Base>>(derived, base);
+		auto derivedName = this->getName(derived);
+		auto baseName = this->getName(base);
+		auto instance = std::make_shared<RTTIInterface<Derived, Base>>(derivedName, baseName);
 		_rtti_lists[derived] = instance;
 		return instance;
 	}
 
     template<typename Derived, typename Base>
-    RTTI::pointer createClass()
+    RTTI::pointer createClass(const std::string& derived, const std::string& base)
     {
-		auto base = this->getName<Base>();
-		auto derived = this->getName<Derived>();
-        auto instance = std::make_shared<RTTIClass<Derived, Base>>(derived, base);
+		auto derivedName = this->getName(derived);
+		auto baseName = this->getName(base);
+        auto instance = std::make_shared<RTTIClass<Derived, Base>>(derivedName, baseName);
         _rtti_lists[derived] = instance;
         return instance;
     }
@@ -181,16 +181,11 @@ public:
     }
 
 private:
-
-	template<typename T>
-	std::string getName() const
+	std::string getName(std::string name) const
 	{
-		std::string name = typeid(T).name();
-		std::size_t pos = name.find("class ", 0, 6);
+		std::size_t pos = name.find("::", 0, 2);
 		if (pos != std::string::npos)
-			name.erase(pos, 6);
-		else
-			name.clear();
+			name.erase(0, pos + 2);
 		return name;
 	}
 
@@ -206,7 +201,7 @@ private:\
     static _NAME RTTI::pointer _rtti;
 
 #define __ImplementInterface(Base) \
-    _NAME RTTI::pointer Base::_rtti = _NAME RTTIFactory::instance()->createInterface<Base, void>();\
+    _NAME RTTI::pointer Base::_rtti = _NAME RTTIFactory::instance()->createInterface<Base, void>(#Base, "");\
     _NAME RTTI::HashCode Base::getType() noexcept\
     {\
         return typeid(Base).hash_code();\
@@ -224,7 +219,7 @@ private:\
     static _NAME RTTI::pointer _rtti;
 
 #define __ImplementSubInterface(Derived, Base) \
-    _NAME RTTI::pointer Derived::_rtti = _NAME RTTIFactory::instance()->createInterface<Derived, Base>();\
+    _NAME RTTI::pointer Derived::_rtti = _NAME RTTIFactory::instance()->createInterface<Derived, Base>(#Derived, #Base);\
     _NAME RTTI::HashCode Derived::getType() noexcept\
     {\
         return typeid(Derived).hash_code();\
@@ -242,7 +237,7 @@ private:\
     static _NAME RTTI::pointer _rtti;
 
 #define __ImplementClass(Base) \
-    _NAME RTTI::pointer Base::_rtti = _NAME RTTIFactory::instance()->createClass<Base, void>();\
+    _NAME RTTI::pointer Base::_rtti = _NAME RTTIFactory::instance()->createClass<Base, void>(#Base, "");\
     _NAME RTTI::HashCode Derived::getType() noexcept\
     {\
         return typeid(Base).hash_code();\
@@ -260,7 +255,7 @@ private:\
     static _NAME RTTI::pointer _rtti;
 
 #define __ImplementSubClass(Derived, Base) \
-    _NAME RTTI::pointer Derived::_rtti = _NAME RTTIFactory::instance()->createClass<Derived, Base>();\
+    _NAME RTTI::pointer Derived::_rtti = _NAME RTTIFactory::instance()->createClass<Derived, Base>(#Derived, #Base);\
     _NAME RTTI::HashCode Derived::getType() noexcept\
     {\
         return typeid(Derived).hash_code();\

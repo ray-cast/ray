@@ -173,8 +173,7 @@ OGLTexture::setup() except
 	if (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT ||
 		internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ||
 		internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT ||
-		internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT ||
-		internalFormat == GL_COMPRESSED_RG_RGTC2)
+		internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
 	{
 		GLint level = (GLint)this->getMipLevel();
 		GLsizei size = this->getMipSize();
@@ -245,9 +244,11 @@ OGLTexture::setup() except
 			else
 #endif
 			{
+#if !defined(EGLAPI)
 				if (OGLFeatures::ARB_direct_state_access && !stream)
 					glTextureStorage2D(_texture, level + 1, internalFormat, w, h);
 				else
+#endif
 				{
 					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, internalFormat, w, h, 0, format, type, stream);
 					glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, internalFormat, w, h, 0, format, type, stream);
@@ -266,9 +267,11 @@ OGLTexture::setup() except
 
 	if (this->isMipmap())
 	{
+#if !defined(EGLAPI)
 		if (OGLFeatures::ARB_direct_state_access)
 			glGenerateTextureMipmap(_texture);
 		else
+#endif
 			glGenerateMipmap(target);		
 	}
 

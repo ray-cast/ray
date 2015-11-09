@@ -1,1 +1,0 @@
-cmake  -DBUILD_SHARED_LIBS:bool=on -DCMAKE_INSTALL_PREFIX:path="C:/Users/Public" -DCMAKE_EXE_LINKER_FLAGS:string="/machine:x64 /Release" -DCMAKE_LIBRARY_PATH:path="C:/Users/Public" -DCMAKE_INCLUDE_PATH:path="C:/Users/Public/include" ..

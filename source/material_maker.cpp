@@ -378,7 +378,7 @@ MaterialMaker::load(const std::string& filename) except
 	{
 		MemoryStream stream;
 
-		IoServer::instance()->openFile(filename, stream);
+		IoServer::instance()->openFile(filename, stream, ios_base::in);
 		if (!stream.is_open())
 			throw failure(__TEXT("Opening file fail:") + filename);
 

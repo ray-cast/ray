@@ -34,7 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifdef _BUILD_PLATFORM_WINDOWS
+#ifdef _BUILD_OPENGL
 #include <ray/ogl_commandlist.h>
 
 _NAME_BEGIN
@@ -43,6 +43,38 @@ GLuint   s_nvcmdlist_header[GL_MAX_COMMANDS_NV] = { 0 };
 GLuint   s_nvcmdlist_headerSizes[GL_MAX_COMMANDS_NV] = { 0 };
 GLushort s_nvcmdlist_stages[NVTOKEN_STAGES] = { 0 };
 bool     s_nvcmdlist_bindless = false;
+
+bool initedNVcommandList = 0;
+
+bool initCommandListNV() noexcept
+{
+	if (initedNVcommandList)
+		return __glewCreateStatesNV != NULL;
+
+	initedNVcommandList = 1;
+
+	__glewCreateStatesNV = (PFNGLCREATESTATESNVPROC)wglGetProcAddress("glCreateStatesNV");
+	__glewDeleteStatesNV = (PFNGLDELETESTATESNVPROC)wglGetProcAddress("glDeleteStatesNV");
+	__glewIsStateNV = (PFNGLISSTATENVPROC)wglGetProcAddress("glIsStateNV");
+	__glewStateCaptureNV = (PFNGLSTATECAPTURENVPROC)wglGetProcAddress("glStateCaptureNV");
+	__glewDrawCommandsNV = (PFNGLDRAWCOMMANDSNVPROC)wglGetProcAddress("glDrawCommandsNV");
+	__glewDrawCommandsAddressNV = (PFNGLDRAWCOMMANDSADDRESSNVPROC)wglGetProcAddress("glDrawCommandsAddressNV");
+	__glewDrawCommandsStatesNV = (PFNGLDRAWCOMMANDSSTATESNVPROC)wglGetProcAddress("glDrawCommandsStatesNV");
+	__glewDrawCommandsStatesAddressNV = (PFNGLDRAWCOMMANDSSTATESADDRESSNVPROC)wglGetProcAddress("glDrawCommandsStatesAddressNV");
+	__glewCreateCommandListsNV = (PFNGLCREATECOMMANDLISTSNVPROC)wglGetProcAddress("glCreateCommandListsNV");
+	__glewDeleteCommandListsNV = (PFNGLDELETECOMMANDLISTSNVPROC)wglGetProcAddress("glDeleteCommandListsNV");
+	__glewIsCommandListNV = (PFNGLISCOMMANDLISTNVPROC)wglGetProcAddress("glIsCommandListNV");
+	__glewListDrawCommandsStatesClientNV = (PFNGLLISTDRAWCOMMANDSSTATESCLIENTNVPROC)wglGetProcAddress("glListDrawCommandsStatesClientNV");
+	__glewCommandListSegmentsNV = (PFNGLCOMMANDLISTSEGMENTSNVPROC)wglGetProcAddress("glCommandListSegmentsNV");
+	__glewCompileCommandListNV = (PFNGLCOMPILECOMMANDLISTNVPROC)wglGetProcAddress("glCompileCommandListNV");
+	__glewCallCommandListNV = (PFNGLCALLCOMMANDLISTNVPROC)wglGetProcAddress("glCallCommandListNV");
+	__glewGetCommandHeaderNV = (PFNGLGETCOMMANDHEADERNVPROC)wglGetProcAddress("glGetCommandHeaderNV");
+	__glewGetStageIndexNV = (PFNGLGETSTAGEINDEXNVPROC)wglGetProcAddress("glGetStageIndexNV");
+
+	OGLFeatures::NV_command_list = __glewCreateStatesNV != NULL;
+
+	return __glewCreateStatesNV != NULL;
+}
 
 _NAME_END
 

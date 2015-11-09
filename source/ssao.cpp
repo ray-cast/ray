@@ -96,6 +96,7 @@ SSAO::computeRawAO(RenderPipeline& pipeline, RenderTexturePtr source, RenderText
 	_cameraClipInfo->assign(pipeline.getCamera()->getClipConstant());
 
 	pipeline.setRenderTexture(dest);
+	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0);
 	pipeline.drawSceneQuad(_ambientOcclusionPass);
 }
 
@@ -124,6 +125,7 @@ SSAO::blurDirection(RenderPipeline& pipeline, RenderTexturePtr source, RenderTex
 	_blurSource->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(dest);
+	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0);
 	pipeline.drawSceneQuad(_ambientOcclusionBlurPass);
 }
 

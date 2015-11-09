@@ -288,7 +288,7 @@ TerrainComponent::getChunkByRaycast(const ray::Vector3& translate, const ray::Ve
 ChunkPosition
 TerrainComponent::chunked(float x) const noexcept
 {
-	return  std::floorf(x / _scale / _size);
+	return  std::floor(x / _scale / _size);
 }
 
 float

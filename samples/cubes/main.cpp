@@ -35,18 +35,22 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/game_application.h>
-#include <ray/game_scene.h>
 
-#include <SDL.h>
-#include <SDL_syswm.h>
+#include <ray/render_features.h>
+#include <ray/input_features.h>
+#include <ray/physics_features.h>
 
-#include "terrain.h"
-#include "first_person_camera.h"
+#define GLFW_EXPOSE_NATIVE_WGL
+#define GLFW_EXPOSE_NATIVE_WIN32
+
+#include <GLFW\glfw3.h>
+#include <GLFW\glfw3native.h>
 
 class GameEngine : public ray::GameApplication
 {
 public:
 	GameEngine() noexcept
+		: _window(nullptr)
 	{
 		_renderSetting.enableSSAO = true;
 		_renderSetting.enableSAT = true;
@@ -56,21 +60,75 @@ public:
 		_renderSetting.enableFXAA = true;
 	}
 
-	void setup(HWND hwnd, std::size_t w, std::size_t h)
+	void init(std::size_t w, std::size_t h)
 	{
-		auto renderer = std::make_shared<ray::RenderFeatures>();
-		renderer->setRenderWindow(hwnd, w, h);
-		renderer->setRenderSetting(_renderSetting);
+		glfwInit();
 
-		this->addFeatures(std::make_shared<ray::InputFeatures>());
-		this->addFeatures(std::make_shared<ray::PhysicFeatures>());
-		this->addFeatures(renderer);
+		_window = glfwCreateWindow(w, h, "Cube World", nullptr, nullptr);
+		if (_window)
+		{
+			glfwSetWindowUserPointer(_window, this);
+			glfwSetWindowFocusCallback(_window, &setWindowFocusCallback);
+			glfwSetWindowCloseCallback(_window, &setWindowCloseCallback);
 
-		if (!this->openScene("dlc:cube\\scene.map"))
-			throw ray::failure("App::openScene('dlc:cube\\scene.map') fail");
+			HWND hwnd = glfwGetWin32Window(_window);
+
+			this->open();
+
+			auto renderer = std::make_shared<ray::RenderFeatures>();
+			renderer->setRenderWindow(hwnd, w, h);
+			renderer->setRenderSetting(_renderSetting);
+
+			this->addFeatures(std::make_shared<ray::InputFeatures>());
+			this->addFeatures(std::make_shared<ray::PhysicFeatures>());
+			this->addFeatures(renderer);
+
+			if (!this->openScene("dlc:cube\\scene.map"))
+				throw ray::failure("App::openScene('dlc:cube\\scene.map') fail");
+		}
+	}
+
+	void run()
+	{
+		while (!glfwWindowShouldClose(_window))
+		{
+			this->update();
+
+			glfwPostEmptyEvent();
+		}
+	}
+
+	static void setWindowCloseCallback(GLFWwindow* window)
+	{
+		GameEngine* engine = (GameEngine*)glfwGetWindowUserPointer(window);
+		if (engine)
+		{
+			ray::AppQuitEvent quit;
+			engine->sendMessage(&quit);
+		}
+	}
+
+	static void setWindowFocusCallback(GLFWwindow* window, int focus)
+	{
+		GameEngine* engine = (GameEngine*)glfwGetWindowUserPointer(window);
+		if (engine)
+		{
+			if (focus)
+			{
+				ray::GetFocusEvent focus;
+				engine->sendMessage(&focus);
+			}
+			else
+			{
+				ray::LostFocusEvent focus;
+				engine->sendMessage(&focus);
+			}
+		}
 	}
 
 private:
+
+	GLFWwindow* _window;
 
 	ray::RenderSetting _renderSetting;
 };
@@ -79,65 +137,16 @@ int main(int argc, char *argv[])
 {
 	try
 	{
-		SDL_Init(SDL_INIT_EVERYTHING);
-		auto window = SDL_CreateWindow("Cube World", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1376, 768, SDL_WINDOW_SHOWN);
-
-		SDL_SysWMinfo info;
-		SDL_VERSION(&info.version);
-		SDL_GetWindowWMInfo(window, &info);
-
-		GameEngine game;
-		game.open();
-		game.start();
-		game.setup(info.info.win.window, 1376, 768);
-
-		SDL_Event event;
-		while (!game.isQuitRequest())
-		{
-			while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_QUIT, SDL_SYSWMEVENT))
-			{
-				switch (event.type)
-				{
-				case SDL_QUIT:
-				{
-					ray::AppQuitEvent quit;
-					game.sendMessage(&quit);
-				}
-				break;
-				case SDL_WINDOWEVENT:
-				{
-					switch (event.window.event)
-					{
-					case SDL_WINDOWEVENT_FOCUS_GAINED:
-					{
-						ray::GetFocusEvent focus;
-						focus.window.id = event.window.windowID;
-						game.sendMessage(&focus);
-					}
-					break;
-					case SDL_WINDOWEVENT_FOCUS_LOST:
-					{
-						ray::LostFocusEvent focus;
-						focus.window.id = event.window.windowID;
-						game.sendMessage(&focus);
-					}
-					}
-				}
-				break;
-				}
-			}
-
-			game.update();
-		}
+		GameEngine engine;
+		engine.init(1376, 768);
+		engine.run();
 	}
 	catch (const ray::exception& e)
 	{
-		SDL_Quit();
-
 		std::cout << e.what();
 		std::system("pause");
 	}
 
-	SDL_Quit();
 	return 0;
+	glfwTerminate();
 }

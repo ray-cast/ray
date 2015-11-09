@@ -46,7 +46,7 @@ class EXPORT RenderFactory final
 public:
 	static RenderDevicePtr createRenderDevice() noexcept;
 	static RenderWindowPtr createRenderWindow() noexcept;
-	static RenderWindowPtr createRenderWindow(WindHandle window) noexcept;
+	static RenderWindowPtr createRenderWindow(WindHandle window) except;
 	static RenderSystemPtr createRenderSystem() noexcept;
 	static RenderPipelinePtr createRenderPipeline() noexcept;
 	static RenderStatePtr createRenderState() noexcept;

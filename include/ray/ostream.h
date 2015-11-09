@@ -82,8 +82,8 @@ public:
     ostream& operator << (unsigned long long value) noexcept;
     ostream& operator << (float value) noexcept;
     ostream& operator << (double value) noexcept;
-    ostream& operator << (ios_base& (__cdecl *function)(ios_base&)) noexcept;
-    ostream& operator << (ostream& (__cdecl *function)(ostream&)) noexcept;
+    ostream& operator << (ios_base& (*function)(ios_base&)) noexcept;
+    ostream& operator << (ostream& (*function)(ostream&)) noexcept;
 
 private:
     ostream& operator=(const ostream&) = delete;

@@ -300,7 +300,7 @@ inline T fast_exp2(T x)
 {
     static const T c[3] = { 5.79526, 12.82461, -2.88611 };
 
-    int e = int(std::round(x));
+    int e = int(round(x));
     T t = x - e;
     T m = (t * t + c[0] * t + c[1]) / (c[2] * t * c[1]);
 

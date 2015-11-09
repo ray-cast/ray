@@ -1,1 +1,1 @@
-#define SVNRevision  1270 
+#define GITRevision  1000

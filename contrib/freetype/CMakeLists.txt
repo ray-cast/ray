@@ -197,12 +197,8 @@ if (BUILD_FRAMEWORK)
   )
 endif ()
 
-add_library(freetype
-  ${PUBLIC_HEADERS}
-  ${PUBLIC_CONFIG_HEADERS}
-  ${PRIVATE_HEADERS}
-  ${BASE_SRCS}
-)
+add_library(freetype ${PUBLIC_HEADERS} ${PUBLIC_CONFIG_HEADERS} ${PRIVATE_HEADERS} ${BASE_SRCS})
+TARGET_LINK_LIBRARIES (freetype zlib)
 
 if (BUILD_FRAMEWORK)
   set_property(SOURCE ${PUBLIC_CONFIG_HEADERS}

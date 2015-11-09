@@ -38,7 +38,7 @@
 #include <ray/render_system.h>
 #include <ray/render_pipeline.h>
 
-#if _BUILD_OPENGL
+#if defined(_BUILD_OPENGL) || defined(_BUILD_OPENGL_ES)
 #include <ray/ogl_state.h>
 #include <ray/ogl_shader.h>
 #include <ray/ogl_texture.h>
@@ -69,7 +69,7 @@ RenderFactory::createRenderWindow() noexcept
 }
 
 RenderWindowPtr
-RenderFactory::createRenderWindow(WindHandle hwnd) noexcept
+RenderFactory::createRenderWindow(WindHandle hwnd) except
 {
 	return std::make_shared<OGLCanvas>(hwnd);
 }
@@ -130,8 +130,6 @@ RenderFactory::createTexture(const std::string& name) except
 				format = PixelFormat::RGBA_DXT3;
 			else if (image.getImageType() == Image::dds5)
 				format = PixelFormat::RGBA_DXT5;
-			else if (image.getImageType() == Image::ati2)
-				format = PixelFormat::RG_ATI2;
 			else
 			{
 				if (image.bpp() == 24)

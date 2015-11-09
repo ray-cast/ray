@@ -37,7 +37,7 @@
 #ifndef _H_OGL_TEXTURE_H_
 #define _H_OGL_TEXTURE_H_
 
-#include <ray/ogl_types.h>
+#include <ray/ogl_canvas.h>
 
 _NAME_BEGIN
 

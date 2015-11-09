@@ -81,7 +81,7 @@ OGLShader::setup() except
 		glGetShaderiv(_instance, GL_INFO_LOG_LENGTH, &length);
 
 		std::string log((std::size_t)length, 0);
-		glGetShaderInfoLog(_instance, length + 1, &length, (char*)log.data());
+		glGetShaderInfoLog(_instance, length, &length, (char*)log.data());
 
 		throw failure(log);
 	}

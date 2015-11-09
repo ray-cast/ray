@@ -93,8 +93,8 @@ typedef std::string string;
 
 #if defined(__WINDOWS__)
 
-EXPORT char* fullpath(char * in, const char * out, std::size_t size);
-EXPORT wchar_t* fullpath(wchar_t * in, const wchar_t * out, std::size_t size);
+EXPORT char* fullpath(char * out, const char * in, std::size_t size);
+EXPORT wchar_t* fullpath(wchar_t * out, const wchar_t * in, std::size_t size);
 
 #endif
 

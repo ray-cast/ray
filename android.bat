@@ -1,1 +1,0 @@
-cmake-gui -DCMAKE_TOOLCHAIN_FILE=cmake/android.toolchain.cmake -DANDROID_NDK=C:/ProgramData/Microsoft/AndroidNDK/android-ndk-r10e -DANDROID_ABI="armeabi-v7a with NEON" "E:/projects/ray" && cmake --build .

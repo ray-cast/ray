@@ -1,5 +1,0 @@
-do_configure:
-	./configure \
-	--prefix=/usr \
-	--libdir=/usr/lib64 \
-	--with-lcms2

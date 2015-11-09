@@ -6,7 +6,7 @@
         <attribute position="0,62,0" />
         <attribute lookat="0,62,1" />
         <attribute active="true"/>
-        <component name="ray::Camera">
+        <component name="Camera">
             <attribute aperture="75.0"/>
             <attribute znear="0.1"/>
             <attribute zfar="65535.0"/>
@@ -15,7 +15,7 @@
         </component>
         <component name="FirstPersonCamera">
         </component>
-        <component name="ray::PhysicsCharacter">
+        <component name="PhysicsCharacter">
             <attribute radius="1"/>
             <attribute height="4"/>
         </component>
@@ -24,10 +24,10 @@
         <attribute name="grass"/>
         <attribute position="0,0,0" />
         <attribute active="false"/>
-        <component name="ray::Mesh">
+        <component name="Mesh">
             <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
-        <component name="ray::MeshRender">
+        <component name="MeshRender">
             <attribute material="dlc:cube/material/grass.mat"/>
         </component>
     </object>
@@ -35,10 +35,10 @@
         <attribute name="wood"/>
         <attribute position="0,0,0" />
         <attribute active="false"/>
-        <component name="ray::Mesh">
+        <component name="Mesh">
             <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
-        <component name="ray::MeshRender">
+        <component name="MeshRender">
             <attribute material="dlc:cube/material/wood.mat"/>
         </component>
     </object>
@@ -46,10 +46,10 @@
         <attribute name="leaf"/>
         <attribute position="0,0,0" />
         <attribute active="false"/>
-        <component name="ray::Mesh">
+        <component name="Mesh">
             <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
-        <component name="ray::MeshRender">
+        <component name="MeshRender">
             <attribute material="dlc:cube/material/leaf.mat"/>
         </component>
     </object>
@@ -57,10 +57,10 @@
         <attribute name="clound"/>
         <attribute position="0,0,0" />
         <attribute active="false"/>
-        <component name="ray::Mesh">
+        <component name="Mesh">
             <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
-        <component name="ray::MeshRender">
+        <component name="MeshRender">
             <attribute material="dlc:cube/material/clound.mat"/>
         </component>
     </object>
@@ -68,10 +68,10 @@
         <attribute name="water"/>
         <attribute position="0,0,0" />
         <attribute active="false"/>
-        <component name="ray::Mesh">
+        <component name="Mesh">
             <attribute name="dlc:cube/models/cube.pmx"/>
         </component>
-        <component name="ray::MeshRender">
+        <component name="MeshRender">
             <attribute material="dlc:cube/material/water.mat"/>
         </component>
     </object>
@@ -80,7 +80,7 @@
         <attribute position="0, 250, 0"/>
         <attribute up="0,0,1"/>
         <attribute active="true"/>
-        <component name="ray::Light">
+        <component name="Light">
             <attribute type="sun"/>
             <attribute range="200.0"/>
             <attribute shadow="true"/>
@@ -90,7 +90,7 @@
         <attribute name="light"/>
         <attribute position="0, 0, 0"/>
         <attribute active="true"/>
-        <component name="ray::Light">
+        <component name="Light">
             <attribute type="ambient"/>
             <attribute color="1.0,1.0,1.0"/>
             <attribute range="200.0"/>

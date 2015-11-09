@@ -113,8 +113,7 @@ Computer::try_simd_sse()
 {
 	auto try_sse_func = [](void*) -> bool
 	{
-		volatile __m128 xmm1 = ::_mm_setzero_ps();
-
+		volatile __m128 xmm1 = _mm_setzero_ps();
 		return 0 == *(int*)&xmm1;
 	};
 

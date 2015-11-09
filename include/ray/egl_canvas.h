@@ -37,7 +37,7 @@
 #ifndef _H_EGL_CANVAS_H_
 #define _H_EGL_CANVAS_H_
 
-#include <ray/render_window.h>
+#include <ray/ogl_types.h>
 
 #include <EGL\egl.h>
 #include <GLES2\gl2.h>
@@ -96,6 +96,7 @@ class EGLCanvas final : public RenderWindow
 {
 public:
     EGLCanvas() noexcept;
+	EGLCanvas(WindHandle hwnd) except;
     ~EGLCanvas() noexcept;
 
     void open(WindHandle hwnd) except;
@@ -104,27 +105,25 @@ public:
     void setSwapInterval(SwapInterval interval) noexcept;
 	SwapInterval getSwapInterval() const noexcept;
 
-    void bind() noexcept;
-    void unbind() noexcept;
-
     void present() noexcept;
-
-	void setWindowResolution(std::size_t w, std::size_t h) noexcept;
-
-	std::size_t getWindowWidth() const noexcept;
-	std::size_t getWindowHeight() const noexcept;
 
 	WindHandle getWindHandle() const noexcept;
 
 private:
-    EGLCanvas(const EGLCanvas&) = delete;
-    EGLCanvas& operator=(const EGLCanvas&) = delete;
+
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
+
+private:
+
+	static void initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept;
+
+private:
+    EGLCanvas(const EGLCanvas&) noexcept = delete;
+    EGLCanvas& operator=(const EGLCanvas&) noexcept = delete;
 
 private:
 	SwapInterval _interval;
-
-	std::size_t _width;
-	std::size_t _height;
 
     EGLNativeWindowType _hwnd;
     EGLNativeDisplayType _hdc;

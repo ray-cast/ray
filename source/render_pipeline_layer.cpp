@@ -278,7 +278,7 @@ RenderPipelineLayer::setRenderTextureLayer(RenderTexturePtr target, int layer) n
 void
 RenderPipelineLayer::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
 {
-	_renderDevice->clearRenderTexture(flags, color, depth, stencil, 0);
+	_renderDevice->clearRenderTexture(flags, color, depth, stencil);
 }
 
 void

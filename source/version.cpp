@@ -88,7 +88,7 @@ unsigned int GetCompileFlags()
 
 unsigned int GetVersionRevision()
 {
-    return SVNRevision;
+    return GITRevision;
 }
 
 _NAME_END

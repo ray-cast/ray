@@ -48,7 +48,6 @@
 #   include <io.h>
 #elif defined(__LINUX__) || defined(__ANDROID__)
 #	include <sys/types.h>
-#	include <sys/io.h>
 #	include <sys/param.h>
 #	include <unistd.h>
 #	include <dirent.h>

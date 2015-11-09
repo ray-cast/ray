@@ -39,6 +39,10 @@
 
 _NAME_BEGIN
 
+#ifndef MAX_PATH
+#	define MAX_PATH 255
+#endif
+
 std::size_t UTF8toGBK(char* dest, std::size_t maxLength, const char* data, std::size_t size)
 {
 	char inbuf[MAX_PATH + 1] = { 0 };

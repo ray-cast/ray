@@ -16,7 +16,7 @@ INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/libiconv/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/asJIT)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/mojoshader)
 
-IF(BUILD_PLATFORM_ANDROID OR BUILD_PLATFORM_LINUX OR BUILD_PLATFORM_IPHONE)
+IF(BUILD_OPENGL_ES)
     INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/gles/include)
     LINK_DIRECTORIES(${DEPENDENCIES_PATH}/gles/lib)
 ENDIF()
@@ -32,8 +32,6 @@ IF(BUILD_GLEW_SHARED)
 ENDIF()
 
 SET(PLATFORM_CORE_LIST
-    ${HEADER_PATH}/computer.h
-    ${SOURCE_PATH}/computer.cpp
     ${HEADER_PATH}/def.h
     ${HEADER_PATH}/delegate.h
     ${HEADER_PATH}/delegate_impl.h
@@ -347,8 +345,8 @@ SET(RENDERER_OGL
     ${SOURCE_PATH}/ogl_renderer.cpp
     ${HEADER_PATH}/ogl_commandlist.h
     ${SOURCE_PATH}/ogl_commandlist.cpp
-    ${HEADER_PATH}/ogl_extenstion.h
-    ${SOURCE_PATH}/ogl_extenstion.cpp
+    ${HEADER_PATH}/ogl_canvas.h
+    ${SOURCE_PATH}/ogl_canvas.cpp
     ${HEADER_PATH}/ogl_shader.h
     ${SOURCE_PATH}/ogl_shader.cpp
     ${HEADER_PATH}/ogl_state.h
@@ -518,7 +516,7 @@ IF(BUILD_PLATFORM_WINDOWS)
     TARGET_LINK_LIBRARIES(librenderer glew)
 ENDIF()
 
-IF(BUILD_PLATFORM_ANDROID)
+IF(BUILD_OPENGL_ES)
     TARGET_LINK_LIBRARIES(librenderer libEGL)
     TARGET_LINK_LIBRARIES(librenderer libGLESv2)
     TARGET_LINK_LIBRARIES(librenderer libMaliEmulator)
@@ -688,6 +686,7 @@ SET(PHYSIC_FEATURES_LIST
 )
 SOURCE_GROUP("system\\physic" FILES ${PHYSIC_FEATURES_LIST})
 
+IF(_BUILD_SCRIPT)
 SET(SCRIGPU_SYSTEM_LIST
     ${SOURCE_PATH}/script_binder.cpp
     ${HEADER_PATH}/script_binder.h
@@ -722,6 +721,9 @@ SET(SCRIGPU_SYSTEM_LIST
     ${SOURCE_PATH}/script_component.cpp
     ${HEADER_PATH}/script_component.h
 )
+ELSE()
+    SET(SCRIGPU_SYSTEM_LIST "")
+ENDIF()
 SOURCE_GROUP("system\\script" FILES ${SCRIGPU_SYSTEM_LIST})
 ADD_LIBRARY(ray SHARED
     ${GAMEAPP_LIST}
@@ -735,20 +737,18 @@ ADD_LIBRARY(ray SHARED
 )
 SET_TARGET_ATTRIBUTE(ray "engine")
 TARGET_LINK_LIBRARIES(ray
-    angelscript
-    asJIT
-)
-
-TARGET_LINK_LIBRARIES(ray
     libimage
     libinput
     libmodel
-    libgui
     libnetwork
     libplatform
     librenderer
     libsound
 )
+
+IF(_BUILD_SCRIPT)
+    TARGET_LINK_LIBRARIES(ray angelscript)
+ENDIF()
 
 IF(BUILD_PHYSIC)
     TARGET_LINK_LIBRARIES(ray libphysic)

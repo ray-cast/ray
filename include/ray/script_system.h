@@ -86,7 +86,6 @@ private:
 
 	asIScriptContext* _context;
 	asIScriptEngine* _engine;
-	asCJITCompiler* _jit;
 
 	std::vector<std::weak_ptr<ScriptObject>> _objects;
 

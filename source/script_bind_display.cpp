@@ -73,17 +73,26 @@ ScriptBindDisplay::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectMethod("Display", "string getWindowTitle() const", asMETHOD(ScriptBindDisplay, getWindowTitle), asCALL_THISCALL); assert(r >= 0);
 }
 
+void 
+ScriptBindDisplay::setRenderSystem(RenderSystemPtr renderer) noexcept
+{
+	_renderer = renderer;
+}
+
 void
 ScriptBindDisplay::setSwapInterval(int interval) noexcept
 {
-	/*if (interval == GPU_FREE)
-		RenderSystem::instance()->setSwapInterval(GPU_FREE);
-	if (interval == GPU_VSYNC)
-		RenderSystem::instance()->setSwapInterval(GPU_VSYNC);
-	if (interval == GPU_FPS30)
-		RenderSystem::instance()->setSwapInterval(GPU_FPS30);
-	if (interval == GPU_FPS15)
-		RenderSystem::instance()->setSwapInterval(GPU_FPS15);*/
+	auto renderer = _renderer.lock();
+	assert(renderer);
+
+	if (interval == GPU_FREE)
+		renderer->setSwapInterval(GPU_FREE);
+	else if (interval == GPU_VSYNC)
+		renderer->setSwapInterval(GPU_VSYNC);
+	else if (interval == GPU_FPS30)
+		renderer->setSwapInterval(GPU_FPS30);
+	else if (interval == GPU_FPS15)
+		renderer->setSwapInterval(GPU_FPS15);
 }
 
 void
@@ -104,13 +113,23 @@ ScriptBindDisplay::setWindowTitle(const std::string& title) noexcept
 int
 ScriptBindDisplay::getWindowWidth() const noexcept
 {
-	return 0;
+	auto renderer = _renderer.lock();
+	assert(renderer);
+
+	std::size_t w, h;
+	renderer->getWindowResolution(w, h);
+	return w;
 }
 
 int
 ScriptBindDisplay::getWindowHeight() const noexcept
 {
-	return 0;
+	auto renderer = _renderer.lock();
+	assert(renderer);
+
+	std::size_t w, h;
+	renderer->getWindowResolution(w, h);
+	return h;
 }
 
 int

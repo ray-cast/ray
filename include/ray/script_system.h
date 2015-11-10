@@ -61,6 +61,7 @@ public:
 
 	void setTimer(TimerPtr timer) noexcept;
 	void setInput(InputPtr input) noexcept;
+	void setRenderSystem(RenderSystemPtr renderer) noexcept;
 
 	void print(const std::string& str) noexcept;
 
@@ -78,8 +79,6 @@ public:
 
 private:
 
-	TimerPtr _timer;
-	InputPtr _input;
 	GameObject* _actor;
 
 	asIScriptContext* _context;

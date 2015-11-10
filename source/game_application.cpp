@@ -81,6 +81,8 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) ex
 		this->addFeatures(std::make_shared<ray::InputFeatures>());
 		this->addFeatures(std::make_shared<ray::ScriptFeatures>());
 		this->addFeatures(std::make_shared<ray::RenderFeatures>(hwnd, width, height));
+
+		this->start();
 	}
 
 	return _isInitialize;

@@ -56,6 +56,7 @@ RenderFeatures::RenderFeatures() noexcept
 	, _width(0)
 	, _height(0)
 {
+	_renderSystem = RenderFactory::createRenderSystem();
 }
 
 RenderFeatures::RenderFeatures(WindHandle hwnd, std::size_t w, std::size_t h) noexcept
@@ -63,6 +64,7 @@ RenderFeatures::RenderFeatures(WindHandle hwnd, std::size_t w, std::size_t h) no
 	, _width(w)
 	, _height(h)
 {
+	_renderSystem = RenderFactory::createRenderSystem();
 }
 
 RenderFeatures::~RenderFeatures() noexcept
@@ -128,7 +130,6 @@ RenderFeatures::clone() const noexcept
 void
 RenderFeatures::onActivate() except
 {
-	_renderSystem = RenderFactory::createRenderSystem();
 	_renderSystem->open(_hwnd, _width, _height);
 	_renderSystem->setRenderSetting(_renderSetting);
 

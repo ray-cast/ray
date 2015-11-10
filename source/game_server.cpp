@@ -45,7 +45,7 @@ _NAME_BEGIN
 
 GameServer::GameServer() noexcept
 	: _gameApp(nullptr)
-	, _isActive(true)
+	, _isActive(false)
 	, _isQuitRequest(false)
 {
 }

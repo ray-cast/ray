@@ -68,10 +68,8 @@ public:
 
 			HWND hwnd = glfwGetWin32Window(_window);
 
-			this->open();
-
-			this->addFeatures(std::make_shared<ray::InputFeatures>());
-			this->addFeatures(std::make_shared<ray::RenderFeatures>(hwnd, w, h));
+			if (!this->open(hwnd, w, h))
+				throw ray::failure("App::open() fail");
 
 			if (!this->openScene("dlc:UI\\scene.map"))
 				throw ray::failure("App::openScene('dlc:UI\\scene.map') fail");

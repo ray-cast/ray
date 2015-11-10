@@ -67,6 +67,10 @@ DefaultRenderSystem::open(WindHandle window, std::size_t w, std::size_t h) excep
 	auto renderWindow = RenderFactory::createRenderWindow(window);
 	_renderPipeline = RenderFactory::createRenderPipeline();
 	_renderPipeline->open(renderWindow, w, h);
+
+	RenderSetting setting;
+	setting.enableFXAA = true;
+	this->setRenderSetting(setting);
 }
 
 void

@@ -38,6 +38,7 @@
 #define _H_SCRIPT_BIND_DISPLAY_H_
 
 #include <ray/script_binder.h>
+#include <ray/render_system.h>
 
 _NAME_BEGIN
 
@@ -48,6 +49,8 @@ public:
 	~ScriptBindDisplay() noexcept;
 
 	void setup(asIScriptEngine* engine) noexcept;
+
+	void setRenderSystem(RenderSystemPtr renderer) noexcept;
 
 private:
 
@@ -65,6 +68,10 @@ private:
 	int getWindowPosY() const noexcept;
 
 	std::string getWindowTitle() const noexcept;
+
+private:
+
+	std::weak_ptr<RenderSystem> _renderer;
 };
 
 _NAME_END

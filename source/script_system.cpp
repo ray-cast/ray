@@ -124,21 +124,19 @@ ScriptSystem::close() noexcept
 void
 ScriptSystem::setTimer(TimerPtr timer) noexcept
 {
-	if (_timer != timer)
-	{
-		_bindTimer->setTimer(timer);
-		_timer = timer;
-	}
+	_bindTimer->setTimer(timer);
 }
 
 void
 ScriptSystem::setInput(InputPtr input) noexcept
 {
-	if (_input != input)
-	{
-		_bindInput->setInput(input);
-		_input = input;
-	}
+	_bindInput->setInput(input);
+}
+
+void
+ScriptSystem::setRenderSystem(RenderSystemPtr renderer) noexcept
+{
+	_bindDisplay->setRenderSystem(renderer);
 }
 
 void

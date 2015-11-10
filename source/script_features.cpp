@@ -37,6 +37,7 @@
 #include <ray/script_features.h>
 #include <ray/script_component.h>
 #include <ray/input_features.h>
+#include <ray/render_features.h>
 #include <ray/game_server.h>
 
 _NAME_BEGIN
@@ -66,6 +67,7 @@ ScriptFeatures::onActivate() except
 	ScriptSystem::instance()->open();
 	ScriptSystem::instance()->setTimer(this->getGameServer()->getTimer());
 	ScriptSystem::instance()->setInput(this->getGameServer()->getFeature<InputFeatures>()->getInput());
+	ScriptSystem::instance()->setRenderSystem(this->getGameServer()->getFeature<RenderFeatures>()->getRenderSystem());
 	//ScriptSystem::instance()->setGuiSystem(_guiSystem);
 }
 

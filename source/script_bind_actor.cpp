@@ -172,19 +172,14 @@ ScriptBindActor::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectMethod("Rigidbody", "void addTorque(const float3& in)", CALLER(PhysicsBodyComponent, addTorque), asCALL_CDECL_OBJFIRST); assert(r > 0);
 	r = engine->RegisterObjectMethod("Rigidbody", "void addImpulse(const float3& in, const float3& in)", CALLER(PhysicsBodyComponent, addImpulse), asCALL_CDECL_OBJFIRST); assert(r > 0);
 
-	r = engine->RegisterObjectType("PhysicsCharacter", sizeof(PhysicsCharacterComponent), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("PhysicsCharacter", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<PhysicsCharacterComponent>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("PhysicsCharacter", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(destroy<PhysicsCharacterComponent>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectMethod("PhysicsCharacter", "bool opImplConv() const", asFUNCTION(ImplConv<PhysicsCharacterComponent>), asCALL_CDECL_OBJFIRST);
-	r = engine->RegisterObjectMethod("PhysicsCharacter", "bool opImplCast() const", asFUNCTION(ImplCast<PhysicsCharacterComponent>), asCALL_CDECL_OBJFIRST);
+	r = engine->RegisterObjectType("PhysicsCharacter", sizeof(PhysicsCharacterComponentPtr), asOBJ_VALUE | asOBJ_ASHANDLE | asOBJ_APP_CLASS_CDAK); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("PhysicsCharacter", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<PhysicsCharacterComponentPtr>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("PhysicsCharacter", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(destroy<PhysicsCharacterComponentPtr>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("PhysicsCharacter", "bool opImplConv() const", asFUNCTION(ImplConv<PhysicsCharacterComponentPtr>), asCALL_CDECL_OBJFIRST);
+	r = engine->RegisterObjectMethod("PhysicsCharacter", "bool opImplCast() const", asFUNCTION(ImplCast<PhysicsCharacterComponentPtr>), asCALL_CDECL_OBJFIRST);
 	r = engine->RegisterObjectMethod("PhysicsCharacter", "void setWalkDirection(const float3& in)", CALLER(PhysicsCharacterComponent, setWalkDirection), asCALL_CDECL_OBJFIRST); assert(r > 0);
 	r = engine->RegisterObjectMethod("PhysicsCharacter", "void jump(float)", CALLER(PhysicsCharacterComponent, jump), asCALL_CDECL_OBJFIRST); assert(r > 0);
 	r = engine->RegisterObjectMethod("PhysicsCharacter", "bool canJumping() const", CALLER(PhysicsCharacterComponent, canJumping), asCALL_CDECL_OBJFIRST); assert(r > 0);
-	
-	r = engine->RegisterObjectType("PhysicsCharacterPtr", sizeof(PhysicsCharacterComponentPtr), asOBJ_VALUE | asOBJ_ASHANDLE | asOBJ_APP_CLASS_CDAK); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("PhysicsCharacterPtr", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<PhysicsCharacterComponentPtr>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("PhysicsCharacterPtr", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(destroy<PhysicsCharacterComponentPtr>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectMethod("PhysicsCharacterPtr", "PhysicsCharacter@ get()", CALLER(PhysicsCharacterComponentPtr, get), asCALL_CDECL_OBJFIRST);
 
 	r = engine->RegisterObjectType("GameObject", sizeof(GameObjectPtr), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("GameObject", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<GameObjectPtr>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
@@ -204,7 +199,7 @@ ScriptBindActor::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectMethod("GameObject", "const float3& get_up() const", CALLER(GameObject, getUpVector), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("GameObject", "MeshFilter get_meshFilter()", CALLER(GameObject, getComponent<MeshComponent>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("GameObject", "Rigidbody get_rigidbody()", CALLER(GameObject, getComponent<PhysicsBodyComponent>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectMethod("GameObject", "PhysicsCharacterPtr get_character()", CALLER(GameObject, getComponent<PhysicsCharacterComponent>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("GameObject", "PhysicsCharacter get_character()", CALLER(GameObject, getComponent<PhysicsCharacterComponent>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 
 	r = engine->RegisterObjectMethod("GameObject", "GameObject clone() const", CALLER(GameObject, clone), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterGlobalFunction("GameObject find(const string& in)", asFUNCTION(GameObject::find<GameObject>), asCALL_CDECL); assert(r >= 0);

@@ -1002,7 +1002,7 @@ OGLRenderer::checkError() noexcept
 void
 OGLRenderer::checkFramebuffer() noexcept
 {
-#ifdef _DEBUG
+#if defined(_DEBUG)
 	GLenum result = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (GL_FRAMEBUFFER_COMPLETE != result)
 	{
@@ -1119,7 +1119,7 @@ OGLRenderer::debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severit
 void
 OGLRenderer::initDebugControl() noexcept
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) && !defined(__ANDROID__)
 	// 131184 memory info
 	// 131185 memory allocation info
 	GLuint ids[] =
@@ -1146,7 +1146,7 @@ void
 OGLRenderer::initCommandList() noexcept
 {
 #if defined(_BUILD_OPENGL)
-	OGLExtenstion::initCommandListNV();
+	initCommandListNV();
 #endif
 }
 

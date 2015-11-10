@@ -160,7 +160,7 @@ EnvironmentIrradiance::_paraboloidCoord(Vector3& vec, int face, const Vector2& u
 	return true;
 }
 
-float* WINAPI D3DXSHEvalDirection(float* out, std::uint32_t order, const Vector3 *dir)
+float* D3DXSHEvalDirection(float* out, std::uint32_t order, const Vector3 *dir)
 {
 	if ((order < MINORDER) || (order > MAXORDER))
 		return out;
@@ -267,7 +267,7 @@ EnvironmentIrradiance::_buildDualParaboloidWeightTextures(TexturePtr textures[2]
 	{
 		float *coefficients;
 		coefficients = new float[size * size * size * size];
-		ZeroMemory(coefficients, size*size*size*size*sizeof(float));
+		std::memset(coefficients, 0, size*size*size*size*sizeof(float));
 
 		for (t = 0; t < size; t++)
 		{

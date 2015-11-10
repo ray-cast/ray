@@ -39,12 +39,6 @@
 
 #include <ray/ogl_types.h>
 
-#include <EGL\egl.h>
-#include <GLES2\gl2.h>
-#include <GLES2\gl2ext.h>
-#include <GLES3\gl3.h>
-#include <GLES3\gl31.h>
-
 #define GL_DEBUG_OUTPUT_SYNCHRONOUS   GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR
 #define GL_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH GL_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_KHR
 #define GL_DEBUG_CALLBACK_FUNCTION    GL_DEBUG_CALLBACK_FUNCTION_KHR

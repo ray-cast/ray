@@ -54,7 +54,7 @@ Atmospheric::Setting::Setting() noexcept
 	kr = 0.0025;
 	km = 0.0025;
 	sun = 16.0f;
-};
+}
 
 Atmospheric::Atmospheric() noexcept
 {
@@ -106,8 +106,8 @@ Atmospheric::onActivate(RenderPipeline& pipeline) except
 	_krESun->assign(_setting.kr * _setting.sun);
 	_kmESun->assign(_setting.km * _setting.sun);
 
-	_kr4PI->assign(_setting.kr * 4.0f * M_PI);
-	_km4PI->assign(_setting.km * 4.0f * M_PI);
+	_kr4PI->assign(float(_setting.kr * 4.0f * M_PI));
+	_km4PI->assign(float(_setting.km * 4.0f * M_PI));
 
 	_scaleFactor->assign(1.0f / (_setting.outerRadius - _setting.innerRadius));
 	_scaleDepth->assign(0.25f);

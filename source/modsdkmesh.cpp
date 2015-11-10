@@ -47,13 +47,13 @@ _NAME_BEGIN
 #define MAX_MATERIAL_NAME 100
 #define MAX_TEXTURE_NAME MAX_PATH
 #define MAX_MATERIAL_PATH MAX_PATH
-#define INVALID_FRAME ((UINT)-1)
-#define INVALID_MESH ((UINT)-1)
-#define INVALID_MATERIAL ((UINT)-1)
-#define INVALID_SUBSET ((UINT)-1)
-#define INVALID_ANIMATION_DATA ((UINT)-1)
+#define INVALID_FRAME ((std::size_t)-1)
+#define INVALID_MESH ((std::size_t)-1)
+#define INVALID_MATERIAL ((std::size_t)-1)
+#define INVALID_SUBSET ((std::size_t)-1)
+#define INVALID_ANIMATION_DATA ((std::size_t)-1)
 #define ERROR_RESOURCE_VALUE 1
-#define INVALID_SAMPLER_SLOT ((UINT)-1)
+#define INVALID_SAMPLER_SLOT ((std::size_t)-1)
 #define MAX_VERTEX_BUFFER 255
 
 #define USAGE_POSITION 0
@@ -63,12 +63,12 @@ _NAME_BEGIN
 
 struct D3DVERTEXELEMENT9
 {
-	WORD    Stream;     // Stream index
-	WORD    Offset;     // Offset in the stream in bytes
-	BYTE    Type;       // Data type
-	BYTE    Method;     // Processing method
-	BYTE    Usage;      // Semantics
-	BYTE    UsageIndex; // Semantic index
+	std::uint16_t   Stream;     // Stream index
+	std::uint16_t   Offset;     // Offset in the stream in bytes
+	std::uint8_t    Type;       // Data type
+	std::uint8_t    Method;     // Processing method
+	std::uint8_t    Usage;      // Semantics
+	std::uint8_t    UsageIndex; // Semantic index
 };
 
 struct SDKMESH_HEADER
@@ -118,24 +118,24 @@ struct SDKMESH_INDEX_BUFFER_HEADER
 struct SDKMESH_MESH
 {
 	char Name[MAX_MESH_NAME];
-	BYTE NumVertexBuffers;
-	UINT VertexBuffers[MAX_VERTEX_STREAMS];
-	UINT IndexBuffer;
-	UINT NumSubsets;
-	UINT NumFrameInfluences; //aka bones
+	std::uint8_t NumVertexBuffers;
+	std::uint32_t VertexBuffers[MAX_VERTEX_STREAMS];
+	std::uint32_t IndexBuffer;
+	std::uint32_t NumSubsets;
+	std::uint32_t NumFrameInfluences; //aka bones
 
 	Vector3 BoundingBoxCenter;
 	Vector3 BoundingBoxExtents;
 
 	union
 	{
-		UINT64 SubsetOffset;	//Offset to list of subsets (This also forces the union to 64bits)
-		UINT* pSubsets;	    //Pointer to list of subsets
+		std::uint64_t SubsetOffset;	//Offset to list of subsets (This also forces the union to 64bits)
+		std::uint32_t* pSubsets;	    //Pointer to list of subsets
 	};
 	union
 	{
-		UINT64 FrameInfluenceOffset;  //Offset to list of frame influences (This also forces the union to 64bits)
-		UINT* pFrameInfluences;      //Pointer to list of frame influences
+		std::uint64_t FrameInfluenceOffset;  //Offset to list of frame influences (This also forces the union to 64bits)
+		std::uint32_t* pFrameInfluences;      //Pointer to list of frame influences
 	};
 };
 
@@ -156,14 +156,14 @@ struct SDKMESH_MATERIAL
 	Vector4 Ambient;
 	Vector4 Specular;
 	Vector4 Emissive;
-	FLOAT Power;
+	float Power;
 
-	UINT64 Force64_1;			//Force the union to 64bits
-	UINT64 Force64_2;			//Force the union to 64bits
-	UINT64 Force64_3;			//Force the union to 64bits
-	UINT64 Force64_4;			//Force the union to 64bits
-	UINT64 Force64_5;		    //Force the union to 64bits
-	UINT64 Force64_6;			//Force the union to 64bits
+	std::uint64_t Force64_1;			//Force the union to 64bits
+	std::uint64_t Force64_2;			//Force the union to 64bits
+	std::uint64_t Force64_3;			//Force the union to 64bits
+	std::uint64_t Force64_4;			//Force the union to 64bits
+	std::uint64_t Force64_5;		    //Force the union to 64bits
+	std::uint64_t Force64_6;			//Force the union to 64bits
 
 };
 
@@ -187,7 +187,7 @@ SDKMeshHandler::doCanRead(istream& stream) const noexcept
 	return false;
 }
 
-bool 
+bool
 SDKMeshHandler::doLoad(Model& model, istream& stream) noexcept
 {
 	SDKMESH_HEADER hdr;
@@ -331,7 +331,7 @@ SDKMeshHandler::doLoad(Model& model, istream& stream) noexcept
 	return true;
 }
 
-bool 
+bool
 SDKMeshHandler::doSave(Model& model, ostream& stream) noexcept
 {
 	return false;

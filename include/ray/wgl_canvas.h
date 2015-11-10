@@ -39,8 +39,6 @@
 
 #include <ray/ogl_types.h>
 
-#include <GL\glew.h>
-
 _NAME_BEGIN
 
 class WGLCanvas final : public RenderWindow

@@ -71,11 +71,12 @@ EGLCanvas::open(WindHandle hwnd) except
 	EGLint attribs[80];
 	EGLint index = 0, mask = 0, startegy = 0;
 
-    if (_ctxconfig.forward)
-    {
-        attribs[index++] = EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE;
-        attribs[index++] = EGL_TRUE;
-    }
+#if !defined(__ANDROID__)
+	if (_ctxconfig.forward)
+	{
+		attribs[index++] = EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE;
+		attribs[index++] = EGL_TRUE;
+	}
 
     if (_ctxconfig.profile != GPU_GL_ES)
     {
@@ -92,31 +93,35 @@ EGLCanvas::open(WindHandle hwnd) except
         }
     }
 
-    if (_ctxconfig.robustness)
-    {
-        if (_ctxconfig.robustness == GPU_GL_REST_NOTIFICATION)
-            startegy = EGL_NO_RESET_NOTIFICATION;
-        else if (_ctxconfig.robustness == GPU_GL_LOSE_CONTEXT_ONREST)
-            startegy = EGL_LOSE_CONTEXT_ON_RESET;
+	if (_ctxconfig.robustness)
+	{
+		if (_ctxconfig.robustness == GPU_GL_REST_NOTIFICATION)
+			startegy = EGL_NO_RESET_NOTIFICATION;
+		else if (_ctxconfig.robustness == GPU_GL_LOSE_CONTEXT_ONREST)
+			startegy = EGL_LOSE_CONTEXT_ON_RESET;
 
-        if (startegy)
-        {
-            attribs[index++] = EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY;
-            attribs[index++] = startegy;
+		if (startegy)
+		{
+			attribs[index++] = EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY;
+			attribs[index++] = startegy;
 
-            attribs[index++] = EGL_CONTEXT_OPENGL_ROBUST_ACCESS;
-            attribs[index++] = EGL_TRUE;
-        }
-    }
+			attribs[index++] = EGL_CONTEXT_OPENGL_ROBUST_ACCESS;
+			attribs[index++] = EGL_TRUE;
+		}
+	}
 
-    if (_ctxconfig.major > 0 && _ctxconfig.major < 4 && _ctxconfig.minor == 0)
-    {
-        attribs[index++] = EGL_CONTEXT_MAJOR_VERSION;
-        attribs[index++] = _ctxconfig.major;
+	if (_ctxconfig.major > 0 && _ctxconfig.major < 4 && _ctxconfig.minor == 0)
+	{
+		attribs[index++] = EGL_CONTEXT_MAJOR_VERSION;
+		attribs[index++] = _ctxconfig.major;
 
-        attribs[index++] = EGL_CONTEXT_MINOR_VERSION;
-        attribs[index++] = _ctxconfig.minor;
-    }
+		attribs[index++] = EGL_CONTEXT_MINOR_VERSION;
+		attribs[index++] = _ctxconfig.minor;
+	}
+#endif
+
+	attribs[index++] = EGL_CONTEXT_CLIENT_VERSION;
+	attribs[index++] = _ctxconfig.major;
 
     attribs[index++] = EGL_NONE;
     attribs[index++] = EGL_NONE;
@@ -124,7 +129,7 @@ EGLCanvas::open(WindHandle hwnd) except
 	const EGLint pixelformat[] =
 	{
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 		EGL_RED_SIZE, _fbconfig.redSize,
 		EGL_GREEN_SIZE, _fbconfig.greenSize,
 		EGL_BLUE_SIZE, _fbconfig.blueSize,
@@ -151,15 +156,15 @@ EGLCanvas::open(WindHandle hwnd) except
 		throw failure(__TEXT("eglBindAPI() fail"));
 
 	EGLint num = 0;
-	if (eglChooseConfig(_display, pixelformat, &_config, 1, &num) == EGL_FALSE)
+	if (::eglChooseConfig(_display, pixelformat, &_config, 1, &num) == EGL_FALSE)
 		throw failure(__TEXT("eglChooseConfig() fail"));
-	
-    _context = ::eglCreateContext(_display, _config, _ctxconfig.share, attribs);
-    if (!_context)
-		throw failure(__TEXT("eglCreateContext() fail"));
 
 	_surface = ::eglCreateWindowSurface(_display, _config, _hwnd, NULL);
 	if (!_surface)
+		throw failure(__TEXT("eglCreateContext() fail"));
+
+    _context = ::eglCreateContext(_display, _config, _ctxconfig.share, attribs);
+    if (!_context)
 		throw failure(__TEXT("eglCreateContext() fail"));
 
 	if (!::eglMakeCurrent(_display, _surface, _surface, _context))

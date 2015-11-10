@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #ifdef _BUILD_OPENGL
 #include <ray/wgl_canvas.h>
-
 #include <GL/wglew.h>
 
 _NAME_BEGIN
@@ -83,8 +82,6 @@ WGLCanvas::WGLCanvas(WindHandle window) except
 	: _hwnd(nullptr)
 	, _hdc(nullptr)
 	, _context(nullptr)
-	, _width(0)
-	, _height(0)
 	, _interval(SwapInterval::GPU_VSYNC)
 {
 	initPixelFormat(_fbconfig, _ctxconfig);

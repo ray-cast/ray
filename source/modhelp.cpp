@@ -936,7 +936,7 @@ MeshProperty::makePlane(float width, float height, float depth, std::uint32_t wi
 			_texcoords[0].push_back(Vector2((float)(ix + 1) / gridX, (float)(1 - iy) / gridY));
 		}
 	}
-};
+}
 
 void
 MeshProperty::makeFloor(float width, float height, std::uint32_t widthSegments, std::uint32_t heightSegments) noexcept

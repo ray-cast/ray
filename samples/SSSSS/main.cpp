@@ -63,7 +63,6 @@ public:
 	void init(std::size_t w, std::size_t h)
 	{
 		glfwInit();
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
 
 		_window = glfwCreateWindow(w, h, "Screen Space Sub Surface Scattering", nullptr, nullptr);
 		if (_window)
@@ -147,6 +146,6 @@ int main(int argc, char *argv[])
 		std::system("pause");
 	}
 
-	return 0;
 	glfwTerminate();
+	return 0;
 }

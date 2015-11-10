@@ -114,12 +114,6 @@ struct UniformAddressCommandNV
 	GLuint    addressHi;
 };
 
-struct BlendEnableCommand
-{
-	GLuint header;
-	bool   enable;
-};
-
 struct BlendColorCommandNV
 {
 	GLuint  header;
@@ -179,24 +173,6 @@ struct FrontFaceCommandNV
 	GLuint  frontFace;  // 0 for CW, 1 for CCW
 };
 
-struct CommandSequence
-{
-	std::vector<GLintptr>  offsets;
-	std::vector<GLsizei>   sizes;
-	std::vector<GLuint>    states;
-	std::vector<GLuint>    fbos;
-};
-
-enum NVTokenShaderStage
-{
-	NVTOKEN_STAGE_VERTEX,
-	NVTOKEN_STAGE_TESS_CONTROL,
-	NVTOKEN_STAGE_TESS_EVALUATION,
-	NVTOKEN_STAGE_GEOMETRY,
-	NVTOKEN_STAGE_FRAGMENT,
-	NVTOKEN_STAGES,
-};
-
 #define GL_TERMINATE_SEQUENCE_COMMAND_NV                      0x0000
 #define GL_NOP_COMMAND_NV                                     0x0001
 #define GL_DRAW_ELEMENTS_COMMAND_NV                           0x0002
@@ -216,7 +192,6 @@ enum NVTokenShaderStage
 #define GL_VIEWPORT_COMMAND_NV                                0x0010
 #define GL_SCISSOR_COMMAND_NV                                 0x0011
 #define GL_FRONT_FACE_COMMAND_NV                              0x0012
-#define GL_BLEND_ENABLE_COMMAND                               0x0013
 #define GL_MAX_COMMANDS_NV                                    0x0014
 
 typedef void (GLEXT_APIENTRY *PFNGLCREATESTATESNVPROC)(GLsizei n, GLuint *states);
@@ -347,50 +322,7 @@ inline GLushort glGetStageIndexNV(GLenum shadertype)
 	return __glewGetStageIndexNV(shadertype);
 }
 
-EXPORT bool initCommandListNV();
-
-extern bool     s_nvcmdlist_bindless;
-extern GLuint   s_nvcmdlist_header[GL_MAX_COMMANDS_NV];
-extern GLuint   s_nvcmdlist_headerSizes[GL_MAX_COMMANDS_NV];
-extern GLushort s_nvcmdlist_stages[NVTOKEN_STAGES];
-
-template <class T>
-inline size_t nvtokenEnqueue(std::string& queue, T& data)
-{
-	size_t offset = queue.size();
-	std::string cmd = std::string((const char*)&data, sizeof(T));
-
-	queue += cmd;
-
-	return offset;
-}
-
-inline GLuint nvtokenHeaderSW(GLuint type, GLuint size)
-{
-	return type | (size << 16);
-}
-
-inline GLuint nvtokenHeaderSizeSW(GLuint header)
-{
-	return header >> 16;
-}
-
-inline GLenum nvtokenHeaderCommand(GLuint header)
-{
-	for (int i = 0; i < GL_MAX_COMMANDS_NV; i++)
-	{
-		if (header == s_nvcmdlist_header[i])
-			return i;
-	}
-
-	assert(0 && "can't find header");
-	return (GLenum)-1;
-}
-
-inline GLenum nvtokenHeaderCommandSW(GLuint header)
-{
-	return header & 0xFFFF;
-}
+EXPORT bool initCommandListNV() noexcept;
 
 _NAME_END
 

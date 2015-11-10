@@ -47,7 +47,7 @@ __ImplementSingleton(ScriptSystem)
 
 ScriptSystem::ScriptSystem() noexcept
 	: _actor(nullptr)
-	, _engine(false)
+	, _engine(nullptr)
 {
 }
 

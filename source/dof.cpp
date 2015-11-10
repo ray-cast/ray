@@ -97,7 +97,7 @@ DepthOfField::computeNear(RenderPipeline& pipeline, RenderTexturePtr source, Ren
 }
 
 void
-DepthOfField::final(RenderPipeline& pipeline, RenderTexturePtr color, RenderTexturePtr texSmall, RenderTexturePtr large)
+DepthOfField::shading(RenderPipeline& pipeline, RenderTexturePtr color, RenderTexturePtr texSmall, RenderTexturePtr large)
 {
 	_texColor->assign(color->getResolveTexture());
 	_texSmall->assign(texSmall->getResolveTexture());
@@ -120,7 +120,7 @@ DepthOfField::onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexce
 
 	this->computeNear(pipeline, source, _texBlur, _texTemp);
 
-	this->final(pipeline, source, _texTemp, _texBlur);
+	this->shading(pipeline, source, _texTemp, _texBlur);
 }
 
 _NAME_END

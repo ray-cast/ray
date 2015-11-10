@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_OGL_EXTENSTION_H_
-#define _H_OGL_EXTENSTION_H_
+#ifndef _H_OGL_CANVAS_H_
+#define _H_OGL_CANVAS_H_
 
 #include <ray/platform.h>
 
@@ -59,96 +59,5 @@
 #		endif
 #	endif
 #endif
-
-_NAME_BEGIN
-
-#if _BUILD_OPENGL
-
-#ifdef GLEW_MX
-extern GLEWContext _glewctx;
-#define glewGetContext() (&_glewctx)
-#endif
-
-#  if defined(__MINGW32__) || defined(__CYGWIN__)
-#    define GLEXT_APIENTRY __stdcall
-#  elif (_MSC_VER >= 800) || defined(_STDCALL_SUPPORTED) || defined(__BORLANDC__)
-#    define GLEXT_APIENTRY __stdcall
-#  else
-#    define GLEXT_APIENTRY
-#  endif
-#endif
-
-struct OGLFeatures
-{
-	static bool ARB_bindless_texture;
-	static bool ARB_vertex_array_object;
-	static bool ARB_vertex_attrib_binding;
-	static bool ARB_provoking_vertex;
-	static bool ARB_direct_state_access;
-	static bool ARB_viewport_array;
-
-	static bool KHR_debug;
-
-	static bool NV_command_list;
-	static bool NV_shader_buffer_load;
-	static bool NV_vertex_buffer_unified_memory;
-};
-
-class OGLExtenstion final
-{
-public:
-	OGLExtenstion() noexcept;
-	~OGLExtenstion() noexcept;
-
-	static bool initExtensions() except;
-	static bool initCommandListNV() noexcept;
-
-private:
-
-	static int initExtention;
-	static int initedNVcommandList;
-};
-
-struct OGLShaderVariant
-{
-	GLuint ubo;
-	GLuint64 bindlessUbo;
-
-	OGLShaderVariant() noexcept
-		: ubo(0)
-		, bindlessUbo(0)
-	{
-	}
-};
-
-typedef std::shared_ptr<class OGLCanvas> OGLCanvasPtr;
-typedef std::shared_ptr<class OGLFramebuffer> OGLRenderTexturePtr;
-typedef std::shared_ptr<class OGLShader> OGLShaderPtr;
-typedef std::shared_ptr<class OGLShaderObject> OGLShaderObjectPtr;
-
-class OGLTypes
-{
-public:
-
-	static GLenum asOGLVertexType(VertexType type) noexcept;
-	static GLenum asOGLVertexUsage(VertexUsage usage) noexcept;
-	static GLenum asOGLVertexFormat(VertexFormat format) noexcept;
-	static GLenum asOGLIndexType(IndexType type) noexcept;
-	static GLenum asOGLShaderType(ShaderType type) noexcept;
-	static GLenum asOGLTarget(TextureDim mapping) noexcept;
-	static GLenum asOGLFormat(PixelFormat format) noexcept;
-	static GLenum asOGLType(PixelFormat format) noexcept;
-	static GLint  asOGLInternalformat(PixelFormat format) noexcept;
-	static GLenum asCompareFunction(CompareFunction func) noexcept;
-	static GLenum asBlendFactor(BlendFactor func) noexcept;
-	static GLenum asBlendOperation(BlendOperation op) noexcept;
-	static GLenum asCullMode(CullMode mode) noexcept;
-	static GLenum asFillMode(FillMode mode) noexcept;
-	static GLenum asStencilOperation(StencilOperation stencilop) noexcept;
-};
-
-#define _USE_RENDER_COMMAND 0
-
-_NAME_END
 
 #endif

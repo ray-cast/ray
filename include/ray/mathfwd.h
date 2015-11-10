@@ -133,9 +133,6 @@ class Rect3t;
 template<typename T = Float>
 class Spheret;
 
-template<typename T = Float>
-class PerlinNoise2t;
-
 // default
 typedef Sizet<> Size;
 typedef Pointt<> Point;
@@ -164,7 +161,6 @@ typedef OBBt<> OBB;
 typedef Plane3t<> Plane3;
 typedef Rect3t<> Rect3;
 typedef Spheret<> Sphere;
-typedef PerlinNoise2t<> PerlinNoise2;
 
 // float
 typedef Sizet<float> Sizef;
@@ -199,7 +195,6 @@ typedef OBBt<float> OBBf;
 typedef Plane3t<float> Plane3f;
 typedef Rect3t<float> Rect3f;
 typedef Spheret<float> Spheref;
-typedef PerlinNoise2t<float> PerlinNoise2f;
 
 // double
 typedef Sizet<double> Sized;
@@ -234,7 +229,6 @@ typedef OBBt<double> OBBd;
 typedef Plane3t<double> Plane3d;
 typedef Rect3t<double> Rect3d;
 typedef Spheret<double> Sphered;
-typedef PerlinNoise2t<double> PerlinNoise2d;
 
 // int
 typedef short short1;

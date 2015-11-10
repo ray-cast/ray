@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/input_mouse.h>
+#if defined(ToplevelInputMouse)
 
 _NAME_BEGIN
 
@@ -256,3 +257,4 @@ DefaultInputMouse::clone() const noexcept
 }
 
 _NAME_END
+#endif

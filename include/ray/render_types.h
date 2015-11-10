@@ -291,6 +291,7 @@ enum PixelFormat
 	RGBA_DXT1,
 	RGBA_DXT3,
 	RGBA_DXT5,
+	RG_ATI2,
 };
 
 enum TextureWrap

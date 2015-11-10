@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/input_keyboard.h>
+#if defined(ToplevelInputKeyboard)
 
 _NAME_BEGIN
 
@@ -146,3 +147,4 @@ DefaultInputKeyboard::clone() const noexcept
 }
 
 _NAME_END
+#endif

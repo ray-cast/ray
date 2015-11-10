@@ -39,14 +39,27 @@
 
 _NAME_BEGIN
 
-GLuint   s_nvcmdlist_header[GL_MAX_COMMANDS_NV] = { 0 };
-GLuint   s_nvcmdlist_headerSizes[GL_MAX_COMMANDS_NV] = { 0 };
-GLushort s_nvcmdlist_stages[NVTOKEN_STAGES] = { 0 };
-bool     s_nvcmdlist_bindless = false;
+PFNGLCREATESTATESNVPROC __glewCreateStatesNV;
+PFNGLDELETESTATESNVPROC __glewDeleteStatesNV;
+PFNGLISSTATENVPROC __glewIsStateNV;
+PFNGLSTATECAPTURENVPROC __glewStateCaptureNV;
+PFNGLDRAWCOMMANDSNVPROC __glewDrawCommandsNV;
+PFNGLDRAWCOMMANDSADDRESSNVPROC __glewDrawCommandsAddressNV;
+PFNGLDRAWCOMMANDSSTATESNVPROC __glewDrawCommandsStatesNV;
+PFNGLDRAWCOMMANDSSTATESADDRESSNVPROC __glewDrawCommandsStatesAddressNV;
+PFNGLCREATECOMMANDLISTSNVPROC __glewCreateCommandListsNV;
+PFNGLDELETECOMMANDLISTSNVPROC __glewDeleteCommandListsNV;
+PFNGLISCOMMANDLISTNVPROC __glewIsCommandListNV;
+PFNGLLISTDRAWCOMMANDSSTATESCLIENTNVPROC __glewListDrawCommandsStatesClientNV;
+PFNGLCOMMANDLISTSEGMENTSNVPROC __glewCommandListSegmentsNV;
+PFNGLCOMPILECOMMANDLISTNVPROC __glewCompileCommandListNV;
+PFNGLCALLCOMMANDLISTNVPROC __glewCallCommandListNV;
+PFNGLGETCOMMANDHEADERNVPROC __glewGetCommandHeaderNV;
+PFNGLGETSTAGEINDEXNVPROC __glewGetStageIndexNV;
 
 bool initedNVcommandList = 0;
 
-bool initCommandListNV() noexcept
+EXPORT bool initCommandListNV() noexcept
 {
 	if (initedNVcommandList)
 		return __glewCreateStatesNV != NULL;

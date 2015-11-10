@@ -1,4 +1,3 @@
-INCLUDE_DIRECTORIES(${INCLUDE_PATH})
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/zlib)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/freeglut/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/glew/include)
@@ -15,14 +14,11 @@ INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/angelscript/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/libiconv/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/asJIT)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/mojoshader)
+INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/gles/include)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
-IF(BUILD_OPENGL_ES)
-    INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/gles/include)
-    LINK_DIRECTORIES(${DEPENDENCIES_PATH}/gles/lib)
-ENDIF()
-
-SET(HEADER_PATH ${INCLUDE_PATH}/ray)
-SET(SOURCE_PATH ${CODE_PATH})
+SET(HEADER_PATH ${PROJECT_SOURCE_DIR}/include/ray)
+SET(SOURCE_PATH ${PROJECT_SOURCE_DIR}/source)
 
 ADD_DEFINITIONS(-D_BUILD_DLL_EXPORT)
 ADD_DEFINITIONS(-D_ALLOW_KEYWORD_MACROS)
@@ -164,16 +160,6 @@ SET(PLATFORM_MATH_LIST
     ${HEADER_PATH}/zintrin.h
 )
 SOURCE_GROUP("math" FILES ${PLATFORM_MATH_LIST})
-ADD_LIBRARY(libplatform SHARED ${PLATFORM_CORE_LIST} ${PLATFORM_DEBUG_LIST} ${PLATFORM_IO_LIST} ${PLATFORM_MATH_LIST})
-SET_TARGET_ATTRIBUTE(libplatform "core")
-TARGET_LINK_LIBRARIES(libplatform libiconv)
-IF(BUILD_PLATFORM_WINDOWS)
-    TARGET_LINK_LIBRARIES(libplatform dbghelp)
-    TARGET_LINK_LIBRARIES(libplatform psapi)
-    TARGET_LINK_LIBRARIES(libplatform version)
-ENDIF()
-
-TARGET_LINK_LIBRARIES(libplatform tinyxml)
 
 SET(INPUT_CORE_LIST
     ${HEADER_PATH}/input_button.h
@@ -222,13 +208,6 @@ SET(INPUT_SDL_LIST
     ${SOURCE_PATH}/sdl_input_mouse.cpp
 )
 SOURCE_GROUP("input\\sdl" FILES ${INPUT_SDL_LIST})
-ADD_LIBRARY(libinput SHARED ${INPUT_CORE_LIST} ${INPUT_MSW_LIST} ${INPUT_SDL_LIST})
-SET_TARGET_ATTRIBUTE(libinput "core")
-
-IF(BUILD_PLATFORM_WINDOWS)
-    TARGET_LINK_LIBRARIES(libinput winmm)
-    TARGET_LINK_LIBRARIES(libinput imm32)
-ENDIF()
 
 SET(IMAGE_LIST
     ${HEADER_PATH}/imagall.h
@@ -271,15 +250,6 @@ SET(IMAGE_LIST
     ${SOURCE_PATH}/imagxpm.cpp
 )
 SOURCE_GROUP("image" FILES ${IMAGE_LIST})
-ADD_LIBRARY(libimage SHARED ${IMAGE_LIST})
-SET_TARGET_ATTRIBUTE(libimage "core")
-TARGET_LINK_LIBRARIES(libimage
-    libplatform
-    libpng
-    libjpeg
-    zlib
-    unzip
-)
 
 SET(MODEL_LIST
     ${HEADER_PATH}/mod3ds.h
@@ -311,13 +281,6 @@ SET(MODEL_LIST
     ${SOURCE_PATH}/bone.cpp
 )
 SOURCE_GROUP("model" FILES ${MODEL_LIST})
-ADD_LIBRARY(libmodel SHARED ${MODEL_LIST})
-SET_TARGET_ATTRIBUTE(libmodel "core")
-
-TARGET_LINK_LIBRARIES(libmodel
-    libplatform
-    libiconv
-)
 
 SET(RENDERER_CORE
     ${SOURCE_PATH}/render_buffer.cpp
@@ -484,59 +447,17 @@ SET(RENDERER_SYSTEM
 )
 SOURCE_GROUP("renderer" FILES ${RENDERER_SYSTEM})
 
-ADD_LIBRARY(librenderer SHARED
-    ${RENDERER_CORE}
-    ${RENDERER_OGL}
-    ${RENDERER_MATERIAL}
-    ${RENDERER_SCENE}
-
-    ${RENDERER_LIGHT}
-    ${RENDERER_CAMERA}
-    ${RENDERER_MESH}
-    ${RENDERER_TERRAIN}
-    ${RENDERER_FONT}
-    ${RENDERER_POST_PROCESS}
-
-    ${RENDERER_SYSTEM}
-)
-SET_TARGET_ATTRIBUTE(librenderer "core")
-TARGET_LINK_LIBRARIES(librenderer
-    freetype
-    libplatform
-    libmodel
-    libimage
-)
-
-IF(BUILD_PLATFORM_LINUX)
-    TARGET_LINK_LIBRARIES(librenderer GL)
-    TARGET_LINK_LIBRARIES(librenderer X11)
-ENDIF()
-
-IF(BUILD_PLATFORM_WINDOWS)
-    TARGET_LINK_LIBRARIES(librenderer glew)
-ENDIF()
-
-IF(BUILD_OPENGL_ES)
-    TARGET_LINK_LIBRARIES(librenderer libEGL)
-    TARGET_LINK_LIBRARIES(librenderer libGLESv2)
-    TARGET_LINK_LIBRARIES(librenderer libMaliEmulator)
-ENDIF()
-
 SET(NETWORK_LIST
     ${SOURCE_PATH}/network.cpp
     ${HEADER_PATH}/network.h
 )
 SOURCE_GROUP("network" FILES ${NETWORK_LIST})
-ADD_LIBRARY(libnetwork SHARED ${NETWORK_LIST})
-SET_TARGET_ATTRIBUTE(libnetwork "core")
 
 SET(SOUND_SYSTEM_LIST
     ${SOURCE_PATH}/sound_device.cpp
     ${HEADER_PATH}/sound_device.h
 )
 SOURCE_GROUP("sound" FILES ${SOUND_SYSTEM_LIST})
-ADD_LIBRARY(libsound SHARED ${SOUND_SYSTEM_LIST})
-SET_TARGET_ATTRIBUTE(libsound "core")
 
 SET(PHYSICS_SYSTEM_LIST
     ${SOURCE_PATH}/physics_scene.cpp
@@ -567,16 +488,6 @@ SET(PHYSICS_SYSTEM_LIST
     ${SOURCE_PATH}/physics_shape_terrain.cpp
 )
 SOURCE_GROUP("physics" FILES ${PHYSICS_SYSTEM_LIST})
-ADD_LIBRARY(libphysic SHARED ${PHYSICS_SYSTEM_LIST})
-SET_TARGET_ATTRIBUTE(libphysic "core")
-TARGET_LINK_LIBRARIES(libphysic
-    libplatform
-    BulletDynamics
-    BulletCollision
-    BulletMultiThreaded
-    BulletSoftBody
-    LinearMath
-)
 
 SET(GAMEAPP_LIST
     ${SOURCE_PATH}/game_application.cpp
@@ -686,7 +597,6 @@ SET(PHYSIC_FEATURES_LIST
 )
 SOURCE_GROUP("system\\physic" FILES ${PHYSIC_FEATURES_LIST})
 
-IF(_BUILD_SCRIPT)
 SET(SCRIGPU_SYSTEM_LIST
     ${SOURCE_PATH}/script_binder.cpp
     ${HEADER_PATH}/script_binder.h
@@ -721,10 +631,30 @@ SET(SCRIGPU_SYSTEM_LIST
     ${SOURCE_PATH}/script_component.cpp
     ${HEADER_PATH}/script_component.h
 )
-ELSE()
-    SET(SCRIGPU_SYSTEM_LIST "")
-ENDIF()
 SOURCE_GROUP("system\\script" FILES ${SCRIGPU_SYSTEM_LIST})
+
+ADD_LIBRARY(libplatform SHARED ${PLATFORM_CORE_LIST} ${PLATFORM_DEBUG_LIST} ${PLATFORM_IO_LIST} ${PLATFORM_MATH_LIST})
+ADD_LIBRARY(libinput SHARED ${INPUT_CORE_LIST} ${INPUT_MSW_LIST} ${INPUT_SDL_LIST})
+ADD_LIBRARY(libimage SHARED ${IMAGE_LIST})
+ADD_LIBRARY(libmodel SHARED ${MODEL_LIST})
+ADD_LIBRARY(libphysic SHARED ${PHYSICS_SYSTEM_LIST})
+ADD_LIBRARY(libnetwork SHARED ${NETWORK_LIST})
+ADD_LIBRARY(libsound SHARED ${SOUND_SYSTEM_LIST})
+ADD_LIBRARY(librenderer SHARED
+    ${RENDERER_CORE}
+    ${RENDERER_OGL}
+    ${RENDERER_MATERIAL}
+    ${RENDERER_SCENE}
+
+    ${RENDERER_LIGHT}
+    ${RENDERER_CAMERA}
+    ${RENDERER_MESH}
+    ${RENDERER_TERRAIN}
+    ${RENDERER_FONT}
+    ${RENDERER_POST_PROCESS}
+
+    ${RENDERER_SYSTEM}
+)
 ADD_LIBRARY(ray SHARED
     ${GAMEAPP_LIST}
     ${GUI_LIST}
@@ -735,18 +665,42 @@ ADD_LIBRARY(ray SHARED
     ${NETWORK_FEATURES_LIST}
     ${SCRIGPU_SYSTEM_LIST}
 )
-SET_TARGET_ATTRIBUTE(ray "engine")
-TARGET_LINK_LIBRARIES(ray
-    libimage
-    libinput
-    libmodel
-    libnetwork
-    libplatform
-    librenderer
-    libsound
-)
 
-IF(_BUILD_SCRIPT)
+TARGET_LINK_LIBRARIES(libplatform libiconv tinyxml)
+TARGET_LINK_LIBRARIES(libimage libplatform libpng libjpeg zlib unzip)
+TARGET_LINK_LIBRARIES(libmodel libplatform libiconv)
+TARGET_LINK_LIBRARIES(libphysic libplatform BulletDynamics BulletCollision BulletSoftBody LinearMath)
+TARGET_LINK_LIBRARIES(librenderer libplatform libmodel libimage freetype)
+TARGET_LINK_LIBRARIES(ray libplatform libimage libinput libmodel libnetwork librenderer libsound)
+
+IF(BUILD_PLATFORM_WINDOWS)
+    TARGET_LINK_LIBRARIES(libplatform dbghelp)
+    TARGET_LINK_LIBRARIES(libplatform psapi)
+    TARGET_LINK_LIBRARIES(libplatform version)
+
+    TARGET_LINK_LIBRARIES(libinput winmm)
+    TARGET_LINK_LIBRARIES(libinput imm32)
+
+    TARGET_LINK_LIBRARIES(librenderer glew)
+
+    IF(BUILD_OPENGL_ES)
+        TARGET_LINK_LIBRARIES(librenderer libEGL)
+        TARGET_LINK_LIBRARIES(librenderer libGLESv2)
+    ENDIF()
+ELSEIF(BUILD_PLATFORM_ANDROID)
+    TARGET_LINK_LIBRARIES(librenderer EGL)
+    TARGET_LINK_LIBRARIES(librenderer GLESv2)
+    TARGET_LINK_LIBRARIES(librenderer GLESv3)
+ELSEIF(BUILD_PLATFORM_LINUX)
+    TARGET_LINK_LIBRARIES(librenderer GL)
+    TARGET_LINK_LIBRARIES(librenderer X11)
+ENDIF()
+
+IF(BUILD_MULTITHREADING)
+    TARGET_LINK_LIBRARIES(libphysic BulletMultiThreaded)
+ENDIF()
+
+IF(BUILD_SCRIPT)
     TARGET_LINK_LIBRARIES(ray angelscript)
 ENDIF()
 
@@ -756,4 +710,25 @@ ENDIF()
 
 IF(BUILD_PLATFORM_SDL2)
     TARGET_LINK_LIBRARIES(ray SDL2)
+ENDIF()
+
+SET_TARGET_ATTRIBUTE(libplatform "core")
+SET_TARGET_ATTRIBUTE(libinput "core")
+SET_TARGET_ATTRIBUTE(libimage "core")
+SET_TARGET_ATTRIBUTE(libmodel "core")
+SET_TARGET_ATTRIBUTE(librenderer "core")
+SET_TARGET_ATTRIBUTE(libnetwork "core")
+SET_TARGET_ATTRIBUTE(libsound "core")
+SET_TARGET_ATTRIBUTE(libphysic "core")
+SET_TARGET_ATTRIBUTE(ray "engine")
+
+IF(UNIX)
+    SET_TARGET_PROPERTIES(libplatform PROPERTIES OUTPUT_NAME platform)
+    SET_TARGET_PROPERTIES(libinput PROPERTIES OUTPUT_NAME input)
+    SET_TARGET_PROPERTIES(libimage PROPERTIES OUTPUT_NAME image)
+    SET_TARGET_PROPERTIES(libmodel PROPERTIES OUTPUT_NAME model)
+    SET_TARGET_PROPERTIES(librenderer PROPERTIES OUTPUT_NAME renderer)
+    SET_TARGET_PROPERTIES(libnetwork PROPERTIES OUTPUT_NAME network)
+    SET_TARGET_PROPERTIES(libsound PROPERTIES OUTPUT_NAME sound)
+    SET_TARGET_PROPERTIES(libphysic PROPERTIES OUTPUT_NAME physic)
 ENDIF()

@@ -157,7 +157,7 @@ AnimotionComponent::_updateVertex(MeshPropertyPtr mesh, MeshPropertyPtr model)
 
 	const auto& bones = _animtion->getBoneArray();
 
-	for (int i = 0; i < vertices.size(); i++)
+	for (std::size_t i = 0; i < vertices.size(); i++)
 	{
 		const auto& weight = bonesWeight[i];
 
@@ -180,7 +180,7 @@ AnimotionComponent::_updateVertex(MeshPropertyPtr mesh, MeshPropertyPtr model)
 	}
 
 	auto meshes = mesh->getChildren();
-	for (int i = 0; i < meshes.size(); i++)
+	for (std::size_t i = 0; i < meshes.size(); i++)
 	{
 		this->_updateVertex(meshes[i], model->getChildren()[i]);
 	};

@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/input_device.h>
+#if defined(ToplevelInputDevice)
 
 _NAME_BEGIN
 
@@ -143,3 +144,5 @@ DefaultInputDevice::clone() const noexcept
 }
 
 _NAME_END
+
+#endif

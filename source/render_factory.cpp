@@ -130,6 +130,8 @@ RenderFactory::createTexture(const std::string& name) except
 				format = PixelFormat::RGBA_DXT3;
 			else if (image.getImageType() == Image::dds5)
 				format = PixelFormat::RGBA_DXT5;
+			else if (image.getImageType() == Image::ati2)
+				format = PixelFormat::RG_ATI2;
 			else
 			{
 				if (image.bpp() == 24)

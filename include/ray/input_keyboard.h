@@ -45,6 +45,8 @@
 #   define ToplevelInputKeyboard MSWInputKeyboard
 #endif
 
+#if defined(ToplevelInputKeyboard)
+
 _NAME_BEGIN
 
 class EXPORT DefaultInputKeyboard final : public ToplevelInputKeyboard
@@ -82,4 +84,5 @@ private:
 
 _NAME_END
 
+#endif
 #endif

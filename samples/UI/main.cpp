@@ -85,8 +85,6 @@ public:
 			while (!glfwWindowShouldClose(_window))
 			{
 				this->update();
-
-				glfwPostEmptyEvent();
 			}
 		}
 	}
@@ -138,6 +136,6 @@ int main(int argc, char *argv[])
 		std::system("pause");
 	}
 
-	return 0;
 	glfwTerminate();
+	return 0;
 }

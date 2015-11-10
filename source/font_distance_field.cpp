@@ -40,10 +40,10 @@
 #include <ray/ioserver.h>
 
 #include <ft2build.h>
-#include <freetype.h>
-#include <ftglyph.h>
-#include <ftbitmap.h>
-#include <ftstroke.h>
+#include <freetype/freetype.h>
+#include <freetype/ftglyph.h>
+#include <freetype/ftbitmap.h>
+#include <freetype/ftstroke.h>
 
 #include <thread>
 

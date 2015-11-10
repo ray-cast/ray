@@ -45,15 +45,17 @@ __ImplementSubClass(InputFeatures, GameFeatures)
 
 InputFeatures::InputFeatures() noexcept
 {
+	_input = std::make_shared<DefaultInput>();
+	_input->addInputListener(this);
+
+#if !defined(__ANDROID__)
 	auto inputDevice = std::make_shared<DefaultInputDevice>();
 	auto inputKeyboard = std::make_shared<DefaultInputKeyboard>();
 	auto inputMouse = std::make_shared<DefaultInputMouse>();
-
-	_input = std::make_shared<DefaultInput>();
 	_input->open(inputDevice);
-	_input->addInputListener(this);
 	_input->obtainKeyboardCapture(inputKeyboard);
 	_input->obtainMouseCapture(inputMouse);
+#endif
 }
 
 InputFeatures::~InputFeatures() noexcept

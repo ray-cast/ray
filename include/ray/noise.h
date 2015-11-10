@@ -37,12 +37,11 @@
 #ifndef _H_NOISE_H_
 #define _H_NOISE_H_
 
-#include <ray/mathfwd.h>
+#include <ray/vector2.h>
 
 _NAME_BEGIN
 
-template<typename T>
-class PerlinNoise2t
+class EXPORT PerlinNoise2
 {
 public:
     enum table
@@ -51,102 +50,20 @@ public:
         mask = size - 1
     };
 
-    PerlinNoise2t()
-    {
-        setup();
-    }
+    PerlinNoise2() noexcept;
 
     //求得柏林噪声
-    T noise(T x, T y, T scale)
-    {
-        Vector2t<T> pos(x * scale, y * scale);
-
-        //找到此点的方格子
-        int iX0 = int(pos.x);
-        int iX1 = iX0 + 1;
-        int iY0 = int(pos.y);
-        int iY1 = iY0 + 1;
-
-        T X0 = (T)iX0;
-        T X1 = (T)iX1;
-        T Y0 = (T)iY0;
-        T Y1 = (T)iY1;
-
-        //获得此方格4个顶点的梯度值
-        const Vector2t<T>& v0 = getVec(iX0, iY0);
-        const Vector2t<T>& v1 = getVec(iX0, iY1);
-        const Vector2t<T>& v2 = getVec(iX1, iY0);
-        const Vector2t<T>& v3 = getVec(iX1, iY1);
-
-        Vector2t<T> d0(pos.x - X0, pos.y - Y0);
-        Vector2t<T> d1(pos.x - X0, pos.y - Y1);
-        Vector2t<T> d2(pos.x - X1, pos.y - Y0);
-        Vector2t<T> d3(pos.x - X1, pos.y - Y1);
-
-        //通过内积算出方格4个顶点的权重
-        T h0 = (d0.x * v0.x) + (d0.y * v0.y);
-        T h1 = (d1.x * v1.x) + (d1.y * v1.y);
-        T h2 = (d2.x * v2.x) + (d2.y * v2.y);
-        T h3 = (d3.x * v3.x) + (d3.y * v3.y);
-
-        T Sx = d0.x, Sy = d0.y;
-
-        //柏林插值平滑函数f(x) = 6*x^5 - 15*x^4 + 10*x^3
-        //通过柏林方程式平滑此点
-
-        Sx = (6 * powf(d0.x, 5.0f)) - (15 * powf(d0.x, 4.0f)) + (10 * powf(d0.x, 3.0f));
-
-        Sy = (6 * powf(d0.y, 5.0f)) - (15 * powf(d0.y, 4.0f)) + (10 * powf(d0.y, 3.0f));
-
-        //在下2顶点的x轴上对权重点Sx进行线性插值
-        T avgX0 = lerp(h0, h2, Sx);
-
-        //在上2顶点的x轴上对权重点Sx进行线性插值
-        T avgX1 = lerp(h1, h3, Sx);
-
-        //在y轴上合并2个插值
-        T result = avgX0 + (Sy*(avgX1 - avgX0));
-
-        return result;
-    }
-
-    T noise(const Vector2t<T> pos, T scale)
-    {
-        return noise(pos.x, pos.y, scale);
-    }
+    float noise(float x, float y, float scale);
+    float noise(const Vector2 pos, float scale);
 
 private:
     //初始化伪随即表
-    void setup()
-    {
-        T step = 6.24f / size;
-        T val = 0.0f;
-
-        for (int i = 0; i < size; i++)
-        {
-            table_[i].x = sin(val);
-            table_[i].y = cos(val);
-
-            val += step;
-
-            lut_[i] = (std::uint8_t)(rand() & mask);
-        }
-    }
-
+    void setup();
     //获得梯度值
-    const Vector2t<T>& getVec(int x, int y) const
-    {
-        std::uint8_t a = lut_[x & mask];
-        std::uint8_t b = lut_[y & mask];
-        std::uint8_t val = lut_[(a + b)& mask];
+    const Vector2& getVec(int x, int y) const;
 
-        assert(val <= mask && val >= 0);
-
-        return table_[val];
-    }
-
-    Vector2t<T> table_[size]; //梯度值表
-    std::uint8_t lut_[size]; //伪随机索引表
+	Vector2 _table[size]; //梯度值表
+    std::uint8_t _lut[size]; //伪随机索引表
 };
 
 void EXPORT simplex_seed(unsigned int x);

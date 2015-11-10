@@ -43,9 +43,9 @@
 #elif defined(_BUILD_PLATFORM_WINDOWS)
 #	include <ray/msw_input_mouse.h>
 #   define ToplevelInputMouse MSWInputMouse
-#else
-
 #endif
+
+#if defined(ToplevelInputMouse)
 
 _NAME_BEGIN
 
@@ -118,4 +118,5 @@ private:
 
 _NAME_END
 
+#endif
 #endif

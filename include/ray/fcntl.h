@@ -143,7 +143,7 @@ inline int access(const wchar_t* path, int mode)
     return ::__waccess(path, mode);
 #elif defined(__LINUX__)
     char fn[MAX_PATH];
-    if (::wcstombs(fn, path, MAX_PATH) == -1)
+    if (::wcstombs(fn, path, MAX_PATH) == (std::size_t)-1)
         return EOF;
 
     return ::__access(fn, mode);
@@ -156,7 +156,7 @@ inline int access(const std::wstring& path, int mode)
     return ::__waccess(path.c_str(), mode);
 #elif defined(__LINUX__)
     char fn[MAX_PATH];
-    if (::wcstombs(fn, path.c_str(), MAX_PATH) == -1)
+    if (::wcstombs(fn, path.c_str(), MAX_PATH) == (std::size_t)-1)
         return EOF;
 
     return ::__access(fn, mode);
@@ -180,7 +180,7 @@ inline int stat64(const wchar_t* filename, struct _stat64* stat)
 #elif defined(__LINUX__)
     //    char fn[MAX_PATH];
     //    char m[MAX_PATH];
-    //    if (::wcstombs(fn, filename, MAX_PATH) == -1)
+    //    if (::wcstombs(fn, filename, MAX_PATH) == (std::size_t)-1)
     //    {
     //        return EOF;
     //    }
@@ -198,7 +198,7 @@ inline int stat64(const std::wstring& filename, struct _stat64* stat)
 #elif defined(__LINUX__)
     //    char fn[MAX_PATH];
     //    char m[MAX_PATH];
-    //    if (::wcstombs(fn, filename.c_str(), MAX_PATH) == -1)
+    //    if (::wcstombs(fn, filename.c_str(), MAX_PATH) == (std::size_t)-1)
     //    {
     //        return EOF;
     //    }
@@ -225,7 +225,7 @@ inline int open(const wchar_t* filename, int flag, int mode)
     return ::__wopen(filename, flag, mode);
 #elif defined(__LINUX__)
     char fn[MAX_PATH];
-    if (::wcstombs(fn, filename, MAX_PATH) == -1)
+    if (::wcstombs(fn, filename, MAX_PATH) == (std::size_t)-1)
         return EOF;
 
     return ::__open(fn, flag, mode);
@@ -240,7 +240,7 @@ inline int open(const std::wstring& filename, int flag, int mode)
     return ::__wopen(filename.c_str(), flag, mode);
 #elif defined(__LINUX__)
     char fn[MAX_PATH];
-    if (::wcstombs(fn, filename.c_str(), MAX_PATH) == -1)
+    if (::wcstombs(fn, filename.c_str(), MAX_PATH) == (std::size_t)-1)
         return EOF;
 
     return ::__open(fn, flag, mode);

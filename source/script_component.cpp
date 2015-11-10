@@ -58,6 +58,17 @@ ScriptComponent::~ScriptComponent() noexcept
 {
 }
 
+void 
+ScriptComponent::load(iarchive& reader) noexcept
+{
+	GameComponent::load(reader);
+}
+
+void 
+ScriptComponent::save(oarchive& write) noexcept
+{
+}
+
 void
 ScriptComponent::onActivate()
 {
@@ -69,7 +80,7 @@ ScriptComponent::onActivate()
 	if (!_scriptObject->setInterface("IController"))
 		return;
 
-	if (!_scriptObject->construct(std::dynamic_pointer_cast<GameObject>(this->getGameObject()->shared_from_this())))
+	if (!_scriptObject->construct(this->getGameObject()))
 		return;
 
 	if (_scriptObject)

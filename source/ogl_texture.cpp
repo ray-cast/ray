@@ -175,7 +175,8 @@ OGLTexture::setup() except
 		internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ||
 		internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT ||
 		internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT ||
-		internalFormat == GL_COMPRESSED_RG_RGTC2)
+		internalFormat == GL_COMPRESSED_RG_RGTC2||
+		internalFormat == GL_COMPRESSED_SIGNED_RG_RGTC2)
 #else
 	if (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT ||
 		internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ||

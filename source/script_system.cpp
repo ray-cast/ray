@@ -63,7 +63,6 @@ ScriptSystem::open() noexcept
 
 	_engine = asCreateScriptEngine(ANGELSCRIPT_VERSION);
 	_engine->SetMessageCallback(asMETHOD(ScriptSystem, MessageCallback), this, asCALL_THISCALL);
-
 	_engine->SetEngineProperty(asEP_BUILD_WITHOUT_LINE_CUES, 1);
 
 	_context = _engine->CreateContext();
@@ -133,16 +132,6 @@ ScriptSystem::setTimer(TimerPtr timer) noexcept
 }
 
 void
-ScriptSystem::setWindow(WindowPtr wx) noexcept
-{
-	if (_window != wx)
-	{
-		_bindDisplay->setWindow(wx);
-		_window = wx;
-	}
-}
-
-void
 ScriptSystem::setInput(InputPtr input) noexcept
 {
 	if (_input != input)
@@ -168,7 +157,7 @@ asIScriptModule*
 ScriptSystem::getModule(const std::string& script)
 {
 	MemoryStream stream;
-	IoServer::instance()->openFile(script, stream);
+	IoServer::instance()->openFile(script, stream, ios_base::in);
 	if (stream.is_open())
 	{
 		std::string data;

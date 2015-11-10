@@ -47,8 +47,6 @@
 
 _NAME_BEGIN
 
-typedef std::shared_ptr<class Window> WindowPtr;
-
 typedef std::shared_ptr<class GameListener> GameListenerPtr;
 typedef std::shared_ptr<class GameScene> GameScenePtr;
 typedef std::shared_ptr<class GameObject> GameObjectPtr;
@@ -70,6 +68,8 @@ typedef std::vector<GameScenePtr> GameScenes;
 typedef std::vector<GameObjectPtr> GameObjects;
 typedef std::vector<GameComponentPtr> GameComponents;
 typedef std::vector<GameFeaturePtr> GameFeatures;
+
+typedef void* WindHandle;
 
 _NAME_END
 

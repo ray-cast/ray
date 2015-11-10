@@ -49,8 +49,6 @@ public:
 
 	void setup(asIScriptEngine* engine) noexcept;
 
-	void setWindow(WindowPtr wx) noexcept;
-
 private:
 
 	void setSwapInterval(int interval) noexcept;

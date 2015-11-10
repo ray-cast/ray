@@ -35,10 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/game_application.h>
-#include <ray/rtti.h>
-#include <ray/render_features.h>
-#include <ray/input_features.h>
-#include <ray/camera_component.h>
+#include <ray/game_event.h>
 
 #define GLFW_EXPOSE_NATIVE_WGL
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -52,12 +49,6 @@ public:
 	GameEngine() noexcept
 		: _window(nullptr)
 	{
-		_renderSetting.enableSSAO = true;
-		_renderSetting.enableSAT = false;
-		_renderSetting.enableSSSS = false;
-		_renderSetting.enableFog = false;
-		_renderSetting.enableFimic = false;
-		_renderSetting.enableFXAA = true;
 	}
 
 	void init(std::size_t w, std::size_t h)
@@ -73,14 +64,8 @@ public:
 
 			HWND hwnd = glfwGetWin32Window(_window);
 
-			this->open();
-
-			auto renderer = std::make_shared<ray::RenderFeatures>();
-			renderer->setRenderWindow(hwnd, w, h);
-			renderer->setRenderSetting(_renderSetting);
-
-			this->addFeatures(std::make_shared<ray::InputFeatures>());
-			this->addFeatures(renderer);
+			if (!this->open(hwnd, w, h))
+				throw ray::failure("App::open() fail");
 
 			if (!this->openScene("dlc:SSSSS\\scene.map"))
 				throw ray::failure("App::openScene('dlc:SSSSS\\scene.map') fail");
@@ -128,8 +113,6 @@ public:
 private:
 
 	GLFWwindow* _window;
-
-	ray::RenderSetting _renderSetting;
 };
 
 int main(int argc, char *argv[])

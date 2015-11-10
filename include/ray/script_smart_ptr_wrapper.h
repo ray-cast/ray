@@ -2,8 +2,8 @@
 #define AS_SMART_POINTER_WRAPPER
 
 #include <new>
-#include "angelscript.h"
 #include <memory>
+#include "angelscript.h"
 
 namespace spw {
 	template <typename T> struct Default {

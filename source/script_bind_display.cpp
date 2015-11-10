@@ -74,11 +74,6 @@ ScriptBindDisplay::setup(asIScriptEngine* engine) noexcept
 }
 
 void
-ScriptBindDisplay::setWindow(WindowPtr wx) noexcept
-{
-}
-
-void
 ScriptBindDisplay::setSwapInterval(int interval) noexcept
 {
 	/*if (interval == GPU_FREE)

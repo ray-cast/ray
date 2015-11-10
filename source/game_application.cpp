@@ -37,6 +37,10 @@
 #include <ray/game_application.h>
 #include <ray/game_server.h>
 
+#include <ray/render_features.h>
+#include <ray/input_features.h>
+#include <ray/script_features.h>
+
 _NAME_BEGIN
 
 GameApplication::GameApplication() noexcept
@@ -55,7 +59,7 @@ GameApplication::~GameApplication() noexcept
 }
 
 bool
-GameApplication::open() except
+GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) except
 {
 	assert(!_isInitialize);
 
@@ -71,6 +75,13 @@ GameApplication::open() except
 	_gameServer->_setGameApp(this);
 	
 	_isInitialize = _gameServer->open();
+
+	if (_isInitialize)
+	{
+		this->addFeatures(std::make_shared<ray::InputFeatures>());
+		this->addFeatures(std::make_shared<ray::ScriptFeatures>());
+		this->addFeatures(std::make_shared<ray::RenderFeatures>(hwnd, width, height));
+	}
 
 	return _isInitialize;
 }

@@ -54,16 +54,15 @@ void
 ScriptBindTimer::setup(asIScriptEngine* _engine) noexcept
 {
 	int r = 0;
-
 	r = _engine->RegisterObjectType("Timer", 0, asOBJ_REF | asOBJ_NOHANDLE); assert(r >= 0);
 	r = _engine->RegisterGlobalProperty("Timer timer", this); assert(r >= 0);
-	r = _engine->RegisterObjectMethod("Timer", "float get_startTime() const", asMETHOD(ScriptBindTimer, startTime), asCALL_THISCALL); assert(r >= 0);
-	r = _engine->RegisterObjectMethod("Timer", "float get_elapsed() const", asMETHOD(ScriptBindTimer, elapsed), asCALL_THISCALL); assert(r >= 0);
-	r = _engine->RegisterObjectMethod("Timer", "float get_appTime() const", asMETHOD(ScriptBindTimer, appTime), asCALL_THISCALL); assert(r >= 0);
-	r = _engine->RegisterObjectMethod("Timer", "float get_delta() const", asMETHOD(ScriptBindTimer, delta), asCALL_THISCALL); assert(r >= 0);
-	r = _engine->RegisterObjectMethod("Timer", "float get_vsync() const", asMETHOD(ScriptBindTimer, vsync), asCALL_THISCALL); assert(r >= 0);
-	r = _engine->RegisterObjectMethod("Timer", "float get_fps() const", asMETHOD(ScriptBindTimer, fps), asCALL_THISCALL); assert(r >= 0);
-	r = _engine->RegisterObjectMethod("Timer", "float get_averageFps() const", asMETHOD(ScriptBindTimer, averageFps), asCALL_THISCALL); assert(r >= 0);
+	r = _engine->RegisterObjectMethod("Timer", "float startTime() const", asMETHOD(ScriptBindTimer, startTime), asCALL_THISCALL); assert(r >= 0);
+	r = _engine->RegisterObjectMethod("Timer", "float elapsed() const", asMETHOD(ScriptBindTimer, elapsed), asCALL_THISCALL); assert(r >= 0);
+	r = _engine->RegisterObjectMethod("Timer", "float appTime() const", asMETHOD(ScriptBindTimer, appTime), asCALL_THISCALL); assert(r >= 0);
+	r = _engine->RegisterObjectMethod("Timer", "float delta() const", asMETHOD(ScriptBindTimer, delta), asCALL_THISCALL); assert(r >= 0);
+	r = _engine->RegisterObjectMethod("Timer", "float vsync() const", asMETHOD(ScriptBindTimer, vsync), asCALL_THISCALL); assert(r >= 0);
+	r = _engine->RegisterObjectMethod("Timer", "float fps() const", asMETHOD(ScriptBindTimer, fps), asCALL_THISCALL); assert(r >= 0);
+	r = _engine->RegisterObjectMethod("Timer", "float averageFps() const", asMETHOD(ScriptBindTimer, averageFps), asCALL_THISCALL); assert(r >= 0);
 }
 
 void

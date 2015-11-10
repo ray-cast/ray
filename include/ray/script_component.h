@@ -51,6 +51,11 @@ public:
 	ScriptComponent() noexcept;
 	virtual ~ScriptComponent() noexcept;
 
+	virtual void load(iarchive& reader) noexcept;
+	virtual void save(oarchive& write) noexcept;
+
+protected:
+
 	virtual void onActivate();
 	virtual void onDeactivate();
 

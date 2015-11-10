@@ -182,15 +182,15 @@ private:
 
 	friend GameScene;
 
-	void _onFrameBegin() noexcept;
-	void _onFrame() noexcept;
-	void _onFrameEnd() noexcept;
+	void _onFrameBegin() except;
+	void _onFrame() except;
+	void _onFrameEnd() except;
 
-	void _onMoveBefore() noexcept;
-	void _onMoveAfter() noexcept;
+	void _onMoveBefore() except;
+	void _onMoveAfter() except;
 
-	void _onLayerChangeBefore() noexcept;
-	void _onLayerChangeAfter() noexcept;
+	void _onLayerChangeBefore() except;
+	void _onLayerChangeAfter() except;
 
 	void _updateTransform() const noexcept;
 

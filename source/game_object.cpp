@@ -1074,7 +1074,7 @@ GameObject::clone() const except
 }
 
 void
-GameObject::_onFrameBegin() noexcept
+GameObject::_onFrameBegin() except
 {
 	if (!this->getActive())
 		return;
@@ -1091,7 +1091,7 @@ GameObject::_onFrameBegin() noexcept
 }
 
 void
-GameObject::_onFrame() noexcept
+GameObject::_onFrame() except
 {
 	if (!this->getActive())
 		return;
@@ -1108,7 +1108,7 @@ GameObject::_onFrame() noexcept
 }
 
 void
-GameObject::_onFrameEnd() noexcept
+GameObject::_onFrameEnd() except
 {
 	if (!this->getActive())
 		return;
@@ -1125,7 +1125,7 @@ GameObject::_onFrameEnd() noexcept
 }
 
 void
-GameObject::_onMoveBefore() noexcept
+GameObject::_onMoveBefore() except
 {
 	if (!this->getActive())
 		return;
@@ -1142,7 +1142,7 @@ GameObject::_onMoveBefore() noexcept
 }
 
 void
-GameObject::_onMoveAfter() noexcept
+GameObject::_onMoveAfter() except
 {
 	if (!this->getActive())
 		return;
@@ -1159,7 +1159,7 @@ GameObject::_onMoveAfter() noexcept
 }
 
 void
-GameObject::_onLayerChangeBefore() noexcept
+GameObject::_onLayerChangeBefore() except
 {
 	if (!this->getActive())
 		return;
@@ -1176,7 +1176,7 @@ GameObject::_onLayerChangeBefore() noexcept
 }
 
 void
-GameObject::_onLayerChangeAfter() noexcept
+GameObject::_onLayerChangeAfter() except
 {
 	if (!this->getActive())
 		return;

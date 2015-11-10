@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<main>
+    <attribute width="1376"/>
+    <attribute height="768"/>
+    <attribute title="Screen Space Sub Surface Scattering"/>
+    <attribute scene="dlc:UI\\scenes\\scene.map"/>
+</main>

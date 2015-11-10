@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_SCRIPT_MANAGER_H_
-#define _H_SCRIPT_MANAGER_H_
+#ifndef _H_SCRIPT_SYSTEM_H_
+#define _H_SCRIPT_SYSTEM_H_
 
 #include <ray/game_types.h>
 #include <ray/script_bind_math.h>
@@ -49,6 +49,7 @@
 _NAME_BEGIN
 
 class ScriptObject;
+typedef std::shared_ptr<ScriptObject> ScriptObjectPtr;
 class ScriptSystem final
 {
 	__DeclareSingleton(ScriptSystem)
@@ -61,11 +62,14 @@ public:
 
 	void setTimer(TimerPtr timer) noexcept;
 	void setInput(InputPtr input) noexcept;
+	void setGameObject(GameObjectPtr object) noexcept;
 	void setRenderSystem(RenderSystemPtr renderer) noexcept;
+
+	bool exce(ScriptObjectPtr object, asIScriptFunction* func);
 
 	void print(const std::string& str) noexcept;
 
-	std::shared_ptr<ScriptObject> createScriptObject();
+	ScriptObjectPtr createScriptObject();
 
 	asIScriptModule* getModule(const std::string& script);
 	asIScriptEngine* getScriptEngine() const noexcept;

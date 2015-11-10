@@ -47,16 +47,18 @@ public:
 	ScriptObject() noexcept;
 	~ScriptObject() noexcept;
 
-	bool setup(const std::string& name, bool _throw = true);
+	bool open(const std::string& name);
 	void close() noexcept;
 
 	bool setInterface(const std::string& controller) noexcept;
 
-	bool construct(GameObjectPtr gameobj) noexcept;
-	bool destruct() noexcept;
+	bool construct() noexcept;
 
-	asIScriptFunction* getInterfaceByDecl(const char* decl) noexcept;
-	asIScriptFunction* getMethodByDecl(const char* decl) noexcept;
+	std::string getName() const noexcept;
+
+	std::size_t getFactoryByDecl(const std::string& decl) noexcept;
+	std::size_t getInterfaceByDecl(const char* decl) noexcept;
+	std::size_t getMethodByDecl(const char* decl) noexcept;
 
 	int setArgByte(std::size_t arg, std::uint8_t value) noexcept;
 	int setArgWord(std::size_t arg, std::uint16_t value) noexcept;
@@ -66,23 +68,15 @@ public:
 	int setArgDouble(std::size_t arg, double value) noexcept;
 	int setArgAddress(std::size_t arg, void *addr) noexcept;
 
-	bool exce(asIScriptFunction* func, bool _throw = true);
-
-	void onActivate() noexcept;
-	void onDeactivate() noexcept;
-
-	void onFrameBegin() noexcept;
-	void onFrame() noexcept;
-	void onFrameEnd() noexcept;
-
-	void onCollisionStay() noexcept;
+	bool exce(std::size_t function) noexcept;
 
 private:
 
 	asIScriptModule* _module;
-
 	asIScriptObject* _object;
 	asIObjectType* _interface;
+
+	std::vector<asIScriptFunction*> _functions;
 };
 
 _NAME_END

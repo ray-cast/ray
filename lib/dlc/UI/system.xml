@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<system>
-    <attribute width="1376"/>
-    <attribute height="768"/>
-    <attribute title="UI"/>
-    <attribute scene="dlc:UI\\scene.map"/>
-</system>

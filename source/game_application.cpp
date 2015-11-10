@@ -59,30 +59,40 @@ GameApplication::~GameApplication() noexcept
 }
 
 bool
-GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) except
+GameApplication::openIoServer() except
 {
-	assert(!_isInitialize);
+	if (!_isInitialize)
+	{
+		_ioServer = IoServer::instance();
+		_ioServer->addAssign(IoAssign("sys", _engineDir));
+		_ioServer->addAssign(IoAssign("dlc", _resourceBaseDir));
+		_ioServer->mountArchives();
 
-	_ioServer = IoServer::instance();
-	_ioServer->addAssign(IoAssign("sys", _engineDir));
-	_ioServer->addAssign(IoAssign("dlc", _resourceBaseDir));
-	_ioServer->mountArchives();
+		_ioInterface = IoInterface::instance();
+		_ioInterface->open();
 
-	_ioInterface = IoInterface::instance();
-	_ioInterface->open();
+		_isInitialize = true;
+	}
 
-	_gameServer = std::make_shared<GameServer>();
-	_gameServer->_setGameApp(this);
-	
-	_isInitialize = _gameServer->open();
+	return _isInitialize;
+}
 
+bool
+GameApplication::openGameServer(WindHandle hwnd, std::size_t width, std::size_t height) except
+{
 	if (_isInitialize)
 	{
-		this->addFeatures(std::make_shared<ray::InputFeatures>());
-		this->addFeatures(std::make_shared<ray::ScriptFeatures>());
-		this->addFeatures(std::make_shared<ray::RenderFeatures>(hwnd, width, height));
+		_gameServer = std::make_shared<GameServer>();
+		_gameServer->_setGameApp(this);
 
-		this->start();
+		if (_gameServer->open())
+		{
+			this->addFeatures(std::make_shared<ray::InputFeatures>());
+			this->addFeatures(std::make_shared<ray::ScriptFeatures>());
+			this->addFeatures(std::make_shared<ray::RenderFeatures>(hwnd, width, height));
+
+			this->start();
+		}
 	}
 
 	return _isInitialize;
@@ -208,7 +218,6 @@ void
 GameApplication::setResDownloadURL(const std::string& path) noexcept
 {
 	assert(_ioServer);
-
 	if (_downloadURL != path)
 	{
 		_ioServer->addAssign(IoAssign("url", path));

@@ -133,6 +133,12 @@ ScriptSystem::setInput(InputPtr input) noexcept
 	_bindInput->setInput(input);
 }
 
+void 
+ScriptSystem::setGameObject(GameObjectPtr object) noexcept
+{
+	_bindActor->setGameObject(object);
+}
+
 void
 ScriptSystem::setRenderSystem(RenderSystemPtr renderer) noexcept
 {
@@ -158,17 +164,12 @@ ScriptSystem::getModule(const std::string& script)
 	IoServer::instance()->openFile(script, stream, ios_base::in);
 	if (stream.is_open())
 	{
-		std::string data;
-		data.resize(stream.size());
-
-		if (!data.empty())
+		if (stream.size())
 		{
-			stream.read((char*)data.c_str(), stream.size());
-
 			asIScriptModule* module = _engine->GetModule(nullptr, asGM_ALWAYS_CREATE);
 			if (module)
 			{
-				module->AddScriptSection(nullptr, data.c_str(), data.length());
+				module->AddScriptSection(nullptr, stream.map(), stream.size());
 				if (module->Build() == asSUCCESS)
 				{
 					module->SetDefaultNamespace("");

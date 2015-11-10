@@ -277,8 +277,8 @@ std::pair<const char*, T&> make_name(const char* name, T& value)
 	return std::pair<const char*, T&>(name, value);
 }
 
-#define rtti_name(T) make_name(#T, T)
-#define rtti_alias(T, alias)  make_name(alias, T)
+#define rtti_name(T) _NAME make_name(#T, T)
+#define rtti_alias(T, alias)  _NAME make_name(alias, T)
 
 _NAME_END
 

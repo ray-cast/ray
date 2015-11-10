@@ -13,7 +13,8 @@
             <attribute w="1376"/>
             <attribute h="768"/>
         </component>
-        <component name="FirstPersonCamera">
+        <component name="Script">
+            <attribute name="dlc:ssrr/script/first_person_camera.as"/>
         </component>
         <!--component name="character">
             <attribute radius="1"/>

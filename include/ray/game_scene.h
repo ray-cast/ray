@@ -106,12 +106,7 @@ private:
 		GameScene* _scene;
 	};
 
-	bool _isActive;
-
 	Setting _setting;
-
-	std::string _name;
-
 	GameObjectPtr  _root;
 	GameServer* _gameServer;
 };

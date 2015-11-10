@@ -36,6 +36,8 @@
 // +----------------------------------------------------------------------
 #include <ray/game_application.h>
 #include <ray/game_event.h>
+#include <ray/xmlreader.h>
+#include <ray/archive.h>
 
 #define GLFW_EXPOSE_NATIVE_WGL
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -43,85 +45,103 @@
 #include <GLFW\glfw3.h>
 #include <GLFW\glfw3native.h>
 
-class GameEngine : public ray::GameApplication
+static void setWindowCloseCallback(GLFWwindow* window)
 {
-public:
-	GameEngine() noexcept
-		: _window(nullptr)
+	ray::GameApplication* engine = (ray::GameApplication*)glfwGetWindowUserPointer(window);
+	if (engine)
 	{
+		ray::AppQuitEvent quit;
+		engine->sendMessage(&quit);
 	}
+}
 
-	void init(std::size_t w, std::size_t h)
+static void setWindowFocusCallback(GLFWwindow* window, int focus)
+{
+	ray::GameApplication* engine = (ray::GameApplication*)glfwGetWindowUserPointer(window);
+	if (engine)
 	{
-		glfwInit();
-
-		_window = glfwCreateWindow(w, h, "Screen Space Sub Surface Scattering", nullptr, nullptr);
-		if (_window)
+		if (focus)
 		{
-			glfwSetWindowUserPointer(_window, this);
-			glfwSetWindowFocusCallback(_window, &setWindowFocusCallback);
-			glfwSetWindowCloseCallback(_window, &setWindowCloseCallback);
-
-			HWND hwnd = glfwGetWin32Window(_window);
-
-			if (!this->open(hwnd, w, h))
-				throw ray::failure("App::open() fail");
-
-			if (!this->openScene("dlc:SSSSS\\scene.map"))
-				throw ray::failure("App::openScene('dlc:SSSSS\\scene.map') fail");
+			ray::GetFocusEvent focus;
+			engine->sendMessage(&focus);
+		}
+		else
+		{
+			ray::LostFocusEvent focus;
+			engine->sendMessage(&focus);
 		}
 	}
-
-	void run()
-	{
-		while (!glfwWindowShouldClose(_window))
-		{
-			this->update();
-
-			glfwPostEmptyEvent();
-		}
-	}
-
-	static void setWindowCloseCallback(GLFWwindow* window)
-	{
-		GameEngine* engine = (GameEngine*)glfwGetWindowUserPointer(window);
-		if (engine)
-		{
-			ray::AppQuitEvent quit;
-			engine->sendMessage(&quit);
-		}
-	}
-
-	static void setWindowFocusCallback(GLFWwindow* window, int focus)
-	{
-		GameEngine* engine = (GameEngine*)glfwGetWindowUserPointer(window);
-		if (engine)
-		{
-			if (focus)
-			{
-				ray::GetFocusEvent focus;
-				engine->sendMessage(&focus);
-			}
-			else
-			{
-				ray::LostFocusEvent focus;
-				engine->sendMessage(&focus);
-			}
-		}
-	}
-
-private:
-
-	GLFWwindow* _window;
-};
+}
 
 int main(int argc, char *argv[])
 {
 	try
 	{
-		GameEngine engine;
-		engine.init(1376, 768);
-		engine.run();
+		ray::GameApplication app;
+		app.openIoServer();
+
+		int width = 1376;
+		int height = 768;
+		std::string title = "Launcher";
+		std::string scene = "";
+
+		for (;;)
+		{
+			std::cout << "Enter your main file path : ";
+			std::cin >> scene;
+			std::cout << std::endl;
+
+			ray::XMLReader reader;
+			if (!reader.open(scene))
+				continue;
+
+			if (reader.getCurrentNodeName() != "main")
+				continue;
+
+			reader.setToFirstChild();
+
+			reader >> rtti_name(width);
+			reader >> rtti_name(height);
+			reader >> rtti_name(title);
+			reader >> rtti_name(scene);
+
+			if (width < 0 || width > 4096)
+				width = 1376;
+			if (height < 0 || height > 4096)
+				height = 768;
+			if (title.empty() || scene.empty())
+				continue;
+			break;
+		}
+
+		glfwInit();
+		auto _window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+		if (_window)
+		{
+			glfwSetWindowUserPointer(_window, &app);
+			glfwSetWindowFocusCallback(_window, &setWindowFocusCallback);
+			glfwSetWindowCloseCallback(_window, &setWindowCloseCallback);
+
+			HWND hwnd = glfwGetWin32Window(_window);
+
+			if (!app.openGameServer(hwnd, width, height))
+				throw ray::failure("App::open() fail");
+
+			for (;;)
+			{
+				if (app.openScene(scene))
+					break;
+
+				std::cout << "Enter your scene file path : ";
+				std::cin >> scene;
+				std::cout << std::endl;
+			}
+
+			while (!glfwWindowShouldClose(_window))
+			{
+				app.update();
+			}
+		}		
 	}
 	catch (const ray::exception& e)
 	{

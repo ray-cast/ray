@@ -39,8 +39,6 @@
 
 #include <ray/game_component.h>
 
-class asIScriptFunction;
-
 _NAME_BEGIN
 
 class ScriptObject;
@@ -78,20 +76,18 @@ private:
 
 	std::shared_ptr<ScriptObject> _scriptObject;
 
-	asIScriptFunction* _onAttach;
-	asIScriptFunction* _onRemove;
+	std::size_t _onAttach;
+	std::size_t _onRemove;
 
-	asIScriptFunction* _onActivate;
-	asIScriptFunction* _onDeactivate;
+	std::size_t _onActivate;
+	std::size_t _onDeactivate;
 
-	asIScriptFunction* _onFrameBegin;
-	asIScriptFunction* _onFrame;
-	asIScriptFunction* _onFrameEnd;
+	std::size_t _onFrameBegin;
+	std::size_t _onFrame;
+	std::size_t _onFrameEnd;
 
-	asIScriptFunction* _onMoveAfter;
-	asIScriptFunction* _onMoveBefore;
-
-	std::map<std::string, asIScriptFunction*> _funcMap;
+	std::size_t _onMoveAfter;
+	std::size_t _onMoveBefore;
 };
 
 _NAME_END

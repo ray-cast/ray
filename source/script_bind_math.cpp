@@ -309,7 +309,7 @@ ScriptBindMath::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectMethod("float4", "void set_y(float value)", asFUNCTION(Float4SetY), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("float4", "void set_z(float value)", asFUNCTION(Float4SetZ), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("float4", "void set_w(float value)", asFUNCTION(Float4SetW), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-
+	
 	// float3x3
 	r = engine->RegisterObjectType("float3x3", sizeof(float3x3), asOBJ_VALUE | asGetTypeTraits<float3x3>()); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("float3x3", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<float3x3>), asCALL_CDECL_OBJFIRST); assert(r >= 0);

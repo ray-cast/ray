@@ -44,13 +44,13 @@ __ImplementSubClass(ScriptComponent, GameComponent)
 
 ScriptComponent::ScriptComponent() noexcept
 	: _scriptObject(nullptr)
-	, _onActivate(nullptr)
-	, _onDeactivate(nullptr)
-	, _onFrameBegin(nullptr)
-	, _onFrame(nullptr)
-	, _onFrameEnd(nullptr)
-	, _onMoveAfter(nullptr)
-	, _onMoveBefore(nullptr)
+	, _onActivate(0)
+	, _onDeactivate(0)
+	, _onFrameBegin(0)
+	, _onFrame(0)
+	, _onFrameEnd(0)
+	, _onMoveAfter(0)
+	, _onMoveBefore(0)
 {
 }
 
@@ -74,37 +74,49 @@ ScriptComponent::onActivate()
 {
 	_scriptObject = ScriptSystem::instance()->createScriptObject();
 
-	if (!_scriptObject->setup(this->getName()))
-		return;
-
-	if (!_scriptObject->setInterface("IController"))
-		return;
-
-	if (!_scriptObject->construct(this->getGameObject()))
-		return;
-
-	if (_scriptObject)
+	if (!_scriptObject->open(this->getName()))
 	{
-		_onActivate = _scriptObject->getInterfaceByDecl("void onActivate()");
-		_onDeactivate = _scriptObject->getInterfaceByDecl("void onDeactivate()");
-
-		_onFrameBegin = _scriptObject->getInterfaceByDecl("void onFrameBegin()");
-		_onFrame = _scriptObject->getInterfaceByDecl("void onFrame()");
-		_onFrameEnd = _scriptObject->getInterfaceByDecl("void onFrameEnd()");
-
-		_onMoveBefore = _scriptObject->getInterfaceByDecl("void onMoveBefore()");
-		_onMoveAfter = _scriptObject->getInterfaceByDecl("void onMoveAfter()");
+		ScriptSystem::instance()->print("Couldn't create module class for the script " + this->getName() + "\n");
+		return;
 	}
 
+	if (!_scriptObject->setInterface("IController"))
+	{
+		ScriptSystem::instance()->print("Couldn't find the interface class for the script" + this->getName() +"\n");
+		return;
+	}
+
+	if (!_scriptObject->construct())
+	{
+		ScriptSystem::instance()->print("Couldn't construct the class for the script" + this->getName() + "\n");
+		return;
+	}
+
+	_onActivate = _scriptObject->getInterfaceByDecl("void onActivate()");
+	_onDeactivate = _scriptObject->getInterfaceByDecl("void onDeactivate()");
+
+	_onFrameBegin = _scriptObject->getInterfaceByDecl("void onFrameBegin()");
+	_onFrame = _scriptObject->getInterfaceByDecl("void onFrame()");
+	_onFrameEnd = _scriptObject->getInterfaceByDecl("void onFrameEnd()");
+
+	_onMoveBefore = _scriptObject->getInterfaceByDecl("void onMoveBefore()");
+	_onMoveAfter = _scriptObject->getInterfaceByDecl("void onMoveAfter()");
+
 	if (_onActivate)
+	{
+		ScriptSystem::instance()->setGameObject(this->getGameObject());
 		_scriptObject->exce(_onActivate);
+	}
 }
 
 void
 ScriptComponent::onDeactivate()
 {
 	if (_onDeactivate)
+	{
+		ScriptSystem::instance()->setGameObject(this->getGameObject());
 		_scriptObject->exce(_onDeactivate);
+	}
 
 	if (_scriptObject)
 	{
@@ -117,35 +129,50 @@ void
 ScriptComponent::onFrameBegin()
 {
 	if (_onFrameBegin)
+	{
+		ScriptSystem::instance()->setGameObject(this->getGameObject());
 		_scriptObject->exce(_onFrameBegin);
+	}
 }
 
 void
 ScriptComponent::onFrame()
 {
 	if (_onFrame)
+	{
+		ScriptSystem::instance()->setGameObject(this->getGameObject());
 		_scriptObject->exce(_onFrame);
+	}
 }
 
 void
 ScriptComponent::onFrameEnd()
 {
 	if (_onFrameEnd)
+	{
+		ScriptSystem::instance()->setGameObject(this->getGameObject());
 		_scriptObject->exce(_onFrameEnd);
+	}
 }
 
 void
 ScriptComponent::onMoveBefore()
 {
 	if (_onMoveBefore)
+	{
+		ScriptSystem::instance()->setGameObject(this->getGameObject());
 		_scriptObject->exce(_onMoveBefore);
+	}
 }
 
 void
 ScriptComponent::onMoveAfter()
 {
 	if (_onMoveAfter)
+	{
+		ScriptSystem::instance()->setGameObject(this->getGameObject());
 		_scriptObject->exce(_onMoveAfter);
+	}
 }
 
 void
@@ -197,7 +224,6 @@ ScriptComponent::clone() const noexcept
 {
 	auto instance = std::make_shared<ScriptComponent>();
 	instance->setName(this->getName());
-
 	return instance;
 }
 

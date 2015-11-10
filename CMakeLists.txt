@@ -272,8 +272,8 @@ ADD_SUBDIRECTORY(contrib)
 # 添加项目
 ADD_SUBDIRECTORY(source)
 
-# 示例
-ADD_SUBDIRECTORY(samples)
+# 启动器
+ADD_SUBDIRECTORY(launcher)
 
 # 示例
 ADD_SUBDIRECTORY(tools)

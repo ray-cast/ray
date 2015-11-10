@@ -39,8 +39,15 @@
 
 #include <ray/game_types.h>
 #include <ray/script_binder.h>
+#include <ray/mesh_component.h>
+#include <ray/physics_body_component.h>
 
 _NAME_BEGIN
+
+typedef std::shared_ptr<class PhysicsShape> PhysicsShapePtr;
+typedef std::shared_ptr<class PhysicsBodyComponent> PhysicsBodyComponentPtr;
+typedef std::shared_ptr<class PhysicsCharacterComponent> PhysicsCharacterComponentPtr;
+typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;
 
 class ScriptBindActor final : public ScriptBinder
 {
@@ -49,6 +56,33 @@ public:
 	~ScriptBindActor() noexcept;
 
 	void setup(asIScriptEngine* _engine) noexcept;
+
+	void setGameObject(GameObjectPtr object) noexcept;
+
+private:
+
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
+    void setActive(bool active) noexcept;
+    bool getActive() const noexcept;
+
+    void setTranslate(const Vector3& translate) noexcept;
+    const Vector3& getTranslate() const noexcept;
+
+    void setLookat(const Vector3& lookat) noexcept;
+    const Vector3& getLookat() const noexcept;
+
+    void setUp(const Vector3& up) noexcept;
+    const Vector3& getUp() const noexcept;
+
+	MeshComponentPtr getMeshFilter() noexcept;
+	PhysicsBodyComponentPtr getPhysicsRigidbody() noexcept;
+	PhysicsCharacterComponentPtr getPhysicsCharacter() noexcept;	
+
+private:
+
+	GameObjectWeakPtr _object;
 };
 
 _NAME_END

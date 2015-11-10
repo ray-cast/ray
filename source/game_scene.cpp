@@ -76,13 +76,11 @@ GameScene::RootObject::getGameScene() noexcept
 
 GameScene::GameScene() noexcept
 	: _gameServer(nullptr)
-	, _isActive(false)
 {	
 }
 
 GameScene::GameScene(const std::string& name) noexcept
 	: _gameServer(nullptr)
-	, _isActive(false)
 {
 	this->setName(name);
 }
@@ -95,19 +93,18 @@ GameScene::~GameScene() noexcept
 void
 GameScene::setActive(bool active) except
 {
-	if (_isActive != active)
-	{
+	if (!_root)
 		_root = std::make_unique<RootObject>(this);
+	if (_root)
 		_root->setActive(active);
-
-		_isActive = active;
-	}
 }
 
 bool
 GameScene::getActive() const noexcept
 {
-	return _isActive;
+	if (_root)
+		_root->getActive();
+	return false;
 }
 
 void

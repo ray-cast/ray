@@ -7,14 +7,12 @@ IF(BUILD_OPENGL_ES)
     LINK_DIRECTORIES(${DEPENDENCIES_PATH}/gles/lib)
 ENDIF()
 
-FOREACH(samples
+FOREACH(mylauncher
     cubes
-    SSRR
-    SSSSS
-    UI
+    launcher
 )
-ADD_SUBDIRECTORY(${samples})
+ADD_SUBDIRECTORY(${mylauncher})
 
-SET_TARGET_ATTRIBUTE(${samples} "samples")
+SET_TARGET_ATTRIBUTE(${mylauncher} "launcher")
 
 ENDFOREACH()

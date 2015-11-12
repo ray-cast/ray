@@ -37,6 +37,7 @@
 #include <ray/render_features.h>
 #include <ray/render_factory.h>
 #include <ray/render_scene.h>
+#include <ray/game_scene.h>
 
 _NAME_BEGIN
 

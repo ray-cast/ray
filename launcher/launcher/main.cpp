@@ -78,6 +78,18 @@ static void setWindowFocusCallback(GLFWwindow* window, int focus)
 	}
 }
 
+static void setWindowSizeChangeCallback(GLFWwindow* window, int w, int h)
+{
+	ray::GameApplication* engine = (ray::GameApplication*)glfwGetWindowUserPointer(window);
+	if (engine)
+	{
+		ray::SizeChangeEvent event;
+		event.window.w = w;
+		event.window.h = h;
+		engine->sendMessage(&event);
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	try
@@ -126,6 +138,7 @@ int main(int argc, char *argv[])
 			glfwSetWindowUserPointer(_window, &app);
 			glfwSetWindowFocusCallback(_window, &setWindowFocusCallback);
 			glfwSetWindowCloseCallback(_window, &setWindowCloseCallback);
+			glfwSetWindowSizeCallback(_window, &setWindowSizeChangeCallback);
 
 			HWND hwnd = glfwGetWin32Window(_window);
 

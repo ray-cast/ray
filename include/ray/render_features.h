@@ -38,8 +38,6 @@
 #define _H_RENDERER_FEATURES_H_
 
 #include <ray/game_features.h>
-#include <ray/game_scene.h>
-#include <ray/game_server.h>
 #include <ray/render_system_base.h>
 
 _NAME_BEGIN
@@ -84,7 +82,7 @@ private:
 
 private:
 
-	typedef std::map<GameScene::InstanceID, RenderScenePtr> RenderScenes;
+	typedef std::map<std::uint32_t, RenderScenePtr> RenderScenes;
 
 	WindHandle _hwnd;
 	std::size_t _width;

@@ -167,6 +167,16 @@ public:
 		return *this;
 	}
 
+	void setMin(const Vector3& _min) noexcept
+	{
+		min = _min;
+	}
+
+	void setMax(const Vector3& _max) noexcept
+	{
+		max = _max;
+	}
+
 	void setCenter(const Vector3t<T>& center) noexcept
 	{
 		auto size = this->size();
@@ -178,6 +188,16 @@ public:
 	{
 		min = pos0;
 		max = pos1;
+	}
+
+	const Vector3& getMin() const noexcept
+	{
+		return min;
+	}
+
+	const Vector3& getMax() const noexcept
+	{
+		return max;
 	}
 
 	void reset() noexcept

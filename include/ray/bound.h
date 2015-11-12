@@ -108,7 +108,7 @@ public:
 
     T radius() const noexcept
     {
-        return _sp.radius;
+        return _sp.radius();
     }
 
     Spheret<T>& sphere() noexcept

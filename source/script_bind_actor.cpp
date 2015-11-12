@@ -148,6 +148,9 @@ ScriptBindActor::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectMethod("MeshFilter", "void setMesh(Mesh)", CALLER(MeshComponent, setMesh), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("MeshFilter", "Mesh getMesh() const", CALLER(MeshComponent, getMesh), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("MeshFilter", "void setCombieInstnace(const CombineInstance& in)", CALLER(MeshComponent, setCombieInstnace), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("MeshFilter", "const BoundingBox& getBoundingBox() const", CALLER(MeshComponent, getBoundingBox), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("MeshFilter", "const BoundingBox& getBoundingBoxDownwards() const", CALLER(MeshComponent, getBoundingBoxDownwards), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	
 
 	r = engine->RegisterObjectType("PhysicsRigidbody", sizeof(PhysicsBodyComponentPtr), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("PhysicsRigidbody", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<PhysicsBodyComponentPtr>), asCALL_CDECL_OBJFIRST); assert(r >= 0);

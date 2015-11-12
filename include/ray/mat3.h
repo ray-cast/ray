@@ -334,21 +334,23 @@ public:
         return a1*b2*c3 - a1*b3*c2 + a2*b3*c1 - a2*b1*c3 + a3*b1*c2 - a3*b2*c1;
     }
 
-    void setRotate(const Quaterniont<T>& q) { setRotate(q.w, q.x, q.y, q.z); }
-    void setRotate(T angle, const Vector3t<T>& axis) { setRotate(angle, axis.x, axis.y, axis.z); }
-    void setRotate(T angle, T x, T y, T z) { makeRotate(angle, x, y, z); }
-    void rotate(const Quaterniont<T>& q) { rotate(q.w, q.x, q.y, q.z); }
-    void rotate(T angle, const Vector3t<T>& axis) { rotate(angle, axis.x, axis.y, axis.z); }
-    void rotate(T angle, T x, T y, T z)
+	Matrix3x3t<T>& setRotate(const Quaterniont<T>& q) { return setRotate(q.w, q.x, q.y, q.z); }
+	Matrix3x3t<T>& setRotate(T angle, const Vector3t<T>& axis) { return setRotate(angle, axis.x, axis.y, axis.z); }
+	Matrix3x3t<T>& setRotate(T angle, T x, T y, T z) { return makeRotate(angle, x, y, z); }
+
+	Matrix3x3t<T>& rotate(const Quaterniont<T>& q) { return rotate(q.w, q.x, q.y, q.z); }
+	Matrix3x3t<T>& rotate(T angle, const Vector3t<T>& axis) { return rotate(angle, axis.x, axis.y, axis.z); }
+	Matrix3x3t<T>& rotate(T angle, T x, T y, T z)
     {
         Matrix3x3t m;
         m.makeRotate(angle, x, y, z);
         *this = m.mult(*this);
+		return *this;
     }
 
-    void makeRotate(const Quaterniont<T>& q) { makeRotate(q.w, q.x, q.y, q.z); }
-    void makeRotate(T angle, T x, T y, T z) { makeRotate(angle, Vector3t<T>(x, y, z)); }
-    void makeRotate(T angle, const Vector3t<T>& axis)
+	Matrix3x3t<T>& makeRotate(const Quaterniont<T>& q) { return makeRotate(q.w, q.x, q.y, q.z); }
+	Matrix3x3t<T>& makeRotate(T angle, T x, T y, T z) { return makeRotate(angle, Vector3t<T>(x, y, z)); }
+	Matrix3x3t<T>& makeRotate(T angle, const Vector3t<T>& axis)
     {
         T c, s;
 
@@ -378,9 +380,11 @@ public:
         c1 = (tx * z + s * y);
         c2 = (ty * z - s * x);
         c3 = (tz * z + c);
+
+		return *this;
     }
 
-    Matrix3x3& makeRotate(const Vector3t<T>& axis)
+    Matrix3x3t<T>& makeRotate(const Vector3t<T>& axis)
     {
         T a, b, c, d, e, f;
 

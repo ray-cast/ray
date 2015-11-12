@@ -121,7 +121,7 @@ ScriptBindActor::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectBehaviour("CombineMesh", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<CombineInstance::Instance>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("CombineMesh", asBEHAVE_CONSTRUCT, "void f(const CombineMesh& in)", asFUNCTION(copy_construct<CombineInstance::Instance>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("CombineMesh", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(destroy<CombineInstance::Instance>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectMethod("CombineMesh", "void setMesh(Mesh)", asMETHOD(CombineInstance::Instance, setMesh), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("CombineMesh", "void setMesh(Mesh& in)", asMETHOD(CombineInstance::Instance, setMesh), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("CombineMesh", "void setTransform(const float4x4& in)", asMETHOD(CombineInstance::Instance, setTransform), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("CombineMesh", "void setTransform(const float3& in, const float3& in = float3(0,0,0), const float3& in = float3(1,1,1))", asMETHOD(CombineInstance::Instance, makeTransform), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("CombineMesh", "Mesh getMesh()", asMETHOD(CombineInstance::Instance, getMesh), asCALL_THISCALL); assert(r >= 0);

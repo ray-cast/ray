@@ -42,6 +42,12 @@
 
 _NAME_BEGIN
 
+class EXPORT MeshListener
+{
+public:
+	virtual void onMeshChange(MeshPropertyPtr mesh);
+};
+
 class EXPORT MeshComponent final : public GameComponent
 {
 	__DeclareSubClass(MeshComponent, GameComponent)

@@ -161,7 +161,8 @@ class TerrainItem
 
 interface TerrainObject
 {
-    bool create(TerrainChunk& in chunk);
+    bool create(TerrainChunk@ chunk);
+    bool createObject(TerrainChunk@ chunk);
 
     TerrainObject@ clone() const;
 };
@@ -174,6 +175,7 @@ class TerrainChunk
     private int _size;
 
     private TerrainMap _map;
+    private array<TerrainObject@> _objects;
 
     TerrainChunk()
     {
@@ -187,6 +189,7 @@ class TerrainChunk
     int y { get const { return _y; } }
     int z { get const { return _z; } }
     int size { get const { return _size; } }
+    int count { get const { return _map.count; } }
 
     const array<TerrainEntry>@ data { get const { return _map.data; } }
 
@@ -220,25 +223,32 @@ class TerrainChunk
         return _map.get(x, y, z);
     }
 
+    void addTerrainObject(TerrainObject@ object)
+    {
+        _objects.insertLast(object);
+    }
+
+    array<TerrainObject@>@ getTerrainObjects()
+    {
+        return _objects;
+    }
+
     void createWorld()
     {
+        int size = _objects.length;
+        for (int i = 0; i < size; i++)
+        {
+            _objects[i].create(this);
+            _objects[i].createObject(this);
+        }
     }
 };
 
-TerrainChunk createWorld(int size, int q, int p)
-{
-    TerrainChunk chunk;
-    chunk.create(q, p, 0, size);
-    chunk.createWorld();
-    return chunk;
-}
-
 class Terrain : IController
 {
-    int size = 32;
-
-    array<TerrainChunk> chunks;
-    array<TerrainObject@> objects;
+    private int _size = 32;
+    private array<TerrainChunk> _chunks;
+    private array<TerrainObject@> _objects;
 
     Terrain()
     {
@@ -246,20 +256,29 @@ class Terrain : IController
 
     void addTerrainObject(TerrainObject@ object)
     {
-        objects.insertLast(object);
+        _objects.insertLast(object);
     }
 
     array<TerrainObject@>@ getTerrainObjects()
     {
-        return objects;
+        return _objects;
     }
 
     void onActivate()
     {
-        objects.insertLast(TerrainGrass());
+        _objects.insertLast(TerrainGrass());
 
-        chunks.push_back(createWorld(size, 5, 0));
-        chunks.push_back(createWorld(size, 1, 0));
+        TerrainChunk chunk;
+        chunk.create(0, 0, 0, _size);
+
+        int size = _objects.length;
+        for (int i = 0; i < size; i++)
+        {
+            chunk.addTerrainObject(_objects[i].clone());
+        }
+
+        chunk.createWorld();
+        _chunks.insertLast(chunk);
     }
 };
 
@@ -277,15 +296,7 @@ class TerrainGrass : TerrainObject
 {
     private GameObject _object;
 
-    TerrainGrass()
-    {
-    }
-
-    ~TerrainGrass()
-    {
-    }
-
-    bool create(TerrainChunk& in chunk)
+    bool create(TerrainChunk@ chunk)
     {
         int size = chunk.size;
         int half = size >> 1;
@@ -317,30 +328,34 @@ class TerrainGrass : TerrainObject
         return true;
     }
 
-    bool createObject(TerrainChunk& chunk)
+    bool createObject(TerrainChunk@ chunk)
     {
-        _object = instantiate("grass");
+        auto cube = find("grass");
 
         int size = chunk.data.length;
-        CombineInstance combines(size);
+        int count = 0;
+
+        CombineInstance combines(chunk.count);
         for (int i = 0; i < size; i++)
         {
             auto it = chunk.data[i];
             if (it.empty())
                 continue;
 
-            combines[i].setMesh(_object.getMeshFilter().getMesh());
-            combines[i].setTransform(float3(it.x * 2, it.y * 2, it.z * 2));
+            combines[count].setMesh(cube.getMeshFilter().getMesh());
+            combines[count].setTransform(float3(it.x * 2, it.y * 2, it.z * 2));
+            count++;
         }
 
         int translateX = chunk.x * chunk.size << 1;
         int translateY = chunk.y * chunk.size << 1;
         int translateZ = chunk.z * chunk.size << 1;
 
+        _object = instantiate("grass");
         _object.setName("chunk_" + p + "_" + q);
-        _object.getMeshFilter().setCombieInstnace(combines);
+        _object.setTranslate(float3(0, 0, 0));
         _object.setActive(true);
-        _object.setTranslate(float3(translateX, translateY, translateZ));
+        _object.getMeshFilter().setCombieInstnace(combines);
 
         return true;
     }

@@ -92,6 +92,7 @@ enum GlobalTexSemantic
 	NormalMap,
 
 	DeferredDepthMap,
+	DeferredDepthLinearMap,
 	DeferredGraphicMap,
 	DeferredNormalMap,
 	DeferredLightMap,

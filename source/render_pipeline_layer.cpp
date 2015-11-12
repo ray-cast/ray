@@ -532,16 +532,19 @@ RenderPipelineLayer::assignVisiable(RenderScenePtr scene, CameraPtr camera) noex
 	_renderQueue[RenderQueue::RQ_TRANSPARENT][RenderPass::RP_TRANSPARENT].clear();
 	_renderQueue[RenderQueue::RQ_TRANSPARENT][RenderPass::RP_SPECIFIC].clear();
 
-	scene->computVisiable(camera->getViewProject(),
-		[&](RenderObjectPtr& it)
+	_visiable.clear();
+
+	scene->computVisiable(camera->getViewProject(), _visiable);
+
+	for (auto& it : _visiable.iter())
 	{
 		if (CameraOrder::CO_SHADOW == camera->getCameraOrder())
 		{
-			if (!it->getCastShadow())
+			if (!it.getOcclusionCullNode()->getCastShadow())
 				return;
 		}
 
-		auto material = it->getMaterial();
+		auto material = it.getOcclusionCullNode()->getMaterial();
 		if (material)
 		{
 			auto& techiniques = material->getTechs();
@@ -550,11 +553,11 @@ RenderPipelineLayer::assignVisiable(RenderScenePtr scene, CameraPtr camera) noex
 				auto queue = technique->getRenderQueue();
 				for (auto& pass : technique->getPassList())
 				{
-					this->addRenderData(queue, pass->getRenderPass(), it);
+					this->addRenderData(queue, pass->getRenderPass(), it.getOcclusionCullNode());
 				}
 			}
 		}
-	});
+	}
 }
 
 void
@@ -564,11 +567,14 @@ RenderPipelineLayer::assignLight(RenderScenePtr scene, CameraPtr camera) noexcep
 
 	_renderQueue[RenderQueue::RQ_LIGHTING][RenderPass::RP_LIGHTS].clear();
 
-	scene->computVisiableLight(camera->getViewProject(), 
-		[&](LightPtr it) 
+	_visiable.clear();
+
+	scene->computVisiableLight(camera->getViewProject(), _visiable);
+
+	for (auto& it : _visiable.iter())
 	{
-		this->addRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS, it);
-	});
+		this->addRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS, it.getOcclusionCullNode());
+	}
 }
 
 void

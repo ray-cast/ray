@@ -99,17 +99,20 @@ RenderMesh::getRenderIndirect() noexcept
 void
 RenderMesh::setRenderScene(RenderScenePtr scene) noexcept
 {
-	auto renderScene = _renderScene.lock();
-	if (renderScene)
+	if (_renderScene.lock() != scene)
 	{
-		renderScene->removeRenderObject(this->shared_from_this());
-	}
+		auto renderScene = _renderScene.lock();
+		if (renderScene)
+		{
+			renderScene->removeRenderObject(this->shared_from_this());
+		}
 
-	_renderScene = scene;
+		_renderScene = scene;
 
-	if (scene)
-	{
-		scene->addRenderObject(this->shared_from_this());
+		if (scene)
+		{
+			scene->addRenderObject(this->shared_from_this());
+		}
 	}
 }
 

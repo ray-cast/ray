@@ -646,9 +646,9 @@ public:
 		c3 = a * c;
 		d3 = 0;
 
-		d1 = 0;
-		d2 = 0;
-		d3 = 0;
+		a4 = 0;
+		b4 = 0;
+		c4 = 0;
 		d4 = 1;
 		return *this;
 	}
@@ -795,7 +795,7 @@ public:
 		return *this;
 	}
 
-	static Matrix4x4t& fromToMatrix(const Vector3t<T>& from, const Vector3t<T>& to, Matrix4x4t& out)
+	static Matrix4x4t<T>& fromToMatrix(const Vector3t<T>& from, const Vector3t<T>& to, Matrix4x4t& out)
 	{
 		Matrix3x3t<T> m3;
 		Matrix3x3t<T>::fromToMatrix(from, to, m3);
@@ -803,7 +803,7 @@ public:
 		return out;
 	}
 
-	Matrix4x4t<T>& makeTransform(const Vector3& translate, const Vector3& rotate, const Vector3& scale)
+	Matrix4x4t<T>& makeTransform(const Vector3t<T>& translate, const Quaterniont<T>& rotate, const Vector3t<T>& scale)
 	{
 		this->makeRotate(rotate);
 		this->setTranslate(translate);

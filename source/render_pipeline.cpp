@@ -143,7 +143,7 @@ DefaultRenderPipeline::renderIrradianceMap(CameraPtr camera) noexcept
 	//_irradiance.renderParaboloidEnvMap(*this, _deferredShadingCubeMap->getResolveTexture());
 }
 
-void 
+void
 DefaultRenderPipeline::render2DEnvMap(CameraPtr camera) noexcept
 {
 	this->setCamera(camera);
@@ -163,6 +163,7 @@ DefaultRenderPipeline::render3DEnvMap(CameraPtr camera) noexcept
 
 	auto semantic = Material::getMaterialSemantic();
 	semantic->setTexParam(GlobalTexSemantic::DeferredDepthMap, _deferredDepthMap->getResolveTexture());
+	semantic->setTexParam(GlobalTexSemantic::DeferredDepthLinearMap, _deferredDepthLinearMap->getResolveTexture());
 	semantic->setTexParam(GlobalTexSemantic::DeferredNormalMap, _deferredNormalMap->getResolveTexture());
 	semantic->setTexParam(GlobalTexSemantic::DeferredGraphicMap, _deferredGraphicMap->getResolveTexture());
 	semantic->setTexParam(GlobalTexSemantic::DeferredLightMap, _deferredLightMap->getResolveTexture());
@@ -173,6 +174,7 @@ DefaultRenderPipeline::render3DEnvMap(CameraPtr camera) noexcept
 	this->assignLight(camera->getRenderScene(), camera);
 
 	this->renderOpaques(_deferredGraphicMaps);
+	this->renderOpaquesDepthLinear(_deferredDepthLinearMap);
 	this->renderLights(_deferredLightMap);
 	this->renderOpaquesShading(_deferredShadingMap);
 	this->renderOpaquesSpecificShading(_deferredShadingMap);
@@ -222,16 +224,16 @@ DefaultRenderPipeline::renderCamera(CameraPtr camera) noexcept
 				break;
 			default:
 				break;
-			}				
+			}
 		}
 		break;
 	}
 }
 
 void
-DefaultRenderPipeline::renderOpaques(MultiRenderTexturePtr renderTexture) noexcept
+DefaultRenderPipeline::renderOpaques(MultiRenderTexturePtr target) noexcept
 {
-	this->setMultiRenderTexture(renderTexture);
+	this->setMultiRenderTexture(target);
 	this->clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0.0);
 	this->drawRenderIndirect(RenderQueue::RQ_OPAQUE, RenderPass::RP_OPAQUES);
 }
@@ -239,9 +241,12 @@ DefaultRenderPipeline::renderOpaques(MultiRenderTexturePtr renderTexture) noexce
 void
 DefaultRenderPipeline::renderOpaquesDepthLinear(RenderTexturePtr target) noexcept
 {
+	_clipInfo->assign(this->getCamera()->getClipConstant());
+	_projInfo->assign(this->getCamera()->getProjConstant());
+
 	this->setRenderTexture(target);
 	this->clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0.0);
-	this->drawRenderIndirect(RenderQueue::RQ_OPAQUE, RenderPass::RP_DEPTH, _deferredDepthLinear);
+	this->drawSceneQuad(_deferredDepthLinear);
 }
 
 void
@@ -250,7 +255,6 @@ DefaultRenderPipeline::renderOpaquesShading(RenderTexturePtr target, int layer) 
 	this->setRenderTexture(target);
 	this->setRenderTextureLayer(target, layer);
 	this->clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0.0);
-
 	this->drawSceneQuad(_deferredShadingOpaques);
 }
 
@@ -405,26 +409,6 @@ DefaultRenderPipeline::renderDirectionalLight(const Light& light) noexcept
 }
 
 void
-DefaultRenderPipeline::renderAmbientLight(const Light& light) noexcept
-{
-	_lightColor->assign(light.getLightColor() * light.getIntensity());
-	_lightDirection->assign(float3x3(this->getCamera()->getView()) * ~(light.getTransform().getTranslate() - light.getLightLookat()));
-	_lightPosition->assign(light.getTransform().getTranslate());
-	_lightAttenuation->assign(light.getLightAttenuation());
-	_lightRange->assign(light.getRange());
-	_lightIntensity->assign(light.getIntensity());
-
-	_eyePosition->assign(this->getCamera()->getTranslate());
-
-	RenderStencilState stencil = _deferredAmbientLight->getRenderState()->getStencilState();
-	stencil.stencilRef = 1 << light.getLayer();
-
-	_deferredAmbientLight->getRenderState()->setStencilState(stencil);
-
-	this->drawSceneQuad(_deferredAmbientLight);
-}
-
-void
 DefaultRenderPipeline::renderPointLight(const Light& light) noexcept
 {
 	_lightColor->assign(light.getLightColor() * light.getIntensity());
@@ -475,6 +459,26 @@ DefaultRenderPipeline::renderSpotLight(const Light& light) noexcept
 }
 
 void
+DefaultRenderPipeline::renderAmbientLight(const Light& light) noexcept
+{
+	_lightColor->assign(light.getLightColor() * light.getIntensity());
+	_lightDirection->assign(float3x3(this->getCamera()->getView()) * ~(light.getTransform().getTranslate() - light.getLightLookat()));
+	_lightPosition->assign(light.getTransform().getTranslate());
+	_lightAttenuation->assign(light.getLightAttenuation());
+	_lightRange->assign(light.getRange());
+	_lightIntensity->assign(light.getIntensity());
+
+	_eyePosition->assign(this->getCamera()->getTranslate());
+
+	RenderStencilState stencil = _deferredAmbientLight->getRenderState()->getStencilState();
+	stencil.stencilRef = 1 << light.getLayer();
+
+	_deferredAmbientLight->getRenderState()->setStencilState(stencil);
+
+	this->drawSceneQuad(_deferredAmbientLight);
+}
+
+void
 DefaultRenderPipeline::renderHemiSphereLight(const Light& light) noexcept
 {
 }
@@ -492,6 +496,7 @@ DefaultRenderPipeline::onActivate() except
 
 	_deferredLighting = MaterialMaker("sys:fx\\deferred_lighting.glsl");
 	_deferredDepthOnly = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredDepthOnly");
+	_deferredDepthLinear = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredDepthLinear");
 	_deferredPointLight = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredPointLight");
 	_deferredAmbientLight = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredAmbientLight");
 	_deferredSunLight = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredSunLight");
@@ -510,6 +515,8 @@ DefaultRenderPipeline::onActivate() except
 	_texEnvironmentMap = _deferredLighting->getParameter("texEnvironmentMap");
 
 	_eyePosition = _deferredLighting->getParameter("eyePosition");
+	_clipInfo = _deferredLighting->getParameter("clipInfo");
+	_projInfo = _deferredLighting->getParameter("projInfo");
 
 	_lightColor = _deferredLighting->getParameter("lightColor");
 	_lightPosition = _deferredLighting->getParameter("lightPosition");
@@ -529,6 +536,9 @@ DefaultRenderPipeline::onActivate() except
 	_deferredDepthMap = RenderFactory::createRenderTexture();
 	_deferredDepthMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::DEPTH32_STENCIL8);
 
+	_deferredDepthLinearMap = RenderFactory::createRenderTexture();
+	_deferredDepthLinearMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R32F);
+
 	_deferredGraphicMap = RenderFactory::createRenderTexture();
 	_deferredGraphicMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
 
@@ -542,7 +552,7 @@ DefaultRenderPipeline::onActivate() except
 	_deferredShadingMap = RenderFactory::createRenderTexture();
 	_deferredShadingMap->setSharedDepthTexture(_deferredDepthMap);
 	_deferredShadingMap->setSharedStencilTexture(_deferredDepthMap);
-	_deferredShadingMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R11G11B10F);
+	_deferredShadingMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
 
 	_deferredGraphicMaps = RenderFactory::createMultiRenderTexture();
 	_deferredGraphicMaps->setSharedDepthTexture(_deferredDepthMap);

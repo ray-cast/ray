@@ -117,6 +117,8 @@ private:
 	MaterialParamPtr _texEnvironmentMap;
 
 	MaterialParamPtr _eyePosition;
+	MaterialParamPtr _clipInfo;
+	MaterialParamPtr _projInfo;
 
 	MaterialParamPtr _shadowDecal;
 	MaterialParamPtr _shadowChannel;
@@ -137,6 +139,7 @@ private:
 	MaterialParamPtr _lightSpotOuterCone;
 
 	RenderTexturePtr _deferredDepthMap;
+	RenderTexturePtr _deferredDepthLinearMap;
 	RenderTexturePtr _deferredGraphicMap;
 	RenderTexturePtr _deferredNormalMap;
 	RenderTexturePtr _deferredLightMap;

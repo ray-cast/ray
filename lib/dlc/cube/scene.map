@@ -13,12 +13,13 @@
             <attribute w="1376"/>
             <attribute h="768"/>
         </component>
-        <component name="FirstPersonCamera">
+        <component name="Script">
+            <attribute name="dlc:cube/script/first_person_camera.as"/>
         </component>
-        <component name="PhysicsCharacter">
+        <!--component name="PhysicsCharacter">
             <attribute radius="1"/>
             <attribute height="4"/>
-        </component>
+        </component-->
     </object>
     <object>
         <attribute name="grass"/>
@@ -83,7 +84,7 @@
         <component name="Light">
             <attribute type="sun"/>
             <attribute range="200.0"/>
-            <attribute shadow="true"/>
+            <attribute shadow="false"/>
         </component>
     </object>
     <object>
@@ -100,7 +101,8 @@
     <object>
         <attribute name="terrain"/>
         <attribute active="true"/>
-        <component name="Terrain">
+        <component name="Script">
+            <attribute name="dlc:cube/script/terrain.as"/>
         </component>
     </object>
 </scene>

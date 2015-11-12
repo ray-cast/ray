@@ -65,6 +65,22 @@ MSWInputMouse::setPosition(int x, int y) noexcept
     ::SetCursorPos(x, y);
 }
 
+int 
+MSWInputMouse::getPositionX() const noexcept
+{
+	POINT pt;
+	::GetCursorPos(&pt);
+	return pt.x;
+}
+
+int 
+MSWInputMouse::getPositionY() const noexcept
+{
+	POINT pt;
+	::GetCursorPos(&pt);
+	return pt.y;
+}
+
 _NAME_END
 
 #endif

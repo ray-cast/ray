@@ -51,6 +51,9 @@ public:
     virtual void hideMouse() noexcept;
 
     virtual void setPosition(int x, int y) noexcept;
+
+	virtual int getPositionX() const noexcept;
+	virtual int getPositionY() const noexcept;
 };
 
 _NAME_END

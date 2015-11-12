@@ -60,6 +60,14 @@ MeshComponent::setMesh(MeshPropertyPtr mesh) noexcept
 	}
 }
 
+void 
+MeshComponent::setCombieInstnace(const CombineInstance& instances) noexcept
+{
+	if (_mesh == nullptr)
+		_mesh = std::make_shared<MeshProperty>();
+	_mesh->mergeMeshes(instances);
+}
+
 void
 MeshComponent::clear() noexcept
 {

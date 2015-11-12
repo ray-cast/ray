@@ -76,13 +76,23 @@ void assign(T * lhs, T* rhs)
 template <typename T>
 bool ImplConv(T* t)
 {
-	return t ? false : true;
+	assert(t);
+	return *t ? true : false;
 }
 
 template <typename T>
 bool ImplCast(T* t)
 {
-	return t ? false : true;
+	assert(t);
+	return *t ? true : false;
+}
+
+GameObjectPtr instantiate(const std::string& name)
+{
+	auto object = GameObject::find<GameObject>(name);
+	if (object)
+		return object->clone();
+	return nullptr;
 }
 
 ScriptBindActor::ScriptBindActor() noexcept
@@ -113,6 +123,7 @@ ScriptBindActor::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectBehaviour("CombineMesh", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(destroy<CombineInstance::Instance>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("CombineMesh", "void setMesh(Mesh)", asMETHOD(CombineInstance::Instance, setMesh), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("CombineMesh", "void setTransform(const float4x4& in)", asMETHOD(CombineInstance::Instance, setTransform), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("CombineMesh", "void setTransform(const float3& in, const float3& in = float3(0,0,0), const float3& in = float3(1,1,1))", asMETHOD(CombineInstance::Instance, makeTransform), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("CombineMesh", "Mesh getMesh()", asMETHOD(CombineInstance::Instance, getMesh), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("CombineMesh", "const float4x4& getTransform()", asMETHOD(CombineInstance::Instance, getTransform), asCALL_THISCALL); assert(r >= 0);
 
@@ -136,6 +147,7 @@ ScriptBindActor::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectMethod("MeshFilter", "const string& getName() const", CALLER(MeshComponent, getName), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("MeshFilter", "void setMesh(Mesh)", CALLER(MeshComponent, setMesh), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("MeshFilter", "Mesh getMesh() const", CALLER(MeshComponent, getMesh), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("MeshFilter", "void setCombieInstnace(const CombineInstance& in)", CALLER(MeshComponent, setCombieInstnace), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 
 	r = engine->RegisterObjectType("PhysicsRigidbody", sizeof(PhysicsBodyComponentPtr), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("PhysicsRigidbody", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<PhysicsBodyComponentPtr>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
@@ -206,8 +218,6 @@ ScriptBindActor::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectMethod("GameObject", "PhysicsRigidbody getPhysicsRigidbody()", CALLER(GameObject, getComponent<PhysicsBodyComponent>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("GameObject", "PhysicsCharacter getPhysicsCharacter()", CALLER(GameObject, getComponent<PhysicsCharacterComponent>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 
-	r = engine->RegisterGlobalFunction("GameObject find(const string& in)", asFUNCTION(GameObject::find<GameObject>), asCALL_CDECL); assert(r >= 0);
-
 	r = engine->RegisterObjectType("this", 0, asOBJ_REF | asOBJ_NOHANDLE); assert(r >= 0);
 	r = engine->RegisterGlobalProperty("this self", this); assert(r >= 0);
 	r = engine->RegisterObjectMethod("this", "void setName(const string& in)", asMETHOD(ScriptBindActor, setName), asCALL_THISCALL); assert(r >= 0);
@@ -223,6 +233,8 @@ ScriptBindActor::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectMethod("this", "MeshFilter getMeshFilter()", asMETHOD(ScriptBindActor, getMeshFilter), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("this", "PhysicsRigidbody getPhysicsRigidbody()", asMETHOD(ScriptBindActor, getPhysicsRigidbody), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("this", "PhysicsCharacter getPhysicsCharacter()", asMETHOD(ScriptBindActor, getPhysicsCharacter), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("GameObject find(const string& in)", asFUNCTION(GameObject::find<GameObject>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("GameObject instantiate(const string& in)", asFUNCTION(instantiate), asCALL_CDECL); assert(r >= 0);
 
 }
 

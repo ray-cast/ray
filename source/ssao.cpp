@@ -93,7 +93,6 @@ SSAO::computeRawAO(RenderPipeline& pipeline, RenderTexturePtr source, RenderText
 {
 	_cameraProjInfo->assign(pipeline.getCamera()->getProjConstant());
 	_cameraProjScale->assign(pipeline.getCamera()->getProjLength().y * _setting.radius);
-	_cameraClipInfo->assign(pipeline.getCamera()->getClipConstant());
 
 	pipeline.setRenderTexture(dest);
 	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0);
@@ -176,7 +175,6 @@ SSAO::onActivate(RenderPipeline& pipeline) except
 
 	_cameraProjScale = _ambientOcclusion->getParameter("projScale");
 	_cameraProjInfo = _ambientOcclusion->getParameter("projInfo");
-	_cameraClipInfo = _ambientOcclusion->getParameter("clipInfo");
 
 	_occlusionRadius = _ambientOcclusion->getParameter("radius");
 	_occlusionRadius2 = _ambientOcclusion->getParameter("radius2");

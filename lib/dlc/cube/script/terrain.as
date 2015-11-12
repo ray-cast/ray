@@ -5,7 +5,7 @@ int hash_int(int key)
     key = key + (key << 2);
     key = key ^ (key >> 4);
     key = key * 2057;
-    key = key^ (key >> 16);
+    key = key ^ (key >> 16);
     return key;
 }
 
@@ -22,22 +22,42 @@ class TerrainEntry
     int x;
     int y;
     int z;
-    int w;
+    int instanceID;
+
+    TerrainEntry()
+    {
+        x = -1;
+        y = -1;
+        z = -1;
+        instanceID = 0;
+    }
+
+    bool empty() const
+    {
+        return
+            x == -1 ||
+            y == -1 ||
+            z == -1 ? true : false;
+    }
 };
 
 class TerrainMap
 {
-    int _x, _y, _z;
-    int _size;
-    int _mask;
-    array<TerrainEntry> _data;
+    private int _mask;
+    private int _count;
+    private array<TerrainEntry> _data;
 
-    void create(int x, int y, int z, int mask)
+    int count { get const { return _count; } }
+    const array<TerrainEntry>@ data { get const { return _data; } }
+
+    void create(int mask)
     {
-        _data.resize((mask + 1));
+        _count = 0;
+        _mask = mask;
+        _data.resize(mask + 1);
     }
 
-    void free()
+    void destroy()
     {
         array<TerrainEntry> empty;
         _data = empty;
@@ -45,28 +65,22 @@ class TerrainMap
 
     void copy(TerrainMap& map)
     {
-        _x = map._x;
-        _y = map._y;
-        _z = map._z;
         _mask = map._mask;
         _data = map._data;
     }
 
-    int set(int x, int y, int z, int w)
+    bool set(int x, int y, int z, int instanceID)
     {
         int index = hash(x, y, z) & _mask;
-        x -= _x;
-        y -= _y;
-        z -= _z;
 
         int overwrite = 0;
-
         TerrainEntry entry = _data[index];
-        while (entry.x != 0 && entry.y != 0 && entry.z != 0)
+        while (!entry.empty())
         {
             if (entry.x == x && entry.y == y && entry.z == z)
             {
                 overwrite = 1;
+                break;
             }
 
             index = (index + 1) & _mask;
@@ -75,173 +89,264 @@ class TerrainMap
 
         if (overwrite != 0)
         {
-            if (entry.w != w)
+            if (entry.instanceID != instanceID)
             {
-                entry.w = w;
-                return 1;
+                entry.instanceID = instanceID;
+                return true;
             }
         }
-        else if (w !=0)
+        else if (instanceID !=0)
         {
-            entry.x = x;
-            entry.y = y;
-            entry.z = z;
-            entry.w = w;
-            _size++;
-            return 1;
+            _data[index].x = x;
+            _data[index].y = y;
+            _data[index].z = z;
+            _data[index].instanceID = instanceID;
+            _count++;
+            if (_count * 2 > _mask)
+            {
+                grow();
+            }
+            return true;
         }
 
-        return index;
+        return false;
     }
 
     int get(int x, int y, int z)
     {
-        int index = hash(x, y, z) & _mask;
-        x -= _x;
-        y -= _y;
-        z -= _z;
-        if (x < 0 || x > 255) return 0;
-        if (y < 0 || y > 255) return 0;
-        if (z < 0 || z > 255) return 0;
-        TerrainEntry entry = _data[index];
-        while (entry.x != 0 && entry.y != 0 && entry.z != 0)
+        uint index = hash(x, y, z) & _mask;
+        auto entry = _data[index];
+
+        while (!entry.empty())
         {
-            if (entry.x == x && entry.y == y && entry.z == z)
+            if (entry.x == x &&
+                entry.y == y &&
+                entry.z == z)
             {
-                return entry.w;
+                return entry.instanceID;
             }
+
             index = (index + 1) & _mask;
             entry = _data[index];
         }
+
         return 0;
     }
+
+    void grow()
+    {
+        TerrainMap map;
+        map.create(_mask << 1 | 1);
+
+        int size = _data.size();
+        for (auto i = 0; i < size; i++)
+        {
+            auto it = _data[i];
+            if (!it.empty())
+            {
+                map.set(it.x, it.y, it.z, it.instanceID);
+            }
+        }
+
+        _mask = map._mask;
+        _data = map._data;
+        _count = map._count;
+    }
+};
+
+class TerrainItem
+{
+    int instanceID;
+};
+
+interface TerrainObject
+{
+    bool create(TerrainChunk& in chunk);
+
+    TerrainObject@ clone() const;
 };
 
 class TerrainChunk
 {
-    int _q;
-    int _p;
-    int _size;
+    private int _x;
+    private int _y;
+    private int _z;
+    private int _size;
 
-    TerrainMap _map;
-    GameObject cube;
-    GameObject group;
+    private TerrainMap _map;
 
     TerrainChunk()
     {
-        cube = find("cube");
     }
 
-    int getX()
+    ~TerrainChunk()
     {
-        return _q;
     }
 
-    int getY()
+    int x { get const { return _x; } }
+    int y { get const { return _y; } }
+    int z { get const { return _z; } }
+    int size { get const { return _size; } }
+
+    const array<TerrainEntry>@ data { get const { return _map.data; } }
+
+    int distance(int x, int y, int z)
     {
-        return _p;
+        int dx = abs(_x - x);
+        int dy = abs(_y - y);
+        int dz = abs(_z - z);
+        return max(max(dx, dy), dz);
     }
 
-    void createClouds(int size, int p, int q)
+    void create(int x, int y, int z, int size)
     {
-        int pad = 1;
-        for (int dx = -pad; dx < size + pad; dx++)
-        {
-            for (int dz = -pad; dz < size + pad; dz++)
-            {
-                for (int y = 64; y < 72; y++)
-                {
-                    if (simplex3(x * 0.01, y * 0.1, z * 0.01, 8, 0.5, 2) > 0.75)
-                    {
-                        int flag = 1;
-                        if (dx < 0 || dz < 0 ||
-                            dx >= size || dz >= size)
-                        {
-                            flag = -1;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    void createWorld(int size, int p, int q)
-    {
-        int index = 0;
-        int half = size / 2;
-
-        CombineInstance combines(size * size * size);
-
-        for (int x = 0; x < size; x++)
-        {
-            for (int z = 0; z < size; z++)
-            {
-                int dx = q * size + x;
-                int dz = p * size + z;
-
-                float f = simplex2( dx * 0.01,  dz * 0.01, 4, 0.5, 2);
-                float g = simplex2(-dx * 0.01, -dz * 0.01, 2, 0.9, 2);
-
-                int h = int(f * g * size + half);
-
-                float4x4 transform;
-
-                for (int y = h - 2; y < h; y++)
-                {
-                    combines[index].mesh = cube.mesh.mesh;
-                    combines[index].transform = transform.makeTransform(float3(dx * 2, y * 2, dz * 2));
-                    index++;
-                }
-            }
-        }
-
-        _q = q;
-        _p = p;
+        _x = x;
+        _y = y;
+        _z = z;
         _size = size;
-
-        group = cube.clone();
-        group.name = "chunk_" + p + "_" + q;
-        group.mesh.mesh.setCombieInstnace(combines);
-        group.active = true;
+        _map.create(0x7FFF);
     }
 
-    int distance(int q, int p)
+    bool set(int x, int y, int z, int instanceID)
     {
-        int dq = abs(_q - q);
-        int dp = abs(_p - p);
-        return max(dq, dp);
+        return _map.set(x, y, z, instanceID);
+    }
+
+    int get(int x, int y, int z)
+    {
+        if (x < 0 || x >= _size) return 0;
+        if (y < 0 || y >= _size) return 0;
+        if (z < 0 || z >= _size) return 0;
+        return _map.get(x, y, z);
+    }
+
+    void createWorld()
+    {
     }
 };
 
 TerrainChunk createWorld(int size, int q, int p)
 {
     TerrainChunk chunk;
-    chunk.createWorld(size, q, p);
+    chunk.create(q, p, 0, size);
+    chunk.createWorld();
     return chunk;
 }
 
 class Terrain : IController
 {
-    GameObject self;
-    GameObject group;
-
     int size = 32;
 
     array<TerrainChunk> chunks;
+    array<TerrainObject@> objects;
 
-    Terrain(GameObject& in ptr)
+    Terrain()
     {
-        self = ptr;
+    }
+
+    void addTerrainObject(TerrainObject@ object)
+    {
+        objects.insertLast(object);
+    }
+
+    array<TerrainObject@>@ getTerrainObjects()
+    {
+        return objects;
     }
 
     void onActivate()
     {
-        for (int i = -2; i < 2; i++)
+        objects.insertLast(TerrainGrass());
+
+        chunks.push_back(createWorld(size, 5, 0));
+        chunks.push_back(createWorld(size, 1, 0));
+    }
+};
+
+class VisiableFaces
+{
+    int left;
+    int right;
+    int bottom;
+    int top;
+    int back;
+    int front;
+};
+
+class TerrainGrass : TerrainObject
+{
+    private GameObject _object;
+
+    TerrainGrass()
+    {
+    }
+
+    ~TerrainGrass()
+    {
+    }
+
+    bool create(TerrainChunk& in chunk)
+    {
+        int size = chunk.size;
+        int half = size >> 1;
+
+        int offsetX = chunk.x * size;
+        int offsetY = chunk.y * size;
+
+        for (int x = 0; x < chunk.size; x++)
         {
-            for (int j = -2; j < 2; j++)
+            for (int z = 0; z < chunk.size; z++)
             {
-                chunks.push_back(createWorld(size, i, j));
+                int dx = offsetX + x;
+                int dz = offsetY + z;
+
+                float f = simplex2( dx * 0.01,  dz * 0.01, 4, 0.5, 2);
+                float g = simplex2(-dx * 0.01, -dz * 0.01, 2, 0.9, 2);
+
+                int h = int(f * g * chunk.size + half);
+
+                float4x4 transform;
+
+                for (int y = h - 2; y < h; y++)
+                {
+                    chunk.set(x, y, z, 1);
+                }
             }
         }
+
+        return true;
     }
-}
+
+    bool createObject(TerrainChunk& chunk)
+    {
+        _object = instantiate("grass");
+
+        int size = chunk.data.length;
+        CombineInstance combines(size);
+        for (int i = 0; i < size; i++)
+        {
+            auto it = chunk.data[i];
+            if (it.empty())
+                continue;
+
+            combines[i].setMesh(_object.getMeshFilter().getMesh());
+            combines[i].setTransform(float3(it.x * 2, it.y * 2, it.z * 2));
+        }
+
+        int translateX = chunk.x * chunk.size << 1;
+        int translateY = chunk.y * chunk.size << 1;
+        int translateZ = chunk.z * chunk.size << 1;
+
+        _object.setName("chunk_" + p + "_" + q);
+        _object.getMeshFilter().setCombieInstnace(combines);
+        _object.setActive(true);
+        _object.setTranslate(float3(translateX, translateY, translateZ));
+
+        return true;
+    }
+
+    TerrainObject@ clone() const
+    {
+        return TerrainGrass();
+    }
+};

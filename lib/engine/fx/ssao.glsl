@@ -3,7 +3,6 @@
     <include name="sys:fx/common.glsl"/>
     <parameter name="projScale" type="float"/>
     <parameter name="projInfo" type="float4"/>
-    <parameter name="clipInfo" type="float4"/>
     <parameter name="radius" type="float"/>
     <parameter name="radius2" type="float"/>
     <parameter name="sphere[0]" type="float2[]"/>
@@ -13,9 +12,8 @@
     <parameter name="blurSharpness" type="float" />
     <parameter name="blurRadius" type="int" />
     <parameter name="blurDirection" type="float2"/>
-    <parameter name="texDepth" semantic="DepthMap" />
+    <parameter name="texDepth" semantic="DeferredDepthLinearMap" />
     <parameter name="texNormal" semantic="NormalMap" />
-    <parameter name="texShadow" semantic="DeferredShadowMap" />
     <parameter name="texOcclusion" type="sampler2D" />
     <parameter name="texSource" type="sampler2D"/>
     <shader name="vertex">
@@ -42,7 +40,6 @@
             uniform float bias;
             uniform float intensity;
             uniform float4 projInfo;
-            uniform float4 clipInfo;
             uniform float2 sphere[NUM_SAMPLE];
 
             uniform int blurRadius;
@@ -52,14 +49,12 @@
 
             uniform sampler2D texDepth;
             uniform sampler2D texNormal;
-            uniform sampler2D texShadow;
             uniform sampler2D texOcclusion;
             uniform sampler2D texSource;
 
             float linearizeDepth(float2 uv)
             {
-                float d = sampleCoord(texDepth, uv).r;
-                return clipInfo.x / (clipInfo.z - clipInfo.y * d);
+                return sampleCoord(texDepth, uv).r;
             }
 
             float3 samplePosition(float2 uv)

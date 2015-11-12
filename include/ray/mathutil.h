@@ -348,7 +348,7 @@ inline constexpr int _hash_int_2(int key)
 
 inline constexpr int _hash_int_3(int key)
 {
-    return key ^ (key >> 4);;
+    return key ^ (key >> 4);
 }
 
 inline constexpr int _hash_int_4(int key)

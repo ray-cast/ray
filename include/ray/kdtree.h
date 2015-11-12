@@ -66,6 +66,7 @@ struct KdimensionNode : public KdimensionData<_Ty>
 	_Tx pos;
 	std::uint8_t split;
 
+	KdimensionNode<_Tx, _Ty>* parent;
 	KdimensionNode<_Tx, _Ty>* left;
 	KdimensionNode<_Tx, _Ty>* right;
 
@@ -142,6 +143,8 @@ template<typename _Tx, typename _Ty = void>
 class KdimensionNearestList final
 {
 public:
+	typedef std::vector<KdimensionNearest<_Tx, _Ty>> KdimensionNearests;
+public:
 	KdimensionNearestList() noexcept
 	{
 	}
@@ -155,7 +158,12 @@ public:
 		_iter.clear();
 	}
 
-	std::vector<KdimensionNearest<_Tx, _Ty>> iter() const noexcept
+	KdimensionNearests& iter() noexcept
+	{
+		return _iter;
+	}
+
+	const KdimensionNearests& iter() const noexcept
 	{
 		return _iter;
 	}
@@ -177,7 +185,7 @@ public:
 
 private:
 
-	std::vector<KdimensionNearest<_Tx, _Ty>> _iter;
+	KdimensionNearests _iter;
 };
 
 template<typename _Tx, typename _Ty>
@@ -347,11 +355,13 @@ public:
 	{
 		std::uint8_t split = 0;
 
-		auto root = KdimensionTreeBase<_Tx, void>::_root;
+		auto& root = KdimensionTreeBase<_Tx, _Ty>::_root;
 		auto next = &root;
+		auto parent = root;
 
 		while (*next)
 		{
+			parent = *next;
 			split = ((*next)->split + 1) % KdimensionTreeBase<_Tx, _Ty>::_dimension;
 
 			if (pos[(*next)->split] < (*next)->pos[(*next)->split])
@@ -364,6 +374,7 @@ public:
 		{
 			auto node = new KdimensionNode<_Tx, _Ty>(pos, split);
 			node->data = data;
+			node->parent = parent;
 			*next = node;
 
 			for (std::size_t i = 0; i < KdimensionTreeBase<_Tx, _Ty>::_dimension; i++)
@@ -377,6 +388,32 @@ public:
 			KdimensionTreeBase<_Tx, _Ty>::_count++;
 		}
 	}
+
+	void remove(const _Tx& pos, _Ty& data) noexcept
+	{
+		std::uint8_t split = 0;
+
+		auto& root = KdimensionTreeBase<_Tx, _Ty>::_root;
+		auto next = &root;
+
+		while (*next)
+		{
+			if ((*next)->pos == pos && (*next)->data == data)
+			{
+				delete (*next);
+				*next = nullptr;
+				return;
+			}
+
+			split = ((*next)->split + 1) % KdimensionTreeBase<_Tx, _Ty>::_dimension;
+
+			if (pos[(*next)->split] < (*next)->pos[(*next)->split])
+				next = &(*next)->left;
+			else
+				next = &(*next)->right;
+		}
+
+	}
 };
 
 template<typename _Tx>
@@ -387,11 +424,14 @@ public:
 	{
 		std::uint8_t split = 0;
 
-		auto root = KdimensionTreeBase<_Tx, void>::_root;
+		auto& root = KdimensionTreeBase<_Tx, void>::_root;
 		auto next = &root;
+		auto parent = root;
 
 		while (*next)
 		{
+			parent = *next;
+
 			split = ((*next)->split + 1) % KdimensionTreeBase<_Tx, void>::_dimension;
 
 			if (pos[(*next)->split] < (*next)->pos[(*next)->split])

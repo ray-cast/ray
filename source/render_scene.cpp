@@ -38,6 +38,89 @@
 
 _NAME_BEGIN
 
+OcclusionCullNode::OcclusionCullNode() noexcept
+	: _item(nullptr)
+	, _distanceSqrt(0)
+{
+}
+
+OcclusionCullNode::OcclusionCullNode(RenderObjectPtr item, float distSqrt) noexcept
+	: _item(item)
+	, _distanceSqrt(distSqrt)
+{
+}
+
+OcclusionCullNode::~OcclusionCullNode() noexcept
+{
+}
+
+void 
+OcclusionCullNode::setOcclusionCullNode(RenderObjectPtr node) noexcept
+{
+	_item = node;
+}
+
+RenderObjectPtr 
+OcclusionCullNode::getOcclusionCullNode() noexcept
+{
+	return _item;
+}
+
+void 
+OcclusionCullNode::setDistanceSqrt(float distSq) noexcept
+{
+	_distanceSqrt = distSq;
+}
+
+float 
+OcclusionCullNode::getDistanceSqrt() const noexcept
+{
+	return _distanceSqrt;
+}
+
+OcclusionCullList::OcclusionCullList() noexcept
+{
+}
+
+OcclusionCullList::~OcclusionCullList() noexcept
+{
+}
+
+void 
+OcclusionCullList::clear() noexcept
+{
+	_iter.clear();
+}
+
+OcclusionCullList::OcclusionCullNodes&
+OcclusionCullList::iter() noexcept
+{
+	return _iter;
+}
+
+const OcclusionCullList::OcclusionCullNodes&
+OcclusionCullList::iter() const noexcept
+{
+	return _iter;
+}
+
+void 
+OcclusionCullList::insert(RenderObjectPtr item, float distanceSqrt) noexcept
+{
+	_iter.push_back(OcclusionCullNode(item, distanceSqrt));
+}
+
+void 
+OcclusionCullList::sort() noexcept
+{
+	std::sort(_iter.begin(), _iter.end(),
+		[](const OcclusionCullNode& lhs, const OcclusionCullNode& rhs)
+	{
+		return lhs.getDistanceSqrt() < rhs.getDistanceSqrt();
+	}
+	);
+}
+
 RenderScene::RenderScene() noexcept
 {
 }
@@ -137,10 +220,12 @@ RenderScene::removeRenderObject(RenderObjectPtr object) noexcept
 }
 
 void
-RenderScene::computVisiable(const Matrix4x4& viewProject, std::function<void(RenderObjectPtr&)> callback) noexcept
+RenderScene::computVisiable(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept
 {
 	Frustum fru;
 	fru.extract(viewProject);
+
+	auto eyePosition = viewProject.getTranslate();
 
 	for (auto& it : _renderObjectList)
 	{
@@ -150,7 +235,7 @@ RenderScene::computVisiable(const Matrix4x4& viewProject, std::function<void(Ren
 			if (listener)
 				listener->onWillRenderObject();
 
-			callback(it);
+			list.insert(it, eyePosition.sqrDistance(it->getBoundingBoxInWorld().center()));
 
 			for (auto& child : it->getSubeRenderObjects())
 			{
@@ -160,18 +245,22 @@ RenderScene::computVisiable(const Matrix4x4& viewProject, std::function<void(Ren
 					if (listener)
 						listener->onWillRenderObject();
 
-					callback(it);
+					list.insert(it, eyePosition.sqrDistance(it->getBoundingBoxInWorld().center()));
 				}
 			}
 		}
 	}
+
+	list.sort();
 }
 
 void
-RenderScene::computVisiableLight(const Matrix4x4& viewProject, std::function<void(LightPtr&)> callback) noexcept
+RenderScene::computVisiableLight(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept
 {
 	Frustum fru;
 	fru.extract(viewProject);
+
+	auto eyePosition = viewProject.getTranslate();
 
 	for (auto& light : _lightList)
 	{
@@ -219,7 +308,7 @@ RenderScene::computVisiableLight(const Matrix4x4& viewProject, std::function<voi
 			if (listener)
 				listener->onWillRenderObject();
 
-			callback(light);
+			list.insert(light, eyePosition.sqrDistance(light->getBoundingBoxInWorld().center()));
 		}
 	}
 }

@@ -111,15 +111,21 @@ XMLReader::close() noexcept
 std::string
 XMLReader::getCurrentNodeName() const noexcept
 {
-	return _currentNode->Value();
+	if (_currentNode)
+		return _currentNode->Value();
+	else
+		return "";
 }
 
 std::string
 XMLReader::getCurrentNodePath() const noexcept
 {
+	if (!_currentNode)
+		return "";
+
 	std::vector<std::string> components;
 
-	TiXmlNode* node = this->_currentNode;
+	TiXmlNode* node = _currentNode;
 	while (node != _document.get())
 	{
 		components.push_back(node->Value());

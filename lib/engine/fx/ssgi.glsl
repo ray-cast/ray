@@ -3,7 +3,6 @@
     <include name="sys:fx/common.glsl"/>
     <parameter name="projScale" type="float"/>
     <parameter name="projInfo" type="float4"/>
-    <parameter name="clipInfo" type="float4"/>
     <parameter name="radius" type="float"/>
     <parameter name="radius2" type="float"/>
     <parameter name="bias" type="float"/>
@@ -12,7 +11,7 @@
     <parameter name="blurSharpness" type="float" />
     <parameter name="blurRadius" type="int" />
     <parameter name="blurDirection" type="float2"/>
-    <parameter name="texDepth" semantic="DepthMap" />
+    <parameter name="texDepth" semantic="DeferredDepthLinearMap" />
     <parameter name="texNormal" semantic="NormalMap" />
     <parameter name='texColor' semantic="ColorMap" />
     <parameter name="texAO" type="sampler2D" />
@@ -44,7 +43,6 @@
             uniform float bias;
             uniform float intensityDivR6;
             uniform vec4 projInfo;
-            uniform vec4 clipInfo;
 
             uniform int blurRadius;
             uniform float blurFactor;
@@ -66,8 +64,7 @@
 
             float linearizeDepth(vec2 uv)
             {
-                float d = texture2D(texDepth, uv).r;
-                return clipInfo.x / (clipInfo.z - clipInfo.y * d);
+                return sampleCoord(texDepth, uv).r;
             }
 
             float bilateralfilter(vec2 coord, float r, float center_d)

@@ -76,6 +76,7 @@ MaterialSemantic::setup() noexcept
 	_semantics[NormalMap] = std::make_shared<MaterialParam>("NormalMap", ShaderVariantType::SPT_TEXTURE);
 
 	_semantics[DeferredDepthMap] = std::make_shared<MaterialParam>("DeferredDepthMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[DeferredDepthLinearMap] = std::make_shared<MaterialParam>("DeferredDepthLinearMap", ShaderVariantType::SPT_TEXTURE);	
 	_semantics[DeferredGraphicMap] = std::make_shared<MaterialParam>("DeferredGraphicMap", ShaderVariantType::SPT_TEXTURE);
 	_semantics[DeferredNormalMap] = std::make_shared<MaterialParam>("DeferredNormalMap", ShaderVariantType::SPT_TEXTURE);
 	_semantics[DeferredLightMap] = std::make_shared<MaterialParam>("DeferredLightMap", ShaderVariantType::SPT_TEXTURE);

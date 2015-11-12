@@ -921,7 +921,7 @@ OGLRenderer::setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constan
 	}
 	case ShaderVariantType::SPT_TEXTURE:
 	{
-		//if (uniform->needUpdate())
+		if (uniform->needUpdate())
 		{
 			auto texture = uniform->getValue()->getTexture();
 			auto sample = uniform->getValue()->getTextureSample();

@@ -330,12 +330,18 @@
                 return mrt1.w;
             }
 
-            float3 restorePosition(sampler2D texDepth, mat4 matProjectInverse, float2 coord)
+            float3 restorePosition(sampler2D texDepth, mat4 matInverse, float2 coord)
             {
                 float depth  = sampleCoord(texDepth, coord.xy).r;
-                float4 result = matProjectInverse * float4(coord * 2.0 - 1.0, depth, 1.0);
+                float4 result = matInverse * float4(coord * 2.0 - 1.0, depth, 1.0);
                 result /= result.w;
                 return result.xyz;
+            }
+
+            float3 restorePosition(sampler2D texDepthLinear, float4 projInfo, float2 coord)
+            {
+                float depth = sampleCoord(texDepthLinear, coord).r;
+                return float3(projInfo.xy * coord + projInfo.zw, 1.0) * depth;
             }
 
             float4 sampleSphere(sampler2D source, float3 normal)

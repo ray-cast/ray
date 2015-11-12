@@ -1262,12 +1262,12 @@ MeshProperty::mergeMeshes(const CombineInstance& instance) noexcept
 		{
 			maxVertices += mesh->getNumVertices();
 			maxIndices += mesh->getNumIndices();
-		}
 
-		hasVertices |= !mesh->getVertexArray().empty();
-		hasNormal |= !mesh->getNormalArray().empty();
-		hasTexcoord |= !mesh->getTexcoordArray().empty();
-		hasFace |= !mesh->getFaceArray().empty();
+			hasVertices |= !mesh->getVertexArray().empty();
+			hasNormal |= !mesh->getNormalArray().empty();
+			hasTexcoord |= !mesh->getTexcoordArray().empty();
+			hasFace |= !mesh->getFaceArray().empty();
+		}
 	}
 
 	if (hasVertices)

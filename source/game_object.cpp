@@ -1057,6 +1057,7 @@ GameObjectPtr
 GameObject::clone() const except
 {
 	auto instance = std::make_shared<GameObject>();
+	instance->setParent(this->getParent());
 	instance->setName(this->getName());
 	instance->setLayer(this->getLayer());
 	instance->setLookAt(this->getLookAt());

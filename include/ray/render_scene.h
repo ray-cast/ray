@@ -39,8 +39,49 @@
 
 #include <ray/camera.h>
 #include <ray/light.h>
+#include <ray/kdtree.h>
 
 _NAME_BEGIN
+
+class EXPORT OcclusionCullNode
+{
+public:
+	OcclusionCullNode() noexcept;
+	OcclusionCullNode(RenderObjectPtr item, float distSqrt) noexcept;
+	~OcclusionCullNode() noexcept;
+
+	void setOcclusionCullNode(RenderObjectPtr node) noexcept;
+	RenderObjectPtr getOcclusionCullNode() noexcept;
+	void setDistanceSqrt(float distSq) noexcept;
+
+	float getDistanceSqrt() const noexcept;
+
+private:
+
+	float _distanceSqrt;
+	RenderObjectPtr _item;
+};
+
+class EXPORT OcclusionCullList
+{
+public:
+	typedef std::vector<OcclusionCullNode> OcclusionCullNodes;
+
+public:
+	OcclusionCullList() noexcept;
+	~OcclusionCullList() noexcept;
+	void clear() noexcept;
+
+	OcclusionCullNodes& iter() noexcept;
+	const OcclusionCullNodes& iter() const noexcept;
+
+	void insert(RenderObjectPtr item, float distanceSqrt) noexcept;
+	void sort() noexcept;
+
+private:
+
+	OcclusionCullNodes _iter;
+};
 
 class EXPORT RenderScene : public Reference<RenderScene>
 {
@@ -64,8 +105,8 @@ public:
 	void addRenderObject(RenderObjectPtr object) noexcept;
 	void removeRenderObject(RenderObjectPtr object) noexcept;
 
-	void computVisiableLight(const Matrix4x4& viewProject, std::function<void(LightPtr&)> callback) noexcept;
-	void computVisiable(const Matrix4x4& viewProject, std::function<void(RenderObjectPtr&)> callback) noexcept;
+	void computVisiableLight(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept;
+	void computVisiable(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept;
 
 private:
 

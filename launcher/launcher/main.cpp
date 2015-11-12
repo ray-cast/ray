@@ -42,6 +42,11 @@
 #define GLFW_EXPOSE_NATIVE_WGL
 #define GLFW_EXPOSE_NATIVE_WIN32
 
+#define WINDOW_DEFAULT_WIDTH 1376
+#define WINDOW_DEFAULT_HEIGHT 768
+#define WINDOW_MAX_WIDTH 4096
+#define WINDOW_MAX_HEIGHT 4096
+
 #include <GLFW\glfw3.h>
 #include <GLFW\glfw3native.h>
 
@@ -78,10 +83,10 @@ int main(int argc, char *argv[])
 	try
 	{
 		ray::GameApplication app;
-		app.openIoServer();
+		app.initialize(argc, argv);
 
-		int width = 1376;
-		int height = 768;
+		int width = WINDOW_DEFAULT_WIDTH;
+		int height = WINDOW_DEFAULT_HEIGHT;
 		std::string title = "Launcher";
 		std::string scene = "";
 
@@ -105,10 +110,10 @@ int main(int argc, char *argv[])
 			reader >> rtti_name(title);
 			reader >> rtti_name(scene);
 
-			if (width < 0 || width > 4096)
-				width = 1376;
-			if (height < 0 || height > 4096)
-				height = 768;
+			if (width < 0 || width > WINDOW_MAX_WIDTH)
+				width = WINDOW_DEFAULT_WIDTH;
+			if (height < 0 || height > WINDOW_MAX_HEIGHT)
+				height = WINDOW_DEFAULT_HEIGHT;
 			if (title.empty() || scene.empty())
 				continue;
 			break;
@@ -124,14 +129,11 @@ int main(int argc, char *argv[])
 
 			HWND hwnd = glfwGetWin32Window(_window);
 
-			if (!app.openGameServer(hwnd, width, height))
+			if (!app.open(hwnd, width, height))
 				throw ray::failure("App::open() fail");
 
-			for (;;)
+			while (!app.openScene(scene))
 			{
-				if (app.openScene(scene))
-					break;
-
 				std::cout << "Enter your scene file path : ";
 				std::cin >> scene;
 				std::cout << std::endl;

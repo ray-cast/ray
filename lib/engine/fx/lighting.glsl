@@ -110,7 +110,7 @@
                 return 0.0;
             }
 
-            float3 brdfEnvironmentSpecular(float3 prefilteredColor, float3 N, float3 V, float roughness, float specular)
+            float brdfEnvironmentSpecular(float3 N, float3 V, float roughness, float specular)
             {
                 float NdotV = dot(N, V);
 
@@ -131,7 +131,7 @@
                 envBRDF.y = (((tmp.x * NdotV + tmp.y) * NdotV + tmp.z) * NdotV) + tmp.w;
                 envBRDF = clamp(envBRDF, 0, 1);
 
-                return prefilteredColor * (specular * envBRDF.x + envBRDF.y);
+                return specular * envBRDF.x + envBRDF.y;
             }
 
             float directionLighting(float3 P, float3 N, float3 L, float3 lightAttenuation)

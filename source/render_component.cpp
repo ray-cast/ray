@@ -169,15 +169,16 @@ RenderComponent::save(oarchive& write) noexcept
 void
 RenderComponent::_attacRenderObjects() noexcept
 {
-	auto renderer = this->getGameObject()->getGameServer()->getFeature<RenderFeatures>();
-	if (renderer)
-	{
-		auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
-		if (renderScene)
-		{
-			_renderObject->setRenderScene(renderScene);
-		}
-	}
+	auto gameServer = this->getGameObject()->getGameServer();
+	if (!gameServer) { assert(gameServer); return;}
+		
+	auto renderer = gameServer->getFeature<RenderFeatures>();
+	if (!renderer) { assert(renderer); return; }
+
+	auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
+	if (!renderScene) { assert(renderScene); return; }
+
+	_renderObject->setRenderScene(renderScene);
 }
 
 void

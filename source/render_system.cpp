@@ -70,6 +70,7 @@ DefaultRenderSystem::open(WindHandle window, std::size_t w, std::size_t h) excep
 
 	RenderSetting setting;
 	setting.enableFXAA = true;
+	setting.enableSSAO = true;
 	this->setRenderSetting(setting);
 }
 

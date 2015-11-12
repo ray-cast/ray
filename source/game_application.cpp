@@ -40,6 +40,7 @@
 #include <ray/render_features.h>
 #include <ray/input_features.h>
 #include <ray/script_features.h>
+#include <ray/physics_features.h>
 
 _NAME_BEGIN
 
@@ -48,6 +49,7 @@ GameApplication::GameApplication() noexcept
 	, _ioInterface(nullptr)
 	, _isQuitRequest(false)
 	, _isInitialize(false)
+	, _workDir("")
 	, _engineDir("..\\..\\engine\\")
 	, _resourceBaseDir("..\\..\\dlc\\")
 {
@@ -59,13 +61,20 @@ GameApplication::~GameApplication() noexcept
 }
 
 bool
-GameApplication::openIoServer() except
+GameApplication::initialize(int argc, char *argv[]) except
 {
+	if (argc != 0)
+	{
+		if (access(argv[0], 0) != 0)
+			return false;
+		_workDir = directory(argv[0]);
+	}
+
 	if (!_isInitialize)
 	{
 		_ioServer = IoServer::instance();
-		_ioServer->addAssign(IoAssign("sys", _engineDir));
-		_ioServer->addAssign(IoAssign("dlc", _resourceBaseDir));
+		_ioServer->addAssign(IoAssign("sys", _workDir + _engineDir));
+		_ioServer->addAssign(IoAssign("dlc", _workDir + _resourceBaseDir));
 		_ioServer->mountArchives();
 
 		_ioInterface = IoInterface::instance();
@@ -78,7 +87,7 @@ GameApplication::openIoServer() except
 }
 
 bool
-GameApplication::openGameServer(WindHandle hwnd, std::size_t width, std::size_t height) except
+GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) except
 {
 	if (_isInitialize)
 	{
@@ -88,6 +97,7 @@ GameApplication::openGameServer(WindHandle hwnd, std::size_t width, std::size_t 
 		if (_gameServer->open())
 		{
 			this->addFeatures(std::make_shared<ray::InputFeatures>());
+			this->addFeatures(std::make_shared<ray::PhysicFeatures>());
 			this->addFeatures(std::make_shared<ray::ScriptFeatures>());
 			this->addFeatures(std::make_shared<ray::RenderFeatures>(hwnd, width, height));
 
@@ -207,11 +217,13 @@ GameApplication::setFileServicePath(const std::string& path) noexcept
 		tmp += SEPARATOR;
 	}
 
-	_engineDir = tmp + "engine\\";
-	_resourceBaseDir = tmp + "dlc\\";
+	_workDir = path;
 
-	_ioServer->addAssign(IoAssign("sys", _engineDir));
-	_ioServer->addAssign(IoAssign("dlc", _resourceBaseDir));
+	auto engineDir = tmp + _engineDir;
+	auto resourceBaseDir = tmp + _resourceBaseDir;
+
+	_ioServer->addAssign(IoAssign("sys", engineDir));
+	_ioServer->addAssign(IoAssign("dlc", resourceBaseDir));
 }
 
 void

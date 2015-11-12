@@ -49,6 +49,7 @@ ScriptFeatures::ScriptFeatures() noexcept
 
 ScriptFeatures::~ScriptFeatures() noexcept
 {
+	ScriptSystem::instance()->close();
 }
 
 GameComponentPtr

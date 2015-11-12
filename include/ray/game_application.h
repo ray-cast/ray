@@ -47,8 +47,9 @@ public:
 	GameApplication() noexcept;
 	virtual ~GameApplication() noexcept;
 
-	bool openIoServer() except;
-	bool openGameServer(WindHandle hwnd, std::size_t width, std::size_t height) except;
+	bool initialize(int argc, char *argv[]) except;
+
+	bool open(WindHandle hwnd, std::size_t width, std::size_t height) except;
 	void close() noexcept;
 
 	void start() except;
@@ -83,6 +84,7 @@ private:
 	bool _isInitialize;
 	bool _isQuitRequest;
 
+	std::string _workDir;
 	std::string _engineDir;
 	std::string _resourceBaseDir;
 	std::string _downloadURL;

@@ -284,6 +284,16 @@ public:
 		return FRUSTUM_CONTAINS;
 	}
 
+	float getFar() const noexcept
+	{
+		return _far.distance;
+	}
+
+	float getNear() const noexcept
+	{
+		return _near.distance;
+	}
+
 private:
 
 	Plane3t<T> _left;

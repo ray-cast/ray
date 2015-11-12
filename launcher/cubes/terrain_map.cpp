@@ -106,9 +106,7 @@ TerrainMap::set(BlockPosition x, BlockPosition y, BlockPosition z, ItemID w)
 
 		_count++;
 		if (_count * 2 > _mask)
-		{
 			this->grow();
-		}
 
 		return true;
 	}
@@ -191,6 +189,7 @@ TerrainMap::grow()
 
 	_mask = map._mask;
 	_size = map._size;
+	_count = map._count;
 	_data.swap(map._data);
 }
 

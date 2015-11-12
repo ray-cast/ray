@@ -11,9 +11,12 @@
     <parameter name="texMRT0" semantic="DeferredGraphicMap" />
     <parameter name="texMRT1" semantic="DeferredNormalMap" />
     <parameter name="texDepth" semantic="DeferredDepthMap" />
+    <parameter name="texDepthLinear" semantic="DeferredDepthLinearMap" />
     <parameter name="texLight" semantic="DeferredLightMap" />
     <parameter name="texEnvironmentMap" type="sampler2D"/>
     <parameter name="eyePosition" type="float3" />
+    <parameter name="clipInfo" type="float4"/>
+    <parameter name="projInfo" type="float4"/>
     <parameter name="lightColor" type="float3" />
     <parameter name="lightDirection" type="float3" />
     <parameter name="lightPosition" type="float3" />
@@ -41,6 +44,12 @@
             void DeferredDepthOnlyVS()
             {
                 gl_Position = mul(matViewProject, mul(matModel, glsl_Position));
+            }
+
+            void DeferredDepthLinearVS()
+            {
+                coord = glsl_Texcoord.xy;
+                gl_Position = position = glsl_Position;
             }
 
             void DeferredSunLightVS()
@@ -81,7 +90,7 @@
     </shader>
     <shader name="fragment">
         <![CDATA[
-            #extension GL_NV_shadow_samplers_cube : enable
+            //#extension GL_NV_shadow_samplers_cube : enable
 
             uniform mat4 matView;
             uniform mat4 matViewInverse;
@@ -89,6 +98,8 @@
             uniform mat4 matViewProjectInverse;
 
             uniform float3 eyePosition;
+            uniform float4 clipInfo;
+            uniform float4 projInfo;
 
             uniform float3 lightColor;
             uniform float3 lightPosition;
@@ -102,6 +113,7 @@
             uniform sampler2D texMRT0;
             uniform sampler2D texMRT1;
             uniform sampler2D texDepth;
+            uniform sampler2D texDepthLinear;
             uniform sampler2D texLight;
             uniform samplerCube texEnvironmentMap;
 
@@ -113,6 +125,12 @@
             in float4 position;
             in float2 coord;
 
+            void DeferredDepthLinearPS()
+            {
+                float d = sampleCoord(texDepth, coord).r;
+                glsl_FragColor0.r = clipInfo.x / (clipInfo.z - clipInfo.y * d);
+            }
+
             void DeferredSunLightPS()
             {
                 float4 MRT1 = sampleCoord(texMRT1, coord);
@@ -122,7 +140,7 @@
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
-                float3 P = restorePosition(texDepth, matProjectInverse, coord);
+                float3 P = restorePosition(texDepthLinear, projInfo, coord);
 
                 float3 V = normalize(eyePosition - P);
                 float3 L = normalize(lightDirection);
@@ -143,7 +161,7 @@
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
-                float3 P = restorePosition(texDepth, matProjectInverse, coord);
+                float3 P = restorePosition(texDepthLinear, projInfo, coord);
                 float3 V = normalize(eyePosition - P);
                 float3 L = normalize(lightDirection);
 
@@ -167,7 +185,7 @@
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
-                float3 P = restorePosition(texDepth, matProjectInverse, coord);
+                float3 P = restorePosition(texDepthLinear, projInfo, coord);
 
                 float3 V = normalize(eyePosition - P);
                 float3 L = normalize(lightDirection);
@@ -188,7 +206,7 @@
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
-                float3 P = restorePosition(texDepth, matProjectInverse, coord);
+                float3 P = restorePosition(texDepthLinear, projInfo, coord);
                 float3 V = normalize(eyePosition - P);
                 float3 L = normalize(lightDirection);
 
@@ -212,7 +230,7 @@
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
-                float3 P = restorePosition(texDepth, matProjectInverse, coord);
+                float3 P = restorePosition(texDepthLinear, projInfo, coord);
                 float3 V = normalize(eyePosition - P);
                 float3 L = normalize(lightPosition - P);
 
@@ -233,7 +251,7 @@
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
-                float3 P = restorePosition(texDepth, matProjectInverse, coord);
+                float3 P = restorePosition(texDepthLinear, projInfo, coord);
                 float3 V = normalize(eyePosition - P);
                 float3 L = normalize(lightPosition - P);
 
@@ -256,16 +274,10 @@
                 float3 N = mat3(matViewInverse) * restoreNormal(MRT1);
                 float3 P = restorePosition(texDepth, matViewProjectInverse, coord);
                 float3 V = normalize(eyePosition - P);
-                float3 R = reflect(V, N);
-
-                float3 prefilteredDiffuseColor = textureCube(texEnvironmentMap, N).rgb;
-                float3 prefilteredSpecularolor = textureCube(texEnvironmentMap, R).rgb;
 
                 float4 lighting;
                 lighting.rgb = lightColor;
-                //lighting.rgb = brdfEnvironmentDiffuse(prefilteredDiffuseColor);
-                //lighting.rgb = brdfEnvironmentSpecular(prefilteredSpecularolor, N, V, shininess, specular);
-                lighting.a = 0.0;
+                lighting.a = brdfEnvironmentSpecular(N, V, shininess, specular);
 
                 glsl_FragColor0 = lighting;
             }
@@ -298,6 +310,15 @@
     <technique name="custom">
         <pass name="DeferredDepthOnly">
             <state name="vertex" value="DeferredDepthOnlyVS"/>
+        </pass>
+        <pass name="DeferredDepthLinear">
+            <state name="vertex" value="DeferredDepthLinearVS"/>
+            <state name="fragment" value="DeferredDepthLinearPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
         </pass>
         <pass name="DeferredSunLight">
             <state name="vertex" value="DeferredSunLightVS"/>

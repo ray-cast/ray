@@ -63,12 +63,6 @@ ScriptObject::open(const std::string& name)
 void
 ScriptObject::close() noexcept
 {
-	if (_module)
-	{
-		_module->Discard();
-		_module = nullptr;
-	}
-
 	if (_object)
 	{
 		_object->Release();

@@ -51,7 +51,7 @@ public:
 	{
 	}
 
-	void init(std::size_t w, std::size_t h)
+	void setup(std::size_t w, std::size_t h)
 	{
 		glfwInit();
 
@@ -120,7 +120,8 @@ int main(int argc, char *argv[])
 	try
 	{
 		GameEngine engine;
-		engine.init(1376, 768);
+		engine.initialize(argc, argv);
+		engine.setup(1376, 768);
 		engine.run();
 	}
 	catch (const ray::exception& e)

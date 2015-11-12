@@ -59,10 +59,15 @@ public:
             return mesh;
         }
 
-        void setTransform(const Matrix4x4& m)
+        void setTransform(const float4x4& m)
         {
             transform = m;
         }
+
+		void makeTransform(const float3& translate, const float3& rotate, const float3& scale)
+		{
+			transform.makeTransform(translate, Quaternion(rotate), scale);
+		}
 
         const Matrix4x4& getTransform() const
         {

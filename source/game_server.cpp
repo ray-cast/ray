@@ -68,7 +68,11 @@ GameServer::close() noexcept
 	_isQuitRequest = true;
 
 	_scenes.clear();
-	_features.clear();
+	for (auto& it : _features)
+	{
+		it->setActive(false);
+		it.reset();
+	}
 }
 
 bool

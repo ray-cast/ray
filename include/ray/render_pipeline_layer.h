@@ -38,6 +38,7 @@
 #define _H_RENDER_PIPELINE_H_
 
 #include <ray/render_pipeline_base.h>
+#include <ray/render_scene.h>
 
 _NAME_BEGIN
 
@@ -130,6 +131,8 @@ private:
 	RenderBufferPtr _renderCone;
 
 	MaterialPassPtr _currentMaterial;
+
+	OcclusionCullList _visiable;
 
 	RenderObjects _renderQueue[RenderQueue::RQ_NUMS][RenderPass::RP_NUMPASS];
 	std::vector<RenderPostProcessPtr> _postprocessors[RenderQueue::RQ_NUMS];

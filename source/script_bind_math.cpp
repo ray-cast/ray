@@ -46,6 +46,12 @@ void construct(T * address)
 	(*address) = T();
 }
 
+template <typename _T, typename _Tx, typename _Ty>
+void construct_2(_T * address, _Tx x, _Ty y)
+{
+	(*address) = _T(x, y);
+}
+
 template <typename _T, typename _Tx, typename _Ty, typename _Tz>
 void construct_3(_T * address, _Tx x, _Ty y, _Tz z)
 {
@@ -96,6 +102,49 @@ void DestructFloat3(float3* thisPointer)
 	thisPointer->~Vector3();
 }
 
+template<typename T>
+bool equalsTemplate(const T& v1, const T& v2)
+{
+	return v1 == v2;
+}
+
+template<typename T>
+T addTemplate(const T& v1, const T& v2)
+{
+	return v1 + v2;
+}
+
+template<typename T>
+T subTemplate(const T& v1, const T& v2)
+{
+	return v1 - v2;
+}
+
+void Float2SetX(float2& v, float value)
+{
+	v.x = value;
+}
+
+void Float2SetY(float2& v, float value)
+{
+	v.y = value;
+}
+
+float Float2GetX(float2& v)
+{
+	return v.x;
+}
+
+float Float2GetY(float2& v)
+{
+	return v.y;
+}
+
+float2 Float2MulFloat(const float2& v, float value)
+{
+	return v * value;
+}
+
 float3 AddFloat3Float3(const float3& v1, const float3& v2)
 {
 	return v1 + v2;
@@ -138,7 +187,7 @@ void Float3SetZ(float3& v, float value)
 
 float3 Float3MulFloat(const float3& v, float value)
 {
-	return float3(v) * value;
+	return v * value;
 }
 
 bool Float3Equals(const float3& v1, const float3& v2)
@@ -184,11 +233,6 @@ void Float4SetZ(float4& v, float value)
 void Float4SetW(float4& v, float value)
 {
 	v.w = value;
-}
-
-void makeRotate(float3x3& m, float angle, const float3& axis)
-{
-	m.makeRotate(angle, axis);
 }
 
 float3 MulFloat3x3Float3(const float3x3& m, const float3& v)
@@ -264,6 +308,34 @@ ScriptBindMath::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterGlobalFunction("float simplex2(float x, float y, int octaves, float persistence, float lacunarity)", asFUNCTION(simplex2), asCALL_CDECL);
 	r = engine->RegisterGlobalFunction("float simplex3(float x, float y, float z, int octaves, float persistence, float lacunarity)", asFUNCTION(simplex3), asCALL_CDECL);
 
+	// float2 class
+	r = engine->RegisterObjectType("float2", sizeof(float2), asOBJ_VALUE | asGetTypeTraits<float2>()); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("float2", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<float2>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("float2", asBEHAVE_CONSTRUCT, "void f(float x, float y)", asFUNCTION((construct_2<float2, float, float>)), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("float2", asBEHAVE_CONSTRUCT, "void f(const float2& in)", asFUNCTION(copy_construct<float2>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("float2", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(destroy<float2>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float2& opAssign(const float2& in)", asMETHODPR(float2, operator =, (const float2&), float2&), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float2& opAddAssign(const float2& in)", asMETHODPR(float2, operator +=, (const float2&), float2&), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float2& opSubAssign(const float2& in)", asMETHODPR(float2, operator -=, (const float2&), float2&), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float2& opMulAssign(const float2& in)", asMETHODPR(float2, operator *=, (const float2&), float2&), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float2& opDivAssign(const float2& in)", asMETHODPR(float2, operator /=, (const float2&), float2&), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "bool opEquals(const float2 &in) const", asFUNCTIONPR(equalsTemplate<float2>, (const float2&, const float2&), bool), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float2 opMul(float)", asFUNCTION(Float2MulFloat), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float2& opMulAssign(const float value)", asMETHODPR(float2, operator *=, (const float), float2&), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float2& opDivAssign(const float value)", asMETHODPR(float2, operator /=, (const float), float2&), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float2 opAdd(const float2& in) const", asFUNCTION(addTemplate<float2>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float2 opSub(const float2& in) const", asFUNCTION(subTemplate<float2>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float get_x() const", asFUNCTION(Float2SetX), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float get_y() const", asFUNCTION(Float2GetY), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "void set_x(float value)", asFUNCTION(Float2SetX), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "void set_y(float value)", asFUNCTION(Float2SetY), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float dot(const float2& in) const", asMETHOD(float2, dot), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float normalize()", asMETHOD(float2, normalize), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float length() const", asMETHOD(float2, length), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float length2() const", asMETHOD(float2, length2), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float distance() const", asMETHOD(float2, distance), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("float2", "float sqrDistance() const", asMETHOD(float2, sqrDistance), asCALL_THISCALL); assert(r >= 0);
+
 	// float3 class
 	r = engine->RegisterObjectType("float3", sizeof(float3), asOBJ_VALUE | asGetTypeTraits<float3>()); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("float3", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<float3>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
@@ -316,7 +388,6 @@ ScriptBindMath::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectBehaviour("float3x3", asBEHAVE_CONSTRUCT, "void f(const float3x3& in)", asFUNCTION(copy_construct<float3x3>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("float3x3", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(destroy<float3x3>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("float3x3", "float3 opMul(const float3& in) const", asFUNCTION(MulFloat3x3Float3), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectMethod("float3x3", "void makeRotate(float angle, const float3& in)", asFUNCTION(makeRotate), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 
 	// float 4x4
 

@@ -354,8 +354,8 @@ class TerrainGrass : TerrainObject
         _object = instantiate("grass");
         _object.setName("chunk_" + p + "_" + q);
         _object.setTranslate(float3(0, 0, 0));
-        _object.setActive(true);
         _object.getMeshFilter().setCombieInstnace(combines);
+        _object.setActive(true);
 
         return true;
     }

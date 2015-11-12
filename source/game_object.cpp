@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #include <ray/game_object.h>
 #include <ray/game_component.h>
-#include <ray/game_scene.h>
 
 _NAME_BEGIN
 
@@ -117,13 +116,15 @@ GameObject::getActive() const noexcept
 void
 GameObject::setLayer(int layer) noexcept
 {
-	layer = clamp(layer, 0, 32);
-
 	if (_layer != layer)
 	{
-		this->_onLayerChangeBefore();
+		for (auto& it : _components)
+			it->onLayerChangeBefore();
+
 		_layer = layer;
-		this->_onLayerChangeAfter();
+
+		for (auto& it : _components)
+			it->onLayerChangeAfter();
 	}
 }
 
@@ -926,14 +927,15 @@ GameObject::addComponent(GameComponentPtr component) except
 			return;
 	}
 
-	component->_setGameObject(this);
-	component->onAttach();
-	if (this->getActive())
-	{
-		component->onActivate();
-	}
-
 	_components.push_back(component);
+
+	component->_setGameObject(this);
+
+	for (auto& it : _components)
+		it->onAttachComponent();
+
+	if (this->getActive())
+		component->onActivate();
 }
 
 void
@@ -944,9 +946,10 @@ GameObject::removeComponent(GameComponentPtr component) noexcept
 	auto it = std::find(_components.begin(), _components.end(), component);
 	if (it != _components.end())
 	{
-		(*it)->onRemove();
-		(*it)->_setGameObject(nullptr);
+		for (auto& it : _components)
+			it->onDetachComponent();
 
+		(*it)->_setGameObject(nullptr);
 		_components.erase(it);
 	}
 }
@@ -960,7 +963,7 @@ GameObject::destroyComponent(GameComponentPtr component) noexcept
 	if (it != _components.end())
 	{
 		(*it)->onDeactivate();
-		(*it)->onRemove();
+		(*it)->onDetachComponent();
 		(*it)->_setGameObject(nullptr);
 
 		_components.erase(it);
@@ -975,7 +978,10 @@ GameObject::cleanupComponents() noexcept
 		for (auto& it : _components)
 		{
 			it->setActive(false);
-			it->onRemove();
+			for (auto& it : _components)
+			{
+				it->onDetachComponent();
+			}
 		}
 	}
 
@@ -1128,9 +1134,6 @@ GameObject::_onFrameEnd() except
 void
 GameObject::_onMoveBefore() except
 {
-	if (!this->getActive())
-		return;
-
 	for (auto& it : _components)
 	{
 		it->onMoveBefore();
@@ -1145,9 +1148,6 @@ GameObject::_onMoveBefore() except
 void
 GameObject::_onMoveAfter() except
 {
-	if (!this->getActive())
-		return;
-
 	for (auto& it : _components)
 	{
 		it->onMoveAfter();
@@ -1156,40 +1156,6 @@ GameObject::_onMoveAfter() except
 	for (auto& it : _children)
 	{
 		it->_onMoveAfter();
-	}
-}
-
-void
-GameObject::_onLayerChangeBefore() except
-{
-	if (!this->getActive())
-		return;
-
-	for (auto& it : _components)
-	{
-		it->onLayerChangeBefore();
-	}
-
-	for (auto& it : _children)
-	{
-		it->_onLayerChangeBefore();
-	}
-}
-
-void
-GameObject::_onLayerChangeAfter() except
-{
-	if (!this->getActive())
-		return;
-
-	for (auto& it : _components)
-	{
-		it->onLayerChangeAfter();
-	}
-
-	for (auto& it : _children)
-	{
-		it->_onLayerChangeAfter();
 	}
 }
 

@@ -47,7 +47,7 @@ SkyBoxComponent::SkyBoxComponent() noexcept
 
 SkyBoxComponent::SkyBoxComponent(MaterialPtr material) noexcept
 {
-	this->addMaterial(material);
+	this->setMaterial(material);
 }
 
 SkyBoxComponent::~SkyBoxComponent() noexcept
@@ -69,12 +69,8 @@ SkyBoxComponent::clone() const noexcept
 {
 	auto sky = std::make_shared<SkyBoxComponent>();
 	sky->setName(this->getName());
-
-	for (auto& it : this->getMaterials())
-	{
-		sky->addMaterial(it);
-	}
-
+	sky->setMaterial(this->getMaterial());
+	sky->setSharedMaterial(this->getMaterial());
 	return sky;
 }
 

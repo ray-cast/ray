@@ -168,13 +168,13 @@ GameComponent::sendMessageDownwards(const GameMessage& message) except
 	}
 }
 
-void
-GameComponent::onAttach() except
+void 
+GameComponent::onAttachComponent() except
 {
 }
 
-void
-GameComponent::onRemove() except
+void 
+GameComponent::onDetachComponent() except
 {
 }
 

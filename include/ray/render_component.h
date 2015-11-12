@@ -56,14 +56,11 @@ public:
 	void setReceiveShadow(bool value) noexcept;
 	bool getReceiveShadow() const noexcept;
 
-	void addMaterial(MaterialPtr material) noexcept;
-	void addSharedMaterial(MaterialPtr material) noexcept;
+	void setMaterial(MaterialPtr material) noexcept;
+	void setSharedMaterial(MaterialPtr material) noexcept;
 
-	const Materials& getMaterials() const noexcept;
-	const Materials& getSharedMaterials() const noexcept;
-
-	MaterialPtr getMaterial(std::size_t index) const noexcept;
-	MaterialPtr getSharedMaterial(std::size_t index) const noexcept;
+	const MaterialPtr getMaterial() const noexcept;
+	const MaterialPtr getSharedMaterial() const noexcept;
 
 	bool hasMaterial() const noexcept;
 	bool hasSharedMaterial() const noexcept;
@@ -80,11 +77,6 @@ protected:
 	RenderObjectPtr _getRenderObject() noexcept;
 
 protected:
-	virtual void onAttach() except;
-	virtual void onRemove() noexcept;
-
-	virtual void onActivate() except;
-	virtual void onDeactivate() noexcept;
 
 	virtual void onWillRenderObject() noexcept;
 	virtual void onRenderObject() noexcept;
@@ -102,8 +94,8 @@ private:
 	bool _isCastShadow;
 	bool _isReceiveShadow;
 
-	Materials _materials;
-	Materials _sharedMaterials;
+	MaterialPtr _material;
+	MaterialPtr _sharedMaterial;
 
 	RenderObjectPtr _renderObject;
 };

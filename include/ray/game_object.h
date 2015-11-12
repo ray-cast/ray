@@ -189,9 +189,6 @@ private:
 	void _onMoveBefore() except;
 	void _onMoveAfter() except;
 
-	void _onLayerChangeBefore() except;
-	void _onLayerChangeAfter() except;
-
 	void _updateTransform() const noexcept;
 
 private:

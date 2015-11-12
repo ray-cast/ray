@@ -136,11 +136,13 @@ public:
     void set(value_type val) noexcept { x = y = val; }
     void set(value_type xx, value_type yy) noexcept { x = xx; y = yy; }
 
+	value_type dot(const Vector2t<T>& v) const noexcept { return x * v.x + y * v.y; }
+
     value_type length() const noexcept { return sqrt(length2()); }
     value_type length2() const noexcept { return x * x + y * y; }
 
     value_type distance(const Vector2t<T>& v) const noexcept { return (v - *this).length(); }
-    value_type distance2(const Vector2t<T>& v) const noexcept { return (v - *this).dot(); }
+    value_type sqrDistance(const Vector2t<T>& v) const noexcept { return (v - *this).length2(); }
 
     reference getComponent(unsigned char index) noexcept
     {

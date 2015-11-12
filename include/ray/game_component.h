@@ -75,8 +75,8 @@ protected:
 	virtual void sendMessageUpwards(const GameMessage& message) except;
 	virtual void sendMessageDownwards(const GameMessage& message) except;
 
-	virtual void onAttach() except;
-	virtual void onRemove() except;
+	virtual void onAttachComponent() except;
+	virtual void onDetachComponent() except;
 
 	virtual void onActivate() except;
 	virtual void onDeactivate() except;

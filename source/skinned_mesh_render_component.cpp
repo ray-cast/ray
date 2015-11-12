@@ -60,11 +60,7 @@ SkinnedMeshRenderComponent::onActivate() except
 		if (!mesh)
 			return;
 
-		auto model = ResLoader<Model>::find(component->getName());
-		if (!model)
-			return;
-
-		this->buildMaterials(model);
+		this->buildMaterials();
 		this->buildRenderObjects(mesh);
 
 		this->_attacRenderObjects();

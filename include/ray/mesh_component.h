@@ -45,7 +45,9 @@ _NAME_BEGIN
 class EXPORT MeshListener
 {
 public:
-	virtual void onMeshChange(MeshPropertyPtr mesh);
+
+	virtual void onMeshChangeAfter() except;
+	virtual void onMeshChangeBefore() except;
 };
 
 class EXPORT MeshComponent final : public GameComponent
@@ -66,6 +68,10 @@ public:
 	std::size_t getNumIndices() const noexcept;
 
 	const Bound& getBoundingBox() const noexcept;
+	const Bound& getBoundingBoxDownwards() const noexcept;
+
+	void addMeshListener(MeshListener* listener) noexcept;
+	void removeMeshListener(MeshListener* listener) noexcept;
 
 	void clear() noexcept;
 
@@ -87,6 +93,8 @@ private:
 
 	MeshPropertyPtr _mesh;
 	MeshPropertyPtr _sharedMesh;
+
+	std::vector<MeshListener*> _listener;
 };
 
 _NAME_END

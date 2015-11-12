@@ -37,15 +37,6 @@
 #include <ray/render_features.h>
 #include <ray/render_factory.h>
 #include <ray/render_scene.h>
-#include <ray/render_window.h>
-#include <ray/camera_component.h>
-#include <ray/script_component.h>
-#include <ray/light_component.h>
-#include <ray/mesh_component.h>
-#include <ray/skybox_component.h>
-#include <ray/mesh_render_component.h>
-#include <ray/skinned_mesh_render_component.h>
-#include <ray/anim_component.h>
 
 _NAME_BEGIN
 

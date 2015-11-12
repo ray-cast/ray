@@ -41,6 +41,16 @@ _NAME_BEGIN
 
 __ImplementSubClass(MeshComponent, GameComponent)
 
+void 
+MeshListener::onMeshChangeAfter() except 
+{
+};
+
+void 
+MeshListener::onMeshChangeBefore() except 
+{
+};
+
 MeshComponent::MeshComponent() noexcept
 {
 }
@@ -54,18 +64,32 @@ MeshComponent::setMesh(MeshPropertyPtr mesh) noexcept
 {
 	if (_mesh != mesh)
 	{
+		for (auto& it : _listener)
+			it->onMeshChangeBefore();
+
 		if (mesh)
 			mesh->computeBoundingBox();
+
 		_mesh = mesh;
+
+		for (auto& it : _listener)
+			it->onMeshChangeAfter();
 	}
 }
 
 void 
 MeshComponent::setCombieInstnace(const CombineInstance& instances) noexcept
 {
+	for (auto& it : _listener)
+		it->onMeshChangeBefore();
+
 	if (_mesh == nullptr)
 		_mesh = std::make_shared<MeshProperty>();
+	
 	_mesh->mergeMeshes(instances);
+
+	for (auto& it : _listener)
+		it->onMeshChangeAfter();
 }
 
 void
@@ -113,6 +137,32 @@ const Bound&
 MeshComponent::getBoundingBox() const noexcept
 {
 	return _mesh->getBoundingBox();
+}
+
+const Bound& 
+MeshComponent::getBoundingBoxDownwards() const noexcept
+{
+	return _mesh->getBoundingBoxDownwards();
+}
+
+void 
+MeshComponent::addMeshListener(MeshListener* listener) noexcept
+{
+	auto it = std::find(_listener.begin(), _listener.end(), listener);
+	if (it == _listener.end())
+	{
+		_listener.push_back(listener);
+	}
+}
+
+void 
+MeshComponent::removeMeshListener(MeshListener* listener) noexcept
+{
+	auto it = std::find(_listener.begin(), _listener.end(), listener);
+	if (it != _listener.end())
+	{
+		_listener.erase(it);
+	}		
 }
 
 void

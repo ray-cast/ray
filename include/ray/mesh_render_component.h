@@ -40,10 +40,11 @@
 #include <ray/render_component.h>
 #include <ray/render_buffer.h>
 #include <ray/render_mesh.h>
+#include <ray/mesh_component.h>
 
 _NAME_BEGIN
 
-class EXPORT MeshRenderComponent : public RenderComponent
+class EXPORT MeshRenderComponent : public RenderComponent, public MeshListener
 {
 	__DeclareSubClass(MeshRenderComponent, RenderComponent)
 public:
@@ -52,15 +53,22 @@ public:
 
 	GameComponentPtr clone() const noexcept;
 
-	void buildMaterials(ModelPtr model) except;
+	void buildMaterials() except;
 	void buildRenderObjects(MeshPropertyPtr mesh) noexcept;
-
-private:
-	RenderObjectPtr buildRenderObject(MeshPropertyPtr mesh, RenderBufferPtr buffer) noexcept;
 
 protected:
 
-	void onActivate() except;
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
+
+	virtual void onMeshChangeAfter() except;
+
+	virtual void onAttachComponent() except;
+	virtual void onDetachComponent() except;
+
+	RenderObjectPtr buildRenderObject(MeshPropertyPtr mesh, RenderBufferPtr buffer) noexcept;
+
+
 
 private:
 	MeshRenderComponent(const MeshRenderComponent&) noexcept = delete;

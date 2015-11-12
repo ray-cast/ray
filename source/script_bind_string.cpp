@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/script_bind_string.h>
-#include <ray/script_system.h>
 
 #include <sstream>
 #include <angelscript.h>
@@ -233,12 +232,9 @@ static char *StringCharAt(unsigned int i, std::string& str)
 	return &str[i];
 }
 
-static int StringCmp(const std::string &a, const std::string &b)
+static bool StringCmp(const std::string &a, const std::string &b)
 {
-	int cmp = 0;
-	if (a < b) cmp = -1;
-	else if (a > b) cmp = 1;
-	return cmp;
+	return a == b;
 }
 
 static int StringFindFirst(const std::string &sub, std::size_t start, const std::string &str)
@@ -480,7 +476,7 @@ ScriptBindString::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectMethod("string", "string opAdd_r(bool) const", asFUNCTION(AddBoolString), asCALL_CDECL_OBJLAST); assert(r >= 0);
 
 	r = engine->RegisterObjectMethod("string", "bool opEquals(const string &in) const", asFUNCTIONPR(StringEquals, (const std::string&, const std::string &), bool), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectMethod("string", "int opCmp(const string &in) const", asFUNCTION(StringCmp), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("string", "bool opCmp(const string &in) const", asFUNCTION(StringCmp), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("string", "uint8& opIndex(uint)", asFUNCTION(StringCharAt), asCALL_CDECL_OBJLAST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("string", "const uint8 &opIndex(uint) const", asFUNCTION(StringCharAt), asCALL_CDECL_OBJLAST); assert(r >= 0);
 

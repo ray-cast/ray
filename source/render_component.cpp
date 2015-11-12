@@ -82,67 +82,39 @@ RenderComponent::getReceiveShadow() const noexcept
 }
 
 void
-RenderComponent::addMaterial(MaterialPtr material) noexcept
+RenderComponent::setMaterial(MaterialPtr material) noexcept
 {
-	assert(material);
-
-	auto it = std::find(_materials.begin(), _materials.end(), material);
-	if (it == _materials.end())
-	{
-		_materials.push_back(material);
-	}
+	_material = material;
 }
 
 void
-RenderComponent::addSharedMaterial(MaterialPtr material) noexcept
+RenderComponent::setSharedMaterial(MaterialPtr material) noexcept
 {
-	assert(material);
-
-	auto it = std::find(_sharedMaterials.begin(), _sharedMaterials.end(), material);
-	if (it == _sharedMaterials.end())
-	{
-		_sharedMaterials.push_back(material);
-	}
+	_material = material;
 }
 
-const Materials&
-RenderComponent::getMaterials() const noexcept
+const MaterialPtr
+RenderComponent::getMaterial() const noexcept
 {
-	return _materials;
+	return _material;
 }
 
-const Materials&
-RenderComponent::getSharedMaterials() const noexcept
+const MaterialPtr
+RenderComponent::getSharedMaterial() const noexcept
 {
-	return _sharedMaterials;
-}
-
-MaterialPtr
-RenderComponent::getMaterial(std::size_t index) const noexcept
-{
-	if (index < _materials.size())
-		return _materials[index];
-	return nullptr;
-}
-
-MaterialPtr
-RenderComponent::getSharedMaterial(std::size_t index) const noexcept
-{
-	if (index < _sharedMaterials.size())
-		return _sharedMaterials[index];
-	return nullptr;
+	return _sharedMaterial;
 }
 
 bool
 RenderComponent::hasMaterial() const noexcept
 {
-	return _materials.empty() ? false : true;
+	return _material != nullptr;
 }
 
 bool
 RenderComponent::hasSharedMaterial() const noexcept
 {
-	return _sharedMaterials.empty() ? false : true;
+	return _sharedMaterial != nullptr;
 }
 
 void
@@ -178,7 +150,8 @@ RenderComponent::_attacRenderObjects() noexcept
 	auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
 	if (!renderScene) { assert(renderScene); return; }
 
-	_renderObject->setRenderScene(renderScene);
+	if (_renderObject)
+		_renderObject->setRenderScene(renderScene);
 }
 
 void
@@ -206,47 +179,6 @@ RenderObjectPtr
 RenderComponent::_getRenderObject() noexcept
 {
 	return _renderObject;
-}
-
-void
-RenderComponent::onAttach() except
-{
-	if (!this->hasSharedMaterial())
-	{
-		if (!this->getName().empty())
-		{
-			auto material = RenderFactory::createMaterial(this->getName());
-			if (material)
-			{
-				this->addMaterial(material);
-				this->addSharedMaterial(material);
-			}
-		}
-	}
-}
-
-void
-RenderComponent::onRemove() noexcept
-{
-	for (auto& it : _materials)
-	{
-		it.reset();
-		it = nullptr;
-	}
-
-	_materials.clear();
-}
-
-void 
-RenderComponent::onActivate() except
-{
-	this->_attacRenderObjects();
-}
-
-void 
-RenderComponent::onDeactivate() noexcept
-{
-	this->_dettachRenderhObjects();
 }
 
 void

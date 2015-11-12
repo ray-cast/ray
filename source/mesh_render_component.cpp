@@ -62,14 +62,24 @@ MeshRenderComponent::clone() const noexcept
 	result->setCastShadow(this->getCastShadow());
 	result->setReceiveShadow(this->getReceiveShadow());
 	result->setName(this->getName());
-
-	for (auto& it : this->getSharedMaterials())
-	{
-		result->addMaterial(it);
-		result->addSharedMaterial(it);
-	}
-
+	result->setMaterial(this->getSharedMaterial());
+	result->setSharedMaterial(this->getSharedMaterial());
 	return result;
+}
+
+void 
+MeshRenderComponent::onAttachComponent() except
+{
+	auto component = this->getGameObject()->getComponent<MeshComponent>();
+	if (component)
+	{
+		component->addMeshListener(this);
+	}
+}
+
+void 
+MeshRenderComponent::onDetachComponent() except
+{
 }
 
 void
@@ -78,6 +88,8 @@ MeshRenderComponent::onActivate() except
 	auto component = this->getGameObject()->getComponent<MeshComponent>();
 	if (component)
 	{
+		component->addMeshListener(this);
+
 		auto mesh = component->getMesh();
 		if (!mesh)
 			return;
@@ -86,7 +98,7 @@ MeshRenderComponent::onActivate() except
 		if (!model)
 			return;
 
-		buildMaterials(model);
+		buildMaterials();
 		buildRenderObjects(mesh);
 
 		_attacRenderObjects();
@@ -94,112 +106,44 @@ MeshRenderComponent::onActivate() except
 }
 
 void
-MeshRenderComponent::buildMaterials(ModelPtr model) except
+MeshRenderComponent::onDeactivate() except
 {
-	if (!this->getName().empty())
-		return;
+	this->_dettachRenderhObjects();
+}
 
-	auto materials = model->getMaterialsList();
-	for (auto& it : materials)
+void 
+MeshRenderComponent::onMeshChangeAfter() except
+{
+	auto component = this->getGameObject()->getComponent<MeshComponent>();
+	if (component)
 	{
-		std::string diffuseName;
-		std::string normalName;
-		std::string specularName;
-		TexturePtr diffuseTexture;
-		TexturePtr normalTexture;
-		TexturePtr specularTexture;
+		component->addMeshListener(this);
 
-		float transparent = 1;
-		float shininess = 0;
-		Vector3 diffuse = Vector3::Zero;
-		Vector3 specular = Vector3::Zero;
-		it->get(MATKEY_TEXTURE_DIFFUSE(0), diffuseName);
-		it->get(MATKEY_TEXTURE_NORMALS(0), normalName);
-		it->get(MATKEY_TEXTURE_SPECULAR(0), specularName);
-		it->get(MATKEY_OPACITY, transparent);
-		it->get(MATKEY_SHININESS, shininess);
-		it->get(MATKEY_COLOR_DIFFUSE, diffuse);
-		it->get(MATKEY_COLOR_SPECULAR, specular);
+		auto mesh = component->getMesh();
+		if (!mesh)
+			return;
 
-		if (!diffuseName.empty())
-		{
-			const std::string& directory = model->getDirectory();
-			if (!directory.empty())
-			{
-				diffuseTexture = RenderFactory::createTexture(directory + diffuseName);
-				/*if (diffuseTexture->getTexFormat() == PixelFormat::R8G8B8A8)
-					transparent = 0;*/
-			}
-		}
-
-		if (!normalName.empty())
-		{
-			const std::string& directory = model->getDirectory();
-			if (!directory.empty())
-			{
-				normalTexture = RenderFactory::createTexture(directory + normalName);
-			}
-		}
-
-		if (!specularName.empty())
-		{
-			const std::string& directory = model->getDirectory();
-			if (!directory.empty())
-			{
-				specularTexture = RenderFactory::createTexture(directory + specularName);
-			}
-		}
-
-		MaterialPtr material = nullptr;
-
-		MaterialMaker maker;
-		if (normalTexture)
-		{
-			if (transparent == 1)
-				material = maker.load("sys:fx/opacity_normal.glsl");
-			else
-				material = maker.load("sys:fx/specific.glsl");
-		}
-		else
-		{
-			if (transparent == 1)
-				material = maker.load("sys:fx/opacity.glsl");
-			else
-				material = maker.load("sys:fx/specific.glsl");
-		}
-
-		if (normalTexture)
-		{
-			material->getParameter("texNormal")->assign(normalTexture);
-		}
-
-		if (diffuseTexture)
-		{
-			material->getParameter("diffuse")->assign(Vector4(diffuse, 0));
-			material->getParameter("texDiffuse")->assign(diffuseTexture);
-		}
-		else
-		{
-			material->getParameter("diffuse")->assign(Vector4(diffuse, 1));
-		}
-
-		if (material->getParameter("opacity"))
-			material->getParameter("opacity")->assign(transparent);
-
-		if (specularTexture)
-		{
-			material->getParameter("texSpecular")->assign(specularTexture);
-			material->getParameter("specular")->assign(Vector4(specular, 0));
-		}
-		else
-		{
-			material->getParameter("shininess")->assign(shininess / 8192);
-			material->getParameter("specular")->assign(Vector4(specular, 1));
-		}
-
-		this->addMaterial(material);
-		this->addSharedMaterial(material);
+		buildRenderObjects(mesh);
 	}
+}
+
+void
+MeshRenderComponent::buildMaterials() except
+{
+	if (!this->hasSharedMaterial())
+	{
+		if (!this->getName().empty())
+		{
+			auto material = RenderFactory::createMaterial(this->getName());
+			if (material)
+			{
+				this->setMaterial(material);
+				this->setSharedMaterial(material);
+			}
+		}
+	}
+
+	this->_attacRenderObjects();
 }
 
 void
@@ -258,7 +202,7 @@ MeshRenderComponent::buildRenderObjects(MeshPropertyPtr mesh) noexcept
 RenderObjectPtr
 MeshRenderComponent::buildRenderObject(MeshPropertyPtr mesh, RenderBufferPtr buffer) noexcept
 {
-	auto material = this->getMaterial(mesh->getMaterialID());
+	auto material = this->getMaterial();
 	if (material)
 	{
 		auto renderObject = std::make_shared<RenderMesh>();

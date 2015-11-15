@@ -40,16 +40,14 @@
 #include <ray/game_types.h>
 #include <ray/script_bind_math.h>
 #include <ray/script_bind_string.h>
+#include <ray/script_bind_array.h>
 #include <ray/script_bind_timer.h>
 #include <ray/script_bind_input.h>
 #include <ray/script_bind_actor.h>
 #include <ray/script_bind_display.h>
-#include <ray/script_bind_core.h>
 
 _NAME_BEGIN
 
-class ScriptObject;
-typedef std::shared_ptr<ScriptObject> ScriptObjectPtr;
 class ScriptSystem final
 {
 	__DeclareSingleton(ScriptSystem)
@@ -90,7 +88,7 @@ private:
 
 	std::vector<std::weak_ptr<ScriptObject>> _objects;
 
-	std::shared_ptr<ScriptBindCore> _bindCore;
+	std::shared_ptr<ScriptBindArray> _bindCore;
 	std::shared_ptr<ScriptBindMath> _bindMath;
 	std::shared_ptr<ScriptBindString> _bindString;
 	std::shared_ptr<ScriptBindTimer> _bindTimer;

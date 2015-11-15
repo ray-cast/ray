@@ -29,34 +29,32 @@ public:
 	static void SetMemoryFunctions(asALLOCFUNC_t allocFunc, asFREEFUNC_t freeFunc);
 
 	// Factory functions
-	static CScriptArray *Create(asIObjectType *ot);
-	static CScriptArray *Create(asIObjectType *ot, asUINT length);
-	static CScriptArray *Create(asIObjectType *ot, asUINT length, void *defaultValue);
-	static CScriptArray *Create(asIObjectType *ot, void *listBuffer);
-
-	// Memory management
-	void AddRef() const;
-	void Release() const;
+	static CScriptArray* Create(asIObjectType *ot);
+	static CScriptArray* Create(asIObjectType *ot, asUINT length);
+	static CScriptArray* Create(asIObjectType *ot, asUINT length, void *defaultValue);
+	static CScriptArray* Create(asIObjectType *ot, void *listBuffer);
 
 	// Type information
 	asIObjectType *GetArrayObjectType() const;
 	int            GetArrayTypeId() const;
 	int            GetElementTypeId() const;
 
-	// Get the current size
-	asUINT GetSize() const;
+	// Memory management
+	void AddRef() const;
+	void Release() const;
 
-	// Returns true if the array is empty
-	bool   IsEmpty() const;
+	const char* data() const;
 
-	// Pre-allocates memory for elements
-	void   Reserve(asUINT maxElements);
+	asUINT getElementNums() const;
+	asUINT getElementSize() const;
 
-	// Resize the array
-	void   Resize(asUINT numElements);
+	bool empty() const;
+
+	void reserve(asUINT maxElements);
+	void resize(asUINT numElements);
 
 	// Get a pointer to an element. Returns 0 if out of bounds
-	void       *At(asUINT index);
+	void *At(asUINT index);
 	const void *At(asUINT index) const;
 
 	// Set value of an element.
@@ -94,14 +92,7 @@ public:
 	void EnumReferences(asIScriptEngine *engine);
 	void ReleaseAllHandles(asIScriptEngine *engine);
 
-protected:
-	mutable int       refCount;
-	mutable bool      gcFlag;
-	asIObjectType    *objType;
-	SArrayBuffer     *buffer;
-	int               elementSize;
-	int               subTypeId;
-
+private:
 	// Constructors
 	CScriptArray(asIObjectType *ot, void *initBuf); // Called from script when initialized with list
 	CScriptArray(asUINT length, asIObjectType *ot);
@@ -116,15 +107,23 @@ protected:
 	void  Precache();
 	bool  CheckMaxSize(asUINT numElements);
 	void  Resize(int delta, asUINT at);
-	void  CreateBuffer(SArrayBuffer **buf, asUINT numElements);
+	void  CreateBuffer(SArrayBuffer** buf, asUINT numElements);
 	void  DeleteBuffer(SArrayBuffer *buf);
 	void  CopyBuffer(SArrayBuffer *dst, SArrayBuffer *src);
 	void  Construct(SArrayBuffer *buf, asUINT start, asUINT end);
 	void  Destruct(SArrayBuffer *buf, asUINT start, asUINT end);
 	bool  Equals(const void *a, const void *b, asIScriptContext *ctx, SArrayCache *cache) const;
+
+private:
+	mutable int       refCount;
+	mutable bool      gcFlag;
+	asIObjectType    *objType;
+	SArrayBuffer     *buffer;
+	int               elementSize;
+	int               subTypeId;
 };
 
-void RegisterScriptArray(asIScriptEngine *engine, bool defaultArray);
+void RegisterScriptArray(asIScriptEngine *engine);
 
 END_AS_NAMESPACE
 

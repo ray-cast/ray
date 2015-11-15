@@ -40,26 +40,30 @@ class FirstPersonCamera : IController
 
             if (input.getKey(keycode::w))
             {
-                float3 mov = self.getLookat() - self.getTranslate();
+                float3 mov = self.getLookat();
+                mov -= self.getTranslate();
                 mov.normalize();
                 walkDirection += mov;
             }
             if (input.getKey(keycode::s))
             {
-                float3 mov = self.getLookat() - self.getTranslate();
+                float3 mov = self.getLookat();
+                mov -= self.getTranslate();
                 mov.normalize();
                 walkDirection -= mov;
             }
             if (input.getKey(keycode::a))
             {
-                float3 mov = self.getLookat() - self.getTranslate();
+                float3 mov = self.getLookat();
+                mov -= self.getTranslate();
                 mov = mov.cross(self.getUp());
                 mov.normalize();
                 walkDirection += mov;
             }
             if (input.getKey(keycode::d))
             {
-                float3 mov = self.getLookat() - self.getTranslate();
+                float3 mov = self.getLookat();
+                mov -= self.getTranslate();
                 mov = mov.cross(self.getUp());
                 mov.normalize();
                 walkDirection -= mov;
@@ -96,7 +100,8 @@ class FirstPersonCamera : IController
 
     void yawCamera(float speed)
     {
-        float3 mov = self.getLookat() - self.getTranslate();
+        float3 mov = self.getLookat();
+        mov -= self.getTranslate();
         mov = mov.cross(self.getUp());
         mov.normalize();
         mov *= speed;
@@ -123,13 +128,15 @@ class FirstPersonCamera : IController
         float angleY = -(lastX - mouseX) / 100.0;
         float angleZ = (lastY - mouseY) / 100.0;
 
-        float3 view = self.getLookat() - self.getTranslate();
+        float3 view = self.getLookat();
+        view -= self.getTranslate();
         view.normalize();
 
         float angle = view.dot(self.getUp()) + angleZ;
         if (angle > -1.0 && angle < 1.0)
         {
-            float3 axis = self.getLookat() - self.getTranslate();
+            float3 axis = self.getLookat();
+            axis -= self.getTranslate();
             axis = axis.cross(self.getUp());
             axis.normalize();
 

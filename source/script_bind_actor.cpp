@@ -34,12 +34,10 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_SCRIPT)
 #include <ray/script_bind_actor.h>
-#include <ray/game_object.h>
-#include <ray/mesh_component.h>
-#include <ray/physics_body_component.h>
-#include <ray/physics_character_component.h>
-#include <ray/script_smart_ptr_wrapper.h>
+#include <ray/script_bind_array.h>
+#include <ray/script_array.h>
 
 _NAME_BEGIN
 
@@ -95,6 +93,41 @@ GameObjectPtr instantiate(const std::string& name)
 	return nullptr;
 }
 
+void setVertexArray(MeshPropertyPtr& mesh, ScriptArray& array)
+{
+	auto& vertices = mesh->getVertexArray();
+	vertices.resize(array.count());
+	std::memcpy(vertices.data(), array.data(), array.count() * sizeof(float3));
+}
+
+void setNormalArray(MeshPropertyPtr& mesh, const ScriptArray& array)
+{
+	auto& normals = mesh->getNormalArray();
+	normals.resize(array.count());
+	std::memcpy(normals.data(), array.data(), array.count() * sizeof(float3));
+}
+
+void setTexcoordArray(MeshPropertyPtr& mesh, const ScriptArray& array)
+{
+	auto& texcoords = mesh->getVertexArray();
+	texcoords.resize(array.count());
+	std::memcpy(texcoords.data(), array.data(), array.count() * sizeof(float2));
+}
+
+void setColorArray(MeshPropertyPtr& mesh, const ScriptArray& array)
+{
+	auto& colors = mesh->getVertexArray();
+	colors.resize(array.count());
+	std::memcpy(colors.data(), array.data(), array.count() * sizeof(float4));
+}
+
+void setFaceArray(MeshPropertyPtr& mesh, const ScriptArray& array)
+{
+	auto& faces = mesh->getFaceArray();
+	faces.resize(array.count());
+	std::memcpy(faces.data(), array.data(), faces.size() * sizeof(uint));
+}
+
 ScriptBindActor::ScriptBindActor() noexcept
 {
 }
@@ -116,6 +149,29 @@ ScriptBindActor::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectBehaviour("Mesh", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<MeshPropertyPtr>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Mesh", asBEHAVE_CONSTRUCT, "void f(const Mesh& in)", asFUNCTION(copy_construct<MeshPropertyPtr>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("Mesh", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(destroy<MeshPropertyPtr>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void setName(const string& in)", CALLER(MeshProperty, setName), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "const string& getName() const", CALLER(MeshProperty, getName), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void setParent(Mesh& in)", CALLER(MeshProperty, setParent), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "const Mesh getParent() const", CALLER(MeshProperty, getParent), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void addChild(Mesh& in)", CALLER(MeshProperty, addChild), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void removeChild(Mesh& in) const", CALLER(MeshProperty, removeChild), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void cleanupChildren() const", CALLER(MeshProperty, cleanupChildren), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "Mesh findChild(const string& in, bool recurse = true)", CALLER(MeshProperty, findChild), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "uint getChildCount() const", CALLER(MeshProperty, getChildCount), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void mergeVertices()", CALLER(MeshProperty, mergeMeshes), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "uint getNumVertices() const", CALLER(MeshProperty, getNumVertices), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "uint getNumIndices() const", CALLER(MeshProperty, getNumIndices), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void computeBoundingBox()", CALLER(MeshProperty, computeBoundingBox), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void computeFaceNormals()", CALLER(MeshProperty, computeFaceNormals), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void computeVertexNormals()", CALLER_PR(MeshProperty, computeVertexNormals, (), void), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void computeMorphNormals()", CALLER(MeshProperty, computeMorphNormals), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void computeTangents()", CALLER(MeshProperty, computeTangents), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void setVertexArray(const vector<float3>& in)", asFUNCTION(setVertexArray), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void setNormalArray(const vector<float3>& in)", asFUNCTION(setNormalArray), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void setColorArray(const vector<float4>& in)", asFUNCTION(setColorArray), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void setTangentArray(const vector<float3>& in)", asFUNCTION(setVertexArray), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void setTexcoordArray(const vector<float2>& in)", asFUNCTION(setTexcoordArray), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("Mesh", "void setFaceArray(const vector<uint>& in)", asFUNCTION(setFaceArray), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 
 	r = engine->RegisterObjectType("CombineMesh", sizeof(CombineInstance::Instance), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("CombineMesh", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<CombineInstance::Instance>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
@@ -221,24 +277,24 @@ ScriptBindActor::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectMethod("GameObject", "PhysicsRigidbody getPhysicsRigidbody()", CALLER(GameObject, getComponent<PhysicsBodyComponent>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("GameObject", "PhysicsCharacter getPhysicsCharacter()", CALLER(GameObject, getComponent<PhysicsCharacterComponent>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 
-	r = engine->RegisterObjectType("this", 0, asOBJ_REF | asOBJ_NOHANDLE); assert(r >= 0);
-	r = engine->RegisterGlobalProperty("this self", this); assert(r >= 0);
-	r = engine->RegisterObjectMethod("this", "void setName(const string& in)", asMETHOD(ScriptBindActor, setName), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("this", "const string& getName() const", asMETHOD(ScriptBindActor, getName), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("this", "void setActive(bool)", asMETHOD(ScriptBindActor, setActive), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("this", "bool getActive() const", asMETHOD(ScriptBindActor, getActive), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("this", "void setTranslate(const float3& in)", asMETHOD(ScriptBindActor, setTranslate), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("this", "void setLookat(const float3& in)", asMETHOD(ScriptBindActor, setLookat), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("this", "void setUp(const float3& in)", asMETHOD(ScriptBindActor, setUp), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("this", "const float3& getTranslate() const", asMETHOD(ScriptBindActor, getTranslate), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("this", "const float3& getLookat() const", asMETHOD(ScriptBindActor, getLookat), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("this", "const float3& getUp() const", asMETHOD(ScriptBindActor, getUp), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("this", "MeshFilter getMeshFilter()", asMETHOD(ScriptBindActor, getMeshFilter), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("this", "PhysicsRigidbody getPhysicsRigidbody()", asMETHOD(ScriptBindActor, getPhysicsRigidbody), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("this", "PhysicsCharacter getPhysicsCharacter()", asMETHOD(ScriptBindActor, getPhysicsCharacter), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectType("local", 0, asOBJ_REF | asOBJ_NOHANDLE); assert(r >= 0);
+	r = engine->RegisterGlobalProperty("local self", this); assert(r >= 0);
+	r = engine->RegisterObjectMethod("local", "void setName(const string& in)", asMETHOD(ScriptBindActor, setName), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("local", "const string& getName() const", asMETHOD(ScriptBindActor, getName), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("local", "void setActive(bool)", asMETHOD(ScriptBindActor, setActive), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("local", "bool getActive() const", asMETHOD(ScriptBindActor, getActive), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("local", "void setTranslate(const float3& in)", asMETHOD(ScriptBindActor, setTranslate), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("local", "void setLookat(const float3& in)", asMETHOD(ScriptBindActor, setLookat), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("local", "void setUp(const float3& in)", asMETHOD(ScriptBindActor, setUp), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("local", "const float3& getTranslate() const", asMETHOD(ScriptBindActor, getTranslate), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("local", "const float3& getLookat() const", asMETHOD(ScriptBindActor, getLookat), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("local", "const float3& getUp() const", asMETHOD(ScriptBindActor, getUp), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("local", "MeshFilter getMeshFilter()", asMETHOD(ScriptBindActor, getMeshFilter), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("local", "PhysicsRigidbody getPhysicsRigidbody()", asMETHOD(ScriptBindActor, getPhysicsRigidbody), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("local", "PhysicsCharacter getPhysicsCharacter()", asMETHOD(ScriptBindActor, getPhysicsCharacter), asCALL_THISCALL); assert(r >= 0);
+
 	r = engine->RegisterGlobalFunction("GameObject find(const string& in)", asFUNCTION(GameObject::find<GameObject>), asCALL_CDECL); assert(r >= 0);
 	r = engine->RegisterGlobalFunction("GameObject instantiate(const string& in)", asFUNCTION(instantiate), asCALL_CDECL); assert(r >= 0);
-
 }
 
 void
@@ -326,3 +382,4 @@ ScriptBindActor::getPhysicsCharacter() noexcept
 }
 
 _NAME_END
+#endif

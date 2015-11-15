@@ -34,10 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_SCRIPT)
 #include <ray/script_bind_display.h>
-#include <ray/render_system.h>
-
-#include <angelscript.h>
 
 _NAME_BEGIN
 
@@ -151,3 +149,4 @@ ScriptBindDisplay::getWindowTitle() const noexcept
 }
 
 _NAME_END
+#endif

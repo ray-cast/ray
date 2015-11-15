@@ -51,7 +51,7 @@ public:
 	virtual void onRenderObject() noexcept = 0;
 };
 
-class EXPORT RenderObject : public Reference<RenderObject>
+class EXPORT RenderObject : public std::enable_shared_from_this<RenderObject>
 {
 public:
 	RenderObject() noexcept;

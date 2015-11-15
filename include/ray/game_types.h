@@ -63,6 +63,11 @@ typedef std::weak_ptr<class GameFeature> GameFeatureWeakPtr;
 typedef std::weak_ptr<class GameServer> GameServerWeakPtr;
 typedef std::weak_ptr<class GameApplication> GameApplicationWeakPtr;
 
+typedef std::shared_ptr<class PhysicsShape> PhysicsShapePtr;
+typedef std::shared_ptr<class PhysicsBodyComponent> PhysicsBodyComponentPtr;
+typedef std::shared_ptr<class PhysicsCharacterComponent> PhysicsCharacterComponentPtr;
+typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;
+
 typedef std::vector<GameListenerPtr> GameListeners;
 typedef std::vector<GameScenePtr> GameScenes;
 typedef std::vector<GameObjectPtr> GameObjects;

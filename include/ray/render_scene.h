@@ -83,7 +83,7 @@ private:
 	OcclusionCullNodes _iter;
 };
 
-class EXPORT RenderScene : public Reference<RenderScene>
+class EXPORT RenderScene : public std::enable_shared_from_this<RenderScene>
 {
 public:
 	RenderScene() noexcept;

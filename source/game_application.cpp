@@ -39,8 +39,14 @@
 
 #include <ray/render_features.h>
 #include <ray/input_features.h>
-#include <ray/script_features.h>
-#include <ray/physics_features.h>
+
+#if defined(_BUILD_SCRIPT)
+#	include <ray/script_features.h>
+#endif
+
+#if defined(_BUILD_PHYSIC)
+#	include <ray/physics_features.h>
+#endif
 
 _NAME_BEGIN
 
@@ -97,8 +103,15 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) ex
 		if (_gameServer->open())
 		{
 			this->addFeatures(std::make_shared<ray::InputFeatures>());
+
+#if defined(_BUILD_SCRIPT)
 			this->addFeatures(std::make_shared<ray::PhysicFeatures>());
+#endif
+
+#if defined(_BUILD_SCRIPT)
 			this->addFeatures(std::make_shared<ray::ScriptFeatures>());
+#endif
+
 			this->addFeatures(std::make_shared<ray::RenderFeatures>(hwnd, width, height));
 
 			this->start();

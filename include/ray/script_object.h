@@ -37,7 +37,7 @@
 #ifndef _H_SCRIPT_OBJECT_H_
 #define _H_SCRIPT_OBJECT_H_
 
-#include <ray/script_system.h>
+#include <ray/script_types.h>
 
 _NAME_BEGIN
 

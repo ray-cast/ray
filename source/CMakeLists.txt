@@ -602,8 +602,8 @@ SET(SCRIGPU_SYSTEM_LIST
     ${HEADER_PATH}/script_binder.h
     ${SOURCE_PATH}/script_bind_actor.cpp
     ${HEADER_PATH}/script_bind_actor.h
-    ${SOURCE_PATH}/script_bind_core.cpp
-    ${HEADER_PATH}/script_bind_core.h
+    ${SOURCE_PATH}/script_bind_array.cpp
+    ${HEADER_PATH}/script_bind_array.h
     ${SOURCE_PATH}/script_bind_display.cpp
     ${HEADER_PATH}/script_bind_display.h
     ${SOURCE_PATH}/script_bind_file.cpp
@@ -618,10 +618,6 @@ SET(SCRIGPU_SYSTEM_LIST
     ${HEADER_PATH}/script_bind_string.h
     ${SOURCE_PATH}/script_bind_timer.cpp
     ${HEADER_PATH}/script_bind_timer.h
-    ${HEADER_PATH}/script_gen_wrapper.h
-    ${HEADER_PATH}/script_smart_ptr_wrapper.h
-    ${SOURCE_PATH}/script_array.cpp
-    ${HEADER_PATH}/script_array.h
     ${SOURCE_PATH}/script_system.cpp
     ${HEADER_PATH}/script_system.h
     ${SOURCE_PATH}/script_object.cpp

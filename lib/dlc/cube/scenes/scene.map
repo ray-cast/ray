@@ -13,8 +13,7 @@
             <attribute w="1376"/>
             <attribute h="768"/>
         </component>
-        <component name="Script">
-            <attribute name="dlc:cube/script/first_person_camera.as"/>
+        <component name="FirstPersonCamera">
         </component>
         <!--component name="PhysicsCharacter">
             <attribute radius="1"/>
@@ -101,8 +100,7 @@
     <object>
         <attribute name="terrain"/>
         <attribute active="true"/>
-        <component name="Script">
-            <attribute name="dlc:cube/script/terrain.as"/>
+        <component name="Terrain">
         </component>
     </object>
 </scene>

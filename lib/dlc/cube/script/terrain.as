@@ -1,3 +1,36 @@
+vector<float> positions = {
+    -1 ,-1 ,-1 ,-1 ,-1 ,+1 ,-1 ,+1 ,-1 ,-1 ,+1 ,+1,
+    +1 ,-1 ,-1 ,+1 ,-1 ,+1 ,+1 ,+1 ,-1 ,+1 ,+1 ,+1,
+    -1 ,+1 ,-1 ,-1 ,+1 ,+1 ,+1 ,+1 ,-1 ,+1 ,+1 ,+1,
+    -1 ,-1 ,-1 ,-1 ,-1 ,+1 ,+1 ,-1 ,-1 ,+1 ,-1 ,+1,
+    -1 ,-1 ,-1 ,-1 ,+1 ,-1 ,+1 ,-1 ,-1 ,+1 ,+1 ,-1,
+    -1 ,-1 ,+1 ,-1 ,+1 ,+1 ,+1 ,-1 ,+1 ,+1 ,+1 ,+1
+};
+vector<float> normals = {
+    -1, 0, 0,
+    +1, 0, 0,
+     0,+1, 0,
+     0,-1, 0,
+     0, 0,-1,
+     0, 0,+1
+};
+vector<float> uvs = {
+    0, 0, 1, 0, 0, 1, 1, 1,
+    1, 0, 0, 0, 1, 1, 0, 1,
+    0, 1, 0, 0, 1, 1, 1, 0,
+    0, 0, 0, 1, 1, 0, 1, 1,
+    0, 0, 0, 1, 1, 0, 1, 1,
+    1, 0, 1, 1, 0, 0, 0, 1
+};
+vector<int> indices = {
+    0, 3, 2, 0, 1, 3,
+    0, 3, 1, 0, 2, 3,
+    0, 3, 2, 0, 1, 3,
+    0, 3, 1, 0, 2, 3,
+    0, 3, 2, 0, 1, 3,
+    0, 3, 1, 0, 2, 3,
+};
+
 int hash_int(int key)
 {
     key = ~key + (key << 15);
@@ -19,9 +52,9 @@ int hash(int x, int y, int z)
 
 class TerrainEntry
 {
-    int x;
-    int y;
-    int z;
+    int8 x;
+    int8 y;
+    int8 z;
     int instanceID;
 
     TerrainEntry()
@@ -45,10 +78,10 @@ class TerrainMap
 {
     private int _mask;
     private int _count;
-    private array<TerrainEntry> _data;
+    private vector<TerrainEntry> _data;
 
     int count { get const { return _count; } }
-    const array<TerrainEntry>@ data { get const { return _data; } }
+    int length { get const { return _data.size(); } }
 
     void create(int mask)
     {
@@ -59,8 +92,7 @@ class TerrainMap
 
     void destroy()
     {
-        array<TerrainEntry> empty;
-        _data = empty;
+        //_data.clear();
     }
 
     void copy(TerrainMap& map)
@@ -133,6 +165,11 @@ class TerrainMap
         return 0;
     }
 
+    void get(uint index, TerrainEntry& out entry) const
+    {
+        entry = _data[index];
+    }
+
     void grow()
     {
         TerrainMap map;
@@ -149,8 +186,8 @@ class TerrainMap
         }
 
         _mask = map._mask;
-        _data = map._data;
         _count = map._count;
+        _data.swap(map._data);
     }
 };
 
@@ -175,7 +212,7 @@ class TerrainChunk
     private int _size;
 
     private TerrainMap _map;
-    private array<TerrainObject@> _objects;
+    private vector<TerrainObject@> _objects;
 
     TerrainChunk()
     {
@@ -190,8 +227,7 @@ class TerrainChunk
     int z { get const { return _z; } }
     int size { get const { return _size; } }
     int count { get const { return _map.count; } }
-
-    const array<TerrainEntry>@ data { get const { return _map.data; } }
+    int length { get const { return _map.length; }}
 
     int distance(int x, int y, int z)
     {
@@ -223,20 +259,31 @@ class TerrainChunk
         return _map.get(x, y, z);
     }
 
-    void addTerrainObject(TerrainObject@ object)
+    void get(uint index, TerrainEntry& out entry) const
     {
-        _objects.insertLast(object);
+        _map.get(index, entry);
     }
 
-    array<TerrainObject@>@ getTerrainObjects()
+    void addTerrainObject(TerrainObject@ object)
+    {
+        _objects.push_back(object);
+    }
+
+    vector<TerrainObject@>@ getTerrainObjects()
     {
         return _objects;
     }
 
-    void createWorld()
+    void createWorld(Terrain@ terrain)
     {
-        int size = _objects.length;
-        for (int i = 0; i < size; i++)
+        auto@ objects = terrain.getTerrainObjects();
+        auto size = objects.size();
+        for (uint i = 0; i < size; i++)
+        {
+            this.addTerrainObject(objects[i].clone());
+        }
+
+        for (uint i = 0; i < size; i++)
         {
             _objects[i].create(this);
             _objects[i].createObject(this);
@@ -246,9 +293,10 @@ class TerrainChunk
 
 class Terrain : IController
 {
+    private int _scale = 2;
     private int _size = 32;
-    private array<TerrainChunk> _chunks;
-    private array<TerrainObject@> _objects;
+    private vector<TerrainChunk@> _chunks;
+    private vector<TerrainObject@> _objects;
 
     Terrain()
     {
@@ -256,29 +304,43 @@ class Terrain : IController
 
     void addTerrainObject(TerrainObject@ object)
     {
-        _objects.insertLast(object);
+        _objects.push_back(object);
     }
 
-    array<TerrainObject@>@ getTerrainObjects()
+    vector<TerrainObject@>@ getTerrainObjects()
     {
         return _objects;
     }
 
+    int chunked(float x) const
+    {
+        return int(floor(x / _scale / _size));
+    }
+
     void onActivate()
     {
-        _objects.insertLast(TerrainGrass());
+        vector<TerrainEntry> vectors;
+
+        _objects.push_back(TerrainGrass());
+
+        float3 translate = self.getTranslate();
+
+        auto x = chunked(translate.x);
+        auto y = chunked(translate.y);
+        auto z = chunked(translate.z);
 
         TerrainChunk chunk;
-        chunk.create(0, 0, 0, _size);
+        chunk.create(-1, 0, 0, _size);
+        chunk.createWorld(this);
 
-        int size = _objects.length;
-        for (int i = 0; i < size; i++)
+        _chunks.push_back(chunk);
+
+        for (int i = x - 1; i < x + 1; i++)
         {
-            chunk.addTerrainObject(_objects[i].clone());
+            for (int j = z - 1; j < z + 1; j++)
+            {
+            }
         }
-
-        chunk.createWorld();
-        _chunks.insertLast(chunk);
     }
 };
 
@@ -296,13 +358,18 @@ class TerrainGrass : TerrainObject
 {
     private GameObject _object;
 
+    private vector<float3> _vertices;
+    private vector<float3> _normals;
+    private vector<float2> _texcoords;
+    private vector<uint> _faces;
+
     bool create(TerrainChunk@ chunk)
     {
         int size = chunk.size;
         int half = size >> 1;
 
         int offsetX = chunk.x * size;
-        int offsetY = chunk.y * size;
+        int offsetY = chunk.z * size;
 
         for (int x = 0; x < chunk.size; x++)
         {
@@ -314,11 +381,8 @@ class TerrainGrass : TerrainObject
                 float f = simplex2( dx * 0.01,  dz * 0.01, 4, 0.5, 2);
                 float g = simplex2(-dx * 0.01, -dz * 0.01, 2, 0.9, 2);
 
-                int h = int(f * g * chunk.size + half);
-
-                float4x4 transform;
-
-                for (int y = h - 2; y < h; y++)
+                int h = int(f * (g * size + half));
+                for (int y = 0; y < h; y++)
                 {
                     chunk.set(x, y, z, 1);
                 }
@@ -332,19 +396,29 @@ class TerrainGrass : TerrainObject
     {
         auto cube = find("grass");
 
-        int size = chunk.data.length;
+        int size = chunk.length;
         int count = 0;
+        int total = 0;
 
-        CombineInstance combines(chunk.count);
         for (int i = 0; i < size; i++)
         {
-            auto it = chunk.data[i];
+            TerrainEntry it;
+            chunk.get(i, it);
             if (it.empty())
                 continue;
 
-            combines[count].setMesh(cube.getMeshFilter().getMesh());
-            combines[count].setTransform(float3(it.x * 2, it.y * 2, it.z * 2));
-            count++;
+            if (it.y <= 0)
+                continue;
+
+            VisiableFaces faces;
+            if (this.visiable(chunk, it, faces) > 0)
+            {
+                int dx = it.x << 1;
+                int dy = it.y << 1;
+                int dz = it.z << 1;
+
+                this.makeCube(faces, dx, dy, dz, 1);
+            }
         }
 
         int translateX = chunk.x * chunk.size << 1;
@@ -352,12 +426,78 @@ class TerrainGrass : TerrainObject
         int translateZ = chunk.z * chunk.size << 1;
 
         _object = instantiate("grass");
-        _object.setName("chunk_" + p + "_" + q);
-        _object.setTranslate(float3(0, 0, 0));
-        _object.getMeshFilter().setCombieInstnace(combines);
-        _object.setActive(true);
+        auto mesh = _object.getMeshFilter().getMesh();
+        mesh.setFaceArray(_faces);
+        mesh.setVertexArray(_vertices);
+        mesh.setNormalArray(_normals);
+        mesh.computeBoundingBox();
 
+        _object.setName("chunk_" + p + "_" + q);
+        _object.setTranslate(float3(translateX, translateY, translateZ));
+        _object.setActive(true);
         return true;
+    }
+
+    int visiable(TerrainChunk@ chunk, const TerrainEntry& in it, VisiableFaces& out faces)
+    {
+        auto f1 = chunk.get(it.x - 1, it.y, it.z);
+        auto f2 = chunk.get(it.x + 1, it.y, it.z);
+        auto f3 = chunk.get(it.x, it.y - 1, it.z);
+        auto f4 = chunk.get(it.x, it.y + 1, it.z);
+        auto f5 = chunk.get(it.x, it.y, it.z - 1);
+        auto f6 = chunk.get(it.x, it.y, it.z + 1);
+
+        f1 = (f1 != it.instanceID) ? 1 : 0;
+        f2 = (f2 != it.instanceID) ? 1 : 0;
+        f3 = (f3 != it.instanceID) ? 1 : 0;
+        f4 = (f4 != it.instanceID) ? 1 : 0;
+        f5 = (f5 != it.instanceID) ? 1 : 0;
+        f6 = (f6 != it.instanceID) ? 1 : 0;
+
+        faces.left = f1;
+        faces.right = f2;
+        faces.bottom = f3;
+        faces.top = f4;
+        faces.front = f5;
+        faces.back = f6;
+
+        return f1 + f2 + f3 + f4 + f5 + f6;
+    }
+
+    void makeCube(const VisiableFaces& faces, float x, float y, float z, float scale)
+    {
+        float s = 0.0625;
+        float a = 0 + 1 / 2048.0;
+        float b = s - 1 / 2048.0;
+        vector<int> visiable = { faces.left, faces.right, faces.top, faces.bottom, faces.front, faces.back };
+
+        for (int i = 0; i < 6; i++) {
+            if (visiable[i] == 0) {
+                continue;
+            }
+            for (int j = 0; j < 6; j++) {
+                int k = indices[i * 6 + j];
+
+                float3 v;
+                v.x = x + scale * positions[i * 12 + k * 3 + 0];
+                v.y = y + scale * positions[i * 12 + k * 3 + 1];
+                v.z = z + scale * positions[i * 12 + k * 3 + 2];
+
+                float3 n;
+                n.x = normals[i * 3 + 0];
+                n.y = normals[i * 3 + 1];
+                n.z = normals[i * 3 + 2];
+
+                float2 uv;
+                uv.x = (uvs[i * 8 + k * 2 + 0] > 0 ? b : a);
+                uv.y = (uvs[i * 8 + k * 2 + 1] > 0 ? b : a);
+
+                _vertices.push_back(v);
+                _normals.push_back(n);
+                _texcoords.push_back(uv);
+                _faces.push_back(_vertices.size() -1);
+            }
+        }
     }
 
     TerrainObject@ clone() const

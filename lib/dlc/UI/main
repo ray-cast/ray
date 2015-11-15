@@ -2,6 +2,6 @@
 <main>
     <attribute width="1376"/>
     <attribute height="768"/>
-    <attribute title="Screen Space Sub Surface Scattering"/>
+    <attribute title="UI"/>
     <attribute scene="dlc:UI\\scenes\\scene.map"/>
 </main>

@@ -34,8 +34,10 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_SCRIPT)
 #include <ray/script_bind_file.h>
 
 _NAME_BEGIN
 
 _NAME_END
+#endif

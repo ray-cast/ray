@@ -34,11 +34,10 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_SCRIPT)
 #include <ray/script_features.h>
+#include <ray/script_system.h>
 #include <ray/script_component.h>
-#include <ray/input_features.h>
-#include <ray/render_features.h>
-#include <ray/game_server.h>
 
 _NAME_BEGIN
 
@@ -126,3 +125,4 @@ ScriptFeatures::instanceScript(iarchive& reader) except
 }
 
 _NAME_END
+#endif

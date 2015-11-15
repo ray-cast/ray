@@ -34,10 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_SCRIPT)
 #include <ray/script_bind_string.h>
-
-#include <sstream>
-#include <angelscript.h>
 
 _NAME_BEGIN
 
@@ -505,3 +503,4 @@ ScriptBindString::setup(asIScriptEngine* engine) noexcept
 }
 
 _NAME_END
+#endif

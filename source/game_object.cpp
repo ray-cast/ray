@@ -141,7 +141,7 @@ GameObject::setParent(GameObjectPtr parent) noexcept
 
 	if (_parent != parent.get())
 	{
-		if (parent == nullptr)
+		if (_parent)
 		{
 			auto it = _parent->_children.begin();
 			auto end = _parent->_children.end();
@@ -157,11 +157,10 @@ GameObject::setParent(GameObjectPtr parent) noexcept
 
 			_parent = nullptr;
 		}
-		else
-		{
-			_parent = parent.get();
+
+		_parent = parent.get();
+		if (_parent)
 			_parent->_children.push_back(std::dynamic_pointer_cast<GameObject>(this->shared_from_this()));
-		}
 	}
 }
 
@@ -268,7 +267,7 @@ GameObject::findChild(const std::string& name, bool recuse) noexcept
 	return nullptr;
 }
 
-std::size_t
+std::uint32_t
 GameObject::getChildCount() const noexcept
 {
 	return _children.size();
@@ -1063,7 +1062,7 @@ GameObjectPtr
 GameObject::clone() const except
 {
 	auto instance = std::make_shared<GameObject>();
-	instance->setParent(this->getParent());
+	//instance->setParent(this->getParent());
 	instance->setName(this->getName());
 	instance->setLayer(this->getLayer());
 	instance->setLookAt(this->getLookAt());

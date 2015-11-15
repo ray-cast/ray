@@ -91,25 +91,12 @@ enum TextureType
 #define MATKEY_TEXTURE_LIGHTMAP(N)     MATKEY_TEXTURE(TT_LIGHTMAP, N)
 #define MATKEY_TEXTURE_REFLECTION(N)   MATKEY_TEXTURE(TT_REFLECTION, N)
 
-#define MAX_NUMBER_OF_COLOR_SETS 0x8
-#define MAX_NUMBER_OF_TEXTURECOORDS 0x8
-
 enum PropertyTypeInfo
 {
 	PTI_FLOAT = 0x01,
 	PTI_STRING = 0x02,
 	PTI_INTEGER = 0x04,
 	PTI_BUFFER = 0x08,
-};
-
-enum MeshType
-{
-	MT_POINT,
-	MT_LINE,
-	MT_TRIANGLES,
-	MT_FAN,
-	MT_QUAD,
-	MT_POLYGON,
 };
 
 class EXPORT CameraProperty final
@@ -178,7 +165,7 @@ private:
 	std::vector<MaterialParam*> _properties;
 };
 
-class EXPORT MeshProperty final : public Reference<MeshProperty>
+class EXPORT MeshProperty final : public std::enable_shared_from_this<MeshProperty>
 {
 public:
 	MeshProperty() noexcept;
@@ -198,9 +185,6 @@ public:
 	std::size_t getChildCount() const noexcept;
 	MeshPropertys& getChildren() noexcept;
 
-	void setMeshType(MeshType type) noexcept;
-	MeshType getMeshType() const noexcept;
-
 	void setMaterialID(std::size_t index) noexcept;
 	std::size_t getMaterialID() const noexcept;
 
@@ -209,9 +193,9 @@ public:
 
 	void setVertexArray(const Vector3Array& array) noexcept;
 	void setNormalArray(const Vector3Array& array) noexcept;
-	void setColorArray(const Vector4Array& array, std::size_t i = 0) noexcept;
+	void setColorArray(const Vector4Array& array) noexcept;
 	void setTangentArray(const Vector3Array& array) noexcept;
-	void setTexcoordArray(const Vector2Array& array, std::size_t i = 0) noexcept;
+	void setTexcoordArray(const Vector2Array& array) noexcept;
 	void setWeightArray(const VertexWeights& array) noexcept;
 	void setBoneArray(const Bones& array) noexcept;
 	void setInverseKinematics(const InverseKinematics& iks) noexcept;
@@ -219,8 +203,8 @@ public:
 
 	Vector3Array& getVertexArray() noexcept;
 	Vector3Array& getNormalArray() noexcept;
-	Vector4Array& getColorArray(std::size_t i = 0) noexcept;
-	Vector2Array& getTexcoordArray(std::size_t i = 0) noexcept;
+	Vector4Array& getColorArray() noexcept;
+	Vector2Array& getTexcoordArray() noexcept;
 	VertexWeights& getWeightArray() noexcept;
 	Bones& getBoneArray() noexcept;
 	InverseKinematics& getInverseKinematics() noexcept;
@@ -229,8 +213,8 @@ public:
 	const Vector3Array& getVertexArray() const noexcept;
 	const Vector3Array& getNormalArray() const noexcept;
 	const Vector3Array& getTangentArray() const noexcept;
-	const Vector4Array& getColorArray(std::size_t i = 0) const noexcept;
-	const Vector2Array& getTexcoordArray(std::size_t i = 0) const noexcept;
+	const Vector4Array& getColorArray() const noexcept;
+	const Vector2Array& getTexcoordArray() const noexcept;
 	const VertexWeights& getWeightArray() const noexcept;
 	const Bones& getBoneArray(const Bones& array) const noexcept;
 	const InverseKinematics& getInverseKinematics() const noexcept;
@@ -268,12 +252,10 @@ private:
 	std::string _name;
 	std::size_t _materialID;
 
-	MeshType _type;
-
 	Vector3Array _vertices;
 	Vector3Array _normals;
-	Vector4Array _colors[MAX_NUMBER_OF_COLOR_SETS];
-	Vector2Array _texcoords[MAX_NUMBER_OF_TEXTURECOORDS];
+	Vector4Array _colors;
+	Vector2Array _texcoords;
 	Vector3Array _tangent;
 	Vector3Array _facesNormal;
 	VertexWeights _weights;

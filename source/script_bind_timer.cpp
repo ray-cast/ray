@@ -34,10 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_SCRIPT)
 #include <ray/script_bind_timer.h>
-#include <ray/timer.h>
-
-#include <angelscript.h>
 
 _NAME_BEGIN
 
@@ -55,7 +53,6 @@ ScriptBindTimer::setup(asIScriptEngine* _engine) noexcept
 {
 	int r = 0;
 	r = _engine->RegisterObjectType("Timer", 0, asOBJ_REF | asOBJ_NOHANDLE); assert(r >= 0);
-	r = _engine->RegisterGlobalProperty("Timer timer", this); assert(r >= 0);
 	r = _engine->RegisterObjectMethod("Timer", "float startTime() const", asMETHOD(ScriptBindTimer, startTime), asCALL_THISCALL); assert(r >= 0);
 	r = _engine->RegisterObjectMethod("Timer", "float elapsed() const", asMETHOD(ScriptBindTimer, elapsed), asCALL_THISCALL); assert(r >= 0);
 	r = _engine->RegisterObjectMethod("Timer", "float appTime() const", asMETHOD(ScriptBindTimer, appTime), asCALL_THISCALL); assert(r >= 0);
@@ -63,12 +60,22 @@ ScriptBindTimer::setup(asIScriptEngine* _engine) noexcept
 	r = _engine->RegisterObjectMethod("Timer", "float vsync() const", asMETHOD(ScriptBindTimer, vsync), asCALL_THISCALL); assert(r >= 0);
 	r = _engine->RegisterObjectMethod("Timer", "float fps() const", asMETHOD(ScriptBindTimer, fps), asCALL_THISCALL); assert(r >= 0);
 	r = _engine->RegisterObjectMethod("Timer", "float averageFps() const", asMETHOD(ScriptBindTimer, averageFps), asCALL_THISCALL); assert(r >= 0);
+	r = _engine->RegisterObjectMethod("Timer", "float reset() const", asMETHOD(ScriptBindTimer, reset), asCALL_THISCALL); assert(r >= 0);
+
+	r = _engine->RegisterGlobalProperty("Timer timer", this); assert(r >= 0);
 }
 
 void
 ScriptBindTimer::setTimer(TimerPtr timer) noexcept
 {
 	_timer = timer;
+}
+
+void
+ScriptBindTimer::reset() noexcept
+{
+	assert(_timer);
+	_timer->reset();
 }
 
 float
@@ -127,3 +134,4 @@ ScriptBindTimer::onFrameEnd() noexcept
 }
 
 _NAME_END
+#endif

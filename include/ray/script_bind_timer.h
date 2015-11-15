@@ -37,9 +37,7 @@
 #ifndef _H_SCRIPT_BIND_TIMER_H_
 #define _H_SCRIPT_BIND_TIMER_H_
 
-#include <ray/game_types.h>
 #include <ray/script_binder.h>
-#include <ray/timer.h>
 
 _NAME_BEGIN
 
@@ -54,6 +52,7 @@ public:
 	void setTimer(TimerPtr timer) noexcept;
 
 private:
+	void reset() noexcept;
 	float startTime() noexcept;
 	float elapsed() noexcept;
 	float appTime() noexcept;

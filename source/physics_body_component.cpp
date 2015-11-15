@@ -229,23 +229,21 @@ void
 PhysicsBodyComponent::onActivate() noexcept
 {
 	auto physics = this->getGameObject()->getGameServer()->getFeature<PhysicFeatures>();
-	if (physics)
+	assert(physics);
+
+	auto physicsScene = physics->getPhysicsScene(this->getGameObject()->getGameScene());
+	assert(physicsScene);
+
+	auto collisionShape = this->getGameObject()->getComponent<PhysicsShapeComponent>();
+	if (collisionShape)
 	{
-		auto physicsScene = physics->getPhysicsScene(this->getGameObject()->getGameScene());
-		if (physicsScene)
+		auto shape = collisionShape->getCollisionShape();
+		if (shape)
 		{
-			auto collisionShape = this->getGameObject()->getComponent<PhysicsShapeComponent>();
-			if (collisionShape)
-			{
-				auto shape = collisionShape->getCollisionShape();
-				if (shape)
-				{
-					_body->setup(shape);
-					_body->setMovePosition(this->getGameObject()->getTranslate());
-					_body->setMoveRotation(this->getGameObject()->getRotate());
-					_body->setPhysicsScene(physicsScene.get());
-				}
-			}
+			_body->setup(shape);
+			_body->setMovePosition(this->getGameObject()->getTranslate());
+			_body->setMoveRotation(this->getGameObject()->getRotate());
+			_body->setPhysicsScene(physicsScene.get());
 		}
 	}
 }
@@ -254,9 +252,7 @@ void
 PhysicsBodyComponent::onDeactivate() noexcept
 {
 	if (_body)
-	{
 		_body->close();
-	}
 }
 
 void

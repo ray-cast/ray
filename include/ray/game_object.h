@@ -69,7 +69,7 @@ public:
 	GameObjectPtr findChild(InstanceID instance, bool recurse = true) noexcept;
 	GameObjectPtr findChild(const std::string& name, bool recurse = true) noexcept;
 
-	std::size_t getChildCount() const noexcept;
+	std::uint32_t getChildCount() const noexcept;
 	GameObjects& getChildren() noexcept;
 	const GameObjects& getChildren() const noexcept;
 

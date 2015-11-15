@@ -376,7 +376,6 @@ MaterialProperty::get(const char* key, std::size_t type, std::size_t index, Mate
 
 MeshProperty::MeshProperty() noexcept
 	: _materialID(0)
-	, _type(MeshType::MT_TRIANGLES)
 	, _parent(nullptr)
 {
 }
@@ -515,18 +514,6 @@ MeshProperty::getChildren() noexcept
 }
 
 void
-MeshProperty::setMeshType(MeshType type) noexcept
-{
-	_type = type;
-}
-
-MeshType
-MeshProperty::getMeshType() const noexcept
-{
-	return _type;
-}
-
-void
 MeshProperty::setMaterialID(std::size_t index) noexcept
 {
 	_materialID = index;
@@ -563,9 +550,9 @@ MeshProperty::setNormalArray(const Vector3Array& array) noexcept
 }
 
 void
-MeshProperty::setColorArray(const Vector4Array& array, std::size_t i) noexcept
+MeshProperty::setColorArray(const Vector4Array& array) noexcept
 {
-	_colors[i] = array;
+	_colors = array;
 }
 
 void
@@ -575,9 +562,9 @@ MeshProperty::setTangentArray(const Vector3Array& array) noexcept
 }
 
 void
-MeshProperty::setTexcoordArray(const std::vector<Vector2>& array, std::size_t i) noexcept
+MeshProperty::setTexcoordArray(const std::vector<Vector2>& array) noexcept
 {
-	_texcoords[i] = array;
+	_texcoords = array;
 }
 
 void
@@ -617,15 +604,15 @@ MeshProperty::getNormalArray() noexcept
 }
 
 Vector4Array&
-MeshProperty::getColorArray(std::size_t i) noexcept
+MeshProperty::getColorArray() noexcept
 {
-	return _colors[i];
+	return _colors;
 }
 
 std::vector<Vector2>&
-MeshProperty::getTexcoordArray(std::size_t i) noexcept
+MeshProperty::getTexcoordArray() noexcept
 {
-	return _texcoords[i];
+	return _texcoords;
 }
 
 VertexWeights&
@@ -671,15 +658,15 @@ MeshProperty::getTangentArray() const noexcept
 }
 
 const Vector4Array&
-MeshProperty::getColorArray(std::size_t i) const noexcept
+MeshProperty::getColorArray() const noexcept
 {
-	return _colors[i];
+	return _colors;
 }
 
 const Vector2Array&
-MeshProperty::getTexcoordArray(std::size_t i) const noexcept
+MeshProperty::getTexcoordArray() const noexcept
 {
-	return _texcoords[i];
+	return _texcoords;
 }
 
 const VertexWeights&
@@ -723,8 +710,8 @@ MeshProperty::clear() noexcept
 {
 	_vertices = Vector3Array();
 	_normals = Vector3Array();
-	_colors[0] = Vector4Array();
-	_texcoords[0] = Vector2Array();
+	_colors = Vector4Array();
+	_texcoords = Vector2Array();
 	_tangent = Vector3Array();
 	_facesNormal = Vector3Array();
 	_faces = UintArray();
@@ -736,7 +723,6 @@ MeshProperty::clone() noexcept
 	auto mesh = std::make_shared<MeshProperty>();
 	mesh->setName(this->getName());
 	mesh->setMaterialID(this->getMaterialID());
-	mesh->setMeshType(this->getMeshType());
 	mesh->setVertexArray(this->getVertexArray());
 	mesh->setNormalArray(this->getNormalArray());
 	mesh->setColorArray(this->getColorArray());
@@ -774,7 +760,7 @@ MeshProperty::makeCircle(float radius, std::uint32_t segments, float thetaStart,
 
 		_vertices.push_back(v);
 
-		_texcoords[0].push_back(Vector2((v.x / radius + 1), (v.y / radius + 1) / 2));
+		_texcoords.push_back(Vector2((v.x / radius + 1), (v.y / radius + 1) / 2));
 	}
 
 	for (std::uint32_t i = 1; i <= segments; i++)
@@ -792,7 +778,6 @@ MeshProperty::makeCircle(float radius, std::uint32_t segments, float thetaStart,
 		_normals.push_back(Vector3::UnitZ);
 	}
 
-	this->setMeshType(MeshType::MT_TRIANGLES);
 	this->computeBoundingBox();
 }
 
@@ -832,10 +817,10 @@ MeshProperty::makePlane(float width, float height, std::uint32_t widthSegments, 
 	{
 		for (std::uint32_t ix = 0; ix < gridX; ix++)
 		{
-			_texcoords[0].push_back(Vector2((float)ix / gridX, (float)(1 - (iy + 1)) / gridY));
-			_texcoords[0].push_back(Vector2((float)(ix + 1) / gridX, (float)(1 - (iy + 1)) / gridY));
-			_texcoords[0].push_back(Vector2((float)ix / gridX, (float)(1 - iy) / gridY));
-			_texcoords[0].push_back(Vector2((float)(ix + 1) / gridX, (float)(1 - iy) / gridY));
+			_texcoords.push_back(Vector2((float)ix / gridX, (float)(1 - (iy + 1)) / gridY));
+			_texcoords.push_back(Vector2((float)(ix + 1) / gridX, (float)(1 - (iy + 1)) / gridY));
+			_texcoords.push_back(Vector2((float)ix / gridX, (float)(1 - iy) / gridY));
+			_texcoords.push_back(Vector2((float)(ix + 1) / gridX, (float)(1 - iy) / gridY));
 
 			unsigned short a = static_cast<unsigned short>(ix + gridX1 * iy);
 			unsigned short b = static_cast<unsigned short>(ix + gridX1 * (iy + 1));
@@ -852,7 +837,6 @@ MeshProperty::makePlane(float width, float height, std::uint32_t widthSegments, 
 		}
 	}
 
-	this->setMeshType(MeshType::MT_TRIANGLES);
 	this->computeBoundingBox();
 }
 
@@ -930,10 +914,10 @@ MeshProperty::makePlane(float width, float height, float depth, std::uint32_t wi
 			_faces.push_back((unsigned short)(d + offset));
 			_faces.push_back((unsigned short)(a + offset));
 
-			_texcoords[0].push_back(Vector2((float)ix / gridX, (float)(1 - (iy + 1)) / gridY));
-			_texcoords[0].push_back(Vector2((float)(ix + 1) / gridX, (float)(1 - (iy + 1)) / gridY));
-			_texcoords[0].push_back(Vector2((float)ix / gridX, (float)(1 - iy) / gridY));
-			_texcoords[0].push_back(Vector2((float)(ix + 1) / gridX, (float)(1 - iy) / gridY));
+			_texcoords.push_back(Vector2((float)ix / gridX, (float)(1 - (iy + 1)) / gridY));
+			_texcoords.push_back(Vector2((float)(ix + 1) / gridX, (float)(1 - (iy + 1)) / gridY));
+			_texcoords.push_back(Vector2((float)ix / gridX, (float)(1 - iy) / gridY));
+			_texcoords.push_back(Vector2((float)(ix + 1) / gridX, (float)(1 - iy) / gridY));
 		}
 	}
 }
@@ -942,10 +926,7 @@ void
 MeshProperty::makeFloor(float width, float height, std::uint32_t widthSegments, std::uint32_t heightSegments) noexcept
 {
 	this->clear();
-
 	this->makePlane(width, height, 0, widthSegments, 0, heightSegments, 'x', 'z', 1.0, 1.0);
-
-	this->setMeshType(MeshType::MT_TRIANGLES);
 	this->computeBoundingBox();
 }
 
@@ -997,7 +978,7 @@ MeshProperty::makeNoise(float width, float height, std::uint32_t widthSegments, 
 			accum -= heightHalf;
 
 			_vertices.push_back(makePosition((float)x, accum, (float)y));
-			_texcoords[0].push_back(Vector2((float)x, (float)y));
+			_texcoords.push_back(Vector2((float)x, (float)y));
 		}
 	}
 
@@ -1015,7 +996,6 @@ MeshProperty::makeNoise(float width, float height, std::uint32_t widthSegments, 
 		}
 	}
 
-	this->setMeshType(MeshType::MT_TRIANGLES);
 	this->computeBoundingBox();
 }
 
@@ -1035,7 +1015,6 @@ MeshProperty::makeCube(float width, float height, float depth, std::uint32_t wid
 	this->makePlane(width, height, depthHalf, widthSegments, heightSegments, depthSegments, 'x', 'y', 1, -1, false); // pz
 	this->makePlane(width, height, -depthHalf, widthSegments, heightSegments, depthSegments, 'x', 'y', -1, -1, false); // nz
 
-	this->setMeshType(MeshType::MT_TRIANGLES);
 	this->computeBoundingBox();
 }
 
@@ -1086,7 +1065,7 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 
 			row.push_back((std::uint32_t)_vertices.size() - 1);
 
-			_texcoords[0].push_back(Vector2(u, 1 - v));
+			_texcoords.push_back(Vector2(u, 1 - v));
 		}
 
 		vertices.push_back(row);
@@ -1135,7 +1114,6 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 		}
 	}
 
-	this->setMeshType(MeshType::MT_TRIANGLES);
 	this->computeVertexNormals();
 	this->computeBoundingBox();
 }
@@ -1177,7 +1155,6 @@ MeshProperty::makeVolumes(float fovy, float znear, float zfar) noexcept
 	_vertices.push_back(Vector3(-tanFovy_2 * zfar, -tanFovy_2 * zfar, -zfar));
 	_vertices.push_back(Vector3(tanFovy_2 * zfar, -tanFovy_2 * zfar, -zfar));
 
-	this->setMeshType(MeshType::MT_QUAD);
 	this->computeBoundingBox();
 }
 
@@ -1189,8 +1166,8 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 	_vertices.push_back(Vector3(0, 0, 0));
 	_vertices.push_back(Vector3(0, height, 0));
 
-	_texcoords[0].push_back(Vector2(0, 0));
-	_texcoords[0].push_back(Vector2(1, 1));
+	_texcoords.push_back(Vector2(0, 0));
+	_texcoords.push_back(Vector2(1, 1));
 
 	float segment = thetaLength / segments;
 
@@ -1208,7 +1185,7 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 
 		_vertices.push_back(v);
 
-		_texcoords[0].push_back(Vector2((v.x / radius + 1), (v.z / radius + 1) / 2));
+		_texcoords.push_back(Vector2((v.x / radius + 1), (v.z / radius + 1) / 2));
 	}
 
 	for (std::uint32_t i = 2; i <= segments + 1; i++)
@@ -1233,7 +1210,6 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 		_faces.push_back(v3);
 	}
 
-	this->setMeshType(MeshType::MT_TRIANGLES);
 	this->computeVertexNormals();
 	this->computeBoundingBox();
 }
@@ -1277,7 +1253,7 @@ MeshProperty::mergeMeshes(const CombineInstance& instance) noexcept
 		this->_normals.resize(maxVertices);
 
 	if (hasTexcoord)
-		this->_texcoords[0].resize(maxVertices);
+		this->_texcoords.resize(maxVertices);
 
 	if (hasFace)
 		this->_faces.resize(maxIndices);
@@ -1396,62 +1372,26 @@ MeshProperty::computeFaceNormals() noexcept
 
 	_facesNormal.resize(_vertices.size());
 
-	switch (_type)
+	std::size_t size = _faces.size();
+	for (std::size_t i = 0; i < size; i += 3)
 	{
-	case MeshType::MT_TRIANGLES:
-	{
-		std::size_t size = _faces.size();
-		for (std::size_t i = 0; i < size; i += 3)
-		{
-			std::size_t f1 = _faces[i];
-			std::size_t f2 = _faces[i + 1];
-			std::size_t f3 = _faces[i + 2];
+		std::size_t f1 = _faces[i];
+		std::size_t f2 = _faces[i + 1];
+		std::size_t f3 = _faces[i + 2];
 
-			const Vector3& a = _vertices[f1];
-			const Vector3& b = _vertices[f2];
-			const Vector3& c = _vertices[f3];
+		const Vector3& a = _vertices[f1];
+		const Vector3& b = _vertices[f2];
+		const Vector3& c = _vertices[f3];
 
-			Vector3 edge1 = c - b;
-			Vector3 edge2 = a - b;
+		Vector3 edge1 = c - b;
+		Vector3 edge2 = a - b;
 
-			Vector3 normal = edge1.cross(edge2);
-			normal.normalize();
+		Vector3 normal = edge1.cross(edge2);
+		normal.normalize();
 
-			(_facesNormal)[f1] = normal;
-			(_facesNormal)[f2] = normal;
-			(_facesNormal)[f3] = normal;
-		}
-	}
-	break;
-	case MeshType::MT_QUAD:
-	{
-		std::size_t size = _faces.size();
-		for (std::size_t i = 0; i < size; i += 4)
-		{
-			std::size_t f1 = _faces[i];
-			std::size_t f2 = _faces[i + 1];
-			std::size_t f3 = _faces[i + 2];
-			std::size_t f4 = _faces[i + 3];
-
-			const Vector3& a = _vertices[f1];
-			const Vector3& b = _vertices[f2];
-			const Vector3& c = _vertices[f3];
-			const Vector3& d = _vertices[f4];
-
-			Vector3 edge1 = c - b;
-			Vector3 edge2 = a - b;
-
-			Vector3 normal = ~edge1.cross(edge2);
-
-			(_facesNormal)[f1] = normal;
-			(_facesNormal)[f2] = normal;
-			(_facesNormal)[f3] = normal;
-			(_facesNormal)[f4] = normal;
-		}
-	}
-	break;
-	default:
-		assert(0);
+		(_facesNormal)[f1] = normal;
+		(_facesNormal)[f2] = normal;
+		(_facesNormal)[f3] = normal;
 	}
 }
 
@@ -1579,6 +1519,11 @@ MeshProperty::computeVertexNormals(std::size_t width, std::size_t height) noexce
 }
 
 void
+MeshProperty::computeMorphNormals() noexcept
+{
+}
+
+void
 MeshProperty::computeTangents() noexcept
 {
 	std::vector<Vector3> tan1;
@@ -1598,9 +1543,9 @@ MeshProperty::computeTangents() noexcept
 		auto& vB = _vertices[f2];
 		auto& vC = _vertices[f3];
 
-		auto& uvA = _texcoords[0][f1];
-		auto& uvB = _texcoords[0][f2];
-		auto& uvC = _texcoords[0][f3];
+		auto& uvA = _texcoords[f1];
+		auto& uvB = _texcoords[f2];
+		auto& uvC = _texcoords[f3];
 
 		auto x1 = vB.x - vA.x;
 		auto x2 = vC.x - vA.x;

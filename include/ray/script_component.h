@@ -37,11 +37,10 @@
 #ifndef _H_SCRIPT_COMPONENT_H_
 #define _H_SCRIPT_COMPONENT_H_
 
-#include <ray/game_component.h>
+#include <ray/script_types.h>
 
 _NAME_BEGIN
 
-class ScriptObject;
 class EXPORT ScriptComponent : public GameComponent
 {
 	__DeclareSubClass(ScriptComponent, GameComponent)
@@ -74,7 +73,7 @@ private:
 
 private:
 
-	std::shared_ptr<ScriptObject> _scriptObject;
+	ScriptObjectPtr _scriptObject;
 
 	std::size_t _onAttach;
 	std::size_t _onRemove;

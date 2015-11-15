@@ -37,8 +37,7 @@
 #ifndef _H_SCRIPT_FEATURES_H_
 #define _H_SCRIPT_FEATURES_H_
 
-#include <ray/game_features.h>
-#include <ray/script_system.h>
+#include <ray/script_types.h>
 
 _NAME_BEGIN
 

@@ -34,12 +34,9 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_SCRIPT)
 #include <ray/script_system.h>
-#include <ray/format.h>
-#include <ray/mstream.h>
 #include <ray/script_object.h>
-
-#include <angelscript.h>
 
 _NAME_BEGIN
 
@@ -67,7 +64,7 @@ ScriptSystem::open() noexcept
 
 	_context = _engine->CreateContext();
 
-	_bindCore = std::make_shared<ScriptBindCore>();
+	_bindCore = std::make_shared<ScriptBindArray>();
 	_bindMath = std::make_shared<ScriptBindMath>();
 	_bindString = std::make_shared<ScriptBindString>();
 	_bindTimer = std::make_shared<ScriptBindTimer>();
@@ -236,3 +233,4 @@ ScriptSystem::onFrameEnd() noexcept
 }
 
 _NAME_END
+#endif

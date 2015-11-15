@@ -38,7 +38,6 @@
 #define _H_SCRIPT_BIND_DISPLAY_H_
 
 #include <ray/script_binder.h>
-#include <ray/render_system.h>
 
 _NAME_BEGIN
 

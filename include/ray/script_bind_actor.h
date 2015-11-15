@@ -37,17 +37,9 @@
 #ifndef _H_SCRIPT_BIND_TRANSFORM_H_
 #define _H_SCRIPT_BIND_TRANSFORM_H_
 
-#include <ray/game_types.h>
 #include <ray/script_binder.h>
-#include <ray/mesh_component.h>
-#include <ray/physics_body_component.h>
 
 _NAME_BEGIN
-
-typedef std::shared_ptr<class PhysicsShape> PhysicsShapePtr;
-typedef std::shared_ptr<class PhysicsBodyComponent> PhysicsBodyComponentPtr;
-typedef std::shared_ptr<class PhysicsCharacterComponent> PhysicsCharacterComponentPtr;
-typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;
 
 class ScriptBindActor final : public ScriptBinder
 {

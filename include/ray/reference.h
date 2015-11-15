@@ -38,36 +38,58 @@
 #define _H_REFERENCE_H_
 
 #include <ray/platform.h>
+#include <atomic>
 
 _NAME_BEGIN
 
-template<typename T>
-class Reference : public std::enable_shared_from_this<T>
+class Reference
 {
 public:
     Reference() noexcept
-        : _data(0)
-        , _pointer(nullptr)
+        : _pointer(nullptr)
+		, _gc(false)
+		, _count(1)
     {
     }
 
-    virtual ~Reference() noexcept
-    {
-    }
+	Reference(const Reference& copy) noexcept
+		: _pointer(copy._pointer)
+	{
+		_gc.store(copy._gc);
+		_count.store(copy._count);
+	}
 
-    void setUserData(std::intptr_t data) noexcept
-    {
-        _data = data;
-    }
+	void addRef() const
+	{
+		++_count;
+	}
+
+	void release() const
+	{
+		_gc = false;
+		_count.fetch_sub(1);
+		if (_count == 0)
+			delete this;
+	}
+
+	int refCount() const
+	{
+		return _count;
+	}
+
+	void setGC() const
+	{
+		_gc = true;
+	}
+
+	bool getGC() const noexcept
+	{
+		return _gc;
+	}
 
     void setUserPointer(std::intptr_t* pointer) noexcept
     {
         _pointer = pointer;
-    }
-
-    std::intptr_t getUserData() const noexcept
-    {
-        return _data;
     }
 
     std::intptr_t* getUserPointer() const noexcept
@@ -75,9 +97,17 @@ public:
         return _pointer;
     }
 
+protected:
+	virtual ~Reference() noexcept
+	{
+		assert(0 == this->_count);
+	}
+
 private:
 
-	std::intptr_t _data;
+	mutable std::atomic_bool _gc;
+	mutable std::atomic_int _count;
+
     std::intptr_t* _pointer;
 };
 

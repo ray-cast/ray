@@ -93,8 +93,6 @@ public:
     template<typename S>
     Vector3t<T>& operator/=(const S sz) { x /= sz; y /= sz; z /= sz; return *this; }
 
-    Vector3t<T> operator-(const Vector3t<T>& v) const { return Vector3t<T>(x - v.x, y - v.y, z - v.z); }
-
     template <typename U>
     explicit operator Vector3t<U>() const
     {

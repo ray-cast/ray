@@ -1,0 +1,21 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
+
+IF(BUILD_OPENGL_ES)
+    INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/gles/include)
+    LINK_DIRECTORIES(${DEPENDENCIES_PATH}/gles/lib)
+ENDIF()
+
+FOREACH(mylauncher
+    launcher
+    cubes
+    ssrr
+    sssss
+    ui
+)
+ADD_SUBDIRECTORY(${mylauncher})
+
+SET_TARGET_ATTRIBUTE(${mylauncher} "launcher")
+
+ENDFOREACH()

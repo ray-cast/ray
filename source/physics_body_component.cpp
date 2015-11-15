@@ -245,6 +245,10 @@ PhysicsBodyComponent::onActivate() noexcept
 			_body->setMoveRotation(this->getGameObject()->getRotate());
 			_body->setPhysicsScene(physicsScene.get());
 		}
+		else
+		{
+			assert(false);
+		}
 	}
 }
 

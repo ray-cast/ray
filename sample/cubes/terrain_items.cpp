@@ -311,9 +311,7 @@ TerrainTree::createObject(TerrainMapPtr map) noexcept
 		gameObject->setName(ray::format("chunk_wood_%d_%d_%d") % offsetX % offsetY % offsetZ);
 		gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
 		gameObject->getComponent<ray::MeshComponent>()->setMesh(woods);
-
-		auto rigidbody = std::make_shared<ray::PhysicsBodyComponent>();
-		gameObject->addComponent(rigidbody);
+		gameObject->addComponent(std::make_shared<ray::PhysicsBodyComponent>());
 		gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
 
 		_objects.push_back(gameObject);
@@ -325,10 +323,8 @@ TerrainTree::createObject(TerrainMapPtr map) noexcept
 		gameObject->setName(ray::format("chunk_leaf_%d_%d_%d") % offsetX % offsetY % offsetZ);
 		gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
 		gameObject->getComponent<ray::MeshComponent>()->setMesh(leafs);
-
-		auto rigidbody = std::make_shared<ray::PhysicsBodyComponent>();
-		gameObject->addComponent(rigidbody);
 		gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
+		gameObject->addComponent(std::make_shared<ray::PhysicsBodyComponent>());
 
 		_objects.push_back(gameObject);
 	}

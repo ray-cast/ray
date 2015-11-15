@@ -38,11 +38,12 @@
 #define _H_PHYSICS_MESH_COMPONENT_H_
 
 #include <ray/physics_shape_component.h>
+#include <ray/mesh_component.h>
 
 _NAME_BEGIN
 
 class PhysicsShapeMesh;
-class EXPORT PhysicsMeshComponent final : public PhysicsShapeComponent
+class EXPORT PhysicsMeshComponent final : public PhysicsShapeComponent, public MeshListener
 {
 	__DeclareSubClass(PhysicsMeshComponent, PhysicsShapeComponent)
 public:
@@ -50,14 +51,19 @@ public:
 	~PhysicsMeshComponent() noexcept;
 
 private:
-	virtual void onAttach() noexcept;
-	virtual void onRemove() noexcept;
+	virtual void onAttachComponent() noexcept;
+	virtual void onDetachComponent() noexcept;
 
 	virtual void onActivate() noexcept;
 	virtual void onDeactivate() noexcept;
 
+	virtual void onMeshChangeAfter() noexcept;
+
 	virtual PhysicsShapePtr getCollisionShape() noexcept;
 	virtual GameComponentPtr clone() const noexcept;
+
+	void _addMeshListstener() noexcept;
+	void _removeMeshListener() noexcept;
 
 	void _buildShapeMesh() noexcept;
 

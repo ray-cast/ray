@@ -94,7 +94,6 @@ PhysicsCapsuleComponent::clone() const noexcept
 	auto component = std::make_shared<PhysicsCapsuleComponent>();
 	component->setWidth(_shape->getWidth());
 	component->setHeight(_shape->getHeight());
-
 	return component;
 }
 

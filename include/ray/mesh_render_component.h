@@ -68,8 +68,6 @@ protected:
 
 	RenderObjectPtr buildRenderObject(MeshPropertyPtr mesh, RenderBufferPtr buffer) noexcept;
 
-
-
 private:
 	MeshRenderComponent(const MeshRenderComponent&) noexcept = delete;
 	MeshRenderComponent& operator=(const MeshRenderComponent&) noexcept = delete;

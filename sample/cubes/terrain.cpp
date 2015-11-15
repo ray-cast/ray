@@ -41,7 +41,7 @@ __ImplementSubClass(TerrainComponent, ray::GameController)
 
 TerrainComponent::TerrainComponent() noexcept
 	: _createRadius(2)
-	, _deleteRadius(9)
+	, _deleteRadius(5)
 	, _renderRadius(10)
 	, _signRadius(10)
 	, _hitRadius(100)
@@ -53,7 +53,7 @@ TerrainComponent::TerrainComponent() noexcept
 	_maxChunks = _deleteRadius  * _deleteRadius * _deleteRadius;
 
 	this->addObject(std::make_shared<TerrainGrass>());
-	//this->addObject(std::make_shared<TerrainTree>());
+	this->addObject(std::make_shared<TerrainTree>());
 	//this->addObject(std::make_shared<TerrainClound>());
 	//this->addObject(std::make_shared<TerrainWater>());
 }
@@ -374,10 +374,8 @@ TerrainComponent::deleteChunks() noexcept
 
 		if (destroy)
 		{
-			it = _chunks.erase(it);
-			end = _chunks.end();
-			if (it == end)
-				break;
+			_chunks.erase(it);
+			break;
 		}
 	}
 }

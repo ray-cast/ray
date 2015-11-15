@@ -78,7 +78,9 @@ PhysicsBoxComponent::getCollisionShape() noexcept
 GameComponentPtr
 PhysicsBoxComponent::clone() const noexcept
 {
-	return std::make_shared<PhysicsBoxComponent>(this->getSize());
+	auto component = std::make_shared<PhysicsBoxComponent>();
+	component->setSize(this->getSize());
+	return component;
 }
 
 void

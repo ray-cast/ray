@@ -28,6 +28,7 @@
         <component name="MeshRender">
             <attribute castshadow="true"/>
             <attribute receiveshadow="false"/>
+            <attribute material="dlc:sssss/materials/sssss.mat"/>
         </component>
     </object>
     <object>

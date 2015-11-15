@@ -8,7 +8,6 @@ IF(BUILD_OPENGL_ES)
 ENDIF()
 
 FOREACH(mylauncher
-    launcher
     cubes
     ssrr
     sssss

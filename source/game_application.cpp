@@ -104,7 +104,7 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) ex
 		{
 			this->addFeatures(std::make_shared<ray::InputFeatures>());
 
-#if defined(_BUILD_SCRIPT)
+#if defined(_BUILD_PHYSIC)
 			this->addFeatures(std::make_shared<ray::PhysicFeatures>());
 #endif
 

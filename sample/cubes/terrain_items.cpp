@@ -151,7 +151,7 @@ TerrainGrass::active(ray::GameObjectPtr parent) noexcept
 		{
 			_object->setParent(parent);
 			_object->setActive(true);
-			//_object->getComponent<ray::MeshComponent>()->clear();
+			_object->getComponent<ray::MeshComponent>()->clear();
 		}
 		else
 		{

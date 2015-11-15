@@ -45,12 +45,12 @@ public:
 	TerrainGrass() noexcept;
 	~TerrainGrass() noexcept;
 
-	bool create(TerrainMapPtr map) noexcept;
-	bool createObject(TerrainMapPtr map) noexcept;
+	bool create(TerrainChunk& chunk) noexcept;
+	bool createObject(TerrainChunk& chunk) noexcept;
 
 	bool active(ray::GameObjectPtr parent) noexcept;
 
-	bool update(TerrainMapPtr map) noexcept;
+	bool update(TerrainChunk& chunk) noexcept;
 
 	TerrainObjectPtr clone() noexcept;
 
@@ -70,12 +70,12 @@ public:
 	TerrainTree() noexcept;
 	~TerrainTree() noexcept;
 
-	bool create(TerrainMapPtr map) noexcept;
-	bool createObject(TerrainMapPtr map) noexcept;
+	bool create(TerrainChunk& chunk) noexcept;
+	bool createObject(TerrainChunk& chunk) noexcept;
 
 	bool active(ray::GameObjectPtr parent) noexcept;
 
-	bool update(TerrainMapPtr map) noexcept;
+	bool update(TerrainChunk& chunk) noexcept;
 
 	TerrainObjectPtr clone() noexcept;
 
@@ -98,12 +98,12 @@ public:
 	TerrainClound() noexcept;
 	~TerrainClound() noexcept;
 
-	bool create(TerrainMapPtr map) noexcept;
-	bool createObject(TerrainMapPtr map) noexcept;
+	bool create(TerrainChunk& chunk) noexcept;
+	bool createObject(TerrainChunk& chunk) noexcept;
 
 	bool active(ray::GameObjectPtr parent) noexcept;
 
-	bool update(TerrainMapPtr map) noexcept;
+	bool update(TerrainChunk& chunk) noexcept;
 
 	TerrainObjectPtr clone() noexcept;
 
@@ -122,12 +122,12 @@ public:
 	TerrainWater() noexcept;
 	~TerrainWater() noexcept;
 
-	bool create(TerrainMapPtr map) noexcept;
-	bool createObject(TerrainMapPtr map) noexcept;
+	bool create(TerrainChunk& chunk) noexcept;
+	bool createObject(TerrainChunk& chunk) noexcept;
 
 	bool active(ray::GameObjectPtr parent) noexcept;
 
-	bool update(TerrainMapPtr map) noexcept;
+	bool update(TerrainChunk& chunk) noexcept;
 
 	TerrainObjectPtr clone() noexcept;
 
@@ -135,8 +135,8 @@ private:
 	class Water : public TerrainItem {};
 
 	std::shared_ptr<Water> _water;
-	ray::GameObjectPtr _waterObject;
 
+	ray::GameObjectPtr _waterObject;
 	ray::GameObjectPtr _object;
 };
 

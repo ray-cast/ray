@@ -51,6 +51,12 @@ public:
 
 	bool isQuitRequest;
 
+	std::int32_t x;
+	std::int32_t y;
+	std::int32_t z;
+	
+	std::size_t size;
+
 	TerrainChunkPtr chunk;
 
 	enum State
@@ -84,13 +90,13 @@ public:
 	bool removeBlockByMousePos(std::int32_t x, std::int32_t y) noexcept;
 	bool removeBlockByRaycast(const ray::Vector3& translate, const ray::Vector3& view) noexcept;
 
-	TerrainChunkPtr getChunkByChunkPos(ChunkPosition x, ChunkPosition y, ChunkPosition z) const noexcept;
-	TerrainChunkPtr getChunkByMousePos(std::int32_t x, std::int32_t y, ray::int3& out) const noexcept;
-	TerrainChunkPtr getChunkByRaycast(const ray::Vector3& translate, const ray::Vector3& view, ray::int3& out) const noexcept;
+	TerrainChunkPtr getChunkByChunkPos(std::int32_t x, std::int32_t y, std::int32_t z) const noexcept;
+	TerrainChunkPtr getChunkByMousePos(std::int32_t x, std::int32_t y, TerrainData& out) const noexcept;
+	TerrainChunkPtr getChunkByRaycast(const ray::Vector3& translate, const ray::Vector3& view, TerrainData& out) const noexcept;
 
-	ChunkPosition chunked(float x) const noexcept;
-	float unchunk(ChunkPosition x) const noexcept;
-	bool visiable(const ray::Frustum& fru, ChunkPosition x, ChunkPosition y, ChunkPosition z) const noexcept;
+	std::int32_t chunked(float x) const noexcept;
+	float unchunk(std::int32_t x) const noexcept;
+	bool visiable(const ray::Frustum& fru, std::int32_t x, std::int32_t y, std::int32_t z) const noexcept;
 
 	void addItem(TerrainItemPtr item) noexcept;
 	void removeItem(TerrainItemPtr item) noexcept;
@@ -117,11 +123,7 @@ private:
 
 private:
 
-	static const int MAX_THREADS = 4;
-
 	float _dayTimer;
-
-	ray::GameObjectPtr _player;
 
 	std::int32_t _size;
 	std::int32_t _scale;
@@ -138,8 +140,6 @@ private:
 	std::vector<TerrainItemPtr> _itmes;
 	std::vector<TerrainObjectPtr> _objects;
 	std::vector<TerrainChunkPtr> _chunks;
-
-	std::vector<std::shared_ptr<TerrainThread>> _threads;
 };
 
 #endif

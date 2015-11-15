@@ -41,18 +41,26 @@
 
 #define EMPTY_ENTRY (-1)
 
-class MapEntry
+class TerrainData
 {
 public:
-	MapEntry()
+	TerrainData() noexcept
+		: x(EMPTY_ENTRY)
+		, y(EMPTY_ENTRY)
+		, z(EMPTY_ENTRY)
+		, instanceID(0)
 	{
-		x = EMPTY_ENTRY;
-		y = EMPTY_ENTRY;
-		z = EMPTY_ENTRY;
-		instanceID = 0;
 	}
 
-	bool empty()
+	TerrainData(BlockPosition xx, BlockPosition yy, BlockPosition zz, InstanceID id = 0) noexcept
+		: x(xx)
+		, y(yy)
+		, z(zz)
+		, instanceID(id)
+	{
+	}
+
+	bool empty() const noexcept
 	{
 		return
 			x == EMPTY_ENTRY ||
@@ -64,31 +72,27 @@ public:
 	BlockPosition y;
 	BlockPosition z;
 
-	ItemID instanceID;
+	InstanceID instanceID;
 };
 
 class TerrainMap final
 {
 public:
-	TerrainMap(TerrainComponent& _terrain);
-	~TerrainMap();
+	TerrainMap() noexcept;
+	TerrainMap(std::size_t mask) noexcept;
+	~TerrainMap() noexcept;
 
-	void create(std::size_t size, ChunkPosition x, ChunkPosition y, ChunkPosition z, std::size_t mask);
-	void close();
+	void create(std::size_t mask) noexcept;
+	void clear() noexcept;
 
-	bool set(BlockPosition x, BlockPosition y, BlockPosition z, ItemID id);
-	ItemID get(BlockPosition x, BlockPosition y, BlockPosition z);
+	bool set(const TerrainData& data) noexcept;
+	bool get(TerrainData& data) noexcept;
 
-	std::size_t size() const noexcept;
+	void grow() noexcept;
+
 	std::size_t count() const noexcept;
 
-	void getPosition(ChunkPosition& x, ChunkPosition& y, ChunkPosition &z);
-
-	void copy(TerrainMap* map);
-
-	MapEntrys& getEntrys() noexcept;
-
-	void grow();
+	TerrainDatas& data() noexcept;
 
 private:
 	TerrainMap(const TerrainMap&) noexcept = delete;
@@ -96,17 +100,10 @@ private:
 
 private:
 
-	TerrainComponent& _terrain;
-
-	ChunkPosition _dx;
-	ChunkPosition _dy;
-	ChunkPosition _dz;
-
 	std::size_t _mask;
-	std::size_t _size;
 	std::size_t _count;
 
-	std::vector<MapEntry> _data;
+	std::vector<TerrainData> _data;
 };
 
 #endif

@@ -49,13 +49,8 @@ TerrainComponent::TerrainComponent() noexcept
 	, _scale(2)
 	, _dayTimer(0)
 {
-	_maxItem = std::numeric_limits<ItemID>::max();
+	_maxItem = std::numeric_limits<InstanceID>::max();
 	_maxChunks = _deleteRadius  * _deleteRadius * _deleteRadius;
-
-	this->addObject(std::make_shared<TerrainGrass>());
-	this->addObject(std::make_shared<TerrainTree>());
-	//this->addObject(std::make_shared<TerrainClound>());
-	//this->addObject(std::make_shared<TerrainWater>());
 }
 
 TerrainComponent::~TerrainComponent() noexcept
@@ -83,22 +78,25 @@ TerrainComponent::addBlockByMousePos(std::int32_t x, std::int32_t y) noexcept
 bool
 TerrainComponent::addBlockByRaycast(const ray::Vector3& translate, const ray::Vector3& view) noexcept
 {
-	ray::int3 out;
+	TerrainData out;
 	auto chunk = this->getChunkByRaycast(translate, view, out);
 	if (chunk)
 	{
 		ray::float3 cur(out.x, out.y, out.z);
 
-		ray::int3 block = out;
+		TerrainData data;
+		TerrainData block;
+		block.x = out.x;
+		block.y = out.y;
+		block.z = out.z;
+		block.instanceID = 1;
 
-		ChunkPosition x, y, z;
+		std::int32_t x, y, z;
 		chunk->getPosition(x, y, z);
 
-		ChunkPosition ix = x;
-		ChunkPosition iy = y;
-		ChunkPosition iz = z;
-
-		ItemID hw = 0;
+		std::int32_t ix = x;
+		std::int32_t iy = y;
+		std::int32_t iz = z;
 
 		do
 		{
@@ -127,13 +125,13 @@ TerrainComponent::addBlockByRaycast(const ray::Vector3& translate, const ray::Ve
 
 			if (chunk)
 			{
-				hw = chunk->get(block.x, block.y, block.z);
+				chunk->get(data);
 			}
-		} while (hw);
+		} while (data.instanceID);
 
-		if (chunk && hw == 0)
+		if (chunk && data.instanceID == 0)
 		{
-			chunk->set(block.x, block.y, block.z, 1);
+			chunk->set(block);
 			chunk->update();
 			return true;
 		}
@@ -145,11 +143,13 @@ TerrainComponent::addBlockByRaycast(const ray::Vector3& translate, const ray::Ve
 bool
 TerrainComponent::removeBlockByMousePos(std::int32_t x, std::int32_t y) noexcept
 {
-	ray::int3 out;
+	TerrainData out;
 	auto chunk = getChunkByMousePos(x, y, out);
 	if (chunk)
 	{
-		chunk->set(out.x, out.y, out.z, 0);
+		out.instanceID = 0;
+
+		chunk->set(out);
 		chunk->update();
 		return true;
 	}
@@ -160,11 +160,13 @@ TerrainComponent::removeBlockByMousePos(std::int32_t x, std::int32_t y) noexcept
 bool
 TerrainComponent::removeBlockByRaycast(const ray::Vector3& translate, const ray::Vector3& view) noexcept
 {
-	ray::int3 out;
+	TerrainData out;
 	auto chunk = getChunkByRaycast(translate, view, out);
 	if (chunk)
 	{
-		chunk->set(out.x, out.y, out.z, 0);
+		out.instanceID = 0;
+
+		chunk->set(out);
 		chunk->update();
 		return true;
 	}
@@ -173,11 +175,11 @@ TerrainComponent::removeBlockByRaycast(const ray::Vector3& translate, const ray:
 }
 
 TerrainChunkPtr
-TerrainComponent::getChunkByChunkPos(ChunkPosition x, ChunkPosition y, ChunkPosition z) const noexcept
+TerrainComponent::getChunkByChunkPos(std::int32_t x, std::int32_t y, std::int32_t z) const noexcept
 {
 	for (auto& it : _chunks)
 	{
-		ChunkPosition _x, _y, _z;
+		std::int32_t _x, _y, _z;
 		it->getPosition(_x, _y, _z);
 
 		if (_x == x && _y == y && _z == z)
@@ -190,7 +192,7 @@ TerrainComponent::getChunkByChunkPos(ChunkPosition x, ChunkPosition y, ChunkPosi
 }
 
 TerrainChunkPtr
-TerrainComponent::getChunkByMousePos(std::int32_t x, std::int32_t y, ray::int3& out) const noexcept
+TerrainComponent::getChunkByMousePos(std::int32_t x, std::int32_t y, TerrainData& out) const noexcept
 {
 	ray::Vector3 pos(x, y, 1);
 
@@ -208,15 +210,13 @@ TerrainComponent::getChunkByMousePos(std::int32_t x, std::int32_t y, ray::int3& 
 }
 
 TerrainChunkPtr
-TerrainComponent::getChunkByRaycast(const ray::Vector3& translate, const ray::Vector3& view, ray::int3& out) const noexcept
+TerrainComponent::getChunkByRaycast(const ray::Vector3& translate, const ray::Vector3& view, TerrainData& out) const noexcept
 {
 	BlockPosition x = chunked(translate.x);
 	BlockPosition y = chunked(translate.y);
 	BlockPosition z = chunked(translate.z);
 
-	BlockPosition px = 0;
-	BlockPosition py = 0;
-	BlockPosition pz = 0;
+	TerrainData p;
 
 	float lastX = x;
 	float lastY = y;
@@ -251,23 +251,20 @@ TerrainComponent::getChunkByRaycast(const ray::Vector3& translate, const ray::Ve
 
 		if (chunk)
 		{
-			BlockPosition nx = roundf(pos.x * 0.5);
-			BlockPosition ny = roundf(pos.y * 0.5);
-			BlockPosition nz = roundf(pos.z * 0.5);
-			if (nx != px || ny != py || nz != pz)
+			TerrainData data;
+			data.x = roundf(pos.x * 0.5);
+			data.y = roundf(pos.y * 0.5);
+			data.z = roundf(pos.z * 0.5);
+
+			if (data.x != p.x || data.y != p.y || data.z != p.z)
 			{
-				auto hw = chunk->get(nx, ny, nz);
-				if (hw > 0)
+				if (chunk->get(data))
 				{
-					out.x = nx;
-					out.y = ny;
-					out.z = nz;
+					out = data;
 					return chunk;
 				}
 
-				px = nx;
-				py = ny;
-				pz = nz;
+				p = data;
 			}
 		}
 
@@ -285,20 +282,20 @@ TerrainComponent::getChunkByRaycast(const ray::Vector3& translate, const ray::Ve
 	return nullptr;
 }
 
-ChunkPosition
+std::int32_t
 TerrainComponent::chunked(float x) const noexcept
 {
 	return  std::floor(x / _scale / _size);
 }
 
 float
-TerrainComponent::unchunk(ChunkPosition x) const noexcept
+TerrainComponent::unchunk(std::int32_t x) const noexcept
 {
 	return x * _size * _scale;
 }
 
 bool
-TerrainComponent::visiable(const ray::Frustum& fru, ChunkPosition x, ChunkPosition y, ChunkPosition z) const noexcept
+TerrainComponent::visiable(const ray::Frustum& fru, std::int32_t x, std::int32_t y, std::int32_t z) const noexcept
 {
 	ray::AABB aabb;
 
@@ -361,18 +358,13 @@ TerrainComponent::deleteChunks() noexcept
 	{
 		bool destroy = true;
 
-		auto translate = _player->getTranslate();
+		auto translate = this->getGameObject()->getTranslate();
 
 		auto x = chunked(translate.x);
 		auto y = chunked(translate.y);
 		auto z = chunked(translate.z);
 
-		if ((*it)->distance(x, y, z) < _deleteRadius)
-		{
-			destroy = false;
-		}
-
-		if (destroy)
+		if ((*it)->distance(x, y, z) > _deleteRadius)
 		{
 			_chunks.erase(it);
 			break;
@@ -386,83 +378,55 @@ TerrainComponent::createChunks() noexcept
 	if (_chunks.size() > _maxChunks)
 		return;
 
-	auto translate = _player->getTranslate();
-	ChunkPosition x = chunked(translate.x);
-	ChunkPosition y = 0;
-	ChunkPosition z = chunked(translate.z);
+	auto translate = this->getGameObject()->getTranslate();
+	std::int32_t x = chunked(translate.x);
+	std::int32_t y = 0;
+	std::int32_t z = chunked(translate.z);
 
 	ray::Frustum fru;
-	fru.extract(_player->getComponent<ray::CameraComponent>()->getViewProject());
+	fru.extract(this->getComponent<ray::CameraComponent>()->getViewProject());
 
-	for (auto& it : _threads)
+	std::int32_t bestX = 0;
+	std::int32_t bestY = 0;
+	std::int32_t bestZ = 0;
+	std::int32_t start = std::numeric_limits<std::int32_t>::max();
+	std::int32_t bestScore = start;
+
+	for (std::int32_t iq = -_createRadius; iq <= _createRadius; iq++)
 	{
-		if (it->state != TerrainThread::IDLE)
-			continue;
-
-		ChunkPosition bestX = 0;
-		ChunkPosition bestY = 0;
-		ChunkPosition bestZ = 0;
-		ChunkPosition start = std::numeric_limits<ChunkPosition>::max();
-		ChunkPosition bestScore = start;
-
-		for (std::int32_t iq = -_createRadius; iq <= _createRadius; iq++)
+		for (std::int32_t ip = -_createRadius; ip <= _createRadius; ip++)
 		{
-			for (std::int32_t ip = -_createRadius; ip <= _createRadius; ip++)
+			std::int32_t dx = x + iq;
+			std::int32_t dy = y;
+			std::int32_t dz = z + ip;
+
+			auto chunk = this->getChunkByChunkPos(dx, dy, dz);
+			if (chunk && !chunk->dirt())
+				continue;
+
+			std::int32_t invisiable = !this->visiable(fru, dx, dy, dz);
+			std::int32_t distance = std::max(std::abs(iq), std::abs(ip));
+			std::int32_t score = (invisiable << 24) | distance;
+			if (score < bestScore)
 			{
-				ChunkPosition dx = x + iq;
-				ChunkPosition dy = y;
-				ChunkPosition dz = z + ip;
-
-				auto chunk = this->getChunkByChunkPos(dx, dy, dz);
-				if (chunk && !chunk->dirt())
-					continue;
-
-				std::int32_t invisiable = !this->visiable(fru, dx, dy, dz);
-				std::int32_t distance = std::max(std::abs(iq), std::abs(ip));
-				std::int32_t score = (invisiable << 24) | distance;
-				if (score < bestScore)
-				{
-					bestScore = score;
-					bestX = dx;
-					bestZ = dz;
-				}
+				bestScore = score;
+				bestX = dx;
+				bestZ = dz;
 			}
 		}
-
-		if (start == bestScore)
-			return;
-
-		auto chunk = this->getChunkByChunkPos(bestX, bestY, bestZ);
-		if (!chunk)
-		{
-			chunk = std::make_shared<TerrainChunk>(*this);
-			chunk->init(_size, bestX, bestY, bestZ);
-
-			_chunks.push_back(chunk);
-		}
-
-		it->chunk = chunk;
-		it->chunk->dirt(false);
-		it->state = TerrainThread::BUSY;
-		it->dispose.notify_one();
 	}
-}
 
-void
-TerrainComponent::checkChunks() noexcept
-{
-	for (auto& it : _threads)
+	if (start == bestScore)
+		return;
+
+	auto chunk = this->getChunkByChunkPos(bestX, bestY, bestZ);
+	if (!chunk)
 	{
-		if (it->state != TerrainThread::DONE)
-			continue;
+		chunk = std::make_shared<TerrainChunk>(*this);
+		chunk->create(bestX, bestY, bestZ, _size);
+		chunk->setActive(this->getGameObject());
 
-		if (it->chunk)
-		{
-			it->chunk->active(std::dynamic_pointer_cast<ray::GameObject>(this->getGameObject()->shared_from_this()));
-			it->chunk = nullptr;
-		}
-
-		it->state = TerrainThread::IDLE;
+		_chunks.push_back(chunk);
 	}
 }
 
@@ -502,7 +466,7 @@ TerrainComponent::dispose(std::shared_ptr<TerrainThread> ctx) noexcept
 
 		if (ctx->chunk)
 		{
-			ctx->chunk->realize();
+			ctx->chunk->create(ctx->size, ctx->x, ctx->y, ctx->z);
 		}
 
 		ctx->state = TerrainThread::DONE;
@@ -518,34 +482,26 @@ TerrainComponent::clone() const noexcept
 void
 TerrainComponent::onActivate() except
 {
-	_player = find<ray::GameObject>("first_person_camera");
-	if (_player)
+	this->addObject(std::make_shared<TerrainGrass>());
+	this->addObject(std::make_shared<TerrainTree>());
+	this->addObject(std::make_shared<TerrainClound>());
+	this->addObject(std::make_shared<TerrainWater>());
+
+	ray::Vector3 translate = this->getGameObject()->getTranslate();
+
+	auto x = chunked(translate.x);
+	auto y = chunked(translate.y);
+	auto z = chunked(translate.z);
+
+	for (std::int32_t i = x - 1; i < x + 1; i++)
 	{
-		ray::Vector3 translate = _player->getTranslate();
-
-		auto x = chunked(translate.x);
-		auto y = chunked(translate.y);
-		auto z = chunked(translate.z);
-
-		for (ChunkPosition i = x - 1; i < x + 1; i++)
+		for (std::int32_t j = z - 1; j < z + 1; j++)
 		{
-			for (ChunkPosition j = z - 1; j < z + 1; j++)
-			{
-				auto chunk = std::make_shared<TerrainChunk>(*this);
-				chunk->init(_size, i, 0, j);
-				chunk->realize();
-				chunk->active(std::dynamic_pointer_cast<ray::GameObject>(this->getGameObject()->shared_from_this()));
+			auto chunk = std::make_shared<TerrainChunk>(*this);
+			chunk->create(i, 0, j, _size);
+			chunk->setActive(this->getGameObject());
 
-				_chunks.push_back(chunk);
-			}
-		}
-
-		for (int i = 0; i < MAX_THREADS; i++)
-		{
-			auto thread = std::make_shared<TerrainThread>();
-			thread->_thread = std::make_unique<std::thread>(std::bind(&TerrainComponent::dispose, this, thread));
-
-			_threads.push_back(thread);
+			_chunks.push_back(chunk);
 		}
 	}
 }
@@ -555,46 +511,12 @@ TerrainComponent::onDeactivate() except
 {
 	_chunks.clear();
 	_itmes.clear();
-
-	for (auto& it : _threads)
-	{
-		it->isQuitRequest = true;
-
-		if (it->_thread)
-		{
-			it->dispose.notify_one();
-
-			it->_thread->join();
-			it->_thread = nullptr;
-		}
-	}
-
-	_threads.clear();
 }
 
 void
 TerrainComponent::onFrame() except
 {
 	this->deleteChunks();
-	this->checkChunks();
 	this->createChunks();
 	this->hitChunks();
-
-	/*auto sun = this->find<ray::GameObject>("sun");
-	if (sun)
-	{
-		float dayTimer = this->getGameServer()->getTimer()->elapsed() / 50;
-		dayTimer -= int(dayTimer);
-
-		_dayTimer += this->getGameServer()->getTimer()->delta() / 50;
-
-		float sunY = cos(_dayTimer);
-		float sunZ = sin(_dayTimer);
-
-		auto pos = sun->getTranslate();
-		pos.y = sunY * 50;
-		pos.z = sunZ * 50;
-
-		sun->setTranslate(pos);
-	}*/
 }

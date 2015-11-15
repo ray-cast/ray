@@ -36,50 +36,46 @@
 // +----------------------------------------------------------------------
 #include "terrain_map.h"
 
-TerrainMap::TerrainMap(TerrainComponent& terrain)
+TerrainMap::TerrainMap() noexcept
 	: _mask(0)
-	, _terrain(terrain)
 {
 }
 
-TerrainMap::~TerrainMap()
+TerrainMap::TerrainMap(std::size_t mask) noexcept
 {
-	this->close();
+	this->create(mask);
+}
+
+TerrainMap::~TerrainMap() noexcept
+{
+	this->clear();
 }
 
 void
-TerrainMap::create(std::size_t size, ChunkPosition x, ChunkPosition y, ChunkPosition z, std::size_t mask)
+TerrainMap::create(std::size_t mask) noexcept
 {
-	_dx = x;
-	_dy = y;
-	_dz = z;
-	_size = size;
 	_mask = mask;
 	_count = 0;
 	_data.resize(mask + 1);
 }
 
 void
-TerrainMap::close()
+TerrainMap::clear() noexcept
 {
-	_data = std::vector<MapEntry>();
+	_data.clear();
 }
 
 bool
-TerrainMap::set(BlockPosition x, BlockPosition y, BlockPosition z, ItemID w)
+TerrainMap::set(const TerrainData& data) noexcept
 {
-	assert(x >= 0 || x < _size);
-	assert(y >= 0 || y < _size);
-	assert(z >= 0 || z < _size);
-
-	std::size_t index = ray::hash_int(x, y, z) & _mask;
+	std::size_t index = ray::hash_int(data.x, data.y, data.z) & _mask;
 
 	auto* entry = &_data[index];
 
 	int overwrite = 0;
 	while (!entry->empty())
 	{
-		if (entry->x == x && entry->y == y && entry->z == z)
+		if (entry->x == data.x && entry->y == data.y && entry->z == data.z)
 		{
 			overwrite = 1;
 			break;
@@ -91,18 +87,15 @@ TerrainMap::set(BlockPosition x, BlockPosition y, BlockPosition z, ItemID w)
 
 	if (overwrite)
 	{
-		if (entry->instanceID != w)
+		if (entry->instanceID != data.instanceID)
 		{
-			entry->instanceID = w;
+			entry->instanceID = data.instanceID;
 			return true;
 		}
 	}
-	else if (w)
+	else if (data.instanceID)
 	{
-		entry->x = x;
-		entry->y = y;
-		entry->z = z;
-		entry->instanceID = w;
+		*entry = data;
 
 		_count++;
 		if (_count * 2 > _mask)
@@ -114,37 +107,28 @@ TerrainMap::set(BlockPosition x, BlockPosition y, BlockPosition z, ItemID w)
 	return false;
 }
 
-ItemID
-TerrainMap::get(BlockPosition x, BlockPosition y, BlockPosition z)
+bool
+TerrainMap::get(TerrainData& data) noexcept
 {
-	if (x < 0 || x >= _size) return 0;
-	if (y < 0 || y >= _size) return 0;
-	if (z < 0 || z >= _size) return 0;
+	std::size_t index = ray::hash_int(data.x, data.y, data.z) & _mask;
 
-	std::size_t index = ray::hash_int(x, y, z) & _mask;
-
-	MapEntry* entry = &_data[index];
+	TerrainData* entry = &_data[index];
 
 	while (!entry->empty())
 	{
-		if (entry->x == x &&
-			entry->y == y &&
-			entry->z == z)
+		if (entry->x == data.x &&
+			entry->y == data.y &&
+			entry->z == data.z)
 		{
-			return entry->instanceID;
+			data.instanceID = entry->instanceID;
+			return true;
 		}
 
 		index = (index + 1) & _mask;
 		entry = &_data[index];
 	}
 
-	return 0;
-}
-
-std::size_t
-TerrainMap::size() const noexcept
-{
-	return _size;
+	return false;
 }
 
 std::size_t
@@ -154,47 +138,26 @@ TerrainMap::count() const noexcept
 }
 
 void
-TerrainMap::getPosition(ChunkPosition& x, ChunkPosition& y, ChunkPosition& z)
+TerrainMap::grow() noexcept
 {
-	x = _dx;
-	y = _dy;
-	z = _dz;
-}
-
-void
-TerrainMap::copy(TerrainMap* map)
-{
-	_dx = map->_dx;
-	_dy = map->_dy;
-	_dz = map->_dz;
-	_size = map->_size;
-	_count = map->_count;
-	_mask = map->_mask;
-	_data = map->_data;
-}
-
-void
-TerrainMap::grow()
-{
-	TerrainMap map(_terrain);
-	map.create(_size, _dx, _dy, _dz, _mask << 1 | 1);
+	TerrainMap map;
+	map.create(_mask << 1 | 1);
 
 	for (auto& it : _data)
 	{
 		if (!it.empty())
 		{
-			map.set(it.x, it.y, it.z, it.instanceID);
+			map.set(it);
 		}
 	}
 
 	_mask = map._mask;
-	_size = map._size;
 	_count = map._count;
 	_data.swap(map._data);
 }
 
-MapEntrys&
-TerrainMap::getEntrys() noexcept
+TerrainDatas&
+TerrainMap::data() noexcept
 {
 	return _data;
 }

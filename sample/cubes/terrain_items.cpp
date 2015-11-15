@@ -58,13 +58,13 @@ TerrainGrass::~TerrainGrass() noexcept
 }
 
 bool
-TerrainGrass::create(TerrainMapPtr map) noexcept
+TerrainGrass::create(TerrainChunk& chunk) noexcept
 {
-	int size = map->size();
+	int size = chunk.size();
 	int half = size >> 1;
 
 	int _x, _y, _z;
-	map->getPosition(_x, _y, _z);
+	chunk.getPosition(_x, _y, _z);
 
 	int offsetX = _x * size;
 	int offsetZ = _z * size;
@@ -83,7 +83,12 @@ TerrainGrass::create(TerrainMapPtr map) noexcept
 
 			for (int y = 0; y < h; y++)
 			{
-				map->set(x, y, z, _grass->getInstance());
+				TerrainData data;
+				data.x = x;
+				data.y = y;
+				data.z = z;
+				data.instanceID = _grass->getInstance();
+				chunk.set(data);
 			}
 		}
 	}
@@ -92,11 +97,11 @@ TerrainGrass::create(TerrainMapPtr map) noexcept
 }
 
 bool
-TerrainGrass::createObject(TerrainMapPtr map) noexcept
+TerrainGrass::createObject(TerrainChunk& chunk) noexcept
 {
 	auto mesh = std::make_shared<ray::MeshProperty>();
 
-	for (auto& it : map->getEntrys())
+	for (auto& it : chunk.data())
 	{
 		if (it.empty() || it.instanceID != _grass->getInstance())
 			continue;
@@ -105,7 +110,7 @@ TerrainGrass::createObject(TerrainMapPtr map) noexcept
 			continue;
 
 		VisiableFaces faces;
-		int total = this->visiable(map, it, faces);
+		int total = this->visiable(chunk, it, faces);
 		if (total)
 		{
 			int dx = it.x << 1;
@@ -119,9 +124,9 @@ TerrainGrass::createObject(TerrainMapPtr map) noexcept
 	if (mesh->getNumVertices())
 	{
 		int mx, my, mz;
-		map->getPosition(mx, my, mz);
+		chunk.getPosition(mx, my, mz);
 
-		int size = map->size();
+		int size = chunk.size();
 
 		int offsetX = mx * size << 1;
 		int offsetY = my * size << 1;
@@ -168,14 +173,14 @@ TerrainGrass::active(ray::GameObjectPtr parent) noexcept
 }
 
 bool
-TerrainGrass::update(TerrainMapPtr map) noexcept
+TerrainGrass::update(TerrainChunk& chunk) noexcept
 {
 	auto parent = _object->getParent();
 
 	_object->destroy();
 	_object = nullptr;
 
-	this->createObject(map);
+	this->createObject(chunk);
 	this->active(parent);
 
 	return true;
@@ -214,13 +219,13 @@ TerrainTree::~TerrainTree() noexcept
 }
 
 bool
-TerrainTree::create(TerrainMapPtr map) noexcept
+TerrainTree::create(TerrainChunk& chunk) noexcept
 {
-	int size = map->size();
+	int size = chunk.size();
 	int half = size >> 1;
 
 	int _x, _y, _z;
-	map->getPosition(_x, _y, _z);
+	chunk.getPosition(_x, _y, _z);
 
 	int offsetX = _x * size;
 	int offsetZ = _z * size;
@@ -249,7 +254,12 @@ TerrainTree::create(TerrainMapPtr map) noexcept
 						int d = (ox * ox) + (oz * oz) + (y - (h + 4)) * (y - (h + 4));
 						if (d < 11)
 						{
-							map->set(x + ox, y, z + oz, _leaf->getInstance());
+							TerrainData data;
+							data.x = x + ox;
+							data.y = y;
+							data.z = z + oz;
+							data.instanceID = _leaf->getInstance();
+							chunk.set(data);
 						}
 					}
 				}
@@ -257,7 +267,12 @@ TerrainTree::create(TerrainMapPtr map) noexcept
 
 			for (int y = h; y < h + 7; y++)
 			{
-				map->set(x, y, z, _wood->getInstance());
+				TerrainData data;
+				data.x = x;
+				data.y = y;
+				data.z = z;
+				data.instanceID = _wood->getInstance();
+				chunk.set(data);
 			}
 		}
 	}
@@ -266,12 +281,12 @@ TerrainTree::create(TerrainMapPtr map) noexcept
 }
 
 bool
-TerrainTree::createObject(TerrainMapPtr map) noexcept
+TerrainTree::createObject(TerrainChunk& chunk) noexcept
 {
 	auto woods = std::make_shared<ray::MeshProperty>();
 	auto leafs = std::make_shared<ray::MeshProperty>();
 
-	for (auto& it : map->getEntrys())
+	for (auto& it : chunk.data())
 	{
 		if (it.empty())
 			continue;
@@ -281,7 +296,7 @@ TerrainTree::createObject(TerrainMapPtr map) noexcept
 			continue;
 
 		VisiableFaces faces;
-		int total = this->visiable(map, it, faces);
+		int total = this->visiable(chunk, it, faces);
 		if (total)
 		{
 			int dx = it.x << 1;
@@ -297,9 +312,9 @@ TerrainTree::createObject(TerrainMapPtr map) noexcept
 	}
 
 	int mx, my, mz;
-	map->getPosition(mx, my, mz);
+	chunk.getPosition(mx, my, mz);
 
-	int size = map->size();
+	int size = chunk.size();
 
 	int offsetX = mx * size << 1;
 	int offsetY = my * size << 1;
@@ -357,7 +372,7 @@ TerrainTree::active(ray::GameObjectPtr parent) noexcept
 }
 
 bool
-TerrainTree::update(TerrainMapPtr map) noexcept
+TerrainTree::update(TerrainChunk& chunk) noexcept
 {
 	return true;
 }
@@ -388,12 +403,12 @@ TerrainClound::~TerrainClound() noexcept
 }
 
 bool
-TerrainClound::create(TerrainMapPtr map) noexcept
+TerrainClound::create(TerrainChunk& chunk) noexcept
 {
-	int size = map->size();
+	int size = chunk.size();
 
 	int _x, _y, _z;
-	map->getPosition(_x, _y, _z);
+	chunk.getPosition(_x, _y, _z);
 
 	int offsetX = _x * size;
 	int offsetZ = _z * size;
@@ -409,7 +424,12 @@ TerrainClound::create(TerrainMapPtr map) noexcept
 			{
 				if (ray::simplex3(dx * 0.01f, y * 0.1f, dz * 0.01f, 8, 0.5f, 2) > 0.75)
 				{
-					map->set(x, y, z, _clound->getInstance());
+					TerrainData data;
+					data.x = x;
+					data.y = y;
+					data.z = z;
+					data.instanceID = _clound->getInstance();
+					chunk.set(data);
 				}
 			}
 		}
@@ -419,11 +439,11 @@ TerrainClound::create(TerrainMapPtr map) noexcept
 }
 
 bool
-TerrainClound::createObject(TerrainMapPtr map) noexcept
+TerrainClound::createObject(TerrainChunk& chunk) noexcept
 {
 	auto mesh = std::make_shared<ray::MeshProperty>();
 
-	for (auto& it : map->getEntrys())
+	for (auto& it : chunk.data())
 	{
 		if (it.empty())
 			continue;
@@ -432,7 +452,7 @@ TerrainClound::createObject(TerrainMapPtr map) noexcept
 			continue;
 
 		VisiableFaces faces;
-		int total = this->visiable(map, it, faces);
+		int total = this->visiable(chunk, it, faces);
 		if (total)
 		{
 			int dx = it.x << 1;
@@ -446,9 +466,9 @@ TerrainClound::createObject(TerrainMapPtr map) noexcept
 	if (mesh->getNumVertices())
 	{
 		int mx, my, mz;
-		map->getPosition(mx, my, mz);
+		chunk.getPosition(mx, my, mz);
 
-		int size = map->size();
+		int size = chunk.size();
 
 		int offsetX = mx * size << 1;
 		int offsetY = my * size << 1;
@@ -478,7 +498,7 @@ TerrainClound::active(ray::GameObjectPtr parent) noexcept
 	{
 		if (parent)
 		{
-			//_object->setParent(parent);
+			_object->setParent(parent);
 			_object->setActive(true);
 			_object->getComponent<ray::MeshComponent>()->clear();
 		}
@@ -493,7 +513,7 @@ TerrainClound::active(ray::GameObjectPtr parent) noexcept
 }
 
 bool
-TerrainClound::update(TerrainMapPtr map) noexcept
+TerrainClound::update(TerrainChunk& chunk) noexcept
 {
 	return true;
 }
@@ -523,13 +543,13 @@ TerrainWater::~TerrainWater() noexcept
 }
 
 bool
-TerrainWater::create(TerrainMapPtr map) noexcept
+TerrainWater::create(TerrainChunk& chunk) noexcept
 {
-	int size = map->size();
+	int size = chunk.size();
 	int half = size >> 1;
 
 	int _x, _y, _z;
-	map->getPosition(_x, _y, _z);
+	chunk.getPosition(_x, _y, _z);
 
 	int offsetX = _x * size;
 	int offsetZ = _z * size;
@@ -550,7 +570,12 @@ TerrainWater::create(TerrainMapPtr map) noexcept
 			{
 				for (int y = h; y < 10; y++)
 				{
-					map->set(x, y, z, _water->getInstance());
+					TerrainData data;
+					data.x = x;
+					data.y = y;
+					data.z = z;
+					data.instanceID = _water->getInstance();
+					chunk.set(data);
 				}
 			}
 		}
@@ -560,11 +585,11 @@ TerrainWater::create(TerrainMapPtr map) noexcept
 }
 
 bool
-TerrainWater::createObject(TerrainMapPtr map) noexcept
+TerrainWater::createObject(TerrainChunk& chunk) noexcept
 {
 	auto mesh = std::make_shared<ray::MeshProperty>();
 
-	for (auto& it : map->getEntrys())
+	for (auto& it : chunk.data())
 	{
 		if (it.empty())
 			continue;
@@ -573,7 +598,7 @@ TerrainWater::createObject(TerrainMapPtr map) noexcept
 			continue;
 
 		VisiableFaces faces;
-		int total = this->visiable(map, it, faces);
+		int total = this->visiable(chunk, it, faces);
 		if (total)
 		{
 			int dx = it.x << 1;
@@ -587,9 +612,9 @@ TerrainWater::createObject(TerrainMapPtr map) noexcept
 	if (mesh->getNumVertices())
 	{
 		int mx, my, mz;
-		map->getPosition(mx, my, mz);
+		chunk.getPosition(mx, my, mz);
 
-		int size = map->size();
+		int size = chunk.size();
 
 		int offsetX = mx * size << 1;
 		int offsetY = my * size << 1;
@@ -634,7 +659,7 @@ TerrainWater::active(ray::GameObjectPtr parent) noexcept
 }
 
 bool
-TerrainWater::update(TerrainMapPtr map) noexcept
+TerrainWater::update(TerrainChunk& chunk) noexcept
 {
 	return false;
 }

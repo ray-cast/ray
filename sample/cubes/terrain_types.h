@@ -58,11 +58,9 @@ typedef std::shared_ptr<class TerrainObject> TerrainObjectPtr;
 
 typedef std::vector<TerrainItemPtr> TerrainItems;
 typedef std::vector<TerrainObjectPtr> TerrainObjects;
-typedef std::vector<class MapEntry> MapEntrys;
+typedef std::vector<class TerrainData> TerrainDatas;
 
-typedef std::int32_t ChunkPosition;
 typedef std::int8_t BlockPosition;
-
-typedef std::int16_t ItemID;
+typedef std::int16_t InstanceID;
 
 #endif

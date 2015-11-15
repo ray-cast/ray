@@ -45,19 +45,23 @@ public:
 	TerrainChunk(TerrainComponent& terrain) noexcept;
 	~TerrainChunk() noexcept;
 
-	void init(std::size_t size, ChunkPosition x, ChunkPosition y, ChunkPosition z) noexcept;
-	void realize() noexcept;
-	void active(ray::GameObjectPtr parent) noexcept;
+	void create(std::int32_t x, std::int32_t y, std::int32_t z, std::size_t size) noexcept;
+
+	void setActive(ray::GameObjectPtr parent) noexcept;
+	bool getActive() const noexcept;
 
 	void dirt(bool dirt) noexcept;
 	bool dirt() const noexcept;
 
-	std::size_t distance(ChunkPosition x, ChunkPosition y, ChunkPosition z) noexcept;
+	std::size_t size() const noexcept;
+	std::size_t distance(std::int32_t x, std::int32_t y, std::int32_t z) noexcept;
 
-	void getPosition(ChunkPosition& x, ChunkPosition& y, ChunkPosition& z) noexcept;
+	void getPosition(std::int32_t& x, std::int32_t& y, std::int32_t& z) noexcept;
 
-	bool set(BlockPosition x, BlockPosition y, BlockPosition z, ItemID id) noexcept;
-	ItemID get(BlockPosition x, BlockPosition y, BlockPosition z) noexcept;
+	bool set(const TerrainData& data) noexcept;
+	bool get(TerrainData& data) const noexcept;
+
+	const TerrainDatas& data() const noexcept;
 
 	void update() noexcept;
 
@@ -67,9 +71,16 @@ private:
 
 private:
 
-	bool _dirt;
-
 	TerrainComponent& _terrain;
+
+	bool _dirt;
+	bool _active;
+
+	std::int32_t _x;
+	std::int32_t _y;
+	std::int32_t _z;
+
+	std::size_t _size;
 
 	TerrainMapPtr _map;
 	TerrainObjects _objects;

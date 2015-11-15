@@ -42,41 +42,41 @@
 class TerrainItem
 {
 public:
-	void setInstance(ItemID id) noexcept;
+	void setInstance(InstanceID id) noexcept;
 
-	ItemID getInstance() const noexcept;
+	InstanceID getInstance() const noexcept;
 
 private:
-	ItemID _instanceID;
+	InstanceID _instanceID;
 };
 
 struct VisiableFaces
 {
-	ItemID left;
-	ItemID right;
-	ItemID bottom;
-	ItemID top;
-	ItemID back;
-	ItemID front;
+	InstanceID left;
+	InstanceID right;
+	InstanceID bottom;
+	InstanceID top;
+	InstanceID back;
+	InstanceID front;
 };
 
 class TerrainObject
 {
 public:
 
-	virtual bool create(TerrainMapPtr map) noexcept = 0;
-	virtual bool createObject(TerrainMapPtr map) noexcept = 0;
+	virtual bool create(TerrainChunk& chunk) noexcept = 0;
+	virtual bool createObject(TerrainChunk& chunk) noexcept = 0;
 
 	virtual bool active(ray::GameObjectPtr parent) noexcept = 0;
 
-	virtual bool update(TerrainMapPtr map) noexcept = 0;
+	virtual bool update(TerrainChunk& chunk) noexcept = 0;
 
 	virtual TerrainObjectPtr clone() noexcept = 0;
 
 	void addItem(TerrainItemPtr item) noexcept;
 	TerrainItems& getItems() noexcept;
 
-	bool visiable(TerrainMapPtr map, const MapEntry& entry, VisiableFaces& faces) noexcept;
+	bool visiable(const TerrainChunk& chunk, const TerrainData& entry, VisiableFaces& faces) noexcept;
 	void makeCube(ray::MeshPropertyPtr data, const VisiableFaces& faces, float x, float y, float z, float n) noexcept;
 
 private:

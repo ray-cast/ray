@@ -35,15 +35,15 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "terrain_item.h"
-#include "terrain_map.h"
+#include "terrain_chunk.h"
 
 void
-TerrainItem::setInstance(ItemID instance) noexcept
+TerrainItem::setInstance(InstanceID instance) noexcept
 {
 	_instanceID = instance;
 }
 
-ItemID
+InstanceID
 TerrainItem::getInstance() const noexcept
 {
 	return _instanceID;
@@ -66,21 +66,28 @@ TerrainObject::getItems() noexcept
 }
 
 bool
-TerrainObject::visiable(TerrainMapPtr map, const MapEntry& it, VisiableFaces& faces) noexcept
+TerrainObject::visiable(const TerrainChunk& chunk, const TerrainData& it, VisiableFaces& faces) noexcept
 {
-	ItemID f1 = map->get(it.x - 1, it.y, it.z);
-	ItemID f2 = map->get(it.x + 1, it.y, it.z);
-	ItemID f3 = map->get(it.x, it.y - 1, it.z);
-	ItemID f4 = map->get(it.x, it.y + 1, it.z);
-	ItemID f5 = map->get(it.x, it.y, it.z - 1);
-	ItemID f6 = map->get(it.x, it.y, it.z + 1);
+	TerrainData d1(it.x - 1, it.y, it.z);
+	TerrainData d2(it.x + 1, it.y, it.z);
+	TerrainData d3(it.x, it.y - 1, it.z);
+	TerrainData d4(it.x, it.y + 1, it.z);
+	TerrainData d5(it.x, it.y, it.z - 1);
+	TerrainData d6(it.x, it.y, it.z + 1);
 
-	f1 = (f1 != it.instanceID) ? 1 : 0;
-	f2 = (f2 != it.instanceID) ? 1 : 0;
-	f3 = (f3 != it.instanceID) ? 1 : 0;
-	f4 = (f4 != it.instanceID) ? 1 : 0;
-	f5 = (f5 != it.instanceID) ? 1 : 0;
-	f6 = (f6 != it.instanceID) ? 1 : 0;
+	bool f1 = chunk.get(d1);
+	bool f2 = chunk.get(d2);
+	bool f3 = chunk.get(d3);
+	bool f4 = chunk.get(d4);
+	bool f5 = chunk.get(d5);
+	bool f6 = chunk.get(d6);
+
+	f1 = (d1.instanceID != it.instanceID) ? true : false;
+	f2 = (d2.instanceID != it.instanceID) ? true : false;
+	f3 = (d3.instanceID != it.instanceID) ? true : false;
+	f4 = (d4.instanceID != it.instanceID) ? true : false;
+	f5 = (d5.instanceID != it.instanceID) ? true : false;
+	f6 = (d6.instanceID != it.instanceID) ? true : false;
 
 	faces.left = f1;
 	faces.right = f2;

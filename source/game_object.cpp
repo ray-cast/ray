@@ -154,8 +154,6 @@ GameObject::setParent(GameObjectPtr parent) noexcept
 					break;
 				}
 			}
-
-			_parent = nullptr;
 		}
 
 		_parent = parent.get();
@@ -1011,6 +1009,8 @@ GameObject::getComponents() const noexcept
 void
 GameObject::destroy() noexcept
 {
+	this->cleanupChildren();
+	this->cleanupComponents();
 	this->setParent(nullptr);
 }
 

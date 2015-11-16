@@ -54,10 +54,14 @@ SET(PLATFORM_CORE_LIST
     ${SOURCE_PATH}/variant.cpp
     ${HEADER_PATH}/rtti.h
     ${SOURCE_PATH}/rtti.cpp
+    ${HEADER_PATH}/rtti_factory.h
+    ${SOURCE_PATH}/rtti_factory.cpp
+    ${HEADER_PATH}/rtti_macros.h
     ${HEADER_PATH}/memory.h
     ${SOURCE_PATH}/timer.cpp
     ${HEADER_PATH}/timer.h
     ${HEADER_PATH}/reference.h
+    ${SOURCE_PATH}/reference.cpp
     ${HEADER_PATH}/noncopyable.h
 )
 SOURCE_GROUP("core" FILES ${PLATFORM_CORE_LIST})

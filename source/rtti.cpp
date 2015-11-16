@@ -48,7 +48,7 @@ Rtti::Rtti(const std::string& name, RttiConstruct creator, const Rtti* parent) n
 	, _parent(parent)
 	, _construct(creator)
 {
-	rtti::Factory::instance()->add(this);
+	Factory::instance()->add(this);
 };
 
 Rtti::~Rtti() noexcept

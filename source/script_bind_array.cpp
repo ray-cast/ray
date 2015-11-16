@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_SCRIPT)
 #include <ray/script_bind_array.h>
-#include <ray/script_array.h>
 
 _NAME_BEGIN
 
@@ -1403,8 +1402,6 @@ ScriptArray::Create(asIObjectType *ot)
 void
 ScriptBindArray::setup(asIScriptEngine* engine) noexcept
 {
-	RegisterScriptArray(engine);
-
 	int r = 0;
 	r = engine->RegisterObjectType("vector<class T>", 0, asOBJ_REF | asOBJ_GC | asOBJ_TEMPLATE); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("vector<T>", asBEHAVE_TEMPLATE_CALLBACK, "bool f(int&in, bool&out)", asFUNCTION(ScriptArrayTemplateCallback), asCALL_CDECL); assert(r >= 0);

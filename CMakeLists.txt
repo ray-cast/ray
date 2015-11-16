@@ -45,7 +45,7 @@ ENDIF()
 OPTION(BUILD_SSE "on for use off for ignore" OFF)
 OPTION(BUILD_UNICODE "on for unicode off for ascii" OFF)
 
-OPTION(BUILD_SCRIPT "on for DX11 off for ogl" ON)
+OPTION(BUILD_SCRIPT "on for DX11 off for ogl" OFF)
 OPTION(BUILD_PHYSIC "on for DX11 off for ogl" ON)
 
 IF(BUILD_PLATFORM_ANDROID)

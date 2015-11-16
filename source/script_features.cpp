@@ -66,7 +66,7 @@ ScriptFeatures::onActivate() except
 {
 	ScriptSystem::instance()->open();
 	ScriptSystem::instance()->setTimer(this->getGameServer()->getTimer());
-	ScriptSystem::instance()->setInput(this->getGameServer()->getFeature<InputFeature>()->getInput());
+	ScriptSystem::instance()->setInput(this->getGameServer()->getFeature<InputFeatures>()->getInput());
 	ScriptSystem::instance()->setRenderSystem(this->getGameServer()->getFeature<RenderFeatures>()->getRenderSystem());
 	//ScriptSystem::instance()->setGuiSystem(_guiSystem);
 }

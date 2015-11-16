@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-class Reference : public rtti::Interface
+class EXPORT Reference : public rtti::Interface
 {
 	__DeclareSubClass(Reference, RttiClass)
 public:

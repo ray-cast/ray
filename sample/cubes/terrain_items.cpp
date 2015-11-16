@@ -35,9 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "terrain_items.h"
-#include <ray/physics_body_component.h>
-#include <ray/physics_heightmap_component.h>
-#include <ray/physics_mesh_component.h>
 #include <ray/physics_box_component.h>
 
 TerrainGrass::TerrainGrass() noexcept
@@ -136,8 +133,6 @@ TerrainGrass::createObject(TerrainChunk& chunk) noexcept
 		gameObject->setName(ray::format("chunk_%d_%d_%d") % offsetX % offsetY % offsetZ);
 		gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
 		gameObject->getComponent<ray::MeshComponent>()->setMesh(mesh);
-		gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
-		gameObject->addComponent(std::make_shared<ray::PhysicsBodyComponent>());
 
 		_object = gameObject;
 
@@ -326,8 +321,6 @@ TerrainTree::createObject(TerrainChunk& chunk) noexcept
 		gameObject->setName(ray::format("chunk_wood_%d_%d_%d") % offsetX % offsetY % offsetZ);
 		gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
 		gameObject->getComponent<ray::MeshComponent>()->setMesh(woods);
-		gameObject->addComponent(std::make_shared<ray::PhysicsBodyComponent>());
-		gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
 
 		_objects.push_back(gameObject);
 	}
@@ -338,8 +331,6 @@ TerrainTree::createObject(TerrainChunk& chunk) noexcept
 		gameObject->setName(ray::format("chunk_leaf_%d_%d_%d") % offsetX % offsetY % offsetZ);
 		gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
 		gameObject->getComponent<ray::MeshComponent>()->setMesh(leafs);
-		gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
-		gameObject->addComponent(std::make_shared<ray::PhysicsBodyComponent>());
 
 		_objects.push_back(gameObject);
 	}
@@ -478,10 +469,6 @@ TerrainClound::createObject(TerrainChunk& chunk) noexcept
 		gameObject->setName(ray::format("chunk_%d_%d_%d") % offsetX % offsetY % offsetZ);
 		gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
 		gameObject->getComponent<ray::MeshComponent>()->setMesh(mesh);
-
-		auto rigidbody = std::make_shared<ray::PhysicsBodyComponent>();
-		gameObject->addComponent(rigidbody);
-		gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
 
 		_object = gameObject;
 
@@ -624,10 +611,6 @@ TerrainWater::createObject(TerrainChunk& chunk) noexcept
 		gameObject->setName(ray::format("chunk_%d_%d_%d") % offsetX % offsetY % offsetZ);
 		gameObject->setTranslate(ray::Vector3(offsetX, offsetY, offsetZ));
 		gameObject->getComponent<ray::MeshComponent>()->setMesh(mesh);
-
-		auto rigidbody = std::make_shared<ray::PhysicsBodyComponent>();
-		gameObject->addComponent(rigidbody);
-		gameObject->addComponent(std::make_shared<ray::PhysicsMeshComponent>());
 
 		_object = gameObject;
 

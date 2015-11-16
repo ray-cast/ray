@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(PhysicsMeshComponent, PhysicsShapeComponent)
+__ImplementSubClass(PhysicsMeshComponent, PhysicsShapeComponent, "PhysicsMesh")
 
 PhysicsMeshComponent::PhysicsMeshComponent() noexcept
 {
@@ -89,7 +89,8 @@ PhysicsMeshComponent::onDeactivate() noexcept
 void 
 PhysicsMeshComponent::onMeshChangeAfter() noexcept
 {
-	_buildShapeMesh();
+	if (this->getActive())
+		_buildShapeMesh();
 }
 
 PhysicsShapePtr

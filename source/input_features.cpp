@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(InputFeatures, GameFeatures)
+__ImplementSubClass(InputFeatures, GameFeature, "Input")
 
 InputFeatures::InputFeatures() noexcept
 {

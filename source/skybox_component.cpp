@@ -39,7 +39,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(SkyBoxComponent, MeshRenderComponent)
+__ImplementSubClass(SkyBoxComponent, MeshRenderComponent, "Skybox")
 
 SkyBoxComponent::SkyBoxComponent() noexcept
 {

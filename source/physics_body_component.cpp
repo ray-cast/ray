@@ -43,7 +43,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(PhysicsBodyComponent, GameComponent)
+__ImplementSubClass(PhysicsBodyComponent, GameComponent, "PhysicsBody")
 
 PhysicsBodyComponent::PhysicsBodyComponent() noexcept
 	: _constantForce(Vector3::Zero)

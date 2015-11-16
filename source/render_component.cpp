@@ -43,7 +43,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubInterface(RenderComponent, GameComponent)
+__ImplementSubInterface(RenderComponent, GameComponent, "RenderComponent")
 
 RenderComponent::RenderComponent() noexcept
 	: _isCastShadow(true)
@@ -122,11 +122,11 @@ RenderComponent::load(iarchive& reader) noexcept
 {
 	GameComponent::load(reader);
 
-	reader >> rtti_alias(_isCastShadow, "castshadow");
-	reader >> rtti_alias(_isReceiveShadow, "receiveshadow");
+	reader >> make_alias(_isCastShadow, "castshadow");
+	reader >> make_alias(_isReceiveShadow, "receiveshadow");
 
 	std::string material;
-	reader >> rtti_name(material);
+	reader >> make_name(material);
 
 	this->setName(material);
 }
@@ -134,8 +134,8 @@ RenderComponent::load(iarchive& reader) noexcept
 void
 RenderComponent::save(oarchive& write) noexcept
 {
-	write << rtti_alias(_isCastShadow, "castshadow");
-	write << rtti_alias(_isReceiveShadow, "receiveshadow");
+	write << make_alias(_isCastShadow, "castshadow");
+	write << make_alias(_isReceiveShadow, "receiveshadow");
 }
 
 void

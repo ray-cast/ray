@@ -34,57 +34,80 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GAME_FEATURE_H_
-#define _H_GAME_FEATURE_H_
+#ifndef _H_RTTI_FACTORY_H_
+#define _H_RTTI_FACTORY_H_
 
-#include <ray/game_message.h>
+#include <ray/rtti.h>
 
 _NAME_BEGIN
 
-class EXPORT GameFeature : public GameListener
+namespace rtti
 {
-	__DeclareSubClass(GameFeature, GameListener)
-public:
-	GameFeature() noexcept;
-	virtual ~GameFeature() noexcept;
+	class EXPORT Factory final
+	{
+		__DeclareSingleton(Factory)
+	public:
+		Factory() noexcept;
+		~Factory() noexcept;
 
-	void setActive(bool active)  except;
-	bool getActive() noexcept;
+		bool open() noexcept;
 
-	GameServer* getGameServer() noexcept;
+		bool add(Rtti* rtti) noexcept;
 
-	virtual void sendMessage(const GameMessage& message) except;
+		Rtti* getRTTI(const char* name) noexcept;
+		Rtti* getRTTI(const std::string& name) noexcept;
 
-protected:
+		const Rtti* getRTTI(const char* name) const noexcept;
+		const Rtti* getRTTI(const std::string& name) const noexcept;
 
-	virtual void onActivate() except;
-	virtual void onDeactivate() except;
+		Interface* createObject(const char*, const Rtti& base) const except;
+		Interface* createObject(const std::string& name, const Rtti& base) const except;
 
-	virtual void onOpenScene(GameScenePtr scene) except;
-	virtual void onCloseScene(GameScenePtr scene) except;
+		template<typename T>
+		std::shared_ptr<T> make_shared(const std::string& name)
+			{ return std::shared_ptr<T>((T*)this->createObject(name, T::RTTI)); }
 
-	virtual void onReset() except;
+		template<typename T>
+		std::shared_ptr<T> make_shared(const char* name)
+			{ return std::shared_ptr<T>((T*)this->createObject(name, T::RTTI)); }
 
-	virtual void onFrameBegin() except;
-	virtual void onFrame() except;
-	virtual void onFrameEnd() except;
+		template<typename T>
+		std::unique_ptr<T> make_unique(const std::string& name)
+			{ return std::unique_ptr<T>((T*)this->createObject(name, T::RTTI)); }
 
-	virtual GameComponentPtr onSerialization(iarchive& reader) except;
+		template<typename T>
+		std::unique_ptr<T> make_unique(const char* name)
+			{ return std::unique_ptr<T>((T*)this->createObject(name, T::RTTI)); }
 
-private:
-	friend GameServer;
-	void _setGameServer(GameServer* server) noexcept;
+	private:
+		mutable std::vector<Rtti*> _rttis;
+		mutable std::map<std::string, Rtti*> _rtti_lists;
+	};
 
-private:
-	GameFeature(const GameFeature&) noexcept = delete;
-	GameFeature& operator=(const GameFeature&) noexcept = delete;
+	template<typename T>
+	std::shared_ptr<T> make_shared(const std::string& name)
+	{
+		return Factory::instance()->make_shared<T>(name);
+	}
 
-private:
+	template<typename T>
+	std::shared_ptr<T> make_shared(const char* name)
+	{
+		return Factory::instance()->make_shared<T>(name);
+	}
 
-	bool _isActive;
+	template<typename T>
+	std::unique_ptr<T> make_unique(const std::string& name)
+	{
+		return Factory::instance()->make_unique<T>(name);
+	}
 
-	GameServer* _gameServer;
-};
+	template<typename T>
+	std::unique_ptr<T> make_unique(const char* name)
+	{
+		return Factory::instance()->make_unique<T>(name);
+	}
+}
 
 _NAME_END
 

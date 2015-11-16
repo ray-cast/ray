@@ -35,9 +35,130 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/rtti.h>
+#include <ray/rtti_factory.h>
 
 _NAME_BEGIN
 
-__ImplementSingleton(RTTIFactory)
+using namespace rtti;
+
+__ImplementClass(Interface, "RTTI")
+
+Rtti::Rtti(const std::string& name, RttiConstruct creator, const Rtti* parent) noexcept
+	: _name(name)
+	, _parent(parent)
+	, _construct(creator)
+{
+	rtti::Factory::instance()->add(this);
+};
+
+Rtti::~Rtti() noexcept
+{
+}
+
+Interface*
+Rtti::create() const except
+{
+	assert(_construct);
+	return _construct();
+}
+
+const Rtti* 
+Rtti::getParent() const noexcept
+{
+	return _parent;
+}
+
+const std::string& 
+Rtti::getName() const noexcept
+{
+	return _name; 
+}
+
+bool
+Rtti::isDerivedFrom(const Rtti* other) const
+{
+	const Rtti* cur;
+	for (cur = this; cur != 0; cur = cur->getParent())
+	{
+		if (cur == other)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool 
+Rtti::isDerivedFrom(const Rtti& other) const
+{
+	const Rtti* cur;
+	for (cur = this; cur != 0; cur = cur->getParent())
+	{
+		if (cur == &other)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool 
+Rtti::isDerivedFrom(const std::string& name) const
+{
+	const Rtti* cur;
+	for (cur = this; cur != 0; cur = cur->getParent())
+	{
+		if (cur->_name == name)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+Interface::Interface() noexcept
+{
+}
+
+Interface::~Interface() noexcept
+{
+}
+
+bool
+Interface::isInstanceOf(const Rtti* rtti) const noexcept
+{
+	return this->rtti() == rtti;
+}
+
+bool
+Interface::isInstanceOf(const Rtti& rtti) const noexcept
+{
+	return this->rtti() == &rtti;
+}
+
+bool
+Interface::isInstanceOf(const std::string& className) const noexcept
+{
+	return this->rtti()->getName() == className;
+}
+
+bool
+Interface::isA(const Rtti* rtti) const noexcept
+{
+	return this->rtti()->isDerivedFrom(rtti);
+}
+
+bool
+Interface::isA(const Rtti& rtti) const noexcept
+{
+	return this->rtti()->isDerivedFrom(rtti);
+}
+
+bool
+Interface::isA(const std::string& rttiName) const noexcept
+{
+	return this->rtti()->isDerivedFrom(rttiName);
+}
+
 
 _NAME_END

@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GameController, GameComponent)
+__ImplementSubInterface(GameController, GameComponent, "GameController")
 
 GameController::GameController() noexcept
 {

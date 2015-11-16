@@ -44,7 +44,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(CameraComponent, GameComponent)
+__ImplementSubClass(CameraComponent, GameComponent, "Camera")
 
 CameraComponent::CameraComponent() noexcept
 {
@@ -187,18 +187,18 @@ CameraComponent::load(iarchive& reader) noexcept
 
 	GameComponent::load(reader);
 
-	reader >> rtti_name(type);
-	reader >> rtti_name(aperture);
-	reader >> rtti_name(znear);
-	reader >> rtti_name(zfar);
-	reader >> rtti_name(x);
-	reader >> rtti_name(y);
-	reader >> rtti_name(w);
-	reader >> rtti_name(h);
-	reader >> rtti_name(left);
-	reader >> rtti_name(right);
-	reader >> rtti_name(top);
-	reader >> rtti_name(bottom);
+	reader >> make_name(type);
+	reader >> make_name(aperture);
+	reader >> make_name(znear);
+	reader >> make_name(zfar);
+	reader >> make_name(x);
+	reader >> make_name(y);
+	reader >> make_name(w);
+	reader >> make_name(h);
+	reader >> make_name(left);
+	reader >> make_name(right);
+	reader >> make_name(top);
+	reader >> make_name(bottom);
 
 	this->setViewport(Viewport(x, y, w, h));
 

@@ -40,7 +40,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GameFeature, GameListener)
+__ImplementSubClass(GameFeature, GameListener, "GameFeature")
 
 GameFeature::GameFeature() noexcept
 	: _isActive(false)

@@ -45,7 +45,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(MeshRenderComponent, GameComponent)
+__ImplementSubClass(MeshRenderComponent, GameComponent, "MeshRender")
 
 MeshRenderComponent::MeshRenderComponent() noexcept
 {
@@ -114,16 +114,17 @@ MeshRenderComponent::onDeactivate() except
 void 
 MeshRenderComponent::onMeshChangeAfter() except
 {
-	auto component = this->getGameObject()->getComponent<MeshComponent>();
-	if (component)
+	if (this->getActive())
 	{
-		component->addMeshListener(this);
+		auto component = this->getGameObject()->getComponent<MeshComponent>();
+		if (component)
+		{
+			auto mesh = component->getMesh();
+			if (!mesh)
+				return;
 
-		auto mesh = component->getMesh();
-		if (!mesh)
-			return;
-
-		buildRenderObjects(mesh);
+			buildRenderObjects(mesh);
+		}
 	}
 }
 

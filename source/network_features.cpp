@@ -39,6 +39,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(NetworkFeatures, GameFeature, "Network")
+
 NetworkFeatures::NetworkFeatures() noexcept
 {
 }

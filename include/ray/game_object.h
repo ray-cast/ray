@@ -163,8 +163,8 @@ public:
 	void cleanupComponents() noexcept;
 
 	template<typename T>
-	std::shared_ptr<T> getComponent() const noexcept { return std::dynamic_pointer_cast<T>(this->getComponent(T::getType())); }
-	GameComponentPtr getComponent(RTTI::HashCode type) const noexcept;
+	std::shared_ptr<T> getComponent() const noexcept { return std::dynamic_pointer_cast<T>(this->getComponent(T::RTTI)); }
+	GameComponentPtr getComponent(const rtti::Rtti& type) const noexcept;
 	const GameComponents& getComponents() const noexcept;
 
 	void sendMessage(const GameMessage& message) noexcept;

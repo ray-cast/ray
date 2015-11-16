@@ -44,7 +44,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GUIPlaneComponent, GUIBehaviourComponent)
+__ImplementSubClass(GUIPlaneComponent, GUIBehaviourComponent, "GUIPlane")
 
 GUIPlaneComponent::GUIPlaneComponent() noexcept
 {
@@ -73,12 +73,19 @@ GUIPlaneComponent::needUpdate() const noexcept
 	auto& children = this->getGameObject()->getChildren();
 	for (auto& child : children)
 	{
-		auto control = child->getComponent<GUIBehaviourComponent>();
-		if (control)
+		auto controls = child->getComponents();
+		for (auto& it : controls)
 		{
-			needUpdate |= control->needUpdate();
-			if (needUpdate)
-				break;
+			if (it->isA<GUIBehaviourComponent>())
+			{
+				auto control = std::dynamic_pointer_cast<GUIBehaviourComponent>(it);
+				if (control)
+				{
+					needUpdate |= control->needUpdate();
+					if (needUpdate)
+						break;
+				}
+			}
 		}
 	}
 

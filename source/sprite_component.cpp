@@ -38,9 +38,9 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(ParticleEmitter, GameComponent)
+__ImplementSubClass(ParticleEmitterComponent, GameComponent, "ParticleEmitter")
 
-ParticleEmitter::ParticleEmitter() noexcept
+ParticleEmitterComponent::ParticleEmitterComponent() noexcept
 	: _enable(true)
 	, _mode(Billboard)
 	, _time(0)
@@ -80,12 +80,12 @@ ParticleEmitter::ParticleEmitter() noexcept
 {
 }
 
-ParticleEmitter::~ParticleEmitter() noexcept
+ParticleEmitterComponent::~ParticleEmitterComponent() noexcept
 {
 }
 
 void
-ParticleEmitter::emitter()
+ParticleEmitterComponent::emitter()
 {
 	Particle* dot = new Particle;
 
@@ -95,7 +95,7 @@ ParticleEmitter::emitter()
 }
 
 void
-ParticleEmitter::emitter(Particle* it) noexcept
+ParticleEmitterComponent::emitter(Particle* it) noexcept
 {
 	randomize();
 
@@ -124,7 +124,7 @@ ParticleEmitter::emitter(Particle* it) noexcept
 }
 
 void
-ParticleEmitter::simulate(float delta) noexcept
+ParticleEmitterComponent::simulate(float delta) noexcept
 {
 	std::size_t emissionCount = 0;
 
@@ -180,9 +180,9 @@ ParticleEmitter::simulate(float delta) noexcept
 }
 
 GameComponentPtr
-ParticleEmitter::clone() const noexcept
+ParticleEmitterComponent::clone() const noexcept
 {
-	return std::make_shared<ParticleEmitter>();
+	return std::make_shared<ParticleEmitterComponent>();
 }
 
 _NAME_END

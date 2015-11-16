@@ -40,7 +40,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(LightComponent, GameComponent)
+__ImplementSubClass(LightComponent, GameComponent, "Light")
 
 LightComponent::LightComponent() noexcept
 	:_light(std::make_shared<Light>())
@@ -147,11 +147,11 @@ LightComponent::load(iarchive& reader) noexcept
 
 	GameComponent::load(reader);
 
-	reader >> rtti_alias(lightIntensity, "intensity");
-	reader >> rtti_alias(lightRange, "range");
-	reader >> rtti_alias(shadow, "shadow");
-	reader >> rtti_alias(lightColor, "color");
-	reader >> rtti_alias(lightType, "type");
+	reader >> make_alias(lightIntensity, "intensity");
+	reader >> make_alias(lightRange, "range");
+	reader >> make_alias(shadow, "shadow");
+	reader >> make_alias(lightColor, "color");
+	reader >> make_alias(lightType, "type");
 
 	if (lightType == "sun")
 		this->setLightType(LightType::LT_SUN);

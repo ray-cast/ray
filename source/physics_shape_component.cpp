@@ -39,7 +39,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubInterface(PhysicsShapeComponent, GameComponent)
+__ImplementSubInterface(PhysicsShapeComponent, GameComponent, "PhysicsShape")
 
 PhysicsShapeComponent::PhysicsShapeComponent() noexcept
 {

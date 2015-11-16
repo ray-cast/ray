@@ -39,7 +39,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GUIButtonComponent, GUIBehaviourComponent)
+__ImplementSubClass(GUIButtonComponent, GUIBehaviourComponent, "GUIButton")
 
 GUIButtonComponent::GUIButtonComponent() noexcept
 {

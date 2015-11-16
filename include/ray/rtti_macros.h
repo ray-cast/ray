@@ -34,57 +34,60 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GAME_FEATURE_H_
-#define _H_GAME_FEATURE_H_
+#ifndef _H_RTTI_MACRO_H_
+#define _H_RTTI_MACRO_H_
 
-#include <ray/game_message.h>
+#include <ray/platform.h>
 
 _NAME_BEGIN
 
-class EXPORT GameFeature : public GameListener
+namespace rtti
 {
-	__DeclareSubClass(GameFeature, GameListener)
-public:
-	GameFeature() noexcept;
-	virtual ~GameFeature() noexcept;
 
-	void setActive(bool active)  except;
-	bool getActive() noexcept;
-
-	GameServer* getGameServer() noexcept;
-
-	virtual void sendMessage(const GameMessage& message) except;
-
-protected:
-
-	virtual void onActivate() except;
-	virtual void onDeactivate() except;
-
-	virtual void onOpenScene(GameScenePtr scene) except;
-	virtual void onCloseScene(GameScenePtr scene) except;
-
-	virtual void onReset() except;
-
-	virtual void onFrameBegin() except;
-	virtual void onFrame() except;
-	virtual void onFrameEnd() except;
-
-	virtual GameComponentPtr onSerialization(iarchive& reader) except;
-
-private:
-	friend GameServer;
-	void _setGameServer(GameServer* server) noexcept;
-
-private:
-	GameFeature(const GameFeature&) noexcept = delete;
-	GameFeature& operator=(const GameFeature&) noexcept = delete;
-
+#define __DeclareInterface(Base)\
+public:\
+	static  _NAME rtti::Rtti RTTI;\
+    virtual _NAME rtti::Rtti* rtti() const noexcept;\
 private:
 
-	bool _isActive;
+#define __ImplementInterface(Base, Name) \
+    _NAME rtti::Rtti Base::RTTI = _NAME rtti::Rtti(Name, nullptr, nullptr);\
+	_NAME rtti::Rtti* Base::rtti() const noexcept { return &RTTI; }\
 
-	GameServer* _gameServer;
-};
+#define __DeclareSubInterface(Derived, Base)\
+public:\
+	static _NAME rtti::Rtti RTTI;\
+    virtual _NAME rtti::Rtti* rtti() const noexcept;\
+private:
+
+#define __ImplementSubInterface(Derived, Base, Name) \
+    _NAME rtti::Rtti Derived::RTTI = _NAME rtti::Rtti(Name, nullptr, &Base::RTTI);\
+	_NAME rtti::Rtti* Derived::rtti() const noexcept { return &RTTI; }\
+
+#define __DeclareClass(Base) \
+public:\
+	static _NAME rtti::Rtti RTTI;\
+	static _NAME rtti::Interface* FactoryCreate(); \
+    virtual _NAME rtti::Rtti* rtti() const noexcept;\
+private:
+
+#define __ImplementClass(Base, Name) \
+    _NAME rtti::Rtti Base::RTTI = _NAME rtti::Rtti(Name, Base::FactoryCreate, nullptr);\
+	_NAME rtti::Rtti* Base::rtti() const noexcept { return &RTTI; }\
+	_NAME rtti::Interface* Base::FactoryCreate() { return new Base; } \
+
+#define __DeclareSubClass(Derived, Base) \
+public:\
+    static _NAME rtti::Rtti RTTI;\
+	static _NAME rtti::Interface* FactoryCreate(); \
+    virtual _NAME rtti::Rtti* rtti() const noexcept;\
+private:
+
+#define __ImplementSubClass(Derived, Base, Name) \
+    _NAME rtti::Rtti Derived::RTTI = _NAME rtti::Rtti(Name, Derived::FactoryCreate, &Base::RTTI);\
+	_NAME rtti::Rtti* Derived::rtti() const noexcept { return &RTTI; }\
+	_NAME rtti::Interface* Derived::FactoryCreate() { return new Derived; }
+}
 
 _NAME_END
 

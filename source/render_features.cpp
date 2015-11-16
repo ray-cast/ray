@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(RenderFeatures, GameFeatures)
+__ImplementSubClass(RenderFeatures, GameFeature, "Graphics")
 
 RenderFeatures::RenderFeatures() noexcept
 	: _hwnd(nullptr)

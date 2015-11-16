@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(AnimotionComponent, GameComponent)
+__ImplementSubClass(AnimotionComponent, GameComponent, "Animation")
 
 AnimotionComponent::AnimotionComponent() noexcept
 {

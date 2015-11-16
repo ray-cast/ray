@@ -72,12 +72,12 @@ enum ParticleMode
 	VerticalBillboard
 };
 
-class EXPORT ParticleEmitter : public GameComponent
+class EXPORT ParticleEmitterComponent : public GameComponent
 {
-	__DeclareSubClass(ParticleEmitter, GameComponent)
+	__DeclareSubClass(ParticleEmitterComponent, GameComponent)
 public:
-	ParticleEmitter() noexcept;
-	virtual ~ParticleEmitter() noexcept;
+	ParticleEmitterComponent() noexcept;
+	virtual ~ParticleEmitterComponent() noexcept;
 
 	void clear();
 

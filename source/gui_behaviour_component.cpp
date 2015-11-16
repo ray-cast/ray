@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GUIBehaviourComponent, GameComponent)
+__ImplementSubInterface(GUIBehaviourComponent, GameComponent, "GUIBehaviour")
 
 GUIBehaviourComponent::GUIBehaviourComponent() noexcept
 	: _needUpdate(true)

@@ -40,7 +40,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(SkinnedMeshRenderComponent, MeshRenderComponent)
+__ImplementSubClass(SkinnedMeshRenderComponent, MeshRenderComponent, "SkinnedMeshRender")
 
 SkinnedMeshRenderComponent::SkinnedMeshRenderComponent() noexcept
 {

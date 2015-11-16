@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementInterface(GameListener)
+__ImplementInterface(GameListener, "GameListener")
 
 GameEvent::GameEvent(const std::type_info& info) noexcept
 	: _code(info.hash_code())
@@ -124,51 +124,16 @@ GameListener::getName() const noexcept
 	return _name;
 }
 
-GameListenerPtr
-GameListener::findObjectByName(const std::string& name) noexcept
-{
-	auto objects = instances();
-	for (auto& it : objects)
-	{
-		if (it)
-		{
-			if (it->getName() == name)
-				return it->shared_from_this();
-		}
-	}
-
-	return nullptr;
-}
-
-GameListenerPtr
-GameListener::findObjectByType(RTTI::HashCode type) noexcept
-{
-	auto objects = instances();
-	for (auto& it : objects)
-	{
-		if (it)
-		{
-			if (it->getRTTI()->getBaseType() == type ||
-				it->getRTTI()->getDerivedType() == type)
-			{
-				return it->shared_from_this();
-			}
-		}
-	}
-
-	return nullptr;
-}
-
 void
 GameListener::load(iarchive& reader) except
 {
-	reader >> rtti_alias(_name, "name");
+	reader >> make_alias(_name, "name");
 }
 
 void
 GameListener::save(oarchive& write) except
 {
-	write << rtti_alias(_name, "name");
+	write << make_alias(_name, "name");
 }
 
 void

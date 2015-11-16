@@ -186,6 +186,21 @@ private:
 	ioarchive& operator=(const ioarchive&) noexcept = delete;
 };
 
+template <class T> inline
+std::pair<std::string, T> make_archive_name(const std::string& name, T&& value)
+{
+	return std::pair<const std::string&, T&>(name.c_str(), std::forward<T>(value));
+}
+
+template <class T> inline
+std::pair<const char*, T&> make_archive_name(const char* name, T& value)
+{
+	return std::pair<const char*, T&>(name, value);
+}
+
+#define make_name(T) make_archive_name(#T, T)
+#define make_alias(T, alias)  make_archive_name(alias, T)
+
 _NAME_END
 
 #endif

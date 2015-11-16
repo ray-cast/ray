@@ -39,7 +39,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GameObject, GameListener)
+__ImplementSubClass(GameObject, GameListener, "Object")
 
 GameObject::GameObject() noexcept
 	: _active(false)
@@ -904,35 +904,18 @@ GameObject::addComponent(GameComponentPtr component) except
 {
 	assert(component);
 
-	if (GameComponent::getType() != component->getRTTI()->getDerivedType())
+	auto it = std::find_if(_components.begin(), _components.end(), [component](GameComponentPtr it) { return component->isInstanceOf(it->rtti()); });
+	if (it == _components.end())
 	{
-		auto it = _components.begin();
-		auto end = _components.end();
+		component->_setGameObject(this);
+		if (this->getActive())
+			component->onActivate();
 
-		for (;it != end; ++it)
-		{
-			if ((*it)->getRTTI()->getDerivedType() == component->getRTTI()->getDerivedType())
-			{
-				return;
-			}
-		}
+		_components.push_back(component);
+
+		for (auto& it : _components)
+			it->onAttachComponent();
 	}
-	else
-	{
-		auto it = std::find(_components.begin(), _components.end(), component);
-		if (it != _components.end())
-			return;
-	}
-
-	_components.push_back(component);
-
-	component->_setGameObject(this);
-
-	for (auto& it : _components)
-		it->onAttachComponent();
-
-	if (this->getActive())
-		component->onActivate();
 }
 
 void
@@ -959,8 +942,10 @@ GameObject::destroyComponent(GameComponentPtr component) noexcept
 	auto it = std::find(_components.begin(), _components.end(), component);
 	if (it != _components.end())
 	{
+		for (auto& it : _components)
+			it->onDetachComponent();
+
 		(*it)->onDeactivate();
-		(*it)->onDetachComponent();
 		(*it)->_setGameObject(nullptr);
 
 		_components.erase(it);
@@ -975,10 +960,9 @@ GameObject::cleanupComponents() noexcept
 		for (auto& it : _components)
 		{
 			it->setActive(false);
+
 			for (auto& it : _components)
-			{
 				it->onDetachComponent();
-			}
 		}
 	}
 
@@ -986,15 +970,12 @@ GameObject::cleanupComponents() noexcept
 }
 
 GameComponentPtr
-GameObject::getComponent(RTTI::HashCode type) const noexcept
+GameObject::getComponent(const rtti::Rtti& type) const noexcept
 {
 	for (auto& it : _components)
 	{
-		if (it->getRTTI()->getBaseType() == type ||
-			it->getRTTI()->getDerivedType() == type)
-		{
+		if (it->isA(type))
 			return it;
-		}
 	}
 
 	return nullptr;

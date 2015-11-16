@@ -44,6 +44,7 @@ _NAME_BEGIN
 
 class EXPORT PhysicFeatures final : public GameFeature
 {
+	__DeclareSubClass(PhysicFeatures, GameFeature)
 public:
 	PhysicFeatures() noexcept;
 	~PhysicFeatures() noexcept;

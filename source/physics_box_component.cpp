@@ -40,7 +40,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(PhysicsBoxComponent, PhysicsShapeComponent)
+__ImplementSubClass(PhysicsBoxComponent, PhysicsShapeComponent, "PhysicsBox")
 
 PhysicsBoxComponent::PhysicsBoxComponent() noexcept
 {

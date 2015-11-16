@@ -216,7 +216,7 @@ GameServer::addFeature(GameFeaturePtr features) except
 {
 	assert(features);
 
-	auto it = std::find(_features.begin(), _features.end(), features);
+	auto it = std::find_if(_features.begin(), _features.end(), [features](GameFeaturePtr it) { return features->isInstanceOf(it->rtti()); });
 	if (it == _features.end())
 	{
 		features->_setGameServer(this);
@@ -243,16 +243,15 @@ GameServer::removeFeature(GameFeaturePtr features) noexcept
 }
 
 GameFeaturePtr
-GameServer::getFeature(RTTI::HashCode rtti) const noexcept
+GameServer::getFeature(const rtti::Rtti& rtti) const noexcept
 {
 	for (auto& it : _features)
 	{
-		if (it->getRTTI()->getDerivedType() == rtti)
-		{
+		if (it->isInstanceOf(rtti))
 			return it;
-		}
 	}
 
+	assert(false);
 	return nullptr;
 }
 

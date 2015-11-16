@@ -68,11 +68,11 @@ public:
 
 	void addFeature(GameFeaturePtr features) except;
 	void removeFeature(GameFeaturePtr features) noexcept;
-	GameFeaturePtr getFeature(RTTI::HashCode rtti) const noexcept;
+	GameFeaturePtr getFeature(const rtti::Rtti& rtti) const noexcept;
 
 	template<typename T>
 	std::shared_ptr<T> getFeature() const noexcept
-		{ return std::dynamic_pointer_cast<T>(this->getFeature(T::getType())); }
+		{ return std::dynamic_pointer_cast<T>(this->getFeature(T::RTTI)); }
 
 	const GameFeatures& getGameFeatures() const noexcept;
 

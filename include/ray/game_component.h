@@ -43,7 +43,7 @@ _NAME_BEGIN
 
 class EXPORT GameComponent : public GameListener
 {
-	__DeclareInterface(GameComponent)
+	__DeclareSubInterface(GameComponent, GameListener)
 public:
 	GameComponent() noexcept;
 	virtual ~GameComponent() noexcept;
@@ -64,9 +64,9 @@ public:
 
 	template<typename T>
 	std::shared_ptr<T> getComponent() const noexcept 
-		{ return std::dynamic_pointer_cast<T>(this->getComponent(T::getType())); }
+		{ return std::dynamic_pointer_cast<T>(this->getComponent(T::RTTI)); }
 
-	GameComponentPtr getComponent(RTTI::HashCode type) const noexcept;
+	GameComponentPtr getComponent(const rtti::Rtti& type) const noexcept;
 	const GameComponents& getComponents() const noexcept;
 
 protected:

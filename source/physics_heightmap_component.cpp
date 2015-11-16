@@ -40,7 +40,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(PhysicsHeightMapComponent, PhysicsShapeComponent)
+__ImplementSubClass(PhysicsHeightMapComponent, PhysicsShapeComponent, "PhysicsHeightMap")
 
 PhysicsHeightMapComponent::PhysicsHeightMapComponent() noexcept
 {

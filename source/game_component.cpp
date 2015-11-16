@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementInterface(GameComponent)
+__ImplementSubInterface(GameComponent, GameListener, "Component")
 
 GameComponent::GameComponent() noexcept
 	: _active(false)
@@ -49,10 +49,10 @@ GameComponent::~GameComponent() noexcept
 {
 }
 
-GameComponentPtr 
-GameComponent::getComponent(RTTI::HashCode type) const noexcept
+GameComponentPtr
+GameComponent::getComponent(const rtti::Rtti& type) const noexcept
 {
-	assert(this->getRTTI()->getDerivedType() != type);
+	assert(this->rtti() != &type);
 	return this->getGameObject()->getComponent(type);
 }
 

@@ -40,6 +40,8 @@
 #include <ray/render_features.h>
 #include <ray/input_features.h>
 
+#include <ray/rtti_factory.h>
+
 #if defined(_BUILD_SCRIPT)
 #	include <ray/script_features.h>
 #endif
@@ -85,6 +87,8 @@ GameApplication::initialize(int argc, char *argv[]) except
 
 		_ioInterface = IoInterface::instance();
 		_ioInterface->open();
+
+		rtti::Factory::instance()->open();
 
 		_isInitialize = true;
 	}

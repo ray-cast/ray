@@ -34,58 +34,92 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GAME_FEATURE_H_
-#define _H_GAME_FEATURE_H_
-
-#include <ray/game_message.h>
+#include <ray/rtti_factory.h>
 
 _NAME_BEGIN
 
-class EXPORT GameFeature : public GameListener
+using namespace rtti;
+
+__ImplementSingleton(Factory)
+
+Factory::Factory() noexcept
 {
-	__DeclareSubClass(GameFeature, GameListener)
-public:
-	GameFeature() noexcept;
-	virtual ~GameFeature() noexcept;
+}
 
-	void setActive(bool active)  except;
-	bool getActive() noexcept;
+Factory::~Factory() noexcept
+{
+}
 
-	GameServer* getGameServer() noexcept;
+bool 
+Factory::open() noexcept
+{
+	for (auto& it : _rttis)
+	{
+		if (it)
+			_rtti_lists[it->getName()] = it;
+	}
+	return true;
+}
 
-	virtual void sendMessage(const GameMessage& message) except;
+bool 
+Factory::add(Rtti* rtti) noexcept
+{
+	_rttis.push_back(rtti);
+	return true;
+}
 
-protected:
+Rtti* 
+Factory::getRTTI(const std::string& name) noexcept
+{
+	return _rtti_lists[name];
+}
 
-	virtual void onActivate() except;
-	virtual void onDeactivate() except;
+Rtti* 
+Factory::getRTTI(const char* name) noexcept
+{
+	return _rtti_lists[name];
+}
 
-	virtual void onOpenScene(GameScenePtr scene) except;
-	virtual void onCloseScene(GameScenePtr scene) except;
+const Rtti*
+Factory::getRTTI(const std::string& name) const noexcept
+{
+	return _rtti_lists[name];
+}
 
-	virtual void onReset() except;
+const Rtti*
+Factory::getRTTI(const char* name) const noexcept
+{
+	return _rtti_lists[name];
+}
 
-	virtual void onFrameBegin() except;
-	virtual void onFrame() except;
-	virtual void onFrameEnd() except;
+Interface*
+Factory::createObject(const char* name, const Rtti& base) const except
+{
+	assert(name);
 
-	virtual GameComponentPtr onSerialization(iarchive& reader) except;
+	auto rtti = this->getRTTI(name);
+	if (!rtti)
+		return nullptr;
 
-private:
-	friend GameServer;
-	void _setGameServer(GameServer* server) noexcept;
+	if (rtti->isDerivedFrom(base))
+		return rtti->create();
 
-private:
-	GameFeature(const GameFeature&) noexcept = delete;
-	GameFeature& operator=(const GameFeature&) noexcept = delete;
+	return nullptr;
+}
 
-private:
+Interface*
+Factory::createObject(const std::string& name, const Rtti& base) const except
+{
+	assert(!name.empty());
 
-	bool _isActive;
+	auto rtti = this->getRTTI(name);
+	if (!rtti)
+		return nullptr;
 
-	GameServer* _gameServer;
-};
+	if (rtti->isDerivedFrom(base))
+		return rtti->create();
+
+	return nullptr;
+}
 
 _NAME_END
-
-#endif

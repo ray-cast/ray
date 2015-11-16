@@ -95,47 +95,6 @@ public:
 
 	virtual void sendMessage(const GameMessage& message) except;
 
-	static GameListenerPtr findObjectByName(const std::string& name) noexcept;
-	static GameListenerPtr findObjectByType(RTTI::HashCode type) noexcept;
-
-	template<typename S>
-	static std::shared_ptr<S> find(const std::string& name) noexcept
-	{
-		return std::dynamic_pointer_cast<S>(findObjectByName(name));
-	}
-
-	template<typename S>
-	static std::shared_ptr<S> findObjectOfType() noexcept
-	{
-		return std::dynamic_pointer_cast<S>(findObjectByType(S::getType()));
-	}
-
-	template<typename S>
-	static std::vector<std::shared_ptr<S>> findObjectsOfType() noexcept
-	{
-		std::vector<std::shared_ptr<S>> result;
-
-		auto objects = S::instances();
-		for (auto& it : objects)
-		{
-			if (it)
-			{
-				auto type = S::getType();
-
-				if (it->getRTTI()->getBaseType() == type ||
-					it->getRTTI()->getDerivedType() == type)
-				{
-					if (!it->getVisible())
-						continue;
-
-					result.push_back(std::dynamic_pointer_cast<S>(it->shared_from_this()));
-				}
-			}
-		}
-
-		return result;
-	}
-
 protected:
 
 	virtual void onMessage(const GameMessage& message) except;

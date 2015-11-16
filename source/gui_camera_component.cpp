@@ -44,7 +44,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GUICameraComponent, GUIListenerComponent)
+__ImplementSubClass(GUICameraComponent, GUIListenerComponent, "GUICamera")
 
 GUICameraComponent::GUICameraComponent() noexcept
 {

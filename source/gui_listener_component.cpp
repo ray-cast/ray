@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GUIListenerComponent, GameComponent)
+__ImplementSubInterface(GUIListenerComponent, GameComponent, "GUIListener")
 
 GUIListenerComponent::GUIListenerComponent() noexcept
 {

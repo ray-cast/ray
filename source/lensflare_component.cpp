@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(LensflareComponent, GameComponent)
+__ImplementSubClass(LensflareComponent, GameComponent, "Lensflare")
 
 LensflareComponent::LensflareComponent() noexcept
 {

@@ -39,7 +39,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(MeshComponent, GameComponent)
+__ImplementSubClass(MeshComponent, GameComponent, "Mesh")
 
 void 
 MeshListener::onMeshChangeAfter() except 

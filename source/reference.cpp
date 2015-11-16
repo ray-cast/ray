@@ -34,58 +34,74 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GAME_FEATURE_H_
-#define _H_GAME_FEATURE_H_
-
-#include <ray/game_message.h>
+#include <ray/reference.h>
 
 _NAME_BEGIN
 
-class EXPORT GameFeature : public GameListener
+__ImplementSubClass(Reference, rtti::Interface, "Reference")
+
+Reference::Reference() noexcept
+	: _pointer(nullptr)
+	, _gc(false)
+	, _count(1)
 {
-	__DeclareSubClass(GameFeature, GameListener)
-public:
-	GameFeature() noexcept;
-	virtual ~GameFeature() noexcept;
+}
 
-	void setActive(bool active)  except;
-	bool getActive() noexcept;
+Reference::Reference(const Reference& copy) noexcept
+	: _pointer(copy._pointer)
+{
+	_gc.store(copy._gc);
+	_count.store(copy._count);
+}
 
-	GameServer* getGameServer() noexcept;
+Reference::~Reference() noexcept
+{
+	assert(0 == this->_count);
+}
 
-	virtual void sendMessage(const GameMessage& message) except;
+void
+Reference::addRef() noexcept
+{
+	++_count;
+}
 
-protected:
+void 
+Reference::release() noexcept
+{
+	_gc = false;
+	_count.fetch_sub(1);
+	if (_count == 0)
+		delete this;
+}
 
-	virtual void onActivate() except;
-	virtual void onDeactivate() except;
+int 
+Reference::refCount() const noexcept
+{
+	return _count;
+}
 
-	virtual void onOpenScene(GameScenePtr scene) except;
-	virtual void onCloseScene(GameScenePtr scene) except;
+void
+Reference::setGC() noexcept
+{
+	_gc = true;
+}
 
-	virtual void onReset() except;
+bool
+Reference::getGC() const noexcept
+{
+	return _gc;
+}
 
-	virtual void onFrameBegin() except;
-	virtual void onFrame() except;
-	virtual void onFrameEnd() except;
+void 
+Reference::setUserPointer(std::intptr_t* pointer) noexcept
+{
+	_pointer = pointer;
+}
 
-	virtual GameComponentPtr onSerialization(iarchive& reader) except;
-
-private:
-	friend GameServer;
-	void _setGameServer(GameServer* server) noexcept;
-
-private:
-	GameFeature(const GameFeature&) noexcept = delete;
-	GameFeature& operator=(const GameFeature&) noexcept = delete;
-
-private:
-
-	bool _isActive;
-
-	GameServer* _gameServer;
-};
+std::intptr_t* 
+Reference::getUserPointer() const noexcept
+{
+	return _pointer;
+}
 
 _NAME_END
-
-#endif

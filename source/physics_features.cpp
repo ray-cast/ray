@@ -45,6 +45,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(PhysicFeatures, GameFeature, "Physics")
+
 PhysicFeatures::PhysicFeatures() noexcept
 	: _physics(nullptr)
 {

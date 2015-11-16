@@ -42,7 +42,7 @@
 _NAME_BEGIN
 
 template<typename T>
-class Instance : public std::enable_shared_from_this<T>
+class Instance : public rtti::Interface , public std::enable_shared_from_this<T>
 {
 public:
     typedef std::shared_ptr<T> pointer;
@@ -88,7 +88,94 @@ public:
         return _instance_lists;
     }
 
+	virtual void setName(const std::string& name) noexcept
+	{
+		_name = name;
+	}
+
+	virtual const std::string& getName() const noexcept
+	{
+		return _name;
+	}
+
+	template<typename S>
+	static std::shared_ptr<S> findObjectByName(const std::string& name) noexcept
+	{
+		auto& objects = instances();
+		for (auto& it : objects)
+		{
+			if (it)
+			{
+				if (it->getName() == name)
+				{
+					if (it->isA<S>())
+						return std::dynamic_pointer_cast<S>(it->shared_from_this());
+				}
+			}
+		}
+
+		return nullptr;
+	}
+
+	template<typename S>
+	static std::shared_ptr<S> findObjectByType(const rtti::Rtti& type) noexcept
+	{
+		auto& objects = instances();
+		for (auto& it : objects)
+		{
+			if (it)
+			{
+				if (it->isA(type))
+				{
+					return std::dynamic_pointer_cast<S>(it->shared_from_this());
+				}
+			}
+		}
+
+		return nullptr;
+	}
+
+	template<typename S>
+	static std::shared_ptr<S> find(const std::string& name) noexcept
+	{
+		return std::dynamic_pointer_cast<S>(findObjectByName<S>(name));
+	}
+
+	template<typename S>
+	static std::shared_ptr<S> findObjectOfType() noexcept
+	{
+		return std::dynamic_pointer_cast<S>(findObjectByType(S::getType()));
+	}
+
+	template<typename S>
+	static std::vector<std::shared_ptr<S>> findObjectsOfType() noexcept
+	{
+		std::vector<std::shared_ptr<S>> result;
+
+		auto objects = S::instances();
+		for (auto& it : objects)
+		{
+			if (it)
+			{
+				auto type = S::getType();
+
+				if (it->getRTTI()->getBaseType() == type ||
+					it->getRTTI()->getDerivedType() == type)
+				{
+					if (!it->getVisible())
+						continue;
+
+					result.push_back(std::dynamic_pointer_cast<S>(it->shared_from_this()));
+				}
+			}
+		}
+
+		return result;
+	}
+
 private:
+
+	std::string _name;
 
     InstanceID _instance;
 

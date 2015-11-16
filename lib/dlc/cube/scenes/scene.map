@@ -2,25 +2,6 @@
 <scene>
     <attribute name="cubes"/>
     <object>
-        <attribute name="first_person_camera"/>
-        <attribute position="0,62,0" />
-        <attribute lookat="0,62,1" />
-        <attribute active="true"/>
-        <component name="Camera">
-            <attribute aperture="75.0"/>
-            <attribute znear="0.1"/>
-            <attribute zfar="65535.0"/>
-            <attribute w="1376"/>
-            <attribute h="768"/>
-        </component>
-        <component name="FirstPersonCamera">
-        </component>
-        <!--component name="PhysicsCharacter">
-            <attribute radius="1"/>
-            <attribute height="4"/>
-        </component-->
-    </object>
-    <object>
         <attribute name="grass"/>
         <attribute position="0,0,0" />
         <attribute active="false"/>
@@ -29,6 +10,10 @@
         </component>
         <component name="MeshRender">
             <attribute material="dlc:cube/material/grass.mat"/>
+        </component>
+        <component name="PhysicsMesh">
+        </component>
+        <component name="PhysicsBody">
         </component>
     </object>
     <object>
@@ -41,6 +26,10 @@
         <component name="MeshRender">
             <attribute material="dlc:cube/material/wood.mat"/>
         </component>
+        <component name="PhysicsMesh">
+        </component>
+        <component name="PhysicsBody">
+        </component>
     </object>
     <object>
         <attribute name="leaf"/>
@@ -51,6 +40,10 @@
         </component>
         <component name="MeshRender">
             <attribute material="dlc:cube/material/leaf.mat"/>
+        </component>
+        <component name="PhysicsMesh">
+        </component>
+        <component name="PhysicsBody">
         </component>
     </object>
     <object>
@@ -63,6 +56,10 @@
         <component name="MeshRender">
             <attribute material="dlc:cube/material/clound.mat"/>
         </component>
+        <component name="PhysicsMesh">
+        </component>
+        <component name="PhysicsBody">
+        </component>
     </object>
     <object>
         <attribute name="water"/>
@@ -73,6 +70,10 @@
         </component>
         <component name="MeshRender">
             <attribute material="dlc:cube/material/water.mat"/>
+        </component>
+        <component name="PhysicsMesh">
+        </component>
+        <component name="PhysicsBody">
         </component>
     </object>
     <object>
@@ -98,9 +99,24 @@
         </component>
     </object>
     <object>
-        <attribute name="terrain"/>
+        <attribute name="first_person_camera"/>
+        <attribute position="0,62,0" />
+        <attribute lookat="0,62,1" />
         <attribute active="true"/>
+        <component name="Camera">
+            <attribute aperture="75.0"/>
+            <attribute znear="0.1"/>
+            <attribute zfar="65535.0"/>
+            <attribute w="1376"/>
+            <attribute h="768"/>
+        </component>
+        <component name="FirstPersonCamera">
+        </component>
         <component name="Terrain">
+        </component>
+        <component name="PhysicsCharacter">
+            <attribute radius="1"/>
+            <attribute height="4"/>
         </component>
     </object>
 </scene>

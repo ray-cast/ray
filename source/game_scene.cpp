@@ -37,10 +37,11 @@
 #include <ray/game_scene.h>
 #include <ray/game_server.h>
 #include <ray/game_component.h>
+#include <ray/rtti_factory.h>
 
 _NAME_BEGIN
 
-__ImplementSubClass(GameScene, GameListener)
+__ImplementSubClass(GameScene, GameListener, "GameScene")
 
 GameScene::Setting::Setting() noexcept
 	: gravity(0.0f, 9.81f, 0.0f)
@@ -259,7 +260,7 @@ GameScene::instanceObject(iarchive& reader, GameObjectPtr parent) except
 				auto name = reader.getString("name");
 				if (!name.empty())
 				{
-					auto component = RTTIFactory::instance()->createObject<GameComponent>(name + "Component");
+					auto component = rtti::make_shared<GameComponent>(name);
 					if (component)
 					{
 						reader >> component;
@@ -303,7 +304,7 @@ GameScene::load(iarchive& reader) except
 			if (nodeName == "attribute")
 			{
 				std::string name = "unknown";
-				reader >> rtti_name(name);
+				reader >> make_name(name);
 
 				this->setName(name);
 			}

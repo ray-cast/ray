@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(PhysicsCharacterComponent, PhysicsShapeComponent)
+__ImplementSubClass(PhysicsCharacterComponent, PhysicsShapeComponent, "PhysicsCharacter")
 
 PhysicsCharacterComponent::PhysicsCharacterComponent() noexcept
 {
@@ -144,8 +144,8 @@ PhysicsCharacterComponent::load(iarchive& reader) noexcept
 	float radius = 1.0;
 	float height = 1.0;
 
-	reader >> rtti_name(radius);
-	reader >> rtti_name(height);
+	reader >> make_name(radius);
+	reader >> make_name(height);
 
 	this->setRadius(radius);
 	this->setHeight(height);

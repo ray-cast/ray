@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GUILabelComponent, GUIBehaviourComponent)
+__ImplementSubClass(GUILabelComponent, GUIBehaviourComponent, "GUILabel")
 
 GUILabelComponent::GUILabelComponent() noexcept
 {
@@ -121,9 +121,9 @@ GUILabelComponent::load(iarchive& reader) noexcept
 	std::string text;
 	std::string material;
 
-	reader >> rtti_name(text);
-	reader >> rtti_name(font);
-	reader >> rtti_name(material);
+	reader >> make_name(text);
+	reader >> make_name(font);
+	reader >> make_name(material);
 
 	_text = text;
 	_fontName = font;

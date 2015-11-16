@@ -37,71 +37,31 @@
 #ifndef _H_REFERENCE_H_
 #define _H_REFERENCE_H_
 
-#include <ray/platform.h>
+#include <ray/rtti.h>
 #include <atomic>
 
 _NAME_BEGIN
 
-class Reference
+class Reference : public rtti::Interface
 {
+	__DeclareSubClass(Reference, RttiClass)
 public:
-    Reference() noexcept
-        : _pointer(nullptr)
-		, _gc(false)
-		, _count(1)
-    {
-    }
+	Reference() noexcept;
+	Reference(const Reference& copy) noexcept;
 
-	Reference(const Reference& copy) noexcept
-		: _pointer(copy._pointer)
-	{
-		_gc.store(copy._gc);
-		_count.store(copy._count);
-	}
+	void addRef() noexcept;
+	void release() noexcept;
 
-	void addRef() const
-	{
-		++_count;
-	}
+	int refCount() const noexcept;
+	
+	void setGC() noexcept;
+	bool getGC() const noexcept;
 
-	void release() const
-	{
-		_gc = false;
-		_count.fetch_sub(1);
-		if (_count == 0)
-			delete this;
-	}
-
-	int refCount() const
-	{
-		return _count;
-	}
-
-	void setGC() const
-	{
-		_gc = true;
-	}
-
-	bool getGC() const noexcept
-	{
-		return _gc;
-	}
-
-    void setUserPointer(std::intptr_t* pointer) noexcept
-    {
-        _pointer = pointer;
-    }
-
-    std::intptr_t* getUserPointer() const noexcept
-    {
-        return _pointer;
-    }
+	void setUserPointer(std::intptr_t* pointer) noexcept;
+	std::intptr_t* getUserPointer() const noexcept;
 
 protected:
-	virtual ~Reference() noexcept
-	{
-		assert(0 == this->_count);
-	}
+	virtual ~Reference() noexcept;
 
 private:
 

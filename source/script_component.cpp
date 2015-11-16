@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(ScriptComponent, GameComponent)
+__ImplementSubClass(ScriptComponent, GameComponent, "Script")
 
 ScriptComponent::ScriptComponent() noexcept
 	: _scriptObject(nullptr)

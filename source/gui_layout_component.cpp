@@ -39,7 +39,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GUILayoutComponent, GameComponent)
+__ImplementSubClass(GUILayoutComponent, GameComponent, "GUILayout")
 
 GUILayoutComponent::GUILayoutComponent() noexcept
 {

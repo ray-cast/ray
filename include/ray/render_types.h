@@ -38,7 +38,6 @@
 #define _H_RENDER_TYPES_H_
 
 #include <ray/memory.h>
-#include <ray/instances.h>
 #include <ray/math.h>
 #include <ray/except.h>
 #include <ray/variant.h>

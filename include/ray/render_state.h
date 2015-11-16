@@ -106,7 +106,7 @@ struct EXPORT RenderStencilState
 	RenderStencilState() noexcept;
 };
 
-class EXPORT RenderState : public Instance<RenderState>
+class EXPORT RenderState
 {
 public:
 	RenderState() noexcept;

@@ -648,25 +648,12 @@ OGLRenderer::createShaderVariant(ShaderVariant& constant) noexcept
 	}
 #endif
 
-	_constantBuffers[constant.getInstanceID()] = buffer;
-
 	return true;
 }
 
 void
 OGLRenderer::destroyShaderVariant(ShaderVariant& constant) noexcept
 {
-	auto index = constant.getInstanceID();
-	if (index != 0)
-	{
-		auto& buffer = _constantBuffers[index];
-
-		if (buffer.ubo)
-		{
-			glDeleteBuffers(1, &buffer.ubo);
-			buffer.ubo = 0;
-		}
-	}
 }
 
 void
@@ -742,7 +729,7 @@ OGLRenderer::updateShaderVariant(ShaderVariantPtr constant) noexcept
 		offset += it->getSize();
 	}
 
-	auto& buffer = _constantBuffers[constant->getInstanceID()];
+	/*auto& buffer = _constantBuffers[constant->getInstanceID()];
 
 #if !defined(EGLAPI)
 	if (OGLFeatures::ARB_direct_state_access)
@@ -754,7 +741,7 @@ OGLRenderer::updateShaderVariant(ShaderVariantPtr constant) noexcept
 	{
 		glBindBuffer(GL_UNIFORM_BUFFER, buffer.ubo);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, _data.size(), _data.data());
-	}
+	}*/
 }
 
 void
@@ -939,7 +926,7 @@ OGLRenderer::setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constan
 
 		break;
 	}
-	case ShaderVariantType::SPT_BUFFER:
+	/*case ShaderVariantType::SPT_BUFFER:
 	{
 		if (uniform->needUpdate())
 		{
@@ -963,7 +950,7 @@ OGLRenderer::setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constan
 				glBindBufferBase(GL_UNIFORM_BUFFER, location, buffer.ubo);
 			}
 		}
-	}
+	}*/
 	default:
 		assert(false);
 		break;

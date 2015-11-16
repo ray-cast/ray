@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class EXPORT ShaderVariant : public Instance<ShaderVariant>
+class EXPORT ShaderVariant
 {
 public:
 	ShaderVariant() noexcept;
@@ -134,7 +134,7 @@ private:
 	ShaderVariants _params;
 };
 
-class EXPORT ShaderParameter : public Instance<ShaderParameter>
+class EXPORT ShaderParameter
 {
 public:
 	ShaderParameter() noexcept;

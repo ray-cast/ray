@@ -104,7 +104,6 @@ GameListener::GameListener() noexcept
 }
 
 GameListener::GameListener(const std::string& name) noexcept
-	: _name(name)
 {
 }
 
@@ -112,13 +111,13 @@ GameListener::~GameListener() noexcept
 {
 }
 
-void
+void 
 GameListener::setName(const std::string& name) noexcept
 {
 	_name = name;
 }
 
-const std::string&
+const std::string& 
 GameListener::getName() const noexcept
 {
 	return _name;
@@ -127,13 +126,16 @@ GameListener::getName() const noexcept
 void
 GameListener::load(iarchive& reader) except
 {
-	reader >> make_alias(_name, "name");
+	std::string name;
+	reader >> make_alias(name, "name");
+	this->setName(name);
 }
 
 void
 GameListener::save(oarchive& write) except
 {
-	write << make_alias(_name, "name");
+	auto& name = this->getName();
+	write << make_alias(name, "name");
 }
 
 void

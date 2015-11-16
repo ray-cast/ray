@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 	ray::FontDistanceField font;
 
 	std::string fontpath = "C:\\Windows\\Fonts\\msyh.ttc";
-	std::wstring charsets = L"基于distance field的字体能在和点阵字体存储相同结构的情况下获得更好的渲染效果，尤其是支持一定程序上的高质量缩放�?;
+	std::wstring charsets = L"基于distance field的字体能在和点阵字体存储相同结构的情况下获得更好的渲染效果，尤其是支持一定程序上的高质量缩放。";
 	font.createFontMapping(fontpath, charsets, 2048, 32, 4);
 	font.save("C:\\Users\\ray\\Desktop\\msyh.dff");
 

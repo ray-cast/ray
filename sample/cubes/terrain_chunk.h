@@ -47,7 +47,7 @@ public:
 
 	void create(std::int32_t x, std::int32_t y, std::int32_t z, std::size_t size) noexcept;
 
-	void setActive(ray::GameObjectPtr parent) noexcept;
+	void setActive(bool active) noexcept;
 	bool getActive() const noexcept;
 
 	void dirt(bool dirt) noexcept;

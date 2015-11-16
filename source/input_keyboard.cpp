@@ -67,7 +67,7 @@ DefaultInputKeyboard::getKey(InputKey::Code key) const noexcept
 }
 
 void
-DefaultInputKeyboard::onFrameBegin() noexcept
+DefaultInputKeyboard::onFrameEnd() noexcept
 {
 	for (std::size_t i = 0; i < InputKey::NumKeyCodes; i++)
 	{

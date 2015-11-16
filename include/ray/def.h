@@ -49,6 +49,7 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <atomic>
 
 #ifndef _BYTE_BITMASK
 #   define _BYTE_BITMASK(Enum, Ty) typedef unsigned char Ty

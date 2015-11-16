@@ -62,7 +62,7 @@ public:
 	virtual InputKeyboardPtr clone() const noexcept;
 
 private:
-	virtual void onFrameBegin() noexcept;
+	virtual void onFrameEnd() noexcept;
 	virtual void onObtainCapture() noexcept;
 	virtual void onReset() noexcept;
 	virtual void onEvent(const InputEvent& event) noexcept;

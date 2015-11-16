@@ -62,14 +62,10 @@ TerrainComponent::addBlockByMousePos(std::int32_t x, std::int32_t y) noexcept
 {
 	ray::Vector3 pos(x, y, 1);
 
-	auto player = find<ray::GameObject>("first_person_camera");
-	if (!player)
-		return false;
+	auto translate = this->getGameObject()->getTranslate();
 
-	auto translate = player->getTranslate();
-
-	auto world = player->getComponent<ray::CameraComponent>()->screenToWorld(pos);
-	auto view = world - player->getTranslate();
+	auto world = this->getComponent<ray::CameraComponent>()->screenToWorld(pos);
+	auto view = world - translate;
 	view.normalize();
 
 	return this->addBlockByRaycast(translate, view);
@@ -196,14 +192,10 @@ TerrainComponent::getChunkByMousePos(std::int32_t x, std::int32_t y, TerrainData
 {
 	ray::Vector3 pos(x, y, 1);
 
-	auto player = find<ray::GameObject>("first_person_camera");
-	if (!player)
-		return false;
+	auto translate = this->getGameObject()->getTranslate();
 
-	auto translate = player->getTranslate();
-
-	auto world = player->getComponent<ray::CameraComponent>()->screenToWorld(pos);
-	auto view = world - player->getTranslate();
+	auto world = this->getComponent<ray::CameraComponent>()->screenToWorld(pos);
+	auto view = world - translate;
 	view.normalize();
 
 	return this->getChunkByRaycast(translate, view, out);
@@ -424,7 +416,7 @@ TerrainComponent::createChunks() noexcept
 	{
 		chunk = std::make_shared<TerrainChunk>(*this);
 		chunk->create(bestX, bestY, bestZ, _size);
-		chunk->setActive(this->getGameObject());
+		chunk->setActive(true);
 
 		_chunks.push_back(chunk);
 	}
@@ -499,7 +491,7 @@ TerrainComponent::onActivate() except
 		{
 			auto chunk = std::make_shared<TerrainChunk>(*this);
 			chunk->create(i, 0, j, _size);
-			chunk->setActive(this->getGameObject());
+			chunk->setActive(true);
 
 			_chunks.push_back(chunk);
 		}
@@ -514,7 +506,7 @@ TerrainComponent::onDeactivate() except
 }
 
 void
-TerrainComponent::onFrame() except
+TerrainComponent::onFrameEnd() except
 {
 	this->deleteChunks();
 	this->createChunks();

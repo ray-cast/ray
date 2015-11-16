@@ -39,7 +39,6 @@
 
 #include <ray/ioserver.h>
 #include <ray/iointerface.h>
-#include <ray/instances.h>
 #include <ray/variant.h>
 #include <ray/archive.h>
 #include <ray/except.h>

@@ -119,7 +119,7 @@ private:
 	void onActivate() except;
 	void onDeactivate() except;
 
-	void onFrame() except;
+	void onFrameEnd() except;
 
 private:
 

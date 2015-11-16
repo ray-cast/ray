@@ -79,7 +79,7 @@ public:
 	GameEvent* _event;
 };
 
-class EXPORT GameListener : public Instance<GameListener>
+class EXPORT GameListener : public rtti::Interface
 {
 	__DeclareInterface(GameListener)
 public:
@@ -87,8 +87,8 @@ public:
 	GameListener(const std::string& name) noexcept;
 	virtual ~GameListener() noexcept;
 
-	virtual void setName(const std::string& name) noexcept;
-	virtual const std::string& getName() const noexcept;
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
 
 	virtual void load(iarchive& reader) except;
 	virtual void save(oarchive& write) except;
@@ -100,19 +100,19 @@ protected:
 	virtual void onMessage(const GameMessage& message) except;
 
 private:
-	GameListener(const GameListener& copy) noexcept = delete;
-	GameListener& operator=(const GameListener& copy) noexcept = delete;
+	GameListener(const GameListener&) noexcept = delete;
+	GameListener& operator=(const GameListener&) noexcept = delete;
 
 private:
 
 	std::string _name;
 };
 
-class EXPORT GameDispatcher : public Instance<GameDispatcher>
+class EXPORT GameDispatcher
 {
 public:
 	GameDispatcher() noexcept;
-	~GameDispatcher() noexcept;
+	virtual ~GameDispatcher() noexcept;
 
 	virtual void enableMessagePosting(bool enable) noexcept;
 	virtual bool enableMessagePosting() const noexcept;
@@ -129,6 +129,10 @@ public:
 	virtual bool waitMessages(GameMessage& event) noexcept;
 	virtual bool waitMessages(GameMessage& event, int timeout) noexcept;
 	virtual void flushMessage() noexcept;
+
+private:
+	GameDispatcher(const GameDispatcher&) noexcept = delete;
+	GameDispatcher& operator=(const GameDispatcher&) noexcept = delete;
 
 private:
 

@@ -41,32 +41,32 @@
 
 _NAME_BEGIN
 
-class EXPORT GameObject : public GameListener
+class EXPORT GameObject : public rtti::Interface
 {
-	__DeclareSubClass(GameObject, GameListener)
+	__DeclareClass(GameObject)
 public:
 	GameObject() noexcept;
 	virtual ~GameObject() noexcept;
+
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
 
 	void setActive(bool active) except;
 	void setActiveUpwards(bool active) except;
 	void setActiveDownwards(bool active) except;
 	bool getActive() const noexcept;
 
-	void setLayer(int layer) noexcept;
-	int getLayer() const noexcept;
+	void setLayer(std::uint8_t layer) noexcept;
+	std::uint8_t getLayer() const noexcept;
+
+	std::uint32_t getInstanceID() const noexcept;
 
 	void setParent(GameObjectPtr parent) noexcept;
 	GameObjectPtr getParent() const noexcept;
 
 	void addChild(GameObjectPtr child) noexcept;
-
 	void removeChild(GameObjectPtr child) noexcept;
-	void removeChild(InstanceID instance) noexcept;
-
 	void cleanupChildren() noexcept;
-
-	GameObjectPtr findChild(InstanceID instance, bool recurse = true) noexcept;
 	GameObjectPtr findChild(const std::string& name, bool recurse = true) noexcept;
 
 	std::uint32_t getChildCount() const noexcept;
@@ -180,7 +180,7 @@ public:
 
 private:
 
-	friend GameScene;
+	friend class GameObjectManager;
 
 	void _onFrameBegin() except;
 	void _onFrame() except;
@@ -199,7 +199,10 @@ private:
 
 	bool _active;
 
-	int _layer;
+	std::uint8_t _layer;
+	std::uint32_t _instanceID;
+
+	std::string _name;
 
 	Vector3 _translate;
 	Vector3 _scaling;
@@ -217,8 +220,8 @@ private:
 	mutable Matrix4x4 _transformInverse;
 	mutable Matrix4x4 _transformInverseTranspose;
 
-	GameObject* _parent;
 	GameObjects _children;
+	GameObjectWeakPtr _parent;
 
 	GameComponents _components;
 };

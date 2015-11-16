@@ -66,21 +66,15 @@ public:
 	void setActive(bool active) except;
 	bool getActive() const noexcept;
 
+	std::uint32_t getInstanceID() const noexcept;
+
 	void setEnvironment(const Setting& setting) noexcept;
 	const Setting& getEnvironment() const noexcept;
 
-	void addGameObject(GameObjectPtr obj) noexcept;
-	void removeGameObject(GameObjectPtr obj) noexcept;
-
-	GameObjectPtr getGameObject(const std::string& name) noexcept;
 	GameObjectPtr getRootObject() noexcept;
-
-	GameScenePtr clone() const noexcept;
 
 	void setGameServer(GameServer* server) noexcept;
 	GameServer* getGameServer() noexcept;
-
-	void update() noexcept;
 
 	void load(iarchive& reader) except;
 
@@ -106,9 +100,13 @@ private:
 		GameScene* _scene;
 	};
 
+	std::uint32_t _instanceID;
+
 	Setting _setting;
 	GameObjectPtr  _root;
 	GameServer* _gameServer;
+
+	static std::uint32_t _instanceCount;
 };
 
 _NAME_END

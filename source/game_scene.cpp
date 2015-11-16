@@ -43,6 +43,8 @@ _NAME_BEGIN
 
 __ImplementSubClass(GameScene, GameListener, "GameScene")
 
+std::uint32_t GameScene::_instanceCount = 0;
+
 GameScene::Setting::Setting() noexcept
 	: gravity(0.0f, 9.81f, 0.0f)
 	, length(1.0f)
@@ -77,6 +79,7 @@ GameScene::RootObject::getGameScene() noexcept
 
 GameScene::GameScene() noexcept
 	: _gameServer(nullptr)
+	, _instanceID(++_instanceCount)
 {	
 }
 
@@ -108,6 +111,12 @@ GameScene::getActive() const noexcept
 	return false;
 }
 
+std::uint32_t 
+GameScene::getInstanceID() const noexcept
+{
+	return _instanceID;
+}
+
 void
 GameScene::setEnvironment(const Setting& setting) noexcept
 {
@@ -120,42 +129,10 @@ GameScene::getEnvironment() const noexcept
 	return _setting;
 }
 
-void
-GameScene::addGameObject(GameObjectPtr gameobj) noexcept
-{
-	assert(gameobj);
-	assert(!gameobj->getParent());
-
-	_root->addChild(gameobj);
-}
-
-void
-GameScene::removeGameObject(GameObjectPtr gameobj) noexcept
-{
-	if (gameobj)
-	{
-		gameobj->setActive(false);
-
-		_root->removeChild(gameobj->getInstanceID());
-	}
-}
-
-GameObjectPtr
-GameScene::getGameObject(const std::string& name) noexcept
-{
-	return _root->findChild(name);
-}
-
 GameObjectPtr
 GameScene::getRootObject() noexcept
 {
 	return _root;
-}
-
-GameScenePtr
-GameScene::clone() const noexcept
-{
-	return nullptr;
 }
 
 void
@@ -177,14 +154,6 @@ GameServer*
 GameScene::getGameServer() noexcept
 {
 	return _gameServer;
-}
-
-void 
-GameScene::update() noexcept
-{
-	_root->_onFrameBegin();
-	_root->_onFrame();
-	_root->_onFrameEnd();
 }
 
 void

@@ -67,7 +67,7 @@ public:
 	virtual bool create(TerrainChunk& chunk) noexcept = 0;
 	virtual bool createObject(TerrainChunk& chunk) noexcept = 0;
 
-	virtual bool active(ray::GameObjectPtr parent) noexcept = 0;
+	virtual bool setActive(bool active) noexcept = 0;
 
 	virtual bool update(TerrainChunk& chunk) noexcept = 0;
 

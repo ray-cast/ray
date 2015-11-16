@@ -48,7 +48,7 @@ public:
 	bool create(TerrainChunk& chunk) noexcept;
 	bool createObject(TerrainChunk& chunk) noexcept;
 
-	bool active(ray::GameObjectPtr parent) noexcept;
+	bool setActive(bool active) noexcept;
 
 	bool update(TerrainChunk& chunk) noexcept;
 
@@ -73,7 +73,7 @@ public:
 	bool create(TerrainChunk& chunk) noexcept;
 	bool createObject(TerrainChunk& chunk) noexcept;
 
-	bool active(ray::GameObjectPtr parent) noexcept;
+	bool setActive(bool active) noexcept;
 
 	bool update(TerrainChunk& chunk) noexcept;
 
@@ -101,7 +101,7 @@ public:
 	bool create(TerrainChunk& chunk) noexcept;
 	bool createObject(TerrainChunk& chunk) noexcept;
 
-	bool active(ray::GameObjectPtr parent) noexcept;
+	bool setActive(bool active) noexcept;
 
 	bool update(TerrainChunk& chunk) noexcept;
 
@@ -125,7 +125,7 @@ public:
 	bool create(TerrainChunk& chunk) noexcept;
 	bool createObject(TerrainChunk& chunk) noexcept;
 
-	bool active(ray::GameObjectPtr parent) noexcept;
+	bool setActive(bool active) noexcept;
 
 	bool update(TerrainChunk& chunk) noexcept;
 

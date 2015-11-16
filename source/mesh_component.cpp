@@ -44,12 +44,12 @@ __ImplementSubClass(MeshComponent, GameComponent, "Mesh")
 void 
 MeshListener::onMeshChangeAfter() except 
 {
-};
+}
 
 void 
 MeshListener::onMeshChangeBefore() except 
 {
-};
+}
 
 MeshComponent::MeshComponent() noexcept
 {

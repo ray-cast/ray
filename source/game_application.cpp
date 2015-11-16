@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/game_application.h>
 #include <ray/game_server.h>
+#include <ray/game_base_features.h>
 
 #include <ray/render_features.h>
 #include <ray/input_features.h>
@@ -106,17 +107,19 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) ex
 
 		if (_gameServer->open())
 		{
-			this->addFeatures(std::make_shared<ray::InputFeatures>());
-
-#if defined(_BUILD_PHYSIC)
-			this->addFeatures(std::make_shared<ray::PhysicFeatures>());
-#endif
+			this->addFeatures(std::make_shared<InputFeatures>());
 
 #if defined(_BUILD_SCRIPT)
-			this->addFeatures(std::make_shared<ray::ScriptFeatures>());
+			this->addFeatures(std::make_shared<ScriptFeatures>());
 #endif
 
-			this->addFeatures(std::make_shared<ray::RenderFeatures>(hwnd, width, height));
+			this->addFeatures(std::make_shared<GameBaseFeatures>());
+
+#if defined(_BUILD_PHYSIC)
+			this->addFeatures(std::make_shared<PhysicFeatures>());
+#endif
+
+			this->addFeatures(std::make_shared<RenderFeatures>(hwnd, width, height));
 
 			this->start();
 		}

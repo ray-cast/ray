@@ -498,6 +498,10 @@ SET(GAMEAPP_LIST
     ${HEADER_PATH}/game_application.h
     ${SOURCE_PATH}/game_object.cpp
     ${HEADER_PATH}/game_object.h
+    ${SOURCE_PATH}/game_base_features.cpp
+    ${HEADER_PATH}/game_base_features.h
+    ${SOURCE_PATH}/game_object_manager.cpp
+    ${HEADER_PATH}/game_object_manager.h
     ${SOURCE_PATH}/game_message.cpp
     ${HEADER_PATH}/game_message.h
     ${SOURCE_PATH}/game_component.cpp

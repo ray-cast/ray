@@ -312,9 +312,6 @@ GameServer::update() except
 		for (auto& it : _features)
 			it->onFrameBegin();
 
-		for (auto& scene : _scenes)
-			scene->update();
-
 		for (auto& it : _features)
 			it->onFrame();
 

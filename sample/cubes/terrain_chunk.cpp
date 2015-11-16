@@ -144,16 +144,15 @@ TerrainChunk::dirt() const noexcept
 }
 
 void
-TerrainChunk::setActive(ray::GameObjectPtr gameobj) noexcept
+TerrainChunk::setActive(bool active) noexcept
 {
-	auto active = gameobj ? true : false;
 	if (_active != active)
 	{
 		for (auto& it : _objects)
 		{
 			if (it)
 			{
-				it->active(gameobj);
+				it->setActive(active);
 			}
 		}
 

@@ -35,11 +35,12 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/game_object.h>
+#include <ray/game_object_manager.h>
 #include <ray/game_component.h>
 
 _NAME_BEGIN
 
-__ImplementSubClass(GameObject, GameListener, "Object")
+__ImplementClass(GameObject, "Object")
 
 GameObject::GameObject() noexcept
 	: _active(false)
@@ -50,18 +51,32 @@ GameObject::GameObject() noexcept
 	, _translate(0, 0, 0)
 	, _lookAt(0, 0, 0)
 	, _upVector(0, 1, 0)
-	, _parent(nullptr)
 {
 	_worldTransform.loadIdentity();
 	_transform.loadIdentity();
 	_transformInverse.loadIdentity();
 	_transformInverseTranspose.loadIdentity();
+	GameObjectManager::instance()->_instanceObject(this, _instanceID);
 }
 
 GameObject::~GameObject() noexcept
 {
 	this->cleanupChildren();
 	this->cleanupComponents();
+
+	GameObjectManager::instance()->_unsetObject(this);
+}
+
+void
+GameObject::setName(const std::string& name) noexcept
+{
+	_name = name;
+}
+
+const std::string&
+GameObject::getName() const noexcept
+{
+	return _name;
 }
 
 void
@@ -69,6 +84,8 @@ GameObject::setActive(bool active) except
 {
 	if (_active != active)
 	{
+		GameObjectManager::instance()->_activeObject(this, active);
+
 		for (auto& it : _components)
 			it->setActive(active);
 
@@ -114,7 +131,7 @@ GameObject::getActive() const noexcept
 }
 
 void
-GameObject::setLayer(int layer) noexcept
+GameObject::setLayer(std::uint8_t layer) noexcept
 {
 	if (_layer != layer)
 	{
@@ -128,10 +145,16 @@ GameObject::setLayer(int layer) noexcept
 	}
 }
 
-int
+std::uint8_t
 GameObject::getLayer() const noexcept
 {
 	return _layer;
+}
+
+std::uint32_t 
+GameObject::getInstanceID() const noexcept
+{
+	return _instanceID;
 }
 
 void
@@ -139,35 +162,34 @@ GameObject::setParent(GameObjectPtr parent) noexcept
 {
 	assert(this != parent.get());
 
-	if (_parent != parent.get())
+	auto _weak = _parent.lock();
+	if (_weak != parent)
 	{
-		if (_parent)
+		if (_weak)
 		{
-			auto it = _parent->_children.begin();
-			auto end = _parent->_children.end();
+			auto it = _weak->_children.begin();
+			auto end = _weak->_children.end();
 
 			for (; it != end; ++it)
 			{
 				if ((*it).get() == this)
 				{
-					_parent->_children.erase(it);
+					_weak->_children.erase(it);
 					break;
 				}
 			}
 		}
 
-		_parent = parent.get();
-		if (_parent)
-			_parent->_children.push_back(std::dynamic_pointer_cast<GameObject>(this->shared_from_this()));
+		_parent = parent;
+		if (parent)
+			parent->_children.push_back(std::dynamic_pointer_cast<GameObject>(this->shared_from_this()));
 	}
 }
 
 GameObjectPtr
 GameObject::getParent() const noexcept
 {
-	if (_parent)
-		return std::dynamic_pointer_cast<GameObject>(_parent->shared_from_this());
-	return nullptr;
+	return _parent.lock();
 }
 
 void
@@ -181,17 +203,12 @@ void
 GameObject::removeChild(GameObjectPtr entity) noexcept
 {
 	assert(entity);
-	this->removeChild(entity->getInstanceID());
-}
 
-void
-GameObject::removeChild(InstanceID instance) noexcept
-{
 	auto it = _children.begin();
 	auto end = _children.end();
 	for (; it != end; ++it)
 	{
-		if ((*it)->getInstanceID() == instance)
+		if ((*it) == entity)
 		{
 			(*it)->setParent(nullptr);
 			break;
@@ -211,32 +228,6 @@ GameObject::cleanupChildren() noexcept
 		it.reset();
 
 	_children.clear();
-}
-
-GameObjectPtr
-GameObject::findChild(InstanceID instance, bool recuse) noexcept
-{
-	for (auto& it : _children)
-	{
-		if (it->getInstanceID() == instance)
-		{
-			return it;
-		}
-	}
-
-	if (recuse)
-	{
-		for (auto& it : _children)
-		{
-			auto result = it->findChild(instance, recuse);
-			if (result)
-			{
-				return result;
-			}
-		}
-	}
-
-	return nullptr;
 }
 
 GameObjectPtr
@@ -957,13 +948,10 @@ GameObject::cleanupComponents() noexcept
 {
 	if (this->getActive())
 	{
-		for (auto& it : _components)
-		{
-			it->setActive(false);
+		this->setActive(false);
 
-			for (auto& it : _components)
-				it->onDetachComponent();
-		}
+		for (auto& it : _components)
+			it->onDetachComponent();
 	}
 
 	_components.clear();
@@ -1016,10 +1004,9 @@ GameObject::sendMessageUpwards(const GameMessage& message) noexcept
 		it->onMessage(message);
 	}
 
-	if (_parent)
-	{
-		_parent->sendMessageDownwards(message);
-	}
+	auto parent = _parent.lock();
+	if (parent)
+		parent->sendMessageDownwards(message);
 }
 
 void
@@ -1043,7 +1030,7 @@ GameObjectPtr
 GameObject::clone() const except
 {
 	auto instance = std::make_shared<GameObject>();
-	//instance->setParent(this->getParent());
+	instance->setParent(this->getParent());
 	instance->setName(this->getName());
 	instance->setLayer(this->getLayer());
 	instance->setLookAt(this->getLookAt());
@@ -1063,97 +1050,65 @@ GameObject::clone() const except
 void
 GameObject::_onFrameBegin() except
 {
-	if (!this->getActive())
-		return;
+	assert(this->getActive());
 
 	for (auto& it : _components)
-	{
 		it->onFrameBegin();
-	}
-
-	for (auto& it : _children)
-	{
-		it->_onFrameBegin();
-	}
 }
 
 void
 GameObject::_onFrame() except
 {
-	if (!this->getActive())
-		return;
+	assert(this->getActive());
 
 	for (auto& it : _components)
-	{
 		it->onFrame();
-	}
-
-	for (auto& it : _children)
-	{
-		it->_onFrame();
-	}
 }
 
 void
 GameObject::_onFrameEnd() except
 {
-	if (!this->getActive())
-		return;
+	assert(this->getActive());
 
 	for (auto& it : _components)
-	{
 		it->onFrameEnd();
-	}
-
-	for (auto& it : _children)
-	{
-		it->_onFrameEnd();
-	}
 }
 
 void
 GameObject::_onMoveBefore() except
 {
 	for (auto& it : _components)
-	{
 		it->onMoveBefore();
-	}
 
 	for (auto& it : _children)
-	{
 		it->_onMoveBefore();
-	}
 }
 
 void
 GameObject::_onMoveAfter() except
 {
 	for (auto& it : _components)
-	{
 		it->onMoveAfter();
-	}
 
 	for (auto& it : _children)
-	{
 		it->_onMoveAfter();
-	}
 }
 
 GameServer*
 GameObject::getGameServer() noexcept
 {
-	if (_parent)
-		return _parent->getGameServer();
-
+	auto parent = _parent.lock();
+	if (parent)
+		return parent->getGameServer();
 	return nullptr;
 }
 
 GameScene*
 GameObject::getGameScene() noexcept
 {
-	if (_parent)
-		return _parent->getGameScene();
-
+	auto parent = _parent.lock();
+	if (parent)
+		return parent->getGameScene();
 	return nullptr;
 }
 

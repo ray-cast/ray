@@ -76,7 +76,7 @@ FirstPersonCameraComponent::onDectivate() noexcept
 }
 
 void
-FirstPersonCameraComponent::onFrameEnd() noexcept
+FirstPersonCameraComponent::onFrame() noexcept
 {
 	float delta = this->getGameServer()->getTimer()->delta();
 	float step = _speed * delta;

@@ -35,12 +35,12 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "terrain_items.h"
-#include <ray/physics_box_component.h>
+#include <ray/game_object_manager.h>
 
 TerrainGrass::TerrainGrass() noexcept
 {
 	_grass = std::make_shared<Grass>();
-	_grassObject = ray::GameObject::find<ray::GameObject>("grass");
+	_grassObject = ray::GameObjectManager::instance()->findObject("grass");
 
 	this->addItem(_grass);
 }
@@ -143,13 +143,12 @@ TerrainGrass::createObject(TerrainChunk& chunk) noexcept
 }
 
 bool
-TerrainGrass::active(ray::GameObjectPtr parent) noexcept
+TerrainGrass::setActive(bool active) noexcept
 {
 	if (_object)
 	{
-		if (parent)
+		if (active)
 		{
-			_object->setParent(parent);
 			_object->setActive(true);
 			_object->getComponent<ray::MeshComponent>()->clear();
 		}
@@ -170,13 +169,11 @@ TerrainGrass::active(ray::GameObjectPtr parent) noexcept
 bool
 TerrainGrass::update(TerrainChunk& chunk) noexcept
 {
-	auto parent = _object->getParent();
-
 	_object->destroy();
 	_object = nullptr;
 
 	this->createObject(chunk);
-	this->active(parent);
+	this->setActive(true);
 
 	return true;
 }
@@ -194,8 +191,8 @@ TerrainTree::TerrainTree() noexcept
 	_wood = std::make_shared<Wood>();
 	_leaf = std::make_shared<Leaf>();
 
-	_woodObject = ray::GameObject::find<ray::GameObject>("wood");
-	_leafObject = ray::GameObject::find<ray::GameObject>("leaf");
+	_woodObject = ray::GameObjectManager::instance()->findObject("wood");
+	_leafObject = ray::GameObjectManager::instance()->findObject("leaf");
 
 	this->addItem(_wood);
 	this->addItem(_leaf);
@@ -342,13 +339,12 @@ TerrainTree::createObject(TerrainChunk& chunk) noexcept
 }
 
 bool
-TerrainTree::active(ray::GameObjectPtr parent) noexcept
+TerrainTree::setActive(bool active) noexcept
 {
 	for (auto& it : _objects)
 	{
-		if (parent)
+		if (active)
 		{
-			it->setParent(parent);
 			it->setActive(true);
 			it->getComponent<ray::MeshComponent>()->clear();
 		}
@@ -380,7 +376,7 @@ TerrainTree::clone() noexcept
 TerrainClound::TerrainClound() noexcept
 {
 	_clound = std::make_shared<Clound>();
-	_cloundObject = ray::GameObject::find<ray::GameObject>("clound");
+	_cloundObject = ray::GameObjectManager::instance()->findObject("clound");
 	this->addItem(_clound);
 }
 
@@ -479,13 +475,12 @@ TerrainClound::createObject(TerrainChunk& chunk) noexcept
 }
 
 bool
-TerrainClound::active(ray::GameObjectPtr parent) noexcept
+TerrainClound::setActive(bool active) noexcept
 {
 	if (_object)
 	{
-		if (parent)
+		if (active)
 		{
-			_object->setParent(parent);
 			_object->setActive(true);
 			_object->getComponent<ray::MeshComponent>()->clear();
 		}
@@ -516,7 +511,7 @@ TerrainClound::clone() noexcept
 TerrainWater::TerrainWater() noexcept
 {
 	_water = std::make_shared<Water>();
-	_waterObject = ray::GameObject::find<ray::GameObject>("water");
+	_waterObject = ray::GameObjectManager::instance()->findObject("water");
 	this->addItem(_water);
 }
 
@@ -621,13 +616,12 @@ TerrainWater::createObject(TerrainChunk& chunk) noexcept
 }
 
 bool
-TerrainWater::active(ray::GameObjectPtr parent) noexcept
+TerrainWater::setActive(bool active) noexcept
 {
 	if (_object)
 	{
-		if (parent)
+		if (active)
 		{
-			_object->setParent(parent);
 			_object->setActive(true);
 			_object->getComponent<ray::MeshComponent>()->clear();
 		}

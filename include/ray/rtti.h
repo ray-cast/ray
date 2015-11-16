@@ -71,7 +71,7 @@ namespace rtti
 		RttiConstruct _construct;
 	};
 
-	class EXPORT Interface
+	class EXPORT Interface : public std::enable_shared_from_this<Interface>
 	{
 		__DeclareClass(Interface)
 	public:

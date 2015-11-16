@@ -38,7 +38,6 @@
 #define _H_REFERENCE_H_
 
 #include <ray/rtti.h>
-#include <atomic>
 
 _NAME_BEGIN
 
@@ -54,8 +53,8 @@ public:
 
 	int refCount() const noexcept;
 	
-	void setGC() noexcept;
-	bool getGC() const noexcept;
+	void destroy() noexcept;
+	bool isDestroy() const noexcept;
 
 	void setUserPointer(std::intptr_t* pointer) noexcept;
 	std::intptr_t* getUserPointer() const noexcept;

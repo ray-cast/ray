@@ -38,6 +38,7 @@
 #define _H_MEMORY_H_
 
 #include <ray/scope_ptr.h>
+#include <ray/shared_ptr.h>
 
 namespace std
 {

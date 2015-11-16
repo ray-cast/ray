@@ -68,6 +68,7 @@ Reference::addRef() noexcept
 void 
 Reference::release() noexcept
 {
+	assert(_count > 0);
 	_gc = false;
 	_count.fetch_sub(1);
 	if (_count == 0)
@@ -81,13 +82,13 @@ Reference::refCount() const noexcept
 }
 
 void
-Reference::setGC() noexcept
+Reference::destroy() noexcept
 {
 	_gc = true;
 }
 
 bool
-Reference::getGC() const noexcept
+Reference::isDestroy() const noexcept
 {
 	return _gc;
 }

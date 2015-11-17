@@ -215,9 +215,16 @@ MSWInputDevice::MSWInputDevice() noexcept
 }
 
 void
-MSWInputDevice::capture(CaptureObject window) noexcept
+MSWInputDevice::setCaptureObject(CaptureObject window) noexcept
 {
+	assert(::IsWindow(window));
 	_window = (HWND)window;
+}
+
+CaptureObject
+MSWInputDevice::getCaptureObject() const noexcept
+{
+	return _window;
 }
 
 void

@@ -121,6 +121,13 @@ public:
         TouchMotionDown,
         TouchMotionUp,
         TouchMotionCancel,
+
+		GetFocus,
+		LostFocus,
+
+		Reset,
+
+		AppQuit
     };
 
     Type event;

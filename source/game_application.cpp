@@ -38,28 +38,6 @@
 #include <ray/game_server.h>
 #include <ray/rtti_factory.h>
 
-#if defined(_BUILD_INPUT)
-#	include <ray/input_features.h>
-#endif
-
-#if defined(_BUILD_SCRIPT)
-#	include <ray/script_features.h>
-#endif
-
-#if defined(_BUILD_BASEGAME)
-#	include <ray/game_base_features.h>
-#endif
-
-#if defined(_BUILD_PHYSIC)
-#	include <ray/physics_features.h>
-#endif
-
-#if defined(_BUILD_RENDERER)
-#	include <ray/render_features.h>
-#endif
-
-#include <ray/gui_input_listener.h>
-
 _NAME_BEGIN
 
 GameApplication::GameApplication() noexcept
@@ -109,37 +87,53 @@ GameApplication::initialize(int argc, char *argv[]) except
 bool
 GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) except
 {
-	if (_isInitialize)
-	{
-		_gameServer = std::make_shared<GameServer>();
-		_gameServer->_setGameApp(this);
+	if (!_isInitialize)
+		return false;
 
-		if (_gameServer->open())
-		{
+	_gameServer = std::make_shared<GameServer>();
+	_gameServer->_setGameApp(this);
+
+	if (!_gameServer->open())
+		return false;
+
 #if defined(_BUILD_INPUT)
-			auto inputFeature = std::make_shared<InputFeatures>();
-			this->addFeatures(inputFeature);
+	_inputFeature = std::make_shared<InputFeatures>();
+	_inputFeature->getInput()->setCaptureObject((CaptureObject)hwnd);
 #endif
 
 #if defined(_BUILD_SCRIPT)
-			this->addFeatures(std::make_shared<ScriptFeatures>());
+	_scriptFeature = std::make_shared<ScriptFeatures>();
 #endif
 
 #if defined(_BUILD_BASEGAME)
-			this->addFeatures(std::make_shared<GameBaseFeatures>());
+	_gameBaseFeature = std::make_shared<GameBaseFeatures>();
 #endif
 
 #if defined(_BUILD_PHYSIC)
-			this->addFeatures(std::make_shared<PhysicFeatures>());
+	_physicFeature = std::make_shared<PhysicFeatures>();
 #endif
 
 #if defined(_BUILD_RENDERER)
-			this->addFeatures(std::make_shared<RenderFeatures>(hwnd, width, height));
+	_renderFeature = std::make_shared<RenderFeatures>(hwnd, width, height);
 #endif
 
-			this->start();
-		}
-	}
+#if defined(_BUILD_INPUT)
+	this->addFeatures(_inputFeature);
+#endif
+#if defined(_BUILD_SCRIPT)
+	this->addFeatures(_scriptFeature);
+#endif
+#if defined(_BUILD_BASEGAME)
+	this->addFeatures(_gameBaseFeature);
+#endif
+#if defined(_BUILD_PHYSIC)
+	this->addFeatures(_physicFeature);
+#endif
+#if defined(_BUILD_RENDERER)
+	this->addFeatures(_renderFeature);
+#endif
+
+	this->start();
 
 	return _isInitialize;
 }
@@ -272,6 +266,14 @@ GameApplication::setResDownloadURL(const std::string& path) noexcept
 		_downloadURL = path;
 	}
 }
+
+#if defined(_BUILD_INPUT)
+void
+GameApplication::sendInputEvent(const InputEvent& event) noexcept
+{
+	_inputFeature->getInput()->sendInputEvent(event);
+}
+#endif
 
 void
 GameApplication::sendMessage(const MessagePtr& message) noexcept

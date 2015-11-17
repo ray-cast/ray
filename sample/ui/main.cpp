@@ -59,8 +59,8 @@ public:
 		if (_window)
 		{
 			glfwSetWindowUserPointer(_window, this);
-			glfwSetWindowFocusCallback(_window, &setWindowFocusCallback);
-			glfwSetWindowCloseCallback(_window, &setWindowCloseCallback);
+			glfwSetWindowFocusCallback(_window, &onWindowFocus);
+			glfwSetWindowCloseCallback(_window, &onWindowClose);
 
 			HWND hwnd = glfwGetWin32Window(_window);
 
@@ -82,31 +82,33 @@ public:
 		}
 	}
 
-	static void setWindowCloseCallback(GLFWwindow* window)
+	static void onWindowClose(GLFWwindow* window)
 	{
 		GameEngine* engine = (GameEngine*)glfwGetWindowUserPointer(window);
 		if (engine)
 		{
-			ray::AppQuitEvent quit;
-			engine->sendMessage(&quit);
-			glfwSetWindowUserPointer(window, nullptr);
+			ray::InputEvent event;
+			event.event = ray::InputEvent::AppQuit;
+			engine->sendInputEvent(event);
 		}
 	}
 
-	static void setWindowFocusCallback(GLFWwindow* window, int focus)
+	static void onWindowFocus(GLFWwindow* window, int focus)
 	{
 		GameEngine* engine = (GameEngine*)glfwGetWindowUserPointer(window);
 		if (engine)
 		{
 			if (focus)
 			{
-				ray::GetFocusEvent focus;
-				engine->sendMessage(&focus);
+				ray::InputEvent event;
+				event.event = ray::InputEvent::GetFocus;
+				engine->sendInputEvent(event);
 			}
 			else
 			{
-				ray::LostFocusEvent focus;
-				engine->sendMessage(&focus);
+				ray::InputEvent event;
+				event.event = ray::InputEvent::LostFocus;
+				engine->sendInputEvent(event);
 			}
 		}
 	}

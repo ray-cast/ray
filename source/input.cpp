@@ -78,6 +78,21 @@ DefaultInput::close() noexcept
 	}
 }
 
+void 
+DefaultInput::setCaptureObject(CaptureObject window) noexcept
+{
+	if (_inputDevice)
+		_inputDevice->setCaptureObject(window);
+}
+
+CaptureObject
+DefaultInput::getCaptureObject() const noexcept
+{
+	if (_inputDevice)
+		return _inputDevice->getCaptureObject();
+	return nullptr;
+}
+
 void
 DefaultInput::setMousePosX(int x) noexcept
 {
@@ -321,6 +336,46 @@ DefaultInput::clearInputListener() noexcept
 	_inputListeners.clear();
 }
 
+void 
+DefaultInput::sendInputEvent(const InputEvent& event) noexcept
+{
+	switch (event.event)
+	{
+	case InputEvent::KeyDown:
+	case InputEvent::KeyUp:
+	{
+		if (_keyboardCaptureDevice && _keyboardCaptureDevice->capture())
+			_keyboardCaptureDevice->onEvent(event);
+		break;
+	}
+	case InputEvent::MouseMotion:
+	case InputEvent::MouseWheelUp:
+	case InputEvent::MouseWheelDown:
+	case InputEvent::MouseButtonUp:
+	case InputEvent::MouseButtonDown:
+	case InputEvent::MouseButtonDoubleClick:
+	{
+		if (_mouseCaptureDevice && _mouseCaptureDevice->capture())
+			_mouseCaptureDevice->onEvent(event);
+	}
+	case InputEvent::GetFocus:
+		this->obtainCapture();
+		break;
+	case InputEvent::LostFocus:
+		this->releaseCapture();
+		break;
+	case InputEvent::Reset:
+		this->reset();
+		break;
+	break;
+	default:
+		break;
+	}
+
+	for (auto& it : _inputListeners)
+		it->onInputEvent(event);
+}
+
 void
 DefaultInput::updateBegin() noexcept
 {
@@ -340,32 +395,7 @@ DefaultInput::update() noexcept
 	InputEvent event;
 	while (_inputDevice->pollEvents(event))
 	{
-		switch (event.event)
-		{
-		case InputEvent::KeyDown:
-		case InputEvent::KeyUp:
-		{
-			if (_keyboardCaptureDevice && _keyboardCaptureDevice->capture())
-				_keyboardCaptureDevice->onEvent(event);
-			break;
-		}
-		case InputEvent::MouseMotion:
-		case InputEvent::MouseWheelUp:
-		case InputEvent::MouseWheelDown:
-		case InputEvent::MouseButtonUp:
-		case InputEvent::MouseButtonDown:
-		case InputEvent::MouseButtonDoubleClick:
-		{
-			if (_mouseCaptureDevice && _mouseCaptureDevice->capture())
-				_mouseCaptureDevice->onEvent(event);
-		}
-		break;
-		default:
-			break;
-		}
-
-		for (auto& it : _inputListeners)
-			it->onInputEvent(event);
+		this->sendInputEvent(event);
 	}
 }
 

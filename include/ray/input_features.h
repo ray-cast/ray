@@ -64,8 +64,6 @@ private:
 	virtual void onFrameBegin() noexcept;
 	virtual void onFrameEnd() noexcept;
 
-	virtual void onMessage(const MessagePtr& event) noexcept;
-
 private:
 	InputFeatures(const InputFeatures&) = delete;
 	InputFeatures& operator=(const InputFeatures&) = delete;

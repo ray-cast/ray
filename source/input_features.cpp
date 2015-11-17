@@ -113,25 +113,6 @@ InputFeatures::onReset() noexcept
 	_input->reset();
 }
 
-void
-InputFeatures::onMessage(const MessagePtr& event) noexcept
-{
-	/*if (event->isInstanceOf<LostFocusEvent>())
-	{
-		if (_input)
-		{
-			_input->releaseCapture();
-		}
-	}
-	else if (event->isInstanceOf<GetFocusEvent>())
-	{
-		if (_input)
-		{
-			_input->obtainCapture();
-		}
-	}*/
-}
-
 _NAME_END
 
 #endif

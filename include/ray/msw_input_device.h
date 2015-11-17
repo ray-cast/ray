@@ -47,7 +47,8 @@ class EXPORT MSWInputDevice : public InputDevice
 public:
 	MSWInputDevice() noexcept;
 
-	virtual void capture(CaptureObject window) noexcept;
+	virtual void setCaptureObject(CaptureObject window) noexcept;
+	virtual CaptureObject getCaptureObject() const noexcept;
 
 	virtual void peekEvents(InputEvent& event) noexcept;
 	virtual bool pollEvents(InputEvent& event) noexcept;

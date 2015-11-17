@@ -67,6 +67,9 @@ public:
 	virtual void open(InputDevicePtr device) noexcept = 0;
 	virtual void close() noexcept = 0;
 
+	virtual void setCaptureObject(CaptureObject window) noexcept = 0;
+	virtual CaptureObject getCaptureObject() const noexcept = 0;
+
 	virtual void setMousePosX(int x) noexcept = 0;
 	virtual void setMousePosY(int y) noexcept = 0;
 	virtual void setMousePos(int x, int y) noexcept = 0;
@@ -104,6 +107,8 @@ public:
 	virtual void addInputListener(InputListenerPtr listener) noexcept = 0;
 	virtual void removeInputListener(InputListenerPtr listener) noexcept = 0;
 	virtual void clearInputListener() noexcept = 0;
+
+	virtual void sendInputEvent(const InputEvent& event) noexcept = 0;
 
 	virtual void updateBegin() noexcept = 0;
 	virtual void update() noexcept = 0;

@@ -45,13 +45,11 @@ class EXPORT InputDevice : public rtti::Interface
 {
 	__DeclareSubInterface(DefaultInputDevice, rtti::Interface)
 public:
-	typedef void* CaptureObject;
-
-public:
 	InputDevice() noexcept;
 	virtual ~InputDevice() noexcept;
 
-	virtual void capture(CaptureObject WinHandle) noexcept = 0;
+	virtual void setCaptureObject(CaptureObject window) noexcept = 0;
+	virtual CaptureObject getCaptureObject() const noexcept = 0;
 
 	virtual void enableEventPosting(bool enable) noexcept = 0;
 	virtual bool enableEventPosting() const noexcept = 0;

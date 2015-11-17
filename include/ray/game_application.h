@@ -39,6 +39,26 @@
 
 #include <ray/game_types.h>
 
+#if defined(_BUILD_INPUT)
+#	include <ray/input_features.h>
+#endif
+
+#if defined(_BUILD_SCRIPT)
+#	include <ray/script_features.h>
+#endif
+
+#if defined(_BUILD_BASEGAME)
+#	include <ray/game_base_features.h>
+#endif
+
+#if defined(_BUILD_PHYSIC)
+#	include <ray/physics_features.h>
+#endif
+
+#if defined(_BUILD_RENDERER)
+#	include <ray/render_features.h>
+#endif
+
 _NAME_BEGIN
 
 class EXPORT GameApplication
@@ -70,6 +90,10 @@ public:
 	void setFileServicePath(const std::string& path) noexcept;
 	void setResDownloadURL(const std::string& path) noexcept;
 
+#if defined(_BUILD_INPUT)
+	void sendInputEvent(const InputEvent& event) noexcept;
+#endif
+
 	void sendMessage(const MessagePtr& message) noexcept;
 	void postMessage(const MessagePtr& message) noexcept;
 
@@ -93,6 +117,22 @@ private:
 
 	IoServer* _ioServer;
 	IoInterface* _ioInterface;
+
+#if defined(_BUILD_INPUT)
+	std::shared_ptr<InputFeatures> _inputFeature;
+#endif
+#if defined(_BUILD_BASEGAME)
+	std::shared_ptr<GameBaseFeatures> _gameBaseFeature;
+#endif
+#if defined(_BUILD_SCRIPT)
+	std::shared_ptr<ScriptFeatures> _scriptFeature;
+#endif
+#if defined(_BUILD_PHYSIC)
+	std::shared_ptr<PhysicFeatures> _physicFeature;
+#endif
+#if defined(_BUILD_RENDERER)
+	std::shared_ptr<RenderFeatures> _renderFeature;
+#endif
 };
 
 _NAME_END

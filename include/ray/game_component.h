@@ -41,20 +41,18 @@
 
 _NAME_BEGIN
 
-class EXPORT GameComponent : public GameListener
+class EXPORT GameComponent : public MessageListener
 {
-	__DeclareSubInterface(GameComponent, GameListener)
+	__DeclareSubInterface(GameComponent, MessageListener)
 public:
 	GameComponent() noexcept;
 	virtual ~GameComponent() noexcept;
 
-	virtual void setActive(bool active) except;
-	virtual bool getActive() const noexcept;
+	void setActive(bool active) except;
+	bool getActive() const noexcept;
 
-	virtual void load(iarchive& reader) noexcept;
-	virtual void save(oarchive& write) noexcept;
-
-	virtual GameComponentPtr clone() const except = 0;
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
 
 	GameObjectPtr getGameObject() noexcept;
 	const GameObjectPtr getGameObject() const noexcept;
@@ -66,14 +64,20 @@ public:
 	std::shared_ptr<T> getComponent() const noexcept 
 		{ return std::dynamic_pointer_cast<T>(this->getComponent(T::RTTI)); }
 
+	GameComponentPtr getComponent(const rtti::Rtti* type) const noexcept;
 	GameComponentPtr getComponent(const rtti::Rtti& type) const noexcept;
 	const GameComponents& getComponents() const noexcept;
 
+	virtual void load(iarchive& reader) noexcept;
+	virtual void save(oarchive& write) noexcept;
+
+	virtual GameComponentPtr clone() const except = 0;
+
 protected:
 
-	virtual void sendMessage(const GameMessage& message) except;
-	virtual void sendMessageUpwards(const GameMessage& message) except;
-	virtual void sendMessageDownwards(const GameMessage& message) except;
+	virtual void sendMessage(const MessagePtr& message) except;
+	virtual void sendMessageUpwards(const MessagePtr& message) except;
+	virtual void sendMessageDownwards(const MessagePtr& message) except;
 
 	virtual void onAttachComponent() except;
 	virtual void onDetachComponent() except;
@@ -98,6 +102,8 @@ private:
 private:
 
 	bool _active;
+
+	std::string _name;
 
 	GameObject* _gameObject;
 

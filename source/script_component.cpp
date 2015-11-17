@@ -177,7 +177,7 @@ ScriptComponent::onMoveAfter()
 }
 
 void
-ScriptComponent::onMessage(const GameMessage& message)
+ScriptComponent::onMessage(const MessagePtr& message)
 {
 	/*static asIScriptFunction* myNull = (asIScriptFunction*)-1;
 

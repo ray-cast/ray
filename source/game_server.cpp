@@ -274,11 +274,11 @@ GameServer::getGameApp() noexcept
 }
 
 void
-GameServer::sendMessage(const GameMessage& message) except
+GameServer::sendMessage(const MessagePtr& message) except
 {
 	if (!_isQuitRequest)
 	{
-		if (message.event()->code() == typeid(AppQuitEvent).hash_code())
+		if (message->getInstanceID() == typeid(AppQuitEvent).hash_code())
 			_isQuitRequest = true;
 
 		for (auto& it : _features)
@@ -290,9 +290,9 @@ GameServer::sendMessage(const GameMessage& message) except
 }
 
 void
-GameServer::postMessage(const GameMessage& event) except
+GameServer::postMessage(const MessagePtr& event) except
 {
-	GameDispatcher::postMessage(event);
+	MessageDispatcher::postMessage(event);
 }
 
 void
@@ -300,7 +300,7 @@ GameServer::update() except
 {
 	if (!_isQuitRequest)
 	{
-		GameMessage event;
+		MessagePtr event;
 
 		while (this->pollMessages(event))
 		{

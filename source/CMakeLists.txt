@@ -15,6 +15,8 @@ INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/libiconv/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/asJIT)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/mojoshader)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/gles/include)
+INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/libogg)
+INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/libvorbis)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
 SET(HEADER_PATH ${PROJECT_SOURCE_DIR}/include/ray)
@@ -38,12 +40,15 @@ SET(PLATFORM_CORE_LIST
     ${HEADER_PATH}/platform.h
     ${HEADER_PATH}/queue.h
     ${HEADER_PATH}/scope_ptr.h
+    ${HEADER_PATH}/shared_ptr.h
     ${HEADER_PATH}/singleton.h
     ${HEADER_PATH}/thread.h
     ${SOURCE_PATH}/thread.cpp
     ${HEADER_PATH}/thread_local.h
     ${HEADER_PATH}/trait.h
     ${HEADER_PATH}/interval.hpp
+    ${SOURCE_PATH}/message.cpp
+    ${HEADER_PATH}/message.h
     ${SOURCE_PATH}/string.cpp
     ${HEADER_PATH}/string.h
     ${SOURCE_PATH}/utf8.cpp
@@ -502,8 +507,6 @@ SET(GAMEAPP_LIST
     ${HEADER_PATH}/game_base_features.h
     ${SOURCE_PATH}/game_object_manager.cpp
     ${HEADER_PATH}/game_object_manager.h
-    ${SOURCE_PATH}/game_message.cpp
-    ${HEADER_PATH}/game_message.h
     ${SOURCE_PATH}/game_component.cpp
     ${HEADER_PATH}/game_component.h
     ${SOURCE_PATH}/game_features.cpp
@@ -532,10 +535,12 @@ SET(GUI_LIST
     ${SOURCE_PATH}/gui_plane_component.cpp
     ${HEADER_PATH}/gui_layout_component.h
     ${SOURCE_PATH}/gui_layout_component.cpp
-    ${HEADER_PATH}/gui_text_component.h
-    ${SOURCE_PATH}/gui_text_component.cpp
     ${HEADER_PATH}/gui_label_component.h
     ${SOURCE_PATH}/gui_label_component.cpp
+    ${HEADER_PATH}/gui_input_listener.h
+    ${SOURCE_PATH}/gui_input_listener.cpp
+    ${HEADER_PATH}/gui_input_manager.h
+    ${SOURCE_PATH}/gui_input_manager.cpp
 )
 SOURCE_GROUP("system\\gui" FILES ${GUI_LIST})
 
@@ -671,6 +676,7 @@ ADD_LIBRARY(ray SHARED
 )
 
 TARGET_LINK_LIBRARIES(libplatform libiconv tinyxml)
+TARGET_LINK_LIBRARIES(libinput libplatform)
 TARGET_LINK_LIBRARIES(libimage libplatform libpng libjpeg zlib unzip)
 TARGET_LINK_LIBRARIES(libmodel libplatform libiconv)
 TARGET_LINK_LIBRARIES(libphysic libplatform BulletDynamics BulletCollision BulletSoftBody LinearMath)
@@ -726,7 +732,7 @@ SET_TARGET_ATTRIBUTE(libsound "core")
 SET_TARGET_ATTRIBUTE(libphysic "core")
 SET_TARGET_ATTRIBUTE(ray "engine")
 
-IF(UNIX)
+IF(MINGW OR UNIX)
     SET_TARGET_PROPERTIES(libplatform PROPERTIES OUTPUT_NAME platform)
     SET_TARGET_PROPERTIES(libinput PROPERTIES OUTPUT_NAME input)
     SET_TARGET_PROPERTIES(libimage PROPERTIES OUTPUT_NAME image)

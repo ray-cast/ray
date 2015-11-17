@@ -37,7 +37,7 @@
 #ifndef _H_GAME_APPLICATION_H_
 #define _H_GAME_APPLICATION_H_
 
-#include <ray/game_message.h>
+#include <ray/game_types.h>
 
 _NAME_BEGIN
 
@@ -70,8 +70,8 @@ public:
 	void setFileServicePath(const std::string& path) noexcept;
 	void setResDownloadURL(const std::string& path) noexcept;
 
-	void sendMessage(const GameMessage& message) noexcept;
-	void postMessage(const GameMessage& message) noexcept;
+	void sendMessage(const MessagePtr& message) noexcept;
+	void postMessage(const MessagePtr& message) noexcept;
 
 	void update() except;
 

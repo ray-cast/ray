@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GameComponent, GameListener, "Component")
+__ImplementSubInterface(GameComponent, MessageListener, "Component")
 
 GameComponent::GameComponent() noexcept
 	: _active(false)
@@ -47,6 +47,13 @@ GameComponent::GameComponent() noexcept
 
 GameComponent::~GameComponent() noexcept
 {
+}
+
+GameComponentPtr 
+GameComponent::getComponent(const rtti::Rtti* type) const noexcept
+{
+	assert(this->rtti() != type);
+	return this->getGameObject()->getComponent(type);
 }
 
 GameComponentPtr
@@ -113,18 +120,34 @@ GameComponent::getActive() const noexcept
 }
 
 void
+GameComponent::setName(const std::string& name) noexcept
+{
+	_name = name;
+}
+
+const std::string&
+GameComponent::getName() const noexcept
+{
+	return _name;
+}
+
+void
 GameComponent::load(iarchive& reader) noexcept
 {
-	GameListener::load(reader);
+	std::string name;
+	reader >> make_alias(name, "name");
+	this->setName(name);
 }
 
 void
 GameComponent::save(oarchive& write) noexcept
 {
+	auto& name = this->getName();
+	write << make_alias(name, "name");
 }
 
 void
-GameComponent::sendMessage(const GameMessage& message) except
+GameComponent::sendMessage(const MessagePtr& message) except
 {
 	auto& components = this->getGameObject()->getComponents();
 	for (auto& it : components)
@@ -135,7 +158,7 @@ GameComponent::sendMessage(const GameMessage& message) except
 }
 
 void
-GameComponent::sendMessageUpwards(const GameMessage& message) except
+GameComponent::sendMessageUpwards(const MessagePtr& message) except
 {
 	auto& components = this->getGameObject()->getComponents();
 	for (auto& it : components)
@@ -152,7 +175,7 @@ GameComponent::sendMessageUpwards(const GameMessage& message) except
 }
 
 void
-GameComponent::sendMessageDownwards(const GameMessage& message) except
+GameComponent::sendMessageDownwards(const MessagePtr& message) except
 {
 	auto& components = this->getGameObject()->getComponents();
 	for (auto& it : components)

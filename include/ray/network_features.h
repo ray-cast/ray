@@ -43,7 +43,7 @@ _NAME_BEGIN
 
 class EXPORT NetworkFeatures final : public GameFeature
 {
-	__DeclareSubClass(NetworkFeatures, GameListener)
+	__DeclareSubClass(NetworkFeatures, MessageListener)
 public:
 	NetworkFeatures() noexcept;
 

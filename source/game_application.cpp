@@ -36,20 +36,29 @@
 // +----------------------------------------------------------------------
 #include <ray/game_application.h>
 #include <ray/game_server.h>
-#include <ray/game_base_features.h>
-
-#include <ray/render_features.h>
-#include <ray/input_features.h>
-
 #include <ray/rtti_factory.h>
+
+#if defined(_BUILD_INPUT)
+#	include <ray/input_features.h>
+#endif
 
 #if defined(_BUILD_SCRIPT)
 #	include <ray/script_features.h>
 #endif
 
+#if defined(_BUILD_BASEGAME)
+#	include <ray/game_base_features.h>
+#endif
+
 #if defined(_BUILD_PHYSIC)
 #	include <ray/physics_features.h>
 #endif
+
+#if defined(_BUILD_RENDERER)
+#	include <ray/render_features.h>
+#endif
+
+#include <ray/gui_input_listener.h>
 
 _NAME_BEGIN
 
@@ -107,19 +116,26 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) ex
 
 		if (_gameServer->open())
 		{
-			this->addFeatures(std::make_shared<InputFeatures>());
+#if defined(_BUILD_INPUT)
+			auto inputFeature = std::make_shared<InputFeatures>();
+			this->addFeatures(inputFeature);
+#endif
 
 #if defined(_BUILD_SCRIPT)
 			this->addFeatures(std::make_shared<ScriptFeatures>());
 #endif
 
+#if defined(_BUILD_BASEGAME)
 			this->addFeatures(std::make_shared<GameBaseFeatures>());
+#endif
 
 #if defined(_BUILD_PHYSIC)
 			this->addFeatures(std::make_shared<PhysicFeatures>());
 #endif
 
+#if defined(_BUILD_RENDERER)
 			this->addFeatures(std::make_shared<RenderFeatures>(hwnd, width, height));
+#endif
 
 			this->start();
 		}
@@ -258,14 +274,14 @@ GameApplication::setResDownloadURL(const std::string& path) noexcept
 }
 
 void
-GameApplication::sendMessage(const GameMessage& message) noexcept
+GameApplication::sendMessage(const MessagePtr& message) noexcept
 {
 	assert(_gameServer);
 	_gameServer->sendMessage(message);
 }
 
 void
-GameApplication::postMessage(const GameMessage& message) noexcept
+GameApplication::postMessage(const MessagePtr& message) noexcept
 {
 	assert(_gameServer);
 	_gameServer->postMessage(message);

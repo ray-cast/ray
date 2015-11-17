@@ -50,7 +50,6 @@ __ImplementSubClass(PhysicFeatures, GameFeature, "Physics")
 PhysicFeatures::PhysicFeatures() noexcept
 	: _physics(nullptr)
 {
-	this->setName(typeid(PhysicFeatures).name());
 }
 
 PhysicFeatures::~PhysicFeatures() noexcept

@@ -38,6 +38,7 @@
 #include <ray/script_bind_actor.h>
 #include <ray/script_bind_array.h>
 #include <ray/script_array.h>
+#include <ray/game_object_manager.h>
 
 _NAME_BEGIN
 
@@ -85,9 +86,14 @@ bool ImplCast(T* t)
 	return *t ? true : false;
 }
 
+GameObjectPtr findObject(const std::string& name)
+{
+	return GameObjectManager::instance()->findObject(name);
+}
+
 GameObjectPtr instantiate(const std::string& name)
 {
-	auto object = GameObject::find<GameObject>(name);
+	auto object = findObject(name);
 	if (object)
 		return object->clone();
 	return nullptr;
@@ -293,7 +299,7 @@ ScriptBindActor::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectMethod("local", "PhysicsRigidbody getPhysicsRigidbody()", asMETHOD(ScriptBindActor, getPhysicsRigidbody), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("local", "PhysicsCharacter getPhysicsCharacter()", asMETHOD(ScriptBindActor, getPhysicsCharacter), asCALL_THISCALL); assert(r >= 0);
 
-	r = engine->RegisterGlobalFunction("GameObject find(const string& in)", asFUNCTION(GameObject::find<GameObject>), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("GameObject find(const string& in)", asFUNCTION(findObject), asCALL_CDECL); assert(r >= 0);
 	r = engine->RegisterGlobalFunction("GameObject instantiate(const string& in)", asFUNCTION(instantiate), asCALL_CDECL); assert(r >= 0);
 }
 

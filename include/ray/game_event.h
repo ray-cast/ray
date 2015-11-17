@@ -37,7 +37,7 @@
 #ifndef _H_GAME_EVENT_H_
 #define _H_GAME_EVENT_H_
 
-#include <ray/game_message.h>
+#include <ray/message.h>
 
 _NAME_BEGIN
 
@@ -78,154 +78,86 @@ struct MouseEvent
 	std::uint32_t yrel;
 };
 
-class AppQuitEvent : public GameEvent
+class AppQuitEvent : public Message
 {
 public:
-	AppQuitEvent()
-		:GameEvent(typeid(AppQuitEvent))
-	{
-	}
-
 	QuitMessage quit;
 };
 
-class AppResetEvent : public GameEvent
+class AppResetEvent : public Message
 {
 public:
-	AppResetEvent()
-		:GameEvent(typeid(AppResetEvent))
-	{
-	}
-
 	App app;
 };
 
-class GetFocusEvent : public GameEvent
+class GetFocusEvent : public Message
 {
 public:
-	GetFocusEvent()
-		:GameEvent(typeid(GetFocusEvent))
-	{
-	}
-
 	WindowMessage window;
 };
 
-class LostFocusEvent : public GameEvent
+class LostFocusEvent : public Message
 {
 public:
-	LostFocusEvent()
-		:GameEvent(typeid(LostFocusEvent))
-	{
-	}
-
 	WindowMessage window;
 };
 
-class SizeChangeEvent : public GameEvent
+class SizeChangeEvent : public Message
 {
 public:
-	SizeChangeEvent()
-		:GameEvent(typeid(SizeChangeEvent))
-	{
-	}
-
 	WindowMessage window;
 };
 
-class MoveChange : public GameEvent
+class MoveChange : public Message
 {
 public:
-	MoveChange()
-		:GameEvent(typeid(MoveChange))
-	{
-	}
-
 	WindowMessage window;
 };
 
-class MouseMotion : public GameEvent
+class MouseMotion : public Message
 {
 public:
-	MouseMotion()
-		:GameEvent(typeid(MouseMotion))
-	{
-	}
-
 	MouseEvent mouse;
 };
 
-class MouseDrag : public GameEvent
+class MouseDrag : public Message
 {
 public:
-	MouseDrag()
-		:GameEvent(typeid(MouseDrag))
-	{
-	}
-
 	MouseEvent mouse;
 };
 
-class MouseEnter : public GameEvent
+class MouseEnter : public Message
 {
 public:
-	MouseEnter()
-		:GameEvent(typeid(MouseEnter))
-	{
-	}
-
 	MouseEvent mouse;
 };
 
-class MouseOver : public GameEvent
+class MouseOver : public Message
 {
 public:
-	MouseOver()
-		:GameEvent(typeid(MouseOver))
-	{
-	}
-
 	MouseEvent mouse;
 };
 
-class MouseButtonDown : public GameEvent
+class MouseButtonDown : public Message
 {
 public:
-	MouseButtonDown()
-		:GameEvent(typeid(MouseButtonDown))
-	{
-	}
-
 	MouseEvent mouse;
 };
 
-class MouseButtonUp : public GameEvent
+class MouseButtonUp : public Message
 {
 public:
-	MouseButtonUp()
-		:GameEvent(typeid(MouseButtonUp))
-	{
-	}
-
 	MouseEvent mouse;
 };
 
-class WillRenderObjectEvent : public GameEvent
+class WillRenderObjectEvent : public Message
 {
 public:
-	WillRenderObjectEvent()
-		:GameEvent(typeid(WillRenderObjectEvent))
-	{
-	}
 };
 
-class RenderObjectEvent : public GameEvent
+class RenderObjectEvent : public Message
 {
 public:
-	RenderObjectEvent()
-		:GameEvent(typeid(RenderObjectEvent))
-	{
-	}
 };
 
 _NAME_END

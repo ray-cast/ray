@@ -88,7 +88,7 @@ public:
 		if (engine)
 		{
 			ray::AppQuitEvent quit;
-			engine->sendMessage(&quit);
+			//engine->sendMessage(&quit);
 			glfwSetWindowUserPointer(window, nullptr);
 		}
 	}
@@ -101,12 +101,12 @@ public:
 			if (focus)
 			{
 				ray::GetFocusEvent focus;
-				engine->sendMessage(&focus);
+				//engine->sendMessage(&focus);
 			}
 			else
 			{
 				ray::LostFocusEvent focus;
-				engine->sendMessage(&focus);
+				//engine->sendMessage(&focus);
 			}
 		}
 	}

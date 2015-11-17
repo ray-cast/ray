@@ -41,9 +41,9 @@
 
 _NAME_BEGIN
 
-class EXPORT GameScene final : public GameListener
+class EXPORT GameScene final : public rtti::Interface
 {
-	__DeclareSubClass(GameScene, GameListener)
+	__DeclareSubClass(GameScene, rtti::Interface)
 public:
 	struct Setting
 	{
@@ -66,6 +66,9 @@ public:
 	void setActive(bool active) except;
 	bool getActive() const noexcept;
 
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
 	std::uint32_t getInstanceID() const noexcept;
 
 	void setEnvironment(const Setting& setting) noexcept;
@@ -76,13 +79,11 @@ public:
 	void setGameServer(GameServer* server) noexcept;
 	GameServer* getGameServer() noexcept;
 
+	void sendMessage(const MessagePtr& message) except;
+
 	void load(iarchive& reader) except;
 
 	GameObjectPtr instanceObject(iarchive& reader, GameObjectPtr parent) except;
-
-private:
-
-	void onMessage(const GameMessage& message) except;
 
 private:
 
@@ -100,12 +101,13 @@ private:
 		GameScene* _scene;
 	};
 
-	std::uint32_t _instanceID;
+	std::string _name;
 
 	Setting _setting;
 	GameObjectPtr  _root;
 	GameServer* _gameServer;
 
+	std::uint32_t _instanceID;
 	static std::uint32_t _instanceCount;
 };
 

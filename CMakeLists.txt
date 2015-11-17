@@ -44,7 +44,7 @@ OPTION(BUILD_INPUT "on for use off for ignore" ON)
 OPTION(BUILD_BASEGAME "on for use off for ignore" ON)
 OPTION(BUILD_SCRIPT "on for use off for ignore" OFF)
 OPTION(BUILD_PHYSIC "on for use off for ignore" ON)
-OPTION(BUILD_GUI "on for use off for ignore" ON)
+OPTION(BUILD_GUI "on for use off for ignore" OFF)
 OPTION(BUILD_RENDERER "on for use off for ignore" ON)
 
 IF(BUILD_PLATFORM_ANDROID)

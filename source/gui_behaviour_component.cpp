@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_GUI)
 #include <ray/gui_behaviour_component.h>
 
 _NAME_BEGIN
@@ -68,3 +69,4 @@ GUIBehaviourComponent::onMoveAfter() except
 }
 
 _NAME_END
+#endif

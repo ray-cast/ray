@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GameScene, GameListener, "GameScene")
+__ImplementSubClass(GameScene, rtti::Interface, "GameScene")
 
 std::uint32_t GameScene::_instanceCount = 0;
 
@@ -111,6 +111,18 @@ GameScene::getActive() const noexcept
 	return false;
 }
 
+void
+GameScene::setName(const std::string& name) noexcept
+{
+	_name = name;
+}
+
+const std::string&
+GameScene::getName() const noexcept
+{
+	return _name;
+}
+
 std::uint32_t 
 GameScene::getInstanceID() const noexcept
 {
@@ -157,7 +169,7 @@ GameScene::getGameServer() noexcept
 }
 
 void
-GameScene::onMessage(const GameMessage& message) except
+GameScene::sendMessage(const MessagePtr& message) except
 {
 	auto root = this->getRootObject();
 	if (root)

@@ -148,6 +148,8 @@ private:
 class EXPORT oarchive : virtual public ios_base
 {
 public:
+	oarchive() noexcept;
+	virtual ~oarchive() noexcept;
 
 	template<typename T>
 	oarchive& operator << (std::pair<const std::string&, T&> value)
@@ -179,9 +181,10 @@ private:
 class EXPORT ioarchive : public iarchive, public oarchive
 {
 public:
+	ioarchive();
+	virtual ~ioarchive();
 
 private:
-
 	ioarchive(const ioarchive&) noexcept = delete;
 	ioarchive& operator=(const ioarchive&) noexcept = delete;
 };
@@ -199,7 +202,7 @@ std::pair<const char*, T&> make_archive_name(const char* name, T& value)
 }
 
 #define make_name(T) make_archive_name(#T, T)
-#define make_alias(T, alias)  make_archive_name(alias, T)
+#define make_alias(value, name) make_archive_name(name, value)
 
 _NAME_END
 

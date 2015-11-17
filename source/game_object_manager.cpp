@@ -129,6 +129,15 @@ GameObjectManager::findActiveObject(const std::string& name) noexcept
 	return nullptr;
 }
 
+GameObjectPtr 
+GameObjectManager::instantiate(const std::string& name) except
+{
+	auto object =this->findObject(name);
+	if (object)
+		return object->clone();
+	return nullptr;
+}
+
 bool 
 GameObjectManager::activeObject(const std::string& name) noexcept
 {

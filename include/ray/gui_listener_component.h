@@ -38,6 +38,7 @@
 #define _H_GUI_LISTENER_COMPONENT_H_
 
 #include <ray/gui.h>
+#include <ray/input.h>
 
 _NAME_BEGIN
 
@@ -50,7 +51,7 @@ public:
 
 protected:
 
-	virtual void onMessage(const GameMessage& message) except;
+	virtual void onMessage(const MessagePtr& message) except;
 
 	virtual void onRenderPre() noexcept;
 	virtual void onRenderPost() noexcept;

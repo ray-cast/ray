@@ -1409,8 +1409,8 @@ ScriptBindArray::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectBehaviour("vector<T>", asBEHAVE_FACTORY, "vector<T>@ f(int&in, uint)", asFUNCTIONPR(ScriptArray::Create, (asIObjectType*, asUINT), ScriptArray*), asCALL_CDECL); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("vector<T>", asBEHAVE_FACTORY, "vector<T>@ f(int&in, uint, const T &in)", asFUNCTIONPR(ScriptArray::Create, (asIObjectType*, asUINT, void *), ScriptArray*), asCALL_CDECL); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("vector<T>", asBEHAVE_GETREFCOUNT, "int f()", asMETHOD(ScriptArray, refCount), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("vector<T>", asBEHAVE_SETGCFLAG, "void f()", asMETHOD(ScriptArray, setGC), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("vector<T>", asBEHAVE_GETGCFLAG, "bool f()", asMETHOD(ScriptArray, getGC), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("vector<T>", asBEHAVE_SETGCFLAG, "void f()", asMETHOD(ScriptArray, destroy), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("vector<T>", asBEHAVE_GETGCFLAG, "bool f()", asMETHOD(ScriptArray, isDestroy), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("vector<T>", asBEHAVE_ENUMREFS, "void f(int&in)", asMETHOD(ScriptArray, EnumReferences), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("vector<T>", asBEHAVE_RELEASEREFS, "void f(int&in)", asMETHOD(ScriptArray, ReleaseAllHandles), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("vector<T>", asBEHAVE_LIST_FACTORY, "vector<T>@ f(int&in type, int&in list) {repeat T}", asFUNCTIONPR(ScriptArray::Create, (asIObjectType*, void*), ScriptArray*), asCALL_CDECL); assert(r >= 0);

@@ -46,4 +46,20 @@ iarchive::~iarchive() noexcept
 {
 }
 
+oarchive::oarchive() noexcept
+{
+}
+
+oarchive::~oarchive() noexcept
+{
+}
+
+ioarchive::ioarchive()
+{
+}
+
+ioarchive::~ioarchive()
+{
+}
+
 _NAME_END

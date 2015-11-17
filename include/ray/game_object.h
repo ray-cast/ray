@@ -37,13 +37,13 @@
 #ifndef _H_GAME_OBJECT_H_
 #define _H_GAME_OBJECT_H_
 
-#include <ray/game_message.h>
+#include <ray/game_types.h>
 
 _NAME_BEGIN
 
 class EXPORT GameObject : public rtti::Interface
 {
-	__DeclareClass(GameObject)
+	__DeclareSubClass(GameObject, rtti::Interface)
 public:
 	GameObject() noexcept;
 	virtual ~GameObject() noexcept;
@@ -164,12 +164,13 @@ public:
 
 	template<typename T>
 	std::shared_ptr<T> getComponent() const noexcept { return std::dynamic_pointer_cast<T>(this->getComponent(T::RTTI)); }
+	GameComponentPtr getComponent(const rtti::Rtti* type) const noexcept;
 	GameComponentPtr getComponent(const rtti::Rtti& type) const noexcept;
 	const GameComponents& getComponents() const noexcept;
 
-	void sendMessage(const GameMessage& message) noexcept;
-	void sendMessageUpwards(const GameMessage& message) noexcept;
-	void sendMessageDownwards(const GameMessage& message) noexcept;
+	void sendMessage(const MessagePtr& message) noexcept;
+	void sendMessageUpwards(const MessagePtr& message) noexcept;
+	void sendMessageDownwards(const MessagePtr& message) noexcept;
 
 	void destroy() noexcept;
 

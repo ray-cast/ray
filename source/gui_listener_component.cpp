@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_GUI)
 #include <ray/gui_listener_component.h>
 
 _NAME_BEGIN
@@ -49,7 +50,7 @@ GUIListenerComponent::~GUIListenerComponent() noexcept
 }
 
 void 
-GUIListenerComponent::onMessage(const GameMessage& message) except
+GUIListenerComponent::onMessage(const MessagePtr& message) except
 {
 	auto event = message.event();
 	if (event->code() == typeid(MouseMotion).hash_code())
@@ -133,3 +134,4 @@ GUIListenerComponent::onRenderPost() noexcept
 }
 
 _NAME_END
+#endif

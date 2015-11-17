@@ -40,7 +40,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GameFeature, GameListener, "GameFeature")
+__ImplementSubClass(GameFeature, MessageListener, "GameFeature")
 
 GameFeature::GameFeature() noexcept
 	: _isActive(false)
@@ -72,7 +72,7 @@ GameFeature::getActive() noexcept
 }
 
 void
-GameFeature::sendMessage(const GameMessage& message) except
+GameFeature::sendMessage(const MessagePtr& message) except
 {
 	auto& features = this->getGameServer()->getGameFeatures();
 	for (auto& it : features)

@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_RENDERER)
 #include <ray/sprite_component.h>
 
 _NAME_BEGIN
@@ -186,3 +187,4 @@ ParticleEmitterComponent::clone() const noexcept
 }
 
 _NAME_END
+#endif

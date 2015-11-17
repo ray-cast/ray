@@ -52,6 +52,8 @@ public:
 	GameObjectPtr findObject(const std::string& name) noexcept;
 	GameObjectPtr findActiveObject(const std::string& name) noexcept;
 
+	GameObjectPtr instantiate(const std::string& name) except;
+
 	bool activeObject(const std::string& name) noexcept;
 
 	void onFrameBegin() noexcept;

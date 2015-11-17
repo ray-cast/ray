@@ -63,7 +63,7 @@ protected:
 	virtual void onFrame();
 	virtual void onFrameEnd();
 
-	virtual void onMessage(const GameMessage& message);
+	virtual void onMessage(const MessagePtr& message);
 
 	virtual GameComponentPtr clone() const noexcept;
 

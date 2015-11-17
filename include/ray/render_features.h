@@ -44,7 +44,7 @@ _NAME_BEGIN
 
 class EXPORT RenderFeatures final : public GameFeature
 {
-	__DeclareSubClass(RenderFeatures, GameListener)
+	__DeclareSubClass(RenderFeatures, GameFeature)
 public:
 	RenderFeatures() noexcept;
 	RenderFeatures(WindHandle hwnd, std::size_t w, std::size_t h) noexcept;

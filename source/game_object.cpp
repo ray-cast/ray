@@ -40,7 +40,7 @@
 
 _NAME_BEGIN
 
-__ImplementClass(GameObject, "Object")
+__ImplementSubClass(GameObject, rtti::Interface, "Object")
 
 GameObject::GameObject() noexcept
 	: _active(false)
@@ -958,6 +958,20 @@ GameObject::cleanupComponents() noexcept
 }
 
 GameComponentPtr
+GameObject::getComponent(const rtti::Rtti* type) const noexcept
+{
+	assert(type);
+
+	for (auto& it : _components)
+	{
+		if (it->isA(type))
+			return it;
+	}
+
+	return nullptr;
+}
+
+GameComponentPtr
 GameObject::getComponent(const rtti::Rtti& type) const noexcept
 {
 	for (auto& it : _components)
@@ -984,7 +998,7 @@ GameObject::destroy() noexcept
 }
 
 void
-GameObject::sendMessage(const GameMessage& message) noexcept
+GameObject::sendMessage(const MessagePtr& message) noexcept
 {
 	if (!this->getActive())
 		return;
@@ -994,7 +1008,7 @@ GameObject::sendMessage(const GameMessage& message) noexcept
 }
 
 void
-GameObject::sendMessageUpwards(const GameMessage& message) noexcept
+GameObject::sendMessageUpwards(const MessagePtr& message) noexcept
 {
 	if (!this->getActive())
 		return;
@@ -1010,7 +1024,7 @@ GameObject::sendMessageUpwards(const GameMessage& message) noexcept
 }
 
 void
-GameObject::sendMessageDownwards(const GameMessage& message) noexcept
+GameObject::sendMessageDownwards(const MessagePtr& message) noexcept
 {
 	if (!this->getActive())
 		return;

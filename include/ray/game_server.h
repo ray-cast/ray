@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-class EXPORT GameServer final : public GameDispatcher
+class EXPORT GameServer final : public MessageDispatcher
 {
 public:
 	GameServer() noexcept;
@@ -78,8 +78,8 @@ public:
 
 	GameApplication* getGameApp() noexcept;
 
-	void sendMessage(const GameMessage& message) except;
-	void postMessage(const GameMessage& message) except;
+	void sendMessage(const MessagePtr& message) except;
+	void postMessage(const MessagePtr& message) except;
 
 	void update() except;
 

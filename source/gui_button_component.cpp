@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_GUI)
 #include <ray/gui_button_component.h>
 #include <ray/render_factory.h>
 
@@ -137,3 +138,4 @@ GUIButtonComponent::onMouseButtonUp(int button, float x, float y) noexcept
 }
 
 _NAME_END
+#endif

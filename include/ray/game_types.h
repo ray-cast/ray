@@ -39,14 +39,13 @@
 
 #include <ray/ioserver.h>
 #include <ray/iointerface.h>
-#include <ray/variant.h>
 #include <ray/archive.h>
 #include <ray/except.h>
-#include <ray/rtti.h>
+#include <ray/message.h>
+#include <ray/timer.h>
 
 _NAME_BEGIN
 
-typedef std::shared_ptr<class GameListener> GameListenerPtr;
 typedef std::shared_ptr<class GameScene> GameScenePtr;
 typedef std::shared_ptr<class GameObject> GameObjectPtr;
 typedef std::shared_ptr<class GameComponent> GameComponentPtr;
@@ -54,7 +53,7 @@ typedef std::shared_ptr<class GameFeature> GameFeaturePtr;
 typedef std::shared_ptr<class GameServer> GameServerPtr;
 typedef std::shared_ptr<class GameApplication> GameApplicationPtr;
 
-typedef std::weak_ptr<class GameListener> GameListenerWeakPtr;
+typedef std::weak_ptr<class MessageListener> MessageListenerWeakPtr;
 typedef std::weak_ptr<class GameScene> GameSceneWeakPtr;
 typedef std::weak_ptr<class GameObject> GameObjectWeakPtr;
 typedef std::weak_ptr<class GameComponent> GameComponentWeakPtr;
@@ -67,7 +66,6 @@ typedef std::shared_ptr<class PhysicsBodyComponent> PhysicsBodyComponentPtr;
 typedef std::shared_ptr<class PhysicsCharacterComponent> PhysicsCharacterComponentPtr;
 typedef std::shared_ptr<class MeshComponent> MeshComponentPtr;
 
-typedef std::vector<GameListenerPtr> GameListeners;
 typedef std::vector<GameScenePtr> GameScenes;
 typedef std::vector<GameObjectPtr> GameObjects;
 typedef std::vector<GameComponentPtr> GameComponents;

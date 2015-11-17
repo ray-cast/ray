@@ -6,6 +6,8 @@ FOREACH(myplugins
     libjpeg
     libpng
     libiconv
+    libvorbis
+    libogg
     tinyxml
     freetype
 )
@@ -17,6 +19,8 @@ FOREACH(myplugins
     libjpeg
     libpng
     libiconv
+    libvorbis
+    libogg
     unzip
     zlib
     zlibstatic

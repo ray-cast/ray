@@ -1,4 +1,4 @@
-project(AndroidNativeAppGlue)
+PROJECT(AndroidNativeAppGlue)
 
 SET(LIB_NAME AndroidNativeAppGlue)
 

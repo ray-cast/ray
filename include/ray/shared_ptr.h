@@ -121,7 +121,7 @@ public:
 
 	operator T*() const noexcept
 	{
-		assert(-tr);
+		assert(_ptr);
 		return this->_ptr;
 	}
 

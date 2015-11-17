@@ -88,8 +88,8 @@ private:
 
 	virtual void onMoveAfter() noexcept;
 
-	virtual void onWillRenderObject() noexcept;
-	virtual void onRenderObject() noexcept;
+	virtual void onWillRenderObject(const Camera& camera) noexcept;
+	virtual void onRenderObject(const Camera& camera) noexcept;
 
 private:
 	CameraComponent(const CameraComponent&) noexcept = delete;

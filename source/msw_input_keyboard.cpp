@@ -39,6 +39,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubInterface(MSWInputKeyboard, InputKeyboard, "MSWInputKeyboard")
+
 MSWInputKeyboard::MSWInputKeyboard() noexcept
 {
 }

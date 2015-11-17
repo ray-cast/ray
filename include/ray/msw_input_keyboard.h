@@ -44,6 +44,7 @@ _NAME_BEGIN
 
 class EXPORT MSWInputKeyboard : public InputKeyboard
 {
+	__DeclareSubInterface(MSWInputKeyboard, InputKeyboard)
 public:
     MSWInputKeyboard() noexcept;
     virtual ~MSWInputKeyboard() noexcept;

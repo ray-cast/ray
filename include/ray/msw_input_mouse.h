@@ -43,6 +43,7 @@ _NAME_BEGIN
 
 class EXPORT MSWInputMouse : public InputMouse
 {
+	__DeclareSubInterface(MSWInputMouse, InputMouse)
 public:
     MSWInputMouse() noexcept;
     virtual ~MSWInputMouse() noexcept;

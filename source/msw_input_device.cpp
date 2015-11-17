@@ -39,6 +39,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubInterface(MSWInputDevice, InputDevice, "MSWInputDevice")
+
 InputKey::Code toScancode(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
 	UINT flags = HIWORD(lParam);

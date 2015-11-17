@@ -43,6 +43,7 @@ _NAME_BEGIN
 
 class EXPORT MSWInputDevice : public InputDevice
 {
+	__DeclareSubInterface(MSWInputDevice, InputDevice)
 public:
 	MSWInputDevice() noexcept;
 

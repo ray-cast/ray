@@ -81,7 +81,39 @@ private:
     std::vector<char> _data;
 };
 
-class EXPORT MemoryStream : public iostream
+class EXPORT MemoryReader final : public istream
+{
+public:
+	MemoryReader() noexcept;
+	~MemoryReader() noexcept;
+
+	void resize(streamsize size) noexcept;
+
+	char* map() noexcept;
+	void unmap() noexcept;
+	bool isMapping() const noexcept;
+
+private:
+	MemoryBuf _buf;
+};
+
+class EXPORT MemoryWrite final : public ostream
+{
+public:
+	MemoryWrite() noexcept;
+	~MemoryWrite() noexcept;
+
+	void resize(streamsize size) noexcept;
+
+	char* map() noexcept;
+	void unmap() noexcept;
+	bool isMapping() const noexcept;
+
+private:
+	MemoryBuf _buf;
+};
+
+class EXPORT MemoryStream final : public iostream
 {
 public:
     MemoryStream() noexcept;
@@ -93,8 +125,7 @@ public:
     void unmap() noexcept;
     bool isMapping() const noexcept;
 
-protected:
-
+private:
     MemoryBuf _buf;
 };
 

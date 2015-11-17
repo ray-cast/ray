@@ -184,6 +184,72 @@ MemoryBuf::isMapping() const noexcept
     return _isMappinged;
 }
 
+MemoryReader::MemoryReader() noexcept
+	: istream(&_buf)
+{
+}
+
+MemoryReader::~MemoryReader() noexcept
+{
+}
+
+void
+MemoryReader::resize(streamsize size) noexcept
+{
+	_buf.resize(size);
+}
+
+char*
+MemoryReader::map() noexcept
+{
+	return _buf.map();
+}
+
+void
+MemoryReader::unmap() noexcept
+{
+	return _buf.unmap();
+}
+
+bool
+MemoryReader::isMapping() const noexcept
+{
+	return _buf.isMapping();
+}
+
+MemoryWrite::MemoryWrite() noexcept
+	: ostream(&_buf)
+{
+}
+
+MemoryWrite::~MemoryWrite() noexcept
+{
+}
+
+void
+MemoryWrite::resize(streamsize size) noexcept
+{
+	_buf.resize(size);
+}
+
+char*
+MemoryWrite::map() noexcept
+{
+	return _buf.map();
+}
+
+void
+MemoryWrite::unmap() noexcept
+{
+	return _buf.unmap();
+}
+
+bool
+MemoryWrite::isMapping() const noexcept
+{
+	return _buf.isMapping();
+}
+
 MemoryStream::MemoryStream() noexcept
     : iostream(&_buf)
 {

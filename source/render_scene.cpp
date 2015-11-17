@@ -231,20 +231,12 @@ RenderScene::computVisiable(const Matrix4x4& viewProject, OcclusionCullList& lis
 	{
 		if (fru.contains(it->getBoundingBoxInWorld().aabb()))
 		{
-			auto listener = it->getRenderListener();
-			if (listener)
-				listener->onWillRenderObject();
-
 			list.insert(it, eyePosition.sqrDistance(it->getBoundingBoxInWorld().center()));
 
 			for (auto& child : it->getSubeRenderObjects())
 			{
 				if (fru.contains(child->getBoundingBoxInWorld().aabb()))
 				{
-					listener = child->getRenderListener();
-					if (listener)
-						listener->onWillRenderObject();
-
 					list.insert(it, eyePosition.sqrDistance(it->getBoundingBoxInWorld().center()));
 				}
 			}
@@ -304,10 +296,6 @@ RenderScene::computVisiableLight(const Matrix4x4& viewProject, OcclusionCullList
 
 		if (fru.contains(light->getBoundingBoxInWorld().aabb()))
 		{
-			auto listener = light->getRenderListener();
-			if (listener)
-				listener->onWillRenderObject();
-
 			list.insert(light, eyePosition.sqrDistance(light->getBoundingBoxInWorld().center()));
 		}
 	}

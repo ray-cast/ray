@@ -500,12 +500,12 @@ RenderPipelineLayer::render(const RenderScene& scene) noexcept
 
 		RenderListener* renderListener = camera->getRenderListener();
 		if (renderListener)
-			renderListener->onWillRenderObject();
+			renderListener->onWillRenderObject(*camera);
 
 		this->onRenderPipeline(camera);
 
 		if (renderListener)
-			renderListener->onRenderObject();
+			renderListener->onRenderObject(*camera);
 
 		this->onRenderPost(camera);
 	}
@@ -553,6 +553,10 @@ RenderPipelineLayer::assignVisiable(RenderScenePtr scene, CameraPtr camera) noex
 				auto queue = technique->getRenderQueue();
 				for (auto& pass : technique->getPassList())
 				{
+					auto listener = it.getOcclusionCullNode()->getRenderListener();
+					if (listener)
+						listener->onWillRenderObject(*this->getCamera());
+
 					this->addRenderData(queue, pass->getRenderPass(), it.getOcclusionCullNode());
 				}
 			}
@@ -573,6 +577,10 @@ RenderPipelineLayer::assignLight(RenderScenePtr scene, CameraPtr camera) noexcep
 
 	for (auto& it : _visiable.iter())
 	{
+		auto listener = it.getOcclusionCullNode()->getRenderListener();
+		if (listener)
+			listener->onWillRenderObject(*this->getCamera());
+
 		this->addRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS, it.getOcclusionCullNode());
 	}
 }
@@ -618,7 +626,7 @@ RenderPipelineLayer::onRenderObject(RenderObject& object, RenderQueue queue, Ren
 
 		auto listener = object.getRenderListener();
 		if (listener)
-			listener->onRenderObject();
+			listener->onRenderObject(*this->getCamera());
 	}
 }
 

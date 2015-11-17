@@ -47,8 +47,8 @@ public:
 	RenderListener() noexcept;
 	virtual ~RenderListener() noexcept;
 
-	virtual void onWillRenderObject() noexcept = 0;
-	virtual void onRenderObject() noexcept = 0;
+	virtual void onWillRenderObject(const Camera& camera) noexcept = 0;
+	virtual void onRenderObject(const Camera& camera) noexcept = 0;
 };
 
 class EXPORT RenderObject : public std::enable_shared_from_this<RenderObject>

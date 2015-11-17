@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_RENDERER)
 #include <ray/light_component.h>
 #include <ray/game_server.h>
 #include <ray/render_features.h>
@@ -219,3 +220,4 @@ LightComponent::clone() const noexcept
 }
 
 _NAME_END
+#endif

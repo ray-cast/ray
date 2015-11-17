@@ -51,7 +51,7 @@ public:
 	virtual ~RenderComponent() noexcept;
 
 	void setCastShadow(bool value) noexcept;
-	bool getCastShadow()  const noexcept;
+	bool getCastShadow() const noexcept;
 
 	void setReceiveShadow(bool value) noexcept;
 	bool getReceiveShadow() const noexcept;
@@ -59,8 +59,8 @@ public:
 	void setMaterial(MaterialPtr material) noexcept;
 	void setSharedMaterial(MaterialPtr material) noexcept;
 
-	const MaterialPtr getMaterial() const noexcept;
-	const MaterialPtr getSharedMaterial() const noexcept;
+	MaterialPtr getMaterial() const noexcept;
+	MaterialPtr getSharedMaterial() const noexcept;
 
 	bool hasMaterial() const noexcept;
 	bool hasSharedMaterial() const noexcept;
@@ -78,8 +78,8 @@ protected:
 
 protected:
 
-	virtual void onWillRenderObject() noexcept;
-	virtual void onRenderObject() noexcept;
+	virtual void onWillRenderObject(const Camera& camera) noexcept;
+	virtual void onRenderObject(const Camera& camera) noexcept;
 
 	virtual void onMoveAfter() noexcept;
 

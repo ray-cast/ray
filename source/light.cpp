@@ -286,19 +286,19 @@ Light::_updateShadow() const noexcept
 }
 
 void 
-Light::onWillRenderObject() noexcept
+Light::onWillRenderObject(const Camera& camera) noexcept
 {
 	auto listener = this->getRenderListener();
 	if (listener)
-		listener->onWillRenderObject();
+		listener->onWillRenderObject(camera);
 }
 
 void 
-Light::onRenderObject() noexcept
+Light::onRenderObject(const Camera& camera) noexcept
 {
 	auto listener = this->getRenderListener();
 	if (listener)
-		listener->onRenderObject();
+		listener->onRenderObject(camera);
 }
 
 LightPtr

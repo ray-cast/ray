@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_RENDERER)
 #include <ray/render_component.h>
 #include <ray/render_factory.h>
 #include <ray/render_features.h>
@@ -93,13 +94,13 @@ RenderComponent::setSharedMaterial(MaterialPtr material) noexcept
 	_material = material;
 }
 
-const MaterialPtr
+MaterialPtr
 RenderComponent::getMaterial() const noexcept
 {
 	return _material;
 }
 
-const MaterialPtr
+MaterialPtr
 RenderComponent::getSharedMaterial() const noexcept
 {
 	return _sharedMaterial;
@@ -196,17 +197,18 @@ RenderComponent::onLayerChangeAfter() noexcept
 }
 
 void 
-RenderComponent::onWillRenderObject() noexcept
+RenderComponent::onWillRenderObject(const Camera& camera) noexcept
 {
-	WillRenderObjectEvent event;
-	this->sendMessage(&event);
+	//WillRenderObjectEvent event;
+	//this->sendMessage(&event);
 }
 
 void 
-RenderComponent::onRenderObject() noexcept
+RenderComponent::onRenderObject(const Camera& camera) noexcept
 {
-	RenderObjectEvent event;
-	this->sendMessage(&event);
+	//RenderObjectEvent event;
+	//this->sendMessage(&event);
 }
 
 _NAME_END
+#endif

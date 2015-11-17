@@ -117,7 +117,7 @@ RenderFactory::createTexture(const std::string& name) except
 
 	loader.load(name,
 		[&](std::shared_ptr<OGLTexture> texture, const std::string& name) {
-		MemoryStream stream;
+		MemoryReader stream;
 		IoServer::instance()->openFile(name, stream);
 		Image image;
 		if (image.load(stream))
@@ -470,7 +470,7 @@ RenderFactory::createRenderBuffer(const std::vector<MeshPropertyPtr> meshes) exc
 MaterialPtr
 RenderFactory::createMaterial(const string& filename) except
 {
-	MemoryStream stream;
+	MemoryReader stream;
 
 	IoServer::instance()->openFile(filename, stream);
 	if (!stream.is_open())

@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_RENDERER)
 #include <ray/mesh_render_component.h>
 #include <ray/mesh_component.h>
 
@@ -229,3 +230,4 @@ MeshRenderComponent::buildRenderObject(MeshPropertyPtr mesh, RenderBufferPtr buf
 }
 
 _NAME_END
+#endif

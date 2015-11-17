@@ -34,13 +34,13 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_RENDERER)
 #include <ray/camera_component.h>
 
 #include <ray/game_server.h>
 #include <ray/game_event.h>
 
 #include <ray/render_features.h>
-#include <ray/render_factory.h>
 
 _NAME_BEGIN
 
@@ -255,17 +255,17 @@ CameraComponent::onMoveAfter() noexcept
 }
 
 void 
-CameraComponent::onWillRenderObject() noexcept
+CameraComponent::onWillRenderObject(const Camera& camera) noexcept
 {
-	WillRenderObjectEvent event;
-	this->sendMessage(&event);
+	//auto event = std::make_shared<WillRenderObjectEvent>();
+	//this->sendMessage(event);
 }
 
 void 
-CameraComponent::onRenderObject() noexcept
+CameraComponent::onRenderObject(const Camera& camera) noexcept
 {
-	RenderObjectEvent event;
-	this->sendMessage(&event);
+	//auto event = std::make_shared<RenderObjectEvent>();
+	//this->sendMessage(event);
 }
 
 GameComponentPtr
@@ -279,3 +279,4 @@ CameraComponent::clone() const noexcept
 }
 
 _NAME_END
+#endif

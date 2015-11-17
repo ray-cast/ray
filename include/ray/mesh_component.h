@@ -45,7 +45,6 @@ _NAME_BEGIN
 class EXPORT MeshListener
 {
 public:
-
 	virtual void onMeshChangeAfter() except;
 	virtual void onMeshChangeBefore() except;
 };

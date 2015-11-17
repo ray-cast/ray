@@ -98,8 +98,8 @@ private:
 
 	void _updateShadow() const noexcept;
 
-	void onWillRenderObject() noexcept;
-	void onRenderObject() noexcept;
+	void onWillRenderObject(const Camera& camera) noexcept;
+	void onRenderObject(const Camera& camera) noexcept;
 
 private:
 	Light(const Light&) noexcept = delete;

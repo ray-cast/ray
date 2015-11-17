@@ -34,53 +34,51 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_X11_CONTEXT_H_
-#define _H_X11_CONTEXT_H_
+#ifndef _H_X11_CANVAS_H_
+#define _H_X11_CANVAS_H_
 
-#ifdef __LINUX__
-
-#include <ray/render_canvas.h>
-
-#include <GL/glew.h>
-#include <GL/glx.h>
+#include <ray/ogl_types.h>
 
 _NAME_BEGIN
 
-class OGLCanvas : public RenderCanvas
+class XGLCanvas final : public RenderWindow
 {
 public:
-    OGLCanvas(std::shared_ptr<Window> wx) noexcept;
-    ~OGLCanvas() noexcept;
+	XGLCanvas() noexcept;
+	XGLCanvas(WindHandle hwnd) except;
+	~XGLCanvas() noexcept;
 
-    void setup(WindHandle wx) noexcept;
-    void close() noexcept;
+	void open(WindHandle hwnd) except;
+	void close() noexcept;
 
-    void setSwapInterval(Canvas::Interval interval) noexcept;
+	void setSwapInterval(SwapInterval interval) noexcept;
+	SwapInterval getSwapInterval() const noexcept;
 
-    void lock();
-    void unlock() noexcept;
+	void present() noexcept;
 
-    bool present() noexcept;
+	WindHandle getWindHandle() const noexcept;
 
 private:
-    OGLCanvas(const OGLCanvas&) = delete;
-    OGLCanvas& operator=(const OGLCanvas&) = delete;
+
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
+
+private:
+
+	static void initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept;
 
 private:
     XWindow _window;
     XDisplay* _display;
-    GLXFBConfig* _cfg;
 
-    XWindow _window;
-    XDisplay* _display;
-
-    GLXWindow _glw;
     GLXContext _glc;
+	GLXFBConfig* _cfg;
+
+	GPUfbconfig _fbconfig;
+	GPUctxconfig _ctxconfig;
 };
 
 _NAME_END
 
-
-#endif
 
 #endif

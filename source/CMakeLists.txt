@@ -331,6 +331,8 @@ SET(RENDERER_OGL
     ${SOURCE_PATH}/wgl_canvas.cpp
     ${HEADER_PATH}/egl_canvas.h
     ${SOURCE_PATH}/egl_canvas.cpp
+    ${HEADER_PATH}/x11_canvas.h
+    ${SOURCE_PATH}/x11_canvas.cpp
 )
 SOURCE_GROUP("core\\device\\OGL" FILES ${RENDERER_OGL})
 

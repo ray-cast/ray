@@ -52,10 +52,10 @@
 #			define OGLCanvas WGLCanvas
 #		elif defined(_BUILD_PLATFORM_LINUX)
 #			include <ray/x11_canvas.h>
-#			define OGLCanvas X11Canvas
+#			define OGLCanvas XGLCanvas
 #		elif defined(_BUILD_PLATFORM_APPLE)
 #			include <ray/x11_canvas.h>
-#			define OGLCanvas X11Canvas
+#			define OGLCanvas XGLCanvas
 #		endif
 #	endif
 #endif

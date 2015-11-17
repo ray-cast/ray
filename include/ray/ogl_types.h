@@ -54,6 +54,9 @@
 #include <GLES3\gl31.h>
 #include <GLES2\gl2ext.h>
 #include <GLES3\gl3ext.h>
+#elif _BUILD_PLATFORM_LINUX
+#include <GL/glew.h>
+#include <GL/glxew.h>
 #endif
 
 _NAME_BEGIN

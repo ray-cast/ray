@@ -279,7 +279,8 @@ EGLCanvas::initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexc
 	ctxconfig.release = 0;
 	ctxconfig.robustness = 0;
 	ctxconfig.share = nullptr;
-	ctxconfig.profile = GPU_GL_ES;
+	ctxconfig.api = GPU_OPENGL_ES_API;
+	ctxconfig.profile = GPU_GL_CORE_PROFILE;
 	ctxconfig.forward = 0;
 	ctxconfig.multithread = false;
 }

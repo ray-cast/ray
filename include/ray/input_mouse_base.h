@@ -44,6 +44,7 @@ _NAME_BEGIN
 
 class EXPORT InputMouse : public InputController
 {
+	__DeclareSubInterface(InputMouse, InputController)
 public:
 	InputMouse() noexcept;
 	virtual ~InputMouse() noexcept;

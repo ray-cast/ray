@@ -34,10 +34,13 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_INPUT)
 #include <ray/input_features.h>
 #include <ray/input_device.h>
 #include <ray/input_keyboard.h>
 #include <ray/input_mouse.h>
+#include <ray/fstream.h>
+#include <ray/xmlreader.h>
 
 _NAME_BEGIN
 
@@ -46,7 +49,6 @@ __ImplementSubClass(InputFeatures, GameFeature, "Input")
 InputFeatures::InputFeatures() noexcept
 {
 	_input = std::make_shared<DefaultInput>();
-	_input->addInputListener(this);
 
 #if !defined(__ANDROID__)
 	auto inputDevice = std::make_shared<DefaultInputDevice>();
@@ -65,16 +67,8 @@ InputFeatures::~InputFeatures() noexcept
 void
 InputFeatures::setInput(InputPtr input) noexcept
 {
-	if (_input != input)
-	{
-		if (input)
-			input->addInputListener(this);
-
-		if (_input)
-			_input->removeInputListener(this);
-
-		_input = input;
-	}
+	assert(input);
+	_input = input;
 }
 
 InputPtr
@@ -83,115 +77,61 @@ InputFeatures::getInput() const noexcept
 	return _input;
 }
 
-GameFeaturePtr
-InputFeatures::clone() const noexcept
-{
-	auto features = std::make_shared<InputFeatures>();
-	if (_input)
-		features->setInput(_input->clone());
-	return features;
-}
-
 void
 InputFeatures::onActivate() except
 {
-	if (_input)
-		_input->obtainCapture();
+	assert(_input);
+	_input->obtainCapture();
 }
 
 void
 InputFeatures::onDeactivate() except
 {
-	if (_input)
-		_input->releaseCapture();
+	assert(_input);
+	_input->releaseCapture();
 }
 
 void
 InputFeatures::onFrameBegin() noexcept
 {
-	if (_input)
-	{
-		_input->updateBegin();
-		_input->update();
-	}
+	assert(_input);
+	_input->updateBegin();
+	_input->update();
 }
 
 void
 InputFeatures::onFrameEnd() noexcept
 {
-	if (_input)
-	{
-		_input->updateEnd();
-	}
+	assert(_input);
+	_input->updateEnd();
 }
 
 void
-InputFeatures::onMessage(const GameMessage& event) noexcept
+InputFeatures::onReset() noexcept
 {
-	if (event.event()->code() == typeid(LostFocusEvent).hash_code())
+	assert(_input);
+	_input->reset();
+}
+
+void
+InputFeatures::onMessage(const MessagePtr& event) noexcept
+{
+	/*if (event->isInstanceOf<LostFocusEvent>())
 	{
 		if (_input)
 		{
 			_input->releaseCapture();
 		}
 	}
-	else if (event.event()->code() == typeid(GetFocusEvent).hash_code())
+	else if (event->isInstanceOf<GetFocusEvent>())
 	{
 		if (_input)
 		{
 			_input->obtainCapture();
 		}
-	}
-}
-
-void
-InputFeatures::onReset() noexcept
-{
-	if (_input)
-	{
-		_input->reset();
-	}
-}
-
-void
-InputFeatures::onInputEvent(const InputEvent& event) noexcept
-{
-	switch (event.event)
-	{
-	case InputEvent::MouseMotion:
-	{
-		MouseMotion motion;
-		motion.mouse.x = event.motion.x;
-		motion.mouse.y = event.motion.y;
-		motion.mouse.xrel = event.motion.xrel;
-		motion.mouse.yrel = event.motion.yrel;
-
-		this->sendMessage(&motion);
-	}
-	break;
-	case InputEvent::MouseButtonDown:
-	{
-		MouseButtonDown button;
-		button.mouse.button = event.button.button;
-		button.mouse.x = event.button.x;
-		button.mouse.y = event.button.y;
-
-		this->sendMessage(&button);
-	}
-	break;
-	case InputEvent::MouseButtonUp:
-	{
-		MouseButtonUp button;
-		button.mouse.button = event.button.button;
-		button.mouse.x = event.button.x;
-		button.mouse.y = event.button.y;
-
-		this->sendMessage(&button);
-	}
-	break;
-	default:
-		break;
-	}
+	}*/
 }
 
 _NAME_END
+
+#endif

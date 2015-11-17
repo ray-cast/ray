@@ -37,10 +37,11 @@
 #ifndef _H_INPUT_TYPES_H_
 #define _H_INPUT_TYPES_H_
 
-#include <ray/platform.h>
+#include <ray/rtti.h>
 
 _NAME_BEGIN
 
+typedef std::shared_ptr<class InputListener> InputListenerPtr;
 typedef std::shared_ptr<class InputKeyboard> InputKeyboardPtr;
 typedef std::shared_ptr<class InputMouse> InputMousePtr;
 typedef std::shared_ptr<class InputDevice> InputDevicePtr;

@@ -43,6 +43,7 @@ _NAME_BEGIN
 
 class EXPORT InputKeyboard : public InputController
 {
+	__DeclareSubInterface(InputKeyboard, InputController)
 public:
 	InputKeyboard() noexcept;
 	virtual ~InputKeyboard() noexcept;

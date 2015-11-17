@@ -44,17 +44,15 @@
 
 _NAME_BEGIN
 
-class EXPORT InputFeatures final : public GameFeature, public InputListener
+class EXPORT InputFeatures final : public GameFeature
 {
-	__DeclareSubClass(InputFeatures, GameListener)
+	__DeclareSubClass(InputFeatures, GameFeature)
 public:
 	InputFeatures() noexcept;
 	virtual ~InputFeatures() noexcept;
 
 	void setInput(InputPtr input) noexcept;
 	InputPtr getInput() const noexcept;
-
-	GameFeaturePtr clone() const noexcept;
 
 private:
 
@@ -66,9 +64,7 @@ private:
 	virtual void onFrameBegin() noexcept;
 	virtual void onFrameEnd() noexcept;
 
-	virtual void onMessage(const GameMessage& event) noexcept;
-
-	virtual void onInputEvent(const InputEvent& event) noexcept;
+	virtual void onMessage(const MessagePtr& event) noexcept;
 
 private:
 	InputFeatures(const InputFeatures&) = delete;

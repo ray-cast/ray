@@ -38,6 +38,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubInterface(InputKeyboard, InputController, "InputKeyboard")
+
 InputKeyboard::InputKeyboard() noexcept
 {
 }

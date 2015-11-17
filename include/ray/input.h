@@ -43,6 +43,7 @@ _NAME_BEGIN
 
 class EXPORT DefaultInput final : public Input
 {
+	__DeclareSubClass(DefaultInput, Input)
 public:
 	DefaultInput() noexcept;
 	~DefaultInput() noexcept;
@@ -84,8 +85,8 @@ public:
 
 	virtual void reset() noexcept;
 
-	virtual void addInputListener(InputListener* listener) noexcept;
-	virtual void removeInputListener(InputListener* listener) noexcept;
+	virtual void addInputListener(InputListenerPtr listener) noexcept;
+	virtual void removeInputListener(InputListenerPtr listener) noexcept;
 	virtual void clearInputListener() noexcept;
 
 	virtual void updateBegin() noexcept;
@@ -100,7 +101,7 @@ private:
 
 private:
 
-	typedef std::vector<InputListener*> InputListeners;
+	typedef std::vector<InputListenerPtr> InputListeners;
 
 	InputDevicePtr _inputDevice;
 	InputMousePtr _mouseCaptureDevice;

@@ -38,6 +38,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(InputController, rtti::Interface, "InputController")
+
 InputController::InputController() noexcept
     :_capture(true)
 {

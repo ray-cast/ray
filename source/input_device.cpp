@@ -39,6 +39,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(DefaultInputDevice, ToplevelInputDevice, "DefaultInputDevice")
+
 DefaultInputDevice::DefaultInputDevice() noexcept
 	: _enableEventPosting(true)
 {

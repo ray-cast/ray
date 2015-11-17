@@ -51,6 +51,7 @@ _NAME_BEGIN
 
 class EXPORT DefaultInputMouse : public ToplevelInputMouse
 {
+	__DeclareSubClass(DefaultInputMouse, ToplevelInputMouse)
 public:
 	DefaultInputMouse() noexcept;
 

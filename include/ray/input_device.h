@@ -55,6 +55,7 @@ _NAME_BEGIN
 
 class EXPORT DefaultInputDevice final : public ToplevelInputDevice
 {
+	__DeclareSubClass(DefaultInputDevice, ToplevelInputDevice)
 public:
 	DefaultInputDevice() noexcept;
 

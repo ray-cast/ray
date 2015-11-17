@@ -41,8 +41,9 @@
 
 _NAME_BEGIN
 
-class EXPORT InputDevice
+class EXPORT InputDevice : public rtti::Interface
 {
+	__DeclareSubInterface(DefaultInputDevice, rtti::Interface)
 public:
 	typedef void* CaptureObject;
 

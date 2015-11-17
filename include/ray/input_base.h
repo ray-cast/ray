@@ -43,8 +43,9 @@
 
 _NAME_BEGIN
 
-class EXPORT InputListener
+class EXPORT InputListener : public rtti::Interface
 {
+	__DeclareSubInterface(InputListener, rtti::Interface)
 public:
 	InputListener() noexcept;
 	virtual ~InputListener() noexcept;
@@ -56,8 +57,9 @@ private:
 	InputListener& operator=(const InputListener&)noexcept = delete;
 };
 
-class EXPORT Input
+class EXPORT Input : public rtti::Interface
 {
+	__DeclareSubInterface(Input, rtti::Interface)
 public:
 	Input() noexcept;
 	virtual ~Input() noexcept;
@@ -99,8 +101,8 @@ public:
 
 	virtual void reset() noexcept = 0;
 
-	virtual void addInputListener(InputListener* listener) noexcept = 0;
-	virtual void removeInputListener(InputListener* listener) noexcept = 0;
+	virtual void addInputListener(InputListenerPtr listener) noexcept = 0;
+	virtual void removeInputListener(InputListenerPtr listener) noexcept = 0;
 	virtual void clearInputListener() noexcept = 0;
 
 	virtual void updateBegin() noexcept = 0;

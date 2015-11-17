@@ -38,6 +38,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubInterface(InputDevice, rtti::Interface, "InputDevice")
+
 InputDevice::InputDevice() noexcept
 {
 }

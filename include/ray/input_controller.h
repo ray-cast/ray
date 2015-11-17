@@ -41,8 +41,9 @@
 
 _NAME_BEGIN
 
-class EXPORT InputController
+class EXPORT InputController : public rtti::Interface
 {
+	__DeclareSubClass(InputController, rtti::Interface)
 public:
     InputController() noexcept;
     virtual ~InputController() noexcept;

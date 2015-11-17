@@ -39,6 +39,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(DefaultInputMouse, ToplevelInputMouse, "DefaultInputMouse")
+
 DefaultInputMouse::DefaultInputMouse() noexcept
 	: _mouseX(0)
 	, _mouseY(0)

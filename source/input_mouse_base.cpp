@@ -38,6 +38,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubInterface(InputMouse, rtti::Interface, "InputMouse")
+
 InputMouse::InputMouse() noexcept
 {
 }

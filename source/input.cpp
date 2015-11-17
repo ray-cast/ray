@@ -38,6 +38,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(DefaultInput, Input, "DefaultInput")
+
 DefaultInput::DefaultInput() noexcept
 {
 }
@@ -292,7 +294,7 @@ DefaultInput::reset() noexcept
 }
 
 void
-DefaultInput::addInputListener(InputListener* listener) noexcept
+DefaultInput::addInputListener(InputListenerPtr listener) noexcept
 {
 	assert(listener);
 	auto it = std::find(_inputListeners.begin(), _inputListeners.end(), listener);
@@ -303,7 +305,7 @@ DefaultInput::addInputListener(InputListener* listener) noexcept
 }
 
 void
-DefaultInput::removeInputListener(InputListener* listener) noexcept
+DefaultInput::removeInputListener(InputListenerPtr listener) noexcept
 {
 	assert(listener);
 	auto it = std::find(_inputListeners.begin(), _inputListeners.end(), listener);

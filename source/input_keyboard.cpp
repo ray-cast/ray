@@ -39,6 +39,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(DefaultInputKeyboard, ToplevelInputKeyboard, "DefaultInputKeyboard")
+
 DefaultInputKeyboard::DefaultInputKeyboard() noexcept
 {
 	std::memset(_keyState, 0, sizeof(_keyState));

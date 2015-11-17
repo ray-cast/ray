@@ -38,6 +38,9 @@
 
 _NAME_BEGIN
 
+__ImplementSubInterface(Input, rtti::Interface, "Input")
+__ImplementSubInterface(InputListener, rtti::Interface, "InputListener")
+
 InputListener::InputListener() noexcept
 {
 }

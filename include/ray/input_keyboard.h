@@ -51,6 +51,7 @@ _NAME_BEGIN
 
 class EXPORT DefaultInputKeyboard final : public ToplevelInputKeyboard
 {
+	__DeclareSubClass(DefaultInputKeyboard, ToplevelInputKeyboard)
 public:
 	DefaultInputKeyboard() noexcept;
 	~DefaultInputKeyboard() noexcept;

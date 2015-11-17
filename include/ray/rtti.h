@@ -84,7 +84,7 @@ namespace rtti
 
 		template<typename T>
 		bool isInstanceOf() const noexcept
-			{ return this->isInstanceOf(T::RTTI); }
+			{ return this->isInstanceOf(T::getRtti()); }
 
 		bool isA(const Rtti* rtti) const noexcept;
 		bool isA(const Rtti& rtti) const noexcept;
@@ -92,7 +92,7 @@ namespace rtti
 
 		template<typename T>
 		bool isA() const noexcept
-			{ return this->isA(T::RTTI); }
+			{ return this->isA(T::getRtti()); }
 	};
 }
 

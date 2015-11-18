@@ -44,6 +44,23 @@ _NAME_BEGIN
 
 __ImplementSubClass(InputFeatures, GameFeature, "Input")
 
+class InputEventListener : public InputListener
+{
+public:
+	InputEventListener(InputFeatures& input)
+		:_input(input)
+	{
+	}
+
+	void onInputEvent(const InputEventPtr& event) noexcept
+	{
+		_input.sendMessage(event);
+	}
+
+private:
+	InputFeatures& _input;
+};
+
 InputFeatures::InputFeatures() noexcept
 {
 	_input = std::make_shared<DefaultInput>();
@@ -55,6 +72,7 @@ InputFeatures::InputFeatures() noexcept
 	_input->open(inputDevice);
 	_input->obtainKeyboardCapture(inputKeyboard);
 	_input->obtainMouseCapture(inputMouse);
+	_input->addInputListener(std::make_shared<InputEventListener>(*this));
 #endif
 }
 

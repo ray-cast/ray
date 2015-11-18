@@ -87,9 +87,9 @@ public:
 		GameEngine* engine = (GameEngine*)glfwGetWindowUserPointer(window);
 		if (engine)
 		{
-			ray::InputEvent event;
-			event.event = ray::InputEvent::AppQuit;
-			engine->sendInputEvent(event);
+			auto event = ray::make_message<ray::InputEvent>();
+			event->event = ray::InputEvent::AppQuit;
+			engine->sendMessage(event);
 		}
 	}
 
@@ -100,15 +100,15 @@ public:
 		{
 			if (focus)
 			{
-				ray::InputEvent event;
-				event.event = ray::InputEvent::GetFocus;
-				engine->sendInputEvent(event);
+				auto event = ray::make_message<ray::InputEvent>();
+				event->event = ray::InputEvent::GetFocus;
+				engine->sendMessage(event);
 			}
 			else
 			{
-				ray::InputEvent event;
-				event.event = ray::InputEvent::LostFocus;
-				engine->sendInputEvent(event);
+				auto event = ray::make_message<ray::InputEvent>();
+				event->event = ray::InputEvent::LostFocus;
+				engine->sendMessage(event);
 			}
 		}
 	}

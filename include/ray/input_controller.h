@@ -41,9 +41,23 @@
 
 _NAME_BEGIN
 
-class EXPORT InputController : public rtti::Interface
+class EXPORT InputListener : public rtti::Interface
 {
-	__DeclareSubClass(InputController, rtti::Interface)
+	__DeclareSubInterface(InputListener, rtti::Interface)
+public:
+	InputListener() noexcept;
+	virtual ~InputListener() noexcept;
+
+	virtual void onInputEvent(const InputEventPtr& event) noexcept = 0;
+
+private:
+	InputListener(const InputListener&) noexcept = delete;
+	InputListener& operator=(const InputListener&)noexcept = delete;
+};
+
+class EXPORT InputController : public InputListener
+{
+	__DeclareSubInterface(InputController, InputListener)
 public:
     InputController() noexcept;
     virtual ~InputController() noexcept;
@@ -56,8 +70,6 @@ public:
     virtual void onFrameEnd() noexcept;
 
     virtual void onReset() noexcept;
-
-    virtual void onEvent(const InputEvent& event) noexcept;
 
     virtual void onObtainCapture() noexcept;
     virtual void onReleaseCapture() noexcept;

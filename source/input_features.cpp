@@ -39,8 +39,6 @@
 #include <ray/input_device.h>
 #include <ray/input_keyboard.h>
 #include <ray/input_mouse.h>
-#include <ray/fstream.h>
-#include <ray/xmlreader.h>
 
 _NAME_BEGIN
 
@@ -111,6 +109,18 @@ InputFeatures::onReset() noexcept
 {
 	assert(_input);
 	_input->reset();
+}
+
+void 
+InputFeatures::onMessage(const MessagePtr& message) except
+{
+	assert(_input);
+
+	if (message->isInstanceOf<InputEvent>())
+	{
+		auto inputEvent = std::dynamic_pointer_cast<InputEvent>(message);
+		_input->sendInputEvent(inputEvent);
+	}
 }
 
 _NAME_END

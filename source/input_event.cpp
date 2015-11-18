@@ -34,47 +34,10 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_INPUT_FEATURES_H_
-#define _H_INPUT_FEATURES_H_
-
-#include <ray/game_features.h>
-#include <ray/game_event.h>
-
-#include <ray/input.h>
+#include <ray/input_event.h>
 
 _NAME_BEGIN
 
-class EXPORT InputFeatures final : public GameFeature
-{
-	__DeclareSubClass(InputFeatures, GameFeature)
-public:
-	InputFeatures() noexcept;
-	virtual ~InputFeatures() noexcept;
-
-	void setInput(InputPtr input) noexcept;
-	InputPtr getInput() const noexcept;
-
-private:
-
-	virtual void onActivate() except;
-	virtual void onDeactivate() except;
-
-	virtual void onReset() noexcept;
-
-	virtual void onFrameBegin() noexcept;
-	virtual void onFrameEnd() noexcept;
-
-	virtual void onMessage(const MessagePtr& message) except;
-
-private:
-	InputFeatures(const InputFeatures&) = delete;
-	InputFeatures& operator=(const InputFeatures&) = delete;
-
-private:
-
-	InputPtr _input;
-};
+__ImplementSubClass(InputEvent, Message, "InputEvent")
 
 _NAME_END
-
-#endif

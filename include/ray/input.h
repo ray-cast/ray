@@ -92,7 +92,8 @@ public:
 	virtual void removeInputListener(InputListenerPtr listener) noexcept;
 	virtual void clearInputListener() noexcept;
 
-	virtual void sendInputEvent(const InputEvent& event) noexcept;
+	virtual void sendInputEvent(const InputEventPtr& event) noexcept;
+	virtual void postInputEvent(const InputEventPtr& event) noexcept;
 
 	virtual void updateBegin() noexcept;
 	virtual void update() noexcept;
@@ -106,13 +107,9 @@ private:
 
 private:
 
-	typedef std::vector<InputListenerPtr> InputListeners;
-
 	InputDevicePtr _inputDevice;
 	InputMousePtr _mouseCaptureDevice;
-	InputKeyboardPtr _keyboardCaptureDevice;
-
-	InputListeners _inputListeners;
+	InputKeyboardPtr _keyboardCaptureDevice;	
 };
 
 _NAME_END

@@ -39,6 +39,7 @@
 _NAME_BEGIN
 
 __ImplementSubInterface(InputDevice, rtti::Interface, "InputDevice")
+__ImplementSubInterface(InputListener, rtti::Interface, "InputListener")
 
 InputDevice::InputDevice() noexcept
 {

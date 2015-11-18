@@ -179,6 +179,7 @@ SET(INPUT_CORE_LIST
     ${SOURCE_PATH}/input_device_base.cpp
     ${HEADER_PATH}/input_device_base.h
     ${HEADER_PATH}/input_event.h
+    ${SOURCE_PATH}/input_event.cpp
     ${HEADER_PATH}/input_key.h
     ${HEADER_PATH}/input_keyboard.h
     ${SOURCE_PATH}/input_keyboard.cpp

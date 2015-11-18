@@ -42,8 +42,9 @@
 
 _NAME_BEGIN
 
-class EXPORT GameServer final : public MessageDispatcher
+class EXPORT GameServer final : public rtti::Interface
 {
+	__DeclareSubClass(GameServer, rtti::Interface)
 public:
 	GameServer() noexcept;
 	~GameServer() noexcept;
@@ -102,6 +103,8 @@ private:
 	GameFeatures _features;
 
 	GameApplication* _gameApp;
+
+	MessageDispatcher _dispatcher;
 };
 
 _NAME_END

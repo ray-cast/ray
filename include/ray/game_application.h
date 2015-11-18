@@ -90,10 +90,6 @@ public:
 	void setFileServicePath(const std::string& path) noexcept;
 	void setResDownloadURL(const std::string& path) noexcept;
 
-#if defined(_BUILD_INPUT)
-	void sendInputEvent(const InputEvent& event) noexcept;
-#endif
-
 	void sendMessage(const MessagePtr& message) noexcept;
 	void postMessage(const MessagePtr& message) noexcept;
 

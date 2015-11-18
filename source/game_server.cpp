@@ -39,9 +39,10 @@
 #include <ray/game_event.h>
 #include <ray/game_component.h>
 #include <ray/xmlreader.h>
-#include <ray/mstream.h>
 
 _NAME_BEGIN
+
+__ImplementSubClass(GameServer, rtti::Interface, "GameServer")
 
 GameServer::GameServer() noexcept
 	: _gameApp(nullptr)
@@ -202,7 +203,7 @@ GameServer::removeScene(GameScenePtr scene) noexcept
 	{
 		for (auto& feature : _features)
 		{
-			feature->onCloseScene((*it));
+			feature->onCloseScene(*it);
 		}
 
 		(*it)->setActive(false);
@@ -278,21 +279,20 @@ GameServer::sendMessage(const MessagePtr& message) except
 {
 	if (!_isQuitRequest)
 	{
-		if (message->getInstanceID() == typeid(AppQuitEvent).hash_code())
-			_isQuitRequest = true;
-
 		for (auto& it : _features)
 			it->onMessage(message);
 
 		for (auto& it : _scenes)
 			it->sendMessage(message);
+
+		_dispatcher.sendMessage(message);
 	}
 }
 
 void
 GameServer::postMessage(const MessagePtr& event) except
 {
-	MessageDispatcher::postMessage(event);
+	_dispatcher.postMessage(event);
 }
 
 void
@@ -301,8 +301,7 @@ GameServer::update() except
 	if (!_isQuitRequest)
 	{
 		MessagePtr event;
-
-		while (this->pollMessages(event))
+		while (_dispatcher.pollMessages(event))
 		{
 			this->sendMessage(event);
 		}

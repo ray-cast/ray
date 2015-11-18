@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(InputController, rtti::Interface, "InputController")
+__ImplementSubInterface(InputController, InputListener, "InputController")
 
 InputController::InputController() noexcept
     :_capture(true)
@@ -97,11 +97,6 @@ InputController::onReleaseCapture() noexcept
 
 void
 InputController::onReset() noexcept
-{
-}
-
-void
-InputController::onEvent(const InputEvent& event) noexcept
 {
 }
 

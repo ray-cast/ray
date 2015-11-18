@@ -267,14 +267,6 @@ GameApplication::setResDownloadURL(const std::string& path) noexcept
 	}
 }
 
-#if defined(_BUILD_INPUT)
-void
-GameApplication::sendInputEvent(const InputEvent& event) noexcept
-{
-	_inputFeature->getInput()->sendInputEvent(event);
-}
-#endif
-
 void
 GameApplication::sendMessage(const MessagePtr& message) noexcept
 {

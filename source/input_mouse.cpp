@@ -209,22 +209,22 @@ DefaultInputMouse::onReleaseCapture() noexcept
 }
 
 void
-DefaultInputMouse::onEvent(const InputEvent& event) noexcept
+DefaultInputMouse::onInputEvent(const InputEventPtr& event) noexcept
 {
-	switch (event.event)
+	switch (event->event)
 	{
 	case InputEvent::MouseMotion:
 	{
-		_mouseX = event.motion.x;
-		_mouseY = event.motion.y;
-		_mouseOffsetX = event.motion.xrel - event.motion.x;
-		_mouseOffsetY = event.motion.yrel - event.motion.y;
+		_mouseX = event->motion.x;
+		_mouseY = event->motion.y;
+		_mouseOffsetX = event->motion.xrel - event->motion.x;
+		_mouseOffsetY = event->motion.yrel - event->motion.y;
 	}
 	break;
 	case InputEvent::MouseWheelDown:
 	case InputEvent::MouseButtonDown:
 	{
-		auto& key = this->_buttonState[event.button.button];
+		auto& key = this->_buttonState[event->button.button];
 		if (!key.pressed)
 		{
 			key.down = true;
@@ -235,7 +235,7 @@ DefaultInputMouse::onEvent(const InputEvent& event) noexcept
 	case InputEvent::MouseWheelUp:
 	case InputEvent::MouseButtonUp:
 	{
-		auto& key = this->_buttonState[event.button.button];
+		auto& key = this->_buttonState[event->button.button];
 		key.up = true;
 		key.pressed = false;
 		key.down = false;
@@ -243,10 +243,19 @@ DefaultInputMouse::onEvent(const InputEvent& event) noexcept
 	break;
 	case InputEvent::MouseButtonDoubleClick:
 	{
-		auto& key = this->_buttonState[event.button.button];
+		auto& key = this->_buttonState[event->button.button];
 		key.click = true;
 	}
 	break;
+	case InputEvent::GetFocus:
+		this->obtainCapture();
+		break;
+	case InputEvent::LostFocus:
+		this->releaseCapture();
+		break;
+	case InputEvent::Reset:
+		this->onReset();
+		break;
 	default:
 		break;
 	}

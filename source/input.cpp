@@ -67,12 +67,14 @@ DefaultInput::close() noexcept
 
 	if (_mouseCaptureDevice)
 	{
+		_mouseCaptureDevice->releaseCapture();
 		_mouseCaptureDevice.reset();
 		_mouseCaptureDevice = nullptr;
 	}
 
 	if (_keyboardCaptureDevice)
 	{
+		_keyboardCaptureDevice->releaseCapture();
 		_keyboardCaptureDevice.reset();
 		_keyboardCaptureDevice = nullptr;
 	}
@@ -246,12 +248,12 @@ DefaultInput::obtainMouseCapture(InputMousePtr mouse) noexcept
 	if (_mouseCaptureDevice != mouse)
 	{
 		if (_mouseCaptureDevice)
-			_mouseCaptureDevice->onReleaseCapture();
+			_mouseCaptureDevice->releaseCapture();
 
 		_mouseCaptureDevice = mouse;
 
 		if (_mouseCaptureDevice)
-			_mouseCaptureDevice->onObtainCapture();
+			_mouseCaptureDevice->obtainCapture();
 	}
 }
 
@@ -261,12 +263,20 @@ DefaultInput::obtainKeyboardCapture(InputKeyboardPtr keyboard) noexcept
 	if (_keyboardCaptureDevice != keyboard)
 	{
 		if (_keyboardCaptureDevice)
-			_keyboardCaptureDevice->onReleaseCapture();
+		{
+			_keyboardCaptureDevice->releaseCapture();
+			if (_inputDevice)
+				_inputDevice->removeInputListener(_keyboardCaptureDevice);
+		}
 
 		_keyboardCaptureDevice = keyboard;
 
 		if (_keyboardCaptureDevice)
-			_keyboardCaptureDevice->onObtainCapture();
+		{
+			_keyboardCaptureDevice->obtainCapture();
+			if (_inputDevice)
+				_inputDevice->addInputListener(_keyboardCaptureDevice);
+		}			
 	}
 }
 
@@ -311,69 +321,42 @@ DefaultInput::reset() noexcept
 void
 DefaultInput::addInputListener(InputListenerPtr listener) noexcept
 {
-	assert(listener);
-	auto it = std::find(_inputListeners.begin(), _inputListeners.end(), listener);
-	if (it == _inputListeners.end())
-	{
-		_inputListeners.push_back(listener);
-	}
+	if (_inputDevice)
+		_inputDevice->addInputListener(listener);
 }
 
 void
 DefaultInput::removeInputListener(InputListenerPtr listener) noexcept
 {
-	assert(listener);
-	auto it = std::find(_inputListeners.begin(), _inputListeners.end(), listener);
-	if (it != _inputListeners.end())
-	{
-		_inputListeners.erase(it);
-	}
+	if (_inputDevice)
+		_inputDevice->removeInputListener(listener);
 }
 
 void 
 DefaultInput::clearInputListener() noexcept
 {
-	_inputListeners.clear();
+	if (_inputDevice)
+		_inputDevice->clearInputListener();
 }
 
 void 
-DefaultInput::sendInputEvent(const InputEvent& event) noexcept
+DefaultInput::sendInputEvent(const InputEventPtr& event) noexcept
 {
-	switch (event.event)
-	{
-	case InputEvent::KeyDown:
-	case InputEvent::KeyUp:
-	{
-		if (_keyboardCaptureDevice && _keyboardCaptureDevice->capture())
-			_keyboardCaptureDevice->onEvent(event);
-		break;
-	}
-	case InputEvent::MouseMotion:
-	case InputEvent::MouseWheelUp:
-	case InputEvent::MouseWheelDown:
-	case InputEvent::MouseButtonUp:
-	case InputEvent::MouseButtonDown:
-	case InputEvent::MouseButtonDoubleClick:
-	{
-		if (_mouseCaptureDevice && _mouseCaptureDevice->capture())
-			_mouseCaptureDevice->onEvent(event);
-	}
-	case InputEvent::GetFocus:
-		this->obtainCapture();
-		break;
-	case InputEvent::LostFocus:
-		this->releaseCapture();
-		break;
-	case InputEvent::Reset:
-		this->reset();
-		break;
-	break;
-	default:
-		break;
-	}
+	if (_inputDevice)
+		_inputDevice->sendEvent(event);
 
-	for (auto& it : _inputListeners)
-		it->onInputEvent(event);
+	if (_mouseCaptureDevice)
+		_mouseCaptureDevice->onInputEvent(event);
+
+	if (_keyboardCaptureDevice)
+		_keyboardCaptureDevice->onInputEvent(event);
+}
+
+void
+DefaultInput::postInputEvent(const InputEventPtr& event) noexcept
+{
+	if (_inputDevice)
+		_inputDevice->postEvent(event);
 }
 
 void
@@ -392,7 +375,7 @@ DefaultInput::update() noexcept
 	if (!_inputDevice)
 		return;
 
-	InputEvent event;
+	InputEventPtr event;
 	while (_inputDevice->pollEvents(event))
 	{
 		this->sendInputEvent(event);
@@ -415,10 +398,13 @@ DefaultInput::clone() const noexcept
 	auto input = std::make_shared<DefaultInput>();
 	if (_inputDevice)
 		input->open(_inputDevice->clone());
+
 	if (_keyboardCaptureDevice)
 		input->obtainKeyboardCapture(_keyboardCaptureDevice->clone());
+
 	if (_mouseCaptureDevice)
 		input->obtainMouseCapture(_mouseCaptureDevice->clone());
+
 	return input;
 }
 

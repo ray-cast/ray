@@ -231,7 +231,6 @@ void
 MSWInputDevice::update() noexcept
 {
 	MSG msg;
-	InputEvent inputEvent;
 
 	while (::PeekMessage(&msg, _window, 0, 0, PM_REMOVE | PM_QS_INPUT))
 	{
@@ -240,21 +239,23 @@ MSWInputDevice::update() noexcept
 		case WM_KEYDOWN:
 		case WM_KEYUP:
 		{
-			inputEvent.event = (msg.message == WM_KEYDOWN) ? InputEvent::KeyDown : InputEvent::KeyUp;
-			inputEvent.key.timestamp = ::timeGetTime();
-			inputEvent.key.state = (msg.message == WM_KEYDOWN) ? true : false;
+			auto inputEvent = make_message<InputEvent>();
+
+			inputEvent->event = (msg.message == WM_KEYDOWN) ? InputEvent::KeyDown : InputEvent::KeyUp;
+			inputEvent->key.timestamp = ::timeGetTime();
+			inputEvent->key.state = (msg.message == WM_KEYDOWN) ? true : false;
 
 			if (msg.wParam == VK_PROCESSKEY)
 			{
 				UINT virtualKey = ::ImmGetVirtualKey(msg.hwnd);
 				if (virtualKey != VK_PROCESSKEY)
 				{
-					inputEvent.key.keysym.sym = toScancode(msg.hwnd, virtualKey, msg.lParam);
+					inputEvent->key.keysym.sym = toScancode(msg.hwnd, virtualKey, msg.lParam);
 				}
 			}
 			else
 			{
-				inputEvent.key.keysym.sym = toScancode(_window, msg.wParam, msg.lParam);
+				inputEvent->key.keysym.sym = toScancode(_window, msg.wParam, msg.lParam);
 			}
 
 			this->postEvent(inputEvent);
@@ -265,14 +266,16 @@ MSWInputDevice::update() noexcept
 			POINT pt;
 			GetCursorPos(&pt);
 
-			inputEvent.event = InputEvent::MouseMotion;
-			inputEvent.motion.x = LOWORD(msg.lParam);
-			inputEvent.motion.y = HIWORD(msg.lParam);
-			inputEvent.motion.xrel = pt.x;
-			inputEvent.motion.yrel = pt.y;
-			inputEvent.motion.state = _isButtonPress;
-			inputEvent.motion.timestamp = ::timeGetTime();
-			inputEvent.button.button = _button;
+			auto inputEvent = make_message<InputEvent>();
+
+			inputEvent->event = InputEvent::MouseMotion;
+			inputEvent->motion.x = LOWORD(msg.lParam);
+			inputEvent->motion.y = HIWORD(msg.lParam);
+			inputEvent->motion.xrel = pt.x;
+			inputEvent->motion.yrel = pt.y;
+			inputEvent->motion.state = _isButtonPress;
+			inputEvent->motion.timestamp = ::timeGetTime();
+			inputEvent->button.button = _button;
 
 			_mouseX = LOWORD(msg.lParam);
 			_mouseY = HIWORD(msg.lParam);
@@ -286,28 +289,30 @@ MSWInputDevice::update() noexcept
 		{
 			SetCapture(msg.hwnd);
 
-			inputEvent.event = InputEvent::MouseButtonDown;
-			inputEvent.button.clicks = true;
-			inputEvent.button.x = _mouseX;
-			inputEvent.button.y = _mouseY;
-			inputEvent.button.timestamp = ::timeGetTime();
+			auto inputEvent = make_message<InputEvent>();
+
+			inputEvent->event = InputEvent::MouseButtonDown;
+			inputEvent->button.clicks = true;
+			inputEvent->button.x = _mouseX;
+			inputEvent->button.y = _mouseY;
+			inputEvent->button.timestamp = ::timeGetTime();
 			switch (msg.message)
 			{
 			case WM_LBUTTONDOWN:
-				inputEvent.button.button = InputButton::MOUSE0;
+				inputEvent->button.button = InputButton::MOUSE0;
 				break;
 			case WM_MBUTTONDOWN:
-				inputEvent.button.button = InputButton::MOUSE1;
+				inputEvent->button.button = InputButton::MOUSE1;
 				break;
 			case WM_RBUTTONDOWN:
-				inputEvent.button.button = InputButton::MOUSE2;
+				inputEvent->button.button = InputButton::MOUSE2;
 				break;
 			default:
-				inputEvent.button.button = InputButton::MOUSE0;
+				inputEvent->button.button = InputButton::MOUSE0;
 			}
 
 			_isButtonPress = true;
-			_button = inputEvent.button.button;
+			_button = inputEvent->button.button;
 
 			this->postEvent(inputEvent);
 		}
@@ -318,28 +323,30 @@ MSWInputDevice::update() noexcept
 		{
 			ReleaseCapture();
 
-			inputEvent.event = InputEvent::MouseButtonUp;
-			inputEvent.button.clicks = false;
-			inputEvent.button.x = _mouseX;
-			inputEvent.button.y = _mouseY;
-			inputEvent.button.timestamp = ::timeGetTime();
+			auto inputEvent = make_message<InputEvent>();
+
+			inputEvent->event = InputEvent::MouseButtonUp;
+			inputEvent->button.clicks = false;
+			inputEvent->button.x = _mouseX;
+			inputEvent->button.y = _mouseY;
+			inputEvent->button.timestamp = ::timeGetTime();
 			switch (msg.message)
 			{
 			case WM_LBUTTONUP:
-				inputEvent.button.button = InputButton::MOUSE0;
+				inputEvent->button.button = InputButton::MOUSE0;
 				break;
 			case WM_MBUTTONUP:
-				inputEvent.button.button = InputButton::MOUSE1;
+				inputEvent->button.button = InputButton::MOUSE1;
 				break;
 			case WM_RBUTTONUP:
-				inputEvent.button.button = InputButton::MOUSE2;
+				inputEvent->button.button = InputButton::MOUSE2;
 				break;
 			default:
-				inputEvent.button.button = InputButton::MOUSE0;
+				inputEvent->button.button = InputButton::MOUSE0;
 			}
 
 			_isButtonPress = false;
-			_button = inputEvent.button.button;
+			_button = inputEvent->button.button;
 
 			this->postEvent(inputEvent);
 		}
@@ -352,27 +359,27 @@ MSWInputDevice::update() noexcept
 }
 
 void
-MSWInputDevice::peekEvents(InputEvent&) noexcept
+MSWInputDevice::peekEvents(InputEventPtr&) noexcept
 {
 	this->update();
 }
 
 bool
-MSWInputDevice::pollEvents(InputEvent&) noexcept
-{
-	this->update();
-	return true;
-}
-
-bool
-MSWInputDevice::waitEvents(InputEvent&) noexcept
+MSWInputDevice::pollEvents(InputEventPtr&) noexcept
 {
 	this->update();
 	return true;
 }
 
 bool
-MSWInputDevice::waitEvents(InputEvent&, int) noexcept
+MSWInputDevice::waitEvents(InputEventPtr&) noexcept
+{
+	this->update();
+	return true;
+}
+
+bool
+MSWInputDevice::waitEvents(InputEventPtr&, int) noexcept
 {
 	this->update();
 	return true;

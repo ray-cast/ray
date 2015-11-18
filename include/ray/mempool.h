@@ -37,17 +37,21 @@
 #ifndef _H_MEMPOOL_H_
 #define _H_MEMPOOL_H_
 
-#include <ray/platform/new.h>
-#include <memory>
-#include <malloc.h>
+#include <ray/new.h>
 
 _NAME_BEGIN
 
 template<typename T>
 class MemoryPool
 {
+	struct _FreeNode
+	{
+		_FreeNode* prev;
+		std::uint8_t data[]
+	}
+	
 public:
-    MemoryPool(int max_size)
+    MemoryPool()
         : _count(0)
         , _max_size(0)
         
@@ -62,10 +66,14 @@ public:
 
     T* allocate()
     {
-        assert(_count < _max_size);
-        T* result = new (&_data[count])T();
-        ++count;
-        return ptr;
+        if (_count < _max_size);
+		{
+			T* result = new (&_data[count])T();
+			++count;
+		}
+
+
+        return result;
     }
 
     void clear()

@@ -171,12 +171,15 @@ GameScene::getGameServer() noexcept
 void
 GameScene::sendMessage(const MessagePtr& message) except
 {
-	auto root = this->getRootObject();
-	if (root)
+	if (this->getActive())
 	{
-		auto childrens = root->getChildren();
-		for (auto& child : childrens)
-			child->sendMessage(message);
+		auto root = this->getRootObject();
+		if (root)
+		{
+			auto childrens = root->getChildren();
+			for (auto& child : childrens)
+				child->sendMessage(message);
+		}
 	}
 }
 

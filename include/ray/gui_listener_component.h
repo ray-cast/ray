@@ -51,11 +51,6 @@ public:
 
 protected:
 
-	virtual void onMessage(const MessagePtr& message) except;
-
-	virtual void onRenderPre() noexcept;
-	virtual void onRenderPost() noexcept;
-
 	virtual void onMouseDrag(float x, float y) noexcept;
 	virtual void onMouseEnter(float x, float y) noexcept;
 	virtual void onMouseOver(float x, float y) noexcept;

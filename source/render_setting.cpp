@@ -47,6 +47,7 @@ RenderSetting::RenderSetting() noexcept
 	, enableFog(false)
 	, enableFimic(false)
 	, enableFXAA(false)
+	, enableColorGrading(false)
 {
 }
 

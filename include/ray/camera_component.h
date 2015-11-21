@@ -76,6 +76,9 @@ public:
 	CameraType getCameraType() const noexcept;
 	CameraOrder getCameraOrder() const noexcept;
 
+	void addRenderListener(RenderListener* listener) noexcept;
+	void removeRenderListener(RenderListener* listener) noexcept;
+
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
 
@@ -98,6 +101,8 @@ private:
 private:
 
 	CameraPtr _camera;
+
+	std::vector<RenderListener*> _listener;
 };
 
 _NAME_END

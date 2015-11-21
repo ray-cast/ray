@@ -44,7 +44,7 @@ _NAME_BEGIN
 class GUIInputListener final : public InputListener
 {
 public:
-	virtual void onInputEvent(const InputEvent& event) noexcept;
+	virtual void onInputEvent(const InputEventPtr& event) noexcept;
 };
 
 _NAME_END

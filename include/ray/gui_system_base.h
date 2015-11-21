@@ -34,43 +34,37 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_FIRST_PERSON_CAMERA_H_
-#define _H_FIRST_PERSON_CAMERA_H_
+#ifndef _H_GUI_SYSTEM_BASE_H_
+#define _H_GUI_SYSTEM_BASE_H_
 
-#include <ray/game_controller.h>
+#include <ray/gui_key.h>
+#include <ray/gui_button.h>
+#include <ray/gui_imageloader.h>
 
-class FirstPersonCameraComponent : public ray::GameController
+_NAME_BEGIN
+
+class EXPORT GuiSystem
 {
-	__DeclareSubClass(FirstPersonCameraComponent, ray::GameController)
 public:
-	FirstPersonCameraComponent() noexcept;
-	~FirstPersonCameraComponent() noexcept;
+	virtual bool open(GuiImageLoader* loader) except = 0;
+	virtual void close() noexcept = 0;
 
-private:
+	virtual bool injectMouseMove(int _absx, int _absy, int _absz) noexcept = 0;
+	virtual bool injectMousePress(int _absx, int _absy, GuiButton::Code _id) noexcept = 0;
+	virtual bool injectMouseRelease(int _absx, int _absy, GuiButton::Code _id) noexcept = 0;
+	virtual bool injectKeyPress(GuiKey::Code _key) noexcept = 0;
+	virtual bool injectKeyRelease(GuiKey::Code _key) noexcept = 0;
 
-	void onActivate() noexcept;
-	void onDectivate() noexcept;
+	virtual bool isFocusMouse() const noexcept = 0;
+	virtual bool isFocusKey() const noexcept = 0;
+	virtual bool isCaptureMouse() const noexcept = 0;
 
-	void onFrame() noexcept;
+	virtual void setViewport(int w, int h) noexcept = 0;
+	virtual void getViewport(int& w, int& h) noexcept = 0;
 
-	void yawCamera(float speed) noexcept;
-	void moveCamera(float speed) noexcept;
-	void rotateCamera(float angle, const ray::float3 axis) noexcept;
-	void rotateCamera(float mouseX, float mouseY, float lastX, float lastY) noexcept;
-
-	ray::GameComponentPtr clone() const noexcept;
-
-private:
-
-	float _speed;
-	float _gravity;
-	float _maxVelocityChange;
-	float _jumpHeight;
-	float _lastX;
-	float _lastY;
-
-	int _centerX;
-	int _centerY;
+	virtual void render() except = 0;
 };
+
+_NAME_END
 
 #endif

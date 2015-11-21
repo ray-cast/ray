@@ -39,7 +39,6 @@ ENDIF()
 
 OPTION(BUILD_SSE "on for use off for ignore" OFF)
 OPTION(BUILD_UNICODE "on for unicode off for ascii" OFF)
-
 OPTION(BUILD_INPUT "on for use off for ignore" ON)
 OPTION(BUILD_BASEGAME "on for use off for ignore" ON)
 OPTION(BUILD_SCRIPT "on for use off for ignore" OFF)
@@ -119,6 +118,7 @@ ENDIF()
 
 IF(BUILD_GUI)
     ADD_DEFINITIONS(-D_BUILD_GUI)
+    ADD_DEFINITIONS(-DMYGUI_STATIC)
 ENDIF()
 
 IF(BUILD_RENDERER)

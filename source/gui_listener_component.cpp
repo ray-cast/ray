@@ -50,50 +50,6 @@ GUIListenerComponent::~GUIListenerComponent() noexcept
 }
 
 void 
-GUIListenerComponent::onMessage(const MessagePtr& message) except
-{
-	auto event = message.event();
-	if (event->code() == typeid(MouseMotion).hash_code())
-	{
-		MouseEvent motion = dynamic_cast<MouseMotion*>(event)->mouse;
-		this->onMouseMotion(motion.x, motion.y);
-	}
-	else if (event->code() == typeid(MouseDrag).hash_code())
-	{
-		MouseEvent motion = dynamic_cast<MouseDrag*>(event)->mouse;
-		this->onMouseDrag(motion.x, motion.y);
-	}
-	else if (event->code() == typeid(MouseEnter).hash_code())
-	{
-		MouseEvent motion = dynamic_cast<MouseEnter*>(event)->mouse;
-		this->onMouseEnter(motion.x, motion.y);
-	}
-	else if (event->code() == typeid(MouseOver).hash_code())
-	{
-		MouseEvent motion = dynamic_cast<MouseOver*>(event)->mouse;
-		this->onMouseOver(motion.x, motion.y);
-	}
-	else if (event->code() == typeid(MouseButtonDown).hash_code())
-	{
-		MouseEvent motion = dynamic_cast<MouseButtonDown*>(event)->mouse;
-		this->onMouseButtonDown(motion.button, motion.x, motion.y);
-	}
-	else if (event->code() == typeid(MouseButtonUp).hash_code())
-	{
-		MouseEvent motion = dynamic_cast<MouseButtonUp*>(event)->mouse;
-		this->onMouseButtonUp(motion.button, motion.x, motion.y);
-	}
-	else if (event->code() == typeid(WillRenderObjectEvent).hash_code())
-	{
-		this->onRenderPre();
-	}
-	else if (event->code() == typeid(RenderObjectEvent).hash_code())
-	{
-		this->onRenderPost();
-	}
-}
-
-void 
 GUIListenerComponent::onMouseDrag(float x, float y) noexcept
 {
 }
@@ -120,16 +76,6 @@ GUIListenerComponent::onMouseButtonDown(int button, float x, float y) noexcept
 
 void 
 GUIListenerComponent::onMouseButtonUp(int button, float x, float y) noexcept
-{
-}
-
-void 
-GUIListenerComponent::onRenderPre() noexcept
-{
-}
-
-void 
-GUIListenerComponent::onRenderPost() noexcept
 {
 }
 

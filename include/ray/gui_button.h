@@ -34,43 +34,36 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_FIRST_PERSON_CAMERA_H_
-#define _H_FIRST_PERSON_CAMERA_H_
+#ifndef _H_GUI_BUTTON_H_
+#define _H_GUI_BUTTON_H_
 
-#include <ray/game_controller.h>
+#include <ray/platform.h>
 
-class FirstPersonCameraComponent : public ray::GameController
+_NAME_BEGIN
+
+class GuiButton
 {
-	__DeclareSubClass(FirstPersonCameraComponent, ray::GameController)
 public:
-	FirstPersonCameraComponent() noexcept;
-	~FirstPersonCameraComponent() noexcept;
+	enum Code
+	{
+		None = -1,
 
-private:
+		Left = 0,
+		Right,
+		Middle,
 
-	void onActivate() noexcept;
-	void onDectivate() noexcept;
-
-	void onFrame() noexcept;
-
-	void yawCamera(float speed) noexcept;
-	void moveCamera(float speed) noexcept;
-	void rotateCamera(float angle, const ray::float3 axis) noexcept;
-	void rotateCamera(float mouseX, float mouseY, float lastX, float lastY) noexcept;
-
-	ray::GameComponentPtr clone() const noexcept;
-
-private:
-
-	float _speed;
-	float _gravity;
-	float _maxVelocityChange;
-	float _jumpHeight;
-	float _lastX;
-	float _lastY;
-
-	int _centerX;
-	int _centerY;
+		Button0 = 0,
+		Button1,
+		Button2,
+		Button3,
+		Button4,
+		Button5,
+		Button6,
+		Button7,
+		MAX
+	};
 };
+
+_NAME_END
 
 #endif

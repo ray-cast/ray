@@ -18,22 +18,5 @@
             <attribute h="768"/>
         </component>
         <component name="GUICamera"/>
-        <object>
-            <attribute name="plane"/>
-            <attribute active="true"/>
-            <component name="GUILayout"/>
-            <component name="GUIPlane"/>
-            <object>
-                <attribute name="button"/>
-                <attribute active="true"/>
-                <attribute position="10,10,0" />
-                <attribute scale="10,6,1" />
-                <component name="GUIButton"/>
-                <component name="GUILabel">
-                    <attribute text="基于distance field的字体能在和点阵字体存储相同结构的情况下获得更好的渲染效果，尤其是支持一定程序上的高质量缩放。"/>
-                    <attribute font="dlc:UI/font/msyh.dff"/>
-                </component>
-            </object>
-        </object>
     </object>
 </scene>

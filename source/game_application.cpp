@@ -97,24 +97,23 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) ex
 		return false;
 
 #if defined(_BUILD_INPUT)
-	_inputFeature = std::make_shared<InputFeatures>();
+	_inputFeature = std::make_shared<InputFeature>();
 	_inputFeature->getInput()->setCaptureObject((CaptureObject)hwnd);
 #endif
-
 #if defined(_BUILD_SCRIPT)
 	_scriptFeature = std::make_shared<ScriptFeatures>();
 #endif
-
 #if defined(_BUILD_BASEGAME)
 	_gameBaseFeature = std::make_shared<GameBaseFeatures>();
 #endif
-
 #if defined(_BUILD_PHYSIC)
 	_physicFeature = std::make_shared<PhysicFeatures>();
 #endif
-
 #if defined(_BUILD_RENDERER)
 	_renderFeature = std::make_shared<RenderFeatures>(hwnd, width, height);
+#endif
+#if defined(_BUILD_GUI)
+	_guiFeature = std::make_shared<GuiFeature>(width, height);
 #endif
 
 #if defined(_BUILD_INPUT)
@@ -132,7 +131,9 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) ex
 #if defined(_BUILD_RENDERER)
 	this->addFeatures(_renderFeature);
 #endif
-
+#if defined(_BUILD_GUI)
+	this->addFeatures(_guiFeature);
+#endif
 	this->start();
 
 	return _isInitialize;

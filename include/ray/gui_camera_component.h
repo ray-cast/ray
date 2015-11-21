@@ -38,10 +38,11 @@
 #define _H_GUI_CAMERA_COMPONENT_H_
 
 #include <ray/gui_behaviour_component.h>
+#include <ray/camera_component.h>
 
 _NAME_BEGIN
 
-class EXPORT GUICameraComponent : public GUIListenerComponent
+class EXPORT GUICameraComponent : public GUIListenerComponent, public RenderListener
 {
 	__DeclareSubClass(GUICameraComponent, GUIListenerComponent)
 public:
@@ -51,21 +52,14 @@ public:
 	GameComponentPtr clone() const except;
 
 private:
-	virtual void onAttach() noexcept;
-	virtual void onDeactivate() noexcept;
+	virtual void onAttachComponent() noexcept;
+	virtual void onRemoveComponent() noexcept;
 
-	virtual void onFrameEnd() noexcept;
+	virtual void onActivate() noexcept;
+	virtual void onDectivate() noexcept;
 
-	virtual void onMouseMotion(float x, float y) noexcept;
-	virtual void onMouseButtonDown(int button, float x, float y) noexcept;
-	virtual void onMouseButtonUp(int button, float x, float y) noexcept;
-
-	virtual void onRenderPre() noexcept;
-	virtual void onRenderPost() noexcept;
-
-private:
-
-	GameComponentPtr _hitTest(const Vector3& raycast) noexcept;
+	virtual void onWillRenderObject(const Camera& camera) noexcept;
+	virtual void onRenderObject(const Camera& camera) noexcept;
 
 private:
 	GUICameraComponent(const GUICameraComponent&) noexcept = delete;

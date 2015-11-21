@@ -92,6 +92,7 @@ private:
 	RenderPostProcessPtr _fog;
 	RenderPostProcessPtr _fimicToneMapping;
 	RenderPostProcessPtr _FXAA;
+	RenderPostProcessPtr _colorGrading;
 };
 
 _NAME_END

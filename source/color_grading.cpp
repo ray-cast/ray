@@ -37,6 +37,7 @@
 #include <ray/color_grading.h>
 #include <ray/material_maker.h>
 #include <ray/render_texture.h>
+#include <ray/render_factory.h>
 
 _NAME_BEGIN
 
@@ -51,9 +52,14 @@ ColorGrading::~ColorGrading() noexcept
 void
 ColorGrading::onActivate(RenderPipeline& pipeline) except
 {
+	_texColorGrading = RenderFactory::createTexture("sys:media/color_grading.png");
+
 	_material = MaterialMaker("sys:fx/color_grading.glsl");
 	_colorGrading = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("grading");
+	_texGrading = _material->getParameter("texColorGrading");
 	_texSource = _material->getParameter("texSource");
+
+	_texGrading->assign(_texColorGrading);
 }
 
 void

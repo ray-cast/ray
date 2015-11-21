@@ -54,9 +54,12 @@ public:
 
 private:
 
+	TexturePtr _texColorGrading;
+
 	MaterialPtr _material;
 	MaterialPassPtr _colorGrading;
 
+	MaterialParamPtr _texGrading;
 	MaterialParamPtr _texSource;
 };
 

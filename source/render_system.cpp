@@ -69,8 +69,8 @@ DefaultRenderSystem::open(WindHandle window, std::size_t w, std::size_t h) excep
 	_renderPipeline->open(renderWindow, w, h);
 
 	RenderSetting setting;
-	setting.enableFXAA = true;
 	setting.enableSSAO = true;
+	setting.enableFXAA = true;
 	this->setRenderSetting(setting);
 }
 
@@ -264,6 +264,20 @@ DefaultRenderSystem::setRenderSetting(const RenderSetting& setting) except
 		{
 			_renderPipeline->removePostProcess(_FXAA);
 			_FXAA.reset();
+		}
+	}
+
+	if (_setting.enableColorGrading != setting.enableColorGrading)
+	{
+		if (setting.enableColorGrading)
+		{
+			_colorGrading = std::make_shared<ColorGrading>();
+			_renderPipeline->addPostProcess(_colorGrading);
+		}
+		else if (_colorGrading)
+		{
+			_renderPipeline->removePostProcess(_colorGrading);
+			_colorGrading.reset();
 		}
 	}
 }

@@ -52,32 +52,6 @@ struct QuitMessage
 	std::int32_t  code;
 };
 
-struct WindowMessage
-{
-	std::uint32_t type;
-	std::uint32_t timestamp;
-	std::uint32_t id;
-	std::int32_t x;
-	std::int32_t y;
-	std::int32_t w;
-	std::int32_t h;
-};
-
-struct MouseEvent
-{
-	std::uint32_t timestamp;
-	std::uint32_t windowID;
-	std::uint32_t which;
-	std::uint8_t button;
-	std::uint8_t state;
-	std::uint8_t clicks;
-	std::uint8_t padding1;
-	std::uint32_t x;
-	std::uint32_t y;
-	std::uint32_t xrel;
-	std::uint32_t yrel;
-};
-
 class AppQuitEvent : public Message
 {
 public:
@@ -88,76 +62,6 @@ class AppResetEvent : public Message
 {
 public:
 	App app;
-};
-
-class GetFocusEvent : public Message
-{
-public:
-	WindowMessage window;
-};
-
-class LostFocusEvent : public Message
-{
-public:
-	WindowMessage window;
-};
-
-class SizeChangeEvent : public Message
-{
-public:
-	WindowMessage window;
-};
-
-class MoveChange : public Message
-{
-public:
-	WindowMessage window;
-};
-
-class MouseMotion : public Message
-{
-public:
-	MouseEvent mouse;
-};
-
-class MouseDrag : public Message
-{
-public:
-	MouseEvent mouse;
-};
-
-class MouseEnter : public Message
-{
-public:
-	MouseEvent mouse;
-};
-
-class MouseOver : public Message
-{
-public:
-	MouseEvent mouse;
-};
-
-class MouseButtonDown : public Message
-{
-public:
-	MouseEvent mouse;
-};
-
-class MouseButtonUp : public Message
-{
-public:
-	MouseEvent mouse;
-};
-
-class WillRenderObjectEvent : public Message
-{
-public:
-};
-
-class RenderObjectEvent : public Message
-{
-public:
 };
 
 _NAME_END

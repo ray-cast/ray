@@ -40,7 +40,7 @@
 #include <ray/game_types.h>
 
 #if defined(_BUILD_INPUT)
-#	include <ray/input_features.h>
+#	include <ray/input_feature.h>
 #endif
 
 #if defined(_BUILD_SCRIPT)
@@ -57,6 +57,10 @@
 
 #if defined(_BUILD_RENDERER)
 #	include <ray/render_features.h>
+#endif
+
+#if defined(_BUILD_GUI)
+#	include <ray/gui_feature.h>
 #endif
 
 _NAME_BEGIN
@@ -115,7 +119,7 @@ private:
 	IoInterface* _ioInterface;
 
 #if defined(_BUILD_INPUT)
-	std::shared_ptr<InputFeatures> _inputFeature;
+	std::shared_ptr<InputFeature> _inputFeature;
 #endif
 #if defined(_BUILD_BASEGAME)
 	std::shared_ptr<GameBaseFeatures> _gameBaseFeature;
@@ -128,6 +132,9 @@ private:
 #endif
 #if defined(_BUILD_RENDERER)
 	std::shared_ptr<RenderFeatures> _renderFeature;
+#endif
+#if defined(_BUILD_GUI)
+	std::shared_ptr<GuiFeature> _guiFeature;
 #endif
 };
 

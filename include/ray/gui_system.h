@@ -34,35 +34,57 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_PLANE_COMPONENT_H_
-#define _H_GUI_PLANE_COMPONENT_H_
+#ifndef _H_GUI_PLATFORM_H_
+#define _H_GUI_PLATFORM_H_
 
-#include <ray/gui_behaviour_component.h>
+#include <ray/gui_system_base.h>
+#include <ray/gui_manager.h>
+
+namespace MyGUI
+{
+	class Gui;
+	class LogManager;
+}
 
 _NAME_BEGIN
 
-class GUIPlaneComponent : public GUIBehaviourComponent
+class GuiRenderer;
+class GuiResManager;
+class EXPORT MyGuiSystem : public GuiSystem
 {
-	__DeclareSubClass(GUIPlane, GUIBehaviour)
 public:
-	GUIPlaneComponent() noexcept;
-	~GUIPlaneComponent() noexcept;
+	MyGuiSystem() noexcept;
+	~MyGuiSystem() noexcept;
 
-	virtual void needUpdate(bool update) noexcept;
-	virtual bool needUpdate() const noexcept;
+	bool open(GuiImageLoader* loader) noexcept;
+	void close() noexcept;
 
-	virtual GameComponentPtr clone() const except;
+	void setImageLoader(GuiImageLoader* loader) noexcept;
+	GuiImageLoader* getImageLoader() const noexcept;
 
-	virtual void buildUIControl(GUILayoutComponentPtr laoyut) noexcept;
-	virtual void buildUIControl(GUILayoutComponentPtr layout, GameObjectPtr object) noexcept;
-	virtual GameComponentPtr hitTest(const Vector3& raycast) noexcept;
+	bool injectMouseMove(int _absx, int _absy, int _absz) noexcept;
+	bool injectMousePress(int _absx, int _absy, GuiButton::Code _id) noexcept;
+	bool injectMouseRelease(int _absx, int _absy, GuiButton::Code _id) noexcept;
+	bool injectKeyPress(GuiKey::Code _key) noexcept;
+	bool injectKeyRelease(GuiKey::Code _key) noexcept;
+	bool isFocusMouse() const noexcept;
+	bool isFocusKey() const noexcept;
+	bool isCaptureMouse() const noexcept;
+
+	void setViewport(int w, int h) noexcept;
+	void getViewport(int& w, int& h) noexcept;
+
+	void render() noexcept;
 
 private:
-	virtual void onRenderPost() noexcept;
 
-private:
+	bool _isInitialise;
 
-	RenderBufferPtr _renderbuffer;
+	GuiRenderer* _renderer;
+	GuiResManager* _resLoader;
+
+	MyGUI::Gui* _gui;
+	MyGUI::LogManager* _logManager;
 };
 
 _NAME_END

@@ -40,9 +40,9 @@
 _NAME_BEGIN
 
 void
-GUIInputListener::onInputEvent(const InputEvent& event) noexcept
+GUIInputListener::onInputEvent(const InputEventPtr& event) noexcept
 {
-	switch (event.event)
+	switch (event->event)
 	{
 	case InputEvent::MouseMotion:
 	{

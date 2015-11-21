@@ -172,6 +172,26 @@ CameraComponent::getCameraOrder() const noexcept
 	return _camera->getCameraOrder();
 }
 
+void 
+CameraComponent::addRenderListener(RenderListener* listener) noexcept
+{
+	auto it = std::find(_listener.begin(), _listener.end(), listener);
+	if (it == _listener.end())
+	{
+		_listener.push_back(listener);
+	}
+}
+
+void 
+CameraComponent::removeRenderListener(RenderListener* listener) noexcept
+{
+	auto it = std::find(_listener.begin(), _listener.end(), listener);
+	if (it != _listener.end())
+	{
+		_listener.erase(it);
+	}
+}
+
 void
 CameraComponent::load(iarchive& reader) noexcept
 {
@@ -257,15 +277,15 @@ CameraComponent::onMoveAfter() noexcept
 void 
 CameraComponent::onWillRenderObject(const Camera& camera) noexcept
 {
-	//auto event = std::make_shared<WillRenderObjectEvent>();
-	//this->sendMessage(event);
+	for (auto& it : _listener)
+		it->onWillRenderObject(camera);
 }
 
 void 
 CameraComponent::onRenderObject(const Camera& camera) noexcept
 {
-	//auto event = std::make_shared<RenderObjectEvent>();
-	//this->sendMessage(event);
+	for (auto& it : _listener)
+		it->onRenderObject(camera);
 }
 
 GameComponentPtr

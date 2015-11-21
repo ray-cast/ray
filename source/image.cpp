@@ -36,6 +36,8 @@
 // +----------------------------------------------------------------------
 #include <ray/image.h>
 #include <ray/imagall.h>
+#include <ray/ioserver.h>
+#include <ray/mstream.h>
 
 _NAME_BEGIN
 
@@ -198,6 +200,15 @@ Image::load(istream& stream, image_type type) noexcept
     }
 
     return false;
+}
+
+bool 
+Image::load(const std::string& filename, image_type type) noexcept
+{
+	MemoryStream stream;
+	if (IoServer::instance()->openFile(filename, stream))
+		return load(stream, type);
+	return false;
 }
 
 bool

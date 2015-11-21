@@ -64,3 +64,8 @@ IF(BUILD_SCRIPT)
     ADD_SUBDIRECTORY(angelscript)
     SET_TARGET_ATTRIBUTE(angelscript "contrib")
 ENDIF()
+
+IF(BUILD_GUI)
+    ADD_SUBDIRECTORY(MyGUIEngine)
+    SET_TARGET_ATTRIBUTE(MyGUIEngine "contrib")
+ENDIF()

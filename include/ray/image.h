@@ -108,6 +108,8 @@ public:
     pass_val& rddata(std::size_t n) noexcept { return _data[(_bpp * n) >> 3]; }
 
 public:
+
+	bool load(const std::string& filename, image_type type = unknown) noexcept;
     bool load(istream& stream, image_type type = unknown) noexcept;
     bool save(ostream& stream, image_type type = png) noexcept;
 

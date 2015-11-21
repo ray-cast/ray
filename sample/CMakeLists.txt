@@ -15,6 +15,6 @@ FOREACH(mylauncher
 )
 ADD_SUBDIRECTORY(${mylauncher})
 
-SET_TARGET_ATTRIBUTE(${mylauncher} "launcher")
+SET_TARGET_ATTRIBUTE(${mylauncher} "sample")
 
 ENDFOREACH()

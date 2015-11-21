@@ -55,7 +55,7 @@
 
             in Vertex output;
 
-            float3 BumpMap(sampler2D normalTex, float2 coord)
+            float3 SphereNormalMap(sampler2D normalTex, float2 coord)
             {
                 float3 bump;
                 bump.xy = texture(normalTex, coord).gr * 2.0 - 1.0;
@@ -72,7 +72,7 @@
                 float3 bitangent = cross(normal, tangent);
 
                 float3x3 tbn = float3x3(tangent, bitangent, normal);
-                float3 tangentNormal = BumpMap(texNormal, output.coord);
+                float3 tangentNormal = SphereNormalMap(texNormal, output.coord);
                 float3 highNormal = mul(tbn, tangentNormal);
 
                 if (diffuse.w > 0.0)

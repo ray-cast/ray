@@ -6,9 +6,6 @@ INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/libpng)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/lua/src)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/tinyxml/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/freetype/include)
-INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/physx/include)
-INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/AntTweakBar/include)
-INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/SDL2/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/bullet/src)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/angelscript/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/libiconv/include)
@@ -17,6 +14,8 @@ INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/mojoshader)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/gles/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/libogg)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/libvorbis)
+INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/MyGUIEngine/include)
+INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/MyGUIPlatform/include)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
 SET(HEADER_PATH ${PROJECT_SOURCE_DIR}/include/ray)
@@ -24,10 +23,6 @@ SET(SOURCE_PATH ${PROJECT_SOURCE_DIR}/source)
 
 ADD_DEFINITIONS(-D_BUILD_DLL_EXPORT)
 ADD_DEFINITIONS(-D_ALLOW_KEYWORD_MACROS)
-
-IF(BUILD_GLEW_SHARED)
-    ADD_DEFINITIONS(-DGLEW_MX)
-ENDIF()
 
 SET(PLATFORM_CORE_LIST
     ${HEADER_PATH}/def.h
@@ -471,6 +466,26 @@ SET(SOUND_SYSTEM_LIST
 )
 SOURCE_GROUP("sound" FILES ${SOUND_SYSTEM_LIST})
 
+SET(GUI_LIST
+    ${HEADER_PATH}/gui_system.h
+    ${SOURCE_PATH}/gui_system.cpp
+    ${HEADER_PATH}/gui_system_base.h
+    ${SOURCE_PATH}/gui_system_base.cpp
+    ${HEADER_PATH}/gui_assert.h
+    ${HEADER_PATH}/gui_buffer.h
+    ${SOURCE_PATH}/gui_buffer.cpp
+    ${HEADER_PATH}/gui_manager.h
+    ${SOURCE_PATH}/gui_manager.cpp
+    ${HEADER_PATH}/gui_imageloader.h
+    ${SOURCE_PATH}/gui_imageloader.cpp
+    ${HEADER_PATH}/gui_texture.h
+    ${SOURCE_PATH}/gui_texture.cpp
+    ${HEADER_PATH}/gui_renderer.h
+    ${SOURCE_PATH}/gui_renderer.cpp
+    ${HEADER_PATH}/gui_types.h
+)
+SOURCE_GROUP("gui" FILES ${GUI_LIST})
+
 SET(PHYSICS_SYSTEM_LIST
     ${SOURCE_PATH}/physics_scene.cpp
     ${HEADER_PATH}/physics_scene.h
@@ -524,7 +539,9 @@ SET(GAMEAPP_LIST
 )
 SOURCE_GROUP("system\\app" FILES ${GAMEAPP_LIST})
 
-SET(GUI_LIST
+SET(GUI_FEATURES_LIST
+    ${HEADER_PATH}/gui_feature.h
+    ${SOURCE_PATH}/gui_feature.cpp
     ${HEADER_PATH}/gui.h
     ${HEADER_PATH}/gui_behaviour_component.h
     ${SOURCE_PATH}/gui_behaviour_component.cpp
@@ -534,8 +551,6 @@ SET(GUI_LIST
     ${SOURCE_PATH}/gui_camera_component.cpp
     ${HEADER_PATH}/gui_listener_component.h
     ${SOURCE_PATH}/gui_listener_component.cpp
-    ${HEADER_PATH}/gui_plane_component.h
-    ${SOURCE_PATH}/gui_plane_component.cpp
     ${HEADER_PATH}/gui_layout_component.h
     ${SOURCE_PATH}/gui_layout_component.cpp
     ${HEADER_PATH}/gui_label_component.h
@@ -545,7 +560,7 @@ SET(GUI_LIST
     ${HEADER_PATH}/gui_input_manager.h
     ${SOURCE_PATH}/gui_input_manager.cpp
 )
-SOURCE_GROUP("system\\gui" FILES ${GUI_LIST})
+SOURCE_GROUP("system\\gui" FILES ${GUI_FEATURES_LIST})
 
 SET(RENDER_FEATURES_LIST
     ${HEADER_PATH}/camera_component.h
@@ -652,6 +667,7 @@ ADD_LIBRARY(libmodel SHARED ${MODEL_LIST})
 ADD_LIBRARY(libphysic SHARED ${PHYSICS_SYSTEM_LIST})
 ADD_LIBRARY(libnetwork SHARED ${NETWORK_LIST})
 ADD_LIBRARY(libsound SHARED ${SOUND_SYSTEM_LIST})
+ADD_LIBRARY(libgui SHARED ${GUI_LIST})
 ADD_LIBRARY(librenderer SHARED
     ${RENDERER_CORE}
     ${RENDERER_OGL}
@@ -669,7 +685,7 @@ ADD_LIBRARY(librenderer SHARED
 )
 ADD_LIBRARY(ray SHARED
     ${GAMEAPP_LIST}
-    ${GUI_LIST}
+    ${GUI_FEATURES_LIST}
     ${RENDER_FEATURES_LIST}
     ${SOUND_FEATURES_LIST}
     ${INPUT_FEATURES_LIST}
@@ -684,7 +700,8 @@ TARGET_LINK_LIBRARIES(libimage libplatform libpng libjpeg zlib unzip)
 TARGET_LINK_LIBRARIES(libmodel libplatform libiconv)
 TARGET_LINK_LIBRARIES(libphysic libplatform BulletDynamics BulletCollision BulletSoftBody LinearMath)
 TARGET_LINK_LIBRARIES(librenderer libplatform libmodel libimage freetype)
-TARGET_LINK_LIBRARIES(ray libplatform libimage libinput libmodel libnetwork librenderer libsound)
+TARGET_LINK_LIBRARIES(libgui libplatform librenderer MyGUIEngine)
+TARGET_LINK_LIBRARIES(ray libplatform libimage libinput libmodel libnetwork librenderer libsound libgui)
 
 IF(BUILD_PLATFORM_WINDOWS)
     TARGET_LINK_LIBRARIES(libplatform dbghelp)
@@ -733,6 +750,7 @@ SET_TARGET_ATTRIBUTE(librenderer "core")
 SET_TARGET_ATTRIBUTE(libnetwork "core")
 SET_TARGET_ATTRIBUTE(libsound "core")
 SET_TARGET_ATTRIBUTE(libphysic "core")
+SET_TARGET_ATTRIBUTE(libgui "core")
 SET_TARGET_ATTRIBUTE(ray "engine")
 
 IF(MINGW OR UNIX)
@@ -744,4 +762,5 @@ IF(MINGW OR UNIX)
     SET_TARGET_PROPERTIES(libnetwork PROPERTIES OUTPUT_NAME network)
     SET_TARGET_PROPERTIES(libsound PROPERTIES OUTPUT_NAME sound)
     SET_TARGET_PROPERTIES(libphysic PROPERTIES OUTPUT_NAME physic)
+    SET_TARGET_PROPERTIES(libgui PROPERTIES OUTPUT_NAME gui)
 ENDIF()

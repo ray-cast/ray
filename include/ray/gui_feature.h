@@ -34,43 +34,38 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_FIRST_PERSON_CAMERA_H_
-#define _H_FIRST_PERSON_CAMERA_H_
+#ifndef _H_GUI_FEATURE_H_
+#define _H_GUI_FEATURE_H_
 
-#include <ray/game_controller.h>
+#include <ray/game_features.h>
+#include <ray/gui_system_base.h>
 
-class FirstPersonCameraComponent : public ray::GameController
+_NAME_BEGIN
+
+class GuiFeature final : public GameFeature
 {
-	__DeclareSubClass(FirstPersonCameraComponent, ray::GameController)
 public:
-	FirstPersonCameraComponent() noexcept;
-	~FirstPersonCameraComponent() noexcept;
+	GuiFeature(std::uint32_t w, std::uint32_t h) noexcept;
+	~GuiFeature() noexcept;
+
+	void render() except;
+
+protected:
+
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
+
+	virtual void onMessage(const MessagePtr& message) except;
 
 private:
 
-	void onActivate() noexcept;
-	void onDectivate() noexcept;
+	std::uint32_t _width;
+	std::uint32_t _height;
 
-	void onFrame() noexcept;
-
-	void yawCamera(float speed) noexcept;
-	void moveCamera(float speed) noexcept;
-	void rotateCamera(float angle, const ray::float3 axis) noexcept;
-	void rotateCamera(float mouseX, float mouseY, float lastX, float lastY) noexcept;
-
-	ray::GameComponentPtr clone() const noexcept;
-
-private:
-
-	float _speed;
-	float _gravity;
-	float _maxVelocityChange;
-	float _jumpHeight;
-	float _lastX;
-	float _lastY;
-
-	int _centerX;
-	int _centerY;
+	GuiSystem* _platform;
+	GuiImageLoader* _loader;
 };
+
+_NAME_END
 
 #endif

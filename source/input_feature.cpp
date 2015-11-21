@@ -34,46 +34,113 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_INPUT_FEATURES_H_
-#define _H_INPUT_FEATURES_H_
-
-#include <ray/game_features.h>
-#include <ray/game_event.h>
-
+#if defined(_BUILD_INPUT)
+#include <ray/input_feature.h>
+#include <ray/input_device.h>
+#include <ray/input_keyboard.h>
+#include <ray/input_mouse.h>
 #include <ray/input.h>
 
 _NAME_BEGIN
 
-class EXPORT InputFeatures final : public GameFeature
+__ImplementSubClass(InputFeature, GameFeature, "Input")
+
+class InputEventListener : public InputListener
 {
-	__DeclareSubClass(InputFeatures, GameFeature)
 public:
-	InputFeatures() noexcept;
-	virtual ~InputFeatures() noexcept;
+	InputEventListener(InputFeature& input)
+		:_input(input)
+	{
+	}
 
-	void setInput(InputPtr input) noexcept;
-	InputPtr getInput() const noexcept;
-
-private:
-
-	virtual void onActivate() except;
-	virtual void onDeactivate() except;
-
-	virtual void onReset() noexcept;
-
-	virtual void onFrameBegin() noexcept;
-	virtual void onFrameEnd() noexcept;
-
-	virtual void onMessage(const MessagePtr& message) except;
+	void onInputEvent(const InputEventPtr& event) noexcept
+	{
+		_input.sendMessage(event);
+	}
 
 private:
-	InputFeatures(const InputFeatures&) = delete;
-	InputFeatures& operator=(const InputFeatures&) = delete;
-
-private:
-
-	InputPtr _input;
+	InputFeature& _input;
 };
+
+InputFeature::InputFeature() noexcept
+{
+	_input = std::make_shared<DefaultInput>();
+
+#if !defined(__ANDROID__)
+	auto inputDevice = std::make_shared<DefaultInputDevice>();
+	auto inputKeyboard = std::make_shared<DefaultInputKeyboard>();
+	auto inputMouse = std::make_shared<DefaultInputMouse>();
+	_input->open(inputDevice);
+	_input->obtainKeyboardCapture(inputKeyboard);
+	_input->obtainMouseCapture(inputMouse);
+	_input->addInputListener(std::make_shared<InputEventListener>(*this));
+#endif
+}
+
+InputFeature::~InputFeature() noexcept
+{
+}
+
+void
+InputFeature::setInput(InputPtr input) noexcept
+{
+	assert(input);
+	_input = input;
+}
+
+InputPtr
+InputFeature::getInput() const noexcept
+{
+	return _input;
+}
+
+void
+InputFeature::onActivate() except
+{
+	assert(_input);
+	_input->obtainCapture();
+}
+
+void
+InputFeature::onDeactivate() except
+{
+	assert(_input);
+	_input->releaseCapture();
+}
+
+void
+InputFeature::onFrameBegin() noexcept
+{
+	assert(_input);
+	_input->updateBegin();
+	_input->update();
+}
+
+void
+InputFeature::onFrameEnd() noexcept
+{
+	assert(_input);
+	_input->updateEnd();
+}
+
+void
+InputFeature::onReset() noexcept
+{
+	assert(_input);
+	_input->reset();
+}
+
+void 
+InputFeature::onMessage(const MessagePtr& message) except
+{
+	assert(_input);
+
+	if (message->isInstanceOf<InputEvent>())
+	{
+		auto inputEvent = std::dynamic_pointer_cast<InputEvent>(message);
+		_input->sendInputEvent(inputEvent);
+	}
+}
 
 _NAME_END
 

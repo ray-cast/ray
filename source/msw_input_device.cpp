@@ -299,16 +299,16 @@ MSWInputDevice::update() noexcept
 			switch (msg.message)
 			{
 			case WM_LBUTTONDOWN:
-				inputEvent->button.button = InputButton::MOUSE0;
+				inputEvent->button.button = InputButton::LEFT;
 				break;
 			case WM_MBUTTONDOWN:
-				inputEvent->button.button = InputButton::MOUSE1;
+				inputEvent->button.button = InputButton::MIDDLE;
 				break;
 			case WM_RBUTTONDOWN:
-				inputEvent->button.button = InputButton::MOUSE2;
+				inputEvent->button.button = InputButton::RIGHT;
 				break;
 			default:
-				inputEvent->button.button = InputButton::MOUSE0;
+				assert(false);
 			}
 
 			_isButtonPress = true;
@@ -333,16 +333,16 @@ MSWInputDevice::update() noexcept
 			switch (msg.message)
 			{
 			case WM_LBUTTONUP:
-				inputEvent->button.button = InputButton::MOUSE0;
+				inputEvent->button.button = InputButton::LEFT;
 				break;
 			case WM_MBUTTONUP:
-				inputEvent->button.button = InputButton::MOUSE1;
+				inputEvent->button.button = InputButton::MIDDLE;
 				break;
 			case WM_RBUTTONUP:
-				inputEvent->button.button = InputButton::MOUSE2;
+				inputEvent->button.button = InputButton::RIGHT;
 				break;
 			default:
-				inputEvent->button.button = InputButton::MOUSE0;
+				assert(false);
 			}
 
 			_isButtonPress = false;

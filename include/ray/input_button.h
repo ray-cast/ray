@@ -46,7 +46,11 @@ class InputButton
 public:
     enum Code
     {
-        MOUSE0,
+		LEFT,
+		RIGHT,
+		MIDDLE,
+
+        MOUSE0 = 0,
         MOUSE1,
         MOUSE2,
         MOUSE3,

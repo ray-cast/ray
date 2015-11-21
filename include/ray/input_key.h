@@ -141,6 +141,9 @@ public:
         CAPSLOCK,
         SCROLLLOCK,
 
+		VOLUMEDOWN,
+		VOLUMEUP,
+
         NP_MULTIPLY,
         NP_SUBSTRACT,
         NP_ADD,

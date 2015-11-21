@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/string.h>
 #include <math.h>
+#include <locale>
 
 _NAME_BEGIN
 
@@ -1126,6 +1127,26 @@ std::wstring getNextToken(const wchar_t*& in)
 	const wchar_t* cur = in;
 	while (!isSpaceOrNewLine(*in))++in;
 	return std::wstring(cur, (size_t)(in - cur));
+}
+
+std::string toLower(const std::string& _input)
+{
+	std::string result;
+	result.resize(_input.size());
+	static std::locale sLocale("");
+	for (unsigned int i = 0; i<_input.size(); ++i)
+		result[i] = std::tolower(_input[i], sLocale);
+	return result;
+}
+
+std::wstring toLower(const std::wstring& _input)
+{
+	std::wstring result;
+	result.resize(_input.size());
+	static std::locale sLocale("");
+	for (unsigned int i = 0; i<_input.size(); ++i)
+		result[i] = std::tolower(_input[i], sLocale);
+	return result;
 }
 
 _NAME_END

@@ -199,6 +199,9 @@ EXPORT int integer_pow(int base, int power);
 EXPORT std::string directory(const std::string& path);
 EXPORT std::wstring directory(const std::wstring& path);
 
+EXPORT std::string toLower(const std::string& _input);
+EXPORT std::wstring toLower(const std::wstring& _input);
+
 _NAME_END
 
 #endif

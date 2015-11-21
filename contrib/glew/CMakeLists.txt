@@ -1,7 +1,6 @@
 project(glew C)
 SET(GLEW_NAME "glew")
 
-OPTION(BUILD_GLEW_SHARED  "on for use off for ignore" OFF)
 IF(BUILD_GLEW_SHARED)
     ADD_DEFINITIONS(-DGLEW_BUILD)
 ELSE()

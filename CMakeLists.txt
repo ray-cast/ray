@@ -20,6 +20,7 @@ SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 OPTION(BUILD_DEBUG_MODE "ON for debug or OFF for release" ON)
 OPTION(BUILD_DIRECTX_11 "on for DX11 off for ogl" OFF)
+OPTION(BUILD_GLEW_SHARED  "on for use off for ignore" ON)
 
 IF(ANDROID_ABI)
     OPTION(BUILD_PLATFORM_ANDROID "on for use off for ignore" ON)
@@ -43,8 +44,9 @@ OPTION(BUILD_INPUT "on for use off for ignore" ON)
 OPTION(BUILD_BASEGAME "on for use off for ignore" ON)
 OPTION(BUILD_SCRIPT "on for use off for ignore" OFF)
 OPTION(BUILD_PHYSIC "on for use off for ignore" ON)
-OPTION(BUILD_GUI "on for use off for ignore" OFF)
+OPTION(BUILD_GUI "on for use off for ignore" ON)
 OPTION(BUILD_RENDERER "on for use off for ignore" ON)
+OPTION(BUILD_SOUND "on for use off for ignore" ON)
 
 IF(BUILD_PLATFORM_ANDROID)
     ADD_DEFINITIONS(-DANDROID)
@@ -230,6 +232,7 @@ ELSEIF(CMAKE_SYSTEM_NAME MATCHES "Windows")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251") # needs to have dll-interface to be used by clients of class
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4265") # 类有虚函数，但析构函数不是虚拟的
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267") # 从“size_t”转换到“int”，可能丢失数据
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4275") #  非 dll 接口 class“std::exception”用作 dll 接口 class“MyGUI::Exception”的基
     #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4305")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4350") # 行为更改
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4355") # “this”: 用于基成员初始值设定项列表
@@ -238,6 +241,7 @@ ELSEIF(CMAKE_SYSTEM_NAME MATCHES "Windows")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4435") # 虚拟继承
     #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4480")
     #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4481")
+
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4514") # “func” 未引用的内联函数已移除
     #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4548")
     #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4571")

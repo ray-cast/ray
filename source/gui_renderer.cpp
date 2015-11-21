@@ -175,12 +175,12 @@ GuiRenderer::shutdown()
 }
 
 void
-GuiRenderer::setImageLoader(GuiImageLoader* loader) noexcept
+GuiRenderer::setImageLoader(Gui::GuiImageLoader* loader) noexcept
 {
 	mImageLoader = loader;
 }
 
-GuiImageLoader* 
+Gui::GuiImageLoader*
 GuiRenderer::getImageLoader() const noexcept
 {
 	return mImageLoader;

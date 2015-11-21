@@ -37,7 +37,7 @@
 #include "first_person_camera.h"
 
 #include <ray/game_server.h>
-#include <ray/input_features.h>
+#include <ray/input_feature.h>
 #include <ray/physics_character_component.h>
 #include <ray/camera_component.h>
 
@@ -68,7 +68,7 @@ FirstPersonCameraComponent::onActivate() noexcept
 void
 FirstPersonCameraComponent::onDectivate() noexcept
 {
-	auto inputFeature = this->getGameServer()->getFeature<ray::InputFeatures>();
+	auto inputFeature = this->getGameServer()->getFeature<ray::InputFeature>();
 	if (inputFeature)
 	{
 		inputFeature->getInput()->lockCursor(false);
@@ -81,7 +81,7 @@ FirstPersonCameraComponent::onFrame() noexcept
 	float delta = this->getGameServer()->getTimer()->delta();
 	float step = _speed * delta;
 
-	auto inputFeature = this->getGameServer()->getFeature<ray::InputFeatures>();
+	auto inputFeature = this->getGameServer()->getFeature<ray::InputFeature>();
 	if (inputFeature)
 	{
 		auto input = inputFeature->getInput();

@@ -25,8 +25,8 @@ public:
 	void initialise();
 	void shutdown();
 
-	void setImageLoader(GuiImageLoader* loader) noexcept;
-	GuiImageLoader* getImageLoader() const noexcept;
+	void setImageLoader(Gui::GuiImageLoader* loader) noexcept;
+	Gui::GuiImageLoader* getImageLoader() const noexcept;
 
 	static GuiRenderer& getInstance();
 	static GuiRenderer* getInstancePtr();
@@ -63,7 +63,7 @@ private:
 
 	typedef std::map<std::string, MyGUI::ITexture*> MapTexture;
 	MapTexture mTextures;
-	GuiImageLoader* mImageLoader;
+	Gui::GuiImageLoader* mImageLoader;
 	bool mPboIsSupported;
         
 	bool mIsInitialise;

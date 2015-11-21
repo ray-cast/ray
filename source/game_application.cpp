@@ -38,6 +38,30 @@
 #include <ray/game_server.h>
 #include <ray/rtti_factory.h>
 
+#if defined(_BUILD_INPUT)
+#	include <ray/input_feature.h>
+#endif
+
+#if defined(_BUILD_SCRIPT)
+#	include <ray/script_features.h>
+#endif
+
+#if defined(_BUILD_BASEGAME)
+#	include <ray/game_base_features.h>
+#endif
+
+#if defined(_BUILD_PHYSIC)
+#	include <ray/physics_features.h>
+#endif
+
+#if defined(_BUILD_RENDERER)
+#	include <ray/render_features.h>
+#endif
+
+#if defined(_BUILD_GUI)
+#	include <ray/gui_feature.h>
+#endif
+
 _NAME_BEGIN
 
 GameApplication::GameApplication() noexcept
@@ -97,8 +121,7 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) ex
 		return false;
 
 #if defined(_BUILD_INPUT)
-	_inputFeature = std::make_shared<InputFeature>();
-	_inputFeature->getInput()->setCaptureObject((CaptureObject)hwnd);
+	_inputFeature = std::make_shared<InputFeature>((CaptureObject)hwnd);
 #endif
 #if defined(_BUILD_SCRIPT)
 	_scriptFeature = std::make_shared<ScriptFeatures>();

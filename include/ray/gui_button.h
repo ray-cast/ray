@@ -41,28 +41,31 @@
 
 _NAME_BEGIN
 
-class GuiButton
+namespace Gui
 {
-public:
-	enum Code
+	class GuiButton
 	{
-		None = -1,
+	public:
+		enum Code
+		{
+			None = -1,
 
-		Left = 0,
-		Right,
-		Middle,
+			Left = 0,
+			Right,
+			Middle,
 
-		Button0 = 0,
-		Button1,
-		Button2,
-		Button3,
-		Button4,
-		Button5,
-		Button6,
-		Button7,
-		MAX
+			Button0 = 0,
+			Button1,
+			Button2,
+			Button3,
+			Button4,
+			Button5,
+			Button6,
+			Button7,
+			MAX
+		};
 	};
-};
+}
 
 _NAME_END
 

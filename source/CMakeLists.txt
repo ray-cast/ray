@@ -24,6 +24,39 @@ SET(SOURCE_PATH ${PROJECT_SOURCE_DIR}/source)
 ADD_DEFINITIONS(-D_BUILD_DLL_EXPORT)
 ADD_DEFINITIONS(-D_ALLOW_KEYWORD_MACROS)
 
+IF(BUILD_INPUT)
+    ADD_DEFINITIONS(-D_BUILD_INPUT)
+ENDIF()
+
+IF(BUILD_BASEGAME)
+    ADD_DEFINITIONS(-D_BUILD_BASEGAME)
+ENDIF()
+
+IF(BUILD_PHYSIC)
+    ADD_DEFINITIONS(-D_BUILD_PHYSIC)
+ENDIF()
+
+IF(BUILD_SCRIPT)
+    ADD_DEFINITIONS(-D_BUILD_SCRIPT)
+ENDIF()
+
+IF(BUILD_GUI)
+    ADD_DEFINITIONS(-D_BUILD_GUI)
+    ADD_DEFINITIONS(-DMYGUI_STATIC)
+ENDIF()
+
+IF(BUILD_RENDERER)
+    ADD_DEFINITIONS(-D_BUILD_RENDERER)
+ENDIF()
+
+IF(BUILD_OPENGL)
+    IF(BUILD_GLEW_SHARED)
+        ADD_DEFINITIONS(-DGLEW_BUILD)
+    ELSE()
+        ADD_DEFINITIONS(-DGLEW_STATIC)
+    ENDIF()
+ENDIF()
+
 SET(PLATFORM_CORE_LIST
     ${HEADER_PATH}/def.h
     ${HEADER_PATH}/delegate.h
@@ -483,6 +516,8 @@ SET(GUI_LIST
     ${HEADER_PATH}/gui_renderer.h
     ${SOURCE_PATH}/gui_renderer.cpp
     ${HEADER_PATH}/gui_types.h
+    ${HEADER_PATH}/gui_key.h
+    ${HEADER_PATH}/gui_button.h
 )
 SOURCE_GROUP("gui" FILES ${GUI_LIST})
 
@@ -597,8 +632,8 @@ SET(SOUND_FEATURES_LIST
 SOURCE_GROUP("system\\sound" FILES ${SOUND_FEATURES_LIST})
 
 SET(INPUT_FEATURES_LIST
-    ${HEADER_PATH}/input_features.h
-    ${SOURCE_PATH}/input_features.cpp
+    ${HEADER_PATH}/input_feature.h
+    ${SOURCE_PATH}/input_feature.cpp
 )
 SOURCE_GROUP("system\\input" FILES ${INPUT_FEATURES_LIST})
 
@@ -661,28 +696,59 @@ SET(SCRIGPU_SYSTEM_LIST
 SOURCE_GROUP("system\\script" FILES ${SCRIGPU_SYSTEM_LIST})
 
 ADD_LIBRARY(libplatform SHARED ${PLATFORM_CORE_LIST} ${PLATFORM_DEBUG_LIST} ${PLATFORM_IO_LIST} ${PLATFORM_MATH_LIST})
-ADD_LIBRARY(libinput SHARED ${INPUT_CORE_LIST} ${INPUT_MSW_LIST} ${INPUT_SDL_LIST})
 ADD_LIBRARY(libimage SHARED ${IMAGE_LIST})
 ADD_LIBRARY(libmodel SHARED ${MODEL_LIST})
-ADD_LIBRARY(libphysic SHARED ${PHYSICS_SYSTEM_LIST})
 ADD_LIBRARY(libnetwork SHARED ${NETWORK_LIST})
 ADD_LIBRARY(libsound SHARED ${SOUND_SYSTEM_LIST})
-ADD_LIBRARY(libgui SHARED ${GUI_LIST})
-ADD_LIBRARY(librenderer SHARED
-    ${RENDERER_CORE}
-    ${RENDERER_OGL}
-    ${RENDERER_MATERIAL}
-    ${RENDERER_SCENE}
 
-    ${RENDERER_LIGHT}
-    ${RENDERER_CAMERA}
-    ${RENDERER_MESH}
-    ${RENDERER_TERRAIN}
-    ${RENDERER_FONT}
-    ${RENDERER_POST_PROCESS}
+IF(BUILD_INPUT)
+    ADD_LIBRARY(libinput SHARED ${INPUT_CORE_LIST} ${INPUT_MSW_LIST} ${INPUT_SDL_LIST})
+    TARGET_LINK_LIBRARIES(libinput libplatform)
+    IF(MINGW OR UNIX)
+        SET_TARGET_PROPERTIES(libinput PROPERTIES OUTPUT_NAME input)
+    ENDIF()
+    SET_TARGET_ATTRIBUTE(libinput "core")
+ENDIF()
 
-    ${RENDERER_SYSTEM}
-)
+IF(BUILD_PHYSIC)
+    ADD_LIBRARY(libphysic SHARED ${PHYSICS_SYSTEM_LIST})
+    TARGET_LINK_LIBRARIES(libphysic libplatform BulletDynamics BulletCollision BulletSoftBody LinearMath)
+    IF(MINGW OR UNIX)
+        SET_TARGET_PROPERTIES(libphysic PROPERTIES OUTPUT_NAME physic)
+    ENDIF()
+    SET_TARGET_ATTRIBUTE(libphysic "core")
+ENDIF()
+
+IF(BUILD_GUI)
+    ADD_LIBRARY(libgui SHARED ${GUI_LIST})
+    TARGET_LINK_LIBRARIES(libgui libplatform librenderer MyGUIEngine)
+    IF(MINGW OR UNIX)
+        SET_TARGET_PROPERTIES(libgui PROPERTIES OUTPUT_NAME gui)
+    ENDIF()
+    SET_TARGET_ATTRIBUTE(libgui "core")
+ENDIF()
+
+IF(BUILD_RENDERER)
+    ADD_LIBRARY(librenderer SHARED
+        ${RENDERER_CORE}
+        ${RENDERER_OGL}
+        ${RENDERER_MATERIAL}
+        ${RENDERER_SCENE}
+
+        ${RENDERER_LIGHT}
+        ${RENDERER_CAMERA}
+        ${RENDERER_MESH}
+        ${RENDERER_TERRAIN}
+        ${RENDERER_FONT}
+        ${RENDERER_POST_PROCESS}
+
+        ${RENDERER_SYSTEM}
+    )
+    TARGET_LINK_LIBRARIES(librenderer libplatform libmodel libimage freetype)
+    SET_TARGET_ATTRIBUTE(librenderer "core")
+    SET_TARGET_PROPERTIES(librenderer PROPERTIES OUTPUT_NAME renderer)
+ENDIF()
+
 ADD_LIBRARY(ray SHARED
     ${GAMEAPP_LIST}
     ${GUI_FEATURES_LIST}
@@ -695,13 +761,9 @@ ADD_LIBRARY(ray SHARED
 )
 
 TARGET_LINK_LIBRARIES(libplatform libiconv tinyxml)
-TARGET_LINK_LIBRARIES(libinput libplatform)
 TARGET_LINK_LIBRARIES(libimage libplatform libpng libjpeg zlib unzip)
 TARGET_LINK_LIBRARIES(libmodel libplatform libiconv)
-TARGET_LINK_LIBRARIES(libphysic libplatform BulletDynamics BulletCollision BulletSoftBody LinearMath)
-TARGET_LINK_LIBRARIES(librenderer libplatform libmodel libimage freetype)
-TARGET_LINK_LIBRARIES(libgui libplatform librenderer MyGUIEngine)
-TARGET_LINK_LIBRARIES(ray libplatform libimage libinput libmodel libnetwork librenderer libsound libgui)
+TARGET_LINK_LIBRARIES(ray libplatform libimage libinput libmodel libnetwork librenderer libsound)
 
 IF(BUILD_PLATFORM_WINDOWS)
     TARGET_LINK_LIBRARIES(libplatform dbghelp)
@@ -738,29 +800,25 @@ IF(BUILD_PHYSIC)
     TARGET_LINK_LIBRARIES(ray libphysic)
 ENDIF()
 
+IF(BUILD_GUI)
+    TARGET_LINK_LIBRARIES(ray libgui)
+ENDIF()
+
 IF(BUILD_PLATFORM_SDL2)
     TARGET_LINK_LIBRARIES(ray SDL2)
 ENDIF()
 
 SET_TARGET_ATTRIBUTE(libplatform "core")
-SET_TARGET_ATTRIBUTE(libinput "core")
 SET_TARGET_ATTRIBUTE(libimage "core")
 SET_TARGET_ATTRIBUTE(libmodel "core")
-SET_TARGET_ATTRIBUTE(librenderer "core")
 SET_TARGET_ATTRIBUTE(libnetwork "core")
 SET_TARGET_ATTRIBUTE(libsound "core")
-SET_TARGET_ATTRIBUTE(libphysic "core")
-SET_TARGET_ATTRIBUTE(libgui "core")
 SET_TARGET_ATTRIBUTE(ray "engine")
 
 IF(MINGW OR UNIX)
     SET_TARGET_PROPERTIES(libplatform PROPERTIES OUTPUT_NAME platform)
-    SET_TARGET_PROPERTIES(libinput PROPERTIES OUTPUT_NAME input)
     SET_TARGET_PROPERTIES(libimage PROPERTIES OUTPUT_NAME image)
     SET_TARGET_PROPERTIES(libmodel PROPERTIES OUTPUT_NAME model)
-    SET_TARGET_PROPERTIES(librenderer PROPERTIES OUTPUT_NAME renderer)
     SET_TARGET_PROPERTIES(libnetwork PROPERTIES OUTPUT_NAME network)
     SET_TARGET_PROPERTIES(libsound PROPERTIES OUTPUT_NAME sound)
-    SET_TARGET_PROPERTIES(libphysic PROPERTIES OUTPUT_NAME physic)
-    SET_TARGET_PROPERTIES(libgui PROPERTIES OUTPUT_NAME gui)
 ENDIF()

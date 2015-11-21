@@ -44,6 +44,10 @@
 
 _NAME_BEGIN
 
+using namespace Gui;
+
+__ImplementSubClass(MyGuiSystem, GuiSystem, "MyGuiSystem")
+
 MyGUI::MouseButton GuiButtonToMyGUI(GuiButton::Code button)
 {
 	switch (button)
@@ -295,13 +299,13 @@ MyGuiSystem::close() noexcept
 }
 
 void
-MyGuiSystem::setImageLoader(GuiImageLoader* loader) noexcept
+MyGuiSystem::setImageLoader(Gui::GuiImageLoader* loader) noexcept
 {
 	assert(_renderer);
 	_renderer->setImageLoader(loader);
 }
 
-GuiImageLoader*
+Gui::GuiImageLoader*
 MyGuiSystem::getImageLoader() const noexcept
 {
 	assert(_renderer);

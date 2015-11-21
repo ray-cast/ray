@@ -10,6 +10,7 @@
 #include "MyGUI_Prerequest.h"
 #include "MyGUI_ITexture.h"
 #include "MyGUI_RenderFormat.h"
+
 #include <ray/gui_imageloader.h>
 
 _NAME_BEGIN
@@ -45,7 +46,7 @@ private:
 class OpenGL3Texture : public MyGUI::ITexture
 {
 public:
-	OpenGL3Texture(const std::string& name, GuiImageLoader* loader);
+	OpenGL3Texture(const std::string& name, Gui::GuiImageLoader* loader);
 	virtual ~OpenGL3Texture();
 
 	virtual const std::string& getName() const;
@@ -93,7 +94,7 @@ private:
 	void* mBuffer;
 	MyGUI::PixelFormat mOriginalFormat;
 	MyGUI::TextureUsage mOriginalUsage;
-	GuiImageLoader* mImageLoader;
+	Gui::GuiImageLoader* mImageLoader;
 	OpenGL3RTTexture* mRenderTarget;
 };
 

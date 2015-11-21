@@ -39,30 +39,6 @@
 
 #include <ray/game_types.h>
 
-#if defined(_BUILD_INPUT)
-#	include <ray/input_feature.h>
-#endif
-
-#if defined(_BUILD_SCRIPT)
-#	include <ray/script_features.h>
-#endif
-
-#if defined(_BUILD_BASEGAME)
-#	include <ray/game_base_features.h>
-#endif
-
-#if defined(_BUILD_PHYSIC)
-#	include <ray/physics_features.h>
-#endif
-
-#if defined(_BUILD_RENDERER)
-#	include <ray/render_features.h>
-#endif
-
-#if defined(_BUILD_GUI)
-#	include <ray/gui_feature.h>
-#endif
-
 _NAME_BEGIN
 
 class EXPORT GameApplication
@@ -118,24 +94,12 @@ private:
 	IoServer* _ioServer;
 	IoInterface* _ioInterface;
 
-#if defined(_BUILD_INPUT)
-	std::shared_ptr<InputFeature> _inputFeature;
-#endif
-#if defined(_BUILD_BASEGAME)
-	std::shared_ptr<GameBaseFeatures> _gameBaseFeature;
-#endif
-#if defined(_BUILD_SCRIPT)
-	std::shared_ptr<ScriptFeatures> _scriptFeature;
-#endif
-#if defined(_BUILD_PHYSIC)
-	std::shared_ptr<PhysicFeatures> _physicFeature;
-#endif
-#if defined(_BUILD_RENDERER)
-	std::shared_ptr<RenderFeatures> _renderFeature;
-#endif
-#if defined(_BUILD_GUI)
-	std::shared_ptr<GuiFeature> _guiFeature;
-#endif
+	GameFeaturePtr _inputFeature;
+	GameFeaturePtr _gameBaseFeature;
+	GameFeaturePtr _scriptFeature;
+	GameFeaturePtr _physicFeature;
+	GameFeaturePtr _renderFeature;
+	GameFeaturePtr _guiFeature;
 };
 
 _NAME_END

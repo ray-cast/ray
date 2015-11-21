@@ -15,7 +15,7 @@ _NAME_BEGIN
 
 using namespace MyGUI;
 
-OpenGL3Texture::OpenGL3Texture(const std::string& _name, GuiImageLoader* _loader) :
+OpenGL3Texture::OpenGL3Texture(const std::string& _name, Gui::GuiImageLoader* _loader) :
     mName(_name),
 	mWidth(0),
     mHeight(0),
@@ -124,12 +124,12 @@ else if (_usage.isValue(TextureUsage::RenderTarget))
 }
 }
 
-void OpenGL3Texture::createManual(int _width, int _height, TextureUsage _usage, PixelFormat _format)
+void OpenGL3Texture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format)
 {
 	createManual(_width, _height, _usage, _format, 0);
 }
 
-void OpenGL3Texture::createManual(int _width, int _height, TextureUsage _usage, PixelFormat _format, void* _data)
+void OpenGL3Texture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format, void* _data)
 {
 	MYGUI_PLATFORM_ASSERT(!mTextureID, "Texture already exist");
 
@@ -137,13 +137,13 @@ void OpenGL3Texture::createManual(int _width, int _height, TextureUsage _usage, 
 	mInternalPixelFormat = 0;
 	mPixelFormat = 0;
 	mNumElemBytes = 0;
-	if (_format == PixelFormat::R8G8B8)
+	if (_format == MyGUI::PixelFormat::R8G8B8)
 	{
 		mInternalPixelFormat = GL_RGB8;
 		mPixelFormat = GL_BGR;
 		mNumElemBytes = 3;
 	}
-	else if (_format == PixelFormat::R8G8B8A8)
+	else if (_format == MyGUI::PixelFormat::R8G8B8A8)
 	{
 		mInternalPixelFormat = GL_RGBA8;
 		mPixelFormat = GL_BGRA;
@@ -221,7 +221,7 @@ void OpenGL3Texture::destroy()
 	mInternalPixelFormat = 0;
 	mAccess = 0;
 	mNumElemBytes = 0;
-	mOriginalFormat = PixelFormat::Unknow;
+	mOriginalFormat = MyGUI::PixelFormat::Unknow;
 	mOriginalUsage = TextureUsage::Default;
 }
 
@@ -324,12 +324,24 @@ void OpenGL3Texture::loadFromFile(const std::string& _filename)
 	{
 		int width = 0;
 		int height = 0;
-		PixelFormat format = PixelFormat::Unknow;
+		Gui::PixelFormat format = Gui::PixelFormat::Unknow;
 
 		void* data = mImageLoader->loadImage(width, height, format, _filename);
 		if (data)
 		{
-			createManual(width, height, TextureUsage::Static | TextureUsage::Write, format, data);
+			MyGUI::PixelFormat pfd = MyGUI::PixelFormat::Unknow;
+			if (format == Gui::PixelFormat::L8)
+				pfd = MyGUI::PixelFormat::L8;
+			else if (format == Gui::PixelFormat::L8A8)
+				pfd = MyGUI::PixelFormat::L8A8;
+			else if (format == Gui::PixelFormat::R8G8B8)
+				pfd = MyGUI::PixelFormat::R8G8B8;
+			else if (format == Gui::PixelFormat::R8G8B8A8)
+				pfd = MyGUI::PixelFormat::R8G8B8A8;
+			else
+				assert(false);
+
+			createManual(width, height, TextureUsage::Static | TextureUsage::Write, pfd, data);
             delete[] (unsigned char*)data;
 		}
 	}
@@ -340,7 +352,20 @@ void OpenGL3Texture::saveToFile(const std::string& _filename)
 	if (mImageLoader)
 	{
 		void* data = lock(TextureUsage::Read);
-		mImageLoader->saveImage(mWidth, mHeight, mOriginalFormat, data, _filename);
+
+		Gui::PixelFormat format = Gui::PixelFormat::Unknow;
+		if (mOriginalFormat == MyGUI::PixelFormat::L8)
+			format = Gui::PixelFormat::L8;
+		else if (mOriginalFormat == MyGUI::PixelFormat::L8A8)
+			format = Gui::PixelFormat::L8A8;
+		else if (mOriginalFormat == MyGUI::PixelFormat::R8G8B8)
+			format = Gui::PixelFormat::R8G8B8;
+		else if (mOriginalFormat == MyGUI::PixelFormat::R8G8B8A8)
+			format = Gui::PixelFormat::R8G8B8A8;
+		else
+			assert(false);
+
+		mImageLoader->saveImage(mWidth, mHeight, format, data, _filename);
 		unlock();
 	}
 }
@@ -373,7 +398,8 @@ bool OpenGL3Texture::isLocked()
 	return mLock;
 }
 
-PixelFormat OpenGL3Texture::getFormat()
+MyGUI::PixelFormat 
+OpenGL3Texture::getFormat()
 {
 	return mOriginalFormat;
 }

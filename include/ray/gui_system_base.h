@@ -43,27 +43,34 @@
 
 _NAME_BEGIN
 
-class EXPORT GuiSystem
+namespace Gui
 {
-public:
-	virtual bool open(GuiImageLoader* loader) except = 0;
-	virtual void close() noexcept = 0;
+	class EXPORT GuiSystem : public rtti::Interface
+	{
+		__DeclareSubInterface(GuiSystem, rtti::Interface)
+	public:
+		GuiSystem() noexcept;
+		virtual ~GuiSystem() noexcept;
 
-	virtual bool injectMouseMove(int _absx, int _absy, int _absz) noexcept = 0;
-	virtual bool injectMousePress(int _absx, int _absy, GuiButton::Code _id) noexcept = 0;
-	virtual bool injectMouseRelease(int _absx, int _absy, GuiButton::Code _id) noexcept = 0;
-	virtual bool injectKeyPress(GuiKey::Code _key) noexcept = 0;
-	virtual bool injectKeyRelease(GuiKey::Code _key) noexcept = 0;
+		virtual bool open(GuiImageLoader* loader) except = 0;
+		virtual void close() noexcept = 0;
 
-	virtual bool isFocusMouse() const noexcept = 0;
-	virtual bool isFocusKey() const noexcept = 0;
-	virtual bool isCaptureMouse() const noexcept = 0;
+		virtual bool injectMouseMove(int _absx, int _absy, int _absz) noexcept = 0;
+		virtual bool injectMousePress(int _absx, int _absy, GuiButton::Code _id) noexcept = 0;
+		virtual bool injectMouseRelease(int _absx, int _absy, GuiButton::Code _id) noexcept = 0;
+		virtual bool injectKeyPress(GuiKey::Code _key) noexcept = 0;
+		virtual bool injectKeyRelease(GuiKey::Code _key) noexcept = 0;
 
-	virtual void setViewport(int w, int h) noexcept = 0;
-	virtual void getViewport(int& w, int& h) noexcept = 0;
+		virtual bool isFocusMouse() const noexcept = 0;
+		virtual bool isFocusKey() const noexcept = 0;
+		virtual bool isCaptureMouse() const noexcept = 0;
 
-	virtual void render() except = 0;
-};
+		virtual void setViewport(int w, int h) noexcept = 0;
+		virtual void getViewport(int& w, int& h) noexcept = 0;
+
+		virtual void render() except = 0;
+	};
+}
 
 _NAME_END
 

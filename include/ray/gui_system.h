@@ -50,42 +50,48 @@ _NAME_BEGIN
 
 class GuiRenderer;
 class GuiResManager;
-class EXPORT MyGuiSystem : public GuiSystem
+
+namespace Gui
 {
-public:
-	MyGuiSystem() noexcept;
-	~MyGuiSystem() noexcept;
+	class EXPORT MyGuiSystem final : public GuiSystem
+	{
+		__DeclareSubClass(MyGuiSystem, GuiSystem)
+	public:
+		MyGuiSystem() noexcept;
+		~MyGuiSystem() noexcept;
 
-	bool open(GuiImageLoader* loader) noexcept;
-	void close() noexcept;
+		bool open(Gui::GuiImageLoader* loader) noexcept;
+		void close() noexcept;
 
-	void setImageLoader(GuiImageLoader* loader) noexcept;
-	GuiImageLoader* getImageLoader() const noexcept;
+		void setImageLoader(Gui::GuiImageLoader* loader) noexcept;
+		Gui::GuiImageLoader* getImageLoader() const noexcept;
 
-	bool injectMouseMove(int _absx, int _absy, int _absz) noexcept;
-	bool injectMousePress(int _absx, int _absy, GuiButton::Code _id) noexcept;
-	bool injectMouseRelease(int _absx, int _absy, GuiButton::Code _id) noexcept;
-	bool injectKeyPress(GuiKey::Code _key) noexcept;
-	bool injectKeyRelease(GuiKey::Code _key) noexcept;
-	bool isFocusMouse() const noexcept;
-	bool isFocusKey() const noexcept;
-	bool isCaptureMouse() const noexcept;
+		bool injectMouseMove(int _absx, int _absy, int _absz) noexcept;
+		bool injectMousePress(int _absx, int _absy, GuiButton::Code _id) noexcept;
+		bool injectMouseRelease(int _absx, int _absy, GuiButton::Code _id) noexcept;
+		bool injectKeyPress(GuiKey::Code _key) noexcept;
+		bool injectKeyRelease(GuiKey::Code _key) noexcept;
 
-	void setViewport(int w, int h) noexcept;
-	void getViewport(int& w, int& h) noexcept;
+		bool isFocusMouse() const noexcept;
+		bool isFocusKey() const noexcept;
+		bool isCaptureMouse() const noexcept;
 
-	void render() noexcept;
+		void setViewport(int w, int h) noexcept;
+		void getViewport(int& w, int& h) noexcept;
 
-private:
+		void render() noexcept;
 
-	bool _isInitialise;
+	private:
 
-	GuiRenderer* _renderer;
-	GuiResManager* _resLoader;
+		bool _isInitialise;
 
-	MyGUI::Gui* _gui;
-	MyGUI::LogManager* _logManager;
-};
+		GuiRenderer* _renderer;
+		GuiResManager* _resLoader;
+
+		MyGUI::Gui* _gui;
+		MyGUI::LogManager* _logManager;
+	};
+}
 
 _NAME_END
 

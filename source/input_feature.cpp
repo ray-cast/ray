@@ -77,6 +77,22 @@ InputFeature::InputFeature() noexcept
 #endif
 }
 
+InputFeature::InputFeature(CaptureObject hwnd) noexcept
+{
+	_input = std::make_shared<DefaultInput>();
+
+#if !defined(__ANDROID__)
+	auto inputDevice = std::make_shared<DefaultInputDevice>();
+	auto inputKeyboard = std::make_shared<DefaultInputKeyboard>();
+	auto inputMouse = std::make_shared<DefaultInputMouse>();
+	_input->open(inputDevice);
+	_input->obtainKeyboardCapture(inputKeyboard);
+	_input->obtainMouseCapture(inputMouse);
+	_input->addInputListener(std::make_shared<InputEventListener>(*this));
+	_input->setCaptureObject(hwnd);
+#endif
+}
+
 InputFeature::~InputFeature() noexcept
 {
 }

@@ -37,6 +37,8 @@
 #include <ray/game_application.h>
 #include <ray/game_event.h>
 
+#include <ray/input_event.h>
+
 #define GLFW_EXPOSE_NATIVE_WGL
 #define GLFW_EXPOSE_NATIVE_WIN32
 

@@ -47,6 +47,7 @@ class EXPORT InputFeature final : public GameFeature
 	__DeclareSubClass(InputFeature, GameFeature)
 public:
 	InputFeature() noexcept;
+	InputFeature(CaptureObject hwnd) noexcept;
 	virtual ~InputFeature() noexcept;
 
 	void setInput(InputPtr input) noexcept;

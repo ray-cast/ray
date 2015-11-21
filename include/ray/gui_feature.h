@@ -62,8 +62,8 @@ private:
 	std::uint32_t _width;
 	std::uint32_t _height;
 
-	GuiSystem* _platform;
-	GuiImageLoader* _loader;
+	Gui::GuiSystem* _platform;
+	Gui::GuiImageLoader* _loader;
 };
 
 _NAME_END

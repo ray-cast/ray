@@ -38,11 +38,11 @@
 
 _NAME_BEGIN
 
-RenderSystem::RenderSystem() noexcept
+RenderSystemBase::RenderSystemBase() noexcept
 {
 }
 
-RenderSystem::~RenderSystem() noexcept
+RenderSystemBase::~RenderSystemBase() noexcept
 {
 }
 

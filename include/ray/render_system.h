@@ -37,15 +37,16 @@
 #ifndef _H_RENDER_SYSTEM_H_
 #define _H_RENDER_SYSTEM_H_
 
-#include <ray/render_system_base.h>
+#include <ray/render_setting.h>
 
 _NAME_BEGIN
 
-class EXPORT DefaultRenderSystem final : public RenderSystem
+class EXPORT RenderSystem final
 {
+	__DeclareSingleton(RenderSystem)
 public:
-	DefaultRenderSystem() noexcept;
-	~DefaultRenderSystem() noexcept;
+	RenderSystem() noexcept;
+	~RenderSystem() noexcept;
 
 	void open(WindHandle window, std::size_t w, std::size_t h) except;
 	void close() noexcept;
@@ -68,13 +69,11 @@ public:
 	bool addRenderScene(RenderScenePtr scene) noexcept;
 	void removeRenderScene(RenderScenePtr scene) noexcept;
 
-	void renderBegin() noexcept;
-	void renderScene() noexcept;
-	void renderEnd() noexcept;
+	void render() noexcept;
 
 private:
-	DefaultRenderSystem(const DefaultRenderSystem&) noexcept = delete;
-	DefaultRenderSystem& operator=(const DefaultRenderSystem&) noexcept = delete;
+	RenderSystem(const RenderSystem&) noexcept = delete;
+	RenderSystem& operator=(const RenderSystem&) noexcept = delete;
 
 private:
 

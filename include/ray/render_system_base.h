@@ -42,11 +42,11 @@
 
 _NAME_BEGIN
 
-class EXPORT RenderSystem
+class EXPORT RenderSystemBase
 {
 public:
-	RenderSystem() noexcept;
-	virtual ~RenderSystem() noexcept;
+	RenderSystemBase() noexcept;
+	virtual ~RenderSystemBase() noexcept;
 
 	virtual void open(WindHandle window, std::size_t w, std::size_t h) except = 0;
 	virtual void close() noexcept = 0;
@@ -74,8 +74,8 @@ public:
 	virtual void renderEnd() noexcept = 0;
 
 private:
-	RenderSystem(const RenderSystem&) noexcept = delete;
-	RenderSystem& operator=(const RenderSystem&) noexcept = delete;
+	RenderSystemBase(const RenderSystemBase&) noexcept = delete;
+	RenderSystemBase& operator=(const RenderSystemBase&) noexcept = delete;
 };
 
 _NAME_END

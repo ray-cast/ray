@@ -52,17 +52,19 @@
 
 _NAME_BEGIN
 
-DefaultRenderSystem::DefaultRenderSystem() noexcept
+__ImplementSingleton(RenderSystem)
+
+RenderSystem::RenderSystem() noexcept
 {
 }
 
-DefaultRenderSystem::~DefaultRenderSystem() noexcept
+RenderSystem::~RenderSystem() noexcept
 {
 	this->close();
 }
 
 void
-DefaultRenderSystem::open(WindHandle window, std::size_t w, std::size_t h) except
+RenderSystem::open(WindHandle window, std::size_t w, std::size_t h) except
 {
 	auto renderWindow = RenderFactory::createRenderWindow(window);
 	_renderPipeline = RenderFactory::createRenderPipeline();
@@ -75,7 +77,7 @@ DefaultRenderSystem::open(WindHandle window, std::size_t w, std::size_t h) excep
 }
 
 void
-DefaultRenderSystem::close() noexcept
+RenderSystem::close() noexcept
 {
 	if (_SAT)
 	{
@@ -139,7 +141,7 @@ DefaultRenderSystem::close() noexcept
 }
 
 void
-DefaultRenderSystem::setRenderSetting(const RenderSetting& setting) except
+RenderSystem::setRenderSetting(const RenderSetting& setting) except
 {
 	if (_setting.enableSAT != setting.enableSAT)
 	{
@@ -283,61 +285,61 @@ DefaultRenderSystem::setRenderSetting(const RenderSetting& setting) except
 }
 
 const RenderSetting&
-DefaultRenderSystem::getRenderSetting() const noexcept
+RenderSystem::getRenderSetting() const noexcept
 {
 	return _setting;
 }
 
 void 
-DefaultRenderSystem::setWireframeMode(bool enable) noexcept
+RenderSystem::setWireframeMode(bool enable) noexcept
 {
 	_renderPipeline->setWireframeMode(enable);
 }
 
 bool 
-DefaultRenderSystem::getWireframeMode() const noexcept
+RenderSystem::getWireframeMode() const noexcept
 {
 	return _renderPipeline->getWireframeMode();
 }
 
 void 
-DefaultRenderSystem::setWindowResolution(std::size_t w, std::size_t h) except
+RenderSystem::setWindowResolution(std::size_t w, std::size_t h) except
 {
 	_renderPipeline->setWindowResolution(w, h);
 }
 
 void 
-DefaultRenderSystem::getWindowResolution(std::size_t& w, std::size_t& h) const noexcept
+RenderSystem::getWindowResolution(std::size_t& w, std::size_t& h) const noexcept
 {
 	_renderPipeline->getWindowResolution(w, h);
 }
 
 void 
-DefaultRenderSystem::setRenderPipeline(RenderPipelinePtr pipeline) except
+RenderSystem::setRenderPipeline(RenderPipelinePtr pipeline) except
 {
 	_renderPipeline = pipeline;
 }
 
 RenderPipelinePtr 
-DefaultRenderSystem::getRenderPipeline() const noexcept
+RenderSystem::getRenderPipeline() const noexcept
 {
 	return _renderPipeline;
 }
 
 void 
-DefaultRenderSystem::setSwapInterval(SwapInterval interval) except
+RenderSystem::setSwapInterval(SwapInterval interval) except
 {
 	_renderPipeline->setSwapInterval(interval);
 }
 
 SwapInterval 
-DefaultRenderSystem::getSwapInterval() const noexcept
+RenderSystem::getSwapInterval() const noexcept
 {
 	return _renderPipeline->getSwapInterval();
 }
 
 bool
-DefaultRenderSystem::addRenderScene(RenderScenePtr scene) noexcept
+RenderSystem::addRenderScene(RenderScenePtr scene) noexcept
 {
 	auto it = std::find(_sceneList.begin(), _sceneList.end(), scene);
 	if (it == _sceneList.end())
@@ -350,7 +352,7 @@ DefaultRenderSystem::addRenderScene(RenderScenePtr scene) noexcept
 }
 
 void
-DefaultRenderSystem::removeRenderScene(RenderScenePtr scene) noexcept
+RenderSystem::removeRenderScene(RenderScenePtr scene) noexcept
 {
 	auto it = std::find(_sceneList.begin(), _sceneList.end(), scene);
 	if (it != _sceneList.end())
@@ -360,23 +362,15 @@ DefaultRenderSystem::removeRenderScene(RenderScenePtr scene) noexcept
 }
 
 void
-DefaultRenderSystem::renderBegin() noexcept
+RenderSystem::render() noexcept
 {
 	_renderPipeline->renderBegin();
-}
 
-void
-DefaultRenderSystem::renderScene() noexcept
-{
 	for (auto& scene : _sceneList)
 	{
 		_renderPipeline->render(*scene);
 	}
-}
 
-void
-DefaultRenderSystem::renderEnd() noexcept
-{
 	for (auto& scene : _sceneList)
 	{
 		auto& cameras = scene->getCameraList();

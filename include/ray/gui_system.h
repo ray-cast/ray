@@ -34,11 +34,10 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_PLATFORM_H_
-#define _H_GUI_PLATFORM_H_
+#ifndef _H_MY_GUI_SYSTEM_H_
+#define _H_MY_GUI_SYSTEM_H_
 
 #include <ray/gui_system_base.h>
-#include <ray/gui_manager.h>
 
 namespace MyGUI
 {
@@ -48,11 +47,11 @@ namespace MyGUI
 
 _NAME_BEGIN
 
-class GuiRenderer;
-class GuiResManager;
-
 namespace Gui
 {
+	class GuiRenderer;
+	class GuiResManager;
+
 	class EXPORT MyGuiSystem final : public GuiSystem
 	{
 		__DeclareSubClass(MyGuiSystem, GuiSystem)
@@ -60,11 +59,14 @@ namespace Gui
 		MyGuiSystem() noexcept;
 		~MyGuiSystem() noexcept;
 
-		bool open(Gui::GuiImageLoader* loader) noexcept;
+		bool open() noexcept;
 		void close() noexcept;
 
-		void setImageLoader(Gui::GuiImageLoader* loader) noexcept;
-		Gui::GuiImageLoader* getImageLoader() const noexcept;
+		void setCoreProfile(const std::string& core) except;
+		const std::string& getCoreProfile() const noexcept;
+
+		void setImageLoader(GuiImageLoaderPtr loader) noexcept;
+		GuiImageLoaderPtr getImageLoader() const noexcept;
 
 		bool injectMouseMove(int _absx, int _absy, int _absz) noexcept;
 		bool injectMousePress(int _absx, int _absy, GuiButton::Code _id) noexcept;
@@ -85,11 +87,13 @@ namespace Gui
 
 		bool _isInitialise;
 
-		GuiRenderer* _renderer;
-		GuiResManager* _resLoader;
+		std::string _coreProfile;
 
-		MyGUI::Gui* _gui;
-		MyGUI::LogManager* _logManager;
+		std::unique_ptr<GuiRenderer> _renderer;
+		std::unique_ptr<GuiResManager> _resLoader;
+
+		std::unique_ptr<MyGUI::Gui> _gui;
+		std::unique_ptr<MyGUI::LogManager> _logManager;
 	};
 }
 

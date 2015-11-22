@@ -67,7 +67,7 @@ ios_base::good() const noexcept
 bool
 ios_base::eof() const noexcept
 {
-	return (this->rdstate() == (ios_base::iostate)ios_base::eofbit);
+	return ((this->rdstate() & (ios_base::iostate)(ios_base::eofbit)) != 0);
 }
 
 bool

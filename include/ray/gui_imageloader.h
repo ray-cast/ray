@@ -37,7 +37,7 @@
 #ifndef _H_GUI_IMAGE_LOADER_H_
 #define _H_GUI_IMAGE_LOADER_H_
 
-#include <ray/rtti.h>
+#include <ray/gui_types.h>
 
 _NAME_BEGIN
 
@@ -54,13 +54,13 @@ namespace Gui
 
 	class EXPORT GuiImageLoader : public rtti::Interface
 	{
-		__DeclareSubClass(GuiImageLoader, rtti::Interface)
+		__DeclareSubInterface(GuiImageLoader, rtti::Interface)
 	public:
 		GuiImageLoader() noexcept;
 		virtual ~GuiImageLoader() noexcept;
 
-		virtual void* loadImage(int& _width, int& _height, Gui::PixelFormat& _format, const std::string& _filename);
-		virtual void saveImage(int _width, int _height, Gui::PixelFormat _format, void* _texture, const std::string& _filename);
+		virtual void* loadImage(int& _width, int& _height, Gui::PixelFormat& _format, const std::string& _filename) = 0;
+		virtual void saveImage(int _width, int _height, Gui::PixelFormat _format, void* _texture, const std::string& _filename) = 0;
 	};
 }
 

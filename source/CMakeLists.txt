@@ -512,8 +512,8 @@ SET(GUI_LIST
     ${HEADER_PATH}/gui_renderer.h
     ${SOURCE_PATH}/gui_renderer.cpp
     ${HEADER_PATH}/gui_types.h
-    ${HEADER_PATH}/gui_key.h
-    ${HEADER_PATH}/gui_button.h
+    ${HEADER_PATH}/gui_input_key.h
+    ${HEADER_PATH}/gui_input_button.h
 )
 SOURCE_GROUP("gui" FILES ${GUI_LIST})
 

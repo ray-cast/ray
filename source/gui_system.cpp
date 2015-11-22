@@ -254,27 +254,18 @@ MyGuiSystem::~MyGuiSystem() noexcept
 }
 
 bool
-MyGuiSystem::open(GuiImageLoader* loader) noexcept
+MyGuiSystem::open() noexcept
 {
 	assert(!_isInitialise);
 
-	_logManager = new MyGUI::LogManager();
+	_logManager = std::make_unique<MyGUI::LogManager>();
 	_logManager->createDefaultSource(MYGUI_PLATFORM_LOG_FILENAME);
 
-	_renderer = new GuiRenderer();
+	_renderer = std::make_unique<GuiRenderer>();
 	_renderer->initialise();
-	_renderer->setImageLoader(loader);
 
-	_resLoader = new GuiResManager();
-	_resLoader->initialise();
-	_resLoader->addResourceLocation("E:/libraries/mygui-master/Media", false);
-	_resLoader->addResourceLocation("E:/libraries/mygui-master/Media/MyGUI_Media", false);
-	_resLoader->addResourceLocation("E:/libraries/mygui-master/Media/Common/Base", false);
-	_resLoader->addResourceLocation("E:/libraries/mygui-master/Media/Demos/Demo_ScrollView", false);
-	_resLoader->addResourceLocation("E:/libraries/mygui-master/Media/Common/Demos", false);
-
-	_gui = new MyGUI::Gui();
-	_gui->initialise("MyGUI_Core.xml");
+	_resLoader = std::make_unique<GuiResManager>();
+	_resLoader->open();
 
 	_isInitialise = true;
 
@@ -289,23 +280,41 @@ MyGuiSystem::close() noexcept
 		_isInitialise = false;
 
 		_renderer->shutdown();
-		_resLoader->shutdown();
+		_resLoader->close();
 
-		delete _gui;
-		delete _renderer;
-		delete _resLoader;
-		delete _logManager;
+		_gui.reset();
+		_renderer.reset();
+		_resLoader.reset();
+		_logManager.reset();
 	}
 }
 
+void 
+MyGuiSystem::setCoreProfile(const std::string& core) except
+{
+	if (_coreProfile != core)
+	{
+		_gui = std::make_unique<MyGUI::Gui>();
+		_gui->initialise(core);
+
+		_coreProfile = core;
+	}
+}
+
+const std::string&
+MyGuiSystem::getCoreProfile() const noexcept
+{
+	return _coreProfile;
+}
+
 void
-MyGuiSystem::setImageLoader(Gui::GuiImageLoader* loader) noexcept
+MyGuiSystem::setImageLoader(GuiImageLoaderPtr loader) noexcept
 {
 	assert(_renderer);
 	_renderer->setImageLoader(loader);
 }
 
-Gui::GuiImageLoader*
+GuiImageLoaderPtr
 MyGuiSystem::getImageLoader() const noexcept
 {
 	assert(_renderer);

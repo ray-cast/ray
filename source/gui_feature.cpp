@@ -37,6 +37,8 @@
 #if defined(_BUILD_GUI)
 #include <ray/gui_feature.h>
 #include <ray/gui_system.h>
+
+#include <ray/image.h>
 #include <ray/input_event.h>
 
 _NAME_BEGIN
@@ -277,11 +279,45 @@ Gui::GuiKey::Code KeyCodetoGuiKey(InputKey::Code key) noexcept
 	return Gui::GuiKey::Code::None;
 }
 
+class ImageLoader : public Gui::GuiImageLoader
+{
+public:
+	void* loadImage(int& _width, int& _height, Gui::PixelFormat& _format, const std::string& _filename)
+	{
+		ray::Image image;
+		if (image.load(_filename))
+		{
+			_width = image.width();
+			_height = image.height();
+
+			if (image.bpp() == 32)
+				_format = Gui::PixelFormat::R8G8B8A8;
+			else if (image.bpp() == 24)
+				_format = Gui::PixelFormat::R8G8B8;
+			else
+			{
+				assert(false);
+			}
+
+			size_t size = image.size();
+			auto result = new unsigned char[size];
+			std::memcpy(result, image.data(), image.size());
+
+			return result;
+		}
+
+		return nullptr;
+	}
+
+	void saveImage(int _width, int _height, Gui::PixelFormat _format, void* _texture, const std::string& _filename)
+	{
+	}
+
+};
+
 GuiFeature::GuiFeature(std::uint32_t w, std::uint32_t h) noexcept
 	: _width(w)
 	, _height(h)
-	, _platform(nullptr)
-	, _loader(nullptr)
 {
 }
 
@@ -299,10 +335,10 @@ GuiFeature::render() except
 void
 GuiFeature::onActivate() except
 {
-	_loader = new Gui::GuiImageLoader;
-
-	_platform = new Gui::MyGuiSystem();
-	_platform->open(_loader);
+	_platform = std::make_shared<Gui::MyGuiSystem>();
+	_platform->open();
+	_platform->setImageLoader(std::make_shared<ImageLoader>());
+	_platform->setCoreProfile("sys:media/ui/MyGUI_Core.xml");
 	_platform->setViewport(_width, _height);
 }
 
@@ -311,14 +347,8 @@ GuiFeature::onDeactivate() except
 {
 	if (_platform)
 	{
-		delete _platform;
+		_platform.reset();
 		_platform = nullptr;
-	}
-
-	if (_loader)
-	{
-		delete _loader;
-		_loader = nullptr;
 	}
 }
 

@@ -1,116 +1,130 @@
-/*!
-	@file
-	@author		George Evmenov
-	@date		07/2009
-*/
-
-#include "MyGUI_VertexData.h"
-#include <GL/glew.h>
-
+// +----------------------------------------------------------------------
+// | Project : ray.
+// | All rights reserved.
+// +----------------------------------------------------------------------
+// | Copyright (c) 2013-2015.
+// +----------------------------------------------------------------------
+// | * Redistribution and use of this software in source and binary forms,
+// |   with or without modification, are permitted provided that the following
+// |   conditions are met:
+// |
+// | * Redistributions of source code must retain the above
+// |   copyright notice, this list of conditions and the
+// |   following disclaimer.
+// |
+// | * Redistributions in binary form must reproduce the above
+// |   copyright notice, this list of conditions and the
+// |   following disclaimer in the documentation and/or other
+// |   materials provided with the distribution.
+// |
+// | * Neither the name of the ray team, nor the names of its
+// |   contributors may be used to endorse or promote products
+// |   derived from this software without specific prior
+// |   written permission of the ray team.
+// |
+// | THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// | "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// | LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// | A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// | OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// | SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// | LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// | DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// | THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// +----------------------------------------------------------------------
 #include <ray/gui_buffer.h>
-#include <ray/gui_assert.h>
+#include <ray/render_buffer.h>
+#include <GL/glew.h>
 
 _NAME_BEGIN
 
-//const size_t VERTEX_IN_QUAD = 6;
-//const size_t RENDER_ITEM_STEEP_REALLOCK = 5 * VERTEX_IN_QUAD;
+using namespace Gui;
 
-OpenGL3VertexBuffer::OpenGL3VertexBuffer() :
-    mBufferID(0), mVAOID(0),
-    //mVertexCount(RENDER_ITEM_STEEP_REALLOCK),
-    mNeedVertexCount(0),
-	mSizeInBytes(0)
+GuiVertexBuffer::GuiVertexBuffer() noexcept
+	: _bufferID(0)
+	, _vao(0)
+	, _needVertexCount(0)
+	, _sizeInBytes(0)
 {
 }
 
-OpenGL3VertexBuffer::~OpenGL3VertexBuffer()
+GuiVertexBuffer::~GuiVertexBuffer() noexcept
 {
 	destroy();
 }
 
 void
-OpenGL3VertexBuffer::setVertexCount(size_t _count)
+GuiVertexBuffer::setVertexCount(size_t _count)
 {
-	if (_count != mNeedVertexCount)
+	if (_count != _needVertexCount)
 	{
-		mNeedVertexCount = _count;
+		_needVertexCount = _count;
 		destroy();
 		create();
 	}
 }
 
-size_t OpenGL3VertexBuffer::getVertexCount()
+std::size_t 
+GuiVertexBuffer::getVertexCount() noexcept
 {
-	return mNeedVertexCount;
+	return _needVertexCount;
 }
 
 MyGUI::Vertex* 
-OpenGL3VertexBuffer::lock()
+GuiVertexBuffer::lock() noexcept
 {
-	MYGUI_PLATFORM_ASSERT(mBufferID, "Vertex buffer in not created");
-
-	// Use glMapBuffer
-	glBindBuffer(GL_ARRAY_BUFFER, mBufferID);
-	// Discard the buffer
-	glBufferData(GL_ARRAY_BUFFER, mSizeInBytes, 0, GL_STREAM_DRAW);
-
-	MyGUI::Vertex* pBuffer = reinterpret_cast<MyGUI::Vertex*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
-
-	MYGUI_PLATFORM_ASSERT(pBuffer, "Error lock vertex buffer");
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	return pBuffer;
+	_stream.resize(_sizeInBytes);
+	return (MyGUI::Vertex*)_stream.map();
 }
 
-void OpenGL3VertexBuffer::unlock()
+void 
+GuiVertexBuffer::unlock() noexcept
 {
-	MYGUI_PLATFORM_ASSERT(mBufferID, "Vertex buffer in not created");
-
-	glBindBuffer(GL_ARRAY_BUFFER, mBufferID);
-	GLboolean result = glUnmapBuffer(GL_ARRAY_BUFFER);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	MYGUI_PLATFORM_ASSERT(result, "Error unlock vertex buffer");
+	glBindBuffer(GL_ARRAY_BUFFER, _bufferID);
+	glBufferData(GL_ARRAY_BUFFER, _sizeInBytes, _stream.map(), GL_STREAM_DRAW);	
 }
 
-void OpenGL3VertexBuffer::destroy()
+void 
+GuiVertexBuffer::destroy()
 {
-	if (mBufferID != 0)
+	if (_bufferID != 0)
 	{
-		glDeleteBuffers(1, &mBufferID);
-		mBufferID = 0;
+		glDeleteBuffers(1, &_bufferID);
+		_bufferID = 0;
 	}
 
-	if (mVAOID != 0)
+	if (_vao != 0)
 	{
-		glDeleteVertexArrays(1, &mVAOID);
-		mVAOID = 0;
+		glDeleteVertexArrays(1, &_vao);
+		_vao = 0;
 	}
 }
 
-void OpenGL3VertexBuffer::create()
+void 
+GuiVertexBuffer::create()
 {
-	MYGUI_PLATFORM_ASSERT(!mBufferID, "Vertex buffer already exist");
+	MYGUI_PLATFORM_ASSERT(!_bufferID, "Vertex buffer already exist");
 
-	mSizeInBytes = mNeedVertexCount * sizeof(MyGUI::Vertex);
+	_sizeInBytes = _needVertexCount * sizeof(MyGUI::Vertex);
 	void* data = 0;
 
-	glGenBuffers(1, &mBufferID);
-	glGenVertexArrays(1, &mVAOID);
+	glGenBuffers(1, &_bufferID);
+	glGenVertexArrays(1, &_vao);
 
-	glBindVertexArray(mVAOID);
-	glBindBuffer(GL_ARRAY_BUFFER, mBufferID);
-		glBufferData(GL_ARRAY_BUFFER, mSizeInBytes, data, GL_STREAM_DRAW);
+	glBindVertexArray(_vao);
+	glBindBuffer(GL_ARRAY_BUFFER, _bufferID);
+	glBufferData(GL_ARRAY_BUFFER, _sizeInBytes, data, GL_STREAM_DRAW);
 
-		// check data size in VBO is same as input array, if not return 0 and delete VBO
-		int bufferSize = 0;
-		glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &bufferSize);
-		if (mSizeInBytes != (size_t)bufferSize)
-		{
-			destroy();
-			MYGUI_PLATFORM_EXCEPT("Data size is mismatch with input array");
-		}
+	// check data size in VBO is same as input array, if not return 0 and delete VBO
+	int bufferSize = 0;
+	glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &bufferSize);
+	if (_sizeInBytes != (size_t)bufferSize)
+	{
+		destroy();
+		MYGUI_PLATFORM_EXCEPT("Data size is mismatch with input array");
+	}
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
@@ -118,16 +132,6 @@ void OpenGL3VertexBuffer::create()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MyGUI::Vertex), (GLubyte *)NULL);
 	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(MyGUI::Vertex), (GLubyte *)offsetof(struct MyGUI::Vertex, colour));
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(MyGUI::Vertex), (GLubyte *)offsetof(struct MyGUI::Vertex, u));
-
-	//glVertexPointer(3, GL_FLOAT, sizeof(Vertex), (void*)offset);
-	//offset += (sizeof(float) * 3);
-	//glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (void*)offset);
-	//offset += (4);
-	//glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), (void*)offset);
-
-	glBindVertexArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 _NAME_END

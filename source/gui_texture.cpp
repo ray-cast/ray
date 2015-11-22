@@ -1,9 +1,39 @@
-/*!
-	@file
-	@author		George Evmenov
-	@date		07/2009
-*/
-
+// +----------------------------------------------------------------------
+// | Project : ray.
+// | All rights reserved.
+// +----------------------------------------------------------------------
+// | Copyright (c) 2013-2015.
+// +----------------------------------------------------------------------
+// | * Redistribution and use of this software in source and binary forms,
+// |   with or without modification, are permitted provided that the following
+// |   conditions are met:
+// |
+// | * Redistributions of source code must retain the above
+// |   copyright notice, this list of conditions and the
+// |   following disclaimer.
+// |
+// | * Redistributions in binary form must reproduce the above
+// |   copyright notice, this list of conditions and the
+// |   following disclaimer in the documentation and/or other
+// |   materials provided with the distribution.
+// |
+// | * Neither the name of the ray team, nor the names of its
+// |   contributors may be used to endorse or promote products
+// |   derived from this software without specific prior
+// |   written permission of the ray team.
+// |
+// | THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// | "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// | LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// | A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// | OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// | SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// | LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// | DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// | THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// +----------------------------------------------------------------------
 #include <ray/gui_texture.h>
 #include <ray/gui_renderer.h>
 #include <ray/gui_assert.h>
@@ -15,7 +45,7 @@ _NAME_BEGIN
 
 using namespace MyGUI;
 
-OpenGL3Texture::OpenGL3Texture(const std::string& _name, Gui::GuiImageLoader* _loader) :
+GuiTexture::GuiTexture(const std::string& _name, Gui::GuiImageLoaderPtr _loader) :
     mName(_name),
 	mWidth(0),
     mHeight(0),
@@ -29,22 +59,24 @@ OpenGL3Texture::OpenGL3Texture(const std::string& _name, Gui::GuiImageLoader* _l
     mPboID(0),
     mLock(false),
     mBuffer(0),
-	mImageLoader(_loader),
-	mRenderTarget(nullptr)
+	_imageLoader(_loader),
+	_renderTarget(nullptr)
 {
 }
 
-OpenGL3Texture::~OpenGL3Texture()
+GuiTexture::~GuiTexture()
 {
 	destroy();
 }
 
-const std::string& OpenGL3Texture::getName() const
+const std::string& 
+GuiTexture::getName() const
 {
 	return mName;
 }
 
-void OpenGL3Texture::setUsage(TextureUsage _usage)
+void 
+GuiTexture::setUsage(TextureUsage _usage)
 {
 	mAccess = 0;
 	mUsage = 0;
@@ -117,23 +149,24 @@ void OpenGL3Texture::setUsage(TextureUsage _usage)
 			mAccess = GL_WRITE_ONLY;
 		}
 	}
-else if (_usage.isValue(TextureUsage::RenderTarget))
-{
-    mUsage = GL_DYNAMIC_READ;
-    mAccess = GL_READ_ONLY;
-}
-}
-
-void OpenGL3Texture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format)
-{
-	createManual(_width, _height, _usage, _format, 0);
+	else if (_usage.isValue(TextureUsage::RenderTarget))
+	{
+		mUsage = GL_DYNAMIC_READ;
+		mAccess = GL_READ_ONLY;
+	}
 }
 
-void OpenGL3Texture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format, void* _data)
+void 
+GuiTexture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format)
+{
+	this->createManual(_width, _height, _usage, _format, 0);
+}
+
+void 
+GuiTexture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format, void* _data)
 {
 	MYGUI_PLATFORM_ASSERT(!mTextureID, "Texture already exist");
 
-	//FIXME перенести в метод
 	mInternalPixelFormat = 0;
 	mPixelFormat = 0;
 	mNumElemBytes = 0;
@@ -182,7 +215,7 @@ void OpenGL3Texture::createManual(int _width, int _height, TextureUsage _usage, 
 	// Restore old unpack alignment
 	glPixelStorei( GL_UNPACK_ALIGNMENT, alignment );
 
-	if (!_data && GuiRenderer::getInstance().isPixelBufferObjectSupported())
+	if (!_data && Gui::GuiRenderer::getInstance().isPixelBufferObjectSupported())
 	{
 		//создаем текстурнный буфер
 		glGenBuffers(1, &mPboID);
@@ -192,12 +225,13 @@ void OpenGL3Texture::createManual(int _width, int _height, TextureUsage _usage, 
 	}
 }
 
-void OpenGL3Texture::destroy()
+void 
+GuiTexture::destroy()
 {
-	if (mRenderTarget != nullptr)
+	if (_renderTarget != nullptr)
 	{
-		delete mRenderTarget;
-		mRenderTarget = nullptr;
+		delete _renderTarget;
+		_renderTarget = nullptr;
 	}
 
 	if (mTextureID != 0)
@@ -225,7 +259,8 @@ void OpenGL3Texture::destroy()
 	mOriginalUsage = TextureUsage::Default;
 }
 
-void* OpenGL3Texture::lock(TextureUsage _access)
+void* 
+GuiTexture::lock(TextureUsage _access)
 {
 	MYGUI_PLATFORM_ASSERT(mTextureID, "Texture is not created");
 
@@ -243,7 +278,7 @@ void* OpenGL3Texture::lock(TextureUsage _access)
 
 	// bind the texture
 	glBindTexture(GL_TEXTURE_2D, mTextureID);
-	if (!GuiRenderer::getInstance().isPixelBufferObjectSupported())
+	if (!Gui::GuiRenderer::getInstance().isPixelBufferObjectSupported())
 	{
 		//Fallback if PBO's are not supported
 		mBuffer = new unsigned char[mDataSize];
@@ -277,7 +312,8 @@ void* OpenGL3Texture::lock(TextureUsage _access)
 	return mBuffer;
 }
 
-void OpenGL3Texture::unlock()
+void 
+GuiTexture::unlock()
 {
 	if (!mLock && mBuffer)
 	{
@@ -291,7 +327,7 @@ void OpenGL3Texture::unlock()
 
 	MYGUI_PLATFORM_ASSERT(mLock, "Texture is not locked");
 
-	if (!GuiRenderer::getInstance().isPixelBufferObjectSupported())
+	if (!Gui::GuiRenderer::getInstance().isPixelBufferObjectSupported())
 	{
 		//Fallback if PBO's are not supported
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, mWidth, mHeight, mPixelFormat, GL_UNSIGNED_BYTE, mBuffer);
@@ -316,17 +352,18 @@ void OpenGL3Texture::unlock()
 	mLock = false;
 }
 
-void OpenGL3Texture::loadFromFile(const std::string& _filename)
+void
+GuiTexture::loadFromFile(const std::string& _filename)
 {
-	destroy();
+	this->destroy();
 
-	if (mImageLoader)
+	if (_imageLoader)
 	{
 		int width = 0;
 		int height = 0;
 		Gui::PixelFormat format = Gui::PixelFormat::Unknow;
 
-		void* data = mImageLoader->loadImage(width, height, format, _filename);
+		void* data = _imageLoader->loadImage(width, height, format, _filename);
 		if (data)
 		{
 			MyGUI::PixelFormat pfd = MyGUI::PixelFormat::Unknow;
@@ -341,17 +378,18 @@ void OpenGL3Texture::loadFromFile(const std::string& _filename)
 			else
 				assert(false);
 
-			createManual(width, height, TextureUsage::Static | TextureUsage::Write, pfd, data);
+			this->createManual(width, height, TextureUsage::Static | TextureUsage::Write, pfd, data);
             delete[] (unsigned char*)data;
 		}
 	}
 }
 
-void OpenGL3Texture::saveToFile(const std::string& _filename)
+void 
+GuiTexture::saveToFile(const std::string& _filename)
 {
-	if (mImageLoader)
+	if (_imageLoader)
 	{
-		void* data = lock(TextureUsage::Read);
+		void* data = this->lock(TextureUsage::Read);
 
 		Gui::PixelFormat format = Gui::PixelFormat::Unknow;
 		if (mOriginalFormat == MyGUI::PixelFormat::L8)
@@ -365,56 +403,64 @@ void OpenGL3Texture::saveToFile(const std::string& _filename)
 		else
 			assert(false);
 
-		mImageLoader->saveImage(mWidth, mHeight, format, data, _filename);
-		unlock();
+		_imageLoader->saveImage(mWidth, mHeight, format, data, _filename);
+
+		this->unlock();
 	}
 }
 
-IRenderTarget* OpenGL3Texture::getRenderTarget()
+IRenderTarget* 
+GuiTexture::getRenderTarget()
 {
-	if (mRenderTarget == nullptr)
-		mRenderTarget = new OpenGL3RTTexture(mTextureID);
+	if (_renderTarget == nullptr)
+		_renderTarget = new GuiRenderTexture(mTextureID);
 
-	return mRenderTarget;
+	return _renderTarget;
 }
 
-unsigned int OpenGL3Texture::getTextureID() const
+unsigned int 
+GuiTexture::getTextureID() const
 {
 	return mTextureID;
 }
 
-int OpenGL3Texture::getWidth()
+int 
+GuiTexture::getWidth()
 {
 	return mWidth;
 }
 
-int OpenGL3Texture::getHeight()
+int
+GuiTexture::getHeight()
 {
 	return mHeight;
 }
 
-bool OpenGL3Texture::isLocked()
+bool 
+GuiTexture::isLocked()
 {
 	return mLock;
 }
 
 MyGUI::PixelFormat 
-OpenGL3Texture::getFormat()
+GuiTexture::getFormat()
 {
 	return mOriginalFormat;
 }
 
-TextureUsage OpenGL3Texture::getUsage()
+TextureUsage
+GuiTexture::getUsage()
 {
 	return mOriginalUsage;
 }
 
-size_t OpenGL3Texture::getNumElemBytes()
+std::size_t
+GuiTexture::getNumElemBytes()
 {
 	return mNumElemBytes;
 }
 
-OpenGL3RTTexture::OpenGL3RTTexture(unsigned int _texture) :
+GuiRenderTexture::GuiRenderTexture(unsigned int _texture) :
 	mTextureID(_texture),
 	mWidth(0),
 	mHeight(0),
@@ -427,38 +473,28 @@ OpenGL3RTTexture::OpenGL3RTTexture(unsigned int _texture) :
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, miplevel, GL_TEXTURE_HEIGHT, &mHeight);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	mRenderTargetInfo.maximumDepth = 1.0f;
-	mRenderTargetInfo.hOffset = 0;
-	mRenderTargetInfo.vOffset = 0;
-	mRenderTargetInfo.aspectCoef = float(mHeight) / float(mWidth);
-	mRenderTargetInfo.pixScaleX = 1.0f / float(mWidth);
-	mRenderTargetInfo.pixScaleY = 1.0f / float(mHeight);
+	_renderTargetInfo.maximumDepth = 1.0f;
+	_renderTargetInfo.hOffset = 0;
+	_renderTargetInfo.vOffset = 0;
+	_renderTargetInfo.aspectCoef = float(mHeight) / float(mWidth);
+	_renderTargetInfo.pixScaleX = 1.0f / float(mWidth);
+	_renderTargetInfo.pixScaleY = 1.0f / float(mHeight);
 
-	// create a framebuffer object, you need to delete them when program exits.
 	glGenFramebuffersEXT(1, &mFBOID);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mFBOID);
 
-	// create a renderbuffer object to store depth info
-	// NOTE: A depth renderable image should be attached the FBO for depth test.
-	// If we don't attach a depth renderable image to the FBO, then
-	// the rendering output will be corrupted because of missing depth test.
-	// If you also need stencil test for your rendering, then you must
-	// attach additional image to the stencil attachement point, too.
 	glGenRenderbuffersEXT(1, &mRBOID);
 	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, mRBOID);
 	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, mWidth, mHeight);
 	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
 
-	// attach a texture to FBO color attachement point
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, mTextureID, 0);
-
-	// attach a renderbuffer to depth attachment point
 	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, mRBOID);
 
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
 
-OpenGL3RTTexture::~OpenGL3RTTexture()
+GuiRenderTexture::~GuiRenderTexture()
 {
 	if (mFBOID != 0)
 	{
@@ -472,7 +508,8 @@ OpenGL3RTTexture::~OpenGL3RTTexture()
 	}
 }
 
-void OpenGL3RTTexture::begin()
+void 
+GuiRenderTexture::GuiRenderTexture::begin()
 {
 	glGetIntegerv(GL_VIEWPORT, mSavedViewport); // save current viewport
 
@@ -480,22 +517,30 @@ void OpenGL3RTTexture::begin()
 
 	glViewport(0, 0, mWidth, mHeight);
 
-	GuiRenderer::getInstance().begin();
+	Gui::GuiRenderer::getInstance().begin();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void OpenGL3RTTexture::end()
+void 
+GuiRenderTexture::GuiRenderTexture::end()
 {
-	GuiRenderer::getInstance().end();
+	Gui::GuiRenderer::getInstance().end();
 
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); // unbind
 
 	glViewport(mSavedViewport[0], mSavedViewport[1], mSavedViewport[2], mSavedViewport[3]); // restore old viewport
 }
 
-void OpenGL3RTTexture::doRender(IVertexBuffer* _buffer, ITexture* _texture, size_t _count)
+void 
+GuiRenderTexture::GuiRenderTexture::doRender(IVertexBuffer* _buffer, ITexture* _texture, size_t _count)
 {
-	GuiRenderer::getInstance().doRenderRTT(_buffer, _texture, _count);
+	Gui::GuiRenderer::getInstance().doRenderRTT(_buffer, _texture, _count);
+}
+
+const MyGUI::RenderTargetInfo& 
+GuiRenderTexture::getInfo()
+{
+	return _renderTargetInfo;
 }
 
 _NAME_END

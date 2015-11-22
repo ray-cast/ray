@@ -165,7 +165,7 @@ istream::read(char* str, std::streamsize cnt) noexcept
             _count = this->rdbuf()->read(str, cnt);
 
             if (_count != cnt)
-                state |= ios_base::badbit;
+                state |= ios_base::failbit | ios_base::eofbit;
         }
 
         this->setstate(state);

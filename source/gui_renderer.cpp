@@ -1,9 +1,39 @@
-/*!
-	@file
-	@author		George Evmenov
-	@date		07/2009
-*/
-
+// +----------------------------------------------------------------------
+// | Project : ray.
+// | All rights reserved.
+// +----------------------------------------------------------------------
+// | Copyright (c) 2013-2015.
+// +----------------------------------------------------------------------
+// | * Redistribution and use of this software in source and binary forms,
+// |   with or without modification, are permitted provided that the following
+// |   conditions are met:
+// |
+// | * Redistributions of source code must retain the above
+// |   copyright notice, this list of conditions and the
+// |   following disclaimer.
+// |
+// | * Redistributions in binary form must reproduce the above
+// |   copyright notice, this list of conditions and the
+// |   following disclaimer in the documentation and/or other
+// |   materials provided with the distribution.
+// |
+// | * Neither the name of the ray team, nor the names of its
+// |   contributors may be used to endorse or promote products
+// |   derived from this software without specific prior
+// |   written permission of the ray team.
+// |
+// | THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// | "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// | LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// | A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// | OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// | SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// | LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// | DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// | THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// +----------------------------------------------------------------------
 #include <ray/gui_renderer.h>
 #include <ray/gui_texture.h>
 #include <ray/gui_buffer.h>
@@ -16,6 +46,8 @@
 
 _NAME_BEGIN
 
+using namespace Gui;
+
 GuiRenderer& GuiRenderer::getInstance()
 {
 	return *getInstancePtr();
@@ -26,16 +58,16 @@ GuiRenderer* GuiRenderer::getInstancePtr()
 	return static_cast<GuiRenderer*>(RenderManager::getInstancePtr());
 }
 
-GuiRenderer::GuiRenderer() :
-	mUpdate(false),
-	mImageLoader(nullptr),
-	mPboIsSupported(false),
-	mIsInitialise(false)
+GuiRenderer::GuiRenderer() 
+	: _update(false)
+	, _imageLoader(nullptr)
+	, _isSupportedPbo(false)
+	, _isInitialise(false)
 {
 }
 
 GLuint buildShader(const char* text, GLenum type)
-	{
+{
 	GLuint id = glCreateShader(type);
 	glShaderSource(id, 1, &text, 0);
 	glCompileShader(id);
@@ -56,7 +88,7 @@ GLuint buildShader(const char* text, GLenum type)
 	}
 
 	return id;
-	}
+}
 
 GLuint GuiRenderer::createShaderProgram(void)
 {
@@ -140,12 +172,12 @@ return progID;
 
 void GuiRenderer::initialise()
 {
-	MYGUI_PLATFORM_ASSERT(!mIsInitialise, getClassTypeName() << " initialised twice");
+	MYGUI_PLATFORM_ASSERT(!_isInitialise, getClassTypeName() << " initialised twice");
 	MYGUI_PLATFORM_LOG(Info, "* Initialise: " << getClassTypeName());
 
 	mVertexFormat = MyGUI::VertexColourType::ColourABGR;
 
-	mUpdate = false;
+	_update = false;
 
 	mReferenceCount = 0;
 
@@ -155,41 +187,41 @@ void GuiRenderer::initialise()
 		MYGUI_PLATFORM_EXCEPT(std::string("OpenGL 3.0 or newer not available, current version is ") + version);
 	}
 
-	mPboIsSupported = glewIsExtensionSupported("GL_EXT_pixel_buffer_object") != 0;
+	_isSupportedPbo = glewIsExtensionSupported("GL_EXT_pixel_buffer_object") != 0;
 	mProgramID = createShaderProgram();
 
 	MYGUI_PLATFORM_LOG(Info, getClassTypeName() << " successfully initialized");
-	mIsInitialise = true;
+	_isInitialise = true;
 }
 
 void 
 GuiRenderer::shutdown()
 {
-	MYGUI_PLATFORM_ASSERT(mIsInitialise, getClassTypeName() << " is not initialised");
+	MYGUI_PLATFORM_ASSERT(_isInitialise, getClassTypeName() << " is not initialised");
 	MYGUI_PLATFORM_LOG(Info, "* Shutdown: " << getClassTypeName());
 
 	destroyAllResources();
 
 	MYGUI_PLATFORM_LOG(Info, getClassTypeName() << " successfully shutdown");
-	mIsInitialise = false;
+	_isInitialise = false;
 }
 
 void
-GuiRenderer::setImageLoader(Gui::GuiImageLoader* loader) noexcept
+GuiRenderer::setImageLoader(Gui::GuiImageLoaderPtr loader) noexcept
 {
-	mImageLoader = loader;
+	_imageLoader = loader;
 }
 
-Gui::GuiImageLoader*
+Gui::GuiImageLoaderPtr
 GuiRenderer::getImageLoader() const noexcept
 {
-	return mImageLoader;
+	return _imageLoader;
 }
 
 MyGUI::IVertexBuffer* 
 GuiRenderer::createVertexBuffer()
 {
-	return new OpenGL3VertexBuffer();
+	return new GuiVertexBuffer();
 }
 
 void GuiRenderer::destroyVertexBuffer(MyGUI::IVertexBuffer* _buffer)
@@ -206,14 +238,14 @@ void GuiRenderer::doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _t
 
 void GuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count)
 {
-	OpenGL3VertexBuffer* buffer = static_cast<OpenGL3VertexBuffer*>(_buffer);
+	GuiVertexBuffer* buffer = static_cast<GuiVertexBuffer*>(_buffer);
 	unsigned int buffer_id = buffer->getBufferID();
 	MYGUI_PLATFORM_ASSERT(buffer_id, "Vertex buffer is not created");
 
 	unsigned int texture_id = 0;
 	if (_texture)
 	{
-		OpenGL3Texture* texture = static_cast<OpenGL3Texture*>(_texture);
+		GuiTexture* texture = static_cast<GuiTexture*>(_texture);
 		texture_id = texture->getTextureID();
 		//MYGUI_PLATFORM_ASSERT(texture_id, "Texture is not created");
 	}
@@ -291,10 +323,10 @@ void GuiRenderer::drawOneFrame()
 	last_time = now_time;
 
 	begin();
-	onRenderToTarget(this, mUpdate);
+	onRenderToTarget(this, _update);
 	end();
 
-	mUpdate = false;
+	_update = false;
 }
 
 void GuiRenderer::setViewSize(int _width, int _height)
@@ -314,12 +346,12 @@ void GuiRenderer::setViewSize(int _width, int _height)
 	mInfo.pixScaleY = 1.0f / float(mViewSize.height);
 
 	onResizeView(mViewSize);
-	mUpdate = true;
+	_update = true;
 }
 
 bool GuiRenderer::isPixelBufferObjectSupported() const
 {
-	return mPboIsSupported;
+	return _isSupportedPbo;
 }
 
 MyGUI::ITexture* 
@@ -328,7 +360,7 @@ GuiRenderer::createTexture(const std::string& _name)
 	MapTexture::const_iterator item = mTextures.find(_name);
 	MYGUI_PLATFORM_ASSERT(item == mTextures.end(), "Texture '" << _name << "' already exist");
 
-	OpenGL3Texture* texture = new OpenGL3Texture(_name, mImageLoader);
+	GuiTexture* texture = new GuiTexture(_name, _imageLoader);
 	mTextures[_name] = texture;
 	return texture;
 }

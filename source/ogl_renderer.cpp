@@ -133,6 +133,8 @@ OGLRenderer::close() noexcept
 void
 OGLRenderer::renderBegin() noexcept
 {
+	this->setShaderObject(nullptr);
+	this->setRenderTexture(nullptr);
 }
 
 void
@@ -366,7 +368,7 @@ OGLRenderer::setRenderTexture(RenderTexturePtr target) noexcept
 		}
 		else
 		{
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
 		}
 
 		_renderTexture = target;

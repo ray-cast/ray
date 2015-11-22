@@ -256,6 +256,19 @@ GameServer::getFeature(const rtti::Rtti& rtti) const noexcept
 	return nullptr;
 }
 
+GameFeaturePtr
+GameServer::getFeature(const rtti::Rtti* rtti) const noexcept
+{
+	for (auto& it : _features)
+	{
+		if (it->isInstanceOf(rtti))
+			return it;
+	}
+
+	assert(false);
+	return nullptr;
+}
+
 const GameFeatures&
 GameServer::getGameFeatures() const noexcept
 {

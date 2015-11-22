@@ -1117,7 +1117,8 @@ OGLRenderer::initDebugControl() noexcept
 		131169,
 		131184,
 		131185,
-		131218
+		131218,
+		131204
 	};
 
 	glEnable(GL_DEBUG_OUTPUT);
@@ -1127,7 +1128,7 @@ OGLRenderer::initDebugControl() noexcept
 	// enable all
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
 	// disable ids
-	glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 5, ids, GL_FALSE);
+	glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 6, ids, GL_FALSE);
 #endif
 }
 

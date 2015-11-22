@@ -52,12 +52,17 @@ OGLVertexBuffer::~OGLVertexBuffer() noexcept
 void
 OGLVertexBuffer::setup(VertexBufferDataPtr vb) except
 {
+	assert(!_vbo);
+
+	glGenBuffers(1, &_vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+
 	auto vertexUsage = OGLTypes::asOGLVertexUsage(vb->getVertexUsage());
 	auto vertexDataSize = vb->getVertexDataSize();
 	auto vertexByteSize = vb->getVertexSize();
 
-	glGenBuffers(1, &_vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+	_vb = vb;
+	_dataSize = vertexDataSize;
 
 #if !defined(EGLAPI)
 	if (OGLFeatures::ARB_direct_state_access)
@@ -83,6 +88,7 @@ OGLVertexBuffer::setup(VertexBufferDataPtr vb) except
 	for (auto& it : components)
 	{
 		auto type = OGLTypes::asOGLVertexFormat(it.getVertexFormat());
+		auto normalize = it.normalize() ? GL_TRUE : GL_FALSE;
 
 #if !defined(EGLAPI)
 		if (OGLFeatures::NV_vertex_buffer_unified_memory)
@@ -92,7 +98,7 @@ OGLVertexBuffer::setup(VertexBufferDataPtr vb) except
 		else if (OGLFeatures::ARB_vertex_attrib_binding)
 		{
 			glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
-			glVertexAttribFormat(it.getVertexAttrib(), it.getVertexCount(), type, GL_FALSE, 0);
+			glVertexAttribFormat(it.getVertexAttrib(), it.getVertexCount(), type, normalize, 0);
 			glVertexAttribBinding(it.getVertexAttrib(), it.getVertexAttrib());
 
 			glBindVertexBuffer(it.getVertexAttrib(), _vbo, offset, vertexByteSize);
@@ -101,7 +107,7 @@ OGLVertexBuffer::setup(VertexBufferDataPtr vb) except
 #endif
 		{
 			glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
-			glVertexAttribPointer(it.getVertexAttrib(), it.getVertexCount(), type, GL_FALSE, vertexByteSize, (const char*)nullptr + offset);
+			glVertexAttribPointer(it.getVertexAttrib(), it.getVertexCount(), type, normalize, vertexByteSize, (const char*)nullptr + offset);
 		}
 
 		offset += it.getVertexSize();
@@ -126,6 +132,29 @@ OGLVertexBuffer::close() noexcept
 	}
 }
 
+void 
+OGLVertexBuffer::update() noexcept
+{
+	auto vertexUsage = OGLTypes::asOGLVertexUsage(_vb->getVertexUsage());
+	auto vertexDataSize = _vb->getVertexDataSize();
+	auto vertexByteSize = _vb->getVertexSize();
+
+	if (_dataSize == vertexDataSize)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+		auto data = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+		assert(data);
+		std::memcpy(data, _vb->data(), _vb->getVertexDataSize());
+		glUnmapBuffer(GL_ARRAY_BUFFER);
+	}
+	else
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+		glBufferData(GL_ARRAY_BUFFER, vertexDataSize, _vb->data(), vertexUsage);
+		_dataSize = vertexDataSize;
+	}
+}
+
 GLuint
 OGLVertexBuffer::getInstanceID() noexcept
 {
@@ -136,6 +165,12 @@ GLuint64
 OGLVertexBuffer::getInstanceAddr() noexcept
 {
 	return _bindlessVbo;
+}
+
+VertexBufferDataPtr
+OGLVertexBuffer::getVertexBufferData() const noexcept
+{
+	return _vb;
 }
 
 OGLIndexBuffer::OGLIndexBuffer() noexcept
@@ -159,6 +194,8 @@ OGLIndexBuffer::setup(IndexBufferDataPtr ib) noexcept
 
 	glGenBuffers(1, &_ibo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ibo);
+
+	_ib = ib;
 
 #if !defined(EGLAPI)
 	if (OGLFeatures::ARB_direct_state_access)
@@ -197,6 +234,16 @@ OGLIndexBuffer::close() noexcept
 	}
 }
 
+void
+OGLIndexBuffer::update() noexcept
+{
+	auto vertexUsage = OGLTypes::asOGLVertexUsage(_ib->getIndexUsage());
+	auto vertexDataSize = _ib->getIndexDataSize();
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, vertexDataSize, _ib->data(), vertexUsage);
+}
+
 GLuint
 OGLIndexBuffer::getInstanceID() noexcept
 {
@@ -207,6 +254,12 @@ GLuint64
 OGLIndexBuffer::getInstanceAddr() noexcept
 {
 	return _bindlessIbo;
+}
+
+IndexBufferDataPtr 
+OGLIndexBuffer::getIndexBufferData() const noexcept
+{
+	return _ib;
 }
 
 OGLRenderBuffer::OGLRenderBuffer() noexcept
@@ -268,6 +321,20 @@ GLuint
 OGLRenderBuffer::getInstanceID() noexcept
 {
 	return _vao;
+}
+
+void 
+OGLRenderBuffer::update() noexcept
+{
+	if (_vb)
+	{
+		_vb->update();
+	}
+
+	if (_ib)
+	{
+		_ib->update();
+	}
 }
 
 void

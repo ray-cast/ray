@@ -6,20 +6,6 @@
             #define GLSL_3 1
 
             #if GLSL_3 == 1
-                layout(location = 0) in vec4 glsl_Position;
-                layout(location = 1) in vec4 glsl_Normal;
-                layout(location = 2) in vec4 glsl_Texcoord;
-                layout(location = 3) in vec4 glsl_Diffuse;
-                layout(location = 4) in vec4 glsl_Specular;
-                layout(location = 5) in vec4 glsl_Weight;
-                layout(location = 6) in vec4 glsl_Tangent;
-                layout(location = 7) in vec4 glsl_Bitangent;
-
-                #define lerp(a, b, t) mix(a, b, t)
-                #define saturate(a) clamp(a, 0.0, 1.0)
-                #define mad(a, b, c) (a * b + c)
-                #define mul(m, v) (m * v)
-
                 #define float2 vec2
                 #define float3 vec3
                 #define float4 vec4
@@ -29,6 +15,20 @@
                 #define float3x3 mat3
                 #define float4x3 mat4x3
                 #define float4x4 mat4
+
+                #define lerp(a, b, t) mix(a, b, t)
+                #define saturate(a) clamp(a, 0.0, 1.0)
+                #define mad(a, b, c) (a * b + c)
+                #define mul(m, v) (m * v)
+
+                layout(location = 0) in float4 glsl_Position;
+                layout(location = 1) in float4 glsl_Normal;
+                layout(location = 2) in float4 glsl_Texcoord;
+                layout(location = 3) in float4 glsl_Diffuse;
+                layout(location = 4) in float4 glsl_Specular;
+                layout(location = 5) in float4 glsl_Weight;
+                layout(location = 6) in float4 glsl_Tangent;
+                layout(location = 7) in float4 glsl_Bitangent;
             #endif
         ]]>
     </shader>

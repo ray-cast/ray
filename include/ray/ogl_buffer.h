@@ -49,14 +49,20 @@ public:
 
 	void setup(VertexBufferDataPtr vb) except;
 	void close() noexcept;
+	
+	void update() noexcept;
 
 	GLuint getInstanceID() noexcept;
 	GLuint64 getInstanceAddr() noexcept;
+
+	VertexBufferDataPtr getVertexBufferData() const noexcept;
 
 private:
 
 	GLuint _vbo;
 	GLuint64 _bindlessVbo;
+
+	GLuint _dataSize;
 
 	VertexBufferDataPtr _vb;
 };
@@ -70,8 +76,12 @@ public:
 	void setup(IndexBufferDataPtr ib) noexcept;
 	void close() noexcept;
 
+	void update() noexcept;
+
 	GLuint getInstanceID() noexcept;
 	GLuint64 getInstanceAddr() noexcept;
+
+	IndexBufferDataPtr getIndexBufferData() const noexcept;
 
 private:
 
@@ -89,6 +99,8 @@ public:
 
 	void setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) except;
 	void close() noexcept;
+
+	void update() noexcept;
 
 	GLuint getInstanceID() noexcept;
 

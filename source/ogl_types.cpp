@@ -109,6 +109,9 @@ OGLTypes::asOGLVertexFormat(VertexFormat format) noexcept
 	case ray::GPU_VERTEX_INT:
 		return GL_INT;
 	case ray::GPU_VERTEX_UNSIGNED_BYTE:
+	case ray::GPU_VERTEX_UNSIGNED_BYTE2:
+	case ray::GPU_VERTEX_UNSIGNED_BYTE3:
+	case ray::GPU_VERTEX_UNSIGNED_BYTE4:
 		return GL_UNSIGNED_BYTE;
 	case ray::GPU_VERTEX_UNSIGNED_SHORT:
 		return GL_UNSIGNED_SHORT;

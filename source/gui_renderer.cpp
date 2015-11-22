@@ -38,6 +38,10 @@
 #include <ray/gui_texture.h>
 #include <ray/gui_buffer.h>
 #include <ray/gui_assert.h>
+
+#include <ray/render_system.h>
+#include <ray/render_pipeline_base.h>
+
 #include "MyGUI_VertexData.h"
 #include "MyGUI_Gui.h"
 #include "MyGUI_Timer.h"
@@ -48,162 +52,65 @@ _NAME_BEGIN
 
 using namespace Gui;
 
-GuiRenderer& GuiRenderer::getInstance()
-{
-	return *getInstancePtr();
-}
-
-GuiRenderer* GuiRenderer::getInstancePtr()
-{
-	return static_cast<GuiRenderer*>(RenderManager::getInstancePtr());
-}
-
 GuiRenderer::GuiRenderer() 
 	: _update(false)
 	, _imageLoader(nullptr)
 	, _isSupportedPbo(false)
 	, _isInitialise(false)
+	, _vertexFormat(MyGUI::VertexColourType::ColourABGR)
 {
 }
 
-GLuint buildShader(const char* text, GLenum type)
+GuiRenderer&
+GuiRenderer::getInstance()
 {
-	GLuint id = glCreateShader(type);
-	glShaderSource(id, 1, &text, 0);
-	glCompileShader(id);
-
-	GLint success;
-	glGetShaderiv(id, GL_COMPILE_STATUS, &success);
-
-	if (success == GL_FALSE) {
-		GLint len = 0;
-		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &len);
-
-		GLchar* buffer = new GLchar[len];
-		glGetShaderInfoLog(id, len, NULL, buffer);
-		std::string infoLog = buffer;
-		delete[] buffer;
-
-		MYGUI_PLATFORM_EXCEPT(infoLog);
-	}
-
-	return id;
+	return *getInstancePtr();
 }
 
-GLuint GuiRenderer::createShaderProgram(void)
+GuiRenderer*
+GuiRenderer::getInstancePtr()
 {
-const char vertexShader[] =
-    "#version 130\n" // GLSL 1.30 = OpenGL 3.0
-    "out vec4 Color;\n"
-    "out vec2 TexCoord;\n"
-    "in vec3 VertexPosition;\n"
-    "in vec4 VertexColor;\n"
-    "in vec2 VertexTexCoord;\n"
-    "uniform float YScale;\n"
-    "void main()\n"
-    "{\n"
-    "  TexCoord = VertexTexCoord;\n"
-    "  Color = VertexColor;\n"
-    "  vec4 vpos = vec4(VertexPosition,1.0);\n"
-    "  vpos.y *= YScale;\n"
-    "  gl_Position = vpos;\n"
-    "}\n"
-    ;
-
-const char fragmentShader[] =
-    "#version 130\n"
-    "in vec4 Color; \n"
-    "in vec2 TexCoord;\n"
-    "out vec4 FragColor;\n"
-    "uniform sampler2D Texture;\n"
-    "void main(void)\n"
-    "{\n"
-    "  FragColor = texture2D(Texture, TexCoord) * Color;\n"
-    "}\n"
-    ;
-
-GLuint vsID = buildShader(vertexShader, GL_VERTEX_SHADER);
-GLuint fsID = buildShader(fragmentShader, GL_FRAGMENT_SHADER);
-
-GLuint progID = glCreateProgram();
-glAttachShader(progID, vsID);
-glAttachShader(progID, fsID);
-
-// setup vertex attribute positions for vertex buffer
-glBindAttribLocation(progID, 0, "VertexPosition");
-glBindAttribLocation(progID, 1, "VertexColor");
-glBindAttribLocation(progID, 2, "VertexTexCoord");
-glBindFragDataLocation(progID, 0, "FragColor");
-
-glLinkProgram(progID);
-
-GLint success;
-glGetProgramiv(progID, GL_LINK_STATUS, &success);
-
-if (success == GL_FALSE) {
-    GLint len = 0;
-    glGetProgramiv(progID, GL_INFO_LOG_LENGTH, &len);
-
-    GLchar* buffer = new GLchar[len];
-    glGetProgramInfoLog(progID, len, NULL, buffer);
-    std::string infoLog = buffer;
-    delete[] buffer;
-
-    MYGUI_PLATFORM_EXCEPT(infoLog);
-}
-glDeleteShader(vsID); // flag for deletion on call to glDeleteProgram
-glDeleteShader(fsID);
-
-int textureUniLoc = glGetUniformLocation(progID, "Texture");
-if (textureUniLoc == -1) {
-    MYGUI_PLATFORM_EXCEPT("Unable to retrieve uniform variable location");
-}
-mYScaleUniformLocation = glGetUniformLocation(progID, "YScale");
-if (mYScaleUniformLocation == -1) {
-    MYGUI_PLATFORM_EXCEPT("Unable to retrieve YScale variable location");
-}
-glUseProgram(progID);
-glUniform1i(textureUniLoc, 0); // set active sampler for 'Texture' to GL_TEXTURE0
-glUniform1f(mYScaleUniformLocation, 1.0f);
-glUseProgram(0);
-
-return progID;
+	return static_cast<GuiRenderer*>(RenderManager::getInstancePtr());
 }
 
-void GuiRenderer::initialise()
+void 
+GuiRenderer::open() except
 {
 	MYGUI_PLATFORM_ASSERT(!_isInitialise, getClassTypeName() << " initialised twice");
 	MYGUI_PLATFORM_LOG(Info, "* Initialise: " << getClassTypeName());
 
-	mVertexFormat = MyGUI::VertexColourType::ColourABGR;
-
-	_update = false;
-
-	mReferenceCount = 0;
-
-	if (!(GLEW_VERSION_3_0)) 
+	if (GLEW_VERSION_3_0) 
 	{
-		const char *version = (const char *) glGetString(GL_VERSION);
-		MYGUI_PLATFORM_EXCEPT(std::string("OpenGL 3.0 or newer not available, current version is ") + version);
+		_material = MaterialMaker("sys:fx/default.glsl");
+		_materialPass = _material->getTech(RenderQueue::RQ_OPAQUE)->getPass("ui");
+		_materialDecal = _material->getParameter("decal");
+		_materialScaleY = _material->getParameter("scaleY");
+		_materialScaleY->assign(1.0f);
+
+		_isSupportedPbo = glewIsExtensionSupported("GL_EXT_pixel_buffer_object") != 0;
+
+		_isInitialise = true;
+		_update = false;
+
+		MYGUI_PLATFORM_LOG(Info, getClassTypeName() << " successfully initialized");
 	}
-
-	_isSupportedPbo = glewIsExtensionSupported("GL_EXT_pixel_buffer_object") != 0;
-	mProgramID = createShaderProgram();
-
-	MYGUI_PLATFORM_LOG(Info, getClassTypeName() << " successfully initialized");
-	_isInitialise = true;
+	else
+	{
+		MYGUI_PLATFORM_EXCEPT(std::string("OpenGL 3.0 or newer not available, current version is ") + (const char*)glGetString(GL_VERSION));
+	}
 }
 
 void 
-GuiRenderer::shutdown()
+GuiRenderer::close() noexcept
 {
 	MYGUI_PLATFORM_ASSERT(_isInitialise, getClassTypeName() << " is not initialised");
 	MYGUI_PLATFORM_LOG(Info, "* Shutdown: " << getClassTypeName());
 
 	destroyAllResources();
+	
+	_isInitialise = false;
 
 	MYGUI_PLATFORM_LOG(Info, getClassTypeName() << " successfully shutdown");
-	_isInitialise = false;
 }
 
 void
@@ -224,19 +131,22 @@ GuiRenderer::createVertexBuffer()
 	return new GuiVertexBuffer();
 }
 
-void GuiRenderer::destroyVertexBuffer(MyGUI::IVertexBuffer* _buffer)
+void 
+GuiRenderer::destroyVertexBuffer(MyGUI::IVertexBuffer* _buffer)
 {
 	delete _buffer;
 }
 
-void GuiRenderer::doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count)
+void 
+GuiRenderer::doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count)
 {
-	glUniform1f(mYScaleUniformLocation, -1.0f);
+	_materialScaleY->assign(-1.0f);
 	doRender(_buffer, _texture, _count);
-	glUniform1f(mYScaleUniformLocation, 1.0f);
+	_materialScaleY->assign(1.0f);
 }
 
-void GuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count)
+void 
+GuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count)
 {
 	GuiVertexBuffer* buffer = static_cast<GuiVertexBuffer*>(_buffer);
 	unsigned int buffer_id = buffer->getBufferID();
@@ -251,32 +161,21 @@ void GuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _text
 	}
 
 	glBindTexture(GL_TEXTURE_2D, texture_id);
-
 	glBindVertexArray(buffer_id);
+
 	glDrawArrays(GL_TRIANGLES, 0, _count);
-	glBindVertexArray(0);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void GuiRenderer::begin()
+void 
+GuiRenderer::begin()
 {
-	++mReferenceCount;
-
-	glUseProgram(mProgramID);
+	RenderSystem::instance()->getRenderPipeline()->setMaterialPass(_materialPass);
 	glActiveTexture(GL_TEXTURE0);
-  
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void GuiRenderer::end()
+void
+GuiRenderer::end()
 {
-	if (--mReferenceCount == 0) 
-	{
-			glDisable(GL_BLEND);
-			glUseProgram(0);
-	}
 }
 
 const MyGUI::RenderTargetInfo& 
@@ -294,7 +193,7 @@ GuiRenderer::getViewSize() const
 MyGUI::VertexColourType 
 GuiRenderer::getVertexFormat()
 {
-	return mVertexFormat;
+	return _vertexFormat;
 }
 
 bool 
@@ -307,7 +206,8 @@ GuiRenderer::isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage _
 	return false;
 }
 
-void GuiRenderer::drawOneFrame()
+void 
+GuiRenderer::drawOneFrame()
 {
 	MyGUI::Gui* gui = MyGUI::Gui::getInstancePtr();
 	if (gui == nullptr)
@@ -322,14 +222,17 @@ void GuiRenderer::drawOneFrame()
 
 	last_time = now_time;
 
-	begin();
+	this->begin();
+
 	onRenderToTarget(this, _update);
-	end();
+	
+	this->end();
 
 	_update = false;
 }
 
-void GuiRenderer::setViewSize(int _width, int _height)
+void 
+GuiRenderer::setViewSize(int _width, int _height)
 {
 	if (_height == 0)
 		_height = 1;
@@ -349,7 +252,8 @@ void GuiRenderer::setViewSize(int _width, int _height)
 	_update = true;
 }
 
-bool GuiRenderer::isPixelBufferObjectSupported() const
+bool 
+GuiRenderer::isPixelBufferObjectSupported() const
 {
 	return _isSupportedPbo;
 }
@@ -357,49 +261,59 @@ bool GuiRenderer::isPixelBufferObjectSupported() const
 MyGUI::ITexture* 
 GuiRenderer::createTexture(const std::string& _name)
 {
-	MapTexture::const_iterator item = mTextures.find(_name);
-	MYGUI_PLATFORM_ASSERT(item == mTextures.end(), "Texture '" << _name << "' already exist");
+	auto& texture = _textures[_name];
+	if (!texture)
+	{
+		texture = std::make_unique<GuiTexture>(_name, _imageLoader);
+		return texture.get();
+	}
 
-	GuiTexture* texture = new GuiTexture(_name, _imageLoader);
-	mTextures[_name] = texture;
-	return texture;
+	MYGUI_PLATFORM_LOG(Info, "Texture '" << _name << "' already exist");
+	return texture.get();
 }
 
 void
 GuiRenderer::destroyTexture(MyGUI::ITexture* _texture)
 {
-	if (_texture == nullptr)
-		return;
+	if (_texture)
+	{
+		auto& texture = _textures[_texture->getName()];
+		if (texture)
+		{
+			texture.reset();
+			texture = nullptr;
+		}
+		else
+		{
+			MYGUI_PLATFORM_ASSERT(texture, "Texture '" << _texture->getName() << "' not found");
+		}
+	}
+	else
+	{
+		MYGUI_PLATFORM_LOG(Info, "Empty texture pointer");
+	}
+}
 
-	MapTexture::iterator item = mTextures.find(_texture->getName());
-	MYGUI_PLATFORM_ASSERT(item != mTextures.end(), "Texture '" << _texture->getName() << "' not found");
+void 
+GuiRenderer::setTexture(MyGUI::ITexture* texture) noexcept
+{
 
-	mTextures.erase(item);
-	delete _texture;
 }
 
 MyGUI::ITexture*
 GuiRenderer::getTexture(const std::string& _name)
 {
-	MapTexture::const_iterator item = mTextures.find(_name);
-	if (item == mTextures.end())
+	MapTexture::const_iterator item = _textures.find(_name);
+	if (item == _textures.end())
 		return nullptr;
-	return item->second;
+	return item->second.get();
 }
 
 void 
 GuiRenderer::destroyAllResources()
 {
-	for (MapTexture::const_iterator item = mTextures.begin(); item != mTextures.end(); ++item)
-		delete item->second;
-
-	mTextures.clear();
-
-	if (mProgramID) 
-	{
-		glDeleteProgram(mProgramID);
-		mProgramID = 0;
-	}
+	_textures.clear();
+	_material.reset();
 }
 
 _NAME_END

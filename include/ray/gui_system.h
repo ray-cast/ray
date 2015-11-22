@@ -59,7 +59,7 @@ namespace Gui
 		MyGuiSystem() noexcept;
 		~MyGuiSystem() noexcept;
 
-		bool open() noexcept;
+		bool open() except;
 		void close() noexcept;
 
 		void setCoreProfile(const std::string& core) except;

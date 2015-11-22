@@ -126,12 +126,12 @@ GuiVertexBuffer::create()
 		MYGUI_PLATFORM_EXCEPT("Data size is mismatch with input array");
 	}
 
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MyGUI::Vertex), (GLubyte *)NULL);
-	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(MyGUI::Vertex), (GLubyte *)offsetof(struct MyGUI::Vertex, colour));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(MyGUI::Vertex), (GLubyte *)offsetof(struct MyGUI::Vertex, u));
+	glEnableVertexAttribArray(GPU_ATTRIB_POSITION);
+	glEnableVertexAttribArray(GPU_ATTRIB_DIFFUSE);
+	glEnableVertexAttribArray(GPU_ATTRIB_TEXCOORD);
+	glVertexAttribPointer(GPU_ATTRIB_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(MyGUI::Vertex), (GLubyte *)NULL);
+	glVertexAttribPointer(GPU_ATTRIB_DIFFUSE, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(MyGUI::Vertex), (GLubyte *)offsetof(struct MyGUI::Vertex, colour));
+	glVertexAttribPointer(GPU_ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(MyGUI::Vertex), (GLubyte *)offsetof(struct MyGUI::Vertex, u));
 }
 
 _NAME_END

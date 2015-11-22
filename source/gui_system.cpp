@@ -254,7 +254,7 @@ MyGuiSystem::~MyGuiSystem() noexcept
 }
 
 bool
-MyGuiSystem::open() noexcept
+MyGuiSystem::open() except
 {
 	assert(!_isInitialise);
 
@@ -262,7 +262,7 @@ MyGuiSystem::open() noexcept
 	_logManager->createDefaultSource(MYGUI_PLATFORM_LOG_FILENAME);
 
 	_renderer = std::make_unique<GuiRenderer>();
-	_renderer->initialise();
+	_renderer->open();
 
 	_resLoader = std::make_unique<GuiResManager>();
 	_resLoader->open();
@@ -279,7 +279,7 @@ MyGuiSystem::close() noexcept
 	{
 		_isInitialise = false;
 
-		_renderer->shutdown();
+		_renderer->close();
 		_resLoader->close();
 
 		_gui.reset();

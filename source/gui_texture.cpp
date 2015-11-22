@@ -69,14 +69,12 @@ GuiTexture::~GuiTexture()
 	destroy();
 }
 
-const std::string& 
-GuiTexture::getName() const
+const std::string& GuiTexture::getName() const
 {
 	return mName;
 }
 
-void 
-GuiTexture::setUsage(TextureUsage _usage)
+void GuiTexture::setUsage(TextureUsage _usage)
 {
 	mAccess = 0;
 	mUsage = 0;
@@ -149,24 +147,23 @@ GuiTexture::setUsage(TextureUsage _usage)
 			mAccess = GL_WRITE_ONLY;
 		}
 	}
-	else if (_usage.isValue(TextureUsage::RenderTarget))
-	{
-		mUsage = GL_DYNAMIC_READ;
-		mAccess = GL_READ_ONLY;
-	}
-}
-
-void 
-GuiTexture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format)
+else if (_usage.isValue(TextureUsage::RenderTarget))
 {
-	this->createManual(_width, _height, _usage, _format, 0);
+    mUsage = GL_DYNAMIC_READ;
+    mAccess = GL_READ_ONLY;
+}
 }
 
-void 
-GuiTexture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format, void* _data)
+void GuiTexture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format)
+{
+	createManual(_width, _height, _usage, _format, 0);
+}
+
+void GuiTexture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format, void* _data)
 {
 	MYGUI_PLATFORM_ASSERT(!mTextureID, "Texture already exist");
 
+	//FIXME перенести в метод
 	mInternalPixelFormat = 0;
 	mPixelFormat = 0;
 	mNumElemBytes = 0;
@@ -225,8 +222,7 @@ GuiTexture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::Pi
 	}
 }
 
-void 
-GuiTexture::destroy()
+void GuiTexture::destroy()
 {
 	if (_renderTarget != nullptr)
 	{
@@ -312,7 +308,7 @@ GuiTexture::lock(TextureUsage _access)
 	return mBuffer;
 }
 
-void 
+void
 GuiTexture::unlock()
 {
 	if (!mLock && mBuffer)
@@ -363,7 +359,7 @@ GuiTexture::loadFromFile(const std::string& _filename)
 		int height = 0;
 		Gui::PixelFormat format = Gui::PixelFormat::Unknow;
 
-		void* data = _imageLoader->loadImage(width, height, format, _filename);
+		auto data = std::unique_ptr<char[]>((char*)_imageLoader->loadImage(width, height, format, _filename));
 		if (data)
 		{
 			MyGUI::PixelFormat pfd = MyGUI::PixelFormat::Unknow;
@@ -378,8 +374,7 @@ GuiTexture::loadFromFile(const std::string& _filename)
 			else
 				assert(false);
 
-			this->createManual(width, height, TextureUsage::Static | TextureUsage::Write, pfd, data);
-            delete[] (unsigned char*)data;
+			this->createManual(width, height, TextureUsage::Static | TextureUsage::Write, pfd, data.get());
 		}
 	}
 }
@@ -424,20 +419,17 @@ GuiTexture::getTextureID() const
 	return mTextureID;
 }
 
-int 
-GuiTexture::getWidth()
+int GuiTexture::getWidth()
 {
 	return mWidth;
 }
 
-int
-GuiTexture::getHeight()
+int GuiTexture::getHeight()
 {
 	return mHeight;
 }
 
-bool 
-GuiTexture::isLocked()
+bool GuiTexture::isLocked()
 {
 	return mLock;
 }
@@ -448,14 +440,12 @@ GuiTexture::getFormat()
 	return mOriginalFormat;
 }
 
-TextureUsage
-GuiTexture::getUsage()
+TextureUsage GuiTexture::getUsage()
 {
 	return mOriginalUsage;
 }
 
-std::size_t
-GuiTexture::getNumElemBytes()
+size_t GuiTexture::getNumElemBytes()
 {
 	return mNumElemBytes;
 }
@@ -480,15 +470,25 @@ GuiRenderTexture::GuiRenderTexture(unsigned int _texture) :
 	_renderTargetInfo.pixScaleX = 1.0f / float(mWidth);
 	_renderTargetInfo.pixScaleY = 1.0f / float(mHeight);
 
+	// create a framebuffer object, you need to delete them when program exits.
 	glGenFramebuffersEXT(1, &mFBOID);
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mFBOID);
 
+	// create a renderbuffer object to store depth info
+	// NOTE: A depth renderable image should be attached the FBO for depth test.
+	// If we don't attach a depth renderable image to the FBO, then
+	// the rendering output will be corrupted because of missing depth test.
+	// If you also need stencil test for your rendering, then you must
+	// attach additional image to the stencil attachement point, too.
 	glGenRenderbuffersEXT(1, &mRBOID);
 	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, mRBOID);
 	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, mWidth, mHeight);
 	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
 
+	// attach a texture to FBO color attachement point
 	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, mTextureID, 0);
+
+	// attach a renderbuffer to depth attachment point
 	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, mRBOID);
 
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
@@ -508,8 +508,7 @@ GuiRenderTexture::~GuiRenderTexture()
 	}
 }
 
-void 
-GuiRenderTexture::GuiRenderTexture::begin()
+void GuiRenderTexture::begin()
 {
 	glGetIntegerv(GL_VIEWPORT, mSavedViewport); // save current viewport
 
@@ -521,8 +520,7 @@ GuiRenderTexture::GuiRenderTexture::begin()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void 
-GuiRenderTexture::GuiRenderTexture::end()
+void GuiRenderTexture::end()
 {
 	Gui::GuiRenderer::getInstance().end();
 
@@ -531,8 +529,7 @@ GuiRenderTexture::GuiRenderTexture::end()
 	glViewport(mSavedViewport[0], mSavedViewport[1], mSavedViewport[2], mSavedViewport[3]); // restore old viewport
 }
 
-void 
-GuiRenderTexture::GuiRenderTexture::doRender(IVertexBuffer* _buffer, ITexture* _texture, size_t _count)
+void GuiRenderTexture::doRender(IVertexBuffer* _buffer, ITexture* _texture, size_t _count)
 {
 	Gui::GuiRenderer::getInstance().doRenderRTT(_buffer, _texture, _count);
 }

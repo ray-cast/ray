@@ -41,7 +41,7 @@
 #include "MyGUI_RenderFormat.h"
 #include "MyGUI_IVertexBuffer.h"
 #include "MyGUI_RenderManager.h"
-
+#include <ray/material_maker.h>
 #include <ray/gui_imageloader.h>
 
 _NAME_BEGIN
@@ -53,51 +53,57 @@ namespace Gui
 	public:
 		GuiRenderer();
 
-		void initialise();
-		void shutdown();
+		void open() except;
+		void close() noexcept;
 
-		void setImageLoader(Gui::GuiImageLoaderPtr loader) noexcept;
-		Gui::GuiImageLoaderPtr getImageLoader() const noexcept;
+		void setImageLoader(GuiImageLoaderPtr loader) noexcept;
+		GuiImageLoaderPtr getImageLoader() const noexcept;
 
 		static GuiRenderer& getInstance();
 		static GuiRenderer* getInstancePtr();
+
+		void doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count);
+		void drawOneFrame();
+		void setViewSize(int _width, int _height);
+		bool isPixelBufferObjectSupported() const;
 
 		virtual const MyGUI::IntSize& getViewSize() const;
 		virtual MyGUI::VertexColourType getVertexFormat();
 		virtual bool isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage _usage);
 		virtual MyGUI::IVertexBuffer* createVertexBuffer();
 		virtual void destroyVertexBuffer(MyGUI::IVertexBuffer* _buffer);
+
+		virtual void setTexture(MyGUI::ITexture* texture) noexcept;
 		virtual MyGUI::ITexture* createTexture(const std::string& _name);
 		virtual void destroyTexture(MyGUI::ITexture* _texture);
 		virtual MyGUI::ITexture* getTexture(const std::string& _name);
+
 		virtual void begin();
 		virtual void end();
 		virtual void doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count);
 		virtual const MyGUI::RenderTargetInfo& getInfo();
-		void doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count);
-		void drawOneFrame();
-		void setViewSize(int _width, int _height);
-		bool isPixelBufferObjectSupported() const;
-		unsigned int createShaderProgram(void);
 
 	private:
 		void destroyAllResources();
 
 	private:
-		typedef std::map<std::string, MyGUI::ITexture*> MapTexture;
+		typedef std::map<std::string, std::unique_ptr<MyGUI::ITexture>> MapTexture;
 
 		MyGUI::IntSize mViewSize;
-		MyGUI::VertexColourType mVertexFormat;
+		MyGUI::VertexColourType _vertexFormat;
 		MyGUI::RenderTargetInfo mInfo;
-		unsigned int mProgramID;
-		unsigned int mReferenceCount;
 		int mYScaleUniformLocation;
-
-		MapTexture mTextures;
 
 		bool _update;
 		bool _isSupportedPbo;
 		bool _isInitialise;
+
+		MaterialPtr _material;
+		MaterialPassPtr _materialPass;
+		MaterialParamPtr _materialScaleY;
+		MaterialParamPtr _materialDecal;
+
+		MapTexture _textures;
 
 		Gui::GuiImageLoaderPtr _imageLoader;
 	};

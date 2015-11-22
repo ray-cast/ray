@@ -38,6 +38,7 @@
 #include <ray/render_features.h>
 #include <ray/render_factory.h>
 #include <ray/render_scene.h>
+#include <ray/render_system.h>
 #include <ray/game_scene.h>
 
 _NAME_BEGIN
@@ -49,7 +50,6 @@ RenderFeatures::RenderFeatures() noexcept
 	, _width(0)
 	, _height(0)
 {
-	_renderSystem = RenderFactory::createRenderSystem();
 }
 
 RenderFeatures::RenderFeatures(WindHandle hwnd, std::size_t w, std::size_t h) noexcept
@@ -57,7 +57,6 @@ RenderFeatures::RenderFeatures(WindHandle hwnd, std::size_t w, std::size_t h) no
 	, _width(w)
 	, _height(h)
 {
-	_renderSystem = RenderFactory::createRenderSystem();
 }
 
 RenderFeatures::~RenderFeatures() noexcept
@@ -90,18 +89,6 @@ RenderFeatures::getRenderSetting() const noexcept
 	return _renderSetting;
 }
 
-void
-RenderFeatures::setRenderSystem(RenderSystemPtr renderSystem) noexcept
-{
-	_renderSystem = renderSystem;
-}
-
-RenderSystemPtr
-RenderFeatures::getRenderSystem() const noexcept
-{
-	return _renderSystem;
-}
-
 RenderScenePtr
 RenderFeatures::getRenderScene(GameScene* scene) noexcept
 {
@@ -123,21 +110,17 @@ RenderFeatures::clone() const noexcept
 void
 RenderFeatures::onActivate() except
 {
-	_renderSystem->open(_hwnd, _width, _height);
-	_renderSystem->setRenderSetting(_renderSetting);
+	RenderSystem::instance()->open(_hwnd, _width, _height);
+	RenderSystem::instance()->setRenderSetting(_renderSetting);
 
 	for (auto& it : _renderScenes)
-		_renderSystem->addRenderScene(it.second);
+		RenderSystem::instance()->addRenderScene(it.second);
 }
 
 void
 RenderFeatures::onDeactivate() except
 {
-	if (_renderSystem)
-	{
-		_renderSystem.reset();
-		_renderSystem = nullptr;
-	}
+	RenderSystem::instance()->close();
 }
 
 void
@@ -148,22 +131,18 @@ RenderFeatures::onOpenScene(GameScenePtr scene) except
 		auto renderScene = std::make_shared<RenderScene>();
 		_renderScenes[scene->getInstanceID()] = renderScene;
 
-		if (_renderSystem)
-			_renderSystem->addRenderScene(renderScene);
+		RenderSystem::instance()->addRenderScene(renderScene);
 	}
 }
 
 void
 RenderFeatures::onCloseScene(GameScenePtr scene) except
 {
-	if (_renderSystem)
+	auto renderScene = _renderScenes[scene->getInstanceID()];
+	if (renderScene)
 	{
-		auto renderScene = _renderScenes[scene->getInstanceID()];
-		if (renderScene)
-		{
-			_renderSystem->removeRenderScene(renderScene);
-			_renderScenes[scene->getInstanceID()] = nullptr;
-		}
+		RenderSystem::instance()->removeRenderScene(renderScene);
+		_renderScenes[scene->getInstanceID()] = nullptr;
 	}
 }
 
@@ -180,12 +159,7 @@ RenderFeatures::onFrame() except
 void
 RenderFeatures::onFrameEnd() except
 {
-	if (_renderSystem)
-	{
-		_renderSystem->renderBegin();
-		_renderSystem->renderScene();
-		_renderSystem->renderEnd();
-	}
+	RenderSystem::instance()->render();
 }
 
 _NAME_END

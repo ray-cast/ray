@@ -56,9 +56,6 @@ public:
 	void setRenderSetting(const RenderSetting& setting) noexcept;
 	const RenderSetting& getRenderSetting() const noexcept;
 
-	void setRenderSystem(RenderSystemPtr renderSystem) noexcept;
-	RenderSystemPtr getRenderSystem() const noexcept;
-
 	RenderScenePtr getRenderScene(GameScene* scene) noexcept;
 	RenderScenePtr getRenderScene(GameScenePtr scene) noexcept;
 
@@ -88,7 +85,6 @@ private:
 	std::size_t _width;
 	std::size_t _height;
 
-	RenderSystemPtr _renderSystem;
 	RenderSetting _renderSetting;
 	RenderScenes _renderScenes;
 };

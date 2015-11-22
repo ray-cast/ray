@@ -74,12 +74,6 @@ RenderFactory::createRenderWindow(WindHandle hwnd) except
 	return std::make_shared<OGLCanvas>(hwnd);
 }
 
-RenderSystemPtr 
-RenderFactory::createRenderSystem() noexcept
-{
-	return std::make_shared<DefaultRenderSystem>();
-}
-
 RenderPipelinePtr 
 RenderFactory::createRenderPipeline() noexcept
 {

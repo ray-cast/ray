@@ -83,12 +83,14 @@ VertexStreams::data() const noexcept
 VertexComponent::VertexComponent() noexcept
 	: _attrib(VertexAttrib::GPU_ATTRIB_POSITION)
 	, _format(VertexFormat::GPU_VERTEX_FLOAT)
+	, _normalize(false)
 {
 }
 
-VertexComponent::VertexComponent(VertexAttrib attrib, VertexFormat format) noexcept
+VertexComponent::VertexComponent(VertexAttrib attrib, VertexFormat format, bool normalize) noexcept
 	: _attrib(attrib)
 	, _format(format)
+	, _normalize(normalize)
 {
 }
 
@@ -108,11 +110,25 @@ VertexComponent::getVertexFormat() const noexcept
 	return _format;
 }
 
+bool
+VertexComponent::normalize() const noexcept
+{
+	return _normalize;
+}
+
 int
 VertexComponent::getVertexCount() const noexcept
 {
 	switch (_format)
 	{
+	case VertexFormat::GPU_VERTEX_UNSIGNED_BYTE:
+		return 1;
+	case VertexFormat::GPU_VERTEX_UNSIGNED_BYTE2:
+		return 2;
+	case VertexFormat::GPU_VERTEX_UNSIGNED_BYTE3:
+		return 3;
+	case VertexFormat::GPU_VERTEX_UNSIGNED_BYTE4:
+		return 4;
 	case VertexFormat::GPU_VERTEX_FLOAT:
 		return 1;
 	case VertexFormat::GPU_VERTEX_FLOAT2:
@@ -132,6 +148,14 @@ VertexComponent::getVertexSize() const noexcept
 {
 	switch (_format)
 	{
+	case VertexFormat::GPU_VERTEX_UNSIGNED_BYTE:
+		return 1;
+	case VertexFormat::GPU_VERTEX_UNSIGNED_BYTE2:
+		return 2;
+	case VertexFormat::GPU_VERTEX_UNSIGNED_BYTE3:
+		return 3;
+	case VertexFormat::GPU_VERTEX_UNSIGNED_BYTE4:
+		return 4;
 	case VertexFormat::GPU_VERTEX_FLOAT:
 		return 4;
 	case VertexFormat::GPU_VERTEX_FLOAT2:

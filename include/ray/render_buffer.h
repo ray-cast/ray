@@ -73,7 +73,7 @@ class EXPORT VertexComponent final
 {
 public:
 	VertexComponent() noexcept;
-	VertexComponent(VertexAttrib attrib, VertexFormat format) noexcept;
+	VertexComponent(VertexAttrib attrib, VertexFormat format, bool normalize = false) noexcept;
 	~VertexComponent() noexcept;
 
 	VertexAttrib getVertexAttrib() const noexcept;
@@ -82,7 +82,11 @@ public:
 	int getVertexCount() const noexcept;
 	int getVertexSize() const noexcept;
 
+	bool normalize() const noexcept;
+
 public:
+
+	bool _normalize;
 
 	VertexAttrib _attrib;
 	VertexFormat _format;
@@ -177,6 +181,7 @@ public:
 	IndexBufferDataPtr getIndexBuffer() const noexcept;
 
 	virtual void apply() noexcept = 0;
+	virtual void update() noexcept = 0;
 
 private:
 	RenderBuffer(const RenderBuffer& copy) noexcept = delete;

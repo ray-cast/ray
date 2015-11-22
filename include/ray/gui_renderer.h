@@ -63,17 +63,20 @@ namespace Gui
 		static GuiRenderer* getInstancePtr();
 
 		void doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count);
-		void drawOneFrame();
-		void setViewSize(int _width, int _height);
+		void drawOneFrame(float delta);
+		
+		void setViewport(int _width, int _height);
+		void getViewport(int& w, int& h);
+
 		bool isPixelBufferObjectSupported() const;
 
 		virtual const MyGUI::IntSize& getViewSize() const;
 		virtual MyGUI::VertexColourType getVertexFormat();
 		virtual bool isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage _usage);
+
 		virtual MyGUI::IVertexBuffer* createVertexBuffer();
 		virtual void destroyVertexBuffer(MyGUI::IVertexBuffer* _buffer);
 
-		virtual void setTexture(MyGUI::ITexture* texture) noexcept;
 		virtual MyGUI::ITexture* createTexture(const std::string& _name);
 		virtual void destroyTexture(MyGUI::ITexture* _texture);
 		virtual MyGUI::ITexture* getTexture(const std::string& _name);
@@ -89,10 +92,9 @@ namespace Gui
 	private:
 		typedef std::map<std::string, std::unique_ptr<MyGUI::ITexture>> MapTexture;
 
-		MyGUI::IntSize mViewSize;
+		MyGUI::IntSize _viewport;
 		MyGUI::VertexColourType _vertexFormat;
-		MyGUI::RenderTargetInfo mInfo;
-		int mYScaleUniformLocation;
+		MyGUI::RenderTargetInfo _info;
 
 		bool _update;
 		bool _isSupportedPbo;

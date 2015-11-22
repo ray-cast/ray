@@ -149,28 +149,36 @@ void
 GuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count)
 {
 	GuiVertexBuffer* buffer = static_cast<GuiVertexBuffer*>(_buffer);
-	unsigned int buffer_id = buffer->getBufferID();
-	MYGUI_PLATFORM_ASSERT(buffer_id, "Vertex buffer is not created");
-
-	unsigned int texture_id = 0;
-	if (_texture)
+	if (buffer)
 	{
-		GuiTexture* texture = static_cast<GuiTexture*>(_texture);
-		texture_id = texture->getTextureID();
-		//MYGUI_PLATFORM_ASSERT(texture_id, "Texture is not created");
+		if (_texture)
+		{
+			GuiTexture* texture = static_cast<GuiTexture*>(_texture);
+			_materialDecal->assign(texture->getTexture());
+		}
+
+		auto renderBuffer = buffer->getBuffer();
+		if (renderBuffer)
+		{
+			RenderIndirect renderable;
+			renderable.numVertices = _count;
+			RenderSystem::instance()->getRenderPipeline()->setMaterialPass(_materialPass);
+			RenderSystem::instance()->getRenderPipeline()->drawMesh(renderBuffer, renderable);
+		}
+		else
+		{
+			MYGUI_PLATFORM_ASSERT(renderBuffer, "render buffer is not created");
+		}
 	}
-
-	glBindTexture(GL_TEXTURE_2D, texture_id);
-	glBindVertexArray(buffer_id);
-
-	glDrawArrays(GL_TRIANGLES, 0, _count);
+	else
+	{
+		MYGUI_PLATFORM_ASSERT(buffer, "buffer is not created");
+	}
 }
 
 void 
 GuiRenderer::begin()
 {
-	RenderSystem::instance()->getRenderPipeline()->setMaterialPass(_materialPass);
-	glActiveTexture(GL_TEXTURE0);
 }
 
 void
@@ -181,13 +189,13 @@ GuiRenderer::end()
 const MyGUI::RenderTargetInfo& 
 GuiRenderer::getInfo()
 {
-	return mInfo;
+	return _info;
 }
 
 const MyGUI::IntSize& 
 GuiRenderer::getViewSize() const
 {
-	return mViewSize;
+	return _viewport;
 }
 
 MyGUI::VertexColourType 
@@ -207,24 +215,17 @@ GuiRenderer::isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage _
 }
 
 void 
-GuiRenderer::drawOneFrame()
+GuiRenderer::drawOneFrame(float delta)
 {
 	MyGUI::Gui* gui = MyGUI::Gui::getInstancePtr();
 	if (gui == nullptr)
 		return;
 
-	static MyGUI::Timer timer;
-	static unsigned long last_time = timer.getMilliseconds();
-	unsigned long now_time = timer.getMilliseconds();
-	unsigned long time = now_time - last_time;
-
-	onFrameEvent((float)((double)(time) / (double)1000));
-
-	last_time = now_time;
-
+	onFrameEvent(delta);
+	
 	this->begin();
 
-	onRenderToTarget(this, _update);
+	onRenderToTarget(this, false);
 	
 	this->end();
 
@@ -232,24 +233,32 @@ GuiRenderer::drawOneFrame()
 }
 
 void 
-GuiRenderer::setViewSize(int _width, int _height)
+GuiRenderer::setViewport(int _width, int _height)
 {
 	if (_height == 0)
 		_height = 1;
 	if (_width == 0)
 		_width = 1;
 
-	mViewSize.set(_width, _height);
+	_viewport.set(_width, _height);
 
-	mInfo.maximumDepth = 1;
-	mInfo.hOffset = 0;
-	mInfo.vOffset = 0;
-	mInfo.aspectCoef = float(mViewSize.height) / float(mViewSize.width);
-	mInfo.pixScaleX = 1.0f / float(mViewSize.width);
-	mInfo.pixScaleY = 1.0f / float(mViewSize.height);
+	_info.maximumDepth = 1;
+	_info.hOffset = 0;
+	_info.vOffset = 0;
+	_info.aspectCoef = float(_viewport.height) / float(_viewport.width);
+	_info.pixScaleX = 1.0f / float(_viewport.width);
+	_info.pixScaleY = 1.0f / float(_viewport.height);
 
-	onResizeView(mViewSize);
+	onResizeView(_viewport);
+
 	_update = true;
+}
+
+void 
+GuiRenderer::getViewport(int& w, int& h)
+{
+	w = _viewport.width;
+	h = _viewport.height;
 }
 
 bool 
@@ -292,12 +301,6 @@ GuiRenderer::destroyTexture(MyGUI::ITexture* _texture)
 	{
 		MYGUI_PLATFORM_LOG(Info, "Empty texture pointer");
 	}
-}
-
-void 
-GuiRenderer::setTexture(MyGUI::ITexture* texture) noexcept
-{
-
 }
 
 MyGUI::ITexture*

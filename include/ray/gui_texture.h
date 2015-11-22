@@ -42,88 +42,97 @@
 #include "MyGUI_RenderFormat.h"
 
 #include <ray/gui_imageloader.h>
+#include <ray/render_factory.h>
+#include <ray/mstream.h>
 
 _NAME_BEGIN
 
-class GuiRenderTexture : public MyGUI::IRenderTarget
+namespace Gui
 {
-public:
-	GuiRenderTexture(unsigned int _texture);
-	virtual ~GuiRenderTexture();
+	class GuiRenderTexture : public MyGUI::IRenderTarget
+	{
+	public:
+		GuiRenderTexture(unsigned int _texture);
+		virtual ~GuiRenderTexture();
 
-	virtual void begin();
-	virtual void end();
+		virtual void begin();
+		virtual void end();
 
-	virtual void doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count);
+		virtual void doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count);
 
-	virtual const MyGUI::RenderTargetInfo& getInfo();
+		virtual const MyGUI::RenderTargetInfo& getInfo();
 
-private:
-	unsigned int mTextureID;
-	int mWidth;
-	int mHeight;
+	private:
+		unsigned int mTextureID;
+		int mWidth;
+		int mHeight;
 
-	int mSavedViewport[4];
+		int mSavedViewport[4];
 
-	unsigned int mFBOID;
-	unsigned int mRBOID;
+		unsigned int mFBOID;
+		unsigned int mRBOID;
 
-	MyGUI::RenderTargetInfo _renderTargetInfo;
-};
+		MyGUI::RenderTargetInfo _renderTargetInfo;
 
-class GuiTexture : public MyGUI::ITexture
-{
-public:
-	GuiTexture(const std::string& name, Gui::GuiImageLoaderPtr loader);
-	virtual ~GuiTexture();
+		RenderTexturePtr _renderTexture;
+	};
 
-	virtual const std::string& getName() const;
+	class GuiTexture : public MyGUI::ITexture
+	{
+	public:
+		GuiTexture(const std::string& name, Gui::GuiImageLoaderPtr loader) noexcept;
+		virtual ~GuiTexture() noexcept;
 
-	virtual void createManual(int _width, int _height, MyGUI::TextureUsage _usage, MyGUI::PixelFormat _format);
-	virtual void loadFromFile(const std::string& _filename);
-	virtual void saveToFile(const std::string& _filename);
+		virtual const std::string& getName() const noexcept;
 
-	virtual void destroy();
+		virtual void createManual(int _width, int _height, MyGUI::TextureUsage _usage, MyGUI::PixelFormat _format);
 
-	virtual int getWidth();
-	virtual int getHeight();
+		virtual void loadFromFile(const std::string& _filename);
+		virtual void saveToFile(const std::string& _filename);
 
-	virtual void* lock(MyGUI::TextureUsage _access);
-	virtual void unlock();
-	virtual bool isLocked();
+		virtual void destroy() noexcept;
 
-	virtual MyGUI::PixelFormat getFormat();
-	virtual MyGUI::TextureUsage getUsage();
-	virtual size_t getNumElemBytes();
+		virtual int getWidth() noexcept;
+		virtual int getHeight() noexcept;
 
-	virtual MyGUI::IRenderTarget* getRenderTarget();
+		virtual void* lock(MyGUI::TextureUsage _access) noexcept;
+		virtual void unlock() noexcept;
+		virtual bool isLocked() noexcept;
 
-	unsigned int getTextureID() const;
-	void setUsage(MyGUI::TextureUsage _usage);
-	void createManual(int _width, int _height, MyGUI::TextureUsage _usage, MyGUI::PixelFormat _format, void* _data);
+		virtual MyGUI::PixelFormat getFormat() noexcept;
+		virtual MyGUI::TextureUsage getUsage() noexcept;
+		virtual size_t getNumElemBytes() noexcept;
 
-private:
-	void _create();
+		void setUsage(MyGUI::TextureUsage _usage) noexcept;
+		MyGUI::TextureUsage getUsage() const noexcept;
 
-private:
-	std::string mName;
-	int mWidth;
-	int mHeight;
-	int mPixelFormat;
-	int mInternalPixelFormat;
-	int mUsage;
-	int mAccess;
-	size_t mNumElemBytes;
-	size_t mDataSize;
-	unsigned int mTextureID;
-	unsigned int mPboID;
-	bool mLock;
-	void* mBuffer;
-	MyGUI::PixelFormat mOriginalFormat;
-	MyGUI::TextureUsage mOriginalUsage;
-	Gui::GuiImageLoaderPtr _imageLoader;
-	GuiRenderTexture* _renderTarget;
-};
+		virtual MyGUI::IRenderTarget* getRenderTarget();
+
+		TexturePtr getTexture() const noexcept;
+		void createManual(int _width, int _height, MyGUI::TextureUsage _usage, MyGUI::PixelFormat _format, void* stream);
+
+	private:
+		std::string _name;
+
+		std::uint32_t _width;
+		std::uint32_t _height;
+
+		bool _lock;
+
+		std::size_t _numElemBytes;
+		std::size_t _dataSize;
+
+		MyGUI::PixelFormat _originalFormat;
+		MyGUI::TextureUsage _originalUsage;
+
+		MemoryStream _stream;
+
+		TexturePtr _texture;
+
+		GuiImageLoaderPtr _imageLoader;
+		GuiRenderTexture* _renderTarget;
+	};
+}
 
 _NAME_END
 

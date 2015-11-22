@@ -59,7 +59,7 @@ namespace Gui
 		GuiImageLoader() noexcept;
 		virtual ~GuiImageLoader() noexcept;
 
-		virtual void* loadImage(int& _width, int& _height, Gui::PixelFormat& _format, const std::string& _filename) = 0;
+		virtual bool loadImage(int& _width, int& _height, Gui::PixelFormat& _format, const std::string& _filename, MemoryStream& stream) = 0;
 		virtual void saveImage(int _width, int _height, Gui::PixelFormat _format, void* _texture, const std::string& _filename) = 0;
 	};
 }

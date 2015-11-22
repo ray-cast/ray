@@ -38,191 +38,98 @@
 #include <ray/gui_renderer.h>
 #include <ray/gui_assert.h>
 #include <ray/gui_system.h>
+#include <ray/render_texture.h>
 
 #include <GL/glew.h>
 
 _NAME_BEGIN
 
+using namespace Gui;
 using namespace MyGUI;
 
-GuiTexture::GuiTexture(const std::string& _name, Gui::GuiImageLoaderPtr _loader) :
-    mName(_name),
-	mWidth(0),
-    mHeight(0),
-	mPixelFormat(0),
-    mInternalPixelFormat(0),
-    mUsage(0),
-    mAccess(0),
-    mNumElemBytes(0),
-    mDataSize(0),
-    mTextureID(0),
-    mPboID(0),
-    mLock(false),
-    mBuffer(0),
-	_imageLoader(_loader),
-	_renderTarget(nullptr)
+GuiTexture::GuiTexture(const std::string& _name, Gui::GuiImageLoaderPtr _loader) noexcept
+	: _name(_name)
+	, _width(0)
+	, _height(0)
+	, _originalUsage(TextureUsage::Default)
+	, _numElemBytes(0)
+	, _dataSize(0)
+	, _lock(false)
+	, _imageLoader(_loader)
+	, _renderTarget(nullptr)
 {
 }
 
-GuiTexture::~GuiTexture()
+GuiTexture::~GuiTexture() noexcept
 {
-	destroy();
+	this->destroy();
 }
 
-const std::string& GuiTexture::getName() const
+const std::string& 
+GuiTexture::getName() const noexcept
 {
-	return mName;
+	return _name;
 }
 
-void GuiTexture::setUsage(TextureUsage _usage)
+void 
+GuiTexture::setUsage(TextureUsage usage) noexcept
 {
-	mAccess = 0;
-	mUsage = 0;
-
-	if (_usage == TextureUsage::Default)
-	{
-		mUsage = GL_STATIC_READ;
-		mAccess = GL_READ_ONLY;
-	}
-	else if (_usage.isValue(TextureUsage::Static))
-	{
-		if (_usage.isValue(TextureUsage::Read))
-		{
-			if (_usage.isValue(TextureUsage::Write))
-			{
-				mUsage = GL_STATIC_COPY;
-				mAccess = GL_READ_WRITE;
-			}
-			else
-			{
-				mUsage = GL_STATIC_READ;
-				mAccess = GL_READ_ONLY;
-			}
-		}
-		else if (_usage.isValue(TextureUsage::Write))
-		{
-			mUsage = GL_STATIC_DRAW;
-			mAccess = GL_WRITE_ONLY;
-		}
-	}
-	else if (_usage.isValue(TextureUsage::Dynamic))
-	{
-		if (_usage.isValue(TextureUsage::Read))
-		{
-			if (_usage.isValue(TextureUsage::Write))
-			{
-				mUsage = GL_DYNAMIC_COPY;
-				mAccess = GL_READ_WRITE;
-			}
-			else
-			{
-				mUsage = GL_DYNAMIC_READ;
-				mAccess = GL_READ_ONLY;
-			}
-		}
-		else if (_usage.isValue(TextureUsage::Write))
-		{
-			mUsage = GL_DYNAMIC_DRAW;
-			mAccess = GL_WRITE_ONLY;
-		}
-	}
-	else if (_usage.isValue(TextureUsage::Stream))
-	{
-		if (_usage.isValue(TextureUsage::Read))
-		{
-			if (_usage.isValue(TextureUsage::Write))
-			{
-				mUsage = GL_STREAM_COPY;
-				mAccess = GL_READ_WRITE;
-			}
-			else
-			{
-				mUsage = GL_STREAM_READ;
-				mAccess = GL_READ_ONLY;
-			}
-		}
-		else if (_usage.isValue(TextureUsage::Write))
-		{
-			mUsage = GL_STREAM_DRAW;
-			mAccess = GL_WRITE_ONLY;
-		}
-	}
-else if (_usage.isValue(TextureUsage::RenderTarget))
-{
-    mUsage = GL_DYNAMIC_READ;
-    mAccess = GL_READ_ONLY;
-}
+	_originalUsage = usage;
 }
 
-void GuiTexture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format)
+MyGUI::TextureUsage 
+GuiTexture::getUsage() const noexcept
+{
+	return _originalUsage;
+}
+
+void
+GuiTexture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format)
 {
 	createManual(_width, _height, _usage, _format, 0);
 }
 
-void GuiTexture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format, void* _data)
+void 
+GuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::PixelFormat _format, void* _data)
 {
-	MYGUI_PLATFORM_ASSERT(!mTextureID, "Texture already exist");
+	MYGUI_PLATFORM_ASSERT(!_texture, "Texture already exist");
 
-	//FIXME перенести в метод
-	mInternalPixelFormat = 0;
-	mPixelFormat = 0;
-	mNumElemBytes = 0;
+	ray::PixelFormat pixelFormat = ray::PixelFormat::R8G8B8;
+	_numElemBytes = 0;
 	if (_format == MyGUI::PixelFormat::R8G8B8)
 	{
-		mInternalPixelFormat = GL_RGB8;
-		mPixelFormat = GL_BGR;
-		mNumElemBytes = 3;
+		pixelFormat = ray::PixelFormat::R8G8B8;
+		_numElemBytes = 3;
 	}
 	else if (_format == MyGUI::PixelFormat::R8G8B8A8)
 	{
-		mInternalPixelFormat = GL_RGBA8;
-		mPixelFormat = GL_BGRA;
-		mNumElemBytes = 4;
+		pixelFormat = ray::PixelFormat::R8G8B8A8;
+		_numElemBytes = 4;
 	}
 	else
 	{
 		MYGUI_PLATFORM_EXCEPT("format not support");
 	}
 
-	mWidth = _width;
-	mHeight = _height;
-	mDataSize = _width * _height * mNumElemBytes;
-	setUsage(_usage);
-	//MYGUI_PLATFORM_ASSERT(mUsage, "usage format not support");
+	_width = width;
+	_height = height;
+	_dataSize = _width * _height * _numElemBytes;
 
-	mOriginalFormat = _format;
-	mOriginalUsage = _usage;
+	_originalFormat = _format;
+	_originalUsage = usage;
 
-	// Set unpack alignment to one byte
-	int alignment = 0;
-	glGetIntegerv( GL_UNPACK_ALIGNMENT, &alignment );
-	glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-
-	// создаем тукстуру
-	glGenTextures(1, &mTextureID);
-	glBindTexture(GL_TEXTURE_2D, mTextureID);
-	// Set texture parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, mInternalPixelFormat, mWidth, mHeight, 0, mPixelFormat, GL_UNSIGNED_BYTE, (GLvoid*)_data);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	// Restore old unpack alignment
-	glPixelStorei( GL_UNPACK_ALIGNMENT, alignment );
-
-	if (!_data && Gui::GuiRenderer::getInstance().isPixelBufferObjectSupported())
-	{
-		//создаем текстурнный буфер
-		glGenBuffers(1, &mPboID);
-		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, mPboID);
-		glBufferData(GL_PIXEL_UNPACK_BUFFER, mDataSize, 0, mUsage);
-		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-	}
+	_texture = RenderFactory::createTexture();
+	_texture->setWidth(_width);
+	_texture->setHeight(_height);
+	_texture->setTexFilter(TextureFilter::GPU_LINEAR);
+	_texture->setTexDim(TextureDim::DIM_2D);
+	_texture->setTexFormat(pixelFormat);
+	_texture->setStream(_data);
+	_texture->setup();
 }
 
-void GuiTexture::destroy()
+void 
+GuiTexture::destroy() noexcept
 {
 	if (_renderTarget != nullptr)
 	{
@@ -230,122 +137,31 @@ void GuiTexture::destroy()
 		_renderTarget = nullptr;
 	}
 
-	if (mTextureID != 0)
-	{
-		glDeleteTextures(1, &mTextureID);
-		mTextureID = 0;
-	}
-	if (mPboID != 0)
-	{
-		glDeleteBuffers(1, &mPboID);
-		mPboID = 0;
-	}
-
-	mWidth = 0;
-	mHeight = 0;
-	mLock = false;
-	mPixelFormat = 0;
-	mDataSize = 0;
-	mUsage = 0;
-	mBuffer = 0;
-	mInternalPixelFormat = 0;
-	mAccess = 0;
-	mNumElemBytes = 0;
-	mOriginalFormat = MyGUI::PixelFormat::Unknow;
-	mOriginalUsage = TextureUsage::Default;
+	_width = 0;
+	_height = 0;
+	_lock = false;
+	_dataSize = 0;
+	_stream.clear();
+	_numElemBytes = 0;
+	_originalUsage = MyGUI::TextureUsage::Default;
+	_originalFormat = MyGUI::PixelFormat::Unknow;
+	_originalUsage = MyGUI::TextureUsage::Default;
 }
 
 void* 
-GuiTexture::lock(TextureUsage _access)
+GuiTexture::lock(TextureUsage _access) noexcept
 {
-	MYGUI_PLATFORM_ASSERT(mTextureID, "Texture is not created");
-
-	if (_access == TextureUsage::Read)
-	{
-		glBindTexture(GL_TEXTURE_2D, mTextureID);
-
-		mBuffer = new unsigned char[mDataSize];
-		glGetTexImage(GL_TEXTURE_2D, 0, mPixelFormat, GL_UNSIGNED_BYTE, mBuffer);
-
-		mLock = false;
-
-		return mBuffer;
-	}
-
-	// bind the texture
-	glBindTexture(GL_TEXTURE_2D, mTextureID);
-	if (!Gui::GuiRenderer::getInstance().isPixelBufferObjectSupported())
-	{
-		//Fallback if PBO's are not supported
-		mBuffer = new unsigned char[mDataSize];
-	}
-	else
-	{
-		// bind the PBO
-		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, mPboID);
-			
-		// Note that glMapBuffer() causes sync issue.
-		// If GPU is working with this buffer, glMapBuffer() will wait(stall)
-		// until GPU to finish its job. To avoid waiting (idle), you can call
-		// first glBufferData() with NULL pointer before glMapBuffer().
-		// If you do that, the previous data in PBO will be discarded and
-		// glMapBuffer() returns a new allocated pointer immediately
-		// even if GPU is still working with the previous data.
-		glBufferData(GL_PIXEL_UNPACK_BUFFER, mDataSize, 0, mUsage);
-
-		// map the buffer object into client's memory
-		mBuffer = (GLubyte*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, mAccess);
-		if (!mBuffer)
-		{
-			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-			glBindTexture(GL_TEXTURE_2D, 0);
-			MYGUI_PLATFORM_EXCEPT("Error texture lock");
-		}
-	}
-
-	mLock = true;
-
-	return mBuffer;
+	MYGUI_PLATFORM_ASSERT(!_lock, "Texture is locked");
+	MYGUI_PLATFORM_ASSERT(_texture, "Texture is not created");
+	_lock = true;
+	return _stream.map();
 }
 
 void
-GuiTexture::unlock()
+GuiTexture::unlock() noexcept
 {
-	if (!mLock && mBuffer)
-	{
-        delete[] (char*)mBuffer;
-		mBuffer = 0;
-
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-		return;
-	}
-
-	MYGUI_PLATFORM_ASSERT(mLock, "Texture is not locked");
-
-	if (!Gui::GuiRenderer::getInstance().isPixelBufferObjectSupported())
-	{
-		//Fallback if PBO's are not supported
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, mWidth, mHeight, mPixelFormat, GL_UNSIGNED_BYTE, mBuffer);
-        delete[] (char*)mBuffer;
-	}
-	else
-	{
-		// release the mapped buffer
-		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-
-		// copy pixels from PBO to texture object
-		// Use offset instead of ponter.
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, mWidth, mHeight, mPixelFormat, GL_UNSIGNED_BYTE, 0);
-
-		// it is good idea to release PBOs with ID 0 after use.
-		// Once bound with 0, all pixel operations are back to normal ways.
-		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-	}
-		
-	glBindTexture(GL_TEXTURE_2D, 0);
-	mBuffer = 0;
-	mLock = false;
+	MYGUI_PLATFORM_ASSERT(_lock, "Texture is not locked");
+	_lock = false;
 }
 
 void
@@ -359,8 +175,7 @@ GuiTexture::loadFromFile(const std::string& _filename)
 		int height = 0;
 		Gui::PixelFormat format = Gui::PixelFormat::Unknow;
 
-		auto data = std::unique_ptr<char[]>((char*)_imageLoader->loadImage(width, height, format, _filename));
-		if (data)
+		if (_imageLoader->loadImage(width, height, format, _filename, _stream))
 		{
 			MyGUI::PixelFormat pfd = MyGUI::PixelFormat::Unknow;
 			if (format == Gui::PixelFormat::L8)
@@ -374,7 +189,7 @@ GuiTexture::loadFromFile(const std::string& _filename)
 			else
 				assert(false);
 
-			this->createManual(width, height, TextureUsage::Static | TextureUsage::Write, pfd, data.get());
+			this->createManual(width, height, TextureUsage::Static | TextureUsage::Write, pfd, _stream.map());
 		}
 	}
 }
@@ -387,18 +202,18 @@ GuiTexture::saveToFile(const std::string& _filename)
 		void* data = this->lock(TextureUsage::Read);
 
 		Gui::PixelFormat format = Gui::PixelFormat::Unknow;
-		if (mOriginalFormat == MyGUI::PixelFormat::L8)
+		if (_originalFormat == MyGUI::PixelFormat::L8)
 			format = Gui::PixelFormat::L8;
-		else if (mOriginalFormat == MyGUI::PixelFormat::L8A8)
+		else if (_originalFormat == MyGUI::PixelFormat::L8A8)
 			format = Gui::PixelFormat::L8A8;
-		else if (mOriginalFormat == MyGUI::PixelFormat::R8G8B8)
+		else if (_originalFormat == MyGUI::PixelFormat::R8G8B8)
 			format = Gui::PixelFormat::R8G8B8;
-		else if (mOriginalFormat == MyGUI::PixelFormat::R8G8B8A8)
+		else if (_originalFormat == MyGUI::PixelFormat::R8G8B8A8)
 			format = Gui::PixelFormat::R8G8B8A8;
 		else
 			assert(false);
 
-		_imageLoader->saveImage(mWidth, mHeight, format, data, _filename);
+		_imageLoader->saveImage(_width, _height, format, data, _filename);
 
 		this->unlock();
 	}
@@ -407,55 +222,59 @@ GuiTexture::saveToFile(const std::string& _filename)
 IRenderTarget* 
 GuiTexture::getRenderTarget()
 {
-	if (_renderTarget == nullptr)
-		_renderTarget = new GuiRenderTexture(mTextureID);
-
-	return _renderTarget;
+	/*if (_renderTarget == nullptr)
+		_renderTarget = new GuiRenderTexture(_texture);
+	return _renderTarget;*/
+	assert(nullptr);
+	return nullptr;
 }
 
-unsigned int 
-GuiTexture::getTextureID() const
+TexturePtr
+GuiTexture::getTexture() const noexcept
 {
-	return mTextureID;
+	return _texture;
 }
 
-int GuiTexture::getWidth()
+int 
+GuiTexture::getWidth() noexcept
 {
-	return mWidth;
+	return _width;
 }
 
-int GuiTexture::getHeight()
+int 
+GuiTexture::getHeight() noexcept
 {
-	return mHeight;
+	return _height;
 }
 
-bool GuiTexture::isLocked()
+bool 
+GuiTexture::isLocked() noexcept
 {
-	return mLock;
+	return _lock;
 }
 
 MyGUI::PixelFormat 
-GuiTexture::getFormat()
+GuiTexture::getFormat() noexcept
 {
-	return mOriginalFormat;
+	return _originalFormat;
 }
 
-TextureUsage GuiTexture::getUsage()
+TextureUsage GuiTexture::getUsage() noexcept
 {
-	return mOriginalUsage;
+	return _originalUsage;
 }
 
-size_t GuiTexture::getNumElemBytes()
+size_t GuiTexture::getNumElemBytes() noexcept
 {
-	return mNumElemBytes;
+	return _numElemBytes;
 }
 
-GuiRenderTexture::GuiRenderTexture(unsigned int _texture) :
-	mTextureID(_texture),
-	mWidth(0),
-	mHeight(0),
-	mFBOID(0),
-	mRBOID(0)
+GuiRenderTexture::GuiRenderTexture(unsigned int _texture) 
+	: mTextureID(_texture)
+	, mWidth(0)
+	, mHeight(0)
+	, mFBOID(0)
+	, mRBOID(0)
 {
 	int miplevel = 0;
 	glBindTexture(GL_TEXTURE_2D, mTextureID);
@@ -508,7 +327,8 @@ GuiRenderTexture::~GuiRenderTexture()
 	}
 }
 
-void GuiRenderTexture::begin()
+void
+GuiRenderTexture::begin()
 {
 	glGetIntegerv(GL_VIEWPORT, mSavedViewport); // save current viewport
 
@@ -520,7 +340,8 @@ void GuiRenderTexture::begin()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void GuiRenderTexture::end()
+void 
+GuiRenderTexture::end()
 {
 	Gui::GuiRenderer::getInstance().end();
 
@@ -529,7 +350,8 @@ void GuiRenderTexture::end()
 	glViewport(mSavedViewport[0], mSavedViewport[1], mSavedViewport[2], mSavedViewport[3]); // restore old viewport
 }
 
-void GuiRenderTexture::doRender(IVertexBuffer* _buffer, ITexture* _texture, size_t _count)
+void 
+GuiRenderTexture::doRender(IVertexBuffer* _buffer, ITexture* _texture, size_t _count)
 {
 	Gui::GuiRenderer::getInstance().doRenderRTT(_buffer, _texture, _count);
 }

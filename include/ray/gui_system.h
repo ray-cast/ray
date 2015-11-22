@@ -81,7 +81,7 @@ namespace Gui
 		void setViewport(int w, int h) noexcept;
 		void getViewport(int& w, int& h) noexcept;
 
-		void render() noexcept;
+		void render(float delta) noexcept;
 
 	private:
 

@@ -44,7 +44,9 @@ _NAME_BEGIN
 
 class GuiFeature final : public GameFeature
 {
+	__DeclareSubClass(GuiFeature, GameFeature)
 public:
+	GuiFeature() noexcept;
 	GuiFeature(std::uint32_t w, std::uint32_t h) noexcept;
 	~GuiFeature() noexcept;
 

@@ -39,6 +39,7 @@
 
 #include <ray/fcntl.h>
 #include <ray/rtti.h>
+#include <ray/mstream.h>
 
 _NAME_BEGIN
 

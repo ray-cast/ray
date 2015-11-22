@@ -373,23 +373,21 @@ void
 MyGuiSystem::setViewport(int w, int h) noexcept
 {
 	assert(_renderer);
-	_renderer->setViewSize(w, h);
+	_renderer->setViewport(w, h);
 }
 
 void 
 MyGuiSystem::getViewport(int& w, int& h) noexcept
 {
 	assert(_renderer);
-	auto size = _renderer->getViewSize();
-	w = size.width;
-	h = size.height;
+	_renderer->getViewport(w, h);
 }
 
 void
-MyGuiSystem::render() noexcept
+MyGuiSystem::render(float delta) noexcept
 {
 	assert(_renderer);
-	_renderer->drawOneFrame();
+	_renderer->drawOneFrame(delta);
 }
 
 _NAME_END

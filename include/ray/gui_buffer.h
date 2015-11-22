@@ -39,6 +39,7 @@
 
 #include <ray/gui_assert.h>
 #include <ray/mstream.h>
+#include <ray/render_buffer.h>
 
 #include <MyGUI_Prerequest.h>
 #include <MyGUI_IVertexBuffer.h>
@@ -60,20 +61,15 @@ namespace Gui
 		virtual MyGUI::Vertex* lock() noexcept;
 		virtual void unlock() noexcept;
 
-		void destroy();
-		void create();
-
-		unsigned int getBufferID() const
-		{
-			return _vao;
-		}
+		RenderBufferPtr getBuffer() const;
 
 	private:
 
 		MemoryStream _stream;
 
-		unsigned int _vao;
-		unsigned int _bufferID;
+		RenderBufferPtr _buffer;
+		VertexBufferDataPtr _vb;
+
 		std::size_t _needVertexCount;
 		std::size_t _sizeInBytes;
 	};

@@ -37,11 +37,14 @@
 #if defined(_BUILD_GUI)
 #include <ray/gui_feature.h>
 #include <ray/gui_system.h>
-
+#include <ray/game_server.h>
+#include <ray/timer.h>
 #include <ray/image.h>
 #include <ray/input_event.h>
 
 _NAME_BEGIN
+
+__ImplementSubClass(GuiFeature, GameFeature, "GuiFeature")
 
 Gui::GuiButton::Code ButtonCodeToGuiButton(InputButton::Code button) noexcept
 {
@@ -282,7 +285,7 @@ Gui::GuiKey::Code KeyCodetoGuiKey(InputKey::Code key) noexcept
 class ImageLoader : public Gui::GuiImageLoader
 {
 public:
-	void* loadImage(int& _width, int& _height, Gui::PixelFormat& _format, const std::string& _filename)
+	bool loadImage(int& _width, int& _height, Gui::PixelFormat& _format, const std::string& _filename, MemoryStream& stream)
 	{
 		ray::Image image;
 		if (image.load(_filename))
@@ -300,13 +303,13 @@ public:
 			}
 
 			size_t size = image.size();
-			auto result = new unsigned char[size];
-			std::memcpy(result, image.data(), image.size());
 
-			return result;
+			stream.resize(size);
+			stream.write((char*)image.data(), size);
+			return true;
 		}
 
-		return nullptr;
+		return false;
 	}
 
 	void saveImage(int _width, int _height, Gui::PixelFormat _format, void* _texture, const std::string& _filename)
@@ -314,6 +317,12 @@ public:
 	}
 
 };
+
+GuiFeature::GuiFeature() noexcept
+	: _width(0)
+	, _height(0)
+{
+}
 
 GuiFeature::GuiFeature(std::uint32_t w, std::uint32_t h) noexcept
 	: _width(w)
@@ -329,7 +338,7 @@ void
 GuiFeature::render() except
 {
 	if (_platform)
-		_platform->render();
+		_platform->render(this->getGameServer()->getTimer()->delta());
 }
 
 void

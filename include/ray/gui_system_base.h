@@ -74,7 +74,7 @@ namespace Gui
 		virtual void setViewport(int w, int h) noexcept = 0;
 		virtual void getViewport(int& w, int& h) noexcept = 0;
 
-		virtual void render() except = 0;
+		virtual void render(float delta) except = 0;
 	};
 }
 

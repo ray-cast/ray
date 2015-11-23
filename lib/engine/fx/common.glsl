@@ -292,12 +292,12 @@
 
             float4 StoreGBufferRT0(float4 diffuse, float3 specular)
             {
-                return float4(packDiffuse(diffuse.rgb), 0.0, luminance(specular));
+                return float4(diffuse.rgb, luminance(specular));
             }
 
             float4 StoreGBufferRT0(float4 diffuse, float specular)
             {
-                return float4(packDiffuse(diffuse.rgb), 0.0, specular);
+                return float4(diffuse.rgb, specular);
             }
 
             float4 StoreGBufferRT1(float3 n, float shininess)
@@ -307,7 +307,7 @@
 
             float3 restoreRGB(sampler2D mrt0, float2 coord)
             {
-                return unpackDiffuse(mrt0, coord).rgb;
+                return sampleCoord(mrt0, coord).rgb;
             }
 
             float restoreSpecular(float4 mrt0)

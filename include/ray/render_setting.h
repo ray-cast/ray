@@ -52,6 +52,7 @@ struct EXPORT RenderSetting
 	bool enableDOF;
 	bool enableFimic;
 	bool enableFXAA;
+	bool enableLightShaft;
 	bool enableColorGrading;
 
 	RenderSetting() noexcept;

@@ -89,6 +89,7 @@ private:
 	RenderPostProcessPtr _SSSS;
 	RenderPostProcessPtr _DOF;
 	RenderPostProcessPtr _fog;
+	RenderPostProcessPtr _lightShaft;
 	RenderPostProcessPtr _fimicToneMapping;
 	RenderPostProcessPtr _FXAA;
 	RenderPostProcessPtr _colorGrading;

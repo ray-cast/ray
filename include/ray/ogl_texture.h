@@ -87,7 +87,7 @@ public:
 	OGLRenderTexture() noexcept;
 	~OGLRenderTexture() noexcept;
 
-	virtual bool setup() noexcept;
+	virtual bool setup(TexturePtr texture) noexcept;
 	virtual void close() noexcept;
 
 	void setLayer(GLuint layer) noexcept;

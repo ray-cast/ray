@@ -39,8 +39,8 @@
 #include <ray/gui_assert.h>
 #include <ray/gui_system.h>
 #include <ray/render_texture.h>
-
-#include <GL/glew.h>
+#include <ray/render_system.h>
+#include <ray/render_pipeline.h>
 
 _NAME_BEGIN
 
@@ -84,13 +84,13 @@ GuiTexture::getUsage() const noexcept
 }
 
 void
-GuiTexture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format)
+GuiTexture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format) except
 {
 	createManual(_width, _height, _usage, _format, 0);
 }
 
 void 
-GuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::PixelFormat _format, void* _data)
+GuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::PixelFormat _format, void* _data) except
 {
 	MYGUI_PLATFORM_ASSERT(!_texture, "Texture already exist");
 
@@ -222,16 +222,16 @@ GuiTexture::saveToFile(const std::string& _filename)
 IRenderTarget* 
 GuiTexture::getRenderTarget()
 {
-	/*if (_renderTarget == nullptr)
-		_renderTarget = new GuiRenderTexture(_texture);
-	return _renderTarget;*/
-	assert(nullptr);
-	return nullptr;
+	assert(_texture);
+	if (_renderTarget == nullptr)
+		_renderTarget = new GuiRenderTexture(_texture);		
+	return _renderTarget;
 }
 
 TexturePtr
 GuiTexture::getTexture() const noexcept
 {
+	assert(_texture);
 	return _texture;
 }
 
@@ -269,95 +269,44 @@ size_t GuiTexture::getNumElemBytes() noexcept
 	return _numElemBytes;
 }
 
-GuiRenderTexture::GuiRenderTexture(unsigned int _texture) 
-	: mTextureID(_texture)
-	, mWidth(0)
-	, mHeight(0)
-	, mFBOID(0)
-	, mRBOID(0)
+GuiRenderTexture::GuiRenderTexture(TexturePtr texture) noexcept
 {
-	int miplevel = 0;
-	glBindTexture(GL_TEXTURE_2D, mTextureID);
-	glGetTexLevelParameteriv(GL_TEXTURE_2D, miplevel, GL_TEXTURE_WIDTH, &mWidth);
-	glGetTexLevelParameteriv(GL_TEXTURE_2D, miplevel, GL_TEXTURE_HEIGHT, &mHeight);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
 	_renderTargetInfo.maximumDepth = 1.0f;
 	_renderTargetInfo.hOffset = 0;
 	_renderTargetInfo.vOffset = 0;
-	_renderTargetInfo.aspectCoef = float(mHeight) / float(mWidth);
-	_renderTargetInfo.pixScaleX = 1.0f / float(mWidth);
-	_renderTargetInfo.pixScaleY = 1.0f / float(mHeight);
+	_renderTargetInfo.aspectCoef = float(texture->getHeight()) / float(texture->getWidth());
+	_renderTargetInfo.pixScaleX = 1.0f / float(texture->getWidth());
+	_renderTargetInfo.pixScaleY = 1.0f / float(texture->getHeight());
 
-	// create a framebuffer object, you need to delete them when program exits.
-	glGenFramebuffersEXT(1, &mFBOID);
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mFBOID);
-
-	// create a renderbuffer object to store depth info
-	// NOTE: A depth renderable image should be attached the FBO for depth test.
-	// If we don't attach a depth renderable image to the FBO, then
-	// the rendering output will be corrupted because of missing depth test.
-	// If you also need stencil test for your rendering, then you must
-	// attach additional image to the stencil attachement point, too.
-	glGenRenderbuffersEXT(1, &mRBOID);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, mRBOID);
-	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, mWidth, mHeight);
-	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
-
-	// attach a texture to FBO color attachement point
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, mTextureID, 0);
-
-	// attach a renderbuffer to depth attachment point
-	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, mRBOID);
-
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	_renderTexture = RenderFactory::createRenderTexture();
+	_renderTexture->setup(texture);
 }
 
-GuiRenderTexture::~GuiRenderTexture()
+GuiRenderTexture::~GuiRenderTexture() noexcept
 {
-	if (mFBOID != 0)
-	{
-		glDeleteFramebuffersEXT(1, &mFBOID);
-		mFBOID = 0;
-	}
-	if (mRBOID != 0)
-	{
-		glDeleteRenderbuffersEXT(1, &mRBOID);
-		mRBOID = 0;
-	}
 }
 
 void
-GuiRenderTexture::begin()
+GuiRenderTexture::begin() noexcept
 {
-	glGetIntegerv(GL_VIEWPORT, mSavedViewport); // save current viewport
-
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mFBOID);
-
-	glViewport(0, 0, mWidth, mHeight);
-
-	Gui::GuiRenderer::getInstance().begin();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	RenderSystem::instance()->getRenderPipeline()->setRenderTexture(_renderTexture);
+	RenderSystem::instance()->getRenderPipeline()->clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4(0, 0, 0, 0), 1.0, 0);
 }
 
 void 
-GuiRenderTexture::end()
+GuiRenderTexture::end() noexcept
 {
-	Gui::GuiRenderer::getInstance().end();
-
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); // unbind
-
-	glViewport(mSavedViewport[0], mSavedViewport[1], mSavedViewport[2], mSavedViewport[3]); // restore old viewport
+	RenderSystem::instance()->getRenderPipeline()->setRenderTexture(nullptr);
 }
 
 void 
-GuiRenderTexture::doRender(IVertexBuffer* _buffer, ITexture* _texture, size_t _count)
+GuiRenderTexture::doRender(IVertexBuffer* _buffer, ITexture* _texture, size_t _count) noexcept
 {
 	Gui::GuiRenderer::getInstance().doRenderRTT(_buffer, _texture, _count);
 }
 
 const MyGUI::RenderTargetInfo& 
-GuiRenderTexture::getInfo()
+GuiRenderTexture::getInfo() noexcept
 {
 	return _renderTargetInfo;
 }

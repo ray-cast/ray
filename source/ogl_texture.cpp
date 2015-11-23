@@ -404,7 +404,7 @@ OGLRenderTexture::~OGLRenderTexture() noexcept
 }
 
 bool
-OGLRenderTexture::setup() noexcept
+OGLRenderTexture::setup(TexturePtr resolveTexture) noexcept
 {
 	assert(!_fbo);
 
@@ -431,13 +431,15 @@ OGLRenderTexture::setup() noexcept
 	auto resolveFormat = this->getTexFormat();
 
 	if (resolveFormat == PixelFormat::DEPTH24_STENCIL8 || resolveFormat == PixelFormat::DEPTH32_STENCIL8)
-		this->bindRenderTexture(this->getResolveTexture(), GL_DEPTH_STENCIL_ATTACHMENT);
+		this->bindRenderTexture(resolveTexture, GL_DEPTH_STENCIL_ATTACHMENT);
 	else if (resolveFormat == PixelFormat::DEPTH_COMPONENT16 || resolveFormat == PixelFormat::DEPTH_COMPONENT24 || resolveFormat == PixelFormat::DEPTH_COMPONENT32)
-		this->bindRenderTexture(this->getResolveTexture(), GL_DEPTH_ATTACHMENT);
+		this->bindRenderTexture(resolveTexture, GL_DEPTH_ATTACHMENT);
 	else if (resolveFormat == PixelFormat::STENCIL8)
-		this->bindRenderTexture(this->getResolveTexture(), GL_STENCIL_ATTACHMENT);
+		this->bindRenderTexture(resolveTexture, GL_STENCIL_ATTACHMENT);
 	else
-		this->bindRenderTexture(this->getResolveTexture(), GL_COLOR_ATTACHMENT0);
+		this->bindRenderTexture(resolveTexture, GL_COLOR_ATTACHMENT0);
+
+	_resolveTexture = resolveTexture;
 
 #if !defined(EGLAPI)
 	if (OGLFeatures::ARB_direct_state_access)

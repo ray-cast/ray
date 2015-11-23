@@ -37,9 +37,10 @@
 #ifndef _GUI_BUFFER_H_
 #define _GUI_BUFFER_H_
 
-#include <ray/gui_assert.h>
-#include <ray/mstream.h>
+#include <ray/gui_types.h>
+
 #include <ray/render_buffer.h>
+#include <ray/render_factory.h>
 
 #include <MyGUI_Prerequest.h>
 #include <MyGUI_IVertexBuffer.h>

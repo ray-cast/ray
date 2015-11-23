@@ -137,10 +137,10 @@ public:
 	RenderTexture() noexcept;
 	virtual ~RenderTexture() noexcept;
 
-	void setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat format) noexcept;
-	void setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, PixelFormat format) noexcept;
+	virtual bool setup(TexturePtr texture) except = 0;
+	virtual void setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat format) except;
+	virtual void setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, PixelFormat format) except;
 
-	virtual bool setup() except = 0;
 	virtual void close() noexcept = 0;
 
 	void setTexMipmap(bool enable) noexcept;

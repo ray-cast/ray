@@ -37,7 +37,7 @@
 #ifndef _H_GUI_INPUT_KEY_H_
 #define _H_GUI_INPUT_KEY_H_
 
-#include <ray/platform.h>
+#include <ray/gui_types.h>
 
 _NAME_BEGIN
 

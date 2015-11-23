@@ -492,7 +492,7 @@ RenderTexture::onSetRenderTextureAfter(RenderTexturePtr) noexcept
 }
 
 void
-RenderTexture::setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat format) noexcept
+RenderTexture::setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat format) except
 {
 	_resolveTexture->setWidth(w);
 	_resolveTexture->setHeight(h);
@@ -500,11 +500,11 @@ RenderTexture::setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat f
 	_resolveTexture->setTexFormat(format);
 	_resolveTexture->setup();
 
-	this->setup();
+	this->setup(_resolveTexture);
 }
 
 void
-RenderTexture::setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, PixelFormat format) noexcept
+RenderTexture::setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, PixelFormat format) except
 {
 	_resolveTexture->setWidth(w);
 	_resolveTexture->setHeight(h);
@@ -513,7 +513,7 @@ RenderTexture::setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim
 	_resolveTexture->setTexFormat(format);
 	_resolveTexture->setup();
 
-	this->setup();
+	this->setup(_resolveTexture);
 }
 
 MultiRenderTexture::MultiRenderTexture() noexcept

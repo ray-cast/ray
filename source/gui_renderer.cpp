@@ -42,11 +42,8 @@
 #include <ray/render_system.h>
 #include <ray/render_pipeline_base.h>
 
-#include "MyGUI_VertexData.h"
-#include "MyGUI_Gui.h"
-#include "MyGUI_Timer.h"
-
-#include "GL/glew.h"
+#include <MyGUI_VertexData.h>
+#include <MyGUI_Gui.h>
 
 _NAME_BEGIN
 
@@ -55,20 +52,19 @@ using namespace Gui;
 GuiRenderer::GuiRenderer() 
 	: _update(false)
 	, _imageLoader(nullptr)
-	, _isSupportedPbo(false)
 	, _isInitialise(false)
 	, _vertexFormat(MyGUI::VertexColourType::ColourABGR)
 {
 }
 
 GuiRenderer&
-GuiRenderer::getInstance()
+GuiRenderer::getInstance() noexcept
 {
 	return *getInstancePtr();
 }
 
 GuiRenderer*
-GuiRenderer::getInstancePtr()
+GuiRenderer::getInstancePtr() noexcept
 {
 	return static_cast<GuiRenderer*>(RenderManager::getInstancePtr());
 }
@@ -79,25 +75,16 @@ GuiRenderer::open() except
 	MYGUI_PLATFORM_ASSERT(!_isInitialise, getClassTypeName() << " initialised twice");
 	MYGUI_PLATFORM_LOG(Info, "* Initialise: " << getClassTypeName());
 
-	if (GLEW_VERSION_3_0) 
-	{
-		_material = MaterialMaker("sys:fx/default.glsl");
-		_materialPass = _material->getTech(RenderQueue::RQ_OPAQUE)->getPass("ui");
-		_materialDecal = _material->getParameter("decal");
-		_materialScaleY = _material->getParameter("scaleY");
-		_materialScaleY->assign(1.0f);
+	_material = MaterialMaker("sys:fx/default.glsl");
+	_materialPass = _material->getTech(RenderQueue::RQ_OPAQUE)->getPass("ui");
+	_materialDecal = _material->getParameter("decal");
+	_materialScaleY = _material->getParameter("scaleY");
+	_materialScaleY->assign(1.0f);
 
-		_isSupportedPbo = glewIsExtensionSupported("GL_EXT_pixel_buffer_object") != 0;
+	_isInitialise = true;
+	_update = false;
 
-		_isInitialise = true;
-		_update = false;
-
-		MYGUI_PLATFORM_LOG(Info, getClassTypeName() << " successfully initialized");
-	}
-	else
-	{
-		MYGUI_PLATFORM_EXCEPT(std::string("OpenGL 3.0 or newer not available, current version is ") + (const char*)glGetString(GL_VERSION));
-	}
+	MYGUI_PLATFORM_LOG(Info, getClassTypeName() << " successfully initialized");
 }
 
 void 
@@ -126,19 +113,19 @@ GuiRenderer::getImageLoader() const noexcept
 }
 
 MyGUI::IVertexBuffer* 
-GuiRenderer::createVertexBuffer()
+GuiRenderer::createVertexBuffer() noexcept
 {
 	return new GuiVertexBuffer();
 }
 
 void 
-GuiRenderer::destroyVertexBuffer(MyGUI::IVertexBuffer* _buffer)
+GuiRenderer::destroyVertexBuffer(MyGUI::IVertexBuffer* _buffer) noexcept
 {
 	delete _buffer;
 }
 
 void 
-GuiRenderer::doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count)
+GuiRenderer::doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept
 {
 	_materialScaleY->assign(-1.0f);
 	doRender(_buffer, _texture, _count);
@@ -146,7 +133,7 @@ GuiRenderer::doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _textur
 }
 
 void 
-GuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count)
+GuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept
 {
 	GuiVertexBuffer* buffer = static_cast<GuiVertexBuffer*>(_buffer);
 	if (buffer)
@@ -177,35 +164,35 @@ GuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, 
 }
 
 void 
-GuiRenderer::begin()
+GuiRenderer::begin() noexcept
 {
 }
 
 void
-GuiRenderer::end()
+GuiRenderer::end() noexcept
 {
 }
 
 const MyGUI::RenderTargetInfo& 
-GuiRenderer::getInfo()
+GuiRenderer::getInfo() noexcept
 {
 	return _info;
 }
 
 const MyGUI::IntSize& 
-GuiRenderer::getViewSize() const
+GuiRenderer::getViewSize() const noexcept
 {
 	return _viewport;
 }
 
 MyGUI::VertexColourType 
-GuiRenderer::getVertexFormat()
+GuiRenderer::getVertexFormat() noexcept
 {
 	return _vertexFormat;
 }
 
 bool 
-GuiRenderer::isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage _usage)
+GuiRenderer::isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage _usage) noexcept
 {
 	if (_format == MyGUI::PixelFormat::R8G8B8 ||
 		_format == MyGUI::PixelFormat::R8G8B8A8)
@@ -215,7 +202,7 @@ GuiRenderer::isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage _
 }
 
 void 
-GuiRenderer::drawOneFrame(float delta)
+GuiRenderer::drawOneFrame(float delta) noexcept
 {
 	MyGUI::Gui* gui = MyGUI::Gui::getInstancePtr();
 	if (gui == nullptr)
@@ -233,7 +220,7 @@ GuiRenderer::drawOneFrame(float delta)
 }
 
 void 
-GuiRenderer::setViewport(int _width, int _height)
+GuiRenderer::setViewport(int _width, int _height) noexcept
 {
 	if (_height == 0)
 		_height = 1;
@@ -255,20 +242,14 @@ GuiRenderer::setViewport(int _width, int _height)
 }
 
 void 
-GuiRenderer::getViewport(int& w, int& h)
+GuiRenderer::getViewport(int& w, int& h) noexcept
 {
 	w = _viewport.width;
 	h = _viewport.height;
 }
 
-bool 
-GuiRenderer::isPixelBufferObjectSupported() const
-{
-	return _isSupportedPbo;
-}
-
 MyGUI::ITexture* 
-GuiRenderer::createTexture(const std::string& _name)
+GuiRenderer::createTexture(const std::string& _name) noexcept
 {
 	auto& texture = _textures[_name];
 	if (!texture)
@@ -282,7 +263,7 @@ GuiRenderer::createTexture(const std::string& _name)
 }
 
 void
-GuiRenderer::destroyTexture(MyGUI::ITexture* _texture)
+GuiRenderer::destroyTexture(MyGUI::ITexture* _texture) noexcept
 {
 	if (_texture)
 	{
@@ -304,7 +285,7 @@ GuiRenderer::destroyTexture(MyGUI::ITexture* _texture)
 }
 
 MyGUI::ITexture*
-GuiRenderer::getTexture(const std::string& _name)
+GuiRenderer::getTexture(const std::string& _name) noexcept
 {
 	MapTexture::const_iterator item = _textures.find(_name);
 	if (item == _textures.end())
@@ -313,7 +294,7 @@ GuiRenderer::getTexture(const std::string& _name)
 }
 
 void 
-GuiRenderer::destroyAllResources()
+GuiRenderer::destroyAllResources() noexcept
 {
 	_textures.clear();
 	_material.reset();

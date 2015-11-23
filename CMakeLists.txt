@@ -20,7 +20,7 @@ SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 OPTION(BUILD_DEBUG_MODE "ON for debug or OFF for release" ON)
 OPTION(BUILD_DIRECTX_11 "on for DX11 off for ogl" OFF)
-OPTION(BUILD_GLEW_SHARED  "on for use off for ignore" ON)
+OPTION(BUILD_GLEW_SHARED  "on for use off for ignore" OFF)
 
 IF(ANDROID_ABI)
     OPTION(BUILD_PLATFORM_ANDROID "on for use off for ignore" ON)

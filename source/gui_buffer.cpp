@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/gui_buffer.h>
-#include <ray/render_factory.h>
 
 _NAME_BEGIN
 

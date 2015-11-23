@@ -37,46 +37,18 @@
 #ifndef _H_GUI_TEXTURE_H_
 #define _H_GUI_TEXTURE_H_
 
-#include "MyGUI_Prerequest.h"
-#include "MyGUI_ITexture.h"
-#include "MyGUI_RenderFormat.h"
+#include <MyGUI_Prerequest.h>
+#include <MyGUI_ITexture.h>
+#include <MyGUI_RenderFormat.h>
 
 #include <ray/gui_imageloader.h>
 #include <ray/render_factory.h>
-#include <ray/mstream.h>
 
 _NAME_BEGIN
 
 namespace Gui
 {
-	class GuiRenderTexture : public MyGUI::IRenderTarget
-	{
-	public:
-		GuiRenderTexture(unsigned int _texture);
-		virtual ~GuiRenderTexture();
-
-		virtual void begin();
-		virtual void end();
-
-		virtual void doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count);
-
-		virtual const MyGUI::RenderTargetInfo& getInfo();
-
-	private:
-		unsigned int mTextureID;
-		int mWidth;
-		int mHeight;
-
-		int mSavedViewport[4];
-
-		unsigned int mFBOID;
-		unsigned int mRBOID;
-
-		MyGUI::RenderTargetInfo _renderTargetInfo;
-
-		RenderTexturePtr _renderTexture;
-	};
-
+	class GuiRenderTexture;
 	class GuiTexture : public MyGUI::ITexture
 	{
 	public:
@@ -85,7 +57,7 @@ namespace Gui
 
 		virtual const std::string& getName() const noexcept;
 
-		virtual void createManual(int _width, int _height, MyGUI::TextureUsage _usage, MyGUI::PixelFormat _format);
+		virtual void createManual(int _width, int _height, MyGUI::TextureUsage _usage, MyGUI::PixelFormat _format) except;
 
 		virtual void loadFromFile(const std::string& _filename);
 		virtual void saveToFile(const std::string& _filename);
@@ -109,15 +81,15 @@ namespace Gui
 		virtual MyGUI::IRenderTarget* getRenderTarget();
 
 		TexturePtr getTexture() const noexcept;
-		void createManual(int _width, int _height, MyGUI::TextureUsage _usage, MyGUI::PixelFormat _format, void* stream);
+		void createManual(int _width, int _height, MyGUI::TextureUsage _usage, MyGUI::PixelFormat _format, void* stream) except;
 
 	private:
 		std::string _name;
 
+		bool _lock;
+
 		std::uint32_t _width;
 		std::uint32_t _height;
-
-		bool _lock;
 
 		std::size_t _numElemBytes;
 		std::size_t _dataSize;
@@ -131,6 +103,25 @@ namespace Gui
 
 		GuiImageLoaderPtr _imageLoader;
 		GuiRenderTexture* _renderTarget;
+	};
+
+	class GuiRenderTexture : public MyGUI::IRenderTarget
+	{
+	public:
+		GuiRenderTexture(TexturePtr texture) noexcept;
+		virtual ~GuiRenderTexture() noexcept;
+
+		virtual void begin() noexcept;
+		virtual void end() noexcept;
+
+		virtual void doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept;
+
+		virtual const MyGUI::RenderTargetInfo& getInfo() noexcept;
+
+	private:
+
+		RenderTexturePtr _renderTexture;
+		MyGUI::RenderTargetInfo _renderTargetInfo;
 	};
 }
 

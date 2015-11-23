@@ -37,10 +37,10 @@
 #ifndef _H_GUI_RENDERER_H_
 #define _H_GUI_RENDERER_H_
 
-#include "MyGUI_Prerequest.h"
-#include "MyGUI_RenderFormat.h"
-#include "MyGUI_IVertexBuffer.h"
-#include "MyGUI_RenderManager.h"
+#include <MyGUI_Prerequest.h>
+#include <MyGUI_RenderFormat.h>
+#include <MyGUI_IVertexBuffer.h>
+#include <MyGUI_RenderManager.h>
 #include <ray/material_maker.h>
 #include <ray/gui_imageloader.h>
 
@@ -59,35 +59,33 @@ namespace Gui
 		void setImageLoader(GuiImageLoaderPtr loader) noexcept;
 		GuiImageLoaderPtr getImageLoader() const noexcept;
 
-		static GuiRenderer& getInstance();
-		static GuiRenderer* getInstancePtr();
+		static GuiRenderer& getInstance() noexcept;
+		static GuiRenderer* getInstancePtr() noexcept;
 
-		void doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count);
-		void drawOneFrame(float delta);
+		void doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept;
+		void drawOneFrame(float delta) noexcept;
 		
-		void setViewport(int _width, int _height);
-		void getViewport(int& w, int& h);
+		void setViewport(int _width, int _height) noexcept;
+		void getViewport(int& w, int& h) noexcept;
 
-		bool isPixelBufferObjectSupported() const;
+		virtual const MyGUI::IntSize& getViewSize() const noexcept;
+		virtual MyGUI::VertexColourType getVertexFormat() noexcept;
+		virtual bool isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage _usage) noexcept;
 
-		virtual const MyGUI::IntSize& getViewSize() const;
-		virtual MyGUI::VertexColourType getVertexFormat();
-		virtual bool isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage _usage);
+		virtual MyGUI::IVertexBuffer* createVertexBuffer() noexcept;
+		virtual void destroyVertexBuffer(MyGUI::IVertexBuffer* _buffer) noexcept;
 
-		virtual MyGUI::IVertexBuffer* createVertexBuffer();
-		virtual void destroyVertexBuffer(MyGUI::IVertexBuffer* _buffer);
+		virtual MyGUI::ITexture* createTexture(const std::string& _name) noexcept;
+		virtual void destroyTexture(MyGUI::ITexture* _texture) noexcept;
+		virtual MyGUI::ITexture* getTexture(const std::string& _name) noexcept;
 
-		virtual MyGUI::ITexture* createTexture(const std::string& _name);
-		virtual void destroyTexture(MyGUI::ITexture* _texture);
-		virtual MyGUI::ITexture* getTexture(const std::string& _name);
-
-		virtual void begin();
-		virtual void end();
-		virtual void doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count);
-		virtual const MyGUI::RenderTargetInfo& getInfo();
+		virtual void begin() noexcept;
+		virtual void end() noexcept;
+		virtual void doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept;
+		virtual const MyGUI::RenderTargetInfo& getInfo() noexcept;
 
 	private:
-		void destroyAllResources();
+		void destroyAllResources() noexcept;
 
 	private:
 		typedef std::map<std::string, std::unique_ptr<MyGUI::ITexture>> MapTexture;
@@ -97,7 +95,6 @@ namespace Gui
 		MyGUI::RenderTargetInfo _info;
 
 		bool _update;
-		bool _isSupportedPbo;
 		bool _isInitialise;
 
 		MaterialPtr _material;

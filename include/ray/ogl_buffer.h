@@ -61,7 +61,7 @@ private:
 
 	GLuint _vbo;
 	GLuint64 _bindlessVbo;
-
+	GLvoid* _data;
 	GLuint _dataSize;
 
 	VertexBufferDataPtr _vb;
@@ -87,6 +87,8 @@ private:
 
 	GLuint _ibo;
 	GLuint64 _bindlessIbo;
+	GLvoid* _data;
+	GLuint _dataSize;
 
 	IndexBufferDataPtr _ib;
 };

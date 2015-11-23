@@ -98,6 +98,18 @@ VertexComponent::~VertexComponent() noexcept
 {
 }
 
+void
+VertexComponent::setVertexAttrib(VertexAttrib attrib) noexcept
+{
+	_attrib = attrib;
+}
+
+void
+VertexComponent::setVertexFormat(VertexFormat format) noexcept
+{
+	_format = format;
+}
+
 VertexAttrib
 VertexComponent::getVertexAttrib() const noexcept
 {
@@ -110,8 +122,14 @@ VertexComponent::getVertexFormat() const noexcept
 	return _format;
 }
 
+void 
+VertexComponent::setNormalize(bool normalize) noexcept
+{
+	_normalize = true;
+}
+
 bool
-VertexComponent::normalize() const noexcept
+VertexComponent::getNormalize() const noexcept
 {
 	return _normalize;
 }
@@ -119,27 +137,39 @@ VertexComponent::normalize() const noexcept
 int
 VertexComponent::getVertexCount() const noexcept
 {
-	switch (_format)
+	if (_format == VertexFormat::GPU_VERTEX_BYTE || _format == VertexFormat::GPU_VERTEX_UNSIGNED_BYTE ||
+		_format == VertexFormat::GPU_VERTEX_SHORT || _format == VertexFormat::GPU_VERTEX_UNSIGNED_SHORT ||
+		_format == VertexFormat::GPU_VERTEX_INT || _format == VertexFormat::GPU_VERTEX_UNSIGNED_INT ||
+		_format == VertexFormat::GPU_VERTEX_FLOAT)
 	{
-	case VertexFormat::GPU_VERTEX_UNSIGNED_BYTE:
 		return 1;
-	case VertexFormat::GPU_VERTEX_UNSIGNED_BYTE2:
+	}
+	else if (_format == VertexFormat::GPU_VERTEX_BYTE2 || _format == VertexFormat::GPU_VERTEX_UNSIGNED_BYTE2 ||
+		_format == VertexFormat::GPU_VERTEX_SHORT2 || _format == VertexFormat::GPU_VERTEX_UNSIGNED_SHORT2 ||
+		_format == VertexFormat::GPU_VERTEX_INT2 || _format == VertexFormat::GPU_VERTEX_UNSIGNED_INT2 ||
+		_format == VertexFormat::GPU_VERTEX_FLOAT2)
+	{
 		return 2;
-	case VertexFormat::GPU_VERTEX_UNSIGNED_BYTE3:
+	}
+	else if (_format == VertexFormat::GPU_VERTEX_BYTE3 || _format == VertexFormat::GPU_VERTEX_UNSIGNED_BYTE3 ||
+		_format == VertexFormat::GPU_VERTEX_SHORT3 || _format == VertexFormat::GPU_VERTEX_UNSIGNED_SHORT3 ||
+		_format == VertexFormat::GPU_VERTEX_INT3 || _format == VertexFormat::GPU_VERTEX_UNSIGNED_INT3 ||
+		_format == VertexFormat::GPU_VERTEX_FLOAT3)
+	{
 		return 3;
-	case VertexFormat::GPU_VERTEX_UNSIGNED_BYTE4:
-		return 4;
-	case VertexFormat::GPU_VERTEX_FLOAT:
-		return 1;
-	case VertexFormat::GPU_VERTEX_FLOAT2:
-		return 2;
-	case VertexFormat::GPU_VERTEX_FLOAT3:
-		return 3;
-	case VertexFormat::GPU_VERTEX_FLOAT4:
+	}
+	else if (_format == VertexFormat::GPU_VERTEX_BYTE4 || _format == VertexFormat::GPU_VERTEX_UNSIGNED_BYTE4 ||
+		_format == VertexFormat::GPU_VERTEX_SHORT4 || _format == VertexFormat::GPU_VERTEX_UNSIGNED_SHORT4 ||
+		_format == VertexFormat::GPU_VERTEX_INT4 || _format == VertexFormat::GPU_VERTEX_UNSIGNED_INT4 ||
+		_format == VertexFormat::GPU_VERTEX_FLOAT4)
+	{
 		return 4;
 	}
+	else
+	{
+		assert(false);
+	}
 
-	assert(false);
 	return 0;
 }
 
@@ -148,25 +178,45 @@ VertexComponent::getVertexSize() const noexcept
 {
 	switch (_format)
 	{
+	case VertexFormat::GPU_VERTEX_BYTE:
 	case VertexFormat::GPU_VERTEX_UNSIGNED_BYTE:
 		return 1;
+	case VertexFormat::GPU_VERTEX_SHORT:
+	case VertexFormat::GPU_VERTEX_BYTE2:
+	case VertexFormat::GPU_VERTEX_UNSIGNED_SHORT:
 	case VertexFormat::GPU_VERTEX_UNSIGNED_BYTE2:
 		return 2;
+	case VertexFormat::GPU_VERTEX_BYTE3:
 	case VertexFormat::GPU_VERTEX_UNSIGNED_BYTE3:
 		return 3;
+	case VertexFormat::GPU_VERTEX_FLOAT:
+	case VertexFormat::GPU_VERTEX_INT:
+	case VertexFormat::GPU_VERTEX_SHORT2:
+	case VertexFormat::GPU_VERTEX_UNSIGNED_SHORT2:
+	case VertexFormat::GPU_VERTEX_UNSIGNED_INT:
 	case VertexFormat::GPU_VERTEX_UNSIGNED_BYTE4:
 		return 4;
-	case VertexFormat::GPU_VERTEX_FLOAT:
-		return 4;
+	case VertexFormat::GPU_VERTEX_SHORT3:
+	case VertexFormat::GPU_VERTEX_UNSIGNED_SHORT3:
+		return 6;
+	case VertexFormat::GPU_VERTEX_INT2:
+	case VertexFormat::GPU_VERTEX_SHORT4:
 	case VertexFormat::GPU_VERTEX_FLOAT2:
+	case VertexFormat::GPU_VERTEX_UNSIGNED_INT2:
+	case VertexFormat::GPU_VERTEX_UNSIGNED_SHORT4:
 		return 8;
 	case VertexFormat::GPU_VERTEX_FLOAT3:
+	case VertexFormat::GPU_VERTEX_INT3:
+	case VertexFormat::GPU_VERTEX_UNSIGNED_INT3:
 		return 12;
 	case VertexFormat::GPU_VERTEX_FLOAT4:
+	case VertexFormat::GPU_VERTEX_INT4:
+	case VertexFormat::GPU_VERTEX_UNSIGNED_INT4:
 		return 16;
+	default:
+		assert(false);
 	}
 
-	assert(false);
 	return 0;
 }
 
@@ -174,12 +224,6 @@ void
 VertexLayout::setVertexComponents(const VertexComponents& component) noexcept
 {
 	_components = component;
-
-	_byteSize = 0;
-	for (auto& it : _components)
-	{
-		_byteSize += it.getVertexSize();
-	}
 }
 
 const VertexComponents&
@@ -188,15 +232,21 @@ VertexLayout::getVertexComponents() const noexcept
 	return _components;
 }
 
-std::size_t
+std::uint32_t
 VertexLayout::getVertexSize() const noexcept
 {
+	std::uint32_t _byteSize = 0;
+	for (auto& it : _components)
+	{
+		_byteSize += it.getVertexSize();
+	}
+
 	return _byteSize;
 }
 
 VertexBufferData::VertexBufferData() noexcept
 	: _vertexCount(0)
-	, _vertexUsage(VertexUsage::GPU_USAGE_STATIC)
+	, _vertexUsage(VertexUsage::GPU_MAP_READ_BIT)
 {
 }
 
@@ -206,7 +256,7 @@ VertexBufferData::~VertexBufferData() noexcept
 }
 
 void
-VertexBufferData::setup(std::size_t count, VertexUsage usage) noexcept
+VertexBufferData::setup(std::size_t count, std::uint32_t usage) noexcept
 {
 	assert(0 != count && this->getVertexSize() > 0);
 	_vertexCount = count;
@@ -246,7 +296,7 @@ VertexBufferData::getVertexCount() const noexcept
 	return _vertexCount;
 }
 
-std::size_t
+std::uint32_t
 VertexBufferData::getVertexSize() const noexcept
 {
 	return _vertexLayout.getVertexSize();
@@ -258,7 +308,7 @@ VertexBufferData::getVertexDataSize() const noexcept
 	return this->getVertexSize() * this->getVertexCount();
 }
 
-VertexUsage
+std::uint32_t
 VertexBufferData::getVertexUsage() const noexcept
 {
 	return _vertexUsage;
@@ -279,7 +329,7 @@ VertexBufferData::data() const noexcept
 IndexBufferData::IndexBufferData() noexcept
 	: _indexCount(0)
 	, _indexType(IndexType::GPU_UINT16)
-	, _indexUsage(VertexUsage::GPU_USAGE_STATIC)
+	, _indexUsage(VertexUsage::GPU_MAP_READ_BIT)
 {
 }
 
@@ -289,23 +339,19 @@ IndexBufferData::~IndexBufferData() noexcept
 }
 
 void
-IndexBufferData::setup(std::size_t num, IndexType type, VertexUsage usage) noexcept
+IndexBufferData::setup(std::size_t num, IndexType type, std::uint32_t usage) noexcept
 {
 	assert(0 != num);
 
 	_indexCount = num;
 	_indexType = type;
 	_indexUsage = usage;
+
+	auto indexSize = (_indexType == IndexType::GPU_UINT16) ? sizeof(std::int16_t) : sizeof(std::int32_t);
 	if (type == IndexType::GPU_UINT16)
-	{
-		_indexSize = sizeof(std::int16_t);
-		_indexStreams.resize(_indexSize * _indexCount);
-	}
+		_indexStreams.resize(indexSize * num);
 	else if (type == IndexType::GPU_UINT32)
-	{
-		_indexSize = sizeof(std::int32_t);
-		_indexStreams.resize(_indexSize * _indexCount);
-	}
+		_indexStreams.resize(indexSize * num);
 }
 
 void
@@ -320,28 +366,28 @@ IndexBufferData::getIndexCount() const noexcept
 	return _indexCount;
 }
 
-std::size_t
+std::uint32_t
 IndexBufferData::getIndexSize() const noexcept
 {
-	return _indexSize;
+	return (_indexType == IndexType::GPU_UINT16) ? sizeof(std::int16_t) : sizeof(std::int32_t);
 }
 
 std::size_t
 IndexBufferData::getIndexDataSize() const noexcept
 {
-	return _indexSize * _indexCount;
+	return this->getIndexSize() * _indexCount;
+}
+
+std::uint32_t
+IndexBufferData::getIndexUsage() const noexcept
+{
+	return _indexUsage;
 }
 
 IndexType
 IndexBufferData::getIndexType() const noexcept
 {
 	return _indexType;
-}
-
-VertexUsage
-IndexBufferData::getIndexUsage() const noexcept
-{
-	return _indexUsage;
 }
 
 void*
@@ -404,12 +450,6 @@ RenderBuffer::getNumIndices() const noexcept
 	if (_bufferIndex)
 		return _bufferIndex->getIndexCount();
 	return 0;
-}
-
-bool
-RenderBuffer::hasIndices() const noexcept
-{
-	return nullptr != _bufferIndex;
 }
 
 _NAME_END

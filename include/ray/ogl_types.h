@@ -124,6 +124,7 @@ struct OGLFeatures
 	static bool ARB_vertex_attrib_binding;
 	static bool ARB_provoking_vertex;
 	static bool ARB_direct_state_access;
+	static bool ARB_buffer_storage;
 	static bool ARB_viewport_array;
 
 	static bool KHR_debug;
@@ -168,7 +169,6 @@ class OGLTypes
 public:
 
 	static GLenum asOGLVertexType(VertexType type) noexcept;
-	static GLenum asOGLVertexUsage(VertexUsage usage) noexcept;
 	static GLenum asOGLVertexFormat(VertexFormat format) noexcept;
 	static GLenum asOGLIndexType(IndexType type) noexcept;
 	static GLenum asOGLShaderType(ShaderType type) noexcept;

@@ -64,8 +64,8 @@ public:
 
 	char* data() noexcept;
 	const char* data() const noexcept;
-private:
 
+private:
 	std::vector<char> _data;
 };
 
@@ -76,13 +76,17 @@ public:
 	VertexComponent(VertexAttrib attrib, VertexFormat format, bool normalize = false) noexcept;
 	~VertexComponent() noexcept;
 
+	void setVertexAttrib(VertexAttrib attrib) noexcept;
+	void setVertexFormat(VertexFormat attrib) noexcept;
+
 	VertexAttrib getVertexAttrib() const noexcept;
 	VertexFormat getVertexFormat() const noexcept;
 
+	void setNormalize(bool normalize) noexcept;
+	bool getNormalize() const noexcept;
+
 	int getVertexCount() const noexcept;
 	int getVertexSize() const noexcept;
-
-	bool normalize() const noexcept;
 
 public:
 
@@ -98,10 +102,9 @@ public:
 	void setVertexComponents(const VertexComponents& component) noexcept;
 	const VertexComponents& getVertexComponents() const noexcept;
 
-	std::size_t getVertexSize() const noexcept;
+	std::uint32_t getVertexSize() const noexcept;
 
 private:
-	std::size_t _byteSize;
 	VertexComponents _components;
 };
 
@@ -111,16 +114,16 @@ public:
 	VertexBufferData() noexcept;
 	virtual ~VertexBufferData() noexcept;
 
-	void setup(std::size_t count, VertexUsage usage) noexcept;
+	void setup(std::size_t count, std::uint32_t usage) noexcept;
 	void close() noexcept;
 
 	void setVertexComponents(const VertexComponents& components) noexcept;
 	const VertexComponents& getVertexComponents() const noexcept;
 
 	std::size_t getVertexCount() const noexcept;
-	std::size_t getVertexSize() const noexcept;
 	std::size_t getVertexDataSize() const noexcept;
-	VertexUsage getVertexUsage() const noexcept;
+	std::uint32_t getVertexSize() const noexcept;
+	std::uint32_t getVertexUsage() const noexcept;
 
 	void resize(std::size_t count);
 
@@ -129,7 +132,7 @@ public:
 
 private:
 	std::size_t   _vertexCount;
-	VertexUsage   _vertexUsage;
+	std::uint32_t _vertexUsage;
 	VertexLayout  _vertexLayout;
 	VertexStreams _vertexStreams;
 };
@@ -140,23 +143,22 @@ public:
 	IndexBufferData() noexcept;
 	virtual ~IndexBufferData() noexcept;
 
-	void setup(std::size_t count, IndexType type, VertexUsage uages) noexcept;
+	void setup(std::size_t count, IndexType type, std::uint32_t uages) noexcept;
 	void close() noexcept;
 
 	std::size_t getIndexCount() const noexcept;
-	std::size_t getIndexSize() const noexcept;
 	std::size_t getIndexDataSize() const noexcept;
+	std::uint32_t getIndexSize() const noexcept;
+	std::uint32_t getIndexUsage() const noexcept;
 	IndexType getIndexType() const noexcept;
-	VertexUsage getIndexUsage() const noexcept;
 
 	void* data() noexcept;
 	const void* data() const noexcept;
 
 private:
 	std::size_t   _indexCount;
-	std::size_t   _indexSize;
+	std::uint32_t _indexUsage;
 	IndexType     _indexType;
-	VertexUsage   _indexUsage;
 	VertexStreams _indexStreams;
 };
 
@@ -169,19 +171,18 @@ public:
 	virtual void setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) except = 0;
 	virtual void close() noexcept = 0;
 
+	virtual void update() noexcept = 0;
+
+	virtual void apply() noexcept = 0;
+
 	std::size_t getNumVertices() const noexcept;
 	std::size_t getNumIndices() const noexcept;
-
-	bool hasIndices() const noexcept;
 
 	void setVertexBuffer(VertexBufferDataPtr vb) noexcept;
 	void setIndexBuffer(IndexBufferDataPtr ib) noexcept;
 
 	VertexBufferDataPtr getVertexBuffer() const noexcept;
 	IndexBufferDataPtr getIndexBuffer() const noexcept;
-
-	virtual void apply() noexcept = 0;
-	virtual void update() noexcept = 0;
 
 private:
 	RenderBuffer(const RenderBuffer& copy) noexcept = delete;

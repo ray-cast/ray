@@ -40,6 +40,8 @@ _NAME_BEGIN
 
 MemoryBuf::MemoryBuf() noexcept
     : _next(0)
+	, _tell(0)
+	, _isMappinged(false)
 {
 }
 
@@ -97,21 +99,31 @@ MemoryBuf::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
 
     if (dir == ios_base::beg)
     {
+		_tell = pos;
         _next = pos;
         return pos;
     }
     else if (dir == ios_base::cur)
     {
-        if (_next += pos < _data.size())
-            return pos;
-        pos = _data.size() - _next;
-        _next = _data.size();
+		_next = _next + pos;
+		if (_next > _data.size())
+		{
+			pos = _data.size() - _next;
+			_next = _data.size();
+		}
+
+		_tell = pos;
         return pos;
     }
     else if (dir == ios_base::end)
     {
-        pos = _data.size() - _next;
-        _next = _data.size();
+		std::size_t size = _data.size();
+        pos = size + pos;
+		if (pos > size)
+			_next = size;
+		else
+			_next = pos;
+		_tell = pos;
         return pos;
     }
 
@@ -121,7 +133,7 @@ MemoryBuf::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
 streamoff
 MemoryBuf::tellg() noexcept
 {
-    return 0;
+    return _tell;
 }
 
 streamsize
@@ -163,6 +175,7 @@ MemoryBuf::resize(streamsize size) noexcept
 char*
 MemoryBuf::map() noexcept
 {
+	assert(!_isMappinged);
     if (_data.size())
     {
         _isMappinged = true;
@@ -175,6 +188,7 @@ MemoryBuf::map() noexcept
 void
 MemoryBuf::unmap() noexcept
 {
+	assert(_isMappinged);
     _isMappinged = false;
 }
 

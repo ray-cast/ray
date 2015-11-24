@@ -69,6 +69,7 @@ private:
 };
 
 istream::istream(streambuf* buf) noexcept
+	: _count(0)
 {
     stream::_init(buf, ios_base::in);
 }

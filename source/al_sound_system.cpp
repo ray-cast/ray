@@ -70,23 +70,23 @@ bool ALSoundSystem::IsInvalid() const noexcept
 
 BufferPtr ALSoundSystem::Open(const std::string& filename)
 {
-    MemoryReader reader;
-    IoServer::instance()->openFile(filename, reader, ios_base::binary | ios_base::in);
+    MemoryReader* reader = new MemoryReader;
+    IoServer::instance()->openFile(filename, *reader, ios_base::binary | ios_base::in);
 
-    OggVorbis_File oggfile;
-    auto err = ::ov_open_callbacks(&reader, &oggfile, nullptr, -1, OV_CALLBACKS_IOSERVER);
+    OggVorbis_File* oggfile = new OggVorbis_File;
+    auto err = ::ov_open_callbacks(reader, oggfile, nullptr, 0, OV_CALLBACKS_IOSERVER);
     if (err < 0)
     {
         return nullptr;
     }
 
-    return LoadFile(&oggfile);
+    return LoadFile(oggfile);
 }
 
 BufferPtr ALSoundSystem::Open(MemoryReader& reader)
 {
     OggVorbis_File oggfile;
-    auto err = ::ov_open_callbacks(&reader, &oggfile, nullptr, -1, OV_CALLBACKS_MEMORYSTREAM);
+    auto err = ::ov_open_callbacks(&reader, &oggfile, nullptr, 0, OV_CALLBACKS_MEMORYSTREAM);
     if (err < 0)
     {
         return nullptr;
@@ -135,10 +135,10 @@ size_t ALSoundSystem::_ioserverRead(void* ptr, size_t elementSize, size_t count,
 {
     if (data != nullptr)
     {
-        auto input = reinterpret_cast<ray::istream*>(data);
+        auto input = static_cast<MemoryReader*>(data);
         if (input->is_open())
         {
-            input->read(reinterpret_cast<char*>(ptr), elementSize * count);
+            input->read((char*)(ptr), elementSize * count);
             return count;
         }
     }
@@ -151,7 +151,18 @@ int ALSoundSystem::_ioserverSeek(void* data, ogg_int64_t pos, int whence)
     {
         auto input = reinterpret_cast<ray::istream*>(data);
         {
-            input->seekg(pos, whence);
+			switch (whence)
+			{
+			case SEEK_SET:
+				input->seekg(pos, ios_base::beg);
+				break;
+			case SEEK_CUR:
+				input->seekg(pos, ios_base::cur);
+				break;
+			case SEEK_END:
+				input->seekg(pos, ios_base::end);
+				break;
+			}            
             return 0;
         }
     }

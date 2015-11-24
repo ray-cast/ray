@@ -12,6 +12,7 @@ FOREACH(mylauncher
     ssrr
     sssss
     ui
+    sound
 )
 ADD_SUBDIRECTORY(${mylauncher})
 

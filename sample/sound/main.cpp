@@ -34,102 +34,19 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MSTREAM_H_
-#define _H_MSTREAM_H_
+#include <ray/al_sound_system.h>
+#include <ray/al_sound_buffer.h>
+#include <ray/al_sound_source.h>
 
-#include <ray/iostream.h>
-#include <vector>
-
-_NAME_BEGIN
-
-class EXPORT MemoryBuf : public streambuf
+int main(int argc, char *argv[])
 {
-public:
-    MemoryBuf() noexcept;
-    ~MemoryBuf() noexcept;
-
-    bool open(const char* filename, const ios_base::openmode mode) noexcept;
-    bool open(const wchar_t* filename, const ios_base::openmode mode) noexcept;
-
-    void close() noexcept;
-
-    streamsize read(char* str, std::streamsize cnt) noexcept;
-    streamsize write(const char* str, std::streamsize cnt) noexcept;
-
-    streamoff seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
-    streamoff tellg() noexcept;
-
-    streamsize size() noexcept;
-    void resize(streamsize size) noexcept;
-
-    char* map() noexcept;
-    void unmap() noexcept;
-    bool isMapping() const noexcept;
-
-    bool is_open() const noexcept;
-
-    int flush() noexcept;
-
-    void copy(streambuf& other) noexcept;
-
-private:
-
-    bool _isMappinged;
-
-	streamoff _tell;
-	streamoff _next;
-
-    std::vector<char> _data;
-};
-
-class EXPORT MemoryReader final : public istream
-{
-public:
-	MemoryReader() noexcept;
-	~MemoryReader() noexcept;
-
-	void resize(streamsize size) noexcept;
-
-	char* map() noexcept;
-	void unmap() noexcept;
-	bool isMapping() const noexcept;
-
-private:
-	MemoryBuf _buf;
-};
-
-class EXPORT MemoryWrite final : public ostream
-{
-public:
-	MemoryWrite() noexcept;
-	~MemoryWrite() noexcept;
-
-	void resize(streamsize size) noexcept;
-
-	char* map() noexcept;
-	void unmap() noexcept;
-	bool isMapping() const noexcept;
-
-private:
-	MemoryBuf _buf;
-};
-
-class EXPORT MemoryStream final : public iostream
-{
-public:
-    MemoryStream() noexcept;
-    ~MemoryStream() noexcept;
-
-    void resize(streamsize size) noexcept;
-
-    char* map() noexcept;
-    void unmap() noexcept;
-    bool isMapping() const noexcept;
-
-private:
-    MemoryBuf _buf;
-};
-
-_NAME_END
-
-#endif
+	ray::ALSoundSystem ss;
+	ss.Init();
+	auto buffer1 = ss.Open("C:\\Users\\ray\\Desktop\\1.ogg");
+	auto source1 = std::make_shared<ray::ALSoundSource>();
+	buffer1->Init();
+	source1->SetSoundBuffer(buffer1);
+	source1->Play();
+	system("pause");
+	return 0;
+}

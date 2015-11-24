@@ -293,7 +293,7 @@ MyGuiSystem::setCoreProfile(const std::string& core) except
 		_gui = std::make_unique<MyGUI::Gui>();
 		_gui->initialise(core);
 
-		MyGUI::IntSize view;
+		/*MyGUI::IntSize view;
 		const MyGUI::IntSize size(450, 450);
 		this->getViewport(view.width, view.height);
 
@@ -302,7 +302,7 @@ MyGuiSystem::setCoreProfile(const std::string& core) except
 		window->setMinSize(150, 150);
 		window->setCaption("ScrollView demo");
 		
-		static auto scrool = window->createWieght<MyGuiButton>("Button", 0, 0, size.width, size.height, GuiWidgetAlign::Stretch);
+		static auto scrool = window->createWieght<MyGuiButton>("Button", 0, 0, size.width, size.height, GuiWidgetAlign::Stretch);*/
 
 		/*MyGUI::Window* window = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("WindowCS", MyGUI::IntCoord(0, 0, size.width, size.height), MyGUI::Align::Default, "Main");
 		window->setMinSize(150, 150);

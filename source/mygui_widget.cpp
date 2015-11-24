@@ -126,7 +126,7 @@ GuiWidgetPtr
 MyGuiWidget::createWieght(const rtti::Rtti* rtti, const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name) except
 {
 	assert(rtti->isDerivedFrom(GuiWidget::getRtti()));
-	auto widget = rtti->create()->downcast<GuiWidget>();
+	auto widget = rtti->create()->cast<GuiWidget>();
 	if (widget)
 	{
 		widget->create(skin, left, top, width, height, align, name, _widget);

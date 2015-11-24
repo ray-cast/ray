@@ -43,7 +43,7 @@
 
 _NAME_BEGIN
 
-class EXPORT Image final : public image_base
+class EXPORT Image final : public ImageBase
 {
 public:
     typedef std::shared_ptr<ImageHandler> _Myhandler;

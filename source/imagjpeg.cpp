@@ -38,8 +38,7 @@
 
 #include <iostream>
 #include <setjmp.h>
-
-#include "../../contrib/libjpeg/jpeglib.h"
+#include <jpeglib.h>
 
 _NAME_BEGIN
 

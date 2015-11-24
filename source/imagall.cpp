@@ -48,23 +48,11 @@
 #if _BUILD_DDS_HANDLER
 #include <ray/imagdds.h>
 #endif
-#if _BUILD_IFF_HANDLER
-#include <ray/imagiff.h>
-#endif
 #if _BUILD_JPEG_HANDLER
 #include <ray/imagjpeg.h>
 #endif
-#if _BUILD_PCX_HANDLER
-#include <ray/imagpcx.h>
-#endif
 #if _BUILD_TGA_HANDLER
 #include <ray/imagtga.h>
-#endif
-#if _BUILD_TIFF_HANDLER
-#include <ray/imagtiff.h>
-#endif
-#if _BUILD_XPM_HANDLER
-#include <ray/imagxpm.h>
 #endif
 
 _NAME_BEGIN
@@ -80,9 +68,6 @@ std::shared_ptr<ImageHandler> jpeg = std::make_shared<JPEGHandler>();
 #endif
 #if _BUILD_PNG_HANDLER
 std::shared_ptr<ImageHandler> png = std::make_shared<PNGHandler>();
-#endif
-#if _BUILD_PCX_HANDLER
-std::shared_ptr<ImageHandler> pcx = std::make_shared<PCXHandler>();
 #endif
 #if _BUILD_TGA_HANDLER
 std::shared_ptr<ImageHandler> tga = std::make_shared<TGAHandler>();
@@ -106,5 +91,16 @@ void GetImageInstanceList(Image& image)
 	image.add(dds);
 #endif
 }
+
+/*"Unable to remove custom importer: I can't find you ...",
+"No suitable reader found for the file format of stream .",
+"Unknown bitdepth in file.",
+"Unknown encoding in file.",
+"The file extension is already in use",
+"Encoding doesn't match bitdepth.",
+"invalid image",
+"Image width too large",
+"Image height too large",
+"File size too large"*/
 
 _NAME_END

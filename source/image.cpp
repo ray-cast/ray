@@ -191,12 +191,6 @@ Image::load(istream& stream, image_type type) noexcept
         {
             return true;
         }
-
-        this->error(impl->error());
-    }
-    else
-    {
-        this->error(image_error::NO_SUITABLE_READER);
     }
 
     return false;
@@ -220,17 +214,9 @@ Image::save(ostream& stream, image_type type) noexcept
         if (this->find(type, impl))
         {
             if (!impl->doSave(*this, stream))
-            {
-                this->error(impl->error());
                 return false;
-            }
 
             return true;
-        }
-        else
-        {
-            this->error(image_error::NO_SUITABLE_READER);
-            return false;
         }
     }
 
@@ -246,41 +232,28 @@ Image::emptyHandler() const noexcept
 bool
 Image::add(_Myhandler handler) noexcept
 {
-    if (nullptr == handler)
-        return false;
+	assert(handler);
+	auto it = std::find(_handlers.begin(), _handlers.end(), handler);
+	if (it == _handlers.end())
+	{
+		_handlers.push_back(handler);
+		return true;
+	}
 
-    for (auto it : _handlers)
-    {
-        if (it == handler)
-        {
-            this->error(image_error::FILE_EXTENSION_IS_ALREADY_IN_USE);
-            return false;
-        }
-    }
-
-    _handlers.push_back(handler);
-
-    return true;
+	return false;
 }
 
 bool
 Image::remove(_Myhandler handler) noexcept
 {
-    if (nullptr == handler)
-        return false;
-
-    auto it = std::find(_handlers.begin(), _handlers.end(), handler);
-
+	assert(handler);
+	auto it = std::find(_handlers.begin(), _handlers.end(), handler);
     if (it != _handlers.end())
     {
-        if (*it == handler)
-        {
-            _handlers.erase(it);
-            return true;
-        }
+        _handlers.erase(it);
+        return true;
     }
 
-    this->error(image_error::UNREGISTERING_CUSTOM_IMPORTER);
     return false;
 }
 

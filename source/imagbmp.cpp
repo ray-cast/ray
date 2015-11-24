@@ -52,7 +52,7 @@ BMPHandler::doCanRead(istream& stream) const noexcept
 }
 
 bool
-BMPHandler::doLoad(Image& image, istream& stream) noexcept
+BMPHandler::doLoad(Image& image, istream& stream) except
 {
 	auto size = (std::size_t)stream.size();
 
@@ -84,7 +84,7 @@ BMPHandler::doLoad(Image& image, istream& stream) noexcept
 			info.info.comp == BI_RLE8 && info.info.bpp != 8 ||
 			info.info.comp == BI_BITFIELDS && info.info.bpp != 16 && info.info.bpp != 32)
 		{
-			this->error(image_error::ENCODING_DOESNT_MATCH_BITDEPTH);
+			throw ray::failure("Encoding doesn't match bitdepth.");
 			return false;
 		}
 
@@ -93,7 +93,7 @@ BMPHandler::doLoad(Image& image, istream& stream) noexcept
 }
 
 bool
-BMPHandler::doSave(Image&, ostream&) noexcept
+BMPHandler::doSave(Image&, ostream&) except
 {
 	return false;
 }

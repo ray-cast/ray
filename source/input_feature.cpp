@@ -153,7 +153,7 @@ InputFeature::onMessage(const MessagePtr& message) except
 
 	if (message->isInstanceOf<InputEvent>())
 	{
-		auto inputEvent = std::dynamic_pointer_cast<InputEvent>(message);
+		auto inputEvent = message->downcast<InputEvent>();
 		_input->sendInputEvent(inputEvent);
 	}
 }

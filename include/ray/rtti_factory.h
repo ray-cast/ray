@@ -60,24 +60,24 @@ namespace rtti
 		const Rtti* getRTTI(const char* name) const noexcept;
 		const Rtti* getRTTI(const std::string& name) const noexcept;
 
-		Interface* createObject(const char*, const Rtti& base) const except;
-		Interface* createObject(const std::string& name, const Rtti& base) const except;
+		Rtti::InterfacePtr createObject(const char*, const Rtti& base) const except;
+		Rtti::InterfacePtr createObject(const std::string& name, const Rtti& base) const except;
 
 		template<typename T>
 		std::shared_ptr<T> make_shared(const std::string& name)
-			{ return std::shared_ptr<T>((T*)this->createObject(name, T::RTTI)); }
+			{ return std::dynamic_pointer_cast<T>(this->createObject(name, T::RTTI)); }
 
 		template<typename T>
 		std::shared_ptr<T> make_shared(const char* name)
-			{ return std::shared_ptr<T>((T*)this->createObject(name, T::RTTI)); }
+			{ return std::dynamic_pointer_cast<T>(this->createObject(name, T::RTTI)); }
 
 		template<typename T>
 		std::unique_ptr<T> make_unique(const std::string& name)
-			{ return std::unique_ptr<T>((T*)this->createObject(name, T::RTTI)); }
+			{ return std::dynamic_pointer_cast<T>(this->createObject(name, T::RTTI)); }
 
 		template<typename T>
 		std::unique_ptr<T> make_unique(const char* name)
-			{ return std::unique_ptr<T>((T*)this->createObject(name, T::RTTI)); }
+			{ return std::dynamic_pointer_cast<T>(this->createObject(name, T::RTTI)); }
 
 	private:
 		mutable std::vector<Rtti*> _rttis;

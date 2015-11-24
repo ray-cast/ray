@@ -55,11 +55,11 @@ Rtti::~Rtti() noexcept
 {
 }
 
-Interface*
+Rtti::InterfacePtr
 Rtti::create() const except
 {
 	assert(_construct);
-	return _construct();
+	return std::shared_ptr<Interface>(_construct());
 }
 
 const Rtti* 

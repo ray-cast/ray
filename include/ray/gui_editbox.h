@@ -34,70 +34,13 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_buffer.h>
+#ifndef _H_GUI_EDIT_BOX_H_
+#define _H_GUI_EDIT_BOX_H_
+
+#include <ray/mygui_types.h>
 
 _NAME_BEGIN
 
-using namespace Gui;
-
-GuiVertexBuffer::GuiVertexBuffer() noexcept
-	: _needVertexCount(0)
-	, _sizeInBytes(0)
-{
-}
-
-GuiVertexBuffer::~GuiVertexBuffer() noexcept
-{
-}
-
-void
-GuiVertexBuffer::setVertexCount(size_t _count)
-{
-	_needVertexCount = _count;
-}
-
-std::size_t 
-GuiVertexBuffer::getVertexCount() noexcept
-{
-	return _needVertexCount;
-}
-
-MyGUI::Vertex* 
-GuiVertexBuffer::lock() noexcept
-{
-	if (!_vb || _needVertexCount != _vb->getVertexCount())
-	{
-		VertexComponents components;
-		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
-		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_DIFFUSE, VertexFormat::GPU_VERTEX_UNSIGNED_BYTE4, true));
-		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_TEXCOORD, VertexFormat::GPU_VERTEX_FLOAT2));
-
-		_vb = RenderFactory::createVertexBuffer();
-		_vb->setVertexComponents(components);
-		_vb->setup(_needVertexCount, VertexUsage::GPU_USAGE_DYNAMIC);		
-	}
-
-	return (MyGUI::Vertex*)_vb->data();
-}
-
-void 
-GuiVertexBuffer::unlock() noexcept
-{
-	if (!_buffer)
-	{
-		_buffer = RenderFactory::createRenderBuffer();
-		_buffer->setup(_vb, nullptr);
-	}
-	else
-	{
-		_buffer->update();
-	}
-}
-
-RenderBufferPtr 
-GuiVertexBuffer::getBuffer() const
-{
-	return _buffer;
-}
-
 _NAME_END
+
+#endif

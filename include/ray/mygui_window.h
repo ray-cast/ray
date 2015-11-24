@@ -34,18 +34,71 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_imageloader.h>
+#ifndef _H_MYGUI_WINDOW_H_
+#define _H_MYGUI_WINDOW_H_
+
+#include <ray/mygui_widget.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GuiImageLoader, rtti::Interface, "GuiImageLoader")
-
-GuiImageLoader::GuiImageLoader() noexcept
+class MyGuiWindowImpl : public MyGuiWidget
 {
-}
+public:
+	MyGuiWindowImpl() noexcept;
+	~MyGuiWindowImpl() noexcept;
+	
+	void create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except;
 
-GuiImageLoader::~GuiImageLoader() noexcept
+	void setCaption(const std::string& name) noexcept;
+	const std::string& getCaption() const noexcept;
+
+	void setVisibleSmooth(bool _value) noexcept;
+	void destroySmooth() noexcept;
+
+	void setAutoAlpha(bool _value) noexcept;
+	bool getAutoAlpha() const noexcept;
+
+	void setMinSize(int _width, int _height) noexcept;
+	void getMinSize(int& w, int& h) const noexcept;
+
+	void setMaxSize(int _width, int _height) noexcept;
+	void getMaxSize(int& w, int& h) const noexcept;
+
+private:
+
+	std::string _name;
+
+	MyGUI::Widget* _widget;
+	MyGUI::Window* _window;
+};
+
+class MyGuiWindow : public GuiWindow
 {
-}
+public:
+	MyGuiWindow() noexcept;
+	MyGuiWindow(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name) noexcept;
+	virtual ~MyGuiWindow() noexcept;
+
+	virtual void setCaption(const std::string& name) noexcept;
+	virtual const std::string& getCaption() const noexcept;
+
+	virtual void setVisibleSmooth(bool _value) noexcept;
+	virtual void destroySmooth() noexcept;
+
+	virtual void setAutoAlpha(bool _value) noexcept;
+	virtual bool getAutoAlpha() const noexcept;
+
+	virtual void setMinSize(int width, int height) noexcept;
+	virtual void getMinSize(int& w, int& h) const noexcept;
+
+	virtual void setMaxSize(int width, int height) noexcept;
+	virtual void getMaxSize(int& w, int& h) const noexcept;
+
+private:
+
+	MyGuiWindowImpl _impl;	
+};
 
 _NAME_END
+
+#endif

@@ -34,18 +34,40 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_imageloader.h>
+#ifndef _H_MY_GUI_WIDGET_H_
+#define _H_MY_GUI_WIDGET_H_
+
+#include <ray/mygui_types.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GuiImageLoader, rtti::Interface, "GuiImageLoader")
-
-GuiImageLoader::GuiImageLoader() noexcept
+class MyGuiWidget : public GuiWidgetImpl
 {
-}
+	__DeclareSubInterface(MyGuiWidget, GuiWidget)
+public:
+	MyGuiWidget(MyGUI::Widget*& widget) noexcept;
+	virtual ~MyGuiWidget() noexcept;
 
-GuiImageLoader::~GuiImageLoader() noexcept
-{
-}
+	virtual void destroy() noexcept;
+
+	virtual void setSkin(const std::string& skin) noexcept;
+	virtual const std::string& getSkin() const noexcept;
+
+	virtual void setViewport(const Viewport& view) noexcept;
+	virtual void getViewport(Viewport& view) const noexcept;
+
+	virtual GuiWidgetPtr createWieght(const rtti::Rtti* rtti, const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name) except;
+private:
+
+	static MyGUI::Align GuiAlignToMyGUI(GuiWidgetAlign align) noexcept;
+
+private:
+
+	std::string _skinName;
+
+	MyGUI::Widget*& _widget;
+};
 
 _NAME_END
+
+#endif

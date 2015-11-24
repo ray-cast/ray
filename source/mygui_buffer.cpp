@@ -34,69 +34,70 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MY_GUI_SYSTEM_H_
-#define _H_MY_GUI_SYSTEM_H_
-
-#include <ray/gui_system_base.h>
-
-namespace MyGUI
-{
-	class Gui;
-	class LogManager;
-}
+#include <ray/mygui_buffer.h>
 
 _NAME_BEGIN
 
-namespace Gui
+MyGuiVertexBuffer::MyGuiVertexBuffer() noexcept
+	: _needVertexCount(0)
+	, _sizeInBytes(0)
 {
-	class GuiRenderer;
-	class GuiResManager;
+}
 
-	class EXPORT MyGuiSystem final : public GuiSystem
+MyGuiVertexBuffer::~MyGuiVertexBuffer() noexcept
+{
+}
+
+void
+MyGuiVertexBuffer::setVertexCount(size_t _count)
+{
+	_needVertexCount = _count;
+}
+
+std::size_t 
+MyGuiVertexBuffer::getVertexCount() noexcept
+{
+	return _needVertexCount;
+}
+
+MyGUI::Vertex* 
+MyGuiVertexBuffer::lock() noexcept
+{
+	if (!_vb || _needVertexCount != _vb->getVertexCount())
 	{
-		__DeclareSubClass(MyGuiSystem, GuiSystem)
-	public:
-		MyGuiSystem() noexcept;
-		~MyGuiSystem() noexcept;
+		VertexComponents components;
+		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
+		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_DIFFUSE, VertexFormat::GPU_VERTEX_UNSIGNED_BYTE4, true));
+		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_TEXCOORD, VertexFormat::GPU_VERTEX_FLOAT2));
 
-		bool open() except;
-		void close() noexcept;
+		if (!_vb)
+			_vb = RenderFactory::createVertexBuffer();
 
-		void setCoreProfile(const std::string& core) except;
-		const std::string& getCoreProfile() const noexcept;
+		_vb->setVertexComponents(components);
+		_vb->setup(_needVertexCount, VertexUsage::GPU_MAP_READ_BIT | VertexUsage::GPU_MAP_WRITE_BIT);
+	}
 
-		void setImageLoader(GuiImageLoaderPtr loader) noexcept;
-		GuiImageLoaderPtr getImageLoader() const noexcept;
+	return (MyGUI::Vertex*)_vb->data();
+}
 
-		bool injectMouseMove(int _absx, int _absy, int _absz) noexcept;
-		bool injectMousePress(int _absx, int _absy, GuiButton::Code _id) noexcept;
-		bool injectMouseRelease(int _absx, int _absy, GuiButton::Code _id) noexcept;
-		bool injectKeyPress(GuiKey::Code _key) noexcept;
-		bool injectKeyRelease(GuiKey::Code _key) noexcept;
+void 
+MyGuiVertexBuffer::unlock() noexcept
+{
+	if (!_buffer)
+	{
+		_buffer = RenderFactory::createRenderBuffer();
+		_buffer->setup(_vb, nullptr);
+	}
+	else
+	{
+		_buffer->update();
+	}
+}
 
-		bool isFocusMouse() const noexcept;
-		bool isFocusKey() const noexcept;
-		bool isCaptureMouse() const noexcept;
-
-		void setViewport(int w, int h) noexcept;
-		void getViewport(int& w, int& h) noexcept;
-
-		void render(float delta) noexcept;
-
-	private:
-
-		bool _isInitialise;
-
-		std::string _coreProfile;
-
-		std::unique_ptr<GuiRenderer> _renderer;
-		std::unique_ptr<GuiResManager> _resLoader;
-
-		std::unique_ptr<MyGUI::Gui> _gui;
-		std::unique_ptr<MyGUI::LogManager> _logManager;
-	};
+RenderBufferPtr 
+MyGuiVertexBuffer::getBuffer() const
+{
+	return _buffer;
 }
 
 _NAME_END
-
-#endif

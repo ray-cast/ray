@@ -34,20 +34,15 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_texture.h>
-#include <ray/gui_renderer.h>
-#include <ray/gui_assert.h>
-#include <ray/gui_system.h>
-#include <ray/render_texture.h>
-#include <ray/render_system.h>
-#include <ray/render_pipeline.h>
+#include <ray/mygui_texture.h>
+#include <ray/mygui_renderer.h>
+#include <ray/mygui_system.h>
 
 _NAME_BEGIN
 
-using namespace Gui;
 using namespace MyGUI;
 
-GuiTexture::GuiTexture(const std::string& _name, Gui::GuiImageLoaderPtr _loader) noexcept
+MyGuiTexture::MyGuiTexture(const std::string& _name, GuiImageLoaderPtr _loader) noexcept
 	: _name(_name)
 	, _width(0)
 	, _height(0)
@@ -60,37 +55,37 @@ GuiTexture::GuiTexture(const std::string& _name, Gui::GuiImageLoaderPtr _loader)
 {
 }
 
-GuiTexture::~GuiTexture() noexcept
+MyGuiTexture::~MyGuiTexture() noexcept
 {
 	this->destroy();
 }
 
 const std::string& 
-GuiTexture::getName() const noexcept
+MyGuiTexture::getName() const noexcept
 {
 	return _name;
 }
 
 void 
-GuiTexture::setUsage(TextureUsage usage) noexcept
+MyGuiTexture::setUsage(TextureUsage usage) noexcept
 {
 	_originalUsage = usage;
 }
 
 MyGUI::TextureUsage 
-GuiTexture::getUsage() const noexcept
+MyGuiTexture::getUsage() const noexcept
 {
 	return _originalUsage;
 }
 
 void
-GuiTexture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format) except
+MyGuiTexture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format) except
 {
 	createManual(_width, _height, _usage, _format, 0);
 }
 
 void 
-GuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::PixelFormat _format, void* _data) except
+MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::PixelFormat _format, void* _data) except
 {
 	MYGUI_PLATFORM_ASSERT(!_texture, "Texture already exist");
 
@@ -129,7 +124,7 @@ GuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::Pixel
 }
 
 void 
-GuiTexture::destroy() noexcept
+MyGuiTexture::destroy() noexcept
 {
 	if (_renderTarget != nullptr)
 	{
@@ -149,7 +144,7 @@ GuiTexture::destroy() noexcept
 }
 
 void* 
-GuiTexture::lock(TextureUsage _access) noexcept
+MyGuiTexture::lock(TextureUsage _access) noexcept
 {
 	MYGUI_PLATFORM_ASSERT(!_lock, "Texture is locked");
 	MYGUI_PLATFORM_ASSERT(_texture, "Texture is not created");
@@ -158,14 +153,14 @@ GuiTexture::lock(TextureUsage _access) noexcept
 }
 
 void
-GuiTexture::unlock() noexcept
+MyGuiTexture::unlock() noexcept
 {
 	MYGUI_PLATFORM_ASSERT(_lock, "Texture is not locked");
 	_lock = false;
 }
 
 void
-GuiTexture::loadFromFile(const std::string& _filename)
+MyGuiTexture::loadFromFile(const std::string& _filename)
 {
 	this->destroy();
 
@@ -173,18 +168,19 @@ GuiTexture::loadFromFile(const std::string& _filename)
 	{
 		int width = 0;
 		int height = 0;
-		Gui::PixelFormat format = Gui::PixelFormat::Unknow;
+		
+		auto format = GuiImageLoader::PixelFormat::Unknow;
 
 		if (_imageLoader->loadImage(width, height, format, _filename, _stream))
 		{
 			MyGUI::PixelFormat pfd = MyGUI::PixelFormat::Unknow;
-			if (format == Gui::PixelFormat::L8)
+			if (format == GuiImageLoader::PixelFormat::L8)
 				pfd = MyGUI::PixelFormat::L8;
-			else if (format == Gui::PixelFormat::L8A8)
+			else if (format == GuiImageLoader::PixelFormat::L8A8)
 				pfd = MyGUI::PixelFormat::L8A8;
-			else if (format == Gui::PixelFormat::R8G8B8)
+			else if (format == GuiImageLoader::PixelFormat::R8G8B8)
 				pfd = MyGUI::PixelFormat::R8G8B8;
-			else if (format == Gui::PixelFormat::R8G8B8A8)
+			else if (format == GuiImageLoader::PixelFormat::R8G8B8A8)
 				pfd = MyGUI::PixelFormat::R8G8B8A8;
 			else
 				assert(false);
@@ -195,21 +191,21 @@ GuiTexture::loadFromFile(const std::string& _filename)
 }
 
 void 
-GuiTexture::saveToFile(const std::string& _filename)
+MyGuiTexture::saveToFile(const std::string& _filename)
 {
 	if (_imageLoader)
 	{
 		void* data = this->lock(TextureUsage::Read);
 
-		Gui::PixelFormat format = Gui::PixelFormat::Unknow;
+		auto format = GuiImageLoader::PixelFormat::Unknow;
 		if (_originalFormat == MyGUI::PixelFormat::L8)
-			format = Gui::PixelFormat::L8;
+			format = GuiImageLoader::PixelFormat::L8;
 		else if (_originalFormat == MyGUI::PixelFormat::L8A8)
-			format = Gui::PixelFormat::L8A8;
+			format = GuiImageLoader::PixelFormat::L8A8;
 		else if (_originalFormat == MyGUI::PixelFormat::R8G8B8)
-			format = Gui::PixelFormat::R8G8B8;
+			format = GuiImageLoader::PixelFormat::R8G8B8;
 		else if (_originalFormat == MyGUI::PixelFormat::R8G8B8A8)
-			format = Gui::PixelFormat::R8G8B8A8;
+			format = GuiImageLoader::PixelFormat::R8G8B8A8;
 		else
 			assert(false);
 
@@ -220,56 +216,58 @@ GuiTexture::saveToFile(const std::string& _filename)
 }
 
 IRenderTarget* 
-GuiTexture::getRenderTarget()
+MyGuiTexture::getRenderTarget()
 {
 	assert(_texture);
 	if (_renderTarget == nullptr)
-		_renderTarget = new GuiRenderTexture(_texture);		
+		_renderTarget = new MyGuiRenderTexture(_texture);		
 	return _renderTarget;
 }
 
 TexturePtr
-GuiTexture::getTexture() const noexcept
+MyGuiTexture::getTexture() const noexcept
 {
 	assert(_texture);
 	return _texture;
 }
 
 int 
-GuiTexture::getWidth() noexcept
+MyGuiTexture::getWidth() noexcept
 {
 	return _width;
 }
 
 int 
-GuiTexture::getHeight() noexcept
+MyGuiTexture::getHeight() noexcept
 {
 	return _height;
 }
 
 bool 
-GuiTexture::isLocked() noexcept
+MyGuiTexture::isLocked() noexcept
 {
 	return _lock;
 }
 
 MyGUI::PixelFormat 
-GuiTexture::getFormat() noexcept
+MyGuiTexture::getFormat() noexcept
 {
 	return _originalFormat;
 }
 
-TextureUsage GuiTexture::getUsage() noexcept
+TextureUsage
+MyGuiTexture::getUsage() noexcept
 {
 	return _originalUsage;
 }
 
-size_t GuiTexture::getNumElemBytes() noexcept
+std::size_t
+MyGuiTexture::getNumElemBytes() noexcept
 {
 	return _numElemBytes;
 }
 
-GuiRenderTexture::GuiRenderTexture(TexturePtr texture) noexcept
+MyGuiRenderTexture::MyGuiRenderTexture(TexturePtr texture) noexcept
 {
 	_renderTargetInfo.maximumDepth = 1.0f;
 	_renderTargetInfo.hOffset = 0;
@@ -282,31 +280,31 @@ GuiRenderTexture::GuiRenderTexture(TexturePtr texture) noexcept
 	_renderTexture->setup(texture);
 }
 
-GuiRenderTexture::~GuiRenderTexture() noexcept
+MyGuiRenderTexture::~MyGuiRenderTexture() noexcept
 {
 }
 
 void
-GuiRenderTexture::begin() noexcept
+MyGuiRenderTexture::begin() noexcept
 {
 	RenderSystem::instance()->getRenderPipeline()->setRenderTexture(_renderTexture);
 	RenderSystem::instance()->getRenderPipeline()->clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4(0, 0, 0, 0), 1.0, 0);
 }
 
 void 
-GuiRenderTexture::end() noexcept
+MyGuiRenderTexture::end() noexcept
 {
 	RenderSystem::instance()->getRenderPipeline()->setRenderTexture(nullptr);
 }
 
 void 
-GuiRenderTexture::doRender(IVertexBuffer* _buffer, ITexture* _texture, size_t _count) noexcept
+MyGuiRenderTexture::doRender(IVertexBuffer* _buffer, ITexture* _texture, size_t _count) noexcept
 {
-	Gui::GuiRenderer::getInstance().doRenderRTT(_buffer, _texture, _count);
+	MyGuiRenderer::getInstance().doRenderRTT(_buffer, _texture, _count);
 }
 
 const MyGUI::RenderTargetInfo& 
-GuiRenderTexture::getInfo() noexcept
+MyGuiRenderTexture::getInfo() noexcept
 {
 	return _renderTargetInfo;
 }

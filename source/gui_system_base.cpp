@@ -38,8 +38,6 @@
 
 _NAME_BEGIN
 
-using namespace Gui;
-
 __ImplementSubInterface(GuiSystem, rtti::Interface, "GuiSystem")
 
 GuiSystem::GuiSystem() noexcept

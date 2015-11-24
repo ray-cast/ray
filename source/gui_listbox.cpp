@@ -34,18 +34,3 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_imageloader.h>
-
-_NAME_BEGIN
-
-__ImplementSubInterface(GuiImageLoader, rtti::Interface, "GuiImageLoader")
-
-GuiImageLoader::GuiImageLoader() noexcept
-{
-}
-
-GuiImageLoader::~GuiImageLoader() noexcept
-{
-}
-
-_NAME_END

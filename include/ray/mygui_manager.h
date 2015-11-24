@@ -34,18 +34,33 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_imageloader.h>
+#ifndef _H_MYGUI_DATA_MANAGER_H_
+#define _H_MYGUI_DATA_MANAGER_H_
+
+#include <ray/mygui_types.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GuiImageLoader, rtti::Interface, "GuiImageLoader")
-
-GuiImageLoader::GuiImageLoader() noexcept
+class MyGuiResManager : public MyGUI::DataManager
 {
-}
+public:
+	MyGuiResManager() noexcept;
 
-GuiImageLoader::~GuiImageLoader() noexcept
-{
-}
+	void open() noexcept;
+	void close() noexcept;
+
+	virtual MyGUI::IDataStream* getData(const std::string& _name);
+
+	virtual void freeData(MyGUI::IDataStream* _data);
+	virtual bool isDataExist(const std::string& _name);
+	virtual const MyGUI::VectorString& getDataListNames(const std::string& _pattern);
+	virtual const std::string& getDataPath(const std::string& _name);
+
+private:
+
+	bool _isInitialise;
+};
 
 _NAME_END
+
+#endif

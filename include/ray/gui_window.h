@@ -34,37 +34,35 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_ASSERT_H_
-#define _H_GUI_ASSERT_H_
+#ifndef _H_GUI_WINDOW_H_
+#define _H_GUI_WINDOW_H_
 
-#include <ray/platform.h>
+#include <ray/gui_widget.h>
 
 _NAME_BEGIN
 
-#define MYGUI_PLATFORM_LOG_SECTION "Platform"
-#define MYGUI_PLATFORM_LOG_FILENAME "MyGUI.log"
-#define MYGUI_PLATFORM_LOG(level, text) MYGUI_LOGGING(MYGUI_PLATFORM_LOG_SECTION, level, text)
+class EXPORT GuiWindow : public GuiWidget
+{
+	__DeclareSubInterface(GuiWindow, GuiWidget)
+public:
+	GuiWindow(GuiWidgetImpl& impl) noexcept;
+	virtual ~GuiWindow() noexcept;
 
-#define MYGUI_PLATFORM_EXCEPT(dest) \
-{ \
-	MYGUI_PLATFORM_LOG(Critical, dest); \
-	MYGUI_DBG_BREAK;\
-	std::ostringstream stream; \
-	stream << dest << "\n"; \
-	MYGUI_BASE_EXCEPT(stream.str().c_str(), "MyGUI"); \
-}
+	virtual void setCaption(const std::string& name) = 0;
+	virtual const std::string& getCaption() const = 0;
 
-#define MYGUI_PLATFORM_ASSERT(exp, dest) \
-{ \
-	if ( ! (exp) ) \
-	{ \
-		MYGUI_PLATFORM_LOG(Critical, dest); \
-		MYGUI_DBG_BREAK;\
-		std::ostringstream stream; \
-		stream << dest << "\n"; \
-		MYGUI_BASE_EXCEPT(stream.str().c_str(), "MyGUI"); \
-	} \
-}
+	virtual void setVisibleSmooth(bool _value) = 0;
+	virtual void destroySmooth() = 0;
+
+	virtual void setAutoAlpha(bool _value) = 0;
+	virtual bool getAutoAlpha() const = 0;
+
+	virtual void setMinSize(int _width, int _height) = 0;
+	virtual void getMinSize(int& w, int& h) const = 0;
+
+	virtual void setMaxSize(int _width, int _height) = 0;
+	virtual void getMaxSize(int& w, int& h) const = 0;
+};
 
 _NAME_END
 

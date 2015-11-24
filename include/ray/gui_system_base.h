@@ -43,40 +43,37 @@
 
 _NAME_BEGIN
 
-namespace Gui
+class EXPORT GuiSystem : public rtti::Interface
 {
-	class EXPORT GuiSystem : public rtti::Interface
-	{
-		__DeclareSubInterface(GuiSystem, rtti::Interface)
-	public:
-		GuiSystem() noexcept;
-		virtual ~GuiSystem() noexcept;
+	__DeclareSubInterface(GuiSystem, rtti::Interface)
+public:
+	GuiSystem() noexcept;
+	virtual ~GuiSystem() noexcept;
 
-		virtual bool open() except = 0;
-		virtual void close() noexcept = 0;
+	virtual bool open() except = 0;
+	virtual void close() noexcept = 0;
 
-		virtual void setCoreProfile(const std::string& core) except = 0;
-		virtual const std::string& getCoreProfile() const noexcept = 0;
+	virtual void setCoreProfile(const std::string& core) except = 0;
+	virtual const std::string& getCoreProfile() const noexcept = 0;
 
-		virtual void setImageLoader(GuiImageLoaderPtr loader) noexcept = 0;
-		virtual GuiImageLoaderPtr getImageLoader() const noexcept = 0;
+	virtual void setImageLoader(GuiImageLoaderPtr loader) noexcept = 0;
+	virtual GuiImageLoaderPtr getImageLoader() const noexcept = 0;
 
-		virtual bool injectMouseMove(int _absx, int _absy, int _absz) noexcept = 0;
-		virtual bool injectMousePress(int _absx, int _absy, GuiButton::Code _id) noexcept = 0;
-		virtual bool injectMouseRelease(int _absx, int _absy, GuiButton::Code _id) noexcept = 0;
-		virtual bool injectKeyPress(GuiKey::Code _key) noexcept = 0;
-		virtual bool injectKeyRelease(GuiKey::Code _key) noexcept = 0;
+	virtual bool injectMouseMove(int _absx, int _absy, int _absz) noexcept = 0;
+	virtual bool injectMousePress(int _absx, int _absy, GuiInputButton::Code _id) noexcept = 0;
+	virtual bool injectMouseRelease(int _absx, int _absy, GuiInputButton::Code _id) noexcept = 0;
+	virtual bool injectKeyPress(GuiInputKey::Code _key) noexcept = 0;
+	virtual bool injectKeyRelease(GuiInputKey::Code _key) noexcept = 0;
 
-		virtual bool isFocusMouse() const noexcept = 0;
-		virtual bool isFocusKey() const noexcept = 0;
-		virtual bool isCaptureMouse() const noexcept = 0;
+	virtual bool isFocusMouse() const noexcept = 0;
+	virtual bool isFocusKey() const noexcept = 0;
+	virtual bool isCaptureMouse() const noexcept = 0;
 
-		virtual void setViewport(int w, int h) noexcept = 0;
-		virtual void getViewport(int& w, int& h) noexcept = 0;
+	virtual void setViewport(int w, int h) noexcept = 0;
+	virtual void getViewport(int& w, int& h) noexcept = 0;
 
-		virtual void render(float delta) except = 0;
-	};
-}
+	virtual void render(float delta) except = 0;
+};
 
 _NAME_END
 

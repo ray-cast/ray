@@ -34,18 +34,120 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_imageloader.h>
+#include <ray/mygui_manager.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GuiImageLoader, rtti::Interface, "GuiImageLoader")
+class DataStream : public MyGUI::IDataStream
+{
+public:
+	DataStream()
+	{
+	}
 
-GuiImageLoader::GuiImageLoader() noexcept
+	virtual ~DataStream()
+	{
+	}
+
+	bool open(const std::string& path)
+	{
+		return IoServer::instance()->openFile(path, _stream);
+	}
+
+	virtual bool eof()
+	{
+		return _stream.eof();
+	}
+
+	virtual size_t size()
+	{
+		return _stream.size();
+	}
+
+	virtual void readline(std::string& _source, MyGUI::Char _delim)
+	{
+		_source.clear();
+
+		for (;;)
+		{
+			char buffer;
+			if (!_stream.read(&buffer, 1))
+				break;
+
+			if (isLineEnd(buffer))
+				break;
+
+			_source.push_back(buffer);
+		}
+	}
+
+	virtual size_t read(void* _buf, size_t _count)
+	{
+		_stream.read((char*)_buf, _count);
+		return _stream.gcount();
+	}
+
+private:
+	MemoryReader _stream;
+};
+
+MyGuiResManager::MyGuiResManager() noexcept
+	: _isInitialise(false)
 {
 }
 
-GuiImageLoader::~GuiImageLoader() noexcept
+void
+MyGuiResManager::open() noexcept
 {
+	assert(!_isInitialise);
+	_isInitialise = true;
+}
+
+void 
+MyGuiResManager::close() noexcept
+{
+	assert(_isInitialise);
+	_isInitialise = false;
+}
+
+MyGUI::IDataStream*
+MyGuiResManager::getData(const std::string& _name)
+{
+	auto stream = make_scope<DataStream>();
+	if (stream->open(_name))
+	{
+		return stream.dismiss();
+	}
+
+	return nullptr;
+}
+
+void 
+MyGuiResManager::freeData(MyGUI::IDataStream* _data)
+{
+	delete _data;
+}
+
+bool
+MyGuiResManager::isDataExist(const std::string& _name)
+{
+	return IoServer::instance()->existsFile(_name);
+}
+
+const MyGUI::VectorString&
+MyGuiResManager::getDataListNames(const std::string& _pattern)
+{
+	assert(false);
+	MyGUI::VectorString v;
+	return v;
+}
+
+const std::string& 
+MyGuiResManager::getDataPath(const std::string& _name)
+{
+	std::string resolvePath;
+	IoServer::instance()->getResolveAssign(_name, resolvePath);
+	return resolvePath;
 }
 
 _NAME_END

@@ -34,37 +34,87 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_FEATURE_H_
-#define _H_GUI_FEATURE_H_
+#ifndef _H_GUI_TEXTURE_H_
+#define _H_GUI_TEXTURE_H_
 
-#include <ray/game_features.h>
-#include <ray/gui_system_base.h>
+#include <ray/mygui_types.h>
 
 _NAME_BEGIN
 
-class GuiFeature final : public GameFeature
+class MyGuiRenderTexture;
+class MyGuiTexture : public MyGUI::ITexture
 {
-	__DeclareSubClass(GuiFeature, GameFeature)
 public:
-	GuiFeature() noexcept;
-	GuiFeature(std::uint32_t w, std::uint32_t h) noexcept;
-	~GuiFeature() noexcept;
+	MyGuiTexture(const std::string& name, GuiImageLoaderPtr loader) noexcept;
+	virtual ~MyGuiTexture() noexcept;
 
-	void render() except;
+	virtual const std::string& getName() const noexcept;
 
-protected:
+	virtual void createManual(int _width, int _height, MyGUI::TextureUsage _usage, MyGUI::PixelFormat _format) except;
 
-	virtual void onActivate() except;
-	virtual void onDeactivate() except;
+	virtual void loadFromFile(const std::string& _filename);
+	virtual void saveToFile(const std::string& _filename);
 
-	virtual void onMessage(const MessagePtr& message) except;
+	virtual void destroy() noexcept;
+
+	virtual int getWidth() noexcept;
+	virtual int getHeight() noexcept;
+
+	virtual void* lock(MyGUI::TextureUsage _access) noexcept;
+	virtual void unlock() noexcept;
+	virtual bool isLocked() noexcept;
+
+	virtual MyGUI::PixelFormat getFormat() noexcept;
+	virtual MyGUI::TextureUsage getUsage() noexcept;
+	virtual std::size_t getNumElemBytes() noexcept;
+
+	void setUsage(MyGUI::TextureUsage _usage) noexcept;
+	MyGUI::TextureUsage getUsage() const noexcept;
+
+	virtual MyGUI::IRenderTarget* getRenderTarget();
+
+	TexturePtr getTexture() const noexcept;
+	void createManual(int _width, int _height, MyGUI::TextureUsage _usage, MyGUI::PixelFormat _format, void* stream) except;
 
 private:
+	std::string _name;
+
+	bool _lock;
 
 	std::uint32_t _width;
 	std::uint32_t _height;
 
-	GuiSystemPtr _platform;
+	std::size_t _numElemBytes;
+	std::size_t _dataSize;
+
+	MyGUI::PixelFormat _originalFormat;
+	MyGUI::TextureUsage _originalUsage;
+
+	MemoryStream _stream;
+
+	TexturePtr _texture;
+
+	GuiImageLoaderPtr _imageLoader;
+	MyGuiRenderTexture* _renderTarget;
+};
+
+class MyGuiRenderTexture : public MyGUI::IRenderTarget
+{
+public:
+	MyGuiRenderTexture(TexturePtr texture) noexcept;
+	virtual ~MyGuiRenderTexture() noexcept;
+
+	virtual void begin() noexcept;
+	virtual void end() noexcept;
+
+	virtual void doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept;
+
+	virtual const MyGUI::RenderTargetInfo& getInfo() noexcept;
+
+private:
+
+	RenderTexturePtr _renderTexture;
+	MyGUI::RenderTargetInfo _renderTargetInfo;
 };
 
 _NAME_END

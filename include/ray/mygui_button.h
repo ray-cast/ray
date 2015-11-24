@@ -34,18 +34,40 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_imageloader.h>
+#ifndef _H_MYGUI_BUTTON_H_
+#define _H_MYGUI_BUTTON_H_
+
+#include <ray/mygui_widget.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GuiImageLoader, rtti::Interface, "GuiImageLoader")
-
-GuiImageLoader::GuiImageLoader() noexcept
+class MyGuiButtonImpl final : public MyGuiWidget
 {
-}
+	__DeclareSubClass(MyGuiButton, GuiWidget)
+public:
+	MyGuiButtonImpl() noexcept;
+	virtual ~MyGuiButtonImpl() noexcept;
 
-GuiImageLoader::~GuiImageLoader() noexcept
+	void create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except;
+
+private:
+
+	MyGUI::Button* _button;
+	MyGUI::Widget* _widget;
+};
+
+class MyGuiButton final : public GuiButton
 {
-}
+	__DeclareSubClass(MyGuiButton, GuiButton)
+public:
+	MyGuiButton() noexcept;
+	virtual ~MyGuiButton() noexcept;
+
+private:
+
+	MyGuiButtonImpl _impl;
+};
 
 _NAME_END
+
+#endif

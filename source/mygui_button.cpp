@@ -34,48 +34,39 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _GUI_BUFFER_H_
-#define _GUI_BUFFER_H_
-
-#include <ray/gui_types.h>
-
-#include <ray/render_buffer.h>
-#include <ray/render_factory.h>
-
-#include <MyGUI_Prerequest.h>
-#include <MyGUI_IVertexBuffer.h>
-#include <MyGUI_VertexData.h>
+#include <ray/mygui_button.h>
 
 _NAME_BEGIN
 
-namespace Gui
+__ImplementSubClass(MyGuiButton, GuiButton, "MyGuiButton")
+__ImplementSubClass(MyGuiButtonImpl, MyGuiWidget, "MyGuiButton")
+
+MyGuiButtonImpl::MyGuiButtonImpl() noexcept
+	: MyGuiWidget(_widget)
 {
-	class GuiVertexBuffer : public MyGUI::IVertexBuffer
-	{
-	public:
-		GuiVertexBuffer() noexcept;
-		virtual ~GuiVertexBuffer() noexcept;
+}
 
-		virtual void setVertexCount(std::size_t _count);
-		virtual std::size_t getVertexCount() noexcept;
+MyGuiButtonImpl::~MyGuiButtonImpl() noexcept
+{
+}
 
-		virtual MyGUI::Vertex* lock() noexcept;
-		virtual void unlock() noexcept;
+void
+MyGuiButtonImpl::create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except
+{
+	if (widget)
+		_button = ((MyGUI::Widget*)widget)->createWidget<MyGUI::Button>(MyGUI::WidgetStyle::Child, "Button", MyGUI::IntCoord(left, top, width, height), MyGUI::Align::Default, "Main", name);
+	else
+		_button = MyGUI::Gui::getInstance().createWidget<MyGUI::Button>("Button", MyGUI::IntCoord(left, top, width, height), MyGUI::Align::Default, "Main", name);
+	_widget = _button;
+}
 
-		RenderBufferPtr getBuffer() const;
+MyGuiButton::MyGuiButton() noexcept
+	: GuiButton(_impl)
+{
+}
 
-	private:
-
-		MemoryStream _stream;
-
-		RenderBufferPtr _buffer;
-		VertexBufferDataPtr _vb;
-
-		std::size_t _needVertexCount;
-		std::size_t _sizeInBytes;
-	};
+MyGuiButton::~MyGuiButton() noexcept
+{
 }
 
 _NAME_END
-
-#endif

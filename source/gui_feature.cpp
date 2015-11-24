@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_GUI)
 #include <ray/gui_feature.h>
-#include <ray/gui_system.h>
+#include <ray/mygui_system.h>
 #include <ray/game_server.h>
 #include <ray/timer.h>
 #include <ray/image.h>
@@ -46,246 +46,246 @@ _NAME_BEGIN
 
 __ImplementSubClass(GuiFeature, GameFeature, "GuiFeature")
 
-Gui::GuiButton::Code ButtonCodeToGuiButton(InputButton::Code button) noexcept
+GuiInputButton::Code ButtonCodeToGuiButton(InputButton::Code button) noexcept
 {
 	switch (button)
 	{
 	case ray::InputButton::LEFT:
-		return Gui::GuiButton::Code::Left;
+		return GuiInputButton::Code::Left;
 	case ray::InputButton::RIGHT:
-		return Gui::GuiButton::Code::Right;
+		return GuiInputButton::Code::Right;
 	case ray::InputButton::MIDDLE:
-		return Gui::GuiButton::Code::Middle;
+		return GuiInputButton::Code::Middle;
 	case ray::InputButton::MOUSE3:
-		return Gui::GuiButton::Code::Button3;
+		return GuiInputButton::Code::Button3;
 	case ray::InputButton::MOUSE4:
-		return Gui::GuiButton::Code::Button4;
+		return GuiInputButton::Code::Button4;
 	case ray::InputButton::MOUSE5:
-		return Gui::GuiButton::Code::Button5;
+		return GuiInputButton::Code::Button5;
 	case ray::InputButton::MOUSE6:
-		return Gui::GuiButton::Code::Button6;
+		return GuiInputButton::Code::Button6;
 	case ray::InputButton::MOUSE7:
-		return Gui::GuiButton::Code::Button7;
+		return GuiInputButton::Code::Button7;
 	}
 
-	return Gui::GuiButton::Code::None;
+	return GuiInputButton::Code::None;
 };
 
-Gui::GuiKey::Code KeyCodetoGuiKey(InputKey::Code key) noexcept
+GuiInputKey::Code KeyCodetoGuiKey(InputKey::Code key) noexcept
 {
 	switch (key)
 	{
 	case InputKey::BACKSPACE:
-		return Gui::GuiKey::Code::Backspace;
+		return GuiInputKey::Code::Backspace;
 	case InputKey::TAB:
-		return Gui::GuiKey::Code::Tab;
+		return GuiInputKey::Code::Tab;
 	case InputKey::ENTER:
-		return Gui::GuiKey::Code::Return;
+		return GuiInputKey::Code::Return;
 	case InputKey::PAUSE:
-		return Gui::GuiKey::Code::Pause;
+		return GuiInputKey::Code::Pause;
 	case InputKey::ESCAPE:
-		return Gui::GuiKey::Code::Escape;
+		return GuiInputKey::Code::Escape;
 	case InputKey::SPACE:
-		return Gui::GuiKey::Code::Space;
+		return GuiInputKey::Code::Space;
 	case InputKey::PGDN:
-		return Gui::GuiKey::Code::NextTrack;
+		return GuiInputKey::Code::NextTrack;
 	case InputKey::END:
-		return Gui::GuiKey::Code::End;
+		return GuiInputKey::Code::End;
 	case InputKey::HOME:
-		return Gui::GuiKey::Code::Home;
+		return GuiInputKey::Code::Home;
 	case InputKey::LEFT:
-		return Gui::GuiKey::Code::ArrowLeft;
+		return GuiInputKey::Code::ArrowLeft;
 	case InputKey::RIGHT:
-		return Gui::GuiKey::Code::ArrowRight;
+		return GuiInputKey::Code::ArrowRight;
 	case InputKey::UP:
-		return Gui::GuiKey::Code::ArrowUp;
+		return GuiInputKey::Code::ArrowUp;
 	case InputKey::DOWN:
-		return Gui::GuiKey::Code::ArrowDown;
+		return GuiInputKey::Code::ArrowDown;
 	case InputKey::INSERT:
-		return Gui::GuiKey::Code::Insert;
+		return GuiInputKey::Code::Insert;
 	case InputKey::DELETE:
-		return Gui::GuiKey::Code::Delete;
+		return GuiInputKey::Code::Delete;
 	case InputKey::NP_0:
-		return Gui::GuiKey::Code::Numpad0;
+		return GuiInputKey::Code::Numpad0;
 	case InputKey::NP_1:
-		return Gui::GuiKey::Code::Numpad1;
+		return GuiInputKey::Code::Numpad1;
 	case InputKey::NP_2:
-		return Gui::GuiKey::Code::Numpad2;
+		return GuiInputKey::Code::Numpad2;
 	case InputKey::NP_3:
-		return Gui::GuiKey::Code::Numpad3;
+		return GuiInputKey::Code::Numpad3;
 	case InputKey::NP_4:
-		return Gui::GuiKey::Code::Numpad4;
+		return GuiInputKey::Code::Numpad4;
 	case InputKey::NP_5:
-		return Gui::GuiKey::Code::Numpad5;
+		return GuiInputKey::Code::Numpad5;
 	case InputKey::NP_6:
-		return Gui::GuiKey::Code::Numpad6;
+		return GuiInputKey::Code::Numpad6;
 	case InputKey::NP_7:
-		return Gui::GuiKey::Code::Numpad7;
+		return GuiInputKey::Code::Numpad7;
 	case InputKey::NP_8:
-		return Gui::GuiKey::Code::Numpad8;
+		return GuiInputKey::Code::Numpad8;
 	case InputKey::NP_9:
-		return Gui::GuiKey::Code::Numpad9;
+		return GuiInputKey::Code::Numpad9;
 	case InputKey::MULTIPLY:
-		return Gui::GuiKey::Code::Multiply;
+		return GuiInputKey::Code::Multiply;
 	case InputKey::ADD:
-		return Gui::GuiKey::Code::Add;
+		return GuiInputKey::Code::Add;
 	case InputKey::SUBTRACT:
-		return Gui::GuiKey::Code::Subtract;
+		return GuiInputKey::Code::Subtract;
 	case InputKey::DECIMAL:
-		return Gui::GuiKey::Code::Decimal;
+		return GuiInputKey::Code::Decimal;
 	case InputKey::DIVIDE:
-		return Gui::GuiKey::Code::Divide;
+		return GuiInputKey::Code::Divide;
 	case InputKey::F1:
-		return Gui::GuiKey::Code::F1;
+		return GuiInputKey::Code::F1;
 	case InputKey::F2:
-		return Gui::GuiKey::Code::F2;
+		return GuiInputKey::Code::F2;
 	case InputKey::F3:
-		return Gui::GuiKey::Code::F3;
+		return GuiInputKey::Code::F3;
 	case InputKey::F4:
-		return Gui::GuiKey::Code::F4;
+		return GuiInputKey::Code::F4;
 	case InputKey::F5:
-		return Gui::GuiKey::Code::F5;
+		return GuiInputKey::Code::F5;
 	case InputKey::F6:
-		return Gui::GuiKey::Code::F6;
+		return GuiInputKey::Code::F6;
 	case InputKey::F7:
-		return Gui::GuiKey::Code::F7;
+		return GuiInputKey::Code::F7;
 	case InputKey::F8:
-		return Gui::GuiKey::Code::F8;
+		return GuiInputKey::Code::F8;
 	case InputKey::F9:
-		return Gui::GuiKey::Code::F9;
+		return GuiInputKey::Code::F9;
 	case InputKey::F10:
-		return Gui::GuiKey::Code::F10;
+		return GuiInputKey::Code::F10;
 	case InputKey::F11:
-		return Gui::GuiKey::Code::F11;
+		return GuiInputKey::Code::F11;
 	case InputKey::F12:
-		return Gui::GuiKey::Code::F12;
+		return GuiInputKey::Code::F12;
 	case InputKey::F13:
-		return Gui::GuiKey::Code::F13;
+		return GuiInputKey::Code::F13;
 	case InputKey::F14:
-		return Gui::GuiKey::Code::F14;
+		return GuiInputKey::Code::F14;
 	case InputKey::F15:
-		return Gui::GuiKey::Code::F15;
+		return GuiInputKey::Code::F15;
 	case InputKey::NUMLOCK:
-		return Gui::GuiKey::Code::NumLock;
+		return GuiInputKey::Code::NumLock;
 	case InputKey::SCROLLLOCK:
-		return Gui::GuiKey::Code::ScrollLock;
+		return GuiInputKey::Code::ScrollLock;
 	case InputKey::SEMICOLON:
-		return Gui::GuiKey::Code::Semicolon;
+		return GuiInputKey::Code::Semicolon;
 	case InputKey::SLASH:
-		return Gui::GuiKey::Code::Slash;
+		return GuiInputKey::Code::Slash;
 	case InputKey::GRAVE:
-		return Gui::GuiKey::Code::Grave;
+		return GuiInputKey::Code::Grave;
 	case InputKey::LBRACKET:
-		return Gui::GuiKey::Code::LeftBracket;
+		return GuiInputKey::Code::LeftBracket;
 	case InputKey::RBRACKET:
-		return Gui::GuiKey::Code::RightBracket;
+		return GuiInputKey::Code::RightBracket;
 	case InputKey::BACKSLASH:
-		return Gui::GuiKey::Code::Backslash;
+		return GuiInputKey::Code::Backslash;
 	case InputKey::COMMA:
-		return Gui::GuiKey::Code::Comma;
+		return GuiInputKey::Code::Comma;
 	case InputKey::UNDERLINE:
-		return Gui::GuiKey::Code::Minus;
+		return GuiInputKey::Code::Minus;
 	case InputKey::PERIOD:
-		return Gui::GuiKey::Code::Period;
+		return GuiInputKey::Code::Period;
 	case InputKey::EQUALS:
-		return Gui::GuiKey::Code::Equals;
+		return GuiInputKey::Code::Equals;
 	case InputKey::LSHIFT:
-		return Gui::GuiKey::Code::LeftShift;
+		return GuiInputKey::Code::LeftShift;
 	case InputKey::RSHIFT:
-		return Gui::GuiKey::Code::RightShift;
+		return GuiInputKey::Code::RightShift;
 	case InputKey::LCTRL:
-		return Gui::GuiKey::Code::LeftControl;
+		return GuiInputKey::Code::LeftControl;
 	case InputKey::RCTRL:
-		return Gui::GuiKey::Code::RightControl;
+		return GuiInputKey::Code::RightControl;
 	case InputKey::LWIN:
-		return Gui::GuiKey::Code::LeftWindows;
+		return GuiInputKey::Code::LeftWindows;
 	case InputKey::RWIN:
-		return Gui::GuiKey::Code::RightWindow;
+		return GuiInputKey::Code::RightWindow;
 	case InputKey::VOLUMEDOWN:
-		return Gui::GuiKey::Code::VolumeDown;
+		return GuiInputKey::Code::VolumeDown;
 	case InputKey::VOLUMEUP:
-		return Gui::GuiKey::Code::VolumeUp;
+		return GuiInputKey::Code::VolumeUp;
 	case InputKey::Key0:
-		return Gui::GuiKey::Code::Zero;
+		return GuiInputKey::Code::Zero;
 	case InputKey::Key1:
-		return Gui::GuiKey::Code::One;
+		return GuiInputKey::Code::One;
 	case InputKey::Key2:
-		return Gui::GuiKey::Code::Two;
+		return GuiInputKey::Code::Two;
 	case InputKey::Key3:
-		return Gui::GuiKey::Code::Three;
+		return GuiInputKey::Code::Three;
 	case InputKey::Key4:
-		return Gui::GuiKey::Code::Four;
+		return GuiInputKey::Code::Four;
 	case InputKey::Key5:
-		return Gui::GuiKey::Code::Five;
+		return GuiInputKey::Code::Five;
 	case InputKey::Key6:
-		return Gui::GuiKey::Code::Six;
+		return GuiInputKey::Code::Six;
 	case InputKey::Key7:
-		return Gui::GuiKey::Code::Seven;
+		return GuiInputKey::Code::Seven;
 	case InputKey::Key8:
-		return Gui::GuiKey::Code::Eight;
+		return GuiInputKey::Code::Eight;
 	case InputKey::Key9:
-		return Gui::GuiKey::Code::Nine;
+		return GuiInputKey::Code::Nine;
 	case InputKey::A:
-		return Gui::GuiKey::Code::A;
+		return GuiInputKey::Code::A;
 	case InputKey::B:
-		return Gui::GuiKey::Code::B;
+		return GuiInputKey::Code::B;
 	case InputKey::C:
-		return Gui::GuiKey::Code::C;
+		return GuiInputKey::Code::C;
 	case InputKey::D:
-		return Gui::GuiKey::Code::D;
+		return GuiInputKey::Code::D;
 	case InputKey::E:
-		return Gui::GuiKey::Code::E;
+		return GuiInputKey::Code::E;
 	case InputKey::F:
-		return Gui::GuiKey::Code::F;
+		return GuiInputKey::Code::F;
 	case InputKey::G:
-		return Gui::GuiKey::Code::G;
+		return GuiInputKey::Code::G;
 	case InputKey::H:
-		return Gui::GuiKey::Code::H;
+		return GuiInputKey::Code::H;
 	case InputKey::I:
-		return Gui::GuiKey::Code::I;
+		return GuiInputKey::Code::I;
 	case InputKey::J:
-		return Gui::GuiKey::Code::J;
+		return GuiInputKey::Code::J;
 	case InputKey::K:
-		return Gui::GuiKey::Code::K;
+		return GuiInputKey::Code::K;
 	case InputKey::L:
-		return Gui::GuiKey::Code::L;
+		return GuiInputKey::Code::L;
 	case InputKey::M:
-		return Gui::GuiKey::Code::M;
+		return GuiInputKey::Code::M;
 	case InputKey::N:
-		return Gui::GuiKey::Code::N;
+		return GuiInputKey::Code::N;
 	case InputKey::O:
-		return Gui::GuiKey::Code::O;
+		return GuiInputKey::Code::O;
 	case InputKey::P:
-		return Gui::GuiKey::Code::P;
+		return GuiInputKey::Code::P;
 	case InputKey::Q:
-		return Gui::GuiKey::Code::Q;
+		return GuiInputKey::Code::Q;
 	case InputKey::R:
-		return Gui::GuiKey::Code::R;
+		return GuiInputKey::Code::R;
 	case InputKey::S:
-		return Gui::GuiKey::Code::S;
+		return GuiInputKey::Code::S;
 	case InputKey::T:
-		return Gui::GuiKey::Code::T;
+		return GuiInputKey::Code::T;
 	case InputKey::U:
-		return Gui::GuiKey::Code::U;
+		return GuiInputKey::Code::U;
 	case InputKey::V:
-		return Gui::GuiKey::Code::V;
+		return GuiInputKey::Code::V;
 	case InputKey::W:
-		return Gui::GuiKey::Code::W;
+		return GuiInputKey::Code::W;
 	case InputKey::X:
-		return Gui::GuiKey::Code::X;
+		return GuiInputKey::Code::X;
 	case InputKey::Y:
-		return Gui::GuiKey::Code::Y;
+		return GuiInputKey::Code::Y;
 	case InputKey::Z:
-		return Gui::GuiKey::Code::Z;
+		return GuiInputKey::Code::Z;
 	}
 
-	return Gui::GuiKey::Code::None;
+	return GuiInputKey::Code::None;
 }
 
-class ImageLoader : public Gui::GuiImageLoader
+class ImageLoader : public GuiImageLoader
 {
 public:
-	bool loadImage(int& _width, int& _height, Gui::PixelFormat& _format, const std::string& _filename, MemoryStream& stream)
+	bool loadImage(int& _width, int& _height, PixelFormat& _format, const std::string& _filename, MemoryStream& stream)
 	{
 		ray::Image image;
 		if (image.load(_filename))
@@ -294,9 +294,9 @@ public:
 			_height = image.height();
 
 			if (image.bpp() == 32)
-				_format = Gui::PixelFormat::R8G8B8A8;
+				_format = PixelFormat::R8G8B8A8;
 			else if (image.bpp() == 24)
-				_format = Gui::PixelFormat::R8G8B8;
+				_format = PixelFormat::R8G8B8;
 			else
 			{
 				assert(false);
@@ -312,10 +312,9 @@ public:
 		return false;
 	}
 
-	void saveImage(int _width, int _height, Gui::PixelFormat _format, void* _texture, const std::string& _filename)
+	void saveImage(int _width, int _height, PixelFormat _format, void* _texture, const std::string& _filename)
 	{
 	}
-
 };
 
 GuiFeature::GuiFeature() noexcept
@@ -344,7 +343,7 @@ GuiFeature::render() except
 void
 GuiFeature::onActivate() except
 {
-	_platform = std::make_shared<Gui::MyGuiSystem>();
+	_platform = std::make_shared<MyGuiSystem>();
 	_platform->open();
 	_platform->setImageLoader(std::make_shared<ImageLoader>());
 	_platform->setCoreProfile("sys:media/ui/MyGUI_Core.xml");

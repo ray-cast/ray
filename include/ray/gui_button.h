@@ -34,18 +34,21 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_imageloader.h>
+#ifndef _H_GUI_BUTTON_H_
+#define _H_GUI_BUTTON_H_
+
+#include <ray/gui_widget.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GuiImageLoader, rtti::Interface, "GuiImageLoader")
-
-GuiImageLoader::GuiImageLoader() noexcept
+class EXPORT GuiButton : public GuiWidget
 {
-}
-
-GuiImageLoader::~GuiImageLoader() noexcept
-{
-}
+	__DeclareSubInterface(GuiButton, GuiWidget)
+public:
+	GuiButton(GuiWidgetImpl& impl) noexcept;
+	virtual ~GuiButton() noexcept;
+};
 
 _NAME_END
+
+#endif

@@ -51,14 +51,14 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 	const auto& depthState = this->getDepthState();
 	const auto& stencilState = this->getStencilState();
 
-	auto& _blendState = _stateCaptured.getBlendState();
-	auto& _rasterState = _stateCaptured.getRasterState();
-	auto& _depthState = _stateCaptured.getDepthState();
-	auto& _stencilState = _stateCaptured.getStencilState();
+	auto& _dstBlendState = _stateCaptured.getBlendState();
+	auto& _dstRasterState = _stateCaptured.getRasterState();
+	auto& _dstDepthState = _stateCaptured.getDepthState();
+	auto& _dstStencilState = _stateCaptured.getStencilState();
 
 	if (blendState.blendEnable)
 	{
-		if (!_blendState.blendEnable)
+		if (!_dstBlendState.blendEnable)
 		{
 #if _USE_RENDER_COMMAND
 			BlendEnableCommand command;
@@ -71,10 +71,10 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 
 		if (blendState.blendSeparateEnable)
 		{
-			if (_blendState.blendSrc != blendState.blendSrc ||
-				_blendState.blendDest != blendState.blendDest ||
-				_blendState.blendAlphaSrc != blendState.blendAlphaSrc ||
-				_blendState.blendAlphaDest != blendState.blendAlphaDest)
+			if (_dstBlendState.blendSrc != blendState.blendSrc ||
+				_dstBlendState.blendDest != blendState.blendDest ||
+				_dstBlendState.blendAlphaSrc != blendState.blendAlphaSrc ||
+				_dstBlendState.blendAlphaDest != blendState.blendAlphaDest)
 			{
 				GLenum sfactorRGB = OGLTypes::asBlendFactor(blendState.blendSrc);
 				GLenum dfactorRGB = OGLTypes::asBlendFactor(blendState.blendDest);
@@ -84,8 +84,8 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 				glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
 			}
 
-			if (_blendState.blendOp != blendState.blendOp ||
-				_blendState.blendAlphaOp != blendState.blendAlphaOp)
+			if (_dstBlendState.blendOp != blendState.blendOp ||
+				_dstBlendState.blendAlphaOp != blendState.blendAlphaOp)
 			{
 				GLenum modeRGB = OGLTypes::asBlendOperation(blendState.blendOp);
 				GLenum modeAlpha = OGLTypes::asBlendOperation(blendState.blendAlphaOp);
@@ -95,8 +95,8 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 		}
 		else
 		{
-			if (_blendState.blendSrc != blendState.blendSrc ||
-				_blendState.blendDest != blendState.blendDest)
+			if (_dstBlendState.blendSrc != blendState.blendSrc ||
+				_dstBlendState.blendDest != blendState.blendDest)
 			{
 				GLenum sfactorRGB = OGLTypes::asBlendFactor(blendState.blendSrc);
 				GLenum dfactorRGB = OGLTypes::asBlendFactor(blendState.blendDest);
@@ -104,7 +104,7 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 				glBlendFunc(sfactorRGB, dfactorRGB);
 			}
 
-			if (_blendState.blendOp != blendState.blendOp)
+			if (_dstBlendState.blendOp != blendState.blendOp)
 			{
 				GLenum modeRGB = OGLTypes::asBlendOperation(blendState.blendOp);
 				glBlendEquation(modeRGB);
@@ -113,13 +113,13 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 	}
 	else
 	{
-		if (_blendState.blendEnable)
+		if (_dstBlendState.blendEnable)
 		{
 			glDisable(GL_BLEND);
 		}
 	}
 
-	if (_rasterState.cullMode != rasterState.cullMode)
+	if (_dstRasterState.cullMode != rasterState.cullMode)
 	{
 		if (rasterState.cullMode != GPU_CULL_NONE)
 		{
@@ -134,14 +134,14 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 	}
 
 #if !defined(EGLAPI)
-	if (_rasterState.fillMode != rasterState.fillMode)
+	if (_dstRasterState.fillMode != rasterState.fillMode)
 	{
 		GLenum mode = OGLTypes::asFillMode(rasterState.fillMode);
 		glPolygonMode(GL_FRONT_AND_BACK, mode);
 	}
 #endif
 
-	if (_rasterState.scissorTestEnable != rasterState.scissorTestEnable)
+	if (_dstRasterState.scissorTestEnable != rasterState.scissorTestEnable)
 	{
 		if (rasterState.scissorTestEnable)
 			glEnable(GL_SCISSOR_TEST);
@@ -149,7 +149,7 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 			glDisable(GL_SCISSOR_TEST);
 	}
 
-	if (_rasterState.srgbEnable != rasterState.srgbEnable)
+	if (_dstRasterState.srgbEnable != rasterState.srgbEnable)
 	{
 		if (rasterState.srgbEnable)
 			glEnable(GL_FRAMEBUFFER_SRGB);
@@ -159,12 +159,12 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 
 	if (depthState.depthEnable)
 	{
-		if (!_depthState.depthEnable)
+		if (!_dstDepthState.depthEnable)
 		{
 			glEnable(GL_DEPTH_TEST);
 		}
 
-		if (_depthState.depthFunc != depthState.depthFunc)
+		if (_dstDepthState.depthFunc != depthState.depthFunc)
 		{
 			GLenum func = OGLTypes::asCompareFunction(depthState.depthFunc);
 			glDepthFunc(func);
@@ -172,13 +172,13 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 	}
 	else
 	{
-		if (_depthState.depthEnable)
+		if (_dstDepthState.depthEnable)
 		{
 			glDisable(GL_DEPTH_TEST);
 		}
 	}
 
-	if (_depthState.depthWriteMask != depthState.depthWriteMask)
+	if (_dstDepthState.depthWriteMask != depthState.depthWriteMask)
 	{
 		GLboolean enable = depthState.depthWriteMask ? GL_TRUE : GL_FALSE;
 		glDepthMask(enable);
@@ -186,20 +186,20 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 
 	if (depthState.depthBiasEnable)
 	{
-		if (!_depthState.depthBiasEnable)
+		if (!_dstDepthState.depthBiasEnable)
 		{
 			glEnable(GL_POLYGON_OFFSET_FILL);
 		}
 
-		if (_depthState.depthBias != depthState.depthBias ||
-			_depthState.depthSlopScaleBias != depthState.depthSlopScaleBias)
+		if (_dstDepthState.depthBias != depthState.depthBias ||
+			_dstDepthState.depthSlopScaleBias != depthState.depthSlopScaleBias)
 		{
 			glPolygonOffset(depthState.depthSlopScaleBias, depthState.depthBias);
 		}
 	}
 	else
 	{
-		if (_depthState.depthBiasEnable)
+		if (_dstDepthState.depthBiasEnable)
 		{
 			glDisable(GL_POLYGON_OFFSET_FILL);
 		}
@@ -207,16 +207,16 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 
 	if (stencilState.stencilEnable)
 	{
-		if (!_stencilState.stencilEnable)
+		if (!_dstStencilState.stencilEnable)
 		{
 			glEnable(GL_STENCIL_TEST);
 		}
 
 		if (stencilState.stencilTwoEnable)
 		{
-			if (_stencilState.stencilFunc != stencilState.stencilFunc ||
-				_stencilState.stencilRef != stencilState.stencilRef ||
-				_stencilState.stencilReadMask != stencilState.stencilReadMask)
+			if (_dstStencilState.stencilFunc != stencilState.stencilFunc ||
+				_dstStencilState.stencilRef != stencilState.stencilRef ||
+				_dstStencilState.stencilReadMask != stencilState.stencilReadMask)
 			{
 				GLenum frontfunc = OGLTypes::asCompareFunction(stencilState.stencilFunc);
 				glStencilFuncSeparate(GL_FRONT, frontfunc, stencilState.stencilRef, stencilState.stencilReadMask);
@@ -225,23 +225,23 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 				glStencilFuncSeparate(GL_BACK, backfunc, stencilState.stencilRef, stencilState.stencilTwoReadMask);
 			}
 
-			if (_stencilState.stencilFail != _stencilState.stencilFail ||
-				_stencilState.stencilZFail != _stencilState.stencilZFail ||
-				_stencilState.stencilPass != _stencilState.stencilPass)
+			if (_dstStencilState.stencilFail != _dstStencilState.stencilFail ||
+				_dstStencilState.stencilZFail != _dstStencilState.stencilZFail ||
+				_dstStencilState.stencilPass != _dstStencilState.stencilPass)
 			{
-				GLenum frontfail = OGLTypes::asStencilOperation(_stencilState.stencilFail);
-				GLenum frontzfail = OGLTypes::asStencilOperation(_stencilState.stencilZFail);
-				GLenum frontpass = OGLTypes::asStencilOperation(_stencilState.stencilPass);
+				GLenum frontfail = OGLTypes::asStencilOperation(_dstStencilState.stencilFail);
+				GLenum frontzfail = OGLTypes::asStencilOperation(_dstStencilState.stencilZFail);
+				GLenum frontpass = OGLTypes::asStencilOperation(_dstStencilState.stencilPass);
 				glStencilOpSeparate(GL_FRONT, frontfail, frontzfail, frontpass);
 
-				GLenum backfail = OGLTypes::asStencilOperation(_stencilState.stencilTwoFail);
-				GLenum backzfail = OGLTypes::asStencilOperation(_stencilState.stencilTwoZFail);
-				GLenum backpass = OGLTypes::asStencilOperation(_stencilState.stencilTwoPass);
+				GLenum backfail = OGLTypes::asStencilOperation(_dstStencilState.stencilTwoFail);
+				GLenum backzfail = OGLTypes::asStencilOperation(_dstStencilState.stencilTwoZFail);
+				GLenum backpass = OGLTypes::asStencilOperation(_dstStencilState.stencilTwoPass);
 				glStencilOpSeparate(GL_BACK, backfail, backzfail, backpass);
 			}
 
-			if (_stencilState.stencilWriteMask != stencilState.stencilWriteMask ||
-				_stencilState.stencilTwoWriteMask != stencilState.stencilTwoWriteMask)
+			if (_dstStencilState.stencilWriteMask != stencilState.stencilWriteMask ||
+				_dstStencilState.stencilTwoWriteMask != stencilState.stencilTwoWriteMask)
 			{
 				glStencilMaskSeparate(GL_FRONT, stencilState.stencilWriteMask);
 				glStencilMaskSeparate(GL_BACK, stencilState.stencilTwoWriteMask);
@@ -249,17 +249,17 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 		}
 		else
 		{
-			if (_stencilState.stencilFunc != stencilState.stencilFunc ||
-				_stencilState.stencilRef != stencilState.stencilRef ||
-				_stencilState.stencilReadMask != stencilState.stencilReadMask)
+			if (_dstStencilState.stencilFunc != stencilState.stencilFunc ||
+				_dstStencilState.stencilRef != stencilState.stencilRef ||
+				_dstStencilState.stencilReadMask != stencilState.stencilReadMask)
 			{
 				GLenum func = OGLTypes::asCompareFunction(stencilState.stencilFunc);
 				glStencilFunc(func, stencilState.stencilRef, stencilState.stencilReadMask);
 			}
 
-			if (_stencilState.stencilFail != stencilState.stencilFail ||
-				_stencilState.stencilZFail != stencilState.stencilZFail ||
-				_stencilState.stencilPass != stencilState.stencilPass)
+			if (_dstStencilState.stencilFail != stencilState.stencilFail ||
+				_dstStencilState.stencilZFail != stencilState.stencilZFail ||
+				_dstStencilState.stencilPass != stencilState.stencilPass)
 			{
 				GLenum fail = OGLTypes::asStencilOperation(stencilState.stencilFail);
 				GLenum zfail = OGLTypes::asStencilOperation(stencilState.stencilZFail);
@@ -267,7 +267,7 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 				glStencilOp(fail, zfail, pass);
 			}
 
-			if (_stencilState.stencilWriteMask != stencilState.stencilWriteMask)
+			if (_dstStencilState.stencilWriteMask != stencilState.stencilWriteMask)
 			{
 				glStencilMask(stencilState.stencilWriteMask);
 			}
@@ -275,7 +275,7 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 	}
 	else
 	{
-		if (_stencilState.stencilEnable)
+		if (_dstStencilState.stencilEnable)
 		{
 			glDisable(GL_STENCIL_TEST);
 		}

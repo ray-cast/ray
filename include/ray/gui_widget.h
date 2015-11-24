@@ -34,95 +34,59 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_OGL_TEXTURE_H_
-#define _H_OGL_TEXTURE_H_
+#ifndef _H_GUI_WIDGET_H_
+#define _H_GUI_WIDGET_H_
 
-#include <ray/ogl_canvas.h>
+#include <ray/gui_align.h>
 
 _NAME_BEGIN
 
-class OGLTextureSample final : public TextureSample
+class EXPORT GuiWidgetImpl : public rtti::Interface
 {
+	__DeclareSubInterface(GuiWidget, rtti::Interface)
 public:
-	OGLTextureSample() noexcept;
-	~OGLTextureSample() noexcept;
+	GuiWidgetImpl() noexcept;
+	virtual ~GuiWidgetImpl() noexcept;
 
-	bool setup() except;
-	void close() noexcept;
+	virtual void create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except = 0;
+	virtual void destroy() noexcept = 0;
 
-	GLuint getInstanceID() noexcept;
-private:
+	virtual void setSkin(const std::string& skin) except = 0;
+	virtual const std::string& getSkin() const noexcept = 0;
 
-	GLuint _sample;
+	virtual void setViewport(const Viewport& view) except = 0;
+	virtual void getViewport(Viewport& view) const noexcept = 0;
+
+	virtual GuiWidgetPtr createWieght(const rtti::Rtti* rtti, const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name = "") except = 0;
 };
 
-class OGLTexture final : public Texture
+class EXPORT GuiWidget : public rtti::Interface
 {
+	__DeclareSubInterface(GuiWidget, rtti::Interface)
 public:
-	OGLTexture() noexcept;
-	~OGLTexture() noexcept;
+	GuiWidget(GuiWidgetImpl& impl) noexcept;
+	virtual ~GuiWidget() noexcept;
 
-	bool setup() except;
-	void close() noexcept;
+	GuiWidgetPtr createWieght(const rtti::Rtti* rtti, const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name = "") except;
+	
+	template<typename T>
+	std::shared_ptr<T> createWieght(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name = "") except
+	{
+		return std::dynamic_pointer_cast<T>(this->createWieght(T::getRtti(), skin, left, top, width, height, align, name));
+	}
+	
+	void create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name = "") except;
+	void create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except;
+	void destroy() noexcept;
 
-	GLuint getInstanceID() noexcept;
-	GLuint64 getInstanceAddr() noexcept;
+	void setSkin(const std::string& skin) except;
+	const std::string& getSkin() const noexcept;
 
+	void setViewport(const Viewport& view) except;
+	void getViewport(Viewport& view) const noexcept;
 private:
 
-	static void applyTextureWrap(GLenum, TextureWrap wrap) noexcept;
-	static void applyTextureFilter(GLenum target, TextureFilter filter) noexcept;
-	static void applyTextureAnis(GLenum target, Anisotropy anis) noexcept;
-
-private:
-
-	GLuint _texture;
-	GLuint64 _textureAddr;
-	GLuint64 _sampleAddr;
-};
-
-class OGLRenderTexture final : public RenderTexture
-{
-public:
-	OGLRenderTexture() noexcept;
-	~OGLRenderTexture() noexcept;
-
-	virtual bool setup(TexturePtr texture) except;
-	virtual void setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat format) except;
-	virtual void setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, PixelFormat format) except;
-	virtual void close() noexcept;
-
-	void setLayer(GLuint layer) noexcept;
-	GLuint getLayer() const noexcept;
-
-	GLuint getInstanceID() noexcept;
-
-private:
-	void bindRenderTexture(TexturePtr texture, GLenum attachment) noexcept;
-	void onSetRenderTextureAfter(RenderTexturePtr target) noexcept;
-
-private:
-	GLuint _fbo;
-	GLuint _layer;
-};
-
-class OGLMultiRenderTexture final : public MultiRenderTexture
-{
-public:
-	OGLMultiRenderTexture() noexcept;
-	~OGLMultiRenderTexture() noexcept;
-
-	virtual bool setup() noexcept;
-	virtual void close() noexcept;
-
-	GLuint getInstanceID() noexcept;
-
-private:
-	void bindRenderTexture(RenderTexturePtr target, GLenum attachment) noexcept;
-
-private:
-
-	GLuint _fbo;
+	GuiWidgetImpl& _impl;
 };
 
 _NAME_END

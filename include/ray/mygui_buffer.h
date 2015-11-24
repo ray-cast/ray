@@ -34,18 +34,38 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_imageloader.h>
+#ifndef _GUI_BUFFER_H_
+#define _GUI_BUFFER_H_
+
+#include <ray/mygui_types.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GuiImageLoader, rtti::Interface, "GuiImageLoader")
-
-GuiImageLoader::GuiImageLoader() noexcept
+class MyGuiVertexBuffer : public MyGUI::IVertexBuffer
 {
-}
+public:
+	MyGuiVertexBuffer() noexcept;
+	virtual ~MyGuiVertexBuffer() noexcept;
 
-GuiImageLoader::~GuiImageLoader() noexcept
-{
-}
+	virtual void setVertexCount(std::size_t _count);
+	virtual std::size_t getVertexCount() noexcept;
+
+	virtual MyGUI::Vertex* lock() noexcept;
+	virtual void unlock() noexcept;
+
+	RenderBufferPtr getBuffer() const;
+
+private:
+
+	MemoryStream _stream;
+
+	RenderBufferPtr _buffer;
+	VertexBufferDataPtr _vb;
+
+	std::size_t _needVertexCount;
+	std::size_t _sizeInBytes;
+};
 
 _NAME_END
+
+#endif

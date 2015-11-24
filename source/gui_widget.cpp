@@ -34,37 +34,76 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_DATA_MANAGER_H_
-#define _H_GUI_DATA_MANAGER_H_
-
-#include <ray/gui_types.h>
-#include <MyGUI_DataManager.h>
+#include <ray/gui_widget.h>
 
 _NAME_BEGIN
 
-namespace Gui
+__ImplementSubInterface(GuiWidget, rtti::Interface, "GuiWidget")
+__ImplementSubInterface(GuiWidgetImpl, rtti::Interface, "GuiWidgetImpl")
+
+GuiWidgetImpl::GuiWidgetImpl() noexcept
 {
-	class GuiResManager : public MyGUI::DataManager
-	{
-	public:
-		GuiResManager() noexcept;
+}
 
-		void open() noexcept;
-		void close() noexcept;
+GuiWidgetImpl::~GuiWidgetImpl() noexcept
+{
+}
 
-		virtual MyGUI::IDataStream* getData(const std::string& _name);
+GuiWidget::GuiWidget(GuiWidgetImpl& impl) noexcept
+	: _impl(impl)
+{
+}
 
-		virtual void freeData(MyGUI::IDataStream* _data);
-		virtual bool isDataExist(const std::string& _name);
-		virtual const MyGUI::VectorString& getDataListNames(const std::string& _pattern);
-		virtual const std::string& getDataPath(const std::string& _name);
+GuiWidget::~GuiWidget() noexcept
+{
+}
 
-	private:
+GuiWidgetPtr 
+GuiWidget::createWieght(const rtti::Rtti* rtti, const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name) except
+{
+	return _impl.createWieght(rtti, skin, left, top, width, height, align, name);
+}
 
-		bool _isInitialise;
-	};
+void
+GuiWidget::create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name) except
+{
+	_impl.create(skin, left, top, width, height, align, name, nullptr);
+}
+
+void
+GuiWidget::create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except
+{
+	_impl.create(skin, left, top, width, height, align, name, widget);
+}
+
+void
+GuiWidget::destroy() noexcept
+{
+	_impl.destroy();
+}
+
+void 
+GuiWidget::setSkin(const std::string& skin) except
+{
+	_impl.setSkin(skin);
+}
+
+const std::string& 
+GuiWidget::getSkin() const noexcept
+{
+	return _impl.getSkin();
+}
+
+void 
+GuiWidget::setViewport(const Viewport& view) except
+{
+	_impl.setViewport(view);
+}
+
+void 
+GuiWidget::getViewport(Viewport& view) const noexcept
+{
+	_impl.getViewport(view);
 }
 
 _NAME_END
-
-#endif

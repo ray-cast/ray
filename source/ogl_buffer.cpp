@@ -41,6 +41,7 @@ _NAME_BEGIN
 OGLVertexBuffer::OGLVertexBuffer() noexcept
 	: _vbo(GL_NONE)
 	, _bindlessVbo(GL_NONE)
+	, _data(nullptr)
 {
 }
 
@@ -53,11 +54,12 @@ void
 OGLVertexBuffer::setup(VertexBufferDataPtr vb) except
 {
 	assert(!_vbo);
+	assert(vb && vb->data());
 
 	glGenBuffers(1, &_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 
-	auto vertexUsage = OGLTypes::asOGLVertexUsage(vb->getVertexUsage());
+	auto vertexUsage = vb->getVertexUsage();
 	auto vertexDataSize = vb->getVertexDataSize();
 	auto vertexByteSize = vb->getVertexSize();
 
@@ -65,21 +67,38 @@ OGLVertexBuffer::setup(VertexBufferDataPtr vb) except
 	_dataSize = vertexDataSize;
 
 #if !defined(EGLAPI)
-	if (OGLFeatures::ARB_direct_state_access)
+	if (vertexUsage & GPU_IMMUTABLE_STORAGE && OGLFeatures::ARB_buffer_storage)
 	{
-		GLbitfield flags = GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-		if (vertexUsage == GL_DYNAMIC_DRAW)
-		{
+		GLbitfield flags = GL_MAP_READ_BIT;
+		if (vertexUsage & GPU_MAP_READ_BIT)
+			flags |= GL_MAP_READ_BIT;
+		if (vertexUsage & GPU_MAP_WRITE_BIT)
 			flags |= GL_MAP_WRITE_BIT;
+		if (vertexUsage & GPU_DYNAMIC_STORAGE_BIT)
 			flags |= GL_DYNAMIC_STORAGE_BIT;
-		}
+		if (vertexUsage & GPU_MAP_PERSISTENT_BIT)
+			flags |= GL_MAP_PERSISTENT_BIT;
+		if (vertexUsage & GPU_CLIENT_STORAGE_BIT)
+			flags |= GL_CLIENT_STORAGE_BIT;
 
-		glNamedBufferStorage(_vbo, vertexDataSize, vb->data(), flags);
+		glBufferStorage(GL_ARRAY_BUFFER, vertexDataSize, vb->data(), flags);
+
+		if (vertexUsage & GPU_MAP_PERSISTENT_BIT &&
+			vertexUsage & GPU_MAP_WRITE_BIT)
+		{
+			_data = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+		}
 	}
 	else
 #endif
 	{
-		glBufferData(GL_ARRAY_BUFFER, vertexDataSize, vb->data(), vertexUsage);
+		GLenum usage = GL_STATIC_DRAW;
+		if (vertexUsage & GPU_MAP_READ_BIT)
+			usage = GL_STATIC_DRAW;
+		if (vertexUsage & GPU_MAP_WRITE_BIT)
+			usage = GL_DYNAMIC_DRAW;
+
+		glBufferData(GL_ARRAY_BUFFER, vertexDataSize, vb->data(), usage);
 	}
 
 	GLuint offset = 0;
@@ -88,7 +107,7 @@ OGLVertexBuffer::setup(VertexBufferDataPtr vb) except
 	for (auto& it : components)
 	{
 		auto type = OGLTypes::asOGLVertexFormat(it.getVertexFormat());
-		auto normalize = it.normalize() ? GL_TRUE : GL_FALSE;
+		auto normalize = it.getNormalize() ? GL_TRUE : GL_FALSE;
 
 #if !defined(EGLAPI)
 		if (OGLFeatures::NV_vertex_buffer_unified_memory)
@@ -135,22 +154,35 @@ OGLVertexBuffer::close() noexcept
 void 
 OGLVertexBuffer::update() noexcept
 {
-	auto vertexUsage = OGLTypes::asOGLVertexUsage(_vb->getVertexUsage());
+	auto vertexUsage = _vb->getVertexUsage();
 	auto vertexDataSize = _vb->getVertexDataSize();
 	auto vertexByteSize = _vb->getVertexSize();
 
-	if (_dataSize == vertexDataSize)
+	if (_data)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-		auto data = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-		assert(data);
-		std::memcpy(data, _vb->data(), _vb->getVertexDataSize());
-		glUnmapBuffer(GL_ARRAY_BUFFER);
+		assert(_dataSize == vertexDataSize);
+		std::memcpy(_data, _vb->data(), _vb->getVertexDataSize());
 	}
 	else
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-		glBufferData(GL_ARRAY_BUFFER, vertexDataSize, _vb->data(), vertexUsage);
+		GLenum usage = GL_STATIC_DRAW;
+		if (vertexUsage & GPU_MAP_READ_BIT)
+			usage = GL_STATIC_DRAW;
+		if (vertexUsage & GPU_MAP_WRITE_BIT)
+			usage = GL_DYNAMIC_DRAW;
+
+#if !defined(EGLAPI)
+		if (OGLFeatures::ARB_direct_state_access)
+		{
+			glNamedBufferData(_vbo, vertexDataSize, _vb->data(), usage);
+		}
+		else
+#endif
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+			glBufferData(GL_ARRAY_BUFFER, vertexDataSize, _vb->data(), usage);
+		}
+
 		_dataSize = vertexDataSize;
 	}
 }
@@ -176,6 +208,7 @@ OGLVertexBuffer::getVertexBufferData() const noexcept
 OGLIndexBuffer::OGLIndexBuffer() noexcept
 	: _ibo(GL_NONE)
 	, _bindlessIbo(GL_NONE)
+	, _data(nullptr)
 {
 }
 
@@ -187,32 +220,52 @@ OGLIndexBuffer::~OGLIndexBuffer() noexcept
 void
 OGLIndexBuffer::setup(IndexBufferDataPtr ib) noexcept
 {
-	auto indexType = OGLTypes::asOGLIndexType(ib->getIndexType());
-	auto indexUsage = OGLTypes::asOGLVertexUsage(ib->getIndexUsage());
-	auto indexCount = ib->getIndexCount();
-	auto indexDataSize = ib->getIndexDataSize();
+	assert(!_ibo);
+	assert(ib && ib->data());
 
 	glGenBuffers(1, &_ibo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ibo);
 
+	auto indexType = OGLTypes::asOGLIndexType(ib->getIndexType());
+	auto indexUsage = ib->getIndexUsage();
+	auto indexCount = ib->getIndexCount();
+	auto indexDataSize = ib->getIndexDataSize();
+
 	_ib = ib;
 
 #if !defined(EGLAPI)
-	if (OGLFeatures::ARB_direct_state_access)
+	if (indexUsage & GPU_IMMUTABLE_STORAGE && OGLFeatures::ARB_buffer_storage)
 	{
-		GLbitfield flags = GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
-		if (indexUsage == GL_DYNAMIC_DRAW)
-		{
+		GLbitfield flags = GL_MAP_READ_BIT;
+		if (indexUsage & GPU_MAP_READ_BIT)
+			flags |= GL_MAP_READ_BIT;
+		if (indexUsage & GPU_MAP_WRITE_BIT)
 			flags |= GL_MAP_WRITE_BIT;
+		if (indexUsage & GPU_DYNAMIC_STORAGE_BIT)
 			flags |= GL_DYNAMIC_STORAGE_BIT;
-		}
+		if (indexUsage & GPU_MAP_PERSISTENT_BIT)
+			flags |= GL_MAP_PERSISTENT_BIT;
+		if (indexUsage & GPU_CLIENT_STORAGE_BIT)
+			flags |= GL_CLIENT_STORAGE_BIT;
 
-		glNamedBufferStorageEXT(_ibo, indexDataSize, ib->data(), flags);
+		glBufferStorage(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, ib->data(), flags);
+
+		if (indexUsage & GPU_MAP_PERSISTENT_BIT &&
+			indexUsage & GPU_MAP_WRITE_BIT)
+		{
+			_data = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+		}
 	}
 	else
 #endif
 	{
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, ib->data(), indexUsage);
+		GLenum usage = GL_STATIC_DRAW;
+		if (indexUsage & GPU_MAP_READ_BIT)
+			usage = GL_STATIC_DRAW;
+		if (indexUsage & GPU_MAP_WRITE_BIT)
+			usage = GL_DYNAMIC_DRAW;
+
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, ib->data(), usage);
 	}
 
 #if !defined(EGLAPI)
@@ -237,11 +290,37 @@ OGLIndexBuffer::close() noexcept
 void
 OGLIndexBuffer::update() noexcept
 {
-	auto vertexUsage = OGLTypes::asOGLVertexUsage(_ib->getIndexUsage());
-	auto vertexDataSize = _ib->getIndexDataSize();
+	auto indexUsage = _ib->getIndexUsage();
+	auto indexDataSize = _ib->getIndexDataSize();
+	auto indexByteSize = _ib->getIndexSize();
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, vertexDataSize, _ib->data(), vertexUsage);
+	if (_data)
+	{
+		assert(_dataSize == indexDataSize);
+		std::memcpy(_data, _ib->data(), indexDataSize);
+	}
+	else
+	{
+		GLenum usage = GL_STATIC_DRAW;
+		if (indexUsage & GPU_MAP_READ_BIT)
+			usage = GL_STATIC_DRAW;
+		if (indexUsage & GPU_MAP_WRITE_BIT)
+			usage = GL_DYNAMIC_DRAW;
+
+#if !defined(EGLAPI)
+		if (OGLFeatures::ARB_direct_state_access)
+		{
+			glNamedBufferData(_ibo, indexDataSize, _ib->data(), usage);
+		}
+		else
+#endif
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, _ibo);
+			glBufferData(GL_ARRAY_BUFFER, indexDataSize, _ib->data(), usage);
+		}
+
+		_dataSize = indexDataSize;
+	}
 }
 
 GLuint

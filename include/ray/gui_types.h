@@ -40,14 +40,14 @@
 #include <ray/fcntl.h>
 #include <ray/rtti.h>
 #include <ray/mstream.h>
+#include <ray/dccmn.h>
 
 _NAME_BEGIN
 
-namespace Gui
-{
-	typedef std::shared_ptr<class GuiImageLoader> GuiImageLoaderPtr;
-	typedef std::shared_ptr<class GuiSystem> GuiSystemPtr;
-}
+typedef std::shared_ptr<class GuiImageLoader> GuiImageLoaderPtr;
+typedef std::shared_ptr<class GuiSystem> GuiSystemPtr;
+typedef std::shared_ptr<class GuiWidget> GuiWidgetPtr;
+typedef std::shared_ptr<class GuiWindow> GuiWindowPtr;
 
 _NAME_END
 

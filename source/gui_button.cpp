@@ -34,5 +34,19 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#include <ray/gui_button.h>
 
-// +----------------------------------------------------------------------
+_NAME_BEGIN
+
+__ImplementSubInterface(GuiButton, GuiWidget, "GuiButton")
+
+GuiButton::GuiButton(GuiWidgetImpl& impl) noexcept
+	: GuiWidget(impl)
+{
+}
+
+GuiButton::~GuiButton() noexcept
+{
+}
+
+_NAME_END

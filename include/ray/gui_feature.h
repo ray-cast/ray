@@ -64,7 +64,7 @@ private:
 	std::uint32_t _width;
 	std::uint32_t _height;
 
-	Gui::GuiSystemPtr _platform;
+	GuiSystemPtr _platform;
 };
 
 _NAME_END

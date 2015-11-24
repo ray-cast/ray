@@ -48,6 +48,7 @@
 #include <ray/fog.h>
 #include <ray/fimic.h>
 #include <ray/fxaa.h>
+#include <ray/light_shaft.h>
 #include <ray/color_grading.h>
 
 _NAME_BEGIN
@@ -73,6 +74,7 @@ RenderSystem::open(WindHandle window, std::size_t w, std::size_t h) except
 	RenderSetting setting;
 	setting.enableSSAO = true;
 	setting.enableFXAA = true;
+	setting.enableFimic = true;
 	this->setRenderSetting(setting);
 }
 
@@ -238,6 +240,20 @@ RenderSystem::setRenderSetting(const RenderSetting& setting) except
 		{
 			_renderPipeline->removePostProcess(_DOF);
 			_DOF.reset();
+		}
+	}
+
+	if (_setting.enableLightShaft != setting.enableLightShaft)
+	{
+		if (setting.enableLightShaft)
+		{
+			_lightShaft = std::make_shared<LightShaft>();
+			_renderPipeline->addPostProcess(_lightShaft);
+		}
+		else if (_lightShaft)
+		{
+			_renderPipeline->removePostProcess(_lightShaft);
+			_lightShaft.reset();
 		}
 	}
 

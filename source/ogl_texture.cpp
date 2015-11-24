@@ -404,7 +404,7 @@ OGLRenderTexture::~OGLRenderTexture() noexcept
 }
 
 bool
-OGLRenderTexture::setup(TexturePtr resolveTexture) noexcept
+OGLRenderTexture::setup(TexturePtr resolveTexture) except
 {
 	assert(!_fbo);
 
@@ -452,6 +452,31 @@ OGLRenderTexture::setup(TexturePtr resolveTexture) noexcept
 #endif
 
 	return true;
+}
+
+void
+OGLRenderTexture::setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat format) except
+{
+	_resolveTexture->setWidth(w);
+	_resolveTexture->setHeight(h);
+	_resolveTexture->setTexDim(dim);
+	_resolveTexture->setTexFormat(format);
+	_resolveTexture->setup();
+
+	this->setup(_resolveTexture);
+}
+
+void
+OGLRenderTexture::setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, PixelFormat format) except
+{
+	_resolveTexture->setWidth(w);
+	_resolveTexture->setHeight(h);
+	_resolveTexture->setDepth(d);
+	_resolveTexture->setTexDim(dim);
+	_resolveTexture->setTexFormat(format);
+	_resolveTexture->setup();
+
+	this->setup(_resolveTexture);
 }
 
 void

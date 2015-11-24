@@ -38,22 +38,15 @@
 #define _H_IMAGE_CFG_H_
 
 #include <ray/iostream.h>
+#include <ray/except.h>
 
 _NAME_BEGIN
 
 #define _BUILD_BMP_HANDLER   1
-#define _BUILD_ICO_HANDLER   1
 #define _BUILD_DDS_HANDLER   1
 #define _BUILD_JPEG_HANDLER  1
 #define _BUILD_PNG_HANDLER   1
-#define _BUILD_GIF_HANDLER   1
-#define _BUILD_IFF_HANDLER   1
-#define _BUILD_PCX_HANDLER   1
 #define _BUILD_TGA_HANDLER   1
-#define _BUILD_TIFF_HANDLER  1
-#define _BUILD_XPM_HANDLER   1
-#define _BUILD_WBMP_HANDLER  1
-#define _BUILD_WMF_HANDLER   1
 
 _NAME_END
 

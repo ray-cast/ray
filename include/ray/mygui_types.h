@@ -34,78 +34,60 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_RENDERER_H_
-#define _H_GUI_RENDERER_H_
+#ifndef _H_MYGUI_TYPES_H_
+#define _H_MYGUI_TYPES_H_
 
-#include <MyGUI_Prerequest.h>
-#include <MyGUI_RenderFormat.h>
-#include <MyGUI_IVertexBuffer.h>
-#include <MyGUI_RenderManager.h>
+#include <ray/mstream.h>
+#include <ray/ioserver.h>
+#include <ray/render_buffer.h>
+#include <ray/render_factory.h>
+#include <ray/render_texture.h>
+#include <ray/render_system.h>
+#include <ray/render_pipeline_base.h>
 #include <ray/material_maker.h>
+
+#include <ray/gui_widget.h>
+#include <ray/gui_window.h>
+#include <ray/gui_button.h>
 #include <ray/gui_imageloader.h>
+#include <ray/gui_system_base.h>
+
+#include <MyGUI.h>
+#include <MyGUI_Gui.h>
+#include <MyGUI_Prerequest.h>
+#include <MyGUI_IVertexBuffer.h>
+#include <MyGUI_ITexture.h>
+#include <MyGUI_VertexData.h>
+#include <MyGUI_DataFileStream.h>
+#include <MyGUI_DataManager.h>
+#include <MyGUI_RenderFormat.h>
+#include <MyGUI_RenderManager.h>
 
 _NAME_BEGIN
 
-namespace Gui
-{
-	class GuiRenderer : public MyGUI::RenderManager, public MyGUI::IRenderTarget
-	{
-	public:
-		GuiRenderer();
+#define MYGUI_PLATFORM_LOG_SECTION "Platform"
+#define MYGUI_PLATFORM_LOG_FILENAME "MyGUI.log"
+#define MYGUI_PLATFORM_LOG(level, text) MYGUI_LOGGING(MYGUI_PLATFORM_LOG_SECTION, level, text)
 
-		void open() except;
-		void close() noexcept;
+#define MYGUI_PLATFORM_EXCEPT(dest) \
+{ \
+	MYGUI_PLATFORM_LOG(Critical, dest); \
+	MYGUI_DBG_BREAK;\
+	std::ostringstream stream; \
+	stream << dest << "\n"; \
+	MYGUI_BASE_EXCEPT(stream.str().c_str(), "MyGUI"); \
+}
 
-		void setImageLoader(GuiImageLoaderPtr loader) noexcept;
-		GuiImageLoaderPtr getImageLoader() const noexcept;
-
-		static GuiRenderer& getInstance() noexcept;
-		static GuiRenderer* getInstancePtr() noexcept;
-
-		void doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept;
-		void drawOneFrame(float delta) noexcept;
-		
-		void setViewport(int _width, int _height) noexcept;
-		void getViewport(int& w, int& h) noexcept;
-
-		virtual const MyGUI::IntSize& getViewSize() const noexcept;
-		virtual MyGUI::VertexColourType getVertexFormat() noexcept;
-		virtual bool isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage _usage) noexcept;
-
-		virtual MyGUI::IVertexBuffer* createVertexBuffer() noexcept;
-		virtual void destroyVertexBuffer(MyGUI::IVertexBuffer* _buffer) noexcept;
-
-		virtual MyGUI::ITexture* createTexture(const std::string& _name) noexcept;
-		virtual void destroyTexture(MyGUI::ITexture* _texture) noexcept;
-		virtual MyGUI::ITexture* getTexture(const std::string& _name) noexcept;
-
-		virtual void begin() noexcept;
-		virtual void end() noexcept;
-		virtual void doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept;
-		virtual const MyGUI::RenderTargetInfo& getInfo() noexcept;
-
-	private:
-		void destroyAllResources() noexcept;
-
-	private:
-		typedef std::map<std::string, std::unique_ptr<MyGUI::ITexture>> MapTexture;
-
-		MyGUI::IntSize _viewport;
-		MyGUI::VertexColourType _vertexFormat;
-		MyGUI::RenderTargetInfo _info;
-
-		bool _update;
-		bool _isInitialise;
-
-		MaterialPtr _material;
-		MaterialPassPtr _materialPass;
-		MaterialParamPtr _materialScaleY;
-		MaterialParamPtr _materialDecal;
-
-		MapTexture _textures;
-
-		Gui::GuiImageLoaderPtr _imageLoader;
-	};
+#define MYGUI_PLATFORM_ASSERT(exp, dest) \
+{ \
+	if ( ! (exp) ) \
+	{ \
+		MYGUI_PLATFORM_LOG(Critical, dest); \
+		MYGUI_DBG_BREAK;\
+		std::ostringstream stream; \
+		stream << dest << "\n"; \
+		MYGUI_BASE_EXCEPT(stream.str().c_str(), "MyGUI"); \
+	} \
 }
 
 _NAME_END

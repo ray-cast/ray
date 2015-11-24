@@ -45,6 +45,7 @@ bool OGLFeatures::ARB_vertex_array_object = 0;
 bool OGLFeatures::ARB_vertex_attrib_binding = 0;
 bool OGLFeatures::ARB_provoking_vertex = 0;
 bool OGLFeatures::ARB_direct_state_access = 0;
+bool OGLFeatures::ARB_buffer_storage = 0;
 bool OGLFeatures::ARB_viewport_array = 0;
 bool OGLFeatures::KHR_debug = 0;
 bool OGLFeatures::NV_command_list = 0;
@@ -79,21 +80,6 @@ OGLTypes::asOGLVertexType(VertexType type) noexcept
 	default:
 		assert(false);
 		return GL_TRIANGLES;
-	}
-}
-
-GLenum
-OGLTypes::asOGLVertexUsage(VertexUsage usage) noexcept
-{
-	switch (usage)
-	{
-	case ray::GPU_USAGE_STATIC:
-		return GL_STATIC_DRAW;
-	case ray::GPU_USAGE_DYNAMIC:
-		return GL_DYNAMIC_DRAW;
-	default:
-		assert(false);
-		return GL_STATIC_DRAW;
 	}
 }
 
@@ -549,6 +535,7 @@ OGLExtenstion::initExtensions() except
 	OGLFeatures::ARB_vertex_attrib_binding = false; //GLEW_ARB_vertex_attrib_binding ? true : false;
 	OGLFeatures::ARB_provoking_vertex = GLEW_ARB_provoking_vertex ? true : false;
 	OGLFeatures::ARB_direct_state_access = GLEW_ARB_direct_state_access ? true : false;
+	OGLFeatures::ARB_buffer_storage = GLEW_ARB_buffer_storage ? true : false;
 	OGLFeatures::ARB_viewport_array = GLEW_ARB_viewport_array ? true : false;
 	OGLFeatures::KHR_debug = GLEW_KHR_debug;
 	OGLFeatures::NV_shader_buffer_load = false; //GLEW_NV_shader_buffer_load ? true : false;

@@ -1149,4 +1149,38 @@ std::wstring toLower(const std::wstring& _input)
 	return result;
 }
 
+void split(std::vector<std::string>& result, const std::string& _source, const std::string& _delims)
+{
+	std::size_t start = _source.find_first_not_of(_delims);
+	while (start != _source.npos)
+	{
+		std::size_t end = _source.find_first_of(_delims, start);
+		if (end != _source.npos)
+			result.push_back(_source.substr(start, end - start));
+		else
+		{
+			result.push_back(_source.substr(start));
+			break;
+		}
+		start = _source.find_first_not_of(_delims, end + 1);
+	}
+}
+
+void split(std::vector<std::wstring>& result, const std::wstring& _source, const std::wstring& _delims)
+{
+	std::size_t start = _source.find_first_not_of(_delims);
+	while (start != _source.npos)
+	{
+		std::size_t end = _source.find_first_of(_delims, start);
+		if (end != _source.npos)
+			result.push_back(_source.substr(start, end - start));
+		else
+		{
+			result.push_back(_source.substr(start));
+			break;
+		}
+		start = _source.find_first_not_of(_delims, end + 1);
+	}
+}
+
 _NAME_END

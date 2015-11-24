@@ -235,7 +235,7 @@ RenderFactory::createRenderBuffer(const MeshProperty& mesh) except
 	{
 		vb = RenderFactory::createVertexBuffer();
 		vb->setVertexComponents(components);
-		vb->setup(numVertex, VertexUsage::GPU_USAGE_STATIC);
+		vb->setup(numVertex, VertexUsage::GPU_MAP_READ_BIT | VertexUsage::GPU_IMMUTABLE_STORAGE);
 
 		std::size_t offset = 0;
 		std::size_t stride = vb->getVertexSize();
@@ -294,7 +294,7 @@ RenderFactory::createRenderBuffer(const MeshProperty& mesh) except
 	if (numIndex > 0)
 	{
 		ib = RenderFactory::createIndexBuffer();
-		ib->setup(numIndex, IndexType::GPU_UINT32, VertexUsage::GPU_USAGE_STATIC);
+		ib->setup(numIndex, IndexType::GPU_UINT32, VertexUsage::GPU_MAP_READ_BIT | VertexUsage::GPU_IMMUTABLE_STORAGE);
 
 		if (!faces.empty())
 		{
@@ -348,7 +348,7 @@ RenderFactory::createRenderBuffer(const std::vector<MeshPropertyPtr> meshes) exc
 	{
 		vb = RenderFactory::createVertexBuffer();
 		vb->setVertexComponents(components);
-		vb->setup(numVertex, VertexUsage::GPU_USAGE_STATIC);
+		vb->setup(numVertex, VertexUsage::GPU_MAP_READ_BIT | VertexUsage::GPU_IMMUTABLE_STORAGE);
 
 		std::size_t offsetVertices = 0;
 		std::size_t stride = vb->getVertexSize();
@@ -432,7 +432,7 @@ RenderFactory::createRenderBuffer(const std::vector<MeshPropertyPtr> meshes) exc
 	if (numIndex > 0)
 	{
 		ib = RenderFactory::createIndexBuffer();
-		ib->setup(numIndex, IndexType::GPU_UINT32, VertexUsage::GPU_USAGE_STATIC);
+		ib->setup(numIndex, IndexType::GPU_UINT32, VertexUsage::GPU_MAP_READ_BIT | VertexUsage::GPU_IMMUTABLE_STORAGE);
 
 		std::size_t offsetIndices = 0;
 

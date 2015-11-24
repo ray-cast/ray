@@ -34,5 +34,76 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#include <ray/gui_widget.h>
 
-// +----------------------------------------------------------------------
+_NAME_BEGIN
+
+__ImplementSubInterface(GuiWidget, rtti::Interface, "GuiWidget")
+__ImplementSubInterface(GuiWidgetImpl, rtti::Interface, "GuiWidgetImpl")
+
+GuiWidgetImpl::GuiWidgetImpl() noexcept
+{
+}
+
+GuiWidgetImpl::~GuiWidgetImpl() noexcept
+{
+}
+
+GuiWidget::GuiWidget(GuiWidgetImpl& impl) noexcept
+	: _impl(impl)
+{
+}
+
+GuiWidget::~GuiWidget() noexcept
+{
+}
+
+GuiWidgetPtr 
+GuiWidget::createWieght(const rtti::Rtti* rtti, const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name) except
+{
+	return _impl.createWieght(rtti, skin, left, top, width, height, align, name);
+}
+
+void
+GuiWidget::create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name) except
+{
+	_impl.create(skin, left, top, width, height, align, name, nullptr);
+}
+
+void
+GuiWidget::create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except
+{
+	_impl.create(skin, left, top, width, height, align, name, widget);
+}
+
+void
+GuiWidget::destroy() noexcept
+{
+	_impl.destroy();
+}
+
+void 
+GuiWidget::setSkin(const std::string& skin) except
+{
+	_impl.setSkin(skin);
+}
+
+const std::string& 
+GuiWidget::getSkin() const noexcept
+{
+	return _impl.getSkin();
+}
+
+void 
+GuiWidget::setViewport(const Viewport& view) except
+{
+	_impl.setViewport(view);
+}
+
+void 
+GuiWidget::getViewport(Viewport& view) const noexcept
+{
+	_impl.getViewport(view);
+}
+
+_NAME_END

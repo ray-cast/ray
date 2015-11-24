@@ -34,86 +34,59 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_OGL_BUFFER_H_
-#define _H_OGL_BUFFER_H_
+#ifndef _H_GUI_WIDGET_H_
+#define _H_GUI_WIDGET_H_
 
-#include <ray/ogl_canvas.h>
+#include <ray/gui_align.h>
 
 _NAME_BEGIN
 
-class OGLVertexBuffer final
+class EXPORT GuiWidgetImpl : public rtti::Interface
 {
+	__DeclareSubInterface(GuiWidget, rtti::Interface)
 public:
-	OGLVertexBuffer() noexcept;
-	~OGLVertexBuffer() noexcept;
+	GuiWidgetImpl() noexcept;
+	virtual ~GuiWidgetImpl() noexcept;
 
-	void setup(VertexBufferDataPtr vb) except;
-	void close() noexcept;
+	virtual void create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except = 0;
+	virtual void destroy() noexcept = 0;
+
+	virtual void setSkin(const std::string& skin) except = 0;
+	virtual const std::string& getSkin() const noexcept = 0;
+
+	virtual void setViewport(const Viewport& view) except = 0;
+	virtual void getViewport(Viewport& view) const noexcept = 0;
+
+	virtual GuiWidgetPtr createWieght(const rtti::Rtti* rtti, const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name = "") except = 0;
+};
+
+class EXPORT GuiWidget : public rtti::Interface
+{
+	__DeclareSubInterface(GuiWidget, rtti::Interface)
+public:
+	GuiWidget(GuiWidgetImpl& impl) noexcept;
+	virtual ~GuiWidget() noexcept;
+
+	GuiWidgetPtr createWieght(const rtti::Rtti* rtti, const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name = "") except;
 	
-	void update() noexcept;
+	template<typename T>
+	std::shared_ptr<T> createWieght(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name = "") except
+	{
+		return std::dynamic_pointer_cast<T>(this->createWieght(T::getRtti(), skin, left, top, width, height, align, name));
+	}
+	
+	void create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name = "") except;
+	void create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except;
+	void destroy() noexcept;
 
-	GLuint getInstanceID() noexcept;
-	GLuint64 getInstanceAddr() noexcept;
+	void setSkin(const std::string& skin) except;
+	const std::string& getSkin() const noexcept;
 
-	VertexBufferDataPtr getVertexBufferData() const noexcept;
-
+	void setViewport(const Viewport& view) except;
+	void getViewport(Viewport& view) const noexcept;
 private:
 
-	GLuint _vbo;
-	GLuint64 _bindlessVbo;
-	GLvoid* _data;
-	GLuint _dataSize;
-
-	VertexBufferDataPtr _vb;
-};
-
-class OGLIndexBuffer final
-{
-public:
-	OGLIndexBuffer() noexcept;
-	~OGLIndexBuffer() noexcept;
-
-	void setup(IndexBufferDataPtr ib) noexcept;
-	void close() noexcept;
-
-	void update() noexcept;
-
-	GLuint getInstanceID() noexcept;
-	GLuint64 getInstanceAddr() noexcept;
-
-	IndexBufferDataPtr getIndexBufferData() const noexcept;
-
-private:
-
-	GLuint _ibo;
-	GLuint64 _bindlessIbo;
-	GLvoid* _data;
-	GLuint _dataSize;
-
-	IndexBufferDataPtr _ib;
-};
-
-class OGLRenderBuffer final : public RenderBuffer
-{
-public:
-	OGLRenderBuffer() noexcept;
-	~OGLRenderBuffer() noexcept;
-
-	void setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) except;
-	void close() noexcept;
-
-	void update() noexcept;
-
-	GLuint getInstanceID() noexcept;
-
-	void apply() noexcept;
-
-private:
-
-	GLuint _vao;
-
-	std::shared_ptr<OGLVertexBuffer> _vb;
-	std::shared_ptr<OGLIndexBuffer> _ib;
+	GuiWidgetImpl& _impl;
 };
 
 _NAME_END

@@ -347,6 +347,8 @@ RenderPipelineLayer::getMaterialPass() const noexcept
 void
 RenderPipelineLayer::drawSceneQuad(MaterialPassPtr pass) noexcept
 {
+	assert(pass);
+
 	RenderIndirect renderable;
 	renderable.startVertice = 0;
 	renderable.numVertices = _renderSceneQuad->getNumVertices();

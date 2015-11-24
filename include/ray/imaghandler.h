@@ -42,15 +42,15 @@
 _NAME_BEGIN
 
 class Image;
-class EXPORT ImageHandler : public image_base
+class EXPORT ImageHandler : public ImageBase
 {
 public:
     virtual ~ImageHandler() noexcept {};
 
     virtual bool doCanRead(istream& stream) const noexcept = 0;
 
-    virtual bool doLoad(Image& image, istream& stream) noexcept = 0;
-    virtual bool doSave(Image& image, ostream& stream) noexcept = 0;
+    virtual bool doLoad(Image& image, istream& stream) except = 0;
+    virtual bool doSave(Image& image, ostream& stream) except = 0;
 };
 
 _NAME_END

@@ -34,21 +34,12 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_IMAGE_XPM_H_
-#define _H_IMAGE_XPM_H_
+#ifndef _H_GUI_EDIT_BOX_H_
+#define _H_GUI_EDIT_BOX_H_
 
-#include <ray/image.h>
+#include <ray/mygui_types.h>
 
 _NAME_BEGIN
-
-class XPMHandler : public ImageHandler
-{
-private:
-    bool doCanRead(istream& stream) const noexcept;
-
-    bool doLoad(Image& image, istream& stream) noexcept;
-    bool doSave(Image& image, ostream& stream) noexcept;
-};
 
 _NAME_END
 

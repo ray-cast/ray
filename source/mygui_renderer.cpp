@@ -34,22 +34,13 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_renderer.h>
-#include <ray/gui_texture.h>
-#include <ray/gui_buffer.h>
-#include <ray/gui_assert.h>
-
-#include <ray/render_system.h>
-#include <ray/render_pipeline_base.h>
-
-#include <MyGUI_VertexData.h>
-#include <MyGUI_Gui.h>
+#include <ray/mygui_renderer.h>
+#include <ray/mygui_texture.h>
+#include <ray/mygui_buffer.h>
 
 _NAME_BEGIN
 
-using namespace Gui;
-
-GuiRenderer::GuiRenderer() 
+MyGuiRenderer::MyGuiRenderer() noexcept
 	: _update(false)
 	, _imageLoader(nullptr)
 	, _isInitialise(false)
@@ -57,20 +48,25 @@ GuiRenderer::GuiRenderer()
 {
 }
 
-GuiRenderer&
-GuiRenderer::getInstance() noexcept
+MyGuiRenderer::~MyGuiRenderer() noexcept
+{
+	this->close();
+}
+
+MyGuiRenderer&
+MyGuiRenderer::getInstance() noexcept
 {
 	return *getInstancePtr();
 }
 
-GuiRenderer*
-GuiRenderer::getInstancePtr() noexcept
+MyGuiRenderer*
+MyGuiRenderer::getInstancePtr() noexcept
 {
-	return static_cast<GuiRenderer*>(RenderManager::getInstancePtr());
+	return static_cast<MyGuiRenderer*>(RenderManager::getInstancePtr());
 }
 
 void 
-GuiRenderer::open() except
+MyGuiRenderer::open() except
 {
 	MYGUI_PLATFORM_ASSERT(!_isInitialise, getClassTypeName() << " initialised twice");
 	MYGUI_PLATFORM_LOG(Info, "* Initialise: " << getClassTypeName());
@@ -88,44 +84,46 @@ GuiRenderer::open() except
 }
 
 void 
-GuiRenderer::close() noexcept
+MyGuiRenderer::close() noexcept
 {
-	MYGUI_PLATFORM_ASSERT(_isInitialise, getClassTypeName() << " is not initialised");
-	MYGUI_PLATFORM_LOG(Info, "* Shutdown: " << getClassTypeName());
+	if (_isInitialise)
+	{
+		MYGUI_PLATFORM_LOG(Info, "* Shutdown: " << getClassTypeName());
 
-	destroyAllResources();
-	
-	_isInitialise = false;
+		destroyAllResources();
 
-	MYGUI_PLATFORM_LOG(Info, getClassTypeName() << " successfully shutdown");
+		_isInitialise = false;
+
+		MYGUI_PLATFORM_LOG(Info, getClassTypeName() << " successfully shutdown");
+	}
 }
 
 void
-GuiRenderer::setImageLoader(Gui::GuiImageLoaderPtr loader) noexcept
+MyGuiRenderer::setImageLoader(GuiImageLoaderPtr loader) noexcept
 {
 	_imageLoader = loader;
 }
 
-Gui::GuiImageLoaderPtr
-GuiRenderer::getImageLoader() const noexcept
+GuiImageLoaderPtr
+MyGuiRenderer::getImageLoader() const noexcept
 {
 	return _imageLoader;
 }
 
 MyGUI::IVertexBuffer* 
-GuiRenderer::createVertexBuffer() noexcept
+MyGuiRenderer::createVertexBuffer() noexcept
 {
-	return new GuiVertexBuffer();
+	return new MyGuiVertexBuffer();
 }
 
 void 
-GuiRenderer::destroyVertexBuffer(MyGUI::IVertexBuffer* _buffer) noexcept
+MyGuiRenderer::destroyVertexBuffer(MyGUI::IVertexBuffer* _buffer) noexcept
 {
 	delete _buffer;
 }
 
 void 
-GuiRenderer::doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept
+MyGuiRenderer::doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept
 {
 	_materialScaleY->assign(-1.0f);
 	doRender(_buffer, _texture, _count);
@@ -133,14 +131,14 @@ GuiRenderer::doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _textur
 }
 
 void 
-GuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept
+MyGuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept
 {
-	GuiVertexBuffer* buffer = static_cast<GuiVertexBuffer*>(_buffer);
+	MyGuiVertexBuffer* buffer = static_cast<MyGuiVertexBuffer*>(_buffer);
 	if (buffer)
 	{
 		if (_texture)
 		{
-			GuiTexture* texture = static_cast<GuiTexture*>(_texture);
+			MyGuiTexture* texture = static_cast<MyGuiTexture*>(_texture);
 			_materialDecal->assign(texture->getTexture());
 		}
 
@@ -164,35 +162,35 @@ GuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, 
 }
 
 void 
-GuiRenderer::begin() noexcept
+MyGuiRenderer::begin() noexcept
 {
 }
 
 void
-GuiRenderer::end() noexcept
+MyGuiRenderer::end() noexcept
 {
 }
 
 const MyGUI::RenderTargetInfo& 
-GuiRenderer::getInfo() noexcept
+MyGuiRenderer::getInfo() noexcept
 {
 	return _info;
 }
 
 const MyGUI::IntSize& 
-GuiRenderer::getViewSize() const noexcept
+MyGuiRenderer::getViewSize() const noexcept
 {
 	return _viewport;
 }
 
 MyGUI::VertexColourType 
-GuiRenderer::getVertexFormat() noexcept
+MyGuiRenderer::getVertexFormat() noexcept
 {
 	return _vertexFormat;
 }
 
 bool 
-GuiRenderer::isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage _usage) noexcept
+MyGuiRenderer::isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage _usage) noexcept
 {
 	if (_format == MyGUI::PixelFormat::R8G8B8 ||
 		_format == MyGUI::PixelFormat::R8G8B8A8)
@@ -202,7 +200,7 @@ GuiRenderer::isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage _
 }
 
 void 
-GuiRenderer::drawOneFrame(float delta) noexcept
+MyGuiRenderer::drawOneFrame(float delta) noexcept
 {
 	MyGUI::Gui* gui = MyGUI::Gui::getInstancePtr();
 	if (gui == nullptr)
@@ -220,7 +218,7 @@ GuiRenderer::drawOneFrame(float delta) noexcept
 }
 
 void 
-GuiRenderer::setViewport(int _width, int _height) noexcept
+MyGuiRenderer::setViewport(int _width, int _height) noexcept
 {
 	if (_height == 0)
 		_height = 1;
@@ -242,19 +240,19 @@ GuiRenderer::setViewport(int _width, int _height) noexcept
 }
 
 void 
-GuiRenderer::getViewport(int& w, int& h) noexcept
+MyGuiRenderer::getViewport(int& w, int& h) noexcept
 {
 	w = _viewport.width;
 	h = _viewport.height;
 }
 
 MyGUI::ITexture* 
-GuiRenderer::createTexture(const std::string& _name) noexcept
+MyGuiRenderer::createTexture(const std::string& _name) noexcept
 {
 	auto& texture = _textures[_name];
 	if (!texture)
 	{
-		texture = std::make_unique<GuiTexture>(_name, _imageLoader);
+		texture = std::make_unique<MyGuiTexture>(_name, _imageLoader);
 		return texture.get();
 	}
 
@@ -263,7 +261,7 @@ GuiRenderer::createTexture(const std::string& _name) noexcept
 }
 
 void
-GuiRenderer::destroyTexture(MyGUI::ITexture* _texture) noexcept
+MyGuiRenderer::destroyTexture(MyGUI::ITexture* _texture) noexcept
 {
 	if (_texture)
 	{
@@ -285,7 +283,7 @@ GuiRenderer::destroyTexture(MyGUI::ITexture* _texture) noexcept
 }
 
 MyGUI::ITexture*
-GuiRenderer::getTexture(const std::string& _name) noexcept
+MyGuiRenderer::getTexture(const std::string& _name) noexcept
 {
 	MapTexture::const_iterator item = _textures.find(_name);
 	if (item == _textures.end())
@@ -294,7 +292,7 @@ GuiRenderer::getTexture(const std::string& _name) noexcept
 }
 
 void 
-GuiRenderer::destroyAllResources() noexcept
+MyGuiRenderer::destroyAllResources() noexcept
 {
 	_textures.clear();
 	_material.reset();

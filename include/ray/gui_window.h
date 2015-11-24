@@ -34,5 +34,36 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#ifndef _H_GUI_WINDOW_H_
+#define _H_GUI_WINDOW_H_
 
-// +----------------------------------------------------------------------
+#include <ray/gui_widget.h>
+
+_NAME_BEGIN
+
+class EXPORT GuiWindow : public GuiWidget
+{
+	__DeclareSubInterface(GuiWindow, GuiWidget)
+public:
+	GuiWindow(GuiWidgetImpl& impl) noexcept;
+	virtual ~GuiWindow() noexcept;
+
+	virtual void setCaption(const std::string& name) = 0;
+	virtual const std::string& getCaption() const = 0;
+
+	virtual void setVisibleSmooth(bool _value) = 0;
+	virtual void destroySmooth() = 0;
+
+	virtual void setAutoAlpha(bool _value) = 0;
+	virtual bool getAutoAlpha() const = 0;
+
+	virtual void setMinSize(int _width, int _height) = 0;
+	virtual void getMinSize(int& w, int& h) const = 0;
+
+	virtual void setMaxSize(int _width, int _height) = 0;
+	virtual void getMaxSize(int& w, int& h) const = 0;
+};
+
+_NAME_END
+
+#endif

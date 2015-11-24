@@ -34,68 +34,70 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MY_GUI_SYSTEM_H_
-#define _H_MY_GUI_SYSTEM_H_
+#ifndef _H_MYGUI_WINDOW_H_
+#define _H_MYGUI_WINDOW_H_
 
-#include <ray/gui_system_base.h>
-
-namespace MyGUI
-{
-	class Gui;
-	class LogManager;
-}
+#include <ray/mygui_widget.h>
 
 _NAME_BEGIN
 
-namespace Gui
+class MyGuiWindowImpl : public MyGuiWidget
 {
-	class GuiRenderer;
-	class GuiResManager;
+public:
+	MyGuiWindowImpl() noexcept;
+	~MyGuiWindowImpl() noexcept;
+	
+	void create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except;
 
-	class EXPORT MyGuiSystem final : public GuiSystem
-	{
-		__DeclareSubClass(MyGuiSystem, GuiSystem)
-	public:
-		MyGuiSystem() noexcept;
-		~MyGuiSystem() noexcept;
+	void setCaption(const std::string& name) noexcept;
+	const std::string& getCaption() const noexcept;
 
-		bool open() except;
-		void close() noexcept;
+	void setVisibleSmooth(bool _value) noexcept;
+	void destroySmooth() noexcept;
 
-		void setCoreProfile(const std::string& core) except;
-		const std::string& getCoreProfile() const noexcept;
+	void setAutoAlpha(bool _value) noexcept;
+	bool getAutoAlpha() const noexcept;
 
-		void setImageLoader(GuiImageLoaderPtr loader) noexcept;
-		GuiImageLoaderPtr getImageLoader() const noexcept;
+	void setMinSize(int _width, int _height) noexcept;
+	void getMinSize(int& w, int& h) const noexcept;
 
-		bool injectMouseMove(int _absx, int _absy, int _absz) noexcept;
-		bool injectMousePress(int _absx, int _absy, GuiButton::Code _id) noexcept;
-		bool injectMouseRelease(int _absx, int _absy, GuiButton::Code _id) noexcept;
-		bool injectKeyPress(GuiKey::Code _key) noexcept;
-		bool injectKeyRelease(GuiKey::Code _key) noexcept;
+	void setMaxSize(int _width, int _height) noexcept;
+	void getMaxSize(int& w, int& h) const noexcept;
 
-		bool isFocusMouse() const noexcept;
-		bool isFocusKey() const noexcept;
-		bool isCaptureMouse() const noexcept;
+private:
 
-		void setViewport(int w, int h) noexcept;
-		void getViewport(int& w, int& h) noexcept;
+	std::string _name;
 
-		void render(float delta) noexcept;
+	MyGUI::Widget* _widget;
+	MyGUI::Window* _window;
+};
 
-	private:
+class MyGuiWindow : public GuiWindow
+{
+public:
+	MyGuiWindow() noexcept;
+	MyGuiWindow(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name) noexcept;
+	virtual ~MyGuiWindow() noexcept;
 
-		bool _isInitialise;
+	virtual void setCaption(const std::string& name) noexcept;
+	virtual const std::string& getCaption() const noexcept;
 
-		std::string _coreProfile;
+	virtual void setVisibleSmooth(bool _value) noexcept;
+	virtual void destroySmooth() noexcept;
 
-		std::unique_ptr<GuiRenderer> _renderer;
-		std::unique_ptr<GuiResManager> _resLoader;
+	virtual void setAutoAlpha(bool _value) noexcept;
+	virtual bool getAutoAlpha() const noexcept;
 
-		std::unique_ptr<MyGUI::Gui> _gui;
-		std::unique_ptr<MyGUI::LogManager> _logManager;
-	};
-}
+	virtual void setMinSize(int width, int height) noexcept;
+	virtual void getMinSize(int& w, int& h) const noexcept;
+
+	virtual void setMaxSize(int width, int height) noexcept;
+	virtual void getMaxSize(int& w, int& h) const noexcept;
+
+private:
+
+	MyGuiWindowImpl _impl;	
+};
 
 _NAME_END
 

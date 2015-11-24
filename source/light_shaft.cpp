@@ -44,9 +44,9 @@
 _NAME_BEGIN
 
 LightShaft::LightShaft() noexcept
-	: illuminationNumber(30)
-	, illuminationWeight(1 / 30)
-	, illuminationDecay(0.96)
+	: illuminationNumber(60)
+	, illuminationWeight(1 / 60)
+	, illuminationDecay(0.98)
 {
 }
 
@@ -64,10 +64,10 @@ LightShaft::onActivate(RenderPipeline& pipeline) except
 	_material = maker.load("sys:fx/light_shaft.glsl");
 
 	_texSample = RenderFactory::createRenderTexture();
-	_texSample->setup(width * 0.5, height * 0.5, TextureDim::DIM_2D, PixelFormat::R11G11B10F);
+	_texSample->setup(width*0.5, height*0.5, TextureDim::DIM_2D, PixelFormat::R11G11B10F);
 
-	_lightShaft = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("scatter");
-	_lightShaftCopy = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("copy");
+	_lightShaft = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("LightScatter");
+	_lightShaftCopy = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("LightScatterCopy");
 
 	_illuminationSample = _material->getParameter("illuminationSample");
 	_illuminationPosition = _material->getParameter("illuminationPosition");
@@ -91,7 +91,7 @@ LightShaft::onDeactivate(RenderPipeline& pipeline) except
 void
 LightShaft::onRender(RenderPipeline& pipeline, RenderTexturePtr source) except
 {
-	pipeline.setRenderTexture(source);
+	pipeline.setRenderTexture(_texSample);
 	pipeline.clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0);
 
 	std::size_t width, height;
@@ -121,6 +121,11 @@ LightShaft::onRender(RenderPipeline& pipeline, RenderTexturePtr source) except
 			}
 		}
 	}
+
+	_illuminationSource->assign(_texSample->getResolveTexture());
+
+	pipeline.setRenderTexture(source);
+	pipeline.drawSceneQuad(_lightShaftCopy);
 }
 
 _NAME_END

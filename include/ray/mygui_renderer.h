@@ -34,65 +34,73 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/imagpcx.h>
+#ifndef _H_GUI_RENDERER_H_
+#define _H_GUI_RENDERER_H_
+
+#include <ray/mygui_types.h>
 
 _NAME_BEGIN
 
-struct PCXTargaHeader
+class MyGuiRenderer : public MyGUI::RenderManager, public MyGUI::IRenderTarget
 {
-    char    manufacturer;
-    char    version;
-    char    encoding;
-    char    bits_per_pixel;
-    unsigned short    xmin, ymin, xmax, ymax;
-    unsigned short    hres, vres;
-    unsigned char    palette[48];
-    char    reserved;
-    char    color_planes;
-    unsigned short    bytes_per_line;
-    unsigned short    palette_type;
-    char    filler[58];
-    unsigned char    data;            // unbounded
+public:
+	MyGuiRenderer() noexcept;
+	~MyGuiRenderer() noexcept;
+
+	void open() except;
+	void close() noexcept;
+
+	void setImageLoader(GuiImageLoaderPtr loader) noexcept;
+	GuiImageLoaderPtr getImageLoader() const noexcept;
+
+	static MyGuiRenderer& getInstance() noexcept;
+	static MyGuiRenderer* getInstancePtr() noexcept;
+
+	void doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept;
+	void drawOneFrame(float delta) noexcept;
+		
+	void setViewport(int _width, int _height) noexcept;
+	void getViewport(int& w, int& h) noexcept;
+
+	virtual const MyGUI::IntSize& getViewSize() const noexcept;
+	virtual MyGUI::VertexColourType getVertexFormat() noexcept;
+	virtual bool isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage _usage) noexcept;
+
+	virtual MyGUI::IVertexBuffer* createVertexBuffer() noexcept;
+	virtual void destroyVertexBuffer(MyGUI::IVertexBuffer* _buffer) noexcept;
+
+	virtual MyGUI::ITexture* createTexture(const std::string& _name) noexcept;
+	virtual void destroyTexture(MyGUI::ITexture* _texture) noexcept;
+	virtual MyGUI::ITexture* getTexture(const std::string& _name) noexcept;
+
+	virtual void begin() noexcept;
+	virtual void end() noexcept;
+	virtual void doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept;
+	virtual const MyGUI::RenderTargetInfo& getInfo() noexcept;
+
+private:
+	void destroyAllResources() noexcept;
+
+private:
+	typedef std::map<std::string, std::unique_ptr<MyGUI::ITexture>> MapTexture;
+
+	MyGUI::IntSize _viewport;
+	MyGUI::VertexColourType _vertexFormat;
+	MyGUI::RenderTargetInfo _info;
+
+	bool _update;
+	bool _isInitialise;
+
+	MaterialPtr _material;
+	MaterialPassPtr _materialPass;
+	MaterialParamPtr _materialScaleY;
+	MaterialParamPtr _materialDecal;
+
+	MapTexture _textures;
+
+	GuiImageLoaderPtr _imageLoader;
 };
 
-bool
-PCXHandler::doCanRead(istream& stream) const noexcept
-{
-    static std::uint8_t magic[] = { 0xFF, 0xD8 };
-
-    std::uint8_t hdr[sizeof(magic)];
-
-    if (stream.read((char*)hdr, sizeof(hdr)))
-    {
-        return std::memcmp(hdr, magic, sizeof(magic)) == 0;
-    }
-
-    return false;
-}
-
-bool
-PCXHandler::doLoad(Image& /*image*/, istream& stream) noexcept
-{
-    PCXTargaHeader header;
-
-    stream.read((char*)&header, sizeof(PCXTargaHeader));
-
-    if (header.manufacturer != 0x0a ||
-        header.version != 5 ||
-        header.encoding != 1 ||
-        header.bits_per_pixel != 8 ||
-        header.xmax >= 65535 ||
-        header.ymax >= 65535)
-    {
-    }
-
-    return true;
-}
-
-bool
-PCXHandler::doSave(Image& /*image*/, ostream& /*stream*/) noexcept
-{
-    return false;
-}
-
 _NAME_END
+
+#endif

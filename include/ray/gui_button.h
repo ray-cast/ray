@@ -34,11 +34,21 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#ifndef _H_GUI_BUTTON_H_
+#define _H_GUI_BUTTON_H_
 
-// +----------------------------------------------------------------------
-#ifndef _H_ADVAPI_DLL_H_
-#define _H_ADVAPI_DLL_H_
+#include <ray/gui_widget.h>
 
-#include <ray/platform.h>
+_NAME_BEGIN
+
+class EXPORT GuiButton : public GuiWidget
+{
+	__DeclareSubInterface(GuiButton, GuiWidget)
+public:
+	GuiButton(GuiWidgetImpl& impl) noexcept;
+	virtual ~GuiButton() noexcept;
+};
+
+_NAME_END
 
 #endif

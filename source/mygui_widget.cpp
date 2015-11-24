@@ -34,131 +34,105 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/rtti.h>
-#include <ray/rtti_factory.h>
+#include <ray/mygui_widget.h>
 
 _NAME_BEGIN
 
-using namespace rtti;
+__ImplementSubInterface(MyGuiWidget, GuiWidget, "MyGuiWidget")
 
-__ImplementClass(Interface, "RTTI")
-
-Rtti::Rtti(const std::string& name, RttiConstruct creator, const Rtti* parent) noexcept
-	: _name(name)
-	, _parent(parent)
-	, _construct(creator)
-{
-	Factory::instance()->add(this);
-};
-
-Rtti::~Rtti() noexcept
+MyGuiWidget::MyGuiWidget(MyGUI::Widget*& widget) noexcept
+	: _skinName("WindowCS")
+	, _widget(widget)
 {
 }
 
-Rtti::InterfacePtr
-Rtti::create() const except
+MyGuiWidget::~MyGuiWidget() noexcept
 {
-	assert(_construct);
-	return std::shared_ptr<Interface>(_construct());
 }
 
-const Rtti* 
-Rtti::getParent() const noexcept
+void 
+MyGuiWidget::destroy() noexcept
 {
-	return _parent;
+	MyGUI::Gui::getInstance().destroyWidget(_widget);
+}
+
+void 
+MyGuiWidget::setSkin(const std::string& skin) noexcept
+{
+	if (_skinName != skin)
+	{
+		_widget->changeWidgetSkin(skin);
+		_skinName = skin;
+	}		
 }
 
 const std::string& 
-Rtti::getName() const noexcept
+MyGuiWidget::getSkin() const noexcept
 {
-	return _name; 
+	return _skinName;
 }
 
-bool
-Rtti::isDerivedFrom(const Rtti* other) const
+void 
+MyGuiWidget::setViewport(const Viewport& view) noexcept
 {
-	const Rtti* cur;
-	for (cur = this; cur != 0; cur = cur->getParent())
+	MyGUI::IntCoord coord;
+	coord.left = view.left;
+	coord.top = view.top;
+	coord.width = view.width;
+	coord.height = view.height;
+	_widget->setCoord(coord);
+}
+
+void
+MyGuiWidget::getViewport(Viewport& view) const noexcept
+{
+	auto& coord = _widget->getCoord();
+	view.left = coord.left;
+	view.top = coord.top;
+	view.width = coord.width;
+	view.height = coord.height;
+}
+
+MyGUI::Align 
+MyGuiWidget::GuiAlignToMyGUI(GuiWidgetAlign align) noexcept
+{
+	switch (align._value)
 	{
-		if (cur == other)
-		{
-			return true;
-		}
+	case GuiWidgetAlign::Left:
+		return MyGUI::Align::Left;
+	case GuiWidgetAlign::Right:
+		return MyGUI::Align::Top;
+	case GuiWidgetAlign::Top:
+		return MyGUI::Align::Right;
+	case GuiWidgetAlign::Bottom:
+		return MyGUI::Align::Bottom;
+	case GuiWidgetAlign::Center:
+		return MyGUI::Align::Center;
+	case GuiWidgetAlign::Default:
+		return MyGUI::Align::Default;
+	case GuiWidgetAlign::HStretch:
+		return MyGUI::Align::HStretch;
+	case GuiWidgetAlign::VStretch:
+		return MyGUI::Align::VStretch;
+	case GuiWidgetAlign::Stretch:
+		return MyGUI::Align::Stretch;
+	default:
+		assert(false);
+		return MyGUI::Align::Default;
 	}
-	return false;
 }
 
-bool 
-Rtti::isDerivedFrom(const Rtti& other) const
+GuiWidgetPtr
+MyGuiWidget::createWieght(const rtti::Rtti* rtti, const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name) except
 {
-	const Rtti* cur;
-	for (cur = this; cur != 0; cur = cur->getParent())
+	assert(rtti->isDerivedFrom(GuiWidget::getRtti()));
+	auto widget = rtti->create()->downcast<GuiWidget>();
+	if (widget)
 	{
-		if (cur == &other)
-		{
-			return true;
-		}
+		widget->create(skin, left, top, width, height, align, name, _widget);
 	}
-	return false;
-}
 
-bool 
-Rtti::isDerivedFrom(const std::string& name) const
-{
-	const Rtti* cur;
-	for (cur = this; cur != 0; cur = cur->getParent())
-	{
-		if (cur->_name == name)
-		{
-			return true;
-		}
-	}
-	return false;
+	return widget;
 }
-
-Interface::Interface() noexcept
-{
-}
-
-Interface::~Interface() noexcept
-{
-}
-
-bool
-Interface::isInstanceOf(const Rtti* rtti) const noexcept
-{
-	return this->rtti() == rtti;
-}
-
-bool
-Interface::isInstanceOf(const Rtti& rtti) const noexcept
-{
-	return this->rtti() == &rtti;
-}
-
-bool
-Interface::isInstanceOf(const std::string& className) const noexcept
-{
-	return this->rtti()->getName() == className;
-}
-
-bool
-Interface::isA(const Rtti* rtti) const noexcept
-{
-	return this->rtti()->isDerivedFrom(rtti);
-}
-
-bool
-Interface::isA(const Rtti& rtti) const noexcept
-{
-	return this->rtti()->isDerivedFrom(rtti);
-}
-
-bool
-Interface::isA(const std::string& rttiName) const noexcept
-{
-	return this->rtti()->isDerivedFrom(rttiName);
-}
-
 
 _NAME_END

@@ -37,19 +37,11 @@
 #ifndef _H_IMAGE_BASE_H_
 #define _H_IMAGE_BASE_H_
 
-#include <ray/imagerr.h>
+#include <ray/imagdef.h>
 
 _NAME_BEGIN
 
-enum ColorType
-{
-    rgb,
-    rgba,
-    bgr,
-    bgra,
-};
-
-class EXPORT image_base
+class EXPORT ImageBase
 {
 public:
     enum _ImageType {};
@@ -57,23 +49,11 @@ public:
 #if _BUILD_BMP_HANDLER
     static const _ImageType bmp = (_ImageType)BMP_HANDLER;
 #endif
-#if _BUILD_ICO_HANDLER
-    static const _ImageType ico = (_ImageType)ICO_HANDLER;
-#endif
 #if _BUILD_JPEG_HANDLER
     static const _ImageType jpeg = (_ImageType)JPEG_HANDLER;
 #endif
 #if _BUILD_PNG_HANDLER
     static const _ImageType png = (_ImageType)PNG_HANDLER;
-#endif
-#if _BUILD_GIF_HANDLER
-    static const _ImageType gif = (_ImageType)GIF_HANDLER;
-#endif
-#if _BUILD_IFF_HANDLER
-    static const _ImageType iff = (_ImageType)IFF_HANDLER;
-#endif
-#if _BUILD_PCX_HANDLER
-    static const _ImageType pcx = (_ImageType)PCX_HANDLER;
 #endif
 #if _BUILD_TGA_HANDLER
     static const _ImageType tga = (_ImageType)TGA_HANDLER;
@@ -87,19 +67,6 @@ public:
 	static const _ImageType bc5s = (_ImageType)BC5S_HANDLER;
 	static const _ImageType ati2 = (_ImageType)ATI2_HANDLER;
 #endif
-#if _BUILD_TIFF_HANDLER
-    static const _ImageType tiff = (_ImageType)TIFF_HANDLER;
-#endif
-#if _BUILD_XPM_HANDLER
-    static const _ImageType xpm = (_ImageType)XPM_HANDLER;
-#endif
-#if _BUILD_WBMP_HANDLER
-    static const _ImageType wbmp = (_ImageType)WBMP_HANDLER;
-#endif
-#if _BUILD_WMF_HANDLER
-    static const _ImageType wmf = (_ImageType)WMF_HANDLER;
-#endif
-
     typedef unsigned int color_type;
     typedef unsigned int image_type;
 
@@ -111,30 +78,12 @@ public:
     typedef std::uint32_t flag_type;
     typedef std::uint32_t delay_type;
 
-    const image_error& error() const noexcept
-    {
-        return _error;
-    }
-
-    void error(image_error::code_type value) noexcept
-    {
-        _error.set(value);
-    }
-
-    void error(const image_error& error) noexcept
-    {
-        _error = error;
-    }
-
 protected:
-    image_base() noexcept {}
+    ImageBase() noexcept {}
 
 private:
-    image_base(const image_base&);
-    const image_base& operator=(const image_base&);
-
-private:
-    image_error _error;
+    ImageBase(const ImageBase&);
+    const ImageBase& operator=(const ImageBase&);
 };
 
 _NAME_END

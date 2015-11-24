@@ -254,35 +254,17 @@ SET(IMAGE_LIST
     ${HEADER_PATH}/imagdef.h
     ${SOURCE_PATH}/image.cpp
     ${HEADER_PATH}/image.h
-    ${HEADER_PATH}/imagerr.h
-    ${SOURCE_PATH}/imagerr.cpp
     ${HEADER_PATH}/imagfwd.h
     ${HEADER_PATH}/imaggif.h
     ${SOURCE_PATH}/imaggif.cpp
-    ${HEADER_PATH}/imagico.h
-    ${SOURCE_PATH}/imagico.cpp
-    ${HEADER_PATH}/imagiff.h
-    ${SOURCE_PATH}/imagiff.cpp
     ${HEADER_PATH}/imagjpeg.h
     ${SOURCE_PATH}/imagjpeg.cpp
-    ${HEADER_PATH}/imagmng.h
-    ${SOURCE_PATH}/imagmng.cpp
-    ${HEADER_PATH}/imagpcx.h
-    ${SOURCE_PATH}/imagpcx.cpp
     ${HEADER_PATH}/imagpng.h
     ${SOURCE_PATH}/imagpng.cpp
-    ${HEADER_PATH}/imagpsd.h
-    ${SOURCE_PATH}/imagpsd.cpp
-    ${HEADER_PATH}/imagraw.h
-    ${SOURCE_PATH}/imagraw.cpp
     ${HEADER_PATH}/imagtga.h
     ${SOURCE_PATH}/imagtga.cpp
     ${HEADER_PATH}/imagdds.h
     ${SOURCE_PATH}/imagdds.cpp
-    ${HEADER_PATH}/imagtiff.h
-    ${SOURCE_PATH}/imagtiff.cpp
-    ${HEADER_PATH}/imagxpm.h
-    ${SOURCE_PATH}/imagxpm.cpp
 )
 SOURCE_GROUP("image" FILES ${IMAGE_LIST})
 
@@ -507,25 +489,48 @@ SET(SOUND_SYSTEM_LIST
 )
 SOURCE_GROUP("sound" FILES ${SOUND_SYSTEM_LIST})
 
+SET(MYGUI_LIST
+    ${HEADER_PATH}/mygui_types.h
+    ${HEADER_PATH}/mygui_system.h
+    ${SOURCE_PATH}/mygui_system.cpp
+    ${HEADER_PATH}/mygui_buffer.h
+    ${SOURCE_PATH}/mygui_buffer.cpp
+    ${HEADER_PATH}/mygui_manager.h
+    ${SOURCE_PATH}/mygui_manager.cpp
+    ${HEADER_PATH}/mygui_texture.h
+    ${SOURCE_PATH}/mygui_texture.cpp
+    ${HEADER_PATH}/mygui_renderer.h
+    ${SOURCE_PATH}/mygui_renderer.cpp
+    ${HEADER_PATH}/mygui_widget.h
+    ${SOURCE_PATH}/mygui_widget.cpp
+    ${HEADER_PATH}/mygui_button.h
+    ${SOURCE_PATH}/mygui_button.cpp
+    ${HEADER_PATH}/mygui_editbox.h
+    ${SOURCE_PATH}/mygui_editbox.cpp
+    ${HEADER_PATH}/mygui_window.h
+    ${SOURCE_PATH}/mygui_window.cpp
+)
+SOURCE_GROUP("gui\\mygui" FILES ${MYGUI_LIST})
+
 SET(GUI_LIST
-    ${HEADER_PATH}/gui_system.h
-    ${SOURCE_PATH}/gui_system.cpp
+    ${HEADER_PATH}/gui_align.h
     ${HEADER_PATH}/gui_system_base.h
     ${SOURCE_PATH}/gui_system_base.cpp
-    ${HEADER_PATH}/gui_assert.h
-    ${HEADER_PATH}/gui_buffer.h
-    ${SOURCE_PATH}/gui_buffer.cpp
-    ${HEADER_PATH}/gui_manager.h
-    ${SOURCE_PATH}/gui_manager.cpp
     ${HEADER_PATH}/gui_imageloader.h
     ${SOURCE_PATH}/gui_imageloader.cpp
-    ${HEADER_PATH}/gui_texture.h
-    ${SOURCE_PATH}/gui_texture.cpp
-    ${HEADER_PATH}/gui_renderer.h
-    ${SOURCE_PATH}/gui_renderer.cpp
     ${HEADER_PATH}/gui_types.h
     ${HEADER_PATH}/gui_input_key.h
     ${HEADER_PATH}/gui_input_button.h
+    ${HEADER_PATH}/gui_widget.h
+    ${SOURCE_PATH}/gui_widget.cpp
+    ${HEADER_PATH}/gui_button.h
+    ${SOURCE_PATH}/gui_button.cpp
+    ${HEADER_PATH}/gui_editbox.h
+    ${SOURCE_PATH}/gui_editbox.cpp
+    ${HEADER_PATH}/gui_window.h
+    ${SOURCE_PATH}/gui_window.cpp
+    ${HEADER_PATH}/gui_listbox.h
+    ${SOURCE_PATH}/gui_listbox.cpp
 )
 SOURCE_GROUP("gui" FILES ${GUI_LIST})
 
@@ -735,7 +740,7 @@ IF(BUILD_PHYSIC)
 ENDIF()
 
 IF(BUILD_GUI)
-    ADD_LIBRARY(libgui STATIC ${GUI_LIST})
+    ADD_LIBRARY(libgui STATIC ${GUI_LIST} ${MYGUI_LIST})
     TARGET_LINK_LIBRARIES(libgui libplatform librenderer MyGUIEngine)
     IF(MINGW OR UNIX)
         SET_TARGET_PROPERTIES(libgui PROPERTIES OUTPUT_NAME gui)

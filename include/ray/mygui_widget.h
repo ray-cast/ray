@@ -34,129 +34,40 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_manager.h>
-#include <ray/gui_assert.h>
+#ifndef _H_MY_GUI_WIDGET_H_
+#define _H_MY_GUI_WIDGET_H_
 
-#include <ray/ioserver.h>
-#include <ray/mstream.h>
-
-#include <MyGUI.h>
-#include <MyGUI_DataFileStream.h>
+#include <ray/mygui_types.h>
 
 _NAME_BEGIN
 
-using namespace Gui;
-
-class DataStream : public MyGUI::IDataStream
+class MyGuiWidget : public GuiWidgetImpl
 {
+	__DeclareSubInterface(MyGuiWidget, GuiWidget)
 public:
-	DataStream()
-	{
-	}
+	MyGuiWidget(MyGUI::Widget*& widget) noexcept;
+	virtual ~MyGuiWidget() noexcept;
 
-	virtual ~DataStream()
-	{
-	}
+	virtual void destroy() noexcept;
 
-	bool open(const std::string& path)
-	{
-		return IoServer::instance()->openFile(path, _stream);
-	}
+	virtual void setSkin(const std::string& skin) noexcept;
+	virtual const std::string& getSkin() const noexcept;
 
-	virtual bool eof()
-	{
-		return _stream.eof();
-	}
+	virtual void setViewport(const Viewport& view) noexcept;
+	virtual void getViewport(Viewport& view) const noexcept;
 
-	virtual size_t size()
-	{
-		return _stream.size();
-	}
+	virtual GuiWidgetPtr createWieght(const rtti::Rtti* rtti, const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name) except;
+private:
 
-	virtual void readline(std::string& _source, MyGUI::Char _delim)
-	{
-		_source.clear();
-
-		for (;;)
-		{
-			char buffer;
-			if (!_stream.read(&buffer, 1))
-				break;
-
-			if (isLineEnd(buffer))
-				break;
-
-			_source.push_back(buffer);
-		}
-	}
-
-	virtual size_t read(void* _buf, size_t _count)
-	{
-		_stream.read((char*)_buf, _count);
-		return _stream.gcount();
-	}
+	static MyGUI::Align GuiAlignToMyGUI(GuiWidgetAlign align) noexcept;
 
 private:
-	MemoryReader _stream;
+
+	std::string _skinName;
+
+	MyGUI::Widget*& _widget;
 };
 
-GuiResManager::GuiResManager() noexcept
-	: _isInitialise(false)
-{
-}
-
-void
-GuiResManager::open() noexcept
-{
-	assert(!_isInitialise);
-	_isInitialise = true;
-}
-
-void 
-GuiResManager::close() noexcept
-{
-	assert(_isInitialise);
-	_isInitialise = false;
-}
-
-MyGUI::IDataStream*
-GuiResManager::getData(const std::string& _name)
-{
-	auto stream = make_scope<DataStream>();
-	if (stream->open(_name))
-	{
-		return stream.dismiss();
-	}
-
-	return nullptr;
-}
-
-void 
-GuiResManager::freeData(MyGUI::IDataStream* _data)
-{
-	delete _data;
-}
-
-bool
-GuiResManager::isDataExist(const std::string& _name)
-{
-	return IoServer::instance()->existsFile(_name);
-}
-
-const MyGUI::VectorString&
-GuiResManager::getDataListNames(const std::string& _pattern)
-{
-	assert(false);
-	MyGUI::VectorString v;
-	return v;
-}
-
-const std::string& 
-GuiResManager::getDataPath(const std::string& _name)
-{
-	std::string resolvePath;
-	IoServer::instance()->getResolveAssign(_name, resolvePath);
-	return resolvePath;
-}
-
 _NAME_END
+
+#endif

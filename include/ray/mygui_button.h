@@ -34,70 +34,40 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_buffer.h>
+#ifndef _H_MYGUI_BUTTON_H_
+#define _H_MYGUI_BUTTON_H_
+
+#include <ray/mygui_widget.h>
 
 _NAME_BEGIN
 
-using namespace Gui;
-
-GuiVertexBuffer::GuiVertexBuffer() noexcept
-	: _needVertexCount(0)
-	, _sizeInBytes(0)
+class MyGuiButtonImpl final : public MyGuiWidget
 {
-}
+	__DeclareSubClass(MyGuiButton, GuiWidget)
+public:
+	MyGuiButtonImpl() noexcept;
+	virtual ~MyGuiButtonImpl() noexcept;
 
-GuiVertexBuffer::~GuiVertexBuffer() noexcept
+	void create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except;
+
+private:
+
+	MyGUI::Button* _button;
+	MyGUI::Widget* _widget;
+};
+
+class MyGuiButton final : public GuiButton
 {
-}
+	__DeclareSubClass(MyGuiButton, GuiButton)
+public:
+	MyGuiButton() noexcept;
+	virtual ~MyGuiButton() noexcept;
 
-void
-GuiVertexBuffer::setVertexCount(size_t _count)
-{
-	_needVertexCount = _count;
-}
+private:
 
-std::size_t 
-GuiVertexBuffer::getVertexCount() noexcept
-{
-	return _needVertexCount;
-}
-
-MyGUI::Vertex* 
-GuiVertexBuffer::lock() noexcept
-{
-	if (!_vb || _needVertexCount != _vb->getVertexCount())
-	{
-		VertexComponents components;
-		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
-		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_DIFFUSE, VertexFormat::GPU_VERTEX_UNSIGNED_BYTE4, true));
-		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_TEXCOORD, VertexFormat::GPU_VERTEX_FLOAT2));
-
-		_vb = RenderFactory::createVertexBuffer();
-		_vb->setVertexComponents(components);
-		_vb->setup(_needVertexCount, VertexUsage::GPU_USAGE_DYNAMIC);		
-	}
-
-	return (MyGUI::Vertex*)_vb->data();
-}
-
-void 
-GuiVertexBuffer::unlock() noexcept
-{
-	if (!_buffer)
-	{
-		_buffer = RenderFactory::createRenderBuffer();
-		_buffer->setup(_vb, nullptr);
-	}
-	else
-	{
-		_buffer->update();
-	}
-}
-
-RenderBufferPtr 
-GuiVertexBuffer::getBuffer() const
-{
-	return _buffer;
-}
+	MyGuiButtonImpl _impl;
+};
 
 _NAME_END
+
+#endif

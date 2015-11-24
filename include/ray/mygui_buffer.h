@@ -37,44 +37,34 @@
 #ifndef _GUI_BUFFER_H_
 #define _GUI_BUFFER_H_
 
-#include <ray/gui_types.h>
-
-#include <ray/render_buffer.h>
-#include <ray/render_factory.h>
-
-#include <MyGUI_Prerequest.h>
-#include <MyGUI_IVertexBuffer.h>
-#include <MyGUI_VertexData.h>
+#include <ray/mygui_types.h>
 
 _NAME_BEGIN
 
-namespace Gui
+class MyGuiVertexBuffer : public MyGUI::IVertexBuffer
 {
-	class GuiVertexBuffer : public MyGUI::IVertexBuffer
-	{
-	public:
-		GuiVertexBuffer() noexcept;
-		virtual ~GuiVertexBuffer() noexcept;
+public:
+	MyGuiVertexBuffer() noexcept;
+	virtual ~MyGuiVertexBuffer() noexcept;
 
-		virtual void setVertexCount(std::size_t _count);
-		virtual std::size_t getVertexCount() noexcept;
+	virtual void setVertexCount(std::size_t _count);
+	virtual std::size_t getVertexCount() noexcept;
 
-		virtual MyGUI::Vertex* lock() noexcept;
-		virtual void unlock() noexcept;
+	virtual MyGUI::Vertex* lock() noexcept;
+	virtual void unlock() noexcept;
 
-		RenderBufferPtr getBuffer() const;
+	RenderBufferPtr getBuffer() const;
 
-	private:
+private:
 
-		MemoryStream _stream;
+	MemoryStream _stream;
 
-		RenderBufferPtr _buffer;
-		VertexBufferDataPtr _vb;
+	RenderBufferPtr _buffer;
+	VertexBufferDataPtr _vb;
 
-		std::size_t _needVertexCount;
-		std::size_t _sizeInBytes;
-	};
-}
+	std::size_t _needVertexCount;
+	std::size_t _sizeInBytes;
+};
 
 _NAME_END
 

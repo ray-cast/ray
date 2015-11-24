@@ -34,36 +34,32 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_DATA_MANAGER_H_
-#define _H_GUI_DATA_MANAGER_H_
+#ifndef _H_MYGUI_DATA_MANAGER_H_
+#define _H_MYGUI_DATA_MANAGER_H_
 
-#include <ray/gui_types.h>
-#include <MyGUI_DataManager.h>
+#include <ray/mygui_types.h>
 
 _NAME_BEGIN
 
-namespace Gui
+class MyGuiResManager : public MyGUI::DataManager
 {
-	class GuiResManager : public MyGUI::DataManager
-	{
-	public:
-		GuiResManager() noexcept;
+public:
+	MyGuiResManager() noexcept;
 
-		void open() noexcept;
-		void close() noexcept;
+	void open() noexcept;
+	void close() noexcept;
 
-		virtual MyGUI::IDataStream* getData(const std::string& _name);
+	virtual MyGUI::IDataStream* getData(const std::string& _name);
 
-		virtual void freeData(MyGUI::IDataStream* _data);
-		virtual bool isDataExist(const std::string& _name);
-		virtual const MyGUI::VectorString& getDataListNames(const std::string& _pattern);
-		virtual const std::string& getDataPath(const std::string& _name);
+	virtual void freeData(MyGUI::IDataStream* _data);
+	virtual bool isDataExist(const std::string& _name);
+	virtual const MyGUI::VectorString& getDataListNames(const std::string& _pattern);
+	virtual const std::string& getDataPath(const std::string& _name);
 
-	private:
+private:
 
-		bool _isInitialise;
-	};
-}
+	bool _isInitialise;
+};
 
 _NAME_END
 

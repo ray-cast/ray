@@ -34,37 +34,57 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_ASSERT_H_
-#define _H_GUI_ASSERT_H_
+#ifndef _H_MY_GUI_SYSTEM_H_
+#define _H_MY_GUI_SYSTEM_H_
 
-#include <ray/platform.h>
+#include <ray/mygui_manager.h>
+#include <ray/mygui_renderer.h>
 
 _NAME_BEGIN
 
-#define MYGUI_PLATFORM_LOG_SECTION "Platform"
-#define MYGUI_PLATFORM_LOG_FILENAME "MyGUI.log"
-#define MYGUI_PLATFORM_LOG(level, text) MYGUI_LOGGING(MYGUI_PLATFORM_LOG_SECTION, level, text)
+class EXPORT MyGuiSystem final : public GuiSystem
+{
+	__DeclareSubClass(MyGuiSystem, GuiSystem)
+public:
+	MyGuiSystem() noexcept;
+	~MyGuiSystem() noexcept;
 
-#define MYGUI_PLATFORM_EXCEPT(dest) \
-{ \
-	MYGUI_PLATFORM_LOG(Critical, dest); \
-	MYGUI_DBG_BREAK;\
-	std::ostringstream stream; \
-	stream << dest << "\n"; \
-	MYGUI_BASE_EXCEPT(stream.str().c_str(), "MyGUI"); \
-}
+	bool open() except;
+	void close() noexcept;
 
-#define MYGUI_PLATFORM_ASSERT(exp, dest) \
-{ \
-	if ( ! (exp) ) \
-	{ \
-		MYGUI_PLATFORM_LOG(Critical, dest); \
-		MYGUI_DBG_BREAK;\
-		std::ostringstream stream; \
-		stream << dest << "\n"; \
-		MYGUI_BASE_EXCEPT(stream.str().c_str(), "MyGUI"); \
-	} \
-}
+	void setCoreProfile(const std::string& core) except;
+	const std::string& getCoreProfile() const noexcept;
+
+	void setImageLoader(GuiImageLoaderPtr loader) noexcept;
+	GuiImageLoaderPtr getImageLoader() const noexcept;
+
+	bool injectMouseMove(int _absx, int _absy, int _absz) noexcept;
+	bool injectMousePress(int _absx, int _absy, GuiInputButton::Code _id) noexcept;
+	bool injectMouseRelease(int _absx, int _absy, GuiInputButton::Code _id) noexcept;
+	bool injectKeyPress(GuiInputKey::Code _key) noexcept;
+	bool injectKeyRelease(GuiInputKey::Code _key) noexcept;
+
+	bool isFocusMouse() const noexcept;
+	bool isFocusKey() const noexcept;
+	bool isCaptureMouse() const noexcept;
+
+	void setViewport(int w, int h) noexcept;
+	void getViewport(int& w, int& h) noexcept;
+
+	void render(float delta) noexcept;
+
+private:
+
+	bool _isInitialise;
+
+	std::string _coreProfile;
+
+	std::unique_ptr<MyGuiRenderer> _renderer;
+	std::unique_ptr<MyGuiResManager> _resLoader;
+
+	std::unique_ptr<MyGUI::Gui> _gui;
+	std::unique_ptr<MyGUI::LogManager> _logManager;
+};
 
 _NAME_END
 

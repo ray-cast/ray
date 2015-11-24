@@ -149,8 +149,8 @@ class BMPHandler : public ImageHandler
 {
 private:
 	bool doCanRead(istream& stream) const noexcept;
-	bool doLoad(Image& image, istream& stream) noexcept;
-	bool doSave(Image& image, ostream& stream) noexcept;
+	bool doLoad(Image& image, istream& stream) except;
+	bool doSave(Image& image, ostream& stream) except;
 
 	bool decode(Image& image, istream& stream, const struct BITMAPINFO& info);
 	bool encode(Image& image, istream& stream, const struct BITMAPINFO& info);

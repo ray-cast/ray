@@ -3,7 +3,7 @@
     <include name="sys:fx/common.glsl"/>
     <parameter name="texDepth" semantic="DepthMap" />
     <parameter name="illuminationSource" type="sampler2D" />
-    <parameter name="illuminationPosition" type="float4" />
+    <parameter name="illuminationPosition" type="float2" />
     <parameter name="illuminationSample" type="float4" />
     <parameter name="illuminationRadio" type="float" />
     <shader name="vertex">
@@ -22,7 +22,7 @@
             in float2 coord;
 
             uniform float illuminationRadio;  // camera radio
-            uniform float3 illuminationPosition; //screen space
+            uniform float2 illuminationPosition; //screen space
             uniform float4 illuminationSample; // x : number sample; y : inv samples; z : weight w : decay
             uniform sampler2D illuminationSource;
             uniform sampler2D texDepth;
@@ -55,7 +55,7 @@
                 color.a = mix(0.4 * distDecay, 1, alpha);
                 color.a = mix(color.a, 1, distDecay);
 
-                glsl_FragColor0 = color ;
+                glsl_FragColor0 = sample ;
             }
         ]]>
     </shader>

@@ -34,86 +34,87 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_OGL_BUFFER_H_
-#define _H_OGL_BUFFER_H_
+#ifndef _H_GUI_TEXTURE_H_
+#define _H_GUI_TEXTURE_H_
 
-#include <ray/ogl_canvas.h>
+#include <ray/mygui_types.h>
 
 _NAME_BEGIN
 
-class OGLVertexBuffer final
+class MyGuiRenderTexture;
+class MyGuiTexture : public MyGUI::ITexture
 {
 public:
-	OGLVertexBuffer() noexcept;
-	~OGLVertexBuffer() noexcept;
+	MyGuiTexture(const std::string& name, GuiImageLoaderPtr loader) noexcept;
+	virtual ~MyGuiTexture() noexcept;
 
-	void setup(VertexBufferDataPtr vb) except;
-	void close() noexcept;
-	
-	void update() noexcept;
+	virtual const std::string& getName() const noexcept;
 
-	GLuint getInstanceID() noexcept;
-	GLuint64 getInstanceAddr() noexcept;
+	virtual void createManual(int _width, int _height, MyGUI::TextureUsage _usage, MyGUI::PixelFormat _format) except;
 
-	VertexBufferDataPtr getVertexBufferData() const noexcept;
+	virtual void loadFromFile(const std::string& _filename);
+	virtual void saveToFile(const std::string& _filename);
+
+	virtual void destroy() noexcept;
+
+	virtual int getWidth() noexcept;
+	virtual int getHeight() noexcept;
+
+	virtual void* lock(MyGUI::TextureUsage _access) noexcept;
+	virtual void unlock() noexcept;
+	virtual bool isLocked() noexcept;
+
+	virtual MyGUI::PixelFormat getFormat() noexcept;
+	virtual MyGUI::TextureUsage getUsage() noexcept;
+	virtual std::size_t getNumElemBytes() noexcept;
+
+	void setUsage(MyGUI::TextureUsage _usage) noexcept;
+	MyGUI::TextureUsage getUsage() const noexcept;
+
+	virtual MyGUI::IRenderTarget* getRenderTarget();
+
+	TexturePtr getTexture() const noexcept;
+	void createManual(int _width, int _height, MyGUI::TextureUsage _usage, MyGUI::PixelFormat _format, void* stream) except;
 
 private:
+	std::string _name;
 
-	GLuint _vbo;
-	GLuint64 _bindlessVbo;
-	GLvoid* _data;
-	GLuint _dataSize;
+	bool _lock;
 
-	VertexBufferDataPtr _vb;
+	std::uint32_t _width;
+	std::uint32_t _height;
+
+	std::size_t _numElemBytes;
+	std::size_t _dataSize;
+
+	MyGUI::PixelFormat _originalFormat;
+	MyGUI::TextureUsage _originalUsage;
+
+	MemoryStream _stream;
+
+	TexturePtr _texture;
+
+	GuiImageLoaderPtr _imageLoader;
+	MyGuiRenderTexture* _renderTarget;
 };
 
-class OGLIndexBuffer final
+class MyGuiRenderTexture : public MyGUI::IRenderTarget
 {
 public:
-	OGLIndexBuffer() noexcept;
-	~OGLIndexBuffer() noexcept;
+	MyGuiRenderTexture(TexturePtr texture) noexcept;
+	virtual ~MyGuiRenderTexture() noexcept;
 
-	void setup(IndexBufferDataPtr ib) noexcept;
-	void close() noexcept;
+	virtual void begin() noexcept;
+	virtual void end() noexcept;
 
-	void update() noexcept;
+	virtual void doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept;
 
-	GLuint getInstanceID() noexcept;
-	GLuint64 getInstanceAddr() noexcept;
-
-	IndexBufferDataPtr getIndexBufferData() const noexcept;
+	virtual const MyGUI::RenderTargetInfo& getInfo() noexcept;
 
 private:
 
-	GLuint _ibo;
-	GLuint64 _bindlessIbo;
-	GLvoid* _data;
-	GLuint _dataSize;
-
-	IndexBufferDataPtr _ib;
-};
-
-class OGLRenderBuffer final : public RenderBuffer
-{
-public:
-	OGLRenderBuffer() noexcept;
-	~OGLRenderBuffer() noexcept;
-
-	void setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) except;
-	void close() noexcept;
-
-	void update() noexcept;
-
-	GLuint getInstanceID() noexcept;
-
-	void apply() noexcept;
-
-private:
-
-	GLuint _vao;
-
-	std::shared_ptr<OGLVertexBuffer> _vb;
-	std::shared_ptr<OGLIndexBuffer> _ib;
+	RenderTexturePtr _renderTexture;
+	MyGUI::RenderTargetInfo _renderTargetInfo;
 };
 
 _NAME_END

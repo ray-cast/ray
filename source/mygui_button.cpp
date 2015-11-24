@@ -34,5 +34,39 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#include <ray/mygui_button.h>
 
-// +----------------------------------------------------------------------
+_NAME_BEGIN
+
+__ImplementSubClass(MyGuiButton, GuiButton, "MyGuiButton")
+__ImplementSubClass(MyGuiButtonImpl, MyGuiWidget, "MyGuiButton")
+
+MyGuiButtonImpl::MyGuiButtonImpl() noexcept
+	: MyGuiWidget(_widget)
+{
+}
+
+MyGuiButtonImpl::~MyGuiButtonImpl() noexcept
+{
+}
+
+void
+MyGuiButtonImpl::create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except
+{
+	if (widget)
+		_button = ((MyGUI::Widget*)widget)->createWidget<MyGUI::Button>(MyGUI::WidgetStyle::Child, "Button", MyGUI::IntCoord(left, top, width, height), MyGUI::Align::Default, "Main", name);
+	else
+		_button = MyGUI::Gui::getInstance().createWidget<MyGUI::Button>("Button", MyGUI::IntCoord(left, top, width, height), MyGUI::Align::Default, "Main", name);
+	_widget = _button;
+}
+
+MyGuiButton::MyGuiButton() noexcept
+	: GuiButton(_impl)
+{
+}
+
+MyGuiButton::~MyGuiButton() noexcept
+{
+}
+
+_NAME_END

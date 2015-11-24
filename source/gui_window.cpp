@@ -34,28 +34,19 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-
-// +----------------------------------------------------------------------
-#include <ray/imagiff.h>
+#include <ray/gui_window.h>
 
 _NAME_BEGIN
 
-bool
-IFFHandler::doCanRead(istream&) const noexcept
+__ImplementSubInterface(GuiWindow, GuiWidget, "GuiWindow")
+
+GuiWindow::GuiWindow(GuiWidgetImpl& impl) noexcept
+	: GuiWidget(impl)
 {
-    return true;
 }
 
-bool
-IFFHandler::doLoad(Image&, istream&) noexcept
+GuiWindow::~GuiWindow() noexcept
 {
-    return true;
-}
-
-bool
-IFFHandler::doSave(Image&, ostream&) noexcept
-{
-    return true;
 }
 
 _NAME_END

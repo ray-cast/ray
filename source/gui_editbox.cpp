@@ -34,28 +34,3 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-
-// +----------------------------------------------------------------------
-#include <ray/imagtiff.h>
-
-_NAME_BEGIN
-
-bool
-TIFFHandler::doCanRead(istream&) const noexcept
-{
-    return true;
-}
-
-bool
-TIFFHandler::doLoad(Image&, istream&) noexcept
-{
-    return true;
-}
-
-bool
-TIFFHandler::doSave(Image&, ostream&) noexcept
-{
-    return true;
-}
-
-_NAME_END

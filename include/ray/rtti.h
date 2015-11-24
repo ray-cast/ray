@@ -48,12 +48,12 @@ namespace rtti
 	{
 	public:
 		typedef Interface*(*RttiConstruct)();
-
+		typedef std::shared_ptr<Interface> InterfacePtr;
 	public:
 		Rtti(const std::string& name, RttiConstruct creator, const Rtti* parent) noexcept;
 		~Rtti() noexcept;
 
-		Interface* create() const except;
+		InterfacePtr create() const except;
 
 		const Rtti* getParent() const noexcept;
 
@@ -93,6 +93,27 @@ namespace rtti
 		template<typename T>
 		bool isA() const noexcept
 			{ return this->isA(T::getRtti()); }
+
+		template<typename T>
+		std::shared_ptr<T> upcast() noexcept
+		{
+			assert(this->isA<T>());
+			return std::dynamic_pointer_cast<T>(this->shared_from_this());
+		}
+
+		template<typename T>
+		std::shared_ptr<T> downcast() noexcept
+		{
+			assert(this->isInstanceOf<T>());
+			return std::dynamic_pointer_cast<T>(this->shared_from_this());
+		}
+
+		template<typename T>
+		std::shared_ptr<T> cast() noexcept
+		{
+			assert(this->isA<T>());
+			return std::dynamic_pointer_cast<T>(this->shared_from_this());
+		}
 	};
 }
 

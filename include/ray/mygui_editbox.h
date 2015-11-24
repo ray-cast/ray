@@ -34,21 +34,3 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_IMAGEPCX_H_
-#define _H_IMAGEPCX_H_
-
-#include <ray/image.h>
-
-_NAME_BEGIN
-
-class PCXHandler : public ImageHandler
-{
-public:
-    bool doCanRead(istream& stream) const noexcept;
-    bool doLoad(Image& image, istream& stream) noexcept;
-    bool doSave(Image& image, ostream& stream) noexcept;
-};
-
-_NAME_END
-
-#endif

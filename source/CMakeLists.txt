@@ -17,6 +17,7 @@ INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/libvorbis)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/MyGUIEngine/include)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/MyGUIPlatform/include)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
+INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/openal/include)
 
 SET(HEADER_PATH ${PROJECT_SOURCE_DIR}/include/ray)
 SET(SOURCE_PATH ${PROJECT_SOURCE_DIR}/source)
@@ -490,8 +491,19 @@ SET(NETWORK_LIST
 SOURCE_GROUP("network" FILES ${NETWORK_LIST})
 
 SET(SOUND_SYSTEM_LIST
-    ${SOURCE_PATH}/sound_device.cpp
-    ${HEADER_PATH}/sound_device.h
+    ${SOURCE_PATH}/al_sound_buffer.cpp
+    ${SOURCE_PATH}/al_sound_system.cpp
+	${SOURCE_PATH}/al_sound_source.cpp
+    ${SOURCE_PATH}/sound_buffer.cpp
+    ${SOURCE_PATH}/sound_system.cpp
+	${SOURCE_PATH}/sound_source.cpp
+    ${HEADER_PATH}/al_sound_buffer.h
+    ${HEADER_PATH}/al_sound_system.h
+	${HEADER_PATH}/al_sound_source.h
+    ${HEADER_PATH}/sound_buffer.h
+    ${HEADER_PATH}/sound_system.h
+	${HEADER_PATH}/sound_source.h
+    ${HEADER_PATH}/sound_types.h
 )
 SOURCE_GROUP("sound" FILES ${SOUND_SYSTEM_LIST})
 
@@ -697,7 +709,7 @@ ADD_LIBRARY(libmodel SHARED ${MODEL_LIST})
 ADD_LIBRARY(libnetwork SHARED ${NETWORK_LIST})
 IF(BUILD_SOUND)
     ADD_LIBRARY(libsound SHARED ${SOUND_SYSTEM_LIST})
-    TARGET_LINK_LIBRARIES(libsound libplatform OpenAL32)
+    TARGET_LINK_LIBRARIES(libsound libplatform OpenAL32 libvorbis)
     IF(MINGW OR UNIX)
         SET_TARGET_PROPERTIES(libsound PROPERTIES OUTPUT_NAME sound)
     ENDIF()

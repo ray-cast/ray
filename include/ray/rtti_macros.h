@@ -79,8 +79,8 @@ private:
 #define __ImplementClass(Base, Name) \
     _NAME rtti::Rtti Base::RTTI = _NAME rtti::Rtti(Name, Base::FactoryCreate, nullptr);\
 	_NAME rtti::Rtti* Base::rtti() const noexcept { return &RTTI; }\
-	_NAME rtti::Interface* Base::FactoryCreate() { return new Base; } \
-	_NAME rtti::Rtti* Base::getRtti() noexcept { return &RTTI; }
+	_NAME rtti::Rtti* Base::getRtti() noexcept { return &RTTI; }\
+	_NAME rtti::Interface* Base::FactoryCreate() { return new Base; }\
 
 #define __DeclareSubClass(Derived, Base) \
 public:\

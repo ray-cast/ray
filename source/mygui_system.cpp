@@ -34,11 +34,10 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_MYGUI)
 #include <ray/mygui_system.h>
 #include <ray/mygui_renderer.h>
 #include <ray/mygui_manager.h>
-#include <ray/mygui_window.h>
-#include <ray/mygui_button.h>
 
 _NAME_BEGIN
 
@@ -293,27 +292,6 @@ MyGuiSystem::setCoreProfile(const std::string& core) except
 		_gui = std::make_unique<MyGUI::Gui>();
 		_gui->initialise(core);
 
-		/*MyGUI::IntSize view;
-		const MyGUI::IntSize size(450, 450);
-		this->getViewport(view.width, view.height);
-
-		static auto window = std::make_shared<MyGuiWindow>();
-		window->create("WindowCS", 0, 0, size.width, size.height, GuiWidgetAlign::Default, "Main");
-		window->setMinSize(150, 150);
-		window->setCaption("ScrollView demo");
-		
-		static auto scrool = window->createWieght<MyGuiButton>("Button", 0, 0, size.width, size.height, GuiWidgetAlign::Stretch);*/
-
-		/*MyGUI::Window* window = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("WindowCS", MyGUI::IntCoord(0, 0, size.width, size.height), MyGUI::Align::Default, "Main");
-		window->setMinSize(150, 150);
-		window->setCaption("ScrollView demo");
-		
-		auto scroll_view = window->createWidget<MyGUI::ScrollView>("ScrollView", MyGUI::IntCoord(2, 2, window->getClientCoord().width - 2, window->getClientCoord().height - 2), MyGUI::Align::Stretch);
-
-		scroll_view->setCanvasSize(256, 256);
-		MyGUI::ImageBox* image = scroll_view->createWidget<MyGUI::ImageBox>("ImageBox", MyGUI::IntCoord(0, 0, 256, 256), MyGUI::Align::Default);
-		image->setImageTexture("Crystal_Clear_View.png");*/
-
 		_coreProfile = core;
 	}
 }
@@ -408,3 +386,4 @@ MyGuiSystem::render(float delta) noexcept
 }
 
 _NAME_END
+#endif

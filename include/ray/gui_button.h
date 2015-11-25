@@ -37,16 +37,26 @@
 #ifndef _H_GUI_BUTTON_H_
 #define _H_GUI_BUTTON_H_
 
-#include <ray/gui_widget.h>
+#include <ray/gui_textbox.h>
 
 _NAME_BEGIN
 
-class EXPORT GuiButton : public GuiWidget
+class EXPORT GuiButton : public GuiTextBox
 {
 	__DeclareSubInterface(GuiButton, GuiWidget)
 public:
 	GuiButton(GuiWidgetImpl& impl) noexcept;
 	virtual ~GuiButton() noexcept;
+
+	virtual void setStateSelected(bool _value) noexcept = 0;
+	virtual bool getStateSelected() const noexcept = 0;
+
+	virtual void setModeImage(bool _value) noexcept = 0;
+	virtual bool getModeImage() const noexcept = 0;
+
+	virtual void setImageResource(const std::string& name) noexcept = 0;
+	virtual void setImageGroup(const std::string& name) noexcept = 0;
+	virtual void setImageName(const std::string& name) noexcept = 0;
 };
 
 _NAME_END

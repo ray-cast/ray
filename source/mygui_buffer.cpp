@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_MYGUI)
 #include <ray/mygui_buffer.h>
 
 _NAME_BEGIN
@@ -71,7 +72,7 @@ MyGuiVertexBuffer::lock() noexcept
 		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_TEXCOORD, VertexFormat::GPU_VERTEX_FLOAT2));
 
 		if (!_vb)
-			_vb = RenderFactory::createVertexBuffer();
+			_vb = std::make_shared<VertexBufferData>();
 
 		_vb->setVertexComponents(components);
 		_vb->setup(_needVertexCount, VertexUsage::GPU_MAP_READ_BIT | VertexUsage::GPU_MAP_WRITE_BIT);
@@ -85,7 +86,7 @@ MyGuiVertexBuffer::unlock() noexcept
 {
 	if (!_buffer)
 	{
-		_buffer = RenderFactory::createRenderBuffer();
+		_buffer = RenderSystem::instance()->createRenderBuffer();
 		_buffer->setup(_vb, nullptr);
 	}
 	else
@@ -101,3 +102,4 @@ MyGuiVertexBuffer::getBuffer() const
 }
 
 _NAME_END
+#endif

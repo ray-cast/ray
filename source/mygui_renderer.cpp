@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_MYGUI)
 #include <ray/mygui_renderer.h>
 #include <ray/mygui_texture.h>
 #include <ray/mygui_buffer.h>
@@ -71,7 +72,7 @@ MyGuiRenderer::open() except
 	MYGUI_PLATFORM_ASSERT(!_isInitialise, getClassTypeName() << " initialised twice");
 	MYGUI_PLATFORM_LOG(Info, "* Initialise: " << getClassTypeName());
 
-	_material = MaterialMaker("sys:fx/default.glsl");
+	_material = RenderSystem::instance()->createMaterial("sys:fx/default.glsl");
 	_materialPass = _material->getTech(RenderQueue::RQ_OPAQUE)->getPass("ui");
 	_materialDecal = _material->getParameter("decal");
 	_materialScaleY = _material->getParameter("scaleY");
@@ -299,3 +300,4 @@ MyGuiRenderer::destroyAllResources() noexcept
 }
 
 _NAME_END
+#endif

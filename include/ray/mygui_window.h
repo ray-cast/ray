@@ -41,13 +41,14 @@
 
 _NAME_BEGIN
 
-class MyGuiWindowImpl : public MyGuiWidget
+class MyGuiWindowImpl final : public MyGuiWidget
 {
 public:
 	MyGuiWindowImpl() noexcept;
+	MyGuiWindowImpl(MyGUI::Widget* _parent) noexcept;
 	~MyGuiWindowImpl() noexcept;
 	
-	void create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except;
+	bool create() except;
 
 	void setCaption(const std::string& name) noexcept;
 	const std::string& getCaption() const noexcept;
@@ -68,15 +69,15 @@ private:
 
 	std::string _name;
 
-	MyGUI::Widget* _widget;
+	MyGUI::Widget* _parent;
 	MyGUI::Window* _window;
 };
 
-class MyGuiWindow : public GuiWindow
+class MyGuiWindow final : public GuiWindow
 {
 public:
 	MyGuiWindow() noexcept;
-	MyGuiWindow(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name) noexcept;
+	MyGuiWindow(MyGUI::Widget* parent) noexcept;
 	virtual ~MyGuiWindow() noexcept;
 
 	virtual void setCaption(const std::string& name) noexcept;

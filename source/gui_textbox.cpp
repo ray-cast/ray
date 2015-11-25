@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,32 +34,19 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if defined(_BUILD_GUI)
-#include <ray/gui_input_listener.h>
+#include <ray/gui_textbox.h>
 
 _NAME_BEGIN
 
-void
-GUIInputListener::onInputEvent(const InputEventPtr& event) noexcept
+__ImplementSubInterface(GuiTextBox, GuiWidget, "GuiTextBox")
+
+GuiTextBox::GuiTextBox(GuiWidgetImpl& impl) noexcept
+	: GuiWidget(impl)
 {
-	switch (event->event)
-	{
-	case InputEvent::MouseMotion:
-	{
-	}
-	break;
-	case InputEvent::MouseButtonDown:
-	{
-	}
-	break;
-	case InputEvent::MouseButtonUp:
-	{
-	}
-	break;
-	default:
-		break;
-	}
+}
+
+GuiTextBox::~GuiTextBox() noexcept
+{
 }
 
 _NAME_END
-#endif

@@ -34,20 +34,20 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MYGUI_BUTTON_H_
-#define _H_MYGUI_BUTTON_H_
+#ifndef _H_MYGUI_TEXTBOX_H_
+#define _H_MYGUI_TEXTBOX_H_
 
 #include <ray/mygui_widget.h>
 
 _NAME_BEGIN
 
-class MyGuiButtonImpl final : public MyGuiWidget
+class MyGuiTextBoxImpl final : public MyGuiWidget
 {
-	__DeclareSubClass(MyGuiButton, GuiWidget)
+	__DeclareSubClass(MyGuiTextBoxImpl, GuiWidget)
 public:
-	MyGuiButtonImpl() noexcept;
-	MyGuiButtonImpl(MyGUI::Widget* parent) noexcept;
-	virtual ~MyGuiButtonImpl() noexcept;
+	MyGuiTextBoxImpl() noexcept;
+	MyGuiTextBoxImpl(MyGUI::Widget* parent) noexcept;
+	virtual ~MyGuiTextBoxImpl() noexcept;
 
 	bool create() except;
 
@@ -77,70 +77,49 @@ public:
 	void setTextShadow(bool _value) noexcept;
 	bool getTextShadow() noexcept;
 
-	void setStateSelected(bool value) noexcept;
-	bool getStateSelected() const noexcept;
-
-	void setModeImage(bool value) noexcept;
-	bool getModeImage() const noexcept;
-
-	void setImageResource(const std::string& name) noexcept;
-	void setImageGroup(const std::string& name) noexcept;
-	void setImageName(const std::string& name) noexcept;
-
 private:
-
 	std::string _caption;
-	MyGUI::Button* _button;
 	MyGUI::Widget* _parent;
+	MyGUI::TextBox* _table;
 };
 
-class MyGuiButton final : public GuiButton
+class MyGuiTextBox final : public GuiTextBox
 {
-	__DeclareSubClass(MyGuiButton, GuiButton)
+	__DeclareSubClass(MyGuiTextBox, GuiButton)
 public:
-	MyGuiButton() noexcept;
-	MyGuiButton(MyGUI::Widget* parent) noexcept;
-	virtual ~MyGuiButton() noexcept;
+	MyGuiTextBox() noexcept;
+	MyGuiTextBox(MyGUI::Widget* parent) noexcept;
+	virtual ~MyGuiTextBox() noexcept;
 
-	virtual Viewport getTextRegion() noexcept;
-	virtual void getTextSize(int& w, int& h) noexcept;
+	Viewport getTextRegion() noexcept;
+	void getTextSize(int& w, int& h) noexcept;
 
-	virtual void setCaption(const std::string& _value) noexcept;
-	virtual const std::string& getCaption() const noexcept;
+	void setCaption(const std::string& _value) noexcept;
+	const std::string& getCaption() const noexcept;
 
-	virtual void setFontName(const std::string& _value) noexcept;
-	virtual const std::string& getFontName() noexcept;
+	void setFontName(const std::string& _value) noexcept;
+	const std::string& getFontName() noexcept;
 
-	virtual void setFontHeight(int _value) noexcept;
-	virtual int getFontHeight() noexcept;
+	void setFontHeight(int _value) noexcept;
+	int getFontHeight() noexcept;
 
-	virtual void setTextAlign(GuiWidgetAlign _value) noexcept;
-	virtual GuiWidgetAlign getTextAlign() noexcept;
+	void setTextAlign(GuiWidgetAlign _value) noexcept;
+	GuiWidgetAlign getTextAlign() noexcept;
 
-	virtual void setTextColour(const float4& value) noexcept;
-	virtual float4 getTextColour() noexcept;
+	void setTextColour(const float4& value) noexcept;
+	float4 getTextColour() noexcept;
 
-	virtual void setCaptionWithReplacing(const std::string& _value) noexcept;
+	void setCaptionWithReplacing(const std::string& _value) noexcept;
 
-	virtual void setTextShadowColour(const float4& value) noexcept;
-	virtual float4 getTextShadowColour() noexcept;
+	void setTextShadowColour(const float4& value) noexcept;
+	float4 getTextShadowColour() noexcept;
 
-	virtual void setTextShadow(bool _value) noexcept;
-	virtual bool getTextShadow() noexcept;
-
-	virtual void setStateSelected(bool value) noexcept;
-	virtual bool getStateSelected() const noexcept;
-
-	virtual void setModeImage(bool value) noexcept;
-	virtual bool getModeImage() const noexcept;
-
-	virtual void setImageResource(const std::string& name) noexcept;
-	virtual void setImageGroup(const std::string& name) noexcept;
-	virtual void setImageName(const std::string& name) noexcept;
+	void setTextShadow(bool _value) noexcept;
+	bool getTextShadow() noexcept;
 
 private:
 
-	MyGuiButtonImpl _impl;
+	MyGuiTextBoxImpl _impl;
 };
 
 _NAME_END

@@ -45,10 +45,16 @@ class MyGuiWidget : public GuiWidgetImpl
 {
 	__DeclareSubInterface(MyGuiWidget, GuiWidget)
 public:
-	MyGuiWidget(MyGUI::Widget*& widget) noexcept;
+	MyGuiWidget() noexcept;
 	virtual ~MyGuiWidget() noexcept;
 
 	virtual void destroy() noexcept;
+
+	virtual void setName(const std::string& name) noexcept;
+	virtual const std::string& getName() noexcept;
+
+	virtual void setAlign(GuiWidgetAlign align) noexcept;
+	virtual GuiWidgetAlign getAlign() noexcept;
 
 	virtual void setSkin(const std::string& skin) noexcept;
 	virtual const std::string& getSkin() const noexcept;
@@ -56,16 +62,20 @@ public:
 	virtual void setViewport(const Viewport& view) noexcept;
 	virtual void getViewport(Viewport& view) const noexcept;
 
-	virtual GuiWidgetPtr createWieght(const rtti::Rtti* rtti, const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name) except;
+	virtual GuiWidgetPtr createWieght(const rtti::Rtti* rtti) except;
+
+protected:
+	void setWidget(MyGUI::Widget* widget) noexcept;
+	MyGUI::Widget* getWidget() const noexcept;
+
+protected:
+
+	static MyGUI::Align GuiAlignToMyGui(GuiWidgetAlign align) noexcept;
+	static GuiWidgetAlign MyGuiToGuiAlign(MyGUI::Align align) noexcept;
+
 private:
 
-	static MyGUI::Align GuiAlignToMyGUI(GuiWidgetAlign align) noexcept;
-
-private:
-
-	std::string _skinName;
-
-	MyGUI::Widget*& _widget;
+	MyGUI::Widget* _widget;
 };
 
 _NAME_END

@@ -34,15 +34,18 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_MYGUI)
 #include <ray/mygui_widget.h>
+#include <ray/mygui_button.h>
+#include <ray/mygui_window.h>
+#include <ray/mygui_textbox.h>
 
 _NAME_BEGIN
 
 __ImplementSubInterface(MyGuiWidget, GuiWidget, "MyGuiWidget")
 
-MyGuiWidget::MyGuiWidget(MyGUI::Widget*& widget) noexcept
-	: _skinName("WindowCS")
-	, _widget(widget)
+MyGuiWidget::MyGuiWidget() noexcept
+	: _widget(nullptr)
 {
 }
 
@@ -57,24 +60,50 @@ MyGuiWidget::destroy() noexcept
 }
 
 void 
+MyGuiWidget::setName(const std::string& name) noexcept
+{
+	assert(_widget);
+	_widget->setName(name);
+}
+
+const std::string& 
+MyGuiWidget::getName() noexcept
+{
+	assert(_widget);
+	return _widget->getName();
+}
+
+void 
+MyGuiWidget::setAlign(GuiWidgetAlign align) noexcept
+{
+	assert(_widget);
+	_widget->setAlign(GuiAlignToMyGui(align));
+}
+
+GuiWidgetAlign 
+MyGuiWidget::getAlign() noexcept
+{
+	return MyGuiToGuiAlign(_widget->getAlign());
+}
+
+void 
 MyGuiWidget::setSkin(const std::string& skin) noexcept
 {
-	if (_skinName != skin)
-	{
-		_widget->changeWidgetSkin(skin);
-		_skinName = skin;
-	}		
+	assert(_widget);
+	_widget->changeWidgetSkin(skin);
 }
 
 const std::string& 
 MyGuiWidget::getSkin() const noexcept
 {
-	return _skinName;
+	assert(_widget);
+	return _widget->getSkinName();
 }
 
 void 
 MyGuiWidget::setViewport(const Viewport& view) noexcept
 {
+	assert(_widget);
 	MyGUI::IntCoord coord;
 	coord.left = view.left;
 	coord.top = view.top;
@@ -84,19 +113,58 @@ MyGuiWidget::setViewport(const Viewport& view) noexcept
 }
 
 void
-MyGuiWidget::getViewport(Viewport& view) const noexcept
+MyGuiWidget::getViewport(Viewport& viewport) const noexcept
 {
-	auto& coord = _widget->getCoord();
-	view.left = coord.left;
-	view.top = coord.top;
-	view.width = coord.width;
-	view.height = coord.height;
+	assert(_widget);
+	MyGUI::IntCoord coord = _widget->getCoord();
+	viewport.left = coord.left;
+	viewport.top = coord.top;
+	viewport.width = coord.width;
+	viewport.height = coord.height;
+}
+
+GuiWidgetPtr
+MyGuiWidget::createWieght(const rtti::Rtti* rtti) except
+{
+	assert(rtti->isDerivedFrom(GuiWidget::getRtti()));
+
+	GuiWidgetPtr widget;
+	if (rtti == MyGuiButton::getRtti())
+	{
+		widget = std::make_shared<MyGuiButton>(_widget);
+	}
+	else if (rtti == MyGuiWindow::getRtti())
+	{
+		widget = std::make_shared<MyGuiWindow>(_widget);
+	}
+	else if (rtti == MyGuiTextBox::getRtti())
+	{
+		widget = std::make_shared<MyGuiTextBox>(_widget);
+	}
+	else
+	{
+		assert(false);
+	}
+	
+	return widget;
+}
+
+void 
+MyGuiWidget::setWidget(MyGUI::Widget* widget) noexcept
+{
+	_widget = widget;
+}
+
+MyGUI::Widget* 
+MyGuiWidget::getWidget() const noexcept
+{
+	return _widget;
 }
 
 MyGUI::Align 
-MyGuiWidget::GuiAlignToMyGUI(GuiWidgetAlign align) noexcept
+MyGuiWidget::GuiAlignToMyGui(GuiWidgetAlign align) noexcept
 {
-	switch (align._value)
+	switch (align.getValue())
 	{
 	case GuiWidgetAlign::Left:
 		return MyGUI::Align::Left;
@@ -122,17 +190,34 @@ MyGuiWidget::GuiAlignToMyGUI(GuiWidgetAlign align) noexcept
 	}
 }
 
-GuiWidgetPtr
-MyGuiWidget::createWieght(const rtti::Rtti* rtti, const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name) except
+GuiWidgetAlign 
+MyGuiWidget::MyGuiToGuiAlign(MyGUI::Align align) noexcept
 {
-	assert(rtti->isDerivedFrom(GuiWidget::getRtti()));
-	auto widget = rtti->create()->cast<GuiWidget>();
-	if (widget)
+	switch (align.getValue())
 	{
-		widget->create(skin, left, top, width, height, align, name, _widget);
+	case MyGUI::Align::Left:
+		return GuiWidgetAlign::Left;
+	case MyGUI::Align::Right:
+		return GuiWidgetAlign::Top;
+	case MyGUI::Align::Top:
+		return GuiWidgetAlign::Right;
+	case MyGUI::Align::Bottom:
+		return GuiWidgetAlign::Bottom;
+	case MyGUI::Align::Center:
+		return GuiWidgetAlign::Center;
+	case MyGUI::Align::Default:
+		return GuiWidgetAlign::Default;
+	case MyGUI::Align::HStretch:
+		return GuiWidgetAlign::HStretch;
+	case MyGUI::Align::VStretch:
+		return GuiWidgetAlign::VStretch;
+	case MyGUI::Align::Stretch:
+		return GuiWidgetAlign::Stretch;
+	default:
+		assert(false);
+		return GuiWidgetAlign::Default;
 	}
-
-	return widget;
 }
 
 _NAME_END
+#endif

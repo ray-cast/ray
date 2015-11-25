@@ -48,8 +48,14 @@ public:
 	GuiWidgetImpl() noexcept;
 	virtual ~GuiWidgetImpl() noexcept;
 
-	virtual void create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except = 0;
+	virtual bool create() except = 0;
 	virtual void destroy() noexcept = 0;
+
+	virtual void setName(const std::string& name) noexcept = 0;
+	virtual const std::string& getName() noexcept = 0;
+
+	virtual void setAlign(GuiWidgetAlign align) noexcept = 0;
+	virtual GuiWidgetAlign getAlign() noexcept = 0;
 
 	virtual void setSkin(const std::string& skin) except = 0;
 	virtual const std::string& getSkin() const noexcept = 0;
@@ -57,7 +63,7 @@ public:
 	virtual void setViewport(const Viewport& view) except = 0;
 	virtual void getViewport(Viewport& view) const noexcept = 0;
 
-	virtual GuiWidgetPtr createWieght(const rtti::Rtti* rtti, const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name = "") except = 0;
+	virtual GuiWidgetPtr createWieght(const rtti::Rtti* rtti) except = 0;
 };
 
 class EXPORT GuiWidget : public rtti::Interface
@@ -67,23 +73,28 @@ public:
 	GuiWidget(GuiWidgetImpl& impl) noexcept;
 	virtual ~GuiWidget() noexcept;
 
-	GuiWidgetPtr createWieght(const rtti::Rtti* rtti, const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name = "") except;
-	
-	template<typename T>
-	std::shared_ptr<T> createWieght(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name = "") except
-	{
-		return std::dynamic_pointer_cast<T>(this->createWieght(T::getRtti(), skin, left, top, width, height, align, name));
-	}
-	
-	void create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name = "") except;
-	void create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except;
+	bool create() except;
 	void destroy() noexcept;
+
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() noexcept;
+
+	void setAlign(GuiWidgetAlign align) noexcept;
+	GuiWidgetAlign getAlign() noexcept;
 
 	void setSkin(const std::string& skin) except;
 	const std::string& getSkin() const noexcept;
 
 	void setViewport(const Viewport& view) except;
 	void getViewport(Viewport& view) const noexcept;
+
+	GuiWidgetPtr createWieght(const rtti::Rtti* rtti) except;
+	template<typename T>
+	std::shared_ptr<T> createWieght() except
+	{
+		return std::dynamic_pointer_cast<T>(this->createWieght(T::getRtti()));
+	}
+
 private:
 
 	GuiWidgetImpl& _impl;

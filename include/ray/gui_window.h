@@ -48,20 +48,20 @@ public:
 	GuiWindow(GuiWidgetImpl& impl) noexcept;
 	virtual ~GuiWindow() noexcept;
 
-	virtual void setCaption(const std::string& name) = 0;
-	virtual const std::string& getCaption() const = 0;
+	virtual void setCaption(const std::string& name) noexcept = 0;
+	virtual const std::string& getCaption() const noexcept = 0;
 
-	virtual void setVisibleSmooth(bool _value) = 0;
-	virtual void destroySmooth() = 0;
+	virtual void setVisibleSmooth(bool _value) noexcept  = 0;
+	virtual void destroySmooth() noexcept = 0;
 
-	virtual void setAutoAlpha(bool _value) = 0;
-	virtual bool getAutoAlpha() const = 0;
+	virtual void setAutoAlpha(bool _value) noexcept = 0;
+	virtual bool getAutoAlpha() const noexcept = 0;
 
-	virtual void setMinSize(int _width, int _height) = 0;
-	virtual void getMinSize(int& w, int& h) const = 0;
+	virtual void setMinSize(int _width, int _height) noexcept  = 0;
+	virtual void getMinSize(int& w, int& h) const noexcept  = 0;
 
-	virtual void setMaxSize(int _width, int _height) = 0;
-	virtual void getMaxSize(int& w, int& h) const = 0;
+	virtual void setMaxSize(int _width, int _height) noexcept = 0;
+	virtual void getMaxSize(int& w, int& h) const noexcept = 0;
 };
 
 _NAME_END

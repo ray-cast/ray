@@ -37,7 +37,7 @@
 #if defined(_BUILD_GUI)
 #include <ray/gui_label_component.h>
 #include <ray/font_distance_field.h>
-#include <ray/render_factory.h>
+#include <ray/render_system.h>
 #include <ray/render_texture.h>
 #include <ray/utf8.h>
 
@@ -140,10 +140,10 @@ void
 GUILabelComponent::_buildMaterial() noexcept
 {
 	if (!_materialName.empty())
-		_material = RenderFactory::createMaterial(_materialName);
+		_material = RenderSystem::instance()->createMaterial(_materialName);
 	else
 	{
-		_material = RenderFactory::createMaterial("dlc:UI/materials/font.mat");
+		_material = RenderSystem::instance()->createMaterial("dlc:UI/materials/font.mat");
 		_material->getParameter("decal")->assign(_texture);
 	}
 }
@@ -163,12 +163,12 @@ GUILabelComponent::_buildFontBitmap() noexcept
 		_fontSize = font.getFontSize();
 		_bitmapSize = font.getBitmapSize();
 
-		auto texture = RenderFactory::createTexture();
+		auto texture = RenderSystem::instance()->createTexture();
 		texture->setMipLevel(0);
 		texture->setMipSize(0);
 		texture->setSize(font.getBitmapSize(), font.getBitmapSize());
 		texture->setTexDim(TextureDim::DIM_2D);
-		texture->setTexFormat(PixelFormat::R8);
+		texture->setTexFormat(TextureFormat::R8);
 		texture->setStream((void*)font.getBitmapData().data());
 		texture->setup();
 

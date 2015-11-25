@@ -34,33 +34,45 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_MYGUI)
 #include <ray/mygui_window.h>
 
 _NAME_BEGIN
 
 MyGuiWindowImpl::MyGuiWindowImpl() noexcept
-	: MyGuiWidget(_widget)
+	: _window(nullptr)
+	, _parent(nullptr)
+{
+}
+
+MyGuiWindowImpl::MyGuiWindowImpl(MyGUI::Widget* parent) noexcept
+	: _window(nullptr)
+	, _parent(parent)
 {
 }
 
 MyGuiWindowImpl::~MyGuiWindowImpl() noexcept
 {
-	MyGUI::Gui::getInstance().destroyWidget(_window);
+	this->destroy();
 }
 
-void 
-MyGuiWindowImpl::create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except
+bool
+MyGuiWindowImpl::create() except
 {
-	if (widget)
-		_window = ((MyGUI::Widget*)widget)->createWidget<MyGUI::Window>(MyGUI::WidgetStyle::Child, "WindowCS", MyGUI::IntCoord(left, top, width, height), MyGUI::Align::Default, "Main", name);
+	assert(!_window);
+	if (_parent)
+		_window = _parent->createWidget<MyGUI::Window>("", 0, 0, 0, 0, MyGUI::Align::Default, "");
 	else
-		_window = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("WindowCS", MyGUI::IntCoord(left, top, width, height), MyGUI::Align::Default, "Main", name);
-	_widget = _window;
+		_window = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("", 0, 0, 0, 0, MyGUI::Align::Default, "Main", "");
+	this->setWidget(_window);
+
+	return _window ? true : false;
 }
 
 void 
 MyGuiWindowImpl::setCaption(const std::string& name) noexcept
 {
+	assert(_window);
 	if (_name != name)
 	{
 		_window->setCaption(name);
@@ -89,24 +101,28 @@ MyGuiWindowImpl::destroySmooth() noexcept
 void 
 MyGuiWindowImpl::setAutoAlpha(bool _value) noexcept
 {
+	assert(_window);
 	_window->setAutoAlpha(_value);
 }
 
 bool 
 MyGuiWindowImpl::getAutoAlpha() const noexcept
 {
+	assert(_window);
 	return _window->getAutoAlpha();
 }
 
 void 
 MyGuiWindowImpl::setMinSize(int _width, int _height) noexcept
 {
+	assert(_window);
 	_window->setMinSize(_width, _height);
 }
 
 void
 MyGuiWindowImpl::getMinSize(int& w, int& h) const noexcept
 {
+	assert(_window);
 	auto size = _window->getMinSize();
 	w = size.width;
 	h = size.height;
@@ -115,12 +131,14 @@ MyGuiWindowImpl::getMinSize(int& w, int& h) const noexcept
 void 
 MyGuiWindowImpl::setMaxSize(int _width, int _height) noexcept
 {
+	assert(_window);
 	_window->setMaxSize(_width, _height);
 }
 
 void
 MyGuiWindowImpl::getMaxSize(int& w, int& h) const noexcept
 {
+	assert(_window);
 	auto size = _window->getMaxSize();
 	w = size.width;
 	h = size.height;
@@ -131,10 +149,10 @@ MyGuiWindow::MyGuiWindow() noexcept
 {
 }
 
-MyGuiWindow::MyGuiWindow(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name) noexcept
+MyGuiWindow::MyGuiWindow(MyGUI::Widget* parent) noexcept
 	: GuiWindow(_impl)
+	, _impl(parent)
 {
-	this->create(skin, left, top, width, height, align, name, nullptr);
 }
 
 MyGuiWindow::~MyGuiWindow() noexcept
@@ -202,3 +220,4 @@ MyGuiWindow::getMaxSize(int& w, int& h) const noexcept
 }
 
 _NAME_END
+#endif

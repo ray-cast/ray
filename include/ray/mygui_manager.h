@@ -59,6 +59,8 @@ public:
 private:
 
 	bool _isInitialise;
+
+	std::string _resolvePath;
 };
 
 _NAME_END

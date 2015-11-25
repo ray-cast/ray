@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2014.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,18 +34,18 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_system_base.h>
+#ifndef _H_GUI_WINDOW_COMPONENT_H_
+#define _H_GUI_WINDOW_COMPONENT_H_
+
+#include <ray/game_component.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GuiSystem, rtti::Interface, "GuiSystem")
-
-GuiSystem::GuiSystem() noexcept
+class GuiWindowComponent final : public GameComponent
 {
-}
-
-GuiSystem::~GuiSystem() noexcept
-{
-}
+public:
+};
 
 _NAME_END
+
+#endif

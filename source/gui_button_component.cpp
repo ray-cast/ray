@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_GUI)
 #include <ray/gui_button_component.h>
-#include <ray/render_factory.h>
+#include <ray/render_system.h>
 
 _NAME_BEGIN
 
@@ -63,7 +63,7 @@ GUIButtonComponent::clone() const except
 void
 GUIButtonComponent::onActivate() except
 {
-	_material = RenderFactory::createMaterial("dlc:UI/materials/default.mat");
+	_material = RenderSystem::instance()->createMaterial("dlc:UI/materials/default.mat");
 }
 
 void 

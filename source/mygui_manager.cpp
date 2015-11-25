@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_MYGUI)
 #include <ray/mygui_manager.h>
 
 _NAME_BEGIN
@@ -145,9 +146,9 @@ MyGuiResManager::getDataListNames(const std::string& _pattern)
 const std::string& 
 MyGuiResManager::getDataPath(const std::string& _name)
 {
-	std::string resolvePath;
-	IoServer::instance()->getResolveAssign(_name, resolvePath);
-	return resolvePath;
+	IoServer::instance()->getResolveAssign(_name, _resolvePath);
+	return _resolvePath;
 }
 
 _NAME_END
+#endif

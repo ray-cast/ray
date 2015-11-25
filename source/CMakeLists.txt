@@ -43,7 +43,11 @@ ENDIF()
 
 IF(BUILD_GUI)
     ADD_DEFINITIONS(-D_BUILD_GUI)
+ENDIF()
+
+IF(BUILD_MYGUI)
     ADD_DEFINITIONS(-DMYGUI_STATIC)
+    ADD_DEFINITIONS(-D_BUILD_MYGUI)
 ENDIF()
 
 IF(BUILD_RENDERER)
@@ -269,8 +273,6 @@ SET(IMAGE_LIST
 SOURCE_GROUP("image" FILES ${IMAGE_LIST})
 
 SET(MODEL_LIST
-    ${HEADER_PATH}/mod3ds.h
-    ${SOURCE_PATH}/mod3ds.cpp
     ${HEADER_PATH}/modall.h
     ${SOURCE_PATH}/modall.cpp
     ${HEADER_PATH}/modcfg.h
@@ -453,14 +455,13 @@ SET(RENDERER_SYSTEM
     ${SOURCE_PATH}/render_pipeline_layer.cpp
     ${HEADER_PATH}/render_pipeline_base.h
     ${SOURCE_PATH}/render_pipeline_base.cpp
+    ${HEADER_PATH}/render_pipeline_manager.h
+    ${SOURCE_PATH}/render_pipeline_manager.cpp
+    ${SOURCE_PATH}/render_pipeline_manager_base.cpp
     ${HEADER_PATH}/render_post_process.h
     ${SOURCE_PATH}/render_post_process.cpp
     ${HEADER_PATH}/render_setting.h
     ${SOURCE_PATH}/render_setting.cpp
-    ${HEADER_PATH}/render_factory.h
-    ${SOURCE_PATH}/render_factory.cpp
-    ${HEADER_PATH}/render_system_base.h
-    ${SOURCE_PATH}/render_system_base.cpp
     ${HEADER_PATH}/render_system.h
     ${SOURCE_PATH}/render_system.cpp
 )
@@ -505,17 +506,19 @@ SET(MYGUI_LIST
     ${SOURCE_PATH}/mygui_widget.cpp
     ${HEADER_PATH}/mygui_button.h
     ${SOURCE_PATH}/mygui_button.cpp
-    ${HEADER_PATH}/mygui_editbox.h
-    ${SOURCE_PATH}/mygui_editbox.cpp
+    ${HEADER_PATH}/mygui_textbox.h
+    ${SOURCE_PATH}/mygui_textbox.cpp
     ${HEADER_PATH}/mygui_window.h
     ${SOURCE_PATH}/mygui_window.cpp
+    ${HEADER_PATH}/mygui_imagebox.h
+    ${SOURCE_PATH}/mygui_imagebox.cpp
 )
 SOURCE_GROUP("gui\\mygui" FILES ${MYGUI_LIST})
 
 SET(GUI_LIST
     ${HEADER_PATH}/gui_align.h
-    ${HEADER_PATH}/gui_system_base.h
-    ${SOURCE_PATH}/gui_system_base.cpp
+    ${HEADER_PATH}/gui_system.h
+    ${SOURCE_PATH}/gui_system.cpp
     ${HEADER_PATH}/gui_imageloader.h
     ${SOURCE_PATH}/gui_imageloader.cpp
     ${HEADER_PATH}/gui_types.h
@@ -525,12 +528,14 @@ SET(GUI_LIST
     ${SOURCE_PATH}/gui_widget.cpp
     ${HEADER_PATH}/gui_button.h
     ${SOURCE_PATH}/gui_button.cpp
-    ${HEADER_PATH}/gui_editbox.h
-    ${SOURCE_PATH}/gui_editbox.cpp
+    ${HEADER_PATH}/gui_textbox.h
+    ${SOURCE_PATH}/gui_textbox.cpp
     ${HEADER_PATH}/gui_window.h
     ${SOURCE_PATH}/gui_window.cpp
-    ${HEADER_PATH}/gui_listbox.h
-    ${SOURCE_PATH}/gui_listbox.cpp
+    ${HEADER_PATH}/gui_imagebox.h
+    ${SOURCE_PATH}/gui_imagebox.cpp
+    ${HEADER_PATH}/gui_editbox.h
+    ${SOURCE_PATH}/gui_editbox.cpp
 )
 SOURCE_GROUP("gui" FILES ${GUI_LIST})
 
@@ -603,8 +608,8 @@ SET(GUI_FEATURES_LIST
     ${SOURCE_PATH}/gui_layout_component.cpp
     ${HEADER_PATH}/gui_label_component.h
     ${SOURCE_PATH}/gui_label_component.cpp
-    ${HEADER_PATH}/gui_input_listener.h
-    ${SOURCE_PATH}/gui_input_listener.cpp
+    ${HEADER_PATH}/gui_window_component.h
+    ${SOURCE_PATH}/gui_window_component.cpp
     ${HEADER_PATH}/gui_input_manager.h
     ${SOURCE_PATH}/gui_input_manager.cpp
 )
@@ -740,7 +745,7 @@ IF(BUILD_PHYSIC)
 ENDIF()
 
 IF(BUILD_GUI)
-    ADD_LIBRARY(libgui STATIC ${GUI_LIST} ${MYGUI_LIST})
+    ADD_LIBRARY(libgui SHARED ${GUI_LIST} ${MYGUI_LIST})
     TARGET_LINK_LIBRARIES(libgui libplatform librenderer MyGUIEngine)
     IF(MINGW OR UNIX)
         SET_TARGET_PROPERTIES(libgui PROPERTIES OUTPUT_NAME gui)

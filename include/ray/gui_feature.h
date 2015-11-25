@@ -38,7 +38,7 @@
 #define _H_GUI_FEATURE_H_
 
 #include <ray/game_features.h>
-#include <ray/gui_system_base.h>
+#include <ray/gui_system.h>
 
 _NAME_BEGIN
 

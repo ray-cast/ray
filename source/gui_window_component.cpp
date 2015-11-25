@@ -34,19 +34,5 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_INPUT_LISTENER_H_
-#define _H_GUI_INPUT_LISTENER_H_
-
-#include <ray/input.h>
-
-_NAME_BEGIN
-
-class GUIInputListener final : public InputListener
-{
-public:
-	virtual void onInputEvent(const InputEventPtr& event) noexcept;
-};
-
-_NAME_END
-
+#if defined(_BUILD_GUI)
 #endif

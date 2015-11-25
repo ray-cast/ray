@@ -34,12 +34,16 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_EDIT_BOX_H_
-#define _H_GUI_EDIT_BOX_H_
+#ifndef _H_GUI_EDITBOX_H_
+#define _H_GUI_EDITBOX_H_
 
-#include <ray/mygui_types.h>
+#include <ray/gui_widget.h>
 
 _NAME_BEGIN
+
+class GuiEditBox : public GuiWidget
+{
+};
 
 _NAME_END
 

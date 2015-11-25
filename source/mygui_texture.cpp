@@ -34,6 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#if defined(_BUILD_MYGUI)
 #include <ray/mygui_texture.h>
 #include <ray/mygui_renderer.h>
 #include <ray/mygui_system.h>
@@ -89,16 +90,16 @@ MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::Pix
 {
 	MYGUI_PLATFORM_ASSERT(!_texture, "Texture already exist");
 
-	ray::PixelFormat pixelFormat = ray::PixelFormat::R8G8B8;
+	TextureFormat pixelFormat = TextureFormat::R8G8B8;
 	_numElemBytes = 0;
 	if (_format == MyGUI::PixelFormat::R8G8B8)
 	{
-		pixelFormat = ray::PixelFormat::R8G8B8;
+		pixelFormat = TextureFormat::R8G8B8;
 		_numElemBytes = 3;
 	}
 	else if (_format == MyGUI::PixelFormat::R8G8B8A8)
 	{
-		pixelFormat = ray::PixelFormat::R8G8B8A8;
+		pixelFormat = TextureFormat::R8G8B8A8;
 		_numElemBytes = 4;
 	}
 	else
@@ -113,7 +114,7 @@ MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::Pix
 	_originalFormat = _format;
 	_originalUsage = usage;
 
-	_texture = RenderFactory::createTexture();
+	_texture = RenderSystem::instance()->createTexture();
 	_texture->setWidth(_width);
 	_texture->setHeight(_height);
 	_texture->setTexFilter(TextureFilter::GPU_LINEAR);
@@ -276,7 +277,7 @@ MyGuiRenderTexture::MyGuiRenderTexture(TexturePtr texture) noexcept
 	_renderTargetInfo.pixScaleX = 1.0f / float(texture->getWidth());
 	_renderTargetInfo.pixScaleY = 1.0f / float(texture->getHeight());
 
-	_renderTexture = RenderFactory::createRenderTexture();
+	_renderTexture = RenderSystem::instance()->createRenderTexture();
 	_renderTexture->setup(texture);
 }
 
@@ -310,3 +311,4 @@ MyGuiRenderTexture::getInfo() noexcept
 }
 
 _NAME_END
+#endif

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,28 +34,18 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MODEL_3DS_H_
-#define _H_MODEL_3DS_H_
-
-#include <ray/model.h>
+#include <ray/gui_system.h>
 
 _NAME_BEGIN
 
-class D3DSHandler : public ModelHandler
+__ImplementSubInterface(GuiSystem, rtti::Interface, "GuiSystem")
+
+GuiSystem::GuiSystem() noexcept
 {
-public:
-    bool doCanRead(istream& stream) const noexcept;
+}
 
-    bool doLoad(Model& model, istream& stream) noexcept;
-    bool doSave(Model& model, ostream& stream) noexcept;
-
-private:
-
-    bool parser(char* data, std::size_t size);
-
-    Model* _model;
-};
+GuiSystem::~GuiSystem() noexcept
+{
+}
 
 _NAME_END
-
-#endif

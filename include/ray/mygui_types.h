@@ -40,7 +40,6 @@
 #include <ray/mstream.h>
 #include <ray/ioserver.h>
 #include <ray/render_buffer.h>
-#include <ray/render_factory.h>
 #include <ray/render_texture.h>
 #include <ray/render_system.h>
 #include <ray/render_pipeline_base.h>
@@ -49,8 +48,9 @@
 #include <ray/gui_widget.h>
 #include <ray/gui_window.h>
 #include <ray/gui_button.h>
+#include <ray/gui_textbox.h>
 #include <ray/gui_imageloader.h>
-#include <ray/gui_system_base.h>
+#include <ray/gui_system.h>
 
 #include <MyGUI.h>
 #include <MyGUI_Gui.h>

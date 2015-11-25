@@ -59,27 +59,45 @@ GuiWidget::~GuiWidget() noexcept
 }
 
 GuiWidgetPtr 
-GuiWidget::createWieght(const rtti::Rtti* rtti, const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name) except
+GuiWidget::createWieght(const rtti::Rtti* rtti) except
 {
-	return _impl.createWieght(rtti, skin, left, top, width, height, align, name);
+	return _impl.createWieght(rtti);
 }
 
-void
-GuiWidget::create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name) except
+bool
+GuiWidget::create() except
 {
-	_impl.create(skin, left, top, width, height, align, name, nullptr);
-}
-
-void
-GuiWidget::create(const std::string& skin, int left, int top, int width, int height, GuiWidgetAlign align, const std::string& name, void* widget) except
-{
-	_impl.create(skin, left, top, width, height, align, name, widget);
+	return _impl.create();
 }
 
 void
 GuiWidget::destroy() noexcept
 {
 	_impl.destroy();
+}
+
+void
+GuiWidget::setName(const std::string& name) noexcept
+{
+	_impl.setName(name);
+}
+
+const std::string&
+GuiWidget::getName() noexcept
+{
+	return _impl.getName();
+}
+
+void 
+GuiWidget::setAlign(GuiWidgetAlign align) noexcept
+{
+	_impl.setAlign(align);
+}
+
+GuiWidgetAlign 
+GuiWidget::getAlign() noexcept
+{
+	return _impl.getAlign();
 }
 
 void 
@@ -100,7 +118,7 @@ GuiWidget::setViewport(const Viewport& view) except
 	_impl.setViewport(view);
 }
 
-void 
+void
 GuiWidget::getViewport(Viewport& view) const noexcept
 {
 	_impl.getViewport(view);

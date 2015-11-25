@@ -34,26 +34,47 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/mod3ds.h>
+#ifndef _H_GUI_TEXTBOX_H_
+#define _H_GUI_TEXTBOX_H_
+
+#include <ray/gui_widget.h>
 
 _NAME_BEGIN
 
-bool
-D3DSHandler::doCanRead(istream&) const noexcept
+class EXPORT GuiTextBox : public GuiWidget
 {
-    return false;
-}
+	__DeclareSubInterface(GuiTextBox, GuiWidget)
+public:
+	GuiTextBox(GuiWidgetImpl& impl) noexcept;
+	virtual ~GuiTextBox() noexcept;
 
-bool
-D3DSHandler::doLoad(Model&, istream&) noexcept
-{
-    return false;
-}
+	virtual Viewport getTextRegion() noexcept = 0;
+	virtual void getTextSize(int& w, int& h) noexcept = 0;
 
-bool
-D3DSHandler::doSave(Model&, ostream&) noexcept
-{
-    return false;
-}
+	virtual void setCaption(const std::string& _value) noexcept = 0;
+	virtual const std::string& getCaption() const noexcept = 0;
+
+	virtual void setFontName(const std::string& _value) noexcept = 0;
+	virtual const std::string& getFontName() noexcept = 0;
+
+	virtual void setFontHeight(int _value) noexcept = 0;
+	virtual int getFontHeight() noexcept = 0;
+
+	virtual void setTextAlign(GuiWidgetAlign _value) noexcept = 0;
+	virtual GuiWidgetAlign getTextAlign() noexcept = 0;
+
+	virtual void setTextColour(const float4& value) noexcept = 0;
+	virtual float4 getTextColour() noexcept = 0;
+
+	virtual void setCaptionWithReplacing(const std::string& _value) noexcept = 0;
+
+	virtual void setTextShadowColour(const float4& value) noexcept = 0;
+	virtual float4 getTextShadowColour() noexcept = 0;
+
+	virtual void setTextShadow(bool _value) noexcept = 0;
+	virtual bool getTextShadow() noexcept = 0;
+};
 
 _NAME_END
+
+#endif

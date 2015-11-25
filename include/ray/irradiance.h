@@ -44,7 +44,7 @@ _NAME_BEGIN
 class EnvironmentIrradiance
 {
 public:
-	EnvironmentIrradiance() except;
+	EnvironmentIrradiance(RenderPipeline& pipeline) except;
 	~EnvironmentIrradiance();
 
 	void renderParaboloidEnvMap(RenderPipeline& pipeline, TexturePtr cubemap) noexcept;

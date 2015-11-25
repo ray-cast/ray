@@ -48,7 +48,7 @@ public:
 	RenderPipelineLayer() noexcept;
 	virtual ~RenderPipelineLayer() noexcept;
 
-	void open(RenderWindowPtr window, std::size_t w, std::size_t h) except;
+	void open(WindHandle window, std::size_t w, std::size_t h) except;
 	void close() noexcept;
 
 	void setCamera(CameraPtr renderer) noexcept;
@@ -60,6 +60,7 @@ public:
 	void setSwapInterval(SwapInterval interval) except;
 	SwapInterval getSwapInterval() const noexcept;
 
+	RenderStatePtr createRenderState() noexcept;
 	void setRenderState(RenderStatePtr state) noexcept;
 	RenderStatePtr getRenderState() const noexcept;
 
@@ -69,20 +70,35 @@ public:
 	void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept;
 	RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept;
 
+	RenderTexturePtr createRenderTexture() noexcept;
+	MultiRenderTexturePtr createMultiRenderTexture() noexcept;
 	void setRenderTexture(RenderTexturePtr target) noexcept;
 	void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept;
 	void setRenderTextureLayer(RenderTexturePtr target, int layer) noexcept;
 	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
 	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
 	void discradRenderTexture() noexcept;
-	void readRenderTexture(RenderTexturePtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	void readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
 	void copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept;
 
-	void setShaderObject(ShaderObjectPtr shader) noexcept;
-	ShaderObjectPtr getShaderObject() const noexcept;
+	TexturePtr createTexture() noexcept;
+	TexturePtr createTexture(const std::string& name) except;
 
+	MaterialPtr createMaterial(const std::string& name) except;
 	void setMaterialPass(MaterialPassPtr pass) noexcept;
 	MaterialPassPtr getMaterialPass() const noexcept;
+
+	ShaderPtr createShader() noexcept;
+	ShaderObjectPtr createShaderObject() noexcept;
+
+	RenderBufferPtr createRenderBuffer() noexcept;
+	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) except;
+	RenderBufferPtr createRenderBuffer(const MeshPropertys& mesh) except;
+
+	void setRenderBuffer(RenderBufferPtr buffer) except;
+	void drawRenderBuffer(const RenderIndirect& renderable) except;
+	void drawRenderBuffer(const RenderIndirects& renderable) except;
+	RenderBufferPtr getRenderBuffer() const noexcept;
 
 	void drawCone() noexcept;
 	void drawSphere() noexcept;

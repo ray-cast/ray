@@ -35,8 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/irradiance.h>
-#include <ray/material_maker.h>
-#include <ray/render_factory.h>
 #include <ray/render_texture.h>
 
 #define PARABOLOID_SAMPLES 64
@@ -62,9 +60,9 @@ inline static std::uint32_t nextPow2(std::uint32_t i)
 	return d;
 }
 
-EnvironmentIrradiance::EnvironmentIrradiance() except
+EnvironmentIrradiance::EnvironmentIrradiance(RenderPipeline& pipeline) except
 {
-	_irradiance = MaterialMaker("sys:fx\\irradiance.glsl");
+	_irradiance = pipeline.createMaterial("sys:fx\\irradiance.glsl");
 	_irradianceParaboloid = _irradiance->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ConvertHemisphere");
 	_irradianceProjectDualParaboloidToSH = _irradiance->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ProjectDualParaboloidToSH");
 
@@ -76,22 +74,22 @@ EnvironmentIrradiance::EnvironmentIrradiance() except
 	_sphericalHarmonicConvolveYlmDW0 = _irradiance->getParameter("SHConvolveYlmDW0");
 	_sphericalHarmonicConvolveYlmDW1 = _irradiance->getParameter("SHConvolveYlmDW1");
 
-	_paraboloidFrontMap = RenderFactory::createRenderTexture();
-	_paraboloidFrontMap->setTexFilter(TextureFilter::GPU_NEAREST);
-	_paraboloidFrontMap->setup(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, TextureDim::DIM_2D, PixelFormat::R11G11B10F);
+	_paraboloidFrontMap = pipeline.createRenderTexture();
+	_paraboloidFrontMap->setup(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, TextureDim::DIM_2D, TextureFormat::R11G11B10F);
 
-	_paraboloidBackMap = RenderFactory::createRenderTexture();
-	_paraboloidBackMap->setTexFilter(TextureFilter::GPU_NEAREST);
-	_paraboloidBackMap->setup(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, TextureDim::DIM_2D, PixelFormat::R11G11B10F);
+	_paraboloidBackMap = pipeline.createRenderTexture();
+	_paraboloidBackMap->setup(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, TextureDim::DIM_2D, TextureFormat::R11G11B10F);
 
-	_paraboloidDualMaps = RenderFactory::createMultiRenderTexture();
+	_paraboloidDualMaps = pipeline.createMultiRenderTexture();
 	_paraboloidDualMaps->attach(_paraboloidFrontMap);
 	_paraboloidDualMaps->attach(_paraboloidBackMap);
 	_paraboloidDualMaps->setup();
 
-	_irradianceSHCoefficients = RenderFactory::createRenderTexture();
-	_irradianceSHCoefficients->setTexFilter(TextureFilter::GPU_NEAREST);
-	_irradianceSHCoefficients->setup(NUM_ORDER_P2, NUM_ORDER_P2, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
+	_irradianceSHCoefficients = pipeline.createRenderTexture();
+	_irradianceSHCoefficients->setup(NUM_ORDER_P2, NUM_ORDER_P2, TextureDim::DIM_2D, TextureFormat::R16G16B16F);
+
+	_paraboloidSHWeights[0] = pipeline.createTexture();
+	_paraboloidSHWeights[1] = pipeline.createTexture();
 
 	this->_buildDualParaboloidWeightTextures(_paraboloidSHWeights, NUM_ORDER, NUM_RADIANCE_SAMPLES);
 }
@@ -302,9 +300,8 @@ EnvironmentIrradiance::_buildDualParaboloidWeightTextures(TexturePtr textures[2]
 			}
 		}
 
-		textures[face] = RenderFactory::createTexture();
 		textures[face]->setTexDim(TextureDim::DIM_2D);
-		textures[face]->setTexFormat(PixelFormat::R32F);
+		textures[face]->setTexFormat(TextureFormat::R32F);
 		textures[face]->setSize(size*size, size*size);
 		textures[face]->setStream(coefficients);
 		textures[face]->setup();

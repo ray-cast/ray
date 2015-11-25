@@ -35,8 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +-----------------------------------------------------------------------
 #include <ray/fimic.h>
-#include <ray/material_maker.h>
-#include <ray/render_factory.h>
 #include <ray/render_texture.h>
 
 _NAME_BEGIN
@@ -105,7 +103,7 @@ FimicToneMapping::measureLuminance(RenderPipeline& pipeline, RenderTexturePtr so
 	float data[SAMPLE_LOG_COUNT];
 	float delta = _timer->delta();
 
-	pipeline.readRenderTexture(source, PixelFormat::R16F, source->getWidth(), source->getHeight(), data);
+	pipeline.readRenderTexture(source, TextureFormat::R16F, source->getWidth(), source->getHeight(), data);
 
 	for (std::size_t i = 0; i < SAMPLE_LOG_COUNT; ++i)
 	{
@@ -203,19 +201,19 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) except
 	std::size_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_texSample4 = RenderFactory::createRenderTexture();
-	_texSample4->setup(width / 4.0, height / 4.0, TextureDim::DIM_2D, PixelFormat::R8G8B8);
+	_texSample4 = pipeline.createRenderTexture();
+	_texSample4->setup(width / 4.0, height / 4.0, TextureDim::DIM_2D, TextureFormat::R8G8B8);
 
-	_texSample8 = RenderFactory::createRenderTexture();
-	_texSample8->setup(width / 8.0, height / 8.0, TextureDim::DIM_2D, PixelFormat::R8G8B8);
+	_texSample8 = pipeline.createRenderTexture();
+	_texSample8->setup(width / 8.0, height / 8.0, TextureDim::DIM_2D, TextureFormat::R8G8B8);
 
-	_texSampleLog = RenderFactory::createRenderTexture();
-	_texSampleLog->setup(SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, TextureDim::DIM_2D, PixelFormat::R16F);
+	_texSampleLog = pipeline.createRenderTexture();
+	_texSampleLog->setup(SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, TextureDim::DIM_2D, TextureFormat::R16F);
 
-	_texBloom = RenderFactory::createRenderTexture();
-	_texBloom->setup(width / 4.0, height / 4.0, TextureDim::DIM_2D, PixelFormat::R8G8B8);
+	_texBloom = pipeline.createRenderTexture();
+	_texBloom->setup(width / 4.0, height / 4.0, TextureDim::DIM_2D, TextureFormat::R8G8B8);
 
-	_fimic = MaterialMaker("sys:fx/fimic.glsl");
+	_fimic = pipeline.createMaterial("sys:fx/fimic.glsl");
 
 	_sample4 = _fimic->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("Sample");
 	_sample8 = _fimic->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("Sample");

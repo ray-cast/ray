@@ -47,7 +47,7 @@ public:
 	OGLRenderer() noexcept;
 	~OGLRenderer() noexcept;
 
-	virtual bool open(RenderWindowPtr window) except;
+	virtual bool open(WindHandle window) except;
 	virtual void close() noexcept;
 
 	virtual void renderBegin() noexcept;
@@ -59,32 +59,40 @@ public:
 	virtual void setWireframeMode(bool enable) noexcept;
 	virtual bool getWireframeMode() const noexcept;
 
+	virtual RenderWindowPtr createRenderWindow() const noexcept;
 	virtual void setRenderWindow(RenderWindowPtr window) except;
 	virtual RenderWindowPtr getRenderWindow() const noexcept;
 
 	virtual void setSwapInterval(SwapInterval interval) except;
 	virtual SwapInterval getSwapInterval() const noexcept;
 
+	virtual RenderStatePtr createRenderState() noexcept;
 	virtual void setRenderState(RenderStatePtr state) noexcept;
 	virtual RenderStatePtr getRenderState() const noexcept;
 
+	virtual RenderBufferPtr createRenderBuffer() noexcept;
 	virtual void setRenderBuffer(RenderBufferPtr buffer) noexcept;
 	virtual void updateRenderBuffer(RenderBufferPtr buffer) noexcept;
 	virtual void drawRenderBuffer(const RenderIndirect& renderable) noexcept;
 	virtual void drawRenderBuffer(const RenderIndirects& renderable) noexcept;
 	virtual RenderBufferPtr getRenderBuffer() const noexcept;
 
+	virtual TexturePtr createTexture() noexcept;
+	virtual RenderTexturePtr createRenderTexture() noexcept;
+	virtual MultiRenderTexturePtr createMultiRenderTexture() noexcept;
 	virtual void setRenderTexture(RenderTexturePtr target) noexcept;
 	virtual void setRenderTextureLayer(RenderTexturePtr texture, std::int32_t layer) noexcept;
 	virtual void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept;
 	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
 	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
 	virtual void discardRenderTexture() noexcept;
-	virtual void readRenderTexture(RenderTexturePtr src, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	virtual void readRenderTexture(RenderTexturePtr src, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
 	virtual void copyRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderTexturePtr dest, const Viewport& v2) noexcept;
 	virtual RenderTexturePtr getRenderTexture() const noexcept;
 	virtual MultiRenderTexturePtr getMultiRenderTexture() const noexcept;
 
+	virtual ShaderPtr createShader() noexcept;
+	virtual ShaderObjectPtr createShaderObject() noexcept;
 	virtual void setShaderObject(ShaderObjectPtr shader) noexcept;
 	virtual ShaderObjectPtr getShaderObject() const noexcept;
 

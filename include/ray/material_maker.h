@@ -46,13 +46,10 @@ class EXPORT MaterialMaker final
 {
 public:
 	MaterialMaker() noexcept;
-	MaterialMaker(const std::string& filename) except;
 	~MaterialMaker() noexcept;
 
 	MaterialPtr load(const std::string& filename) except;
 	MaterialPtr load(iarchive& reader) except;
-
-	operator MaterialPtr() noexcept;
 
 private:
 
@@ -77,8 +74,6 @@ private:
 	MaterialMaker& operator=(const MaterialMaker&) noexcept = delete;
 
 private:
-
-	MaterialPtr _material;
 
 	std::map<std::string, std::string> _shaderCodes;
 };

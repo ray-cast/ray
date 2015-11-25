@@ -35,9 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/ssgi.h>
-#include <ray/material_maker.h>
 #include <ray/camera.h>
-#include <ray/render_factory.h>
 #include <ray/render_texture.h>
 
 _NAME_BEGIN
@@ -129,13 +127,13 @@ SSGI::shading(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePt
 void
 SSGI::onActivate(RenderPipeline& pipeline) except
 {
-	_texAmbient = RenderFactory::createRenderTexture();
-	_texAmbient->setup(1376, 768, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
+	_texAmbient = pipeline.createRenderTexture();
+	_texAmbient->setup(1376, 768, TextureDim::DIM_2D, TextureFormat::R16G16B16A16F);
 
-	_texBlur = RenderFactory::createRenderTexture();
-	_texBlur->setup(1376, 768, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
+	_texBlur = pipeline.createRenderTexture();
+	_texBlur->setup(1376, 768, TextureDim::DIM_2D, TextureFormat::R16G16B16A16F);
 
-	_ambientOcclusion = MaterialMaker("sys:fx\\ssgi.glsl");
+	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssgi.glsl");
 	_ambientOcclusionPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ao");
 	_ambientOcclusionBlurPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("blur");
 	_ambientOcclusionCopyPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("copy");

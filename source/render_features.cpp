@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_RENDERER)
 #include <ray/render_features.h>
-#include <ray/render_factory.h>
 #include <ray/render_scene.h>
 #include <ray/render_system.h>
 #include <ray/game_scene.h>
@@ -75,6 +74,18 @@ WindHandle
 RenderFeatures::getRenderWindow() const noexcept
 {
 	return _hwnd;
+}
+
+void
+RenderFeatures::setRenderPipeline(RenderPipelinePtr pipeline) noexcept
+{
+	RenderSystem::instance()->setRenderPipeline(pipeline);
+}
+
+RenderPipelinePtr 
+RenderFeatures::getRenderPipeline() const noexcept
+{
+	return RenderSystem::instance()->getRenderPipeline();
 }
 
 void

@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_RENDERER)
 #include <ray/render_component.h>
-#include <ray/render_factory.h>
 #include <ray/render_features.h>
 
 #include <ray/game_server.h>

@@ -38,7 +38,6 @@
 #include <ray/camera.h>
 #include <ray/light.h>
 #include <ray/material_maker.h>
-#include <ray/render_factory.h>
 #include <ray/render_scene.h>
 #include <ray/render_texture.h>
 
@@ -494,7 +493,7 @@ DefaultRenderPipeline::onActivate() except
 	std::size_t width, height;
 	this->getWindowResolution(width, height);
 
-	_deferredLighting = MaterialMaker("sys:fx\\deferred_lighting.glsl");
+	_deferredLighting = this->createMaterial("sys:fx\\deferred_lighting.glsl");
 	_deferredDepthOnly = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredDepthOnly");
 	_deferredDepthLinear = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredDepthLinear");
 	_deferredPointLight = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredPointLight");
@@ -533,53 +532,53 @@ DefaultRenderPipeline::onActivate() except
 	_shadowFactor = _deferredLighting->getParameter("shadowFactor");
 	_shadowMatrix = _deferredLighting->getParameter("shadowMatrix");
 
-	_deferredDepthMap = RenderFactory::createRenderTexture();
-	_deferredDepthMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::DEPTH32_STENCIL8);
+	_deferredDepthMap = this->createRenderTexture();
+	_deferredDepthMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::DEPTH32_STENCIL8);
 
-	_deferredDepthLinearMap = RenderFactory::createRenderTexture();
-	_deferredDepthLinearMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R32F);
+	_deferredDepthLinearMap = this->createRenderTexture();
+	_deferredDepthLinearMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R32F);
 
-	_deferredGraphicMap = RenderFactory::createRenderTexture();
-	_deferredGraphicMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
+	_deferredGraphicMap = this->createRenderTexture();
+	_deferredGraphicMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
 
-	_deferredNormalMap = RenderFactory::createRenderTexture();
-	_deferredNormalMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
+	_deferredNormalMap = this->createRenderTexture();
+	_deferredNormalMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
 
-	_deferredLightMap = RenderFactory::createRenderTexture();
+	_deferredLightMap = this->createRenderTexture();
 	_deferredLightMap->setSharedStencilTexture(_deferredDepthMap);
-	_deferredLightMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16A16F);
+	_deferredLightMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R16G16B16A16F);
 
-	_deferredShadingMap = RenderFactory::createRenderTexture();
+	_deferredShadingMap = this->createRenderTexture();
 	_deferredShadingMap->setSharedDepthTexture(_deferredDepthMap);
 	_deferredShadingMap->setSharedStencilTexture(_deferredDepthMap);
-	_deferredShadingMap->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
+	_deferredShadingMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R16G16B16F);
 
-	_deferredGraphicMaps = RenderFactory::createMultiRenderTexture();
+	_deferredGraphicMaps = this->createMultiRenderTexture();
 	_deferredGraphicMaps->setSharedDepthTexture(_deferredDepthMap);
 	_deferredGraphicMaps->setSharedStencilTexture(_deferredDepthMap);
 	_deferredGraphicMaps->attach(_deferredGraphicMap);
 	_deferredGraphicMaps->attach(_deferredNormalMap);
 	_deferredGraphicMaps->setup();
 
-	_deferredDepthCubeMap = RenderFactory::createRenderTexture();
-	_deferredDepthCubeMap->setup(512, 512, TextureDim::DIM_2D, PixelFormat::DEPTH24_STENCIL8);
+	_deferredDepthCubeMap = this->createRenderTexture();
+	_deferredDepthCubeMap->setup(512, 512, TextureDim::DIM_2D, TextureFormat::DEPTH24_STENCIL8);
 
-	_deferredGraphicCubeMap = RenderFactory::createRenderTexture();
-	_deferredGraphicCubeMap->setup(512, 512, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
+	_deferredGraphicCubeMap = this->createRenderTexture();
+	_deferredGraphicCubeMap->setup(512, 512, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
 
-	_deferredNormalCubeMap = RenderFactory::createRenderTexture();
-	_deferredNormalCubeMap->setup(512, 512, TextureDim::DIM_2D, PixelFormat::R8G8B8A8);
+	_deferredNormalCubeMap = this->createRenderTexture();
+	_deferredNormalCubeMap->setup(512, 512, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
 
-	_deferredLightCubeMap = RenderFactory::createRenderTexture();
+	_deferredLightCubeMap = this->createRenderTexture();
 	_deferredLightCubeMap->setSharedStencilTexture(_deferredDepthCubeMap);
-	_deferredLightCubeMap->setup(512, 512, TextureDim::DIM_2D, PixelFormat::R11G11B10F);
+	_deferredLightCubeMap->setup(512, 512, TextureDim::DIM_2D, TextureFormat::R11G11B10F);
 
-	_deferredShadingCubeMap = RenderFactory::createRenderTexture();
+	_deferredShadingCubeMap = this->createRenderTexture();
 	_deferredShadingCubeMap->setSharedDepthTexture(_deferredDepthCubeMap);
 	_deferredShadingCubeMap->setSharedStencilTexture(_deferredDepthCubeMap);
-	_deferredShadingCubeMap->setup(512, 512, TextureDim::DIM_CUBE, PixelFormat::R11G11B10F);
+	_deferredShadingCubeMap->setup(512, 512, TextureDim::DIM_CUBE, TextureFormat::R11G11B10F);
 
-	_deferredGraphicCubeMaps = RenderFactory::createMultiRenderTexture();
+	_deferredGraphicCubeMaps = this->createMultiRenderTexture();
 	_deferredGraphicCubeMaps->setSharedDepthTexture(_deferredDepthCubeMap);
 	_deferredGraphicCubeMaps->setSharedStencilTexture(_deferredDepthCubeMap);
 	_deferredGraphicCubeMaps->attach(_deferredGraphicCubeMap);

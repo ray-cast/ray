@@ -35,8 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/ssss.h>
-#include <ray/material_maker.h>
-#include <ray/render_factory.h>
 #include <ray/render_texture.h>
 #include <ray/camera.h>
 #include <ray/light.h>
@@ -55,7 +53,7 @@ SSSS::~SSSS() noexcept
 void
 SSSS::onActivate(RenderPipeline& pipeline) except
 {
-	_material = MaterialMaker("sys:fx/ssss.glsl");
+	_material = pipeline.createMaterial("sys:fx/ssss.glsl");
 
 	_translucency = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("translucency");
 	_blurX = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("blurX");
@@ -64,8 +62,8 @@ SSSS::onActivate(RenderPipeline& pipeline) except
 	std::size_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_SSSS = RenderFactory::createRenderTexture();
-	_SSSS->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16G16B16F);
+	_SSSS = pipeline.createRenderTexture();
+	_SSSS->setup(width, height, TextureDim::DIM_2D, TextureFormat::R16G16B16F);
 
 	float sssLevel = 0.025f * float(47) / (100 - 0);
 	float sssProject = 1.0 / tan(0.5 * radians(20.0)) / 3.0;

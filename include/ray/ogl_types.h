@@ -47,6 +47,7 @@
 
 #if _BUILD_PLATFORM_WINDOWS
 #include <GL\glew.h>
+#include <GL\wglew.h>
 #elif _BUILD_PLATFORM_ANDROID
 #include <EGL\egl.h>
 #include <GLES2\gl2.h>
@@ -173,9 +174,9 @@ public:
 	static GLenum asOGLIndexType(IndexType type) noexcept;
 	static GLenum asOGLShaderType(ShaderType type) noexcept;
 	static GLenum asOGLTarget(TextureDim mapping) noexcept;
-	static GLenum asOGLFormat(PixelFormat format) noexcept;
-	static GLenum asOGLType(PixelFormat format) noexcept;
-	static GLint  asOGLInternalformat(PixelFormat format) noexcept;
+	static GLenum asOGLFormat(TextureFormat format) noexcept;
+	static GLenum asOGLType(TextureFormat format) noexcept;
+	static GLint  asOGLInternalformat(TextureFormat format) noexcept;
 	static GLenum asCompareFunction(CompareFunction func) noexcept;
 	static GLenum asBlendFactor(BlendFactor func) noexcept;
 	static GLenum asBlendOperation(BlendOperation op) noexcept;

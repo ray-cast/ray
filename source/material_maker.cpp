@@ -35,22 +35,18 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/material_maker.h>
-#include <ray/render_factory.h>
+#include <ray/render_system.h>
 #include <ray/ioserver.h>
 #include <ray/resource.h>
 #include <ray/except.h>
 #include <ray/mstream.h>
 #include <ray/xmlreader.h>
+#include <ray/parse.h>
 
 _NAME_BEGIN
 
 MaterialMaker::MaterialMaker() noexcept
 {
-}
-
-MaterialMaker::MaterialMaker(const std::string& filename) except
-{
-	this->load(filename);
 }
 
 MaterialMaker::~MaterialMaker() noexcept
@@ -60,14 +56,14 @@ MaterialMaker::~MaterialMaker() noexcept
 RenderStatePtr
 MaterialMaker::instanceState(iarchive& reader) except
 {
-	auto state = RenderFactory::createRenderState();
+	auto state = RenderSystem::instance()->createRenderState();
 	return state;
 }
 
 ShaderPtr
 MaterialMaker::instanceShader(iarchive& reader) except
 {
-	auto shader = RenderFactory::createShader();
+	auto shader = RenderSystem::instance()->createShader();
 
 	std::string type = reader.getString("name");
 	std::string value = reader.getString("value");
@@ -123,8 +119,8 @@ MaterialMaker::instancePass(iarchive& reader) except
 
 	if (reader.setToFirstChild())
 	{
-		ShaderObjectPtr shaderObject = RenderFactory::createShaderObject();
-		RenderStatePtr state = RenderFactory::createRenderState();
+		ShaderObjectPtr shaderObject = RenderSystem::instance()->createShaderObject();
+		RenderStatePtr state = RenderSystem::instance()->createRenderState();
 
 		RenderDepthState depthState;
 		RenderRasterState rasterState;
@@ -318,14 +314,18 @@ MaterialMaker::instanceParameter(iarchive& reader) except
 			param->setType(ShaderVariantType::SPT_FLOAT3);
 		else if (type == "float4")
 			param->setType(ShaderVariantType::SPT_FLOAT4);
+		else if (type == "mat3")
+			param->setType(ShaderVariantType::SPT_FLOAT3X3);
 		else if (type == "mat4")
 			param->setType(ShaderVariantType::SPT_FLOAT4X4);
 		else if (type == "float[]")
 			param->setType(ShaderVariantType::SPT_FLOAT_ARRAY);
 		else if (type == "float2[]")
 			param->setType(ShaderVariantType::SPT_FLOAT2_ARRAY);
-		else if (type == "float2")
-			param->setType(ShaderVariantType::SPT_FLOAT2);
+		else if (type == "float3[]")
+			param->setType(ShaderVariantType::SPT_FLOAT3_ARRAY);
+		else if (type == "float4[]")
+			param->setType(ShaderVariantType::SPT_FLOAT4_ARRAY);
 		else if (type == "sampler2D")
 			param->setType(ShaderVariantType::SPT_TEXTURE);
 		else if (type == "buffer")
@@ -399,67 +399,126 @@ MaterialMaker::load(iarchive& reader) except
 {
 	std::string nodeName;
 	nodeName = reader.getCurrentNodeName();
-	if (nodeName == "effect")
-	{
-		if (!_material)
-			_material = std::make_shared<Material>();
+	if (nodeName != "material" && nodeName != "effect")
+		throw failure(__TEXT("Unknown node name " + nodeName + ", so I can't open it"));
 
-		if (reader.setToFirstChild())
+	if (!reader.setToFirstChild())
+		throw failure(__TEXT("The file has been damaged and can't be recovered, so I can't open it"));
+
+	if (nodeName == "material")
+	{
+		std::string name;
+		std::map<std::string, std::string> args;
+
+		do
 		{
-			do
+			auto key = reader.getCurrentNodeName();
+			if (key == "attribute")
 			{
-				std::string name = reader.getCurrentNodeName();
-				if (name == "parameter")
+				auto attributes = reader.getAttrs();
+				for (auto& it : attributes)
 				{
-					auto param = instanceParameter(reader);
-					if (param)
-						_material->addParameter(param);
-				}
-				else if (name == "buffer")
-				{
-					auto buffer = instanceBuffer(reader);
-					if (buffer)
-						_material->addParameter(buffer);
-				}
-				else if (name == "include")
-				{
-					auto path = reader.getString("name");
-					if (!path.empty())
+					if (it == "shader")
 					{
-						this->load(path);
-					}
-				}
-				else if (name == "shader")
-				{
-					auto type = reader.getString("name");
-					if (!type.empty())
-					{
-						_shaderCodes[type] += reader.getText();
+						name = reader.getString(it);
 					}
 					else
 					{
-						throw failure(__TEXT("Empty shader name : ") + reader.getCurrentNodePath());
+						args[it] = reader.getString(it);
 					}
 				}
-				else if (name == "technique")
-				{
-					auto tech = instanceTech(reader);
-					if (tech)
-						_material->addTech(tech);
-				}
-			} while (reader.setToNextChild());
+			}
+		} while (reader.setToNextChild());
 
-			_material->setup();
-			return _material;
+		if (!name.empty())
+		{
+			MaterialMaker maker;
+			auto material = maker.load(name);
+			if (material)
+			{
+				for (auto& arg : args)
+				{
+					auto param = material->getParameter(arg.first);
+					if (param)
+					{
+						auto type = param->getType();
+						switch (type)
+						{
+						case ShaderVariantType::SPT_FLOAT:
+							param->assign(parseFloat<Float>(arg.second));
+							break;
+						case ShaderVariantType::SPT_FLOAT2:
+							param->assign(parseFloat2(arg.second));
+							break;
+						case ShaderVariantType::SPT_FLOAT3:
+							param->assign(parseFloat3(arg.second));
+							break;
+						case ShaderVariantType::SPT_FLOAT4:
+							param->assign(parseFloat4(arg.second));
+							break;
+						case ShaderVariantType::SPT_TEXTURE:
+							param->assign(RenderSystem::instance()->createTexture(arg.second));
+							break;
+						}
+					}
+				}
+
+				return material;
+			}
 		}
+	}
+	else if (nodeName == "effect")
+	{
+		auto material = std::make_shared<Material>();
+
+		do
+		{
+			std::string name = reader.getCurrentNodeName();
+			if (name == "parameter")
+			{
+				auto param = instanceParameter(reader);
+				if (param)
+					material->addParameter(param);
+			}
+			else if (name == "buffer")
+			{
+				auto buffer = instanceBuffer(reader);
+				if (buffer)
+					material->addParameter(buffer);
+			}
+			else if (name == "include")
+			{
+				auto path = reader.getString("name");
+				if (!path.empty())
+				{
+					this->load(path);
+				}
+			}
+			else if (name == "shader")
+			{
+				auto type = reader.getString("name");
+				if (!type.empty())
+				{
+					_shaderCodes[type] += reader.getText();
+				}
+				else
+				{
+					throw failure(__TEXT("Empty shader name : ") + reader.getCurrentNodePath());
+				}
+			}
+			else if (name == "technique")
+			{
+				auto tech = instanceTech(reader);
+				if (tech)
+					material->addTech(tech);
+			}
+		} while (reader.setToNextChild());
+
+		material->setup();
+		return material;
 	}
 
 	return nullptr;
-}
-
-MaterialMaker::operator MaterialPtr() noexcept
-{
-	return _material;
 }
 
 VertexType 

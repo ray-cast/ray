@@ -35,7 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/material.h>
-#include <ray/render_factory.h>
+#include <ray/render_system.h>
 
 _NAME_BEGIN
 
@@ -66,7 +66,7 @@ Material::setup() except
 			auto renderState = pass->getRenderState();
 			if (!renderState)
 			{
-				pass->setRenderState(RenderFactory::createRenderState());
+				pass->setRenderState(RenderSystem::instance()->createRenderState());
 			}
 
 			auto shaderObject = pass->getShaderObject();

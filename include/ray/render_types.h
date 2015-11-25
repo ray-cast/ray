@@ -265,7 +265,7 @@ enum TextureOp
 	OP_SIGNEDADD,   //* T = T1 + (T2-0.5)
 };
 
-enum PixelFormat
+enum TextureFormat
 {
 	STENCIL8,
 	DEPTH_COMPONENT16,

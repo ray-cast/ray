@@ -35,10 +35,8 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/atmospheric.h>
-#include <ray/material_maker.h>
 #include <ray/light.h>
 #include <ray/camera.h>
-#include <ray/render_factory.h>
 
 _NAME_BEGIN
 
@@ -71,9 +69,9 @@ Atmospheric::onActivate(RenderPipeline& pipeline) except
 	MeshProperty mesh;
 	mesh.makeSphere(1, 128, 96);
 
-	_sphere = RenderFactory::createRenderBuffer(mesh);
+	_sphere = pipeline.createRenderBuffer(mesh);
 
-	_sat = MaterialMaker("sys:fx/atmospheric.glsl");
+	_sat = pipeline.createMaterial("sys:fx/atmospheric.glsl");
 
 	_sky = _sat->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("sky");
 	_ground = _sat->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ground");

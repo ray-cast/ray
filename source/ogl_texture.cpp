@@ -404,9 +404,10 @@ OGLRenderTexture::~OGLRenderTexture() noexcept
 }
 
 bool
-OGLRenderTexture::setup(TexturePtr resolveTexture) except
+OGLRenderTexture::setup(TexturePtr texture) except
 {
 	assert(!_fbo);
+	assert(texture);
 
 	glGenFramebuffers(1, &_fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
@@ -430,16 +431,16 @@ OGLRenderTexture::setup(TexturePtr resolveTexture) except
 
 	auto resolveFormat = this->getTexFormat();
 
-	if (resolveFormat == PixelFormat::DEPTH24_STENCIL8 || resolveFormat == PixelFormat::DEPTH32_STENCIL8)
-		this->bindRenderTexture(resolveTexture, GL_DEPTH_STENCIL_ATTACHMENT);
-	else if (resolveFormat == PixelFormat::DEPTH_COMPONENT16 || resolveFormat == PixelFormat::DEPTH_COMPONENT24 || resolveFormat == PixelFormat::DEPTH_COMPONENT32)
-		this->bindRenderTexture(resolveTexture, GL_DEPTH_ATTACHMENT);
-	else if (resolveFormat == PixelFormat::STENCIL8)
-		this->bindRenderTexture(resolveTexture, GL_STENCIL_ATTACHMENT);
+	if (resolveFormat == TextureFormat::DEPTH24_STENCIL8 || resolveFormat == TextureFormat::DEPTH32_STENCIL8)
+		this->bindRenderTexture(texture, GL_DEPTH_STENCIL_ATTACHMENT);
+	else if (resolveFormat == TextureFormat::DEPTH_COMPONENT16 || resolveFormat == TextureFormat::DEPTH_COMPONENT24 || resolveFormat == TextureFormat::DEPTH_COMPONENT32)
+		this->bindRenderTexture(texture, GL_DEPTH_ATTACHMENT);
+	else if (resolveFormat == TextureFormat::STENCIL8)
+		this->bindRenderTexture(texture, GL_STENCIL_ATTACHMENT);
 	else
-		this->bindRenderTexture(resolveTexture, GL_COLOR_ATTACHMENT0);
+		this->bindRenderTexture(texture, GL_COLOR_ATTACHMENT0);
 
-	_resolveTexture = resolveTexture;
+	_resolveTexture = texture;
 
 #if !defined(EGLAPI)
 	if (OGLFeatures::ARB_direct_state_access)
@@ -455,8 +456,9 @@ OGLRenderTexture::setup(TexturePtr resolveTexture) except
 }
 
 void
-OGLRenderTexture::setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat format) except
+OGLRenderTexture::setup(std::size_t w, std::size_t h, TextureDim dim, TextureFormat format) except
 {
+	_resolveTexture = std::make_shared<OGLTexture>();
 	_resolveTexture->setWidth(w);
 	_resolveTexture->setHeight(h);
 	_resolveTexture->setTexDim(dim);
@@ -467,8 +469,9 @@ OGLRenderTexture::setup(std::size_t w, std::size_t h, TextureDim dim, PixelForma
 }
 
 void
-OGLRenderTexture::setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, PixelFormat format) except
+OGLRenderTexture::setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, TextureFormat format) except
 {
+	_resolveTexture = std::make_shared<OGLTexture>();
 	_resolveTexture->setWidth(w);
 	_resolveTexture->setHeight(h);
 	_resolveTexture->setDepth(d);
@@ -530,11 +533,11 @@ OGLRenderTexture::onSetRenderTextureAfter(RenderTexturePtr target) noexcept
 	if (_fbo)
 	{
 		auto resolveFormat = target->getTexFormat();
-		if (resolveFormat == PixelFormat::DEPTH24_STENCIL8 || resolveFormat == PixelFormat::DEPTH32_STENCIL8)
+		if (resolveFormat == TextureFormat::DEPTH24_STENCIL8 || resolveFormat == TextureFormat::DEPTH32_STENCIL8)
 			this->bindRenderTexture(this->getResolveTexture(), GL_STENCIL_ATTACHMENT);
-		else if (resolveFormat == PixelFormat::DEPTH_COMPONENT16 || resolveFormat == PixelFormat::DEPTH_COMPONENT24 || resolveFormat == PixelFormat::DEPTH_COMPONENT32)
+		else if (resolveFormat == TextureFormat::DEPTH_COMPONENT16 || resolveFormat == TextureFormat::DEPTH_COMPONENT24 || resolveFormat == TextureFormat::DEPTH_COMPONENT32)
 			this->bindRenderTexture(this->getResolveTexture(), GL_DEPTH_ATTACHMENT);
-		else if (resolveFormat == PixelFormat::STENCIL8)
+		else if (resolveFormat == TextureFormat::STENCIL8)
 			this->bindRenderTexture(this->getResolveTexture(), GL_STENCIL_ATTACHMENT);
 		else
 			this->bindRenderTexture(this->getResolveTexture(), GL_COLOR_ATTACHMENT0);

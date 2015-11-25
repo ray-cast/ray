@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/fxaa.h>
-#include <ray/material_maker.h>
 #include <ray/render_texture.h>
 
 _NAME_BEGIN
@@ -51,7 +50,7 @@ FXAA::~FXAA() noexcept
 void
 FXAA::onActivate(RenderPipeline& pipeline) except
 {
-	_fxaa = MaterialMaker("sys:fx/fxaa.glsl");
+	_fxaa = pipeline.createMaterial("sys:fx/fxaa.glsl");
 	_fxaaPass = _fxaa->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("fxaa");
 	_texelStep = _fxaa->getParameter("texelStep");
 }

@@ -47,6 +47,9 @@ public:
 	DepthOfField() noexcept;
 	~DepthOfField() noexcept;
 
+	virtual void onActivate(RenderPipeline& pipeline) except;
+	virtual void onDeactivate(RenderPipeline& pipeline) except;
+
 	void onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
 
 	void blurh(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;

@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #ifdef _BUILD_OPENGL
 #include <ray/wgl_canvas.h>
-#include <GL/wglew.h>
 
 _NAME_BEGIN
 

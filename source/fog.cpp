@@ -35,8 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/fog.h>
-#include <ray/material_maker.h>
-#include <ray/camera.h>
 
 _NAME_BEGIN
 
@@ -51,7 +49,7 @@ Fog::~Fog() noexcept
 void
 Fog::onActivate(RenderPipeline& pipeline) except
 {
-	_material = MaterialMaker("sys:fx/fog.glsl");
+	_material = pipeline.createMaterial("sys:fx/fog.glsl");
 	_fog = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("fog");
 	_fogFalloff = _material->getParameter("fogFalloff");
 	_fogDensity = _material->getParameter("fogDensity");

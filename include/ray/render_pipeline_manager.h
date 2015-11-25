@@ -34,16 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/render_system_base.h>
+#ifndef _H_RENDER_SYSTEM_BASE_H_
+#define _H_RENDER_SYSTEM_BASE_H_
 
-_NAME_BEGIN
 
-RenderSystemBase::RenderSystemBase() noexcept
-{
-}
-
-RenderSystemBase::~RenderSystemBase() noexcept
-{
-}
-
-_NAME_END
+#endif

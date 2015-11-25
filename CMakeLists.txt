@@ -19,8 +19,8 @@ SET(TOOLS_PATH ${PROJECT_SOURCE_DIR}/tools)
 SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 OPTION(BUILD_DEBUG_MODE "ON for debug or OFF for release" ON)
-OPTION(BUILD_DIRECTX_11 "on for DX11 off for ogl" OFF)
 OPTION(BUILD_GLEW_SHARED  "on for use off for ignore" OFF)
+OPTION(BUILD_MYGUI  "on for use off for ignore" ON)
 
 IF(ANDROID_ABI)
     OPTION(BUILD_PLATFORM_ANDROID "on for use off for ignore" ON)
@@ -36,6 +36,7 @@ IF(BUILD_PLATFORM_ANDROID)
 ELSE()
     OPTION(BUILD_OPENGL "on for DX11 off for ogl" ON)
     OPTION(BUILD_OPENGL_ES "on for DX11 off for ogl" OFF)
+    OPTION(BUILD_DIRECTX_11 "on for DX11 off for ogl" OFF)
 ENDIF()
 
 OPTION(BUILD_SSE "on for use off for ignore" OFF)

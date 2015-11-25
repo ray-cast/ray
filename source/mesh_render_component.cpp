@@ -38,10 +38,9 @@
 #include <ray/mesh_render_component.h>
 #include <ray/mesh_component.h>
 
-#include <ray/render_factory.h>
+#include <ray/render_system.h>
 #include <ray/render_buffer.h>
 
-#include <ray/material_maker.h>
 #include <ray/resource.h>
 
 _NAME_BEGIN
@@ -136,7 +135,7 @@ MeshRenderComponent::buildMaterials() except
 	{
 		if (!this->getName().empty())
 		{
-			auto material = RenderFactory::createMaterial(this->getName());
+			auto material = RenderSystem::instance()->createMaterial(this->getName());
 			if (material)
 			{
 				this->setMaterial(material);
@@ -157,7 +156,7 @@ MeshRenderComponent::buildRenderObjects(MeshPropertyPtr mesh) noexcept
 	meshes.push_back(mesh);
 	meshes.insert(meshes.end(), children.begin(), children.end());
 
-	auto renderBuffer = RenderFactory::createRenderBuffer(meshes);
+	auto renderBuffer = RenderSystem::instance()->createRenderBuffer(meshes);
 	if (children.empty())
 	{
 		auto renderObject = this->buildRenderObject(mesh, renderBuffer);

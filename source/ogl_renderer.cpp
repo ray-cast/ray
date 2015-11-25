@@ -68,11 +68,12 @@ OGLRenderer::~OGLRenderer() noexcept
 }
 
 bool
-OGLRenderer::open(RenderWindowPtr window) except
+OGLRenderer::open(WindHandle window) except
 {
 	if (!_initOpenGL)
 	{
-		this->setRenderWindow(window);
+		_glcontext = this->createRenderWindow();
+		_glcontext->open(window);
 
 		this->initDebugControl();
 		this->initStateSystem();
@@ -190,6 +191,12 @@ OGLRenderer::getWireframeMode() const noexcept
 	return _enableWireframe;
 }
 
+RenderWindowPtr 
+OGLRenderer::createRenderWindow() const noexcept
+{
+	return std::make_shared<OGLCanvas>();
+}
+
 void
 OGLRenderer::setRenderWindow(RenderWindowPtr glcontext) except
 {
@@ -227,6 +234,12 @@ OGLRenderer::getSwapInterval() const noexcept
 	return _glcontext->getSwapInterval();
 }
 
+RenderStatePtr 
+OGLRenderer::createRenderState() noexcept
+{
+	return std::make_shared<OGLRenderState>();
+}
+
 void
 OGLRenderer::setRenderState(RenderStatePtr state) noexcept
 {
@@ -246,6 +259,12 @@ RenderStatePtr
 OGLRenderer::getRenderState() const noexcept
 {
 	return _state;
+}
+
+RenderBufferPtr
+OGLRenderer::createRenderBuffer() noexcept
+{
+	return std::make_shared<OGLRenderBuffer>();
 }
 
 void
@@ -353,6 +372,24 @@ OGLRenderer::getRenderBuffer() const noexcept
 	return _renderBuffer;
 }
 
+TexturePtr 
+OGLRenderer::createTexture() noexcept
+{
+	return std::make_shared<OGLTexture>();
+}
+
+RenderTexturePtr 
+OGLRenderer::createRenderTexture() noexcept
+{
+	return std::make_shared<OGLRenderTexture>();
+}
+
+MultiRenderTexturePtr 
+OGLRenderer::createMultiRenderTexture() noexcept
+{
+	return std::make_shared<OGLMultiRenderTexture>();
+}
+
 void
 OGLRenderer::setRenderTexture(RenderTexturePtr target) noexcept
 {
@@ -386,11 +423,12 @@ OGLRenderer::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
-		auto& targets = target->getRenderTextures();
-		for (std::size_t index = 0; index < targets.size(); index++)
+		auto& renderTextures = target->getRenderTextures();
+		std::size_t size = renderTextures.size();
+		for (std::size_t index = 0; index < size; index++)
 		{
-			auto target = targets[index];
-			this->setViewport(Viewport(0, 0, target->getWidth(), target->getHeight()), index);
+			auto renderTexture = renderTextures[index];
+			this->setViewport(Viewport(0, 0, renderTexture->getWidth(), renderTexture->getHeight()), index);
 		}
 
 		_renderTexture = nullptr;
@@ -582,7 +620,7 @@ OGLRenderer::discardRenderTexture() noexcept
 }
 
 void
-OGLRenderer::readRenderTexture(RenderTexturePtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+OGLRenderer::readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
 	assert(target && w && h && data);
 
@@ -598,6 +636,18 @@ OGLRenderer::readRenderTexture(RenderTexturePtr target, PixelFormat pfd, std::si
 	GLenum type = OGLTypes::asOGLType(pfd);
 
 	glReadPixels(0, 0, w, h, format, type, data);
+}
+
+ShaderPtr 
+OGLRenderer::createShader() noexcept
+{
+	return std::make_shared<OGLShader>();
+}
+
+ShaderObjectPtr 
+OGLRenderer::createShaderObject() noexcept
+{
+	return std::make_shared<OGLShaderObject>();
 }
 
 void

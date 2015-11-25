@@ -69,6 +69,23 @@ public:
 	bool addRenderScene(RenderScenePtr scene) noexcept;
 	void removeRenderScene(RenderScenePtr scene) noexcept;
 
+	TexturePtr createTexture() noexcept;
+	TexturePtr createTexture(const std::string& name) except;
+
+	MaterialPtr createMaterial(const std::string& name) noexcept;
+
+	RenderTexturePtr createRenderTexture() noexcept;
+	MultiRenderTexturePtr createMultiRenderTexture() noexcept;
+
+	RenderStatePtr createRenderState() noexcept;
+
+	ShaderPtr createShader() noexcept;
+	ShaderObjectPtr createShaderObject() noexcept;
+
+	RenderBufferPtr createRenderBuffer() noexcept;
+	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) except;
+	RenderBufferPtr createRenderBuffer(const MeshPropertys& meshes) except;
+
 	void render() noexcept;
 
 private:

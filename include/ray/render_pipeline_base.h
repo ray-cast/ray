@@ -49,7 +49,7 @@ public:
 	RenderPipeline() noexcept;
 	virtual ~RenderPipeline() noexcept;
 
-	virtual void open(RenderWindowPtr window, std::size_t w, std::size_t h) except = 0;
+	virtual void open(WindHandle window, std::size_t w, std::size_t h) except = 0;
 	virtual void close() noexcept = 0;
 
 	virtual void setCamera(CameraPtr renderer) noexcept = 0;
@@ -61,6 +61,7 @@ public:
 	virtual void setSwapInterval(SwapInterval interval) except = 0;
 	virtual SwapInterval getSwapInterval() const noexcept = 0;
 
+	virtual RenderStatePtr createRenderState() noexcept = 0;
 	virtual void setRenderState(RenderStatePtr state) noexcept = 0;
 	virtual RenderStatePtr getRenderState() const noexcept = 0;
 
@@ -70,20 +71,35 @@ public:
 	virtual void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept = 0;
 	virtual RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept = 0;
 
+	virtual RenderTexturePtr createRenderTexture() noexcept = 0;
+	virtual MultiRenderTexturePtr createMultiRenderTexture() noexcept = 0;
 	virtual void setRenderTexture(RenderTexturePtr target) noexcept = 0;
 	virtual void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept = 0;
 	virtual void setRenderTextureLayer(RenderTexturePtr target, int layer) noexcept = 0;
 	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept = 0;
 	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept = 0;
 	virtual void discradRenderTexture() noexcept = 0;
-	virtual void readRenderTexture(RenderTexturePtr target, PixelFormat pfd, std::size_t w, std::size_t h, void* data) noexcept = 0;
+	virtual void readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept = 0;
 	virtual void copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept = 0;
 
-	virtual void setShaderObject(ShaderObjectPtr shader) noexcept = 0;
-	virtual ShaderObjectPtr getShaderObject() const noexcept = 0;
+	virtual TexturePtr createTexture() noexcept = 0;
+	virtual TexturePtr createTexture(const std::string& name) except = 0;
 
+	virtual MaterialPtr createMaterial(const std::string& name) except = 0;
 	virtual void setMaterialPass(MaterialPassPtr pass) noexcept = 0;
 	virtual MaterialPassPtr getMaterialPass() const noexcept = 0;
+
+	virtual ShaderPtr createShader() noexcept = 0;
+	virtual ShaderObjectPtr createShaderObject() noexcept = 0;
+
+	virtual RenderBufferPtr createRenderBuffer() noexcept = 0;
+	virtual RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) except = 0;
+	virtual RenderBufferPtr createRenderBuffer(const MeshPropertys& mesh) except = 0;
+
+	virtual void setRenderBuffer(RenderBufferPtr buffer) except = 0;
+	virtual void drawRenderBuffer(const RenderIndirect& renderable) except = 0;
+	virtual void drawRenderBuffer(const RenderIndirects& renderable) except = 0;
+	virtual RenderBufferPtr getRenderBuffer() const noexcept = 0;
 
 	virtual void drawCone() noexcept = 0;
 	virtual void drawSphere() noexcept = 0;

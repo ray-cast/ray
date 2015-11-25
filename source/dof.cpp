@@ -35,15 +35,22 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/dof.h>
-#include <ray/material_maker.h>
-#include <ray/render_factory.h>
 #include <ray/render_texture.h>
 
 _NAME_BEGIN
 
 DepthOfField::DepthOfField() noexcept
 {
-	_dof = MaterialMaker("sys:fx/dof.glsl");
+}
+
+DepthOfField::~DepthOfField() noexcept
+{
+}
+
+void 
+DepthOfField::onActivate(RenderPipeline& pipeline) except
+{
+	_dof = pipeline.createMaterial("sys:fx/dof.glsl");
 
 	_sample4 = _dof->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("sample");
 	_blurh = _dof->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("blurh");
@@ -51,11 +58,11 @@ DepthOfField::DepthOfField() noexcept
 	_computeNear = _dof->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("computeNear");
 	_final = _dof->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("final");
 
-	_texTemp = RenderFactory::createRenderTexture();
-	_texTemp->setup(512, 512, TextureDim::DIM_2D, PixelFormat::R8G8B8);
+	_texTemp = pipeline.createRenderTexture();
+	_texTemp->setup(512, 512, TextureDim::DIM_2D, TextureFormat::R8G8B8);
 
-	_texBlur = RenderFactory::createRenderTexture();
-	_texBlur->setup(512, 512, TextureDim::DIM_2D, PixelFormat::R8G8B8);
+	_texBlur = pipeline.createRenderTexture();
+	_texBlur->setup(512, 512, TextureDim::DIM_2D, TextureFormat::R8G8B8);
 
 	_texColor = _dof->getParameter("texColor");
 	_texShrunk = _dof->getParameter("texShrunk");
@@ -64,7 +71,8 @@ DepthOfField::DepthOfField() noexcept
 	_texLarge = _dof->getParameter("texLarge");
 }
 
-DepthOfField::~DepthOfField() noexcept
+void 
+DepthOfField::onDeactivate(RenderPipeline& pipeline) except
 {
 }
 

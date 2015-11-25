@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_system.h>
-#include <ray/render_factory.h>
 #include <ray/render_scene.h>
 #include <ray/render_window.h>
 #include <ray/render_pipeline.h>
@@ -67,9 +66,10 @@ RenderSystem::~RenderSystem() noexcept
 void
 RenderSystem::open(WindHandle window, std::size_t w, std::size_t h) except
 {
-	auto renderWindow = RenderFactory::createRenderWindow(window);
-	_renderPipeline = RenderFactory::createRenderPipeline();
-	_renderPipeline->open(renderWindow, w, h);
+	assert(!_renderPipeline);
+
+	_renderPipeline = std::make_shared<DefaultRenderPipeline>();
+	_renderPipeline->open(window, w, h);
 
 	RenderSetting setting;
 	setting.enableSSAO = true;
@@ -309,48 +309,56 @@ RenderSystem::getRenderSetting() const noexcept
 void 
 RenderSystem::setWireframeMode(bool enable) noexcept
 {
+	assert(_renderPipeline);
 	_renderPipeline->setWireframeMode(enable);
 }
 
 bool 
 RenderSystem::getWireframeMode() const noexcept
 {
+	assert(_renderPipeline);
 	return _renderPipeline->getWireframeMode();
 }
 
 void 
 RenderSystem::setWindowResolution(std::size_t w, std::size_t h) except
 {
+	assert(_renderPipeline);
 	_renderPipeline->setWindowResolution(w, h);
 }
 
 void 
 RenderSystem::getWindowResolution(std::size_t& w, std::size_t& h) const noexcept
 {
+	assert(_renderPipeline);
 	_renderPipeline->getWindowResolution(w, h);
 }
 
 void 
 RenderSystem::setRenderPipeline(RenderPipelinePtr pipeline) except
 {
+	assert(_renderPipeline);
 	_renderPipeline = pipeline;
 }
 
 RenderPipelinePtr 
 RenderSystem::getRenderPipeline() const noexcept
 {
+	assert(_renderPipeline);
 	return _renderPipeline;
 }
 
 void 
 RenderSystem::setSwapInterval(SwapInterval interval) except
 {
+	assert(_renderPipeline);
 	_renderPipeline->setSwapInterval(interval);
 }
 
 SwapInterval 
 RenderSystem::getSwapInterval() const noexcept
 {
+	assert(_renderPipeline);
 	return _renderPipeline->getSwapInterval();
 }
 
@@ -377,15 +385,92 @@ RenderSystem::removeRenderScene(RenderScenePtr scene) noexcept
 	}
 }
 
+TexturePtr 
+RenderSystem::createTexture() noexcept
+{
+	assert(_renderPipeline);
+	return _renderPipeline->createTexture();
+}
+
+TexturePtr 
+RenderSystem::createTexture(const std::string& name) except
+{
+	assert(_renderPipeline);
+	return _renderPipeline->createTexture(name);
+}
+
+MaterialPtr
+RenderSystem::createMaterial(const std::string& name) noexcept
+{
+	assert(_renderPipeline);
+	return _renderPipeline->createMaterial(name);
+}
+
+RenderTexturePtr 
+RenderSystem::createRenderTexture() noexcept
+{
+	assert(_renderPipeline);
+	return _renderPipeline->createRenderTexture();
+}
+
+MultiRenderTexturePtr 
+RenderSystem::createMultiRenderTexture() noexcept
+{
+	assert(_renderPipeline);
+	return _renderPipeline->createMultiRenderTexture();
+}
+
+RenderStatePtr
+RenderSystem::createRenderState() noexcept
+{
+	assert(_renderPipeline);
+	return _renderPipeline->createRenderState();
+}
+
+ShaderPtr 
+RenderSystem::createShader() noexcept
+{
+	assert(_renderPipeline);
+	return _renderPipeline->createShader();
+}
+
+ShaderObjectPtr 
+RenderSystem::createShaderObject() noexcept
+{
+	assert(_renderPipeline);
+	return _renderPipeline->createShaderObject();
+}
+
+RenderBufferPtr 
+RenderSystem::createRenderBuffer() noexcept
+{
+	assert(_renderPipeline);
+	return _renderPipeline->createRenderBuffer();
+}
+
+RenderBufferPtr 
+RenderSystem::createRenderBuffer(const MeshProperty& mesh) except
+{
+	assert(_renderPipeline);
+	return _renderPipeline->createRenderBuffer(mesh);
+}
+
+RenderBufferPtr 
+RenderSystem::createRenderBuffer(const MeshPropertys& meshes) except
+{
+	assert(_renderPipeline);
+	return _renderPipeline->createRenderBuffer(meshes);
+}
+
 void
 RenderSystem::render() noexcept
 {
+	assert(_renderPipeline);
+
 	_renderPipeline->renderBegin();
 
 	for (auto& scene : _sceneList)
-	{
 		_renderPipeline->render(*scene);
-	}
 
 	for (auto& scene : _sceneList)
 	{

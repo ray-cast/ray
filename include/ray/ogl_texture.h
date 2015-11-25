@@ -88,8 +88,8 @@ public:
 	~OGLRenderTexture() noexcept;
 
 	virtual bool setup(TexturePtr texture) except;
-	virtual void setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat format) except;
-	virtual void setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, PixelFormat format) except;
+	virtual void setup(std::size_t w, std::size_t h, TextureDim dim, TextureFormat format) except;
+	virtual void setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, TextureFormat format) except;
 	virtual void close() noexcept;
 
 	void setLayer(GLuint layer) noexcept;

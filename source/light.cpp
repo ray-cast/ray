@@ -38,7 +38,7 @@
 #include <ray/camera.h>
 #include <ray/render_texture.h>
 #include <ray/render_scene.h>
-#include <ray/render_factory.h>
+#include <ray/render_system.h>
 
 _NAME_BEGIN
 
@@ -256,8 +256,8 @@ Light::_updateShadow() const noexcept
 	{
 		if (!_shadowCamera->getRenderTexture())
 		{
-			auto depthTexture = RenderFactory::createRenderTexture();
-			depthTexture->setup(_shadowSize, _shadowSize, TextureDim::DIM_2D, PixelFormat::DEPTH_COMPONENT32);
+			auto depthTexture = RenderSystem::instance()->createRenderTexture();
+			depthTexture->setup(_shadowSize, _shadowSize, TextureDim::DIM_2D, TextureFormat::DEPTH_COMPONENT32);
 
 			_shadowCamera->setRenderTexture(depthTexture);
 		}

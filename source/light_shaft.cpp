@@ -35,10 +35,8 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/light_shaft.h>
-#include <ray/material_maker.h>
 #include <ray/light.h>
 #include <ray/camera.h>
-#include <ray/render_factory.h>
 #include <ray/render_texture.h>
 
 _NAME_BEGIN
@@ -60,11 +58,10 @@ LightShaft::onActivate(RenderPipeline& pipeline) except
 	std::size_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	MaterialMaker maker;
-	_material = maker.load("sys:fx/light_shaft.glsl");
+	_material = pipeline.createMaterial("sys:fx/light_shaft.glsl");
 
-	_texSample = RenderFactory::createRenderTexture();
-	_texSample->setup(width*0.5, height*0.5, TextureDim::DIM_2D, PixelFormat::R11G11B10F);
+	_texSample = pipeline.createRenderTexture();
+	_texSample->setup(width*0.5, height*0.5, TextureDim::DIM_2D, TextureFormat::R11G11B10F);
 
 	_lightShaft = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("LightScatter");
 	_lightShaftCopy = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("LightScatterCopy");

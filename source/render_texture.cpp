@@ -35,13 +35,12 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_texture.h>
-#include <ray/render_factory.h>
 
 _NAME_BEGIN
 
 Texture::Texture() noexcept
 	: _size(0, 0, 0)
-	, _format(PixelFormat::R8G8B8A8)
+	, _format(TextureFormat::R8G8B8A8)
 	, _dim(TextureDim::DIM_2D)
 	, _mipmap(false)
 	, _multisample(false)
@@ -66,7 +65,7 @@ Texture::setTexMipmap(bool enable) noexcept
 }
 
 void
-Texture::setTexFormat(PixelFormat format) noexcept
+Texture::setTexFormat(TextureFormat format) noexcept
 {
 	_format = format;
 }
@@ -157,7 +156,7 @@ Texture::getTexOp() const noexcept
 	return _texop;
 }
 
-PixelFormat
+TextureFormat
 Texture::getTexFormat() const noexcept
 {
 	return _format;
@@ -308,136 +307,58 @@ RenderTexture::RenderTexture() noexcept
 	, _sharedDepthTexture(0)
 	, _sharedStencilTexture(0)
 {
-	_resolveTexture = RenderFactory::createTexture();
 }
 
 RenderTexture::~RenderTexture() noexcept
 {
 }
 
-void
-RenderTexture::setTexMipmap(bool enable) noexcept
-{
-	_resolveTexture->setTexMipmap(enable);
-}
-
-void
-RenderTexture::setTexFormat(PixelFormat format) noexcept
-{
-	_resolveTexture->setTexFormat(format);
-}
-
-void
-RenderTexture::setTexFilter(TextureFilter filter) noexcept
-{
-	_resolveTexture->setTexFilter(filter);
-}
-
-void
-RenderTexture::setTexWrap(TextureWrap wrap) noexcept
-{
-	_resolveTexture->setTexWrap(wrap);
-}
-
-void
-RenderTexture::setTexOp(TextureOp texop) noexcept
-{
-	_resolveTexture->setTexOp(texop);
-}
-
-void
-RenderTexture::setTexDim(TextureDim mapping) noexcept
-{
-	_resolveTexture->setTexDim(mapping);
-}
-
-void
-RenderTexture::setMultiSample(bool multisample) noexcept
-{
-	_resolveTexture->setMultisample(multisample);
-}
-
-void
-RenderTexture::setWidth(std::size_t w) noexcept
-{
-	_resolveTexture->setWidth(w);
-}
-
-void
-RenderTexture::setHeight(std::size_t h) noexcept
-{
-	_resolveTexture->setHeight(h);
-}
-
-void
-RenderTexture::setDepth(std::size_t depth) noexcept
-{
-	_resolveTexture->setDepth(depth);
-}
-
-void
-RenderTexture::setSize(std::size_t w, std::size_t h, std::size_t depth) noexcept
-{
-	_resolveTexture->setSize(w, h, depth);
-}
-
-TextureOp
-RenderTexture::getTexOp() const noexcept
-{
-	return _resolveTexture->getTexOp();
-}
-
-PixelFormat
+TextureFormat
 RenderTexture::getTexFormat()  const noexcept
 {
+	assert(_resolveTexture);
 	return _resolveTexture->getTexFormat();
-}
-
-TextureFilter
-RenderTexture::getTexFilter() const noexcept
-{
-	return _resolveTexture->getTexFilter();
-}
-
-TextureWrap
-RenderTexture::getTexWrap() const noexcept
-{
-	return _resolveTexture->getTexWrap();
 }
 
 TextureDim
 RenderTexture::getTexDim() const noexcept
 {
+	assert(_resolveTexture);
 	return _resolveTexture->getTexDim();
 }
 
 std::size_t
 RenderTexture::getWidth() const noexcept
 {
+	assert(_resolveTexture);
 	return _resolveTexture->getWidth();
 }
 
 std::size_t
 RenderTexture::getHeight() const noexcept
 {
+	assert(_resolveTexture);
 	return _resolveTexture->getHeight();
 }
 
 std::size_t
 RenderTexture::getDepth() const noexcept
 {
+	assert(_resolveTexture);
 	return _resolveTexture->getDepth();
 }
 
 bool
 RenderTexture::isMipmap() const noexcept
 {
+	assert(_resolveTexture);
 	return _resolveTexture->isMipmap();
 }
 
 bool
 RenderTexture::isMultiSample() const noexcept
 {
+	assert(_resolveTexture);
 	return _resolveTexture->isMultiSample();
 }
 

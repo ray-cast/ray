@@ -38,7 +38,7 @@
 #define _H_RENDERER_FEATURES_H_
 
 #include <ray/game_features.h>
-#include <ray/render_system_base.h>
+#include <ray/render_system.h>
 
 _NAME_BEGIN
 
@@ -52,6 +52,9 @@ public:
 
 	void setRenderWindow(WindHandle hwnd, std::size_t w, std::size_t h) noexcept;
 	WindHandle getRenderWindow() const noexcept;
+
+	void setRenderPipeline(RenderPipelinePtr pipeline) noexcept;
+	RenderPipelinePtr getRenderPipeline() const noexcept;
 
 	void setRenderSetting(const RenderSetting& setting) noexcept;
 	const RenderSetting& getRenderSetting() const noexcept;

@@ -35,9 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/ssao.h>
-#include <ray/material_maker.h>
 #include <ray/camera.h>
-#include <ray/render_factory.h>
 #include <ray/render_texture.h>
 
 _NAME_BEGIN
@@ -162,13 +160,13 @@ SSAO::onActivate(RenderPipeline& pipeline) except
 	std::size_t width, height;	
 	pipeline.getWindowResolution(width, height);
 
-	_texAmbient = RenderFactory::createRenderTexture();
-	_texAmbient->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16F);
+	_texAmbient = pipeline.createRenderTexture();
+	_texAmbient->setup(width, height, TextureDim::DIM_2D, TextureFormat::R16F);
 
-	_texBlur = RenderFactory::createRenderTexture();
-	_texBlur->setup(width, height, TextureDim::DIM_2D, PixelFormat::R16F);
+	_texBlur = pipeline.createRenderTexture();
+	_texBlur->setup(width, height, TextureDim::DIM_2D, TextureFormat::R16F);
 
-	_ambientOcclusion = MaterialMaker("sys:fx\\ssao.glsl");
+	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssao.glsl");
 	_ambientOcclusionPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ao");
 	_ambientOcclusionBlurPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("blur");
 	_ambientOcclusionCopyPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("copy");

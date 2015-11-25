@@ -51,7 +51,7 @@ public:
 	virtual void close() noexcept = 0;
 
 	void setTexMipmap(bool enable) noexcept;
-	void setTexFormat(PixelFormat format) noexcept;
+	void setTexFormat(TextureFormat format) noexcept;
 	void setTexOp(TextureOp op) noexcept;
 	void setTexWrap(TextureWrap wrap) noexcept;
 	void setTexFilter(TextureFilter filter) noexcept;
@@ -67,7 +67,7 @@ public:
 	void setSize(int w, int h, int depth = 0) noexcept;
 
 	TextureOp     getTexOp()   const noexcept;
-	PixelFormat   getTexFormat()  const noexcept;
+	TextureFormat   getTexFormat()  const noexcept;
 	TextureDim    getTexDim() const noexcept;
 	TextureWrap   getTexWrap() const noexcept;
 	TextureFilter getTexFilter() const noexcept;
@@ -103,7 +103,7 @@ private:
 	std::uint8_t _mipLevel;
 	std::uint32_t _mipSize;
 
-	PixelFormat _format;
+	TextureFormat _format;
 	TextureDim _dim;
 	TextureOp _texop;
 	TextureFilter _filter;
@@ -138,33 +138,17 @@ public:
 	virtual ~RenderTexture() noexcept;
 
 	virtual bool setup(TexturePtr texture) except = 0;
-	virtual void setup(std::size_t w, std::size_t h, TextureDim dim, PixelFormat format) except = 0;
-	virtual void setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, PixelFormat format) except = 0;
+	virtual void setup(std::size_t w, std::size_t h, TextureDim dim, TextureFormat format) except = 0;
+	virtual void setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, TextureFormat format) except = 0;
 
 	virtual void close() noexcept = 0;
 
-	void setTexMipmap(bool enable) noexcept;
-	void setTexFormat(PixelFormat format) noexcept;
-	void setTexFilter(TextureFilter filter) noexcept;
-	void setTexWrap(TextureWrap wrap) noexcept;
-	void setTexOp(TextureOp op) noexcept;
-	void setTexDim(TextureDim map) noexcept;
-	void setMultiSample(bool multisample) noexcept;
+	TextureDim getTexDim() const noexcept;
+	TextureFormat getTexFormat()  const noexcept;
 
-	TextureOp     getTexOp()   const noexcept;
-	TextureFilter getTexFilter() const noexcept;
-	TextureWrap   getTexWrap() const noexcept;
-	TextureDim    getTexDim() const noexcept;
-	PixelFormat getTexFormat()  const noexcept;
-
-	void setWidth(std::size_t w) noexcept;
-	void setHeight(std::size_t h) noexcept;
-	void setDepth(std::size_t d) noexcept;
-	void setSize(std::size_t w, std::size_t h, std::size_t depth = 0) noexcept;
-
-	std::size_t getWidth()   const noexcept;
-	std::size_t getHeight()  const noexcept;
-	std::size_t getDepth()   const noexcept;
+	std::size_t getWidth()  const noexcept;
+	std::size_t getHeight() const noexcept;
+	std::size_t getDepth()  const noexcept;
 
 	bool isMipmap() const noexcept;
 	bool isMultiSample() const noexcept;

@@ -187,39 +187,39 @@ OGLTypes::asOGLTarget(TextureDim target) noexcept
 }
 
 GLenum
-OGLTypes::asOGLFormat(PixelFormat format) noexcept
+OGLTypes::asOGLFormat(TextureFormat format) noexcept
 {
-	if (format == PixelFormat::DEPTH_COMPONENT16 || format == PixelFormat::DEPTH_COMPONENT24 || format == PixelFormat::DEPTH_COMPONENT32)
+	if (format == TextureFormat::DEPTH_COMPONENT16 || format == TextureFormat::DEPTH_COMPONENT24 || format == TextureFormat::DEPTH_COMPONENT32)
 		return GL_DEPTH_COMPONENT;
 
-	if (format == PixelFormat::DEPTH24_STENCIL8 || format == PixelFormat::DEPTH32_STENCIL8)
+	if (format == TextureFormat::DEPTH24_STENCIL8 || format == TextureFormat::DEPTH32_STENCIL8)
 		return GL_DEPTH_STENCIL;
 
-	if (format == PixelFormat::STENCIL8)
+	if (format == TextureFormat::STENCIL8)
 		return GL_STENCIL_INDEX;
 
-	if (format == PixelFormat::R8G8B8 || format == PixelFormat::R16G16B16 || format == PixelFormat::R16G16B16F || format == PixelFormat::R32G32B32F)
+	if (format == TextureFormat::R8G8B8 || format == TextureFormat::R16G16B16 || format == TextureFormat::R16G16B16F || format == TextureFormat::R32G32B32F)
 		return GL_RGB;
 
-	if (format == PixelFormat::R8G8B8A8 || format == PixelFormat::R16G16B16A16 || format == PixelFormat::R16G16B16A16F || format == PixelFormat::R32G32B32A32F)
+	if (format == TextureFormat::R8G8B8A8 || format == TextureFormat::R16G16B16A16 || format == TextureFormat::R16G16B16A16F || format == TextureFormat::R32G32B32A32F)
 		return GL_RGBA;
 
-	if (format == PixelFormat::R16G16B16A16_SNORM)
+	if (format == TextureFormat::R16G16B16A16_SNORM)
 		return GL_RGBA;
 
-	if (format == PixelFormat::SR8G8B8 || format == PixelFormat::SRGB)
+	if (format == TextureFormat::SR8G8B8 || format == TextureFormat::SRGB)
 		return GL_RGB;
 
-	if (format == PixelFormat::SR8G8B8A8 || format == PixelFormat::SRGBA)
+	if (format == TextureFormat::SR8G8B8A8 || format == TextureFormat::SRGBA)
 		return GL_RGBA;
 
-	if (format == PixelFormat::R8 || format == PixelFormat::R16F || format == PixelFormat::R32F)
+	if (format == TextureFormat::R8 || format == TextureFormat::R16F || format == TextureFormat::R32F)
 		return GL_RED;
 
-	if (format == PixelFormat::RG16F || format == PixelFormat::RG32F)
+	if (format == TextureFormat::RG16F || format == TextureFormat::RG32F)
 		return GL_RG;
 
-	if (format == PixelFormat::R11G11B10F)
+	if (format == TextureFormat::R11G11B10F)
 		return GL_RGB;
 
 	assert(false);
@@ -227,54 +227,54 @@ OGLTypes::asOGLFormat(PixelFormat format) noexcept
 }
 
 GLenum
-OGLTypes::asOGLType(PixelFormat format) noexcept
+OGLTypes::asOGLType(TextureFormat format) noexcept
 {
-	if (format == PixelFormat::DEPTH24_STENCIL8)
+	if (format == TextureFormat::DEPTH24_STENCIL8)
 		return GL_UNSIGNED_INT_24_8;
 
-	if (format == PixelFormat::DEPTH32_STENCIL8)
+	if (format == TextureFormat::DEPTH32_STENCIL8)
 		return GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
 
-	if (format == PixelFormat::STENCIL8)
+	if (format == TextureFormat::STENCIL8)
 		return GL_UNSIGNED_BYTE;
 
-	if (format == PixelFormat::DEPTH_COMPONENT32)
+	if (format == TextureFormat::DEPTH_COMPONENT32)
 		return GL_FLOAT;
 
-	if (format == PixelFormat::DEPTH_COMPONENT16 || format == PixelFormat::DEPTH_COMPONENT24)
+	if (format == TextureFormat::DEPTH_COMPONENT16 || format == TextureFormat::DEPTH_COMPONENT24)
 		return GL_UNSIGNED_BYTE;
 
-	if (format == PixelFormat::R8G8B8 || format == PixelFormat::R16G16B16)
+	if (format == TextureFormat::R8G8B8 || format == TextureFormat::R16G16B16)
 		return GL_UNSIGNED_BYTE;
 
-	if (format == PixelFormat::R8G8B8A8 || format == PixelFormat::R16G16B16A16)
+	if (format == TextureFormat::R8G8B8A8 || format == TextureFormat::R16G16B16A16)
 		return GL_UNSIGNED_BYTE;
 
-	if (format == PixelFormat::R8)
+	if (format == TextureFormat::R8)
 		return GL_UNSIGNED_BYTE;
 
-	if (format == PixelFormat::R16G16B16F || format == PixelFormat::R32G32B32F)
+	if (format == TextureFormat::R16G16B16F || format == TextureFormat::R32G32B32F)
 		return GL_FLOAT;
 
-	if (format == PixelFormat::R16G16B16A16_SNORM)
+	if (format == TextureFormat::R16G16B16A16_SNORM)
 		return GL_FLOAT;
 
-	if (format == PixelFormat::R16G16B16A16F || format == PixelFormat::R32G32B32A32F)
+	if (format == TextureFormat::R16G16B16A16F || format == TextureFormat::R32G32B32A32F)
 		return GL_FLOAT;
 
-	if (format == PixelFormat::SR8G8B8 || format == PixelFormat::SRGB)
+	if (format == TextureFormat::SR8G8B8 || format == TextureFormat::SRGB)
 		return GL_FLOAT;
 
-	if (format == PixelFormat::SR8G8B8A8 || format == PixelFormat::SRGBA)
+	if (format == TextureFormat::SR8G8B8A8 || format == TextureFormat::SRGBA)
 		return GL_FLOAT;
 
-	if (format == PixelFormat::R16F || format == PixelFormat::R32F)
+	if (format == TextureFormat::R16F || format == TextureFormat::R32F)
 		return GL_FLOAT;
 
-	if (format == PixelFormat::RG16F || format == PixelFormat::RG32F)
+	if (format == TextureFormat::RG16F || format == TextureFormat::RG32F)
 		return GL_FLOAT;
 
-	if (format == PixelFormat::R11G11B10F)
+	if (format == TextureFormat::R11G11B10F)
 		return GL_FLOAT;
 
 	assert(false);
@@ -282,72 +282,72 @@ OGLTypes::asOGLType(PixelFormat format) noexcept
 }
 
 GLint
-OGLTypes::asOGLInternalformat(PixelFormat format) noexcept
+OGLTypes::asOGLInternalformat(TextureFormat format) noexcept
 {
 	switch (format)
 	{
-	case PixelFormat::STENCIL8:
+	case TextureFormat::STENCIL8:
 		return GL_STENCIL_INDEX8;
-	case PixelFormat::DEPTH_COMPONENT16:
+	case TextureFormat::DEPTH_COMPONENT16:
 		return GL_DEPTH_COMPONENT16;
-	case PixelFormat::DEPTH_COMPONENT24:
+	case TextureFormat::DEPTH_COMPONENT24:
 		return GL_DEPTH_COMPONENT24;
-	case PixelFormat::DEPTH_COMPONENT32:
+	case TextureFormat::DEPTH_COMPONENT32:
 		return GL_DEPTH_COMPONENT32F;
-	case PixelFormat::DEPTH24_STENCIL8:
+	case TextureFormat::DEPTH24_STENCIL8:
 		return GL_DEPTH24_STENCIL8;
-	case PixelFormat::DEPTH32_STENCIL8:
+	case TextureFormat::DEPTH32_STENCIL8:
 		return GL_DEPTH32F_STENCIL8;
-	case PixelFormat::R8G8B8:
+	case TextureFormat::R8G8B8:
 		return GL_RGB8;
-	case PixelFormat::R8G8B8A8:
+	case TextureFormat::R8G8B8A8:
 		return GL_RGBA8;
-	case PixelFormat::R16G16B16:
+	case TextureFormat::R16G16B16:
 		return GL_RGB16I;
-	case PixelFormat::R16G16B16A16:
+	case TextureFormat::R16G16B16A16:
 		return GL_RGBA16I;
 #if !defined(EGLAPI)
-	case PixelFormat::R16G16B16A16_SNORM:
+	case TextureFormat::R16G16B16A16_SNORM:
 		return GL_RGBA16_SNORM;
 #endif
-	case PixelFormat::R16G16B16F:
+	case TextureFormat::R16G16B16F:
 		return GL_RGB16F;
-	case PixelFormat::R32G32B32F:
+	case TextureFormat::R32G32B32F:
 		return GL_RGB32F;
-	case PixelFormat::R16G16B16A16F:
+	case TextureFormat::R16G16B16A16F:
 		return GL_RGBA16F;
-	case PixelFormat::R32G32B32A32F:
+	case TextureFormat::R32G32B32A32F:
 		return GL_RGBA32F;
-	case PixelFormat::SR8G8B8:
+	case TextureFormat::SR8G8B8:
 		return GL_SRGB8;
-	case PixelFormat::SR8G8B8A8:
+	case TextureFormat::SR8G8B8A8:
 		return GL_SRGB8_ALPHA8;
-	case PixelFormat::SRGB:
+	case TextureFormat::SRGB:
 		return GL_SRGB;
-	case PixelFormat::SRGBA:
+	case TextureFormat::SRGBA:
 		return GL_SRGB_ALPHA_EXT;
-	case PixelFormat::R8:
+	case TextureFormat::R8:
 		return GL_R8;
-	case PixelFormat::R16F:
+	case TextureFormat::R16F:
 		return GL_R16F;
-	case PixelFormat::R32F:
+	case TextureFormat::R32F:
 		return GL_R32F;
-	case PixelFormat::RG16F:
+	case TextureFormat::RG16F:
 		return GL_RG16F;
-	case PixelFormat::RG32F:
+	case TextureFormat::RG32F:
 		return GL_RG32F;
-	case PixelFormat::R11G11B10F:
+	case TextureFormat::R11G11B10F:
 		return GL_R11F_G11F_B10F;
-	case PixelFormat::RGB_DXT1:
+	case TextureFormat::RGB_DXT1:
 		return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-	case PixelFormat::RGBA_DXT1:
+	case TextureFormat::RGBA_DXT1:
 		return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-	case PixelFormat::RGBA_DXT3:
+	case TextureFormat::RGBA_DXT3:
 		return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-	case PixelFormat::RGBA_DXT5:
+	case TextureFormat::RGBA_DXT5:
 		return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 #if !defined(EGLAPI)
-	case PixelFormat::RG_ATI2:
+	case TextureFormat::RG_ATI2:
 		return GL_COMPRESSED_RG_RGTC2;
 #endif
 	default:

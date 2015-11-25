@@ -35,14 +35,13 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/ssr.h>
-#include <ray/material_maker.h>
 
 _NAME_BEGIN
 
 SSR::SSR() noexcept
 {
-	_ssr = MaterialMaker("sys:fx/ssr.glsl");
-	_ssrPass = _ssr->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ssr");
+	//_ssr = MaterialMaker("sys:fx/ssr.glsl");
+	//_ssrPass = _ssr->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ssr");
 
 	//_projInfo = _ssr->getParameter("projInfo");
 	//_clipInfo = _ssr->getParameter("clipInfo");

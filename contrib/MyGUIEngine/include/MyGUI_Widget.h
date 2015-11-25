@@ -136,6 +136,7 @@ namespace MyGUI
 		/** See Widget::setRealPosition(const FloatCoord& _coord) */
 		void setRealCoord(float _left, float _top, float _width, float _height);
 
+		void setName(const std::string&);
 		//! Get name of widget
 		const std::string& getName() const;
 
@@ -240,6 +241,7 @@ namespace MyGUI
 
 		/** Change widget skin */
 		void changeWidgetSkin(const std::string& _skinName);
+		const std::string& getSkinName() const noexcept;
 
 		/** Set widget style.
 			@param _style New widget style (see WidgetStyle::Enum)
@@ -404,6 +406,7 @@ namespace MyGUI
 		bool mInheritsAlpha;
 		// имя виджета
 		std::string mName;
+		std::string mSkinName;
 
 		// наш отец в иерархии виджетов
 		Widget* mParent;

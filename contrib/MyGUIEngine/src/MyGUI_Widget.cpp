@@ -153,6 +153,9 @@ namespace MyGUI
 
 	void Widget::changeWidgetSkin(const std::string& _skinName)
 	{
+		if (mSkinName == _skinName)
+			return;
+
 		ResourceSkin* skinInfo = nullptr;
 		ResourceLayout* templateInfo = nullptr;
 
@@ -182,6 +185,13 @@ namespace MyGUI
 				setProperty(iter->first, iter->second);
 			}
 		}
+
+		mSkinName = _skinName;
+	}
+
+	const std::string& Widget::getSkinName() const noexcept
+	{
+		return mSkinName;
 	}
 
 	const WidgetInfo* Widget::initialiseWidgetSkinBase(ResourceSkin* _skinInfo, ResourceLayout* _templateInfo)
@@ -1240,6 +1250,11 @@ namespace MyGUI
 	void Widget::setRealCoord(float _left, float _top, float _width, float _height)
 	{
 		setRealCoord(FloatCoord(_left, _top, _width, _height));
+	}
+
+	void Widget::setName(const std::string& name)
+	{
+		mName = name;
 	}
 
 	const std::string& Widget::getName() const

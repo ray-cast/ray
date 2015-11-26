@@ -19,6 +19,7 @@ enum class SOUND_FORMAT_ENUM : SOUND_FORMAT_TYPE
 
 typedef std::shared_ptr<class SoundBuffer> BufferPtr;
 typedef std::shared_ptr<class SoundSource> SourcePtr;
+typedef std::shared_ptr<class SoundSystem> SystemPtr;
 
 _NAME_END
 

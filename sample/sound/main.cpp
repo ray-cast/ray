@@ -34,16 +34,25 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/al_sound_system.h>
-#include <ray/al_sound_buffer.h>
-#include <ray/al_sound_source.h>
+#include <ray/sound_system.h>
+#include <ray/sound_buffer.h>
+#include <ray/sound_source.h>
+#include "ray/sound_factory.h"
 
 int main(int argc, char *argv[])
 {
-	ray::ALSoundSystem ss;
-	ss.Init();
-	auto buffer1 = ss.Open("C:\\Users\\ray\\Desktop\\1.ogg");
-	auto source1 = std::make_shared<ray::ALSoundSource>();
+    auto ss = ray::SoundFactory::CreateSystem("AlSoundSystem");
+    if (ss == nullptr)
+    {
+        return 0;
+    }
+	ss->Init();
+	auto buffer1 = ss->Open("d:\\1.ogg");
+    auto source1 = ray::SoundFactory::CreateSource("AlSoundSource");
+    if (source1 == nullptr)
+    {
+        return 0;
+    }
 	buffer1->Init();
 	source1->SetSoundBuffer(buffer1);
 	source1->Play();

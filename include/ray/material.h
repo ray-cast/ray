@@ -38,7 +38,7 @@
 #define _H_METERIAL_H_
 
 #include <ray/material_tech.h>
-#include <ray/material_semantic.h>
+#include <ray/material_param.h>
 
 _NAME_BEGIN
 

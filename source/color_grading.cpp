@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/color_grading.h>
-#include <ray/material_maker.h>
 #include <ray/render_texture.h>
 
 _NAME_BEGIN

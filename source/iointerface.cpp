@@ -177,28 +177,21 @@ IoInterface::dispose()
 	{
 		while (!_isQuit)
 		{
-			if (!_isPause)
+			std::unique_lock<std::mutex> _lock(_mutex);
+			if (_queue.empty())
 			{
-				std::unique_lock<std::mutex> _lock(_mutex);
-				if (_queue.empty())
-				{
-					_dispose.wait(_lock);
-				}
-
-				if (!_queue.empty())
-				{
-					auto res = _queue.front();
-					_queue.pop();
-
-					if (res)
-					{
-						res->load();
-					}
-				}
+				_dispose.wait(_lock);
 			}
-			else
+
+			if (!_queue.empty())
 			{
-				std::this_thread::sleep_for(std::chrono::microseconds(60));
+				auto res = _queue.front();
+				_queue.pop();
+
+				if (res)
+				{
+					res->load();
+				}
 			}
 		}
 	}

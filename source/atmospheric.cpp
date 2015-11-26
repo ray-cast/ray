@@ -139,11 +139,8 @@ Atmospheric::onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcep
 
 			_lightDirection->assign(lightDirection);
 
-			pipeline.setMaterialPass(_ground);
-			pipeline.drawMesh(_sphere, renderable);
-
-			pipeline.setMaterialPass(_sky);
-			pipeline.drawMesh(_sphere, renderable);
+			pipeline.drawMesh(_ground, _sphere, renderable);
+			pipeline.drawMesh(_sky, _sphere, renderable);
 		}
 	}
 }

@@ -39,6 +39,7 @@
 
 #include <vector>
 #include <assert.h>
+#include <ray/trait.h>
 #include <ray/macro.h>
 #include <ray/except.h>
 
@@ -46,6 +47,12 @@ _NAME_BEGIN
 
 template<typename T>
 class delegate;
+
+template<typename _This, typename _Functor>
+inline typename delegate<typename trait::functor<_Functor>::result_type(typename trait::functor<_Functor>::arg_type)>::bind make_delegate(_Functor t2, _This t1)
+{
+	return delegate<typename trait::functor<_Functor>::result_type(typename trait::functor<_Functor>::arg_type)>::make(t1, t2);
+}
 
 #define DELEGATE_MAX_ARGS 0
 #include "delegate_impl.h"

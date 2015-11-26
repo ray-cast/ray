@@ -64,7 +64,7 @@ private:
         virtual ~IICALLBACK() noexcept {}
 
         virtual Result invoke(DELEGATE_FUNCTION_PARAMS) const = 0;
-        virtual IICALLBACK* clone() const = 0;
+        virtual std::unique_ptr<IICALLBACK> clone() const = 0;
     };
 
     template<typename T>
@@ -91,9 +91,9 @@ private:
             return invoke(_functor DELEGATE_COMMA DELEGATE_FUNCTION_ARGS);
         }
 
-        virtual IICALLBACK* clone() const
+        virtual std::unique_ptr<IICALLBACK> clone() const
         {
-            return new ICALLBACK<T>(_functor);
+            return std::make_unique<ICALLBACK<T>>(_functor);
         }
 
         T _functor;
@@ -102,8 +102,8 @@ private:
 public:
     typedef delegate<Result(DELEGATE_TEMPLATE_ARGS)> _Myt;
 
-    typedef std::vector<IICALLBACK*> DELEGATES;
-
+	typedef typename std::unique_ptr<IICALLBACK> bind;
+    typedef std::vector<std::unique_ptr<IICALLBACK>> DELEGATES;
     typedef typename DELEGATES::iterator iterator;
     typedef typename DELEGATES::const_iterator const_iterator;
     typedef typename DELEGATES::size_type size_type;
@@ -179,10 +179,9 @@ private:
         static T run(const _Myt& self DELEGATE_COMMA DELEGATE_FUNCTION_PARAMS)
         {
             const_iterator it = self._functions->begin();
+            const_iterator end = self._functions->end() - 1;
 
-            const_iterator End = self._functions->end() - 1;
-
-            for (; it != End; ++it)
+            for (; it != end; ++it)
                 (*it)->invoke(DELEGATE_FUNCTION_ARGS);
 
             return (*it)->invoke(DELEGATE_FUNCTION_ARGS);
@@ -194,12 +193,8 @@ private:
     {
         static void run(const _Myt& self DELEGATE_COMMA DELEGATE_FUNCTION_PARAMS)
         {
-            const_iterator it = self._functions->begin();
-
-            const_iterator End = self._functions->end();
-
-            for (; it != End; ++it)
-                (*it)->invoke(DELEGATE_FUNCTION_ARGS);
+            for (auto& it : *self._functions)
+                it->invoke(DELEGATE_FUNCTION_ARGS);
         }
     };
 public:
@@ -224,21 +219,29 @@ public:
         if (!_functions)
             _functions = new DELEGATES;
 
-        _functions->push_back(new ICALLBACK<std::pair<_This, _Functor>>(pair));
+        _functions->push_back(std::make_unique<ICALLBACK<std::pair<_This, _Functor>>>(pair));
     }
+
+	void attach(typename _Myt::bind& callback)
+	{
+		assert(callback);
+
+		if (!_functions)
+			_functions = new DELEGATES;
+
+		_functions->push_back(std::move(callback));
+	}
 
     void attach(const _Myt& other)
     {
-        if (!_functions)
-            _functions = new DELEGATES;
+		if (other._functions)
+		{
+			if (!_functions)
+				_functions = new DELEGATES;
 
-        const_iterator it = other._functions->begin();
-        const_iterator End = other._functions->end();
-
-        for (; it != End; ++it)
-        {
-            _functions->push_back((*it)->clone());
-        }
+			for (auto& it : *other._functions)
+				_functions->push_back(it->clone());
+		}
     }
 
     template<typename T>
@@ -313,18 +316,15 @@ public:
     void clear() noexcept
     {
         if (!_functions) { return; }
-
-        iterator it = _functions->begin();
-
-        iterator end = _functions->end();
-
-        for (; it != end; ++it)
-        {
-            delete (*it); *it = 0;
-        }
-
         _functions->clear();
     }
+
+	template<typename _This, typename _Functor>
+	static typename _Myt::bind make(const _This& t1, const _Functor& t2)
+	{
+		return std::make_unique<ICALLBACK<std::pair<_This, _Functor>>>(std::make_pair(t1, t2));
+	}
+
 private:
     DELEGATES* _functions;
 };

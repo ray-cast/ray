@@ -148,8 +148,7 @@ MyGuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture
 		{
 			RenderIndirect renderable;
 			renderable.numVertices = _count;
-			RenderSystem::instance()->getRenderPipeline()->setMaterialPass(_materialPass);
-			RenderSystem::instance()->getRenderPipeline()->drawMesh(renderBuffer, renderable);
+			RenderSystem::instance()->getRenderPipeline()->drawMesh(_materialPass, renderBuffer, renderable);
 		}
 		else
 		{

@@ -37,12 +37,19 @@
 #ifndef _H_GUI_LISTENER_COMPONENT_H_
 #define _H_GUI_LISTENER_COMPONENT_H_
 
-#include <ray/gui.h>
+#include <ray/game_component.h>
 #include <ray/input.h>
+#include <ray/material.h>
+#include <ray/game_event.h>
+#include <ray/game_component.h>
+#include <ray/game_controller.h>
 
 _NAME_BEGIN
 
-class EXPORT GUIListenerComponent : public GameController
+typedef std::shared_ptr<class GUILayoutComponent> GUILayoutComponentPtr;
+typedef std::shared_ptr<class GUIBehaviourComponent> GUIBehaviourComponentPtr;
+
+class EXPORT GUIListenerComponent : public GameComponent
 {
 	__DeclareSubInterface(GUIListenerComponent, GameComponent)
 public:

@@ -37,7 +37,7 @@
 #ifndef _H_GUI_LAYOUT_COMPONENT_H_
 #define _H_GUI_LAYOUT_COMPONENT_H_
 
-#include <ray/gui.h>
+#include <ray/gui_listener_component.h>
 
 _NAME_BEGIN
 

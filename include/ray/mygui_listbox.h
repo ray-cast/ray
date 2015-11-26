@@ -37,16 +37,6 @@
 #ifndef _H_GUI_H_
 #define _H_GUI_H_
 
-#include <ray/material.h>
-#include <ray/game_event.h>
-#include <ray/game_component.h>
-#include <ray/game_controller.h>
 
-_NAME_BEGIN
-
-typedef std::shared_ptr<class GUILayoutComponent> GUILayoutComponentPtr;
-typedef std::shared_ptr<class GUIBehaviourComponent> GUIBehaviourComponentPtr;
-
-_NAME_END
 
 #endif

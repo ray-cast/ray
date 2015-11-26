@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_INPUT_MANAGER_H_
-#define _H_GUI_INPUT_MANAGER_H_
+#include <ray/render_pipeline.h>
 
+_NAME_BEGIN
 
-#endif
+_NAME_END

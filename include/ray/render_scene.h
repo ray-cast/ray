@@ -40,6 +40,7 @@
 #include <ray/camera.h>
 #include <ray/light.h>
 #include <ray/kdtree.h>
+#include <ray/delegate.h>
 
 _NAME_BEGIN
 
@@ -108,11 +109,20 @@ public:
 	void computVisiableLight(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept;
 	void computVisiable(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept;
 
+	void registerAddCameraDelegate(delegate<void(CameraPtr)>::bind delegate) noexcept;
+
 private:
 
 	Cameras _cameraList;
 	Lights _lightList;
 	RenderObjects _renderObjectList;
+
+	delegate<void(LightPtr)> _onAddLightDelegate;
+	delegate<void(CameraPtr)> _onAddCameraDelegate;
+	delegate<void(RenderObjectPtr)> _onAddRenderObjectDelegate;
+	delegate<void(LightPtr)> _onRemoveLightDelegate;
+	delegate<void(CameraPtr)> _onRemoveCameraDelegate;
+	delegate<void(RenderObjectPtr)> _onRemoveRenderObjectDelegate;
 };
 
 _NAME_END

@@ -37,9 +37,9 @@
 #include <ray/render_pipeline.h>
 #include <ray/camera.h>
 #include <ray/light.h>
-#include <ray/material_maker.h>
 #include <ray/render_scene.h>
 #include <ray/render_texture.h>
+#include <ray/material_manager.h>
 
 _NAME_BEGIN
 
@@ -63,7 +63,6 @@ void
 DefaultRenderPipeline::renderShadowMap(CameraPtr camera) noexcept
 {
 	this->setCamera(camera);
-	this->assignVisiable(camera->getRenderScene(), camera);
 
 	this->setRenderTexture(camera->getRenderTexture());
 	this->clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0.0);
@@ -104,11 +103,11 @@ DefaultRenderPipeline::renderCubeMapLayer(RenderScenePtr scene, CameraPtr camera
 void
 DefaultRenderPipeline::renderCubeMap(CameraPtr camera) noexcept
 {
-	auto semantic = Material::getMaterialSemantic();
-	semantic->setTexParam(GlobalTexSemantic::DeferredDepthMap, _deferredDepthCubeMap->getResolveTexture());
-	semantic->setTexParam(GlobalTexSemantic::DeferredNormalMap, _deferredNormalCubeMap->getResolveTexture());
-	semantic->setTexParam(GlobalTexSemantic::DeferredGraphicMap, _deferredGraphicCubeMap->getResolveTexture());
-	semantic->setTexParam(GlobalTexSemantic::DeferredLightMap, _deferredLightCubeMap->getResolveTexture());
+	auto& semantic = this->getMaterialManager();
+	semantic->setTexParam(MaterialSemantic::DeferredDepthMap, _deferredDepthCubeMap->getResolveTexture());
+	semantic->setTexParam(MaterialSemantic::DeferredNormalMap, _deferredNormalCubeMap->getResolveTexture());
+	semantic->setTexParam(MaterialSemantic::DeferredGraphicMap, _deferredGraphicCubeMap->getResolveTexture());
+	semantic->setTexParam(MaterialSemantic::DeferredLightMap, _deferredLightCubeMap->getResolveTexture());
 
 	_leftCamera->makePerspective(90.0, 1.0, camera->getNear(), camera->getFar());
 	_leftCamera->makeLookAt(camera->getTranslate(), camera->getTranslate() - Vector3::UnitX, Vector3::UnitY);
@@ -147,8 +146,6 @@ DefaultRenderPipeline::render2DEnvMap(CameraPtr camera) noexcept
 {
 	this->setCamera(camera);
 
-	this->assignVisiable(camera->getRenderScene(), camera);
-
 	this->setRenderTexture(_deferredShadingMap);
 	this->clearRenderTexture(ClearFlags::CLEAR_ALL, camera->getClearColor(), 1.0, 0);
 	this->drawRenderIndirect(RenderQueue::RQ_OPAQUE, RenderPass::RP_OPAQUES);
@@ -160,17 +157,14 @@ DefaultRenderPipeline::render3DEnvMap(CameraPtr camera) noexcept
 	//this->renderCubeMap(camera);
 	//this->renderIrradianceMap(camera);
 
-	auto semantic = Material::getMaterialSemantic();
-	semantic->setTexParam(GlobalTexSemantic::DeferredDepthMap, _deferredDepthMap->getResolveTexture());
-	semantic->setTexParam(GlobalTexSemantic::DeferredDepthLinearMap, _deferredDepthLinearMap->getResolveTexture());
-	semantic->setTexParam(GlobalTexSemantic::DeferredNormalMap, _deferredNormalMap->getResolveTexture());
-	semantic->setTexParam(GlobalTexSemantic::DeferredGraphicMap, _deferredGraphicMap->getResolveTexture());
-	semantic->setTexParam(GlobalTexSemantic::DeferredLightMap, _deferredLightMap->getResolveTexture());
+	auto semantic = this->getMaterialManager();
+	semantic->setTexParam(MaterialSemantic::DeferredDepthMap, _deferredDepthMap->getResolveTexture());
+	semantic->setTexParam(MaterialSemantic::DeferredDepthLinearMap, _deferredDepthLinearMap->getResolveTexture());
+	semantic->setTexParam(MaterialSemantic::DeferredNormalMap, _deferredNormalMap->getResolveTexture());
+	semantic->setTexParam(MaterialSemantic::DeferredGraphicMap, _deferredGraphicMap->getResolveTexture());
+	semantic->setTexParam(MaterialSemantic::DeferredLightMap, _deferredLightMap->getResolveTexture());
 
 	this->setCamera(camera);
-
-	this->assignVisiable(camera->getRenderScene(), camera);
-	this->assignLight(camera->getRenderScene(), camera);
 
 	this->renderOpaques(_deferredGraphicMaps);
 	this->renderOpaquesDepthLinear(_deferredDepthLinearMap);
@@ -419,7 +413,7 @@ DefaultRenderPipeline::renderPointLight(const Light& light) noexcept
 
 	_eyePosition->assign(float3x3(this->getCamera()->getView()) * this->getCamera()->getTranslate());
 
-	auto semantic = Material::getMaterialSemantic();
+	auto semantic = this->getMaterialManager();
 	semantic->setMatrixParam(matModel, light.getTransform());
 
 	RenderStencilState stencil = _deferredPointLight->getRenderState()->getStencilState();
@@ -427,14 +421,13 @@ DefaultRenderPipeline::renderPointLight(const Light& light) noexcept
 
 	_deferredPointLight->getRenderState()->setStencilState(stencil);
 
-	this->setMaterialPass(_deferredPointLight);
-	this->drawSphere();
+	this->drawSphere(_deferredPointLight);
 }
 
 void
 DefaultRenderPipeline::renderSpotLight(const Light& light) noexcept
 {
-	auto semantic = Material::getMaterialSemantic();
+	auto semantic = this->getMaterialManager();
 	semantic->setMatrixParam(matModel, light.getTransform());
 
 	_lightColor->assign(light.getLightColor() * light.getIntensity());
@@ -453,8 +446,7 @@ DefaultRenderPipeline::renderSpotLight(const Light& light) noexcept
 
 	_deferredSpotLight->getRenderState()->setStencilState(stencil);
 
-	this->setMaterialPass(_deferredSpotLight);
-	this->drawCone();
+	this->drawCone(_deferredSpotLight);
 }
 
 void
@@ -490,7 +482,7 @@ DefaultRenderPipeline::renderAreaLight(const Light& light) noexcept
 void
 DefaultRenderPipeline::onActivate() except
 {
-	std::size_t width, height;
+	std::uint32_t width, height;
 	this->getWindowResolution(width, height);
 
 	_deferredLighting = this->createMaterial("sys:fx\\deferred_lighting.glsl");
@@ -585,14 +577,14 @@ DefaultRenderPipeline::onActivate() except
 	_deferredGraphicCubeMaps->attach(_deferredNormalCubeMap);
 	_deferredGraphicCubeMaps->setup();
 
-	auto semantic = Material::getMaterialSemantic();
-	semantic->setTexParam(GlobalTexSemantic::DeferredDepthMap, _deferredDepthMap->getResolveTexture());
-	semantic->setTexParam(GlobalTexSemantic::DeferredNormalMap, _deferredNormalMap->getResolveTexture());
-	semantic->setTexParam(GlobalTexSemantic::DeferredGraphicMap, _deferredGraphicMap->getResolveTexture());
-	semantic->setTexParam(GlobalTexSemantic::DeferredLightMap, _deferredLightMap->getResolveTexture());
-	semantic->setTexParam(GlobalTexSemantic::DepthMap, _deferredDepthMap->getResolveTexture());
-	semantic->setTexParam(GlobalTexSemantic::ColorMap, _deferredShadingMap->getResolveTexture());
-	semantic->setTexParam(GlobalTexSemantic::NormalMap, _deferredNormalMap->getResolveTexture());
+	auto semantic = this->getMaterialManager();
+	semantic->setTexParam(MaterialSemantic::DeferredDepthMap, _deferredDepthMap->getResolveTexture());
+	semantic->setTexParam(MaterialSemantic::DeferredNormalMap, _deferredNormalMap->getResolveTexture());
+	semantic->setTexParam(MaterialSemantic::DeferredGraphicMap, _deferredGraphicMap->getResolveTexture());
+	semantic->setTexParam(MaterialSemantic::DeferredLightMap, _deferredLightMap->getResolveTexture());
+	semantic->setTexParam(MaterialSemantic::DepthMap, _deferredDepthMap->getResolveTexture());
+	semantic->setTexParam(MaterialSemantic::ColorMap, _deferredShadingMap->getResolveTexture());
+	semantic->setTexParam(MaterialSemantic::NormalMap, _deferredNormalMap->getResolveTexture());
 
 	_texEnvironmentMap->assign(_deferredShadingCubeMap->getResolveTexture());
 }
@@ -657,7 +649,7 @@ DefaultRenderPipeline::onRenderPost(CameraPtr camera) noexcept
 		auto v2 = camera->getViewport();
 		if (v2.width == 0 || v2.height == 0)
 		{
-			std::size_t width, height;
+			std::uint32_t width, height;
 			this->getWindowResolution(width, height);
 
 			v2.left = 0;

@@ -52,15 +52,8 @@ public:
 	ShaderVariant(const std::string& name, ShaderVariantType type) noexcept;
 	~ShaderVariant() noexcept;
 
-	void setup() noexcept;
-	void close() noexcept;
-
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
-
-	void setSemantic(const std::string& semantic) noexcept;
-	const std::string& getSemantic() const noexcept;
-	bool isSemantic() const noexcept;
 
 	void setType(ShaderVariantType type) noexcept;
 	ShaderVariantType getType() const noexcept;
@@ -111,7 +104,6 @@ protected:
 private:
 
 	std::string _name;
-	std::string _semantic;
 
 	TexturePtr _texture;
 	TextureSamplePtr _textureSample;
@@ -164,16 +156,16 @@ private:
 	std::size_t _bindingProgram;
 };
 
-class EXPORT ShaderAttribute : public ShaderParameter
+class EXPORT ShaderAttribute final : public ShaderParameter
 {
 };
 
-class EXPORT ShaderSubroutine : public ShaderParameter
+class EXPORT ShaderSubroutine final : public ShaderParameter
 {
 public:
 };
 
-class EXPORT ShaderUniform : public ShaderParameter
+class EXPORT ShaderUniform final : public ShaderParameter
 {
 public:
 	ShaderUniform() noexcept;

@@ -37,11 +37,11 @@
 #ifndef _H_DEFERRED_LIGHTING_H_
 #define _H_DEFERRED_LIGHTING_H_
 
-#include <ray/render_pipeline_layer.h>
+#include <ray/render_pipeline_base.h>
 
 _NAME_BEGIN
 
-class DefaultRenderPipeline final : public RenderPipelineLayer
+class DefaultRenderPipeline final : public RenderPipeline
 {
 public:
 	DefaultRenderPipeline() except;
@@ -153,8 +153,6 @@ private:
 
 	MultiRenderTexturePtr _deferredGraphicMaps;
 	MultiRenderTexturePtr _deferredGraphicCubeMaps;
-
-	//EnvironmentIrradiance _irradiance;
 };
 
 _NAME_END

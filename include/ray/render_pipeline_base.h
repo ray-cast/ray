@@ -37,9 +37,7 @@
 #ifndef _H_RENDER_PIPELINE_BASE_H_
 #define _H_RENDER_PIPELINE_BASE_H_
 
-#include <ray/render_types.h>
-#include <ray/render_buffer.h>
-#include <ray/material.h>
+#include <ray/render_pipeline_manager_base.h>
 
 _NAME_BEGIN
 
@@ -49,79 +47,113 @@ public:
 	RenderPipeline() noexcept;
 	virtual ~RenderPipeline() noexcept;
 
-	virtual void open(WindHandle window, std::size_t w, std::size_t h) except = 0;
-	virtual void close() noexcept = 0;
+	void open(WindHandle window, std::size_t w, std::size_t h) except;
+	void close() noexcept;
 
-	virtual void setCamera(CameraPtr renderer) noexcept = 0;
-	virtual CameraPtr getCamera() const noexcept = 0;
+	void setCamera(CameraPtr renderer) noexcept;
+	CameraPtr getCamera() const noexcept;
 
-	virtual void setWireframeMode(bool enable) noexcept = 0;
-	virtual bool getWireframeMode() const noexcept = 0;
+	void setRenderPipelineManager(RenderPipelineManagerPtr manager) noexcept;
+	RenderPipelineManagerPtr getRenderPipelineManagerPtr() const noexcept;
 
-	virtual void setSwapInterval(SwapInterval interval) except = 0;
-	virtual SwapInterval getSwapInterval() const noexcept = 0;
+	void setWireframeMode(bool enable) noexcept;
+	bool getWireframeMode() const noexcept;
 
-	virtual RenderStatePtr createRenderState() noexcept = 0;
-	virtual void setRenderState(RenderStatePtr state) noexcept = 0;
-	virtual RenderStatePtr getRenderState() const noexcept = 0;
+	void setSwapInterval(SwapInterval interval) except;
+	SwapInterval getSwapInterval() const noexcept;
 
-	virtual void setWindowResolution(std::size_t w, std::size_t h) noexcept = 0;
-	virtual void getWindowResolution(std::size_t& w, std::size_t& h) const noexcept = 0;
+	RenderStatePtr createRenderState() noexcept;
+	void setRenderState(RenderStatePtr state) noexcept;
+	RenderStatePtr getRenderState() const noexcept;
 
-	virtual void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept = 0;
-	virtual RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept = 0;
+	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
+	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
-	virtual RenderTexturePtr createRenderTexture() noexcept = 0;
-	virtual MultiRenderTexturePtr createMultiRenderTexture() noexcept = 0;
-	virtual void setRenderTexture(RenderTexturePtr target) noexcept = 0;
-	virtual void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept = 0;
-	virtual void setRenderTextureLayer(RenderTexturePtr target, int layer) noexcept = 0;
-	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept = 0;
-	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept = 0;
-	virtual void discradRenderTexture() noexcept = 0;
-	virtual void readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept = 0;
-	virtual void copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept = 0;
+	void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept;
+	RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept;
 
-	virtual TexturePtr createTexture() noexcept = 0;
-	virtual TexturePtr createTexture(const std::string& name) except = 0;
+	RenderTexturePtr createRenderTexture() noexcept;
+	MultiRenderTexturePtr createMultiRenderTexture() noexcept;
+	void setRenderTexture(RenderTexturePtr target) noexcept;
+	void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept;
+	void setRenderTextureLayer(RenderTexturePtr target, int layer) noexcept;
+	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
+	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
+	void discradRenderTexture() noexcept;
+	void readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	void copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept;
 
-	virtual MaterialPtr createMaterial(const std::string& name) except = 0;
-	virtual void setMaterialPass(MaterialPassPtr pass) noexcept = 0;
-	virtual MaterialPassPtr getMaterialPass() const noexcept = 0;
+	TexturePtr createTexture() noexcept;
+	TexturePtr createTexture(const std::string& name) except;
 
-	virtual ShaderPtr createShader() noexcept = 0;
-	virtual ShaderObjectPtr createShaderObject() noexcept = 0;
+	MaterialPtr createMaterial(const std::string& name) except;
+	void setMaterialPass(MaterialPassPtr pass) noexcept;
+	void setMaterialManager(MaterialManagerPtr manager) noexcept;
+	MaterialPassPtr& getMaterialPass() noexcept;
+	MaterialManagerPtr& getMaterialManager() noexcept;
+	const MaterialPassPtr& getMaterialPass() const noexcept;
+	const MaterialManagerPtr& getMaterialManager() const noexcept;
 
-	virtual RenderBufferPtr createRenderBuffer() noexcept = 0;
-	virtual RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) except = 0;
-	virtual RenderBufferPtr createRenderBuffer(const MeshPropertys& mesh) except = 0;
+	ShaderPtr createShader() noexcept;
+	ShaderObjectPtr createShaderObject() noexcept;
+	void setShaderObject(ShaderObjectPtr progarm) noexcept;
+	ShaderObjectPtr getShaderObject() const noexcept;
 
-	virtual void setRenderBuffer(RenderBufferPtr buffer) except = 0;
-	virtual void drawRenderBuffer(const RenderIndirect& renderable) except = 0;
-	virtual void drawRenderBuffer(const RenderIndirects& renderable) except = 0;
-	virtual RenderBufferPtr getRenderBuffer() const noexcept = 0;
+	RenderBufferPtr createRenderBuffer() noexcept;
+	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) except;
+	RenderBufferPtr createRenderBuffer(const MeshPropertys& mesh) except;
 
-	virtual void drawCone() noexcept = 0;
-	virtual void drawSphere() noexcept = 0;
-	virtual void drawSceneQuad(MaterialPassPtr) noexcept = 0;
-	virtual void drawRenderIndirect(RenderQueue type, RenderPass pass, MaterialPassPtr material = nullptr, RenderTexturePtr target = nullptr) noexcept = 0;
+	void setRenderBuffer(RenderBufferPtr buffer) except;
+	void drawRenderBuffer(const RenderIndirect& renderable) except;
+	void drawRenderBuffer(const RenderIndirects& renderable) except;
+	RenderBufferPtr getRenderBuffer() const noexcept;
 
-	virtual void drawMesh(RenderBufferPtr mesh, const RenderIndirect& renderable) noexcept = 0;
-	virtual void updateMesh(RenderBufferPtr mesh, VertexBufferDataPtr vb, IndexBufferDataPtr ib) noexcept = 0;
+	void drawCone(MaterialPassPtr pass) noexcept;
+	void drawSphere(MaterialPassPtr pass) noexcept;
+	void drawSceneQuad(MaterialPassPtr pass) noexcept;
+	void drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const RenderIndirect& renderable) noexcept;
+	void drawRenderIndirect(RenderQueue type, RenderPass pass, MaterialPassPtr material = nullptr, RenderTexturePtr target = nullptr) noexcept;
 
-	virtual void addPostProcess(RenderPostProcessPtr postprocess) except = 0;
-	virtual void removePostProcess(RenderPostProcessPtr postprocess) noexcept = 0;
-	virtual void renderPostProcess(RenderTexturePtr renderTexture) except = 0;
+	void addPostProcess(RenderPostProcessPtr postprocess) except;
+	void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
+	void renderPostProcess(RenderTexturePtr renderTexture) except;
 
-	virtual void renderBegin() noexcept = 0;
-	virtual void render(const RenderScene& scene) noexcept = 0;
-	virtual void renderEnd() noexcept = 0;
+	void renderBegin() noexcept;
+	void render(const RenderScene& scene) noexcept;
+	void renderEnd() noexcept;
+
+protected:
+
+	virtual void onRenderObjectPre(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except;
+	virtual void onRenderObjectPost(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except;
+	virtual void onRenderObject(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except;
+
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
+
+	virtual void onRenderPre(CameraPtr camera) except;
+	virtual void onRenderPost(CameraPtr camera) except;
+	virtual void onRenderPipeline(CameraPtr camera) except;
 
 private:
-	RenderPipeline(const RenderPipeline&) = delete;
-	RenderPipeline& operator=(const RenderPipeline&) = delete;
-};
+	
+	std::uint32_t _width;
+	std::uint32_t _height;
 
+	CameraPtr _camera;
+
+	RenderDevicePtr _renderDevice;
+	RenderWindowPtr _renderWindow;
+
+	RenderBufferPtr _renderSceneQuad;
+	RenderBufferPtr _renderSphere;
+	RenderBufferPtr _renderCone;
+
+	MaterialManagerPtr _materialManager;
+
+	RenderPipelineManagerPtr _pipelineManager;
+	RenderPostProcessor _postprocessors[RenderQueue::RQ_NUMS];
+};
 
 _NAME_END
 

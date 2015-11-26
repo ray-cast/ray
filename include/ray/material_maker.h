@@ -56,8 +56,8 @@ private:
 	RenderStatePtr instanceState(iarchive& reader) except;
 	MaterialPassPtr instancePass(iarchive& reader) except;
 	MaterialTechPtr instanceTech(iarchive& reader) except;
-	MaterialParamPtr instanceParameter(iarchive& reader) except;
-	MaterialParamPtr instanceBuffer(iarchive& reader) except;
+	void instanceParameter(MaterialPtr& material, iarchive& reader) except;
+	MaterialParamPtr instanceBuffer(MaterialPtr& material, iarchive& reader) except;
 	ShaderPtr instanceShader(iarchive& reader) except;
 
 	static VertexType stringToPrimitive(const std::string& primitive) noexcept;

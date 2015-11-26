@@ -38,6 +38,7 @@
 #include <ray/render_scene.h>
 #include <ray/render_window.h>
 #include <ray/render_pipeline.h>
+#include <ray/render_pipeline_manager.h>
 #include <ray/atmospheric.h>
 #include <ray/ssao.h>
 #include <ray/ssgi.h>
@@ -321,14 +322,14 @@ RenderSystem::getWireframeMode() const noexcept
 }
 
 void 
-RenderSystem::setWindowResolution(std::size_t w, std::size_t h) except
+RenderSystem::setWindowResolution(std::uint32_t w, std::uint32_t h) except
 {
 	assert(_renderPipeline);
 	_renderPipeline->setWindowResolution(w, h);
 }
 
 void 
-RenderSystem::getWindowResolution(std::size_t& w, std::size_t& h) const noexcept
+RenderSystem::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept
 {
 	assert(_renderPipeline);
 	_renderPipeline->getWindowResolution(w, h);
@@ -368,6 +369,8 @@ RenderSystem::addRenderScene(RenderScenePtr scene) noexcept
 	auto it = std::find(_sceneList.begin(), _sceneList.end(), scene);
 	if (it == _sceneList.end())
 	{
+		scene->registerAddCameraDelegate(make_delegate(&RenderSystem::onAddCamera, this));
+
 		_sceneList.push_back(scene);
 		return true;
 	}
@@ -486,6 +489,11 @@ RenderSystem::render() noexcept
 	}
 
 	_renderPipeline->renderEnd();
+}
+
+void 
+RenderSystem::onAddCamera(CameraPtr camera)
+{
 }
 
 _NAME_END

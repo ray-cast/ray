@@ -81,17 +81,6 @@ ShaderVariant::ShaderVariant(const std::string& name, ShaderVariantType type) no
 ShaderVariant::~ShaderVariant() noexcept
 {
 	this->setType(ShaderVariantType::SPT_NONE);
-	this->close();
-}
-
-void
-ShaderVariant::setup() noexcept
-{
-}
-
-void
-ShaderVariant::close() noexcept
-{
 }
 
 void
@@ -104,24 +93,6 @@ const std::string&
 ShaderVariant::getName() const noexcept
 {
 	return _name;
-}
-
-void
-ShaderVariant::setSemantic(const std::string& semantic) noexcept
-{
-	_semantic = semantic;
-}
-
-const std::string&
-ShaderVariant::getSemantic() const noexcept
-{
-	return _semantic;
-}
-
-bool
-ShaderVariant::isSemantic() const noexcept
-{
-	return !_semantic.empty();
 }
 
 std::size_t

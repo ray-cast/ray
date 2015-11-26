@@ -35,6 +35,9 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/material_pass.h>
+#include <ray/material.h>
+#include <ray/material_manager.h>
+#include <ray/render_system.h>
 
 _NAME_BEGIN
 
@@ -45,6 +48,51 @@ MaterialPass::MaterialPass(RenderPass pass) noexcept
 
 MaterialPass::~MaterialPass() noexcept
 {
+}
+
+void 
+MaterialPass::setup(Material& material) except
+{
+	assert(_shaderObject);
+
+	if (!_renderState)
+	{
+		_renderState = RenderSystem::instance()->createRenderState();
+	}
+
+	if (_shaderObject->setup())
+	{
+		auto uniforms = _shaderObject->getActiveUniforms();
+		for (auto& uniform : uniforms)
+		{
+			auto param = material.getParameter(uniform->getName());
+			if (param)
+			{
+				uniform->setValue(param);
+				param->addShaderUniform(uniform);
+				_parameters.push_back(param);
+			}
+		}
+	}
+}
+
+void
+MaterialPass::close() noexcept
+{
+	if (_shaderObject)
+	{
+		auto uniforms = _shaderObject->getActiveUniforms();
+		for (auto& it : uniforms)
+		{
+			auto param = this->getParameter(it->getName());
+			if (param)
+			{
+				param->removeShaderUniform(it);
+			}
+		}
+
+		_shaderObject->close();
+	}
 }
 
 void
@@ -59,6 +107,34 @@ MaterialPass::getName() const noexcept
 	return _name;
 }
 
+RenderPass
+MaterialPass::getRenderPass() const noexcept
+{
+	return _pass;
+}
+
+const MaterialParams& 
+MaterialPass::getParameters() const noexcept
+{
+	return _parameters;
+}
+
+MaterialParamPtr
+MaterialPass::getParameter(const std::string& name) const noexcept
+{
+	assert(!name.empty());
+
+	for (auto& it : _parameters)
+	{
+		if (it->getName() == name)
+		{
+			return it;
+		}
+	}
+
+	return nullptr;
+}
+
 void
 MaterialPass::setShaderObject(ShaderObjectPtr shader) noexcept
 {
@@ -69,12 +145,6 @@ void
 MaterialPass::setRenderState(RenderStatePtr state) noexcept
 {
 	_renderState = state;
-}
-
-RenderPass
-MaterialPass::getRenderPass() noexcept
-{
-	return _pass;
 }
 
 ShaderObjectPtr

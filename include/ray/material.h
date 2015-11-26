@@ -59,12 +59,8 @@ public:
 	void addParameter(MaterialParamPtr technique) noexcept;
 	void removeParameter(MaterialParamPtr technique) noexcept;
 	MaterialParamPtr getParameter(const std::string& name) const noexcept;
-	ShaderVariantPtr getParameterInChildren(const std::string& name) const noexcept;
 	MaterialParams& getParameters() noexcept;
 	const MaterialParams& getParameters() const noexcept;
-
-	static void setMaterialSemantic(MaterialSemanticPtr semantic) noexcept;
-	static MaterialSemanticPtr getMaterialSemantic() noexcept;
 
 private:
 	Material(const Material&) noexcept = delete;
@@ -74,8 +70,6 @@ private:
 
 	MaterialParams _parameters;
 	MaterialTechniques _techniques;
-
-	static MaterialSemanticPtr _semantic;
 };
 
 _NAME_END

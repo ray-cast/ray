@@ -283,8 +283,8 @@ MaterialMaker::instanceTech(iarchive& reader) except
 	return tech;
 }
 
-MaterialParamPtr
-MaterialMaker::instanceParameter(iarchive& reader) except
+void
+MaterialMaker::instanceParameter(MaterialPtr& material, iarchive& reader) except
 {
 	auto name = reader.getString("name");
 	auto type = reader.getString("type");
@@ -336,21 +336,74 @@ MaterialMaker::instanceParameter(iarchive& reader) except
 			throw failure(__TEXT("Unknown parameter type : ") + name);
 		}
 
-		return  param;
+		material->addParameter(param);
 	}
 	else if (!semantic.empty())
 	{
 		auto param = std::make_shared<MaterialParam>();
 		param->setName(name);
-		param->setSemantic(semantic);
-		return param;
-	}
+		if (semantic == "matModel")
+			param->setSemantic(MaterialSemantic::matModel);
+		else if (semantic == "matModelInverse")
+			param->setSemantic(MaterialSemantic::matModelInverse);
+		else if (semantic == "matModelInverseTranspose")
+			param->setSemantic(MaterialSemantic::matModelInverseTranspose);
+		else if (semantic == "matProject")
+			param->setSemantic(MaterialSemantic::matProject);
+		else if (semantic == "matProjectInverse")
+			param->setSemantic(MaterialSemantic::matProjectInverse);
+		else if (semantic == "matView")
+			param->setSemantic(MaterialSemantic::matView);
+		else if (semantic == "matViewInverse")
+			param->setSemantic(MaterialSemantic::matViewInverse);
+		else if (semantic == "matViewInverseTranspose")
+			param->setSemantic(MaterialSemantic::matViewInverseTranspose);
+		else if (semantic == "matViewProject")
+			param->setSemantic(MaterialSemantic::matViewProject);
+		else if (semantic == "matViewProjectInverse")
+			param->setSemantic(MaterialSemantic::matViewProjectInverse);
+		else if (semantic == "CameraAperture")
+			param->setSemantic(MaterialSemantic::CameraAperture);
+		else if (semantic == "CameraFar")
+			param->setSemantic(MaterialSemantic::CameraFar);
+		else if (semantic == "CameraNear")
+			param->setSemantic(MaterialSemantic::CameraNear);
+		else if (semantic == "CameraView")
+			param->setSemantic(MaterialSemantic::CameraView);
+		else if (semantic == "CameraPosition")
+			param->setSemantic(MaterialSemantic::CameraPosition);
+		else if (semantic == "CameraDirection")
+			param->setSemantic(MaterialSemantic::CameraDirection);
+		else if (semantic == "DepthMap")
+			param->setSemantic(MaterialSemantic::DepthMap);
+		else if (semantic == "ColorMap")
+			param->setSemantic(MaterialSemantic::ColorMap);
+		else if (semantic == "NormalMap")
+			param->setSemantic(MaterialSemantic::NormalMap);
+		else if (semantic == "DeferredDepthMap")
+			param->setSemantic(MaterialSemantic::DeferredDepthMap);
+		else if (semantic == "DeferredDepthLinearMap")
+			param->setSemantic(MaterialSemantic::DeferredDepthLinearMap);
+		else if (semantic == "DeferredGraphicMap")
+			param->setSemantic(MaterialSemantic::DeferredGraphicMap);
+		else if (semantic == "DeferredNormalMap")
+			param->setSemantic(MaterialSemantic::DeferredNormalMap);
+		else if (semantic == "DeferredLightMap")
+			param->setSemantic(MaterialSemantic::DeferredLightMap);
+		else if (semantic == "DeferredShadowMap")
+			param->setSemantic(MaterialSemantic::DeferredShadowMap);
+		else
+		{
+			assert(false);
+			throw failure(__TEXT("Unknown semantic type : ") + name);
+		}
 
-	return nullptr;
+		material->addParameter(param);
+	}
 }
 
 MaterialParamPtr
-MaterialMaker::instanceBuffer(iarchive& reader) except
+MaterialMaker::instanceBuffer(MaterialPtr& material, iarchive& reader) except
 {
 	auto buffer = std::make_shared<MaterialParam>();
 	buffer->setType(ShaderVariantType::SPT_BUFFER);
@@ -360,9 +413,6 @@ MaterialMaker::instanceBuffer(iarchive& reader) except
 	{
 		do
 		{
-			auto param = instanceParameter(reader);
-			if (param)
-				buffer->addParameter(param);
 		} while (reader.setToNextChild());
 
 		return buffer;
@@ -476,13 +526,11 @@ MaterialMaker::load(iarchive& reader) except
 			std::string name = reader.getCurrentNodeName();
 			if (name == "parameter")
 			{
-				auto param = instanceParameter(reader);
-				if (param)
-					material->addParameter(param);
+				instanceParameter(material, reader);
 			}
 			else if (name == "buffer")
 			{
-				auto buffer = instanceBuffer(reader);
+				auto buffer = instanceBuffer(material, reader);
 				if (buffer)
 					material->addParameter(buffer);
 			}
@@ -521,7 +569,7 @@ MaterialMaker::load(iarchive& reader) except
 	return nullptr;
 }
 
-VertexType 
+VertexType
 MaterialMaker::stringToPrimitive(const std::string& primitive) noexcept
 {
 	if (primitive == "point")

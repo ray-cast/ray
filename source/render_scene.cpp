@@ -137,6 +137,8 @@ RenderScene::addCamera(CameraPtr camera) noexcept
 	{
 		_cameraList.push_back(camera);
 		this->sortCamera();
+
+		_onAddCameraDelegate.run(camera);
 	}
 }
 
@@ -299,6 +301,12 @@ RenderScene::computVisiableLight(const Matrix4x4& viewProject, OcclusionCullList
 			list.insert(light, eyePosition.sqrDistance(light->getBoundingBoxInWorld().center()));
 		}
 	}
+}
+
+void 
+RenderScene::registerAddCameraDelegate(delegate<void(CameraPtr)>::bind delegate) noexcept
+{
+	_onAddCameraDelegate.attach(delegate);
 }
 
 _NAME_END

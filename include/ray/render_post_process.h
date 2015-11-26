@@ -67,7 +67,7 @@ protected:
 	virtual void onDeactivate(RenderPipeline& pipeline) except;
 
 private:
-	friend RenderPipelineLayer;
+	friend RenderPipeline;
 	void _setRenderPipeline(RenderPipeline* pipeline) noexcept;
 
 private:

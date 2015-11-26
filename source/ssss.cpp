@@ -59,7 +59,7 @@ SSSS::onActivate(RenderPipeline& pipeline) except
 	_blurX = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("blurX");
 	_blurY = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("blurY");
 
-	std::size_t width, height;
+	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
 	_SSSS = pipeline.createRenderTexture();

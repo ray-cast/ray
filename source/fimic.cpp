@@ -198,7 +198,7 @@ FimicToneMapping::generateToneMapping(RenderPipeline& pipeline, RenderTexturePtr
 void
 FimicToneMapping::onActivate(RenderPipeline& pipeline) except
 {
-	std::size_t width, height;
+	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
 	_texSample4 = pipeline.createRenderTexture();

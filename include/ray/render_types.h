@@ -67,6 +67,7 @@ typedef std::shared_ptr<class RenderMesh> RenderMeshPtr;
 typedef std::shared_ptr<class RenderDevice> RenderDevicePtr;
 typedef std::shared_ptr<class RenderWindow> RenderWindowPtr;
 typedef std::shared_ptr<class RenderPipeline> RenderPipelinePtr;
+typedef std::shared_ptr<class RenderPipelineManager> RenderPipelineManagerPtr;
 typedef std::shared_ptr<class RenderSystem> RenderSystemPtr;
 typedef std::shared_ptr<class RenderState> RenderStatePtr;
 typedef std::shared_ptr<class RenderBuffer> RenderBufferPtr;
@@ -97,6 +98,7 @@ typedef std::vector<RenderMeshPtr> RenderMeshes;
 typedef std::vector<RenderObjectPtr> RenderObjects;
 typedef std::vector<RenderScenePtr> RenderScenes;
 typedef std::vector<RenderIndirectPtr> RenderIndirects;
+typedef std::vector<RenderPostProcessPtr> RenderPostProcessor;
 
 typedef std::vector<CameraPtr> Cameras;
 typedef std::vector<LightPtr> Lights;

@@ -60,8 +60,8 @@ public:
 	void setWireframeMode(bool enable) noexcept;
 	bool getWireframeMode() const noexcept;
 
-	void setWindowResolution(std::size_t w, std::size_t h) except;
-	void getWindowResolution(std::size_t& w, std::size_t& h) const noexcept;
+	void setWindowResolution(std::uint32_t w, std::uint32_t h) except;
+	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
 	void setSwapInterval(SwapInterval interval) except;
 	SwapInterval getSwapInterval() const noexcept;
@@ -87,6 +87,9 @@ public:
 	RenderBufferPtr createRenderBuffer(const MeshPropertys& meshes) except;
 
 	void render() noexcept;
+
+private:
+	void onAddCamera(CameraPtr camera);
 
 private:
 	RenderSystem(const RenderSystem&) noexcept = delete;

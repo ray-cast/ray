@@ -55,7 +55,7 @@ LightShaft::~LightShaft() noexcept
 void
 LightShaft::onActivate(RenderPipeline& pipeline) except
 {
-	std::size_t width, height;
+	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
 	_material = pipeline.createMaterial("sys:fx/light_shaft.glsl");
@@ -91,7 +91,7 @@ LightShaft::onRender(RenderPipeline& pipeline, RenderTexturePtr source) except
 	pipeline.setRenderTexture(_texSample);
 	pipeline.clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0);
 
-	std::size_t width, height;
+	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
 	_illuminationRadio->assign((float)width / height);

@@ -35,11 +35,8 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/material.h>
-#include <ray/render_system.h>
 
 _NAME_BEGIN
-
-MaterialSemanticPtr Material::_semantic = std::make_shared<MaterialSemantic>();
 
 Material::Material() noexcept
 {
@@ -53,48 +50,12 @@ Material::~Material() noexcept
 void
 Material::setup() except
 {
-	for (auto& param : _parameters)
-	{
-		param->setup();
-	}
-
 	for (auto& technique : _techniques)
 	{
 		auto& passList = technique->getPassList();
 		for (auto& pass : passList)
 		{
-			auto renderState = pass->getRenderState();
-			if (!renderState)
-			{
-				pass->setRenderState(RenderSystem::instance()->createRenderState());
-			}
-
-			auto shaderObject = pass->getShaderObject();
-			if (shaderObject->setup())
-			{
-				auto uniforms = shaderObject->getActiveUniforms();
-				for (auto& it : uniforms)
-				{
-					auto param = this->getParameter(it->getName());
-					if (param)
-					{
-						auto semantic = param->getSemantic();
-						if (!semantic.empty())
-						{
-							auto parameter = this->getMaterialSemantic()->getParamPointer(semantic);
-							if (parameter)
-							{
-								it->setValue(parameter);
-							}
-						}
-						else
-						{
-							param->addShaderUniform(it);
-							it->setValue(param);
-						}
-					}
-				}
-			}
+			pass->setup(*this);
 		}
 	}
 }
@@ -107,36 +68,7 @@ Material::close() noexcept
 		auto& passList = technique->getPassList();
 		for (auto& pass : passList)
 		{
-			auto shaderObject = pass->getShaderObject();
-			if (!shaderObject)
-				continue;
-
-			if (!shaderObject)
-				continue;
-
-			auto uniforms = shaderObject->getActiveUniforms();
-			for (auto& it : uniforms)
-			{
-				auto param = this->getParameter(it->getName());
-				if (param)
-				{
-					auto semantic = param->getSemantic();
-					if (!semantic.empty())
-					{
-						auto parameter = this->getMaterialSemantic()->getParamPointer(semantic);
-						if (parameter)
-						{
-							parameter->removeShaderUniform(it);
-							it->setValue(nullptr);
-						}
-					}
-					else
-					{
-						param->removeShaderUniform(it);
-						it->setValue(nullptr);
-					}
-				}
-			}
+			pass->close();
 		}
 	}
 
@@ -147,6 +79,7 @@ Material::close() noexcept
 void
 Material::addTech(MaterialTechPtr technique) noexcept
 {
+	assert(technique);
 	assert(std::find(_techniques.begin(), _techniques.end(), technique) == _techniques.end());
 	_techniques.push_back(technique);
 }
@@ -154,6 +87,7 @@ Material::addTech(MaterialTechPtr technique) noexcept
 void
 Material::removeTech(MaterialTechPtr technique) noexcept
 {
+	assert(technique);
 	auto it = std::find(_techniques.begin(), _techniques.end(), technique);
 	if (it != _techniques.end())
 	{
@@ -184,57 +118,31 @@ Material::getTechs() noexcept
 void
 Material::addParameter(MaterialParamPtr parameter) noexcept
 {
-	if (parameter)
-	{
-		auto it = std::find(_parameters.begin(), _parameters.end(), parameter);
-		if (it == _parameters.end())
-		{
-			_parameters.push_back(parameter);
-		}
-	}
+	assert(parameter);
+	assert(std::find(_parameters.begin(), _parameters.end(), parameter) == _parameters.end());
+	_parameters.push_back(parameter);
 }
 
 void
 Material::removeParameter(MaterialParamPtr parameter) noexcept
 {
-	if (parameter)
+	assert(parameter);
+	auto it = std::find(_parameters.begin(), _parameters.end(), parameter);
+	if (it != _parameters.end())
 	{
-		auto it = std::find(_parameters.begin(), _parameters.end(), parameter);
-		if (it != _parameters.end())
-		{
-			_parameters.erase(it);
-		}
+		_parameters.erase(it);
 	}
 }
 
 MaterialParamPtr
 Material::getParameter(const std::string& name) const noexcept
 {
+	assert(!name.empty());
 	for (auto& it : _parameters)
 	{
 		if (it->getName() == name)
 		{
 			return it;
-		}
-	}
-
-	return nullptr;
-}
-
-ShaderVariantPtr
-Material::getParameterInChildren(const std::string& name) const noexcept
-{
-	for (auto& it : _parameters)
-	{
-		if (it->getName() == name)
-		{
-			return it;
-		}
-		else if (it->getType() == ShaderVariantType::SPT_BUFFER)
-		{
-			auto result = it->getParameter(name);
-			if (result)
-				return result;
 		}
 	}
 
@@ -251,18 +159,6 @@ const MaterialParams&
 Material::getParameters() const noexcept
 {
 	return _parameters;
-}
-
-void
-Material::setMaterialSemantic(MaterialSemanticPtr semantic) noexcept
-{
-	_semantic = semantic;
-}
-
-MaterialSemanticPtr
-Material::getMaterialSemantic() noexcept
-{
-	return _semantic;
 }
 
 _NAME_END

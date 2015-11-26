@@ -374,14 +374,12 @@ SET(RENDERER_MATERIAL
     ${HEADER_PATH}/material_fwd.h
     ${HEADER_PATH}/material_param.h
     ${SOURCE_PATH}/material_param.cpp
-    ${HEADER_PATH}/material_semantic.h
-    ${SOURCE_PATH}/material_semantic.cpp
+    ${HEADER_PATH}/material_manager.h
+    ${SOURCE_PATH}/material_manager.cpp
     ${HEADER_PATH}/material_pass.h
     ${SOURCE_PATH}/material_pass.cpp
     ${HEADER_PATH}/material_tech.h
     ${SOURCE_PATH}/material_tech.cpp
-    ${HEADER_PATH}/material_shader.h
-    ${SOURCE_PATH}/material_shader.cpp
     ${HEADER_PATH}/material_maker.h
     ${SOURCE_PATH}/material_maker.cpp
 )
@@ -451,12 +449,11 @@ SOURCE_GROUP("renderer\\terrain" FILES ${RENDERER_TERRAIN})
 SET(RENDERER_SYSTEM
     ${HEADER_PATH}/render_pipeline.h
     ${SOURCE_PATH}/render_pipeline.cpp
-    ${HEADER_PATH}/render_pipeline_layer.h
-    ${SOURCE_PATH}/render_pipeline_layer.cpp
     ${HEADER_PATH}/render_pipeline_base.h
     ${SOURCE_PATH}/render_pipeline_base.cpp
     ${HEADER_PATH}/render_pipeline_manager.h
     ${SOURCE_PATH}/render_pipeline_manager.cpp
+    ${HEADER_PATH}/render_pipeline_manager_base.h
     ${SOURCE_PATH}/render_pipeline_manager_base.cpp
     ${HEADER_PATH}/render_post_process.h
     ${SOURCE_PATH}/render_post_process.cpp
@@ -512,6 +509,8 @@ SET(MYGUI_LIST
     ${SOURCE_PATH}/mygui_window.cpp
     ${HEADER_PATH}/mygui_imagebox.h
     ${SOURCE_PATH}/mygui_imagebox.cpp
+    ${HEADER_PATH}/mygui_listbox.h
+    ${SOURCE_PATH}/mygui_listbox.cpp
 )
 SOURCE_GROUP("gui\\mygui" FILES ${MYGUI_LIST})
 
@@ -595,7 +594,6 @@ SOURCE_GROUP("system\\app" FILES ${GAMEAPP_LIST})
 SET(GUI_FEATURES_LIST
     ${HEADER_PATH}/gui_feature.h
     ${SOURCE_PATH}/gui_feature.cpp
-    ${HEADER_PATH}/gui.h
     ${HEADER_PATH}/gui_behaviour_component.h
     ${SOURCE_PATH}/gui_behaviour_component.cpp
     ${HEADER_PATH}/gui_button_component.h
@@ -636,8 +634,8 @@ SET(RENDER_FEATURES_LIST
     ${SOURCE_PATH}/sprite_component.cpp
     ${SOURCE_PATH}/mesh_component.cpp
     ${HEADER_PATH}/mesh_component.h
-    ${SOURCE_PATH}/render_features.cpp
-    ${HEADER_PATH}/render_features.h
+    ${SOURCE_PATH}/render_feature.cpp
+    ${HEADER_PATH}/render_feature.h
 )
 SOURCE_GROUP("system\\renderer" FILES ${RENDER_FEATURES_LIST})
 

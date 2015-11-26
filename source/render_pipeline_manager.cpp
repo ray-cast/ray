@@ -34,3 +34,92 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#include <ray/render_pipeline_manager.h>
+#include <ray/render_post_process.h>
+
+_NAME_BEGIN
+
+void 
+DefaultRenderPipelineManager::open() noexcept
+{
+}
+
+void
+DefaultRenderPipelineManager::close() noexcept
+{
+}
+
+void
+DefaultRenderPipelineManager::addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept
+{
+	assert(object);
+	assert(queue == RenderQueue::RQ_OPAQUE || queue == RenderQueue::RQ_TRANSPARENT || queue == RenderQueue::RQ_LIGHTING);
+
+	_renderQueue[queue][pass].push_back(object);
+}
+
+RenderObjects&
+DefaultRenderPipelineManager::getRenderData(RenderQueue queue, RenderPass pass) noexcept
+{
+	assert(queue == RenderQueue::RQ_OPAQUE || queue == RenderQueue::RQ_TRANSPARENT || queue == RenderQueue::RQ_LIGHTING);
+	return _renderQueue[queue][pass];
+}
+
+void 
+DefaultRenderPipelineManager::assginVisiable(CameraPtr camera) noexcept
+{
+	assert(camera);
+
+	_renderQueue[RenderQueue::RQ_OPAQUE][RenderPass::RP_OPAQUES].clear();
+	_renderQueue[RenderQueue::RQ_OPAQUE][RenderPass::RP_SPECIFIC].clear();
+	_renderQueue[RenderQueue::RQ_TRANSPARENT][RenderPass::RP_TRANSPARENT].clear();
+	_renderQueue[RenderQueue::RQ_TRANSPARENT][RenderPass::RP_SPECIFIC].clear();
+	_renderQueue[RenderQueue::RQ_LIGHTING][RenderPass::RP_LIGHTS].clear();
+
+	_visiable.clear();
+
+	auto scene = camera->getRenderScene();
+	scene->computVisiable(camera->getViewProject(), _visiable);
+
+	for (auto& it : _visiable.iter())
+	{
+		if (CameraOrder::CO_SHADOW == camera->getCameraOrder())
+		{
+			if (!it.getOcclusionCullNode()->getCastShadow())
+				return;
+		}
+
+		auto material = it.getOcclusionCullNode()->getMaterial();
+		if (material)
+		{
+			auto& techiniques = material->getTechs();
+			for (auto& technique : techiniques)
+			{
+				auto queue = technique->getRenderQueue();
+				for (auto& pass : technique->getPassList())
+				{
+					auto listener = it.getOcclusionCullNode()->getRenderListener();
+					if (listener)
+						listener->onWillRenderObject(*camera);
+
+					this->addRenderData(queue, pass->getRenderPass(), it.getOcclusionCullNode());
+				}
+			}
+		}
+	}
+
+	_visiable.clear();
+
+	scene->computVisiableLight(camera->getViewProject(), _visiable);
+
+	for (auto& it : _visiable.iter())
+	{
+		auto listener = it.getOcclusionCullNode()->getRenderListener();
+		if (listener)
+			listener->onWillRenderObject(*camera);
+
+		this->addRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS, it.getOcclusionCullNode());
+	}
+}
+
+_NAME_END

@@ -34,34 +34,64 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/material_shader.h>
+#ifndef _H_RENDERER_FEATURE_H_
+#define _H_RENDERER_FEATURE_H_
+
+#include <ray/game_features.h>
+#include <ray/render_system.h>
 
 _NAME_BEGIN
 
-MaterialShader::MaterialShader() noexcept
+class EXPORT RenderFeature final : public GameFeature
 {
-}
+	__DeclareSubClass(RenderFeature, GameFeature)
+public:
+	RenderFeature() noexcept;
+	RenderFeature(WindHandle hwnd, std::uint32_t w, std::uint32_t h) noexcept;
+	virtual ~RenderFeature() noexcept;
 
-MaterialShader::~MaterialShader() noexcept
-{
-}
+	void setRenderWindow(WindHandle hwnd, std::uint32_t w, std::uint32_t h) noexcept;
+	WindHandle getRenderWindow() const noexcept;
 
-void
-MaterialShader::addShader(ShaderPtr shader) noexcept
-{
-	_shaders.push_back(shader);
-}
+	void setRenderPipeline(RenderPipelinePtr pipeline) noexcept;
+	RenderPipelinePtr getRenderPipeline() const noexcept;
 
-MaterialShader::Shaders&
-MaterialShader::getShaders() noexcept
-{
-	return _shaders;
-}
+	void setRenderSetting(const RenderSetting& setting) noexcept;
+	const RenderSetting& getRenderSetting() const noexcept;
 
-ShaderVariants&
-MaterialShader::getParameter() noexcept
-{
-	return _parameters;
-}
+	RenderScenePtr getRenderScene(GameScene* scene) noexcept;
+	RenderScenePtr getRenderScene(GameScenePtr scene) noexcept;
+
+	GameFeaturePtr clone() const noexcept;
+
+private:
+
+	void onActivate() except;
+	void onDeactivate() except;
+
+	void onOpenScene(GameScenePtr scene) except;
+	void onCloseScene(GameScenePtr scene) except;
+
+	void onFrameBegin() except;
+	void onFrame() except;
+	void onFrameEnd() except;
+
+private:
+	RenderFeature(const RenderFeature&) = delete;
+	RenderFeature& operator=(const RenderFeature&) = delete;
+
+private:
+
+	typedef std::map<std::uint32_t, RenderScenePtr> RenderScenes;
+
+	WindHandle _hwnd;
+	std::uint32_t _width;
+	std::uint32_t _height;
+
+	RenderSetting _renderSetting;
+	RenderScenes _renderScenes;
+};
 
 _NAME_END
+
+#endif

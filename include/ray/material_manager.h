@@ -34,59 +34,60 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MATERIAL_PASS_H_
-#define _H_MATERIAL_PASS_H_
+#ifndef _H_MATERIAL_MANAGER_H_
+#define _H_MATERIAL_MANAGER_H_
 
-#include <ray/material_fwd.h>
+#include <ray/material.h>
 
 _NAME_BEGIN
 
-enum RenderPass
-{
-	RP_CUSTOM,
-	RP_DEPTH,
-	RP_SHADOW,
-	RP_OPAQUES,
-	RP_TRANSPARENT,
-	RP_SPECIFIC,
-	RP_LIGHTS,
-	RP_POSTPROCESS,
-	RP_NUMPASS
-};
-
-class EXPORT MaterialPass final
+class EXPORT MaterialManager final
 {
 public:
-	MaterialPass(RenderPass pass) noexcept;
-	~MaterialPass() noexcept;
+	MaterialManager() noexcept;
+	~MaterialManager() noexcept;
 
-	void setup(Material& material) except;
+	void setup() noexcept;
 	void close() noexcept;
 
-	void setName(const std::string& name) noexcept;
-	const std::string& getName() const noexcept;
+	void setMatrixParam(MaterialSemantic index, const Matrix4x4& m) noexcept;
+	const Matrix4x4& getMatrixParam(MaterialSemantic index) noexcept;
+	std::string getMatrixParmName(MaterialSemantic index) const noexcept;
+	MaterialSemantic getMatrixParamSemantic(const std::string& name) const noexcept;
 
-	RenderPass getRenderPass() const noexcept;
+	void setFloatParam(MaterialSemantic index, float v) noexcept;
+	float getFloatParam(MaterialSemantic index) noexcept;
+	std::string getFloatParmName(MaterialSemantic index) const noexcept;
+	MaterialSemantic getFloatParamSemantic(const std::string& name) const noexcept;
 
-	const MaterialParams& getParameters() const noexcept;
-	MaterialParamPtr getParameter(const std::string& name) const noexcept;
+	void setFloat3Param(MaterialSemantic index, const float3& v) noexcept;
+	const Vector3& getFloat3Param(MaterialSemantic index) noexcept;
+	std::string getFloat3ParmName(MaterialSemantic index) const noexcept;
+	MaterialSemantic getFloat3ParamSemantic(const std::string& name) const noexcept;
 
-	void setRenderState(RenderStatePtr state) noexcept;
-	RenderStatePtr getRenderState() noexcept;
+	void setFloat4Param(MaterialSemantic index, const float4& v) noexcept;
+	const Vector4& getFloat4Param(MaterialSemantic index) noexcept;
+	std::string getFloat4ParmName(MaterialSemantic index) const noexcept;
+	MaterialSemantic getFloat4ParamSemantic(const std::string& name) const noexcept;
 
-	void setShaderObject(ShaderObjectPtr shader) noexcept;
-	ShaderObjectPtr getShaderObject() noexcept;
+	void setTexParam(MaterialSemantic index, TexturePtr v) noexcept;
+	TexturePtr getTexParam(MaterialSemantic index) noexcept;
+	std::string getTexParmName(MaterialSemantic index) const noexcept;
+	MaterialSemantic getTexParamSemantic(const std::string& name) const noexcept;
+
+	MaterialParamPtr getParamPointer(MaterialSemantic semantic) const noexcept;
+	MaterialParamPtr getParamPointer(const std::string& name) const noexcept;
+
+	MaterialPtr createMaterial(const std::string& name) noexcept;
+
+	void setMaterialPass(MaterialPassPtr& pass) noexcept;
+	MaterialPassPtr& getMaterialPass() noexcept;
+	const MaterialPassPtr& getMaterialPass() const noexcept;
 
 private:
 
-	std::string _name;
-
-	RenderPass _pass;
-	
-	MaterialParams _parameters;
-
-	ShaderObjectPtr _shaderObject;
-	RenderStatePtr _renderState;
+	MaterialPassPtr _material;
+	MaterialParams _semantics;
 };
 
 _NAME_END

@@ -37,7 +37,7 @@
 #if defined(_BUILD_RENDERER)
 #include <ray/light_component.h>
 #include <ray/game_server.h>
-#include <ray/render_features.h>
+#include <ray/render_feature.h>
 
 _NAME_BEGIN
 
@@ -183,7 +183,7 @@ LightComponent::save(oarchive& write) noexcept
 void
 LightComponent::onActivate() noexcept
 {
-	auto renderer = this->getGameObject()->getGameServer()->getFeature<RenderFeatures>();
+	auto renderer = this->getGameObject()->getGameServer()->getFeature<RenderFeature>();
 	if (renderer)
 	{
 		auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());

@@ -849,133 +849,81 @@ OGLRenderer::setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constan
 	assert(uniform->getValue());
 
 	auto type = uniform->getValue()->getType();
+	if (type != ShaderVariantType::SPT_TEXTURE)
+	{
+		if (!uniform->needUpdate())
+			return;
+		uniform->needUpdate(false);
+	}
+
 	auto location = uniform->getLocation();
 	auto program = uniform->getBindingProgram();
-
-	if (constant->isSemantic())
-	{
-		uniform->needUpdate(true);
-	}
 
 	switch (type)
 	{
 	case ShaderVariantType::SPT_BOOL:
 	{
-		if (uniform->needUpdate())
-		{
-			glProgramUniform1i(program, location, uniform->getValue()->getBool());
-			uniform->needUpdate(false);
-		}
+		glProgramUniform1i(program, location, uniform->getValue()->getBool());
 		break;
 	}
 	case ShaderVariantType::SPT_INT:
 	{
-		if (uniform->needUpdate())
-		{
-			glProgramUniform1i(program, location, uniform->getValue()->getInt());
-			uniform->needUpdate(false);
-		}
+		glProgramUniform1i(program, location, uniform->getValue()->getInt());
 		break;
 	}
 	case ShaderVariantType::SPT_INT2:
 	{
-		if (uniform->needUpdate())
-		{
-			glProgramUniform2iv(program, location, 1, uniform->getValue()->getInt2().ptr());
-			uniform->needUpdate(false);
-		}
+		glProgramUniform2iv(program, location, 1, uniform->getValue()->getInt2().ptr());
 		break;
 	}
 	case ShaderVariantType::SPT_FLOAT:
 	{
-		if (uniform->needUpdate())
-		{
-			glProgramUniform1f(program, location, uniform->getValue()->getFloat());
-			uniform->needUpdate(false);
-		}
+		glProgramUniform1f(program, location, uniform->getValue()->getFloat());
 		break;
 	}
 	case ShaderVariantType::SPT_FLOAT2:
 	{
-		//if (uniform->needUpdate())
-		{
-			glProgramUniform2fv(program, location, 1, uniform->getValue()->getFloat2().ptr());
-			uniform->needUpdate(false);
-		}
+		glProgramUniform2fv(program, location, 1, uniform->getValue()->getFloat2().ptr());
 		break;
 	}
 	case ShaderVariantType::SPT_FLOAT3:
 	{
-		if (uniform->needUpdate())
-		{
-			glProgramUniform3fv(program, location, 1, uniform->getValue()->getFloat3().ptr());
-			uniform->needUpdate(false);
-		}
+		glProgramUniform3fv(program, location, 1, uniform->getValue()->getFloat3().ptr());
 		break;
 	}
 	case ShaderVariantType::SPT_FLOAT4:
 	{
-		if (uniform->needUpdate())
-		{
-			glProgramUniform4fv(program, location, 1, uniform->getValue()->getFloat4().ptr());
-			uniform->needUpdate(false);
-		}
+		glProgramUniform4fv(program, location, 1, uniform->getValue()->getFloat4().ptr());
 		break;
 	}
 	case ShaderVariantType::SPT_FLOAT3X3:
 	{
-		if (uniform->needUpdate())
-		{
-			glProgramUniformMatrix3fv(program, location, 1, GL_FALSE, uniform->getValue()->getFloat3x3().ptr());
-			uniform->needUpdate(false);
-		}
+		glProgramUniformMatrix3fv(program, location, 1, GL_FALSE, uniform->getValue()->getFloat3x3().ptr());
 		break;
 	}
 	case ShaderVariantType::SPT_FLOAT4X4:
 	{
-		if (uniform->needUpdate())
-		{
-			glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, uniform->getValue()->getFloat4x4().ptr());
-			uniform->needUpdate(false);
-		}
+		glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, uniform->getValue()->getFloat4x4().ptr());
 		break;
 	}
 	case ShaderVariantType::SPT_FLOAT_ARRAY:
 	{
-		if (uniform->needUpdate())
-		{
-			glProgramUniform1fv(program, location, uniform->getValue()->getFloatArray().size(), uniform->getValue()->getFloatArray().data());
-			uniform->needUpdate(false);
-		}
+		glProgramUniform1fv(program, location, uniform->getValue()->getFloatArray().size(), uniform->getValue()->getFloatArray().data());
 		break;
 	}
 	case ShaderVariantType::SPT_FLOAT2_ARRAY:
 	{
-		if (uniform->needUpdate())
-		{
-			glProgramUniform2fv(program, location, uniform->getValue()->getFloat2Array().size(), (GLfloat*)uniform->getValue()->getFloat2Array().data());
-			uniform->needUpdate(false);
-		}
+		glProgramUniform2fv(program, location, uniform->getValue()->getFloat2Array().size(), (GLfloat*)uniform->getValue()->getFloat2Array().data());
 		break;
 	}
 	case ShaderVariantType::SPT_TEXTURE:
 	{
-		if (uniform->needUpdate())
+		auto texture = uniform->getValue()->getTexture();
+		auto sample = uniform->getValue()->getTextureSample();
+		if (texture)
 		{
-			auto texture = uniform->getValue()->getTexture();
-			auto sample = uniform->getValue()->getTextureSample();
-			if (texture)
-			{
-				this->setShaderUniform(uniform, texture, sample);
-#if !defined(EGLAPI)
-				if (OGLFeatures::ARB_bindless_texture)
-				{
-					uniform->needUpdate(false);
-				}
-#endif
-			}
+			this->setShaderUniform(uniform, texture, sample);
 		}
-
 		break;
 	}
 	/*case ShaderVariantType::SPT_BUFFER:

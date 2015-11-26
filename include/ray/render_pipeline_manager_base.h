@@ -34,37 +34,26 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MATERIAL_SHADER_H_
-#define _H_MATERIAL_SHADER_H_
+#ifndef _H_RENDER_PIPELINE_MANAGER_BASE_H_
+#define _H_RENDER_PIPELINE_MANAGER_BASE_H_
 
-#include <ray/material_fwd.h>
+#include <ray/render_types.h>
+#include <ray/render_buffer.h>
+#include <ray/render_scene.h>
+#include <ray/material.h>
 
 _NAME_BEGIN
 
-class EXPORT MaterialShader final
+class RenderPipelineManager
 {
 public:
-	typedef std::vector<ShaderPtr> Shaders;
+	virtual void open() noexcept = 0;
+	virtual void close() noexcept = 0;
 
-public:
-	MaterialShader() noexcept;
-	~MaterialShader() noexcept;
+	virtual void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept = 0;
+	virtual RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept = 0;
 
-	void addShader(ShaderPtr shader) noexcept;
-
-	Shaders& getShaders() noexcept;
-	ShaderVariants& getParameter() noexcept;
-
-private:
-	MaterialShader(const MaterialShader&) = delete;
-	MaterialShader& operator=(const MaterialShader&) = delete;
-
-private:
-
-	Shaders _shaders;
-	ShaderVariants _parameters;
-
-	ShaderObjectPtr _shaderObject;
+	virtual void assginVisiable(CameraPtr camera) noexcept = 0;
 };
 
 _NAME_END

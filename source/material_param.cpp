@@ -39,36 +39,99 @@
 _NAME_BEGIN
 
 MaterialParam::MaterialParam() noexcept
+	: _semantic(MaterialSemantic::NotSemantic)
 {
 }
 
-MaterialParam::MaterialParam(const std::string& name, float value) noexcept
-	:ShaderVariant(name, value)
-{
-}
-
-MaterialParam::MaterialParam(const std::string& name, const float3& value) noexcept
+MaterialParam::MaterialParam(const std::string& name, float value, MaterialSemantic semantic) noexcept
 	: ShaderVariant(name, value)
+	, _semantic(semantic)
 {
 }
 
-MaterialParam::MaterialParam(const std::string& name, const Vector4& value) noexcept
+MaterialParam::MaterialParam(const std::string& name, const float3& value, MaterialSemantic semantic) noexcept
 	: ShaderVariant(name, value)
+	, _semantic(semantic)
 {
 }
 
-MaterialParam::MaterialParam(const std::string& name, const Matrix4x4& value) noexcept
+MaterialParam::MaterialParam(const std::string& name, const Vector4& value, MaterialSemantic semantic) noexcept
 	: ShaderVariant(name, value)
+	, _semantic(semantic)
 {
 }
 
-MaterialParam::MaterialParam(const std::string& name, ShaderVariantType type) noexcept
+MaterialParam::MaterialParam(const std::string& name, const Matrix4x4& value, MaterialSemantic semantic) noexcept
+	: ShaderVariant(name, value)
+	, _semantic(semantic)
+{
+}
+
+MaterialParam::MaterialParam(const std::string& name, ShaderVariantType type, MaterialSemantic semantic) noexcept
 	: ShaderVariant(name, type)
+	, _semantic(semantic)
 {
 }
 
 MaterialParam::~MaterialParam() noexcept
 {
+}
+
+void
+MaterialParam::setSemantic(MaterialSemantic semantic) noexcept
+{
+	if (_semantic != semantic)
+	{
+		if (semantic == MaterialSemantic::matModel ||
+			semantic == MaterialSemantic::matModelInverse ||
+			semantic == MaterialSemantic::matModelInverseTranspose ||
+			semantic == MaterialSemantic::matProject ||
+			semantic == MaterialSemantic::matProjectInverse ||
+			semantic == MaterialSemantic::matView ||
+			semantic == MaterialSemantic::matViewInverse ||
+			semantic == MaterialSemantic::matViewInverseTranspose ||
+			semantic == MaterialSemantic::matViewProject ||
+			semantic == MaterialSemantic::matViewProjectInverse)
+		{
+			this->setType(ShaderVariantType::SPT_FLOAT4X4);
+		}
+		else if (semantic == MaterialSemantic::CameraAperture ||
+			semantic == MaterialSemantic::CameraNear ||
+			semantic == MaterialSemantic::CameraFar)
+		{
+			this->setType(ShaderVariantType::SPT_FLOAT);
+		}
+		else if (semantic == MaterialSemantic::CameraView ||
+			semantic == MaterialSemantic::CameraPosition ||
+			semantic == MaterialSemantic::CameraDirection)
+		{
+			this->setType(ShaderVariantType::SPT_FLOAT3);
+		}
+		else if (semantic == MaterialSemantic::DeferredDepthLinearMap ||
+			semantic == MaterialSemantic::DeferredDepthMap ||
+			semantic == MaterialSemantic::DeferredGraphicMap ||
+			semantic == MaterialSemantic::DeferredNormalMap ||
+			semantic == MaterialSemantic::DeferredLightMap ||
+			semantic == MaterialSemantic::DeferredShadowMap ||
+			semantic == MaterialSemantic::DepthMap ||
+			semantic == MaterialSemantic::ColorMap ||
+			semantic == MaterialSemantic::NormalMap)
+		{
+			this->setType(ShaderVariantType::SPT_TEXTURE);
+		}
+		else
+		{
+			assert(false);
+		}
+
+		_semantic = semantic;
+	}
+}
+
+MaterialSemantic
+MaterialParam::getSemantic() const noexcept
+{
+	return _semantic;
 }
 
 void
@@ -97,9 +160,7 @@ void
 MaterialParam::onChangeAfter() noexcept
 {
 	for (auto& it : _uniforms)
-	{
 		it->needUpdate(true);
-	}
 }
 
 _NAME_END

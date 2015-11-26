@@ -37,5 +37,29 @@
 #ifndef _H_RENDER_SYSTEM_BASE_H_
 #define _H_RENDER_SYSTEM_BASE_H_
 
+#include <ray/render_pipeline_manager_base.h>
+
+_NAME_BEGIN
+
+class DefaultRenderPipelineManager : public RenderPipelineManager
+{
+public:
+
+	void open() noexcept;
+	void close() noexcept;
+
+	void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept;
+	RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept;
+
+	void assginVisiable(CameraPtr camera) noexcept;
+
+private:
+
+	OcclusionCullList _visiable;
+
+	RenderObjects _renderQueue[RenderQueue::RQ_NUMS][RenderPass::RP_NUMPASS];
+};
+
+_NAME_END
 
 #endif

@@ -41,16 +41,58 @@
 
 _NAME_BEGIN
 
-class EXPORT MaterialParam final : public ShaderVariant
+enum MaterialSemantic
+{
+	NotSemantic = -1,
+
+	matModel,
+	matModelInverse,
+	matModelInverseTranspose,
+
+	matProject,
+	matProjectInverse,
+
+	matView,
+	matViewInverse,
+	matViewInverseTranspose,
+
+	matViewProject,
+	matViewProjectInverse,
+
+	CameraAperture,
+	CameraNear,
+	CameraFar,
+	CameraView,
+	CameraPosition,
+	CameraDirection,
+
+	DepthMap,
+	ColorMap,
+	NormalMap,
+
+	DeferredDepthMap,
+	DeferredDepthLinearMap,
+	DeferredGraphicMap,
+	DeferredNormalMap,
+	DeferredLightMap,
+	DeferredShadowMap,
+
+	NumSemantic
+};
+
+class EXPORT MaterialParam : public ShaderVariant
 {
 public:
 	MaterialParam() noexcept;
-	MaterialParam(const std::string& name, float value) noexcept;
-	MaterialParam(const std::string& name, const float3& value) noexcept;
-	MaterialParam(const std::string& name, const Vector4& value) noexcept;
-	MaterialParam(const std::string& name, const Matrix4x4& value) noexcept;
-	MaterialParam(const std::string& name, ShaderVariantType type) noexcept;
-	~MaterialParam() noexcept;
+	MaterialParam(const std::string& name, float value, MaterialSemantic semantic = MaterialSemantic::NotSemantic) noexcept;
+	MaterialParam(const std::string& name, const float3& value, MaterialSemantic semantic = MaterialSemantic::NotSemantic) noexcept;
+	MaterialParam(const std::string& name, const Vector4& value, MaterialSemantic semantic = MaterialSemantic::NotSemantic) noexcept;
+	MaterialParam(const std::string& name, const Matrix4x4& value, MaterialSemantic semantic = MaterialSemantic::NotSemantic) noexcept;
+	MaterialParam(const std::string& name, ShaderVariantType type, MaterialSemantic semantic = MaterialSemantic::NotSemantic) noexcept;
+	virtual ~MaterialParam() noexcept;
+
+	void setSemantic(MaterialSemantic semantic) noexcept;
+	MaterialSemantic getSemantic() const noexcept;
 
 	void addShaderUniform(ShaderUniformPtr uniform) noexcept;
 	void removeShaderUniform(ShaderUniformPtr uniform) noexcept;
@@ -65,6 +107,7 @@ private:
 
 private:
 
+	MaterialSemantic _semantic;
 	ShaderUniforms _uniforms;
 };
 

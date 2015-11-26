@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_RENDERER)
 #include <ray/render_component.h>
-#include <ray/render_features.h>
+#include <ray/render_feature.h>
 
 #include <ray/game_server.h>
 #include <ray/game_event.h>
@@ -144,7 +144,7 @@ RenderComponent::_attacRenderObjects() noexcept
 	auto gameServer = this->getGameObject()->getGameServer();
 	if (!gameServer) { assert(gameServer); return;}
 		
-	auto renderer = gameServer->getFeature<RenderFeatures>();
+	auto renderer = gameServer->getFeature<RenderFeature>();
 	if (!renderer) { assert(renderer); return; }
 
 	auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());

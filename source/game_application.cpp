@@ -85,6 +85,13 @@ GameApplication::initialize(int argc, char *argv[]) except
 {
 	if (!_isInitialize)
 	{
+		if (argc != 0)
+		{
+			if (fcntl::access(argv[0], 0) != 0)
+				return false;
+			_workDir = util::directory(argv[0]);
+		}
+
 		_ioServer = IoServer::instance();
 		_ioServer->addAssign(IoAssign("sys", _workDir + _engineDir));
 		_ioServer->addAssign(IoAssign("dlc", _workDir + _resourceBaseDir));
@@ -92,13 +99,6 @@ GameApplication::initialize(int argc, char *argv[]) except
 
 		_ioInterface = IoInterface::instance();
 		_ioInterface->open();
-
-		if (argc != 0)
-		{
-			if (!_ioServer->existsFile(argv[0]))
-				return false;
-			_workDir = util::directory(argv[0]);
-		}
 
 		rtti::Factory::instance()->open();
 

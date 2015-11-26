@@ -78,7 +78,7 @@ public:
 	MaterialParamPtr getParamPointer(MaterialSemantic semantic) const noexcept;
 	MaterialParamPtr getParamPointer(const std::string& name) const noexcept;
 
-	MaterialPtr createMaterial(const std::string& name) noexcept;
+	MaterialPtr createMaterial(const std::string& name) except;
 
 	void setMaterialPass(MaterialPassPtr& pass) noexcept;
 	MaterialPassPtr& getMaterialPass() noexcept;

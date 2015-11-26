@@ -88,13 +88,13 @@ FILE* fopen(const char* filename, ios_base::openmode mode) noexcept
     if (mode & ios_base::app)     flags |= O_APPEND;
     if (mode & ios_base::trunc)   flags |= O_TRUNC;
 
-    int access = PP_DEFAULT;
+    int access = fcntl::PP_DEFAULT;
 
 #if defined(__WINDOWS__)
-    access |= PP_IRUSR | PP_IWUSR;
+    access |= fcntl::PP_IRUSR | fcntl::PP_IWUSR;
 #endif
 
-    return fmalloc(_NAME open(filename, flags, access));
+    return fmalloc(fcntl::open(filename, flags, access));
 }
 
 FILE* fopen(const char* filename, ios_base::open_mode mode) noexcept
@@ -120,13 +120,13 @@ FILE* fopen(const wchar_t* filename, ios_base::openmode mode) noexcept
     if (mode & ios_base::app)     flags |= O_APPEND;
     if (mode & ios_base::trunc)   flags |= O_TRUNC;
 
-    int access = PP_DEFAULT;
+    int access = fcntl::PP_DEFAULT;
 
 #if defined(__WINDOWS__)
-    access |= PP_IRUSR | PP_IWUSR;
+    access |= fcntl::PP_IRUSR | fcntl::PP_IWUSR;
 #endif
 
-    return fmalloc(_NAME open(filename, flags, access));
+    return fmalloc(fcntl::open(filename, flags, access));
 }
 
 FILE* fopen(const wchar_t* filename, ios_base::open_mode mode) noexcept
@@ -342,14 +342,14 @@ streamoff fseek(FILE* stream, streamoff _off, ios_base::seekdir seek) noexcept
                 break;
             }
 
-            _NAME seek(stream->_file, count, seek);
+			fcntl::seek(stream->_file, count, seek);
         }
 
         return ftell(stream);
     }
     else
     {
-        return _NAME seek(stream->_file, (long)_off, seek);
+        return fcntl::seek(stream->_file, (long)_off, seek);
     }
 }
 

@@ -279,7 +279,7 @@ MaterialManager::getParamPointer(const std::string& name) const noexcept
 }
 
 MaterialPtr
-MaterialManager::createMaterial(const std::string& name) noexcept
+MaterialManager::createMaterial(const std::string& name) except
 {
 	MaterialMaker maker;
 	return maker.load(name);

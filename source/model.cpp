@@ -75,7 +75,7 @@ bool
 Model::load(const char* filename, ModelType type) noexcept
 {
     _name = filename;
-    _directory = directory(_name);
+    _directory = util::directory(_name);
     MemoryStream stream;
     IoServer::instance()->openFile(filename, stream);
     return this->load((*(istream*)&stream), type);
@@ -85,7 +85,7 @@ bool
 Model::load(const std::string& filename, ModelType type) noexcept
 {
     _name = filename;
-    _directory = directory(_name);
+    _directory = util::directory(_name);
     MemoryStream stream;
     IoServer::instance()->openFile(filename, stream);
     return this->load((*(istream*)&stream), type);
@@ -94,7 +94,7 @@ Model::load(const std::string& filename, ModelType type) noexcept
 bool
 Model::load(const wchar_t* filename, ModelType type) noexcept
 {
-    _directory = directory(_name);
+    _directory = util::directory(_name);
     MemoryStream stream;
     IoServer::instance()->openFile(filename, stream);
     return this->load((*(istream*)&stream), type);
@@ -103,7 +103,7 @@ Model::load(const wchar_t* filename, ModelType type) noexcept
 bool
 Model::load(const std::wstring& filename, ModelType type) noexcept
 {
-    _directory = directory(_name);
+    _directory = util::directory(_name);
     MemoryStream stream;
     IoServer::instance()->openFile(filename, stream);
     return this->load((*(istream*)&stream), type);

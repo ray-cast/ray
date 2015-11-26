@@ -343,7 +343,10 @@ IoServer::existsFile(const std::string& path) noexcept
 	this->getResolveAssign(path, resolvePath);
 	if (resolvePath.empty())
 	{
-		this->setstate(ios_base::failbit);
+		if (access(path.c_str(), 0) != 0)
+			this->setstate(ios_base::failbit);
+		else
+			this->clear(ios_base::goodbit);
 		return *this;
 	}
 	this->clear(ios_base::goodbit);

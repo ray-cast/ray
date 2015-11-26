@@ -323,7 +323,7 @@ XMLReader::getFloat(const char* name) const noexcept
 {
 	auto value = getString(name);
 	if (!value.empty())
-		return fast_atof(value.c_str());
+		return util::fast_atof(value.c_str());
 
 	return 0.0;
 }

@@ -75,7 +75,7 @@ public:
 			if (!_stream.read(&buffer, 1))
 				break;
 
-			if (isLineEnd(buffer))
+			if (util::isLineEnd(buffer))
 				break;
 
 			_source.push_back(buffer);

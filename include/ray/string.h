@@ -93,6 +93,9 @@ typedef std::string string;
 
 #if defined(__WINDOWS__)
 
+namespace util
+{
+
 EXPORT char* fullpath(char * out, const char * in, std::size_t size);
 EXPORT wchar_t* fullpath(wchar_t * out, const wchar_t * in, std::size_t size);
 
@@ -204,6 +207,8 @@ EXPORT std::wstring toLower(const std::wstring& _input);
 
 EXPORT void split(std::vector<std::string>& result, const std::string& _source, const std::string& _delims = "\t\n ");
 EXPORT void split(std::vector<std::wstring>& result, const std::wstring& _source, const std::wstring& _delims = L"\t\n ");
+
+}
 
 _NAME_END
 

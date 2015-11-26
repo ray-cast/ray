@@ -92,7 +92,7 @@ public:
 		GuiWidgetAlign result(Enum(0));
 		const MapAlign& map_names = result.getValueNames();
 		std::vector<std::string> vec;
-		ray::split(vec, _value);
+		util::split(vec, _value);
 
 		for (size_t pos = 0; pos < vec.size(); pos++)
 		{

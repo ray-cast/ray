@@ -287,7 +287,7 @@ ostream::operator << (char value) noexcept
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, MAX_PATH, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -309,7 +309,7 @@ ostream::operator << (unsigned char value) noexcept
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, MAX_PATH, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -331,7 +331,7 @@ ostream::operator << (short value) noexcept
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, MAX_PATH, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -353,7 +353,7 @@ ostream::operator << (long long value) noexcept
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, MAX_PATH, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -375,7 +375,7 @@ ostream::operator << (unsigned short value) noexcept
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, MAX_PATH, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -397,7 +397,7 @@ ostream::operator << (int value) noexcept
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, MAX_PATH, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -419,7 +419,7 @@ ostream::operator << (unsigned int value) noexcept
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, MAX_PATH, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -441,7 +441,7 @@ ostream::operator << (unsigned long value) noexcept
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, MAX_PATH, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -463,7 +463,7 @@ ostream::operator << (unsigned long long value) noexcept
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, MAX_PATH, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -485,7 +485,7 @@ ostream::operator << (float value) noexcept
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = ftoa10(buf, MAX_PATH, value);
+            auto written = util::ftoa10(buf, MAX_PATH, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -507,7 +507,7 @@ ostream::operator << (double value) noexcept
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = dtoa10(buf, MAX_PATH, value);
+            auto written = util::dtoa10(buf, MAX_PATH, value);
             if (written > 0)
             {
                 return this->write(buf, written);

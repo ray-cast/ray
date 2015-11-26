@@ -40,6 +40,9 @@
 
 _NAME_BEGIN
 
+namespace util
+{
+
 const float fast_atof_table[16] =
 {
 	// we write [16] here instead of [] to work around a swig bug
@@ -1182,5 +1185,7 @@ void split(std::vector<std::wstring>& result, const std::wstring& _source, const
 		start = _source.find_first_not_of(_delims, end + 1);
 	}
 }
+
+} // namespace util
 
 _NAME_END

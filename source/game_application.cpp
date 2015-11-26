@@ -55,7 +55,7 @@
 #endif
 
 #if defined(_BUILD_RENDERER)
-#	include <ray/render_features.h>
+#	include <ray/render_feature.h>
 #endif
 
 #if defined(_BUILD_GUI)
@@ -83,13 +83,6 @@ GameApplication::~GameApplication() noexcept
 bool
 GameApplication::initialize(int argc, char *argv[]) except
 {
-	if (argc != 0)
-	{
-		if (access(argv[0], 0) != 0)
-			return false;
-		_workDir = directory(argv[0]);
-	}
-
 	if (!_isInitialize)
 	{
 		_ioServer = IoServer::instance();
@@ -99,6 +92,13 @@ GameApplication::initialize(int argc, char *argv[]) except
 
 		_ioInterface = IoInterface::instance();
 		_ioInterface->open();
+
+		if (argc != 0)
+		{
+			if (!_ioServer->existsFile(argv[0]))
+				return false;
+			_workDir = util::directory(argv[0]);
+		}
 
 		rtti::Factory::instance()->open();
 
@@ -133,7 +133,7 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) ex
 	_physicFeature = std::make_shared<PhysicFeatures>();
 #endif
 #if defined(_BUILD_RENDERER)
-	_renderFeature = std::make_shared<RenderFeatures>(hwnd, width, height);
+	_renderFeature = std::make_shared<RenderFeature>(hwnd, width, height);
 #endif
 #if defined(_BUILD_GUI)
 	_guiFeature = std::make_shared<GuiFeature>(width, height);

@@ -44,7 +44,7 @@
 #include <ray/camera_component.h>
 #include <ray/mesh_component.h>
 #include <ray/input_feature.h>
-#include <ray/render_features.h>
+#include <ray/render_feature.h>
 #include <ray/physics_features.h>
 #include <ray/queue.h>
 #include <ray/format.h>

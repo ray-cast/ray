@@ -429,14 +429,14 @@ TerrainComponent::hitChunks() noexcept
 	if (inputFeatures)
 	{
 		auto input = inputFeatures->getInput();
-		if (input->getButtonDown(ray::InputButton::MOUSE0))
+		if (input->getButtonDown(ray::InputButton::LEFT))
 		{
 			if (input->getKey(ray::InputKey::LCTRL) || input->isLockedCursor())
 			{
 				this->removeBlockByMousePos(input->getMousePosX(), input->getMousePosY());
 			}
 		}
-		else if (input->getButtonDown(ray::InputButton::MOUSE2))
+		else if (input->getButtonDown(ray::InputButton::RIGHT))
 		{
 			this->addBlockByMousePos(input->getMousePosX(), input->getMousePosY());
 		}

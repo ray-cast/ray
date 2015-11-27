@@ -62,8 +62,8 @@ protected:
 
 	virtual void onMeshChange() except;
 
-	virtual void onAttachComponent(GameComponentPtr component) except;
-	virtual void onDetachComponent(GameComponentPtr component) except;
+	virtual void onAttachComponent(GameComponentPtr& component) except;
+	virtual void onDetachComponent(GameComponentPtr& component) except;
 
 	RenderObjectPtr buildRenderObject(MeshPropertyPtr mesh, RenderBufferPtr buffer) noexcept;
 

@@ -60,14 +60,14 @@ PhysicsMeshComponent::clone() const noexcept
 }
 
 void
-PhysicsMeshComponent::onAttachComponent(GameComponentPtr component) noexcept
+PhysicsMeshComponent::onAttachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<MeshComponent>())
 		component->downcast<MeshComponent>()->addMeshChangeListener(std::bind(&PhysicsMeshComponent::onMeshChange, this));
 }
 
 void
-PhysicsMeshComponent::onDetachComponent(GameComponentPtr component) noexcept
+PhysicsMeshComponent::onDetachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<MeshComponent>())
 		component->downcast<MeshComponent>()->removeMeshChangeListener(std::bind(&PhysicsMeshComponent::onMeshChange, this));

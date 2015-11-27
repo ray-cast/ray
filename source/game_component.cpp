@@ -197,7 +197,7 @@ GameComponent::onAttach() except
 }
 
 void 
-GameComponent::onRemove() except
+GameComponent::onDetach() except
 {
 }
 
@@ -247,12 +247,12 @@ GameComponent::onLayerChangeAfter() except
 }
 
 void
-GameComponent::onAttachComponent(GameComponentPtr component) except
+GameComponent::onAttachComponent(GameComponentPtr& component) except
 {
 }
 
 void
-GameComponent::onDetachComponent(GameComponentPtr component) except
+GameComponent::onDetachComponent(GameComponentPtr& component) except
 {
 }
 

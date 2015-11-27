@@ -59,8 +59,8 @@ MeshComponent::setMesh(MeshPropertyPtr mesh) noexcept
 
 		_mesh = mesh;
 
-		for (auto& onMeshChange : _onMeshChange)
-			onMeshChange();
+		for (auto& it : _onMeshChange)
+			std::invoke(it);
 	}
 }
 
@@ -72,8 +72,8 @@ MeshComponent::setCombieInstnace(const CombineInstance& instances) noexcept
 	
 	_mesh->mergeMeshes(instances);
 
-	for (auto& onMeshChange : _onMeshChange)
-		onMeshChange();
+	for (auto& it : _onMeshChange)
+		std::invoke(it);
 }
 
 void
@@ -135,6 +135,8 @@ MeshComponent::addMeshChangeListener(std::function<void()> func) noexcept
 	auto it = std::find_if(_onMeshChange.begin(), _onMeshChange.end(), [&](std::function<void()>& it) { return it.target_type() == func.target_type();});
 	if (it == _onMeshChange.end())
 		_onMeshChange.push_back(func);
+	else
+		assert(false);
 }
 
 void 
@@ -143,6 +145,8 @@ MeshComponent::removeMeshChangeListener(std::function<void()> func) noexcept
 	auto it = std::find_if(_onMeshChange.begin(), _onMeshChange.end(), [&](std::function<void()>& it) { return it.target_type() == func.target_type();});
 	if (it != _onMeshChange.end())
 		_onMeshChange.erase(it);
+	else
+		assert(false);
 }
 
 void

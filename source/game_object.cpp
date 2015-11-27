@@ -944,6 +944,9 @@ GameObject::addComponent(GameComponentPtr component) except
 			component->onActivate();
 
 		for (auto& it : _components)
+			component->onAttachComponent(it);
+
+		for (auto& it : _components)
 			it->onAttachComponent(component);
 
 		_components.push_back(component);
@@ -960,7 +963,8 @@ GameObject::removeComponent(GameComponentPtr component) noexcept
 	{
 		_components.erase(it);
 
-		component->onRemove();
+		for (auto& it : _components)
+			component->onDetachComponent(it);
 
 		for (auto& it : _components)
 			it->onDetachComponent(component);
@@ -968,6 +972,7 @@ GameObject::removeComponent(GameComponentPtr component) noexcept
 		if (this->getActive() && component->getActive())
 			component->onDeactivate();
 
+		component->onDetach();
 		component->_setGameObject(nullptr);
 	}
 }
@@ -985,7 +990,7 @@ GameObject::cleanupComponents() noexcept
 				it->onDetachComponent(component);
 		}
 
-		it->onRemove();
+		it->onDetach();
 	}
 
 	_components.clear();

@@ -76,7 +76,7 @@ private:
 	ScriptObjectPtr _scriptObject;
 
 	std::size_t _onAttach;
-	std::size_t _onRemove;
+	std::size_t _onDetach;
 
 	std::size_t _onActivate;
 	std::size_t _onDeactivate;

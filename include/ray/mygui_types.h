@@ -50,7 +50,7 @@
 #include <ray/gui_button.h>
 #include <ray/gui_textbox.h>
 #include <ray/gui_imageloader.h>
-#include <ray/gui_system.h>
+#include <ray/gui_system_base.h>
 
 #include <MyGUI.h>
 #include <MyGUI_Gui.h>

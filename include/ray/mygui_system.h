@@ -42,9 +42,9 @@
 
 _NAME_BEGIN
 
-class EXPORT MyGuiSystem final : public GuiSystem
+class EXPORT MyGuiSystem final : public GuiSystemBase
 {
-	__DeclareSubClass(MyGuiSystem, GuiSystem)
+	__DeclareSubClass(MyGuiSystem, GuiSystemBase)
 public:
 	MyGuiSystem() noexcept;
 	~MyGuiSystem() noexcept;
@@ -70,6 +70,8 @@ public:
 
 	void setViewport(int w, int h) noexcept;
 	void getViewport(int& w, int& h) noexcept;
+
+	GuiWidgetPtr createWidget(const rtti::Rtti* rtti) except;
 
 	void render(float delta) noexcept;
 

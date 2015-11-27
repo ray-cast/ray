@@ -136,6 +136,7 @@ OGLRenderer::renderBegin() noexcept
 {
 	this->setShaderObject(nullptr);
 	this->setRenderTexture(nullptr);
+	this->setRenderBuffer(nullptr);
 }
 
 void
@@ -270,12 +271,11 @@ OGLRenderer::createRenderBuffer() noexcept
 void
 OGLRenderer::setRenderBuffer(RenderBufferPtr buffer) noexcept
 {
-	assert(buffer);
-
 	if (_renderBuffer != buffer)
 	{
+		if (buffer)
+			buffer->apply();
 		_renderBuffer = buffer;
-		_renderBuffer->apply();
 	}
 }
 

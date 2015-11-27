@@ -34,57 +34,18 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_SYSTEM_H_
-#define _H_GUI_SYSTEM_H_
-
-#include <ray/gui_system_base.h>
+#include <ray/gui_system.h>
 
 _NAME_BEGIN
 
-class EXPORT GuiSystem final
+__ImplementSubInterface(GuiSystemBase, rtti::Interface, "GuiSystem")
+
+GuiSystemBase::GuiSystemBase() noexcept
 {
-	__DeclareSingleton(GuiSystem)
-public:
-	GuiSystem() noexcept;
-	~GuiSystem() noexcept;
+}
 
-	bool open() except;
-	void close() noexcept;
-
-	void setCoreProfile(const std::string& core) except;
-	const std::string& getCoreProfile() const noexcept;
-
-	void setImageLoader(GuiImageLoaderPtr loader) noexcept;
-	GuiImageLoaderPtr getImageLoader() const noexcept;
-
-	bool injectMouseMove(int _absx, int _absy, int _absz) noexcept;
-	bool injectMousePress(int _absx, int _absy, GuiInputButton::Code _id) noexcept;
-	bool injectMouseRelease(int _absx, int _absy, GuiInputButton::Code _id) noexcept;
-	bool injectKeyPress(GuiInputKey::Code _key) noexcept;
-	bool injectKeyRelease(GuiInputKey::Code _key) noexcept;
-
-	bool isFocusMouse() const noexcept;
-	bool isFocusKey() const noexcept;
-	bool isCaptureMouse() const noexcept;
-
-	void setViewport(int w, int h) noexcept;
-	void getViewport(int& w, int& h) noexcept;
-
-	GuiWidgetPtr createWidget(const rtti::Rtti* rtti);
-	template<typename T>
-	typename std::enable_if<std::is_base_of<GuiWidget, T>::value, std::shared_ptr<T>>::type createWidget()
-		{ return this->createWidget(T::getRtti())->downcast<T>(); }
-
-	void render(float delta) except;
-
-private:
-	GuiSystem(const GuiSystem&) = delete;
-	GuiSystem& operator=(const GuiSystem&) = delete;
-
-private:
-	GuiSystemBasePtr _system;
-};
+GuiSystemBase::~GuiSystemBase() noexcept
+{
+}
 
 _NAME_END
-
-#endif

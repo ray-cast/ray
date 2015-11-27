@@ -38,10 +38,13 @@
 #include <ray/mygui_system.h>
 #include <ray/mygui_renderer.h>
 #include <ray/mygui_manager.h>
+#include <ray/mygui_button.h>
+#include <ray/mygui_window.h>
+#include <ray/mygui_textbox.h>
 
 _NAME_BEGIN
 
-__ImplementSubClass(MyGuiSystem, GuiSystem, "MyGuiSystem")
+__ImplementSubClass(MyGuiSystem, GuiSystemBase, "MyGuiSystem")
 
 MyGUI::MouseButton GuiButtonToMyGUI(GuiInputButton::Code button)
 {
@@ -376,6 +379,27 @@ MyGuiSystem::getViewport(int& w, int& h) noexcept
 {
 	assert(_renderer);
 	_renderer->getViewport(w, h);
+}
+
+GuiWidgetPtr
+MyGuiSystem::createWidget(const rtti::Rtti* rtti) except
+{
+	assert(rtti);
+	assert(rtti->isDerivedFrom(GuiWidget::getRtti()));
+
+	GuiWidgetPtr widget;
+	if (rtti == GuiButton::getRtti())
+		widget = std::make_shared<MyGuiButton>();
+	else if (rtti == GuiWindow::getRtti())
+		widget = std::make_shared<MyGuiWindow>();
+	else if (rtti == GuiTextBox::getRtti())
+		widget = std::make_shared<MyGuiTextBox>();
+	else
+	{
+		assert(false);
+	}
+
+	return widget;
 }
 
 void

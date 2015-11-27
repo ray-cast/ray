@@ -50,6 +50,15 @@ public:
 	GuiFeature(std::uint32_t w, std::uint32_t h) noexcept;
 	~GuiFeature() noexcept;
 
+	void setCoreProfile(const std::string& core) except;
+	const std::string& getCoreProfile() const noexcept;
+
+	void setImageLoader(GuiImageLoaderPtr loader) noexcept;
+	GuiImageLoaderPtr getImageLoader() const noexcept;
+
+	void setViewport(int w, int h) noexcept;
+	void getViewport(int& w, int& h) noexcept;
+
 	void render() except;
 
 protected:
@@ -64,7 +73,7 @@ private:
 	std::uint32_t _width;
 	std::uint32_t _height;
 
-	GuiSystemPtr _platform;
+	GuiSystem* _platform;
 };
 
 _NAME_END

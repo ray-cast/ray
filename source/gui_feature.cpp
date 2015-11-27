@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_GUI)
 #include <ray/gui_feature.h>
-#include <ray/mygui_system.h>
+#include <ray/gui_system.h>
 #include <ray/game_server.h>
 #include <ray/timer.h>
 #include <ray/image.h>
@@ -333,18 +333,62 @@ GuiFeature::~GuiFeature() noexcept
 {
 }
 
+void 
+GuiFeature::setCoreProfile(const std::string& core) except
+{
+	assert(_platform);
+	_platform->setCoreProfile(core);
+}
+
+const std::string& 
+GuiFeature::getCoreProfile() const noexcept
+{
+	assert(_platform);
+	return _platform->getCoreProfile();
+}
+
+void 
+GuiFeature::setImageLoader(GuiImageLoaderPtr loader) noexcept
+{
+	assert(_platform);
+	_platform->setImageLoader(loader);
+}
+
+GuiImageLoaderPtr 
+GuiFeature::getImageLoader() const noexcept
+{
+	assert(_platform);
+	return _platform->getImageLoader();
+}
+
+void 
+GuiFeature::setViewport(int w, int h) noexcept
+{
+	assert(_platform);
+	_platform->setViewport(w, h);
+}
+
+void 
+GuiFeature::getViewport(int& w, int& h) noexcept
+{
+	assert(_platform);
+	_platform->getViewport(w, h);
+}
+
 void
 GuiFeature::render() except
 {
-	if (_platform)
-		_platform->render(this->getGameServer()->getTimer()->delta());
+	assert(_platform);
+	_platform->render(this->getGameServer()->getTimer()->delta());
 }
 
 void
 GuiFeature::onActivate() except
 {
-	_platform = std::make_shared<MyGuiSystem>();
-	_platform->open();
+	_platform = GuiSystem::instance();
+	if (!_platform->open())
+		throw failure("GuiSystem::open() fail");
+
 	_platform->setImageLoader(std::make_shared<ImageLoader>());
 	_platform->setCoreProfile("sys:media/ui/MyGUI_Core.xml");
 	_platform->setViewport(_width, _height);
@@ -354,15 +398,14 @@ void
 GuiFeature::onDeactivate() except
 {
 	if (_platform)
-	{
-		_platform.reset();
 		_platform = nullptr;
-	}
 }
 
 void
 GuiFeature::onMessage(const MessagePtr& message) except
 {
+	assert(_platform);
+
 	if (message->isInstanceOf<InputEvent>())
 	{
 		InputEventPtr event = std::dynamic_pointer_cast<InputEvent>(message);

@@ -129,18 +129,12 @@ MyGuiWidget::createWieght(const rtti::Rtti* rtti) except
 	assert(rtti->isDerivedFrom(GuiWidget::getRtti()));
 
 	GuiWidgetPtr widget;
-	if (rtti == MyGuiButton::getRtti())
-	{
+	if (rtti == GuiButton::getRtti())
 		widget = std::make_shared<MyGuiButton>(_widget);
-	}
-	else if (rtti == MyGuiWindow::getRtti())
-	{
+	else if (rtti == GuiWindow::getRtti())
 		widget = std::make_shared<MyGuiWindow>(_widget);
-	}
-	else if (rtti == MyGuiTextBox::getRtti())
-	{
+	else if (rtti == GuiTextBox::getRtti())
 		widget = std::make_shared<MyGuiTextBox>(_widget);
-	}
 	else
 	{
 		assert(false);

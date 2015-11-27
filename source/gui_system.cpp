@@ -35,10 +35,12 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/gui_system.h>
+#include <ray/mygui_system.h>
+#include <ray/mygui_button.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GuiSystem, rtti::Interface, "GuiSystem")
+__ImplementSingleton(GuiSystem)
 
 GuiSystem::GuiSystem() noexcept
 {
@@ -46,6 +48,137 @@ GuiSystem::GuiSystem() noexcept
 
 GuiSystem::~GuiSystem() noexcept
 {
+}
+
+bool 
+GuiSystem::open() except
+{
+	assert(!_system);
+	_system = std::make_shared<MyGuiSystem>();
+
+	return _system->open();
+}
+
+void 
+GuiSystem::close() noexcept
+{
+	if (_system)
+	{
+		_system.reset();
+		_system = nullptr;
+	}
+}
+
+void 
+GuiSystem::setCoreProfile(const std::string& core) except
+{
+	assert(_system);
+	return _system->setCoreProfile(core);
+}
+
+const std::string& 
+GuiSystem::getCoreProfile() const noexcept
+{
+	assert(_system);
+	return _system->getCoreProfile();
+}
+
+void 
+GuiSystem::setImageLoader(GuiImageLoaderPtr loader) noexcept
+{
+	assert(_system);
+	return _system->setImageLoader(loader);
+}
+
+GuiImageLoaderPtr 
+GuiSystem::getImageLoader() const noexcept
+{
+	assert(_system);
+	return _system->getImageLoader();
+}
+
+bool 
+GuiSystem::injectMouseMove(int _absx, int _absy, int _absz) noexcept
+{
+	assert(_system);
+	return _system->injectMouseMove(_absx, _absy, _absz);
+}
+
+bool 
+GuiSystem::injectMousePress(int _absx, int _absy, GuiInputButton::Code _id) noexcept
+{
+	assert(_system);
+	return _system->injectMousePress(_absx, _absy, _id);
+}
+
+bool 
+GuiSystem::injectMouseRelease(int _absx, int _absy, GuiInputButton::Code _id) noexcept
+{
+	assert(_system);
+	return _system->injectMouseRelease(_absx, _absy, _id);
+}
+
+bool 
+GuiSystem::injectKeyPress(GuiInputKey::Code _key) noexcept
+{
+	assert(_system);
+	return _system->injectKeyPress(_key);
+}
+
+bool 
+GuiSystem::injectKeyRelease(GuiInputKey::Code _key) noexcept
+{
+	assert(_system);
+	return _system->injectKeyRelease(_key);
+}
+
+bool 
+GuiSystem::isFocusMouse() const noexcept
+{
+	assert(_system);
+	return _system->isFocusMouse();
+}
+
+bool 
+GuiSystem::isFocusKey() const noexcept
+{
+	assert(_system);
+	return _system->isFocusKey();
+}
+
+bool 
+GuiSystem::isCaptureMouse() const noexcept
+{
+	assert(_system);
+	return _system->isCaptureMouse();
+}
+
+void 
+GuiSystem::setViewport(int w, int h) noexcept
+{
+	assert(_system);
+	_system->setViewport(w, h);
+}
+
+void 
+GuiSystem::getViewport(int& w, int& h) noexcept
+{
+	assert(_system);
+	_system->getViewport(w, h);
+}
+
+GuiWidgetPtr 
+GuiSystem::createWidget(const rtti::Rtti* rtti)
+{
+	assert(_system);
+	return _system->createWidget(rtti);
+}
+
+void 
+GuiSystem::render(float delta) except
+{
+	assert(_system);
+	_system->render(delta);
 }
 
 _NAME_END

@@ -41,7 +41,7 @@ _NAME_BEGIN
 __ImplementSubInterface(GameComponent, MessageListener, "Component")
 
 GameComponent::GameComponent() noexcept
-	: _active(false)
+	: _active(true)
 {
 }
 
@@ -192,12 +192,12 @@ GameComponent::sendMessageDownwards(const MessagePtr& message) except
 }
 
 void 
-GameComponent::onAttachComponent() except
+GameComponent::onAttach() except
 {
 }
 
 void 
-GameComponent::onDetachComponent() except
+GameComponent::onRemove() except
 {
 }
 
@@ -243,6 +243,16 @@ GameComponent::onLayerChangeBefore() except
 
 void
 GameComponent::onLayerChangeAfter() except
+{
+}
+
+void
+GameComponent::onAttachComponent(GameComponentPtr component) except
+{
+}
+
+void
+GameComponent::onDetachComponent(GameComponentPtr component) except
 {
 }
 

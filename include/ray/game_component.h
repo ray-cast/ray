@@ -79,8 +79,8 @@ protected:
 	virtual void sendMessageUpwards(const MessagePtr& message) except;
 	virtual void sendMessageDownwards(const MessagePtr& message) except;
 
-	virtual void onAttachComponent() except;
-	virtual void onDetachComponent() except;
+	virtual void onAttach() except;
+	virtual void onRemove() except;
 
 	virtual void onActivate() except;
 	virtual void onDeactivate() except;
@@ -94,6 +94,9 @@ protected:
 
 	virtual void onLayerChangeBefore() except;
 	virtual void onLayerChangeAfter() except;
+
+	virtual void onAttachComponent(GameComponentPtr component) except;
+	virtual void onDetachComponent(GameComponentPtr component) except;
 
 private:
 	friend GameObject;

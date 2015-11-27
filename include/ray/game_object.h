@@ -159,7 +159,6 @@ public:
 
 	void addComponent(GameComponentPtr component) except;
 	void removeComponent(GameComponentPtr component) noexcept;
-	void destroyComponent(GameComponentPtr component) noexcept;
 	void cleanupComponents() noexcept;
 
 	template<typename T>

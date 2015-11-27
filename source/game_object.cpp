@@ -87,7 +87,18 @@ GameObject::setActive(bool active) except
 		GameObjectManager::instance()->_activeObject(this, active);
 
 		for (auto& it : _components)
-			it->setActive(active);
+		{
+			if (active)
+			{
+				if (it->getActive())
+					it->onActivate();
+			}
+			else
+			{
+				if (it->getActive())
+					it->onDeactivate();
+			}
+		}
 
 		_active = active;
 	}
@@ -99,7 +110,18 @@ GameObject::setActiveUpwards(bool active) except
 	if (_active != active)
 	{
 		for (auto& it : _components)
-			it->setActive(active);
+		{
+			if (active)
+			{
+				if (it->getActive())
+					it->onActivate();
+			}
+			else
+			{
+				if (it->getActive())
+					it->onDeactivate();
+			}
+		}
 
 		auto parent = this->getParent();
 		if (parent)
@@ -115,7 +137,18 @@ GameObject::setActiveDownwards(bool active) except
 	if (_active != active)
 	{
 		for (auto& it : _components)
-			it->setActive(active);
+		{
+			if (active)
+			{
+				if (it->getActive())
+					it->onActivate();
+			}
+			else
+			{
+				if (it->getActive())
+					it->onDeactivate();
+			}
+		}
 
 		for (auto& it : _children)
 			it->setActiveDownwards(true);
@@ -136,12 +169,18 @@ GameObject::setLayer(std::uint8_t layer) noexcept
 	if (_layer != layer)
 	{
 		for (auto& it : _components)
-			it->onLayerChangeBefore();
+		{
+			if (it->getActive())
+				it->onLayerChangeBefore();
+		}
 
 		_layer = layer;
 
 		for (auto& it : _components)
-			it->onLayerChangeAfter();
+		{
+			if (it->getActive())
+				it->onLayerChangeAfter();
+		}
 	}
 }
 
@@ -895,17 +934,19 @@ GameObject::addComponent(GameComponentPtr component) except
 {
 	assert(component);
 
-	auto it = std::find_if(_components.begin(), _components.end(), [component](GameComponentPtr it) { return component->isInstanceOf(it->rtti()); });
+	auto it = std::find_if(_components.begin(), _components.end(), [component](GameComponentPtr& it) { return component->isInstanceOf(it->rtti()); });
 	if (it == _components.end())
 	{
 		component->_setGameObject(this);
-		if (this->getActive())
+		component->onAttach();
+
+		if (this->getActive() && component->getActive())
 			component->onActivate();
 
-		_components.push_back(component);
-
 		for (auto& it : _components)
-			it->onAttachComponent();
+			it->onAttachComponent(component);
+
+		_components.push_back(component);
 	}
 }
 
@@ -917,41 +958,34 @@ GameObject::removeComponent(GameComponentPtr component) noexcept
 	auto it = std::find(_components.begin(), _components.end(), component);
 	if (it != _components.end())
 	{
-		for (auto& it : _components)
-			it->onDetachComponent();
-
-		(*it)->_setGameObject(nullptr);
 		_components.erase(it);
-	}
-}
 
-void
-GameObject::destroyComponent(GameComponentPtr component) noexcept
-{
-	assert(component);
+		component->onRemove();
 
-	auto it = std::find(_components.begin(), _components.end(), component);
-	if (it != _components.end())
-	{
 		for (auto& it : _components)
-			it->onDetachComponent();
+			it->onDetachComponent(component);
 
-		(*it)->onDeactivate();
-		(*it)->_setGameObject(nullptr);
+		if (this->getActive() && component->getActive())
+			component->onDeactivate();
 
-		_components.erase(it);
+		component->_setGameObject(nullptr);
 	}
 }
 
 void
 GameObject::cleanupComponents() noexcept
 {
-	if (this->getActive())
-	{
-		this->setActive(false);
+	this->setActive(false);
 
-		for (auto& it : _components)
-			it->onDetachComponent();
+	for (auto& it : _components)
+	{
+		for (auto& component : _components)
+		{
+			if (it != component)
+				it->onDetachComponent(component);
+		}
+
+		it->onRemove();
 	}
 
 	_components.clear();
@@ -1004,7 +1038,10 @@ GameObject::sendMessage(const MessagePtr& message) noexcept
 		return;
 
 	for (auto& it : _components)
-		it->onMessage(message);
+	{
+		if (it->getActive())
+			it->onMessage(message);
+	}
 }
 
 void
@@ -1015,7 +1052,8 @@ GameObject::sendMessageUpwards(const MessagePtr& message) noexcept
 
 	for (auto& it : _components)
 	{
-		it->onMessage(message);
+		if (it->getActive())
+			it->onMessage(message);
 	}
 
 	auto parent = _parent.lock();
@@ -1031,13 +1069,12 @@ GameObject::sendMessageDownwards(const MessagePtr& message) noexcept
 
 	for (auto& it : _components)
 	{
-		it->onMessage(message);
+		if (it->getActive())
+			it->onMessage(message);
 	}
 
 	for (auto& it : _children)
-	{
 		it->sendMessageDownwards(message);
-	}
 }
 
 GameObjectPtr
@@ -1054,9 +1091,7 @@ GameObject::clone() const except
 	instance->setTranslate(this->getTranslate());
 
 	for (auto& it : _components)
-	{
 		instance->addComponent(it->clone());
-	}
 
 	return instance;
 }
@@ -1067,7 +1102,10 @@ GameObject::_onFrameBegin() except
 	assert(this->getActive());
 
 	for (auto& it : _components)
-		it->onFrameBegin();
+	{
+		if (it->getActive())
+			it->onFrameBegin();
+	}
 }
 
 void
@@ -1076,7 +1114,10 @@ GameObject::_onFrame() except
 	assert(this->getActive());
 
 	for (auto& it : _components)
-		it->onFrame();
+	{
+		if (it->getActive())
+			it->onFrame();
+	}
 }
 
 void
@@ -1085,14 +1126,20 @@ GameObject::_onFrameEnd() except
 	assert(this->getActive());
 
 	for (auto& it : _components)
-		it->onFrameEnd();
+	{
+		if (it->getActive())
+			it->onFrameEnd();
+	}		
 }
 
 void
 GameObject::_onMoveBefore() except
 {
 	for (auto& it : _components)
-		it->onMoveBefore();
+	{
+		if (it->getActive())
+			it->onMoveBefore();
+	}
 
 	for (auto& it : _children)
 		it->_onMoveBefore();
@@ -1102,7 +1149,10 @@ void
 GameObject::_onMoveAfter() except
 {
 	for (auto& it : _components)
-		it->onMoveAfter();
+	{
+		if (it->getActive())
+			it->onMoveAfter();
+	}
 
 	for (auto& it : _children)
 		it->_onMoveAfter();

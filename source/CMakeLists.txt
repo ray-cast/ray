@@ -520,6 +520,8 @@ SET(GUI_LIST
     ${HEADER_PATH}/gui_align.h
     ${HEADER_PATH}/gui_system.h
     ${SOURCE_PATH}/gui_system.cpp
+    ${HEADER_PATH}/gui_system_base.h
+    ${SOURCE_PATH}/gui_system_base.cpp
     ${HEADER_PATH}/gui_imageloader.h
     ${SOURCE_PATH}/gui_imageloader.cpp
     ${HEADER_PATH}/gui_types.h

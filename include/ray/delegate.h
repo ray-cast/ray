@@ -48,12 +48,6 @@ _NAME_BEGIN
 template<typename T>
 class delegate;
 
-template<typename _This, typename _Functor>
-inline typename delegate<typename trait::functor<_Functor>::result_type(typename trait::functor<_Functor>::arg_type)>::bind make_delegate(_Functor t2, _This t1)
-{
-	return delegate<typename trait::functor<_Functor>::result_type(typename trait::functor<_Functor>::arg_type)>::make(t1, t2);
-}
-
 #define DELEGATE_MAX_ARGS 0
 #include "delegate_impl.h"
 #undef DELEGATE_MAX_ARGS
@@ -89,6 +83,12 @@ inline typename delegate<typename trait::functor<_Functor>::result_type(typename
 #define DELEGATE_MAX_ARGS 8
 #include "delegate_impl.h"
 #undef DELEGATE_MAX_ARGS
+
+template<typename _This, typename _Functor>
+inline auto make_delegate_bind(_This t1, _Functor t2)
+{
+	return delegate<typename trait::functor<_Functor>::result_type(typename trait::functor<_Functor>::arg_type)>::make(t1, t2);
+}
 
 _NAME_END
 

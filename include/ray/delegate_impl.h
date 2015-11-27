@@ -57,11 +57,12 @@
 template <typename Result DELEGATE_COMMA DELEGATE_TEMPLATE_PARAMS>
 class delegate<Result(DELEGATE_TEMPLATE_ARGS)>
 {
-private:
+public:
     class IICALLBACK
     {
     public:
-        virtual ~IICALLBACK() noexcept {}
+		IICALLBACK() noexcept {};
+		virtual ~IICALLBACK() noexcept {};
 
         virtual Result invoke(DELEGATE_FUNCTION_PARAMS) const = 0;
         virtual std::unique_ptr<IICALLBACK> clone() const = 0;
@@ -102,7 +103,7 @@ private:
 public:
     typedef delegate<Result(DELEGATE_TEMPLATE_ARGS)> _Myt;
 
-	typedef typename std::unique_ptr<IICALLBACK> bind;
+	typedef IICALLBACK bind;
     typedef std::vector<std::unique_ptr<IICALLBACK>> DELEGATES;
     typedef typename DELEGATES::iterator iterator;
     typedef typename DELEGATES::const_iterator const_iterator;
@@ -112,20 +113,6 @@ public:
     delegate() noexcept
         : _functions(nullptr)
     {
-    }
-
-    template<typename _Functor>
-    delegate(const _Functor& t1) noexcept
-        : _functions(nullptr)
-    {
-        this->attach(t1);
-    }
-
-    template<typename _This, typename _Functor>
-    delegate(_This t1, _Functor t2) noexcept
-        :_functions(nullptr)
-    {
-        this->attach(t1, t2);
     }
 
     delegate(const _Myt& copy) noexcept
@@ -199,7 +186,7 @@ private:
     };
 public:
     template<typename _Function>
-    void attach(_Function t1)
+    void attach(typename std::enable_if<std::is_function<_Function>::value, _Function>::type t1)
     {
         if (!_functions)
             _functions = new DELEGATES;
@@ -222,14 +209,12 @@ public:
         _functions->push_back(std::make_unique<ICALLBACK<std::pair<_This, _Functor>>>(pair));
     }
 
-	void attach(typename _Myt::bind& callback)
+	void attach(const IICALLBACK& callback)
 	{
-		assert(callback);
-
 		if (!_functions)
 			_functions = new DELEGATES;
 
-		_functions->push_back(std::move(callback));
+		_functions->push_back(callback.clone());
 	}
 
     void attach(const _Myt& other)
@@ -290,8 +275,8 @@ public:
     {
         if (!_functions) { return; }
 
-        const_iterator it = _functions->begin();
-        const_iterator end = _functions->end();
+        auto it = _functions->begin();
+        auto end = _functions->end();
 
         for (; it != end; ++it)
         {
@@ -299,14 +284,37 @@ public:
 
             if (p->_functor == t1)
             {
-                delete p;
-
                 _functions->erase(it);
-
                 break;
             }
         }
     }
+
+	template<typename _This, typename _Functor>
+	void remove(const _This& t1, const _Functor& t2)
+	{
+		this->remove(std::make_pair(t1, t2));
+	}
+
+	template<typename _This, typename _Functor>
+	void remove(const std::pair<_This, _Functor>& pair)
+	{
+		if (!_functions) { return; }
+
+		auto it = _functions->begin();
+		auto end = _functions->end();
+
+		for (; it != end; ++it)
+		{
+			ICALLBACK<T>* p = dynamic_cast<ICALLBACK<T>*>(*it);
+
+			if (p->_functor == t1)
+			{
+				_functions->erase(it);
+				break;
+			}
+		}
+	}
 
     bool empty() noexcept
     {
@@ -320,9 +328,9 @@ public:
     }
 
 	template<typename _This, typename _Functor>
-	static typename _Myt::bind make(const _This& t1, const _Functor& t2)
+	static ICALLBACK<std::pair<_This, _Functor>> make(const _This& t1, const _Functor& t2)
 	{
-		return std::make_unique<ICALLBACK<std::pair<_This, _Functor>>>(std::make_pair(t1, t2));
+		return ICALLBACK<std::pair<_This, _Functor>>(std::make_pair(t1, t2));
 	}
 
 private:

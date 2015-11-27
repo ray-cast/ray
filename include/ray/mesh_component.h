@@ -42,13 +42,6 @@
 
 _NAME_BEGIN
 
-class EXPORT MeshListener
-{
-public:
-	virtual void onMeshChangeAfter() except;
-	virtual void onMeshChangeBefore() except;
-};
-
 class EXPORT MeshComponent final : public GameComponent
 {
 	__DeclareSubClass(MeshComponent, GameComponent)
@@ -69,8 +62,8 @@ public:
 	const Bound& getBoundingBox() const noexcept;
 	const Bound& getBoundingBoxDownwards() const noexcept;
 
-	void addMeshListener(MeshListener* listener) noexcept;
-	void removeMeshListener(MeshListener* listener) noexcept;
+	void addMeshChangeListener(std::function<void()> func) noexcept;
+	void removeMeshChangeListener(std::function<void()> func) noexcept;
 
 	void clear() noexcept;
 
@@ -93,7 +86,7 @@ private:
 	MeshPropertyPtr _mesh;
 	MeshPropertyPtr _sharedMesh;
 
-	std::vector<MeshListener*> _listener;
+	std::vector<std::function<void()>> _onMeshChange;
 };
 
 _NAME_END

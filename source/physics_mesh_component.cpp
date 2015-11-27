@@ -60,34 +60,34 @@ PhysicsMeshComponent::clone() const noexcept
 }
 
 void
-PhysicsMeshComponent::onAttachComponent() noexcept
+PhysicsMeshComponent::onAttachComponent(GameComponentPtr component) noexcept
 {
-	_addMeshListstener();
+	if (component->isInstanceOf<MeshComponent>())
+		component->downcast<MeshComponent>()->addMeshChangeListener(std::bind(&PhysicsMeshComponent::onMeshChange, this));
 }
 
 void
-PhysicsMeshComponent::onDetachComponent() noexcept
+PhysicsMeshComponent::onDetachComponent(GameComponentPtr component) noexcept
 {
+	if (component->isInstanceOf<MeshComponent>())
+		component->downcast<MeshComponent>()->removeMeshChangeListener(std::bind(&PhysicsMeshComponent::onMeshChange, this));
 }
 
 void
 PhysicsMeshComponent::onActivate() noexcept
 {
-	_addMeshListstener();
-
 	_buildShapeMesh();
 }
 
 void
 PhysicsMeshComponent::onDeactivate() noexcept
 {
-	_removeMeshListener();
 	if (_shape)
 		_shape->close();
 }
 
 void 
-PhysicsMeshComponent::onMeshChangeAfter() noexcept
+PhysicsMeshComponent::onMeshChange() noexcept
 {
 	if (this->getActive())
 		_buildShapeMesh();
@@ -97,22 +97,6 @@ PhysicsShapePtr
 PhysicsMeshComponent::getCollisionShape() noexcept
 {
 	return _shape;
-}
-
-void 
-PhysicsMeshComponent::_addMeshListstener() noexcept
-{
-	auto component = this->getGameObject()->getComponent<MeshComponent>();
-	if (component)
-		component->addMeshListener(this);
-}
-
-void 
-PhysicsMeshComponent::_removeMeshListener() noexcept
-{
-	auto component = this->getGameObject()->getComponent<MeshComponent>();
-	if (component)
-		component->addMeshListener(this);
 }
 
 void

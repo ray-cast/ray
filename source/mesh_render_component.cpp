@@ -68,18 +68,17 @@ MeshRenderComponent::clone() const noexcept
 }
 
 void 
-MeshRenderComponent::onAttachComponent() except
+MeshRenderComponent::onAttachComponent(GameComponentPtr component) except
 {
-	auto component = this->getGameObject()->getComponent<MeshComponent>();
-	if (component)
-	{
-		component->addMeshListener(this);
-	}
+	if (component->isInstanceOf<MeshComponent>())
+		component->downcast<MeshComponent>()->addMeshChangeListener(std::bind(&MeshRenderComponent::onMeshChange, this));
 }
 
 void 
-MeshRenderComponent::onDetachComponent() except
+MeshRenderComponent::onDetachComponent(GameComponentPtr component) except
 {
+	if (component->isInstanceOf<MeshComponent>())
+		component->downcast<MeshComponent>()->removeMeshChangeListener(std::bind(&MeshRenderComponent::onMeshChange, this));
 }
 
 void
@@ -88,8 +87,6 @@ MeshRenderComponent::onActivate() except
 	auto component = this->getGameObject()->getComponent<MeshComponent>();
 	if (component)
 	{
-		component->addMeshListener(this);
-
 		auto mesh = component->getMesh();
 		if (!mesh)
 			return;
@@ -112,7 +109,7 @@ MeshRenderComponent::onDeactivate() except
 }
 
 void 
-MeshRenderComponent::onMeshChangeAfter() except
+MeshRenderComponent::onMeshChange() except
 {
 	if (this->getActive())
 	{
@@ -143,8 +140,6 @@ MeshRenderComponent::buildMaterials() except
 			}
 		}
 	}
-
-	this->_attacRenderObjects();
 }
 
 void

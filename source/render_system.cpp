@@ -369,8 +369,6 @@ RenderSystem::addRenderScene(RenderScenePtr scene) noexcept
 	auto it = std::find(_sceneList.begin(), _sceneList.end(), scene);
 	if (it == _sceneList.end())
 	{
-		scene->registerAddCameraDelegate(make_delegate(&RenderSystem::onAddCamera, this));
-
 		_sceneList.push_back(scene);
 		return true;
 	}

@@ -59,8 +59,6 @@ public:
 	void setViewport(int w, int h) noexcept;
 	void getViewport(int& w, int& h) noexcept;
 
-	void render() except;
-
 protected:
 
 	virtual void onActivate() except;

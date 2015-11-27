@@ -63,7 +63,7 @@ GUIBehaviourComponent::needUpdate() const noexcept
 }
 
 void 
-GUIBehaviourComponent::onMoveAfter() except
+GUIBehaviourComponent::onMoveAfter() noexcept
 {
 	this->needUpdate(true);
 }

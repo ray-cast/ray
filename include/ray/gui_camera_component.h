@@ -37,32 +37,28 @@
 #ifndef _H_GUI_CAMERA_COMPONENT_H_
 #define _H_GUI_CAMERA_COMPONENT_H_
 
-#include <ray/gui_behaviour_component.h>
-#include <ray/camera_component.h>
+#include <ray/game_component.h>
 
 _NAME_BEGIN
 
-class EXPORT GUICameraComponent : public GUIListenerComponent
+class EXPORT GuiCameraComponent : public GameComponent
 {
-	__DeclareSubClass(GUICameraComponent, GUIListenerComponent)
+	__DeclareSubClass(GuiCameraComponent, GameComponent)
 public:
-	GUICameraComponent() noexcept;
-	virtual ~GUICameraComponent() noexcept;
+	GuiCameraComponent() noexcept;
+	virtual ~GuiCameraComponent() noexcept;
 
 	GameComponentPtr clone() const except;
 
 private:
-	virtual void onAttachComponent(GameComponentPtr& component) except;
-	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
-
-	virtual void onActivate() noexcept;
-	virtual void onDectivate() noexcept;
+	void onAttachComponent(GameComponentPtr& component) except;
+	void onDetachComponent(GameComponentPtr& component) noexcept;
 
 	void onPostRender() noexcept;
 
 private:
-	GUICameraComponent(const GUICameraComponent&) noexcept = delete;
-	GUICameraComponent& operator=(const GUICameraComponent&) noexcept = delete;
+	GuiCameraComponent(const GuiCameraComponent&) noexcept = delete;
+	GuiCameraComponent& operator=(const GuiCameraComponent&) noexcept = delete;
 
 private:
 

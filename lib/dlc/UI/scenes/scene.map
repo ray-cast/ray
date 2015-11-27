@@ -17,6 +17,22 @@
             <attribute w="1376"/>
             <attribute h="768"/>
         </component>
-        <component name="GUICamera"/>
+        <component name="GuiCamera"/>
+    </object>
+    <object>
+        <attribute position="0,0,0" />
+        <attribute scale="200, 200, 0" />
+        <attribute active="true"/>
+        <component name="GuiWindow">
+            <attribute skin="WindowCS"/>
+        </component>
+    </object>
+    <object>
+        <attribute position="200,200,0" />
+        <attribute scale="200, 200, 0" />
+        <attribute active="true"/>
+        <component name="GuiWindow">
+            <attribute skin="WindowCS"/>
+        </component>
     </object>
 </scene>

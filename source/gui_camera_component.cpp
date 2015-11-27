@@ -43,54 +43,40 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GUICameraComponent, GUIListenerComponent, "GUICamera")
+__ImplementSubClass(GuiCameraComponent, GameComponent, "GuiCamera")
 
-GUICameraComponent::GUICameraComponent() noexcept
+GuiCameraComponent::GuiCameraComponent() noexcept
 {
 }
 
-GUICameraComponent::~GUICameraComponent() noexcept
+GuiCameraComponent::~GuiCameraComponent() noexcept
 {
 }
 
 GameComponentPtr 
-GUICameraComponent::clone() const except
+GuiCameraComponent::clone() const except
 {
-	return std::make_shared<GUICameraComponent>();
+	return std::make_shared<GuiCameraComponent>();
 }
 
 void
-GUICameraComponent::onAttachComponent(GameComponentPtr& component) except
+GuiCameraComponent::onAttachComponent(GameComponentPtr& component) except
 {
 	if (component->isInstanceOf<CameraComponent>())
-		component->downcast<CameraComponent>()->addPostRenderListener(std::bind(&GUICameraComponent::onPostRender, this));
+		component->downcast<CameraComponent>()->addPostRenderListener(std::bind(&GuiCameraComponent::onPostRender, this));
 }
 
 void
-GUICameraComponent::onDetachComponent(GameComponentPtr& component) noexcept
+GuiCameraComponent::onDetachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<CameraComponent>())
-		component->downcast<CameraComponent>()->removePostRenderListener(std::bind(&GUICameraComponent::onPostRender, this));
-}
-
-void
-GUICameraComponent::onActivate() noexcept
-{
-}
-
-void
-GUICameraComponent::onDectivate() noexcept
-{
+		component->downcast<CameraComponent>()->removePostRenderListener(std::bind(&GuiCameraComponent::onPostRender, this));
 }
 
 void 
-GUICameraComponent::onPostRender() noexcept
+GuiCameraComponent::onPostRender() noexcept
 {
-	auto platform = this->getGameServer()->getFeature<GuiFeature>();
-	if (platform)
-	{
-		platform->render();
-	}
+	GuiSystem::instance()->render(this->getGameServer()->getTimer()->delta());
 }
 
 _NAME_END

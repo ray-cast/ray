@@ -34,27 +34,41 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_LISTENER_COMPONENT_H_
-#define _H_GUI_LISTENER_COMPONENT_H_
+#ifndef _H_GUI_WIDGET_COMPONENT_H_
+#define _H_GUI_WIDGET_COMPONENT_H_
 
 #include <ray/game_component.h>
-#include <ray/input.h>
-#include <ray/material.h>
-#include <ray/game_event.h>
-#include <ray/game_component.h>
-#include <ray/game_controller.h>
+#include <ray/gui_widget.h>
 
 _NAME_BEGIN
 
-typedef std::shared_ptr<class GUILayoutComponent> GUILayoutComponentPtr;
-typedef std::shared_ptr<class GUIBehaviourComponent> GUIBehaviourComponentPtr;
-
-class EXPORT GUIListenerComponent : public GameComponent
+class EXPORT GuiWidgetComponent : public GameComponent
 {
-	__DeclareSubInterface(GUIListenerComponent, GameComponent)
+	__DeclareSubInterface(GuiWidgetComponent, GameComponent)
 public:
-	GUIListenerComponent() noexcept;
-	virtual ~GUIListenerComponent() noexcept;
+	GuiWidgetComponent() noexcept;
+	virtual ~GuiWidgetComponent() noexcept;
+
+	void setAlign(GuiWidgetAlign align) noexcept;
+	GuiWidgetAlign getAlign() noexcept;
+
+	void setSkin(const std::string& skin) except;
+	const std::string& getSkin() const noexcept;
+
+protected:
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
+
+	void _updateTransform() noexcept;
+
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
+
+	virtual void onMoveAfter() noexcept;
+
+protected:
+	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept = 0;
+	virtual GuiWidgetPtr getGuiWidget() const noexcept = 0;
 
 protected:
 

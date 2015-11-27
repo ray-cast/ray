@@ -42,9 +42,9 @@
 _NAME_BEGIN
 
 MyGuiRenderer::MyGuiRenderer() noexcept
-	: _update(false)
-	, _imageLoader(nullptr)
+	: _imageLoader(nullptr)
 	, _isInitialise(false)
+	, _isUpdate(true)
 	, _vertexFormat(MyGUI::VertexColourType::ColourABGR)
 {
 }
@@ -79,7 +79,6 @@ MyGuiRenderer::open() except
 	_materialScaleY->assign(1.0f);
 
 	_isInitialise = true;
-	_update = false;
 
 	MYGUI_PLATFORM_LOG(Info, getClassTypeName() << " successfully initialized");
 }
@@ -121,6 +120,58 @@ void
 MyGuiRenderer::destroyVertexBuffer(MyGUI::IVertexBuffer* _buffer) noexcept
 {
 	delete _buffer;
+}
+
+MyGUI::ITexture*
+MyGuiRenderer::createTexture(const std::string& _name) noexcept
+{
+	auto& texture = _textures[_name];
+	if (!texture)
+	{
+		texture = std::make_unique<MyGuiTexture>(_name, _imageLoader);
+		return texture.get();
+	}
+
+	MYGUI_PLATFORM_LOG(Info, "Texture '" << _name << "' already exist");
+	return texture.get();
+}
+
+void
+MyGuiRenderer::destroyTexture(MyGUI::ITexture* _texture) noexcept
+{
+	if (_texture)
+	{
+		auto& texture = _textures[_texture->getName()];
+		if (texture)
+		{
+			texture.reset();
+			texture = nullptr;
+		}
+		else
+		{
+			MYGUI_PLATFORM_ASSERT(texture, "Texture '" << _texture->getName() << "' not found");
+		}
+	}
+	else
+	{
+		MYGUI_PLATFORM_LOG(Info, "Empty texture pointer");
+	}
+}
+
+MyGUI::ITexture*
+MyGuiRenderer::getTexture(const std::string& _name) noexcept
+{
+	MapTexture::const_iterator item = _textures.find(_name);
+	if (item == _textures.end())
+		return nullptr;
+	return item->second.get();
+}
+
+void
+MyGuiRenderer::destroyAllResources() noexcept
+{
+	_textures.clear();
+	_material.reset();
 }
 
 void 
@@ -202,19 +253,10 @@ MyGuiRenderer::isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage
 void 
 MyGuiRenderer::drawOneFrame(float delta) noexcept
 {
-	MyGUI::Gui* gui = MyGUI::Gui::getInstancePtr();
-	if (gui == nullptr)
-		return;
-
 	onFrameEvent(delta);
-	
-	this->begin();
+	onRenderToTarget(this, _isUpdate);
 
-	onRenderToTarget(this, false);
-	
-	this->end();
-
-	_update = false;
+	_isUpdate = false;
 }
 
 void 
@@ -234,9 +276,9 @@ MyGuiRenderer::setViewport(int _width, int _height) noexcept
 	_info.pixScaleX = 1.0f / float(_viewport.width);
 	_info.pixScaleY = 1.0f / float(_viewport.height);
 
-	onResizeView(_viewport);
+	this->onResizeView(_viewport);
 
-	_update = true;
+	_isUpdate = true;
 }
 
 void 
@@ -244,58 +286,6 @@ MyGuiRenderer::getViewport(int& w, int& h) noexcept
 {
 	w = _viewport.width;
 	h = _viewport.height;
-}
-
-MyGUI::ITexture* 
-MyGuiRenderer::createTexture(const std::string& _name) noexcept
-{
-	auto& texture = _textures[_name];
-	if (!texture)
-	{
-		texture = std::make_unique<MyGuiTexture>(_name, _imageLoader);
-		return texture.get();
-	}
-
-	MYGUI_PLATFORM_LOG(Info, "Texture '" << _name << "' already exist");
-	return texture.get();
-}
-
-void
-MyGuiRenderer::destroyTexture(MyGUI::ITexture* _texture) noexcept
-{
-	if (_texture)
-	{
-		auto& texture = _textures[_texture->getName()];
-		if (texture)
-		{
-			texture.reset();
-			texture = nullptr;
-		}
-		else
-		{
-			MYGUI_PLATFORM_ASSERT(texture, "Texture '" << _texture->getName() << "' not found");
-		}
-	}
-	else
-	{
-		MYGUI_PLATFORM_LOG(Info, "Empty texture pointer");
-	}
-}
-
-MyGUI::ITexture*
-MyGuiRenderer::getTexture(const std::string& _name) noexcept
-{
-	MapTexture::const_iterator item = _textures.find(_name);
-	if (item == _textures.end())
-		return nullptr;
-	return item->second.get();
-}
-
-void 
-MyGuiRenderer::destroyAllResources() noexcept
-{
-	_textures.clear();
-	_material.reset();
 }
 
 _NAME_END

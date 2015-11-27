@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GuiWindow, GuiWidget, "GuiWindow")
+__ImplementSubInterface(GuiWindow, GuiWidget, "GuiWindowControl")
 
 GuiWindow::GuiWindow(GuiWidgetImpl& impl) noexcept
 	: GuiWidget(impl)

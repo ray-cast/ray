@@ -35,47 +35,126 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #if defined(_BUILD_GUI)
-#include <ray/gui_listener_component.h>
+#include <ray/gui_widget_component.h>
+#include <ray/gui_button_component.h>
+#include <ray/gui_window_component.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GUIListenerComponent, GameComponent, "GUIListener")
+__ImplementSubInterface(GuiWidgetComponent, GameComponent, "GUIListener")
 
-GUIListenerComponent::GUIListenerComponent() noexcept
+GuiWidgetComponent::GuiWidgetComponent() noexcept
 {
 }
 
-GUIListenerComponent::~GUIListenerComponent() noexcept
-{
-}
-
-void 
-GUIListenerComponent::onMouseDrag(float x, float y) noexcept
+GuiWidgetComponent::~GuiWidgetComponent() noexcept
 {
 }
 
 void 
-GUIListenerComponent::onMouseEnter(float x, float y) noexcept
+GuiWidgetComponent::setAlign(GuiWidgetAlign align) noexcept
+{
+	this->getGuiWidget()->setAlign(align);
+}
+
+GuiWidgetAlign
+GuiWidgetComponent::getAlign() noexcept
+{
+	return this->getGuiWidget()->getAlign();
+}
+
+void
+GuiWidgetComponent::setSkin(const std::string& skin) except
+{
+	this->getGuiWidget()->setSkin(skin);
+}
+
+const std::string& 
+GuiWidgetComponent::getSkin() const noexcept
+{
+	return this->getGuiWidget()->getSkin();
+}
+
+void 
+GuiWidgetComponent::load(iarchive& reader) noexcept
+{
+	GameComponent::load(reader);
+
+	Viewport view(0, 0, 0, 0);
+	std::string skin;
+	std::string align;
+
+	reader >> make_alias(skin, "skin");
+	reader >> make_alias(align, "align");
+
+	this->setSkin(skin);
+	//this->setAlign(GuiWidgetAlign::parse(align));
+}
+
+void 
+GuiWidgetComponent::save(oarchive& write) noexcept
 {
 }
 
 void 
-GUIListenerComponent::onMouseOver(float x, float y) noexcept
+GuiWidgetComponent::_updateTransform() noexcept
+{
+	auto scale = this->getGameObject()->getScale();
+	auto translate = this->getGameObject()->getTranslate();
+
+	Viewport view;
+	view.left = translate.x;
+	view.top = translate.y;
+	view.width = scale.x;
+	view.height = scale.y;
+
+	this->getGuiWidget()->setViewport(view);
+}
+
+void 
+GuiWidgetComponent::onActivate() except
+{
+	this->_updateTransform();
+}
+
+void 
+GuiWidgetComponent::onDeactivate() except
+{
+}
+
+void
+GuiWidgetComponent::onMoveAfter() noexcept
+{
+	this->_updateTransform();
+}
+
+void 
+GuiWidgetComponent::onMouseDrag(float x, float y) noexcept
 {
 }
 
 void 
-GUIListenerComponent::onMouseMotion(float x, float y) noexcept
+GuiWidgetComponent::onMouseEnter(float x, float y) noexcept
 {
 }
 
 void 
-GUIListenerComponent::onMouseButtonDown(int button, float x, float y) noexcept
+GuiWidgetComponent::onMouseOver(float x, float y) noexcept
 {
 }
 
 void 
-GUIListenerComponent::onMouseButtonUp(int button, float x, float y) noexcept
+GuiWidgetComponent::onMouseMotion(float x, float y) noexcept
+{
+}
+
+void 
+GuiWidgetComponent::onMouseButtonDown(int button, float x, float y) noexcept
+{
+}
+
+void 
+GuiWidgetComponent::onMouseButtonUp(int button, float x, float y) noexcept
 {
 }
 

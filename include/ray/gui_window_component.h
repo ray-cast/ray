@@ -37,13 +37,45 @@
 #ifndef _H_GUI_WINDOW_COMPONENT_H_
 #define _H_GUI_WINDOW_COMPONENT_H_
 
-#include <ray/game_component.h>
+#include <ray/gui_widget_component.h>
+#include <ray/gui_window.h>
 
 _NAME_BEGIN
 
-class GuiWindowComponent final : public GameComponent
+class GuiWindowComponent final : public GuiWidgetComponent
 {
+	__DeclareSubClass(GuiWindowComponent, GuiWidgetComponent)
 public:
+	GuiWindowComponent() noexcept;
+	~GuiWindowComponent() noexcept;
+
+	void setCaption(const std::string& name) noexcept;
+	const std::string& getCaption() const noexcept;
+
+	void setVisibleSmooth(bool _value) noexcept;
+	void destroySmooth() noexcept;
+
+	void setAutoAlpha(bool _value) noexcept;
+	bool getAutoAlpha() const noexcept;
+
+	void setMinSize(int _width, int _height) noexcept;
+	void getMinSize(int& w, int& h) const noexcept;
+
+	void setMaxSize(int _width, int _height) noexcept;
+	void getMaxSize(int& w, int& h) const noexcept;
+
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
+
+	GameComponentPtr clone() const except;
+
+protected:
+	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept;
+	virtual GuiWidgetPtr getGuiWidget() const noexcept;
+
+private:
+
+	GuiWindowPtr _window;
 };
 
 _NAME_END

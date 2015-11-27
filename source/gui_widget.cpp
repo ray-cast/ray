@@ -38,8 +38,8 @@
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GuiWidget, rtti::Interface, "GuiWidget")
-__ImplementSubInterface(GuiWidgetImpl, rtti::Interface, "GuiWidgetImpl")
+__ImplementSubInterface(GuiWidget, rtti::Interface, "GuiWidgetControl")
+__ImplementSubInterface(GuiWidgetImpl, rtti::Interface, "GuiWidgetControlImpl")
 
 GuiWidgetImpl::GuiWidgetImpl() noexcept
 {

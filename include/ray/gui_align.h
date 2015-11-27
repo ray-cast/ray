@@ -87,12 +87,12 @@ public:
 		return *this;
 	}
 
-	static GuiWidgetAlign parse(const std::string& _value)
+	static GuiWidgetAlign parse(const std::string& value)
 	{
 		GuiWidgetAlign result(Enum(0));
 		const MapAlign& map_names = result.getValueNames();
 		std::vector<std::string> vec;
-		util::split(vec, _value);
+		util::split(vec, value);
 
 		for (size_t pos = 0; pos < vec.size(); pos++)
 		{
@@ -102,6 +102,7 @@ public:
 				result._value = Enum(int(result._value) | int(iter->second));
 			}
 		}
+
 		return result;
 	}
 

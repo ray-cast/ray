@@ -43,207 +43,34 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GUILabelComponent, GUIBehaviourComponent, "GUILabel")
+__ImplementSubClass(GuiLabelComponent, GuiWidgetComponent, "GUILabel")
 
-GUILabelComponent::GUILabelComponent() noexcept
+GuiLabelComponent::GuiLabelComponent() noexcept
 {
-	_color = Vector4(1.0, 1.0, 1.0, 1.0);
 }
 
-GUILabelComponent::~GUILabelComponent() noexcept
+GuiLabelComponent::~GuiLabelComponent() noexcept
 {
+}
+
+void
+GuiLabelComponent::setGuiWidget(GuiWidgetPtr widget) noexcept
+{
+	assert(widget->isInstanceOf<GuiWidget>());
+	_label = widget->downcast<GuiTextBox>();
+}
+
+GuiWidgetPtr
+GuiLabelComponent::getGuiWidget() const noexcept
+{
+	return _label;
 }
 
 GameComponentPtr 
-GUILabelComponent::clone() const except
+GuiLabelComponent::clone() const except
 {
-	auto other = std::make_shared<GUILabelComponent>();
-	other->_color = _color;
-	other->_text = _text;
-	other->_fontName = _fontName;
-	other->_materialName = _materialName;
-	other->_texture = _texture;
-	other->_material = _material;
-	other->_fontSize = _fontSize;
-	other->_bitmapSize = _bitmapSize;
-	other->_glyphs = _glyphs;
+	auto other = std::make_shared<GuiLabelComponent>();
 	return other;
-}
-
-void 
-GUILabelComponent::setText(const std::string& text) noexcept
-{
-	_text = text;
-	this->needUpdate(true);
-}
-
-const std::string&
-GUILabelComponent::getText() const noexcept
-{
-	return _text;
-}
-
-void 
-GUILabelComponent::setFont(const std::string& font) noexcept
-{
-	_fontName = font;
-	if (this->getActive())
-		_buildFontBitmap();
-	this->needUpdate(true);
-}
-
-const std::string& 
-GUILabelComponent::getFont() const noexcept
-{
-	return _fontName;
-}
-
-void 
-GUILabelComponent::setMaterial(MaterialPtr material) noexcept
-{
-	_material = material;
-	if (this->getActive())
-		_buildMaterial();
-	this->needUpdate(true);
-}
-
-MaterialPtr 
-GUILabelComponent::getMaterial() const noexcept
-{
-	return _material;
-}
-
-void 
-GUILabelComponent::load(iarchive& reader) noexcept
-{
-	GameComponent::load(reader);
-
-	std::string font;
-	std::string text;
-	std::string material;
-
-	reader >> make_name(text);
-	reader >> make_name(font);
-	reader >> make_name(material);
-
-	_text = text;
-	_fontName = font;
-	_materialName = material;
-}
-
-void 
-GUILabelComponent::save(oarchive& write) noexcept
-{
-}
-
-void
-GUILabelComponent::_buildMaterial() noexcept
-{
-	if (!_materialName.empty())
-		_material = RenderSystem::instance()->createMaterial(_materialName);
-	else
-	{
-		_material = RenderSystem::instance()->createMaterial("dlc:UI/materials/font.mat");
-		_material->getParameter("decal")->assign(_texture);
-	}
-}
-
-void 
-GUILabelComponent::_buildFontBitmap() noexcept
-{
-	FontDistanceField font;
-	if (font.load(_fontName))
-	{
-		auto& glyphs = font.getBitmapGlyphs();
-		for (auto& glyph : glyphs)
-		{
-			_glyphs[glyph.glyph] = std::make_unique<FontGlyph>(glyph);
-		}
-
-		_fontSize = font.getFontSize();
-		_bitmapSize = font.getBitmapSize();
-
-		auto texture = RenderSystem::instance()->createTexture();
-		texture->setMipLevel(0);
-		texture->setMipSize(0);
-		texture->setSize(font.getBitmapSize(), font.getBitmapSize());
-		texture->setTexDim(TextureDim::DIM_2D);
-		texture->setTexFormat(TextureFormat::R8);
-		texture->setStream((void*)font.getBitmapData().data());
-		texture->setup();
-
-		_texture = texture;
-	}
-}
-
-void
-GUILabelComponent::onActivate() except
-{
-	_buildFontBitmap();
-	_buildMaterial();
-}
-
-void 
-GUILabelComponent::buildUIControl(GUILayoutComponentPtr layout) noexcept
-{
-	std::vector<wchar_t> data(_text.size());
-	UTF8toUNICODE(data.data(), data.size(), _text.data(), _text.size());
-
-	Vector2 advance(0, 0);
-	Vector3 center = this->getGameObject()->getTranslate();
-
-	float size = (float) _fontSize / _bitmapSize;
-	float scale = 2;
-
-	std::vector<float4> rects;
-	std::vector<float4> uvs;
-	std::vector<float4> colors;
-
-	for (auto& it : data)
-	{
-		if (it == 0)
-			continue;
-		else if (it == L' ')
-		{
-			advance.x += 1;
-			continue;
-		}			
-
-		auto& glyph = _glyphs[it];
-		if (glyph)
-		{
-			Vector4 rect;
-			rect.x = center.x + advance.x;
-			rect.y = center.y + advance.y;
-			rect.z = center.x + advance.x + scale;
-			rect.w = center.y + advance.y + scale;
-
-			Vector4 uv;
-			uv.x = glyph->offsetX * size;
-			uv.y = glyph->offsetY * size;
-			uv.z = glyph->offsetX * size + size;
-			uv.w = glyph->offsetY * size + size;
-
-			advance.x += (glyph->left + glyph->left + glyph->width) * scale;
-
-			rects.push_back(rect);
-			uvs.push_back(uv);
-			colors.push_back(_color);
-		}
-	}
-
-	auto materialPass = _material->getTech(RenderQueue::RQ_OPAQUE)->getPass(RenderPass::RP_OPAQUES);
-
-	layout->setMaterialPass(materialPass);
-	layout->drawQuadsWithUV(rects, uvs, colors);
-
-	this->needUpdate(false);
-}
-
-GameComponentPtr 
-GUILabelComponent::hitTest(const Vector3& raycast) noexcept
-{
-	return nullptr;
 }
 
 _NAME_END

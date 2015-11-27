@@ -90,10 +90,8 @@ public:
 
 	GuiWidgetPtr createWieght(const rtti::Rtti* rtti) except;
 	template<typename T>
-	std::shared_ptr<T> createWieght() except
-	{
-		return std::dynamic_pointer_cast<T>(this->createWieght(T::getRtti()));
-	}
+	typename std::enable_if<std::is_base_of<GuiWidget, T>::value, std::shared_ptr<T>>::type createWieght() except
+		{ return std::dynamic_pointer_cast<T>(this->createWieght(T::getRtti())); }
 
 private:
 

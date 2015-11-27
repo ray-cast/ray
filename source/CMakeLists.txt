@@ -604,8 +604,8 @@ SET(GUI_FEATURES_LIST
     ${SOURCE_PATH}/gui_button_component.cpp
     ${HEADER_PATH}/gui_camera_component.h
     ${SOURCE_PATH}/gui_camera_component.cpp
-    ${HEADER_PATH}/gui_listener_component.h
-    ${SOURCE_PATH}/gui_listener_component.cpp
+    ${HEADER_PATH}/gui_widget_component.h
+    ${SOURCE_PATH}/gui_widget_component.cpp
     ${HEADER_PATH}/gui_layout_component.h
     ${SOURCE_PATH}/gui_layout_component.cpp
     ${HEADER_PATH}/gui_label_component.h
@@ -748,7 +748,7 @@ ENDIF()
 
 IF(BUILD_GUI)
     ADD_LIBRARY(libgui SHARED ${GUI_LIST} ${MYGUI_LIST})
-    TARGET_LINK_LIBRARIES(libgui libplatform librenderer MyGUIEngine)
+    TARGET_LINK_LIBRARIES(libgui libplatform librenderer MyGUIEngine glew)
     IF(MINGW OR UNIX)
         SET_TARGET_PROPERTIES(libgui PROPERTIES OUTPUT_NAME gui)
     ENDIF()

@@ -35,4 +35,114 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #if defined(_BUILD_GUI)
+#include <ray/gui_window_component.h>
+#include <ray/gui_system.h>
+
+_NAME_BEGIN
+
+__ImplementSubClass(GuiWindowComponent, GuiWidgetComponent, "GuiWindow")
+
+GuiWindowComponent::GuiWindowComponent() noexcept
+{
+	_window = GuiSystem::instance()->createWidget<GuiWindow>();
+	_window->create();
+}
+
+GuiWindowComponent::~GuiWindowComponent() noexcept
+{
+}
+
+void 
+GuiWindowComponent::setCaption(const std::string& name) noexcept
+{
+	_window->setCaption(name);
+}
+
+const std::string& 
+GuiWindowComponent::getCaption() const noexcept
+{
+	return _window->getCaption();
+}
+
+void 
+GuiWindowComponent::setVisibleSmooth(bool value) noexcept
+{
+	_window->setVisibleSmooth(value);
+}
+
+void 
+GuiWindowComponent::destroySmooth() noexcept
+{
+	_window->destroySmooth();
+}
+
+void 
+GuiWindowComponent::setAutoAlpha(bool value) noexcept
+{
+	_window->setAutoAlpha(value);
+}
+
+bool 
+GuiWindowComponent::getAutoAlpha() const noexcept
+{
+	return _window->getAutoAlpha();
+}
+
+void 
+GuiWindowComponent::setMinSize(int width, int height) noexcept
+{
+	_window->setMinSize(width, height);
+}
+
+void 
+GuiWindowComponent::getMinSize(int& w, int& h) const noexcept
+{
+	_window->getMinSize(w, h);
+}
+
+void 
+GuiWindowComponent::setMaxSize(int width, int height) noexcept
+{
+	_window->setMaxSize(width, height);
+}
+
+void
+GuiWindowComponent::getMaxSize(int& w, int& h) const noexcept
+{
+	_window->getMaxSize(w, h);
+}
+
+void 
+GuiWindowComponent::load(iarchive& reader) noexcept
+{
+	GuiWidgetComponent::load(reader);
+}
+
+void 
+GuiWindowComponent::save(oarchive& write) noexcept
+{
+	GuiWidgetComponent::save(write);
+}
+
+GameComponentPtr
+GuiWindowComponent::clone() const except
+{
+	return std::make_shared<GuiWindowComponent>();
+}
+
+void 
+GuiWindowComponent::setGuiWidget(GuiWidgetPtr widget) noexcept
+{
+	assert(widget->isInstanceOf<GuiWidget>());
+	_window = widget->downcast<GuiWindow>();
+}
+
+GuiWidgetPtr 
+GuiWindowComponent::getGuiWidget() const noexcept
+{
+	return _window;
+}
+
+_NAME_END
+
 #endif

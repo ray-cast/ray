@@ -37,21 +37,30 @@
 #ifndef _H_GUI_BUTTON_COMPONENT_H_
 #define _H_GUI_BUTTON_COMPONENT_H_
 
-#include <ray/gui_listener_component.h>
+#include <ray/gui_widget_component.h>
+#include <ray/gui_button.h>
 
 _NAME_BEGIN
 
-class GUIButtonComponent : public GUIListenerComponent
+class GuiButtonComponent : public GuiWidgetComponent
 {
-	__DeclareSubClass(GUIButton, GUIBehaviour)
+	__DeclareSubClass(GuiButtonComponent, GuiWidgetComponent)
 public:
-	GUIButtonComponent() noexcept;
-	~GUIButtonComponent() noexcept;
+	GuiButtonComponent() noexcept;
+	~GuiButtonComponent() noexcept;
 
 	virtual GameComponentPtr clone() const except;
 
+protected:
+	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept;
+	virtual GuiWidgetPtr getGuiWidget() const noexcept;
+
 private:
 	virtual void onActivate() except;
+
+private:
+
+	GuiButtonPtr _button;
 };
 
 _NAME_END

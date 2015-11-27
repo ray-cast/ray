@@ -39,25 +39,38 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GUIButtonComponent, GUIListenerComponent, "GUIButton")
+__ImplementSubClass(GuiButtonComponent, GuiWidgetComponent, "GuiButton")
 
-GUIButtonComponent::GUIButtonComponent() noexcept
+GuiButtonComponent::GuiButtonComponent() noexcept
 {
 }
 
-GUIButtonComponent::~GUIButtonComponent() noexcept
+GuiButtonComponent::~GuiButtonComponent() noexcept
 {
 }
 
 GameComponentPtr 
-GUIButtonComponent::clone() const except
+GuiButtonComponent::clone() const except
 {
-	return std::make_shared<GUIButtonComponent>();
+	return std::make_shared<GuiButtonComponent>();
 }
 
 void
-GUIButtonComponent::onActivate() except
+GuiButtonComponent::onActivate() except
 {
+}
+
+void
+GuiButtonComponent::setGuiWidget(GuiWidgetPtr widget) noexcept
+{
+	assert(widget->isInstanceOf<GuiWidget>());
+	_button = widget->downcast<GuiButton>();
+}
+
+GuiWidgetPtr
+GuiButtonComponent::getGuiWidget() const noexcept
+{
+	return _button;
 }
 
 _NAME_END

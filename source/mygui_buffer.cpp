@@ -66,16 +66,21 @@ MyGuiVertexBuffer::lock() noexcept
 {
 	if (!_vb || _needVertexCount != _vb->getVertexCount())
 	{
-		VertexComponents components;
-		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
-		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_DIFFUSE, VertexFormat::GPU_VERTEX_UNSIGNED_BYTE4, true));
-		components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_TEXCOORD, VertexFormat::GPU_VERTEX_FLOAT2));
-
 		if (!_vb)
-			_vb = std::make_shared<VertexBufferData>();
+		{
+			VertexComponents components;
+			components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
+			components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_DIFFUSE, VertexFormat::GPU_VERTEX_UNSIGNED_BYTE4, true));
+			components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_TEXCOORD, VertexFormat::GPU_VERTEX_FLOAT2));
 
-		_vb->setVertexComponents(components);
-		_vb->setup(_needVertexCount, VertexUsage::GPU_MAP_READ_BIT | VertexUsage::GPU_MAP_WRITE_BIT);
+			_vb = std::make_shared<VertexBufferData>();
+			_vb->setVertexComponents(components);
+			_vb->setup(_needVertexCount, VertexUsage::GPU_MAP_READ_BIT | VertexUsage::GPU_MAP_WRITE_BIT);
+		}
+		else
+		{
+			_vb->resize(_needVertexCount);
+		}
 	}
 
 	return (MyGUI::Vertex*)_vb->data();

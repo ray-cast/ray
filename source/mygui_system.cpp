@@ -294,6 +294,7 @@ MyGuiSystem::setCoreProfile(const std::string& core) except
 	{
 		_gui = std::make_unique<MyGUI::Gui>();
 		_gui->initialise(core);
+		_gui->setVisiblePointer(false);
 
 		_coreProfile = core;
 	}

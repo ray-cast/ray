@@ -37,60 +37,27 @@
 #ifndef _H_GUI_LABEL_COMPONENT_H_
 #define _H_GUI_LABEL_COMPONENT_H_
 
-#include <ray/gui_behaviour_component.h>
-#include <ray/gui_layout_component.h>
-#include <ray/font_bitmap.h>
+#include <ray/gui_widget_component.h>
+#include <ray/gui_textbox.h>
 
 _NAME_BEGIN
 
-class GUILabelComponent : public GUIBehaviourComponent
+class GuiLabelComponent : public GuiWidgetComponent
 {
-	__DeclareSubClass(GUILabelComponent, GUIBehaviour)
+	__DeclareSubClass(GuiLabelComponent, GuiWidgetComponent)
 public:
-	GUILabelComponent() noexcept;
-	~GUILabelComponent() noexcept;
+	GuiLabelComponent() noexcept;
+	~GuiLabelComponent() noexcept;
 
-	virtual GameComponentPtr clone() const except;
-
-	virtual void setText(const std::string& text) noexcept;
-	virtual const std::string& getText() const noexcept;
-
-	virtual void setFont(const std::string& text) noexcept;
-	virtual const std::string& getFont() const noexcept;
-
-	virtual void setMaterial(MaterialPtr material) noexcept;
-	virtual MaterialPtr getMaterial() const noexcept;
-
-	virtual void buildUIControl(GUILayoutComponentPtr skin) noexcept;
-	virtual GameComponentPtr hitTest(const Vector3& raycast) noexcept;
-
-	virtual void load(iarchive& reader) noexcept;
-	virtual void save(oarchive& write) noexcept;
+	GameComponentPtr clone() const except;
 
 protected:
-
-	void _buildMaterial() noexcept;
-	void _buildFontBitmap() noexcept;
-
-protected:
-
-	void onActivate() except;
+	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept;
+	virtual GuiWidgetPtr getGuiWidget() const noexcept;
 
 private:
 
-	Vector4 _color;
-
-	std::string _text;
-	std::string _fontName;
-	std::string _materialName;
-
-	TexturePtr _texture;
-	MaterialPtr _material;
-
-	std::uint16_t _fontSize;
-	std::uint16_t _bitmapSize;
-
-	std::map<wchar_t, std::shared_ptr<FontGlyph>> _glyphs;
+	GuiTextBoxPtr _label;
 };
 
 _NAME_END

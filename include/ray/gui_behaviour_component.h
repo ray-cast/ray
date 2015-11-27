@@ -37,11 +37,11 @@
 #ifndef _H_GUI_BEHAVIOUR_COMPONENT_H_
 #define _H_GUI_BEHAVIOUR_COMPONENT_H_
 
-#include <ray/gui_listener_component.h>
+#include <ray/gui_widget_component.h>
 
 _NAME_BEGIN
 
-class GUIBehaviourComponent : public GUIListenerComponent
+class GUIBehaviourComponent : public GuiWidgetComponent
 {
 	__DeclareSubInterface(GUIBehaviourComponent, GameComponent)
 public:
@@ -51,12 +51,9 @@ public:
 	virtual void needUpdate(bool update) noexcept;
 	virtual bool needUpdate() const noexcept;
 
-	virtual void buildUIControl(GUILayoutComponentPtr layout) noexcept = 0;
-	virtual GameComponentPtr hitTest(const Vector3& raycast) noexcept = 0;
-
 protected:
 
-	virtual void onMoveAfter() except;
+	virtual void onMoveAfter() noexcept;
 
 private:
 

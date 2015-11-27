@@ -84,12 +84,12 @@ private:
 private:
 	typedef std::map<std::string, std::unique_ptr<MyGUI::ITexture>> MapTexture;
 
+	bool _isUpdate;
+	bool _isInitialise;
+
 	MyGUI::IntSize _viewport;
 	MyGUI::VertexColourType _vertexFormat;
 	MyGUI::RenderTargetInfo _info;
-
-	bool _update;
-	bool _isInitialise;
 
 	MaterialPtr _material;
 	MaterialPassPtr _materialPass;

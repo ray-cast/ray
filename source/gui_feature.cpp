@@ -376,13 +376,6 @@ GuiFeature::getViewport(int& w, int& h) noexcept
 }
 
 void
-GuiFeature::render() except
-{
-	assert(_platform);
-	_platform->render(this->getGameServer()->getTimer()->delta());
-}
-
-void
 GuiFeature::onActivate() except
 {
 	_platform = GuiSystem::instance();

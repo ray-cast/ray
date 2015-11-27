@@ -61,9 +61,10 @@ MyGuiWindowImpl::create() except
 {
 	assert(!_window);
 	if (_parent)
-		_window = _parent->createWidget<MyGUI::Window>("", 0, 0, 0, 0, MyGUI::Align::Default, "");
+		_window = _parent->createWidget<MyGUI::Window>("", 0, 0, 0, 0, MyGUI::Align::Default);
 	else
-		_window = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("", 0, 0, 0, 0, MyGUI::Align::Default, "Main", "");
+		_window = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("WindowCS", 0, 0, 100, 1000, MyGUI::Align::Default, "Main");
+
 	this->setWidget(_window);
 
 	return _window ? true : false;

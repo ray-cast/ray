@@ -60,28 +60,22 @@ GUICameraComponent::clone() const except
 }
 
 void
-GUICameraComponent::onAttachComponent() noexcept
+GUICameraComponent::onAttachComponent(GameComponentPtr& component) except
 {
-	auto camera = this->getComponent<CameraComponent>();
-	if (camera)
-	{
-		camera->addRenderListener(this);
-	}
+	if (component->isInstanceOf<CameraComponent>())
+		component->downcast<CameraComponent>()->addPostRenderListener(std::bind(&GUICameraComponent::onPostRender, this));
 }
 
 void
-GUICameraComponent::onRemoveComponent() noexcept
+GUICameraComponent::onDetachComponent(GameComponentPtr& component) noexcept
 {
+	if (component->isInstanceOf<CameraComponent>())
+		component->downcast<CameraComponent>()->removePostRenderListener(std::bind(&GUICameraComponent::onPostRender, this));
 }
 
 void
 GUICameraComponent::onActivate() noexcept
 {
-	auto camera = this->getComponent<CameraComponent>();
-	if (camera)
-	{
-		camera->addRenderListener(this);
-	}
 }
 
 void
@@ -90,12 +84,7 @@ GUICameraComponent::onDectivate() noexcept
 }
 
 void 
-GUICameraComponent::onWillRenderObject(const Camera& camera) noexcept
-{
-}
-
-void 
-GUICameraComponent::onRenderObject(const Camera& camera) noexcept
+GUICameraComponent::onPostRender() noexcept
 {
 	auto platform = this->getGameServer()->getFeature<GuiFeature>();
 	if (platform)

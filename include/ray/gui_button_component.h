@@ -37,12 +37,11 @@
 #ifndef _H_GUI_BUTTON_COMPONENT_H_
 #define _H_GUI_BUTTON_COMPONENT_H_
 
-#include <ray/gui_behaviour_component.h>
-#include <ray/gui_layout_component.h>
+#include <ray/gui_listener_component.h>
 
 _NAME_BEGIN
 
-class GUIButtonComponent : public GUIBehaviourComponent
+class GUIButtonComponent : public GUIListenerComponent
 {
 	__DeclareSubClass(GUIButton, GUIBehaviour)
 public:
@@ -51,26 +50,8 @@ public:
 
 	virtual GameComponentPtr clone() const except;
 
-	virtual void buildUIControl(GUILayoutComponentPtr skin) noexcept;
-	virtual GameComponentPtr hitTest(const Vector3& raycast) noexcept;
-
-	virtual void onMouseEnter(float x, float y) noexcept;
-	virtual void onMouseOver(float x, float y) noexcept;
-	virtual void onMouseButtonDown(int button, float x, float y) noexcept;
-	virtual void onMouseButtonUp(int button, float x, float y) noexcept;
-
 private:
 	virtual void onActivate() except;
-
-private:
-
-	GUIStyleState _current;
-	GUIStyleState _normal;
-	GUIStyleState _hover;
-	GUIStyleState _active;
-	GUIStyleState _focused;
-
-	MaterialPtr _material;
 };
 
 _NAME_END

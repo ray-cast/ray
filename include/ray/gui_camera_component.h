@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-class EXPORT GUICameraComponent : public GUIListenerComponent, public RenderListener
+class EXPORT GUICameraComponent : public GUIListenerComponent
 {
 	__DeclareSubClass(GUICameraComponent, GUIListenerComponent)
 public:
@@ -52,14 +52,13 @@ public:
 	GameComponentPtr clone() const except;
 
 private:
-	virtual void onAttachComponent() noexcept;
-	virtual void onRemoveComponent() noexcept;
+	virtual void onAttachComponent(GameComponentPtr& component) except;
+	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
 
 	virtual void onActivate() noexcept;
 	virtual void onDectivate() noexcept;
 
-	virtual void onWillRenderObject(const Camera& camera) noexcept;
-	virtual void onRenderObject(const Camera& camera) noexcept;
+	void onPostRender() noexcept;
 
 private:
 	GUICameraComponent(const GUICameraComponent&) noexcept = delete;

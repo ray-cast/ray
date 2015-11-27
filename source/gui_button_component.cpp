@@ -36,18 +36,13 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_GUI)
 #include <ray/gui_button_component.h>
-#include <ray/render_system.h>
 
 _NAME_BEGIN
 
-__ImplementSubClass(GUIButtonComponent, GUIBehaviourComponent, "GUIButton")
+__ImplementSubClass(GUIButtonComponent, GUIListenerComponent, "GUIButton")
 
 GUIButtonComponent::GUIButtonComponent() noexcept
 {
-	_normal.textColor = Vector4(0.5, 0.5, 0.5, 1.0);
-	_hover.textColor = Vector4(0.6, 0.6, 0.6, 1.0);
-	_active.textColor = Vector4(0.4, 0.4, 0.4, 1.0);
-	_current.textColor = _normal.textColor;
 }
 
 GUIButtonComponent::~GUIButtonComponent() noexcept
@@ -63,78 +58,6 @@ GUIButtonComponent::clone() const except
 void
 GUIButtonComponent::onActivate() except
 {
-	_material = RenderSystem::instance()->createMaterial("dlc:UI/materials/default.mat");
-}
-
-void 
-GUIButtonComponent::buildUIControl(GUILayoutComponentPtr layout) noexcept
-{
-	Vector4 color;
-
-	auto center = this->getGameObject()->getTranslate();
-	auto half = this->getGameObject()->getScale() * 0.5;
-
-	auto v0 = float3(center.x - half.x, center.y + half.y, center.z);
-	auto v1 = float3(center.x - half.x, center.y - half.y, center.z);
-	auto v2 = float3(center.x + half.x, center.y - half.y, center.z);
-	auto v3 = float3(center.x + half.x, center.y + half.y, center.z);
-
-	auto materialPass = _material->getTech(RenderQueue::RQ_OPAQUE)->getPass(RenderPass::RP_OPAQUES);
-
-	layout->setMaterialPass(materialPass);
-	layout->drawQuad(v0, v1, v2, v3, _current.textColor);
-
-	this->needUpdate(false);
-}
-
-GameComponentPtr
-GUIButtonComponent::hitTest(const Vector3& raycast) noexcept
-{
-	auto center = this->getGameObject()->getTranslate();
-	auto half = this->getGameObject()->getScale() * 0.5;
-
-	auto v0 = float3(center.x - half.x, center.y + half.y, center.z);
-	auto v1 = float3(center.x - half.x, center.y - half.y, center.z);
-	auto v2 = float3(center.x + half.x, center.y - half.y, center.z);
-	auto v3 = float3(center.x + half.x, center.y + half.y, center.z);
-
-	if (center.x - half.x <= raycast.x &&
-		center.x + half.x >= raycast.x &&
-		center.y - half.y <= raycast.y &&
-		center.y + half.y >= raycast.y)
-	{
-		return std::dynamic_pointer_cast<GameComponent>(this->shared_from_this());
-	}
-
-	return nullptr;
-}
-
-void 
-GUIButtonComponent::onMouseEnter(float x, float y) noexcept
-{
-	_current = _hover;
-	this->needUpdate(true);
-}
-
-void 
-GUIButtonComponent::onMouseOver(float x, float y) noexcept
-{
-	_current = _normal;
-	this->needUpdate(true);
-}
-
-void 
-GUIButtonComponent::onMouseButtonDown(int button, float x, float y) noexcept
-{
-	_current = _active;
-	this->needUpdate(true);
-}
-
-void 
-GUIButtonComponent::onMouseButtonUp(int button, float x, float y) noexcept
-{
-	_current = _normal;
-	this->needUpdate(true);
 }
 
 _NAME_END

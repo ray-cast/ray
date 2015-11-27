@@ -173,23 +173,35 @@ CameraComponent::getCameraOrder() const noexcept
 }
 
 void 
-CameraComponent::addRenderListener(RenderListener* listener) noexcept
+CameraComponent::addPreRenderListener(std::function<void()> func) noexcept
 {
-	auto it = std::find(_listener.begin(), _listener.end(), listener);
-	if (it == _listener.end())
-	{
-		_listener.push_back(listener);
-	}
+	auto it = std::find_if(_onPreRender.begin(), _onPreRender.end(), [&](std::function<void()>& it) { return it.target_type() == func.target_type();});
+	if (it == _onPreRender.end())
+		_onPreRender.push_back(func);
 }
 
 void 
-CameraComponent::removeRenderListener(RenderListener* listener) noexcept
+CameraComponent::removePreRenderListener(std::function<void()> func) noexcept
 {
-	auto it = std::find(_listener.begin(), _listener.end(), listener);
-	if (it != _listener.end())
-	{
-		_listener.erase(it);
-	}
+	auto it = std::find_if(_onPostRender.begin(), _onPostRender.end(), [&](std::function<void()>& it) { return it.target_type() == func.target_type();});
+	if (it != _onPostRender.end())
+		_onPostRender.erase(it);
+}
+
+void
+CameraComponent::addPostRenderListener(std::function<void()> func) noexcept
+{
+	auto it = std::find_if(_onPostRender.begin(), _onPostRender.end(), [&](std::function<void()>& it) { return it.target_type() == func.target_type();});
+	if (it == _onPostRender.end())
+		_onPostRender.push_back(func);
+}
+
+void
+CameraComponent::removePostRenderListener(std::function<void()> func) noexcept
+{
+	auto it = std::find_if(_onPostRender.begin(), _onPostRender.end(), [&](std::function<void()>& it) { return it.target_type() == func.target_type();});
+	if (it != _onPostRender.end())
+		_onPostRender.erase(it);
 }
 
 void
@@ -277,15 +289,15 @@ CameraComponent::onMoveAfter() noexcept
 void 
 CameraComponent::onWillRenderObject(const Camera& camera) noexcept
 {
-	for (auto& it : _listener)
-		it->onWillRenderObject(camera);
+	for (auto& it : _onPreRender)
+		std::invoke(it);
 }
 
 void 
 CameraComponent::onRenderObject(const Camera& camera) noexcept
 {
-	for (auto& it : _listener)
-		it->onRenderObject(camera);
+	for (auto& it : _onPostRender)
+		std::invoke(it);
 }
 
 GameComponentPtr

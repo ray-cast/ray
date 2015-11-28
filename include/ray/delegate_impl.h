@@ -55,25 +55,29 @@
 #endif
 
 template <typename Result DELEGATE_COMMA DELEGATE_TEMPLATE_PARAMS>
+class binder<Result(DELEGATE_TEMPLATE_ARGS)>
+{
+public:
+	binder() noexcept {};
+	virtual ~binder() noexcept {};
+
+	virtual Result invoke(DELEGATE_FUNCTION_PARAMS) const = 0;
+	virtual std::unique_ptr<binder> clone() const = 0;
+	virtual bool comp(const binder& other) const noexcept = 0;
+};
+
+template <typename Result DELEGATE_COMMA DELEGATE_TEMPLATE_PARAMS>
 class delegate<Result(DELEGATE_TEMPLATE_ARGS)>
 {
 public:
-    class IICALLBACK
-    {
-    public:
-		IICALLBACK() noexcept {};
-		virtual ~IICALLBACK() noexcept {};
-
-        virtual Result invoke(DELEGATE_FUNCTION_PARAMS) const = 0;
-        virtual std::unique_ptr<IICALLBACK> clone() const = 0;
-    };
+	typedef binder<Result(DELEGATE_TEMPLATE_ARGS)> delegate_bindbase;
 
     template<typename T>
-    class ICALLBACK : public IICALLBACK
+    class delegate_bind : public delegate_bindbase
     {
     public:
-        ICALLBACK(const T& f) noexcept : _functor(f) {}
-        ICALLBACK(const ICALLBACK& copy) noexcept : _functor(copy._functor) {}
+        delegate_bind(const T& f) noexcept : _functor(f) {}
+        delegate_bind(const delegate_bind& copy) noexcept : _functor(copy._functor) {}
 
         template<typename Function>
         static Result invoke(const Function& Func DELEGATE_COMMA DELEGATE_FUNCTION_PARAMS)
@@ -84,7 +88,7 @@ public:
         template<typename This, typename Function>
         static Result invoke(const std::pair<This, Function>& mf DELEGATE_COMMA DELEGATE_FUNCTION_PARAMS)
         {
-            return ((*mf.first).*mf.second)(DELEGATE_FUNCTION_ARGS);
+            return ((*mf.second).*mf.first)(DELEGATE_FUNCTION_ARGS);
         }
 
         virtual Result invoke(DELEGATE_FUNCTION_PARAMS) const
@@ -92,19 +96,22 @@ public:
             return invoke(_functor DELEGATE_COMMA DELEGATE_FUNCTION_ARGS);
         }
 
-        virtual std::unique_ptr<IICALLBACK> clone() const
+        virtual std::unique_ptr<delegate_bindbase> clone() const
         {
-            return std::make_unique<ICALLBACK<T>>(_functor);
+            return std::make_unique<delegate_bind<T>>(_functor);
         }
+
+		virtual bool comp(const binder& other) const noexcept
+		{
+			return _functor == dynamic_cast<const delegate_bind&>(other)._functor;
+		}
 
         T _functor;
     };
 
-public:
     typedef delegate<Result(DELEGATE_TEMPLATE_ARGS)> _Myt;
 
-	typedef IICALLBACK bind;
-    typedef std::vector<std::unique_ptr<IICALLBACK>> DELEGATES;
+    typedef std::vector<std::unique_ptr<delegate_bindbase>> DELEGATES;
     typedef typename DELEGATES::iterator iterator;
     typedef typename DELEGATES::const_iterator const_iterator;
     typedef typename DELEGATES::size_type size_type;
@@ -123,93 +130,35 @@ public:
 
     ~delegate() noexcept
     {
-        clear();
+        this->clear();
         delete _functions;
     }
 
-    Result operator()(DELEGATE_FUNCTION_PARAMS)
-    {
-        return run(DELEGATE_FUNCTION_ARGS);
-    }
-
-    template<typename T>
-    _Myt& operator+=(const T& t1)
-    {
-        this->attach(t1);
-        return *this;
-    }
-
-    template<typename T>
-    _Myt& operator+=(const _Myt& other)
-    {
-        this->attach(other);
-        return *this;
-    }
-
-    template<typename T>
-    _Myt& operator-=(const T& t1)
-    {
-        this->remove(t1);
-        return *this;
-    }
-
-    _Myt& operator=(const _Myt& copy)
-    {
-        this->assign(copy);
-        return *this;
-    }
-
-private:
-    template<typename T, typename S = void>
-    struct Partial
-    {
-        static T run(const _Myt& self DELEGATE_COMMA DELEGATE_FUNCTION_PARAMS)
-        {
-            const_iterator it = self._functions->begin();
-            const_iterator end = self._functions->end() - 1;
-
-            for (; it != end; ++it)
-                (*it)->invoke(DELEGATE_FUNCTION_ARGS);
-
-            return (*it)->invoke(DELEGATE_FUNCTION_ARGS);
-        }
-    };
-
-    template<typename S>
-    struct Partial<void, S>
-    {
-        static void run(const _Myt& self DELEGATE_COMMA DELEGATE_FUNCTION_PARAMS)
-        {
-            for (auto& it : *self._functions)
-                it->invoke(DELEGATE_FUNCTION_ARGS);
-        }
-    };
-public:
     template<typename _Function>
-    void attach(typename std::enable_if<std::is_function<_Function>::value, _Function>::type t1)
+    void attach(typename std::enable_if<std::is_function<_Function>::value, const _Function&>::type t1)
     {
         if (!_functions)
             _functions = new DELEGATES;
 
-        _functions->push_back(new ICALLBACK<_Function>(t1));
+        _functions->push_back(new delegate_bind<_Function>(t1));
     }
 
-    template<typename _This, typename _Functor>
-    void attach(const _This& t1, const _Functor& t2)
+    template<typename _Functor, typename _This>
+    void attach(typename std::enable_if<std::is_function<_Functor>::value, _Functor>::type t1, const _This& t2)
     {
         this->attach(std::make_pair(t1, t2));
     }
 
-    template<typename _This, typename _Functor>
-    void attach(const std::pair<_This, _Functor>& pair)
+    template<typename _Functor, typename _This>
+    void attach(const std::pair<_Functor, _This>& pair)
     {
         if (!_functions)
             _functions = new DELEGATES;
 
-        _functions->push_back(std::make_unique<ICALLBACK<std::pair<_This, _Functor>>>(pair));
+        _functions->push_back(std::make_unique<delegate_bind<std::pair<_Functor, _This>>>(pair));
     }
 
-	void attach(const IICALLBACK& callback)
+	void attach(const delegate_bindbase& callback)
 	{
 		if (!_functions)
 			_functions = new DELEGATES;
@@ -236,14 +185,14 @@ public:
         this->attach(t1);
     }
 
-    template<typename _This, typename _Functor>
-    void assign(const _This& t1, const _Functor& t2)
+    template<typename _Functor, typename _This>
+    void assign(const _Functor& t1, const _This& t2)
     {
         this->clear();
         this->attach(std::make_pair(t1, t2));
     }
 
-    template<typename _This, typename _Functor>
+    template<typename _Functor, typename _This>
     void assign(const std::pair<_This, _Functor>& pair)
     {
         this->clear();
@@ -270,6 +219,22 @@ public:
         return (_functions ? _functions->size() : 0);
     }
 
+	bool find(const delegate_bindbase& callback) const
+	{
+		if (_functions)
+		{
+			auto it = _functions->begin();
+			auto end = _functions->end();
+			for (; it != end; ++it)
+			{
+				if (callback.comp(*(*it)))
+					return true;
+			}
+		}
+
+		return false;
+	}
+
     template<typename T>
     void remove(const T& t1)
     {
@@ -280,7 +245,7 @@ public:
 
         for (; it != end; ++it)
         {
-            ICALLBACK<T>* p = dynamic_cast<ICALLBACK<T>*>(*it);
+            delegate_bind<T>* p = dynamic_cast<delegate_bind<T>*>(*it);
 
             if (p->_functor == t1)
             {
@@ -290,14 +255,14 @@ public:
         }
     }
 
-	template<typename _This, typename _Functor>
-	void remove(const _This& t1, const _Functor& t2)
+	template<typename _Functor, typename _This>
+	void remove(const _Functor& t1, const _This& t2)
 	{
 		this->remove(std::make_pair(t1, t2));
 	}
 
-	template<typename _This, typename _Functor>
-	void remove(const std::pair<_This, _Functor>& pair)
+	template<typename _Functor, typename _This>
+	void remove(const std::pair<_Functor, _This>& pair)
 	{
 		if (!_functions) { return; }
 
@@ -306,12 +271,29 @@ public:
 
 		for (; it != end; ++it)
 		{
-			ICALLBACK<T>* p = dynamic_cast<ICALLBACK<T>*>(*it);
+			delegate_bind<T>* p = dynamic_cast<delegate_bind<T>*>(*it);
 
 			if (p->_functor == t1)
 			{
 				_functions->erase(it);
 				break;
+			}
+		}
+	}
+
+	void remove(const delegate_bindbase& callback)
+	{
+		if (_functions)
+		{
+			auto it = _functions->begin();
+			auto end = _functions->end();
+			for (; it != end; ++it)
+			{
+				if (callback.comp(*(*it)))
+				{
+					_functions->erase(it);
+					break;
+				}
 			}
 		}
 	}
@@ -327,11 +309,69 @@ public:
         _functions->clear();
     }
 
-	template<typename _This, typename _Functor>
-	static ICALLBACK<std::pair<_This, _Functor>> make(const _This& t1, const _Functor& t2)
+	template<typename _Functor, typename _This>
+	static delegate_bind<std::pair<_Functor, _This>> make(const _Functor& t1, const _This& t2)
 	{
-		return ICALLBACK<std::pair<_This, _Functor>>(std::make_pair(t1, t2));
+		return delegate_bind<std::pair<_Functor, _This>>(std::make_pair(t1, t2));
 	}
+
+	Result operator()(DELEGATE_FUNCTION_PARAMS)
+	{
+		return run(DELEGATE_FUNCTION_ARGS);
+	}
+
+	template<typename T>
+	_Myt& operator+=(const T& t1)
+	{
+		this->attach(t1);
+		return *this;
+	}
+
+	template<typename T>
+	_Myt& operator+=(const _Myt& other)
+	{
+		this->attach(other);
+		return *this;
+	}
+
+	template<typename T>
+	_Myt& operator-=(const T& t1)
+	{
+		this->remove(t1);
+		return *this;
+	}
+
+	_Myt& operator=(const _Myt& copy)
+	{
+		this->assign(copy);
+		return *this;
+	}
+
+private:
+	template<typename T, typename S = void>
+	struct Partial
+	{
+		static T run(const _Myt& self DELEGATE_COMMA DELEGATE_FUNCTION_PARAMS)
+		{
+			const_iterator it = self._functions->begin();
+			const_iterator end = self._functions->end() - 1;
+
+			for (; it != end; ++it)
+				(*it)->invoke(DELEGATE_FUNCTION_ARGS);
+
+			return (*it)->invoke(DELEGATE_FUNCTION_ARGS);
+		}
+	};
+
+	template<typename S>
+	struct Partial<void, S>
+	{
+		static void run(const _Myt& self DELEGATE_COMMA DELEGATE_FUNCTION_PARAMS)
+		{
+			for (auto& it : *self._functions)
+				it->invoke(DELEGATE_FUNCTION_ARGS);
+		}
+	};
 
 private:
     DELEGATES* _functions;

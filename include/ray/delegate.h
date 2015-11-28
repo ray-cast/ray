@@ -46,6 +46,9 @@
 _NAME_BEGIN
 
 template<typename T>
+class binder;
+
+template<typename T>
 class delegate;
 
 #define DELEGATE_MAX_ARGS 0
@@ -84,8 +87,8 @@ class delegate;
 #include "delegate_impl.h"
 #undef DELEGATE_MAX_ARGS
 
-template<typename _This, typename _Functor>
-inline auto make_delegate_bind(_This t1, _Functor t2)
+template<typename _Functor, typename _This>
+inline auto make_binder(_Functor t1, _This t2)
 {
 	return delegate<typename trait::functor<_Functor>::result_type(typename trait::functor<_Functor>::arg_type)>::make(t1, t2);
 }

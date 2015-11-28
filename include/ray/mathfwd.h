@@ -175,9 +175,6 @@ typedef Vector3t<float> Normalf;
 typedef Matrix2x2t<float> Matrix2x2f;
 typedef Matrix3x3t<float> Matrix3x3f;
 typedef Matrix4x4t<float> Matrix4x4f;
-typedef Vector2t<float> float2;
-typedef Vector3t<float> float3;
-typedef Vector4t<float> float4;
 typedef Matrix2x2t<float> float2x2;
 typedef Matrix3x3t<float> float3x3;
 typedef Matrix4x4t<float> float4x4;
@@ -209,9 +206,6 @@ typedef Vector3t<double> Normald;
 typedef Matrix2x2t<double> Matrix2x2d;
 typedef Matrix3x3t<double> Matrix3x3d;
 typedef Matrix4x4t<double> Matrix4x4d;
-typedef Vector2t<double> double2;
-typedef Vector3t<double> double3;
-typedef Vector4t<double> double4;
 typedef Matrix2x2t<double> double2x2;
 typedef Matrix3x3t<double> double3x3;
 typedef Matrix4x4t<double> double4x4;
@@ -254,6 +248,18 @@ typedef RGBt<unsigned char> RGB;
 typedef RGBAt<unsigned char> RGBA;
 typedef BGRt<unsigned char> BGR;
 typedef BGRAt<unsigned char> BGRA;
+
+// float
+typedef float float1;
+typedef Vector2t<float> float2;
+typedef Vector3t<float> float3;
+typedef Vector4t<float> float4;
+
+// double
+typedef double double1;
+typedef Vector2t<double> double2;
+typedef Vector3t<double> double3;
+typedef Vector4t<double> double4;
 
 // array
 typedef std::vector<int> IntArray;

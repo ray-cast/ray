@@ -65,8 +65,11 @@ MaterialMaker::instanceShader(iarchive& reader) except
 {
 	auto shader = RenderSystem::instance()->createShader();
 
-	std::string type = reader.getString("name");
-	std::string value = reader.getString("value");
+	std::string type;
+	reader.getValue("name", type);
+
+	std::string value;
+	reader.getValue("value", value);
 
 	if (type.empty())
 		throw failure(__TEXT("The shader name can not be empty"));
@@ -95,7 +98,8 @@ MaterialMaker::instancePass(iarchive& reader) except
 {
 	RenderPass passType = RenderPass::RP_CUSTOM;
 
-	std::string passName = reader.getString("name");
+	std::string passName;
+	reader.getValue("name", passName);
 	if (passName.empty())
 		throw failure(__TEXT("The pass name can not be empty"));
 
@@ -132,8 +136,8 @@ MaterialMaker::instancePass(iarchive& reader) except
 			auto nodeName = reader.getCurrentNodeName();
 			if (nodeName == "state")
 			{
-				std::string name = reader.getString("name");
-				std::string value = reader.getString("value");
+				std::string name = reader.getValue<std::string>("name");
+				std::string value = reader.getValue<std::string>("value");
 
 				if (name == "vertex")
 				{
@@ -152,77 +156,77 @@ MaterialMaker::instancePass(iarchive& reader) except
 					}
 				}
 				else if (name == "cullmode")
-					rasterState.cullMode = stringToCullMode(reader.getString("value"));
+					rasterState.cullMode = stringToCullMode(reader.getValue<std::string>("value"));
 				else if (name == "fillmode")
-					rasterState.fillMode = stringToFillMode(reader.getString("value"));
+					rasterState.fillMode = stringToFillMode(reader.getValue<std::string>("value"));
 				else if (name == "scissorTestEnable")
-					rasterState.scissorTestEnable = reader.getBoolean("value");
+					rasterState.scissorTestEnable = reader.getValue<bool>("value");
 				else if (name == "primitive")
-					rasterState.primitiveType = stringToPrimitive(reader.getString("value"));
+					rasterState.primitiveType = stringToPrimitive(reader.getValue<std::string>("value"));
 				else if (name == "multisampleEnable")
-					rasterState.multisampleEnable = reader.getBoolean("value");
+					rasterState.multisampleEnable = reader.getValue<bool>("value");
 				else if (name == "srgbEnable")
-					rasterState.srgbEnable = reader.getBoolean("value");
+					rasterState.srgbEnable = reader.getValue<bool>("value");
 				else if (name == "blend")
-					blendState.blendEnable = reader.getBoolean("value");
+					blendState.blendEnable = reader.getValue<bool>("value");
 				else if (name == "blendSeparate")
-					blendState.blendSeparateEnable = reader.getBoolean("value");
+					blendState.blendSeparateEnable = reader.getValue<bool>("value");
 				else if (name == "blendOp")
-					blendState.blendOp = stringToBlendOperation(reader.getString("value"));
+					blendState.blendOp = stringToBlendOperation(reader.getValue<std::string>("value"));
 				else if (name == "blendsrc")
-					blendState.blendSrc = stringToBlendFactor(reader.getString("value"));
+					blendState.blendSrc = stringToBlendFactor(reader.getValue<std::string>("value"));
 				else if (name == "blenddst")
-					blendState.blendDest = stringToBlendFactor(reader.getString("value"));
+					blendState.blendDest = stringToBlendFactor(reader.getValue<std::string>("value"));
 				else if (name == "blendalphaop")
-					blendState.blendAlphaOp = stringToBlendOperation(reader.getString("value"));
+					blendState.blendAlphaOp = stringToBlendOperation(reader.getValue<std::string>("value"));
 				else if (name == "blendalphasrc")
-					blendState.blendAlphaSrc = stringToBlendFactor(reader.getString("value"));
+					blendState.blendAlphaSrc = stringToBlendFactor(reader.getValue<std::string>("value"));
 				else if (name == "blendalphadst")
-					blendState.blendAlphaDest = stringToBlendFactor(reader.getString("value"));
+					blendState.blendAlphaDest = stringToBlendFactor(reader.getValue<std::string>("value"));
 				else if (name == "colormask")
-					blendState.colorWriteMask = stringToColorMask(reader.getString("value"));
+					blendState.colorWriteMask = stringToColorMask(reader.getValue<std::string>("value"));
 				else if (name == "depthtest")
-					depthState.depthEnable = reader.getBoolean("value");
+					depthState.depthEnable = reader.getValue<bool>("value");
 				else if (name == "depthwrite")
-					depthState.depthWriteMask = reader.getBoolean("value");
+					depthState.depthWriteMask = reader.getValue<bool>("value");
 				else if (name == "depthfunc")
-					depthState.depthFunc = stringToCompareFunc(reader.getString("value"));
+					depthState.depthFunc = stringToCompareFunc(reader.getValue<std::string>("value"));
 				else if (name == "depthBiasEnable")
-					depthState.depthBiasEnable = reader.getBoolean("value");
+					depthState.depthBiasEnable = reader.getValue<bool>("value");
 				else if (name == "depthSlopScaleBias")
-					depthState.depthSlopScaleBias = reader.getFloat("value");
+					depthState.depthSlopScaleBias = reader.getValue<float>("value");
 				else if (name == "depthBias")
-					depthState.depthBias = reader.getFloat("value");
+					depthState.depthBias = reader.getValue<float>("value");
 				else if (name == "stencilTest")
-					stencilState.stencilEnable = reader.getBoolean("value");
+					stencilState.stencilEnable = reader.getValue<bool>("value");
 				else if (name == "stencilRef")
-					stencilState.stencilRef = reader.getInteger("value");
+					stencilState.stencilRef = reader.getValue<int>("value");
 				else if (name == "stencilFunc")
-					stencilState.stencilFunc = stringToCompareFunc(reader.getString("value"));
+					stencilState.stencilFunc = stringToCompareFunc(reader.getValue<std::string>("value"));
 				else if (name == "stencilReadMask")
-					stencilState.stencilReadMask = reader.getInteger("value");
+					stencilState.stencilReadMask = reader.getValue<int>("value");
 				else if (name == "stencilWriteMask")
-					stencilState.stencilWriteMask = reader.getInteger("value");
+					stencilState.stencilWriteMask = reader.getValue<int>("value");
 				else if (name == "stencilFail")
-					stencilState.stencilFail = stringToStencilOp(reader.getString("value"));
+					stencilState.stencilFail = stringToStencilOp(reader.getValue<std::string>("value"));
 				else if (name == "stencilZFail")
-					stencilState.stencilZFail = stringToStencilOp(reader.getString("value"));
+					stencilState.stencilZFail = stringToStencilOp(reader.getValue<std::string>("value"));
 				else if (name == "stencilPass")
-					stencilState.stencilPass = stringToStencilOp(reader.getString("value"));
+					stencilState.stencilPass = stringToStencilOp(reader.getValue<std::string>("value"));
 				else if (name == "stencilTwoTest")
-					stencilState.stencilTwoEnable = reader.getBoolean("value");
+					stencilState.stencilTwoEnable = reader.getValue<bool>("value");
 				else if (name == "stencilTwoFunc")
-					stencilState.stencilTwoFunc = stringToCompareFunc(reader.getString("value"));
+					stencilState.stencilTwoFunc = stringToCompareFunc(reader.getValue<std::string>("value"));
 				else if (name == "stencilTwoReadMask")
-					stencilState.stencilTwoReadMask = reader.getInteger("value");
+					stencilState.stencilTwoReadMask = reader.getValue<int>("value");
 				else if (name == "stencilTwoWriteMask")
-					stencilState.stencilTwoWriteMask = reader.getInteger("value");
+					stencilState.stencilTwoWriteMask = reader.getValue<int>("value");
 				else if (name == "stencilTwoFail")
-					stencilState.stencilTwoFail = stringToStencilOp(reader.getString("value"));
+					stencilState.stencilTwoFail = stringToStencilOp(reader.getValue<std::string>("value"));
 				else if (name == "stencilTwoZFail")
-					stencilState.stencilTwoZFail = stringToStencilOp(reader.getString("value"));
+					stencilState.stencilTwoZFail = stringToStencilOp(reader.getValue<std::string>("value"));
 				else if (name == "stencilTwoPass")
-					stencilState.stencilTwoPass = stringToStencilOp(reader.getString("value"));
+					stencilState.stencilTwoPass = stringToStencilOp(reader.getValue<std::string>("value"));
 			}
 			else
 			{
@@ -247,7 +251,7 @@ MaterialMaker::instanceTech(iarchive& reader) except
 {
 	RenderQueue queue = RenderQueue::RQ_OPAQUE;
 
-	std::string techName = reader.getString("name");
+	std::string techName = reader.getValue<std::string>("name");
 	if (techName.empty())
 		throw failure(__TEXT("The technique name can not be empty"));
 
@@ -286,10 +290,10 @@ MaterialMaker::instanceTech(iarchive& reader) except
 void
 MaterialMaker::instanceParameter(MaterialPtr& material, iarchive& reader) except
 {
-	auto name = reader.getString("name");
-	auto type = reader.getString("type");
-	auto semantic = reader.getString("semantic");
-	auto value = reader.getString("value");
+	auto name = reader.getValue<std::string>("name");
+	auto type = reader.getValue<std::string>("type");
+	auto semantic = reader.getValue<std::string>("semantic");
+	auto value = reader.getValue<std::string>("value");
 
 	if (name.empty())
 	{
@@ -407,7 +411,7 @@ MaterialMaker::instanceBuffer(MaterialPtr& material, iarchive& reader) except
 {
 	auto buffer = std::make_shared<MaterialParam>();
 	buffer->setType(ShaderVariantType::SPT_BUFFER);
-	buffer->setName(reader.getString("name"));
+	buffer->setName(reader.getValue<std::string>("name"));
 
 	if (reader.setToFirstChild())
 	{
@@ -470,11 +474,11 @@ MaterialMaker::load(iarchive& reader) except
 				{
 					if (it == "shader")
 					{
-						name = reader.getString(it);
+						name = reader.getValue<std::string>(it);
 					}
 					else
 					{
-						args[it] = reader.getString(it);
+						args[it] = reader.getValue<std::string>(it);
 					}
 				}
 			}
@@ -536,7 +540,7 @@ MaterialMaker::load(iarchive& reader) except
 			}
 			else if (name == "include")
 			{
-				auto path = reader.getString("name");
+				auto path = reader.getValue<std::string>("name");
 				if (!path.empty())
 				{
 					this->load(path);
@@ -544,7 +548,7 @@ MaterialMaker::load(iarchive& reader) except
 			}
 			else if (name == "shader")
 			{
-				auto type = reader.getString("name");
+				auto type = reader.getValue<std::string>("name");
 				if (!type.empty())
 				{
 					_shaderCodes[type] += reader.getText();

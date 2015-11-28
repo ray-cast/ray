@@ -67,28 +67,18 @@ public:
     bool hasAttr(const char* name) const noexcept;
     std::vector<std::string> getAttrs() const noexcept;
 
-    std::string getString(const char* name) const noexcept;
-    std::string getString(const std::string& name) const noexcept;
-
     std::string getText() const noexcept;
 
-    int getInteger(const char* name) const noexcept;
-    int getInteger(const std::string& name) const noexcept;
-
-    bool getBoolean(const char* name) const noexcept;
-    bool getBoolean(const std::string& name) const noexcept;
-
-    float getFloat(const char* name) const noexcept;
-    float getFloat(const std::string& name) const noexcept;
-
-    float2 getFloat2(const char* name) const noexcept;
-    float2 getFloat2(const std::string& name) const noexcept;
-
-    float3 getFloat3(const char* name) const noexcept;
-    float3 getFloat3(const std::string& name) const noexcept;
-
-    float4 getFloat4(const char* name) const noexcept;
-    float4 getFloat4(const std::string& name) const noexcept;
+    bool getValue(const std::string& name, bool& result) const noexcept;
+	bool getValue(const std::string& name, int1& result) const noexcept;
+	bool getValue(const std::string& name, int2& result) const noexcept;
+	bool getValue(const std::string& name, int3& result) const noexcept;
+	bool getValue(const std::string& name, int4& result) const noexcept;
+    bool getValue(const std::string& name, float1& result) const noexcept;
+    bool getValue(const std::string& name, float2& result) const noexcept;
+    bool getValue(const std::string& name, float3& result) const noexcept;
+    bool getValue(const std::string& name, float4& result) const noexcept;
+    bool getValue(const std::string& name, std::string& result) const noexcept;
 
 private:
 

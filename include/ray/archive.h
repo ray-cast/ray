@@ -59,36 +59,26 @@ public:
 	virtual bool hasAttr(const char* name) const noexcept = 0;
 	virtual std::vector<std::string> getAttrs() const noexcept = 0;
 
-	virtual std::string getString(const char* name) const noexcept = 0;
-	virtual std::string getString(const std::string& name) const noexcept = 0;
-
 	virtual std::string getText() const noexcept = 0;
 
-	virtual int getInteger(const char* name) const noexcept = 0;
-	virtual int getInteger(const std::string& name) const noexcept = 0;
+	virtual bool getValue(const std::string& name, bool& result) const noexcept = 0;
+	virtual bool getValue(const std::string& name, int1& result) const noexcept = 0;
+	virtual bool getValue(const std::string& name, int2& result) const noexcept = 0;
+	virtual bool getValue(const std::string& name, int3& result) const noexcept = 0;
+	virtual bool getValue(const std::string& name, int4& result) const noexcept = 0;
+	virtual bool getValue(const std::string& name, float1& result) const noexcept = 0;
+	virtual bool getValue(const std::string& name, float2& result) const noexcept = 0;
+	virtual bool getValue(const std::string& name, float3& result) const noexcept = 0;
+	virtual bool getValue(const std::string& name, float4& result) const noexcept = 0;
+	virtual bool getValue(const std::string& name, std::string& result) const noexcept = 0;
 
-	virtual bool getBoolean(const char* name) const noexcept = 0;
-	virtual bool getBoolean(const std::string& name) const noexcept = 0;
-
-	virtual float getFloat(const char* name) const noexcept = 0;
-	virtual float getFloat(const std::string& name) const noexcept = 0;
-
-	virtual float2 getFloat2(const char* name) const noexcept = 0;
-	virtual float2 getFloat2(const std::string& name) const noexcept = 0;
-
-	virtual float3 getFloat3(const char* name) const noexcept = 0;
-	virtual float3 getFloat3(const std::string& name) const noexcept = 0;
-
-	virtual float4 getFloat4(const char* name) const noexcept = 0;
-	virtual float4 getFloat4(const std::string& name) const noexcept = 0;
-
-	void getValue(const std::string& name, bool& result) const noexcept { result = this->getBoolean(name); }
-	void getValue(const std::string& name, int& result) const noexcept { result = this->getInteger(name); }
-	void getValue(const std::string& name, float& result) const noexcept { result = this->getFloat(name); }
-	void getValue(const std::string& name, float2& result) const noexcept { result = this->getFloat2(name); }
-	void getValue(const std::string& name, float3& result) const noexcept { result = this->getFloat3(name); }
-	void getValue(const std::string& name, float4& result) const noexcept { result = this->getFloat4(name); }
-	void getValue(const std::string& name, std::string& result) const noexcept { result = this->getString(name); }
+	template<typename T>
+	T getValue(const std::string& name) const
+	{
+		T value;
+		this->getValue(name, value);
+		return value;
+	}
 
 	template<typename T>
 	iarchive& operator >> (std::pair<const std::string&, T&> value)

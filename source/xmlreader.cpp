@@ -224,7 +224,7 @@ XMLReader::setToParent() noexcept
 	}
 }
 
-bool 
+bool
 XMLReader::hasChild() const noexcept
 {
 	return _currentNode->NoChildren() ? false : true;
@@ -256,24 +256,6 @@ XMLReader::getAttrs() const noexcept
 }
 
 std::string
-XMLReader::getString(const char* name) const noexcept
-{
-	auto result = _currentNode->Attribute(name);
-	if (result)
-	{
-		return result;
-	}
-
-	return "";
-}
-
-std::string
-XMLReader::getString(const std::string& name) const noexcept
-{
-	return this->getString(name.c_str());
-}
-
-std::string
 XMLReader::getText() const noexcept
 {
 	auto result = _currentNode->GetText();
@@ -282,63 +264,142 @@ XMLReader::getText() const noexcept
 	return "";
 }
 
-int
-XMLReader::getInteger(const char* name) const noexcept
-{
-	auto value = getString(name);
-	if (!value.empty())
-		return atoi(value.c_str());
-
-	return 0;
-}
-
-int
-XMLReader::getInteger(const std::string& name) const noexcept
-{
-	auto value = getString(name.c_str());
-	if (!value.empty())
-		return atoi(value.c_str());
-
-	return 0;
-}
-
 bool
-XMLReader::getBoolean(const char* name) const noexcept
+XMLReader::getValue(const std::string& name, bool& result) const noexcept
 {
-	auto value = getString(name);
-	if (value == "true" || value == "1")
-		return true;
+	std::string value;
+	if (this->getValue(name, value))
+	{
+		if (value == "true" || value == "1")
+		{
+			result = true;
+			return true;
+		}
+		else if (value == "false" || value == "0" || value == "nil" || value == "null")
+		{
+			result = false;
+			return true;
+		}
+	}
 
 	return false;
 }
 
 bool
-XMLReader::getBoolean(const std::string& name) const noexcept
+XMLReader::getValue(const std::string& name, int1& result) const noexcept
 {
-	return this->getBoolean(name.c_str());
+	std::string value;
+	if (this->getValue(name, value))
+	{
+		result = atoi(value.c_str());
+		return true;
+	}
+
+	return false;
 }
 
-float
-XMLReader::getFloat(const char* name) const noexcept
+bool
+XMLReader::getValue(const std::string& name, int2& result) const noexcept
 {
-	auto value = getString(name);
-	if (!value.empty())
-		return util::fast_atof(value.c_str());
+	std::string value;
+	if (this->getValue(name, value))
+	{
+		int i1 = 0;
+		int i2 = 0;
 
-	return 0.0;
+		for (auto& it : value)
+		{
+			if (it == ',')
+			{
+				it = ' ';
+			}
+		}
+
+		std::istringstream sin(value.c_str());
+
+		sin >> i1 >> i2;
+		result.set(i1, i2);
+		return true;
+	}
+
+	return false;
 }
 
-float
-XMLReader::getFloat(const std::string& name) const noexcept
+bool
+XMLReader::getValue(const std::string& name, int3& result) const noexcept
 {
-	return this->getFloat(name.c_str());
+	std::string value;
+	if (this->getValue(name, value))
+	{
+		int i1 = 0;
+		int i2 = 0;
+		int i3 = 0;
+
+		for (auto& it : value)
+		{
+			if (it == ',')
+			{
+				it = ' ';
+			}
+		}
+
+		std::istringstream sin(value.c_str());
+
+		sin >> i1 >> i2 >> i3;
+		result.set(i1, i2, i3);
+		return true;
+	}
+
+	return false;
 }
 
-float2
-XMLReader::getFloat2(const char* name) const noexcept
+bool
+XMLReader::getValue(const std::string& name, int4& result) const noexcept
 {
-	auto value = getString(name);
-	if (!value.empty())
+	std::string value;
+	if (this->getValue(name, value))
+	{
+		int i1 = 0;
+		int i2 = 0;
+		int i3 = 0;
+		int i4 = 0;
+
+		for (auto& it : value)
+		{
+			if (it == ',')
+			{
+				it = ' ';
+			}
+		}
+
+		std::istringstream sin(value.c_str());
+
+		sin >> i1 >> i2 >> i3 >> i4;
+		result.set(i1, i2, i3, i4);
+		return true;
+	}
+
+	return false;
+}
+
+bool
+XMLReader::getValue(const std::string& name, float1& result) const noexcept
+{
+	std::string value;
+	if (this->getValue(name, value))
+	{
+		result = util::fast_atof(value.c_str());
+		return true;
+	}
+
+	return false;
+}
+
+bool
+XMLReader::getValue(const std::string& name, float2& result) const noexcept
+{
+	std::string value;
+	if (this->getValue(name, value))
 	{
 		float f1 = 0;
 		float f2 = 0;
@@ -354,23 +415,18 @@ XMLReader::getFloat2(const char* name) const noexcept
 		std::istringstream sin(value.c_str());
 
 		sin >> f1 >> f2;
-		return float2(f1, f2);
+		result.set(f1, f2);
+		return true;
 	}
 
-	return float2(0, 0);
+	return false;
 }
 
-float2
-XMLReader::getFloat2(const std::string& name) const noexcept
+bool
+XMLReader::getValue(const std::string& name, float3& result) const noexcept
 {
-	return this->getFloat2(name.c_str());
-}
-
-float3
-XMLReader::getFloat3(const char* name) const noexcept
-{
-	auto value = getString(name);
-	if (!value.empty())
+	std::string value;
+	if (this->getValue(name, value))
 	{
 		float f1 = 0;
 		float f2 = 0;
@@ -387,23 +443,18 @@ XMLReader::getFloat3(const char* name) const noexcept
 		std::istringstream sin(value);
 
 		sin >> f1 >> f2 >> f3;
-		return float3(f1, f2, f3);
+		result.set(f1, f2, f3);
+		return true;
 	}
 
-	return float3(0, 0, 0);
+	return false;
 }
 
-float3
-XMLReader::getFloat3(const std::string& name) const noexcept
+bool
+XMLReader::getValue(const std::string& name, float4& result) const noexcept
 {
-	return this->getFloat3(name.c_str());
-}
-
-float4
-XMLReader::getFloat4(const char* name) const noexcept
-{
-	auto value = getString(name);
-	if (!value.empty())
+	std::string value;
+	if (this->getValue(name, value))
 	{
 		float f1 = 0;
 		float f2 = 0;
@@ -421,16 +472,24 @@ XMLReader::getFloat4(const char* name) const noexcept
 		std::istringstream sin(value.c_str());
 
 		sin >> f1 >> f2 >> f3 >> f4;
-		return float4(f1, f2, f3, f4);
+		result.set(f1, f2, f3, f4);
+		return true;
 	}
 
-	return float4(0, 0, 0, 0);
+	return false;
 }
 
-float4
-XMLReader::getFloat4(const std::string& name) const noexcept
+bool
+XMLReader::getValue(const std::string& name, std::string& result) const noexcept
 {
-	return this->getFloat4(name.c_str());
+	auto value = _currentNode->Attribute(name.c_str());
+	if (value)
+	{
+		result = value;
+		return true;
+	}
+
+	return false;
 }
 
 _NAME_END

@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_GUI)
 #include <ray/gui_button_component.h>
+#include <ray/gui_system.h>
 
 _NAME_BEGIN
 
@@ -43,21 +44,98 @@ __ImplementSubClass(GuiButtonComponent, GuiWidgetComponent, "GuiButton")
 
 GuiButtonComponent::GuiButtonComponent() noexcept
 {
+	_button = GuiSystem::instance()->createWidget<GuiButton>();
+	_button->create();
 }
 
 GuiButtonComponent::~GuiButtonComponent() noexcept
 {
 }
 
+void 
+GuiButtonComponent::setStateSelected(bool value) noexcept
+{
+	_button->setStateSelected(value);
+}
+
+bool 
+GuiButtonComponent::getStateSelected() const noexcept
+{
+	return _button->getStateSelected();
+}
+
+void 
+GuiButtonComponent::setModeImage(bool value) noexcept
+{
+	_button->setModeImage(value);
+}
+
+bool 
+GuiButtonComponent::getModeImage() const noexcept
+{
+	return _button->getModeImage();
+}
+
+void 
+GuiButtonComponent::setImageResource(const std::string& name) noexcept
+{
+	_button->setImageResource(name);
+}
+
+void 
+GuiButtonComponent::setImageGroup(const std::string& name) noexcept
+{
+	_button->setImageGroup(name);
+}
+
+void 
+GuiButtonComponent::setImageName(const std::string& name) noexcept
+{
+	_button->setImageName(name);
+}
+
+void
+GuiButtonComponent::load(iarchive& reader) noexcept
+{
+	GuiWidgetComponent::load(reader);
+
+	bool state = false;
+	bool mode = false;
+	std::string name, group, resource;
+
+	reader >> make_alias(state, "state");
+	reader >> make_alias(mode, "mode");
+	reader >> make_alias(name, "name");
+	reader >> make_alias(group, "group");
+	reader >> make_alias(resource, "resource");
+
+	this->setStateSelected(state);
+	this->setModeImage(mode);
+	this->setImageName(name);
+	this->setImageGroup(group);
+	this->setImageResource(resource);
+}
+
+void
+GuiButtonComponent::save(oarchive& write) noexcept
+{
+	GuiWidgetComponent::save(write);
+
+	bool state = this->getStateSelected();
+	bool mode = this->getModeImage();
+	std::string name, group, resource;
+
+	write << make_alias(state, "state");
+	write << make_alias(mode, "mode");
+	write << make_alias(name, "name");
+	write << make_alias(group, "group");
+	write << make_alias(resource, "resource");
+}
+
 GameComponentPtr 
 GuiButtonComponent::clone() const except
 {
 	return std::make_shared<GuiButtonComponent>();
-}
-
-void
-GuiButtonComponent::onActivate() except
-{
 }
 
 void

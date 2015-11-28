@@ -49,9 +49,6 @@ public:
 	GuiWindowComponent() noexcept;
 	~GuiWindowComponent() noexcept;
 
-	void setCaption(const std::string& name) noexcept;
-	const std::string& getCaption() const noexcept;
-
 	void setVisibleSmooth(bool _value) noexcept;
 	void destroySmooth() noexcept;
 

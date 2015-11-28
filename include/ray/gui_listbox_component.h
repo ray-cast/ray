@@ -34,12 +34,20 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_LAYOUT_COMPONENT_H_
-#define _H_GUI_LAYOUT_COMPONENT_H_
+#ifndef _H_GUI_BEHAVIOUR_COMPONENT_H_
+#define _H_GUI_BEHAVIOUR_COMPONENT_H_
 
 #include <ray/gui_widget_component.h>
 
 _NAME_BEGIN
+
+class GuiListBoxComponent final : public GuiWidgetComponent
+{
+	__DeclareSubInterface(GUIBehaviourComponent, GameComponent)
+public:
+	GuiListBoxComponent() noexcept;
+	~GuiListBoxComponent() noexcept;
+};
 
 _NAME_END
 

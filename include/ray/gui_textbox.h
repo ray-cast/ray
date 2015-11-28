@@ -51,8 +51,8 @@ public:
 	virtual Viewport getTextRegion() noexcept = 0;
 	virtual void getTextSize(int& w, int& h) noexcept = 0;
 
-	virtual void setCaption(const std::string& _value) noexcept = 0;
-	virtual const std::string& getCaption() const noexcept = 0;
+	virtual void setText(const std::string& _value) noexcept = 0;
+	virtual const std::string& getText() const noexcept = 0;
 
 	virtual void setFontName(const std::string& _value) noexcept = 0;
 	virtual const std::string& getFontName() noexcept = 0;
@@ -66,13 +66,13 @@ public:
 	virtual void setTextColour(const float4& value) noexcept = 0;
 	virtual float4 getTextColour() noexcept = 0;
 
-	virtual void setCaptionWithReplacing(const std::string& _value) noexcept = 0;
+	virtual void setTextWithReplacing(const std::string& _value) noexcept = 0;
 
 	virtual void setTextShadowColour(const float4& value) noexcept = 0;
 	virtual float4 getTextShadowColour() noexcept = 0;
 
 	virtual void setTextShadow(bool _value) noexcept = 0;
-	virtual bool getTextShadow() noexcept = 0;
+	virtual bool getTextShadow() const noexcept = 0;
 };
 
 _NAME_END

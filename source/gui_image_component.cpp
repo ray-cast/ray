@@ -35,9 +35,10 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #if defined(_BUILD_GUI)
-#include <ray/gui_layout_component.h>
+#include <ray/gui_image_component.h>
 
 _NAME_BEGIN
 
 _NAME_END
+
 #endif

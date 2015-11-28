@@ -36,10 +36,9 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_GUI)
 #include <ray/gui_camera_component.h>
-#include <ray/gui_behaviour_component.h>
-#include <ray/gui_feature.h>
-#include <ray/camera_component.h>
+#include <ray/gui_system.h>
 #include <ray/game_server.h>
+#include <ray/camera_component.h>
 
 _NAME_BEGIN
 

@@ -45,12 +45,6 @@ MyGuiWindowImpl::MyGuiWindowImpl() noexcept
 {
 }
 
-MyGuiWindowImpl::MyGuiWindowImpl(MyGUI::Widget* parent) noexcept
-	: _window(nullptr)
-	, _parent(parent)
-{
-}
-
 MyGuiWindowImpl::~MyGuiWindowImpl() noexcept
 {
 	this->destroy();
@@ -63,28 +57,19 @@ MyGuiWindowImpl::create() except
 	if (_parent)
 		_window = _parent->createWidget<MyGUI::Window>("", 0, 0, 0, 0, MyGUI::Align::Default);
 	else
-		_window = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("WindowCS", 0, 0, 100, 1000, MyGUI::Align::Default, "Main");
+		_window = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("", 0, 0, 0, 0, MyGUI::Align::Default, "Main");
+
+	_textbox = std::make_shared<MyGuiTextBox>(_window, false);
 
 	this->setWidget(_window);
 
 	return _window ? true : false;
 }
 
-void 
-MyGuiWindowImpl::setCaption(const std::string& name) noexcept
+GuiTextBoxPtr 
+MyGuiWindowImpl::getGuiTextBox() const noexcept
 {
-	assert(_window);
-	if (_name != name)
-	{
-		_window->setCaption(name);
-		_name = name;
-	}	
-}
-
-const std::string& 
-MyGuiWindowImpl::getCaption() const noexcept
-{
-	return _name;
+	return _textbox;
 }
 
 void 
@@ -150,26 +135,14 @@ MyGuiWindow::MyGuiWindow() noexcept
 {
 }
 
-MyGuiWindow::MyGuiWindow(MyGUI::Widget* parent) noexcept
-	: GuiWindow(_impl)
-	, _impl(parent)
-{
-}
-
 MyGuiWindow::~MyGuiWindow() noexcept
 {
 }
 
-void
-MyGuiWindow::setCaption(const std::string& name) noexcept
+GuiTextBoxPtr
+MyGuiWindow::getGuiTextBox() const noexcept
 {
-	_impl.setCaption(name);
-}
-
-const std::string&
-MyGuiWindow::getCaption() const noexcept
-{
-	return _impl.getCaption();
+	return _impl.getGuiTextBox();
 }
 
 void 

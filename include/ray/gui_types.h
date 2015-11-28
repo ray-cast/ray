@@ -52,6 +52,8 @@ typedef std::shared_ptr<class GuiTextBox> GuiTextBoxPtr;
 typedef std::shared_ptr<class GuiSystem> GuiSystemPtr;
 typedef std::shared_ptr<class GuiSystemBase> GuiSystemBasePtr;
 
+typedef std::weak_ptr<class GuiWidget> GuiWidgetWeakPtr;
+
 _NAME_END
 
 #endif

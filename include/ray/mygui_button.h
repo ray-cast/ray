@@ -46,7 +46,6 @@ class MyGuiButtonImpl final : public MyGuiWidget
 	__DeclareSubClass(MyGuiButton, GuiWidget)
 public:
 	MyGuiButtonImpl() noexcept;
-	MyGuiButtonImpl(MyGUI::Widget* parent) noexcept;
 	virtual ~MyGuiButtonImpl() noexcept;
 
 	bool create() except;
@@ -54,8 +53,8 @@ public:
 	Viewport getTextRegion() noexcept;
 	void getTextSize(int& w, int& h) noexcept;
 
-	void setCaption(const std::string& _value) noexcept;
-	const std::string& getCaption() const noexcept;
+	void setText(const std::string& _value) noexcept;
+	const std::string& getText() const noexcept;
 
 	void setFontName(const std::string& _value) noexcept;
 	const std::string& getFontName() noexcept;
@@ -69,13 +68,13 @@ public:
 	void setTextColour(const float4& value) noexcept;
 	float4 getTextColour() noexcept;
 
-	void setCaptionWithReplacing(const std::string& _value) noexcept;
+	void setTextWithReplacing(const std::string& _value) noexcept;
 
 	void setTextShadowColour(const float4& value) noexcept;
 	float4 getTextShadowColour() noexcept;
 
 	void setTextShadow(bool _value) noexcept;
-	bool getTextShadow() noexcept;
+	bool getTextShadow() const noexcept;
 
 	void setStateSelected(bool value) noexcept;
 	bool getStateSelected() const noexcept;
@@ -99,14 +98,13 @@ class MyGuiButton final : public GuiButton
 	__DeclareSubClass(MyGuiButton, GuiButton)
 public:
 	MyGuiButton() noexcept;
-	MyGuiButton(MyGUI::Widget* parent) noexcept;
 	virtual ~MyGuiButton() noexcept;
 
 	virtual Viewport getTextRegion() noexcept;
 	virtual void getTextSize(int& w, int& h) noexcept;
 
-	virtual void setCaption(const std::string& _value) noexcept;
-	virtual const std::string& getCaption() const noexcept;
+	virtual void setText(const std::string& _value) noexcept;
+	virtual const std::string& getText() const noexcept;
 
 	virtual void setFontName(const std::string& _value) noexcept;
 	virtual const std::string& getFontName() noexcept;
@@ -120,13 +118,13 @@ public:
 	virtual void setTextColour(const float4& value) noexcept;
 	virtual float4 getTextColour() noexcept;
 
-	virtual void setCaptionWithReplacing(const std::string& _value) noexcept;
+	virtual void setTextWithReplacing(const std::string& _value) noexcept;
 
 	virtual void setTextShadowColour(const float4& value) noexcept;
 	virtual float4 getTextShadowColour() noexcept;
 
 	virtual void setTextShadow(bool _value) noexcept;
-	virtual bool getTextShadow() noexcept;
+	virtual bool getTextShadow() const noexcept;
 
 	virtual void setStateSelected(bool value) noexcept;
 	virtual bool getStateSelected() const noexcept;

@@ -45,18 +45,21 @@ __ImplementSubClass(MyGuiTextBoxImpl, MyGuiWidget, "MyGuiTextBoxImpl")
 MyGuiTextBoxImpl::MyGuiTextBoxImpl() noexcept
 	: _table(nullptr)
 	, _parent(nullptr)
+	, _destroy(true)
 {
 }
 
-MyGuiTextBoxImpl::MyGuiTextBoxImpl(MyGUI::Widget* parent) noexcept
-	: _table(nullptr)
-	, _parent(parent)
+MyGuiTextBoxImpl::MyGuiTextBoxImpl(MyGUI::TextBox* self, bool destroy) noexcept
+	: _table(self)
+	, _parent(nullptr)
+	, _destroy(destroy)
 {
 }
 
 MyGuiTextBoxImpl::~MyGuiTextBoxImpl() noexcept
 {
-	this->destroy();
+	if (_destroy)
+		this->destroy();
 }
 
 bool
@@ -70,6 +73,19 @@ MyGuiTextBoxImpl::create() except
 	this->setWidget(_table);
 
 	return _table ? true : false;
+}
+
+void
+MyGuiTextBoxImpl::destroy() noexcept
+{
+	if (_destroy)
+	{
+		if (_table)
+		{
+			MyGUI::Gui::getInstance().destroyWidget(_table);
+			_table = nullptr;
+		}
+	}
 }
 
 Viewport
@@ -88,14 +104,14 @@ MyGuiTextBoxImpl::getTextSize(int& w, int& h) noexcept
 }
 
 void
-MyGuiTextBoxImpl::setCaption(const std::string& value) noexcept
+MyGuiTextBoxImpl::setText(const std::string& value) noexcept
 {
 	_caption = value;
 	_table->setCaption(value);
 }
 
 const std::string&
-MyGuiTextBoxImpl::getCaption() const noexcept
+MyGuiTextBoxImpl::getText() const noexcept
 {
 	return _caption;
 }
@@ -162,7 +178,7 @@ MyGuiTextBoxImpl::getTextColour() noexcept
 }
 
 void
-MyGuiTextBoxImpl::setCaptionWithReplacing(const std::string& _value) noexcept
+MyGuiTextBoxImpl::setTextWithReplacing(const std::string& _value) noexcept
 {
 	_table->setCaptionWithReplacing(_value);
 }
@@ -198,7 +214,7 @@ MyGuiTextBoxImpl::setTextShadow(bool _value) noexcept
 }
 
 bool
-MyGuiTextBoxImpl::getTextShadow() noexcept
+MyGuiTextBoxImpl::getTextShadow() const noexcept
 {
 	return _table->getTextShadow();
 }
@@ -208,9 +224,9 @@ MyGuiTextBox::MyGuiTextBox() noexcept
 {
 }
 
-MyGuiTextBox::MyGuiTextBox(MyGUI::Widget* parent) noexcept
+MyGuiTextBox::MyGuiTextBox(MyGUI::TextBox* self, bool destroy) noexcept
 	: GuiTextBox(_impl)
-	, _impl(parent)
+	, _impl(self, destroy)
 {
 }
 
@@ -231,15 +247,15 @@ MyGuiTextBox::getTextSize(int& w, int& h) noexcept
 }
 
 void
-MyGuiTextBox::setCaption(const std::string& _value) noexcept
+MyGuiTextBox::setText(const std::string& _value) noexcept
 {
-	_impl.setCaption(_value);
+	_impl.setText(_value);
 }
 
 const string&
-MyGuiTextBox::getCaption() const noexcept
+MyGuiTextBox::getText() const noexcept
 {
-	return _impl.getCaption();
+	return _impl.getText();
 }
 
 void
@@ -291,9 +307,9 @@ MyGuiTextBox::getTextColour() noexcept
 }
 
 void
-MyGuiTextBox::setCaptionWithReplacing(const std::string& _value) noexcept
+MyGuiTextBox::setTextWithReplacing(const std::string& _value) noexcept
 {
-	_impl.setCaptionWithReplacing(_value);
+	_impl.setTextWithReplacing(_value);
 }
 
 void
@@ -315,7 +331,7 @@ MyGuiTextBox::setTextShadow(bool _value) noexcept
 }
 
 bool
-MyGuiTextBox::getTextShadow() noexcept
+MyGuiTextBox::getTextShadow() const noexcept
 {
 	return _impl.getTextShadow();
 }

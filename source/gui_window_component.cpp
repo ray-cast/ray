@@ -53,62 +53,58 @@ GuiWindowComponent::~GuiWindowComponent() noexcept
 }
 
 void 
-GuiWindowComponent::setCaption(const std::string& name) noexcept
-{
-	_window->setCaption(name);
-}
-
-const std::string& 
-GuiWindowComponent::getCaption() const noexcept
-{
-	return _window->getCaption();
-}
-
-void 
 GuiWindowComponent::setVisibleSmooth(bool value) noexcept
 {
+	assert(_window);
 	_window->setVisibleSmooth(value);
 }
 
 void 
 GuiWindowComponent::destroySmooth() noexcept
 {
+	assert(_window);
 	_window->destroySmooth();
 }
 
 void 
 GuiWindowComponent::setAutoAlpha(bool value) noexcept
 {
+	assert(_window);
 	_window->setAutoAlpha(value);
 }
 
 bool 
 GuiWindowComponent::getAutoAlpha() const noexcept
 {
+	assert(_window);
 	return _window->getAutoAlpha();
 }
 
 void 
 GuiWindowComponent::setMinSize(int width, int height) noexcept
 {
+	assert(_window);
 	_window->setMinSize(width, height);
 }
 
 void 
 GuiWindowComponent::getMinSize(int& w, int& h) const noexcept
 {
+	assert(_window);
 	_window->getMinSize(w, h);
 }
 
 void 
 GuiWindowComponent::setMaxSize(int width, int height) noexcept
 {
+	assert(_window);
 	_window->setMaxSize(width, height);
 }
 
 void
 GuiWindowComponent::getMaxSize(int& w, int& h) const noexcept
 {
+	assert(_window);
 	_window->getMaxSize(w, h);
 }
 
@@ -116,6 +112,23 @@ void
 GuiWindowComponent::load(iarchive& reader) noexcept
 {
 	GuiWidgetComponent::load(reader);
+
+	bool smooth = true;
+	bool autoAlpha = false;
+	int minWidth = 0, maxWidth = 10000;
+	int minHeight = 0, maxHeight = 10000;
+	
+	reader >> make_alias(smooth, "smooth");
+	reader >> make_alias(autoAlpha, "autoAlpha");
+	reader >> make_alias(minWidth, "minWidth");
+	reader >> make_alias(minWidth, "minHeight");
+	reader >> make_alias(maxWidth, "maxWidth");
+	reader >> make_alias(maxHeight, "maxHeight");
+
+	this->setVisibleSmooth(smooth);
+	this->setAutoAlpha(autoAlpha);
+	this->setMinSize(minWidth, minHeight);
+	this->setMaxSize(maxWidth, maxHeight);
 }
 
 void 

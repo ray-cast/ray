@@ -36,9 +36,6 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_MYGUI)
 #include <ray/mygui_widget.h>
-#include <ray/mygui_button.h>
-#include <ray/mygui_window.h>
-#include <ray/mygui_textbox.h>
 
 _NAME_BEGIN
 
@@ -56,10 +53,14 @@ MyGuiWidget::~MyGuiWidget() noexcept
 void 
 MyGuiWidget::destroy() noexcept
 {
-	MyGUI::Gui::getInstance().destroyWidget(_widget);
+	if (_widget)
+	{
+		MyGUI::Gui::getInstance().destroyWidget(_widget);
+		_widget = nullptr;
+	}		
 }
 
-void 
+void
 MyGuiWidget::setName(const std::string& name) noexcept
 {
 	assert(_widget);
@@ -71,6 +72,28 @@ MyGuiWidget::getName() noexcept
 {
 	assert(_widget);
 	return _widget->getName();
+}
+
+void 
+MyGuiWidget::setParent(GuiWidgetImpl* parent) noexcept
+{
+	assert(_widget);
+	if (_parent != parent)
+	{
+		if (parent)
+		{
+			auto widget = dynamic_cast<MyGuiWidget*>(parent)->getWidget();
+			if (widget)
+				_widget->attachToWidget(widget);
+		}
+		_parent = parent;
+	}
+}
+
+GuiWidgetImpl*
+MyGuiWidget::getParent() const noexcept
+{
+	return _parent;
 }
 
 void 
@@ -121,26 +144,6 @@ MyGuiWidget::getViewport(Viewport& viewport) const noexcept
 	viewport.top = coord.top;
 	viewport.width = coord.width;
 	viewport.height = coord.height;
-}
-
-GuiWidgetPtr
-MyGuiWidget::createWieght(const rtti::Rtti* rtti) except
-{
-	assert(rtti->isDerivedFrom(GuiWidget::getRtti()));
-
-	GuiWidgetPtr widget;
-	if (rtti == GuiButton::getRtti())
-		widget = std::make_shared<MyGuiButton>(_widget);
-	else if (rtti == GuiWindow::getRtti())
-		widget = std::make_shared<MyGuiWindow>(_widget);
-	else if (rtti == GuiTextBox::getRtti())
-		widget = std::make_shared<MyGuiTextBox>(_widget);
-	else
-	{
-		assert(false);
-	}
-	
-	return widget;
 }
 
 void 

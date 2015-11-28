@@ -34,31 +34,12 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_BEHAVIOUR_COMPONENT_H_
-#define _H_GUI_BEHAVIOUR_COMPONENT_H_
+#ifndef _H_GUI_EIDTBOX_COMPONENT_H_
+#define _H_GUI_EIDTBOX_COMPONENT_H_
 
-#include <ray/gui_widget_component.h>
+#include <ray/gui_editbox_component.h>
 
 _NAME_BEGIN
-
-class GUIBehaviourComponent : public GuiWidgetComponent
-{
-	__DeclareSubInterface(GUIBehaviourComponent, GameComponent)
-public:
-	GUIBehaviourComponent() noexcept;
-	~GUIBehaviourComponent() noexcept;
-
-	virtual void needUpdate(bool update) noexcept;
-	virtual bool needUpdate() const noexcept;
-
-protected:
-
-	virtual void onMoveAfter() noexcept;
-
-private:
-
-	bool _needUpdate;
-};
 
 _NAME_END
 

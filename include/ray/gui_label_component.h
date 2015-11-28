@@ -49,6 +49,35 @@ public:
 	GuiLabelComponent() noexcept;
 	~GuiLabelComponent() noexcept;
 
+	Viewport getTextRegion() noexcept;
+	void getTextSize(int& w, int& h) noexcept;
+
+	void setText(const std::string& _value) noexcept;
+	const std::string& getText() const noexcept;
+
+	void setFontName(const std::string& _value) noexcept;
+	const std::string& getFontName() noexcept;
+
+	void setFontHeight(int _value) noexcept;
+	int getFontHeight() noexcept;
+
+	void setTextAlign(GuiWidgetAlign _value) noexcept;
+	GuiWidgetAlign getTextAlign() noexcept;
+
+	void setTextColour(const float4& value) noexcept;
+	float4 getTextColour() noexcept;
+
+	void setTextWithReplacing(const std::string& _value) noexcept;
+
+	void setTextShadowColour(const float4& value) noexcept;
+	float4 getTextShadowColour() noexcept;
+
+	void setTextShadow(bool _value) noexcept;
+	bool getTextShadow() const noexcept;
+
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
+
 	GameComponentPtr clone() const except;
 
 protected:

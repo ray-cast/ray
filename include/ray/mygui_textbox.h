@@ -46,16 +46,17 @@ class MyGuiTextBoxImpl final : public MyGuiWidget
 	__DeclareSubClass(MyGuiTextBoxImpl, GuiWidget)
 public:
 	MyGuiTextBoxImpl() noexcept;
-	MyGuiTextBoxImpl(MyGUI::Widget* parent) noexcept;
-	virtual ~MyGuiTextBoxImpl() noexcept;
+	MyGuiTextBoxImpl(MyGUI::TextBox* self, bool destroy = true) noexcept;
+	~MyGuiTextBoxImpl() noexcept;
 
 	bool create() except;
+	void destroy() noexcept;
 
 	Viewport getTextRegion() noexcept;
 	void getTextSize(int& w, int& h) noexcept;
 
-	void setCaption(const std::string& _value) noexcept;
-	const std::string& getCaption() const noexcept;
+	void setText(const std::string& _value) noexcept;
+	const std::string& getText() const noexcept;
 
 	void setFontName(const std::string& _value) noexcept;
 	const std::string& getFontName() noexcept;
@@ -69,15 +70,16 @@ public:
 	void setTextColour(const float4& value) noexcept;
 	float4 getTextColour() noexcept;
 
-	void setCaptionWithReplacing(const std::string& _value) noexcept;
+	void setTextWithReplacing(const std::string& _value) noexcept;
 
 	void setTextShadowColour(const float4& value) noexcept;
 	float4 getTextShadowColour() noexcept;
 
 	void setTextShadow(bool _value) noexcept;
-	bool getTextShadow() noexcept;
+	bool getTextShadow() const noexcept;
 
 private:
+	bool _destroy;
 	std::string _caption;
 	MyGUI::Widget* _parent;
 	MyGUI::TextBox* _table;
@@ -88,14 +90,14 @@ class MyGuiTextBox final : public GuiTextBox
 	__DeclareSubClass(MyGuiTextBox, GuiButton)
 public:
 	MyGuiTextBox() noexcept;
-	MyGuiTextBox(MyGUI::Widget* parent) noexcept;
+	MyGuiTextBox(MyGUI::TextBox* self, bool destroy = true) noexcept;
 	virtual ~MyGuiTextBox() noexcept;
 
 	Viewport getTextRegion() noexcept;
 	void getTextSize(int& w, int& h) noexcept;
 
-	void setCaption(const std::string& _value) noexcept;
-	const std::string& getCaption() const noexcept;
+	void setText(const std::string& _value) noexcept;
+	const std::string& getText() const noexcept;
 
 	void setFontName(const std::string& _value) noexcept;
 	const std::string& getFontName() noexcept;
@@ -109,13 +111,13 @@ public:
 	void setTextColour(const float4& value) noexcept;
 	float4 getTextColour() noexcept;
 
-	void setCaptionWithReplacing(const std::string& _value) noexcept;
+	void setTextWithReplacing(const std::string& _value) noexcept;
 
 	void setTextShadowColour(const float4& value) noexcept;
 	float4 getTextShadowColour() noexcept;
 
 	void setTextShadow(bool _value) noexcept;
-	bool getTextShadow() noexcept;
+	bool getTextShadow() const noexcept;
 
 private:
 

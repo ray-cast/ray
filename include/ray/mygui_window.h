@@ -37,7 +37,7 @@
 #ifndef _H_MYGUI_WINDOW_H_
 #define _H_MYGUI_WINDOW_H_
 
-#include <ray/mygui_widget.h>
+#include <ray/mygui_textbox.h>
 
 _NAME_BEGIN
 
@@ -45,13 +45,11 @@ class MyGuiWindowImpl final : public MyGuiWidget
 {
 public:
 	MyGuiWindowImpl() noexcept;
-	MyGuiWindowImpl(MyGUI::Widget* _parent) noexcept;
 	~MyGuiWindowImpl() noexcept;
 	
 	bool create() except;
 
-	void setCaption(const std::string& name) noexcept;
-	const std::string& getCaption() const noexcept;
+	GuiTextBoxPtr getGuiTextBox() const noexcept;
 
 	void setVisibleSmooth(bool _value) noexcept;
 	void destroySmooth() noexcept;
@@ -71,17 +69,17 @@ private:
 
 	MyGUI::Widget* _parent;
 	MyGUI::Window* _window;
+
+	GuiTextBoxPtr _textbox;
 };
 
 class MyGuiWindow final : public GuiWindow
 {
 public:
 	MyGuiWindow() noexcept;
-	MyGuiWindow(MyGUI::Widget* parent) noexcept;
 	virtual ~MyGuiWindow() noexcept;
 
-	virtual void setCaption(const std::string& name) noexcept;
-	virtual const std::string& getCaption() const noexcept;
+	virtual GuiTextBoxPtr getGuiTextBox() const noexcept;
 
 	virtual void setVisibleSmooth(bool _value) noexcept;
 	virtual void destroySmooth() noexcept;

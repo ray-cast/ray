@@ -43,13 +43,12 @@ _NAME_BEGIN
 
 class EXPORT GuiWindow : public GuiWidget
 {
-	__DeclareSubInterface(GuiWindow, GuiWidget)
+	__DeclareSubInterface(GuiWindow, GuiTextBox)
 public:
 	GuiWindow(GuiWidgetImpl& impl) noexcept;
 	virtual ~GuiWindow() noexcept;
 
-	virtual void setCaption(const std::string& name) noexcept = 0;
-	virtual const std::string& getCaption() const noexcept = 0;
+	virtual GuiTextBoxPtr getGuiTextBox() const noexcept = 0;
 
 	virtual void setVisibleSmooth(bool _value) noexcept  = 0;
 	virtual void destroySmooth() noexcept = 0;

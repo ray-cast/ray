@@ -36,10 +36,7 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_GUI)
 #include <ray/gui_label_component.h>
-#include <ray/font_distance_field.h>
-#include <ray/render_system.h>
-#include <ray/render_texture.h>
-#include <ray/utf8.h>
+#include <ray/gui_system.h>
 
 _NAME_BEGIN
 
@@ -47,10 +44,131 @@ __ImplementSubClass(GuiLabelComponent, GuiWidgetComponent, "GUILabel")
 
 GuiLabelComponent::GuiLabelComponent() noexcept
 {
+	_label = GuiSystem::instance()->createWidget<GuiTextBox>();
+	_label->create();
 }
 
 GuiLabelComponent::~GuiLabelComponent() noexcept
 {
+}
+
+Viewport
+GuiLabelComponent::getTextRegion() noexcept
+{
+	assert(_label);
+	return _label->getTextRegion();
+}
+
+void 
+GuiLabelComponent::getTextSize(int& w, int& h) noexcept
+{
+	assert(_label);
+	return _label->getTextSize(w, h);
+}
+
+void 
+GuiLabelComponent::setText(const std::string& value) noexcept
+{
+	assert(_label);
+	_label->setText(value);
+}
+
+const std::string& 
+GuiLabelComponent::getText() const noexcept
+{
+	assert(_label);
+	return _label->getText();
+}
+
+void 
+GuiLabelComponent::setFontName(const std::string& value) noexcept
+{
+	assert(_label);
+	_label->setFontName(value);
+}
+
+const std::string& 
+GuiLabelComponent::getFontName() noexcept
+{
+	assert(_label);
+	return _label->getFontName();
+}
+
+void 
+GuiLabelComponent::setFontHeight(int value) noexcept
+{
+	assert(_label);
+	_label->setFontHeight(value);
+}
+
+int 
+GuiLabelComponent::getFontHeight() noexcept
+{
+	assert(_label);
+	return _label->getFontHeight();
+}
+
+void 
+GuiLabelComponent::setTextAlign(GuiWidgetAlign value) noexcept
+{
+	assert(_label);
+	_label->setTextAlign(value);
+}
+
+GuiWidgetAlign 
+GuiLabelComponent::getTextAlign() noexcept
+{
+	assert(_label);
+	return _label->getTextAlign();
+}
+
+void 
+GuiLabelComponent::setTextColour(const float4& value) noexcept
+{
+	assert(_label);
+	_label->setTextColour(value);
+}
+
+float4 
+GuiLabelComponent::getTextColour() noexcept
+{
+	assert(_label);
+	return _label->getTextColour();
+}
+
+void 
+GuiLabelComponent::setTextWithReplacing(const std::string& value) noexcept
+{
+	assert(_label);
+	_label->setTextWithReplacing(value);
+}
+
+void 
+GuiLabelComponent::setTextShadowColour(const float4& value) noexcept
+{
+	assert(_label);
+	_label->setTextShadowColour(value);
+}
+
+float4 
+GuiLabelComponent::getTextShadowColour() noexcept
+{
+	assert(_label);
+	return _label->getTextShadowColour();
+}
+
+void 
+GuiLabelComponent::setTextShadow(bool value) noexcept
+{
+	assert(_label);
+	_label->setTextShadow(value);
+}
+
+bool 
+GuiLabelComponent::getTextShadow() const noexcept
+{
+	assert(_label);
+	return _label->getTextShadow();
 }
 
 void
@@ -64,6 +182,28 @@ GuiWidgetPtr
 GuiLabelComponent::getGuiWidget() const noexcept
 {
 	return _label;
+}
+
+void
+GuiLabelComponent::load(iarchive& reader) noexcept
+{
+	std::string font;
+	int fontSize = 12;
+	std::string text;
+	std::string textAlign;
+
+	reader >> make_alias(font, "font");
+	reader >> make_alias(fontSize, "fontSize");
+	reader >> make_alias(text, "text");
+	reader >> make_alias(textAlign, "textAlign");
+
+	this->setText(text);
+	this->setTextAlign(GuiWidgetAlign::parse(textAlign));
+}
+
+void 
+GuiLabelComponent::save(oarchive& write) noexcept
+{
 }
 
 GameComponentPtr 

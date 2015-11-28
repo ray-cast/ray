@@ -89,14 +89,14 @@ public:
 
 	static GuiWidgetAlign parse(const std::string& value)
 	{
-		GuiWidgetAlign result(Enum(0));
+		GuiWidgetAlign result(Default);
 		const MapAlign& map_names = result.getValueNames();
 		std::vector<std::string> vec;
 		util::split(vec, value);
 
-		for (size_t pos = 0; pos < vec.size(); pos++)
+		for (auto& it : vec)
 		{
-			MapAlign::const_iterator iter = map_names.find(vec[pos]);
+			auto iter = map_names.find(it);
 			if (iter != map_names.end())
 			{
 				result._value = Enum(int(result._value) | int(iter->second));

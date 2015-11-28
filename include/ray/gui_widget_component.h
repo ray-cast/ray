@@ -59,6 +59,7 @@ protected:
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
 
+	void _updateParent() noexcept;
 	void _updateTransform() noexcept;
 
 	virtual void onActivate() except;

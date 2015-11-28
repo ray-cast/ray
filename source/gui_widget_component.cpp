@@ -36,8 +36,6 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_GUI)
 #include <ray/gui_widget_component.h>
-#include <ray/gui_button_component.h>
-#include <ray/gui_window_component.h>
 
 _NAME_BEGIN
 
@@ -88,12 +86,26 @@ GuiWidgetComponent::load(iarchive& reader) noexcept
 	reader >> make_alias(align, "align");
 
 	this->setSkin(skin);
-	//this->setAlign(GuiWidgetAlign::parse(align));
+	this->setAlign(GuiWidgetAlign::parse(align));
 }
 
 void 
 GuiWidgetComponent::save(oarchive& write) noexcept
 {
+}
+
+void 
+GuiWidgetComponent::_updateParent() noexcept
+{
+	auto parent = this->getGameObject()->getParent();
+	if (parent)
+	{
+		auto component = parent->getComponent<GuiWidgetComponent>();
+		if (component)
+		{
+			this->getGuiWidget()->setParent(component->getGuiWidget());
+		}
+	}
 }
 
 void 
@@ -114,6 +126,7 @@ GuiWidgetComponent::_updateTransform() noexcept
 void 
 GuiWidgetComponent::onActivate() except
 {
+	this->_updateParent();
 	this->_updateTransform();
 }
 

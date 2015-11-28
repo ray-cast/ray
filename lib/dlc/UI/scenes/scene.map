@@ -21,18 +21,18 @@
     </object>
     <object>
         <attribute position="0,0,0" />
-        <attribute scale="200, 200, 0" />
+        <attribute scale="400, 400, 0" />
         <attribute active="true"/>
         <component name="GuiWindow">
             <attribute skin="WindowCS"/>
         </component>
-    </object>
-    <object>
-        <attribute position="200,200,0" />
-        <attribute scale="200, 200, 0" />
-        <attribute active="true"/>
-        <component name="GuiWindow">
-            <attribute skin="WindowCS"/>
-        </component>
+        <object>
+            <attribute position="0,0,0" />
+            <attribute scale="200, 200, 0" />
+            <attribute active="true"/>
+            <component name="GuiButton">
+                <attribute skin="Button"/>
+            </component>
+        </object>
     </object>
 </scene>

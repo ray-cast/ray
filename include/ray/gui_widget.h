@@ -54,6 +54,9 @@ public:
 	virtual void setName(const std::string& name) noexcept = 0;
 	virtual const std::string& getName() noexcept = 0;
 
+	virtual void setParent(GuiWidgetImpl* parent) noexcept = 0;
+	virtual GuiWidgetImpl* getParent() const noexcept = 0;
+
 	virtual void setAlign(GuiWidgetAlign align) noexcept = 0;
 	virtual GuiWidgetAlign getAlign() noexcept = 0;
 
@@ -62,8 +65,6 @@ public:
 
 	virtual void setViewport(const Viewport& view) except = 0;
 	virtual void getViewport(Viewport& view) const noexcept = 0;
-
-	virtual GuiWidgetPtr createWieght(const rtti::Rtti* rtti) except = 0;
 };
 
 class EXPORT GuiWidget : public rtti::Interface
@@ -79,6 +80,9 @@ public:
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() noexcept;
 
+	void setParent(GuiWidgetPtr parent) noexcept;
+	GuiWidgetPtr getParent() const noexcept;
+
 	void setAlign(GuiWidgetAlign align) noexcept;
 	GuiWidgetAlign getAlign() noexcept;
 
@@ -88,14 +92,10 @@ public:
 	void setViewport(const Viewport& view) except;
 	void getViewport(Viewport& view) const noexcept;
 
-	GuiWidgetPtr createWieght(const rtti::Rtti* rtti) except;
-	template<typename T>
-	typename std::enable_if<std::is_base_of<GuiWidget, T>::value, std::shared_ptr<T>>::type createWieght() except
-		{ return std::dynamic_pointer_cast<T>(this->createWieght(T::getRtti())); }
-
 private:
 
 	GuiWidgetImpl& _impl;
+	GuiWidgetWeakPtr _parent;
 };
 
 _NAME_END

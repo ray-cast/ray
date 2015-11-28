@@ -58,12 +58,6 @@ GuiWidget::~GuiWidget() noexcept
 {
 }
 
-GuiWidgetPtr 
-GuiWidget::createWieght(const rtti::Rtti* rtti) except
-{
-	return _impl.createWieght(rtti);
-}
-
 bool
 GuiWidget::create() except
 {
@@ -86,6 +80,25 @@ const std::string&
 GuiWidget::getName() noexcept
 {
 	return _impl.getName();
+}
+
+void 
+GuiWidget::setParent(GuiWidgetPtr parent) noexcept
+{
+	if (_parent.lock() != parent)
+	{
+		if (parent)
+			_impl.setParent(&parent->_impl);
+		else
+			_impl.setParent(nullptr);
+		_parent = parent;
+	}
+}
+
+GuiWidgetPtr
+GuiWidget::getParent() const noexcept
+{
+	return _parent.lock();
 }
 
 void 

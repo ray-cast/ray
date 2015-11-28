@@ -73,7 +73,7 @@ public:
 	GuiWidgetPtr createWidget(const rtti::Rtti* rtti);
 	template<typename T>
 	typename std::enable_if<std::is_base_of<GuiWidget, T>::value, std::shared_ptr<T>>::type createWidget()
-		{ return this->createWidget(T::getRtti())->downcast<T>(); }
+		{ return this->createWidget(T::getRtti())->cast<T>(); }
 
 	void render(float delta) except;
 

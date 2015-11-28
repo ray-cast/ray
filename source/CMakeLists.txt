@@ -598,22 +598,22 @@ SOURCE_GROUP("system\\app" FILES ${GAMEAPP_LIST})
 SET(GUI_FEATURES_LIST
     ${HEADER_PATH}/gui_feature.h
     ${SOURCE_PATH}/gui_feature.cpp
-    ${HEADER_PATH}/gui_behaviour_component.h
-    ${SOURCE_PATH}/gui_behaviour_component.cpp
+    ${HEADER_PATH}/gui_listbox_component.h
+    ${SOURCE_PATH}/gui_listbox_component.cpp
     ${HEADER_PATH}/gui_button_component.h
     ${SOURCE_PATH}/gui_button_component.cpp
     ${HEADER_PATH}/gui_camera_component.h
     ${SOURCE_PATH}/gui_camera_component.cpp
     ${HEADER_PATH}/gui_widget_component.h
     ${SOURCE_PATH}/gui_widget_component.cpp
-    ${HEADER_PATH}/gui_layout_component.h
-    ${SOURCE_PATH}/gui_layout_component.cpp
+    ${HEADER_PATH}/gui_editbox_component.h
+    ${SOURCE_PATH}/gui_editbox_component.cpp
     ${HEADER_PATH}/gui_label_component.h
     ${SOURCE_PATH}/gui_label_component.cpp
     ${HEADER_PATH}/gui_window_component.h
     ${SOURCE_PATH}/gui_window_component.cpp
-    ${HEADER_PATH}/gui_input_manager.h
-    ${SOURCE_PATH}/gui_input_manager.cpp
+    ${HEADER_PATH}/gui_image_component.h
+    ${SOURCE_PATH}/gui_image_component.cpp
 )
 SOURCE_GROUP("system\\gui" FILES ${GUI_FEATURES_LIST})
 

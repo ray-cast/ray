@@ -34,39 +34,13 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if defined(_BUILD_GUI)
-#include <ray/gui_behaviour_component.h>
+#ifndef _H_GUI_IMAGE_COMPONENT_H_
+#define _H_GUI_IMAGE_COMPONENT_H_
+
+#include <ray/gui_widget_component.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GUIBehaviourComponent, GameComponent, "GUIBehaviour")
-
-GUIBehaviourComponent::GUIBehaviourComponent() noexcept
-	: _needUpdate(true)
-{
-}
-
-GUIBehaviourComponent::~GUIBehaviourComponent() noexcept
-{
-}
-
-void
-GUIBehaviourComponent::needUpdate(bool update) noexcept
-{
-	_needUpdate = update;
-}
-
-bool 
-GUIBehaviourComponent::needUpdate() const noexcept
-{
-	return _needUpdate;
-}
-
-void 
-GUIBehaviourComponent::onMoveAfter() noexcept
-{
-	this->needUpdate(true);
-}
-
 _NAME_END
+
 #endif

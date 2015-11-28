@@ -42,21 +42,31 @@
 
 _NAME_BEGIN
 
-class GuiButtonComponent : public GuiWidgetComponent
+class GuiButtonComponent final : public GuiWidgetComponent
 {
 	__DeclareSubClass(GuiButtonComponent, GuiWidgetComponent)
 public:
 	GuiButtonComponent() noexcept;
 	~GuiButtonComponent() noexcept;
 
-	virtual GameComponentPtr clone() const except;
+	void setStateSelected(bool value) noexcept;
+	bool getStateSelected() const noexcept;
+
+	void setModeImage(bool value) noexcept;
+	bool getModeImage() const noexcept;
+
+	void setImageResource(const std::string& name) noexcept;
+	void setImageGroup(const std::string& name) noexcept;
+	void setImageName(const std::string& name) noexcept;
+
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
+
+	GameComponentPtr clone() const except;
 
 protected:
 	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept;
 	virtual GuiWidgetPtr getGuiWidget() const noexcept;
-
-private:
-	virtual void onActivate() except;
 
 private:
 

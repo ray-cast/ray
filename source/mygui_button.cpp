@@ -48,12 +48,6 @@ MyGuiButtonImpl::MyGuiButtonImpl() noexcept
 {
 }
 
-MyGuiButtonImpl::MyGuiButtonImpl(MyGUI::Widget* parent) noexcept
-	: _button(nullptr)
-	, _parent(parent)
-{
-}
-
 MyGuiButtonImpl::~MyGuiButtonImpl() noexcept
 {
 	this->destroy();
@@ -72,10 +66,10 @@ MyGuiButtonImpl::create() except
 	return _button ? true : false;
 }
 
-
 Viewport
 MyGuiButtonImpl::getTextRegion() noexcept
 {
+	assert(_button);
 	auto region = _button->getTextRegion();
 	return Viewport(region.left, region.top, region.width, region.height);
 }
@@ -83,20 +77,22 @@ MyGuiButtonImpl::getTextRegion() noexcept
 void
 MyGuiButtonImpl::getTextSize(int& w, int& h) noexcept
 {
+	assert(_button);
 	auto size = _button->getTextSize();
 	w = size.width;
 	h = size.height;
 }
 
 void
-MyGuiButtonImpl::setCaption(const std::string& value) noexcept
+MyGuiButtonImpl::setText(const std::string& value) noexcept
 {
+	assert(_button);
 	_caption = value;
 	_button->setCaption(value);
 }
 
 const std::string&
-MyGuiButtonImpl::getCaption() const noexcept
+MyGuiButtonImpl::getText() const noexcept
 {
 	return _caption;
 }
@@ -104,6 +100,7 @@ MyGuiButtonImpl::getCaption() const noexcept
 void
 MyGuiButtonImpl::setFontName(const std::string& value) noexcept
 {
+	assert(_button);
 	_button->setFontName(value);
 }
 
@@ -111,36 +108,42 @@ MyGuiButtonImpl::setFontName(const std::string& value) noexcept
 const std::string&
 MyGuiButtonImpl::getFontName() noexcept
 {
+	assert(_button);
 	return _button->getFontName();
 }
 
 void
 MyGuiButtonImpl::setFontHeight(int _value) noexcept
 {
+	assert(_button);
 	_button->setFontHeight(_value);
 }
 
 int
 MyGuiButtonImpl::getFontHeight() noexcept
 {
+	assert(_button);
 	return _button->getFontHeight();
 }
 
 void
 MyGuiButtonImpl::setTextAlign(GuiWidgetAlign _value) noexcept
 {
+	assert(_button);
 	_button->setTextAlign(GuiAlignToMyGui(_value));
 }
 
 GuiWidgetAlign
 MyGuiButtonImpl::getTextAlign() noexcept
 {
+	assert(_button);
 	return MyGuiToGuiAlign(_button->getTextAlign());
 }
 
 void
 MyGuiButtonImpl::setTextColour(const float4& _value) noexcept
 {
+	assert(_button);
 	MyGUI::Colour color;
 	color.red = _value.x;
 	color.green = _value.y;
@@ -152,6 +155,7 @@ MyGuiButtonImpl::setTextColour(const float4& _value) noexcept
 float4
 MyGuiButtonImpl::getTextColour() noexcept
 {
+	assert(_button);
 	MyGUI::Colour colour = _button->getTextColour();
 
 	float4 color;
@@ -163,14 +167,16 @@ MyGuiButtonImpl::getTextColour() noexcept
 }
 
 void
-MyGuiButtonImpl::setCaptionWithReplacing(const std::string& _value) noexcept
+MyGuiButtonImpl::setTextWithReplacing(const std::string& _value) noexcept
 {
+	assert(_button);
 	_button->setCaptionWithReplacing(_value);
 }
 
 void
 MyGuiButtonImpl::setTextShadowColour(const float4& value) noexcept
 {
+	assert(_button);
 	MyGUI::Colour color;
 	color.red = value.x;
 	color.green = value.y;
@@ -182,6 +188,7 @@ MyGuiButtonImpl::setTextShadowColour(const float4& value) noexcept
 float4
 MyGuiButtonImpl::getTextShadowColour() noexcept
 {
+	assert(_button);
 	auto colour = _button->getTextShadowColour();
 
 	float4 color;
@@ -195,66 +202,68 @@ MyGuiButtonImpl::getTextShadowColour() noexcept
 void
 MyGuiButtonImpl::setTextShadow(bool _value) noexcept
 {
+	assert(_button);
 	_button->setTextShadow(_value);
 }
 
 bool
-MyGuiButtonImpl::getTextShadow() noexcept
+MyGuiButtonImpl::getTextShadow() const noexcept
 {
+	assert(_button);
 	return _button->getTextShadow();
 }
 
 void 
 MyGuiButtonImpl::setStateSelected(bool value) noexcept
 {
-	assert(!_button);
+	assert(_button);
 	_button->setStateSelected(value);
 }
 
 bool 
 MyGuiButtonImpl::getStateSelected() const noexcept
 {
+	assert(_button);
 	return _button->getStateSelected();
 }
 
 void 
 MyGuiButtonImpl::setModeImage(bool value) noexcept
 {
+	assert(_button);
 	_button->setModeImage(value);
 }
 
 bool 
 MyGuiButtonImpl::getModeImage() const noexcept
 {
+	assert(_button);
 	return _button->getModeImage();
 }
 
 void 
 MyGuiButtonImpl::setImageResource(const std::string& name) noexcept
 {
+	assert(_button);
 	_button->setImageResource(name);
 }
 
 void 
 MyGuiButtonImpl::setImageGroup(const std::string& name) noexcept
 {
+	assert(_button);
 	_button->setImageGroup(name);
 }
 
 void 
 MyGuiButtonImpl::setImageName(const std::string& name) noexcept
 {
+	assert(_button);
 	_button->setImageName(name);
 }
 
 MyGuiButton::MyGuiButton() noexcept
 	: GuiButton(_impl)
-{
-}
-
-MyGuiButton::MyGuiButton(MyGUI::Widget* parent) noexcept
-	: GuiButton(_impl)
-	, _impl(parent)
 {
 }
 
@@ -317,21 +326,21 @@ MyGuiButton::getTextSize(int& w, int& h) noexcept
 }
 
 void
-MyGuiButton::setCaption(const std::string& _value) noexcept
+MyGuiButton::setText(const std::string& value) noexcept
 {
-	_impl.setCaption(_value);
+	_impl.setText(value);
 }
 
 const string&
-MyGuiButton::getCaption() const noexcept
+MyGuiButton::getText() const noexcept
 {
-	return _impl.getCaption();
+	return _impl.getText();
 }
 
 void
-MyGuiButton::setFontName(const std::string& _value) noexcept
+MyGuiButton::setFontName(const std::string& value) noexcept
 {
-	_impl.setFontName(_value);
+	_impl.setFontName(value);
 }
 
 const std::string&
@@ -341,9 +350,9 @@ MyGuiButton::getFontName() noexcept
 }
 
 void
-MyGuiButton::setFontHeight(int _value) noexcept
+MyGuiButton::setFontHeight(int value) noexcept
 {
-	_impl.setFontHeight(_value);
+	_impl.setFontHeight(value);
 }
 
 int
@@ -353,9 +362,9 @@ MyGuiButton::getFontHeight() noexcept
 }
 
 void
-MyGuiButton::setTextAlign(GuiWidgetAlign _value) noexcept
+MyGuiButton::setTextAlign(GuiWidgetAlign value) noexcept
 {
-	_impl.setTextAlign(_value);
+	_impl.setTextAlign(value);
 }
 
 GuiWidgetAlign
@@ -377,9 +386,9 @@ MyGuiButton::getTextColour() noexcept
 }
 
 void
-MyGuiButton::setCaptionWithReplacing(const std::string& _value) noexcept
+MyGuiButton::setTextWithReplacing(const std::string& _value) noexcept
 {
-	_impl.setCaptionWithReplacing(_value);
+	_impl.setTextWithReplacing(_value);
 }
 
 void
@@ -395,13 +404,13 @@ MyGuiButton::getTextShadowColour() noexcept
 }
 
 void
-MyGuiButton::setTextShadow(bool _value) noexcept
+MyGuiButton::setTextShadow(bool value) noexcept
 {
-	_impl.setTextShadow(_value);
+	_impl.setTextShadow(value);
 }
 
 bool
-MyGuiButton::getTextShadow() noexcept
+MyGuiButton::getTextShadow() const noexcept
 {
 	return _impl.getTextShadow();
 }

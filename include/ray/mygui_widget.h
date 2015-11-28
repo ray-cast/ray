@@ -53,6 +53,9 @@ public:
 	virtual void setName(const std::string& name) noexcept;
 	virtual const std::string& getName() noexcept;
 
+	virtual void setParent(GuiWidgetImpl* parent) noexcept;
+	virtual GuiWidgetImpl* getParent() const noexcept;
+
 	virtual void setAlign(GuiWidgetAlign align) noexcept;
 	virtual GuiWidgetAlign getAlign() noexcept;
 
@@ -61,8 +64,6 @@ public:
 
 	virtual void setViewport(const Viewport& view) noexcept;
 	virtual void getViewport(Viewport& view) const noexcept;
-
-	virtual GuiWidgetPtr createWieght(const rtti::Rtti* rtti) except;
 
 protected:
 	void setWidget(MyGUI::Widget* widget) noexcept;
@@ -74,7 +75,7 @@ protected:
 	static GuiWidgetAlign MyGuiToGuiAlign(MyGUI::Align align) noexcept;
 
 private:
-
+	GuiWidgetImpl* _parent;
 	MyGUI::Widget* _widget;
 };
 

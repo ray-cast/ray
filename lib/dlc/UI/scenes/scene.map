@@ -30,6 +30,17 @@
             <attribute position="0,0,0" />
             <attribute scale="200, 200, 0" />
             <attribute active="true"/>
+            <component name="GuiLabel">
+                <attribute text="hello world"/>
+                <attribute textColor="1,1,1,1"/>
+                <attribute fontSize="24"/>
+                <attribute skin="TextBox"/>
+            </component>
+        </object>
+        <object>
+            <attribute position="0,0,0" />
+            <attribute scale="200, 200, 0" />
+            <attribute active="true"/>
             <component name="GuiButton">
                 <attribute skin="Button"/>
             </component>

@@ -40,7 +40,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GuiLabelComponent, GuiWidgetComponent, "GUILabel")
+__ImplementSubClass(GuiLabelComponent, GuiWidgetComponent, "GuiLabel")
 
 GuiLabelComponent::GuiLabelComponent() noexcept
 {
@@ -191,14 +191,28 @@ GuiLabelComponent::load(iarchive& reader) noexcept
 	int fontSize = 12;
 	std::string text;
 	std::string textAlign;
+	bool textShadow = false;
+	float4 textColor;
+	float4 textShadowColor;
 
 	reader >> make_alias(font, "font");
 	reader >> make_alias(fontSize, "fontSize");
 	reader >> make_alias(text, "text");
 	reader >> make_alias(textAlign, "textAlign");
+	reader >> make_alias(textShadow, "textShadow");
+	reader >> make_alias(textColor, "textColor");
+	reader >> make_alias(textShadowColor, "textShadowColor");
 
 	this->setText(text);
+	this->setTextColour(textColor);
+	this->setTextShadow(textShadow);
+	this->setTextShadowColour(textShadowColor);
 	this->setTextAlign(GuiWidgetAlign::parse(textAlign));
+
+	if (!font.empty())
+		this->setFontName(font);
+
+	this->setFontHeight(fontSize);
 }
 
 void 

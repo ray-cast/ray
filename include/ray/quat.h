@@ -57,67 +57,98 @@ public:
 	Quaterniont() noexcept {}
 	Quaterniont(T x, T y, T z, T w) noexcept : x(x), y(y), z(z), w(w) {}
 
-	Quaterniont(const Matrix3x3t<T>& pRotMatrix) noexcept
-	{
-		makeRotate(pRotMatrix);
-	}
-
 	Quaterniont(T rotx, T roty, T rotz) noexcept
 	{
-		setToRotateObjectToInertial(rotx, roty, rotz);
-	}
-
-	Quaterniont(const Vector3t<T>& axis, T angle) noexcept
-	{
-		makeRotate(axis, angle);
+		this->makeRotate(rotx, roty, rotz);
 	}
 
 	Quaterniont(const Vector3t<T>& rotate) noexcept
 	{
-		x = rotate.x;
-		y = rotate.y;
-		z = rotate.z;
-		w = 1.0;
+		this->makeRotate(rotate);
+	}
 
+	Quaterniont(const Vector3t<T>& axis, T angle) noexcept
+	{
+		this->makeRotate(axis, angle);
+	}
+
+	Quaterniont(const Matrix3x3t<T>& rotate) noexcept
+	{
+		this->makeRotate(rotate);
+	}
+
+	Quaterniont operator-() const noexcept { return this->conjugate(); }
+	Quaterniont& operator*=(T f) noexcept { w *= w; x *= f; y *= f; z *= f; return *this; }
+	Quaterniont& operator/=(T f) noexcept { w /= w; x /= f; y /= f; z /= f; return *this; }
+	Quaterniont& operator+=(const Quaterniont& v) noexcept { w += v.w; x += v.x; y += v.y; z += v.z; return *this; }
+	Quaterniont& operator-=(const Quaterniont& v) noexcept { w -= v.w; x -= v.x; y -= v.y; z -= v.z; return *this; }
+	Quaterniont& operator*=(const Quaterniont& v) noexcept { w *= v.w; x *= v.x; y *= v.y; z *= v.z; return *this; }
+	Quaterniont& operator/=(const Quaterniont& v) noexcept { w /= v.w; x /= v.x; y /= v.y; z /= v.z; return *this; }
+
+	T length() const noexcept
+	{
+		return sqrt(length2());
+	}
+
+	T length2() const noexcept
+	{
+		return x * x + y * y + z * z + w * w;
+	}
+
+	T dot(const Quaterniont<T>& q) const noexcept
+	{
+		return x * q.x + y * q.y + z * q.z + w * q.w;
+	}
+
+	Quaterniont<T> cross(const Quaterniont<T>& q) const noexcept
+	{
+		return Quaterniont<T>(
+			w * q.x + x * q.w + y * q.z - z * q.y,
+			w * q.y + y * q.w + z * q.x - x * q.z,
+			w * q.z + z * q.w + x * q.y - y * q.x,
+			w * q.w - x * q.x - y * q.y - z * q.z);
+	}
+
+	void identity() noexcept
+	{
+		x = y = z = 0.0f; w = 1.0f;
+	}
+
+	void set(T xx, T yy, T zz) noexcept
+	{
+		x = xx;
+		y = yy;
+		z = zz;
+		w = 1.0;
+		
 		this->normalize();
 
 		const T t = static_cast<T>(1.0) - (x*x) - (y*y) - (z*z);
-
 		if (t < static_cast<T>(0.0))
 			w = static_cast<T>(0.0);
 		else
 			w = sqrt(t);
 	}
 
-	Quaterniont operator-() const { return this->conjugate(); }
-	Quaterniont& operator*=(T f) { w *= w; x *= f; y *= f; z *= f; return *this; }
-	Quaterniont& operator/=(T f) { w /= w; x /= f; y /= f; z /= f; return *this; }
-	Quaterniont& operator+=(const Quaterniont& v) { w += v.w; x += v.x; y += v.y; z += v.z; return *this; }
-	Quaterniont& operator-=(const Quaterniont& v) { w -= v.w; x -= v.x; y -= v.y; z -= v.z; return *this; }
-	Quaterniont& operator*=(const Quaterniont& v) { w *= v.w; x *= v.x; y *= v.y; z *= v.z; return *this; }
-	Quaterniont& operator/=(const Quaterniont& v) { w /= v.w; x /= v.x; y /= v.y; z /= v.z; return *this; }
-
-	T length() const
+	void set(T xx, T yy, T zz, T ww) noexcept
 	{
-		return sqrt(length2());
+		x = xx;
+		y = yy;
+		z = zz;
+		w = ww;
 	}
 
-	T length2() const
+	void set(const Vector3t<T>& v) noexcept
 	{
-		return x * x + y * y + z * z;
+		this->set(v.x, v.y, v.z);
 	}
 
-	T dot(const Quaternion& q) const
+	void set(const Vector4t<T>& v) noexcept
 	{
-		return x * q.x + y * q.y + z * q.z + w * q.w;
+		this->set(v.x, v.y, v.z, v.w);
 	}
 
-	void identity()
-	{
-		x = y = z = 0.0f; w = 1.0f;
-	}
-
-	Quaterniont& conjugate()
+	Quaterniont& conjugate() noexcept
 	{
 		x = -x;
 		y = -y;
@@ -125,12 +156,12 @@ public:
 		return *this;
 	}
 
-	const Quaterniont& inverse()
+	const Quaterniont& inverse() noexcept
 	{
-		return conjugate();
+		return this->conjugate();
 	}
 
-	Quaterniont pow(const Quaterniont& q, float exponent)
+	Quaterniont pow(const Quaterniont& q, float exponent) noexcept
 	{
 		if (fabs(q.w) > 0.9999f)
 		{
@@ -150,7 +181,7 @@ public:
 			cos(newAlpha));
 	}
 
-	void slerp(const Quaterniont& q1, const Quaterniont& q2, T t)
+	void slerp(const Quaterniont& q1, const Quaterniont& q2, T t) noexcept
 	{
 		if (t <= 0.0f) { *this = q1; return; }
 		if (t >= 1.0f) { *this = q2; return; }
@@ -197,7 +228,7 @@ public:
 		}
 	}
 
-	void setToRotateAboutx(T theta)
+	void setToRotateAboutX(T theta) noexcept
 	{
 		T thetaOver2 = theta * 0.5f;
 
@@ -207,7 +238,7 @@ public:
 		z = 0.0f;
 	}
 
-	void setToRotateAbouty(T theta)
+	void setToRotateAboutY(T theta) noexcept
 	{
 		T thetaOver2 = theta * 0.5f;
 
@@ -217,7 +248,7 @@ public:
 		z = 0.0f;
 	}
 
-	void setToRotateAboutz(T theta)
+	void setToRotateAboutZ(T theta) noexcept
 	{
 		T thetaOver2 = theta * 0.5f;
 
@@ -227,23 +258,31 @@ public:
 		z = sin(thetaOver2);
 	}
 
-	Vector3t<T> rotate(const Vector3t<T>& v)
+	T getRotationAngle() const noexcept
 	{
-		Quaterniont q2(0.f, v.x, v.y, v.z);
+		T thetaOver2 = safeAcos(w);
+
+		return thetaOver2 * 2.0f;
+	}
+
+	Vector3t<T> rotate(const Vector3t<T>& v) noexcept
+	{
+		Quaterniont q2(v.x, v.y, v.z, 0.f);
 		Quaterniont q = *this, qinv = q;
 
-		q.conjugate();
+		qinv.inverse();
 
 		q = q ^ q2 ^ qinv;
+
 		return Vector3t<T>(q.x, q.y, q.z);
 	}
 
-	const Quaterniont& normalize()
+	const Quaterniont& normalize() noexcept
 	{
-		const T mag = sqrt(x*x + y*y + z*z + w*w);
-		if (mag)
+		const T magSqrt = this->length2();
+		if (magSqrt)
 		{
-			const T inv = (T)(1.0) / mag;
+			const T inv = (T)(1.0) / std::sqrt(magSqrt);
 			x *= inv;
 			y *= inv;
 			z *= inv;
@@ -252,7 +291,28 @@ public:
 		return *this;
 	}
 
-	void makeRotate(const Vector3t<T>& axis, T angle)
+	void makeRotate(const Vector3t<T>& axis) noexcept
+	{
+		this->makeRotate(axis.x, axis.y, axis.z);
+	}
+
+	void makeRotate(T pitch, T yaw, T roll) noexcept
+	{
+		const T fSinPitch(sin(pitch*static_cast<T>(0.5)));
+		const T fCosPitch(cos(pitch*static_cast<T>(0.5)));
+		const T fSinYaw(sin(yaw*static_cast<T>(0.5)));
+		const T fCosYaw(cos(yaw*static_cast<T>(0.5)));
+		const T fSinRoll(sin(roll*static_cast<T>(0.5)));
+		const T fCosRoll(cos(roll*static_cast<T>(0.5)));
+		const T fCosPitchCosYaw(fCosPitch*fCosYaw);
+		const T fSinPitchSinYaw(fSinPitch*fSinYaw);
+		x = fSinRoll * fCosPitchCosYaw - fCosRoll * fSinPitchSinYaw;
+		y = fCosRoll * fCosPitch * fSinYaw - fSinRoll * fSinPitch * fCosYaw;
+		z = fCosRoll * fSinPitch * fCosYaw + fSinRoll * fCosPitch * fSinYaw;
+		w = fCosRoll * fCosPitchCosYaw + fSinRoll * fSinPitchSinYaw;
+	}
+
+	void makeRotate(const Vector3t<T>& axis, T angle) noexcept
 	{
 		assert(axis.x <= 1.0 && axis.y <= 1.0 && axis.z <= 1.0);
 
@@ -264,36 +324,36 @@ public:
 		w = cos_a;
 	}
 
-	void makeRotate(const Matrix3x3t<T>& pRotMatrix)
+	void makeRotate(const Matrix3x3t<T>& rotate) noexcept
 	{
-		T t = 1 + pRotMatrix.a1 + pRotMatrix.b2 + pRotMatrix.c3;
+		T t = 1 + rotate.a1 + rotate.b2 + rotate.c3;
 
 		// large enough
 		if (t > static_cast<T>(0.001))
 		{
 			T s = sqrt(t) * static_cast<T>(2.0);
-			x = (pRotMatrix.c2 - pRotMatrix.b3) / s;
-			y = (pRotMatrix.a3 - pRotMatrix.c1) / s;
-			z = (pRotMatrix.b1 - pRotMatrix.a2) / s;
+			x = (rotate.c2 - rotate.b3) / s;
+			y = (rotate.a3 - rotate.c1) / s;
+			z = (rotate.b1 - rotate.a2) / s;
 			w = static_cast<T>(0.25) * s;
 		} // else we have to check several cases
-		else if (pRotMatrix.a1 > pRotMatrix.b2 && pRotMatrix.a1 > pRotMatrix.c3)
+		else if (rotate.a1 > rotate.b2 && rotate.a1 > rotate.c3)
 		{
 			// Column 0:
-			T s = sqrt(static_cast<T>(1.0) + pRotMatrix.a1 - pRotMatrix.b2 - pRotMatrix.c3) * static_cast<T>(2.0);
+			T s = sqrt(static_cast<T>(1.0) + rotate.a1 - rotate.b2 - rotate.c3) * static_cast<T>(2.0);
 			x = static_cast<T>(0.25) * s;
-			y = (pRotMatrix.b1 + pRotMatrix.a2) / s;
-			z = (pRotMatrix.a3 + pRotMatrix.c1) / s;
-			w = (pRotMatrix.c2 - pRotMatrix.b3) / s;
+			y = (rotate.b1 + rotate.a2) / s;
+			z = (rotate.a3 + rotate.c1) / s;
+			w = (rotate.c2 - rotate.b3) / s;
 		}
-		else if (pRotMatrix.b2 > pRotMatrix.c3)
+		else if (rotate.b2 > rotate.c3)
 		{
 			// Column 1:
-			T s = sqrt(static_cast<T>(1.0) + pRotMatrix.b2 - pRotMatrix.a1 - pRotMatrix.c3) * static_cast<T>(2.0);
-			x = (pRotMatrix.b1 + pRotMatrix.a2) / s;
+			T s = sqrt(static_cast<T>(1.0) + rotate.b2 - rotate.a1 - rotate.c3) * static_cast<T>(2.0);
+			x = (rotate.b1 + rotate.a2) / s;
 			y = static_cast<T>(0.25) * s;
-			z = (pRotMatrix.c2 + pRotMatrix.b3) / s;
-			w = (pRotMatrix.a3 - pRotMatrix.c1) / s;
+			z = (rotate.c2 + rotate.b3) / s;
+			w = (rotate.a3 - rotate.c1) / s;
 		}
 		else
 		{
@@ -306,23 +366,7 @@ public:
 		}
 	}
 
-	void setToRotateObjectToInertial(T fPitch, T fYaw, T fRoll)
-	{
-		const T fSinPitch(sin(fPitch*static_cast<T>(0.5)));
-		const T fCosPitch(cos(fPitch*static_cast<T>(0.5)));
-		const T fSinYaw(sin(fYaw*static_cast<T>(0.5)));
-		const T fCosYaw(cos(fYaw*static_cast<T>(0.5)));
-		const T fSinRoll(sin(fRoll*static_cast<T>(0.5)));
-		const T fCosRoll(cos(fRoll*static_cast<T>(0.5)));
-		const T fCosPitchCosYaw(fCosPitch*fCosYaw);
-		const T fSinPitchSinYaw(fSinPitch*fSinYaw);
-		x = fSinRoll * fCosPitchCosYaw - fCosRoll * fSinPitchSinYaw;
-		y = fCosRoll * fCosPitch * fSinYaw - fSinRoll * fSinPitch * fCosYaw;
-		z = fCosRoll * fSinPitch * fCosYaw + fSinRoll * fCosPitch * fSinYaw;
-		w = fCosRoll * fCosPitchCosYaw + fSinRoll * fSinPitchSinYaw;
-	}
-
-	void setToRotateObjectToInertial(const EulerAnglest<T>& orientation)
+	void setToRotateObjectToInertial(const EulerAnglest<T>& orientation) noexcept
 	{
 		T sp, sb, sh;
 		T cp, cb, ch;
@@ -337,7 +381,7 @@ public:
 		w = ch * cp * cb + sh * sp * sb;
 	}
 
-	void setToRotateInertialToObject(const EulerAnglest<T>& orientation)
+	void setToRotateInertialToObject(const EulerAnglest<T>& orientation) noexcept
 	{
 		T sp, sb, sh;
 		T cp, cb, ch;
@@ -352,7 +396,7 @@ public:
 		w = ch * cp * cb + sh * sp * sb;
 	}
 
-	EulerAnglest<T> fromInertialToObjectQuaterniont()
+	EulerAnglest<T> fromInertialToObjectQuaterniont() const noexcept
 	{
 		EulerAnglest<T> euler;
 
@@ -374,7 +418,7 @@ public:
 		return euler;
 	}
 
-	EulerAnglest<T> fromObjectToInertialQuaterniont()
+	EulerAnglest<T> fromObjectToInertialQuaterniont() const noexcept
 	{
 		EulerAnglest<T> euler;
 
@@ -383,9 +427,7 @@ public:
 		if (fabs(sp) > 0.9999f)
 		{
 			euler.pitch = M_PI_2 * sp;
-
 			euler.heading = atan2(-x * z + w * y, 0.5f - y * y - z * z);
-
 			euler.bank = 0.0f;
 		}
 		else
@@ -398,14 +440,7 @@ public:
 		return euler;
 	}
 
-	T getRotationAngle() const
-	{
-		T thetaOver2 = safeAcos(w);
-
-		return thetaOver2 * 2.0f;
-	}
-
-	const Vector3t<T> getRotationAxis() const
+	const Vector3t<T> getRotationAxis() const noexcept
 	{
 		T sinThetaOver2Sq = 1.0f - w * w;
 
@@ -419,7 +454,7 @@ public:
 		return Vector3t<T>(x * oneOverSinThetaOver2, y * oneOverSinThetaOver2, z * oneOverSinThetaOver2);
 	}
 
-	void interpolate(const Quaterniont& pStart, const Quaterniont& pEnd, T pFactor)
+	void interpolate(const Quaterniont& pStart, const Quaterniont& pEnd, T pFactor) noexcept
 	{
 		// calc cosine theta
 		T cosom = pStart.x * pEnd.x + pStart.y * pEnd.y + pStart.z * pEnd.z + pStart.w * pEnd.w;
@@ -508,7 +543,7 @@ inline Quaterniont<T> operator*(const Quaterniont<T>& a, const Quaterniont<T>& b
 	Quaterniont<T> q;
 
 	// scalar component
-	q.w = (a.w * b.w) - (a.x * b.x + a.y * b.y + a.z * b.z);
+	q.w = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z;
 
 	// cross product
 	q.x = a.y * b.z - a.z * b.y;
@@ -528,10 +563,10 @@ template<typename T>
 inline Quaterniont<T> operator^(const Quaterniont<T>& q1, const Quaterniont<T>& q2)
 {
 	return Quaterniont<T>(
-		q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z,
 		q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y,
 		q1.w * q2.y + q1.y * q2.w + q1.z * q2.x - q1.x * q2.z,
-		q1.w * q2.z + q1.z * q2.w + q1.x * q2.y - q1.y * q2.x);
+		q1.w * q2.z + q1.z * q2.w + q1.x * q2.y - q1.y * q2.x,
+		q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z);
 }
 
 _NAME_END

@@ -85,8 +85,8 @@ GuiWidgetComponent::load(iarchive& reader) noexcept
 	std::string skin;
 	std::string align;
 
-	reader >> make_alias(skin, "skin");
-	reader >> make_alias(align, "align");
+	reader >> make_archive(skin, "skin");
+	reader >> make_archive(align, "align");
 
 	this->setSkin(skin);
 	this->setAlign(GuiWidgetAlign::parse(align));
@@ -98,8 +98,8 @@ GuiWidgetComponent::save(oarchive& write) noexcept
 	auto string = this->getAlign().print();
 	auto skin = this->getSkin();
 
-	write << make_alias(skin, "skin");
-	write << make_alias(string, "align");
+	write << make_archive(skin, "skin");
+	write << make_archive(string, "align");
 }
 
 void 

@@ -214,13 +214,13 @@ GuiLabelComponent::load(iarchive& reader) noexcept
 	float4 textColor(0, 0, 0, 0);
 	float4 textShadowColor(0, 0, 0, 0);
 
-	reader >> make_alias(font, "font");
-	reader >> make_alias(fontSize, "fontSize");
-	reader >> make_alias(text, "text");
-	reader >> make_alias(textAlign, "textAlign");
-	reader >> make_alias(textShadow, "textShadow");
-	reader >> make_alias(textColor, "textColor");
-	reader >> make_alias(textShadowColor, "textShadowColor");
+	reader >> make_archive(font, "font");
+	reader >> make_archive(fontSize, "fontSize");
+	reader >> make_archive(text, "text");
+	reader >> make_archive(textAlign, "textAlign");
+	reader >> make_archive(textShadow, "textShadow");
+	reader >> make_archive(textColor, "textColor");
+	reader >> make_archive(textShadowColor, "textShadowColor");
 
 	this->setText(text);
 	this->setTextColour(textColor);

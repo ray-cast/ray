@@ -8,10 +8,7 @@
         <attribute active="true"/>
         <component name="Camera">
             <attribute type="ortho"/>
-            <attribute left="0"/>
-            <attribute top="0"/>
-            <attribute right="100"/>
-            <attribute bottom="100"/>
+            <attribute ortho="0,100,0,100"/>
             <attribute znear="0.1"/>
             <attribute zfar="10.0"/>
             <attribute w="1376"/>

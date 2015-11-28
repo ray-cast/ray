@@ -122,11 +122,11 @@ RenderComponent::load(iarchive& reader) noexcept
 {
 	GameComponent::load(reader);
 
-	reader >> make_alias(_isCastShadow, "castshadow");
-	reader >> make_alias(_isReceiveShadow, "receiveshadow");
+	reader >> make_archive(_isCastShadow, "castshadow");
+	reader >> make_archive(_isReceiveShadow, "receiveshadow");
 
 	std::string material;
-	reader >> make_name(material);
+	reader >> make_archive(material, "material");
 
 	this->setName(material);
 }
@@ -134,8 +134,8 @@ RenderComponent::load(iarchive& reader) noexcept
 void
 RenderComponent::save(oarchive& write) noexcept
 {
-	write << make_alias(_isCastShadow, "castshadow");
-	write << make_alias(_isReceiveShadow, "receiveshadow");
+	write << make_archive(_isCastShadow, "castshadow");
+	write << make_archive(_isReceiveShadow, "receiveshadow");
 }
 
 void

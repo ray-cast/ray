@@ -211,33 +211,24 @@ CameraComponent::load(iarchive& reader) noexcept
 	float aperture = 70.0;
 	float znear = 0.1;
 	float zfar = 1000.0;
-	float left = 0;
-	float right = 0;
-	float top = 0;
-	float bottom = 0;
-	int x = 0, y = 0, w = 0, h = 0;
+	float4 viewport = float4::Zero;
+	float4 ortho = float4::Zero;
 
 	GameComponent::load(reader);
 
-	reader >> make_name(type);
-	reader >> make_name(aperture);
-	reader >> make_name(znear);
-	reader >> make_name(zfar);
-	reader >> make_name(x);
-	reader >> make_name(y);
-	reader >> make_name(w);
-	reader >> make_name(h);
-	reader >> make_name(left);
-	reader >> make_name(right);
-	reader >> make_name(top);
-	reader >> make_name(bottom);
+	reader >> make_archive(type, "type");
+	reader >> make_archive(aperture, "aperture");
+	reader >> make_archive(znear, "znear");
+	reader >> make_archive(zfar, "zfar");
+	reader >> make_archive(viewport, "viewport");
+	reader >> make_archive(ortho, "ortho");
 
-	this->setViewport(Viewport(x, y, w, h));
+	this->setViewport(Viewport(viewport.x, viewport.y, viewport.z, viewport.w));
 
 	if (type == "ortho")
 	{
 		this->setCameraType(CameraType::CT_ORTHO);
-		this->makeOrtho(left, right, top, bottom, znear, zfar);
+		this->makeOrtho(ortho.x, ortho.y, ortho.z, ortho.w, znear, zfar);
 	}
 	else
 	{

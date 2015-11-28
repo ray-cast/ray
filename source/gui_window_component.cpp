@@ -120,12 +120,12 @@ GuiWindowComponent::load(iarchive& reader) noexcept
 	int minWidth = 0, maxWidth = 10000;
 	int minHeight = 0, maxHeight = 10000;
 	
-	reader >> make_alias(smooth, "smooth");
-	reader >> make_alias(autoAlpha, "autoAlpha");
-	reader >> make_alias(minWidth, "minWidth");
-	reader >> make_alias(minWidth, "minHeight");
-	reader >> make_alias(maxWidth, "maxWidth");
-	reader >> make_alias(maxHeight, "maxHeight");
+	reader >> make_archive(smooth, "smooth");
+	reader >> make_archive(autoAlpha, "autoAlpha");
+	reader >> make_archive(minWidth, "minWidth");
+	reader >> make_archive(minWidth, "minHeight");
+	reader >> make_archive(maxWidth, "maxWidth");
+	reader >> make_archive(maxHeight, "maxHeight");
 
 	this->setVisibleSmooth(smooth);
 	this->setAutoAlpha(autoAlpha);

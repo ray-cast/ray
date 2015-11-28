@@ -148,11 +148,11 @@ LightComponent::load(iarchive& reader) noexcept
 
 	GameComponent::load(reader);
 
-	reader >> make_alias(lightIntensity, "intensity");
-	reader >> make_alias(lightRange, "range");
-	reader >> make_alias(shadow, "shadow");
-	reader >> make_alias(lightColor, "color");
-	reader >> make_alias(lightType, "type");
+	reader >> make_archive(lightIntensity, "intensity");
+	reader >> make_archive(lightRange, "range");
+	reader >> make_archive(shadow, "shadow");
+	reader >> make_archive(lightColor, "color");
+	reader >> make_archive(lightType, "type");
 
 	if (lightType == "sun")
 		this->setLightType(LightType::LT_SUN);

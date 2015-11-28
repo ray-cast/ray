@@ -254,7 +254,7 @@ GuiImageComponent::load(iarchive& reader) noexcept
 	GuiWidgetComponent::load(reader);
 
 	std::string texture;
-	reader >> make_alias(texture, "texture");
+	reader >> make_archive(texture, "texture");
 
 	this->setImageTexture(texture);
 }

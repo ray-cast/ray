@@ -42,22 +42,35 @@
 
 _NAME_BEGIN
 
-class EXPORT iarchive : virtual public ios_base
+class EXPORT archive_base : public ios_base
 {
 public:
-	iarchive() noexcept;
-	virtual ~iarchive() noexcept;
+	archive_base() noexcept;
+	virtual ~archive_base() noexcept;
 
 	virtual std::string getCurrentNodeName() const noexcept = 0;
 	virtual std::string getCurrentNodePath() const noexcept = 0;
 
 	virtual void setToNode(const std::string& path) noexcept = 0;
-	virtual bool setToFirstChild(const std::string& name = "") noexcept = 0;
-	virtual bool setToNextChild(const std::string& name = "") noexcept = 0;
+	virtual bool setToFirstChild() noexcept = 0;
+	virtual bool setToFirstChild(const std::string& name) noexcept = 0;
+	virtual bool setToNextChild() noexcept = 0;
+	virtual bool setToNextChild(const std::string& name) noexcept = 0;
 	virtual bool setToParent() noexcept = 0;
 
+private:
+	archive_base(const archive_base&) = delete;
+	archive_base& operator=(const archive_base&) = delete;
+};
+
+class EXPORT iarchive : virtual public archive_base
+{
+public:
+	iarchive() noexcept;
+	virtual ~iarchive() noexcept;
+
 	virtual bool hasAttr(const char* name) const noexcept = 0;
-	virtual std::vector<std::string> getAttrs() const noexcept = 0;
+	virtual const std::vector<std::string>& getAttrs() const noexcept = 0;
 
 	virtual std::string getText() const noexcept = 0;
 
@@ -75,6 +88,7 @@ public:
 	template<typename T>
 	T getValue(const std::string& name) const
 	{
+		assert(!name.empty());
 		T value;
 		this->getValue(name, value);
 		return value;
@@ -83,7 +97,9 @@ public:
 	template<typename T>
 	iarchive& operator >> (std::pair<const std::string&, T&> value)
 	{
-		auto attributes = this->getAttrs();
+		assert(!value.first.empty());
+
+		auto& attributes = this->getAttrs();
 		for (auto& it : attributes)
 		{
 			if (it == value.first)
@@ -99,9 +115,11 @@ public:
 	template<typename T>
 	iarchive& operator >> (std::pair<const char*, T&> value)
 	{
+		assert(value.first);
+
 		do
 		{
-			auto attributes = this->getAttrs();
+			auto& attributes = this->getAttrs();
 			for (auto& it : attributes)
 			{
 				if (it.compare(value.first) == 0)
@@ -135,7 +153,7 @@ private:
 	iarchive& operator=(const iarchive&) noexcept = delete;
 };
 
-class EXPORT oarchive : virtual public ios_base
+class EXPORT oarchive : virtual public archive_base
 {
 public:
 	oarchive() noexcept;
@@ -180,19 +198,16 @@ private:
 };
 
 template <class T> inline
-std::pair<std::string, T> make_archive_name(const std::string& name, T&& value)
+std::pair<const char*, T&> make_archive(T&& value, const char* name)
 {
-	return std::pair<const std::string&, T&>(name.c_str(), std::forward<T>(value));
+	return std::pair<const char*, T&>(name, std::forward<T>(value));
 }
 
 template <class T> inline
-std::pair<const char*, T&> make_archive_name(const char* name, T& value)
+std::pair<std::string, T> make_archive(T&& value, const std::string& name)
 {
-	return std::pair<const char*, T&>(name, value);
+	return std::pair<const std::string&, T&>(name.c_str(), std::forward<T>(value));
 }
-
-#define make_name(T) make_archive_name(#T, T)
-#define make_alias(value, name) make_archive_name(name, value)
 
 _NAME_END
 

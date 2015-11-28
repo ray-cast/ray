@@ -59,13 +59,15 @@ public:
     std::string getCurrentNodePath() const noexcept;
 
     void setToNode(const std::string& path) noexcept;
+	bool setToFirstChild() noexcept;
     bool setToFirstChild(const std::string& name = "") noexcept;
+	bool setToNextChild() noexcept;
     bool setToNextChild(const std::string& name = "") noexcept;
     bool setToParent() noexcept;
 
 	bool hasChild() const noexcept;
     bool hasAttr(const char* name) const noexcept;
-    std::vector<std::string> getAttrs() const noexcept;
+    const std::vector<std::string>& getAttrs() const noexcept;
 
     std::string getText() const noexcept;
 
@@ -83,6 +85,8 @@ public:
 private:
 
     TiXmlElement* _currentNode;
+	mutable TiXmlElement* _currentAttrNode;
+	mutable std::vector<std::string> _attrs;
     std::unique_ptr<TiXmlDocument> _document;
 };
 

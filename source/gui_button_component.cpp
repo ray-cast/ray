@@ -105,11 +105,11 @@ GuiButtonComponent::load(iarchive& reader) noexcept
 	bool mode = false;
 	std::string name, group, resource;
 
-	reader >> make_alias(state, "state");
-	reader >> make_alias(mode, "mode");
-	reader >> make_alias(name, "name");
-	reader >> make_alias(group, "group");
-	reader >> make_alias(resource, "resource");
+	reader >> make_archive(state, "state");
+	reader >> make_archive(mode, "mode");
+	reader >> make_archive(name, "name");
+	reader >> make_archive(group, "group");
+	reader >> make_archive(resource, "resource");
 
 	this->setStateSelected(state);
 	this->setModeImage(mode);
@@ -127,11 +127,11 @@ GuiButtonComponent::save(oarchive& write) noexcept
 	bool mode = this->getModeImage();
 	std::string name, group, resource;
 
-	write << make_alias(state, "state");
-	write << make_alias(mode, "mode");
-	write << make_alias(name, "name");
-	write << make_alias(group, "group");
-	write << make_alias(resource, "resource");
+	write << make_archive(state, "state");
+	write << make_archive(mode, "mode");
+	write << make_archive(name, "name");
+	write << make_archive(group, "group");
+	write << make_archive(resource, "resource");
 }
 
 GameComponentPtr 

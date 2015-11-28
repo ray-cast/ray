@@ -47,6 +47,7 @@ _NAME_BEGIN
 XMLReader::XMLReader() noexcept
 	: _document(nullptr)
 	, _currentNode(nullptr)
+	, _currentAttrNode(nullptr)
 {
 }
 
@@ -76,6 +77,7 @@ XMLReader::open(istream& stream) noexcept
 	if (!_document->Error())
 	{
 		_currentNode = _document->RootElement();
+		_currentAttrNode = nullptr;
 		if (_currentNode)
 			return true;
 	}
@@ -97,9 +99,10 @@ void
 XMLReader::close() noexcept
 {
 	if (_currentNode)
-	{
 		_currentNode = nullptr;
-	}
+
+	if (_currentAttrNode)
+		_currentAttrNode = nullptr;
 
 	if (_document)
 	{
@@ -152,6 +155,21 @@ XMLReader::getCurrentNodePath() const noexcept
 void
 XMLReader::setToNode(const std::string& path) noexcept
 {
+	assert(false);
+}
+
+bool
+XMLReader::setToFirstChild() noexcept
+{
+	assert(_currentNode);
+
+	TiXmlElement* child = 0;
+	child = _currentNode->FirstChildElement();
+
+	if (child)
+		_currentNode = child;
+	
+	return child ? true : false;
 }
 
 bool
@@ -161,13 +179,9 @@ XMLReader::setToFirstChild(const std::string& name) noexcept
 
 	TiXmlElement* child = 0;
 	if (name.empty())
-	{
 		child = _currentNode->FirstChildElement();
-	}
 	else
-	{
 		child = _currentNode->FirstChildElement(name.c_str());
-	}
 
 	if (child)
 	{
@@ -181,19 +195,35 @@ XMLReader::setToFirstChild(const std::string& name) noexcept
 }
 
 bool
+XMLReader::setToNextChild() noexcept
+{
+	assert(_currentNode);
+
+	TiXmlElement* next = 0;
+	next = _currentNode->NextSiblingElement();
+
+	if (next)
+	{
+		_currentNode = next;
+		return true;
+	}
+	else
+	{
+		this->setToParent();
+		return false;
+	}
+}
+
+bool
 XMLReader::setToNextChild(const std::string& name) noexcept
 {
 	assert(_currentNode);
 
 	TiXmlElement* next = 0;
 	if (name.empty())
-	{
 		next = _currentNode->NextSiblingElement();
-	}
 	else
-	{
 		next = _currentNode->NextSiblingElement(name.c_str());
-	}
 
 	if (next)
 	{
@@ -234,25 +264,27 @@ bool
 XMLReader::hasAttr(const char* name) const noexcept
 {
 	assert(this->_currentNode);
-
 	return _currentNode->Attribute(name) ? true : false;
 }
 
-std::vector<std::string>
+const std::vector<std::string>&
 XMLReader::getAttrs() const noexcept
 {
 	assert(this->_currentNode);
 
-	std::vector<std::string> attrs;
-
-	TiXmlAttribute* attr = this->_currentNode->FirstAttribute();
-	while (0 != attr)
+	if (_currentAttrNode != _currentNode)
 	{
-		attrs.push_back(attr->Name());
-		attr = attr->Next();
+		_attrs.clear();
+
+		TiXmlAttribute* attr = this->_currentNode->FirstAttribute();
+		while (attr)
+		{
+			_attrs.push_back(attr->Name());
+			attr = attr->Next();
+		}
 	}
 
-	return attrs;
+	return _attrs;
 }
 
 std::string

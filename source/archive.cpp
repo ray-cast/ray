@@ -38,6 +38,14 @@
 
 _NAME_BEGIN
 
+archive_base::archive_base() noexcept
+{
+}
+
+archive_base::~archive_base() noexcept
+{
+}
+
 iarchive::iarchive() noexcept
 {
 }

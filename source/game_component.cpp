@@ -135,7 +135,7 @@ void
 GameComponent::load(iarchive& reader) noexcept
 {
 	std::string name;
-	reader >> make_alias(name, "name");
+	reader >> make_archive(name, "name");
 	this->setName(name);
 }
 
@@ -143,7 +143,7 @@ void
 GameComponent::save(oarchive& write) noexcept
 {
 	auto& name = this->getName();
-	write << make_alias(name, "name");
+	write << make_archive(name, "name");
 }
 
 void

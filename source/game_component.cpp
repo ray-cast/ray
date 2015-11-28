@@ -236,6 +236,16 @@ GameComponent::onMoveAfter() except
 {
 }
 
+void 
+GameComponent::onParentChangeBefore() except
+{
+}
+
+void 
+GameComponent::onParentChangeAfter() except
+{
+}
+
 void
 GameComponent::onLayerChangeBefore() except
 {

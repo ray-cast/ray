@@ -204,6 +204,9 @@ GameObject::setParent(GameObjectPtr parent) noexcept
 	auto _weak = _parent.lock();
 	if (_weak != parent)
 	{
+		for (auto& it : _components)
+			it->onParentChangeBefore();
+
 		if (_weak)
 		{
 			auto it = _weak->_children.begin();
@@ -222,6 +225,9 @@ GameObject::setParent(GameObjectPtr parent) noexcept
 		_parent = parent;
 		if (parent)
 			parent->_children.push_back(std::dynamic_pointer_cast<GameObject>(this->shared_from_this()));
+
+		for (auto& it : _components)
+			it->onParentChangeAfter();
 	}
 }
 

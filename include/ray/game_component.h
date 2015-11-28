@@ -95,6 +95,9 @@ protected:
 	virtual void onMoveBefore() except;
 	virtual void onMoveAfter() except;
 
+	virtual void onParentChangeBefore() except;
+	virtual void onParentChangeAfter() except;
+
 	virtual void onLayerChangeBefore() except;
 	virtual void onLayerChangeAfter() except;
 

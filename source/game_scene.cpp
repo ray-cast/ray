@@ -201,42 +201,52 @@ GameScene::instanceObject(iarchive& reader, GameObjectPtr parent) except
 			auto key = reader.getCurrentNodeName();
 			if (key == "attribute")
 			{
-				auto attributes = reader.getAttrs();
+				/*std::string name;
+				bool active = false;
+				int layer = 0;
+				float3 position = float3::Zero;
+				float3 scale = float3::Zero;
+				float3 rotate = float3::Zero;
+				float3 lookat = float3::UnitZ;
+				float3 up = float3::UnitY;
+
+				reader >> make_archive(name, "name");
+				reader >> make_archive(active, "active");
+				reader >> make_archive(layer, "layer");
+				reader >> make_archive(position, "position");
+				reader >> make_archive(scale, "scale");
+				reader >> make_archive(rotate, "rotate");
+				reader >> make_archive(lookat, "lookat");
+				reader >> make_archive(up, "up");
+
+				actor->setName(name);
+				actor->setActive(active);
+				actor->setLayer(layer);
+				actor->setTranslate(position);
+				actor->setScale(scale);
+				actor->setRotate(rotate);
+				actor->setLookAt(lookat);
+				actor->setUpVector(up);*/
+
+				auto& attributes = reader.getAttrs();
 				for (auto& it : attributes)
 				{
 					if (it == "name")
-					{
 						actor->setName(reader.getValue<std::string>(it));
-					}
 					else if (it == "active")
-					{
 						active = reader.getValue<bool>(it);
-					}
 					else if (it == "position")
-					{
 						actor->setTranslate(reader.getValue<float3>(it));
-					}
 					else if (it == "scale")
-					{
 						actor->setScale(reader.getValue<float3>(it));
-					}
 					else if (it == "lookat")
-					{
 						actor->setLookAt(reader.getValue<float3>(it));
-					}
 					else if (it == "up")
-					{
 						actor->setUpVector(reader.getValue<float3>(it));
-					}
 					else if (it == "rotate")
-					{
-						float3 value = reader.getValue<float3>(it);
-						actor->setRotate(Quaternion(value.x, value.y, value.z));
-					}
+						actor->setRotate(Quaternion(reader.getValue<float3>(it)));
 					else if (it == "layer")
-					{
 						actor->setLayer(reader.getValue<int>(it));
-					}
 				}
 			}
 			else if (key == "component")

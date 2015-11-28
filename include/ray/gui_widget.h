@@ -51,17 +51,13 @@ public:
 	virtual bool create() except = 0;
 	virtual void destroy() noexcept = 0;
 
-	virtual void setName(const std::string& name) noexcept = 0;
-	virtual const std::string& getName() noexcept = 0;
-
 	virtual void setParent(GuiWidgetImpl* parent) noexcept = 0;
 	virtual GuiWidgetImpl* getParent() const noexcept = 0;
 
 	virtual void setAlign(GuiWidgetAlign align) noexcept = 0;
 	virtual GuiWidgetAlign getAlign() noexcept = 0;
 
-	virtual void setSkin(const std::string& skin) except = 0;
-	virtual const std::string& getSkin() const noexcept = 0;
+	virtual void changeWidgetSkin(const std::string& skin) except = 0;
 
 	virtual void setViewport(const Viewport& view) except = 0;
 	virtual void getViewport(Viewport& view) const noexcept = 0;
@@ -77,17 +73,13 @@ public:
 	bool create() except;
 	void destroy() noexcept;
 
-	void setName(const std::string& name) noexcept;
-	const std::string& getName() noexcept;
-
 	void setParent(GuiWidgetPtr parent) noexcept;
 	GuiWidgetPtr getParent() const noexcept;
 
 	void setAlign(GuiWidgetAlign align) noexcept;
 	GuiWidgetAlign getAlign() noexcept;
 
-	void setSkin(const std::string& skin) except;
-	const std::string& getSkin() const noexcept;
+	void changeWidgetSkin(const std::string& skin) except;
 
 	void setViewport(const Viewport& view) except;
 	void getViewport(Viewport& view) const noexcept;

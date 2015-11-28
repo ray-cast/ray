@@ -37,14 +37,14 @@
 #ifndef _H_GUI_WINDOW_COMPONENT_H_
 #define _H_GUI_WINDOW_COMPONENT_H_
 
-#include <ray/gui_widget_component.h>
+#include <ray/gui_label_component.h>
 #include <ray/gui_window.h>
 
 _NAME_BEGIN
 
-class GuiWindowComponent final : public GuiWidgetComponent
+class GuiWindowComponent final : public GuiLabelComponent
 {
-	__DeclareSubClass(GuiWindowComponent, GuiWidgetComponent)
+	__DeclareSubClass(GuiWindowComponent, GuiLabelComponent)
 public:
 	GuiWindowComponent() noexcept;
 	~GuiWindowComponent() noexcept;

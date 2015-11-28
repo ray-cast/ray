@@ -40,6 +40,7 @@
 #include <ray/mygui_manager.h>
 #include <ray/mygui_button.h>
 #include <ray/mygui_window.h>
+#include <ray/mygui_imagebox.h>
 #include <ray/mygui_textbox.h>
 
 _NAME_BEGIN
@@ -395,6 +396,8 @@ MyGuiSystem::createWidget(const rtti::Rtti* rtti) except
 		widget = std::make_shared<MyGuiWindow>();
 	else if (rtti == GuiTextBox::getRtti())
 		widget = std::make_shared<MyGuiTextBox>();
+	else if (rtti == GuiImageBox::getRtti())
+		widget = std::make_shared<MyGuiImageBox>();
 	else
 	{
 		assert(false);

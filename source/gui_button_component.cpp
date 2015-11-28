@@ -40,12 +40,14 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GuiButtonComponent, GuiWidgetComponent, "GuiButton")
+__ImplementSubClass(GuiButtonComponent, GuiLabelComponent, "GuiButton")
 
 GuiButtonComponent::GuiButtonComponent() noexcept
 {
 	_button = GuiSystem::instance()->createWidget<GuiButton>();
 	_button->create();
+
+	this->setGuiTextBox(_button->getGuiTextBox());
 }
 
 GuiButtonComponent::~GuiButtonComponent() noexcept
@@ -97,7 +99,7 @@ GuiButtonComponent::setImageName(const std::string& name) noexcept
 void
 GuiButtonComponent::load(iarchive& reader) noexcept
 {
-	GuiWidgetComponent::load(reader);
+	GuiLabelComponent::load(reader);
 
 	bool state = false;
 	bool mode = false;
@@ -141,7 +143,6 @@ GuiButtonComponent::clone() const except
 void
 GuiButtonComponent::setGuiWidget(GuiWidgetPtr widget) noexcept
 {
-	assert(widget->isInstanceOf<GuiWidget>());
 	_button = widget->downcast<GuiButton>();
 }
 

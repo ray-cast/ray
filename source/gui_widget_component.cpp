@@ -64,13 +64,17 @@ GuiWidgetComponent::getAlign() noexcept
 void
 GuiWidgetComponent::setSkin(const std::string& skin) except
 {
-	this->getGuiWidget()->setSkin(skin);
+	if (_skin != skin)
+	{
+		this->getGuiWidget()->changeWidgetSkin(skin);
+		_skin = skin;
+	}
 }
 
-const std::string& 
+const std::string&
 GuiWidgetComponent::getSkin() const noexcept
 {
-	return this->getGuiWidget()->getSkin();
+	return _skin;
 }
 
 void 
@@ -78,7 +82,6 @@ GuiWidgetComponent::load(iarchive& reader) noexcept
 {
 	GameComponent::load(reader);
 
-	Viewport view(0, 0, 0, 0);
 	std::string skin;
 	std::string align;
 
@@ -92,6 +95,11 @@ GuiWidgetComponent::load(iarchive& reader) noexcept
 void 
 GuiWidgetComponent::save(oarchive& write) noexcept
 {
+	auto string = this->getAlign().print();
+	auto skin = this->getSkin();
+
+	write << make_alias(skin, "skin");
+	write << make_alias(string, "align");
 }
 
 void 

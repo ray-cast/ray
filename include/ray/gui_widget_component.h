@@ -79,6 +79,10 @@ protected:
 	virtual void onMouseMotion(float x, float y) noexcept;
 	virtual void onMouseButtonDown(int button, float x, float y) noexcept;
 	virtual void onMouseButtonUp(int button, float x, float y) noexcept;
+
+private:
+
+	std::string _skin;
 };
 
 _NAME_END

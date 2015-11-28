@@ -34,3 +34,19 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#include <ray/gui_imagebox.h>
+
+_NAME_BEGIN
+
+__ImplementSubInterface(GuiImageBox, GuiWidget, "GuiImageBoxControl")
+
+GuiImageBox::GuiImageBox(GuiWidgetImpl& impl) noexcept
+	: GuiWidget(impl)
+{
+}
+
+GuiImageBox::~GuiImageBox() noexcept
+{
+}
+
+_NAME_END

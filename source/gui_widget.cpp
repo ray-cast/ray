@@ -70,18 +70,6 @@ GuiWidget::destroy() noexcept
 	_impl.destroy();
 }
 
-void
-GuiWidget::setName(const std::string& name) noexcept
-{
-	_impl.setName(name);
-}
-
-const std::string&
-GuiWidget::getName() noexcept
-{
-	return _impl.getName();
-}
-
 void 
 GuiWidget::setParent(GuiWidgetPtr parent) noexcept
 {
@@ -114,15 +102,9 @@ GuiWidget::getAlign() noexcept
 }
 
 void 
-GuiWidget::setSkin(const std::string& skin) except
+GuiWidget::changeWidgetSkin(const std::string& skin) except
 {
-	_impl.setSkin(skin);
-}
-
-const std::string& 
-GuiWidget::getSkin() const noexcept
-{
-	return _impl.getSkin();
+	_impl.changeWidgetSkin(skin);
 }
 
 void 

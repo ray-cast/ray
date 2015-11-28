@@ -66,11 +66,6 @@ private:
 
 private:
 
-	GameComponentPtr instanceRigidbody(iarchive& reader) except;
-	GameComponentPtr instanceShapeBox(iarchive& reader) except;
-
-private:
-
 	PhysicsSystemPtr _physics;
 	PhysicsScenes _physicsScenes;
 };

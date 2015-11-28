@@ -37,14 +37,14 @@
 #ifndef _H_GUI_BUTTON_COMPONENT_H_
 #define _H_GUI_BUTTON_COMPONENT_H_
 
-#include <ray/gui_widget_component.h>
+#include <ray/gui_label_component.h>
 #include <ray/gui_button.h>
 
 _NAME_BEGIN
 
-class GuiButtonComponent final : public GuiWidgetComponent
+class GuiButtonComponent final : public GuiLabelComponent
 {
-	__DeclareSubClass(GuiButtonComponent, GuiWidgetComponent)
+	__DeclareSubClass(GuiButtonComponent, GuiLabelComponent)
 public:
 	GuiButtonComponent() noexcept;
 	~GuiButtonComponent() noexcept;

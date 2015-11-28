@@ -206,42 +206,42 @@ GameScene::instanceObject(iarchive& reader, GameObjectPtr parent) except
 				{
 					if (it == "name")
 					{
-						actor->setName(reader.getString(it));
+						actor->setName(reader.getValue<std::string>(it));
 					}
 					else if (it == "active")
 					{
-						active = reader.getBoolean(it);
+						active = reader.getValue<bool>(it);
 					}
 					else if (it == "position")
 					{
-						actor->setTranslate(reader.getFloat3(it));
+						actor->setTranslate(reader.getValue<float3>(it));
 					}
 					else if (it == "scale")
 					{
-						actor->setScale(reader.getFloat3(it));
+						actor->setScale(reader.getValue<float3>(it));
 					}
 					else if (it == "lookat")
 					{
-						actor->setLookAt(reader.getFloat3(it));
+						actor->setLookAt(reader.getValue<float3>(it));
 					}
 					else if (it == "up")
 					{
-						actor->setUpVector(reader.getFloat3(it));
+						actor->setUpVector(reader.getValue<float3>(it));
 					}
 					else if (it == "rotate")
 					{
-						float3 value = reader.getFloat3(it);
+						float3 value = reader.getValue<float3>(it);
 						actor->setRotate(Quaternion(value.x, value.y, value.z));
 					}
 					else if (it == "layer")
 					{
-						actor->setLayer(reader.getInteger(it));
+						actor->setLayer(reader.getValue<int>(it));
 					}
 				}
 			}
 			else if (key == "component")
 			{
-				auto name = reader.getString("name");
+				auto name = reader.getValue<std::string>("name");
 				if (!name.empty())
 				{
 					auto component = rtti::make_shared<GameComponent>(name);

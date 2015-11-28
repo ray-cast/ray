@@ -47,6 +47,7 @@ class GuiLabelComponent : public GuiWidgetComponent
 	__DeclareSubClass(GuiLabelComponent, GuiWidgetComponent)
 public:
 	GuiLabelComponent() noexcept;
+	GuiLabelComponent(GuiTextBoxPtr label) noexcept;
 	~GuiLabelComponent() noexcept;
 
 	Viewport getTextRegion() noexcept;
@@ -83,6 +84,9 @@ public:
 protected:
 	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept;
 	virtual GuiWidgetPtr getGuiWidget() const noexcept;
+
+	virtual void setGuiTextBox(GuiTextBoxPtr widget) noexcept;
+	virtual GuiTextBoxPtr getGuiTextBox() const noexcept;
 
 private:
 

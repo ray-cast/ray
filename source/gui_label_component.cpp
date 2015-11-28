@@ -48,6 +48,11 @@ GuiLabelComponent::GuiLabelComponent() noexcept
 	_label->create();
 }
 
+GuiLabelComponent::GuiLabelComponent(GuiTextBoxPtr label) noexcept
+	: _label(label)
+{
+}
+
 GuiLabelComponent::~GuiLabelComponent() noexcept
 {
 }
@@ -184,16 +189,30 @@ GuiLabelComponent::getGuiWidget() const noexcept
 	return _label;
 }
 
+void 
+GuiLabelComponent::setGuiTextBox(GuiTextBoxPtr widget) noexcept
+{
+	_label = widget;
+}
+
+GuiTextBoxPtr 
+GuiLabelComponent::getGuiTextBox() const noexcept
+{
+	return _label;
+}
+
 void
 GuiLabelComponent::load(iarchive& reader) noexcept
 {
+	GuiWidgetComponent::load(reader);
+
 	std::string font;
 	int fontSize = 12;
 	std::string text;
 	std::string textAlign;
 	bool textShadow = false;
-	float4 textColor;
-	float4 textShadowColor;
+	float4 textColor(0, 0, 0, 0);
+	float4 textShadowColor(0, 0, 0, 0);
 
 	reader >> make_alias(font, "font");
 	reader >> make_alias(fontSize, "fontSize");
@@ -207,7 +226,11 @@ GuiLabelComponent::load(iarchive& reader) noexcept
 	this->setTextColour(textColor);
 	this->setTextShadow(textShadow);
 	this->setTextShadowColour(textShadowColor);
-	this->setTextAlign(GuiWidgetAlign::parse(textAlign));
+
+	if (textAlign.empty())
+		this->setTextAlign(GuiWidgetAlign::Center);
+	else
+		this->setTextAlign(GuiWidgetAlign::parse(textAlign));
 
 	if (!font.empty())
 		this->setFontName(font);

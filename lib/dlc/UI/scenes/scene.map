@@ -25,24 +25,27 @@
         <attribute active="true"/>
         <component name="GuiWindow">
             <attribute skin="WindowCS"/>
+                <attribute text="hello world"/>
+                <attribute skin="TextBox"/>
         </component>
         <object>
             <attribute position="0,0,0" />
             <attribute scale="200, 200, 0" />
-            <attribute active="true"/>
-            <component name="GuiLabel">
+            <attribute active="false"/>
+            <component name="GuiButton">
+                <attribute skin="Button"/>
                 <attribute text="hello world"/>
                 <attribute textColor="1,1,1,1"/>
                 <attribute fontSize="24"/>
-                <attribute skin="TextBox"/>
             </component>
         </object>
         <object>
             <attribute position="0,0,0" />
             <attribute scale="200, 200, 0" />
             <attribute active="true"/>
-            <component name="GuiButton">
-                <attribute skin="Button"/>
+            <component name="GuiImage">
+                <attribute skin="ImageBox"/>
+                <attribute texture="sys:media/color_grading.png"/>
             </component>
         </object>
     </object>

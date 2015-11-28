@@ -60,20 +60,6 @@ MyGuiWidget::destroy() noexcept
 	}		
 }
 
-void
-MyGuiWidget::setName(const std::string& name) noexcept
-{
-	assert(_widget);
-	_widget->setName(name);
-}
-
-const std::string& 
-MyGuiWidget::getName() noexcept
-{
-	assert(_widget);
-	return _widget->getName();
-}
-
 void 
 MyGuiWidget::setParent(GuiWidgetImpl* parent) noexcept
 {
@@ -110,17 +96,10 @@ MyGuiWidget::getAlign() noexcept
 }
 
 void 
-MyGuiWidget::setSkin(const std::string& skin) noexcept
+MyGuiWidget::changeWidgetSkin(const std::string& skin) noexcept
 {
 	assert(_widget);
 	_widget->changeWidgetSkin(skin);
-}
-
-const std::string& 
-MyGuiWidget::getSkin() const noexcept
-{
-	assert(_widget);
-	return _widget->getSkinName();
 }
 
 void 

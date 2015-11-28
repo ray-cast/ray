@@ -50,17 +50,13 @@ public:
 
 	virtual void destroy() noexcept;
 
-	virtual void setName(const std::string& name) noexcept;
-	virtual const std::string& getName() noexcept;
-
 	virtual void setParent(GuiWidgetImpl* parent) noexcept;
 	virtual GuiWidgetImpl* getParent() const noexcept;
 
 	virtual void setAlign(GuiWidgetAlign align) noexcept;
 	virtual GuiWidgetAlign getAlign() noexcept;
 
-	virtual void setSkin(const std::string& skin) noexcept;
-	virtual const std::string& getSkin() const noexcept;
+	virtual void changeWidgetSkin(const std::string& skin) noexcept;
 
 	virtual void setViewport(const Viewport& view) noexcept;
 	virtual void getViewport(Viewport& view) const noexcept;

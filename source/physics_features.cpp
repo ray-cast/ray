@@ -37,9 +37,6 @@
 #if _BUILD_PHYSIC
 #include <ray/physics_features.h>
 #include <ray/physics_system.h>
-#include <ray/physics_body_component.h>
-#include <ray/physics_box_component.h>
-#include <ray/physics_character_component.h>
 #include <ray/game_scene.h>
 #include <ray/game_server.h>
 
@@ -129,70 +126,6 @@ GameFeaturePtr
 PhysicFeatures::clone() const noexcept
 {
 	return std::make_shared<PhysicFeatures>();
-}
-
-GameComponentPtr
-PhysicFeatures::instanceRigidbody(iarchive& reader) except
-{
-	if (reader.setToFirstChild())
-	{
-		auto body = std::make_shared<PhysicsBodyComponent>();
-
-		do
-		{
-			auto key = reader.getCurrentNodeName();
-			if (key == "attribute")
-			{
-				auto attributes = reader.getAttrs();
-				for (auto& it : attributes)
-				{
-					std::string value = reader.getString(it);
-					if (it == "sleep")
-					{
-						body->sleep(reader.getBoolean(it.c_str()));
-					}
-					else if (it == "mass")
-					{
-						body->setMass(reader.getFloat(it.c_str()));
-					}
-				}
-			}
-		} while (reader.setToNextChild());
-
-		return body;
-	}
-
-	return nullptr;
-}
-
-GameComponentPtr
-PhysicFeatures::instanceShapeBox(iarchive& reader) except
-{
-	if (reader.setToFirstChild())
-	{
-		auto box = std::make_shared<PhysicsBoxComponent>();
-
-		do
-		{
-			auto key = reader.getCurrentNodeName();
-			if (key == "attribute")
-			{
-				auto attributes = reader.getAttrs();
-				for (auto& it : attributes)
-				{
-					std::string value = reader.getString(it);
-					if (it == "size")
-					{
-						box->setSize(reader.getFloat3(it.c_str()));
-					}
-				}
-			}
-		} while (reader.setToNextChild());
-
-		return box;
-	}
-
-	return nullptr;
 }
 
 _NAME_END

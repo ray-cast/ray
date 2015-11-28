@@ -40,12 +40,14 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GuiWindowComponent, GuiWidgetComponent, "GuiWindow")
+__ImplementSubClass(GuiWindowComponent, GuiLabelComponent, "GuiWindow")
 
 GuiWindowComponent::GuiWindowComponent() noexcept
-{
+{	
 	_window = GuiSystem::instance()->createWidget<GuiWindow>();
 	_window->create();
+
+	this->setGuiTextBox(_window->getGuiTextBox());
 }
 
 GuiWindowComponent::~GuiWindowComponent() noexcept
@@ -111,7 +113,7 @@ GuiWindowComponent::getMaxSize(int& w, int& h) const noexcept
 void 
 GuiWindowComponent::load(iarchive& reader) noexcept
 {
-	GuiWidgetComponent::load(reader);
+	GuiLabelComponent::load(reader);
 
 	bool smooth = true;
 	bool autoAlpha = false;

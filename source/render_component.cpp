@@ -198,15 +198,11 @@ RenderComponent::onLayerChangeAfter() noexcept
 void 
 RenderComponent::onWillRenderObject(const Camera& camera) noexcept
 {
-	//WillRenderObjectEvent event;
-	//this->sendMessage(&event);
 }
 
 void 
 RenderComponent::onRenderObject(const Camera& camera) noexcept
 {
-	//RenderObjectEvent event;
-	//this->sendMessage(&event);
 }
 
 _NAME_END

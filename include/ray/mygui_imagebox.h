@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -41,6 +41,122 @@
 
 _NAME_BEGIN
 
+class MyGuiImageBoxImpl final : public MyGuiWidget
+{
+public:
+	MyGuiImageBoxImpl() noexcept;
+	~MyGuiImageBoxImpl() noexcept;
+
+	bool create() except;
+
+	void setImageInfo(const std::string& texture, const Viewport& coord, const Size& tile);
+
+	void setImageTexture(const std::string& value);
+	void setImageRect(const Viewport& value);
+	void setImageCoord(const Viewport& value);
+	void setImageTile(const int2& value);
+
+	void setImageIndex(std::size_t index);
+	std::size_t getImageIndex() const;
+
+	Size getImageSize() const;
+
+	std::size_t getItemCount() const;
+
+	void setItemSelect(std::size_t index);
+	std::size_t getItemSelect() const;
+	void resetItemSelect();
+
+	void insertItem(std::size_t index, const Viewport& _item);
+	void addItem(const Viewport& _item);
+	void setItem(std::size_t index, const Viewport& _item);
+
+	void deleteAllItems();
+
+	void addItemFrame(std::size_t index, const Viewport& _item);
+
+	void insertItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& _item);
+
+	void addItemFrameDuplicate(std::size_t index, std::size_t indexSourceFrame);
+
+	void insertItemFrameDuplicate(std::size_t index, std::size_t indexFrame, std::size_t indexSourceFrame);
+
+	void setItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& _item);
+
+	void deleteItemFrame(std::size_t index, std::size_t indexFrame);
+	void deleteAllItemFrames(std::size_t index);
+
+	void setItemFrameRate(std::size_t index, float _rate);
+	float getItemFrameRate(std::size_t index);
+
+	bool setItemResource(const std::string& _name);
+
+	void setItemGroup(const std::string& value);
+	void setItemName(const std::string& value);
+
+private:
+
+	std::string _name;
+
+	MyGUI::Widget* _parent;
+	MyGUI::ImageBox* _imagebox;
+};
+
+class MyGuiImageBox final : public GuiImageBox
+{
+public:
+	MyGuiImageBox() noexcept;
+	virtual ~MyGuiImageBox() noexcept;
+
+	void setImageInfo(const std::string& texture, const Viewport& coord, const Size& tile);
+
+	void setImageTexture(const std::string& value);
+	void setImageRect(const Viewport& value);
+	void setImageCoord(const Viewport& value);
+	void setImageTile(const int2& value);
+
+	void setImageIndex(std::size_t index);
+	std::size_t getImageIndex() const;
+
+	Size getImageSize() const;
+
+	std::size_t getItemCount() const;
+
+	void setItemSelect(std::size_t index);
+	std::size_t getItemSelect() const;
+	void resetItemSelect();
+
+	void insertItem(std::size_t index, const Viewport& _item);
+	void addItem(const Viewport& _item);
+	void setItem(std::size_t index, const Viewport& _item);
+
+	void deleteAllItems();
+
+	void addItemFrame(std::size_t index, const Viewport& _item);
+
+	void insertItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& _item);
+
+	void addItemFrameDuplicate(std::size_t index, std::size_t indexSourceFrame);
+
+	void insertItemFrameDuplicate(std::size_t index, std::size_t indexFrame, std::size_t indexSourceFrame);
+
+	void setItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& _item);
+
+	void deleteItemFrame(std::size_t index, std::size_t indexFrame);
+	void deleteAllItemFrames(std::size_t index);
+
+	void setItemFrameRate(std::size_t index, float _rate);
+	float getItemFrameRate(std::size_t index);
+
+	bool setItemResource(const std::string& _name);
+
+	void setItemGroup(const std::string& value);
+	void setItemName(const std::string& value);
+
+private:
+
+	MyGuiImageBoxImpl _impl;
+};
 
 _NAME_END
 

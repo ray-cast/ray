@@ -50,31 +50,7 @@ public:
 
 	bool create() except;
 
-	Viewport getTextRegion() noexcept;
-	void getTextSize(int& w, int& h) noexcept;
-
-	void setText(const std::string& _value) noexcept;
-	const std::string& getText() const noexcept;
-
-	void setFontName(const std::string& _value) noexcept;
-	const std::string& getFontName() noexcept;
-
-	void setFontHeight(int _value) noexcept;
-	int getFontHeight() noexcept;
-
-	void setTextAlign(GuiWidgetAlign _value) noexcept;
-	GuiWidgetAlign getTextAlign() noexcept;
-
-	void setTextColour(const float4& value) noexcept;
-	float4 getTextColour() noexcept;
-
-	void setTextWithReplacing(const std::string& _value) noexcept;
-
-	void setTextShadowColour(const float4& value) noexcept;
-	float4 getTextShadowColour() noexcept;
-
-	void setTextShadow(bool _value) noexcept;
-	bool getTextShadow() const noexcept;
+	GuiTextBoxPtr getGuiTextBox() const noexcept;
 
 	void setStateSelected(bool value) noexcept;
 	bool getStateSelected() const noexcept;
@@ -91,6 +67,8 @@ private:
 	std::string _caption;
 	MyGUI::Button* _button;
 	MyGUI::Widget* _parent;
+
+	GuiTextBoxPtr _textbox;
 };
 
 class MyGuiButton final : public GuiButton
@@ -100,31 +78,7 @@ public:
 	MyGuiButton() noexcept;
 	virtual ~MyGuiButton() noexcept;
 
-	virtual Viewport getTextRegion() noexcept;
-	virtual void getTextSize(int& w, int& h) noexcept;
-
-	virtual void setText(const std::string& _value) noexcept;
-	virtual const std::string& getText() const noexcept;
-
-	virtual void setFontName(const std::string& _value) noexcept;
-	virtual const std::string& getFontName() noexcept;
-
-	virtual void setFontHeight(int _value) noexcept;
-	virtual int getFontHeight() noexcept;
-
-	virtual void setTextAlign(GuiWidgetAlign _value) noexcept;
-	virtual GuiWidgetAlign getTextAlign() noexcept;
-
-	virtual void setTextColour(const float4& value) noexcept;
-	virtual float4 getTextColour() noexcept;
-
-	virtual void setTextWithReplacing(const std::string& _value) noexcept;
-
-	virtual void setTextShadowColour(const float4& value) noexcept;
-	virtual float4 getTextShadowColour() noexcept;
-
-	virtual void setTextShadow(bool _value) noexcept;
-	virtual bool getTextShadow() const noexcept;
+	virtual GuiTextBoxPtr getGuiTextBox() const noexcept;
 
 	virtual void setStateSelected(bool value) noexcept;
 	virtual bool getStateSelected() const noexcept;

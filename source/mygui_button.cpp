@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_MYGUI)
 #include <ray/mygui_button.h>
+#include <ray/mygui_textbox.h>
 
 _NAME_BEGIN
 
@@ -61,156 +62,18 @@ MyGuiButtonImpl::create() except
 		_button = _parent->createWidget<MyGUI::Button>("Button", 0, 0, 0, 0, MyGUI::Align::Default, "");
 	else
 		_button = MyGUI::Gui::getInstance().createWidget<MyGUI::Button>("Button", 0, 0, 0, 0, MyGUI::Align::Default, "Main", "");
+
+	_textbox = std::make_shared<MyGuiTextBox>(_button, false);
+
 	this->setWidget(_button);
 	
 	return _button ? true : false;
 }
 
-Viewport
-MyGuiButtonImpl::getTextRegion() noexcept
+GuiTextBoxPtr
+MyGuiButtonImpl::getGuiTextBox() const noexcept
 {
-	assert(_button);
-	auto region = _button->getTextRegion();
-	return Viewport(region.left, region.top, region.width, region.height);
-}
-
-void
-MyGuiButtonImpl::getTextSize(int& w, int& h) noexcept
-{
-	assert(_button);
-	auto size = _button->getTextSize();
-	w = size.width;
-	h = size.height;
-}
-
-void
-MyGuiButtonImpl::setText(const std::string& value) noexcept
-{
-	assert(_button);
-	_caption = value;
-	_button->setCaption(value);
-}
-
-const std::string&
-MyGuiButtonImpl::getText() const noexcept
-{
-	return _caption;
-}
-
-void
-MyGuiButtonImpl::setFontName(const std::string& value) noexcept
-{
-	assert(_button);
-	_button->setFontName(value);
-}
-
-
-const std::string&
-MyGuiButtonImpl::getFontName() noexcept
-{
-	assert(_button);
-	return _button->getFontName();
-}
-
-void
-MyGuiButtonImpl::setFontHeight(int _value) noexcept
-{
-	assert(_button);
-	_button->setFontHeight(_value);
-}
-
-int
-MyGuiButtonImpl::getFontHeight() noexcept
-{
-	assert(_button);
-	return _button->getFontHeight();
-}
-
-void
-MyGuiButtonImpl::setTextAlign(GuiWidgetAlign _value) noexcept
-{
-	assert(_button);
-	_button->setTextAlign(GuiAlignToMyGui(_value));
-}
-
-GuiWidgetAlign
-MyGuiButtonImpl::getTextAlign() noexcept
-{
-	assert(_button);
-	return MyGuiToGuiAlign(_button->getTextAlign());
-}
-
-void
-MyGuiButtonImpl::setTextColour(const float4& _value) noexcept
-{
-	assert(_button);
-	MyGUI::Colour color;
-	color.red = _value.x;
-	color.green = _value.y;
-	color.blue = _value.z;
-	color.alpha = _value.w;
-	_button->setTextColour(color);
-}
-
-float4
-MyGuiButtonImpl::getTextColour() noexcept
-{
-	assert(_button);
-	MyGUI::Colour colour = _button->getTextColour();
-
-	float4 color;
-	color.x = colour.red;
-	color.y = colour.green;
-	color.z = colour.blue;
-	color.w = colour.alpha;
-	return color;
-}
-
-void
-MyGuiButtonImpl::setTextWithReplacing(const std::string& _value) noexcept
-{
-	assert(_button);
-	_button->setCaptionWithReplacing(_value);
-}
-
-void
-MyGuiButtonImpl::setTextShadowColour(const float4& value) noexcept
-{
-	assert(_button);
-	MyGUI::Colour color;
-	color.red = value.x;
-	color.green = value.y;
-	color.blue = value.z;
-	color.alpha = value.w;
-	_button->setTextShadowColour(color);
-}
-
-float4
-MyGuiButtonImpl::getTextShadowColour() noexcept
-{
-	assert(_button);
-	auto colour = _button->getTextShadowColour();
-
-	float4 color;
-	color.x = colour.red;
-	color.y = colour.green;
-	color.z = colour.blue;
-	color.w = colour.alpha;
-	return color;
-}
-
-void
-MyGuiButtonImpl::setTextShadow(bool _value) noexcept
-{
-	assert(_button);
-	_button->setTextShadow(_value);
-}
-
-bool
-MyGuiButtonImpl::getTextShadow() const noexcept
-{
-	assert(_button);
-	return _button->getTextShadow();
+	return _textbox;
 }
 
 void 
@@ -271,6 +134,12 @@ MyGuiButton::~MyGuiButton() noexcept
 {
 }
 
+GuiTextBoxPtr
+MyGuiButton::getGuiTextBox() const noexcept
+{
+	return _impl.getGuiTextBox();
+}
+
 void 
 MyGuiButton::setStateSelected(bool value) noexcept
 {
@@ -311,108 +180,6 @@ void
 MyGuiButton::setImageName(const std::string& name) noexcept
 {
 	_impl.setImageName(name);
-}
-
-Viewport
-MyGuiButton::getTextRegion() noexcept
-{
-	return _impl.getTextRegion();
-}
-
-void
-MyGuiButton::getTextSize(int& w, int& h) noexcept
-{
-	_impl.getTextSize(w, h);
-}
-
-void
-MyGuiButton::setText(const std::string& value) noexcept
-{
-	_impl.setText(value);
-}
-
-const string&
-MyGuiButton::getText() const noexcept
-{
-	return _impl.getText();
-}
-
-void
-MyGuiButton::setFontName(const std::string& value) noexcept
-{
-	_impl.setFontName(value);
-}
-
-const std::string&
-MyGuiButton::getFontName() noexcept
-{
-	return _impl.getFontName();
-}
-
-void
-MyGuiButton::setFontHeight(int value) noexcept
-{
-	_impl.setFontHeight(value);
-}
-
-int
-MyGuiButton::getFontHeight() noexcept
-{
-	return _impl.getFontHeight();
-}
-
-void
-MyGuiButton::setTextAlign(GuiWidgetAlign value) noexcept
-{
-	_impl.setTextAlign(value);
-}
-
-GuiWidgetAlign
-MyGuiButton::getTextAlign() noexcept
-{
-	return _impl.getTextAlign();
-}
-
-void
-MyGuiButton::setTextColour(const float4& value) noexcept
-{
-	_impl.setTextColour(value);
-}
-
-float4
-MyGuiButton::getTextColour() noexcept
-{
-	return _impl.getTextColour();
-}
-
-void
-MyGuiButton::setTextWithReplacing(const std::string& _value) noexcept
-{
-	_impl.setTextWithReplacing(_value);
-}
-
-void
-MyGuiButton::setTextShadowColour(const float4& value) noexcept
-{
-	_impl.setTextShadowColour(value);
-}
-
-float4
-MyGuiButton::getTextShadowColour() noexcept
-{
-	return _impl.getTextShadowColour();
-}
-
-void
-MyGuiButton::setTextShadow(bool value) noexcept
-{
-	_impl.setTextShadow(value);
-}
-
-bool
-MyGuiButton::getTextShadow() const noexcept
-{
-	return _impl.getTextShadow();
 }
 
 _NAME_END

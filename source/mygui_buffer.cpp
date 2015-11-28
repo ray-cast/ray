@@ -50,7 +50,7 @@ MyGuiVertexBuffer::~MyGuiVertexBuffer() noexcept
 }
 
 void
-MyGuiVertexBuffer::setVertexCount(size_t _count)
+MyGuiVertexBuffer::setVertexCount(std::size_t _count)
 {
 	_needVertexCount = _count;
 }

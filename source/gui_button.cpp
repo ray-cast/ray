@@ -41,7 +41,7 @@ _NAME_BEGIN
 __ImplementSubInterface(GuiButton, GuiWidget, "GuiButtonControl")
 
 GuiButton::GuiButton(GuiWidgetImpl& impl) noexcept
-	: GuiTextBox(impl)
+	: GuiWidget(impl)
 {
 }
 

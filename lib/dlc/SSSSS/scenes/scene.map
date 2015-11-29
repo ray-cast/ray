@@ -6,26 +6,20 @@
         <attribute position="0,0,-2" />
         <attribute lookat="0,0,1" />
         <attribute active="true"/>
-        <component name="Camera">
+        <component class="Camera">
             <attribute aperture="45.0"/>
             <attribute znear="0.1"/>
             <attribute zfar="65535.0"/>
-            <attribute w="1376"/>
-            <attribute h="768"/>
         </component>
-        <component name="FirstPersonCamera">
+        <component class="FirstPersonCamera">
         </component>
     </object>
     <object>
-        <attribute name="head"/>
-        <attribute position="0,0,0" />
-        <attribute rotate="0,0,0"/>
-        <attribute scale="1,1,1" />
-        <attribute active="true"/>
-        <component name="Mesh">
+        <attribute name="head" position="0,0,0" rotate="0,0,0" scale="1,1,1" active="true"/>
+        <component class="Mesh">
             <attribute name="dlc:SSSSS/models/head/Head.sdkmesh"/>
         </component>
-        <component name="MeshRender">
+        <component class="MeshRender">
             <attribute castshadow="true"/>
             <attribute receiveshadow="false"/>
             <attribute material="dlc:sssss/materials/sssss.mat"/>
@@ -36,7 +30,7 @@
         <attribute position="0,0,-10"/>
         <attribute lookat="0,0,1" />
         <attribute active="true"/>
-        <component name="Light">
+        <component class="Light">
             <attribute type="sun"/>
             <attribute color="1.0,1.0,1.0"/>
             <attribute range="200.0"/>
@@ -48,7 +42,7 @@
         <attribute name="light"/>
         <attribute position="0, 0, 0"/>
         <attribute active="false"/>
-        <component name="Light">
+        <component class="Light">
             <attribute type="ambient"/>
             <attribute color="1.0,1.0,1.0"/>
             <attribute range="200.0"/>

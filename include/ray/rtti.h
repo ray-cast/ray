@@ -43,12 +43,12 @@ _NAME_BEGIN
 
 namespace rtti
 {
-	class Interface;
+	typedef std::shared_ptr<class Interface> InterfacePtr;
+
 	class EXPORT Rtti
 	{
 	public:
 		typedef Interface*(*RttiConstruct)();
-		typedef std::shared_ptr<Interface> InterfacePtr;
 	public:
 		Rtti(const std::string& name, RttiConstruct creator, const Rtti* parent) noexcept;
 		~Rtti() noexcept;

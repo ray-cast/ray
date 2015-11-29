@@ -171,7 +171,7 @@ RenderComponent::_setRenderObject(RenderObjectPtr object) noexcept
 
 	_renderObject = object;
 	_renderObject->setRenderListener(this);
-
+	
 	this->_attacRenderObjects();
 }
 

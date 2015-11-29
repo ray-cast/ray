@@ -92,7 +92,7 @@ Factory::getRTTI(const char* name) const noexcept
 	return _rtti_lists[name];
 }
 
-Rtti::InterfacePtr
+InterfacePtr
 Factory::createObject(const char* name, const Rtti& base) const except
 {
 	assert(name);
@@ -107,7 +107,7 @@ Factory::createObject(const char* name, const Rtti& base) const except
 	return nullptr;
 }
 
-Rtti::InterfacePtr
+InterfacePtr
 Factory::createObject(const std::string& name, const Rtti& base) const except
 {
 	assert(!name.empty());

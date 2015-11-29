@@ -60,8 +60,8 @@ namespace rtti
 		const Rtti* getRTTI(const char* name) const noexcept;
 		const Rtti* getRTTI(const std::string& name) const noexcept;
 
-		Rtti::InterfacePtr createObject(const char*, const Rtti& base) const except;
-		Rtti::InterfacePtr createObject(const std::string& name, const Rtti& base) const except;
+		InterfacePtr createObject(const char*, const Rtti& base) const except;
+		InterfacePtr createObject(const std::string& name, const Rtti& base) const except;
 
 		template<typename T>
 		std::shared_ptr<T> make_shared(const std::string& name)

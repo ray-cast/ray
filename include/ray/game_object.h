@@ -173,6 +173,9 @@ public:
 
 	void destroy() noexcept;
 
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
+
 	GameObjectPtr clone() const except;
 
 	virtual GameServer* getGameServer() noexcept;

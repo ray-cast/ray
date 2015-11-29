@@ -87,18 +87,14 @@ MeshRenderComponent::onActivate() except
 	auto component = this->getGameObject()->getComponent<MeshComponent>();
 	if (component)
 	{
-		auto mesh = component->getMesh();
-		if (!mesh)
-			return;
-
-		auto model = ResLoader<Model>::find(component->getName());
-		if (!model)
-			return;
-
 		buildMaterials();
-		buildRenderObjects(mesh);
 
-		_attacRenderObjects();
+		auto mesh = component->getMesh();
+		if (mesh)
+		{
+			buildRenderObjects(mesh);
+			_attacRenderObjects();
+		}
 	}
 }
 
@@ -111,7 +107,7 @@ MeshRenderComponent::onDeactivate() except
 void 
 MeshRenderComponent::onMeshChange() except
 {
-	if (this->getActive())
+	if (this->getGameObject()->getActive())
 	{
 		auto component = this->getGameObject()->getComponent<MeshComponent>();
 		if (component)
@@ -120,6 +116,7 @@ MeshRenderComponent::onMeshChange() except
 			if (!mesh)
 				return;
 
+			buildMaterials();
 			buildRenderObjects(mesh);
 		}
 	}
@@ -128,7 +125,7 @@ MeshRenderComponent::onMeshChange() except
 void
 MeshRenderComponent::buildMaterials() except
 {
-	if (!this->hasSharedMaterial())
+	if (!this->hasMaterial())
 	{
 		if (!this->getName().empty())
 		{
@@ -218,6 +215,10 @@ MeshRenderComponent::buildRenderObject(MeshPropertyPtr mesh, RenderBufferPtr buf
 		renderObject->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
 
 		return renderObject;
+	}
+	else
+	{
+		assert(false);
 	}
 
 	return nullptr;

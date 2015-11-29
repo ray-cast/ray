@@ -35,7 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "first_person_camera.h"
-
+#include <ray/render_system.h>
 #include <ray/game_server.h>
 #include <ray/input_feature.h>
 #include <ray/physics_character_component.h>
@@ -60,9 +60,10 @@ FirstPersonCameraComponent::~FirstPersonCameraComponent() noexcept
 void
 FirstPersonCameraComponent::onActivate() noexcept
 {
-	auto camera = this->getGameObject()->getComponent<ray::CameraComponent>();
-	_centerX = camera->getViewport().width *  0.5;
-	_centerY = camera->getViewport().height * 0.5;
+	ray::RenderSystem::instance()->getWindowResolution(_centerX, _centerY);
+
+	_centerX *= 0.5;
+	_centerY *= 0.5;
 }
 
 void

@@ -69,8 +69,14 @@ public:
 	iarchive() noexcept;
 	virtual ~iarchive() noexcept;
 
+	virtual bool hasChild() const noexcept = 0;
+
 	virtual bool hasAttr(const char* name) const noexcept = 0;
-	virtual const std::vector<std::string>& getAttrs() const noexcept = 0;
+	virtual void clearAttrs() noexcept = 0;
+	virtual const std::vector<std::string>& addAttrs() noexcept = 0;
+	virtual const std::vector<std::string>& addAttrsInChildren() noexcept = 0;
+	virtual const std::vector<std::string>& addAttrsInChildren(const std::string& key) noexcept = 0;
+	virtual const std::vector<std::string>& getAttrList() const noexcept = 0;
 
 	virtual std::string getText() const noexcept = 0;
 
@@ -99,7 +105,7 @@ public:
 	{
 		assert(!value.first.empty());
 
-		auto& attributes = this->getAttrs();
+		auto& attributes = this->getAttrList();
 		for (auto& it : attributes)
 		{
 			if (it == value.first)
@@ -117,22 +123,16 @@ public:
 	{
 		assert(value.first);
 
-		do
+		auto& attributes = this->getAttrList();
+		for (auto& it : attributes)
 		{
-			auto& attributes = this->getAttrs();
-			for (auto& it : attributes)
+			if (it.compare(value.first) == 0)
 			{
-				if (it.compare(value.first) == 0)
-				{
-					this->getValue(it, value.second);
-					this->setToParent();
-					this->setToFirstChild();
-					return *this;
-				}
+				this->getValue(it, value.second);
+				break;
 			}
-		} while (this->setToNextChild());
+		}
 
-		this->setToFirstChild();
 		return *this;
 	}
 

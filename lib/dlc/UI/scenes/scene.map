@@ -1,49 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <scene>
     <attribute name="UI"/>
-    <object>
-        <attribute name="UIRoot"/>
-        <attribute position="0,0,-1" />
-        <attribute lookat="0,0,1" />
-        <attribute active="true"/>
-        <component name="Camera">
-            <attribute type="ortho"/>
-            <attribute ortho="0,100,0,100"/>
-            <attribute znear="0.1"/>
-            <attribute zfar="10.0"/>
-            <attribute w="1376"/>
-            <attribute h="768"/>
-        </component>
-        <component name="GuiCamera"/>
+    <object name="UIRoot" position="0,0,-1" lookat="0,0,1" active="true">
+        <component class="Camera" type="ortho" ortho="0,100,0,100" znear="0.1" zfar="10.0" w="1376" h="768"/>
+        <component class="GuiCamera"/>
     </object>
-    <object>
-        <attribute position="0,0,0" />
-        <attribute scale="400, 400, 0" />
-        <attribute active="true"/>
-        <component name="GuiWindow">
-            <attribute skin="WindowCS"/>
-                <attribute text="hello world"/>
-                <attribute skin="TextBox"/>
-        </component>
-        <object>
-            <attribute position="0,0,0" />
-            <attribute scale="200, 200, 0" />
-            <attribute active="false"/>
-            <component name="GuiButton">
-                <attribute skin="Button"/>
-                <attribute text="hello world"/>
-                <attribute textColor="1,1,1,1"/>
-                <attribute fontSize="24"/>
-            </component>
+    <object position="0,0,0"  scale="400, 400, 0" active="true">
+        <component class="GuiWindow" skin="WindowCS" text="hello world" />
+        <object active="true" position="0,0,0" scale="200, 200, 0">
+            <component class="GuiButton" skin="Button" text="hello world" textColor="1,1,1,1" fontSize="24" />
         </object>
-        <object>
-            <attribute position="0,0,0" />
-            <attribute scale="200, 200, 0" />
-            <attribute active="true"/>
-            <component name="GuiImage">
-                <attribute skin="ImageBox"/>
-                <attribute texture="sys:media/color_grading.png"/>
-            </component>
+        <object active="true" position="200,200,0" scale="200, 200, 0">
+            <component class="GuiImage" skin="ImageBox" texture="sys:media/color_grading.png"/>
         </object>
     </object>
 </scene>

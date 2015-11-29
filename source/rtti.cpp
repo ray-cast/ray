@@ -55,7 +55,7 @@ Rtti::~Rtti() noexcept
 {
 }
 
-Rtti::InterfacePtr
+InterfacePtr
 Rtti::create() const except
 {
 	assert(_construct);

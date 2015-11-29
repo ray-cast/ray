@@ -456,33 +456,21 @@ MaterialMaker::load(iarchive& reader) except
 	if (nodeName != "material" && nodeName != "effect")
 		throw failure(__TEXT("Unknown node name " + nodeName + ", so I can't open it"));
 
-	if (!reader.setToFirstChild())
-		throw failure(__TEXT("The file has been damaged and can't be recovered, so I can't open it"));
-
 	if (nodeName == "material")
 	{
 		std::string name;
 		std::map<std::string, std::string> args;
 
-		do
+		reader.clearAttrs();
+		reader.addAttrsInChildren("attribute");
+		auto& attributes = reader.getAttrList();
+		for (auto& it : attributes)
 		{
-			auto key = reader.getCurrentNodeName();
-			if (key == "attribute")
-			{
-				auto attributes = reader.getAttrs();
-				for (auto& it : attributes)
-				{
-					if (it == "shader")
-					{
-						name = reader.getValue<std::string>(it);
-					}
-					else
-					{
-						args[it] = reader.getValue<std::string>(it);
-					}
-				}
-			}
-		} while (reader.setToNextChild());
+			if (it == "shader")
+				name = reader.getValue<std::string>(it);
+			else
+				args[it] = reader.getValue<std::string>(it);
+		}
 
 		if (!name.empty())
 		{
@@ -524,6 +512,9 @@ MaterialMaker::load(iarchive& reader) except
 	else if (nodeName == "effect")
 	{
 		auto material = std::make_shared<Material>();
+
+		if (!reader.setToFirstChild())
+			throw failure(__TEXT("The file has been damaged and can't be recovered, so I can't open it"));
 
 		do
 		{

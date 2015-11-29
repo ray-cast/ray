@@ -187,16 +187,12 @@ GameObjectManager::onFrameEnd() noexcept
 
 	if (_hasEmptyActors)
 	{
-		auto it = _activeActors.begin();
-		auto end = _activeActors.end();
-
-		for (; it != end; ++it)
+		for (auto it = _activeActors.begin(); it != _activeActors.end();)
 		{
 			if (!(*it))
-			{
 				it = _activeActors.erase(it);
-				end = _activeActors.end();
-			}
+			else
+				++it;
 		}
 
 		_hasEmptyActors = false;

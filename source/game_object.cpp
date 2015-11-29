@@ -1088,6 +1088,42 @@ GameObject::sendMessageDownwards(const MessagePtr& message) noexcept
 		it->sendMessageDownwards(message);
 }
 
+void 
+GameObject::load(iarchive& reader) noexcept
+{
+	std::string name;
+	bool active = false;
+	int layer = 0;
+	float3 position = float3::Zero;
+	float3 scale = float3::One;
+	float3 rotate = float3::Zero;
+	float3 lookat = float3::UnitZ;
+	float3 up = float3::UnitY;
+
+	reader >> make_archive(name, "name");
+	reader >> make_archive(active, "active");
+	reader >> make_archive(layer, "layer");
+	reader >> make_archive(position, "position");
+	reader >> make_archive(scale, "scale");
+	reader >> make_archive(rotate, "rotate");
+	reader >> make_archive(lookat, "lookat");
+	reader >> make_archive(up, "up");
+
+	this->setName(name);
+	this->setActive(active);
+	this->setLayer(layer);
+	this->setTranslate(position);
+	this->setScale(scale);
+	this->setRotate(rotate);
+	this->setLookAt(lookat);
+	this->setUpVector(up);
+}
+
+void 
+GameObject::save(oarchive& write) noexcept
+{
+}
+
 GameObjectPtr
 GameObject::clone() const except
 {

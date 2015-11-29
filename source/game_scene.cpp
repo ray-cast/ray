@@ -192,91 +192,46 @@ GameScene::instanceObject(iarchive& reader, GameObjectPtr parent) except
 		auto actor = std::make_shared<GameObject>();
 		actor->setParent(parent);
 
-		reader.setToFirstChild();
+		reader.addAttrs();
+		reader.addAttrsInChildren("attribute");
+		actor->load(reader);
 
-		bool active = false;
-
-		do
+		if (reader.setToFirstChild())
 		{
-			auto key = reader.getCurrentNodeName();
-			if (key == "attribute")
+			do
 			{
-				/*std::string name;
-				bool active = false;
-				int layer = 0;
-				float3 position = float3::Zero;
-				float3 scale = float3::Zero;
-				float3 rotate = float3::Zero;
-				float3 lookat = float3::UnitZ;
-				float3 up = float3::UnitY;
-
-				reader >> make_archive(name, "name");
-				reader >> make_archive(active, "active");
-				reader >> make_archive(layer, "layer");
-				reader >> make_archive(position, "position");
-				reader >> make_archive(scale, "scale");
-				reader >> make_archive(rotate, "rotate");
-				reader >> make_archive(lookat, "lookat");
-				reader >> make_archive(up, "up");
-
-				actor->setName(name);
-				actor->setActive(active);
-				actor->setLayer(layer);
-				actor->setTranslate(position);
-				actor->setScale(scale);
-				actor->setRotate(rotate);
-				actor->setLookAt(lookat);
-				actor->setUpVector(up);*/
-
-				auto& attributes = reader.getAttrs();
-				for (auto& it : attributes)
+				auto key = reader.getCurrentNodeName();
+				if (key == "component")
 				{
-					if (it == "name")
-						actor->setName(reader.getValue<std::string>(it));
-					else if (it == "active")
-						active = reader.getValue<bool>(it);
-					else if (it == "position")
-						actor->setTranslate(reader.getValue<float3>(it));
-					else if (it == "scale")
-						actor->setScale(reader.getValue<float3>(it));
-					else if (it == "lookat")
-						actor->setLookAt(reader.getValue<float3>(it));
-					else if (it == "up")
-						actor->setUpVector(reader.getValue<float3>(it));
-					else if (it == "rotate")
-						actor->setRotate(Quaternion(reader.getValue<float3>(it)));
-					else if (it == "layer")
-						actor->setLayer(reader.getValue<int>(it));
-				}
-			}
-			else if (key == "component")
-			{
-				auto name = reader.getValue<std::string>("name");
-				if (!name.empty())
-				{
-					auto component = rtti::make_shared<GameComponent>(name);
-					if (component)
+					auto name = reader.getValue<std::string>("class");
+					if (!name.empty())
 					{
-						reader >> component;
-						actor->addComponent(component);
+						auto component = rtti::make_shared<GameComponent>(name);
+						if (component)
+						{
+							reader.addAttrs();
+							reader.addAttrsInChildren("attribute");
+							component->load(reader);
+
+							actor->addComponent(component);
+						}
+						else
+						{
+							throw failure("Unknown component name : " + name);
+						}
 					}
 					else
 					{
-						throw failure("Unknown component name : " + name);
+						throw failure("empty component name : " + reader.getCurrentNodePath());
 					}
 				}
-				else
+				else if (key == "object")
 				{
-					throw failure("empty component name : " + reader.getCurrentNodePath());
+					instanceObject(reader, actor);
 				}
-			}
-			else if (key == "object")
-			{
-				instanceObject(reader, actor);
-			}
-		} while (reader.setToNextChild());
+			} while (reader.setToNextChild());
+		}
 
-		actor->setActive(active);
 		return actor;
 	}
 

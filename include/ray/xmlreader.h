@@ -42,6 +42,7 @@
 
 class TiXmlDocument;
 class TiXmlElement;
+class TiXmlAttribute;
 
 _NAME_BEGIN
 
@@ -66,8 +67,13 @@ public:
     bool setToParent() noexcept;
 
 	bool hasChild() const noexcept;
+
     bool hasAttr(const char* name) const noexcept;
-    const std::vector<std::string>& getAttrs() const noexcept;
+	void clearAttrs() noexcept;
+	const std::vector<std::string>& addAttrs() noexcept;
+	const std::vector<std::string>& addAttrsInChildren() noexcept;
+	const std::vector<std::string>& addAttrsInChildren(const std::string& key) noexcept;
+    const std::vector<std::string>& getAttrList() const noexcept;
 
     std::string getText() const noexcept;
 
@@ -82,11 +88,14 @@ public:
     bool getValue(const std::string& name, float4& result) const noexcept;
     bool getValue(const std::string& name, std::string& result) const noexcept;
 
+	const char* errorString() const noexcept;
+
 private:
 
     TiXmlElement* _currentNode;
-	mutable TiXmlElement* _currentAttrNode;
-	mutable std::vector<std::string> _attrs;
+	TiXmlElement* _currentAttrNode;
+	std::vector<std::string> _attrNames;
+	std::vector<TiXmlAttribute*> _attrLists;
     std::unique_ptr<TiXmlDocument> _document;
 };
 

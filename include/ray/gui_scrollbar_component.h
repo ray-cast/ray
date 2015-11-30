@@ -34,23 +34,74 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GAME_CONTROLLER_H_
-#define _H_GAME_CONTROLLER_H_
+#ifndef _H_GUI_SCRIOLLBAR_COMPONENT_H_
+#define _H_GUI_SCRIOLLBAR_COMPONENT_H_
 
-#include <ray/game_component.h>
+#include <ray/gui_widget_component.h>
 
 _NAME_BEGIN
 
-class EXPORT GameController : public GameComponent
+class GuiScrollBarComponent : public GuiWidgetComponent
 {
-	__DeclareSubInterface(GameController, GameComponent)
+	__DeclareSubClass(GuiScrollBarComponent, GuiWidgetComponent)
 public:
-	GameController() noexcept;
-	virtual ~GameController() noexcept;
+	GuiScrollBarComponent() noexcept;
+	~GuiScrollBarComponent() noexcept;
+
+    void setVerticalAlignment(bool value);
+    bool getVerticalAlignment() const;
+
+    void setScrollRange(std::size_t value);
+    std::size_t getScrollRange() const;
+
+    void setScrollPosition(std::size_t value);
+    std::size_t getScrollPosition() const;
+
+    void setScrollPage(std::size_t value);
+    std::size_t getScrollPage() const;
+
+    void setScrollViewPage(std::size_t value);
+    std::size_t getScrollViewPage() const;
+
+    void setScrollWheelPage(std::size_t value);
+    std::size_t getScrollWheelPage() const;
+
+    int getLineSize() const;
+
+    void setTrackSize(int value);
+    int getTrackSize() const;
+
+    void setMinTrackSize(int value);
+    int getMinTrackSize() const;
+
+    void setMoveToClick(bool value);
+    bool getMoveToClick() const;
+
+    void setRepeatEnabled(bool enabled);
+    bool getRepeatEnabled() const;
+
+    void setRepeatTriggerTime(float time);
+    float getRepeatTriggerTime(float time) const;
+
+    void setRepeatStepTime(float time);
+    float getRepeatStepTime(float time) const;
+
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
+
+	GameComponentPtr clone() const except;
+
+protected:
+	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept;
+	virtual GuiWidgetPtr getGuiWidget() const noexcept;
 
 private:
-	GameController(const GameController&) noexcept = delete;
-	GameController& operator=(const GameController&)noexcept = delete;
+	GuiScrollBarComponent(const GuiScrollBarComponent&) = delete;
+	GuiScrollBarComponent& operator=(const GuiScrollBarComponent&) = delete;
+
+private:
+
+	GuiScrollBarPtr _scrollBar;
 };
 
 _NAME_END

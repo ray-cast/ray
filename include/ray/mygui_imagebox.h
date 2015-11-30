@@ -43,6 +43,7 @@ _NAME_BEGIN
 
 class MyGuiImageBoxImpl final : public MyGuiWidget
 {
+	__DeclareSubClass(MyGuiImageBoxImpl, MyGuiWidget)
 public:
 	MyGuiImageBoxImpl() noexcept;
 	~MyGuiImageBoxImpl() noexcept;
@@ -94,7 +95,10 @@ public:
 	void setItemName(const std::string& value);
 
 private:
+	MyGuiImageBoxImpl(const MyGuiImageBoxImpl&) noexcept = delete;
+	MyGuiImageBoxImpl& operator=(const MyGuiImageBoxImpl&) noexcept = delete;
 
+private:
 	std::string _name;
 
 	MyGUI::Widget* _parent;
@@ -103,6 +107,7 @@ private:
 
 class MyGuiImageBox final : public GuiImageBox
 {
+	__DeclareSubClass(MyGuiImageBox, GuiImageBox)
 public:
 	MyGuiImageBox() noexcept;
 	virtual ~MyGuiImageBox() noexcept;
@@ -150,6 +155,10 @@ public:
 
 	void setItemGroup(const std::string& value);
 	void setItemName(const std::string& value);
+
+private:
+	MyGuiImageBox(const MyGuiImageBox&) noexcept = delete;
+	MyGuiImageBox& operator=(const MyGuiImageBox&) noexcept = delete;
 
 private:
 

@@ -36,11 +36,8 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_RENDERER)
 #include <ray/camera_component.h>
-
-#include <ray/game_server.h>
-#include <ray/game_event.h>
-
 #include <ray/render_feature.h>
+#include <ray/game_server.h>
 
 _NAME_BEGIN
 

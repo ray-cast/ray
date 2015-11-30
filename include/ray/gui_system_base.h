@@ -75,6 +75,10 @@ public:
 	virtual GuiWidgetPtr createWidget(const rtti::Rtti* rtti) except = 0;
 
 	virtual void render(float delta) except = 0;
+
+private:
+	GuiSystemBase(const GuiSystemBase&) noexcept = delete;
+	GuiSystemBase& operator=(const GuiSystemBase&) noexcept = delete;
 };
 
 _NAME_END

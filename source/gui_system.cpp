@@ -71,15 +71,16 @@ GuiSystem::close() noexcept
 }
 
 void
-GuiSystem::setGuiSystem(GuiSystemBasePtr system) except
+GuiSystem::setGuiSystem(GuiSystemBasePtr& system) except
 {
+	assert(_system);
 	if (_system != system)
 	{
 		_system = system;
 	}
 }
 
-GuiSystemBasePtr
+const GuiSystemBasePtr&
 GuiSystem::getGuiSystem() const noexcept
 {
 	return _system;

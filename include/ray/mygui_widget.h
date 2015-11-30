@@ -101,6 +101,10 @@ protected:
 	static GuiWidgetAlign MyGuiToGuiAlign(MyGUI::Align align) noexcept;
 
 private:
+	MyGuiWidget(const MyGuiWidget&) noexcept = delete;
+	MyGuiWidget& operator=(const MyGuiWidget&) noexcept = delete;
+
+private:
 	GuiWidgetImpl* _parent;
 	MyGUI::Widget* _widget;
 };

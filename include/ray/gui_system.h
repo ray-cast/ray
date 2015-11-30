@@ -51,8 +51,8 @@ public:
 	bool open(GuiSystemBasePtr impl = nullptr) except;
 	void close() noexcept;
 
-	void setGuiSystem(GuiSystemBasePtr system) except;
-	GuiSystemBasePtr getGuiSystem() const noexcept;
+	void setGuiSystem(GuiSystemBasePtr& system) except;
+	const GuiSystemBasePtr& getGuiSystem() const noexcept;
 
 	void setCoreProfile(const std::string& core) except;
 	const std::string& getCoreProfile() const noexcept;
@@ -81,8 +81,8 @@ public:
 	void render(float delta) except;
 
 private:
-	GuiSystem(const GuiSystem&) = delete;
-	GuiSystem& operator=(const GuiSystem&) = delete;
+	GuiSystem(const GuiSystem&) noexcept = delete;
+	GuiSystem& operator=(const GuiSystem&) noexcept = delete;
 
 private:
 	GuiSystemBasePtr _system;

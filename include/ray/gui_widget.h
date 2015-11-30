@@ -61,6 +61,9 @@ public:
 
 	virtual void setViewport(const Rect& view) except = 0;
 	virtual void getViewport(Rect& view) const noexcept = 0;
+private:
+	GuiWidgetImpl(const GuiWidgetImpl&) noexcept = delete;
+	GuiWidgetImpl& operator=(const GuiWidgetImpl&) noexcept = delete;
 };
 
 class EXPORT GuiWidget : public rtti::Interface
@@ -84,6 +87,9 @@ public:
 	void setViewport(const Rect& view) except;
 	void getViewport(Rect& view) const noexcept;
 
+private:
+	GuiWidget(const GuiWidget&) noexcept = delete;
+	GuiWidget& operator=(const GuiWidget&) noexcept = delete;
 private:
 
 	GuiWidgetImpl& _impl;

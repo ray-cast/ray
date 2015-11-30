@@ -48,14 +48,6 @@ public:
 	GuiScrollView(GuiWidgetImpl& impl) noexcept;
 	virtual ~GuiScrollView() noexcept;
 
-	virtual void setPosition(const Point& value) = 0;
-	virtual void setSize(const Size& value) = 0;
-	virtual void setCoord(const Rect& value) = 0;
-
-	virtual void setPosition(int left, int top) = 0;
-	virtual void setSize(int width, int height) = 0;
-	virtual void setCoord(int left, int top, int width, int height) = 0;
-
 	virtual void setVisibleVScroll(bool value) = 0;
 	virtual bool isVisibleVScroll() const = 0;
 
@@ -73,6 +65,10 @@ public:
 
 	virtual void setViewOffset(const Point& value) = 0;
 	virtual Point getViewOffset() const = 0;
+
+private:
+	GuiScrollView(const GuiScrollView&) noexcept = delete;
+	GuiScrollView& operator=(const GuiScrollView&) noexcept = delete;
 };
 
 _NAME_END

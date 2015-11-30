@@ -60,6 +60,10 @@ public:
 
 	virtual bool loadImage(int& _width, int& _height, PixelFormat& _format, const std::string& _filename, MemoryStream& stream) = 0;
 	virtual void saveImage(int _width, int _height, PixelFormat _format, void* _texture, const std::string& _filename) = 0;
+
+private:
+	GuiImageLoader(const GuiImageLoader&) noexcept = delete;
+	GuiImageLoader& operator=(const GuiImageLoader&) noexcept = delete;
 };
 
 _NAME_END

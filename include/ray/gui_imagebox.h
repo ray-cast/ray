@@ -91,6 +91,10 @@ public:
 
 	virtual void setItemGroup(const std::string& value) = 0;
 	virtual void setItemName(const std::string& value) = 0;
+
+private:
+	GuiImageBox(const GuiImageBox&) noexcept = delete;
+	GuiImageBox& operator=(const GuiImageBox&) noexcept = delete;
 };
 
 _NAME_END

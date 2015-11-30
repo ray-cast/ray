@@ -73,6 +73,9 @@ public:
 
 	virtual void setTextShadow(bool _value) noexcept = 0;
 	virtual bool getTextShadow() const noexcept = 0;
+private:
+	GuiTextBox(const GuiTextBox&) noexcept = delete;
+	GuiTextBox& operator=(const GuiTextBox&) noexcept = delete;
 };
 
 _NAME_END

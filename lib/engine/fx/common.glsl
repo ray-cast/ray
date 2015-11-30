@@ -2,7 +2,7 @@
 <effect version="1270" language="glsl">
     <shader name="vertex">
         <![CDATA[
-            #version 330
+            #version 330 core
             #define GLSL_3 1
 
             #if GLSL_3 == 1

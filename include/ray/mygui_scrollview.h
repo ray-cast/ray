@@ -43,15 +43,12 @@ _NAME_BEGIN
 
 class MyGuiScrollViewImpl final : public MyGuiWidget
 {
+	__DeclareSubClass(MyGuiScrollViewImpl, MyGuiWidget)
 public:
 	MyGuiScrollViewImpl() noexcept;
 	~MyGuiScrollViewImpl() noexcept;
 
 	bool create() except;
-
-	void setPosition(int left, int top);
-	void setSize(int width, int height);
-	void setCoord(int left, int top, int width, int height);
 
 	void setVisibleVScroll(bool value);
 	bool isVisibleVScroll() const;
@@ -72,8 +69,8 @@ public:
 	Point getViewOffset() const;
 
 private:
-	MyGuiScrollViewImpl(const MyGuiScrollViewImpl&) = delete;
-	MyGuiScrollViewImpl& operator=(const MyGuiScrollViewImpl&) = delete;
+	MyGuiScrollViewImpl(const MyGuiScrollViewImpl&) noexcept = delete;
+	MyGuiScrollViewImpl& operator=(const MyGuiScrollViewImpl&) noexcept = delete;
 
 private:
 
@@ -83,17 +80,10 @@ private:
 
 class MyGuiScrollView final : public GuiScrollView
 {
+	__DeclareSubClass(MyGuiScrollView, GuiScrollView)
 public:
 	MyGuiScrollView() noexcept;
 	~MyGuiScrollView() noexcept;
-
-	void setPosition(const Point& value);
-	void setSize(const Size& value);
-	void setCoord(const Rect& value);
-
-	void setPosition(int left, int top);
-	void setSize(int width, int height);
-	void setCoord(int left, int top, int width, int height);
 
 	void setVisibleVScroll(bool value);
 	bool isVisibleVScroll() const;
@@ -114,8 +104,8 @@ public:
 	Point getViewOffset() const;
 
 private:
-	MyGuiScrollView(const MyGuiScrollView&) = delete;
-	MyGuiScrollView& operator=(const MyGuiScrollView&) = delete;
+	MyGuiScrollView(const MyGuiScrollView&) noexcept = delete;
+	MyGuiScrollView& operator=(const MyGuiScrollView&) noexcept = delete;
 
 private:
 

@@ -511,6 +511,12 @@ SET(MYGUI_LIST
     ${SOURCE_PATH}/mygui_window.cpp
     ${HEADER_PATH}/mygui_imagebox.h
     ${SOURCE_PATH}/mygui_imagebox.cpp
+    ${HEADER_PATH}/mygui_listbox.h
+    ${SOURCE_PATH}/mygui_listbox.cpp
+    ${HEADER_PATH}/mygui_editbox.h
+    ${SOURCE_PATH}/mygui_editbox.cpp
+    ${HEADER_PATH}/mygui_scrollbar.h
+    ${SOURCE_PATH}/mygui_scrollbar.cpp
     ${HEADER_PATH}/mygui_scrollview.h
     ${SOURCE_PATH}/mygui_scrollview.cpp
 )
@@ -535,8 +541,14 @@ SET(GUI_LIST
     ${SOURCE_PATH}/gui_textbox.cpp
     ${HEADER_PATH}/gui_window.h
     ${SOURCE_PATH}/gui_window.cpp
+    ${HEADER_PATH}/gui_listbox.h
+    ${SOURCE_PATH}/gui_listbox.cpp
+    ${HEADER_PATH}/gui_editbox.h
+    ${SOURCE_PATH}/gui_editbox.cpp
     ${HEADER_PATH}/gui_imagebox.h
     ${SOURCE_PATH}/gui_imagebox.cpp
+    ${HEADER_PATH}/gui_scrollbar.h
+    ${SOURCE_PATH}/gui_scrollbar.cpp
     ${HEADER_PATH}/gui_scrollview.h
     ${SOURCE_PATH}/gui_scrollview.cpp
 )
@@ -587,8 +599,6 @@ SET(GAMEAPP_LIST
     ${HEADER_PATH}/game_features.h
     ${SOURCE_PATH}/game_server.cpp
     ${HEADER_PATH}/game_server.h
-    ${SOURCE_PATH}/game_controller.cpp
-    ${HEADER_PATH}/game_controller.h
     ${SOURCE_PATH}/game_scene.cpp
     ${HEADER_PATH}/game_scene.h
     ${HEADER_PATH}/game_types.h
@@ -600,12 +610,16 @@ SET(GUI_FEATURES_LIST
     ${SOURCE_PATH}/gui_feature.cpp
     ${HEADER_PATH}/gui_listbox_component.h
     ${SOURCE_PATH}/gui_listbox_component.cpp
+    ${HEADER_PATH}/gui_editbox_component.h
+    ${SOURCE_PATH}/gui_editbox_component.cpp
     ${HEADER_PATH}/gui_button_component.h
     ${SOURCE_PATH}/gui_button_component.cpp
     ${HEADER_PATH}/gui_camera_component.h
     ${SOURCE_PATH}/gui_camera_component.cpp
     ${HEADER_PATH}/gui_widget_component.h
     ${SOURCE_PATH}/gui_widget_component.cpp
+    ${HEADER_PATH}/gui_scrollbar_component.h
+    ${SOURCE_PATH}/gui_scrollbar_component.cpp
     ${HEADER_PATH}/gui_scrollview_component.h
     ${SOURCE_PATH}/gui_scrollview_component.cpp
     ${HEADER_PATH}/gui_label_component.h

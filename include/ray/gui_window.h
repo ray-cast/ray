@@ -61,6 +61,10 @@ public:
 
 	virtual void setMaxSize(int _width, int _height) noexcept = 0;
 	virtual void getMaxSize(int& w, int& h) const noexcept = 0;
+
+private:
+	GuiWindow(const GuiWindow&) noexcept = delete;
+	GuiWindow& operator=(const GuiWindow&) noexcept = delete;
 };
 
 _NAME_END

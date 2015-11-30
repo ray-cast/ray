@@ -34,34 +34,61 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_BUTTON_H_
-#define _H_GUI_BUTTON_H_
+#ifndef _H_GUI_SCROLLBAR_H_
+#define _H_GUI_SCROLLBAR_H_
 
 #include <ray/gui_widget.h>
 
 _NAME_BEGIN
 
-class EXPORT GuiButton : public GuiWidget
+class EXPORT GuiScrollBar : public GuiWidget
 {
-	__DeclareSubInterface(GuiButton, GuiWidget)
+	__DeclareSubInterface(GuiScrollBar, GuiWidget)
 public:
-	GuiButton(GuiWidgetImpl& impl) noexcept;
-	virtual ~GuiButton() noexcept;
+	GuiScrollBar(GuiWidgetImpl& impl) noexcept;
+	virtual ~GuiScrollBar() noexcept;
 
-	virtual GuiTextBoxPtr getGuiTextBox() const noexcept = 0;
+	virtual void setVerticalAlignment(bool value) = 0;
+	virtual bool getVerticalAlignment() const = 0;
 
-	virtual void setStateSelected(bool _value) noexcept = 0;
-	virtual bool getStateSelected() const noexcept = 0;
+	virtual void setScrollRange(std::size_t value) = 0;
+	virtual std::size_t getScrollRange() const = 0;
 
-	virtual void setModeImage(bool _value) noexcept = 0;
-	virtual bool getModeImage() const noexcept = 0;
+	virtual void setScrollPosition(std::size_t value) = 0;
+	virtual std::size_t getScrollPosition() const = 0;
 
-	virtual void setImageResource(const std::string& name) noexcept = 0;
-	virtual void setImageGroup(const std::string& name) noexcept = 0;
-	virtual void setImageName(const std::string& name) noexcept = 0;
+	virtual void setScrollPage(std::size_t value) = 0;
+	virtual std::size_t getScrollPage() const = 0;
+
+	virtual void setScrollViewPage(std::size_t value) = 0;
+	virtual std::size_t getScrollViewPage() const = 0;
+
+	virtual void setScrollWheelPage(std::size_t value) = 0;
+	virtual std::size_t getScrollWheelPage() const = 0;
+
+	virtual int getLineSize() const = 0;
+
+	virtual void setTrackSize(int value) = 0;
+	virtual int getTrackSize() const = 0;
+
+	virtual void setMinTrackSize(int value) = 0;
+	virtual int getMinTrackSize() const = 0;
+
+	virtual void setMoveToClick(bool value) = 0;
+	virtual bool getMoveToClick() const = 0;
+
+	virtual void setRepeatEnabled(bool enabled) = 0;
+	virtual bool getRepeatEnabled() const = 0;
+
+	virtual void setRepeatTriggerTime(float time) = 0;
+	virtual float getRepeatTriggerTime(float time) const = 0;
+
+	virtual void setRepeatStepTime(float time) = 0;
+	virtual float getRepeatStepTime(float time) const = 0;
+
 private:
-	GuiButton(const GuiButton&) noexcept = delete;
-	GuiButton& operator=(const GuiButton&) noexcept = delete;
+	GuiScrollBar(const GuiScrollBar&) noexcept = delete;
+	GuiScrollBar& operator=(const GuiScrollBar&) noexcept = delete;
 };
 
 _NAME_END

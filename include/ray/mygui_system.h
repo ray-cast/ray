@@ -76,6 +76,10 @@ public:
 	void render(float delta) noexcept;
 
 private:
+	MyGuiSystem(const MyGuiSystem&) noexcept = delete;
+	MyGuiSystem& operator=(const MyGuiSystem&) noexcept = delete;
+
+private:
 
 	bool _isInitialise;
 

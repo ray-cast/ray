@@ -42,6 +42,7 @@
 #include <ray/mygui_window.h>
 #include <ray/mygui_imagebox.h>
 #include <ray/mygui_textbox.h>
+#include <ray/mygui_scrollbar.h>
 #include <ray/mygui_scrollview.h>
 
 _NAME_BEGIN
@@ -399,6 +400,8 @@ MyGuiSystem::createWidget(const rtti::Rtti* rtti) except
 		widget = std::make_shared<MyGuiTextBox>();
 	else if (rtti == GuiImageBox::getRtti())
 		widget = std::make_shared<MyGuiImageBox>();
+	else if (rtti == GuiScrollBar::getRtti())
+		widget = std::make_shared<MyGuiScrollBar>();
 	else if (rtti == GuiScrollView::getRtti())
 		widget = std::make_shared<MyGuiScrollView>();
 	else

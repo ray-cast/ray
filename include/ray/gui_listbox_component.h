@@ -47,6 +47,52 @@ class GuiListBoxComponent final : public GuiWidgetComponent
 public:
 	GuiListBoxComponent() noexcept;
 	~GuiListBoxComponent() noexcept;
+
+    std::size_t getItemCount() const;
+    void insertItemAt(std::size_t index, const std::string& name);
+    void addItem(const std::string& name);
+    void removeItemAt(std::size_t index);
+    void removeAllItems();
+    void swapItemsAt(std::size_t index1, std::size_t index2);
+
+    std::size_t findItemIndexWith(const std::string& name);
+    std::size_t getIndexSelected() const;
+    void setIndexSelected(std::size_t index);
+    void clearIndexSelected();
+    void setItemNameAt(std::size_t index, const std::string& name);
+    void clearItemDataAt(std::size_t index);
+
+    const std::string& getItemNameAt(std::size_t index);
+
+    void beginToItemAt(std::size_t index);
+    void beginToItemFirst();
+    void beginToItemLast();
+    void beginToItemSelected();
+
+    bool isItemVisibleAt(std::size_t index, bool fill = true);
+    bool isItemSelectedVisible(bool fill = true);
+
+    void setScrollVisible(bool visible);
+    void setScrollPosition(std::size_t position);
+
+    int getOptimalHeight();
+
+    void setActivateOnClick(bool activateOnClick);
+
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
+
+	GameComponentPtr clone() const except;
+protected:
+	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept;
+	virtual GuiWidgetPtr getGuiWidget() const noexcept;
+
+private:
+    GuiListBoxComponent(const GuiListBoxComponent&) noexcept = delete;
+    GuiListBoxComponent& operator=(const GuiListBoxComponent&) noexcept = delete;
+
+private:
+    GuiListBoxPtr _listBox;
 };
 
 _NAME_END

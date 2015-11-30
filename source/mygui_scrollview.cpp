@@ -38,6 +38,9 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(MyGuiScrollView, GuiScrollBar, "MyGuiScrollView")
+__ImplementSubClass(MyGuiScrollViewImpl, MyGuiWidget, "MyGuiScrollViewImpl")
+
 MyGuiScrollViewImpl::MyGuiScrollViewImpl() noexcept
 	: _parent(nullptr)
 	, _scrollView(nullptr)
@@ -60,24 +63,6 @@ MyGuiScrollViewImpl::create() except
 	this->setWidget(_scrollView);
 
 	return _scrollView ? true : false;
-}
-
-void
-MyGuiScrollViewImpl::setPosition(int left, int top)
-{
-	_scrollView->setPosition(left, top);
-}
-
-void
-MyGuiScrollViewImpl::setSize(int width, int height)
-{
-	_scrollView->setSize(width, height);
-}
-
-void
-MyGuiScrollViewImpl::setCoord(int left, int top, int width, int height)
-{
-	_scrollView->setCoord(left, top, width, height);
 }
 
 void
@@ -159,42 +144,6 @@ MyGuiScrollView::MyGuiScrollView() noexcept
 
 MyGuiScrollView::~MyGuiScrollView() noexcept
 {
-}
-
-void
-MyGuiScrollView::setPosition(const Point& value)
-{
-	_impl.setPosition(value.x, value.y);
-}
-
-void
-MyGuiScrollView::setSize(const Size& value)
-{
-	_impl.setSize(value.x, value.y);
-}
-
-void
-MyGuiScrollView::setCoord(const Rect& value)
-{
-	_impl.setCoord(value.x, value.y, value.w, value.h);
-}
-
-void
-MyGuiScrollView::setPosition(int left, int top)
-{
-	_impl.setPosition(left, top);
-}
-
-void
-MyGuiScrollView::setSize(int width, int height)
-{
-	_impl.setSize(width, height);
-}
-
-void
-MyGuiScrollView::setCoord(int left, int top, int width, int height)
-{
-	_impl.setCoord(left, top, width, height);
 }
 
 void

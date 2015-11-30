@@ -147,6 +147,8 @@ GuiScrollViewComponent::load(iarchive& reader) noexcept
 void 
 GuiScrollViewComponent::save(oarchive& write) noexcept
 {
+	GuiWidgetComponent::save(write);
+
 	bool scrollV = this->isVisibleVScroll();
 	bool scrollH = this->isVisibleHScroll();
 

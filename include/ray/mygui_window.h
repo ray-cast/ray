@@ -43,6 +43,7 @@ _NAME_BEGIN
 
 class MyGuiWindowImpl final : public MyGuiWidget
 {
+	__DeclareSubClass(MyGuiWindowImpl, MyGuiWidget)
 public:
 	MyGuiWindowImpl() noexcept;
 	~MyGuiWindowImpl() noexcept;
@@ -64,6 +65,10 @@ public:
 	void getMaxSize(int& w, int& h) const noexcept;
 
 private:
+	MyGuiWindowImpl(const MyGuiWindowImpl&) noexcept = delete;
+	MyGuiWindowImpl& operator=(const MyGuiWindowImpl&) noexcept = delete;
+
+private:
 
 	std::string _name;
 
@@ -75,6 +80,7 @@ private:
 
 class MyGuiWindow final : public GuiWindow
 {
+	__DeclareSubClass(MyGuiWindow, GuiWindow)
 public:
 	MyGuiWindow() noexcept;
 	virtual ~MyGuiWindow() noexcept;
@@ -92,6 +98,10 @@ public:
 
 	virtual void setMaxSize(int width, int height) noexcept;
 	virtual void getMaxSize(int& w, int& h) const noexcept;
+
+private:
+	MyGuiWindow(const MyGuiWindow&) noexcept = delete;
+	MyGuiWindow& operator=(const MyGuiWindow&) noexcept = delete;
 
 private:
 

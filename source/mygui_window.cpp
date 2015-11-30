@@ -39,6 +39,9 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(MyGuiWindow, GuiWindow, "MyGuiWindow")
+__ImplementSubClass(MyGuiWindowImpl, MyGuiWidget, "MyGuiWindowImpl")
+
 MyGuiWindowImpl::MyGuiWindowImpl() noexcept
 	: _window(nullptr)
 	, _parent(nullptr)

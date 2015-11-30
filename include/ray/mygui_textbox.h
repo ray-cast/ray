@@ -79,6 +79,10 @@ public:
 	bool getTextShadow() const noexcept;
 
 private:
+	MyGuiTextBoxImpl(const MyGuiTextBoxImpl&) noexcept = delete;
+	MyGuiTextBoxImpl& operator=(const MyGuiTextBoxImpl&) noexcept = delete;
+
+private:
 	bool _destroy;
 	std::string _caption;
 	MyGUI::Widget* _parent;
@@ -118,6 +122,10 @@ public:
 
 	void setTextShadow(bool _value) noexcept;
 	bool getTextShadow() const noexcept;
+
+private:
+	MyGuiTextBox(const MyGuiTextBox&) noexcept = delete;
+	MyGuiTextBox& operator=(const MyGuiTextBox&) noexcept = delete;
 
 private:
 

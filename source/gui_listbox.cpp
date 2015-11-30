@@ -34,36 +34,19 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_BUTTON_H_
-#define _H_GUI_BUTTON_H_
-
-#include <ray/gui_widget.h>
+#include <ray/gui_listbox.h>
 
 _NAME_BEGIN
 
-class EXPORT GuiButton : public GuiWidget
+__ImplementSubInterface(GuiListBox, GuiWidget, "GuiListBoxControl")
+
+GuiListBox::GuiListBox(GuiWidgetImpl& impl) noexcept
+	: GuiWidget(impl)
 {
-	__DeclareSubInterface(GuiButton, GuiWidget)
-public:
-	GuiButton(GuiWidgetImpl& impl) noexcept;
-	virtual ~GuiButton() noexcept;
+}
 
-	virtual GuiTextBoxPtr getGuiTextBox() const noexcept = 0;
-
-	virtual void setStateSelected(bool _value) noexcept = 0;
-	virtual bool getStateSelected() const noexcept = 0;
-
-	virtual void setModeImage(bool _value) noexcept = 0;
-	virtual bool getModeImage() const noexcept = 0;
-
-	virtual void setImageResource(const std::string& name) noexcept = 0;
-	virtual void setImageGroup(const std::string& name) noexcept = 0;
-	virtual void setImageName(const std::string& name) noexcept = 0;
-private:
-	GuiButton(const GuiButton&) noexcept = delete;
-	GuiButton& operator=(const GuiButton&) noexcept = delete;
-};
+GuiListBox::~GuiListBox() noexcept
+{
+}
 
 _NAME_END
-
-#endif

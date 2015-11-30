@@ -34,18 +34,56 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/game_controller.h>
+#ifndef _H_GUI_LISTBOX_H_
+#define _H_GUI_LISTBOX_H_
+
+#include <ray/gui_widget.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GameController, GameComponent, "GameController")
-
-GameController::GameController() noexcept
+class EXPORT GuiListBox : public GuiWidget
 {
-}
+	__DeclareSubInterface(GuiListBox, GuiWidget)
+public:
+	GuiListBox(GuiWidgetImpl& impl) noexcept;
+	virtual ~GuiListBox() noexcept;
 
-GameController::~GameController() noexcept
-{
-}
+	virtual std::size_t getItemCount() const = 0;
+	virtual void insertItemAt(std::size_t index, const std::string& name) = 0;
+	virtual void addItem(const std::string& name) = 0;
+	virtual void removeItemAt(std::size_t index) = 0;
+	virtual void removeAllItems() = 0;
+	virtual void swapItemsAt(std::size_t index1, std::size_t index2) = 0;
+
+	virtual std::size_t findItemIndexWith(const std::string& name) = 0;
+	virtual std::size_t getIndexSelected() const = 0;
+	virtual void setIndexSelected(std::size_t index) = 0;
+	virtual void clearIndexSelected() = 0;
+	virtual void setItemNameAt(std::size_t index, const std::string& name) = 0;
+	virtual void clearItemDataAt(std::size_t index) = 0;
+
+	virtual const std::string& getItemNameAt(std::size_t index) = 0;
+
+	virtual void beginToItemAt(std::size_t index) = 0;
+	virtual void beginToItemFirst() = 0;
+	virtual void beginToItemLast() = 0;
+	virtual void beginToItemSelected() = 0;
+
+	virtual bool isItemVisibleAt(std::size_t index, bool fill = true) = 0;
+	virtual bool isItemSelectedVisible(bool fill = true) = 0;
+
+	virtual void setScrollVisible(bool visible) = 0;
+	virtual void setScrollPosition(std::size_t position) = 0;
+
+	virtual int getOptimalHeight() = 0;
+
+	virtual void setActivateOnClick(bool activateOnClick) = 0;
+
+private:
+	GuiListBox(const GuiListBox&) noexcept = delete;
+	GuiListBox& operator=(const GuiListBox&) noexcept = delete;
+};
 
 _NAME_END
+
+#endif

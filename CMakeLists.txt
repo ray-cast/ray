@@ -227,6 +227,7 @@ ELSEIF(CMAKE_SYSTEM_NAME MATCHES "Windows")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4061") # 枚举数没有被 case 标签显式处理
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4100") # 未引用的形参
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4191") # 不安全的函数转换
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4548") # 逗号前的表达式不起任何作用；应输入带副作用的表达式
     #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4201")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4242") # 从“const int”转换到“BYTE”，可能丢失数据
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244") # 从“int”转换到“unsigned char”，可能丢失数据

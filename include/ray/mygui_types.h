@@ -48,8 +48,10 @@
 #include <ray/gui_widget.h>
 #include <ray/gui_window.h>
 #include <ray/gui_button.h>
+#include <ray/gui_listbox.h>
 #include <ray/gui_textbox.h>
 #include <ray/gui_imagebox.h>
+#include <ray/gui_scrollbar.h>
 #include <ray/gui_scrollview.h>
 #include <ray/gui_imageloader.h>
 #include <ray/gui_system_base.h>

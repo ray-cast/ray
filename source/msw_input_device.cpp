@@ -41,7 +41,7 @@ _NAME_BEGIN
 
 __ImplementSubInterface(MSWInputDevice, InputDevice, "MSWInputDevice")
 
-InputKey::Code toScancode(HWND hwnd, WPARAM wParam, LPARAM lParam)
+InputKey::Code VirtualKeyToScanCode(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
 	UINT flags = HIWORD(lParam);
 
@@ -209,6 +209,64 @@ InputKey::Code toScancode(HWND hwnd, WPARAM wParam, LPARAM lParam)
 	return InputKey::Code::UNKNOWN;
 }
 
+int VirtualKeyToText(WPARAM _virtualKey)
+{
+	static WCHAR deadKey = 0;
+
+	BYTE keyState[256];
+	HKL  layout = GetKeyboardLayout(0);
+	if (GetKeyboardState(keyState) == 0)
+		return 0;
+
+	WCHAR buff[3] = { 0, 0, 0 };
+	int ascii = ToUnicodeEx((UINT)_virtualKey, 0, keyState, buff, 3, 0, layout);
+	if (ascii == 1 && deadKey != '\0')
+	{
+		// A dead key is stored and we have just converted a character key
+		// Combine the two into a single character
+		WCHAR wcBuff[3] = { buff[0], deadKey, '\0' };
+		WCHAR out[3];
+
+		deadKey = '\0';
+		if (FoldStringW(MAP_PRECOMPOSED, (LPWSTR)wcBuff, 3, (LPWSTR)out, 3))
+			return out[0];
+	}
+	else if (ascii == 1)
+	{
+		// We have a single character
+		deadKey = '\0';
+		return buff[0];
+	}
+	else if (ascii == 2)
+	{
+		// Convert a non-combining diacritical mark into a combining diacritical mark
+		// Combining versions range from 0x300 to 0x36F; only 5 (for French) have been mapped below
+		// http://www.fileformat.info/info/unicode/block/combining_diacritical_marks/images.htm
+		switch (buff[0])
+		{
+		case 0x5E: // Circumflex accent: §Ó
+			deadKey = 0x302;
+			break;
+		case 0x60: // Grave accent: §Ñ
+			deadKey = 0x300;
+			break;
+		case 0xA8: // Diaeresis: §î
+			deadKey = 0x308;
+			break;
+		case 0xB4: // Acute accent: §Û
+			deadKey = 0x301;
+			break;
+		case 0xB8: // Cedilla: §Ù
+			deadKey = 0x327;
+			break;
+		default:
+			deadKey = buff[0];
+			break;
+		}
+	}
+	return 0;
+}
+
 MSWInputDevice::MSWInputDevice() noexcept
 	: _window(nullptr)
 {
@@ -250,12 +308,22 @@ MSWInputDevice::update() noexcept
 				UINT virtualKey = ::ImmGetVirtualKey(msg.hwnd);
 				if (virtualKey != VK_PROCESSKEY)
 				{
-					inputEvent->key.keysym.sym = toScancode(msg.hwnd, virtualKey, msg.lParam);
+					inputEvent->key.keysym.raw = virtualKey;
+					inputEvent->key.keysym.sym = VirtualKeyToScanCode(msg.hwnd, virtualKey, msg.lParam);
+					if (msg.message == WM_KEYDOWN)
+						inputEvent->key.keysym.unicode = VirtualKeyToText(virtualKey);
+					else
+						inputEvent->key.keysym.unicode = 0;
 				}
 			}
 			else
 			{
-				inputEvent->key.keysym.sym = toScancode(_window, msg.wParam, msg.lParam);
+				inputEvent->key.keysym.raw = msg.wParam;
+				inputEvent->key.keysym.sym = VirtualKeyToScanCode(_window, msg.wParam, msg.lParam);
+				if (msg.message == WM_KEYDOWN)
+					inputEvent->key.keysym.unicode = VirtualKeyToText(msg.wParam);
+				else
+					inputEvent->key.keysym.unicode = 0;
 			}
 
 			this->postEvent(inputEvent);

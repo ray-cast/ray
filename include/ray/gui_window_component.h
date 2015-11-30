@@ -37,13 +37,13 @@
 #ifndef _H_GUI_WINDOW_COMPONENT_H_
 #define _H_GUI_WINDOW_COMPONENT_H_
 
-#include <ray/gui_label_component.h>
+#include <ray/gui_widget_component.h>
 
 _NAME_BEGIN
 
-class GuiWindowComponent final : public GuiLabelComponent
+class GuiWindowComponent final : public GuiWidgetComponent
 {
-	__DeclareSubClass(GuiWindowComponent, GuiLabelComponent)
+	__DeclareSubClass(GuiWindowComponent, GuiWidgetComponent)
 public:
 	GuiWindowComponent() noexcept;
 	~GuiWindowComponent() noexcept;
@@ -66,12 +66,18 @@ public:
 	GameComponentPtr clone() const except;
 
 protected:
+	virtual void onAttach() except;
+	virtual void onDetach() except;
+
+protected:
 	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept;
 	virtual GuiWidgetPtr getGuiWidget() const noexcept;
 
 private:
 
 	GuiWindowPtr _window;
+
+	GameObjectPtr _label;
 };
 
 _NAME_END

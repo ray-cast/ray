@@ -36,19 +36,18 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_GUI)
 #include <ray/gui_button_component.h>
+#include <ray/gui_label_component.h>
 #include <ray/gui_button.h>
 #include <ray/gui_system.h>
 
 _NAME_BEGIN
 
-__ImplementSubClass(GuiButtonComponent, GuiLabelComponent, "GuiButton")
+__ImplementSubClass(GuiButtonComponent, GuiWidgetComponent, "GuiButton")
 
 GuiButtonComponent::GuiButtonComponent() noexcept
 {
 	_button = GuiSystem::instance()->createWidget<GuiButton>();
 	_button->create();
-
-	this->setGuiTextBox(_button->getGuiTextBox());
 }
 
 GuiButtonComponent::~GuiButtonComponent() noexcept
@@ -97,10 +96,28 @@ GuiButtonComponent::setImageName(const std::string& name) noexcept
 	_button->setImageName(name);
 }
 
+void 
+GuiButtonComponent::onAttach() except
+{
+	if (_label)
+		_label->setParent(this->getGameObject());
+}
+
+void 
+GuiButtonComponent::onDetach() except
+{
+	if (_label)
+		_label->setParent(nullptr);
+}
+
 void
 GuiButtonComponent::load(iarchive& reader) noexcept
 {
-	GuiLabelComponent::load(reader);
+	auto label = std::make_shared<GuiLabelComponent>(_button->getGuiTextBox());
+	label->load(reader);
+
+	_label = std::make_shared<GameObject>();
+	_label->addComponent(label);
 
 	bool state = false;
 	bool mode = false;
@@ -154,4 +171,5 @@ GuiButtonComponent::getGuiWidget() const noexcept
 }
 
 _NAME_END
+
 #endif

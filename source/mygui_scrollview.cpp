@@ -38,17 +38,27 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(MyGuiScrollView, GuiScrollBar, "MyGuiScrollView")
+__ImplementSubClass(MyGuiScrollView, GuiScrollView, "MyGuiScrollView")
 __ImplementSubClass(MyGuiScrollViewImpl, MyGuiWidget, "MyGuiScrollViewImpl")
 
 MyGuiScrollViewImpl::MyGuiScrollViewImpl() noexcept
 	: _parent(nullptr)
 	, _scrollView(nullptr)
+	, _destroy(true)
 {
+}
+
+MyGuiScrollViewImpl::MyGuiScrollViewImpl(MyGUI::ScrollView* self, bool destroy) noexcept
+	: _parent(nullptr)
+	, _scrollView(self)
+	, _destroy(false)
+{
+	this->setWidget(self);
 }
 
 MyGuiScrollViewImpl::~MyGuiScrollViewImpl() noexcept
 {
+	this->destroy();
 }
 
 bool
@@ -63,6 +73,19 @@ MyGuiScrollViewImpl::create() except
 	this->setWidget(_scrollView);
 
 	return _scrollView ? true : false;
+}
+
+void
+MyGuiScrollViewImpl::destroy() noexcept
+{
+	if (_destroy)
+	{
+		if (_scrollView)
+		{
+			MyGUI::Gui::getInstance().destroyWidget(_scrollView);
+			_scrollView = nullptr;
+		}
+	}
 }
 
 void
@@ -139,6 +162,12 @@ MyGuiScrollViewImpl::getViewOffset() const
 
 MyGuiScrollView::MyGuiScrollView() noexcept
 	: GuiScrollView(_impl)
+{
+}
+
+MyGuiScrollView::MyGuiScrollView(MyGUI::ScrollView* self, bool destroy) noexcept
+	: GuiScrollView(_impl)
+	, _impl(self, destroy)
 {
 }
 

@@ -49,7 +49,7 @@ GuiLabelComponent::GuiLabelComponent() noexcept
 	_label->create();
 }
 
-GuiLabelComponent::GuiLabelComponent(GuiTextBoxPtr label) noexcept
+GuiLabelComponent::GuiLabelComponent(GuiTextBoxPtr& label) noexcept
 	: _label(label)
 {
 }
@@ -190,18 +190,6 @@ GuiLabelComponent::getGuiWidget() const noexcept
 	return _label;
 }
 
-void 
-GuiLabelComponent::setGuiTextBox(GuiTextBoxPtr widget) noexcept
-{
-	_label = widget;
-}
-
-GuiTextBoxPtr 
-GuiLabelComponent::getGuiTextBox() const noexcept
-{
-	return _label;
-}
-
 void
 GuiLabelComponent::load(iarchive& reader) noexcept
 {
@@ -228,9 +216,7 @@ GuiLabelComponent::load(iarchive& reader) noexcept
 	this->setTextShadow(textShadow);
 	this->setTextShadowColour(textShadowColor);
 
-	if (textAlign.empty())
-		this->setTextAlign(GuiWidgetAlign::Center);
-	else
+	if (!textAlign.empty())
 		this->setTextAlign(GuiWidgetAlign::parse(textAlign));
 
 	if (!font.empty())

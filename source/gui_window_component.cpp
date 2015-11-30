@@ -36,19 +36,18 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_GUI)
 #include <ray/gui_window_component.h>
+#include <ray/gui_label_component.h>
 #include <ray/gui_window.h>
 #include <ray/gui_system.h>
 
 _NAME_BEGIN
 
-__ImplementSubClass(GuiWindowComponent, GuiLabelComponent, "GuiWindow")
+__ImplementSubClass(GuiWindowComponent, GuiWidgetComponent, "GuiWindow")
 
 GuiWindowComponent::GuiWindowComponent() noexcept
 {	
 	_window = GuiSystem::instance()->createWidget<GuiWindow>();
 	_window->create();
-
-	this->setGuiTextBox(_window->getGuiTextBox());
 }
 
 GuiWindowComponent::~GuiWindowComponent() noexcept
@@ -111,10 +110,28 @@ GuiWindowComponent::getMaxSize(int& w, int& h) const noexcept
 	_window->getMaxSize(w, h);
 }
 
+void
+GuiWindowComponent::onAttach() except
+{
+	if (_label)
+		_label->setParent(this->getGameObject());
+}
+
+void
+GuiWindowComponent::onDetach() except
+{
+	if (_label)
+		_label->setParent(nullptr);
+}
+
 void 
 GuiWindowComponent::load(iarchive& reader) noexcept
 {
-	GuiLabelComponent::load(reader);
+	auto label = std::make_shared<GuiLabelComponent>(_window->getGuiTextBox());
+	label->load(reader);
+
+	_label = std::make_shared<GameObject>();
+	_label->addComponent(label);
 
 	bool smooth = true;
 	bool autoAlpha = false;

@@ -41,7 +41,7 @@
 _NAME_BEGIN
 
 __ImplementSubClass(MyGuiButton, GuiButton, "MyGuiButton")
-__ImplementSubClass(MyGuiButtonImpl, MyGuiWidget, "MyGuiButton")
+__ImplementSubClass(MyGuiButtonImpl, MyGuiWidget, "MyGuiButtonImpl")
 
 MyGuiButtonImpl::MyGuiButtonImpl() noexcept
 	: _button(nullptr)

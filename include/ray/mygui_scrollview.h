@@ -46,9 +46,11 @@ class MyGuiScrollViewImpl final : public MyGuiWidget
 	__DeclareSubClass(MyGuiScrollViewImpl, MyGuiWidget)
 public:
 	MyGuiScrollViewImpl() noexcept;
+	MyGuiScrollViewImpl(MyGUI::ScrollView* self, bool destroy = true) noexcept;
 	~MyGuiScrollViewImpl() noexcept;
 
 	bool create() except;
+	void destroy() noexcept;
 
 	void setVisibleVScroll(bool value);
 	bool isVisibleVScroll() const;
@@ -73,7 +75,7 @@ private:
 	MyGuiScrollViewImpl& operator=(const MyGuiScrollViewImpl&) noexcept = delete;
 
 private:
-
+	bool _destroy;
 	MyGUI::Widget* _parent;
 	MyGUI::ScrollView* _scrollView;
 };
@@ -83,6 +85,7 @@ class MyGuiScrollView final : public GuiScrollView
 	__DeclareSubClass(MyGuiScrollView, GuiScrollView)
 public:
 	MyGuiScrollView() noexcept;
+	MyGuiScrollView(MyGUI::ScrollView* self, bool destroy = true) noexcept;
 	~MyGuiScrollView() noexcept;
 
 	void setVisibleVScroll(bool value);

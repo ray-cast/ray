@@ -93,6 +93,10 @@ protected:
 	virtual GuiWidgetPtr getGuiWidget() const noexcept;
 
 private:
+	GuiImageComponent(const GuiImageComponent&) noexcept = delete;
+	GuiImageComponent& operator=(const GuiImageComponent&) noexcept = delete;
+
+private:
 
 	GuiImageBoxPtr _imagebox;
 };

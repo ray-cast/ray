@@ -82,6 +82,11 @@ protected:
 		return MyGUI::IntCoord(rect.x, rect.y, rect.w, rect.h); 
 	}
 
+	static MyGUI::Colour convert(const float4& color) noexcept
+	{
+		return MyGUI::Colour(color.x, color.y, color.z, color.w);
+	}
+
 	static Point convert(const MyGUI::IntPoint& pt) noexcept
 	{
 		return Point(pt.left, pt.top);
@@ -95,6 +100,11 @@ protected:
 	static Rect convert(const MyGUI::IntCoord& rect) noexcept
 	{
 		return Rect(rect.left, rect.top, rect.width, rect.height);
+	}
+
+	static float4 convert(const MyGUI::Colour& color) noexcept
+	{
+		return float4(color.red, color.green, color.blue, color.alpha);
 	}
 
 	static MyGUI::Align GuiAlignToMyGui(GuiWidgetAlign align) noexcept;

@@ -54,6 +54,7 @@ MyGuiTextBoxImpl::MyGuiTextBoxImpl(MyGUI::TextBox* self, bool destroy) noexcept
 	, _parent(nullptr)
 	, _destroy(destroy)
 {
+	this->setWidget(self);
 }
 
 MyGuiTextBoxImpl::~MyGuiTextBoxImpl() noexcept

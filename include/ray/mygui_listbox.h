@@ -82,6 +82,10 @@ public:
 	void setActivateOnClick(bool activateOnClick);
 
 private:
+	MyGuiListBoxImpl(const MyGuiListBoxImpl&) noexcept = delete;
+	MyGuiListBoxImpl& operator=(const MyGuiListBoxImpl&) noexcept = delete;
+
+private:
 
 	MyGUI::ListBox* _listBox;
 	MyGUI::Widget* _parent;
@@ -124,6 +128,10 @@ public:
 	int getOptimalHeight();
 
 	void setActivateOnClick(bool activateOnClick);
+
+private:
+	MyGuiListBox(const MyGuiListBox&) noexcept = delete;
+	MyGuiListBox& operator=(const MyGuiListBox&) noexcept = delete;
 
 private:
 

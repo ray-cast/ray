@@ -37,11 +37,11 @@
 #ifndef _H_GUI_BUTTON_COMPONENT_H_
 #define _H_GUI_BUTTON_COMPONENT_H_
 
-#include <ray/gui_label_component.h>
+#include <ray/gui_widget_component.h>
 
 _NAME_BEGIN
 
-class GuiButtonComponent final : public GuiLabelComponent
+class GuiButtonComponent final : public GuiWidgetComponent
 {
 	__DeclareSubClass(GuiButtonComponent, GuiLabelComponent)
 public:
@@ -64,12 +64,21 @@ public:
 	GameComponentPtr clone() const except;
 
 protected:
+	virtual void onAttach() except;
+	virtual void onDetach() except;
+
+protected:
 	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept;
 	virtual GuiWidgetPtr getGuiWidget() const noexcept;
 
 private:
+	GuiButtonComponent(const GuiButtonComponent&) noexcept = delete;
+	GuiButtonComponent& operator=(const GuiButtonComponent&) noexcept = delete;
+
+private:
 
 	GuiButtonPtr _button;
+	GameObjectPtr _label;
 };
 
 _NAME_END

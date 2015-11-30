@@ -62,7 +62,7 @@ public:
 	virtual bool injectMouseMove(int _absx, int _absy, int _absz) noexcept = 0;
 	virtual bool injectMousePress(int _absx, int _absy, GuiInputButton::Code _id) noexcept = 0;
 	virtual bool injectMouseRelease(int _absx, int _absy, GuiInputButton::Code _id) noexcept = 0;
-	virtual bool injectKeyPress(GuiInputKey::Code _key) noexcept = 0;
+	virtual bool injectKeyPress(GuiInputKey::Code _key, GuiInputChar _char) noexcept = 0;
 	virtual bool injectKeyRelease(GuiInputKey::Code _key) noexcept = 0;
 
 	virtual bool isFocusMouse() const noexcept = 0;

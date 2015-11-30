@@ -136,10 +136,10 @@ GuiSystem::injectMouseRelease(int _absx, int _absy, GuiInputButton::Code _id) no
 }
 
 bool 
-GuiSystem::injectKeyPress(GuiInputKey::Code _key) noexcept
+GuiSystem::injectKeyPress(GuiInputKey::Code _key, GuiInputChar _char) noexcept
 {
 	assert(_system);
-	return _system->injectKeyPress(_key);
+	return _system->injectKeyPress(_key, _char);
 }
 
 bool 

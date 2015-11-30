@@ -89,8 +89,8 @@ public:
 	float getRepeatStepTime(float time) const;
 
 private:
-	MyGuiScrollBarImpl(const MyGuiScrollBarImpl&) = delete;
-	MyGuiScrollBarImpl& operator=(const MyGuiScrollBarImpl&) = delete;
+	MyGuiScrollBarImpl(const MyGuiScrollBarImpl&) noexcept = delete;
+	MyGuiScrollBarImpl& operator=(const MyGuiScrollBarImpl&) noexcept = delete;
 
 private:
 
@@ -144,8 +144,8 @@ public:
 	float getRepeatStepTime(float time) const;
 
 private:
-	MyGuiScrollBar(const MyGuiScrollBar&) = delete;
-	MyGuiScrollBar& operator=(const MyGuiScrollBar&) = delete;
+	MyGuiScrollBar(const MyGuiScrollBar&) noexcept = delete;
+	MyGuiScrollBar& operator=(const MyGuiScrollBar&) noexcept = delete;
 
 private:
 

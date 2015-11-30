@@ -43,7 +43,7 @@ _NAME_BEGIN
 
 class MyGuiButtonImpl final : public MyGuiWidget
 {
-	__DeclareSubClass(MyGuiButton, GuiWidget)
+	__DeclareSubClass(MyGuiButtonImpl, MyGuiWidget)
 public:
 	MyGuiButtonImpl() noexcept;
 	virtual ~MyGuiButtonImpl() noexcept;
@@ -61,6 +61,10 @@ public:
 	void setImageResource(const std::string& name) noexcept;
 	void setImageGroup(const std::string& name) noexcept;
 	void setImageName(const std::string& name) noexcept;
+
+private:
+	MyGuiButtonImpl(const MyGuiButtonImpl&) noexcept = delete;
+	MyGuiButtonImpl& operator=(const MyGuiButtonImpl&) noexcept = delete;
 
 private:
 
@@ -89,6 +93,10 @@ public:
 	virtual void setImageResource(const std::string& name) noexcept;
 	virtual void setImageGroup(const std::string& name) noexcept;
 	virtual void setImageName(const std::string& name) noexcept;
+
+private:
+	MyGuiButton(const MyGuiButton&) noexcept = delete;
+	MyGuiButton& operator=(const MyGuiButton&) noexcept = delete;
 
 private:
 

@@ -416,7 +416,7 @@ GuiFeature::onMessage(const MessagePtr& message) except
 				_platform->injectMouseRelease(event->button.x, event->button.y, ButtonCodeToGuiButton((InputButton::Code)event->button.button));
 				break;
 			case InputEvent::KeyDown:
-				_platform->injectKeyPress(KeyCodetoGuiKey((InputKey::Code)event->key.keysym.sym));
+				_platform->injectKeyPress(KeyCodetoGuiKey((InputKey::Code)event->key.keysym.sym), event->key.keysym.unicode);
 				break;
 			case InputEvent::KeyUp:
 				_platform->injectKeyRelease(KeyCodetoGuiKey((InputKey::Code)event->key.keysym.sym));

@@ -17,4 +17,7 @@
             </object>
         </object>
     </object>
+    <object position="400,400,0"  scale="200, 200, 0" active="true">
+        <component class="GuiEditBox" skin="EditBox" text="hello world"/>
+    </object>
 </scene>

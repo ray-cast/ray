@@ -41,12 +41,12 @@
 
 _NAME_BEGIN
 
-class GuiLabelComponent : public GuiWidgetComponent
+class GuiLabelComponent final : public GuiWidgetComponent
 {
 	__DeclareSubClass(GuiLabelComponent, GuiWidgetComponent)
 public:
 	GuiLabelComponent() noexcept;
-	GuiLabelComponent(GuiTextBoxPtr label) noexcept;
+	GuiLabelComponent(GuiTextBoxPtr& label) noexcept;
 	~GuiLabelComponent() noexcept;
 
 	Rect getTextRegion() noexcept;
@@ -84,8 +84,9 @@ protected:
 	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept;
 	virtual GuiWidgetPtr getGuiWidget() const noexcept;
 
-	virtual void setGuiTextBox(GuiTextBoxPtr widget) noexcept;
-	virtual GuiTextBoxPtr getGuiTextBox() const noexcept;
+private:
+	GuiLabelComponent(const GuiLabelComponent&) noexcept = delete;
+	GuiLabelComponent& operator=(const GuiLabelComponent&) noexcept = delete;
 
 private:
 

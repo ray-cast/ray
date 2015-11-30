@@ -40,6 +40,7 @@
 #include <ray/mygui_manager.h>
 #include <ray/mygui_button.h>
 #include <ray/mygui_window.h>
+#include <ray/mygui_editbox.h>
 #include <ray/mygui_imagebox.h>
 #include <ray/mygui_textbox.h>
 #include <ray/mygui_scrollbar.h>
@@ -342,9 +343,9 @@ MyGuiSystem::injectMouseRelease(int _absx, int _absy, GuiInputButton::Code _id) 
 }
 
 bool
-MyGuiSystem::injectKeyPress(GuiInputKey::Code _key) noexcept
+MyGuiSystem::injectKeyPress(GuiInputKey::Code _key, GuiInputChar _char) noexcept
 {
-	return MyGUI::InputManager::getInstance().injectKeyPress(GuiKeyToMyGUI(_key));
+	return MyGUI::InputManager::getInstance().injectKeyPress(GuiKeyToMyGUI(_key), _char);
 }
 
 bool
@@ -396,6 +397,8 @@ MyGuiSystem::createWidget(const rtti::Rtti* rtti) except
 		widget = std::make_shared<MyGuiButton>();
 	else if (rtti == GuiWindow::getRtti())
 		widget = std::make_shared<MyGuiWindow>();
+	else if (rtti == GuiEditBox::getRtti())
+		widget = std::make_shared<MyGuiEditBox>();
 	else if (rtti == GuiTextBox::getRtti())
 		widget = std::make_shared<MyGuiTextBox>();
 	else if (rtti == GuiImageBox::getRtti())

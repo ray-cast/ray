@@ -165,6 +165,12 @@ public:
 	std::shared_ptr<T> getComponent() const noexcept { return std::dynamic_pointer_cast<T>(this->getComponent(T::RTTI)); }
 	GameComponentPtr getComponent(const rtti::Rtti* type) const noexcept;
 	GameComponentPtr getComponent(const rtti::Rtti& type) const noexcept;
+
+	template<typename T>
+	std::shared_ptr<T> getComponentInChildren() const noexcept { return std::dynamic_pointer_cast<T>(this->getComponentInChildren(T::RTTI)); }
+	GameComponentPtr getComponentInChildren(const rtti::Rtti* type) const noexcept;
+	GameComponentPtr getComponentInChildren(const rtti::Rtti& type) const noexcept;
+
 	const GameComponents& getComponents() const noexcept;
 
 	void sendMessage(const MessagePtr& message) noexcept;

@@ -1021,13 +1021,34 @@ GameObject::getComponent(const rtti::Rtti* type) const noexcept
 GameComponentPtr
 GameObject::getComponent(const rtti::Rtti& type) const noexcept
 {
+	return this->getComponent(&type);
+}
+
+GameComponentPtr
+GameObject::getComponentInChildren(const rtti::Rtti* type) const noexcept
+{
+	assert(type);
+
 	for (auto& it : _components)
 	{
 		if (it->isA(type))
 			return it;
 	}
 
+	for (auto& it : _children)
+	{
+		auto component = it->getComponentInChildren(type);
+		if (component)
+			return component;
+	}
+
 	return nullptr;
+}
+
+GameComponentPtr 
+GameObject::getComponentInChildren(const rtti::Rtti& type) const noexcept
+{
+	return this->getComponentInChildren(&type);
 }
 
 const GameComponents&

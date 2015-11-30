@@ -939,6 +939,7 @@ void
 GameObject::addComponent(GameComponentPtr component) except
 {
 	assert(component);
+	assert(component->_gameObject == nullptr);
 
 	auto it = std::find_if(_components.begin(), _components.end(), [component](GameComponentPtr& it) { return component->isInstanceOf(it->rtti()); });
 	if (it == _components.end())
@@ -963,6 +964,7 @@ void
 GameObject::removeComponent(GameComponentPtr component) noexcept
 {
 	assert(component);
+	assert(component->_gameObject == this);
 
 	auto it = std::find(_components.begin(), _components.end(), component);
 	if (it != _components.end())

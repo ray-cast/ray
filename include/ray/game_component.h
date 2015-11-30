@@ -112,8 +112,6 @@ private:
 	std::string _name;
 
 	GameObject* _gameObject;
-
-	GameComponents _components;
 };
 
 _NAME_END

@@ -42,6 +42,7 @@ __ImplementSubInterface(GameComponent, MessageListener, "Component")
 
 GameComponent::GameComponent() noexcept
 	: _active(true)
+	, _gameObject(nullptr)
 {
 }
 

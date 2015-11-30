@@ -59,8 +59,8 @@ public:
 
 	virtual void changeWidgetSkin(const std::string& skin) except = 0;
 
-	virtual void setViewport(const Viewport& view) except = 0;
-	virtual void getViewport(Viewport& view) const noexcept = 0;
+	virtual void setViewport(const Rect& view) except = 0;
+	virtual void getViewport(Rect& view) const noexcept = 0;
 };
 
 class EXPORT GuiWidget : public rtti::Interface
@@ -81,8 +81,8 @@ public:
 
 	void changeWidgetSkin(const std::string& skin) except;
 
-	void setViewport(const Viewport& view) except;
-	void getViewport(Viewport& view) const noexcept;
+	void setViewport(const Rect& view) except;
+	void getViewport(Rect& view) const noexcept;
 
 private:
 

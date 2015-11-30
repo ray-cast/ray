@@ -101,7 +101,7 @@ public:
 	}
 
 	template<typename T>
-	iarchive& operator >> (std::pair<const std::string&, T&> value)
+	bool getValue(std::pair<const std::string&, T&> value) const
 	{
 		assert(!value.first.empty());
 
@@ -111,15 +111,15 @@ public:
 			if (it == value.first)
 			{
 				this->getValue(it, value.second);
-				break;
+				return true;
 			}
 		}
 
-		return *this;
+		return false;
 	}
 
 	template<typename T>
-	iarchive& operator >> (std::pair<const char*, T&> value)
+	bool getValue(std::pair<const char*, T&> value) const
 	{
 		assert(value.first);
 
@@ -129,10 +129,24 @@ public:
 			if (it.compare(value.first) == 0)
 			{
 				this->getValue(it, value.second);
-				break;
+				return true;
 			}
 		}
 
+		return false;
+	}
+
+	template<typename T>
+	iarchive& operator >> (std::pair<const std::string&, T&> value) const
+	{
+		this->getValue(value);
+		return *this;
+	}
+
+	template<typename T>
+	iarchive& operator >> (std::pair<const char*, T&> value)
+	{
+		this->getValue(value);
 		return *this;
 	}
 

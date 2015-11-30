@@ -58,14 +58,44 @@ public:
 
 	virtual void changeWidgetSkin(const std::string& skin) noexcept;
 
-	virtual void setViewport(const Viewport& view) noexcept;
-	virtual void getViewport(Viewport& view) const noexcept;
+	virtual void setViewport(const Rect& view) noexcept;
+	virtual void getViewport(Rect& view) const noexcept;
 
 protected:
 	void setWidget(MyGUI::Widget* widget) noexcept;
 	MyGUI::Widget* getWidget() const noexcept;
 
 protected:
+
+	static MyGUI::IntPoint convert(const Point& pt) noexcept
+	{
+		return MyGUI::IntPoint(pt.x, pt.y);
+	}
+		
+	static MyGUI::IntSize convert(const Size& sz) noexcept
+	{
+		return MyGUI::IntSize(sz.x, sz.y);
+	}
+
+	static MyGUI::IntCoord convert(const Rect& rect) noexcept
+	{
+		return MyGUI::IntCoord(rect.x, rect.y, rect.w, rect.h); 
+	}
+
+	static Point convert(const MyGUI::IntPoint& pt) noexcept
+	{
+		return Point(pt.left, pt.top);
+	}
+
+	static Size convert(const MyGUI::IntSize& sz) noexcept
+	{
+		return Size(sz.width, sz.height);
+	}
+
+	static Rect convert(const MyGUI::IntCoord& rect) noexcept
+	{
+		return Rect(rect.left, rect.top, rect.width, rect.height);
+	}
 
 	static MyGUI::Align GuiAlignToMyGui(GuiWidgetAlign align) noexcept;
 	static GuiWidgetAlign MyGuiToGuiAlign(MyGUI::Align align) noexcept;

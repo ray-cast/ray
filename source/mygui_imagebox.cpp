@@ -55,9 +55,9 @@ MyGuiImageBoxImpl::create() except
 {
 	assert(!_imagebox);
 	if (_parent)
-		_imagebox = _parent->createWidget<MyGUI::ImageBox>("ImageBox", 0, 0, 0, 0, MyGUI::Align::Default, "");
+		_imagebox = _parent->createWidget<MyGUI::ImageBox>("", 0, 0, 0, 0, MyGUI::Align::Default, "");
 	else
-		_imagebox = MyGUI::Gui::getInstance().createWidget<MyGUI::ImageBox>("ImageBox", 0, 0, 0, 0, MyGUI::Align::Default, "Main", "");
+		_imagebox = MyGUI::Gui::getInstance().createWidget<MyGUI::ImageBox>("", 0, 0, 0, 0, MyGUI::Align::Default, "Main", "");
 
 	this->setWidget(_imagebox);
 
@@ -65,21 +65,10 @@ MyGuiImageBoxImpl::create() except
 }
 
 void
-MyGuiImageBoxImpl::setImageInfo(const std::string& texture, const Viewport& view, const Size& tile)
+MyGuiImageBoxImpl::setImageInfo(const std::string& texture, const Rect& view, const Size& tile)
 {
 	assert(_imagebox);
-
-	MyGUI::IntCoord coord;
-	coord.left = view.left;
-	coord.top = view.top;
-	coord.width = view.width;
-	coord.height = view.height;
-
-	MyGUI::IntSize size;
-	size.width = tile.x;
-	size.height = tile.y;
-
-	_imagebox->setImageInfo(texture, coord, size);
+	_imagebox->setImageInfo(texture, convert(view), convert(tile));
 }
 
 void
@@ -90,37 +79,17 @@ MyGuiImageBoxImpl::setImageTexture(const std::string& value)
 }
 
 void
-MyGuiImageBoxImpl::setImageRect(const Viewport& value)
+MyGuiImageBoxImpl::setImageCoord(const Rect& value)
 {
 	assert(_imagebox);
-	MyGUI::IntRect rc;
-	rc.left = value.left;
-	rc.right = value.left + value.width;
-	rc.top = value.top;
-	rc.bottom = value.top + value.height;
-	_imagebox->setImageRect(rc);
+	_imagebox->setImageCoord(convert(value));
 }
 
 void
-MyGuiImageBoxImpl::setImageCoord(const Viewport& value)
+MyGuiImageBoxImpl::setImageTile(const Size& value)
 {
 	assert(_imagebox);
-	MyGUI::IntCoord coord;
-	coord.left = value.left;
-	coord.top = value.top;
-	coord.width = value.width;
-	coord.height = value.height;
-	_imagebox->setImageCoord(coord);
-}
-
-void
-MyGuiImageBoxImpl::setImageTile(const int2& value)
-{
-	assert(_imagebox);
-	MyGUI::IntSize size;
-	size.width = value.x;
-	size.height = value.y;
-	_imagebox->setImageTile(size);
+	_imagebox->setImageTile(convert(value));
 }
 
 void
@@ -141,8 +110,7 @@ Size
 MyGuiImageBoxImpl::getImageSize() const
 {
 	assert(_imagebox);
-	auto size = _imagebox->getImageSize();
-	return Size(size.width, size.height);
+	return convert(_imagebox->getImageSize());
 }
 
 std::size_t
@@ -174,39 +142,24 @@ MyGuiImageBoxImpl::resetItemSelect()
 }
 
 void
-MyGuiImageBoxImpl::insertItem(std::size_t index, const Viewport& value)
+MyGuiImageBoxImpl::insertItem(std::size_t index, const Rect& value)
 {
 	assert(_imagebox);
-	MyGUI::IntCoord coord;
-	coord.left = value.left;
-	coord.top = value.top;
-	coord.width = value.width;
-	coord.height = value.height;
-	_imagebox->insertItem(index, coord);
+	_imagebox->insertItem(index, convert(value));
 }
 
 void
-MyGuiImageBoxImpl::addItem(const Viewport& value)
+MyGuiImageBoxImpl::addItem(const Rect& value)
 {
 	assert(_imagebox);
-	MyGUI::IntCoord coord;
-	coord.left = value.left;
-	coord.top = value.top;
-	coord.width = value.width;
-	coord.height = value.height;
-	_imagebox->addItem(coord);
+	_imagebox->addItem(convert(value));
 }
 
 void
-MyGuiImageBoxImpl::setItem(std::size_t index, const Viewport& value)
+MyGuiImageBoxImpl::setItem(std::size_t index, const Rect& value)
 {
 	assert(_imagebox);
-	MyGUI::IntCoord coord;
-	coord.left = value.left;
-	coord.top = value.top;
-	coord.width = value.width;
-	coord.height = value.height;
-	_imagebox->setItem(index, coord);
+	_imagebox->setItem(index, convert(value));
 }
 
 void
@@ -217,27 +170,17 @@ MyGuiImageBoxImpl::deleteAllItems()
 }
 
 void
-MyGuiImageBoxImpl::addItemFrame(std::size_t index, const Viewport& value)
+MyGuiImageBoxImpl::addItemFrame(std::size_t index, const Rect& value)
 {
 	assert(_imagebox);
-	MyGUI::IntCoord coord;
-	coord.left = value.left;
-	coord.top = value.top;
-	coord.width = value.width;
-	coord.height = value.height;
-	_imagebox->addItemFrame(index, coord);
+	_imagebox->addItemFrame(index, convert(value));
 }
 
 void
-MyGuiImageBoxImpl::insertItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& value)
+MyGuiImageBoxImpl::insertItemFrame(std::size_t index, std::size_t indexFrame, const Rect& value)
 {
 	assert(_imagebox);
-	MyGUI::IntCoord coord;
-	coord.left = value.left;
-	coord.top = value.top;
-	coord.width = value.width;
-	coord.height = value.height;
-	_imagebox->insertItemFrame(index, indexFrame, coord);
+	_imagebox->insertItemFrame(index, indexFrame, convert(value));
 }
 
 void
@@ -255,15 +198,10 @@ MyGuiImageBoxImpl::insertItemFrameDuplicate(std::size_t index, std::size_t index
 }
 
 void
-MyGuiImageBoxImpl::setItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& value)
+MyGuiImageBoxImpl::setItemFrame(std::size_t index, std::size_t indexFrame, const Rect& value)
 {
 	assert(_imagebox);
-	MyGUI::IntCoord coord;
-	coord.left = value.left;
-	coord.top = value.top;
-	coord.width = value.width;
-	coord.height = value.height;
-	_imagebox->setItemFrame(index, indexFrame, coord);
+	_imagebox->setItemFrame(index, indexFrame, convert(value));
 }
 
 void
@@ -325,7 +263,7 @@ MyGuiImageBox::~MyGuiImageBox() noexcept
 }
 
 void
-MyGuiImageBox::setImageInfo(const std::string& texture, const Viewport& coord, const Size& tile)
+MyGuiImageBox::setImageInfo(const std::string& texture, const Rect& coord, const Size& tile)
 {
 	_impl.setImageInfo(texture, coord, tile);
 }
@@ -337,19 +275,13 @@ MyGuiImageBox::setImageTexture(const std::string& value)
 }
 
 void
-MyGuiImageBox::setImageRect(const Viewport& value)
-{
-	_impl.setImageRect(value);
-}
-
-void
-MyGuiImageBox::setImageCoord(const Viewport& value)
+MyGuiImageBox::setImageCoord(const Rect& value)
 {
 	_impl.setImageCoord(value);
 }
 
 void
-MyGuiImageBox::setImageTile(const int2& value)
+MyGuiImageBox::setImageTile(const Size& value)
 {
 	_impl.setImageTile(value);
 }
@@ -397,19 +329,19 @@ MyGuiImageBox::resetItemSelect()
 }
 
 void
-MyGuiImageBox::insertItem(std::size_t index, const Viewport& item)
+MyGuiImageBox::insertItem(std::size_t index, const Rect& item)
 {
 	_impl.insertItem(index, item);
 }
 
 void
-MyGuiImageBox::addItem(const Viewport& item)
+MyGuiImageBox::addItem(const Rect& item)
 {
 	_impl.addItem(item);
 }
 
 void
-MyGuiImageBox::setItem(std::size_t index, const Viewport& item)
+MyGuiImageBox::setItem(std::size_t index, const Rect& item)
 {
 	_impl.setItem(index, item);
 }
@@ -421,13 +353,13 @@ MyGuiImageBox::deleteAllItems()
 }
 
 void
-MyGuiImageBox::addItemFrame(std::size_t index, const Viewport& item)
+MyGuiImageBox::addItemFrame(std::size_t index, const Rect& item)
 {
 	_impl.addItemFrame(index, item);
 }
 
 void
-MyGuiImageBox::insertItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& item)
+MyGuiImageBox::insertItemFrame(std::size_t index, std::size_t indexFrame, const Rect& item)
 {
 	_impl.insertItemFrame(index, indexFrame, item);
 }
@@ -445,7 +377,7 @@ MyGuiImageBox::insertItemFrameDuplicate(std::size_t index, std::size_t indexFram
 }
 
 void
-MyGuiImageBox::setItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& item)
+MyGuiImageBox::setItemFrame(std::size_t index, std::size_t indexFrame, const Rect& item)
 {
 	_impl.setItemFrame(index, indexFrame, item);
 }

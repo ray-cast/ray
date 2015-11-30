@@ -880,8 +880,8 @@ public:
 	{
 		T A = (left + right) / (left - right);
 		T B = (bottom + top) / (bottom - top);
-		T C = (fabs(zFar) > DBL_MAX) ? 1.0f : (zFar + zNear) / (zFar - zNear);
-		T D = (fabs(zFar) > DBL_MAX) ? zNear : 2.0 * zNear * zFar / (zNear - zFar);
+		T C = (zFar > DBL_MAX) ? 1.0f : (zFar + zNear) / (zFar - zNear);
+		T D = (zFar > DBL_MAX) ? zNear : 2.0 * zNear * zFar / (zNear - zFar);
 		T cx = 2.0f * zNear / (right - left);
 		T cy = 2.0f * zNear / (top - bottom);
 
@@ -897,8 +897,8 @@ public:
 	{
 		T A = (right + left) / (right - left);
 		T B = (top + bottom) / (top - bottom);
-		T C = (fabs(zFar) > DBL_MAX) ? 1.0f : (zFar + zNear) / (zFar - zNear);
-		T D = (fabs(zFar) > DBL_MAX) ? zNear : 2.0 * zNear * zFar / (zFar - zNear);
+		T C = (zFar > DBL_MAX) ? 1.0f : (zFar + zNear) / (zFar - zNear);
+		T D = (zFar > DBL_MAX) ? zNear : 2.0 * zNear * zFar / (zFar - zNear);
 		T cx = 2.0f * zNear / (right - left);
 		T cy = 2.0f * zNear / (top - bottom);
 

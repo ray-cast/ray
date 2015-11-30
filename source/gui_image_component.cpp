@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_GUI)
 #include <ray/gui_image_component.h>
+#include <ray/gui_imagebox.h>
 #include <ray/gui_system.h>
 
 _NAME_BEGIN
@@ -53,7 +54,7 @@ GuiImageComponent::~GuiImageComponent() noexcept
 }
 
 void
-GuiImageComponent::setImageInfo(const std::string& texture, const Viewport& coord, const Size& tile)
+GuiImageComponent::setImageInfo(const std::string& texture, const Rect& coord, const Size& tile)
 {
     assert(_imagebox);
     _imagebox->setImageInfo(texture, coord, tile);
@@ -67,21 +68,14 @@ GuiImageComponent::setImageTexture(const std::string& value)
 }
 
 void
-GuiImageComponent::setImageRect(const Viewport& value)
-{
-    assert(_imagebox);
-    _imagebox->setImageRect(value);
-}
-
-void
-GuiImageComponent::setImageCoord(const Viewport& value)
+GuiImageComponent::setImageCoord(const Rect& value)
 {
     assert(_imagebox);
     _imagebox->setImageCoord(value);
 }
 
 void
-GuiImageComponent::setImageTile(const int2& value)
+GuiImageComponent::setImageTile(const Size& value)
 {
     assert(_imagebox);
     _imagebox->setImageTile(value);
@@ -137,21 +131,21 @@ GuiImageComponent::resetItemSelect()
 }
 
 void
-GuiImageComponent::insertItem(std::size_t index, const Viewport& item)
+GuiImageComponent::insertItem(std::size_t index, const Rect& item)
 {
     assert(_imagebox);
     _imagebox->insertItem(index, item);
 }
 
 void
-GuiImageComponent::addItem(const Viewport& item)
+GuiImageComponent::addItem(const Rect& item)
 {
     assert(_imagebox);
     _imagebox->addItem(item);
 }
 
 void
-GuiImageComponent::setItem(std::size_t index, const Viewport& item)
+GuiImageComponent::setItem(std::size_t index, const Rect& item)
 {
     assert(_imagebox);
     _imagebox->setItem(index, item);
@@ -165,14 +159,14 @@ GuiImageComponent::deleteAllItems()
 }
 
 void
-GuiImageComponent::addItemFrame(std::size_t index, const Viewport& item)
+GuiImageComponent::addItemFrame(std::size_t index, const Rect& item)
 {
     assert(_imagebox);
     _imagebox->addItemFrame(index, item);
 }
 
 void
-GuiImageComponent::insertItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& item)
+GuiImageComponent::insertItemFrame(std::size_t index, std::size_t indexFrame, const Rect& item)
 {
     assert(_imagebox);
     _imagebox->insertItemFrame(index, indexFrame, item);
@@ -193,7 +187,7 @@ GuiImageComponent::insertItemFrameDuplicate(std::size_t index, std::size_t index
 }
 
 void
-GuiImageComponent::setItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& item)
+GuiImageComponent::setItemFrame(std::size_t index, std::size_t indexFrame, const Rect& item)
 {
     assert(_imagebox);
     _imagebox->setItemFrame(index, indexFrame, item);

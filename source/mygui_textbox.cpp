@@ -67,9 +67,9 @@ MyGuiTextBoxImpl::create() except
 {
 	assert(!_table);
 	if (_parent)
-		_table = _parent->createWidget<MyGUI::TextBox>("TextBox", 0, 0, 0, 0, MyGUI::Align::Center, "");
+		_table = _parent->createWidget<MyGUI::TextBox>("", 0, 0, 0, 0, MyGUI::Align::Center, "");
 	else
-		_table = MyGUI::Gui::getInstance().createWidget<MyGUI::TextBox>("TextBox", 0, 0, 0, 0, MyGUI::Align::Center, "Main", "");
+		_table = MyGUI::Gui::getInstance().createWidget<MyGUI::TextBox>("", 0, 0, 0, 0, MyGUI::Align::Center, "Main", "");
 	this->setWidget(_table);
 
 	return _table ? true : false;
@@ -88,11 +88,10 @@ MyGuiTextBoxImpl::destroy() noexcept
 	}
 }
 
-Viewport
+Rect
 MyGuiTextBoxImpl::getTextRegion() noexcept
 {
-	auto region = _table->getTextRegion();
-	return Viewport(region.left, region.top, region.width, region.height);
+	return convert(_table->getTextRegion());
 }
 
 void
@@ -234,7 +233,7 @@ MyGuiTextBox::~MyGuiTextBox() noexcept
 {
 }
 
-Viewport
+Rect
 MyGuiTextBox::getTextRegion() noexcept
 {
 	return _impl.getTextRegion();

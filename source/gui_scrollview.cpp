@@ -34,8 +34,19 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/gui_editbox.h>
+#include <ray/gui_scrollview.h>
 
 _NAME_BEGIN
+
+__ImplementSubInterface(GuiScrollView, GuiWidget, "GuiScrollViewControl")
+
+GuiScrollView::GuiScrollView(GuiWidgetImpl& impl) noexcept
+	: GuiWidget(impl)
+{
+}
+
+GuiScrollView::~GuiScrollView() noexcept
+{
+}
 
 _NAME_END

@@ -52,7 +52,7 @@ public:
 	bool create() except;
 	void destroy() noexcept;
 
-	Viewport getTextRegion() noexcept;
+	Rect getTextRegion() noexcept;
 	void getTextSize(int& w, int& h) noexcept;
 
 	void setText(const std::string& _value) noexcept;
@@ -93,7 +93,7 @@ public:
 	MyGuiTextBox(MyGUI::TextBox* self, bool destroy = true) noexcept;
 	virtual ~MyGuiTextBox() noexcept;
 
-	Viewport getTextRegion() noexcept;
+	Rect getTextRegion() noexcept;
 	void getTextSize(int& w, int& h) noexcept;
 
 	void setText(const std::string& _value) noexcept;

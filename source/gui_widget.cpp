@@ -108,13 +108,13 @@ GuiWidget::changeWidgetSkin(const std::string& skin) except
 }
 
 void 
-GuiWidget::setViewport(const Viewport& view) except
+GuiWidget::setViewport(const Rect& view) except
 {
 	_impl.setViewport(view);
 }
 
 void
-GuiWidget::getViewport(Viewport& view) const noexcept
+GuiWidget::getViewport(Rect& view) const noexcept
 {
 	_impl.getViewport(view);
 }

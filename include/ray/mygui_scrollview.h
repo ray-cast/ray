@@ -34,15 +34,92 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_EDITBOX_H_
-#define _H_GUI_EDITBOX_H_
+#ifndef _H_MYGUI_SCROLLVIEW_H_
+#define _H_MYGUI_SCROLLVIEW_H_
 
-#include <ray/gui_widget.h>
+#include <ray/mygui_widget.h>
 
 _NAME_BEGIN
 
-class GuiEditBox : public GuiWidget
+class MyGuiScrollViewImpl final : public MyGuiWidget
 {
+public:
+	MyGuiScrollViewImpl() noexcept;
+	~MyGuiScrollViewImpl() noexcept;
+
+	bool create() except;
+
+	void setPosition(int left, int top);
+	void setSize(int width, int height);
+	void setCoord(int left, int top, int width, int height);
+
+	void setVisibleVScroll(bool value);
+	bool isVisibleVScroll() const;
+
+	void setVisibleHScroll(bool value);
+	bool isVisibleHScroll() const;
+
+	void setCanvasAlign(GuiWidgetAlign value);
+	GuiWidgetAlign getCanvasAlign() const;
+
+	void setCanvasSize(const Size& value);
+	void setCanvasSize(int width, int height);
+	Size getCanvasSize();
+
+	Rect getViewCoord() const;
+
+	void setViewOffset(const Point& value);
+	Point getViewOffset() const;
+
+private:
+	MyGuiScrollViewImpl(const MyGuiScrollViewImpl&) = delete;
+	MyGuiScrollViewImpl& operator=(const MyGuiScrollViewImpl&) = delete;
+
+private:
+
+	MyGUI::Widget* _parent;
+	MyGUI::ScrollView* _scrollView;
+};
+
+class MyGuiScrollView final : public GuiScrollView
+{
+public:
+	MyGuiScrollView() noexcept;
+	~MyGuiScrollView() noexcept;
+
+	void setPosition(const Point& value);
+	void setSize(const Size& value);
+	void setCoord(const Rect& value);
+
+	void setPosition(int left, int top);
+	void setSize(int width, int height);
+	void setCoord(int left, int top, int width, int height);
+
+	void setVisibleVScroll(bool value);
+	bool isVisibleVScroll() const;
+
+	void setVisibleHScroll(bool value);
+	bool isVisibleHScroll() const;
+
+	void setCanvasAlign(GuiWidgetAlign value);
+	GuiWidgetAlign getCanvasAlign() const;
+
+	void setCanvasSize(const Size& value);
+	void setCanvasSize(int width, int height);
+	Size getCanvasSize();
+
+	Rect getViewCoord() const;
+
+	void setViewOffset(const Point& value);
+	Point getViewOffset() const;
+
+private:
+	MyGuiScrollView(const MyGuiScrollView&) = delete;
+	MyGuiScrollView& operator=(const MyGuiScrollView&) = delete;
+
+private:
+
+	MyGuiScrollViewImpl _impl;
 };
 
 _NAME_END

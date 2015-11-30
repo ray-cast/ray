@@ -34,9 +34,54 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_H_
-#define _H_GUI_H_
+#ifndef _H_GUI_SCRIOLLVIEW_COMPONENT_H_
+#define _H_GUI_SCRIOLLVIEW_COMPONENT_H_
 
+#include <ray/gui_widget_component.h>
 
+_NAME_BEGIN
+
+class GuiScrollViewComponent : public GuiWidgetComponent
+{
+	__DeclareSubClass(GuiScrollViewComponent, GuiWidgetComponent)
+public:
+	GuiScrollViewComponent() noexcept;
+	~GuiScrollViewComponent() noexcept;
+
+	void setVisibleVScroll(bool value);
+	bool isVisibleVScroll() const;
+
+	void setVisibleHScroll(bool value);
+	bool isVisibleHScroll() const;
+
+	void setCanvasAlign(GuiWidgetAlign value);
+	GuiWidgetAlign getCanvasAlign() const;
+
+	void setCanvasSize(const Size& value);
+	void setCanvasSize(int width, int height);
+	Size getCanvasSize();
+	
+	void setViewOffset(const Point& value);
+	Point getViewOffset() const;
+
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
+
+	GameComponentPtr clone() const except;
+
+protected:
+	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept;
+	virtual GuiWidgetPtr getGuiWidget() const noexcept;
+
+private:
+	GuiScrollViewComponent(const GuiScrollViewComponent&) = delete;
+	GuiScrollViewComponent& operator=(const GuiScrollViewComponent&) = delete;
+
+private:
+
+	GuiScrollViewPtr _scrollView;
+};
+
+_NAME_END
 
 #endif

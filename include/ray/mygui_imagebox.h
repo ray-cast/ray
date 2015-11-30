@@ -49,12 +49,11 @@ public:
 
 	bool create() except;
 
-	void setImageInfo(const std::string& texture, const Viewport& coord, const Size& tile);
+	void setImageInfo(const std::string& texture, const Rect& coord, const Size& tile);
 
 	void setImageTexture(const std::string& value);
-	void setImageRect(const Viewport& value);
-	void setImageCoord(const Viewport& value);
-	void setImageTile(const int2& value);
+	void setImageCoord(const Rect& value);
+	void setImageTile(const Size& value);
 
 	void setImageIndex(std::size_t index);
 	std::size_t getImageIndex() const;
@@ -67,21 +66,21 @@ public:
 	std::size_t getItemSelect() const;
 	void resetItemSelect();
 
-	void insertItem(std::size_t index, const Viewport& _item);
-	void addItem(const Viewport& _item);
-	void setItem(std::size_t index, const Viewport& _item);
+	void insertItem(std::size_t index, const Rect& _item);
+	void addItem(const Rect& _item);
+	void setItem(std::size_t index, const Rect& _item);
 
 	void deleteAllItems();
 
-	void addItemFrame(std::size_t index, const Viewport& _item);
+	void addItemFrame(std::size_t index, const Rect& _item);
 
-	void insertItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& _item);
+	void insertItemFrame(std::size_t index, std::size_t indexFrame, const Rect& _item);
 
 	void addItemFrameDuplicate(std::size_t index, std::size_t indexSourceFrame);
 
 	void insertItemFrameDuplicate(std::size_t index, std::size_t indexFrame, std::size_t indexSourceFrame);
 
-	void setItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& _item);
+	void setItemFrame(std::size_t index, std::size_t indexFrame, const Rect& _item);
 
 	void deleteItemFrame(std::size_t index, std::size_t indexFrame);
 	void deleteAllItemFrames(std::size_t index);
@@ -108,12 +107,11 @@ public:
 	MyGuiImageBox() noexcept;
 	virtual ~MyGuiImageBox() noexcept;
 
-	void setImageInfo(const std::string& texture, const Viewport& coord, const Size& tile);
+	void setImageInfo(const std::string& texture, const Rect& coord, const Size& tile);
 
 	void setImageTexture(const std::string& value);
-	void setImageRect(const Viewport& value);
-	void setImageCoord(const Viewport& value);
-	void setImageTile(const int2& value);
+	void setImageCoord(const Rect& value);
+	void setImageTile(const Size& value);
 
 	void setImageIndex(std::size_t index);
 	std::size_t getImageIndex() const;
@@ -126,21 +124,21 @@ public:
 	std::size_t getItemSelect() const;
 	void resetItemSelect();
 
-	void insertItem(std::size_t index, const Viewport& _item);
-	void addItem(const Viewport& _item);
-	void setItem(std::size_t index, const Viewport& _item);
+	void insertItem(std::size_t index, const Rect& _item);
+	void addItem(const Rect& _item);
+	void setItem(std::size_t index, const Rect& _item);
 
 	void deleteAllItems();
 
-	void addItemFrame(std::size_t index, const Viewport& _item);
+	void addItemFrame(std::size_t index, const Rect& _item);
 
-	void insertItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& _item);
+	void insertItemFrame(std::size_t index, std::size_t indexFrame, const Rect& _item);
 
 	void addItemFrameDuplicate(std::size_t index, std::size_t indexSourceFrame);
 
 	void insertItemFrameDuplicate(std::size_t index, std::size_t indexFrame, std::size_t indexSourceFrame);
 
-	void setItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& _item);
+	void setItemFrame(std::size_t index, std::size_t indexFrame, const Rect& _item);
 
 	void deleteItemFrame(std::size_t index, std::size_t indexFrame);
 	void deleteAllItemFrames(std::size_t index);

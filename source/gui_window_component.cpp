@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_GUI)
 #include <ray/gui_window_component.h>
+#include <ray/gui_window.h>
 #include <ray/gui_system.h>
 
 _NAME_BEGIN

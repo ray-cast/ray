@@ -59,9 +59,9 @@ MyGuiButtonImpl::create() except
 {
 	assert(!_button);
 	if (_parent)
-		_button = _parent->createWidget<MyGUI::Button>("Button", 0, 0, 0, 0, MyGUI::Align::Default, "");
+		_button = _parent->createWidget<MyGUI::Button>("", 0, 0, 0, 0, MyGUI::Align::Default, "");
 	else
-		_button = MyGUI::Gui::getInstance().createWidget<MyGUI::Button>("Button", 0, 0, 0, 0, MyGUI::Align::Default, "Main", "");
+		_button = MyGUI::Gui::getInstance().createWidget<MyGUI::Button>("", 0, 0, 0, 0, MyGUI::Align::Default, "Main", "");
 
 	_textbox = std::make_shared<MyGuiTextBox>(_button, false);
 

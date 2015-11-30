@@ -511,8 +511,8 @@ SET(MYGUI_LIST
     ${SOURCE_PATH}/mygui_window.cpp
     ${HEADER_PATH}/mygui_imagebox.h
     ${SOURCE_PATH}/mygui_imagebox.cpp
-    ${HEADER_PATH}/mygui_listbox.h
-    ${SOURCE_PATH}/mygui_listbox.cpp
+    ${HEADER_PATH}/mygui_scrollview.h
+    ${SOURCE_PATH}/mygui_scrollview.cpp
 )
 SOURCE_GROUP("gui\\mygui" FILES ${MYGUI_LIST})
 
@@ -537,8 +537,8 @@ SET(GUI_LIST
     ${SOURCE_PATH}/gui_window.cpp
     ${HEADER_PATH}/gui_imagebox.h
     ${SOURCE_PATH}/gui_imagebox.cpp
-    ${HEADER_PATH}/gui_editbox.h
-    ${SOURCE_PATH}/gui_editbox.cpp
+    ${HEADER_PATH}/gui_scrollview.h
+    ${SOURCE_PATH}/gui_scrollview.cpp
 )
 SOURCE_GROUP("gui" FILES ${GUI_LIST})
 
@@ -606,8 +606,8 @@ SET(GUI_FEATURES_LIST
     ${SOURCE_PATH}/gui_camera_component.cpp
     ${HEADER_PATH}/gui_widget_component.h
     ${SOURCE_PATH}/gui_widget_component.cpp
-    ${HEADER_PATH}/gui_editbox_component.h
-    ${SOURCE_PATH}/gui_editbox_component.cpp
+    ${HEADER_PATH}/gui_scrollview_component.h
+    ${SOURCE_PATH}/gui_scrollview_component.cpp
     ${HEADER_PATH}/gui_label_component.h
     ${SOURCE_PATH}/gui_label_component.cpp
     ${HEADER_PATH}/gui_window_component.h

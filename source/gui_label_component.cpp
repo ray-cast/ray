@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_GUI)
 #include <ray/gui_label_component.h>
+#include <ray/gui_textbox.h>
 #include <ray/gui_system.h>
 
 _NAME_BEGIN
@@ -57,7 +58,7 @@ GuiLabelComponent::~GuiLabelComponent() noexcept
 {
 }
 
-Viewport
+Rect
 GuiLabelComponent::getTextRegion() noexcept
 {
 	assert(_label);

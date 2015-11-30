@@ -34,3 +34,47 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#ifndef _H_GUI_SCROLLVIEW_H_
+#define _H_GUI_SCROLLVIEW_H_
+
+#include <ray/gui_widget.h>
+
+_NAME_BEGIN
+
+class EXPORT GuiScrollView : public GuiWidget
+{
+	__DeclareSubInterface(GuiScrollView, GuiWidget);
+public:
+	GuiScrollView(GuiWidgetImpl& impl) noexcept;
+	virtual ~GuiScrollView() noexcept;
+
+	virtual void setPosition(const Point& value) = 0;
+	virtual void setSize(const Size& value) = 0;
+	virtual void setCoord(const Rect& value) = 0;
+
+	virtual void setPosition(int left, int top) = 0;
+	virtual void setSize(int width, int height) = 0;
+	virtual void setCoord(int left, int top, int width, int height) = 0;
+
+	virtual void setVisibleVScroll(bool value) = 0;
+	virtual bool isVisibleVScroll() const = 0;
+
+	virtual void setVisibleHScroll(bool value) = 0;
+	virtual bool isVisibleHScroll() const = 0;
+
+	virtual void setCanvasAlign(GuiWidgetAlign value) = 0;
+	virtual GuiWidgetAlign getCanvasAlign() const = 0;
+
+	virtual void setCanvasSize(const Size& value) = 0;
+	virtual void setCanvasSize(int width, int height) = 0;
+	virtual Size getCanvasSize() = 0;
+
+	virtual Rect getViewCoord() const = 0;
+
+	virtual void setViewOffset(const Point& value) = 0;
+	virtual Point getViewOffset() const = 0;
+};
+
+_NAME_END
+
+#endif

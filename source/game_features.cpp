@@ -74,6 +74,8 @@ GameFeature::getActive() noexcept
 void
 GameFeature::sendMessage(const MessagePtr& message) except
 {
+	assert(message);
+
 	auto& features = this->getGameServer()->getGameFeatures();
 	for (auto& it : features)
 	{

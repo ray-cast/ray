@@ -48,12 +48,11 @@ public:
 	GuiImageBox(GuiWidgetImpl& impl) noexcept;
 	virtual ~GuiImageBox() noexcept;
 
-	virtual void setImageInfo(const std::string& texture, const Viewport& coord, const Size& tile) = 0;
+	virtual void setImageInfo(const std::string& texture, const Rect& coord, const Size& tile) = 0;
 
 	virtual void setImageTexture(const std::string& value) = 0;
-	virtual void setImageRect(const Viewport& value) = 0;
-	virtual void setImageCoord(const Viewport& value) = 0;
-	virtual void setImageTile(const int2& value) = 0;
+	virtual void setImageCoord(const Rect& value) = 0;
+	virtual void setImageTile(const Size& value) = 0;
 
 	virtual void setImageIndex(std::size_t index) = 0;
 	virtual std::size_t getImageIndex() const = 0;
@@ -66,21 +65,21 @@ public:
 	virtual std::size_t getItemSelect() const = 0;
 	virtual void resetItemSelect() = 0;
 
-	virtual void insertItem(std::size_t index, const Viewport& _item) = 0;
-	virtual void addItem(const Viewport& _item) = 0;
-	virtual void setItem(std::size_t index, const Viewport& _item) = 0;
+	virtual void insertItem(std::size_t index, const Rect& _item) = 0;
+	virtual void addItem(const Rect& _item) = 0;
+	virtual void setItem(std::size_t index, const Rect& _item) = 0;
 
 	virtual void deleteAllItems() = 0;
 
-	virtual void addItemFrame(std::size_t index, const Viewport& _item) = 0;
+	virtual void addItemFrame(std::size_t index, const Rect& _item) = 0;
 
-	virtual void insertItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& _item) = 0;
+	virtual void insertItemFrame(std::size_t index, std::size_t indexFrame, const Rect& _item) = 0;
 
 	virtual void addItemFrameDuplicate(std::size_t index, std::size_t indexSourceFrame) = 0;
 
 	virtual void insertItemFrameDuplicate(std::size_t index, std::size_t indexFrame, std::size_t indexSourceFrame) = 0;
 
-	virtual void setItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& _item) = 0;
+	virtual void setItemFrame(std::size_t index, std::size_t indexFrame, const Rect& _item) = 0;
 
 	virtual void deleteItemFrame(std::size_t index, std::size_t indexFrame) = 0;
 	virtual void deleteAllItemFrames(std::size_t index) = 0;

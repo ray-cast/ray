@@ -39,7 +39,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GuiWidgetComponent, GameComponent, "GUIListener")
+__ImplementSubInterface(GuiWidgetComponent, GameComponent, "GuiWidget")
 
 GuiWidgetComponent::GuiWidgetComponent() noexcept
 {
@@ -122,11 +122,11 @@ GuiWidgetComponent::_updateTransform() noexcept
 	auto scale = this->getGameObject()->getScale();
 	auto translate = this->getGameObject()->getTranslate();
 
-	Viewport view;
-	view.left = translate.x;
-	view.top = translate.y;
-	view.width = scale.x;
-	view.height = scale.y;
+	Rect view;
+	view.x = translate.x;
+	view.y = translate.y;
+	view.w = scale.x;
+	view.h = scale.y;
 
 	this->getGuiWidget()->setViewport(view);
 }
@@ -180,4 +180,5 @@ GuiWidgetComponent::onMouseButtonUp(int button, float x, float y) noexcept
 }
 
 _NAME_END
+
 #endif

@@ -39,9 +39,6 @@
 
 #include <ray/gui_widget_component.h>
 
-#include <ray/gui_label_component.h>
-#include <ray/gui_imagebox.h>
-
 _NAME_BEGIN
 
 class GuiImageComponent final : public GuiWidgetComponent
@@ -51,31 +48,37 @@ public:
 	GuiImageComponent() noexcept;
 	~GuiImageComponent() noexcept;
 
-    void setImageInfo(const std::string& texture, const Viewport& coord, const Size& tile);
+    void setImageInfo(const std::string& texture, const Rect& coord, const Size& tile);
     void setImageTexture(const std::string& value);
-    void setImageRect(const Viewport& value);
-    void setImageCoord(const Viewport& value);
-    void setImageTile(const int2& value);
+    void setImageCoord(const Rect& value);
+    void setImageTile(const Size& value);
+
     void setImageIndex(std::size_t index);
     std::size_t getImageIndex() const;
-    Size getImageSize() const;
+    
+	Size getImageSize() const;
     std::size_t getItemCount() const;
-    void setItemSelect(std::size_t index);
+    
+	void setItemSelect(std::size_t index);
     std::size_t getItemSelect() const;
-    void resetItemSelect();
-    void insertItem(std::size_t index, const Viewport& _item);
-    void addItem(const Viewport& _item);
-    void setItem(std::size_t index, const Viewport& _item);
+    
+	void resetItemSelect();
+    void insertItem(std::size_t index, const Rect& _item);
+    void addItem(const Rect& _item);
+    void setItem(std::size_t index, const Rect& _item);
     void deleteAllItems();
-    void addItemFrame(std::size_t index, const Viewport& _item);
-    void insertItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& _item);
+    
+	void addItemFrame(std::size_t index, const Rect& _item);
+    void insertItemFrame(std::size_t index, std::size_t indexFrame, const Rect& _item);
     void addItemFrameDuplicate(std::size_t index, std::size_t indexSourceFrame);
     void insertItemFrameDuplicate(std::size_t index, std::size_t indexFrame, std::size_t indexSourceFrame);
-    void setItemFrame(std::size_t index, std::size_t indexFrame, const Viewport& _item);
+    void setItemFrame(std::size_t index, std::size_t indexFrame, const Rect& _item);
     void deleteItemFrame(std::size_t index, std::size_t indexFrame);
     void deleteAllItemFrames(std::size_t index);
-    void setItemFrameRate(std::size_t index, float _rate);
+    
+	void setItemFrameRate(std::size_t index, float _rate);
     float getItemFrameRate(std::size_t index);
+
     bool setItemResource(const std::string& _name);
     void setItemGroup(const std::string& value);
     void setItemName(const std::string& value);

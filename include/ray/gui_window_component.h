@@ -38,7 +38,6 @@
 #define _H_GUI_WINDOW_COMPONENT_H_
 
 #include <ray/gui_label_component.h>
-#include <ray/gui_window.h>
 
 _NAME_BEGIN
 

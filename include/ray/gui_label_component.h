@@ -38,7 +38,6 @@
 #define _H_GUI_LABEL_COMPONENT_H_
 
 #include <ray/gui_widget_component.h>
-#include <ray/gui_textbox.h>
 
 _NAME_BEGIN
 
@@ -50,7 +49,7 @@ public:
 	GuiLabelComponent(GuiTextBoxPtr label) noexcept;
 	~GuiLabelComponent() noexcept;
 
-	Viewport getTextRegion() noexcept;
+	Rect getTextRegion() noexcept;
 	void getTextSize(int& w, int& h) noexcept;
 
 	void setText(const std::string& _value) noexcept;

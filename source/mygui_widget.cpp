@@ -103,26 +103,17 @@ MyGuiWidget::changeWidgetSkin(const std::string& skin) noexcept
 }
 
 void 
-MyGuiWidget::setViewport(const Viewport& view) noexcept
+MyGuiWidget::setViewport(const Rect& view) noexcept
 {
 	assert(_widget);
-	MyGUI::IntCoord coord;
-	coord.left = view.left;
-	coord.top = view.top;
-	coord.width = view.width;
-	coord.height = view.height;
-	_widget->setCoord(coord);
+	_widget->setCoord(convert(view));
 }
 
 void
-MyGuiWidget::getViewport(Viewport& viewport) const noexcept
+MyGuiWidget::getViewport(Rect& rect) const noexcept
 {
 	assert(_widget);
-	MyGUI::IntCoord coord = _widget->getCoord();
-	viewport.left = coord.left;
-	viewport.top = coord.top;
-	viewport.width = coord.width;
-	viewport.height = coord.height;
+	rect = convert(_widget->getCoord());
 }
 
 void 

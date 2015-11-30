@@ -1045,6 +1045,8 @@ GameObject::destroy() noexcept
 void
 GameObject::sendMessage(const MessagePtr& message) noexcept
 {
+	assert(message);
+
 	if (!this->getActive())
 		return;
 
@@ -1058,6 +1060,8 @@ GameObject::sendMessage(const MessagePtr& message) noexcept
 void
 GameObject::sendMessageUpwards(const MessagePtr& message) noexcept
 {
+	assert(message);
+
 	if (!this->getActive())
 		return;
 
@@ -1075,6 +1079,8 @@ GameObject::sendMessageUpwards(const MessagePtr& message) noexcept
 void
 GameObject::sendMessageDownwards(const MessagePtr& message) noexcept
 {
+	assert(message);
+
 	if (!this->getActive())
 		return;
 

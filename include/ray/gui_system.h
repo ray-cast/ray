@@ -48,8 +48,11 @@ public:
 	GuiSystem() noexcept;
 	~GuiSystem() noexcept;
 
-	bool open() except;
+	bool open(GuiSystemBasePtr impl = nullptr) except;
 	void close() noexcept;
+
+	void setGuiSystem(GuiSystemBasePtr system) except;
+	GuiSystemBasePtr getGuiSystem() const noexcept;
 
 	void setCoreProfile(const std::string& core) except;
 	const std::string& getCoreProfile() const noexcept;

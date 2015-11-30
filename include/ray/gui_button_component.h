@@ -38,7 +38,6 @@
 #define _H_GUI_BUTTON_COMPONENT_H_
 
 #include <ray/gui_label_component.h>
-#include <ray/gui_button.h>
 
 _NAME_BEGIN
 

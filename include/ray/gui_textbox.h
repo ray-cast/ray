@@ -48,7 +48,7 @@ public:
 	GuiTextBox(GuiWidgetImpl& impl) noexcept;
 	virtual ~GuiTextBox() noexcept;
 
-	virtual Viewport getTextRegion() noexcept = 0;
+	virtual Rect getTextRegion() noexcept = 0;
 	virtual void getTextSize(int& w, int& h) noexcept = 0;
 
 	virtual void setText(const std::string& _value) noexcept = 0;

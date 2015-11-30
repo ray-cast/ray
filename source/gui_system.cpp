@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #include <ray/gui_system.h>
 #include <ray/mygui_system.h>
-#include <ray/mygui_button.h>
 
 _NAME_BEGIN
 
@@ -51,11 +50,13 @@ GuiSystem::~GuiSystem() noexcept
 }
 
 bool 
-GuiSystem::open() except
+GuiSystem::open(GuiSystemBasePtr impl) except
 {
 	assert(!_system);
-	_system = std::make_shared<MyGuiSystem>();
-
+	if (impl)
+		_system = impl;
+	else
+		_system = std::make_shared<MyGuiSystem>();
 	return _system->open();
 }
 
@@ -67,6 +68,21 @@ GuiSystem::close() noexcept
 		_system.reset();
 		_system = nullptr;
 	}
+}
+
+void
+GuiSystem::setGuiSystem(GuiSystemBasePtr system) except
+{
+	if (_system != system)
+	{
+		_system = system;
+	}
+}
+
+GuiSystemBasePtr
+GuiSystem::getGuiSystem() const noexcept
+{
+	return _system;
 }
 
 void 

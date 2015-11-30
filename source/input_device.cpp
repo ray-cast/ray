@@ -46,6 +46,11 @@ DefaultInputDevice::DefaultInputDevice() noexcept
 {
 }
 
+DefaultInputDevice::~DefaultInputDevice() noexcept
+{
+	this->clearInputListener();
+}
+
 void
 DefaultInputDevice::enableEventPosting(bool enable) noexcept
 {
@@ -65,6 +70,7 @@ DefaultInputDevice::addInputListener(InputListenerPtr listener) noexcept
 	auto it = std::find(_inputListeners.begin(), _inputListeners.end(), listener);
 	if (it == _inputListeners.end())
 	{
+		listener->onAttach();
 		_inputListeners.push_back(listener);
 	}
 }
@@ -76,7 +82,7 @@ DefaultInputDevice::removeInputListener(InputListenerPtr listener) noexcept
 	auto it = std::find(_inputListeners.begin(), _inputListeners.end(), listener);
 	if (it != _inputListeners.end())
 	{
-
+		listener->onDetach();
 		_inputListeners.erase(it);
 	}
 }
@@ -84,6 +90,8 @@ DefaultInputDevice::removeInputListener(InputListenerPtr listener) noexcept
 void
 DefaultInputDevice::clearInputListener() noexcept
 {
+	for (auto& listener : _inputListeners)
+		listener->onDetach();
 	_inputListeners.clear();
 }
 

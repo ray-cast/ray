@@ -48,6 +48,9 @@ public:
 	InputListener() noexcept;
 	virtual ~InputListener() noexcept;
 
+	virtual void onAttach() noexcept;
+	virtual void onDetach() noexcept;
+
 	virtual void onInputEvent(const InputEventPtr& event) noexcept = 0;
 
 private:

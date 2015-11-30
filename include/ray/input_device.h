@@ -58,6 +58,7 @@ class EXPORT DefaultInputDevice final : public ToplevelInputDevice
 	__DeclareSubClass(DefaultInputDevice, ToplevelInputDevice)
 public:
 	DefaultInputDevice() noexcept;
+	~DefaultInputDevice() noexcept;
 
 	virtual void enableEventPosting(bool enable) noexcept;
 	virtual bool enableEventPosting() const noexcept;

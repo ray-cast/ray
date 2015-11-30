@@ -48,6 +48,16 @@ InputListener::~InputListener() noexcept
 {
 }
 
+void 
+InputListener::onAttach() noexcept
+{
+}
+
+void 
+InputListener::onDetach() noexcept
+{
+}
+
 Input::Input() noexcept
 {
 }

@@ -125,8 +125,6 @@ DefaultInputDevice::pollEvents(InputEventPtr& event) noexcept
 		{
 			event = _events.front();
 			_events.pop();
-
-			this->sendEvent(event);
 			return true;
 		}
 	}

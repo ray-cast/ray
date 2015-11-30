@@ -344,12 +344,6 @@ DefaultInput::sendInputEvent(const InputEventPtr& event) noexcept
 {
 	if (_inputDevice)
 		_inputDevice->sendEvent(event);
-
-	if (_mouseCaptureDevice)
-		_mouseCaptureDevice->onInputEvent(event);
-
-	if (_keyboardCaptureDevice)
-		_keyboardCaptureDevice->onInputEvent(event);
 }
 
 void

@@ -47,7 +47,7 @@ struct InputKeysym
     std::uint16_t sym;
     std::uint16_t raw;
     std::uint16_t mod;
-    std::uint32_t unused;
+    std::uint16_t unicode;
 };
 
 struct KeyboardEvent

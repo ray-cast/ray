@@ -26,11 +26,14 @@ Ray3D is released as Open Source under the terms of a 3-clause BSD license.
 ```
 
 ### Engine Design ###
+* Data-Driven Renderer
 * Physically-Based Rendering
 * Practical Parallel Rendering
 * Deferred Lighting
+* Gamma Correction
 * Exponential Shadow Maps
-* Data-Driven Renderer
 * Atmospheric Scattering
 * Scene Space Ambient Occlusion
+* Screen Space Sub Surface Scattering
 * High Dynamic Range Imaging
+* FXAA3

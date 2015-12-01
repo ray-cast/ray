@@ -90,9 +90,9 @@ public:
 	void setEditStatic(bool value);
 	bool getEditStatic() const;
 
-	void setPasswordChar(char value);
+	void setPasswordChar(GuiInputChar value);
 	void setPasswordChar(const std::string& value);
-	char getPasswordChar() const;
+	GuiInputChar getPasswordChar() const;
 
 	void setEditWordWrap(bool value);
 	bool getEditWordWrap() const;

@@ -235,7 +235,7 @@ GuiEditBoxComponent::getEditStatic() const
 }
 
 void
-GuiEditBoxComponent::setPasswordChar(char value)
+GuiEditBoxComponent::setPasswordChar(GuiInputChar value)
 {
     _editBox->setPasswordChar(value);
 }
@@ -246,7 +246,7 @@ GuiEditBoxComponent::setPasswordChar(const std::string& value)
     _editBox->setPasswordChar(value);
 }
 
-char
+GuiInputChar
 GuiEditBoxComponent::getPasswordChar() const
 {
     return _editBox->getPasswordChar();

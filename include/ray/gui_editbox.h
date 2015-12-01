@@ -90,9 +90,9 @@ public:
 	virtual void setEditStatic(bool value) = 0;
 	virtual bool getEditStatic() const = 0;
 
-	virtual void setPasswordChar(char value) = 0;
+	virtual void setPasswordChar(GuiInputChar value) = 0;
 	virtual void setPasswordChar(const std::string& value) = 0;
-	virtual char getPasswordChar() const = 0;
+	virtual GuiInputChar getPasswordChar() const = 0;
 
 	virtual void setEditWordWrap(bool value) = 0;
 	virtual bool getEditWordWrap() const = 0;

@@ -259,7 +259,7 @@ MyGuiEditBoxImpl::getEditStatic() const
 }
 
 void
-MyGuiEditBoxImpl::setPasswordChar(char value)
+MyGuiEditBoxImpl::setPasswordChar(GuiInputChar value)
 {
 	_editBox->setPasswordChar(value);
 }
@@ -270,7 +270,7 @@ MyGuiEditBoxImpl::setPasswordChar(const std::string& value)
 	_editBox->setPasswordChar(value);
 }
 
-char
+GuiInputChar
 MyGuiEditBoxImpl::getPasswordChar() const
 {
 	return _editBox->getPasswordChar();
@@ -544,7 +544,7 @@ MyGuiEditBox::getEditStatic() const
 }
 
 void
-MyGuiEditBox::setPasswordChar(char value)
+MyGuiEditBox::setPasswordChar(GuiInputChar value)
 {
 	_impl.setPasswordChar(value);
 }
@@ -555,7 +555,7 @@ MyGuiEditBox::setPasswordChar(const std::string& value)
 	_impl.setPasswordChar(value);
 }
 
-char
+GuiInputChar
 MyGuiEditBox::getPasswordChar() const
 {
 	return _impl.getPasswordChar();

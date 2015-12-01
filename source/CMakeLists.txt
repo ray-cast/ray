@@ -786,8 +786,10 @@ IF(BUILD_RENDERER)
         ${RENDERER_SYSTEM}
     )
     TARGET_LINK_LIBRARIES(librenderer libplatform libmodel libimage freetype)
+    IF(MINGW OR UNIX)
+        SET_TARGET_PROPERTIES(librenderer PROPERTIES OUTPUT_NAME renderer)
+    ENDIF()
     SET_TARGET_ATTRIBUTE(librenderer "core")
-    SET_TARGET_PROPERTIES(librenderer PROPERTIES OUTPUT_NAME renderer)
 ENDIF()
 
 ADD_LIBRARY(ray SHARED

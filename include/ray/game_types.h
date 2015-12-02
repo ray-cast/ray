@@ -43,6 +43,7 @@
 #include <ray/except.h>
 #include <ray/message.h>
 #include <ray/timer.h>
+#include <ray/delegate.h>
 
 _NAME_BEGIN
 

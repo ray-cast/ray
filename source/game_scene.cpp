@@ -203,10 +203,10 @@ GameScene::instanceObject(iarchive& reader, GameObjectPtr parent) except
 				auto key = reader.getCurrentNodeName();
 				if (key == "component")
 				{
-					auto name = reader.getValue<std::string>("class");
-					if (!name.empty())
+					auto className = reader.getValue<std::string>("class");
+					if (!className.empty())
 					{
-						auto component = rtti::make_shared<GameComponent>(name);
+						auto component = rtti::make_shared<GameComponent>(className);
 						if (component)
 						{
 							reader.addAttrs();
@@ -217,7 +217,7 @@ GameScene::instanceObject(iarchive& reader, GameObjectPtr parent) except
 						}
 						else
 						{
-							throw failure("Unknown component name : " + name);
+							throw failure("Unknown component name : " + className);
 						}
 					}
 					else

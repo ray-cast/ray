@@ -358,11 +358,11 @@ public:
 		else
 		{
 			// Column 2:
-			T s = sqrt(static_cast<T>(1.0) + pRotMatrix.c3 - pRotMatrix.a1 - pRotMatrix.b2) * static_cast<T>(2.0);
-			x = (pRotMatrix.a3 + pRotMatrix.c1) / s;
-			y = (pRotMatrix.c2 + pRotMatrix.b3) / s;
+			T s = sqrt(static_cast<T>(1.0) + rotate.c3 - rotate.a1 - rotate.b2) * static_cast<T>(2.0);
+			x = (rotate.a3 + rotate.c1) / s;
+			y = (rotate.c2 + rotate.b3) / s;
 			z = static_cast<T>(0.25) * s;
-			w = (pRotMatrix.b1 - pRotMatrix.a2) / s;
+			w = (rotate.b1 - rotate.a2) / s;
 		}
 	}
 

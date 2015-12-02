@@ -48,6 +48,9 @@ _NAME_BEGIN
 template<typename T>
 class binder;
 
+template<typename _Tx, typename _Ty>
+class delegate_bind;
+
 template<typename T>
 class delegate;
 
@@ -88,9 +91,15 @@ class delegate;
 #undef DELEGATE_MAX_ARGS
 
 template<typename _Functor, typename _This>
-inline auto make_binder(_Functor t1, _This t2)
+inline delegate_bind<typename trait::functor<_Functor>::result_type(), std::pair<_Functor, _This>> make_binder(_Functor t1, _This t2)
 {
-	return delegate<typename trait::functor<_Functor>::result_type(typename trait::functor<_Functor>::arg_type)>::make(t1, t2);
+	return delegate_bind<typename trait::functor<_Functor>::result_type(), std::pair<_Functor, _This>>(std::make_pair(t1, t2));
+}
+
+template<typename _Functor, typename _This>
+inline delegate_bind<typename trait::functor<_Functor>::result_type(typename trait::functor<_Functor>::arg_type), std::pair<_Functor, _This>> make_binder(_Functor t1, _This t2)
+{
+	return delegate_bind<typename trait::functor<_Functor>::result_type(typename trait::functor<_Functor>::arg_type), std::pair<_Functor, _This>>(std::make_pair(t1, t2));
 }
 
 _NAME_END

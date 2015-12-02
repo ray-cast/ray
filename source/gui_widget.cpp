@@ -120,157 +120,157 @@ GuiWidget::getViewport(Rect& view) const noexcept
 }
 
 void
-GuiWidget::addKeySetFocus(binder<void()>& func) noexcept
+GuiWidget::addKeySetFocus(function<void()>& func) noexcept
 {
 	_impl.addKeySetFocus(func);
 }
 
 void
-GuiWidget::addKeyLostFocus(binder<void()>& func) noexcept
+GuiWidget::addKeyLostFocus(function<void()>& func) noexcept
 {
 	_impl.addKeyLostFocus(func);
 }
 
 void
-GuiWidget::addKeyButtonPressed(binder<void()>& func) noexcept
+GuiWidget::addKeyButtonPressed(function<void()>& func) noexcept
 {
 	_impl.addKeyButtonPressed(func);
 }
 
 void
-GuiWidget::addKeyButtonReleased(binder<void()>& func) noexcept
+GuiWidget::addKeyButtonReleased(function<void()>& func) noexcept
 {
 	_impl.addKeyButtonReleased(func);
 }
 
 void
-GuiWidget::addMouseMove(binder<void()>& func) noexcept
+GuiWidget::addMouseMove(function<void()>& func) noexcept
 {
 	_impl.addMouseMove(func);
 }
 
 void
-GuiWidget::addMouseDrag(binder<void()>& func) noexcept
+GuiWidget::addMouseDrag(function<void()>& func) noexcept
 {
 	_impl.addMouseDrag(func);
 }
 
 void
-GuiWidget::addMouseWheel(binder<void()>& func) noexcept
+GuiWidget::addMouseWheel(function<void()>& func) noexcept
 {
 	_impl.addMouseWheel(func);
 }
 
 void
-GuiWidget::addMouseSetFocusListener(binder<void()>& func) noexcept
+GuiWidget::addMouseSetFocusListener(function<void()>& func) noexcept
 {
 	_impl.addMouseSetFocusListener(func);
 }
 
 void
-GuiWidget::addMouseLostFocusListener(binder<void()>& func) noexcept
+GuiWidget::addMouseLostFocusListener(function<void()>& func) noexcept
 {
 	_impl.addMouseLostFocusListener(func);
 }
 
 void
-GuiWidget::addMouseButtonPressedListener(binder<void()>& func) noexcept
+GuiWidget::addMouseButtonPressedListener(function<void()>& func) noexcept
 {
 	_impl.addMouseButtonPressedListener(func);
 }
 
 void
-GuiWidget::addMouseButtonReleasedListener(binder<void()>& func) noexcept
+GuiWidget::addMouseButtonReleasedListener(function<void()>& func) noexcept
 {
 	_impl.addMouseButtonReleasedListener(func);
 }
 
 void
-GuiWidget::addMouseButtonClickListener(binder<void()>& func) noexcept
+GuiWidget::addMouseButtonClickListener(function<void()>& func) noexcept
 {
 	_impl.addMouseButtonClickListener(func);
 }
 
 void
-GuiWidget::addMouseButtonDoubleClickListener(binder<void()>& func) noexcept
+GuiWidget::addMouseButtonDoubleClickListener(function<void()>& func) noexcept
 {
 	_impl.addMouseButtonDoubleClickListener(func);
 }
 
 void
-GuiWidget::removeKeySetFocus(binder<void()>& func) noexcept
+GuiWidget::removeKeySetFocus(function<void()>& func) noexcept
 {
 	_impl.removeKeySetFocus(func);
 }
 
 void
-GuiWidget::removeKeyLostFocus(binder<void()>& func) noexcept
+GuiWidget::removeKeyLostFocus(function<void()>& func) noexcept
 {
 	_impl.removeKeyLostFocus(func);
 }
 
 void
-GuiWidget::removeKeyButtonPressed(binder<void()>& func) noexcept
+GuiWidget::removeKeyButtonPressed(function<void()>& func) noexcept
 {
 	_impl.removeKeyButtonPressed(func);
 }
 
 void
-GuiWidget::removeKeyButtonReleased(binder<void()>& func) noexcept
+GuiWidget::removeKeyButtonReleased(function<void()>& func) noexcept
 {
 	_impl.removeKeyButtonReleased(func);
 }
 
 void
-GuiWidget::removeMouseMove(binder<void()>& func) noexcept
+GuiWidget::removeMouseMove(function<void()>& func) noexcept
 {
 	_impl.removeMouseMove(func);
 }
 
 void
-GuiWidget::removeMouseDrag(binder<void()>& func) noexcept
+GuiWidget::removeMouseDrag(function<void()>& func) noexcept
 {
 	_impl.removeMouseDrag(func);
 }
 
 void
-GuiWidget::removeMouseWheel(binder<void()>& func) noexcept
+GuiWidget::removeMouseWheel(function<void()>& func) noexcept
 {
 	_impl.removeMouseWheel(func);
 }
 
 void
-GuiWidget::removeMouseSetFocusListener(binder<void()>& func) noexcept
+GuiWidget::removeMouseSetFocusListener(function<void()>& func) noexcept
 {
 	_impl.removeMouseSetFocusListener(func);
 }
 
 void
-GuiWidget::removeMouseLostFocusListener(binder<void()>& func) noexcept
+GuiWidget::removeMouseLostFocusListener(function<void()>& func) noexcept
 {
 	_impl.removeMouseLostFocusListener(func);
 }
 
 void
-GuiWidget::removeMouseButtonPressedListener(binder<void()>& func) noexcept
+GuiWidget::removeMouseButtonPressedListener(function<void()>& func) noexcept
 {
 	_impl.removeMouseButtonPressedListener(func);
 }
 
 void
-GuiWidget::removeMouseButtonReleasedListener(binder<void()>& func) noexcept
+GuiWidget::removeMouseButtonReleasedListener(function<void()>& func) noexcept
 {
 	_impl.removeMouseButtonReleasedListener(func);
 }
 
 void
-GuiWidget::removeMouseButtonClickListener(binder<void()>& func) noexcept
+GuiWidget::removeMouseButtonClickListener(function<void()>& func) noexcept
 {
 	_impl.removeMouseButtonClickListener(func);
 }
 
 void
-GuiWidget::removeMouseButtonDoubleClickListener(binder<void()>& func) noexcept
+GuiWidget::removeMouseButtonDoubleClickListener(function<void()>& func) noexcept
 {
 	_impl.removeMouseButtonDoubleClickListener(func);
 }

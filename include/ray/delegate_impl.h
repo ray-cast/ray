@@ -55,22 +55,22 @@
 #endif
 
 template<typename Result DELEGATE_COMMA DELEGATE_TEMPLATE_PARAMS>
-class binder<Result(DELEGATE_TEMPLATE_ARGS)>
+class function<Result(DELEGATE_TEMPLATE_ARGS)>
 {
 public:
-	binder() noexcept {};
-	virtual ~binder() noexcept {};
+	function() noexcept {};
+	virtual ~function() noexcept {};
 
 	virtual Result invoke(DELEGATE_FUNCTION_PARAMS) const = 0;
-	virtual std::unique_ptr<binder> clone() const = 0;
-	virtual bool comp(const binder& other) const noexcept = 0;
+	virtual std::unique_ptr<function> clone() const = 0;
+	virtual bool comp(const function& other) const noexcept = 0;
 };
 
 template<typename Result DELEGATE_COMMA DELEGATE_TEMPLATE_PARAMS, class _Ty>
-class delegate_bind<Result(DELEGATE_TEMPLATE_ARGS), _Ty> : public binder<Result(DELEGATE_TEMPLATE_ARGS)>
+class delegate_bind<Result(DELEGATE_TEMPLATE_ARGS), _Ty> : public function<Result(DELEGATE_TEMPLATE_ARGS)>
 {
 public:
-	typedef binder<Result(DELEGATE_TEMPLATE_ARGS)> delegate_bindbase;
+	typedef function<Result(DELEGATE_TEMPLATE_ARGS)> delegate_bindbase;
 
 public:
 	delegate_bind(const _Ty& f) noexcept : _functor(f) {}
@@ -112,7 +112,7 @@ class delegate<Result(DELEGATE_TEMPLATE_ARGS)>
 public:
 	typedef delegate<Result(DELEGATE_TEMPLATE_ARGS)> _Myt;
 
-	typedef binder<Result(DELEGATE_TEMPLATE_ARGS)> delegate_bindbase;
+	typedef function<Result(DELEGATE_TEMPLATE_ARGS)> delegate_bindbase;
     typedef std::vector<std::unique_ptr<delegate_bindbase>> DELEGATES;
     typedef typename DELEGATES::iterator iterator;
     typedef typename DELEGATES::const_iterator const_iterator;

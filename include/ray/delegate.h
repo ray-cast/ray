@@ -46,7 +46,7 @@
 _NAME_BEGIN
 
 template<typename T>
-class binder;
+class function;
 
 template<typename _Tx, typename _Ty>
 class delegate_bind;

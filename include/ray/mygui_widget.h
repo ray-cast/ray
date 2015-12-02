@@ -61,42 +61,42 @@ public:
 	virtual void setViewport(const Rect& view) noexcept;
 	virtual void getViewport(Rect& view) const noexcept;
 
-	virtual void addKeySetFocus(binder<void()>& func) noexcept;
-	virtual void addKeyLostFocus(binder<void()>& func) noexcept;
-	virtual void addKeyButtonPressed(binder<void()>& func) noexcept;
-	virtual void addKeyButtonReleased(binder<void()>& func) noexcept;
+	virtual void addKeySetFocus(function<void()>& func) noexcept;
+	virtual void addKeyLostFocus(function<void()>& func) noexcept;
+	virtual void addKeyButtonPressed(function<void()>& func) noexcept;
+	virtual void addKeyButtonReleased(function<void()>& func) noexcept;
 
-	virtual void addMouseMove(binder<void()>& func) noexcept;
-	virtual void addMouseDrag(binder<void()>& func) noexcept;
-	virtual void addMouseWheel(binder<void()>& func) noexcept;
+	virtual void addMouseMove(function<void()>& func) noexcept;
+	virtual void addMouseDrag(function<void()>& func) noexcept;
+	virtual void addMouseWheel(function<void()>& func) noexcept;
 
-	virtual void addMouseSetFocusListener(binder<void()>& func) noexcept;
-	virtual void addMouseLostFocusListener(binder<void()>& func) noexcept;
+	virtual void addMouseSetFocusListener(function<void()>& func) noexcept;
+	virtual void addMouseLostFocusListener(function<void()>& func) noexcept;
 
-	virtual void addMouseButtonPressedListener(binder<void()>& func) noexcept;
-	virtual void addMouseButtonReleasedListener(binder<void()>& func) noexcept;
+	virtual void addMouseButtonPressedListener(function<void()>& func) noexcept;
+	virtual void addMouseButtonReleasedListener(function<void()>& func) noexcept;
 
-	virtual void addMouseButtonClickListener(binder<void()>& func) noexcept;
-	virtual void addMouseButtonDoubleClickListener(binder<void()>& func) noexcept;
+	virtual void addMouseButtonClickListener(function<void()>& func) noexcept;
+	virtual void addMouseButtonDoubleClickListener(function<void()>& func) noexcept;
 
-	virtual void removeKeySetFocus(binder<void()>& func) noexcept;
-	virtual void removeKeyLostFocus(binder<void()>& func) noexcept;
+	virtual void removeKeySetFocus(function<void()>& func) noexcept;
+	virtual void removeKeyLostFocus(function<void()>& func) noexcept;
 
-	virtual void removeKeyButtonPressed(binder<void()>& func) noexcept;
-	virtual void removeKeyButtonReleased(binder<void()>& func) noexcept;
+	virtual void removeKeyButtonPressed(function<void()>& func) noexcept;
+	virtual void removeKeyButtonReleased(function<void()>& func) noexcept;
 
-	virtual void removeMouseMove(binder<void()>& func) noexcept;
-	virtual void removeMouseDrag(binder<void()>& func) noexcept;
-	virtual void removeMouseWheel(binder<void()>& func) noexcept;
+	virtual void removeMouseMove(function<void()>& func) noexcept;
+	virtual void removeMouseDrag(function<void()>& func) noexcept;
+	virtual void removeMouseWheel(function<void()>& func) noexcept;
 
-	virtual void removeMouseSetFocusListener(binder<void()>& func) noexcept;
-	virtual void removeMouseLostFocusListener(binder<void()>& func) noexcept;
+	virtual void removeMouseSetFocusListener(function<void()>& func) noexcept;
+	virtual void removeMouseLostFocusListener(function<void()>& func) noexcept;
 
-	virtual void removeMouseButtonPressedListener(binder<void()>& func) noexcept;
-	virtual void removeMouseButtonReleasedListener(binder<void()>& func) noexcept;
+	virtual void removeMouseButtonPressedListener(function<void()>& func) noexcept;
+	virtual void removeMouseButtonReleasedListener(function<void()>& func) noexcept;
 
-	virtual void removeMouseButtonClickListener(binder<void()>& func) noexcept;
-	virtual void removeMouseButtonDoubleClickListener(binder<void()>& func) noexcept;
+	virtual void removeMouseButtonClickListener(function<void()>& func) noexcept;
+	virtual void removeMouseButtonDoubleClickListener(function<void()>& func) noexcept;
 
 private:
 	void onKeySetFocus(MyGUI::Widget*, MyGUI::Widget*);

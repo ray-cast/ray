@@ -170,28 +170,28 @@ CameraComponent::getCameraOrder() const noexcept
 }
 
 void 
-CameraComponent::addPreRenderListener(binder<void()>&& func) noexcept
+CameraComponent::addPreRenderListener(function<void()>&& func) noexcept
 {
 	assert(!_onPreRender.find(func));
 	_onPreRender.attach(func);
 }
 
 void 
-CameraComponent::removePreRenderListener(binder<void()>&& func) noexcept
+CameraComponent::removePreRenderListener(function<void()>&& func) noexcept
 {
 	assert(_onPostRender.find(func));
 	_onPostRender.remove(func);
 }
 
 void
-CameraComponent::addPostRenderListener(binder<void()>&& func) noexcept
+CameraComponent::addPostRenderListener(function<void()>&& func) noexcept
 {
 	assert(!_onPostRender.find(func));
 	_onPostRender.attach(func);
 }
 
 void
-CameraComponent::removePostRenderListener(binder<void()>&& func) noexcept
+CameraComponent::removePostRenderListener(function<void()>&& func) noexcept
 {
 	assert(_onPostRender.find(func));
 	_onPostRender.remove(func);

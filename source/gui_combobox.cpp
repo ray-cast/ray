@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,61 +34,19 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_LABEL_COMPONENT_H_
-#define _H_GUI_LABEL_COMPONENT_H_
-
-#include <ray/gui_widget_component.h>
+#include <ray/gui_combobox.h>
 
 _NAME_BEGIN
 
-class GuiLabelComponent final : public GuiWidgetComponent
+__ImplementSubInterface(GuiComboBox, GuiWidget, "GuiComboBoxControl")
+
+GuiComboBox::GuiComboBox(GuiWidgetImpl& impl) noexcept
+	: GuiWidget(impl)
 {
-	__DeclareSubClass(GuiLabelComponent, GuiWidgetComponent)
-public:
-	GuiLabelComponent() noexcept;
-	GuiLabelComponent(GuiTextBoxPtr& label) noexcept;
-	~GuiLabelComponent() noexcept;
+}
 
-	Rect getTextRegion() noexcept;
-	void getTextSize(int& w, int& h) noexcept;
-
-	void setText(const std::string& _value) noexcept;
-	const std::string& getText() const noexcept;
-
-	void setFontName(const std::string& _value) noexcept;
-	const std::string& getFontName() noexcept;
-
-	void setFontHeight(int _value) noexcept;
-	int getFontHeight() noexcept;
-
-	void setTextAlign(GuiWidgetAlign _value) noexcept;
-	GuiWidgetAlign getTextAlign() noexcept;
-
-	void setTextColour(const float4& value) noexcept;
-	float4 getTextColour() noexcept;
-
-	void setTextWithReplacing(const std::string& _value) noexcept;
-
-	void setTextShadowColour(const float4& value) noexcept;
-	float4 getTextShadowColour() noexcept;
-
-	void setTextShadow(bool _value) noexcept;
-	bool getTextShadow() const noexcept;
-
-	void load(iarchive& reader) noexcept;
-	void save(oarchive& write) noexcept;
-
-	GameComponentPtr clone() const except;
-
-private:
-	GuiLabelComponent(const GuiLabelComponent&) noexcept = delete;
-	GuiLabelComponent& operator=(const GuiLabelComponent&) noexcept = delete;
-
-private:
-
-	GuiTextBoxPtr _label;
-};
+GuiComboBox::~GuiComboBox() noexcept
+{
+}
 
 _NAME_END
-
-#endif

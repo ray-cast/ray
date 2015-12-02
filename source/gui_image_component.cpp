@@ -47,6 +47,8 @@ GuiImageComponent::GuiImageComponent() noexcept
 {
 	_imagebox = GuiSystem::instance()->createWidget<GuiImageBox>();
 	_imagebox->create();
+
+	this->setGuiWidget(_imagebox);
 }
 
 GuiImageComponent::~GuiImageComponent() noexcept
@@ -263,18 +265,6 @@ GameComponentPtr
 GuiImageComponent::clone() const except
 {
 	return std::make_shared<GuiImageComponent>();
-}
-
-void
-GuiImageComponent::setGuiWidget(GuiWidgetPtr widget) noexcept
-{
-	_imagebox = widget->downcast<GuiImageBox>();
-}
-
-GuiWidgetPtr
-GuiImageComponent::getGuiWidget() const noexcept
-{
-	return _imagebox;
 }
 
 _NAME_END

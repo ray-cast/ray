@@ -139,8 +139,8 @@ MyGuiListBoxImpl::clearItemDataAt(std::size_t index)
 	_listBox->clearItemDataAt(index);
 }
 
-const std::string&
-MyGuiListBoxImpl::getItemNameAt(std::size_t index)
+std::string
+MyGuiListBoxImpl::getItemNameAt(std::size_t index) const
 {
 	return _listBox->getItemNameAt(index);
 }
@@ -286,8 +286,8 @@ MyGuiListBox::clearItemDataAt(std::size_t index)
 	_impl.clearItemDataAt(index);
 }
 
-const std::string&
-MyGuiListBox::getItemNameAt(std::size_t index)
+std::string
+MyGuiListBox::getItemNameAt(std::size_t index) const
 {
 	return _impl.getItemNameAt(index);
 }

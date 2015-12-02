@@ -46,6 +46,8 @@ GuiScrollBarComponent::GuiScrollBarComponent() noexcept
 {
 	_scrollBar = GuiSystem::instance()->createWidget<GuiScrollBar>();
 	_scrollBar->create();
+
+	this->setGuiWidget(_scrollBar);
 }
 
 GuiScrollBarComponent::~GuiScrollBarComponent() noexcept
@@ -218,18 +220,6 @@ GameComponentPtr
 GuiScrollBarComponent::clone() const except
 {
 	return std::make_shared<GuiScrollBarComponent>();
-}
-
-void
-GuiScrollBarComponent::setGuiWidget(GuiWidgetPtr widget) noexcept
-{
-	_scrollBar = widget->downcast<GuiScrollBar>();
-}
-
-GuiWidgetPtr
-GuiScrollBarComponent::getGuiWidget() const noexcept
-{
-	return _scrollBar;
 }
 
 _NAME_END

@@ -50,17 +50,17 @@ MyGuiWidget::~MyGuiWidget() noexcept
 {
 }
 
-void 
+void
 MyGuiWidget::destroy() noexcept
 {
 	if (_widget)
 	{
 		MyGUI::Gui::getInstance().destroyWidget(_widget);
 		_widget = nullptr;
-	}		
+	}
 }
 
-void 
+void
 MyGuiWidget::setParent(GuiWidgetImpl* parent) noexcept
 {
 	assert(_widget);
@@ -82,27 +82,27 @@ MyGuiWidget::getParent() const noexcept
 	return _parent;
 }
 
-void 
+void
 MyGuiWidget::setAlign(GuiWidgetAlign align) noexcept
 {
 	assert(_widget);
 	_widget->setAlign(GuiAlignToMyGui(align));
 }
 
-GuiWidgetAlign 
+GuiWidgetAlign
 MyGuiWidget::getAlign() noexcept
 {
 	return MyGuiToGuiAlign(_widget->getAlign());
 }
 
-void 
+void
 MyGuiWidget::changeWidgetSkin(const std::string& skin) noexcept
 {
 	assert(_widget);
 	_widget->changeWidgetSkin(skin);
 }
 
-void 
+void
 MyGuiWidget::setViewport(const Rect& view) noexcept
 {
 	assert(_widget);
@@ -116,19 +116,281 @@ MyGuiWidget::getViewport(Rect& rect) const noexcept
 	rect = convert(_widget->getCoord());
 }
 
-void 
+void
+MyGuiWidget::addKeySetFocus(binder<void()>& func) noexcept
+{
+	assert(!_onKeySetFocus.find(func));
+	if (_onKeySetFocus.empty())
+		_widget->eventKeySetFocus += MyGUI::newDelegate(this, &MyGuiWidget::onKeySetFocus);
+	_onKeySetFocus.attach(func);
+}
+
+void
+MyGuiWidget::addKeyLostFocus(binder<void()>& func) noexcept
+{
+	assert(!_onKeyLostFocus.find(func));
+	if (_onKeyLostFocus.empty())
+		_widget->eventKeyLostFocus += MyGUI::newDelegate(this, &MyGuiWidget::onKeyLostFocus);
+	_onKeyLostFocus.attach(func);
+}
+
+void
+MyGuiWidget::addKeyButtonPressed(binder<void()>& func) noexcept
+{
+	assert(!_onKeyButtonPressed.find(func));
+	if (_onKeyButtonPressed.empty())
+		_widget->eventKeyButtonPressed += MyGUI::newDelegate(this, &MyGuiWidget::onKeyButtonPressed);
+	_onKeyButtonPressed.attach(func);
+}
+
+void
+MyGuiWidget::addKeyButtonReleased(binder<void()>& func) noexcept
+{
+	assert(!_onKeyButtonReleased.find(func));
+	if (_onKeyButtonReleased.empty())
+		_widget->eventKeyButtonReleased += MyGUI::newDelegate(this, &MyGuiWidget::onKeyButtonReleased);
+	_onKeyButtonReleased.attach(func);
+}
+
+void
+MyGuiWidget::addMouseLostFocusListener(binder<void()>& func) noexcept
+{
+	assert(!_onMouseLostFocus.find(func));
+	if (_onMouseLostFocus.empty())
+		_widget->eventMouseLostFocus += MyGUI::newDelegate(this, &MyGuiWidget::onMouseLostFocus);
+	_onMouseLostFocus.attach(func);
+}
+
+void
+MyGuiWidget::addMouseSetFocusListener(binder<void()>& func) noexcept
+{
+	assert(!_onMouseSetFocus.find(func));
+	if (_onMouseSetFocus.empty())
+		_widget->eventMouseSetFocus += MyGUI::newDelegate(this, &MyGuiWidget::onMouseSetFocus);
+	_onMouseSetFocus.attach(func);
+}
+
+void
+MyGuiWidget::addMouseButtonPressedListener(binder<void()>& func) noexcept
+{
+	assert(!_onMouseButtonPressed.find(func));
+	if (_onMouseButtonPressed.empty())
+		_widget->eventMouseButtonPressed += MyGUI::newDelegate(this, &MyGuiWidget::onMouseButtonPressed);
+	_onMouseButtonPressed.attach(func);
+}
+
+void
+MyGuiWidget::addMouseButtonReleasedListener(binder<void()>& func) noexcept
+{
+	assert(!_onMouseButtonPressed.find(func));
+	if (_onMouseButtonPressed.empty())
+		_widget->eventMouseButtonReleased += MyGUI::newDelegate(this, &MyGuiWidget::onMouseButtonReleased);
+	_onMouseButtonReleased.attach(func);
+}
+
+void
+MyGuiWidget::addMouseButtonClickListener(binder<void()>& func) noexcept
+{
+	assert(!_onMouseButtonClick.find(func));
+	if (_onMouseButtonClick.empty())
+		_widget->eventMouseButtonClick += MyGUI::newDelegate(this, &MyGuiWidget::onMouseButtonClick);
+	_onMouseButtonClick.attach(func);
+}
+
+void
+MyGuiWidget::addMouseButtonDoubleClickListener(binder<void()>& func) noexcept
+{
+	assert(!_onMouseButtonDoubleClick.find(func));
+	if (_onMouseButtonDoubleClick.empty())
+		_widget->eventMouseButtonDoubleClick += MyGUI::newDelegate(this, &MyGuiWidget::onMouseButtonDoubleClick);
+	_onMouseButtonDoubleClick.attach(func);
+}
+
+void
+MyGuiWidget::removeKeySetFocus(binder<void()>& func) noexcept
+{
+	assert(_onKeySetFocus.find(func));
+	_onKeySetFocus.remove(func);
+}
+
+void
+MyGuiWidget::removeKeyLostFocus(binder<void()>& func) noexcept
+{
+	assert(_onKeyLostFocus.find(func));
+	_onKeyLostFocus.remove(func);
+}
+
+void
+MyGuiWidget::removeKeyButtonPressed(binder<void()>& func) noexcept
+{
+	assert(_onKeyButtonPressed.find(func));
+	_onKeyButtonPressed.remove(func);
+}
+
+void
+MyGuiWidget::removeKeyButtonReleased(binder<void()>& func) noexcept
+{
+	assert(_onKeyButtonReleased.find(func));
+	_onKeyButtonReleased.remove(func);
+}
+
+void
+MyGuiWidget::removeMouseSetFocusListener(binder<void()>& func) noexcept
+{
+	assert(_onMouseSetFocus.find(func));
+	_onMouseSetFocus.remove(func);
+}
+
+void
+MyGuiWidget::removeMouseLostFocusListener(binder<void()>& func) noexcept
+{
+	assert(_onMouseLostFocus.find(func));
+	_onMouseLostFocus.remove(func);
+}
+
+void
+MyGuiWidget::removeMouseButtonPressedListener(binder<void()>& func) noexcept
+{
+	assert(_onMouseButtonPressed.find(func));
+	_onMouseButtonPressed.remove(func);
+}
+
+void
+MyGuiWidget::removeMouseButtonReleasedListener(binder<void()>& func) noexcept
+{
+	assert(_onMouseButtonReleased.find(func));
+	_onMouseButtonReleased.remove(func);
+}
+
+void
+MyGuiWidget::removeMouseButtonClickListener(binder<void()>& func) noexcept
+{
+	assert(_onMouseButtonClick.find(func));
+	_onMouseButtonClick.remove(func);
+}
+
+void
+MyGuiWidget::removeMouseButtonDoubleClickListener(binder<void()>& func) noexcept
+{
+	assert(_onMouseButtonDoubleClick.find(func));
+	_onMouseButtonDoubleClick.remove(func);
+}
+
+void
+MyGuiWidget::onMouseLostFocus(MyGUI::Widget*, MyGUI::Widget*)
+{
+	_onMouseLostFocus.run();
+}
+
+void
+MyGuiWidget::onMouseSetFocus(MyGUI::Widget*, MyGUI::Widget*)
+{
+	_onMouseSetFocus.run();
+}
+
+void
+MyGuiWidget::onKeySetFocus(MyGUI::Widget*, MyGUI::Widget*)
+{
+	_onKeySetFocus();
+}
+
+void
+MyGuiWidget::onKeyLostFocus(MyGUI::Widget*, MyGUI::Widget*)
+{
+	_onKeyLostFocus();
+}
+
+void
+MyGuiWidget::onKeyButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char)
+{
+	_onKeyButtonPressed.run();
+}
+
+void
+MyGuiWidget::onKeyButtonReleased(MyGUI::Widget* _sender, MyGUI::KeyCode _key)
+{
+	_onKeyButtonReleased.run();
+}
+
+void
+MyGuiWidget::onMouseButtonPressed(MyGUI::Widget*, int x, int y, MyGUI::MouseButton button)
+{
+	_onMouseButtonPressed.run();
+}
+
+void
+MyGuiWidget::onMouseButtonReleased(MyGUI::Widget*, int x, int y, MyGUI::MouseButton button)
+{
+	_onMouseButtonReleased.run();
+}
+
+void
+MyGuiWidget::onMouseButtonClick(MyGUI::Widget* _sender)
+{
+	_onMouseButtonClick.run();
+}
+
+void
+MyGuiWidget::onMouseButtonDoubleClick(MyGUI::Widget* _sender)
+{
+	_onMouseButtonDoubleClick.run();
+}
+
+void
 MyGuiWidget::setWidget(MyGUI::Widget* widget) noexcept
 {
+	assert(widget);
+	assert(_widget == nullptr);
 	_widget = widget;
 }
 
-MyGUI::Widget* 
+MyGUI::Widget*
 MyGuiWidget::getWidget() const noexcept
 {
 	return _widget;
 }
 
-MyGUI::Align 
+MyGUI::FlowDirection
+MyGuiWidget::convert(GuiFlowDirection flow) noexcept
+{
+	switch (flow.getValue())
+	{
+	case GuiFlowDirection::TopToBottom:
+		return MyGUI::FlowDirection::TopToBottom;
+	case GuiFlowDirection::BottomToTop:
+		return MyGUI::FlowDirection::BottomToTop;
+	case GuiFlowDirection::LeftToRight:
+		return MyGUI::FlowDirection::LeftToRight;
+	case GuiFlowDirection::RightToLeft:
+		return MyGUI::FlowDirection::RightToLeft;
+	default:
+		assert(false);
+		return MyGUI::FlowDirection::LeftToRight;
+		break;
+	}
+}
+
+GuiFlowDirection
+MyGuiWidget::convert(MyGUI::FlowDirection flow) noexcept
+{
+	switch (flow.getValue())
+	{
+	case MyGUI::FlowDirection::TopToBottom:
+		return GuiFlowDirection::TopToBottom;
+	case MyGUI::FlowDirection::BottomToTop:
+		return GuiFlowDirection::BottomToTop;
+	case MyGUI::FlowDirection::LeftToRight:
+		return GuiFlowDirection::LeftToRight;
+	case MyGUI::FlowDirection::RightToLeft:
+		return GuiFlowDirection::RightToLeft;
+	default:
+		assert(false);
+		return GuiFlowDirection::LeftToRight;
+		break;
+	}
+}
+
+MyGUI::Align
 MyGuiWidget::GuiAlignToMyGui(GuiWidgetAlign align) noexcept
 {
 	switch (align.getValue())
@@ -157,7 +419,7 @@ MyGuiWidget::GuiAlignToMyGui(GuiWidgetAlign align) noexcept
 	}
 }
 
-GuiWidgetAlign 
+GuiWidgetAlign
 MyGuiWidget::MyGuiToGuiAlign(MyGUI::Align align) noexcept
 {
 	switch (align.getValue())

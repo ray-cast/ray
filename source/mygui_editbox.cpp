@@ -47,6 +47,14 @@ __ImplementSubClass(MyGuiEditBoxImpl, MyGuiWidget, "MyGuiEditBoxImpl")
 MyGuiEditBoxImpl::MyGuiEditBoxImpl() noexcept
 	: _editBox(nullptr)
 	, _parent(nullptr)
+	, _destroy(true)
+{
+}
+
+MyGuiEditBoxImpl::MyGuiEditBoxImpl(MyGUI::EditBox* self, bool destroy) noexcept
+	: _parent(nullptr)
+	, _editBox(self)
+	, _destroy(destroy)
 {
 }
 
@@ -69,6 +77,19 @@ MyGuiEditBoxImpl::create() except
 	this->setWidget(_editBox);
 
 	return _editBox ? true : false;
+}
+
+void
+MyGuiEditBoxImpl::destroy() noexcept
+{
+	if (_destroy)
+	{
+		if (_editBox)
+		{
+			MyGUI::Gui::getInstance().destroyWidget(_editBox);
+			_editBox = nullptr;
+		}
+	}
 }
 
 GuiTextBoxPtr
@@ -350,6 +371,12 @@ MyGuiEditBoxImpl::setHScrollPosition(std::size_t index)
 
 MyGuiEditBox::MyGuiEditBox() noexcept
 	: GuiEditBox(_impl)
+{
+}
+
+MyGuiEditBox::MyGuiEditBox(MyGUI::EditBox* self, bool destroy) noexcept
+	: GuiEditBox(_impl)
+	, _impl(self, destroy)
 {
 }
 

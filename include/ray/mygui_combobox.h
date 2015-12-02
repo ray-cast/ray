@@ -34,36 +34,38 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MYGUI_LISTBOX_H_
-#define _H_MYGUI_LISTBOX_H_
+#ifndef _H_MYGUI_COMBOBOX_H_
+#define _H_MYGUI_COMBOBOX_H_
 
 #include <ray/mygui_widget.h>
 
 _NAME_BEGIN
 
-class MyGuiListBoxImpl final : public MyGuiWidget
+class MyGuiComboBoxImpl final : public MyGuiWidget
 {
-	__DeclareSubClass(MyGuiButton, GuiWidget)
+	__DeclareSubClass(MyGuiComboBoxImpl, MyGuiWidget)
 public:
-	MyGuiListBoxImpl() noexcept;
-	virtual ~MyGuiListBoxImpl() noexcept;
+	MyGuiComboBoxImpl() noexcept;
+	virtual ~MyGuiComboBoxImpl() noexcept;
 
 	bool create() except;
 
 	std::size_t getItemCount() const;
-	void insertItemAt(std::size_t index, const std::string& name);
-	void addItem(const std::string& name);
+	void insertItemAt(std::size_t index, const std::string& name, std::string data);
+	void addItem(const std::string& name, const std::string& data);
 	void removeItemAt(std::size_t index);
 	void removeAllItems();
-	void swapItemsAt(std::size_t index1, std::size_t index2);
-
 	std::size_t findItemIndexWith(const std::string& name);
-	std::size_t getIndexSelected() const;
-	void setIndexSelected(std::size_t index);
-	void clearIndexSelected();
-	void setItemNameAt(std::size_t index, const std::string& name);
-	void clearItemDataAt(std::size_t index);
 
+	void setIndexSelected(std::size_t index);
+	std::size_t getIndexSelected() const;
+	void clearIndexSelected();
+
+	void setItemDataAt(std::size_t index, const std::string& data);
+	void clearItemDataAt(std::size_t index);
+	std::string* getItemDataAt(std::size_t index, bool _throw = true) const;
+
+	void setItemNameAt(std::size_t index, const std::string& name);
 	std::string getItemNameAt(std::size_t index) const;
 
 	void beginToItemAt(std::size_t index);
@@ -71,47 +73,58 @@ public:
 	void beginToItemLast();
 	void beginToItemSelected();
 
-	bool isItemVisibleAt(std::size_t index, bool fill = true);
-	bool isItemSelectedVisible(bool fill = true);
+	void setComboModeDrop(bool _value);
+	bool getComboModeDrop() const;
 
-	void setScrollVisible(bool visible);
-	void setScrollPosition(std::size_t position);
+	void setSmoothShow(bool _value);
+	bool getSmoothShow() const;
 
-	int getOptimalHeight();
+	void setMaxListLength(int _value);
+	int getMaxListLength() const;
 
-	void setActivateOnClick(bool activateOnClick);
+	void setFlowDirection(GuiFlowDirection _value);
+	GuiFlowDirection getFlowDirection() const;
+
+	GuiEditBoxPtr getGuiEditBox() const noexcept;
 
 private:
-	MyGuiListBoxImpl(const MyGuiListBoxImpl&) noexcept = delete;
-	MyGuiListBoxImpl& operator=(const MyGuiListBoxImpl&) noexcept = delete;
+	MyGuiComboBoxImpl(const MyGuiComboBoxImpl&) noexcept = delete;
+	MyGuiComboBoxImpl& operator=(const MyGuiComboBoxImpl&) noexcept = delete;
 
 private:
 
-	MyGUI::ListBox* _listBox;
+	std::string _caption;
+	MyGUI::ComboBox* _comboBox;
 	MyGUI::Widget* _parent;
+
+	GuiEditBoxPtr _editBox;
 };
 
-class MyGuiListBox final : public GuiListBox
+class MyGuiComboBox final : public GuiComboBox
 {
-	__DeclareSubClass(MyGuiButton, GuiButton)
+	__DeclareSubClass(MyGuiComboBox, GuiComboBox)
 public:
-	MyGuiListBox() noexcept;
-	virtual ~MyGuiListBox() noexcept;
+	MyGuiComboBox() noexcept;
+	virtual ~MyGuiComboBox() noexcept;
+
+	GuiEditBoxPtr getGuiEditBox() const noexcept;
 
 	std::size_t getItemCount() const;
-	void insertItemAt(std::size_t index, const std::string& name);
-	void addItem(const std::string& name);
+	void insertItemAt(std::size_t index, const std::string& name, std::string data);
+	void addItem(const std::string& name, const std::string& data);
 	void removeItemAt(std::size_t index);
 	void removeAllItems();
-	void swapItemsAt(std::size_t index1, std::size_t index2);
-
 	std::size_t findItemIndexWith(const std::string& name);
-	std::size_t getIndexSelected() const;
-	void setIndexSelected(std::size_t index);
-	void clearIndexSelected();
-	void setItemNameAt(std::size_t index, const std::string& name);
-	void clearItemDataAt(std::size_t index);
 
+	void setIndexSelected(std::size_t index);
+	std::size_t getIndexSelected() const;
+	void clearIndexSelected();
+
+	void setItemDataAt(std::size_t index, const std::string& data);
+	void clearItemDataAt(std::size_t index);
+	std::string* getItemDataAt(std::size_t index, bool _throw = true) const;
+
+	void setItemNameAt(std::size_t index, const std::string& name);
 	std::string getItemNameAt(std::size_t index) const;
 
 	void beginToItemAt(std::size_t index);
@@ -119,23 +132,25 @@ public:
 	void beginToItemLast();
 	void beginToItemSelected();
 
-	bool isItemVisibleAt(std::size_t index, bool fill = true);
-	bool isItemSelectedVisible(bool fill = true);
+	void setComboModeDrop(bool _value);
+	bool getComboModeDrop() const;
 
-	void setScrollVisible(bool visible);
-	void setScrollPosition(std::size_t position);
+	void setSmoothShow(bool _value);
+	bool getSmoothShow() const;
 
-	int getOptimalHeight();
+	void setMaxListLength(int _value);
+	int getMaxListLength() const;
 
-	void setActivateOnClick(bool activateOnClick);
-
-private:
-	MyGuiListBox(const MyGuiListBox&) noexcept = delete;
-	MyGuiListBox& operator=(const MyGuiListBox&) noexcept = delete;
+	void setFlowDirection(GuiFlowDirection _value);
+	GuiFlowDirection getFlowDirection() const;
 
 private:
+	MyGuiComboBox(const MyGuiComboBox&) noexcept = delete;
+	MyGuiComboBox& operator=(const MyGuiComboBox&) noexcept = delete;
 
-	MyGuiListBoxImpl _impl;
+private:
+
+	MyGuiComboBoxImpl _impl;
 };
 
 _NAME_END

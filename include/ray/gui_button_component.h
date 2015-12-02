@@ -43,10 +43,10 @@ _NAME_BEGIN
 
 class GuiButtonComponent final : public GuiWidgetComponent
 {
-	__DeclareSubClass(GuiButtonComponent, GuiLabelComponent)
+	__DeclareSubClass(GuiButtonComponent, GuiWidgetComponent)
 public:
 	GuiButtonComponent() noexcept;
-	~GuiButtonComponent() noexcept;
+	virtual ~GuiButtonComponent() noexcept;
 
 	void setStateSelected(bool value) noexcept;
 	bool getStateSelected() const noexcept;
@@ -67,10 +67,6 @@ protected:
 	virtual void onAttach() except;
 	virtual void onDetach() except;
 
-protected:
-	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept;
-	virtual GuiWidgetPtr getGuiWidget() const noexcept;
-
 private:
 	GuiButtonComponent(const GuiButtonComponent&) noexcept = delete;
 	GuiButtonComponent& operator=(const GuiButtonComponent&) noexcept = delete;
@@ -78,7 +74,9 @@ private:
 private:
 
 	GuiButtonPtr _button;
-	GameObjectPtr _label;
+
+	GameComponentPtr _label;
+	GameObjectPtr _labelObject;
 };
 
 _NAME_END

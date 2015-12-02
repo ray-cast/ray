@@ -515,6 +515,8 @@ SET(MYGUI_LIST
     ${SOURCE_PATH}/mygui_listbox.cpp
     ${HEADER_PATH}/mygui_editbox.h
     ${SOURCE_PATH}/mygui_editbox.cpp
+    ${HEADER_PATH}/mygui_combobox.h
+    ${SOURCE_PATH}/mygui_combobox.cpp
     ${HEADER_PATH}/mygui_scrollbar.h
     ${SOURCE_PATH}/mygui_scrollbar.cpp
     ${HEADER_PATH}/mygui_scrollview.h
@@ -545,6 +547,8 @@ SET(GUI_LIST
     ${SOURCE_PATH}/gui_listbox.cpp
     ${HEADER_PATH}/gui_editbox.h
     ${SOURCE_PATH}/gui_editbox.cpp
+    ${HEADER_PATH}/gui_combobox.h
+    ${SOURCE_PATH}/gui_combobox.cpp
     ${HEADER_PATH}/gui_imagebox.h
     ${SOURCE_PATH}/gui_imagebox.cpp
     ${HEADER_PATH}/gui_scrollbar.h
@@ -610,6 +614,8 @@ SET(GUI_FEATURES_LIST
     ${SOURCE_PATH}/gui_feature.cpp
     ${HEADER_PATH}/gui_listbox_component.h
     ${SOURCE_PATH}/gui_listbox_component.cpp
+    ${HEADER_PATH}/gui_combobox_component.h
+    ${SOURCE_PATH}/gui_combobox_component.cpp
     ${HEADER_PATH}/gui_editbox_component.h
     ${SOURCE_PATH}/gui_editbox_component.cpp
     ${HEADER_PATH}/gui_button_component.h

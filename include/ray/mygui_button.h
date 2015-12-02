@@ -68,19 +68,18 @@ private:
 
 private:
 
-	std::string _caption;
-	MyGUI::Button* _button;
 	MyGUI::Widget* _parent;
+	MyGUI::Button* _button;
 
 	GuiTextBoxPtr _textbox;
 };
 
-class MyGuiButton final : public GuiButton
+class MyGuiButtonControl final : public GuiButton
 {
-	__DeclareSubClass(MyGuiButton, GuiButton)
+	__DeclareSubClass(MyGuiButtonControl, GuiButton)
 public:
-	MyGuiButton() noexcept;
-	virtual ~MyGuiButton() noexcept;
+	MyGuiButtonControl() noexcept;
+	virtual ~MyGuiButtonControl() noexcept;
 
 	virtual GuiTextBoxPtr getGuiTextBox() const noexcept;
 
@@ -95,8 +94,8 @@ public:
 	virtual void setImageName(const std::string& name) noexcept;
 
 private:
-	MyGuiButton(const MyGuiButton&) noexcept = delete;
-	MyGuiButton& operator=(const MyGuiButton&) noexcept = delete;
+	MyGuiButtonControl(const MyGuiButtonControl&) noexcept = delete;
+	MyGuiButtonControl& operator=(const MyGuiButtonControl&) noexcept = delete;
 
 private:
 

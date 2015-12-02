@@ -69,15 +69,12 @@ protected:
 	virtual void onAttach() except;
 	virtual void onDetach() except;
 
-protected:
-	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept;
-	virtual GuiWidgetPtr getGuiWidget() const noexcept;
-
 private:
 
 	GuiWindowPtr _window;
 
-	GameObjectPtr _label;
+	GameComponentPtr _label;
+	GameObjectPtr _labelObject;
 };
 
 _NAME_END

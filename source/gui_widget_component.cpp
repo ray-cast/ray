@@ -49,24 +49,27 @@ GuiWidgetComponent::~GuiWidgetComponent() noexcept
 {
 }
 
-void 
+void
 GuiWidgetComponent::setAlign(GuiWidgetAlign align) noexcept
 {
-	this->getGuiWidget()->setAlign(align);
+	assert(_widget);
+	_widget->setAlign(align);
 }
 
 GuiWidgetAlign
 GuiWidgetComponent::getAlign() noexcept
 {
-	return this->getGuiWidget()->getAlign();
+	assert(_widget);
+	return _widget->getAlign();
 }
 
 void
 GuiWidgetComponent::setSkin(const std::string& skin) except
 {
+	assert(_widget);
 	if (_skin != skin)
 	{
-		this->getGuiWidget()->changeWidgetSkin(skin);
+		_widget->changeWidgetSkin(skin);
 		_skin = skin;
 	}
 }
@@ -77,7 +80,147 @@ GuiWidgetComponent::getSkin() const noexcept
 	return _skin;
 }
 
-void 
+void
+GuiWidgetComponent::addKeySetFocus(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->addKeySetFocus(func);
+}
+
+void
+GuiWidgetComponent::addKeyLostFocus(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->addKeyLostFocus(func);
+}
+
+void
+GuiWidgetComponent::addKeyButtonPressed(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->addKeyButtonPressed(func);
+}
+
+void
+GuiWidgetComponent::addKeyButtonReleased(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->addKeyButtonReleased(func);
+}
+
+void
+GuiWidgetComponent::addMouseSetFocusListener(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->addMouseSetFocusListener(func);
+}
+
+void
+GuiWidgetComponent::addMouseLostFocusListener(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->addMouseLostFocusListener(func);
+}
+
+void
+GuiWidgetComponent::addMouseButtonPressedListener(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->addMouseButtonPressedListener(func);
+}
+
+void
+GuiWidgetComponent::addMouseButtonReleasedListener(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->addMouseButtonReleasedListener(func);
+}
+
+void
+GuiWidgetComponent::addMouseButtonClickListener(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->addMouseButtonClickListener(func);
+}
+
+void
+GuiWidgetComponent::addMouseButtonDoubleClickListener(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->addMouseButtonDoubleClickListener(func);
+}
+
+void
+GuiWidgetComponent::removeKeySetFocus(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->removeKeySetFocus(func);
+}
+
+void
+GuiWidgetComponent::removeKeyLostFocus(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->removeKeyLostFocus(func);
+}
+
+void
+GuiWidgetComponent::removeKeyButtonPressed(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->removeKeyButtonPressed(func);
+}
+
+void
+GuiWidgetComponent::removeKeyButtonReleased(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->removeKeyButtonReleased(func);
+}
+
+void
+GuiWidgetComponent::removeMouseSetFocusListener(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->removeMouseSetFocusListener(func);
+}
+
+void
+GuiWidgetComponent::removeMouseLostFocusListener(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->removeMouseLostFocusListener(func);
+}
+
+void
+GuiWidgetComponent::removeMouseButtonPressedListener(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->removeMouseButtonPressedListener(func);
+}
+
+void
+GuiWidgetComponent::removeMouseButtonReleasedListener(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->removeMouseButtonReleasedListener(func);
+}
+
+void
+GuiWidgetComponent::removeMouseButtonClickListener(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->removeMouseButtonClickListener(func);
+}
+
+void
+GuiWidgetComponent::removeMouseButtonDoubleClickListener(binder<void()>& func) noexcept
+{
+	assert(_widget);
+	_widget->removeMouseButtonDoubleClickListener(func);
+}
+
+void
 GuiWidgetComponent::load(iarchive& reader) noexcept
 {
 	GameComponent::load(reader);
@@ -92,7 +235,7 @@ GuiWidgetComponent::load(iarchive& reader) noexcept
 	this->setAlign(GuiWidgetAlign::parse(align));
 }
 
-void 
+void
 GuiWidgetComponent::save(oarchive& write) noexcept
 {
 	auto string = this->getAlign().print();
@@ -102,23 +245,40 @@ GuiWidgetComponent::save(oarchive& write) noexcept
 	write << make_archive(string, "align");
 }
 
-void 
+void
+GuiWidgetComponent::setGuiWidget(GuiWidgetPtr widget) noexcept
+{
+	assert(widget);
+	_widget = widget;
+}
+
+GuiWidgetPtr
+GuiWidgetComponent::getGuiWidget() const noexcept
+{
+	return _widget;
+}
+
+void
 GuiWidgetComponent::_updateParent() noexcept
 {
+	assert(_widget);
+
 	auto parent = this->getGameObject()->getParent();
 	if (parent)
 	{
 		auto component = parent->getComponent<GuiWidgetComponent>();
 		if (component)
 		{
-			this->getGuiWidget()->setParent(component->getGuiWidget());
+			_widget->setParent(component->getGuiWidget());
 		}
 	}
 }
 
-void 
+void
 GuiWidgetComponent::_updateTransform() noexcept
 {
+	assert(_widget);
+
 	auto scale = this->getGameObject()->getScale();
 	auto translate = this->getGameObject()->getTranslate();
 
@@ -128,17 +288,17 @@ GuiWidgetComponent::_updateTransform() noexcept
 	view.w = scale.x;
 	view.h = scale.y;
 
-	this->getGuiWidget()->setViewport(view);
+	_widget->setViewport(view);
 }
 
-void 
+void
 GuiWidgetComponent::onActivate() except
 {
 	this->_updateParent();
 	this->_updateTransform();
 }
 
-void 
+void
 GuiWidgetComponent::onDeactivate() except
 {
 }
@@ -147,36 +307,6 @@ void
 GuiWidgetComponent::onMoveAfter() noexcept
 {
 	this->_updateTransform();
-}
-
-void 
-GuiWidgetComponent::onMouseDrag(float x, float y) noexcept
-{
-}
-
-void 
-GuiWidgetComponent::onMouseEnter(float x, float y) noexcept
-{
-}
-
-void 
-GuiWidgetComponent::onMouseOver(float x, float y) noexcept
-{
-}
-
-void 
-GuiWidgetComponent::onMouseMotion(float x, float y) noexcept
-{
-}
-
-void 
-GuiWidgetComponent::onMouseButtonDown(int button, float x, float y) noexcept
-{
-}
-
-void 
-GuiWidgetComponent::onMouseButtonUp(int button, float x, float y) noexcept
-{
 }
 
 _NAME_END

@@ -41,6 +41,7 @@
 #include <ray/rtti.h>
 #include <ray/mstream.h>
 #include <ray/dccmn.h>
+#include <ray/delegate.h>
 
 _NAME_BEGIN
 
@@ -49,6 +50,7 @@ typedef std::shared_ptr<class GuiWidget> GuiWidgetPtr;
 typedef std::shared_ptr<class GuiWindow> GuiWindowPtr;
 typedef std::shared_ptr<class GuiButton> GuiButtonPtr;
 typedef std::shared_ptr<class GuiListBox> GuiListBoxPtr;
+typedef std::shared_ptr<class GuiComboBox> GuiComboBoxPtr;
 typedef std::shared_ptr<class GuiEditBox> GuiEditBoxPtr;
 typedef std::shared_ptr<class GuiTextBox> GuiTextBoxPtr;
 typedef std::shared_ptr<class GuiImageBox> GuiImageBoxPtr;

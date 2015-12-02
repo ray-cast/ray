@@ -48,6 +48,7 @@
 #include <ray/gui_widget.h>
 #include <ray/gui_window.h>
 #include <ray/gui_button.h>
+#include <ray/gui_combobox.h>
 #include <ray/gui_listbox.h>
 #include <ray/gui_editbox.h>
 #include <ray/gui_textbox.h>

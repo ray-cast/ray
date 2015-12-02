@@ -46,9 +46,11 @@ class MyGuiEditBoxImpl final : public MyGuiWidget
 	__DeclareSubClass(MyGuiEditBoxImpl, MyGuiWidget)
 public:
 	MyGuiEditBoxImpl() noexcept;
+	MyGuiEditBoxImpl(MyGUI::EditBox* self, bool destroy = true) noexcept;
 	virtual ~MyGuiEditBoxImpl() noexcept;
 
 	bool create() except;
+	void destroy() noexcept;
 
 	void setTextIntervalColour(std::size_t start, std::size_t count, const float4& colour);
 	std::size_t getTextSelectionStart() const;
@@ -121,6 +123,8 @@ private:
 
 private:
 
+	bool _destroy;
+
 	std::string _caption;
 
 	MyGUI::Widget* _parent;
@@ -134,6 +138,7 @@ class MyGuiEditBox final : public GuiEditBox
 	__DeclareSubClass(MyGuiEditBox, GuiEditBox)
 public:
 	MyGuiEditBox() noexcept;
+	MyGuiEditBox(MyGUI::EditBox* self, bool destroy = true) noexcept;
 	virtual ~MyGuiEditBox() noexcept;
 
 	void setTextIntervalColour(std::size_t start, std::size_t count, const float4& colour);

@@ -59,6 +59,7 @@ public:
 	virtual void setImageResource(const std::string& name) noexcept = 0;
 	virtual void setImageGroup(const std::string& name) noexcept = 0;
 	virtual void setImageName(const std::string& name) noexcept = 0;
+
 private:
 	GuiButton(const GuiButton&) noexcept = delete;
 	GuiButton& operator=(const GuiButton&) noexcept = delete;

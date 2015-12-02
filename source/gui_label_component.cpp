@@ -47,11 +47,14 @@ GuiLabelComponent::GuiLabelComponent() noexcept
 {
 	_label = GuiSystem::instance()->createWidget<GuiTextBox>();
 	_label->create();
+
+	this->setGuiWidget(_label);
 }
 
 GuiLabelComponent::GuiLabelComponent(GuiTextBoxPtr& label) noexcept
 	: _label(label)
 {
+	this->setGuiWidget(_label);
 }
 
 GuiLabelComponent::~GuiLabelComponent() noexcept
@@ -175,19 +178,6 @@ GuiLabelComponent::getTextShadow() const noexcept
 {
 	assert(_label);
 	return _label->getTextShadow();
-}
-
-void
-GuiLabelComponent::setGuiWidget(GuiWidgetPtr widget) noexcept
-{
-	assert(widget->isInstanceOf<GuiWidget>());
-	_label = widget->downcast<GuiTextBox>();
-}
-
-GuiWidgetPtr
-GuiLabelComponent::getGuiWidget() const noexcept
-{
-	return _label;
 }
 
 void

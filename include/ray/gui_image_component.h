@@ -88,10 +88,6 @@ public:
 
 	GameComponentPtr clone() const except;
 
-protected:
-	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept;
-	virtual GuiWidgetPtr getGuiWidget() const noexcept;
-
 private:
 	GuiImageComponent(const GuiImageComponent&) noexcept = delete;
 	GuiImageComponent& operator=(const GuiImageComponent&) noexcept = delete;

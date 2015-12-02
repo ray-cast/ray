@@ -61,6 +61,43 @@ public:
 	virtual void setViewport(const Rect& view) noexcept;
 	virtual void getViewport(Rect& view) const noexcept;
 
+	void addKeySetFocus(binder<void()>& func) noexcept;
+	void addKeyLostFocus(binder<void()>& func) noexcept;
+	void addKeyButtonPressed(binder<void()>& func) noexcept;
+	void addKeyButtonReleased(binder<void()>& func) noexcept;
+
+	void addMouseSetFocusListener(binder<void()>& func) noexcept;
+	void addMouseLostFocusListener(binder<void()>& func) noexcept;
+	void addMouseButtonPressedListener(binder<void()>& func) noexcept;
+	void addMouseButtonReleasedListener(binder<void()>& func) noexcept;
+	void addMouseButtonClickListener(binder<void()>& func) noexcept;
+	void addMouseButtonDoubleClickListener(binder<void()>& func) noexcept;
+
+	void removeKeySetFocus(binder<void()>& func) noexcept;
+	void removeKeyLostFocus(binder<void()>& func) noexcept;
+	void removeKeyButtonPressed(binder<void()>& func) noexcept;
+	void removeKeyButtonReleased(binder<void()>& func) noexcept;
+
+	void removeMouseSetFocusListener(binder<void()>& func) noexcept;
+	void removeMouseLostFocusListener(binder<void()>& func) noexcept;
+	void removeMouseButtonPressedListener(binder<void()>& func) noexcept;
+	void removeMouseButtonReleasedListener(binder<void()>& func) noexcept;
+	void removeMouseButtonClickListener(binder<void()>& func) noexcept;
+	void removeMouseButtonDoubleClickListener(binder<void()>& func) noexcept;
+
+private:
+	void onKeySetFocus(MyGUI::Widget*, MyGUI::Widget*);
+	void onKeyLostFocus(MyGUI::Widget*, MyGUI::Widget*);
+	void onKeyButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char);
+	void onKeyButtonReleased(MyGUI::Widget* _sender, MyGUI::KeyCode _key);
+
+	void onMouseSetFocus(MyGUI::Widget*, MyGUI::Widget*);
+	void onMouseLostFocus(MyGUI::Widget*, MyGUI::Widget*);
+	void onMouseButtonPressed(MyGUI::Widget*, int x, int y, MyGUI::MouseButton button);
+	void onMouseButtonReleased(MyGUI::Widget*, int x, int y, MyGUI::MouseButton button);
+	void onMouseButtonClick(MyGUI::Widget* _sender);
+	void onMouseButtonDoubleClick(MyGUI::Widget* _sender);
+
 protected:
 	void setWidget(MyGUI::Widget* widget) noexcept;
 	MyGUI::Widget* getWidget() const noexcept;
@@ -71,7 +108,7 @@ protected:
 	{
 		return MyGUI::IntPoint(pt.x, pt.y);
 	}
-		
+
 	static MyGUI::IntSize convert(const Size& sz) noexcept
 	{
 		return MyGUI::IntSize(sz.x, sz.y);
@@ -79,7 +116,7 @@ protected:
 
 	static MyGUI::IntCoord convert(const Rect& rect) noexcept
 	{
-		return MyGUI::IntCoord(rect.x, rect.y, rect.w, rect.h); 
+		return MyGUI::IntCoord(rect.x, rect.y, rect.w, rect.h);
 	}
 
 	static MyGUI::Colour convert(const float4& color) noexcept
@@ -107,6 +144,9 @@ protected:
 		return float4(color.red, color.green, color.blue, color.alpha);
 	}
 
+	static MyGUI::FlowDirection convert(GuiFlowDirection flow) noexcept;
+	static GuiFlowDirection convert(MyGUI::FlowDirection flow) noexcept;
+
 	static MyGUI::Align GuiAlignToMyGui(GuiWidgetAlign align) noexcept;
 	static GuiWidgetAlign MyGuiToGuiAlign(MyGUI::Align align) noexcept;
 
@@ -117,6 +157,18 @@ private:
 private:
 	GuiWidgetImpl* _parent;
 	MyGUI::Widget* _widget;
+
+	delegate<void()> _onKeySetFocus;
+	delegate<void()> _onKeyLostFocus;
+	delegate<void()> _onKeyButtonPressed;
+	delegate<void()> _onKeyButtonReleased;
+
+	delegate<void()> _onMouseSetFocus;
+	delegate<void()> _onMouseLostFocus;
+	delegate<void()> _onMouseButtonPressed;
+	delegate<void()> _onMouseButtonReleased;
+	delegate<void()> _onMouseButtonClick;
+	delegate<void()> _onMouseButtonDoubleClick;
 };
 
 _NAME_END

@@ -48,6 +48,14 @@ GuiEditBoxComponent::GuiEditBoxComponent() noexcept
 {
 	_editBox = GuiSystem::instance()->createWidget<GuiEditBox>();
 	_editBox->create();
+
+	this->setGuiWidget(_editBox);
+}
+
+GuiEditBoxComponent::GuiEditBoxComponent(GuiEditBoxPtr& edit) noexcept
+	: _editBox(edit)
+{
+	this->setGuiWidget(_editBox);
 }
 
 GuiEditBoxComponent::~GuiEditBoxComponent() noexcept
@@ -358,18 +366,6 @@ GameComponentPtr
 GuiEditBoxComponent::clone() const except
 {
 	return std::make_shared<GuiEditBoxComponent>();
-}
-
-void
-GuiEditBoxComponent::setGuiWidget(GuiWidgetPtr widget) noexcept
-{
-	_editBox = widget->downcast<GuiEditBox>();
-}
-
-GuiWidgetPtr
-GuiEditBoxComponent::getGuiWidget() const noexcept
-{
-	return _editBox;
 }
 
 _NAME_END

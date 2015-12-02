@@ -62,7 +62,7 @@ public:
     void setItemNameAt(std::size_t index, const std::string& name);
     void clearItemDataAt(std::size_t index);
 
-    const std::string& getItemNameAt(std::size_t index);
+    std::string getItemNameAt(std::size_t index) const;
 
     void beginToItemAt(std::size_t index);
     void beginToItemFirst();
@@ -83,9 +83,6 @@ public:
 	void save(oarchive& write) noexcept;
 
 	GameComponentPtr clone() const except;
-protected:
-	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept;
-	virtual GuiWidgetPtr getGuiWidget() const noexcept;
 
 private:
     GuiListBoxComponent(const GuiListBoxComponent&) noexcept = delete;

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,59 +34,60 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_LABEL_COMPONENT_H_
-#define _H_GUI_LABEL_COMPONENT_H_
+#ifndef _H_GUI_COMBOBOX_H_
+#define _H_GUI_COMBOBOX_H_
 
-#include <ray/gui_widget_component.h>
+#include <ray/gui_widget.h>
 
 _NAME_BEGIN
 
-class GuiLabelComponent final : public GuiWidgetComponent
+class EXPORT GuiComboBox : public GuiWidget
 {
-	__DeclareSubClass(GuiLabelComponent, GuiWidgetComponent)
+	__DeclareSubInterface(GuiComboBox, GuiWidget)
 public:
-	GuiLabelComponent() noexcept;
-	GuiLabelComponent(GuiTextBoxPtr& label) noexcept;
-	~GuiLabelComponent() noexcept;
+	GuiComboBox(GuiWidgetImpl& impl) noexcept;
+	virtual ~GuiComboBox() noexcept;
 
-	Rect getTextRegion() noexcept;
-	void getTextSize(int& w, int& h) noexcept;
+    virtual std::size_t getItemCount() const = 0;
+    virtual void insertItemAt(std::size_t index, const std::string& name, std::string data) = 0;
+    virtual void addItem(const std::string& name, const std::string& data) = 0;
+    virtual void removeItemAt(std::size_t index) = 0;
+    virtual void removeAllItems() = 0;
+    virtual std::size_t findItemIndexWith(const std::string& name) = 0;
 
-	void setText(const std::string& _value) noexcept;
-	const std::string& getText() const noexcept;
+    virtual void setIndexSelected(std::size_t index) = 0;
+    virtual std::size_t getIndexSelected() const = 0;
+    virtual void clearIndexSelected() = 0;
 
-	void setFontName(const std::string& _value) noexcept;
-	const std::string& getFontName() noexcept;
+    virtual void setItemDataAt(std::size_t index, const std::string& data) = 0;
+    virtual void clearItemDataAt(std::size_t index) = 0;
+    virtual std::string* getItemDataAt(std::size_t index, bool _throw = true) const = 0;
 
-	void setFontHeight(int _value) noexcept;
-	int getFontHeight() noexcept;
+    virtual void setItemNameAt(std::size_t index, const std::string& name) = 0;
+    virtual std::string getItemNameAt(std::size_t index) const = 0;
 
-	void setTextAlign(GuiWidgetAlign _value) noexcept;
-	GuiWidgetAlign getTextAlign() noexcept;
+    virtual void beginToItemAt(std::size_t index) = 0;
+    virtual void beginToItemFirst() = 0;
+    virtual void beginToItemLast() = 0;
+    virtual void beginToItemSelected() = 0;
 
-	void setTextColour(const float4& value) noexcept;
-	float4 getTextColour() noexcept;
+    virtual void setComboModeDrop(bool value) = 0;
+    virtual bool getComboModeDrop() const = 0;
 
-	void setTextWithReplacing(const std::string& _value) noexcept;
+    virtual void setSmoothShow(bool value) = 0;
+    virtual bool getSmoothShow() const = 0;
 
-	void setTextShadowColour(const float4& value) noexcept;
-	float4 getTextShadowColour() noexcept;
+    virtual void setMaxListLength(int value) = 0;
+    virtual int getMaxListLength() const = 0;
 
-	void setTextShadow(bool _value) noexcept;
-	bool getTextShadow() const noexcept;
+    virtual void setFlowDirection(GuiFlowDirection value) = 0;
+    virtual GuiFlowDirection getFlowDirection() const = 0;
 
-	void load(iarchive& reader) noexcept;
-	void save(oarchive& write) noexcept;
-
-	GameComponentPtr clone() const except;
+	virtual GuiEditBoxPtr getGuiEditBox() const noexcept = 0;
 
 private:
-	GuiLabelComponent(const GuiLabelComponent&) noexcept = delete;
-	GuiLabelComponent& operator=(const GuiLabelComponent&) noexcept = delete;
-
-private:
-
-	GuiTextBoxPtr _label;
+	GuiComboBox(const GuiComboBox&) noexcept = delete;
+	GuiComboBox& operator=(const GuiComboBox&) noexcept = delete;
 };
 
 _NAME_END

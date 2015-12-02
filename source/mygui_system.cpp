@@ -39,6 +39,7 @@
 #include <ray/mygui_renderer.h>
 #include <ray/mygui_manager.h>
 #include <ray/mygui_button.h>
+#include <ray/mygui_combobox.h>
 #include <ray/mygui_window.h>
 #include <ray/mygui_editbox.h>
 #include <ray/mygui_imagebox.h>
@@ -394,7 +395,7 @@ MyGuiSystem::createWidget(const rtti::Rtti* rtti) except
 
 	GuiWidgetPtr widget;
 	if (rtti == GuiButton::getRtti())
-		widget = std::make_shared<MyGuiButton>();
+		widget = std::make_shared<MyGuiButtonControl>();
 	else if (rtti == GuiWindow::getRtti())
 		widget = std::make_shared<MyGuiWindow>();
 	else if (rtti == GuiEditBox::getRtti())
@@ -407,6 +408,8 @@ MyGuiSystem::createWidget(const rtti::Rtti* rtti) except
 		widget = std::make_shared<MyGuiScrollBar>();
 	else if (rtti == GuiScrollView::getRtti())
 		widget = std::make_shared<MyGuiScrollView>();
+	else if (rtti == GuiComboBox::getRtti())
+		widget = std::make_shared<MyGuiComboBox>();
 	else
 	{
 		assert(false);

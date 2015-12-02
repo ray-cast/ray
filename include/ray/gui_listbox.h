@@ -62,7 +62,7 @@ public:
 	virtual void setItemNameAt(std::size_t index, const std::string& name) = 0;
 	virtual void clearItemDataAt(std::size_t index) = 0;
 
-	virtual const std::string& getItemNameAt(std::size_t index) = 0;
+	virtual std::string getItemNameAt(std::size_t index) const = 0;
 
 	virtual void beginToItemAt(std::size_t index) = 0;
 	virtual void beginToItemFirst() = 0;

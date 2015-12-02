@@ -2,18 +2,18 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
-// | * Redistribution and use of this software in source and binary forms,
+// | * Redistribution and use of _renderThread software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
 // |   conditions are met:
 // |
 // | * Redistributions of source code must retain the above
-// |   copyright notice, this list of conditions and the
+// |   copyright notice, _renderThread list of conditions and the
 // |   following disclaimer.
 // |
 // | * Redistributions in binary form must reproduce the above
-// |   copyright notice, this list of conditions and the
+// |   copyright notice, _renderThread list of conditions and the
 // |   following disclaimer in the documentation and/or other
 // |   materials provided with the distribution.
 // |
@@ -34,60 +34,63 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_LABEL_COMPONENT_H_
-#define _H_GUI_LABEL_COMPONENT_H_
-
-#include <ray/gui_widget_component.h>
+#if defined(_BUILD_GUI)
+#include <ray/gui_combobox_component.h>
+#include <ray/gui_editbox_component.h>
+#include <ray/gui_combobox.h>
+#include <ray/gui_system.h>
 
 _NAME_BEGIN
 
-class GuiLabelComponent final : public GuiWidgetComponent
+__ImplementSubClass(GuiComboBoxComponent, GuiWidgetComponent, "GuiCombo")
+
+GuiComboBoxComponent::GuiComboBoxComponent() noexcept
 {
-	__DeclareSubClass(GuiLabelComponent, GuiWidgetComponent)
-public:
-	GuiLabelComponent() noexcept;
-	GuiLabelComponent(GuiTextBoxPtr& label) noexcept;
-	~GuiLabelComponent() noexcept;
+	_comboBox = GuiSystem::instance()->createWidget<GuiComboBox>();
+	_comboBox->create();
 
-	Rect getTextRegion() noexcept;
-	void getTextSize(int& w, int& h) noexcept;
+	_edit = std::make_shared<GuiEditBoxComponent>(_comboBox->getGuiEditBox());
+	_editObject = std::make_shared<GameObject>();
+	_editObject->addComponent(_edit);
 
-	void setText(const std::string& _value) noexcept;
-	const std::string& getText() const noexcept;
+	this->setGuiWidget(_comboBox);
+}
 
-	void setFontName(const std::string& _value) noexcept;
-	const std::string& getFontName() noexcept;
+GuiComboBoxComponent::~GuiComboBoxComponent() noexcept
+{
+}
 
-	void setFontHeight(int _value) noexcept;
-	int getFontHeight() noexcept;
+void
+GuiComboBoxComponent::onAttach() except
+{
+	assert(_editObject);
+	_editObject->setParent(this->getGameObject());
+}
 
-	void setTextAlign(GuiWidgetAlign _value) noexcept;
-	GuiWidgetAlign getTextAlign() noexcept;
+void
+GuiComboBoxComponent::onDetach() except
+{
+	assert(_editObject);
+	_editObject->setParent(nullptr);
+}
 
-	void setTextColour(const float4& value) noexcept;
-	float4 getTextColour() noexcept;
+void
+GuiComboBoxComponent::load(iarchive& reader) noexcept
+{
+	_edit->load(reader);
+}
 
-	void setTextWithReplacing(const std::string& _value) noexcept;
+void
+GuiComboBoxComponent::save(oarchive& write) noexcept
+{
+	_edit->save(write);
+}
 
-	void setTextShadowColour(const float4& value) noexcept;
-	float4 getTextShadowColour() noexcept;
-
-	void setTextShadow(bool _value) noexcept;
-	bool getTextShadow() const noexcept;
-
-	void load(iarchive& reader) noexcept;
-	void save(oarchive& write) noexcept;
-
-	GameComponentPtr clone() const except;
-
-private:
-	GuiLabelComponent(const GuiLabelComponent&) noexcept = delete;
-	GuiLabelComponent& operator=(const GuiLabelComponent&) noexcept = delete;
-
-private:
-
-	GuiTextBoxPtr _label;
-};
+GameComponentPtr
+GuiComboBoxComponent::clone() const except
+{
+	return std::make_shared<GuiComboBoxComponent>();
+}
 
 _NAME_END
 

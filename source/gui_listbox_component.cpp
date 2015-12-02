@@ -47,6 +47,8 @@ GuiListBoxComponent::GuiListBoxComponent() noexcept
 {
 	_listBox = GuiSystem::instance()->createWidget<GuiListBox>();
 	_listBox->create();
+
+	this->setGuiWidget(_listBox);
 }
 
 GuiListBoxComponent::~GuiListBoxComponent() noexcept
@@ -125,8 +127,8 @@ GuiListBoxComponent::clearItemDataAt(std::size_t index)
     _listBox->clearItemDataAt(index);
 }
 
-const std::string&
-GuiListBoxComponent::getItemNameAt(std::size_t index)
+std::string
+GuiListBoxComponent::getItemNameAt(std::size_t index) const
 {
     return _listBox->getItemNameAt(index);
 }
@@ -189,19 +191,6 @@ void
 GuiListBoxComponent::setActivateOnClick(bool activateOnClick)
 {
     _listBox->setActivateOnClick(activateOnClick);
-}
-
-void
-GuiListBoxComponent::setGuiWidget(GuiWidgetPtr widget) noexcept
-{
-	assert(widget->isInstanceOf<GuiWidget>());
-	_listBox = widget->downcast<GuiListBox>();
-}
-
-GuiWidgetPtr
-GuiListBoxComponent::getGuiWidget() const noexcept
-{
-	return _listBox;
 }
 
 void

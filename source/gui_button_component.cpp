@@ -48,76 +48,86 @@ GuiButtonComponent::GuiButtonComponent() noexcept
 {
 	_button = GuiSystem::instance()->createWidget<GuiButton>();
 	_button->create();
+
+	_label = std::make_shared<GuiLabelComponent>(_button->getGuiTextBox());
+	_labelObject = std::make_shared<GameObject>();
+	_labelObject->addComponent(_label);
+
+	this->setGuiWidget(_button);
 }
 
 GuiButtonComponent::~GuiButtonComponent() noexcept
 {
 }
 
-void 
+void
 GuiButtonComponent::setStateSelected(bool value) noexcept
 {
+	assert(_button);
 	_button->setStateSelected(value);
 }
 
-bool 
+bool
 GuiButtonComponent::getStateSelected() const noexcept
 {
+	assert(_button);
 	return _button->getStateSelected();
 }
 
-void 
+void
 GuiButtonComponent::setModeImage(bool value) noexcept
 {
+	assert(_button);
 	_button->setModeImage(value);
 }
 
-bool 
+bool
 GuiButtonComponent::getModeImage() const noexcept
 {
+	assert(_button);
 	return _button->getModeImage();
 }
 
-void 
+void
 GuiButtonComponent::setImageResource(const std::string& name) noexcept
 {
+	assert(_button);
 	_button->setImageResource(name);
 }
 
-void 
+void
 GuiButtonComponent::setImageGroup(const std::string& name) noexcept
 {
+	assert(_button);
 	_button->setImageGroup(name);
 }
 
-void 
+void
 GuiButtonComponent::setImageName(const std::string& name) noexcept
 {
+	assert(_button);
 	_button->setImageName(name);
 }
 
-void 
+void
 GuiButtonComponent::onAttach() except
 {
-	if (_label)
-		_label->setParent(this->getGameObject());
+	assert(_labelObject);
+	_labelObject->setParent(this->getGameObject());
 }
 
-void 
+void
 GuiButtonComponent::onDetach() except
 {
-	if (_label)
-		_label->setParent(nullptr);
+	assert(_labelObject);
+	_labelObject->setParent(nullptr);
 }
 
 void
 GuiButtonComponent::load(iarchive& reader) noexcept
 {
-	auto label = std::make_shared<GuiLabelComponent>(_button->getGuiTextBox());
-	label->load(reader);
-
-	_label = std::make_shared<GameObject>();
-	_label->addComponent(label);
+	assert(_label);
+	_label->load(reader);
 
 	bool state = false;
 	bool mode = false;
@@ -139,7 +149,8 @@ GuiButtonComponent::load(iarchive& reader) noexcept
 void
 GuiButtonComponent::save(oarchive& write) noexcept
 {
-	GuiWidgetComponent::save(write);
+	assert(_label);
+	_label->save(write);
 
 	bool state = this->getStateSelected();
 	bool mode = this->getModeImage();
@@ -152,22 +163,10 @@ GuiButtonComponent::save(oarchive& write) noexcept
 	write << make_archive(resource, "resource");
 }
 
-GameComponentPtr 
+GameComponentPtr
 GuiButtonComponent::clone() const except
 {
 	return std::make_shared<GuiButtonComponent>();
-}
-
-void
-GuiButtonComponent::setGuiWidget(GuiWidgetPtr widget) noexcept
-{
-	_button = widget->downcast<GuiButton>();
-}
-
-GuiWidgetPtr
-GuiButtonComponent::getGuiWidget() const noexcept
-{
-	return _button;
 }
 
 _NAME_END

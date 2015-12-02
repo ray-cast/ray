@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class GuiWidgetAlign
+class EXPORT GuiWidgetAlign
 {
 public:
 	typedef std::map<std::string, int> MapAlign;
@@ -215,6 +215,89 @@ inline std::istream& operator >> (std::istream& stream, GuiWidgetAlign&  result)
 	}
 
 	return stream;
+}
+
+struct EXPORT GuiFlowDirection
+{
+	enum Enum
+	{
+		LeftToRight,
+		RightToLeft,
+		TopToBottom,
+		BottomToTop,
+		MAX
+	};
+
+	GuiFlowDirection(Enum _value = LeftToRight) :
+		_value(_value)
+	{
+	}
+
+	static GuiFlowDirection parse(const std::string& str)
+	{
+		GuiFlowDirection type;
+		int value = 0;
+		for (;;)
+		{
+			const char* name = type.getValueName(value);
+			if (strcmp(name, "") == 0 || name == str) break;
+			value++;
+		}
+		type._value = (Enum)value;
+		return type;
+	}
+
+	bool isHorizontal() const
+	{
+		return _value == LeftToRight || _value == RightToLeft;
+	}
+
+	bool isVertical() const
+	{
+		return !this->isHorizontal();
+	}
+
+	std::string print() const
+	{
+		return getValueName(_value);
+	}
+
+	int getValue() const
+	{
+		return _value;
+	}
+
+	const char* getValueName(int index) const
+	{
+		static const char* values[MAX + 1] = { "LeftToRight", "RightToLeft", "TopToBottom", "BottomToTop", "" };
+		return values[(index < MAX && index >= 0) ? index : MAX];
+	}
+
+	Enum _value;
+};
+
+inline bool operator == (GuiFlowDirection const& a, GuiFlowDirection const& b)
+{
+	return a._value == b._value;
+}
+
+inline bool operator != (GuiFlowDirection const& a, GuiFlowDirection const& b)
+{
+	return a._value != b._value;
+}
+
+inline std::ostream& operator << (std::ostream& _stream, const GuiFlowDirection&  other)
+{
+	_stream << other.getValueName(other._value);
+	return _stream;
+}
+
+inline std::istream& operator >> (std::istream& _stream, GuiFlowDirection&  other)
+{
+	std::string value;
+	_stream >> value;
+	other = GuiFlowDirection::parse(value);
+	return _stream;
 }
 
 _NAME_END

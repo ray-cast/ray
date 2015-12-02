@@ -55,12 +55,33 @@ public:
 	void setSkin(const std::string& skin) except;
 	const std::string& getSkin() const noexcept;
 
-protected:
-	void load(iarchive& reader) noexcept;
-	void save(oarchive& write) noexcept;
+	void addKeySetFocus(binder<void()>& func) noexcept;
+	void addKeyLostFocus(binder<void()>& func) noexcept;
+	void addKeyButtonPressed(binder<void()>& func) noexcept;
+	void addKeyButtonReleased(binder<void()>& func) noexcept;
 
-	void _updateParent() noexcept;
-	void _updateTransform() noexcept;
+	void addMouseSetFocusListener(binder<void()>& func) noexcept;
+	void addMouseLostFocusListener(binder<void()>& func) noexcept;
+	void addMouseButtonPressedListener(binder<void()>& func) noexcept;
+	void addMouseButtonReleasedListener(binder<void()>& func) noexcept;
+	void addMouseButtonClickListener(binder<void()>& func) noexcept;
+	void addMouseButtonDoubleClickListener(binder<void()>& func) noexcept;
+
+	void removeKeySetFocus(binder<void()>& func) noexcept;
+	void removeKeyLostFocus(binder<void()>& func) noexcept;
+	void removeKeyButtonPressed(binder<void()>& func) noexcept;
+	void removeKeyButtonReleased(binder<void()>& func) noexcept;
+
+	void removeMouseSetFocusListener(binder<void()>& func) noexcept;
+	void removeMouseLostFocusListener(binder<void()>& func) noexcept;
+	void removeMouseButtonPressedListener(binder<void()>& func) noexcept;
+	void removeMouseButtonReleasedListener(binder<void()>& func) noexcept;
+	void removeMouseButtonClickListener(binder<void()>& func) noexcept;
+	void removeMouseButtonDoubleClickListener(binder<void()>& func) noexcept;
+
+protected:
+	virtual void load(iarchive& reader) noexcept;
+	virtual void save(oarchive& write) noexcept;
 
 	virtual void onActivate() except;
 	virtual void onDeactivate() except;
@@ -68,21 +89,17 @@ protected:
 	virtual void onMoveAfter() noexcept;
 
 protected:
-	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept = 0;
-	virtual GuiWidgetPtr getGuiWidget() const noexcept = 0;
+	void _updateParent() noexcept;
+	void _updateTransform() noexcept;
 
-protected:
-
-	virtual void onMouseDrag(float x, float y) noexcept;
-	virtual void onMouseEnter(float x, float y) noexcept;
-	virtual void onMouseOver(float x, float y) noexcept;
-	virtual void onMouseMotion(float x, float y) noexcept;
-	virtual void onMouseButtonDown(int button, float x, float y) noexcept;
-	virtual void onMouseButtonUp(int button, float x, float y) noexcept;
+	void setGuiWidget(GuiWidgetPtr widget) noexcept;
+	GuiWidgetPtr getGuiWidget() const noexcept;
 
 private:
 
 	std::string _skin;
+
+	GuiWidgetPtr _widget;
 };
 
 _NAME_END

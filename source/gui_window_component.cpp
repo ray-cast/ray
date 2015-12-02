@@ -48,6 +48,12 @@ GuiWindowComponent::GuiWindowComponent() noexcept
 {	
 	_window = GuiSystem::instance()->createWidget<GuiWindow>();
 	_window->create();
+
+	_label = std::make_shared<GuiLabelComponent>(_window->getGuiTextBox());
+	_labelObject = std::make_shared<GameObject>();
+	_labelObject->addComponent(_label);
+
+	this->setGuiWidget(_window);
 }
 
 GuiWindowComponent::~GuiWindowComponent() noexcept
@@ -113,25 +119,21 @@ GuiWindowComponent::getMaxSize(int& w, int& h) const noexcept
 void
 GuiWindowComponent::onAttach() except
 {
-	if (_label)
-		_label->setParent(this->getGameObject());
+	assert(_labelObject);
+	_labelObject->setParent(this->getGameObject());
 }
 
 void
 GuiWindowComponent::onDetach() except
 {
-	if (_label)
-		_label->setParent(nullptr);
+	assert(_labelObject);
+	_labelObject->setParent(nullptr);
 }
 
 void 
 GuiWindowComponent::load(iarchive& reader) noexcept
 {
-	auto label = std::make_shared<GuiLabelComponent>(_window->getGuiTextBox());
-	label->load(reader);
-
-	_label = std::make_shared<GameObject>();
-	_label->addComponent(label);
+	_label->load(reader);
 
 	bool smooth = true;
 	bool autoAlpha = false;
@@ -154,26 +156,13 @@ GuiWindowComponent::load(iarchive& reader) noexcept
 void 
 GuiWindowComponent::save(oarchive& write) noexcept
 {
-	GuiWidgetComponent::save(write);
+	_label->save(write);
 }
 
 GameComponentPtr
 GuiWindowComponent::clone() const except
 {
 	return std::make_shared<GuiWindowComponent>();
-}
-
-void 
-GuiWindowComponent::setGuiWidget(GuiWidgetPtr widget) noexcept
-{
-	assert(widget->isInstanceOf<GuiWidget>());
-	_window = widget->downcast<GuiWindow>();
-}
-
-GuiWidgetPtr 
-GuiWindowComponent::getGuiWidget() const noexcept
-{
-	return _window;
 }
 
 _NAME_END

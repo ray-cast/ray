@@ -46,6 +46,8 @@ GuiScrollViewComponent::GuiScrollViewComponent() noexcept
 {
 	_scrollView = GuiSystem::instance()->createWidget<GuiScrollView>();
 	_scrollView->create();
+
+	this->setGuiWidget(_scrollView);
 }
 
 GuiScrollViewComponent::~GuiScrollViewComponent() noexcept
@@ -160,18 +162,6 @@ GameComponentPtr
 GuiScrollViewComponent::clone() const except
 {
 	return std::make_shared<GuiScrollViewComponent>();
-}
-
-void 
-GuiScrollViewComponent::setGuiWidget(GuiWidgetPtr widget) noexcept
-{
-	_scrollView = widget->downcast<GuiScrollView>();
-}
-
-GuiWidgetPtr 
-GuiScrollViewComponent::getGuiWidget() const noexcept
-{
-	return _scrollView;
 }
 
 _NAME_END

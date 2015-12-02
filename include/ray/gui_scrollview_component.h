@@ -69,10 +69,6 @@ public:
 
 	GameComponentPtr clone() const except;
 
-protected:
-	virtual void setGuiWidget(GuiWidgetPtr widget) noexcept;
-	virtual GuiWidgetPtr getGuiWidget() const noexcept;
-
 private:
 	GuiScrollViewComponent(const GuiScrollViewComponent&) = delete;
 	GuiScrollViewComponent& operator=(const GuiScrollViewComponent&) = delete;

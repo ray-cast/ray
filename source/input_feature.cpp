@@ -59,6 +59,10 @@ public:
 	}
 
 private:
+	InputEventListener(const InputEventListener&) noexcept = delete;
+	InputEventListener& operator=(const InputEventListener&)noexcept = delete;
+
+private:
 	InputFeature& _input;
 };
 

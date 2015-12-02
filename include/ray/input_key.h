@@ -46,7 +46,7 @@ class InputKey
 public:
     enum Code
     {
-        UNKNOWN = -1,
+		None,
 
         ESCAPE,
 

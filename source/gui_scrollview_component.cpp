@@ -123,8 +123,8 @@ GuiScrollViewComponent::load(iarchive& reader) noexcept
 {
 	GuiWidgetComponent::load(reader);
 
-	bool scrollV = false;
-	bool scrollH = false;
+	bool scrollV = true;
+	bool scrollH = true;
 	int2 size(0, 0);
 	int2 offset(0, 0);
 	std::string align;

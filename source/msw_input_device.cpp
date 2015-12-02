@@ -99,7 +99,7 @@ InputKey::Code VirtualKeyToScanCode(HWND hwnd, WPARAM wParam, LPARAM lParam)
 					msg.lParam & 0x01000000 &&
 					msg.time == time)
 				{
-					return InputKey::Code::UNKNOWN;
+					return InputKey::Code::None;
 				}
 			}
 		}
@@ -206,7 +206,7 @@ InputKey::Code VirtualKeyToScanCode(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		return (InputKey::Code)(InputKey::Code::Key0 + wParam - '0');
 	}
 
-	return InputKey::Code::UNKNOWN;
+	return InputKey::Code::None;
 }
 
 int VirtualKeyToText(WPARAM _virtualKey)

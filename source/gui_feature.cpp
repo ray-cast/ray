@@ -75,6 +75,8 @@ GuiInputKey::Code KeyCodetoGuiKey(InputKey::Code key) noexcept
 {
 	switch (key)
 	{
+	case InputKey::None:
+		return GuiInputKey::Code::None;
 	case InputKey::BACKSPACE:
 		return GuiInputKey::Code::Backspace;
 	case InputKey::TAB:
@@ -421,6 +423,8 @@ GuiFeature::onMessage(const MessagePtr& message) except
 			case InputEvent::KeyUp:
 				_platform->injectKeyRelease(KeyCodetoGuiKey((InputKey::Code)event->key.keysym.sym));
 				break;
+			case InputEvent::Character:
+				_platform->injectKeyPress(KeyCodetoGuiKey(InputKey::Code::None), event->key.keysym.unicode);
 			}
 		}
 	}

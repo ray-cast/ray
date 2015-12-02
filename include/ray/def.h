@@ -98,11 +98,7 @@
 #   endif
 #endif
 
-#if defined(_VISUAL_STUDIO_) && (_VISUAL_STUDIO_ > 1800)
-#	define __CXX11__ 1
-#endif
-
-#if !defined(__CXX11__)
+#if defined(_VISUAL_STUDIO_) && (_VISUAL_STUDIO_ <= 1800)
 #   ifndef noexcept
 #       define noexcept throw()
 #   endif
@@ -113,7 +109,7 @@
 #endif
 
 #ifndef except
-#	if !defined(__CXX11__)
+#   if defined(_VISUAL_STUDIO_) && (_VISUAL_STUDIO_ <= 1800)
 #       define except
 #	else
 #       define except noexcept(false)

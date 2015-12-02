@@ -37,7 +37,7 @@
 #include "terrain.h"
 #include "terrain_items.h"
 
-__ImplementSubClass(TerrainComponent, ray::GameController, "Terrain")
+__ImplementSubClass(TerrainComponent, ray::GameComponent, "Terrain")
 
 TerrainComponent::TerrainComponent() noexcept
 	: _createRadius(2)

@@ -41,7 +41,7 @@
 #include <ray/camera_component.h>
 #include <ray/render_system.h>
 
-__ImplementSubClass(FirstPersonCameraComponent, GameController, "FirstPersonCamera")
+__ImplementSubClass(FirstPersonCameraComponent, GameComponent, "FirstPersonCamera")
 
 FirstPersonCameraComponent::FirstPersonCameraComponent() noexcept
 	: _speed(10.0)

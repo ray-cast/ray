@@ -37,11 +37,11 @@
 #ifndef _H_FIRST_PERSON_CAMERA_H_
 #define _H_FIRST_PERSON_CAMERA_H_
 
-#include <ray/game_controller.h>
+#include <ray/game_component.h>
 
-class FirstPersonCameraComponent : public ray::GameController
+class FirstPersonCameraComponent : public ray::GameComponent
 {
-	__DeclareSubClass(FirstPersonCameraComponent, ray::GameController)
+	__DeclareSubClass(FirstPersonCameraComponent, ray::GameComponent)
 public:
 	FirstPersonCameraComponent() noexcept;
 	~FirstPersonCameraComponent() noexcept;

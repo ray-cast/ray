@@ -39,7 +39,6 @@
 
 #include <ray/game_application.h>
 #include <ray/game_server.h>
-#include <ray/game_controller.h>
 #include <ray/game_object.h>
 #include <ray/camera_component.h>
 #include <ray/mesh_component.h>

@@ -78,7 +78,7 @@ private:
 	TerrainThread& operator=(TerrainThread&) = delete;
 };
 
-class TerrainComponent : public ray::GameController
+class TerrainComponent : public ray::GameComponent
 {
 	__DeclareSubClass(TerrainComponent, ray::GameController)
 public:

@@ -263,20 +263,12 @@ DefaultInput::obtainKeyboardCapture(InputKeyboardPtr keyboard) noexcept
 	if (_keyboardCaptureDevice != keyboard)
 	{
 		if (_keyboardCaptureDevice)
-		{
 			_keyboardCaptureDevice->releaseCapture();
-			if (_inputDevice)
-				_inputDevice->removeInputListener(_keyboardCaptureDevice);
-		}
 
 		_keyboardCaptureDevice = keyboard;
 
 		if (_keyboardCaptureDevice)
-		{
 			_keyboardCaptureDevice->obtainCapture();
-			if (_inputDevice)
-				_inputDevice->addInputListener(_keyboardCaptureDevice);
-		}			
 	}
 }
 
@@ -372,6 +364,12 @@ DefaultInput::update() noexcept
 	InputEventPtr event;
 	while (_inputDevice->pollEvents(event))
 	{
+		if (_keyboardCaptureDevice)
+			_keyboardCaptureDevice->onInputEvent(event);
+
+		if (_mouseCaptureDevice)
+			_mouseCaptureDevice->onInputEvent(event);
+
 		this->sendInputEvent(event);
 	}
 }

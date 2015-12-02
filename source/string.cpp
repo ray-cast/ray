@@ -250,8 +250,8 @@ int strnicmp(const wchar_t *s1, const wchar_t *s2, std::size_t n)
 		if (p++ >= n)
 			return 0;
 
-		c1 = ray::tolower(*s1++);
-		c2 = ray::tolower(*s2++);
+		c1 = util::tolower(*s1++);
+		c2 = util::tolower(*s2++);
 	} while (c1 && (c1 == c2));
 
 	return c1 - c2;

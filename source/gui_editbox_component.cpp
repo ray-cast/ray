@@ -52,7 +52,7 @@ GuiEditBoxComponent::GuiEditBoxComponent() noexcept
 	this->setGuiWidget(_editBox);
 }
 
-GuiEditBoxComponent::GuiEditBoxComponent(GuiEditBoxPtr& edit) noexcept
+GuiEditBoxComponent::GuiEditBoxComponent(GuiEditBoxPtr edit) noexcept
 	: _editBox(edit)
 {
 	this->setGuiWidget(_editBox);

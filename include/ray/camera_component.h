@@ -76,11 +76,11 @@ public:
 	CameraType getCameraType() const noexcept;
 	CameraOrder getCameraOrder() const noexcept;
 
-	void addPreRenderListener(std::function<void()> listener) noexcept;
-	void removePreRenderListener(std::function<void()> listener) noexcept;
+	void addPreRenderListener(binder<void()>&& listener) noexcept;
+	void removePreRenderListener(binder<void()>&& listener) noexcept;
 
-	void addPostRenderListener(std::function<void()> listener) noexcept;
-	void removePostRenderListener(std::function<void()> listener) noexcept;
+	void addPostRenderListener(binder<void()>&& listener) noexcept;
+	void removePostRenderListener(binder<void()>&& listener) noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
@@ -105,8 +105,8 @@ private:
 
 	CameraPtr _camera;
 
-	std::vector<std::function<void()>> _onPreRender;
-	std::vector<std::function<void()>> _onPostRender;
+	delegate<void()> _onPreRender;
+	delegate<void()> _onPostRender;
 };
 
 _NAME_END

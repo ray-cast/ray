@@ -69,7 +69,7 @@ GuiInputButton::Code ButtonCodeToGuiButton(InputButton::Code button) noexcept
 	}
 
 	return GuiInputButton::Code::None;
-};
+}
 
 GuiInputKey::Code KeyCodetoGuiKey(InputKey::Code key) noexcept
 {

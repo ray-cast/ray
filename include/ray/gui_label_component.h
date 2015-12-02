@@ -46,7 +46,7 @@ class GuiLabelComponent final : public GuiWidgetComponent
 	__DeclareSubClass(GuiLabelComponent, GuiWidgetComponent)
 public:
 	GuiLabelComponent() noexcept;
-	GuiLabelComponent(GuiTextBoxPtr& label) noexcept;
+	GuiLabelComponent(GuiTextBoxPtr label) noexcept;
 	~GuiLabelComponent() noexcept;
 
 	Rect getTextRegion() noexcept;

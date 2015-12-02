@@ -46,7 +46,7 @@ class GuiEditBoxComponent final : public GuiWidgetComponent
 	__DeclareSubClass(GuiEditBoxComponent, GuiWidgetComponent)
 public:
 	GuiEditBoxComponent() noexcept;
-	GuiEditBoxComponent(GuiEditBoxPtr& edit) noexcept;
+	GuiEditBoxComponent(GuiEditBoxPtr edit) noexcept;
 	~GuiEditBoxComponent() noexcept;
 
 	void setTextIntervalColour(std::size_t start, std::size_t count, const float4& colour);

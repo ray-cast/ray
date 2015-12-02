@@ -51,7 +51,7 @@ GuiLabelComponent::GuiLabelComponent() noexcept
 	this->setGuiWidget(_label);
 }
 
-GuiLabelComponent::GuiLabelComponent(GuiTextBoxPtr& label) noexcept
+GuiLabelComponent::GuiLabelComponent(GuiTextBoxPtr label) noexcept
 	: _label(label)
 {
 	this->setGuiWidget(_label);

@@ -43,7 +43,7 @@ _NAME_BEGIN
 
 class EXPORT GuiScrollView : public GuiWidget
 {
-	__DeclareSubInterface(GuiScrollView, GuiWidget);
+	__DeclareSubInterface(GuiScrollView, GuiWidget)
 public:
 	GuiScrollView(GuiWidgetImpl& impl) noexcept;
 	virtual ~GuiScrollView() noexcept;

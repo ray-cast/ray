@@ -52,7 +52,7 @@ GuiCameraComponent::~GuiCameraComponent() noexcept
 {
 }
 
-GameComponentPtr 
+GameComponentPtr
 GuiCameraComponent::clone() const except
 {
 	return std::make_shared<GuiCameraComponent>();
@@ -62,17 +62,17 @@ void
 GuiCameraComponent::onAttachComponent(GameComponentPtr& component) except
 {
 	if (component->isInstanceOf<CameraComponent>())
-		component->downcast<CameraComponent>()->addPostRenderListener(std::bind(&GuiCameraComponent::onPostRender, this));
+		component->downcast<CameraComponent>()->addPostRenderListener(make_binder(&GuiCameraComponent::onPostRender, this));
 }
 
 void
 GuiCameraComponent::onDetachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<CameraComponent>())
-		component->downcast<CameraComponent>()->removePostRenderListener(std::bind(&GuiCameraComponent::onPostRender, this));
+		component->downcast<CameraComponent>()->removePostRenderListener(make_binder(&GuiCameraComponent::onPostRender, this));
 }
 
-void 
+void
 GuiCameraComponent::onPostRender() noexcept
 {
 	GuiSystem::instance()->render(this->getGameServer()->getTimer()->delta());

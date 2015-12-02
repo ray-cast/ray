@@ -48,15 +48,29 @@ namespace trait
     template<typename T>
     struct functor {};
 
+	template<typename Result>
+	struct functor<Result(*)()>
+	{
+		typedef Result result_type;
+		typedef void arg_type;
+	};
+
+	template<typename Result, typename Args>
+	struct functor<Result(*)(Args)>
+	{
+		typedef Result result_type;
+		typedef Args arg_type;
+	};
+
     template<typename Result, typename Class>
-    struct functor<Result(Class::*)(void)>
+    struct functor<Result(Class::*)()>
     {
         typedef Result result_type;
         typedef Class class_type;
         typedef void arg_type;
     };
 
-    template<typename Result, typename Class, class Args>
+    template<typename Result, typename Class, typename Args>
     struct functor<Result(Class::*)(Args)>
     {
         typedef Result result_type;

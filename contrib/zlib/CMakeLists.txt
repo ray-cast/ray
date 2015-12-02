@@ -69,21 +69,26 @@ endif()
 if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     # If we're doing an out of source build and the user has a zconf.h
     # in their source tree...
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h)
+    if(EXISTS ${LIBRARY_OUTPUT_PATH}/zconf.h)
         message(STATUS "Renaming")
-        message(STATUS "    ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h")
+        message(STATUS "    ${LIBRARY_OUTPUT_PATH}/zconf.h")
         message(STATUS "to 'zconf.h.included' because this file is included with zlib")
         message(STATUS "but CMake generates it automatically in the build directory.")
-        file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.included)
+        file(RENAME ${LIBRARY_OUTPUT_PATH}/zconf.h ${LIBRARY_OUTPUT_PATH}/zconf.h.included)
   endif()
 endif()
 
-set(ZLIB_PC ${CMAKE_CURRENT_BINARY_DIR}/zlib.pc)
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
-		${ZLIB_PC} @ONLY)
-configure_file(	${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.cmakein
-		${CMAKE_CURRENT_SOURCE_DIR}/zconf.h @ONLY)
-include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR})
+set(ZLIB_PC ${LIBRARY_OUTPUT_PATH}/zlib.pc)
+
+if(NOT EXISTS ${ZLIB_PC})
+    configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein ${ZLIB_PC} @ONLY)
+endif()
+
+if(NOT EXISTS ${LIBRARY_OUTPUT_PATH}/zconf.h)
+    configure_file(	${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.cmakein ${LIBRARY_OUTPUT_PATH}/zconf.h @ONLY)
+endif()
+
+include_directories(${LIBRARY_OUTPUT_PATH} ${CMAKE_SOURCE_DIR})
 
 
 #============================================================================
@@ -91,7 +96,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR})
 #============================================================================
 
 set(ZLIB_PUBLIC_HDRS
-    ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h
+    ${LIBRARY_OUTPUT_PATH}/zconf.h
     zlib.h
 )
 set(ZLIB_PRIVATE_HDRS

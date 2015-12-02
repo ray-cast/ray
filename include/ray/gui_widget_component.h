@@ -60,6 +60,10 @@ public:
 	void addKeyButtonPressed(binder<void()>& func) noexcept;
 	void addKeyButtonReleased(binder<void()>& func) noexcept;
 
+	void addMouseMove(binder<void()>& func) noexcept;
+	void addMouseDrag(binder<void()>& func) noexcept;
+	void addMouseWheel(binder<void()>& func) noexcept;
+
 	void addMouseSetFocusListener(binder<void()>& func) noexcept;
 	void addMouseLostFocusListener(binder<void()>& func) noexcept;
 	void addMouseButtonPressedListener(binder<void()>& func) noexcept;
@@ -71,6 +75,10 @@ public:
 	void removeKeyLostFocus(binder<void()>& func) noexcept;
 	void removeKeyButtonPressed(binder<void()>& func) noexcept;
 	void removeKeyButtonReleased(binder<void()>& func) noexcept;
+
+	void removeMouseMove(binder<void()>& func) noexcept;
+	void removeMouseDrag(binder<void()>& func) noexcept;
+	void removeMouseWheel(binder<void()>& func) noexcept;
 
 	void removeMouseSetFocusListener(binder<void()>& func) noexcept;
 	void removeMouseLostFocusListener(binder<void()>& func) noexcept;

@@ -153,6 +153,33 @@ MyGuiWidget::addKeyButtonReleased(binder<void()>& func) noexcept
 }
 
 void
+MyGuiWidget::addMouseMove(binder<void()>& func) noexcept
+{
+	assert(!_onMouseMove.find(func));
+	if (_onMouseMove.empty())
+		_widget->eventMouseMove += MyGUI::newDelegate(this, &MyGuiWidget::onMouseMove);
+	_onMouseMove.attach(func);
+}
+
+void
+MyGuiWidget::addMouseDrag(binder<void()>& func) noexcept
+{
+	assert(!_onMouseDrag.find(func));
+	if (_onMouseDrag.empty())
+		_widget->eventMouseDrag += MyGUI::newDelegate(this, &MyGuiWidget::onMouseDrag);
+	_onMouseDrag.attach(func);
+}
+
+void
+MyGuiWidget::addMouseWheel(binder<void()>& func) noexcept
+{
+	assert(!_onMouseWheel.find(func));
+	if (_onMouseWheel.empty())
+		_widget->eventMouseWheel += MyGUI::newDelegate(this, &MyGuiWidget::onMouseWheel);
+	_onMouseWheel.attach(func);
+}
+
+void
 MyGuiWidget::addMouseLostFocusListener(binder<void()>& func) noexcept
 {
 	assert(!_onMouseLostFocus.find(func));
@@ -235,6 +262,27 @@ MyGuiWidget::removeKeyButtonReleased(binder<void()>& func) noexcept
 }
 
 void
+MyGuiWidget::removeMouseMove(binder<void()>& func) noexcept
+{
+	assert(_onMouseMove.find(func));
+	_onMouseMove.remove(func);
+}
+
+void
+MyGuiWidget::removeMouseDrag(binder<void()>& func) noexcept
+{
+	assert(_onMouseDrag.find(func));
+	_onMouseDrag.remove(func);
+}
+
+void
+MyGuiWidget::removeMouseWheel(binder<void()>& func) noexcept
+{
+	assert(_onMouseWheel.find(func));
+	_onMouseWheel.remove(func);
+}
+
+void
 MyGuiWidget::removeMouseSetFocusListener(binder<void()>& func) noexcept
 {
 	assert(_onMouseSetFocus.find(func));
@@ -277,18 +325,6 @@ MyGuiWidget::removeMouseButtonDoubleClickListener(binder<void()>& func) noexcept
 }
 
 void
-MyGuiWidget::onMouseLostFocus(MyGUI::Widget*, MyGUI::Widget*)
-{
-	_onMouseLostFocus.run();
-}
-
-void
-MyGuiWidget::onMouseSetFocus(MyGUI::Widget*, MyGUI::Widget*)
-{
-	_onMouseSetFocus.run();
-}
-
-void
 MyGuiWidget::onKeySetFocus(MyGUI::Widget*, MyGUI::Widget*)
 {
 	_onKeySetFocus();
@@ -298,6 +334,36 @@ void
 MyGuiWidget::onKeyLostFocus(MyGUI::Widget*, MyGUI::Widget*)
 {
 	_onKeyLostFocus();
+}
+
+void
+MyGuiWidget::onMouseLostFocus(MyGUI::Widget*, MyGUI::Widget*)
+{
+	_onMouseLostFocus.run();
+}
+
+void
+MyGuiWidget::onMouseMove(MyGUI::Widget*, int, int) noexcept
+{
+	_onMouseMove.run();
+}
+
+void
+MyGuiWidget::onMouseDrag(MyGUI::Widget*, int, int, MyGUI::MouseButton) noexcept
+{
+	_onMouseDrag.run();
+}
+
+void
+MyGuiWidget::onMouseWheel(MyGUI::Widget*, int) noexcept
+{
+	_onMouseWheel.run();
+}
+
+void
+MyGuiWidget::onMouseSetFocus(MyGUI::Widget*, MyGUI::Widget*)
+{
+	_onMouseSetFocus.run();
 }
 
 void

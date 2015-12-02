@@ -144,6 +144,24 @@ GuiWidget::addKeyButtonReleased(binder<void()>& func) noexcept
 }
 
 void
+GuiWidget::addMouseMove(binder<void()>& func) noexcept
+{
+	_impl.addMouseMove(func);
+}
+
+void
+GuiWidget::addMouseDrag(binder<void()>& func) noexcept
+{
+	_impl.addMouseDrag(func);
+}
+
+void
+GuiWidget::addMouseWheel(binder<void()>& func) noexcept
+{
+	_impl.addMouseWheel(func);
+}
+
+void
 GuiWidget::addMouseSetFocusListener(binder<void()>& func) noexcept
 {
 	_impl.addMouseSetFocusListener(func);
@@ -201,6 +219,24 @@ void
 GuiWidget::removeKeyButtonReleased(binder<void()>& func) noexcept
 {
 	_impl.removeKeyButtonReleased(func);
+}
+
+void
+GuiWidget::removeMouseMove(binder<void()>& func) noexcept
+{
+	_impl.removeMouseMove(func);
+}
+
+void
+GuiWidget::removeMouseDrag(binder<void()>& func) noexcept
+{
+	_impl.removeMouseDrag(func);
+}
+
+void
+GuiWidget::removeMouseWheel(binder<void()>& func) noexcept
+{
+	_impl.removeMouseWheel(func);
 }
 
 void

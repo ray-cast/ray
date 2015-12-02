@@ -61,40 +61,60 @@ public:
 	virtual void setViewport(const Rect& view) noexcept;
 	virtual void getViewport(Rect& view) const noexcept;
 
-	void addKeySetFocus(binder<void()>& func) noexcept;
-	void addKeyLostFocus(binder<void()>& func) noexcept;
-	void addKeyButtonPressed(binder<void()>& func) noexcept;
-	void addKeyButtonReleased(binder<void()>& func) noexcept;
+	virtual void addKeySetFocus(binder<void()>& func) noexcept;
+	virtual void addKeyLostFocus(binder<void()>& func) noexcept;
+	virtual void addKeyButtonPressed(binder<void()>& func) noexcept;
+	virtual void addKeyButtonReleased(binder<void()>& func) noexcept;
 
-	void addMouseSetFocusListener(binder<void()>& func) noexcept;
-	void addMouseLostFocusListener(binder<void()>& func) noexcept;
-	void addMouseButtonPressedListener(binder<void()>& func) noexcept;
-	void addMouseButtonReleasedListener(binder<void()>& func) noexcept;
-	void addMouseButtonClickListener(binder<void()>& func) noexcept;
-	void addMouseButtonDoubleClickListener(binder<void()>& func) noexcept;
+	virtual void addMouseMove(binder<void()>& func) noexcept;
+	virtual void addMouseDrag(binder<void()>& func) noexcept;
+	virtual void addMouseWheel(binder<void()>& func) noexcept;
 
-	void removeKeySetFocus(binder<void()>& func) noexcept;
-	void removeKeyLostFocus(binder<void()>& func) noexcept;
-	void removeKeyButtonPressed(binder<void()>& func) noexcept;
-	void removeKeyButtonReleased(binder<void()>& func) noexcept;
+	virtual void addMouseSetFocusListener(binder<void()>& func) noexcept;
+	virtual void addMouseLostFocusListener(binder<void()>& func) noexcept;
 
-	void removeMouseSetFocusListener(binder<void()>& func) noexcept;
-	void removeMouseLostFocusListener(binder<void()>& func) noexcept;
-	void removeMouseButtonPressedListener(binder<void()>& func) noexcept;
-	void removeMouseButtonReleasedListener(binder<void()>& func) noexcept;
-	void removeMouseButtonClickListener(binder<void()>& func) noexcept;
-	void removeMouseButtonDoubleClickListener(binder<void()>& func) noexcept;
+	virtual void addMouseButtonPressedListener(binder<void()>& func) noexcept;
+	virtual void addMouseButtonReleasedListener(binder<void()>& func) noexcept;
+
+	virtual void addMouseButtonClickListener(binder<void()>& func) noexcept;
+	virtual void addMouseButtonDoubleClickListener(binder<void()>& func) noexcept;
+
+	virtual void removeKeySetFocus(binder<void()>& func) noexcept;
+	virtual void removeKeyLostFocus(binder<void()>& func) noexcept;
+
+	virtual void removeKeyButtonPressed(binder<void()>& func) noexcept;
+	virtual void removeKeyButtonReleased(binder<void()>& func) noexcept;
+
+	virtual void removeMouseMove(binder<void()>& func) noexcept;
+	virtual void removeMouseDrag(binder<void()>& func) noexcept;
+	virtual void removeMouseWheel(binder<void()>& func) noexcept;
+
+	virtual void removeMouseSetFocusListener(binder<void()>& func) noexcept;
+	virtual void removeMouseLostFocusListener(binder<void()>& func) noexcept;
+
+	virtual void removeMouseButtonPressedListener(binder<void()>& func) noexcept;
+	virtual void removeMouseButtonReleasedListener(binder<void()>& func) noexcept;
+
+	virtual void removeMouseButtonClickListener(binder<void()>& func) noexcept;
+	virtual void removeMouseButtonDoubleClickListener(binder<void()>& func) noexcept;
 
 private:
 	void onKeySetFocus(MyGUI::Widget*, MyGUI::Widget*);
 	void onKeyLostFocus(MyGUI::Widget*, MyGUI::Widget*);
+
 	void onKeyButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char);
 	void onKeyButtonReleased(MyGUI::Widget* _sender, MyGUI::KeyCode _key);
 
+	void onMouseMove(MyGUI::Widget*, int, int) noexcept;
+	void onMouseDrag(MyGUI::Widget*, int, int, MyGUI::MouseButton) noexcept;
+	void onMouseWheel(MyGUI::Widget*, int) noexcept;
+
 	void onMouseSetFocus(MyGUI::Widget*, MyGUI::Widget*);
 	void onMouseLostFocus(MyGUI::Widget*, MyGUI::Widget*);
+
 	void onMouseButtonPressed(MyGUI::Widget*, int x, int y, MyGUI::MouseButton button);
 	void onMouseButtonReleased(MyGUI::Widget*, int x, int y, MyGUI::MouseButton button);
+
 	void onMouseButtonClick(MyGUI::Widget* _sender);
 	void onMouseButtonDoubleClick(MyGUI::Widget* _sender);
 
@@ -162,6 +182,10 @@ private:
 	delegate<void()> _onKeyLostFocus;
 	delegate<void()> _onKeyButtonPressed;
 	delegate<void()> _onKeyButtonReleased;
+
+	delegate<void()> _onMouseMove;
+	delegate<void()> _onMouseDrag;
+	delegate<void()> _onMouseWheel;
 
 	delegate<void()> _onMouseSetFocus;
 	delegate<void()> _onMouseLostFocus;

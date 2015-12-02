@@ -63,14 +63,14 @@ void
 PhysicsMeshComponent::onAttachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<MeshComponent>())
-		component->downcast<MeshComponent>()->addMeshChangeListener(std::bind(&PhysicsMeshComponent::onMeshChange, this));
+		component->downcast<MeshComponent>()->addMeshChangeListener(make_binder(&PhysicsMeshComponent::onMeshChange, this));
 }
 
 void
 PhysicsMeshComponent::onDetachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<MeshComponent>())
-		component->downcast<MeshComponent>()->removeMeshChangeListener(std::bind(&PhysicsMeshComponent::onMeshChange, this));
+		component->downcast<MeshComponent>()->removeMeshChangeListener(make_binder(&PhysicsMeshComponent::onMeshChange, this));
 }
 
 void

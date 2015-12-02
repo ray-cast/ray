@@ -62,8 +62,8 @@ public:
 	const Bound& getBoundingBox() const noexcept;
 	const Bound& getBoundingBoxDownwards() const noexcept;
 
-	void addMeshChangeListener(std::function<void()> func) noexcept;
-	void removeMeshChangeListener(std::function<void()> func) noexcept;
+	void addMeshChangeListener(binder<void()>& func) noexcept;
+	void removeMeshChangeListener(binder<void()>& func) noexcept;
 
 	void clear() noexcept;
 
@@ -86,7 +86,7 @@ private:
 	MeshPropertyPtr _mesh;
 	MeshPropertyPtr _sharedMesh;
 
-	std::vector<std::function<void()>> _onMeshChange;
+	delegate<void()> _onMeshChange;
 };
 
 _NAME_END

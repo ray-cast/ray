@@ -53,67 +53,14 @@
 #else
 #define DELEGATE_COMMA ,
 #endif
-
-template<typename Result DELEGATE_COMMA DELEGATE_TEMPLATE_PARAMS>
-class function<Result(DELEGATE_TEMPLATE_ARGS)>
-{
-public:
-	function() noexcept {};
-	virtual ~function() noexcept {};
-
-	virtual Result invoke(DELEGATE_FUNCTION_PARAMS) const = 0;
-	virtual std::unique_ptr<function> clone() const = 0;
-	virtual bool comp(const function& other) const noexcept = 0;
-};
-
-template<typename Result DELEGATE_COMMA DELEGATE_TEMPLATE_PARAMS, class _Ty>
-class delegate_bind<Result(DELEGATE_TEMPLATE_ARGS), _Ty> : public function<Result(DELEGATE_TEMPLATE_ARGS)>
-{
-public:
-	typedef function<Result(DELEGATE_TEMPLATE_ARGS)> delegate_bindbase;
-
-public:
-	delegate_bind(const _Ty& f) noexcept : _functor(f) {}
-	delegate_bind(const delegate_bind& copy) noexcept : _functor(copy._functor) {}
-
-	template<typename Function>
-	static Result invoke(const Function& Func DELEGATE_COMMA DELEGATE_FUNCTION_PARAMS)
-	{
-		return (const_cast<Function&>(Func))(DELEGATE_FUNCTION_ARGS);
-	}
-
-	template<typename This, typename Function>
-	static Result invoke(const std::pair<This, Function>& mf DELEGATE_COMMA DELEGATE_FUNCTION_PARAMS)
-	{
-		return ((*mf.second).*mf.first)(DELEGATE_FUNCTION_ARGS);
-	}
-
-	virtual Result invoke(DELEGATE_FUNCTION_PARAMS) const
-	{
-		return invoke(_functor DELEGATE_COMMA DELEGATE_FUNCTION_ARGS);
-	}
-
-	virtual std::unique_ptr<delegate_bindbase> clone() const
-	{
-		return std::make_unique<delegate_bind>(_functor);
-	}
-
-	virtual bool comp(const delegate_bindbase& other) const noexcept
-	{
-		return _functor == dynamic_cast<const delegate_bind&>(other)._functor;
-	}
-
-	_Ty _functor;
-};
-
 template <typename Result DELEGATE_COMMA DELEGATE_TEMPLATE_PARAMS>
 class delegate<Result(DELEGATE_TEMPLATE_ARGS)>
 {
 public:
 	typedef delegate<Result(DELEGATE_TEMPLATE_ARGS)> _Myt;
 
-	typedef function<Result(DELEGATE_TEMPLATE_ARGS)> delegate_bindbase;
-    typedef std::vector<std::unique_ptr<delegate_bindbase>> DELEGATES;
+	typedef std::function<Result(DELEGATE_TEMPLATE_ARGS)> _MyFunction;
+    typedef std::vector<_MyFunction> DELEGATES;
     typedef typename DELEGATES::iterator iterator;
     typedef typename DELEGATES::const_iterator const_iterator;
     typedef typename DELEGATES::size_type size_type;
@@ -142,7 +89,7 @@ public:
         if (!_functions)
             _functions = new DELEGATES;
 
-        _functions->push_back(new delegate_bind<Result(DELEGATE_TEMPLATE_ARGS), _Function>(t1));
+        _functions->push_back(new function_impl<Result(DELEGATE_TEMPLATE_ARGS), _Function>(t1));
     }
 
     template<typename _Functor, typename _This>
@@ -157,15 +104,15 @@ public:
         if (!_functions)
             _functions = new DELEGATES;
 
-        _functions->push_back(std::make_unique<delegate_bind<Result(DELEGATE_TEMPLATE_ARGS), std::pair<_Functor, _This>>>(pair));
+        _functions->push_back(std::make_unique<function_impl<Result(DELEGATE_TEMPLATE_ARGS), std::pair<_Functor, _This>>>(pair));
     }
 
-	void attach(const delegate_bindbase& callback)
+	void attach(const _MyFunction& callback)
 	{
 		if (!_functions)
 			_functions = new DELEGATES;
 
-		_functions->push_back(callback.clone());
+		_functions->push_back(callback);
 	}
 
     void attach(const _Myt& other)
@@ -221,15 +168,13 @@ public:
         return (_functions ? _functions->size() : 0);
     }
 
-	bool find(const delegate_bindbase& callback) const
+	bool find(const _MyFunction& callback) const
 	{
 		if (_functions)
 		{
-			auto it = _functions->begin();
-			auto end = _functions->end();
-			for (; it != end; ++it)
+			for (auto& it : *_functions)
 			{
-				if (callback.comp(*(*it)))
+				if (callback.target_type() == it.target_type())
 					return true;
 			}
 		}
@@ -247,7 +192,7 @@ public:
 
         for (; it != end; ++it)
         {
-            auto p = dynamic_cast<delegate_bind<Result(DELEGATE_TEMPLATE_ARGS), T>*>(*it);
+            auto p = dynamic_cast<function_impl<Result(DELEGATE_TEMPLATE_ARGS), T>*>(*it);
             if (p->_functor == t1)
             {
                 _functions->erase(it);
@@ -272,9 +217,9 @@ public:
 
 		for (; it != end; ++it)
 		{
-			auto p = dynamic_cast<delegate_bind<Result(DELEGATE_TEMPLATE_ARGS), std::pair<_Functor, _This>>*>(*it);
+			auto p = dynamic_cast<function_impl<Result(DELEGATE_TEMPLATE_ARGS), std::pair<_Functor, _This>>*>(*it);
 
-			if (p->_functor == pair)
+			if (p->_functor.target_type() == pair.target_type())
 			{
 				_functions->erase(it);
 				break;
@@ -282,7 +227,7 @@ public:
 		}
 	}
 
-	void remove(const delegate_bindbase& callback)
+	void remove(const _MyFunction& callback)
 	{
 		if (_functions)
 		{
@@ -290,7 +235,7 @@ public:
 			auto end = _functions->end();
 			for (; it != end; ++it)
 			{
-				if (callback.comp(*(*it)))
+				if (callback.target_type() == (*it).target_type())
 				{
 					_functions->erase(it);
 					break;
@@ -352,9 +297,9 @@ private:
 			const_iterator end = self._functions->end() - 1;
 
 			for (; it != end; ++it)
-				(*it)->invoke(DELEGATE_FUNCTION_ARGS);
+				(*it)(DELEGATE_FUNCTION_ARGS);
 
-			return (*it)->invoke(DELEGATE_FUNCTION_ARGS);
+			return (*it)(DELEGATE_FUNCTION_ARGS);
 		}
 	};
 
@@ -364,7 +309,7 @@ private:
 		static void run(const _Myt& self DELEGATE_COMMA DELEGATE_FUNCTION_PARAMS)
 		{
 			for (auto& it : *self._functions)
-				it->invoke(DELEGATE_FUNCTION_ARGS);
+				it(DELEGATE_FUNCTION_ARGS);
 		}
 	};
 

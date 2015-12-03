@@ -71,14 +71,14 @@ void
 MeshRenderComponent::onAttachComponent(GameComponentPtr& component) except
 {
 	if (component->isInstanceOf<MeshComponent>())
-		component->downcast<MeshComponent>()->addMeshChangeListener(make_binder(&MeshRenderComponent::onMeshChange, this));
+		component->downcast<MeshComponent>()->addMeshChangeListener(std::bind(&MeshRenderComponent::onMeshChange, this));
 }
 
 void 
 MeshRenderComponent::onDetachComponent(GameComponentPtr& component) except
 {
 	if (component->isInstanceOf<MeshComponent>())
-		component->downcast<MeshComponent>()->removeMeshChangeListener(make_binder(&MeshRenderComponent::onMeshChange, this));
+		component->downcast<MeshComponent>()->removeMeshChangeListener(std::bind(&MeshRenderComponent::onMeshChange, this));
 }
 
 void

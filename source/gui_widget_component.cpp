@@ -81,182 +81,182 @@ GuiWidgetComponent::getSkin() const noexcept
 }
 
 void
-GuiWidgetComponent::addKeySetFocus(function<void()>&& func) noexcept
+GuiWidgetComponent::addKeySetFocus(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->addKeySetFocus(func);
 }
 
 void
-GuiWidgetComponent::addKeyLostFocus(function<void()>&& func) noexcept
+GuiWidgetComponent::addKeyLostFocus(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->addKeyLostFocus(func);
 }
 
 void
-GuiWidgetComponent::addKeyButtonPressed(function<void()>&& func) noexcept
+GuiWidgetComponent::addKeyButtonPressed(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->addKeyButtonPressed(func);
 }
 
 void
-GuiWidgetComponent::addKeyButtonReleased(function<void()>&& func) noexcept
+GuiWidgetComponent::addKeyButtonReleased(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->addKeyButtonReleased(func);
 }
 
 void
-GuiWidgetComponent::addMouseMove(function<void()>&& func) noexcept
+GuiWidgetComponent::addMouseMove(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->addMouseMove(func);
 }
 
 void
-GuiWidgetComponent::addMouseDrag(function<void()>&& func) noexcept
+GuiWidgetComponent::addMouseDrag(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->addMouseDrag(func);
 }
 
 void
-GuiWidgetComponent::addMouseWheel(function<void()>&& func) noexcept
+GuiWidgetComponent::addMouseWheel(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->addMouseWheel(func);
 }
 
 void
-GuiWidgetComponent::addMouseSetFocusListener(function<void()>&& func) noexcept
+GuiWidgetComponent::addMouseSetFocusListener(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->addMouseSetFocusListener(func);
 }
 
 void
-GuiWidgetComponent::addMouseLostFocusListener(function<void()>&& func) noexcept
+GuiWidgetComponent::addMouseLostFocusListener(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->addMouseLostFocusListener(func);
 }
 
 void
-GuiWidgetComponent::addMouseButtonPressedListener(function<void()>&& func) noexcept
+GuiWidgetComponent::addMouseButtonPressedListener(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->addMouseButtonPressedListener(func);
 }
 
 void
-GuiWidgetComponent::addMouseButtonReleasedListener(function<void()>&& func) noexcept
+GuiWidgetComponent::addMouseButtonReleasedListener(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->addMouseButtonReleasedListener(func);
 }
 
 void
-GuiWidgetComponent::addMouseButtonClickListener(function<void()>&& func) noexcept
+GuiWidgetComponent::addMouseButtonClickListener(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->addMouseButtonClickListener(func);
 }
 
 void
-GuiWidgetComponent::addMouseButtonDoubleClickListener(function<void()>&& func) noexcept
+GuiWidgetComponent::addMouseButtonDoubleClickListener(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->addMouseButtonDoubleClickListener(func);
 }
 
 void
-GuiWidgetComponent::removeKeySetFocus(function<void()>&& func) noexcept
+GuiWidgetComponent::removeKeySetFocus(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->removeKeySetFocus(func);
 }
 
 void
-GuiWidgetComponent::removeKeyLostFocus(function<void()>&& func) noexcept
+GuiWidgetComponent::removeKeyLostFocus(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->removeKeyLostFocus(func);
 }
 
 void
-GuiWidgetComponent::removeKeyButtonPressed(function<void()>&& func) noexcept
+GuiWidgetComponent::removeKeyButtonPressed(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->removeKeyButtonPressed(func);
 }
 
 void
-GuiWidgetComponent::removeKeyButtonReleased(function<void()>&& func) noexcept
+GuiWidgetComponent::removeKeyButtonReleased(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->removeKeyButtonReleased(func);
 }
 
 void
-GuiWidgetComponent::removeMouseMove(function<void()>&& func) noexcept
+GuiWidgetComponent::removeMouseMove(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->removeMouseMove(func);
 }
 
 void
-GuiWidgetComponent::removeMouseDrag(function<void()>&& func) noexcept
+GuiWidgetComponent::removeMouseDrag(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->removeMouseDrag(func);
 }
 
 void
-GuiWidgetComponent::removeMouseWheel(function<void()>&& func) noexcept
+GuiWidgetComponent::removeMouseWheel(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->removeMouseWheel(func);
 }
 
 void
-GuiWidgetComponent::removeMouseSetFocusListener(function<void()>&& func) noexcept
+GuiWidgetComponent::removeMouseSetFocusListener(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->removeMouseSetFocusListener(func);
 }
 
 void
-GuiWidgetComponent::removeMouseLostFocusListener(function<void()>&& func) noexcept
+GuiWidgetComponent::removeMouseLostFocusListener(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->removeMouseLostFocusListener(func);
 }
 
 void
-GuiWidgetComponent::removeMouseButtonPressedListener(function<void()>&& func) noexcept
+GuiWidgetComponent::removeMouseButtonPressedListener(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->removeMouseButtonPressedListener(func);
 }
 
 void
-GuiWidgetComponent::removeMouseButtonReleasedListener(function<void()>&& func) noexcept
+GuiWidgetComponent::removeMouseButtonReleasedListener(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->removeMouseButtonReleasedListener(func);
 }
 
 void
-GuiWidgetComponent::removeMouseButtonClickListener(function<void()>&& func) noexcept
+GuiWidgetComponent::removeMouseButtonClickListener(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->removeMouseButtonClickListener(func);
 }
 
 void
-GuiWidgetComponent::removeMouseButtonDoubleClickListener(function<void()>&& func) noexcept
+GuiWidgetComponent::removeMouseButtonDoubleClickListener(std::function<void()> func) noexcept
 {
 	assert(_widget);
 	_widget->removeMouseButtonDoubleClickListener(func);

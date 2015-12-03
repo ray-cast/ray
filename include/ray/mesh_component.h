@@ -62,8 +62,8 @@ public:
 	const Bound& getBoundingBox() const noexcept;
 	const Bound& getBoundingBoxDownwards() const noexcept;
 
-	void addMeshChangeListener(function<void()>&& func) noexcept;
-	void removeMeshChangeListener(function<void()>&& func) noexcept;
+	void addMeshChangeListener(std::function<void()> func) noexcept;
+	void removeMeshChangeListener(std::function<void()> func) noexcept;
 
 	void clear() noexcept;
 

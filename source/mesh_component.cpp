@@ -128,14 +128,14 @@ MeshComponent::getBoundingBoxDownwards() const noexcept
 }
 
 void 
-MeshComponent::addMeshChangeListener(function<void()>&& func) noexcept
+MeshComponent::addMeshChangeListener(std::function<void()> func) noexcept
 {
 	assert(!_onMeshChange.find(func));
 	_onMeshChange.attach(func);
 }
 
 void 
-MeshComponent::removeMeshChangeListener(function<void()>&& func) noexcept
+MeshComponent::removeMeshChangeListener(std::function<void()> func) noexcept
 {
 	assert(_onMeshChange.find(func));
 	_onMeshChange.remove(func);

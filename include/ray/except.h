@@ -81,17 +81,6 @@ public:
 	virtual ~failure() noexcept;
 };
 
-template <typename T>
-inline T InvalidCall()
-{
-	throw failure(error_code::DIDNT_INHERIT_THE_FUNCTION);
-}
-
-template <>
-inline void InvalidCall<void>()
-{
-}
-
 _NAME_END
 
 #endif

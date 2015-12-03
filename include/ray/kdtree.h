@@ -91,6 +91,21 @@ struct KdimensionNode : public KdimensionData<_Ty>
 		if (right)
 			delete right;
 	}
+
+	bool isRoot() const noexcept
+	{
+		return parent == nullptr;
+	}
+
+	bool isLeft() const noexcept
+	{
+		return parent && parent->left == this;
+	}
+
+	bool isRight() const noexcept
+	{
+		return parent && parent->right == this;
+	}
 };
 
 template<typename _Tx, typename _Ty = void>
@@ -134,7 +149,6 @@ public:
 	}
 
 private:
-
 	float _distanceSqrt;
 	KdimensionNode<_Tx, _Ty>* _item;
 };
@@ -144,6 +158,7 @@ class KdimensionNearestList final
 {
 public:
 	typedef std::vector<KdimensionNearest<_Tx, _Ty>> KdimensionNearests;
+
 public:
 	KdimensionNearestList() noexcept
 	{
@@ -184,7 +199,6 @@ public:
 	}
 
 private:
-
 	KdimensionNearests _iter;
 };
 
@@ -223,13 +237,89 @@ public:
 		return _count == 0;
 	}
 
+	void insert(KdimensionNode<_Tx, _Ty>* node)
+	{
+		std::uint8_t split = 0;
+		auto& root = _root;
+		auto next = &root;
+		auto parent = root;
+
+		while (*next)
+		{
+			parent = *next;
+			split = ((*next)->split + 1) % _dimension;
+			if (node->pos[(*next)->split] < (*next)->pos[(*next)->split])
+				next = &(*next)->left;
+			else
+				next = &(*next)->right;
+		}
+
+		if (!*next)
+		{
+			node->split = split;
+			*next = node;
+
+			for (std::size_t i = 0; i < _dimension; i++)
+			{
+				if (node->pos[i] < _min[i])
+					_min[i] = node->pos[i];
+				if (node->pos[i] > _max[i])
+					_max[i] = node->pos[i];
+			}
+
+			_count++;
+		}
+	}
+
+	void remove_if(const _Tx& pos, std::function<bool(KdimensionNode<_Tx, _Ty>* node)> compfunc) noexcept
+	{
+		std::uint8_t split = 0;
+
+		auto& root = KdimensionTreeBase<_Tx, void>::_root;
+		auto next = root;
+
+		while (next)
+		{
+			if (next->pos == pos && compfunc(next))
+			{
+				if (next->isRoot())
+					_root = nullptr;
+				else if (next->isLeft())
+					next->parent->left = nullptr;
+				else
+					next->parent->right = nullptr;
+
+				if (next->left)
+				{
+					this->insert(next->left);
+					next->left = nullptr;
+				}
+
+				if (next->right)
+				{
+					this->insert(next->right);
+					next->right = nullptr;
+				}
+
+				delete next;
+				return;
+			}
+
+			split = (next->split + 1) % KdimensionTreeBase<_Tx, void>::_dimension;
+
+			if (pos[next->split] < next->pos[next->split])
+				next = next->left;
+			else
+				next = next->right;
+		}
+	}
+
 	std::size_t search(KdimensionNearest<_Tx, _Ty>& result, const _Tx& pos, float range) noexcept
 	{
 		if (_root)
 		{
 			_serachPoint = pos;
 			_serachRange = range;
-
 			result.setKdimensionNode(_root);
 			result.setDistanceSqrt(distanceSqrt(_root->pos, pos));
 			this->nearest(result, _root);
@@ -252,7 +342,6 @@ public:
 	}
 
 private:
-
 	float distanceSqrt(const _Tx& pos1, const _Tx& pos2)
 	{
 		float distSq = 0;
@@ -264,7 +353,6 @@ private:
 	float distanceSqrt(const _Tx& pos, const _Tx& min, const _Tx& max)
 	{
 		float result = 0;
-
 		for (std::size_t i = 0; i < _dimension; i++)
 		{
 			if (pos[i] < min[i])
@@ -272,22 +360,17 @@ private:
 			else if (pos[i] > max[i])
 				result += SQ(max[i] - pos[i]);
 		}
-
 		return result;
 	}
 
 	void nearest(KdimensionNearest<_Tx, _Ty>& result, KdimensionNode<_Tx, _Ty>* node) noexcept
 	{
 		assert(node);
-
 		auto split = _serachPoint[node->split] - node->pos[node->split];
-
 		auto nearerSubtree = split <= 0 ? node->left : node->right;
 		auto& nearerCoord = split <= 0 ? _max[node->split] : _min[node->split];
-
 		auto fartherSubtree = split <= 0 ? node->right : node->left;
 		auto& fartherCoord = split <= 0 ? _min[node->split] : _max[node->split];
-
 		if (nearerSubtree)
 		{
 			split = nearerCoord;
@@ -295,19 +378,16 @@ private:
 			nearest(result, nearerSubtree);
 			nearerCoord = split;
 		}
-
 		float distSq = distanceSqrt(node->pos, _serachPoint);
 		if (distSq < result.getDistanceSqrt() && distSq  < SQ(_serachRange))
 		{
 			result.setKdimensionNode(node);
 			result.setDistanceSqrt(distSq);
 		}
-
 		if (fartherSubtree)
 		{
 			split = fartherCoord;
 			fartherCoord = node->pos[node->split];
-
 			distSq = distanceSqrt(_serachPoint, _min, _max);
 			if (distSq < result.getDistanceSqrt() && distSq < SQ(_serachRange))
 				nearest(result, fartherSubtree);
@@ -329,21 +409,19 @@ private:
 		bool ret = nearest(result, split <= 0.0 ? node->left : node->right);
 		if (ret >= 0 && fabs(split) < _serachRange)
 			ret = nearest(result, split <= 0.0 ? node->right : node->left);
-
 		return ret;
 	}
 
 public:
-
 	_Tx _min;
 	_Tx _max;
-
+	
 	_Tx _serachPoint;
+	
 	float _serachRange;
-
 	std::size_t _count;
 	std::uint8_t _dimension;
-
+	
 	KdimensionNode<_Tx, _Ty>* _root;
 };
 
@@ -353,66 +431,9 @@ class KdimensionTree final : public KdimensionTreeBase<_Tx, _Ty>
 public:
 	void insert(const _Tx& pos, _Ty& data) noexcept
 	{
-		std::uint8_t split = 0;
-
-		auto& root = KdimensionTreeBase<_Tx, _Ty>::_root;
-		auto next = &root;
-		auto parent = root;
-
-		while (*next)
-		{
-			parent = *next;
-			split = ((*next)->split + 1) % KdimensionTreeBase<_Tx, _Ty>::_dimension;
-
-			if (pos[(*next)->split] < (*next)->pos[(*next)->split])
-				next = &(*next)->left;
-			else
-				next = &(*next)->right;
-		}
-
-		if (!*next)
-		{
-			auto node = new KdimensionNode<_Tx, _Ty>(pos, split);
-			node->data = data;
-			node->parent = parent;
-			*next = node;
-
-			for (std::size_t i = 0; i < KdimensionTreeBase<_Tx, _Ty>::_dimension; i++)
-			{
-				if (pos[i] < KdimensionTreeBase<_Tx, _Ty>::_min[i])
-					KdimensionTreeBase<_Tx, _Ty>::_min[i] = pos[i];
-				if (pos[i] > KdimensionTreeBase<_Tx, _Ty>::_max[i])
-					KdimensionTreeBase<_Tx, _Ty>::_max[i] = pos[i];
-			}
-
-			KdimensionTreeBase<_Tx, _Ty>::_count++;
-		}
-	}
-
-	void remove(const _Tx& pos, _Ty& data) noexcept
-	{
-		std::uint8_t split = 0;
-
-		auto& root = KdimensionTreeBase<_Tx, _Ty>::_root;
-		auto next = &root;
-
-		while (*next)
-		{
-			if ((*next)->pos == pos && (*next)->data == data)
-			{
-				delete (*next);
-				*next = nullptr;
-				return;
-			}
-
-			split = ((*next)->split + 1) % KdimensionTreeBase<_Tx, _Ty>::_dimension;
-
-			if (pos[(*next)->split] < (*next)->pos[(*next)->split])
-				next = &(*next)->left;
-			else
-				next = &(*next)->right;
-		}
-
+		auto node = new KdimensionNode<_Tx>(pos, 0);
+		node->data = data;
+		KdimensionTreeBase::insert(node);
 	}
 };
 
@@ -420,40 +441,11 @@ template<typename _Tx>
 class KdimensionTree<_Tx, void> final : public KdimensionTreeBase<_Tx, void>
 {
 public:
+
 	void insert(const _Tx& pos) noexcept
 	{
-		std::uint8_t split = 0;
-
-		auto& root = KdimensionTreeBase<_Tx, void>::_root;
-		auto next = &root;
-		auto parent = root;
-
-		while (*next)
-		{
-			parent = *next;
-
-			split = ((*next)->split + 1) % KdimensionTreeBase<_Tx, void>::_dimension;
-
-			if (pos[(*next)->split] < (*next)->pos[(*next)->split])
-				next = &(*next)->left;
-			else
-				next = &(*next)->right;
-		}
-
-		if (!*next)
-		{
-			*next = new KdimensionNode<_Tx>(pos, split);
-
-			for (std::size_t i = 0; i < KdimensionTreeBase<_Tx, void>::_dimension; i++)
-			{
-				if (pos[i] < KdimensionTreeBase<_Tx,void>::_min[i])
-					KdimensionTreeBase<_Tx, void>::_min[i] = pos[i];
-				if (pos[i] > KdimensionTreeBase<_Tx, void>::_max[i])
-					KdimensionTreeBase<_Tx, void>::_max[i] = pos[i];
-			}
-
-			KdimensionTreeBase<_Tx, void>::_count++;
-		}
+		auto node = new KdimensionNode<_Tx>(pos, 0);
+		KdimensionTreeBase::insert(node);
 	}
 };
 

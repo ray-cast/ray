@@ -768,7 +768,7 @@ ENDIF()
 
 IF(BUILD_GUI)
     ADD_LIBRARY(libgui SHARED ${GUI_LIST} ${MYGUI_LIST})
-    TARGET_LINK_LIBRARIES(libgui libplatform librenderer MyGUIEngine glew)
+    TARGET_LINK_LIBRARIES(libgui libplatform librenderer MyGUIEngine)
     IF(MINGW OR UNIX)
         SET_TARGET_PROPERTIES(libgui PROPERTIES OUTPUT_NAME gui)
     ENDIF()
@@ -842,7 +842,7 @@ IF(BUILD_MULTITHREADING)
 ENDIF()
 
 IF(BUILD_SCRIPT)
-    TARGET_LINK_LIBRARIES(ray angelscript)
+    TARGET_LINK_LIBRARIES(ray angelscript pthread)
 ENDIF()
 
 IF(BUILD_PHYSIC)

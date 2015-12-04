@@ -89,7 +89,7 @@ public:
         if (!_functions)
             _functions = new DELEGATES;
 
-        _functions->push_back(new function_impl<Result(DELEGATE_TEMPLATE_ARGS), _Function>(t1));
+        _functions->push_back(_MyFunction(t1));
     }
 
     template<typename _Functor, typename _This>
@@ -104,7 +104,7 @@ public:
         if (!_functions)
             _functions = new DELEGATES;
 
-        _functions->push_back(std::make_unique<function_impl<Result(DELEGATE_TEMPLATE_ARGS), std::pair<_Functor, _This>>>(pair));
+        _functions->push_back(std::bind(pair.second, pair.first));
     }
 
 	void attach(const _MyFunction& callback)
@@ -182,18 +182,19 @@ public:
 		return false;
 	}
 
-    template<typename T>
-    void remove(const T& t1)
+    template<typename _Functor>
+    void remove(const _Functor& t1)
     {
         if (!_functions) { return; }
 
         auto it = _functions->begin();
         auto end = _functions->end();
 
+		_MyFunction func(t1);
+
         for (; it != end; ++it)
         {
-            auto p = dynamic_cast<function_impl<Result(DELEGATE_TEMPLATE_ARGS), T>*>(*it);
-            if (p->_functor == t1)
+            if ((*it).target_type() == func.target_type())
             {
                 _functions->erase(it);
                 break;
@@ -215,11 +216,11 @@ public:
 		auto it = _functions->begin();
 		auto end = _functions->end();
 
+		_MyFunction func = std::bind(pair.second, pair.first);
+
 		for (; it != end; ++it)
 		{
-			auto p = dynamic_cast<function_impl<Result(DELEGATE_TEMPLATE_ARGS), std::pair<_Functor, _This>>*>(*it);
-
-			if (p->_functor.target_type() == pair.target_type())
+			if ((*it).target_type() == func.target_type())
 			{
 				_functions->erase(it);
 				break;

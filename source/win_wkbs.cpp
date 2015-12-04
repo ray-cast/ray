@@ -40,7 +40,7 @@
 
 _NAME_BEGIN
 
-string
+util::string
 WalkerBase::GetCurrentDirectory(void) noexcept
 {
     DWORD length = MAX_BUFFER_LENGTH;
@@ -52,13 +52,13 @@ WalkerBase::GetCurrentDirectory(void) noexcept
         DWORD size = ::GetCurrentDirectory(length, buffer.get());
 
         if (length > size)
-            return string(buffer.get(), size);
+            return util::string(buffer.get(), size);
     }
 
     return __TEXT("");
 }
 
-string
+util::string
 WalkerBase::GetModuleFileName(HMODULE hModule) noexcept
 {
     DWORD length = MAX_BUFFER_LENGTH;
@@ -70,17 +70,17 @@ WalkerBase::GetModuleFileName(HMODULE hModule) noexcept
         DWORD size = ::GetModuleFileName(hModule, buffer.get(), length);
 
         if (length > size)
-            return string(buffer.get(), size);
+            return util::string(buffer.get(), size);
     }
 
     return __TEXT("");
 }
 
-string
+util::string
 WalkerBase::GetModuleDirectory(HMODULE hModule) noexcept
 {
-    string dir = GetModuleFileName(hModule);
-    string::size_type pos = dir.find_last_of(__TEXT("\\/:"));
+	util::string dir = GetModuleFileName(hModule);
+	util::string::size_type pos = dir.find_last_of(__TEXT("\\/:"));
     if (pos != std::string::npos)
     {
         dir.erase(pos, dir.length() - pos);
@@ -90,14 +90,14 @@ WalkerBase::GetModuleDirectory(HMODULE hModule) noexcept
     return __TEXT("");
 }
 
-string
-WalkerBase::GetEnvironmentVariable(const string& name) noexcept
+util::string
+WalkerBase::GetEnvironmentVariable(const util::string& name) noexcept
 {
     DWORD length = MAX_BUFFER_LENGTH;
 
     for (DWORD i = 0; i < 5; i++)
     {
-        std::unique_ptr<char_type[]> buffer(new char_type[length]);
+        std::unique_ptr<util::char_type[]> buffer(new util::char_type[length]);
 
         DWORD size = ::GetEnvironmentVariable(name.data(), buffer.get(), length);
 
@@ -105,7 +105,7 @@ WalkerBase::GetEnvironmentVariable(const string& name) noexcept
             break;
 
         if (length > size)
-            return string(buffer.get(), size);
+            return util::string(buffer.get(), size);
     }
 
     return __TEXT("");

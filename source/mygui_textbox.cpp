@@ -252,7 +252,7 @@ MyGuiTextBox::setText(const std::string& _value) noexcept
 	_impl.setText(_value);
 }
 
-const string&
+const std::string&
 MyGuiTextBox::getText() const noexcept
 {
 	return _impl.getText();

@@ -46,14 +46,14 @@ class EXPORT exception
 public:
 	exception(const error_code::int_type code) noexcept;
 	exception(const error_code& code) noexcept;
-	exception(const string& msg, const error_code& code) noexcept;
-	exception(const string& msg, const string& stack, const error_code& code) noexcept;
+	exception(const util::string& msg, const error_code& code) noexcept;
+	exception(const util::string& msg, const util::string& stack, const error_code& code) noexcept;
 
 	virtual ~exception() noexcept;
 
-	const string& message() const noexcept;
-	const string& stack() const noexcept;
-	const string& what() const noexcept;
+	const util::string& message() const noexcept;
+	const util::string& stack() const noexcept;
+	const util::string& what() const noexcept;
 
 	const error_code& code() const noexcept;
 
@@ -63,9 +63,9 @@ private:
 
 private:
 
-	string _info;
-    string _stack;
-	string _message;
+	util::string _info;
+	util::string _stack;
+	util::string _message;
 
     error_code _code;
 };
@@ -73,8 +73,8 @@ private:
 class EXPORT failure : public exception
 {
 public:
-	failure(const string& _msg, const error_code& _code = make_error_code(error_code::UNKNOWN_ERROR)) noexcept;
-	failure(const string& _msg, const string& _stack, const error_code& _code = make_error_code(error_code::UNKNOWN_ERROR)) noexcept;
+	failure(const util::string& _msg, const error_code& _code = make_error_code(error_code::UNKNOWN_ERROR)) noexcept;
+	failure(const util::string& _msg, const util::string& _stack, const error_code& _code = make_error_code(error_code::UNKNOWN_ERROR)) noexcept;
 	failure(const error_code& _code) noexcept;
 	failure(const error_code::int_type& _code) noexcept;
 

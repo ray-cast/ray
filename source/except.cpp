@@ -56,14 +56,14 @@ exception::exception(const error_code& code) noexcept
 	this->printStack();
 }
 
-exception::exception(const string& msg, const error_code& code) noexcept
+exception::exception(const util::string& msg, const error_code& code) noexcept
 	: _message(msg)
 	, _code(code)
 {
 	this->printStack();
 }
 
-exception::exception(const string& msg, const string& stack, const error_code& code) noexcept
+exception::exception(const util::string& msg, const util::string& stack, const error_code& code) noexcept
 	: _message(msg)
 	, _stack(stack)
 	, _code(code)
@@ -91,13 +91,13 @@ exception::printStack() noexcept
 	_info.append(__TEXT("\n"));
 }
 
-const string& 
+const util::string&
 exception::message() const noexcept
 {
 	return _message;
 }
 
-const string& 
+const util::string&
 exception::stack() const noexcept
 {
 	return _stack;
@@ -109,18 +109,18 @@ exception::code() const noexcept
 	return (this->_code);
 }
 
-const string&
+const util::string&
 exception::what() const noexcept
 {
 	return _info;
 }
 
-failure::failure(const string& _msg, const error_code& _code) noexcept
+failure::failure(const util::string& _msg, const error_code& _code) noexcept
 	: exception(_msg, _code)
 {
 }
 
-failure::failure(const string& _msg, const string& _stack, const error_code& _code) noexcept
+failure::failure(const util::string& _msg, const util::string& _stack, const error_code& _code) noexcept
 	: exception(_msg, _stack, _code)
 {
 }

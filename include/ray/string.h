@@ -51,6 +51,9 @@
 
 _NAME_BEGIN
 
+namespace util
+{
+
 #ifdef _UNICODE
 typedef wchar_t char_type;
 #else
@@ -92,13 +95,8 @@ typedef std::string string;
 #endif 
 
 #if defined(__WINDOWS__)
-
-namespace util
-{
-
 EXPORT char* fullpath(char * out, const char * in, std::size_t size);
 EXPORT wchar_t* fullpath(wchar_t * out, const wchar_t * in, std::size_t size);
-
 #endif
 
 EXPORT int stricmp(const std::string& a, const std::string& b);

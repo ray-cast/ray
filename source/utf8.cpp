@@ -35,22 +35,19 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/utf8.h>
+#include <ray/string.h>
 #include <iconv.h>
 
 _NAME_BEGIN
 
-#ifndef MAX_PATH
-#	define MAX_PATH 255
-#endif
-
 std::size_t UTF8toGBK(char* dest, std::size_t maxLength, const char* data, std::size_t size)
 {
-	char inbuf[MAX_PATH + 1] = { 0 };
-	char outbuf[MAX_PATH + 1] = { 0 };
+	char inbuf[PATHLIMIT + 1] = { 0 };
+	char outbuf[PATHLIMIT + 1] = { 0 };
 	char *in = inbuf;
 	char *out = outbuf;
 	std::size_t in_size = (size_t)size;
-	std::size_t out_size = (size_t)MAX_PATH;
+	std::size_t out_size = (size_t)PATHLIMIT;
 
 	memcpy(in, data, size);
 
@@ -58,7 +55,7 @@ std::size_t UTF8toGBK(char* dest, std::size_t maxLength, const char* data, std::
 	iconv(ic, &in, &in_size, &out, &out_size);
 	iconv_close(ic);
 
-	out_size = MAX_PATH - out_size;
+	out_size = PATHLIMIT - out_size;
 	memcpy(dest, outbuf, out_size);
 
 	return out_size;
@@ -66,16 +63,16 @@ std::size_t UTF8toGBK(char* dest, std::size_t maxLength, const char* data, std::
 
 std::size_t UTF8toUNICODE(wchar_t* dest, std::size_t maxLength, const char* data, std::size_t size)
 {
-	char inbuf[MAX_PATH + 1] = { 0 };
-	char outbuf[MAX_PATH + 1] = { 0 };
+	char inbuf[PATHLIMIT + 1] = { 0 };
+	char outbuf[PATHLIMIT + 1] = { 0 };
 	char *in = inbuf;
 	char *out = outbuf;
 	std::size_t in_size = (size_t)size;
-	std::size_t out_size = (size_t)MAX_PATH;
+	std::size_t out_size = (size_t)PATHLIMIT;
 
 	memcpy(in, data, size);
 
-	UTF8toGBK(outbuf, MAX_PATH, inbuf, size);
+	UTF8toGBK(outbuf, PATHLIMIT, inbuf, size);
 
 	in = outbuf;
 	out = inbuf;
@@ -84,7 +81,7 @@ std::size_t UTF8toUNICODE(wchar_t* dest, std::size_t maxLength, const char* data
 	iconv(ic, &in, &in_size, &out, &out_size);
 	iconv_close(ic);
 
-	out_size = MAX_PATH - out_size;
+	out_size = PATHLIMIT - out_size;
 	memcpy(dest, inbuf, out_size);
 
 	return out_size;

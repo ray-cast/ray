@@ -334,8 +334,8 @@ PMDHandler::doLoad(Model& model, istream& stream) noexcept
 			char outbuf[MAX_PATH + 1] = { 0 };
 			char *in = inbuf;
 			char *out = outbuf;
-			std::size_t in_size = (size_t)MAX_PATH;
-			std::size_t out_size = (size_t)MAX_PATH;
+			std::size_t in_size = (std::size_t)MAX_PATH;
+			std::size_t out_size = (std::size_t)MAX_PATH;
 
 			memcpy(in, it.Name.Name, sizeof(it.Name.Name));
 

@@ -433,7 +433,7 @@ public:
 	{
 		auto node = new KdimensionNode<_Tx>(pos, 0);
 		node->data = data;
-		KdimensionTreeBase::insert(node);
+		KdimensionTreeBase<_Tx, _Ty>::insert(node);
 	}
 };
 
@@ -445,7 +445,7 @@ public:
 	void insert(const _Tx& pos) noexcept
 	{
 		auto node = new KdimensionNode<_Tx>(pos, 0);
-		KdimensionTreeBase::insert(node);
+		KdimensionTreeBase<_Tx, void>::insert(node);
 	}
 };
 

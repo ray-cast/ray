@@ -178,8 +178,8 @@ int stricmp(const char *s1, const char *s2)
 
 	do
 	{
-		c1 = ray::tolower(*s1++);
-		c2 = ray::tolower(*s2++);
+		c1 = util::tolower(*s1++);
+		c2 = util::tolower(*s2++);
 	} while (c1 && (c1 == c2));
 
 	return c1 - c2;
@@ -200,8 +200,8 @@ int stricmp(const wchar_t *s1, const wchar_t *s2)
 
 	do
 	{
-		c1 = ray::tolower(*s1++);
-		c2 = ray::tolower(*s2++);
+		c1 = util::tolower(*s1++);
+		c2 = util::tolower(*s2++);
 	} while (c1 && (c1 == c2));
 
 	return c1 - c2;
@@ -226,8 +226,8 @@ int strnicmp(const char *s1, const char *s2, std::size_t n)
 		if (p++ >= n)
 			return 0;
 
-		c1 = ray::tolower(*s1++);
-		c2 = ray::tolower(*s2++);
+		c1 = util::tolower(*s1++);
+		c2 = util::tolower(*s2++);
 	} while (c1 && (c1 == c2));
 
 	return c1 - c2;
@@ -640,8 +640,8 @@ std::size_t ftoa10(char* out, std::size_t max, float number)
 
 	if (decPoint > 0)
 	{
-		char buf[MAX_PATH];
-		auto nums = itoa10(buf, MAX_PATH, decPoint);
+		char buf[PATHLIMIT];
+		auto nums = itoa10(buf, PATHLIMIT, decPoint);
 		if (written + nums + 2 < max)
 		{
 			*out++ = 'e';
@@ -710,8 +710,8 @@ std::size_t dtoa10(char* out, std::size_t max, double number)
 
 	if (decPoint > 0)
 	{
-		char buf[MAX_PATH];
-		auto nums = itoa10(buf, MAX_PATH, decPoint);
+		char buf[PATHLIMIT];
+		auto nums = itoa10(buf, PATHLIMIT, decPoint);
 		if (written + nums + 2 < max)
 		{
 			*out++ = 'e';
@@ -1108,6 +1108,24 @@ std::string directory(const std::string& path)
 	}
 
 	return std::string(path.c_str(), path.size() - length);
+}
+
+std::wstring directory(const std::wstring& path)
+{
+	auto begin = path.rbegin();
+	auto end = path.rend();
+
+	std::size_t length = 0;
+
+	for (; begin != end; ++begin)
+	{
+		if (isSeparator(*begin))
+			break;
+
+		length++;
+	}
+
+	return std::wstring(path.c_str(), path.size() - length);
 }
 
 void skipToken(const char*& in)

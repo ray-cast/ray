@@ -68,26 +68,26 @@ public:
 	StackWalker(DWORD processid = 0, HANDLE process = 0, Options options = _Mybase::normal) noexcept;
 	~StackWalker() noexcept;
 
-	const string& printStack(HANDLE thread = 0) noexcept;
+	const util::string& printStack(HANDLE thread = 0) noexcept;
 
 private:
 
 	void printStack(const HANDLE hThread, CONTEXT& context) noexcept;
-	void printSymbol(const string& searchPath, DWORD symOptions, const string& username) noexcept;
-	void printModule(const string& img, const string& mod, DWORD64 baseAddr, DWORD size, DWORD result, const string& symType, const string& pdbName, ULONGLONG fileVersion) noexcept;
+	void printSymbol(const util::string& searchPath, DWORD symOptions, const util::string& username) noexcept;
+	void printModule(const util::string& img, const util::string& mod, DWORD64 baseAddr, DWORD size, DWORD result, const util::string& symType, const util::string& pdbName, ULONGLONG fileVersion) noexcept;
 	void printEntry(CallStackEntry& entry) noexcept;
-	void print(const string& text, ostringstream& ostream) noexcept;
+	void print(const util::string& text, ostringstream& ostream) noexcept;
 	void error(const char* funcName, DWORD gle = NO_ERROR, DWORD64 addr = 0x0) noexcept;
 
 	void clear() noexcept;
-	const string& str() noexcept;
+	const util::string& str() noexcept;
 
 private:
 	StackWalkerInternal* _internal;
 
 	Options _options;
 
-	string _message;
+	util::string _message;
 
 	ostringstream _module;
 	ostringstream _entry;

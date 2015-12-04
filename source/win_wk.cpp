@@ -107,7 +107,7 @@ StackWalker::~StackWalker() noexcept
 	delete _internal;
 }
 
-const string&
+const util::string&
 StackWalker::printStack(HANDLE thread) noexcept
 {
 	try
@@ -179,7 +179,7 @@ StackWalker::printStack(const HANDLE thread, CONTEXT& context) noexcept
 }
 
 void
-StackWalker::printModule(const string& img, const string& mod, DWORD64 baseAddr, DWORD size, DWORD result, const string& symType, const string& pdbName, ULONGLONG fileVersion) noexcept
+StackWalker::printModule(const util::string& img, const util::string& mod, DWORD64 baseAddr, DWORD size, DWORD result, const util::string& symType, const util::string& pdbName, ULONGLONG fileVersion) noexcept
 {
 	if (_options & _Mybase::module_info)
 	{
@@ -199,7 +199,7 @@ StackWalker::printModule(const string& img, const string& mod, DWORD64 baseAddr,
 }
 
 void
-StackWalker::printSymbol(const string& searchPath, DWORD symOptions, const string& username) noexcept
+StackWalker::printSymbol(const util::string& searchPath, DWORD symOptions, const util::string& username) noexcept
 {
 	if (_options & _Mybase::symbol)
 	{
@@ -265,7 +265,7 @@ StackWalker::error(const char* funcName, DWORD gle, DWORD64 addr) noexcept
 }
 
 void
-StackWalker::print(const string& text, ostringstream& ostream) noexcept
+StackWalker::print(const util::string& text, ostringstream& ostream) noexcept
 {
 	ostream << text << std::endl;
 }
@@ -278,7 +278,7 @@ StackWalker::clear() noexcept
 	_entry.copyfmt(null);
 }
 
-const string&
+const util::string&
 StackWalker::str() noexcept
 {
 	if (_error.str().empty())

@@ -74,7 +74,7 @@ StackWalkerInternal::~StackWalkerInternal() noexcept
 }
 
 bool
-StackWalkerInternal::loadSymbol(const string& filepath) noexcept
+StackWalkerInternal::loadSymbol(const util::string& filepath) noexcept
 {
     assert(!filepath.empty());
 
@@ -133,7 +133,7 @@ StackWalkerInternal::loadModules() noexcept
     {
         if (_module_loaded) return true;
 
-        string path;
+		util::string path;
 
         path += __TEXT(".;");
         path += GetCurrentDirectory() + __TEXT(";");
@@ -142,7 +142,7 @@ StackWalkerInternal::loadModules() noexcept
         path += GetEnvironmentVariable(__TEXT("SYSTEMROOT")) + __TEXT(";");
         path += GetEnvironmentVariable(__TEXT("SYSTEMROOT")) + __TEXT("\\system32") + __TEXT(";");
 
-        string drive = GetEnvironmentVariable(__TEXT("SYSTEMDRIVE"));
+		util::string drive = GetEnvironmentVariable(__TEXT("SYSTEMDRIVE"));
         if (drive.empty())
         {
             path += __TEXT("SRV*c:\\websymbols*http://msdl.microsoft.com/download/symbols;");
@@ -274,7 +274,7 @@ StackWalkerInternal::loadModulesFromPSAPI(HANDLE hprocess) noexcept
 }
 
 bool
-StackWalkerInternal::loadModule(HANDLE process, const string& img, const string& mod, DWORD64 baseAddr, DWORD size) noexcept
+StackWalkerInternal::loadModule(HANDLE process, const util::string& img, const util::string& mod, DWORD64 baseAddr, DWORD size) noexcept
 {
     assert(0 != process);
     assert(0 != img.size());
@@ -282,8 +282,8 @@ StackWalkerInternal::loadModule(HANDLE process, const string& img, const string&
 
     try
     {
-        string image = img;
-        string modulename = mod;
+		util::string image = img;
+		util::string modulename = mod;
         DWORD result = 0;
 
         if (!::SymLoadModuleEx(process, 0, image.data(), modulename.data(), baseAddr, size, 0, 0))
@@ -314,7 +314,7 @@ StackWalkerInternal::loadModule(HANDLE process, const string& img, const string&
         }
 
 		IMAGEHLPMODULE module;
-        string type = __TEXT("-unknown-");
+		util::string type = __TEXT("-unknown-");
         if (this->getModuleInfo(baseAddr, module))
         {
             type = this->getSymTypeName(module.SymType);
@@ -536,7 +536,7 @@ StackWalkerInternal::getLocalVariable(const PCONTEXT context, VariableList& vari
     return false;
 }
 
-string
+util::string
 StackWalkerInternal::getTypeName(PSYMBOLINFO syminfo) noexcept
 {
     assert(syminfo->Tag == SymTagData);
@@ -544,7 +544,7 @@ StackWalkerInternal::getTypeName(PSYMBOLINFO syminfo) noexcept
     return this->getTypeName(syminfo->TypeIndex, syminfo->ModBase);
 }
 
-string
+util::string
 StackWalkerInternal::getTypeName(DWORD typeID, DWORD64 modBase) noexcept
 {
     DWORD typeTag;
@@ -570,7 +570,7 @@ StackWalkerInternal::getTypeName(DWORD typeID, DWORD64 modBase) noexcept
     }
 }
 
-string
+util::string
 StackWalkerInternal::getSymTypeName(SYM_TYPE type) noexcept
 {
     switch (type)
@@ -656,7 +656,7 @@ StackWalkerInternal::getBaseType(DWORD typeID, DWORD64 modBase) noexcept
     }
 }
 
-string
+util::string
 StackWalkerInternal::getBaseTypeName(DWORD typeID, DWORD64 modBase) noexcept
 {
     switch (this->getBaseType(typeID, modBase))
@@ -698,7 +698,7 @@ StackWalkerInternal::getBaseTypeName(DWORD typeID, DWORD64 modBase) noexcept
     }
 }
 
-string
+util::string
 StackWalkerInternal::getPointerTypeName(DWORD typeID, DWORD64 modBase) noexcept
 {
     BOOL isReference = false;
@@ -713,7 +713,7 @@ StackWalkerInternal::getPointerTypeName(DWORD typeID, DWORD64 modBase) noexcept
     return this->getTypeName(innerTypeID, modBase) + (isReference == TRUE ? __TEXT("&") : __TEXT("*"));
 }
 
-string
+util::string
 StackWalkerInternal::getArrayTypeName(DWORD typeID, DWORD64 modBase) noexcept
 {
     DWORD innerTypeID;
@@ -729,7 +729,7 @@ StackWalkerInternal::getArrayTypeName(DWORD typeID, DWORD64 modBase) noexcept
     return strBuilder.str();
 }
 
-string
+util::string
 StackWalkerInternal::getUDTTypeName(DWORD typeID, DWORD64 modBase) noexcept
 {
     WCHAR* buf = nullptr;
@@ -743,14 +743,14 @@ StackWalkerInternal::getUDTTypeName(DWORD typeID, DWORD64 modBase) noexcept
 
         ::wcstombs(str, buf, MAX_BUFFER_LENGTH);
 
-        return string(str);
+        return util::string(str);
 #endif
     }
 
     return __TEXT("??");
 }
 
-string
+util::string
 StackWalkerInternal::getEnumTypeName(DWORD typeID, DWORD64 modBase) noexcept
 {
     WCHAR* buf = nullptr;
@@ -764,14 +764,14 @@ StackWalkerInternal::getEnumTypeName(DWORD typeID, DWORD64 modBase) noexcept
 
         ::wcstombs(str, buf, MAX_BUFFER_LENGTH);
 
-        return string(str);
+        return util::string(str);
 #endif
     }
 
     return __TEXT("??");
 }
 
-string
+util::string
 StackWalkerInternal::getFuncTypeName(DWORD typeID, DWORD64 modBase) noexcept
 {
     DWORD paramCount = 0;
@@ -855,7 +855,7 @@ StackWalkerInternal::getDataMemberInfo(DWORD memberID, DWORD64 modBase, DWORD64 
 
         ::wcstombs(str, name, MAX_BUFFER_LENGTH);
 
-        stream << __TEXT("  ") << string(str);
+        stream << __TEXT("  ") << util::string(str);
 #endif
     }
     else
@@ -915,13 +915,13 @@ StackWalkerInternal::getTypeAddress(PSYMBOLINFO syminfo, const PCONTEXT context)
     return address;
 }
 
-string
+util::string
 StackWalkerInternal::getTypeValue(PSYMBOLINFO syminfo, PCONTEXT context) noexcept
 {
     return this->getTypeValue(syminfo->TypeIndex, syminfo->ModBase, this->getTypeAddress(syminfo, context), syminfo->Size);
 }
 
-string
+util::string
 StackWalkerInternal::getTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, DWORD size) noexcept
 {
     std::unique_ptr<BYTE[]> data = std::make_unique<BYTE[]>(size);
@@ -932,7 +932,7 @@ StackWalkerInternal::getTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address
     return this->getTypeValue(typeID, modBase, address, data.get());
 }
 
-string
+util::string
 StackWalkerInternal::getTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept
 {
     DWORD typeTag = SymTagNull;
@@ -960,7 +960,7 @@ StackWalkerInternal::getTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address
     }
 }
 
-string
+util::string
 StackWalkerInternal::getBaseTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept
 {
     ostringstream value;
@@ -1020,7 +1020,7 @@ StackWalkerInternal::getBaseTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 add
     return value.str();
 }
 
-string
+util::string
 StackWalkerInternal::getPointerTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept
 {
     ULONG64 length;
@@ -1028,11 +1028,11 @@ StackWalkerInternal::getPointerTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 
 
     ostringstream value;
 
-    string str = this->getPointerTypeName(typeID, modBase);
+	util::string str = this->getPointerTypeName(typeID, modBase);
     if (str == __TEXT("char*") || str == __TEXT("unsigned char*"))
     {
-        char_type* array = (char_type*)(*(std::intptr_t*)pData);
-        char_type* text = array;
+		util::char_type* array = (util::char_type*)(*(std::intptr_t*)pData);
+		util::char_type* text = array;
 
         std::size_t length = 0;
 
@@ -1044,13 +1044,13 @@ StackWalkerInternal::getPointerTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 
 
         if (length > 0)
         {
-            value << R"(")" << string(array, length) << R"(")";
+            value << R"(")" << util::string(array, length) << R"(")";
         }
     }
     else if (str == __TEXT("char**") || str == __TEXT("unsigned char**"))
     {
-		char_type** array = (char_type**)(*(std::intptr_t*)pData);
-		char_type* text = array[0];
+		util::char_type** array = (util::char_type**)(*(std::intptr_t*)pData);
+		util::char_type* text = array[0];
 
         std::size_t length = 0;
 
@@ -1062,7 +1062,7 @@ StackWalkerInternal::getPointerTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 
 
         if (length > 0)
         {
-            value << R"(")" << string(array[0], length) << R"(")";
+            value << R"(")" << util::string(array[0], length) << R"(")";
         }
     }
     else
@@ -1084,7 +1084,7 @@ StackWalkerInternal::getPointerTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 
     return value.str();
 }
 
-string
+util::string
 StackWalkerInternal::getArrayTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept
 {
     DWORD elemCount;
@@ -1115,7 +1115,7 @@ StackWalkerInternal::getArrayTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 ad
     return value.str();
 }
 
-string
+util::string
 StackWalkerInternal::getUDTTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept
 {
     /*
@@ -1146,10 +1146,10 @@ StackWalkerInternal::getUDTTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 addr
     return value.str();
 }
 
-string
+util::string
 StackWalkerInternal::getEnumTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept
 {
-    string valueName;
+	util::string valueName;
 
     DWORD baseType;
     SymGetTypeInfo(_process, modBase, typeID, TI_GET_BASETYPE, &baseType);

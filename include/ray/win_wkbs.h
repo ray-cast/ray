@@ -76,9 +76,9 @@ public:
         DWORD typeID;
         ULONG64 modBase;
         DWORD64 address;
-        string typeName;
-        string varName;
-        string valueName;
+        util::string typeName;
+		util::string varName;
+		util::string valueName;
     };
 
     struct VariableList
@@ -93,11 +93,11 @@ public:
         DWORD offsetFromLine;
         DWORD lineNumber;
         DWORD64 baseOfImage;
-        string name;
-        string lineFileName;
-        string moduleName;
-        string imageName;
-        string loadedImageName;
+		util::string name;
+		util::string lineFileName;
+		util::string moduleName;
+		util::string imageName;
+		util::string loadedImageName;
         VariableList variable;
     };
 
@@ -106,17 +106,17 @@ public:
     static const _CallstackEntryType next = (_CallstackEntryType)0x1;
     static const _CallstackEntryType last = (_CallstackEntryType)0x2;
 
-	typedef std::basic_ostringstream<char_type> ostringstream;
+	typedef std::basic_ostringstream<util::char_type> ostringstream;
 
     _INT_BITMASK(_Options, Options);
     _INT_BITMASK(_CallstackEntryType, EntryType);
 
 protected:
 
-    static string GetCurrentDirectory() noexcept;
-    static string GetModuleFileName(HMODULE hModule = 0) noexcept;
-    static string GetModuleDirectory(HMODULE hModule = 0) noexcept;
-    static string GetEnvironmentVariable(const string& name) noexcept;
+    static util::string GetCurrentDirectory() noexcept;
+    static util::string GetModuleFileName(HMODULE hModule = 0) noexcept;
+    static util::string GetModuleDirectory(HMODULE hModule = 0) noexcept;
+    static util::string GetEnvironmentVariable(const util::string& name) noexcept;
 };
 
 _NAME_END

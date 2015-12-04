@@ -283,11 +283,11 @@ ostream::operator << (char value) noexcept
     const osentry _Ok(this);
     if (_Ok)
     {
-        char buf[MAX_PATH];
+        char buf[PATHLIMIT];
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = util::itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, PATHLIMIT, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -305,11 +305,11 @@ ostream::operator << (unsigned char value) noexcept
     const osentry _Ok(this);
     if (_Ok)
     {
-        char buf[MAX_PATH];
+        char buf[PATHLIMIT];
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = util::itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, PATHLIMIT, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -327,11 +327,11 @@ ostream::operator << (short value) noexcept
     const osentry _Ok(this);
     if (_Ok)
     {
-        char buf[MAX_PATH];
+        char buf[PATHLIMIT];
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = util::itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, PATHLIMIT, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -349,11 +349,11 @@ ostream::operator << (long long value) noexcept
     const osentry _Ok(this);
     if (_Ok)
     {
-        char buf[MAX_PATH];
+        char buf[PATHLIMIT];
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = util::itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, PATHLIMIT, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -371,11 +371,11 @@ ostream::operator << (unsigned short value) noexcept
     const osentry _Ok(this);
     if (_Ok)
     {
-        char buf[MAX_PATH];
+        char buf[PATHLIMIT];
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = util::itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, PATHLIMIT, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -393,11 +393,11 @@ ostream::operator << (int value) noexcept
     const osentry _Ok(this);
     if (_Ok)
     {
-        char buf[MAX_PATH];
+        char buf[PATHLIMIT];
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = util::itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, PATHLIMIT, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -415,11 +415,11 @@ ostream::operator << (unsigned int value) noexcept
     const osentry _Ok(this);
     if (_Ok)
     {
-        char buf[MAX_PATH];
+        char buf[PATHLIMIT];
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = util::itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, PATHLIMIT, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -437,11 +437,11 @@ ostream::operator << (unsigned long value) noexcept
     const osentry _Ok(this);
     if (_Ok)
     {
-        char buf[MAX_PATH];
+        char buf[PATHLIMIT];
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = util::itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, PATHLIMIT, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -459,11 +459,11 @@ ostream::operator << (unsigned long long value) noexcept
     const osentry _Ok(this);
     if (_Ok)
     {
-        char buf[MAX_PATH];
+        char buf[PATHLIMIT];
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = util::itoa10(buf, MAX_PATH, value);
+            auto written = util::itoa10(buf, PATHLIMIT, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -481,11 +481,11 @@ ostream::operator << (float value) noexcept
     const osentry _Ok(this);
     if (_Ok)
     {
-        char buf[MAX_PATH];
+        char buf[PATHLIMIT];
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = util::ftoa10(buf, MAX_PATH, value);
+            auto written = util::ftoa10(buf, PATHLIMIT, value);
             if (written > 0)
             {
                 return this->write(buf, written);
@@ -503,11 +503,11 @@ ostream::operator << (double value) noexcept
     const osentry _Ok(this);
     if (_Ok)
     {
-        char buf[MAX_PATH];
+        char buf[PATHLIMIT];
 
         if (this->flags() & ios_base::dec)
         {
-            auto written = util::dtoa10(buf, MAX_PATH, value);
+            auto written = util::dtoa10(buf, PATHLIMIT, value);
             if (written > 0)
             {
                 return this->write(buf, written);

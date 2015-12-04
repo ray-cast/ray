@@ -49,8 +49,6 @@ public:
 
 	void setup(asIScriptEngine* engine) noexcept;
 
-	void setRenderSystem(RenderSystemPtr renderer) noexcept;
-
 private:
 
 	void setSwapInterval(int interval) noexcept;

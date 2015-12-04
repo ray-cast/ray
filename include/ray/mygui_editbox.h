@@ -117,6 +117,16 @@ public:
 
 	GuiTextBoxPtr getGuiTextBox() const noexcept;
 
+	void addTextChangeListener(std::function<void()>& func) noexcept;
+	void removeTextChangeListener(std::function<void()>& func) noexcept;
+
+	void addSelectAccept(std::function<void()>& func) noexcept;
+	void removeSelectAccept(std::function<void()>& func) noexcept;
+
+private:
+	void onTextChange(MyGUI::Widget*) noexcept;
+	void onSelectAccept(MyGUI::Widget*) noexcept;
+
 private:
 	MyGuiEditBoxImpl(const MyGuiEditBoxImpl&) noexcept = delete;
 	MyGuiEditBoxImpl& operator=(const MyGuiEditBoxImpl&) noexcept = delete;
@@ -131,6 +141,9 @@ private:
 	MyGUI::EditBox* _editBox;
 
 	GuiTextBoxPtr _textbox;
+
+	delegate<void()> _onTextChange;
+	delegate<void()> _onSelectAccept;
 };
 
 class MyGuiEditBox final : public GuiEditBox
@@ -205,6 +218,12 @@ public:
 	void setHScrollPosition(std::size_t index);
 
 	GuiTextBoxPtr getGuiTextBox() const noexcept;
+
+	void addTextChangeListener(std::function<void()>& func) noexcept;
+	void removeTextChangeListener(std::function<void()>& func) noexcept;
+
+	void addSelectAccept(std::function<void()>& func) noexcept;
+	void removeSelectAccept(std::function<void()>& func) noexcept;
 
 private:
 	MyGuiEditBox(const MyGuiEditBox&) noexcept = delete;

@@ -133,6 +133,54 @@ MyGuiWindowImpl::getMaxSize(int& w, int& h) const noexcept
 	h = size.height;
 }
 
+void
+MyGuiWindowImpl::addWindowButtonPressListener(std::function<void()>& func) noexcept
+{
+	assert(_window);
+	assert(!_onWindowButtonPress.find(func));
+	if (_onWindowButtonPress.empty())
+		_window->eventWindowButtonPressed += MyGUI::newDelegate(this, &MyGuiWindowImpl::onWindowButtonPress);
+	_onWindowButtonPress.attach(func);
+}
+
+void 
+MyGuiWindowImpl::addWindowCoordChangeListener(std::function<void()>& func) noexcept
+{
+	assert(_window);
+	assert(!_onWindowCoordChange.find(func));
+	if (_onWindowCoordChange.empty())
+		_window->eventWindowChangeCoord += MyGUI::newDelegate(this, &MyGuiWindowImpl::onWindowCoordChange);
+	_onWindowCoordChange.attach(func);
+}
+
+void 
+MyGuiWindowImpl::removeWindowButtonPressListener(std::function<void()>& func) noexcept
+{
+	assert(_window);
+	assert(_onWindowButtonPress.find(func));
+	_onWindowButtonPress.remove(func);
+}
+
+void 
+MyGuiWindowImpl::removeWindowCoordChangeListener(std::function<void()>& func) noexcept
+{
+	assert(_window);
+	assert(_onWindowCoordChange.find(func));
+	_onWindowCoordChange.remove(func);
+}
+
+void 
+MyGuiWindowImpl::onWindowButtonPress(MyGUI::Widget*, const std::string&) except
+{
+	_onWindowButtonPress.run();
+}
+
+void 
+MyGuiWindowImpl::onWindowCoordChange(MyGUI::Widget*) except
+{
+	_onWindowCoordChange.run();
+}
+
 MyGuiWindow::MyGuiWindow() noexcept
 	: GuiWindow(_impl)
 {
@@ -196,5 +244,30 @@ MyGuiWindow::getMaxSize(int& w, int& h) const noexcept
 	_impl.getMaxSize(w, h);
 }
 
+void 
+MyGuiWindow::addWindowButtonPressListener(std::function<void()>& func) noexcept
+{
+	_impl.addWindowButtonPressListener(func);
+}
+
+void 
+MyGuiWindow::addWindowCoordChangeListener(std::function<void()>& func) noexcept
+{
+	_impl.addWindowCoordChangeListener(func);
+}
+
+void 
+MyGuiWindow::removeWindowButtonPressListener(std::function<void()>& func) noexcept
+{
+	_impl.removeWindowButtonPressListener(func);
+}
+
+void 
+MyGuiWindow::removeWindowCoordChangeListener(std::function<void()>& func) noexcept
+{
+	_impl.removeWindowCoordChangeListener(func);
+}
+
 _NAME_END
+
 #endif

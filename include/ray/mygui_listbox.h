@@ -50,36 +50,55 @@ public:
 
 	bool create() except;
 
-	std::size_t getItemCount() const;
-	void insertItemAt(std::size_t index, const std::string& name);
-	void addItem(const std::string& name);
-	void removeItemAt(std::size_t index);
-	void removeAllItems();
-	void swapItemsAt(std::size_t index1, std::size_t index2);
+	std::size_t getItemCount() const noexcept;
+	void insertItemAt(std::size_t index, const std::string& name) noexcept;
+	void addItem(const std::string& name) noexcept;
+	void removeItemAt(std::size_t index) noexcept;
+	void removeAllItems() noexcept;
+	void swapItemsAt(std::size_t index1, std::size_t index2) noexcept;
 
-	std::size_t findItemIndexWith(const std::string& name);
-	std::size_t getIndexSelected() const;
-	void setIndexSelected(std::size_t index);
-	void clearIndexSelected();
-	void setItemNameAt(std::size_t index, const std::string& name);
-	void clearItemDataAt(std::size_t index);
+	std::size_t findItemIndexWith(const std::string& name) noexcept;
+	std::size_t getIndexSelected() const noexcept;
+	void setIndexSelected(std::size_t index) noexcept;
+	void clearIndexSelected() noexcept;
+	void setItemNameAt(std::size_t index, const std::string& name) noexcept;
+	void clearItemDataAt(std::size_t index) noexcept;
 
-	std::string getItemNameAt(std::size_t index) const;
+	std::string getItemNameAt(std::size_t index) const noexcept;
 
-	void beginToItemAt(std::size_t index);
-	void beginToItemFirst();
-	void beginToItemLast();
-	void beginToItemSelected();
+	void beginToItemAt(std::size_t index) noexcept;
+	void beginToItemFirst() noexcept;
+	void beginToItemLast() noexcept;
+	void beginToItemSelected() noexcept;
 
-	bool isItemVisibleAt(std::size_t index, bool fill = true);
-	bool isItemSelectedVisible(bool fill = true);
+	bool isItemVisibleAt(std::size_t index, bool fill = true) noexcept;
+	bool isItemSelectedVisible(bool fill = true) noexcept;
 
-	void setScrollVisible(bool visible);
-	void setScrollPosition(std::size_t position);
+	void setScrollVisible(bool visible) noexcept;
+	void setScrollPosition(std::size_t position) noexcept;
 
-	int getOptimalHeight();
+	int getOptimalHeight() noexcept;
 
-	void setActivateOnClick(bool activateOnClick);
+	void setActivateOnClick(bool activateOnClick) noexcept;
+
+	void addListSelectAcceptListener(std::function<void()>& func) noexcept;
+	void addListChangePositionListener(std::function<void()>& func) noexcept;
+	void addListMouseItemActivateListener(std::function<void()>& func) noexcept;
+	void addListMouseItemFocusListener(std::function<void()>& func) noexcept;
+	void addListChangeScrollListener(std::function<void()>& func) noexcept;
+
+	void removeListSelectAcceptListener(std::function<void()>& func) noexcept;
+	void removeListChangePositionListener(std::function<void()>& func) noexcept;
+	void removeListMouseItemActivateListener(std::function<void()>& func) noexcept;
+	void removeListMouseItemFocusListener(std::function<void()>& func) noexcept;
+	void removeListChangeScrollListener(std::function<void()>& func) noexcept;
+
+private:
+	void onListSelectAccept(MyGUI::Widget*, std::size_t) except;
+	void onListChangePosition(MyGUI::Widget*, std::size_t) except;
+	void onListMouseItemActivate(MyGUI::Widget*, std::size_t) except;
+	void onListMouseItemFocus(MyGUI::Widget*, std::size_t) except;
+	void onListChangeScroll(MyGUI::Widget*, std::size_t) except;
 
 private:
 	MyGuiListBoxImpl(const MyGuiListBoxImpl&) noexcept = delete;
@@ -89,6 +108,12 @@ private:
 
 	MyGUI::ListBox* _listBox;
 	MyGUI::Widget* _parent;
+
+	delegate<void()> _onListSelectAccept;
+	delegate<void()> _onListChangePosition;
+	delegate<void()> _onListMouseItemActivate;
+	delegate<void()> _onListMouseItemFocus;
+	delegate<void()> _onListChangeScroll;
 };
 
 class MyGuiListBox final : public GuiListBox
@@ -98,36 +123,48 @@ public:
 	MyGuiListBox() noexcept;
 	virtual ~MyGuiListBox() noexcept;
 
-	std::size_t getItemCount() const;
-	void insertItemAt(std::size_t index, const std::string& name);
-	void addItem(const std::string& name);
-	void removeItemAt(std::size_t index);
-	void removeAllItems();
-	void swapItemsAt(std::size_t index1, std::size_t index2);
+	std::size_t getItemCount() const noexcept;
+	void insertItemAt(std::size_t index, const std::string& name) noexcept;
+	void addItem(const std::string& name) noexcept;
+	void removeItemAt(std::size_t index) noexcept;
+	void removeAllItems() noexcept;
+	void swapItemsAt(std::size_t index1, std::size_t index2) noexcept;
 
-	std::size_t findItemIndexWith(const std::string& name);
-	std::size_t getIndexSelected() const;
-	void setIndexSelected(std::size_t index);
-	void clearIndexSelected();
-	void setItemNameAt(std::size_t index, const std::string& name);
-	void clearItemDataAt(std::size_t index);
+	std::size_t findItemIndexWith(const std::string& name) noexcept;
+	std::size_t getIndexSelected() const noexcept;
+	void setIndexSelected(std::size_t index) noexcept;
+	void clearIndexSelected() noexcept;
+	void setItemNameAt(std::size_t index, const std::string& name) noexcept;
+	void clearItemDataAt(std::size_t index) noexcept;
 
-	std::string getItemNameAt(std::size_t index) const;
+	std::string getItemNameAt(std::size_t index) const noexcept;
 
-	void beginToItemAt(std::size_t index);
-	void beginToItemFirst();
-	void beginToItemLast();
-	void beginToItemSelected();
+	void beginToItemAt(std::size_t index) noexcept;
+	void beginToItemFirst() noexcept;
+	void beginToItemLast() noexcept;
+	void beginToItemSelected() noexcept;
 
-	bool isItemVisibleAt(std::size_t index, bool fill = true);
-	bool isItemSelectedVisible(bool fill = true);
+	bool isItemVisibleAt(std::size_t index, bool fill = true) noexcept;
+	bool isItemSelectedVisible(bool fill = true) noexcept;
 
-	void setScrollVisible(bool visible);
-	void setScrollPosition(std::size_t position);
+	void setScrollVisible(bool visible) noexcept;
+	void setScrollPosition(std::size_t position) noexcept;
 
-	int getOptimalHeight();
+	int getOptimalHeight() noexcept;
 
-	void setActivateOnClick(bool activateOnClick);
+	void setActivateOnClick(bool activateOnClick) noexcept;
+
+	void addListSelectAcceptListener(std::function<void()>& func) noexcept;
+	void addListChangePositionListener(std::function<void()>& func) noexcept;
+	void addListMouseItemActivateListener(std::function<void()>& func) noexcept;
+	void addListMouseItemFocusListener(std::function<void()>& func) noexcept;
+	void addListChangeScrollListener(std::function<void()>& func) noexcept;
+
+	void removeListSelectAcceptListener(std::function<void()>& func) noexcept;
+	void removeListChangePositionListener(std::function<void()>& func) noexcept;
+	void removeListMouseItemActivateListener(std::function<void()>& func) noexcept;
+	void removeListMouseItemFocusListener(std::function<void()>& func) noexcept;
+	void removeListChangeScrollListener(std::function<void()>& func) noexcept;
 
 private:
 	MyGuiListBox(const MyGuiListBox&) noexcept = delete;

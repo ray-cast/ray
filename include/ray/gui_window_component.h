@@ -60,6 +60,12 @@ public:
 	void setMaxSize(int _width, int _height) noexcept;
 	void getMaxSize(int& w, int& h) const noexcept;
 
+	void addWindowButtonPressListener(std::function<void()>& func) noexcept;
+	void addWindowCoordChangeListener(std::function<void()>& func) noexcept;
+
+	void removeWindowButtonPressListener(std::function<void()>& func) noexcept;
+	void removeWindowCoordChangeListener(std::function<void()>& func) noexcept;
+
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
 

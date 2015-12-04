@@ -112,6 +112,12 @@ public:
 	std::size_t getHScrollPosition();
 	void setHScrollPosition(std::size_t index);
 
+	void addTextChangeListener(std::function<void()>& func) noexcept;
+	void removeTextChangeListener(std::function<void()>& func) noexcept;
+
+	void addSelectAccept(std::function<void()>& func) noexcept;
+	void removeSelectAccept(std::function<void()>& func) noexcept;
+
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
 

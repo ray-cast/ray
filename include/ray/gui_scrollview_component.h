@@ -48,21 +48,21 @@ public:
 	GuiScrollViewComponent() noexcept;
 	~GuiScrollViewComponent() noexcept;
 
-	void setVisibleVScroll(bool value);
-	bool isVisibleVScroll() const;
+	void setVisibleVScroll(bool value) noexcept;
+	bool isVisibleVScroll() const noexcept;
 
-	void setVisibleHScroll(bool value);
-	bool isVisibleHScroll() const;
+	void setVisibleHScroll(bool value) noexcept;
+	bool isVisibleHScroll() const noexcept;
 
-	void setCanvasAlign(GuiWidgetAlign value);
-	GuiWidgetAlign getCanvasAlign() const;
+	void setCanvasAlign(GuiWidgetAlign value) noexcept;
+	GuiWidgetAlign getCanvasAlign() const noexcept;
 
-	void setCanvasSize(const Size& value);
-	void setCanvasSize(int width, int height);
-	Size getCanvasSize();
-	
-	void setViewOffset(const Point& value);
-	Point getViewOffset() const;
+	void setCanvasSize(const Size& value) noexcept;
+	void setCanvasSize(int width, int height) noexcept;
+	Size getCanvasSize() noexcept;
+
+	void setViewOffset(const Point& value) noexcept;
+	Point getViewOffset() const noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;

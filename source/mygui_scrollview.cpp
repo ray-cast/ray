@@ -89,73 +89,73 @@ MyGuiScrollViewImpl::destroy() noexcept
 }
 
 void
-MyGuiScrollViewImpl::setVisibleVScroll(bool value)
+MyGuiScrollViewImpl::setVisibleVScroll(bool value) noexcept
 {
 	_scrollView->setVisibleVScroll(value);
 }
 
 bool
-MyGuiScrollViewImpl::isVisibleVScroll() const
+MyGuiScrollViewImpl::isVisibleVScroll() const noexcept
 {
 	return _scrollView->isVisibleVScroll();
 }
 
 void
-MyGuiScrollViewImpl::setVisibleHScroll(bool value)
+MyGuiScrollViewImpl::setVisibleHScroll(bool value) noexcept
 {
 	_scrollView->setVisibleHScroll(value);
 }
 
 bool
-MyGuiScrollViewImpl::isVisibleHScroll() const
+MyGuiScrollViewImpl::isVisibleHScroll() const noexcept
 {
 	return _scrollView->isVisibleHScroll();
 }
 
 void
-MyGuiScrollViewImpl::setCanvasAlign(GuiWidgetAlign value)
+MyGuiScrollViewImpl::setCanvasAlign(GuiWidgetAlign value) noexcept
 {
 	_scrollView->setCanvasAlign(GuiAlignToMyGui(value));
 }
 
 GuiWidgetAlign
-MyGuiScrollViewImpl::getCanvasAlign() const
+MyGuiScrollViewImpl::getCanvasAlign() const noexcept
 {
 	return MyGuiToGuiAlign(_scrollView->getCanvasAlign());
 }
 
 void
-MyGuiScrollViewImpl::setCanvasSize(const Size& value)
+MyGuiScrollViewImpl::setCanvasSize(const Size& value) noexcept
 {
 	this->setCanvasSize(value.x, value.y);
 }
 
 void
-MyGuiScrollViewImpl::setCanvasSize(int width, int height)
+MyGuiScrollViewImpl::setCanvasSize(int width, int height) noexcept
 {
 	_scrollView->setCanvasSize(width, height);
 }
 
 Size
-MyGuiScrollViewImpl::getCanvasSize()
+MyGuiScrollViewImpl::getCanvasSize() noexcept
 {
 	return convert(_scrollView->getSize());
 }
 
 Rect
-MyGuiScrollViewImpl::getViewCoord() const
+MyGuiScrollViewImpl::getViewCoord() const noexcept
 {
 	return convert(_scrollView->getViewCoord());
 }
 
 void
-MyGuiScrollViewImpl::setViewOffset(const Point& value)
+MyGuiScrollViewImpl::setViewOffset(const Point& value) noexcept
 {
 	_scrollView->setViewOffset(convert(value));
 }
 
 Point
-MyGuiScrollViewImpl::getViewOffset() const
+MyGuiScrollViewImpl::getViewOffset() const noexcept
 {
 	return convert(_scrollView->getViewOffset());
 }
@@ -176,73 +176,73 @@ MyGuiScrollView::~MyGuiScrollView() noexcept
 }
 
 void
-MyGuiScrollView::setVisibleVScroll(bool value)
+MyGuiScrollView::setVisibleVScroll(bool value) noexcept
 {
 	_impl.setVisibleVScroll(value);
 }
 
 bool
-MyGuiScrollView::isVisibleVScroll() const
+MyGuiScrollView::isVisibleVScroll() const noexcept
 {
 	return _impl.isVisibleVScroll();
 }
 
 void
-MyGuiScrollView::setVisibleHScroll(bool value)
+MyGuiScrollView::setVisibleHScroll(bool value) noexcept
 {
 	_impl.setVisibleHScroll(value);
 }
 
 bool
-MyGuiScrollView::isVisibleHScroll() const
+MyGuiScrollView::isVisibleHScroll() const noexcept
 {
 	return _impl.isVisibleHScroll();
 }
 
 void
-MyGuiScrollView::setCanvasAlign(GuiWidgetAlign value)
+MyGuiScrollView::setCanvasAlign(GuiWidgetAlign value) noexcept
 {
 	_impl.setCanvasAlign(value);
 }
 
 GuiWidgetAlign
-MyGuiScrollView::getCanvasAlign() const
+MyGuiScrollView::getCanvasAlign() const noexcept
 {
 	return _impl.getCanvasAlign();
 }
 
 void
-MyGuiScrollView::setCanvasSize(const Size& value)
+MyGuiScrollView::setCanvasSize(const Size& value) noexcept
 {
 	this->setCanvasSize(value.x, value.y);
 }
 
 void
-MyGuiScrollView::setCanvasSize(int width, int height)
+MyGuiScrollView::setCanvasSize(int width, int height) noexcept
 {
 	_impl.setCanvasSize(width, height);
 }
 
 Size
-MyGuiScrollView::getCanvasSize()
+MyGuiScrollView::getCanvasSize() noexcept
 {
 	return _impl.getCanvasSize();
 }
 
 Rect
-MyGuiScrollView::getViewCoord() const
+MyGuiScrollView::getViewCoord() const noexcept
 {
 	return _impl.getViewCoord();
 }
 
 void
-MyGuiScrollView::setViewOffset(const Point& value)
+MyGuiScrollView::setViewOffset(const Point& value) noexcept
 {
 	_impl.setViewOffset(value);
 }
 
 Point
-MyGuiScrollView::getViewOffset() const
+MyGuiScrollView::getViewOffset() const noexcept
 {
 	return _impl.getViewOffset();
 }

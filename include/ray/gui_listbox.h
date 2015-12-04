@@ -48,36 +48,48 @@ public:
 	GuiListBox(GuiWidgetImpl& impl) noexcept;
 	virtual ~GuiListBox() noexcept;
 
-	virtual std::size_t getItemCount() const = 0;
-	virtual void insertItemAt(std::size_t index, const std::string& name) = 0;
-	virtual void addItem(const std::string& name) = 0;
-	virtual void removeItemAt(std::size_t index) = 0;
-	virtual void removeAllItems() = 0;
-	virtual void swapItemsAt(std::size_t index1, std::size_t index2) = 0;
+	virtual std::size_t getItemCount() const noexcept = 0;
+	virtual void insertItemAt(std::size_t index, const std::string& name) noexcept = 0;
+	virtual void addItem(const std::string& name) noexcept = 0;
+	virtual void removeItemAt(std::size_t index) noexcept = 0;
+	virtual void removeAllItems() noexcept = 0;
+	virtual void swapItemsAt(std::size_t index1, std::size_t index2) noexcept = 0;
 
-	virtual std::size_t findItemIndexWith(const std::string& name) = 0;
-	virtual std::size_t getIndexSelected() const = 0;
-	virtual void setIndexSelected(std::size_t index) = 0;
-	virtual void clearIndexSelected() = 0;
-	virtual void setItemNameAt(std::size_t index, const std::string& name) = 0;
-	virtual void clearItemDataAt(std::size_t index) = 0;
+	virtual std::size_t findItemIndexWith(const std::string& name) noexcept = 0;
+	virtual std::size_t getIndexSelected() const noexcept = 0;
+	virtual void setIndexSelected(std::size_t index) noexcept = 0;
+	virtual void clearIndexSelected() noexcept = 0;
+	virtual void setItemNameAt(std::size_t index, const std::string& name) noexcept = 0;
+	virtual void clearItemDataAt(std::size_t index) noexcept = 0;
 
-	virtual std::string getItemNameAt(std::size_t index) const = 0;
+	virtual std::string getItemNameAt(std::size_t index) const noexcept = 0;
 
-	virtual void beginToItemAt(std::size_t index) = 0;
-	virtual void beginToItemFirst() = 0;
-	virtual void beginToItemLast() = 0;
-	virtual void beginToItemSelected() = 0;
+	virtual void beginToItemAt(std::size_t index) noexcept = 0;
+	virtual void beginToItemFirst() noexcept = 0;
+	virtual void beginToItemLast() noexcept = 0;
+	virtual void beginToItemSelected() noexcept = 0;
 
-	virtual bool isItemVisibleAt(std::size_t index, bool fill = true) = 0;
-	virtual bool isItemSelectedVisible(bool fill = true) = 0;
+	virtual bool isItemVisibleAt(std::size_t index, bool fill = true) noexcept = 0;
+	virtual bool isItemSelectedVisible(bool fill = true) noexcept = 0;
 
-	virtual void setScrollVisible(bool visible) = 0;
-	virtual void setScrollPosition(std::size_t position) = 0;
+	virtual void setScrollVisible(bool visible) noexcept = 0;
+	virtual void setScrollPosition(std::size_t position) noexcept = 0;
 
-	virtual int getOptimalHeight() = 0;
+	virtual int getOptimalHeight() noexcept = 0;
 
-	virtual void setActivateOnClick(bool activateOnClick) = 0;
+	virtual void setActivateOnClick(bool activateOnClick) noexcept = 0;
+
+	virtual void addListSelectAcceptListener(std::function<void()>& func) noexcept = 0;
+	virtual void addListChangePositionListener(std::function<void()>& func) noexcept = 0;
+	virtual void addListMouseItemActivateListener(std::function<void()>& func) noexcept = 0;
+	virtual void addListMouseItemFocusListener(std::function<void()>& func) noexcept = 0;
+	virtual void addListChangeScrollListener(std::function<void()>& func) noexcept = 0;
+
+	virtual void removeListSelectAcceptListener(std::function<void()>& func) noexcept = 0;
+	virtual void removeListChangePositionListener(std::function<void()>& func) noexcept = 0;
+	virtual void removeListMouseItemActivateListener(std::function<void()>& func) noexcept = 0;
+	virtual void removeListMouseItemFocusListener(std::function<void()>& func) noexcept = 0;
+	virtual void removeListChangeScrollListener(std::function<void()>& func) noexcept = 0;
 
 private:
 	GuiListBox(const GuiListBox&) noexcept = delete;

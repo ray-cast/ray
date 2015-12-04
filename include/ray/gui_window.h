@@ -62,6 +62,12 @@ public:
 	virtual void setMaxSize(int _width, int _height) noexcept = 0;
 	virtual void getMaxSize(int& w, int& h) const noexcept = 0;
 
+	virtual void addWindowButtonPressListener(std::function<void()>& func) noexcept = 0;
+	virtual void addWindowCoordChangeListener(std::function<void()>& func) noexcept = 0;
+
+	virtual void removeWindowButtonPressListener(std::function<void()>& func) noexcept = 0;
+	virtual void removeWindowCoordChangeListener(std::function<void()>& func) noexcept = 0;
+
 private:
 	GuiWindow(const GuiWindow&) noexcept = delete;
 	GuiWindow& operator=(const GuiWindow&) noexcept = delete;

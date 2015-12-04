@@ -111,6 +111,12 @@ public:
 	virtual std::size_t getHScrollPosition() = 0;
 	virtual void setHScrollPosition(std::size_t index) = 0;
 
+	virtual void addTextChangeListener(std::function<void()>& func) noexcept = 0;
+	virtual void removeTextChangeListener(std::function<void()>& func) noexcept = 0;
+
+	virtual void addSelectAccept(std::function<void()>& func) noexcept = 0;
+	virtual void removeSelectAccept(std::function<void()>& func) noexcept = 0;
+
 	virtual GuiTextBoxPtr getGuiTextBox() const noexcept = 0;
 
 private:

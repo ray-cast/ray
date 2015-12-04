@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GuiComboBoxComponent, GuiWidgetComponent, "GuiCombo")
+__ImplementSubClass(GuiComboBoxComponent, GuiWidgetComponent, "GuiComboBox")
 
 GuiComboBoxComponent::GuiComboBoxComponent() noexcept
 {
@@ -58,6 +58,186 @@ GuiComboBoxComponent::GuiComboBoxComponent() noexcept
 
 GuiComboBoxComponent::~GuiComboBoxComponent() noexcept
 {
+}
+
+std::size_t
+GuiComboBoxComponent::getItemCount() const noexcept
+{
+	return _comboBox->getItemCount();
+}
+
+void
+GuiComboBoxComponent::insertItemAt(std::size_t index, const std::string& name, std::string data) noexcept
+{
+	_comboBox->insertItemAt(index, name, data);
+}
+
+void
+GuiComboBoxComponent::addItem(const std::string& name, const std::string& data) noexcept
+{
+	_comboBox->addItem(name, data);
+}
+
+void
+GuiComboBoxComponent::removeItemAt(std::size_t index) noexcept
+{
+	_comboBox->removeItemAt(index);
+}
+
+void
+GuiComboBoxComponent::removeAllItems() noexcept
+{
+	_comboBox->removeAllItems();
+}
+
+std::size_t
+GuiComboBoxComponent::findItemIndexWith(const std::string& name) noexcept
+{
+	return _comboBox->findItemIndexWith(name);
+}
+
+void
+GuiComboBoxComponent::setIndexSelected(std::size_t index) noexcept
+{
+	_comboBox->setIndexSelected(index);
+}
+
+std::size_t
+GuiComboBoxComponent::getIndexSelected() const noexcept
+{
+	return _comboBox->getIndexSelected();
+}
+
+void
+GuiComboBoxComponent::clearIndexSelected() noexcept
+{
+	_comboBox->clearIndexSelected();
+}
+
+void
+GuiComboBoxComponent::setItemDataAt(std::size_t index, const std::string& data) noexcept
+{
+	_comboBox->setItemDataAt(index, data);
+}
+
+void
+GuiComboBoxComponent::clearItemDataAt(std::size_t index) noexcept
+{
+	_comboBox->clearItemDataAt(index);
+}
+
+std::string*
+GuiComboBoxComponent::getItemDataAt(std::size_t index, bool _throw) const noexcept
+{
+	return _comboBox->getItemDataAt(index, _throw);
+}
+
+void
+GuiComboBoxComponent::setItemNameAt(std::size_t index, const std::string& name) noexcept
+{
+	_comboBox->setItemNameAt(index, name);
+}
+
+std::string
+GuiComboBoxComponent::getItemNameAt(std::size_t index) const noexcept
+{
+	return _comboBox->getItemNameAt(index);
+}
+
+void
+GuiComboBoxComponent::beginToItemAt(std::size_t index) noexcept
+{
+	_comboBox->beginToItemAt(index);
+}
+
+void
+GuiComboBoxComponent::beginToItemFirst() noexcept
+{
+	_comboBox->beginToItemFirst();
+}
+
+void
+GuiComboBoxComponent::beginToItemLast() noexcept
+{
+	_comboBox->beginToItemLast();
+}
+
+void
+GuiComboBoxComponent::beginToItemSelected() noexcept
+{
+	_comboBox->beginToItemSelected();
+}
+
+void
+GuiComboBoxComponent::setComboModeDrop(bool value) noexcept
+{
+	_comboBox->setComboModeDrop(value);
+}
+
+bool
+GuiComboBoxComponent::getComboModeDrop() const noexcept
+{
+	return _comboBox->getComboModeDrop();
+}
+
+void
+GuiComboBoxComponent::setSmoothShow(bool value) noexcept
+{
+	_comboBox->setSmoothShow(value);
+}
+
+bool
+GuiComboBoxComponent::getSmoothShow() const noexcept
+{
+	return _comboBox->getSmoothShow();
+}
+
+void
+GuiComboBoxComponent::setMaxListLength(int value) noexcept
+{
+	_comboBox->setMaxListLength(value);
+}
+
+int
+GuiComboBoxComponent::getMaxListLength() const noexcept
+{
+	return _comboBox->getMaxListLength();
+}
+
+void
+GuiComboBoxComponent::setFlowDirection(GuiFlowDirection value) noexcept
+{
+	_comboBox->setFlowDirection(value);
+}
+
+GuiFlowDirection
+GuiComboBoxComponent::getFlowDirection() const noexcept
+{
+	return _comboBox->getFlowDirection();
+}
+
+void
+GuiComboBoxComponent::addComboAcceptListener(std::function<void()>& func) noexcept
+{
+	_comboBox->addComboAcceptListener(func);
+}
+
+void
+GuiComboBoxComponent::addComboChangePositionListener(std::function<void()>& func) noexcept
+{
+	_comboBox->addComboChangePositionListener(func);
+}
+
+void
+GuiComboBoxComponent::removeComboAcceptListener(std::function<void()>& func) noexcept
+{
+	_comboBox->removeComboAcceptListener(func);
+}
+
+void
+GuiComboBoxComponent::removeComboChangePositionListener(std::function<void()>& func) noexcept
+{
+	_comboBox->removeComboChangePositionListener(func);
 }
 
 void

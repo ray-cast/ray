@@ -48,43 +48,46 @@ public:
 	GuiScrollBar(GuiWidgetImpl& impl) noexcept;
 	virtual ~GuiScrollBar() noexcept;
 
-	virtual void setVerticalAlignment(bool value) = 0;
-	virtual bool getVerticalAlignment() const = 0;
+	virtual void setVerticalAlignment(bool value) noexcept = 0;
+	virtual bool getVerticalAlignment() const noexcept = 0;
 
-	virtual void setScrollRange(std::size_t value) = 0;
-	virtual std::size_t getScrollRange() const = 0;
+	virtual void setScrollRange(std::size_t value) noexcept = 0;
+	virtual std::size_t getScrollRange() const noexcept = 0;
 
-	virtual void setScrollPosition(std::size_t value) = 0;
-	virtual std::size_t getScrollPosition() const = 0;
+	virtual void setScrollPosition(std::size_t value) noexcept = 0;
+	virtual std::size_t getScrollPosition() const noexcept = 0;
 
-	virtual void setScrollPage(std::size_t value) = 0;
-	virtual std::size_t getScrollPage() const = 0;
+	virtual void setScrollPage(std::size_t value) noexcept = 0;
+	virtual std::size_t getScrollPage() const noexcept = 0;
 
-	virtual void setScrollViewPage(std::size_t value) = 0;
-	virtual std::size_t getScrollViewPage() const = 0;
+	virtual void setScrollViewPage(std::size_t value) noexcept = 0;
+	virtual std::size_t getScrollViewPage() const noexcept = 0;
 
-	virtual void setScrollWheelPage(std::size_t value) = 0;
-	virtual std::size_t getScrollWheelPage() const = 0;
+	virtual void setScrollWheelPage(std::size_t value) noexcept = 0;
+	virtual std::size_t getScrollWheelPage() const noexcept = 0;
 
-	virtual int getLineSize() const = 0;
+	virtual int getLineSize() const noexcept = 0;
 
-	virtual void setTrackSize(int value) = 0;
-	virtual int getTrackSize() const = 0;
+	virtual void setTrackSize(int value) noexcept = 0;
+	virtual int getTrackSize() const noexcept = 0;
 
-	virtual void setMinTrackSize(int value) = 0;
-	virtual int getMinTrackSize() const = 0;
+	virtual void setMinTrackSize(int value) noexcept = 0;
+	virtual int getMinTrackSize() const noexcept = 0;
 
-	virtual void setMoveToClick(bool value) = 0;
-	virtual bool getMoveToClick() const = 0;
+	virtual void setMoveToClick(bool value) noexcept = 0;
+	virtual bool getMoveToClick() const noexcept = 0;
 
-	virtual void setRepeatEnabled(bool enabled) = 0;
-	virtual bool getRepeatEnabled() const = 0;
+	virtual void setRepeatEnabled(bool enabled) noexcept = 0;
+	virtual bool getRepeatEnabled() const noexcept = 0;
 
-	virtual void setRepeatTriggerTime(float time) = 0;
-	virtual float getRepeatTriggerTime(float time) const = 0;
+	virtual void setRepeatTriggerTime(float time) noexcept = 0;
+	virtual float getRepeatTriggerTime(float time) const noexcept = 0;
 
-	virtual void setRepeatStepTime(float time) = 0;
-	virtual float getRepeatStepTime(float time) const = 0;
+	virtual void setRepeatStepTime(float time) noexcept = 0;
+	virtual float getRepeatStepTime(float time) const noexcept = 0;
+
+	virtual void addScrollPositionChange(std::function<void()>& func) noexcept = 0;
+	virtual void removeScrollPositionChange(std::function<void()>& func) noexcept = 0;
 
 private:
 	GuiScrollBar(const GuiScrollBar&) noexcept = delete;

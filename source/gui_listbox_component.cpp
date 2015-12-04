@@ -56,142 +56,203 @@ GuiListBoxComponent::~GuiListBoxComponent() noexcept
 }
 
 std::size_t
-GuiListBoxComponent::getItemCount() const
+GuiListBoxComponent::getItemCount() const noexcept
 {
     return _listBox->getItemCount();
 }
 
 void
-GuiListBoxComponent::insertItemAt(std::size_t index, const std::string& name)
+GuiListBoxComponent::insertItemAt(std::size_t index, const std::string& name) noexcept
 {
     _listBox->insertItemAt(index, name);
 }
 
 void
-GuiListBoxComponent::addItem(const std::string& name)
+GuiListBoxComponent::addItem(const std::string& name) noexcept
 {
     _listBox->addItem(name);
 }
 
 void
-GuiListBoxComponent::removeItemAt(std::size_t index)
+GuiListBoxComponent::removeItemAt(std::size_t index) noexcept
 {
     _listBox->removeItemAt(index);
 }
 
 void
-GuiListBoxComponent::removeAllItems()
+GuiListBoxComponent::removeAllItems() noexcept
 {
     _listBox->removeAllItems();
 }
 
 void
-GuiListBoxComponent::swapItemsAt(std::size_t index1, std::size_t index2)
+GuiListBoxComponent::swapItemsAt(std::size_t index1, std::size_t index2) noexcept
 {
     _listBox->swapItemsAt(index1, index2);
 }
 
 std::size_t
-GuiListBoxComponent::findItemIndexWith(const std::string& name)
+GuiListBoxComponent::findItemIndexWith(const std::string& name) noexcept
 {
     return _listBox->findItemIndexWith(name);
 }
 
 std::size_t
-GuiListBoxComponent::getIndexSelected() const
+GuiListBoxComponent::getIndexSelected() const noexcept
 {
     return _listBox->getIndexSelected();
 }
 
 void
-GuiListBoxComponent::setIndexSelected(std::size_t index)
+GuiListBoxComponent::setIndexSelected(std::size_t index) noexcept
 {
     _listBox->setIndexSelected(index);
 }
 
 void
-GuiListBoxComponent::clearIndexSelected()
+GuiListBoxComponent::clearIndexSelected() noexcept
 {
     _listBox->clearIndexSelected();
 }
 
 void
-GuiListBoxComponent::setItemNameAt(std::size_t index, const std::string& name)
+GuiListBoxComponent::setItemNameAt(std::size_t index, const std::string& name) noexcept
 {
     _listBox->setItemNameAt(index, name);
 }
 
 void
-GuiListBoxComponent::clearItemDataAt(std::size_t index)
+GuiListBoxComponent::clearItemDataAt(std::size_t index) noexcept
 {
     _listBox->clearItemDataAt(index);
 }
 
 std::string
-GuiListBoxComponent::getItemNameAt(std::size_t index) const
+GuiListBoxComponent::getItemNameAt(std::size_t index) const noexcept
 {
     return _listBox->getItemNameAt(index);
 }
 
 void
-GuiListBoxComponent::beginToItemAt(std::size_t index)
+GuiListBoxComponent::beginToItemAt(std::size_t index) noexcept
 {
     _listBox->beginToItemAt(index);
 }
 
 void
-GuiListBoxComponent::beginToItemFirst()
+GuiListBoxComponent::beginToItemFirst() noexcept
 {
     _listBox->beginToItemFirst();
 }
 
 void
-GuiListBoxComponent::beginToItemLast()
+GuiListBoxComponent::beginToItemLast() noexcept
 {
     _listBox->beginToItemLast();
 }
 
 void
-GuiListBoxComponent::beginToItemSelected()
+GuiListBoxComponent::beginToItemSelected() noexcept
 {
     _listBox->beginToItemSelected();
 }
 
 bool
-GuiListBoxComponent::isItemVisibleAt(std::size_t index, bool fill)
+GuiListBoxComponent::isItemVisibleAt(std::size_t index, bool fill) noexcept
 {
     return _listBox->isItemVisibleAt(index, fill);
 }
 
 bool
-GuiListBoxComponent::isItemSelectedVisible(bool fill)
+GuiListBoxComponent::isItemSelectedVisible(bool fill) noexcept
 {
     return _listBox->isItemSelectedVisible(fill);
 }
 
 void
-GuiListBoxComponent::setScrollVisible(bool visible)
+GuiListBoxComponent::setScrollVisible(bool visible) noexcept
 {
     _listBox->setScrollVisible(visible);
 }
 
 void
-GuiListBoxComponent::setScrollPosition(std::size_t position)
+GuiListBoxComponent::setScrollPosition(std::size_t position) noexcept
 {
     _listBox->setScrollPosition(position);
 }
 
 int
-GuiListBoxComponent::getOptimalHeight()
+GuiListBoxComponent::getOptimalHeight() noexcept
 {
     return _listBox->getOptimalHeight();
 }
 
 void
-GuiListBoxComponent::setActivateOnClick(bool activateOnClick)
+GuiListBoxComponent::setActivateOnClick(bool activateOnClick) noexcept
 {
     _listBox->setActivateOnClick(activateOnClick);
 }
+
+void
+GuiListBoxComponent::addListSelectAcceptListener(std::function<void()>& func) noexcept
+{
+    _listBox->addListSelectAcceptListener(func);
+}
+
+void
+GuiListBoxComponent::addListChangePositionListener(std::function<void()>& func) noexcept
+{
+    _listBox->addListChangePositionListener(func);
+}
+
+void
+GuiListBoxComponent::addListMouseItemActivateListener(std::function<void()>& func) noexcept
+{
+    _listBox->addListMouseItemActivateListener(func);
+}
+
+void
+GuiListBoxComponent::addListMouseItemFocusListener(std::function<void()>& func) noexcept
+{
+    _listBox->addListMouseItemFocusListener(func);
+}
+
+void
+GuiListBoxComponent::addListChangeScrollListener(std::function<void()>& func) noexcept
+{
+    _listBox->addListChangeScrollListener(func);
+}
+
+void
+GuiListBoxComponent::removeListSelectAcceptListener(std::function<void()>& func) noexcept
+{
+    _listBox->removeListSelectAcceptListener(func);
+}
+
+void
+GuiListBoxComponent::removeListChangePositionListener(std::function<void()>& func) noexcept
+{
+    _listBox->removeListChangePositionListener(func);
+}
+
+void
+GuiListBoxComponent::removeListMouseItemActivateListener(std::function<void()>& func) noexcept
+{
+    _listBox->removeListMouseItemActivateListener(func);
+}
+
+void
+GuiListBoxComponent::removeListMouseItemFocusListener(std::function<void()>& func) noexcept
+{
+    _listBox->removeListMouseItemFocusListener(func);
+}
+
+void
+GuiListBoxComponent::removeListChangeScrollListener(std::function<void()>& func) noexcept
+{
+    _listBox->removeListChangeScrollListener(func);
+}
+
 
 void
 GuiListBoxComponent::load(iarchive& reader) noexcept
@@ -199,13 +260,13 @@ GuiListBoxComponent::load(iarchive& reader) noexcept
 	GuiWidgetComponent::load(reader);
 }
 
-void 
+void
 GuiListBoxComponent::save(oarchive& write) noexcept
 {
 	GuiWidgetComponent::save(write);
 }
 
-GameComponentPtr 
+GameComponentPtr
 GuiListBoxComponent::clone() const except
 {
 	return std::make_shared<GuiListBoxComponent>();

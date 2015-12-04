@@ -50,43 +50,49 @@ public:
 
 	bool create() except;
 
-	void setVerticalAlignment(bool value);
-	bool getVerticalAlignment() const;
+	void setVerticalAlignment(bool value) noexcept;
+	bool getVerticalAlignment() const noexcept;
 
-	void setScrollRange(std::size_t value);
-	std::size_t getScrollRange() const;
+	void setScrollRange(std::size_t value) noexcept;
+	std::size_t getScrollRange() const noexcept;
 
-	void setScrollPosition(std::size_t value);
-	std::size_t getScrollPosition() const;
+	void setScrollPosition(std::size_t value) noexcept;
+	std::size_t getScrollPosition() const noexcept;
 
-	void setScrollPage(std::size_t value);
-	std::size_t getScrollPage() const;
+	void setScrollPage(std::size_t value) noexcept;
+	std::size_t getScrollPage() const noexcept;
 
-	void setScrollViewPage(std::size_t value);
-	std::size_t getScrollViewPage() const;
+	void setScrollViewPage(std::size_t value) noexcept;
+	std::size_t getScrollViewPage() const noexcept;
 
-	void setScrollWheelPage(std::size_t value);
-	std::size_t getScrollWheelPage() const;
+	void setScrollWheelPage(std::size_t value) noexcept;
+	std::size_t getScrollWheelPage() const noexcept;
 
-	int getLineSize() const;
+	int getLineSize() const noexcept;
 
-	void setTrackSize(int value);
-	int getTrackSize() const;
+	void setTrackSize(int value) noexcept;
+	int getTrackSize() const noexcept;
 
-	void setMinTrackSize(int value);
-	int getMinTrackSize() const;
+	void setMinTrackSize(int value) noexcept;
+	int getMinTrackSize() const noexcept;
 
-	void setMoveToClick(bool value);
-	bool getMoveToClick() const;
+	void setMoveToClick(bool value) noexcept;
+	bool getMoveToClick() const noexcept;
 
-	void setRepeatEnabled(bool enabled);
-	bool getRepeatEnabled() const;
+	void setRepeatEnabled(bool enabled) noexcept;
+	bool getRepeatEnabled() const noexcept;
 
-	void setRepeatTriggerTime(float time);
-	float getRepeatTriggerTime(float time) const;
+	void setRepeatTriggerTime(float time) noexcept;
+	float getRepeatTriggerTime(float time) const noexcept;
 
-	void setRepeatStepTime(float time);
-	float getRepeatStepTime(float time) const;
+	void setRepeatStepTime(float time) noexcept;
+	float getRepeatStepTime(float time) const noexcept;
+
+	void addScrollPositionChange(std::function<void()>& func) noexcept;
+	void removeScrollPositionChange(std::function<void()>& func) noexcept;
+
+private:
+	void onScrollPositionChange(MyGUI::ScrollBar*, std::size_t) except;
 
 private:
 	MyGuiScrollBarImpl(const MyGuiScrollBarImpl&) noexcept = delete;
@@ -96,6 +102,8 @@ private:
 
 	MyGUI::Widget* _parent;
 	MyGUI::ScrollBar* _scrollBar;
+
+	delegate<void()> _onScrollPositionChange;
 };
 
 class MyGuiScrollBar final : public GuiScrollBar
@@ -105,43 +113,46 @@ public:
 	MyGuiScrollBar() noexcept;
 	~MyGuiScrollBar() noexcept;
 
-	void setVerticalAlignment(bool value);
-	bool getVerticalAlignment() const;
+	void setVerticalAlignment(bool value) noexcept;
+	bool getVerticalAlignment() const noexcept;
 
-	void setScrollRange(std::size_t value);
-	std::size_t getScrollRange() const;
+	void setScrollRange(std::size_t value) noexcept;
+	std::size_t getScrollRange() const noexcept;
 
-	void setScrollPosition(std::size_t value);
-	std::size_t getScrollPosition() const;
+	void setScrollPosition(std::size_t value) noexcept;
+	std::size_t getScrollPosition() const noexcept;
 
-	void setScrollPage(std::size_t value);
-	std::size_t getScrollPage() const;
+	void setScrollPage(std::size_t value) noexcept;
+	std::size_t getScrollPage() const noexcept;
 
-	void setScrollViewPage(std::size_t value);
-	std::size_t getScrollViewPage() const;
+	void setScrollViewPage(std::size_t value) noexcept;
+	std::size_t getScrollViewPage() const noexcept;
 
-	void setScrollWheelPage(std::size_t value);
-	std::size_t getScrollWheelPage() const;
+	void setScrollWheelPage(std::size_t value) noexcept;
+	std::size_t getScrollWheelPage() const noexcept;
 
-	int getLineSize() const;
+	int getLineSize() const noexcept;
 
-	void setTrackSize(int value);
-	int getTrackSize() const;
+	void setTrackSize(int value) noexcept;
+	int getTrackSize() const noexcept;
 
-	void setMinTrackSize(int value);
-	int getMinTrackSize() const;
+	void setMinTrackSize(int value) noexcept;
+	int getMinTrackSize() const noexcept;
 
-	void setMoveToClick(bool value);
-	bool getMoveToClick() const;
+	void setMoveToClick(bool value) noexcept;
+	bool getMoveToClick() const noexcept;
 
-	void setRepeatEnabled(bool enabled);
-	bool getRepeatEnabled() const;
+	void setRepeatEnabled(bool enabled) noexcept;
+	bool getRepeatEnabled() const noexcept;
 
-	void setRepeatTriggerTime(float time);
-	float getRepeatTriggerTime(float time) const;
+	void setRepeatTriggerTime(float time) noexcept;
+	float getRepeatTriggerTime(float time) const noexcept;
 
-	void setRepeatStepTime(float time);
-	float getRepeatStepTime(float time) const;
+	void setRepeatStepTime(float time) noexcept;
+	float getRepeatStepTime(float time) const noexcept;
+
+	void addScrollPositionChange(std::function<void()>& func) noexcept;
+	void removeScrollPositionChange(std::function<void()>& func) noexcept;
 
 private:
 	MyGuiScrollBar(const MyGuiScrollBar&) noexcept = delete;

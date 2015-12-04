@@ -48,23 +48,23 @@ public:
 	GuiScrollView(GuiWidgetImpl& impl) noexcept;
 	virtual ~GuiScrollView() noexcept;
 
-	virtual void setVisibleVScroll(bool value) = 0;
-	virtual bool isVisibleVScroll() const = 0;
+	virtual void setVisibleVScroll(bool value) noexcept = 0;
+	virtual bool isVisibleVScroll() const noexcept = 0;
 
-	virtual void setVisibleHScroll(bool value) = 0;
-	virtual bool isVisibleHScroll() const = 0;
+	virtual void setVisibleHScroll(bool value) noexcept = 0;
+	virtual bool isVisibleHScroll() const noexcept = 0;
 
-	virtual void setCanvasAlign(GuiWidgetAlign value) = 0;
-	virtual GuiWidgetAlign getCanvasAlign() const = 0;
+	virtual void setCanvasAlign(GuiWidgetAlign value) noexcept = 0;
+	virtual GuiWidgetAlign getCanvasAlign() const noexcept = 0;
 
-	virtual void setCanvasSize(const Size& value) = 0;
-	virtual void setCanvasSize(int width, int height) = 0;
-	virtual Size getCanvasSize() = 0;
+	virtual void setCanvasSize(const Size& value) noexcept = 0;
+	virtual void setCanvasSize(int width, int height) noexcept = 0;
+	virtual Size getCanvasSize() noexcept = 0;
 
-	virtual Rect getViewCoord() const = 0;
+	virtual Rect getViewCoord() const noexcept = 0;
 
-	virtual void setViewOffset(const Point& value) = 0;
-	virtual Point getViewOffset() const = 0;
+	virtual void setViewOffset(const Point& value) noexcept = 0;
+	virtual Point getViewOffset() const noexcept = 0;
 
 private:
 	GuiScrollView(const GuiScrollView&) noexcept = delete;

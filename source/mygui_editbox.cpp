@@ -369,6 +369,50 @@ MyGuiEditBoxImpl::setHScrollPosition(std::size_t index)
 	_editBox->setHScrollPosition(index);
 }
 
+void 
+MyGuiEditBoxImpl::addTextChangeListener(std::function<void()>& func) noexcept
+{
+	assert(!_onTextChange.find(func));
+	if (_onTextChange.empty())
+		_editBox->eventEditTextChange += MyGUI::newDelegate(this, &MyGuiEditBoxImpl::onTextChange);
+	_onTextChange.attach(func);
+}
+
+void 
+MyGuiEditBoxImpl::removeTextChangeListener(std::function<void()>& func) noexcept
+{
+	assert(_onTextChange.find(func));
+	_onTextChange.remove(func);
+}
+
+void 
+MyGuiEditBoxImpl::addSelectAccept(std::function<void()>& func) noexcept
+{
+	assert(!_onSelectAccept.find(func));
+	if (_onTextChange.empty())
+		_editBox->eventEditSelectAccept += MyGUI::newDelegate(this, &MyGuiEditBoxImpl::onSelectAccept);
+	_onSelectAccept.attach(func);
+}
+
+void 
+MyGuiEditBoxImpl::removeSelectAccept(std::function<void()>& func) noexcept
+{
+	assert(_onSelectAccept.find(func));
+	_onSelectAccept.remove(func);
+}
+
+void 
+MyGuiEditBoxImpl::onTextChange(MyGUI::Widget*) noexcept
+{
+	_onTextChange();
+}
+
+void 
+MyGuiEditBoxImpl::onSelectAccept(MyGUI::Widget*) noexcept
+{
+	_onSelectAccept();
+}
+
 MyGuiEditBox::MyGuiEditBox() noexcept
 	: GuiEditBox(_impl)
 {
@@ -658,6 +702,30 @@ void
 MyGuiEditBox::setHScrollPosition(std::size_t index)
 {
 	_impl.setHScrollPosition(index);
+}
+
+void
+MyGuiEditBox::addTextChangeListener(std::function<void()>& func) noexcept
+{
+	_impl.addTextChangeListener(func);
+}
+
+void 
+MyGuiEditBox::removeTextChangeListener(std::function<void()>& func) noexcept
+{
+	_impl.removeTextChangeListener(func);
+}
+
+void 
+MyGuiEditBox::addSelectAccept(std::function<void()>& func) noexcept
+{
+	_impl.addSelectAccept(func);
+}
+
+void 
+MyGuiEditBox::removeSelectAccept(std::function<void()>& func) noexcept
+{
+	_impl.removeSelectAccept(func);
 }
 
 _NAME_END

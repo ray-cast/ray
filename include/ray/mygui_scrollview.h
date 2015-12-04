@@ -52,23 +52,23 @@ public:
 	bool create() except;
 	void destroy() noexcept;
 
-	void setVisibleVScroll(bool value);
-	bool isVisibleVScroll() const;
+	void setVisibleVScroll(bool value) noexcept;
+	bool isVisibleVScroll() const noexcept;
 
-	void setVisibleHScroll(bool value);
-	bool isVisibleHScroll() const;
+	void setVisibleHScroll(bool value) noexcept;
+	bool isVisibleHScroll() const noexcept;
 
-	void setCanvasAlign(GuiWidgetAlign value);
-	GuiWidgetAlign getCanvasAlign() const;
+	void setCanvasAlign(GuiWidgetAlign value) noexcept;
+	GuiWidgetAlign getCanvasAlign() const noexcept;
 
-	void setCanvasSize(const Size& value);
-	void setCanvasSize(int width, int height);
-	Size getCanvasSize();
+	void setCanvasSize(const Size& value) noexcept;
+	void setCanvasSize(int width, int height) noexcept;
+	Size getCanvasSize() noexcept;
 
-	Rect getViewCoord() const;
+	Rect getViewCoord() const noexcept;
 
-	void setViewOffset(const Point& value);
-	Point getViewOffset() const;
+	void setViewOffset(const Point& value) noexcept;
+	Point getViewOffset() const noexcept;
 
 private:
 	MyGuiScrollViewImpl(const MyGuiScrollViewImpl&) noexcept = delete;
@@ -88,23 +88,23 @@ public:
 	MyGuiScrollView(MyGUI::ScrollView* self, bool destroy = true) noexcept;
 	~MyGuiScrollView() noexcept;
 
-	void setVisibleVScroll(bool value);
-	bool isVisibleVScroll() const;
+	void setVisibleVScroll(bool value) noexcept;
+	bool isVisibleVScroll() const noexcept;
 
-	void setVisibleHScroll(bool value);
-	bool isVisibleHScroll() const;
+	void setVisibleHScroll(bool value) noexcept;
+	bool isVisibleHScroll() const noexcept;
 
-	void setCanvasAlign(GuiWidgetAlign value);
-	GuiWidgetAlign getCanvasAlign() const;
+	void setCanvasAlign(GuiWidgetAlign value) noexcept;
+	GuiWidgetAlign getCanvasAlign() const noexcept;
 
-	void setCanvasSize(const Size& value);
-	void setCanvasSize(int width, int height);
-	Size getCanvasSize();
+	void setCanvasSize(const Size& value) noexcept;
+	void setCanvasSize(int width, int height) noexcept;
+	Size getCanvasSize() noexcept;
 
-	Rect getViewCoord() const;
+	Rect getViewCoord() const noexcept;
 
-	void setViewOffset(const Point& value);
-	Point getViewOffset() const;
+	void setViewOffset(const Point& value) noexcept;
+	Point getViewOffset() const noexcept;
 
 private:
 	MyGuiScrollView(const MyGuiScrollView&) noexcept = delete;

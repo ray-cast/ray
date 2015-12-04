@@ -50,42 +50,52 @@ public:
 
 	bool create() except;
 
-	std::size_t getItemCount() const;
-	void insertItemAt(std::size_t index, const std::string& name, std::string data);
-	void addItem(const std::string& name, const std::string& data);
-	void removeItemAt(std::size_t index);
-	void removeAllItems();
-	std::size_t findItemIndexWith(const std::string& name);
+	std::size_t getItemCount() const noexcept;
+	void insertItemAt(std::size_t index, const std::string& name, std::string data) noexcept;
+	void addItem(const std::string& name, const std::string& data) noexcept;
+	void removeItemAt(std::size_t index) noexcept;
+	void removeAllItems() noexcept;
+	std::size_t findItemIndexWith(const std::string& name) noexcept;
 
-	void setIndexSelected(std::size_t index);
-	std::size_t getIndexSelected() const;
-	void clearIndexSelected();
+	void setIndexSelected(std::size_t index) noexcept;
+	std::size_t getIndexSelected() const noexcept;
+	void clearIndexSelected() noexcept;
 
-	void setItemDataAt(std::size_t index, const std::string& data);
-	void clearItemDataAt(std::size_t index);
-	std::string* getItemDataAt(std::size_t index, bool _throw = true) const;
+	void setItemDataAt(std::size_t index, const std::string& data) noexcept;
+	void clearItemDataAt(std::size_t index) noexcept;
+	std::string* getItemDataAt(std::size_t index, bool _throw = true) const noexcept;
 
-	void setItemNameAt(std::size_t index, const std::string& name);
-	std::string getItemNameAt(std::size_t index) const;
+	void setItemNameAt(std::size_t index, const std::string& name) noexcept;
+	std::string getItemNameAt(std::size_t index) const noexcept;
 
-	void beginToItemAt(std::size_t index);
-	void beginToItemFirst();
-	void beginToItemLast();
-	void beginToItemSelected();
+	void beginToItemAt(std::size_t index) noexcept;
+	void beginToItemFirst() noexcept;
+	void beginToItemLast() noexcept;
+	void beginToItemSelected() noexcept;
 
-	void setComboModeDrop(bool _value);
-	bool getComboModeDrop() const;
+	void setComboModeDrop(bool _value) noexcept;
+	bool getComboModeDrop() const noexcept;
 
-	void setSmoothShow(bool _value);
-	bool getSmoothShow() const;
+	void setSmoothShow(bool _value) noexcept;
+	bool getSmoothShow() const noexcept;
 
-	void setMaxListLength(int _value);
-	int getMaxListLength() const;
+	void setMaxListLength(int _value) noexcept;
+	int getMaxListLength() const noexcept;
 
-	void setFlowDirection(GuiFlowDirection _value);
-	GuiFlowDirection getFlowDirection() const;
+	void setFlowDirection(GuiFlowDirection _value) noexcept;
+	GuiFlowDirection getFlowDirection() const noexcept;
+
+	void addComboAcceptListener(std::function<void()>& func) noexcept;
+	void addComboChangePositionListener(std::function<void()>& func) noexcept;
+
+	void removeComboAcceptListener(std::function<void()>& func) noexcept;
+	void removeComboChangePositionListener(std::function<void()>& func) noexcept;
 
 	GuiEditBoxPtr getGuiEditBox() const noexcept;
+
+private:
+	void onComboAccept(MyGUI::Widget*) noexcept;
+	void onComboChangePosition(MyGUI::Widget*, std::size_t) noexcept;
 
 private:
 	MyGuiComboBoxImpl(const MyGuiComboBoxImpl&) noexcept = delete;
@@ -98,6 +108,9 @@ private:
 	MyGUI::Widget* _parent;
 
 	GuiEditBoxPtr _editBox;
+
+	delegate<void()> _onComboAccept;
+	delegate<void()> _onComboChangePosition;
 };
 
 class MyGuiComboBox final : public GuiComboBox
@@ -109,40 +122,46 @@ public:
 
 	GuiEditBoxPtr getGuiEditBox() const noexcept;
 
-	std::size_t getItemCount() const;
-	void insertItemAt(std::size_t index, const std::string& name, std::string data);
-	void addItem(const std::string& name, const std::string& data);
-	void removeItemAt(std::size_t index);
-	void removeAllItems();
-	std::size_t findItemIndexWith(const std::string& name);
+	std::size_t getItemCount() const noexcept;
+	void insertItemAt(std::size_t index, const std::string& name, std::string data) noexcept;
+	void addItem(const std::string& name, const std::string& data) noexcept;
+	void removeItemAt(std::size_t index) noexcept;
+	void removeAllItems() noexcept;
+	std::size_t findItemIndexWith(const std::string& name) noexcept;
 
-	void setIndexSelected(std::size_t index);
-	std::size_t getIndexSelected() const;
-	void clearIndexSelected();
+	void setIndexSelected(std::size_t index) noexcept;
+	std::size_t getIndexSelected() const noexcept;
+	void clearIndexSelected() noexcept;
 
-	void setItemDataAt(std::size_t index, const std::string& data);
-	void clearItemDataAt(std::size_t index);
-	std::string* getItemDataAt(std::size_t index, bool _throw = true) const;
+	void setItemDataAt(std::size_t index, const std::string& data) noexcept;
+	void clearItemDataAt(std::size_t index) noexcept;
+	std::string* getItemDataAt(std::size_t index, bool _throw = true) const noexcept;
 
-	void setItemNameAt(std::size_t index, const std::string& name);
-	std::string getItemNameAt(std::size_t index) const;
+	void setItemNameAt(std::size_t index, const std::string& name) noexcept;
+	std::string getItemNameAt(std::size_t index) const noexcept;
 
-	void beginToItemAt(std::size_t index);
-	void beginToItemFirst();
-	void beginToItemLast();
-	void beginToItemSelected();
+	void beginToItemAt(std::size_t index) noexcept;
+	void beginToItemFirst() noexcept;
+	void beginToItemLast() noexcept;
+	void beginToItemSelected() noexcept;
 
-	void setComboModeDrop(bool _value);
-	bool getComboModeDrop() const;
+	void setComboModeDrop(bool _value) noexcept;
+	bool getComboModeDrop() const noexcept;
 
-	void setSmoothShow(bool _value);
-	bool getSmoothShow() const;
+	void setSmoothShow(bool _value) noexcept;
+	bool getSmoothShow() const noexcept;
 
-	void setMaxListLength(int _value);
-	int getMaxListLength() const;
+	void setMaxListLength(int _value) noexcept;
+	int getMaxListLength() const noexcept;
 
-	void setFlowDirection(GuiFlowDirection _value);
-	GuiFlowDirection getFlowDirection() const;
+	void setFlowDirection(GuiFlowDirection _value) noexcept;
+	GuiFlowDirection getFlowDirection() const noexcept;
+
+	void addComboAcceptListener(std::function<void()>& func) noexcept;
+	void addComboChangePositionListener(std::function<void()>& func) noexcept;
+
+	void removeComboAcceptListener(std::function<void()>& func) noexcept;
+	void removeComboChangePositionListener(std::function<void()>& func) noexcept;
 
 private:
 	MyGuiComboBox(const MyGuiComboBox&) noexcept = delete;

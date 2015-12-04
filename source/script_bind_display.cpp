@@ -71,12 +71,6 @@ ScriptBindDisplay::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectMethod("Display", "string getWindowTitle() const", asMETHOD(ScriptBindDisplay, getWindowTitle), asCALL_THISCALL); assert(r >= 0);
 }
 
-void 
-ScriptBindDisplay::setRenderSystem(RenderSystemPtr renderer) noexcept
-{
-	_renderer = renderer;
-}
-
 void
 ScriptBindDisplay::setSwapInterval(int interval) noexcept
 {

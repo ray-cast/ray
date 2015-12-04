@@ -37,7 +37,6 @@
 #if defined(_BUILD_SCRIPT)
 #include <ray/script_features.h>
 #include <ray/script_system.h>
-#include <ray/script_component.h>
 
 _NAME_BEGIN
 
@@ -51,23 +50,12 @@ ScriptFeatures::~ScriptFeatures() noexcept
 	ScriptSystem::instance()->close();
 }
 
-GameComponentPtr
-ScriptFeatures::onSerialization(iarchive& reader) except
-{
-	auto component = reader.getString("name");
-	if (component == "script")
-		return instanceScript(reader);
-
-	return nullptr;
-}
-
 void
 ScriptFeatures::onActivate() except
 {
 	ScriptSystem::instance()->open();
 	ScriptSystem::instance()->setTimer(this->getGameServer()->getTimer());
 	ScriptSystem::instance()->setInput(this->getGameServer()->getFeature<InputFeature>()->getInput());
-	ScriptSystem::instance()->setRenderSystem(this->getGameServer()->getFeature<RenderFeature>()->getRenderSystem());
 	//ScriptSystem::instance()->setGuiSystem(_guiSystem);
 }
 
@@ -95,34 +83,6 @@ ScriptFeatures::onFrameEnd() noexcept
 	ScriptSystem::instance()->onFrameEnd();
 }
 
-GameComponentPtr
-ScriptFeatures::instanceScript(iarchive& reader) except
-{
-	if (reader.setToFirstChild())
-	{
-		auto script = std::make_shared<ScriptComponent>();
-
-		do
-		{
-			auto key = reader.getCurrentNodeName();
-			if (key == "attribute")
-			{
-				auto attributes = reader.getAttrs();
-				for (auto& it : attributes)
-				{
-					if (it == "name")
-					{
-						script->setName(reader.getString(it));
-					}
-				}
-			}
-		} while (reader.setToNextChild());
-
-		return script;
-	}
-
-	return nullptr;
-}
-
 _NAME_END
+
 #endif

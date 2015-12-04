@@ -37,7 +37,6 @@
 #ifndef _H_SCRIPT_TYPES_H_
 #define _H_SCRIPT_TYPES_H_
 
-#include <ray/game_controller.h>
 #include <ray/game_object.h>
 #include <ray/game_features.h>
 #include <ray/game_component.h>
@@ -51,8 +50,8 @@
 #include <ray/timer.h>
 #include <ray/mstream.h>
 
-#include <ray/input_features.h>
-#include <ray/render_features.h>
+#include <ray/input_feature.h>
+#include <ray/render_feature.h>
 
 #include <angelscript.h>
 #include <sstream>

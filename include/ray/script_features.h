@@ -56,11 +56,6 @@ private:
 	virtual void onFrame() noexcept;
 	virtual void onFrameEnd() noexcept;
 
-	virtual GameComponentPtr onSerialization(iarchive& reader) except;
-
-private:
-	GameComponentPtr instanceScript(iarchive& reader) except;
-
 private:
 
 	ScriptFeatures(const ScriptFeatures&) = delete;

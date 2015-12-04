@@ -137,12 +137,6 @@ ScriptSystem::setGameObject(GameObjectPtr object) noexcept
 }
 
 void
-ScriptSystem::setRenderSystem(RenderSystemPtr renderer) noexcept
-{
-	_bindDisplay->setRenderSystem(renderer);
-}
-
-void
 ScriptSystem::MessageCallback(const asSMessageInfo* msg, void* param)
 {
 	const char* type = "ERR ";

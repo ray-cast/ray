@@ -61,7 +61,6 @@ public:
 	void setTimer(TimerPtr timer) noexcept;
 	void setInput(InputPtr input) noexcept;
 	void setGameObject(GameObjectPtr object) noexcept;
-	void setRenderSystem(RenderSystemPtr renderer) noexcept;
 
 	bool exce(ScriptObjectPtr object, asIScriptFunction* func);
 

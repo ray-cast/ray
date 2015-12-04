@@ -505,6 +505,10 @@ SET(MYGUI_LIST
     ${SOURCE_PATH}/mygui_widget.cpp
     ${HEADER_PATH}/mygui_button.h
     ${SOURCE_PATH}/mygui_button.cpp
+    ${HEADER_PATH}/mygui_menu.h
+    ${SOURCE_PATH}/mygui_menu.cpp
+    ${HEADER_PATH}/mygui_menuitem.h
+    ${SOURCE_PATH}/mygui_menuitem.cpp
     ${HEADER_PATH}/mygui_textbox.h
     ${SOURCE_PATH}/mygui_textbox.cpp
     ${HEADER_PATH}/mygui_window.h
@@ -539,6 +543,10 @@ SET(GUI_LIST
     ${SOURCE_PATH}/gui_widget.cpp
     ${HEADER_PATH}/gui_button.h
     ${SOURCE_PATH}/gui_button.cpp
+    ${HEADER_PATH}/gui_menu.h
+    ${SOURCE_PATH}/gui_menu.cpp
+    ${HEADER_PATH}/gui_menuitem.h
+    ${SOURCE_PATH}/gui_menuitem.cpp
     ${HEADER_PATH}/gui_textbox.h
     ${SOURCE_PATH}/gui_textbox.cpp
     ${HEADER_PATH}/gui_window.h
@@ -620,6 +628,10 @@ SET(GUI_FEATURES_LIST
     ${SOURCE_PATH}/gui_editbox_component.cpp
     ${HEADER_PATH}/gui_button_component.h
     ${SOURCE_PATH}/gui_button_component.cpp
+    ${HEADER_PATH}/gui_menu_component.h
+    ${SOURCE_PATH}/gui_menu_component.cpp
+    ${HEADER_PATH}/gui_menuitem_component.h
+    ${SOURCE_PATH}/gui_menuitem_component.cpp
     ${HEADER_PATH}/gui_camera_component.h
     ${SOURCE_PATH}/gui_camera_component.cpp
     ${HEADER_PATH}/gui_widget_component.h

@@ -41,12 +41,21 @@
 _NAME_BEGIN
 
 __ImplementSubClass(MyGuiButtonImpl, MyGuiWidget, "MyGuiButtonImpl")
-__ImplementSubClass(MyGuiButtonControl, GuiButton, "MyGuiButtonControl")
+__ImplementSubClass(MyGuiButton, GuiButton, "MyGuiButton")
 
 MyGuiButtonImpl::MyGuiButtonImpl() noexcept
 	: _button(nullptr)
 	, _parent(nullptr)
+	, _destroy(true)
 {
+}
+
+MyGuiButtonImpl::MyGuiButtonImpl(MyGUI::Button* self, bool destroy) noexcept
+	: _button(self)
+	, _parent(nullptr)
+	, _destroy(destroy)
+{
+	_textbox = std::make_shared<MyGuiTextBox>(_button, false);
 }
 
 MyGuiButtonImpl::~MyGuiButtonImpl() noexcept
@@ -68,6 +77,19 @@ MyGuiButtonImpl::create() except
 	this->setWidget(_button);
 
 	return _button ? true : false;
+}
+
+void
+MyGuiButtonImpl::destroy() noexcept
+{
+	if (_destroy)
+	{
+		if (_button)
+		{
+			MyGUI::Gui::getInstance().destroyWidget(_button);
+			_button = nullptr;
+		}
+	}
 }
 
 GuiTextBoxPtr
@@ -125,59 +147,65 @@ MyGuiButtonImpl::setImageName(const std::string& name) noexcept
 	_button->setImageName(name);
 }
 
-MyGuiButtonControl::MyGuiButtonControl() noexcept
+MyGuiButton::MyGuiButton() noexcept
 	: GuiButton(_impl)
 {
 }
 
-MyGuiButtonControl::~MyGuiButtonControl() noexcept
+MyGuiButton::MyGuiButton(MyGUI::Button* self, bool destroy) noexcept
+	: GuiButton(_impl)
+	, _impl(self, destroy)
+{
+}
+
+MyGuiButton::~MyGuiButton() noexcept
 {
 }
 
 GuiTextBoxPtr
-MyGuiButtonControl::getGuiTextBox() const noexcept
+MyGuiButton::getGuiTextBox() const noexcept
 {
 	return _impl.getGuiTextBox();
 }
 
 void
-MyGuiButtonControl::setStateSelected(bool value) noexcept
+MyGuiButton::setStateSelected(bool value) noexcept
 {
 	_impl.setStateSelected(value);
 }
 
 bool
-MyGuiButtonControl::getStateSelected() const noexcept
+MyGuiButton::getStateSelected() const noexcept
 {
 	return _impl.getStateSelected();
 }
 
 void
-MyGuiButtonControl::setModeImage(bool value) noexcept
+MyGuiButton::setModeImage(bool value) noexcept
 {
 	_impl.setModeImage(value);
 }
 
 bool
-MyGuiButtonControl::getModeImage() const noexcept
+MyGuiButton::getModeImage() const noexcept
 {
 	return _impl.getModeImage();
 }
 
 void
-MyGuiButtonControl::setImageResource(const std::string& name) noexcept
+MyGuiButton::setImageResource(const std::string& name) noexcept
 {
 	_impl.setImageResource(name);
 }
 
 void
-MyGuiButtonControl::setImageGroup(const std::string& name) noexcept
+MyGuiButton::setImageGroup(const std::string& name) noexcept
 {
 	_impl.setImageGroup(name);
 }
 
 void
-MyGuiButtonControl::setImageName(const std::string& name) noexcept
+MyGuiButton::setImageName(const std::string& name) noexcept
 {
 	_impl.setImageName(name);
 }

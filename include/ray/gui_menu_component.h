@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,53 +34,66 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_WINDOW_COMPONENT_H_
-#define _H_GUI_WINDOW_COMPONENT_H_
+#ifndef _H_GUI_MENU_COMPONENT_H_
+#define _H_GUI_MENU_COMPONENT_H_
 
 #include <ray/gui_widget_component.h>
 
 _NAME_BEGIN
 
-class GuiWindowComponent final : public GuiWidgetComponent
+class GuiMenuComponent final : public GuiWidgetComponent
 {
-	__DeclareSubClass(GuiWindowComponent, GuiWidgetComponent)
+	__DeclareSubClass(GuiMenuComponent, GuiWidgetComponent)
 public:
-	GuiWindowComponent() noexcept;
-	~GuiWindowComponent() noexcept;
+	GuiMenuComponent() noexcept;
+	virtual ~GuiMenuComponent() noexcept;
 
-	void setVisibleSmooth(bool _value) noexcept;
-	void destroySmooth() noexcept;
+    void setVisibleSmooth(bool value) noexcept;
+    std::size_t getItemCount() const noexcept;
 
-	void setAutoAlpha(bool _value) noexcept;
-	bool getAutoAlpha() const noexcept;
+    void removeItemAt(std::size_t index) noexcept;
+    void removeAllItems() noexcept;
 
-	void setMinSize(int _width, int _height) noexcept;
-	void getMinSize(int& w, int& h) const noexcept;
+    void setItemDataAt(std::size_t index, const std::string& data) noexcept;
+    void clearItemDataAt(std::size_t index) noexcept;
+    void setItemIdAt(std::size_t index, const std::string& _id) noexcept;
+    std::string getItemIdAt(std::size_t index) noexcept;
 
-	void setMaxSize(int _width, int _height) noexcept;
-	void getMaxSize(int& w, int& h) const noexcept;
+    void setItemNameAt(std::size_t index, const std::string& name) noexcept;
+    std::string getItemNameAt(size_t index) noexcept;
 
-	void addWindowButtonPressListener(std::function<void()> func) noexcept;
-	void addWindowCoordChangeListener(std::function<void()> func) noexcept;
+    std::size_t findItemIndexWith(const std::string& name) noexcept;
+    void setItemChildVisibleAt(std::size_t index, bool visible) noexcept;
 
-	void removeWindowButtonPressListener(std::function<void()> func) noexcept;
-	void removeWindowCoordChangeListener(std::function<void()> func) noexcept;
+    void removeItemChildAt(std::size_t index) noexcept;
+
+    void setItemTypeAt(std::size_t index, GuiMenuItemType type) noexcept;
+    GuiMenuItemType getItemTypeAt(std::size_t index) noexcept;
+
+    void setPopupAccept(bool value) noexcept;
+    bool getPopupAccept() const noexcept;
+
+    void setVerticalAlignment(bool value) noexcept;
+    bool getVerticalAlignment() const noexcept;
+
+	void addMenuCtrlCloseListener(std::function<void()> func) noexcept;
+	void addMenuCtrlAcceptListener(std::function<void()> func) noexcept;
+
+	void removeMenuCtrlCloseListener(std::function<void()> func) noexcept;
+	void removeMenuCtrlAcceptListener(std::function<void()> func) noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
 
 	GameComponentPtr clone() const except;
 
-protected:
-	virtual void onAttach() except;
-	virtual void onDetach() except;
+private:
+	GuiMenuComponent(const GuiMenuComponent&) noexcept = delete;
+	GuiMenuComponent& operator=(const GuiMenuComponent&) noexcept = delete;
 
 private:
 
-	GuiWindowPtr _window;
-
-	GameComponentPtr _label;
-	GameObjectPtr _labelObject;
+	GuiMenuPtr _menu;
 };
 
 _NAME_END

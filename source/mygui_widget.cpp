@@ -452,7 +452,40 @@ MyGuiWidget::convert(MyGUI::FlowDirection flow) noexcept
 	default:
 		assert(false);
 		return GuiFlowDirection::LeftToRight;
-		break;
+	}
+}
+
+MyGUI::MenuItemType 
+MyGuiWidget::convert(GuiMenuItemType type) noexcept
+{
+	switch (type.getValue())
+	{
+	case GuiMenuItemType::Normal:
+		return MyGUI::MenuItemType::Normal;
+	case GuiMenuItemType::Popup:
+		return MyGUI::MenuItemType::Popup;
+	case GuiMenuItemType::Separator:
+		return MyGUI::MenuItemType::Separator;
+	default:
+		assert(false);
+		return MyGUI::MenuItemType::Normal;
+	}
+}
+
+GuiMenuItemType 
+MyGuiWidget::convert(MyGUI::MenuItemType type) noexcept
+{
+	switch (type.getValue())
+	{
+	case MyGUI::MenuItemType::Normal:
+		return GuiMenuItemType::Normal;
+	case MyGUI::MenuItemType::Popup:
+		return GuiMenuItemType::Popup;
+	case MyGUI::MenuItemType::Separator:
+		return GuiMenuItemType::Separator;
+	default:
+		assert(false);
+		return GuiMenuItemType::Normal;
 	}
 }
 

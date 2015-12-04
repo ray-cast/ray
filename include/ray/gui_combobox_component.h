@@ -83,11 +83,11 @@ public:
 	void setFlowDirection(GuiFlowDirection _value) noexcept;
 	GuiFlowDirection getFlowDirection() const noexcept;
 
-	void addComboAcceptListener(std::function<void()>& func) noexcept;
-	void addComboChangePositionListener(std::function<void()>& func) noexcept;
+	void addComboAcceptListener(std::function<void()> func) noexcept;
+	void addComboChangePositionListener(std::function<void()> func) noexcept;
 
-	void removeComboAcceptListener(std::function<void()>& func) noexcept;
-	void removeComboChangePositionListener(std::function<void()>& func) noexcept;
+	void removeComboAcceptListener(std::function<void()> func) noexcept;
+	void removeComboChangePositionListener(std::function<void()> func) noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;

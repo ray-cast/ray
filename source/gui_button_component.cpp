@@ -56,6 +56,16 @@ GuiButtonComponent::GuiButtonComponent() noexcept
 	this->setGuiWidget(_button);
 }
 
+GuiButtonComponent::GuiButtonComponent(GuiButtonPtr button) noexcept
+	:_button(button)
+{
+	_label = std::make_shared<GuiLabelComponent>(_button->getGuiTextBox());
+	_labelObject = std::make_shared<GameObject>();
+	_labelObject->addComponent(_label);
+
+	this->setGuiWidget(_button);
+}
+
 GuiButtonComponent::~GuiButtonComponent() noexcept
 {
 }

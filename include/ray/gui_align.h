@@ -300,6 +300,81 @@ inline std::istream& operator >> (std::istream& _stream, GuiFlowDirection&  othe
 	return _stream;
 }
 
+struct GuiMenuItemType
+{
+	enum Enum
+	{
+		Normal,
+		Popup,
+		Separator,
+		MAX
+	};
+
+	GuiMenuItemType(Enum value = MAX) 
+		: _value(value)
+	{
+	}
+
+	static GuiMenuItemType parse(const std::string& value)
+	{
+		GuiMenuItemType type;
+		int iType = 0;
+		for (;;)
+		{
+			const char* name = type.getValueName(iType);
+			if (strcmp(name, "") == 0 || name == value)
+				break;
+			iType++;
+		}
+		type._value = Enum(iType);
+		return type;
+	}
+
+	std::string print() const
+	{
+		return getValueName(_value);
+	}
+
+	int getValue() const
+	{
+		return _value;
+	}
+
+	const char* getValueName(int index) const
+	{
+		static const char* values[MAX + 1] = { "Normal", "Popup", "Separator", "" };
+		return values[(index < MAX && index >= 0) ? index : MAX];
+	}
+
+private:
+	Enum _value;
+};
+
+
+inline bool operator == (GuiMenuItemType const& a, GuiMenuItemType const& b)
+{
+	return a.getValue() == b.getValue();
+}
+
+inline bool operator != (GuiMenuItemType const& a, GuiMenuItemType const& b)
+{
+	return a.getValue() != b.getValue();
+}
+
+inline std::ostream& operator << (std::ostream& _stream, const GuiMenuItemType&  _value)
+{
+	_stream << _value.getValueName(_value.getValue());
+	return _stream;
+}
+
+inline std::istream& operator >> (std::istream& _stream, GuiMenuItemType&  _value)
+{
+	std::string value;
+	_stream >> value;
+	_value = GuiMenuItemType::parse(value);
+	return _stream;
+}
+
 _NAME_END
 
 #endif

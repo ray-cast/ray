@@ -205,14 +205,14 @@ GuiScrollBarComponent::getRepeatStepTime(float time) const noexcept
 }
 
 void
-GuiScrollBarComponent::addScrollPositionChange(std::function<void()>& func) noexcept
+GuiScrollBarComponent::addScrollPositionChange(std::function<void()> func) noexcept
 {
 	assert(_scrollBar);
 	_scrollBar->addScrollPositionChange(func);
 }
 
 void
-GuiScrollBarComponent::removeScrollPositionChange(std::function<void()>& func) noexcept
+GuiScrollBarComponent::removeScrollPositionChange(std::function<void()> func) noexcept
 {
 	assert(_scrollBar);
 	_scrollBar->removeScrollPositionChange(func);

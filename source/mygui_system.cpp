@@ -395,7 +395,7 @@ MyGuiSystem::createWidget(const rtti::Rtti* rtti) except
 
 	GuiWidgetPtr widget;
 	if (rtti == GuiButton::getRtti())
-		widget = std::make_shared<MyGuiButtonControl>();
+		widget = std::make_shared<MyGuiButton>();
 	else if (rtti == GuiWindow::getRtti())
 		widget = std::make_shared<MyGuiWindow>();
 	else if (rtti == GuiEditBox::getRtti())

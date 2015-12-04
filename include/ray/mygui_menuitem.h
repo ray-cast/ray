@@ -34,77 +34,91 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MYGUI_BUTTON_H_
-#define _H_MYGUI_BUTTON_H_
+#ifndef _H_MYGUI_MENUITEM_H_
+#define _H_MYGUI_MENUITEM_H_
 
 #include <ray/mygui_widget.h>
 
 _NAME_BEGIN
 
-class MyGuiButtonImpl final : public MyGuiWidget
+class MyGuiMenuItemImpl final : public MyGuiWidget
 {
-	__DeclareSubClass(MyGuiButtonImpl, MyGuiWidget)
+	__DeclareSubClass(MyGuiMenuItemImpl, MyGuiWidget)
 public:
-	MyGuiButtonImpl() noexcept;
-	MyGuiButtonImpl(MyGUI::Button* self, bool destroy = true) noexcept;
-	virtual ~MyGuiButtonImpl() noexcept;
+	MyGuiMenuItemImpl() noexcept;
+	virtual ~MyGuiMenuItemImpl() noexcept;
 
 	bool create() except;
-	void destroy() noexcept;
 
-	GuiTextBoxPtr getGuiTextBox() const noexcept;
+	GuiButtonPtr getGuiButton() const noexcept;
 
-	void setStateSelected(bool value) noexcept;
-	bool getStateSelected() const noexcept;
+	void setItemName(const std::string& value) noexcept;
+	std::string getItemName() noexcept;
 
-	void setModeImage(bool value) noexcept;
-	bool getModeImage() const noexcept;
+	void setItemData(const std::string& value) noexcept;
+	std::string* getItemData() const noexcept;
 
-	void setImageResource(const std::string& name) noexcept;
-	void setImageGroup(const std::string& name) noexcept;
-	void setImageName(const std::string& name) noexcept;
+	void removeItem() noexcept;
+	void setItemId(const std::string& value) noexcept;
+	const std::string& getItemId() noexcept;
+
+	std::size_t getItemIndex() noexcept;
+
+	void setItemType(GuiMenuItemType value) noexcept;
+	GuiMenuItemType getItemType() noexcept;
+
+	void setItemChildVisible(bool value) noexcept;
+
+	bool getItemChecked() const noexcept;
+	void setItemChecked(bool value) noexcept;
 
 private:
-	MyGuiButtonImpl(const MyGuiButtonImpl&) noexcept = delete;
-	MyGuiButtonImpl& operator=(const MyGuiButtonImpl&) noexcept = delete;
+	MyGuiMenuItemImpl(const MyGuiMenuItemImpl&) noexcept = delete;
+	MyGuiMenuItemImpl& operator=(const MyGuiMenuItemImpl&) noexcept = delete;
 
 private:
-
-	bool _destroy;
 
 	MyGUI::Widget* _parent;
-	MyGUI::Button* _button;
-
-	GuiTextBoxPtr _textbox;
+	MyGUI::MenuItem* _menuItem;
+	GuiButtonPtr _button;
 };
 
-class MyGuiButton final : public GuiButton
+class MyGuiMenuItem final : public GuiMenuItem
 {
-	__DeclareSubClass(MyGuiButton, GuiButton)
+	__DeclareSubClass(MyGuiMenuItem, GuiMenuItem)
 public:
-	MyGuiButton() noexcept;
-	MyGuiButton(MyGUI::Button* self, bool destroy = true) noexcept;
-	virtual ~MyGuiButton() noexcept;
+	MyGuiMenuItem() noexcept;
+	virtual ~MyGuiMenuItem() noexcept;
 
-	virtual GuiTextBoxPtr getGuiTextBox() const noexcept;
+	GuiButtonPtr getGuiButton() const noexcept;
 
-	virtual void setStateSelected(bool value) noexcept;
-	virtual bool getStateSelected() const noexcept;
+	void setItemName(const std::string& value) noexcept;
+	std::string getItemName() noexcept;
 
-	virtual void setModeImage(bool value) noexcept;
-	virtual bool getModeImage() const noexcept;
+	void setItemData(const std::string& value) noexcept;
+	std::string* getItemData() const noexcept;
 
-	virtual void setImageResource(const std::string& name) noexcept;
-	virtual void setImageGroup(const std::string& name) noexcept;
-	virtual void setImageName(const std::string& name) noexcept;
+	void removeItem() noexcept;
+	void setItemId(const std::string& value) noexcept;
+	const std::string& getItemId() noexcept;
+
+	std::size_t getItemIndex() noexcept;
+
+	void setItemType(GuiMenuItemType value) noexcept;
+	GuiMenuItemType getItemType() noexcept;
+
+	void setItemChildVisible(bool value) noexcept;
+
+	bool getItemChecked() const noexcept;
+	void setItemChecked(bool value) noexcept;
 
 private:
-	MyGuiButton(const MyGuiButton&) noexcept = delete;
-	MyGuiButton& operator=(const MyGuiButton&) noexcept = delete;
+	MyGuiMenuItem(const MyGuiMenuItem&) noexcept = delete;
+	MyGuiMenuItem& operator=(const MyGuiMenuItem&) noexcept = delete;
 
 private:
 
-	MyGuiButtonImpl _impl;
+	MyGuiMenuItemImpl _impl;
 };
 
 _NAME_END

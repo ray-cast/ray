@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,55 +34,19 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GUI_WINDOW_COMPONENT_H_
-#define _H_GUI_WINDOW_COMPONENT_H_
-
-#include <ray/gui_widget_component.h>
+#include <ray/gui_menu.h>
 
 _NAME_BEGIN
 
-class GuiWindowComponent final : public GuiWidgetComponent
+__ImplementSubInterface(GuiMenu, GuiWidget, "GuiMenuControl")
+
+GuiMenu::GuiMenu(GuiWidgetImpl& impl) noexcept
+	: GuiWidget(impl)
 {
-	__DeclareSubClass(GuiWindowComponent, GuiWidgetComponent)
-public:
-	GuiWindowComponent() noexcept;
-	~GuiWindowComponent() noexcept;
+}
 
-	void setVisibleSmooth(bool _value) noexcept;
-	void destroySmooth() noexcept;
-
-	void setAutoAlpha(bool _value) noexcept;
-	bool getAutoAlpha() const noexcept;
-
-	void setMinSize(int _width, int _height) noexcept;
-	void getMinSize(int& w, int& h) const noexcept;
-
-	void setMaxSize(int _width, int _height) noexcept;
-	void getMaxSize(int& w, int& h) const noexcept;
-
-	void addWindowButtonPressListener(std::function<void()> func) noexcept;
-	void addWindowCoordChangeListener(std::function<void()> func) noexcept;
-
-	void removeWindowButtonPressListener(std::function<void()> func) noexcept;
-	void removeWindowCoordChangeListener(std::function<void()> func) noexcept;
-
-	void load(iarchive& reader) noexcept;
-	void save(oarchive& write) noexcept;
-
-	GameComponentPtr clone() const except;
-
-protected:
-	virtual void onAttach() except;
-	virtual void onDetach() except;
-
-private:
-
-	GuiWindowPtr _window;
-
-	GameComponentPtr _label;
-	GameObjectPtr _labelObject;
-};
+GuiMenu::~GuiMenu() noexcept
+{
+}
 
 _NAME_END
-
-#endif

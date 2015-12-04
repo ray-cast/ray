@@ -46,6 +46,7 @@ class GuiButtonComponent final : public GuiWidgetComponent
 	__DeclareSubClass(GuiButtonComponent, GuiWidgetComponent)
 public:
 	GuiButtonComponent() noexcept;
+	GuiButtonComponent(GuiButtonPtr button) noexcept;
 	virtual ~GuiButtonComponent() noexcept;
 
 	void setStateSelected(bool value) noexcept;

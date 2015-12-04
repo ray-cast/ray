@@ -117,28 +117,28 @@ GuiWindowComponent::getMaxSize(int& w, int& h) const noexcept
 }
 
 void
-GuiWindowComponent::addWindowButtonPressListener(std::function<void()>& func) noexcept
+GuiWindowComponent::addWindowButtonPressListener(std::function<void()> func) noexcept
 {
 	assert(_window);
 	_window->addWindowButtonPressListener(func);
 }
 
 void
-GuiWindowComponent::addWindowCoordChangeListener(std::function<void()>& func) noexcept
+GuiWindowComponent::addWindowCoordChangeListener(std::function<void()> func) noexcept
 {
 	assert(_window);
 	_window->addWindowCoordChangeListener(func);
 }
 
 void
-GuiWindowComponent::removeWindowButtonPressListener(std::function<void()>& func) noexcept
+GuiWindowComponent::removeWindowButtonPressListener(std::function<void()> func) noexcept
 {
 	assert(_window);
 	_window->removeWindowButtonPressListener(func);
 }
 
 void
-GuiWindowComponent::removeWindowCoordChangeListener(std::function<void()>& func) noexcept
+GuiWindowComponent::removeWindowCoordChangeListener(std::function<void()> func) noexcept
 {
 	assert(_window);
 	_window->removeWindowCoordChangeListener(func);

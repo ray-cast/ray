@@ -194,61 +194,61 @@ GuiListBoxComponent::setActivateOnClick(bool activateOnClick) noexcept
 }
 
 void
-GuiListBoxComponent::addListSelectAcceptListener(std::function<void()>& func) noexcept
+GuiListBoxComponent::addListSelectAcceptListener(std::function<void()> func) noexcept
 {
     _listBox->addListSelectAcceptListener(func);
 }
 
 void
-GuiListBoxComponent::addListChangePositionListener(std::function<void()>& func) noexcept
+GuiListBoxComponent::addListChangePositionListener(std::function<void()> func) noexcept
 {
     _listBox->addListChangePositionListener(func);
 }
 
 void
-GuiListBoxComponent::addListMouseItemActivateListener(std::function<void()>& func) noexcept
+GuiListBoxComponent::addListMouseItemActivateListener(std::function<void()> func) noexcept
 {
     _listBox->addListMouseItemActivateListener(func);
 }
 
 void
-GuiListBoxComponent::addListMouseItemFocusListener(std::function<void()>& func) noexcept
+GuiListBoxComponent::addListMouseItemFocusListener(std::function<void()> func) noexcept
 {
     _listBox->addListMouseItemFocusListener(func);
 }
 
 void
-GuiListBoxComponent::addListChangeScrollListener(std::function<void()>& func) noexcept
+GuiListBoxComponent::addListChangeScrollListener(std::function<void()> func) noexcept
 {
     _listBox->addListChangeScrollListener(func);
 }
 
 void
-GuiListBoxComponent::removeListSelectAcceptListener(std::function<void()>& func) noexcept
+GuiListBoxComponent::removeListSelectAcceptListener(std::function<void()> func) noexcept
 {
     _listBox->removeListSelectAcceptListener(func);
 }
 
 void
-GuiListBoxComponent::removeListChangePositionListener(std::function<void()>& func) noexcept
+GuiListBoxComponent::removeListChangePositionListener(std::function<void()> func) noexcept
 {
     _listBox->removeListChangePositionListener(func);
 }
 
 void
-GuiListBoxComponent::removeListMouseItemActivateListener(std::function<void()>& func) noexcept
+GuiListBoxComponent::removeListMouseItemActivateListener(std::function<void()> func) noexcept
 {
     _listBox->removeListMouseItemActivateListener(func);
 }
 
 void
-GuiListBoxComponent::removeListMouseItemFocusListener(std::function<void()>& func) noexcept
+GuiListBoxComponent::removeListMouseItemFocusListener(std::function<void()> func) noexcept
 {
     _listBox->removeListMouseItemFocusListener(func);
 }
 
 void
-GuiListBoxComponent::removeListChangeScrollListener(std::function<void()>& func) noexcept
+GuiListBoxComponent::removeListChangeScrollListener(std::function<void()> func) noexcept
 {
     _listBox->removeListChangeScrollListener(func);
 }

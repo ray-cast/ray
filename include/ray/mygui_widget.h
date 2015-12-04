@@ -167,6 +167,9 @@ protected:
 	static MyGUI::FlowDirection convert(GuiFlowDirection flow) noexcept;
 	static GuiFlowDirection convert(MyGUI::FlowDirection flow) noexcept;
 
+	static MyGUI::MenuItemType convert(GuiMenuItemType type) noexcept;
+	static GuiMenuItemType convert(MyGUI::MenuItemType type) noexcept;
+
 	static MyGUI::Align GuiAlignToMyGui(GuiWidgetAlign align) noexcept;
 	static GuiWidgetAlign MyGuiToGuiAlign(MyGUI::Align align) noexcept;
 

@@ -49,6 +49,8 @@ typedef std::shared_ptr<class GuiImageLoader> GuiImageLoaderPtr;
 typedef std::shared_ptr<class GuiWidget> GuiWidgetPtr;
 typedef std::shared_ptr<class GuiWindow> GuiWindowPtr;
 typedef std::shared_ptr<class GuiButton> GuiButtonPtr;
+typedef std::shared_ptr<class GuiMenu> GuiMenuPtr;
+typedef std::shared_ptr<class GuiMenuItem> GuiMenuItemPtr;
 typedef std::shared_ptr<class GuiListBox> GuiListBoxPtr;
 typedef std::shared_ptr<class GuiComboBox> GuiComboBoxPtr;
 typedef std::shared_ptr<class GuiEditBox> GuiEditBoxPtr;

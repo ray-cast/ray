@@ -333,25 +333,25 @@ GuiEditBoxComponent::setHScrollPosition(std::size_t index)
 }
 
 void 
-GuiEditBoxComponent::addTextChangeListener(std::function<void()>& func) noexcept
+GuiEditBoxComponent::addTextChangeListener(std::function<void()> func) noexcept
 {
 	_editBox->addTextChangeListener(func);
 }
 
 void 
-GuiEditBoxComponent::removeTextChangeListener(std::function<void()>& func) noexcept
+GuiEditBoxComponent::removeTextChangeListener(std::function<void()> func) noexcept
 {
 	_editBox->removeTextChangeListener(func);
 }
 
 void 
-GuiEditBoxComponent::addSelectAccept(std::function<void()>& func) noexcept
+GuiEditBoxComponent::addSelectAccept(std::function<void()> func) noexcept
 {
 	_editBox->addSelectAccept(func);
 }
 
 void 
-GuiEditBoxComponent::removeSelectAccept(std::function<void()>& func) noexcept
+GuiEditBoxComponent::removeSelectAccept(std::function<void()> func) noexcept
 {
 	_editBox->removeSelectAccept(func);
 }

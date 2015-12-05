@@ -34,40 +34,53 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_AL_SOUND_BUFFER_H_
-#define _H_AL_SOUND_BUFFER_H_
+#ifndef _H_AL_SOUND_DEVICE_H_
+#define _H_AL_SOUND_DEVICE_H_
 
-#include <ray/sound_buffer.h>
+#include <ray/sound_device.h>
 #include <al.h>
 #include <alc.h>
+#include <vorbisfile.h>
 
 _NAME_BEGIN
 
-class EXPORT ALSoundBuffer : public SoundBuffer
+class EXPORT ALSoundDevice : public SoundDevice
 {
 public:
-    ALSoundBuffer() noexcept;
-    virtual ~ALSoundBuffer() noexcept;
+    ALSoundDevice() noexcept;
+    virtual ~ALSoundDevice() noexcept;
 
     virtual bool open();
     virtual void close() noexcept;
 
     virtual bool isOpen() const noexcept;
 
-    virtual void setBuffer(void* buff);
-    virtual const void* getBuffer() const noexcept;
+	virtual SoundBufferPtr createSoundBuffer();
+	virtual SoundSourcePtr createSoundSource();
 
-    virtual void readtBufferData(void* dest, size_t size) const;
-    virtual void writeBufferData(const void* src, size_t size);
-
-    virtual void setBufferType(const SoundFormat type) noexcept;
-    virtual void setBufferFrequency(const SoundFrequency freq) noexcept;
+    virtual SoundBufferPtr load(const std::string& filename);
+    virtual SoundBufferPtr load(MemoryReader& reader);
 
 private:
-    std::vector<char>           _data;
-    SoundFormat           _soundType;
-    SoundFrequency        _soundFreqency;
-    ALuint                      _buffer;
+    SoundBufferPtr LoadFile(OggVorbis_File* file);
+
+public:
+    static ov_callbacks OV_CALLBACKS_IOSERVER;
+    static ov_callbacks OV_CALLBACKS_MEMORYSTREAM;
+
+    static size_t _ioserverRead(void*, size_t, size_t, void*);
+    static int _ioserverSeek(void*, ogg_int64_t, int);
+    static int _ioserverClose(void *data);
+    static long _ioserverTell(void *data);
+
+    static size_t _memoryStreamRead(void*, size_t, size_t, void*);
+    static int _memoryStreamSeek(void*, ogg_int64_t, int);
+    static int _memoryStreamClose(void *data);
+    static long _memoryStreamTell(void *data);
+
+private:
+    ALCdevice*      _device;
+    ALCcontext*     _context;
 };
 
 _NAME_END

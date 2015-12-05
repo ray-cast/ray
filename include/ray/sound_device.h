@@ -34,20 +34,29 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_SOUND_SYSTEM_H_
-#define _H_SOUND_SYSTEM_H_
+#ifndef _H_SOUND_DEVICE_H_
+#define _H_SOUND_DEVICE_H_
 
-#include <ray/platform.h>
+#include <ray/sound_types.h>
 
 _NAME_BEGIN
 
 class EXPORT SoundDevice
 {
 public:
-    SoundDevice() noexcept;
+	SoundDevice() noexcept;
     virtual ~SoundDevice() noexcept;
 
-    virtual void update() noexcept;
+    virtual bool open() = 0;
+    virtual void close() noexcept = 0;
+
+    virtual bool isOpen() const noexcept = 0;
+	
+	virtual SoundBufferPtr createSoundBuffer() = 0;
+	virtual SoundSourcePtr createSoundSource() = 0;
+
+    virtual SoundBufferPtr load(const std::string& filename) = 0;
+    virtual SoundBufferPtr load(MemoryReader& reader) = 0;
 };
 
 _NAME_END

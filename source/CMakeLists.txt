@@ -472,19 +472,21 @@ SOURCE_GROUP("network" FILES ${NETWORK_LIST})
 
 SET(SOUND_SYSTEM_LIST
     ${SOURCE_PATH}/al_sound_buffer.cpp
-    ${SOURCE_PATH}/al_sound_system.cpp
-	${SOURCE_PATH}/al_sound_source.cpp
-    ${SOURCE_PATH}/sound_buffer.cpp
-    ${SOURCE_PATH}/sound_system.cpp
-	${SOURCE_PATH}/sound_source.cpp
-	${SOURCE_PATH}/sound_factory.cpp
     ${HEADER_PATH}/al_sound_buffer.h
-    ${HEADER_PATH}/al_sound_system.h
-	${HEADER_PATH}/al_sound_source.h
+    ${SOURCE_PATH}/al_sound_device.cpp
+    ${HEADER_PATH}/al_sound_device.h
+    ${HEADER_PATH}/al_sound_source.h
+    ${SOURCE_PATH}/al_sound_source.cpp
+    ${SOURCE_PATH}/sound_buffer.cpp
     ${HEADER_PATH}/sound_buffer.h
-	${HEADER_PATH}/sound_factory.h
+    ${SOURCE_PATH}/sound_listener.cpp
+    ${HEADER_PATH}/sound_listener.h
+    ${HEADER_PATH}/sound_device.h
+    ${SOURCE_PATH}/sound_device.cpp
     ${HEADER_PATH}/sound_system.h
-	${HEADER_PATH}/sound_source.h
+    ${SOURCE_PATH}/sound_system.cpp
+    ${HEADER_PATH}/sound_source.h
+    ${SOURCE_PATH}/sound_source.cpp
     ${HEADER_PATH}/sound_types.h
 )
 SOURCE_GROUP("sound" FILES ${SOUND_SYSTEM_LIST})

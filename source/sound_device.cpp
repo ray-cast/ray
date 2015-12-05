@@ -46,9 +46,4 @@ SoundDevice::~SoundDevice() noexcept
 {
 }
 
-void
-SoundDevice::update() noexcept
-{
-}
-
 _NAME_END

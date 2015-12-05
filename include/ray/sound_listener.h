@@ -34,42 +34,20 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_AL_SOUND_BUFFER_H_
-#define _H_AL_SOUND_BUFFER_H_
+#ifndef _H_SOUND_LISTENER_H_
+#define _H_SOUND_LISTENER_H_
 
-#include <ray/sound_buffer.h>
-#include <al.h>
-#include <alc.h>
+#include <ray/sound_types.h>
 
 _NAME_BEGIN
 
-class EXPORT ALSoundBuffer : public SoundBuffer
+class SoundListener
 {
 public:
-    ALSoundBuffer() noexcept;
-    virtual ~ALSoundBuffer() noexcept;
-
-    virtual bool open();
-    virtual void close() noexcept;
-
-    virtual bool isOpen() const noexcept;
-
-    virtual void setBuffer(void* buff);
-    virtual const void* getBuffer() const noexcept;
-
-    virtual void readtBufferData(void* dest, size_t size) const;
-    virtual void writeBufferData(const void* src, size_t size);
-
-    virtual void setBufferType(const SoundFormat type) noexcept;
-    virtual void setBufferFrequency(const SoundFrequency freq) noexcept;
-
-private:
-    std::vector<char>           _data;
-    SoundFormat           _soundType;
-    SoundFrequency        _soundFreqency;
-    ALuint                      _buffer;
+	SoundListener() noexcept;
+	~SoundListener() noexcept;
 };
 
 _NAME_END
 
-#endif 
+#endif

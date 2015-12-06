@@ -163,25 +163,25 @@ DDSHandler::doLoad(Image& image, istream& stream) noexcept
 			switch (info.format.fourcc)
 			{
 			case DDS_FOURCC_DXT1:
-				image.setImageType(Image::dds1);
+				image.setImageType(ImageType::dds1);
 				break;
 			case DDS_FOURCC_DXT3:
-				image.setImageType(Image::dds3);
+				image.setImageType(ImageType::dds3);
 				break;
 			case DDS_FOURCC_DXT5:
-				image.setImageType(Image::dds5);
+				image.setImageType(ImageType::dds5);
 				break;
 			case DDS_FOURCC_BC4U:
-				image.setImageType(Image::bc4u);
+				image.setImageType(ImageType::bc4u);
 				break;
 			case DDS_FOURCC_BC4S:
-				image.setImageType(Image::bc4s);
+				image.setImageType(ImageType::bc4s);
 				break;
 			case DDS_FOURCC_BC5S:
-				image.setImageType(Image::bc5s);
+				image.setImageType(ImageType::bc5s);
 				break;
 			case DDS_FOURCC_ATI2:
-				image.setImageType(Image::ati2);
+				image.setImageType(ImageType::ati2);
 				break;
 			default:
 				assert(false);

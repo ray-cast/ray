@@ -46,13 +46,10 @@ _NAME_BEGIN
 class EXPORT Image final : public ImageBase
 {
 public:
-    typedef std::shared_ptr<ImageHandler> _Myhandler;
-
-public:
     Image() noexcept;
     Image(size_type width, size_type height, bpp_type bpp, bool clear = false) noexcept;
     Image(size_type width, size_type height, bpp_type bpp, std::size_t dataSize, image_buf data, bool static_data = false, bool clear = false) noexcept;
-    Image(istream& stream, image_type type = unknown) noexcept;
+    Image(istream& stream, ImageType type = ImageType::unknown) noexcept;
     ~Image() noexcept;
 
     bool create(size_type width, size_type height, bpp_type bpp, bool clear = false) noexcept;
@@ -70,8 +67,8 @@ public:
     bpp_type  bpp()    const noexcept { return _bpp; }
     bool      empty()  const noexcept { return _data == nullptr; }
 
-	void setImageType(image_type type) noexcept;
-	image_type  getImageType() const noexcept;
+	void setImageType(ImageType type) noexcept;
+	ImageType getImageType() const noexcept;
 
 	// for dds
 	void setMipLevel(std::uint8_t level) noexcept;
@@ -109,16 +106,16 @@ public:
 
 public:
 
-	bool load(const std::string& filename, image_type type = unknown) noexcept;
-    bool load(istream& stream, image_type type = unknown) noexcept;
-    bool save(ostream& stream, image_type type = png) noexcept;
+	bool load(const std::string& filename, ImageType type = ImageType::unknown) noexcept;
+    bool load(istream& stream, ImageType type = ImageType::unknown) noexcept;
+    bool save(ostream& stream, ImageType type = ImageType::png) noexcept;
 
     bool emptyHandler() const noexcept;
-    bool add(_Myhandler handler) noexcept;
-    bool remove(_Myhandler handler) noexcept;
-    bool find(istream& stream, _Myhandler& handler) const noexcept;
-    bool find(image_type type, _Myhandler& handler) const noexcept;
-    bool find(istream& stream, image_type type, _Myhandler& handler) const noexcept;
+    bool add(ImageHandlerPtr handler) noexcept;
+    bool remove(ImageHandlerPtr handler) noexcept;
+    bool find(istream& stream, ImageHandlerPtr& handler) const noexcept;
+    bool find(ImageType type, ImageHandlerPtr& handler) const noexcept;
+    bool find(istream& stream, ImageType type, ImageHandlerPtr& handler) const noexcept;
 
 public:
     static void cmyk_to_rgb(image_buf rgb, const image_buf cmyk) noexcept;
@@ -140,7 +137,7 @@ private:
 
 private:
 
-	image_type _imageType;
+	ImageType _imageType;
 
 	bool _isStatic;
 	bool _hasMask;
@@ -155,7 +152,7 @@ private:
 
 	std::uint8_t _mipLevel;
 
-    std::vector<_Myhandler> _handlers;
+    std::vector<ImageHandlerPtr> _handlers;
 };
 
 _NAME_END

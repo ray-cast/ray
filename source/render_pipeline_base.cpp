@@ -420,13 +420,13 @@ RenderPipeline::createTexture(const std::string& name) except
 	{
 		TextureFormat format = TextureFormat::R8G8B8A8;
 
-		if (image.getImageType() == Image::dds1)
+		if (image.getImageType() == ImageType::dds1)
 			format = TextureFormat::RGBA_DXT1;
-		else if (image.getImageType() == Image::dds3)
+		else if (image.getImageType() == ImageType::dds3)
 			format = TextureFormat::RGBA_DXT3;
-		else if (image.getImageType() == Image::dds5)
+		else if (image.getImageType() == ImageType::dds5)
 			format = TextureFormat::RGBA_DXT5;
-		else if (image.getImageType() == Image::ati2)
+		else if (image.getImageType() == ImageType::ati2)
 			format = TextureFormat::RG_ATI2;
 		else
 		{

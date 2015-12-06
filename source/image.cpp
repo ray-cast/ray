@@ -46,7 +46,7 @@ Image::Image() noexcept
 	this->_init();
 }
 
-Image::Image(istream& stream, image_type type) noexcept
+Image::Image(istream& stream, ImageType type) noexcept
 {
 	this->_init();
     this->load(stream, type);
@@ -83,7 +83,7 @@ Image::create(size_type width, size_type height, bpp_type bpp, bool clear) noexc
 	_isStatic = false;
 	_data = new pass_val[destLength];
 
-	this->setImageType(Image::unknown);
+	this->setImageType(ImageType::unknown);
 
 	if (clear) this->clear();
 
@@ -104,7 +104,7 @@ Image::create(size_type width, size_type height, bpp_type bpp, std::size_t dataS
 	_size = dataSize;
 	_isStatic = staticData;
 
-	this->setImageType(Image::unknown);
+	this->setImageType(ImageType::unknown);
 
 	if (clear) this->clear();
 
@@ -135,12 +135,12 @@ Image::destroy() noexcept
 }
 
 void
-Image::setImageType(image_type type) noexcept
+Image::setImageType(ImageType type) noexcept
 {
 	_imageType = type;
 }
 
-Image::image_type
+ImageType
 Image::getImageType() const noexcept
 {
 	return _imageType;
@@ -176,12 +176,12 @@ Image::setPalette(PaletteData* pal) noexcept
 }
 
 bool
-Image::load(istream& stream, image_type type) noexcept
+Image::load(istream& stream, ImageType type) noexcept
 {
     if (emptyHandler())
         GetImageInstanceList(*this);
 
-    _Myhandler impl;
+    ImageHandlerPtr impl;
 
 	this->setImageType(type);
 
@@ -197,7 +197,7 @@ Image::load(istream& stream, image_type type) noexcept
 }
 
 bool 
-Image::load(const std::string& filename, image_type type) noexcept
+Image::load(const std::string& filename, ImageType type) noexcept
 {
 	MemoryStream stream;
 	if (IoServer::instance()->openFile(filename, stream))
@@ -206,11 +206,11 @@ Image::load(const std::string& filename, image_type type) noexcept
 }
 
 bool
-Image::save(ostream& stream, image_type type) noexcept
+Image::save(ostream& stream, ImageType type) noexcept
 {
     if (stream.good())
     {
-        _Myhandler impl;
+        ImageHandlerPtr impl;
         if (this->find(type, impl))
         {
             if (!impl->doSave(*this, stream))
@@ -230,7 +230,7 @@ Image::emptyHandler() const noexcept
 }
 
 bool
-Image::add(_Myhandler handler) noexcept
+Image::add(ImageHandlerPtr handler) noexcept
 {
 	assert(handler);
 	auto it = std::find(_handlers.begin(), _handlers.end(), handler);
@@ -244,7 +244,7 @@ Image::add(_Myhandler handler) noexcept
 }
 
 bool
-Image::remove(_Myhandler handler) noexcept
+Image::remove(ImageHandlerPtr handler) noexcept
 {
 	assert(handler);
 	auto it = std::find(_handlers.begin(), _handlers.end(), handler);
@@ -258,7 +258,7 @@ Image::remove(_Myhandler handler) noexcept
 }
 
 bool
-Image::find(istream& stream, _Myhandler& out) const noexcept
+Image::find(istream& stream, ImageHandlerPtr& out) const noexcept
 {
     if (stream.is_open())
     {
@@ -280,9 +280,9 @@ Image::find(istream& stream, _Myhandler& out) const noexcept
 }
 
 bool
-Image::find(image_type type, _Myhandler& out) const noexcept
+Image::find(ImageType type, ImageHandlerPtr& out) const noexcept
 {
-    std::size_t index = (std::size_t)type;
+    std::size_t index = (std::size_t)type.getValue();
     if (_handlers.size() < index)
     {
         out = _handlers[index];
@@ -293,9 +293,9 @@ Image::find(image_type type, _Myhandler& out) const noexcept
 }
 
 bool
-Image::find(istream& stream, image_type type, _Myhandler& out) const noexcept
+Image::find(istream& stream, ImageType type, ImageHandlerPtr& out) const noexcept
 {
-    if (type != Image::unknown)
+    if (type != ImageType::unknown)
     {
         if (this->find(type, out))
         {

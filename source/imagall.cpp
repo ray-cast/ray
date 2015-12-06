@@ -34,7 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/imagcfg.h>
+#include <ray/imagall.h>
+#include <ray/image.h>
 
 #if _BUILD_BMP_HANDLER
 #include <ray/imagbmp.h>

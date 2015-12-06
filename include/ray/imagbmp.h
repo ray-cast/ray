@@ -145,9 +145,12 @@ struct BITMAPINFO
 
 typedef RGB BMPPalette;
 
-class BMPHandler : public ImageHandler
+class BMPHandler final : public ImageHandler
 {
-private:
+public:
+	BMPHandler() noexcept;
+	virtual ~BMPHandler() noexcept;
+
 	bool doCanRead(istream& stream) const noexcept;
 	bool doLoad(Image& image, istream& stream) except;
 	bool doSave(Image& image, ostream& stream) except;

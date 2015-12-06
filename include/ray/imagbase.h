@@ -41,34 +41,12 @@
 
 _NAME_BEGIN
 
+typedef std::shared_ptr<class ImageHandler> ImageHandlerPtr;
+
 class EXPORT ImageBase
 {
 public:
-    enum _ImageType {};
-    static const _ImageType unknown = (_ImageType)UNKNOWN_HANDLER;
-#if _BUILD_BMP_HANDLER
-    static const _ImageType bmp = (_ImageType)BMP_HANDLER;
-#endif
-#if _BUILD_JPEG_HANDLER
-    static const _ImageType jpeg = (_ImageType)JPEG_HANDLER;
-#endif
-#if _BUILD_PNG_HANDLER
-    static const _ImageType png = (_ImageType)PNG_HANDLER;
-#endif
-#if _BUILD_TGA_HANDLER
-    static const _ImageType tga = (_ImageType)TGA_HANDLER;
-#endif
-#if _BUILD_DDS_HANDLER
-	static const _ImageType dds1 = (_ImageType)DDS1_HANDLER;
-	static const _ImageType dds3 = (_ImageType)DDS3_HANDLER;
-	static const _ImageType dds5 = (_ImageType)DDS5_HANDLER;
-	static const _ImageType bc4u = (_ImageType)BC4U_HANDLER;
-	static const _ImageType bc4s = (_ImageType)BC4S_HANDLER;
-	static const _ImageType bc5s = (_ImageType)BC5S_HANDLER;
-	static const _ImageType ati2 = (_ImageType)ATI2_HANDLER;
-#endif
     typedef unsigned int color_type;
-    typedef unsigned int image_type;
 
     typedef std::uint8_t pass_val;
     typedef std::uint8_t* image_buf;
@@ -78,13 +56,80 @@ public:
     typedef std::uint32_t flag_type;
     typedef std::uint32_t delay_type;
 
-protected:
     ImageBase() noexcept {}
 
 private:
-    ImageBase(const ImageBase&);
-    const ImageBase& operator=(const ImageBase&);
+    ImageBase(const ImageBase&) noexcept = delete;
+    const ImageBase& operator=(const ImageBase&) noexcept = delete;
 };
+
+class ImageType
+{
+public:
+	enum Type
+	{
+		unknown = UNKNOWN_HANDLER,
+#if _BUILD_BMP_HANDLER
+		bmp = BMP_HANDLER,
+#endif
+#if _BUILD_JPEG_HANDLER
+		jpeg = JPEG_HANDLER,
+#endif
+#if _BUILD_PNG_HANDLER
+		png = PNG_HANDLER,
+#endif
+#if _BUILD_TGA_HANDLER
+		tga = TGA_HANDLER,
+#endif
+#if _BUILD_DDS_HANDLER
+		dds1 = DDS1_HANDLER,
+		dds3 = DDS3_HANDLER,
+		dds5 = DDS5_HANDLER,
+		bc4u = BC4U_HANDLER,
+		bc4s = BC4S_HANDLER,
+		bc5s = BC5S_HANDLER,
+		ati2 = ATI2_HANDLER
+#endif
+	};
+
+	ImageType()
+		: _value(ImageType::unknown)
+	{
+	}
+
+	ImageType(Type value)
+		: _value(value)
+	{
+	}
+
+	Type getValue() const noexcept
+	{
+		return _value;
+	}
+
+private:
+	Type _value;
+};
+
+inline bool operator==(const ImageType& a, const ImageType& b) noexcept
+{
+	return a.getValue() == b.getValue();
+}
+
+inline bool operator!=(const ImageType& a, const ImageType& b) noexcept
+{
+	return a.getValue() != b.getValue();
+}
+
+inline bool operator==(const ImageType& a, ImageType::Type b) noexcept
+{
+	return a.getValue() == b;
+}
+
+inline bool operator!=(const ImageType& a, ImageType::Type b) noexcept
+{
+	return a.getValue() != b;
+}
 
 _NAME_END
 

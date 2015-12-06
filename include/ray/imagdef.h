@@ -37,9 +37,16 @@
 #ifndef _H_IMAGDEF_H_
 #define _H_IMAGDEF_H_
 
-#include <ray/imagcfg.h>
+#include <ray/iostream.h>
+#include <ray/except.h>
 
 _NAME_BEGIN
+
+#define _BUILD_BMP_HANDLER   1
+#define _BUILD_DDS_HANDLER   1
+#define _BUILD_JPEG_HANDLER  1
+#define _BUILD_PNG_HANDLER   1
+#define _BUILD_TGA_HANDLER   1
 
 enum
 {

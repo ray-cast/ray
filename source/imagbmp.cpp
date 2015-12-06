@@ -38,6 +38,14 @@
 
 _NAME_BEGIN
 
+BMPHandler::BMPHandler() noexcept
+{
+}
+
+BMPHandler::~BMPHandler() noexcept
+{
+}
+
 bool
 BMPHandler::doCanRead(istream& stream) const noexcept
 {
@@ -85,7 +93,6 @@ BMPHandler::doLoad(Image& image, istream& stream) except
 			info.info.comp == BI_BITFIELDS && info.info.bpp != 16 && info.info.bpp != 32)
 		{
 			throw ray::failure("Encoding doesn't match bitdepth.");
-			return false;
 		}
 
 		return this->decode(image, stream, info);

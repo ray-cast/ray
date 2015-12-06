@@ -34,57 +34,59 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_AL_SOUND_SOURCE_H_
-#define _H_AL_SOUND_SOURCE_H_
+#ifndef _H_SOUND_PROPERTY_H_
+#define _H_SOUND_PROPERTY_H_
 
-#include <ray/sound_source.h>
-#include <al.h>
-#include <alc.h>
+#include <ray/sound_types.h>
 
 _NAME_BEGIN
 
-class EXPORT ALSoundSource : public SoundSource
+struct SoundParam
+{
+	std::string key;
+
+	std::size_t type;
+	std::size_t index;
+	std::size_t length;
+	std::size_t dataType;
+
+	char* data;
+};
+
+enum SoundPropertyTypeInfo
+{
+	SPTI_FLOAT = 0x01,
+	SPTI_STRING = 0x02,
+	SPTI_INTEGER = 0x04,
+	SPTI_BUFFER = 0x08,
+};
+
+class EXPORT SoundProperty
 {
 public:
-    ALSoundSource() noexcept;
-    virtual ~ALSoundSource() noexcept;
+	SoundProperty() noexcept;
+	~SoundProperty() noexcept;
 
-    virtual void open();
-    virtual void close() noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, int value) noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, float value) noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, const float3& value) noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, const float4& value) noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, const char* value) noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, const unsigned char* value) noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, const std::string& value) noexcept;
 
-	virtual void setSoundBuffer(SoundBufferPtr ptr);;
-	virtual SoundBufferPtr getSoundBuffer() const noexcept;
-
-	virtual void setVolume(float volume) noexcept;
-	virtual float getVolume() const noexcept;
-
-	virtual void setPitch(float pitch) noexcept;
-	virtual float getPitch(void) const noexcept;
-
-	virtual void setLoop(bool loop) noexcept;
-	virtual bool getLoop(void) const noexcept;
-
-	virtual void setMaxDistance(float maxdis) noexcept;
-	virtual float getMaxDistance() const noexcept;
-
-	virtual void setMinDistance(float mindis) noexcept;
-	virtual float getMinDistance() const noexcept;
-
-	virtual void setTransform3D(const float3& position, const float3& velocity, const float3& forward, const float3& up) noexcept;
-	virtual void getTransform3D(float3& position, float3& velocity, float3& forward, float3& up) noexcept;
-
-    virtual void play() noexcept;
-	virtual bool isPlaying() const noexcept;
-
-    virtual void stop() noexcept;
-	virtual bool isStopped() const noexcept;
-
-    virtual void pause() noexcept;
-	virtual bool isPaused() const noexcept;
+	bool get(const char* key, std::size_t type, std::size_t index, int& value) const noexcept;
+	bool get(const char* key, std::size_t type, std::size_t index, float& value) const noexcept;
+	bool get(const char* key, std::size_t type, std::size_t index, float3& value) const noexcept;
+	bool get(const char* key, std::size_t type, std::size_t index, float4& value) const noexcept;
+	bool get(const char* key, std::size_t type, std::size_t index, std::string& value) const noexcept;
 
 private:
-    ALuint      _source;
-    SoundBufferPtr   _buffer;
+	bool get(const char* key, std::size_t type, std::size_t index, SoundParam** out) const noexcept;
+
+private:
+
+	std::vector<SoundParam*> _properties;
 };
 
 _NAME_END

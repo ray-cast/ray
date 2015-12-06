@@ -41,21 +41,38 @@
 
 _NAME_BEGIN
 
-class EXPORT SoundSystem
+class EXPORT SoundSystem final
 {
+	__DeclareSingleton(SoundSystem)
 public:
     SoundSystem() noexcept;
-    virtual ~SoundSystem() noexcept;
+    ~SoundSystem() noexcept;
 
 	void open() noexcept;
 	void close() noexcept;
 
-	SoundBufferPtr createSoundBuffer();
-	SoundSourcePtr createSoundSource();
+	bool isOpened() noexcept;
+
+	SoundSourcePtr createSoundSource(const std::string& filename, SoundFile::Type type = SoundFile::Unknown) except;
+
+	bool emptyHandler() const noexcept;
+	bool add(SoundHandlerPtr handler) noexcept;
+	bool remove(SoundHandlerPtr handler) noexcept;
+	bool find(istream& stream, SoundHandlerPtr& handler) const noexcept;
+	bool find(SoundFile::Type type, SoundHandlerPtr& handler) const noexcept;
+	bool find(istream& stream, SoundFile::Type type, SoundHandlerPtr& handler) const noexcept;
+
+private:
+
+	SoundBufferPtr load(const std::string& filename, SoundFile::Type type) noexcept;
+	SoundBufferPtr load(istream& stream, SoundFile::Type type = SoundFile::Unknown) noexcept;
 
 private:
 
 	SoundDevicePtr _soundDevice;
+	SoundBufferMaps _soundBuffers;
+
+	SoundHandlers _handlers;
 };
 
 _NAME_END

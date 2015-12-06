@@ -45,14 +45,16 @@ class SoundFeatures final : public GameFeature
 {
 public:
 	SoundFeatures() noexcept;
+	~SoundFeatures() noexcept;
+
+private:
+
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
 
 private:
 	SoundFeatures(const SoundFeatures&) noexcept = delete;
 	SoundFeatures& operator=(const SoundFeatures&) noexcept = delete;
-
-private:
-
-	virtual void onFrame() noexcept;
 };
 
 _NAME_END

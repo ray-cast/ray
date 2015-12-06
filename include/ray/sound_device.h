@@ -54,9 +54,6 @@ public:
 	
 	virtual SoundBufferPtr createSoundBuffer() = 0;
 	virtual SoundSourcePtr createSoundSource() = 0;
-
-    virtual SoundBufferPtr load(const std::string& filename) = 0;
-    virtual SoundBufferPtr load(MemoryReader& reader) = 0;
 };
 
 _NAME_END

@@ -35,9 +35,16 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/sound_system.h>
+#include <ray/sound_source.h>
+#include <ray/sound_handler_all.h>
+
 #include <ray/al_sound_device.h>
+#include <ray/mstream.h>
+#include <ray/ioserver.h>
 
 _NAME_BEGIN
+
+__ImplementSingleton(SoundSystem)
 
 SoundSystem::SoundSystem() noexcept
 {
@@ -51,6 +58,8 @@ SoundSystem::~SoundSystem() noexcept
 void 
 SoundSystem::open() noexcept
 {
+	assert(!this->isOpened());
+
 	_soundDevice = std::make_shared<ALSoundDevice>();
 }
 
@@ -64,16 +73,159 @@ SoundSystem::close() noexcept
 	}
 }
 
-SoundBufferPtr 
-SoundSystem::createSoundBuffer()
+bool
+SoundSystem::isOpened() noexcept
 {
-	return _soundDevice->createSoundBuffer();
+	return (_soundDevice != nullptr) ? true : false;
 }
 
 SoundSourcePtr
-SoundSystem::createSoundSource()
+SoundSystem::createSoundSource(const std::string& filename, SoundFile::Type type) except
 {
-	return _soundDevice->createSoundSource();
+	assert(this->isOpened());
+
+	auto soundBuffer = this->load(filename, type);
+	if (soundBuffer)
+	{
+		auto sound = _soundDevice->createSoundSource();
+		if (sound)
+		{
+			sound->open();
+			sound->setSoundBuffer(soundBuffer);
+			return sound;
+		}
+	}
+
+	return nullptr;
+}
+
+SoundBufferPtr
+SoundSystem::load(const std::string& filename, SoundFile::Type type) noexcept
+{
+	assert(this->isOpened());
+
+	auto soundBuffer = _soundBuffers[filename];
+	if (!soundBuffer)
+	{
+		MemoryStream stream;
+		if (IoServer::instance()->openFile(filename, stream))
+			soundBuffer = load(stream, type);
+
+		if (soundBuffer)
+			_soundBuffers[filename] = soundBuffer;
+	}
+
+	return soundBuffer;
+}
+
+SoundBufferPtr
+SoundSystem::load(istream& stream, SoundFile::Type type) noexcept
+{
+	assert(this->isOpened());
+
+	if (this->emptyHandler())
+		GetSoundInstanceList(*this);
+
+	SoundHandlerPtr impl;
+
+	if (this->find(stream, type, impl))
+	{
+		auto buffer = _soundDevice->createSoundBuffer();
+		if (buffer)
+		{
+			if (impl->doLoad(*buffer, stream))
+			{
+				return buffer;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+bool
+SoundSystem::emptyHandler() const noexcept
+{
+	return _handlers.empty();
+}
+
+bool
+SoundSystem::add(SoundHandlerPtr handler) noexcept
+{
+	assert(handler);
+
+	auto it = std::find(_handlers.begin(), _handlers.end(), handler);
+	if (it == _handlers.end())
+	{
+		_handlers.push_back(handler);
+		return true;
+	}
+
+	return false;
+}
+
+bool
+SoundSystem::remove(SoundHandlerPtr handler) noexcept
+{
+	assert(handler);
+
+	auto it = std::find(_handlers.begin(), _handlers.end(), handler);
+	if (it != _handlers.end())
+	{
+		_handlers.erase(it);
+		return true;
+	}
+
+	return false;
+}
+
+bool
+SoundSystem::find(istream& stream, SoundHandlerPtr& out) const noexcept
+{
+	if (!stream.is_open())
+		return false;
+
+	for (auto it : _handlers)
+	{
+		stream.seekg(0, std::ios_base::beg);
+
+		if (it->doCanRead(stream))
+		{
+			stream.seekg(0, std::ios_base::beg);
+
+			out = it;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool
+SoundSystem::find(SoundFile::Type type, SoundHandlerPtr& out) const noexcept
+{
+	std::size_t index = (std::size_t)type;
+	if (_handlers.size() < index)
+	{
+		out = _handlers[index];
+		return true;
+	}
+
+	return false;
+}
+
+bool
+SoundSystem::find(istream& stream, SoundFile::Type type, SoundHandlerPtr& out) const noexcept
+{
+	if (type != SoundFile::Type::Unknown)
+	{
+		if (this->find(type, out))
+		{
+			return true;
+		}
+	}
+
+	return this->find(stream, out);
 }
 
 _NAME_END

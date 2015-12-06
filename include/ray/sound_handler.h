@@ -34,57 +34,23 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_AL_SOUND_SOURCE_H_
-#define _H_AL_SOUND_SOURCE_H_
+#ifndef _H_SOUND_HANDLER_H_
+#define _H_SOUND_HANDLER_H_
 
-#include <ray/sound_source.h>
-#include <al.h>
-#include <alc.h>
+#include <ray/sound_types.h>
 
 _NAME_BEGIN
 
-class EXPORT ALSoundSource : public SoundSource
+class SoundHandler
 {
 public:
-    ALSoundSource() noexcept;
-    virtual ~ALSoundSource() noexcept;
+	SoundHandler() noexcept;
+	virtual ~SoundHandler() noexcept;
 
-    virtual void open();
-    virtual void close() noexcept;
+	virtual bool doCanRead(istream& stream) const noexcept = 0;
 
-	virtual void setSoundBuffer(SoundBufferPtr ptr);;
-	virtual SoundBufferPtr getSoundBuffer() const noexcept;
-
-	virtual void setVolume(float volume) noexcept;
-	virtual float getVolume() const noexcept;
-
-	virtual void setPitch(float pitch) noexcept;
-	virtual float getPitch(void) const noexcept;
-
-	virtual void setLoop(bool loop) noexcept;
-	virtual bool getLoop(void) const noexcept;
-
-	virtual void setMaxDistance(float maxdis) noexcept;
-	virtual float getMaxDistance() const noexcept;
-
-	virtual void setMinDistance(float mindis) noexcept;
-	virtual float getMinDistance() const noexcept;
-
-	virtual void setTransform3D(const float3& position, const float3& velocity, const float3& forward, const float3& up) noexcept;
-	virtual void getTransform3D(float3& position, float3& velocity, float3& forward, float3& up) noexcept;
-
-    virtual void play() noexcept;
-	virtual bool isPlaying() const noexcept;
-
-    virtual void stop() noexcept;
-	virtual bool isStopped() const noexcept;
-
-    virtual void pause() noexcept;
-	virtual bool isPaused() const noexcept;
-
-private:
-    ALuint      _source;
-    SoundBufferPtr   _buffer;
+	virtual bool doLoad(SoundBuffer& buffer, istream& stream) except = 0;
+	virtual bool doSave(SoundBuffer& buffer, ostream& stream) except = 0;
 };
 
 _NAME_END

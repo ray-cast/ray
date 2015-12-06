@@ -37,7 +37,8 @@
 #ifndef _H_SOUND_TYPES_H_
 #define _H_SOUND_TYPES_H_
 
-#include <ray/platform.h>
+#include <ray/math.h>
+#include <ray/istream.h>
 
 _NAME_BEGIN
 
@@ -55,9 +56,26 @@ enum class SoundFormat : SOUND_FORMAT_TYPE
     Stereo16 = 0x1103,
 };
 
+class SoundFile
+{
+public:
+	enum Type
+	{
+		Unknown,
+		OggFile
+	};
+};
+
 typedef std::shared_ptr<class SoundBuffer> SoundBufferPtr;
 typedef std::shared_ptr<class SoundSource> SoundSourcePtr;
 typedef std::shared_ptr<class SoundDevice> SoundDevicePtr;
+typedef std::shared_ptr<class SoundHandler> SoundHandlerPtr;
+typedef std::shared_ptr<class SoundSystem> SoundSystemPtr;
+
+typedef std::vector<SoundHandlerPtr> SoundHandlers;
+typedef std::vector<SoundBufferPtr> SoundBuffers;
+
+typedef std::map<std::string, SoundBufferPtr> SoundBufferMaps;
 
 _NAME_END
 

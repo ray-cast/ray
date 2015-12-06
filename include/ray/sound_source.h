@@ -50,13 +50,35 @@ public:
     virtual void open() = 0;
     virtual void close() noexcept = 0;
 
-    virtual void play() = 0;
-    virtual void stop() = 0;
-    virtual void pause() = 0;
-    virtual void resume() = 0;
+	virtual void setSoundBuffer(SoundBufferPtr ptr) = 0;
+	virtual SoundBufferPtr getSoundBuffer() const noexcept = 0;
 
-    virtual void setSoundBuffer(SoundBufferPtr ptr)  = 0;
-    virtual SoundBufferPtr getSoundBuffer() const noexcept = 0;
+	virtual void setVolume(float volume) noexcept = 0;
+	virtual float getVolume() const noexcept = 0;
+
+	virtual void setPitch(float pitch) noexcept = 0;
+	virtual float getPitch(void) const noexcept = 0;
+
+	virtual void setLoop(bool loop) noexcept = 0;
+	virtual bool getLoop(void) const noexcept = 0;
+
+	virtual void setMaxDistance(float maxdis) noexcept = 0;
+	virtual float getMaxDistance() const noexcept = 0;
+
+	virtual void setMinDistance(float mindis) noexcept = 0;
+	virtual float getMinDistance() const noexcept = 0;
+
+	virtual void setTransform3D(const float3& position, const float3& velocity, const float3& forward, const float3& up) noexcept = 0;
+	virtual void getTransform3D(float3& position, float3& velocity, float3& forward, float3& up) noexcept = 0;
+
+    virtual void play() noexcept = 0;
+	virtual bool isPlaying() const noexcept = 0;
+
+    virtual void stop() noexcept = 0;
+	virtual bool isStopped() const noexcept = 0;
+
+    virtual void pause() noexcept = 0;
+	virtual bool isPaused() const noexcept = 0;
 };
 
 _NAME_END

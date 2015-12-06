@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/sound_features.h>
+#include <ray/sound_system.h>
 
 _NAME_BEGIN
 
@@ -42,9 +43,20 @@ SoundFeatures::SoundFeatures() noexcept
 {
 }
 
-void
-SoundFeatures::onFrame() noexcept
+SoundFeatures::~SoundFeatures() noexcept
 {
+}
+
+void 
+SoundFeatures::onActivate() except
+{
+	SoundSystem::instance()->open();
+}
+
+void 
+SoundFeatures::onDeactivate() except
+{
+	SoundSystem::instance()->close();
 }
 
 _NAME_END

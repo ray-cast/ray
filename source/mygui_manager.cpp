@@ -75,6 +75,9 @@ public:
 			if (!_stream.read(&buffer, 1))
 				break;
 
+			if (_stream.eof())
+				break;
+
 			if (util::isLineEnd(buffer))
 				break;
 

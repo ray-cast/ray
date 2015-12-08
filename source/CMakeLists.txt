@@ -486,12 +486,10 @@ SET(SOUND_SYSTEM_LIST
     ${HEADER_PATH}/al_sound_types.h
     ${SOURCE_PATH}/sound_buffer.cpp
     ${HEADER_PATH}/sound_buffer.h
-    ${HEADER_PATH}/sound_handler.h
-    ${SOURCE_PATH}/sound_handler.cpp
-    ${HEADER_PATH}/sound_handler_all.h
-    ${SOURCE_PATH}/sound_handler_all.cpp
-    ${HEADER_PATH}/sound_handler_ogg.h
-    ${SOURCE_PATH}/sound_handler_ogg.cpp
+    ${HEADER_PATH}/sound_buffer_all.h
+    ${SOURCE_PATH}/sound_buffer_all.cpp
+    ${HEADER_PATH}/sound_buffer_ogg.h
+    ${SOURCE_PATH}/sound_buffer_ogg.cpp
     ${HEADER_PATH}/sound_device.h
     ${SOURCE_PATH}/sound_device.cpp
     ${SOURCE_PATH}/sound_listener.cpp
@@ -502,6 +500,8 @@ SET(SOUND_SYSTEM_LIST
     ${SOURCE_PATH}/sound_system.cpp
     ${HEADER_PATH}/sound_source.h
     ${SOURCE_PATH}/sound_source.cpp
+    ${HEADER_PATH}/sound_source_listener.h
+    ${SOURCE_PATH}/sound_source_listener.cpp
     ${HEADER_PATH}/sound_types.h
 )
 SOURCE_GROUP("sound" FILES ${SOUND_SYSTEM_LIST})

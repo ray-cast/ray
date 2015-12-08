@@ -34,52 +34,92 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_SOUND_SYSTEM_H_
-#define _H_SOUND_SYSTEM_H_
-
-#include <ray/sound_types.h>
+#if defined(_BUILD_SOUND)
+#include <ray/sound_listener_component.h>
+#include <ray/sound_listener.h>
+#include <ray/sound_system.h>
 
 _NAME_BEGIN
 
-class EXPORT SoundSystem final
+__ImplementSubClass(SoundListenerComponent, GameComponent, "SoundListener")
+
+SoundListenerComponent::SoundListenerComponent() noexcept
+	: _volume(1.0)
 {
-	__DeclareSingleton(SoundSystem)
-public:
-    SoundSystem() noexcept;
-    ~SoundSystem() noexcept;
+}
 
-	bool open() noexcept;
-	void close() noexcept;
+SoundListenerComponent::~SoundListenerComponent() noexcept
+{
+}
 
-	bool isOpened() noexcept;
+void 
+SoundListenerComponent::setVolume(float volume) noexcept
+{
+	if (_volume != volume)
+	{
+		if (_listener)
+			_listener->setVolume(volume);
+		_volume = volume;
+	}	
+}
 
-	void setDistanceModel(bool enable) noexcept;
-	bool getDistanceModel() const noexcept;
+float 
+SoundListenerComponent::getVolume() const noexcept
+{
+	return _volume;
+}
 
-	SoundSourcePtr createSoundSource() except;
-	SoundSourcePtr createSoundSource(const std::string& filename, SoundFile::Type type = SoundFile::Unknown) except;
-	SoundReaderPtr createSoundBuffer(const std::string& filename, SoundFile::Type type = SoundFile::Unknown) noexcept;
-	SoundReaderPtr createSoundBuffer(istream& stream, SoundFile::Type type = SoundFile::Unknown) noexcept;
+void 
+SoundListenerComponent::load(iarchive& reader) noexcept
+{
+	GameComponent::load(reader);
 
-	SoundListenerPtr createSoundListener() noexcept;
+	reader >> make_archive(_volume, "volume");
+}
 
-	bool emptyHandler() const noexcept;
-	bool add(SoundReaderPtr handler) noexcept;
-	bool remove(SoundReaderPtr handler) noexcept;
+void 
+SoundListenerComponent::save(oarchive& write) noexcept
+{
+	GameComponent::save(write);
 
-private:
+	write << make_archive(_volume, "volume");
+}
 
-	bool find(istream& stream, SoundReaderPtr& handler) const noexcept;
-	bool find(SoundFile::Type type, SoundReaderPtr& handler) const noexcept;
-	bool find(istream& stream, SoundFile::Type type, SoundReaderPtr& handler) const noexcept;
+GameComponentPtr 
+SoundListenerComponent::clone() const except
+{
+	auto component = std::make_shared<SoundListenerComponent>();
+	component->_volume = this->_volume;
+	return component;
+}
 
-private:
+void
+SoundListenerComponent::onActivate() except
+{
+	_listener = SoundSystem::instance()->createSoundListener();
+	_listener->open();
+	_listener->setVolume(_volume);
+}
 
-	SoundDevicePtr _soundDevice;
-	SoundReaderMaps _soundReaders;
+void
+SoundListenerComponent::onDeactivate() except
+{
+	if (_listener)
+	{
+		_listener->close();
+		_listener = nullptr;
+	}
+}
 
-	SoundReaders _handlers;
-};
+void
+SoundListenerComponent::onMoveAfter() noexcept
+{
+	auto actor = this->getGameObject();
+	assert(actor);
+
+	_listener->setTranslate(actor->getTranslate());
+	_listener->setOrientation(actor->getLookAt(), actor->getUpVector());
+}
 
 _NAME_END
 

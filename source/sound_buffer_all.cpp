@@ -34,25 +34,18 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_SOUND_HANDLER_H_
-#define _H_SOUND_HANDLER_H_
+#include <ray/sound_buffer_all.h>
+#include <ray/sound_system.h>
 
-#include <ray/sound_types.h>
+#include <ray/sound_buffer_ogg.h>
 
 _NAME_BEGIN
 
-class SoundHandler
+auto ogg = std::make_shared<OggSoundReader>();
+
+void GetSoundInstanceList(SoundSystem& sound)
 {
-public:
-	SoundHandler() noexcept;
-	virtual ~SoundHandler() noexcept;
-
-	virtual bool doCanRead(istream& stream) const noexcept = 0;
-
-	virtual bool doLoad(SoundBuffer& buffer, istream& stream) except = 0;
-	virtual bool doSave(SoundBuffer& buffer, ostream& stream) except = 0;
-};
+	sound.add(ogg);
+}
 
 _NAME_END
-
-#endif

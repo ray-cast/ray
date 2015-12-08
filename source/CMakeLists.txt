@@ -37,6 +37,10 @@ IF(BUILD_PHYSIC)
     ADD_DEFINITIONS(-D_BUILD_PHYSIC)
 ENDIF()
 
+IF(BUILD_SOUND)
+    ADD_DEFINITIONS(-D_BUILD_SOUND)
+ENDIF()
+
 IF(BUILD_SCRIPT)
     ADD_DEFINITIONS(-D_BUILD_SCRIPT)
 ENDIF()
@@ -254,8 +258,8 @@ SET(IMAGE_LIST
     ${HEADER_PATH}/imagbase.h
     ${SOURCE_PATH}/imagbmp.cpp
     ${HEADER_PATH}/imagbmp.h
-    ${HEADER_PATH}/imagcfg.h
     ${HEADER_PATH}/imagdef.h
+    ${HEADER_PATH}/imaghandler.h
     ${SOURCE_PATH}/image.cpp
     ${HEADER_PATH}/image.h
     ${HEADER_PATH}/imagfwd.h
@@ -477,6 +481,9 @@ SET(SOUND_SYSTEM_LIST
     ${HEADER_PATH}/al_sound_device.h
     ${HEADER_PATH}/al_sound_source.h
     ${SOURCE_PATH}/al_sound_source.cpp
+    ${SOURCE_PATH}/al_sound_listener.cpp
+    ${HEADER_PATH}/al_sound_listener.h
+    ${HEADER_PATH}/al_sound_types.h
     ${SOURCE_PATH}/sound_buffer.cpp
     ${HEADER_PATH}/sound_buffer.h
     ${HEADER_PATH}/sound_handler.h
@@ -686,10 +693,12 @@ SET(RENDER_FEATURES_LIST
 SOURCE_GROUP("system\\renderer" FILES ${RENDER_FEATURES_LIST})
 
 SET(SOUND_FEATURES_LIST
+    ${SOURCE_PATH}/sound_feature.cpp
+    ${HEADER_PATH}/sound_feature.h
     ${SOURCE_PATH}/sound_component.cpp
     ${HEADER_PATH}/sound_component.h
-    ${SOURCE_PATH}/sound_features.cpp
-    ${HEADER_PATH}/sound_features.h
+    ${SOURCE_PATH}/sound_listener_component.cpp
+    ${HEADER_PATH}/sound_listener_component.h
 )
 SOURCE_GROUP("system\\sound" FILES ${SOUND_FEATURES_LIST})
 

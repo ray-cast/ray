@@ -54,6 +54,10 @@
 #	include <ray/physics_features.h>
 #endif
 
+#if defined(_BUILD_SOUND)
+#	include <ray/sound_feature.h>
+#endif
+
 #if defined(_BUILD_RENDERER)
 #	include <ray/render_feature.h>
 #endif
@@ -132,6 +136,9 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) ex
 #if defined(_BUILD_PHYSIC)
 	_physicFeature = std::make_shared<PhysicFeatures>();
 #endif
+#if defined(_BUILD_SOUND)
+	_soundFeature = std::make_shared<SoundFeature>();
+#endif
 #if defined(_BUILD_RENDERER)
 	_renderFeature = std::make_shared<RenderFeature>(hwnd, width, height);
 #endif
@@ -150,6 +157,9 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) ex
 #endif
 #if defined(_BUILD_PHYSIC)
 	this->addFeatures(_physicFeature);
+#endif
+#if defined(_BUILD_SOUND)
+	this->addFeatures(_soundFeature);
 #endif
 #if defined(_BUILD_RENDERER)
 	this->addFeatures(_renderFeature);

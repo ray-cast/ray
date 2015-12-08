@@ -47,13 +47,16 @@ public:
 	SoundDevice() noexcept;
     virtual ~SoundDevice() noexcept;
 
-    virtual bool open() = 0;
+    virtual bool open() noexcept = 0;
     virtual void close() noexcept = 0;
 
     virtual bool isOpen() const noexcept = 0;
+
+	virtual void setDistanceModel(bool enable) noexcept = 0;
+	virtual bool getDistanceModel() const noexcept = 0;
 	
-	virtual SoundBufferPtr createSoundBuffer() = 0;
 	virtual SoundSourcePtr createSoundSource() = 0;
+	virtual SoundListenerPtr createSoundListener() noexcept = 0;
 };
 
 _NAME_END

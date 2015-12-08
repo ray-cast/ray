@@ -37,54 +37,78 @@
 #ifndef _H_AL_SOUND_SOURCE_H_
 #define _H_AL_SOUND_SOURCE_H_
 
-#include <ray/sound_source.h>
-#include <al.h>
-#include <alc.h>
+#include <ray/al_sound_types.h>
 
 _NAME_BEGIN
 
-class EXPORT ALSoundSource : public SoundSource
+class EXPORT ALSoundSource final : public SoundSource
 {
 public:
     ALSoundSource() noexcept;
     virtual ~ALSoundSource() noexcept;
 
-    virtual void open();
+    virtual void open() noexcept;
     virtual void close() noexcept;
 
-	virtual void setSoundBuffer(SoundBufferPtr ptr);;
-	virtual SoundBufferPtr getSoundBuffer() const noexcept;
+	virtual void setSoundBuffer(SoundReaderPtr ptr) noexcept;
+	virtual SoundReaderPtr getSoundBuffer() const noexcept;
+
+	virtual void addSoundSourceListener(SoundSourceListener* listener) noexcept;
+	virtual void removeSoundSourceListener(SoundSourceListener* listener) noexcept;
 
 	virtual void setVolume(float volume) noexcept;
-	virtual float getVolume() const noexcept;
-
+	virtual void setMinVolume(float volume) noexcept;
+	virtual void setMaxVolume(float volume) noexcept;
+	virtual void setTranslate(const float3& translate) noexcept;
+	virtual void setVelocity(const float3& velocity) noexcept;
+	virtual void setOrientation(const float3& forward, const float3& up) noexcept;
 	virtual void setPitch(float pitch) noexcept;
-	virtual float getPitch(void) const noexcept;
-
-	virtual void setLoop(bool loop) noexcept;
-	virtual bool getLoop(void) const noexcept;
-
 	virtual void setMaxDistance(float maxdis) noexcept;
-	virtual float getMaxDistance() const noexcept;
-
 	virtual void setMinDistance(float mindis) noexcept;
+	virtual void setSoundClip(const SoundClip& clip) noexcept;
+
+	virtual void getTranslate(float3& translate) noexcept;
+	virtual void getVelocity(float3& velocity) noexcept;
+	virtual void getOrientation(float3& forward, float3& up) noexcept;
+	virtual void getSoundClip(SoundClip& clip) const noexcept;
+
+	virtual float getVolume() const noexcept;
+	virtual float getMinVolume() const noexcept;
+	virtual float getMaxVolume() const noexcept;
+	virtual float getPitch() const noexcept;
+	virtual float getMaxDistance() const noexcept;
 	virtual float getMinDistance() const noexcept;
 
-	virtual void setTransform3D(const float3& position, const float3& velocity, const float3& forward, const float3& up) noexcept;
-	virtual void getTransform3D(float3& position, float3& velocity, float3& forward, float3& up) noexcept;
-
-    virtual void play() noexcept;
-	virtual bool isPlaying() const noexcept;
-
-    virtual void stop() noexcept;
-	virtual bool isStopped() const noexcept;
-
+    virtual void play(bool play) noexcept;
+	virtual void loop(bool loop) noexcept;
     virtual void pause() noexcept;
+
+	virtual bool isPlaying() const noexcept;
+	virtual bool isStopped() const noexcept;
 	virtual bool isPaused() const noexcept;
+	virtual bool isLoop() const noexcept;
 
 private:
-    ALuint      _source;
-    SoundBufferPtr   _buffer;
+
+	void _initSoundStream() noexcept;
+
+private:
+
+	bool _isLoop;
+
+    ALuint  _alSource;
+	ALuint  _alBuffer;
+	ALsizei _alBufferSize;
+	ALenum  _alFormat;
+
+	ALsizei _alSampleLength;
+	ALsizei _alSampleLengthTotal;
+
+	std::vector<char> _data;
+	std::vector<SoundSourceListener*> _listeners;
+
+	SoundClip _soundClip;
+	SoundReaderPtr _soundReader;
 };
 
 _NAME_END

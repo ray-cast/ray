@@ -34,51 +34,32 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_SOUND_SYSTEM_H_
-#define _H_SOUND_SYSTEM_H_
+#ifndef _H_AL_SOUND_LISTENER_H_
+#define _H_AL_SOUND_LISTENER_H_
 
-#include <ray/sound_types.h>
+#include <ray/al_sound_types.h>
 
 _NAME_BEGIN
 
-class EXPORT SoundSystem final
+class ALSoundListener final : public SoundListener
 {
-	__DeclareSingleton(SoundSystem)
 public:
-    SoundSystem() noexcept;
-    ~SoundSystem() noexcept;
+	ALSoundListener() noexcept;
+	~ALSoundListener() noexcept;
 
-	bool open() noexcept;
-	void close() noexcept;
+	virtual bool open() noexcept;
+	virtual void close() noexcept;
 
-	bool isOpened() noexcept;
+	virtual void setVolume(float volume) noexcept;
+	virtual float getVolume() const noexcept;
 
-	void setDistanceModel(bool enable) noexcept;
-	bool getDistanceModel() const noexcept;
+	virtual void setTranslate(const float3& translate) noexcept;
+	virtual void setVelocity(const float3& velocity) noexcept;
+	virtual void setOrientation(const float3& forward, const float3& up) noexcept;
 
-	SoundSourcePtr createSoundSource() except;
-	SoundSourcePtr createSoundSource(const std::string& filename, SoundFile::Type type = SoundFile::Unknown) except;
-	SoundReaderPtr createSoundBuffer(const std::string& filename, SoundFile::Type type = SoundFile::Unknown) noexcept;
-	SoundReaderPtr createSoundBuffer(istream& stream, SoundFile::Type type = SoundFile::Unknown) noexcept;
-
-	SoundListenerPtr createSoundListener() noexcept;
-
-	bool emptyHandler() const noexcept;
-	bool add(SoundReaderPtr handler) noexcept;
-	bool remove(SoundReaderPtr handler) noexcept;
-
-private:
-
-	bool find(istream& stream, SoundReaderPtr& handler) const noexcept;
-	bool find(SoundFile::Type type, SoundReaderPtr& handler) const noexcept;
-	bool find(istream& stream, SoundFile::Type type, SoundReaderPtr& handler) const noexcept;
-
-private:
-
-	SoundDevicePtr _soundDevice;
-	SoundReaderMaps _soundReaders;
-
-	SoundReaders _handlers;
+	virtual void getTranslate(float3& translate) noexcept;
+	virtual void getVelocity(float3& velocity) noexcept;
+	virtual void getOrientation(float3& forward, float3& up) noexcept;
 };
 
 _NAME_END

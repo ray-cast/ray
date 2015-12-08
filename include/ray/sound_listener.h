@@ -41,11 +41,25 @@
 
 _NAME_BEGIN
 
-class SoundListener
+class EXPORT SoundListener
 {
 public:
 	SoundListener() noexcept;
 	~SoundListener() noexcept;
+
+	virtual bool open() noexcept = 0;
+	virtual void close() noexcept = 0;
+
+	virtual void setVolume(float volume) noexcept = 0;
+	virtual float getVolume() const noexcept = 0;
+
+	virtual void setTranslate(const float3& translate) noexcept = 0;
+	virtual void setVelocity(const float3& velocity) noexcept = 0;
+	virtual void setOrientation(const float3& forward, const float3& up) noexcept = 0;
+
+	virtual void getTranslate(float3& translate) noexcept = 0;
+	virtual void getVelocity(float3& velocity) noexcept = 0;
+	virtual void getOrientation(float3& forward, float3& up) noexcept = 0;
 };
 
 _NAME_END

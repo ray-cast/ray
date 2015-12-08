@@ -34,52 +34,14 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_SOUND_SYSTEM_H_
-#define _H_SOUND_SYSTEM_H_
+#ifndef _H_SOUND_HANDLER_ALL_H_
+#define _H_SOUND_HANDLER_ALL_H_
 
-#include <ray/sound_types.h>
+#include <ray/sound_buffer.h>
 
 _NAME_BEGIN
 
-class EXPORT SoundSystem final
-{
-	__DeclareSingleton(SoundSystem)
-public:
-    SoundSystem() noexcept;
-    ~SoundSystem() noexcept;
-
-	bool open() noexcept;
-	void close() noexcept;
-
-	bool isOpened() noexcept;
-
-	void setDistanceModel(bool enable) noexcept;
-	bool getDistanceModel() const noexcept;
-
-	SoundSourcePtr createSoundSource() except;
-	SoundSourcePtr createSoundSource(const std::string& filename, SoundFile::Type type = SoundFile::Unknown) except;
-	SoundReaderPtr createSoundBuffer(const std::string& filename, SoundFile::Type type = SoundFile::Unknown) noexcept;
-	SoundReaderPtr createSoundBuffer(istream& stream, SoundFile::Type type = SoundFile::Unknown) noexcept;
-
-	SoundListenerPtr createSoundListener() noexcept;
-
-	bool emptyHandler() const noexcept;
-	bool add(SoundReaderPtr handler) noexcept;
-	bool remove(SoundReaderPtr handler) noexcept;
-
-private:
-
-	bool find(istream& stream, SoundReaderPtr& handler) const noexcept;
-	bool find(SoundFile::Type type, SoundReaderPtr& handler) const noexcept;
-	bool find(istream& stream, SoundFile::Type type, SoundReaderPtr& handler) const noexcept;
-
-private:
-
-	SoundDevicePtr _soundDevice;
-	SoundReaderMaps _soundReaders;
-
-	SoundReaders _handlers;
-};
+EXPORT void GetSoundInstanceList(SoundSystem& image);
 
 _NAME_END
 

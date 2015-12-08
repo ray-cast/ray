@@ -58,6 +58,7 @@ enum SoundPropertyTypeInfo
 	SPTI_FLOAT = 0x01,
 	SPTI_STRING = 0x02,
 	SPTI_INTEGER = 0x04,
+	SPTI_UNSIGNED_INTEGER = 0x04,
 	SPTI_BUFFER = 0x08,
 };
 
@@ -68,6 +69,7 @@ public:
 	~SoundProperty() noexcept;
 
 	bool set(const char* key, std::size_t type, std::size_t index, int value) noexcept;
+	bool set(const char* key, std::size_t type, std::size_t index, unsigned int value) noexcept;
 	bool set(const char* key, std::size_t type, std::size_t index, float value) noexcept;
 	bool set(const char* key, std::size_t type, std::size_t index, const float3& value) noexcept;
 	bool set(const char* key, std::size_t type, std::size_t index, const float4& value) noexcept;
@@ -76,6 +78,7 @@ public:
 	bool set(const char* key, std::size_t type, std::size_t index, const std::string& value) noexcept;
 
 	bool get(const char* key, std::size_t type, std::size_t index, int& value) const noexcept;
+	bool get(const char* key, std::size_t type, std::size_t index, unsigned int& value) const noexcept;
 	bool get(const char* key, std::size_t type, std::size_t index, float& value) const noexcept;
 	bool get(const char* key, std::size_t type, std::size_t index, float3& value) const noexcept;
 	bool get(const char* key, std::size_t type, std::size_t index, float4& value) const noexcept;

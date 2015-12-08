@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/sound_system.h>
 #include <ray/sound_source.h>
-#include <ray/sound_handler_all.h>
+#include <ray/sound_buffer_all.h>
 
 #include <ray/al_sound_device.h>
 #include <ray/mstream.h>
@@ -55,17 +55,28 @@ SoundSystem::~SoundSystem() noexcept
 	this->close();
 }
 
-void 
+bool
 SoundSystem::open() noexcept
 {
 	assert(!this->isOpened());
 
 	_soundDevice = std::make_shared<ALSoundDevice>();
+	return _soundDevice->open();
 }
 
 void 
 SoundSystem::close() noexcept
 {
+	if (!_soundReaders.empty())
+	{
+		for (auto& it : _soundReaders)
+		{
+			it.second.reset();
+		}
+
+		_soundReaders.clear();
+	}
+
 	if (_soundDevice)
 	{
 		_soundDevice.reset();
@@ -79,15 +90,43 @@ SoundSystem::isOpened() noexcept
 	return (_soundDevice != nullptr) ? true : false;
 }
 
+void 
+SoundSystem::setDistanceModel(bool enable) noexcept
+{
+	assert(_soundDevice);
+	_soundDevice->setDistanceModel(enable);
+}
+
+bool 
+SoundSystem::getDistanceModel() const noexcept
+{
+	assert(_soundDevice);
+	return _soundDevice->getDistanceModel();
+}
+
+SoundListenerPtr
+SoundSystem::createSoundListener() noexcept
+{
+	assert(_soundDevice);
+	return _soundDevice->createSoundListener();
+}
+
+SoundSourcePtr
+SoundSystem::createSoundSource() except
+{
+	assert(_soundDevice);
+	return _soundDevice->createSoundSource();
+}
+
 SoundSourcePtr
 SoundSystem::createSoundSource(const std::string& filename, SoundFile::Type type) except
 {
 	assert(this->isOpened());
 
-	auto soundBuffer = this->load(filename, type);
+	auto soundBuffer = this->createSoundBuffer(filename, type);
 	if (soundBuffer)
 	{
-		auto sound = _soundDevice->createSoundSource();
+		auto sound = this->createSoundSource();
 		if (sound)
 		{
 			sound->open();
@@ -99,44 +138,42 @@ SoundSystem::createSoundSource(const std::string& filename, SoundFile::Type type
 	return nullptr;
 }
 
-SoundBufferPtr
-SoundSystem::load(const std::string& filename, SoundFile::Type type) noexcept
+SoundReaderPtr
+SoundSystem::createSoundBuffer(const std::string& filename, SoundFile::Type type) noexcept
 {
 	assert(this->isOpened());
 
-	auto soundBuffer = _soundBuffers[filename];
-	if (!soundBuffer)
+	auto soundReader = _soundReaders[filename];
+	if (!soundReader)
 	{
 		MemoryStream stream;
 		if (IoServer::instance()->openFile(filename, stream))
-			soundBuffer = load(stream, type);
+			soundReader = createSoundBuffer(stream, type);
 
-		if (soundBuffer)
-			_soundBuffers[filename] = soundBuffer;
+		if (soundReader)
+			_soundReaders[filename] = soundReader;
 	}
 
-	return soundBuffer;
+	return soundReader;
 }
 
-SoundBufferPtr
-SoundSystem::load(istream& stream, SoundFile::Type type) noexcept
+SoundReaderPtr
+SoundSystem::createSoundBuffer(istream& stream, SoundFile::Type type) noexcept
 {
 	assert(this->isOpened());
 
 	if (this->emptyHandler())
 		GetSoundInstanceList(*this);
 
-	SoundHandlerPtr impl;
-
+	SoundReaderPtr impl;
+	
 	if (this->find(stream, type, impl))
 	{
-		auto buffer = _soundDevice->createSoundBuffer();
-		if (buffer)
+		auto reader = impl->clone();
+		if (reader)
 		{
-			if (impl->doLoad(*buffer, stream))
-			{
-				return buffer;
-			}
+			reader->open(stream);
+			return reader;
 		}
 	}
 
@@ -150,7 +187,7 @@ SoundSystem::emptyHandler() const noexcept
 }
 
 bool
-SoundSystem::add(SoundHandlerPtr handler) noexcept
+SoundSystem::add(SoundReaderPtr handler) noexcept
 {
 	assert(handler);
 
@@ -165,7 +202,7 @@ SoundSystem::add(SoundHandlerPtr handler) noexcept
 }
 
 bool
-SoundSystem::remove(SoundHandlerPtr handler) noexcept
+SoundSystem::remove(SoundReaderPtr handler) noexcept
 {
 	assert(handler);
 
@@ -180,7 +217,7 @@ SoundSystem::remove(SoundHandlerPtr handler) noexcept
 }
 
 bool
-SoundSystem::find(istream& stream, SoundHandlerPtr& out) const noexcept
+SoundSystem::find(istream& stream, SoundReaderPtr& out) const noexcept
 {
 	if (!stream.is_open())
 		return false;
@@ -189,7 +226,7 @@ SoundSystem::find(istream& stream, SoundHandlerPtr& out) const noexcept
 	{
 		stream.seekg(0, std::ios_base::beg);
 
-		if (it->doCanRead(stream))
+		if (it->access(stream))
 		{
 			stream.seekg(0, std::ios_base::beg);
 
@@ -202,7 +239,7 @@ SoundSystem::find(istream& stream, SoundHandlerPtr& out) const noexcept
 }
 
 bool
-SoundSystem::find(SoundFile::Type type, SoundHandlerPtr& out) const noexcept
+SoundSystem::find(SoundFile::Type type, SoundReaderPtr& out) const noexcept
 {
 	std::size_t index = (std::size_t)type;
 	if (_handlers.size() < index)
@@ -215,7 +252,7 @@ SoundSystem::find(SoundFile::Type type, SoundHandlerPtr& out) const noexcept
 }
 
 bool
-SoundSystem::find(istream& stream, SoundFile::Type type, SoundHandlerPtr& out) const noexcept
+SoundSystem::find(istream& stream, SoundFile::Type type, SoundReaderPtr& out) const noexcept
 {
 	if (type != SoundFile::Type::Unknown)
 	{

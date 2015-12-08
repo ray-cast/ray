@@ -34,15 +34,16 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_SOUND_HANDLER_ALL_H_
-#define _H_SOUND_HANDLER_ALL_H_
-
-#include <ray/sound_handler.h>
+#include <ray/sound_source_listener.h>
 
 _NAME_BEGIN
 
-EXPORT void GetSoundInstanceList(SoundSystem& image);
+SoundSourceListener::SoundSourceListener() noexcept
+{
+}
+
+SoundSourceListener::~SoundSourceListener() noexcept
+{
+}
 
 _NAME_END
-
-#endif

@@ -34,28 +34,105 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/sound_system.h>
-#include <ray/sound_buffer.h>
-#include <ray/sound_source.h>
-#include "ray/sound_factory.h"
+#include <ray/game_application.h>
+#include <ray/game_event.h>
+
+#include <ray/input_event.h>
+
+#define GLFW_EXPOSE_NATIVE_WGL
+#define GLFW_EXPOSE_NATIVE_WIN32
+
+#include <GLFW\glfw3.h>
+#include <GLFW\glfw3native.h>
+
+class GameEngine : public ray::GameApplication
+{
+public:
+	GameEngine() noexcept
+		: _window(nullptr)
+	{
+	}
+
+	void setup(std::size_t w, std::size_t h)
+	{
+		glfwInit();
+
+		_window = glfwCreateWindow(w, h, "Sound Test", nullptr, nullptr);
+		if (_window)
+		{
+			glfwSetWindowUserPointer(_window, this);
+			glfwSetWindowFocusCallback(_window, &onWindowFocus);
+			glfwSetWindowCloseCallback(_window, &onWindowClose);
+
+			HWND hwnd = glfwGetWin32Window(_window);
+
+			if (!this->open(hwnd, w, h))
+				throw ray::failure("App::open() fail");
+
+			if (!this->openScene("dlc:sound\\scenes\\scene.map"))
+				throw ray::failure("App::openScene('dlc:sound\\scenes\\scene.map') fail");
+		}
+	}
+
+	void run()
+	{
+		while (!glfwWindowShouldClose(_window))
+		{
+			this->update();
+		}
+	}
+
+	static void onWindowClose(GLFWwindow* window)
+	{
+		GameEngine* engine = (GameEngine*)glfwGetWindowUserPointer(window);
+		if (engine)
+		{
+			auto event = ray::make_message<ray::InputEvent>();
+			event->event = ray::InputEvent::AppQuit;
+			engine->sendMessage(event);
+		}
+	}
+
+	static void onWindowFocus(GLFWwindow* window, int focus)
+	{
+		GameEngine* engine = (GameEngine*)glfwGetWindowUserPointer(window);
+		if (engine)
+		{
+			if (focus)
+			{
+				auto event = ray::make_message<ray::InputEvent>();
+				event->event = ray::InputEvent::GetFocus;
+				engine->sendMessage(event);
+			}
+			else
+			{
+				auto event = ray::make_message<ray::InputEvent>();
+				event->event = ray::InputEvent::LostFocus;
+				engine->sendMessage(event);
+			}
+		}
+	}
+
+private:
+
+	GLFWwindow* _window;
+};
 
 int main(int argc, char *argv[])
 {
-    auto ss = ray::SoundFactory::CreateSystem("AlSoundSystem");
-    if (ss == nullptr)
-    {
-        return 0;
-    }
-	ss->Init();
-	auto buffer1 = ss->Open("d:\\1.ogg");
-    auto source1 = ray::SoundFactory::CreateSource("AlSoundSource");
-    if (source1 == nullptr)
-    {
-        return 0;
-    }
-	buffer1->Init();
-	source1->SetSoundBuffer(buffer1);
-	source1->Play();
-	system("pause");
+	try
+	{
+		GameEngine engine;
+		engine.initialize(argc, argv);
+		engine.setup(1376, 768);
+		engine.run();
+	}
+	catch (const ray::exception& e)
+	{
+		std::cout << e.what();
+		std::system("pause");
+	}
+
+	glfwTerminate();
 	return 0;
 }

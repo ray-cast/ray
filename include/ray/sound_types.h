@@ -39,21 +39,22 @@
 
 #include <ray/math.h>
 #include <ray/istream.h>
+#include <ray/mstream.h>
 
 _NAME_BEGIN
-
-class MemoryReader;
 
 typedef int SOUND_FORMAT_TYPE;
 typedef int SoundFrequency;
 
 enum class SoundFormat : SOUND_FORMAT_TYPE
 {
-    None     = 0,
-    Mono8    = 0x1100,
-    Mono16   = 0x1101,
-    Stereo8  = 0x1102,
-    Stereo16 = 0x1103,
+    None,
+    Mono8,
+    Mono16,
+    Stereo8,
+    Stereo16,
+	Quad16,
+	Chn16
 };
 
 class SoundFile
@@ -69,13 +70,16 @@ public:
 typedef std::shared_ptr<class SoundBuffer> SoundBufferPtr;
 typedef std::shared_ptr<class SoundSource> SoundSourcePtr;
 typedef std::shared_ptr<class SoundDevice> SoundDevicePtr;
+typedef std::shared_ptr<class SoundListener> SoundListenerPtr;
 typedef std::shared_ptr<class SoundHandler> SoundHandlerPtr;
 typedef std::shared_ptr<class SoundSystem> SoundSystemPtr;
+typedef std::shared_ptr<class SoundReader> SoundReaderPtr;
 
 typedef std::vector<SoundHandlerPtr> SoundHandlers;
 typedef std::vector<SoundBufferPtr> SoundBuffers;
+typedef std::vector<SoundReaderPtr> SoundReaders;
 
-typedef std::map<std::string, SoundBufferPtr> SoundBufferMaps;
+typedef std::map<std::string, SoundReaderPtr> SoundReaderMaps;
 
 _NAME_END
 

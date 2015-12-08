@@ -37,6 +37,7 @@
 #include <ray/al_sound_device.h>
 #include <ray/al_sound_buffer.h>
 #include <ray/al_sound_source.h>
+#include <ray/al_sound_listener.h>
 
 _NAME_BEGIN
 
@@ -52,22 +53,24 @@ ALSoundDevice::~ALSoundDevice() noexcept
 }
 
 bool 
-ALSoundDevice::open()
+ALSoundDevice::open() noexcept
 {
     _device = ::alcOpenDevice(nullptr);
     if (!_device)
         return false;
-
+	
 	_context = ::alcCreateContext(_device, nullptr);
-	if (::alcMakeContextCurrent(_context))
-		return true;
+	if (!::alcMakeContextCurrent(_context))
+		return false;
 
-    return true;
+	return true;
 }
 
 void 
 ALSoundDevice::close() noexcept
 {
+	::alcMakeContextCurrent(AL_NONE);
+
 	if (_context)
 	{
 		::alcDestroyContext(_context);
@@ -87,16 +90,35 @@ ALSoundDevice::isOpen() const noexcept
     return _device ? true : false;
 }
 
-SoundBufferPtr
-ALSoundDevice::createSoundBuffer()
+void
+ALSoundDevice::setDistanceModel(bool enable) noexcept
 {
-	return std::make_shared<ALSoundBuffer>();
+	if (_distanceModel != enable)
+	{
+		if (enable)
+			::alEnable(AL_SOURCE_DISTANCE_MODEL);
+		else
+			::alDisable(AL_SOURCE_DISTANCE_MODEL);
+		_distanceModel = enable;
+	}
+}
+
+bool
+ALSoundDevice::getDistanceModel() const noexcept
+{
+	return _distanceModel;
 }
 
 SoundSourcePtr
 ALSoundDevice::createSoundSource()
 {
 	return std::make_shared<ALSoundSource>();
+}
+
+SoundListenerPtr 
+ALSoundDevice::createSoundListener() noexcept
+{
+	return std::make_shared<ALSoundListener>();
 }
 
 _NAME_END

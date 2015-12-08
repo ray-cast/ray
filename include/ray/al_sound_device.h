@@ -37,27 +37,30 @@
 #ifndef _H_AL_SOUND_DEVICE_H_
 #define _H_AL_SOUND_DEVICE_H_
 
-#include <ray/sound_device.h>
-#include <al.h>
-#include <alc.h>
+#include <ray/al_sound_types.h>
 
 _NAME_BEGIN
 
-class EXPORT ALSoundDevice : public SoundDevice
+class EXPORT ALSoundDevice final : public SoundDevice
 {
 public:
     ALSoundDevice() noexcept;
     virtual ~ALSoundDevice() noexcept;
 
-    virtual bool open();
+    virtual bool open() noexcept;
     virtual void close() noexcept;
 
     virtual bool isOpen() const noexcept;
 
-	virtual SoundBufferPtr createSoundBuffer();
+	virtual void setDistanceModel(bool enable) noexcept;
+	virtual bool getDistanceModel() const noexcept;
+
 	virtual SoundSourcePtr createSoundSource();
+	virtual SoundListenerPtr createSoundListener() noexcept;
 
 private:
+	bool _distanceModel;
+
     ALCdevice*      _device;
     ALCcontext*     _context;
 };

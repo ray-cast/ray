@@ -34,53 +34,96 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_SOUND_SYSTEM_H_
-#define _H_SOUND_SYSTEM_H_
-
-#include <ray/sound_types.h>
+#include <ray/al_sound_listener.h>
 
 _NAME_BEGIN
 
-class EXPORT SoundSystem final
+ALSoundListener::ALSoundListener() noexcept
 {
-	__DeclareSingleton(SoundSystem)
-public:
-    SoundSystem() noexcept;
-    ~SoundSystem() noexcept;
+}
 
-	bool open() noexcept;
-	void close() noexcept;
+ALSoundListener::~ALSoundListener() noexcept
+{
+	this->close();
+}
 
-	bool isOpened() noexcept;
+bool 
+ALSoundListener::open() noexcept
+{
+	return true;
+}
 
-	void setDistanceModel(bool enable) noexcept;
-	bool getDistanceModel() const noexcept;
+void 
+ALSoundListener::close() noexcept
+{
+}
 
-	SoundSourcePtr createSoundSource() except;
-	SoundSourcePtr createSoundSource(const std::string& filename, SoundFile::Type type = SoundFile::Unknown) except;
-	SoundReaderPtr createSoundBuffer(const std::string& filename, SoundFile::Type type = SoundFile::Unknown) noexcept;
-	SoundReaderPtr createSoundBuffer(istream& stream, SoundFile::Type type = SoundFile::Unknown) noexcept;
+void
+ALSoundListener::setVolume(float volume) noexcept
+{
+	alListenerf(AL_GAIN, volume);
+}
 
-	SoundListenerPtr createSoundListener() noexcept;
+float
+ALSoundListener::getVolume() const noexcept
+{
+	float volume = -1.0f;
+	alGetListenerf(AL_GAIN, &volume);
+	return volume;
+}
 
-	bool emptyHandler() const noexcept;
-	bool add(SoundReaderPtr handler) noexcept;
-	bool remove(SoundReaderPtr handler) noexcept;
+void 
+ALSoundListener::setTranslate(const float3& translate) noexcept
+{
+	ALfloat pos[] = { translate.x, translate.y, translate.z };
+	alListenerfv(AL_POSITION, pos);
+}
 
-private:
+void 
+ALSoundListener::setVelocity(const float3& velocity) noexcept
+{
+	ALfloat vel[] = { velocity.x, velocity.y, velocity.z };
+	alListenerfv(AL_VELOCITY, vel);
+}
 
-	bool find(istream& stream, SoundReaderPtr& handler) const noexcept;
-	bool find(SoundFile::Type type, SoundReaderPtr& handler) const noexcept;
-	bool find(istream& stream, SoundFile::Type type, SoundReaderPtr& handler) const noexcept;
+void 
+ALSoundListener::setOrientation(const float3& forward, const float3& up) noexcept
+{
+	ALfloat dir[] = { forward.x, forward.y, forward.z, up.x, up.y, up.z };
+	alListenerfv(AL_ORIENTATION, dir);
+}
 
-private:
+void 
+ALSoundListener::getTranslate(float3& translate) noexcept
+{
+	ALfloat pos[3];
+	alGetListenerfv(AL_POSITION, pos);
+	translate.x = pos[0];
+	translate.y = pos[1];
+	translate.z = pos[2];
+}
 
-	SoundDevicePtr _soundDevice;
-	SoundReaderMaps _soundReaders;
+void 
+ALSoundListener::getVelocity(float3& velocity) noexcept
+{
+	ALfloat pos[3];
+	alGetListenerfv(AL_VELOCITY, pos);
+	velocity.x = pos[0];
+	velocity.y = pos[1];
+	velocity.z = pos[2];
+}
 
-	SoundReaders _handlers;
-};
+void 
+ALSoundListener::getOrientation(float3& forward, float3& up) noexcept
+{
+	ALfloat dir[6];
+	alGetListenerfv(AL_ORIENTATION, dir);
+	forward.x = dir[0];
+	forward.y = dir[1];
+	forward.z = dir[2];
+	up.x = dir[3];
+	up.y = dir[4];
+	up.z = dir[5];
+}
 
 _NAME_END
-
-#endif

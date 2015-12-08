@@ -34,29 +34,33 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/sound_features.h>
+#if defined(_BUILD_SOUND)
+#include <ray/sound_feature.h>
 #include <ray/sound_system.h>
 
 _NAME_BEGIN
 
-SoundFeatures::SoundFeatures() noexcept
+SoundFeature::SoundFeature() noexcept
 {
 }
 
-SoundFeatures::~SoundFeatures() noexcept
+SoundFeature::~SoundFeature() noexcept
 {
 }
 
 void 
-SoundFeatures::onActivate() except
+SoundFeature::onActivate() except
 {
 	SoundSystem::instance()->open();
+	SoundSystem::instance()->setDistanceModel(true);
 }
 
 void 
-SoundFeatures::onDeactivate() except
+SoundFeature::onDeactivate() except
 {
 	SoundSystem::instance()->close();
 }
 
 _NAME_END
+
+#endif

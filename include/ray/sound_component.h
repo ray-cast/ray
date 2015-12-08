@@ -38,14 +38,87 @@
 #define _H_SOUND_COMPONENT_H_
 
 #include <ray/game_component.h>
+#include <ray/sound_source.h>
 
 _NAME_BEGIN
 
-class SoundComponent final : public GameComponent
+class SoundComponent final : public GameComponent, public SoundSourceListener
 {
+	__DeclareSubClass(SoundComponent, GameComponent)
 public:
 	SoundComponent() noexcept;
 	~SoundComponent() noexcept;
+
+    void setSoundBuffer(const std::string& name) noexcept;
+	const std::string& getSoundBuffer() const noexcept;
+
+    void setVolume(float volume) noexcept;
+    void setMinVolume(float volume) noexcept;
+    void setMaxVolume(float volume) noexcept;
+    void setPitch(float pitch) noexcept;
+    void setMaxDistance(float maxdis) noexcept;
+    void setMinDistance(float mindis) noexcept;
+
+    float getVolume() const noexcept;
+    float getMinVolume() const noexcept;
+    float getMaxVolume() const noexcept;
+    float getPitch() const noexcept;
+    float getMaxDistance() const noexcept;
+    float getMinDistance() const noexcept;
+
+	void setSoundClip(const SoundClip& clip) noexcept;
+	void getSoundClip(SoundClip& clip) const noexcept;
+
+    void play() noexcept;
+    void stop() noexcept;
+    void pause() noexcept;
+    void loop(bool loop) noexcept;
+
+    bool isPlaying() const noexcept;
+    bool isStopped() const noexcept;
+    bool isPaused() const noexcept;
+    bool isLooping() const noexcept;
+
+	void addPlayEndListener(std::function<void()> func) noexcept;
+	void removePlayEndListener(std::function<void()> func) noexcept;
+
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
+
+	GameComponentPtr clone() const except;
+
+private:
+
+	virtual void onFrameBegin() noexcept;
+
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
+
+	virtual void onMoveAfter() noexcept;
+
+	virtual void onPlayEnd() noexcept;
+
+private:
+
+	std::string _sourceName;
+
+	SoundClip _clip;
+	SoundSourcePtr _sound;
+
+	float _volume;
+	float _volumeMin;
+	float _volumeMax;
+
+	float _distanceMin;
+	float _distanceMax;
+
+	float _pitch;
+
+	bool _isPlayOnActivate;
+	bool _isPause;
+	bool _isLoop;
+
+	delegate<void()> _onPlayEnd;
 };
 
 _NAME_END

@@ -74,4 +74,6 @@ ENDIF()
 
 IF(BUILD_SOUND)
     ADD_SUBDIRECTORY(openal)
+    SET_TARGET_ATTRIBUTE(OpenAL32 "contrib")
+    SET_TARGET_ATTRIBUTE(common "contrib")
 ENDIF()

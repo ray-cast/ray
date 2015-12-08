@@ -34,16 +34,22 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/sound_handler.h>
+#ifndef _H_SOUND_SOURCE_LISTENER_H_
+#define _H_SOUND_SOURCE_LISTENER_H_
+
+#include <ray/sound_types.h>
 
 _NAME_BEGIN
 
-SoundHandler::SoundHandler() noexcept
+class EXPORT SoundSourceListener
 {
-}
+public:
+	SoundSourceListener() noexcept;
+	virtual ~SoundSourceListener() noexcept;
 
-SoundHandler::~SoundHandler() noexcept
-{
-}
+	virtual void onPlayEnd() noexcept = 0;
+};
 
 _NAME_END
+
+#endif

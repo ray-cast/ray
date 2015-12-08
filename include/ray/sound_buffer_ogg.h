@@ -37,17 +37,73 @@
 #ifndef _H_SOUND_HANDLER_OGG_H_
 #define _H_SOUND_HANDLER_OGG_H_
 
-#include <ray/sound_handler.h>
+#include <ray/sound_buffer.h>
+
+struct OggVorbis_File;
 
 _NAME_BEGIN
 
-class OggSoundHandler final : public SoundHandler
+class OggStreamBuffer final : public SoundBuffer
 {
 public:
-	virtual bool doCanRead(istream& stream) const noexcept;
+	OggStreamBuffer() noexcept;
+	~OggStreamBuffer() noexcept;
 
-	virtual bool doLoad(SoundBuffer& buffer, istream& stream) except;
-	virtual bool doSave(SoundBuffer& buffer, ostream& stream) except;
+	virtual bool open(istream& stream) noexcept;
+
+	virtual bool access(istream& stream) const noexcept;
+
+	virtual streamsize read(char* str, std::streamsize cnt) noexcept;
+	virtual streamsize write(const char* str, std::streamsize cnt) noexcept;
+
+	virtual streamoff seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
+	virtual streamoff tellg() noexcept;
+
+	virtual streamsize size() noexcept;
+
+	virtual bool is_open() const noexcept;
+
+	virtual int flush() noexcept;
+
+	virtual void close() noexcept;
+
+	virtual void copy(streambuf& other) noexcept;
+
+	virtual std::uint8_t getBufferChannelCount() const noexcept;
+	virtual std::size_t getBufferTotalSamples() const noexcept;
+
+	virtual SoundFormat getBufferType() const noexcept;
+	virtual SoundFrequency getBufferFrequency() const noexcept;
+
+private:
+
+	streamoff _next;
+	MemoryStream _stream;
+
+	OggVorbis_File* _oggVorbisFile;
+};
+
+class OggSoundReader final : public SoundReader
+{
+public:
+	OggSoundReader() noexcept;
+	~OggSoundReader() noexcept;
+
+	virtual bool open(istream& stream) noexcept;
+
+	virtual bool access(istream& stream) const noexcept;
+
+	virtual std::uint8_t getBufferChannelCount() const noexcept;
+	virtual std::size_t getBufferTotalSamples() const noexcept;
+
+	virtual SoundFormat getBufferType() const noexcept;
+	virtual SoundFrequency getBufferFrequency() const noexcept;
+
+	virtual SoundReaderPtr clone() noexcept;
+
+private:
+
+	OggStreamBuffer _oggVorbisFile;
 };
 
 _NAME_END

@@ -34,29 +34,43 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_SOUND_FEATURES_H_
-#define _H_SOUND_FEATURES_H_
+#ifndef _H_FIRST_PERSON_CAMERA_H_
+#define _H_FIRST_PERSON_CAMERA_H_
 
-#include <ray/game_features.h>
+#include <ray/game_component.h>
 
-_NAME_BEGIN
-
-class SoundFeatures final : public GameFeature
+class FirstPersonCameraComponent : public ray::GameComponent
 {
+	__DeclareSubClass(FirstPersonCameraComponent, ray::GameComponent)
 public:
-	SoundFeatures() noexcept;
-	~SoundFeatures() noexcept;
+	FirstPersonCameraComponent() noexcept;
+	~FirstPersonCameraComponent() noexcept;
 
 private:
 
-	virtual void onActivate() except;
-	virtual void onDeactivate() except;
+	void onActivate() noexcept;
+	void onDectivate() noexcept;
+
+	void onFrame() noexcept;
+
+	void yawCamera(float speed) noexcept;
+	void moveCamera(float speed) noexcept;
+	void rotateCamera(float angle, const ray::float3 axis) noexcept;
+	void rotateCamera(float mouseX, float mouseY, float lastX, float lastY) noexcept;
+
+	ray::GameComponentPtr clone() const noexcept;
 
 private:
-	SoundFeatures(const SoundFeatures&) noexcept = delete;
-	SoundFeatures& operator=(const SoundFeatures&) noexcept = delete;
+
+	float _speed;
+	float _gravity;
+	float _maxVelocityChange;
+	float _jumpHeight;
+	float _lastX;
+	float _lastY;
+
+	std::uint32_t _centerX;
+	std::uint32_t _centerY;
 };
-
-_NAME_END
 
 #endif

@@ -34,51 +34,40 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_SOUND_SYSTEM_H_
-#define _H_SOUND_SYSTEM_H_
+#ifndef _H_SOUND_COMPONENT_H_
+#define _H_SOUND_COMPONENT_H_
 
+#include <ray/game_component.h>
 #include <ray/sound_types.h>
 
 _NAME_BEGIN
 
-class EXPORT SoundSystem final
+class SoundListenerComponent final : public GameComponent
 {
-	__DeclareSingleton(SoundSystem)
+	__DeclareSubClass(SoundListenerComponent, GameComponent)
 public:
-    SoundSystem() noexcept;
-    ~SoundSystem() noexcept;
+	SoundListenerComponent() noexcept;
+	~SoundListenerComponent() noexcept;
 
-	bool open() noexcept;
-	void close() noexcept;
+	void setVolume(float volume) noexcept;
+	float getVolume() const noexcept;
 
-	bool isOpened() noexcept;
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
 
-	void setDistanceModel(bool enable) noexcept;
-	bool getDistanceModel() const noexcept;
+	GameComponentPtr clone() const except;
 
-	SoundSourcePtr createSoundSource() except;
-	SoundSourcePtr createSoundSource(const std::string& filename, SoundFile::Type type = SoundFile::Unknown) except;
-	SoundReaderPtr createSoundBuffer(const std::string& filename, SoundFile::Type type = SoundFile::Unknown) noexcept;
-	SoundReaderPtr createSoundBuffer(istream& stream, SoundFile::Type type = SoundFile::Unknown) noexcept;
+private:
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
 
-	SoundListenerPtr createSoundListener() noexcept;
-
-	bool emptyHandler() const noexcept;
-	bool add(SoundReaderPtr handler) noexcept;
-	bool remove(SoundReaderPtr handler) noexcept;
+	virtual void onMoveAfter() noexcept;
 
 private:
 
-	bool find(istream& stream, SoundReaderPtr& handler) const noexcept;
-	bool find(SoundFile::Type type, SoundReaderPtr& handler) const noexcept;
-	bool find(istream& stream, SoundFile::Type type, SoundReaderPtr& handler) const noexcept;
+	float _volume;
 
-private:
-
-	SoundDevicePtr _soundDevice;
-	SoundReaderMaps _soundReaders;
-
-	SoundReaders _handlers;
+	SoundListenerPtr _listener;
 };
 
 _NAME_END

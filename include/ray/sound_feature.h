@@ -34,18 +34,28 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/sound_handler_all.h>
-#include <ray/sound_system.h>
+#ifndef _H_SOUND_FEATURE_H_
+#define _H_SOUND_FEATURE_H_
 
-#include <ray/sound_handler_ogg.h>
+#include <ray/game_features.h>
 
 _NAME_BEGIN
 
-auto ogg = std::make_shared<OggSoundHandler>();
-
-void GetSoundInstanceList(SoundSystem& sound)
+class SoundFeature final : public GameFeature
 {
-	sound.add(ogg);
-}
+public:
+	SoundFeature() noexcept;
+	~SoundFeature() noexcept;
+
+private:
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
+
+private:
+	SoundFeature(const SoundFeature&) noexcept = delete;
+	SoundFeature& operator=(const SoundFeature&) noexcept = delete;
+};
 
 _NAME_END
+
+#endif

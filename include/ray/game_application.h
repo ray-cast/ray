@@ -98,6 +98,7 @@ private:
 	GameFeaturePtr _gameBaseFeature;
 	GameFeaturePtr _scriptFeature;
 	GameFeaturePtr _physicFeature;
+	GameFeaturePtr _soundFeature;
 	GameFeaturePtr _renderFeature;
 	GameFeaturePtr _guiFeature;
 };

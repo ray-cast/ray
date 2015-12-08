@@ -88,6 +88,42 @@ SoundProperty::set(const char* key, std::size_t type, std::size_t index, int val
 }
 
 bool
+SoundProperty::set(const char* key, std::size_t type, std::size_t index, unsigned int value) noexcept
+{
+	assert(nullptr != key);
+
+	auto it = _properties.begin();
+	auto end = _properties.end();
+
+	for (; it != end; ++it)
+	{
+		if ((*it)->key == key &&
+			(*it)->type == type &&
+			(*it)->index == index)
+		{
+			delete (*it);
+			_properties.erase(it);
+			break;
+		}
+	}
+
+	auto prop = make_scope<SoundParam>();
+
+	prop->key = key;
+	prop->type = type;
+	prop->index = index;
+	prop->length = sizeof(int);
+	prop->dataType = SPTI_UNSIGNED_INTEGER;
+	prop->data = new char[prop->length];
+
+	std::memcpy(prop->data, &value, prop->length);
+
+	_properties.push_back(prop.dismiss());
+
+	return true;
+}
+
+bool
 SoundProperty::set(const char* key, std::size_t type, std::size_t index, float value) noexcept
 {
 	assert(nullptr != key);
@@ -258,6 +294,27 @@ SoundProperty::get(const char* key, std::size_t type, std::size_t index, int& va
 	if (this->get(key, type, index, &prop))
 	{
 		if (prop->dataType == SPTI_INTEGER)
+		{
+			if (prop->length == sizeof(int))
+			{
+				std::memcpy(&value, prop->data, prop->length);
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool
+SoundProperty::get(const char* key, std::size_t type, std::size_t index, unsigned int& value) const noexcept
+{
+	assert(nullptr != key);
+
+	SoundParam* prop = nullptr;
+	if (this->get(key, type, index, &prop))
+	{
+		if (prop->dataType == SPTI_UNSIGNED_INTEGER)
 		{
 			if (prop->length == sizeof(int))
 			{

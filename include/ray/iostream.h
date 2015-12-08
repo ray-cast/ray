@@ -66,6 +66,7 @@ public:
     iostream& flush() noexcept;
     iostream& close() noexcept;
 
+	iostream& copy(istream& other) noexcept;
     iostream& copy(iostream& other) noexcept;
 
     streamsize size() noexcept;

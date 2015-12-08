@@ -53,7 +53,7 @@ public:
     streambuf* rdbuf() const noexcept;
     void set_rdbuf(streambuf* buf) noexcept;
 
-    void copy(stream& other) noexcept;
+    void copy(const stream& other) noexcept;
 
 protected:
     void _init(streambuf* _buf, ios_base::openmode mode) noexcept;

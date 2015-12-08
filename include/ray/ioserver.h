@@ -75,7 +75,10 @@ public:
     IoServer& openFileFromDisk(const std::wstring& path, iostream& stream, open_mode mode = ios_base::in) noexcept;
 
     IoServer& deleteFile(const std::string& path) noexcept;
+
     IoServer& existsFile(const std::string& path) noexcept;
+	IoServer& existsFileFromFileSystem(const std::string& path) noexcept;
+	IoServer& existsFileFromDisk(const std::string& path) noexcept;
 
     IoServer& copyFile(const std::string& path, const std::string& to) const noexcept;
 

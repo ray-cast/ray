@@ -38,7 +38,6 @@
 #define _H_MSTREAM_H_
 
 #include <ray/iostream.h>
-#include <vector>
 
 _NAME_BEGIN
 

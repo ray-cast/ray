@@ -339,17 +339,36 @@ IoServer::deleteFile(const std::string& path) noexcept
 IoServer&
 IoServer::existsFile(const std::string& path) noexcept
 {
+	bool result = this->existsFileFromFileSystem(path);
+	if (!result)
+	{
+		result = this->existsFileFromDisk(path);
+	}
+
+	return *this;
+}
+
+IoServer& 
+IoServer::existsFileFromFileSystem(const std::string& path) noexcept
+{
+	this->setstate(ios_base::failbit);
+	return *this;
+}
+
+IoServer& 
+IoServer::existsFileFromDisk(const std::string& path) noexcept
+{
 	std::string resolvePath;
 	this->getResolveAssign(path, resolvePath);
+
 	if (resolvePath.empty())
-	{
-		if (access(path.c_str(), 0) != 0)
-			this->setstate(ios_base::failbit);
-		else
-			this->clear(ios_base::goodbit);
-		return *this;
-	}
-	this->clear(ios_base::goodbit);
+		resolvePath = path;
+
+	if (access(resolvePath.c_str(), 0) != 0)
+		this->setstate(ios_base::failbit);
+	else
+		this->clear(ios_base::goodbit);
+
 	return *this;
 }
 

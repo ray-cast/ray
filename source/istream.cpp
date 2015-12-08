@@ -166,7 +166,7 @@ istream::read(char* str, std::streamsize cnt) noexcept
             _count = this->rdbuf()->read(str, cnt);
 
             if (_count != cnt)
-                state |= ios_base::failbit | ios_base::eofbit;
+                state |= ios_base::eofbit;
         }
 
         this->setstate(state);
@@ -273,13 +273,13 @@ istream::close() noexcept
 }
 
 istream*
-istream::clone() const
+istream::clone() const noexcept
 {
     return nullptr;
 }
 
 istream&
-istream::copy(istream& other) noexcept
+istream::copy(const istream& other) noexcept
 {
     _count = other._count;
     stream::copy(other);

@@ -52,12 +52,18 @@ MemoryBuf::~MemoryBuf() noexcept
 bool
 MemoryBuf::open(const char* filename, const ios_base::openmode mode) noexcept
 {
+	_next = 0;
+	_tell = 0;
+	_isMappinged = false;
     return true;
 }
 
 bool
 MemoryBuf::open(const wchar_t* filename, const ios_base::openmode mode) noexcept
 {
+	_next = 0;
+	_tell = 0;
+	_isMappinged = false;
     return true;
 }
 

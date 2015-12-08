@@ -309,6 +309,14 @@ iostream::close() noexcept
     return (*this);
 }
 
+iostream& 
+iostream::copy(istream& other) noexcept
+{
+	_count = other.gcount();
+	stream::copy(other);
+	return *this;
+}
+
 iostream&
 iostream::copy(iostream& other) noexcept
 {

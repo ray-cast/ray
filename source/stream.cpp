@@ -67,7 +67,7 @@ stream::_init(streambuf* _buf, ios_base::openmode mode) noexcept
 }
 
 void
-stream::copy(stream& other) noexcept
+stream::copy(const stream& other) noexcept
 {
     assert(other._strbuf);
 	_mode = other._mode;

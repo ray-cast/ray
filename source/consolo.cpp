@@ -192,7 +192,7 @@ icstream::icstream(const std::wstring& filename, const ios_base::open_mode mode)
 }
 
 istream*
-icstream::clone() const
+icstream::clone() const noexcept
 {
 	return new icstream;
 }

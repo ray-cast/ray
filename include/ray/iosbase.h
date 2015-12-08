@@ -167,7 +167,7 @@ public:
     ios_base::iostate exceptions() const noexcept;
 
     ios_base::fmtflags flags() const noexcept;
-    void copy(ios_base& other) noexcept;
+    void copy(const ios_base& other) noexcept;
 
     bool operator!() const noexcept;
     operator bool() const noexcept;

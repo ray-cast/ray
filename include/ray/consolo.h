@@ -85,7 +85,7 @@ public:
     explicit icstream(const std::wstring& filename, const ios_base::open_mode mode) noexcept;
     ~icstream() noexcept;
 
-    virtual istream* clone() const;
+    virtual istream* clone() const noexcept;
 
 private:
 

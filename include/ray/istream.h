@@ -63,7 +63,7 @@ public:
     istream& flush() noexcept;
     istream& close() noexcept;
 
-    istream& copy(istream& other) noexcept;
+    istream& copy(const istream& other) noexcept;
 
     streamsize size() noexcept;
 
@@ -71,7 +71,7 @@ public:
 
     streamsize gcount() const noexcept;
 
-    virtual istream* clone() const;
+    virtual istream* clone() const noexcept;
 
 private:
     istream& operator=(const istream&) = delete;

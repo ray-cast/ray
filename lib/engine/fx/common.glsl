@@ -112,6 +112,11 @@
                 return YCbCr.rgb;
             }
 
+            float4 RGBA2YCbCr(float4 rgba)
+            {
+                return float4(RGB2YCbCr(rgba.rgb), rgba.a);
+            }
+
             float3 YCbCr2RGB(float3 YCbCr)
             {
                 // YCbCr2RGB
@@ -300,9 +305,9 @@
                 return float4(diffuse.rgb, specular);
             }
 
-            float4 StoreGBufferRT1(float3 n, float shininess)
+            float4 StoreGBufferRT1(float3 n, float roughness)
             {
-                return float4(packNormal(n), shininess);
+                return float4(packNormal(n), roughness);
             }
 
             float3 restoreRGB(sampler2D mrt0, float2 coord)
@@ -315,17 +320,12 @@
                 return mrt0.a;
             }
 
-            float restoreAlpha(float4 mrt0)
-            {
-                return mrt0.b;
-            }
-
             float3 restoreNormal(float4 mrt1)
             {
                 return unpackNormal(mrt1.xyz);
             }
 
-            float restoreShininess(float4 mrt1)
+            float restoreRoughness(float4 mrt1)
             {
                 return mrt1.w;
             }

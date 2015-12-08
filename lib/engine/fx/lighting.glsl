@@ -14,6 +14,11 @@
                 return specular + (1.0f - specular) * exp2((-5.55473 * LdotH - 6.98316) * LdotH);
             }
 
+            float3 fresnelSchlick(float3 specular, float LdotH)
+            {
+                return specular + (1.0f - specular) * exp2((-5.55473 * LdotH - 6.98316) * LdotH);
+            }
+
             float attenuationTerm(float3 lightPosition, float3 world, float3 atten)
             {
                 float3 v = lightPosition - world;
@@ -22,19 +27,9 @@
                 return 1 / dot(atten, float3(1, d, d2));
             }
 
-            float specularNormalizeFactor(float roughness)
-            {
-                return (roughness + 2) / (8 * PIE);
-            }
-
             float roughnessTerm(float NdotH, float roughness)
             {
-                // pow(dotHN, K)
-                // = pow(dotHN, K)
-                // = exp((dotHN-1)*(K+0.775))
-                // = exp2((dotHN-1)*((K+0.775)/Log(2)))
-                return pow(NdotH, roughness);
-                // return exp2((NdotH - 1) * ((roughness + 0.775) * InvLog2));
+                return (roughness + 2) / (8 * PIE) * pow(NdotH, roughness);
             }
 
             float geometricShadowingSchlickBeckmann(float NdotV, float k)
@@ -44,12 +39,13 @@
 
             float geometricShadowingSmith(float roughness, float NdotL, float NdotV, float LdotH)
             {
-                float k = 2 / sqrt(PIE * (roughness + 2));
-                return geometricShadowingSchlickBeckmann(NdotL, k) * geometricShadowingSchlickBeckmann(NdotV, k);
                 // http://www.filmicworlds.com/2014/04/21/optimizing-ggx-shaders-with-dotlh/
-                //float k2 = 4 / (PIE * (roughness + 2));
-                //float invK2 = 1 - k2;
-                //return 1 / (LdotH * LdotH * invK2 + k2);
+                // geometricShadowingSchlickBeckmann(NdotL, k) * geometricShadowingSchlickBeckmann(NdotV, k);
+                // = geometricShadowingSchlickBeckmann(LdotH, k) * geometricShadowingSchlickBeckmann(LdotH, k);
+                float k = 2 / sqrt(PIE * (roughness + 2));
+                float k2 = k * k;
+                float invK2 = 1.0f - k2;
+                return 1.0 / (LdotH * LdotH * invK2 + k2);
             }
 
             float rimLighting(float NdotV, float LdoV)
@@ -78,11 +74,10 @@
                     float roughness = pow(8192.0f, gloss);
 
                     float D = roughnessTerm(nh, roughness);
-                    float S = specularNormalizeFactor(roughness);
                     float F = fresnelSchlick(specular, lh);
                     float G = geometricShadowingSmith(roughness, nl, nv, lh);
 
-                    return max(0, D * S * F * G * nl);
+                    return max(0, D * F * G * nl);
                 }
 
                 return 0;

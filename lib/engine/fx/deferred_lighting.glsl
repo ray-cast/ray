@@ -136,7 +136,7 @@
                 float4 MRT1 = sampleCoord(texMRT1, coord);
                 float4 MRT0 = sampleCoord(texMRT0, coord);
 
-                float shininess = restoreShininess(MRT1);
+                float roughness = restoreRoughness(MRT1);
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
@@ -147,7 +147,7 @@
 
                 float4 lighting;
                 lighting.rgb = lightColor * brdfLambert(N, L);
-                lighting.a = brdfSpecular(N, L, V, shininess, specular);
+                lighting.a = brdfSpecular(N, L, V, roughness, specular);
 
                 glsl_FragColor0 = lighting;
             }
@@ -157,7 +157,7 @@
                 float4 MRT1 = sampleCoord(texMRT1, coord);
                 float4 MRT0 = sampleCoord(texMRT0, coord);
 
-                float shininess = restoreShininess(MRT1);
+                float roughness = restoreRoughness(MRT1);
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
@@ -170,7 +170,7 @@
 
                 float4 lighting;
                 lighting.rgb = lightColor * brdfLambert(N, L);
-                lighting.a = brdfSpecular(N, L, V, shininess, specular);
+                lighting.a = brdfSpecular(N, L, V, roughness, specular);
                 lighting *= shadowLighting(shadowMap, shadowMatrix, shadowFactor, world.xyz);
 
                 glsl_FragColor0 = lighting;
@@ -181,7 +181,7 @@
                 float4 MRT1 = sampleCoord(texMRT1, coord);
                 float4 MRT0 = sampleCoord(texMRT0, coord);
 
-                float shininess = restoreShininess(MRT1);
+                float roughness = restoreRoughness(MRT1);
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
@@ -192,7 +192,7 @@
 
                 float4 lighting;
                 lighting.rgb = lightColor * brdfLambert(N, L);
-                lighting.a = brdfSpecular(N, L, V, shininess, specular);
+                lighting.a = brdfSpecular(N, L, V, roughness, specular);
 
                 glsl_FragColor0 = lighting;
             }
@@ -202,7 +202,7 @@
                 float4 MRT1 = sampleCoord(texMRT1, coord);
                 float4 MRT0 = sampleCoord(texMRT0, coord);
 
-                float shininess = restoreShininess(MRT1);
+                float roughness = restoreRoughness(MRT1);
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
@@ -215,7 +215,7 @@
 
                 float4 lighting;
                 lighting.rgb = lightColor * brdfLambert(N, L);
-                lighting.a = brdfSpecular(N, L, V, shininess, specular);
+                lighting.a = brdfSpecular(N, L, V, roughness, specular);
                 lighting *= shadowLighting(shadowMap, shadowMatrix, shadowFactor, world.xyz);
 
                 glsl_FragColor0 = lighting;
@@ -226,7 +226,7 @@
                 float4 MRT1 = sampleCoord(texMRT1, coord);
                 float4 MRT0 = sampleCoord(texMRT0, coord);
 
-                float shininess = restoreShininess(MRT1);
+                float roughness = restoreRoughness(MRT1);
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
@@ -236,7 +236,7 @@
 
                 float4 lighting;
                 lighting.rgb = lightColor * brdfLambert(N, L);
-                lighting.a = brdfSpecular(N, L, V, shininess, specular);
+                lighting.a = brdfSpecular(N, L, V, roughness, specular);
                 lighting *= spotLighting(lightPosition, P, lightDirection, lightSpotInnerCone, lightSpotOuterCone, lightAttenuation);
 
                 glsl_FragColor0 = lighting;
@@ -247,7 +247,7 @@
                 float4 MRT1 = sampleCoord(texMRT1, coord);
                 float4 MRT0 = sampleCoord(texMRT0, coord);
 
-                float shininess = restoreShininess(MRT1);
+                float roughness = restoreRoughness(MRT1);
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
@@ -257,7 +257,7 @@
 
                 float4 lighting;
                 lighting.rgb = lightColor * brdfLambert(N, L);
-                lighting.a = brdfSpecular(N, L, V, shininess, specular);
+                lighting.a = brdfSpecular(N, L, V, roughness, specular);
                 lighting *= pointLighting(lightPosition, P, lightAttenuation);
 
                 glsl_FragColor0 = lighting;
@@ -268,7 +268,7 @@
                 float4 MRT1 = sampleCoord(texMRT1, coord);
                 float4 MRT0 = sampleCoord(texMRT0, coord);
 
-                float shininess = restoreShininess(MRT1);
+                float roughness = restoreRoughness(MRT1);
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = mat3(matViewInverse) * restoreNormal(MRT1);
@@ -277,7 +277,7 @@
 
                 float4 lighting;
                 lighting.rgb = lightColor;
-                lighting.a = brdfEnvironmentSpecular(N, V, shininess, specular);
+                lighting.a = brdfEnvironmentSpecular(N, V, roughness, specular);
 
                 glsl_FragColor0 = lighting;
             }
@@ -303,7 +303,7 @@
 
                 color = color * light.rgb + light.rgb * light.a;
 
-                glsl_FragColor0 = float4(color, restoreAlpha(MRT0));
+                glsl_FragColor0 = float4(color, 1.0);
             }
         ]]>
     </shader>

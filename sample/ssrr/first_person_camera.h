@@ -69,8 +69,8 @@ private:
 	float _lastX;
 	float _lastY;
 
-	int _centerX;
-	int _centerY;
+	std::uint32_t _centerX;
+	std::uint32_t _centerY;
 };
 
 #endif

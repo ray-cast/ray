@@ -34,8 +34,6 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-
-// +----------------------------------------------------------------------
 #include <ray/imagtga.h>
 
 _NAME_BEGIN
@@ -62,7 +60,7 @@ struct TGAHeader
 #pragma pack(pop)
 
 bool
-TGAHandler::doCanRead(istream& stream) const noexcept
+TGAHandler::doCanRead(StreamReader& stream) const noexcept
 {
 	TGAHeader hdr;
 
@@ -93,7 +91,7 @@ TGAHandler::doCanRead(istream& stream) const noexcept
 }
 
 bool
-TGAHandler::doLoad(Image& image, istream& stream) noexcept
+TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 {
 	TGAHeader hdr;
 
@@ -320,7 +318,7 @@ TGAHandler::doLoad(Image& image, istream& stream) noexcept
 }
 
 bool
-TGAHandler::doSave(Image& /*image*/, ostream& /*stream*/) noexcept
+TGAHandler::doSave(Image&, StreamWrite&) noexcept
 {
 	return false;
 }

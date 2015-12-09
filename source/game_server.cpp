@@ -39,6 +39,8 @@
 #include <ray/game_event.h>
 #include <ray/game_component.h>
 #include <ray/xmlreader.h>
+#include <ray/mstream.h>
+#include <ray/ioserver.h>
 
 _NAME_BEGIN
 
@@ -130,13 +132,17 @@ GameServer::getTimer() const noexcept
 bool
 GameServer::openScene(const std::string& filename) except
 {
-	XMLReader xml;
-	if (xml.open(filename))
+	StreamReaderPtr stream;
+	if (IoServer::instance()->openFile(stream, filename, ios_base::in))
 	{
-		auto scene = std::make_shared<GameScene>();
-		scene->setGameServer(this);
-		scene->load(xml);
-		return true;
+		XMLReader xml;
+		if (xml.open(*stream))
+		{
+			auto scene = std::make_shared<GameScene>();
+			scene->setGameServer(this);
+			scene->load(xml);
+			return true;
+		}
 	}
 
 	return false;

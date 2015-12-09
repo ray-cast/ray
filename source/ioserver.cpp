@@ -144,116 +144,23 @@ IoServer::getResolveAssign(const std::string& url, std::string& resolvePath) noe
 }
 
 IoServer&
-IoServer::openFile(const std::string& path, iostream& stream, open_mode mode) noexcept
+IoServer::openFile(StreamReaderPtr& stream, const std::string& path, open_mode mode) noexcept
 {
-    bool result = this->openFileFromFileSystem(path, stream, mode);
-    if (!result)
-    {
-        result = this->openFileFromDisk(path, stream, mode);
-    }
-
-    return *this;
-}
-
-IoServer&
-IoServer::openFileFromFileSystem(const std::string& path, iostream& stream, open_mode mode) noexcept
-{
-    this->setstate(ios_base::failbit);
-    return *this;
-}
-
-IoServer&
-IoServer::openFileFromDisk(const std::string& path, iostream& stream, open_mode mode) noexcept
-{
-    std::string resolvePath;
-	this->getResolveAssign(path, resolvePath);
-
-	if (resolvePath.empty())
-		resolvePath = path;
-
-    fstream fileStream;
-    fileStream.setOpenMode(mode);
-
-    if (fileStream.open(resolvePath))
-    {
-        stream.setOpenMode(fileStream.getOpenMode());
-        if (stream.open(path))
-        {
-            if (stream.copy(fileStream))
-            {
-                this->setstate(ios_base::goodbit);
-                return *this;
-            }
-        }
-    }
-
-    this->setstate(ios_base::failbit);
-    return *this;
-}
-
-IoServer&
-IoServer::openFile(const std::wstring& path, iostream& stream, open_mode mode) noexcept
-{
-    bool result = this->openFileFromFileSystem(path, stream, mode);
-    if (!result)
-    {
-        result = this->openFileFromDisk(path, stream, mode);
-    }
-
-    return *this;
-}
-
-IoServer&
-IoServer::openFileFromFileSystem(const std::wstring& path, iostream& stream, open_mode mode) noexcept
-{
-    this->setstate(ios_base::failbit);
-    return *this;
-}
-
-IoServer&
-IoServer::openFileFromDisk(const std::wstring& path, iostream& stream, open_mode mode) noexcept
-{
-    fstream fileStream;
-    fileStream.setOpenMode(mode);
-
-    if (fileStream.open(path))
-    {
-        stream.setOpenMode(fileStream.getOpenMode());
-        if (fileStream.open(path))
-        {
-            if (stream.copy(fileStream))
-            {
-                this->setstate(ios_base::goodbit);
-                return *this;
-            }
-        }
-    }
-
-    this->setstate(ios_base::failbit);
-    return *this;
-}
-
-IoServer&
-IoServer::openFile(const std::string& path, istream& stream, open_mode mode) noexcept
-{
-	bool result = this->openFileFromFileSystem(path, stream, mode);
+	bool result = this->openFileFromFileSystem(stream, path, mode);
 	if (!result)
-	{
-		result = this->openFileFromDisk(path, stream, mode);
-	}
-
+		result = this->openFileFromDisk(stream, path, mode);
 	return *this;
 }
 
 IoServer&
-IoServer::openFileFromFileSystem(const std::string& path, istream& stream, open_mode mode) noexcept
+IoServer::openFileFromFileSystem(StreamReaderPtr& stream, const std::string& path, open_mode mode) noexcept
 {
 	this->setstate(ios_base::failbit);
 	return *this;
 }
 
 IoServer&
-IoServer::openFileFromDisk(const std::string& path, istream& stream, open_mode mode) noexcept
+IoServer::openFileFromDisk(StreamReaderPtr& result, const std::string& path, open_mode mode) noexcept
 {
 	std::string resolvePath;
 	this->getResolveAssign(path, resolvePath);
@@ -261,19 +168,15 @@ IoServer::openFileFromDisk(const std::string& path, istream& stream, open_mode m
 	if (resolvePath.empty())
 		resolvePath = path;
 
-	fstream fileStream;
-	fileStream.setOpenMode(mode);
-
-	if (fileStream.open(resolvePath))
+	if (this->existsFileFromDisk(resolvePath))
 	{
-		stream.setOpenMode(fileStream.getOpenMode());
-		if (stream.open(path))
+		auto stream = std::make_shared<fstream>();
+		stream->setOpenMode(mode);
+		if (stream->open(resolvePath))
 		{
-			if (stream.copy(fileStream))
-			{
-				this->setstate(ios_base::goodbit);
-				return *this;
-			}
+			result = stream;
+			this->setstate(ios_base::goodbit);
+			return *this;
 		}
 	}
 
@@ -282,46 +185,83 @@ IoServer::openFileFromDisk(const std::string& path, istream& stream, open_mode m
 }
 
 IoServer&
-IoServer::openFile(const std::string& path, ostream& stream, open_mode mode) noexcept
+IoServer::openFile(StreamWritePtr& stream, const std::string& path, open_mode mode) noexcept
 {
-	bool result = this->openFileFromFileSystem(path, stream, mode);
+	bool result = this->openFileFromFileSystem(stream, path, mode);
 	if (!result)
-	{
-		result = this->openFileFromDisk(path, stream, mode);
-	}
-
+		result = this->openFileFromDisk(stream, path, mode);
 	return *this;
 }
 
 IoServer&
-IoServer::openFileFromFileSystem(const std::string& path, ostream& stream, open_mode mode) noexcept
+IoServer::openFileFromFileSystem(StreamWritePtr& stream, const std::string& path, open_mode mode) noexcept
 {
 	this->setstate(ios_base::failbit);
 	return *this;
 }
 
 IoServer&
-IoServer::openFileFromDisk(const std::string& path, ostream& stream, open_mode mode) noexcept
+IoServer::openFileFromDisk(StreamWritePtr& result, const std::string& path, open_mode mode) noexcept
 {
+	assert(false);
+
 	std::string resolvePath;
 	this->getResolveAssign(path, resolvePath);
 
 	if (resolvePath.empty())
 		resolvePath = path;
 
-	fstream fileStream;
-	fileStream.setOpenMode(mode);
+	auto stream = std::make_shared<ofstream>();
+	stream->setOpenMode(mode);
 
-	if (fileStream.open(resolvePath))
+	if (stream->open(resolvePath))
 	{
-		stream.setOpenMode(fileStream.getOpenMode());
-		if (stream.open(path))
+		result = stream;
+		this->clear(ios_base::goodbit);
+		return *this;
+	}
+
+	this->setstate(ios_base::failbit);
+	return *this;
+}
+
+IoServer&
+IoServer::openFile(StreamPtr& stream, const std::string& path, open_mode mode) noexcept
+{
+	bool result = this->openFileFromFileSystem(stream, path, mode);
+	if (!result)
+		result = this->openFileFromDisk(stream, path, mode);
+	return *this;
+}
+
+IoServer&
+IoServer::openFileFromFileSystem(StreamPtr& stream, const std::string& path, open_mode mode) noexcept
+{
+	this->setstate(ios_base::failbit);
+	return *this;
+}
+
+IoServer&
+IoServer::openFileFromDisk(StreamPtr& result, const std::string& path, open_mode mode) noexcept
+{
+	assert(false);
+
+	std::string resolvePath;
+	this->getResolveAssign(path, resolvePath);
+
+	if (resolvePath.empty())
+		resolvePath = path;
+
+	if (this->existsFileFromDisk(resolvePath))
+	{
+		auto stream = std::make_shared<fstream>();
+		stream->setOpenMode(mode);
+
+		if (stream->open(resolvePath))
 		{
-			if (stream.copy(fileStream))
-			{
-				this->setstate(ios_base::goodbit);
-				return *this;
-			}
+			result = stream;
+			this->clear(ios_base::goodbit);
+			return *this;
 		}
 	}
 
@@ -369,6 +309,12 @@ IoServer::existsFileFromDisk(const std::string& path) noexcept
 	else
 		this->clear(ios_base::goodbit);
 
+	return *this;
+}
+
+IoServer& 
+IoServer::copyFile(const std::string& path, const std::string& to) noexcept
+{
 	return *this;
 }
 

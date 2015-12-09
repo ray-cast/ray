@@ -364,10 +364,10 @@ struct PMD
 class PMDHandler : public ModelHandler
 {
 public:
-	virtual bool doCanRead(istream& stream) const noexcept;
+	virtual bool doCanRead(StreamReader& stream) const noexcept;
 
-	virtual bool doLoad(Model& model, istream& stream) noexcept;
-	virtual bool doSave(Model& model, ostream& stream) noexcept;
+	virtual bool doLoad(Model& model, StreamReader& stream) noexcept;
+	virtual bool doSave(Model& model, StreamWrite& stream) noexcept;
 };
 
 _NAME_END

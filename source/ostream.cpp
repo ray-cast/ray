@@ -35,122 +35,39 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/ostream.h>
-#include <ray/iolistener.h>
 
 _NAME_BEGIN
 
-class osentry
+StreamWrite::osentry::osentry(StreamWrite* _ostr)
+    :_my_ostr(_ostr)
 {
-public:
-    explicit osentry(ostream* _ostr)
-        :_my_ostr(_ostr)
-    {
-        if (_my_ostr->rdbuf() != 0)
-            _my_ostr->rdbuf()->lock();
-        _ok = _ostr->good();
-    }
-
-    ~osentry() noexcept
-    {
-        if (_my_ostr->rdbuf() != 0)
-            _my_ostr->rdbuf()->unlock();
-    }
-
-    explicit operator bool() const
-    {
-        return (_ok ? true : false);
-    }
-
-private:
-    bool _ok;
-    ostream* _my_ostr;
-    osentry(const osentry&);
-    const osentry& operator=(const osentry&);
-};
-
-ostream::ostream(streambuf* buf, bool _isstd) noexcept
-{
-    stream::_init(buf, ios_base::out);
+    if (_my_ostr->rdbuf() != 0)
+        _my_ostr->rdbuf()->lock();
+    _ok = _ostr->good();
 }
 
-ostream::~ostream() noexcept
+StreamWrite::osentry::~osentry() noexcept
+{
+    if (_my_ostr->rdbuf() != 0)
+        _my_ostr->rdbuf()->unlock();
+}
+
+StreamWrite::osentry::operator bool() const noexcept
+{
+    return (_ok ? true : false);
+}
+
+StreamWrite::StreamWrite(streambuf* buf) noexcept
+{
+    StreamBase::_init(buf, ios_base::out);
+}
+
+StreamWrite::~StreamWrite() noexcept
 {
 }
 
-bool
-ostream::is_open() const noexcept
-{
-    return this->rdbuf()->is_open();
-}
-
-ostream&
-ostream::open(const char* filename) noexcept
-{
-    const osentry ok(this);
-    if (ok)
-    {
-        ios_base::openmode mode = getOpenMode();
-
-        ioListenerPoster::onOpenBefor(filename, mode);
-
-        if (!this->rdbuf()->open(filename, mode))
-        {
-            ioListenerPoster::onOpenFail(filename, mode);
-
-            this->setstate(ios_base::failbit);
-        }
-        else
-        {
-            ioListenerPoster::onOpenSuccess(filename, mode);
-
-            this->clear(ios_base::goodbit);
-        }
-    }
-
-    return (*this);
-}
-
-ostream&
-ostream::open(const wchar_t* filename) noexcept
-{
-    const osentry ok(this);
-    if (ok)
-    {
-        ios_base::openmode mode = getOpenMode();
-
-        ioListenerPoster::onOpenBefor(filename, mode);
-
-        if (!this->rdbuf()->open(filename, mode))
-        {
-            ioListenerPoster::onOpenFail(filename, mode);
-
-            this->setstate(ios_base::failbit);
-        }
-        else
-        {
-            ioListenerPoster::onOpenSuccess(filename, mode);
-
-            this->clear(ios_base::goodbit);
-        }
-    }
-
-    return (*this);
-}
-
-ostream&
-ostream::open(const std::string& filename) noexcept
-{
-    return this->open(filename.c_str());
-}
-
-ostream&
-ostream::open(const std::wstring& filename) noexcept
-{
-    return this->open(filename.c_str());
-}
-
-ostream&
-ostream::write(const char* str, std::streamsize cnt) noexcept
+StreamWrite&
+StreamWrite::write(const char* str, std::streamsize cnt) noexcept
 {
     assert(cnt != 0);
 
@@ -177,14 +94,14 @@ ostream::write(const char* str, std::streamsize cnt) noexcept
     return (*this);
 }
 
-ostream&
-ostream::write(const char* str, streamsize size, streamsize cnt) noexcept
+StreamWrite&
+StreamWrite::write(const char* str, streamsize size, streamsize cnt) noexcept
 {
     return this->write(str, size * cnt);
 }
 
-ostream&
-ostream::flush() noexcept
+StreamWrite&
+StreamWrite::flush() noexcept
 {
     if (this->rdbuf() != 0)
     {
@@ -199,8 +116,8 @@ ostream::flush() noexcept
     return (*this);
 }
 
-ostream&
-ostream::seekg(ios_base::off_type pos) noexcept
+StreamWrite&
+StreamWrite::seekg(ios_base::off_type pos) noexcept
 {
     const osentry ok(this);
     if (ok)
@@ -212,8 +129,8 @@ ostream::seekg(ios_base::off_type pos) noexcept
     return (*this);
 }
 
-ostream&
-ostream::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
+StreamWrite&
+StreamWrite::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
 {
     const osentry ok(this);
     if (ok)
@@ -226,13 +143,13 @@ ostream::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
 }
 
 streamsize
-ostream::gcount() const noexcept
+StreamWrite::gcount() const noexcept
 {
     return _count;
 }
 
 ios_base::pos_type
-ostream::tellg() noexcept
+StreamWrite::tellg() noexcept
 {
     const osentry ok(this);
 
@@ -242,43 +159,28 @@ ostream::tellg() noexcept
         return (ios_base::pos_type(ios_base::_BADOFF));
 }
 
-ostream&
-ostream::close() noexcept
-{
-    const osentry ok(this);
-    if (ok)
-    {
-        if (!this->fail())
-        {
-            this->rdbuf()->close();
-        }
-    }
-
-    return (*this);
-}
-
-ostream&
-ostream::copy(ostream& other) noexcept
+StreamWrite&
+StreamWrite::copy(StreamWrite& other) noexcept
 {
     _count = other._count;
-    stream::copy(other);
+    StreamBase::copy(other);
     return *this;
 }
 
-ostream&
-ostream::operator << (const char* str) noexcept
+StreamWrite&
+StreamWrite::operator << (const char* str) noexcept
 {
     return this->write(str, (std::streamsize)std::strlen(str));
 }
 
-ostream&
-ostream::operator << (const std::string& str) noexcept
+StreamWrite&
+StreamWrite::operator << (const std::string& str) noexcept
 {
     return this->write(str.c_str(), (std::streamsize)str.size());
 }
 
-ostream&
-ostream::operator << (char value) noexcept
+StreamWrite&
+StreamWrite::operator << (char value) noexcept
 {
     const osentry _Ok(this);
     if (_Ok)
@@ -299,8 +201,8 @@ ostream::operator << (char value) noexcept
     return *this;
 }
 
-ostream&
-ostream::operator << (unsigned char value) noexcept
+StreamWrite&
+StreamWrite::operator << (unsigned char value) noexcept
 {
     const osentry _Ok(this);
     if (_Ok)
@@ -321,8 +223,8 @@ ostream::operator << (unsigned char value) noexcept
     return *this;
 }
 
-ostream&
-ostream::operator << (short value) noexcept
+StreamWrite&
+StreamWrite::operator << (short value) noexcept
 {
     const osentry _Ok(this);
     if (_Ok)
@@ -343,8 +245,8 @@ ostream::operator << (short value) noexcept
     return *this;
 }
 
-ostream&
-ostream::operator << (long long value) noexcept
+StreamWrite&
+StreamWrite::operator << (long long value) noexcept
 {
     const osentry _Ok(this);
     if (_Ok)
@@ -365,8 +267,8 @@ ostream::operator << (long long value) noexcept
     return *this;
 }
 
-ostream&
-ostream::operator << (unsigned short value) noexcept
+StreamWrite&
+StreamWrite::operator << (unsigned short value) noexcept
 {
     const osentry _Ok(this);
     if (_Ok)
@@ -387,8 +289,8 @@ ostream::operator << (unsigned short value) noexcept
     return *this;
 }
 
-ostream&
-ostream::operator << (int value) noexcept
+StreamWrite&
+StreamWrite::operator << (int value) noexcept
 {
     const osentry _Ok(this);
     if (_Ok)
@@ -409,8 +311,8 @@ ostream::operator << (int value) noexcept
     return *this;
 }
 
-ostream&
-ostream::operator << (unsigned int value) noexcept
+StreamWrite&
+StreamWrite::operator << (unsigned int value) noexcept
 {
     const osentry _Ok(this);
     if (_Ok)
@@ -431,8 +333,8 @@ ostream::operator << (unsigned int value) noexcept
     return *this;
 }
 
-ostream&
-ostream::operator << (unsigned long value) noexcept
+StreamWrite&
+StreamWrite::operator << (unsigned long value) noexcept
 {
     const osentry _Ok(this);
     if (_Ok)
@@ -453,8 +355,8 @@ ostream::operator << (unsigned long value) noexcept
     return *this;
 }
 
-ostream&
-ostream::operator << (unsigned long long value) noexcept
+StreamWrite&
+StreamWrite::operator << (unsigned long long value) noexcept
 {
     const osentry _Ok(this);
     if (_Ok)
@@ -475,8 +377,8 @@ ostream::operator << (unsigned long long value) noexcept
     return *this;
 }
 
-ostream&
-ostream::operator << (float value) noexcept
+StreamWrite&
+StreamWrite::operator << (float value) noexcept
 {
     const osentry _Ok(this);
     if (_Ok)
@@ -497,8 +399,8 @@ ostream::operator << (float value) noexcept
     return *this;
 }
 
-ostream&
-ostream::operator << (double value) noexcept
+StreamWrite&
+StreamWrite::operator << (double value) noexcept
 {
     const osentry _Ok(this);
     if (_Ok)
@@ -519,16 +421,16 @@ ostream::operator << (double value) noexcept
     return *this;
 }
 
-ostream&
-ostream::operator << (ios_base& (*function)(ios_base&)) noexcept
+StreamWrite&
+StreamWrite::operator << (ios_base& (*function)(ios_base&)) noexcept
 {    // call ios_base manipulator
     assert(function);
     (*function)(*(ios_base *)this);
     return (*this);
 }
 
-ostream&
-ostream::operator << (ostream& (*function)(ostream&)) noexcept
+StreamWrite&
+StreamWrite::operator << (StreamWrite& (*function)(StreamWrite&)) noexcept
 {
     assert(function);
     (*function)(*this);

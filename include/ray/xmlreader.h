@@ -37,8 +37,7 @@
 #ifndef _H_XMLREADER_H_
 #define _H_XMLREADER_H_
 
-#include <ray/archive.h>
-#include <ray/iostream.h>
+#include <ray/ioarchive.h>
 
 class TiXmlDocument;
 class TiXmlElement;
@@ -46,57 +45,75 @@ class TiXmlAttribute;
 
 _NAME_BEGIN
 
+class XmlBuf : public archivebuf
+{
+public:
+	XmlBuf() noexcept;
+	~XmlBuf() noexcept;
+
+	virtual bool open(StreamReader& stream) noexcept;
+	virtual void close() noexcept;
+
+	virtual bool is_open() const noexcept;
+
+	virtual std::string getCurrentNodeName() const noexcept;
+	virtual std::string getCurrentNodePath() const noexcept;
+
+	virtual void setToNode(const std::string& path) noexcept;
+	virtual bool setToFirstChild() noexcept;
+	virtual bool setToFirstChild(const std::string& name) noexcept;
+	virtual bool setToNextChild() noexcept;
+	virtual bool setToNextChild(const std::string& name) noexcept;
+	virtual bool setToParent() noexcept;
+
+	virtual bool hasChild() const noexcept;
+
+	virtual bool hasAttr(const char* name) const noexcept;
+	virtual void clearAttrs() noexcept;
+	virtual bool addAttrs() noexcept;
+	virtual bool addAttrsInChildren() noexcept;
+	virtual bool addAttrsInChildren(const std::string& key) noexcept;
+	virtual const std::vector<std::string>& getAttrList() const noexcept;
+
+	virtual std::string getText() const noexcept;
+
+	virtual bool getValue(const std::string& name, bool& result) const noexcept;
+	virtual bool getValue(const std::string& name, int1& result) const noexcept;
+	virtual bool getValue(const std::string& name, int2& result) const noexcept;
+	virtual bool getValue(const std::string& name, int3& result) const noexcept;
+	virtual bool getValue(const std::string& name, int4& result) const noexcept;
+	virtual bool getValue(const std::string& name, float1& result) const noexcept;
+	virtual bool getValue(const std::string& name, float2& result) const noexcept;
+	virtual bool getValue(const std::string& name, float3& result) const noexcept;
+	virtual bool getValue(const std::string& name, float4& result) const noexcept;
+	virtual bool getValue(const std::string& name, std::string& result) const noexcept;
+
+	virtual const char* errorString() const noexcept;
+
+	virtual void copy(const archivebuf& other) noexcept;
+
+private:
+	XmlBuf(const XmlBuf&) noexcept = delete;
+	XmlBuf& operator=(const XmlBuf&) noexcept = delete;
+
+private:
+
+	TiXmlElement* _currentNode;
+	TiXmlElement* _currentAttrNode;
+	std::vector<std::string> _attrNames;
+	std::vector<TiXmlAttribute*> _attrLists;
+	std::unique_ptr<TiXmlDocument> _document;
+};
+
 class EXPORT XMLReader final : public iarchive
 {
 public:
     XMLReader() noexcept;
     ~XMLReader() noexcept;
 
-    bool open(istream& stream) noexcept;
-	bool open(const std::string& filename) noexcept;
-    void close() noexcept;
-
-    std::string getCurrentNodeName() const noexcept;
-    std::string getCurrentNodePath() const noexcept;
-
-    void setToNode(const std::string& path) noexcept;
-	bool setToFirstChild() noexcept;
-    bool setToFirstChild(const std::string& name = "") noexcept;
-	bool setToNextChild() noexcept;
-    bool setToNextChild(const std::string& name = "") noexcept;
-    bool setToParent() noexcept;
-
-	bool hasChild() const noexcept;
-
-    bool hasAttr(const char* name) const noexcept;
-	void clearAttrs() noexcept;
-	const std::vector<std::string>& addAttrs() noexcept;
-	const std::vector<std::string>& addAttrsInChildren() noexcept;
-	const std::vector<std::string>& addAttrsInChildren(const std::string& key) noexcept;
-    const std::vector<std::string>& getAttrList() const noexcept;
-
-    std::string getText() const noexcept;
-
-    bool getValue(const std::string& name, bool& result) const noexcept;
-	bool getValue(const std::string& name, int1& result) const noexcept;
-	bool getValue(const std::string& name, int2& result) const noexcept;
-	bool getValue(const std::string& name, int3& result) const noexcept;
-	bool getValue(const std::string& name, int4& result) const noexcept;
-    bool getValue(const std::string& name, float1& result) const noexcept;
-    bool getValue(const std::string& name, float2& result) const noexcept;
-    bool getValue(const std::string& name, float3& result) const noexcept;
-    bool getValue(const std::string& name, float4& result) const noexcept;
-    bool getValue(const std::string& name, std::string& result) const noexcept;
-
-	const char* errorString() const noexcept;
-
 private:
 
-    TiXmlElement* _currentNode;
-	TiXmlElement* _currentAttrNode;
-	std::vector<std::string> _attrNames;
-	std::vector<TiXmlAttribute*> _attrLists;
-    std::unique_ptr<TiXmlDocument> _document;
+	XmlBuf _xml;
 };
 
 _NAME_END

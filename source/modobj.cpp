@@ -50,11 +50,11 @@ ObjHandler::~ObjHandler() noexcept
 }
 
 bool
-ObjHandler::SearchFileHeaderForToken(istream* stream, const char** tokens, unsigned int numTokens, unsigned int searchBytes, bool tokensSol)
+ObjHandler::SearchFileHeaderForToken(StreamReader* stream, const char** tokens, unsigned int numTokens, unsigned int searchBytes, bool tokensSol)
 {
     assert(nullptr != stream && nullptr != tokens && 0 != numTokens && 0 != searchBytes);
 
-    if (stream->is_open())
+    if (stream->good())
     {
         // read 200 characters from the file
         std::unique_ptr<char[]> _buffer(new char[searchBytes + 1 /* for the '\0' */]);
@@ -97,14 +97,14 @@ ObjHandler::SearchFileHeaderForToken(istream* stream, const char** tokens, unsig
 }
 
 bool
-ObjHandler::doCanRead(istream& stream) const noexcept
+ObjHandler::doCanRead(StreamReader& stream) const noexcept
 {
     static const char *pTokens[] = { "mtllib", "usemtl" };
     return SearchFileHeaderForToken(&stream, pTokens, 2);
 }
 
 bool
-ObjHandler::doLoad(Model& model, istream& stream) noexcept
+ObjHandler::doLoad(Model& model, StreamReader& stream) noexcept
 {
     streamsize size = stream.gcount();
     if (size < 16)
@@ -119,7 +119,7 @@ ObjHandler::doLoad(Model& model, istream& stream) noexcept
 }
 
 bool
-ObjHandler::doSave(Model& model, ostream& stream) noexcept
+ObjHandler::doSave(Model& model, StreamWrite& stream) noexcept
 {
     return false;
 }

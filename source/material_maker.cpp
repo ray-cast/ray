@@ -430,14 +430,12 @@ MaterialMaker::load(const std::string& filename) except
 {
 	try
 	{
-		MemoryReader stream;
-
-		IoServer::instance()->openFile(filename, stream, ios_base::in);
-		if (!stream.is_open())
+		StreamReaderPtr stream;
+		if (!IoServer::instance()->openFile(stream, filename, ios_base::in))
 			throw failure(__TEXT("Opening file fail:") + filename);
 
 		XMLReader reader;
-		if (reader.open(stream))
+		if (reader.open(*stream))
 			return this->load(reader);
 
 		return nullptr;

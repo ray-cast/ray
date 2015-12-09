@@ -144,14 +144,16 @@ SET(PLATFORM_IO_LIST
     ${HEADER_PATH}/iostream.h
     ${SOURCE_PATH}/ioserver.cpp
     ${HEADER_PATH}/ioserver.h
-    ${SOURCE_PATH}/iolistener.cpp
-    ${HEADER_PATH}/iolistener.h
     ${SOURCE_PATH}/iointerface.cpp
     ${HEADER_PATH}/iointerface.h
     ${SOURCE_PATH}/istream.cpp
     ${HEADER_PATH}/istream.h
     ${SOURCE_PATH}/archive.cpp
     ${HEADER_PATH}/archive.h
+    ${SOURCE_PATH}/iarchive.cpp
+    ${HEADER_PATH}/iarchive.h
+    ${SOURCE_PATH}/oarchive.cpp
+    ${HEADER_PATH}/oarchive.h
     ${SOURCE_PATH}/ostream.cpp
     ${HEADER_PATH}/ostream.h
     ${SOURCE_PATH}/mstream.cpp
@@ -159,6 +161,7 @@ SET(PLATFORM_IO_LIST
     ${SOURCE_PATH}/stream.cpp
     ${HEADER_PATH}/stream.h
     ${HEADER_PATH}/package.h
+    ${SOURCE_PATH}/package.cpp
     ${SOURCE_PATH}/streambuf.cpp
     ${HEADER_PATH}/streambuf.h
     ${HEADER_PATH}/xmlreader.h

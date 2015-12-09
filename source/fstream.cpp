@@ -39,73 +39,135 @@
 _NAME_BEGIN
 
 ifstream::ifstream() noexcept
-    : istream(&_file)
+    : StreamReader(&_file)
 {
 }
 
 ifstream::ifstream(FILE* file) noexcept
-    : istream(&_file)
+    : StreamReader(&_file)
 {
 }
 
 ifstream::ifstream(const char* filename) noexcept
-    : istream(&_file)
+    : StreamReader(&_file)
 {
     this->open(filename);
 }
 
 ifstream::ifstream(const wchar_t* filename) noexcept
-    : istream(&_file)
+    : StreamReader(&_file)
 {
     this->open(filename);
 }
 
 ifstream::ifstream(const std::string& filename) noexcept
-    : istream(&_file)
+    : StreamReader(&_file)
 {
     this->open(filename);
 }
 
 ifstream::ifstream(const std::wstring& filename) noexcept
-    : istream(&_file)
+    : StreamReader(&_file)
 {
     this->open(filename);
 }
+
+bool
+ifstream::is_open() const noexcept
+{
+	return this->rdbuf()->is_open();
+}
+
+ifstream&
+ifstream::open(const char* filename) noexcept
+{
+	const isentry ok(this);
+	if (ok)
+	{
+		if (!_file.open(filename, this->getOpenMode()))
+			this->setstate(ios_base::failbit);
+		else
+			this->clear(ios_base::goodbit);
+	}
+
+	return (*this);
+}
+
+ifstream&
+ifstream::open(const wchar_t* filename) noexcept
+{
+	const isentry ok(this);
+	if (ok)
+	{
+		if (!_file.open(filename, this->getOpenMode()))
+			this->setstate(ios_base::failbit);
+		else
+			this->clear(ios_base::goodbit);
+	}
+
+	return (*this);
+}
+
+ifstream&
+ifstream::open(const std::string& filename) noexcept
+{
+	return this->open(filename.c_str());
+}
+
+ifstream&
+ifstream::open(const std::wstring& filename) noexcept
+{
+	return this->open(filename.c_str());
+}
+
+ifstream&
+ifstream::close() noexcept
+{
+	const isentry ok(this);
+	if (ok)
+	{
+		if (!_file.close())
+			this->setstate(failbit);
+	}
+
+	return (*this);
+}
+
 
 ifstream::~ifstream() noexcept
 {
 }
 
 ofstream::ofstream() noexcept
-    : ostream(&_file)
+    : StreamWrite(&_file)
 {
 }
 
 ofstream::ofstream(FILE* file) noexcept
-    : ostream(&_file)
+    : StreamWrite(&_file)
 {
 }
 
 ofstream::ofstream(const char* filename) noexcept
-    : ostream(&_file)
+    : StreamWrite(&_file)
 {
     this->open(filename);
 }
 
 ofstream::ofstream(const wchar_t* filename) noexcept
-    : ostream(&_file)
+    : StreamWrite(&_file)
 {
     this->open(filename);
 }
 
 ofstream::ofstream(const std::string& filename) noexcept
-    : ostream(&_file)
+    : StreamWrite(&_file)
 {
     this->open(filename);
 }
 
 ofstream::ofstream(const std::wstring& filename) noexcept
-    : ostream(&_file)
+    : StreamWrite(&_file)
 {
     this->open(filename);
 }
@@ -114,42 +176,164 @@ ofstream::~ofstream() noexcept
 {
 }
 
+bool
+ofstream::is_open() const noexcept
+{
+	return this->rdbuf()->is_open();
+}
+
+ofstream&
+ofstream::open(const char* filename) noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!_file.open(filename, this->getOpenMode()))
+			this->setstate(ios_base::failbit);
+		else
+			this->clear(ios_base::goodbit);
+	}
+
+	return (*this);
+}
+
+ofstream&
+ofstream::open(const wchar_t* filename) noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!_file.open(filename, this->getOpenMode()))
+			this->setstate(ios_base::failbit);
+		else
+			this->clear(ios_base::goodbit);
+	}
+
+	return (*this);
+}
+
+ofstream&
+ofstream::open(const std::string& filename) noexcept
+{
+	return this->open(filename.c_str());
+}
+
+ofstream&
+ofstream::open(const std::wstring& filename) noexcept
+{
+	return this->open(filename.c_str());
+}
+
+ofstream&
+ofstream::close() noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!_file.close())
+			this->setstate(failbit);
+	}
+
+	return (*this);
+}
+
 fstream::fstream() noexcept
-    : iostream(&_file)
+    : Stream(&_file)
 {
 }
 
 fstream::fstream(FILE* file) noexcept
-    : iostream(&_file)
+    : Stream(&_file)
 {
 }
 
 fstream::fstream(const char* filename) noexcept
-    : iostream(&_file)
+    : Stream(&_file)
 {
     this->open(filename);
 }
 
 fstream::fstream(const wchar_t* filename) noexcept
-    : iostream(&_file)
+    : Stream(&_file)
 {
     this->open(filename);
 }
 
 fstream::fstream(const std::string& filename) noexcept
-    : iostream(&_file)
+    : Stream(&_file)
 {
     this->open(filename);
 }
 
 fstream::fstream(const std::wstring& filename) noexcept
-    : iostream(&_file)
+    : Stream(&_file)
 {
     this->open(filename);
 }
 
 fstream::~fstream() noexcept
 {
+}
+
+fstream&
+fstream::open(const char* filename) noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!_file.open(filename, this->getOpenMode()))
+			this->setstate(ios_base::failbit);
+		else
+			this->clear(ios_base::goodbit);
+	}
+
+	return (*this);
+}
+
+fstream&
+fstream::open(const wchar_t* filename) noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!_file.open(filename, this->getOpenMode()))
+			this->setstate(ios_base::failbit);
+		else
+			this->clear(ios_base::goodbit);
+	}
+
+	return (*this);
+}
+
+fstream&
+fstream::open(const std::string& filename) noexcept
+{
+	return this->open(filename.c_str());
+}
+
+fstream&
+fstream::open(const std::wstring& filename) noexcept
+{
+	return this->open(filename.c_str());
+}
+
+bool
+fstream::is_open() const noexcept
+{
+	return this->rdbuf()->is_open();
+}
+
+fstream&
+fstream::close() noexcept
+{
+	const isentry ok(this);
+	if (ok)
+	{
+		if (!_file.close())
+			this->setstate(failbit);
+	}
+
+	return (*this);
 }
 
 _NAME_END

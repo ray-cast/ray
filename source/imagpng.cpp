@@ -48,7 +48,7 @@ struct PNGInfoStruct
 
 	union
 	{
-		istream* in;
+		StreamReader* in;
 	} stream;
 };
 
@@ -78,7 +78,7 @@ void PNGAPI PNG_stream_reader(png_structp png_ptr, png_bytep data, png_size_t le
 }
 
 bool
-PNGHandler::doCanRead(istream& stream) const noexcept
+PNGHandler::doCanRead(StreamReader& stream) const noexcept
 {
 	static const std::uint8_t magic[] = { 0x89, 'P', 'N', 'G' };
 
@@ -93,7 +93,7 @@ PNGHandler::doCanRead(istream& stream) const noexcept
 }
 
 bool
-PNGHandler::doLoad(Image& image, istream& stream) noexcept
+PNGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 {
 	PNGInfoStruct info;
 	info.stream.in = &stream;
@@ -228,7 +228,7 @@ PNGHandler::doLoad(Image& image, istream& stream) noexcept
 }
 
 bool
-PNGHandler::doSave(Image& /*image*/, ostream& /*stream*/) noexcept
+PNGHandler::doSave(Image&, StreamWrite&) noexcept
 {
 	return false;
 }

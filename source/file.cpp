@@ -373,16 +373,11 @@ IOFILE*
 IOFILE::open(const char* filename, ios_base::openmode mode) noexcept
 {
     if (_stream)
-    {
         fclose(_stream);
-    }
 
     _stream = fopen(filename, mode);
     if (_stream)
-    {
         return this;
-    }
-
     return nullptr;
 }
 
@@ -451,14 +446,17 @@ IOFILE::seek(streamoff _off, ios_base::seekdir seek) noexcept
     return fseek(_stream, _off, seek);
 }
 
-void
+bool
 IOFILE::close() noexcept
 {
     if (_stream)
     {
         fclose(_stream);
         _stream = nullptr;
+		return true;
     }
+
+	return false;
 }
 
 streamoff

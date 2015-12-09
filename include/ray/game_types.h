@@ -39,7 +39,7 @@
 
 #include <ray/ioserver.h>
 #include <ray/iointerface.h>
-#include <ray/archive.h>
+#include <ray/ioarchive.h>
 #include <ray/except.h>
 #include <ray/message.h>
 #include <ray/timer.h>

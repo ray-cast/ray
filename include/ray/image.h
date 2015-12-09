@@ -49,7 +49,7 @@ public:
     Image() noexcept;
     Image(size_type width, size_type height, bpp_type bpp, bool clear = false) noexcept;
     Image(size_type width, size_type height, bpp_type bpp, std::size_t dataSize, image_buf data, bool static_data = false, bool clear = false) noexcept;
-    Image(istream& stream, ImageType type = ImageType::unknown) noexcept;
+    Image(StreamReader& stream, ImageType type = ImageType::unknown) noexcept;
     ~Image() noexcept;
 
     bool create(size_type width, size_type height, bpp_type bpp, bool clear = false) noexcept;
@@ -107,15 +107,15 @@ public:
 public:
 
 	bool load(const std::string& filename, ImageType type = ImageType::unknown) noexcept;
-    bool load(istream& stream, ImageType type = ImageType::unknown) noexcept;
-    bool save(ostream& stream, ImageType type = ImageType::png) noexcept;
+    bool load(StreamReader& stream, ImageType type = ImageType::unknown) noexcept;
+    bool save(StreamWrite& stream, ImageType type = ImageType::png) noexcept;
 
     bool emptyHandler() const noexcept;
     bool add(ImageHandlerPtr handler) noexcept;
     bool remove(ImageHandlerPtr handler) noexcept;
-    bool find(istream& stream, ImageHandlerPtr& handler) const noexcept;
-    bool find(ImageType type, ImageHandlerPtr& handler) const noexcept;
-    bool find(istream& stream, ImageType type, ImageHandlerPtr& handler) const noexcept;
+    bool find(StreamReader& stream, ImageHandlerPtr& handler) const noexcept;
+    bool find(StreamReader& stream, ImageType type, ImageHandlerPtr& handler) const noexcept;
+	bool find(ImageType type, ImageHandlerPtr& handler) const noexcept;
 
 public:
     static void cmyk_to_rgb(image_buf rgb, const image_buf cmyk) noexcept;

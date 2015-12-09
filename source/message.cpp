@@ -65,12 +65,12 @@ Message::getInstanceID() const noexcept
 }
 
 void 
-Message::write(ostream& stream) noexcept
+Message::write(StreamWrite& stream) noexcept
 {
 }
 
 void 
-Message::read(istream& stream) noexcept
+Message::read(StreamReader& stream) noexcept
 {
 }
 

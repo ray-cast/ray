@@ -71,7 +71,7 @@ FontPointBitmap::~FontPointBitmap() noexcept
 }
 
 void 
-FontPointBitmap::createFontMapping(istream& stream, const std::wstring& charsets, std::size_t fontSize, std::size_t distanceSize, std::size_t numThreads)
+FontPointBitmap::createFontMapping(StreamReader& stream, const std::wstring& charsets, std::size_t fontSize, std::size_t distanceSize, std::size_t numThreads)
 {
 	std::vector<std::unique_ptr<std::thread>> _threads;
 
@@ -183,9 +183,9 @@ FontPointBitmap::createFontMapping(istream& stream, const std::wstring& charsets
 void 
 FontPointBitmap::createFontMapping(const std::string& fontpath, const std::wstring& charsets, std::size_t fontSize, std::size_t distanceSize, std::size_t numThreads)
 {
-	MemoryStream stream;
-	if (IoServer::instance()->openFile(fontpath, stream, ios_base::in))
-		this->createFontMapping(stream, charsets, fontSize, distanceSize, numThreads);
+	StreamReaderPtr stream;
+	if (IoServer::instance()->openFile(stream, fontpath, ios_base::in))
+		this->createFontMapping(*stream, charsets, fontSize, distanceSize, numThreads);
 }
 
 void
@@ -283,7 +283,7 @@ FontPointBitmap::getFontSize() const noexcept
 }
 
 bool
-FontPointBitmap::load(istream& stream)
+FontPointBitmap::load(StreamReader& stream)
 {
 	DFFINFOHEADER header;
 	if (stream.read((char*)&header, sizeof(header)))
@@ -314,28 +314,31 @@ FontPointBitmap::load(istream& stream)
 bool
 FontPointBitmap::load(const std::string& filepath)
 {
-	MemoryStream stream;
-	if (IoServer::instance()->openFile(filepath, stream))
-		return this->load(stream);
+	StreamReaderPtr stream;
+	if (IoServer::instance()->openFile(stream, filepath))
+		return this->load(*stream);
 	return false;
 }
 
 bool
-FontPointBitmap::save(ostream& stream)
+FontPointBitmap::save(StreamWrite& stream)
 {
-	if (!_bitmapGlyphs.empty())
+	if (stream)
 	{
-		DFFINFOHEADER header;
-		header.magic[0] = 'D';
-		header.magic[1] = 'F';
-		header.magic[2] = 'F';
-		header.sizeOfGlyph = _bitmapGlyphs.size();
-		header.sizeOfBitmap = _bitmapSize;
+		if (!_bitmapGlyphs.empty())
+		{
+			DFFINFOHEADER header;
+			header.magic[0] = 'D';
+			header.magic[1] = 'F';
+			header.magic[2] = 'F';
+			header.sizeOfGlyph = _bitmapGlyphs.size();
+			header.sizeOfBitmap = _bitmapSize;
 
-		stream.write((char*)&header, sizeof(header));
-		stream.write((char*)_bitmapGlyphs.data(), sizeof(FontGlyph) * _bitmapGlyphs.size());
-		stream.write((char*)_bitmap.data(), _bitmap.size());
-		return true;
+			stream.write((char*)&header, sizeof(header));
+			stream.write((char*)_bitmapGlyphs.data(), sizeof(FontGlyph) * _bitmapGlyphs.size());
+			stream.write((char*)_bitmap.data(), _bitmap.size());
+			return true;
+		}
 	}
 
 	return false;
@@ -344,9 +347,9 @@ FontPointBitmap::save(ostream& stream)
 bool
 FontPointBitmap::save(const std::string& filepath)
 {
-	ofstream stream;
-	if (IoServer::instance()->openFile(filepath, stream))
-		return this->save(stream);
+	StreamWritePtr stream;
+	if (IoServer::instance()->openFile(stream, filepath))
+		return this->save(*stream);
 	return false;
 }
 

@@ -47,10 +47,10 @@ public:
 	SDKMeshHandler() noexcept;
 	~SDKMeshHandler() noexcept;
 
-	bool doCanRead(istream& stream) const noexcept;
+	bool doCanRead(StreamReader& stream) const noexcept;
 
-	bool doLoad(Model& model, istream& stream) noexcept;
-	bool doSave(Model& model, ostream& stream) noexcept;
+	bool doLoad(Model& model, StreamReader& stream) noexcept;
+	bool doSave(Model& model, StreamWrite& stream) noexcept;
 };
 
 _NAME_END

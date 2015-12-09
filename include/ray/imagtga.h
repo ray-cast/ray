@@ -44,9 +44,9 @@ _NAME_BEGIN
 class TGAHandler : public ImageHandler
 {
 private:
-    bool doCanRead(istream& stream) const noexcept;
-    bool doLoad(Image& image, istream& stream) noexcept;
-    bool doSave(Image& image, ostream& stream) noexcept;
+    bool doCanRead(StreamReader& stream) const noexcept;
+    bool doLoad(Image& image, StreamReader& stream) noexcept;
+    bool doSave(Image& image, StreamWrite& stream) noexcept;
 };
 
 _NAME_END

@@ -52,30 +52,34 @@ public:
 
 	bool open(const std::string& path)
 	{
-		return IoServer::instance()->openFile(path, _stream);
+		return IoServer::instance()->openFile(_stream, path);
 	}
 
 	virtual bool eof()
 	{
-		return _stream.eof();
+		assert(_stream);
+		return _stream->eof();
 	}
 
 	virtual size_t size()
 	{
-		return _stream.size();
+		assert(_stream);
+		return _stream->size();
 	}
 
 	virtual void readline(std::string& _source, MyGUI::Char _delim)
 	{
+		assert(_stream);
+
 		_source.clear();
 
 		for (;;)
 		{
 			char buffer;
-			if (!_stream.read(&buffer, 1))
+			if (!_stream->read(&buffer, 1))
 				break;
 
-			if (_stream.eof())
+			if (_stream->eof())
 				break;
 
 			if (util::isLineEnd(buffer))
@@ -87,12 +91,13 @@ public:
 
 	virtual size_t read(void* _buf, size_t _count)
 	{
-		_stream.read((char*)_buf, _count);
-		return _stream.gcount();
+		assert(_stream);
+		_stream->read((char*)_buf, _count);
+		return _stream->gcount();
 	}
 
 private:
-	MemoryReader _stream;
+	StreamReaderPtr _stream;
 };
 
 MyGuiResManager::MyGuiResManager() noexcept

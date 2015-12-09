@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-class EXPORT ifstream final : public istream
+class EXPORT ifstream final : public StreamReader
 {
 public:
     ifstream() noexcept;
@@ -53,12 +53,21 @@ public:
     ifstream(const std::wstring& filename) noexcept;
     ~ifstream() noexcept;
 
+	ifstream& open(const char* filename) noexcept;
+	ifstream& open(const wchar_t* filename) noexcept;
+	ifstream& open(const std::string& filename) noexcept;
+	ifstream& open(const std::wstring& filename) noexcept;
+
+	ifstream& close() noexcept;
+
+	bool is_open() const noexcept;
+
 private:
 
     filebuf _file;
 };
 
-class EXPORT ofstream final : public ostream
+class EXPORT ofstream final : public StreamWrite
 {
 public:
     ofstream() noexcept;
@@ -69,12 +78,21 @@ public:
     ofstream(const std::wstring& filename) noexcept;
     ~ofstream() noexcept;
 
+	ofstream& open(const char* filename) noexcept;
+	ofstream& open(const wchar_t* filename) noexcept;
+	ofstream& open(const std::string& filename) noexcept;
+	ofstream& open(const std::wstring& filename) noexcept;
+
+	ofstream& close() noexcept;
+
+	bool is_open() const noexcept;
+
 private:
 
     filebuf _file;
 };
 
-class EXPORT fstream final : public iostream
+class EXPORT fstream final : public Stream
 {
 public:
     fstream() noexcept;
@@ -84,6 +102,15 @@ public:
     fstream(const std::string& filename) noexcept;
     fstream(const std::wstring& filename) noexcept;
     ~fstream() noexcept;
+
+	fstream& open(const char* filename) noexcept;
+	fstream& open(const wchar_t* filename) noexcept;
+	fstream& open(const std::string& filename) noexcept;
+	fstream& open(const std::wstring& filename) noexcept;
+
+	fstream& close() noexcept;
+
+	bool is_open() const noexcept;
 
 private:
 

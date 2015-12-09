@@ -47,7 +47,7 @@ BMPHandler::~BMPHandler() noexcept
 }
 
 bool
-BMPHandler::doCanRead(istream& stream) const noexcept
+BMPHandler::doCanRead(StreamReader& stream) const noexcept
 {
 	std::uint8_t hdr[2];
 
@@ -60,7 +60,7 @@ BMPHandler::doCanRead(istream& stream) const noexcept
 }
 
 bool
-BMPHandler::doLoad(Image& image, istream& stream) except
+BMPHandler::doLoad(Image& image, StreamReader& stream) except
 {
 	auto size = (std::size_t)stream.size();
 
@@ -100,25 +100,25 @@ BMPHandler::doLoad(Image& image, istream& stream) except
 }
 
 bool
-BMPHandler::doSave(Image&, ostream&) except
+BMPHandler::doSave(Image&, StreamWrite&) except
 {
 	return false;
 }
 
 bool
-BMPHandler::decode(Image&, istream&, const BITMAPINFO&)
+BMPHandler::decode(Image&, StreamReader&, const BITMAPINFO&)
 {
 	return false;
 }
 
 bool
-BMPHandler::encode(Image&, istream&, const BITMAPINFO&)
+BMPHandler::encode(Image&, StreamReader&, const BITMAPINFO&)
 {
 	return false;
 }
 
 bool
-BMPHandler::loadDIB(Image& image, istream& stream, const BITMAPINFO& info)
+BMPHandler::loadDIB(Image& image, StreamReader& stream, const BITMAPINFO& info)
 {
 	size_type columns = (size_type)info.info.width;
 	size_type rows = (size_type)(info.info.height < 0 ? -info.info.height : info.info.height);

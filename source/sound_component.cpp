@@ -67,11 +67,11 @@ SoundComponent::setSoundBuffer(const std::string& name) noexcept
 	{
 		if (_sound)
 		{
-			auto buffer = SoundSystem::instance()->createSoundBuffer(name);
-			if (buffer)
-				_sound->setSoundBuffer(buffer);
+			auto soundReader = SoundSystem::instance()->createSoundReader(name);
+			if (soundReader)
+				_sound->setSoundReader(soundReader);
 			else
-				_sound->setSoundBuffer(nullptr);
+				_sound->setSoundReader(nullptr);
 		}
 
 		_sourceName = name;
@@ -207,8 +207,8 @@ SoundComponent::play() noexcept
 	{
 		if (!_sound)
 		{
-			auto buffer = SoundSystem::instance()->createSoundBuffer(_sourceName);
-			if (buffer)
+			auto soundReader = SoundSystem::instance()->createSoundReader(_sourceName);
+			if (soundReader)
 			{
 				auto actor = this->getGameObject();
 				assert(actor);
@@ -216,7 +216,7 @@ SoundComponent::play() noexcept
 				_sound = SoundSystem::instance()->createSoundSource();
 				_sound->open();
 
-				_sound->setSoundBuffer(buffer);
+				_sound->setSoundReader(soundReader);
 
 				_sound->setVolume(_volume);
 				_sound->setMinVolume(_volumeMin);

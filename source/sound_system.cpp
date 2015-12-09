@@ -123,14 +123,14 @@ SoundSystem::createSoundSource(const std::string& filename, SoundFile::Type type
 {
 	assert(this->isOpened());
 
-	auto soundBuffer = this->createSoundBuffer(filename, type);
+	auto soundBuffer = this->createSoundReader(filename, type);
 	if (soundBuffer)
 	{
 		auto sound = this->createSoundSource();
 		if (sound)
 		{
 			sound->open();
-			sound->setSoundBuffer(soundBuffer);
+			sound->setSoundReader(soundBuffer);
 			return sound;
 		}
 	}
@@ -139,16 +139,16 @@ SoundSystem::createSoundSource(const std::string& filename, SoundFile::Type type
 }
 
 SoundReaderPtr
-SoundSystem::createSoundBuffer(const std::string& filename, SoundFile::Type type) noexcept
+SoundSystem::createSoundReader(const std::string& filename, SoundFile::Type type) noexcept
 {
 	assert(this->isOpened());
 
 	auto soundReader = _soundReaders[filename];
 	if (!soundReader)
 	{
-		MemoryStream stream;
-		if (IoServer::instance()->openFile(filename, stream))
-			soundReader = createSoundBuffer(stream, type);
+		StreamReaderPtr stream;
+		if (IoServer::instance()->openFile(stream, filename))
+			soundReader = createSoundReader(*stream, type);
 
 		if (soundReader)
 			_soundReaders[filename] = soundReader;
@@ -158,7 +158,7 @@ SoundSystem::createSoundBuffer(const std::string& filename, SoundFile::Type type
 }
 
 SoundReaderPtr
-SoundSystem::createSoundBuffer(istream& stream, SoundFile::Type type) noexcept
+SoundSystem::createSoundReader(StreamReader& stream, SoundFile::Type type) noexcept
 {
 	assert(this->isOpened());
 
@@ -169,7 +169,7 @@ SoundSystem::createSoundBuffer(istream& stream, SoundFile::Type type) noexcept
 	
 	if (this->find(stream, type, impl))
 	{
-		auto reader = impl->clone();
+		auto reader = std::shared_ptr<SoundReader>(static_cast<SoundReader*>(impl->clone()));
 		if (reader)
 		{
 			reader->open(stream);
@@ -217,9 +217,9 @@ SoundSystem::remove(SoundReaderPtr handler) noexcept
 }
 
 bool
-SoundSystem::find(istream& stream, SoundReaderPtr& out) const noexcept
+SoundSystem::find(StreamReader& stream, SoundReaderPtr& out) const noexcept
 {
-	if (!stream.is_open())
+	if (!stream.good())
 		return false;
 
 	for (auto it : _handlers)
@@ -252,7 +252,7 @@ SoundSystem::find(SoundFile::Type type, SoundReaderPtr& out) const noexcept
 }
 
 bool
-SoundSystem::find(istream& stream, SoundFile::Type type, SoundReaderPtr& out) const noexcept
+SoundSystem::find(StreamReader& stream, SoundFile::Type type, SoundReaderPtr& out) const noexcept
 {
 	if (type != SoundFile::Type::Unknown)
 	{

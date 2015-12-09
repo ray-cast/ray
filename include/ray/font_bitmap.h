@@ -67,7 +67,7 @@ public:
 	FontBitmap() noexcept;
 	virtual ~FontBitmap() noexcept;
 
-	virtual void createFontMapping(istream& stream, const std::wstring& charsets, std::size_t fontSize, std::size_t distanceSize, std::size_t numThreads) = 0;
+	virtual void createFontMapping(StreamReader& stream, const std::wstring& charsets, std::size_t fontSize, std::size_t distanceSize, std::size_t numThreads) = 0;
 	virtual void createFontMapping(const std::string& fontpath, const std::wstring& charsets, std::size_t fontSize, std::size_t distanceSize, std::size_t numThreads) = 0;
 
 	virtual void clear() noexcept = 0;

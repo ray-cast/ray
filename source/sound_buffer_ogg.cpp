@@ -43,7 +43,7 @@ std::size_t _istreamRead(void* ptr, std::size_t elementSize, std::size_t count, 
 {
 	assert(data != nullptr);
 
-	auto input = static_cast<istream*>(data);
+	auto input = static_cast<StreamReader*>(data);
 	input->read((char*)(ptr), elementSize * count);
 	return input->gcount();
 }
@@ -52,7 +52,7 @@ int _istreamSeek(void* data, ogg_int64_t pos, int whence)
 {
 	assert(data != nullptr);
 
-	auto input = static_cast<ray::istream*>(data);
+	auto input = static_cast<ray::StreamReader*>(data);
 	switch (whence)
 	{
 	case SEEK_SET:
@@ -77,7 +77,7 @@ long _istreamTell(void *data)
 {
 	assert(data != nullptr);
 
-	auto input = static_cast<ray::istream*>(data);
+	auto input = static_cast<ray::StreamReader*>(data);
 	return input->tellg();
 }
 
@@ -93,7 +93,7 @@ OggStreamBuffer::~OggStreamBuffer() noexcept
 }
 
 bool
-OggStreamBuffer::access(istream& stream) const noexcept
+OggStreamBuffer::access(StreamReader& stream) const noexcept
 {
 	OggVorbis_File oggfile;
 
@@ -110,7 +110,7 @@ OggStreamBuffer::access(istream& stream) const noexcept
 }
 
 bool
-OggStreamBuffer::open(istream& stream) noexcept
+OggStreamBuffer::open(StreamReader& stream) noexcept
 {
 	assert(!_oggVorbisFile);
 
@@ -242,11 +242,18 @@ OggStreamBuffer::is_open() const noexcept
 int 
 OggStreamBuffer::flush() noexcept
 {
-	_stream.flush();
-	return 0;
+	if (_stream.flush())
+		return 0;
+	return -1;
 }
 
-void 
+streambuf* 
+OggStreamBuffer::clone() const noexcept
+{
+	return new OggStreamBuffer;
+}
+
+bool
 OggStreamBuffer::close() noexcept
 {
 	if (_oggVorbisFile)
@@ -255,7 +262,11 @@ OggStreamBuffer::close() noexcept
 
 		delete _oggVorbisFile;
 		_oggVorbisFile = nullptr;
+
+		return true;
 	}
+
+	return false;
 }
 
 void 
@@ -313,11 +324,11 @@ OggSoundReader::OggSoundReader() noexcept
 
 OggSoundReader::~OggSoundReader() noexcept
 {
-	this->close();
+	_oggVorbisFile.close();
 }
 
 bool 
-OggSoundReader::open(istream& stream) noexcept
+OggSoundReader::open(StreamReader& stream) noexcept
 {
 	if (_oggVorbisFile.open(stream))
 		this->clear(ios_base::goodbit);
@@ -327,7 +338,7 @@ OggSoundReader::open(istream& stream) noexcept
 }
 
 bool
-OggSoundReader::access(istream& stream) const noexcept
+OggSoundReader::access(StreamReader& stream) const noexcept
 {
 	return _oggVorbisFile.access(stream);
 }
@@ -335,35 +346,35 @@ OggSoundReader::access(istream& stream) const noexcept
 std::uint8_t 
 OggSoundReader::getBufferChannelCount() const noexcept
 {
-	assert(this->is_open());
+	assert(_oggVorbisFile.is_open());
 	return _oggVorbisFile.getBufferChannelCount();
 }
 
 std::size_t 
 OggSoundReader::getBufferTotalSamples() const noexcept
 {
-	assert(this->is_open());
+	assert(_oggVorbisFile.is_open());
 	return _oggVorbisFile.getBufferTotalSamples();
 }
 
 SoundFormat 
 OggSoundReader::getBufferType() const noexcept
 {
-	assert(this->is_open());
+	assert(_oggVorbisFile.is_open());
 	return _oggVorbisFile.getBufferType();
 }
 
 SoundFrequency 
 OggSoundReader::getBufferFrequency() const noexcept
 {
-	assert(this->is_open());
+	assert(_oggVorbisFile.is_open());
 	return _oggVorbisFile.getBufferFrequency();
 }
 
-SoundReaderPtr 
-OggSoundReader::clone() noexcept
+StreamReader*
+OggSoundReader::clone() const noexcept
 {
-	return std::make_shared<OggSoundReader>();
+	return new OggSoundReader();
 }
 
 _NAME_END

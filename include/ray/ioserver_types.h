@@ -34,52 +34,17 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_IOLISTENER_H_
-#define _H_ZSTREAM_H_
+#ifndef _H_IO_SERVER_TYPES_H_
+#define _H_IO_SERVER_TYPES_H_
 
-#include <ray/iosbase.h>
+#include <ray/package.h>
+#include <ray/ioassign.h>
 
 _NAME_BEGIN
 
-class EXPORT ioListener
-{
-public:
-
-    virtual void onAttach() noexcept;
-    virtual void onRemove() noexcept;
-
-    virtual void onOpenBefor(const std::string& filename, const ios_base::openmode mode) noexcept;
-    virtual void onOpenBefor(const std::wstring& filename, const ios_base::openmode mode) noexcept;
-
-    virtual void onOpenFail(const std::string& filename, const ios_base::openmode mode) noexcept;
-    virtual void onOpenFail(const std::wstring& filename, const ios_base::openmode mode) noexcept;
-
-    virtual void onOpenSuccess(const std::string& filename, const ios_base::openmode mode) noexcept;
-    virtual void onOpenSuccess(const std::wstring& filename, const ios_base::openmode mode) noexcept;
-};
-
-class EXPORT ioListenerPoster final
-{
-public:
-    static void onOpenBefor(const std::string& filename, const ios_base::openmode mode) noexcept;
-    static void onOpenBefor(const std::wstring& filename, const ios_base::openmode mode) noexcept;
-
-    static void onOpenFail(const std::string& filename, const ios_base::openmode mode) noexcept;
-    static void onOpenFail(const std::wstring& filename, const ios_base::openmode mode) noexcept;
-
-    static void onOpenSuccess(const std::string& filename, const ios_base::openmode mode) noexcept;
-    static void onOpenSuccess(const std::wstring& filename, const ios_base::openmode mode) noexcept;
-};
-
-class EXPORT ioListenerRegister final
-{
-public:
-    ioListenerRegister() noexcept;
-    ~ioListenerRegister() noexcept;
-
-    static void addListener(ioListener* listener) noexcept;
-    static void removeListener(const ioListener* listener) noexcept;
-};
+typedef std::shared_ptr<Stream> StreamPtr;
+typedef std::shared_ptr<StreamReader> StreamReaderPtr;
+typedef std::shared_ptr<StreamWrite> StreamWritePtr;
 
 _NAME_END
 

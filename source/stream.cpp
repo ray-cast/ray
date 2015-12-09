@@ -33,33 +33,33 @@
 // | THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// +----------------------------------------------------------------------
+// +---------------------------------------------------------------------
 #include <ray/stream.h>
 
 _NAME_BEGIN
 
-stream::stream() noexcept
+StreamBase::StreamBase() noexcept
 {
 }
 
-stream::~stream() noexcept
+StreamBase::~StreamBase() noexcept
 {
 }
 
 streambuf*
-stream::rdbuf() const noexcept
+StreamBase::rdbuf() const noexcept
 {
     return _strbuf;
 }
 
 void
-stream::set_rdbuf(streambuf* buf) noexcept
+StreamBase::set_rdbuf(streambuf* buf) noexcept
 {
     _strbuf = buf;
 }
 
 void
-stream::_init(streambuf* _buf, ios_base::openmode mode) noexcept
+StreamBase::_init(streambuf* _buf, ios_base::openmode mode) noexcept
 {
     this->set_rdbuf(_buf);
 	_mode = mode;
@@ -67,7 +67,7 @@ stream::_init(streambuf* _buf, ios_base::openmode mode) noexcept
 }
 
 void
-stream::copy(const stream& other) noexcept
+StreamBase::copy(const StreamBase& other) noexcept
 {
     assert(other._strbuf);
 	_mode = other._mode;
@@ -76,13 +76,13 @@ stream::copy(const stream& other) noexcept
 }
 
 void
-stream::setOpenMode(ios_base::openmode mode) noexcept
+StreamBase::setOpenMode(ios_base::openmode mode) noexcept
 {
 	_mode = mode;
 }
 
 ios_base::openmode
-stream::getOpenMode() const noexcept
+StreamBase::getOpenMode() const noexcept
 {
 	return _mode;
 }

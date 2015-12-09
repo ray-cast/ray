@@ -46,7 +46,7 @@ Image::Image() noexcept
 	this->_init();
 }
 
-Image::Image(istream& stream, ImageType type) noexcept
+Image::Image(StreamReader& stream, ImageType type) noexcept
 {
 	this->_init();
     this->load(stream, type);
@@ -176,7 +176,7 @@ Image::setPalette(PaletteData* pal) noexcept
 }
 
 bool
-Image::load(istream& stream, ImageType type) noexcept
+Image::load(StreamReader& stream, ImageType type) noexcept
 {
     if (emptyHandler())
         GetImageInstanceList(*this);
@@ -199,14 +199,14 @@ Image::load(istream& stream, ImageType type) noexcept
 bool 
 Image::load(const std::string& filename, ImageType type) noexcept
 {
-	MemoryStream stream;
-	if (IoServer::instance()->openFile(filename, stream))
-		return load(stream, type);
+	StreamReaderPtr stream;
+	if (IoServer::instance()->openFile(stream, filename))
+		return this->load(*stream, type);
 	return false;
 }
 
 bool
-Image::save(ostream& stream, ImageType type) noexcept
+Image::save(StreamWrite& stream, ImageType type) noexcept
 {
     if (stream.good())
     {
@@ -258,21 +258,21 @@ Image::remove(ImageHandlerPtr handler) noexcept
 }
 
 bool
-Image::find(istream& stream, ImageHandlerPtr& out) const noexcept
+Image::find(StreamReader& stream, ImageHandlerPtr& out) const noexcept
 {
-    if (stream.is_open())
+	if (!stream.good())
+		return false;
+
+	for (auto it : _handlers)
     {
-        for (auto it : _handlers)
+        stream.seekg(0, std::ios_base::beg);
+
+        if (it->doCanRead(stream))
         {
             stream.seekg(0, std::ios_base::beg);
 
-            if (it->doCanRead(stream))
-            {
-                stream.seekg(0, std::ios_base::beg);
-
-                out = it;
-                return true;
-            }
+            out = it;
+            return true;
         }
     }
 
@@ -293,7 +293,7 @@ Image::find(ImageType type, ImageHandlerPtr& out) const noexcept
 }
 
 bool
-Image::find(istream& stream, ImageType type, ImageHandlerPtr& out) const noexcept
+Image::find(StreamReader& stream, ImageType type, ImageHandlerPtr& out) const noexcept
 {
     if (type != ImageType::unknown)
     {

@@ -39,7 +39,7 @@
 _NAME_BEGIN
 
 bool
-GIFHandler::doCanRead(istream& stream) const noexcept
+GIFHandler::doCanRead(StreamReader& stream) const noexcept
 {
     static const std::uint8_t magic[] = { 'G', 'I', 'F' };
 
@@ -54,13 +54,13 @@ GIFHandler::doCanRead(istream& stream) const noexcept
 }
 
 bool
-GIFHandler::doLoad(Image&, istream&) noexcept
+GIFHandler::doLoad(Image&, StreamReader&) noexcept
 {
     return true;
 }
 
 bool
-GIFHandler::doSave(Image&, ostream&) noexcept
+GIFHandler::doSave(Image&, StreamWrite&) noexcept
 {
     return true;
 }

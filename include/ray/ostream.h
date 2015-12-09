@@ -41,53 +41,62 @@
 
 _NAME_BEGIN
 
-class EXPORT ostream : public virtual stream
+class EXPORT StreamWrite : public virtual StreamBase
 {
 public:
-    explicit ostream(streambuf* buf, bool _isstd = false) noexcept;
-    virtual ~ostream() noexcept;
+    StreamWrite(streambuf* buf) noexcept;
+    virtual ~StreamWrite() noexcept;
 
-    bool is_open() const noexcept;
+    StreamWrite& write(const char* str, std::streamsize cnt) noexcept;
+    StreamWrite& write(const char* str, streamsize size, streamsize cnt) noexcept;
 
-    ostream& open(const char* filename) noexcept;
-    ostream& open(const wchar_t* filename) noexcept;
-    ostream& open(const std::string& filename) noexcept;
-    ostream& open(const std::wstring& filename) noexcept;
+    StreamWrite& seekg(ios_base::off_type pos) noexcept;
+    StreamWrite& seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
 
-    ostream& write(const char* str, std::streamsize cnt) noexcept;
-    ostream& write(const char* str, streamsize size, streamsize cnt) noexcept;
-
-    ostream& seekg(ios_base::off_type pos) noexcept;
-    ostream& seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
-
-    ostream& flush() noexcept;
-    ostream& close() noexcept;
+    StreamWrite& flush() noexcept;
 
     streamsize gcount() const noexcept;
 
     ios_base::pos_type tellg() noexcept;
 
-    ostream& copy(ostream& other) noexcept;
+    StreamWrite& copy(StreamWrite& other) noexcept;
 
-    ostream& operator << (const char* str) noexcept;
-    ostream& operator << (const std::string& str) noexcept;
-    ostream& operator << (char value) noexcept;
-    ostream& operator << (short value) noexcept;
-    ostream& operator << (int value) noexcept;
-    ostream& operator << (long long value) noexcept;
-    ostream& operator << (unsigned char value) noexcept;
-    ostream& operator << (unsigned short value) noexcept;
-    ostream& operator << (unsigned int value) noexcept;
-    ostream& operator << (unsigned long value) noexcept;
-    ostream& operator << (unsigned long long value) noexcept;
-    ostream& operator << (float value) noexcept;
-    ostream& operator << (double value) noexcept;
-    ostream& operator << (ios_base& (*function)(ios_base&)) noexcept;
-    ostream& operator << (ostream& (*function)(ostream&)) noexcept;
+    StreamWrite& operator << (const char* str) noexcept;
+    StreamWrite& operator << (const std::string& str) noexcept;
+    StreamWrite& operator << (char value) noexcept;
+    StreamWrite& operator << (short value) noexcept;
+    StreamWrite& operator << (int value) noexcept;
+    StreamWrite& operator << (long long value) noexcept;
+    StreamWrite& operator << (unsigned char value) noexcept;
+    StreamWrite& operator << (unsigned short value) noexcept;
+    StreamWrite& operator << (unsigned int value) noexcept;
+    StreamWrite& operator << (unsigned long value) noexcept;
+    StreamWrite& operator << (unsigned long long value) noexcept;
+    StreamWrite& operator << (float value) noexcept;
+    StreamWrite& operator << (double value) noexcept;
+    StreamWrite& operator << (ios_base& (*function)(ios_base&)) noexcept;
+    StreamWrite& operator << (StreamWrite& (*function)(StreamWrite&)) noexcept;
+
+protected:
+	class osentry
+	{
+	public:
+		osentry(StreamWrite* _ostr);
+		~osentry() noexcept;
+		operator bool() const noexcept;
+
+	private:
+		osentry(const osentry&) noexcept = delete;
+		const osentry& operator=(const osentry&) noexcept = delete;
+
+	private:
+		bool _ok;
+		StreamWrite* _my_ostr;
+	};
 
 private:
-    ostream& operator=(const ostream&) = delete;
-    ostream(const ostream&) = delete;
+    StreamWrite& operator=(const StreamWrite&) = delete;
+    StreamWrite(const StreamWrite&) = delete;
 
 private:
 

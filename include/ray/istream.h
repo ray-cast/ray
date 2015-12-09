@@ -41,29 +41,21 @@
 
 _NAME_BEGIN
 
-class EXPORT istream : public virtual stream
+class EXPORT StreamReader : public virtual StreamBase
 {
 public:
-    istream(streambuf* buf) noexcept;
-    virtual ~istream() noexcept;
+    StreamReader(streambuf* buf) noexcept;
+    virtual ~StreamReader() noexcept;
 
-    bool is_open() const noexcept;
+    StreamReader& read(char* str, std::streamsize cnt) noexcept;
+    StreamReader& read(char* str, streamsize size, streamsize cnt) noexcept;
 
-    istream& open(const char* filename) noexcept;
-    istream& open(const wchar_t* filename) noexcept;
-    istream& open(const std::string& filename) noexcept;
-    istream& open(const std::wstring& filename) noexcept;
+    StreamReader& seekg(ios_base::off_type pos) noexcept;
+    StreamReader& seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
 
-    istream& read(char* str, std::streamsize cnt) noexcept;
-    istream& read(char* str, streamsize size, streamsize cnt) noexcept;
+    StreamReader& flush() noexcept;
 
-    istream& seekg(ios_base::off_type pos) noexcept;
-    istream& seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
-
-    istream& flush() noexcept;
-    istream& close() noexcept;
-
-    istream& copy(const istream& other) noexcept;
+    StreamReader& copy(const StreamReader& other) noexcept;
 
     streamsize size() noexcept;
 
@@ -71,11 +63,29 @@ public:
 
     streamsize gcount() const noexcept;
 
-    virtual istream* clone() const noexcept;
+    virtual StreamReader* clone() const noexcept;
+
+protected:
+	class isentry final
+	{
+	public:
+		isentry(StreamReader* _istr);
+		~isentry() noexcept;
+
+		operator bool() const noexcept;
+
+	private:
+		isentry(const isentry&) noexcept = delete;
+		const isentry& operator=(const isentry&) noexcept = delete;
+
+	private:
+		bool _ok;
+		StreamReader* _my_istr;
+	};
 
 private:
-    istream& operator=(const istream&) = delete;
-    istream(const istream&) = delete;
+    StreamReader& operator=(const StreamReader&) = delete;
+    StreamReader(const StreamReader&) = delete;
 
 private:
 

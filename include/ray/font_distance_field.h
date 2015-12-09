@@ -64,7 +64,7 @@ public:
 	FontPointBitmap() noexcept;
 	virtual ~FontPointBitmap() noexcept;
 
-	virtual void createFontMapping(istream& stream, const std::wstring& charsets, std::size_t fontSize, std::size_t distanceSize, std::size_t numThreads);
+	virtual void createFontMapping(StreamReader& stream, const std::wstring& charsets, std::size_t fontSize, std::size_t distanceSize, std::size_t numThreads);
 	virtual void createFontMapping(const std::string& fontpath, const std::wstring& charsets, std::size_t fontSize, std::size_t distanceSize, std::size_t numThreads);
 
 	virtual void clear() noexcept;
@@ -75,8 +75,8 @@ public:
 
 	virtual std::size_t getFontSize() const noexcept;
 
-	virtual bool load(istream& stream);
-	virtual bool save(ostream& stream);
+	virtual bool load(StreamReader& stream);
+	virtual bool save(StreamWrite& stream);
 
 	virtual bool load(const std::string& filepath);
 	virtual bool save(const std::string& filepath);

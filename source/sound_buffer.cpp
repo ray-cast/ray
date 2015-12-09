@@ -47,30 +47,24 @@ SoundBuffer::~SoundBuffer() noexcept
 }
 
 bool
-SoundBuffer::open(const char* filename, const ios_base::openmode mode) noexcept
+SoundBuffer::open(const char* filename, ios_base::openmode mode) noexcept
 {
 	return false;
 }
 
 bool 
-SoundBuffer::open(const wchar_t* filename, const ios_base::openmode mode) noexcept
+SoundBuffer::open(const wchar_t* filename, ios_base::openmode mode) noexcept
 {
 	return false;
 }
 
 SoundReader::SoundReader(SoundBuffer& buf) noexcept
-	: istream(&buf)
+	: StreamReader(&buf)
 {
 }
 
 SoundReader::~SoundReader() noexcept
 {
-}
-
-istream*
-SoundReader::clone() const noexcept
-{
-	return nullptr;
 }
 
 _NAME_END

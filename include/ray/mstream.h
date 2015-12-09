@@ -47,10 +47,8 @@ public:
     MemoryBuf() noexcept;
     ~MemoryBuf() noexcept;
 
-    bool open(const char* filename, const ios_base::openmode mode) noexcept;
-    bool open(const wchar_t* filename, const ios_base::openmode mode) noexcept;
-
-    void close() noexcept;
+    bool open(ios_base::openmode mode) noexcept;
+    bool close() noexcept;
 
     streamsize read(char* str, std::streamsize cnt) noexcept;
     streamsize write(const char* str, std::streamsize cnt) noexcept;
@@ -69,6 +67,8 @@ public:
 
     int flush() noexcept;
 
+	streambuf* clone() const noexcept;
+
     void copy(streambuf& other) noexcept;
 
 private:
@@ -81,7 +81,7 @@ private:
     std::vector<char> _data;
 };
 
-class EXPORT MemoryReader final : public istream
+class EXPORT MemoryReader final : public StreamReader
 {
 public:
 	MemoryReader() noexcept;
@@ -97,7 +97,7 @@ private:
 	MemoryBuf _buf;
 };
 
-class EXPORT MemoryWrite final : public ostream
+class EXPORT MemoryWrite final : public StreamWrite
 {
 public:
 	MemoryWrite() noexcept;
@@ -113,7 +113,7 @@ private:
 	MemoryBuf _buf;
 };
 
-class EXPORT MemoryStream final : public iostream
+class EXPORT MemoryStream final : public Stream
 {
 public:
     MemoryStream() noexcept;

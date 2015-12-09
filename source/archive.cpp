@@ -38,36 +38,53 @@
 
 _NAME_BEGIN
 
-archive_base::archive_base() noexcept
+archive::archive() noexcept
 {
 }
 
-archive_base::~archive_base() noexcept
+archive::~archive() noexcept
 {
 }
 
-iarchive::iarchive() noexcept
+archivebuf*
+archive::rdbuf() const noexcept
 {
+	return _strbuf;
 }
 
-iarchive::~iarchive() noexcept
+void
+archive::set_rdbuf(archivebuf* buf) noexcept
 {
+	_strbuf = buf;
 }
 
-oarchive::oarchive() noexcept
+void
+archive::_init(archivebuf* _buf, ios_base::openmode mode) noexcept
 {
+	this->set_rdbuf(_buf);
+	_mode = mode;
+	ios_base::_init();
 }
 
-oarchive::~oarchive() noexcept
+void
+archive::copy(const archive& other) noexcept
 {
+	assert(other._strbuf);
+	_mode = other._mode;
+	_strbuf->copy(*other._strbuf);
+	ios_base::copy(other);
 }
 
-ioarchive::ioarchive()
+void
+archive::setOpenMode(ios_base::openmode mode) noexcept
 {
+	_mode = mode;
 }
 
-ioarchive::~ioarchive()
+ios_base::openmode
+archive::getOpenMode() const noexcept
 {
+	return _mode;
 }
 
 _NAME_END

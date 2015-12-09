@@ -39,7 +39,7 @@
 _NAME_BEGIN
 
 bool
-PMXHandler::doCanRead(istream& stream) const noexcept
+PMXHandler::doCanRead(StreamReader& stream) const noexcept
 {
 	PMX_Header hdr;
 
@@ -60,7 +60,7 @@ PMXHandler::doCanRead(istream& stream) const noexcept
 }
 
 bool
-PMXHandler::doLoad(Model& model, istream& stream) noexcept
+PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 {
 	PMX pmx;
 
@@ -628,7 +628,7 @@ PMXHandler::doLoad(Model& model, istream& stream) noexcept
 }
 
 bool
-PMXHandler::doSave(Model& model, ostream& stream) noexcept
+PMXHandler::doSave(Model& model, StreamWrite& stream) noexcept
 {
 	return false;
 }

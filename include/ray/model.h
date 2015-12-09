@@ -47,10 +47,10 @@ class EXPORT ModelHandler
 public:
     virtual ~ModelHandler() noexcept {};
 
-    virtual bool doCanRead(istream& stream) const noexcept = 0;
+    virtual bool doCanRead(StreamReader& stream) const noexcept = 0;
 
-    virtual bool doLoad(Model& image, istream& stream) noexcept = 0;
-    virtual bool doSave(Model& image, ostream& stream) noexcept = 0;
+    virtual bool doLoad(Model& image, StreamReader& stream) noexcept = 0;
+    virtual bool doSave(Model& image, StreamWrite& stream) noexcept = 0;
 };
 
 class EXPORT Model final
@@ -67,25 +67,7 @@ public:
 
 public:
     Model() noexcept;
-    Model(const char* filename, ModelType type = MT_UNKNOWN) noexcept;
-    Model(const wchar_t* filename, ModelType type = MT_UNKNOWN) noexcept;
-    Model(const std::string& filename, ModelType type = MT_UNKNOWN) noexcept;
-    Model(const std::wstring& filename, ModelType type = MT_UNKNOWN) noexcept;
     ~Model() noexcept;
-
-    bool load(const char* filename, ModelType type = MT_UNKNOWN) noexcept;
-    bool load(const wchar_t* filename, ModelType type = MT_UNKNOWN) noexcept;
-    bool load(const std::string& filename, ModelType type = MT_UNKNOWN) noexcept;
-    bool load(const std::wstring& filename, ModelType type = MT_UNKNOWN) noexcept;
-    bool load(istream& stream, ModelType type = MT_UNKNOWN) noexcept;
-
-    bool save(const char* filename, ModelType type) noexcept;
-    bool save(const wchar_t* filename, ModelType) noexcept;
-    bool save(const std::string& filename, ModelType type) noexcept;
-    bool save(const std::wstring& filename, ModelType type) noexcept;
-    bool save(ostream& stream, ModelType type) noexcept;
-
-    void clear() noexcept;
 
     void addMesh(MeshPropertyPtr mesh)          noexcept;
     void addTexture(TexturePropertyPtr texture) noexcept;
@@ -119,12 +101,17 @@ public:
 
     void applyProcess(int flags) noexcept;
 
+	void clear() noexcept;
+
+	bool load(StreamReader& stream, ModelType type = MT_UNKNOWN) noexcept;
+	bool save(StreamWrite& stream, ModelType type = MT_OBJ) noexcept;
+
     bool emptyHandler() const noexcept;
     bool addHandler(_Myhandler handler) noexcept;
     bool removeHandler(_Myhandler handler) noexcept;
     bool find(ModelType type, _Myhandler& handler) const noexcept;
-    bool find(istream& stream, _Myhandler& handler) const noexcept;
-    bool find(istream& stream, ModelType type, _Myhandler& handler) const noexcept;
+    bool find(StreamReader& stream, _Myhandler& handler) const noexcept;
+    bool find(StreamReader& stream, ModelType type, _Myhandler& handler) const noexcept;
 
 private:
     Model& operator=(const Model&) noexcept = delete;

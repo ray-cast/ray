@@ -37,12 +37,7 @@
 #ifndef _H_IOSBASE_H_
 #define _H_IOSBASE_H_
 
-#include <iosfwd>
-#include <ios>
-#include <stdio.h>
-
-#include <ray/trait.h>
-#include <ray/string.h>
+#include <ray/iosfwd.h>
 
 _NAME_BEGIN
 

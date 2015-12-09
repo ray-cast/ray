@@ -37,11 +37,18 @@
 #ifndef _H_IOSFWD_H_
 #define _H_IOSFWD_H_
 
+#include <ray/string.h>
+
 #include <iosfwd>
 #include <ios>
-#include <stdio.h>
+#include <cstdio>
 
-#include <ray/trait.h>
-#include <ray/string.h>
+_NAME_BEGIN
+
+typedef std::shared_ptr<class Stream> StreamPtr;
+typedef std::shared_ptr<class StreamReader> StreamReaderPtr;
+typedef std::shared_ptr<class StreamWrite> StreamWritePtr;
+
+_NAME_END
 
 #endif

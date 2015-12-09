@@ -34,39 +34,26 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_STREAM_BASE_H_
-#define _H_STREAM_BASE_H_
-
-#include <ray/streambuf.h>
+#include <ray/archive_buf.h>
 
 _NAME_BEGIN
 
-class EXPORT StreamBase : public ios_base
+archivebuf::archivebuf() noexcept
 {
-public:
-	StreamBase() noexcept;
-    virtual ~StreamBase() noexcept;
+}
 
-	void setOpenMode(ios_base::openmode mode) noexcept;
-	ios_base::openmode getOpenMode() const noexcept;
+archivebuf::~archivebuf() noexcept
+{
+}
 
-    streambuf* rdbuf() const noexcept;
-    void set_rdbuf(streambuf* buf) noexcept;
+void
+archivebuf::lock() noexcept
+{
+}
 
-    void copy(const StreamBase& other) noexcept;
-
-protected:
-    void _init(streambuf* _buf, ios_base::openmode mode) noexcept;
-
-private:
-	StreamBase& operator=(const StreamBase&) = delete;
-	StreamBase(const StreamBase&) = delete;
-
-private:
-    streambuf* _strbuf;
-	ios_base::openmode _mode;
-};
+void
+archivebuf::unlock() noexcept
+{
+}
 
 _NAME_END
-
-#endif

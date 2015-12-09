@@ -131,7 +131,7 @@ struct DDSRawPixelData
 #define DDS_MIN(a, b) (a > b ? b : a)
 
 bool 
-DDSHandler::doCanRead(istream& stream) const noexcept
+DDSHandler::doCanRead(StreamReader& stream) const noexcept
 {
 	static const std::uint8_t magic[] = { 'D', 'D', 'S', ' ' };
 
@@ -144,7 +144,7 @@ DDSHandler::doCanRead(istream& stream) const noexcept
 }
 
 bool 
-DDSHandler::doLoad(Image& image, istream& stream) noexcept
+DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 {
 	DDSTextureInfo info;
 
@@ -198,7 +198,7 @@ DDSHandler::doLoad(Image& image, istream& stream) noexcept
 }
 
 bool 
-DDSHandler::doSave(Image& image, ostream& stream) noexcept
+DDSHandler::doSave(Image& image, StreamWrite& stream) noexcept
 {
 	return false;
 }

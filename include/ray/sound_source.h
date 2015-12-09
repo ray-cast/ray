@@ -58,7 +58,7 @@ public:
 	virtual void open() noexcept = 0;
 	virtual void close() noexcept = 0;
 
-	virtual void setSoundBuffer(SoundReaderPtr ptr) noexcept = 0;
+	virtual void setSoundReader(SoundReaderPtr ptr) noexcept = 0;
 	virtual SoundReaderPtr getSoundBuffer() const noexcept = 0;
 
 	virtual void addSoundSourceListener(SoundSourceListener* listener) noexcept = 0;

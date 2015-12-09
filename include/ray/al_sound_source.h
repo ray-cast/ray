@@ -50,7 +50,7 @@ public:
     virtual void open() noexcept;
     virtual void close() noexcept;
 
-	virtual void setSoundBuffer(SoundReaderPtr ptr) noexcept;
+	virtual void setSoundReader(SoundReaderPtr ptr) noexcept;
 	virtual SoundReaderPtr getSoundBuffer() const noexcept;
 
 	virtual void addSoundSourceListener(SoundSourceListener* listener) noexcept;

@@ -58,8 +58,8 @@ public:
 
 	SoundSourcePtr createSoundSource() except;
 	SoundSourcePtr createSoundSource(const std::string& filename, SoundFile::Type type = SoundFile::Unknown) except;
-	SoundReaderPtr createSoundBuffer(const std::string& filename, SoundFile::Type type = SoundFile::Unknown) noexcept;
-	SoundReaderPtr createSoundBuffer(istream& stream, SoundFile::Type type = SoundFile::Unknown) noexcept;
+	SoundReaderPtr createSoundReader(const std::string& filename, SoundFile::Type type = SoundFile::Unknown) noexcept;
+	SoundReaderPtr createSoundReader(StreamReader& stream, SoundFile::Type type = SoundFile::Unknown) noexcept;
 
 	SoundListenerPtr createSoundListener() noexcept;
 
@@ -69,9 +69,9 @@ public:
 
 private:
 
-	bool find(istream& stream, SoundReaderPtr& handler) const noexcept;
 	bool find(SoundFile::Type type, SoundReaderPtr& handler) const noexcept;
-	bool find(istream& stream, SoundFile::Type type, SoundReaderPtr& handler) const noexcept;
+	bool find(StreamReader& stream, SoundReaderPtr& handler) const noexcept;
+	bool find(StreamReader& stream, SoundFile::Type type, SoundReaderPtr& handler) const noexcept;
 
 private:
 

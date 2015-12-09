@@ -35,28 +35,25 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/xmlreader.h>
-#include <ray/ioserver.h>
-#include <ray/mstream.h>
-#include <ray/utf8.h>
-
 #include <sstream>
 #include <tinyxml.h>
 
 _NAME_BEGIN
 
-XMLReader::XMLReader() noexcept
+XmlBuf::XmlBuf() noexcept
 	: _document(nullptr)
 	, _currentNode(nullptr)
 	, _currentAttrNode(nullptr)
 {
 }
 
-XMLReader::~XMLReader() noexcept
+XmlBuf::~XmlBuf() noexcept
 {
+	this->close();
 }
 
-bool
-XMLReader::open(istream& stream) noexcept
+bool 
+XmlBuf::open(StreamReader& stream) noexcept
 {
 	assert(0 == _document);
 	assert(0 == _currentNode);
@@ -71,32 +68,23 @@ XMLReader::open(istream& stream) noexcept
 	if (!stream.read((char*)data.c_str(), length))
 		return false;
 
-	_document = std::make_unique<TiXmlDocument>();
-	_document->Parse(data.c_str());
+	TiXmlDocument document;
+	document.Parse(data.c_str());
 
-	if (!_document->Error())
+	if (!document.Error() && document.RootElement())
 	{
+		_document = std::make_unique<TiXmlDocument>(document);
 		_currentNode = _document->RootElement();
 		_currentAttrNode = nullptr;
-		if (_currentNode)
-			return true;
+
+		return true;
 	}
-	
+
 	return false;
 }
 
-bool
-XMLReader::open(const std::string& filename) noexcept
-{
-	MemoryStream stream;
-	IoServer::instance()->openFile(filename, stream);
-	if (stream.is_open())
-		return this->open(stream);
-	return false;
-}
-
-void
-XMLReader::close() noexcept
+void 
+XmlBuf::close() noexcept
 {
 	if (_currentNode)
 		_currentNode = nullptr;
@@ -111,8 +99,14 @@ XMLReader::close() noexcept
 	}
 }
 
-std::string
-XMLReader::getCurrentNodeName() const noexcept
+bool 
+XmlBuf::is_open() const noexcept
+{
+	return _document.get() ? true : false;
+}
+
+std::string 
+XmlBuf::getCurrentNodeName() const noexcept
 {
 	if (_currentNode)
 		return _currentNode->Value();
@@ -120,8 +114,8 @@ XMLReader::getCurrentNodeName() const noexcept
 		return "";
 }
 
-std::string
-XMLReader::getCurrentNodePath() const noexcept
+std::string 
+XmlBuf::getCurrentNodePath() const noexcept
 {
 	if (!_currentNode)
 		return "";
@@ -153,13 +147,13 @@ XMLReader::getCurrentNodePath() const noexcept
 }
 
 void
-XMLReader::setToNode(const std::string& path) noexcept
+XmlBuf::setToNode(const std::string& path) noexcept
 {
 	assert(false);
 }
 
 bool
-XMLReader::setToFirstChild() noexcept
+XmlBuf::setToFirstChild() noexcept
 {
 	assert(_currentNode);
 
@@ -170,12 +164,12 @@ XMLReader::setToFirstChild() noexcept
 
 	if (child)
 		_currentNode = child;
-	
+
 	return child ? true : false;
 }
 
 bool
-XMLReader::setToFirstChild(const std::string& name) noexcept
+XmlBuf::setToFirstChild(const std::string& name) noexcept
 {
 	assert(_currentNode);
 
@@ -199,7 +193,7 @@ XMLReader::setToFirstChild(const std::string& name) noexcept
 }
 
 bool
-XMLReader::setToNextChild() noexcept
+XmlBuf::setToNextChild() noexcept
 {
 	assert(_currentNode);
 
@@ -221,7 +215,7 @@ XMLReader::setToNextChild() noexcept
 }
 
 bool
-XMLReader::setToNextChild(const std::string& name) noexcept
+XmlBuf::setToNextChild(const std::string& name) noexcept
 {
 	assert(_currentNode);
 
@@ -246,7 +240,7 @@ XMLReader::setToNextChild(const std::string& name) noexcept
 }
 
 bool
-XMLReader::setToParent() noexcept
+XmlBuf::setToParent() noexcept
 {
 	assert(_currentNode);
 
@@ -265,27 +259,27 @@ XMLReader::setToParent() noexcept
 }
 
 bool
-XMLReader::hasChild() const noexcept
+XmlBuf::hasChild() const noexcept
 {
 	return _currentNode->NoChildren() ? false : true;
 }
 
 bool
-XMLReader::hasAttr(const char* name) const noexcept
+XmlBuf::hasAttr(const char* name) const noexcept
 {
 	assert(_currentNode);
 	return _currentNode->Attribute(name) ? true : false;
 }
 
 void
-XMLReader::clearAttrs() noexcept
+XmlBuf::clearAttrs() noexcept
 {
 	_attrNames.clear();
 	_attrLists.clear();
 }
 
-const std::vector<std::string>&
-XMLReader::addAttrs() noexcept
+bool
+XmlBuf::addAttrs() noexcept
 {
 	assert(this->_currentNode);
 
@@ -298,11 +292,11 @@ XMLReader::addAttrs() noexcept
 		attr = attr->Next();
 	}
 
-	return _attrNames;
+	return true;
 }
 
-const std::vector<std::string>& 
-XMLReader::addAttrsInChildren() noexcept
+bool
+XmlBuf::addAttrsInChildren() noexcept
 {
 	auto child = _currentNode->FirstChildElement();
 	if (child)
@@ -321,13 +315,15 @@ XMLReader::addAttrsInChildren() noexcept
 			child = child->NextSiblingElement();
 
 		} while (child);
+
+		return true;
 	}
 
-	return _attrNames;
+	return false;
 }
 
-const std::vector<std::string>& 
-XMLReader::addAttrsInChildren(const std::string& key) noexcept
+bool
+XmlBuf::addAttrsInChildren(const std::string& key) noexcept
 {
 	assert(this->_currentNode);
 
@@ -351,19 +347,21 @@ XMLReader::addAttrsInChildren(const std::string& key) noexcept
 			child = child->NextSiblingElement();
 
 		} while (child);
+
+		return true;
 	}
 
-	return _attrNames;
+	return false;
 }
 
 const std::vector<std::string>&
-XMLReader::getAttrList() const noexcept
+XmlBuf::getAttrList() const noexcept
 {
 	return _attrNames;
 }
 
 std::string
-XMLReader::getText() const noexcept
+XmlBuf::getText() const noexcept
 {
 	auto result = _currentNode->GetText();
 	if (result)
@@ -372,7 +370,7 @@ XMLReader::getText() const noexcept
 }
 
 bool
-XMLReader::getValue(const std::string& name, bool& result) const noexcept
+XmlBuf::getValue(const std::string& name, bool& result) const noexcept
 {
 	std::string value;
 	if (this->getValue(name, value))
@@ -393,7 +391,7 @@ XMLReader::getValue(const std::string& name, bool& result) const noexcept
 }
 
 bool
-XMLReader::getValue(const std::string& name, int1& result) const noexcept
+XmlBuf::getValue(const std::string& name, int1& result) const noexcept
 {
 	std::string value;
 	if (this->getValue(name, value))
@@ -406,7 +404,7 @@ XMLReader::getValue(const std::string& name, int1& result) const noexcept
 }
 
 bool
-XMLReader::getValue(const std::string& name, int2& result) const noexcept
+XmlBuf::getValue(const std::string& name, int2& result) const noexcept
 {
 	std::string value;
 	if (this->getValue(name, value))
@@ -433,7 +431,7 @@ XMLReader::getValue(const std::string& name, int2& result) const noexcept
 }
 
 bool
-XMLReader::getValue(const std::string& name, int3& result) const noexcept
+XmlBuf::getValue(const std::string& name, int3& result) const noexcept
 {
 	std::string value;
 	if (this->getValue(name, value))
@@ -461,7 +459,7 @@ XMLReader::getValue(const std::string& name, int3& result) const noexcept
 }
 
 bool
-XMLReader::getValue(const std::string& name, int4& result) const noexcept
+XmlBuf::getValue(const std::string& name, int4& result) const noexcept
 {
 	std::string value;
 	if (this->getValue(name, value))
@@ -490,7 +488,7 @@ XMLReader::getValue(const std::string& name, int4& result) const noexcept
 }
 
 bool
-XMLReader::getValue(const std::string& name, float1& result) const noexcept
+XmlBuf::getValue(const std::string& name, float1& result) const noexcept
 {
 	std::string value;
 	if (this->getValue(name, value))
@@ -503,7 +501,7 @@ XMLReader::getValue(const std::string& name, float1& result) const noexcept
 }
 
 bool
-XMLReader::getValue(const std::string& name, float2& result) const noexcept
+XmlBuf::getValue(const std::string& name, float2& result) const noexcept
 {
 	std::string value;
 	if (this->getValue(name, value))
@@ -530,7 +528,7 @@ XMLReader::getValue(const std::string& name, float2& result) const noexcept
 }
 
 bool
-XMLReader::getValue(const std::string& name, float3& result) const noexcept
+XmlBuf::getValue(const std::string& name, float3& result) const noexcept
 {
 	std::string value;
 	if (this->getValue(name, value))
@@ -558,7 +556,7 @@ XMLReader::getValue(const std::string& name, float3& result) const noexcept
 }
 
 bool
-XMLReader::getValue(const std::string& name, float4& result) const noexcept
+XmlBuf::getValue(const std::string& name, float4& result) const noexcept
 {
 	std::string value;
 	if (this->getValue(name, value))
@@ -587,7 +585,7 @@ XMLReader::getValue(const std::string& name, float4& result) const noexcept
 }
 
 bool
-XMLReader::getValue(const std::string& name, std::string& result) const noexcept
+XmlBuf::getValue(const std::string& name, std::string& result) const noexcept
 {
 	if (_attrLists.empty())
 	{
@@ -605,16 +603,31 @@ XMLReader::getValue(const std::string& name, std::string& result) const noexcept
 		{
 			result = it->Value();
 			return true;
-		}			
+		}
 	}
 
 	return false;
 }
 
 const char*
-XMLReader::errorString() const noexcept
+XmlBuf::errorString() const noexcept
 {
 	return _document->ErrorDesc();
+}
+
+void 
+XmlBuf::copy(const archivebuf& other) noexcept
+{
+	assert(false);
+}
+
+XMLReader::XMLReader() noexcept
+	: iarchive(&_xml)
+{
+}
+
+XMLReader::~XMLReader() noexcept
+{
 }
 
 _NAME_END

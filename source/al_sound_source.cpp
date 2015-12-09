@@ -101,7 +101,7 @@ ALSoundSource::removeSoundSourceListener(SoundSourceListener* listener) noexcept
 }
 
 void
-ALSoundSource::setSoundBuffer(SoundReaderPtr buffer) noexcept
+ALSoundSource::setSoundReader(SoundReaderPtr buffer) noexcept
 {
 	if (_soundReader != buffer)
 	{

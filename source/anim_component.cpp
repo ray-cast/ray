@@ -38,6 +38,8 @@
 #include <ray/mesh_component.h>
 #include <ray/resource.h>
 #include <ray/model.h>
+#include <ray/mstream.h>
+#include <ray/ioserver.h>
 
 _NAME_BEGIN
 
@@ -62,7 +64,11 @@ AnimotionComponent::play(const std::string& filename) noexcept
 
 		loader.load(filename,
 			[&](ray::ModelPtr model, const std::string& name) {
-			return model->load(name);
+			
+			StreamReaderPtr stream;
+			if (IoServer::instance()->openFile(stream, filename))
+				return model->load(*stream);
+			return false;
 		}
 		);
 

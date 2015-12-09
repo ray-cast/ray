@@ -47,14 +47,14 @@ public:
     ObjHandler() noexcept;
     ~ObjHandler() noexcept;
 
-    bool doCanRead(istream& stream) const noexcept;
+    bool doCanRead(StreamReader& stream) const noexcept;
 
-    bool doLoad(Model& model, istream& stream) noexcept;
-    bool doSave(Model& model, ostream& stream) noexcept;
+    bool doLoad(Model& model, StreamReader& stream) noexcept;
+    bool doSave(Model& model, StreamWrite& stream) noexcept;
 
 private:
 
-    static bool SearchFileHeaderForToken(istream* stream, const char** tokens, unsigned int numTokens, unsigned int searchBytes = 200, bool tokensSol = false);
+    static bool SearchFileHeaderForToken(StreamReader* stream, const char** tokens, unsigned int numTokens, unsigned int searchBytes = 200, bool tokensSol = false);
 
     bool parser(char* data, std::size_t size);
 

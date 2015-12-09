@@ -413,42 +413,44 @@ RenderPipeline::createTexture() noexcept
 TexturePtr 
 RenderPipeline::createTexture(const std::string& name) except
 {
-	MemoryReader stream;
-	IoServer::instance()->openFile(name, stream);
-	Image image;
-	if (image.load(stream))
+	StreamReaderPtr stream;
+	if (IoServer::instance()->openFile(stream, name))
 	{
-		TextureFormat format = TextureFormat::R8G8B8A8;
-
-		if (image.getImageType() == ImageType::dds1)
-			format = TextureFormat::RGBA_DXT1;
-		else if (image.getImageType() == ImageType::dds3)
-			format = TextureFormat::RGBA_DXT3;
-		else if (image.getImageType() == ImageType::dds5)
-			format = TextureFormat::RGBA_DXT5;
-		else if (image.getImageType() == ImageType::ati2)
-			format = TextureFormat::RG_ATI2;
-		else
+		Image image;
+		if (image.load(*stream))
 		{
-			if (image.bpp() == 24)
-				format = TextureFormat::R8G8B8;
-			else if (image.bpp() == 32)
-				format = TextureFormat::R8G8B8A8;
+			TextureFormat format = TextureFormat::R8G8B8A8;
+
+			if (image.getImageType() == ImageType::dds1)
+				format = TextureFormat::RGBA_DXT1;
+			else if (image.getImageType() == ImageType::dds3)
+				format = TextureFormat::RGBA_DXT3;
+			else if (image.getImageType() == ImageType::dds5)
+				format = TextureFormat::RGBA_DXT5;
+			else if (image.getImageType() == ImageType::ati2)
+				format = TextureFormat::RG_ATI2;
 			else
 			{
-				assert(false);
+				if (image.bpp() == 24)
+					format = TextureFormat::R8G8B8;
+				else if (image.bpp() == 32)
+					format = TextureFormat::R8G8B8A8;
+				else
+				{
+					assert(false);
+				}
 			}
-		}
 
-		auto texture = this->createTexture();
-		texture->setMipLevel(image.getMipLevel());
-		texture->setMipSize(image.size());
-		texture->setSize(image.width(), image.height());
-		texture->setTexDim(TextureDim::DIM_2D);
-		texture->setTexFormat(format);
-		texture->setStream(image.data());
-		texture->setup();
-		return texture;
+			auto texture = this->createTexture();
+			texture->setMipLevel(image.getMipLevel());
+			texture->setMipSize(image.size());
+			texture->setSize(image.width(), image.height());
+			texture->setTexDim(TextureDim::DIM_2D);
+			texture->setTexFormat(format);
+			texture->setStream(image.data());
+			texture->setup();
+			return texture;
+		}
 	}
 
 	return nullptr;

@@ -87,9 +87,9 @@ public:
     IOFILE* open(const std::wstring& filename, ios_base::open_mode mode) noexcept;
 
     bool is_open() const noexcept;
+    bool close() noexcept;
 
-    int getc() noexcept;
-    void close() noexcept;
+	int getc() noexcept;
 
     streamoff seek(streamoff _off, ios_base::seekdir seek) noexcept;
     streamoff tell() const noexcept;

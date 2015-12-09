@@ -135,10 +135,10 @@ public:
 	VMDHandler() noexcept;
 	~VMDHandler();
 
-	bool doCanRead(istream& stream) const noexcept;
+	bool doCanRead(StreamReader& stream) const noexcept;
 
-	bool doLoad(Model& image, istream& stream) noexcept;
-	bool doSave(Model& image, ostream& stream) noexcept;
+	bool doLoad(Model& image, StreamReader& stream) noexcept;
+	bool doSave(Model& image, StreamWrite& stream) noexcept;
 };
 
 _NAME_END

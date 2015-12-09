@@ -38,7 +38,7 @@
 #define _H_MATERIAL_MAKETER_H_
 
 #include <ray/material.h>
-#include <ray/archive.h>
+#include <ray/iarchive.h>
 
 _NAME_BEGIN
 

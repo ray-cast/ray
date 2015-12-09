@@ -48,10 +48,10 @@ public:
 	ImageHandler() noexcept {};
     virtual ~ImageHandler() noexcept {};
 
-    virtual bool doCanRead(istream& stream) const noexcept = 0;
+    virtual bool doCanRead(StreamReader& stream) const noexcept = 0;
 
-    virtual bool doLoad(Image& image, istream& stream) except = 0;
-    virtual bool doSave(Image& image, ostream& stream) except = 0;
+    virtual bool doLoad(Image& image, StreamReader& stream) except = 0;
+    virtual bool doSave(Image& image, StreamWrite& stream) except = 0;
 
 private:
     ImageHandler(const ImageHandler&) noexcept = delete;

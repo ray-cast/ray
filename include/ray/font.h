@@ -46,8 +46,8 @@ class EXPORT Font
 {
 public:
 
-	virtual bool load(istream& stream) = 0;
-	virtual bool save(ostream& stream) = 0;
+	virtual bool load(StreamReader& stream) = 0;
+	virtual bool save(StreamWrite& stream) = 0;
 
 	virtual bool load(const std::string& filepath) = 0;
 	virtual bool save(const std::string& filepath) = 0;

@@ -50,8 +50,10 @@ public:
 
     bool is_open() const noexcept;
 
-    bool open(const char* filename, const ios_base::openmode mode) noexcept;
-    bool open(const wchar_t* filename, const ios_base::openmode mode) noexcept;
+    bool open(const char* filename, ios_base::openmode mode) noexcept;
+    bool open(const wchar_t* filename, ios_base::openmode mode) noexcept;
+
+	bool close() noexcept;
 
     streamsize read(char* str, std::streamsize cnt) noexcept;
     streamsize write(const char* str, std::streamsize cnt) noexcept;
@@ -63,7 +65,7 @@ public:
 
     int flush() noexcept;
 
-    void close() noexcept;
+	streambuf* clone() const noexcept;
 
     void copy(streambuf& other) noexcept;
 

@@ -37,178 +37,34 @@
 #ifndef _H_ARCHIVE_H_
 #define _H_ARCHIVE_H_
 
-#include <ray/iosbase.h>
-#include <ray/math.h>
+#include <ray/archive_buf.h>
 
 _NAME_BEGIN
 
-class EXPORT archive_base : public ios_base
+class EXPORT archive : public ios_base
 {
 public:
-	archive_base() noexcept;
-	virtual ~archive_base() noexcept;
+	archive() noexcept;
+	virtual ~archive() noexcept;
 
-	virtual std::string getCurrentNodeName() const noexcept = 0;
-	virtual std::string getCurrentNodePath() const noexcept = 0;
+	void setOpenMode(ios_base::openmode mode) noexcept;
+	ios_base::openmode getOpenMode() const noexcept;
 
-	virtual void setToNode(const std::string& path) noexcept = 0;
-	virtual bool setToFirstChild() noexcept = 0;
-	virtual bool setToFirstChild(const std::string& name) noexcept = 0;
-	virtual bool setToNextChild() noexcept = 0;
-	virtual bool setToNextChild(const std::string& name) noexcept = 0;
-	virtual bool setToParent() noexcept = 0;
+	archivebuf* rdbuf() const noexcept;
+	void set_rdbuf(archivebuf* buf) noexcept;
 
-private:
-	archive_base(const archive_base&) = delete;
-	archive_base& operator=(const archive_base&) = delete;
-};
+	void copy(const archive& other) noexcept;
 
-class EXPORT iarchive : virtual public archive_base
-{
-public:
-	iarchive() noexcept;
-	virtual ~iarchive() noexcept;
-
-	virtual bool hasChild() const noexcept = 0;
-
-	virtual bool hasAttr(const char* name) const noexcept = 0;
-	virtual void clearAttrs() noexcept = 0;
-	virtual const std::vector<std::string>& addAttrs() noexcept = 0;
-	virtual const std::vector<std::string>& addAttrsInChildren() noexcept = 0;
-	virtual const std::vector<std::string>& addAttrsInChildren(const std::string& key) noexcept = 0;
-	virtual const std::vector<std::string>& getAttrList() const noexcept = 0;
-
-	virtual std::string getText() const noexcept = 0;
-
-	virtual bool getValue(const std::string& name, bool& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, int1& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, int2& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, int3& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, int4& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, float1& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, float2& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, float3& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, float4& result) const noexcept = 0;
-	virtual bool getValue(const std::string& name, std::string& result) const noexcept = 0;
-
-	template<typename T>
-	T getValue(const std::string& name) const
-	{
-		assert(!name.empty());
-		T value;
-		this->getValue(name, value);
-		return value;
-	}
-
-	template<typename T>
-	bool getValue(std::pair<const std::string&, T&> value) const
-	{
-		assert(!value.first.empty());
-
-		auto& attributes = this->getAttrList();
-		for (auto& it : attributes)
-		{
-			if (it == value.first)
-			{
-				this->getValue(it, value.second);
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	template<typename T>
-	bool getValue(std::pair<const char*, T&> value) const
-	{
-		assert(value.first);
-
-		auto& attributes = this->getAttrList();
-		for (auto& it : attributes)
-		{
-			if (it.compare(value.first) == 0)
-			{
-				this->getValue(it, value.second);
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	template<typename T>
-	iarchive& operator >> (std::pair<const std::string&, T&> value) const
-	{
-		this->getValue(value);
-		return *this;
-	}
-
-	template<typename T>
-	iarchive& operator >> (std::pair<const char*, T&> value)
-	{
-		this->getValue(value);
-		return *this;
-	}
-
-	template<typename T>
-	iarchive& operator >> (std::shared_ptr<T>& value)
-	{
-		if (this->setToFirstChild())
-		{
-			value->load(*this);
-			this->setToParent();
-		}
-		return *this;
-	}
+protected:
+	void _init(archivebuf* _buf, ios_base::openmode mode) noexcept;
 
 private:
-
-	iarchive(const iarchive&) noexcept = delete;
-	iarchive& operator=(const iarchive&) noexcept = delete;
-};
-
-class EXPORT oarchive : virtual public archive_base
-{
-public:
-	oarchive() noexcept;
-	virtual ~oarchive() noexcept;
-
-	template<typename T>
-	oarchive& operator << (std::pair<const std::string&, T&> value)
-	{
-		assert(false);
-		return *this;
-	}
-
-	template<typename T>
-	oarchive& operator << (std::pair<const char*, T&> value)
-	{
-		assert(false);
-		return *this;
-	}
-
-	template<typename T>
-	iarchive& operator << (std::shared_ptr<T>& value)
-	{
-		assert(false);
-		return *this;
-	}
+	archive& operator=(const archive&) = delete;
+	archive(const archive&) = delete;
 
 private:
-
-	oarchive(const oarchive&) noexcept = delete;
-	oarchive& operator=(const oarchive&) noexcept = delete;
-};
-
-class EXPORT ioarchive : public iarchive, public oarchive
-{
-public:
-	ioarchive();
-	virtual ~ioarchive();
-
-private:
-	ioarchive(const ioarchive&) noexcept = delete;
-	ioarchive& operator=(const ioarchive&) noexcept = delete;
+	archivebuf* _strbuf;
+	ios_base::openmode _mode;
 };
 
 template <class T> inline

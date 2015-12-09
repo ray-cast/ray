@@ -35,123 +35,40 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/istream.h>
-#include <ray/iolistener.h>
 
 _NAME_BEGIN
 
-class isentry
+StreamReader::isentry::isentry(StreamReader* _istr)
+    : _my_istr(_istr)
+    , _ok(true)
 {
-public:
-    explicit isentry(istream* _istr)
-        :_my_istr(_istr)
-        , _ok(true)
-    {
-        if (_my_istr->rdbuf() != 0)
-            _my_istr->rdbuf()->lock();
-    }
+    if (_my_istr->rdbuf() != 0)
+        _my_istr->rdbuf()->lock();
+}
 
-    ~isentry() noexcept
-    {
-        if (_my_istr->rdbuf() != 0)
-            _my_istr->rdbuf()->unlock();
-    };
-
-    operator bool() const
-    {
-        return _ok ? true : false;
-    }
-
-private:
-    bool _ok;
-    istream* _my_istr;
-    isentry(const isentry&);
-    const isentry& operator=(const isentry&);
+StreamReader::isentry::~isentry() noexcept
+{
+    if (_my_istr->rdbuf() != 0)
+        _my_istr->rdbuf()->unlock();
 };
 
-istream::istream(streambuf* buf) noexcept
+StreamReader::isentry::operator bool() const noexcept
+{
+    return _ok ? true : false;
+}
+
+StreamReader::StreamReader(streambuf* buf) noexcept
 	: _count(0)
 {
-    stream::_init(buf, ios_base::in);
+    StreamBase::_init(buf, ios_base::in);
 }
 
-istream::~istream() noexcept
+StreamReader::~StreamReader() noexcept
 {
 }
 
-bool
-istream::is_open() const noexcept
-{
-    return this->rdbuf()->is_open();
-}
-
-istream&
-istream::open(const char* filename) noexcept
-{
-    const isentry ok(this);
-    if (ok)
-    {
-        ios_base::openmode mode = this->getOpenMode();
-
-        ioListenerPoster::onOpenBefor(filename, mode);
-
-        if (!this->rdbuf()->open(filename, mode))
-        {
-            ioListenerPoster::onOpenFail(filename, mode);
-
-            this->setstate(ios_base::failbit);
-        }
-        else
-        {
-            ioListenerPoster::onOpenSuccess(filename, mode);
-
-            this->clear(ios_base::goodbit);
-        }
-    }
-
-    return (*this);
-}
-
-istream&
-istream::open(const wchar_t* filename) noexcept
-{
-    const isentry ok(this);
-    if (ok)
-    {
-        ios_base::openmode mode = this->getOpenMode();
-
-        ioListenerPoster::onOpenBefor(filename, mode);
-
-        if (!this->rdbuf()->open(filename, mode))
-        {
-            ioListenerPoster::onOpenFail(filename, mode);
-
-            this->setstate(ios_base::failbit);
-        }
-        else
-        {
-            ioListenerPoster::onOpenSuccess(filename, mode);
-
-            this->clear(ios_base::goodbit);
-        }
-    }
-
-    return (*this);
-}
-
-istream&
-istream::open(const std::string& filename) noexcept
-{
-    return this->open(filename.c_str());
-}
-
-istream&
-istream::open(const std::wstring& filename) noexcept
-{
-    return this->open(filename.c_str());
-}
-
-istream&
-istream::read(char* str, std::streamsize cnt) noexcept
+StreamReader&
+StreamReader::read(char* str, std::streamsize cnt) noexcept
 {
     assert(cnt != 0);
 
@@ -179,30 +96,29 @@ istream::read(char* str, std::streamsize cnt) noexcept
     return (*this);
 }
 
-istream&
-istream::read(char* str, streamsize size, streamsize cnt) noexcept
+StreamReader&
+StreamReader::read(char* str, streamsize size, streamsize cnt) noexcept
 {
     return this->read(str, size * cnt);
 }
 
-istream&
-istream::flush() noexcept
+StreamReader&
+StreamReader::flush() noexcept
 {
-    if (this->rdbuf() != 0)
+    assert (this->rdbuf() != 0);
+
+    const isentry ok(this);
+    if (ok)
     {
-        const isentry ok(this);
-        if (ok)
-        {
-            if (ok && this->rdbuf()->flush() == -1)
-                this->setstate(ios_base::badbit, true);
-        }
+        if (ok && this->rdbuf()->flush() == -1)
+            this->setstate(ios_base::badbit, true);
     }
 
     return (*this);
 }
 
-istream&
-istream::seekg(ios_base::off_type pos) noexcept
+StreamReader&
+StreamReader::seekg(ios_base::off_type pos) noexcept
 {
     const isentry ok(this);
     if (ok)
@@ -214,8 +130,8 @@ istream::seekg(ios_base::off_type pos) noexcept
     return (*this);
 }
 
-istream&
-istream::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
+StreamReader&
+StreamReader::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
 {
     const isentry ok(this);
     if (ok)
@@ -228,7 +144,7 @@ istream::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
 }
 
 streamsize
-istream::size() noexcept
+StreamReader::size() noexcept
 {
     const isentry ok(this);
     if (ok)
@@ -241,7 +157,7 @@ istream::size() noexcept
 }
 
 streamoff
-istream::tellg() noexcept
+StreamReader::tellg() noexcept
 {
     const isentry ok(this);
 
@@ -252,37 +168,22 @@ istream::tellg() noexcept
 }
 
 streamsize
-istream::gcount() const noexcept
+StreamReader::gcount() const noexcept
 {
     return _count;
 }
 
-istream&
-istream::close() noexcept
-{
-    const isentry ok(this);
-    if (ok)
-    {
-        if (!this->fail())
-        {
-            this->rdbuf()->close();
-        }
-    }
-
-    return (*this);
-}
-
-istream*
-istream::clone() const noexcept
+StreamReader*
+StreamReader::clone() const noexcept
 {
     return nullptr;
 }
 
-istream&
-istream::copy(const istream& other) noexcept
+StreamReader&
+StreamReader::copy(const StreamReader& other) noexcept
 {
     _count = other._count;
-    stream::copy(other);
+    StreamBase::copy(other);
     return *this;
 }
 

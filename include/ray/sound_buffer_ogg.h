@@ -49,9 +49,9 @@ public:
 	OggStreamBuffer() noexcept;
 	~OggStreamBuffer() noexcept;
 
-	virtual bool open(istream& stream) noexcept;
+	virtual bool open(StreamReader& stream) noexcept;
 
-	virtual bool access(istream& stream) const noexcept;
+	virtual bool access(StreamReader& stream) const noexcept;
 
 	virtual streamsize read(char* str, std::streamsize cnt) noexcept;
 	virtual streamsize write(const char* str, std::streamsize cnt) noexcept;
@@ -65,7 +65,9 @@ public:
 
 	virtual int flush() noexcept;
 
-	virtual void close() noexcept;
+	virtual bool close() noexcept;
+
+	virtual streambuf* clone() const noexcept;
 
 	virtual void copy(streambuf& other) noexcept;
 
@@ -89,17 +91,17 @@ public:
 	OggSoundReader() noexcept;
 	~OggSoundReader() noexcept;
 
-	virtual bool open(istream& stream) noexcept;
+	bool open(StreamReader& stream) noexcept;
 
-	virtual bool access(istream& stream) const noexcept;
+	bool access(StreamReader& stream) const noexcept;
 
-	virtual std::uint8_t getBufferChannelCount() const noexcept;
-	virtual std::size_t getBufferTotalSamples() const noexcept;
+	std::uint8_t getBufferChannelCount() const noexcept;
+	std::size_t getBufferTotalSamples() const noexcept;
 
-	virtual SoundFormat getBufferType() const noexcept;
-	virtual SoundFrequency getBufferFrequency() const noexcept;
+	SoundFormat getBufferType() const noexcept;
+	SoundFrequency getBufferFrequency() const noexcept;
 
-	virtual SoundReaderPtr clone() noexcept;
+	StreamReader* clone() const noexcept;
 
 private:
 

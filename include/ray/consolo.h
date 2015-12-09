@@ -47,8 +47,8 @@ public:
     consolebuf() noexcept;
     virtual ~consolebuf() noexcept;
 
-    bool open(const char* filename, const ios_base::openmode mode) noexcept;
-    bool open(const wchar_t* filename, const ios_base::openmode mode) noexcept;
+    bool open(const char* filename, ios_base::openmode mode) noexcept;
+    bool open(const wchar_t* filename, ios_base::openmode mode) noexcept;
 
     streamsize read(char* str, std::streamsize cnt) noexcept;
     streamsize write(const char* str, std::streamsize cnt) noexcept;
@@ -62,52 +62,36 @@ public:
 
     int flush() noexcept;
 
-    void close() noexcept;
+    bool close() noexcept;
 
     void lock() noexcept;
     void unlock() noexcept;
 
+	streambuf* clone() const noexcept;
+
     void copy(streambuf& other) noexcept;
 };
 
-class EXPORT icstream final : public istream
+class EXPORT icstream final : public StreamReader
 {
 public:
     icstream() noexcept;
-    explicit icstream(FILE* file) noexcept;
-    explicit icstream(const char* filename, const ios_base::openmode mode = ios_base::in) noexcept;
-    explicit icstream(const char* filename, const ios_base::open_mode mode) noexcept;
-    explicit icstream(const wchar_t* filename, const ios_base::openmode mode = ios_base::in) noexcept;
-    explicit icstream(const wchar_t* filename, const ios_base::open_mode mode) noexcept;
-    explicit icstream(const std::string& filename, const ios_base::openmode mode = ios_base::in) noexcept;
-    explicit icstream(const std::string& filename, const ios_base::open_mode mode) noexcept;
-    explicit icstream(const std::wstring& filename, const ios_base::openmode mode = ios_base::in) noexcept;
-    explicit icstream(const std::wstring& filename, const ios_base::open_mode mode) noexcept;
     ~icstream() noexcept;
 
-    virtual istream* clone() const noexcept;
+    virtual StreamReader* clone() const noexcept;
 
 private:
 
     consolebuf _console;
 };
 
-class EXPORT ocstream final : public ostream
+class EXPORT ocstream final : public StreamWrite
 {
 public:
     ocstream() noexcept;
-    explicit ocstream(FILE* file) noexcept;
-    explicit ocstream(const char* filename, const ios_base::openmode mode = ios_base::out) noexcept;
-    explicit ocstream(const char* filename, const ios_base::open_mode mode) noexcept;
-    explicit ocstream(const wchar_t* filename, const ios_base::openmode mode = ios_base::out) noexcept;
-    explicit ocstream(const wchar_t* filename, const ios_base::open_mode mode) noexcept;
-    explicit ocstream(const std::string& filename, const ios_base::openmode mode = ios_base::out) noexcept;
-    explicit ocstream(const std::string& filename, const ios_base::open_mode mode) noexcept;
-    explicit ocstream(const std::wstring& filename, const ios_base::openmode mode = ios_base::out) noexcept;
-    explicit ocstream(const std::wstring& filename, const ios_base::open_mode mode) noexcept;
     ~ocstream() noexcept;
 
-    virtual ostream* clone() const;
+    virtual StreamWrite* clone() const;
 
 private:
 

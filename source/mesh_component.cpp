@@ -36,6 +36,8 @@
 // +----------------------------------------------------------------------
 #include <ray/mesh_component.h>
 #include <ray/resource.h>
+#include <ray/ioserver.h>
+#include <ray/mstream.h>
 
 _NAME_BEGIN
 
@@ -149,9 +151,12 @@ MeshComponent::load(iarchive& reader) noexcept
 	ResLoader<Model> model;
 
 	model.load(this->getName(),
-		[&](ray::ModelPtr model, const std::string& name) 
+		[&](ray::ModelPtr model, const std::string& filename)
 	{
-		return model->load(name);
+		StreamReaderPtr stream;
+		if (IoServer::instance()->openFile(stream, filename))
+			return model->load(*stream);
+		return false;
 	},
 		[&](ray::ModelPtr model) 
 	{

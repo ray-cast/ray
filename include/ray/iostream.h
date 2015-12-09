@@ -41,33 +41,25 @@
 
 _NAME_BEGIN
 
-class EXPORT iostream : public istream, public ostream
+class EXPORT Stream : public StreamReader, public StreamWrite
 {
 public:
-    iostream(streambuf* buf) noexcept;
-    virtual ~iostream() noexcept;
+    Stream(streambuf* buf) noexcept;
+    virtual ~Stream() noexcept;
 
-    bool is_open() const noexcept;
+    Stream& read(char* str, std::streamsize cnt) noexcept;
+    Stream& read(char* str, streamsize size, streamsize cnt) noexcept;
 
-    iostream& open(const char* filename) noexcept;
-    iostream& open(const wchar_t* filename) noexcept;
-    iostream& open(const std::string& filename) noexcept;
-    iostream& open(const std::wstring& filename) noexcept;
+    Stream& write(const char* str, std::streamsize cnt) noexcept;
+    Stream& write(const char* str, streamsize size, streamsize cnt) noexcept;
 
-    iostream& read(char* str, std::streamsize cnt) noexcept;
-    iostream& read(char* str, streamsize size, streamsize cnt) noexcept;
+    Stream& seekg(ios_base::off_type pos) noexcept;
+    Stream& seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
 
-    iostream& write(const char* str, std::streamsize cnt) noexcept;
-    iostream& write(const char* str, streamsize size, streamsize cnt) noexcept;
+    Stream& flush() noexcept;
 
-    iostream& seekg(ios_base::off_type pos) noexcept;
-    iostream& seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
-
-    iostream& flush() noexcept;
-    iostream& close() noexcept;
-
-	iostream& copy(istream& other) noexcept;
-    iostream& copy(iostream& other) noexcept;
+	Stream& copy(StreamReader& other) noexcept;
+    Stream& copy(Stream& other) noexcept;
 
     streamsize size() noexcept;
 
@@ -75,9 +67,27 @@ public:
 
     streampos tellg() noexcept;
 
+protected:
+	class iosentry final
+	{
+	public:
+		iosentry(Stream* _istr);
+		~iosentry() noexcept;
+
+		operator bool() const noexcept;
+
+	private:
+		iosentry(const iosentry&) = delete;
+		const iosentry& operator=(const iosentry&) = delete;
+
+	private:
+		bool _ok;
+		Stream* _myIostr;
+	};
+
 private:
-    iostream& operator=(const iostream&) noexcept = delete;
-    iostream(const iostream&) noexcept = delete;
+    Stream& operator=(const Stream&) noexcept = delete;
+    Stream(const Stream&) noexcept = delete;
 
 private:
 

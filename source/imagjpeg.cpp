@@ -56,7 +56,7 @@ struct jpeg_source_manager
 
     JOCTET* buffer;
 
-    istream* stream;
+    StreamReader* stream;
 };
 
 extern "C" void jpeg_error_exit(j_common_ptr cinfo)
@@ -123,7 +123,7 @@ extern "C" void jpeg_term_source(j_decompress_ptr)
 }
 
 bool
-JPEGHandler::doCanRead(istream& stream) const noexcept
+JPEGHandler::doCanRead(StreamReader& stream) const noexcept
 {
     static std::uint8_t magic[] = { 0xFF, 0xD8 };
 
@@ -138,7 +138,7 @@ JPEGHandler::doCanRead(istream& stream) const noexcept
 }
 
 bool
-JPEGHandler::doLoad(Image& image, istream& stream) noexcept
+JPEGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 {
     jpeg_decompress_struct cinfo;
 
@@ -231,7 +231,7 @@ JPEGHandler::doLoad(Image& image, istream& stream) noexcept
 }
 
 bool
-JPEGHandler::doSave(Image& /*image*/, ostream& /*stream*/) noexcept
+JPEGHandler::doSave(Image&, StreamWrite&) noexcept
 {
     jpeg_compress_struct cinfo;
 

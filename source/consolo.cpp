@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/consolo.h>
-#include <iostream>
 
 _NAME_BEGIN
 
@@ -51,13 +50,13 @@ consolebuf::~consolebuf() noexcept
 }
 
 bool
-consolebuf::open(const char* filename, const ios_base::openmode mode) noexcept
+consolebuf::open(const char* filename, ios_base::openmode mode) noexcept
 {
 	return true;
 }
 
 bool
-consolebuf::open(const wchar_t* filename, const ios_base::openmode mode) noexcept
+consolebuf::open(const wchar_t* filename, ios_base::openmode mode) noexcept
 {
 	return true;
 }
@@ -107,11 +106,12 @@ consolebuf::flush() noexcept
 	return true;
 }
 
-void
+bool
 consolebuf::close() noexcept
 {
 	std::cin.clear();
 	std::cout.clear();
+	return true;
 }
 
 void
@@ -124,6 +124,12 @@ consolebuf::unlock() noexcept
 {
 }
 
+streambuf*
+consolebuf::clone() const noexcept
+{
+	return new consolebuf;
+}
+
 void
 consolebuf::copy(streambuf& other) noexcept
 {
@@ -134,64 +140,11 @@ consolebuf::copy(streambuf& other) noexcept
 }
 
 icstream::icstream() noexcept
-	: istream(&_console)
+	: StreamReader(&_console)
 {
 }
 
-icstream::icstream(FILE* file) noexcept
-	: istream(&_console)
-{
-}
-
-icstream::icstream(const char* filename, const ios_base::openmode mode) noexcept
-	: istream(&_console)
-{
-	this->open(filename);
-}
-
-icstream::icstream(const char* filename, const ios_base::open_mode mode) noexcept
-	: istream(&_console)
-{
-	this->open(filename);
-}
-
-icstream::icstream(const wchar_t* filename, const ios_base::openmode mode) noexcept
-	: istream(&_console)
-{
-	this->open(filename);
-}
-
-icstream::icstream(const wchar_t* filename, const ios_base::open_mode mode) noexcept
-	: istream(&_console)
-{
-	this->open(filename);
-}
-
-icstream::icstream(const std::string& filename, const ios_base::openmode mode) noexcept
-	: istream(&_console)
-{
-	this->open(filename);
-}
-
-icstream::icstream(const std::string& filename, const ios_base::open_mode mode) noexcept
-	: istream(&_console)
-{
-	this->open(filename);
-}
-
-icstream::icstream(const std::wstring& filename, const ios_base::openmode mode) noexcept
-	: istream(&_console)
-{
-	this->open(filename);
-}
-
-icstream::icstream(const std::wstring& filename, const ios_base::open_mode mode) noexcept
-	: istream(&_console)
-{
-	this->open(filename);
-}
-
-istream*
+StreamReader*
 icstream::clone() const noexcept
 {
 	return new icstream;
@@ -202,59 +155,7 @@ icstream::~icstream() noexcept
 }
 
 ocstream::ocstream() noexcept
-	: ostream(&_console)
-{
-}
-
-ocstream::ocstream(FILE* file) noexcept
-	: ostream(&_console)
-{
-}
-
-ocstream::ocstream(const char* filename, const ios_base::openmode mode) noexcept
-	: ostream(&_console)
-{
-	this->open(filename);
-}
-
-ocstream::ocstream(const char* filename, const ios_base::open_mode mode) noexcept
-	: ostream(&_console)
-{
-	this->open(filename);
-}
-
-ocstream::ocstream(const wchar_t* filename, const ios_base::openmode mode) noexcept
-	: ostream(&_console)
-{
-	this->open(filename);
-}
-
-ocstream::ocstream(const wchar_t* filename, const ios_base::open_mode mode) noexcept
-	: ostream(&_console)
-{
-	this->open(filename);
-}
-
-ocstream::ocstream(const std::string& filename, const ios_base::openmode mode) noexcept
-	: ostream(&_console)
-{
-	this->open(filename);
-}
-
-ocstream::ocstream(const std::string& filename, const ios_base::open_mode mode) noexcept
-	: ostream(&_console)
-{
-	this->open(filename);
-}
-
-ocstream::ocstream(const std::wstring& filename, const ios_base::openmode mode) noexcept
-	: ostream(&_console)
-{
-	this->open(filename);
-}
-
-ocstream::ocstream(const std::wstring& filename, const ios_base::open_mode mode) noexcept
-	: ostream(&_console)
+	: StreamWrite(&_console)
 {
 }
 
@@ -262,7 +163,7 @@ ocstream::~ocstream() noexcept
 {
 }
 
-ostream*
+StreamWrite*
 ocstream::clone() const
 {
 	return new ocstream;

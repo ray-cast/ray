@@ -151,13 +151,13 @@ public:
 	BMPHandler() noexcept;
 	virtual ~BMPHandler() noexcept;
 
-	bool doCanRead(istream& stream) const noexcept;
-	bool doLoad(Image& image, istream& stream) except;
-	bool doSave(Image& image, ostream& stream) except;
+	bool doCanRead(StreamReader& stream) const noexcept;
+	bool doLoad(Image& image, StreamReader& stream) except;
+	bool doSave(Image& image, StreamWrite& stream) except;
 
-	bool decode(Image& image, istream& stream, const struct BITMAPINFO& info);
-	bool encode(Image& image, istream& stream, const struct BITMAPINFO& info);
-	bool loadDIB(Image& image, istream& stream, const struct BITMAPINFO& info);
+	bool decode(Image& image, StreamReader& stream, const struct BITMAPINFO& info);
+	bool encode(Image& image, StreamReader& stream, const struct BITMAPINFO& info);
+	bool loadDIB(Image& image, StreamReader& stream, const struct BITMAPINFO& info);
 };
 
 _NAME_END

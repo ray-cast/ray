@@ -50,7 +50,7 @@ MemoryBuf::~MemoryBuf() noexcept
 }
 
 bool
-MemoryBuf::open(const char* filename, const ios_base::openmode mode) noexcept
+MemoryBuf::open(ios_base::openmode mode) noexcept
 {
 	_next = 0;
 	_tell = 0;
@@ -59,18 +59,10 @@ MemoryBuf::open(const char* filename, const ios_base::openmode mode) noexcept
 }
 
 bool
-MemoryBuf::open(const wchar_t* filename, const ios_base::openmode mode) noexcept
-{
-	_next = 0;
-	_tell = 0;
-	_isMappinged = false;
-    return true;
-}
-
-void
 MemoryBuf::close() noexcept
 {
     _data.clear();
+	return true;
 }
 
 streamsize
@@ -160,6 +152,12 @@ MemoryBuf::flush() noexcept
     return 0;
 }
 
+streambuf* 
+MemoryBuf::clone() const noexcept
+{
+	return new MemoryBuf;
+}
+
 void
 MemoryBuf::copy(streambuf& other) noexcept
 {
@@ -205,7 +203,7 @@ MemoryBuf::isMapping() const noexcept
 }
 
 MemoryReader::MemoryReader() noexcept
-	: istream(&_buf)
+	: StreamReader(&_buf)
 {
 }
 
@@ -238,7 +236,7 @@ MemoryReader::isMapping() const noexcept
 }
 
 MemoryWrite::MemoryWrite() noexcept
-	: ostream(&_buf)
+	: StreamWrite(&_buf)
 {
 }
 
@@ -271,7 +269,7 @@ MemoryWrite::isMapping() const noexcept
 }
 
 MemoryStream::MemoryStream() noexcept
-    : iostream(&_buf)
+    : Stream(&_buf)
 {
 }
 

@@ -47,9 +47,6 @@ public:
     streambuf() noexcept;
     virtual ~streambuf() noexcept;
 
-    virtual bool open(const char* filename, const ios_base::openmode mode) noexcept = 0;
-    virtual bool open(const wchar_t* filename, const ios_base::openmode mode) noexcept = 0;
-
     virtual streamsize read(char* str, std::streamsize cnt) noexcept = 0;
     virtual streamsize write(const char* str, std::streamsize cnt) noexcept = 0;
 
@@ -62,7 +59,7 @@ public:
 
     virtual int flush() noexcept = 0;
 
-    virtual void close() noexcept = 0;
+	virtual streambuf* clone() const noexcept = 0;
 
     virtual void copy(streambuf& other) noexcept = 0;
 

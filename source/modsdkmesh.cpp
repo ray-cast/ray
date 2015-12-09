@@ -176,7 +176,7 @@ SDKMeshHandler::~SDKMeshHandler() noexcept
 }
 
 bool
-SDKMeshHandler::doCanRead(istream& stream) const noexcept
+SDKMeshHandler::doCanRead(StreamReader& stream) const noexcept
 {
 	SDKMESH_HEADER hdr;
 	if (stream.read((char*)&hdr, sizeof(hdr)))
@@ -188,7 +188,7 @@ SDKMeshHandler::doCanRead(istream& stream) const noexcept
 }
 
 bool
-SDKMeshHandler::doLoad(Model& model, istream& stream) noexcept
+SDKMeshHandler::doLoad(Model& model, StreamReader& stream) noexcept
 {
 	SDKMESH_HEADER hdr;
 
@@ -332,7 +332,7 @@ SDKMeshHandler::doLoad(Model& model, istream& stream) noexcept
 }
 
 bool
-SDKMeshHandler::doSave(Model& model, ostream& stream) noexcept
+SDKMeshHandler::doSave(Model& model, StreamWrite& stream) noexcept
 {
 	return false;
 }

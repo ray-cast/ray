@@ -36,34 +36,11 @@
 // +----------------------------------------------------------------------
 #include <ray/model.h>
 #include <ray/modall.h>
-#include <ray/ioserver.h>
-#include <ray/fstream.h>
-#include <ray/mstream.h>
 
 _NAME_BEGIN
 
 Model::Model() noexcept
 {
-}
-
-Model::Model(const char* filename, ModelType type) noexcept
-{
-    this->load(filename, type);
-}
-
-Model::Model(const wchar_t* filename, ModelType type) noexcept
-{
-    this->load(filename, type);
-}
-
-Model::Model(const std::string& filename, ModelType type) noexcept
-{
-    this->load(filename, type);
-}
-
-Model::Model(const std::wstring& filename, ModelType type) noexcept
-{
-    this->load(filename, type);
 }
 
 Model::~Model() noexcept
@@ -72,45 +49,7 @@ Model::~Model() noexcept
 }
 
 bool
-Model::load(const char* filename, ModelType type) noexcept
-{
-    _name = filename;
-    _directory = util::directory(_name);
-    MemoryStream stream;
-    IoServer::instance()->openFile(filename, stream);
-    return this->load((*(istream*)&stream), type);
-}
-
-bool
-Model::load(const std::string& filename, ModelType type) noexcept
-{
-    _name = filename;
-    _directory = util::directory(_name);
-    MemoryStream stream;
-    IoServer::instance()->openFile(filename, stream);
-    return this->load((*(istream*)&stream), type);
-}
-
-bool
-Model::load(const wchar_t* filename, ModelType type) noexcept
-{
-    _directory = util::directory(_name);
-    MemoryStream stream;
-    IoServer::instance()->openFile(filename, stream);
-    return this->load((*(istream*)&stream), type);
-}
-
-bool
-Model::load(const std::wstring& filename, ModelType type) noexcept
-{
-    _directory = util::directory(_name);
-    MemoryStream stream;
-    IoServer::instance()->openFile(filename, stream);
-    return this->load((*(istream*)&stream), type);
-}
-
-bool
-Model::load(istream& stream, ModelType type) noexcept
+Model::load(StreamReader& stream, ModelType type) noexcept
 {
     if (emptyHandler())
         GetModelInstanceList(*this);
@@ -362,21 +301,21 @@ Model::find(ModelType type, _Myhandler& out) const noexcept
 }
 
 bool
-Model::find(istream& stream, _Myhandler& out) const noexcept
+Model::find(StreamReader& stream, _Myhandler& out) const noexcept
 {
-    if (stream.is_open())
+	if (!stream.good())
+		return false;
+
+	for (auto& it : _handlers)
     {
-        for (auto& it : _handlers)
+        stream.seekg(0, std::ios_base::beg);
+
+        if (it->doCanRead(stream))
         {
             stream.seekg(0, std::ios_base::beg);
 
-            if (it->doCanRead(stream))
-            {
-                stream.seekg(0, std::ios_base::beg);
-
-                out = it;
-                return true;
-            }
+            out = it;
+            return true;
         }
     }
 
@@ -384,7 +323,7 @@ Model::find(istream& stream, _Myhandler& out) const noexcept
 }
 
 bool
-Model::find(istream& stream, ModelType type, _Myhandler& out) const noexcept
+Model::find(StreamReader& stream, ModelType type, _Myhandler& out) const noexcept
 {
     if (type != MT_UNKNOWN)
     {

@@ -74,7 +74,7 @@ VMDHandler::~VMDHandler() noexcept
 }
 
 bool
-VMDHandler::doCanRead(istream& stream) const noexcept
+VMDHandler::doCanRead(StreamReader& stream) const noexcept
 {
 	assert(sizeof(VMDMotion) == 111);
 	assert(sizeof(VMDMorph) == 23);
@@ -96,7 +96,7 @@ VMDHandler::doCanRead(istream& stream) const noexcept
 }
 
 bool
-VMDHandler::doLoad(Model& model, istream& stream) noexcept
+VMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 {
 	VMD vmd;
 
@@ -198,7 +198,7 @@ VMDHandler::doLoad(Model& model, istream& stream) noexcept
 }
 
 bool
-VMDHandler::doSave(Model& model, ostream& stream) noexcept
+VMDHandler::doSave(Model& model, StreamWrite& stream) noexcept
 {
 	VMD vmd;
 	std::memset(&vmd.Header, 0, sizeof(vmd.Header));

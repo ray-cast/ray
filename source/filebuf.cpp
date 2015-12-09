@@ -53,13 +53,13 @@ filebuf::is_open() const noexcept
 }
 
 bool
-filebuf::open(const char* filename, const ios_base::openmode mode) noexcept
+filebuf::open(const char* filename, ios_base::openmode mode) noexcept
 {
     return _file.open(filename, mode) ? true : false;
 }
 
 bool
-filebuf::open(const wchar_t* filename, const ios_base::openmode mode) noexcept
+filebuf::open(const wchar_t* filename, ios_base::openmode mode) noexcept
 {
     return _file.open(filename, mode) ? true : false;
 }
@@ -104,10 +104,16 @@ filebuf::flush() noexcept
     return 0;
 }
 
-void
+bool
 filebuf::close() noexcept
 {
     return _file.close();
+}
+
+streambuf* 
+filebuf::clone() const noexcept
+{
+	return new filebuf;
 }
 
 void

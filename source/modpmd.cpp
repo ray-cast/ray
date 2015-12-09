@@ -40,7 +40,7 @@
 _NAME_BEGIN
 
 bool
-PMDHandler::doCanRead(istream& stream) const noexcept
+PMDHandler::doCanRead(StreamReader& stream) const noexcept
 {
 	PMD_Header hdr;
 
@@ -61,7 +61,7 @@ PMDHandler::doCanRead(istream& stream) const noexcept
 }
 
 bool
-PMDHandler::doLoad(Model& model, istream& stream) noexcept
+PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 {
 	PMD _pmd;
 	if (!stream.read((char*)&_pmd.Header, sizeof(_pmd.Header))) return false;
@@ -383,7 +383,7 @@ PMDHandler::doLoad(Model& model, istream& stream) noexcept
 }
 
 bool
-PMDHandler::doSave(Model& model, ostream& stream) noexcept
+PMDHandler::doSave(Model& model, StreamWrite& stream) noexcept
 {
 	return false;
 }

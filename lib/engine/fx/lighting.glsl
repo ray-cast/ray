@@ -19,17 +19,13 @@
                 return specular + (1.0f - specular) * exp2((-5.55473 * LdotH - 6.98316) * LdotH);
             }
 
-            float attenuationTerm(float3 lightPosition, float3 world, float3 atten)
-            {
-                float3 v = lightPosition - world;
-                float d2 = dot(v, v);
-                float d = sqrt(d2);
-                return 1 / dot(atten, float3(1, d, d2));
-            }
-
             float roughnessTerm(float NdotH, float roughness)
             {
-                return (roughness + 2) / (8 * PIE) * pow(NdotH, roughness);
+                // https://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel
+                // pow(dotHN, K)
+                // = exp(-K*(1-dotHN))
+                // = exp2(K / InvLog2 * dotHN - K / InvLog2)
+                return (roughness + 2) / (8 * PIE) * exp2(roughness * InvLog2 * NdotH - roughness * InvLog2);
             }
 
             float geometricShadowingSchlickBeckmann(float NdotV, float k)
@@ -37,20 +33,15 @@
                 return NdotV / (NdotV * (1.0 - k) + k);
             }
 
-            float geometricShadowingSmith(float roughness, float NdotL, float NdotV, float LdotH)
+            float geometricShadowingSmith(float gloss, float NdotL, float NdotV, float LdotH)
             {
                 // http://www.filmicworlds.com/2014/04/21/optimizing-ggx-shaders-with-dotlh/
                 // geometricShadowingSchlickBeckmann(NdotL, k) * geometricShadowingSchlickBeckmann(NdotV, k);
                 // = geometricShadowingSchlickBeckmann(LdotH, k) * geometricShadowingSchlickBeckmann(LdotH, k);
-                float k = 2 / sqrt(PIE * (roughness + 2));
+                float k = min(1, gloss + 0.545);
                 float k2 = k * k;
                 float invK2 = 1.0f - k2;
                 return 1.0 / (LdotH * LdotH * invK2 + k2);
-            }
-
-            float rimLighting(float NdotV, float LdoV)
-            {
-                return pow(1 - NdotV, 5);// * (1 - LdoV);
             }
 
             float brdfLambert(float3 N, float3 L)
@@ -75,7 +66,7 @@
 
                     float D = roughnessTerm(nh, roughness);
                     float F = fresnelSchlick(specular, lh);
-                    float G = geometricShadowingSmith(roughness, nl, nv, lh);
+                    float G = geometricShadowingSmith(gloss, nl, nv, lh);
 
                     return max(0, D * F * G * nl);
                 }
@@ -127,6 +118,27 @@
                 envBRDF = clamp(envBRDF, 0, 1);
 
                 return specular * envBRDF.x + envBRDF.y;
+            }
+
+            float rimLighting(float NdotV, float rimPower)
+            {
+                return (1 - NdotV) * rimPower;// * (1 - LdoV);
+            }
+
+            float attenuationTerm(float3 lightPosition, float3 world, float3 atten)
+            {
+                float3 v = lightPosition - world;
+                float d2 = dot(v, v);
+                float d = sqrt(d2);
+                return 1 / dot(atten, float3(1, d, d2));
+            }
+
+            float skinBeckmann(float ndoth, float m)
+            {
+                float alpha = acos( ndoth );
+                float ta = tan( alpha );
+                float val = 1.0/(m*m*pow(ndoth,4.0))*exp(-(ta*ta)/(m*m));
+                return val;
             }
 
             float directionLighting(float3 P, float3 N, float3 L, float3 lightAttenuation)

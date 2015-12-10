@@ -110,7 +110,7 @@ OggStreamBuffer::access(StreamReader& stream) const noexcept
 }
 
 bool
-OggStreamBuffer::open(StreamReader& stream) noexcept
+OggStreamBuffer::open(StreamReaderPtr stream) noexcept
 {
 	assert(!_oggVorbisFile);
 
@@ -123,9 +123,9 @@ OggStreamBuffer::open(StreamReader& stream) noexcept
 	callbacks.close_func = &_istreamClose;
 
 	_next = 0;
-	_stream.copy(stream);
+	_stream = stream;
 
-	auto err = ::ov_open_callbacks(&_stream, &ogg, nullptr, 0, callbacks);
+	auto err = ::ov_open_callbacks(_stream.get(), &ogg, nullptr, 0, callbacks);
 	if (err < 0)
 	{
 		::ov_clear(&ogg);
@@ -242,7 +242,7 @@ OggStreamBuffer::is_open() const noexcept
 int 
 OggStreamBuffer::flush() noexcept
 {
-	if (_stream.flush())
+	if (_stream->flush())
 		return 0;
 	return -1;
 }
@@ -318,7 +318,7 @@ OggStreamBuffer::getBufferFrequency() const noexcept
 }
 
 OggSoundReader::OggSoundReader() noexcept
-	: SoundReader(_oggVorbisFile)
+	: SoundReader(&_oggVorbisFile)
 {
 }
 
@@ -327,54 +327,10 @@ OggSoundReader::~OggSoundReader() noexcept
 	_oggVorbisFile.close();
 }
 
-bool 
-OggSoundReader::open(StreamReader& stream) noexcept
-{
-	if (_oggVorbisFile.open(stream))
-		this->clear(ios_base::goodbit);
-	else
-		this->setstate(ios_base::failbit);
-	return _oggVorbisFile.is_open();
-}
-
-bool
-OggSoundReader::access(StreamReader& stream) const noexcept
-{
-	return _oggVorbisFile.access(stream);
-}
-
-std::uint8_t 
-OggSoundReader::getBufferChannelCount() const noexcept
-{
-	assert(_oggVorbisFile.is_open());
-	return _oggVorbisFile.getBufferChannelCount();
-}
-
-std::size_t 
-OggSoundReader::getBufferTotalSamples() const noexcept
-{
-	assert(_oggVorbisFile.is_open());
-	return _oggVorbisFile.getBufferTotalSamples();
-}
-
-SoundFormat 
-OggSoundReader::getBufferType() const noexcept
-{
-	assert(_oggVorbisFile.is_open());
-	return _oggVorbisFile.getBufferType();
-}
-
-SoundFrequency 
-OggSoundReader::getBufferFrequency() const noexcept
-{
-	assert(_oggVorbisFile.is_open());
-	return _oggVorbisFile.getBufferFrequency();
-}
-
-StreamReader*
+SoundReaderPtr
 OggSoundReader::clone() const noexcept
 {
-	return new OggSoundReader();
+	return std::make_shared<OggSoundReader>();
 }
 
 _NAME_END

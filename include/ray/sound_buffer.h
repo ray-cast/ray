@@ -47,22 +47,7 @@ public:
     SoundBuffer() noexcept;
     virtual ~SoundBuffer() noexcept;
 
-    virtual bool open(StreamReader& stream) noexcept = 0;
-
-	virtual bool access(StreamReader& stream) const noexcept = 0;
-
-private:
-	bool open(const char* filename, ios_base::openmode mode) noexcept;
-	bool open(const wchar_t* filename, ios_base::openmode mode) noexcept;
-};
-
-class EXPORT SoundReader : public StreamReader
-{
-public:
-	SoundReader(SoundBuffer& buf) noexcept;
-	virtual ~SoundReader() noexcept;
-
-	virtual bool open(StreamReader& stream) noexcept = 0;
+	virtual bool open(StreamReaderPtr stream) noexcept = 0;
 
 	virtual bool access(StreamReader& stream) const noexcept = 0;
 
@@ -71,6 +56,31 @@ public:
 
 	virtual SoundFormat getBufferType() const noexcept = 0;
 	virtual SoundFrequency getBufferFrequency() const noexcept = 0;
+	
+private:
+	bool open(const char* filename, ios_base::openmode mode) noexcept;
+	bool open(const wchar_t* filename, ios_base::openmode mode) noexcept;
+};
+
+class EXPORT SoundReader : public StreamReader
+{
+public:
+	SoundReader(SoundBuffer* buf) noexcept;
+	virtual ~SoundReader() noexcept;
+
+	bool open(StreamReaderPtr stream) noexcept;
+	bool access(StreamReader& stream) const noexcept;
+
+	std::uint8_t getBufferChannelCount() const noexcept;
+	std::size_t getBufferTotalSamples() const noexcept;
+
+	SoundFormat getBufferType() const noexcept;
+	SoundFrequency getBufferFrequency() const noexcept;
+
+	virtual SoundReaderPtr clone() const noexcept = 0;
+
+private:
+	SoundBuffer* _buf;
 };
 
 _NAME_END

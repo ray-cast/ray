@@ -59,7 +59,7 @@ public:
 	SoundSourcePtr createSoundSource() except;
 	SoundSourcePtr createSoundSource(const std::string& filename, SoundFile::Type type = SoundFile::Unknown) except;
 	SoundReaderPtr createSoundReader(const std::string& filename, SoundFile::Type type = SoundFile::Unknown) noexcept;
-	SoundReaderPtr createSoundReader(StreamReader& stream, SoundFile::Type type = SoundFile::Unknown) noexcept;
+	SoundReaderPtr createSoundReader(StreamReaderPtr stream, SoundFile::Type type = SoundFile::Unknown) noexcept;
 
 	SoundListenerPtr createSoundListener() noexcept;
 

@@ -480,14 +480,7 @@ ALSoundSource::_playEnd() noexcept
 	for (auto& it : _listeners)
 		it->onPlayEnd();
 
-	ALint processed = 0;
-	::alGetSourcei(_alSource, AL_BUFFERS_PROCESSED, &processed);
-
-	while (processed--)
-	{
-		ALuint buff;
-		::alSourceUnqueueBuffers(_alSource, 1, &buff);
-	}
+	this->_clearSoundQueue();
 
 	_isPlayEnd = true;
 	_isPlaying = false;

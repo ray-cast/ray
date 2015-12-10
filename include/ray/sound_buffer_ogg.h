@@ -49,7 +49,7 @@ public:
 	OggStreamBuffer() noexcept;
 	~OggStreamBuffer() noexcept;
 
-	virtual bool open(StreamReader& stream) noexcept;
+	virtual bool open(StreamReaderPtr stream) noexcept;
 
 	virtual bool access(StreamReader& stream) const noexcept;
 
@@ -80,7 +80,7 @@ public:
 private:
 
 	streamoff _next;
-	MemoryStream _stream;
+	StreamReaderPtr _stream;
 
 	OggVorbis_File* _oggVorbisFile;
 };
@@ -91,17 +91,7 @@ public:
 	OggSoundReader() noexcept;
 	~OggSoundReader() noexcept;
 
-	bool open(StreamReader& stream) noexcept;
-
-	bool access(StreamReader& stream) const noexcept;
-
-	std::uint8_t getBufferChannelCount() const noexcept;
-	std::size_t getBufferTotalSamples() const noexcept;
-
-	SoundFormat getBufferType() const noexcept;
-	SoundFrequency getBufferFrequency() const noexcept;
-
-	StreamReader* clone() const noexcept;
+	SoundReaderPtr clone() const noexcept;
 
 private:
 

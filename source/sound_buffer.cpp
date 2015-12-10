@@ -58,13 +58,50 @@ SoundBuffer::open(const wchar_t* filename, ios_base::openmode mode) noexcept
 	return false;
 }
 
-SoundReader::SoundReader(SoundBuffer& buf) noexcept
-	: StreamReader(&buf)
+SoundReader::SoundReader(SoundBuffer* buf) noexcept
+	: StreamReader(buf)
+	, _buf(buf)
 {
 }
 
 SoundReader::~SoundReader() noexcept
 {
+}
+
+bool 
+SoundReader::open(StreamReaderPtr stream) noexcept
+{
+	return this->_buf->open(stream);
+}
+
+bool
+SoundReader::access(StreamReader& stream) const noexcept
+{
+	return this->_buf->access(stream);
+}
+
+std::uint8_t 
+SoundReader::getBufferChannelCount() const noexcept
+{
+	return this->_buf->getBufferChannelCount();
+}
+
+std::size_t
+SoundReader::getBufferTotalSamples() const noexcept
+{
+	return this->_buf->getBufferTotalSamples();
+}
+
+SoundFormat
+SoundReader::getBufferType() const noexcept
+{
+	return this->_buf->getBufferType();
+}
+
+SoundFrequency 
+SoundReader::getBufferFrequency() const noexcept
+{
+	return this->_buf->getBufferFrequency();
 }
 
 _NAME_END

@@ -39,7 +39,6 @@
 #include <ray/sound_buffer_all.h>
 
 #include <ray/al_sound_device.h>
-#include <ray/mstream.h>
 #include <ray/ioserver.h>
 
 _NAME_BEGIN
@@ -148,7 +147,7 @@ SoundSystem::createSoundReader(const std::string& filename, SoundFile::Type type
 	{
 		StreamReaderPtr stream;
 		if (IoServer::instance()->openFile(stream, filename))
-			soundReader = createSoundReader(*stream, type);
+			soundReader = createSoundReader(stream, type);
 
 		if (soundReader)
 			_soundReaders[filename] = soundReader;
@@ -158,7 +157,7 @@ SoundSystem::createSoundReader(const std::string& filename, SoundFile::Type type
 }
 
 SoundReaderPtr
-SoundSystem::createSoundReader(StreamReader& stream, SoundFile::Type type) noexcept
+SoundSystem::createSoundReader(StreamReaderPtr stream, SoundFile::Type type) noexcept
 {
 	assert(this->isOpened());
 
@@ -167,9 +166,9 @@ SoundSystem::createSoundReader(StreamReader& stream, SoundFile::Type type) noexc
 
 	SoundReaderPtr impl;
 	
-	if (this->find(stream, type, impl))
+	if (this->find(*stream, type, impl))
 	{
-		auto reader = std::shared_ptr<SoundReader>(static_cast<SoundReader*>(impl->clone()));
+		auto reader = impl->clone();
 		if (reader)
 		{
 			reader->open(stream);

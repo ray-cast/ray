@@ -57,7 +57,7 @@ StreamReader::isentry::operator bool() const noexcept
     return _ok ? true : false;
 }
 
-StreamReader::StreamReader(streambuf* buf) noexcept
+StreamReader::StreamReader(StreamBuf* buf) noexcept
 	: _count(0)
 {
     StreamBase::_init(buf, ios_base::in);

@@ -46,20 +46,20 @@ StreamBase::~StreamBase() noexcept
 {
 }
 
-streambuf*
+StreamBuf*
 StreamBase::rdbuf() const noexcept
 {
     return _strbuf;
 }
 
 void
-StreamBase::set_rdbuf(streambuf* buf) noexcept
+StreamBase::set_rdbuf(StreamBuf* buf) noexcept
 {
     _strbuf = buf;
 }
 
 void
-StreamBase::_init(streambuf* _buf, ios_base::openmode mode) noexcept
+StreamBase::_init(StreamBuf* _buf, ios_base::openmode mode) noexcept
 {
     this->set_rdbuf(_buf);
 	_mode = mode;

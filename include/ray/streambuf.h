@@ -41,11 +41,11 @@
 
 _NAME_BEGIN
 
-class EXPORT streambuf
+class EXPORT StreamBuf
 {
 public:
-    streambuf() noexcept;
-    virtual ~streambuf() noexcept;
+    StreamBuf() noexcept;
+    virtual ~StreamBuf() noexcept;
 
     virtual streamsize read(char* str, std::streamsize cnt) noexcept = 0;
     virtual streamsize write(const char* str, std::streamsize cnt) noexcept = 0;

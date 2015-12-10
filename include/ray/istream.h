@@ -44,7 +44,7 @@ _NAME_BEGIN
 class EXPORT StreamReader : public virtual StreamBase
 {
 public:
-    StreamReader(streambuf* buf) noexcept;
+    StreamReader(StreamBuf* buf) noexcept;
     virtual ~StreamReader() noexcept;
 
     StreamReader& read(char* str, std::streamsize cnt) noexcept;

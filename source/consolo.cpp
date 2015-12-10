@@ -124,21 +124,6 @@ consolebuf::unlock() noexcept
 {
 }
 
-streambuf*
-consolebuf::clone() const noexcept
-{
-	return new consolebuf;
-}
-
-void
-consolebuf::copy(streambuf& other) noexcept
-{
-	std::vector<char> buffer;
-	buffer.resize(other.size());
-	other.read(buffer.data(), other.size());
-	this->write(buffer.data(), other.size());
-}
-
 icstream::icstream() noexcept
 	: StreamReader(&_console)
 {

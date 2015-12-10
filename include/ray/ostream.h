@@ -44,7 +44,7 @@ _NAME_BEGIN
 class EXPORT StreamWrite : public virtual StreamBase
 {
 public:
-    StreamWrite(streambuf* buf) noexcept;
+    StreamWrite(StreamBuf* buf) noexcept;
     virtual ~StreamWrite() noexcept;
 
     StreamWrite& write(const char* str, std::streamsize cnt) noexcept;

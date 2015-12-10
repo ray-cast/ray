@@ -57,7 +57,7 @@ StreamWrite::osentry::operator bool() const noexcept
     return (_ok ? true : false);
 }
 
-StreamWrite::StreamWrite(streambuf* buf) noexcept
+StreamWrite::StreamWrite(StreamBuf* buf) noexcept
 {
     StreamBase::_init(buf, ios_base::out);
 }

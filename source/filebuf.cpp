@@ -110,19 +110,4 @@ filebuf::close() noexcept
     return _file.close();
 }
 
-streambuf* 
-filebuf::clone() const noexcept
-{
-	return new filebuf;
-}
-
-void
-filebuf::copy(streambuf& other) noexcept
-{
-    std::vector<char> buffer;
-    buffer.resize(other.size());
-    other.read(buffer.data(), other.size());
-    this->write(buffer.data(), other.size());
-}
-
 _NAME_END

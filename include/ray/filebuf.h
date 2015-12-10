@@ -42,7 +42,7 @@
 
 _NAME_BEGIN
 
-class filebuf : public streambuf
+class filebuf : public StreamBuf
 {
 public:
     filebuf() noexcept;
@@ -64,11 +64,6 @@ public:
     streamsize size() noexcept;
 
     int flush() noexcept;
-
-	streambuf* clone() const noexcept;
-
-    void copy(streambuf& other) noexcept;
-
 private:
 
     IOFILE _file;

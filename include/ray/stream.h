@@ -50,18 +50,18 @@ public:
 	void setOpenMode(ios_base::openmode mode) noexcept;
 	ios_base::openmode getOpenMode() const noexcept;
 
-    streambuf* rdbuf() const noexcept;
-    void set_rdbuf(streambuf* buf) noexcept;
+    StreamBuf* rdbuf() const noexcept;
+    void set_rdbuf(StreamBuf* buf) noexcept;
 
 protected:
-    void _init(streambuf* _buf, ios_base::openmode mode) noexcept;
+    void _init(StreamBuf* _buf, ios_base::openmode mode) noexcept;
 
 private:
 	StreamBase& operator=(const StreamBase&) = delete;
 	StreamBase(const StreamBase&) = delete;
 
 private:
-    streambuf* _strbuf;
+    StreamBuf* _strbuf;
 	ios_base::openmode _mode;
 };
 

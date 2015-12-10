@@ -38,21 +38,21 @@
 
 _NAME_BEGIN
 
-streambuf::streambuf() noexcept
+StreamBuf::StreamBuf() noexcept
 {
 }
 
-streambuf::~streambuf() noexcept
-{
-}
-
-void
-streambuf::lock() noexcept
+StreamBuf::~StreamBuf() noexcept
 {
 }
 
 void
-streambuf::unlock() noexcept
+StreamBuf::lock() noexcept
+{
+}
+
+void
+StreamBuf::unlock() noexcept
 {
 }
 

@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class EXPORT SoundBuffer : public streambuf
+class EXPORT SoundBuffer : public StreamBuf
 {
 public:
     SoundBuffer() noexcept;
@@ -56,10 +56,6 @@ public:
 
 	virtual SoundFormat getBufferType() const noexcept = 0;
 	virtual SoundFrequency getBufferFrequency() const noexcept = 0;
-	
-private:
-	bool open(const char* filename, ios_base::openmode mode) noexcept;
-	bool open(const wchar_t* filename, ios_base::openmode mode) noexcept;
 };
 
 class EXPORT SoundReader : public StreamReader

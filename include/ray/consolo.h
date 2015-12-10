@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class consolebuf final : public streambuf
+class consolebuf final : public StreamBuf
 {
 public:
     consolebuf() noexcept;
@@ -66,10 +66,6 @@ public:
 
     void lock() noexcept;
     void unlock() noexcept;
-
-	streambuf* clone() const noexcept;
-
-    void copy(streambuf& other) noexcept;
 };
 
 class EXPORT icstream final : public StreamReader

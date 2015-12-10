@@ -57,7 +57,7 @@ Stream::iosentry::operator bool() const noexcept
     return _ok ? true : false;
 }
 
-Stream::Stream(streambuf* buf) noexcept
+Stream::Stream(StreamBuf* buf) noexcept
     : StreamReader(buf)
     , StreamWrite(buf)
     , _count(0)

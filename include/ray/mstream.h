@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class EXPORT MemoryBuf : public streambuf
+class EXPORT MemoryBuf : public StreamBuf
 {
 public:
     MemoryBuf() noexcept;

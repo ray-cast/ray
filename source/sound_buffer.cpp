@@ -46,18 +46,6 @@ SoundBuffer::~SoundBuffer() noexcept
 {
 }
 
-bool
-SoundBuffer::open(const char* filename, ios_base::openmode mode) noexcept
-{
-	return false;
-}
-
-bool 
-SoundBuffer::open(const wchar_t* filename, ios_base::openmode mode) noexcept
-{
-	return false;
-}
-
 SoundReader::SoundReader(SoundBuffer* buf) noexcept
 	: StreamReader(buf)
 	, _buf(buf)

@@ -45,7 +45,7 @@
         <component class="Sound">
             <attribute source="dlc:sound/sound/1.ogg"/>
             <attribute play="true"/>
-            <attribute loop="false"/>
+            <attribute loop="true"/>
         </component>
     </object>
 </scene>

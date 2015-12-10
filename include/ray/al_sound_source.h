@@ -90,14 +90,21 @@ public:
 
 private:
 
+	void _playStart() noexcept;
+	void _playEnd() noexcept;
+
 	void _initSoundStream() noexcept;
+	void _clearSoundQueue() noexcept;
+	void _updateSoundQueue() noexcept;
 
 private:
 
 	bool _isLoop;
+	bool _isPlaying;
+	bool _isPlayEnd;
 
     ALuint  _alSource;
-	ALuint  _alBuffer;
+	ALuint  _alBuffer[2];
 	ALsizei _alBufferSize;
 	ALenum  _alFormat;
 

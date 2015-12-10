@@ -230,6 +230,8 @@ SoundComponent::play() noexcept
 				_sound->setTranslate(actor->getTranslate());
 				_sound->setOrientation(actor->getLookAt(), actor->getUpVector());
 
+				_sound->loop(_isLoop);
+
 				_sound->addSoundSourceListener(this);
 			}
 		}

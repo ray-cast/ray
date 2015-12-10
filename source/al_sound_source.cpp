@@ -35,15 +35,17 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/al_sound_source.h>
-#include <ray/al_sound_buffer.h>
 
 _NAME_BEGIN
 
 ALSoundSource::ALSoundSource() noexcept
 	: _alSource(AL_NONE)
-	, _alBuffer(AL_NONE)
 	, _alFormat(AL_NONE)
+	, _isPlaying(false)
+	, _isPlayEnd(false)
+	, _isLoop(false)
 {
+	std::memset(_alBuffer, 0, sizeof(_alBuffer));
 }
 
 ALSoundSource::~ALSoundSource() noexcept
@@ -58,9 +60,10 @@ ALSoundSource::open() noexcept
     ::alGenSources(1, &_alSource);
 	::alSourcei(_alSource, AL_SOURCE_TYPE, AL_STREAMING);
 	::alSourcei(_alSource, AL_LOOPING, AL_FALSE);
+	::alSourcei(_alSource, AL_SOURCE_RELATIVE, AL_TRUE);
 
-	assert(_alBuffer == AL_NONE);
-	::alGenBuffers(1, &_alBuffer);
+	::alGenBuffers(1, &_alBuffer[0]);
+	::alGenBuffers(1, &_alBuffer[1]);
 }
 
 void
@@ -74,10 +77,13 @@ ALSoundSource::close() noexcept
 		_alSource = AL_NONE;
 	}
 
-	if (_alBuffer != AL_NONE)
+	for (auto& it : _alBuffer)
 	{
-		::alDeleteBuffers(1, &_alBuffer);
-		_alBuffer = AL_NONE;
+		if (it != AL_NONE)
+		{
+			::alDeleteBuffers(1, &it);
+			it = AL_NONE;
+		}
 	}
 
 	_soundReader = nullptr;
@@ -354,42 +360,28 @@ ALSoundSource::play(bool play) noexcept
 
 	if (play)
 	{
+		if (_isPlayEnd)
+			return;
+
+		this->_updateSoundQueue();
+
 		if (!this->isPlaying())
 		{
-			if (_alSampleLengthTotal > _soundClip.samples || _soundReader->eof())
+			if (_isPlaying || _alSampleLengthTotal > _soundClip.samples || _soundReader->eof())
 			{
 				if (!_isLoop)
 				{
-					for (auto& it : _listeners)
-						it->onPlayEnd();
+					this->_playEnd();
 					return;
 				}
-				else
-				{
-					this->_initSoundStream();
-				}
 			}
 
-			_soundReader->read(_data.data(), _data.size());
-			if (_soundReader->gcount() > 0)
-			{
-				ALuint buff;
-				::alSourceUnqueueBuffers(_alSource, 1, &buff);
-
-				::alBufferData(_alBuffer, _alFormat, _data.data(), _soundReader->gcount(), _soundClip.freq);
-				::alSourceQueueBuffers(_alSource, 1, &_alBuffer);
-
-				::alSourcePlay(_alSource);
-
-				_alSampleLengthTotal += _alSampleLength;
-			}
+			this->_playStart();
 		}
 	}
 	else
 	{
 		::alSourceStop(_alSource);
-
-		this->_initSoundStream();
 	}
 }
 
@@ -456,6 +448,87 @@ ALSoundSource::_initSoundStream() noexcept
 {
 	_alSampleLengthTotal = _soundClip.length;
 	_soundReader->seekg(_soundClip.length, ios_base::beg);
+}
+
+void
+ALSoundSource::_playStart() noexcept
+{
+	this->_initSoundStream();
+	this->_clearSoundQueue();
+
+	for (auto it : _alBuffer)
+	{
+		_soundReader->read(_data.data(), _data.size());
+		if (_soundReader->gcount() > 0)
+		{
+			::alBufferData(it, _alFormat, _data.data(), _soundReader->gcount(), _soundClip.freq);
+			::alSourceQueueBuffers(_alSource, 1, &it);
+
+			_alSampleLengthTotal += _alSampleLength;
+		}
+	}
+
+	::alSourcePlay(_alSource);
+
+	_isPlaying = true;
+	_isPlayEnd = false;
+}
+
+void
+ALSoundSource::_playEnd() noexcept
+{
+	for (auto& it : _listeners)
+		it->onPlayEnd();
+
+	ALint processed = 0;
+	::alGetSourcei(_alSource, AL_BUFFERS_PROCESSED, &processed);
+
+	while (processed--)
+	{
+		ALuint buff;
+		::alSourceUnqueueBuffers(_alSource, 1, &buff);
+	}
+
+	_isPlayEnd = true;
+	_isPlaying = false;
+}
+
+void 
+ALSoundSource::_clearSoundQueue() noexcept
+{
+	ALint processed = 0;
+	::alGetSourcei(_alSource, AL_BUFFERS_PROCESSED, &processed);
+
+	while (processed--)
+	{
+		ALuint buff;
+		::alSourceUnqueueBuffers(_alSource, 1, &buff);
+	}
+}
+
+void
+ALSoundSource::_updateSoundQueue() noexcept
+{
+	ALint processed = 0;
+	::alGetSourcei(_alSource, AL_BUFFERS_PROCESSED, &processed);
+
+	while (processed--)
+	{
+		ALuint buff;
+		::alSourceUnqueueBuffers(_alSource, 1, &buff);
+
+		if (_alSampleLengthTotal > _soundClip.samples || _soundReader->eof())
+			break;
+
+		_soundReader->read(_data.data(), _data.size());
+		if (_soundReader->gcount() > 0)
+		{
+			::alBufferData(buff, _alFormat, _data.data(), _soundReader->gcount(), _soundClip.freq);
+			::alSourceQueueBuffers(_alSource, 1, &buff);
+
+			_alSampleLengthTotal += _alSampleLength;
+		}
+	}
 }
 
 _NAME_END

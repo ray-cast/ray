@@ -150,10 +150,14 @@ SET(PLATFORM_IO_LIST
     ${HEADER_PATH}/istream.h
     ${SOURCE_PATH}/archive.cpp
     ${HEADER_PATH}/archive.h
+    ${SOURCE_PATH}/archive_buf.cpp
+    ${HEADER_PATH}/archive_buf.h
     ${SOURCE_PATH}/iarchive.cpp
     ${HEADER_PATH}/iarchive.h
     ${SOURCE_PATH}/oarchive.cpp
     ${HEADER_PATH}/oarchive.h
+    ${SOURCE_PATH}/ioarchive.cpp
+    ${HEADER_PATH}/ioarchive.h
     ${SOURCE_PATH}/ostream.cpp
     ${HEADER_PATH}/ostream.h
     ${SOURCE_PATH}/mstream.cpp

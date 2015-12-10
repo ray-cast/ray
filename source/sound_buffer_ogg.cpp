@@ -247,12 +247,6 @@ OggStreamBuffer::flush() noexcept
 	return -1;
 }
 
-streambuf* 
-OggStreamBuffer::clone() const noexcept
-{
-	return new OggStreamBuffer;
-}
-
 bool
 OggStreamBuffer::close() noexcept
 {
@@ -267,12 +261,6 @@ OggStreamBuffer::close() noexcept
 	}
 
 	return false;
-}
-
-void 
-OggStreamBuffer::copy(streambuf& other) noexcept
-{
-	assert(false);
 }
 
 std::uint8_t

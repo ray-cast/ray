@@ -67,10 +67,6 @@ public:
 
 	virtual bool close() noexcept;
 
-	virtual streambuf* clone() const noexcept;
-
-	virtual void copy(streambuf& other) noexcept;
-
 	virtual std::uint8_t getBufferChannelCount() const noexcept;
 	virtual std::size_t getBufferTotalSamples() const noexcept;
 

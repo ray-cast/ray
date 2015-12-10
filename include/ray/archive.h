@@ -53,8 +53,6 @@ public:
 	archivebuf* rdbuf() const noexcept;
 	void set_rdbuf(archivebuf* buf) noexcept;
 
-	void copy(const archive& other) noexcept;
-
 protected:
 	void _init(archivebuf* _buf, ios_base::openmode mode) noexcept;
 

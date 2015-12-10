@@ -67,10 +67,6 @@ public:
 
     int flush() noexcept;
 
-	streambuf* clone() const noexcept;
-
-    void copy(streambuf& other) noexcept;
-
 private:
 
     bool _isMappinged;

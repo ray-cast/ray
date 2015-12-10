@@ -58,9 +58,6 @@ public:
 
     Stream& flush() noexcept;
 
-	Stream& copy(StreamReader& other) noexcept;
-    Stream& copy(Stream& other) noexcept;
-
     streamsize size() noexcept;
 
     streamsize gcount() const noexcept;

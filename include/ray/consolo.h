@@ -78,7 +78,7 @@ public:
     icstream() noexcept;
     ~icstream() noexcept;
 
-    virtual StreamReader* clone() const noexcept;
+    virtual StreamReaderPtr clone() const noexcept;
 
 private:
 

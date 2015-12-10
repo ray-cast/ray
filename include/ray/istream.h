@@ -55,15 +55,11 @@ public:
 
     StreamReader& flush() noexcept;
 
-    StreamReader& copy(const StreamReader& other) noexcept;
-
     streamsize size() noexcept;
 
     streamoff tellg() noexcept;
 
     streamsize gcount() const noexcept;
-
-    virtual StreamReader* clone() const noexcept;
 
 protected:
 	class isentry final

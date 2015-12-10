@@ -209,20 +209,4 @@ Stream::tellg() noexcept
         return (ios_base::pos_type(ios_base::_BADOFF));
 }
 
-Stream& 
-Stream::copy(StreamReader& other) noexcept
-{
-	_count = other.gcount();
-	StreamBase::copy(other);
-	return *this;
-}
-
-Stream&
-Stream::copy(Stream& other) noexcept
-{
-    _count = other._count;
-	StreamBase::copy(other);
-    return *this;
-}
-
 _NAME_END

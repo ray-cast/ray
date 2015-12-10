@@ -160,14 +160,6 @@ StreamWrite::tellg() noexcept
 }
 
 StreamWrite&
-StreamWrite::copy(StreamWrite& other) noexcept
-{
-    _count = other._count;
-    StreamBase::copy(other);
-    return *this;
-}
-
-StreamWrite&
 StreamWrite::operator << (const char* str) noexcept
 {
     return this->write(str, (std::streamsize)std::strlen(str));

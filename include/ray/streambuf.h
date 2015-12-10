@@ -59,10 +59,6 @@ public:
 
     virtual int flush() noexcept = 0;
 
-	virtual streambuf* clone() const noexcept = 0;
-
-    virtual void copy(streambuf& other) noexcept = 0;
-
     virtual void lock() noexcept;
     virtual void unlock() noexcept;
 };

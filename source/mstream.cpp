@@ -152,24 +152,6 @@ MemoryBuf::flush() noexcept
     return 0;
 }
 
-streambuf* 
-MemoryBuf::clone() const noexcept
-{
-	return new MemoryBuf;
-}
-
-void
-MemoryBuf::copy(streambuf& other) noexcept
-{
-    assert(other.is_open());
-
-    this->resize(other.size());
-    char* buf = this->map();
-    assert(buf);
-    other.read(buf, other.size());
-    this->unmap();
-}
-
 void
 MemoryBuf::resize(streamsize size) noexcept
 {

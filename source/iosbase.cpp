@@ -101,14 +101,6 @@ ios_base::flags() const noexcept
 }
 
 void
-ios_base::copy(const ios_base& other) noexcept
-{
-	_my_state = other._my_state;
-	_my_except = other._my_except;
-	_fmtfl = other._fmtfl;
-}
-
-void
 ios_base::clear(ios_base::io_state _state)
 {
 	this->clear((ios_base::iostate)_state);

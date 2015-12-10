@@ -144,10 +144,10 @@ icstream::icstream() noexcept
 {
 }
 
-StreamReader*
+StreamReaderPtr
 icstream::clone() const noexcept
 {
-	return new icstream;
+	return std::make_shared<icstream>();
 }
 
 icstream::~icstream() noexcept

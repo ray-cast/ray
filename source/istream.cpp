@@ -173,18 +173,4 @@ StreamReader::gcount() const noexcept
     return _count;
 }
 
-StreamReader*
-StreamReader::clone() const noexcept
-{
-    return nullptr;
-}
-
-StreamReader&
-StreamReader::copy(const StreamReader& other) noexcept
-{
-    _count = other._count;
-    StreamBase::copy(other);
-    return *this;
-}
-
 _NAME_END

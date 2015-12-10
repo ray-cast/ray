@@ -67,15 +67,6 @@ archive::_init(archivebuf* _buf, ios_base::openmode mode) noexcept
 }
 
 void
-archive::copy(const archive& other) noexcept
-{
-	assert(other._strbuf);
-	_mode = other._mode;
-	_strbuf->copy(*other._strbuf);
-	ios_base::copy(other);
-}
-
-void
 archive::setOpenMode(ios_base::openmode mode) noexcept
 {
 	_mode = mode;

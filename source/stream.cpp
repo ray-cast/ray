@@ -67,15 +67,6 @@ StreamBase::_init(streambuf* _buf, ios_base::openmode mode) noexcept
 }
 
 void
-StreamBase::copy(const StreamBase& other) noexcept
-{
-    assert(other._strbuf);
-	_mode = other._mode;
-    _strbuf->copy(*other._strbuf);
-    ios_base::copy(other);
-}
-
-void
 StreamBase::setOpenMode(ios_base::openmode mode) noexcept
 {
 	_mode = mode;

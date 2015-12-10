@@ -59,8 +59,6 @@ public:
 
     ios_base::pos_type tellg() noexcept;
 
-    StreamWrite& copy(StreamWrite& other) noexcept;
-
     StreamWrite& operator << (const char* str) noexcept;
     StreamWrite& operator << (const std::string& str) noexcept;
     StreamWrite& operator << (char value) noexcept;

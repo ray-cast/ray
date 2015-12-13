@@ -23,7 +23,7 @@
             void OpaqueVS()
             {
                 coord = glsl_Texcoord.xy;
-                normal = vec4(mat3(matView) * (matModelInverseTranspose * glsl_Normal).rgb, 1.0);
+                normal = vec4(mat3(matView) * (matModelInverseTranspose * glsl_Normal).rgb, 1.0f);
                 gl_Position = matViewProject * matModel * glsl_Position;
             }
         ]]>
@@ -45,15 +45,15 @@
                 vec4 albedo;
                 vec3 spec;
 
-                if (diffuse.w > 0.0)
+                if (diffuse.w > 0.0f)
                     albedo = diffuse;
                 else
-                    albedo = texture(texDiffuse, float2(coord.x, 1-coord.y));
+                    albedo = sampleCoord(texDiffuse, float2(coord.x, 1.0f - coord.y));
 
-                if (specular.w > 0.0)
+                if (specular.w > 0.0f)
                     spec = specular.rgb;
                 else
-                    spec = texture(texSpecular, coord).rgb;
+                    spec = sampleCoord(texSpecular, coord).rgb;
 
                 glsl_FragColor0 = StoreGBufferRT0(RGBA2sRGB(albedo), spec);
                 glsl_FragColor1 = StoreGBufferRT1(normalize(normal.xyz), shininess);

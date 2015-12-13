@@ -107,7 +107,7 @@ private:
 
 private:
 
-	LightType      _lightType;
+	LightType _lightType;
 
 	float _lightRange;
 	float _lightIntensity;
@@ -115,11 +115,9 @@ private:
 	Vector3 _lightColor;
 	Vector3 _lightAttenuation;
 
-	// spot
 	float _spotInnerCone;
 	float _spotOuterCone;
 
-	// shaodw
 	bool _shadow;
 	mutable bool _shadowUpdated;
 	std::size_t _shadowSize;

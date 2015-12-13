@@ -30,7 +30,7 @@
             #define TONEMAP_FILMIC 4
 
             #ifndef TONEMAP_OPERATOR
-            #define TONEMAP_OPERATOR TONEMAP_FILMIC
+            #   define TONEMAP_OPERATOR TONEMAP_FILMIC
             #endif
 
             uniform sampler2D texSource;
@@ -82,10 +82,12 @@
                     color.r = L_d;
                     color = xyz2rgb(Yxy2xyz(color));
                     return color;
-                #else // TONEMAP_FILMIC
+                #elif TONEMAP_OPERATOR == TONEMAP_FILMIC
                     color = 2.2f * Uncharted2Tonemap(exposure * color);
                     float3 whiteScale = 1.0f / Uncharted2Tonemap(float3(W));
                     color *= whiteScale;
+                    return color;
+                #else
                     return color;
                 #endif
             }
@@ -169,7 +171,7 @@
                 color = color * (lumKey / lumAve) + bloom;
                 color = FilmicTonemap(color, exposure);
 
-                glsl_FragColor0 = float4(color, 1.0);
+                glsl_FragColor0 = float4(sRGB2RGB(color), 1.0);
             }
         ]]>
     </shader>

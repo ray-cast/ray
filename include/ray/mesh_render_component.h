@@ -38,8 +38,6 @@
 #define _H_MESH_RENDER_COMPONENT_H_
 
 #include <ray/render_component.h>
-#include <ray/render_buffer.h>
-#include <ray/render_mesh.h>
 
 _NAME_BEGIN
 
@@ -49,6 +47,18 @@ class EXPORT MeshRenderComponent : public RenderComponent
 public:
 	MeshRenderComponent() noexcept;
 	~MeshRenderComponent() noexcept;
+
+	void setMaterial(MaterialPtr material) noexcept;
+	void setSharedMaterial(MaterialPtr material) noexcept;
+
+	MaterialPtr getMaterial() const noexcept;
+	MaterialPtr getSharedMaterial() const noexcept;
+
+	bool hasMaterial() const noexcept;
+	bool hasSharedMaterial() const noexcept;
+
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
 
 	GameComponentPtr clone() const noexcept;
 
@@ -62,14 +72,32 @@ protected:
 
 	virtual void onMeshChange() except;
 
+	virtual void onMoveAfter() noexcept;
+	virtual void onLayerChangeAfter() noexcept;
+
 	virtual void onAttachComponent(GameComponentPtr& component) except;
 	virtual void onDetachComponent(GameComponentPtr& component) except;
+
+protected:
+
+	void _attacRenderObjects() noexcept;
+	void _dettachRenderhObjects() noexcept;
+
+	void _setRenderObject(RenderObjectPtr object) noexcept;
+	RenderObjectPtr _getRenderObject() noexcept;
 
 	RenderObjectPtr buildRenderObject(MeshPropertyPtr mesh, RenderBufferPtr buffer) noexcept;
 
 private:
 	MeshRenderComponent(const MeshRenderComponent&) noexcept = delete;
 	MeshRenderComponent& operator=(const MeshRenderComponent&) noexcept = delete;
+
+private:
+
+	MaterialPtr _material;
+	MaterialPtr _sharedMaterial;
+
+	RenderObjectPtr _renderObject;
 };
 
 _NAME_END

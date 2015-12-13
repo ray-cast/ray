@@ -18,20 +18,15 @@
             uniform mat4 matView;
             uniform mat4 matViewProject;
 
-            struct Vertex
-            {
-                vec2 coord;
-                vec3 normal;
-                vec3 tangent;
-            };
-
-            out Vertex output;
+            out vec2 coord;
+            out vec3 normal;
+            out vec3 tangent;
 
             void OpaqueVS()
             {
-                output.coord = vec2(glsl_Texcoord.x, glsl_Texcoord.y);
-                output.normal = mul(mat3(matView), mul(mat3(matModelInverseTranspose), glsl_Normal.xyz));
-                output.tangent = mul(mat3(matModelInverseTranspose), glsl_Tangent.xyz);
+                coord = vec2(glsl_Texcoord.x, glsl_Texcoord.y);
+                normal = mul(mat3(matView), mul(mat3(matModelInverseTranspose), glsl_Normal.xyz));
+                tangent = mul(mat3(matModelInverseTranspose), glsl_Tangent.xyz);
                 gl_Position = mul(matViewProject, mul(matModel, glsl_Position));
             }
         ]]>
@@ -46,14 +41,9 @@
             uniform sampler2D texDiffuse;
             uniform sampler2D texSpecular;
 
-            struct Vertex
-            {
-                vec2 coord;
-                vec3 normal;
-                vec3 tangent;
-            };
-
-            in Vertex output;
+            in vec2 coord;
+            in vec3 normal;
+            in vec3 tangent;
 
             float3 SphereNormalMap(sampler2D normalTex, float2 coord)
             {
@@ -67,25 +57,25 @@
             {
                 float4 albedo;
 
-                float3 normal = normalize(output.normal);
-                float3 tangent = normalize(output.tangent);
-                float3 bitangent = cross(normal, tangent);
+                float3 N = normalize(normal);
+                float3 T = normalize(tangent);
+                float3 B = cross(N, T);
 
-                float3x3 tbn = float3x3(tangent, bitangent, normal);
-                float3 tangentNormal = SphereNormalMap(texNormal, output.coord);
+                float3x3 tbn = float3x3(T, B, N);
+                float3 tangentNormal = SphereNormalMap(texNormal, coord);
                 float3 highNormal = mul(tbn, tangentNormal);
 
                 if (diffuse.w > 0.0)
                     albedo = diffuse;
                 else
-                    albedo = texture(texDiffuse, output.coord);
+                    albedo = texture(texDiffuse, coord);
 
                 float roughness = shininess;
                 float intensity = luminance(specular.rgb);
                 if (specular.w == 0.0)
                 {
-                    roughness = texture(texSpecular, output.coord).g;
-                    intensity = texture(texSpecular, output.coord).r;
+                    roughness = texture(texSpecular, coord).g;
+                    intensity = texture(texSpecular, coord).r;
                 }
 
                 glsl_FragColor0 = StoreGBufferRT0(RGBA2sRGB(albedo), intensity);

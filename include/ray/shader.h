@@ -233,7 +233,6 @@ public:
 
 	virtual ShaderAttributes&  getActiveAttributes() noexcept = 0;
 	virtual ShaderUniforms&    getActiveUniforms() noexcept = 0;
-	virtual ShaderSubroutines& getActiveSubroutines() noexcept = 0;
 };
 
 _NAME_END

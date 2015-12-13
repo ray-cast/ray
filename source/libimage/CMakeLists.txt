@@ -1,0 +1,24 @@
+SET(HEADER_PATH ${PROJECT_SOURCE_DIR}/include/ray)
+SET(SOURCE_PATH ${PROJECT_SOURCE_DIR}/source/libimage)
+
+SET(COMMON_LIST
+    ${HEADER_PATH}/imagbase.h
+    ${HEADER_PATH}/imagdef.h
+    ${HEADER_PATH}/imaghandler.h
+    ${HEADER_PATH}/image.h
+    ${HEADER_PATH}/imagfwd.h
+)
+SOURCE_GROUP("image" FILES ${COMMON_LIST})
+
+FILE(GLOB SOURCE_LIST "*.*")
+SOURCE_GROUP("image" FILES ${SOURCE_LIST})
+
+ADD_LIBRARY(libimage SHARED ${COMMON_LIST} ${SOURCE_LIST})
+
+TARGET_LINK_LIBRARIES(libimage libplatform libpng libjpeg zlib unzip)
+
+SET_TARGET_ATTRIBUTE(libimage "core")
+
+IF(MINGW OR UNIX)
+    SET_TARGET_PROPERTIES(libimage PROPERTIES OUTPUT_NAME image)
+ENDIF()

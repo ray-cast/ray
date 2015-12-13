@@ -86,6 +86,9 @@ public:
 	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) except;
 	RenderBufferPtr createRenderBuffer(const MeshPropertys& meshes) except;
 
+	IndexBufferDataPtr createIndexBufferData() noexcept;
+	VertexBufferDataPtr createVertexBufferData() noexcept;
+
 	void render() noexcept;
 
 private:

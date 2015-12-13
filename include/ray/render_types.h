@@ -341,13 +341,29 @@ enum VertexType
 
 enum VertexUsage
 {
-	GPU_DYNAMIC_STORAGE_BIT = 1 << 0,
-	GPU_MAP_READ_BIT		= 1 << 1,
-	GPU_MAP_WRITE_BIT		= 1 << 2,
-	GPU_MAP_PERSISTENT_BIT	= 1 << 3,
-	GPU_MAP_COHERENT_BIT	= 1 << 4,
-	GPU_CLIENT_STORAGE_BIT	= 1 << 5,
-	GPU_IMMUTABLE_STORAGE   = 1 << 6
+	MAP_READ_BIT  = 1 << 0,
+	MAP_WRITE_BIT = 1 << 1,
+	MAP_PERSISTENT_BIT	= 1 << 2,
+	MAP_COHERENT_BIT	= 1 << 3,
+	DYNAMIC_STORAGE_BIT = 1 << 4,
+	CLIENT_STORAGE_BIT	= 1 << 5,
+	IMMUTABLE_STORAGE = 1 << 7
+};
+
+enum StreamType
+{
+	VERTEX_STREAM,
+	INDEX_STREAM,
+};
+
+class AccessMapping
+{
+public:
+	enum
+	{
+		MAP_READ_BIT = 1 << 0,
+		MAP_WRITE_BIT = 1 << 1
+	};
 };
 
 enum VertexAttrib

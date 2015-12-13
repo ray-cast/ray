@@ -39,7 +39,6 @@
 
 #include <ray/game_component.h>
 #include <ray/render_object.h>
-#include <ray/material.h>
 
 _NAME_BEGIN
 
@@ -56,48 +55,29 @@ public:
 	void setReceiveShadow(bool value) noexcept;
 	bool getReceiveShadow() const noexcept;
 
-	void setMaterial(MaterialPtr material) noexcept;
-	void setSharedMaterial(MaterialPtr material) noexcept;
+	void addPreRenderListener(std::function<void()> listener) noexcept;
+	void removePreRenderListener(std::function<void()> listener) noexcept;
 
-	MaterialPtr getMaterial() const noexcept;
-	MaterialPtr getSharedMaterial() const noexcept;
-
-	bool hasMaterial() const noexcept;
-	bool hasSharedMaterial() const noexcept;
+	void addPostRenderListener(std::function<void()> listener) noexcept;
+	void removePostRenderListener(std::function<void()> listener) noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
 
 protected:
-
-	void _attacRenderObjects() noexcept;
-	void _dettachRenderhObjects() noexcept;
-
-	void _setRenderObject(RenderObjectPtr object) noexcept;
-	RenderObjectPtr _getRenderObject() noexcept;
-
-protected:
-
 	virtual void onWillRenderObject(const Camera& camera) noexcept;
 	virtual void onRenderObject(const Camera& camera) noexcept;
-
-	virtual void onMoveAfter() noexcept;
-
-	virtual void onLayerChangeAfter() noexcept;
 
 private:
 	RenderComponent(const RenderComponent&) = delete;
 	RenderComponent& operator=(const RenderComponent&) = delete;
 
-private:
-
+protected:
 	bool _isCastShadow;
 	bool _isReceiveShadow;
 
-	MaterialPtr _material;
-	MaterialPtr _sharedMaterial;
-
-	RenderObjectPtr _renderObject;
+	delegate<void()> _onPreRender;
+	delegate<void()> _onPostRender;
 };
 
 _NAME_END

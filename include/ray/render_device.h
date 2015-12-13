@@ -67,6 +67,8 @@ public:
 	virtual SwapInterval getSwapInterval() const noexcept = 0;
 
 	virtual RenderBufferPtr createRenderBuffer() noexcept = 0;
+	virtual IndexBufferDataPtr createIndexBufferData() noexcept = 0;
+	virtual VertexBufferDataPtr createVertexBufferData() noexcept = 0;
 	virtual void setRenderBuffer(RenderBufferPtr buffer) except = 0;
 	virtual void updateRenderBuffer(RenderBufferPtr buffer) except = 0;
 	virtual void drawRenderBuffer(const RenderIndirect& renderable) except = 0;
@@ -82,7 +84,7 @@ public:
 	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) except = 0;
 	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) except = 0;
 	virtual void discardRenderTexture() except = 0;
-	virtual void copyRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderTexturePtr dest, const Viewport& v2) except = 0;
+	virtual void blitRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderTexturePtr dest, const Viewport& v2) except = 0;
 	virtual void readRenderTexture(RenderTexturePtr source, TextureFormat pfd, std::size_t w, std::size_t h, void* data) except = 0;
 	virtual RenderTexturePtr getRenderTexture() const noexcept = 0;
 	virtual MultiRenderTexturePtr getMultiRenderTexture() const noexcept = 0;

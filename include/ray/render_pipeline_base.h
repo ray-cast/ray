@@ -53,6 +53,9 @@ public:
 	void setCamera(CameraPtr renderer) noexcept;
 	CameraPtr getCamera() const noexcept;
 
+	void setViewport(const Viewport& view) noexcept;
+	const Viewport& getViewport() const noexcept;
+
 	void setRenderPipelineManager(RenderPipelineManagerPtr manager) noexcept;
 	RenderPipelineManagerPtr getRenderPipelineManagerPtr() const noexcept;
 
@@ -81,7 +84,7 @@ public:
 	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
 	void discradRenderTexture() noexcept;
 	void readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
-	void copyRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept;
+	void blitRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept;
 
 	TexturePtr createTexture() noexcept;
 	TexturePtr createTexture(const std::string& name) except;
@@ -103,6 +106,9 @@ public:
 	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) except;
 	RenderBufferPtr createRenderBuffer(const MeshPropertys& mesh) except;
 
+	IndexBufferDataPtr createIndexBufferData() noexcept;
+	VertexBufferDataPtr createVertexBufferData() noexcept;
+
 	void setRenderBuffer(RenderBufferPtr buffer) except;
 	void drawRenderBuffer(const RenderIndirect& renderable) except;
 	void drawRenderBuffer(const RenderIndirects& renderable) except;
@@ -112,7 +118,7 @@ public:
 	void drawSphere(MaterialPassPtr pass) noexcept;
 	void drawSceneQuad(MaterialPassPtr pass) noexcept;
 	void drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const RenderIndirect& renderable) noexcept;
-	void drawRenderIndirect(RenderQueue type, RenderPass pass, MaterialPassPtr material = nullptr, RenderTexturePtr target = nullptr) noexcept;
+	void drawRenderQueue(RenderQueue type, RenderPass pass, MaterialPassPtr material = nullptr, RenderTexturePtr target = nullptr) noexcept;
 
 	void addPostProcess(RenderPostProcessPtr postprocess) except;
 	void removePostProcess(RenderPostProcessPtr postprocess) noexcept;

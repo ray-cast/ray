@@ -1050,8 +1050,6 @@
             <state name="depthwrite" value="false"/>
 
             <state name="cullmode" value="front"/>
-
-            <state name="srgbEnable" value="true"/>
         </pass>
     </technique>
 </effect>

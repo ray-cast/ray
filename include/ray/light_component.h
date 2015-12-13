@@ -37,14 +37,14 @@
 #ifndef _H_LIGHT_COMPONENT_H_
 #define _H_LIGHT_COMPONENT_H_
 
-#include <ray/game_component.h>
+#include <ray/render_component.h>
 #include <ray/light.h>
 
 _NAME_BEGIN
 
-class LightComponent final : public GameComponent
+class LightComponent final : public RenderComponent
 {
-	__DeclareSubClass(LightComponent, GameComponent)
+	__DeclareSubClass(LightComponent, RenderComponent)
 public:
 	LightComponent() noexcept;
 	~LightComponent() noexcept;
@@ -82,8 +82,6 @@ private:
 private:
 
 	LightPtr _light;
-
-	RenderScene* _renderScene;
 };
 
 _NAME_END

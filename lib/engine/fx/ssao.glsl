@@ -30,7 +30,7 @@
     <shader name="fragment">
         <![CDATA[
             #define NUM_SAMPLE 10
-            #define NUM_SAMPLE_INV (1.0 / NUM_SAMPLE)
+            #define NUM_SAMPLE_INV (1.0f / float(NUM_SAMPLE))
 
             in float2 coord;
 
@@ -75,7 +75,7 @@
                 float sinasinb = sphere[sampleIndex].y * sampleNoise.y;
                 float sinacosb = sphere[sampleIndex].y * sampleNoise.x;
                 float cosasinb = sphere[sampleIndex].x * sampleNoise.y;
-                return float2(cosacosb-sinasinb, sinacosb+cosasinb) * radius * (sampleIndex * NUM_SAMPLE_INV);
+                return float2(cosacosb-sinasinb, sinacosb+cosasinb) * radius * (float(sampleIndex) * NUM_SAMPLE_INV);
             }
 
             void aoPS()
@@ -84,9 +84,9 @@
                 float3 viewNormal = sampleNormal(coord);
 
                 int2 ssC = int2(gl_FragCoord.xy);
-                float sampleAngle = (3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10;
+                float sampleAngle = float(3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10.0f;
                 float sampleRadius = projScale * radius / viewPosition.z;
-                float sampleAmbient = 0.0;
+                float sampleAmbient = 0.0f;
 
                 float2 sampleNoise = float2(cos(sampleAngle), sin(sampleAngle));
 
@@ -100,12 +100,12 @@
                     float sampleAngle = dot(sampleDirection, viewNormal);
                     float sampleLength2 = dot(sampleDirection, sampleDirection);
 
-                    float f = max(radius2 - sampleLength2, 0);
+                    float f = max(radius2 - sampleLength2, 0.0f);
 
-                    sampleAmbient += max((sampleAngle - sampleDepth * bias) * inversesqrt(sampleLength2), 0);
+                    sampleAmbient += max((sampleAngle - sampleDepth * bias) * inversesqrt(sampleLength2), 0.0f);
                 }
 
-                sampleAmbient = max(0.0, 1 - sampleAmbient * intensity * NUM_SAMPLE_INV);
+                sampleAmbient = max(0.0f, 1.0f - sampleAmbient * intensity * NUM_SAMPLE_INV);
 
                 glsl_FragColor0 = float4(sampleAmbient);
             }
@@ -121,14 +121,14 @@
             {
                 float center_d = linearizeDepth(coord);
 
-                float total_c = 0;
-                float total_w = 0;
+                float total_c = 0.f;
+                float total_w = 0.f;
 
                 for (int r = -blurRadius; r < blurRadius; r++)
                 {
-                    float2 offset = coord + blurDirection * r;
+                    float2 offset = coord + blurDirection * float(r);
 
-                    float bilateralWeight = bilateralfilter(offset, r, center_d);
+                    float bilateralWeight = bilateralfilter(offset, float(r), center_d);
 
                     total_c += sampleCoord(texSource, offset).r * bilateralWeight;
                     total_w += bilateralWeight;

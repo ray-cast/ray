@@ -29,7 +29,7 @@
 
             void UILayerPS()
             {
-                glsl_FragColor0 = sampleCoord(decal, coord) * diffuse;
+                glsl_FragColor0 = sampleCoord(decal, coord) * (diffuse / 255.0f);
             }
         ]]>
     </shader>

@@ -80,6 +80,8 @@ private:
 	void renderHemiSphereLight(const Light& light) noexcept;
 	void renderAreaLight(const Light& light) noexcept;
 
+	void copyRenderTexture(RenderTexturePtr src, RenderTexturePtr dst, const Viewport& view) noexcept;
+
 private:
 	virtual void onActivate() except;
 	virtual void onDeactivate() noexcept;
@@ -109,11 +111,13 @@ private:
 	MaterialPassPtr _deferredShadingOpaques;
 	MaterialPassPtr _deferredShadingTransparents;
 	MaterialPassPtr _deferredDebugLayer;
+	MaterialPassPtr _deferredCopyOnly;
 
 	MaterialParamPtr _texMRT0;
 	MaterialParamPtr _texMRT1;
 	MaterialParamPtr _texDepth;
 	MaterialParamPtr _texLight;
+	MaterialParamPtr _texSource;
 	MaterialParamPtr _texEnvironmentMap;
 
 	MaterialParamPtr _eyePosition;

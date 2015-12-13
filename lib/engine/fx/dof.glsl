@@ -11,9 +11,6 @@
     <parameter name="near" semantic="CameraNear"/>
     <shader type="vertex" name="DepthOfFieldVS">
         <![CDATA[
-            #version 330
-            precision mediump float;
-
             layout(location = 0) in vec4 glsl_Vertex;
             layout(location = 2) in vec2 glsl_Texcoord;
 
@@ -28,11 +25,6 @@
     </shader>
     <shader type="fragment" name="SamplePS">
         <![CDATA[
-            #version 330
-            precision mediump float;
-
-            layout(location = 0) out vec4 glsl_FragColor0;
-
             uniform sampler2D texColor;
             uniform sampler2D texDepth;
 

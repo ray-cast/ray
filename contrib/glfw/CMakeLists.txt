@@ -18,7 +18,7 @@ set(LIB_SUFFIX "" CACHE STRING "Takes an empty string or 64. Directory where lib
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+option(GLFW_BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
 option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
 option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
@@ -48,7 +48,7 @@ if (MSVC)
     option(USE_MSVC_RUNTIME_LIBRARY_DLL "Use MSVC runtime library DLL" ON)
 endif()
 
-if (BUILD_SHARED_LIBS)
+if (GLFW_BUILD_SHARED_LIBS)
     set(_GLFW_BUILD_DLL 1)
 endif()
 
@@ -109,7 +109,7 @@ endif()
 if (UNIX)
     add_definitions(-Wall)
 
-    if (BUILD_SHARED_LIBS)
+    if (GLFW_BUILD_SHARED_LIBS)
         add_definitions(-fvisibility=hidden)
     endif()
 endif()
@@ -501,7 +501,7 @@ endforeach()
 #--------------------------------------------------------------------
 # Choose library output name
 #--------------------------------------------------------------------
-if (BUILD_SHARED_LIBS AND UNIX)
+if (GLFW_BUILD_SHARED_LIBS AND UNIX)
     # On Unix-like systems, shared libraries can use the soname system.
     set(GLFW_LIB_NAME glfw)
 else()

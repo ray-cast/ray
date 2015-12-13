@@ -37,12 +37,12 @@
 #ifndef _H_CAMERA_COMPONENT_H_
 #define _H_CAMERA_COMPONENT_H_
 
-#include <ray/game_component.h>
+#include <ray/render_component.h>
 #include <ray/camera.h>
 
 _NAME_BEGIN
 
-class EXPORT CameraComponent final : public GameComponent, public RenderListener
+class EXPORT CameraComponent final : public RenderComponent
 {
 	__DeclareSubClass(CameraComponent, GameComponent)
 public:
@@ -76,12 +76,6 @@ public:
 	CameraType getCameraType() const noexcept;
 	CameraOrder getCameraOrder() const noexcept;
 
-	void addPreRenderListener(std::function<void()> listener) noexcept;
-	void removePreRenderListener(std::function<void()> listener) noexcept;
-
-	void addPostRenderListener(std::function<void()> listener) noexcept;
-	void removePostRenderListener(std::function<void()> listener) noexcept;
-
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
 
@@ -94,9 +88,6 @@ private:
 
 	virtual void onMoveAfter() noexcept;
 
-	virtual void onWillRenderObject(const Camera& camera) noexcept;
-	virtual void onRenderObject(const Camera& camera) noexcept;
-
 private:
 	CameraComponent(const CameraComponent&) noexcept = delete;
 	CameraComponent& operator=(const CameraComponent&) noexcept = delete;
@@ -104,9 +95,6 @@ private:
 private:
 
 	CameraPtr _camera;
-
-	delegate<void()> _onPreRender;
-	delegate<void()> _onPostRender;
 };
 
 _NAME_END

@@ -13,6 +13,7 @@
     <parameter name="texDepth" semantic="DeferredDepthMap" />
     <parameter name="texDepthLinear" semantic="DeferredDepthLinearMap" />
     <parameter name="texLight" semantic="DeferredLightMap" />
+    <parameter name="texSource" type="sampler2D"/>
     <parameter name="texEnvironmentMap" type="sampler2D"/>
     <parameter name="eyePosition" type="float3" />
     <parameter name="clipInfo" type="float4"/>
@@ -27,7 +28,6 @@
     <parameter name="lightSpotOuterCone" type="float"/>
     <parameter name="shadowChannel" type="int" />
     <parameter name="shadowMap" type="sampler2D" />
-    <parameter name="shadowArrayMap" type="sampler2D" />
     <parameter name="shadowFactor" type="float"/>
     <parameter name="shadowMatrix" type="mat4" />
     <shader name="vertex">
@@ -49,7 +49,13 @@
             void DeferredDepthLinearVS()
             {
                 coord = glsl_Texcoord.xy;
-                gl_Position = position = glsl_Position;
+                gl_Position = glsl_Position;
+            }
+
+            void DeferredCopyOnlyVS()
+            {
+                coord = glsl_Texcoord.xy;
+                gl_Position = glsl_Position;
             }
 
             void DeferredSunLightVS()
@@ -115,20 +121,29 @@
             uniform sampler2D texDepth;
             uniform sampler2D texDepthLinear;
             uniform sampler2D texLight;
+            uniform sampler2D texSource;
             uniform samplerCube texEnvironmentMap;
 
             uniform float shadowFactor;
             uniform mat4 shadowMatrix;
             uniform sampler2D shadowMap;
-            uniform sampler2DArray shadowArrayMap;
 
             in float4 position;
             in float2 coord;
+
+            void DeferredDepthOnlyPS()
+            {
+            }
 
             void DeferredDepthLinearPS()
             {
                 float d = sampleCoord(texDepth, coord).r;
                 glsl_FragColor0.r = clipInfo.x / (clipInfo.z - clipInfo.y * d);
+            }
+
+            void DeferredCopyOnlyPS()
+            {
+                glsl_FragColor0 = sampleCoord(texSource, coord);
             }
 
             void DeferredSunLightPS()
@@ -310,10 +325,20 @@
     <technique name="custom">
         <pass name="DeferredDepthOnly">
             <state name="vertex" value="DeferredDepthOnlyVS"/>
+            <state name="fragment" value="DeferredDepthOnlyPS" />
         </pass>
         <pass name="DeferredDepthLinear">
             <state name="vertex" value="DeferredDepthLinearVS"/>
             <state name="fragment" value="DeferredDepthLinearPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+        <pass name="DeferredCopyOnly">
+            <state name="vertex" value="DeferredCopyOnlyVS"/>
+            <state name="fragment" value="DeferredCopyOnlyPS"/>
 
             <state name="cullmode" value="none"/>
 

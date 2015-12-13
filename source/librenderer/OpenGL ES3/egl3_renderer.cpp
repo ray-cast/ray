@@ -34,11 +34,11 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "egl_renderer.h"
-#include "egl_state.h"
-#include "egl_shader.h"
-#include "egl_texture.h"
-#include "egl_buffer.h"
+#include "egl3_renderer.h"
+#include "egl3_state.h"
+#include "egl3_shader.h"
+#include "egl3_texture.h"
+#include "egl3_buffer.h"
 
 _NAME_BEGIN
 
@@ -49,15 +49,12 @@ EGL3Renderer::EGL3Renderer() noexcept
 	, _clearColor(0.0, 0.0, 0.0)
 	, _clearDepth(0.0)
 	, _clearStencil(0xFFFFFFFF)
+	, _viewport(0, 0, 0, 0)
 	, _state(GL_NONE)
 	, _renderTexture(GL_NONE)
 	, _defaultVAO(GL_NONE)
 	, _enableWireframe(false)
 {
-	_textureUnits.resize(_maxTextureUnits);
-	_viewport.resize(_maxViewports);
-
-	_stateCaptured = std::make_shared<EGL3RenderState>();
 }
 
 EGL3Renderer::~EGL3Renderer() noexcept
@@ -73,9 +70,11 @@ EGL3Renderer::open(WindHandle window) except
 		_glcontext = this->createRenderWindow();
 		_glcontext->open(window);
 
+		_textureUnits.resize(_maxTextureUnits);
+		_stateCaptured = std::make_shared<EGL3RenderState>();
+
 		this->initDebugControl();
 		this->initStateSystem();
-		this->initCommandList();
 
 		_initOpenGL = true;
 	}
@@ -86,6 +85,9 @@ EGL3Renderer::open(WindHandle window) except
 void
 EGL3Renderer::close() noexcept
 {
+	if (!_initOpenGL)
+		return;
+
 	if (_renderBuffer)
 	{
 		_renderBuffer.reset();
@@ -147,28 +149,20 @@ EGL3Renderer::renderEnd() noexcept
 void
 EGL3Renderer::setViewport(const Viewport& view, std::size_t i) noexcept
 {
-	EGL3Check::checkError();
-
-	if (_viewport[i] != view)
+	if (_viewport.left != view.left ||
+		_viewport.top != view.top ||
+		_viewport.width != view.width ||
+		_viewport.height != view.height)
 	{
-#	if !defined(EGLAPI)
-		if (EGL3Features::ARB_viewport_array)
-			glViewportIndexedf(i, view.left, view.top, view.width, view.height);
-		else
-			glViewport(view.left, view.top, view.width, view.height);
-#	else
-		glViewport(view.left, view.top, view.width, view.height);
-#	endif
-		_viewport[i] = view;
+		GL_CHECK(glViewport(view.left, view.top, view.width, view.height));
+		_viewport = view;
 	}
-	
-	EGL3Check::checkError();
 }
 
 const Viewport&
 EGL3Renderer::getViewport(std::size_t i) const noexcept
 {
-	return _viewport[i];
+	return _viewport;
 }
 
 void
@@ -177,13 +171,13 @@ EGL3Renderer::setWireframeMode(bool enable) noexcept
 	_enableWireframe = enable;
 }
 
-bool 
+bool
 EGL3Renderer::getWireframeMode() const noexcept
 {
 	return _enableWireframe;
 }
 
-RenderWindowPtr 
+RenderWindowPtr
 EGL3Renderer::createRenderWindow() const noexcept
 {
 	return std::make_shared<EGLCanvas>();
@@ -226,7 +220,7 @@ EGL3Renderer::getSwapInterval() const noexcept
 	return _glcontext->getSwapInterval();
 }
 
-RenderStatePtr 
+RenderStatePtr
 EGL3Renderer::createRenderState() noexcept
 {
 	return std::make_shared<EGL3RenderState>();
@@ -245,8 +239,6 @@ EGL3Renderer::setRenderState(RenderStatePtr state) noexcept
 	_stateCaptured->setStencilState(state->getStencilState());
 
 	_state = state;
-
-	EGL3Check::checkError();
 }
 
 RenderStatePtr
@@ -258,27 +250,21 @@ EGL3Renderer::getRenderState() const noexcept
 RenderBufferPtr
 EGL3Renderer::createRenderBuffer() noexcept
 {
-	EGL3Check::checkError();
 	auto result = std::make_shared<EGL3RenderBuffer>();
-	EGL3Check::checkError();
 	return result;
 }
 
-IndexBufferDataPtr 
+IndexBufferDataPtr
 EGL3Renderer::createIndexBufferData() noexcept
 {
-	EGL3Check::checkError();
 	auto result = std::make_shared<EGL3IndexBuffer>();
-	EGL3Check::checkError();
 	return result;
 }
 
-VertexBufferDataPtr 
+VertexBufferDataPtr
 EGL3Renderer::createVertexBufferData() noexcept
 {
-	EGL3Check::checkError();
 	auto result = std::make_shared<EGL3VertexBuffer>();
-	EGL3Check::checkError();
 	return result;
 }
 
@@ -291,44 +277,16 @@ EGL3Renderer::setRenderBuffer(RenderBufferPtr buffer) noexcept
 			buffer->apply();
 		_renderBuffer = buffer;
 	}
-
-	EGL3Check::checkError();
 }
 
 void
 EGL3Renderer::updateRenderBuffer(RenderBufferPtr renderBuffer) noexcept
 {
-	/*assert(renderBuffer);
-
-	auto vb = renderBuffer->getVertexBuffer();
-	auto ib = renderBuffer->getIndexBuffer();
-
-	if (vb)
-	{
-		auto vertexUsage = EGL3Types::asEGL3VertexUsage(vb->getVertexUsage());
-		auto vertexCount = vb->getVertexCount();
-		auto vertexSize = vb->getVertexDataSize();
-
-		glBindBuffer(GL_ARRAY_BUFFER, vb->getInstanceID());
-		glBufferData(GL_ARRAY_BUFFER, vb->getVertexSize(), vb->data(), vertexUsage);
-	}
-
-	if (ib)
-	{
-		auto indexType = EGL3Types::asEGL3IndexType(ib->getIndexType());
-		auto indexUsage = EGL3Types::asEGL3VertexUsage(ib->getIndexUsage());
-		auto indexCount = ib->getIndexCount();
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->getInstanceID());
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, ib->getIndexDataSize(), ib->data(), indexUsage);
-	}*/
 }
 
 void
 EGL3Renderer::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 {
-	EGL3Check::checkError();
-
 	assert(_renderBuffer && _stateCaptured);
 	assert(_renderBuffer->getNumVertices() >= renderable.startVertice + renderable.numVertices);
 	assert(_renderBuffer->getNumIndices() >= renderable.startIndice + renderable.numIndices);
@@ -344,43 +302,24 @@ EGL3Renderer::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 			primitiveType = GPU_LINE;
 		}
 	}
-	
+
 	GLenum drawType = EGL3Types::asEGL3VertexType(primitiveType);
 	auto ib = _renderBuffer->getIndexBuffer();
 	if (ib)
 	{
 		GLenum indexType = EGL3Types::asEGL3IndexType(ib->getIndexType());
 
-#if !defined(EGLAPI)
-		if (renderable.numInstances > 0)
-		{
-			auto offsetIndices = _renderBuffer->getIndexBuffer()->getIndexSize() * renderable.startIndice;
-			glDrawElementsInstancedBaseVertexBaseInstance(drawType, renderable.numIndices, indexType, (char*)nullptr + offsetIndices, renderable.numInstances, renderable.startVertice, renderable.startInstances);
-		}
-		else
-		{
-			auto offsetIndices = _renderBuffer->getIndexBuffer()->getIndexSize() * renderable.startIndice;
-			glDrawElementsBaseVertex(drawType, renderable.numIndices, indexType, (char*)nullptr + offsetIndices, renderable.startVertice);
-		}
-#else
-		if (renderable.numInstances > 0)
-			glDrawElementsInstanced(drawType, renderable.numIndices, indexType, (char*)(nullptr) + renderable.startIndice, renderable.numInstances);
-		else
-			glDrawElements(drawType, renderable.numIndices, indexType, (char*)nullptr + renderable.startIndice);
-#endif
+		GLsizei numInstance = std::max(1, renderable.numInstances);
+		GL_CHECK(glDrawElementsInstanced(drawType, renderable.numIndices, indexType, (char*)renderable.startIndice, numInstance));
 	}
 	else
 	{
-		if (renderable.numInstances > 0)
-			glDrawArraysInstanced(drawType, renderable.startVertice, renderable.numVertices, renderable.numIndices);
-		else
-			glDrawArrays(drawType, renderable.startVertice, renderable.numVertices);
+		GLsizei numInstance = std::max(1, renderable.numInstances);
+		GL_CHECK(glDrawArraysInstanced(drawType, renderable.startVertice, renderable.numVertices, numInstance));
 	}
-
-	EGL3Check::checkError();
 }
 
-void 
+void
 EGL3Renderer::drawRenderBuffer(const RenderIndirects& renderable) noexcept
 {
 	assert(false);
@@ -392,30 +331,24 @@ EGL3Renderer::getRenderBuffer() const noexcept
 	return _renderBuffer;
 }
 
-TexturePtr 
+TexturePtr
 EGL3Renderer::createTexture() noexcept
 {
-	EGL3Check::checkError();
 	auto result = std::make_shared<EGL3Texture>();
-	EGL3Check::checkError();
 	return result;
 }
 
-RenderTexturePtr 
+RenderTexturePtr
 EGL3Renderer::createRenderTexture() noexcept
 {
-	EGL3Check::checkError();
 	auto result = std::make_shared<EGL3RenderTexture>();
-	EGL3Check::checkError();
 	return result;
 }
 
-MultiRenderTexturePtr 
+MultiRenderTexturePtr
 EGL3Renderer::createMultiRenderTexture() noexcept
 {
-	EGL3Check::checkError();
 	auto result = std::make_shared<EGL3MultiRenderTexture>();
-	EGL3Check::checkError();
 	return result;
 }
 
@@ -428,20 +361,18 @@ EGL3Renderer::setRenderTexture(RenderTexturePtr target) noexcept
 		{
 			auto framebuffer = std::dynamic_pointer_cast<EGL3RenderTexture>(target)->getInstanceID();
 
-			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+			GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, framebuffer));
 
 			this->setViewport(Viewport(0, 0, target->getWidth(), target->getHeight()));
 		}
 		else
 		{
-			glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+			GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE));
 		}
 
 		_renderTexture = target;
 		_multiRenderTexture = nullptr;
 	}
-
-	EGL3Check::checkError();
 }
 
 void
@@ -452,7 +383,7 @@ EGL3Renderer::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
 	auto framebuffer = std::dynamic_pointer_cast<EGL3MultiRenderTexture>(target)->getInstanceID();
 	if (_multiRenderTexture != target)
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+		GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, framebuffer));
 
 		auto& renderTextures = target->getRenderTextures();
 		std::size_t size = renderTextures.size();
@@ -465,8 +396,6 @@ EGL3Renderer::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
 		_renderTexture = nullptr;
 		_multiRenderTexture = target;
 	}
-
-	EGL3Check::checkError();
 }
 
 void
@@ -497,12 +426,12 @@ EGL3Renderer::setRenderTextureLayer(RenderTexturePtr renderTexture, std::int32_t
 		}
 
 		if (renderTexture->getTexDim() == TextureDim::DIM_2D_ARRAY)
-			glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, 0, layer);
+			GL_CHECK(glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, 0, layer));
 		else if (renderTexture->getTexDim() == TextureDim::DIM_CUBE)
-			glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer, textureID, 0);
+			GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer, textureID, 0));
+		else
+			assert(false);
 	}
-
-	EGL3Check::checkError();
 }
 
 void
@@ -511,22 +440,20 @@ EGL3Renderer::blitRenderTexture(RenderTexturePtr src, const Viewport& v1, Render
 	assert(src);
 
 	auto srcTarget = std::dynamic_pointer_cast<EGL3RenderTexture>(src)->getInstanceID();
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, srcTarget);
+	GL_CHECK(glBindFramebuffer(GL_READ_FRAMEBUFFER, srcTarget));
 
 	if (dest)
 	{
 		auto destTarget = std::dynamic_pointer_cast<EGL3RenderTexture>(dest)->getInstanceID();
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destTarget);
+		GL_CHECK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destTarget));
 	}
 	else
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		GL_CHECK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
 
-	glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	GL_CHECK(glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST));
 
 	_renderTexture = GL_NONE;
 	_multiRenderTexture = GL_NONE;
-
-	EGL3Check::checkError();
 }
 
 RenderTexturePtr
@@ -587,15 +514,13 @@ EGL3Renderer::clearRenderTexture(ClearFlags flags, const Vector4& color, float d
 			glDepthMask(GL_TRUE);
 		}
 
-		glClear(mode);
+		GL_CHECK(glClear(mode));
 
 		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
 		{
 			glDepthMask(GL_FALSE);
 		}
 	}
-
-	EGL3Check::checkError();
 }
 
 void
@@ -610,7 +535,7 @@ EGL3Renderer::clearRenderTexture(ClearFlags flags, const Vector4& color, float d
 		}
 
 		GLfloat f = depth;
-		glClearBufferfv(GL_DEPTH, 0, &f);
+		GL_CHECK(glClearBufferfv(GL_DEPTH, 0, &f));
 
 		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
 		{
@@ -621,15 +546,13 @@ EGL3Renderer::clearRenderTexture(ClearFlags flags, const Vector4& color, float d
 	if (flags & ClearFlags::CLEAR_STENCIL)
 	{
 		GLint s = stencil;
-		glClearBufferiv(GL_STENCIL, 0, &s);
+		GL_CHECK(glClearBufferiv(GL_STENCIL, 0, &s));
 	}
 
 	if (flags & ClearFlags::CLEAR_COLOR)
 	{
-		glClearBufferfv(GL_COLOR, i, color.ptr());
+		GL_CHECK(glClearBufferfv(GL_COLOR, i, color.ptr()));
 	}
-
-	EGL3Check::checkError();
 }
 
 void
@@ -658,8 +581,6 @@ EGL3Renderer::discardRenderTexture() noexcept
 
 		glInvalidateFramebuffer(GL_FRAMEBUFFER, size, attachments);
 	}
-
-	EGL3Check::checkError();
 }
 
 void
@@ -674,30 +595,24 @@ EGL3Renderer::readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std:
 		_renderTexture = target;
 		_multiRenderTexture = nullptr;
 	}
-	
+
 	GLenum format = EGL3Types::asEGL3Format(pfd);
 	GLenum type = EGL3Types::asEGL3Type(pfd);
 
 	glReadPixels(0, 0, w, h, format, type, data);
-
-	EGL3Check::checkError();
 }
 
-ShaderPtr 
+ShaderPtr
 EGL3Renderer::createShader() noexcept
 {
-	EGL3Check::checkError();
 	auto result = std::make_shared<EGL3Shader>();
-	EGL3Check::checkError();
 	return result;
 }
 
-ShaderObjectPtr 
+ShaderObjectPtr
 EGL3Renderer::createShaderObject() noexcept
 {
-	EGL3Check::checkError();
 	auto result = std::make_shared<EGL3ShaderObject>();
-	EGL3Check::checkError();
 	return result;
 }
 
@@ -705,26 +620,16 @@ void
 EGL3Renderer::setShaderObject(ShaderObjectPtr shader) noexcept
 {
 	if (shader)
-	{
-		auto program = std::dynamic_pointer_cast<EGL3ShaderObject>(shader)->getInstanceID();
-		if (_shaderObject != shader)
-		{
-			glUseProgram(program);
-			_shaderObject = shader;
-		}
+		shader->setActive(true);
 
-		for (auto& it : shader->getActiveUniforms())
-		{
-			this->setShaderUniform(it, it->getValue());
-		}
-	}
-	else
+	if (_shaderObject != shader)
 	{
-		glUseProgram(GL_NONE);
-		_shaderObject = nullptr;
-	}
+		if (_shaderObject)
+			_shaderObject->setActive(false);
+		_shaderObject = shader;
 
-	EGL3Check::checkError();
+		if (!shader) GL_CHECK(glUseProgram(GL_NONE));
+	}
 }
 
 ShaderObjectPtr
@@ -736,9 +641,7 @@ EGL3Renderer::getShaderObject() const noexcept
 bool
 EGL3Renderer::createShaderVariant(ShaderVariant& constant) noexcept
 {
-	if (constant.getType() != ShaderVariantType::SPT_BUFFER)
-		return true;
-	return true;
+	return false;
 }
 
 void
@@ -749,237 +652,6 @@ EGL3Renderer::destroyShaderVariant(ShaderVariant& constant) noexcept
 void
 EGL3Renderer::updateShaderVariant(ShaderVariantPtr constant) noexcept
 {
-	std::vector<char> _data;
-	_data.resize(constant->getSize());
-
-	std::size_t offset = 0;
-
-	for (auto& it : constant->getParameters())
-	{
-		switch (it->getType())
-		{
-		case SPT_BOOL:
-		{
-			auto value = it->getBool();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		case SPT_INT:
-		{
-			auto value = it->getInt();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		case SPT_INT2:
-		{
-			auto value = it->getInt2();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		case SPT_FLOAT:
-		{
-			auto value = it->getFloat();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		case SPT_FLOAT2:
-		{
-			auto value = it->getFloat2();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		case SPT_FLOAT3:
-		{
-			auto value = it->getFloat3();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		case SPT_FLOAT4:
-		{
-			auto value = it->getFloat4();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		case SPT_FLOAT3X3:
-		{
-			auto value = it->getFloat3x3();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		case SPT_FLOAT4X4:
-		{
-			auto value = it->getFloat4x4();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		default:
-			assert(false);
-		}
-
-		offset += it->getSize();
-	}
-
-	/*auto& buffer = _constantBuffers[constant->getInstanceID()];
-
-#if !defined(EGLAPI)
-	if (EGL3Features::ARB_direct_state_access)
-	{
-		glNamedBufferSubDataEXT(buffer.ubo, 0, _data.size(), _data.data());
-	}
-	else
-#endif
-	{
-		glBindBuffer(GL_UNIFORM_BUFFER, buffer.ubo);
-		glBufferSubData(GL_UNIFORM_BUFFER, 0, _data.size(), _data.data());
-	}*/
-}
-
-void
-EGL3Renderer::setShaderUniform(ShaderUniformPtr uniform, TexturePtr texture, TextureSamplePtr sample) noexcept
-{
-	assert(uniform && texture);
-	assert(uniform->getBindingPoint() < _maxTextureUnits);
-
-	auto _texture = std::dynamic_pointer_cast<EGL3Texture>(texture);
-	auto _sample = std::dynamic_pointer_cast<EGL3TextureSample>(texture);
-
-	auto location = uniform->getLocation();
-	auto program = uniform->getBindingProgram();
-	auto unit = uniform->getBindingPoint();
-	auto target = EGL3Types::asEGL3Target(texture->getTexDim());
-	auto textureID = _texture->getInstanceID();
-
-	glProgramUniform1i(program, location, unit);
-
-	if (_textureUnits[unit] != textureID)
-	{
-		glActiveTexture(GL_TEXTURE0 + unit);
-		glBindTexture(target, textureID);
-
-		_textureUnits[unit] = textureID;
-	}
-
-	if (sample)
-	{
-		glBindSampler(GL_TEXTURE0 + unit, _sample->getInstanceID());
-	}
-}
-
-void
-EGL3Renderer::setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constant) noexcept
-{
-	assert(constant && uniform);
-	assert(uniform->getValue());
-
-	auto type = uniform->getValue()->getType();
-	if (type != ShaderVariantType::SPT_TEXTURE)
-	{
-		if (!uniform->needUpdate())
-			return;
-		uniform->needUpdate(false);
-	}
-
-	auto location = uniform->getLocation();
-	auto program = uniform->getBindingProgram();
-
-	switch (type)
-	{
-	case ShaderVariantType::SPT_BOOL:
-	{
-		glProgramUniform1i(program, location, uniform->getValue()->getBool());
-		break;
-	}
-	case ShaderVariantType::SPT_INT:
-	{
-		glProgramUniform1i(program, location, uniform->getValue()->getInt());
-		break;
-	}
-	case ShaderVariantType::SPT_INT2:
-	{
-		glProgramUniform2iv(program, location, 1, uniform->getValue()->getInt2().ptr());
-		break;
-	}
-	case ShaderVariantType::SPT_FLOAT:
-	{
-		glProgramUniform1f(program, location, uniform->getValue()->getFloat());
-		break;
-	}
-	case ShaderVariantType::SPT_FLOAT2:
-	{
-		glProgramUniform2fv(program, location, 1, uniform->getValue()->getFloat2().ptr());
-		break;
-	}
-	case ShaderVariantType::SPT_FLOAT3:
-	{
-		glProgramUniform3fv(program, location, 1, uniform->getValue()->getFloat3().ptr());
-		break;
-	}
-	case ShaderVariantType::SPT_FLOAT4:
-	{
-		glProgramUniform4fv(program, location, 1, uniform->getValue()->getFloat4().ptr());
-		break;
-	}
-	case ShaderVariantType::SPT_FLOAT3X3:
-	{
-		glProgramUniformMatrix3fv(program, location, 1, GL_FALSE, uniform->getValue()->getFloat3x3().ptr());
-		break;
-	}
-	case ShaderVariantType::SPT_FLOAT4X4:
-	{
-		glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, uniform->getValue()->getFloat4x4().ptr());
-		break;
-	}
-	case ShaderVariantType::SPT_FLOAT_ARRAY:
-	{
-		glProgramUniform1fv(program, location, uniform->getValue()->getFloatArray().size(), uniform->getValue()->getFloatArray().data());
-		break;
-	}
-	case ShaderVariantType::SPT_FLOAT2_ARRAY:
-	{
-		glProgramUniform2fv(program, location, uniform->getValue()->getFloat2Array().size(), (GLfloat*)uniform->getValue()->getFloat2Array().data());
-		break;
-	}
-	case ShaderVariantType::SPT_TEXTURE:
-	{
-		auto texture = uniform->getValue()->getTexture();
-		auto sample = uniform->getValue()->getTextureSample();
-		if (texture)
-		{
-			this->setShaderUniform(uniform, texture, sample);
-		}
-		break;
-	}
-	/*case ShaderVariantType::SPT_BUFFER:
-	{
-		if (uniform->needUpdate())
-		{
-			this->updateShaderVariant(constant);
-			uniform->needUpdate(false);
-		}
-
-		auto index = constant->getInstanceID();
-		if (index != 0)
-		{
-			auto& buffer = _constantBuffers[index];
-
-#if !defined(EGLAPI)
-			if (EGL3Features::NV_vertex_buffer_unified_memory)
-			{
-				glBindBufferRange(GL_UNIFORM_BUFFER, location, buffer.ubo, 0, constant->getSize());
-			}
-			else
-#endif
-			{
-				glBindBufferBase(GL_UNIFORM_BUFFER, location, buffer.ubo);
-			}
-		}
-	}*/
-	default:
-		assert(false);
-		break;
-	}
-
-	EGL3Check::checkError();
 }
 
 void
@@ -1084,9 +756,7 @@ EGL3Renderer::initDebugControl() noexcept
 	};
 
 	GL_CHECK(glEnable(GL_DEBUG_OUTPUT));
-#if !defined(EGLAPI)
-	GL_CHECK(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-#endif
+
 	GL_CHECK(glDebugMessageCallback(debugCallBack, this));
 	// enable all
 	GL_CHECK(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE));
@@ -1096,48 +766,40 @@ EGL3Renderer::initDebugControl() noexcept
 }
 
 void
-EGL3Renderer::initCommandList() noexcept
-{
-#if defined(_BUILD_OPENGL)
-	initCommandListNV();
-#endif
-}
-
-void
 EGL3Renderer::initStateSystem() noexcept
 {
-	glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_TRUE);
-	glDepthFunc(GL_LEQUAL);
+	GL_CHECK(glEnable(GL_DEPTH_TEST));
+	GL_CHECK(glDepthMask(GL_TRUE));
+	GL_CHECK(glDepthFunc(GL_LEQUAL));
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glFrontFace(GL_CW);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	GL_CHECK(glEnable(GL_CULL_FACE));
+	GL_CHECK(glCullFace(GL_BACK));
+	GL_CHECK(glFrontFace(GL_CW));
+	GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
 
-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF);
+	GL_CHECK(glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP));
+	GL_CHECK(glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF));
 
-	glBlendEquation(GL_FUNC_ADD);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	GL_CHECK(glBlendEquation(GL_FUNC_ADD));
+	GL_CHECK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-	glGenVertexArrays(1, &_defaultVAO);
-	glBindVertexArray(_defaultVAO);
+	GL_CHECK(glGenVertexArrays(1, &_defaultVAO));
+	GL_CHECK(glBindVertexArray(_defaultVAO));
 
-	glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_POSITION);
-	glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL);
-	glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD);
-	glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE);
+	GL_CHECK(glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_POSITION));
+	GL_CHECK(glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL));
+	GL_CHECK(glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD));
+	GL_CHECK(glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE));
 
-	glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_POSITION, 3, GL_FLOAT, GL_FALSE, 0);
-	glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0);
-	glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0);
-	glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0);
+	GL_CHECK(glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_POSITION, 3, GL_FLOAT, GL_FALSE, 0));
+	GL_CHECK(glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0));
+	GL_CHECK(glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0));
+	GL_CHECK(glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0));
 
-	glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_POSITION, (GLuint)VertexAttrib::GPU_ATTRIB_POSITION);
-	glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL, (GLuint)VertexAttrib::GPU_ATTRIB_NORMAL);
-	glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD, (GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD);
-	glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE, (GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE);
+	GL_CHECK(glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_POSITION, (GLuint)VertexAttrib::GPU_ATTRIB_POSITION));
+	GL_CHECK(glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL, (GLuint)VertexAttrib::GPU_ATTRIB_NORMAL));
+	GL_CHECK(glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD, (GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD));
+	GL_CHECK(glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE, (GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE));
 }
 
 _NAME_END

@@ -193,6 +193,10 @@ MyGuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture
 			MyGuiTexture* texture = static_cast<MyGuiTexture*>(_texture);
 			_materialDecal->assign(texture->getTexture());
 		}
+		else
+		{
+			_materialDecal->assign(nullptr);
+		}
 
 		auto renderBuffer = buffer->getBuffer();
 		if (renderBuffer)
@@ -289,4 +293,5 @@ MyGuiRenderer::getViewport(int& w, int& h) noexcept
 }
 
 _NAME_END
+
 #endif

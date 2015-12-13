@@ -41,30 +41,18 @@
 
 _NAME_BEGIN
 
-class EXPORT RenderIndirect final
+class EXPORT GraphicsData
 {
 public:
-	std::size_t startVertice;
-	std::size_t startIndice;
-	std::size_t startInstances;
-	std::size_t numVertices;
-	std::size_t numIndices;
-	std::size_t numInstances;
-
-	RenderIndirect() noexcept;
-};
-
-class EXPORT RenderBufferData
-{
-public:
-	RenderBufferData() noexcept;
-	virtual ~RenderBufferData() noexcept;
+	GraphicsData() noexcept;
+	virtual ~GraphicsData() noexcept;
 
 	virtual bool is_open() const noexcept = 0;
 
 	virtual streamsize size() const noexcept = 0;
 
 	virtual int flush() noexcept = 0;
+	virtual int flush(ios_base::off_type offset, streamsize cnt) noexcept = 0;
 
 	virtual void resize(const char* data, streamsize count) noexcept = 0;
 
@@ -75,19 +63,20 @@ public:
 	virtual streamoff tellg() noexcept = 0;
 
 	virtual const char* map(std::uint32_t access) noexcept = 0;
+	virtual const char* map(ios_base::off_type offset, streamsize cnt, std::uint32_t access) noexcept = 0;
 	virtual void unmap() noexcept = 0;
 	virtual bool isMapping() const noexcept = 0;
 
 private:
-	RenderBufferData(const RenderBufferData&) = delete;
-	RenderBufferData& operator=(const RenderBufferData&) = delete;
+	GraphicsData(const GraphicsData&) = delete;
+	GraphicsData& operator=(const GraphicsData&) = delete;
 };
 
-class EXPORT RenderBufferStream
+class EXPORT GraphicsStream
 {
 public:
-	RenderBufferStream(RenderBufferData* data) noexcept;
-	virtual ~RenderBufferStream() noexcept;
+	GraphicsStream(GraphicsData* data) noexcept;
+	virtual ~GraphicsStream() noexcept;
 
 	bool is_open() const noexcept;
 
@@ -96,6 +85,7 @@ public:
 	void resize(const char* data, std::size_t cnt) noexcept;
 
 	int flush() noexcept;
+	int flush(ios_base::off_type offset, streamsize cnt) noexcept;
 
 	streamsize read(char* data, streamsize cnt) noexcept;
 	streamsize write(const char* data, streamsize cnt) noexcept;
@@ -104,31 +94,16 @@ public:
 	streamoff tellg() noexcept;
 
 	const char* map(std::uint32_t access) noexcept;
+	const char* map(ios_base::off_type offset, streamsize cnt, std::uint32_t access) noexcept;
 	void unmap() noexcept;
 	bool isMapping() const noexcept;
 
 private:
-	RenderBufferStream(const RenderBufferStream&) = delete;
-	RenderBufferStream& operator=(const RenderBufferStream&) = delete;
+	GraphicsStream(const GraphicsStream&) = delete;
+	GraphicsStream& operator=(const GraphicsStream&) = delete;
 
 private:
-	RenderBufferData* _data;
-};
-
-class EXPORT VertexStreams final
-{
-public:
-	VertexStreams() noexcept;
-	~VertexStreams() noexcept;
-
-	void resize(std::size_t length) noexcept;
-	void release() noexcept;
-
-	char* data() noexcept;
-	const char* data() const noexcept;
-
-private:
-	std::vector<char> _data;
+	GraphicsData* _data;
 };
 
 class EXPORT VertexComponent final
@@ -147,8 +122,7 @@ public:
 	int getVertexCount() const noexcept;
 	int getVertexSize() const noexcept;
 
-public:
-
+private:
 	VertexAttrib _attrib;
 	VertexFormat _format;
 };
@@ -156,6 +130,9 @@ public:
 class EXPORT VertexLayout final
 {
 public:
+	VertexLayout() noexcept;
+	~VertexLayout() noexcept;
+
 	void setVertexComponents(const VertexComponents& component) noexcept;
 	const VertexComponents& getVertexComponents() const noexcept;
 
@@ -168,10 +145,10 @@ private:
 	VertexComponents _components;
 };
 
-class EXPORT VertexBufferData : public RenderBufferStream
+class EXPORT VertexBufferData : public GraphicsStream
 {
 public:
-	VertexBufferData(RenderBufferData* data) noexcept;
+	VertexBufferData(GraphicsData* data) noexcept;
 	virtual ~VertexBufferData() noexcept;
 
 	virtual void open(const VertexLayout& layout, std::uint32_t usage, const char* data, streamsize datasize) noexcept = 0;
@@ -188,10 +165,10 @@ private:
 	VertexBufferData& operator=(const VertexBufferData&) = delete;
 };
 
-class EXPORT IndexBufferData : public RenderBufferStream
+class EXPORT IndexBufferData : public GraphicsStream
 {
 public:
-	IndexBufferData(RenderBufferData* data) noexcept;
+	IndexBufferData(GraphicsData* data) noexcept;
 	virtual ~IndexBufferData() noexcept;
 
 	virtual void open(IndexType type, std::uint32_t usage, const char* data, streamsize datasize) noexcept = 0;
@@ -207,6 +184,19 @@ private:
 	IndexBufferData& operator=(const IndexBufferData&) = delete;
 };
 
+class EXPORT RenderIndirect final
+{
+public:
+	std::int32_t startVertice;
+	std::int32_t startIndice;
+	std::int32_t startInstances;
+	std::int32_t numVertices;
+	std::int32_t numIndices;
+	std::int32_t numInstances;
+
+	RenderIndirect() noexcept;
+};
+
 class EXPORT RenderBuffer
 {
 public:
@@ -218,23 +208,15 @@ public:
 
 	virtual void apply() noexcept = 0;
 
-	std::size_t getNumVertices() const noexcept;
-	std::size_t getNumIndices() const noexcept;
+	virtual std::size_t getNumVertices() const noexcept = 0;
+	virtual std::size_t getNumIndices() const noexcept = 0;
 
-	void setVertexBuffer(VertexBufferDataPtr vb) noexcept;
-	void setIndexBuffer(IndexBufferDataPtr ib) noexcept;
-
-	VertexBufferDataPtr getVertexBuffer() const noexcept;
-	IndexBufferDataPtr getIndexBuffer() const noexcept;
+	virtual VertexBufferDataPtr getVertexBuffer() const noexcept = 0;
+	virtual IndexBufferDataPtr getIndexBuffer() const noexcept = 0;
 
 private:
 	RenderBuffer(const RenderBuffer& copy) noexcept = delete;
 	RenderBuffer& operator=(const RenderBuffer&) noexcept = delete;
-
-private:
-
-	VertexBufferDataPtr _bufferVertex;
-	IndexBufferDataPtr  _bufferIndex;
 };
 
 _NAME_END

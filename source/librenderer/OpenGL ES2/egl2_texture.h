@@ -34,56 +34,77 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_EGL_CANVAS_H_
-#define _H_EGL_CANVAS_H_
+#ifndef _H_EGL2_TEXTURE_H_
+#define _H_EGL2_TEXTURE_H_
 
-#include "egl_types.h"
+#include "egl2_canvas.h"
 
 _NAME_BEGIN
 
-class EGLCanvas final : public RenderWindow
+class EGL2Texture final : public Texture
 {
 public:
-    EGLCanvas() noexcept;
-	EGLCanvas(WindHandle hwnd) except;
-    ~EGLCanvas() noexcept;
+	EGL2Texture() noexcept;
+	~EGL2Texture() noexcept;
 
-    void open(WindHandle hwnd) except;
-    void close() noexcept;
+	bool setup() except;
+	void close() noexcept;
 
-    void setSwapInterval(SwapInterval interval) noexcept;
-	SwapInterval getSwapInterval() const noexcept;
-
-    void present() noexcept;
-
-	WindHandle getWindHandle() const noexcept;
+	GLuint getInstanceID() noexcept;
 
 private:
 
-	virtual void onActivate() except;
-	virtual void onDeactivate() except;
+	static void applyTextureWrap(GLenum, TextureWrap wrap) noexcept;
+	static void applyTextureFilter(GLenum target, TextureFilter filter) noexcept;
+	static void applyTextureAnis(GLenum target, Anisotropy anis) noexcept;
 
 private:
 
-	static void initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept;
+	GLuint _texture;
+};
+
+class EGL2RenderTexture final : public RenderTexture
+{
+public:
+	EGL2RenderTexture() noexcept;
+	~EGL2RenderTexture() noexcept;
+
+	virtual bool setup(TexturePtr texture) except;
+	virtual void setup(std::size_t w, std::size_t h, TextureDim dim, TextureFormat format) except;
+	virtual void setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, TextureFormat format) except;
+	virtual void close() noexcept;
+
+	void setLayer(GLuint layer) noexcept;
+	GLuint getLayer() const noexcept;
+
+	GLuint getInstanceID() noexcept;
 
 private:
-    EGLCanvas(const EGLCanvas&) noexcept = delete;
-    EGLCanvas& operator=(const EGLCanvas&) noexcept = delete;
+	void bindRenderTexture(TexturePtr texture, GLenum attachment) noexcept;
+	void onSetRenderTextureAfter(RenderTexturePtr target) noexcept;
 
 private:
-	SwapInterval _interval;
+	GLuint _fbo;
+	GLuint _layer;
+};
 
-    EGLNativeWindowType _hwnd;
-    EGLNativeDisplayType _hdc;
+class EGL2MultiRenderTexture final : public MultiRenderTexture
+{
+public:
+	EGL2MultiRenderTexture() noexcept;
+	~EGL2MultiRenderTexture() noexcept;
 
-    EGLDisplay _display;
-    EGLSurface _surface;
-    EGLConfig _config;
-    EGLContext _context;
+	virtual bool setup() noexcept;
+	virtual void close() noexcept;
 
-    GPUfbconfig _fbconfig;
-    GPUctxconfig _ctxconfig;
+	GLuint getInstanceID() noexcept;
+
+private:
+	void bindRenderTexture(RenderTexturePtr target, GLenum attachment) noexcept;
+
+private:
+
+	GLuint _fbo;
 };
 
 _NAME_END

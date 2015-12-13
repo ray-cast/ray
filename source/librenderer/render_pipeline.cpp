@@ -72,78 +72,6 @@ DefaultRenderPipeline::renderShadowMap(CameraPtr camera) noexcept
 }
 
 void
-DefaultRenderPipeline::renderCubeMapLayer(RenderScenePtr scene, CameraPtr camera, int layer) noexcept
-{
-	this->setCamera(camera);
-
-	/*this->assignVisiable(scene, camera);
-	this->assignLight(scene, camera);
-
-	this->renderOpaques(_deferredGraphicCubeMaps);
-	this->renderLights(_deferredLightCubeMap);
-	this->renderOpaquesShading(_deferredShadingCubeMap, layer);
-	this->renderOpaquesSpecificShading(_deferredShadingCubeMap, layer);*/
-
-	this->setRenderTexture(_deferredShadingCubeMap);
-	this->setRenderTextureLayer(_deferredShadingCubeMap, layer);
-	this->clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0.0, 0);
-	this->drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_SPECIFIC);
-	this->drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_POSTPROCESS, nullptr, _deferredShadingCubeMap);
-
-	/*auto renderable = this->getRenderData(RenderQueue::Transparent);
-	if (!renderable.empty())
-	{
-		this->renderTransparent(_deferredGraphicCubeMaps);
-		this->renderLights(_deferredLightCubeMap);
-		this->renderTransparentShading(_deferredShadingCubeMap);
-		this->renderTransparentSpecificShading(_deferredShadingCubeMap);
-	}*/
-}
-
-void
-DefaultRenderPipeline::renderCubeMap(CameraPtr camera) noexcept
-{
-	auto& semantic = this->getMaterialManager();
-	semantic->setTexParam(MaterialSemantic::DeferredDepthMap, _deferredDepthCubeMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredNormalMap, _deferredNormalCubeMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredGraphicMap, _deferredGraphicCubeMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredLightMap, _deferredLightCubeMap->getResolveTexture());
-
-	_texEnvironmentMap->assign(_deferredShadingCubeMap->getResolveTexture());
-
-	_leftCamera->makePerspective(90.0, 1.0, camera->getNear(), camera->getFar());
-	_leftCamera->makeLookAt(camera->getTranslate(), camera->getTranslate() - Vector3::UnitX, Vector3::UnitY);
-
-	_rightCamera->makePerspective(90.0, 1.0, camera->getNear(), camera->getFar());
-	_rightCamera->makeLookAt(camera->getTranslate(), camera->getTranslate() + Vector3::UnitX, Vector3::UnitY);
-
-	_frontCamera->makePerspective(90.0, 1.0, camera->getNear(), camera->getFar());
-	_frontCamera->makeLookAt(camera->getTranslate(), camera->getTranslate() + Vector3::UnitZ, Vector3::UnitY);
-
-	_backCamera->makePerspective(90.0, 1.0, camera->getNear(), camera->getFar());
-	_backCamera->makeLookAt(camera->getTranslate(), camera->getTranslate() - Vector3::UnitZ, Vector3::UnitY);
-
-	_topCamera->makePerspective(90.0, 1.0, camera->getNear(), camera->getFar());
-	_topCamera->makeLookAt(camera->getTranslate(), camera->getTranslate() + Vector3::UnitY, -Vector3::UnitZ);
-
-	_bottomCamera->makePerspective(90.0, 1.0, camera->getNear(), camera->getFar());
-	_bottomCamera->makeLookAt(camera->getTranslate(), camera->getTranslate() - Vector3::UnitY, Vector3::UnitZ);
-
-	this->renderCubeMapLayer(camera->getRenderScene(), _rightCamera, 0);
-	this->renderCubeMapLayer(camera->getRenderScene(), _leftCamera, 1);
-	this->renderCubeMapLayer(camera->getRenderScene(), _bottomCamera, 2);
-	this->renderCubeMapLayer(camera->getRenderScene(), _topCamera, 3);
-	this->renderCubeMapLayer(camera->getRenderScene(), _frontCamera, 4);
-	this->renderCubeMapLayer(camera->getRenderScene(), _backCamera, 5);
-}
-
-void
-DefaultRenderPipeline::renderIrradianceMap(CameraPtr camera) noexcept
-{
-	//_irradiance.renderParaboloidEnvMap(*this, _deferredShadingCubeMap->getResolveTexture());
-}
-
-void
 DefaultRenderPipeline::render2DEnvMap(CameraPtr camera) noexcept
 {
 	this->setCamera(camera);
@@ -156,9 +84,6 @@ DefaultRenderPipeline::render2DEnvMap(CameraPtr camera) noexcept
 void
 DefaultRenderPipeline::render3DEnvMap(CameraPtr camera) noexcept
 {
-	//this->renderCubeMap(camera);
-	//this->renderIrradianceMap(camera);
-
 	auto semantic = this->getMaterialManager();
 	semantic->setTexParam(MaterialSemantic::DeferredDepthMap, _deferredDepthMap->getResolveTexture());
 	semantic->setTexParam(MaterialSemantic::DeferredDepthLinearMap, _deferredDepthLinearMap->getResolveTexture());
@@ -199,9 +124,6 @@ DefaultRenderPipeline::renderCamera(CameraPtr camera) noexcept
 		break;
 	case CO_LIGHT:
 		this->renderLights(camera->getRenderTexture());
-		break;
-	case CO_CUBEMAP:
-		this->renderCubeMap(camera);
 		break;
 	case CO_MAIN:
 		{
@@ -535,13 +457,8 @@ DefaultRenderPipeline::onActivate() except
 	_deferredDepthMap = this->createRenderTexture();
 	_deferredDepthMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::DEPTH32_STENCIL8);
 
-#if defined(_BUILD_OPENGL_ES)
 	_deferredDepthLinearMap = this->createRenderTexture();
 	_deferredDepthLinearMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
-#else
-	_deferredDepthLinearMap = this->createRenderTexture();
-	_deferredDepthLinearMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R32F);
-#endif
 
 	_deferredGraphicMap = this->createRenderTexture();
 	_deferredGraphicMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
@@ -549,27 +466,14 @@ DefaultRenderPipeline::onActivate() except
 	_deferredNormalMap = this->createRenderTexture();
 	_deferredNormalMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
 
-#if defined(_BUILD_OPENGL_ES)
 	_deferredLightMap = this->createRenderTexture();
 	_deferredLightMap->setSharedStencilTexture(_deferredDepthMap);
 	_deferredLightMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
-#else
-	_deferredLightMap = this->createRenderTexture();
-	_deferredLightMap->setSharedStencilTexture(_deferredDepthMap);
-	_deferredLightMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R16G16B16A16F);
-#endif
 
-#if defined(_BUILD_OPENGL_ES)
 	_deferredShadingMap = this->createRenderTexture();
 	_deferredShadingMap->setSharedDepthTexture(_deferredDepthMap);
 	_deferredShadingMap->setSharedStencilTexture(_deferredDepthMap);
 	_deferredShadingMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
-#else
-	_deferredShadingMap = this->createRenderTexture();
-	_deferredShadingMap->setSharedDepthTexture(_deferredDepthMap);
-	_deferredShadingMap->setSharedStencilTexture(_deferredDepthMap);
-	_deferredShadingMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R16G16B16F);
-#endif
 
 	_deferredGraphicMaps = this->createMultiRenderTexture();
 	_deferredGraphicMaps->setSharedDepthTexture(_deferredDepthMap);
@@ -577,33 +481,6 @@ DefaultRenderPipeline::onActivate() except
 	_deferredGraphicMaps->attach(_deferredGraphicMap);
 	_deferredGraphicMaps->attach(_deferredNormalMap);
 	_deferredGraphicMaps->setup();
-
-#if !defined(_BUILD_OPENGL_ES)
-	_deferredDepthCubeMap = this->createRenderTexture();
-	_deferredDepthCubeMap->setup(512, 512, TextureDim::DIM_2D, TextureFormat::DEPTH24_STENCIL8);
-
-	_deferredGraphicCubeMap = this->createRenderTexture();
-	_deferredGraphicCubeMap->setup(512, 512, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
-
-	_deferredNormalCubeMap = this->createRenderTexture();
-	_deferredNormalCubeMap->setup(512, 512, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
-
-	_deferredLightCubeMap = this->createRenderTexture();
-	_deferredLightCubeMap->setSharedStencilTexture(_deferredDepthCubeMap);
-	_deferredLightCubeMap->setup(512, 512, TextureDim::DIM_2D, TextureFormat::R11G11B10F);
-
-	_deferredShadingCubeMap = this->createRenderTexture();
-	_deferredShadingCubeMap->setSharedDepthTexture(_deferredDepthCubeMap);
-	_deferredShadingCubeMap->setSharedStencilTexture(_deferredDepthCubeMap);
-	_deferredShadingCubeMap->setup(512, 512, TextureDim::DIM_CUBE, TextureFormat::R11G11B10F);
-
-	_deferredGraphicCubeMaps = this->createMultiRenderTexture();
-	_deferredGraphicCubeMaps->setSharedDepthTexture(_deferredDepthCubeMap);
-	_deferredGraphicCubeMaps->setSharedStencilTexture(_deferredDepthCubeMap);
-	_deferredGraphicCubeMaps->attach(_deferredGraphicCubeMap);
-	_deferredGraphicCubeMaps->attach(_deferredNormalCubeMap);
-	_deferredGraphicCubeMaps->setup();
-#endif
 
 	auto semantic = this->getMaterialManager();
 	semantic->setTexParam(MaterialSemantic::DeferredDepthMap, _deferredDepthMap->getResolveTexture());
@@ -695,21 +572,6 @@ DefaultRenderPipeline::onRenderPost(CameraPtr camera) noexcept
 	this->blitRenderTexture(_deferredLightMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3 * 2, 768 / 2, 1376, 768));
 	if (_deferredShadingMap)
 	this->blitRenderTexture(_deferredShadingMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3 * 2, 0, 1376, 768 / 2));*/
-
-	/*this->setRenderTextureLayer(_deferredShadingCubeMap, 0);
-	this->blitRenderTexture(_deferredShadingCubeMap, Viewport(0, 0, 512, 512), 0, Viewport(0, 768 / 2, 1376 / 3, 768));
-
-	this->setRenderTextureLayer(_deferredShadingCubeMap, 1);
-	this->blitRenderTexture(_deferredShadingCubeMap, Viewport(0, 0, 512, 512), 0, Viewport(1376 / 3, 768 / 2, 1376 / 3 * 2, 768));
-
-	this->setRenderTextureLayer(_deferredShadingCubeMap, 2);
-	this->blitRenderTexture(_deferredShadingCubeMap, Viewport(0, 0, 512, 512), 0, Viewport(1376 / 3 * 2, 768 / 2, 1376, 768));
-
-	this->setRenderTextureLayer(_deferredShadingCubeMap, 3);
-	this->blitRenderTexture(_deferredShadingCubeMap, Viewport(0, 0, 512, 512), 0, Viewport(0, 0, 1376 / 3, 768 / 2));
-
-	this->setRenderTextureLayer(_deferredShadingCubeMap, 4);
-	this->blitRenderTexture(_deferredShadingCubeMap, Viewport(0, 0, 512, 512), 0, Viewport(1376 / 3, 0, 1376 / 3 * 2, 768 / 2));*/
 }
 
 _NAME_END

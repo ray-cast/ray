@@ -39,24 +39,14 @@
 
 #include <ray/platform.h>
 
-#if defined(_BUILD_PLATFORM_SDL2)
-#    include <ray/sdl_canvas.h>
-#    define OGLCanvas SDLCanvas
-#else
-#    if defined(_BUILD_OPENGL_ES)
-#       include <ray/egl_canvas.h>
-#       define OGLCanvas EGLCanvas
-#    elif defined(_BUILD_OPENGL)
-#		if defined(_BUILD_PLATFORM_WINDOWS)
-#			include <ray/wgl_canvas.h>
-#			define OGLCanvas WGLCanvas
-#		elif defined(_BUILD_PLATFORM_LINUX)
-#			include <ray/x11_canvas.h>
-#			define OGLCanvas XGLCanvas
-#		elif defined(_BUILD_PLATFORM_APPLE)
-#			include <ray/x11_canvas.h>
-#			define OGLCanvas XGLCanvas
-#		endif
+#if defined(_BUILD_OPENGL)
+#	if defined(_BUILD_PLATFORM_WINDOWS)
+#		include "wgl_canvas.h"
+#		define OGLCanvas WGLCanvas
+#	elif defined(_BUILD_PLATFORM_LINUX)
+#		include "x11_canvas.h"
+#		define OGLCanvas XGLCanvas
+#	elif defined(_BUILD_PLATFORM_APPLE)
 #	endif
 #endif
 

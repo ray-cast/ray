@@ -34,60 +34,56 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_ATMOSPHERE_H_
-#define _H_ATMOSPHERE_H_
+#ifndef _H_EGL_CANVAS_H_
+#define _H_EGL_CANVAS_H_
 
-#include <ray/render_post_process.h>
+#include "egl2_types.h"
 
 _NAME_BEGIN
 
-class EXPORT Atmospheric : public RenderPostProcess
+class EGLCanvas final : public RenderWindow
 {
 public:
-	struct EXPORT Setting
-	{
-		float outerRadius;
-		float innerRadius;
-		float kr;
-		float km;
-		float sun;
-		float3 wavelength;
+    EGLCanvas() noexcept;
+	EGLCanvas(WindHandle hwnd) except;
+    ~EGLCanvas() noexcept;
 
-		Setting() noexcept;
-	};
+    void open(WindHandle hwnd) except;
+    void close() noexcept;
 
-public:
-	Atmospheric() noexcept;
-	~Atmospheric() noexcept;
+    void setSwapInterval(SwapInterval interval) noexcept;
+	SwapInterval getSwapInterval() const noexcept;
 
-	void onActivate(RenderPipeline& pipeline) except;
-	void onDeactivate(RenderPipeline& pipeline) noexcept;
+    void present() noexcept;
 
-	void onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
+	WindHandle getWindHandle() const noexcept;
 
 private:
 
-	Setting _setting;
+	virtual void onActivate() except;
+	virtual void onDeactivate() except;
 
-	RenderBufferPtr _sphere;
+private:
 
-	MaterialPtr _sat;
-	MaterialPassPtr _sky;
-	MaterialPassPtr _ground;
+	static void initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept;
 
-	MaterialParamPtr _lightDirection;
-	MaterialParamPtr _invWavelength;
-	MaterialParamPtr _outerRadius;
-	MaterialParamPtr _outerRadius2;
-	MaterialParamPtr _innerRadius;
-	MaterialParamPtr _innerRadius2;
-	MaterialParamPtr _krESun;
-	MaterialParamPtr _kmESun;
-	MaterialParamPtr _kr4PI;
-	MaterialParamPtr _km4PI;
-	MaterialParamPtr _scaleFactor;
-	MaterialParamPtr _scaleDepth;
-	MaterialParamPtr _scaleOverScaleDepth;
+private:
+    EGLCanvas(const EGLCanvas&) noexcept = delete;
+    EGLCanvas& operator=(const EGLCanvas&) noexcept = delete;
+
+private:
+	SwapInterval _interval;
+
+    EGLNativeWindowType _hwnd;
+    EGLNativeDisplayType _hdc;
+
+    EGLDisplay _display;
+    EGLSurface _surface;
+    EGLConfig _config;
+    EGLContext _context;
+
+    GPUfbconfig _fbconfig;
+    GPUctxconfig _ctxconfig;
 };
 
 _NAME_END

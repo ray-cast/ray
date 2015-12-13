@@ -34,7 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "egl_canvas.h"
+#include "egl2_canvas.h"
 
 _NAME_BEGIN
 
@@ -268,8 +268,8 @@ EGLCanvas::initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexc
 	fbconfig.accumAlphaSize = 0;
 	fbconfig.samples = 0;
 
-	ctxconfig.major = 3;
-	ctxconfig.minor = 1;
+	ctxconfig.major = 2;
+	ctxconfig.minor = 0;
 	ctxconfig.release = 0;
 	ctxconfig.robustness = 0;
 	ctxconfig.share = nullptr;

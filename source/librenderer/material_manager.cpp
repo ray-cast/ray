@@ -54,34 +54,34 @@ MaterialManager::setup() noexcept
 {
 	_semantics.resize(MaterialSemantic::NumSemantic);
 
-	_semantics[matModel] = std::make_shared<MaterialParam>("matModel", float4x4());
-	_semantics[matModelInverse] = std::make_shared<MaterialParam>("matModelInverse", float4x4());
-	_semantics[matModelInverseTranspose] = std::make_shared<MaterialParam>("matModelInverseTranspose", float4x4());
-	_semantics[matProject] = std::make_shared<MaterialParam>("matProject", float4x4());
-	_semantics[matProjectInverse] = std::make_shared<MaterialParam>("matProjectInverse", float4x4());
-	_semantics[matView] = std::make_shared<MaterialParam>("matView", float4x4());
-	_semantics[matViewInverse] = std::make_shared<MaterialParam>("matViewInverse", float4x4());
-	_semantics[matViewInverseTranspose] = std::make_shared<MaterialParam>("matViewInverseTranspose", float4x4());
-	_semantics[matViewProject] = std::make_shared<MaterialParam>("matViewProject", float4x4());
-	_semantics[matViewProjectInverse] = std::make_shared<MaterialParam>("matViewProjectInverse", float4x4());
+	_semantics[matModel] = std::make_shared<MaterialParamSemantic>("matModel", ShaderVariantType::SPT_FLOAT4X4);
+	_semantics[matModelInverse] = std::make_shared<MaterialParamSemantic>("matModelInverse", ShaderVariantType::SPT_FLOAT4X4);
+	_semantics[matModelInverseTranspose] = std::make_shared<MaterialParamSemantic>("matModelInverseTranspose", ShaderVariantType::SPT_FLOAT4X4);
+	_semantics[matProject] = std::make_shared<MaterialParamSemantic>("matProject", ShaderVariantType::SPT_FLOAT4X4);
+	_semantics[matProjectInverse] = std::make_shared<MaterialParamSemantic>("matProjectInverse", ShaderVariantType::SPT_FLOAT4X4);
+	_semantics[matView] = std::make_shared<MaterialParamSemantic>("matView", ShaderVariantType::SPT_FLOAT4X4);
+	_semantics[matViewInverse] = std::make_shared<MaterialParamSemantic>("matViewInverse", ShaderVariantType::SPT_FLOAT4X4);
+	_semantics[matViewInverseTranspose] = std::make_shared<MaterialParamSemantic>("matViewInverseTranspose", ShaderVariantType::SPT_FLOAT4X4);
+	_semantics[matViewProject] = std::make_shared<MaterialParamSemantic>("matViewProject", ShaderVariantType::SPT_FLOAT4X4);
+	_semantics[matViewProjectInverse] = std::make_shared<MaterialParamSemantic>("matViewProjectInverse", ShaderVariantType::SPT_FLOAT4X4);
 
-	_semantics[CameraAperture] = std::make_shared<MaterialParam>("CameraAperture", float());
-	_semantics[CameraFar] = std::make_shared<MaterialParam>("CameraFar", float());
-	_semantics[CameraNear] = std::make_shared<MaterialParam>("CameraNear", float());
-	_semantics[CameraView] = std::make_shared<MaterialParam>("CameraView", float3());
-	_semantics[CameraPosition] = std::make_shared<MaterialParam>("CameraPosition", Vector3());
-	_semantics[CameraDirection] = std::make_shared<MaterialParam>("CameraDirection", Vector3());
+	_semantics[CameraAperture] = std::make_shared<MaterialParamSemantic>("CameraAperture", ShaderVariantType::SPT_FLOAT);
+	_semantics[CameraFar] = std::make_shared<MaterialParamSemantic>("CameraFar", ShaderVariantType::SPT_FLOAT);
+	_semantics[CameraNear] = std::make_shared<MaterialParamSemantic>("CameraNear", ShaderVariantType::SPT_FLOAT);
+	_semantics[CameraView] = std::make_shared<MaterialParamSemantic>("CameraView", ShaderVariantType::SPT_FLOAT3);
+	_semantics[CameraPosition] = std::make_shared<MaterialParamSemantic>("CameraPosition", ShaderVariantType::SPT_FLOAT3);
+	_semantics[CameraDirection] = std::make_shared<MaterialParamSemantic>("CameraDirection", ShaderVariantType::SPT_FLOAT3);
 
-	_semantics[DepthMap] = std::make_shared<MaterialParam>("DepthMap", ShaderVariantType::SPT_TEXTURE);
-	_semantics[ColorMap] = std::make_shared<MaterialParam>("ColorMap", ShaderVariantType::SPT_TEXTURE);
-	_semantics[NormalMap] = std::make_shared<MaterialParam>("NormalMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[DepthMap] = std::make_shared<MaterialParamSemantic>("DepthMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[ColorMap] = std::make_shared<MaterialParamSemantic>("ColorMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[NormalMap] = std::make_shared<MaterialParamSemantic>("NormalMap", ShaderVariantType::SPT_TEXTURE);
 
-	_semantics[DeferredDepthMap] = std::make_shared<MaterialParam>("DeferredDepthMap", ShaderVariantType::SPT_TEXTURE);
-	_semantics[DeferredDepthLinearMap] = std::make_shared<MaterialParam>("DeferredDepthLinearMap", ShaderVariantType::SPT_TEXTURE);
-	_semantics[DeferredGraphicMap] = std::make_shared<MaterialParam>("DeferredGraphicMap", ShaderVariantType::SPT_TEXTURE);
-	_semantics[DeferredNormalMap] = std::make_shared<MaterialParam>("DeferredNormalMap", ShaderVariantType::SPT_TEXTURE);
-	_semantics[DeferredLightMap] = std::make_shared<MaterialParam>("DeferredLightMap", ShaderVariantType::SPT_TEXTURE);
-	_semantics[DeferredShadowMap] = std::make_shared<MaterialParam>("DeferredShadowMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[DeferredDepthMap] = std::make_shared<MaterialParamSemantic>("DeferredDepthMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[DeferredDepthLinearMap] = std::make_shared<MaterialParamSemantic>("DeferredDepthLinearMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[DeferredGraphicMap] = std::make_shared<MaterialParamSemantic>("DeferredGraphicMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[DeferredNormalMap] = std::make_shared<MaterialParamSemantic>("DeferredNormalMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[DeferredLightMap] = std::make_shared<MaterialParamSemantic>("DeferredLightMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[DeferredShadowMap] = std::make_shared<MaterialParamSemantic>("DeferredShadowMap", ShaderVariantType::SPT_TEXTURE);
 }
 
 void
@@ -256,7 +256,7 @@ MaterialManager::getTexParamSemantic(const std::string& name) const noexcept
 	return (MaterialSemantic)NotSemantic;
 }
 
-MaterialParamPtr
+MaterialParamSemanticPtr
 MaterialManager::getParamPointer(MaterialSemantic semantic) const noexcept
 {
 	assert(semantic != MaterialSemantic::NotSemantic);
@@ -264,7 +264,7 @@ MaterialManager::getParamPointer(MaterialSemantic semantic) const noexcept
 	return _semantics[semantic];
 }
 
-MaterialParamPtr
+MaterialParamSemanticPtr
 MaterialManager::getParamPointer(const std::string& name) const noexcept
 {
 	for (auto& it : _semantics)

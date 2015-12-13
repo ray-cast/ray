@@ -34,60 +34,23 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_ATMOSPHERE_H_
-#define _H_ATMOSPHERE_H_
+#ifndef _H_EGL2_STATE_H_
+#define _H_EGL2_STATE_H_
 
-#include <ray/render_post_process.h>
+#include "egl2_canvas.h"
 
 _NAME_BEGIN
 
-class EXPORT Atmospheric : public RenderPostProcess
+class EGL2RenderState : public RenderState
 {
 public:
-	struct EXPORT Setting
-	{
-		float outerRadius;
-		float innerRadius;
-		float kr;
-		float km;
-		float sun;
-		float3 wavelength;
+	EGL2RenderState() noexcept;
+	~EGL2RenderState() noexcept;
 
-		Setting() noexcept;
-	};
-
-public:
-	Atmospheric() noexcept;
-	~Atmospheric() noexcept;
-
-	void onActivate(RenderPipeline& pipeline) except;
-	void onDeactivate(RenderPipeline& pipeline) noexcept;
-
-	void onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
-
+	virtual void apply(const RenderState& last) noexcept;
 private:
-
-	Setting _setting;
-
-	RenderBufferPtr _sphere;
-
-	MaterialPtr _sat;
-	MaterialPassPtr _sky;
-	MaterialPassPtr _ground;
-
-	MaterialParamPtr _lightDirection;
-	MaterialParamPtr _invWavelength;
-	MaterialParamPtr _outerRadius;
-	MaterialParamPtr _outerRadius2;
-	MaterialParamPtr _innerRadius;
-	MaterialParamPtr _innerRadius2;
-	MaterialParamPtr _krESun;
-	MaterialParamPtr _kmESun;
-	MaterialParamPtr _kr4PI;
-	MaterialParamPtr _km4PI;
-	MaterialParamPtr _scaleFactor;
-	MaterialParamPtr _scaleDepth;
-	MaterialParamPtr _scaleOverScaleDepth;
+	EGL2RenderState(const EGL2RenderState&) = delete;
+	EGL2RenderState& operator=(const EGL2RenderState&) = delete;
 };
 
 _NAME_END

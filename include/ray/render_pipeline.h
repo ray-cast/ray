@@ -49,11 +49,6 @@ public:
 
 	void renderShadowMap(CameraPtr camera) noexcept;
 
-	void renderCubeMap(CameraPtr camera) noexcept;
-	void renderCubeMapLayer(RenderScenePtr scene, CameraPtr camera, int layer) noexcept;
-
-	void renderIrradianceMap(CameraPtr camera) noexcept;
-
 	void render2DEnvMap(CameraPtr camera) noexcept;
 	void render3DEnvMap(CameraPtr camera) noexcept;
 
@@ -149,14 +144,7 @@ private:
 	RenderTexturePtr _deferredLightMap;
 	RenderTexturePtr _deferredShadingMap;
 
-	RenderTexturePtr _deferredDepthCubeMap;
-	RenderTexturePtr _deferredGraphicCubeMap;
-	RenderTexturePtr _deferredNormalCubeMap;
-	RenderTexturePtr _deferredLightCubeMap;
-	RenderTexturePtr _deferredShadingCubeMap;
-
 	MultiRenderTexturePtr _deferredGraphicMaps;
-	MultiRenderTexturePtr _deferredGraphicCubeMaps;
 };
 
 _NAME_END

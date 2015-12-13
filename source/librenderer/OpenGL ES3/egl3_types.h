@@ -45,47 +45,13 @@
 #include <ray/render_command.h>
 #include <ray/shader.h>
 
-#if _BUILD_OPENGL_ES
-#	include <EGL\egl.h>
-#	include <GLES3\gl3.h>
-#	include <GLES3\gl31.h>
-#	include <GLES2\gl2ext.h>
-#	include <GLES3\gl3ext.h>
-#else
-#	if _BUILD_PLATFORM_WINDOWS
-#		include <GL\glew.h>
-#		include <GL\wglew.h>
-#	elif _BUILD_PLATFORM_ANDROID
-#		include <EGL\egl.h>
-#		include <GLES2\gl2.h>
-#		include <GLES3\gl3.h>
-#		include <GLES3\gl31.h>
-#		include <GLES2\gl2ext.h>
-#		include <GLES3\gl3ext.h>
-#	elif _BUILD_PLATFORM_LINUX
-#		include <GL/glew.h>
-#		include <GL/glxew.h>
-#	endif
-#endif
+#include <EGL\egl.h>
+#include <GLES3\gl3.h>
+#include <GLES3\gl31.h>
+#include <GLES2\gl2ext.h>
+#include <GLES3\gl3ext.h>
 
 _NAME_BEGIN
-
-#define _USE_RENDER_COMMAND 0
-
-#if _BUILD_OPENGL
-#	ifdef GLEW_MX
-	extern GLEWContext _glewctx;
-#	define glewGetContext() (&_glewctx)
-#	endif
-
-#  if defined(__MINGW32__) || defined(__CYGWIN__)
-#    define GLEXT_APIENTRY __stdcall
-#  elif (_MSC_VER >= 800) || defined(_STDCALL_SUPPORTED) || defined(__BORLANDC__)
-#    define GLEXT_APIENTRY __stdcall
-#  else
-#    define GLEXT_APIENTRY
-#  endif
-#endif
 
 #if defined(EGLAPI)
 #	define GL_DEBUG_OUTPUT_SYNCHRONOUS   GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR
@@ -134,6 +100,15 @@ _NAME_BEGIN
 #   define glDebugMessageControl glDebugMessageControlKHR
 #endif
 
+#if GL_DEBUG
+#	if defined(_VISUAL_STUDIO_)
+#		pragma warning(disable : 4127)
+#	endif
+#	define GL_CHECK(x) do { x; EGL3Check::checkError(); } while (false)
+#else
+#	define GL_CHECK(x) x
+#endif
+
 struct GPUfbconfig
 {
 	int redSize;
@@ -165,19 +140,15 @@ struct GPUctxconfig
 	int release;
 	int multithread;
 
-#   if defined(_BUILD_OPENGL_ES)
 	EGLContext share;
-#   elif defined(_BUILD_OPENGL)
-#	if _BUILD_PLATFORM_WINDOWS
-	HGLRC share;
-#	endif
-#endif
 };
 
 typedef std::shared_ptr<class EGL3Canvas> EGL3CanvasPtr;
 typedef std::shared_ptr<class EGL3Framebuffer> EGL3RenderTexturePtr;
 typedef std::shared_ptr<class EGL3Shader> EGL3ShaderPtr;
 typedef std::shared_ptr<class EGL3ShaderObject> EGL3ShaderObjectPtr;
+typedef std::shared_ptr<class EGL3VertexBuffer> EGL3VertexBufferPtr;
+typedef std::shared_ptr<class EGL3IndexBuffer> EGL3IndexBufferPtr;
 
 class EGL3Types
 {
@@ -204,8 +175,6 @@ class EGL3Check
 public:
 	static void checkError() noexcept;
 };
-
-#define GL_CHECK(x) x; EGL3Check::checkError()
 
 _NAME_END
 

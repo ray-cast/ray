@@ -50,7 +50,7 @@ typedef std::shared_ptr<class VertexBufferData> VertexBufferDataPtr;
 typedef std::shared_ptr<class IndexBufferData> IndexBufferDataPtr;
 
 typedef std::shared_ptr<class Texture> TexturePtr;
-typedef std::shared_ptr<class TextureSample> TextureSamplePtr;
+typedef std::shared_ptr<class TextureSampler> TextureSamplerPtr;
 typedef std::shared_ptr<class MultiRenderTexture> MultiRenderTexturePtr;
 
 typedef std::shared_ptr<class Shader> ShaderPtr;

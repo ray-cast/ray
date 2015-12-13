@@ -34,7 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "egl_types.h"
+#include "egl3_types.h"
 
 _NAME_BEGIN
 
@@ -500,17 +500,12 @@ EGL3Check::checkError() noexcept
 		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
 			std::cerr << "FBO:Incomplete missing attachment";
 			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
+			std::cerr << "FBO:Incomplete dimensions";
+			break;
 		case GL_FRAMEBUFFER_UNSUPPORTED:
 			std::cerr << "FBO:Unsupported";
 			break;
-#if !defined(EGLAPI)
-		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-			std::cerr << "FBO:Incomplete draw buffer";
-			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-			std::cerr << "FBO:Incomplete read buffer";
-			break;
-#endif
 		default:
 			assert(false);
 		}

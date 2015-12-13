@@ -266,38 +266,46 @@ Texture::copy(TexturePtr other) noexcept
 	this->setTexDim(other->getTexDim());
 }
 
+TextureSampler::TextureSampler() noexcept
+{
+}
+
+TextureSampler::~TextureSampler() noexcept
+{
+}
+
 void
-TextureSample::setTexWrap(TextureWrap wrap) noexcept
+TextureSampler::setTexWrap(TextureWrap wrap) noexcept
 {
 	_wrap = wrap;
 }
 
 void
-TextureSample::setTexFilter(TextureFilter filter) noexcept
+TextureSampler::setTexFilter(TextureFilter filter) noexcept
 {
 	_filter = filter;
 }
 
 void
-TextureSample::setAnisotropy(Anisotropy anis) noexcept
+TextureSampler::setAnisotropy(Anisotropy anis) noexcept
 {
 	_anis = anis;
 }
 
 TextureWrap
-TextureSample::getTexWrap() const noexcept
+TextureSampler::getTexWrap() const noexcept
 {
 	return _wrap;
 }
 
 TextureFilter
-TextureSample::getTexFilter() const noexcept
+TextureSampler::getTexFilter() const noexcept
 {
 	return _filter;
 }
 
 Anisotropy
-TextureSample::getTexAnisotropy() const noexcept
+TextureSampler::getTexAnisotropy() const noexcept
 {
 	return _anis;
 }

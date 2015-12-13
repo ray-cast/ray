@@ -34,7 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "egl_buffer.h"
+#include "egl3_buffer.h"
 
 _NAME_BEGIN
 
@@ -129,9 +129,15 @@ EGL3BufferData::resize(const char* data, streamsize datasize) noexcept
 int
 EGL3BufferData::flush() noexcept
 {
+	return this->flush(0, _dataSize);
+}
+
+int 
+EGL3BufferData::flush(ios_base::off_type offset, streamsize cnt) noexcept
+{
 	GL_CHECK(glBindBuffer(_target, _buffer));
-	GL_CHECK(glFlushMappedBufferRange(_target, 0, _dataSize));
-	return _dataSize;
+	GL_CHECK(glFlushMappedBufferRange(_target, offset, cnt));
+	return cnt;
 }
 
 streamsize
@@ -144,10 +150,10 @@ EGL3BufferData::read(char* str, streamsize cnt) noexcept
 			return 0;
 	}
 
-	const char* data = this->map(AccessMapping::MAP_READ_BIT);
+	const char* data = this->map(_dataOffset, cnt, AccessMapping::MAP_READ_BIT);
 	if (data)
 	{
-		std::memcpy(str, data + _dataOffset, cnt);
+		std::memcpy(str, data, cnt);
 		_dataOffset += cnt;
 	}
 
@@ -165,10 +171,10 @@ EGL3BufferData::write(const char* str, streamsize cnt) noexcept
 			return 0;
 	}
 
-	auto data = this->map(AccessMapping::MAP_READ_BIT | AccessMapping::MAP_WRITE_BIT);
+	const char* data = this->map(_dataOffset, cnt, AccessMapping::MAP_WRITE_BIT);
 	if (data)
 	{
-		std::memcpy((char*)data + _dataOffset, data, cnt);
+		std::memcpy((char*)data, data, cnt);
 		_dataOffset += cnt;
 		this->unmap();
 		return cnt;
@@ -225,6 +231,12 @@ EGL3BufferData::tellg() noexcept
 const char*
 EGL3BufferData::map(std::uint32_t access) noexcept
 {
+	return this->map(0, _dataSize, access);
+}
+
+const char*
+EGL3BufferData::map(ios_base::off_type offset, streamsize cnt, std::uint32_t access) noexcept
+{
 	assert(!_isMapping);
 
 	GLbitfield flags = GL_MAP_READ_BIT;
@@ -236,7 +248,7 @@ EGL3BufferData::map(std::uint32_t access) noexcept
 	_isMapping = true;
 
 	GL_CHECK(glBindBuffer(_target, _buffer));
-	auto result = (char*)glMapBufferRange(_target, 0, _dataSize, flags);
+	auto result = (char*)glMapBufferRange(_target, offset, cnt, flags);
 	GL_CHECK(result);
 	return result;
 }
@@ -311,7 +323,6 @@ void
 EGL3VertexBuffer::bindLayout() noexcept
 {
 	GLuint offset = 0;
-	GLsizei vertexByteSize = this->getVertexSize();
 
 	auto& components = this->getVertexComponents();
 	for (auto& it : components)
@@ -425,9 +436,6 @@ EGL3RenderBuffer::setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) except
 {
 	_vb = std::dynamic_pointer_cast<EGL3VertexBuffer>(vb);
 	_ib = std::dynamic_pointer_cast<EGL3IndexBuffer>(ib);
-
-	this->setVertexBuffer(vb);
-	this->setIndexBuffer(ib);
 }
 
 void
@@ -444,6 +452,34 @@ EGL3RenderBuffer::close() noexcept
 		_ib->close();
 		_ib = nullptr;
 	}
+}
+
+std::size_t 
+EGL3RenderBuffer::getNumVertices() const noexcept
+{
+	if (_vb)
+		return _vb->getVertexCount();
+	return 0;
+}
+
+std::size_t 
+EGL3RenderBuffer::getNumIndices() const noexcept
+{
+	if (_ib)
+		return _ib->getIndexCount();
+	return 0;
+}
+
+VertexBufferDataPtr 
+EGL3RenderBuffer::getVertexBuffer() const noexcept
+{
+	return _vb;
+}
+
+IndexBufferDataPtr 
+EGL3RenderBuffer::getIndexBuffer() const noexcept
+{
+	return _ib;
 }
 
 void

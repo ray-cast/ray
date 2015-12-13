@@ -2,8 +2,11 @@
 <effect version="1270" language="glsl">
     <shader name="fragment">
         <![CDATA[
-            #define InvLog2 3.32192809489
-            #define PIE 3.1415926
+            #define InvLog2 3.32192809489f
+            #define InvPIE 0.318309886142f
+            #define InvPIE8 0.039788735767f
+            #define InvPIE4 0.079577471535f
+            #define PIE 3.141592654f
 
             float fresnelSchlick(float specular, float LdotH)
             {
@@ -25,7 +28,7 @@
                 // pow(dotHN, K)
                 // = exp(-K*(1-dotHN))
                 // = exp2(K / InvLog2 * dotHN - K / InvLog2)
-                return (roughness + 2.0f) / (8.0f * PIE) * exp2(roughness * InvLog2 * NdotH - roughness * InvLog2);
+                return (roughness * InvPIE8 + InvPIE4) * exp2(roughness * InvLog2 * NdotH - roughness * InvLog2);
             }
 
             float geometricShadowingSchlickBeckmann(float NdotV, float k)
@@ -47,7 +50,7 @@
             float brdfLambert(float3 N, float3 L)
             {
                 float nl = dot(N, L);
-                float lambert = nl * 0.5f + 0.5f;
+                float lambert = mad(nl, 0.5f, 0.5f);
                 float diffuse = smoothstep(0.0f, 1.5f, lambert);
                 return max(0.0f, nl);
             }
@@ -90,7 +93,7 @@
 
                     vec2 envBRDF = texture(texLUT, vec2(NdotV, 1.0f - roughness)).rg;
 
-                    return (specular * envBRDF.x + envBRDF.y);
+                    return (mad(specular, envBRDF.x, envBRDF.y));
                 }
 
                 return 0.0f;
@@ -165,7 +168,7 @@
             {
                 vec4 proj = shadowMatrix * vec4(P, 1.0f);
                 proj.xyz /= proj.w;
-                proj.xy = proj.xy * 0.5f + 0.5f;
+                proj.xy = mad(proj.xy, 0.5f, 0.5f);
 
                 if (proj.x < 0.0f || proj.y < 0.0f ||
                     proj.x > 1.0f || proj.y > 1.0f)

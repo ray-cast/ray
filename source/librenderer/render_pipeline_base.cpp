@@ -52,9 +52,12 @@
 #include <ray/parse.h>
 #include <ray/resource.h>
 
-#if defined(_BUILD_OPENGL) || defined(_BUILD_OPENGL_ES)
-#	include "OpenGL ES3/egl_renderer.h"
+#if defined(_BUILD_OPENGL) || defined(_BUILD_OPENGL_ES3)
+#	include "OpenGL ES3/egl3_renderer.h"
 #	define RenderDevice EGL3Renderer
+#elif defined(_BUILD_OPENGL) || defined(_BUILD_OPENGL_ES2)
+#	include "OpenGL ES2/egl2_renderer.h"
+#	define RenderDevice EGL2Renderer
 #endif
 
 _NAME_BEGIN

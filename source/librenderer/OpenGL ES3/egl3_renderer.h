@@ -37,7 +37,7 @@
 #ifndef _H_EGL3_RENDERER_H_
 #define _H_EGL3_RENDERER_H_
 
-#include "egl_canvas.h"
+#include "egl3_canvas.h"
 
 _NAME_BEGIN
 
@@ -106,10 +106,6 @@ private:
 
 	void initDebugControl() noexcept;
 	void initStateSystem() noexcept;
-	void initCommandList() noexcept;
-
-	void setShaderUniform(ShaderUniformPtr uniform, TexturePtr texture, TextureSamplePtr sample = nullptr) noexcept;
-	void setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constant) noexcept;
 
 	static void GLAPIENTRY debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept;
 
@@ -126,6 +122,8 @@ private:
 	GLfloat _clearDepth;
 	GLint   _clearStencil;
 
+	Viewport _viewport;
+
 	GLuint _defaultVAO;
 	GLuint _maxViewports;
 	GLuint _maxTextureUnits;
@@ -140,17 +138,7 @@ private:
 	RenderStatePtr _state;
 	RenderStatePtr _stateCaptured;
 
-	GLuint _stateObjDraw;
-	GLuint _stateObjDrawGeo;
-
-	GLuint      _tokenBuffer;
-	GLuint      _tokenCmdList;
-	std::string _tokenData;
-
-	RenderCommand _renderCommands;
-
 	std::vector<GLint> _textureUnits;
-	std::vector<Viewport> _viewport;
 };
 
 _NAME_END

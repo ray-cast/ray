@@ -48,96 +48,75 @@ RenderIndirect::RenderIndirect() noexcept
 {
 }
 
-RenderBufferData::RenderBufferData() noexcept
+GraphicsData::GraphicsData() noexcept
 {
 }
 
-RenderBufferData::~RenderBufferData() noexcept
+GraphicsData::~GraphicsData() noexcept
 {
 }
 
-RenderBufferStream::RenderBufferStream(RenderBufferData* data) noexcept
+GraphicsStream::GraphicsStream(GraphicsData* data) noexcept
 	: _data(data)
 {
 }
 
-RenderBufferStream::~RenderBufferStream() noexcept
+GraphicsStream::~GraphicsStream() noexcept
 {
 }
 
 bool 
-RenderBufferStream::is_open() const noexcept
+GraphicsStream::is_open() const noexcept
 {
 	return _data->is_open();
 }
 
 void 
-RenderBufferStream::resize(const char* data, std::size_t cnt) noexcept
+GraphicsStream::resize(const char* data, std::size_t cnt) noexcept
 {
 	_data->resize(data, cnt);
 }
 
 streamsize
-RenderBufferStream::size() noexcept
+GraphicsStream::size() noexcept
 {
 	return _data->size();
 }
 
 int 
-RenderBufferStream::flush() noexcept
+GraphicsStream::flush() noexcept
 {
 	return _data->flush();
 }
 
+int
+GraphicsStream::flush(ios_base::off_type offset, streamsize cnt) noexcept
+{
+	return _data->flush(offset, cnt);
+}
+
 const char* 
-RenderBufferStream::map(std::uint32_t access) noexcept
+GraphicsStream::map(std::uint32_t access) noexcept
 {
 	return _data->map(access);
 }
 
+const char*
+GraphicsStream::map(ios_base::off_type offset, streamsize cnt, std::uint32_t access) noexcept
+{
+	return _data->map(offset, cnt, access);
+}
+
 void 
-RenderBufferStream::unmap() noexcept
+GraphicsStream::unmap() noexcept
 {
 	return _data->unmap();
 }
 
 bool 
-RenderBufferStream::isMapping() const noexcept
+GraphicsStream::isMapping() const noexcept
 {
 	return _data->isMapping();
-}
-
-VertexStreams::VertexStreams() noexcept
-{
-}
-
-VertexStreams::~VertexStreams() noexcept
-{
-	this->release();
-}
-
-void
-VertexStreams::resize(std::size_t length) noexcept
-{
-	_data.resize(length);
-}
-
-void
-VertexStreams::release() noexcept
-{
-	_data.clear();
-}
-
-char* 
-VertexStreams::data() noexcept
-{
-	return (char*)_data.data();
-}
-
-const char*
-VertexStreams::data() const noexcept
-{
-	return _data.data();
 }
 
 VertexComponent::VertexComponent() noexcept
@@ -266,6 +245,14 @@ VertexComponent::getVertexSize() const noexcept
 	return 0;
 }
 
+VertexLayout::VertexLayout() noexcept
+{
+}
+
+VertexLayout::~VertexLayout() noexcept
+{
+}
+
 void
 VertexLayout::setVertexComponents(const VertexComponents& component) noexcept
 {
@@ -310,8 +297,8 @@ VertexLayout::getVertexSize() const noexcept
 	return _byteSize;
 }
 
-VertexBufferData::VertexBufferData(RenderBufferData* data) noexcept
-	: RenderBufferStream(data)
+VertexBufferData::VertexBufferData(GraphicsData* data) noexcept
+	: GraphicsStream(data)
 {
 }
 
@@ -319,8 +306,8 @@ VertexBufferData::~VertexBufferData() noexcept
 {
 }
 
-IndexBufferData::IndexBufferData(RenderBufferData* data) noexcept
-	: RenderBufferStream(data)
+IndexBufferData::IndexBufferData(GraphicsData* data) noexcept
+	: GraphicsStream(data)
 {
 }
 
@@ -329,53 +316,11 @@ IndexBufferData::~IndexBufferData() noexcept
 }
 
 RenderBuffer::RenderBuffer() noexcept
-	: _bufferVertex(nullptr)
-	, _bufferIndex(nullptr)
 {
 }
 
 RenderBuffer::~RenderBuffer() noexcept
 {
-}
-
-void
-RenderBuffer::setVertexBuffer(VertexBufferDataPtr vb) noexcept
-{
-	_bufferVertex = vb;
-}
-
-void
-RenderBuffer::setIndexBuffer(IndexBufferDataPtr ib) noexcept
-{
-	_bufferIndex = ib;
-}
-
-VertexBufferDataPtr
-RenderBuffer::getVertexBuffer() const noexcept
-{
-	return _bufferVertex;
-}
-
-IndexBufferDataPtr
-RenderBuffer::getIndexBuffer() const noexcept
-{
-	return _bufferIndex;
-}
-
-std::size_t
-RenderBuffer::getNumVertices() const noexcept
-{
-	if (_bufferVertex)
-		return _bufferVertex->getVertexCount();
-	return 0;
-}
-
-std::size_t
-RenderBuffer::getNumIndices() const noexcept
-{
-	if (_bufferIndex)
-		return _bufferIndex->getIndexCount();
-	return 0;
 }
 
 _NAME_END

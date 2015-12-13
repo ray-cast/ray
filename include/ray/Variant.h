@@ -52,7 +52,7 @@ public:
         Bool,
         Float4,
         String,
-        Mat4,
+        Float4x4,
         Blob,
         Guid,
         Object,
@@ -61,7 +61,7 @@ public:
         BoolArray,
         Float4Array,
         StringArray,
-        Mat4Array,
+		Float4x4Array,
     };
 
     Variant();
@@ -69,7 +69,7 @@ public:
     Variant(float rhs);
     Variant(bool rhs);
     Variant(const float4& v);
-    Variant(const Matrix4x4& m);
+    Variant(const float4x4& m);
     Variant(const std::string& rhs);
     Variant(const char* chrPtr);
     Variant(const void* ptr);
@@ -77,7 +77,7 @@ public:
     Variant(const std::vector<float>& rhs);
     Variant(const std::vector<bool>& rhs);
     Variant(const std::vector<float4>& rhs);
-    Variant(const std::vector<Matrix4x4>& rhs);
+    Variant(const std::vector<float4x4>& rhs);
     Variant(const std::vector<std::string>& rhs);
     Variant(const Variant& rhs);
 
@@ -92,7 +92,7 @@ public:
     void operator=(float val);
     void operator=(bool val);
     void operator=(const float4& val);
-    void operator=(const Matrix4x4& val);
+    void operator=(const float4x4& val);
     void operator=(const std::string& s);
     void operator=(const char* chrPtr);
     void operator=(const void* ptr);
@@ -100,7 +100,7 @@ public:
     void operator=(const std::vector<float>& rhs);
     void operator=(const std::vector<bool>& rhs);
     void operator=(const std::vector<float4>& rhs);
-    void operator=(const std::vector<Matrix4x4>& rhs);
+    void operator=(const std::vector<float4x4>& rhs);
     void operator=(const std::vector<std::string>& rhs);
 
     bool operator==(const Variant& rhs) const;
@@ -126,40 +126,46 @@ public:
     bool operator>=(const Variant& rhs) const;
     bool operator<=(const Variant& rhs) const;
 
+	void assign(int val);
+	void assign(float val);
+	void assign(bool val);
+	void assign(const void* ptr);
+	void assign(const float4& val);
+	void assign(const float4x4& val);
+	void assign(const std::string& val);
+	void assign(const std::vector<int>& val);
+	void assign(const std::vector<float>& val);
+	void assign(const std::vector<bool>& val);
+	void assign(const std::vector<float4>& val);
+	void assign(const std::vector<float4x4>& val);
+	void assign(const std::vector<std::string>& val);
+
     void setInt(int val);
     void setFloat(float val);
     void setBool(bool val);
     void setFloat4(const float4& val);
-    void setFloat4_X(float val);
-    void setFloat4_Y(float val);
-    void setFloat4_Z(float val);
-    void setFloat4_W(float val);
+	void setFloat4x4(const float4x4& val);
     void setObject(const void* ptr);
+	void setString(const std::string& val);
     void setIntArray(const std::vector<int>& val);
     void setFloatArray(const std::vector<float>& val);
     void setBoolArray(const std::vector<bool>& val);
     void setFloat4Array(const std::vector<float4>& val);
-    void setMatrix4x4Array(const std::vector<Matrix4x4>& val);
+    void setFloat4x4Array(const std::vector<float4x4>& val);
     void setStringArray(const std::vector<std::string>& val);
 
     int getInt() const;
     float getFloat() const;
     bool getBool() const;
-    void setString(const std::string& val);
     const std::string& getString() const;
-    float4 getFloat4() const;
-    float getFloat4_X() const;
-    float getFloat4_Y() const;
-    float getFloat4_Z() const;
-    float getFloat4_W() const;
-    const Matrix4x4& getMatrix4x4() const;
+    const float4& getFloat4() const;
+    const float4x4& getFloat4x4() const;
     const void* getObject() const;
     const std::vector<int>& getIntArray() const;
     const std::vector<float>& getFloatArray() const;
     const std::vector<bool>& getBoolArray() const;
     const std::vector<float4>& getFloat4Array() const;
-    void setMatrix4x4(const Matrix4x4& val);
-    const std::vector<Matrix4x4>& getMatrix4x4Array() const;
+    const std::vector<float4x4>& getFloat4x4Array() const;
     const std::vector<std::string>& getStringArray() const;
 
     static std::string typeToString(Type t);
@@ -169,23 +175,23 @@ private:
     void destroy();
     void copy(const Variant& rhs);
 
-    Type type;
+    Type _type;
 
     union
     {
         int i;
         bool b;
         float f[4];
-        Matrix4x4* m;
+        float4x4* matrix;
         const void* object;
         std::string* string;
         std::vector<int>* intArray;
         std::vector<float>* floatArray;
         std::vector<bool>* boolArray;
         std::vector<float4>* float4Array;
-        std::vector<Matrix4x4>* Matrix4x4Array;
+        std::vector<float4x4>* float4x4Array;
         std::vector<std::string>* stringArray;
-    };
+    } _value;
 };
 
 _NAME_END

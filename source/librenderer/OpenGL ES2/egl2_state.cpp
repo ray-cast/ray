@@ -31,20 +31,20 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "egl_state.h"
+#include "egl2_state.h"
 
 _NAME_BEGIN
 
-EGL3RenderState::EGL3RenderState() noexcept
+EGL2RenderState::EGL2RenderState() noexcept
 {
 }
 
-EGL3RenderState::~EGL3RenderState() noexcept
+EGL2RenderState::~EGL2RenderState() noexcept
 {
 }
 
 void 
-EGL3RenderState::apply(const RenderState& _stateCaptured) noexcept
+EGL2RenderState::apply(const RenderState& _stateCaptured) noexcept
 {
 	const auto& blendState = this->getBlendState();
 	const auto& rasterState = this->getRasterState();
@@ -68,10 +68,10 @@ EGL3RenderState::apply(const RenderState& _stateCaptured) noexcept
 				_dstBlendState.blendAlphaSrc != blendState.blendAlphaSrc ||
 				_dstBlendState.blendAlphaDest != blendState.blendAlphaDest)
 			{
-				GLenum sfactorRGB = EGL3Types::asBlendFactor(blendState.blendSrc);
-				GLenum dfactorRGB = EGL3Types::asBlendFactor(blendState.blendDest);
-				GLenum sfactorAlpha = EGL3Types::asBlendFactor(blendState.blendAlphaSrc);
-				GLenum dfactorAlpha = EGL3Types::asBlendFactor(blendState.blendAlphaDest);
+				GLenum sfactorRGB = EGL2Types::asBlendFactor(blendState.blendSrc);
+				GLenum dfactorRGB = EGL2Types::asBlendFactor(blendState.blendDest);
+				GLenum sfactorAlpha = EGL2Types::asBlendFactor(blendState.blendAlphaSrc);
+				GLenum dfactorAlpha = EGL2Types::asBlendFactor(blendState.blendAlphaDest);
 
 				glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
 			}
@@ -79,8 +79,8 @@ EGL3RenderState::apply(const RenderState& _stateCaptured) noexcept
 			if (_dstBlendState.blendOp != blendState.blendOp ||
 				_dstBlendState.blendAlphaOp != blendState.blendAlphaOp)
 			{
-				GLenum modeRGB = EGL3Types::asBlendOperation(blendState.blendOp);
-				GLenum modeAlpha = EGL3Types::asBlendOperation(blendState.blendAlphaOp);
+				GLenum modeRGB = EGL2Types::asBlendOperation(blendState.blendOp);
+				GLenum modeAlpha = EGL2Types::asBlendOperation(blendState.blendAlphaOp);
 
 				glBlendEquationSeparate(modeRGB, modeAlpha);
 			}
@@ -90,15 +90,15 @@ EGL3RenderState::apply(const RenderState& _stateCaptured) noexcept
 			if (_dstBlendState.blendSrc != blendState.blendSrc ||
 				_dstBlendState.blendDest != blendState.blendDest)
 			{
-				GLenum sfactorRGB = EGL3Types::asBlendFactor(blendState.blendSrc);
-				GLenum dfactorRGB = EGL3Types::asBlendFactor(blendState.blendDest);
+				GLenum sfactorRGB = EGL2Types::asBlendFactor(blendState.blendSrc);
+				GLenum dfactorRGB = EGL2Types::asBlendFactor(blendState.blendDest);
 
 				glBlendFunc(sfactorRGB, dfactorRGB);
 			}
 
 			if (_dstBlendState.blendOp != blendState.blendOp)
 			{
-				GLenum modeRGB = EGL3Types::asBlendOperation(blendState.blendOp);
+				GLenum modeRGB = EGL2Types::asBlendOperation(blendState.blendOp);
 				glBlendEquation(modeRGB);
 			}
 		}
@@ -115,7 +115,7 @@ EGL3RenderState::apply(const RenderState& _stateCaptured) noexcept
 	{
 		if (rasterState.cullMode != GPU_CULL_NONE)
 		{
-			GLenum mode = EGL3Types::asCullMode(rasterState.cullMode);
+			GLenum mode = EGL2Types::asCullMode(rasterState.cullMode);
 			glEnable(GL_CULL_FACE);
 			glCullFace(mode);
 		}
@@ -150,7 +150,7 @@ EGL3RenderState::apply(const RenderState& _stateCaptured) noexcept
 
 		if (_dstDepthState.depthFunc != depthState.depthFunc)
 		{
-			GLenum func = EGL3Types::asCompareFunction(depthState.depthFunc);
+			GLenum func = EGL2Types::asCompareFunction(depthState.depthFunc);
 			glDepthFunc(func);
 		}
 	}
@@ -202,10 +202,10 @@ EGL3RenderState::apply(const RenderState& _stateCaptured) noexcept
 				_dstStencilState.stencilRef != stencilState.stencilRef ||
 				_dstStencilState.stencilReadMask != stencilState.stencilReadMask)
 			{
-				GLenum frontfunc = EGL3Types::asCompareFunction(stencilState.stencilFunc);
+				GLenum frontfunc = EGL2Types::asCompareFunction(stencilState.stencilFunc);
 				glStencilFuncSeparate(GL_FRONT, frontfunc, stencilState.stencilRef, stencilState.stencilReadMask);
 
-				GLenum backfunc = EGL3Types::asCompareFunction(stencilState.stencilTwoFunc);
+				GLenum backfunc = EGL2Types::asCompareFunction(stencilState.stencilTwoFunc);
 				glStencilFuncSeparate(GL_BACK, backfunc, stencilState.stencilRef, stencilState.stencilTwoReadMask);
 			}
 
@@ -213,14 +213,14 @@ EGL3RenderState::apply(const RenderState& _stateCaptured) noexcept
 				_dstStencilState.stencilZFail != _dstStencilState.stencilZFail ||
 				_dstStencilState.stencilPass != _dstStencilState.stencilPass)
 			{
-				GLenum frontfail = EGL3Types::asStencilOperation(_dstStencilState.stencilFail);
-				GLenum frontzfail = EGL3Types::asStencilOperation(_dstStencilState.stencilZFail);
-				GLenum frontpass = EGL3Types::asStencilOperation(_dstStencilState.stencilPass);
+				GLenum frontfail = EGL2Types::asStencilOperation(_dstStencilState.stencilFail);
+				GLenum frontzfail = EGL2Types::asStencilOperation(_dstStencilState.stencilZFail);
+				GLenum frontpass = EGL2Types::asStencilOperation(_dstStencilState.stencilPass);
 				glStencilOpSeparate(GL_FRONT, frontfail, frontzfail, frontpass);
 
-				GLenum backfail = EGL3Types::asStencilOperation(_dstStencilState.stencilTwoFail);
-				GLenum backzfail = EGL3Types::asStencilOperation(_dstStencilState.stencilTwoZFail);
-				GLenum backpass = EGL3Types::asStencilOperation(_dstStencilState.stencilTwoPass);
+				GLenum backfail = EGL2Types::asStencilOperation(_dstStencilState.stencilTwoFail);
+				GLenum backzfail = EGL2Types::asStencilOperation(_dstStencilState.stencilTwoZFail);
+				GLenum backpass = EGL2Types::asStencilOperation(_dstStencilState.stencilTwoPass);
 				glStencilOpSeparate(GL_BACK, backfail, backzfail, backpass);
 			}
 
@@ -237,7 +237,7 @@ EGL3RenderState::apply(const RenderState& _stateCaptured) noexcept
 				_dstStencilState.stencilRef != stencilState.stencilRef ||
 				_dstStencilState.stencilReadMask != stencilState.stencilReadMask)
 			{
-				GLenum func = EGL3Types::asCompareFunction(stencilState.stencilFunc);
+				GLenum func = EGL2Types::asCompareFunction(stencilState.stencilFunc);
 				glStencilFunc(func, stencilState.stencilRef, stencilState.stencilReadMask);
 			}
 
@@ -245,9 +245,9 @@ EGL3RenderState::apply(const RenderState& _stateCaptured) noexcept
 				_dstStencilState.stencilZFail != stencilState.stencilZFail ||
 				_dstStencilState.stencilPass != stencilState.stencilPass)
 			{
-				GLenum fail = EGL3Types::asStencilOperation(stencilState.stencilFail);
-				GLenum zfail = EGL3Types::asStencilOperation(stencilState.stencilZFail);
-				GLenum pass = EGL3Types::asStencilOperation(stencilState.stencilPass);
+				GLenum fail = EGL2Types::asStencilOperation(stencilState.stencilFail);
+				GLenum zfail = EGL2Types::asStencilOperation(stencilState.stencilZFail);
+				GLenum pass = EGL2Types::asStencilOperation(stencilState.stencilPass);
 				glStencilOp(fail, zfail, pass);
 			}
 

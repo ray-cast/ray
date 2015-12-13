@@ -113,9 +113,12 @@ private:
 	void* _data;
 };
 
-class EXPORT TextureSample
+class EXPORT TextureSampler
 {
 public:
+	TextureSampler() noexcept;
+	virtual ~TextureSampler() noexcept;
+
 	void setTexWrap(TextureWrap wrap) noexcept;
 	void setTexFilter(TextureFilter filter) noexcept;
 	void setAnisotropy(Anisotropy anis) noexcept;

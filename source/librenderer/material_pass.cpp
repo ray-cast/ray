@@ -48,6 +48,7 @@ MaterialPass::MaterialPass(RenderPass pass) noexcept
 
 MaterialPass::~MaterialPass() noexcept
 {
+	this->close();
 }
 
 void 
@@ -62,13 +63,12 @@ MaterialPass::setup(Material& material) except
 
 	if (_shaderObject->setup())
 	{
-		auto uniforms = _shaderObject->getActiveUniforms();
+		auto& uniforms = _shaderObject->getActiveUniforms();
 		for (auto& uniform : uniforms)
 		{
 			auto param = material.getParameter(uniform->getName());
 			if (param)
 			{
-				uniform->setValue(param);
 				param->addShaderUniform(uniform);
 				_parameters.push_back(param);
 			}
@@ -92,7 +92,16 @@ MaterialPass::close() noexcept
 		}
 
 		_shaderObject->close();
+		_shaderObject = nullptr;
 	}
+
+	if (_renderState)
+	{
+		_renderState->close();
+		_renderState = nullptr;
+	}
+
+	_parameters.clear();
 }
 
 void

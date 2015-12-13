@@ -34,23 +34,92 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_EGL3_STATE_H_
-#define _H_EGL3_STATE_H_
+#ifndef _H_EGL3_TEXTURE_H_
+#define _H_EGL3_TEXTURE_H_
 
-#include "egl_canvas.h"
+#include "egl3_canvas.h"
 
 _NAME_BEGIN
 
-class EGL3RenderState : public RenderState
+class EGL3TextureSampler final : public TextureSampler
 {
 public:
-	EGL3RenderState() noexcept;
-	~EGL3RenderState() noexcept;
+	EGL3TextureSampler() noexcept;
+	~EGL3TextureSampler() noexcept;
 
-	virtual void apply(const RenderState& last) noexcept;
+	bool setup() except;
+	void close() noexcept;
+
+	GLuint getInstanceID() noexcept;
 private:
-	EGL3RenderState(const EGL3RenderState&) = delete;
-	EGL3RenderState& operator=(const EGL3RenderState&) = delete;
+
+	GLuint _sampler;
+};
+
+class EGL3Texture final : public Texture
+{
+public:
+	EGL3Texture() noexcept;
+	~EGL3Texture() noexcept;
+
+	bool setup() except;
+	void close() noexcept;
+
+	GLuint getInstanceID() noexcept;
+
+private:
+
+	static void applyTextureWrap(GLenum, TextureWrap wrap) noexcept;
+	static void applyTextureFilter(GLenum target, TextureFilter filter) noexcept;
+	static void applyTextureAnis(GLenum target, Anisotropy anis) noexcept;
+
+private:
+
+	GLuint _texture;
+};
+
+class EGL3RenderTexture final : public RenderTexture
+{
+public:
+	EGL3RenderTexture() noexcept;
+	~EGL3RenderTexture() noexcept;
+
+	virtual bool setup(TexturePtr texture) except;
+	virtual void setup(std::size_t w, std::size_t h, TextureDim dim, TextureFormat format) except;
+	virtual void setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, TextureFormat format) except;
+	virtual void close() noexcept;
+
+	void setLayer(GLuint layer) noexcept;
+	GLuint getLayer() const noexcept;
+
+	GLuint getInstanceID() noexcept;
+
+private:
+	void bindRenderTexture(TexturePtr texture, GLenum attachment) noexcept;
+	void onSetRenderTextureAfter(RenderTexturePtr target) noexcept;
+
+private:
+	GLuint _fbo;
+	GLuint _layer;
+};
+
+class EGL3MultiRenderTexture final : public MultiRenderTexture
+{
+public:
+	EGL3MultiRenderTexture() noexcept;
+	~EGL3MultiRenderTexture() noexcept;
+
+	virtual bool setup() noexcept;
+	virtual void close() noexcept;
+
+	GLuint getInstanceID() noexcept;
+
+private:
+	void bindRenderTexture(RenderTexturePtr target, GLenum attachment) noexcept;
+
+private:
+
+	GLuint _fbo;
 };
 
 _NAME_END

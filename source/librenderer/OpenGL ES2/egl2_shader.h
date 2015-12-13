@@ -34,68 +34,30 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MATERIAL_PARAM_H_
-#define _H_MATERIAL_PARAM_H_
+#ifndef _H_EGL2_SHADER_H_
+#define _H_EGL2_SHADER_H_
 
-#include <ray/material_fwd.h>
+#include "egl2_canvas.h"
 
 _NAME_BEGIN
 
-enum MaterialSemantic
-{
-	NotSemantic = -1,
-
-	matModel,
-	matModelInverse,
-	matModelInverseTranspose,
-
-	matProject,
-	matProjectInverse,
-
-	matView,
-	matViewInverse,
-	matViewInverseTranspose,
-
-	matViewProject,
-	matViewProjectInverse,
-
-	CameraAperture,
-	CameraNear,
-	CameraFar,
-	CameraView,
-	CameraPosition,
-	CameraDirection,
-
-	DepthMap,
-	ColorMap,
-	NormalMap,
-
-	DeferredDepthMap,
-	DeferredDepthLinearMap,
-	DeferredGraphicMap,
-	DeferredNormalMap,
-	DeferredLightMap,
-	DeferredShadowMap,
-
-	NumSemantic
-};
-
-class EXPORT MaterialParamSemantic final
+class EGLShaderVariant final : public ShaderVariant
 {
 public:
-	MaterialParamSemantic(const std::string& name, ShaderVariantType type, MaterialSemantic semantic = MaterialSemantic::NotSemantic) noexcept;
-	~MaterialParamSemantic() noexcept;
+	EGLShaderVariant() noexcept;
+	virtual ~EGLShaderVariant() noexcept;
 
-	void setName(const std::string& name) noexcept;
-	const std::string& getName() const noexcept;
+	void setLocation(GLint location) noexcept;
+	GLint getLocation() const noexcept;
 
-	void setSemantic(MaterialSemantic semantic) noexcept;
-	MaterialSemantic getSemantic() const noexcept;
+	void setBindingPoint(GLint unit) noexcept;
+	GLint getBindingPoint() const noexcept;
+
+	void setBindingProgram(GLuint program) noexcept;
+	GLuint getBindingProgram() const noexcept;
 
 	void setType(ShaderVariantType type) noexcept;
 	ShaderVariantType getType() const noexcept;
-
-	std::size_t getSize() const noexcept;
 
 	void assign(bool value) noexcept;
 	void assign(int value) noexcept;
@@ -110,12 +72,12 @@ public:
 	void assign(const std::vector<float2>& value) noexcept;
 	void assign(const std::vector<float3>& value) noexcept;
 	void assign(const std::vector<float4>& value) noexcept;
-	void assign(TexturePtr texture, TextureSamplerPtr sampler = nullptr) noexcept;
+	void assign(TexturePtr texture, TextureSamplerPtr sampler) noexcept;
 
 	bool getBool() const noexcept;
 	int getInt() const noexcept;
-	const int2& getInt2() const noexcept;
 	float getFloat() const noexcept;
+	const int2& getInt2() const noexcept;
 	const float2& getFloat2() const noexcept;
 	const float3& getFloat3() const noexcept;
 	const float4& getFloat4() const noexcept;
@@ -123,16 +85,17 @@ public:
 	const float4x4& getFloat4x4() const noexcept;
 	const std::vector<float>& getFloatArray() const noexcept;
 	const std::vector<float2>& getFloat2Array() const noexcept;
-	const std::vector<float3>& getFloat3Array() const noexcept;
-	const std::vector<float4>& getFloat4Array() const noexcept;
+
 	TexturePtr getTexture() const noexcept;
-	TextureSamplerPtr getTextureSampler() const noexcept;
+	TextureSamplerPtr getSampler() const noexcept;
+
+private:
+	EGLShaderVariant(const EGLShaderVariant&) noexcept = delete;
+	EGLShaderVariant& operator=(const EGLShaderVariant&) noexcept = delete;
 
 private:
 
 	std::string _name;
-
-	MaterialSemantic _semantic;
 
 	TexturePtr _texture;
 	TextureSamplerPtr _textureSampler;
@@ -153,53 +116,107 @@ private:
 	ShaderVariantType _type;
 
 	ShaderVariants _params;
+
+	GLint _location;
+	GLint  _bindingPoint;
+	GLuint _bindingProgram;
+	GLenum _target;
 };
 
-class EXPORT MaterialParam final
+class EGLShaderUniform final : public ShaderUniform
 {
 public:
-	MaterialParam() noexcept;
-	MaterialParam(const std::string& name, ShaderVariantType type, MaterialSemantic semantic = MaterialSemantic::NotSemantic) noexcept;
-	virtual ~MaterialParam() noexcept;
+	EGLShaderUniform() noexcept;
+	~EGLShaderUniform() noexcept;
 
 	void setName(const std::string& name) noexcept;
-	const std::string& getName() const noexcept;
-
 	void setType(ShaderVariantType type) noexcept;
-	ShaderVariantType getType() const noexcept;
 
-	void assign(bool value) noexcept;
-	void assign(int value) noexcept;
-	void assign(const int2& value) noexcept;
-	void assign(float value) noexcept;
-	void assign(const float2& value) noexcept;
-	void assign(const float3& value) noexcept;
-	void assign(const float4& value) noexcept;
-	void assign(const float3x3& value) noexcept;
-	void assign(const float4x4& value) noexcept;
-	void assign(const std::vector<float>& value) noexcept;
-	void assign(const std::vector<float2>& value) noexcept;
-	void assign(const std::vector<float3>& value) noexcept;
-	void assign(const std::vector<float4>& value) noexcept;
-	void assign(TexturePtr texture, TextureSamplerPtr sampler = nullptr) noexcept;
+	void setLocation(GLint location) noexcept;
+	GLint getLocation() const noexcept;
 
-	void setSemantic(MaterialSemantic semantic) noexcept;
-	MaterialSemantic getSemantic() const noexcept;
+	void setBindingPoint(GLint unit) noexcept;
+	GLint getBindingPoint() const noexcept;
 
-	void addShaderUniform(ShaderUniformPtr& uniform) noexcept;
-	void removeShaderUniform(ShaderUniformPtr& uniform) noexcept;
+	void setBindingProgram(GLuint program) noexcept;
+	GLuint getBindingProgram() const noexcept;
 
-private:
-	MaterialParam(const MaterialParam&) = delete;
-	MaterialParam& operator=(const MaterialParam&) = delete;
+	bool getBool() const noexcept;
+	int getInt() const noexcept;
+	float getFloat() const noexcept;
+	const int2& getInt2() const noexcept;
+	const float2& getFloat2() const noexcept;
+	const float3& getFloat3() const noexcept;
+	const float4& getFloat4() const noexcept;
+	const float3x3& getFloat3x3() const noexcept;
+	const float4x4& getFloat4x4() const noexcept;
+	const std::vector<float>& getFloatArray() const noexcept;
+	const std::vector<float2>& getFloat2Array() const noexcept;
+
+	TexturePtr getTexture() const noexcept;
+	TextureSamplerPtr getSampler() const noexcept;
 
 private:
+	EGLShaderUniform(const EGLShaderUniform&) noexcept = delete;
+	EGLShaderUniform& operator=(const EGLShaderUniform&) noexcept = delete;
 
-	std::string _name;
-	ShaderVariantType _type;
-	MaterialSemantic _semantic;
+private:
+	EGLShaderVariant _value;
+};
 
-	ShaderUniforms _uniforms;
+class EGL2Shader final : public Shader
+{
+public:
+	EGL2Shader() noexcept;
+	~EGL2Shader() noexcept;
+
+	virtual bool setup() except;
+	virtual void close() noexcept;
+
+	virtual std::size_t getInstanceID() const noexcept;
+
+private:
+	GLuint _instance;
+};
+
+class EGL2ShaderObject final : public ShaderObject
+{
+public:
+	EGL2ShaderObject() noexcept;
+	~EGL2ShaderObject() noexcept;
+
+	bool setup() except;
+	void close() noexcept;
+
+	void setActive(bool active) noexcept;
+	bool getActive() noexcept;
+
+	void addShader(ShaderPtr shader) noexcept;
+	void removeShader(ShaderPtr shader) noexcept;
+
+	const Shaders& getShaders() const noexcept;
+
+	std::size_t getInstanceID() noexcept;
+
+	ShaderUniforms& getActiveUniforms() noexcept;
+	ShaderAttributes& getActiveAttributes() noexcept;
+
+private:
+	void _initActiveAttribute() noexcept;
+	void _initActiveUniform() noexcept;
+
+	void _updateShaderUniform(ShaderUniformPtr uniform) noexcept;
+
+private:
+
+	bool _isActive;
+
+	GLuint _program;
+
+	Shaders _shaders;
+
+	ShaderUniforms    _activeUniforms;
+	ShaderAttributes  _activeAttributes;
 };
 
 _NAME_END

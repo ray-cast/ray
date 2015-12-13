@@ -37,9 +37,84 @@
 #ifndef _H_EGL3_SHADER_H_
 #define _H_EGL3_SHADER_H_
 
-#include "egl_canvas.h"
+#include "egl3_canvas.h"
 
 _NAME_BEGIN
+
+class EGLShaderVariant final : public ShaderVariant
+{
+public:
+	EGLShaderVariant() noexcept;
+	virtual ~EGLShaderVariant() noexcept;
+
+	void setLocation(GLint location) noexcept;
+	GLint getLocation() const noexcept;
+
+	void setBindingPoint(GLint unit) noexcept;
+	GLint getBindingPoint() const noexcept;
+
+	void setBindingProgram(GLuint program) noexcept;
+	GLuint getBindingProgram() const noexcept;
+
+	void assign(bool value) noexcept;
+	void assign(int value) noexcept;
+	void assign(const int2& value) noexcept;
+	void assign(float value) noexcept;
+	void assign(const float2& value) noexcept;
+	void assign(const float3& value) noexcept;
+	void assign(const float4& value) noexcept;
+	void assign(const float3x3& value) noexcept;
+	void assign(const float4x4& value) noexcept;
+	void assign(const std::vector<float>& value) noexcept;
+	void assign(const std::vector<float2>& value) noexcept;
+	void assign(const std::vector<float3>& value) noexcept;
+	void assign(const std::vector<float4>& value) noexcept;
+	void assign(TexturePtr texture, TextureSamplerPtr sampler) noexcept;
+
+	TexturePtr getTexture() const noexcept;
+	TextureSamplerPtr getSampler() const noexcept;
+
+private:
+	EGLShaderVariant(const EGLShaderVariant&) noexcept = delete;
+	EGLShaderVariant& operator=(const EGLShaderVariant&) noexcept = delete;
+
+private:
+	GLint _location;
+	GLint  _bindingPoint;
+	GLuint _bindingProgram;
+	GLenum _target;
+	TexturePtr _texture;
+	TextureSamplerPtr _sampler;
+};
+
+class EGLShaderUniform final : public ShaderUniform
+{
+public:
+	EGLShaderUniform() noexcept;
+	~EGLShaderUniform() noexcept;
+
+	void setName(const std::string& name) noexcept;
+	void setType(ShaderVariantType type) noexcept;
+
+	void setLocation(GLint location) noexcept;
+	GLint getLocation() const noexcept;
+
+	void setBindingPoint(GLint unit) noexcept;
+	GLint getBindingPoint() const noexcept;
+
+	void setBindingProgram(GLuint program) noexcept;
+	GLuint getBindingProgram() const noexcept;
+
+	TexturePtr getTexture() const noexcept;
+	TextureSamplerPtr getSampler() const noexcept;
+
+private:
+	EGLShaderUniform(const EGLShaderUniform&) noexcept = delete;
+	EGLShaderUniform& operator=(const EGLShaderUniform&) noexcept = delete;
+
+private:
+	EGLShaderVariant _value;
+};
 
 class EGL3Shader final : public Shader
 {
@@ -53,7 +128,6 @@ public:
 	virtual std::size_t getInstanceID() const noexcept;
 
 private:
-
 	GLuint _instance;
 };
 
@@ -63,26 +137,30 @@ public:
 	EGL3ShaderObject() noexcept;
 	~EGL3ShaderObject() noexcept;
 
-	virtual bool setup() except;
-	virtual void close() noexcept;
+	bool setup() except;
+	void close() noexcept;
 
-	virtual void addShader(ShaderPtr shader) noexcept;
-	virtual void removeShader(ShaderPtr shader) noexcept;
+	void setActive(bool active) noexcept;
+	bool getActive() noexcept;
 
-	virtual Shaders& getShaders() noexcept;
+	void addShader(ShaderPtr shader) noexcept;
+	void removeShader(ShaderPtr shader) noexcept;
 
-	virtual std::size_t getInstanceID() noexcept;
+	const Shaders& getShaders() const noexcept;
 
-	virtual ShaderAttributes&  getActiveAttributes() noexcept;
-	virtual ShaderUniforms&    getActiveUniforms() noexcept;
+	std::size_t getInstanceID() noexcept;
+
+	ShaderUniforms& getActiveUniforms() noexcept;
+	ShaderAttributes& getActiveAttributes() noexcept;
 
 private:
-
 	void _initActiveAttribute() noexcept;
 	void _initActiveUniform() noexcept;
 	void _initActiveUniformBlock() noexcept;
 
 private:
+
+	bool _isActive;
 
 	GLuint _program;
 

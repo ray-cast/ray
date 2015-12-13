@@ -34,18 +34,18 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_EGL3_BUFFER_H_
-#define _H_EGL3_BUFFER_H_
+#ifndef _H_EGL2_BUFFER_H_
+#define _H_EGL2_BUFFER_H_
 
-#include "egl_canvas.h"
+#include "egl2_canvas.h"
 
 _NAME_BEGIN
 
-class EGL3BufferData : public RenderBufferData
+class EGL2BufferData : public GraphicsData
 {
 public:
-	EGL3BufferData() noexcept;
-	~EGL3BufferData() noexcept;
+	EGL2BufferData() noexcept;
+	~EGL2BufferData() noexcept;
 
 	bool open(StreamType type, std::uint32_t usage, const char* data, streamsize datasize) noexcept;
 	void close() noexcept;
@@ -57,6 +57,7 @@ public:
 	void resize(const char* data, streamsize datasize) noexcept;
 
 	int flush() noexcept;
+	int flush(ios_base::off_type offset, streamsize cnt) noexcept;
 
 	streamsize read(char* data, streamsize cnt) noexcept;
 	streamsize write(const char* data, streamsize cnt) noexcept;
@@ -65,6 +66,7 @@ public:
 	streamoff tellg() noexcept;
 
 	const char* map(std::uint32_t access) noexcept;
+	const char* map(ios_base::off_type offset, streamsize cnt, std::uint32_t access) noexcept;
 	void unmap() noexcept;
 	bool isMapping() const noexcept;
 
@@ -83,11 +85,11 @@ private:
 	std::uint32_t _usage;
 };
 
-class EGL3VertexBuffer final : public VertexBufferData
+class EGL2VertexBuffer final : public VertexBufferData
 {
 public:
-	EGL3VertexBuffer() noexcept;
-	~EGL3VertexBuffer() noexcept;
+	EGL2VertexBuffer() noexcept;
+	~EGL2VertexBuffer() noexcept;
 
 	void open(const VertexLayout& layout, std::uint32_t usage, const char* data, streamsize count) noexcept;
 	void close() noexcept;
@@ -103,14 +105,14 @@ public:
 
 private:
 	VertexLayout  _vertexLayout;
-	EGL3BufferData _vertexData;
+	EGL2BufferData _vertexData;
 };
 
-class EGL3IndexBuffer final : public IndexBufferData
+class EGL2IndexBuffer final : public IndexBufferData
 {
 public:
-	EGL3IndexBuffer() noexcept;
-	~EGL3IndexBuffer() noexcept;
+	EGL2IndexBuffer() noexcept;
+	~EGL2IndexBuffer() noexcept;
 
 	void open(IndexType type, std::uint32_t usage, const char* data, streamsize datasize) noexcept;
 	void close() noexcept;
@@ -127,24 +129,30 @@ public:
 private:
 	IndexType     _indexType;
 	std::uint8_t  _indexSize;
-	EGL3BufferData _indexData;
+	EGL2BufferData _indexData;
 };
 
-class EGL3RenderBuffer final : public RenderBuffer
+class EGL2RenderBuffer final : public RenderBuffer
 {
 public:
-	EGL3RenderBuffer() noexcept;
-	~EGL3RenderBuffer() noexcept;
+	EGL2RenderBuffer() noexcept;
+	~EGL2RenderBuffer() noexcept;
 
 	void setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) except;
 	void close() noexcept;
+
+	std::size_t getNumVertices() const noexcept;
+	std::size_t getNumIndices() const noexcept;
+
+	VertexBufferDataPtr getVertexBuffer() const noexcept;
+	IndexBufferDataPtr getIndexBuffer() const noexcept;
 
 	void apply() noexcept;
 
 private:
 
-	std::shared_ptr<EGL3VertexBuffer> _vb;
-	std::shared_ptr<EGL3IndexBuffer> _ib;
+	EGL2VertexBufferPtr _vb;
+	EGL2IndexBufferPtr _ib;
 };
 
 _NAME_END

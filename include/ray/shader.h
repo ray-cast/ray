@@ -45,25 +45,58 @@ class EXPORT ShaderVariant
 {
 public:
 	ShaderVariant() noexcept;
-	ShaderVariant(const std::string& name, float value) noexcept;
-	ShaderVariant(const std::string& name, const float3& value) noexcept;
-	ShaderVariant(const std::string& name, const float4& value) noexcept;
-	ShaderVariant(const std::string& name, const float4x4& value) noexcept;
-	ShaderVariant(const std::string& name, ShaderVariantType type) noexcept;
-	~ShaderVariant() noexcept;
+	virtual ~ShaderVariant() noexcept;
+
+	virtual void assign(bool value) noexcept = 0;
+	virtual void assign(int value) noexcept = 0;
+	virtual void assign(const int2& value) noexcept = 0;
+	virtual void assign(float value) noexcept = 0;
+	virtual void assign(const float2& value) noexcept = 0;
+	virtual void assign(const float3& value) noexcept = 0;
+	virtual void assign(const float4& value) noexcept = 0;
+	virtual void assign(const float3x3& value) noexcept = 0;
+	virtual void assign(const float4x4& value) noexcept = 0;
+	virtual void assign(const std::vector<float>& value) noexcept = 0;
+	virtual void assign(const std::vector<float2>& value) noexcept = 0;
+	virtual void assign(const std::vector<float3>& value) noexcept = 0;
+	virtual void assign(const std::vector<float4>& value) noexcept = 0;
+	virtual void assign(TexturePtr texture, TextureSamplerPtr sampler) noexcept = 0;
+
+private:
+	ShaderVariant(const ShaderVariant&) noexcept = delete;
+	ShaderVariant& operator=(const ShaderVariant&) noexcept = delete;
+};
+
+class EXPORT ShaderParameter
+{
+public:
+	ShaderParameter() noexcept;
+	virtual ~ShaderParameter() noexcept;
 
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 
-	void setType(ShaderVariantType type) noexcept;
+	void needUpdate(bool update) noexcept;
+	bool needUpdate() const noexcept;
+
+private:
+	bool _needUpdate;
+
+	std::string _name;
+};
+
+class EXPORT ShaderAttribute final : public ShaderParameter
+{
+};
+
+class EXPORT ShaderUniform : public ShaderParameter
+{
+public:
+	ShaderUniform(ShaderVariant* value) noexcept;
+	virtual ~ShaderUniform() noexcept;
+
+	const std::string& getName() const noexcept;
 	ShaderVariantType getType() const noexcept;
-
-	void addParameter(ShaderVariantPtr arg) noexcept;
-	void removeParameter(ShaderVariantPtr arg) noexcept;
-	ShaderVariantPtr getParameter(const std::string& name) const noexcept;
-	const ShaderVariants& getParameters() const noexcept;
-
-	std::size_t getSize() const noexcept;
 
 	void assign(bool value) noexcept;
 	void assign(int value) noexcept;
@@ -78,109 +111,20 @@ public:
 	void assign(const std::vector<float2>& value) noexcept;
 	void assign(const std::vector<float3>& value) noexcept;
 	void assign(const std::vector<float4>& value) noexcept;
-	void assign(TexturePtr texture, TextureSamplePtr sample = nullptr) noexcept;
-
-	bool getBool() const noexcept;
-	int getInt() const noexcept;
-	const int2& getInt2() const noexcept;
-	float getFloat() const noexcept;
-	const float2& getFloat2() const noexcept;
-	const float3& getFloat3() const noexcept;
-	const float4& getFloat4() const noexcept;
-	const float3x3& getFloat3x3() const noexcept;
-	const float4x4& getFloat4x4() const noexcept;
-	const std::vector<float>& getFloatArray() const noexcept;
-	const std::vector<float2>& getFloat2Array() const noexcept;
-	const std::vector<float3>& getFloat3Array() const noexcept;
-	const std::vector<float4>& getFloat4Array() const noexcept;
-	TexturePtr getTexture() const noexcept;
-	TextureSamplePtr getTextureSample() const noexcept;
+	void assign(TexturePtr texture, TextureSamplerPtr sample = nullptr) noexcept;
 
 protected:
-
-	virtual void onChangeBefore() noexcept;
-	virtual void onChangeAfter() noexcept;
-
-private:
-
-	std::string _name;
-
-	TexturePtr _texture;
-	TextureSamplePtr _textureSample;
-
-	union
-	{
-		bool b;
-		int i[4];
-		float f[4];
-		float3x3* m3;
-		float4x4* m4;
-		std::vector<float>* farray;
-		std::vector<float2>* farray2;
-		std::vector<float3>* farray3;
-		std::vector<float4>* farray4;
-	} _value;
-
-	ShaderVariantType _type;
-
-	ShaderVariants _params;
-};
-
-class EXPORT ShaderParameter
-{
-public:
-	ShaderParameter() noexcept;
-	virtual ~ShaderParameter() noexcept;
-
 	void setName(const std::string& name) noexcept;
-	const std::string& getName() const noexcept;
-
-	void setLocation(std::size_t location) noexcept;
-	std::size_t getLocation() const noexcept;
-
-	void setBindingPoint(std::size_t unit) noexcept;
-	std::size_t getBindingPoint() const noexcept;
-
-	void setBindingProgram(std::size_t program) noexcept;
-	std::size_t getBindingProgram() const noexcept;
-
-	void needUpdate(bool update) noexcept;
-	bool needUpdate() const noexcept;
+	void setType(ShaderVariantType type) noexcept;
 
 private:
-	bool _needUpdate;
+	ShaderUniform(const ShaderUniform&) noexcept = delete;
+	ShaderUniform& operator=(const ShaderUniform&) noexcept = delete;
 
+private:
 	std::string _name;
-	std::size_t _location;
-	std::size_t _bindingPoint;
-	std::size_t _bindingProgram;
-};
-
-class EXPORT ShaderAttribute final : public ShaderParameter
-{
-};
-
-class EXPORT ShaderSubroutine final : public ShaderParameter
-{
-public:
-};
-
-class EXPORT ShaderUniform final : public ShaderParameter
-{
-public:
-	ShaderUniform() noexcept;
-	~ShaderUniform() noexcept;
-
-	void setType(ShaderVariantType buffer) noexcept;
-	ShaderVariantType getType() const noexcept;
-
-	void setValue(ShaderVariantPtr buffer) noexcept;
-	ShaderVariantPtr getValue() const noexcept;
-
-public:
-
 	ShaderVariantType _type;
-	ShaderVariantPtr _value;
+	ShaderVariant* _value;
 };
 
 class EXPORT Shader
@@ -203,14 +147,11 @@ public:
 	virtual void setSource(const std::string& source) noexcept;
 	virtual const std::string& getSource() const noexcept;
 
-	virtual std::size_t getInstanceID() const noexcept = 0;
-
 private:
 	Shader(const Shader&) noexcept = delete;
 	Shader& operator=(const Shader&) noexcept = delete;
 
 private:
-
 	ShaderType _type;
 	std::string _source;
 };
@@ -224,15 +165,20 @@ public:
 	virtual bool setup() except = 0;
 	virtual void close() noexcept = 0;
 
-	virtual void addShader(ShaderPtr shader) except = 0;
+	virtual void setActive(bool active) noexcept = 0;
+	virtual bool getActive() noexcept = 0;
+
+	virtual void addShader(ShaderPtr shader) noexcept = 0;
 	virtual void removeShader(ShaderPtr shader) noexcept = 0;
 
-	virtual Shaders& getShaders() noexcept = 0;
+	virtual const Shaders& getShaders() const noexcept = 0;
 
-	virtual std::size_t getInstanceID() noexcept = 0;
+	virtual ShaderUniforms& getActiveUniforms() noexcept = 0;
+	virtual ShaderAttributes& getActiveAttributes() noexcept = 0;
 
-	virtual ShaderAttributes&  getActiveAttributes() noexcept = 0;
-	virtual ShaderUniforms&    getActiveUniforms() noexcept = 0;
+private:
+	ShaderObject(const ShaderObject&) noexcept = delete;
+	ShaderObject& operator=(const ShaderObject&) noexcept = delete;
 };
 
 _NAME_END

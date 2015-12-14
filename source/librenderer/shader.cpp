@@ -89,18 +89,6 @@ ShaderUniform::~ShaderUniform() noexcept
 }
 
 void
-ShaderUniform::setName(const std::string& name) noexcept
-{
-	_name = name;
-}
-
-const std::string&
-ShaderUniform::getName() const noexcept
-{
-	return _name;
-}
-
-void
 ShaderUniform::setType(ShaderVariantType type) noexcept
 {
 	_type = type;
@@ -201,13 +189,6 @@ ShaderUniform::assign(const std::vector<float4>& value) noexcept
 {
 	assert(_value);
 	_value->assign(value);
-}
-
-void
-ShaderUniform::assign(TexturePtr texture, TextureSamplerPtr sample) noexcept
-{
-	assert(_value);
-	_value->assign(texture, sample);
 }
 
 Shader::Shader() noexcept

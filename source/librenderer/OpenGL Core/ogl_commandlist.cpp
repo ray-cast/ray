@@ -34,8 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifdef _BUILD_OPENGL
-#include <ray/ogl_commandlist.h>
+#include "ogl_commandlist.h"
 
 _NAME_BEGIN
 
@@ -90,5 +89,3 @@ EXPORT bool initCommandListNV() noexcept
 }
 
 _NAME_END
-
-#endif

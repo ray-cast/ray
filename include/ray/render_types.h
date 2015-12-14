@@ -362,7 +362,8 @@ public:
 	enum
 	{
 		MAP_READ_BIT = 1 << 0,
-		MAP_WRITE_BIT = 1 << 1
+		MAP_WRITE_BIT = 1 << 1,
+		MAP_UNSYNCHRONIZED_BIT = 1 << 2
 	};
 };
 

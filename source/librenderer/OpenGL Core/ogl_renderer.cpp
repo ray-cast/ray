@@ -34,18 +34,17 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/ogl_renderer.h>
-#include <ray/ogl_state.h>
-#include <ray/ogl_shader.h>
-#include <ray/ogl_texture.h>
-#include <ray/ogl_buffer.h>
-#include <ray/ogl_commandlist.h>
+#include "ogl_renderer.h"
+#include "ogl_state.h"
+#include "ogl_shader.h"
+#include "ogl_texture.h"
+#include "ogl_buffer.h"
+#include "ogl_commandlist.h"
 
 _NAME_BEGIN
 
 OGLRenderer::OGLRenderer() noexcept
 	: _initOpenGL(false)
-	, _constantBuffers(512)
 	, _maxTextureUnits(32)
 	, _maxViewports(4)
 	, _clearColor(0.0, 0.0, 0.0)
@@ -56,9 +55,7 @@ OGLRenderer::OGLRenderer() noexcept
 	, _defaultVAO(GL_NONE)
 	, _enableWireframe(false)
 {
-	_textureUnits.resize(_maxTextureUnits);
 	_viewport.resize(_maxViewports);
-
 	_stateCaptured = std::make_shared<OGLRenderState>();
 }
 
@@ -149,22 +146,11 @@ OGLRenderer::renderEnd() noexcept
 void
 OGLRenderer::setViewport(const Viewport& view, std::size_t i) noexcept
 {
-	OGLCheck::checkError();
-
 	if (_viewport[i] != view)
 	{
-#	if !defined(EGLAPI)
-		if (OGLFeatures::ARB_viewport_array)
-			glViewportIndexedf(i, view.left, view.top, view.width, view.height);
-		else
-			glViewport(view.left, view.top, view.width, view.height);
-#	else
-		glViewport(view.left, view.top, view.width, view.height);
-#	endif
+		glViewportIndexedf(i, view.left, view.top, view.width, view.height);
 		_viewport[i] = view;
 	}
-	
-	OGLCheck::checkError();
 }
 
 const Viewport&
@@ -179,13 +165,13 @@ OGLRenderer::setWireframeMode(bool enable) noexcept
 	_enableWireframe = enable;
 }
 
-bool 
+bool
 OGLRenderer::getWireframeMode() const noexcept
 {
 	return _enableWireframe;
 }
 
-RenderWindowPtr 
+RenderWindowPtr
 OGLRenderer::createRenderWindow() const noexcept
 {
 	return std::make_shared<OGLCanvas>();
@@ -194,8 +180,6 @@ OGLRenderer::createRenderWindow() const noexcept
 void
 OGLRenderer::setRenderWindow(RenderWindowPtr glcontext) except
 {
-	assert(glcontext);
-
 	if (_glcontext != glcontext)
 	{
 		if (_glcontext)
@@ -228,7 +212,7 @@ OGLRenderer::getSwapInterval() const noexcept
 	return _glcontext->getSwapInterval();
 }
 
-RenderStatePtr 
+RenderStatePtr
 OGLRenderer::createRenderState() noexcept
 {
 	return std::make_shared<OGLRenderState>();
@@ -247,8 +231,6 @@ OGLRenderer::setRenderState(RenderStatePtr state) noexcept
 	_stateCaptured->setStencilState(state->getStencilState());
 
 	_state = state;
-
-	OGLCheck::checkError();
 }
 
 RenderStatePtr
@@ -260,28 +242,19 @@ OGLRenderer::getRenderState() const noexcept
 RenderBufferPtr
 OGLRenderer::createRenderBuffer() noexcept
 {
-	OGLCheck::checkError();
-	auto result = std::make_shared<OGLRenderBuffer>();
-	OGLCheck::checkError();
-	return result;
+	return	std::make_shared<OGLRenderBuffer>();
 }
 
-IndexBufferDataPtr 
+IndexBufferDataPtr
 OGLRenderer::createIndexBufferData() noexcept
 {
-	OGLCheck::checkError();
-	auto result = std::make_shared<OGLIndexBuffer>();
-	OGLCheck::checkError();
-	return result;
+	return std::make_shared<OGLIndexBuffer>();
 }
 
-VertexBufferDataPtr 
+VertexBufferDataPtr
 OGLRenderer::createVertexBufferData() noexcept
 {
-	OGLCheck::checkError();
-	auto result = std::make_shared<OGLVertexBuffer>();
-	OGLCheck::checkError();
-	return result;
+	return std::make_shared<OGLVertexBuffer>();
 }
 
 void
@@ -293,44 +266,16 @@ OGLRenderer::setRenderBuffer(RenderBufferPtr buffer) noexcept
 			buffer->apply();
 		_renderBuffer = buffer;
 	}
-
-	OGLCheck::checkError();
 }
 
 void
 OGLRenderer::updateRenderBuffer(RenderBufferPtr renderBuffer) noexcept
 {
-	/*assert(renderBuffer);
-
-	auto vb = renderBuffer->getVertexBuffer();
-	auto ib = renderBuffer->getIndexBuffer();
-
-	if (vb)
-	{
-		auto vertexUsage = OGLTypes::asOGLVertexUsage(vb->getVertexUsage());
-		auto vertexCount = vb->getVertexCount();
-		auto vertexSize = vb->getVertexDataSize();
-
-		glBindBuffer(GL_ARRAY_BUFFER, vb->getInstanceID());
-		glBufferData(GL_ARRAY_BUFFER, vb->getVertexSize(), vb->data(), vertexUsage);
-	}
-
-	if (ib)
-	{
-		auto indexType = OGLTypes::asOGLIndexType(ib->getIndexType());
-		auto indexUsage = OGLTypes::asOGLVertexUsage(ib->getIndexUsage());
-		auto indexCount = ib->getIndexCount();
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->getInstanceID());
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, ib->getIndexDataSize(), ib->data(), indexUsage);
-	}*/
 }
 
 void
 OGLRenderer::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 {
-	OGLCheck::checkError();
-
 	assert(_renderBuffer && _stateCaptured);
 	assert(_renderBuffer->getNumVertices() >= renderable.startVertice + renderable.numVertices);
 	assert(_renderBuffer->getNumIndices() >= renderable.startIndice + renderable.numIndices);
@@ -346,43 +291,25 @@ OGLRenderer::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 			primitiveType = GPU_LINE;
 		}
 	}
-	
+
 	GLenum drawType = OGLTypes::asOGLVertexType(primitiveType);
 	auto ib = _renderBuffer->getIndexBuffer();
 	if (ib)
 	{
 		GLenum indexType = OGLTypes::asOGLIndexType(ib->getIndexType());
 
-#if !defined(EGLAPI)
-		if (renderable.numInstances > 0)
-		{
-			auto offsetIndices = _renderBuffer->getIndexBuffer()->getIndexSize() * renderable.startIndice;
-			glDrawElementsInstancedBaseVertexBaseInstance(drawType, renderable.numIndices, indexType, (char*)nullptr + offsetIndices, renderable.numInstances, renderable.startVertice, renderable.startInstances);
-		}
-		else
-		{
-			auto offsetIndices = _renderBuffer->getIndexBuffer()->getIndexSize() * renderable.startIndice;
-			glDrawElementsBaseVertex(drawType, renderable.numIndices, indexType, (char*)nullptr + offsetIndices, renderable.startVertice);
-		}
-#else
-		if (renderable.numInstances > 0)
-			glDrawElementsInstanced(drawType, renderable.numIndices, indexType, (char*)(nullptr) + renderable.startIndice, renderable.numInstances);
-		else
-			glDrawElements(drawType, renderable.numIndices, indexType, (char*)nullptr + renderable.startIndice);
-#endif
+		GLvoid* offsetIndices = (GLchar*)(_renderBuffer->getIndexBuffer()->getIndexSize() * renderable.startIndice);
+		GLsizei numInstance = std::max(1, renderable.numInstances);
+		glDrawElementsInstancedBaseVertexBaseInstance(drawType, renderable.numIndices, indexType, offsetIndices, numInstance, renderable.startVertice, renderable.startInstances);
 	}
 	else
 	{
-		if (renderable.numInstances > 0)
-			glDrawArraysInstanced(drawType, renderable.startVertice, renderable.numVertices, renderable.numIndices);
-		else
-			glDrawArrays(drawType, renderable.startVertice, renderable.numVertices);
+		GLsizei numInstance = std::max(1, renderable.numInstances);
+		glDrawArraysInstancedBaseInstance(drawType, renderable.startVertice, renderable.numVertices, numInstance, renderable.startInstances);
 	}
-
-	OGLCheck::checkError();
 }
 
-void 
+void
 OGLRenderer::drawRenderBuffer(const RenderIndirects& renderable) noexcept
 {
 	assert(false);
@@ -394,31 +321,39 @@ OGLRenderer::getRenderBuffer() const noexcept
 	return _renderBuffer;
 }
 
-TexturePtr 
+TexturePtr
 OGLRenderer::createTexture() noexcept
-{
-	OGLCheck::checkError();
-	auto result = std::make_shared<OGLTexture>();
-	OGLCheck::checkError();
-	return result;
+{	
+	return std::make_shared<OGLTexture>();
 }
 
-RenderTexturePtr 
+void 
+OGLRenderer::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
+{
+	auto _texture = std::dynamic_pointer_cast<OGLTexture>(texture);
+	if (_texture)
+	{
+		GLuint textureID = _texture->getInstanceID();
+		GLenum textureDim = OGLTypes::asOGLTarget(_texture->getTexDim());
+
+		glBindTextureUnit(slot, textureID);
+	}
+	else
+	{
+		glBindTextureUnit(slot, 0);
+	}
+}
+
+RenderTexturePtr
 OGLRenderer::createRenderTexture() noexcept
-{
-	OGLCheck::checkError();
-	auto result = std::make_shared<OGLRenderTexture>();
-	OGLCheck::checkError();
-	return result;
+{	
+	return std::make_shared<OGLRenderTexture>();
 }
 
-MultiRenderTexturePtr 
+MultiRenderTexturePtr
 OGLRenderer::createMultiRenderTexture() noexcept
-{
-	OGLCheck::checkError();
-	auto result = std::make_shared<OGLMultiRenderTexture>();
-	OGLCheck::checkError();
-	return result;
+{	
+	return std::make_shared<OGLMultiRenderTexture>();
 }
 
 void
@@ -442,8 +377,6 @@ OGLRenderer::setRenderTexture(RenderTexturePtr target) noexcept
 		_renderTexture = target;
 		_multiRenderTexture = nullptr;
 	}
-
-	OGLCheck::checkError();
 }
 
 void
@@ -467,8 +400,6 @@ OGLRenderer::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
 		_renderTexture = nullptr;
 		_multiRenderTexture = target;
 	}
-
-	OGLCheck::checkError();
 }
 
 void
@@ -503,8 +434,6 @@ OGLRenderer::setRenderTextureLayer(RenderTexturePtr renderTexture, std::int32_t 
 		else if (renderTexture->getTexDim() == TextureDim::DIM_CUBE)
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer, textureID, 0);
 	}
-
-	OGLCheck::checkError();
 }
 
 void
@@ -527,8 +456,6 @@ OGLRenderer::blitRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderT
 
 	_renderTexture = GL_NONE;
 	_multiRenderTexture = GL_NONE;
-
-	OGLCheck::checkError();
 }
 
 RenderTexturePtr
@@ -596,8 +523,6 @@ OGLRenderer::clearRenderTexture(ClearFlags flags, const Vector4& color, float de
 			glDepthMask(GL_FALSE);
 		}
 	}
-
-	OGLCheck::checkError();
 }
 
 void
@@ -630,8 +555,6 @@ OGLRenderer::clearRenderTexture(ClearFlags flags, const Vector4& color, float de
 	{
 		glClearBufferfv(GL_COLOR, i, color.ptr());
 	}
-
-	OGLCheck::checkError();
 }
 
 void
@@ -660,8 +583,6 @@ OGLRenderer::discardRenderTexture() noexcept
 
 		glInvalidateFramebuffer(GL_FRAMEBUFFER, size, attachments);
 	}
-
-	OGLCheck::checkError();
 }
 
 void
@@ -676,57 +597,62 @@ OGLRenderer::readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::
 		_renderTexture = target;
 		_multiRenderTexture = nullptr;
 	}
-	
+
 	GLenum format = OGLTypes::asOGLFormat(pfd);
 	GLenum type = OGLTypes::asOGLType(pfd);
 
 	glReadPixels(0, 0, w, h, format, type, data);
-
-	OGLCheck::checkError();
 }
 
-ShaderPtr 
+ShaderPtr
 OGLRenderer::createShader() noexcept
-{
-	OGLCheck::checkError();
-	auto result = std::make_shared<OGLShader>();
-	OGLCheck::checkError();
-	return result;
+{	
+	return std::make_shared<OGLShader>();
 }
 
-ShaderObjectPtr 
+ShaderObjectPtr
 OGLRenderer::createShaderObject() noexcept
-{
-	OGLCheck::checkError();
-	auto result = std::make_shared<OGLShaderObject>();
-	OGLCheck::checkError();
-	return result;
+{	
+	return std::make_shared<OGLShaderObject>();
 }
 
 void
 OGLRenderer::setShaderObject(ShaderObjectPtr shader) noexcept
 {
-	if (shader)
+	if (_shaderObject != shader)
 	{
-		auto program = std::dynamic_pointer_cast<OGLShaderObject>(shader)->getInstanceID();
-		if (_shaderObject != shader)
-		{
-			glUseProgram(program);
-			_shaderObject = shader;
-		}
+		if (_shaderObject)
+			_shaderObject->setActive(false);
 
-		for (auto& it : shader->getActiveUniforms())
-		{
-			this->setShaderUniform(it, it->getValue());
-		}
-	}
-	else
-	{
-		glUseProgram(GL_NONE);
-		_shaderObject = nullptr;
+		_shaderObject = shader;
+
+		if (_shaderObject)
+			_shaderObject->setActive(true);
 	}
 
-	OGLCheck::checkError();
+	/*if (_shaderObject)
+	{
+		auto& uniforms = _shaderObject->getActiveUniforms();
+
+		for (auto& it : uniforms)
+		{
+			if (it->getType() == SPT_TEXTURE)
+			{
+				auto uniform = std::dynamic_pointer_cast<OGLShaderUniform>(it);
+				auto bindingPoint = uniform->getBindingPoint();
+				auto texture = std::dynamic_pointer_cast<OGLTexture>(uniform->getTexture());
+				auto sampler = std::dynamic_pointer_cast<OGLTextureSampler>(uniform->getSampler());
+
+				this->setTexture(texture, bindingPoint);
+
+				if (sampler)
+				{
+					GLuint samplerID = sampler->getInstanceID();
+					glBindSampler(GL_TEXTURE0 + bindingPoint, samplerID);
+				}
+			}
+		}
+	}*/
 }
 
 ShaderObjectPtr
@@ -738,24 +664,7 @@ OGLRenderer::getShaderObject() const noexcept
 bool
 OGLRenderer::createShaderVariant(ShaderVariant& constant) noexcept
 {
-	if (constant.getType() != ShaderVariantType::SPT_BUFFER)
-		return true;
-
-	OGLShaderVariant buffer;
-
-	glGenBuffers(1, &buffer.ubo);
-	glBindBuffer(GL_UNIFORM_BUFFER, buffer.ubo);
-	glBufferData(GL_UNIFORM_BUFFER, constant.getSize(), 0, GL_DYNAMIC_DRAW);
-
-#if !defined(EGLAPI)
-	if (OGLFeatures::NV_vertex_buffer_unified_memory)
-	{
-		glGetNamedBufferParameterui64vNV(buffer.ubo, GL_BUFFER_GPU_ADDRESS_NV, &buffer.bindlessUbo);
-		glMakeNamedBufferResidentNV(buffer.ubo, GL_READ_ONLY);
-	}
-#endif
-
-	return true;
+	return false;
 }
 
 void
@@ -766,252 +675,6 @@ OGLRenderer::destroyShaderVariant(ShaderVariant& constant) noexcept
 void
 OGLRenderer::updateShaderVariant(ShaderVariantPtr constant) noexcept
 {
-	std::vector<char> _data;
-	_data.resize(constant->getSize());
-
-	std::size_t offset = 0;
-
-	for (auto& it : constant->getParameters())
-	{
-		switch (it->getType())
-		{
-		case SPT_BOOL:
-		{
-			auto value = it->getBool();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		case SPT_INT:
-		{
-			auto value = it->getInt();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		case SPT_INT2:
-		{
-			auto value = it->getInt2();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		case SPT_FLOAT:
-		{
-			auto value = it->getFloat();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		case SPT_FLOAT2:
-		{
-			auto value = it->getFloat2();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		case SPT_FLOAT3:
-		{
-			auto value = it->getFloat3();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		case SPT_FLOAT4:
-		{
-			auto value = it->getFloat4();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		case SPT_FLOAT3X3:
-		{
-			auto value = it->getFloat3x3();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		case SPT_FLOAT4X4:
-		{
-			auto value = it->getFloat4x4();
-			std::memcpy(&_data[offset], &value, it->getSize());
-		}
-		break;
-		default:
-			assert(false);
-		}
-
-		offset += it->getSize();
-	}
-
-	/*auto& buffer = _constantBuffers[constant->getInstanceID()];
-
-#if !defined(EGLAPI)
-	if (OGLFeatures::ARB_direct_state_access)
-	{
-		glNamedBufferSubDataEXT(buffer.ubo, 0, _data.size(), _data.data());
-	}
-	else
-#endif
-	{
-		glBindBuffer(GL_UNIFORM_BUFFER, buffer.ubo);
-		glBufferSubData(GL_UNIFORM_BUFFER, 0, _data.size(), _data.data());
-	}*/
-}
-
-void
-OGLRenderer::setShaderUniform(ShaderUniformPtr uniform, TexturePtr texture, TextureSamplePtr sample) noexcept
-{
-	assert(uniform && texture);
-	assert(uniform->getBindingPoint() < _maxTextureUnits);
-
-	auto _texture = std::dynamic_pointer_cast<OGLTexture>(texture);
-	auto _sample = std::dynamic_pointer_cast<OGLTextureSample>(texture);
-
-	auto location = uniform->getLocation();
-	auto program = uniform->getBindingProgram();
-	auto unit = uniform->getBindingPoint();
-	auto target = OGLTypes::asOGLTarget(texture->getTexDim());
-	auto textureAddr = _texture->getInstanceAddr();
-	auto textureID = _texture->getInstanceID();
-
-#if !defined(EGLAPI)
-	if (OGLFeatures::ARB_bindless_texture)
-	{
-		glProgramUniformHandleui64ARB(program, location, textureAddr);
-	}
-	else if (OGLFeatures::ARB_direct_state_access)
-	{
-		glProgramUniform1i(program, location, unit);
-		glBindTextureUnit(GL_TEXTURE0 + unit, textureID);
-	}
-	else
-#endif
-	{
-		glProgramUniform1i(program, location, unit);
-
-		if (_textureUnits[unit] != textureID)
-		{
-			glActiveTexture(GL_TEXTURE0 + unit);
-			glBindTexture(target, textureID);
-
-			_textureUnits[unit] = textureID;
-		}
-	}
-
-	if (sample)
-	{
-		glBindSampler(GL_TEXTURE0 + unit, _sample->getInstanceID());
-	}
-}
-
-void
-OGLRenderer::setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constant) noexcept
-{
-	assert(constant && uniform);
-	assert(uniform->getValue());
-
-	auto type = uniform->getValue()->getType();
-	if (type != ShaderVariantType::SPT_TEXTURE)
-	{
-		if (!uniform->needUpdate())
-			return;
-		uniform->needUpdate(false);
-	}
-
-	auto location = uniform->getLocation();
-	auto program = uniform->getBindingProgram();
-
-	switch (type)
-	{
-	case ShaderVariantType::SPT_BOOL:
-	{
-		glProgramUniform1i(program, location, uniform->getValue()->getBool());
-		break;
-	}
-	case ShaderVariantType::SPT_INT:
-	{
-		glProgramUniform1i(program, location, uniform->getValue()->getInt());
-		break;
-	}
-	case ShaderVariantType::SPT_INT2:
-	{
-		glProgramUniform2iv(program, location, 1, uniform->getValue()->getInt2().ptr());
-		break;
-	}
-	case ShaderVariantType::SPT_FLOAT:
-	{
-		glProgramUniform1f(program, location, uniform->getValue()->getFloat());
-		break;
-	}
-	case ShaderVariantType::SPT_FLOAT2:
-	{
-		glProgramUniform2fv(program, location, 1, uniform->getValue()->getFloat2().ptr());
-		break;
-	}
-	case ShaderVariantType::SPT_FLOAT3:
-	{
-		glProgramUniform3fv(program, location, 1, uniform->getValue()->getFloat3().ptr());
-		break;
-	}
-	case ShaderVariantType::SPT_FLOAT4:
-	{
-		glProgramUniform4fv(program, location, 1, uniform->getValue()->getFloat4().ptr());
-		break;
-	}
-	case ShaderVariantType::SPT_FLOAT3X3:
-	{
-		glProgramUniformMatrix3fv(program, location, 1, GL_FALSE, uniform->getValue()->getFloat3x3().ptr());
-		break;
-	}
-	case ShaderVariantType::SPT_FLOAT4X4:
-	{
-		glProgramUniformMatrix4fv(program, location, 1, GL_FALSE, uniform->getValue()->getFloat4x4().ptr());
-		break;
-	}
-	case ShaderVariantType::SPT_FLOAT_ARRAY:
-	{
-		glProgramUniform1fv(program, location, uniform->getValue()->getFloatArray().size(), uniform->getValue()->getFloatArray().data());
-		break;
-	}
-	case ShaderVariantType::SPT_FLOAT2_ARRAY:
-	{
-		glProgramUniform2fv(program, location, uniform->getValue()->getFloat2Array().size(), (GLfloat*)uniform->getValue()->getFloat2Array().data());
-		break;
-	}
-	case ShaderVariantType::SPT_TEXTURE:
-	{
-		auto texture = uniform->getValue()->getTexture();
-		auto sample = uniform->getValue()->getTextureSample();
-		if (texture)
-		{
-			this->setShaderUniform(uniform, texture, sample);
-		}
-		break;
-	}
-	/*case ShaderVariantType::SPT_BUFFER:
-	{
-		if (uniform->needUpdate())
-		{
-			this->updateShaderVariant(constant);
-			uniform->needUpdate(false);
-		}
-
-		auto index = constant->getInstanceID();
-		if (index != 0)
-		{
-			auto& buffer = _constantBuffers[index];
-
-#if !defined(EGLAPI)
-			if (OGLFeatures::NV_vertex_buffer_unified_memory)
-			{
-				glBindBufferRange(GL_UNIFORM_BUFFER, location, buffer.ubo, 0, constant->getSize());
-			}
-			else
-#endif
-			{
-				glBindBufferBase(GL_UNIFORM_BUFFER, location, buffer.ubo);
-			}
-		}
-	}*/
-	default:
-		assert(false);
-		break;
-	}
-
-	OGLCheck::checkError();
 }
 
 void
@@ -1115,24 +778,22 @@ OGLRenderer::initDebugControl() noexcept
 		131204
 	};
 
-	GL_CHECK(glEnable(GL_DEBUG_OUTPUT));
-#if !defined(EGLAPI)
-	GL_CHECK(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-#endif
-	GL_CHECK(glDebugMessageCallback(debugCallBack, this));
+	glEnable(GL_DEBUG_OUTPUT);
+
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+	glDebugMessageCallback(debugCallBack, this);
 	// enable all
-	GL_CHECK(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE));
+	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
 	// disable ids
-	GL_CHECK(glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 6, ids, GL_FALSE));
+	glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 6, ids, GL_FALSE);
 #endif
 }
 
 void
 OGLRenderer::initCommandList() noexcept
 {
-#if defined(_BUILD_OPENGL)
 	initCommandListNV();
-#endif
 }
 
 void
@@ -1153,34 +814,29 @@ OGLRenderer::initStateSystem() noexcept
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-#if !defined(EGLAPI)
-	if (OGLFeatures::ARB_provoking_vertex)
-	{
-		glProvokingVertex(GL_LAST_VERTEX_CONVENTION);
-	}
+	glGenVertexArrays(1, &_defaultVAO);
+	glBindVertexArray(_defaultVAO);
 
-	if (OGLFeatures::NV_vertex_buffer_unified_memory)
-	{
-		glGenVertexArrays(1, &_defaultVAO);
-		glBindVertexArray(_defaultVAO);
+	glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_POSITION);
+	glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL);
+	glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD);
+	glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE);
+	glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_TANGENT);
+	glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_BITANGENT);
 
-		glEnableClientState(GL_VERTEX_ATTRIB_ARRAY_UNIFIED_NV);
-		glEnableClientState(GL_ELEMENT_ARRAY_UNIFIED_NV);
-		glEnableClientState(GL_UNIFORM_BUFFER_UNIFIED_NV);
+	glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_POSITION, 3, GL_FLOAT, GL_FALSE, 0);
+	glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0);
+	glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0);
+	glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0);
+	glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_TANGENT, 3, GL_FLOAT, GL_FALSE, 0);
+	glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_BITANGENT, 3, GL_FLOAT, GL_FALSE, 0);
 
-		glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_POSITION);
-		glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL);
-		glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD);
-
-		glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_POSITION, 3, GL_FLOAT, GL_FALSE, 0);
-		glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0);
-		glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0);
-
-		glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_POSITION, (GLuint)VertexAttrib::GPU_ATTRIB_POSITION);
-		glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL, (GLuint)VertexAttrib::GPU_ATTRIB_NORMAL);
-		glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD, (GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD);
-	}
-#endif	
+	glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_POSITION, (GLuint)VertexAttrib::GPU_ATTRIB_POSITION);
+	glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL, (GLuint)VertexAttrib::GPU_ATTRIB_NORMAL);
+	glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD, (GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD);
+	glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE, (GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE);
+	glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_TANGENT, (GLuint)VertexAttrib::GPU_ATTRIB_TANGENT);
+	glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_BITANGENT, (GLuint)VertexAttrib::GPU_ATTRIB_BITANGENT);
 }
 
 _NAME_END

@@ -41,17 +41,14 @@
 
 _NAME_BEGIN
 
-class EGLShaderVariant final : public ShaderVariant
+class EGL3ShaderVariant final : public ShaderVariant
 {
 public:
-	EGLShaderVariant() noexcept;
-	virtual ~EGLShaderVariant() noexcept;
+	EGL3ShaderVariant() noexcept;
+	virtual ~EGL3ShaderVariant() noexcept;
 
 	void setLocation(GLint location) noexcept;
 	GLint getLocation() const noexcept;
-
-	void setBindingPoint(GLint unit) noexcept;
-	GLint getBindingPoint() const noexcept;
 
 	void setBindingProgram(GLuint program) noexcept;
 	GLuint getBindingProgram() const noexcept;
@@ -69,22 +66,15 @@ public:
 	void assign(const std::vector<float2>& value) noexcept;
 	void assign(const std::vector<float3>& value) noexcept;
 	void assign(const std::vector<float4>& value) noexcept;
-	void assign(TexturePtr texture, TextureSamplerPtr sampler) noexcept;
-
-	TexturePtr getTexture() const noexcept;
-	TextureSamplerPtr getSampler() const noexcept;
 
 private:
-	EGLShaderVariant(const EGLShaderVariant&) noexcept = delete;
-	EGLShaderVariant& operator=(const EGLShaderVariant&) noexcept = delete;
+	EGL3ShaderVariant(const EGL3ShaderVariant&) noexcept = delete;
+	EGL3ShaderVariant& operator=(const EGL3ShaderVariant&) noexcept = delete;
 
 private:
 	GLint _location;
 	GLint  _bindingPoint;
 	GLuint _bindingProgram;
-	GLenum _target;
-	TexturePtr _texture;
-	TextureSamplerPtr _sampler;
 };
 
 class EGLShaderUniform final : public ShaderUniform
@@ -99,21 +89,14 @@ public:
 	void setLocation(GLint location) noexcept;
 	GLint getLocation() const noexcept;
 
-	void setBindingPoint(GLint unit) noexcept;
-	GLint getBindingPoint() const noexcept;
-
 	void setBindingProgram(GLuint program) noexcept;
 	GLuint getBindingProgram() const noexcept;
-
-	TexturePtr getTexture() const noexcept;
-	TextureSamplerPtr getSampler() const noexcept;
-
 private:
 	EGLShaderUniform(const EGLShaderUniform&) noexcept = delete;
 	EGLShaderUniform& operator=(const EGLShaderUniform&) noexcept = delete;
 
 private:
-	EGLShaderVariant _value;
+	EGL3ShaderVariant _value;
 };
 
 class EGL3Shader final : public Shader

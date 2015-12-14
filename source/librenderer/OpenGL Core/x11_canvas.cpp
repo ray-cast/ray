@@ -35,7 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #ifdef _BUILD_PLATFORM_LINUX
-#include <ray/glx_canvas.h>
+#include "x11_canvas.h"
 
 _NAME_BEGIN
 

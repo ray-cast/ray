@@ -45,32 +45,15 @@
 #include <ray/render_command.h>
 #include <ray/shader.h>
 
-#if _BUILD_OPENGL_ES
-#	include <EGL\egl.h>
-#	include <GLES3\gl3.h>
-#	include <GLES3\gl31.h>
-#	include <GLES2\gl2ext.h>
-#	include <GLES3\gl3ext.h>
-#else
-#	if _BUILD_PLATFORM_WINDOWS
-#		include <GL\glew.h>
-#		include <GL\wglew.h>
-#	elif _BUILD_PLATFORM_ANDROID
-#		include <EGL\egl.h>
-#		include <GLES2\gl2.h>
-#		include <GLES3\gl3.h>
-#		include <GLES3\gl31.h>
-#		include <GLES2\gl2ext.h>
-#		include <GLES3\gl3ext.h>
-#	elif _BUILD_PLATFORM_LINUX
-#		include <GL/glew.h>
-#		include <GL/glxew.h>
-#	endif
+#if _BUILD_PLATFORM_WINDOWS
+#	include <GL/glew.h>
+#	include <GL/wglew.h>
+#elif _BUILD_PLATFORM_LINUX
+#	include <GL/glew.h>
+#	include <GL/glxew.h>
 #endif
 
 _NAME_BEGIN
-
-#define _USE_RENDER_COMMAND 0
 
 #if _BUILD_OPENGL
 #	ifdef GLEW_MX
@@ -87,51 +70,13 @@ _NAME_BEGIN
 #  endif
 #endif
 
-#if defined(EGLAPI)
-#	define GL_DEBUG_OUTPUT_SYNCHRONOUS   GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR
-#   define GL_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH GL_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_KHR
-#   define GL_DEBUG_CALLBACK_FUNCTION    GL_DEBUG_CALLBACK_FUNCTION_KHR
-#   define GL_DEBUG_CALLBACK_USER_PARAM  GL_DEBUG_CALLBACK_USER_PARAM_KHR
-#   define GL_DEBUG_SOURCE_API           GL_DEBUG_SOURCE_API_KHR
-#   define GL_DEBUG_SOURCE_WINDOW_SYSTEM GL_DEBUG_SOURCE_WINDOW_SYSTEM_KHR
-#   define GL_DEBUG_SOURCE_SHADER_COMPILER GL_DEBUG_SOURCE_SHADER_COMPILER_KHR
-#   define GL_DEBUG_SOURCE_THIRD_PARTY   GL_DEBUG_SOURCE_THIRD_PARTY_KHR
-#   define GL_DEBUG_SOURCE_APPLICATION   GL_DEBUG_SOURCE_APPLICATION_KHR
-#   define GL_DEBUG_SOURCE_OTHER         GL_DEBUG_SOURCE_OTHER_KHR
-#   define GL_DEBUG_TYPE_ERROR           GL_DEBUG_TYPE_ERROR_KHR
-#   define GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_KHR
-#   define GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_KHR
-#   define GL_DEBUG_TYPE_PORTABILITY     GL_DEBUG_TYPE_PORTABILITY_KHR
-#   define GL_DEBUG_TYPE_PERFORMANCE     GL_DEBUG_TYPE_PERFORMANCE_KHR
-#   define GL_DEBUG_TYPE_OTHER           GL_DEBUG_TYPE_OTHER_KHR
-#   define GL_DEBUG_TYPE_MARKER          GL_DEBUG_TYPE_MARKER_KHR
-#   define GL_DEBUG_TYPE_PUSH_GROUP      GL_DEBUG_TYPE_PUSH_GROUP_KHR
-#   define GL_DEBUG_TYPE_POP_GROUP       GL_DEBUG_TYPE_POP_GROUP_KHR
-#   define GL_DEBUG_SEVERITY_NOTIFICATION GL_DEBUG_SEVERITY_NOTIFICATION_KHR
-#   define GL_MAX_DEBUG_GROUP_STACK_DEPTH GL_MAX_DEBUG_GROUP_STACK_DEPTH_KHR
-#   define GL_DEBUG_GROUP_STACK_DEPTH    GL_DEBUG_GROUP_STACK_DEPTH_KHR
-#   define GL_BUFFER                     GL_BUFFER_KHR
-#   define GL_SHADER                     GL_SHADER_KHR
-#   define GL_PROGRAM                    GL_PROGRAM_KHR
-#   define GL_VERTEX_ARRAY               GL_VERTEX_ARRAY_KHR
-#   define GL_QUERY                      GL_QUERY_KHR
-#   define GL_MAX_LABEL_LENGTH           GL_MAX_LABEL_LENGTH_KHR
-#   define GL_MAX_DEBUG_MESSAGE_LENGTH   GL_MAX_DEBUG_MESSAGE_LENGTH_KHR
-#   define GL_MAX_DEBUG_LOGGED_MESSAGES  GL_MAX_DEBUG_LOGGED_MESSAGES_KHR
-#   define GL_DEBUG_LOGGED_MESSAGES      GL_DEBUG_LOGGED_MESSAGES_KHR
-#   define GL_DEBUG_SEVERITY_HIGH        GL_DEBUG_SEVERITY_HIGH_KHR
-#   define GL_DEBUG_SEVERITY_MEDIUM      GL_DEBUG_SEVERITY_MEDIUM_KHR
-#   define GL_DEBUG_SEVERITY_LOW         GL_DEBUG_SEVERITY_LOW_KHR
-#   define GL_DEBUG_OUTPUT               GL_DEBUG_OUTPUT_KHR
-#   define GL_CONTEXT_FLAG_DEBUG_BIT     GL_CONTEXT_FLAG_DEBUG_BIT_KHR
-#   define GL_STACK_OVERFLOW             GL_STACK_OVERFLOW_KHR
-#   define GL_STACK_UNDERFLOW            GL_STACK_UNDERFLOW_KHR
-#   define GL_FRAMEBUFFER_SRGB           GL_FRAMEBUFFER_SRGB_EXT
-
-#   define GLAPIENTRY GL_APIENTRY
-
-#   define glDebugMessageCallback glDebugMessageCallbackKHR
-#   define glDebugMessageControl glDebugMessageControlKHR
+#if GL_DEBUG
+#	if defined(_VISUAL_STUDIO_)
+#		pragma warning(disable : 4127)
+#	endif
+#	define GL_CHECK(x) do { x; EGL2Check::checkError(); } while (false)
+#else
+#	define GL_CHECK(x) x
 #endif
 
 struct GPUfbconfig
@@ -165,12 +110,8 @@ struct GPUctxconfig
 	int release;
 	int multithread;
 
-#   if defined(_BUILD_OPENGL_ES)
-	EGLContext share;
-#   elif defined(_BUILD_OPENGL)
-#	if _BUILD_PLATFORM_WINDOWS
+#if _BUILD_PLATFORM_WINDOWS
 	HGLRC share;
-#	endif
 #endif
 };
 
@@ -204,22 +145,12 @@ private:
 	static int initExtention;
 };
 
-struct OGLShaderVariant
-{
-	GLuint ubo;
-	GLuint64 bindlessUbo;
-
-	OGLShaderVariant() noexcept
-		: ubo(0)
-		, bindlessUbo(0)
-	{
-	}
-};
-
 typedef std::shared_ptr<class OGLCanvas> OGLCanvasPtr;
 typedef std::shared_ptr<class OGLFramebuffer> OGLRenderTexturePtr;
 typedef std::shared_ptr<class OGLShader> OGLShaderPtr;
 typedef std::shared_ptr<class OGLShaderObject> OGLShaderObjectPtr;
+typedef std::shared_ptr<class OGLVertexBuffer> OGLVertexBufferPtr;
+typedef std::shared_ptr<class OGLIndexBuffer> OGLIndexBufferPtr;
 
 class OGLTypes
 {
@@ -246,8 +177,6 @@ class OGLCheck
 public:
 	static void checkError() noexcept;
 };
-
-#define GL_CHECK(x) x; OGLCheck::checkError()
 
 _NAME_END
 

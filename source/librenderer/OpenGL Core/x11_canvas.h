@@ -37,7 +37,7 @@
 #ifndef _H_X11_CANVAS_H_
 #define _H_X11_CANVAS_H_
 
-#include <ray/ogl_types.h>
+#include "ogl_types.h"
 
 _NAME_BEGIN
 

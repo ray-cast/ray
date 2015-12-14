@@ -37,9 +37,66 @@
 #ifndef _H_OGL_SHADER_H_
 #define _H_OGL_SHADER_H_
 
-#include <ray/ogl_canvas.h>
+#include "ogl_canvas.h"
 
 _NAME_BEGIN
+
+class OGLShaderVariant final : public ShaderVariant
+{
+public:
+	OGLShaderVariant() noexcept;
+	virtual ~OGLShaderVariant() noexcept;
+
+	void setLocation(GLint location) noexcept;
+	GLint getLocation() const noexcept;
+
+	void setBindingProgram(GLuint program) noexcept;
+	GLuint getBindingProgram() const noexcept;
+
+	void assign(bool value) noexcept;
+	void assign(int value) noexcept;
+	void assign(const int2& value) noexcept;
+	void assign(float value) noexcept;
+	void assign(const float2& value) noexcept;
+	void assign(const float3& value) noexcept;
+	void assign(const float4& value) noexcept;
+	void assign(const float3x3& value) noexcept;
+	void assign(const float4x4& value) noexcept;
+	void assign(const std::vector<float>& value) noexcept;
+	void assign(const std::vector<float2>& value) noexcept;
+	void assign(const std::vector<float3>& value) noexcept;
+	void assign(const std::vector<float4>& value) noexcept;
+
+private:
+	OGLShaderVariant(const OGLShaderVariant&) noexcept = delete;
+	OGLShaderVariant& operator=(const OGLShaderVariant&) noexcept = delete;
+
+private:
+	GLint _location;
+	GLuint _bindingProgram;
+};
+
+class OGLShaderUniform final : public ShaderUniform
+{
+public:
+	OGLShaderUniform() noexcept;
+	~OGLShaderUniform() noexcept;
+
+	void setType(ShaderVariantType type) noexcept;
+
+	void setLocation(GLint location) noexcept;
+	GLint getLocation() const noexcept;
+
+	void setBindingProgram(GLuint program) noexcept;
+	GLuint getBindingProgram() const noexcept;
+
+private:
+	OGLShaderUniform(const OGLShaderUniform&) noexcept = delete;
+	OGLShaderUniform& operator=(const OGLShaderUniform&) noexcept = delete;
+
+private:
+	OGLShaderVariant _value;
+};
 
 class OGLShader final : public Shader
 {
@@ -66,25 +123,28 @@ public:
 	virtual bool setup() except;
 	virtual void close() noexcept;
 
+	void setActive(bool active) noexcept;
+	bool getActive() noexcept;
+
 	virtual void addShader(ShaderPtr shader) noexcept;
 	virtual void removeShader(ShaderPtr shader) noexcept;
 
-	virtual Shaders& getShaders() noexcept;
+	virtual const Shaders& getShaders() const noexcept;
 
 	virtual std::size_t getInstanceID() noexcept;
 
 	virtual ShaderAttributes&  getActiveAttributes() noexcept;
 	virtual ShaderUniforms&    getActiveUniforms() noexcept;
-	virtual ShaderSubroutines& getActiveSubroutines() noexcept;
 
 private:
 
 	void _initActiveAttribute() noexcept;
 	void _initActiveUniform() noexcept;
 	void _initActiveUniformBlock() noexcept;
-	void _initActiveSubroutine() noexcept;
 
 private:
+
+	bool _isActive;
 
 	GLuint _program;
 
@@ -92,7 +152,6 @@ private:
 
 	ShaderUniforms    _activeUniforms;
 	ShaderAttributes  _activeAttributes;
-	ShaderSubroutines _activeSubroutines;
 };
 
 _NAME_END

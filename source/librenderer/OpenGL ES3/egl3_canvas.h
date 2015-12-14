@@ -41,12 +41,12 @@
 
 _NAME_BEGIN
 
-class EGLCanvas final : public RenderWindow
+class EGL3Canvas final : public RenderWindow
 {
 public:
-    EGLCanvas() noexcept;
-	EGLCanvas(WindHandle hwnd) except;
-    ~EGLCanvas() noexcept;
+    EGL3Canvas() noexcept;
+	EGL3Canvas(WindHandle hwnd) except;
+    ~EGL3Canvas() noexcept;
 
     void open(WindHandle hwnd) except;
     void close() noexcept;
@@ -68,8 +68,8 @@ private:
 	static void initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept;
 
 private:
-    EGLCanvas(const EGLCanvas&) noexcept = delete;
-    EGLCanvas& operator=(const EGLCanvas&) noexcept = delete;
+    EGL3Canvas(const EGL3Canvas&) noexcept = delete;
+    EGL3Canvas& operator=(const EGL3Canvas&) noexcept = delete;
 
 private:
 	SwapInterval _interval;

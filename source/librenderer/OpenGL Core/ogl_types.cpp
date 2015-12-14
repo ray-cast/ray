@@ -34,7 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/ogl_types.h>
+#include "ogl_types.h"
 
 _NAME_BEGIN
 
@@ -352,7 +352,7 @@ OGLTypes::asOGLInternalformat(TextureFormat format) noexcept
 #endif
 	default:
 		assert(false);
-		return GL_RGBA;
+		return GL_INVALID_ENUM;
 	}
 }
 

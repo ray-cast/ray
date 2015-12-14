@@ -186,7 +186,7 @@ Texture::getTexAnisotropy() const noexcept
 	return _anis;
 }
 
-std::uint8_t
+std::int32_t
 Texture::getMipLevel() const noexcept
 {
 	return _mipLevel;

@@ -41,17 +41,14 @@
 
 _NAME_BEGIN
 
-class EGLShaderVariant final : public ShaderVariant
+class EGL2ShaderVariant final : public ShaderVariant
 {
 public:
-	EGLShaderVariant() noexcept;
-	virtual ~EGLShaderVariant() noexcept;
+	EGL2ShaderVariant() noexcept;
+	virtual ~EGL2ShaderVariant() noexcept;
 
 	void setLocation(GLint location) noexcept;
 	GLint getLocation() const noexcept;
-
-	void setBindingPoint(GLint unit) noexcept;
-	GLint getBindingPoint() const noexcept;
 
 	void setBindingProgram(GLuint program) noexcept;
 	GLuint getBindingProgram() const noexcept;
@@ -72,7 +69,6 @@ public:
 	void assign(const std::vector<float2>& value) noexcept;
 	void assign(const std::vector<float3>& value) noexcept;
 	void assign(const std::vector<float4>& value) noexcept;
-	void assign(TexturePtr texture, TextureSamplerPtr sampler) noexcept;
 
 	bool getBool() const noexcept;
 	int getInt() const noexcept;
@@ -85,20 +81,14 @@ public:
 	const float4x4& getFloat4x4() const noexcept;
 	const std::vector<float>& getFloatArray() const noexcept;
 	const std::vector<float2>& getFloat2Array() const noexcept;
-
-	TexturePtr getTexture() const noexcept;
-	TextureSamplerPtr getSampler() const noexcept;
-
+	
 private:
-	EGLShaderVariant(const EGLShaderVariant&) noexcept = delete;
-	EGLShaderVariant& operator=(const EGLShaderVariant&) noexcept = delete;
+	EGL2ShaderVariant(const EGL2ShaderVariant&) noexcept = delete;
+	EGL2ShaderVariant& operator=(const EGL2ShaderVariant&) noexcept = delete;
 
 private:
 
 	std::string _name;
-
-	TexturePtr _texture;
-	TextureSamplerPtr _textureSampler;
 
 	union
 	{
@@ -118,9 +108,7 @@ private:
 	ShaderVariants _params;
 
 	GLint _location;
-	GLint  _bindingPoint;
 	GLuint _bindingProgram;
-	GLenum _target;
 };
 
 class EGLShaderUniform final : public ShaderUniform
@@ -134,9 +122,6 @@ public:
 
 	void setLocation(GLint location) noexcept;
 	GLint getLocation() const noexcept;
-
-	void setBindingPoint(GLint unit) noexcept;
-	GLint getBindingPoint() const noexcept;
 
 	void setBindingProgram(GLuint program) noexcept;
 	GLuint getBindingProgram() const noexcept;
@@ -161,7 +146,7 @@ private:
 	EGLShaderUniform& operator=(const EGLShaderUniform&) noexcept = delete;
 
 private:
-	EGLShaderVariant _value;
+	EGL2ShaderVariant _value;
 };
 
 class EGL2Shader final : public Shader

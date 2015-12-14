@@ -80,11 +80,11 @@ enum MaterialSemantic
 	NumSemantic
 };
 
-class EXPORT MaterialParamSemantic final
+class EXPORT MaterialSemanticParam final
 {
 public:
-	MaterialParamSemantic(const std::string& name, ShaderVariantType type, MaterialSemantic semantic = MaterialSemantic::NotSemantic) noexcept;
-	~MaterialParamSemantic() noexcept;
+	MaterialSemanticParam(const std::string& name, ShaderVariantType type, MaterialSemantic semantic = MaterialSemantic::NotSemantic) noexcept;
+	~MaterialSemanticParam() noexcept;
 
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
@@ -183,11 +183,14 @@ public:
 	void assign(const std::vector<float4>& value) noexcept;
 	void assign(TexturePtr texture, TextureSamplerPtr sampler = nullptr) noexcept;
 
+	TexturePtr getTexture() const noexcept;
+
 	void setSemantic(MaterialSemantic semantic) noexcept;
 	MaterialSemantic getSemantic() const noexcept;
 
 	void addShaderUniform(ShaderUniformPtr& uniform) noexcept;
 	void removeShaderUniform(ShaderUniformPtr& uniform) noexcept;
+	ShaderUniforms& getShaderUniform() noexcept;;
 
 private:
 	MaterialParam(const MaterialParam&) = delete;
@@ -198,7 +201,7 @@ private:
 	std::string _name;
 	ShaderVariantType _type;
 	MaterialSemantic _semantic;
-
+	TexturePtr _texture;
 	ShaderUniforms _uniforms;
 };
 

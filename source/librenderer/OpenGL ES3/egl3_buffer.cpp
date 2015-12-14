@@ -132,7 +132,7 @@ EGL3BufferData::flush() noexcept
 	return this->flush(0, _dataSize);
 }
 
-int 
+int
 EGL3BufferData::flush(ios_base::off_type offset, streamsize cnt) noexcept
 {
 	GL_CHECK(glBindBuffer(_target, _buffer));
@@ -443,18 +443,19 @@ EGL3RenderBuffer::close() noexcept
 {
 	if (_vb)
 	{
-		_vb->close();
+		_vb.reset();
 		_vb = nullptr;
 	}
-	
+
 	if (_ib)
 	{
-		_ib->close();
+		_ib.reset();
 		_ib = nullptr;
+
 	}
 }
 
-std::size_t 
+std::size_t
 EGL3RenderBuffer::getNumVertices() const noexcept
 {
 	if (_vb)
@@ -462,7 +463,7 @@ EGL3RenderBuffer::getNumVertices() const noexcept
 	return 0;
 }
 
-std::size_t 
+std::size_t
 EGL3RenderBuffer::getNumIndices() const noexcept
 {
 	if (_ib)
@@ -470,13 +471,13 @@ EGL3RenderBuffer::getNumIndices() const noexcept
 	return 0;
 }
 
-VertexBufferDataPtr 
+VertexBufferDataPtr
 EGL3RenderBuffer::getVertexBuffer() const noexcept
 {
 	return _vb;
 }
 
-IndexBufferDataPtr 
+IndexBufferDataPtr
 EGL3RenderBuffer::getIndexBuffer() const noexcept
 {
 	return _ib;

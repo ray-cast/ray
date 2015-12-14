@@ -35,152 +35,119 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "egl3_shader.h"
-#include "egl3_texture.h"
 
 _NAME_BEGIN
 
-EGLShaderVariant::EGLShaderVariant() noexcept
+EGL3ShaderVariant::EGL3ShaderVariant() noexcept
 	: _bindingProgram(0)
-	, _bindingPoint(0)
 	, _location(0)
 {
 }
 
-EGLShaderVariant::~EGLShaderVariant() noexcept
+EGL3ShaderVariant::~EGL3ShaderVariant() noexcept
 {
 }
 
 void
-EGLShaderVariant::setLocation(GLint location) noexcept
+EGL3ShaderVariant::setLocation(GLint location) noexcept
 {
 	_location = location;
 }
 
 GLint
-EGLShaderVariant::getLocation() const noexcept
+EGL3ShaderVariant::getLocation() const noexcept
 {
 	return _location;
 }
 
 void
-EGLShaderVariant::setBindingPoint(GLint unit) noexcept
-{
-	_bindingPoint = unit;
-}
-
-GLint
-EGLShaderVariant::getBindingPoint() const noexcept
-{
-	return _bindingPoint;
-}
-
-void
-EGLShaderVariant::setBindingProgram(GLuint program) noexcept
+EGL3ShaderVariant::setBindingProgram(GLuint program) noexcept
 {
 	_bindingProgram = program;
 }
 
 GLuint
-EGLShaderVariant::getBindingProgram() const noexcept
+EGL3ShaderVariant::getBindingProgram() const noexcept
 {
 	return _bindingProgram;
 }
 
 void
-EGLShaderVariant::assign(bool value) noexcept
+EGL3ShaderVariant::assign(bool value) noexcept
 {
 	GL_CHECK(glProgramUniform1i(_bindingProgram, _location, value));
 }
 
 void
-EGLShaderVariant::assign(int value) noexcept
+EGL3ShaderVariant::assign(int value) noexcept
 {
 	GL_CHECK(glProgramUniform1i(_bindingProgram, _location, value));
 }
 
 void
-EGLShaderVariant::assign(const int2& value) noexcept
+EGL3ShaderVariant::assign(const int2& value) noexcept
 {
 	GL_CHECK(glProgramUniform2iv(_bindingProgram, _location, 1, value.ptr()));
 }
 
 void
-EGLShaderVariant::assign(float value) noexcept
+EGL3ShaderVariant::assign(float value) noexcept
 {
 	GL_CHECK(glProgramUniform1f(_bindingProgram, _location, value));
 }
 
 void
-EGLShaderVariant::assign(const float2& value) noexcept
+EGL3ShaderVariant::assign(const float2& value) noexcept
 {
 	GL_CHECK(glProgramUniform2fv(_bindingProgram, _location, 1, value.ptr()));
 }
 
 void
-EGLShaderVariant::assign(const float3& value) noexcept
+EGL3ShaderVariant::assign(const float3& value) noexcept
 {
 	GL_CHECK(glProgramUniform3fv(_bindingProgram, _location, 1, value.ptr()));
 }
 
 void
-EGLShaderVariant::assign(const float4& value) noexcept
+EGL3ShaderVariant::assign(const float4& value) noexcept
 {
 	GL_CHECK(glProgramUniform4fv(_bindingProgram, _location, 1, value.ptr()));
 }
 
 void
-EGLShaderVariant::assign(const float3x3& value) noexcept
+EGL3ShaderVariant::assign(const float3x3& value) noexcept
 {
 	GL_CHECK(glProgramUniformMatrix3fv(_bindingProgram, _location, 1, GL_FALSE, value.ptr()));
 }
 
 void
-EGLShaderVariant::assign(const float4x4& value) noexcept
+EGL3ShaderVariant::assign(const float4x4& value) noexcept
 {
 	GL_CHECK(glProgramUniformMatrix4fv(_bindingProgram, _location, 1, GL_FALSE, value.ptr()));
 }
 
 void
-EGLShaderVariant::assign(const std::vector<float>& value) noexcept
+EGL3ShaderVariant::assign(const std::vector<float>& value) noexcept
 {
 	GL_CHECK(glProgramUniform1fv(_bindingProgram, _location, value.size(), value.data()));
 }
 
 void
-EGLShaderVariant::assign(const std::vector<float2>& value) noexcept
+EGL3ShaderVariant::assign(const std::vector<float2>& value) noexcept
 {
 	GL_CHECK(glProgramUniform2fv(_bindingProgram, _location, value.size(), (GLfloat*)value.data()));
 }
 
 void
-EGLShaderVariant::assign(const std::vector<float3>& value) noexcept
+EGL3ShaderVariant::assign(const std::vector<float3>& value) noexcept
 {
 	GL_CHECK(glProgramUniform3fv(_bindingProgram, _location, value.size(), (GLfloat*)value.data()));
 }
 
 void
-EGLShaderVariant::assign(const std::vector<float4>& value) noexcept
+EGL3ShaderVariant::assign(const std::vector<float4>& value) noexcept
 {
 	GL_CHECK(glProgramUniform4fv(_bindingProgram, _location, value.size(), (GLfloat*)value.data()));
-}
-
-void
-EGLShaderVariant::assign(TexturePtr texture, TextureSamplerPtr sampler) noexcept
-{
-	_texture = texture;
-	_sampler = sampler;
-}
-
-TexturePtr
-EGLShaderVariant::getTexture() const noexcept
-{
-	return _texture;
-}
-
-TextureSamplerPtr
-EGLShaderVariant::getSampler() const noexcept
-{
-	return _sampler;
 }
 
 EGLShaderUniform::EGLShaderUniform() noexcept
@@ -217,18 +184,6 @@ EGLShaderUniform::getLocation() const noexcept
 }
 
 void
-EGLShaderUniform::setBindingPoint(GLint unit) noexcept
-{
-	_value.setBindingPoint(unit);
-}
-
-GLint
-EGLShaderUniform::getBindingPoint() const noexcept
-{
-	return _value.getBindingPoint();
-}
-
-void
 EGLShaderUniform::setBindingProgram(GLuint program) noexcept
 {
 	_value.setBindingProgram(program);
@@ -238,18 +193,6 @@ GLuint
 EGLShaderUniform::getBindingProgram() const noexcept
 {
 	return _value.getBindingProgram();
-}
-
-TexturePtr 
-EGLShaderUniform::getTexture() const noexcept
-{
-	return _value.getTexture();
-}
-
-TextureSamplerPtr 
-EGLShaderUniform::getSampler() const noexcept
-{
-	return _value.getSampler();
 }
 
 EGL3Shader::EGL3Shader() noexcept
@@ -395,40 +338,6 @@ EGL3ShaderObject::setActive(bool active) noexcept
 			glUseProgram(_program);
 		_isActive = active;
 	}
-
-	if (active)
-	{
-		for (auto& it : _activeUniforms)
-		{
-			if (it->getType() == SPT_TEXTURE)
-			{
-				auto uniform = std::dynamic_pointer_cast<EGLShaderUniform>(it);
-				auto bindingPoint = uniform->getBindingPoint();
-				auto texture = std::dynamic_pointer_cast<EGL3Texture>(uniform->getTexture());
-				auto sampler = std::dynamic_pointer_cast<EGL3TextureSampler>(uniform->getSampler());
-
-				if (texture)
-				{
-					GLuint textureID = texture->getInstanceID();
-					GLenum textureDim = EGL3Types::asEGL3Target(texture->getTexDim());
-
-					GL_CHECK(glActiveTexture(GL_TEXTURE0 + bindingPoint));
-					GL_CHECK(glBindTexture(textureDim, textureID));
-				}
-				else
-				{
-					GL_CHECK(glActiveTexture(GL_TEXTURE0 + bindingPoint));
-					GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
-				}
-
-				if (sampler)
-				{
-					GLuint samplerID = sampler->getInstanceID();
-					GL_CHECK(glBindSampler(GL_TEXTURE0 + bindingPoint, samplerID));
-				}
-			}
-		}
-	}
 }
 
 bool
@@ -511,7 +420,6 @@ EGL3ShaderObject::_initActiveUniform() noexcept
 {
 	GLint numUniform = 0;
 	GLint maxUniformLength = 0;
-	GLint numTexUnit = 0;
 
 	glGetProgramiv(_program, GL_ACTIVE_UNIFORMS, &numUniform);
 	glGetProgramiv(_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformLength);
@@ -547,9 +455,6 @@ EGL3ShaderObject::_initActiveUniform() noexcept
 			type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
 		{
 			uniform->setType(SPT_TEXTURE);
-			uniform->setBindingPoint(numTexUnit++);
-
-			GL_CHECK(glProgramUniform1i(_program, location, uniform->getBindingPoint()));
 		}
 		else
 		{

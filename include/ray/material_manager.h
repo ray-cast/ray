@@ -75,8 +75,8 @@ public:
 	std::string getTexParmName(MaterialSemantic index) const noexcept;
 	MaterialSemantic getTexParamSemantic(const std::string& name) const noexcept;
 
-	MaterialParamSemanticPtr getParamPointer(MaterialSemantic semantic) const noexcept;
-	MaterialParamSemanticPtr getParamPointer(const std::string& name) const noexcept;
+	MaterialSemanticParamPtr getParamPointer(MaterialSemantic semantic) const noexcept;
+	MaterialSemanticParamPtr getParamPointer(const std::string& name) const noexcept;
 
 	MaterialPtr createMaterial(const std::string& name) except;
 
@@ -87,7 +87,7 @@ public:
 private:
 
 	MaterialPassPtr _material;
-	MaterialParamSemantics _semantics;
+	MaterialSemanticParams _semantics;
 };
 
 _NAME_END

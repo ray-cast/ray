@@ -38,43 +38,43 @@
 
 _NAME_BEGIN
 
-MaterialParamSemantic::MaterialParamSemantic(const std::string& name, ShaderVariantType type, MaterialSemantic semantic) noexcept
+MaterialSemanticParam::MaterialSemanticParam(const std::string& name, ShaderVariantType type, MaterialSemantic semantic) noexcept
 	: _name(name)
 	, _semantic(semantic)
 {
 	this->setType(type);
 }
 
-MaterialParamSemantic::~MaterialParamSemantic() noexcept
+MaterialSemanticParam::~MaterialSemanticParam() noexcept
 {
 }
 
 void
-MaterialParamSemantic::setName(const std::string& name) noexcept
+MaterialSemanticParam::setName(const std::string& name) noexcept
 {
 	_name = name;
 }
 
 const std::string&
-MaterialParamSemantic::getName() const noexcept
+MaterialSemanticParam::getName() const noexcept
 {
 	return _name;
 }
 
 void
-MaterialParamSemantic::setSemantic(MaterialSemantic semantic) noexcept
+MaterialSemanticParam::setSemantic(MaterialSemantic semantic) noexcept
 {
 	_semantic = semantic;
 }
 
 MaterialSemantic
-MaterialParamSemantic::getSemantic() const noexcept
+MaterialSemanticParam::getSemantic() const noexcept
 {
 	return _semantic;
 }
 
 std::size_t
-MaterialParamSemantic::getSize() const noexcept
+MaterialSemanticParam::getSize() const noexcept
 {
 	switch (_type)
 	{
@@ -103,7 +103,7 @@ MaterialParamSemantic::getSize() const noexcept
 }
 
 void
-MaterialParamSemantic::setType(ShaderVariantType type) noexcept
+MaterialSemanticParam::setType(ShaderVariantType type) noexcept
 {
 	if (_type != type)
 	{
@@ -150,13 +150,13 @@ MaterialParamSemantic::setType(ShaderVariantType type) noexcept
 }
 
 ShaderVariantType
-MaterialParamSemantic::getType() const noexcept
+MaterialSemanticParam::getType() const noexcept
 {
 	return _type;
 }
 
 void
-MaterialParamSemantic::assign(bool value) noexcept
+MaterialSemanticParam::assign(bool value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_BOOL);
 	if (_value.b != value)
@@ -166,7 +166,7 @@ MaterialParamSemantic::assign(bool value) noexcept
 }
 
 void
-MaterialParamSemantic::assign(int value) noexcept
+MaterialSemanticParam::assign(int value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_INT);
 	if (_value.i[0] != value)
@@ -176,7 +176,7 @@ MaterialParamSemantic::assign(int value) noexcept
 }
 
 void
-MaterialParamSemantic::assign(const int2& value) noexcept
+MaterialSemanticParam::assign(const int2& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_INT2);
 	if (_value.i[0] != value.x ||
@@ -188,7 +188,7 @@ MaterialParamSemantic::assign(const int2& value) noexcept
 }
 
 void
-MaterialParamSemantic::assign(float value) noexcept
+MaterialSemanticParam::assign(float value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT);
 	if (_value.f[0] != value)
@@ -198,7 +198,7 @@ MaterialParamSemantic::assign(float value) noexcept
 }
 
 void
-MaterialParamSemantic::assign(const float2& value) noexcept
+MaterialSemanticParam::assign(const float2& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT2);
 	if (_value.f[0] != value.x ||
@@ -210,7 +210,7 @@ MaterialParamSemantic::assign(const float2& value) noexcept
 }
 
 void
-MaterialParamSemantic::assign(const float3& value) noexcept
+MaterialSemanticParam::assign(const float3& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT3);
 	if (_value.f[0] != value.x ||
@@ -224,7 +224,7 @@ MaterialParamSemantic::assign(const float3& value) noexcept
 }
 
 void
-MaterialParamSemantic::assign(const float4& value) noexcept
+MaterialSemanticParam::assign(const float4& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT4);
 	if (_value.f[0] != value.x ||
@@ -240,49 +240,49 @@ MaterialParamSemantic::assign(const float4& value) noexcept
 }
 
 void
-MaterialParamSemantic::assign(const float3x3& value) noexcept
+MaterialSemanticParam::assign(const float3x3& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT3X3);
 	*_value.m3 = value;
 }
 
 void
-MaterialParamSemantic::assign(const float4x4& value) noexcept
+MaterialSemanticParam::assign(const float4x4& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT4X4);
 	*_value.m4 = value;
 }
 
 void
-MaterialParamSemantic::assign(const std::vector<float>& value) noexcept
+MaterialSemanticParam::assign(const std::vector<float>& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT_ARRAY);
 	*_value.farray = value;
 }
 
 void
-MaterialParamSemantic::assign(const std::vector<float2>& value) noexcept
+MaterialSemanticParam::assign(const std::vector<float2>& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT2_ARRAY);
 	*_value.farray2 = value;
 }
 
 void
-MaterialParamSemantic::assign(const std::vector<float3>& value) noexcept
+MaterialSemanticParam::assign(const std::vector<float3>& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT3_ARRAY);
 	*_value.farray3 = value;
 }
 
 void
-MaterialParamSemantic::assign(const std::vector<float4>& value) noexcept
+MaterialSemanticParam::assign(const std::vector<float4>& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT4_ARRAY);
 	*_value.farray4 = value;
 }
 
 void
-MaterialParamSemantic::assign(TexturePtr texture, TextureSamplerPtr sampler) noexcept
+MaterialSemanticParam::assign(TexturePtr texture, TextureSamplerPtr sampler) noexcept
 {
 	this->setType(ShaderVariantType::SPT_TEXTURE);
 	if (_texture != texture)
@@ -293,105 +293,105 @@ MaterialParamSemantic::assign(TexturePtr texture, TextureSamplerPtr sampler) noe
 }
 
 bool
-MaterialParamSemantic::getBool() const noexcept
+MaterialSemanticParam::getBool() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_BOOL);
 	return _value.b;
 }
 
 int
-MaterialParamSemantic::getInt() const noexcept
+MaterialSemanticParam::getInt() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_INT);
 	return _value.i[0];
 }
 
 const int2&
-MaterialParamSemantic::getInt2() const noexcept
+MaterialSemanticParam::getInt2() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_INT2);
 	return (int2&)_value.i[0];
 }
 
 float
-MaterialParamSemantic::getFloat() const noexcept
+MaterialSemanticParam::getFloat() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT);
 	return _value.f[0];
 }
 
 const float2&
-MaterialParamSemantic::getFloat2() const noexcept
+MaterialSemanticParam::getFloat2() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT2);
 	return (float2&)_value.f[0];
 }
 
 const float3&
-MaterialParamSemantic::getFloat3() const noexcept
+MaterialSemanticParam::getFloat3() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT3);
 	return (float3&)_value.f[0];
 }
 
 const float4&
-MaterialParamSemantic::getFloat4() const noexcept
+MaterialSemanticParam::getFloat4() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT4);
 	return (float4&)_value.f[0];
 }
 
 const float3x3&
-MaterialParamSemantic::getFloat3x3() const noexcept
+MaterialSemanticParam::getFloat3x3() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT3X3);
 	return (float3x3&)*_value.m3;
 }
 
 const float4x4&
-MaterialParamSemantic::getFloat4x4() const noexcept
+MaterialSemanticParam::getFloat4x4() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT4X4);
 	return (float4x4&)*_value.m4;
 }
 
 const std::vector<float>&
-MaterialParamSemantic::getFloatArray() const noexcept
+MaterialSemanticParam::getFloatArray() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT_ARRAY);
 	return *_value.farray;
 }
 
 const std::vector<float2>&
-MaterialParamSemantic::getFloat2Array() const noexcept
+MaterialSemanticParam::getFloat2Array() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT2_ARRAY);
 	return *_value.farray2;
 }
 
 const std::vector<float3>&
-MaterialParamSemantic::getFloat3Array() const noexcept
+MaterialSemanticParam::getFloat3Array() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT3_ARRAY);
 	return *_value.farray3;
 }
 
 const std::vector<float4>&
-MaterialParamSemantic::getFloat4Array() const noexcept
+MaterialSemanticParam::getFloat4Array() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT4_ARRAY);
 	return *_value.farray4;
 }
 
 TexturePtr
-MaterialParamSemantic::getTexture() const noexcept
+MaterialSemanticParam::getTexture() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_TEXTURE);
 	return _texture;
 }
 
 TextureSamplerPtr
-MaterialParamSemantic::getTextureSampler() const noexcept
+MaterialSemanticParam::getTextureSampler() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_TEXTURE);
 	return _textureSampler;
@@ -531,8 +531,13 @@ MaterialParam::assign(const std::vector<float4>& value) noexcept
 void
 MaterialParam::assign(TexturePtr texture, TextureSamplerPtr sampler) noexcept
 {
-	for (auto& it : _uniforms)
-		it->assign(texture, sampler);
+	_texture = texture;
+}
+
+TexturePtr 
+MaterialParam::getTexture() const noexcept
+{
+	return _texture;
 }
 
 void
@@ -607,6 +612,12 @@ MaterialParam::removeShaderUniform(ShaderUniformPtr& uniform) noexcept
 	auto it = std::find(_uniforms.begin(), _uniforms.end(), uniform);
 	if (it != _uniforms.end())
 		_uniforms.erase(it);
+}
+
+ShaderUniforms&
+MaterialParam::getShaderUniform() noexcept
+{
+	return _uniforms;
 }
 
 _NAME_END

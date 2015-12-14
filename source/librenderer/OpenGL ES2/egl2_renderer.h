@@ -80,6 +80,8 @@ public:
 	virtual RenderBufferPtr getRenderBuffer() const noexcept;
 
 	virtual TexturePtr createTexture() noexcept;
+	virtual void setTexture(TexturePtr texture, std::uint32_t slot) noexcept;
+
 	virtual RenderTexturePtr createRenderTexture() noexcept;
 	virtual MultiRenderTexturePtr createMultiRenderTexture() noexcept;
 	virtual void setRenderTexture(RenderTexturePtr target) noexcept;

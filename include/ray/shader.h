@@ -60,7 +60,6 @@ public:
 	virtual void assign(const std::vector<float2>& value) noexcept = 0;
 	virtual void assign(const std::vector<float3>& value) noexcept = 0;
 	virtual void assign(const std::vector<float4>& value) noexcept = 0;
-	virtual void assign(TexturePtr texture, TextureSamplerPtr sampler) noexcept = 0;
 
 private:
 	ShaderVariant(const ShaderVariant&) noexcept = delete;
@@ -80,9 +79,9 @@ public:
 	bool needUpdate() const noexcept;
 
 private:
-	bool _needUpdate;
-
 	std::string _name;
+
+	bool _needUpdate;
 };
 
 class EXPORT ShaderAttribute final : public ShaderParameter
@@ -95,7 +94,6 @@ public:
 	ShaderUniform(ShaderVariant* value) noexcept;
 	virtual ~ShaderUniform() noexcept;
 
-	const std::string& getName() const noexcept;
 	ShaderVariantType getType() const noexcept;
 
 	void assign(bool value) noexcept;
@@ -111,18 +109,15 @@ public:
 	void assign(const std::vector<float2>& value) noexcept;
 	void assign(const std::vector<float3>& value) noexcept;
 	void assign(const std::vector<float4>& value) noexcept;
-	void assign(TexturePtr texture, TextureSamplerPtr sample = nullptr) noexcept;
 
 protected:
-	void setName(const std::string& name) noexcept;
 	void setType(ShaderVariantType type) noexcept;
-
+	
 private:
 	ShaderUniform(const ShaderUniform&) noexcept = delete;
 	ShaderUniform& operator=(const ShaderUniform&) noexcept = delete;
 
 private:
-	std::string _name;
 	ShaderVariantType _type;
 	ShaderVariant* _value;
 };

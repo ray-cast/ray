@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-EGLCanvas::EGLCanvas() noexcept
+EGL3Canvas::EGL3Canvas() noexcept
     : _display(EGL_NO_DISPLAY)
     , _surface(EGL_NO_SURFACE)
     , _context(EGL_NO_CONTEXT)
@@ -48,7 +48,7 @@ EGLCanvas::EGLCanvas() noexcept
 	initPixelFormat(_fbconfig, _ctxconfig);
 }
 
-EGLCanvas::EGLCanvas(WindHandle hwnd) except
+EGL3Canvas::EGL3Canvas(WindHandle hwnd) except
 	: _display(EGL_NO_DISPLAY)
 	, _surface(EGL_NO_SURFACE)
 	, _context(EGL_NO_CONTEXT)
@@ -60,12 +60,12 @@ EGLCanvas::EGLCanvas(WindHandle hwnd) except
 	this->open(hwnd);
 }
 
-EGLCanvas::~EGLCanvas() noexcept
+EGL3Canvas::~EGL3Canvas() noexcept
 {
     this->close();
 }
 void
-EGLCanvas::open(WindHandle hwnd) except
+EGL3Canvas::open(WindHandle hwnd) except
 {
 	EGLint attribs[80];
 	EGLint index = 0, mask = 0, startegy = 0;
@@ -166,7 +166,7 @@ EGLCanvas::open(WindHandle hwnd) except
 }
 
 void
-EGLCanvas::close() noexcept
+EGL3Canvas::close() noexcept
 {
     if (_surface != EGL_NO_SURFACE)
     {
@@ -188,7 +188,7 @@ EGLCanvas::close() noexcept
 }
 
 void
-EGLCanvas::setSwapInterval(SwapInterval interval) noexcept
+EGL3Canvas::setSwapInterval(SwapInterval interval) noexcept
 {
     assert(_display != EGL_NO_DISPLAY);
 
@@ -218,13 +218,13 @@ EGLCanvas::setSwapInterval(SwapInterval interval) noexcept
 }
 
 SwapInterval
-EGLCanvas::getSwapInterval() const noexcept
+EGL3Canvas::getSwapInterval() const noexcept
 {
 	return _interval;
 }
 
 void
-EGLCanvas::present() noexcept
+EGL3Canvas::present() noexcept
 {
     assert(_display != EGL_NO_DISPLAY);
     assert(_surface != EGL_NO_SURFACE);
@@ -232,27 +232,27 @@ EGLCanvas::present() noexcept
 }
 
 WindHandle
-EGLCanvas::getWindHandle() const noexcept
+EGL3Canvas::getWindHandle() const noexcept
 {
 	return _hwnd;
 }
 
 void
-EGLCanvas::onActivate() except
+EGL3Canvas::onActivate() except
 {
 	if (!eglMakeCurrent(_display, _surface, _surface, _context))
 		throw failure(__TEXT("eglMakeCurrent() fail"));
 }
 
 void
-EGLCanvas::onDeactivate() except
+EGL3Canvas::onDeactivate() except
 {
 	if (!eglMakeCurrent(EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT))
 		throw failure(__TEXT("eglMakeCurrent() fail"));
 }
 
 void
-EGLCanvas::initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept
+EGL3Canvas::initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept
 {
 	fbconfig.redSize = 8;
 	fbconfig.greenSize = 8;

@@ -31,7 +31,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/ogl_state.h>
+#include "ogl_state.h"
 
 _NAME_BEGIN
 
@@ -125,13 +125,11 @@ OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
 		}
 	}
 
-#if !defined(EGLAPI)
 	if (_dstRasterState.fillMode != rasterState.fillMode)
 	{
 		GLenum mode = OGLTypes::asFillMode(rasterState.fillMode);
 		glPolygonMode(GL_FRONT_AND_BACK, mode);
 	}
-#endif
 
 	if (_dstRasterState.scissorTestEnable != rasterState.scissorTestEnable)
 	{

@@ -35,59 +35,45 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "egl2_shader.h"
-#include "egl2_texture.h"
 
 _NAME_BEGIN
 
-EGLShaderVariant::EGLShaderVariant() noexcept
+EGL2ShaderVariant::EGL2ShaderVariant() noexcept
 	: _bindingProgram(0)
-	, _bindingPoint(0)
 	, _location(0)
 {
 }
 
-EGLShaderVariant::~EGLShaderVariant() noexcept
+EGL2ShaderVariant::~EGL2ShaderVariant() noexcept
 {
 }
 
 void
-EGLShaderVariant::setLocation(GLint location) noexcept
+EGL2ShaderVariant::setLocation(GLint location) noexcept
 {
 	_location = location;
 }
 
 GLint
-EGLShaderVariant::getLocation() const noexcept
+EGL2ShaderVariant::getLocation() const noexcept
 {
 	return _location;
 }
 
 void
-EGLShaderVariant::setBindingPoint(GLint unit) noexcept
-{
-	_bindingPoint = unit;
-}
-
-GLint
-EGLShaderVariant::getBindingPoint() const noexcept
-{
-	return _bindingPoint;
-}
-
-void
-EGLShaderVariant::setBindingProgram(GLuint program) noexcept
+EGL2ShaderVariant::setBindingProgram(GLuint program) noexcept
 {
 	_bindingProgram = program;
 }
 
 GLuint
-EGLShaderVariant::getBindingProgram() const noexcept
+EGL2ShaderVariant::getBindingProgram() const noexcept
 {
 	return _bindingProgram;
 }
 
 void
-EGLShaderVariant::setType(ShaderVariantType type) noexcept
+EGL2ShaderVariant::setType(ShaderVariantType type) noexcept
 {
 	if (_type != type)
 	{
@@ -134,13 +120,13 @@ EGLShaderVariant::setType(ShaderVariantType type) noexcept
 }
 
 ShaderVariantType
-EGLShaderVariant::getType() const noexcept
+EGL2ShaderVariant::getType() const noexcept
 {
 	return _type;
 }
 
 void
-EGLShaderVariant::assign(bool value) noexcept
+EGL2ShaderVariant::assign(bool value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_BOOL);
 	if (_value.b != value)
@@ -150,7 +136,7 @@ EGLShaderVariant::assign(bool value) noexcept
 }
 
 void
-EGLShaderVariant::assign(int value) noexcept
+EGL2ShaderVariant::assign(int value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_INT);
 	if (_value.i[0] != value)
@@ -160,7 +146,7 @@ EGLShaderVariant::assign(int value) noexcept
 }
 
 void
-EGLShaderVariant::assign(const int2& value) noexcept
+EGL2ShaderVariant::assign(const int2& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_INT2);
 	if (_value.i[0] != value.x ||
@@ -172,7 +158,7 @@ EGLShaderVariant::assign(const int2& value) noexcept
 }
 
 void
-EGLShaderVariant::assign(float value) noexcept
+EGL2ShaderVariant::assign(float value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT);
 	if (_value.f[0] != value)
@@ -182,7 +168,7 @@ EGLShaderVariant::assign(float value) noexcept
 }
 
 void
-EGLShaderVariant::assign(const float2& value) noexcept
+EGL2ShaderVariant::assign(const float2& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT2);
 	if (_value.f[0] != value.x ||
@@ -194,7 +180,7 @@ EGLShaderVariant::assign(const float2& value) noexcept
 }
 
 void
-EGLShaderVariant::assign(const float3& value) noexcept
+EGL2ShaderVariant::assign(const float3& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT3);
 	if (_value.f[0] != value.x ||
@@ -208,7 +194,7 @@ EGLShaderVariant::assign(const float3& value) noexcept
 }
 
 void
-EGLShaderVariant::assign(const float4& value) noexcept
+EGL2ShaderVariant::assign(const float4& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT4);
 	if (_value.f[0] != value.x ||
@@ -224,145 +210,122 @@ EGLShaderVariant::assign(const float4& value) noexcept
 }
 
 void
-EGLShaderVariant::assign(const float3x3& value) noexcept
+EGL2ShaderVariant::assign(const float3x3& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT3X3);
 	*_value.m3 = value;
 }
 
 void
-EGLShaderVariant::assign(const float4x4& value) noexcept
+EGL2ShaderVariant::assign(const float4x4& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT4X4);
 	*_value.m4 = value;
 }
 
 void
-EGLShaderVariant::assign(const std::vector<float>& value) noexcept
+EGL2ShaderVariant::assign(const std::vector<float>& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT_ARRAY);
 	*_value.farray = value;
 }
 
 void
-EGLShaderVariant::assign(const std::vector<float2>& value) noexcept
+EGL2ShaderVariant::assign(const std::vector<float2>& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT2_ARRAY);
 	*_value.farray2 = value;
 }
 
 void
-EGLShaderVariant::assign(const std::vector<float3>& value) noexcept
+EGL2ShaderVariant::assign(const std::vector<float3>& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT3_ARRAY);
 	*_value.farray3 = value;
 }
 
 void
-EGLShaderVariant::assign(const std::vector<float4>& value) noexcept
+EGL2ShaderVariant::assign(const std::vector<float4>& value) noexcept
 {
 	this->setType(ShaderVariantType::SPT_FLOAT4_ARRAY);
 	*_value.farray4 = value;
 }
 
-void
-EGLShaderVariant::assign(TexturePtr texture, TextureSamplerPtr sampler) noexcept
-{
-	this->setType(ShaderVariantType::SPT_TEXTURE);
-	if (_texture != texture)
-	{
-		_texture = texture;
-		_textureSampler = sampler;
-	}
-}
-
 bool
-EGLShaderVariant::getBool() const noexcept
+EGL2ShaderVariant::getBool() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_BOOL);
 	return _value.b;
 }
 
 int
-EGLShaderVariant::getInt() const noexcept
+EGL2ShaderVariant::getInt() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_INT);
 	return _value.i[0];
 }
 
 float
-EGLShaderVariant::getFloat() const noexcept
+EGL2ShaderVariant::getFloat() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT);
 	return _value.f[0];
 }
 
 const int2&
-EGLShaderVariant::getInt2() const noexcept
+EGL2ShaderVariant::getInt2() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_INT2);
 	return (int2&)_value.i;
 }
 
 const float2&
-EGLShaderVariant::getFloat2() const noexcept
+EGL2ShaderVariant::getFloat2() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT2);
 	return (float2&)_value.f;
 }
 
 const float3&
-EGLShaderVariant::getFloat3() const noexcept
+EGL2ShaderVariant::getFloat3() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT3);
 	return (float3&)_value.f;
 }
 
 const float4&
-EGLShaderVariant::getFloat4() const noexcept
+EGL2ShaderVariant::getFloat4() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT4);
 	return (float4&)_value.f;
 }
 
 const float3x3&
-EGLShaderVariant::getFloat3x3() const noexcept
+EGL2ShaderVariant::getFloat3x3() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT3X3);
 	return (float3x3&)*_value.m3;
 }
 
 const float4x4&
-EGLShaderVariant::getFloat4x4() const noexcept
+EGL2ShaderVariant::getFloat4x4() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT4X4);
 	return (float4x4&)*_value.m4;
 }
 
 const std::vector<float>&
-EGLShaderVariant::getFloatArray() const noexcept
+EGL2ShaderVariant::getFloatArray() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT_ARRAY);
 	return *_value.farray;
 }
 
 const std::vector<float2>&
-EGLShaderVariant::getFloat2Array() const noexcept
+EGL2ShaderVariant::getFloat2Array() const noexcept
 {
 	assert(_type == ShaderVariantType::SPT_FLOAT_ARRAY);
 	return *_value.farray2;
-}
-
-TexturePtr
-EGLShaderVariant::getTexture() const noexcept
-{
-	return _texture;
-}
-
-TextureSamplerPtr
-EGLShaderVariant::getSampler() const noexcept
-{
-	return _textureSampler;
 }
 
 EGLShaderUniform::EGLShaderUniform() noexcept
@@ -399,18 +362,6 @@ EGLShaderUniform::getLocation() const noexcept
 }
 
 void
-EGLShaderUniform::setBindingPoint(GLint unit) noexcept
-{
-	_value.setBindingPoint(unit);
-}
-
-GLint
-EGLShaderUniform::getBindingPoint() const noexcept
-{
-	return _value.getBindingPoint();
-}
-
-void
 EGLShaderUniform::setBindingProgram(GLuint program) noexcept
 {
 	_value.setBindingProgram(program);
@@ -420,18 +371,6 @@ GLuint
 EGLShaderUniform::getBindingProgram() const noexcept
 {
 	return _value.getBindingProgram();
-}
-
-TexturePtr
-EGLShaderUniform::getTexture() const noexcept
-{
-	return _value.getTexture();
-}
-
-TextureSamplerPtr
-EGLShaderUniform::getSampler() const noexcept
-{
-	return _value.getSampler();
 }
 
 bool
@@ -612,12 +551,8 @@ EGL2ShaderObject::setup() except
 
 	_isActive = false;
 
-	glUseProgram(_program);
-
 	_initActiveAttribute();
 	_initActiveUniform();
-
-	glUseProgram(GL_NONE);
 
 	return true;
 }
@@ -736,7 +671,6 @@ EGL2ShaderObject::_initActiveUniform() noexcept
 {
 	GLint numUniform = 0;
 	GLint maxUniformLength = 0;
-	GLint numTexUnit = 0;
 
 	glGetProgramiv(_program, GL_ACTIVE_UNIFORMS, &numUniform);
 	glGetProgramiv(_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformLength);
@@ -769,9 +703,6 @@ EGL2ShaderObject::_initActiveUniform() noexcept
 		if (type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE)
 		{
 			uniform->setType(SPT_TEXTURE);
-			uniform->setBindingPoint(numTexUnit++);
-
-			GL_CHECK(glUniform1i(location, uniform->getBindingPoint()));
 		}
 		else
 		{
@@ -900,26 +831,7 @@ EGL2ShaderObject::_updateShaderUniform(ShaderUniformPtr it) noexcept
 	}
 	case ShaderVariantType::SPT_TEXTURE:
 	{
-		auto texture = uniform->getTexture();
-		if (texture)
-		{
-			auto bindingPoint = uniform->getBindingPoint();
-			auto texture = std::dynamic_pointer_cast<EGL2Texture>(uniform->getTexture());
-
-			if (texture)
-			{
-				GLuint textureID = texture->getInstanceID();
-				GLenum textureDim = EGL2Types::asEGL2Target(texture->getTexDim());
-
-				GL_CHECK(glActiveTexture(GL_TEXTURE0 + bindingPoint));
-				GL_CHECK(glBindTexture(textureDim, textureID));
-			}
-			else
-			{
-				GL_CHECK(glActiveTexture(GL_TEXTURE0 + bindingPoint));
-				GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
-			}
-		}
+		glUniform1i(location, uniform->getInt());
 		break;
 	}
 	default:

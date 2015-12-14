@@ -37,7 +37,7 @@
 #ifndef _H_OGL_RENDERER_H_
 #define _H_OGL_RENDERER_H_
 
-#include <ray/ogl_canvas.h>
+#include "ogl_canvas.h"
 
 _NAME_BEGIN
 
@@ -80,6 +80,8 @@ public:
 	virtual RenderBufferPtr getRenderBuffer() const noexcept;
 
 	virtual TexturePtr createTexture() noexcept;
+	virtual void setTexture(TexturePtr texture, std::uint32_t slot) noexcept;
+
 	virtual RenderTexturePtr createRenderTexture() noexcept;
 	virtual MultiRenderTexturePtr createMultiRenderTexture() noexcept;
 	virtual void setRenderTexture(RenderTexturePtr target) noexcept;
@@ -107,9 +109,6 @@ private:
 	void initDebugControl() noexcept;
 	void initStateSystem() noexcept;
 	void initCommandList() noexcept;
-
-	void setShaderUniform(ShaderUniformPtr uniform, TexturePtr texture, TextureSamplePtr sample = nullptr) noexcept;
-	void setShaderUniform(ShaderUniformPtr uniform, ShaderVariantPtr constant) noexcept;
 
 	static void GLAPIENTRY debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept;
 
@@ -149,9 +148,7 @@ private:
 
 	RenderCommand _renderCommands;
 
-	std::vector<GLint> _textureUnits;
 	std::vector<Viewport> _viewport;
-	std::vector<OGLShaderVariant> _constantBuffers;
 };
 
 _NAME_END

@@ -37,11 +37,18 @@
 #ifndef _H_OGL_COMMANDLIST_H_
 #define _H_OGL_COMMANDLIST_H_
 
-#ifdef _BUILD_OPENGL
-
-#include <ray/ogl_canvas.h>
+#include "ogl_canvas.h"
 
 _NAME_BEGIN
+
+typedef struct DrawElementsIndirectCommand_t
+{
+	GLuint count;
+	GLuint primCount;
+	GLuint firstIndex;
+	GLuint baseVertex;
+	GLuint baseInstance;
+} DrawElementsIndirectCommand;
 
 struct TerminateSequenceCommandNV
 {
@@ -325,7 +332,5 @@ inline GLushort glGetStageIndexNV(GLenum shadertype)
 EXPORT bool initCommandListNV() noexcept;
 
 _NAME_END
-
-#endif
 
 #endif

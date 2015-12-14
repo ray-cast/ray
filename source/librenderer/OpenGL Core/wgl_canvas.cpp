@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifdef _BUILD_OPENGL
-#include <ray/wgl_canvas.h>
+#if defined(_BUILD_PLATFORM_WINDOWS)
+#include "wgl_canvas.h"
 
 _NAME_BEGIN
 

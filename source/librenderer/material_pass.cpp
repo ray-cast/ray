@@ -70,6 +70,10 @@ MaterialPass::setup(Material& material) except
 			if (param)
 			{
 				param->addShaderUniform(uniform);
+
+				if (uniform->getType() == ShaderVariantType::SPT_TEXTURE)
+					_textures.push_back(param);
+
 				_parameters.push_back(param);
 			}
 		}
@@ -120,6 +124,12 @@ RenderPass
 MaterialPass::getRenderPass() const noexcept
 {
 	return _pass;
+}
+
+const MaterialParams& 
+MaterialPass::getTextures() const noexcept
+{
+	return _textures;
 }
 
 const MaterialParams& 

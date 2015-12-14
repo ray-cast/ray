@@ -78,7 +78,7 @@ public:
 	int getDepth()   const noexcept;
 	const int3& getSize()  const noexcept;
 
-	std::uint8_t getMipLevel() const noexcept;
+	std::int32_t getMipLevel() const noexcept;
 	std::uint32_t getMipSize() const noexcept;
 
 	void* getStream() const noexcept;
@@ -100,7 +100,7 @@ private:
 
 	int3 _size;
 
-	std::uint8_t _mipLevel;
+	std::int32_t _mipLevel;
 	std::uint32_t _mipSize;
 
 	TextureFormat _format;

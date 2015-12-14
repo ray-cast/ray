@@ -180,7 +180,7 @@ EGL3Renderer::getWireframeMode() const noexcept
 RenderWindowPtr
 EGL3Renderer::createRenderWindow() const noexcept
 {
-	return std::make_shared<EGLCanvas>();
+	return std::make_shared<EGL3Canvas>();
 }
 
 void
@@ -336,6 +336,24 @@ EGL3Renderer::createTexture() noexcept
 {
 	auto result = std::make_shared<EGL3Texture>();
 	return result;
+}
+
+void
+EGL3Renderer::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
+{
+	if (texture)
+	{
+		GLuint textureID = std::dynamic_pointer_cast<EGL3Texture>(texture)->getInstanceID();
+		GLenum textureDim = EGL3Types::asEGL3Target(texture->getTexDim());
+
+		GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+		GL_CHECK(glBindTexture(textureDim, textureID));
+	}
+	else
+	{
+		GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+		GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
+	}
 }
 
 RenderTexturePtr
@@ -619,16 +637,15 @@ EGL3Renderer::createShaderObject() noexcept
 void
 EGL3Renderer::setShaderObject(ShaderObjectPtr shader) noexcept
 {
-	if (shader)
-		shader->setActive(true);
-
 	if (_shaderObject != shader)
 	{
 		if (_shaderObject)
 			_shaderObject->setActive(false);
+
 		_shaderObject = shader;
 
-		if (!shader) GL_CHECK(glUseProgram(GL_NONE));
+		if (_shaderObject)
+			_shaderObject->setActive(true);
 	}
 }
 

@@ -37,11 +37,11 @@
 #ifndef _H_OGL_BUFFER_H_
 #define _H_OGL_BUFFER_H_
 
-#include <ray/ogl_canvas.h>
+#include "ogl_canvas.h"
 
 _NAME_BEGIN
 
-class OGLBufferData : public RenderBufferData
+class OGLBufferData : public GraphicsData
 {
 public:
 	OGLBufferData() noexcept;
@@ -57,6 +57,7 @@ public:
 	void resize(const char* data, streamsize datasize) noexcept;
 
 	int flush() noexcept;
+	int flush(ios_base::off_type offset, streamsize cnt) noexcept;
 
 	streamsize read(char* data, streamsize cnt) noexcept;
 	streamsize write(const char* data, streamsize cnt) noexcept;
@@ -65,17 +66,16 @@ public:
 	streamoff tellg() noexcept;
 
 	const char* map(std::uint32_t access) noexcept;
+	const char* map(ios_base::off_type offset, streamsize cnt, std::uint32_t access) noexcept;
 	void unmap() noexcept;
 	bool isMapping() const noexcept;
 
 	GLuint getInstanceID() noexcept;
-	GLuint64 getInstanceAddr() noexcept;
 
 	void bind() noexcept;
 
 private:
 	GLuint _buffer;
-	GLuint64 _bindlessBuffer;
 	GLenum _target;
 	GLvoid* _data;
 	GLsizei _dataSize;
@@ -124,7 +124,6 @@ public:
 	IndexType getIndexType() const noexcept;
 
 	GLuint getInstanceID() noexcept;
-	GLuint64 getInstanceAddr() noexcept;
 
 	void bind() noexcept;
 
@@ -143,16 +142,18 @@ public:
 	void setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) except;
 	void close() noexcept;
 
-	GLuint getInstanceID() noexcept;
+	std::size_t getNumVertices() const noexcept;
+	std::size_t getNumIndices() const noexcept;
+
+	VertexBufferDataPtr getVertexBuffer() const noexcept;
+	IndexBufferDataPtr getIndexBuffer() const noexcept;
 
 	void apply() noexcept;
 
 private:
 
-	GLuint _vao;
-
-	std::shared_ptr<OGLVertexBuffer> _vb;
-	std::shared_ptr<OGLIndexBuffer> _ib;
+	OGLVertexBufferPtr _vb;
+	OGLIndexBufferPtr _ib;
 };
 
 _NAME_END

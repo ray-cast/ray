@@ -34,9 +34,160 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/ogl_shader.h>
+#include "ogl_shader.h"
 
 _NAME_BEGIN
+
+OGLShaderVariant::OGLShaderVariant() noexcept
+	: _bindingProgram(0)
+	, _location(0)
+{
+}
+
+OGLShaderVariant::~OGLShaderVariant() noexcept
+{
+}
+
+void
+OGLShaderVariant::setLocation(GLint location) noexcept
+{
+	_location = location;
+}
+
+GLint
+OGLShaderVariant::getLocation() const noexcept
+{
+	return _location;
+}
+
+void
+OGLShaderVariant::setBindingProgram(GLuint program) noexcept
+{
+	_bindingProgram = program;
+}
+
+GLuint
+OGLShaderVariant::getBindingProgram() const noexcept
+{
+	return _bindingProgram;
+}
+
+void
+OGLShaderVariant::assign(bool value) noexcept
+{
+	glProgramUniform1i(_bindingProgram, _location, value);
+}
+
+void
+OGLShaderVariant::assign(int value) noexcept
+{
+	glProgramUniform1i(_bindingProgram, _location, value);
+}
+
+void
+OGLShaderVariant::assign(const int2& value) noexcept
+{
+	glProgramUniform2iv(_bindingProgram, _location, 1, value.ptr());
+}
+
+void
+OGLShaderVariant::assign(float value) noexcept
+{
+	glProgramUniform1f(_bindingProgram, _location, value);
+}
+
+void
+OGLShaderVariant::assign(const float2& value) noexcept
+{
+	glProgramUniform2fv(_bindingProgram, _location, 1, value.ptr());
+}
+
+void
+OGLShaderVariant::assign(const float3& value) noexcept
+{
+	glProgramUniform3fv(_bindingProgram, _location, 1, value.ptr());
+}
+
+void
+OGLShaderVariant::assign(const float4& value) noexcept
+{
+	glProgramUniform4fv(_bindingProgram, _location, 1, value.ptr());
+}
+
+void
+OGLShaderVariant::assign(const float3x3& value) noexcept
+{
+	glProgramUniformMatrix3fv(_bindingProgram, _location, 1, GL_FALSE, value.ptr());
+}
+
+void
+OGLShaderVariant::assign(const float4x4& value) noexcept
+{
+	glProgramUniformMatrix4fv(_bindingProgram, _location, 1, GL_FALSE, value.ptr());
+}
+
+void
+OGLShaderVariant::assign(const std::vector<float>& value) noexcept
+{
+	glProgramUniform1fv(_bindingProgram, _location, value.size(), value.data());
+}
+
+void
+OGLShaderVariant::assign(const std::vector<float2>& value) noexcept
+{
+	glProgramUniform2fv(_bindingProgram, _location, value.size(), (GLfloat*)value.data());
+}
+
+void
+OGLShaderVariant::assign(const std::vector<float3>& value) noexcept
+{
+	glProgramUniform3fv(_bindingProgram, _location, value.size(), (GLfloat*)value.data());
+}
+
+void
+OGLShaderVariant::assign(const std::vector<float4>& value) noexcept
+{
+	glProgramUniform4fv(_bindingProgram, _location, value.size(), (GLfloat*)value.data());
+}
+
+OGLShaderUniform::OGLShaderUniform() noexcept
+	: ShaderUniform(&_value)
+{
+}
+
+OGLShaderUniform::~OGLShaderUniform() noexcept
+{
+}
+
+void
+OGLShaderUniform::setType(ShaderVariantType type) noexcept
+{
+	ShaderUniform::setType(type);
+}
+
+void
+OGLShaderUniform::setLocation(GLint location) noexcept
+{
+	_value.setLocation(location);
+}
+
+GLint
+OGLShaderUniform::getLocation() const noexcept
+{
+	return _value.getLocation();
+}
+
+void
+OGLShaderUniform::setBindingProgram(GLuint program) noexcept
+{
+	_value.setBindingProgram(program);
+}
+
+GLuint
+OGLShaderUniform::getBindingProgram() const noexcept
+{
+	return _value.getBindingProgram();
+}
 
 OGLShader::OGLShader() noexcept
 	: _instance(GL_NONE)
@@ -103,6 +254,7 @@ OGLShader::getInstanceID() const noexcept
 
 OGLShaderObject::OGLShaderObject() noexcept
 	: _program(0)
+	, _isActive(false)
 {
 }
 
@@ -123,8 +275,8 @@ OGLShaderObject::setup() except
 		auto oglShader = std::dynamic_pointer_cast<OGLShader>(shader);
 		if (oglShader)
 		{
-			if (!shader->getInstanceID())
-				shader->setup();
+			if (!oglShader->getInstanceID())
+				oglShader->setup();
 
 			glAttachShader(_program, oglShader->getInstanceID());
 		}
@@ -147,7 +299,6 @@ OGLShaderObject::setup() except
 	_initActiveAttribute();
 	_initActiveUniform();
 	_initActiveUniformBlock();
-	_initActiveSubroutine();
 
 	return true;
 }
@@ -165,7 +316,23 @@ OGLShaderObject::close() noexcept
 
 	_activeAttributes.clear();
 	_activeUniforms.clear();
-	_activeSubroutines.clear();
+}
+
+void
+OGLShaderObject::setActive(bool active) noexcept
+{
+	if (_isActive != active)
+	{
+		if (active)
+			glUseProgram(_program);
+		_isActive = active;
+	}
+}
+
+bool
+OGLShaderObject::getActive() noexcept
+{
+	return _isActive;
 }
 
 void
@@ -184,8 +351,8 @@ OGLShaderObject::removeShader(ShaderPtr shader) noexcept
 	}
 }
 
-Shaders&
-OGLShaderObject::getShaders() noexcept
+const Shaders&
+OGLShaderObject::getShaders() const noexcept
 {
 	return _shaders;
 }
@@ -206,12 +373,6 @@ ShaderUniforms&
 OGLShaderObject::getActiveUniforms() noexcept
 {
 	return _activeUniforms;
-}
-
-ShaderSubroutines&
-OGLShaderObject::getActiveSubroutines() noexcept
-{
-	return _activeSubroutines;
 }
 
 void
@@ -238,7 +399,7 @@ OGLShaderObject::_initActiveAttribute() noexcept
 
 			auto attrib = std::make_shared<ShaderAttribute>();
 			attrib->setName(nameAttribute.get());
-			attrib->setLocation(location);
+			//attrib->setLocation(location);
 
 			_activeAttributes.push_back(attrib);
 		}
@@ -250,7 +411,6 @@ OGLShaderObject::_initActiveUniform() noexcept
 {
 	GLint numUniform = 0;
 	GLint maxUniformLength = 0;
-	GLint numTexUnit = 0;
 
 	glGetProgramiv(_program, GL_ACTIVE_UNIFORMS, &numUniform);
 	glGetProgramiv(_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformLength);
@@ -275,7 +435,7 @@ OGLShaderObject::_initActiveUniform() noexcept
 		if (location == GL_INVALID_INDEX)
 			continue;
 
-		auto uniform = std::make_shared<ShaderUniform>();
+		auto uniform = std::make_shared<OGLShaderUniform>();
 		uniform->setName(nameUniform.get());
 		uniform->setLocation(location);
 		uniform->setBindingProgram(_program);
@@ -286,7 +446,6 @@ OGLShaderObject::_initActiveUniform() noexcept
 			type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
 		{
 			uniform->setType(SPT_TEXTURE);
-			uniform->setBindingPoint(numTexUnit++);
 		}
 		else
 		{
@@ -389,16 +548,12 @@ OGLShaderObject::_initActiveUniformBlock() noexcept
 				for (GLint j = 0; j < count; ++j)
 				{
 					GLsizei length = 0;
-#if !defined(EGLAPI)
-					glGetActiveUniformName(_program, indices[j], maxUniformLength, &length, name.data());
-#else
-					glGetActiveUniform(_program, indices[j], maxUniformLength, &length, &datasize[j], (GLenum*)&type[j], name.data());
-#endif
 
+					glGetActiveUniformName(_program, indices[j], maxUniformLength, &length, name.data());
 					varlist[j].append(name.data(), length);
 				}
 
-				auto uniformblock = std::make_shared<ShaderUniform>();
+				auto uniformblock = std::make_shared<OGLShaderUniform>();
 				uniformblock->setName(nameUniformBlock.get());
 				uniformblock->setType(ShaderVariantType::SPT_BUFFER);
 				uniformblock->setLocation(location);
@@ -408,84 +563,5 @@ OGLShaderObject::_initActiveUniformBlock() noexcept
 		}
 	}
 }
-
-void
-OGLShaderObject::_initActiveSubroutine() noexcept
-{
-#if !defined(EGLAPI)
-	GLint numSubroutines = 0;
-	GLint maxSubroutines = 0;
-
-	glGetProgramStageiv(_program, GL_VERTEX_SHADER, GL_ACTIVE_SUBROUTINES, &numSubroutines);
-	glGetProgramStageiv(_program, GL_VERTEX_SHADER, GL_ACTIVE_SUBROUTINE_MAX_LENGTH, &maxSubroutines);
-
-	if (numSubroutines)
-	{
-		auto nameSubroutines = make_scope<GLchar[]>(maxSubroutines + 1);
-		nameSubroutines[maxSubroutines + 1] = 0;
-
-		for (GLint i = 0; i < maxSubroutines; ++i)
-		{
-			GLenum type = GL_VERTEX_SHADER;
-			glGetActiveSubroutineName(_program, type, i, maxSubroutines, 0, nameSubroutines.get());
-
-			GLint location = glGetSubroutineIndex(_program, type, nameSubroutines.get());
-
-			auto subroutines = std::make_shared<ShaderSubroutine>();
-			subroutines->setName(nameSubroutines.get());
-			subroutines->setLocation(location);
-
-			_activeSubroutines.push_back(subroutines);
-		}
-	}
-#endif
-}
-
-/*void
-OGLShaderObject::onAttachSubroutine(std::shared_ptr<ShaderObject::Subroutine> subroutine) noexcept
-{
-	if (_program)
-	{
-		int index = -1;
-
-		switch (subroutine->getShaderType())
-		{
-		case Shader::vertex:
-			if (subroutine->isMultiple())
-				index = glGetSubroutineUniformLocation(_program, GL_VERTEX_SHADER, subroutine->getName().c_str());
-			else
-				index = glGetSubroutineIndex(_program, GL_VERTEX_SHADER, subroutine->getName().c_str());
-			break;
-		case Shader::fragment:
-			if (subroutine->isMultiple())
-				index = glGetSubroutineUniformLocation(_program, GL_FRAGMENT_SHADER, subroutine->getName().c_str());
-			else
-				index = glGetSubroutineIndex(_program, GL_FRAGMENT_SHADER, subroutine->getName().c_str());
-			break;
-		case Shader::geometry:
-			if (subroutine->isMultiple())
-				index = glGetSubroutineUniformLocation(_program, GL_GEOMETRY_SHADER, subroutine->getName().c_str());
-			else
-				index = glGetSubroutineIndex(_program, GL_GEOMETRY_SHADER, subroutine->getName().c_str());
-			break;
-		}
-	}
-
-	for (auto& it : _subroutines)
-	{
-		switch (it->value())
-		{
-		case vertex:
-			glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &it->getInstance());
-			break;
-		case fragment:
-			glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &it->getInstance());
-			break;
-		case geometry:
-			glUniformSubroutinesuiv(GL_GEOMETRY_SHADER, 1, &it->getInstance());
-			break;
-		}
-	}
-}*/
 
 _NAME_END

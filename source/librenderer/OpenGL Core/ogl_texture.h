@@ -37,15 +37,15 @@
 #ifndef _H_OGL_TEXTURE_H_
 #define _H_OGL_TEXTURE_H_
 
-#include <ray/ogl_canvas.h>
+#include "ogl_canvas.h"
 
 _NAME_BEGIN
 
-class OGLTextureSample final : public TextureSample
+class OGLTextureSampler final : public TextureSampler
 {
 public:
-	OGLTextureSample() noexcept;
-	~OGLTextureSample() noexcept;
+	OGLTextureSampler() noexcept;
+	~OGLTextureSampler() noexcept;
 
 	bool setup() except;
 	void close() noexcept;
@@ -53,7 +53,7 @@ public:
 	GLuint getInstanceID() noexcept;
 private:
 
-	GLuint _sample;
+	GLuint _sampler;
 };
 
 class OGLTexture final : public Texture
@@ -78,7 +78,6 @@ private:
 
 	GLuint _texture;
 	GLuint64 _textureAddr;
-	GLuint64 _sampleAddr;
 };
 
 class OGLRenderTexture final : public RenderTexture

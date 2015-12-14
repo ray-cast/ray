@@ -173,7 +173,7 @@ EGL2Renderer::getWireframeMode() const noexcept
 RenderWindowPtr 
 EGL2Renderer::createRenderWindow() const noexcept
 {
-	return std::make_shared<EGLCanvas>();
+	return std::make_shared<EGL2Canvas>();
 }
 
 void
@@ -327,6 +327,24 @@ EGL2Renderer::createTexture() noexcept
 {
 	auto result = std::make_shared<EGL2Texture>();
 	return result;
+}
+
+void
+EGL2Renderer::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
+{
+	if (texture)
+	{
+		GLuint textureID = std::dynamic_pointer_cast<EGL2Texture>(texture)->getInstanceID();
+		GLenum textureDim = EGL2Types::asEGL2Target(texture->getTexDim());
+
+		GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+		GL_CHECK(glBindTexture(textureDim, textureID));
+	}
+	else
+	{
+		GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+		GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
+	}
 }
 
 RenderTexturePtr 

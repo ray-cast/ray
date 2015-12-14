@@ -34,13 +34,12 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/ogl_buffer.h>
+#include "ogl_buffer.h"
 
 _NAME_BEGIN
 
 OGLBufferData::OGLBufferData() noexcept
 	: _buffer(GL_NONE)
-	, _bindlessBuffer(GL_NONE)
 	, _isMapping(false)
 	, _data(nullptr)
 {
@@ -69,11 +68,10 @@ OGLBufferData::open(StreamType type, std::uint32_t usage, const char* data, stre
 	else if (type == StreamType::INDEX_STREAM)
 		_target = GL_ELEMENT_ARRAY_BUFFER;
 
-	GL_CHECK(glGenBuffers(1, &_buffer));
-	GL_CHECK(glBindBuffer(_target, _buffer));
+	glGenBuffers(1, &_buffer);
+	glBindBuffer(_target, _buffer);
 
-#if !defined(EGLAPI)
-	if (usage & VertexUsage::IMMUTABLE_STORAGE && OGLFeatures::ARB_buffer_storage)
+	if (usage & VertexUsage::IMMUTABLE_STORAGE)
 	{
 		GLbitfield flags = GL_MAP_READ_BIT;
 		if (usage & VertexUsage::MAP_READ_BIT)
@@ -89,10 +87,9 @@ OGLBufferData::open(StreamType type, std::uint32_t usage, const char* data, stre
 		if (usage & VertexUsage::CLIENT_STORAGE_BIT)
 			flags |= GL_CLIENT_STORAGE_BIT;
 
-		GL_CHECK(glBufferStorage(_target, _dataSize, data, flags));
+		glNamedBufferStorage(_buffer, _dataSize, data, flags);
 	}
 	else
-#endif
 	{
 		GLenum flags = GL_STATIC_DRAW;
 		if (usage & VertexUsage::MAP_READ_BIT)
@@ -100,16 +97,8 @@ OGLBufferData::open(StreamType type, std::uint32_t usage, const char* data, stre
 		if (usage & VertexUsage::MAP_WRITE_BIT)
 			flags = GL_DYNAMIC_READ;
 
-		GL_CHECK(glBufferData(_target, _dataSize, data, flags));
+		glNamedBufferData(_buffer, _dataSize, data, flags);
 	}
-
-#if !defined(EGLAPI)
-	if (OGLFeatures::NV_vertex_buffer_unified_memory)
-	{
-		GL_CHECK(glGetNamedBufferParameterui64vNV(_buffer, GL_BUFFER_GPU_ADDRESS_NV, &_bindlessBuffer));
-		GL_CHECK(glMakeNamedBufferResidentNV(_buffer, GL_READ_ONLY));
-	}
-#endif
 
 	return true;
 }
@@ -132,7 +121,7 @@ OGLBufferData::close() noexcept
 
 	if (_buffer)
 	{
-		GL_CHECK(glDeleteBuffers(1, &_buffer));
+		glDeleteBuffers(1, &_buffer);
 		_buffer = 0;
 	}
 }
@@ -156,22 +145,21 @@ OGLBufferData::resize(const char* data, streamsize datasize) noexcept
 	if (_usage & VertexUsage::MAP_WRITE_BIT)
 		flags = GL_DYNAMIC_READ;
 
-	GL_CHECK(glBindBuffer(_target, _buffer));
-	GL_CHECK(glBufferData(_target, datasize, data, flags));
+	glNamedBufferData(_buffer, datasize, data, flags);
 	_dataSize = datasize;
 }
 
 int
 OGLBufferData::flush() noexcept
 {
-	if (OGLFeatures::ARB_buffer_storage)
-	{
-		GL_CHECK(glBindBuffer(_target, _buffer));
-		GL_CHECK(glFlushMappedBufferRange(_target, 0, _dataSize));
-		return _dataSize;
-	}
+	return this->flush(0, _dataSize);
+}
 
-	return 0;
+int
+OGLBufferData::flush(ios_base::off_type offset, streamsize cnt) noexcept
+{
+	glFlushMappedNamedBufferRange(_target, offset, cnt);
+	return cnt;
 }
 
 streamsize
@@ -184,10 +172,10 @@ OGLBufferData::read(char* str, streamsize cnt) noexcept
 			return 0;
 	}
 
-	const char* data = this->map(AccessMapping::MAP_READ_BIT);
+	const char* data = this->map(_dataOffset, cnt, AccessMapping::MAP_READ_BIT);
 	if (data)
 	{
-		std::memcpy(str, data + _dataOffset, cnt);
+		std::memcpy(str, data, cnt);
 		_dataOffset += cnt;
 	}
 
@@ -205,10 +193,10 @@ OGLBufferData::write(const char* str, streamsize cnt) noexcept
 			return 0;
 	}
 
-	auto data = this->map(AccessMapping::MAP_READ_BIT | AccessMapping::MAP_WRITE_BIT);
+	const char* data = this->map(_dataOffset, cnt, AccessMapping::MAP_WRITE_BIT);
 	if (data)
 	{
-		std::memcpy((char*)_data + _dataOffset, data, cnt);
+		std::memcpy((char*)data, data, cnt);
 		_dataOffset += cnt;
 		this->unmap();
 		return cnt;
@@ -265,6 +253,12 @@ OGLBufferData::tellg() noexcept
 const char*
 OGLBufferData::map(std::uint32_t access) noexcept
 {
+	return this->map(0, _dataSize, access);
+}
+
+const char*
+OGLBufferData::map(ios_base::off_type offset, streamsize cnt, std::uint32_t access) noexcept
+{
 	if (!_data)
 	{
 		if (_usage & VertexUsage::IMMUTABLE_STORAGE && OGLFeatures::ARB_buffer_storage)
@@ -274,15 +268,14 @@ OGLBufferData::map(std::uint32_t access) noexcept
 				flags |= GL_MAP_READ_BIT;
 			if (access & AccessMapping::MAP_WRITE_BIT)
 				flags |= GL_MAP_WRITE_BIT;
-#if !defined(EGLAPI)
+			if (access & AccessMapping::MAP_UNSYNCHRONIZED_BIT)
+				flags |= GL_MAP_UNSYNCHRONIZED_BIT;
 			if (_usage & VertexUsage::MAP_PERSISTENT_BIT)
 				flags |= GL_MAP_PERSISTENT_BIT;
 			if (_usage & VertexUsage::MAP_COHERENT_BIT)
 				flags |= GL_MAP_COHERENT_BIT;
-#endif
-
-			GL_CHECK(glBindBuffer(_target, _buffer));
-			_data = (char*)glMapBufferRange(_target, 0, _dataSize, flags);
+			
+			_data = (char*)glMapNamedBufferRange(_buffer, offset, cnt, flags);
 		}
 		else
 		{
@@ -291,9 +284,10 @@ OGLBufferData::map(std::uint32_t access) noexcept
 				flags |= GL_MAP_READ_BIT;
 			if (access & AccessMapping::MAP_WRITE_BIT)
 				flags |= GL_MAP_WRITE_BIT;
+			if (access & AccessMapping::MAP_UNSYNCHRONIZED_BIT)
+				flags |= GL_MAP_UNSYNCHRONIZED_BIT;
 
-			GL_CHECK(glBindBuffer(_target, _buffer));
-			_data = (char*)glMapBufferRange(_target, 0, _dataSize, flags);
+			_data = (char*)glMapNamedBufferRange(_buffer, offset, cnt, flags);
 		}
 	}
 
@@ -311,7 +305,6 @@ OGLBufferData::unmap() noexcept
 {
 	assert(_isMapping);
 
-#if defined(EGLAPI)
 	if (OGLFeatures::ARB_buffer_storage)
 	{
 		if (_usage & VertexUsage::MAP_PERSISTENT_BIT)
@@ -320,10 +313,8 @@ OGLBufferData::unmap() noexcept
 			return;
 		}
 	}
-#endif
 
-	GL_CHECK(glBindBuffer(_target, _buffer));
-	GL_CHECK(glUnmapBuffer(_target));
+	glUnmapNamedBuffer(_buffer);
 	_data = nullptr;
 	_isMapping = false;
 }
@@ -340,16 +331,10 @@ OGLBufferData::getInstanceID() noexcept
 	return _buffer;
 }
 
-GLuint64
-OGLBufferData::getInstanceAddr() noexcept
-{
-	return _bindlessBuffer;
-}
-
 void
 OGLBufferData::bind() noexcept
 {
-	GL_CHECK(glBindBuffer(_target, _buffer));
+	glBindBuffer(_target, _buffer);
 }
 
 OGLVertexBuffer::OGLVertexBuffer() noexcept
@@ -379,40 +364,30 @@ OGLVertexBuffer::close() noexcept
 void
 OGLVertexBuffer::bind() noexcept
 {
-	_vertexData.bind();
-}
-
-void
-OGLVertexBuffer::bindLayout() noexcept
-{
 	GLuint offset = 0;
 	GLsizei vertexByteSize = this->getVertexSize();
 
 	auto& components = this->getVertexComponents();
 	for (auto& it : components)
 	{
+		glBindVertexBuffer(it.getVertexAttrib(), _vertexData.getInstanceID(), offset, vertexByteSize);
+		offset += it.getVertexSize();
+	}
+}
+
+void
+OGLVertexBuffer::bindLayout() noexcept
+{
+	GLuint offset = 0;
+
+	auto& components = this->getVertexComponents();
+	for (auto& it : components)
+	{
 		auto type = OGLTypes::asOGLVertexFormat(it.getVertexFormat());
-		auto normalize = it.getNormalize() ? GL_TRUE : GL_FALSE;
 
-#if !defined(EGLAPI)
-		if (OGLFeatures::NV_vertex_buffer_unified_memory)
-		{
-			GL_CHECK(glBindVertexBuffer(it.getVertexAttrib(), _vertexData.getInstanceID(), offset, vertexByteSize));
-		}
-		else if (OGLFeatures::ARB_vertex_attrib_binding)
-		{
-			GL_CHECK(glEnableVertexAttribArray((GLuint)it.getVertexAttrib()));
-			GL_CHECK(glVertexAttribFormat(it.getVertexAttrib(), it.getVertexCount(), type, normalize, 0));
-			GL_CHECK(glVertexAttribBinding(it.getVertexAttrib(), it.getVertexAttrib()));
-
-			GL_CHECK(glBindVertexBuffer(it.getVertexAttrib(), _vertexData.getInstanceID(), offset, vertexByteSize));
-		}
-		else
-#endif
-		{
-			GL_CHECK(glEnableVertexAttribArray((GLuint)it.getVertexAttrib()));
-			GL_CHECK(glVertexAttribPointer(it.getVertexAttrib(), it.getVertexCount(), type, normalize, vertexByteSize, (const char*)nullptr + offset));
-		}
+		glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
+		glVertexAttribFormat(it.getVertexAttrib(), it.getVertexCount(), type, GL_FALSE, 0);
+		glVertexAttribBinding(it.getVertexAttrib(), it.getVertexAttrib());
 
 		offset += it.getVertexSize();
 	}
@@ -497,12 +472,6 @@ OGLIndexBuffer::getInstanceID() noexcept
 	return _indexData.getInstanceID();
 }
 
-GLuint64
-OGLIndexBuffer::getInstanceAddr() noexcept
-{
-	return _indexData.getInstanceAddr();
-}
-
 void
 OGLIndexBuffer::bind() noexcept
 {
@@ -510,7 +479,6 @@ OGLIndexBuffer::bind() noexcept
 }
 
 OGLRenderBuffer::OGLRenderBuffer() noexcept
-	: _vao(GL_NONE)
 {
 }
 
@@ -522,112 +490,59 @@ OGLRenderBuffer::~OGLRenderBuffer() noexcept
 void
 OGLRenderBuffer::setup(VertexBufferDataPtr vb, IndexBufferDataPtr ib) except
 {
-	assert(GL_NONE == _vao);
-
-#if !defined(EGLAPI)
-	if (!OGLFeatures::NV_vertex_buffer_unified_memory)
-	{
-		if (OGLFeatures::ARB_vertex_array_object)
-		{
-			GL_CHECK(glGenVertexArrays(1, &_vao));
-			GL_CHECK(glBindVertexArray(_vao));
-		}
-	}
-#else
-	GL_CHECK(glGenVertexArrays(1, &_vao));
-	GL_CHECK(glBindVertexArray(_vao));
-#endif
-
-	auto vbo = std::dynamic_pointer_cast<OGLVertexBuffer>(vb);
-	if (vbo)
-	{
-		vbo->bind();
-		vbo->bindLayout();
-	}
-
-	auto ibo = std::dynamic_pointer_cast<OGLIndexBuffer>(ib);
-	if (ibo)
-	{
-		ibo->bind();
-	}
-
-	GL_CHECK(glBindVertexArray(0));
-
-	this->setVertexBuffer(vb);
-	this->setIndexBuffer(ib);
+	_vb = std::dynamic_pointer_cast<OGLVertexBuffer>(vb);
+	_ib = std::dynamic_pointer_cast<OGLIndexBuffer>(ib);
 }
 
 void
 OGLRenderBuffer::close() noexcept
 {
-	if (_vao)
+	if (_vb)
 	{
-		GL_CHECK(glDeleteVertexArrays(1, &_vao));
-		_vao = GL_NONE;
+		_vb.reset();
+		_vb = nullptr;
+	}
+		
+	if (_ib)
+	{
+		_ib.reset();
+		_ib = nullptr;		
 	}
 }
 
-GLuint
-OGLRenderBuffer::getInstanceID() noexcept
+std::size_t
+OGLRenderBuffer::getNumVertices() const noexcept
 {
-	return _vao;
+	if (_vb)
+		return _vb->getVertexCount();
+	return 0;
+}
+
+std::size_t
+OGLRenderBuffer::getNumIndices() const noexcept
+{
+	if (_ib)
+		return _ib->getIndexCount();
+	return 0;
+}
+
+VertexBufferDataPtr
+OGLRenderBuffer::getVertexBuffer() const noexcept
+{
+	return _vb;
+}
+
+IndexBufferDataPtr
+OGLRenderBuffer::getIndexBuffer() const noexcept
+{
+	return _ib;
 }
 
 void
 OGLRenderBuffer::apply() noexcept
 {
-#if 0
-	if (OGLFeatures::NV_vertex_buffer_unified_memory)
-	{
-		if (vb)
-		{
-			auto bindlessVbo = vb->getInstanceAddr();
-			auto vertexSize = vb->getVertexDataSize();
-
-			GLuint64 offset = 0;
-
-			for (auto& it : vb->getVertexComponents())
-			{
-				GL_CHECK(glBufferAddressRangeNV(GL_VERTEX_ATTRIB_ARRAY_ADDRESS_NV, it.getVertexAttrib(), bindlessVbo + offset, vertexSize - offset));
-
-				offset += it.getVertexSize();
-			}
-		}
-
-		if (ib)
-		{
-			auto bindlessIbo = ib->getInstanceAddr();
-			auto indexDataSize = ib->getIndexDataSize();
-
-			GL_CHECK(glBufferAddressRangeNV(GL_ELEMENT_ARRAY_ADDRESS_NV, 0, bindlessIbo, indexDataSize));
-		}
-	}
-	else if (OGLFeatures::ARB_vertex_attrib_binding)
-	{
-		if (vb)
-		{
-			auto vbo = vb->getInstanceID();
-
-			GLuint offset = 0;
-
-			for (auto& it : vb->getVertexComponents())
-			{
-				GL_CHECK(glBindVertexBuffer(it.getVertexAttrib(), vbo, offset, vb->getVertexSize()));
-
-				offset += it.getVertexSize();
-			}
-		}
-
-		if (ib)
-		{
-			GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->getInstanceID()));
-		}
-	}
-	else
-#endif
-	{
-		GL_CHECK(glBindVertexArray(_vao));
-	}
+	if (_vb) _vb->bind();
+	if (_ib) _ib->bind();
 }
 
 _NAME_END

@@ -68,6 +68,7 @@ public:
 
 	RenderPass getRenderPass() const noexcept;
 
+	const MaterialParams& getTextures() const noexcept;
 	const MaterialParams& getParameters() const noexcept;
 	MaterialParamPtr getParameter(const std::string& name) const noexcept;
 
@@ -83,6 +84,7 @@ private:
 
 	RenderPass _pass;
 	
+	MaterialParams _textures;
 	MaterialParams _parameters;
 
 	ShaderObjectPtr _shaderObject;

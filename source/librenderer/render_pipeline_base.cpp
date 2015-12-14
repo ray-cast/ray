@@ -52,7 +52,10 @@
 #include <ray/parse.h>
 #include <ray/resource.h>
 
-#if defined(_BUILD_OPENGL) || defined(_BUILD_OPENGL_ES3)
+#if defined(_BUILD_OPENGL) || defined(_BUILD_OPENGL_CORE)
+#	include "OpenGL Core/ogl_renderer.h"
+#	define RenderDevice OGLRenderer
+#elif defined(_BUILD_OPENGL) || defined(_BUILD_OPENGL_ES3)
 #	include "OpenGL ES3/egl3_renderer.h"
 #	define RenderDevice EGL3Renderer
 #elif defined(_BUILD_OPENGL) || defined(_BUILD_OPENGL_ES2)
@@ -481,6 +484,17 @@ void
 RenderPipeline::setMaterialPass(MaterialPassPtr pass) noexcept
 {
 	_materialManager->setMaterialPass(pass);
+	
+	auto& textures = pass->getTextures();
+	for (int i = 0; i < textures.size(); i++)
+	{
+		auto& uniforms = textures[i]->getShaderUniform();
+		auto texture = textures[i]->getTexture();
+
+		for (auto& it : uniforms)
+			it->assign(i);
+		_renderDevice->setTexture(texture, i);
+	}
 
 	this->setRenderState(pass->getRenderState());
 	this->setShaderObject(pass->getShaderObject());

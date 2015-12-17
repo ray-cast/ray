@@ -34,4 +34,52 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "ogl_canvas.h"
+#include "ogl_ibo.h"
+
+_NAME_BEGIN
+
+__ImplementSubClass(OGLIndexBuffer, OGLGraphicsData, "GraphicsData")
+
+OGLIndexBuffer::OGLIndexBuffer() noexcept
+	: OGLGraphicsData(&_indexData)
+{
+}
+
+OGLIndexBuffer::OGLIndexBuffer(const GraphicsDataDesc& desc) noexcept
+	: OGLGraphicsData(&_indexData)
+{
+	this->open(desc);
+}
+
+OGLIndexBuffer::~OGLIndexBuffer() noexcept
+{
+	this->close();
+}
+
+void
+OGLIndexBuffer::open(const GraphicsDataDesc& desc) noexcept
+{
+	assert(desc.getType() == GraphicsStream::IBO);
+	assert(desc.getStreamSize() > 0);
+	_indexData.open(desc);
+}
+
+void
+OGLIndexBuffer::close() noexcept
+{
+	_indexData.close();
+}
+
+bool
+OGLIndexBuffer::is_open() const noexcept
+{
+	return _indexData.is_open();
+}
+
+void
+OGLIndexBuffer::bind() noexcept
+{
+	_indexData.bind();
+}
+
+_NAME_END

@@ -38,6 +38,8 @@
 #define _H_RENDER_SYSTEM_H_
 
 #include <ray/render_setting.h>
+#include <ray/graphics_data.h>
+#include <ray/graphics_layout.h>
 
 _NAME_BEGIN
 
@@ -82,12 +84,16 @@ public:
 	ShaderPtr createShader() noexcept;
 	ShaderObjectPtr createShaderObject() noexcept;
 
-	RenderBufferPtr createRenderBuffer() noexcept;
+	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
+	bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;
+	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
+	void unmapBuffer(GraphicsDataPtr& data) noexcept;
+
+	GraphicsLayoutPtr createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept;
+
+	RenderBufferPtr createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
 	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) except;
 	RenderBufferPtr createRenderBuffer(const MeshPropertys& meshes) except;
-
-	IndexBufferDataPtr createIndexBufferData() noexcept;
-	VertexBufferDataPtr createVertexBufferData() noexcept;
 
 	void render() noexcept;
 

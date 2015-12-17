@@ -37,7 +37,7 @@
 #ifndef _H_RENDER_TEXTURE_H_
 #define _H_RENDER_TEXTURE_H_
 
-#include <ray/render_types.h>
+#include <ray/sampler_object.h>
 
 _NAME_BEGIN
 
@@ -52,13 +52,13 @@ public:
 
 	void setTexMipmap(bool enable) noexcept;
 	void setTexFormat(TextureFormat format) noexcept;
-	void setTexOp(TextureOp op) noexcept;
-	void setTexWrap(TextureWrap wrap) noexcept;
-	void setTexFilter(TextureFilter filter) noexcept;
+	void setTexOp(SamplerOp op) noexcept;
+	void setSamplerWrap(SamplerWrap wrap) noexcept;
+	void setSamplerFilter(SamplerFilter filter) noexcept;
 	void setTexDim(TextureDim mapping) noexcept;
 	void setMipLevel(std::uint8_t level) noexcept;
 	void setMipSize(std::uint32_t size) noexcept;
-	void setAnisotropy(Anisotropy anis) noexcept;
+	void setSamplerAnis(SamplerAnis anis) noexcept;
 	void setMultisample(bool enable) noexcept;
 	void setWidth(int w) noexcept;
 	void setHeight(int h) noexcept;
@@ -66,12 +66,12 @@ public:
 	void setStream(void* data) noexcept;
 	void setSize(int w, int h, int depth = 0) noexcept;
 
-	TextureOp     getTexOp()   const noexcept;
+	SamplerOp     getTexOp()   const noexcept;
 	TextureFormat   getTexFormat()  const noexcept;
 	TextureDim    getTexDim() const noexcept;
-	TextureWrap   getTexWrap() const noexcept;
-	TextureFilter getTexFilter() const noexcept;
-	Anisotropy    getTexAnisotropy() const noexcept;
+	SamplerWrap   getSamplerWrap() const noexcept;
+	SamplerFilter getSamplerFilter() const noexcept;
+	SamplerAnis    getSamplerAnis() const noexcept;
 
 	int getWidth()   const noexcept;
 	int getHeight()  const noexcept;
@@ -105,33 +105,12 @@ private:
 
 	TextureFormat _format;
 	TextureDim _dim;
-	TextureOp _texop;
-	TextureFilter _filter;
-	TextureWrap _wrap;
-	Anisotropy _anis;
+	SamplerOp _texop;
+	SamplerFilter _filter;
+	SamplerWrap _wrap;
+	SamplerAnis _anis;
 
 	void* _data;
-};
-
-class EXPORT TextureSampler
-{
-public:
-	TextureSampler() noexcept;
-	virtual ~TextureSampler() noexcept;
-
-	void setTexWrap(TextureWrap wrap) noexcept;
-	void setTexFilter(TextureFilter filter) noexcept;
-	void setAnisotropy(Anisotropy anis) noexcept;
-
-	TextureWrap   getTexWrap() const noexcept;
-	TextureFilter getTexFilter() const noexcept;
-	Anisotropy    getTexAnisotropy() const noexcept;
-
-private:
-	TextureOp _texop;
-	TextureFilter _filter;
-	TextureWrap _wrap;
-	Anisotropy _anis;
 };
 
 class EXPORT RenderTexture

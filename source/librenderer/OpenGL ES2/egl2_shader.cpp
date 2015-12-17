@@ -77,40 +77,40 @@ EGL2ShaderVariant::setType(ShaderVariantType type) noexcept
 {
 	if (_type != type)
 	{
-		if (_type == ShaderVariantType::SPT_FLOAT_ARRAY)
+		if (_type == ShaderVariantType::FloatArray)
 		{
 			delete _value.farray;
 			_value.farray = nullptr;
 		}
-		else if (_type == ShaderVariantType::SPT_FLOAT2_ARRAY)
+		else if (_type == ShaderVariantType::Float2Array)
 		{
 			delete _value.farray2;
 			_value.farray2 = nullptr;
 		}
-		else if (_type == ShaderVariantType::SPT_FLOAT3X3)
+		else if (_type == ShaderVariantType::Float3x3)
 		{
 			delete _value.m3;
 			_value.m3 = nullptr;
 		}
-		else if (_type == ShaderVariantType::SPT_FLOAT4X4)
+		else if (_type == ShaderVariantType::Float4x4)
 		{
 			delete _value.m4;
 			_value.m4 = nullptr;
 		}
 
-		if (type == ShaderVariantType::SPT_FLOAT_ARRAY)
+		if (type == ShaderVariantType::FloatArray)
 		{
 			_value.farray = new std::vector<float>();
 		}
-		else if (type == ShaderVariantType::SPT_FLOAT2_ARRAY)
+		else if (type == ShaderVariantType::Float2Array)
 		{
 			_value.farray2 = new std::vector<float2>();
 		}
-		else if (type == ShaderVariantType::SPT_FLOAT3X3)
+		else if (type == ShaderVariantType::Float3x3)
 		{
 			_value.m3 = new Matrix3x3;
 		}
-		else if (type == ShaderVariantType::SPT_FLOAT4X4)
+		else if (type == ShaderVariantType::Float4x4)
 		{
 			_value.m4 = new Matrix4x4;
 		}
@@ -128,7 +128,7 @@ EGL2ShaderVariant::getType() const noexcept
 void
 EGL2ShaderVariant::assign(bool value) noexcept
 {
-	this->setType(ShaderVariantType::SPT_BOOL);
+	this->setType(ShaderVariantType::Bool);
 	if (_value.b != value)
 	{
 		_value.b = value;
@@ -138,7 +138,7 @@ EGL2ShaderVariant::assign(bool value) noexcept
 void
 EGL2ShaderVariant::assign(int value) noexcept
 {
-	this->setType(ShaderVariantType::SPT_INT);
+	this->setType(ShaderVariantType::Int);
 	if (_value.i[0] != value)
 	{
 		_value.i[0] = value;
@@ -148,7 +148,7 @@ EGL2ShaderVariant::assign(int value) noexcept
 void
 EGL2ShaderVariant::assign(const int2& value) noexcept
 {
-	this->setType(ShaderVariantType::SPT_INT2);
+	this->setType(ShaderVariantType::Int2);
 	if (_value.i[0] != value.x ||
 		_value.i[1] != value.y)
 	{
@@ -160,7 +160,7 @@ EGL2ShaderVariant::assign(const int2& value) noexcept
 void
 EGL2ShaderVariant::assign(float value) noexcept
 {
-	this->setType(ShaderVariantType::SPT_FLOAT);
+	this->setType(ShaderVariantType::Float);
 	if (_value.f[0] != value)
 	{
 		_value.f[0] = value;
@@ -170,7 +170,7 @@ EGL2ShaderVariant::assign(float value) noexcept
 void
 EGL2ShaderVariant::assign(const float2& value) noexcept
 {
-	this->setType(ShaderVariantType::SPT_FLOAT2);
+	this->setType(ShaderVariantType::Float2);
 	if (_value.f[0] != value.x ||
 		_value.f[1] != value.y)
 	{
@@ -182,7 +182,7 @@ EGL2ShaderVariant::assign(const float2& value) noexcept
 void
 EGL2ShaderVariant::assign(const float3& value) noexcept
 {
-	this->setType(ShaderVariantType::SPT_FLOAT3);
+	this->setType(ShaderVariantType::Float3);
 	if (_value.f[0] != value.x ||
 		_value.f[1] != value.y ||
 		_value.f[2] != value.z)
@@ -196,7 +196,7 @@ EGL2ShaderVariant::assign(const float3& value) noexcept
 void
 EGL2ShaderVariant::assign(const float4& value) noexcept
 {
-	this->setType(ShaderVariantType::SPT_FLOAT4);
+	this->setType(ShaderVariantType::Float4);
 	if (_value.f[0] != value.x ||
 		_value.f[1] != value.y ||
 		_value.f[2] != value.z ||
@@ -212,119 +212,119 @@ EGL2ShaderVariant::assign(const float4& value) noexcept
 void
 EGL2ShaderVariant::assign(const float3x3& value) noexcept
 {
-	this->setType(ShaderVariantType::SPT_FLOAT3X3);
+	this->setType(ShaderVariantType::Float3x3);
 	*_value.m3 = value;
 }
 
 void
 EGL2ShaderVariant::assign(const float4x4& value) noexcept
 {
-	this->setType(ShaderVariantType::SPT_FLOAT4X4);
+	this->setType(ShaderVariantType::Float4x4);
 	*_value.m4 = value;
 }
 
 void
 EGL2ShaderVariant::assign(const std::vector<float>& value) noexcept
 {
-	this->setType(ShaderVariantType::SPT_FLOAT_ARRAY);
+	this->setType(ShaderVariantType::FloatArray);
 	*_value.farray = value;
 }
 
 void
 EGL2ShaderVariant::assign(const std::vector<float2>& value) noexcept
 {
-	this->setType(ShaderVariantType::SPT_FLOAT2_ARRAY);
+	this->setType(ShaderVariantType::Float2Array);
 	*_value.farray2 = value;
 }
 
 void
 EGL2ShaderVariant::assign(const std::vector<float3>& value) noexcept
 {
-	this->setType(ShaderVariantType::SPT_FLOAT3_ARRAY);
+	this->setType(ShaderVariantType::Float3Array);
 	*_value.farray3 = value;
 }
 
 void
 EGL2ShaderVariant::assign(const std::vector<float4>& value) noexcept
 {
-	this->setType(ShaderVariantType::SPT_FLOAT4_ARRAY);
+	this->setType(ShaderVariantType::Float4Array);
 	*_value.farray4 = value;
 }
 
 bool
 EGL2ShaderVariant::getBool() const noexcept
 {
-	assert(_type == ShaderVariantType::SPT_BOOL);
+	assert(_type == ShaderVariantType::Bool);
 	return _value.b;
 }
 
 int
 EGL2ShaderVariant::getInt() const noexcept
 {
-	assert(_type == ShaderVariantType::SPT_INT);
+	assert(_type == ShaderVariantType::Int);
 	return _value.i[0];
 }
 
 float
 EGL2ShaderVariant::getFloat() const noexcept
 {
-	assert(_type == ShaderVariantType::SPT_FLOAT);
+	assert(_type == ShaderVariantType::Float);
 	return _value.f[0];
 }
 
 const int2&
 EGL2ShaderVariant::getInt2() const noexcept
 {
-	assert(_type == ShaderVariantType::SPT_INT2);
+	assert(_type == ShaderVariantType::Int2);
 	return (int2&)_value.i;
 }
 
 const float2&
 EGL2ShaderVariant::getFloat2() const noexcept
 {
-	assert(_type == ShaderVariantType::SPT_FLOAT2);
+	assert(_type == ShaderVariantType::Float2);
 	return (float2&)_value.f;
 }
 
 const float3&
 EGL2ShaderVariant::getFloat3() const noexcept
 {
-	assert(_type == ShaderVariantType::SPT_FLOAT3);
+	assert(_type == ShaderVariantType::Float3);
 	return (float3&)_value.f;
 }
 
 const float4&
 EGL2ShaderVariant::getFloat4() const noexcept
 {
-	assert(_type == ShaderVariantType::SPT_FLOAT4);
+	assert(_type == ShaderVariantType::Float4);
 	return (float4&)_value.f;
 }
 
 const float3x3&
 EGL2ShaderVariant::getFloat3x3() const noexcept
 {
-	assert(_type == ShaderVariantType::SPT_FLOAT3X3);
+	assert(_type == ShaderVariantType::Float3x3);
 	return (float3x3&)*_value.m3;
 }
 
 const float4x4&
 EGL2ShaderVariant::getFloat4x4() const noexcept
 {
-	assert(_type == ShaderVariantType::SPT_FLOAT4X4);
+	assert(_type == ShaderVariantType::Float4x4);
 	return (float4x4&)*_value.m4;
 }
 
 const std::vector<float>&
 EGL2ShaderVariant::getFloatArray() const noexcept
 {
-	assert(_type == ShaderVariantType::SPT_FLOAT_ARRAY);
+	assert(_type == ShaderVariantType::FloatArray);
 	return *_value.farray;
 }
 
 const std::vector<float2>&
 EGL2ShaderVariant::getFloat2Array() const noexcept
 {
-	assert(_type == ShaderVariantType::SPT_FLOAT_ARRAY);
+	assert(_type == ShaderVariantType::Float2Array);
 	return *_value.farray2;
 }
 
@@ -702,50 +702,50 @@ EGL2ShaderObject::_initActiveUniform() noexcept
 
 		if (type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE)
 		{
-			uniform->setType(SPT_TEXTURE);
+			uniform->setType(ShaderVariantType::Texture);
 		}
 		else
 		{
 			bool isArray = uniform->getName().find("[0]") != std::string::npos;
 
 			if (type == GL_BOOL)
-				uniform->setType(SPT_BOOL);
+				uniform->setType(ShaderVariantType::Bool);
 			else if (type == GL_INT)
-				uniform->setType(SPT_INT);
+				uniform->setType(ShaderVariantType::Int);
 			else if (type == GL_INT_VEC2)
-				uniform->setType(SPT_INT2);
+				uniform->setType(ShaderVariantType::Int2);
 			else if (type == GL_FLOAT)
 			{
 				if (isArray)
-					uniform->setType(SPT_FLOAT_ARRAY);
+					uniform->setType(ShaderVariantType::FloatArray);
 				else
-					uniform->setType(SPT_FLOAT);
+					uniform->setType(ShaderVariantType::Float);
 			}
 			else if (type == GL_FLOAT_VEC2)
 			{
 				if (isArray)
-					uniform->setType(SPT_FLOAT2_ARRAY);
+					uniform->setType(ShaderVariantType::Float2Array);
 				else
-					uniform->setType(SPT_FLOAT2);
+					uniform->setType(ShaderVariantType::Float2);
 			}
 			else if (type == GL_FLOAT_VEC3)
 			{
 				if (isArray)
-					uniform->setType(SPT_FLOAT3_ARRAY);
+					uniform->setType(ShaderVariantType::Float3Array);
 				else
-					uniform->setType(SPT_FLOAT3);
+					uniform->setType(ShaderVariantType::Float3);
 			}
 			else if (type == GL_FLOAT_VEC4)
 			{
 				if (isArray)
-					uniform->setType(SPT_FLOAT4_ARRAY);
+					uniform->setType(ShaderVariantType::Float4Array);
 				else
-					uniform->setType(SPT_FLOAT4);
+					uniform->setType(ShaderVariantType::Float4);
 			}
 			else if (type == GL_FLOAT_MAT3)
-				uniform->setType(SPT_FLOAT3X3);
+				uniform->setType(ShaderVariantType::Float3x3);
 			else if (type == GL_FLOAT_MAT4)
-				uniform->setType(SPT_FLOAT4X4);
+				uniform->setType(ShaderVariantType::Float4x4);
 			else
 				assert(false);
 		}
@@ -762,7 +762,7 @@ EGL2ShaderObject::_updateShaderUniform(ShaderUniformPtr it) noexcept
 	auto uniform = std::dynamic_pointer_cast<EGLShaderUniform>(it);
 
 	auto type = uniform->getType();
-	if (type != ShaderVariantType::SPT_TEXTURE)
+	if (type != ShaderVariantType::Texture)
 	{
 		if (!uniform->needUpdate())
 			return;
@@ -774,62 +774,62 @@ EGL2ShaderObject::_updateShaderUniform(ShaderUniformPtr it) noexcept
 
 	switch (type)
 	{
-	case ShaderVariantType::SPT_BOOL:
+	case ShaderVariantType::Bool:
 	{
 		glUniform1i(location, uniform->getBool());
 		break;
 	}
-	case ShaderVariantType::SPT_INT:
+	case ShaderVariantType::Int:
 	{
 		glUniform1i(location, uniform->getInt());
 		break;
 	}
-	case ShaderVariantType::SPT_INT2:
+	case ShaderVariantType::Int2:
 	{
 		glUniform2iv(location, 1, uniform->getInt2().ptr());
 		break;
 	}
-	case ShaderVariantType::SPT_FLOAT:
+	case ShaderVariantType::Float:
 	{
 		glUniform1f(location, uniform->getFloat());
 		break;
 	}
-	case ShaderVariantType::SPT_FLOAT2:
+	case ShaderVariantType::Float2:
 	{
 		glUniform2fv(location, 1, uniform->getFloat2().ptr());
 		break;
 	}
-	case ShaderVariantType::SPT_FLOAT3:
+	case ShaderVariantType::Float3:
 	{
 		glUniform3fv(location, 1, uniform->getFloat3().ptr());
 		break;
 	}
-	case ShaderVariantType::SPT_FLOAT4:
+	case ShaderVariantType::Float4:
 	{
 		glUniform4fv(location, 1, uniform->getFloat4().ptr());
 		break;
 	}
-	case ShaderVariantType::SPT_FLOAT3X3:
+	case ShaderVariantType::Float3x3:
 	{
 		glUniformMatrix3fv(location, 1, GL_FALSE, uniform->getFloat3x3().ptr());
 		break;
 	}
-	case ShaderVariantType::SPT_FLOAT4X4:
+	case ShaderVariantType::Float4x4:
 	{
 		glUniformMatrix4fv(location, 1, GL_FALSE, uniform->getFloat4x4().ptr());
 		break;
 	}
-	case ShaderVariantType::SPT_FLOAT_ARRAY:
+	case ShaderVariantType::FloatArray:
 	{
 		glUniform1fv(location, uniform->getFloatArray().size(), uniform->getFloatArray().data());
 		break;
 	}
-	case ShaderVariantType::SPT_FLOAT2_ARRAY:
+	case ShaderVariantType::Float2Array:
 	{
 		glUniform2fv(location, uniform->getFloat2Array().size(), (GLfloat*)uniform->getFloat2Array().data());
 		break;
 	}
-	case ShaderVariantType::SPT_TEXTURE:
+	case ShaderVariantType::Texture:
 	{
 		glUniform1i(location, uniform->getInt());
 		break;

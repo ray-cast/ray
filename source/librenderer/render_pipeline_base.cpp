@@ -89,14 +89,29 @@ RenderPipeline::open(WindHandle window, std::size_t w, std::size_t h) except
 	mesh.makePlane(2, 2, 1, 1);
 
 	_renderSceneQuad = this->createRenderBuffer(mesh);
+	_renderSceneQuadIndirect.startVertice = 0;
+	_renderSceneQuadIndirect.numVertices = mesh.getNumVertices();
+	_renderSceneQuadIndirect.startIndice = 0;
+	_renderSceneQuadIndirect.numIndices = mesh.getNumIndices();
+	_renderSceneQuadIndirect.numInstances = 0;
 
 	mesh.makeSphere(1, 16, 12);
 
 	_renderSphere = this->createRenderBuffer(mesh);
+	_renderSphereIndirect.startVertice = 0;
+	_renderSphereIndirect.numVertices = mesh.getNumVertices();
+	_renderSphereIndirect.startIndice = 0;
+	_renderSphereIndirect.numIndices = mesh.getNumIndices();
+	_renderSphereIndirect.numInstances = 0;
 
 	mesh.makeCone(1, 1, 16);
 
 	_renderCone = this->createRenderBuffer(mesh);
+	_renderConeIndirect.startVertice = 0;
+	_renderConeIndirect.numVertices = mesh.getNumVertices();
+	_renderConeIndirect.startIndice = 0;
+	_renderConeIndirect.numIndices = mesh.getNumIndices();
+	_renderConeIndirect.numInstances = 0;
 	
 	this->setWindowResolution(w, h);
 
@@ -531,10 +546,12 @@ RenderPipeline::getMaterialManager() const noexcept
 }
 
 RenderBufferPtr
-RenderPipeline::createRenderBuffer() noexcept
+RenderPipeline::createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
 {
-	assert(_renderDevice);
-	return _renderDevice->createRenderBuffer();
+	auto mesh = std::make_shared<RenderBuffer>();
+	mesh->setVertexBuffer(vb);
+	mesh->setIndexBuffer(ib);
+	return mesh;
 }
 
 RenderBufferPtr
@@ -549,41 +566,42 @@ RenderPipeline::createRenderBuffer(const MeshProperty& mesh) except
 	if (!vertices.empty())
 	{
 		if (vertices.size() == numVertex)
-			components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
+			components.push_back(VertexComponent(VertexFormat::Float3, VertexAttrib::Position));
 	}
 
 	auto& colors = mesh.getColorArray();
 	if (!colors.empty())
 	{
 		if (colors.size() == numVertex)
-			components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_DIFFUSE, VertexFormat::GPU_VERTEX_FLOAT4));
+			components.push_back(VertexComponent(VertexFormat::Float4, VertexAttrib::Diffuse));
 	}
 
 	auto& normals = mesh.getNormalArray();
 	if (!normals.empty())
 	{
 		if (normals.size() == numVertex)
-			components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_NORMAL, VertexFormat::GPU_VERTEX_FLOAT3));
+			components.push_back(VertexComponent(VertexFormat::Float3, VertexAttrib::Normal));
 	}
 
 	auto& texcoords = mesh.getTexcoordArray();
 	if (!texcoords.empty())
 	{
 		if (texcoords.size() == numVertex)
-			components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_TEXCOORD, VertexFormat::GPU_VERTEX_FLOAT2));
+			components.push_back(VertexComponent(VertexFormat::Float2, VertexAttrib::Texcoord));
 	}
 
 	auto& tangent = mesh.getTangentArray();
 	if (!tangent.empty())
 	{
 		if (tangent.size() == numVertex)
-			components.push_back(VertexComponent(VertexAttrib::GPU_ATTRIB_TANGENT, VertexFormat::GPU_VERTEX_FLOAT3));
+			components.push_back(VertexComponent(VertexFormat::Float3, VertexAttrib::Tangent));
 	}
 
-	VertexLayout layout;
+	GraphicsLayoutDesc layout;
 	layout.setVertexComponents(components);
+	layout.setIndexType(IndexType::Uint32);
 
-	VertexBufferDataPtr vb;
+	GraphicsDataPtr vb;
 
 	if (numVertex)
 	{
@@ -639,30 +657,41 @@ RenderPipeline::createRenderBuffer(const MeshProperty& mesh) except
 			offset += sizeof(float2);
 		}
 
-		vb = this->createVertexBufferData();
-		vb->open(layout, VertexUsage::MAP_READ_BIT, _data.data(), _data.size());
+		GraphicsDataDesc _vb;
+		_vb.setUsage(UsageFlags::MAP_READ_BIT);
+		_vb.setStream((std::uint8_t*)_data.data());
+		_vb.setStreamSize(_data.size());
+
+		vb = this->createGraphicsData(_vb);
 	}
 
-	IndexBufferDataPtr ib;
+	GraphicsDataPtr ib;
 
 	auto& faces = mesh.getFaceArray();
 	if (numIndices > 0)
 	{
-		ib = this->createIndexBufferData();
-		ib->open(IndexType::GPU_UINT32, VertexUsage::MAP_READ_BIT, (char*)faces.data(), faces.size() * sizeof(std::uint32_t));
+		GraphicsDataDesc _ib;
+		_ib.setType(GraphicsStream::IBO);
+		_ib.setUsage(UsageFlags::MAP_READ_BIT);
+		_ib.setStream((std::uint8_t*)faces.data());
+		_ib.setStreamSize(faces.size() * sizeof(std::uint32_t));
+
+		ib = this->createGraphicsData(_ib);
 	}
 
-	auto buffer = this->createRenderBuffer();
-	buffer->setup(vb, ib);
+	auto buffer = this->createRenderBuffer(vb, ib);
+	if (buffer)
+	{
+		buffer->setGraphicsLayout(this->createGraphicsLayout(layout));
+		return buffer;
+	}
 
-	return buffer;
+	return nullptr;
 }
 
 RenderBufferPtr 
 RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) except
 {
-	auto buffer = this->createRenderBuffer();
-
 	auto numVertex = 0;
 	auto numIndices = 0;
 
@@ -672,24 +701,22 @@ RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) except
 		numIndices += it->getNumIndices();
 	}
 
-	VertexLayout layout;
+	GraphicsLayoutDesc layout;
 
 	if (!meshes.front()->getVertexArray().empty())
-		layout.addComponent(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
-
+		layout.addComponent(VertexComponent(VertexFormat::Float3, VertexAttrib::Position));
 	if (!meshes.front()->getColorArray().empty())
-		layout.addComponent(VertexComponent(VertexAttrib::GPU_ATTRIB_DIFFUSE, VertexFormat::GPU_VERTEX_FLOAT4));
-
+		layout.addComponent(VertexComponent(VertexFormat::Float4, VertexAttrib::Diffuse));
 	if (!meshes.front()->getNormalArray().empty())
-		layout.addComponent(VertexComponent(VertexAttrib::GPU_ATTRIB_NORMAL, VertexFormat::GPU_VERTEX_FLOAT3));
-
+		layout.addComponent(VertexComponent(VertexFormat::Float3, VertexAttrib::Normal));
 	if (!meshes.front()->getTexcoordArray().empty())
-		layout.addComponent(VertexComponent(VertexAttrib::GPU_ATTRIB_TEXCOORD, VertexFormat::GPU_VERTEX_FLOAT2));
-
+		layout.addComponent(VertexComponent(VertexFormat::Float2, VertexAttrib::Texcoord));
 	if (!meshes.front()->getTangentArray().empty())
-		layout.addComponent(VertexComponent(VertexAttrib::GPU_ATTRIB_TANGENT, VertexFormat::GPU_VERTEX_FLOAT3));
+		layout.addComponent(VertexComponent(VertexFormat::Float3, VertexAttrib::Tangent));
+	if (!meshes.front()->getFaceArray().empty())
+		layout.setIndexType(IndexType::Uint32);
 
-	VertexBufferDataPtr vb;
+	GraphicsDataPtr vb;
 
 	if (numVertex)
 	{
@@ -772,11 +799,15 @@ RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) except
 			offsetVertices += mesh->getNumVertices() * layout.getVertexSize();
 		}
 
-		vb = this->createVertexBufferData();
-		vb->open(layout, VertexUsage::MAP_READ_BIT, _data.data(), layout.getVertexSize() * numVertex);
+		GraphicsDataDesc _vb;
+		_vb.setUsage(UsageFlags::MAP_READ_BIT);
+		_vb.setStream((std::uint8_t*)_data.data());
+		_vb.setStreamSize(_data.size());
+
+		vb = this->createGraphicsData(_vb);
 	}
 
-	IndexBufferDataPtr ib;
+	GraphicsDataPtr ib;
 
 	if (numIndices > 0)
 	{
@@ -802,34 +833,67 @@ RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) except
 			}
 		}
 
-		ib = this->createIndexBufferData();
-		ib->open(IndexType::GPU_UINT32, VertexUsage::MAP_READ_BIT, (char*)faces.data(), faces.size() * sizeof(std::uint32_t));
+		GraphicsDataDesc _ib;
+		_ib.setType(GraphicsStream::IBO);
+		_ib.setUsage(UsageFlags::MAP_READ_BIT);
+		_ib.setStream((std::uint8_t*)faces.data());
+		_ib.setStreamSize(faces.size() * sizeof(std::uint32_t));
+
+		ib = this->createGraphicsData(_ib);
 	}
 
-	buffer->setup(vb, ib);
+	auto buffer = this->createRenderBuffer(vb, ib);
+	if (buffer)
+	{
+		buffer->setGraphicsLayout(this->createGraphicsLayout(layout));
+		return buffer;
+	}
 
-	return buffer;
+	return nullptr;
 }
 
-IndexBufferDataPtr 
-RenderPipeline::createIndexBufferData() noexcept
+GraphicsLayoutPtr 
+RenderPipeline::createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept
 {
 	assert(_renderDevice);
-	return _renderDevice->createIndexBufferData();
+	return _renderDevice->createGraphicsLayout(desc);
 }
 
-VertexBufferDataPtr
-RenderPipeline::createVertexBufferData() noexcept
+GraphicsDataPtr
+RenderPipeline::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
 	assert(_renderDevice);
-	return _renderDevice->createVertexBufferData();
+	return _renderDevice->createGraphicsData(desc);
+}
+
+bool
+RenderPipeline::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
+{
+	assert(_renderDevice);
+	return _renderDevice->updateBuffer(data, str, cnt);
+}
+
+void* 
+RenderPipeline::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
+{
+	assert(_renderDevice);
+	return _renderDevice->mapBuffer(data, access);
+}
+
+void 
+RenderPipeline::unmapBuffer(GraphicsDataPtr& data) noexcept
+{
+	assert(_renderDevice);
+	return _renderDevice->unmapBuffer(data);
 }
 
 void 
 RenderPipeline::setRenderBuffer(RenderBufferPtr buffer) except
 {
 	assert(_renderDevice);
-	_renderDevice->setRenderBuffer(buffer);
+	_renderDevice->setGraphicsLayout(buffer->getGraphicsLayout());
+	_renderDevice->setVertexBufferData(buffer->getVertexBuffer());
+	_renderDevice->setIndexBufferData(buffer->getIndexBuffer());
 }
 
 void 
@@ -846,52 +910,23 @@ RenderPipeline::drawRenderBuffer(const RenderIndirects& renderable) except
 	_renderDevice->drawRenderBuffer(renderable);
 }
 
-RenderBufferPtr 
-RenderPipeline::getRenderBuffer() const noexcept
-{
-	assert(_renderDevice);
-	return _renderDevice->getRenderBuffer();
-}
-
 void
 RenderPipeline::drawSceneQuad(MaterialPassPtr pass) noexcept
 {
 	assert(pass);
-
-	RenderIndirect renderable;
-	renderable.startVertice = 0;
-	renderable.numVertices = _renderSceneQuad->getNumVertices();
-	renderable.startIndice = 0;
-	renderable.numIndices = _renderSceneQuad->getNumIndices();
-	renderable.numInstances = 0;
-
-	this->drawMesh(pass, _renderSceneQuad, renderable);
+	this->drawMesh(pass, _renderSceneQuad, _renderSceneQuadIndirect);
 }
 
 void
 RenderPipeline::drawSphere(MaterialPassPtr pass) noexcept
 {
-	RenderIndirect renderable;
-	renderable.startVertice = 0;
-	renderable.numVertices = _renderSphere->getNumVertices();
-	renderable.startIndice = 0;
-	renderable.numIndices = _renderSphere->getNumIndices();
-	renderable.numInstances = 0;
-
-	this->drawMesh(pass, _renderSphere, renderable);
+	this->drawMesh(pass, _renderSphere, _renderSphereIndirect);
 }
 
 void
 RenderPipeline::drawCone(MaterialPassPtr pass) noexcept
 {
-	RenderIndirect renderable;
-	renderable.startVertice = 0;
-	renderable.numVertices = _renderCone->getNumVertices();
-	renderable.startIndice = 0;
-	renderable.numIndices = _renderCone->getNumIndices();
-	renderable.numInstances = 0;
-
-	this->drawMesh(pass, _renderCone, renderable);
+	this->drawMesh(pass, _renderCone, _renderConeIndirect);
 }
 
 void

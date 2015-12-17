@@ -73,6 +73,7 @@ WGLCanvas::WGLCanvas() noexcept
 	, _hdc(nullptr)
 	, _context(nullptr)
 	, _interval(SwapInterval::GPU_VSYNC)
+	, _isActive(true)
 {
 	initPixelFormat(_fbconfig, _ctxconfig);
 }
@@ -82,6 +83,7 @@ WGLCanvas::WGLCanvas(WindHandle window) except
 	, _hdc(nullptr)
 	, _context(nullptr)
 	, _interval(SwapInterval::GPU_VSYNC)
+	, _isActive(false)
 {
 	initPixelFormat(_fbconfig, _ctxconfig);
 
@@ -259,6 +261,7 @@ WGLCanvas::open(WindHandle hwnd) except
 
 	::wglMakeCurrent(_hdc, _context);
 
+	_isActive = false;
 	_fbconfig = _fbconfig;
 	_ctxconfig = _ctxconfig;
 	_interval = (SwapInterval)wglGetSwapIntervalEXT();
@@ -331,17 +334,29 @@ WGLCanvas::getWindHandle() const noexcept
 }
 
 void
-WGLCanvas::onActivate() except
+WGLCanvas::setActive(bool active) except
 {
-	if (!::wglMakeCurrent(_hdc, _context))
-		throw failure(__TEXT("wglMakeCurrent() fail"));
+	if (_isActive != active)
+	{
+		if (active)
+		{
+			if (!::wglMakeCurrent(0, 0))
+				throw failure(__TEXT("wglMakeCurrent() fail"));
+		}
+		else
+		{
+			if (!::wglMakeCurrent(_hdc, _context))
+				throw failure(__TEXT("wglMakeCurrent() fail"));
+		}
+
+		_isActive = active;
+	}
 }
 
-void
-WGLCanvas::onDeactivate() except
+bool
+WGLCanvas::getActive() const noexcept
 {
-	if (!::wglMakeCurrent(0, 0))
-		throw failure(__TEXT("wglMakeCurrent() fail"));
+	return _isActive;
 }
 
 bool
@@ -370,7 +385,7 @@ WGLCanvas::initWGLExtensions(HDC hdc) except
 #if defined(GLEW_MX)
 	wglewInit();
 #endif
-	
+
 	__wglSwapBuffers = (PFNWGLSWAPBUFFERSPROC)::GetProcAddress(::LoadLibrary(__TEXT("OpenGL32")), "wglSwapBuffers");
 
 	if (::wglewIsSupported("WGL_EXT_swap_control"))
@@ -409,7 +424,7 @@ WGLCanvas::initWGLExtensions(HDC hdc) except
 	return _ARB_create_context;
 }
 
-void 
+void
 WGLCanvas::initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept
 {
 	fbconfig.redSize = 8;

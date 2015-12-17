@@ -44,6 +44,7 @@ EGL2Canvas::EGL2Canvas() noexcept
     , _context(EGL_NO_CONTEXT)
     , _config(0)
 	, _interval(SwapInterval::GPU_VSYNC)
+	, _isActive(false)
 {
 	initPixelFormat(_fbconfig, _ctxconfig);
 }
@@ -54,6 +55,7 @@ EGL2Canvas::EGL2Canvas(WindHandle hwnd) except
 	, _context(EGL_NO_CONTEXT)
 	, _config(0)
 	, _interval(SwapInterval::GPU_VSYNC)
+	, _isActive(false)
 {
 	initPixelFormat(_fbconfig, _ctxconfig);
 
@@ -188,6 +190,32 @@ EGL2Canvas::close() noexcept
 }
 
 void
+EGL2Canvas::setActive(bool active) except
+{
+	if (_isActive != active)
+	{
+		if (active)
+		{
+			if (!eglMakeCurrent(_display, _surface, _surface, _context))
+				throw failure(__TEXT("eglMakeCurrent() fail"));
+		}
+		else
+		{
+			if (!eglMakeCurrent(EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT))
+				throw failure(__TEXT("eglMakeCurrent() fail"));
+		}
+
+		_isActive = active;
+	}
+}
+
+bool
+EGL2Canvas::getActive() const noexcept
+{
+	return _isActive;
+}
+
+void
 EGL2Canvas::setSwapInterval(SwapInterval interval) noexcept
 {
     assert(_display != EGL_NO_DISPLAY);
@@ -235,20 +263,6 @@ WindHandle
 EGL2Canvas::getWindHandle() const noexcept
 {
 	return _hwnd;
-}
-
-void
-EGL2Canvas::onActivate() except
-{
-	if (!eglMakeCurrent(_display, _surface, _surface, _context))
-		throw failure(__TEXT("eglMakeCurrent() fail"));
-}
-
-void
-EGL2Canvas::onDeactivate() except
-{
-	if (!eglMakeCurrent(EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT))
-		throw failure(__TEXT("eglMakeCurrent() fail"));
 }
 
 void

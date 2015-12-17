@@ -38,7 +38,9 @@
 
 _NAME_BEGIN
 
-RenderDevice::RenderDevice() except
+__ImplementSubInterface(RenderDevice, rtti::Interface, "RenderDevice")
+
+RenderDevice::RenderDevice() noexcept
 {
 }
 

@@ -43,6 +43,9 @@
 #include <ray/render_state.h>
 #include <ray/render_window.h>
 #include <ray/render_command.h>
+#include <ray/sampler_object.h>
+#include <ray/graphics_data.h>
+#include <ray/graphics_layout.h>
 #include <ray/shader.h>
 
 #if _BUILD_PLATFORM_WINDOWS
@@ -151,6 +154,9 @@ typedef std::shared_ptr<class OGLShader> OGLShaderPtr;
 typedef std::shared_ptr<class OGLShaderObject> OGLShaderObjectPtr;
 typedef std::shared_ptr<class OGLVertexBuffer> OGLVertexBufferPtr;
 typedef std::shared_ptr<class OGLIndexBuffer> OGLIndexBufferPtr;
+typedef std::shared_ptr<class OGLGraphicsLayout> OGLGraphicsLayoutPtr;
+typedef std::shared_ptr<class OGLDrawIndirectBuffer> OGLDrawIndirectBufferPtr;
+typedef std::shared_ptr<class OGLSampler> OGLSamplerPtr;
 
 class OGLTypes
 {

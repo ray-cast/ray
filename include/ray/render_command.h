@@ -41,6 +41,19 @@
 
 _NAME_BEGIN
 
+class EXPORT RenderIndirect final
+{
+public:
+	std::int32_t startVertice;
+	std::int32_t startIndice;
+	std::int32_t startInstances;
+	std::int32_t numVertices;
+	std::int32_t numIndices;
+	std::int32_t numInstances;
+
+	RenderIndirect() noexcept;
+};
+
 class RenderCommand
 {
 public:

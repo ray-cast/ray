@@ -51,19 +51,7 @@ RenderMesh::~RenderMesh() noexcept
 void
 RenderMesh::setRenderBuffer(RenderBufferPtr geometry) noexcept
 {
-	assert(geometry);
-
 	_geometry = geometry;
-
-	if (!_renderable)
-	{
-		_renderable = std::make_shared<RenderIndirect>();
-		_renderable->startVertice = 0;
-		_renderable->startIndice = 0;
-		_renderable->numVertices = geometry->getNumVertices();
-		_renderable->numIndices = geometry->getNumIndices();
-		_renderable->numInstances = 0;
-	}
 }
 
 RenderBufferPtr

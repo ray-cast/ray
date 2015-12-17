@@ -53,8 +53,8 @@ RenderBlendState::RenderBlendState() noexcept
 
 RenderRasterState::RenderRasterState() noexcept
 	: cullMode(GPU_CULL_BACK)
-	, fillMode(GPU_SOLID_MODE)
-	, primitiveType(VertexType::GPU_TRIANGLE)
+	, fillMode(SolidMode)
+	, primitiveType(VertexType::Triangle)
 	, scissorTestEnable(false)
 	, srgbEnable(false)
 	, multisampleEnable(false)

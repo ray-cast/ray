@@ -42,6 +42,7 @@ _NAME_BEGIN
 MyGuiVertexBuffer::MyGuiVertexBuffer() noexcept
 	: _needVertexCount(0)
 	, _sizeInBytes(0)
+	, _vertexCount(0)
 {
 }
 
@@ -64,36 +65,40 @@ MyGuiVertexBuffer::getVertexCount() noexcept
 MyGUI::Vertex* 
 MyGuiVertexBuffer::lock() noexcept
 {
-	if (!_vb || _needVertexCount != _vb->getVertexCount())
+	if (!_vb || _needVertexCount != _vertexCount)
 	{
 		if (!_vb)
 		{
-			VertexLayout layout;
-			layout.addComponent(VertexComponent(VertexAttrib::GPU_ATTRIB_POSITION, VertexFormat::GPU_VERTEX_FLOAT3));
-			layout.addComponent(VertexComponent(VertexAttrib::GPU_ATTRIB_DIFFUSE, VertexFormat::GPU_VERTEX_UNSIGNED_BYTE4));
-			layout.addComponent(VertexComponent(VertexAttrib::GPU_ATTRIB_TEXCOORD, VertexFormat::GPU_VERTEX_FLOAT2));
+			_layout.addComponent(VertexComponent(VertexFormat::Float3, VertexAttrib::Position));
+			_layout.addComponent(VertexComponent(VertexFormat::Uchar4, VertexAttrib::Diffuse, true));
+			_layout.addComponent(VertexComponent(VertexFormat::Float2, VertexAttrib::Texcoord));
 
-			auto usage = VertexUsage::MAP_READ_BIT | VertexUsage::MAP_WRITE_BIT;
+			auto layout = RenderSystem::instance()->createGraphicsLayout(_layout);
 
-			_vb = RenderSystem::instance()->createVertexBufferData();
-			_vb->open(layout, usage, nullptr, layout.getVertexSize() * _needVertexCount);
+			GraphicsDataDesc vb;
+			vb.setUsage(UsageFlags::MAP_READ_BIT | UsageFlags::MAP_WRITE_BIT);
+			vb.setStreamSize(_layout.getVertexSize() * _needVertexCount);
 
-			_buffer = RenderSystem::instance()->createRenderBuffer();
-			_buffer->setup(_vb, nullptr);
+			_vb = RenderSystem::instance()->createGraphicsData(vb);
+
+			_buffer = RenderSystem::instance()->createRenderBuffer(_vb, nullptr);
+			_buffer->setGraphicsLayout(layout);
+
+			_vertexCount = _needVertexCount;
 		}
 		else
 		{
-			_vb->resize(nullptr, _needVertexCount * _vb->getVertexSize());
+			RenderSystem::instance()->updateBuffer(_vb, nullptr, _needVertexCount * _layout.getVertexSize());
 		}
 	}
 
-	return (MyGUI::Vertex*)_vb->map(AccessMapping::MAP_READ_BIT | AccessMapping::MAP_WRITE_BIT);
+	return (MyGUI::Vertex*)RenderSystem::instance()->mapBuffer(_vb, AccessFlags::MAP_READ_BIT | AccessFlags::MAP_WRITE_BIT);
 }
 
 void 
 MyGuiVertexBuffer::unlock() noexcept
 {
-	_vb->unmap();
+	RenderSystem::instance()->unmapBuffer(_vb);
 }
 
 RenderBufferPtr 
@@ -103,4 +108,5 @@ MyGuiVertexBuffer::getBuffer() const
 }
 
 _NAME_END
+
 #endif

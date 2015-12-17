@@ -46,11 +46,12 @@
 _NAME_BEGIN
 
 typedef std::shared_ptr<class VertexComponent> VertexComponentPtr;
-typedef std::shared_ptr<class VertexBufferData> VertexBufferDataPtr;
-typedef std::shared_ptr<class IndexBufferData> IndexBufferDataPtr;
+
+typedef std::shared_ptr<class GraphicsData> GraphicsDataPtr;
+typedef std::shared_ptr<class GraphicsLayout> GraphicsLayoutPtr;
 
 typedef std::shared_ptr<class Texture> TexturePtr;
-typedef std::shared_ptr<class TextureSampler> TextureSamplerPtr;
+typedef std::shared_ptr<class SamplerObject> SamplerObjectPtr;
 typedef std::shared_ptr<class MultiRenderTexture> MultiRenderTexturePtr;
 
 typedef std::shared_ptr<class Shader> ShaderPtr;
@@ -219,9 +220,9 @@ enum CullMode
 
 enum FillMode
 {
-	GPU_POINT_MODE,
-	GPU_WIREFRAME_MODE,
-	GPU_SOLID_MODE,
+	PointMode,
+	WireframeMode,
+	SolidMode,
 };
 
 enum StencilOperation
@@ -247,27 +248,7 @@ enum ClearFlags
 	CLEAR_ALL = CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL
 };
 
-enum Anisotropy
-{
-	ANISOTROPY_0,
-	ANISOTROPY_1,
-	ANISOTROPY_2,
-	ANISOTROPY_4,
-	ANISOTROPY_8,
-	ANISOTROPY_16,
-};
-
-enum TextureOp
-{
-	OP_MULTIPLY,    //* T = T1 * T2
-	OP_ADD,         //* T = T1 + T2
-	OP_SUBTRACT,    //* T = T1 - T2
-	OP_DIVIDE,      //* T = T1 / T2
-	OP_SMOOTHADD,   //* T = (T1 + T2) - (T1 * T2)
-	OP_SIGNEDADD,   //* T = T1 + (T2-0.5)
-};
-
-enum TextureFormat
+enum class TextureFormat
 {
 	STENCIL8,
 	DEPTH_COMPONENT16,
@@ -301,24 +282,7 @@ enum TextureFormat
 	RG_ATI2,
 };
 
-enum TextureWrap
-{
-	REPEAT,
-	CLAMP_TO_EDGE,
-	MODE_MIRROR,
-};
-
-enum TextureFilter
-{
-	GPU_NEAREST,
-	GPU_LINEAR,
-	GPU_NEAREST_MIPMAP_LINEAR,
-	GPU_NEAREST_MIPMAP_NEAREST,
-	GPU_LINEAR_MIPMAP_NEAREST,
-	GPU_LINEAR_MIPMAP_LINEAR,
-};
-
-enum TextureDim
+enum class TextureDim
 {
 	DIM_2D,
 	DIM_3D,
@@ -328,97 +292,74 @@ enum TextureDim
 	DIM_CUBE_ARRAY,
 };
 
-enum VertexType
+enum class VertexType
 {
-	GPU_POINT,
-	GPU_LINE,
-	GPU_TRIANGLE,
-	GPU_FAN,
-	GPU_POINT_OR_LINE,
-	GPU_TRIANGLE_OR_LINE,
-	GPU_FAN_OR_LINE,
+	Point,
+	Line,
+	Triangle,
+	Fan,
+	PointOrLine,
+	TriangleOrLine,
+	FanOrLine,
 };
 
-enum VertexUsage
-{
-	MAP_READ_BIT  = 1 << 0,
-	MAP_WRITE_BIT = 1 << 1,
-	MAP_PERSISTENT_BIT	= 1 << 2,
-	MAP_COHERENT_BIT	= 1 << 3,
-	DYNAMIC_STORAGE_BIT = 1 << 4,
-	CLIENT_STORAGE_BIT	= 1 << 5,
-	IMMUTABLE_STORAGE = 1 << 7
-};
-
-enum StreamType
-{
-	VERTEX_STREAM,
-	INDEX_STREAM,
-};
-
-class AccessMapping
+class VertexAttrib
 {
 public:
 	enum
 	{
-		MAP_READ_BIT = 1 << 0,
-		MAP_WRITE_BIT = 1 << 1,
-		MAP_UNSYNCHRONIZED_BIT = 1 << 2
+		Position,
+		Normal,
+		Texcoord,
+		Diffuse,
+		Specular,
+		Weight,
+		Tangent,
+		Bitangent,
+		Nums,
 	};
 };
 
-enum VertexAttrib
+enum class VertexFormat
 {
-	GPU_ATTRIB_POSITION,
-	GPU_ATTRIB_NORMAL,
-	GPU_ATTRIB_TEXCOORD,
-	GPU_ATTRIB_DIFFUSE,
-	GPU_ATTRIB_SPECULAR,
-	GPU_ATTRIB_WEIGHT,
-	GPU_ATTRIB_TANGENT,
-	GPU_ATTRIB_BITANGENT,
-	GPU_ATTRIB_NUMS,
+	Char,
+	Char2,
+	Char3,
+	Char4,
+	Short,
+	Short2,
+	Short3,
+	Short4,
+	Int,
+	Int2,
+	Int3,
+	Int4,
+	Uchar,
+	Uchar2,
+	Uchar3,
+	Uchar4,
+	Ushort,
+	Ushort2,
+	Ushort3,
+	Ushort4,
+	Uint,
+	Uint2,
+	Uint3,
+	Uint4,
+	Float,
+	Float2,
+	Float3,
+	Float4
 };
 
-enum VertexFormat
+enum class IndexType
 {
-	GPU_VERTEX_BYTE,
-	GPU_VERTEX_BYTE2,
-	GPU_VERTEX_BYTE3,
-	GPU_VERTEX_BYTE4,
-	GPU_VERTEX_SHORT,
-	GPU_VERTEX_SHORT2,
-	GPU_VERTEX_SHORT3,
-	GPU_VERTEX_SHORT4,
-	GPU_VERTEX_INT,
-	GPU_VERTEX_INT2,
-	GPU_VERTEX_INT3,
-	GPU_VERTEX_INT4,
-	GPU_VERTEX_UNSIGNED_BYTE,
-	GPU_VERTEX_UNSIGNED_BYTE2,
-	GPU_VERTEX_UNSIGNED_BYTE3,
-	GPU_VERTEX_UNSIGNED_BYTE4,
-	GPU_VERTEX_UNSIGNED_SHORT,
-	GPU_VERTEX_UNSIGNED_SHORT2,
-	GPU_VERTEX_UNSIGNED_SHORT3,
-	GPU_VERTEX_UNSIGNED_SHORT4,
-	GPU_VERTEX_UNSIGNED_INT,
-	GPU_VERTEX_UNSIGNED_INT2,
-	GPU_VERTEX_UNSIGNED_INT3,
-	GPU_VERTEX_UNSIGNED_INT4,
-	GPU_VERTEX_FLOAT,
-	GPU_VERTEX_FLOAT2,
-	GPU_VERTEX_FLOAT3,
-	GPU_VERTEX_FLOAT4,
+	None,
+	Uint16,
+	Uint32
 };
 
-enum IndexType
-{
-	GPU_UINT16,
-	GPU_UINT32
-};
-
-enum ShaderType
+enum class ShaderType
 {
 	ST_VERTEX,
 	ST_FRAGMENT,
@@ -430,24 +371,24 @@ enum ShaderType
 	ST_CG_FRAGMENT,
 };
 
-enum ShaderVariantType
+enum class ShaderVariantType
 {
-	SPT_NONE,
-	SPT_BOOL,
-	SPT_INT,
-	SPT_INT2,
-	SPT_FLOAT,
-	SPT_FLOAT2,
-	SPT_FLOAT3,
-	SPT_FLOAT4,
-	SPT_FLOAT3X3,
-	SPT_FLOAT4X4,
-	SPT_FLOAT_ARRAY,
-	SPT_FLOAT2_ARRAY,
-	SPT_FLOAT3_ARRAY,
-	SPT_FLOAT4_ARRAY,
-	SPT_TEXTURE,
-	SPT_BUFFER,
+	None,
+	Bool,
+	Int,
+	Int2,
+	Float,
+	Float2,
+	Float3,
+	Float4,
+	Float3x3,
+	Float4x4,
+	FloatArray,
+	Float2Array,
+	Float3Array,
+	Float4Array,
+	Texture,
+	Buffer,
 };
 
 _NAME_END

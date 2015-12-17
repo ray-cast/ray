@@ -54,9 +54,9 @@ public:
 
 private:
 
-	static void applyTextureWrap(GLenum, TextureWrap wrap) noexcept;
-	static void applyTextureFilter(GLenum target, TextureFilter filter) noexcept;
-	static void applyTextureAnis(GLenum target, Anisotropy anis) noexcept;
+	static void applyTextureWrap(GLenum target, SamplerWrap wrap) noexcept;
+	static void applyTextureFilter(GLenum target, SamplerFilter filter) noexcept;
+	static void applyTextureAnis(GLenum target, SamplerAnis anis) noexcept;
 
 private:
 

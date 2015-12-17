@@ -51,17 +51,15 @@ public:
 	void open(WindHandle hwnd) except;
 	void close() noexcept;
 
+	void setActive(bool active) except;
+	bool getActive() const noexcept;
+
 	void setSwapInterval(SwapInterval interval) noexcept;
 	SwapInterval getSwapInterval() const noexcept;
 
 	void present() noexcept;
 
 	WindHandle getWindHandle() const noexcept;
-
-private:
-
-	virtual void onActivate() except;
-	virtual void onDeactivate() except;
 
 private:
 
@@ -81,6 +79,8 @@ private:
 	static bool _ARB_create_context_robustness;
 
 	static bool _EXT_swap_control;
+
+	bool _isActive;
 
 	HWND _hwnd;
 	HDC _hdc;

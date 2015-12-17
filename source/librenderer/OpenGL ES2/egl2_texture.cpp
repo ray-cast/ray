@@ -64,9 +64,9 @@ EGL2Texture::setup() except
 	GLsizei h = (GLsizei)this->getHeight();
 	GLsizei depth = (GLsizei)this->getDepth();
 
-	applyTextureWrap(target, this->getTexWrap());
-	applyTextureFilter(target, this->getTexFilter());
-	applyTextureAnis(target, this->getTexAnisotropy());
+	applyTextureWrap(target, this->getSamplerWrap());
+	applyTextureFilter(target, this->getSamplerFilter());
+	applyTextureAnis(target, this->getSamplerAnis());
 
 	if (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT ||
 		internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ||
@@ -145,19 +145,19 @@ EGL2Texture::getInstanceID() noexcept
 }
 
 void
-EGL2Texture::applyTextureWrap(GLenum target, TextureWrap wrap) noexcept
+EGL2Texture::applyTextureWrap(GLenum target, SamplerWrap wrap) noexcept
 {
-	if (TextureWrap::REPEAT & wrap)
+	if (SamplerWrap::Repeat == wrap)
 	{
 		glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
-	else if (TextureWrap::CLAMP_TO_EDGE & wrap)
+	else if (SamplerWrap::ClampToEdge == wrap)
 	{
 		glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
-	else if (TextureWrap::MODE_MIRROR & wrap)
+	else if (SamplerWrap::Mirror == wrap)
 	{
 		glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 		glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
@@ -165,34 +165,34 @@ EGL2Texture::applyTextureWrap(GLenum target, TextureWrap wrap) noexcept
 }
 
 void
-EGL2Texture::applyTextureFilter(GLenum target, TextureFilter filter) noexcept
+EGL2Texture::applyTextureFilter(GLenum target, SamplerFilter filter) noexcept
 {
-	if (filter == TextureFilter::GPU_NEAREST)
+	if (filter == SamplerFilter::Nearest)
 	{
 		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	}
-	else if (filter == TextureFilter::GPU_LINEAR)
+	else if (filter == SamplerFilter::Linear)
 	{
 		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	}
-	else if (filter == TextureFilter::GPU_NEAREST_MIPMAP_LINEAR)
+	else if (filter == SamplerFilter::NearestMipmapLinear)
 	{
 		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 	}
-	else if (filter == TextureFilter::GPU_NEAREST_MIPMAP_NEAREST)
+	else if (filter == SamplerFilter::NearestMipmapNearest)
 	{
 		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 	}
-	else if (filter == TextureFilter::GPU_LINEAR_MIPMAP_NEAREST)
+	else if (filter == SamplerFilter::LinearMipmapNearest)
 	{
 		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 	}
-	else if (filter == TextureFilter::GPU_LINEAR_MIPMAP_LINEAR)
+	else if (filter == SamplerFilter::LinearMipmapLinear)
 	{
 		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -200,17 +200,17 @@ EGL2Texture::applyTextureFilter(GLenum target, TextureFilter filter) noexcept
 }
 
 void
-EGL2Texture::applyTextureAnis(GLenum target, Anisotropy anis) noexcept
+EGL2Texture::applyTextureAnis(GLenum target, SamplerAnis anis) noexcept
 {
-	if (anis == Anisotropy::ANISOTROPY_1)
+	if (anis == SamplerAnis::Anis1)
 		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
-	else if (anis == Anisotropy::ANISOTROPY_2)
+	else if (anis == SamplerAnis::Anis2)
 		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2);
-	else if (anis == Anisotropy::ANISOTROPY_4)
+	else if (anis == SamplerAnis::Anis4)
 		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
-	else if (anis == Anisotropy::ANISOTROPY_8)
+	else if (anis == SamplerAnis::Anis8)
 		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
-	else if (anis == Anisotropy::ANISOTROPY_16)
+	else if (anis == SamplerAnis::Anis16)
 		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
 }
 

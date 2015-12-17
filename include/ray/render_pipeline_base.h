@@ -102,17 +102,20 @@ public:
 	void setShaderObject(ShaderObjectPtr progarm) noexcept;
 	ShaderObjectPtr getShaderObject() const noexcept;
 
-	RenderBufferPtr createRenderBuffer() noexcept;
+	GraphicsLayoutPtr createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept;
+
+	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
+	bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;
+	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
+	void unmapBuffer(GraphicsDataPtr& data) noexcept;
+
+	RenderBufferPtr createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
 	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) except;
 	RenderBufferPtr createRenderBuffer(const MeshPropertys& mesh) except;
-
-	IndexBufferDataPtr createIndexBufferData() noexcept;
-	VertexBufferDataPtr createVertexBufferData() noexcept;
 
 	void setRenderBuffer(RenderBufferPtr buffer) except;
 	void drawRenderBuffer(const RenderIndirect& renderable) except;
 	void drawRenderBuffer(const RenderIndirects& renderable) except;
-	RenderBufferPtr getRenderBuffer() const noexcept;
 
 	void drawCone(MaterialPassPtr pass) noexcept;
 	void drawSphere(MaterialPassPtr pass) noexcept;
@@ -154,6 +157,10 @@ private:
 	RenderBufferPtr _renderSceneQuad;
 	RenderBufferPtr _renderSphere;
 	RenderBufferPtr _renderCone;
+
+	RenderIndirect _renderConeIndirect;
+	RenderIndirect _renderSphereIndirect;
+	RenderIndirect _renderSceneQuadIndirect;
 
 	MaterialManagerPtr _materialManager;
 

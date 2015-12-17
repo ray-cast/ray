@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _GUI_BUFFER_H_
-#define _GUI_BUFFER_H_
+#ifndef _MYGUI_BUFFER_H_
+#define _MYGUI_BUFFER_H_
 
 #include "mygui_types.h"
 
@@ -60,8 +60,11 @@ private:
 	MemoryStream _stream;
 
 	RenderBufferPtr _buffer;
-	VertexBufferDataPtr _vb;
 
+	GraphicsLayoutDesc _layout;
+	GraphicsDataPtr _vb;
+
+	std::size_t _vertexCount;
 	std::size_t _needVertexCount;
 	std::size_t _sizeInBytes;
 };

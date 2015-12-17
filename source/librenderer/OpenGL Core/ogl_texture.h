@@ -41,21 +41,6 @@
 
 _NAME_BEGIN
 
-class OGLTextureSampler final : public TextureSampler
-{
-public:
-	OGLTextureSampler() noexcept;
-	~OGLTextureSampler() noexcept;
-
-	bool setup() except;
-	void close() noexcept;
-
-	GLuint getInstanceID() noexcept;
-private:
-
-	GLuint _sampler;
-};
-
 class OGLTexture final : public Texture
 {
 public:
@@ -70,9 +55,9 @@ public:
 
 private:
 
-	static void applyTextureWrap(GLenum, TextureWrap wrap) noexcept;
-	static void applyTextureFilter(GLenum target, TextureFilter filter) noexcept;
-	static void applyTextureAnis(GLenum target, Anisotropy anis) noexcept;
+	static void applySamplerWrap(GLenum, SamplerWrap wrap) noexcept;
+	static void applySamplerFilter(GLenum target, SamplerFilter filter) noexcept;
+	static void applyTextureAnis(GLenum target, SamplerAnis anis) noexcept;
 
 private:
 

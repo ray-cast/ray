@@ -51,6 +51,9 @@ public:
 	void open(WindHandle hwnd) except;
 	void close() noexcept;
 
+	void setActive(bool active) except;
+	void getActive() noexcept;
+
 	void setSwapInterval(SwapInterval interval) noexcept;
 	SwapInterval getSwapInterval() const noexcept;
 
@@ -60,14 +63,11 @@ public:
 
 private:
 
-	virtual void onActivate() except;
-	virtual void onDeactivate() except;
-
-private:
-
 	static void initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept;
 
 private:
+	bool _isActive;
+
     XWindow _window;
     XDisplay* _display;
 

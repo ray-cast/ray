@@ -35,8 +35,14 @@ ELSEIF(BUILD_RENDERSYSTEM EQUAL 3)
 ENDIF()
 
 SET(RENDERER_CORE
-    ${SOURCE_PATH}/render_buffer.cpp
-    ${HEADER_PATH}/render_buffer.h
+    ${HEADER_PATH}/graphics_child.h
+    ${SOURCE_PATH}/graphics_child.cpp
+    ${HEADER_PATH}/graphics_data.h
+    ${SOURCE_PATH}/graphics_data.cpp
+    ${HEADER_PATH}/graphics_layout.h
+    ${SOURCE_PATH}/graphics_layout.cpp
+    ${HEADER_PATH}/graphics_resource.h
+    ${SOURCE_PATH}/graphics_resource.cpp
     ${HEADER_PATH}/render_device.h
     ${SOURCE_PATH}/render_device.cpp
     ${HEADER_PATH}/render_window.h
@@ -50,6 +56,10 @@ SET(RENDERER_CORE
     ${HEADER_PATH}/render_types.h
     ${HEADER_PATH}/shader.h
     ${SOURCE_PATH}/shader.cpp
+    ${HEADER_PATH}/vertex_component.h
+    ${SOURCE_PATH}/vertex_component.cpp
+    ${HEADER_PATH}/sampler_object.h
+    ${SOURCE_PATH}/sampler_object.cpp
 )
 SOURCE_GROUP("core" FILES ${RENDERER_CORE})
 
@@ -103,6 +113,8 @@ SOURCE_GROUP("renderer\\renderable" FILES ${RENDERER_SCENE})
 SET(RENDERER_MESH
     ${HEADER_PATH}/render_mesh.h
     ${SOURCE_PATH}/render_mesh.cpp
+    ${SOURCE_PATH}/render_buffer.cpp
+    ${HEADER_PATH}/render_buffer.h
 )
 SOURCE_GROUP("renderer\\mesh" FILES ${RENDERER_MESH})
 

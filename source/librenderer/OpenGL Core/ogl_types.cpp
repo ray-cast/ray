@@ -63,19 +63,19 @@ OGLTypes::asOGLVertexType(VertexType type) noexcept
 {
 	switch (type)
 	{
-	case ray::GPU_POINT:
+	case VertexType::Point:
 		return GL_POINTS;
-	case ray::GPU_LINE:
+	case VertexType::Line:
 		return GL_LINES;
-	case ray::GPU_TRIANGLE:
+	case VertexType::Triangle:
 		return GL_TRIANGLES;
-	case ray::GPU_FAN:
+	case VertexType::Fan:
 		return GL_TRIANGLE_FAN;
-	case ray::GPU_POINT_OR_LINE:
+	case VertexType::PointOrLine:
 		return GL_POINTS;
-	case ray::GPU_TRIANGLE_OR_LINE:
+	case VertexType::TriangleOrLine:
 		return GL_TRIANGLES;
-	case ray::GPU_FAN_OR_LINE:
+	case VertexType::FanOrLine:
 		return GL_TRIANGLE_FAN;
 	default:
 		assert(false);
@@ -88,25 +88,40 @@ OGLTypes::asOGLVertexFormat(VertexFormat format) noexcept
 {
 	switch (format)
 	{
-	case ray::GPU_VERTEX_BYTE:
+	case VertexFormat::Char:
+	case VertexFormat::Char2:
+	case VertexFormat::Char3:
+	case VertexFormat::Char4:
 		return GL_BYTE;
-	case ray::GPU_VERTEX_SHORT:
+	case VertexFormat::Short:
+	case VertexFormat::Short2:
+	case VertexFormat::Short3:
+	case VertexFormat::Short4:
 		return GL_SHORT;
-	case ray::GPU_VERTEX_INT:
+	case VertexFormat::Int:
+	case VertexFormat::Int2:
+	case VertexFormat::Int3:
+	case VertexFormat::Int4:
 		return GL_INT;
-	case ray::GPU_VERTEX_UNSIGNED_BYTE:
-	case ray::GPU_VERTEX_UNSIGNED_BYTE2:
-	case ray::GPU_VERTEX_UNSIGNED_BYTE3:
-	case ray::GPU_VERTEX_UNSIGNED_BYTE4:
+	case VertexFormat::Uchar:
+	case VertexFormat::Uchar2:
+	case VertexFormat::Uchar3:
+	case VertexFormat::Uchar4:
 		return GL_UNSIGNED_BYTE;
-	case ray::GPU_VERTEX_UNSIGNED_SHORT:
+	case VertexFormat::Ushort:
+	case VertexFormat::Ushort2:
+	case VertexFormat::Ushort3:
+	case VertexFormat::Ushort4:
 		return GL_UNSIGNED_SHORT;
-	case ray::GPU_VERTEX_UNSIGNED_INT:
+	case VertexFormat::Uint:
+	case VertexFormat::Uint2:
+	case VertexFormat::Uint3:
+	case VertexFormat::Uint4:
 		return GL_UNSIGNED_INT;
-	case ray::GPU_VERTEX_FLOAT:
-	case ray::GPU_VERTEX_FLOAT2:
-	case ray::GPU_VERTEX_FLOAT3:
-	case ray::GPU_VERTEX_FLOAT4:
+	case VertexFormat::Float:
+	case VertexFormat::Float2:
+	case VertexFormat::Float3:
+	case VertexFormat::Float4:
 		return GL_FLOAT;
 	default:
 		assert(false);
@@ -119,9 +134,11 @@ OGLTypes::asOGLIndexType(IndexType type) noexcept
 {
 	switch (type)
 	{
-	case ray::GPU_UINT16:
+	case IndexType::None:
+		return GL_NONE;
+	case IndexType::Uint16:
 		return GL_UNSIGNED_SHORT;
-	case ray::GPU_UINT32:
+	case IndexType::Uint32:
 		return GL_UNSIGNED_INT;
 	default:
 		assert(false);
@@ -140,7 +157,6 @@ OGLTypes::asOGLShaderType(ShaderType type) noexcept
 		return GL_FRAGMENT_SHADER;
 	case ShaderType::ST_COMPUTE:
 		return GL_COMPUTE_SHADER;
-#if !defined(EGLAPI)
 	case ShaderType::ST_GEOMETRY:
 		return GL_GEOMETRY_SHADER;
 	case ShaderType::ST_TESS_CONTROL:
@@ -151,7 +167,6 @@ OGLTypes::asOGLShaderType(ShaderType type) noexcept
 		return GL_CG_VERTEX_SHADER_EXT;
 	case ShaderType::ST_CG_FRAGMENT:
 		return GL_CG_FRAGMENT_SHADER_EXT;
-#endif
 	default:
 		assert(false);
 		return GL_VERTEX_SHADER;
@@ -306,10 +321,8 @@ OGLTypes::asOGLInternalformat(TextureFormat format) noexcept
 		return GL_RGB16UI;
 	case TextureFormat::R16G16B16A16:
 		return GL_RGBA16UI;
-#if !defined(EGLAPI)
 	case TextureFormat::R16G16B16A16_SNORM:
 		return GL_RGBA16_SNORM;
-#endif
 	case TextureFormat::R16G16B16F:
 		return GL_RGB16F;
 	case TextureFormat::R32G32B32F:
@@ -346,10 +359,8 @@ OGLTypes::asOGLInternalformat(TextureFormat format) noexcept
 		return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 	case TextureFormat::RGBA_DXT5:
 		return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-#if !defined(EGLAPI)
 	case TextureFormat::RG_ATI2:
 		return GL_COMPRESSED_RG_RGTC2;
-#endif
 	default:
 		assert(false);
 		return GL_INVALID_ENUM;
@@ -429,7 +440,6 @@ OGLTypes::asBlendFactor(BlendFactor func) noexcept
 GLenum
 OGLTypes::asBlendOperation(BlendOperation blendop) noexcept
 {
-#if !defined(EGLAPI)
 	switch (blendop)
 	{
 	case ray::GPU_ADD:
@@ -442,10 +452,6 @@ OGLTypes::asBlendOperation(BlendOperation blendop) noexcept
 		assert(false);
 		return GL_FUNC_ADD;
 	}
-#else
-	assert(false);
-	return GL_INVALID_ENUM;
-#endif
 }
 
 GLenum
@@ -473,11 +479,11 @@ OGLTypes::asFillMode(FillMode mode) noexcept
 #if !defined(EGLAPI)
 	switch (mode)
 	{
-	case ray::GPU_POINT_MODE:
+	case ray::PointMode:
 		return GL_POINT;
-	case ray::GPU_WIREFRAME_MODE:
+	case ray::WireframeMode:
 		return GL_LINE;
-	case ray::GPU_SOLID_MODE:
+	case ray::SolidMode:
 		return GL_FILL;
 	default:
 		assert(false);
@@ -542,13 +548,13 @@ OGLExtenstion::initExtensions() except
 	OGLFeatures::NV_vertex_buffer_unified_memory = false;//GLEW_NV_vertex_buffer_unified_memory ? true : false;
 
 #endif
-	
+
 	initExtention = true;
 
 	return initExtention;
 }
 
-void 
+void
 OGLCheck::checkError() noexcept
 {
 #ifdef _DEBUG

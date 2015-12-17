@@ -38,7 +38,10 @@
 #include "egl2_state.h"
 #include "egl2_shader.h"
 #include "egl2_texture.h"
-#include "egl2_buffer.h"
+#include "egl2_layout.h"
+#include "egl2_sampler.h"
+#include "egl2_vbo.h"
+#include "egl2_ibo.h"
 
 _NAME_BEGIN
 
@@ -129,7 +132,6 @@ EGL2Renderer::renderBegin() noexcept
 {
 	this->setShaderObject(nullptr);
 	this->setRenderTexture(nullptr);
-	this->setRenderBuffer(nullptr);
 }
 
 void
@@ -240,72 +242,232 @@ EGL2Renderer::getRenderState() const noexcept
 	return _state;
 }
 
-RenderBufferPtr
-EGL2Renderer::createRenderBuffer() noexcept
+GraphicsLayoutPtr
+EGL2Renderer::createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept
 {
-	auto result = std::make_shared<EGL2RenderBuffer>();
-	return result;
-}
-
-IndexBufferDataPtr 
-EGL2Renderer::createIndexBufferData() noexcept
-{
-	auto result = std::make_shared<EGL2IndexBuffer>();
-	return result;
-}
-
-VertexBufferDataPtr 
-EGL2Renderer::createVertexBufferData() noexcept
-{
-	auto result = std::make_shared<EGL2VertexBuffer>();
-	return result;
+	auto layout = std::make_shared<EGL2GraphicsLayout>();
+	if (layout->open(desc))
+		return layout;
+	return nullptr;
 }
 
 void
-EGL2Renderer::setRenderBuffer(RenderBufferPtr buffer) noexcept
+EGL2Renderer::setGraphicsLayout(GraphicsLayoutPtr layout) noexcept
 {
-	if (_renderBuffer != buffer)
+	if (_inputLayout != layout)
 	{
-		if (buffer)
-			buffer->apply();
-		_renderBuffer = buffer;
+		if (layout)
+		{
+			if (layout->isInstanceOf<EGL2GraphicsLayout>())
+				_inputLayout = layout->downcast<EGL2GraphicsLayout>();
+			else
+				_inputLayout = nullptr;
+		}
+		else
+		{
+			_inputLayout = nullptr;
+		}
+
+		_needUpdateLayout = true;
+	}
+}
+
+GraphicsLayoutPtr
+EGL2Renderer::getGraphicsLayout() const noexcept
+{
+	return _inputLayout;
+}
+
+GraphicsDataPtr
+EGL2Renderer::createGraphicsData(const GraphicsDataDesc& desc) noexcept
+{
+	auto type = desc.getType();
+
+	if (type == GraphicsStream::VBO)
+		return std::make_shared<EGL2VertexBuffer>(desc);
+	else if (type == GraphicsStream::IBO)
+		return std::make_shared<EGL2IndexBuffer>(desc);
+
+	return nullptr;
+}
+
+bool
+EGL2Renderer::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
+{
+	if (data)
+	{
+		auto max = std::numeric_limits<GLsizeiptr>::max();
+		if (cnt < max)
+		{
+			if (data->isInstanceOf<EGL2VertexBuffer>())
+				this->setVertexBufferData(data);
+			else if (data->isInstanceOf<EGL2IndexBuffer>())
+				this->setIndexBufferData(data);
+			else
+				return false;
+
+			auto _data = data->cast<EGL2GraphicsData>();
+			_data->resize((const char*)str, cnt);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void*
+EGL2Renderer::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
+{
+	if (data)
+	{
+		if (data->isInstanceOf<EGL2VertexBuffer>())
+			this->setVertexBufferData(data);
+		else if (data->isInstanceOf<EGL2IndexBuffer>())
+			this->setIndexBufferData(data);
+		else
+			return nullptr;
+
+		auto _data = data->cast<EGL2GraphicsData>();
+		return _data->map(access);
+	}
+
+	return nullptr;
+}
+
+void
+EGL2Renderer::unmapBuffer(GraphicsDataPtr& data) noexcept
+{
+	if (data)
+	{
+		if (data->isInstanceOf<EGL2VertexBuffer>())
+			this->setVertexBufferData(data);
+		else if (data->isInstanceOf<EGL2IndexBuffer>())
+			this->setIndexBufferData(data);
+		else
+			return;
+
+		auto _data = data->cast<EGL2GraphicsData>();
+		_data->unmap();
 	}
 }
 
 void
-EGL2Renderer::updateRenderBuffer(RenderBufferPtr renderBuffer) noexcept
+EGL2Renderer::setIndexBufferData(GraphicsDataPtr data) noexcept
 {
+	if (_ibo != data)
+	{
+		if (data)
+		{
+			if (data->isInstanceOf<EGL2IndexBuffer>())
+				_ibo = data->downcast<EGL2IndexBuffer>();
+			else
+				_ibo = nullptr;
+		}
+		else
+		{
+			_ibo = nullptr;
+		}
+
+		_needUpdateIbo = true;
+	}
+}
+
+GraphicsDataPtr
+EGL2Renderer::getIndexBufferData() const noexcept
+{
+	return _ibo;
+}
+
+void
+EGL2Renderer::setVertexBufferData(GraphicsDataPtr data) noexcept
+{
+	if (_vbo != data)
+	{
+		if (data)
+		{
+			if (data->isInstanceOf<EGL2VertexBuffer>())
+				_vbo = data->downcast<EGL2VertexBuffer>();
+			else
+				_vbo = nullptr;
+		}
+		else
+		{
+			_vbo = nullptr;
+		}
+
+		_needUpdateVbo = true;
+	}
+}
+
+GraphicsDataPtr
+EGL2Renderer::getVertexBufferData() const noexcept
+{
+	return _vbo;
 }
 
 void
 EGL2Renderer::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 {
-	assert(_renderBuffer && _stateCaptured);
-	assert(_renderBuffer->getNumVertices() >= renderable.startVertice + renderable.numVertices);
-	assert(_renderBuffer->getNumIndices() >= renderable.startIndice + renderable.numIndices);
+	if (!_stateCaptured)
+		return;
+
+	if (!_inputLayout || !_vbo)
+		return;
+
+	if (_vbo->size() < _inputLayout->getVertexSize() * (renderable.startVertice + renderable.numVertices))
+		return;
+
+	if (_inputLayout->getIndexType() != GL_NONE)
+	{
+		if (!_ibo)
+			return;
+
+		if (_ibo->size() < _inputLayout->getIndexSize() * (renderable.startIndice + renderable.numIndices))
+			return;
+	}
 
 	auto primitiveType = _stateCaptured->getRasterState().primitiveType;
-
 	if (_enableWireframe)
 	{
-		if (primitiveType == GPU_POINT_OR_LINE ||
-			primitiveType == GPU_TRIANGLE_OR_LINE ||
-			primitiveType == GPU_FAN_OR_LINE)
+		if (primitiveType == VertexType::PointOrLine ||
+			primitiveType == VertexType::TriangleOrLine ||
+			primitiveType == VertexType::FanOrLine)
 		{
-			primitiveType = GPU_LINE;
+			primitiveType = VertexType::Line;
 		}
 	}
-	
-	GLenum drawType = EGL2Types::asEGL2VertexType(primitiveType);
-	auto ib = _renderBuffer->getIndexBuffer();
-	if (ib)
-	{
-		GLenum indexType = EGL2Types::asEGL2IndexType(ib->getIndexType());
 
-		GL_CHECK(glDrawElements(drawType, renderable.numIndices, indexType, (char*)renderable.startIndice));
+	if (_needUpdateLayout)
+	{
+		if (_inputLayout)
+			_inputLayout->bindLayout();
+		_needUpdateLayout = false;
+	}
+
+	if (_needUpdateVbo)
+	{
+		if (_vbo)
+			_vbo->bind(_inputLayout);
+		_needUpdateVbo = false;
+	}
+
+	if (_needUpdateIbo)
+	{
+		if (_ibo)
+			_ibo->bind();
+		_needUpdateIbo = false;
+	}
+
+	if (_ibo)
+	{
+		GLenum drawType = EGL2Types::asEGL2VertexType(primitiveType);
+		GLenum indexType = _inputLayout->getIndexType();
+		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_inputLayout->getIndexSize() * renderable.startIndice);
+		GL_CHECK(glDrawElements(drawType, renderable.numIndices, indexType, offsetIndices));
 	}
 	else
 	{
+		GLenum drawType = EGL2Types::asEGL2VertexType(primitiveType);
 		GL_CHECK(glDrawArrays(drawType, renderable.startVertice, renderable.numVertices));
 	}
 }
@@ -314,12 +476,6 @@ void
 EGL2Renderer::drawRenderBuffer(const RenderIndirects& renderable) noexcept
 {
 	assert(false);
-}
-
-RenderBufferPtr
-EGL2Renderer::getRenderBuffer() const noexcept
-{
-	return _renderBuffer;
 }
 
 TexturePtr 
@@ -344,6 +500,25 @@ EGL2Renderer::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
 	{
 		GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
 		GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
+	}
+}
+
+
+SamplerObjectPtr
+EGL2Renderer::createSamplerObject() noexcept
+{
+	return std::make_shared<EGL2Sampler>();
+}
+
+void
+EGL2Renderer::setSamplerObject(SamplerObjectPtr sampler, std::uint32_t slot) noexcept
+{
+	auto glsampler = sampler->downcast<EGL2Sampler>();
+	if (glsampler)
+	{
+	}
+	else
+	{
 	}
 }
 

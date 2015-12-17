@@ -117,7 +117,7 @@ MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::Pix
 	_texture = RenderSystem::instance()->createTexture();
 	_texture->setWidth(_width);
 	_texture->setHeight(_height);
-	_texture->setTexFilter(TextureFilter::GPU_LINEAR);
+	_texture->setSamplerFilter(SamplerFilter::Linear);
 	_texture->setTexDim(TextureDim::DIM_2D);
 	_texture->setTexFormat(pixelFormat);
 	_texture->setStream(_data);

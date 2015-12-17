@@ -71,7 +71,7 @@ MaterialPass::setup(Material& material) except
 			{
 				param->addShaderUniform(uniform);
 
-				if (uniform->getType() == ShaderVariantType::SPT_TEXTURE)
+				if (uniform->getType() == ShaderVariantType::Texture)
 					_textures.push_back(param);
 
 				_parameters.push_back(param);

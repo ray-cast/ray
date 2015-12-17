@@ -43,19 +43,19 @@ EGL2Types::asEGL2VertexType(VertexType type) noexcept
 {
 	switch (type)
 	{
-	case ray::GPU_POINT:
+	case VertexType::Point:
 		return GL_POINTS;
-	case ray::GPU_LINE:
+	case VertexType::Line:
 		return GL_LINES;
-	case ray::GPU_TRIANGLE:
+	case VertexType::Triangle:
 		return GL_TRIANGLES;
-	case ray::GPU_FAN:
+	case VertexType::Fan:
 		return GL_TRIANGLE_FAN;
-	case ray::GPU_POINT_OR_LINE:
+	case VertexType::PointOrLine:
 		return GL_POINTS;
-	case ray::GPU_TRIANGLE_OR_LINE:
+	case VertexType::TriangleOrLine:
 		return GL_TRIANGLES;
-	case ray::GPU_FAN_OR_LINE:
+	case VertexType::FanOrLine:
 		return GL_TRIANGLE_FAN;
 	default:
 		assert(false);
@@ -68,25 +68,40 @@ EGL2Types::asEGL2VertexFormat(VertexFormat format) noexcept
 {
 	switch (format)
 	{
-	case ray::GPU_VERTEX_BYTE:
+	case VertexFormat::Char:
+	case VertexFormat::Char2:
+	case VertexFormat::Char3:
+	case VertexFormat::Char4:
 		return GL_BYTE;
-	case ray::GPU_VERTEX_SHORT:
+	case VertexFormat::Short:
+	case VertexFormat::Short2:
+	case VertexFormat::Short3:
+	case VertexFormat::Short4:
 		return GL_SHORT;
-	case ray::GPU_VERTEX_INT:
+	case VertexFormat::Int:
+	case VertexFormat::Int2:
+	case VertexFormat::Int3:
+	case VertexFormat::Int4:
 		return GL_INT;
-	case ray::GPU_VERTEX_UNSIGNED_BYTE:
-	case ray::GPU_VERTEX_UNSIGNED_BYTE2:
-	case ray::GPU_VERTEX_UNSIGNED_BYTE3:
-	case ray::GPU_VERTEX_UNSIGNED_BYTE4:
+	case VertexFormat::Uchar:
+	case VertexFormat::Uchar2:
+	case VertexFormat::Uchar3:
+	case VertexFormat::Uchar4:
 		return GL_UNSIGNED_BYTE;
-	case ray::GPU_VERTEX_UNSIGNED_SHORT:
+	case VertexFormat::Ushort:
+	case VertexFormat::Ushort2:
+	case VertexFormat::Ushort3:
+	case VertexFormat::Ushort4:
 		return GL_UNSIGNED_SHORT;
-	case ray::GPU_VERTEX_UNSIGNED_INT:
+	case VertexFormat::Uint:
+	case VertexFormat::Uint2:
+	case VertexFormat::Uint3:
+	case VertexFormat::Uint4:
 		return GL_UNSIGNED_INT;
-	case ray::GPU_VERTEX_FLOAT:
-	case ray::GPU_VERTEX_FLOAT2:
-	case ray::GPU_VERTEX_FLOAT3:
-	case ray::GPU_VERTEX_FLOAT4:
+	case VertexFormat::Float:
+	case VertexFormat::Float2:
+	case VertexFormat::Float3:
+	case VertexFormat::Float4:
 		return GL_FLOAT;
 	default:
 		assert(false);
@@ -99,9 +114,11 @@ EGL2Types::asEGL2IndexType(IndexType type) noexcept
 {
 	switch (type)
 	{
-	case ray::GPU_UINT16:
+	case IndexType::None:
+		return GL_NONE;
+	case IndexType::Uint16:
 		return GL_UNSIGNED_SHORT;
-	case ray::GPU_UINT32:
+	case IndexType::Uint32:
 		return GL_UNSIGNED_INT;
 	default:
 		assert(false);

@@ -42,6 +42,7 @@
 #include <ray/render_system.h>
 #include <ray/render_buffer.h>
 #include <ray/render_mesh.h>
+#include <ray/render_command.h>
 
 #include <ray/game_server.h>
 
@@ -329,6 +330,15 @@ MeshRenderComponent::buildRenderObject(MeshPropertyPtr mesh, RenderBufferPtr buf
 		renderObject->setTransform(this->getGameObject()->getTransform());
 		renderObject->setTransformInverse(this->getGameObject()->getTransformInverse());
 		renderObject->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
+
+		auto renderable = std::make_shared<RenderIndirect>();
+		renderable->startVertice = 0;
+		renderable->startIndice = 0;
+		renderable->numVertices = mesh->getNumVertices();
+		renderable->numIndices = mesh->getNumIndices();
+		renderable->numInstances = 0;
+
+		renderObject->setRenderIndirect(renderable);
 
 		return renderObject;
 	}

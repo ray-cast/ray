@@ -41,21 +41,6 @@
 
 _NAME_BEGIN
 
-class EGL3TextureSampler final : public TextureSampler
-{
-public:
-	EGL3TextureSampler() noexcept;
-	~EGL3TextureSampler() noexcept;
-
-	bool setup() except;
-	void close() noexcept;
-
-	GLuint getInstanceID() noexcept;
-private:
-
-	GLuint _sampler;
-};
-
 class EGL3Texture final : public Texture
 {
 public:
@@ -69,9 +54,9 @@ public:
 
 private:
 
-	static void applyTextureWrap(GLenum, TextureWrap wrap) noexcept;
-	static void applyTextureFilter(GLenum target, TextureFilter filter) noexcept;
-	static void applyTextureAnis(GLenum target, Anisotropy anis) noexcept;
+	static void applySamplerWrap(GLenum, SamplerWrap wrap) noexcept;
+	static void applySamplerFilter(GLenum target, SamplerFilter filter) noexcept;
+	static void applyTextureAnis(GLenum target, SamplerAnis anis) noexcept;
 
 private:
 

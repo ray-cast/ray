@@ -41,14 +41,22 @@
 
 _NAME_BEGIN
 
-typedef struct DrawElementsIndirectCommand_t
+struct DrawElementsIndirectCommand 
 {
 	GLuint count;
-	GLuint primCount;
-	GLuint firstIndex;
+	GLuint numInstances;
+	GLuint baseIndex;
 	GLuint baseVertex;
 	GLuint baseInstance;
-} DrawElementsIndirectCommand;
+};
+
+struct DrawArraysInstancedCommand
+{
+	GLuint  count;
+	GLuint  numInstances;
+	GLuint  baseIndex;
+	GLuint  baseInstance;
+};
 
 struct TerminateSequenceCommandNV
 {

@@ -305,35 +305,35 @@ MaterialMaker::instanceParameter(MaterialPtr& material, iarchive& reader) except
 		auto param = std::make_shared<MaterialParam>();
 		param->setName(name);
 		if (type == "bool")
-			param->setType(ShaderVariantType::SPT_BOOL);
+			param->setType(ShaderVariantType::Bool);
 		else if (type == "int")
-			param->setType(ShaderVariantType::SPT_INT);
+			param->setType(ShaderVariantType::Int);
 		else if (type == "int2")
-			param->setType(ShaderVariantType::SPT_INT2);
+			param->setType(ShaderVariantType::Int2);
 		else if (type == "float")
-			param->setType(ShaderVariantType::SPT_FLOAT);
+			param->setType(ShaderVariantType::Float);
 		else if (type == "float2")
-			param->setType(ShaderVariantType::SPT_FLOAT2);
+			param->setType(ShaderVariantType::Float2);
 		else if (type == "float3")
-			param->setType(ShaderVariantType::SPT_FLOAT3);
+			param->setType(ShaderVariantType::Float3);
 		else if (type == "float4")
-			param->setType(ShaderVariantType::SPT_FLOAT4);
+			param->setType(ShaderVariantType::Float4);
 		else if (type == "mat3")
-			param->setType(ShaderVariantType::SPT_FLOAT3X3);
+			param->setType(ShaderVariantType::Float3x3);
 		else if (type == "mat4")
-			param->setType(ShaderVariantType::SPT_FLOAT4X4);
+			param->setType(ShaderVariantType::Float4x4);
 		else if (type == "float[]")
-			param->setType(ShaderVariantType::SPT_FLOAT_ARRAY);
+			param->setType(ShaderVariantType::FloatArray);
 		else if (type == "float2[]")
-			param->setType(ShaderVariantType::SPT_FLOAT2_ARRAY);
+			param->setType(ShaderVariantType::Float2Array);
 		else if (type == "float3[]")
-			param->setType(ShaderVariantType::SPT_FLOAT3_ARRAY);
+			param->setType(ShaderVariantType::Float3Array);
 		else if (type == "float4[]")
-			param->setType(ShaderVariantType::SPT_FLOAT4_ARRAY);
+			param->setType(ShaderVariantType::Float4Array);
 		else if (type == "sampler2D")
-			param->setType(ShaderVariantType::SPT_TEXTURE);
+			param->setType(ShaderVariantType::Texture);
 		else if (type == "buffer")
-			param->setType(ShaderVariantType::SPT_BUFFER);
+			param->setType(ShaderVariantType::Buffer);
 		else
 		{
 			assert(false);
@@ -410,7 +410,7 @@ MaterialParamPtr
 MaterialMaker::instanceBuffer(MaterialPtr& material, iarchive& reader) except
 {
 	auto buffer = std::make_shared<MaterialParam>();
-	buffer->setType(ShaderVariantType::SPT_BUFFER);
+	buffer->setType(ShaderVariantType::Buffer);
 	buffer->setName(reader.getValue<std::string>("name"));
 
 	if (reader.setToFirstChild())
@@ -484,19 +484,19 @@ MaterialMaker::load(iarchive& reader) except
 						auto type = param->getType();
 						switch (type)
 						{
-						case ShaderVariantType::SPT_FLOAT:
+						case ShaderVariantType::Float:
 							param->assign(parseFloat<Float>(arg.second));
 							break;
-						case ShaderVariantType::SPT_FLOAT2:
+						case ShaderVariantType::Float2:
 							param->assign(parseFloat2(arg.second));
 							break;
-						case ShaderVariantType::SPT_FLOAT3:
+						case ShaderVariantType::Float3:
 							param->assign(parseFloat3(arg.second));
 							break;
-						case ShaderVariantType::SPT_FLOAT4:
+						case ShaderVariantType::Float4:
 							param->assign(parseFloat4(arg.second));
 							break;
-						case ShaderVariantType::SPT_TEXTURE:
+						case ShaderVariantType::Texture:
 							param->assign(RenderSystem::instance()->createTexture(arg.second));
 							break;
 						}
@@ -575,23 +575,23 @@ VertexType
 MaterialMaker::stringToPrimitive(const std::string& primitive) noexcept
 {
 	if (primitive == "point")
-		return VertexType::GPU_POINT;
+		return VertexType::Point;
 	else if (primitive == "point_or_line")
-		return VertexType::GPU_POINT_OR_LINE;
+		return VertexType::PointOrLine;
 	else if (primitive == "line")
-		return VertexType::GPU_LINE;
+		return VertexType::Line;
 	else if (primitive == "triangle")
-		return VertexType::GPU_TRIANGLE;
+		return VertexType::Triangle;
 	else if (primitive == "triangle_or_line")
-		return VertexType::GPU_TRIANGLE_OR_LINE;
+		return VertexType::TriangleOrLine;
 	else if (primitive == "fan")
-		return VertexType::GPU_FAN;
+		return VertexType::Fan;
 	else if (primitive == "fan_or_line")
-		return VertexType::GPU_FAN_OR_LINE;
+		return VertexType::FanOrLine;
 	else
 	{
 		assert(false);
-		return GPU_TRIANGLE;
+		return VertexType::Triangle;
 	}
 }
 
@@ -617,15 +617,15 @@ FillMode
 MaterialMaker::stringToFillMode(const std::string& fillmode) noexcept
 {
 	if (fillmode == "point")
-		return FillMode::GPU_POINT_MODE;
+		return FillMode::PointMode;
 	else if (fillmode == "line")
-		return FillMode::GPU_WIREFRAME_MODE;
+		return FillMode::WireframeMode;
 	else if (fillmode == "solid")
-		return FillMode::GPU_SOLID_MODE;
+		return FillMode::SolidMode;
 	else
 	{
 		assert(false);
-		return FillMode::GPU_SOLID_MODE;
+		return FillMode::SolidMode;
 	}
 }
 

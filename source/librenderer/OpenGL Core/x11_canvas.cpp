@@ -40,6 +40,7 @@
 _NAME_BEGIN
 
 XGLCanvas::XGLCanvas() noexcept
+	: _isActive(false)
 {
 	initPixelFormat(_fbconfig, _ctxconfig);
 }
@@ -224,15 +225,22 @@ XGLCanvas::getSwapInterval(SwapInterval interval) noexcept
 }
 
 void
-XGLCanvas::onActivate() noexcepts
+XGLCanvas::setActive(bool active) noexcepts
 {
-    glXMakeContextCurrent(_display, _window, _window, _glc);
+	if (_isActive != active)
+	{
+		if (active)
+			glXMakeContextCurrent(_display, _window, _window, _glc);
+		else
+			glXMakeContextCurrent(_display, 0, 0, 0);
+		_isActive = active;
+	}		
 }
 
 void
-XGLCanvas::onDeactivate() noexcept
+XGLCanvas::getActive() noexcept
 {
-    glXMakeContextCurrent(_display, 0, 0, 0);
+	return _isActive;
 }
 
 bool

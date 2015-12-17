@@ -46,10 +46,10 @@ Texture::Texture() noexcept
 	, _multisample(false)
 	, _mipLevel(0)
 	, _mipSize(0)
-	, _texop(TextureOp::OP_ADD)
-	, _filter(TextureFilter::GPU_LINEAR)
-	, _wrap(TextureWrap::CLAMP_TO_EDGE)
-	, _anis(Anisotropy::ANISOTROPY_0)
+	, _texop(SamplerOp::Add)
+	, _filter(SamplerFilter::Linear)
+	, _wrap(SamplerWrap::ClampToEdge)
+	, _anis(SamplerAnis::Anis0)
 	, _data(nullptr)
 {
 }
@@ -77,25 +77,25 @@ Texture::setTexDim(TextureDim map) noexcept
 }
 
 void
-Texture::setTexOp(TextureOp op) noexcept
+Texture::setTexOp(SamplerOp op) noexcept
 {
 	_texop = op;
 }
 
 void
-Texture::setTexWrap(TextureWrap wrap) noexcept
+Texture::setSamplerWrap(SamplerWrap wrap) noexcept
 {
 	_wrap = wrap;
 }
 
 void
-Texture::setTexFilter(TextureFilter filter) noexcept
+Texture::setSamplerFilter(SamplerFilter filter) noexcept
 {
 	_filter = filter;
 }
 
 void
-Texture::setAnisotropy(Anisotropy anis) noexcept
+Texture::setSamplerAnis(SamplerAnis anis) noexcept
 {
 	_anis = anis;
 }
@@ -150,7 +150,7 @@ Texture::setStream(void* data) noexcept
 	_data = data;
 }
 
-TextureOp
+SamplerOp
 Texture::getTexOp() const noexcept
 {
 	return _texop;
@@ -168,20 +168,20 @@ Texture::getTexDim() const noexcept
 	return _dim;
 }
 
-TextureWrap
-Texture::getTexWrap() const noexcept
+SamplerWrap
+Texture::getSamplerWrap() const noexcept
 {
 	return _wrap;
 }
 
-TextureFilter
-Texture::getTexFilter() const noexcept
+SamplerFilter
+Texture::getSamplerFilter() const noexcept
 {
 	return _filter;
 }
 
-Anisotropy
-Texture::getTexAnisotropy() const noexcept
+SamplerAnis
+Texture::getSamplerAnis() const noexcept
 {
 	return _anis;
 }
@@ -247,8 +247,8 @@ Texture::copy(const Texture& other) noexcept
 	this->setHeight(other.getHeight());
 	this->setTexMipmap(other.isMipmap());
 	this->setTexFormat(other.getTexFormat());
-	this->setTexFilter(other.getTexFilter());
-	this->setTexWrap(other.getTexWrap());
+	this->setSamplerFilter(other.getSamplerFilter());
+	this->setSamplerWrap(other.getSamplerWrap());
 	this->setTexOp(other.getTexOp());
 	this->setTexDim(other.getTexDim());
 }
@@ -260,54 +260,10 @@ Texture::copy(TexturePtr other) noexcept
 	this->setHeight(other->getHeight());
 	this->setTexMipmap(other->isMipmap());
 	this->setTexFormat(other->getTexFormat());
-	this->setTexFilter(other->getTexFilter());
-	this->setTexWrap(other->getTexWrap());
+	this->setSamplerFilter(other->getSamplerFilter());
+	this->setSamplerWrap(other->getSamplerWrap());
 	this->setTexOp(other->getTexOp());
 	this->setTexDim(other->getTexDim());
-}
-
-TextureSampler::TextureSampler() noexcept
-{
-}
-
-TextureSampler::~TextureSampler() noexcept
-{
-}
-
-void
-TextureSampler::setTexWrap(TextureWrap wrap) noexcept
-{
-	_wrap = wrap;
-}
-
-void
-TextureSampler::setTexFilter(TextureFilter filter) noexcept
-{
-	_filter = filter;
-}
-
-void
-TextureSampler::setAnisotropy(Anisotropy anis) noexcept
-{
-	_anis = anis;
-}
-
-TextureWrap
-TextureSampler::getTexWrap() const noexcept
-{
-	return _wrap;
-}
-
-TextureFilter
-TextureSampler::getTexFilter() const noexcept
-{
-	return _filter;
-}
-
-Anisotropy
-TextureSampler::getTexAnisotropy() const noexcept
-{
-	return _anis;
 }
 
 RenderTexture::RenderTexture() noexcept

@@ -147,6 +147,8 @@ typedef std::shared_ptr<class EGL2Shader> EGL2ShaderPtr;
 typedef std::shared_ptr<class EGL2ShaderObject> EGL2ShaderObjectPtr;
 typedef std::shared_ptr<class EGL2VertexBuffer> EGL2VertexBufferPtr;
 typedef std::shared_ptr<class EGL2IndexBuffer> EGL2IndexBufferPtr;
+typedef std::shared_ptr<class EGL2GraphicsLayout> EGL2GraphicsLayoutPtr;
+typedef std::shared_ptr<class EGL2Sampler> EGL2SamplerPtr;
 
 class EGL2Types
 {

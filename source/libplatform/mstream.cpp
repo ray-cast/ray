@@ -40,7 +40,6 @@ _NAME_BEGIN
 
 MemoryBuf::MemoryBuf() noexcept
     : _next(0)
-	, _tell(0)
 	, _isMappinged(false)
 {
 }
@@ -53,7 +52,6 @@ bool
 MemoryBuf::open(ios_base::openmode mode) noexcept
 {
 	_next = 0;
-	_tell = 0;
 	_isMappinged = false;
     return true;
 }
@@ -103,7 +101,6 @@ MemoryBuf::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
 
     if (dir == ios_base::beg)
     {
-		_tell = pos;
         _next = pos;
         return pos;
     }
@@ -116,7 +113,6 @@ MemoryBuf::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
 			_next = _data.size();
 		}
 
-		_tell = pos;
         return pos;
     }
     else if (dir == ios_base::end)
@@ -127,7 +123,6 @@ MemoryBuf::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
 			_next = size;
 		else
 			_next = pos;
-		_tell = pos;
         return pos;
     }
 
@@ -137,7 +132,7 @@ MemoryBuf::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
 streamoff
 MemoryBuf::tellg() noexcept
 {
-    return _tell;
+    return _next;
 }
 
 streamsize

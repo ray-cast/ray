@@ -38,7 +38,11 @@
 #include "egl3_state.h"
 #include "egl3_shader.h"
 #include "egl3_texture.h"
-#include "egl3_buffer.h"
+#include "egl3_layout.h"
+#include "egl3_vbo.h"
+#include "egl3_ibo.h"
+#include "egl3_dibo.h"
+#include "egl3_sampler.h"
 
 _NAME_BEGIN
 
@@ -52,7 +56,6 @@ EGL3Renderer::EGL3Renderer() noexcept
 	, _viewport(0, 0, 0, 0)
 	, _state(GL_NONE)
 	, _renderTexture(GL_NONE)
-	, _defaultVAO(GL_NONE)
 	, _enableWireframe(false)
 {
 }
@@ -118,12 +121,6 @@ EGL3Renderer::close() noexcept
 		_state = nullptr;
 	}
 
-	if (_defaultVAO != GL_NONE)
-	{
-		glDeleteVertexArrays(1, &_defaultVAO);
-		_defaultVAO = GL_NONE;
-	}
-
 	if (_glcontext)
 	{
 		_glcontext.reset();
@@ -136,7 +133,6 @@ EGL3Renderer::renderBegin() noexcept
 {
 	this->setShaderObject(nullptr);
 	this->setRenderTexture(nullptr);
-	this->setRenderBuffer(nullptr);
 }
 
 void
@@ -247,74 +243,236 @@ EGL3Renderer::getRenderState() const noexcept
 	return _state;
 }
 
-RenderBufferPtr
-EGL3Renderer::createRenderBuffer() noexcept
+GraphicsLayoutPtr
+EGL3Renderer::createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept
 {
-	auto result = std::make_shared<EGL3RenderBuffer>();
-	return result;
-}
-
-IndexBufferDataPtr
-EGL3Renderer::createIndexBufferData() noexcept
-{
-	auto result = std::make_shared<EGL3IndexBuffer>();
-	return result;
-}
-
-VertexBufferDataPtr
-EGL3Renderer::createVertexBufferData() noexcept
-{
-	auto result = std::make_shared<EGL3VertexBuffer>();
-	return result;
+	auto layout = std::make_shared<EGL3GraphicsLayout>();
+	if (layout->open(desc))
+		return layout;
+	return nullptr;
 }
 
 void
-EGL3Renderer::setRenderBuffer(RenderBufferPtr buffer) noexcept
+EGL3Renderer::setGraphicsLayout(GraphicsLayoutPtr layout) noexcept
 {
-	if (_renderBuffer != buffer)
+	if (_inputLayout != layout)
 	{
-		if (buffer)
-			buffer->apply();
-		_renderBuffer = buffer;
+		if (layout)
+		{
+			if (layout->isInstanceOf<EGL3GraphicsLayout>())
+				_inputLayout = layout->downcast<EGL3GraphicsLayout>();
+			else
+				_inputLayout = nullptr;
+		}
+		else
+		{
+			_inputLayout = nullptr;
+		}
+
+		_needUpdateLayout = true;
+	}
+}
+
+GraphicsLayoutPtr
+EGL3Renderer::getGraphicsLayout() const noexcept
+{
+	return _inputLayout;
+}
+
+GraphicsDataPtr
+EGL3Renderer::createGraphicsData(const GraphicsDataDesc& desc) noexcept
+{
+	auto type = desc.getType();
+
+	if (type == GraphicsStream::VBO)
+		return std::make_shared<EGL3VertexBuffer>(desc);
+	else if (type == GraphicsStream::IBO)
+		return std::make_shared<EGL3IndexBuffer>(desc);
+	else if (type == GraphicsStream::DIBO)
+		return std::make_shared<EGL3DrawIndirectBuffer>(desc);
+
+	return nullptr;
+}
+
+bool
+EGL3Renderer::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
+{
+	if (data)
+	{
+		auto max = std::numeric_limits<GLsizeiptr>::max();
+		if (cnt < max)
+		{
+			if (data->isInstanceOf<EGL3VertexBuffer>())
+				this->setVertexBufferData(data);
+			else if (data->isInstanceOf<EGL3IndexBuffer>())
+				this->setIndexBufferData(data);
+			else
+				return false;
+
+			auto _data = data->cast<EGL3GraphicsData>();
+			_data->resize((const char*)str, cnt);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void*
+EGL3Renderer::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
+{
+	if (data)
+	{
+		if (data->isInstanceOf<EGL3VertexBuffer>())
+			this->setVertexBufferData(data);
+		else if (data->isInstanceOf<EGL3IndexBuffer>())
+			this->setIndexBufferData(data);
+		else
+			return nullptr;
+
+		auto _data = data->cast<EGL3GraphicsData>();
+		return _data->map(access);
+	}
+
+	return nullptr;
+}
+
+void
+EGL3Renderer::unmapBuffer(GraphicsDataPtr& data) noexcept
+{
+	if (data)
+	{
+		if (data->isInstanceOf<EGL3VertexBuffer>())
+			this->setVertexBufferData(data);
+		else if (data->isInstanceOf<EGL3IndexBuffer>())
+			this->setIndexBufferData(data);
+		else
+			return;
+
+		auto _data = data->cast<EGL3GraphicsData>();
+		_data->unmap();
 	}
 }
 
 void
-EGL3Renderer::updateRenderBuffer(RenderBufferPtr renderBuffer) noexcept
+EGL3Renderer::setIndexBufferData(GraphicsDataPtr data) noexcept
 {
+	if (_ibo != data)
+	{
+		if (data)
+		{
+			if (data->isInstanceOf<EGL3IndexBuffer>())
+				_ibo = data->downcast<EGL3IndexBuffer>();
+			else
+				_ibo = nullptr;
+		}
+		else
+		{
+			_ibo = nullptr;
+		}
+
+		_needUpdateIbo = true;
+	}
+}
+
+GraphicsDataPtr
+EGL3Renderer::getIndexBufferData() const noexcept
+{
+	return _ibo;
+}
+
+void
+EGL3Renderer::setVertexBufferData(GraphicsDataPtr data) noexcept
+{
+	if (_vbo != data)
+	{
+		if (data)
+		{
+			if (data->isInstanceOf<EGL3VertexBuffer>())
+				_vbo = data->downcast<EGL3VertexBuffer>();
+			else
+				_vbo = nullptr;
+		}
+		else
+		{
+			_vbo = nullptr;
+		}
+
+		_needUpdateVbo = true;
+	}
+}
+
+GraphicsDataPtr
+EGL3Renderer::getVertexBufferData() const noexcept
+{
+	return _vbo;
 }
 
 void
 EGL3Renderer::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 {
-	assert(_renderBuffer && _stateCaptured);
-	assert(_renderBuffer->getNumVertices() >= renderable.startVertice + renderable.numVertices);
-	assert(_renderBuffer->getNumIndices() >= renderable.startIndice + renderable.numIndices);
+	if (!_stateCaptured)
+		return;
+
+	if (!_inputLayout || !_vbo)
+		return;
+
+	if (_vbo->size() < _inputLayout->getVertexSize() * (renderable.startVertice + renderable.numVertices))
+		return;
+
+	if (_inputLayout->getIndexType() != GL_NONE)
+	{
+		if (!_ibo)
+			return;
+
+		if (_ibo->size() < _inputLayout->getIndexSize() * (renderable.startIndice + renderable.numIndices))
+			return;
+	}
 
 	auto primitiveType = _stateCaptured->getRasterState().primitiveType;
-
 	if (_enableWireframe)
 	{
-		if (primitiveType == GPU_POINT_OR_LINE ||
-			primitiveType == GPU_TRIANGLE_OR_LINE ||
-			primitiveType == GPU_FAN_OR_LINE)
+		if (primitiveType == VertexType::PointOrLine ||
+			primitiveType == VertexType::TriangleOrLine ||
+			primitiveType == VertexType::FanOrLine)
 		{
-			primitiveType = GPU_LINE;
+			primitiveType = VertexType::Line;
 		}
 	}
 
-	GLenum drawType = EGL3Types::asEGL3VertexType(primitiveType);
-	auto ib = _renderBuffer->getIndexBuffer();
-	if (ib)
+	if (_needUpdateLayout)
 	{
-		GLenum indexType = EGL3Types::asEGL3IndexType(ib->getIndexType());
+		if (_inputLayout)
+			_inputLayout->bindLayout();
+		_needUpdateLayout = false;
+	}
 
+	if (_needUpdateVbo)
+	{
+		if (_vbo)
+			_vbo->bind(_inputLayout);
+		_needUpdateVbo = false;
+	}
+
+	if (_needUpdateIbo)
+	{
+		if (_ibo)
+			_ibo->bind();
+		_needUpdateIbo = false;
+	}
+
+	if (_ibo)
+	{
+		GLenum drawType = EGL3Types::asEGL3VertexType(primitiveType);
+		GLenum indexType = _inputLayout->getIndexType();
 		GLsizei numInstance = std::max(1, renderable.numInstances);
-		GL_CHECK(glDrawElementsInstanced(drawType, renderable.numIndices, indexType, (char*)renderable.startIndice, numInstance));
+		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_inputLayout->getIndexSize() * renderable.startIndice);
+		GL_CHECK(glDrawElementsInstanced(drawType, renderable.numIndices, indexType, offsetIndices, numInstance));
 	}
 	else
 	{
 		GLsizei numInstance = std::max(1, renderable.numInstances);
+		GLenum drawType = EGL3Types::asEGL3VertexType(primitiveType);
 		GL_CHECK(glDrawArraysInstanced(drawType, renderable.startVertice, renderable.numVertices, numInstance));
 	}
 }
@@ -323,12 +481,6 @@ void
 EGL3Renderer::drawRenderBuffer(const RenderIndirects& renderable) noexcept
 {
 	assert(false);
-}
-
-RenderBufferPtr
-EGL3Renderer::getRenderBuffer() const noexcept
-{
-	return _renderBuffer;
 }
 
 TexturePtr
@@ -353,6 +505,27 @@ EGL3Renderer::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
 	{
 		GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
 		GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
+	}
+}
+
+SamplerObjectPtr 
+EGL3Renderer::createSamplerObject() noexcept
+{
+	return std::make_shared<EGL3Sampler>();
+}
+
+void 
+EGL3Renderer::setSamplerObject(SamplerObjectPtr sampler, std::uint32_t slot) noexcept
+{
+	auto glsampler = sampler->downcast<EGL3Sampler>();
+	if (glsampler)
+	{
+		GLuint samplerID = glsampler->getInstanceID();
+		GL_CHECK(glBindSampler(slot, samplerID));
+	}
+	else
+	{
+		GL_CHECK(glBindSampler(slot, 0));
 	}
 }
 
@@ -799,24 +972,6 @@ EGL3Renderer::initStateSystem() noexcept
 
 	GL_CHECK(glBlendEquation(GL_FUNC_ADD));
 	GL_CHECK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-
-	GL_CHECK(glGenVertexArrays(1, &_defaultVAO));
-	GL_CHECK(glBindVertexArray(_defaultVAO));
-
-	GL_CHECK(glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_POSITION));
-	GL_CHECK(glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL));
-	GL_CHECK(glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD));
-	GL_CHECK(glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE));
-
-	GL_CHECK(glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_POSITION, 3, GL_FLOAT, GL_FALSE, 0));
-	GL_CHECK(glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0));
-	GL_CHECK(glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0));
-	GL_CHECK(glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0));
-
-	GL_CHECK(glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_POSITION, (GLuint)VertexAttrib::GPU_ATTRIB_POSITION));
-	GL_CHECK(glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL, (GLuint)VertexAttrib::GPU_ATTRIB_NORMAL));
-	GL_CHECK(glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD, (GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD));
-	GL_CHECK(glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE, (GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE));
 }
 
 _NAME_END

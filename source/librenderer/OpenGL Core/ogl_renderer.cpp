@@ -38,8 +38,12 @@
 #include "ogl_state.h"
 #include "ogl_shader.h"
 #include "ogl_texture.h"
-#include "ogl_buffer.h"
+#include "ogl_layout.h"
+#include "ogl_vbo.h"
+#include "ogl_ibo.h"
+#include "ogl_dibo.h"
 #include "ogl_commandlist.h"
+#include "ogl_sampler.h"
 
 _NAME_BEGIN
 
@@ -52,8 +56,10 @@ OGLRenderer::OGLRenderer() noexcept
 	, _clearStencil(0xFFFFFFFF)
 	, _state(GL_NONE)
 	, _renderTexture(GL_NONE)
-	, _defaultVAO(GL_NONE)
 	, _enableWireframe(false)
+	, _needUpdateLayout(false)
+	, _needUpdateVbo(false)
+	, _needUpdateIbo(false)
 {
 	_viewport.resize(_maxViewports);
 	_stateCaptured = std::make_shared<OGLRenderState>();
@@ -85,12 +91,6 @@ OGLRenderer::open(WindHandle window) except
 void
 OGLRenderer::close() noexcept
 {
-	if (_renderBuffer)
-	{
-		_renderBuffer.reset();
-		_renderBuffer = nullptr;
-	}
-
 	if (_shaderObject)
 	{
 		_shaderObject.reset();
@@ -115,12 +115,6 @@ OGLRenderer::close() noexcept
 		_state = nullptr;
 	}
 
-	if (_defaultVAO != GL_NONE)
-	{
-		glDeleteVertexArrays(1, &_defaultVAO);
-		_defaultVAO = GL_NONE;
-	}
-
 	if (_glcontext)
 	{
 		_glcontext.reset();
@@ -133,7 +127,6 @@ OGLRenderer::renderBegin() noexcept
 {
 	this->setShaderObject(nullptr);
 	this->setRenderTexture(nullptr);
-	this->setRenderBuffer(nullptr);
 }
 
 void
@@ -239,72 +232,215 @@ OGLRenderer::getRenderState() const noexcept
 	return _state;
 }
 
-RenderBufferPtr
-OGLRenderer::createRenderBuffer() noexcept
+GraphicsLayoutPtr
+OGLRenderer::createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept
 {
-	return	std::make_shared<OGLRenderBuffer>();
-}
-
-IndexBufferDataPtr
-OGLRenderer::createIndexBufferData() noexcept
-{
-	return std::make_shared<OGLIndexBuffer>();
-}
-
-VertexBufferDataPtr
-OGLRenderer::createVertexBufferData() noexcept
-{
-	return std::make_shared<OGLVertexBuffer>();
+	auto layout = std::make_shared<OGLGraphicsLayout>();
+	if (layout->open(desc))
+		return layout;
+	return nullptr;
 }
 
 void
-OGLRenderer::setRenderBuffer(RenderBufferPtr buffer) noexcept
+OGLRenderer::setGraphicsLayout(GraphicsLayoutPtr layout) noexcept
 {
-	if (_renderBuffer != buffer)
+	if (_inputLayout != layout)
 	{
-		if (buffer)
-			buffer->apply();
-		_renderBuffer = buffer;
+		if (layout)
+		{
+			if (layout->isInstanceOf<OGLGraphicsLayout>())
+				_inputLayout = layout->downcast<OGLGraphicsLayout>();
+			else
+				_inputLayout = nullptr;
+		}
+		else
+		{
+			_inputLayout = nullptr;
+		}
+
+		_needUpdateLayout = true;
+	}
+}
+
+GraphicsLayoutPtr
+OGLRenderer::getGraphicsLayout() const noexcept
+{
+	return _inputLayout;
+}
+
+GraphicsDataPtr
+OGLRenderer::createGraphicsData(const GraphicsDataDesc& desc) noexcept
+{
+	auto type = desc.getType();
+
+	if (type == GraphicsStream::VBO)
+		return std::make_shared<OGLVertexBuffer>(desc);
+	else if (type == GraphicsStream::IBO)
+		return std::make_shared<OGLIndexBuffer>(desc);
+	else if (type == GraphicsStream::DIBO)
+		return std::make_shared<OGLDrawIndirectBuffer>(desc);
+
+	return nullptr;
+}
+
+bool
+OGLRenderer::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
+{
+	if (data)
+	{
+		auto max = std::numeric_limits<GLsizeiptr>::max();
+		if (cnt < max)
+		{
+			auto _data = data->cast<OGLGraphicsData>();
+			_data->resize((const char*)str, cnt);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void*
+OGLRenderer::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
+{
+	if (data)
+	{
+		auto _data = data->cast<OGLGraphicsData>();
+		return _data->map(access);
+	}
+
+	return nullptr;
+}
+
+void
+OGLRenderer::unmapBuffer(GraphicsDataPtr& data) noexcept
+{
+	if (data)
+	{
+		auto _data = data->cast<OGLGraphicsData>();
+		_data->unmap();
 	}
 }
 
 void
-OGLRenderer::updateRenderBuffer(RenderBufferPtr renderBuffer) noexcept
+OGLRenderer::setIndexBufferData(GraphicsDataPtr data) noexcept
 {
+	if (_ibo != data)
+	{
+		if (data)
+		{
+			if (data->isInstanceOf<OGLIndexBuffer>())
+				_ibo = data->downcast<OGLIndexBuffer>();
+			else
+				_ibo = nullptr;
+		}
+		else
+		{
+			_ibo = nullptr;
+		}
+
+		_needUpdateIbo = true;
+	}
+}
+
+GraphicsDataPtr
+OGLRenderer::getIndexBufferData() const noexcept
+{
+	return _ibo;
+}
+
+void
+OGLRenderer::setVertexBufferData(GraphicsDataPtr data) noexcept
+{
+	if (_vbo != data)
+	{
+		if (data)
+		{
+			if (data->isInstanceOf<OGLVertexBuffer>())
+				_vbo = data->downcast<OGLVertexBuffer>();
+			else
+				_vbo = nullptr;
+		}
+		else
+		{
+			_vbo = nullptr;
+		}
+
+		_needUpdateVbo = true;
+	}
+}
+
+GraphicsDataPtr
+OGLRenderer::getVertexBufferData() const noexcept
+{
+	return _vbo;
 }
 
 void
 OGLRenderer::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 {
-	assert(_renderBuffer && _stateCaptured);
-	assert(_renderBuffer->getNumVertices() >= renderable.startVertice + renderable.numVertices);
-	assert(_renderBuffer->getNumIndices() >= renderable.startIndice + renderable.numIndices);
+	if (!_stateCaptured)
+		return;
+
+	if (!_inputLayout || !_vbo)
+		return;
+
+	if (_vbo->size() < _inputLayout->getVertexSize() * (renderable.startVertice + renderable.numVertices))
+		return;
+
+	if (_inputLayout->getIndexType() != GL_NONE)
+	{
+		if (!_ibo)
+			return;
+
+		if (_ibo->size() < _inputLayout->getIndexSize() * (renderable.startIndice + renderable.numIndices))
+			return;
+	}
 
 	auto primitiveType = _stateCaptured->getRasterState().primitiveType;
-
 	if (_enableWireframe)
 	{
-		if (primitiveType == GPU_POINT_OR_LINE ||
-			primitiveType == GPU_TRIANGLE_OR_LINE ||
-			primitiveType == GPU_FAN_OR_LINE)
+		if (primitiveType == VertexType::PointOrLine ||
+			primitiveType == VertexType::TriangleOrLine ||
+			primitiveType == VertexType::FanOrLine)
 		{
-			primitiveType = GPU_LINE;
+			primitiveType = VertexType::Line;
 		}
 	}
 
-	GLenum drawType = OGLTypes::asOGLVertexType(primitiveType);
-	auto ib = _renderBuffer->getIndexBuffer();
-	if (ib)
+	if (_needUpdateLayout)
 	{
-		GLenum indexType = OGLTypes::asOGLIndexType(ib->getIndexType());
+		if (_inputLayout)
+			_inputLayout->bindLayout();
+		_needUpdateLayout = false;
+	}
 
-		GLvoid* offsetIndices = (GLchar*)(_renderBuffer->getIndexBuffer()->getIndexSize() * renderable.startIndice);
+	if (_needUpdateVbo)
+	{
+		if (_vbo)
+			_vbo->bind(_inputLayout);
+		_needUpdateVbo = false;
+	}
+
+	if (_needUpdateIbo)
+	{
+		if (_ibo)
+			_ibo->bind();
+		_needUpdateIbo = false;
+	}
+
+	if (_ibo)
+	{
+		GLenum drawType = OGLTypes::asOGLVertexType(primitiveType);
+		GLenum indexType = _inputLayout->getIndexType();
 		GLsizei numInstance = std::max(1, renderable.numInstances);
+		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_inputLayout->getIndexSize() * renderable.startIndice);
 		glDrawElementsInstancedBaseVertexBaseInstance(drawType, renderable.numIndices, indexType, offsetIndices, numInstance, renderable.startVertice, renderable.startInstances);
 	}
 	else
 	{
 		GLsizei numInstance = std::max(1, renderable.numInstances);
+		GLenum drawType = OGLTypes::asOGLVertexType(primitiveType);
 		glDrawArraysInstancedBaseInstance(drawType, renderable.startVertice, renderable.numVertices, numInstance, renderable.startInstances);
 	}
 }
@@ -315,26 +451,20 @@ OGLRenderer::drawRenderBuffer(const RenderIndirects& renderable) noexcept
 	assert(false);
 }
 
-RenderBufferPtr
-OGLRenderer::getRenderBuffer() const noexcept
-{
-	return _renderBuffer;
-}
-
 TexturePtr
 OGLRenderer::createTexture() noexcept
-{	
+{
 	return std::make_shared<OGLTexture>();
 }
 
-void 
+void
 OGLRenderer::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
 {
-	auto _texture = std::dynamic_pointer_cast<OGLTexture>(texture);
-	if (_texture)
+	auto gltexture = std::dynamic_pointer_cast<OGLTexture>(texture);
+	if (gltexture)
 	{
-		GLuint textureID = _texture->getInstanceID();
-		GLenum textureDim = OGLTypes::asOGLTarget(_texture->getTexDim());
+		GLuint textureID = gltexture->getInstanceID();
+		GLenum textureDim = OGLTypes::asOGLTarget(gltexture->getTexDim());
 
 		glBindTextureUnit(slot, textureID);
 	}
@@ -344,15 +474,36 @@ OGLRenderer::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
 	}
 }
 
+SamplerObjectPtr
+OGLRenderer::createSamplerObject() noexcept
+{
+	return std::make_shared<OGLSampler>();
+}
+
+void
+OGLRenderer::setSamplerObject(SamplerObjectPtr sampler, std::uint32_t slot) noexcept
+{
+	auto glsampler = sampler->downcast<OGLSampler>();
+	if (glsampler)
+	{
+		GLuint samplerID = glsampler->getInstanceID();
+		glBindSampler(slot, samplerID);
+	}
+	else
+	{
+		glBindSampler(slot, 0);
+	}
+}
+
 RenderTexturePtr
 OGLRenderer::createRenderTexture() noexcept
-{	
+{
 	return std::make_shared<OGLRenderTexture>();
 }
 
 MultiRenderTexturePtr
 OGLRenderer::createMultiRenderTexture() noexcept
-{	
+{
 	return std::make_shared<OGLMultiRenderTexture>();
 }
 
@@ -606,13 +757,13 @@ OGLRenderer::readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::
 
 ShaderPtr
 OGLRenderer::createShader() noexcept
-{	
+{
 	return std::make_shared<OGLShader>();
 }
 
 ShaderObjectPtr
 OGLRenderer::createShaderObject() noexcept
-{	
+{
 	return std::make_shared<OGLShaderObject>();
 }
 
@@ -636,12 +787,12 @@ OGLRenderer::setShaderObject(ShaderObjectPtr shader) noexcept
 
 		for (auto& it : uniforms)
 		{
-			if (it->getType() == SPT_TEXTURE)
+			if (it->getType() == Texture)
 			{
 				auto uniform = std::dynamic_pointer_cast<OGLShaderUniform>(it);
 				auto bindingPoint = uniform->getBindingPoint();
 				auto texture = std::dynamic_pointer_cast<OGLTexture>(uniform->getTexture());
-				auto sampler = std::dynamic_pointer_cast<OGLTextureSampler>(uniform->getSampler());
+				auto sampler = std::dynamic_pointer_cast<OGLSampler>(uniform->getSampler());
 
 				this->setTexture(texture, bindingPoint);
 
@@ -794,6 +945,15 @@ void
 OGLRenderer::initCommandList() noexcept
 {
 	initCommandListNV();
+
+	GraphicsDataDesc dibo;
+	dibo.setType(GraphicsStream::DIBO);
+	dibo.setStreamSize(sizeof(DrawElementsIndirectCommand));
+	dibo.setUsage(UsageFlags::MAP_WRITE_BIT | UsageFlags::IMMUTABLE_STORAGE);
+
+	_drawIndirectBuffer = std::make_shared<OGLDrawIndirectBuffer>();
+	_drawIndirectBuffer->open(dibo);
+	_drawIndirectBuffer->bind();
 }
 
 void
@@ -813,30 +973,6 @@ OGLRenderer::initStateSystem() noexcept
 
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glGenVertexArrays(1, &_defaultVAO);
-	glBindVertexArray(_defaultVAO);
-
-	glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_POSITION);
-	glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL);
-	glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD);
-	glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE);
-	glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_TANGENT);
-	glEnableVertexAttribArray((GLuint)VertexAttrib::GPU_ATTRIB_BITANGENT);
-
-	glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_POSITION, 3, GL_FLOAT, GL_FALSE, 0);
-	glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL, 3, GL_FLOAT, GL_FALSE, 0);
-	glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0);
-	glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0);
-	glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_TANGENT, 3, GL_FLOAT, GL_FALSE, 0);
-	glVertexAttribFormat((GLuint)VertexAttrib::GPU_ATTRIB_BITANGENT, 3, GL_FLOAT, GL_FALSE, 0);
-
-	glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_POSITION, (GLuint)VertexAttrib::GPU_ATTRIB_POSITION);
-	glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_NORMAL, (GLuint)VertexAttrib::GPU_ATTRIB_NORMAL);
-	glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD, (GLuint)VertexAttrib::GPU_ATTRIB_TEXCOORD);
-	glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE, (GLuint)VertexAttrib::GPU_ATTRIB_DIFFUSE);
-	glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_TANGENT, (GLuint)VertexAttrib::GPU_ATTRIB_TANGENT);
-	glVertexAttribBinding((GLuint)VertexAttrib::GPU_ATTRIB_BITANGENT, (GLuint)VertexAttrib::GPU_ATTRIB_BITANGENT);
 }
 
 _NAME_END

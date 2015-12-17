@@ -54,34 +54,34 @@ MaterialManager::setup() noexcept
 {
 	_semantics.resize(MaterialSemantic::NumSemantic);
 
-	_semantics[matModel] = std::make_shared<MaterialSemanticParam>("matModel", ShaderVariantType::SPT_FLOAT4X4);
-	_semantics[matModelInverse] = std::make_shared<MaterialSemanticParam>("matModelInverse", ShaderVariantType::SPT_FLOAT4X4);
-	_semantics[matModelInverseTranspose] = std::make_shared<MaterialSemanticParam>("matModelInverseTranspose", ShaderVariantType::SPT_FLOAT4X4);
-	_semantics[matProject] = std::make_shared<MaterialSemanticParam>("matProject", ShaderVariantType::SPT_FLOAT4X4);
-	_semantics[matProjectInverse] = std::make_shared<MaterialSemanticParam>("matProjectInverse", ShaderVariantType::SPT_FLOAT4X4);
-	_semantics[matView] = std::make_shared<MaterialSemanticParam>("matView", ShaderVariantType::SPT_FLOAT4X4);
-	_semantics[matViewInverse] = std::make_shared<MaterialSemanticParam>("matViewInverse", ShaderVariantType::SPT_FLOAT4X4);
-	_semantics[matViewInverseTranspose] = std::make_shared<MaterialSemanticParam>("matViewInverseTranspose", ShaderVariantType::SPT_FLOAT4X4);
-	_semantics[matViewProject] = std::make_shared<MaterialSemanticParam>("matViewProject", ShaderVariantType::SPT_FLOAT4X4);
-	_semantics[matViewProjectInverse] = std::make_shared<MaterialSemanticParam>("matViewProjectInverse", ShaderVariantType::SPT_FLOAT4X4);
+	_semantics[matModel] = std::make_shared<MaterialSemanticParam>("matModel", ShaderVariantType::Float4x4);
+	_semantics[matModelInverse] = std::make_shared<MaterialSemanticParam>("matModelInverse", ShaderVariantType::Float4x4);
+	_semantics[matModelInverseTranspose] = std::make_shared<MaterialSemanticParam>("matModelInverseTranspose", ShaderVariantType::Float4x4);
+	_semantics[matProject] = std::make_shared<MaterialSemanticParam>("matProject", ShaderVariantType::Float4x4);
+	_semantics[matProjectInverse] = std::make_shared<MaterialSemanticParam>("matProjectInverse", ShaderVariantType::Float4x4);
+	_semantics[matView] = std::make_shared<MaterialSemanticParam>("matView", ShaderVariantType::Float4x4);
+	_semantics[matViewInverse] = std::make_shared<MaterialSemanticParam>("matViewInverse", ShaderVariantType::Float4x4);
+	_semantics[matViewInverseTranspose] = std::make_shared<MaterialSemanticParam>("matViewInverseTranspose", ShaderVariantType::Float4x4);
+	_semantics[matViewProject] = std::make_shared<MaterialSemanticParam>("matViewProject", ShaderVariantType::Float4x4);
+	_semantics[matViewProjectInverse] = std::make_shared<MaterialSemanticParam>("matViewProjectInverse", ShaderVariantType::Float4x4);
 
-	_semantics[CameraAperture] = std::make_shared<MaterialSemanticParam>("CameraAperture", ShaderVariantType::SPT_FLOAT);
-	_semantics[CameraFar] = std::make_shared<MaterialSemanticParam>("CameraFar", ShaderVariantType::SPT_FLOAT);
-	_semantics[CameraNear] = std::make_shared<MaterialSemanticParam>("CameraNear", ShaderVariantType::SPT_FLOAT);
-	_semantics[CameraView] = std::make_shared<MaterialSemanticParam>("CameraView", ShaderVariantType::SPT_FLOAT3);
-	_semantics[CameraPosition] = std::make_shared<MaterialSemanticParam>("CameraPosition", ShaderVariantType::SPT_FLOAT3);
-	_semantics[CameraDirection] = std::make_shared<MaterialSemanticParam>("CameraDirection", ShaderVariantType::SPT_FLOAT3);
+	_semantics[CameraAperture] = std::make_shared<MaterialSemanticParam>("CameraAperture", ShaderVariantType::Float);
+	_semantics[CameraFar] = std::make_shared<MaterialSemanticParam>("CameraFar", ShaderVariantType::Float);
+	_semantics[CameraNear] = std::make_shared<MaterialSemanticParam>("CameraNear", ShaderVariantType::Float);
+	_semantics[CameraView] = std::make_shared<MaterialSemanticParam>("CameraView", ShaderVariantType::Float3);
+	_semantics[CameraPosition] = std::make_shared<MaterialSemanticParam>("CameraPosition", ShaderVariantType::Float3);
+	_semantics[CameraDirection] = std::make_shared<MaterialSemanticParam>("CameraDirection", ShaderVariantType::Float3);
 
-	_semantics[DepthMap] = std::make_shared<MaterialSemanticParam>("DepthMap", ShaderVariantType::SPT_TEXTURE);
-	_semantics[ColorMap] = std::make_shared<MaterialSemanticParam>("ColorMap", ShaderVariantType::SPT_TEXTURE);
-	_semantics[NormalMap] = std::make_shared<MaterialSemanticParam>("NormalMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[DepthMap] = std::make_shared<MaterialSemanticParam>("DepthMap", ShaderVariantType::Texture);
+	_semantics[ColorMap] = std::make_shared<MaterialSemanticParam>("ColorMap", ShaderVariantType::Texture);
+	_semantics[NormalMap] = std::make_shared<MaterialSemanticParam>("NormalMap", ShaderVariantType::Texture);
 
-	_semantics[DeferredDepthMap] = std::make_shared<MaterialSemanticParam>("DeferredDepthMap", ShaderVariantType::SPT_TEXTURE);
-	_semantics[DeferredDepthLinearMap] = std::make_shared<MaterialSemanticParam>("DeferredDepthLinearMap", ShaderVariantType::SPT_TEXTURE);
-	_semantics[DeferredGraphicMap] = std::make_shared<MaterialSemanticParam>("DeferredGraphicMap", ShaderVariantType::SPT_TEXTURE);
-	_semantics[DeferredNormalMap] = std::make_shared<MaterialSemanticParam>("DeferredNormalMap", ShaderVariantType::SPT_TEXTURE);
-	_semantics[DeferredLightMap] = std::make_shared<MaterialSemanticParam>("DeferredLightMap", ShaderVariantType::SPT_TEXTURE);
-	_semantics[DeferredShadowMap] = std::make_shared<MaterialSemanticParam>("DeferredShadowMap", ShaderVariantType::SPT_TEXTURE);
+	_semantics[DeferredDepthMap] = std::make_shared<MaterialSemanticParam>("DeferredDepthMap", ShaderVariantType::Texture);
+	_semantics[DeferredDepthLinearMap] = std::make_shared<MaterialSemanticParam>("DeferredDepthLinearMap", ShaderVariantType::Texture);
+	_semantics[DeferredGraphicMap] = std::make_shared<MaterialSemanticParam>("DeferredGraphicMap", ShaderVariantType::Texture);
+	_semantics[DeferredNormalMap] = std::make_shared<MaterialSemanticParam>("DeferredNormalMap", ShaderVariantType::Texture);
+	_semantics[DeferredLightMap] = std::make_shared<MaterialSemanticParam>("DeferredLightMap", ShaderVariantType::Texture);
+	_semantics[DeferredShadowMap] = std::make_shared<MaterialSemanticParam>("DeferredShadowMap", ShaderVariantType::Texture);
 }
 
 void

@@ -454,50 +454,50 @@ EGL3ShaderObject::_initActiveUniform() noexcept
 			type == GL_SAMPLER_2D_ARRAY || type == GL_SAMPLER_CUBE ||
 			type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
 		{
-			uniform->setType(SPT_TEXTURE);
+			uniform->setType(ShaderVariantType::Texture);
 		}
 		else
 		{
 			bool isArray = uniform->getName().find("[0]") != std::string::npos;
 
 			if (type == GL_BOOL)
-				uniform->setType(SPT_BOOL);
+				uniform->setType(ShaderVariantType::Bool);
 			else if (type == GL_INT)
-				uniform->setType(SPT_INT);
+				uniform->setType(ShaderVariantType::Int);
 			else if (type == GL_INT_VEC2)
-				uniform->setType(SPT_INT2);
+				uniform->setType(ShaderVariantType::Int2);
 			else if (type == GL_FLOAT)
 			{
 				if (isArray)
-					uniform->setType(SPT_FLOAT_ARRAY);
+					uniform->setType(ShaderVariantType::FloatArray);
 				else
-					uniform->setType(SPT_FLOAT);
+					uniform->setType(ShaderVariantType::Float);
 			}
 			else if (type == GL_FLOAT_VEC2)
 			{
 				if (isArray)
-					uniform->setType(SPT_FLOAT2_ARRAY);
+					uniform->setType(ShaderVariantType::Float2Array);
 				else
-					uniform->setType(SPT_FLOAT2);
+					uniform->setType(ShaderVariantType::Float2);
 			}
 			else if (type == GL_FLOAT_VEC3)
 			{
 				if (isArray)
-					uniform->setType(SPT_FLOAT3_ARRAY);
+					uniform->setType(ShaderVariantType::Float3Array);
 				else
-					uniform->setType(SPT_FLOAT3);
+					uniform->setType(ShaderVariantType::Float3);
 			}
 			else if (type == GL_FLOAT_VEC4)
 			{
 				if (isArray)
-					uniform->setType(SPT_FLOAT4_ARRAY);
+					uniform->setType(ShaderVariantType::Float4Array);
 				else
-					uniform->setType(SPT_FLOAT4);
+					uniform->setType(ShaderVariantType::Float4);
 			}
 			else if (type == GL_FLOAT_MAT3)
-				uniform->setType(SPT_FLOAT3X3);
+				uniform->setType(ShaderVariantType::Float3x3);
 			else if (type == GL_FLOAT_MAT4)
-				uniform->setType(SPT_FLOAT4X4);
+				uniform->setType(ShaderVariantType::Float4x4);
 			else
 				assert(false);
 		}
@@ -564,7 +564,7 @@ EGL3ShaderObject::_initActiveUniformBlock() noexcept
 
 				auto uniformblock = std::make_shared<EGLShaderUniform>();
 				uniformblock->setName(nameUniformBlock.get());
-				uniformblock->setType(ShaderVariantType::SPT_BUFFER);
+				uniformblock->setType(ShaderVariantType::Buffer);
 				uniformblock->setLocation(location);
 
 				_activeUniforms.push_back(uniformblock);

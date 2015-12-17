@@ -442,11 +442,46 @@ RenderSystem::createShaderObject() noexcept
 	return _renderPipeline->createShaderObject();
 }
 
-RenderBufferPtr 
-RenderSystem::createRenderBuffer() noexcept
+GraphicsDataPtr
+RenderSystem::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
 	assert(_renderPipeline);
-	return _renderPipeline->createRenderBuffer();
+	return _renderPipeline->createGraphicsData(desc);
+}
+
+bool
+RenderSystem::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
+{
+	assert(_renderPipeline);
+	return _renderPipeline->updateBuffer(data, str, cnt);
+}
+
+void*
+RenderSystem::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
+{
+	assert(_renderPipeline);
+	return _renderPipeline->mapBuffer(data, access);
+}
+
+void 
+RenderSystem::unmapBuffer(GraphicsDataPtr& data) noexcept
+{
+	assert(_renderPipeline);
+	_renderPipeline->unmapBuffer(data);
+}
+
+GraphicsLayoutPtr
+RenderSystem::createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept
+{
+	assert(_renderPipeline);
+	return _renderPipeline->createGraphicsLayout(desc);
+}
+
+RenderBufferPtr 
+RenderSystem::createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
+{
+	assert(_renderPipeline);
+	return _renderPipeline->createRenderBuffer(vb, ib);
 }
 
 RenderBufferPtr 
@@ -461,20 +496,6 @@ RenderSystem::createRenderBuffer(const MeshPropertys& meshes) except
 {
 	assert(_renderPipeline);
 	return _renderPipeline->createRenderBuffer(meshes);
-}
-
-IndexBufferDataPtr 
-RenderSystem::createIndexBufferData() noexcept
-{
-	assert(_renderPipeline);
-	return _renderPipeline->createIndexBufferData();
-}
-
-VertexBufferDataPtr
-RenderSystem::createVertexBufferData() noexcept
-{
-	assert(_renderPipeline);
-	return _renderPipeline->createVertexBufferData();
 }
 
 void

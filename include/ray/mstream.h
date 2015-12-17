@@ -71,7 +71,6 @@ private:
 
     bool _isMappinged;
 
-	streamoff _tell;
 	streamoff _next;
 
     std::vector<char> _data;

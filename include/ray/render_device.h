@@ -37,14 +37,16 @@
 #ifndef _H_RENDER_DEVICE_H_
 #define _H_RENDER_DEVICE_H_
 
-#include <ray/render_types.h>
+#include <ray/graphics_data.h>
+#include <ray/graphics_layout.h>
 
 _NAME_BEGIN
 
-class EXPORT RenderDevice
+class EXPORT RenderDevice : public rtti::Interface
 {
+	__DeclareSubInterface(RenderDevice, rtti::Interface)
 public:
-	RenderDevice() except;
+	RenderDevice() noexcept;
 	virtual ~RenderDevice() noexcept;
 
 	virtual bool open(WindHandle window) except = 0;
@@ -60,23 +62,32 @@ public:
 	virtual void setWireframeMode(bool enable) except = 0;
 	virtual bool getWireframeMode() const noexcept = 0;
 
-	virtual void setViewport(const Viewport& viewport, std::size_t i = 0) except = 0;
+	virtual void setViewport(const Viewport& viewport, std::size_t i = 0) noexcept = 0;
 	virtual const Viewport& getViewport(std::size_t i = 0) const noexcept = 0;
 
 	virtual void setSwapInterval(SwapInterval interval) except = 0;
 	virtual SwapInterval getSwapInterval() const noexcept = 0;
 
-	virtual RenderBufferPtr createRenderBuffer() noexcept = 0;
-	virtual IndexBufferDataPtr createIndexBufferData() noexcept = 0;
-	virtual VertexBufferDataPtr createVertexBufferData() noexcept = 0;
-	virtual void setRenderBuffer(RenderBufferPtr buffer) except = 0;
-	virtual void updateRenderBuffer(RenderBufferPtr buffer) except = 0;
-	virtual void drawRenderBuffer(const RenderIndirect& renderable) except = 0;
-	virtual void drawRenderBuffer(const RenderIndirects& renderable) except = 0;
-	virtual RenderBufferPtr getRenderBuffer() const noexcept = 0;
+	virtual GraphicsLayoutPtr createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept = 0;
+	virtual void setGraphicsLayout(GraphicsLayoutPtr data) noexcept = 0;
+	virtual GraphicsLayoutPtr getGraphicsLayout() const noexcept = 0;
+
+	virtual GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept = 0;
+	virtual bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept = 0;
+	virtual void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept = 0;
+	virtual void unmapBuffer(GraphicsDataPtr& data) noexcept = 0;
+
+	virtual void setIndexBufferData(GraphicsDataPtr data) noexcept = 0;
+	virtual GraphicsDataPtr getIndexBufferData() const noexcept = 0;
+
+	virtual void setVertexBufferData(GraphicsDataPtr data) noexcept = 0;
+	virtual GraphicsDataPtr getVertexBufferData() const noexcept = 0;
 
 	virtual TexturePtr createTexture() noexcept = 0;
 	virtual void setTexture(TexturePtr texture, std::uint32_t slot) noexcept = 0;
+
+	virtual SamplerObjectPtr createSamplerObject() noexcept = 0;
+	virtual void setSamplerObject(SamplerObjectPtr sampler, std::uint32_t slot) noexcept = 0;
 
 	virtual RenderTexturePtr createRenderTexture() noexcept = 0;
 	virtual MultiRenderTexturePtr createMultiRenderTexture() noexcept = 0;
@@ -99,6 +110,9 @@ public:
 	virtual ShaderObjectPtr createShaderObject() noexcept = 0;
 	virtual void setShaderObject(ShaderObjectPtr shader) except = 0;
 	virtual ShaderObjectPtr getShaderObject() const noexcept = 0;
+
+	virtual void drawRenderBuffer(const RenderIndirect& renderable) noexcept = 0;
+	virtual void drawRenderBuffer(const RenderIndirects& renderable) noexcept = 0;
 
 private:
 	RenderDevice(const RenderDevice&) noexcept = delete;

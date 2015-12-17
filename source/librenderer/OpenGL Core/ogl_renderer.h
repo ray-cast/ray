@@ -70,17 +70,26 @@ public:
 	virtual void setRenderState(RenderStatePtr state) noexcept;
 	virtual RenderStatePtr getRenderState() const noexcept;
 
-	virtual RenderBufferPtr createRenderBuffer() noexcept;
-	virtual IndexBufferDataPtr createIndexBufferData() noexcept;
-	virtual VertexBufferDataPtr createVertexBufferData() noexcept;
-	virtual void setRenderBuffer(RenderBufferPtr buffer) noexcept;
-	virtual void updateRenderBuffer(RenderBufferPtr buffer) noexcept;
-	virtual void drawRenderBuffer(const RenderIndirect& renderable) noexcept;
-	virtual void drawRenderBuffer(const RenderIndirects& renderable) noexcept;
-	virtual RenderBufferPtr getRenderBuffer() const noexcept;
+	virtual GraphicsLayoutPtr createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept;
+	virtual void setGraphicsLayout(GraphicsLayoutPtr data) noexcept;
+	virtual GraphicsLayoutPtr getGraphicsLayout() const noexcept;
+
+	virtual GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
+	virtual bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;
+	virtual void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
+	virtual void unmapBuffer(GraphicsDataPtr& data) noexcept;
+
+	virtual void setIndexBufferData(GraphicsDataPtr data) noexcept;
+	virtual GraphicsDataPtr getIndexBufferData() const noexcept;
+
+	virtual void setVertexBufferData(GraphicsDataPtr data) noexcept;
+	virtual GraphicsDataPtr getVertexBufferData() const noexcept;
 
 	virtual TexturePtr createTexture() noexcept;
 	virtual void setTexture(TexturePtr texture, std::uint32_t slot) noexcept;
+
+	virtual SamplerObjectPtr createSamplerObject() noexcept;
+	virtual void setSamplerObject(SamplerObjectPtr sampler, std::uint32_t slot) noexcept;
 
 	virtual RenderTexturePtr createRenderTexture() noexcept;
 	virtual MultiRenderTexturePtr createMultiRenderTexture() noexcept;
@@ -104,6 +113,9 @@ public:
 	virtual void destroyShaderVariant(ShaderVariant& constant) noexcept;
 	virtual void updateShaderVariant(ShaderVariantPtr constant) noexcept;
 
+	virtual void drawRenderBuffer(const RenderIndirect& renderable) noexcept;
+	virtual void drawRenderBuffer(const RenderIndirects& renderable) noexcept;
+
 private:
 
 	void initDebugControl() noexcept;
@@ -121,11 +133,12 @@ private:
 	bool _initOpenGL;
 	bool _enableWireframe;
 
+	RenderWindowPtr _glcontext;
+
 	Vector4 _clearColor;
 	GLfloat _clearDepth;
 	GLint   _clearStencil;
 
-	GLuint _defaultVAO;
 	GLuint _maxViewports;
 	GLuint _maxTextureUnits;
 
@@ -134,8 +147,6 @@ private:
 
 	ShaderObjectPtr _shaderObject;
 
-	RenderWindowPtr _glcontext;
-	RenderBufferPtr _renderBuffer;
 	RenderStatePtr _state;
 	RenderStatePtr _stateCaptured;
 
@@ -147,6 +158,16 @@ private:
 	std::string _tokenData;
 
 	RenderCommand _renderCommands;
+
+	bool _needUpdateLayout;
+	bool _needUpdateVbo;
+	bool _needUpdateIbo;
+
+	OGLVertexBufferPtr _vbo;
+	OGLIndexBufferPtr _ibo;
+	OGLGraphicsLayoutPtr _inputLayout;
+
+	OGLDrawIndirectBufferPtr _drawIndirectBuffer;
 
 	std::vector<Viewport> _viewport;
 };

@@ -41,8 +41,9 @@
 
 _NAME_BEGIN
 
-class EXPORT RenderWindow
+class EXPORT RenderWindow : public rtti::Interface
 {
+	__DeclareSubInterface(RenderWindow, rtti::Interface)		
 public:
 	RenderWindow() noexcept;
 	virtual ~RenderWindow() noexcept;
@@ -50,23 +51,15 @@ public:
 	virtual void open(WindHandle hwnd) except = 0;
 	virtual void close() noexcept = 0;
 
-	virtual void setActive(bool active) except;
-	virtual bool getActive() const noexcept;
+	virtual void setActive(bool active) except = 0;
+	virtual bool getActive() const noexcept = 0;
 
-	virtual void setSwapInterval(SwapInterval interval) except = 0;
+	virtual void setSwapInterval(SwapInterval interval) noexcept = 0;
 	virtual SwapInterval getSwapInterval() const noexcept = 0;
 
 	virtual WindHandle getWindHandle() const noexcept = 0;
 
-	virtual void present() except = 0;
-
-protected:
-	virtual void onActivate() except = 0;
-	virtual void onDeactivate() except = 0;
-
-private:
-
-	bool _active;
+	virtual void present() noexcept = 0;
 };
 
 _NAME_END

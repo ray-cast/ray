@@ -38,6 +38,16 @@
 
 _NAME_BEGIN
 
+RenderIndirect::RenderIndirect() noexcept
+	: startVertice(0)
+	, numVertices(0)
+	, startIndice(0)
+	, numIndices(0)
+	, numInstances(0)
+	, startInstances(0)
+{
+}
+
 void 
 RenderCommand::clear() noexcept
 {

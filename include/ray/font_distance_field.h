@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_FREE_TYPE_H_
-#define _H_FREE_TYPE_H_
+#ifndef _H_FONT_DISTANCE_FIELD_H_
+#define _H_FONT_DISTANCE_FIELD_H_
 
 #include <ray/font_bitmap.h>
 #include <ray/kdtree.h>
@@ -43,6 +43,10 @@
 struct FT_BitmapGlyphRec_;
 struct FT_LibraryRec_;
 struct FT_FaceRec_;
+
+typedef FT_BitmapGlyphRec_* FT_BitmapGlyph;
+typedef FT_LibraryRec_* FT_Library;
+typedef FT_FaceRec_* FT_Face;
 
 _NAME_BEGIN
 
@@ -55,11 +59,6 @@ struct DFFINFOHEADER
 
 class EXPORT FontPointBitmap : public FontBitmap
 {
-public:
-	typedef FT_BitmapGlyphRec_* FT_BitmapGlyph;
-	typedef FT_LibraryRec_* FT_Library;
-	typedef FT_FaceRec_* FT_Face;
-
 public:
 	FontPointBitmap() noexcept;
 	virtual ~FontPointBitmap() noexcept;

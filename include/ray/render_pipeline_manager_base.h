@@ -40,6 +40,7 @@
 #include <ray/render_types.h>
 #include <ray/render_buffer.h>
 #include <ray/render_scene.h>
+#include <ray/render_command.h>
 #include <ray/material.h>
 
 _NAME_BEGIN

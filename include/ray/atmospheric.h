@@ -88,6 +88,8 @@ private:
 	MaterialParamPtr _scaleFactor;
 	MaterialParamPtr _scaleDepth;
 	MaterialParamPtr _scaleOverScaleDepth;
+
+	RenderIndirect _renderable;
 };
 
 _NAME_END

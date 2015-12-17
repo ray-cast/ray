@@ -69,6 +69,11 @@ Atmospheric::onActivate(RenderPipeline& pipeline) except
 	MeshProperty mesh;
 	mesh.makeSphere(1, 128, 96);
 
+	_renderable.startVertice = 0;
+	_renderable.startIndice = 0;
+	_renderable.numVertices = mesh.getNumVertices();
+	_renderable.numIndices = mesh.getNumIndices();
+
 	_sphere = pipeline.createRenderBuffer(mesh);
 
 	_sat = pipeline.createMaterial("sys:fx/atmospheric.glsl");
@@ -122,12 +127,6 @@ Atmospheric::onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcep
 {
 	pipeline.setRenderTexture(source);
 
-	RenderIndirect renderable;
-	renderable.startVertice = 0;
-	renderable.startIndice = 0;
-	renderable.numVertices = _sphere->getNumVertices();
-	renderable.numIndices = _sphere->getNumIndices();
-
 	auto lights = pipeline.getRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS);
 	for (auto& it : lights)
 	{
@@ -139,8 +138,8 @@ Atmospheric::onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcep
 
 			_lightDirection->assign(lightDirection);
 
-			pipeline.drawMesh(_ground, _sphere, renderable);
-			pipeline.drawMesh(_sky, _sphere, renderable);
+			pipeline.drawMesh(_ground, _sphere, _renderable);
+			pipeline.drawMesh(_sky, _sphere, _renderable);
 		}
 	}
 }

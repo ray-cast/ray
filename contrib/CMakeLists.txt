@@ -12,6 +12,7 @@ FOREACH(myplugins
     libogg
     tinyxml
     freetype
+    HLSLCrossCompiler
 )
 # 添加参与编译的子目录
 ADD_SUBDIRECTORY(${myplugins})
@@ -28,6 +29,7 @@ FOREACH(myplugins
     zlibstatic
     tinyxml
     freetype
+    libHLSLcc
 )
 SET_TARGET_ATTRIBUTE(${myplugins} "contrib")
 
@@ -78,3 +80,5 @@ IF(BUILD_SOUND)
     SET_TARGET_ATTRIBUTE(OpenAL32 "contrib")
     SET_TARGET_ATTRIBUTE(common "contrib")
 ENDIF()
+
+SET_TARGET_ATTRIBUTE(HLSLcc "tools")

@@ -43,12 +43,14 @@ SET(RENDERER_CORE
     ${SOURCE_PATH}/graphics_layout.cpp
     ${HEADER_PATH}/graphics_resource.h
     ${SOURCE_PATH}/graphics_resource.cpp
-    ${HEADER_PATH}/render_device.h
-    ${SOURCE_PATH}/render_device.cpp
-    ${HEADER_PATH}/render_window.h
-    ${SOURCE_PATH}/render_window.cpp
-    ${HEADER_PATH}/render_state.h
-    ${SOURCE_PATH}/render_state.cpp
+    ${HEADER_PATH}/graphics_device.h
+    ${SOURCE_PATH}/graphics_device.cpp
+    ${HEADER_PATH}/graphics_context.h
+    ${SOURCE_PATH}/graphics_context.cpp
+    ${HEADER_PATH}/graphics_state.h
+    ${SOURCE_PATH}/graphics_state.cpp
+    ${HEADER_PATH}/graphics_sampler.h
+    ${SOURCE_PATH}/graphics_sampler.cpp
     ${HEADER_PATH}/render_texture.h
     ${SOURCE_PATH}/render_texture.cpp
     ${HEADER_PATH}/render_command.h
@@ -56,10 +58,6 @@ SET(RENDERER_CORE
     ${HEADER_PATH}/render_types.h
     ${HEADER_PATH}/shader.h
     ${SOURCE_PATH}/shader.cpp
-    ${HEADER_PATH}/vertex_component.h
-    ${SOURCE_PATH}/vertex_component.cpp
-    ${HEADER_PATH}/sampler_object.h
-    ${SOURCE_PATH}/sampler_object.cpp
 )
 SOURCE_GROUP("core" FILES ${RENDERER_CORE})
 
@@ -165,15 +163,23 @@ SET(RENDERER_TERRAIN
 )
 SOURCE_GROUP("renderer\\terrain" FILES ${RENDERER_TERRAIN})
 
+SET(RENDER_PIPELINE
+    ${HEADER_PATH}/deferred_render_pipeline.h
+    ${SOURCE_PATH}/deferred_render_pipeline.cpp
+)
+SOURCE_GROUP("renderer\\pipeline" FILES ${RENDER_PIPELINE})
+
 SET(RENDERER_SYSTEM
+    ${HEADER_PATH}/render_data_manager.h
+    ${SOURCE_PATH}/render_data_manager.cpp
+    ${HEADER_PATH}/render_data_manager_base.h
+    ${SOURCE_PATH}/render_data_manager_base.cpp
     ${HEADER_PATH}/render_pipeline.h
     ${SOURCE_PATH}/render_pipeline.cpp
-    ${HEADER_PATH}/render_pipeline_base.h
-    ${SOURCE_PATH}/render_pipeline_base.cpp
+    ${HEADER_PATH}/render_pipeline_controller.h
+    ${SOURCE_PATH}/render_pipeline_controller.cpp
     ${HEADER_PATH}/render_pipeline_manager.h
     ${SOURCE_PATH}/render_pipeline_manager.cpp
-    ${HEADER_PATH}/render_pipeline_manager_base.h
-    ${SOURCE_PATH}/render_pipeline_manager_base.cpp
     ${HEADER_PATH}/render_post_process.h
     ${SOURCE_PATH}/render_post_process.cpp
     ${HEADER_PATH}/render_setting.h
@@ -206,6 +212,7 @@ ADD_LIBRARY(librenderer SHARED
     ${RENDERER_TERRAIN}
     ${RENDERER_FONT}
     ${RENDERER_POST_PROCESS}
+    ${RENDER_PIPELINE}
 
     ${RENDERER_SYSTEM}
 )

@@ -34,117 +34,137 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_DEFERRED_LIGHTING_H_
-#define _H_DEFERRED_LIGHTING_H_
+#ifndef _H_RENDER_PIPELINE_H_
+#define _H_RENDER_PIPELINE_H_
 
-#include <ray/render_pipeline_base.h>
+#include <ray/graphics_data.h>
+#include <ray/graphics_layout.h>
+#include <ray/render_data_manager_base.h>
 
 _NAME_BEGIN
 
-class DefaultRenderPipeline final : public RenderPipeline
+class EXPORT RenderPipeline
 {
 public:
-	DefaultRenderPipeline() except;
-	~DefaultRenderPipeline() noexcept;
+	RenderPipeline() noexcept;
+	virtual ~RenderPipeline() noexcept;
 
-	void renderShadowMap(CameraPtr camera) noexcept;
+	void open(WindHandle window, std::uint32_t w, std::uint32_t h) except;
+	void close() noexcept;
 
-	void render2DEnvMap(CameraPtr camera) noexcept;
-	void render3DEnvMap(CameraPtr camera) noexcept;
+	void setDefaultGraphicsContext(GraphicsContextPtr context) noexcept;
+	GraphicsContextPtr getDefaultGraphicsContext() const noexcept;
 
-	void renderCamera(CameraPtr camera) noexcept;
+	void setCamera(CameraPtr renderer) noexcept;
+	CameraPtr getCamera() const noexcept;
+
+	void setViewport(const Viewport& view) noexcept;
+	const Viewport& getViewport() const noexcept;
+
+	void setRenderDataManager(RenderDataManagerPtr manager) noexcept;
+	RenderDataManagerPtr getRenderDataManagerPtr() const noexcept;
+
+	void setWireframeMode(bool enable) noexcept;
+	bool getWireframeMode() const noexcept;
+
+	void setSwapInterval(SwapInterval interval) noexcept;
+	SwapInterval getSwapInterval() const noexcept;
+
+	GraphicsStatePtr createGraphicsState() noexcept;
+	void setGraphicsState(GraphicsStatePtr state) noexcept;
+	GraphicsStatePtr getGraphicsState() const noexcept;
+
+	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
+	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
+
+	void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept;
+	RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept;
+
+	RenderTexturePtr createRenderTexture() noexcept;
+	MultiRenderTexturePtr createMultiRenderTexture() noexcept;
+	void setRenderTexture(RenderTexturePtr target) noexcept;
+	void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept;
+	void setRenderTextureLayer(RenderTexturePtr target, int layer) noexcept;
+	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
+	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
+	void discradRenderTexture() noexcept;
+	void readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	void blitRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept;
+
+	TexturePtr createTexture() noexcept;
+	TexturePtr createTexture(const std::string& name) except;
+
+	MaterialPtr createMaterial(const std::string& name) except;
+	void setMaterialPass(MaterialPassPtr pass) noexcept;
+	void setMaterialManager(MaterialManagerPtr manager) noexcept;
+	MaterialPassPtr getMaterialPass() noexcept;
+	MaterialManagerPtr getMaterialManager() noexcept;
+
+	ShaderPtr createShader() noexcept;
+	ShaderObjectPtr createShaderObject() noexcept;
+	void setShaderObject(ShaderObjectPtr progarm) noexcept;
+	ShaderObjectPtr getShaderObject() const noexcept;
+
+	GraphicsLayoutPtr createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept;
+
+	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
+	bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;
+	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
+	void unmapBuffer(GraphicsDataPtr& data) noexcept;
+
+	RenderBufferPtr createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
+	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) except;
+	RenderBufferPtr createRenderBuffer(const MeshPropertys& mesh) except;
+
+	void setRenderBuffer(RenderBufferPtr buffer) except;
+	void drawRenderBuffer(const RenderIndirect& renderable) except;
+	void drawRenderBuffer(const RenderIndirects& renderable) except;
+
+	void drawCone(MaterialPassPtr pass) noexcept;
+	void drawSphere(MaterialPassPtr pass) noexcept;
+	void drawSceneQuad(MaterialPassPtr pass) noexcept;
+	void drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const RenderIndirect& renderable) noexcept;
+	void drawRenderQueue(RenderQueue type, RenderPass pass, MaterialPassPtr material = nullptr, RenderTexturePtr target = nullptr) noexcept;
+
+	void addPostProcess(RenderPostProcessPtr postprocess) except;
+	void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
+	void renderPostProcess(RenderTexturePtr renderTexture) except;
+
+	void renderBegin() noexcept;
+	void renderEnd() noexcept;
+
+protected:
+
+	virtual void onRenderObjectPre(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except;
+	virtual void onRenderObject(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except;
+	virtual void onRenderObjectPost(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except;
 
 private:
-
-	void renderOpaques(MultiRenderTexturePtr target) noexcept;
-	void renderOpaquesDepthLinear(RenderTexturePtr target) noexcept;
-	void renderOpaquesShading(RenderTexturePtr target, int layer = 0) noexcept;
-	void renderOpaquesSpecificShading(RenderTexturePtr target, int layer = 0) noexcept;
-
-	void renderTransparent(MultiRenderTexturePtr target) noexcept;
-	void renderTransparentDepthLinear(RenderTexturePtr target) noexcept;
-	void renderTransparentShading(RenderTexturePtr target, int layer = 0) noexcept;
-	void renderTransparentSpecificShading(RenderTexturePtr target, int layer = 0) noexcept;
-
-	void renderLights(RenderTexturePtr target) noexcept;
-	void renderSunLight(const Light& light) noexcept;
-	void renderDirectionalLight(const Light& light) noexcept;
-	void renderAmbientLight(const Light& light) noexcept;
-	void renderPointLight(const Light& light) noexcept;
-	void renderSpotLight(const Light& light) noexcept;
-	void renderHemiSphereLight(const Light& light) noexcept;
-	void renderAreaLight(const Light& light) noexcept;
-
-	void copyRenderTexture(RenderTexturePtr src, RenderTexturePtr dst, const Viewport& view) noexcept;
+	RenderPipeline(const RenderPipeline&) noexcept = delete;
+	RenderPipeline& operator=(const RenderPipeline&) noexcept = delete;
 
 private:
-	virtual void onActivate() except;
-	virtual void onDeactivate() noexcept;
+	
+	std::uint32_t _width;
+	std::uint32_t _height;
 
-	virtual void onRenderPre(CameraPtr camera) noexcept;
-	virtual void onRenderPipeline(CameraPtr camera) noexcept;
-	virtual void onRenderPost(CameraPtr camera) noexcept;
-private:
+	CameraPtr _camera;
 
-	CameraPtr _leftCamera;
-	CameraPtr _rightCamera;
-	CameraPtr _frontCamera;
-	CameraPtr _backCamera;
-	CameraPtr _topCamera;
-	CameraPtr _bottomCamera;
+	GraphicsDevicePtr _graphicsDevice;
+	GraphicsContextPtr _graphicsContext;
 
-	MaterialPtr _deferredLighting;
-	MaterialPassPtr _deferredDepthOnly;
-	MaterialPassPtr _deferredDepthLinear;
-	MaterialPassPtr _deferredSunLight;
-	MaterialPassPtr _deferredSunLightShadow;
-	MaterialPassPtr _deferredDirectionalLight;
-	MaterialPassPtr _deferredDirectionalLightShadow;
-	MaterialPassPtr _deferredSpotLight;
-	MaterialPassPtr _deferredPointLight;
-	MaterialPassPtr _deferredAmbientLight;
-	MaterialPassPtr _deferredShadingOpaques;
-	MaterialPassPtr _deferredShadingTransparents;
-	MaterialPassPtr _deferredDebugLayer;
-	MaterialPassPtr _deferredCopyOnly;
+	RenderBufferPtr _renderSceneQuad;
+	RenderBufferPtr _renderSphere;
+	RenderBufferPtr _renderCone;
 
-	MaterialParamPtr _texMRT0;
-	MaterialParamPtr _texMRT1;
-	MaterialParamPtr _texDepth;
-	MaterialParamPtr _texLight;
-	MaterialParamPtr _texSource;
-	MaterialParamPtr _texEnvironmentMap;
+	RenderIndirect _renderConeIndirect;
+	RenderIndirect _renderSphereIndirect;
+	RenderIndirect _renderSceneQuadIndirect;
 
-	MaterialParamPtr _eyePosition;
-	MaterialParamPtr _clipInfo;
-	MaterialParamPtr _projInfo;
+	MaterialManagerPtr _materialManager;
 
-	MaterialParamPtr _shadowDecal;
-	MaterialParamPtr _shadowChannel;
-	MaterialParamPtr _shadowMap;
-	MaterialParamPtr _shadowArrayMap;
-	MaterialParamPtr _shadowFactor;
-	MaterialParamPtr _shadowMatrix;
-	MaterialParamPtr _shadowOffset;
-	MaterialParamPtr _shadowWeight;
-
-	MaterialParamPtr _lightColor;
-	MaterialParamPtr _lightPosition;
-	MaterialParamPtr _lightDirection;
-	MaterialParamPtr _lightRange;
-	MaterialParamPtr _lightIntensity;
-	MaterialParamPtr _lightAttenuation;
-	MaterialParamPtr _lightSpotInnerCone;
-	MaterialParamPtr _lightSpotOuterCone;
-
-	RenderTexturePtr _deferredDepthMap;
-	RenderTexturePtr _deferredDepthLinearMap;
-	RenderTexturePtr _deferredGraphicMap;
-	RenderTexturePtr _deferredNormalMap;
-	RenderTexturePtr _deferredLightMap;
-	RenderTexturePtr _deferredShadingMap;
-
-	MultiRenderTexturePtr _deferredGraphicMaps;
+	RenderDataManagerPtr _dataManager;
+	RenderPostProcessor _postprocessors[RenderQueue::RQ_NUMS];
 };
 
 _NAME_END

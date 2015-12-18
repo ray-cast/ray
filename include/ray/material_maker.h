@@ -53,7 +53,7 @@ public:
 
 private:
 
-	RenderStatePtr instanceState(iarchive& reader) except;
+	GraphicsStatePtr instanceState(iarchive& reader) except;
 	MaterialPassPtr instancePass(iarchive& reader) except;
 	MaterialTechPtr instanceTech(iarchive& reader) except;
 	void instanceParameter(MaterialPtr& material, iarchive& reader) except;

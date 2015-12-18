@@ -34,18 +34,33 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/render_device.h>
+#ifndef _H_RENDER_DATA_MANAGER_H_
+#define _H_RENDER_DATA_MANAGER_H_
+
+#include <ray/render_data_manager_base.h>
+#include <ray/render_scene.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(RenderDevice, rtti::Interface, "RenderDevice")
-
-RenderDevice::RenderDevice() noexcept
+class DefaultRenderDataManager : public RenderDataManager
 {
-}
+public:
 
-RenderDevice::~RenderDevice() noexcept
-{
-}
+	void open() noexcept;
+	void close() noexcept;
+
+	void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept;
+	RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept;
+
+	void assginVisiable(CameraPtr camera) noexcept;
+
+private:
+
+	OcclusionCullList _visiable;
+
+	RenderObjects _renderQueue[RenderQueue::RQ_NUMS][RenderPass::RP_NUMPASS];
+};
 
 _NAME_END
+
+#endif

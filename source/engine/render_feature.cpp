@@ -157,6 +157,7 @@ RenderFeature::onCloseScene(GameScenePtr scene) except
 void
 RenderFeature::onFrameBegin() except
 {
+	RenderSystem::instance()->renderBegin();
 }
 
 void
@@ -168,6 +169,7 @@ void
 RenderFeature::onFrameEnd() except
 {
 	RenderSystem::instance()->render();
+	RenderSystem::instance()->renderEnd();
 }
 
 _NAME_END

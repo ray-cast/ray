@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class XGLCanvas final : public RenderWindow
+class XGLCanvas : public RenderWindow
 {
 public:
 	XGLCanvas() noexcept;

@@ -37,15 +37,15 @@
 #ifndef _H_OGL_TYPES_H_
 #define _H_OGL_TYPES_H_
 
-#include <ray/render_device.h>
-#include <ray/render_buffer.h>
-#include <ray/render_texture.h>
-#include <ray/render_state.h>
-#include <ray/render_window.h>
-#include <ray/render_command.h>
-#include <ray/sampler_object.h>
 #include <ray/graphics_data.h>
 #include <ray/graphics_layout.h>
+#include <ray/graphics_device.h>
+#include <ray/graphics_context.h>
+#include <ray/graphics_state.h>
+#include <ray/graphics_sampler.h>
+
+#include <ray/render_texture.h>
+#include <ray/render_command.h>
 #include <ray/shader.h>
 
 #if _BUILD_PLATFORM_WINDOWS

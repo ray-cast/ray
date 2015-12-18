@@ -41,20 +41,20 @@
 
 _NAME_BEGIN
 
-class EGL2Sampler final : public SamplerObject
+class EGL2Sampler final : public GraphicsSampler
 {
-	__DeclareSubClass(EGL3Sampler, SamplerObject)
+	__DeclareSubClass(EGL3Sampler, GraphicsSampler)
 public:
 	EGL2Sampler() noexcept;
 	~EGL2Sampler() noexcept;
 
-	bool setup(const SamplerObjectDesc& desc) except;
+	bool setup(const GraphicsSamplerDesc& desc) except;
 	void close() noexcept;
 
-	void getSamplerObjectDesc(SamplerObjectDesc& desc) const noexcept;
+	void getGraphicsSamplerDesc(GraphicsSamplerDesc& desc) const noexcept;
 private:
 
-	SamplerObjectDesc _desc;
+	GraphicsSamplerDesc _desc;
 };
 
 _NAME_END

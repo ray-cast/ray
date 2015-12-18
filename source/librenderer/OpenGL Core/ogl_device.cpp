@@ -1,4 +1,4 @@
-// +----------------------------------------------------------------------
+// +---------------------------------------------------------------------
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
@@ -34,92 +34,101 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/render_post_process.h>
+#include "ogl_device.h"
+#include "ogl_device_context.h"
+#include "ogl_canvas.h"
+#include "ogl_state.h"
+#include "ogl_shader.h"
+#include "ogl_texture.h"
+#include "ogl_layout.h"
+#include "ogl_vbo.h"
+#include "ogl_ibo.h"
+#include "ogl_dibo.h"
+#include "ogl_commandlist.h"
+#include "ogl_sampler.h"
 
 _NAME_BEGIN
 
-RenderPostProcess::RenderPostProcess() noexcept
-	: _active(false)
-	, _renderQueue(RenderQueue::RQ_POSTPROCESS)
-	, _renderPipeline(nullptr)
+OGLDevice::OGLDevice() noexcept
 {
 }
 
-RenderPostProcess::~RenderPostProcess() noexcept
+OGLDevice::~OGLDevice() noexcept
 {
 }
 
-void 
-RenderPostProcess::setActive(bool active) except
+GraphicsContextPtr
+OGLDevice::createGraphicsContext(WindHandle win) noexcept
 {
-	if (_active != active)
-	{
-		if (active)
-			this->onActivate(*_renderPipeline);
-		else
-			this->onDeactivate(*_renderPipeline);
-
-		_active = active;
-	}
+	auto context = std::make_shared<OGLDeviceContext>();
+	context->open(win);
+	return context;
 }
 
-bool 
-RenderPostProcess::getActive() const noexcept
+GraphicsStatePtr
+OGLDevice::createGraphicsState() noexcept
 {
-	return _active;
+	return std::make_shared<OGLGraphicsState>();
 }
 
-void
-RenderPostProcess::setRenderQueue(RenderQueue queue) noexcept
+GraphicsLayoutPtr
+OGLDevice::createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept
 {
-	_renderQueue = queue;
+	auto layout = std::make_shared<OGLGraphicsLayout>();
+	if (layout->open(desc))
+		return layout;
+	return nullptr;
 }
 
-RenderQueue
-RenderPostProcess::getRenderQueue() const noexcept
+GraphicsDataPtr
+OGLDevice::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
-	return _renderQueue;
+	auto type = desc.getType();
+
+	if (type == GraphicsStream::VBO)
+		return std::make_shared<OGLVertexBuffer>(desc);
+	else if (type == GraphicsStream::IBO)
+		return std::make_shared<OGLIndexBuffer>(desc);
+	else if (type == GraphicsStream::DIBO)
+		return std::make_shared<OGLDrawIndirectBuffer>(desc);
+
+	return nullptr;
 }
 
-void
-RenderPostProcess::onActivate(RenderPipeline&) except
+TexturePtr
+OGLDevice::createTexture() noexcept
 {
+	return std::make_shared<OGLTexture>();
 }
 
-void
-RenderPostProcess::onDeactivate(RenderPipeline&) except
+GraphicsSamplerPtr
+OGLDevice::createGraphicsSampler() noexcept
 {
+	return std::make_shared<OGLSampler>();
 }
 
-void
-RenderPostProcess::onResolutionChangeBefore(RenderPipeline&) except
+RenderTexturePtr
+OGLDevice::createRenderTexture() noexcept
 {
+	return std::make_shared<OGLRenderTexture>();
 }
 
-void
-RenderPostProcess::onResolutionChangeAfter(RenderPipeline&) except
+MultiRenderTexturePtr
+OGLDevice::createMultiRenderTexture() noexcept
 {
+	return std::make_shared<OGLMultiRenderTexture>();
 }
 
-void
-RenderPostProcess::onRenderPre(RenderPipeline& pipeline) except
+ShaderPtr
+OGLDevice::createShader() noexcept
 {
+	return std::make_shared<OGLShader>();
 }
 
-void
-RenderPostProcess::onRenderPost(RenderPipeline& pipeline) except
+ShaderObjectPtr
+OGLDevice::createShaderObject() noexcept
 {
-}
-
-void 
-RenderPostProcess::onRender(RenderPipeline& pipeline, RenderTexturePtr source) except
-{
-}
-
-void 
-RenderPostProcess::_setRenderPipeline(RenderPipeline* pipeline) noexcept
-{
-	_renderPipeline = pipeline;
+	return std::make_shared<OGLShaderObject>();
 }
 
 _NAME_END

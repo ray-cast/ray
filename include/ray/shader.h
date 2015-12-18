@@ -84,7 +84,7 @@ private:
 	bool _needUpdate;
 };
 
-class EXPORT ShaderAttribute final : public ShaderParameter
+class EXPORT ShaderAttribute : public ShaderParameter
 {
 };
 

@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(EGL3Sampler, SamplerObject, "EGL3Sampler")
+__ImplementSubClass(EGL3Sampler, GraphicsSampler, "EGL3Sampler")
 
 EGL3Sampler::EGL3Sampler() noexcept
 	: _sampler(0)
@@ -51,7 +51,7 @@ EGL3Sampler::~EGL3Sampler() noexcept
 }
 
 bool
-EGL3Sampler::setup(const SamplerObjectDesc& desc) except
+EGL3Sampler::setup(const GraphicsSamplerDesc& desc) except
 {
 	assert(!_sampler);
 
@@ -143,7 +143,7 @@ EGL3Sampler::getInstanceID() noexcept
 }
 
 void
-EGL3Sampler::getSamplerObjectDesc(SamplerObjectDesc& desc) const noexcept
+EGL3Sampler::getGraphicsSamplerDesc(GraphicsSamplerDesc& desc) const noexcept
 {
 	desc = _desc;
 }

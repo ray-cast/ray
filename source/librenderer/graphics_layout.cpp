@@ -40,6 +40,168 @@ _NAME_BEGIN
 
 __ImplementSubInterface(GraphicsLayout, GraphicsChild, "GraphicsLayoutDesc")
 
+
+VertexComponent::VertexComponent() noexcept
+	: _format(VertexFormat::Float)
+	, _attrib(0)
+	, _vertexCount(0)
+	, _vertexSize(0)
+{
+}
+
+VertexComponent::VertexComponent(VertexFormat format, std::uint8_t attrib, bool normalize) noexcept
+	: _format(format)
+	, _attrib(attrib)
+	, _normalize(normalize)
+{
+	_vertexCount = getVertexCount(format);
+	_vertexSize = getVertexSize(format);
+}
+
+VertexComponent::~VertexComponent() noexcept
+{
+}
+
+void
+VertexComponent::setVertexAttrib(std::uint8_t attrib) noexcept
+{
+	_attrib = attrib;
+}
+
+void
+VertexComponent::setVertexFormat(VertexFormat format) noexcept
+{
+	if (_format != format)
+	{
+		_vertexCount = getVertexCount(format);
+		_vertexSize = getVertexSize(format);
+
+		_format = format;
+	}
+}
+
+void
+VertexComponent::setNormalize(bool normalize) noexcept
+{
+	_normalize = normalize;
+}
+
+std::uint8_t
+VertexComponent::getVertexAttrib() const noexcept
+{
+	return _attrib;
+}
+
+VertexFormat
+VertexComponent::getVertexFormat() const noexcept
+{
+	return _format;
+}
+
+bool
+VertexComponent::getNormalize() const noexcept
+{
+	return _normalize;
+}
+
+std::uint8_t
+VertexComponent::getVertexCount() const noexcept
+{
+	return _vertexCount;
+}
+
+std::uint8_t
+VertexComponent::getVertexSize() const noexcept
+{
+	return _vertexSize;
+}
+
+std::uint8_t
+VertexComponent::getVertexCount(VertexFormat format) noexcept
+{
+	if (format == VertexFormat::Char || format == VertexFormat::Uchar ||
+		format == VertexFormat::Short || format == VertexFormat::Ushort ||
+		format == VertexFormat::Int || format == VertexFormat::Uint ||
+		format == VertexFormat::Float)
+	{
+		return 1;
+	}
+	else if (format == VertexFormat::Char2 || format == VertexFormat::Uchar2 ||
+		format == VertexFormat::Short2 || format == VertexFormat::Ushort2 ||
+		format == VertexFormat::Int2 || format == VertexFormat::Uint2 ||
+		format == VertexFormat::Float2)
+	{
+		return 2;
+	}
+	else if (format == VertexFormat::Char3 || format == VertexFormat::Uchar3 ||
+		format == VertexFormat::Short3 || format == VertexFormat::Short3 ||
+		format == VertexFormat::Int3 || format == VertexFormat::Uint3 ||
+		format == VertexFormat::Float3)
+	{
+		return 3;
+	}
+	else if (format == VertexFormat::Char4 || format == VertexFormat::Uchar4 ||
+		format == VertexFormat::Short4 || format == VertexFormat::Ushort4 ||
+		format == VertexFormat::Int4 || format == VertexFormat::Uint4 ||
+		format == VertexFormat::Float4)
+	{
+		return 4;
+	}
+	else
+	{
+		assert(false);
+		return 0;
+	}
+}
+
+std::uint8_t
+VertexComponent::getVertexSize(VertexFormat format) noexcept
+{
+	switch (format)
+	{
+	case VertexFormat::Char:
+	case VertexFormat::Uchar:
+		return 1;
+	case VertexFormat::Char2:
+	case VertexFormat::Uchar2:
+	case VertexFormat::Short:
+	case VertexFormat::Ushort:
+		return 2;
+	case VertexFormat::Char3:
+	case VertexFormat::Uchar3:
+		return 3;
+	case VertexFormat::Char4:
+	case VertexFormat::Uchar4:
+	case VertexFormat::Short2:
+	case VertexFormat::Ushort2:
+	case VertexFormat::Int:
+	case VertexFormat::Uint:
+	case VertexFormat::Float:
+		return 4;
+	case VertexFormat::Short3:
+	case VertexFormat::Ushort3:
+		return 6;
+	case VertexFormat::Int2:
+	case VertexFormat::Uint2:
+	case VertexFormat::Short4:
+	case VertexFormat::Ushort4:
+	case VertexFormat::Float2:
+		return 8;
+	case VertexFormat::Int3:
+	case VertexFormat::Uint3:
+	case VertexFormat::Float3:
+		return 12;
+	case VertexFormat::Float4:
+	case VertexFormat::Int4:
+	case VertexFormat::Uint4:
+		return 16;
+	default:
+		assert(false);
+	}
+
+	return 0;
+}
+
 GraphicsLayoutDesc::GraphicsLayoutDesc() noexcept
 	: _indexType(IndexType::None)
 {

@@ -117,7 +117,6 @@ OGLTexture::setup() except
 			internalFormat == GL_COMPRESSED_RG_RGTC2 ||
 			internalFormat == GL_COMPRESSED_SIGNED_RG_RGTC2)
 		{
-			GLint level = (GLint)this->getMipLevel();
 			GLsizei size = this->getMipSize();
 			std::size_t offset = 0;
 			std::size_t blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;

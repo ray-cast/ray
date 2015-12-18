@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(OGLSampler, SamplerObject, "OGLSampler")
+__ImplementSubClass(OGLSampler, GraphicsSampler, "OGLSampler")
 
 OGLSampler::OGLSampler() noexcept
 	: _sampler(0)
@@ -51,7 +51,7 @@ OGLSampler::~OGLSampler() noexcept
 }
 
 bool
-OGLSampler::setup(const SamplerObjectDesc& desc) except
+OGLSampler::setup(const GraphicsSamplerDesc& desc) except
 {
 	assert(!_sampler);
 
@@ -143,7 +143,7 @@ OGLSampler::getInstanceID() noexcept
 }
 
 void 
-OGLSampler::getSamplerObjectDesc(SamplerObjectDesc& desc) const noexcept
+OGLSampler::getGraphicsSamplerDesc(GraphicsSamplerDesc& desc) const noexcept
 {
 	desc = _desc;
 }

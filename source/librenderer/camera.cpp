@@ -39,6 +39,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(Camera, RenderObject, "Camera")
+
 Camera::Camera() noexcept
 	: _left(0)
 	, _right(0)
@@ -439,14 +441,14 @@ Camera::setRenderScene(RenderScenePtr scene) noexcept
 	auto renderScene = _renderScene.lock();
 	if (renderScene)
 	{
-		renderScene->removeCamera(std::dynamic_pointer_cast<Camera>(this->shared_from_this()));
+		renderScene->removeCamera(this->downcast<Camera>());
 	}
 
 	_renderScene = scene;
 
 	if (scene)
 	{
-		scene->addCamera(std::dynamic_pointer_cast<Camera>(this->shared_from_this()));
+		scene->addCamera(this->downcast<Camera>());
 	}
 }
 
@@ -469,15 +471,15 @@ Camera::getRenderTexture() const noexcept
 }
 
 void
-Camera::setRenderWindow(RenderWindowPtr window) noexcept
+Camera::setGraphicsContext(GraphicsContextPtr window) noexcept
 {
-	_renderWindow = window;
+	_graphicsContext = window;
 }
 
-RenderWindowPtr
-Camera::getRenderWindow() const noexcept
+GraphicsContextPtr
+Camera::getGraphicsContext() const noexcept
 {
-	return _renderWindow;
+	return _graphicsContext;
 }
 
 CameraPtr

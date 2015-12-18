@@ -36,9 +36,9 @@
 // +----------------------------------------------------------------------
 #include <ray/render_system.h>
 #include <ray/render_scene.h>
-#include <ray/render_window.h>
 #include <ray/render_pipeline.h>
 #include <ray/render_pipeline_manager.h>
+#include <ray/graphics_context.h>
 #include <ray/atmospheric.h>
 #include <ray/ssao.h>
 #include <ray/ssgi.h>
@@ -69,8 +69,11 @@ RenderSystem::open(WindHandle window, std::size_t w, std::size_t h) except
 {
 	assert(!_renderPipeline);
 
-	_renderPipeline = std::make_shared<DefaultRenderPipeline>();
+	_renderPipeline = std::make_shared<RenderPipeline>();
 	_renderPipeline->open(window, w, h);
+
+	_pipelineManager = std::make_shared<RenderPipelineManager>();
+	_pipelineManager->open(_renderPipeline);
 
 	RenderSetting setting;
 	setting.enableSSAO = false;
@@ -421,11 +424,11 @@ RenderSystem::createMultiRenderTexture() noexcept
 	return _renderPipeline->createMultiRenderTexture();
 }
 
-RenderStatePtr
-RenderSystem::createRenderState() noexcept
+GraphicsStatePtr
+RenderSystem::createGraphicsState() noexcept
 {
 	assert(_renderPipeline);
-	return _renderPipeline->createRenderState();
+	return _renderPipeline->createGraphicsState();
 }
 
 ShaderPtr 
@@ -499,34 +502,41 @@ RenderSystem::createRenderBuffer(const MeshPropertys& meshes) except
 }
 
 void
-RenderSystem::render() noexcept
+RenderSystem::renderBegin() noexcept
 {
-	assert(_renderPipeline);
+	assert(_pipelineManager);
 
-	_renderPipeline->renderBegin();
+	_pipelineManager->renderBegin();
+}
 
-	for (auto& scene : _sceneList)
-		_renderPipeline->render(*scene);
+void
+RenderSystem::renderEnd() noexcept
+{
+	assert(_pipelineManager);
 
 	for (auto& scene : _sceneList)
 	{
 		auto& cameras = scene->getCameraList();
 		for (auto& camera : cameras)
 		{
-			auto widnow = camera->getRenderWindow();
-			if (widnow)
+			auto context = camera->getGraphicsContext();
+			if (context)
 			{
-				widnow->present();
+				context->present();
 			}
 		}
 	}
 
-	_renderPipeline->renderEnd();
+	_pipelineManager->renderEnd();
 }
 
-void 
-RenderSystem::onAddCamera(CameraPtr camera)
+void
+RenderSystem::render() noexcept
 {
+	assert(_renderPipeline);
+
+	for (auto& scene : _sceneList)
+		_pipelineManager->render(*scene);
 }
 
 _NAME_END

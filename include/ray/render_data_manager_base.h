@@ -34,18 +34,24 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_LIGHT_SHAFT_H_
-#define _H_LIGHT_SHAFT_H_
+#ifndef _H_RENDER_PIPELINE_MANAGER_BASE_H_
+#define _H_RENDER_PIPELINE_MANAGER_BASE_H_
 
-#include <ray/post_process.h>
+#include <ray/render_types.h>
+#include <ray/material.h>
 
 _NAME_BEGIN
 
-class LightShaft : public RenderPostProcess
+class RenderDataManager
 {
 public:
-    LightShaft() noexcept;
-    virtual ~LightShaft() noexcept;
+	RenderDataManager() noexcept;
+	virtual ~RenderDataManager() noexcept;
+
+	virtual void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept = 0;
+	virtual RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept = 0;
+
+	virtual void assginVisiable(CameraPtr camera) noexcept = 0;
 };
 
 _NAME_END

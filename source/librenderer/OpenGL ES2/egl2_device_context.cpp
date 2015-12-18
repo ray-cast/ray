@@ -34,7 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "egl2_renderer.h"
+#include "egl2_device_context.h"
 #include "egl2_state.h"
 #include "egl2_shader.h"
 #include "egl2_texture.h"
@@ -45,7 +45,9 @@
 
 _NAME_BEGIN
 
-EGL2Renderer::EGL2Renderer() noexcept
+__ImplementSubClass(EGL2DeviceContext, GraphicsContext, "EGL2DeviceContext")
+
+EGL2DeviceContext::EGL2DeviceContext() noexcept
 	: _initOpenGL(false)
 	, _maxTextureUnits(32)
 	, _maxViewports(4)
@@ -59,21 +61,22 @@ EGL2Renderer::EGL2Renderer() noexcept
 {
 }
 
-EGL2Renderer::~EGL2Renderer() noexcept
+EGL2DeviceContext::~EGL2DeviceContext() noexcept
 {
 	this->close();
 }
 
 bool
-EGL2Renderer::open(WindHandle window) except
+EGL2DeviceContext::open(WindHandle window) except
 {
 	if (!_initOpenGL)
 	{
-		_glcontext = this->createRenderWindow();
+		_glcontext = std::make_shared<EGL2Canvas>();
 		_glcontext->open(window);
+		_glcontext->setActive(true);
 
 		_textureUnits.resize(_maxTextureUnits);
-		_stateCaptured = std::make_shared<EGL2RenderState>();
+		_stateCaptured = std::make_shared<EGL2GraphicsState>();
 
 		this->initDebugControl();
 		this->initStateSystem();
@@ -85,7 +88,7 @@ EGL2Renderer::open(WindHandle window) except
 }
 
 void
-EGL2Renderer::close() noexcept
+EGL2DeviceContext::close() noexcept
 {
 	if (!_initOpenGL)
 		return;
@@ -128,21 +131,21 @@ EGL2Renderer::close() noexcept
 }
 
 void
-EGL2Renderer::renderBegin() noexcept
+EGL2DeviceContext::renderBegin() noexcept
 {
 	this->setShaderObject(nullptr);
 	this->setRenderTexture(nullptr);
 }
 
 void
-EGL2Renderer::renderEnd() noexcept
+EGL2DeviceContext::renderEnd() noexcept
 {
 	assert(_glcontext);
 	_glcontext->present();
 }
 
 void
-EGL2Renderer::setViewport(const Viewport& view, std::size_t i) noexcept
+EGL2DeviceContext::setViewport(const Viewport& view, std::size_t i) noexcept
 {
 	if (_viewport.left != view.left ||
 		_viewport.top != view.top ||
@@ -155,104 +158,73 @@ EGL2Renderer::setViewport(const Viewport& view, std::size_t i) noexcept
 }
 
 const Viewport&
-EGL2Renderer::getViewport(std::size_t i) const noexcept
+EGL2DeviceContext::getViewport(std::size_t i) const noexcept
 {
 	return _viewport;
 }
 
 void
-EGL2Renderer::setWireframeMode(bool enable) noexcept
+EGL2DeviceContext::setWireframeMode(bool enable) noexcept
 {
 	_enableWireframe = enable;
 }
 
 bool 
-EGL2Renderer::getWireframeMode() const noexcept
+EGL2DeviceContext::getWireframeMode() const noexcept
 {
 	return _enableWireframe;
 }
 
-RenderWindowPtr 
-EGL2Renderer::createRenderWindow() const noexcept
-{
-	return std::make_shared<EGL2Canvas>();
-}
-
 void
-EGL2Renderer::setRenderWindow(RenderWindowPtr glcontext) except
-{
-	assert(glcontext);
-
-	if (_glcontext != glcontext)
-	{
-		if (_glcontext)
-			_glcontext->setActive(false);
-
-		_glcontext = glcontext;
-
-		if (_glcontext)
-			_glcontext->setActive(true);
-	}
-}
-
-RenderWindowPtr
-EGL2Renderer::getRenderWindow() const noexcept
-{
-	return _glcontext;
-}
-
-void
-EGL2Renderer::setSwapInterval(SwapInterval interval) except
+EGL2DeviceContext::setSwapInterval(SwapInterval interval) noexcept
 {
 	assert(_glcontext);
 	_glcontext->setSwapInterval(interval);
 }
 
 SwapInterval
-EGL2Renderer::getSwapInterval() const noexcept
+EGL2DeviceContext::getSwapInterval() const noexcept
 {
 	assert(_glcontext);
 	return _glcontext->getSwapInterval();
 }
 
-RenderStatePtr 
-EGL2Renderer::createRenderState() noexcept
-{
-	return std::make_shared<EGL2RenderState>();
-}
-
 void
-EGL2Renderer::setRenderState(RenderStatePtr state) noexcept
+EGL2DeviceContext::setGraphicsState(GraphicsStatePtr state) noexcept
 {
-	assert(state);
+	if (state)
+	{
+		auto oglState = state->downcast<EGL2GraphicsState>();
+		if (oglState)
+		{
+			oglState->apply(*_stateCaptured);
 
-	state->apply(*_stateCaptured);
+			_stateCaptured->setBlendState(oglState->getBlendState());
+			_stateCaptured->setDepthState(oglState->getDepthState());
+			_stateCaptured->setRasterState(oglState->getRasterState());
+			_stateCaptured->setStencilState(oglState->getStencilState());
 
-	_stateCaptured->setBlendState(state->getBlendState());
-	_stateCaptured->setDepthState(state->getDepthState());
-	_stateCaptured->setRasterState(state->getRasterState());
-	_stateCaptured->setStencilState(state->getStencilState());
-
-	_state = state;
+			_state = oglState;
+		}
+		else
+		{
+			assert(false);
+		}
+	}
+	else
+	{
+		assert(false);
+	}
 }
 
-RenderStatePtr
-EGL2Renderer::getRenderState() const noexcept
+GraphicsStatePtr
+EGL2DeviceContext::getGraphicsState() const noexcept
 {
 	return _state;
 }
 
-GraphicsLayoutPtr
-EGL2Renderer::createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept
-{
-	auto layout = std::make_shared<EGL2GraphicsLayout>();
-	if (layout->open(desc))
-		return layout;
-	return nullptr;
-}
-
 void
-EGL2Renderer::setGraphicsLayout(GraphicsLayoutPtr layout) noexcept
+EGL2DeviceContext::setGraphicsLayout(GraphicsLayoutPtr layout) noexcept
 {
 	if (_inputLayout != layout)
 	{
@@ -273,26 +245,13 @@ EGL2Renderer::setGraphicsLayout(GraphicsLayoutPtr layout) noexcept
 }
 
 GraphicsLayoutPtr
-EGL2Renderer::getGraphicsLayout() const noexcept
+EGL2DeviceContext::getGraphicsLayout() const noexcept
 {
 	return _inputLayout;
 }
 
-GraphicsDataPtr
-EGL2Renderer::createGraphicsData(const GraphicsDataDesc& desc) noexcept
-{
-	auto type = desc.getType();
-
-	if (type == GraphicsStream::VBO)
-		return std::make_shared<EGL2VertexBuffer>(desc);
-	else if (type == GraphicsStream::IBO)
-		return std::make_shared<EGL2IndexBuffer>(desc);
-
-	return nullptr;
-}
-
 bool
-EGL2Renderer::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
+EGL2DeviceContext::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
 {
 	if (data)
 	{
@@ -316,7 +275,7 @@ EGL2Renderer::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) no
 }
 
 void*
-EGL2Renderer::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
+EGL2DeviceContext::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
 {
 	if (data)
 	{
@@ -335,7 +294,7 @@ EGL2Renderer::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
 }
 
 void
-EGL2Renderer::unmapBuffer(GraphicsDataPtr& data) noexcept
+EGL2DeviceContext::unmapBuffer(GraphicsDataPtr& data) noexcept
 {
 	if (data)
 	{
@@ -352,7 +311,7 @@ EGL2Renderer::unmapBuffer(GraphicsDataPtr& data) noexcept
 }
 
 void
-EGL2Renderer::setIndexBufferData(GraphicsDataPtr data) noexcept
+EGL2DeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
 {
 	if (_ibo != data)
 	{
@@ -373,13 +332,13 @@ EGL2Renderer::setIndexBufferData(GraphicsDataPtr data) noexcept
 }
 
 GraphicsDataPtr
-EGL2Renderer::getIndexBufferData() const noexcept
+EGL2DeviceContext::getIndexBufferData() const noexcept
 {
 	return _ibo;
 }
 
 void
-EGL2Renderer::setVertexBufferData(GraphicsDataPtr data) noexcept
+EGL2DeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 {
 	if (_vbo != data)
 	{
@@ -400,13 +359,13 @@ EGL2Renderer::setVertexBufferData(GraphicsDataPtr data) noexcept
 }
 
 GraphicsDataPtr
-EGL2Renderer::getVertexBufferData() const noexcept
+EGL2DeviceContext::getVertexBufferData() const noexcept
 {
 	return _vbo;
 }
 
 void
-EGL2Renderer::drawRenderBuffer(const RenderIndirect& renderable) noexcept
+EGL2DeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 {
 	if (!_stateCaptured)
 		return;
@@ -473,20 +432,13 @@ EGL2Renderer::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 }
 
 void 
-EGL2Renderer::drawRenderBuffer(const RenderIndirects& renderable) noexcept
+EGL2DeviceContext::drawRenderBuffer(const RenderIndirects& renderable) noexcept
 {
 	assert(false);
 }
 
-TexturePtr 
-EGL2Renderer::createTexture() noexcept
-{
-	auto result = std::make_shared<EGL2Texture>();
-	return result;
-}
-
 void
-EGL2Renderer::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
+EGL2DeviceContext::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
 {
 	if (texture)
 	{
@@ -503,15 +455,8 @@ EGL2Renderer::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
 	}
 }
 
-
-SamplerObjectPtr
-EGL2Renderer::createSamplerObject() noexcept
-{
-	return std::make_shared<EGL2Sampler>();
-}
-
 void
-EGL2Renderer::setSamplerObject(SamplerObjectPtr sampler, std::uint32_t slot) noexcept
+EGL2DeviceContext::setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept
 {
 	auto glsampler = sampler->downcast<EGL2Sampler>();
 	if (glsampler)
@@ -522,22 +467,8 @@ EGL2Renderer::setSamplerObject(SamplerObjectPtr sampler, std::uint32_t slot) noe
 	}
 }
 
-RenderTexturePtr 
-EGL2Renderer::createRenderTexture() noexcept
-{
-	auto result = std::make_shared<EGL2RenderTexture>();
-	return result;
-}
-
-MultiRenderTexturePtr 
-EGL2Renderer::createMultiRenderTexture() noexcept
-{
-	auto result = std::make_shared<EGL2MultiRenderTexture>();
-	return result;
-}
-
 void
-EGL2Renderer::setRenderTexture(RenderTexturePtr target) noexcept
+EGL2DeviceContext::setRenderTexture(RenderTexturePtr target) noexcept
 {
 	if (_renderTexture != target)
 	{
@@ -547,7 +478,7 @@ EGL2Renderer::setRenderTexture(RenderTexturePtr target) noexcept
 
 			GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, framebuffer));
 
-			this->setViewport(Viewport(0, 0, target->getWidth(), target->getHeight()));
+			this->setViewport(Viewport(0, 0, target->getWidth(), target->getHeight()), 0);
 		}
 		else
 		{
@@ -560,7 +491,7 @@ EGL2Renderer::setRenderTexture(RenderTexturePtr target) noexcept
 }
 
 void
-EGL2Renderer::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
+EGL2DeviceContext::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
 {
 	assert(target);
 
@@ -583,7 +514,7 @@ EGL2Renderer::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
 }
 
 void
-EGL2Renderer::setRenderTextureLayer(RenderTexturePtr renderTexture, std::int32_t layer) noexcept
+EGL2DeviceContext::setRenderTextureLayer(RenderTexturePtr renderTexture, std::int32_t layer) noexcept
 {
 	assert(renderTexture);
 	assert(renderTexture->getTexDim() == TextureDim::DIM_CUBE);
@@ -614,25 +545,25 @@ EGL2Renderer::setRenderTextureLayer(RenderTexturePtr renderTexture, std::int32_t
 }
 
 void
-EGL2Renderer::blitRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderTexturePtr dest, const Viewport& v2) noexcept
+EGL2DeviceContext::blitRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderTexturePtr dest, const Viewport& v2) noexcept
 {
 	assert(false);
 }
 
 RenderTexturePtr
-EGL2Renderer::getRenderTexture() const noexcept
+EGL2DeviceContext::getRenderTexture() const noexcept
 {
 	return _renderTexture;
 }
 
 MultiRenderTexturePtr
-EGL2Renderer::getMultiRenderTexture() const noexcept
+EGL2DeviceContext::getMultiRenderTexture() const noexcept
 {
 	return _multiRenderTexture;
 }
 
 void
-EGL2Renderer::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
+EGL2DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
 {
 	GLbitfield mode = 0;
 
@@ -689,19 +620,19 @@ EGL2Renderer::clearRenderTexture(ClearFlags flags, const Vector4& color, float d
 }
 
 void
-EGL2Renderer::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+EGL2DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
 	this->clearRenderTexture(flags, color, depth, stencil);
 }
 
 void
-EGL2Renderer::discardRenderTexture() noexcept
+EGL2DeviceContext::discardRenderTexture() noexcept
 {
 	assert(_renderTexture || _multiRenderTexture);
 }
 
 void
-EGL2Renderer::readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+EGL2DeviceContext::readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
 	assert(target && w && h && data);
 
@@ -721,22 +652,8 @@ EGL2Renderer::readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std:
 	EGL2Check::checkError();
 }
 
-ShaderPtr 
-EGL2Renderer::createShader() noexcept
-{
-	auto result = std::make_shared<EGL2Shader>();
-	return result;
-}
-
-ShaderObjectPtr 
-EGL2Renderer::createShaderObject() noexcept
-{
-	auto result = std::make_shared<EGL2ShaderObject>();
-	return result;
-}
-
 void
-EGL2Renderer::setShaderObject(ShaderObjectPtr shader) noexcept
+EGL2DeviceContext::setShaderObject(ShaderObjectPtr shader) noexcept
 {
 	if (shader)
 		shader->setActive(true);
@@ -752,29 +669,20 @@ EGL2Renderer::setShaderObject(ShaderObjectPtr shader) noexcept
 }
 
 ShaderObjectPtr
-EGL2Renderer::getShaderObject() const noexcept
+EGL2DeviceContext::getShaderObject() const noexcept
 {
 	return _shaderObject;
 }
 
-bool
-EGL2Renderer::createShaderVariant(ShaderVariant& constant) noexcept
+void
+EGL2DeviceContext::present() noexcept
 {
-	return false;
+	assert(_glcontext);
+	_glcontext->present();
 }
 
 void
-EGL2Renderer::destroyShaderVariant(ShaderVariant& constant) noexcept
-{
-}
-
-void
-EGL2Renderer::updateShaderVariant(ShaderVariantPtr constant) noexcept
-{
-}
-
-void
-EGL2Renderer::debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept
+EGL2DeviceContext::debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept
 {
 	std::cerr << "source : ";
 	switch (source)
@@ -859,7 +767,7 @@ EGL2Renderer::debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severi
 }
 
 void
-EGL2Renderer::initDebugControl() noexcept
+EGL2DeviceContext::initDebugControl() noexcept
 {
 #if defined(_DEBUG) && !defined(__ANDROID__)
 	// 131184 memory info
@@ -885,7 +793,7 @@ EGL2Renderer::initDebugControl() noexcept
 }
 
 void
-EGL2Renderer::initStateSystem() noexcept
+EGL2DeviceContext::initStateSystem() noexcept
 {
 	GL_CHECK(glEnable(GL_DEPTH_TEST));
 	GL_CHECK(glDepthMask(GL_TRUE));

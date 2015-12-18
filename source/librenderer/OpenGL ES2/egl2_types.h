@@ -37,11 +37,12 @@
 #ifndef _H_EGL2_TYPES_H_
 #define _H_EGL2_TYPES_H_
 
-#include <ray/render_device.h>
-#include <ray/render_buffer.h>
+#include <ray/graphics_device.h>
+#include <ray/graphics_context.h>
+#include <ray/graphics_data.h>
+#include <ray/graphics_sampler.h>
+#include <ray/graphics_state.h>
 #include <ray/render_texture.h>
-#include <ray/render_state.h>
-#include <ray/render_window.h>
 #include <ray/render_command.h>
 #include <ray/shader.h>
 
@@ -145,6 +146,7 @@ typedef std::shared_ptr<class EGL2Canvas> EGL2CanvasPtr;
 typedef std::shared_ptr<class EGL2Framebuffer> EGL2RenderTexturePtr;
 typedef std::shared_ptr<class EGL2Shader> EGL2ShaderPtr;
 typedef std::shared_ptr<class EGL2ShaderObject> EGL2ShaderObjectPtr;
+typedef std::shared_ptr<class EGL2GraphicsState> EGL2GraphicsStatePtr;
 typedef std::shared_ptr<class EGL2VertexBuffer> EGL2VertexBufferPtr;
 typedef std::shared_ptr<class EGL2IndexBuffer> EGL2IndexBufferPtr;
 typedef std::shared_ptr<class EGL2GraphicsLayout> EGL2GraphicsLayoutPtr;

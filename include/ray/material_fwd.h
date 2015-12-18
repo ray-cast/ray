@@ -37,8 +37,7 @@
 #ifndef _H_MATERIAL_FWD_H_
 #define _H_MATERIAL_FWD_H_
 
-#include <ray/shader.h>
-#include <ray/render_state.h>
+#include <ray/graphics_types.h>
 
 _NAME_BEGIN
 

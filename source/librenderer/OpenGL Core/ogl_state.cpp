@@ -35,16 +35,18 @@
 
 _NAME_BEGIN
 
-OGLRenderState::OGLRenderState() noexcept
+__ImplementSubClass(OGLGraphicsState, GraphicsState, "OGLGraphicsState")
+
+OGLGraphicsState::OGLGraphicsState() noexcept
 {
 }
 
-OGLRenderState::~OGLRenderState() noexcept
+OGLGraphicsState::~OGLGraphicsState() noexcept
 {
 }
 
-void 
-OGLRenderState::apply(const RenderState& _stateCaptured) noexcept
+void
+OGLGraphicsState::apply(const GraphicsState& _stateCaptured) noexcept
 {
 	const auto& blendState = this->getBlendState();
 	const auto& rasterState = this->getRasterState();

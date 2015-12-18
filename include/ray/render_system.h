@@ -79,7 +79,7 @@ public:
 	RenderTexturePtr createRenderTexture() noexcept;
 	MultiRenderTexturePtr createMultiRenderTexture() noexcept;
 
-	RenderStatePtr createRenderState() noexcept;
+	GraphicsStatePtr createGraphicsState() noexcept;
 
 	ShaderPtr createShader() noexcept;
 	ShaderObjectPtr createShaderObject() noexcept;
@@ -95,10 +95,9 @@ public:
 	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) except;
 	RenderBufferPtr createRenderBuffer(const MeshPropertys& meshes) except;
 
+	void renderBegin() noexcept;
 	void render() noexcept;
-
-private:
-	void onAddCamera(CameraPtr camera);
+	void renderEnd() noexcept;
 
 private:
 	RenderSystem(const RenderSystem&) noexcept = delete;
@@ -110,6 +109,7 @@ private:
 
 	RenderScenes _sceneList;
 	RenderPipelinePtr _renderPipeline;
+	RenderPipelineManagerPtr _pipelineManager;
 
 	RenderPostProcessPtr _SSGI;
 	RenderPostProcessPtr _SSAO;

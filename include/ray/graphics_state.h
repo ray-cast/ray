@@ -34,10 +34,10 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_STATE_H_
-#define _H_RENDER_STATE_H_
+#ifndef _H_GRAPHICS_STATE_H_
+#define _H_GRAPHICS_STATE_H_
 
-#include <ray/render_types.h>
+#include <ray/graphics_child.h>
 
 _NAME_BEGIN
 
@@ -106,14 +106,12 @@ struct EXPORT RenderStencilState
 	RenderStencilState() noexcept;
 };
 
-class EXPORT RenderState
+class EXPORT GraphicsState : public GraphicsChild
 {
+	__DeclareSubInterface(GraphicsState, GraphicsChild)
 public:
-	RenderState() noexcept;
-	virtual ~RenderState() noexcept;
-
-	void setup() noexcept;
-	void close() noexcept;
+	GraphicsState() noexcept;
+	virtual ~GraphicsState() noexcept;
 
 	void setBlendState(const RenderBlendState& state) noexcept;
 	void setRasterState(const RenderRasterState& state) noexcept;
@@ -130,11 +128,9 @@ public:
 	const RenderDepthState& getDepthState() const noexcept;
 	const RenderStencilState& getStencilState() const noexcept;
 
-	virtual void apply(const RenderState& last) noexcept = 0;
-
 private:
-	RenderState(const RenderState&) noexcept = delete;
-	RenderState& operator=(const RenderState&) noexcept = delete;
+	GraphicsState(const GraphicsState&) noexcept = delete;
+	GraphicsState& operator=(const GraphicsState&) noexcept = delete;
 
 public:
 

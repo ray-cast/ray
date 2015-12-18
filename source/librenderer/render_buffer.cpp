@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubInterface(RenderBuffer, rtti::Interface, "RenderBuffer")
+__ImplementSubClass(RenderBuffer, rtti::Interface, "RenderBuffer")
 
 RenderBuffer::RenderBuffer() noexcept
 {

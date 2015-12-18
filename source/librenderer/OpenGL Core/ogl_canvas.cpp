@@ -34,44 +34,16 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_VERTEX_COMPONENT_H_
-#define _H_VERTEX_COMPONENT_H_
-
-#include <ray/render_types.h>
+#include "ogl_canvas.h"
 
 _NAME_BEGIN
 
-class EXPORT VertexComponent final
+OGLCanvas::OGLCanvas() noexcept
 {
-public:
-	VertexComponent() noexcept;
-	VertexComponent(VertexFormat format, std::uint8_t attrib, bool normalize = false) noexcept;
-	~VertexComponent() noexcept;
+}
 
-	void setVertexAttrib(std::uint8_t attrib) noexcept;
-	std::uint8_t getVertexAttrib() const noexcept;
-
-	void setVertexFormat(VertexFormat format) noexcept;
-	VertexFormat getVertexFormat() const noexcept;
-
-	void setNormalize(bool normalize) noexcept;
-	bool getNormalize() const noexcept;
-
-	std::uint8_t getVertexCount() const noexcept;
-	std::uint8_t getVertexSize() const noexcept;
-
-	static std::uint8_t getVertexCount(VertexFormat) noexcept;
-	static std::uint8_t getVertexSize(VertexFormat) noexcept;
-
-private:
-	bool _normalize;
-
-	std::uint8_t _vertexCount;
-	std::uint8_t _vertexSize;
-	std::uint8_t _attrib;
-	VertexFormat _format;
-};
+OGLCanvas::~OGLCanvas() noexcept
+{
+}
 
 _NAME_END
-
-#endif

@@ -41,11 +41,11 @@
 
 _NAME_BEGIN
 
-class WGLCanvas final : public RenderWindow
+class WGLCanvas
 {
 public:
 	WGLCanvas() noexcept;
-	WGLCanvas(WindHandle) except;
+	WGLCanvas(WindHandle hwnd) except;
 	~WGLCanvas() noexcept;
 
 	void open(WindHandle hwnd) except;
@@ -62,7 +62,6 @@ public:
 	WindHandle getWindHandle() const noexcept;
 
 private:
-
 	static bool initWGLExtensions(HDC hdc) except;
 	static void initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept;
 

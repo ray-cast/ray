@@ -37,17 +37,29 @@
 #ifndef _H_OGL_CANVAS_H_
 #define _H_OGL_CANVAS_H_
 
-#include <ray/platform.h>
-
 #if defined(_BUILD_OPENGL)
 #	if defined(_BUILD_PLATFORM_WINDOWS)
 #		include "wgl_canvas.h"
-#		define OGLCanvas WGLCanvas
+#		define ToplevelCanvas WGLCanvas
 #	elif defined(_BUILD_PLATFORM_LINUX)
 #		include "x11_canvas.h"
-#		define OGLCanvas XGLCanvas
+#		define ToplevelCanvas XGLCanvas
 #	elif defined(_BUILD_PLATFORM_APPLE)
 #	endif
 #endif
+
+_NAME_BEGIN
+
+class OGLCanvas final : public ToplevelCanvas
+{
+public:
+	OGLCanvas() noexcept;
+	~OGLCanvas() noexcept;
+private:
+	OGLCanvas(const OGLCanvas&) noexcept = delete;
+	OGLCanvas& operator=(const OGLCanvas&) noexcept = delete;
+};
+
+_NAME_END
 
 #endif

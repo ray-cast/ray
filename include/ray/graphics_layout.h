@@ -37,10 +37,40 @@
 #ifndef _H_GRAPHICS_LAYOUT_H_
 #define _H_GRAPHICS_LAYOUT_H_
 
-#include <ray/vertex_component.h>
 #include <ray/graphics_child.h>
 
 _NAME_BEGIN
+
+class EXPORT VertexComponent final
+{
+public:
+	VertexComponent() noexcept;
+	VertexComponent(VertexFormat format, std::uint8_t attrib, bool normalize = false) noexcept;
+	~VertexComponent() noexcept;
+
+	void setVertexAttrib(std::uint8_t attrib) noexcept;
+	std::uint8_t getVertexAttrib() const noexcept;
+
+	void setVertexFormat(VertexFormat format) noexcept;
+	VertexFormat getVertexFormat() const noexcept;
+
+	void setNormalize(bool normalize) noexcept;
+	bool getNormalize() const noexcept;
+
+	std::uint8_t getVertexCount() const noexcept;
+	std::uint8_t getVertexSize() const noexcept;
+
+	static std::uint8_t getVertexCount(VertexFormat) noexcept;
+	static std::uint8_t getVertexSize(VertexFormat) noexcept;
+
+private:
+	bool _normalize;
+
+	std::uint8_t _vertexCount;
+	std::uint8_t _vertexSize;
+	std::uint8_t _attrib;
+	VertexFormat _format;
+};
 
 class EXPORT GraphicsLayoutDesc final
 {

@@ -76,6 +76,19 @@ private:
 	GLuint _bindingProgram;
 };
 
+class OGLShaderAttribute final : public ShaderAttribute
+{
+public:
+	OGLShaderAttribute() noexcept;
+	~OGLShaderAttribute() noexcept;
+
+	void setLocation(GLint location) noexcept;
+	GLint getLocation() const noexcept;
+
+private:
+	GLint _location;
+};
+
 class OGLShaderUniform final : public ShaderUniform
 {
 public:

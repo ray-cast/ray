@@ -201,7 +201,7 @@ EGL2Canvas::setActive(bool active) except
 		}
 		else
 		{
-			if (!eglMakeCurrent(EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT))
+			if (!eglMakeCurrent(_display, _surface, _surface, EGL_NO_CONTEXT))
 				throw failure(__TEXT("eglMakeCurrent() fail"));
 		}
 

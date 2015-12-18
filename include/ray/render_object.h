@@ -51,8 +51,9 @@ public:
 	virtual void onRenderObject(const Camera& camera) noexcept = 0;
 };
 
-class EXPORT RenderObject : public std::enable_shared_from_this<RenderObject>
+class EXPORT RenderObject : public rtti::Interface
 {
+	__DeclareSubInterface(RenderObject, rtti::Interface)
 public:
 	RenderObject() noexcept;
 	virtual ~RenderObject() noexcept;

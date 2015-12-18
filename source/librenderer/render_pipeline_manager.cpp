@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2014.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -35,91 +35,112 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_pipeline_manager.h>
-#include <ray/render_post_process.h>
+#include <ray/render_pipeline.h>
+#include <ray/render_scene.h>
+#include <ray/graphics_context.h>
+#include <ray/deferred_render_pipeline.h>
 
 _NAME_BEGIN
 
-void 
-DefaultRenderPipelineManager::open() noexcept
+RenderPipelineManager::RenderPipelineManager() noexcept
 {
 }
 
-void
-DefaultRenderPipelineManager::close() noexcept
+RenderPipelineManager::~RenderPipelineManager() noexcept
 {
-}
-
-void
-DefaultRenderPipelineManager::addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept
-{
-	assert(object);
-	assert(queue == RenderQueue::RQ_OPAQUE || queue == RenderQueue::RQ_TRANSPARENT || queue == RenderQueue::RQ_LIGHTING);
-
-	_renderQueue[queue][pass].push_back(object);
-}
-
-RenderObjects&
-DefaultRenderPipelineManager::getRenderData(RenderQueue queue, RenderPass pass) noexcept
-{
-	assert(queue == RenderQueue::RQ_OPAQUE || queue == RenderQueue::RQ_TRANSPARENT || queue == RenderQueue::RQ_LIGHTING);
-	return _renderQueue[queue][pass];
 }
 
 void 
-DefaultRenderPipelineManager::assginVisiable(CameraPtr camera) noexcept
+RenderPipelineManager::open(RenderPipelinePtr pipeline) except
 {
-	assert(camera);
+	_renderPipeline = pipeline;
 
-	_renderQueue[RenderQueue::RQ_OPAQUE][RenderPass::RP_OPAQUES].clear();
-	_renderQueue[RenderQueue::RQ_OPAQUE][RenderPass::RP_SPECIFIC].clear();
-	_renderQueue[RenderQueue::RQ_TRANSPARENT][RenderPass::RP_TRANSPARENT].clear();
-	_renderQueue[RenderQueue::RQ_TRANSPARENT][RenderPass::RP_SPECIFIC].clear();
-	_renderQueue[RenderQueue::RQ_LIGHTING][RenderPass::RP_LIGHTS].clear();
+	_deferredLighting = std::make_shared<DeferredRenderPipeline>();
+	_deferredLighting->_setRenderPipeline(_renderPipeline);
+	_deferredLighting->setActive(true);
+}
 
-	_visiable.clear();
-
-	auto scene = camera->getRenderScene();
-	scene->computVisiable(camera->getViewProject(), _visiable);
-
-	for (auto& it : _visiable.iter())
+void 
+RenderPipelineManager::close() noexcept
+{
+	if (_deferredLighting)
 	{
-		if (CameraOrder::CO_SHADOW == camera->getCameraOrder())
-		{
-			if (!it.getOcclusionCullNode()->getCastShadow())
-				return;
-		}
-
-		auto material = it.getOcclusionCullNode()->getMaterial();
-		if (material)
-		{
-			auto& techiniques = material->getTechs();
-			for (auto& technique : techiniques)
-			{
-				auto queue = technique->getRenderQueue();
-				for (auto& pass : technique->getPassList())
-				{
-					auto listener = it.getOcclusionCullNode()->getOwnerListener();
-					if (listener)
-						listener->onWillRenderObject(*camera);
-
-					this->addRenderData(queue, pass->getRenderPass(), it.getOcclusionCullNode());
-				}
-			}
-		}
+		_deferredLighting.reset();
+		_deferredLighting = nullptr;
 	}
 
-	_visiable.clear();
-
-	scene->computVisiableLight(camera->getViewProject(), _visiable);
-
-	for (auto& it : _visiable.iter())
+	if (_renderPipeline)
 	{
-		auto listener = it.getOcclusionCullNode()->getOwnerListener();
-		if (listener)
-			listener->onWillRenderObject(*camera);
-
-		this->addRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS, it.getOcclusionCullNode());
+		_renderPipeline.reset();
+		_renderPipeline = nullptr;
 	}
+}
+
+void
+RenderPipelineManager::setRenderPipeline(RenderPipelinePtr pipeline) noexcept
+{
+	if (_renderPipeline != pipeline)
+	{
+		_deferredLighting->setActive(false);
+		_deferredLighting->_setRenderPipeline(pipeline);
+		_deferredLighting->setActive(true);
+
+		_renderPipeline = pipeline;
+	}
+}
+
+RenderPipelinePtr 
+RenderPipelineManager::getRenderPipeline() noexcept
+{
+	return _renderPipeline;
+}
+
+void
+RenderPipelineManager::renderBegin() noexcept
+{
+	if (_renderPipeline)
+		_renderPipeline->renderBegin();
+}
+
+void 
+RenderPipelineManager::render(const RenderScene& scene) noexcept
+{
+	if (!_renderPipeline)
+		return;
+
+	auto& cameras = scene.getCameraList();
+	for (auto& camera : cameras)
+	{
+		auto context = camera->getGraphicsContext();
+		if (!context)
+			context = _renderPipeline->getDefaultGraphicsContext();
+
+		context->renderBegin();
+
+		_renderPipeline->setCamera(camera);
+
+		_deferredLighting->onRenderPre(*_renderPipeline);
+
+		RenderListener* renderListener = camera->getOwnerListener();
+		if (renderListener)
+			renderListener->onWillRenderObject(*camera);
+
+		_deferredLighting->onRenderPipeline(*_renderPipeline);
+
+		if (renderListener)
+			renderListener->onRenderObject(*camera);
+
+		_deferredLighting->onRenderPost(*_renderPipeline);
+
+		context->renderEnd();
+	}
+}
+
+void 
+RenderPipelineManager::renderEnd() noexcept
+{
+	if (_renderPipeline)
+		_renderPipeline->renderEnd();
 }
 
 _NAME_END

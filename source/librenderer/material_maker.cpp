@@ -35,6 +35,8 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/material_maker.h>
+#include <ray/graphics_state.h>
+#include <ray/shader.h>
 #include <ray/render_system.h>
 #include <ray/ioserver.h>
 #include <ray/resource.h>
@@ -53,10 +55,10 @@ MaterialMaker::~MaterialMaker() noexcept
 {
 }
 
-RenderStatePtr
+GraphicsStatePtr
 MaterialMaker::instanceState(iarchive& reader) except
 {
-	auto state = RenderSystem::instance()->createRenderState();
+	auto state = RenderSystem::instance()->createGraphicsState();
 	return state;
 }
 
@@ -124,7 +126,7 @@ MaterialMaker::instancePass(iarchive& reader) except
 	if (reader.setToFirstChild())
 	{
 		ShaderObjectPtr shaderObject = RenderSystem::instance()->createShaderObject();
-		RenderStatePtr state = RenderSystem::instance()->createRenderState();
+		GraphicsStatePtr state = RenderSystem::instance()->createGraphicsState();
 
 		RenderDepthState depthState;
 		RenderRasterState rasterState;
@@ -239,7 +241,7 @@ MaterialMaker::instancePass(iarchive& reader) except
 		state->setRasterState(rasterState);
 		state->setStencilState(stencilState);
 
-		pass->setRenderState(state);
+		pass->setGraphicsState(state);
 		pass->setShaderObject(shaderObject);
 	}
 

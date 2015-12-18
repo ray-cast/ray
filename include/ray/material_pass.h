@@ -72,8 +72,8 @@ public:
 	const MaterialParams& getParameters() const noexcept;
 	MaterialParamPtr getParameter(const std::string& name) const noexcept;
 
-	void setRenderState(RenderStatePtr state) noexcept;
-	RenderStatePtr getRenderState() noexcept;
+	void setGraphicsState(GraphicsStatePtr state) noexcept;
+	GraphicsStatePtr getGraphicsState() noexcept;
 
 	void setShaderObject(ShaderObjectPtr shader) noexcept;
 	ShaderObjectPtr getShaderObject() noexcept;
@@ -88,7 +88,7 @@ private:
 	MaterialParams _parameters;
 
 	ShaderObjectPtr _shaderObject;
-	RenderStatePtr _renderState;
+	GraphicsStatePtr _graphicsState;
 };
 
 _NAME_END

@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(EGL2Sampler, SamplerObject, "EGL2Sampler")
+__ImplementSubClass(EGL2Sampler, GraphicsSampler, "EGL2Sampler")
 
 EGL2Sampler::EGL2Sampler() noexcept
 {
@@ -50,7 +50,7 @@ EGL2Sampler::~EGL2Sampler() noexcept
 }
 
 bool
-EGL2Sampler::setup(const SamplerObjectDesc& desc) except
+EGL2Sampler::setup(const GraphicsSamplerDesc& desc) except
 {
 	_desc = desc;
 	return true;
@@ -62,7 +62,7 @@ EGL2Sampler::close() noexcept
 }
 
 void
-EGL2Sampler::getSamplerObjectDesc(SamplerObjectDesc& desc) const noexcept
+EGL2Sampler::getGraphicsSamplerDesc(GraphicsSamplerDesc& desc) const noexcept
 {
 	desc = _desc;
 }

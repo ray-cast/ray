@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,34 +34,16 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_WINDOW_H_
-#define _H_RENDER_WINDOW_H_
-
-#include <ray/render_types.h>
+#include <ray/render_data_manager_base.h>
 
 _NAME_BEGIN
 
-class EXPORT RenderWindow : public rtti::Interface
+RenderDataManager::RenderDataManager() noexcept
 {
-	__DeclareSubInterface(RenderWindow, rtti::Interface)		
-public:
-	RenderWindow() noexcept;
-	virtual ~RenderWindow() noexcept;
+}
 
-	virtual void open(WindHandle hwnd) except = 0;
-	virtual void close() noexcept = 0;
-
-	virtual void setActive(bool active) except = 0;
-	virtual bool getActive() const noexcept = 0;
-
-	virtual void setSwapInterval(SwapInterval interval) noexcept = 0;
-	virtual SwapInterval getSwapInterval() const noexcept = 0;
-
-	virtual WindHandle getWindHandle() const noexcept = 0;
-
-	virtual void present() noexcept = 0;
-};
+RenderDataManager::~RenderDataManager() noexcept
+{
+}
 
 _NAME_END
-
-#endif

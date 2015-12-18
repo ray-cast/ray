@@ -34,53 +34,53 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "ogl_renderer.h"
-#include "ogl_state.h"
-#include "ogl_shader.h"
-#include "ogl_texture.h"
-#include "ogl_layout.h"
-#include "ogl_vbo.h"
-#include "ogl_ibo.h"
-#include "ogl_dibo.h"
-#include "ogl_commandlist.h"
-#include "ogl_sampler.h"
+#include "egl3_device_context.h"
+#include "egl3_state.h"
+#include "egl3_shader.h"
+#include "egl3_texture.h"
+#include "egl3_layout.h"
+#include "egl3_vbo.h"
+#include "egl3_ibo.h"
+#include "egl3_dibo.h"
+#include "egl3_sampler.h"
 
 _NAME_BEGIN
 
-OGLRenderer::OGLRenderer() noexcept
+__ImplementSubClass(EGL3DeviceContext, GraphicsContext, "EGL3DeviceContext")
+
+EGL3DeviceContext::EGL3DeviceContext() noexcept
 	: _initOpenGL(false)
 	, _maxTextureUnits(32)
 	, _maxViewports(4)
 	, _clearColor(0.0, 0.0, 0.0)
 	, _clearDepth(0.0)
 	, _clearStencil(0xFFFFFFFF)
+	, _viewport(0, 0, 0, 0)
 	, _state(GL_NONE)
 	, _renderTexture(GL_NONE)
 	, _enableWireframe(false)
-	, _needUpdateLayout(false)
-	, _needUpdateVbo(false)
-	, _needUpdateIbo(false)
 {
-	_viewport.resize(_maxViewports);
-	_stateCaptured = std::make_shared<OGLRenderState>();
 }
 
-OGLRenderer::~OGLRenderer() noexcept
+EGL3DeviceContext::~EGL3DeviceContext() noexcept
 {
 	this->close();
 }
 
 bool
-OGLRenderer::open(WindHandle window) except
+EGL3DeviceContext::open(WindHandle window) except
 {
 	if (!_initOpenGL)
 	{
-		_glcontext = this->createRenderWindow();
+		_glcontext = std::make_shared<EGL3Canvas>();
 		_glcontext->open(window);
+		_glcontext->setActive(true);
+
+		_textureUnits.resize(_maxTextureUnits);
+		_stateCaptured = std::make_shared<EGL3GraphicsState>();
 
 		this->initDebugControl();
 		this->initStateSystem();
-		this->initCommandList();
 
 		_initOpenGL = true;
 	}
@@ -89,8 +89,17 @@ OGLRenderer::open(WindHandle window) except
 }
 
 void
-OGLRenderer::close() noexcept
+EGL3DeviceContext::close() noexcept
 {
+	if (!_initOpenGL)
+		return;
+
+	if (_renderBuffer)
+	{
+		_renderBuffer.reset();
+		_renderBuffer = nullptr;
+	}
+
 	if (_shaderObject)
 	{
 		_shaderObject.reset();
@@ -123,133 +132,107 @@ OGLRenderer::close() noexcept
 }
 
 void
-OGLRenderer::renderBegin() noexcept
-{
-	this->setShaderObject(nullptr);
-	this->setRenderTexture(nullptr);
-}
-
-void
-OGLRenderer::renderEnd() noexcept
+EGL3DeviceContext::renderBegin() noexcept
 {
 	assert(_glcontext);
-	_glcontext->present();
+	_glcontext->setActive(true);
 }
 
 void
-OGLRenderer::setViewport(const Viewport& view, std::size_t i) noexcept
+EGL3DeviceContext::renderEnd() noexcept
 {
-	if (_viewport[i] != view)
+	assert(_glcontext);
+	_glcontext->setActive(false);
+}
+
+void
+EGL3DeviceContext::setViewport(const Viewport& view, std::size_t i) noexcept
+{
+	if (_viewport.left != view.left ||
+		_viewport.top != view.top ||
+		_viewport.width != view.width ||
+		_viewport.height != view.height)
 	{
-		glViewportIndexedf(i, view.left, view.top, view.width, view.height);
-		_viewport[i] = view;
+		GL_CHECK(glViewport(view.left, view.top, view.width, view.height));
+		_viewport = view;
 	}
 }
 
 const Viewport&
-OGLRenderer::getViewport(std::size_t i) const noexcept
+EGL3DeviceContext::getViewport(std::size_t i) const noexcept
 {
-	return _viewport[i];
+	return _viewport;
 }
 
 void
-OGLRenderer::setWireframeMode(bool enable) noexcept
+EGL3DeviceContext::setWireframeMode(bool enable) noexcept
 {
 	_enableWireframe = enable;
 }
 
 bool
-OGLRenderer::getWireframeMode() const noexcept
+EGL3DeviceContext::getWireframeMode() const noexcept
 {
 	return _enableWireframe;
 }
 
-RenderWindowPtr
-OGLRenderer::createRenderWindow() const noexcept
-{
-	return std::make_shared<OGLCanvas>();
-}
-
 void
-OGLRenderer::setRenderWindow(RenderWindowPtr glcontext) except
-{
-	if (_glcontext != glcontext)
-	{
-		if (_glcontext)
-			_glcontext->setActive(false);
-
-		_glcontext = glcontext;
-
-		if (_glcontext)
-			_glcontext->setActive(true);
-	}
-}
-
-RenderWindowPtr
-OGLRenderer::getRenderWindow() const noexcept
-{
-	return _glcontext;
-}
-
-void
-OGLRenderer::setSwapInterval(SwapInterval interval) except
+EGL3DeviceContext::setSwapInterval(SwapInterval interval) noexcept
 {
 	assert(_glcontext);
 	_glcontext->setSwapInterval(interval);
 }
 
 SwapInterval
-OGLRenderer::getSwapInterval() const noexcept
+EGL3DeviceContext::getSwapInterval() const noexcept
 {
 	assert(_glcontext);
 	return _glcontext->getSwapInterval();
 }
 
-RenderStatePtr
-OGLRenderer::createRenderState() noexcept
-{
-	return std::make_shared<OGLRenderState>();
-}
-
 void
-OGLRenderer::setRenderState(RenderStatePtr state) noexcept
+EGL3DeviceContext::setGraphicsState(GraphicsStatePtr state) noexcept
 {
-	assert(state);
+	if (state)
+	{
+		auto oglState = state->downcast<EGL3GraphicsState>();
+		if (oglState)
+		{
+			oglState->apply(*_stateCaptured);
 
-	state->apply(*_stateCaptured);
+			_stateCaptured->setBlendState(oglState->getBlendState());
+			_stateCaptured->setDepthState(oglState->getDepthState());
+			_stateCaptured->setRasterState(oglState->getRasterState());
+			_stateCaptured->setStencilState(oglState->getStencilState());
 
-	_stateCaptured->setBlendState(state->getBlendState());
-	_stateCaptured->setDepthState(state->getDepthState());
-	_stateCaptured->setRasterState(state->getRasterState());
-	_stateCaptured->setStencilState(state->getStencilState());
-
-	_state = state;
+			_state = oglState;
+		}
+		else
+		{
+			assert(false);
+		}
+	}
+	else
+	{
+		assert(false);
+	}
 }
 
-RenderStatePtr
-OGLRenderer::getRenderState() const noexcept
+GraphicsStatePtr
+EGL3DeviceContext::getGraphicsState() const noexcept
 {
 	return _state;
 }
 
-GraphicsLayoutPtr
-OGLRenderer::createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept
-{
-	auto layout = std::make_shared<OGLGraphicsLayout>();
-	if (layout->open(desc))
-		return layout;
-	return nullptr;
-}
-
 void
-OGLRenderer::setGraphicsLayout(GraphicsLayoutPtr layout) noexcept
+EGL3DeviceContext::setGraphicsLayout(GraphicsLayoutPtr layout) noexcept
 {
 	if (_inputLayout != layout)
 	{
 		if (layout)
 		{
-			if (layout->isInstanceOf<OGLGraphicsLayout>())
-				_inputLayout = layout->downcast<OGLGraphicsLayout>();
+			if (layout->isInstanceOf<EGL3GraphicsLayout>())
+				_inputLayout = layout->downcast<EGL3GraphicsLayout>();
 			else
 				_inputLayout = nullptr;
 		}
@@ -263,35 +246,27 @@ OGLRenderer::setGraphicsLayout(GraphicsLayoutPtr layout) noexcept
 }
 
 GraphicsLayoutPtr
-OGLRenderer::getGraphicsLayout() const noexcept
+EGL3DeviceContext::getGraphicsLayout() const noexcept
 {
 	return _inputLayout;
 }
 
-GraphicsDataPtr
-OGLRenderer::createGraphicsData(const GraphicsDataDesc& desc) noexcept
-{
-	auto type = desc.getType();
-
-	if (type == GraphicsStream::VBO)
-		return std::make_shared<OGLVertexBuffer>(desc);
-	else if (type == GraphicsStream::IBO)
-		return std::make_shared<OGLIndexBuffer>(desc);
-	else if (type == GraphicsStream::DIBO)
-		return std::make_shared<OGLDrawIndirectBuffer>(desc);
-
-	return nullptr;
-}
-
 bool
-OGLRenderer::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
+EGL3DeviceContext::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
 {
 	if (data)
 	{
 		auto max = std::numeric_limits<GLsizeiptr>::max();
 		if (cnt < max)
 		{
-			auto _data = data->cast<OGLGraphicsData>();
+			if (data->isInstanceOf<EGL3VertexBuffer>())
+				this->setVertexBufferData(data);
+			else if (data->isInstanceOf<EGL3IndexBuffer>())
+				this->setIndexBufferData(data);
+			else
+				return false;
+
+			auto _data = data->cast<EGL3GraphicsData>();
 			_data->resize((const char*)str, cnt);
 			return true;
 		}
@@ -301,11 +276,18 @@ OGLRenderer::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noe
 }
 
 void*
-OGLRenderer::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
+EGL3DeviceContext::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
 {
 	if (data)
 	{
-		auto _data = data->cast<OGLGraphicsData>();
+		if (data->isInstanceOf<EGL3VertexBuffer>())
+			this->setVertexBufferData(data);
+		else if (data->isInstanceOf<EGL3IndexBuffer>())
+			this->setIndexBufferData(data);
+		else
+			return nullptr;
+
+		auto _data = data->cast<EGL3GraphicsData>();
 		return _data->map(access);
 	}
 
@@ -313,24 +295,31 @@ OGLRenderer::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
 }
 
 void
-OGLRenderer::unmapBuffer(GraphicsDataPtr& data) noexcept
+EGL3DeviceContext::unmapBuffer(GraphicsDataPtr& data) noexcept
 {
 	if (data)
 	{
-		auto _data = data->cast<OGLGraphicsData>();
+		if (data->isInstanceOf<EGL3VertexBuffer>())
+			this->setVertexBufferData(data);
+		else if (data->isInstanceOf<EGL3IndexBuffer>())
+			this->setIndexBufferData(data);
+		else
+			return;
+
+		auto _data = data->cast<EGL3GraphicsData>();
 		_data->unmap();
 	}
 }
 
 void
-OGLRenderer::setIndexBufferData(GraphicsDataPtr data) noexcept
+EGL3DeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
 {
 	if (_ibo != data)
 	{
 		if (data)
 		{
-			if (data->isInstanceOf<OGLIndexBuffer>())
-				_ibo = data->downcast<OGLIndexBuffer>();
+			if (data->isInstanceOf<EGL3IndexBuffer>())
+				_ibo = data->downcast<EGL3IndexBuffer>();
 			else
 				_ibo = nullptr;
 		}
@@ -344,20 +333,20 @@ OGLRenderer::setIndexBufferData(GraphicsDataPtr data) noexcept
 }
 
 GraphicsDataPtr
-OGLRenderer::getIndexBufferData() const noexcept
+EGL3DeviceContext::getIndexBufferData() const noexcept
 {
 	return _ibo;
 }
 
 void
-OGLRenderer::setVertexBufferData(GraphicsDataPtr data) noexcept
+EGL3DeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 {
 	if (_vbo != data)
 	{
 		if (data)
 		{
-			if (data->isInstanceOf<OGLVertexBuffer>())
-				_vbo = data->downcast<OGLVertexBuffer>();
+			if (data->isInstanceOf<EGL3VertexBuffer>())
+				_vbo = data->downcast<EGL3VertexBuffer>();
 			else
 				_vbo = nullptr;
 		}
@@ -371,13 +360,13 @@ OGLRenderer::setVertexBufferData(GraphicsDataPtr data) noexcept
 }
 
 GraphicsDataPtr
-OGLRenderer::getVertexBufferData() const noexcept
+EGL3DeviceContext::getVertexBufferData() const noexcept
 {
 	return _vbo;
 }
 
 void
-OGLRenderer::drawRenderBuffer(const RenderIndirect& renderable) noexcept
+EGL3DeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 {
 	if (!_stateCaptured)
 		return;
@@ -431,98 +420,75 @@ OGLRenderer::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 
 	if (_ibo)
 	{
-		GLenum drawType = OGLTypes::asOGLVertexType(primitiveType);
+		GLenum drawType = EGL3Types::asEGL3VertexType(primitiveType);
 		GLenum indexType = _inputLayout->getIndexType();
 		GLsizei numInstance = std::max(1, renderable.numInstances);
 		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_inputLayout->getIndexSize() * renderable.startIndice);
-		glDrawElementsInstancedBaseVertexBaseInstance(drawType, renderable.numIndices, indexType, offsetIndices, numInstance, renderable.startVertice, renderable.startInstances);
+		GL_CHECK(glDrawElementsInstanced(drawType, renderable.numIndices, indexType, offsetIndices, numInstance));
 	}
 	else
 	{
 		GLsizei numInstance = std::max(1, renderable.numInstances);
-		GLenum drawType = OGLTypes::asOGLVertexType(primitiveType);
-		glDrawArraysInstancedBaseInstance(drawType, renderable.startVertice, renderable.numVertices, numInstance, renderable.startInstances);
+		GLenum drawType = EGL3Types::asEGL3VertexType(primitiveType);
+		GL_CHECK(glDrawArraysInstanced(drawType, renderable.startVertice, renderable.numVertices, numInstance));
 	}
 }
 
 void
-OGLRenderer::drawRenderBuffer(const RenderIndirects& renderable) noexcept
+EGL3DeviceContext::drawRenderBuffer(const RenderIndirects& renderable) noexcept
 {
 	assert(false);
 }
 
-TexturePtr
-OGLRenderer::createTexture() noexcept
-{
-	return std::make_shared<OGLTexture>();
-}
-
 void
-OGLRenderer::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
+EGL3DeviceContext::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
 {
-	auto gltexture = std::dynamic_pointer_cast<OGLTexture>(texture);
-	if (gltexture)
+	if (texture)
 	{
-		GLuint textureID = gltexture->getInstanceID();
-		GLenum textureDim = OGLTypes::asOGLTarget(gltexture->getTexDim());
+		GLuint textureID = std::dynamic_pointer_cast<EGL3Texture>(texture)->getInstanceID();
+		GLenum textureDim = EGL3Types::asEGL3Target(texture->getTexDim());
 
-		glBindTextureUnit(slot, textureID);
+		GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+		GL_CHECK(glBindTexture(textureDim, textureID));
 	}
 	else
 	{
-		glBindTextureUnit(slot, 0);
+		GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+		GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
 	}
 }
 
-SamplerObjectPtr
-OGLRenderer::createSamplerObject() noexcept
-{
-	return std::make_shared<OGLSampler>();
-}
-
 void
-OGLRenderer::setSamplerObject(SamplerObjectPtr sampler, std::uint32_t slot) noexcept
+EGL3DeviceContext::setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept
 {
-	auto glsampler = sampler->downcast<OGLSampler>();
+	auto glsampler = sampler->downcast<EGL3Sampler>();
 	if (glsampler)
 	{
 		GLuint samplerID = glsampler->getInstanceID();
-		glBindSampler(slot, samplerID);
+		GL_CHECK(glBindSampler(slot, samplerID));
 	}
 	else
 	{
-		glBindSampler(slot, 0);
+		GL_CHECK(glBindSampler(slot, 0));
 	}
 }
 
-RenderTexturePtr
-OGLRenderer::createRenderTexture() noexcept
-{
-	return std::make_shared<OGLRenderTexture>();
-}
-
-MultiRenderTexturePtr
-OGLRenderer::createMultiRenderTexture() noexcept
-{
-	return std::make_shared<OGLMultiRenderTexture>();
-}
-
 void
-OGLRenderer::setRenderTexture(RenderTexturePtr target) noexcept
+EGL3DeviceContext::setRenderTexture(RenderTexturePtr target) noexcept
 {
 	if (_renderTexture != target)
 	{
 		if (target)
 		{
-			auto framebuffer = std::dynamic_pointer_cast<OGLRenderTexture>(target)->getInstanceID();
+			auto framebuffer = std::dynamic_pointer_cast<EGL3RenderTexture>(target)->getInstanceID();
 
-			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+			GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, framebuffer));
 
-			this->setViewport(Viewport(0, 0, target->getWidth(), target->getHeight()));
+			this->setViewport(Viewport(0, 0, target->getWidth(), target->getHeight()), 0);
 		}
 		else
 		{
-			glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+			GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE));
 		}
 
 		_renderTexture = target;
@@ -531,14 +497,14 @@ OGLRenderer::setRenderTexture(RenderTexturePtr target) noexcept
 }
 
 void
-OGLRenderer::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
+EGL3DeviceContext::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
 {
 	assert(target);
 
-	auto framebuffer = std::dynamic_pointer_cast<OGLMultiRenderTexture>(target)->getInstanceID();
+	auto framebuffer = std::dynamic_pointer_cast<EGL3MultiRenderTexture>(target)->getInstanceID();
 	if (_multiRenderTexture != target)
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+		GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, framebuffer));
 
 		auto& renderTextures = target->getRenderTextures();
 		std::size_t size = renderTextures.size();
@@ -554,14 +520,14 @@ OGLRenderer::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
 }
 
 void
-OGLRenderer::setRenderTextureLayer(RenderTexturePtr renderTexture, std::int32_t layer) noexcept
+EGL3DeviceContext::setRenderTextureLayer(RenderTexturePtr renderTexture, std::int32_t layer) noexcept
 {
 	assert(renderTexture);
 
 	if (renderTexture->getTexDim() == TextureDim::DIM_2D_ARRAY ||
 		renderTexture->getTexDim() == TextureDim::DIM_CUBE)
 	{
-		auto texture = std::dynamic_pointer_cast<OGLTexture>(renderTexture->getResolveTexture());
+		auto texture = std::dynamic_pointer_cast<EGL3Texture>(renderTexture->getResolveTexture());
 		auto textureID = texture->getInstanceID();
 
 		GLenum attachment = GL_COLOR_ATTACHMENT0;
@@ -581,48 +547,50 @@ OGLRenderer::setRenderTextureLayer(RenderTexturePtr renderTexture, std::int32_t 
 		}
 
 		if (renderTexture->getTexDim() == TextureDim::DIM_2D_ARRAY)
-			glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, 0, layer);
+			GL_CHECK(glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, 0, layer));
 		else if (renderTexture->getTexDim() == TextureDim::DIM_CUBE)
-			glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer, textureID, 0);
+			GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer, textureID, 0));
+		else
+			assert(false);
 	}
 }
 
 void
-OGLRenderer::blitRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderTexturePtr dest, const Viewport& v2) noexcept
+EGL3DeviceContext::blitRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderTexturePtr dest, const Viewport& v2) noexcept
 {
 	assert(src);
 
-	auto srcTarget = std::dynamic_pointer_cast<OGLRenderTexture>(src)->getInstanceID();
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, srcTarget);
+	auto srcTarget = std::dynamic_pointer_cast<EGL3RenderTexture>(src)->getInstanceID();
+	GL_CHECK(glBindFramebuffer(GL_READ_FRAMEBUFFER, srcTarget));
 
 	if (dest)
 	{
-		auto destTarget = std::dynamic_pointer_cast<OGLRenderTexture>(dest)->getInstanceID();
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destTarget);
+		auto destTarget = std::dynamic_pointer_cast<EGL3RenderTexture>(dest)->getInstanceID();
+		GL_CHECK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destTarget));
 	}
 	else
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		GL_CHECK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
 
-	glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	GL_CHECK(glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST));
 
 	_renderTexture = GL_NONE;
 	_multiRenderTexture = GL_NONE;
 }
 
 RenderTexturePtr
-OGLRenderer::getRenderTexture() const noexcept
+EGL3DeviceContext::getRenderTexture() const noexcept
 {
 	return _renderTexture;
 }
 
 MultiRenderTexturePtr
-OGLRenderer::getMultiRenderTexture() const noexcept
+EGL3DeviceContext::getMultiRenderTexture() const noexcept
 {
 	return _multiRenderTexture;
 }
 
 void
-OGLRenderer::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
+EGL3DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
 {
 	GLbitfield mode = 0;
 
@@ -667,7 +635,7 @@ OGLRenderer::clearRenderTexture(ClearFlags flags, const Vector4& color, float de
 			glDepthMask(GL_TRUE);
 		}
 
-		glClear(mode);
+		GL_CHECK(glClear(mode));
 
 		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
 		{
@@ -677,7 +645,7 @@ OGLRenderer::clearRenderTexture(ClearFlags flags, const Vector4& color, float de
 }
 
 void
-OGLRenderer::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+EGL3DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
 	if (flags & ClearFlags::CLEAR_DEPTH)
 	{
@@ -688,7 +656,7 @@ OGLRenderer::clearRenderTexture(ClearFlags flags, const Vector4& color, float de
 		}
 
 		GLfloat f = depth;
-		glClearBufferfv(GL_DEPTH, 0, &f);
+		GL_CHECK(glClearBufferfv(GL_DEPTH, 0, &f));
 
 		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
 		{
@@ -699,17 +667,17 @@ OGLRenderer::clearRenderTexture(ClearFlags flags, const Vector4& color, float de
 	if (flags & ClearFlags::CLEAR_STENCIL)
 	{
 		GLint s = stencil;
-		glClearBufferiv(GL_STENCIL, 0, &s);
+		GL_CHECK(glClearBufferiv(GL_STENCIL, 0, &s));
 	}
 
 	if (flags & ClearFlags::CLEAR_COLOR)
 	{
-		glClearBufferfv(GL_COLOR, i, color.ptr());
+		GL_CHECK(glClearBufferfv(GL_COLOR, i, color.ptr()));
 	}
 }
 
 void
-OGLRenderer::discardRenderTexture() noexcept
+EGL3DeviceContext::discardRenderTexture() noexcept
 {
 	assert(_renderTexture || _multiRenderTexture);
 
@@ -737,11 +705,11 @@ OGLRenderer::discardRenderTexture() noexcept
 }
 
 void
-OGLRenderer::readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+EGL3DeviceContext::readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
 	assert(target && w && h && data);
 
-	auto framebuffer = std::dynamic_pointer_cast<OGLRenderTexture>(target)->getInstanceID();
+	auto framebuffer = std::dynamic_pointer_cast<EGL3RenderTexture>(target)->getInstanceID();
 	if (_renderTexture != target)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -749,26 +717,14 @@ OGLRenderer::readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::
 		_multiRenderTexture = nullptr;
 	}
 
-	GLenum format = OGLTypes::asOGLFormat(pfd);
-	GLenum type = OGLTypes::asOGLType(pfd);
+	GLenum format = EGL3Types::asEGL3Format(pfd);
+	GLenum type = EGL3Types::asEGL3Type(pfd);
 
 	glReadPixels(0, 0, w, h, format, type, data);
 }
 
-ShaderPtr
-OGLRenderer::createShader() noexcept
-{
-	return std::make_shared<OGLShader>();
-}
-
-ShaderObjectPtr
-OGLRenderer::createShaderObject() noexcept
-{
-	return std::make_shared<OGLShaderObject>();
-}
-
 void
-OGLRenderer::setShaderObject(ShaderObjectPtr shader) noexcept
+EGL3DeviceContext::setShaderObject(ShaderObjectPtr shader) noexcept
 {
 	if (_shaderObject != shader)
 	{
@@ -780,56 +736,23 @@ OGLRenderer::setShaderObject(ShaderObjectPtr shader) noexcept
 		if (_shaderObject)
 			_shaderObject->setActive(true);
 	}
-
-	/*if (_shaderObject)
-	{
-		auto& uniforms = _shaderObject->getActiveUniforms();
-
-		for (auto& it : uniforms)
-		{
-			if (it->getType() == Texture)
-			{
-				auto uniform = std::dynamic_pointer_cast<OGLShaderUniform>(it);
-				auto bindingPoint = uniform->getBindingPoint();
-				auto texture = std::dynamic_pointer_cast<OGLTexture>(uniform->getTexture());
-				auto sampler = std::dynamic_pointer_cast<OGLSampler>(uniform->getSampler());
-
-				this->setTexture(texture, bindingPoint);
-
-				if (sampler)
-				{
-					GLuint samplerID = sampler->getInstanceID();
-					glBindSampler(GL_TEXTURE0 + bindingPoint, samplerID);
-				}
-			}
-		}
-	}*/
 }
 
 ShaderObjectPtr
-OGLRenderer::getShaderObject() const noexcept
+EGL3DeviceContext::getShaderObject() const noexcept
 {
 	return _shaderObject;
 }
 
-bool
-OGLRenderer::createShaderVariant(ShaderVariant& constant) noexcept
+void
+EGL3DeviceContext::present() noexcept
 {
-	return false;
+	assert(_glcontext);
+	_glcontext->present();
 }
 
 void
-OGLRenderer::destroyShaderVariant(ShaderVariant& constant) noexcept
-{
-}
-
-void
-OGLRenderer::updateShaderVariant(ShaderVariantPtr constant) noexcept
-{
-}
-
-void
-OGLRenderer::debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept
+EGL3DeviceContext::debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept
 {
 	std::cerr << "source : ";
 	switch (source)
@@ -914,7 +837,7 @@ OGLRenderer::debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severit
 }
 
 void
-OGLRenderer::initDebugControl() noexcept
+EGL3DeviceContext::initDebugControl() noexcept
 {
 #if defined(_DEBUG) && !defined(__ANDROID__)
 	// 131184 memory info
@@ -929,50 +852,33 @@ OGLRenderer::initDebugControl() noexcept
 		131204
 	};
 
-	glEnable(GL_DEBUG_OUTPUT);
+	GL_CHECK(glEnable(GL_DEBUG_OUTPUT));
 
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-
-	glDebugMessageCallback(debugCallBack, this);
+	GL_CHECK(glDebugMessageCallback(debugCallBack, this));
 	// enable all
-	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
+	GL_CHECK(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE));
 	// disable ids
-	glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 6, ids, GL_FALSE);
+	GL_CHECK(glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 6, ids, GL_FALSE));
 #endif
 }
 
 void
-OGLRenderer::initCommandList() noexcept
+EGL3DeviceContext::initStateSystem() noexcept
 {
-	initCommandListNV();
+	GL_CHECK(glEnable(GL_DEPTH_TEST));
+	GL_CHECK(glDepthMask(GL_TRUE));
+	GL_CHECK(glDepthFunc(GL_LEQUAL));
 
-	GraphicsDataDesc dibo;
-	dibo.setType(GraphicsStream::DIBO);
-	dibo.setStreamSize(sizeof(DrawElementsIndirectCommand));
-	dibo.setUsage(UsageFlags::MAP_WRITE_BIT | UsageFlags::IMMUTABLE_STORAGE);
+	GL_CHECK(glEnable(GL_CULL_FACE));
+	GL_CHECK(glCullFace(GL_BACK));
+	GL_CHECK(glFrontFace(GL_CW));
+	GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
 
-	_drawIndirectBuffer = std::make_shared<OGLDrawIndirectBuffer>();
-	_drawIndirectBuffer->open(dibo);
-	_drawIndirectBuffer->bind();
-}
+	GL_CHECK(glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP));
+	GL_CHECK(glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF));
 
-void
-OGLRenderer::initStateSystem() noexcept
-{
-	glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_TRUE);
-	glDepthFunc(GL_LEQUAL);
-
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glFrontFace(GL_CW);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF);
-
-	glBlendEquation(GL_FUNC_ADD);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	GL_CHECK(glBlendEquation(GL_FUNC_ADD));
+	GL_CHECK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 }
 
 _NAME_END

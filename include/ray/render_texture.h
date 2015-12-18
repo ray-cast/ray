@@ -37,7 +37,7 @@
 #ifndef _H_RENDER_TEXTURE_H_
 #define _H_RENDER_TEXTURE_H_
 
-#include <ray/sampler_object.h>
+#include <ray/graphics_sampler.h>
 
 _NAME_BEGIN
 

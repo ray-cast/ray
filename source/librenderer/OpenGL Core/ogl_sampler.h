@@ -41,24 +41,24 @@
 
 _NAME_BEGIN
 
-class OGLSampler final : public SamplerObject
+class OGLSampler final : public GraphicsSampler
 {
-	__DeclareSubClass(OGLSampler, SamplerObject)
+	__DeclareSubClass(OGLSampler, GraphicsSampler)
 public:
 	OGLSampler() noexcept;
 	~OGLSampler() noexcept;
 
-	bool setup(const SamplerObjectDesc& desc) except;
+	bool setup(const GraphicsSamplerDesc& desc) except;
 	void close() noexcept;
 
 	GLuint getInstanceID() noexcept;
 
-	void getSamplerObjectDesc(SamplerObjectDesc& desc) const noexcept;
+	void getGraphicsSamplerDesc(GraphicsSamplerDesc& desc) const noexcept;
 
 private:
 
 	GLuint _sampler;
-	SamplerObjectDesc _desc;
+	GraphicsSamplerDesc _desc;
 };
 
 _NAME_END

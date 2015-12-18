@@ -40,6 +40,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(RenderMesh, RenderObject, "RenderMesh")
+
 RenderMesh::RenderMesh() noexcept
 {
 }
@@ -80,14 +82,14 @@ RenderMesh::setRenderScene(RenderScenePtr scene) noexcept
 		auto renderScene = _renderScene.lock();
 		if (renderScene)
 		{
-			renderScene->removeRenderObject(this->shared_from_this());
+			renderScene->removeRenderObject(this->downcast<RenderMesh>());
 		}
 
 		_renderScene = scene;
 
 		if (scene)
 		{
-			scene->addRenderObject(this->shared_from_this());
+			scene->addRenderObject(this->downcast<RenderMesh>());
 		}
 	}
 }

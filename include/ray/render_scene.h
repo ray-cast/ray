@@ -83,8 +83,9 @@ private:
 	OcclusionCullNodes _iter;
 };
 
-class EXPORT RenderScene : public std::enable_shared_from_this<RenderScene>
+class EXPORT RenderScene : public rtti::Interface
 {
+	__DeclareSubClass(RenderScene, rtti::Interface)
 public:
 	RenderScene() noexcept;
 	virtual ~RenderScene() noexcept;

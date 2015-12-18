@@ -38,6 +38,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(RenderScene, rtti::Interface, "RenderScene")
+
 OcclusionCullNode::OcclusionCullNode() noexcept
 	: _item(nullptr)
 	, _distanceSqrt(0)

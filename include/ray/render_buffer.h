@@ -42,9 +42,9 @@
 
 _NAME_BEGIN
 
-class EXPORT RenderBuffer : public rtti::Interface
+class EXPORT RenderBuffer final : public rtti::Interface
 {
-	__DeclareSubInterface(RenderBuffer, rtti::Interface)
+	__DeclareSubClass(RenderBuffer, rtti::Interface)
 public:
 	RenderBuffer() noexcept;
 	virtual ~RenderBuffer() noexcept;

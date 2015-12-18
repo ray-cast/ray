@@ -162,9 +162,6 @@ EGL3Canvas::open(WindHandle hwnd) except
     _context = ::eglCreateContext(_display, _config, _ctxconfig.share, attribs);
     if (!_context)
 		throw failure(__TEXT("eglCreateContext() fail"));
-
-	if (!::eglMakeCurrent(_display, _surface, _surface, _context))
-		throw failure(__TEXT("eglMakeCurrent() fail"));
 }
 
 void
@@ -201,7 +198,7 @@ EGL3Canvas::setActive(bool active) except
 		}
 		else
 		{
-			if (!eglMakeCurrent(EGL_NO_DISPLAY, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT))
+			if (!eglMakeCurrent(_display, _surface, _surface, EGL_NO_CONTEXT))
 				throw failure(__TEXT("eglMakeCurrent() fail"));
 		}
 

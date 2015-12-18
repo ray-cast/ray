@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class EGL2Canvas final : public RenderWindow
+class EGL2Canvas final
 {
 public:
     EGL2Canvas() noexcept;

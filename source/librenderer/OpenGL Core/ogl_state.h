@@ -41,16 +41,17 @@
 
 _NAME_BEGIN
 
-class OGLRenderState : public RenderState
+class OGLGraphicsState : public GraphicsState
 {
+    __DeclareSubClass(OGLGraphicsState, GraphicsState)
 public:
-	OGLRenderState() noexcept;
-	~OGLRenderState() noexcept;
+	OGLGraphicsState() noexcept;
+	~OGLGraphicsState() noexcept;
 
-	virtual void apply(const RenderState& last) noexcept;
+	void apply(const GraphicsState& last) noexcept;
 private:
-	OGLRenderState(const OGLRenderState&) = delete;
-	OGLRenderState& operator=(const OGLRenderState&) = delete;
+	OGLGraphicsState(const OGLGraphicsState&) = delete;
+	OGLGraphicsState& operator=(const OGLGraphicsState&) = delete;
 };
 
 _NAME_END

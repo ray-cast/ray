@@ -4,16 +4,16 @@
 // +----------------------------------------------------------------------
 // | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
-// | * Redistribution and use of _renderDevice software in source and binary forms,
+// | * Redistribution and use of _graphicsDevice software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
 // |   conditions are met:
 // |
 // | * Redistributions of source code must retain the above
-// |   copyright notice, _renderDevice list of conditions and the
+// |   copyright notice, _graphicsDevice list of conditions and the
 // |   following disclaimer.
 // |
 // | * Redistributions in binary form must reproduce the above
-// |   copyright notice, _renderDevice list of conditions and the
+// |   copyright notice, _graphicsDevice list of conditions and the
 // |   following disclaimer in the documentation and/or other
 // |   materials provided with the distribution.
 // |

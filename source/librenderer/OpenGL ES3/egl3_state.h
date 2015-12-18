@@ -41,16 +41,17 @@
 
 _NAME_BEGIN
 
-class EGL3RenderState : public RenderState
+class EGL3GraphicsState final : public GraphicsState
 {
+    __DeclareSubClass(EGL3GraphicsState, RenderState)
 public:
-	EGL3RenderState() noexcept;
-	~EGL3RenderState() noexcept;
+	EGL3GraphicsState() noexcept;
+	~EGL3GraphicsState() noexcept;
 
-	virtual void apply(const RenderState& last) noexcept;
+	virtual void apply(const GraphicsState& last) noexcept;
 private:
-	EGL3RenderState(const EGL3RenderState&) = delete;
-	EGL3RenderState& operator=(const EGL3RenderState&) = delete;
+	EGL3GraphicsState(const EGL3GraphicsState&) = delete;
+	EGL3GraphicsState& operator=(const EGL3GraphicsState&) = delete;
 };
 
 _NAME_END

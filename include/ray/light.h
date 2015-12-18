@@ -54,6 +54,7 @@ enum LightType
 
 class EXPORT Light final : public RenderObject, public RenderListener
 {
+	__DeclareSubClass(Light, RenderObject)
 public:
 	Light() noexcept;
 	~Light() noexcept;

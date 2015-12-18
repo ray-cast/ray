@@ -35,16 +35,18 @@
 
 _NAME_BEGIN
 
-EGL2RenderState::EGL2RenderState() noexcept
+__ImplementSubClass(EGL2GraphicsState, GraphicsState, "EGL2GraphicsState")
+
+EGL2GraphicsState::EGL2GraphicsState() noexcept
 {
 }
 
-EGL2RenderState::~EGL2RenderState() noexcept
+EGL2GraphicsState::~EGL2GraphicsState() noexcept
 {
 }
 
 void 
-EGL2RenderState::apply(const RenderState& _stateCaptured) noexcept
+EGL2GraphicsState::apply(const GraphicsState& _stateCaptured) noexcept
 {
 	const auto& blendState = this->getBlendState();
 	const auto& rasterState = this->getRasterState();

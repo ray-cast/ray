@@ -34,29 +34,18 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_PIPELINE_MANAGER_BASE_H_
-#define _H_RENDER_PIPELINE_MANAGER_BASE_H_
-
-#include <ray/render_types.h>
-#include <ray/render_buffer.h>
-#include <ray/render_scene.h>
-#include <ray/render_command.h>
-#include <ray/material.h>
+#include <ray/graphics_device.h>
 
 _NAME_BEGIN
 
-class RenderPipelineManager
+__ImplementSubInterface(GraphicsDevice, rtti::Interface, "GraphicsDevice")
+
+GraphicsDevice::GraphicsDevice() noexcept
 {
-public:
-	virtual void open() noexcept = 0;
-	virtual void close() noexcept = 0;
+}
 
-	virtual void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept = 0;
-	virtual RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept = 0;
-
-	virtual void assginVisiable(CameraPtr camera) noexcept = 0;
-};
+GraphicsDevice::~GraphicsDevice() noexcept
+{
+}
 
 _NAME_END
-
-#endif

@@ -80,9 +80,9 @@ MyGuiTexture::getUsage() const noexcept
 }
 
 void
-MyGuiTexture::createManual(int _width, int _height, TextureUsage _usage, MyGUI::PixelFormat _format) except
+MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::PixelFormat format) except
 {
-	createManual(_width, _height, _usage, _format, 0);
+	createManual(width, height, usage, format, 0);
 }
 
 void 

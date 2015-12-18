@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,62 +34,36 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/sampler_object.h>
+#ifndef _H_EGL2_DEVICE_H_
+#define _H_EGL2_DEVICE_H_
+
+#include "egl2_canvas.h"
 
 _NAME_BEGIN
 
-__ImplementSubInterface(SamplerObject, GraphicsChild, "SamplerObject")
-
-SamplerObjectDesc::SamplerObjectDesc() noexcept
+class EGL2Device final : public GraphicsDevice
 {
-}
+	__DeclareSubClass(EGL2Device, GraphicsDevice)
+public:
+	EGL2Device() noexcept;
+	~EGL2Device() noexcept;
 
-SamplerObjectDesc::~SamplerObjectDesc() noexcept
-{
-}
+	virtual GraphicsContextPtr createGraphicsContext(WindHandle hwnd) noexcept;
+	virtual GraphicsStatePtr createGraphicsState() noexcept;
+	virtual GraphicsLayoutPtr createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept;
+	virtual GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
+	virtual TexturePtr createTexture() noexcept;
+	virtual GraphicsSamplerPtr createGraphicsSampler() noexcept;
+	virtual RenderTexturePtr createRenderTexture() noexcept;
+	virtual MultiRenderTexturePtr createMultiRenderTexture() noexcept;
+	virtual ShaderPtr createShader() noexcept;
+	virtual ShaderObjectPtr createShaderObject() noexcept;
 
-void
-SamplerObjectDesc::setSamplerWrap(SamplerWrap wrap) noexcept
-{
-	_wrap = wrap;
-}
-
-void
-SamplerObjectDesc::setSamplerFilter(SamplerFilter filter) noexcept
-{
-	_filter = filter;
-}
-
-void
-SamplerObjectDesc::setSamplerAnis(SamplerAnis anis) noexcept
-{
-	_anis = anis;
-}
-
-SamplerWrap
-SamplerObjectDesc::getSamplerWrap() const noexcept
-{
-	return _wrap;
-}
-
-SamplerFilter
-SamplerObjectDesc::getSamplerFilter() const noexcept
-{
-	return _filter;
-}
-
-SamplerAnis
-SamplerObjectDesc::getSamplerAnis() const noexcept
-{
-	return _anis;
-}
-
-SamplerObject::SamplerObject() noexcept
-{
-}
-
-SamplerObject::~SamplerObject() noexcept
-{
-}
+private:
+	EGL2Device(const EGL2Device&) noexcept = delete;
+	EGL2Device& operator=(const EGL2Device&) noexcept = delete;
+};
 
 _NAME_END
+
+#endif

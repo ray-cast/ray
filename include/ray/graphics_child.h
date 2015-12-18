@@ -37,7 +37,7 @@
 #ifndef _H_GRAPHICS_CHILD_H_
 #define _H_GRAPHICS_CHILD_H_
 
-#include <ray/render_types.h>
+#include <ray/graphics_types.h>
 
 _NAME_BEGIN
 

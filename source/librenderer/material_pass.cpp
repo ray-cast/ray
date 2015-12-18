@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/material_pass.h>
 #include <ray/material.h>
-#include <ray/material_manager.h>
+#include <ray/shader.h>
 #include <ray/render_system.h>
 
 _NAME_BEGIN
@@ -56,9 +56,9 @@ MaterialPass::setup(Material& material) except
 {
 	assert(_shaderObject);
 
-	if (!_renderState)
+	if (!_graphicsState)
 	{
-		_renderState = RenderSystem::instance()->createRenderState();
+		_graphicsState = RenderSystem::instance()->createGraphicsState();
 	}
 
 	if (_shaderObject->setup())
@@ -95,14 +95,14 @@ MaterialPass::close() noexcept
 			}
 		}
 
-		_shaderObject->close();
+		_shaderObject.reset();
 		_shaderObject = nullptr;
 	}
 
-	if (_renderState)
+	if (_graphicsState)
 	{
-		_renderState->close();
-		_renderState = nullptr;
+		_graphicsState.reset();
+		_graphicsState = nullptr;
 	}
 
 	_parameters.clear();
@@ -161,9 +161,9 @@ MaterialPass::setShaderObject(ShaderObjectPtr shader) noexcept
 }
 
 void
-MaterialPass::setRenderState(RenderStatePtr state) noexcept
+MaterialPass::setGraphicsState(GraphicsStatePtr state) noexcept
 {
-	_renderState = state;
+	_graphicsState = state;
 }
 
 ShaderObjectPtr
@@ -172,10 +172,10 @@ MaterialPass::getShaderObject() noexcept
 	return _shaderObject;
 }
 
-RenderStatePtr
-MaterialPass::getRenderState() noexcept
+GraphicsStatePtr
+MaterialPass::getGraphicsState() noexcept
 {
-	return _renderState;
+	return _graphicsState;
 }
 
 _NAME_END

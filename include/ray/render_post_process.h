@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_POST_PROCESS_H_
-#define _H_POST_PROCESS_H_
+#ifndef _H_RENDER_POST_PROCESS_H_
+#define _H_RENDER_POST_PROCESS_H_
 
 #include <ray/render_pipeline.h>
 
@@ -47,27 +47,24 @@ public:
 	RenderPostProcess() noexcept;
 	virtual ~RenderPostProcess() noexcept;
 
-	virtual void setActive(bool active) except;
-	virtual bool getActive() const noexcept;
+	void setActive(bool active) except;
+	bool getActive() const noexcept;
 
-	virtual void setRenderQueue(RenderQueue queue) noexcept;
-	virtual RenderQueue getRenderQueue() const noexcept;
+	void setRenderQueue(RenderQueue queue) noexcept;
+	RenderQueue getRenderQueue() const noexcept;
+
+public:
+	virtual void onActivate(RenderPipeline& pipeline) except;
+	virtual void onDeactivate(RenderPipeline& pipeline) except;
 
 	virtual void onResolutionChangeBefore(RenderPipeline& pipeline) except;
 	virtual void onResolutionChangeAfter(RenderPipeline& pipeline) except;
 
-	virtual void onPreRender(RenderPipeline& pipeline) except;
-	virtual void onPostRender(RenderPipeline& pipeline) except;
+	virtual void onRenderPre(RenderPipeline& pipeline) except;
+	virtual void onRenderPost(RenderPipeline& pipeline) except;
 
-	virtual void onRender(RenderPipeline& pipeline, RenderTexturePtr source) except = 0;
+	virtual void onRender(RenderPipeline& pipeline, RenderTexturePtr source) except;
 
-protected:
-
-	virtual void onActivate(RenderPipeline& pipeline) except;
-	virtual void onDeactivate(RenderPipeline& pipeline) except;
-
-private:
-	friend RenderPipeline;
 	void _setRenderPipeline(RenderPipeline* pipeline) noexcept;
 
 private:

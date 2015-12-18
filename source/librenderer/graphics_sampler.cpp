@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2014.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,43 +34,62 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_TYPES_H_
-#define _H_RENDER_TYPES_H_
-
-#include <ray\graphics_types.h>
+#include <ray/graphics_sampler.h>
 
 _NAME_BEGIN
 
-typedef std::shared_ptr<class RenderObject> RenderObjectPtr;
-typedef std::shared_ptr<class RenderPostProcess> RenderPostProcessPtr;
-typedef std::shared_ptr<class RenderPipelineController> RenderPipelineControllerPtr;
-typedef std::shared_ptr<class RenderPipeline> RenderPipelinePtr;
-typedef std::shared_ptr<class RenderPipelineManager> RenderPipelineManagerPtr;
-typedef std::shared_ptr<class RenderDataManager> RenderDataManagerPtr;
-typedef std::shared_ptr<class RenderMesh> RenderMeshPtr;
-typedef std::shared_ptr<class RenderSystem> RenderSystemPtr;
-typedef std::shared_ptr<class RenderBuffer> RenderBufferPtr;
-typedef std::shared_ptr<class RenderScene> RenderScenePtr;
+__ImplementSubInterface(GraphicsSampler, GraphicsChild, "GraphicsSampler")
 
-typedef std::shared_ptr<class Material> MaterialPtr;
-typedef std::shared_ptr<class MaterialPass> MaterialPassPtr;
+GraphicsSamplerDesc::GraphicsSamplerDesc() noexcept
+{
+}
 
-typedef std::shared_ptr<class Camera> CameraPtr;
-typedef std::shared_ptr<class Light> LightPtr;
+GraphicsSamplerDesc::~GraphicsSamplerDesc() noexcept
+{
+}
 
-typedef std::weak_ptr<class Camera> CameraWeakPtr;
-typedef std::weak_ptr<class Light> LightWeakPtr;
-typedef std::weak_ptr<class RenderScene> RenderSceneWeakPtr;
+void
+GraphicsSamplerDesc::setSamplerWrap(SamplerWrap wrap) noexcept
+{
+	_wrap = wrap;
+}
 
-typedef std::vector<RenderBufferPtr> RenderBuffers;
-typedef std::vector<RenderMeshPtr> RenderMeshes;
-typedef std::vector<RenderObjectPtr> RenderObjects;
-typedef std::vector<RenderScenePtr> RenderScenes;
-typedef std::vector<RenderPostProcessPtr> RenderPostProcessor;
+void
+GraphicsSamplerDesc::setSamplerFilter(SamplerFilter filter) noexcept
+{
+	_filter = filter;
+}
 
-typedef std::vector<CameraPtr> Cameras;
-typedef std::vector<LightPtr> Lights;
+void
+GraphicsSamplerDesc::setSamplerAnis(SamplerAnis anis) noexcept
+{
+	_anis = anis;
+}
+
+SamplerWrap
+GraphicsSamplerDesc::getSamplerWrap() const noexcept
+{
+	return _wrap;
+}
+
+SamplerFilter
+GraphicsSamplerDesc::getSamplerFilter() const noexcept
+{
+	return _filter;
+}
+
+SamplerAnis
+GraphicsSamplerDesc::getSamplerAnis() const noexcept
+{
+	return _anis;
+}
+
+GraphicsSampler::GraphicsSampler() noexcept
+{
+}
+
+GraphicsSampler::~GraphicsSampler() noexcept
+{
+}
 
 _NAME_END
-
-#endif

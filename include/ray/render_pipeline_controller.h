@@ -34,42 +34,46 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_TYPES_H_
-#define _H_RENDER_TYPES_H_
+#ifndef _H_RENDER_PIPELINE_CONTROLLER_H_
+#define _H_RENDER_PIPELINE_CONTROLLER_H_
 
-#include <ray\graphics_types.h>
+#include <ray/render_types.h>
 
 _NAME_BEGIN
 
-typedef std::shared_ptr<class RenderObject> RenderObjectPtr;
-typedef std::shared_ptr<class RenderPostProcess> RenderPostProcessPtr;
-typedef std::shared_ptr<class RenderPipelineController> RenderPipelineControllerPtr;
-typedef std::shared_ptr<class RenderPipeline> RenderPipelinePtr;
-typedef std::shared_ptr<class RenderPipelineManager> RenderPipelineManagerPtr;
-typedef std::shared_ptr<class RenderDataManager> RenderDataManagerPtr;
-typedef std::shared_ptr<class RenderMesh> RenderMeshPtr;
-typedef std::shared_ptr<class RenderSystem> RenderSystemPtr;
-typedef std::shared_ptr<class RenderBuffer> RenderBufferPtr;
-typedef std::shared_ptr<class RenderScene> RenderScenePtr;
+class RenderPipelineController
+{
+public:
+	RenderPipelineController() noexcept;
+	virtual ~RenderPipelineController() noexcept;
 
-typedef std::shared_ptr<class Material> MaterialPtr;
-typedef std::shared_ptr<class MaterialPass> MaterialPassPtr;
+	void setActive(bool active) except;
+	bool getActive() const noexcept;
 
-typedef std::shared_ptr<class Camera> CameraPtr;
-typedef std::shared_ptr<class Light> LightPtr;
+protected:
+	virtual void onActivate(RenderPipeline& pipeline) except;
+	virtual void onDeactivate(RenderPipeline& pipeline) except;
 
-typedef std::weak_ptr<class Camera> CameraWeakPtr;
-typedef std::weak_ptr<class Light> LightWeakPtr;
-typedef std::weak_ptr<class RenderScene> RenderSceneWeakPtr;
+	virtual void onResolutionChangeBefore(RenderPipeline& pipeline) except;
+	virtual void onResolutionChangeAfter(RenderPipeline& pipeline) except;
 
-typedef std::vector<RenderBufferPtr> RenderBuffers;
-typedef std::vector<RenderMeshPtr> RenderMeshes;
-typedef std::vector<RenderObjectPtr> RenderObjects;
-typedef std::vector<RenderScenePtr> RenderScenes;
-typedef std::vector<RenderPostProcessPtr> RenderPostProcessor;
+	virtual void onRenderPre(RenderPipeline& pipeline) except;
+	virtual void onRenderPipeline(RenderPipeline& pipeline) except;
+	virtual void onRenderPost(RenderPipeline& pipeline) except;
 
-typedef std::vector<CameraPtr> Cameras;
-typedef std::vector<LightPtr> Lights;
+private:
+	friend class RenderPipelineManager;
+	void _setRenderPipeline(RenderPipelinePtr pipeline) noexcept;
+
+private:
+	RenderPipelineController(const RenderPipelineController&) noexcept = delete;
+	RenderPipelineController& operator=(const RenderPipelineController&) noexcept = delete;
+
+private:
+
+	bool _active;
+	RenderPipeline* _renderPipeline;
+};
 
 _NAME_END
 

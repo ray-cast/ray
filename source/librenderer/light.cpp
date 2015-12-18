@@ -42,6 +42,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(Light, RenderObject, "Light")
+
 Light::Light() noexcept
 	: _lightType(LightType::LT_POINT)
 	, _lightRange(1.0f)
@@ -226,7 +228,7 @@ Light::setRenderScene(RenderScenePtr scene) noexcept
 		if (this->getShadow())
 			_shadowCamera->setRenderScene(nullptr);
 
-		renderScene->removeLight(std::dynamic_pointer_cast<Light>(this->shared_from_this()));
+		renderScene->removeLight(this->downcast<Light>());
 	}
 
 	_renderScene = scene;
@@ -236,7 +238,7 @@ Light::setRenderScene(RenderScenePtr scene) noexcept
 		if (this->getShadow())
 			_shadowCamera->setRenderScene(scene);
 
-		scene->addLight(std::dynamic_pointer_cast<Light>(this->shared_from_this()));
+		scene->addLight(this->downcast<Light>());
 	}
 }
 

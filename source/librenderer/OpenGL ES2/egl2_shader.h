@@ -139,7 +139,7 @@ public:
 	const std::vector<float2>& getFloat2Array() const noexcept;
 
 	TexturePtr getTexture() const noexcept;
-	SamplerObjectPtr getSampler() const noexcept;
+	GraphicsSamplerPtr getSampler() const noexcept;
 
 private:
 	EGLShaderUniform(const EGLShaderUniform&) noexcept = delete;

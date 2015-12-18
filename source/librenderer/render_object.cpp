@@ -38,6 +38,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubInterface(RenderObject, rtti::Interface, "RenderObject")
+
 RenderListener::RenderListener() noexcept
 {
 }

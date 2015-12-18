@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/material_param.h>
+#include <ray/shader.h>
 
 _NAME_BEGIN
 
@@ -282,7 +283,7 @@ MaterialSemanticParam::assign(const std::vector<float4>& value) noexcept
 }
 
 void
-MaterialSemanticParam::assign(TexturePtr texture, SamplerObjectPtr sampler) noexcept
+MaterialSemanticParam::assign(TexturePtr texture, GraphicsSamplerPtr sampler) noexcept
 {
 	this->setType(ShaderVariantType::Texture);
 	if (_texture != texture)
@@ -390,7 +391,7 @@ MaterialSemanticParam::getTexture() const noexcept
 	return _texture;
 }
 
-SamplerObjectPtr
+GraphicsSamplerPtr
 MaterialSemanticParam::getTextureSampler() const noexcept
 {
 	assert(_type == ShaderVariantType::Texture);
@@ -529,7 +530,7 @@ MaterialParam::assign(const std::vector<float4>& value) noexcept
 }
 
 void
-MaterialParam::assign(TexturePtr texture, SamplerObjectPtr sampler) noexcept
+MaterialParam::assign(TexturePtr texture, GraphicsSamplerPtr sampler) noexcept
 {
 	_texture = texture;
 }

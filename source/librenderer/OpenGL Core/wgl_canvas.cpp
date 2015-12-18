@@ -285,6 +285,32 @@ WGLCanvas::close() noexcept
 }
 
 void
+WGLCanvas::setActive(bool active) except
+{
+	if (_isActive != active)
+	{
+		if (active)
+		{
+			if (!::wglMakeCurrent(_hdc, _context))
+				throw failure(__TEXT("wglMakeCurrent() fail"));
+		}
+		else
+		{
+			if (!::wglMakeCurrent(0, 0))
+				throw failure(__TEXT("wglMakeCurrent() fail"));
+		}
+
+		_isActive = active;
+	}
+}
+
+bool
+WGLCanvas::getActive() const noexcept
+{
+	return _isActive;
+}
+
+void
 WGLCanvas::setSwapInterval(SwapInterval interval) noexcept
 {
 	assert(__wglSwapIntervalEXT);
@@ -331,32 +357,6 @@ WindHandle
 WGLCanvas::getWindHandle() const noexcept
 {
 	return _hwnd;
-}
-
-void
-WGLCanvas::setActive(bool active) except
-{
-	if (_isActive != active)
-	{
-		if (active)
-		{
-			if (!::wglMakeCurrent(0, 0))
-				throw failure(__TEXT("wglMakeCurrent() fail"));
-		}
-		else
-		{
-			if (!::wglMakeCurrent(_hdc, _context))
-				throw failure(__TEXT("wglMakeCurrent() fail"));
-		}
-
-		_isActive = active;
-	}
-}
-
-bool
-WGLCanvas::getActive() const noexcept
-{
-	return _isActive;
 }
 
 bool

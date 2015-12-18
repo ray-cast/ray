@@ -41,23 +41,23 @@
 
 _NAME_BEGIN
 
-class EGL3Sampler final : public SamplerObject
+class EGL3Sampler final : public GraphicsSampler
 {
 	__DeclareSubClass(EGL3Sampler, SamplerObject)
 public:
 	EGL3Sampler() noexcept;
 	~EGL3Sampler() noexcept;
 
-	bool setup(const SamplerObjectDesc& desc) except;
+	bool setup(const GraphicsSamplerDesc& desc) except;
 	void close() noexcept;
 
 	GLuint getInstanceID() noexcept;
 
-    void getSamplerObjectDesc(SamplerObjectDesc& desc) const noexcept;
+    void getGraphicsSamplerDesc(GraphicsSamplerDesc& desc) const noexcept;
 private:
 
 	GLuint _sampler;
-    SamplerObjectDesc _desc;
+    GraphicsSamplerDesc _desc;
 };
 
 _NAME_END

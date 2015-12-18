@@ -34,42 +34,36 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_TYPES_H_
-#define _H_RENDER_TYPES_H_
+#ifndef _H_GRAPHICS_DEVICE_H_
+#define _H_GRAPHICS_DEVICE_H_
 
-#include <ray\graphics_types.h>
+#include <ray/graphics_data.h>
+#include <ray/graphics_layout.h>
 
 _NAME_BEGIN
 
-typedef std::shared_ptr<class RenderObject> RenderObjectPtr;
-typedef std::shared_ptr<class RenderPostProcess> RenderPostProcessPtr;
-typedef std::shared_ptr<class RenderPipelineController> RenderPipelineControllerPtr;
-typedef std::shared_ptr<class RenderPipeline> RenderPipelinePtr;
-typedef std::shared_ptr<class RenderPipelineManager> RenderPipelineManagerPtr;
-typedef std::shared_ptr<class RenderDataManager> RenderDataManagerPtr;
-typedef std::shared_ptr<class RenderMesh> RenderMeshPtr;
-typedef std::shared_ptr<class RenderSystem> RenderSystemPtr;
-typedef std::shared_ptr<class RenderBuffer> RenderBufferPtr;
-typedef std::shared_ptr<class RenderScene> RenderScenePtr;
+class EXPORT GraphicsDevice : public rtti::Interface
+{
+	__DeclareSubInterface(GraphicsDevice, rtti::Interface)
+public:
+	GraphicsDevice() noexcept;
+	virtual ~GraphicsDevice() noexcept;
 
-typedef std::shared_ptr<class Material> MaterialPtr;
-typedef std::shared_ptr<class MaterialPass> MaterialPassPtr;
+	virtual GraphicsContextPtr createGraphicsContext(WindHandle window) noexcept = 0;
+	virtual GraphicsLayoutPtr createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept = 0;
+	virtual GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept = 0;
+	virtual TexturePtr createTexture() noexcept = 0;
+	virtual GraphicsSamplerPtr createGraphicsSampler() noexcept = 0;
+	virtual RenderTexturePtr createRenderTexture() noexcept = 0;
+	virtual MultiRenderTexturePtr createMultiRenderTexture() noexcept = 0;
+	virtual GraphicsStatePtr createGraphicsState() noexcept = 0;
+	virtual ShaderPtr createShader() noexcept = 0;
+	virtual ShaderObjectPtr createShaderObject() noexcept = 0;
 
-typedef std::shared_ptr<class Camera> CameraPtr;
-typedef std::shared_ptr<class Light> LightPtr;
-
-typedef std::weak_ptr<class Camera> CameraWeakPtr;
-typedef std::weak_ptr<class Light> LightWeakPtr;
-typedef std::weak_ptr<class RenderScene> RenderSceneWeakPtr;
-
-typedef std::vector<RenderBufferPtr> RenderBuffers;
-typedef std::vector<RenderMeshPtr> RenderMeshes;
-typedef std::vector<RenderObjectPtr> RenderObjects;
-typedef std::vector<RenderScenePtr> RenderScenes;
-typedef std::vector<RenderPostProcessPtr> RenderPostProcessor;
-
-typedef std::vector<CameraPtr> Cameras;
-typedef std::vector<LightPtr> Lights;
+private:
+	GraphicsDevice(const GraphicsDevice&) noexcept = delete;
+	GraphicsDevice& operator=(const GraphicsDevice&) noexcept = delete;
+};
 
 _NAME_END
 

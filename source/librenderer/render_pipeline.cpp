@@ -35,543 +35,1042 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_pipeline.h>
-#include <ray/camera.h>
-#include <ray/light.h>
+#include <ray/render_data_manager.h>
+#include <ray/render_post_process.h>
 #include <ray/render_scene.h>
 #include <ray/render_texture.h>
+#include <ray/render_object.h>
+#include <ray/render_buffer.h>
+#include <ray/material.h>
 #include <ray/material_manager.h>
+#include <ray/model.h>
+#include <ray/image.h>
+#include <ray/ioserver.h>
+#include <ray/mstream.h>
+#include <ray/resource.h>
+
+#if defined(_BUILD_OPENGL) || defined(_BUILD_OPENGL_CORE)
+#	include "OpenGL Core/ogl_device.h"
+#	define RenderDevice OGLDevice
+#elif defined(_BUILD_OPENGL) || defined(_BUILD_OPENGL_ES3)
+#	include "OpenGL ES3/egl3_device.h"
+#	define RenderDevice EGL3Device
+#elif defined(_BUILD_OPENGL) || defined(_BUILD_OPENGL_ES2)
+#	include "OpenGL ES2/egl2_device.h"
+#	define RenderDevice EGL2Device
+#endif
 
 _NAME_BEGIN
 
-const float ESM_FACTOR = 1000.0f;
-
-DefaultRenderPipeline::DefaultRenderPipeline() except
+RenderPipeline::RenderPipeline() noexcept
 {
-	_leftCamera = std::make_shared<Camera>();
-	_rightCamera = std::make_shared<Camera>();
-	_frontCamera = std::make_shared<Camera>();
-	_backCamera = std::make_shared<Camera>();
-	_topCamera = std::make_shared<Camera>();
-	_bottomCamera = std::make_shared<Camera>();
 }
 
-DefaultRenderPipeline::~DefaultRenderPipeline() noexcept
+RenderPipeline::~RenderPipeline() noexcept
 {
+	this->close();
 }
 
 void
-DefaultRenderPipeline::renderShadowMap(CameraPtr camera) noexcept
+RenderPipeline::open(WindHandle window, std::uint32_t w, std::uint32_t h) except
 {
-	this->setCamera(camera);
+	_graphicsDevice = std::make_shared<RenderDevice>();
+	_graphicsContext = _graphicsDevice->createGraphicsContext(window);
 
-	this->setRenderTexture(camera->getRenderTexture());
-	this->clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0.0);
+	_materialManager = std::make_shared<MaterialManager>();
+	_dataManager = std::make_shared<DefaultRenderDataManager>();
 
-	this->drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_OPAQUES, _deferredDepthOnly);
-	this->drawRenderQueue(RenderQueue::RQ_TRANSPARENT, RenderPass::RP_TRANSPARENT, _deferredDepthOnly);
+	MeshProperty mesh;
+	mesh.makePlane(2, 2, 1, 1);
+
+	_renderSceneQuad = this->createRenderBuffer(mesh);
+	_renderSceneQuadIndirect.startVertice = 0;
+	_renderSceneQuadIndirect.numVertices = mesh.getNumVertices();
+	_renderSceneQuadIndirect.startIndice = 0;
+	_renderSceneQuadIndirect.numIndices = mesh.getNumIndices();
+	_renderSceneQuadIndirect.numInstances = 0;
+
+	mesh.makeSphere(1, 16, 12);
+
+	_renderSphere = this->createRenderBuffer(mesh);
+	_renderSphereIndirect.startVertice = 0;
+	_renderSphereIndirect.numVertices = mesh.getNumVertices();
+	_renderSphereIndirect.startIndice = 0;
+	_renderSphereIndirect.numIndices = mesh.getNumIndices();
+	_renderSphereIndirect.numInstances = 0;
+
+	mesh.makeCone(1, 1, 16);
+
+	_renderCone = this->createRenderBuffer(mesh);
+	_renderConeIndirect.startVertice = 0;
+	_renderConeIndirect.numVertices = mesh.getNumVertices();
+	_renderConeIndirect.startIndice = 0;
+	_renderConeIndirect.numIndices = mesh.getNumIndices();
+	_renderConeIndirect.numInstances = 0;
+	
+	this->setWindowResolution(w, h);
 }
 
 void
-DefaultRenderPipeline::render2DEnvMap(CameraPtr camera) noexcept
+RenderPipeline::close() noexcept
 {
-	this->setCamera(camera);
-
-	this->setRenderTexture(_deferredShadingMap);
-	this->clearRenderTexture(ClearFlags::CLEAR_ALL, this->getCamera()->getClearColor(), 1.0, 0);
-	this->drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_OPAQUES);
-}
-
-void
-DefaultRenderPipeline::render3DEnvMap(CameraPtr camera) noexcept
-{
-	auto semantic = this->getMaterialManager();
-	semantic->setTexParam(MaterialSemantic::DeferredDepthMap, _deferredDepthMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredDepthLinearMap, _deferredDepthLinearMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredNormalMap, _deferredNormalMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredGraphicMap, _deferredGraphicMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredLightMap, _deferredLightMap->getResolveTexture());
-
-	this->setCamera(camera);
-
-	this->renderOpaques(_deferredGraphicMaps);
-	this->renderOpaquesDepthLinear(_deferredDepthLinearMap);
-	this->renderLights(_deferredLightMap);
-	this->renderOpaquesShading(_deferredShadingMap);
-	this->renderOpaquesSpecificShading(_deferredShadingMap);
-
-	/*this->renderTransparent(_deferredGraphicMaps);
-	this->renderLights(_deferredLightMap);
-	this->renderTransparentShading(_deferredShadingMap);
-	this->renderTransparentSpecificShading(_deferredShadingMap);*/
-
-	this->renderPostProcess(_deferredShadingMap);
-
-	auto renderTexture = camera->getRenderTexture();
-	if (renderTexture)
-		this->copyRenderTexture(_deferredShadingMap, renderTexture, camera->getViewport());
-}
-
-void
-DefaultRenderPipeline::renderCamera(CameraPtr camera) noexcept
-{
-	assert(camera);
-
-	auto cameraOrder = camera->getCameraOrder();
-	switch (cameraOrder)
+	if (_renderSceneQuad)
 	{
-	case CO_SHADOW:
-		this->renderShadowMap(camera);
-		break;
-	case CO_LIGHT:
-		this->renderLights(camera->getRenderTexture());
-		break;
-	case CO_MAIN:
+		_renderSceneQuad.reset();
+		_renderSceneQuad = nullptr;
+	}
+
+	if (_renderSphere)
+	{
+		_renderSphere.reset();
+		_renderSphere = nullptr;
+	}
+
+	if (_renderCone)
+	{
+		_renderCone.reset();
+		_renderCone = nullptr;
+	}
+
+	for (auto& postprocess : _postprocessors)
+	{
+		for (auto& it : postprocess)
+			it->setActive(false);
+
+		postprocess.clear();
+	}
+
+	if (_dataManager)
+	{
+		_dataManager.reset();
+		_dataManager = nullptr;
+	}
+
+	if (_materialManager)
+	{
+		_materialManager.reset();
+		_materialManager = nullptr;
+	}
+
+	if (_graphicsDevice)
+	{
+		_graphicsDevice.reset();
+		_graphicsDevice = nullptr;
+	}
+}
+
+void 
+RenderPipeline::setDefaultGraphicsContext(GraphicsContextPtr context) noexcept
+{
+	_graphicsContext = context;
+}
+
+GraphicsContextPtr 
+RenderPipeline::getDefaultGraphicsContext() const noexcept
+{
+	return _graphicsContext;
+}
+
+void 
+RenderPipeline::setRenderDataManager(RenderDataManagerPtr manager) noexcept
+{
+	_dataManager = manager;
+}
+
+RenderDataManagerPtr 
+RenderPipeline::getRenderDataManagerPtr() const noexcept
+{
+	return _dataManager;
+}
+
+void
+RenderPipeline::setWireframeMode(bool enable) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->setWireframeMode(enable);
+}
+
+bool
+RenderPipeline::getWireframeMode() const noexcept
+{
+	assert(_graphicsContext);
+	return _graphicsContext->getWireframeMode();
+}
+
+void
+RenderPipeline::setSwapInterval(SwapInterval interval) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->setSwapInterval(interval);
+}
+
+SwapInterval
+RenderPipeline::getSwapInterval() const noexcept
+{
+	assert(_graphicsContext);
+	return _graphicsContext->getSwapInterval();
+}
+
+void
+RenderPipeline::setCamera(CameraPtr camera) noexcept
+{
+	if (camera->getCameraOrder() != CameraOrder::CO_SHADOW)
+	{
+		if (camera->getCameraType() == CameraType::CT_PERSPECTIVE)
 		{
-			switch (camera->getCameraType())
-			{
-			case CameraType::CT_PERSPECTIVE:
-				this->render3DEnvMap(camera);
-				break;
-			case CameraType::CT_ORTHO:
-				this->render2DEnvMap(camera);
-				break;
-			default:
-				break;
-			}
-		}
-		break;
-	}
-}
+			float ratio;
+			float aperture;
+			float znear;
+			float zfar;
+			camera->getPerspective(aperture, ratio, znear, zfar);
 
-void
-DefaultRenderPipeline::renderOpaques(MultiRenderTexturePtr target) noexcept
-{
-	this->setMultiRenderTexture(target);
-	this->clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0.0);
-	this->drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_OPAQUES);
-}
-
-void
-DefaultRenderPipeline::renderOpaquesDepthLinear(RenderTexturePtr target) noexcept
-{
-	_clipInfo->assign(this->getCamera()->getClipConstant());
-	_projInfo->assign(this->getCamera()->getProjConstant());
-
-	this->setRenderTexture(target);
-	this->clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0.0);
-	this->drawSceneQuad(_deferredDepthLinear);
-}
-
-void
-DefaultRenderPipeline::renderOpaquesShading(RenderTexturePtr target, int layer) noexcept
-{
-	this->setRenderTexture(target);
-	this->setRenderTextureLayer(target, layer);
-	this->clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0.0);
-	this->drawSceneQuad(_deferredShadingOpaques);
-}
-
-void
-DefaultRenderPipeline::renderOpaquesSpecificShading(RenderTexturePtr target, int layer) noexcept
-{
-	this->setRenderTexture(target);
-	this->setRenderTextureLayer(target, layer);
-	this->drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_SPECIFIC);
-	this->drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_POSTPROCESS, nullptr, target);
-}
-
-void
-DefaultRenderPipeline::renderTransparent(MultiRenderTexturePtr renderTexture) noexcept
-{
-	this->setMultiRenderTexture(renderTexture);
-	this->clearRenderTexture(ClearFlags::CLEAR_COLOR_STENCIL, Vector4::Zero, 1.0, 0.0, 0);
-
-	this->drawRenderQueue(RenderQueue::RQ_TRANSPARENT, RenderPass::RP_TRANSPARENT);
-}
-
-void
-DefaultRenderPipeline::renderTransparentDepthLinear(RenderTexturePtr target) noexcept
-{
-	this->setRenderTexture(target);
-	this->clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0.0, 0);
-
-	this->drawRenderQueue(RenderQueue::RQ_TRANSPARENT, RenderPass::RP_DEPTH, _deferredDepthLinear);
-}
-
-void
-DefaultRenderPipeline::renderTransparentShading(RenderTexturePtr target, int layer) noexcept
-{
-	this->setRenderTexture(target);
-	this->setRenderTextureLayer(target, layer);
-	this->drawSceneQuad(_deferredShadingTransparents);
-}
-
-void
-DefaultRenderPipeline::renderTransparentSpecificShading(RenderTexturePtr target, int layer) noexcept
-{
-	this->setRenderTexture(target);
-	this->setRenderTextureLayer(target, layer);
-	this->drawRenderQueue(RenderQueue::RQ_TRANSPARENT, RenderPass::RP_SPECIFIC);
-	this->drawRenderQueue(RenderQueue::RQ_TRANSPARENT, RenderPass::RP_POSTPROCESS);
-}
-
-void
-DefaultRenderPipeline::renderLights(RenderTexturePtr target) noexcept
-{
-	this->setRenderTexture(target);
-	this->clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0);
-
-	auto& lights = this->getRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS);
-	for (auto& it : lights)
-	{
-		auto light = std::dynamic_pointer_cast<Light>(it);
-
-		switch (light->getLightType())
-		{
-		case ray::LT_SUN:
-			this->renderSunLight(*light);
-			break;
-		case ray::LT_DIRECTIONAL:
-			this->renderDirectionalLight(*light);
-			break;
-		case ray::LT_POINT:
-			this->renderPointLight(*light);
-			break;
-		case ray::LT_AREA:
-			this->renderAreaLight(*light);
-			break;
-		case ray::LT_SPOT:
-			this->renderSpotLight(*light);
-			break;
-		case ray::LT_HEMI_SPHERE:
-			this->renderHemiSphereLight(*light);
-			break;
-		case ray::LT_AMBIENT:
-			this->renderAmbientLight(*light);
-			break;
-		default:
-			break;
-		}
-	}
-}
-
-void
-DefaultRenderPipeline::renderSunLight(const Light& light) noexcept
-{
-	_lightColor->assign(light.getLightColor() * light.getIntensity());
-	_lightDirection->assign(float3x3(this->getCamera()->getView()) * ~(light.getTransform().getTranslate() - light.getLightLookat()));
-	_lightPosition->assign(light.getTransform().getTranslate());
-	_lightAttenuation->assign(light.getLightAttenuation());
-	_lightRange->assign(light.getRange());
-
-	_eyePosition->assign(float3x3(this->getCamera()->getView()) * this->getCamera()->getTranslate());
-
-	if (light.getShadow())
-	{
-		auto& stencil = _deferredSunLightShadow->getRenderState()->getStencilState();
-		stencil.stencilRef = 1 << light.getLayer();
-
-		_shadowFactor->assign(ESM_FACTOR);
-		_shadowMap->assign(light.getShadowCamera()->getRenderTexture()->getResolveTexture());
-		_shadowMatrix->assign(light.getShadowCamera()->getViewProject());
-
-		this->drawSceneQuad(_deferredSunLightShadow);
-	}
-	else
-	{
-		auto& stencil = _deferredSunLight->getRenderState()->getStencilState();
-		stencil.stencilRef = 1 << light.getLayer();
-
-		this->drawSceneQuad(_deferredSunLight);
-	}
-}
-
-void
-DefaultRenderPipeline::renderDirectionalLight(const Light& light) noexcept
-{
-	_lightColor->assign(light.getLightColor() * light.getIntensity());
-	_lightDirection->assign(float3x3(this->getCamera()->getView()) * ~(light.getTransform().getTranslate() - light.getLightLookat()));
-	_lightPosition->assign(light.getTransform().getTranslate());
-	_lightAttenuation->assign(light.getLightAttenuation());
-	_lightRange->assign(light.getRange());
-
-	_eyePosition->assign(float3x3(this->getCamera()->getView()) * this->getCamera()->getTranslate());
-
-	if (light.getShadow())
-	{
-		RenderStencilState stencil = _deferredDirectionalLightShadow->getRenderState()->getStencilState();
-		stencil.stencilRef = 1 << light.getLayer();
-
-		_deferredDirectionalLightShadow->getRenderState()->setStencilState(stencil);
-
-		_shadowMap->assign(light.getShadowCamera()->getRenderTexture()->getResolveTexture());
-		_shadowFactor->assign(ESM_FACTOR);
-		_shadowMatrix->assign(light.getShadowCamera()->getViewProject());
-
-		this->drawSceneQuad(_deferredDirectionalLightShadow);
-	}
-	else
-	{
-		RenderStencilState stencil = _deferredDirectionalLight->getRenderState()->getStencilState();
-		stencil.stencilRef = 1 << light.getLayer();
-
-		_deferredDirectionalLight->getRenderState()->setStencilState(stencil);
-
-		this->drawSceneQuad(_deferredDirectionalLight);
-	}
-}
-
-void
-DefaultRenderPipeline::renderPointLight(const Light& light) noexcept
-{
-	_lightColor->assign(light.getLightColor() * light.getIntensity());
-	_lightDirection->assign(float3x3(this->getCamera()->getView()) * ~(light.getTransform().getTranslate() - light.getLightLookat()));
-	_lightPosition->assign(light.getTransform().getTranslate());
-	_lightAttenuation->assign(light.getLightAttenuation());
-	_lightRange->assign(light.getRange());
-	_lightIntensity->assign(light.getIntensity());
-
-	_eyePosition->assign(float3x3(this->getCamera()->getView()) * this->getCamera()->getTranslate());
-
-	auto semantic = this->getMaterialManager();
-	semantic->setMatrixParam(matModel, light.getTransform());
-
-	RenderStencilState stencil = _deferredPointLight->getRenderState()->getStencilState();
-	stencil.stencilRef = 1 << light.getLayer();
-
-	_deferredPointLight->getRenderState()->setStencilState(stencil);
-
-	this->drawSphere(_deferredPointLight);
-}
-
-void
-DefaultRenderPipeline::renderSpotLight(const Light& light) noexcept
-{
-	auto semantic = this->getMaterialManager();
-	semantic->setMatrixParam(matModel, light.getTransform());
-
-	_lightColor->assign(light.getLightColor() * light.getIntensity());
-	_lightDirection->assign(float3x3(this->getCamera()->getView()) * ~(light.getTransform().getTranslate() - light.getLightLookat()));
-	_lightPosition->assign(light.getTransform().getTranslate());
-	_lightAttenuation->assign(light.getLightAttenuation());
-	_lightRange->assign(light.getRange());
-	_lightIntensity->assign(light.getIntensity());
-	_lightSpotInnerCone->assign(light.getSpotInnerCone());
-	_lightSpotOuterCone->assign(light.getSpotOuterCone());
-
-	_eyePosition->assign(float3x3(this->getCamera()->getView()) * this->getCamera()->getTranslate());
-
-	RenderStencilState stencil = _deferredSpotLight->getRenderState()->getStencilState();
-	stencil.stencilRef = 1 << light.getLayer();
-
-	_deferredSpotLight->getRenderState()->setStencilState(stencil);
-
-	this->drawCone(_deferredSpotLight);
-}
-
-void
-DefaultRenderPipeline::renderAmbientLight(const Light& light) noexcept
-{
-	_lightColor->assign(light.getLightColor() * light.getIntensity());
-	_lightDirection->assign(float3x3(this->getCamera()->getView()) * ~(light.getTransform().getTranslate() - light.getLightLookat()));
-	_lightPosition->assign(light.getTransform().getTranslate());
-	_lightAttenuation->assign(light.getLightAttenuation());
-	_lightRange->assign(light.getRange());
-	_lightIntensity->assign(light.getIntensity());
-
-	_eyePosition->assign(this->getCamera()->getTranslate());
-
-	RenderStencilState stencil = _deferredAmbientLight->getRenderState()->getStencilState();
-	stencil.stencilRef = 1 << light.getLayer();
-
-	_deferredAmbientLight->getRenderState()->setStencilState(stencil);
-
-	this->drawSceneQuad(_deferredAmbientLight);
-}
-
-void
-DefaultRenderPipeline::renderHemiSphereLight(const Light& light) noexcept
-{
-}
-
-void
-DefaultRenderPipeline::renderAreaLight(const Light& light) noexcept
-{
-}
-
-void
-DefaultRenderPipeline::copyRenderTexture(RenderTexturePtr src, RenderTexturePtr dst, const Viewport& view) noexcept
-{
-	_texSource->assign(src->getResolveTexture());
-	this->setRenderTexture(dst);
-	this->drawSceneQuad(_deferredCopyOnly);
-}
-
-void
-DefaultRenderPipeline::onActivate() except
-{
-	std::uint32_t width, height;
-	this->getWindowResolution(width, height);
-
-	_deferredLighting = this->createMaterial("sys:fx\\deferred_lighting.glsl");
-	_deferredDepthOnly = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredDepthOnly");
-	_deferredDepthLinear = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredDepthLinear");
-	_deferredPointLight = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredPointLight");
-	_deferredAmbientLight = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredAmbientLight");
-	_deferredSunLight = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredSunLight");
-	_deferredSunLightShadow = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredSunLightShadow");
-	_deferredDirectionalLight = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DirectionalLight");
-	_deferredDirectionalLightShadow = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DirectionalLightShadow");
-	_deferredSpotLight = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredSpotLight");
-	_deferredShadingOpaques = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredShadingOpaques");
-	_deferredShadingTransparents = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredShadingTransparents");
-	_deferredDebugLayer = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredDebugLayer");
-	_deferredCopyOnly = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredCopyOnly");
-
-	_texMRT0 = _deferredLighting->getParameter("texMRT0");
-	_texMRT1 = _deferredLighting->getParameter("texMRT1");
-	_texDepth = _deferredLighting->getParameter("texDepth");
-	_texLight = _deferredLighting->getParameter("texLight");
-	_texSource = _deferredLighting->getParameter("texSource");
-	_texEnvironmentMap = _deferredLighting->getParameter("texEnvironmentMap");
-
-	_eyePosition = _deferredLighting->getParameter("eyePosition");
-	_clipInfo = _deferredLighting->getParameter("clipInfo");
-	_projInfo = _deferredLighting->getParameter("projInfo");
-
-	_lightColor = _deferredLighting->getParameter("lightColor");
-	_lightPosition = _deferredLighting->getParameter("lightPosition");
-	_lightDirection = _deferredLighting->getParameter("lightDirection");
-	_lightRange = _deferredLighting->getParameter("lightRange");
-	_lightIntensity = _deferredLighting->getParameter("lightIntensity");
-	_lightAttenuation = _deferredLighting->getParameter("lightAttenuation");
-	_lightSpotInnerCone = _deferredLighting->getParameter("lightSpotInnerCone");
-	_lightSpotOuterCone = _deferredLighting->getParameter("lightSpotOuterCone");
-
-	_shadowChannel = _deferredLighting->getParameter("shadowChannel");
-	_shadowMap = _deferredLighting->getParameter("shadowMap");
-	_shadowArrayMap = _deferredLighting->getParameter("shadowArrayMap");
-	_shadowFactor = _deferredLighting->getParameter("shadowFactor");
-	_shadowMatrix = _deferredLighting->getParameter("shadowMatrix");
-
-	_deferredDepthMap = this->createRenderTexture();
-	_deferredDepthMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::DEPTH32_STENCIL8);
-
-	_deferredDepthLinearMap = this->createRenderTexture();
-	_deferredDepthLinearMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
-
-	_deferredGraphicMap = this->createRenderTexture();
-	_deferredGraphicMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
-
-	_deferredNormalMap = this->createRenderTexture();
-	_deferredNormalMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
-
-	_deferredLightMap = this->createRenderTexture();
-	_deferredLightMap->setSharedStencilTexture(_deferredDepthMap);
-	_deferredLightMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
-
-	_deferredShadingMap = this->createRenderTexture();
-	_deferredShadingMap->setSharedDepthTexture(_deferredDepthMap);
-	_deferredShadingMap->setSharedStencilTexture(_deferredDepthMap);
-	_deferredShadingMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
-
-	_deferredGraphicMaps = this->createMultiRenderTexture();
-	_deferredGraphicMaps->setSharedDepthTexture(_deferredDepthMap);
-	_deferredGraphicMaps->setSharedStencilTexture(_deferredDepthMap);
-	_deferredGraphicMaps->attach(_deferredGraphicMap);
-	_deferredGraphicMaps->attach(_deferredNormalMap);
-	_deferredGraphicMaps->setup();
-
-	auto semantic = this->getMaterialManager();
-	semantic->setTexParam(MaterialSemantic::DeferredDepthMap, _deferredDepthMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredNormalMap, _deferredNormalMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredGraphicMap, _deferredGraphicMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredLightMap, _deferredLightMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DepthMap, _deferredDepthMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::ColorMap, _deferredShadingMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::NormalMap, _deferredNormalMap->getResolveTexture());
-}
-
-void
-DefaultRenderPipeline::onDeactivate() noexcept
-{
-	if (_deferredDepthMap)
-	{
-		_deferredDepthMap.reset();
-		_deferredDepthMap = nullptr;
-	}
-
-	if (_deferredGraphicMap)
-	{
-		_deferredGraphicMap.reset();
-		_deferredGraphicMap = nullptr;
-	}
-
-	if (_deferredNormalMap)
-	{
-		_deferredNormalMap.reset();
-		_deferredNormalMap = nullptr;
-	}
-
-	if (_deferredLightMap)
-	{
-		_deferredLightMap.reset();
-		_deferredLightMap = nullptr;
-	}
-
-	if (_deferredGraphicMaps)
-	{
-		_deferredGraphicMaps.reset();
-		_deferredGraphicMaps = nullptr;
-	}
-}
-
-void
-DefaultRenderPipeline::onRenderPre(CameraPtr camera) noexcept
-{
-}
-
-void
-DefaultRenderPipeline::onRenderPipeline(CameraPtr camera) noexcept
-{
-	this->renderCamera(camera);
-}
-
-void
-DefaultRenderPipeline::onRenderPost(CameraPtr camera) noexcept
-{
-	assert(camera);
-
-	if (camera->getCameraRender() == CR_RENDER_TO_SCREEN)
-	{
-		auto renderTexture = camera->getRenderTexture();
-		if (!renderTexture)
-			renderTexture = _deferredShadingMap;
-
-		auto v1 = Viewport(0, 0, renderTexture->getWidth(), renderTexture->getHeight());
-		auto v2 = camera->getViewport();
-		if (v2.width == 0 || v2.height == 0)
-		{
 			std::uint32_t width, height;
 			this->getWindowResolution(width, height);
 
-			v2.left = 0;
-			v2.top = 0;
-			v2.width = width;
-			v2.height = height;
+			float windowRatio = (float)width / (float)height;
+			if (ratio != windowRatio)
+			{
+				ratio = windowRatio;
+				camera->makePerspective(aperture, znear, zfar, ratio);
+			}
 		}
+		else
+		{
+			float left;
+			float right;
+			float top;
+			float bottom;
+			float ratio;
+			float znear;
+			float zfar;
+			camera->getOrtho(left, right, top, bottom, ratio, znear, zfar);
 
-		this->copyRenderTexture(renderTexture, nullptr, v2);
+			std::uint32_t width, height;
+			this->getWindowResolution(width, height);
+
+			float windowRatio = (float)width / (float)height;
+			if (ratio != windowRatio)
+			{
+				ratio = windowRatio;
+				camera->makeOrtho(left, right, top, bottom, znear, zfar, ratio);
+			}
+		}
 	}
 
-	/*if (_deferredGraphicMap)
-	this->blitRenderTexture(_deferredGraphicMap, Viewport(0, 0, 1376, 768), 0, Viewport(0, 768 / 2, 1376 / 3, 768));
-	if (_deferredNormalMap)
-	this->blitRenderTexture(_deferredNormalMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3, 768 / 2, 1376 / 3 * 2, 768));
-	if (_deferredLightMap)
-	this->blitRenderTexture(_deferredLightMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3 * 2, 768 / 2, 1376, 768));
-	if (_deferredShadingMap)
-	this->blitRenderTexture(_deferredShadingMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3 * 2, 0, 1376, 768 / 2));*/
+	float ratio;
+	float aperture;
+	float znear;
+	float zfar;
+	camera->getPerspective(aperture, ratio, znear, zfar);
+
+	_materialManager->setFloatParam(MaterialSemantic::CameraNear, znear);
+	_materialManager->setFloatParam(MaterialSemantic::CameraFar, zfar);
+	_materialManager->setFloatParam(MaterialSemantic::CameraAperture, aperture);
+	_materialManager->setFloat3Param(MaterialSemantic::CameraView, camera->getLookAt());
+	_materialManager->setFloat3Param(MaterialSemantic::CameraPosition, camera->getTranslate());
+	_materialManager->setFloat3Param(MaterialSemantic::CameraDirection, camera->getLookAt() - camera->getTranslate());
+	_materialManager->setMatrixParam(MaterialSemantic::matView, camera->getView());
+	_materialManager->setMatrixParam(MaterialSemantic::matViewInverse, camera->getViewInverse());
+	_materialManager->setMatrixParam(MaterialSemantic::matViewInverseTranspose, camera->getViewInverseTranspose());
+	_materialManager->setMatrixParam(MaterialSemantic::matProject, camera->getProject());
+	_materialManager->setMatrixParam(MaterialSemantic::matProjectInverse, camera->getProjectInverse());
+	_materialManager->setMatrixParam(MaterialSemantic::matViewProject, camera->getViewProject());
+	_materialManager->setMatrixParam(MaterialSemantic::matViewProjectInverse, camera->getViewProjectInverse());
+
+	_dataManager->assginVisiable(camera);
+
+	_camera = camera;
+}
+
+CameraPtr
+RenderPipeline::getCamera() const noexcept
+{
+	return _camera;
+}
+
+void
+RenderPipeline::setViewport(const Viewport& view) noexcept
+{
+	_graphicsContext->setViewport(view);
+}
+
+const Viewport& 
+RenderPipeline::getViewport() const noexcept
+{
+	return _graphicsContext->getViewport();
+}
+
+void
+RenderPipeline::addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept
+{
+	_dataManager->addRenderData(queue, pass, object);
+}
+
+RenderObjects&
+RenderPipeline::getRenderData(RenderQueue queue, RenderPass pass) noexcept
+{
+	return _dataManager->getRenderData(queue, pass);
+}
+
+void
+RenderPipeline::drawMesh(MaterialPassPtr pass, RenderBufferPtr buffer, const RenderIndirect& renderable) noexcept
+{
+	this->setMaterialPass(pass);
+	this->setRenderBuffer(buffer);
+	this->drawRenderBuffer(renderable);
+}
+
+RenderTexturePtr 
+RenderPipeline::createRenderTexture() noexcept
+{
+	assert(_graphicsDevice);
+	return _graphicsDevice->createRenderTexture();
+}
+
+MultiRenderTexturePtr 
+RenderPipeline::createMultiRenderTexture() noexcept
+{
+	assert(_graphicsDevice);
+	return _graphicsDevice->createMultiRenderTexture();
+}
+
+void
+RenderPipeline::setRenderTexture(RenderTexturePtr target) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->setRenderTexture(target);
+}
+
+void
+RenderPipeline::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->setMultiRenderTexture(target);
+}
+
+void
+RenderPipeline::setRenderTextureLayer(RenderTexturePtr target, int layer) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->setRenderTextureLayer(target, layer);
+}
+
+void
+RenderPipeline::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->clearRenderTexture(flags, color, depth, stencil);
+}
+
+void
+RenderPipeline::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->clearRenderTexture(flags, color, depth, stencil, i);
+}
+
+void
+RenderPipeline::discradRenderTexture() noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->discardRenderTexture();
+}
+
+void
+RenderPipeline::readRenderTexture(RenderTexturePtr texture, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->readRenderTexture(texture, pfd, w, h, data);
+}
+
+void
+RenderPipeline::blitRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->blitRenderTexture(srcTarget, src, destTarget, dest);
+}
+
+GraphicsStatePtr
+RenderPipeline::createGraphicsState() noexcept
+{
+	assert(_graphicsDevice);
+	return _graphicsDevice->createGraphicsState();
+}
+
+void
+RenderPipeline::setGraphicsState(GraphicsStatePtr state) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->setGraphicsState(state);
+}
+
+GraphicsStatePtr
+RenderPipeline::getGraphicsState() const noexcept
+{
+	assert(_graphicsContext);
+	return _graphicsContext->getGraphicsState();
+}
+
+ShaderPtr
+RenderPipeline::createShader() noexcept
+{
+	assert(_graphicsDevice);
+	return _graphicsDevice->createShader();
+}
+
+ShaderObjectPtr 
+RenderPipeline::createShaderObject() noexcept
+{
+	assert(_graphicsDevice);
+	return _graphicsDevice->createShaderObject();
+}
+
+void 
+RenderPipeline::setShaderObject(ShaderObjectPtr progaram) noexcept
+{
+	assert(_graphicsContext);
+	return _graphicsContext->setShaderObject(progaram);
+}
+
+ShaderObjectPtr 
+RenderPipeline::getShaderObject() const noexcept
+{
+	assert(_graphicsContext);
+	return _graphicsContext->getShaderObject();
+}
+
+TexturePtr 
+RenderPipeline::createTexture() noexcept
+{
+	assert(_graphicsDevice);
+	return _graphicsDevice->createTexture();
+}
+
+TexturePtr 
+RenderPipeline::createTexture(const std::string& name) except
+{
+	StreamReaderPtr stream;
+	if (IoServer::instance()->openFile(stream, name))
+	{
+		Image image;
+		if (image.load(*stream))
+		{
+			TextureFormat format = TextureFormat::R8G8B8A8;
+
+			if (image.getImageType() == ImageType::dds1)
+				format = TextureFormat::RGBA_DXT1;
+			else if (image.getImageType() == ImageType::dds3)
+				format = TextureFormat::RGBA_DXT3;
+			else if (image.getImageType() == ImageType::dds5)
+				format = TextureFormat::RGBA_DXT5;
+			else if (image.getImageType() == ImageType::ati2)
+				format = TextureFormat::RG_ATI2;
+			else
+			{
+				if (image.bpp() == 24)
+					format = TextureFormat::R8G8B8;
+				else if (image.bpp() == 32)
+					format = TextureFormat::R8G8B8A8;
+				else
+				{
+					assert(false);
+				}
+			}
+
+			auto texture = this->createTexture();
+			texture->setMipLevel(image.getMipLevel());
+			texture->setMipSize(image.size());
+			texture->setSize(image.width(), image.height());
+			texture->setTexDim(TextureDim::DIM_2D);
+			texture->setTexFormat(format);
+			texture->setStream(image.data());
+			texture->setup();
+			return texture;
+		}
+	}
+
+	return nullptr;
+}
+
+MaterialPtr 
+RenderPipeline::createMaterial(const std::string& name) except
+{
+	return _materialManager->createMaterial(name);
+}
+
+void
+RenderPipeline::setMaterialPass(MaterialPassPtr pass) noexcept
+{
+	_materialManager->setMaterialPass(pass);
+	
+	auto& textures = pass->getTextures();
+	for (std::size_t i = 0; i < textures.size(); i++)
+	{
+		auto& uniforms = textures[i]->getShaderUniform();
+		auto texture = textures[i]->getTexture();
+
+		for (auto& it : uniforms)
+			it->assign((int)i);
+		_graphicsContext->setTexture(texture, i);
+	}
+
+	this->setGraphicsState(pass->getGraphicsState());
+	this->setShaderObject(pass->getShaderObject());
+}
+
+void
+RenderPipeline::setMaterialManager(MaterialManagerPtr manager) noexcept
+{
+	_materialManager = manager;
+}
+
+MaterialPassPtr
+RenderPipeline::getMaterialPass() noexcept
+{
+	return _materialManager->getMaterialPass();
+}
+
+MaterialManagerPtr
+RenderPipeline::getMaterialManager() noexcept
+{
+	return _materialManager;
+}
+
+RenderBufferPtr
+RenderPipeline::createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
+{
+	auto mesh = std::make_shared<RenderBuffer>();
+	mesh->setVertexBuffer(vb);
+	mesh->setIndexBuffer(ib);
+	return mesh;
+}
+
+RenderBufferPtr
+RenderPipeline::createRenderBuffer(const MeshProperty& mesh) except
+{
+	auto numVertex = mesh.getNumVertices();
+	auto numIndices = mesh.getNumIndices();
+
+	VertexComponents components;
+
+	auto& vertices = mesh.getVertexArray();
+	if (!vertices.empty())
+	{
+		if (vertices.size() == numVertex)
+			components.push_back(VertexComponent(VertexFormat::Float3, VertexAttrib::Position));
+	}
+
+	auto& colors = mesh.getColorArray();
+	if (!colors.empty())
+	{
+		if (colors.size() == numVertex)
+			components.push_back(VertexComponent(VertexFormat::Float4, VertexAttrib::Diffuse));
+	}
+
+	auto& normals = mesh.getNormalArray();
+	if (!normals.empty())
+	{
+		if (normals.size() == numVertex)
+			components.push_back(VertexComponent(VertexFormat::Float3, VertexAttrib::Normal));
+	}
+
+	auto& texcoords = mesh.getTexcoordArray();
+	if (!texcoords.empty())
+	{
+		if (texcoords.size() == numVertex)
+			components.push_back(VertexComponent(VertexFormat::Float2, VertexAttrib::Texcoord));
+	}
+
+	auto& tangent = mesh.getTangentArray();
+	if (!tangent.empty())
+	{
+		if (tangent.size() == numVertex)
+			components.push_back(VertexComponent(VertexFormat::Float3, VertexAttrib::Tangent));
+	}
+
+	GraphicsLayoutDesc layout;
+	layout.setVertexComponents(components);
+	layout.setIndexType(IndexType::Uint32);
+
+	GraphicsDataPtr vb;
+
+	if (numVertex)
+	{
+		std::size_t offset = 0;
+		std::size_t stride = layout.getVertexSize();
+		std::vector<char> _data(numVertex * stride);
+
+		if (vertices.size() == numVertex)
+		{
+			char* data = (char*)_data.data();
+			for (auto& it : vertices)
+			{
+				*(float3*)data = it;
+				data += stride;
+			}
+
+			offset += sizeof(float3);
+		}
+
+		if (colors.size() == numVertex)
+		{
+			char* data = (char*)_data.data() + offset;
+			for (auto& it : colors)
+			{
+				*(float4*)data = it;
+				data += stride;
+			}
+
+			offset += sizeof(float4);
+		}
+
+		if (normals.size() == numVertex)
+		{
+			char* data = (char*)_data.data() + offset;
+			for (auto& it : normals)
+			{
+				*(float3*)data = it;
+				data += stride;
+			}
+
+			offset += sizeof(float3);
+		}
+
+		if (texcoords.size() == numVertex)
+		{
+			char* data = (char*)_data.data() + offset;
+			for (auto& it : texcoords)
+			{
+				*(float2*)data = it;
+				data += stride;
+			}
+
+			offset += sizeof(float2);
+		}
+
+		GraphicsDataDesc _vb;
+		_vb.setUsage(UsageFlags::MAP_READ_BIT);
+		_vb.setStream((std::uint8_t*)_data.data());
+		_vb.setStreamSize(_data.size());
+
+		vb = this->createGraphicsData(_vb);
+	}
+
+	GraphicsDataPtr ib;
+
+	auto& faces = mesh.getFaceArray();
+	if (numIndices > 0)
+	{
+		GraphicsDataDesc _ib;
+		_ib.setType(GraphicsStream::IBO);
+		_ib.setUsage(UsageFlags::MAP_READ_BIT);
+		_ib.setStream((std::uint8_t*)faces.data());
+		_ib.setStreamSize(faces.size() * sizeof(std::uint32_t));
+
+		ib = this->createGraphicsData(_ib);
+	}
+
+	auto buffer = this->createRenderBuffer(vb, ib);
+	if (buffer)
+	{
+		buffer->setGraphicsLayout(this->createGraphicsLayout(layout));
+		return buffer;
+	}
+
+	return nullptr;
+}
+
+RenderBufferPtr 
+RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) except
+{
+	auto numVertex = 0;
+	auto numIndices = 0;
+
+	for (auto& it : meshes)
+	{
+		numVertex += it->getNumVertices();
+		numIndices += it->getNumIndices();
+	}
+
+	GraphicsLayoutDesc layout;
+
+	if (!meshes.front()->getVertexArray().empty())
+		layout.addComponent(VertexComponent(VertexFormat::Float3, VertexAttrib::Position));
+	if (!meshes.front()->getColorArray().empty())
+		layout.addComponent(VertexComponent(VertexFormat::Float4, VertexAttrib::Diffuse));
+	if (!meshes.front()->getNormalArray().empty())
+		layout.addComponent(VertexComponent(VertexFormat::Float3, VertexAttrib::Normal));
+	if (!meshes.front()->getTexcoordArray().empty())
+		layout.addComponent(VertexComponent(VertexFormat::Float2, VertexAttrib::Texcoord));
+	if (!meshes.front()->getTangentArray().empty())
+		layout.addComponent(VertexComponent(VertexFormat::Float3, VertexAttrib::Tangent));
+	if (!meshes.front()->getFaceArray().empty())
+		layout.setIndexType(IndexType::Uint32);
+
+	GraphicsDataPtr vb;
+
+	if (numVertex)
+	{
+		std::size_t offsetVertices = 0;
+		std::size_t stride = layout.getVertexSize();
+		std::vector<char> _data(numVertex * stride);
+
+		const char* mapBuffer = _data.data();
+
+		for (auto& mesh : meshes)
+		{
+			auto& vertices = mesh->getVertexArray();
+			auto& colors = mesh->getColorArray();
+			auto& normals = mesh->getNormalArray();
+			auto& tangents = mesh->getTangentArray();
+			auto& texcoords = mesh->getTexcoordArray();
+
+			std::size_t offset1 = 0;
+
+			if (!vertices.empty())
+			{
+				char* data = (char*)mapBuffer + offset1 + offsetVertices;
+				for (auto& it : vertices)
+				{
+					*(float3*)data = it;
+					data += stride;
+				}
+
+				offset1 += sizeof(float3);
+			}
+
+			if (!colors.empty())
+			{
+				char* data = (char*)mapBuffer + offset1 + offsetVertices;
+				for (auto& it : colors)
+				{
+					*(float4*)data = it;
+					data += stride;
+				}
+
+				offset1 += sizeof(float4);
+			}
+
+			if (!normals.empty())
+			{
+				char* data = (char*)mapBuffer + offset1 + offsetVertices;
+				for (auto& it : normals)
+				{
+					*(float3*)data = it;
+					data += stride;
+				}
+
+				offset1 += sizeof(float3);
+			}
+
+			if (!texcoords.empty())
+			{
+				char* data = (char*)mapBuffer + offset1 + offsetVertices;
+				for (auto& it : texcoords)
+				{
+					*(float2*)data = it;
+					data += stride;
+				}
+
+				offset1 += sizeof(float2);
+			}
+
+			if (!tangents.empty())
+			{
+				char* data = (char*)mapBuffer + offset1 + offsetVertices;
+				for (auto& it : tangents)
+				{
+					*(float3*)data = it;
+					data += stride;
+				}
+
+				offset1 += sizeof(float3);
+			}
+
+			offsetVertices += mesh->getNumVertices() * layout.getVertexSize();
+		}
+
+		GraphicsDataDesc _vb;
+		_vb.setUsage(UsageFlags::MAP_READ_BIT);
+		_vb.setStream((std::uint8_t*)_data.data());
+		_vb.setStreamSize(_data.size());
+
+		vb = this->createGraphicsData(_vb);
+	}
+
+	GraphicsDataPtr ib;
+
+	if (numIndices > 0)
+	{
+		std::vector<std::uint32_t> faces(numIndices);
+		std::size_t offsetIndices = 0;
+
+		for (auto& it : meshes)
+		{
+			auto& array = it->getFaceArray();
+			if (!array.empty())
+			{
+				std::uint32_t* indices = (std::uint32_t*)faces.data() + offsetIndices;
+				for (auto& face : array)
+				{
+#if !defined(EGLAPI)
+					*indices++ = face;
+#else
+					*indices++ = offsetIndices + face;
+#endif
+				}
+
+				offsetIndices += array.size();
+			}
+		}
+
+		GraphicsDataDesc _ib;
+		_ib.setType(GraphicsStream::IBO);
+		_ib.setUsage(UsageFlags::MAP_READ_BIT);
+		_ib.setStream((std::uint8_t*)faces.data());
+		_ib.setStreamSize(faces.size() * sizeof(std::uint32_t));
+
+		ib = this->createGraphicsData(_ib);
+	}
+
+	auto buffer = this->createRenderBuffer(vb, ib);
+	if (buffer)
+	{
+		buffer->setGraphicsLayout(this->createGraphicsLayout(layout));
+		return buffer;
+	}
+
+	return nullptr;
+}
+
+GraphicsLayoutPtr 
+RenderPipeline::createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept
+{
+	assert(_graphicsDevice);
+	return _graphicsDevice->createGraphicsLayout(desc);
+}
+
+GraphicsDataPtr
+RenderPipeline::createGraphicsData(const GraphicsDataDesc& desc) noexcept
+{
+	assert(_graphicsDevice);
+	return _graphicsDevice->createGraphicsData(desc);
+}
+
+bool
+RenderPipeline::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
+{
+	assert(_graphicsContext);
+	return _graphicsContext->updateBuffer(data, str, cnt);
+}
+
+void* 
+RenderPipeline::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
+{
+	assert(_graphicsContext);
+	return _graphicsContext->mapBuffer(data, access);
+}
+
+void 
+RenderPipeline::unmapBuffer(GraphicsDataPtr& data) noexcept
+{
+	assert(_graphicsContext);
+	return _graphicsContext->unmapBuffer(data);
+}
+
+void 
+RenderPipeline::setRenderBuffer(RenderBufferPtr buffer) except
+{
+	assert(_graphicsDevice);
+	_graphicsContext->setGraphicsLayout(buffer->getGraphicsLayout());
+	_graphicsContext->setVertexBufferData(buffer->getVertexBuffer());
+	_graphicsContext->setIndexBufferData(buffer->getIndexBuffer());
+}
+
+void 
+RenderPipeline::drawRenderBuffer(const RenderIndirect& renderable) except
+{
+	assert(_graphicsContext);
+	_graphicsContext->drawRenderBuffer(renderable);
+}
+
+void 
+RenderPipeline::drawRenderBuffer(const RenderIndirects& renderable) except
+{
+	assert(_graphicsDevice);
+	_graphicsContext->drawRenderBuffer(renderable);
+}
+
+void
+RenderPipeline::drawSceneQuad(MaterialPassPtr pass) noexcept
+{
+	assert(pass);
+	this->drawMesh(pass, _renderSceneQuad, _renderSceneQuadIndirect);
+}
+
+void
+RenderPipeline::drawSphere(MaterialPassPtr pass) noexcept
+{
+	this->drawMesh(pass, _renderSphere, _renderSphereIndirect);
+}
+
+void
+RenderPipeline::drawCone(MaterialPassPtr pass) noexcept
+{
+	this->drawMesh(pass, _renderCone, _renderConeIndirect);
+}
+
+void
+RenderPipeline::drawRenderQueue(RenderQueue queue, RenderPass pass, MaterialPassPtr material, RenderTexturePtr target) noexcept
+{
+	auto& renderable = this->getRenderData(queue, pass);
+	for (auto& it : renderable)
+	{
+		this->onRenderObjectPre(*it, queue, pass, material);
+		this->onRenderObject(*it, queue, pass, material);
+		this->onRenderObjectPost(*it, queue, pass, material);
+	}
+
+	if (pass == RenderPass::RP_POSTPROCESS)
+	{
+		auto postprocess = _postprocessors[queue];
+		for (auto& it : postprocess)
+		{
+			it->onRenderPre(*this);
+			it->onRender(*this, target);
+			it->onRenderPost(*this);
+		}
+	}
+}
+
+void
+RenderPipeline::setWindowResolution(std::uint32_t width, std::uint32_t height) noexcept
+{
+	if (_width != width || _height != height)
+	{
+		auto& renderPostProcess = _postprocessors[RenderQueue::RQ_POSTPROCESS];
+		for (auto& it : renderPostProcess)
+		{
+			if (it->getActive())
+				it->onResolutionChangeBefore(*this);
+		}
+
+		_width = width;
+		_height = height;
+
+		for (auto& it : renderPostProcess)
+		{
+			if (it->getActive())
+				it->onResolutionChangeAfter(*this);
+		}
+	}
+}
+
+void
+RenderPipeline::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept
+{
+	w = _width;
+	h = _height;
+}
+
+void
+RenderPipeline::addPostProcess(RenderPostProcessPtr postprocess) except
+{
+	auto renderQueue = postprocess->getRenderQueue();
+	auto& renderPostProcess = _postprocessors[renderQueue];
+
+	if (std::find(renderPostProcess.begin(), renderPostProcess.end(), postprocess) == renderPostProcess.end())
+	{
+		postprocess->_setRenderPipeline(this);
+		postprocess->setActive(true);
+		renderPostProcess.push_back(postprocess);
+	}
+}
+
+void
+RenderPipeline::removePostProcess(RenderPostProcessPtr postprocess) noexcept
+{
+	auto renderQueue = postprocess->getRenderQueue();
+	auto& renderPostProcess = _postprocessors[renderQueue];
+
+	auto it = std::find(renderPostProcess.begin(), renderPostProcess.end(), postprocess);
+	if (it != renderPostProcess.end())
+	{
+		postprocess->setActive(false);
+		renderPostProcess.erase(it);
+	}
+}
+
+void
+RenderPipeline::renderPostProcess(RenderTexturePtr renderTexture) except
+{
+	auto& renderPostProcess = _postprocessors[RenderQueue::RQ_POSTPROCESS];
+
+	for (auto& it : renderPostProcess)
+	{
+		if (it->getActive())
+		{
+			it->onRenderPre(*this);
+			it->onRender(*this, renderTexture);
+			it->onRenderPost(*this);
+		}
+	}
+}
+
+void
+RenderPipeline::renderBegin() noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->renderBegin();
+}
+
+void
+RenderPipeline::renderEnd() noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->present();
+	_graphicsContext->renderEnd();
+}
+
+void
+RenderPipeline::onRenderObjectPre(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except
+{
+}
+
+void
+RenderPipeline::onRenderObjectPost(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except
+{
+}
+
+void
+RenderPipeline::onRenderObject(RenderObject& object, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) except
+{
+	auto pass = _pass ? _pass : object.getMaterial()->getTech(queue)->getPass(passType);
+
+	if (pass)
+	{
+		_materialManager->setMatrixParam(MaterialSemantic::matModel, object.getTransform());
+		_materialManager->setMatrixParam(MaterialSemantic::matModelInverse, object.getTransformInverse());
+		_materialManager->setMatrixParam(MaterialSemantic::matModelInverseTranspose, object.getTransformInverseTranspose());
+
+		if (!_pass)
+		{
+			RenderStencilState stencil = pass->getGraphicsState()->getStencilState();
+			stencil.stencilEnable = true;
+			stencil.stencilPass = StencilOperation::STENCILOP_REPLACE;
+			stencil.stencilFunc = CompareFunction::GPU_ALWAYS;
+			stencil.stencilRef = 1 << object.getLayer();
+			stencil.stencilReadMask = 0xFFFFFFFF;
+
+			pass->getGraphicsState()->setStencilState(stencil);
+		}
+
+		this->drawMesh(pass, object.getRenderBuffer(), *object.getRenderIndirect());
+
+		auto listener = object.getOwnerListener();
+		if (listener)
+			listener->onRenderObject(*this->getCamera());
+	}
 }
 
 _NAME_END

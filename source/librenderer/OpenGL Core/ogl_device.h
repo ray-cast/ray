@@ -34,42 +34,34 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_TYPES_H_
-#define _H_RENDER_TYPES_H_
+#ifndef _H_OGL_DEVICE_H_
+#define _H_OGL_DEVICE_H_
 
-#include <ray\graphics_types.h>
+#include "ogl_canvas.h"
 
 _NAME_BEGIN
 
-typedef std::shared_ptr<class RenderObject> RenderObjectPtr;
-typedef std::shared_ptr<class RenderPostProcess> RenderPostProcessPtr;
-typedef std::shared_ptr<class RenderPipelineController> RenderPipelineControllerPtr;
-typedef std::shared_ptr<class RenderPipeline> RenderPipelinePtr;
-typedef std::shared_ptr<class RenderPipelineManager> RenderPipelineManagerPtr;
-typedef std::shared_ptr<class RenderDataManager> RenderDataManagerPtr;
-typedef std::shared_ptr<class RenderMesh> RenderMeshPtr;
-typedef std::shared_ptr<class RenderSystem> RenderSystemPtr;
-typedef std::shared_ptr<class RenderBuffer> RenderBufferPtr;
-typedef std::shared_ptr<class RenderScene> RenderScenePtr;
+class OGLDevice final : public GraphicsDevice
+{
+public:
+	OGLDevice() noexcept;
+	~OGLDevice() noexcept;
 
-typedef std::shared_ptr<class Material> MaterialPtr;
-typedef std::shared_ptr<class MaterialPass> MaterialPassPtr;
+	virtual GraphicsContextPtr createGraphicsContext(WindHandle hwnd) noexcept;
+	virtual GraphicsStatePtr createGraphicsState() noexcept;
+	virtual GraphicsLayoutPtr createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept;
+	virtual GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
+	virtual TexturePtr createTexture() noexcept;
+	virtual GraphicsSamplerPtr createGraphicsSampler() noexcept;
+	virtual RenderTexturePtr createRenderTexture() noexcept;
+	virtual MultiRenderTexturePtr createMultiRenderTexture() noexcept;
+	virtual ShaderPtr createShader() noexcept;
+	virtual ShaderObjectPtr createShaderObject() noexcept;
 
-typedef std::shared_ptr<class Camera> CameraPtr;
-typedef std::shared_ptr<class Light> LightPtr;
-
-typedef std::weak_ptr<class Camera> CameraWeakPtr;
-typedef std::weak_ptr<class Light> LightWeakPtr;
-typedef std::weak_ptr<class RenderScene> RenderSceneWeakPtr;
-
-typedef std::vector<RenderBufferPtr> RenderBuffers;
-typedef std::vector<RenderMeshPtr> RenderMeshes;
-typedef std::vector<RenderObjectPtr> RenderObjects;
-typedef std::vector<RenderScenePtr> RenderScenes;
-typedef std::vector<RenderPostProcessPtr> RenderPostProcessor;
-
-typedef std::vector<CameraPtr> Cameras;
-typedef std::vector<LightPtr> Lights;
+private:
+	OGLDevice(const OGLDevice&) noexcept = delete;
+	OGLDevice& operator=(const OGLDevice&) noexcept = delete;
+};
 
 _NAME_END
 

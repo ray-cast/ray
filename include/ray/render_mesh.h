@@ -43,6 +43,7 @@ _NAME_BEGIN
 
 class EXPORT RenderMesh final : public RenderObject
 {
+	__DeclareSubClass(RenderMesh, RenderObject)
 public:
 	RenderMesh() noexcept;
 	~RenderMesh() noexcept;

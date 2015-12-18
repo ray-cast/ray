@@ -41,16 +41,17 @@
 
 _NAME_BEGIN
 
-class EGL2RenderState : public RenderState
+class EGL2GraphicsState : public GraphicsState
 {
+	__DeclareSubClass(EGL2GraphicsState, RenderState)
 public:
-	EGL2RenderState() noexcept;
-	~EGL2RenderState() noexcept;
+	EGL2GraphicsState() noexcept;
+	~EGL2GraphicsState() noexcept;
 
-	virtual void apply(const RenderState& last) noexcept;
+	void apply(const GraphicsState& last) noexcept;
 private:
-	EGL2RenderState(const EGL2RenderState&) = delete;
-	EGL2RenderState& operator=(const EGL2RenderState&) = delete;
+	EGL2GraphicsState(const EGL2GraphicsState&) = delete;
+	EGL2GraphicsState& operator=(const EGL2GraphicsState&) = delete;
 };
 
 _NAME_END

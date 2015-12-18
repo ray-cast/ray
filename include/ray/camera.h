@@ -70,6 +70,7 @@ enum CameraRender
 
 class EXPORT Camera final : public RenderObject
 {
+	__DeclareSubClass(Camera, RenderObject)
 public:
 	Camera() noexcept;
 	~Camera() noexcept;
@@ -130,11 +131,11 @@ public:
 
 	void setRenderScene(RenderScenePtr scene) noexcept;
 	void setRenderTexture(RenderTexturePtr texture) noexcept;
-	void setRenderWindow(RenderWindowPtr window) noexcept;
+	void setGraphicsContext(GraphicsContextPtr window) noexcept;
 
 	RenderScenePtr getRenderScene() const noexcept;
 	RenderTexturePtr getRenderTexture() const noexcept;
-	RenderWindowPtr getRenderWindow() const noexcept;
+	GraphicsContextPtr getGraphicsContext() const noexcept;
 
 	CameraPtr clone() const noexcept;
 
@@ -178,7 +179,7 @@ private:
 	CameraRender _cameraRender;
 
 	RenderTexturePtr _renderTexture;
-	RenderWindowPtr _renderWindow;
+	GraphicsContextPtr _graphicsContext;
 
 	RenderSceneWeakPtr  _renderScene;
 };

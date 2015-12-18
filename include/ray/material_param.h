@@ -110,7 +110,7 @@ public:
 	void assign(const std::vector<float2>& value) noexcept;
 	void assign(const std::vector<float3>& value) noexcept;
 	void assign(const std::vector<float4>& value) noexcept;
-	void assign(TexturePtr texture, SamplerObjectPtr sampler = nullptr) noexcept;
+	void assign(TexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
 
 	bool getBool() const noexcept;
 	int getInt() const noexcept;
@@ -126,7 +126,7 @@ public:
 	const std::vector<float3>& getFloat3Array() const noexcept;
 	const std::vector<float4>& getFloat4Array() const noexcept;
 	TexturePtr getTexture() const noexcept;
-	SamplerObjectPtr getTextureSampler() const noexcept;
+	GraphicsSamplerPtr getTextureSampler() const noexcept;
 
 private:
 
@@ -135,7 +135,7 @@ private:
 	MaterialSemantic _semantic;
 
 	TexturePtr _texture;
-	SamplerObjectPtr _textureSampler;
+	GraphicsSamplerPtr _textureSampler;
 
 	union
 	{
@@ -181,7 +181,7 @@ public:
 	void assign(const std::vector<float2>& value) noexcept;
 	void assign(const std::vector<float3>& value) noexcept;
 	void assign(const std::vector<float4>& value) noexcept;
-	void assign(TexturePtr texture, SamplerObjectPtr sampler = nullptr) noexcept;
+	void assign(TexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
 
 	TexturePtr getTexture() const noexcept;
 

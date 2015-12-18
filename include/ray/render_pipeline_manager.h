@@ -34,30 +34,36 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_SYSTEM_BASE_H_
-#define _H_RENDER_SYSTEM_BASE_H_
+#ifndef _H_RENDER_PIPELINE_MANAGER_H_
+#define _H_RENDER_PIPELINE_MANAGER_H_
 
-#include <ray/render_pipeline_manager_base.h>
+#include <ray/deferred_render_pipeline.h>
 
 _NAME_BEGIN
 
-class DefaultRenderPipelineManager : public RenderPipelineManager
+class RenderPipelineManager final
 {
 public:
+	RenderPipelineManager() noexcept;
+    ~RenderPipelineManager() noexcept;
 
-	void open() noexcept;
+	void open(RenderPipelinePtr pipeline) except;
 	void close() noexcept;
 
-	void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept;
-	RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept;
+	void setRenderPipeline(RenderPipelinePtr pipeline) noexcept;
+	RenderPipelinePtr getRenderPipeline() noexcept;
 
-	void assginVisiable(CameraPtr camera) noexcept;
+	void renderBegin() noexcept;
+	void render(const RenderScene& scene) noexcept;
+	void renderEnd() noexcept;
 
 private:
+	RenderPipelineManager(const RenderPipelineManager&) noexcept = delete;
+	RenderPipelineManager& operator = (const RenderPipelineManager&) noexcept = delete;
 
-	OcclusionCullList _visiable;
-
-	RenderObjects _renderQueue[RenderQueue::RQ_NUMS][RenderPass::RP_NUMPASS];
+private:
+	RenderPipelinePtr _renderPipeline;
+	RenderPipelineControllerPtr _deferredLighting;
 };
 
 _NAME_END

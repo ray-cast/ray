@@ -1,4 +1,4 @@
-// +----------------------------------------------------------------------
+// +---------------------------------------------------------------------
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
@@ -34,92 +34,102 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/render_post_process.h>
+#include "egl3_device.h"
+#include "egl3_device_context.h"
+#include "egl3_canvas.h"
+#include "egl3_state.h"
+#include "egl3_shader.h"
+#include "egl3_texture.h"
+#include "egl3_layout.h"
+#include "egl3_vbo.h"
+#include "egl3_ibo.h"
+#include "egl3_dibo.h"
+#include "egl3_sampler.h"
 
 _NAME_BEGIN
 
-RenderPostProcess::RenderPostProcess() noexcept
-	: _active(false)
-	, _renderQueue(RenderQueue::RQ_POSTPROCESS)
-	, _renderPipeline(nullptr)
+__ImplementSubClass(EGL3Device, GraphicsDevice, "EGL3Device")
+
+EGL3Device::EGL3Device() noexcept
 {
 }
 
-RenderPostProcess::~RenderPostProcess() noexcept
+EGL3Device::~EGL3Device() noexcept
 {
 }
 
-void 
-RenderPostProcess::setActive(bool active) except
+GraphicsContextPtr
+EGL3Device::createGraphicsContext(WindHandle win) noexcept
 {
-	if (_active != active)
-	{
-		if (active)
-			this->onActivate(*_renderPipeline);
-		else
-			this->onDeactivate(*_renderPipeline);
-
-		_active = active;
-	}
+	auto context = std::make_shared<EGL3DeviceContext>();
+	context->open(win);
+	return context;
 }
 
-bool 
-RenderPostProcess::getActive() const noexcept
+GraphicsStatePtr
+EGL3Device::createGraphicsState() noexcept
 {
-	return _active;
+	return std::make_shared<EGL3GraphicsState>();
 }
 
-void
-RenderPostProcess::setRenderQueue(RenderQueue queue) noexcept
+GraphicsLayoutPtr
+EGL3Device::createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept
 {
-	_renderQueue = queue;
+	auto layout = std::make_shared<EGL3GraphicsLayout>();
+	if (layout->open(desc))
+		return layout;
+	return nullptr;
 }
 
-RenderQueue
-RenderPostProcess::getRenderQueue() const noexcept
+GraphicsDataPtr
+EGL3Device::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
-	return _renderQueue;
+	auto type = desc.getType();
+
+	if (type == GraphicsStream::VBO)
+		return std::make_shared<EGL3VertexBuffer>(desc);
+	else if (type == GraphicsStream::IBO)
+		return std::make_shared<EGL3IndexBuffer>(desc);
+	else if (type == GraphicsStream::DIBO)
+		return std::make_shared<EGL3DrawIndirectBuffer>(desc);
+
+	return nullptr;
 }
 
-void
-RenderPostProcess::onActivate(RenderPipeline&) except
+TexturePtr
+EGL3Device::createTexture() noexcept
 {
+	return std::make_shared<EGL3Texture>();
 }
 
-void
-RenderPostProcess::onDeactivate(RenderPipeline&) except
+GraphicsSamplerPtr
+EGL3Device::createGraphicsSampler() noexcept
 {
+	return std::make_shared<EGL3Sampler>();
 }
 
-void
-RenderPostProcess::onResolutionChangeBefore(RenderPipeline&) except
+RenderTexturePtr
+EGL3Device::createRenderTexture() noexcept
 {
+	return std::make_shared<EGL3RenderTexture>();
 }
 
-void
-RenderPostProcess::onResolutionChangeAfter(RenderPipeline&) except
+MultiRenderTexturePtr
+EGL3Device::createMultiRenderTexture() noexcept
 {
+	return std::make_shared<EGL3MultiRenderTexture>();
 }
 
-void
-RenderPostProcess::onRenderPre(RenderPipeline& pipeline) except
+ShaderPtr
+EGL3Device::createShader() noexcept
 {
+	return std::make_shared<EGL3Shader>();
 }
 
-void
-RenderPostProcess::onRenderPost(RenderPipeline& pipeline) except
+ShaderObjectPtr
+EGL3Device::createShaderObject() noexcept
 {
-}
-
-void 
-RenderPostProcess::onRender(RenderPipeline& pipeline, RenderTexturePtr source) except
-{
-}
-
-void 
-RenderPostProcess::_setRenderPipeline(RenderPipeline* pipeline) noexcept
-{
-	_renderPipeline = pipeline;
+	return std::make_shared<EGL3ShaderObject>();
 }
 
 _NAME_END

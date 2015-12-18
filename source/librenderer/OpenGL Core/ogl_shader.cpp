@@ -150,6 +150,27 @@ OGLShaderVariant::assign(const std::vector<float4>& value) noexcept
 	glProgramUniform4fv(_bindingProgram, _location, value.size(), (GLfloat*)value.data());
 }
 
+OGLShaderAttribute::OGLShaderAttribute() noexcept
+	: _location(GL_NONE)
+{
+}
+
+OGLShaderAttribute::~OGLShaderAttribute() noexcept
+{
+}
+
+void 
+OGLShaderAttribute::setLocation(GLint location) noexcept
+{
+	_location = location;
+}
+
+GLint 
+OGLShaderAttribute::getLocation() const noexcept
+{
+	return _location;
+}
+
 OGLShaderUniform::OGLShaderUniform() noexcept
 	: ShaderUniform(&_value)
 {
@@ -397,9 +418,9 @@ OGLShaderObject::_initActiveAttribute() noexcept
 			glGetActiveAttrib(_program, (GLuint)i, maxAttribute, GL_NONE, &size, &type, nameAttribute.get());
 			GLint location = glGetAttribLocation(_program, nameAttribute.get());
 
-			auto attrib = std::make_shared<ShaderAttribute>();
+			auto attrib = std::make_shared<OGLShaderAttribute>();
 			attrib->setName(nameAttribute.get());
-			//attrib->setLocation(location);
+			attrib->setLocation(location);
 
 			_activeAttributes.push_back(attrib);
 		}

@@ -1,4 +1,4 @@
-// +----------------------------------------------------------------------
+// +---------------------------------------------------------------------
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
@@ -34,78 +34,98 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MYGUI_TYPES_H_
-#define _H_MYGUI_TYPES_H_
-
-#include <ray/mstream.h>
-#include <ray/ioserver.h>
-#include <ray/render_buffer.h>
-#include <ray/render_texture.h>
-#include <ray/render_system.h>
-#include <ray/render_pipeline.h>
-#include <ray/material_maker.h>
-
-#include <ray/gui_widget.h>
-#include <ray/gui_window.h>
-#include <ray/gui_button.h>
-#include <ray/gui_menu.h>
-#include <ray/gui_menuitem.h>
-#include <ray/gui_combobox.h>
-#include <ray/gui_listbox.h>
-#include <ray/gui_editbox.h>
-#include <ray/gui_textbox.h>
-#include <ray/gui_imagebox.h>
-#include <ray/gui_scrollbar.h>
-#include <ray/gui_scrollview.h>
-#include <ray/gui_imageloader.h>
-#include <ray/gui_system_base.h>
-
-#pragma warning(push)
-#pragma warning(disable : 4297)
-#pragma warning(disable : 4127)
-#pragma warning(disable : 5026)
-#pragma warning(disable : 5027)
-
-#include <MyGUI.h>
-#include <MyGUI_Gui.h>
-#include <MyGUI_Prerequest.h>
-#include <MyGUI_IVertexBuffer.h>
-#include <MyGUI_ITexture.h>
-#include <MyGUI_VertexData.h>
-#include <MyGUI_DataFileStream.h>
-#include <MyGUI_DataManager.h>
-#include <MyGUI_RenderFormat.h>
-#include <MyGUI_RenderManager.h>
-
-#pragma warning(pop)
+#include "egl2_device.h"
+#include "egl2_device_context.h"
+#include "egl2_canvas.h"
+#include "egl2_state.h"
+#include "egl2_shader.h"
+#include "egl2_texture.h"
+#include "egl2_layout.h"
+#include "egl2_vbo.h"
+#include "egl2_ibo.h"
+#include "egl2_sampler.h"
 
 _NAME_BEGIN
 
-#define MYGUI_PLATFORM_LOG_SECTION "Platform"
-#define MYGUI_PLATFORM_LOG_FILENAME "MyGUI.log"
-#define MYGUI_PLATFORM_LOG(level, text) MYGUI_LOGGING(MYGUI_PLATFORM_LOG_SECTION, level, text)
+__ImplementSubClass(EGL2Device, GraphicsDevice, "EGL2Device")
 
-#define MYGUI_PLATFORM_EXCEPT(dest) \
-{ \
-	MYGUI_PLATFORM_LOG(Critical, dest); \
-	MYGUI_DBG_BREAK;\
-	std::ostringstream stream; \
-	stream << dest << "\n"; \
-	MYGUI_BASE_EXCEPT(stream.str().c_str(), "MyGUI"); \
+EGL2Device::EGL2Device() noexcept
+{
 }
 
-#define MYGUI_PLATFORM_ASSERT(exp, dest) \
-{ \
-	if ( ! (exp) ) \
-	{ \
-		MYGUI_PLATFORM_LOG(Critical, dest); \
-		MYGUI_DBG_BREAK;\
-		std::ostringstream stream; \
-		stream << dest << "\n"; \
-		MYGUI_BASE_EXCEPT(stream.str().c_str(), "MyGUI"); \
-	} \
+EGL2Device::~EGL2Device() noexcept
+{
+}
+
+GraphicsContextPtr
+EGL2Device::createGraphicsContext(WindHandle win) noexcept
+{
+	auto context = std::make_shared<EGL2DeviceContext>();
+	context->open(win);
+	return context;
+}
+
+GraphicsStatePtr
+EGL2Device::createGraphicsState() noexcept
+{
+	return std::make_shared<EGL2GraphicsState>();
+}
+
+GraphicsLayoutPtr
+EGL2Device::createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept
+{
+	auto layout = std::make_shared<EGL2GraphicsLayout>();
+	if (layout->open(desc))
+		return layout;
+	return nullptr;
+}
+
+GraphicsDataPtr
+EGL2Device::createGraphicsData(const GraphicsDataDesc& desc) noexcept
+{
+	auto type = desc.getType();
+
+	if (type == GraphicsStream::VBO)
+		return std::make_shared<EGL2VertexBuffer>(desc);
+	else if (type == GraphicsStream::IBO)
+		return std::make_shared<EGL2IndexBuffer>(desc);
+	return nullptr;
+}
+
+TexturePtr
+EGL2Device::createTexture() noexcept
+{
+	return std::make_shared<EGL2Texture>();
+}
+
+GraphicsSamplerPtr
+EGL2Device::createGraphicsSampler() noexcept
+{
+	return std::make_shared<EGL2Sampler>();
+}
+
+RenderTexturePtr
+EGL2Device::createRenderTexture() noexcept
+{
+	return std::make_shared<EGL2RenderTexture>();
+}
+
+MultiRenderTexturePtr
+EGL2Device::createMultiRenderTexture() noexcept
+{
+	return std::make_shared<EGL2MultiRenderTexture>();
+}
+
+ShaderPtr
+EGL2Device::createShader() noexcept
+{
+	return std::make_shared<EGL2Shader>();
+}
+
+ShaderObjectPtr
+EGL2Device::createShaderObject() noexcept
+{
+	return std::make_shared<EGL2ShaderObject>();
 }
 
 _NAME_END
-
-#endif

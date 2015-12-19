@@ -161,7 +161,7 @@ EGL2GraphicsBuf::read(char* str, GLsizeiptr cnt) noexcept
 		std::memcpy(str, data, cnt);
 		_dataOffset += cnt;
 	}
-
+	
 	this->unmap();
 	return cnt;
 }

@@ -45,6 +45,9 @@
 
 _NAME_BEGIN
 
+#define MAX_TEXTURE_UNIT 32
+#define MAX_SAMPLER_UNIT 32
+
 typedef std::shared_ptr<class GraphicsData> GraphicsDataPtr;
 typedef std::shared_ptr<class GraphicsResource> GraphicsResourcePtr;
 typedef std::shared_ptr<class GraphicsLayout> GraphicsLayoutPtr;

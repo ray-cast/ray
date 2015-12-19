@@ -41,7 +41,6 @@ _NAME_BEGIN
 
 MaterialManager::MaterialManager() noexcept
 {
-	this->setup();
 }
 
 MaterialManager::~MaterialManager() noexcept
@@ -50,38 +49,10 @@ MaterialManager::~MaterialManager() noexcept
 }
 
 void
-MaterialManager::setup() noexcept
+MaterialManager::open(GraphicsDevicePtr device) noexcept
 {
-	_semantics.resize(MaterialSemantic::NumSemantic);
-
-	_semantics[matModel] = std::make_shared<MaterialSemanticParam>("matModel", ShaderVariantType::Float4x4);
-	_semantics[matModelInverse] = std::make_shared<MaterialSemanticParam>("matModelInverse", ShaderVariantType::Float4x4);
-	_semantics[matModelInverseTranspose] = std::make_shared<MaterialSemanticParam>("matModelInverseTranspose", ShaderVariantType::Float4x4);
-	_semantics[matProject] = std::make_shared<MaterialSemanticParam>("matProject", ShaderVariantType::Float4x4);
-	_semantics[matProjectInverse] = std::make_shared<MaterialSemanticParam>("matProjectInverse", ShaderVariantType::Float4x4);
-	_semantics[matView] = std::make_shared<MaterialSemanticParam>("matView", ShaderVariantType::Float4x4);
-	_semantics[matViewInverse] = std::make_shared<MaterialSemanticParam>("matViewInverse", ShaderVariantType::Float4x4);
-	_semantics[matViewInverseTranspose] = std::make_shared<MaterialSemanticParam>("matViewInverseTranspose", ShaderVariantType::Float4x4);
-	_semantics[matViewProject] = std::make_shared<MaterialSemanticParam>("matViewProject", ShaderVariantType::Float4x4);
-	_semantics[matViewProjectInverse] = std::make_shared<MaterialSemanticParam>("matViewProjectInverse", ShaderVariantType::Float4x4);
-
-	_semantics[CameraAperture] = std::make_shared<MaterialSemanticParam>("CameraAperture", ShaderVariantType::Float);
-	_semantics[CameraFar] = std::make_shared<MaterialSemanticParam>("CameraFar", ShaderVariantType::Float);
-	_semantics[CameraNear] = std::make_shared<MaterialSemanticParam>("CameraNear", ShaderVariantType::Float);
-	_semantics[CameraView] = std::make_shared<MaterialSemanticParam>("CameraView", ShaderVariantType::Float3);
-	_semantics[CameraPosition] = std::make_shared<MaterialSemanticParam>("CameraPosition", ShaderVariantType::Float3);
-	_semantics[CameraDirection] = std::make_shared<MaterialSemanticParam>("CameraDirection", ShaderVariantType::Float3);
-
-	_semantics[DepthMap] = std::make_shared<MaterialSemanticParam>("DepthMap", ShaderVariantType::Texture);
-	_semantics[ColorMap] = std::make_shared<MaterialSemanticParam>("ColorMap", ShaderVariantType::Texture);
-	_semantics[NormalMap] = std::make_shared<MaterialSemanticParam>("NormalMap", ShaderVariantType::Texture);
-
-	_semantics[DeferredDepthMap] = std::make_shared<MaterialSemanticParam>("DeferredDepthMap", ShaderVariantType::Texture);
-	_semantics[DeferredDepthLinearMap] = std::make_shared<MaterialSemanticParam>("DeferredDepthLinearMap", ShaderVariantType::Texture);
-	_semantics[DeferredGraphicMap] = std::make_shared<MaterialSemanticParam>("DeferredGraphicMap", ShaderVariantType::Texture);
-	_semantics[DeferredNormalMap] = std::make_shared<MaterialSemanticParam>("DeferredNormalMap", ShaderVariantType::Texture);
-	_semantics[DeferredLightMap] = std::make_shared<MaterialSemanticParam>("DeferredLightMap", ShaderVariantType::Texture);
-	_semantics[DeferredShadowMap] = std::make_shared<MaterialSemanticParam>("DeferredShadowMap", ShaderVariantType::Texture);
+	_semantics.clear();
+	_graphicsDevice = device;
 }
 
 void
@@ -91,190 +62,64 @@ MaterialManager::close() noexcept
 }
 
 void
-MaterialManager::setMatrixParam(MaterialSemantic index, const Matrix4x4& m) noexcept
+MaterialManager::setGraphicsDevice(GraphicsDevicePtr device) noexcept
 {
-	_semantics[index]->assign(m);
+	_graphicsDevice = device;
 }
 
-const Matrix4x4&
-MaterialManager::getMatrixParam(MaterialSemantic index) noexcept
+GraphicsDevicePtr
+MaterialManager::getGraphicsDevice() noexcept
 {
-	return _semantics[index]->getFloat4x4();
+	return _graphicsDevice;
 }
 
-std::string
-MaterialManager::getMatrixParmName(MaterialSemantic index) const noexcept
+MaterialSemanticPtr
+MaterialManager::createSemantic(const std::string& name, ShaderVariantType type) noexcept
 {
-	return _semantics[index]->getName();
-}
-
-MaterialSemantic
-MaterialManager::getMatrixParamSemantic(const std::string& name) const noexcept
-{
-	if (getMatrixParmName(MaterialSemantic::matModel) == name)
-		return MaterialSemantic::matModel;
-	if (getMatrixParmName(MaterialSemantic::matModelInverse) == name)
-		return  MaterialSemantic::matModelInverse;
-	if (getMatrixParmName(MaterialSemantic::matModelInverseTranspose) == name)
-		return MaterialSemantic::matModelInverseTranspose;
-	if (getMatrixParmName(MaterialSemantic::matView) == name)
-		return MaterialSemantic::matView;
-	if (getMatrixParmName(MaterialSemantic::matViewInverse) == name)
-		return MaterialSemantic::matViewInverse;
-	if (getMatrixParmName(MaterialSemantic::matViewInverseTranspose) == name)
-		return MaterialSemantic::matViewInverseTranspose;
-	if (getMatrixParmName(MaterialSemantic::matProject) == name)
-		return MaterialSemantic::matProject;
-	if (getMatrixParmName(MaterialSemantic::matProjectInverse) == name)
-		return MaterialSemantic::matProjectInverse;
-	if (getMatrixParmName(MaterialSemantic::matViewProject) == name)
-		return MaterialSemantic::matViewProject;
-	if (getMatrixParmName(MaterialSemantic::matViewProjectInverse) == name)
-		return MaterialSemantic::matViewProjectInverse;
-
-	return NotSemantic;
-}
-
-void
-MaterialManager::setFloatParam(MaterialSemantic index, float v) noexcept
-{
-	_semantics[index]->assign(v);
-}
-
-float
-MaterialManager::getFloatParam(MaterialSemantic index) noexcept
-{
-	return _semantics[index]->getFloat();
-}
-
-std::string
-MaterialManager::getFloatParmName(MaterialSemantic index) const noexcept
-{
-	return _semantics[index]->getName();
-}
-
-MaterialSemantic
-MaterialManager::getFloatParamSemantic(const std::string& name) const noexcept
-{
-	if (getFloatParmName(MaterialSemantic::CameraAperture) == name)
-		return MaterialSemantic::CameraAperture;
-	if (getFloatParmName(MaterialSemantic::CameraFar) == name)
-		return MaterialSemantic::CameraFar;
-	if (getFloatParmName(MaterialSemantic::CameraNear) == name)
-		return MaterialSemantic::CameraNear;
-
-	return MaterialSemantic::NotSemantic;
-}
-
-void
-MaterialManager::setFloat3Param(MaterialSemantic index, const float3& v) noexcept
-{
-	_semantics[index]->assign(v);
-}
-
-const Vector3&
-MaterialManager::getFloat3Param(MaterialSemantic index) noexcept
-{
-	return _semantics[index]->getFloat3();
-}
-
-std::string
-MaterialManager::getFloat3ParmName(MaterialSemantic index) const noexcept
-{
-	return _semantics[index]->getName();
-}
-
-MaterialSemantic
-MaterialManager::getFloat3ParamSemantic(const std::string& name) const noexcept
-{
-	if (getFloat3ParmName(MaterialSemantic::CameraView) == name)
-		return MaterialSemantic::CameraView;
-	if (getFloat3ParmName(MaterialSemantic::CameraPosition) == name)
-		return MaterialSemantic::CameraPosition;
-	if (getFloat3ParmName(MaterialSemantic::CameraDirection) == name)
-		return MaterialSemantic::CameraDirection;
-	return MaterialSemantic::NotSemantic;
-}
-
-void
-MaterialManager::setFloat4Param(MaterialSemantic index, const float4& v) noexcept
-{
-	_semantics[index]->assign(v);
-}
-
-const Vector4&
-MaterialManager::getFloat4Param(MaterialSemantic index) noexcept
-{
-	return _semantics[index]->getFloat4();
-}
-
-std::string
-MaterialManager::getFloat4ParmName(MaterialSemantic index) const noexcept
-{
-	return _semantics[index]->getName();
-}
-
-MaterialSemantic
-MaterialManager::getFloat4ParamSemantic(const std::string& name) const noexcept
-{
-	return MaterialSemantic::NotSemantic;
-}
-
-void
-MaterialManager::setTexParam(MaterialSemantic index, TexturePtr texture) noexcept
-{
-	_semantics[index]->assign(texture);
-}
-
-TexturePtr
-MaterialManager::getTexParam(MaterialSemantic index) noexcept
-{
-	return _semantics[index]->getTexture();
-}
-
-std::string
-MaterialManager::getTexParmName(MaterialSemantic index) const noexcept
-{
-	return _semantics[index]->getName();
-}
-
-MaterialSemantic
-MaterialManager::getTexParamSemantic(const std::string& name) const noexcept
-{
-	if (getTexParmName(MaterialSemantic::DepthMap) == name)
-		return MaterialSemantic::DepthMap;
-	if (getTexParmName(MaterialSemantic::ColorMap) == name)
-		return MaterialSemantic::ColorMap;
-	if (getTexParmName(MaterialSemantic::DeferredDepthMap) == name)
-		return MaterialSemantic::DeferredDepthMap;
-	if (getTexParmName(MaterialSemantic::DeferredGraphicMap) == name)
-		return MaterialSemantic::DeferredGraphicMap;
-	if (getTexParmName(MaterialSemantic::DeferredNormalMap) == name)
-		return MaterialSemantic::DeferredNormalMap;
-	if (getTexParmName(MaterialSemantic::DeferredLightMap) == name)
-		return MaterialSemantic::DeferredLightMap;
-	return (MaterialSemantic)NotSemantic;
-}
-
-MaterialSemanticParamPtr
-MaterialManager::getParamPointer(MaterialSemantic semantic) const noexcept
-{
-	assert(semantic != MaterialSemantic::NotSemantic);
-	assert(semantic < MaterialSemantic::NumSemantic);
-	return _semantics[semantic];
-}
-
-MaterialSemanticParamPtr
-MaterialManager::getParamPointer(const std::string& name) const noexcept
-{
-	for (auto& it : _semantics)
+	if (!name.empty() && type != ShaderVariantType::None)
 	{
-		if (it->getName() == name)
+		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialSemanticPtr& it) { return it->getName() == name;});
+		if (it == _semantics.end())
 		{
-			return it;
+			_semantics.push_back(std::make_shared<MaterialSemantic>(name, type));
+			return _semantics.back();
 		}
 	}
 
+	return nullptr;
+}
+
+void
+MaterialManager::addSemantic(MaterialSemanticPtr semantc) noexcept
+{
+	if (semantc && !semantc->getName().empty() && semantc->getType() != ShaderVariantType::None)
+	{
+		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialSemanticPtr& it) { return it->getName() == semantc->getName();});
+		if (it == _semantics.end())
+			_semantics.push_back(semantc);
+	}
+}
+
+void
+MaterialManager::removeSemantic(MaterialSemanticPtr semantc) noexcept
+{
+	if (semantc && !semantc->getName().empty() && semantc->getType() != ShaderVariantType::None)
+	{
+		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialSemanticPtr& it) { return it->getName() == semantc->getName();});
+		if (it == _semantics.end())
+			_semantics.push_back(semantc);
+	}
+}
+
+MaterialSemanticPtr
+MaterialManager::getSemantic(const std::string& name) noexcept
+{
+	if (!name.empty())
+	{
+		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialSemanticPtr it) { return it->getName() == name;});
+		if (it != _semantics.end())
+			return *it;
+	}
 	return nullptr;
 }
 
@@ -282,7 +127,10 @@ MaterialPtr
 MaterialManager::createMaterial(const std::string& name) except
 {
 	MaterialMaker maker;
-	return maker.load(name);
+	auto material = maker.load(*this, name);
+	if (material)
+		return material;
+	return nullptr;
 }
 
 void
@@ -292,48 +140,57 @@ MaterialManager::setMaterialPass(MaterialPassPtr& pass) noexcept
 	for (auto& it : semantics)
 	{
 		auto semantic = it->getSemantic();
-		if (semantic == MaterialSemantic::NotSemantic)
-			continue;
-		else if (semantic == MaterialSemantic::NotSemantic)
-			continue;
-		else if (semantic == MaterialSemantic::matModel)
-			it->assign(this->getMatrixParam(matModel));
-		else if (semantic == MaterialSemantic::matModelInverse)
-			it->assign(this->getMatrixParam(matModelInverse));
-		else if (semantic == MaterialSemantic::matModelInverseTranspose)
-			it->assign(this->getMatrixParam(matModelInverseTranspose));
-		else if (semantic == MaterialSemantic::matView)
-			it->assign(this->getMatrixParam(MaterialSemantic::matView));
-		else if (semantic == MaterialSemantic::matViewInverse)
-			it->assign(this->getMatrixParam(MaterialSemantic::matViewInverse));
-		else if (semantic == MaterialSemantic::matViewInverseTranspose)
-			it->assign(this->getMatrixParam(MaterialSemantic::matViewInverseTranspose));
-		else if (semantic == MaterialSemantic::matProject)
-			it->assign(this->getMatrixParam(MaterialSemantic::matProject));
-		else if (semantic == MaterialSemantic::matProjectInverse)
-			it->assign(this->getMatrixParam(MaterialSemantic::matProjectInverse));
-		else if (semantic == MaterialSemantic::matViewProject)
-			it->assign(this->getMatrixParam(MaterialSemantic::matViewProject));
-		else if (semantic == MaterialSemantic::matViewProjectInverse)
-			it->assign(this->getMatrixParam(MaterialSemantic::matViewProjectInverse));
-		else if (semantic == MaterialSemantic::DeferredDepthLinearMap)
-			it->assign(this->getTexParam(MaterialSemantic::DeferredDepthLinearMap));
-		else if (semantic == MaterialSemantic::DeferredDepthMap)
-			it->assign(this->getTexParam(MaterialSemantic::DeferredDepthMap));
-		else if (semantic == MaterialSemantic::DeferredGraphicMap)
-			it->assign(this->getTexParam(MaterialSemantic::DeferredGraphicMap));
-		else if (semantic == MaterialSemantic::DeferredLightMap)
-			it->assign(this->getTexParam(MaterialSemantic::DeferredLightMap));
-		else if (semantic == MaterialSemantic::DeferredNormalMap)
-			it->assign(this->getTexParam(MaterialSemantic::DeferredNormalMap));
-		else if (semantic == MaterialSemantic::DeferredShadowMap)
-			it->assign(this->getTexParam(MaterialSemantic::DeferredShadowMap));
-		else if (semantic == MaterialSemantic::DepthMap)
-			it->assign(this->getTexParam(MaterialSemantic::DepthMap));
-		else if (semantic == MaterialSemantic::NormalMap)
-			it->assign(this->getTexParam(MaterialSemantic::NormalMap));
-		else if (semantic == MaterialSemantic::ColorMap)
-			it->assign(this->getTexParam(MaterialSemantic::ColorMap));
+		if (semantic)
+		{
+			auto type = semantic->getType();
+			switch (type)
+			{
+			case ray::ShaderVariantType::Bool:
+				it->assign(semantic->getBool());
+				break;
+			case ray::ShaderVariantType::Int:
+				it->assign(semantic->getInt());
+				break;
+			case ray::ShaderVariantType::Int2:
+				it->assign(semantic->getInt2());
+				break;
+			case ray::ShaderVariantType::Float:
+				it->assign(semantic->getFloat());
+				break;
+			case ray::ShaderVariantType::Float2:
+				it->assign(semantic->getFloat2());
+				break;
+			case ray::ShaderVariantType::Float3:
+				it->assign(semantic->getFloat3());
+				break;
+			case ray::ShaderVariantType::Float4:
+				it->assign(semantic->getFloat4());
+				break;
+			case ray::ShaderVariantType::Float3x3:
+				it->assign(semantic->getFloat3x3());
+				break;
+			case ray::ShaderVariantType::Float4x4:
+				it->assign(semantic->getFloat4x4());
+				break;
+			case ray::ShaderVariantType::FloatArray:
+				it->assign(semantic->getFloatArray());
+				break;
+			case ray::ShaderVariantType::Float2Array:
+				it->assign(semantic->getFloat2Array());
+				break;
+			case ray::ShaderVariantType::Float3Array:
+				it->assign(semantic->getFloat3Array());
+				break;
+			case ray::ShaderVariantType::Float4Array:
+				it->assign(semantic->getFloat4Array());
+				break;
+			case ray::ShaderVariantType::Texture:
+				it->assign(semantic->getTexture());
+				break;
+			default:
+				break;
+			}
+		}
 	}
 
 	_material = pass;

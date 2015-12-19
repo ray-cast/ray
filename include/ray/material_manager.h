@@ -47,47 +47,27 @@ public:
 	MaterialManager() noexcept;
 	~MaterialManager() noexcept;
 
-	void setup() noexcept;
+	void open(GraphicsDevicePtr device) noexcept;
 	void close() noexcept;
 
-	void setMatrixParam(MaterialSemantic index, const Matrix4x4& m) noexcept;
-	const Matrix4x4& getMatrixParam(MaterialSemantic index) noexcept;
-	std::string getMatrixParmName(MaterialSemantic index) const noexcept;
-	MaterialSemantic getMatrixParamSemantic(const std::string& name) const noexcept;
-
-	void setFloatParam(MaterialSemantic index, float v) noexcept;
-	float getFloatParam(MaterialSemantic index) noexcept;
-	std::string getFloatParmName(MaterialSemantic index) const noexcept;
-	MaterialSemantic getFloatParamSemantic(const std::string& name) const noexcept;
-
-	void setFloat3Param(MaterialSemantic index, const float3& v) noexcept;
-	const Vector3& getFloat3Param(MaterialSemantic index) noexcept;
-	std::string getFloat3ParmName(MaterialSemantic index) const noexcept;
-	MaterialSemantic getFloat3ParamSemantic(const std::string& name) const noexcept;
-
-	void setFloat4Param(MaterialSemantic index, const float4& v) noexcept;
-	const Vector4& getFloat4Param(MaterialSemantic index) noexcept;
-	std::string getFloat4ParmName(MaterialSemantic index) const noexcept;
-	MaterialSemantic getFloat4ParamSemantic(const std::string& name) const noexcept;
-
-	void setTexParam(MaterialSemantic index, TexturePtr v) noexcept;
-	TexturePtr getTexParam(MaterialSemantic index) noexcept;
-	std::string getTexParmName(MaterialSemantic index) const noexcept;
-	MaterialSemantic getTexParamSemantic(const std::string& name) const noexcept;
-
-	MaterialSemanticParamPtr getParamPointer(MaterialSemantic semantic) const noexcept;
-	MaterialSemanticParamPtr getParamPointer(const std::string& name) const noexcept;
+	void setGraphicsDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getGraphicsDevice() noexcept;
 
 	MaterialPtr createMaterial(const std::string& name) except;
+
+	MaterialSemanticPtr createSemantic(const std::string& name, ShaderVariantType type) noexcept;
+	void addSemantic(MaterialSemanticPtr semantc) noexcept;
+	void removeSemantic(MaterialSemanticPtr semantc) noexcept;
+	MaterialSemanticPtr getSemantic(const std::string& name) noexcept;
 
 	void setMaterialPass(MaterialPassPtr& pass) noexcept;
 	MaterialPassPtr& getMaterialPass() noexcept;
 	const MaterialPassPtr& getMaterialPass() const noexcept;
 
 private:
-
+	GraphicsDevicePtr _graphicsDevice;
 	MaterialPassPtr _material;
-	MaterialSemanticParams _semantics;
+	MaterialSemantics _semantics;
 };
 
 _NAME_END

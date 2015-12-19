@@ -74,7 +74,10 @@ public:
 	virtual GraphicsDataPtr getVertexBufferData() const noexcept = 0;
 
 	virtual void setTexture(TexturePtr texture, std::uint32_t slot) noexcept = 0;
+	virtual void setTexture(TexturePtr texture[], std::uint32_t first, std::uint32_t count) noexcept = 0;
+
 	virtual void setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept = 0;
+	virtual void setGraphicsSampler(GraphicsSamplerPtr sampler[], std::uint32_t first, std::uint32_t count) noexcept = 0;
 
 	virtual void setRenderTexture(RenderTexturePtr target) noexcept = 0;
 	virtual void setRenderTextureLayer(RenderTexturePtr target, std::int32_t layer) noexcept = 0;

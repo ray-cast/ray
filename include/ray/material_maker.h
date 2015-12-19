@@ -48,17 +48,17 @@ public:
 	MaterialMaker() noexcept;
 	~MaterialMaker() noexcept;
 
-	MaterialPtr load(const std::string& filename) except;
-	MaterialPtr load(iarchive& reader) except;
+	MaterialPtr load(MaterialManager& manager, const std::string& filename) except;
+	MaterialPtr load(MaterialManager& manager, iarchive& reader) except;
 
 private:
 
-	GraphicsStatePtr instanceState(iarchive& reader) except;
-	MaterialPassPtr instancePass(iarchive& reader) except;
-	MaterialTechPtr instanceTech(iarchive& reader) except;
-	void instanceParameter(MaterialPtr& material, iarchive& reader) except;
+	GraphicsStatePtr instanceState(MaterialManager& manager, iarchive& reader) except;
+	MaterialPassPtr instancePass(MaterialManager& manager, iarchive& reader) except;
+	MaterialTechPtr instanceTech(MaterialManager& manager, iarchive& reader) except;
+	void instanceParameter(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
 	MaterialParamPtr instanceBuffer(MaterialPtr& material, iarchive& reader) except;
-	ShaderPtr instanceShader(iarchive& reader) except;
+	ShaderPtr instanceShader(MaterialManager& manager, iarchive& reader) except;
 
 	static VertexType stringToPrimitive(const std::string& primitive) noexcept;
 	static CullMode stringToCullMode(const std::string& cullmode) noexcept;

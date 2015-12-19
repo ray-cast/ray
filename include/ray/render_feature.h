@@ -72,6 +72,8 @@ private:
 	void onOpenScene(GameScenePtr scene) except;
 	void onCloseScene(GameScenePtr scene) except;
 
+	void onWindowSizeChange() except;
+
 	void onFrameBegin() except;
 	void onFrame() except;
 	void onFrameEnd() except;

@@ -169,7 +169,7 @@ EGL2DeviceContext::setWireframeMode(bool enable) noexcept
 	_enableWireframe = enable;
 }
 
-bool 
+bool
 EGL2DeviceContext::getWireframeMode() const noexcept
 {
 	return _enableWireframe;
@@ -431,7 +431,7 @@ EGL2DeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 	}
 }
 
-void 
+void
 EGL2DeviceContext::drawRenderBuffer(const RenderIndirects& renderable) noexcept
 {
 	assert(false);
@@ -456,6 +456,13 @@ EGL2DeviceContext::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
 }
 
 void
+EGL2DeviceContext::setTexture(TexturePtr textures[], std::uint32_t first, std::uint32_t count) noexcept
+{
+	for (std::uint32_t i = first; i < first + count; i++)
+		this->setTexture(textures[i], i);
+}
+
+void
 EGL2DeviceContext::setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept
 {
 	auto glsampler = sampler->downcast<EGL2Sampler>();
@@ -465,6 +472,13 @@ EGL2DeviceContext::setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t 
 	else
 	{
 	}
+}
+
+void
+EGL2DeviceContext::setGraphicsSampler(GraphicsSamplerPtr samplers[], std::uint32_t first, std::uint32_t count) noexcept
+{
+	for (std::uint32_t i = first; i < first + count; i++)
+		this->setGraphicsSampler(samplers[i], i);
 }
 
 void
@@ -540,7 +554,7 @@ EGL2DeviceContext::setRenderTextureLayer(RenderTexturePtr renderTexture, std::in
 	{
 		this->setRenderTexture(renderTexture);
 	}
-	
+
 	GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer, textureID, 0));
 }
 
@@ -573,7 +587,7 @@ EGL2DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, fl
 
 		if (_clearColor != color)
 		{
-			glClearColor(color.x, color.y, color.z, color.w);
+			GL_CHECK(glClearColor(color.x, color.y, color.z, color.w));
 			_clearColor = color;
 		}
 	}
@@ -584,7 +598,7 @@ EGL2DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, fl
 
 		if (_clearDepth != depth)
 		{
-			glClearDepthf(depth);
+			GL_CHECK(glClearDepthf(depth));
 			_clearDepth = depth;
 		}
 	}
@@ -595,7 +609,7 @@ EGL2DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, fl
 
 		if (_clearStencil != stencil)
 		{
-			glClearStencil(stencil);
+			GL_CHECK(glClearStencil(stencil));
 			_clearStencil = stencil;
 		}
 	}
@@ -605,7 +619,7 @@ EGL2DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, fl
 		auto depthWriteMask = _stateCaptured->getDepthState().depthWriteMask;
 		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
 		{
-			glDepthMask(GL_TRUE);
+			GL_CHECK(glDepthMask(GL_TRUE));
 		}
 
 		GL_CHECK(glClear(mode));
@@ -639,15 +653,15 @@ EGL2DeviceContext::readRenderTexture(RenderTexturePtr target, TextureFormat pfd,
 	auto framebuffer = std::dynamic_pointer_cast<EGL2RenderTexture>(target)->getInstanceID();
 	if (_renderTexture != target)
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+		GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, framebuffer));
 		_renderTexture = target;
 		_multiRenderTexture = nullptr;
 	}
-	
+
 	GLenum format = EGL2Types::asEGL2Format(pfd);
 	GLenum type = EGL2Types::asEGL2Type(pfd);
 
-	glReadPixels(0, 0, w, h, format, type, data);
+	GL_CHECK(glReadPixels(0, 0, w, h, format, type, data));
 
 	EGL2Check::checkError();
 }

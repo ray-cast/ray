@@ -611,8 +611,6 @@ OGLCheck::checkError() noexcept
 			std::cerr << "FBO:Incomplete read buffer";
 			break;
 #endif
-		default:
-			assert(false);
 		}
 	}
 #endif

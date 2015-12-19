@@ -37,6 +37,7 @@
 #ifndef _H_RENDER_TEXTURE_H_
 #define _H_RENDER_TEXTURE_H_
 
+#include <ray/graphics_resource.h>
 #include <ray/graphics_sampler.h>
 
 _NAME_BEGIN
@@ -113,8 +114,9 @@ private:
 	void* _data;
 };
 
-class EXPORT RenderTexture
+class EXPORT RenderTexture : public GraphicsResource
 {
+	__DeclareSubInterface(RenderTexture, GraphicsResource)
 public:
 	RenderTexture() noexcept;
 	virtual ~RenderTexture() noexcept;

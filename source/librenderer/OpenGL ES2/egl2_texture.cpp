@@ -57,8 +57,8 @@ EGL2Texture::setup() except
 	auto internalFormat = EGL2Types::asEGL2Internalformat(this->getTexFormat());
 	auto stream = this->getStream();
 
-	glGenTextures(1, &_texture);
-	glBindTexture(target, _texture);
+	GL_CHECK(glGenTextures(1, &_texture));
+	GL_CHECK(glBindTexture(target, _texture));
 
 	GLsizei w = (GLsizei)this->getWidth();
 	GLsizei h = (GLsizei)this->getHeight();
@@ -78,11 +78,11 @@ EGL2Texture::setup() except
 		std::size_t offset = 0;
 		std::size_t blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;
 
-		for (GLint mip = 0; mip < level; mip++) 
+		for (GLint mip = 0; mip < level; mip++)
 		{
 			auto mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
 
-			glCompressedTexImage2D(GL_TEXTURE_2D, mip, internalFormat, w, h, 0, mipSize, (char*)stream + offset);
+			GL_CHECK(glCompressedTexImage2D(GL_TEXTURE_2D, mip, internalFormat, w, h, 0, mipSize, (char*)stream + offset));
 
 			w = std::max(w >> 1, 1);
 			h = std::max(h >> 1, 1);
@@ -100,16 +100,16 @@ EGL2Texture::setup() except
 		switch (target)
 		{
 		case GL_TEXTURE_2D:
-			glTexImage2D(target, level, internalFormat, w, h, 0, format, type, stream);
+			GL_CHECK(glTexImage2D(target, level, internalFormat, w, h, 0, format, type, stream));
 		break;
 		case GL_TEXTURE_CUBE_MAP:
 		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, internalFormat, w, h, 0, format, type, stream);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, internalFormat, w, h, 0, format, type, stream);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, internalFormat, w, h, 0, format, type, stream);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, internalFormat, w, h, 0, format, type, stream);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, internalFormat, w, h, 0, format, type, stream);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, internalFormat, w, h, 0, format, type, stream);
+			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, internalFormat, w, h, 0, format, type, stream));
+			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, internalFormat, w, h, 0, format, type, stream));
+			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, internalFormat, w, h, 0, format, type, stream));
+			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, internalFormat, w, h, 0, format, type, stream));
+			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, internalFormat, w, h, 0, format, type, stream));
+			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, internalFormat, w, h, 0, format, type, stream));
 		}
 		break;
 		default:
@@ -119,11 +119,7 @@ EGL2Texture::setup() except
 	}
 
 	if (this->isMipmap())
-	{
-		glGenerateMipmap(target);		
-	}
-
-	EGL2Check::checkError();
+		GL_CHECK(glGenerateMipmap(target));
 
 	return true;
 }
@@ -149,18 +145,18 @@ EGL2Texture::applyTextureWrap(GLenum target, SamplerWrap wrap) noexcept
 {
 	if (SamplerWrap::Repeat == wrap)
 	{
-		glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT));
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT));
 	}
 	else if (SamplerWrap::ClampToEdge == wrap)
 	{
-		glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 	}
 	else if (SamplerWrap::Mirror == wrap)
 	{
-		glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-		glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT));
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT));
 	}
 }
 
@@ -169,33 +165,33 @@ EGL2Texture::applyTextureFilter(GLenum target, SamplerFilter filter) noexcept
 {
 	if (filter == SamplerFilter::Nearest)
 	{
-		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
 	}
 	else if (filter == SamplerFilter::Linear)
 	{
-		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
 	}
 	else if (filter == SamplerFilter::NearestMipmapLinear)
 	{
-		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_LINEAR));
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
 	}
 	else if (filter == SamplerFilter::NearestMipmapNearest)
 	{
-		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST));
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST));
 	}
 	else if (filter == SamplerFilter::LinearMipmapNearest)
 	{
-		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST));
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST));
 	}
 	else if (filter == SamplerFilter::LinearMipmapLinear)
 	{
-		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
 	}
 }
 
@@ -203,15 +199,15 @@ void
 EGL2Texture::applyTextureAnis(GLenum target, SamplerAnis anis) noexcept
 {
 	if (anis == SamplerAnis::Anis1)
-		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1));
 	else if (anis == SamplerAnis::Anis2)
-		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2);
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2));
 	else if (anis == SamplerAnis::Anis4)
-		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4));
 	else if (anis == SamplerAnis::Anis8)
-		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8));
 	else if (anis == SamplerAnis::Anis16)
-		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16));
 }
 
 EGL2RenderTexture::EGL2RenderTexture() noexcept
@@ -231,10 +227,8 @@ EGL2RenderTexture::setup(TexturePtr texture) except
 	assert(!_fbo);
 	assert(texture);
 
-	EGL2Check::checkError();
-
-	glGenFramebuffers(1, &_fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+	GL_CHECK(glGenFramebuffers(1, &_fbo));
+	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, _fbo));
 
 	auto sharedDepthTarget = this->getSharedDepthTexture();
 	auto sharedStencilTarget = this->getSharedStencilTexture();
@@ -255,7 +249,7 @@ EGL2RenderTexture::setup(TexturePtr texture) except
 
 	_resolveTexture = texture;
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 
 	return true;
 }
@@ -307,14 +301,14 @@ EGL2RenderTexture::bindRenderTexture(TexturePtr texture, GLenum attachment) noex
 		case TextureDim::DIM_2D:
 		{
 			if (texture->isMultiSample())
-				glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, handle, 0);
+				GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, handle, 0));
 			else
-				glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0);
+				GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0));
 			break;
 		}
 		case TextureDim::DIM_CUBE:
 		{
-			glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X, handle, 0);
+			GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X, handle, 0));
 			break;
 		}
 	}
@@ -343,13 +337,13 @@ EGL2RenderTexture::getInstanceID() noexcept
 	return _fbo;
 }
 
-void 
+void
 EGL2RenderTexture::setLayer(GLuint layer) noexcept
 {
 	_layer = layer;
 }
 
-GLuint 
+GLuint
 EGL2RenderTexture::getLayer() const noexcept
 {
 	return _layer;
@@ -370,8 +364,8 @@ EGL2MultiRenderTexture::setup() noexcept
 {
 	assert(GL_NONE == _fbo);
 
-	glGenFramebuffers(1, &_fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+	GL_CHECK(glGenFramebuffers(1, &_fbo));
+	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, _fbo));
 
 	auto sharedDepthTarget = this->getSharedDepthTexture();
 	auto sharedStencilTarget = this->getSharedStencilTexture();
@@ -392,7 +386,7 @@ EGL2MultiRenderTexture::setup() noexcept
 		draw[count++] = attachment++;
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 
 	return true;
 }
@@ -423,9 +417,9 @@ EGL2MultiRenderTexture::bindRenderTexture(RenderTexturePtr target, GLenum attach
 		case TextureDim::DIM_2D:
 		{
 			if (target->isMultiSample())
-				glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, handle, 0);
+				GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, handle, 0));
 			else
-				glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0);
+				GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0));
 			break;
 		}
 	}

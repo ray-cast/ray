@@ -54,9 +54,7 @@ Material::setup() except
 	{
 		auto& passList = technique->getPassList();
 		for (auto& pass : passList)
-		{
 			pass->setup(*this);
-		}
 	}
 }
 
@@ -67,9 +65,7 @@ Material::close() noexcept
 	{
 		auto& passList = technique->getPassList();
 		for (auto& pass : passList)
-		{
 			pass->close();
-		}
 	}
 
 	_techniques.clear();
@@ -101,9 +97,7 @@ Material::getTech(RenderQueue queue) noexcept
 	for (auto& it : _techniques)
 	{
 		if (it->getRenderQueue() == queue)
-		{
 			return it;
-		}
 	}
 
 	return nullptr;
@@ -141,9 +135,7 @@ Material::getParameter(const std::string& name) const noexcept
 	for (auto& it : _parameters)
 	{
 		if (it->getName() == name)
-		{
 			return it;
-		}
 	}
 
 	return nullptr;

@@ -50,15 +50,6 @@ __ImplementSubClass(EGL3DeviceContext, GraphicsContext, "EGL3DeviceContext")
 
 EGL3DeviceContext::EGL3DeviceContext() noexcept
 	: _initOpenGL(false)
-	, _maxTextureUnits(32)
-	, _maxViewports(4)
-	, _clearColor(0.0, 0.0, 0.0)
-	, _clearDepth(0.0)
-	, _clearStencil(0xFFFFFFFF)
-	, _viewport(0, 0, 0, 0)
-	, _state(GL_NONE)
-	, _renderTexture(GL_NONE)
-	, _enableWireframe(false)
 {
 }
 
@@ -76,11 +67,8 @@ EGL3DeviceContext::open(WindHandle window) except
 		_glcontext->open(window);
 		_glcontext->setActive(true);
 
-		_textureUnits.resize(_maxTextureUnits);
-		_stateCaptured = std::make_shared<EGL3GraphicsState>();
-
-		this->initDebugControl();
 		this->initStateSystem();
+        this->initDebugControl();
 
 		_initOpenGL = true;
 	}
@@ -129,6 +117,8 @@ EGL3DeviceContext::close() noexcept
 		_glcontext.reset();
 		_glcontext = nullptr;
 	}
+
+    _initOpenGL = false;
 }
 
 void
@@ -214,6 +204,7 @@ EGL3DeviceContext::setGraphicsState(GraphicsStatePtr state) noexcept
 	}
 	else
 	{
+		_stateCaptured->apply(*_stateDefalut);
 		assert(false);
 	}
 }
@@ -459,11 +450,18 @@ EGL3DeviceContext::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
 }
 
 void
+EGL3DeviceContext::setTexture(TexturePtr textures[], std::uint32_t first, std::uint32_t count) noexcept
+{
+	for (std::uint32_t i = first; i < first + count; i++)
+		this->setTexture(textures[i], i);
+}
+
+void
 EGL3DeviceContext::setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept
 {
-	auto glsampler = sampler->downcast<EGL3Sampler>();
-	if (glsampler)
+	if (sampler)
 	{
+		auto glsampler = sampler->downcast<EGL3Sampler>();
 		GLuint samplerID = glsampler->getInstanceID();
 		GL_CHECK(glBindSampler(slot, samplerID));
 	}
@@ -471,6 +469,13 @@ EGL3DeviceContext::setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t 
 	{
 		GL_CHECK(glBindSampler(slot, 0));
 	}
+}
+
+void
+EGL3DeviceContext::setGraphicsSampler(GraphicsSamplerPtr samplers[], std::uint32_t first, std::uint32_t count) noexcept
+{
+	for (std::uint32_t i = first; i < first + count; i++)
+		this->setGraphicsSampler(samplers[i], i);
 }
 
 void
@@ -754,6 +759,9 @@ EGL3DeviceContext::present() noexcept
 void
 EGL3DeviceContext::debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept
 {
+	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+		return;
+
 	std::cerr << "source : ";
 	switch (source)
 	{
@@ -858,13 +866,21 @@ EGL3DeviceContext::initDebugControl() noexcept
 	// enable all
 	GL_CHECK(glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE));
 	// disable ids
-	GL_CHECK(glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 6, ids, GL_FALSE));
+	// GL_CHECK(glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 6, ids, GL_FALSE));
 #endif
 }
 
 void
 EGL3DeviceContext::initStateSystem() noexcept
 {
+    GL_CHECK(glClearDepthf(1.0));
+    GL_CHECK(glClearColor(0.0, 0.0, 0.0, 0.0));
+    GL_CHECK(glClearStencil(0));
+
+    GL_CHECK(glViewport(0, 0, 0, 0));
+
+	GL_CHECK(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
+
 	GL_CHECK(glEnable(GL_DEPTH_TEST));
 	GL_CHECK(glDepthMask(GL_TRUE));
 	GL_CHECK(glDepthFunc(GL_LEQUAL));
@@ -874,11 +890,34 @@ EGL3DeviceContext::initStateSystem() noexcept
 	GL_CHECK(glFrontFace(GL_CW));
 	GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
 
+	GL_CHECK(glDisable(GL_STENCIL_TEST));
+	GL_CHECK(glStencilMask(0xFFFFFFFF));
 	GL_CHECK(glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP));
 	GL_CHECK(glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF));
 
+	GL_CHECK(glDisable(GL_BLEND));
 	GL_CHECK(glBlendEquation(GL_FUNC_ADD));
 	GL_CHECK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
+    _maxTextureUnits = MAX_TEXTURE_UNIT;
+    _maxViewports = 4;
+
+    _clearColor.set(0.0, 0.0, 0.0, 0.0);
+    _clearDepth = 1.0;
+    _clearStencil = 0;
+
+	_viewport.left = 0;
+	_viewport.top = 0;
+	_viewport.width = 0;
+	_viewport.height = 0;
+
+    _enableWireframe = false;
+
+    _textureUnits.resize(_maxTextureUnits);
+
+    _stateDefalut = std::make_shared<EGL3GraphicsState>();
+    _stateCaptured = std::make_shared<EGL3GraphicsState>();
+
 }
 
 _NAME_END

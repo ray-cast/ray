@@ -77,7 +77,10 @@ public:
 	GraphicsDataPtr getVertexBufferData() const noexcept;
 
 	void setTexture(TexturePtr texture, std::uint32_t slot) noexcept;
+	void setTexture(TexturePtr textures[], std::uint32_t first, std::uint32_t count) noexcept;
+
 	void setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept;
+	void setGraphicsSampler(GraphicsSamplerPtr samplers[], std::uint32_t first, std::uint32_t count) noexcept;
 
 	void setRenderTexture(RenderTexturePtr target) noexcept;
 	void setRenderTextureLayer(RenderTexturePtr target, std::int32_t layer) noexcept;
@@ -141,8 +144,10 @@ private:
 
 	EGL3CanvasPtr _glcontext;
 	RenderBufferPtr _renderBuffer;
-	GraphicsStatePtr _state;
-	GraphicsStatePtr _stateCaptured;
+
+	EGL3GraphicsStatePtr _state;
+	EGL3GraphicsStatePtr _stateDefalut;
+	EGL3GraphicsStatePtr _stateCaptured;
 
 	std::vector<GLint> _textureUnits;
 };

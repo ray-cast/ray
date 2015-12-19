@@ -75,8 +75,20 @@ public:
 	void copyRenderTexture(RenderPipeline& pipeline, RenderTexturePtr src, RenderTexturePtr dst, const Viewport& view) noexcept;
 
 private:
+	void setupSemantic(RenderPipeline& pipeline);
+	void setupMaterials(RenderPipeline& pipeline);
+	void setupRenderTextures(RenderPipeline& pipeline);
+
+	void destroySemantic(RenderPipeline& pipeline);
+	void destroyMaterials(RenderPipeline& pipeline);
+	void destroyRenderTextures(RenderPipeline& pipeline);
+
+private:
 	virtual void onActivate(RenderPipeline& pipeline) except;
 	virtual void onDeactivate(RenderPipeline& pipeline) noexcept;
+
+	virtual void onResolutionChangeBefore(RenderPipeline& pipeline) noexcept;
+	virtual void onResolutionChangeAfter(RenderPipeline& pipeline) noexcept;
 
 	virtual void onRenderPre(RenderPipeline& pipeline) noexcept;
 	virtual void onRenderPipeline(RenderPipeline& pipeline) noexcept;
@@ -134,6 +146,16 @@ private:
 	MaterialParamPtr _lightAttenuation;
 	MaterialParamPtr _lightSpotInnerCone;
 	MaterialParamPtr _lightSpotOuterCone;
+
+	MaterialSemanticPtr _materialDepthMap;
+	MaterialSemanticPtr _materialColorMap;
+	MaterialSemanticPtr _materialNormalMap;
+	MaterialSemanticPtr _materialDeferredDepthMap;
+	MaterialSemanticPtr _materialDeferredDepthLinearMap;
+	MaterialSemanticPtr _materialDeferredGraphicMap;
+	MaterialSemanticPtr _materialDeferredNormalMap;
+	MaterialSemanticPtr _materialDeferredLightMap;
+	MaterialSemanticPtr _materialDeferredShadowMap;
 
 	RenderTexturePtr _deferredDepthMap;
 	RenderTexturePtr _deferredDepthLinearMap;

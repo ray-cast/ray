@@ -41,56 +41,14 @@
 
 _NAME_BEGIN
 
-enum MaterialSemantic
-{
-	NotSemantic = -1,
-
-	matModel,
-	matModelInverse,
-	matModelInverseTranspose,
-
-	matProject,
-	matProjectInverse,
-
-	matView,
-	matViewInverse,
-	matViewInverseTranspose,
-
-	matViewProject,
-	matViewProjectInverse,
-
-	CameraAperture,
-	CameraNear,
-	CameraFar,
-	CameraView,
-	CameraPosition,
-	CameraDirection,
-
-	DepthMap,
-	ColorMap,
-	NormalMap,
-
-	DeferredDepthMap,
-	DeferredDepthLinearMap,
-	DeferredGraphicMap,
-	DeferredNormalMap,
-	DeferredLightMap,
-	DeferredShadowMap,
-
-	NumSemantic
-};
-
-class EXPORT MaterialSemanticParam final
+class EXPORT MaterialSemantic final
 {
 public:
-	MaterialSemanticParam(const std::string& name, ShaderVariantType type, MaterialSemantic semantic = MaterialSemantic::NotSemantic) noexcept;
-	~MaterialSemanticParam() noexcept;
+	MaterialSemantic(const std::string& name, ShaderVariantType type) noexcept;
+	~MaterialSemantic() noexcept;
 
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
-
-	void setSemantic(MaterialSemantic semantic) noexcept;
-	MaterialSemantic getSemantic() const noexcept;
 
 	void setType(ShaderVariantType type) noexcept;
 	ShaderVariantType getType() const noexcept;
@@ -132,8 +90,6 @@ private:
 
 	std::string _name;
 
-	MaterialSemantic _semantic;
-
 	TexturePtr _texture;
 	GraphicsSamplerPtr _textureSampler;
 
@@ -151,7 +107,6 @@ private:
 	} _value;
 
 	ShaderVariantType _type;
-
 	ShaderVariants _params;
 };
 
@@ -159,7 +114,7 @@ class EXPORT MaterialParam final
 {
 public:
 	MaterialParam() noexcept;
-	MaterialParam(const std::string& name, ShaderVariantType type, MaterialSemantic semantic = MaterialSemantic::NotSemantic) noexcept;
+	MaterialParam(const std::string& name, ShaderVariantType type) noexcept;
 	virtual ~MaterialParam() noexcept;
 
 	void setName(const std::string& name) noexcept;
@@ -167,6 +122,9 @@ public:
 
 	void setType(ShaderVariantType type) noexcept;
 	ShaderVariantType getType() const noexcept;
+
+	void setSemantic(MaterialSemanticPtr semantic) noexcept;
+	MaterialSemanticPtr getSemantic() const noexcept;
 
 	void assign(bool value) noexcept;
 	void assign(int value) noexcept;
@@ -185,9 +143,6 @@ public:
 
 	TexturePtr getTexture() const noexcept;
 
-	void setSemantic(MaterialSemantic semantic) noexcept;
-	MaterialSemantic getSemantic() const noexcept;
-
 	void addShaderUniform(ShaderUniformPtr& uniform) noexcept;
 	void removeShaderUniform(ShaderUniformPtr& uniform) noexcept;
 	ShaderUniforms& getShaderUniform() noexcept;;
@@ -199,9 +154,9 @@ private:
 private:
 
 	std::string _name;
-	ShaderVariantType _type;
-	MaterialSemantic _semantic;
+	MaterialSemanticPtr _semantic;
 	TexturePtr _texture;
+	ShaderVariantType _type;
 	ShaderUniforms _uniforms;
 };
 

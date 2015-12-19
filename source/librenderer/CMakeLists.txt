@@ -51,11 +51,11 @@ SET(RENDERER_CORE
     ${SOURCE_PATH}/graphics_state.cpp
     ${HEADER_PATH}/graphics_sampler.h
     ${SOURCE_PATH}/graphics_sampler.cpp
+    ${HEADER_PATH}/graphics_types.h
     ${HEADER_PATH}/render_texture.h
     ${SOURCE_PATH}/render_texture.cpp
     ${HEADER_PATH}/render_command.h
     ${SOURCE_PATH}/render_command.cpp
-    ${HEADER_PATH}/render_types.h
     ${HEADER_PATH}/shader.h
     ${SOURCE_PATH}/shader.cpp
 )
@@ -186,6 +186,7 @@ SET(RENDERER_SYSTEM
     ${SOURCE_PATH}/render_setting.cpp
     ${HEADER_PATH}/render_system.h
     ${SOURCE_PATH}/render_system.cpp
+    ${HEADER_PATH}/render_types.h
 )
 SOURCE_GROUP("renderer" FILES ${RENDERER_SYSTEM})
 
@@ -217,7 +218,7 @@ ADD_LIBRARY(librenderer SHARED
     ${RENDERER_SYSTEM}
 )
 
-TARGET_LINK_LIBRARIES(librenderer libplatform libmodel libimage freetype)
+TARGET_LINK_LIBRARIES(librenderer libplatform libmodel libimage freetype libHLSLcc)
 
 IF(BUILD_PLATFORM_WINDOWS)
     IF(BUILD_OPENGL_ES)

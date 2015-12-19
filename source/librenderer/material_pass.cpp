@@ -56,11 +56,6 @@ MaterialPass::setup(Material& material) except
 {
 	assert(_shaderObject);
 
-	if (!_graphicsState)
-	{
-		_graphicsState = RenderSystem::instance()->createGraphicsState();
-	}
-
 	if (_shaderObject->setup())
 	{
 		auto& uniforms = _shaderObject->getActiveUniforms();

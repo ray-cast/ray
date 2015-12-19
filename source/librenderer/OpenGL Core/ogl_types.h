@@ -156,6 +156,7 @@ typedef std::shared_ptr<class OGLVertexBuffer> OGLVertexBufferPtr;
 typedef std::shared_ptr<class OGLIndexBuffer> OGLIndexBufferPtr;
 typedef std::shared_ptr<class OGLGraphicsLayout> OGLGraphicsLayoutPtr;
 typedef std::shared_ptr<class OGLDrawIndirectBuffer> OGLDrawIndirectBufferPtr;
+typedef std::shared_ptr<class OGLGraphicsState> OGLGraphicsStatePtr;
 typedef std::shared_ptr<class OGLSampler> OGLSamplerPtr;
 
 class OGLTypes

@@ -45,14 +45,14 @@ typedef std::shared_ptr<class Material> MaterialPtr;
 typedef std::shared_ptr<class MaterialPass> MaterialPassPtr;
 typedef std::shared_ptr<class MaterialTech> MaterialTechPtr;
 typedef std::shared_ptr<class MaterialParam> MaterialParamPtr;
-typedef std::shared_ptr<class MaterialSemanticParam> MaterialSemanticParamPtr;
+typedef std::shared_ptr<class MaterialSemantic> MaterialSemanticPtr;
 typedef std::shared_ptr<class MaterialManager> MaterialManagerPtr;
 
 typedef std::vector<MaterialPtr> Materials;
 typedef std::vector<MaterialPassPtr> MaterialPassList;
 typedef std::vector<MaterialTechPtr> MaterialTechniques;
 typedef std::vector<MaterialParamPtr> MaterialParams;
-typedef std::vector<MaterialSemanticParamPtr> MaterialSemanticParams;
+typedef std::vector<MaterialSemanticPtr> MaterialSemantics;
 
 _NAME_END
 

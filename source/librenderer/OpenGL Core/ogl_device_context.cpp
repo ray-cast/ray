@@ -52,20 +52,7 @@ __ImplementSubClass(OGLDeviceContext, GraphicsContext, "OGLDeviceContext")
 
 OGLDeviceContext::OGLDeviceContext() noexcept
 	: _initOpenGL(false)
-	, _maxTextureUnits(32)
-	, _maxViewports(4)
-	, _clearColor(0.0, 0.0, 0.0)
-	, _clearDepth(0.0)
-	, _clearStencil(0xFFFFFFFF)
-	, _state(GL_NONE)
-	, _renderTexture(GL_NONE)
-	, _enableWireframe(false)
-	, _needUpdateLayout(false)
-	, _needUpdateVbo(false)
-	, _needUpdateIbo(false)
 {
-	_viewport.resize(_maxViewports);
-	_stateCaptured = std::make_shared<OGLGraphicsState>();
 }
 
 OGLDeviceContext::~OGLDeviceContext() noexcept
@@ -123,6 +110,8 @@ OGLDeviceContext::close() noexcept
 		_glcontext.reset();
 		_glcontext = nullptr;
 	}
+
+	_initOpenGL = false;
 }
 
 void
@@ -205,7 +194,7 @@ OGLDeviceContext::setGraphicsState(GraphicsStatePtr state) noexcept
 	}
 	else
 	{
-		assert(false);
+		_stateCaptured->apply(*_stateDefalut);
 	}
 }
 
@@ -422,17 +411,53 @@ OGLDeviceContext::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
 }
 
 void
+OGLDeviceContext::setTexture(TexturePtr texture[], std::uint32_t first, std::uint32_t count) noexcept
+{
+	if (count < MAX_TEXTURE_UNIT)
+	{
+		GLuint textures[MAX_TEXTURE_UNIT];
+		for (std::uint32_t i = 0; i < count; i++)
+		{
+			if (texture[i])
+				textures[i] = std::dynamic_pointer_cast<OGLTexture>(texture[i])->getInstanceID();
+			else
+				textures[i] = GL_NONE;
+		}
+
+		glBindTextures(first, count, textures);
+	}
+}
+
+void
 OGLDeviceContext::setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept
 {
-	auto glsampler = sampler->downcast<OGLSampler>();
-	if (glsampler)
+	if (sampler)
 	{
+		auto glsampler = sampler->downcast<OGLSampler>();
 		GLuint samplerID = glsampler->getInstanceID();
 		glBindSampler(slot, samplerID);
 	}
 	else
 	{
 		glBindSampler(slot, 0);
+	}
+}
+
+void
+OGLDeviceContext::setGraphicsSampler(GraphicsSamplerPtr sampler[], std::uint32_t first, std::uint32_t count) noexcept
+{
+	if (count < MAX_SAMPLER_UNIT)
+	{
+		GLuint samplers[MAX_SAMPLER_UNIT];
+		for (std::uint32_t i = 0; i < count; i++)
+		{
+			if (sampler[i])
+				samplers[i] = sampler[i]->downcast<OGLSampler>()->getInstanceID();
+			else
+				samplers[i] = GL_NONE;
+		}
+
+		glBindSamplers(first, count, samplers);
 	}
 }
 
@@ -867,6 +892,14 @@ OGLDeviceContext::initCommandList() noexcept
 void
 OGLDeviceContext::initStateSystem() noexcept
 {
+	glClearDepth(1.0);
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClearStencil(0);
+
+	glViewport(0, 0, 0, 0);
+
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LEQUAL);
@@ -876,11 +909,32 @@ OGLDeviceContext::initStateSystem() noexcept
 	glFrontFace(GL_CW);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+	glDisable(GL_STENCIL_TEST);
+	glStencilMask(0xFFFFFFFF);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF);
 
+	glDisable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	_maxTextureUnits = MAX_TEXTURE_UNIT;
+	_maxViewports = 4;
+
+	_clearColor.set(0.0, 0.0, 0.0, 0.0);
+	_clearDepth = 1.0;
+	_clearStencil = 0;
+
+	_enableWireframe = false;
+
+	_needUpdateLayout = false;
+	_needUpdateVbo = false;
+	_needUpdateIbo = false;
+
+	_viewport.resize(_maxViewports);
+
+	_stateDefalut = std::make_shared<OGLGraphicsState>();
+	_stateCaptured = std::make_shared<OGLGraphicsState>();
 }
 
 _NAME_END

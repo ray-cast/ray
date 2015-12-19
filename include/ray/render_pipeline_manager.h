@@ -53,6 +53,9 @@ public:
 	void setRenderPipeline(RenderPipelinePtr pipeline) noexcept;
 	RenderPipelinePtr getRenderPipeline() noexcept;
 
+	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
+	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
+
 	void renderBegin() noexcept;
 	void render(const RenderScene& scene) noexcept;
 	void renderEnd() noexcept;

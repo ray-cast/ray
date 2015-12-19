@@ -42,12 +42,11 @@
 
 _NAME_BEGIN
 
-class DefaultRenderDataManager : public RenderDataManager
+class DefaultRenderDataManager final : public RenderDataManager
 {
 public:
-
-	void open() noexcept;
-	void close() noexcept;
+	DefaultRenderDataManager() noexcept;
+	~DefaultRenderDataManager() noexcept;
 
 	void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept;
 	RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept;

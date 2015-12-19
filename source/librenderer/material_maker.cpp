@@ -35,15 +35,17 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/material_maker.h>
+#include <ray/material_manager.h>
 #include <ray/graphics_state.h>
+#include <ray/graphics_device.h>
 #include <ray/shader.h>
 #include <ray/render_system.h>
 #include <ray/ioserver.h>
-#include <ray/resource.h>
-#include <ray/except.h>
-#include <ray/mstream.h>
 #include <ray/xmlreader.h>
 #include <ray/parse.h>
+
+#define EXCLUDE_PSTDINT
+#include <hlslcc.hpp>
 
 _NAME_BEGIN
 
@@ -56,16 +58,16 @@ MaterialMaker::~MaterialMaker() noexcept
 }
 
 GraphicsStatePtr
-MaterialMaker::instanceState(iarchive& reader) except
+MaterialMaker::instanceState(MaterialManager& manager, iarchive& reader) except
 {
-	auto state = RenderSystem::instance()->createGraphicsState();
+	auto state = manager.getGraphicsDevice()->createGraphicsState();
 	return state;
 }
 
 ShaderPtr
-MaterialMaker::instanceShader(iarchive& reader) except
+MaterialMaker::instanceShader(MaterialManager& manager, iarchive& reader) except
 {
-	auto shader = RenderSystem::instance()->createShader();
+	auto shader = manager.getGraphicsDevice()->createShader();
 
 	std::string type;
 	reader.getValue("name", type);
@@ -96,7 +98,7 @@ MaterialMaker::instanceShader(iarchive& reader) except
 }
 
 MaterialPassPtr
-MaterialMaker::instancePass(iarchive& reader) except
+MaterialMaker::instancePass(MaterialManager& manager, iarchive& reader) except
 {
 	RenderPass passType = RenderPass::RP_CUSTOM;
 
@@ -125,8 +127,8 @@ MaterialMaker::instancePass(iarchive& reader) except
 
 	if (reader.setToFirstChild())
 	{
-		ShaderObjectPtr shaderObject = RenderSystem::instance()->createShaderObject();
-		GraphicsStatePtr state = RenderSystem::instance()->createGraphicsState();
+		ShaderObjectPtr shaderObject = manager.getGraphicsDevice()->createShaderObject();
+		GraphicsStatePtr state = manager.getGraphicsDevice()->createGraphicsState();
 
 		RenderDepthState depthState;
 		RenderRasterState rasterState;
@@ -136,104 +138,89 @@ MaterialMaker::instancePass(iarchive& reader) except
 		do
 		{
 			auto nodeName = reader.getCurrentNodeName();
-			if (nodeName == "state")
-			{
-				std::string name = reader.getValue<std::string>("name");
-				std::string value = reader.getValue<std::string>("value");
-
-				if (name == "vertex")
-				{
-					auto shader = instanceShader(reader);
-					if (shader)
-					{
-						shaderObject->addShader(shader);
-					}
-				}
-				else if (name == "fragment")
-				{
-					auto shader = instanceShader(reader);
-					if (shader)
-					{
-						shaderObject->addShader(shader);
-					}
-				}
-				else if (name == "cullmode")
-					rasterState.cullMode = stringToCullMode(reader.getValue<std::string>("value"));
-				else if (name == "fillmode")
-					rasterState.fillMode = stringToFillMode(reader.getValue<std::string>("value"));
-				else if (name == "scissorTestEnable")
-					rasterState.scissorTestEnable = reader.getValue<bool>("value");
-				else if (name == "primitive")
-					rasterState.primitiveType = stringToPrimitive(reader.getValue<std::string>("value"));
-				else if (name == "multisampleEnable")
-					rasterState.multisampleEnable = reader.getValue<bool>("value");
-				else if (name == "srgbEnable")
-					rasterState.srgbEnable = reader.getValue<bool>("value");
-				else if (name == "blend")
-					blendState.blendEnable = reader.getValue<bool>("value");
-				else if (name == "blendSeparate")
-					blendState.blendSeparateEnable = reader.getValue<bool>("value");
-				else if (name == "blendOp")
-					blendState.blendOp = stringToBlendOperation(reader.getValue<std::string>("value"));
-				else if (name == "blendsrc")
-					blendState.blendSrc = stringToBlendFactor(reader.getValue<std::string>("value"));
-				else if (name == "blenddst")
-					blendState.blendDest = stringToBlendFactor(reader.getValue<std::string>("value"));
-				else if (name == "blendalphaop")
-					blendState.blendAlphaOp = stringToBlendOperation(reader.getValue<std::string>("value"));
-				else if (name == "blendalphasrc")
-					blendState.blendAlphaSrc = stringToBlendFactor(reader.getValue<std::string>("value"));
-				else if (name == "blendalphadst")
-					blendState.blendAlphaDest = stringToBlendFactor(reader.getValue<std::string>("value"));
-				else if (name == "colormask")
-					blendState.colorWriteMask = stringToColorMask(reader.getValue<std::string>("value"));
-				else if (name == "depthtest")
-					depthState.depthEnable = reader.getValue<bool>("value");
-				else if (name == "depthwrite")
-					depthState.depthWriteMask = reader.getValue<bool>("value");
-				else if (name == "depthfunc")
-					depthState.depthFunc = stringToCompareFunc(reader.getValue<std::string>("value"));
-				else if (name == "depthBiasEnable")
-					depthState.depthBiasEnable = reader.getValue<bool>("value");
-				else if (name == "depthSlopScaleBias")
-					depthState.depthSlopScaleBias = reader.getValue<float>("value");
-				else if (name == "depthBias")
-					depthState.depthBias = reader.getValue<float>("value");
-				else if (name == "stencilTest")
-					stencilState.stencilEnable = reader.getValue<bool>("value");
-				else if (name == "stencilRef")
-					stencilState.stencilRef = reader.getValue<int>("value");
-				else if (name == "stencilFunc")
-					stencilState.stencilFunc = stringToCompareFunc(reader.getValue<std::string>("value"));
-				else if (name == "stencilReadMask")
-					stencilState.stencilReadMask = reader.getValue<int>("value");
-				else if (name == "stencilWriteMask")
-					stencilState.stencilWriteMask = reader.getValue<int>("value");
-				else if (name == "stencilFail")
-					stencilState.stencilFail = stringToStencilOp(reader.getValue<std::string>("value"));
-				else if (name == "stencilZFail")
-					stencilState.stencilZFail = stringToStencilOp(reader.getValue<std::string>("value"));
-				else if (name == "stencilPass")
-					stencilState.stencilPass = stringToStencilOp(reader.getValue<std::string>("value"));
-				else if (name == "stencilTwoTest")
-					stencilState.stencilTwoEnable = reader.getValue<bool>("value");
-				else if (name == "stencilTwoFunc")
-					stencilState.stencilTwoFunc = stringToCompareFunc(reader.getValue<std::string>("value"));
-				else if (name == "stencilTwoReadMask")
-					stencilState.stencilTwoReadMask = reader.getValue<int>("value");
-				else if (name == "stencilTwoWriteMask")
-					stencilState.stencilTwoWriteMask = reader.getValue<int>("value");
-				else if (name == "stencilTwoFail")
-					stencilState.stencilTwoFail = stringToStencilOp(reader.getValue<std::string>("value"));
-				else if (name == "stencilTwoZFail")
-					stencilState.stencilTwoZFail = stringToStencilOp(reader.getValue<std::string>("value"));
-				else if (name == "stencilTwoPass")
-					stencilState.stencilTwoPass = stringToStencilOp(reader.getValue<std::string>("value"));
-			}
-			else
-			{
+			if (nodeName != "state")
 				throw failure(__TEXT("Unkonwn node name ") + nodeName + reader.getCurrentNodePath());
-			}
+
+			std::string name = reader.getValue<std::string>("name");
+			std::string value = reader.getValue<std::string>("value");
+
+			if (name == "vertex")
+				shaderObject->addShader(instanceShader(manager, reader));
+			else if (name == "fragment")
+				shaderObject->addShader(instanceShader(manager, reader));
+			else if (name == "cullmode")
+				rasterState.cullMode = stringToCullMode(reader.getValue<std::string>("value"));
+			else if (name == "fillmode")
+				rasterState.fillMode = stringToFillMode(reader.getValue<std::string>("value"));
+			else if (name == "scissorTestEnable")
+				rasterState.scissorTestEnable = reader.getValue<bool>("value");
+			else if (name == "primitive")
+				rasterState.primitiveType = stringToPrimitive(reader.getValue<std::string>("value"));
+			else if (name == "multisampleEnable")
+				rasterState.multisampleEnable = reader.getValue<bool>("value");
+			else if (name == "srgbEnable")
+				rasterState.srgbEnable = reader.getValue<bool>("value");
+			else if (name == "blend")
+				blendState.blendEnable = reader.getValue<bool>("value");
+			else if (name == "blendSeparate")
+				blendState.blendSeparateEnable = reader.getValue<bool>("value");
+			else if (name == "blendOp")
+				blendState.blendOp = stringToBlendOperation(reader.getValue<std::string>("value"));
+			else if (name == "blendsrc")
+				blendState.blendSrc = stringToBlendFactor(reader.getValue<std::string>("value"));
+			else if (name == "blenddst")
+				blendState.blendDest = stringToBlendFactor(reader.getValue<std::string>("value"));
+			else if (name == "blendalphaop")
+				blendState.blendAlphaOp = stringToBlendOperation(reader.getValue<std::string>("value"));
+			else if (name == "blendalphasrc")
+				blendState.blendAlphaSrc = stringToBlendFactor(reader.getValue<std::string>("value"));
+			else if (name == "blendalphadst")
+				blendState.blendAlphaDest = stringToBlendFactor(reader.getValue<std::string>("value"));
+			else if (name == "colormask")
+				blendState.colorWriteMask = stringToColorMask(reader.getValue<std::string>("value"));
+			else if (name == "depthtest")
+				depthState.depthEnable = reader.getValue<bool>("value");
+			else if (name == "depthwrite")
+				depthState.depthWriteMask = reader.getValue<bool>("value");
+			else if (name == "depthfunc")
+				depthState.depthFunc = stringToCompareFunc(reader.getValue<std::string>("value"));
+			else if (name == "depthBiasEnable")
+				depthState.depthBiasEnable = reader.getValue<bool>("value");
+			else if (name == "depthSlopScaleBias")
+				depthState.depthSlopScaleBias = reader.getValue<float>("value");
+			else if (name == "depthBias")
+				depthState.depthBias = reader.getValue<float>("value");
+			else if (name == "stencilTest")
+				stencilState.stencilEnable = reader.getValue<bool>("value");
+			else if (name == "stencilRef")
+				stencilState.stencilRef = reader.getValue<int>("value");
+			else if (name == "stencilFunc")
+				stencilState.stencilFunc = stringToCompareFunc(reader.getValue<std::string>("value"));
+			else if (name == "stencilReadMask")
+				stencilState.stencilReadMask = reader.getValue<int>("value");
+			else if (name == "stencilWriteMask")
+				stencilState.stencilWriteMask = reader.getValue<int>("value");
+			else if (name == "stencilFail")
+				stencilState.stencilFail = stringToStencilOp(reader.getValue<std::string>("value"));
+			else if (name == "stencilZFail")
+				stencilState.stencilZFail = stringToStencilOp(reader.getValue<std::string>("value"));
+			else if (name == "stencilPass")
+				stencilState.stencilPass = stringToStencilOp(reader.getValue<std::string>("value"));
+			else if (name == "stencilTwoTest")
+				stencilState.stencilTwoEnable = reader.getValue<bool>("value");
+			else if (name == "stencilTwoFunc")
+				stencilState.stencilTwoFunc = stringToCompareFunc(reader.getValue<std::string>("value"));
+			else if (name == "stencilTwoReadMask")
+				stencilState.stencilTwoReadMask = reader.getValue<int>("value");
+			else if (name == "stencilTwoWriteMask")
+				stencilState.stencilTwoWriteMask = reader.getValue<int>("value");
+			else if (name == "stencilTwoFail")
+				stencilState.stencilTwoFail = stringToStencilOp(reader.getValue<std::string>("value"));
+			else if (name == "stencilTwoZFail")
+				stencilState.stencilTwoZFail = stringToStencilOp(reader.getValue<std::string>("value"));
+			else if (name == "stencilTwoPass")
+				stencilState.stencilTwoPass = stringToStencilOp(reader.getValue<std::string>("value"));
+
 		} while (reader.setToNextChild());
 
 		state->setDepthState(depthState);
@@ -249,7 +236,7 @@ MaterialMaker::instancePass(iarchive& reader) except
 }
 
 MaterialTechPtr
-MaterialMaker::instanceTech(iarchive& reader) except
+MaterialMaker::instanceTech(MaterialManager& manager, iarchive& reader) except
 {
 	RenderQueue queue = RenderQueue::RQ_OPAQUE;
 
@@ -281,7 +268,7 @@ MaterialMaker::instanceTech(iarchive& reader) except
 			auto name = reader.getCurrentNodeName();
 			if (name == "pass")
 			{
-				tech->addPass(instancePass(reader));
+				tech->addPass(instancePass(manager, reader));
 			}
 		} while (reader.setToNextChild());
 	}
@@ -290,7 +277,7 @@ MaterialMaker::instanceTech(iarchive& reader) except
 }
 
 void
-MaterialMaker::instanceParameter(MaterialPtr& material, iarchive& reader) except
+MaterialMaker::instanceParameter(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
 {
 	auto name = reader.getValue<std::string>("name");
 	auto type = reader.getValue<std::string>("type");
@@ -298,9 +285,7 @@ MaterialMaker::instanceParameter(MaterialPtr& material, iarchive& reader) except
 	auto value = reader.getValue<std::string>("value");
 
 	if (name.empty())
-	{
 		throw failure(__TEXT("The parameter name can not be empty"));
-	}
 
 	if (!type.empty())
 	{
@@ -346,64 +331,13 @@ MaterialMaker::instanceParameter(MaterialPtr& material, iarchive& reader) except
 	}
 	else if (!semantic.empty())
 	{
+		auto materialSemantic = manager.getSemantic(semantic);
+		if (!materialSemantic)
+			throw failure(__TEXT("Unknown semantic : ") + semantic);
+
 		auto param = std::make_shared<MaterialParam>();
 		param->setName(name);
-		if (semantic == "matModel")
-			param->setSemantic(MaterialSemantic::matModel);
-		else if (semantic == "matModelInverse")
-			param->setSemantic(MaterialSemantic::matModelInverse);
-		else if (semantic == "matModelInverseTranspose")
-			param->setSemantic(MaterialSemantic::matModelInverseTranspose);
-		else if (semantic == "matProject")
-			param->setSemantic(MaterialSemantic::matProject);
-		else if (semantic == "matProjectInverse")
-			param->setSemantic(MaterialSemantic::matProjectInverse);
-		else if (semantic == "matView")
-			param->setSemantic(MaterialSemantic::matView);
-		else if (semantic == "matViewInverse")
-			param->setSemantic(MaterialSemantic::matViewInverse);
-		else if (semantic == "matViewInverseTranspose")
-			param->setSemantic(MaterialSemantic::matViewInverseTranspose);
-		else if (semantic == "matViewProject")
-			param->setSemantic(MaterialSemantic::matViewProject);
-		else if (semantic == "matViewProjectInverse")
-			param->setSemantic(MaterialSemantic::matViewProjectInverse);
-		else if (semantic == "CameraAperture")
-			param->setSemantic(MaterialSemantic::CameraAperture);
-		else if (semantic == "CameraFar")
-			param->setSemantic(MaterialSemantic::CameraFar);
-		else if (semantic == "CameraNear")
-			param->setSemantic(MaterialSemantic::CameraNear);
-		else if (semantic == "CameraView")
-			param->setSemantic(MaterialSemantic::CameraView);
-		else if (semantic == "CameraPosition")
-			param->setSemantic(MaterialSemantic::CameraPosition);
-		else if (semantic == "CameraDirection")
-			param->setSemantic(MaterialSemantic::CameraDirection);
-		else if (semantic == "DepthMap")
-			param->setSemantic(MaterialSemantic::DepthMap);
-		else if (semantic == "ColorMap")
-			param->setSemantic(MaterialSemantic::ColorMap);
-		else if (semantic == "NormalMap")
-			param->setSemantic(MaterialSemantic::NormalMap);
-		else if (semantic == "DeferredDepthMap")
-			param->setSemantic(MaterialSemantic::DeferredDepthMap);
-		else if (semantic == "DeferredDepthLinearMap")
-			param->setSemantic(MaterialSemantic::DeferredDepthLinearMap);
-		else if (semantic == "DeferredGraphicMap")
-			param->setSemantic(MaterialSemantic::DeferredGraphicMap);
-		else if (semantic == "DeferredNormalMap")
-			param->setSemantic(MaterialSemantic::DeferredNormalMap);
-		else if (semantic == "DeferredLightMap")
-			param->setSemantic(MaterialSemantic::DeferredLightMap);
-		else if (semantic == "DeferredShadowMap")
-			param->setSemantic(MaterialSemantic::DeferredShadowMap);
-		else
-		{
-			assert(false);
-			throw failure(__TEXT("Unknown semantic type : ") + name);
-		}
-
+		param->setSemantic(materialSemantic);
 		material->addParameter(param);
 	}
 }
@@ -428,7 +362,7 @@ MaterialMaker::instanceBuffer(MaterialPtr& material, iarchive& reader) except
 }
 
 MaterialPtr
-MaterialMaker::load(const std::string& filename) except
+MaterialMaker::load(MaterialManager& manager, const std::string& filename) except
 {
 	try
 	{
@@ -438,7 +372,7 @@ MaterialMaker::load(const std::string& filename) except
 
 		XMLReader reader;
 		if (reader.open(*stream))
-			return this->load(reader);
+			return this->load(manager, reader);
 
 		return nullptr;
 	}
@@ -449,7 +383,7 @@ MaterialMaker::load(const std::string& filename) except
 }
 
 MaterialPtr
-MaterialMaker::load(iarchive& reader) except
+MaterialMaker::load(MaterialManager& manager, iarchive& reader) except
 {
 	std::string nodeName;
 	nodeName = reader.getCurrentNodeName();
@@ -475,7 +409,7 @@ MaterialMaker::load(iarchive& reader) except
 		if (!name.empty())
 		{
 			MaterialMaker maker;
-			auto material = maker.load(name);
+			auto material = maker.load(manager, name);
 			if (material)
 			{
 				for (auto& arg : args)
@@ -521,7 +455,7 @@ MaterialMaker::load(iarchive& reader) except
 			std::string name = reader.getCurrentNodeName();
 			if (name == "parameter")
 			{
-				instanceParameter(material, reader);
+				instanceParameter(manager, material, reader);
 			}
 			else if (name == "buffer")
 			{
@@ -534,7 +468,7 @@ MaterialMaker::load(iarchive& reader) except
 				auto path = reader.getValue<std::string>("name");
 				if (!path.empty())
 				{
-					this->load(path);
+					this->load(manager, path);
 				}
 			}
 			else if (name == "shader")
@@ -560,12 +494,12 @@ MaterialMaker::load(iarchive& reader) except
 			}
 			else if (name == "technique")
 			{
-				auto tech = instanceTech(reader);
+				auto tech = instanceTech(manager, reader);
 				if (tech)
 					material->addTech(tech);
 			}
 		} while (reader.setToNextChild());
-
+		
 		material->setup();
 		return material;
 	}

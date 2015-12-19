@@ -77,7 +77,10 @@ public:
 	GraphicsDataPtr getVertexBufferData() const noexcept;
 
 	void setTexture(TexturePtr texture, std::uint32_t slot) noexcept;
+	void setTexture(TexturePtr texture[], std::uint32_t first, std::uint32_t end) noexcept;
+
 	void setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept;
+	void setGraphicsSampler(GraphicsSamplerPtr sampler[], std::uint32_t first, std::uint32_t count) noexcept;
 
 	void setRenderTexture(RenderTexturePtr target) noexcept;
 	void setRenderTextureLayer(RenderTexturePtr target, std::int32_t layer) noexcept;
@@ -130,8 +133,9 @@ private:
 
 	ShaderObjectPtr _shaderObject;
 
-	GraphicsStatePtr _state;
-	GraphicsStatePtr _stateCaptured;
+	OGLGraphicsStatePtr _state;
+	OGLGraphicsStatePtr _stateCaptured;
+	OGLGraphicsStatePtr _stateDefalut;
 
 	GLuint _stateObjDraw;
 	GLuint _stateObjDrawGeo;

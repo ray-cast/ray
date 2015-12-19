@@ -198,8 +198,8 @@ EGL3Canvas::setActive(bool active) except
 		}
 		else
 		{
-			if (!eglMakeCurrent(_display, _surface, _surface, EGL_NO_CONTEXT))
-				throw failure(__TEXT("eglMakeCurrent() fail"));
+			/*if (!eglMakeCurrent(_display, _surface, _surface, EGL_NO_CONTEXT))
+				throw failure(__TEXT("eglMakeCurrent() fail"));*/
 		}
 
 		_isActive = active;

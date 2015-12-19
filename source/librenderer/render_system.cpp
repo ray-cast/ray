@@ -328,14 +328,14 @@ void
 RenderSystem::setWindowResolution(std::uint32_t w, std::uint32_t h) except
 {
 	assert(_renderPipeline);
-	_renderPipeline->setWindowResolution(w, h);
+	_pipelineManager->setWindowResolution(w, h);
 }
 
 void 
 RenderSystem::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept
 {
 	assert(_renderPipeline);
-	_renderPipeline->getWindowResolution(w, h);
+	_pipelineManager->getWindowResolution(w, h);
 }
 
 void 
@@ -404,7 +404,7 @@ RenderSystem::createTexture(const std::string& name) except
 }
 
 MaterialPtr
-RenderSystem::createMaterial(const std::string& name) noexcept
+RenderSystem::createMaterial(const std::string& name) except
 {
 	assert(_renderPipeline);
 	return _renderPipeline->createMaterial(name);
@@ -422,27 +422,6 @@ RenderSystem::createMultiRenderTexture() noexcept
 {
 	assert(_renderPipeline);
 	return _renderPipeline->createMultiRenderTexture();
-}
-
-GraphicsStatePtr
-RenderSystem::createGraphicsState() noexcept
-{
-	assert(_renderPipeline);
-	return _renderPipeline->createGraphicsState();
-}
-
-ShaderPtr 
-RenderSystem::createShader() noexcept
-{
-	assert(_renderPipeline);
-	return _renderPipeline->createShader();
-}
-
-ShaderObjectPtr 
-RenderSystem::createShaderObject() noexcept
-{
-	assert(_renderPipeline);
-	return _renderPipeline->createShaderObject();
 }
 
 GraphicsDataPtr

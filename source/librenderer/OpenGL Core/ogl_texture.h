@@ -61,12 +61,14 @@ private:
 
 private:
 
+	GLenum _target;
 	GLuint _texture;
 	GLuint64 _textureAddr;
 };
 
 class OGLRenderTexture final : public RenderTexture
 {
+	__DeclareSubClass(OGLRenderTexture, RenderTexture)
 public:
 	OGLRenderTexture() noexcept;
 	~OGLRenderTexture() noexcept;

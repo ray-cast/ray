@@ -80,7 +80,6 @@ OGLVertexBuffer::is_open() const noexcept
 void
 OGLVertexBuffer::bind(const OGLGraphicsLayoutPtr& layout) noexcept
 {
-	GLuint offset = 0;
 	GLsizei vertexByteSize = layout->getVertexSize();
 	glBindVertexBuffer(0, _vertexData.getInstanceID(), 0, vertexByteSize);
 }

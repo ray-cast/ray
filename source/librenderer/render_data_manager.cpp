@@ -35,17 +35,14 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_data_manager.h>
-#include <ray/render_post_process.h>
 
 _NAME_BEGIN
 
-void 
-DefaultRenderDataManager::open() noexcept
+DefaultRenderDataManager::DefaultRenderDataManager() noexcept
 {
 }
 
-void
-DefaultRenderDataManager::close() noexcept
+DefaultRenderDataManager::~DefaultRenderDataManager() noexcept
 {
 }
 

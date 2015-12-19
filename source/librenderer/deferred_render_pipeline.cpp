@@ -55,6 +55,16 @@ DeferredRenderPipeline::DeferredRenderPipeline() noexcept
 	_backCamera = std::make_shared<Camera>();
 	_topCamera = std::make_shared<Camera>();
 	_bottomCamera = std::make_shared<Camera>();
+
+	_materialDepthMap = std::make_shared<MaterialSemantic>("DepthMap", ShaderVariantType::Texture);
+	_materialColorMap = std::make_shared<MaterialSemantic>("ColorMap", ShaderVariantType::Texture);
+	_materialNormalMap = std::make_shared<MaterialSemantic>("NormalMap", ShaderVariantType::Texture);
+	_materialDeferredDepthMap = std::make_shared<MaterialSemantic>("DeferredDepthMap", ShaderVariantType::Texture);
+	_materialDeferredDepthLinearMap = std::make_shared<MaterialSemantic>("DeferredDepthLinearMap", ShaderVariantType::Texture);
+	_materialDeferredGraphicMap = std::make_shared<MaterialSemantic>("DeferredGraphicMap", ShaderVariantType::Texture);
+	_materialDeferredNormalMap = std::make_shared<MaterialSemantic>("DeferredNormalMap", ShaderVariantType::Texture);
+	_materialDeferredLightMap = std::make_shared<MaterialSemantic>("DeferredLightMap", ShaderVariantType::Texture);
+	_materialDeferredShadowMap = std::make_shared<MaterialSemantic>("DeferredShadowMap", ShaderVariantType::Texture);
 }
 
 DeferredRenderPipeline::~DeferredRenderPipeline() noexcept
@@ -65,7 +75,7 @@ void
 DeferredRenderPipeline::renderShadowMap(RenderPipeline& pipeline) noexcept
 {
 	pipeline.setRenderTexture(pipeline.getCamera()->getRenderTexture());
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0.0);
+	pipeline.clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0);
 
 	pipeline.drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_OPAQUES, _deferredDepthOnly);
 	pipeline.drawRenderQueue(RenderQueue::RQ_TRANSPARENT, RenderPass::RP_TRANSPARENT, _deferredDepthOnly);
@@ -82,12 +92,15 @@ DeferredRenderPipeline::render2DEnvMap(RenderPipeline& pipeline) noexcept
 void
 DeferredRenderPipeline::render3DEnvMap(RenderPipeline& pipeline) noexcept
 {
-	auto semantic = pipeline.getMaterialManager();
-	semantic->setTexParam(MaterialSemantic::DeferredDepthMap, _deferredDepthMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredDepthLinearMap, _deferredDepthLinearMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredNormalMap, _deferredNormalMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredGraphicMap, _deferredGraphicMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredLightMap, _deferredLightMap->getResolveTexture());
+	_materialDeferredDepthMap->assign(_deferredDepthMap->getResolveTexture());
+	_materialDeferredDepthLinearMap->assign(_deferredDepthLinearMap->getResolveTexture());
+	_materialDeferredNormalMap->assign(_deferredNormalMap->getResolveTexture());
+	_materialDeferredGraphicMap->assign(_deferredGraphicMap->getResolveTexture());
+	_materialDeferredLightMap->assign(_deferredLightMap->getResolveTexture());
+
+	_materialDepthMap->assign(_deferredDepthMap->getResolveTexture());
+	_materialColorMap->assign(_deferredShadingMap->getResolveTexture());
+	_materialNormalMap->assign(_deferredNormalMap->getResolveTexture());
 
 	this->renderOpaques(pipeline, _deferredGraphicMaps);
 	this->renderOpaquesDepthLinear(pipeline, _deferredDepthLinearMap);
@@ -111,7 +124,7 @@ void
 DeferredRenderPipeline::renderOpaques(RenderPipeline& pipeline, MultiRenderTexturePtr target) noexcept
 {
 	pipeline.setMultiRenderTexture(target);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0.0);
+	pipeline.clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_OPAQUES);
 }
 
@@ -122,7 +135,7 @@ DeferredRenderPipeline::renderOpaquesDepthLinear(RenderPipeline& pipeline, Rende
 	_projInfo->assign(pipeline.getCamera()->getProjConstant());
 
 	pipeline.setRenderTexture(target);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0.0);
+	pipeline.clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0);
 	pipeline.drawSceneQuad(_deferredDepthLinear);
 }
 
@@ -131,7 +144,7 @@ DeferredRenderPipeline::renderOpaquesShading(RenderPipeline& pipeline, RenderTex
 {
 	pipeline.setRenderTexture(target);
 	pipeline.setRenderTextureLayer(target, layer);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0.0);
+	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0);
 	pipeline.drawSceneQuad(_deferredShadingOpaques);
 }
 
@@ -148,7 +161,7 @@ void
 DeferredRenderPipeline::renderTransparent(RenderPipeline& pipeline, MultiRenderTexturePtr renderTexture) noexcept
 {
 	pipeline.setMultiRenderTexture(renderTexture);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR_STENCIL, Vector4::Zero, 1.0, 0.0, 0);
+	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR_STENCIL, Vector4::Zero, 1.0, 0, 0);
 
 	pipeline.drawRenderQueue(RenderQueue::RQ_TRANSPARENT, RenderPass::RP_TRANSPARENT);
 }
@@ -157,7 +170,7 @@ void
 DeferredRenderPipeline::renderTransparentDepthLinear(RenderPipeline& pipeline, RenderTexturePtr target) noexcept
 {
 	pipeline.setRenderTexture(target);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0.0, 0);
+	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0, 0);
 
 	pipeline.drawRenderQueue(RenderQueue::RQ_TRANSPARENT, RenderPass::RP_DEPTH, _deferredDepthLinear);
 }
@@ -297,23 +310,18 @@ DeferredRenderPipeline::renderPointLight(RenderPipeline& pipeline, const Light& 
 
 	_eyePosition->assign(float3x3(pipeline.getCamera()->getView()) * pipeline.getCamera()->getTranslate());
 
-	auto semantic = pipeline.getMaterialManager();
-	semantic->setMatrixParam(matModel, light.getTransform());
-
 	RenderStencilState stencil = _deferredPointLight->getGraphicsState()->getStencilState();
 	stencil.stencilRef = 1 << light.getLayer();
 
 	_deferredPointLight->getGraphicsState()->setStencilState(stencil);
 
+	pipeline.setModelMatrix(light.getTransform());
 	pipeline.drawSphere(_deferredPointLight);
 }
 
 void
 DeferredRenderPipeline::renderSpotLight(RenderPipeline& pipeline, const Light& light) noexcept
 {
-	auto semantic = pipeline.getMaterialManager();
-	semantic->setMatrixParam(matModel, light.getTransform());
-
 	_lightColor->assign(light.getLightColor() * light.getIntensity());
 	_lightDirection->assign(float3x3(pipeline.getCamera()->getView()) * ~(light.getTransform().getTranslate() - light.getLightLookat()));
 	_lightPosition->assign(light.getTransform().getTranslate());
@@ -330,6 +338,7 @@ DeferredRenderPipeline::renderSpotLight(RenderPipeline& pipeline, const Light& l
 
 	_deferredSpotLight->getGraphicsState()->setStencilState(stencil);
 
+	pipeline.setModelMatrix(light.getTransform());
 	pipeline.drawCone(_deferredSpotLight);
 }
 
@@ -372,11 +381,23 @@ DeferredRenderPipeline::copyRenderTexture(RenderPipeline& pipeline, RenderTextur
 }
 
 void
-DeferredRenderPipeline::onActivate(RenderPipeline& pipeline) except
+DeferredRenderPipeline::setupSemantic(RenderPipeline& pipeline)
 {
-	std::uint32_t width, height;
-	pipeline.getWindowResolution(width, height);
+	auto materialManager = pipeline.getMaterialManager();
+	materialManager->addSemantic(_materialDepthMap);
+	materialManager->addSemantic(_materialColorMap);
+	materialManager->addSemantic(_materialNormalMap);
+	materialManager->addSemantic(_materialDeferredDepthMap);
+	materialManager->addSemantic(_materialDeferredDepthLinearMap);
+	materialManager->addSemantic(_materialDeferredGraphicMap);
+	materialManager->addSemantic(_materialDeferredNormalMap);
+	materialManager->addSemantic(_materialDeferredLightMap);
+	materialManager->addSemantic(_materialDeferredShadowMap);
+}
 
+void
+DeferredRenderPipeline::setupMaterials(RenderPipeline& pipeline)
+{
 	_deferredLighting = pipeline.createMaterial("sys:fx\\deferred_lighting.glsl");
 	_deferredDepthOnly = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredDepthOnly");
 	_deferredDepthLinear = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredDepthLinear");
@@ -417,6 +438,13 @@ DeferredRenderPipeline::onActivate(RenderPipeline& pipeline) except
 	_shadowArrayMap = _deferredLighting->getParameter("shadowArrayMap");
 	_shadowFactor = _deferredLighting->getParameter("shadowFactor");
 	_shadowMatrix = _deferredLighting->getParameter("shadowMatrix");
+}
+
+void
+DeferredRenderPipeline::setupRenderTextures(RenderPipeline& pipeline)
+{
+	std::uint32_t width, height;
+	pipeline.getWindowResolution(width, height);
 
 	_deferredDepthMap = pipeline.createRenderTexture();
 	_deferredDepthMap->setup(width, height, TextureDim::DIM_2D, TextureFormat::DEPTH32_STENCIL8);
@@ -445,49 +473,108 @@ DeferredRenderPipeline::onActivate(RenderPipeline& pipeline) except
 	_deferredGraphicMaps->attach(_deferredGraphicMap);
 	_deferredGraphicMaps->attach(_deferredNormalMap);
 	_deferredGraphicMaps->setup();
+}
 
-	auto semantic = pipeline.getMaterialManager();
-	semantic->setTexParam(MaterialSemantic::DeferredDepthMap, _deferredDepthMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredNormalMap, _deferredNormalMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredGraphicMap, _deferredGraphicMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DeferredLightMap, _deferredLightMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::DepthMap, _deferredDepthMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::ColorMap, _deferredShadingMap->getResolveTexture());
-	semantic->setTexParam(MaterialSemantic::NormalMap, _deferredNormalMap->getResolveTexture());
+void
+DeferredRenderPipeline::destroySemantic(RenderPipeline& pipeline)
+{
+	auto materialManager = pipeline.getMaterialManager();
+	materialManager->removeSemantic(_materialDepthMap);
+	materialManager->removeSemantic(_materialColorMap);
+	materialManager->removeSemantic(_materialNormalMap);
+	materialManager->removeSemantic(_materialDeferredDepthMap);
+	materialManager->removeSemantic(_materialDeferredDepthLinearMap);
+	materialManager->removeSemantic(_materialDeferredGraphicMap);
+	materialManager->removeSemantic(_materialDeferredNormalMap);
+	materialManager->removeSemantic(_materialDeferredLightMap);
+	materialManager->removeSemantic(_materialDeferredShadowMap);
+}
+
+void
+DeferredRenderPipeline::destroyMaterials(RenderPipeline& pipeline)
+{
+	_deferredLighting.reset();
+	_deferredDepthOnly.reset();
+	_deferredDepthLinear.reset();
+	_deferredSunLight.reset();
+	_deferredSunLightShadow.reset();
+	_deferredDirectionalLight.reset();
+	_deferredDirectionalLightShadow.reset();
+	_deferredSpotLight.reset();
+	_deferredPointLight.reset();
+	_deferredAmbientLight.reset();
+	_deferredShadingOpaques.reset();
+	_deferredShadingTransparents.reset();
+	_deferredDebugLayer.reset();
+	_deferredCopyOnly.reset();
+
+	_texMRT0.reset();
+	_texMRT1.reset();
+	_texDepth.reset();
+	_texLight.reset();
+	_texSource.reset();
+	_texEnvironmentMap.reset();
+
+	_eyePosition.reset();
+	_clipInfo.reset();
+	_projInfo.reset();
+
+	_shadowDecal.reset();
+	_shadowChannel.reset();
+	_shadowMap.reset();
+	_shadowArrayMap.reset();
+	_shadowFactor.reset();
+	_shadowMatrix.reset();
+	_shadowOffset.reset();
+	_shadowWeight.reset();
+
+	_lightColor.reset();
+	_lightPosition.reset();
+	_lightDirection.reset();
+	_lightRange.reset();
+	_lightIntensity.reset();
+	_lightAttenuation.reset();
+	_lightSpotInnerCone.reset();
+	_lightSpotOuterCone.reset();
+}
+
+void
+DeferredRenderPipeline::destroyRenderTextures(RenderPipeline& pipeline)
+{
+	_deferredDepthMap.reset();
+	_deferredDepthLinearMap.reset();
+	_deferredGraphicMap.reset();
+	_deferredNormalMap.reset();
+	_deferredLightMap.reset();
+	_deferredGraphicMaps.reset();
+}
+
+void
+DeferredRenderPipeline::onActivate(RenderPipeline& pipeline) except
+{
+	this->setupSemantic(pipeline);
+	this->setupMaterials(pipeline);
+	this->setupRenderTextures(pipeline);
 }
 
 void
 DeferredRenderPipeline::onDeactivate(RenderPipeline& pipeline) noexcept
 {
-	if (_deferredDepthMap)
-	{
-		_deferredDepthMap.reset();
-		_deferredDepthMap = nullptr;
-	}
+	this->destroySemantic(pipeline);
+	this->destroyMaterials(pipeline);
+	this->destroyRenderTextures(pipeline);
+}
 
-	if (_deferredGraphicMap)
-	{
-		_deferredGraphicMap.reset();
-		_deferredGraphicMap = nullptr;
-	}
+void 
+DeferredRenderPipeline::onResolutionChangeBefore(RenderPipeline& pipeline) noexcept
+{
+}
 
-	if (_deferredNormalMap)
-	{
-		_deferredNormalMap.reset();
-		_deferredNormalMap = nullptr;
-	}
-
-	if (_deferredLightMap)
-	{
-		_deferredLightMap.reset();
-		_deferredLightMap = nullptr;
-	}
-
-	if (_deferredGraphicMaps)
-	{
-		_deferredGraphicMaps.reset();
-		_deferredGraphicMaps = nullptr;
-	}
+void 
+DeferredRenderPipeline::onResolutionChangeAfter(RenderPipeline& pipeline) noexcept
+{
+	destroyRenderTextures(pipeline);
+	setupRenderTextures(pipeline);
 }
 
 void
@@ -552,17 +639,17 @@ DeferredRenderPipeline::onRenderPost(RenderPipeline& pipeline) noexcept
 			v2.height = height;
 		}
 
-		this->copyRenderTexture(pipeline, renderTexture, nullptr, v2);
+		pipeline.blitRenderTexture(renderTexture, v2, nullptr, v2);
 	}
 
 	/*if (_deferredGraphicMap)
-	this->blitRenderTexture(_deferredGraphicMap, Viewport(0, 0, 1376, 768), 0, Viewport(0, 768 / 2, 1376 / 3, 768));
+		pipeline.blitRenderTexture(_deferredGraphicMap, Viewport(0, 0, 1376, 768), 0, Viewport(0, 768 / 2, 1376 / 3, 768));
 	if (_deferredNormalMap)
-	this->blitRenderTexture(_deferredNormalMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3, 768 / 2, 1376 / 3 * 2, 768));
+		pipeline.blitRenderTexture(_deferredNormalMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3, 768 / 2, 1376 / 3 * 2, 768));
 	if (_deferredLightMap)
-	this->blitRenderTexture(_deferredLightMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3 * 2, 768 / 2, 1376, 768));
+		pipeline.blitRenderTexture(_deferredLightMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3 * 2, 768 / 2, 1376, 768));
 	if (_deferredShadingMap)
-	this->blitRenderTexture(_deferredShadingMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3 * 2, 0, 1376, 768 / 2));*/
+		pipeline.blitRenderTexture(_deferredShadingMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3 * 2, 0, 1376, 768 / 2));*/
 }
 
 _NAME_END

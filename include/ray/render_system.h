@@ -74,15 +74,10 @@ public:
 	TexturePtr createTexture() noexcept;
 	TexturePtr createTexture(const std::string& name) except;
 
-	MaterialPtr createMaterial(const std::string& name) noexcept;
+	MaterialPtr createMaterial(const std::string& name) except;
 
 	RenderTexturePtr createRenderTexture() noexcept;
 	MultiRenderTexturePtr createMultiRenderTexture() noexcept;
-
-	GraphicsStatePtr createGraphicsState() noexcept;
-
-	ShaderPtr createShader() noexcept;
-	ShaderObjectPtr createShaderObject() noexcept;
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
 	bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;

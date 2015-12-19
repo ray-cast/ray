@@ -95,6 +95,22 @@ RenderPipelineManager::getRenderPipeline() noexcept
 	return _renderPipeline;
 }
 
+void 
+RenderPipelineManager::setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept
+{
+	_renderPipeline->renderBegin();
+	_deferredLighting->onResolutionChangeBefore(*_renderPipeline);
+	_renderPipeline->setWindowResolution(w, h);
+	_deferredLighting->onResolutionChangeAfter(*_renderPipeline);
+	_renderPipeline->renderEnd();
+}
+
+void 
+RenderPipelineManager::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept
+{
+	_renderPipeline->getWindowResolution(w, h);
+}
+
 void
 RenderPipelineManager::renderBegin() noexcept
 {

@@ -49,13 +49,13 @@
 #include <ray/mstream.h>
 #include <ray/resource.h>
 
-#if defined(_BUILD_OPENGL) || defined(_BUILD_OPENGL_CORE)
+#if defined(_BUILD_OPENGL_CORE)
 #	include "OpenGL Core/ogl_device.h"
 #	define RenderDevice OGLDevice
-#elif defined(_BUILD_OPENGL) || defined(_BUILD_OPENGL_ES3)
+#elif defined(_BUILD_OPENGL_ES3)
 #	include "OpenGL ES3/egl3_device.h"
 #	define RenderDevice EGL3Device
-#elif defined(_BUILD_OPENGL) || defined(_BUILD_OPENGL_ES2)
+#elif defined(_BUILD_OPENGL_ES2)
 #	include "OpenGL ES2/egl2_device.h"
 #	define RenderDevice EGL2Device
 #endif
@@ -78,6 +78,25 @@ RenderPipeline::open(WindHandle window, std::uint32_t w, std::uint32_t h) except
 	_graphicsContext = _graphicsDevice->createGraphicsContext(window);
 
 	_materialManager = std::make_shared<MaterialManager>();
+	_materialManager->open(_graphicsDevice);
+
+	_materialMatModel = _materialManager->createSemantic("matModel", ShaderVariantType::Float4x4);
+	_materialMatModelInverse = _materialManager->createSemantic("matModelInverse", ShaderVariantType::Float4x4);
+	_materialMatModelInverseTranspose = _materialManager->createSemantic("matModelInverseTranspose", ShaderVariantType::Float4x4);
+	_materialMatProject = _materialManager->createSemantic("matProject", ShaderVariantType::Float4x4);
+	_materialMatProjectInverse = _materialManager->createSemantic("matProjectInverse", ShaderVariantType::Float4x4);
+	_materialMatView = _materialManager->createSemantic("matView", ShaderVariantType::Float4x4);
+	_materialMatViewInverse = _materialManager->createSemantic("matViewInverse", ShaderVariantType::Float4x4);
+	_materialMatViewInverseTranspose = _materialManager->createSemantic("matViewInverseTranspose", ShaderVariantType::Float4x4);
+	_materialMatViewProject = _materialManager->createSemantic("matViewProject", ShaderVariantType::Float4x4);
+	_materialMatViewProjectInverse = _materialManager->createSemantic("matViewProjectInverse", ShaderVariantType::Float4x4);
+	_materialCameraAperture = _materialManager->createSemantic("CameraAperture", ShaderVariantType::Float);
+	_materialCameraFar = _materialManager->createSemantic("CameraFar", ShaderVariantType::Float);
+	_materialCameraNear = _materialManager->createSemantic("CameraNear", ShaderVariantType::Float);
+	_materialCameraView = _materialManager->createSemantic("CameraView", ShaderVariantType::Float3);
+	_materialCameraPosition = _materialManager->createSemantic("CameraPosition", ShaderVariantType::Float3);
+	_materialCameraDirection = _materialManager->createSemantic("CameraDirection", ShaderVariantType::Float3);
+
 	_dataManager = std::make_shared<DefaultRenderDataManager>();
 
 	MeshProperty mesh;
@@ -107,31 +126,13 @@ RenderPipeline::open(WindHandle window, std::uint32_t w, std::uint32_t h) except
 	_renderConeIndirect.startIndice = 0;
 	_renderConeIndirect.numIndices = mesh.getNumIndices();
 	_renderConeIndirect.numInstances = 0;
-	
+
 	this->setWindowResolution(w, h);
 }
 
 void
 RenderPipeline::close() noexcept
 {
-	if (_renderSceneQuad)
-	{
-		_renderSceneQuad.reset();
-		_renderSceneQuad = nullptr;
-	}
-
-	if (_renderSphere)
-	{
-		_renderSphere.reset();
-		_renderSphere = nullptr;
-	}
-
-	if (_renderCone)
-	{
-		_renderCone.reset();
-		_renderCone = nullptr;
-	}
-
 	for (auto& postprocess : _postprocessors)
 	{
 		for (auto& it : postprocess)
@@ -140,44 +141,50 @@ RenderPipeline::close() noexcept
 		postprocess.clear();
 	}
 
-	if (_dataManager)
-	{
-		_dataManager.reset();
-		_dataManager = nullptr;
-	}
+	_materialManager.reset();
+	_materialMatModel.reset();
+	_materialMatModelInverse.reset();
+	_materialMatModelInverseTranspose.reset();
+	_materialMatProject.reset();
+	_materialMatProjectInverse.reset();
+	_materialMatView.reset();
+	_materialMatViewInverse.reset();
+	_materialMatViewInverseTranspose.reset();
+	_materialMatViewProject.reset();
+	_materialMatViewProjectInverse.reset();
+	_materialCameraAperture.reset();
+	_materialCameraFar.reset();
+	_materialCameraNear.reset();
+	_materialCameraView.reset();
+	_materialCameraPosition.reset();
+	_materialCameraDirection.reset();
 
-	if (_materialManager)
-	{
-		_materialManager.reset();
-		_materialManager = nullptr;
-	}
-
-	if (_graphicsDevice)
-	{
-		_graphicsDevice.reset();
-		_graphicsDevice = nullptr;
-	}
+	_renderSceneQuad.reset();
+	_renderSphere.reset();
+	_renderCone.reset();
+	_dataManager.reset();
+	_graphicsDevice.reset();
 }
 
-void 
+void
 RenderPipeline::setDefaultGraphicsContext(GraphicsContextPtr context) noexcept
 {
 	_graphicsContext = context;
 }
 
-GraphicsContextPtr 
+GraphicsContextPtr
 RenderPipeline::getDefaultGraphicsContext() const noexcept
 {
 	return _graphicsContext;
 }
 
-void 
+void
 RenderPipeline::setRenderDataManager(RenderDataManagerPtr manager) noexcept
 {
 	_dataManager = manager;
 }
 
-RenderDataManagerPtr 
+RenderDataManagerPtr
 RenderPipeline::getRenderDataManagerPtr() const noexcept
 {
 	return _dataManager;
@@ -263,19 +270,19 @@ RenderPipeline::setCamera(CameraPtr camera) noexcept
 	float zfar;
 	camera->getPerspective(aperture, ratio, znear, zfar);
 
-	_materialManager->setFloatParam(MaterialSemantic::CameraNear, znear);
-	_materialManager->setFloatParam(MaterialSemantic::CameraFar, zfar);
-	_materialManager->setFloatParam(MaterialSemantic::CameraAperture, aperture);
-	_materialManager->setFloat3Param(MaterialSemantic::CameraView, camera->getLookAt());
-	_materialManager->setFloat3Param(MaterialSemantic::CameraPosition, camera->getTranslate());
-	_materialManager->setFloat3Param(MaterialSemantic::CameraDirection, camera->getLookAt() - camera->getTranslate());
-	_materialManager->setMatrixParam(MaterialSemantic::matView, camera->getView());
-	_materialManager->setMatrixParam(MaterialSemantic::matViewInverse, camera->getViewInverse());
-	_materialManager->setMatrixParam(MaterialSemantic::matViewInverseTranspose, camera->getViewInverseTranspose());
-	_materialManager->setMatrixParam(MaterialSemantic::matProject, camera->getProject());
-	_materialManager->setMatrixParam(MaterialSemantic::matProjectInverse, camera->getProjectInverse());
-	_materialManager->setMatrixParam(MaterialSemantic::matViewProject, camera->getViewProject());
-	_materialManager->setMatrixParam(MaterialSemantic::matViewProjectInverse, camera->getViewProjectInverse());
+	_materialCameraNear->assign(znear);
+	_materialCameraFar->assign(zfar);
+	_materialCameraAperture->assign(aperture);
+	_materialCameraView->assign(camera->getLookAt());
+	_materialCameraPosition->assign(camera->getTranslate());
+	_materialCameraDirection->assign(camera->getLookAt() - camera->getTranslate());
+	_materialMatView->assign(camera->getView());
+	_materialMatViewInverse->assign(camera->getViewInverse());
+	_materialMatViewInverseTranspose->assign(camera->getViewInverseTranspose());
+	_materialMatProject->assign(camera->getProject());
+	_materialMatProjectInverse->assign(camera->getProjectInverse());
+	_materialMatViewProject->assign(camera->getViewProject());
+	_materialMatViewProjectInverse->assign(camera->getViewProjectInverse());
 
 	_dataManager->assginVisiable(camera);
 
@@ -289,26 +296,42 @@ RenderPipeline::getCamera() const noexcept
 }
 
 void
+RenderPipeline::setModelMatrix(const float4x4& m) noexcept
+{
+	_materialMatModel->assign(m);
+}
+
+const float4x4&
+RenderPipeline::getModelMatrix() const noexcept
+{
+	return _materialMatModel->getFloat4x4();
+}
+
+void
 RenderPipeline::setViewport(const Viewport& view) noexcept
 {
+	assert(_graphicsContext);
 	_graphicsContext->setViewport(view);
 }
 
-const Viewport& 
+const Viewport&
 RenderPipeline::getViewport() const noexcept
 {
+	assert(_graphicsContext);
 	return _graphicsContext->getViewport();
 }
 
 void
 RenderPipeline::addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept
 {
+	assert(_dataManager);
 	_dataManager->addRenderData(queue, pass, object);
 }
 
 RenderObjects&
 RenderPipeline::getRenderData(RenderQueue queue, RenderPass pass) noexcept
 {
+	assert(_dataManager);
 	return _dataManager->getRenderData(queue, pass);
 }
 
@@ -320,14 +343,14 @@ RenderPipeline::drawMesh(MaterialPassPtr pass, RenderBufferPtr buffer, const Ren
 	this->drawRenderBuffer(renderable);
 }
 
-RenderTexturePtr 
+RenderTexturePtr
 RenderPipeline::createRenderTexture() noexcept
 {
 	assert(_graphicsDevice);
 	return _graphicsDevice->createRenderTexture();
 }
 
-MultiRenderTexturePtr 
+MultiRenderTexturePtr
 RenderPipeline::createMultiRenderTexture() noexcept
 {
 	assert(_graphicsDevice);
@@ -390,63 +413,14 @@ RenderPipeline::blitRenderTexture(RenderTexturePtr srcTarget, const Viewport& sr
 	_graphicsContext->blitRenderTexture(srcTarget, src, destTarget, dest);
 }
 
-GraphicsStatePtr
-RenderPipeline::createGraphicsState() noexcept
-{
-	assert(_graphicsDevice);
-	return _graphicsDevice->createGraphicsState();
-}
-
-void
-RenderPipeline::setGraphicsState(GraphicsStatePtr state) noexcept
-{
-	assert(_graphicsContext);
-	_graphicsContext->setGraphicsState(state);
-}
-
-GraphicsStatePtr
-RenderPipeline::getGraphicsState() const noexcept
-{
-	assert(_graphicsContext);
-	return _graphicsContext->getGraphicsState();
-}
-
-ShaderPtr
-RenderPipeline::createShader() noexcept
-{
-	assert(_graphicsDevice);
-	return _graphicsDevice->createShader();
-}
-
-ShaderObjectPtr 
-RenderPipeline::createShaderObject() noexcept
-{
-	assert(_graphicsDevice);
-	return _graphicsDevice->createShaderObject();
-}
-
-void 
-RenderPipeline::setShaderObject(ShaderObjectPtr progaram) noexcept
-{
-	assert(_graphicsContext);
-	return _graphicsContext->setShaderObject(progaram);
-}
-
-ShaderObjectPtr 
-RenderPipeline::getShaderObject() const noexcept
-{
-	assert(_graphicsContext);
-	return _graphicsContext->getShaderObject();
-}
-
-TexturePtr 
+TexturePtr
 RenderPipeline::createTexture() noexcept
 {
 	assert(_graphicsDevice);
 	return _graphicsDevice->createTexture();
 }
 
-TexturePtr 
+TexturePtr
 RenderPipeline::createTexture(const std::string& name) except
 {
 	StreamReaderPtr stream;
@@ -492,7 +466,7 @@ RenderPipeline::createTexture(const std::string& name) except
 	return nullptr;
 }
 
-MaterialPtr 
+MaterialPtr
 RenderPipeline::createMaterial(const std::string& name) except
 {
 	return _materialManager->createMaterial(name);
@@ -502,20 +476,28 @@ void
 RenderPipeline::setMaterialPass(MaterialPassPtr pass) noexcept
 {
 	_materialManager->setMaterialPass(pass);
-	
+
+	TexturePtr bindTextures[MAX_TEXTURE_UNIT];
+	GraphicsSamplerPtr bindSamplers[MAX_SAMPLER_UNIT];
+
 	auto& textures = pass->getTextures();
-	for (std::size_t i = 0; i < textures.size(); i++)
+	auto  textureCount = std::min((std::size_t)MAX_TEXTURE_UNIT, textures.size());
+	for (std::size_t i = 0; i < textureCount; i++)
 	{
 		auto& uniforms = textures[i]->getShaderUniform();
 		auto texture = textures[i]->getTexture();
 
 		for (auto& it : uniforms)
 			it->assign((int)i);
-		_graphicsContext->setTexture(texture, i);
+
+		bindTextures[i] = textures[i]->getTexture();
+		bindSamplers[i] = 0;
 	}
 
-	this->setGraphicsState(pass->getGraphicsState());
-	this->setShaderObject(pass->getShaderObject());
+	_graphicsContext->setTexture(bindTextures, 0, textureCount);
+	_graphicsContext->setGraphicsSampler(bindSamplers, 0, textureCount);
+	_graphicsContext->setGraphicsState(pass->getGraphicsState());
+	_graphicsContext->setShaderObject(pass->getShaderObject());
 }
 
 void
@@ -680,7 +662,7 @@ RenderPipeline::createRenderBuffer(const MeshProperty& mesh) except
 	return nullptr;
 }
 
-RenderBufferPtr 
+RenderBufferPtr
 RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) except
 {
 	auto numVertex = 0;
@@ -843,7 +825,7 @@ RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) except
 	return nullptr;
 }
 
-GraphicsLayoutPtr 
+GraphicsLayoutPtr
 RenderPipeline::createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept
 {
 	assert(_graphicsDevice);
@@ -864,21 +846,21 @@ RenderPipeline::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) 
 	return _graphicsContext->updateBuffer(data, str, cnt);
 }
 
-void* 
+void*
 RenderPipeline::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
 {
 	assert(_graphicsContext);
 	return _graphicsContext->mapBuffer(data, access);
 }
 
-void 
+void
 RenderPipeline::unmapBuffer(GraphicsDataPtr& data) noexcept
 {
 	assert(_graphicsContext);
 	return _graphicsContext->unmapBuffer(data);
 }
 
-void 
+void
 RenderPipeline::setRenderBuffer(RenderBufferPtr buffer) except
 {
 	assert(_graphicsDevice);
@@ -887,14 +869,14 @@ RenderPipeline::setRenderBuffer(RenderBufferPtr buffer) except
 	_graphicsContext->setIndexBufferData(buffer->getIndexBuffer());
 }
 
-void 
+void
 RenderPipeline::drawRenderBuffer(const RenderIndirect& renderable) except
 {
 	assert(_graphicsContext);
 	_graphicsContext->drawRenderBuffer(renderable);
 }
 
-void 
+void
 RenderPipeline::drawRenderBuffer(const RenderIndirects& renderable) except
 {
 	assert(_graphicsDevice);
@@ -1049,9 +1031,9 @@ RenderPipeline::onRenderObject(RenderObject& object, RenderQueue queue, RenderPa
 
 	if (pass)
 	{
-		_materialManager->setMatrixParam(MaterialSemantic::matModel, object.getTransform());
-		_materialManager->setMatrixParam(MaterialSemantic::matModelInverse, object.getTransformInverse());
-		_materialManager->setMatrixParam(MaterialSemantic::matModelInverseTranspose, object.getTransformInverseTranspose());
+		_materialMatModel->assign(object.getTransform());
+		_materialMatModelInverse->assign(object.getTransformInverse());
+		_materialMatModelInverseTranspose->assign(object.getTransformInverseTranspose());
 
 		if (!_pass)
 		{

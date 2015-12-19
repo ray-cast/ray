@@ -194,11 +194,8 @@ EGL2Types::asEGL2Type(TextureFormat format) noexcept
 	if (format == TextureFormat::STENCIL8)
 		return GL_UNSIGNED_BYTE;
 
-	if (format == TextureFormat::DEPTH_COMPONENT32)
+	if (format == TextureFormat::DEPTH_COMPONENT32 || format == TextureFormat::DEPTH_COMPONENT16 || format == TextureFormat::DEPTH_COMPONENT24)
 		return GL_FLOAT;
-
-	if (format == TextureFormat::DEPTH_COMPONENT16 || format == TextureFormat::DEPTH_COMPONENT24)
-		return GL_UNSIGNED_BYTE;
 
 	if (format == TextureFormat::R8G8B8 || format == TextureFormat::R8G8B8A8)
 		return GL_UNSIGNED_BYTE;
@@ -246,6 +243,10 @@ EGL2Types::asEGL2Internalformat(TextureFormat format) noexcept
 		return GL_STENCIL_INDEX8;
 	case TextureFormat::DEPTH_COMPONENT16:
 		return GL_DEPTH_COMPONENT16;
+	case TextureFormat::R8G8B8:
+		return GL_RGB;
+	case TextureFormat::R8G8B8A8:
+		return GL_RGBA;
 	case TextureFormat::SRGBA:
 		return GL_SRGB_ALPHA_EXT;
 	case TextureFormat::RGB_DXT1:
@@ -409,25 +410,25 @@ EGL2Check::checkError() noexcept
 		switch (result)
 		{
 		case GL_INVALID_ENUM:
-			std::cerr << "GL_INVALID_ENUM";
+			std::cerr << "GL_INVALID_ENUM" << std::endl;
 			break;
 		case GL_INVALID_VALUE:
-			std::cerr << "GL_INVALID_VALUE";
+			std::cerr << "GL_INVALID_VALUE" << std::endl;
 			break;
 		case GL_INVALID_OPERATION:
-			std::cerr << "GL_INVALID_OPERATION";
+			std::cerr << "GL_INVALID_OPERATION" << std::endl;
 			break;
 		case GL_STACK_OVERFLOW:
-			std::cerr << "GL_STACK_OVERFLOW";
+			std::cerr << "GL_STACK_OVERFLOW" << std::endl;
 			break;
 		case GL_STACK_UNDERFLOW:
-			std::cerr << "GL_STACK_UNDERFLOW";
+			std::cerr << "GL_STACK_UNDERFLOW" << std::endl;
 			break;
 		case GL_OUT_OF_MEMORY:
-			std::cerr << "GL_OUT_OF_MEMORY";
+			std::cerr << "GL_OUT_OF_MEMORY" << std::endl;
 			break;
 		case GL_INVALID_FRAMEBUFFER_OPERATION:
-			std::cerr << "GL_INVALID_FRAMEBUFFER_OPERATION";
+			std::cerr << "GL_INVALID_FRAMEBUFFER_OPERATION" << std::endl;
 			break;
 		default:
 			assert(false);
@@ -440,16 +441,16 @@ EGL2Check::checkError() noexcept
 		switch (result)
 		{
 		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-			std::cerr << "FBO:Incomplete attachment";
+			std::cerr << "FBO:Incomplete attachment" << std::endl;
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-			std::cerr << "FBO:Incomplete missing attachment";
+			std::cerr << "FBO:Incomplete missing attachment" << std::endl;
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-			std::cerr << "FBO:Incomplete dimensions";
+			std::cerr << "FBO:Incomplete dimensions" << std::endl;
 			break;
 		case GL_FRAMEBUFFER_UNSUPPORTED:
-			std::cerr << "FBO:Unsupported";
+			std::cerr << "FBO:Unsupported" << std::endl;
 			break;
 		default:
 			assert(false);

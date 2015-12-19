@@ -38,6 +38,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubInterface(RenderTexture, GraphicsResource, "RenderTexture")
+
 Texture::Texture() noexcept
 	: _size(0, 0, 0)
 	, _format(TextureFormat::R8G8B8A8)

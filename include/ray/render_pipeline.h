@@ -58,6 +58,9 @@ public:
 	void setCamera(CameraPtr renderer) noexcept;
 	CameraPtr getCamera() const noexcept;
 
+	void setModelMatrix(const float4x4& m) noexcept;
+	const float4x4& getModelMatrix() const noexcept;
+
 	void setViewport(const Viewport& view) noexcept;
 	const Viewport& getViewport() const noexcept;
 
@@ -69,11 +72,7 @@ public:
 
 	void setSwapInterval(SwapInterval interval) noexcept;
 	SwapInterval getSwapInterval() const noexcept;
-
-	GraphicsStatePtr createGraphicsState() noexcept;
-	void setGraphicsState(GraphicsStatePtr state) noexcept;
-	GraphicsStatePtr getGraphicsState() const noexcept;
-
+	
 	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
@@ -99,11 +98,6 @@ public:
 	void setMaterialManager(MaterialManagerPtr manager) noexcept;
 	MaterialPassPtr getMaterialPass() noexcept;
 	MaterialManagerPtr getMaterialManager() noexcept;
-
-	ShaderPtr createShader() noexcept;
-	ShaderObjectPtr createShaderObject() noexcept;
-	void setShaderObject(ShaderObjectPtr progarm) noexcept;
-	ShaderObjectPtr getShaderObject() const noexcept;
 
 	GraphicsLayoutPtr createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept;
 
@@ -144,7 +138,7 @@ private:
 	RenderPipeline& operator=(const RenderPipeline&) noexcept = delete;
 
 private:
-	
+
 	std::uint32_t _width;
 	std::uint32_t _height;
 
@@ -162,6 +156,22 @@ private:
 	RenderIndirect _renderSceneQuadIndirect;
 
 	MaterialManagerPtr _materialManager;
+	MaterialSemanticPtr _materialMatModel;
+	MaterialSemanticPtr _materialMatModelInverse;
+	MaterialSemanticPtr _materialMatModelInverseTranspose;
+	MaterialSemanticPtr _materialMatProject;
+	MaterialSemanticPtr _materialMatProjectInverse;
+	MaterialSemanticPtr _materialMatView;
+	MaterialSemanticPtr _materialMatViewInverse;
+	MaterialSemanticPtr _materialMatViewInverseTranspose;
+	MaterialSemanticPtr _materialMatViewProject;
+	MaterialSemanticPtr _materialMatViewProjectInverse;
+	MaterialSemanticPtr _materialCameraAperture;
+	MaterialSemanticPtr _materialCameraFar;
+	MaterialSemanticPtr _materialCameraNear;
+	MaterialSemanticPtr _materialCameraView;
+	MaterialSemanticPtr _materialCameraPosition;
+	MaterialSemanticPtr _materialCameraDirection;
 
 	RenderDataManagerPtr _dataManager;
 	RenderPostProcessor _postprocessors[RenderQueue::RQ_NUMS];

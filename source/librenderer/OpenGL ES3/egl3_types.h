@@ -151,6 +151,7 @@ typedef std::shared_ptr<class EGL3VertexBuffer> EGL3VertexBufferPtr;
 typedef std::shared_ptr<class EGL3IndexBuffer> EGL3IndexBufferPtr;
 typedef std::shared_ptr<class EGL3GraphicsLayout> EGL3GraphicsLayoutPtr;
 typedef std::shared_ptr<class EGL3DrawIndirectBuffer> EGL3DrawIndirectBufferPtr;
+typedef std::shared_ptr<class EGL3GraphicsState> EGL3GraphicsStatePtr;
 typedef std::shared_ptr<class EGL3Sampler> EGL3SamplerPtr;
 
 class EGL3Types

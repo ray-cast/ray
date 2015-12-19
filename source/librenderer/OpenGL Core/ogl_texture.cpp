@@ -38,11 +38,14 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(OGLRenderTexture, RenderTexture, "OGLRenderTexture")
+
 #define MAX_COLOR_ATTACHMENTS 15
 
 OGLTexture::OGLTexture() noexcept
 	: _texture(0)
 	, _textureAddr(0)
+	, _target(GL_NONE)
 {
 }
 
@@ -83,14 +86,14 @@ OGLTexture::setup() except
 		if (this->isMultiSample())
 			glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, level, internalFormat, w, h, GL_FALSE);
 		else
-			glTexStorage2D(target, level, internalFormat, w, h);
+			glTexStorage2D(GL_TEXTURE_2D, level, internalFormat, w, h);
 	}
 	else if (target == GL_TEXTURE_2D_ARRAY)
 	{
 		if (this->isMultiSample())
 			glTexStorage3DMultisample(GL_TEXTURE_2D_MULTISAMPLE, level, internalFormat, w, h, depth, GL_FALSE);
 		else
-			glTexStorage3D(target, level, internalFormat, w, h, depth);
+			glTexStorage3D(GL_TEXTURE_2D_ARRAY, level, internalFormat, w, h, depth);
 	}
 		
 	else if (target == GL_TEXTURE_3D)
@@ -98,7 +101,7 @@ OGLTexture::setup() except
 		if (this->isMultiSample())
 			glTexStorage3DMultisample(GL_TEXTURE_2D_MULTISAMPLE, level, internalFormat, w, h, depth, GL_FALSE);
 		else
-			glTexStorage3D(target, level, internalFormat, w, h, depth);
+			glTexStorage3D(GL_TEXTURE_3D, level, internalFormat, w, h, depth);
 	}
 	else if (target == GL_TEXTURE_CUBE_MAP)
 	{
@@ -117,13 +120,12 @@ OGLTexture::setup() except
 			internalFormat == GL_COMPRESSED_RG_RGTC2 ||
 			internalFormat == GL_COMPRESSED_SIGNED_RG_RGTC2)
 		{
-			GLsizei size = this->getMipSize();
-			std::size_t offset = 0;
-			std::size_t blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;
+			GLsizei offset = 0;
+			GLsizei blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;
 
 			for (GLint mip = 0; mip < level; mip++)
 			{
-				auto mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
+				GLsizei mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
 
 				glCompressedTexSubImage2D(GL_TEXTURE_2D, mip, 0, 0, w, h, internalFormat, mipSize, (char*)stream + offset);
 
@@ -135,23 +137,22 @@ OGLTexture::setup() except
 		}
 		else
 		{
-			auto level = 0;
-			auto format = OGLTypes::asOGLFormat(this->getTexFormat());
-			auto type = OGLTypes::asOGLType(this->getTexFormat());
+			GLenum format = OGLTypes::asOGLFormat(this->getTexFormat());
+			GLenum type = OGLTypes::asOGLType(this->getTexFormat());
 
 			switch (target)
 			{
 			case GL_TEXTURE_2D:
-				glTexSubImage2D(target, level, 0, 0, w, h, format, type, stream);
+				glTexSubImage2D(target, 0, 0, 0, w, h, format, type, stream);
 				break;
 			case GL_TEXTURE_2D_ARRAY:
-				glTexSubImage3D(target, level, 0, 0, 0, w, h, depth, format, type, stream);
+				glTexSubImage3D(target, 0, 0, 0, 0, w, h, depth, format, type, stream);
 				break;
 			case GL_TEXTURE_3D:
-				glTexSubImage3D(target, level, 0, 0, 0, w, h, depth, format, type, stream);
+				glTexSubImage3D(target, 0, 0, 0, 0, w, h, depth, format, type, stream);
 				break;
 			case GL_TEXTURE_CUBE_MAP:
-				glTexSubImage3D(target, level, 0, 0, 0, w, h, 6, format, type, stream);
+				glTexSubImage3D(target, 0, 0, 0, 0, w, h, 6, format, type, stream);
 				break;
 			break;
 			default:
@@ -166,6 +167,7 @@ OGLTexture::setup() except
 		glGenerateMipmap(target);		
 	}
 
+	_target = target;
 	_textureAddr = glGetTextureHandleARB(_texture);
 	glMakeTextureHandleResidentARB(_textureAddr);
 

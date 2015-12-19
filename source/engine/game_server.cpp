@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/game_server.h>
+#include <ray/game_application.h>
 #include <ray/game_scene.h>
 #include <ray/game_event.h>
 #include <ray/game_component.h>
@@ -62,7 +63,11 @@ bool
 GameServer::open() except
 {
 	_timer = std::make_shared<Timer>();
-	return _timer->open();
+	_timer->open();
+
+	this->getGameApp()->addWindowSizeChangeCallback(std::bind(&GameServer::onWindowSizeChange, this));
+
+	return true;
 }
 
 void
@@ -336,6 +341,13 @@ GameServer::update() except
 		for (auto& it : _features)
 			it->onFrameEnd();
 	}
+}
+
+void
+GameServer::onWindowSizeChange() noexcept
+{
+	for (auto& it : _features)
+		it->onWindowSizeChange();
 }
 
 _NAME_END

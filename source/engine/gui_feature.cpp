@@ -37,10 +37,12 @@
 #if defined(_BUILD_GUI)
 #include <ray/gui_feature.h>
 #include <ray/gui_system.h>
-#include <ray/game_server.h>
 #include <ray/timer.h>
 #include <ray/image.h>
 #include <ray/input_event.h>
+
+#include <ray/game_server.h>
+#include <ray/game_application.h>
 
 _NAME_BEGIN
 
@@ -394,6 +396,14 @@ GuiFeature::onDeactivate() except
 {
 	if (_platform)
 		_platform = nullptr;
+}
+
+void
+GuiFeature::onWindowSizeChange() except
+{
+	std::uint32_t w, h;
+	this->getGameServer()->getGameApp()->getWindowResolution(w, h);
+	_platform->setViewport(w, h);
 }
 
 void

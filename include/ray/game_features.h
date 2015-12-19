@@ -65,6 +65,8 @@ protected:
 
 	virtual void onReset() except;
 
+	virtual void onWindowSizeChange() except;
+
 	virtual void onFrameBegin() except;
 	virtual void onFrame() except;
 	virtual void onFrameEnd() except;

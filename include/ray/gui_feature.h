@@ -64,6 +64,8 @@ protected:
 	virtual void onActivate() except;
 	virtual void onDeactivate() except;
 
+	virtual void onWindowSizeChange() except;
+
 	virtual void onMessage(const MessagePtr& message) except;
 
 private:

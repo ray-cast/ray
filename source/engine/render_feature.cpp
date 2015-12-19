@@ -38,7 +38,10 @@
 #include <ray/render_feature.h>
 #include <ray/render_scene.h>
 #include <ray/render_system.h>
+
 #include <ray/game_scene.h>
+#include <ray/game_server.h>
+#include <ray/game_application.h>
 
 _NAME_BEGIN
 
@@ -152,6 +155,14 @@ RenderFeature::onCloseScene(GameScenePtr scene) except
 		RenderSystem::instance()->removeRenderScene(renderScene);
 		_renderScenes[scene->getInstanceID()] = nullptr;
 	}
+}
+
+void 
+RenderFeature::onWindowSizeChange() except
+{
+	std::uint32_t w, h;
+	this->getGameServer()->getGameApp()->getWindowResolution(w, h);
+	RenderSystem::instance()->setWindowResolution(w, h);
 }
 
 void

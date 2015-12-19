@@ -136,6 +136,11 @@ GameFeature::onReset() except
 {
 }
 
+void 
+GameFeature::onWindowSizeChange() except
+{
+}
+
 void
 GameFeature::onFrameBegin() except
 {

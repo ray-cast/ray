@@ -63,6 +63,7 @@ public:
 			glfwSetWindowUserPointer(_window, this);
 			glfwSetWindowFocusCallback(_window, &onWindowFocus);
 			glfwSetWindowCloseCallback(_window, &onWindowClose);
+			glfwSetWindowSizeCallback(_window, &onWindowResize);
 
 			HWND hwnd = glfwGetWin32Window(_window);
 
@@ -81,6 +82,15 @@ public:
 			this->update();
 
 			glfwPostEmptyEvent();
+		}
+	}
+
+	static void onWindowResize(GLFWwindow* window, int w, int h)
+	{
+		GameEngine* engine = (GameEngine*)glfwGetWindowUserPointer(window);
+		if (engine)
+		{
+			engine->setWindowResolution(w, h);
 		}
 	}
 

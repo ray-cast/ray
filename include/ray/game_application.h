@@ -73,6 +73,11 @@ public:
 	void sendMessage(const MessagePtr& message) noexcept;
 	void postMessage(const MessagePtr& message) noexcept;
 
+	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
+	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) noexcept;
+	void addWindowSizeChangeCallback(std::function<void()> func) noexcept;
+	void removeWindowSizeChangeCallback(std::function<void()> func) noexcept;
+
 	void update() except;
 
 private:
@@ -84,6 +89,9 @@ private:
 	bool _isInitialize;
 	bool _isQuitRequest;
 
+	std::uint32_t _width;
+	std::uint32_t _height;
+
 	std::string _workDir;
 	std::string _engineDir;
 	std::string _resourceBaseDir;
@@ -93,6 +101,8 @@ private:
 
 	IoServer* _ioServer;
 	IoInterface* _ioInterface;
+
+	delegate<void()> _onWindowSizeChange;
 
 	GameFeaturePtr _inputFeature;
 	GameFeaturePtr _gameBaseFeature;

@@ -315,6 +315,39 @@ GameApplication::postMessage(const MessagePtr& message) noexcept
 	_gameServer->postMessage(message);
 }
 
+void 
+GameApplication::setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept
+{
+	if (_width != w || _height != h)
+	{
+		_width = w;
+		_height = h;
+
+		_onWindowSizeChange.run();
+	}
+}
+
+void 
+GameApplication::getWindowResolution(std::uint32_t& w, std::uint32_t& h) noexcept
+{
+	w = _width;
+	h = _height;
+}
+
+void 
+GameApplication::addWindowSizeChangeCallback(std::function<void()> func) noexcept
+{
+	assert(!_onWindowSizeChange.find(func));
+	_onWindowSizeChange.attach(func);
+}
+
+void 
+GameApplication::removeWindowSizeChangeCallback(std::function<void()> func) noexcept
+{
+	assert(_onWindowSizeChange.find(func));
+	_onWindowSizeChange.remove(func);
+}
+
 void
 GameApplication::update() except
 {

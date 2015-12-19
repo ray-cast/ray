@@ -59,7 +59,7 @@ public:
 
 	void setTimer(TimerPtr timer) noexcept;
 	TimerPtr getTimer() const noexcept;
-
+	
 	bool openScene(const std::string& sceneName) except;
 	bool addScene(GameScenePtr scene) except;
 	void closeScene(const std::string& sceneName) noexcept;
@@ -84,6 +84,9 @@ public:
 	void postMessage(const MessagePtr& message) except;
 
 	void update() except;
+
+private:
+	void onWindowSizeChange() noexcept;
 
 private:
 	friend GameApplication;

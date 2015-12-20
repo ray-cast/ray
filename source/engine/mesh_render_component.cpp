@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -42,7 +42,6 @@
 #include <ray/render_system.h>
 #include <ray/render_buffer.h>
 #include <ray/render_mesh.h>
-#include <ray/render_command.h>
 
 #include <ray/game_server.h>
 

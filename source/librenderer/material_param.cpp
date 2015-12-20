@@ -39,6 +39,11 @@
 
 _NAME_BEGIN
 
+MaterialSemantic::MaterialSemantic() noexcept
+	: _type(ShaderVariantType::None)
+{
+}
+
 MaterialSemantic::MaterialSemantic(const std::string& name, ShaderVariantType type) noexcept
 	: _name(name)
 {
@@ -270,7 +275,7 @@ MaterialSemantic::assign(const std::vector<float4>& value) noexcept
 }
 
 void
-MaterialSemantic::assign(TexturePtr texture, GraphicsSamplerPtr sampler) noexcept
+MaterialSemantic::assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
 {
 	this->setType(ShaderVariantType::Texture);
 	if (_texture != texture)
@@ -371,7 +376,7 @@ MaterialSemantic::getFloat4Array() const noexcept
 	return *_value.farray4;
 }
 
-TexturePtr
+GraphicsTexturePtr
 MaterialSemantic::getTexture() const noexcept
 {
 	assert(_type == ShaderVariantType::Texture);
@@ -515,12 +520,12 @@ MaterialParam::assign(const std::vector<float4>& value) noexcept
 }
 
 void
-MaterialParam::assign(TexturePtr texture, GraphicsSamplerPtr sampler) noexcept
+MaterialParam::assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
 {
 	_texture = texture;
 }
 
-TexturePtr 
+GraphicsTexturePtr
 MaterialParam::getTexture() const noexcept
 {
 	return _texture;

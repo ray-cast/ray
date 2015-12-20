@@ -55,10 +55,10 @@ EGL3GraphicsData::size() const noexcept
 	return _buf->size();
 }
 
-void
-EGL3GraphicsData::getGraphicsDataDesc(GraphicsDataDesc& desc) const noexcept
+const GraphicsDataDesc&
+EGL3GraphicsData::getGraphicsDataDesc() const noexcept
 {
-	_buf->getGraphicsDataDesc(desc);
+	return _buf->getGraphicsDataDesc();
 }
 
 void

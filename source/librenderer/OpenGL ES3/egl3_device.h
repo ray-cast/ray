@@ -52,10 +52,10 @@ public:
 	virtual GraphicsStatePtr createGraphicsState() noexcept;
 	virtual GraphicsLayoutPtr createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept;
 	virtual GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
-	virtual TexturePtr createTexture() noexcept;
-	virtual GraphicsSamplerPtr createGraphicsSampler() noexcept;
-	virtual RenderTexturePtr createRenderTexture() noexcept;
-	virtual MultiRenderTexturePtr createMultiRenderTexture() noexcept;
+	virtual GraphicsTexturePtr createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept;
+	virtual GraphicsSamplerPtr createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept;
+	virtual GraphicsRenderTexturePtr createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept;
+	virtual GraphicsMultiRenderTexturePtr createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept;
 	virtual ShaderPtr createShader() noexcept;
 	virtual ShaderObjectPtr createShaderObject() noexcept;
 

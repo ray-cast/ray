@@ -89,11 +89,11 @@ public:
 
 private:
 
-	void computeRawAO(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-	void blurHorizontal(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-	void blurVertical(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-	void blurDirection(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest, const float2& direction) noexcept;
-	void shading(RenderPipeline& pipeline, RenderTexturePtr color, RenderTexturePtr ao) noexcept;
+	void computeRawAO(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void blurHorizontal(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void blurVertical(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void blurDirection(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest, const float2& direction) noexcept;
+	void shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr color, GraphicsRenderTexturePtr ao) noexcept;
 
 	void createSphereNoise();
 
@@ -102,14 +102,11 @@ private:
 	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, RenderTexturePtr source) except;
+	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) except;
 
 private:
 
 	Setting _setting;
-
-	RenderTexturePtr _texBlur;
-	RenderTexturePtr _texAmbient;
 
 	MaterialPtr _ambientOcclusion;
 
@@ -133,6 +130,9 @@ private:
 	MaterialParamPtr _blurSharpness;
 	MaterialParamPtr _blurDirection;
 	MaterialParamPtr _blurGaussian;
+
+	GraphicsRenderTexturePtr _texBlur;
+	GraphicsRenderTexturePtr _texAmbient;
 };
 
 _NAME_END

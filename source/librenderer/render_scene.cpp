@@ -115,7 +115,13 @@ OcclusionCullList::insert(RenderObjectPtr item, float distanceSqrt) noexcept
 void 
 OcclusionCullList::sort() noexcept
 {
-	std::sort(_iter.begin(), _iter.end(),
+	this->sort(_iter.begin(), _iter.end());
+}
+
+void
+OcclusionCullList::sort(iterator begin, iterator end) noexcept
+{
+	std::sort(begin, end,
 		[](const OcclusionCullNode& lhs, const OcclusionCullNode& rhs)
 	{
 		return lhs.getDistanceSqrt() < rhs.getDistanceSqrt();
@@ -233,7 +239,7 @@ RenderScene::computVisiable(const Matrix4x4& viewProject, OcclusionCullList& lis
 	{
 		if (fru.contains(it->getBoundingBoxInWorld().aabb()))
 		{
-			list.insert(it, eyePosition.sqrDistance(it->getBoundingBoxInWorld().center()));
+			list.insert(it, eyePosition.sqrDistance(it->getTransform().getTranslate()));
 
 			for (auto& child : it->getSubeRenderObjects())
 			{
@@ -244,8 +250,6 @@ RenderScene::computVisiable(const Matrix4x4& viewProject, OcclusionCullList& lis
 			}
 		}
 	}
-
-	list.sort();
 }
 
 void

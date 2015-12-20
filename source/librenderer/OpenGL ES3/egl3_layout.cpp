@@ -168,10 +168,10 @@ EGL3GraphicsLayout::getVertexSize() const noexcept
 	return _vertexSize;
 }
 
-void
-EGL3GraphicsLayout::getGraphicsLayout(GraphicsLayoutDesc& layout) const noexcept
+const GraphicsLayoutDesc&
+EGL3GraphicsLayout::getGraphicsLayout() const noexcept
 {
-	layout = _layout;
+	return _layout;
 }
 
 void

@@ -37,8 +37,6 @@
 #ifndef _H_RENDER_PIPELINE_H_
 #define _H_RENDER_PIPELINE_H_
 
-#include <ray/graphics_data.h>
-#include <ray/graphics_layout.h>
 #include <ray/render_data_manager_base.h>
 
 _NAME_BEGIN
@@ -79,23 +77,25 @@ public:
 	void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept;
 	RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept;
 
-	RenderTexturePtr createRenderTexture() noexcept;
-	MultiRenderTexturePtr createMultiRenderTexture() noexcept;
-	void setRenderTexture(RenderTexturePtr target) noexcept;
-	void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept;
-	void setRenderTextureLayer(RenderTexturePtr target, int layer) noexcept;
+	GraphicsRenderTexturePtr createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept;
+	GraphicsRenderTexturePtr createRenderTexture(std::uint32_t w, std::uint32_t h, TextureDim dim, TextureFormat format) noexcept;
+	GraphicsMultiRenderTexturePtr createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept;
+	void setRenderTexture(GraphicsRenderTexturePtr target) noexcept;
+	void setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept;
+	void setRenderTextureLayer(GraphicsRenderTexturePtr target, int layer) noexcept;
 	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
 	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
 	void discradRenderTexture() noexcept;
-	void readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
-	void blitRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept;
+	void readRenderTexture(GraphicsRenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	void blitRenderTexture(GraphicsRenderTexturePtr srcTarget, const Viewport& src, GraphicsRenderTexturePtr destTarget, const Viewport& dest) noexcept;
 
-	TexturePtr createTexture() noexcept;
-	TexturePtr createTexture(const std::string& name) except;
+	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
+	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, TextureDim dim, TextureFormat format) noexcept;
+	GraphicsTexturePtr createTexture(const std::string& name) except;
 
 	MaterialPtr createMaterial(const std::string& name) except;
-	void setMaterialPass(MaterialPassPtr pass) noexcept;
 	void setMaterialManager(MaterialManagerPtr manager) noexcept;
+	void setMaterialPass(MaterialPassPtr pass) noexcept;
 	MaterialPassPtr getMaterialPass() noexcept;
 	MaterialManagerPtr getMaterialManager() noexcept;
 
@@ -118,11 +118,11 @@ public:
 	void drawSphere(MaterialPassPtr pass) noexcept;
 	void drawSceneQuad(MaterialPassPtr pass) noexcept;
 	void drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const RenderIndirect& renderable) noexcept;
-	void drawRenderQueue(RenderQueue type, RenderPass pass, MaterialPassPtr material = nullptr, RenderTexturePtr target = nullptr) noexcept;
+	void drawRenderQueue(RenderQueue type, RenderPass pass, MaterialPassPtr material = nullptr, GraphicsRenderTexturePtr target = nullptr) noexcept;
 
 	void addPostProcess(RenderPostProcessPtr postprocess) except;
 	void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
-	void renderPostProcess(RenderTexturePtr renderTexture) except;
+	void renderPostProcess(GraphicsRenderTexturePtr renderTexture) except;
 
 	void renderBegin() noexcept;
 	void renderEnd() noexcept;

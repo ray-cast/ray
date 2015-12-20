@@ -38,10 +38,11 @@
 
 _NAME_BEGIN
 
-#define MAX_COLOR_ATTACHMENTS 15
+__ImplementSubClass(EGL3Texture, GraphicsTexture, "EGL3Texture")
 
 EGL3Texture::EGL3Texture() noexcept
 	: _texture(0)
+	, _target(GL_NONE)
 {
 }
 
@@ -51,49 +52,42 @@ EGL3Texture::~EGL3Texture() noexcept
 }
 
 bool
-EGL3Texture::setup() except
+EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 {
-	auto target = EGL3Types::asEGL3Target(this->getTexDim());
-	auto internalFormat = EGL3Types::asEGL3Internalformat(this->getTexFormat());
-	auto stream = this->getStream();
+	auto target = EGL3Types::asEGL3Target(textureDesc.getTexDim(), textureDesc.isMultiSample());
+	auto internalFormat = EGL3Types::asEGL3Internalformat(textureDesc.getTexFormat());
+	auto stream = textureDesc.getStream();
+
+	if (target == GL_INVALID_ENUM)
+		return false;
+
+	if (internalFormat == GL_INVALID_ENUM)
+		return false;
 
 	GL_CHECK(glGenTextures(1, &_texture));
 	GL_CHECK(glBindTexture(target, _texture));
 
-	GLsizei w = (GLsizei)this->getWidth();
-	GLsizei h = (GLsizei)this->getHeight();
-	GLsizei depth = (GLsizei)this->getDepth();
+	GLsizei w = (GLsizei)textureDesc.getWidth();
+	GLsizei h = (GLsizei)textureDesc.getHeight();
+	GLsizei depth = (GLsizei)textureDesc.getDepth();
 
-	applySamplerWrap(target, this->getSamplerWrap());
-	applySamplerFilter(target, this->getSamplerFilter());
-	applyTextureAnis(target, this->getSamplerAnis());
+	applySamplerWrap(target, textureDesc.getSamplerWrap());
+	applySamplerFilter(target, textureDesc.getSamplerFilter());
+	applyTextureAnis(target, textureDesc.getSamplerAnis());
 
 	GLsizei level = target == GL_TEXTURE_CUBE_MAP ? 6 : 1;
-	level = std::max(level, this->getMipLevel());
+	level = std::max(level, textureDesc.getMipLevel());
 
 	if (target == GL_TEXTURE_2D)
-	{
-		if (this->isMultiSample())
-			GL_CHECK(glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, level, internalFormat, w, h, GL_FALSE));
-		else
-			GL_CHECK(glTexStorage2D(target, level, internalFormat, w, h));
-	}
+		glTexStorage2D(GL_TEXTURE_2D, level, internalFormat, w, h);
+	else if (target == GL_TEXTURE_2D_MULTISAMPLE)
+		glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, level, internalFormat, w, h, GL_FALSE);
 	else if (target == GL_TEXTURE_2D_ARRAY)
-	{
-		GL_CHECK(glTexStorage3D(target, level, internalFormat, w, h, depth));
-	}
-
+		glTexStorage3D(GL_TEXTURE_2D_ARRAY, level, internalFormat, w, h, depth);
 	else if (target == GL_TEXTURE_3D)
-	{
-		GL_CHECK(glTexStorage3D(target, level, internalFormat, w, h, depth));
-	}
+		glTexStorage3D(GL_TEXTURE_3D, level, internalFormat, w, h, depth);
 	else if (target == GL_TEXTURE_CUBE_MAP)
-	{
-		if (this->isMultiSample())
-			GL_CHECK(glTexStorage2DMultisample(GL_TEXTURE_CUBE_MAP, level, internalFormat, w, h, GL_FALSE));
-		else
-			GL_CHECK(glTexStorage2D(GL_TEXTURE_CUBE_MAP, level, internalFormat, w, h));
-	}
+		glTexStorage2D(GL_TEXTURE_CUBE_MAP, level, internalFormat, w, h);
 
 	if (stream)
 	{
@@ -102,8 +96,8 @@ EGL3Texture::setup() except
 			internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT ||
 			internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
 		{
-			GLint level = (GLint)this->getMipLevel();
-			GLsizei size = this->getMipSize();
+			GLint level = (GLint)textureDesc.getMipLevel();
+			GLsizei size = textureDesc.getMipSize();
 			std::size_t offset = 0;
 			std::size_t blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;
 
@@ -122,8 +116,8 @@ EGL3Texture::setup() except
 		else
 		{
 			auto level = 0;
-			auto format = EGL3Types::asEGL3Format(this->getTexFormat());
-			auto type = EGL3Types::asEGL3Type(this->getTexFormat());
+			auto format = EGL3Types::asEGL3Format(textureDesc.getTexFormat());
+			auto type = EGL3Types::asEGL3Type(textureDesc.getTexFormat());
 
 			switch (target)
 			{
@@ -147,10 +141,11 @@ EGL3Texture::setup() except
 		}
 	}
 
-	if (this->isMipmap())
-	{
+	_target = target;
+	_textureDesc = textureDesc;
+
+	if (textureDesc.isMipmap())
 		GL_CHECK(glGenerateMipmap(target));
-	}
 
 	return true;
 }
@@ -165,10 +160,22 @@ EGL3Texture::close() noexcept
 	}
 }
 
+GLenum
+EGL3Texture::getTarget() const noexcept
+{
+	return _target;
+}
+
 GLuint
-EGL3Texture::getInstanceID() noexcept
+EGL3Texture::getInstanceID() const noexcept
 {
 	return _texture;
+}
+
+const GraphicsTextureDesc&
+EGL3Texture::getGraphicsTextureDesc() const noexcept
+{
+	return _textureDesc;
 }
 
 void
@@ -242,257 +249,6 @@ EGL3Texture::applyTextureAnis(GLenum target, SamplerAnis anis) noexcept
 		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8));
 	else if (anis == SamplerAnis::Anis16)
 		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16));
-}
-
-EGL3RenderTexture::EGL3RenderTexture() noexcept
-	: _fbo(GL_NONE)
-	, _layer(GL_NONE)
-{
-}
-
-EGL3RenderTexture::~EGL3RenderTexture() noexcept
-{
-	this->close();
-}
-
-bool
-EGL3RenderTexture::setup(TexturePtr texture) except
-{
-	assert(!_fbo);
-	assert(texture);
-
-	GL_CHECK(glGenFramebuffers(1, &_fbo));
-	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, _fbo));
-
-	auto sharedDepthTarget = this->getSharedDepthTexture();
-	auto sharedStencilTarget = this->getSharedStencilTexture();
-
-	if (sharedDepthTarget == sharedStencilTarget)
-	{
-		if (sharedDepthTarget)
-			this->bindRenderTexture(sharedDepthTarget->getResolveTexture(), GL_DEPTH_STENCIL_ATTACHMENT);
-	}
-	else
-	{
-		if (sharedDepthTarget)
-			this->bindRenderTexture(sharedDepthTarget->getResolveTexture(), GL_DEPTH_ATTACHMENT);
-
-		if (sharedStencilTarget)
-			this->bindRenderTexture(sharedStencilTarget->getResolveTexture(), GL_STENCIL_ATTACHMENT);
-	}
-
-	auto resolveFormat = this->getTexFormat();
-
-	if (resolveFormat == TextureFormat::DEPTH24_STENCIL8 || resolveFormat == TextureFormat::DEPTH32_STENCIL8)
-		this->bindRenderTexture(texture, GL_DEPTH_STENCIL_ATTACHMENT);
-	else if (resolveFormat == TextureFormat::DEPTH_COMPONENT16 || resolveFormat == TextureFormat::DEPTH_COMPONENT24 || resolveFormat == TextureFormat::DEPTH_COMPONENT32)
-		this->bindRenderTexture(texture, GL_DEPTH_ATTACHMENT);
-	else if (resolveFormat == TextureFormat::STENCIL8)
-		this->bindRenderTexture(texture, GL_STENCIL_ATTACHMENT);
-	else
-		this->bindRenderTexture(texture, GL_COLOR_ATTACHMENT0);
-
-	_resolveTexture = texture;
-
-	GLenum draw = GL_COLOR_ATTACHMENT0;
-	GL_CHECK(glDrawBuffers(1, &draw));
-	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-
-	return true;
-}
-
-void
-EGL3RenderTexture::setup(std::size_t w, std::size_t h, TextureDim dim, TextureFormat format) except
-{
-	_resolveTexture = std::make_shared<EGL3Texture>();
-	_resolveTexture->setWidth(w);
-	_resolveTexture->setHeight(h);
-	_resolveTexture->setTexDim(dim);
-	_resolveTexture->setTexFormat(format);
-	_resolveTexture->setup();
-
-	this->setup(_resolveTexture);
-}
-
-void
-EGL3RenderTexture::setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, TextureFormat format) except
-{
-	_resolveTexture = std::make_shared<EGL3Texture>();
-	_resolveTexture->setWidth(w);
-	_resolveTexture->setHeight(h);
-	_resolveTexture->setDepth(d);
-	_resolveTexture->setTexDim(dim);
-	_resolveTexture->setTexFormat(format);
-	_resolveTexture->setup();
-
-	this->setup(_resolveTexture);
-}
-
-void
-EGL3RenderTexture::close() noexcept
-{
-	if (_fbo != GL_NONE)
-	{
-		GL_CHECK(glDeleteFramebuffers(1, &_fbo));
-		_fbo = GL_NONE;
-	}
-}
-
-void
-EGL3RenderTexture::bindRenderTexture(TexturePtr texture, GLenum attachment) noexcept
-{
-	auto handle = std::dynamic_pointer_cast<EGL3Texture>(texture)->getInstanceID();
-
-	switch (texture->getTexDim())
-	{
-		case TextureDim::DIM_2D:
-		{
-			if (texture->isMultiSample())
-				GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, handle, 0));
-			else
-				GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0));
-			break;
-		}
-		case TextureDim::DIM_2D_ARRAY:
-		{
-			GL_CHECK(glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, handle, 0, 0));
-			break;
-		}
-		case TextureDim::DIM_CUBE:
-		{
-			GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X, handle, 0));
-			break;
-		}
-	}
-}
-
-void
-EGL3RenderTexture::onSetRenderTextureAfter(RenderTexturePtr target) noexcept
-{
-	if (_fbo)
-	{
-		auto resolveFormat = target->getTexFormat();
-		if (resolveFormat == TextureFormat::DEPTH24_STENCIL8 || resolveFormat == TextureFormat::DEPTH32_STENCIL8)
-			this->bindRenderTexture(this->getResolveTexture(), GL_STENCIL_ATTACHMENT);
-		else if (resolveFormat == TextureFormat::DEPTH_COMPONENT16 || resolveFormat == TextureFormat::DEPTH_COMPONENT24 || resolveFormat == TextureFormat::DEPTH_COMPONENT32)
-			this->bindRenderTexture(this->getResolveTexture(), GL_DEPTH_ATTACHMENT);
-		else if (resolveFormat == TextureFormat::STENCIL8)
-			this->bindRenderTexture(this->getResolveTexture(), GL_STENCIL_ATTACHMENT);
-		else
-			this->bindRenderTexture(this->getResolveTexture(), GL_COLOR_ATTACHMENT0);
-	}
-}
-
-GLuint
-EGL3RenderTexture::getInstanceID() noexcept
-{
-	return _fbo;
-}
-
-void
-EGL3RenderTexture::setLayer(GLuint layer) noexcept
-{
-	_layer = layer;
-}
-
-GLuint
-EGL3RenderTexture::getLayer() const noexcept
-{
-	return _layer;
-}
-
-EGL3MultiRenderTexture::EGL3MultiRenderTexture() noexcept
-	: _fbo(GL_NONE)
-{
-}
-
-EGL3MultiRenderTexture::~EGL3MultiRenderTexture() noexcept
-{
-	this->close();
-}
-
-bool
-EGL3MultiRenderTexture::setup() noexcept
-{
-	assert(GL_NONE == _fbo);
-
-	GL_CHECK(glGenFramebuffers(1, &_fbo));
-	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, _fbo));
-
-	auto sharedDepthTarget = this->getSharedDepthTexture();
-	auto sharedStencilTarget = this->getSharedStencilTexture();
-
-	if (sharedDepthTarget == sharedStencilTarget)
-	{
-		if (sharedDepthTarget)
-			this->bindRenderTexture(sharedDepthTarget, GL_DEPTH_STENCIL_ATTACHMENT);
-	}
-	else
-	{
-		if (sharedDepthTarget)
-		{
-			this->bindRenderTexture(sharedDepthTarget, GL_DEPTH_ATTACHMENT);
-		}
-
-		if (sharedStencilTarget)
-		{
-			this->bindRenderTexture(sharedStencilTarget, GL_STENCIL_ATTACHMENT);
-		}
-	}
-
-	GLenum draw[MAX_COLOR_ATTACHMENTS] = { 0 };
-	GLenum attachment = GL_COLOR_ATTACHMENT0;
-	GLsizei count = 0;
-
-	for (auto& target : this->getRenderTextures())
-	{
-		this->bindRenderTexture(target, attachment);
-		draw[count++] = attachment++;
-	}
-
-	GL_CHECK(glDrawBuffers(count, draw));
-	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-
-	return true;
-}
-
-void
-EGL3MultiRenderTexture::close() noexcept
-{
-	if (_fbo != GL_NONE)
-	{
-		GL_CHECK(glDeleteFramebuffers(1, &_fbo));
-		_fbo = GL_NONE;
-	}
-}
-
-GLuint
-EGL3MultiRenderTexture::getInstanceID() noexcept
-{
-	return _fbo;
-}
-
-void
-EGL3MultiRenderTexture::bindRenderTexture(RenderTexturePtr target, GLenum attachment) noexcept
-{
-	auto handle = std::dynamic_pointer_cast<EGL3Texture>(target->getResolveTexture())->getInstanceID();
-
-	switch (target->getTexDim())
-	{
-		case TextureDim::DIM_2D:
-		{
-			if (target->isMultiSample())
-				GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, handle, 0));
-			else
-				GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0));
-			break;
-		}
-		case TextureDim::DIM_2D_ARRAY:
-		{
-			GL_CHECK(glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, handle, 0, 0));
-			break;
-		}
-	}
 }
 
 _NAME_END

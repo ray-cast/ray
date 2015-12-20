@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/fxaa.h>
-#include <ray/render_texture.h>
 
 _NAME_BEGIN
 
@@ -69,9 +68,10 @@ FXAA::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-FXAA::onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
+FXAA::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept
 {
-	_texelStep->assign(float2(1.0f / source->getWidth(), 1.0f / source->getHeight()));
+	auto& textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
+	_texelStep->assign(float2(1.0f / textureDesc.getWidth(), 1.0f / textureDesc.getHeight()));
 
 	pipeline.setRenderTexture(source);
 	pipeline.drawSceneQuad(_fxaaPass);

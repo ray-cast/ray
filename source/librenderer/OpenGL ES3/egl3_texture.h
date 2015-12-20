@@ -41,16 +41,21 @@
 
 _NAME_BEGIN
 
-class EGL3Texture final : public Texture
+class EGL3Texture final : public GraphicsTexture
 {
+	__DeclareSubClass(EGL3Texture, GraphicsTexture)
 public:
 	EGL3Texture() noexcept;
 	~EGL3Texture() noexcept;
 
-	bool setup() except;
+	bool setup(const GraphicsTextureDesc& textureDesc) noexcept;
 	void close() noexcept;
 
-	GLuint getInstanceID() noexcept;
+	GLenum getTarget() const noexcept;
+
+	GLuint getInstanceID() const noexcept;
+
+	const GraphicsTextureDesc& getGraphicsTextureDesc() const noexcept;
 
 private:
 
@@ -59,52 +64,9 @@ private:
 	static void applyTextureAnis(GLenum target, SamplerAnis anis) noexcept;
 
 private:
-
+	GLenum _target;
 	GLuint _texture;
-};
-
-class EGL3RenderTexture final : public RenderTexture
-{
-public:
-	EGL3RenderTexture() noexcept;
-	~EGL3RenderTexture() noexcept;
-
-	virtual bool setup(TexturePtr texture) except;
-	virtual void setup(std::size_t w, std::size_t h, TextureDim dim, TextureFormat format) except;
-	virtual void setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, TextureFormat format) except;
-	virtual void close() noexcept;
-
-	void setLayer(GLuint layer) noexcept;
-	GLuint getLayer() const noexcept;
-
-	GLuint getInstanceID() noexcept;
-
-private:
-	void bindRenderTexture(TexturePtr texture, GLenum attachment) noexcept;
-	void onSetRenderTextureAfter(RenderTexturePtr target) noexcept;
-
-private:
-	GLuint _fbo;
-	GLuint _layer;
-};
-
-class EGL3MultiRenderTexture final : public MultiRenderTexture
-{
-public:
-	EGL3MultiRenderTexture() noexcept;
-	~EGL3MultiRenderTexture() noexcept;
-
-	virtual bool setup() noexcept;
-	virtual void close() noexcept;
-
-	GLuint getInstanceID() noexcept;
-
-private:
-	void bindRenderTexture(RenderTexturePtr target, GLenum attachment) noexcept;
-
-private:
-
-	GLuint _fbo;
+	GraphicsTextureDesc _textureDesc;
 };
 
 _NAME_END

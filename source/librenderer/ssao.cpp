@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #include <ray/ssao.h>
 #include <ray/camera.h>
-#include <ray/render_texture.h>
 
 _NAME_BEGIN
 
@@ -87,7 +86,7 @@ SSAO::getSetting() const noexcept
 }
 
 void
-SSAO::computeRawAO(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
 	_cameraProjInfo->assign(pipeline.getCamera()->getProjConstant());
 	_cameraProjScale->assign(pipeline.getCamera()->getProjLength().y * _setting.radius);
@@ -98,25 +97,29 @@ SSAO::computeRawAO(RenderPipeline& pipeline, RenderTexturePtr source, RenderText
 }
 
 void
-SSAO::blurHorizontal(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+SSAO::blurHorizontal(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
+	GraphicsTextureDesc textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
+
 	float2 direction(_setting.blurScale, 0.0f);
-	direction.x /= source->getWidth();
+	direction.x /= textureDesc.getWidth();
 
 	this->blurDirection(pipeline, source, dest, direction);
 }
 
 void
-SSAO::blurVertical(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+SSAO::blurVertical(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
+	GraphicsTextureDesc textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
+
 	float2 direction(0.0f, _setting.blurScale);
-	direction.y /= source->getHeight();
+	direction.y /= textureDesc.getHeight();
 
 	this->blurDirection(pipeline, source, dest, direction);
 }
 
 void
-SSAO::blurDirection(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest, const float2& direction) noexcept
+SSAO::blurDirection(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest, const float2& direction) noexcept
 {
 	_blurDirection->assign(direction);
 	_blurSource->assign(source->getResolveTexture());
@@ -127,7 +130,7 @@ SSAO::blurDirection(RenderPipeline& pipeline, RenderTexturePtr source, RenderTex
 }
 
 void
-SSAO::shading(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr ao) noexcept
+SSAO::shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr ao) noexcept
 {
 	_occlusionAmbient->assign(ao->getResolveTexture());
 
@@ -160,11 +163,8 @@ SSAO::onActivate(RenderPipeline& pipeline) except
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_texAmbient = pipeline.createRenderTexture();
-	_texAmbient->setup(width, height, TextureDim::DIM_2D, TextureFormat::R16F);
-
-	_texBlur = pipeline.createRenderTexture();
-	_texBlur->setup(width, height, TextureDim::DIM_2D, TextureFormat::R16F);
+	_texAmbient = pipeline.createRenderTexture(width, height, TextureDim::DIM_2D, TextureFormat::R16F);
+	_texBlur = pipeline.createRenderTexture(width, height, TextureDim::DIM_2D, TextureFormat::R16F);
 
 	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssao.glsl");
 	_ambientOcclusionPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ao");
@@ -199,7 +199,7 @@ SSAO::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-SSAO::onRender(RenderPipeline& pipeline, RenderTexturePtr source) except
+SSAO::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) except
 {
 	this->computeRawAO(pipeline, source, _texAmbient);
 

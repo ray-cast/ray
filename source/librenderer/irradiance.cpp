@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/irradiance.h>
-#include <ray/render_texture.h>
 
 #define PARABOLOID_SAMPLES 64
 #define NUM_ORDER 3
@@ -74,24 +73,18 @@ EnvironmentIrradiance::EnvironmentIrradiance(RenderPipeline& pipeline) except
 	_sphericalHarmonicConvolveYlmDW0 = _irradiance->getParameter("SHConvolveYlmDW0");
 	_sphericalHarmonicConvolveYlmDW1 = _irradiance->getParameter("SHConvolveYlmDW1");
 
-	_paraboloidFrontMap = pipeline.createRenderTexture();
-	_paraboloidFrontMap->setup(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, TextureDim::DIM_2D, TextureFormat::R11G11B10F);
+	_paraboloidFrontMap = pipeline.createRenderTexture(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, TextureDim::DIM_2D, TextureFormat::R11G11B10F);
+	_paraboloidBackMap = pipeline.createRenderTexture(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, TextureDim::DIM_2D, TextureFormat::R11G11B10F);
 
-	_paraboloidBackMap = pipeline.createRenderTexture();
-	_paraboloidBackMap->setup(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, TextureDim::DIM_2D, TextureFormat::R11G11B10F);
+	GraphicsMultiRenderTextureDesc paraboloidDualDesc;
+	paraboloidDualDesc.attach(_paraboloidFrontMap);
+	paraboloidDualDesc.attach(_paraboloidBackMap);
 
-	_paraboloidDualMaps = pipeline.createMultiRenderTexture();
-	_paraboloidDualMaps->attach(_paraboloidFrontMap);
-	_paraboloidDualMaps->attach(_paraboloidBackMap);
-	_paraboloidDualMaps->setup();
+	_paraboloidDualMaps = pipeline.createMultiRenderTexture(paraboloidDualDesc);
 
-	_irradianceSHCoefficients = pipeline.createRenderTexture();
-	_irradianceSHCoefficients->setup(NUM_ORDER_P2, NUM_ORDER_P2, TextureDim::DIM_2D, TextureFormat::R16G16B16F);
+	_irradianceSHCoefficients = pipeline.createRenderTexture(NUM_ORDER_P2, NUM_ORDER_P2, TextureDim::DIM_2D, TextureFormat::R16G16B16F);
 
-	_paraboloidSHWeights[0] = pipeline.createTexture();
-	_paraboloidSHWeights[1] = pipeline.createTexture();
-
-	this->_buildDualParaboloidWeightTextures(_paraboloidSHWeights, NUM_ORDER, NUM_RADIANCE_SAMPLES);
+	this->_buildDualParaboloidWeightTextures(pipeline, _paraboloidSHWeights, NUM_ORDER, NUM_RADIANCE_SAMPLES);
 }
 
 EnvironmentIrradiance::~EnvironmentIrradiance()
@@ -99,12 +92,14 @@ EnvironmentIrradiance::~EnvironmentIrradiance()
 }
 
 void
-EnvironmentIrradiance::renderParaboloidEnvMap(RenderPipeline& pipeline, TexturePtr cubemap) noexcept
+EnvironmentIrradiance::renderParaboloidEnvMap(RenderPipeline& pipeline, GraphicsTexturePtr cubemap) noexcept
 {
 	assert(cubemap);
 
+	auto& textureDesc = cubemap->getGraphicsTextureDesc();
+
 	_paraboloidCubeMapSampler->assign(cubemap);
-	_paraboloidSamplesInverse->assign(1.0f / cubemap->getWidth());
+	_paraboloidSamplesInverse->assign(1.0f / textureDesc.getWidth());
 
 	_sphericalHarmonicConvolveDE0->assign(_paraboloidFrontMap->getResolveTexture());
 	_sphericalHarmonicConvolveDE1->assign(_paraboloidBackMap->getResolveTexture());
@@ -121,12 +116,12 @@ EnvironmentIrradiance::renderParaboloidEnvMap(RenderPipeline& pipeline, TextureP
 }
 
 void
-EnvironmentIrradiance::renderProjectParaboloidToSH(RenderPipeline& pipeline, RenderTexturePtr evalSHFunction, RenderTexturePtr dest) noexcept
+EnvironmentIrradiance::renderProjectParaboloidToSH(RenderPipeline& pipeline, GraphicsRenderTexturePtr evalSHFunction, GraphicsRenderTexturePtr dest) noexcept
 {
 }
 
 void
-EnvironmentIrradiance::renderEvaluateConvolvedSH(RenderPipeline& pipeline, RenderTexturePtr evalSHFunction, RenderTexturePtr dest) noexcept
+EnvironmentIrradiance::renderEvaluateConvolvedSH(RenderPipeline& pipeline, GraphicsRenderTexturePtr evalSHFunction, GraphicsRenderTexturePtr dest) noexcept
 {
 }
 
@@ -216,7 +211,7 @@ float* D3DXSHEvalDirection(float* out, std::uint32_t order, const Vector3 *dir)
 }
 
 bool
-EnvironmentIrradiance::_buildDualParaboloidWeightTextures(TexturePtr textures[2], std::uint32_t order, std::uint32_t size)
+EnvironmentIrradiance::_buildDualParaboloidWeightTextures(RenderPipeline& pipeline, GraphicsTexturePtr textures[2], std::uint32_t order, std::uint32_t size)
 {
 	assert(textures || isPow2(size));
 
@@ -300,11 +295,13 @@ EnvironmentIrradiance::_buildDualParaboloidWeightTextures(TexturePtr textures[2]
 			}
 		}
 
-		textures[face]->setTexDim(TextureDim::DIM_2D);
-		textures[face]->setTexFormat(TextureFormat::R32F);
-		textures[face]->setSize(size*size, size*size);
-		textures[face]->setStream(coefficients);
-		textures[face]->setup();
+		GraphicsTextureDesc textureDesc;
+		textureDesc.setTexDim(TextureDim::DIM_2D);
+		textureDesc.setTexFormat(TextureFormat::R32F);
+		textureDesc.setSize(size*size, size*size);
+		textureDesc.setStream(coefficients);
+
+		_paraboloidSHWeights[face] = pipeline.createTexture(textureDesc);
 
 		delete[] coefficients;
 	}

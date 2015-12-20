@@ -1,0 +1,393 @@
+// +----------------------------------------------------------------------
+// | Project : ray.
+// | All rights reserved.
+// +----------------------------------------------------------------------
+// | Copyright (c) 2013-2014.
+// +----------------------------------------------------------------------
+// | * Redistribution and use of this software in source and binary forms,
+// |   with or without modification, are permitted provided that the following
+// |   conditions are met:
+// |
+// | * Redistributions of source code must retain the above
+// |   copyright notice, this list of conditions and the
+// |   following disclaimer.
+// |
+// | * Redistributions in binary form must reproduce the above
+// |   copyright notice, this list of conditions and the
+// |   following disclaimer in the documentation and/or other
+// |   materials provided with the distribution.
+// |
+// | * Neither the name of the ray team, nor the names of its
+// |   contributors may be used to endorse or promote products
+// |   derived from this software without specific prior
+// |   written permission of the ray team.
+// |
+// | THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// | "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// | LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// | A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// | OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// | SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// | LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// | DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// | THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// +----------------------------------------------------------------------
+#include "ogl_framebuffer.h"
+#include "ogl_texture.h"
+
+_NAME_BEGIN
+
+__ImplementSubClass(OGLRenderTexture, GraphicsRenderTexture, "OGLRenderTexture")
+__ImplementSubClass(OGLMultiRenderTexture, GraphicsMultiRenderTexture, "OGLMultiRenderTexture")
+
+OGLRenderTexture::OGLRenderTexture() noexcept
+	: _fbo(GL_NONE)
+	, _layer(GL_NONE)
+	, _isActive(false)
+{
+}
+
+OGLRenderTexture::~OGLRenderTexture() noexcept
+{
+	this->close();
+}
+
+bool
+OGLRenderTexture::setup(const GraphicsRenderTextureDesc& framebufferDesc) except
+{
+	assert(!_fbo);
+
+	if (!framebufferDesc.getGraphicsTexture())
+		return false;
+
+	glGenFramebuffers(1, &_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+
+	auto sharedDepthTarget = framebufferDesc.getSharedDepthTexture();
+	auto sharedStencilTarget = framebufferDesc.getSharedStencilTexture();
+
+	if (sharedDepthTarget == sharedStencilTarget)
+	{
+		if (sharedDepthTarget)
+			this->bindRenderTexture(sharedDepthTarget->getResolveTexture(), GL_DEPTH_STENCIL_ATTACHMENT);
+	}
+	else
+	{
+		if (sharedDepthTarget)
+			this->bindRenderTexture(sharedDepthTarget->getResolveTexture(), GL_DEPTH_ATTACHMENT);
+
+		if (sharedStencilTarget)
+			this->bindRenderTexture(sharedStencilTarget->getResolveTexture(), GL_STENCIL_ATTACHMENT);
+	}
+
+	auto texture = framebufferDesc.getGraphicsTexture();
+	auto textureDesc = texture->getGraphicsTextureDesc();
+
+	TextureFormat format = textureDesc.getTexFormat();
+
+	if (format == TextureFormat::DEPTH24_STENCIL8 || format == TextureFormat::DEPTH32_STENCIL8)
+		this->bindRenderTexture(texture, GL_DEPTH_STENCIL_ATTACHMENT);
+	else if (format == TextureFormat::DEPTH_COMPONENT16 || format == TextureFormat::DEPTH_COMPONENT24 || format == TextureFormat::DEPTH_COMPONENT32)
+		this->bindRenderTexture(texture, GL_DEPTH_ATTACHMENT);
+	else if (format == TextureFormat::STENCIL8)
+		this->bindRenderTexture(texture, GL_STENCIL_ATTACHMENT);
+	else
+		this->bindRenderTexture(texture, GL_COLOR_ATTACHMENT0);
+
+	_framebufferDesc = framebufferDesc;
+
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	return true;
+}
+
+void
+OGLRenderTexture::close() noexcept
+{
+	if (_fbo != GL_NONE)
+	{
+		glDeleteFramebuffers(1, &_fbo);
+		_fbo = GL_NONE;
+	}
+}
+
+void
+OGLRenderTexture::setActive(bool active) noexcept
+{
+	if (_isActive != active)
+	{
+		if (active)
+			glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+		_isActive = active;
+	}
+}
+
+bool
+OGLRenderTexture::getActive() noexcept
+{
+	return _isActive;
+}
+
+void
+OGLRenderTexture::setLayer(GLuint layer) noexcept
+{
+	assert(this->getActive());
+
+	if (_layer != layer)
+	{
+		auto& textureDesc = _framebufferDesc.getGraphicsTexture()->getGraphicsTextureDesc();
+		if (textureDesc.getTexDim() != TextureDim::DIM_2D_ARRAY ||
+			textureDesc.getTexDim() != TextureDim::DIM_CUBE)
+		{
+			return;
+		}
+
+		auto texture = this->getResolveTexture()->downcast<OGLTexture>();
+		auto textureID = texture->getInstanceID();
+
+		GLenum attachment = GL_COLOR_ATTACHMENT0;
+
+		if (textureDesc.getTexDim() == TextureDim::DIM_2D_ARRAY)
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, 0, layer);
+		else if (textureDesc.getTexDim() == TextureDim::DIM_CUBE)
+			glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer, textureID, 0);
+
+		_layer = layer;
+	}
+}
+
+GLuint
+OGLRenderTexture::getLayer() const noexcept
+{
+	return _layer;
+}
+
+void
+OGLRenderTexture::discard() noexcept
+{
+	GLenum attachment = GL_COLOR_ATTACHMENT0;
+	glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, &attachment);
+}
+
+void
+OGLRenderTexture::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment) noexcept
+{
+	assert(texture);
+
+	auto gltexture = texture->downcast<OGLTexture>();
+	auto handle = gltexture->getInstanceID();
+	auto target = gltexture->getTarget();
+
+	if (target == GL_TEXTURE_2D)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0);
+	else if (target == GL_TEXTURE_2D_MULTISAMPLE)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, handle, 0);
+	else if (target == GL_TEXTURE_2D_ARRAY)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_ARRAY, handle, 0);
+	else if (target == GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE_ARRAY, handle, 0);
+	else if (target == GL_TEXTURE_3D)
+		glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_3D, handle, 0, 0);
+	else if (target == GL_TEXTURE_CUBE_MAP)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0);
+	else if (target == GL_TEXTURE_CUBE_MAP_ARRAY)
+		glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0, 0);
+	else
+		assert(false);
+}
+
+GLuint
+OGLRenderTexture::getInstanceID() noexcept
+{
+	return _fbo;
+}
+
+GraphicsTexturePtr
+OGLRenderTexture::getResolveTexture() const noexcept
+{
+	return _framebufferDesc.getGraphicsTexture();
+}
+
+const GraphicsRenderTextureDesc&
+OGLRenderTexture::getGraphicsRenderTextureDesc() const noexcept
+{
+	return _framebufferDesc;
+}
+
+OGLMultiRenderTexture::OGLMultiRenderTexture() noexcept
+	: _fbo(GL_NONE)
+	, _isActive(false)
+{
+}
+
+OGLMultiRenderTexture::~OGLMultiRenderTexture() noexcept
+{
+	this->close();
+}
+
+bool
+OGLMultiRenderTexture::setup(const GraphicsMultiRenderTextureDesc& multiFramebufferDesc) noexcept
+{
+	assert(GL_NONE == _fbo);
+
+	glGenFramebuffers(1, &_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+
+	auto sharedDepthTarget = multiFramebufferDesc.getSharedDepthTexture();
+	auto sharedStencilTarget = multiFramebufferDesc.getSharedStencilTexture();
+
+	if (sharedDepthTarget == sharedStencilTarget)
+	{
+		if (sharedDepthTarget)
+			this->bindRenderTexture(sharedDepthTarget->getResolveTexture(), GL_DEPTH_STENCIL_ATTACHMENT);
+	}
+	else
+	{
+		if (sharedDepthTarget)
+		{
+			this->bindRenderTexture(sharedDepthTarget->getResolveTexture(), GL_DEPTH_ATTACHMENT);
+		}
+
+		if (sharedStencilTarget)
+		{
+			this->bindRenderTexture(sharedStencilTarget->getResolveTexture(), GL_STENCIL_ATTACHMENT);
+		}
+	}
+
+	GLenum draw[MAX_COLOR_ATTACHMENTS] = { 0 };
+	GLenum attachment = GL_COLOR_ATTACHMENT0;
+	GLsizei count = 0;
+
+	for (auto& target : multiFramebufferDesc.getRenderTextures())
+	{
+		this->bindRenderTexture(target->getResolveTexture(), attachment);
+		draw[count++] = attachment++;
+	}
+
+	glDrawBuffers(count, draw);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	return true;
+}
+
+void
+OGLMultiRenderTexture::close() noexcept
+{
+	if (_fbo != GL_NONE)
+	{
+		glDeleteFramebuffers(1, &_fbo);
+		_fbo = GL_NONE;
+	}
+}
+
+void
+OGLMultiRenderTexture::setActive(bool active) noexcept
+{
+	if (_isActive != active)
+	{
+		if (active)
+			glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+		_isActive = active;
+	}
+}
+
+bool
+OGLMultiRenderTexture::getActive() noexcept
+{
+	return _isActive;
+}
+
+void 
+OGLMultiRenderTexture::setLayer(GraphicsRenderTexturePtr renderTexture, GLuint layer) noexcept
+{
+	auto texture = renderTexture->getResolveTexture()->downcast<OGLTexture>();
+	auto textureID = texture->getInstanceID();
+	auto& textureDesc = renderTexture->getResolveTexture()->getGraphicsTextureDesc();
+	if (textureDesc.getTexDim() != TextureDim::DIM_2D_ARRAY ||
+		textureDesc.getTexDim() != TextureDim::DIM_CUBE)
+	{
+		return;
+	}
+
+	GLenum attachment = GL_COLOR_ATTACHMENT0;
+
+	for (auto& it : _multiFramebufferDesc.getRenderTextures())
+	{
+		if (it == renderTexture)
+			break;
+		attachment++;
+	}
+
+	if (textureDesc.getTexDim() == TextureDim::DIM_2D_ARRAY)
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, 0, layer);
+	else if (textureDesc.getTexDim() == TextureDim::DIM_CUBE)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer, textureID, 0);
+}
+
+GLuint 
+OGLMultiRenderTexture::getLayer() const noexcept
+{
+	return 0;
+}
+
+void
+OGLMultiRenderTexture::discard() noexcept
+{
+	GLenum attachments[24];
+	GLenum attachment = GL_COLOR_ATTACHMENT0;
+
+	auto& targets = _multiFramebufferDesc.getRenderTextures();
+	auto size = targets.size();
+
+	for (std::size_t i = 0; i < size; i++)
+	{
+		attachments[i] = attachment;
+		attachment++;
+	}
+
+	glInvalidateFramebuffer(GL_FRAMEBUFFER, size, attachments);
+}
+
+GLuint
+OGLMultiRenderTexture::getInstanceID() noexcept
+{
+	return _fbo;
+}
+
+const GraphicsMultiRenderTextureDesc&
+OGLMultiRenderTexture::getGraphicsMultiRenderTextureDesc() const noexcept
+{
+	return _multiFramebufferDesc;
+}
+
+void
+OGLMultiRenderTexture::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment) noexcept
+{
+	assert(texture);
+
+	auto gltexture = texture->downcast<OGLTexture>();
+	auto handle = gltexture->getInstanceID();
+	auto target = gltexture->getTarget();
+
+	if (target == GL_TEXTURE_2D)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0);
+	else if (target == GL_TEXTURE_2D_MULTISAMPLE)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, handle, 0);
+	else if (target == GL_TEXTURE_2D_ARRAY)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_ARRAY, handle, 0);
+	else if (target == GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE_ARRAY, handle, 0);
+	else if (target == GL_TEXTURE_3D)
+		glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_3D, handle, 0, 0);
+	else if (target == GL_TEXTURE_CUBE_MAP)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0);
+	else if (target == GL_TEXTURE_CUBE_MAP_ARRAY)
+		glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0, 0);
+	else
+		assert(false);
+}
+
+_NAME_END

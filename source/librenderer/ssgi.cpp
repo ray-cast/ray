@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #include <ray/ssgi.h>
 #include <ray/camera.h>
-#include <ray/render_texture.h>
 
 _NAME_BEGIN
 
@@ -77,7 +76,7 @@ SSGI::getSetting() const noexcept
 }
 
 void
-SSGI::computeRawAO(RenderPipeline& pipeline, RenderTexturePtr dest) noexcept
+SSGI::computeRawAO(RenderPipeline& pipeline, GraphicsRenderTexturePtr dest) noexcept
 {
 	_projInfo->assign(pipeline.getCamera()->getProjConstant());
 	_projScale->assign(pipeline.getCamera()->getProjLength().y * _setting.radius);
@@ -88,25 +87,29 @@ SSGI::computeRawAO(RenderPipeline& pipeline, RenderTexturePtr dest) noexcept
 }
 
 void
-SSGI::blurHorizontal(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+SSGI::blurHorizontal(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
+	GraphicsTextureDesc textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
+
 	float2 direction(_setting.blurScale, 0.0f);
-	direction.x /= source->getWidth();
+	direction.x /= textureDesc.getWidth();
 
 	this->blurDirection(pipeline, source, dest, direction);
 }
 
 void
-SSGI::blurVertical(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+SSGI::blurVertical(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
+	GraphicsTextureDesc textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
+
 	float2 direction(0.0f, _setting.blurScale);
-	direction.y /= source->getHeight();
+	direction.y /= textureDesc.getHeight();
 
 	this->blurDirection(pipeline, source, dest, direction);
 }
 
 void
-SSGI::blurDirection(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest, const float2& direction) noexcept
+SSGI::blurDirection(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest, const float2& direction) noexcept
 {
 	_blurDirection->assign(direction);
 	_blurTexSource->assign(source->getResolveTexture());
@@ -116,7 +119,7 @@ SSGI::blurDirection(RenderPipeline& pipeline, RenderTexturePtr source, RenderTex
 }
 
 void
-SSGI::shading(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr ao) noexcept
+SSGI::shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr ao) noexcept
 {
 	_copyAmbient->assign(ao->getResolveTexture());
 
@@ -127,11 +130,8 @@ SSGI::shading(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePt
 void
 SSGI::onActivate(RenderPipeline& pipeline) except
 {
-	_texAmbient = pipeline.createRenderTexture();
-	_texAmbient->setup(1376, 768, TextureDim::DIM_2D, TextureFormat::R16G16B16A16F);
-
-	_texBlur = pipeline.createRenderTexture();
-	_texBlur->setup(1376, 768, TextureDim::DIM_2D, TextureFormat::R16G16B16A16F);
+	_texAmbient = pipeline.createRenderTexture(1376, 768, TextureDim::DIM_2D, TextureFormat::R16G16B16A16F);
+	_texBlur = pipeline.createRenderTexture(1376, 768, TextureDim::DIM_2D, TextureFormat::R16G16B16A16F);
 
 	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssgi.glsl");
 	_ambientOcclusionPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ao");
@@ -174,7 +174,7 @@ SSGI::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-SSGI::onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
+SSGI::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept
 {
 	this->computeRawAO(pipeline, _texAmbient);
 

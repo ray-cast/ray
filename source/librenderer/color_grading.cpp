@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/color_grading.h>
-#include <ray/render_texture.h>
 
 _NAME_BEGIN
 
@@ -66,7 +65,7 @@ ColorGrading::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-ColorGrading::onRender(RenderPipeline& pipeline, RenderTexturePtr source) except
+ColorGrading::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) except
 {
 	_texSource->assign(source->getResolveTexture());
 

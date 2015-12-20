@@ -53,7 +53,7 @@ public:
 
 	GLuint getInstanceID() noexcept;
 
-	void getGraphicsSamplerDesc(GraphicsSamplerDesc& desc) const noexcept;
+	const GraphicsSamplerDesc& getGraphicsSamplerDesc() const noexcept;
 
 private:
 

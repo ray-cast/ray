@@ -323,10 +323,10 @@ OGLGraphicsBuf::getInstanceID() noexcept
 	return _buffer;
 }
 
-void
-OGLGraphicsBuf::getGraphicsDataDesc(GraphicsDataDesc& desc) const noexcept
+const GraphicsDataDesc&
+OGLGraphicsBuf::getGraphicsDataDesc() const noexcept
 {
-	desc = _desc;
+	return _desc;
 }
 
 void

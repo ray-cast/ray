@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/ssss.h>
-#include <ray/render_texture.h>
 #include <ray/camera.h>
 #include <ray/light.h>
 
@@ -62,8 +61,7 @@ SSSS::onActivate(RenderPipeline& pipeline) except
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_SSSS = pipeline.createRenderTexture();
-	_SSSS->setup(width, height, TextureDim::DIM_2D, TextureFormat::R16G16B16F);
+	_SSSS = pipeline.createRenderTexture(width, height, TextureDim::DIM_2D, TextureFormat::R16G16B16F);
 
 	float sssLevel = 0.025f * float(47) / (100 - 0);
 	float sssProject = 1.0 / tan(0.5 * radians(20.0)) / 3.0;
@@ -92,7 +90,7 @@ SSSS::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-SSSS::onRender(RenderPipeline& pipeline, RenderTexturePtr source) except
+SSSS::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) except
 {
 	pipeline.setRenderTexture(source);
 

@@ -43,9 +43,9 @@
 #include <ray/graphics_context.h>
 #include <ray/graphics_state.h>
 #include <ray/graphics_sampler.h>
+#include <ray/graphics_texture.h>
+#include <ray/graphics_view.h>
 
-#include <ray/render_texture.h>
-#include <ray/render_command.h>
 #include <ray/shader.h>
 
 #if _BUILD_PLATFORM_WINDOWS
@@ -149,7 +149,8 @@ private:
 };
 
 typedef std::shared_ptr<class OGLCanvas> OGLCanvasPtr;
-typedef std::shared_ptr<class OGLFramebuffer> OGLRenderTexturePtr;
+typedef std::shared_ptr<class OGLRenderTexture> OGLRenderTexturePtr;
+typedef std::shared_ptr<class OGLMultiRenderTexture> OGLMultiRenderTexturePtr;
 typedef std::shared_ptr<class OGLShader> OGLShaderPtr;
 typedef std::shared_ptr<class OGLShaderObject> OGLShaderObjectPtr;
 typedef std::shared_ptr<class OGLVertexBuffer> OGLVertexBufferPtr;
@@ -157,6 +158,7 @@ typedef std::shared_ptr<class OGLIndexBuffer> OGLIndexBufferPtr;
 typedef std::shared_ptr<class OGLGraphicsLayout> OGLGraphicsLayoutPtr;
 typedef std::shared_ptr<class OGLDrawIndirectBuffer> OGLDrawIndirectBufferPtr;
 typedef std::shared_ptr<class OGLGraphicsState> OGLGraphicsStatePtr;
+typedef std::shared_ptr<class OGLTexture> OGLTexturePtr;
 typedef std::shared_ptr<class OGLSampler> OGLSamplerPtr;
 
 class OGLTypes
@@ -167,7 +169,7 @@ public:
 	static GLenum asOGLVertexFormat(VertexFormat format) noexcept;
 	static GLenum asOGLIndexType(IndexType type) noexcept;
 	static GLenum asOGLShaderType(ShaderType type) noexcept;
-	static GLenum asOGLTarget(TextureDim mapping) noexcept;
+	static GLenum asOGLTarget(TextureDim mapping, bool multisampler) noexcept;
 	static GLenum asOGLFormat(TextureFormat format) noexcept;
 	static GLenum asOGLType(TextureFormat format) noexcept;
 	static GLint  asOGLInternalformat(TextureFormat format) noexcept;

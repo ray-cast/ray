@@ -41,43 +41,6 @@
 
 _NAME_BEGIN
 
-enum class SamplerAnis
-{
-	Anis0,
-	Anis1,
-	Anis2,
-	Anis4,
-	Anis8,
-	Anis16,
-};
-
-enum class SamplerOp
-{
-	Multiply,    //* T = T1 * T2
-	Add,         //* T = T1 + T2
-	Subtract,    //* T = T1 - T2
-	Divide,      //* T = T1 / T2
-	SmoothAdd,   //* T = (T1 + T2) - (T1 * T2)
-	SignedAdd,   //* T = T1 + (T2-0.5)
-};
-
-enum class SamplerWrap
-{
-	Repeat,
-	Mirror,
-	ClampToEdge,
-};
-
-enum class SamplerFilter
-{
-	Nearest,
-	Linear,
-	NearestMipmapLinear,
-	NearestMipmapNearest,
-	LinearMipmapNearest,
-	LinearMipmapLinear,
-};
-
 class EXPORT GraphicsSamplerDesc
 {
 public:
@@ -106,7 +69,7 @@ public:
 	GraphicsSampler() noexcept;
 	virtual ~GraphicsSampler() noexcept;
 
-	virtual void getGraphicsSamplerDesc(GraphicsSamplerDesc& desc) const noexcept = 0;
+	virtual const GraphicsSamplerDesc& getGraphicsSamplerDesc() const noexcept = 0;
 
 private:
 	GraphicsSampler(const GraphicsSampler&) noexcept = delete;

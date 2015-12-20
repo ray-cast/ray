@@ -50,17 +50,17 @@ public:
 	virtual void onActivate(RenderPipeline& pipeline) except;
 	virtual void onDeactivate(RenderPipeline& pipeline) except;
 
-	virtual void onRender(RenderPipeline& pipeline, RenderTexturePtr texture) except;
+	virtual void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr texture) except;
 
 private:
-
-	TexturePtr _texColorGrading;
 
 	MaterialPtr _material;
 	MaterialPassPtr _colorGrading;
 
 	MaterialParamPtr _texGrading;
 	MaterialParamPtr _texSource;
+
+	GraphicsTexturePtr _texColorGrading;
 };
 
 _NAME_END

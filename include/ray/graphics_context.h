@@ -73,22 +73,22 @@ public:
 	virtual void setVertexBufferData(GraphicsDataPtr data) noexcept = 0;
 	virtual GraphicsDataPtr getVertexBufferData() const noexcept = 0;
 
-	virtual void setTexture(TexturePtr texture, std::uint32_t slot) noexcept = 0;
-	virtual void setTexture(TexturePtr texture[], std::uint32_t first, std::uint32_t count) noexcept = 0;
+	virtual void setGraphicsTexture(GraphicsTexturePtr texture, std::uint32_t slot) noexcept = 0;
+	virtual void setGraphicsTexture(GraphicsTexturePtr texture[], std::uint32_t first, std::uint32_t count) noexcept = 0;
 
 	virtual void setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept = 0;
 	virtual void setGraphicsSampler(GraphicsSamplerPtr sampler[], std::uint32_t first, std::uint32_t count) noexcept = 0;
 
-	virtual void setRenderTexture(RenderTexturePtr target) noexcept = 0;
-	virtual void setRenderTextureLayer(RenderTexturePtr target, std::int32_t layer) noexcept = 0;
-	virtual void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept = 0;
+	virtual void setRenderTexture(GraphicsRenderTexturePtr target) noexcept = 0;
+	virtual void setRenderTextureLayer(GraphicsRenderTexturePtr target, std::int32_t layer) noexcept = 0;
+	virtual void setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept = 0;
 	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept = 0;
 	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept = 0;
 	virtual void discardRenderTexture() noexcept = 0;
-	virtual void blitRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderTexturePtr dest, const Viewport& v2) noexcept = 0;
-	virtual void readRenderTexture(RenderTexturePtr source, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept = 0;
-	virtual RenderTexturePtr getRenderTexture() const noexcept = 0;
-	virtual MultiRenderTexturePtr getMultiRenderTexture() const noexcept = 0;
+	virtual void blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, GraphicsRenderTexturePtr dest, const Viewport& v2) noexcept = 0;
+	virtual void readRenderTexture(GraphicsRenderTexturePtr source, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept = 0;
+	virtual GraphicsRenderTexturePtr getRenderTexture() const noexcept = 0;
+	virtual GraphicsMultiRenderTexturePtr getMultiRenderTexture() const noexcept = 0;
 
 	virtual void setGraphicsState(GraphicsStatePtr state) noexcept = 0;
 	virtual GraphicsStatePtr getGraphicsState() const noexcept = 0;

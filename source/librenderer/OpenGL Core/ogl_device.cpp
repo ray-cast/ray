@@ -40,6 +40,7 @@
 #include "ogl_state.h"
 #include "ogl_shader.h"
 #include "ogl_texture.h"
+#include "ogl_framebuffer.h"
 #include "ogl_layout.h"
 #include "ogl_vbo.h"
 #include "ogl_ibo.h"
@@ -61,8 +62,9 @@ GraphicsContextPtr
 OGLDevice::createGraphicsContext(WindHandle win) noexcept
 {
 	auto context = std::make_shared<OGLDeviceContext>();
-	context->open(win);
-	return context;
+	if (context->open(win))
+		return context;
+	return nullptr;
 }
 
 GraphicsStatePtr
@@ -95,28 +97,37 @@ OGLDevice::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 	return nullptr;
 }
 
-TexturePtr
-OGLDevice::createTexture() noexcept
+GraphicsTexturePtr
+OGLDevice::createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept
 {
-	return std::make_shared<OGLTexture>();
+	auto texture = std::make_shared<OGLTexture>();
+	if (texture->setup(desc))
+		return texture;
+	return nullptr;
 }
 
 GraphicsSamplerPtr
-OGLDevice::createGraphicsSampler() noexcept
+OGLDevice::createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept
 {
 	return std::make_shared<OGLSampler>();
 }
 
-RenderTexturePtr
-OGLDevice::createRenderTexture() noexcept
+GraphicsRenderTexturePtr
+OGLDevice::createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept
 {
-	return std::make_shared<OGLRenderTexture>();
+	auto texture = std::make_shared<OGLRenderTexture>();
+	if (texture->setup(desc))
+		return texture;
+	return nullptr;
 }
 
-MultiRenderTexturePtr
-OGLDevice::createMultiRenderTexture() noexcept
+GraphicsMultiRenderTexturePtr
+OGLDevice::createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept
 {
-	return std::make_shared<OGLMultiRenderTexture>();
+	auto texture = std::make_shared<OGLMultiRenderTexture>();
+	if (texture->setup(desc))
+		return texture;
+	return nullptr;
 }
 
 ShaderPtr

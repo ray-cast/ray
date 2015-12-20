@@ -50,8 +50,6 @@ public:
 
 	GLsizeiptr size() const noexcept;
 
-	void getGraphicsDataDesc(GraphicsDataDesc& desc) const noexcept;
-
 	void resize(const char* data, GLsizeiptr datasize) noexcept;
 
 	int flush() noexcept;
@@ -60,6 +58,8 @@ public:
 	void* map(std::uint32_t access) noexcept;
 	void* map(GLintptr offset, GLsizeiptr cnt, std::uint32_t access) noexcept;
 	void unmap() noexcept;
+
+	const GraphicsDataDesc& getGraphicsDataDesc() const noexcept;
 
 private:
 	EGL3GraphicsData(const EGL3GraphicsData&) noexcept = delete;

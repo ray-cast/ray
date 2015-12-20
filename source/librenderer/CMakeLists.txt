@@ -52,10 +52,12 @@ SET(RENDERER_CORE
     ${HEADER_PATH}/graphics_sampler.h
     ${SOURCE_PATH}/graphics_sampler.cpp
     ${HEADER_PATH}/graphics_types.h
-    ${HEADER_PATH}/render_texture.h
-    ${SOURCE_PATH}/render_texture.cpp
-    ${HEADER_PATH}/render_command.h
-    ${SOURCE_PATH}/render_command.cpp
+    ${HEADER_PATH}/graphics_texture.h
+    ${SOURCE_PATH}/graphics_texture.cpp
+    ${HEADER_PATH}/graphics_view.h
+    ${SOURCE_PATH}/graphics_view.cpp
+    ${HEADER_PATH}/graphics_command.h
+    ${SOURCE_PATH}/graphics_command.cpp
     ${HEADER_PATH}/shader.h
     ${SOURCE_PATH}/shader.cpp
 )

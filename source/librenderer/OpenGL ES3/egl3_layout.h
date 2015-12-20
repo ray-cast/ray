@@ -63,9 +63,9 @@ public:
 	GLsizei getIndexSize() const noexcept;
 	GLsizei getVertexSize() const noexcept;
 
-	void getGraphicsLayout(GraphicsLayoutDesc& layout) const noexcept;
-
 	void bindLayout() noexcept;
+
+	const GraphicsLayoutDesc& getGraphicsLayout() const noexcept;
 
 private:
 	EGL3GraphicsLayout(const EGL3GraphicsLayout&) noexcept = delete;

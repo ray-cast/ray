@@ -63,7 +63,7 @@ public:
 	GLsizei getIndexSize() const noexcept;
 	GLsizei getVertexSize() const noexcept;
 
-	void getGraphicsLayout(GraphicsLayoutDesc& layout) const noexcept;
+	const GraphicsLayoutDesc& getGraphicsLayout() const noexcept;
 
 	void bindLayout() noexcept;
 

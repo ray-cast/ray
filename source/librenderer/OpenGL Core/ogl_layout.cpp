@@ -168,10 +168,10 @@ OGLGraphicsLayout::getVertexSize() const noexcept
 	return _vertexSize;
 }
 
-void
-OGLGraphicsLayout::getGraphicsLayout(GraphicsLayoutDesc& layout) const noexcept
+const GraphicsLayoutDesc&
+OGLGraphicsLayout::getGraphicsLayout() const noexcept
 {
-	layout = _layout;
+	return _layout;
 }
 
 void

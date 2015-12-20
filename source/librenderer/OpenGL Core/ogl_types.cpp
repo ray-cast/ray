@@ -174,27 +174,49 @@ OGLTypes::asOGLShaderType(ShaderType type) noexcept
 }
 
 GLenum
-OGLTypes::asOGLTarget(TextureDim target) noexcept
+OGLTypes::asOGLTarget(TextureDim target, bool multisampler) noexcept
 {
-	switch (target)
+	if (target == TextureDim::DIM_2D)
 	{
-	case TextureDim::DIM_2D:
-		return GL_TEXTURE_2D;
-		break;
-	case TextureDim::DIM_3D:
-		return GL_TEXTURE_3D;
-		break;
-	case TextureDim::DIM_2D_ARRAY:
-		return GL_TEXTURE_2D_ARRAY;
-		break;
-	case TextureDim::DIM_3D_ARRAY:
-		return GL_TEXTURE_2D_ARRAY;
-		break;
-	case TextureDim::DIM_CUBE:
-		return GL_TEXTURE_CUBE_MAP;
-		break;
-	default:
-		break;
+		if (multisampler)
+			return GL_TEXTURE_2D_MULTISAMPLE;
+		else
+			return GL_TEXTURE_2D;
+	}
+	else if (target == TextureDim::DIM_3D)
+	{
+		if (multisampler)
+			return GL_INVALID_ENUM;
+		else
+			return GL_TEXTURE_3D;
+	}
+	else if (target == TextureDim::DIM_2D_ARRAY)
+	{
+		if (multisampler)
+			return GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
+		else
+			return GL_TEXTURE_2D_ARRAY;
+	}
+	else if (target == TextureDim::DIM_3D_ARRAY)
+	{
+		if (multisampler)
+			return GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
+		else
+			return GL_TEXTURE_2D;
+	}
+	else if (target == TextureDim::DIM_CUBE)
+	{
+		if (multisampler)
+			return GL_INVALID_ENUM;
+		else
+			return GL_TEXTURE_CUBE_MAP;
+	}
+	else if (target == TextureDim::DIM_CUBE_ARRAY)
+	{
+		if (multisampler)
+			return GL_INVALID_ENUM;
+		else
+			return GL_TEXTURE_CUBE_MAP_ARRAY;
 	}
 
 	assert(false);

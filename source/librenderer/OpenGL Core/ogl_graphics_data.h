@@ -50,7 +50,7 @@ public:
 
 	GLsizeiptr size() const noexcept;
 
-	void getGraphicsDataDesc(GraphicsDataDesc& desc) const noexcept;
+	const GraphicsDataDesc& getGraphicsDataDesc() const noexcept;
 
 	void resize(const char* data, GLsizeiptr datasize) noexcept;
 

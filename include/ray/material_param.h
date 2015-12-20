@@ -44,6 +44,7 @@ _NAME_BEGIN
 class EXPORT MaterialSemantic final
 {
 public:
+	MaterialSemantic() noexcept;
 	MaterialSemantic(const std::string& name, ShaderVariantType type) noexcept;
 	~MaterialSemantic() noexcept;
 
@@ -68,7 +69,7 @@ public:
 	void assign(const std::vector<float2>& value) noexcept;
 	void assign(const std::vector<float3>& value) noexcept;
 	void assign(const std::vector<float4>& value) noexcept;
-	void assign(TexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
+	void assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
 
 	bool getBool() const noexcept;
 	int getInt() const noexcept;
@@ -83,14 +84,14 @@ public:
 	const std::vector<float2>& getFloat2Array() const noexcept;
 	const std::vector<float3>& getFloat3Array() const noexcept;
 	const std::vector<float4>& getFloat4Array() const noexcept;
-	TexturePtr getTexture() const noexcept;
+	GraphicsTexturePtr getTexture() const noexcept;
 	GraphicsSamplerPtr getTextureSampler() const noexcept;
 
 private:
 
 	std::string _name;
 
-	TexturePtr _texture;
+	GraphicsTexturePtr _texture;
 	GraphicsSamplerPtr _textureSampler;
 
 	union
@@ -139,9 +140,9 @@ public:
 	void assign(const std::vector<float2>& value) noexcept;
 	void assign(const std::vector<float3>& value) noexcept;
 	void assign(const std::vector<float4>& value) noexcept;
-	void assign(TexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
+	void assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
 
-	TexturePtr getTexture() const noexcept;
+	GraphicsTexturePtr getTexture() const noexcept;
 
 	void addShaderUniform(ShaderUniformPtr& uniform) noexcept;
 	void removeShaderUniform(ShaderUniformPtr& uniform) noexcept;
@@ -155,7 +156,7 @@ private:
 
 	std::string _name;
 	MaterialSemanticPtr _semantic;
-	TexturePtr _texture;
+	GraphicsTexturePtr _texture;
 	ShaderVariantType _type;
 	ShaderUniforms _uniforms;
 };

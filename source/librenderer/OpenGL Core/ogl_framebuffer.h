@@ -34,77 +34,87 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GRAPHICS_DATA_H_
-#define _H_GRAPHICS_DATA_H_
+#ifndef _H_OGL_FRAMEBUFFER_H_
+#define _H_OGL_FRAMEBUFFER_H_
 
-#include <ray/graphics_resource.h>
+#include "ogl_canvas.h"
 
 _NAME_BEGIN
 
-class EXPORT UsageFlags
+class OGLRenderTexture final : public GraphicsRenderTexture
 {
+	__DeclareSubClass(OGLRenderTexture, GraphicsRenderTexture)
 public:
-	enum
-	{
-		MAP_READ_BIT = 1 << 0,
-		MAP_WRITE_BIT = 1 << 1,
-		MAP_PERSISTENT_BIT = 1 << 2,
-		MAP_COHERENT_BIT = 1 << 3,
-		MAP_FLUSH_EXPLICIT_BIT = 1 << 6,
-		DYNAMIC_STORAGE_BIT = 1 << 4,
-		CLIENT_STORAGE_BIT = 1 << 5,
-		IMMUTABLE_STORAGE = 1 << 7
-	};
-};
+	OGLRenderTexture() noexcept;
+	~OGLRenderTexture() noexcept;
 
-class EXPORT AccessFlags
-{
-public:
-	enum
-	{
-		MAP_READ_BIT = 1 << 0,
-		MAP_WRITE_BIT = 1 << 1,
-		MAP_UNSYNCHRONIZED_BIT = 1 << 2
-	};
-};
+	bool setup(const GraphicsRenderTextureDesc& framebufferDesc) except;
+	void close() noexcept;
 
-class EXPORT GraphicsDataDesc
-{
-public:
-	GraphicsDataDesc() noexcept;
-	~GraphicsDataDesc() noexcept;
-	
-	void setUsage(std::uint32_t usage) noexcept;
-	std::uint32_t getUsage() const noexcept;
+	void setLayer(GLuint layer) noexcept;
+	GLuint getLayer() const noexcept;
 
-	void setType(GraphicsStream type) noexcept;
-	GraphicsStream getType() const noexcept;
+	void setActive(bool active) noexcept;
+	bool getActive() noexcept;
 
-	void setStream(std::uint8_t* data) noexcept;
-	std::uint8_t* getStream() const noexcept;
+	void discard() noexcept;
 
-	void setStreamSize(std::uint32_t size) noexcept;
-	std::uint32_t getStreamSize() const noexcept;
+	GLuint getInstanceID() noexcept;
+
+	GraphicsTexturePtr getResolveTexture() const noexcept;
+	const GraphicsRenderTextureDesc& getGraphicsRenderTextureDesc() const noexcept;
 
 private:
-	std::uint32_t _usage;
-	std::uint8_t* _data;
-	std::uint32_t _dataSize;
-	GraphicsStream _type;
-};
-
-class EXPORT GraphicsData : public GraphicsResource
-{
-	__DeclareSubInterface(GraphicsData, GraphicsResource)
-public:
-	GraphicsData() noexcept;
-	virtual ~GraphicsData() noexcept;
-
-	virtual const GraphicsDataDesc& getGraphicsDataDesc() const noexcept = 0;
+	void bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment) noexcept;
 
 private:
-	GraphicsData(const GraphicsData&) = delete;
-	GraphicsData& operator=(const GraphicsData&) = delete;
+	OGLRenderTexture(const OGLRenderTexture&) noexcept = delete;
+	OGLRenderTexture& operator=(const OGLRenderTexture&) noexcept = delete;
+
+private:
+	bool _isActive;
+
+	GLuint _fbo;
+	GLuint _layer;
+
+	GraphicsRenderTextureDesc _framebufferDesc;
+};
+
+class OGLMultiRenderTexture final : public GraphicsMultiRenderTexture
+{
+	__DeclareSubClass(OGLMultiRenderTexture, GraphicsMultiRenderTexture)
+public:
+	OGLMultiRenderTexture() noexcept;
+	~OGLMultiRenderTexture() noexcept;
+
+	bool setup(const GraphicsMultiRenderTextureDesc& multiFramebufferDesc) noexcept;
+	void close() noexcept;
+
+	void setActive(bool active) noexcept;
+	bool getActive() noexcept;
+
+	void setLayer(GraphicsRenderTexturePtr texture, GLuint layer) noexcept;
+	GLuint getLayer() const noexcept;
+
+	void discard() noexcept;
+
+	GLuint getInstanceID() noexcept;
+
+	const GraphicsMultiRenderTextureDesc& getGraphicsMultiRenderTextureDesc() const noexcept;
+
+private:
+	void bindRenderTexture(GraphicsTexturePtr target, GLenum attachment) noexcept;
+
+private:
+	OGLMultiRenderTexture(const OGLMultiRenderTexture&) noexcept = delete;
+	OGLMultiRenderTexture& operator=(const OGLMultiRenderTexture&) noexcept = delete;
+
+private:
+	bool _isActive;
+
+	GLuint _fbo;
+
+	GraphicsMultiRenderTextureDesc _multiFramebufferDesc;
 };
 
 _NAME_END

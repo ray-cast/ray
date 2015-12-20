@@ -73,7 +73,7 @@ public:
 
 	virtual MyGUI::IRenderTarget* getRenderTarget();
 
-	TexturePtr getTexture() const noexcept;
+	GraphicsTexturePtr getTexture() const noexcept;
 	void createManual(int _width, int _height, MyGUI::TextureUsage _usage, MyGUI::PixelFormat _format, void* stream) except;
 
 private:
@@ -92,7 +92,7 @@ private:
 
 	MemoryStream _stream;
 
-	TexturePtr _texture;
+	GraphicsTexturePtr _texture;
 
 	GuiImageLoaderPtr _imageLoader;
 	MyGuiRenderTexture* _renderTarget;
@@ -101,7 +101,7 @@ private:
 class MyGuiRenderTexture : public MyGUI::IRenderTarget
 {
 public:
-	MyGuiRenderTexture(TexturePtr texture) noexcept;
+	MyGuiRenderTexture(GraphicsTexturePtr texture) noexcept;
 	virtual ~MyGuiRenderTexture() noexcept;
 
 	virtual void begin() noexcept;
@@ -113,7 +113,7 @@ public:
 
 private:
 
-	RenderTexturePtr _renderTexture;
+	GraphicsRenderTexturePtr _renderTexture;
 	MyGUI::RenderTargetInfo _renderTargetInfo;
 };
 

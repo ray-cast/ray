@@ -130,11 +130,11 @@ public:
 	CameraRender getCameraRender() const noexcept;
 
 	void setRenderScene(RenderScenePtr scene) noexcept;
-	void setRenderTexture(RenderTexturePtr texture) noexcept;
+	void setRenderTexture(GraphicsRenderTexturePtr texture) noexcept;
 	void setGraphicsContext(GraphicsContextPtr window) noexcept;
 
 	RenderScenePtr getRenderScene() const noexcept;
-	RenderTexturePtr getRenderTexture() const noexcept;
+	GraphicsRenderTexturePtr getRenderTexture() const noexcept;
 	GraphicsContextPtr getGraphicsContext() const noexcept;
 
 	CameraPtr clone() const noexcept;
@@ -172,13 +172,12 @@ private:
 
 	ClearFlags _clearFlags;
 	Vector4     _clearColor;
-	TexturePtr  _clearSkybox;
 
 	CameraType   _cameraType;
 	CameraOrder  _cameraOrder;
 	CameraRender _cameraRender;
 
-	RenderTexturePtr _renderTexture;
+	GraphicsRenderTexturePtr _renderTexture;
 	GraphicsContextPtr _graphicsContext;
 
 	RenderSceneWeakPtr  _renderScene;

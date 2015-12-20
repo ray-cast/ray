@@ -50,14 +50,14 @@ public:
 	virtual void onActivate(RenderPipeline& pipeline) except;
 	virtual void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
+	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept;
 
-	void blurh(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-	void blurv(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+	void blurh(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void blurv(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
-	void computeNear(RenderPipeline& pipeline, RenderTexturePtr shrunk, RenderTexturePtr blured, RenderTexturePtr dest) noexcept;
+	void computeNear(RenderPipeline& pipeline, GraphicsRenderTexturePtr shrunk, GraphicsRenderTexturePtr blured, GraphicsRenderTexturePtr dest) noexcept;
 
-	void shading(RenderPipeline& pipeline, RenderTexturePtr color, RenderTexturePtr texSmall, RenderTexturePtr large);
+	void shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr color, GraphicsRenderTexturePtr texSmall, GraphicsRenderTexturePtr large);
 
 private:
 
@@ -75,8 +75,8 @@ private:
 	MaterialParamPtr _texSmall;
 	MaterialParamPtr _texLarge;
 
-	RenderTexturePtr _texTemp;
-	RenderTexturePtr _texBlur;
+	GraphicsRenderTexturePtr _texTemp;
+	GraphicsRenderTexturePtr _texBlur;
 };
 
 _NAME_END

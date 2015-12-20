@@ -459,12 +459,12 @@ Camera::getRenderScene() const noexcept
 }
 
 void
-Camera::setRenderTexture(RenderTexturePtr texture) noexcept
+Camera::setRenderTexture(GraphicsRenderTexturePtr texture) noexcept
 {
 	_renderTexture = texture;
 }
 
-RenderTexturePtr
+GraphicsRenderTexturePtr
 Camera::getRenderTexture() const noexcept
 {
 	return _renderTexture;

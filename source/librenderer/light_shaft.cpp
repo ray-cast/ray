@@ -37,7 +37,6 @@
 #include <ray/light_shaft.h>
 #include <ray/light.h>
 #include <ray/camera.h>
-#include <ray/render_texture.h>
 
 _NAME_BEGIN
 
@@ -59,9 +58,7 @@ LightShaft::onActivate(RenderPipeline& pipeline) except
 	pipeline.getWindowResolution(width, height);
 
 	_material = pipeline.createMaterial("sys:fx/light_shaft.glsl");
-
-	_texSample = pipeline.createRenderTexture();
-	_texSample->setup(width*0.5, height*0.5, TextureDim::DIM_2D, TextureFormat::R11G11B10F);
+	_texSample = pipeline.createRenderTexture(width*0.5, height*0.5, TextureDim::DIM_2D, TextureFormat::R11G11B10F);
 
 	_lightShaft = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("LightScatter");
 	_lightShaftCopy = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("LightScatterCopy");
@@ -86,7 +83,7 @@ LightShaft::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-LightShaft::onRender(RenderPipeline& pipeline, RenderTexturePtr source) except
+LightShaft::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) except
 {
 	pipeline.setRenderTexture(_texSample);
 	pipeline.clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0);

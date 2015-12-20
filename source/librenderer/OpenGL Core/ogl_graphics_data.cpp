@@ -55,10 +55,10 @@ OGLGraphicsData::size() const noexcept
 	return _buf->size();
 }
 
-void
-OGLGraphicsData::getGraphicsDataDesc(GraphicsDataDesc& desc) const noexcept
+const GraphicsDataDesc&
+OGLGraphicsData::getGraphicsDataDesc() const noexcept
 {
-	_buf->getGraphicsDataDesc(desc);
+	return _buf->getGraphicsDataDesc();
 }
 
 void 

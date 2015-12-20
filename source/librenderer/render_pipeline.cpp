@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -38,7 +38,7 @@
 #include <ray/render_data_manager.h>
 #include <ray/render_post_process.h>
 #include <ray/render_scene.h>
-#include <ray/render_texture.h>
+#include <ray/graphics_texture.h>
 #include <ray/render_object.h>
 #include <ray/render_buffer.h>
 #include <ray/material.h>
@@ -343,36 +343,51 @@ RenderPipeline::drawMesh(MaterialPassPtr pass, RenderBufferPtr buffer, const Ren
 	this->drawRenderBuffer(renderable);
 }
 
-RenderTexturePtr
-RenderPipeline::createRenderTexture() noexcept
+GraphicsRenderTexturePtr
+RenderPipeline::createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept
 {
 	assert(_graphicsDevice);
-	return _graphicsDevice->createRenderTexture();
+	return _graphicsDevice->createRenderTexture(desc);
 }
 
-MultiRenderTexturePtr
-RenderPipeline::createMultiRenderTexture() noexcept
+GraphicsRenderTexturePtr 
+RenderPipeline::createRenderTexture(std::uint32_t w, std::uint32_t h, TextureDim dim, TextureFormat format) noexcept
 {
 	assert(_graphicsDevice);
-	return _graphicsDevice->createMultiRenderTexture();
+	auto texture = this->createTexture(w, h, dim, format);
+	if (texture)
+	{
+		GraphicsRenderTextureDesc framebufferDesc;
+		framebufferDesc.setGraphicsTexture(texture);
+		return _graphicsDevice->createRenderTexture(framebufferDesc);
+	}
+
+	return nullptr;
+}
+
+GraphicsMultiRenderTexturePtr
+RenderPipeline::createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept
+{
+	assert(_graphicsDevice);
+	return _graphicsDevice->createMultiRenderTexture(desc);
 }
 
 void
-RenderPipeline::setRenderTexture(RenderTexturePtr target) noexcept
+RenderPipeline::setRenderTexture(GraphicsRenderTexturePtr target) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->setRenderTexture(target);
 }
 
 void
-RenderPipeline::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
+RenderPipeline::setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->setMultiRenderTexture(target);
 }
 
 void
-RenderPipeline::setRenderTextureLayer(RenderTexturePtr target, int layer) noexcept
+RenderPipeline::setRenderTextureLayer(GraphicsRenderTexturePtr target, int layer) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->setRenderTextureLayer(target, layer);
@@ -400,27 +415,39 @@ RenderPipeline::discradRenderTexture() noexcept
 }
 
 void
-RenderPipeline::readRenderTexture(RenderTexturePtr texture, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+RenderPipeline::readRenderTexture(GraphicsRenderTexturePtr texture, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->readRenderTexture(texture, pfd, w, h, data);
 }
 
 void
-RenderPipeline::blitRenderTexture(RenderTexturePtr srcTarget, const Viewport& src, RenderTexturePtr destTarget, const Viewport& dest) noexcept
+RenderPipeline::blitRenderTexture(GraphicsRenderTexturePtr srcTarget, const Viewport& src, GraphicsRenderTexturePtr destTarget, const Viewport& dest) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->blitRenderTexture(srcTarget, src, destTarget, dest);
 }
 
-TexturePtr
-RenderPipeline::createTexture() noexcept
+GraphicsTexturePtr
+RenderPipeline::createTexture(const GraphicsTextureDesc& desc) noexcept
 {
 	assert(_graphicsDevice);
-	return _graphicsDevice->createTexture();
+	return _graphicsDevice->createGraphicsTexture(desc);
 }
 
-TexturePtr
+GraphicsTexturePtr 
+RenderPipeline::createTexture(std::uint32_t w, std::uint32_t h, TextureDim dim, TextureFormat format) noexcept
+{
+	assert(_graphicsDevice);
+	GraphicsTextureDesc textureDesc;
+	textureDesc.setWidth(w);
+	textureDesc.setHeight(h);
+	textureDesc.setTexDim(dim);
+	textureDesc.setTexFormat(format);
+	return _graphicsDevice->createGraphicsTexture(textureDesc);
+}
+
+GraphicsTexturePtr
 RenderPipeline::createTexture(const std::string& name) except
 {
 	StreamReaderPtr stream;
@@ -451,15 +478,15 @@ RenderPipeline::createTexture(const std::string& name) except
 				}
 			}
 
-			auto texture = this->createTexture();
-			texture->setMipLevel(image.getMipLevel());
-			texture->setMipSize(image.size());
-			texture->setSize(image.width(), image.height());
-			texture->setTexDim(TextureDim::DIM_2D);
-			texture->setTexFormat(format);
-			texture->setStream(image.data());
-			texture->setup();
-			return texture;
+			GraphicsTextureDesc textureDesc;
+			textureDesc.setMipLevel(image.getMipLevel());
+			textureDesc.setMipSize(image.size());
+			textureDesc.setSize(image.width(), image.height());
+			textureDesc.setTexDim(TextureDim::DIM_2D);
+			textureDesc.setTexFormat(format);
+			textureDesc.setStream(image.data());
+
+			return this->createTexture(textureDesc);
 		}
 	}
 
@@ -477,7 +504,7 @@ RenderPipeline::setMaterialPass(MaterialPassPtr pass) noexcept
 {
 	_materialManager->setMaterialPass(pass);
 
-	TexturePtr bindTextures[MAX_TEXTURE_UNIT];
+	GraphicsTexturePtr bindTextures[MAX_TEXTURE_UNIT];
 	GraphicsSamplerPtr bindSamplers[MAX_SAMPLER_UNIT];
 
 	auto& textures = pass->getTextures();
@@ -494,7 +521,7 @@ RenderPipeline::setMaterialPass(MaterialPassPtr pass) noexcept
 		bindSamplers[i] = 0;
 	}
 
-	_graphicsContext->setTexture(bindTextures, 0, textureCount);
+	_graphicsContext->setGraphicsTexture(bindTextures, 0, textureCount);
 	_graphicsContext->setGraphicsSampler(bindSamplers, 0, textureCount);
 	_graphicsContext->setGraphicsState(pass->getGraphicsState());
 	_graphicsContext->setShaderObject(pass->getShaderObject());
@@ -903,7 +930,7 @@ RenderPipeline::drawCone(MaterialPassPtr pass) noexcept
 }
 
 void
-RenderPipeline::drawRenderQueue(RenderQueue queue, RenderPass pass, MaterialPassPtr material, RenderTexturePtr target) noexcept
+RenderPipeline::drawRenderQueue(RenderQueue queue, RenderPass pass, MaterialPassPtr material, GraphicsRenderTexturePtr target) noexcept
 {
 	auto& renderable = this->getRenderData(queue, pass);
 	for (auto& it : renderable)
@@ -984,7 +1011,7 @@ RenderPipeline::removePostProcess(RenderPostProcessPtr postprocess) noexcept
 }
 
 void
-RenderPipeline::renderPostProcess(RenderTexturePtr renderTexture) except
+RenderPipeline::renderPostProcess(GraphicsRenderTexturePtr renderTexture) except
 {
 	auto& renderPostProcess = _postprocessors[RenderQueue::RQ_POSTPROCESS];
 

@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +-----------------------------------------------------------------------
 #include <ray/fimic.h>
-#include <ray/render_texture.h>
 
 _NAME_BEGIN
 
@@ -95,7 +94,7 @@ FimicToneMapping::getSetting() const noexcept
 }
 
 void
-FimicToneMapping::measureLuminance(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
+FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept
 {
 	_timer->update();
 
@@ -103,7 +102,8 @@ FimicToneMapping::measureLuminance(RenderPipeline& pipeline, RenderTexturePtr so
 	float data[SAMPLE_LOG_COUNT];
 	float delta = _timer->delta();
 
-	pipeline.readRenderTexture(source, TextureFormat::R16F, source->getWidth(), source->getHeight(), data);
+	auto& textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
+	pipeline.readRenderTexture(source, TextureFormat::R16F, textureDesc.getWidth(), textureDesc.getHeight(), data);
 
 	for (std::size_t i = 0; i < SAMPLE_LOG_COUNT; ++i)
 	{
@@ -122,7 +122,7 @@ FimicToneMapping::measureLuminance(RenderPipeline& pipeline, RenderTexturePtr so
 }
 
 void
-FimicToneMapping::sample4(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+FimicToneMapping::sample4(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
 	_toneSource->assign(source->getResolveTexture());
 
@@ -133,7 +133,7 @@ FimicToneMapping::sample4(RenderPipeline& pipeline, RenderTexturePtr source, Ren
 }
 
 void
-FimicToneMapping::sample8(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+FimicToneMapping::sample8(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
 	_toneSource->assign(source->getResolveTexture());
 
@@ -144,7 +144,7 @@ FimicToneMapping::sample8(RenderPipeline& pipeline, RenderTexturePtr source, Ren
 }
 
 void
-FimicToneMapping::sampleLog(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+FimicToneMapping::sampleLog(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
 	_toneSource->assign(source->getResolveTexture());
 
@@ -155,7 +155,7 @@ FimicToneMapping::sampleLog(RenderPipeline& pipeline, RenderTexturePtr source, R
 }
 
 void
-FimicToneMapping::generateBloom(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+FimicToneMapping::generateBloom(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
 	_toneSource->assign(source->getResolveTexture());
 
@@ -166,9 +166,10 @@ FimicToneMapping::generateBloom(RenderPipeline& pipeline, RenderTexturePtr sourc
 }
 
 void
-FimicToneMapping::blurh(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	_bloomTexSizeInv->assign(float2(1.0 / source->getWidth(), 1.0 / source->getHeight()));
+	auto& textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
+	_bloomTexSizeInv->assign(float2(1.0 / textureDesc.getWidth(), 1.0 / textureDesc.getHeight()));
 	_toneSource->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(dest);
@@ -176,9 +177,10 @@ FimicToneMapping::blurh(RenderPipeline& pipeline, RenderTexturePtr source, Rende
 }
 
 void
-FimicToneMapping::blurv(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	_bloomTexSizeInv->assign(float2(1.0 / source->getWidth(), 1.0 / source->getHeight()));
+	auto& textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
+	_bloomTexSizeInv->assign(float2(1.0 / textureDesc.getWidth(), 1.0 / textureDesc.getHeight()));
 	_toneSource->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(dest);
@@ -186,7 +188,7 @@ FimicToneMapping::blurv(RenderPipeline& pipeline, RenderTexturePtr source, Rende
 }
 
 void
-FimicToneMapping::generateToneMapping(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+FimicToneMapping::generateToneMapping(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
 	_toneSource->assign(dest->getResolveTexture());
 	_toneBloom->assign(source->getResolveTexture());
@@ -201,17 +203,10 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) except
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_texSample4 = pipeline.createRenderTexture();
-	_texSample4->setup(width / 4.0, height / 4.0, TextureDim::DIM_2D, TextureFormat::R8G8B8);
-
-	_texSample8 = pipeline.createRenderTexture();
-	_texSample8->setup(width / 8.0, height / 8.0, TextureDim::DIM_2D, TextureFormat::R8G8B8);
-
-	_texSampleLog = pipeline.createRenderTexture();
-	_texSampleLog->setup(SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, TextureDim::DIM_2D, TextureFormat::R16F);
-
-	_texBloom = pipeline.createRenderTexture();
-	_texBloom->setup(width / 4.0, height / 4.0, TextureDim::DIM_2D, TextureFormat::R8G8B8);
+	_texSample4 = pipeline.createRenderTexture(width / 4.0, height / 4.0, TextureDim::DIM_2D, TextureFormat::R8G8B8);
+	_texSample8 = pipeline.createRenderTexture(width / 8.0, height / 8.0, TextureDim::DIM_2D, TextureFormat::R8G8B8);
+	_texSampleLog = pipeline.createRenderTexture(SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, TextureDim::DIM_2D, TextureFormat::R16F);
+	_texBloom = pipeline.createRenderTexture(width / 4.0, height / 4.0, TextureDim::DIM_2D, TextureFormat::R8G8B8);
 
 	_fimic = pipeline.createMaterial("sys:fx/fimic.glsl");
 
@@ -268,7 +263,7 @@ FimicToneMapping::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-FimicToneMapping::onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
+FimicToneMapping::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept
 {
 	this->sample4(pipeline, source, _texSample4);
 	this->sample8(pipeline, _texSample4, _texSample8);

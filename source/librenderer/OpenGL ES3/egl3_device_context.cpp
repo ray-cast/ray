@@ -38,6 +38,7 @@
 #include "egl3_state.h"
 #include "egl3_shader.h"
 #include "egl3_texture.h"
+#include "egl3_framebuffer.h"
 #include "egl3_layout.h"
 #include "egl3_vbo.h"
 #include "egl3_ibo.h"
@@ -432,12 +433,14 @@ EGL3DeviceContext::drawRenderBuffer(const RenderIndirects& renderable) noexcept
 }
 
 void
-EGL3DeviceContext::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
+EGL3DeviceContext::setGraphicsTexture(GraphicsTexturePtr texture, std::uint32_t slot) noexcept
 {
 	if (texture)
 	{
-		GLuint textureID = std::dynamic_pointer_cast<EGL3Texture>(texture)->getInstanceID();
-		GLenum textureDim = EGL3Types::asEGL3Target(texture->getTexDim());
+		auto gltexture = texture->downcast<EGL3Texture>();
+
+		GLuint textureID = gltexture->getInstanceID();
+		GLenum textureDim = gltexture->getTarget();
 
 		GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
 		GL_CHECK(glBindTexture(textureDim, textureID));
@@ -450,10 +453,10 @@ EGL3DeviceContext::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
 }
 
 void
-EGL3DeviceContext::setTexture(TexturePtr textures[], std::uint32_t first, std::uint32_t count) noexcept
+EGL3DeviceContext::setGraphicsTexture(GraphicsTexturePtr textures[], std::uint32_t first, std::uint32_t count) noexcept
 {
 	for (std::uint32_t i = first; i < first + count; i++)
-		this->setTexture(textures[i], i);
+		this->setGraphicsTexture(textures[i], i);
 }
 
 void
@@ -479,116 +482,127 @@ EGL3DeviceContext::setGraphicsSampler(GraphicsSamplerPtr samplers[], std::uint32
 }
 
 void
-EGL3DeviceContext::setRenderTexture(RenderTexturePtr target) noexcept
+EGL3DeviceContext::setRenderTexture(GraphicsRenderTexturePtr target) noexcept
 {
 	if (_renderTexture != target)
 	{
+		if (_renderTexture)
+			_renderTexture->setActive(false);
+
+		if (_multiRenderTexture)
+			_multiRenderTexture->setActive(false);
+
 		if (target)
 		{
-			auto framebuffer = std::dynamic_pointer_cast<EGL3RenderTexture>(target)->getInstanceID();
+			_renderTexture = target->downcast<EGL3RenderTexture>();
+			_renderTexture->setActive(true);
 
-			GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, framebuffer));
-
-			this->setViewport(Viewport(0, 0, target->getWidth(), target->getHeight()), 0);
+			auto textureDesc = _renderTexture->getResolveTexture()->getGraphicsTextureDesc();
+			this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), 0);
 		}
 		else
 		{
-			GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE));
+			_renderTexture = nullptr;
+			glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
 		}
 
-		_renderTexture = target;
 		_multiRenderTexture = nullptr;
 	}
 }
 
 void
-EGL3DeviceContext::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
+EGL3DeviceContext::setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept
 {
-	assert(target);
-
-	auto framebuffer = std::dynamic_pointer_cast<EGL3MultiRenderTexture>(target)->getInstanceID();
 	if (_multiRenderTexture != target)
 	{
-		GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, framebuffer));
+		if (_renderTexture)
+			_renderTexture->setActive(false);
 
-		auto& renderTextures = target->getRenderTextures();
-		std::size_t size = renderTextures.size();
-		for (std::size_t index = 0; index < size; index++)
+		if (_multiRenderTexture)
+			_multiRenderTexture->setActive(false);
+
+		if (target)
 		{
-			auto renderTexture = renderTextures[index];
-			this->setViewport(Viewport(0, 0, renderTexture->getWidth(), renderTexture->getHeight()), index);
+			_multiRenderTexture = target->downcast<EGL3MultiRenderTexture>();
+			_multiRenderTexture->setActive(true);
+
+			auto& framebuffers = _multiRenderTexture->getGraphicsMultiRenderTextureDesc().getRenderTextures();
+			std::size_t size = framebuffers.size();
+			for (std::size_t index = 0; index < size; index++)
+			{
+				auto framebuffer = framebuffers[index];
+				auto textureDesc = framebuffer->getResolveTexture()->getGraphicsTextureDesc();
+				this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), index);
+			}
+		}
+		else
+		{
+			_multiRenderTexture = nullptr;
+			glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
 		}
 
 		_renderTexture = nullptr;
-		_multiRenderTexture = target;
 	}
 }
 
 void
-EGL3DeviceContext::setRenderTextureLayer(RenderTexturePtr renderTexture, std::int32_t layer) noexcept
+EGL3DeviceContext::setRenderTextureLayer(GraphicsRenderTexturePtr renderTexture, std::int32_t layer) noexcept
 {
 	assert(renderTexture);
 
-	if (renderTexture->getTexDim() == TextureDim::DIM_2D_ARRAY ||
-		renderTexture->getTexDim() == TextureDim::DIM_CUBE)
+	if (_multiRenderTexture)
 	{
-		auto texture = std::dynamic_pointer_cast<EGL3Texture>(renderTexture->getResolveTexture());
-		auto textureID = texture->getInstanceID();
-
-		GLenum attachment = GL_COLOR_ATTACHMENT0;
-
-		if (_multiRenderTexture)
-		{
-			for (auto& it : _multiRenderTexture->getRenderTextures())
-			{
-				if (it == renderTexture)
-					break;
-				attachment++;
-			}
-		}
-		else if (_renderTexture != renderTexture)
-		{
-			this->setRenderTexture(renderTexture);
-		}
-
-		if (renderTexture->getTexDim() == TextureDim::DIM_2D_ARRAY)
-			GL_CHECK(glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, 0, layer));
-		else if (renderTexture->getTexDim() == TextureDim::DIM_CUBE)
-			GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer, textureID, 0));
-		else
-			assert(false);
+		_multiRenderTexture->setLayer(renderTexture, layer);
+	}
+	else if (_renderTexture == renderTexture)
+	{
+		_renderTexture->setLayer(layer);
+	}
+	else
+	{
+		this->setRenderTexture(renderTexture);
+		_renderTexture->setLayer(layer);
 	}
 }
 
 void
-EGL3DeviceContext::blitRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderTexturePtr dest, const Viewport& v2) noexcept
+EGL3DeviceContext::blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, GraphicsRenderTexturePtr dest, const Viewport& v2) noexcept
 {
 	assert(src);
 
-	auto srcTarget = std::dynamic_pointer_cast<EGL3RenderTexture>(src)->getInstanceID();
-	GL_CHECK(glBindFramebuffer(GL_READ_FRAMEBUFFER, srcTarget));
+	auto srcTarget = src->downcast<EGL3RenderTexture>()->getInstanceID();
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, srcTarget);
 
 	if (dest)
 	{
-		auto destTarget = std::dynamic_pointer_cast<EGL3RenderTexture>(dest)->getInstanceID();
-		GL_CHECK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destTarget));
+		auto destTarget = dest->downcast<EGL3RenderTexture>()->getInstanceID();
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destTarget);
 	}
 	else
-		GL_CHECK(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-	GL_CHECK(glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST));
+	glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-	_renderTexture = GL_NONE;
-	_multiRenderTexture = GL_NONE;
+	if (_renderTexture)
+	{
+		_renderTexture->setActive(false);
+		_renderTexture = nullptr;
+	}
+
+	if (_multiRenderTexture)
+	{
+		_multiRenderTexture->setActive(false);
+		_multiRenderTexture = nullptr;
+	}
 }
 
-RenderTexturePtr
+GraphicsRenderTexturePtr
 EGL3DeviceContext::getRenderTexture() const noexcept
 {
 	return _renderTexture;
 }
 
-MultiRenderTexturePtr
+GraphicsMultiRenderTexturePtr
 EGL3DeviceContext::getMultiRenderTexture() const noexcept
 {
 	return _multiRenderTexture;
@@ -687,45 +701,27 @@ EGL3DeviceContext::discardRenderTexture() noexcept
 	assert(_renderTexture || _multiRenderTexture);
 
 	if (_renderTexture)
-	{
-		GLenum attachment = GL_COLOR_ATTACHMENT0;
-		glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, &attachment);
-	}
+		_renderTexture->downcast<EGL3RenderTexture>()->discard();
 	else if (_multiRenderTexture)
-	{
-		GLenum attachments[24];
-		GLenum attachment = GL_COLOR_ATTACHMENT0;
-
-		auto& targets = _multiRenderTexture->getRenderTextures();
-		auto size = targets.size();
-
-		for (std::size_t i = 0; i < size; i++)
-		{
-			attachments[i] = attachment;
-			attachment++;
-		}
-
-		glInvalidateFramebuffer(GL_FRAMEBUFFER, size, attachments);
-	}
+		_multiRenderTexture->downcast<EGL3MultiRenderTexture>()->discard();
 }
 
 void
-EGL3DeviceContext::readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+EGL3DeviceContext::readRenderTexture(GraphicsRenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
-	assert(target && w && h && data);
+	assert(w && h && data);
 
-	auto framebuffer = std::dynamic_pointer_cast<EGL3RenderTexture>(target)->getInstanceID();
-	if (_renderTexture != target)
+	if (target)
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-		_renderTexture = target;
-		_multiRenderTexture = nullptr;
+		GLenum format = EGL3Types::asEGL3Format(pfd);
+		GLenum type = EGL3Types::asEGL3Type(pfd);
+
+		if (format != GL_INVALID_ENUM && type != GL_INVALID_ENUM)
+		{
+			this->setRenderTexture(target);
+			glReadPixels(0, 0, w, h, format, type, data);
+		}
 	}
-
-	GLenum format = EGL3Types::asEGL3Format(pfd);
-	GLenum type = EGL3Types::asEGL3Type(pfd);
-
-	glReadPixels(0, 0, w, h, format, type, data);
 }
 
 void

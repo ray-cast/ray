@@ -37,7 +37,10 @@
 #ifndef _H_RENDER_TYPES_H_
 #define _H_RENDER_TYPES_H_
 
-#include <ray\graphics_types.h>
+#include <ray/graphics_data.h>
+#include <ray/graphics_layout.h>
+#include <ray/graphics_view.h>
+#include <ray/graphics_texture.h>
 
 _NAME_BEGIN
 

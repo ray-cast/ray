@@ -54,6 +54,7 @@ public:
 	GraphicsDevicePtr getGraphicsDevice() noexcept;
 
 	MaterialPtr createMaterial(const std::string& name) except;
+	MaterialPtr getMaterial(const std::string& name) noexcept;
 
 	MaterialSemanticPtr createSemantic(const std::string& name, ShaderVariantType type) noexcept;
 	void addSemantic(MaterialSemanticPtr semantc) noexcept;
@@ -68,6 +69,8 @@ private:
 	GraphicsDevicePtr _graphicsDevice;
 	MaterialPassPtr _material;
 	MaterialSemantics _semantics;
+
+	std::map<std::string, MaterialPtr> _materials;
 };
 
 _NAME_END

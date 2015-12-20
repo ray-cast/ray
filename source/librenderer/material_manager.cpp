@@ -126,11 +126,20 @@ MaterialManager::getSemantic(const std::string& name) noexcept
 MaterialPtr
 MaterialManager::createMaterial(const std::string& name) except
 {
-	MaterialMaker maker;
-	auto material = maker.load(*this, name);
-	if (material)
-		return material;
-	return nullptr;
+	auto& material = _materials[name];
+	if (!material)
+	{
+		MaterialMaker maker;
+		_materials[name] = maker.load(*this, name);
+	}
+
+	return material;
+}
+
+MaterialPtr
+MaterialManager::getMaterial(const std::string& name) noexcept
+{
+	return _materials[name];
 }
 
 void

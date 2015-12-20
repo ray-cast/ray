@@ -54,6 +54,10 @@ public:
 	void assginVisiable(CameraPtr camera) noexcept;
 
 private:
+	void sortMaterial(OcclusionCullList& list) noexcept;
+	void sortDistance(OcclusionCullList& list) noexcept;
+
+private:
 
 	OcclusionCullList _visiable;
 

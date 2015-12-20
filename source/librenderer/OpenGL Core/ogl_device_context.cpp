@@ -39,6 +39,7 @@
 #include "ogl_state.h"
 #include "ogl_shader.h"
 #include "ogl_texture.h"
+#include "ogl_framebuffer.h"
 #include "ogl_layout.h"
 #include "ogl_vbo.h"
 #include "ogl_ibo.h"
@@ -396,11 +397,11 @@ OGLDeviceContext::drawRenderBuffer(const RenderIndirects& renderable) noexcept
 }
 
 void
-OGLDeviceContext::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
+OGLDeviceContext::setGraphicsTexture(GraphicsTexturePtr texture, std::uint32_t slot) noexcept
 {
-	auto gltexture = std::dynamic_pointer_cast<OGLTexture>(texture);
-	if (gltexture)
+	if (texture)
 	{
+		auto gltexture = texture->downcast<OGLTexture>();
 		GLuint textureID = gltexture->getInstanceID();
 		glBindTextureUnit(slot, textureID);
 	}
@@ -411,7 +412,7 @@ OGLDeviceContext::setTexture(TexturePtr texture, std::uint32_t slot) noexcept
 }
 
 void
-OGLDeviceContext::setTexture(TexturePtr texture[], std::uint32_t first, std::uint32_t count) noexcept
+OGLDeviceContext::setGraphicsTexture(GraphicsTexturePtr texture[], std::uint32_t first, std::uint32_t count) noexcept
 {
 	if (count < MAX_TEXTURE_UNIT)
 	{
@@ -433,8 +434,7 @@ OGLDeviceContext::setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t s
 {
 	if (sampler)
 	{
-		auto glsampler = sampler->downcast<OGLSampler>();
-		GLuint samplerID = glsampler->getInstanceID();
+		GLuint samplerID = sampler->downcast<OGLSampler>()->getInstanceID();
 		glBindSampler(slot, samplerID);
 	}
 	else
@@ -462,96 +462,100 @@ OGLDeviceContext::setGraphicsSampler(GraphicsSamplerPtr sampler[], std::uint32_t
 }
 
 void
-OGLDeviceContext::setRenderTexture(RenderTexturePtr target) noexcept
+OGLDeviceContext::setRenderTexture(GraphicsRenderTexturePtr target) noexcept
 {
 	if (_renderTexture != target)
 	{
+		if (_renderTexture)
+			_renderTexture->setActive(false);
+
+		if (_multiRenderTexture)
+			_multiRenderTexture->setActive(false);
+
 		if (target)
 		{
-			auto framebuffer = std::dynamic_pointer_cast<OGLRenderTexture>(target)->getInstanceID();
+			_renderTexture = target->downcast<OGLRenderTexture>();
+			_renderTexture->setActive(true);
 
-			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-
-			this->setViewport(Viewport(0, 0, target->getWidth(), target->getHeight()), 0);
+			auto textureDesc = _renderTexture->getResolveTexture()->getGraphicsTextureDesc();
+			this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), 0);
 		}
 		else
 		{
+			_renderTexture = nullptr;
 			glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
 		}
 
-		_renderTexture = target;
 		_multiRenderTexture = nullptr;
 	}
 }
 
 void
-OGLDeviceContext::setMultiRenderTexture(MultiRenderTexturePtr target) noexcept
+OGLDeviceContext::setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept
 {
-	assert(target);
-
-	auto framebuffer = std::dynamic_pointer_cast<OGLMultiRenderTexture>(target)->getInstanceID();
 	if (_multiRenderTexture != target)
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+		if (_renderTexture)
+			_renderTexture->setActive(false);
 
-		auto& renderTextures = target->getRenderTextures();
-		std::size_t size = renderTextures.size();
-		for (std::size_t index = 0; index < size; index++)
+		if (_multiRenderTexture)
+			_multiRenderTexture->setActive(false);
+
+		if (target)
 		{
-			auto renderTexture = renderTextures[index];
-			this->setViewport(Viewport(0, 0, renderTexture->getWidth(), renderTexture->getHeight()), index);
+			_multiRenderTexture = target->downcast<OGLMultiRenderTexture>();
+			_multiRenderTexture->setActive(true);
+
+			auto& framebuffers = _multiRenderTexture->getGraphicsMultiRenderTextureDesc().getRenderTextures();
+			std::size_t size = framebuffers.size();
+			for (std::size_t index = 0; index < size; index++)
+			{
+				auto framebuffer = framebuffers[index];
+				auto textureDesc = framebuffer->getResolveTexture()->getGraphicsTextureDesc();
+				this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), index);
+			}
+		}
+		else
+		{
+			_multiRenderTexture = nullptr;
+			glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
 		}
 
 		_renderTexture = nullptr;
-		_multiRenderTexture = target;
 	}
 }
 
 void
-OGLDeviceContext::setRenderTextureLayer(RenderTexturePtr renderTexture, std::int32_t layer) noexcept
+OGLDeviceContext::setRenderTextureLayer(GraphicsRenderTexturePtr renderTexture, std::int32_t layer) noexcept
 {
 	assert(renderTexture);
 
-	if (renderTexture->getTexDim() == TextureDim::DIM_2D_ARRAY ||
-		renderTexture->getTexDim() == TextureDim::DIM_CUBE)
+	if (_multiRenderTexture)
 	{
-		auto texture = std::dynamic_pointer_cast<OGLTexture>(renderTexture->getResolveTexture());
-		auto textureID = texture->getInstanceID();
-
-		GLenum attachment = GL_COLOR_ATTACHMENT0;
-
-		if (_multiRenderTexture)
-		{
-			for (auto& it : _multiRenderTexture->getRenderTextures())
-			{
-				if (it == renderTexture)
-					break;
-				attachment++;
-			}
-		}
-		else if (_renderTexture != renderTexture)
-		{
-			this->setRenderTexture(renderTexture);
-		}
-
-		if (renderTexture->getTexDim() == TextureDim::DIM_2D_ARRAY)
-			glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, 0, layer);
-		else if (renderTexture->getTexDim() == TextureDim::DIM_CUBE)
-			glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer, textureID, 0);
+		_multiRenderTexture->setLayer(renderTexture, layer);
+	}
+	else if (_renderTexture == renderTexture)
+	{
+		_renderTexture->setLayer(layer);
+	}
+	else
+	{
+		this->setRenderTexture(renderTexture);
+		_renderTexture->setLayer(layer);
 	}
 }
 
 void
-OGLDeviceContext::blitRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderTexturePtr dest, const Viewport& v2) noexcept
+OGLDeviceContext::blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, GraphicsRenderTexturePtr dest, const Viewport& v2) noexcept
 {
 	assert(src);
 
-	auto srcTarget = std::dynamic_pointer_cast<OGLRenderTexture>(src)->getInstanceID();
+	auto srcTarget = src->downcast<OGLRenderTexture>()->getInstanceID();
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, srcTarget);
 
 	if (dest)
 	{
-		auto destTarget = std::dynamic_pointer_cast<OGLRenderTexture>(dest)->getInstanceID();
+		auto destTarget = dest->downcast<OGLRenderTexture>()->getInstanceID();
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destTarget);
 	}
 	else
@@ -559,17 +563,26 @@ OGLDeviceContext::blitRenderTexture(RenderTexturePtr src, const Viewport& v1, Re
 
 	glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-	_renderTexture = GL_NONE;
-	_multiRenderTexture = GL_NONE;
+	if (_renderTexture)
+	{
+		_renderTexture->setActive(false);
+		_renderTexture = nullptr;
+	}
+
+	if (_multiRenderTexture)
+	{
+		_multiRenderTexture->setActive(false);
+		_multiRenderTexture = nullptr;
+	}
 }
 
-RenderTexturePtr
+GraphicsRenderTexturePtr
 OGLDeviceContext::getRenderTexture() const noexcept
 {
 	return _renderTexture;
 }
 
-MultiRenderTexturePtr
+GraphicsMultiRenderTexturePtr
 OGLDeviceContext::getMultiRenderTexture() const noexcept
 {
 	return _multiRenderTexture;
@@ -668,45 +681,27 @@ OGLDeviceContext::discardRenderTexture() noexcept
 	assert(_renderTexture || _multiRenderTexture);
 
 	if (_renderTexture)
-	{
-		GLenum attachment = GL_COLOR_ATTACHMENT0;
-		glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, &attachment);
-	}
+		_renderTexture->downcast<OGLRenderTexture>()->discard();
 	else if (_multiRenderTexture)
-	{
-		GLenum attachments[24];
-		GLenum attachment = GL_COLOR_ATTACHMENT0;
-
-		auto& targets = _multiRenderTexture->getRenderTextures();
-		auto size = targets.size();
-
-		for (std::size_t i = 0; i < size; i++)
-		{
-			attachments[i] = attachment;
-			attachment++;
-		}
-
-		glInvalidateFramebuffer(GL_FRAMEBUFFER, size, attachments);
-	}
+		_multiRenderTexture->downcast<OGLMultiRenderTexture>()->discard();
 }
 
 void
-OGLDeviceContext::readRenderTexture(RenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+OGLDeviceContext::readRenderTexture(GraphicsRenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
-	assert(target && w && h && data);
+	assert(w && h && data);
 
-	auto framebuffer = std::dynamic_pointer_cast<OGLRenderTexture>(target)->getInstanceID();
-	if (_renderTexture != target)
+	if (target)
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-		_renderTexture = target;
-		_multiRenderTexture = nullptr;
+		GLenum format = OGLTypes::asOGLFormat(pfd);
+		GLenum type = OGLTypes::asOGLType(pfd);
+
+		if (format != GL_INVALID_ENUM && type != GL_INVALID_ENUM)
+		{
+			this->setRenderTexture(target);
+			glReadPixels(0, 0, w, h, format, type, data);
+		}
 	}
-
-	GLenum format = OGLTypes::asOGLFormat(pfd);
-	GLenum type = OGLTypes::asOGLType(pfd);
-
-	glReadPixels(0, 0, w, h, format, type, data);
 }
 
 void
@@ -722,30 +717,6 @@ OGLDeviceContext::setShaderObject(ShaderObjectPtr shader) noexcept
 		if (_shaderObject)
 			_shaderObject->setActive(true);
 	}
-
-	/*if (_shaderObject)
-	{
-	auto& uniforms = _shaderObject->getActiveUniforms();
-
-	for (auto& it : uniforms)
-	{
-	if (it->getType() == Texture)
-	{
-	auto uniform = std::dynamic_pointer_cast<OGLShaderUniform>(it);
-	auto bindingPoint = uniform->getBindingPoint();
-	auto texture = std::dynamic_pointer_cast<OGLTexture>(uniform->getTexture());
-	auto sampler = std::dynamic_pointer_cast<OGLSampler>(uniform->getSampler());
-
-	this->setTexture(texture, bindingPoint);
-
-	if (sampler)
-	{
-	GLuint samplerID = sampler->getInstanceID();
-	glBindSampler(GL_TEXTURE0 + bindingPoint, samplerID);
-	}
-	}
-	}
-	}*/
 }
 
 ShaderObjectPtr

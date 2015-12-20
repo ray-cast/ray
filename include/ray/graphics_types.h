@@ -45,8 +45,17 @@
 
 _NAME_BEGIN
 
-#define MAX_TEXTURE_UNIT 32
-#define MAX_SAMPLER_UNIT 32
+#ifndef MAX_TEXTURE_UNIT
+#	define MAX_TEXTURE_UNIT 32
+#endif
+
+#ifndef MAX_SAMPLER_UNIT
+#	define MAX_SAMPLER_UNIT 32
+#endif
+
+#ifndef MAX_COLOR_ATTACHMENTS
+#	define MAX_COLOR_ATTACHMENTS 15
+#endif
 
 typedef std::shared_ptr<class GraphicsData> GraphicsDataPtr;
 typedef std::shared_ptr<class GraphicsResource> GraphicsResourcePtr;
@@ -54,11 +63,10 @@ typedef std::shared_ptr<class GraphicsLayout> GraphicsLayoutPtr;
 typedef std::shared_ptr<class GraphicsDevice> GraphicsDevicePtr;
 typedef std::shared_ptr<class GraphicsContext> GraphicsContextPtr;
 typedef std::shared_ptr<class GraphicsState> GraphicsStatePtr;
-typedef std::shared_ptr<class RenderTexture> RenderTexturePtr;
-
-typedef std::shared_ptr<class Texture> TexturePtr;
+typedef std::shared_ptr<class GraphicsTexture> GraphicsTexturePtr;
 typedef std::shared_ptr<class GraphicsSampler> GraphicsSamplerPtr;
-typedef std::shared_ptr<class MultiRenderTexture> MultiRenderTexturePtr;
+typedef std::shared_ptr<class GraphicsRenderTexture> GraphicsRenderTexturePtr;
+typedef std::shared_ptr<class GraphicsMultiRenderTexture> GraphicsMultiRenderTexturePtr;
 
 typedef std::shared_ptr<class Shader> ShaderPtr;
 typedef std::shared_ptr<class ShaderVariant> ShaderVariantPtr;
@@ -73,25 +81,10 @@ typedef std::vector<ShaderAttributePtr> ShaderAttributes;
 typedef std::vector<ShaderUniformPtr> ShaderUniforms;
 typedef std::vector<ShaderSubroutinePtr> ShaderSubroutines;
 typedef std::vector<ShaderVariantPtr> ShaderVariants;
-typedef std::vector<RenderTexturePtr> RenderTextures;
+typedef std::vector<GraphicsRenderTexturePtr> GraphicsRenderTextures;
 typedef std::vector<class VertexComponent> VertexComponents;
-
-class EXPORT RenderIndirect final
-{
-public:
-	std::int32_t startVertice;
-	std::int32_t startIndice;
-	std::int32_t startInstances;
-	std::int32_t numVertices;
-	std::int32_t numIndices;
-	std::int32_t numInstances;
-
-	RenderIndirect() noexcept;
-};
-
 typedef std::shared_ptr<class RenderIndirect> RenderIndirectPtr;
 typedef std::vector<RenderIndirectPtr> RenderIndirects;
-
 
 typedef void* WindHandle;
 
@@ -281,6 +274,53 @@ enum class TextureDim
 	DIM_CUBE_ARRAY,
 };
 
+enum class SamplerAnis
+{
+	Anis0,
+	Anis1,
+	Anis2,
+	Anis4,
+	Anis8,
+	Anis16,
+};
+
+enum class SamplerOp
+{
+	Multiply,    //* T = T1 * T2
+	Add,         //* T = T1 + T2
+	Subtract,    //* T = T1 - T2
+	Divide,      //* T = T1 / T2
+	SmoothAdd,   //* T = (T1 + T2) - (T1 * T2)
+	SignedAdd,   //* T = T1 + (T2-0.5)
+};
+
+enum class SamplerWrap
+{
+	Repeat,
+	Mirror,
+	ClampToEdge,
+};
+
+enum class SamplerFilter
+{
+	Nearest,
+	Linear,
+	NearestMipmapLinear,
+	NearestMipmapNearest,
+	LinearMipmapNearest,
+	LinearMipmapLinear,
+};
+
+enum class GraphicsStream
+{
+	VBO,
+	IBO,
+	UBO,
+	DIBO,
+	TBO,
+	SSBO
+};
+
 enum class VertexType
 {
 	Point,
@@ -290,23 +330,6 @@ enum class VertexType
 	PointOrLine,
 	TriangleOrLine,
 	FanOrLine,
-};
-
-class VertexAttrib
-{
-public:
-	enum
-	{
-		Position,
-		Normal,
-		Texcoord,
-		Diffuse,
-		Specular,
-		Weight,
-		Tangent,
-		Bitangent,
-		Nums,
-	};
 };
 
 enum class VertexFormat
@@ -378,6 +401,36 @@ enum class ShaderVariantType
 	Float4Array,
 	Texture,
 	Buffer,
+};
+
+class VertexAttrib
+{
+public:
+	enum
+	{
+		Position,
+		Normal,
+		Texcoord,
+		Diffuse,
+		Specular,
+		Weight,
+		Tangent,
+		Bitangent,
+		Nums,
+	};
+};
+
+class EXPORT RenderIndirect final
+{
+public:
+	std::int32_t startVertice;
+	std::int32_t startIndice;
+	std::int32_t startInstances;
+	std::int32_t numVertices;
+	std::int32_t numIndices;
+	std::int32_t numInstances;
+
+	RenderIndirect() noexcept;
 };
 
 _NAME_END

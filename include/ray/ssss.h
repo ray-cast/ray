@@ -50,7 +50,7 @@ public:
 	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, RenderTexturePtr source) except;
+	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) except;
 
 private:
 
@@ -72,7 +72,7 @@ private:
 	MaterialParamPtr _lightShadowMap;
 	MaterialParamPtr _lightShadowMatrix;
 
-	RenderTexturePtr _SSSS;
+	GraphicsRenderTexturePtr _SSSS;
 };
 
 _NAME_END

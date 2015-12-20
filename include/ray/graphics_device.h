@@ -39,6 +39,10 @@
 
 #include <ray/graphics_data.h>
 #include <ray/graphics_layout.h>
+#include <ray/graphics_texture.h>
+#include <ray/graphics_view.h>
+#include <ray/graphics_sampler.h>
+#include <ray/graphics_state.h>
 
 _NAME_BEGIN
 
@@ -52,10 +56,10 @@ public:
 	virtual GraphicsContextPtr createGraphicsContext(WindHandle window) noexcept = 0;
 	virtual GraphicsLayoutPtr createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept = 0;
 	virtual GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept = 0;
-	virtual TexturePtr createTexture() noexcept = 0;
-	virtual GraphicsSamplerPtr createGraphicsSampler() noexcept = 0;
-	virtual RenderTexturePtr createRenderTexture() noexcept = 0;
-	virtual MultiRenderTexturePtr createMultiRenderTexture() noexcept = 0;
+	virtual GraphicsTexturePtr createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept = 0;
+	virtual GraphicsSamplerPtr createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept = 0;
+	virtual GraphicsRenderTexturePtr createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept = 0;
+	virtual GraphicsMultiRenderTexturePtr createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept = 0;
 	virtual GraphicsStatePtr createGraphicsState() noexcept = 0;
 	virtual ShaderPtr createShader() noexcept = 0;
 	virtual ShaderObjectPtr createShaderObject() noexcept = 0;

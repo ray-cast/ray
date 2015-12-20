@@ -142,10 +142,10 @@ OGLSampler::getInstanceID() noexcept
 	return _sampler;
 }
 
-void 
-OGLSampler::getGraphicsSamplerDesc(GraphicsSamplerDesc& desc) const noexcept
+const GraphicsSamplerDesc&
+OGLSampler::getGraphicsSamplerDesc() const noexcept
 {
-	desc = _desc;
+	return _desc;
 }
 
 _NAME_END

@@ -40,6 +40,7 @@
 #include "egl3_state.h"
 #include "egl3_shader.h"
 #include "egl3_texture.h"
+#include "egl3_framebuffer.h"
 #include "egl3_layout.h"
 #include "egl3_vbo.h"
 #include "egl3_ibo.h"
@@ -96,28 +97,40 @@ EGL3Device::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 	return nullptr;
 }
 
-TexturePtr
-EGL3Device::createTexture() noexcept
+GraphicsTexturePtr
+EGL3Device::createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept
 {
-	return std::make_shared<EGL3Texture>();
+	auto texture = std::make_shared<EGL3Texture>();
+	if (texture->setup(desc))
+		return texture;
+	return nullptr;
 }
 
 GraphicsSamplerPtr
-EGL3Device::createGraphicsSampler() noexcept
+EGL3Device::createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept
 {
-	return std::make_shared<EGL3Sampler>();
+	auto sampler = std::make_shared<EGL3Sampler>();
+	if (sampler->setup(desc))
+		return sampler;
+	return nullptr;
 }
 
-RenderTexturePtr
-EGL3Device::createRenderTexture() noexcept
+GraphicsRenderTexturePtr
+EGL3Device::createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept
 {
-	return std::make_shared<EGL3RenderTexture>();
+	auto texture = std::make_shared<EGL3RenderTexture>();
+	if (texture->setup(desc))
+		return texture;
+	return nullptr;
 }
 
-MultiRenderTexturePtr
-EGL3Device::createMultiRenderTexture() noexcept
+GraphicsMultiRenderTexturePtr
+EGL3Device::createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept
 {
-	return std::make_shared<EGL3MultiRenderTexture>();
+	auto texture = std::make_shared<EGL3MultiRenderTexture>();
+	if (texture->setup(desc))
+		return texture;
+	return nullptr;
 }
 
 ShaderPtr

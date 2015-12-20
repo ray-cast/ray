@@ -114,14 +114,15 @@ MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::Pix
 	_originalFormat = _format;
 	_originalUsage = usage;
 
-	_texture = RenderSystem::instance()->createTexture();
-	_texture->setWidth(_width);
-	_texture->setHeight(_height);
-	_texture->setSamplerFilter(SamplerFilter::Linear);
-	_texture->setTexDim(TextureDim::DIM_2D);
-	_texture->setTexFormat(pixelFormat);
-	_texture->setStream(_data);
-	_texture->setup();
+	GraphicsTextureDesc textureDesc;
+	textureDesc.setWidth(_width);
+	textureDesc.setHeight(_height);
+	textureDesc.setSamplerFilter(SamplerFilter::Linear);
+	textureDesc.setTexDim(TextureDim::DIM_2D);
+	textureDesc.setTexFormat(pixelFormat);
+	textureDesc.setStream(_data);
+
+	_texture = RenderSystem::instance()->createTexture(textureDesc);
 }
 
 void 
@@ -225,7 +226,7 @@ MyGuiTexture::getRenderTarget()
 	return _renderTarget;
 }
 
-TexturePtr
+GraphicsTexturePtr
 MyGuiTexture::getTexture() const noexcept
 {
 	assert(_texture);
@@ -268,17 +269,21 @@ MyGuiTexture::getNumElemBytes() noexcept
 	return _numElemBytes;
 }
 
-MyGuiRenderTexture::MyGuiRenderTexture(TexturePtr texture) noexcept
+MyGuiRenderTexture::MyGuiRenderTexture(GraphicsTexturePtr texture) noexcept
 {
+	auto& textureDes = texture->getGraphicsTextureDesc();
+
 	_renderTargetInfo.maximumDepth = 1.0f;
 	_renderTargetInfo.hOffset = 0;
 	_renderTargetInfo.vOffset = 0;
-	_renderTargetInfo.aspectCoef = float(texture->getHeight()) / float(texture->getWidth());
-	_renderTargetInfo.pixScaleX = 1.0f / float(texture->getWidth());
-	_renderTargetInfo.pixScaleY = 1.0f / float(texture->getHeight());
+	_renderTargetInfo.aspectCoef = float(textureDes.getHeight()) / float(textureDes.getWidth());
+	_renderTargetInfo.pixScaleX = 1.0f / float(textureDes.getWidth());
+	_renderTargetInfo.pixScaleY = 1.0f / float(textureDes.getHeight());
 
-	_renderTexture = RenderSystem::instance()->createRenderTexture();
-	_renderTexture->setup(texture);
+	GraphicsRenderTextureDesc framebufferDesc;
+	framebufferDesc.setGraphicsTexture(texture);
+
+	_renderTexture = RenderSystem::instance()->createRenderTexture(framebufferDesc);
 }
 
 MyGuiRenderTexture::~MyGuiRenderTexture() noexcept

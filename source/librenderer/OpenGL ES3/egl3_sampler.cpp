@@ -142,10 +142,10 @@ EGL3Sampler::getInstanceID() noexcept
 	return _sampler;
 }
 
-void
-EGL3Sampler::getGraphicsSamplerDesc(GraphicsSamplerDesc& desc) const noexcept
+const GraphicsSamplerDesc&
+EGL3Sampler::getGraphicsSamplerDesc() const noexcept
 {
-	desc = _desc;
+	return _desc;
 }
 
 _NAME_END

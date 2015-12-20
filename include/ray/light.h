@@ -88,7 +88,7 @@ public:
 	void setTransform(const Matrix4x4& m) noexcept;
 
 	CameraPtr getShadowCamera() const noexcept;
-	TexturePtr getShadowMap() const noexcept;
+	GraphicsTexturePtr getShadowMap() const noexcept;
 
 	void setRenderScene(RenderScenePtr scene) noexcept;
 	RenderScenePtr getRenderScene() const noexcept;

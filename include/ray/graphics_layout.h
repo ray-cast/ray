@@ -102,7 +102,7 @@ public:
 	GraphicsLayout() noexcept;
 	virtual ~GraphicsLayout() noexcept;
 
-	virtual void getGraphicsLayout(GraphicsLayoutDesc& layout) const noexcept = 0;
+	virtual const GraphicsLayoutDesc& getGraphicsLayout() const noexcept = 0;
 
 private:
 	GraphicsLayout(const GraphicsLayout&) = delete;

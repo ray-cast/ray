@@ -66,6 +66,8 @@ class EXPORT OcclusionCullList
 {
 public:
 	typedef std::vector<OcclusionCullNode> OcclusionCullNodes;
+	typedef std::vector<OcclusionCullNode>::iterator iterator;
+	typedef std::vector<OcclusionCullNode>::const_iterator const_iterator;
 
 public:
 	OcclusionCullList() noexcept;
@@ -77,6 +79,7 @@ public:
 
 	void insert(RenderObjectPtr item, float distanceSqrt) noexcept;
 	void sort() noexcept;
+	void sort(iterator begin, iterator end) noexcept;
 
 private:
 

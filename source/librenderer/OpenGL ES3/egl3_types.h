@@ -41,8 +41,8 @@
 #include <ray/graphics_context.h>
 #include <ray/graphics_state.h>
 #include <ray/graphics_sampler.h>
-#include <ray/render_texture.h>
-#include <ray/render_command.h>
+#include <ray/graphics_texture.h>
+#include <ray/graphics_view.h>
 #include <ray/shader.h>
 
 #include <EGL\egl.h>
@@ -144,7 +144,8 @@ struct GPUctxconfig
 };
 
 typedef std::shared_ptr<class EGL3Canvas> EGL3CanvasPtr;
-typedef std::shared_ptr<class EGL3Framebuffer> EGL3RenderTexturePtr;
+typedef std::shared_ptr<class EGL3RenderTexture> EGL3RenderTexturePtr;
+typedef std::shared_ptr<class EGL3MultiRenderTexture> EGL3MultiRenderTexturePtr;
 typedef std::shared_ptr<class EGL3Shader> EGL3ShaderPtr;
 typedef std::shared_ptr<class EGL3ShaderObject> EGL3ShaderObjectPtr;
 typedef std::shared_ptr<class EGL3VertexBuffer> EGL3VertexBufferPtr;
@@ -162,7 +163,7 @@ public:
 	static GLenum asEGL3VertexFormat(VertexFormat format) noexcept;
 	static GLenum asEGL3IndexType(IndexType type) noexcept;
 	static GLenum asEGL3ShaderType(ShaderType type) noexcept;
-	static GLenum asEGL3Target(TextureDim mapping) noexcept;
+	static GLenum asEGL3Target(TextureDim mapping, bool multisampler) noexcept;
 	static GLenum asEGL3Format(TextureFormat format) noexcept;
 	static GLenum asEGL3Type(TextureFormat format) noexcept;
 	static GLint  asEGL3Internalformat(TextureFormat format) noexcept;

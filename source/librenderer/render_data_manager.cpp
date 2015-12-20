@@ -59,6 +59,7 @@ RenderObjects&
 DefaultRenderDataManager::getRenderData(RenderQueue queue, RenderPass pass) noexcept
 {
 	assert(queue == RenderQueue::RQ_OPAQUE || queue == RenderQueue::RQ_TRANSPARENT || queue == RenderQueue::RQ_LIGHTING);
+
 	return _renderQueue[queue][pass];
 }
 
@@ -77,6 +78,9 @@ DefaultRenderDataManager::assginVisiable(CameraPtr camera) noexcept
 
 	auto scene = camera->getRenderScene();
 	scene->computVisiable(camera->getViewProject(), _visiable);
+
+	this->sortMaterial(_visiable);
+	this->sortDistance(_visiable);
 
 	for (auto& it : _visiable.iter())
 	{
@@ -116,6 +120,51 @@ DefaultRenderDataManager::assginVisiable(CameraPtr camera) noexcept
 			listener->onWillRenderObject(*camera);
 
 		this->addRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS, it.getOcclusionCullNode());
+	}
+}
+
+void 
+DefaultRenderDataManager::sortMaterial(OcclusionCullList& list) noexcept
+{
+	auto& iter = list.iter();
+	std::sort(iter.begin(), iter.end(),
+		[](OcclusionCullNode& lh, OcclusionCullNode& rh) 
+	{
+		return lh.getOcclusionCullNode()->getMaterial() < rh.getOcclusionCullNode()->getMaterial();
+	});
+}
+
+void 
+DefaultRenderDataManager::sortDistance(OcclusionCullList& list) noexcept
+{
+	auto& iter = list.iter();
+	if (iter.empty())
+		return;
+
+	auto it1 = iter.begin();
+	auto it2 = ++iter.begin();
+
+	auto end = iter.end();
+
+	while (it2 != end)
+	{
+		MaterialPtr m1 = it1->getOcclusionCullNode()->getMaterial();
+		MaterialPtr m2 = it2->getOcclusionCullNode()->getMaterial();
+
+		while (m1 == m2)
+		{
+			if ((++it2) == end)
+				break;
+
+			m2 = it2->getOcclusionCullNode()->getMaterial();
+		};
+
+		std::size_t count = it2 - it1;
+		if (count > 1)
+			list.sort(it1, it2);
+		
+		if (it2 != end)
+			it1 = it2++;
 	}
 }
 

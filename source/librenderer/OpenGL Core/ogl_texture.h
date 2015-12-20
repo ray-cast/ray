@@ -41,17 +41,23 @@
 
 _NAME_BEGIN
 
-class OGLTexture final : public Texture
+class OGLTexture final : public GraphicsTexture
 {
+	__DeclareSubClass(OGLTexture, GraphicsTexture)
 public:
 	OGLTexture() noexcept;
 	~OGLTexture() noexcept;
 
-	bool setup() except;
+	bool setup(const GraphicsTextureDesc& textureDesc) except;
 	void close() noexcept;
 
+	bool isMultiSample() const noexcept;
+
+	GLenum getTarget() const noexcept;
 	GLuint getInstanceID() noexcept;
 	GLuint64 getInstanceAddr() noexcept;
+
+	const GraphicsTextureDesc& getGraphicsTextureDesc() const noexcept;
 
 private:
 
@@ -64,51 +70,8 @@ private:
 	GLenum _target;
 	GLuint _texture;
 	GLuint64 _textureAddr;
-};
 
-class OGLRenderTexture final : public RenderTexture
-{
-	__DeclareSubClass(OGLRenderTexture, RenderTexture)
-public:
-	OGLRenderTexture() noexcept;
-	~OGLRenderTexture() noexcept;
-
-	virtual bool setup(TexturePtr texture) except;
-	virtual void setup(std::size_t w, std::size_t h, TextureDim dim, TextureFormat format) except;
-	virtual void setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, TextureFormat format) except;
-	virtual void close() noexcept;
-
-	void setLayer(GLuint layer) noexcept;
-	GLuint getLayer() const noexcept;
-
-	GLuint getInstanceID() noexcept;
-
-private:
-	void bindRenderTexture(TexturePtr texture, GLenum attachment) noexcept;
-	void onSetRenderTextureAfter(RenderTexturePtr target) noexcept;
-
-private:
-	GLuint _fbo;
-	GLuint _layer;
-};
-
-class OGLMultiRenderTexture final : public MultiRenderTexture
-{
-public:
-	OGLMultiRenderTexture() noexcept;
-	~OGLMultiRenderTexture() noexcept;
-
-	virtual bool setup() noexcept;
-	virtual void close() noexcept;
-
-	GLuint getInstanceID() noexcept;
-
-private:
-	void bindRenderTexture(RenderTexturePtr target, GLenum attachment) noexcept;
-
-private:
-
-	GLuint _fbo;
+	GraphicsTextureDesc _textureDesc;
 };
 
 _NAME_END

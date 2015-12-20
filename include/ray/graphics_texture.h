@@ -38,19 +38,15 @@
 #define _H_RENDER_TEXTURE_H_
 
 #include <ray/graphics_resource.h>
-#include <ray/graphics_sampler.h>
 
 _NAME_BEGIN
 
-class EXPORT Texture
+class EXPORT GraphicsTextureDesc final
 {
 public:
-	Texture() noexcept;
-	virtual ~Texture() noexcept;
-
-	virtual bool setup() except = 0;
-	virtual void close() noexcept = 0;
-
+	GraphicsTextureDesc() noexcept;
+	~GraphicsTextureDesc() noexcept;
+	
 	void setTexMipmap(bool enable) noexcept;
 	void setTexFormat(TextureFormat format) noexcept;
 	void setTexOp(SamplerOp op) noexcept;
@@ -67,12 +63,12 @@ public:
 	void setStream(void* data) noexcept;
 	void setSize(int w, int h, int depth = 0) noexcept;
 
-	SamplerOp     getTexOp()   const noexcept;
-	TextureFormat   getTexFormat()  const noexcept;
+	TextureFormat getTexFormat()  const noexcept;
 	TextureDim    getTexDim() const noexcept;
+	SamplerOp     getTexOp()   const noexcept;
 	SamplerWrap   getSamplerWrap() const noexcept;
 	SamplerFilter getSamplerFilter() const noexcept;
-	SamplerAnis    getSamplerAnis() const noexcept;
+	SamplerAnis   getSamplerAnis() const noexcept;
 
 	int getWidth()   const noexcept;
 	int getHeight()  const noexcept;
@@ -86,13 +82,6 @@ public:
 
 	bool isMipmap() const noexcept;
 	bool isMultiSample() const noexcept;
-
-	void copy(TexturePtr other) noexcept;
-	void copy(const Texture& other) noexcept;
-
-private:
-	Texture(const Texture&) noexcept = delete;
-	Texture& operator=(const Texture&) noexcept = delete;
 
 private:
 
@@ -114,85 +103,18 @@ private:
 	void* _data;
 };
 
-class EXPORT RenderTexture : public GraphicsResource
+class EXPORT GraphicsTexture : public GraphicsResource
 {
 	__DeclareSubInterface(RenderTexture, GraphicsResource)
 public:
-	RenderTexture() noexcept;
-	virtual ~RenderTexture() noexcept;
+	GraphicsTexture() noexcept;
+	virtual ~GraphicsTexture() noexcept;
 
-	virtual bool setup(TexturePtr texture) except = 0;
-	virtual void setup(std::size_t w, std::size_t h, TextureDim dim, TextureFormat format) except = 0;
-	virtual void setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, TextureFormat format) except = 0;
-
-	virtual void close() noexcept = 0;
-
-	TextureDim getTexDim() const noexcept;
-	TextureFormat getTexFormat()  const noexcept;
-
-	std::size_t getWidth()  const noexcept;
-	std::size_t getHeight() const noexcept;
-	std::size_t getDepth()  const noexcept;
-
-	bool isMipmap() const noexcept;
-	bool isMultiSample() const noexcept;
-
-	TexturePtr getResolveTexture() const noexcept;
-
-	void setSharedDepthTexture(RenderTexturePtr target) noexcept;
-	void setSharedStencilTexture(RenderTexturePtr target) noexcept;
-
-	RenderTexturePtr getSharedDepthTexture() const noexcept;
-	RenderTexturePtr getSharedStencilTexture() const noexcept;
-
-protected:
-
-	virtual void onSetRenderTextureBefore(RenderTexturePtr target) noexcept;
-	virtual void onSetRenderTextureAfter(RenderTexturePtr target) noexcept;
+	virtual const GraphicsTextureDesc& getGraphicsTextureDesc() const noexcept = 0;
 
 private:
-	RenderTexture(RenderTexture&) noexcept = delete;
-	RenderTexture& operator=(const RenderTexture&)noexcept = delete;
-
-protected:
-
-	TexturePtr _resolveTexture;
-
-	RenderTexturePtr _sharedDepthTexture;
-	RenderTexturePtr _sharedStencilTexture;
-};
-
-class EXPORT MultiRenderTexture
-{
-public:
-	MultiRenderTexture() noexcept;
-	virtual ~MultiRenderTexture() noexcept;
-
-	virtual bool setup() noexcept = 0;
-	virtual void close() noexcept = 0;
-
-	virtual void attach(RenderTexturePtr texture) noexcept;
-	virtual void detach(RenderTexturePtr texture) noexcept;
-
-	virtual RenderTextures& getRenderTextures() noexcept;
-	virtual const RenderTextures& getRenderTextures() const noexcept;
-
-	virtual void setSharedDepthTexture(RenderTexturePtr target) noexcept;
-	virtual void setSharedStencilTexture(RenderTexturePtr target) noexcept;
-
-	virtual RenderTexturePtr getSharedDepthTexture() const noexcept;
-	virtual RenderTexturePtr getSharedStencilTexture() const noexcept;
-
-private:
-	MultiRenderTexture(MultiRenderTexture&) noexcept = delete;
-	MultiRenderTexture& operator=(const MultiRenderTexture&) noexcept = delete;
-
-protected:
-
-	RenderTextures _textures;
-
-	RenderTexturePtr _sharedDepthTexture;
-	RenderTexturePtr _sharedStencilTexture;
+	GraphicsTexture(const GraphicsTexture&) noexcept = delete;
+	GraphicsTexture& operator=(const GraphicsTexture&) noexcept = delete;
 };
 
 _NAME_END

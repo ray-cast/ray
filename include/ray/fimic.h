@@ -73,24 +73,24 @@ public:
 
 private:
 
-	void sample4(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-	void sample8(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-	void sampleLog(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+	void sample4(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void sample8(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void sampleLog(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
-	void measureLuminance(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
+	void measureLuminance(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept;
 
-	void generateBloom(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-	void generateToneMapping(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+	void generateBloom(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void generateToneMapping(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
-	void blurh(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
-	void blurv(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept;
+	void blurh(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void blurv(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
 private:
 
 	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
+	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept;
 
 private:
 
@@ -99,11 +99,6 @@ private:
 	TimerPtr _timer;
 
 	Setting _setting;
-
-	RenderTexturePtr _texSample4;
-	RenderTexturePtr _texSample8;
-	RenderTexturePtr _texSampleLog;
-	RenderTexturePtr _texBloom;
 
 	MaterialPtr _fimic;
 	MaterialPassPtr _sample4;
@@ -125,6 +120,11 @@ private:
 	MaterialParamPtr _toneLumExposure;
 	MaterialParamPtr _toneBurnout;
 	MaterialParamPtr _toneDefocus;
+
+	GraphicsRenderTexturePtr _texSample4;
+	GraphicsRenderTexturePtr _texSample8;
+	GraphicsRenderTexturePtr _texSampleLog;
+	GraphicsRenderTexturePtr _texBloom;
 };
 
 _NAME_END

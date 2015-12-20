@@ -49,7 +49,7 @@ public:
 
 private:
 
-	void onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept;
+	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept;
 
 private:
 

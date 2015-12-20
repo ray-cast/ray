@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/dof.h>
-#include <ray/render_texture.h>
 
 _NAME_BEGIN
 
@@ -58,11 +57,8 @@ DepthOfField::onActivate(RenderPipeline& pipeline) except
 	_computeNear = _dof->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("computeNear");
 	_final = _dof->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("final");
 
-	_texTemp = pipeline.createRenderTexture();
-	_texTemp->setup(512, 512, TextureDim::DIM_2D, TextureFormat::R8G8B8);
-
-	_texBlur = pipeline.createRenderTexture();
-	_texBlur->setup(512, 512, TextureDim::DIM_2D, TextureFormat::R8G8B8);
+	_texTemp = pipeline.createRenderTexture(512, 512, TextureDim::DIM_2D, TextureFormat::R8G8B8);
+	_texBlur = pipeline.createRenderTexture(512, 512, TextureDim::DIM_2D, TextureFormat::R8G8B8);
 
 	_texColor = _dof->getParameter("texColor");
 	_texShrunk = _dof->getParameter("texShrunk");
@@ -77,7 +73,7 @@ DepthOfField::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-DepthOfField::blurh(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+DepthOfField::blurh(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
 	_texColor->assign(source->getResolveTexture());
 
@@ -86,7 +82,7 @@ DepthOfField::blurh(RenderPipeline& pipeline, RenderTexturePtr source, RenderTex
 }
 
 void
-DepthOfField::blurv(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr dest) noexcept
+DepthOfField::blurv(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
 	_texColor->assign(source->getResolveTexture());
 
@@ -95,7 +91,7 @@ DepthOfField::blurv(RenderPipeline& pipeline, RenderTexturePtr source, RenderTex
 }
 
 void
-DepthOfField::computeNear(RenderPipeline& pipeline, RenderTexturePtr source, RenderTexturePtr blured, RenderTexturePtr dest) noexcept
+DepthOfField::computeNear(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr blured, GraphicsRenderTexturePtr dest) noexcept
 {
 	_texShrunk->assign(source->getResolveTexture());
 	_texBlured->assign(blured->getResolveTexture());
@@ -105,7 +101,7 @@ DepthOfField::computeNear(RenderPipeline& pipeline, RenderTexturePtr source, Ren
 }
 
 void
-DepthOfField::shading(RenderPipeline& pipeline, RenderTexturePtr color, RenderTexturePtr texSmall, RenderTexturePtr large)
+DepthOfField::shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr color, GraphicsRenderTexturePtr texSmall, GraphicsRenderTexturePtr large)
 {
 	_texColor->assign(color->getResolveTexture());
 	_texSmall->assign(texSmall->getResolveTexture());
@@ -116,7 +112,7 @@ DepthOfField::shading(RenderPipeline& pipeline, RenderTexturePtr color, RenderTe
 }
 
 void
-DepthOfField::onRender(RenderPipeline& pipeline, RenderTexturePtr source) noexcept
+DepthOfField::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept
 {
 	_texColor->assign(source->getResolveTexture());
 

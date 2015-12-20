@@ -389,14 +389,21 @@ RenderSystem::removeRenderScene(RenderScenePtr scene) noexcept
 	}
 }
 
-TexturePtr 
-RenderSystem::createTexture() noexcept
+GraphicsTexturePtr
+RenderSystem::createTexture(const GraphicsTextureDesc& desc) noexcept
 {
 	assert(_renderPipeline);
-	return _renderPipeline->createTexture();
+	return _renderPipeline->createTexture(desc);
 }
 
-TexturePtr 
+GraphicsTexturePtr
+RenderSystem::createTexture(std::uint32_t w, std::uint32_t h, TextureDim dim, TextureFormat format) noexcept
+{
+	assert(_renderPipeline);
+	return _renderPipeline->createTexture(w, h, dim, format);
+}
+
+GraphicsTexturePtr
 RenderSystem::createTexture(const std::string& name) except
 {
 	assert(_renderPipeline);
@@ -410,18 +417,25 @@ RenderSystem::createMaterial(const std::string& name) except
 	return _renderPipeline->createMaterial(name);
 }
 
-RenderTexturePtr 
-RenderSystem::createRenderTexture() noexcept
+GraphicsRenderTexturePtr 
+RenderSystem::createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept
 {
 	assert(_renderPipeline);
-	return _renderPipeline->createRenderTexture();
+	return _renderPipeline->createRenderTexture(desc);
 }
 
-MultiRenderTexturePtr 
-RenderSystem::createMultiRenderTexture() noexcept
+GraphicsRenderTexturePtr
+RenderSystem::createRenderTexture(std::uint32_t w, std::uint32_t h, TextureDim dim, TextureFormat format) noexcept
 {
 	assert(_renderPipeline);
-	return _renderPipeline->createMultiRenderTexture();
+	return _renderPipeline->createRenderTexture(w, h, dim, format);
+}
+
+GraphicsMultiRenderTexturePtr
+RenderSystem::createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept
+{
+	assert(_renderPipeline);
+	return _renderPipeline->createMultiRenderTexture(desc);
 }
 
 GraphicsDataPtr

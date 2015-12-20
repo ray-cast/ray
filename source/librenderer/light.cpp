@@ -36,7 +36,8 @@
 // +----------------------------------------------------------------------
 #include <ray/light.h>
 #include <ray/camera.h>
-#include <ray/render_texture.h>
+#include <ray/graphics_view.h>
+#include <ray/graphics_texture.h>
 #include <ray/render_scene.h>
 #include <ray/render_system.h>
 
@@ -212,7 +213,7 @@ Light::getShadowCamera() const noexcept
 	return _shadowCamera;
 }
 
-TexturePtr
+GraphicsTexturePtr
 Light::getShadowMap() const noexcept
 {
 	_updateShadow();
@@ -258,9 +259,7 @@ Light::_updateShadow() const noexcept
 	{
 		if (!_shadowCamera->getRenderTexture())
 		{
-			auto depthTexture = RenderSystem::instance()->createRenderTexture();
-			depthTexture->setup(_shadowSize, _shadowSize, TextureDim::DIM_2D, TextureFormat::DEPTH_COMPONENT32);
-
+			auto depthTexture = RenderSystem::instance()->createRenderTexture(_shadowSize, _shadowSize, TextureDim::DIM_2D, TextureFormat::DEPTH_COMPONENT32);
 			_shadowCamera->setRenderTexture(depthTexture);
 		}
 	}

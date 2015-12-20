@@ -68,9 +68,12 @@ EGL3Device::createGraphicsContext(WindHandle win) noexcept
 }
 
 GraphicsStatePtr
-EGL3Device::createGraphicsState() noexcept
+EGL3Device::createGraphicsState(const GraphicsStateDesc& desc) noexcept
 {
-	return std::make_shared<EGL3GraphicsState>();
+	auto state = std::make_shared<EGL3GraphicsState>();
+	if (state->setup(desc))
+		return state;
+	return nullptr;
 }
 
 GraphicsLayoutPtr

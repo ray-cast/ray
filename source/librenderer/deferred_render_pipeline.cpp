@@ -242,9 +242,6 @@ DeferredRenderPipeline::renderSunLight(RenderPipeline& pipeline, const Light& li
 
 	if (light.getShadow())
 	{
-		auto& stencil = _deferredSunLightShadow->getGraphicsState()->getStencilState();
-		stencil.stencilRef = 1 << light.getLayer();
-
 		_shadowFactor->assign(ESM_FACTOR);
 		_shadowMap->assign(light.getShadowCamera()->getRenderTexture()->getResolveTexture());
 		_shadowMatrix->assign(light.getShadowCamera()->getViewProject());
@@ -253,9 +250,6 @@ DeferredRenderPipeline::renderSunLight(RenderPipeline& pipeline, const Light& li
 	}
 	else
 	{
-		auto& stencil = _deferredSunLight->getGraphicsState()->getStencilState();
-		stencil.stencilRef = 1 << light.getLayer();
-
 		pipeline.drawSceneQuad(_deferredSunLight);
 	}
 }
@@ -273,11 +267,6 @@ DeferredRenderPipeline::renderDirectionalLight(RenderPipeline& pipeline, const L
 
 	if (light.getShadow())
 	{
-		RenderStencilState stencil = _deferredDirectionalLightShadow->getGraphicsState()->getStencilState();
-		stencil.stencilRef = 1 << light.getLayer();
-
-		_deferredDirectionalLightShadow->getGraphicsState()->setStencilState(stencil);
-
 		_shadowMap->assign(light.getShadowCamera()->getRenderTexture()->getResolveTexture());
 		_shadowFactor->assign(ESM_FACTOR);
 		_shadowMatrix->assign(light.getShadowCamera()->getViewProject());
@@ -286,11 +275,6 @@ DeferredRenderPipeline::renderDirectionalLight(RenderPipeline& pipeline, const L
 	}
 	else
 	{
-		RenderStencilState stencil = _deferredDirectionalLight->getGraphicsState()->getStencilState();
-		stencil.stencilRef = 1 << light.getLayer();
-
-		_deferredDirectionalLight->getGraphicsState()->setStencilState(stencil);
-
 		pipeline.drawSceneQuad(_deferredDirectionalLight);
 	}
 }
@@ -306,11 +290,6 @@ DeferredRenderPipeline::renderPointLight(RenderPipeline& pipeline, const Light& 
 	_lightIntensity->assign(light.getIntensity());
 
 	_eyePosition->assign(float3x3(pipeline.getCamera()->getView()) * pipeline.getCamera()->getTranslate());
-
-	RenderStencilState stencil = _deferredPointLight->getGraphicsState()->getStencilState();
-	stencil.stencilRef = 1 << light.getLayer();
-
-	_deferredPointLight->getGraphicsState()->setStencilState(stencil);
 
 	pipeline.setModelMatrix(light.getTransform());
 	pipeline.drawSphere(_deferredPointLight);
@@ -330,11 +309,6 @@ DeferredRenderPipeline::renderSpotLight(RenderPipeline& pipeline, const Light& l
 
 	_eyePosition->assign(float3x3(pipeline.getCamera()->getView()) * pipeline.getCamera()->getTranslate());
 
-	RenderStencilState stencil = _deferredSpotLight->getGraphicsState()->getStencilState();
-	stencil.stencilRef = 1 << light.getLayer();
-
-	_deferredSpotLight->getGraphicsState()->setStencilState(stencil);
-
 	pipeline.setModelMatrix(light.getTransform());
 	pipeline.drawCone(_deferredSpotLight);
 }
@@ -350,11 +324,6 @@ DeferredRenderPipeline::renderAmbientLight(RenderPipeline& pipeline, const Light
 	_lightIntensity->assign(light.getIntensity());
 
 	_eyePosition->assign(pipeline.getCamera()->getTranslate());
-
-	RenderStencilState stencil = _deferredAmbientLight->getGraphicsState()->getStencilState();
-	stencil.stencilRef = 1 << light.getLayer();
-
-	_deferredAmbientLight->getGraphicsState()->setStencilState(stencil);
 
 	pipeline.drawSceneQuad(_deferredAmbientLight);
 }

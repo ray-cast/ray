@@ -45,18 +45,30 @@ EGL3GraphicsState::~EGL3GraphicsState() noexcept
 {
 }
 
-void
-EGL3GraphicsState::apply(const GraphicsState& _stateCaptured) noexcept
+bool
+EGL3GraphicsState::setup(const GraphicsStateDesc& desc) noexcept
 {
-	const auto& blendState = this->getBlendState();
-	const auto& rasterState = this->getRasterState();
-	const auto& depthState = this->getDepthState();
-	const auto& stencilState = this->getStencilState();
+	_stateDesc = desc;
+	return true;
+}
 
-	auto& _dstBlendState = _stateCaptured.getBlendState();
-	auto& _dstRasterState = _stateCaptured.getRasterState();
-	auto& _dstDepthState = _stateCaptured.getDepthState();
-	auto& _dstStencilState = _stateCaptured.getStencilState();
+void
+EGL3GraphicsState::close() noexcept
+{
+}
+
+void
+EGL3GraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
+{
+	const auto& blendState = _stateDesc.getBlendState();
+	const auto& rasterState = _stateDesc.getRasterState();
+	const auto& depthState = _stateDesc.getDepthState();
+	const auto& stencilState = _stateDesc.getStencilState();
+
+	auto& _dstBlendState = lastStateDesc.getBlendState();
+	auto& _dstRasterState = lastStateDesc.getRasterState();
+	auto& _dstDepthState = lastStateDesc.getDepthState();
+	auto& _dstStencilState = lastStateDesc.getStencilState();
 
 	if (blendState.blendEnable)
 	{
@@ -266,6 +278,12 @@ EGL3GraphicsState::apply(const GraphicsState& _stateCaptured) noexcept
 			glDisable(GL_STENCIL_TEST);
 		}
 	}
+}
+
+const GraphicsStateDesc&
+EGL3GraphicsState::getGraphicsStateDesc() const noexcept
+{
+	return _stateDesc;
 }
 
 _NAME_END

@@ -60,7 +60,7 @@ public:
 	virtual GraphicsSamplerPtr createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept = 0;
 	virtual GraphicsRenderTexturePtr createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept = 0;
 	virtual GraphicsMultiRenderTexturePtr createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept = 0;
-	virtual GraphicsStatePtr createGraphicsState() noexcept = 0;
+	virtual GraphicsStatePtr createGraphicsState(const GraphicsStateDesc& desc) noexcept = 0;
 	virtual ShaderPtr createShader() noexcept = 0;
 	virtual ShaderObjectPtr createShaderObject() noexcept = 0;
 

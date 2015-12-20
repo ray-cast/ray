@@ -57,13 +57,6 @@ MaterialMaker::~MaterialMaker() noexcept
 {
 }
 
-GraphicsStatePtr
-MaterialMaker::instanceState(MaterialManager& manager, iarchive& reader) except
-{
-	auto state = manager.getGraphicsDevice()->createGraphicsState();
-	return state;
-}
-
 ShaderPtr
 MaterialMaker::instanceShader(MaterialManager& manager, iarchive& reader) except
 {
@@ -128,7 +121,6 @@ MaterialMaker::instancePass(MaterialManager& manager, iarchive& reader) except
 	if (reader.setToFirstChild())
 	{
 		ShaderObjectPtr shaderObject = manager.getGraphicsDevice()->createShaderObject();
-		GraphicsStatePtr state = manager.getGraphicsDevice()->createGraphicsState();
 
 		RenderDepthState depthState;
 		RenderRasterState rasterState;
@@ -223,10 +215,14 @@ MaterialMaker::instancePass(MaterialManager& manager, iarchive& reader) except
 
 		} while (reader.setToNextChild());
 
-		state->setDepthState(depthState);
-		state->setBlendState(blendState);
-		state->setRasterState(rasterState);
-		state->setStencilState(stencilState);
+		GraphicsStateDesc stateDesc;
+		stateDesc.setDepthState(depthState);
+		stateDesc.setBlendState(blendState);
+		stateDesc.setRasterState(rasterState);
+		stateDesc.setStencilState(stencilState);
+
+		auto state = manager.getGraphicsDevice()->createGraphicsState(stateDesc);
+		assert(state);
 
 		pass->setGraphicsState(state);
 		pass->setShaderObject(shaderObject);

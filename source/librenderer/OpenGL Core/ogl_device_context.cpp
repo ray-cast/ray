@@ -179,14 +179,10 @@ OGLDeviceContext::setGraphicsState(GraphicsStatePtr state) noexcept
 		auto oglState = state->downcast<OGLGraphicsState>();
 		if (oglState)
 		{
-			oglState->apply(*_stateCaptured);
-
-			_stateCaptured->setBlendState(oglState->getBlendState());
-			_stateCaptured->setDepthState(oglState->getDepthState());
-			_stateCaptured->setRasterState(oglState->getRasterState());
-			_stateCaptured->setStencilState(oglState->getStencilState());
+			oglState->apply(_stateCaptured);
 
 			_state = oglState;
+			_stateCaptured = oglState->getGraphicsStateDesc();
 		}
 		else
 		{
@@ -195,7 +191,7 @@ OGLDeviceContext::setGraphicsState(GraphicsStatePtr state) noexcept
 	}
 	else
 	{
-		_stateCaptured->apply(*_stateDefalut);
+		_stateDefalut->apply(_stateCaptured);
 	}
 }
 
@@ -324,9 +320,6 @@ OGLDeviceContext::getVertexBufferData() const noexcept
 void
 OGLDeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 {
-	if (!_stateCaptured)
-		return;
-
 	if (!_inputLayout || !_vbo)
 		return;
 
@@ -342,7 +335,7 @@ OGLDeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 			return;
 	}
 
-	auto primitiveType = _stateCaptured->getRasterState().primitiveType;
+	auto primitiveType = _stateCaptured.getRasterState().primitiveType;
 	if (_enableWireframe)
 	{
 		if (primitiveType == VertexType::PointOrLine ||
@@ -628,7 +621,7 @@ OGLDeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, flo
 
 	if (mode != 0)
 	{
-		auto depthWriteMask = _stateCaptured->getDepthState().depthWriteMask;
+		auto depthWriteMask = _stateCaptured.getDepthState().depthWriteMask;
 		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
 		{
 			glDepthMask(GL_TRUE);
@@ -648,7 +641,7 @@ OGLDeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, flo
 {
 	if (flags & ClearFlags::CLEAR_DEPTH)
 	{
-		auto depthWriteMask = _stateCaptured->getDepthState().depthWriteMask;
+		auto depthWriteMask = _stateCaptured.getDepthState().depthWriteMask;
 		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
 		{
 			glDepthMask(GL_TRUE);
@@ -905,7 +898,9 @@ OGLDeviceContext::initStateSystem() noexcept
 	_viewport.resize(_maxViewports);
 
 	_stateDefalut = std::make_shared<OGLGraphicsState>();
-	_stateCaptured = std::make_shared<OGLGraphicsState>();
+	_stateDefalut->setup(GraphicsStateDesc());
+
+	_stateCaptured = GraphicsStateDesc();
 }
 
 _NAME_END

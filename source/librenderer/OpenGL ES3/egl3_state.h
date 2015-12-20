@@ -48,10 +48,18 @@ public:
 	EGL3GraphicsState() noexcept;
 	~EGL3GraphicsState() noexcept;
 
-	virtual void apply(const GraphicsState& last) noexcept;
+    bool setup(const GraphicsStateDesc& desc) noexcept;
+    void close() noexcept;
+
+	void apply(const GraphicsStateDesc& last) noexcept;
+
+    const GraphicsStateDesc& getGraphicsStateDesc() const noexcept;
 private:
 	EGL3GraphicsState(const EGL3GraphicsState&) = delete;
 	EGL3GraphicsState& operator=(const EGL3GraphicsState&) = delete;
+
+private:
+    GraphicsStateDesc _stateDesc;
 };
 
 _NAME_END

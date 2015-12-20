@@ -147,7 +147,7 @@ private:
 
 	EGL3GraphicsStatePtr _state;
 	EGL3GraphicsStatePtr _stateDefalut;
-	EGL3GraphicsStatePtr _stateCaptured;
+	GraphicsStateDesc _stateCaptured;
 
 	std::vector<GLint> _textureUnits;
 };

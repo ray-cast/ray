@@ -184,29 +184,29 @@ EGL3DeviceContext::getSwapInterval() const noexcept
 void
 EGL3DeviceContext::setGraphicsState(GraphicsStatePtr state) noexcept
 {
-	if (state)
+	if (_state != state)
 	{
-		auto oglState = state->downcast<EGL3GraphicsState>();
-		if (oglState)
+		if (state)
 		{
-			oglState->apply(*_stateCaptured);
+			auto glstate = state->downcast<EGL3GraphicsState>();
+			if (glstate)
+			{
+				glstate->apply(_stateCaptured);
 
-			_stateCaptured->setBlendState(oglState->getBlendState());
-			_stateCaptured->setDepthState(oglState->getDepthState());
-			_stateCaptured->setRasterState(oglState->getRasterState());
-			_stateCaptured->setStencilState(oglState->getStencilState());
-
-			_state = oglState;
+				_state = glstate;
+				_stateCaptured = glstate->getGraphicsStateDesc();
+			}
+			else
+			{
+				_state = nullptr;
+				_stateDefalut->apply(_stateCaptured);
+			}
 		}
 		else
 		{
-			assert(false);
+			_state = nullptr;
+			_stateDefalut->apply(_stateCaptured);
 		}
-	}
-	else
-	{
-		_stateCaptured->apply(*_stateDefalut);
-		assert(false);
 	}
 }
 
@@ -360,9 +360,6 @@ EGL3DeviceContext::getVertexBufferData() const noexcept
 void
 EGL3DeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 {
-	if (!_stateCaptured)
-		return;
-
 	if (!_inputLayout || !_vbo)
 		return;
 
@@ -378,7 +375,7 @@ EGL3DeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 			return;
 	}
 
-	auto primitiveType = _stateCaptured->getRasterState().primitiveType;
+	auto primitiveType = _stateCaptured.getRasterState().primitiveType;
 	if (_enableWireframe)
 	{
 		if (primitiveType == VertexType::PointOrLine ||
@@ -648,7 +645,7 @@ EGL3DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, fl
 
 	if (mode != 0)
 	{
-		auto depthWriteMask = _stateCaptured->getDepthState().depthWriteMask;
+		auto depthWriteMask = _stateCaptured.getDepthState().depthWriteMask;
 		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
 		{
 			glDepthMask(GL_TRUE);
@@ -668,7 +665,7 @@ EGL3DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, fl
 {
 	if (flags & ClearFlags::CLEAR_DEPTH)
 	{
-		auto depthWriteMask = _stateCaptured->getDepthState().depthWriteMask;
+		auto depthWriteMask = _stateCaptured.getDepthState().depthWriteMask;
 		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
 		{
 			glDepthMask(GL_TRUE);
@@ -912,7 +909,7 @@ EGL3DeviceContext::initStateSystem() noexcept
     _textureUnits.resize(_maxTextureUnits);
 
     _stateDefalut = std::make_shared<EGL3GraphicsState>();
-    _stateCaptured = std::make_shared<EGL3GraphicsState>();
+    _stateCaptured = GraphicsStateDesc();
 
 }
 

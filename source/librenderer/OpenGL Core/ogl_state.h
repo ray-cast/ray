@@ -41,17 +41,26 @@
 
 _NAME_BEGIN
 
-class OGLGraphicsState : public GraphicsState
+class OGLGraphicsState final : public GraphicsState
 {
     __DeclareSubClass(OGLGraphicsState, GraphicsState)
 public:
 	OGLGraphicsState() noexcept;
 	~OGLGraphicsState() noexcept;
 
-	void apply(const GraphicsState& last) noexcept;
+	bool setup(const GraphicsStateDesc& desc) noexcept;
+	void close() noexcept;
+
+	void apply(const GraphicsStateDesc& last) noexcept;
+
+	const GraphicsStateDesc& getGraphicsStateDesc() const noexcept;
+
 private:
 	OGLGraphicsState(const OGLGraphicsState&) = delete;
 	OGLGraphicsState& operator=(const OGLGraphicsState&) = delete;
+
+private:
+	GraphicsStateDesc _stateDesc;
 };
 
 _NAME_END

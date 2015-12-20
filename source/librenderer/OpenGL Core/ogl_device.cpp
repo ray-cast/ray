@@ -68,9 +68,12 @@ OGLDevice::createGraphicsContext(WindHandle win) noexcept
 }
 
 GraphicsStatePtr
-OGLDevice::createGraphicsState() noexcept
+OGLDevice::createGraphicsState(const GraphicsStateDesc& desc) noexcept
 {
-	return std::make_shared<OGLGraphicsState>();
+	auto state = std::make_shared<OGLGraphicsState>();
+	if (state->setup(desc))
+		return state;
+	return nullptr;
 }
 
 GraphicsLayoutPtr

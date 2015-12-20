@@ -47,9 +47,9 @@ class EGL3Device final : public GraphicsDevice
 public:
 	EGL3Device() noexcept;
 	~EGL3Device() noexcept;
-	
+
 	virtual GraphicsContextPtr createGraphicsContext(WindHandle hwnd) noexcept;
-	virtual GraphicsStatePtr createGraphicsState() noexcept;
+	virtual GraphicsStatePtr createGraphicsState(const GraphicsStateDesc& desc) noexcept;
 	virtual GraphicsLayoutPtr createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept;
 	virtual GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
 	virtual GraphicsTexturePtr createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept;

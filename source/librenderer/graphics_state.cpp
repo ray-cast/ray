@@ -92,84 +92,92 @@ RenderStencilState::RenderStencilState() noexcept
 {
 }
 
+GraphicsStateDesc::GraphicsStateDesc() noexcept
+{
+}
+
+GraphicsStateDesc::~GraphicsStateDesc() noexcept
+{
+}
+
+void
+GraphicsStateDesc::setBlendState(const RenderBlendState& state) noexcept
+{
+	_blendState = state;
+}
+
+void
+GraphicsStateDesc::setRasterState(const RenderRasterState& state) noexcept
+{
+	_rasterState = state;
+}
+
+void
+GraphicsStateDesc::setDepthState(const RenderDepthState& state) noexcept
+{
+	_depthState = state;
+}
+
+void
+GraphicsStateDesc::setStencilState(const RenderStencilState& state) noexcept
+{
+	_stencilState = state;
+}
+
+RenderBlendState&
+GraphicsStateDesc::getBlendState() noexcept
+{
+	return _blendState;
+}
+
+RenderRasterState&
+GraphicsStateDesc::getRasterState() noexcept
+{
+	return _rasterState;
+}
+
+RenderDepthState&
+GraphicsStateDesc::getDepthState() noexcept
+{
+	return _depthState;
+}
+
+RenderStencilState&
+GraphicsStateDesc::getStencilState() noexcept
+{
+	return _stencilState;
+}
+
+const RenderBlendState&
+GraphicsStateDesc::getBlendState() const noexcept
+{
+	return _blendState;
+}
+
+const RenderRasterState&
+GraphicsStateDesc::getRasterState() const noexcept
+{
+	return _rasterState;
+}
+
+const RenderDepthState&
+GraphicsStateDesc::getDepthState() const noexcept
+{
+	return _depthState;
+}
+
+const RenderStencilState&
+GraphicsStateDesc::getStencilState() const noexcept
+{
+	return _stencilState;
+}
+
 GraphicsState::GraphicsState() noexcept
 {
 }
 
 GraphicsState::~GraphicsState() noexcept
 {
-}
-
-void
-GraphicsState::setBlendState(const RenderBlendState& state) noexcept
-{
-	_blendState = state;
-}
-
-void
-GraphicsState::setRasterState(const RenderRasterState& state) noexcept
-{
-	_rasterState = state;
-}
-
-void
-GraphicsState::setDepthState(const RenderDepthState& state) noexcept
-{
-	_depthState = state;
-}
-
-void
-GraphicsState::setStencilState(const RenderStencilState& state) noexcept
-{
-	_stencilState = state;
-}
-
-RenderBlendState&
-GraphicsState::getBlendState() noexcept
-{
-	return _blendState;
-}
-
-RenderRasterState&
-GraphicsState::getRasterState() noexcept
-{
-	return _rasterState;
-}
-
-RenderDepthState&
-GraphicsState::getDepthState() noexcept
-{
-	return _depthState;
-}
-
-RenderStencilState&
-GraphicsState::getStencilState() noexcept
-{
-	return _stencilState;
-}
-
-const RenderBlendState&
-GraphicsState::getBlendState() const noexcept
-{
-	return _blendState;
-}
-
-const RenderRasterState&
-GraphicsState::getRasterState() const noexcept
-{
-	return _rasterState;
-}
-
-const RenderDepthState&
-GraphicsState::getDepthState() const noexcept
-{
-	return _depthState;
-}
-
-const RenderStencilState&
-GraphicsState::getStencilState() const noexcept
-{
-	return _stencilState;
 }
 
 _NAME_END

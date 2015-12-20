@@ -134,8 +134,8 @@ private:
 	ShaderObjectPtr _shaderObject;
 
 	OGLGraphicsStatePtr _state;
-	OGLGraphicsStatePtr _stateCaptured;
 	OGLGraphicsStatePtr _stateDefalut;
+	GraphicsStateDesc _stateCaptured;
 
 	GLuint _stateObjDraw;
 	GLuint _stateObjDrawGeo;

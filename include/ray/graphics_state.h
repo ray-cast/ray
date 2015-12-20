@@ -106,12 +106,11 @@ struct EXPORT RenderStencilState
 	RenderStencilState() noexcept;
 };
 
-class EXPORT GraphicsState : public GraphicsChild
+class EXPORT GraphicsStateDesc final
 {
-	__DeclareSubInterface(GraphicsState, GraphicsChild)
 public:
-	GraphicsState() noexcept;
-	virtual ~GraphicsState() noexcept;
+	GraphicsStateDesc() noexcept;
+	~GraphicsStateDesc() noexcept;
 
 	void setBlendState(const RenderBlendState& state) noexcept;
 	void setRasterState(const RenderRasterState& state) noexcept;
@@ -129,15 +128,24 @@ public:
 	const RenderStencilState& getStencilState() const noexcept;
 
 private:
-	GraphicsState(const GraphicsState&) noexcept = delete;
-	GraphicsState& operator=(const GraphicsState&) noexcept = delete;
-
-public:
-
 	RenderBlendState _blendState;
 	RenderRasterState _rasterState;
 	RenderDepthState _depthState;
 	RenderStencilState _stencilState;
+};
+
+class EXPORT GraphicsState : public GraphicsChild
+{
+	__DeclareSubInterface(GraphicsState, GraphicsChild)
+public:
+	GraphicsState() noexcept;
+	virtual ~GraphicsState() noexcept;
+
+	virtual const GraphicsStateDesc& getGraphicsStateDesc() const noexcept = 0;
+
+private:
+	GraphicsState(const GraphicsState&) noexcept = delete;
+	GraphicsState& operator=(const GraphicsState&) noexcept = delete;
 };
 
 _NAME_END

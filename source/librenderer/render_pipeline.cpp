@@ -1062,18 +1062,6 @@ RenderPipeline::onRenderObject(RenderObject& object, RenderQueue queue, RenderPa
 		_materialMatModelInverse->assign(object.getTransformInverse());
 		_materialMatModelInverseTranspose->assign(object.getTransformInverseTranspose());
 
-		if (!_pass)
-		{
-			RenderStencilState stencil = pass->getGraphicsState()->getStencilState();
-			stencil.stencilEnable = true;
-			stencil.stencilPass = StencilOperation::STENCILOP_REPLACE;
-			stencil.stencilFunc = CompareFunction::GPU_ALWAYS;
-			stencil.stencilRef = 1 << object.getLayer();
-			stencil.stencilReadMask = 0xFFFFFFFF;
-
-			pass->getGraphicsState()->setStencilState(stencil);
-		}
-
 		this->drawMesh(pass, object.getRenderBuffer(), *object.getRenderIndirect());
 
 		auto listener = object.getOwnerListener();

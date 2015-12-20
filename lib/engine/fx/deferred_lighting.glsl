@@ -357,9 +357,6 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
-
-            <state name="stencilTest" value="true"/>
-            <state name="stencilFunc" value="equal"/>
         </pass>
         <pass name="DeferredSunLightShadow">
             <state name="vertex" value="DeferredSunLightVS"/>
@@ -373,9 +370,6 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
-
-            <state name="stencilTest" value="true"/>
-            <state name="stencilFunc" value="equal"/>
         </pass>
         <pass name="DeferredDirectionalLight">
             <state name="vertex" value="DeferredDirectionalLightVS"/>
@@ -389,9 +383,6 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
-
-            <state name="stencilTest" value="true"/>
-            <state name="stencilFunc" value="equal"/>
         </pass>
         <pass name="DeferredDirectionalLightShadow">
             <state name="vertex" value="DeferredDirectionalLightVS"/>
@@ -405,9 +396,6 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
-
-            <state name="stencilTest" value="true"/>
-            <state name="stencilFunc" value="equal"/>
         </pass>
         <pass name="DeferredPointLight">
             <state name="vertex" value="DeferredPointLightVS"/>
@@ -421,9 +409,6 @@
             <state name="blenddst" value="one"/>
 
             <state name="cullmode" value="none"/>
-
-            <state name="stencilTest" value="true"/>
-            <state name="stencilFunc" value="equal"/>
         </pass>
         <pass name="DeferredSpotLight">
             <state name="vertex" value="DeferredSpotLightVS"/>
@@ -437,9 +422,6 @@
             <state name="blenddst" value="one"/>
 
             <state name="cullmode" value="none"/>
-
-            <state name="stencilTest" value="true"/>
-            <state name="stencilFunc" value="equal"/>
         </pass>
         <pass name="DeferredAmbientLight">
             <state name="vertex" value="DeferredAmbientLightVS"/>
@@ -453,9 +435,6 @@
             <state name="blenddst" value="one"/>
 
             <state name="cullmode" value="none"/>
-
-            <state name="stencilTest" value="true"/>
-            <state name="stencilFunc" value="equal"/>
         </pass>
         <pass name="DeferredShadingOpaques">
             <state name="vertex" value="DeferredShadingVS"/>
@@ -465,10 +444,6 @@
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
-
-            <state name="stencilTest" value="true"/>
-            <state name="stencilFunc" value="notequal"/>
-            <state name="stencilRef" value="0" />
         </pass>
         <pass name="DeferredShadingTransparents">
             <state name="vertex" value="DeferredShadingVS"/>
@@ -482,10 +457,6 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="srcalpha"/>
             <state name="blenddst" value="invsrcalpha"/>
-
-            <state name="stencilTest" value="true"/>
-            <state name="stencilFunc" value="notequal"/>
-            <state name="stencilRef" value="0" />
         </pass>
     </technique>
 </effect>

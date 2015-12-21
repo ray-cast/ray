@@ -97,4 +97,10 @@ OGLGraphicsData::unmap() noexcept
 	_buf->unmap();
 }
 
+GLuint
+OGLGraphicsData::getInstanceID() const noexcept
+{
+	return _buf->getInstanceID();
+}
+
 _NAME_END

@@ -35,6 +35,8 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_layout.h"
+#include "ogl_vbo.h"
+#include "ogl_ibo.h"
 
 _NAME_BEGIN
 
@@ -42,6 +44,8 @@ __ImplementSubClass(OGLGraphicsLayout, GraphicsLayout, "OGLGraphicsLayout")
 
 OGLGraphicsLayout::OGLGraphicsLayout() noexcept
 	: _vao(GL_NONE)
+	, _vbo(GL_NONE)
+	, _ibo(GL_NONE)
 	, _vertexSize(0)
 	, _indexType(GL_NONE)
 	, _indexSize(0)
@@ -74,11 +78,9 @@ OGLGraphicsLayout::open(const GraphicsLayoutDesc& layout) noexcept
 
 	_layout = layout;
 
-	glGenVertexArrays(1, &_vao);
+	glCreateVertexArrays(1, &_vao);
 	if (_vao != GL_NONE)
 	{
-		glBindVertexArray(_vao);
-
 		GLuint offset = 0;
 
 		auto& components = this->getVertexComponents();
@@ -89,15 +91,13 @@ OGLGraphicsLayout::open(const GraphicsLayoutDesc& layout) noexcept
 			{
 				GLboolean normalize = it.getNormalize() ? GL_TRUE : GL_FALSE;
 
-				glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
-				glVertexAttribFormat(it.getVertexAttrib(), it.getVertexCount(), type, normalize, offset);
-				glVertexAttribBinding(it.getVertexAttrib(), 0);
+				glEnableVertexArrayAttrib(_vao, (GLuint)it.getVertexAttrib());
+				glVertexArrayAttribFormat(_vao, it.getVertexAttrib(), it.getVertexCount(), type, normalize, offset);
+				glVertexArrayAttribBinding(_vao, it.getVertexAttrib(), 0);
 			}
 
 			offset += it.getVertexSize();
 		}
-
-		glBindVertexArray(GL_NONE);
 
 		return true;
 	}
@@ -168,6 +168,12 @@ OGLGraphicsLayout::getVertexSize() const noexcept
 	return _vertexSize;
 }
 
+GLuint 
+OGLGraphicsLayout::getInstanceID() const noexcept
+{
+	return _vao;
+}
+
 const GraphicsLayoutDesc&
 OGLGraphicsLayout::getGraphicsLayout() const noexcept
 {
@@ -178,6 +184,31 @@ void
 OGLGraphicsLayout::bindLayout() noexcept
 {
 	glBindVertexArray(_vao);
+}
+
+void
+OGLGraphicsLayout::bindVbo(OGLVertexBufferPtr vbo) noexcept
+{
+	assert(vbo);
+
+	if (_vbo != vbo)
+	{
+		glVertexArrayVertexBuffer(_vao, 0, vbo->getInstanceID(), 0, _vertexSize);
+		_vbo = vbo;
+	}
+}
+
+void
+OGLGraphicsLayout::bindIbo(OGLIndexBufferPtr ibo) noexcept
+{
+	assert(ibo);
+	assert(_layout.getIndexType() != IndexType::None);
+
+	if (_ibo != ibo)
+	{
+		glVertexArrayElementBuffer(_vao, ibo->getInstanceID());
+		_ibo = ibo;
+	}	
 }
 
 _NAME_END

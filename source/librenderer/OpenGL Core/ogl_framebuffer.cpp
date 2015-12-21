@@ -62,8 +62,9 @@ OGLRenderTexture::setup(const GraphicsRenderTextureDesc& framebufferDesc) except
 	if (!framebufferDesc.getGraphicsTexture())
 		return false;
 
-	glGenFramebuffers(1, &_fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+	glCreateFramebuffers(1, &_fbo);
+	if (_fbo == GL_NONE)
+		return false;
 
 	auto sharedDepthTarget = framebufferDesc.getSharedDepthTexture();
 	auto sharedStencilTarget = framebufferDesc.getSharedStencilTexture();
@@ -98,9 +99,7 @@ OGLRenderTexture::setup(const GraphicsRenderTextureDesc& framebufferDesc) except
 
 	_framebufferDesc = framebufferDesc;
 
-	glDrawBuffer(GL_COLOR_ATTACHMENT0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+	glNamedFramebufferDrawBuffer(_fbo, GL_COLOR_ATTACHMENT0);
 	return true;
 }
 
@@ -149,11 +148,7 @@ OGLRenderTexture::setLayer(GLuint layer) noexcept
 		auto textureID = texture->getInstanceID();
 
 		GLenum attachment = GL_COLOR_ATTACHMENT0;
-
-		if (textureDesc.getTexDim() == TextureDim::DIM_2D_ARRAY)
-			glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, 0, layer);
-		else if (textureDesc.getTexDim() == TextureDim::DIM_CUBE)
-			glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer, textureID, 0);
+		glNamedFramebufferTextureLayer(_fbo, attachment, textureID, 0, layer);
 
 		_layer = layer;
 	}
@@ -169,7 +164,7 @@ void
 OGLRenderTexture::discard() noexcept
 {
 	GLenum attachment = GL_COLOR_ATTACHMENT0;
-	glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, &attachment);
+	glInvalidateNamedFramebufferData(_fbo, 1, &attachment);	
 }
 
 void
@@ -181,22 +176,7 @@ OGLRenderTexture::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachmen
 	auto handle = gltexture->getInstanceID();
 	auto target = gltexture->getTarget();
 
-	if (target == GL_TEXTURE_2D)
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0);
-	else if (target == GL_TEXTURE_2D_MULTISAMPLE)
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, handle, 0);
-	else if (target == GL_TEXTURE_2D_ARRAY)
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_ARRAY, handle, 0);
-	else if (target == GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE_ARRAY, handle, 0);
-	else if (target == GL_TEXTURE_3D)
-		glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_3D, handle, 0, 0);
-	else if (target == GL_TEXTURE_CUBE_MAP)
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0);
-	else if (target == GL_TEXTURE_CUBE_MAP_ARRAY)
-		glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0, 0);
-	else
-		assert(false);
+	glNamedFramebufferTexture(_fbo, attachment, handle, 0);
 }
 
 GLuint
@@ -233,8 +213,9 @@ OGLMultiRenderTexture::setup(const GraphicsMultiRenderTextureDesc& multiFramebuf
 {
 	assert(GL_NONE == _fbo);
 
-	glGenFramebuffers(1, &_fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+	glCreateFramebuffers(1, &_fbo);
+	if (_fbo == GL_NONE)
+		return false;
 
 	auto sharedDepthTarget = multiFramebufferDesc.getSharedDepthTexture();
 	auto sharedStencilTarget = multiFramebufferDesc.getSharedStencilTexture();
@@ -267,8 +248,7 @@ OGLMultiRenderTexture::setup(const GraphicsMultiRenderTextureDesc& multiFramebuf
 		draw[count++] = attachment++;
 	}
 
-	glDrawBuffers(count, draw);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glNamedFramebufferDrawBuffers(_fbo, count, draw);
 
 	return true;
 }
@@ -321,10 +301,7 @@ OGLMultiRenderTexture::setLayer(GraphicsRenderTexturePtr renderTexture, GLuint l
 		attachment++;
 	}
 
-	if (textureDesc.getTexDim() == TextureDim::DIM_2D_ARRAY)
-		glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, 0, layer);
-	else if (textureDesc.getTexDim() == TextureDim::DIM_CUBE)
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer, textureID, 0);
+	glNamedFramebufferTextureLayer(_fbo, attachment, textureID, 0, layer);
 }
 
 GLuint 
@@ -348,7 +325,7 @@ OGLMultiRenderTexture::discard() noexcept
 		attachment++;
 	}
 
-	glInvalidateFramebuffer(GL_FRAMEBUFFER, size, attachments);
+	glInvalidateNamedFramebufferData(_fbo, size, attachments);
 }
 
 GLuint
@@ -372,22 +349,7 @@ OGLMultiRenderTexture::bindRenderTexture(GraphicsTexturePtr texture, GLenum atta
 	auto handle = gltexture->getInstanceID();
 	auto target = gltexture->getTarget();
 
-	if (target == GL_TEXTURE_2D)
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0);
-	else if (target == GL_TEXTURE_2D_MULTISAMPLE)
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, handle, 0);
-	else if (target == GL_TEXTURE_2D_ARRAY)
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_ARRAY, handle, 0);
-	else if (target == GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE_ARRAY, handle, 0);
-	else if (target == GL_TEXTURE_3D)
-		glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_3D, handle, 0, 0);
-	else if (target == GL_TEXTURE_CUBE_MAP)
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0);
-	else if (target == GL_TEXTURE_CUBE_MAP_ARRAY)
-		glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0, 0);
-	else
-		assert(false);
+	glNamedFramebufferTexture(_fbo, attachment, handle, 0);
 }
 
 _NAME_END

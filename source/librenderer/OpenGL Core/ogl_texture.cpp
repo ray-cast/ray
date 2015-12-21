@@ -42,7 +42,6 @@ __ImplementSubClass(OGLTexture, GraphicsTexture, "OGLTexture")
 
 OGLTexture::OGLTexture() noexcept
 	: _texture(0)
-	, _textureAddr(0)
 	, _target(GL_NONE)
 {
 }
@@ -65,34 +64,33 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) except
 	if (internalFormat == GL_INVALID_ENUM)
 		return false;
 
-	glGenTextures(1, &_texture);
-	glBindTexture(target, _texture);
+	glCreateTextures(target, 1, &_texture);
 
 	GLsizei w = (GLsizei)textureDesc.getWidth();
 	GLsizei h = (GLsizei)textureDesc.getHeight();
 	GLsizei depth = (GLsizei)textureDesc.getDepth();
 
-	applySamplerWrap(target, textureDesc.getSamplerWrap());
-	applySamplerFilter(target, textureDesc.getSamplerFilter());
-	applyTextureAnis(target, textureDesc.getSamplerAnis());
+	this->applySamplerWrap(textureDesc.getSamplerWrap());
+	this->applySamplerFilter(textureDesc.getSamplerFilter());
+	this->applySamplerAnis(textureDesc.getSamplerAnis());
 
 	GLsizei level = target == GL_TEXTURE_CUBE_MAP ? 6 : 1;
 	level = std::max(level, textureDesc.getMipLevel());
 
 	if (target == GL_TEXTURE_2D)
-		glTexStorage2D(GL_TEXTURE_2D, level, internalFormat, w, h);
+		glTextureStorage2D(_texture, level, internalFormat, w, h);
 	else if (target == GL_TEXTURE_2D_MULTISAMPLE)
-		glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, level, internalFormat, w, h, GL_FALSE);
+		glTextureStorage2DMultisample(_texture, level, internalFormat, w, h, GL_FALSE);
 	else if (target == GL_TEXTURE_2D_ARRAY)
-		glTexStorage3D(GL_TEXTURE_2D_ARRAY, level, internalFormat, w, h, depth);
+		glTextureStorage3D(_texture, level, internalFormat, w, h, depth);
 	else if (target == GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
-		glTexStorage3DMultisample(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, level, internalFormat, w, h, depth, GL_FALSE);
+		glTextureStorage3DMultisample(_texture, level, internalFormat, w, h, depth, GL_FALSE);
 	else if (target == GL_TEXTURE_3D)
-		glTexStorage3D(GL_TEXTURE_3D, level, internalFormat, w, h, depth);
+		glTextureStorage3D(_texture, level, internalFormat, w, h, depth);
 	else if (target == GL_TEXTURE_CUBE_MAP)
-		glTexStorage2D(GL_TEXTURE_CUBE_MAP, level, internalFormat, w, h);
+		glTextureStorage2D(_texture, level, internalFormat, w, h);
 	else if (target == GL_TEXTURE_CUBE_MAP_ARRAY)
-		glTexStorage3D(GL_TEXTURE_CUBE_MAP_ARRAY, level, internalFormat, w, h, depth);
+		glTextureStorage3D(_texture, level, internalFormat, w, h, depth);
 
 	if (stream)
 	{
@@ -110,7 +108,7 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) except
 			{
 				GLsizei mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
 
-				glCompressedTexSubImage2D(GL_TEXTURE_2D, mip, 0, 0, w, h, internalFormat, mipSize, (char*)stream + offset);
+				glCompressedTextureSubImage2D(_texture, mip, 0, 0, w, h, internalFormat, mipSize, (char*)stream + offset);
 
 				w = std::max(w >> 1, 1);
 				h = std::max(h >> 1, 1);
@@ -122,20 +120,20 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) except
 		{
 			GLenum format = OGLTypes::asOGLFormat(textureDesc.getTexFormat());
 			GLenum type = OGLTypes::asOGLType(textureDesc.getTexFormat());
-
+			
 			switch (target)
 			{
 			case GL_TEXTURE_2D:
-				glTexSubImage2D(target, 0, 0, 0, w, h, format, type, stream);
+				glTextureSubImage2D(_texture, 0, 0, 0, w, h, format, type, stream);
 				break;
 			case GL_TEXTURE_2D_ARRAY:
-				glTexSubImage3D(target, 0, 0, 0, 0, w, h, depth, format, type, stream);
+				glTextureSubImage3D(_texture, 0, 0, 0, 0, w, h, depth, format, type, stream);
 				break;
 			case GL_TEXTURE_3D:
-				glTexSubImage3D(target, 0, 0, 0, 0, w, h, depth, format, type, stream);
+				glTextureSubImage3D(_texture, 0, 0, 0, 0, w, h, depth, format, type, stream);
 				break;
 			case GL_TEXTURE_CUBE_MAP:
-				glTexSubImage3D(target, 0, 0, 0, 0, w, h, 6, format, type, stream);
+				glTextureSubImage3D(_texture, 0, 0, 0, 0, w, h, 6, format, type, stream);
 				break;
 			break;
 			default:
@@ -146,15 +144,11 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) except
 	}
 
 	if (textureDesc.isMipmap())
-		glGenerateMipmap(target);
+		glGenerateTextureMipmap(_texture);
 
 	_target = target;
 	_textureDesc = textureDesc;
 
-	_textureAddr = glGetTextureHandleARB(_texture);
-	glMakeTextureHandleResidentARB(_textureAddr);
-
-	glBindTexture(target, GL_NONE);
 	return true;
 }
 
@@ -165,7 +159,6 @@ OGLTexture::close() noexcept
 	{
 		glDeleteTextures(1, &_texture);
 		_texture = GL_NONE;
-		_textureAddr = GL_NONE;
 	}
 }
 
@@ -187,12 +180,6 @@ OGLTexture::getInstanceID() noexcept
 	return _texture;
 }
 
-GLuint64
-OGLTexture::getInstanceAddr() noexcept
-{
-	return _textureAddr;
-}
-
 const GraphicsTextureDesc&
 OGLTexture::getGraphicsTextureDesc() const noexcept
 {
@@ -200,76 +187,76 @@ OGLTexture::getGraphicsTextureDesc() const noexcept
 }
 
 void
-OGLTexture::applySamplerWrap(GLenum target, SamplerWrap wrap) noexcept
+OGLTexture::applySamplerWrap(SamplerWrap wrap) noexcept
 {
 	if (SamplerWrap::Repeat == wrap)
 	{
-		glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(target, GL_TEXTURE_WRAP_R, GL_REPEAT);
+		glTextureParameteri(_texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTextureParameteri(_texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTextureParameteri(_texture, GL_TEXTURE_WRAP_R, GL_REPEAT);
 	}
 	else if (SamplerWrap::ClampToEdge == wrap)
 	{
-		glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(_texture, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	}
 	else if (SamplerWrap::Mirror == wrap)
 	{
-		glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-		glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-		glTexParameteri(target, GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
+		glTextureParameteri(_texture, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		glTextureParameteri(_texture, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		glTextureParameteri(_texture, GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
 	}
 }
 
 void
-OGLTexture::applySamplerFilter(GLenum target, SamplerFilter filter) noexcept
+OGLTexture::applySamplerFilter(SamplerFilter filter) noexcept
 {
 	if (filter == SamplerFilter::Nearest)
 	{
-		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	}
 	else if (filter == SamplerFilter::Linear)
 	{
-		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	}
 	else if (filter == SamplerFilter::NearestMipmapLinear)
 	{
-		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+		glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+		glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 	}
 	else if (filter == SamplerFilter::NearestMipmapNearest)
 	{
-		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+		glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+		glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 	}
 	else if (filter == SamplerFilter::LinearMipmapNearest)
 	{
-		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+		glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+		glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 	}
 	else if (filter == SamplerFilter::LinearMipmapLinear)
 	{
-		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	}
 }
 
 void
-OGLTexture::applyTextureAnis(GLenum target, SamplerAnis anis) noexcept
+OGLTexture::applySamplerAnis(SamplerAnis anis) noexcept
 {
 	if (anis == SamplerAnis::Anis1)
-		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
+		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
 	else if (anis == SamplerAnis::Anis2)
-		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2);
+		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2);
 	else if (anis == SamplerAnis::Anis4)
-		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
+		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
 	else if (anis == SamplerAnis::Anis8)
-		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
+		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
 	else if (anis == SamplerAnis::Anis16)
-		glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
+		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
 }
 
 _NAME_END

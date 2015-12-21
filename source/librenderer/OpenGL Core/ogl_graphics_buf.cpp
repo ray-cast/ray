@@ -78,42 +78,45 @@ OGLGraphicsBuf::open(const GraphicsDataDesc& desc) noexcept
 	else
 		return false;
 
-	glGenBuffers(1, &_buffer);
-	glBindBuffer(_target, _buffer);
-
-	auto usage = desc.getUsage();
-	if (usage & UsageFlags::IMMUTABLE_STORAGE)
+	glCreateBuffers(1, &_buffer);
+	if (_buffer != GL_NONE)
 	{
-		GLbitfield flags = GL_MAP_READ_BIT;
-		if (usage & UsageFlags::MAP_READ_BIT)
-			flags |= GL_MAP_READ_BIT;
-		if (usage & UsageFlags::MAP_WRITE_BIT)
-			flags |= GL_MAP_WRITE_BIT;
-		if (usage & UsageFlags::MAP_PERSISTENT_BIT)
-			flags |= GL_MAP_PERSISTENT_BIT;
-		if (usage & UsageFlags::MAP_COHERENT_BIT)
-			flags |= GL_MAP_COHERENT_BIT;
-		if (usage & UsageFlags::MAP_FLUSH_EXPLICIT_BIT)
-			flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
-		if (usage & UsageFlags::DYNAMIC_STORAGE_BIT)
-			flags |= GL_DYNAMIC_STORAGE_BIT;
-		if (usage & UsageFlags::CLIENT_STORAGE_BIT)
-			flags |= GL_CLIENT_STORAGE_BIT;
+		auto usage = desc.getUsage();
+		if (usage & UsageFlags::IMMUTABLE_STORAGE)
+		{
+			GLbitfield flags = GL_MAP_READ_BIT;
+			if (usage & UsageFlags::MAP_READ_BIT)
+				flags |= GL_MAP_READ_BIT;
+			if (usage & UsageFlags::MAP_WRITE_BIT)
+				flags |= GL_MAP_WRITE_BIT;
+			if (usage & UsageFlags::MAP_PERSISTENT_BIT)
+				flags |= GL_MAP_PERSISTENT_BIT;
+			if (usage & UsageFlags::MAP_COHERENT_BIT)
+				flags |= GL_MAP_COHERENT_BIT;
+			if (usage & UsageFlags::MAP_FLUSH_EXPLICIT_BIT)
+				flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
+			if (usage & UsageFlags::DYNAMIC_STORAGE_BIT)
+				flags |= GL_DYNAMIC_STORAGE_BIT;
+			if (usage & UsageFlags::CLIENT_STORAGE_BIT)
+				flags |= GL_CLIENT_STORAGE_BIT;
 
-		glNamedBufferStorage(_buffer, _dataSize, desc.getStream(), flags);
+			glNamedBufferStorage(_buffer, _dataSize, desc.getStream(), flags);
+		}
+		else
+		{
+			GLenum flags = GL_STATIC_DRAW;
+			if (usage & UsageFlags::MAP_READ_BIT)
+				flags = GL_STATIC_DRAW;
+			if (usage & UsageFlags::MAP_WRITE_BIT)
+				flags = GL_DYNAMIC_READ;
+
+			glNamedBufferData(_buffer, _dataSize, desc.getStream(), flags);
+		}
+
+		return true;
 	}
-	else
-	{
-		GLenum flags = GL_STATIC_DRAW;
-		if (usage & UsageFlags::MAP_READ_BIT)
-			flags = GL_STATIC_DRAW;
-		if (usage & UsageFlags::MAP_WRITE_BIT)
-			flags = GL_DYNAMIC_READ;
 
-		glNamedBufferData(_buffer, _dataSize, desc.getStream(), flags);
-	}
-
-	return true;
+	return false;
 }
 
 bool
@@ -318,7 +321,7 @@ OGLGraphicsBuf::isMapping() const noexcept
 }
 
 GLuint
-OGLGraphicsBuf::getInstanceID() noexcept
+OGLGraphicsBuf::getInstanceID() const noexcept
 {
 	return _buffer;
 }

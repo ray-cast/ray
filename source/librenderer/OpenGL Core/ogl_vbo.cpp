@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_vbo.h"
-#include "ogl_layout.h"
 
 _NAME_BEGIN
 
@@ -75,13 +74,6 @@ bool
 OGLVertexBuffer::is_open() const noexcept
 {
 	return _vertexData.is_open();
-}
-
-void
-OGLVertexBuffer::bind(const OGLGraphicsLayoutPtr& layout) noexcept
-{
-	GLsizei vertexByteSize = layout->getVertexSize();
-	glBindVertexBuffer(0, _vertexData.getInstanceID(), 0, vertexByteSize);
 }
 
 _NAME_END

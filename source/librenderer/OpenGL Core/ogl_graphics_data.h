@@ -61,6 +61,8 @@ public:
 	void* map(GLintptr offset, GLsizeiptr cnt, std::uint32_t access) noexcept;
 	void unmap() noexcept;
 
+	GLuint getInstanceID() const noexcept;
+
 private:
 	OGLGraphicsData(const OGLGraphicsData&) noexcept = delete;
 	OGLGraphicsData& operator=(const OGLGraphicsData&) noexcept = delete;

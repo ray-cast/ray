@@ -356,14 +356,14 @@ OGLDeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 	if (_needUpdateVbo)
 	{
 		if (_vbo)
-			_vbo->bind(_inputLayout);
+			_inputLayout->bindVbo(_vbo);
 		_needUpdateVbo = false;
 	}
 
 	if (_needUpdateIbo)
 	{
 		if (_ibo)
-			_ibo->bind();
+			_inputLayout->bindIbo(_ibo);
 		_needUpdateIbo = false;
 	}
 
@@ -384,9 +384,10 @@ OGLDeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 }
 
 void
-OGLDeviceContext::drawRenderBuffer(const RenderIndirects& renderable) noexcept
+OGLDeviceContext::drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept
 {
-	assert(false);
+	for (std::size_t i = first; i < first + count; i++)
+		this->drawRenderBuffer(renderable[i]);
 }
 
 void
@@ -543,30 +544,10 @@ OGLDeviceContext::blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport
 {
 	assert(src);
 
-	auto srcTarget = src->downcast<OGLRenderTexture>()->getInstanceID();
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, srcTarget);
+	auto readFramebuffer = src->downcast<OGLRenderTexture>()->getInstanceID();
+	auto drawFramebuffer = dest ? dest->downcast<OGLRenderTexture>()->getInstanceID() : 0;
 
-	if (dest)
-	{
-		auto destTarget = dest->downcast<OGLRenderTexture>()->getInstanceID();
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destTarget);
-	}
-	else
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
-	glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-	if (_renderTexture)
-	{
-		_renderTexture->setActive(false);
-		_renderTexture = nullptr;
-	}
-
-	if (_multiRenderTexture)
-	{
-		_multiRenderTexture->setActive(false);
-		_multiRenderTexture = nullptr;
-	}
+	glBlitNamedFramebuffer(readFramebuffer, drawFramebuffer, v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
 GraphicsRenderTexturePtr

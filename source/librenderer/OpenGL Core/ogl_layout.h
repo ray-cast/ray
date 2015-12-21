@@ -63,9 +63,13 @@ public:
 	GLsizei getIndexSize() const noexcept;
 	GLsizei getVertexSize() const noexcept;
 
-	const GraphicsLayoutDesc& getGraphicsLayout() const noexcept;
+	GLuint getInstanceID() const noexcept;
 
 	void bindLayout() noexcept;
+	void bindVbo(OGLVertexBufferPtr vbo) noexcept;
+	void bindIbo(OGLIndexBufferPtr ibo) noexcept;
+
+	const GraphicsLayoutDesc& getGraphicsLayout() const noexcept;
 
 private:
 	OGLGraphicsLayout(const OGLGraphicsLayout&) noexcept = delete;
@@ -76,6 +80,8 @@ private:
 	GLenum _indexType;
 	GLsizei _indexSize;
 	GLsizei _vertexSize;
+	GraphicsDataPtr _vbo;
+	GraphicsDataPtr _ibo;
 	GraphicsLayoutDesc _layout;
 };
 

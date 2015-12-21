@@ -54,8 +54,6 @@ public:
 
 	bool is_open() const noexcept;
 
-	void bind(const OGLGraphicsLayoutPtr& layout) noexcept;
-
 private:
 	OGLVertexBuffer(const OGLVertexBuffer&) noexcept = delete;
 	OGLVertexBuffer& operator=(const OGLVertexBuffer&) noexcept = delete;

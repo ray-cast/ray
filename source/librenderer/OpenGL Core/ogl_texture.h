@@ -55,22 +55,18 @@ public:
 
 	GLenum getTarget() const noexcept;
 	GLuint getInstanceID() noexcept;
-	GLuint64 getInstanceAddr() noexcept;
 
 	const GraphicsTextureDesc& getGraphicsTextureDesc() const noexcept;
 
 private:
-
-	static void applySamplerWrap(GLenum, SamplerWrap wrap) noexcept;
-	static void applySamplerFilter(GLenum target, SamplerFilter filter) noexcept;
-	static void applyTextureAnis(GLenum target, SamplerAnis anis) noexcept;
+	void applySamplerWrap(SamplerWrap wrap) noexcept;
+	void applySamplerFilter(SamplerFilter filter) noexcept;
+	void applySamplerAnis(SamplerAnis anis) noexcept;
 
 private:
 
 	GLenum _target;
 	GLuint _texture;
-	GLuint64 _textureAddr;
-
 	GraphicsTextureDesc _textureDesc;
 };
 

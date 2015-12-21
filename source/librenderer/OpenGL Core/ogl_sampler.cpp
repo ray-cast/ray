@@ -55,7 +55,7 @@ OGLSampler::setup(const GraphicsSamplerDesc& desc) except
 {
 	assert(!_sampler);
 
-	glGenSamplers(1, &_sampler);
+	glCreateSamplers(1, &_sampler);
 
 	auto wrap = desc.getSamplerWrap();
 	if (SamplerWrap::Repeat == wrap)

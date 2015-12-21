@@ -225,13 +225,13 @@ OGLShader::setup() except
 {
 	assert(!_instance);
 
+	if (this->getSource().empty())
+		throw failure(__TEXT("This shader code cannot be null"));
+
 	GLenum shaderType = OGLTypes::asOGLShaderType(this->getType());
 	_instance = glCreateShader(shaderType);
 	if (_instance == GL_NONE)
 		throw failure(__TEXT("glCreateShader fail"));
-
-	if (this->getSource().empty())
-		throw failure(__TEXT("This shader code cannot be null"));
 
 	const GLchar* codes[1] =
 	{

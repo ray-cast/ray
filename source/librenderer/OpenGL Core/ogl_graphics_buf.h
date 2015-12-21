@@ -70,7 +70,7 @@ public:
 	void unmap() noexcept;
 	bool isMapping() const noexcept;
 
-	GLuint getInstanceID() noexcept;
+	GLuint getInstanceID() const noexcept;
 
 	const GraphicsDataDesc& getGraphicsDataDesc() const noexcept;
 

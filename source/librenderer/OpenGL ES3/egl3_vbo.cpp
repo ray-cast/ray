@@ -35,7 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "egl3_vbo.h"
-#include "egl3_layout.h"
 
 _NAME_BEGIN
 
@@ -75,13 +74,6 @@ bool
 EGL3VertexBuffer::is_open() const noexcept
 {
 	return _vertexData.is_open();
-}
-
-void
-EGL3VertexBuffer::bind(const EGL3GraphicsLayoutPtr& layout) noexcept
-{
-	GLsizei vertexByteSize = layout->getVertexSize();
-	glBindVertexBuffer(0, _vertexData.getInstanceID(), 0, vertexByteSize);
 }
 
 _NAME_END

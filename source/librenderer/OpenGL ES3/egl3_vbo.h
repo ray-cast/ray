@@ -54,8 +54,6 @@ public:
 
 	bool is_open() const noexcept;
 
-	void bind(const EGL3GraphicsLayoutPtr& layout) noexcept;
-
 private:
 	EGL3VertexBuffer(const EGL3VertexBuffer&) noexcept = delete;
 	EGL3VertexBuffer& operator=(const EGL3VertexBuffer&) noexcept = delete;

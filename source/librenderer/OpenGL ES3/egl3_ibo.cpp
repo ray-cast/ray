@@ -76,10 +76,4 @@ EGL3IndexBuffer::is_open() const noexcept
 	return _indexData.is_open();
 }
 
-void
-EGL3IndexBuffer::bind() noexcept
-{
-	_indexData.bind();
-}
-
 _NAME_END

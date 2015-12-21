@@ -64,6 +64,8 @@ public:
 	GLsizei getVertexSize() const noexcept;
 
 	void bindLayout() noexcept;
+	void bindVbo(const EGL3VertexBufferPtr& vbo) noexcept;
+	void bindIbo(const EGL3IndexBufferPtr& ibo) noexcept;
 
 	const GraphicsLayoutDesc& getGraphicsLayout() const noexcept;
 
@@ -76,6 +78,8 @@ private:
 	GLenum _indexType;
 	GLsizei _indexSize;
 	GLsizei _vertexSize;
+	GraphicsDataPtr _vbo;
+	GraphicsDataPtr _ibo;
 	GraphicsLayoutDesc _layout;
 };
 

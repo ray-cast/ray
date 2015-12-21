@@ -97,4 +97,10 @@ EGL3GraphicsData::unmap() noexcept
 	_buf->unmap();
 }
 
+GLuint
+EGL3GraphicsData::getInstanceID() const noexcept
+{
+	return _buf->getInstanceID();
+}
+
 _NAME_END

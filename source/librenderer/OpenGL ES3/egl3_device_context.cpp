@@ -396,14 +396,14 @@ EGL3DeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 	if (_needUpdateVbo)
 	{
 		if (_vbo)
-			_vbo->bind(_inputLayout);
+			_inputLayout->bindVbo(_vbo);
 		_needUpdateVbo = false;
 	}
 
 	if (_needUpdateIbo)
 	{
 		if (_ibo)
-			_ibo->bind();
+			_inputLayout->bindIbo(_ibo);
 		_needUpdateIbo = false;
 	}
 
@@ -424,9 +424,10 @@ EGL3DeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 }
 
 void
-EGL3DeviceContext::drawRenderBuffer(const RenderIndirects& renderable) noexcept
+EGL3DeviceContext::drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept
 {
-	assert(false);
+	for (std::size_t i = first; i < first + count; i++)
+		this->drawRenderBuffer(renderable[i]);
 }
 
 void

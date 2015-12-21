@@ -35,6 +35,8 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "egl3_layout.h"
+#include "egl3_vbo.h"
+#include "egl3_ibo.h"
 
 _NAME_BEGIN
 
@@ -178,6 +180,27 @@ void
 EGL3GraphicsLayout::bindLayout() noexcept
 {
 	glBindVertexArray(_vao);
+}
+
+void
+EGL3GraphicsLayout::bindVbo(const EGL3VertexBufferPtr& vbo) noexcept
+{
+	if (_vbo != vbo)
+	{
+		GLsizei vertexByteSize = this->getVertexSize();
+		glBindVertexBuffer(0, vbo->getInstanceID(), 0, _vertexSize);
+		_vbo = vbo;
+	}
+}
+
+void
+EGL3GraphicsLayout::bindIbo(const EGL3IndexBufferPtr& ibo) noexcept
+{
+	if (_ibo != ibo)
+	{
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID());
+		_ibo = ibo;
+	}
 }
 
 _NAME_END

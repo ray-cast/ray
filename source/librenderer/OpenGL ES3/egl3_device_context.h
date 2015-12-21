@@ -100,7 +100,7 @@ public:
 	ShaderObjectPtr getShaderObject() const noexcept;
 
 	void drawRenderBuffer(const RenderIndirect& renderable) noexcept;
-	void drawRenderBuffer(const RenderIndirects& renderable) noexcept;
+	void drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept;
 
 	void present() noexcept;
 

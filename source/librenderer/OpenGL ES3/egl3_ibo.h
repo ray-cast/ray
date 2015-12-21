@@ -54,8 +54,6 @@ public:
 
 	bool is_open() const noexcept;
 
-	void bind() noexcept;
-
 private:
 	EGL3IndexBuffer(const EGL3IndexBuffer&) noexcept = delete;
 	EGL3IndexBuffer& operator=(const EGL3IndexBuffer) noexcept = delete;

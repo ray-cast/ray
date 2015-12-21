@@ -111,8 +111,8 @@ public:
 	RenderBufferPtr createRenderBuffer(const MeshPropertys& mesh) except;
 
 	void setRenderBuffer(RenderBufferPtr buffer) except;
-	void drawRenderBuffer(const RenderIndirect& renderable) except;
-	void drawRenderBuffer(const RenderIndirects& renderable) except;
+	void drawRenderBuffer(const RenderIndirect& renderable) noexcept;
+	void drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept;
 
 	void drawCone(MaterialPassPtr pass) noexcept;
 	void drawSphere(MaterialPassPtr pass) noexcept;

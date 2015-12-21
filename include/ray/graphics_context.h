@@ -97,7 +97,7 @@ public:
 	virtual ShaderObjectPtr getShaderObject() const noexcept = 0;
 
 	virtual void drawRenderBuffer(const RenderIndirect& renderable) noexcept = 0;
-	virtual void drawRenderBuffer(const RenderIndirects& renderable) noexcept = 0;
+	virtual void drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept = 0;
 
 	virtual void present() noexcept = 0;
 

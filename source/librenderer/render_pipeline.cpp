@@ -38,7 +38,6 @@
 #include <ray/render_data_manager.h>
 #include <ray/render_post_process.h>
 #include <ray/render_scene.h>
-#include <ray/graphics_texture.h>
 #include <ray/render_object.h>
 #include <ray/render_buffer.h>
 #include <ray/material.h>
@@ -897,17 +896,17 @@ RenderPipeline::setRenderBuffer(RenderBufferPtr buffer) except
 }
 
 void
-RenderPipeline::drawRenderBuffer(const RenderIndirect& renderable) except
+RenderPipeline::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->drawRenderBuffer(renderable);
 }
 
 void
-RenderPipeline::drawRenderBuffer(const RenderIndirects& renderable) except
+RenderPipeline::drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept
 {
 	assert(_graphicsDevice);
-	_graphicsContext->drawRenderBuffer(renderable);
+	_graphicsContext->drawRenderBuffer(renderable, first, count);
 }
 
 void

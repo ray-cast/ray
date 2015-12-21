@@ -58,8 +58,8 @@ SET(RENDERER_CORE
     ${SOURCE_PATH}/graphics_view.cpp
     ${HEADER_PATH}/graphics_command.h
     ${SOURCE_PATH}/graphics_command.cpp
-    ${HEADER_PATH}/shader.h
-    ${SOURCE_PATH}/shader.cpp
+    ${HEADER_PATH}/graphics_shader.h
+    ${SOURCE_PATH}/graphics_shader.cpp
 )
 SOURCE_GROUP("core" FILES ${RENDERER_CORE})
 

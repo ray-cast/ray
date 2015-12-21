@@ -111,43 +111,44 @@ private:
 	OGLShaderVariant _value;
 };
 
-class OGLShader final : public Shader
+class OGLShader final : public GraphicsShader
 {
+	__DeclareSubClass(OGLShader, GraphicsShader)
 public:
 	OGLShader() noexcept;
 	~OGLShader() noexcept;
 
-	virtual bool setup() except;
-	virtual void close() noexcept;
+	bool setup(const ShaderDesc& shader) except;
+	void close() noexcept;
 
-	virtual std::size_t getInstanceID() const noexcept;
+	GLuint getInstanceID() const noexcept;
+
+private:
+	OGLShader(const OGLShader&) noexcept = delete;
+	OGLShader& operator=(const OGLShader&) noexcept = delete;
 
 private:
 
 	GLuint _instance;
 };
 
-class OGLShaderObject final : public ShaderObject
+class OGLShaderObject final : public GraphicsProgram
 {
+	__DeclareSubClass(OGLShaderObject, GraphicsProgram)
 public:
 	OGLShaderObject() noexcept;
 	~OGLShaderObject() noexcept;
 
-	virtual bool setup() except;
-	virtual void close() noexcept;
+	bool setup(const ShaderObjectDesc& program) except;
+	void close() noexcept;
 
 	void setActive(bool active) noexcept;
 	bool getActive() noexcept;
 
-	virtual void addShader(ShaderPtr shader) noexcept;
-	virtual void removeShader(ShaderPtr shader) noexcept;
+	GLuint getInstanceID() noexcept;
 
-	virtual const Shaders& getShaders() const noexcept;
-
-	virtual std::size_t getInstanceID() noexcept;
-
-	virtual ShaderAttributes&  getActiveAttributes() noexcept;
-	virtual ShaderUniforms&    getActiveUniforms() noexcept;
+	virtual ShaderUniforms& getActiveUniforms() noexcept;
+	virtual ShaderAttributes& getActiveAttributes() noexcept;
 
 private:
 
@@ -161,9 +162,9 @@ private:
 
 	GLuint _program;
 
-	Shaders _shaders;
+	OGLShaders _shaders;
 
-	ShaderUniforms    _activeUniforms;
+	ShaderUniforms _activeUniforms;
 	ShaderAttributes  _activeAttributes;
 };
 

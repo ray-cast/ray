@@ -35,7 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/material_param.h>
-#include <ray/shader.h>
+#include <ray/graphics_shader.h>
 
 _NAME_BEGIN
 

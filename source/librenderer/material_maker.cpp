@@ -38,7 +38,7 @@
 #include <ray/material_manager.h>
 #include <ray/graphics_state.h>
 #include <ray/graphics_device.h>
-#include <ray/shader.h>
+#include <ray/graphics_shader.h>
 #include <ray/render_system.h>
 #include <ray/ioserver.h>
 #include <ray/xmlreader.h>
@@ -57,11 +57,9 @@ MaterialMaker::~MaterialMaker() noexcept
 {
 }
 
-ShaderPtr
+ShaderDesc
 MaterialMaker::instanceShader(MaterialManager& manager, iarchive& reader) except
 {
-	auto shader = manager.getGraphicsDevice()->createShader();
-
 	std::string type;
 	reader.getValue("name", type);
 
@@ -74,9 +72,22 @@ MaterialMaker::instanceShader(MaterialManager& manager, iarchive& reader) except
 	if (value.empty())
 		throw failure(__TEXT("The shader value can not be empty"));
 
+	ShaderType shaderType;
+
+	if (type == "vertex")
+		shaderType = ShaderType::Vertex;
+	else if (type == "fragment")
+		shaderType = ShaderType::Fragment;
+	else if (type == "geometry")
+		shaderType = ShaderType::Geometry;
+	else if (type == "compute")
+		shaderType = ShaderType::Compute;
+	else
+		throw failure(__TEXT("Unknown shader type : ") + type);
+
 	std::string method = _shaderCodes[type];
 	if (method.empty())
-		throw failure(__TEXT("Unknown shader type : ") + type);
+		throw failure(__TEXT("Empty shader code : ") + type);
 
 	std::size_t off = method.find(value.data());
 	if (off == std::string::npos)
@@ -84,8 +95,9 @@ MaterialMaker::instanceShader(MaterialManager& manager, iarchive& reader) except
 
 	method.replace(off, value.size(), "main");
 
-	shader->setType(type);
-	shader->setSource(method);
+	ShaderDesc shader;
+	shader.setType(shaderType);
+	shader.setSource(method);
 
 	return shader;
 }
@@ -120,12 +132,12 @@ MaterialMaker::instancePass(MaterialManager& manager, iarchive& reader) except
 
 	if (reader.setToFirstChild())
 	{
-		ShaderObjectPtr shaderObject = manager.getGraphicsDevice()->createShaderObject();
-
 		RenderDepthState depthState;
 		RenderRasterState rasterState;
 		RenderBlendState blendState;
 		RenderStencilState stencilState;
+
+		ShaderObjectDesc shaderObjectDesc;
 
 		do
 		{
@@ -137,9 +149,9 @@ MaterialMaker::instancePass(MaterialManager& manager, iarchive& reader) except
 			std::string value = reader.getValue<std::string>("value");
 
 			if (name == "vertex")
-				shaderObject->addShader(instanceShader(manager, reader));
+				shaderObjectDesc.addShader(instanceShader(manager, reader));
 			else if (name == "fragment")
-				shaderObject->addShader(instanceShader(manager, reader));
+				shaderObjectDesc.addShader(instanceShader(manager, reader));
 			else if (name == "cullmode")
 				rasterState.cullMode = stringToCullMode(reader.getValue<std::string>("value"));
 			else if (name == "fillmode")
@@ -222,10 +234,10 @@ MaterialMaker::instancePass(MaterialManager& manager, iarchive& reader) except
 		stateDesc.setStencilState(stencilState);
 
 		auto state = manager.getGraphicsDevice()->createGraphicsState(stateDesc);
-		assert(state);
+		auto program = manager.getGraphicsDevice()->createShaderProgram(shaderObjectDesc);
 
 		pass->setGraphicsState(state);
-		pass->setShaderObject(shaderObject);
+		pass->setGraphicsProgram(program);
 	}
 
 	return pass;

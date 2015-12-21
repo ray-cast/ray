@@ -34,9 +34,12 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/shader.h>
+#include <ray/graphics_shader.h>
 
 _NAME_BEGIN
+
+__ImplementSubInterface(GraphicsShader, GraphicsChild, "GraphicsShader")
+__ImplementSubInterface(GraphicsProgram, GraphicsChild, "GraphicsProgram")
 
 ShaderVariant::ShaderVariant() noexcept
 {
@@ -191,83 +194,90 @@ ShaderUniform::assign(const std::vector<float4>& value) noexcept
 	_value->assign(value);
 }
 
-Shader::Shader() noexcept
+ShaderDesc::ShaderDesc() noexcept
 {
 }
 
-Shader::Shader(ShaderType type, const std::string& code) noexcept
-{
-	this->setType(type);
-	this->setSource(code);
-}
-
-Shader::Shader(const std::string& type, const std::string& code) noexcept
+ShaderDesc::ShaderDesc(ShaderType type, const std::string& code) noexcept
 {
 	this->setType(type);
 	this->setSource(code);
 }
 
-Shader::Shader(const std::wstring& type, const std::string& code) noexcept
-{
-	this->setType(type);
-	this->setSource(code);
-}
-
-Shader::~Shader() noexcept
+ShaderDesc::~ShaderDesc() noexcept
 {
 }
 
 void
-Shader::setType(ShaderType type) noexcept
+ShaderDesc::setType(ShaderType type) noexcept
 {
 	_type = type;
 }
 
 void
-Shader::setType(const std::string& type) noexcept
-{
-	if (type == "vertex") { _type = ShaderType::ST_VERTEX; return; }
-	if (type == "fragment") { _type = ShaderType::ST_FRAGMENT; return; }
-	if (type == "geometry") { _type = ShaderType::ST_GEOMETRY; return; }
-
-	_type = ShaderType::ST_VERTEX;
-	assert(false);
-}
-
-void
-Shader::setType(const std::wstring& type) noexcept
-{
-	if (type == L"vertex") { _type = ShaderType::ST_VERTEX; return; }
-	if (type == L"fragment") { _type = ShaderType::ST_FRAGMENT; return; }
-	if (type == L"geometry") { _type = ShaderType::ST_GEOMETRY; return; }
-
-	_type = ShaderType::ST_VERTEX;
-	assert(false);
-}
-
-void
-Shader::setSource(const std::string& source) noexcept
+ShaderDesc::setSource(const std::string& source) noexcept
 {
 	_source = source;
 }
 
 ShaderType
-Shader::getType()const noexcept
+ShaderDesc::getType()const noexcept
 {
 	return _type;
 }
 
 const std::string&
-Shader::getSource() const noexcept
+ShaderDesc::getSource() const noexcept
 {
 	return _source;
 }
 
-ShaderObject::ShaderObject() noexcept
+ShaderObjectDesc::ShaderObjectDesc() noexcept
 {
 }
 
-ShaderObject::~ShaderObject() noexcept
+ShaderObjectDesc::~ShaderObjectDesc() noexcept
+{
+}
+
+void
+ShaderObjectDesc::addShader(const ShaderDesc& shader) noexcept
+{
+	if (shader.getSource().empty())
+		return;
+
+	auto it = std::find_if(_shaders.begin(), _shaders.end(), [&](const ShaderDesc& shaderDesc) { return shaderDesc.getType() == shader.getType();});
+	if (it == _shaders.end())
+		_shaders.push_back(shader);
+}
+
+void
+ShaderObjectDesc::removeShader(ShaderType type) noexcept
+{
+	auto it = std::find_if(_shaders.begin(), _shaders.end(), [&](const ShaderDesc& shaderDesc) { return shaderDesc.getType() == type;});
+	if (it != _shaders.end())
+		_shaders.erase(it);
+}
+
+const ShadersDesc&
+ShaderObjectDesc::getShaders() const noexcept
+{
+	return _shaders;
+}
+
+GraphicsShader::GraphicsShader() noexcept
+{
+}
+
+GraphicsShader::~GraphicsShader() noexcept
+{
+}
+
+GraphicsProgram::GraphicsProgram() noexcept
+{
+}
+
+GraphicsProgram::~GraphicsProgram() noexcept
 {
 }
 

@@ -37,7 +37,7 @@
 #ifndef _H_SHADER_H_
 #define _H_SHADER_H_
 
-#include <ray/render_types.h>
+#include <ray/graphics_child.h>
 
 _NAME_BEGIN
 
@@ -122,58 +122,65 @@ private:
 	ShaderVariant* _value;
 };
 
-class EXPORT Shader
+class EXPORT ShaderDesc final
 {
 public:
-	Shader() noexcept;
-	Shader(ShaderType type, const std::string& code) noexcept;
-	Shader(const std::string& type, const std::string& code) noexcept;
-	Shader(const std::wstring& type, const std::string& code) noexcept;
-	virtual ~Shader() noexcept;
-
-	virtual bool setup() except = 0;
-	virtual void close() noexcept = 0;
+	ShaderDesc() noexcept;
+	ShaderDesc(ShaderType type, const std::string& code) noexcept;
+	virtual ~ShaderDesc() noexcept;
 
 	virtual void setType(ShaderType type) noexcept;
-	virtual void setType(const std::string& type) noexcept;
-	virtual void setType(const std::wstring& type) noexcept;
 	virtual ShaderType  getType() const noexcept;
 
 	virtual void setSource(const std::string& source) noexcept;
 	virtual const std::string& getSource() const noexcept;
 
 private:
-	Shader(const Shader&) noexcept = delete;
-	Shader& operator=(const Shader&) noexcept = delete;
-
-private:
 	ShaderType _type;
 	std::string _source;
 };
 
-class EXPORT ShaderObject
+class EXPORT ShaderObjectDesc final
 {
 public:
-	ShaderObject() noexcept;
-	virtual ~ShaderObject() noexcept;
+	ShaderObjectDesc() noexcept;
+	virtual ~ShaderObjectDesc() noexcept;
 
-	virtual bool setup() except = 0;
-	virtual void close() noexcept = 0;
+	void addShader(const ShaderDesc& shader) noexcept;
+	void removeShader(ShaderType type) noexcept;
 
-	virtual void setActive(bool active) noexcept = 0;
-	virtual bool getActive() noexcept = 0;
+	const ShadersDesc& getShaders() const noexcept;
 
-	virtual void addShader(ShaderPtr shader) noexcept = 0;
-	virtual void removeShader(ShaderPtr shader) noexcept = 0;
+private:
 
-	virtual const Shaders& getShaders() const noexcept = 0;
+	ShadersDesc _shaders;
+};
+
+class EXPORT GraphicsShader : public GraphicsChild
+{
+	__DeclareSubInterface(GraphicsShader, GraphicsChild)
+public:
+	GraphicsShader() noexcept;
+	virtual ~GraphicsShader() noexcept;
+
+private:
+	GraphicsShader(const GraphicsShader&) noexcept = delete;
+	GraphicsShader& operator=(const GraphicsShader&) noexcept = delete;
+};
+
+class EXPORT GraphicsProgram : public GraphicsChild
+{
+	__DeclareSubInterface(GraphicsProgram, GraphicsChild)
+public:
+	GraphicsProgram() noexcept;
+	virtual ~GraphicsProgram() noexcept;
 
 	virtual ShaderUniforms& getActiveUniforms() noexcept = 0;
 	virtual ShaderAttributes& getActiveAttributes() noexcept = 0;
 
 private:
-	ShaderObject(const ShaderObject&) noexcept = delete;
-	ShaderObject& operator=(const ShaderObject&) noexcept = delete;
+	GraphicsProgram(const GraphicsProgram&) noexcept = delete;
+	GraphicsProgram& operator=(const GraphicsProgram&) noexcept = delete;
 };
 
 _NAME_END

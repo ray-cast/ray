@@ -43,7 +43,7 @@
 #include <ray/graphics_sampler.h>
 #include <ray/graphics_texture.h>
 #include <ray/graphics_view.h>
-#include <ray/shader.h>
+#include <ray/graphics_shader.h>
 
 #include <EGL\egl.h>
 #include <GLES3\gl3.h>
@@ -154,6 +154,8 @@ typedef std::shared_ptr<class EGL3GraphicsLayout> EGL3GraphicsLayoutPtr;
 typedef std::shared_ptr<class EGL3DrawIndirectBuffer> EGL3DrawIndirectBufferPtr;
 typedef std::shared_ptr<class EGL3GraphicsState> EGL3GraphicsStatePtr;
 typedef std::shared_ptr<class EGL3Sampler> EGL3SamplerPtr;
+
+typedef std::vector<EGL3ShaderPtr> EGL3Shaders;
 
 class EGL3Types
 {

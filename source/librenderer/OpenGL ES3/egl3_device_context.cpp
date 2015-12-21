@@ -83,12 +83,6 @@ EGL3DeviceContext::close() noexcept
 	if (!_initOpenGL)
 		return;
 
-	if (_renderBuffer)
-	{
-		_renderBuffer.reset();
-		_renderBuffer = nullptr;
-	}
-
 	if (_shaderObject)
 	{
 		_shaderObject.reset();
@@ -723,22 +717,33 @@ EGL3DeviceContext::readRenderTexture(GraphicsRenderTexturePtr target, TextureFor
 }
 
 void
-EGL3DeviceContext::setShaderObject(ShaderObjectPtr shader) noexcept
+EGL3DeviceContext::setGraphicsProgram(GraphicsProgramPtr shader) noexcept
 {
-	if (_shaderObject != shader)
+	if (shader)
+	{
+		auto glshader = shader->downcast<EGL3ShaderObject>();
+		if (_shaderObject != glshader)
+		{
+			if (_shaderObject)
+				_shaderObject->setActive(false);
+
+			_shaderObject = glshader;
+
+			if (_shaderObject)
+				_shaderObject->setActive(true);
+		}
+	}
+	else
 	{
 		if (_shaderObject)
 			_shaderObject->setActive(false);
 
-		_shaderObject = shader;
-
-		if (_shaderObject)
-			_shaderObject->setActive(true);
+		glUseProgram(GL_NONE);
 	}
 }
 
-ShaderObjectPtr
-EGL3DeviceContext::getShaderObject() const noexcept
+GraphicsProgramPtr
+EGL3DeviceContext::getGraphicsProgram() const noexcept
 {
 	return _shaderObject;
 }

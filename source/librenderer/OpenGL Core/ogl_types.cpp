@@ -151,21 +151,21 @@ OGLTypes::asOGLShaderType(ShaderType type) noexcept
 {
 	switch (type)
 	{
-	case ShaderType::ST_VERTEX:
+	case ShaderType::Vertex:
 		return GL_VERTEX_SHADER;
-	case ShaderType::ST_FRAGMENT:
+	case ShaderType::Fragment:
 		return GL_FRAGMENT_SHADER;
-	case ShaderType::ST_COMPUTE:
+	case ShaderType::Compute:
 		return GL_COMPUTE_SHADER;
-	case ShaderType::ST_GEOMETRY:
+	case ShaderType::Geometry:
 		return GL_GEOMETRY_SHADER;
-	case ShaderType::ST_TESS_CONTROL:
+	case ShaderType::TessControl:
 		return GL_TESS_CONTROL_SHADER;
-	case ShaderType::ST_TESS_EVALUATION:
+	case ShaderType::TessEvaluation:
 		return GL_TESS_EVALUATION_SHADER;
-	case ShaderType::ST_CG_VERTEX:
+	case ShaderType::VertexCg:
 		return GL_CG_VERTEX_SHADER_EXT;
-	case ShaderType::ST_CG_FRAGMENT:
+	case ShaderType::FragmentCg:
 		return GL_CG_FRAGMENT_SHADER_EXT;
 	default:
 		assert(false);

@@ -133,16 +133,22 @@ OGLDevice::createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) 
 	return nullptr;
 }
 
-ShaderPtr
-OGLDevice::createShader() noexcept
+GraphicsShaderPtr
+OGLDevice::createShader(const ShaderDesc& desc) noexcept
 {
-	return std::make_shared<OGLShader>();
+	auto shader = std::make_shared<OGLShader>();
+	if (shader->setup(desc))
+		return shader;
+	return nullptr;
 }
 
-ShaderObjectPtr
-OGLDevice::createShaderObject() noexcept
+GraphicsProgramPtr
+OGLDevice::createShaderProgram(const ShaderObjectDesc& desc) noexcept
 {
-	return std::make_shared<OGLShaderObject>();
+	auto program = std::make_shared<OGLShaderObject>();
+	if (program->setup(desc))
+		return program;
+	return nullptr;
 }
 
 _NAME_END

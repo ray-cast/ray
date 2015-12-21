@@ -57,7 +57,7 @@ private:
 	MaterialTechPtr instanceTech(MaterialManager& manager, iarchive& reader) except;
 	void instanceParameter(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
 	MaterialParamPtr instanceBuffer(MaterialPtr& material, iarchive& reader) except;
-	ShaderPtr instanceShader(MaterialManager& manager, iarchive& reader) except;
+	ShaderDesc instanceShader(MaterialManager& manager, iarchive& reader) except;
 
 	static VertexType stringToPrimitive(const std::string& primitive) noexcept;
 	static CullMode stringToCullMode(const std::string& cullmode) noexcept;

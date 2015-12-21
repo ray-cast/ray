@@ -55,8 +55,8 @@ public:
 	virtual GraphicsSamplerPtr createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept;
 	virtual GraphicsRenderTexturePtr createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept;
 	virtual GraphicsMultiRenderTexturePtr createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept;
-	virtual ShaderPtr createShader() noexcept;
-	virtual ShaderObjectPtr createShaderObject() noexcept;
+	virtual GraphicsShaderPtr createShader(const ShaderDesc& desc) noexcept;
+	virtual GraphicsProgramPtr createShaderProgram(const ShaderObjectDesc& desc) noexcept;
 
 private:
 	OGLDevice(const OGLDevice&) noexcept = delete;

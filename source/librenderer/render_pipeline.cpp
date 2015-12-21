@@ -523,7 +523,7 @@ RenderPipeline::setMaterialPass(MaterialPassPtr pass) noexcept
 	_graphicsContext->setGraphicsTexture(bindTextures, 0, textureCount);
 	_graphicsContext->setGraphicsSampler(bindSamplers, 0, textureCount);
 	_graphicsContext->setGraphicsState(pass->getGraphicsState());
-	_graphicsContext->setShaderObject(pass->getShaderObject());
+	_graphicsContext->setGraphicsProgram(pass->getGraphicsProgram());
 }
 
 void

@@ -96,8 +96,8 @@ public:
 	void setGraphicsState(GraphicsStatePtr state) noexcept;
 	GraphicsStatePtr getGraphicsState() const noexcept;
 
-	void setShaderObject(ShaderObjectPtr shader) noexcept;
-	ShaderObjectPtr getShaderObject() const noexcept;
+	void setGraphicsProgram(GraphicsProgramPtr shader) noexcept;
+	GraphicsProgramPtr getGraphicsProgram() const noexcept;
 
 	void drawRenderBuffer(const RenderIndirect& renderable) noexcept;
 	void drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept;
@@ -131,7 +131,7 @@ private:
 	OGLRenderTexturePtr _renderTexture;
 	OGLMultiRenderTexturePtr _multiRenderTexture;
 
-	ShaderObjectPtr _shaderObject;
+	OGLShaderObjectPtr _shaderObject;
 
 	OGLGraphicsStatePtr _state;
 	OGLGraphicsStatePtr _stateDefalut;

@@ -75,8 +75,8 @@ public:
 	void setGraphicsState(GraphicsStatePtr state) noexcept;
 	GraphicsStatePtr getGraphicsState() noexcept;
 
-	void setShaderObject(ShaderObjectPtr shader) noexcept;
-	ShaderObjectPtr getShaderObject() noexcept;
+	void setGraphicsProgram(GraphicsProgramPtr shader) noexcept;
+	GraphicsProgramPtr getGraphicsProgram() noexcept;
 
 private:
 
@@ -87,8 +87,8 @@ private:
 	MaterialParams _textures;
 	MaterialParams _parameters;
 
-	ShaderObjectPtr _shaderObject;
 	GraphicsStatePtr _graphicsState;
+	GraphicsProgramPtr _graphicsShader;
 };
 
 _NAME_END

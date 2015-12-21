@@ -131,11 +131,11 @@ EGL3Types::asEGL3ShaderType(ShaderType type) noexcept
 {
 	switch (type)
 	{
-	case ShaderType::ST_VERTEX:
+	case ShaderType::Vertex:
 		return GL_VERTEX_SHADER;
-	case ShaderType::ST_FRAGMENT:
+	case ShaderType::Fragment:
 		return GL_FRAGMENT_SHADER;
-	case ShaderType::ST_COMPUTE:
+	case ShaderType::Compute:
 		return GL_COMPUTE_SHADER;
 	default:
 		assert(false);
@@ -493,7 +493,7 @@ EGL3Types::asStencilOperation(StencilOperation stencilop) noexcept
 	}
 }
 
-void 
+void
 EGL3Check::checkError() noexcept
 {
 #ifdef _DEBUG

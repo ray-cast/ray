@@ -82,21 +82,59 @@ OGLGraphicsLayout::open(const GraphicsLayoutDesc& layout) noexcept
 	if (_vao != GL_NONE)
 	{
 		GLuint offset = 0;
+		GLuint bindingIndex = 0;
 
 		auto& components = this->getVertexComponents();
 		for (auto& it : components)
 		{
-			GLenum type = OGLTypes::asOGLVertexFormat(it.getVertexFormat());
-			if (type != GL_INVALID_ENUM)
+			GLboolean normalize = it.getNormalize() ? GL_TRUE : GL_FALSE;
+
+			if (it.getVertexDivisor() > 0)
 			{
-				GLboolean normalize = it.getNormalize() ? GL_TRUE : GL_FALSE;
+				if (it.getVertexFormat() == VertexFormat::Float3x3 ||
+					it.getVertexFormat() == VertexFormat::Float4x4)
+				{
+					GLuint count = it.getVertexFormat() == VertexFormat::Float3x3 ? 3 : 4;
 
-				glEnableVertexArrayAttrib(_vao, (GLuint)it.getVertexAttrib());
-				glVertexArrayAttribFormat(_vao, it.getVertexAttrib(), it.getVertexCount(), type, normalize, offset);
-				glVertexArrayAttribBinding(_vao, it.getVertexAttrib(), 0);
+					for (GLuint i = 0; i < count; i++)
+					{
+						glEnableVertexArrayAttrib(_vao, it.getVertexAttrib());
+						glVertexArrayAttribBinding(_vao, it.getVertexAttrib(), bindingIndex);
+						glVertexArrayBindingDivisor(_vao, bindingIndex, it.getVertexDivisor());
+						glVertexArrayAttribFormat(_vao, it.getVertexAttrib(), count, GL_FLOAT, normalize, offset);
+
+						offset += (count * sizeof(float));
+						bindingIndex++;
+					}
+				}
+				else
+				{
+					GLenum type = OGLTypes::asOGLVertexFormat(it.getVertexFormat());
+					if (type != GL_INVALID_ENUM)
+					{
+						glEnableVertexArrayAttrib(_vao, it.getVertexAttrib());
+						glVertexArrayAttribBinding(_vao, it.getVertexAttrib(), bindingIndex);
+						glVertexArrayBindingDivisor(_vao, bindingIndex, it.getVertexDivisor());
+						glVertexArrayAttribFormat(_vao, it.getVertexAttrib(), it.getVertexCount(), type, normalize, offset);
+
+						bindingIndex++;
+					}
+
+					offset += it.getVertexSize();
+				}
 			}
+			else
+			{
+				GLenum type = OGLTypes::asOGLVertexFormat(it.getVertexFormat());
+				if (type != GL_INVALID_ENUM)
+				{
+					glEnableVertexArrayAttrib(_vao, it.getVertexAttrib());
+					glVertexArrayAttribBinding(_vao, it.getVertexAttrib(), bindingIndex);
+					glVertexArrayAttribFormat(_vao, it.getVertexAttrib(), it.getVertexCount(), type, normalize, offset);
+				}
 
-			offset += it.getVertexSize();
+				offset += it.getVertexSize();
+			}
 		}
 
 		return true;
@@ -194,6 +232,19 @@ OGLGraphicsLayout::bindVbo(OGLVertexBufferPtr vbo) noexcept
 	if (_vbo != vbo)
 	{
 		glVertexArrayVertexBuffer(_vao, 0, vbo->getInstanceID(), 0, _vertexSize);
+
+		GLuint bindingIndex = 1;
+
+		auto& components = this->getVertexComponents();
+		for (auto& it : components)
+		{
+			if (it.getVertexDivisor() > 0)
+			{
+				glVertexArrayVertexBuffer(_vao, bindingIndex, vbo->getInstanceID(), 0, it.getVertexSize());
+				bindingIndex++;
+			}
+		}
+
 		_vbo = vbo;
 	}
 }

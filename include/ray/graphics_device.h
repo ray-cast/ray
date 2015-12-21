@@ -43,6 +43,7 @@
 #include <ray/graphics_view.h>
 #include <ray/graphics_sampler.h>
 #include <ray/graphics_state.h>
+#include <ray/graphics_shader.h>
 
 _NAME_BEGIN
 
@@ -61,8 +62,8 @@ public:
 	virtual GraphicsRenderTexturePtr createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept = 0;
 	virtual GraphicsMultiRenderTexturePtr createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept = 0;
 	virtual GraphicsStatePtr createGraphicsState(const GraphicsStateDesc& desc) noexcept = 0;
-	virtual ShaderPtr createShader() noexcept = 0;
-	virtual ShaderObjectPtr createShaderObject() noexcept = 0;
+	virtual GraphicsShaderPtr createShader(const ShaderDesc& desc) noexcept = 0;
+	virtual GraphicsProgramPtr createShaderProgram(const ShaderObjectDesc& desc) noexcept = 0;
 
 private:
 	GraphicsDevice(const GraphicsDevice&) noexcept = delete;

@@ -45,7 +45,7 @@ class EXPORT VertexComponent final
 {
 public:
 	VertexComponent() noexcept;
-	VertexComponent(VertexFormat format, std::uint8_t attrib, bool normalize = false) noexcept;
+	VertexComponent(VertexFormat format, std::uint8_t attrib, bool normalize = false, std::uint8_t divisor = 0) noexcept;
 	~VertexComponent() noexcept;
 
 	void setVertexAttrib(std::uint8_t attrib) noexcept;
@@ -53,6 +53,9 @@ public:
 
 	void setVertexFormat(VertexFormat format) noexcept;
 	VertexFormat getVertexFormat() const noexcept;
+
+	void setVertexDivisor(std::uint8_t divisor) noexcept;
+	std::uint8_t getVertexDivisor() const noexcept;
 
 	void setNormalize(bool normalize) noexcept;
 	bool getNormalize() const noexcept;
@@ -69,6 +72,7 @@ private:
 	std::uint8_t _vertexCount;
 	std::uint8_t _vertexSize;
 	std::uint8_t _attrib;
+	std::uint8_t _divisor;
 	VertexFormat _format;
 };
 

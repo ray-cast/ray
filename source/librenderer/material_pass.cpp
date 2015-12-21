@@ -36,8 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/material_pass.h>
 #include <ray/material.h>
-#include <ray/shader.h>
-#include <ray/render_system.h>
+#include <ray/graphics_shader.h>
 
 _NAME_BEGIN
 
@@ -54,23 +53,20 @@ MaterialPass::~MaterialPass() noexcept
 void 
 MaterialPass::setup(Material& material) except
 {
-	assert(_shaderObject);
+	assert(_graphicsShader);
 
-	if (_shaderObject->setup())
+	auto& uniforms = _graphicsShader->getActiveUniforms();
+	for (auto& uniform : uniforms)
 	{
-		auto& uniforms = _shaderObject->getActiveUniforms();
-		for (auto& uniform : uniforms)
+		auto param = material.getParameter(uniform->getName());
+		if (param)
 		{
-			auto param = material.getParameter(uniform->getName());
-			if (param)
-			{
-				param->addShaderUniform(uniform);
+			param->addShaderUniform(uniform);
 
-				if (uniform->getType() == ShaderVariantType::Texture)
-					_textures.push_back(param);
+			if (uniform->getType() == ShaderVariantType::Texture)
+				_textures.push_back(param);
 
-				_parameters.push_back(param);
-			}
+			_parameters.push_back(param);
 		}
 	}
 }
@@ -78,9 +74,9 @@ MaterialPass::setup(Material& material) except
 void
 MaterialPass::close() noexcept
 {
-	if (_shaderObject)
+	if (_graphicsShader)
 	{
-		auto uniforms = _shaderObject->getActiveUniforms();
+		auto uniforms = _graphicsShader->getActiveUniforms();
 		for (auto& it : uniforms)
 		{
 			auto param = this->getParameter(it->getName());
@@ -90,8 +86,8 @@ MaterialPass::close() noexcept
 			}
 		}
 
-		_shaderObject.reset();
-		_shaderObject = nullptr;
+		_graphicsShader.reset();
+		_graphicsShader = nullptr;
 	}
 
 	if (_graphicsState)
@@ -150,9 +146,9 @@ MaterialPass::getParameter(const std::string& name) const noexcept
 }
 
 void
-MaterialPass::setShaderObject(ShaderObjectPtr shader) noexcept
+MaterialPass::setGraphicsProgram(GraphicsProgramPtr shader) noexcept
 {
-	_shaderObject = shader;
+	_graphicsShader = shader;
 }
 
 void
@@ -161,10 +157,10 @@ MaterialPass::setGraphicsState(GraphicsStatePtr state) noexcept
 	_graphicsState = state;
 }
 
-ShaderObjectPtr
-MaterialPass::getShaderObject() noexcept
+GraphicsProgramPtr
+MaterialPass::getGraphicsProgram() noexcept
 {
-	return _shaderObject;
+	return _graphicsShader;
 }
 
 GraphicsStatePtr

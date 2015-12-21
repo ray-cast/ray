@@ -67,23 +67,26 @@ typedef std::shared_ptr<class GraphicsTexture> GraphicsTexturePtr;
 typedef std::shared_ptr<class GraphicsSampler> GraphicsSamplerPtr;
 typedef std::shared_ptr<class GraphicsRenderTexture> GraphicsRenderTexturePtr;
 typedef std::shared_ptr<class GraphicsMultiRenderTexture> GraphicsMultiRenderTexturePtr;
+typedef std::shared_ptr<class GraphicsShader> GraphicsShaderPtr;
+typedef std::shared_ptr<class GraphicsProgram> GraphicsProgramPtr;
 
-typedef std::shared_ptr<class Shader> ShaderPtr;
+typedef std::shared_ptr<class ShaderDesc> ShaderDescPtr;
 typedef std::shared_ptr<class ShaderVariant> ShaderVariantPtr;
 typedef std::shared_ptr<class ShaderParameter> ShaderParameterPtr;
 typedef std::shared_ptr<class ShaderAttribute> ShaderAttributePtr;
 typedef std::shared_ptr<class ShaderUniform> ShaderUniformPtr;
 typedef std::shared_ptr<class ShaderSubroutine> ShaderSubroutinePtr;
-typedef std::shared_ptr<class ShaderObject> ShaderObjectPtr;
+typedef std::shared_ptr<class ShaderObjectDesc> ShaderObjectDescPtr;
 
-typedef std::vector<ShaderPtr> Shaders;
+typedef std::shared_ptr<class RenderIndirect> RenderIndirectPtr;
+
+typedef std::vector<ShaderDesc> ShadersDesc;
 typedef std::vector<ShaderAttributePtr> ShaderAttributes;
 typedef std::vector<ShaderUniformPtr> ShaderUniforms;
 typedef std::vector<ShaderSubroutinePtr> ShaderSubroutines;
 typedef std::vector<ShaderVariantPtr> ShaderVariants;
 typedef std::vector<GraphicsRenderTexturePtr> GraphicsRenderTextures;
 typedef std::vector<class VertexComponent> VertexComponents;
-typedef std::shared_ptr<class RenderIndirect> RenderIndirectPtr;
 typedef std::vector<RenderIndirectPtr> RenderIndirects;
 
 typedef void* WindHandle;
@@ -361,7 +364,9 @@ enum class VertexFormat
 	Float,
 	Float2,
 	Float3,
-	Float4
+	Float4,
+	Float3x3,
+	Float4x4,
 };
 
 enum class IndexType
@@ -373,14 +378,14 @@ enum class IndexType
 
 enum class ShaderType
 {
-	ST_VERTEX,
-	ST_FRAGMENT,
-	ST_GEOMETRY,
-	ST_COMPUTE,
-	ST_TESS_EVALUATION,
-	ST_TESS_CONTROL,
-	ST_CG_VERTEX,
-	ST_CG_FRAGMENT,
+	Vertex,
+	Fragment,
+	Geometry,
+	Compute,
+	TessEvaluation,
+	TessControl,
+	VertexCg,
+	FragmentCg,
 };
 
 enum class ShaderVariantType

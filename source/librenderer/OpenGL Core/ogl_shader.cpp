@@ -38,6 +38,9 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(OGLShader, GraphicsShader, "OGLShader")
+__ImplementSubClass(OGLShaderObject, GraphicsProgram, "OGLShaderObject")
+
 OGLShaderVariant::OGLShaderVariant() noexcept
 	: _bindingProgram(0)
 	, _location(0)
@@ -159,13 +162,13 @@ OGLShaderAttribute::~OGLShaderAttribute() noexcept
 {
 }
 
-void 
+void
 OGLShaderAttribute::setLocation(GLint location) noexcept
 {
 	_location = location;
 }
 
-GLint 
+GLint
 OGLShaderAttribute::getLocation() const noexcept
 {
 	return _location;
@@ -221,21 +224,21 @@ OGLShader::~OGLShader() noexcept
 }
 
 bool
-OGLShader::setup() except
+OGLShader::setup(const ShaderDesc& shader) except
 {
 	assert(!_instance);
 
-	if (this->getSource().empty())
+	if (shader.getSource().empty())
 		throw failure(__TEXT("This shader code cannot be null"));
 
-	GLenum shaderType = OGLTypes::asOGLShaderType(this->getType());
+	GLenum shaderType = OGLTypes::asOGLShaderType(shader.getType());
 	_instance = glCreateShader(shaderType);
 	if (_instance == GL_NONE)
 		throw failure(__TEXT("glCreateShader fail"));
 
 	const GLchar* codes[1] =
 	{
-		this->getSource().c_str()
+		shader.getSource().c_str()
 	};
 
 	glShaderSource(_instance, 1, codes, 0);
@@ -267,7 +270,7 @@ OGLShader::close() noexcept
 	}
 }
 
-std::size_t
+GLuint
 OGLShader::getInstanceID() const noexcept
 {
 	return _instance;
@@ -285,21 +288,22 @@ OGLShaderObject::~OGLShaderObject() noexcept
 }
 
 bool
-OGLShaderObject::setup() except
+OGLShaderObject::setup(const ShaderObjectDesc& program) except
 {
 	assert(!_program);
 
+	if (program.getShaders().empty())
+		return false;
+
 	_program = glCreateProgram();
 
-	for (auto shader : _shaders)
+	for (auto shader : program.getShaders())
 	{
-		auto oglShader = std::dynamic_pointer_cast<OGLShader>(shader);
-		if (oglShader)
+		auto glshader = std::make_shared<OGLShader>();
+		if (glshader)
 		{
-			if (!oglShader->getInstanceID())
-				oglShader->setup();
-
-			glAttachShader(_program, oglShader->getInstanceID());
+			if (glshader->setup(shader))
+				glAttachShader(_program, glshader->getInstanceID());
 		}
 	}
 
@@ -356,29 +360,7 @@ OGLShaderObject::getActive() noexcept
 	return _isActive;
 }
 
-void
-OGLShaderObject::addShader(ShaderPtr shader) noexcept
-{
-	_shaders.push_back(shader);
-}
-
-void
-OGLShaderObject::removeShader(ShaderPtr shader) noexcept
-{
-	auto it = std::find(_shaders.begin(), _shaders.end(), shader);
-	if (it != _shaders.end())
-	{
-		_shaders.erase(it);
-	}
-}
-
-const Shaders&
-OGLShaderObject::getShaders() const noexcept
-{
-	return _shaders;
-}
-
-std::size_t
+GLuint
 OGLShaderObject::getInstanceID() noexcept
 {
 	return _program;

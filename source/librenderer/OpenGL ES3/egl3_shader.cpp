@@ -38,6 +38,9 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(EGL3Shader, GraphicsShader, "EGL3Shader")
+__ImplementSubClass(EGL3ShaderObject, GraphicsProgram, "EGL3ShaderObject")
+
 EGL3ShaderVariant::EGL3ShaderVariant() noexcept
 	: _bindingProgram(0)
 	, _location(0)
@@ -206,21 +209,21 @@ EGL3Shader::~EGL3Shader() noexcept
 }
 
 bool
-EGL3Shader::setup() except
+EGL3Shader::setup(const ShaderDesc& desc) except
 {
 	assert(!_instance);
 
-	GLenum shaderType = EGL3Types::asEGL3ShaderType(this->getType());
+	GLenum shaderType = EGL3Types::asEGL3ShaderType(desc.getType());
 	_instance = glCreateShader(shaderType);
 	if (_instance == GL_NONE)
 		throw failure(__TEXT("glCreateShader fail"));
 
-	if (this->getSource().empty())
+	if (desc.getSource().empty())
 		throw failure(__TEXT("This shader code cannot be null"));
 
 	const GLchar* codes[1] =
 	{
-		this->getSource().c_str()
+		desc.getSource().c_str()
 	};
 
 	glShaderSource(_instance, 1, codes, 0);
@@ -253,7 +256,7 @@ EGL3Shader::close() noexcept
 	}
 }
 
-std::size_t
+GLuint
 EGL3Shader::getInstanceID() const noexcept
 {
 	return _instance;
@@ -271,21 +274,19 @@ EGL3ShaderObject::~EGL3ShaderObject() noexcept
 }
 
 bool
-EGL3ShaderObject::setup() except
+EGL3ShaderObject::setup(const ShaderObjectDesc& programDesc) except
 {
 	assert(!_program);
 
 	_program = glCreateProgram();
 
-	for (auto& shader : _shaders)
+	for (auto& shader : programDesc.getShaders())
 	{
-		auto glshader = std::dynamic_pointer_cast<EGL3Shader>(shader);
-		if (glshader)
+		auto glshader = std::make_shared<EGL3Shader>();
+		if (glshader->setup(shader))
 		{
-			if (!glshader->getInstanceID())
-				glshader->setup();
-
 			glAttachShader(_program, glshader->getInstanceID());
+			_shaders.push_back(glshader);
 		}
 	}
 
@@ -346,28 +347,8 @@ EGL3ShaderObject::getActive() noexcept
 	return _isActive;
 }
 
-void
-EGL3ShaderObject::addShader(ShaderPtr shader) noexcept
-{
-	_shaders.push_back(shader);
-}
-
-void
-EGL3ShaderObject::removeShader(ShaderPtr shader) noexcept
-{
-	auto it = std::find(_shaders.begin(), _shaders.end(), shader);
-	if (it != _shaders.end())
-		_shaders.erase(it);
-}
-
-const Shaders&
-EGL3ShaderObject::getShaders() const noexcept
-{
-	return _shaders;
-}
-
-std::size_t
-EGL3ShaderObject::getInstanceID() noexcept
+GLuint
+EGL3ShaderObject::getInstanceID() const noexcept
 {
 	return _program;
 }

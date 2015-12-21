@@ -46,13 +46,15 @@ VertexComponent::VertexComponent() noexcept
 	, _attrib(0)
 	, _vertexCount(0)
 	, _vertexSize(0)
+	, _divisor(0)
 {
 }
 
-VertexComponent::VertexComponent(VertexFormat format, std::uint8_t attrib, bool normalize) noexcept
+VertexComponent::VertexComponent(VertexFormat format, std::uint8_t attrib, bool normalize, std::uint8_t divisor) noexcept
 	: _format(format)
 	, _attrib(attrib)
 	, _normalize(normalize)
+	, _divisor(divisor)
 {
 	_vertexCount = getVertexCount(format);
 	_vertexSize = getVertexSize(format);
@@ -96,6 +98,18 @@ VertexFormat
 VertexComponent::getVertexFormat() const noexcept
 {
 	return _format;
+}
+
+void 
+VertexComponent::setVertexDivisor(std::uint8_t divisor) noexcept
+{
+	_divisor = divisor;
+}
+
+std::uint8_t 
+VertexComponent::getVertexDivisor() const noexcept
+{
+	return _divisor;
 }
 
 bool
@@ -147,6 +161,14 @@ VertexComponent::getVertexCount(VertexFormat format) noexcept
 	{
 		return 4;
 	}
+	else if (format == VertexFormat::Float3x3)
+	{
+		return 12;
+	}
+	else if (format == VertexFormat::Float4x4)
+	{
+		return 16;
+	}
 	else
 	{
 		assert(false);
@@ -195,6 +217,10 @@ VertexComponent::getVertexSize(VertexFormat format) noexcept
 	case VertexFormat::Int4:
 	case VertexFormat::Uint4:
 		return 16;
+	case VertexFormat::Float3x3:
+		return 48;
+	case VertexFormat::Float4x4:
+		return 56;
 	default:
 		assert(false);
 	}

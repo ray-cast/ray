@@ -679,22 +679,33 @@ OGLDeviceContext::readRenderTexture(GraphicsRenderTexturePtr target, TextureForm
 }
 
 void
-OGLDeviceContext::setShaderObject(ShaderObjectPtr shader) noexcept
+OGLDeviceContext::setGraphicsProgram(GraphicsProgramPtr shader) noexcept
 {
-	if (_shaderObject != shader)
+	if (shader)
+	{
+		auto glshader = shader->downcast<OGLShaderObject>();
+		if (_shaderObject != glshader)
+		{
+			if (_shaderObject)
+				_shaderObject->setActive(false);
+
+			_shaderObject = glshader;
+
+			if (_shaderObject)
+				_shaderObject->setActive(true);
+		}
+	}
+	else
 	{
 		if (_shaderObject)
 			_shaderObject->setActive(false);
 
-		_shaderObject = shader;
-
-		if (_shaderObject)
-			_shaderObject->setActive(true);
+		glUseProgram(GL_NONE);
 	}
 }
 
-ShaderObjectPtr
-OGLDeviceContext::getShaderObject() const noexcept
+GraphicsProgramPtr
+OGLDeviceContext::getGraphicsProgram() const noexcept
 {
 	return _shaderObject;
 }

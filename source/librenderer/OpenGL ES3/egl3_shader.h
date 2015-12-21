@@ -99,39 +99,36 @@ private:
 	EGL3ShaderVariant _value;
 };
 
-class EGL3Shader final : public Shader
+class EGL3Shader final : public GraphicsShader
 {
+	__DeclareSubClass(EGL3Shader, GraphicsShader)
 public:
 	EGL3Shader() noexcept;
 	~EGL3Shader() noexcept;
 
-	virtual bool setup() except;
-	virtual void close() noexcept;
+	bool setup(const ShaderDesc& desc) except;
+	void close() noexcept;
 
-	virtual std::size_t getInstanceID() const noexcept;
+	GLuint getInstanceID() const noexcept;
 
 private:
 	GLuint _instance;
 };
 
-class EGL3ShaderObject final : public ShaderObject
+class EGL3ShaderObject final : public GraphicsProgram
 {
+	__DeclareSubClass(EGL3ShaderObject, GraphicsProgram)
 public:
 	EGL3ShaderObject() noexcept;
 	~EGL3ShaderObject() noexcept;
 
-	bool setup() except;
+	bool setup(const ShaderObjectDesc& desc) except;
 	void close() noexcept;
 
 	void setActive(bool active) noexcept;
 	bool getActive() noexcept;
 
-	void addShader(ShaderPtr shader) noexcept;
-	void removeShader(ShaderPtr shader) noexcept;
-
-	const Shaders& getShaders() const noexcept;
-
-	std::size_t getInstanceID() noexcept;
+	GLuint getInstanceID() const noexcept;
 
 	ShaderUniforms& getActiveUniforms() noexcept;
 	ShaderAttributes& getActiveAttributes() noexcept;
@@ -147,7 +144,7 @@ private:
 
 	GLuint _program;
 
-	Shaders _shaders;
+	EGL3Shaders _shaders;
 
 	ShaderUniforms    _activeUniforms;
 	ShaderAttributes  _activeAttributes;

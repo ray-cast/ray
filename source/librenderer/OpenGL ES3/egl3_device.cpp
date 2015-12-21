@@ -136,16 +136,22 @@ EGL3Device::createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc)
 	return nullptr;
 }
 
-ShaderPtr
-EGL3Device::createShader() noexcept
+GraphicsShaderPtr
+EGL3Device::createShader(const ShaderDesc& desc) noexcept
 {
-	return std::make_shared<EGL3Shader>();
+	auto shader = std::make_shared<EGL3Shader>();
+	if (shader->setup(desc))
+		return shader;
+	return nullptr;
 }
 
-ShaderObjectPtr
-EGL3Device::createShaderObject() noexcept
+GraphicsProgramPtr
+EGL3Device::createShaderProgram(const ShaderObjectDesc& desc) noexcept
 {
-	return std::make_shared<EGL3ShaderObject>();
+	auto program = std::make_shared<EGL3ShaderObject>();
+	if (program->setup(desc))
+		return program;
+	return nullptr;
 }
 
 _NAME_END

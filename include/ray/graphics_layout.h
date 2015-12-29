@@ -45,21 +45,24 @@ class EXPORT VertexComponent final
 {
 public:
 	VertexComponent() noexcept;
-	VertexComponent(VertexFormat format, std::uint8_t attrib, bool normalize = false, std::uint8_t divisor = 0) noexcept;
+	VertexComponent(const std::string& semantic, std::uint8_t semanticIndex, VertexFormat format, std::uint8_t slot = 0, std::uint8_t divisor = 0) noexcept;
 	~VertexComponent() noexcept;
 
-	void setVertexAttrib(std::uint8_t attrib) noexcept;
-	std::uint8_t getVertexAttrib() const noexcept;
+	void setSemantic(const std::string& semantic) noexcept;
+	const std::string& getSemantic() const noexcept;
+
+	void setSemanticIndex(std::uint8_t index) noexcept;
+	std::uint8_t getSemanticIndex() const noexcept;
 
 	void setVertexFormat(VertexFormat format) noexcept;
 	VertexFormat getVertexFormat() const noexcept;
 
+	void setVertexSlot(std::uint8_t slot) noexcept;
+	std::uint8_t getVertexSlot() const noexcept;
+
 	void setVertexDivisor(std::uint8_t divisor) noexcept;
 	std::uint8_t getVertexDivisor() const noexcept;
-
-	void setNormalize(bool normalize) noexcept;
-	bool getNormalize() const noexcept;
-
+	
 	std::uint8_t getVertexCount() const noexcept;
 	std::uint8_t getVertexSize() const noexcept;
 
@@ -67,11 +70,11 @@ public:
 	static std::uint8_t getVertexSize(VertexFormat) noexcept;
 
 private:
-	bool _normalize;
-
-	std::uint8_t _vertexCount;
-	std::uint8_t _vertexSize;
-	std::uint8_t _attrib;
+	std::string _semantic;
+	std::uint8_t _index;
+	std::uint8_t _slot;
+	std::uint8_t _count;
+	std::uint8_t _size;
 	std::uint8_t _divisor;
 	VertexFormat _format;
 };

@@ -58,7 +58,7 @@ SSR::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcep
 	//_clipInfo->assign(pipeline.camera->getClipConstant());
 
 	pipeline.setRenderTexture(source);
-	pipeline.drawSceneQuad(_ssrPass);
+	pipeline.drawScreenQuad(_ssrPass);
 }
 
 _NAME_END

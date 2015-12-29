@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<main>
-    <attribute width="1376"/>
-    <attribute height="768"/>
-    <attribute title="Cube World"/>
-    <attribute scene="dlc:cube/scenes/scene.map"/>
-</main>

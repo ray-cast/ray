@@ -80,5 +80,3 @@ IF(BUILD_SOUND)
     SET_TARGET_ATTRIBUTE(OpenAL32 "contrib")
     SET_TARGET_ATTRIBUTE(common "contrib")
 ENDIF()
-
-SET_TARGET_ATTRIBUTE(HLSLcc "tools")

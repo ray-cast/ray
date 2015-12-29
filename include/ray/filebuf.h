@@ -61,7 +61,7 @@ public:
     streamoff seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
     streamoff tellg() noexcept;
 
-    streamsize size() noexcept;
+    streamsize size() const noexcept;
 
     int flush() noexcept;
 private:

@@ -74,7 +74,9 @@ void
 RenderPipeline::open(WindHandle window, std::uint32_t w, std::uint32_t h) except
 {
 	_graphicsDevice = std::make_shared<RenderDevice>();
-	_graphicsContext = _graphicsDevice->createGraphicsContext(window);
+	_graphicsDevice->open(window);
+
+	_graphicsContext = _graphicsDevice->getGraphicsContext();
 
 	_materialManager = std::make_shared<MaterialManager>();
 	_materialManager->open(_graphicsDevice);
@@ -101,12 +103,12 @@ RenderPipeline::open(WindHandle window, std::uint32_t w, std::uint32_t h) except
 	MeshProperty mesh;
 	mesh.makePlane(2, 2, 1, 1);
 
-	_renderSceneQuad = this->createRenderBuffer(mesh);
-	_renderSceneQuadIndirect.startVertice = 0;
-	_renderSceneQuadIndirect.numVertices = mesh.getNumVertices();
-	_renderSceneQuadIndirect.startIndice = 0;
-	_renderSceneQuadIndirect.numIndices = mesh.getNumIndices();
-	_renderSceneQuadIndirect.numInstances = 0;
+	_renderScreenQuad = this->createRenderBuffer(mesh);
+	_renderScreenQuadIndirect.startVertice = 0;
+	_renderScreenQuadIndirect.numVertices = mesh.getNumVertices();
+	_renderScreenQuadIndirect.startIndice = 0;
+	_renderScreenQuadIndirect.numIndices = mesh.getNumIndices();
+	_renderScreenQuadIndirect.numInstances = 0;
 
 	mesh.makeSphere(1, 16, 12);
 
@@ -158,11 +160,25 @@ RenderPipeline::close() noexcept
 	_materialCameraPosition.reset();
 	_materialCameraDirection.reset();
 
-	_renderSceneQuad.reset();
+	_renderScreenQuad.reset();
 	_renderSphere.reset();
 	_renderCone.reset();
 	_dataManager.reset();
 	_graphicsDevice.reset();
+}
+
+void 
+RenderPipeline::setGraphicsContext(GraphicsContextPtr context) noexcept
+{
+	assert(_graphicsDevice);
+	_graphicsDevice->setGraphicsContext(context);
+}
+
+GraphicsContextPtr 
+RenderPipeline::getGraphicsContext() const noexcept
+{
+	assert(_graphicsDevice);
+	return _graphicsDevice->getGraphicsContext();
 }
 
 void
@@ -192,29 +208,29 @@ RenderPipeline::getRenderDataManagerPtr() const noexcept
 void
 RenderPipeline::setWireframeMode(bool enable) noexcept
 {
-	assert(_graphicsContext);
-	_graphicsContext->setWireframeMode(enable);
+	assert(_graphicsDevice);
+	_graphicsDevice->setWireframeMode(enable);
 }
 
 bool
 RenderPipeline::getWireframeMode() const noexcept
 {
-	assert(_graphicsContext);
-	return _graphicsContext->getWireframeMode();
+	assert(_graphicsDevice);
+	return _graphicsDevice->getWireframeMode();
 }
 
 void
 RenderPipeline::setSwapInterval(SwapInterval interval) noexcept
 {
-	assert(_graphicsContext);
-	_graphicsContext->setSwapInterval(interval);
+	assert(_graphicsDevice);
+	_graphicsDevice->setSwapInterval(interval);
 }
 
 SwapInterval
 RenderPipeline::getSwapInterval() const noexcept
 {
-	assert(_graphicsContext);
-	return _graphicsContext->getSwapInterval();
+	assert(_graphicsDevice);
+	return _graphicsDevice->getSwapInterval();
 }
 
 void
@@ -309,15 +325,15 @@ RenderPipeline::getModelMatrix() const noexcept
 void
 RenderPipeline::setViewport(const Viewport& view) noexcept
 {
-	assert(_graphicsContext);
-	_graphicsContext->setViewport(view);
+	assert(_graphicsDevice);
+	_graphicsDevice->setViewport(view);
 }
 
 const Viewport&
 RenderPipeline::getViewport() const noexcept
 {
-	assert(_graphicsContext);
-	return _graphicsContext->getViewport();
+	assert(_graphicsDevice);
+	return _graphicsDevice->getViewport();
 }
 
 void
@@ -349,7 +365,7 @@ RenderPipeline::createRenderTexture(const GraphicsRenderTextureDesc& desc) noexc
 	return _graphicsDevice->createRenderTexture(desc);
 }
 
-GraphicsRenderTexturePtr 
+GraphicsRenderTexturePtr
 RenderPipeline::createRenderTexture(std::uint32_t w, std::uint32_t h, TextureDim dim, TextureFormat format) noexcept
 {
 	assert(_graphicsDevice);
@@ -374,57 +390,57 @@ RenderPipeline::createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& d
 void
 RenderPipeline::setRenderTexture(GraphicsRenderTexturePtr target) noexcept
 {
-	assert(_graphicsContext);
-	_graphicsContext->setRenderTexture(target);
+	assert(_graphicsDevice);
+	_graphicsDevice->setRenderTexture(target);
 }
 
 void
 RenderPipeline::setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept
 {
-	assert(_graphicsContext);
-	_graphicsContext->setMultiRenderTexture(target);
+	assert(_graphicsDevice);
+	_graphicsDevice->setMultiRenderTexture(target);
 }
 
 void
 RenderPipeline::setRenderTextureLayer(GraphicsRenderTexturePtr target, int layer) noexcept
 {
-	assert(_graphicsContext);
-	_graphicsContext->setRenderTextureLayer(target, layer);
+	assert(_graphicsDevice);
+	_graphicsDevice->setRenderTextureLayer(target, layer);
 }
 
 void
 RenderPipeline::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
 {
-	assert(_graphicsContext);
-	_graphicsContext->clearRenderTexture(flags, color, depth, stencil);
+	assert(_graphicsDevice);
+	_graphicsDevice->clearRenderTexture(flags, color, depth, stencil);
 }
 
 void
 RenderPipeline::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
-	assert(_graphicsContext);
-	_graphicsContext->clearRenderTexture(flags, color, depth, stencil, i);
+	assert(_graphicsDevice);
+	_graphicsDevice->clearRenderTexture(flags, color, depth, stencil, i);
 }
 
 void
 RenderPipeline::discradRenderTexture() noexcept
 {
-	assert(_graphicsContext);
-	_graphicsContext->discardRenderTexture();
+	assert(_graphicsDevice);
+	_graphicsDevice->discardRenderTexture();
 }
 
 void
 RenderPipeline::readRenderTexture(GraphicsRenderTexturePtr texture, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
-	assert(_graphicsContext);
-	_graphicsContext->readRenderTexture(texture, pfd, w, h, data);
+	assert(_graphicsDevice);
+	_graphicsDevice->readRenderTexture(texture, pfd, w, h, data);
 }
 
 void
 RenderPipeline::blitRenderTexture(GraphicsRenderTexturePtr srcTarget, const Viewport& src, GraphicsRenderTexturePtr destTarget, const Viewport& dest) noexcept
 {
-	assert(_graphicsContext);
-	_graphicsContext->blitRenderTexture(srcTarget, src, destTarget, dest);
+	assert(_graphicsDevice);
+	_graphicsDevice->blitRenderTexture(srcTarget, src, destTarget, dest);
 }
 
 GraphicsTexturePtr
@@ -434,7 +450,7 @@ RenderPipeline::createTexture(const GraphicsTextureDesc& desc) noexcept
 	return _graphicsDevice->createGraphicsTexture(desc);
 }
 
-GraphicsTexturePtr 
+GraphicsTexturePtr
 RenderPipeline::createTexture(std::uint32_t w, std::uint32_t h, TextureDim dim, TextureFormat format) noexcept
 {
 	assert(_graphicsDevice);
@@ -503,6 +519,8 @@ RenderPipeline::setMaterialPass(MaterialPassPtr pass) noexcept
 {
 	_materialManager->setMaterialPass(pass);
 
+	std::size_t bindCount = 0;
+
 	GraphicsTexturePtr bindTextures[MAX_TEXTURE_UNIT];
 	GraphicsSamplerPtr bindSamplers[MAX_SAMPLER_UNIT];
 
@@ -516,14 +534,23 @@ RenderPipeline::setMaterialPass(MaterialPassPtr pass) noexcept
 		for (auto& it : uniforms)
 			it->assign((int)i);
 
-		bindTextures[i] = textures[i]->getTexture();
-		bindSamplers[i] = 0;
+		if (textures[i]->getTexture())
+		{
+			bindTextures[i] = textures[i]->getTexture();
+			bindSamplers[i] = textures[i]->getSampler();
+
+			bindCount++;
+		}
 	}
 
-	_graphicsContext->setGraphicsTexture(bindTextures, 0, textureCount);
-	_graphicsContext->setGraphicsSampler(bindSamplers, 0, textureCount);
-	_graphicsContext->setGraphicsState(pass->getGraphicsState());
-	_graphicsContext->setGraphicsProgram(pass->getGraphicsProgram());
+	if (bindCount > 0)
+	{
+		_graphicsDevice->setGraphicsTexture(bindTextures, 0, bindCount);
+		_graphicsDevice->setGraphicsSampler(bindSamplers, 0, bindCount);
+	}
+
+	_graphicsDevice->setGraphicsState(pass->getGraphicsState());
+	_graphicsDevice->setGraphicsProgram(pass->getGraphicsProgram());
 }
 
 void
@@ -565,35 +592,35 @@ RenderPipeline::createRenderBuffer(const MeshProperty& mesh) except
 	if (!vertices.empty())
 	{
 		if (vertices.size() == numVertex)
-			components.push_back(VertexComponent(VertexFormat::Float3, VertexAttrib::Position));
+			components.push_back(VertexComponent("POSITION", 0, VertexFormat::Float3));
 	}
 
 	auto& colors = mesh.getColorArray();
 	if (!colors.empty())
 	{
 		if (colors.size() == numVertex)
-			components.push_back(VertexComponent(VertexFormat::Float4, VertexAttrib::Diffuse));
+			components.push_back(VertexComponent("COLOR", 0, VertexFormat::Float4));
 	}
 
 	auto& normals = mesh.getNormalArray();
 	if (!normals.empty())
 	{
 		if (normals.size() == numVertex)
-			components.push_back(VertexComponent(VertexFormat::Float3, VertexAttrib::Normal));
+			components.push_back(VertexComponent("NORMAL", 0, VertexFormat::Float3));
 	}
 
 	auto& texcoords = mesh.getTexcoordArray();
 	if (!texcoords.empty())
 	{
 		if (texcoords.size() == numVertex)
-			components.push_back(VertexComponent(VertexFormat::Float2, VertexAttrib::Texcoord));
+			components.push_back(VertexComponent("TEXCOORD", 0, VertexFormat::Float2));
 	}
 
 	auto& tangent = mesh.getTangentArray();
 	if (!tangent.empty())
 	{
 		if (tangent.size() == numVertex)
-			components.push_back(VertexComponent(VertexFormat::Float3, VertexAttrib::Tangent));
+			components.push_back(VertexComponent("TANGENT", 0, VertexFormat::Float3));
 	}
 
 	GraphicsLayoutDesc layout;
@@ -660,6 +687,7 @@ RenderPipeline::createRenderBuffer(const MeshProperty& mesh) except
 		_vb.setUsage(UsageFlags::MAP_READ_BIT);
 		_vb.setStream((std::uint8_t*)_data.data());
 		_vb.setStreamSize(_data.size());
+		_vb.setStride(stride);
 
 		vb = this->createGraphicsData(_vb);
 	}
@@ -672,6 +700,7 @@ RenderPipeline::createRenderBuffer(const MeshProperty& mesh) except
 		GraphicsDataDesc _ib;
 		_ib.setType(GraphicsStream::IBO);
 		_ib.setUsage(UsageFlags::MAP_READ_BIT);
+		_ib.setStride(sizeof(std::uint32_t));
 		_ib.setStream((std::uint8_t*)faces.data());
 		_ib.setStreamSize(faces.size() * sizeof(std::uint32_t));
 
@@ -703,15 +732,15 @@ RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) except
 	GraphicsLayoutDesc layout;
 
 	if (!meshes.front()->getVertexArray().empty())
-		layout.addComponent(VertexComponent(VertexFormat::Float3, VertexAttrib::Position));
+		layout.addComponent(VertexComponent("POSITION", 0, VertexFormat::Float3));
 	if (!meshes.front()->getColorArray().empty())
-		layout.addComponent(VertexComponent(VertexFormat::Float4, VertexAttrib::Diffuse));
+		layout.addComponent(VertexComponent("COLOR", 0, VertexFormat::Float4));
 	if (!meshes.front()->getNormalArray().empty())
-		layout.addComponent(VertexComponent(VertexFormat::Float3, VertexAttrib::Normal));
+		layout.addComponent(VertexComponent("NORMAL", 0, VertexFormat::Float3));
 	if (!meshes.front()->getTexcoordArray().empty())
-		layout.addComponent(VertexComponent(VertexFormat::Float2, VertexAttrib::Texcoord));
+		layout.addComponent(VertexComponent("TEXCOORD", 0, VertexFormat::Float2));
 	if (!meshes.front()->getTangentArray().empty())
-		layout.addComponent(VertexComponent(VertexFormat::Float3, VertexAttrib::Tangent));
+		layout.addComponent(VertexComponent("TANGENT", 0, VertexFormat::Float3));
 	if (!meshes.front()->getFaceArray().empty())
 		layout.setIndexType(IndexType::Uint32);
 
@@ -802,6 +831,7 @@ RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) except
 		_vb.setUsage(UsageFlags::MAP_READ_BIT);
 		_vb.setStream((std::uint8_t*)_data.data());
 		_vb.setStreamSize(_data.size());
+		_vb.setStride(stride);
 
 		vb = this->createGraphicsData(_vb);
 	}
@@ -836,6 +866,7 @@ RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) except
 		_ib.setType(GraphicsStream::IBO);
 		_ib.setUsage(UsageFlags::MAP_READ_BIT);
 		_ib.setStream((std::uint8_t*)faces.data());
+		_ib.setStride(sizeof(std::uint32_t));
 		_ib.setStreamSize(faces.size() * sizeof(std::uint32_t));
 
 		ib = this->createGraphicsData(_ib);
@@ -868,52 +899,52 @@ RenderPipeline::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 bool
 RenderPipeline::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
 {
-	assert(_graphicsContext);
-	return _graphicsContext->updateBuffer(data, str, cnt);
+	assert(_graphicsDevice);
+	return _graphicsDevice->updateBuffer(data, str, cnt);
 }
 
 void*
 RenderPipeline::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
 {
-	assert(_graphicsContext);
-	return _graphicsContext->mapBuffer(data, access);
+	assert(_graphicsDevice);
+	return _graphicsDevice->mapBuffer(data, access);
 }
 
 void
 RenderPipeline::unmapBuffer(GraphicsDataPtr& data) noexcept
 {
-	assert(_graphicsContext);
-	return _graphicsContext->unmapBuffer(data);
+	assert(_graphicsDevice);
+	return _graphicsDevice->unmapBuffer(data);
 }
 
 void
 RenderPipeline::setRenderBuffer(RenderBufferPtr buffer) except
 {
 	assert(_graphicsDevice);
-	_graphicsContext->setGraphicsLayout(buffer->getGraphicsLayout());
-	_graphicsContext->setVertexBufferData(buffer->getVertexBuffer());
-	_graphicsContext->setIndexBufferData(buffer->getIndexBuffer());
+	_graphicsDevice->setGraphicsLayout(buffer->getGraphicsLayout());
+	_graphicsDevice->setVertexBufferData(buffer->getVertexBuffer());
+	_graphicsDevice->setIndexBufferData(buffer->getIndexBuffer());
 }
 
 void
 RenderPipeline::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 {
-	assert(_graphicsContext);
-	_graphicsContext->drawRenderBuffer(renderable);
+	assert(_graphicsDevice);
+	_graphicsDevice->drawRenderBuffer(renderable);
 }
 
 void
 RenderPipeline::drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept
 {
 	assert(_graphicsDevice);
-	_graphicsContext->drawRenderBuffer(renderable, first, count);
+	_graphicsDevice->drawRenderBuffer(renderable, first, count);
 }
 
 void
-RenderPipeline::drawSceneQuad(MaterialPassPtr pass) noexcept
+RenderPipeline::drawScreenQuad(MaterialPassPtr pass) noexcept
 {
 	assert(pass);
-	this->drawMesh(pass, _renderSceneQuad, _renderSceneQuadIndirect);
+	this->drawMesh(pass, _renderScreenQuad, _renderScreenQuadIndirect);
 }
 
 void
@@ -1028,16 +1059,15 @@ RenderPipeline::renderPostProcess(GraphicsRenderTexturePtr renderTexture) except
 void
 RenderPipeline::renderBegin() noexcept
 {
-	assert(_graphicsContext);
-	_graphicsContext->renderBegin();
+	assert(_graphicsDevice);
+	_graphicsDevice->renderBegin();
 }
 
 void
 RenderPipeline::renderEnd() noexcept
 {
-	assert(_graphicsContext);
-	_graphicsContext->present();
-	_graphicsContext->renderEnd();
+	assert(_graphicsDevice);
+	_graphicsDevice->renderEnd();
 }
 
 void

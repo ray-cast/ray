@@ -41,6 +41,10 @@ _NAME_BEGIN
 __ImplementSubInterface(GraphicsSampler, GraphicsChild, "GraphicsSampler")
 
 GraphicsSamplerDesc::GraphicsSamplerDesc() noexcept
+	: _filter(SamplerFilter::Nearest)
+	, _wrap(SamplerWrap::Repeat)
+	, _texop(SamplerOp::Add)
+	, _anis(SamplerAnis::Anis0)
 {
 }
 

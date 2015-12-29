@@ -69,14 +69,15 @@ MyGuiVertexBuffer::lock() noexcept
 	{
 		if (!_vb)
 		{
-			_layout.addComponent(VertexComponent(VertexFormat::Float3, VertexAttrib::Position));
-			_layout.addComponent(VertexComponent(VertexFormat::Uchar4, VertexAttrib::Diffuse, true));
-			_layout.addComponent(VertexComponent(VertexFormat::Float2, VertexAttrib::Texcoord));
+			_layout.addComponent(VertexComponent("POSITION", 0, VertexFormat::Float3));
+			_layout.addComponent(VertexComponent("COLOR", 0, VertexFormat::Uchar4));
+			_layout.addComponent(VertexComponent("TEXCOORD", 0, VertexFormat::Float2));
 
 			auto layout = RenderSystem::instance()->createGraphicsLayout(_layout);
 
 			GraphicsDataDesc vb;
 			vb.setUsage(UsageFlags::MAP_READ_BIT | UsageFlags::MAP_WRITE_BIT);
+			vb.setStride(_layout.getVertexSize());
 			vb.setStreamSize(_layout.getVertexSize() * _needVertexCount);
 
 			_vb = RenderSystem::instance()->createGraphicsData(vb);

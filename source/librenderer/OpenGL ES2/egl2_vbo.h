@@ -46,10 +46,9 @@ class EGL2VertexBuffer final : public EGL2GraphicsData
 	__DeclareSubClass(EGL2VertexBuffer, EGL2GraphicsData)
 public:
 	EGL2VertexBuffer() noexcept;
-	EGL2VertexBuffer(const GraphicsDataDesc& desc) noexcept;
 	~EGL2VertexBuffer() noexcept;
 
-	void open(const GraphicsDataDesc& desc) noexcept;
+	bool setup(const GraphicsDataDesc& desc) noexcept;
 	void close() noexcept;
 
 	bool is_open() const noexcept;

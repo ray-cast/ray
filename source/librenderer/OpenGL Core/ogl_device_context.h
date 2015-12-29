@@ -48,8 +48,11 @@ public:
 	OGLDeviceContext() noexcept;
 	~OGLDeviceContext() noexcept;
 
-	bool open(WindHandle hwnd) except;
+	bool open(WindHandle hwnd) noexcept;
 	void close() noexcept;
+
+	void setActive(bool active) noexcept;
+	bool getActive() const noexcept;
 
 	void renderBegin() noexcept;
 	void renderEnd() noexcept;
@@ -66,15 +69,15 @@ public:
 	void setGraphicsLayout(GraphicsLayoutPtr data) noexcept;
 	GraphicsLayoutPtr getGraphicsLayout() const noexcept;
 
-	bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;
-	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
-	void unmapBuffer(GraphicsDataPtr& data) noexcept;
+	void setVertexBufferData(GraphicsDataPtr data) noexcept;
+	GraphicsDataPtr getVertexBufferData() const noexcept;
 
 	void setIndexBufferData(GraphicsDataPtr data) noexcept;
 	GraphicsDataPtr getIndexBufferData() const noexcept;
 
-	void setVertexBufferData(GraphicsDataPtr data) noexcept;
-	GraphicsDataPtr getVertexBufferData() const noexcept;
+	bool updateBuffer(GraphicsDataPtr& data, void* buf, std::size_t cnt) noexcept;
+	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
+	void unmapBuffer(GraphicsDataPtr& data) noexcept;
 
 	void setGraphicsTexture(GraphicsTexturePtr texture, std::uint32_t slot) noexcept;
 	void setGraphicsTexture(GraphicsTexturePtr texture[], std::uint32_t first, std::uint32_t end) noexcept;
@@ -112,6 +115,11 @@ private:
 	static void GLAPIENTRY debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept;
 
 private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
 	OGLDeviceContext(const OGLDeviceContext&) noexcept = delete;
 	OGLDeviceContext& operator=(const OGLDeviceContext&) noexcept = delete;
 
@@ -134,7 +142,7 @@ private:
 	OGLShaderObjectPtr _shaderObject;
 
 	OGLGraphicsStatePtr _state;
-	OGLGraphicsStatePtr _stateDefalut;
+	OGLGraphicsStatePtr _stateDefault;
 	GraphicsStateDesc _stateCaptured;
 
 	GLuint _stateObjDraw;
@@ -155,6 +163,8 @@ private:
 	OGLDrawIndirectBufferPtr _drawIndirectBuffer;
 
 	std::vector<Viewport> _viewport;
+
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

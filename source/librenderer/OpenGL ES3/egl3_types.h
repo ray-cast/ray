@@ -53,7 +53,7 @@
 
 _NAME_BEGIN
 
-#if defined(EGLAPI)
+#if defined(GL_KHR_debug)
 #	define GL_DEBUG_OUTPUT_SYNCHRONOUS   GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR
 #   define GL_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH GL_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_KHR
 #   define GL_DEBUG_CALLBACK_FUNCTION    GL_DEBUG_CALLBACK_FUNCTION_KHR
@@ -109,6 +109,15 @@ _NAME_BEGIN
 #	define GL_CHECK(x) x
 #endif
 
+#if _DEBUG
+#	if defined(_VISUAL_STUDIO_)
+#		pragma warning(disable : 4127)
+#	endif
+#	define GL_PLATFORM_LOG(format, ...) EGL3Check::debugOutput(format, __VA_ARGS__)
+#else
+#	define GL_PLATFORM_LOG(format, ...)
+#endif
+
 struct GPUfbconfig
 {
 	int redSize;
@@ -144,6 +153,8 @@ struct GPUctxconfig
 };
 
 typedef std::shared_ptr<class EGL3Canvas> EGL3CanvasPtr;
+typedef std::shared_ptr<class EGL3Device> EGL3DevicePtr;
+typedef std::shared_ptr<class EGL3DeviceContext> EGL3DeviceContextPtr;
 typedef std::shared_ptr<class EGL3RenderTexture> EGL3RenderTexturePtr;
 typedef std::shared_ptr<class EGL3MultiRenderTexture> EGL3MultiRenderTexturePtr;
 typedef std::shared_ptr<class EGL3Shader> EGL3ShaderPtr;
@@ -153,6 +164,7 @@ typedef std::shared_ptr<class EGL3IndexBuffer> EGL3IndexBufferPtr;
 typedef std::shared_ptr<class EGL3GraphicsLayout> EGL3GraphicsLayoutPtr;
 typedef std::shared_ptr<class EGL3DrawIndirectBuffer> EGL3DrawIndirectBufferPtr;
 typedef std::shared_ptr<class EGL3GraphicsState> EGL3GraphicsStatePtr;
+typedef std::shared_ptr<class EGL3Texture> EGL3TexturePtr;
 typedef std::shared_ptr<class EGL3Sampler> EGL3SamplerPtr;
 
 typedef std::vector<EGL3ShaderPtr> EGL3Shaders;
@@ -175,12 +187,16 @@ public:
 	static GLenum asCullMode(CullMode mode) noexcept;
 	static GLenum asFillMode(FillMode mode) noexcept;
 	static GLenum asStencilOperation(StencilOperation stencilop) noexcept;
+	static GLenum asSamplerWrap(SamplerWrap wrap) noexcept;
+	static GLenum asSamplerFilter(SamplerFilter filter) noexcept;
 };
 
 class EGL3Check
 {
 public:
 	static void checkError() noexcept;
+
+	static void debugOutput(const std::string& message, ...) noexcept;
 };
 
 _NAME_END

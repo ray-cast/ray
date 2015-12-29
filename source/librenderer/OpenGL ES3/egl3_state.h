@@ -54,12 +54,19 @@ public:
 	void apply(const GraphicsStateDesc& last) noexcept;
 
     const GraphicsStateDesc& getGraphicsStateDesc() const noexcept;
+
+private:
+	friend class EGL3Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
 private:
 	EGL3GraphicsState(const EGL3GraphicsState&) = delete;
 	EGL3GraphicsState& operator=(const EGL3GraphicsState&) = delete;
 
 private:
     GraphicsStateDesc _stateDesc;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

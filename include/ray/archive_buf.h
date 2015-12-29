@@ -48,20 +48,23 @@ public:
 	archivebuf() noexcept;
 	virtual ~archivebuf() noexcept;
 
-	virtual bool open(StreamReader& stream) noexcept = 0;
-	virtual void close() noexcept = 0;
-
-	virtual bool is_open() const noexcept = 0;
-
 	virtual std::string getCurrentNodeName() const noexcept = 0;
 	virtual std::string getCurrentNodePath() const noexcept = 0;
 
-	virtual void setToNode(const std::string& path) noexcept = 0;
+	virtual bool addAttribute(const std::string& key, const std::string& value) noexcept = 0;
+	virtual void setAttribute(const std::string& key, const std::string& value) noexcept = 0;
+	virtual void removeAttribute(const std::string& key) noexcept = 0;
+
+	virtual bool addNode(const std::string& key) noexcept = 0;
+	virtual bool addSubNode(const std::string& key) noexcept = 0;
+
+	virtual bool setToNode(const std::string& path) noexcept = 0;
 	virtual bool setToFirstChild() noexcept = 0;
 	virtual bool setToFirstChild(const std::string& name) noexcept = 0;
 	virtual bool setToNextChild() noexcept = 0;
 	virtual bool setToNextChild(const std::string& name) noexcept = 0;
 	virtual bool setToParent() noexcept = 0;
+	virtual bool setToRoot() noexcept = 0;
 
 	virtual bool hasChild() const noexcept = 0;
 
@@ -84,8 +87,6 @@ public:
 	virtual bool getValue(const std::string& name, float3& result) const noexcept = 0;
 	virtual bool getValue(const std::string& name, float4& result) const noexcept = 0;
 	virtual bool getValue(const std::string& name, std::string& result) const noexcept = 0;
-
-	virtual void copy(const archivebuf& other) noexcept = 0;
 
 	virtual void lock() noexcept;
 	virtual void unlock() noexcept;

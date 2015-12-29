@@ -103,4 +103,16 @@ OGLGraphicsData::getInstanceID() const noexcept
 	return _buf->getInstanceID();
 }
 
+void 
+OGLGraphicsData::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+OGLGraphicsData::getDevice() noexcept
+{
+	return _device.lock();
+}
+
 _NAME_END

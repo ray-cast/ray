@@ -70,7 +70,7 @@ ColorGrading::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source
 	_texSource->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(source);
-	pipeline.drawSceneQuad(_colorGrading);
+	pipeline.drawScreenQuad(_colorGrading);
 }
 
 _NAME_END

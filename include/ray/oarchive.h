@@ -43,9 +43,34 @@ _NAME_BEGIN
 
 class EXPORT oarchive : virtual public archive
 {
+protected:
+	class osentry final
+	{
+	public:
+		osentry(oarchive* _istr);
+		~osentry() noexcept;
+
+		operator bool() const noexcept;
+
+	private:
+		osentry(const osentry&) noexcept = delete;
+		osentry& operator=(const osentry&) noexcept = delete;
+
+	private:
+		bool _ok;
+		oarchive* _my_istr;
+	};
+
 public:
-	oarchive() noexcept;
+	oarchive(archivebuf* buf) noexcept;
 	virtual ~oarchive() noexcept;
+
+	oarchive& addAttribute(const std::string& key, const std::string& value) noexcept;
+	oarchive& setAttribute(const std::string& key, const std::string& value) noexcept;
+	oarchive& removeAttribute(const std::string& key) noexcept;
+
+	oarchive& addNode(const std::string& key) noexcept;
+	oarchive& addSubNode(const std::string& key) noexcept;
 
 	template<typename T>
 	oarchive& operator << (std::pair<const std::string&, T&> value)

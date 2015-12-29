@@ -43,6 +43,7 @@ __ImplementSubInterface(GraphicsData, GraphicsResource, "GraphicsData")
 GraphicsDataDesc::GraphicsDataDesc() noexcept
 	: _data(nullptr)
 	, _dataSize(0)
+	, _stride(0)
 	, _usage(UsageFlags::MAP_READ_BIT | UsageFlags::IMMUTABLE_STORAGE)
 	, _type(GraphicsStream::VBO)
 {
@@ -74,6 +75,18 @@ GraphicsStream
 GraphicsDataDesc::getType() const noexcept
 {
 	return _type;
+}
+
+void
+GraphicsDataDesc::setStride(std::uint32_t stride) noexcept
+{
+	_stride = stride;
+}
+
+std::uint32_t 
+GraphicsDataDesc::getStride() const noexcept
+{
+	return _stride;
 }
 
 void 

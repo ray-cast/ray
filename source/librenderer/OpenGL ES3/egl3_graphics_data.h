@@ -64,11 +64,17 @@ public:
 	const GraphicsDataDesc& getGraphicsDataDesc() const noexcept;
 
 private:
+	friend class EGL3Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
 	EGL3GraphicsData(const EGL3GraphicsData&) noexcept = delete;
 	EGL3GraphicsData& operator=(const EGL3GraphicsData&) noexcept = delete;
 
 private:
 	EGL3GraphicsBuf* _buf;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

@@ -74,7 +74,7 @@ void
 DeferredRenderPipeline::renderShadowMap(RenderPipeline& pipeline) noexcept
 {
 	pipeline.setRenderTexture(pipeline.getCamera()->getRenderTexture());
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(ClearFlags::Default, Vector4::Zero, 1.0, 0);
 
 	pipeline.drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_OPAQUES, _deferredDepthOnly);
 	pipeline.drawRenderQueue(RenderQueue::RQ_TRANSPARENT, RenderPass::RP_TRANSPARENT, _deferredDepthOnly);
@@ -84,7 +84,7 @@ void
 DeferredRenderPipeline::render2DEnvMap(RenderPipeline& pipeline) noexcept
 {
 	pipeline.setRenderTexture(_deferredShadingMap);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_ALL, pipeline.getCamera()->getClearColor(), 1.0, 0);
+	pipeline.clearRenderTexture(ClearFlags::Default, pipeline.getCamera()->getClearColor(), 1.0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_OPAQUES);
 }
 
@@ -123,7 +123,7 @@ void
 DeferredRenderPipeline::renderOpaques(RenderPipeline& pipeline, GraphicsMultiRenderTexturePtr target) noexcept
 {
 	pipeline.setMultiRenderTexture(target);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(ClearFlags::Default, Vector4::Zero, 1.0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_OPAQUES);
 }
 
@@ -134,16 +134,16 @@ DeferredRenderPipeline::renderOpaquesDepthLinear(RenderPipeline& pipeline, Graph
 	_projInfo->assign(pipeline.getCamera()->getProjConstant());
 
 	pipeline.setRenderTexture(target);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0);
-	pipeline.drawSceneQuad(_deferredDepthLinear);
+	pipeline.clearRenderTexture(ClearFlags::Default, Vector4::Zero, 1.0, 0);
+	pipeline.drawScreenQuad(_deferredDepthLinear);
 }
 
 void
 DeferredRenderPipeline::renderOpaquesShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target, int layer) noexcept
 {
 	pipeline.setRenderTexture(target);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0);
-	pipeline.drawSceneQuad(_deferredShadingOpaques);
+	pipeline.clearRenderTexture(ClearFlags::Color, Vector4::Zero, 1.0, 0);
+	pipeline.drawScreenQuad(_deferredShadingOpaques);
 }
 
 void
@@ -158,7 +158,7 @@ void
 DeferredRenderPipeline::renderTransparent(RenderPipeline& pipeline, GraphicsMultiRenderTexturePtr renderTexture) noexcept
 {
 	pipeline.setMultiRenderTexture(renderTexture);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR_STENCIL, Vector4::Zero, 1.0, 0, 0);
+	pipeline.clearRenderTexture(ClearFlags::ColorStencil, Vector4::Zero, 1.0, 0, 0);
 
 	pipeline.drawRenderQueue(RenderQueue::RQ_TRANSPARENT, RenderPass::RP_TRANSPARENT);
 }
@@ -167,7 +167,7 @@ void
 DeferredRenderPipeline::renderTransparentDepthLinear(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept
 {
 	pipeline.setRenderTexture(target);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0, 0);
+	pipeline.clearRenderTexture(ClearFlags::Color, Vector4::Zero, 1.0, 0, 0);
 
 	pipeline.drawRenderQueue(RenderQueue::RQ_TRANSPARENT, RenderPass::RP_DEPTH, _deferredDepthLinear);
 }
@@ -177,7 +177,7 @@ DeferredRenderPipeline::renderTransparentShading(RenderPipeline& pipeline, Graph
 {
 	pipeline.setRenderTexture(target);
 	pipeline.setRenderTextureLayer(target, layer);
-	pipeline.drawSceneQuad(_deferredShadingTransparents);
+	pipeline.drawScreenQuad(_deferredShadingTransparents);
 }
 
 void
@@ -193,7 +193,7 @@ void
 DeferredRenderPipeline::renderLights(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept
 {
 	pipeline.setRenderTexture(target);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(ClearFlags::Color, Vector4::Zero, 1.0, 0);
 
 	auto& lights = pipeline.getRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS);
 	for (auto& it : lights)
@@ -233,12 +233,12 @@ void
 DeferredRenderPipeline::renderSunLight(RenderPipeline& pipeline, const Light& light) noexcept
 {
 	_lightColor->assign(light.getLightColor() * light.getIntensity());
-	_lightDirection->assign(float3x3(pipeline.getCamera()->getView()) * ~(light.getTransform().getTranslate() - light.getLightLookat()));
+	_lightDirection->assign(~(light.getTransform().getTranslate() - light.getLightLookat()) * float3x3(pipeline.getCamera()->getView()));
 	_lightPosition->assign(light.getTransform().getTranslate());
 	_lightAttenuation->assign(light.getLightAttenuation());
 	_lightRange->assign(light.getRange());
 
-	_eyePosition->assign(float3x3(pipeline.getCamera()->getView()) * pipeline.getCamera()->getTranslate());
+	_eyePosition->assign(pipeline.getCamera()->getTranslate() * float3x3(pipeline.getCamera()->getView()));
 
 	if (light.getShadow())
 	{
@@ -246,11 +246,11 @@ DeferredRenderPipeline::renderSunLight(RenderPipeline& pipeline, const Light& li
 		_shadowMap->assign(light.getShadowCamera()->getRenderTexture()->getResolveTexture());
 		_shadowMatrix->assign(light.getShadowCamera()->getViewProject());
 
-		pipeline.drawSceneQuad(_deferredSunLightShadow);
+		pipeline.drawScreenQuad(_deferredSunLightShadow);
 	}
 	else
 	{
-		pipeline.drawSceneQuad(_deferredSunLight);
+		pipeline.drawScreenQuad(_deferredSunLight);
 	}
 }
 
@@ -258,12 +258,12 @@ void
 DeferredRenderPipeline::renderDirectionalLight(RenderPipeline& pipeline, const Light& light) noexcept
 {
 	_lightColor->assign(light.getLightColor() * light.getIntensity());
-	_lightDirection->assign(float3x3(pipeline.getCamera()->getView()) * ~(light.getTransform().getTranslate() - light.getLightLookat()));
+	_lightDirection->assign(~(light.getTransform().getTranslate() - light.getLightLookat()) * float3x3(pipeline.getCamera()->getView()));
 	_lightPosition->assign(light.getTransform().getTranslate());
 	_lightAttenuation->assign(light.getLightAttenuation());
 	_lightRange->assign(light.getRange());
 
-	_eyePosition->assign(float3x3(pipeline.getCamera()->getView()) * pipeline.getCamera()->getTranslate());
+	_eyePosition->assign(pipeline.getCamera()->getTranslate() * float3x3(pipeline.getCamera()->getView()));
 
 	if (light.getShadow())
 	{
@@ -271,11 +271,11 @@ DeferredRenderPipeline::renderDirectionalLight(RenderPipeline& pipeline, const L
 		_shadowFactor->assign(ESM_FACTOR);
 		_shadowMatrix->assign(light.getShadowCamera()->getViewProject());
 
-		pipeline.drawSceneQuad(_deferredDirectionalLightShadow);
+		pipeline.drawScreenQuad(_deferredDirectionalLightShadow);
 	}
 	else
 	{
-		pipeline.drawSceneQuad(_deferredDirectionalLight);
+		pipeline.drawScreenQuad(_deferredDirectionalLight);
 	}
 }
 
@@ -283,13 +283,13 @@ void
 DeferredRenderPipeline::renderPointLight(RenderPipeline& pipeline, const Light& light) noexcept
 {
 	_lightColor->assign(light.getLightColor() * light.getIntensity());
-	_lightDirection->assign(float3x3(pipeline.getCamera()->getView()) * ~(light.getTransform().getTranslate() - light.getLightLookat()));
+	_lightDirection->assign(~(light.getTransform().getTranslate() - light.getLightLookat()) * float3x3(pipeline.getCamera()->getView()));
 	_lightPosition->assign(light.getTransform().getTranslate());
 	_lightAttenuation->assign(light.getLightAttenuation());
 	_lightRange->assign(light.getRange());
 	_lightIntensity->assign(light.getIntensity());
 
-	_eyePosition->assign(float3x3(pipeline.getCamera()->getView()) * pipeline.getCamera()->getTranslate());
+	_eyePosition->assign(pipeline.getCamera()->getTranslate() * float3x3(pipeline.getCamera()->getView()));
 
 	pipeline.setModelMatrix(light.getTransform());
 	pipeline.drawSphere(_deferredPointLight);
@@ -299,7 +299,7 @@ void
 DeferredRenderPipeline::renderSpotLight(RenderPipeline& pipeline, const Light& light) noexcept
 {
 	_lightColor->assign(light.getLightColor() * light.getIntensity());
-	_lightDirection->assign(float3x3(pipeline.getCamera()->getView()) * ~(light.getTransform().getTranslate() - light.getLightLookat()));
+	_lightDirection->assign(~(light.getTransform().getTranslate() - light.getLightLookat()) * float3x3(pipeline.getCamera()->getView()));
 	_lightPosition->assign(light.getTransform().getTranslate());
 	_lightAttenuation->assign(light.getLightAttenuation());
 	_lightRange->assign(light.getRange());
@@ -307,7 +307,7 @@ DeferredRenderPipeline::renderSpotLight(RenderPipeline& pipeline, const Light& l
 	_lightSpotInnerCone->assign(light.getSpotInnerCone());
 	_lightSpotOuterCone->assign(light.getSpotOuterCone());
 
-	_eyePosition->assign(float3x3(pipeline.getCamera()->getView()) * pipeline.getCamera()->getTranslate());
+	_eyePosition->assign(pipeline.getCamera()->getTranslate() * float3x3(pipeline.getCamera()->getView()));
 
 	pipeline.setModelMatrix(light.getTransform());
 	pipeline.drawCone(_deferredSpotLight);
@@ -317,7 +317,7 @@ void
 DeferredRenderPipeline::renderAmbientLight(RenderPipeline& pipeline, const Light& light) noexcept
 {
 	_lightColor->assign(light.getLightColor() * light.getIntensity());
-	_lightDirection->assign(float3x3(pipeline.getCamera()->getView()) * ~(light.getTransform().getTranslate() - light.getLightLookat()));
+	_lightDirection->assign(~(light.getTransform().getTranslate() - light.getLightLookat()) * float3x3(pipeline.getCamera()->getView()));
 	_lightPosition->assign(light.getTransform().getTranslate());
 	_lightAttenuation->assign(light.getLightAttenuation());
 	_lightRange->assign(light.getRange());
@@ -325,7 +325,7 @@ DeferredRenderPipeline::renderAmbientLight(RenderPipeline& pipeline, const Light
 
 	_eyePosition->assign(pipeline.getCamera()->getTranslate());
 
-	pipeline.drawSceneQuad(_deferredAmbientLight);
+	pipeline.drawScreenQuad(_deferredAmbientLight);
 }
 
 void
@@ -343,7 +343,7 @@ DeferredRenderPipeline::copyRenderTexture(RenderPipeline& pipeline, GraphicsRend
 {
 	_texSource->assign(src->getResolveTexture());
 	pipeline.setRenderTexture(dst);
-	pipeline.drawSceneQuad(_deferredCopyOnly);
+	pipeline.drawScreenQuad(_deferredCopyOnly);
 }
 
 void
@@ -364,7 +364,7 @@ DeferredRenderPipeline::setupSemantic(RenderPipeline& pipeline)
 void
 DeferredRenderPipeline::setupMaterials(RenderPipeline& pipeline)
 {
-	_deferredLighting = pipeline.createMaterial("sys:fx\\deferred_lighting.glsl");
+	_deferredLighting = pipeline.createMaterial("sys:fx\\deferred_lighting.fxml.o");
 	_deferredDepthOnly = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredDepthOnly");
 	_deferredDepthLinear = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredDepthLinear");
 	_deferredPointLight = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredPointLight");
@@ -376,7 +376,6 @@ DeferredRenderPipeline::setupMaterials(RenderPipeline& pipeline)
 	_deferredSpotLight = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredSpotLight");
 	_deferredShadingOpaques = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredShadingOpaques");
 	_deferredShadingTransparents = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredShadingTransparents");
-	_deferredDebugLayer = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredDebugLayer");
 	_deferredCopyOnly = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredCopyOnly");
 
 	_texMRT0 = _deferredLighting->getParameter("texMRT0");
@@ -419,7 +418,7 @@ DeferredRenderPipeline::setupRenderTextures(RenderPipeline& pipeline)
 
 	GraphicsRenderTextureDesc deferredLightDesc;
 	deferredLightDesc.setSharedStencilTexture(_deferredDepthMap);
-	deferredLightDesc.setGraphicsTexture(pipeline.createTexture(width, height, TextureDim::DIM_2D, TextureFormat::R16G16B16A16F));
+	deferredLightDesc.setGraphicsTexture(pipeline.createTexture(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8));
 	_deferredLightMap = pipeline.createRenderTexture(deferredLightDesc);
 
 	GraphicsRenderTextureDesc deferredShadingDesc;

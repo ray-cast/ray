@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(GraphicsChild, rtti::Interface, "GraphicsChild")
+__ImplementSubInterface(GraphicsChild, rtti::Interface, "GraphicsChild")
 
 GraphicsChild::GraphicsChild() noexcept
 {

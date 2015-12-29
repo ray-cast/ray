@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<effect version="1270" language="hlsl">
+    <sampler name="PointClamp">
+        <state name="filter"  value="point"/>
+        <state name="wrap"  value="clamp"/>
+    </sampler>
+    <sampler name="samLinear">
+        <state name="filter"  value="linear"/>
+        <state name="wrap"  value="repeat"/>
+    </sampler>
+</effect>

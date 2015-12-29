@@ -59,7 +59,7 @@ public:
 	virtual streamoff seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
 	virtual streamoff tellg() noexcept;
 
-	virtual streamsize size() noexcept;
+	virtual streamsize size() const noexcept;
 
 	virtual bool is_open() const noexcept;
 

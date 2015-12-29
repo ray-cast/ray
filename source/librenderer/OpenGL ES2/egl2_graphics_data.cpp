@@ -56,12 +56,6 @@ EGL2GraphicsData::size() const noexcept
 }
 
 void
-EGL2GraphicsData::getGraphicsDataDesc(GraphicsDataDesc& desc) const noexcept
-{
-	_buf->getGraphicsDataDesc(desc);
-}
-
-void
 EGL2GraphicsData::resize(const char* data, GLsizeiptr datasize) noexcept
 {
 	return _buf->resize(data, datasize);
@@ -95,6 +89,30 @@ void
 EGL2GraphicsData::unmap() noexcept
 {
 	_buf->unmap();
+}
+
+GLuint
+EGL2GraphicsData::getInstanceID() const noexcept
+{
+	return _buf->getInstanceID();
+}
+
+const GraphicsDataDesc&
+EGL2GraphicsData::getGraphicsDataDesc() const noexcept
+{
+	return _buf->getGraphicsDataDesc();
+}
+
+void
+EGL2GraphicsData::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL2GraphicsData::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

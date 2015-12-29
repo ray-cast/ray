@@ -4,5 +4,5 @@
     <attribute specular="0.1, 0.1, 0.1, 1.0" />
     <attribute opacity="0.75"/>
     <attribute shininess="0.1" />
-    <attribute shader="sys:fx/transparent.glsl"/>
+    <attribute shader="sys:fx/transparent.fxml.o"/>
 </material>

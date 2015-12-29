@@ -78,7 +78,7 @@ DepthOfField::blurh(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, G
 	_texColor->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(dest);
-	pipeline.drawSceneQuad(_blurh);
+	pipeline.drawScreenQuad(_blurh);
 }
 
 void
@@ -87,7 +87,7 @@ DepthOfField::blurv(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, G
 	_texColor->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(dest);
-	pipeline.drawSceneQuad(_blurv);
+	pipeline.drawScreenQuad(_blurv);
 }
 
 void
@@ -97,7 +97,7 @@ DepthOfField::computeNear(RenderPipeline& pipeline, GraphicsRenderTexturePtr sou
 	_texBlured->assign(blured->getResolveTexture());
 
 	pipeline.setRenderTexture(dest);
-	pipeline.drawSceneQuad(_computeNear);
+	pipeline.drawScreenQuad(_computeNear);
 }
 
 void
@@ -108,7 +108,7 @@ DepthOfField::shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr color, 
 	_texLarge->assign(large->getResolveTexture());
 
 	pipeline.setRenderTexture(color);
-	pipeline.drawSceneQuad(_final);
+	pipeline.drawScreenQuad(_final);
 }
 
 void
@@ -117,7 +117,7 @@ DepthOfField::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source
 	_texColor->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(_texBlur);
-	pipeline.drawSceneQuad(_sample4);
+	pipeline.drawScreenQuad(_sample4);
 
 	this->blurh(pipeline, _texBlur, _texTemp);
 	this->blurv(pipeline, _texTemp, _texBlur);

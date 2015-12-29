@@ -38,12 +38,97 @@
 
 _NAME_BEGIN
 
-oarchive::oarchive() noexcept
+oarchive::osentry::osentry(oarchive* _istr)
+	: _my_istr(_istr)
+	, _ok(true)
 {
+	if (_my_istr->rdbuf() != 0)
+		_my_istr->rdbuf()->lock();
+}
+
+oarchive::osentry::~osentry() noexcept
+{
+	if (_my_istr->rdbuf() != 0)
+		_my_istr->rdbuf()->unlock();
+};
+
+oarchive::osentry::operator bool() const noexcept
+{
+	return _ok ? true : false;
+}
+
+oarchive::oarchive(archivebuf* buf) noexcept
+{
+	archive::_init(buf, ios_base::out);
 }
 
 oarchive::~oarchive() noexcept
 {
+}
+
+oarchive&
+oarchive::addAttribute(const std::string& key, const std::string& value) noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!this->fail() && !this->rdbuf()->addAttribute(key, value))
+			this->setstate(ios_base::failbit);
+	}
+
+	return *this;
+}
+
+oarchive&
+oarchive::setAttribute(const std::string& key, const std::string& value) noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!this->fail() && !this->rdbuf()->addAttribute(key, value))
+			this->setstate(ios_base::failbit);
+	}
+
+	return *this;
+}
+
+oarchive&
+oarchive::removeAttribute(const std::string& key) noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!this->fail())
+			this->rdbuf()->removeAttribute(key);
+	}
+
+	return *this;
+}
+
+oarchive&
+oarchive::addNode(const std::string& key) noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!this->fail() && !this->rdbuf()->addNode(key))
+			this->setstate(ios_base::failbit);
+	}
+
+	return *this;
+}
+
+oarchive&
+oarchive::addSubNode(const std::string& key) noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!this->fail() && !this->rdbuf()->addSubNode(key))
+			this->setstate(ios_base::failbit);
+	}
+
+	return *this;
 }
 
 _NAME_END

@@ -69,7 +69,7 @@ void
 Fog::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr texture) except
 {
 	pipeline.setRenderTexture(texture);
-	pipeline.drawSceneQuad(_fog);
+	pipeline.drawScreenQuad(_fog);
 }
 
 _NAME_END

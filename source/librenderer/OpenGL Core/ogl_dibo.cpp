@@ -45,22 +45,17 @@ OGLDrawIndirectBuffer::OGLDrawIndirectBuffer() noexcept
 {
 }
 
-OGLDrawIndirectBuffer::OGLDrawIndirectBuffer(const GraphicsDataDesc& desc) noexcept
-	: OGLGraphicsData(&_indirectData)
-{
-	this->open(desc);
-}
-
 OGLDrawIndirectBuffer::~OGLDrawIndirectBuffer() noexcept
 {
+	this->close();
 }
 
-void
-OGLDrawIndirectBuffer::open(const GraphicsDataDesc& desc) noexcept
+bool
+OGLDrawIndirectBuffer::setup(const GraphicsDataDesc& desc) noexcept
 {
 	assert(desc.getType() == GraphicsStream::DIBO);
 	assert(desc.getStreamSize() > 0);
-	_indirectData.open(desc);
+	return _indirectData.setup(desc);
 }
 
 void

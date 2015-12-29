@@ -48,7 +48,7 @@ EGL2IndexBuffer::EGL2IndexBuffer() noexcept
 EGL2IndexBuffer::EGL2IndexBuffer(const GraphicsDataDesc& desc) noexcept
 	: EGL2GraphicsData(&_indexData)
 {
-	this->open(desc);
+	this->setup(desc);
 }
 
 EGL2IndexBuffer::~EGL2IndexBuffer() noexcept
@@ -56,12 +56,12 @@ EGL2IndexBuffer::~EGL2IndexBuffer() noexcept
 	this->close();
 }
 
-void
-EGL2IndexBuffer::open(const GraphicsDataDesc& desc) noexcept
+bool
+EGL2IndexBuffer::setup(const GraphicsDataDesc& desc) noexcept
 {
 	assert(desc.getType() == GraphicsStream::IBO);
 	assert(desc.getStreamSize() > 0);
-	_indexData.open(desc);
+	return _indexData.open(desc);
 }
 
 void

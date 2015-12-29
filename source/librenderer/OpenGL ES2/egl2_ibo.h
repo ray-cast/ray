@@ -49,7 +49,7 @@ public:
 	EGL2IndexBuffer(const GraphicsDataDesc& desc) noexcept;
 	~EGL2IndexBuffer() noexcept;
 
-	void open(const GraphicsDataDesc& desc) noexcept;
+	bool setup(const GraphicsDataDesc& desc) noexcept;
 	void close() noexcept;
 
 	bool is_open() const noexcept;

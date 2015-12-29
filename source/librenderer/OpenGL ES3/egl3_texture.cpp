@@ -54,41 +54,53 @@ EGL3Texture::~EGL3Texture() noexcept
 bool
 EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 {
-	auto target = EGL3Types::asEGL3Target(textureDesc.getTexDim(), textureDesc.isMultiSample());
-	auto internalFormat = EGL3Types::asEGL3Internalformat(textureDesc.getTexFormat());
-	auto stream = textureDesc.getStream();
+	assert(_texture == GL_NONE);
 
+	GL_CHECK(glGenTextures(1, &_texture));
+	if (_texture == GL_NONE)
+	{
+		GL_PLATFORM_LOG("glCreateTextures fail");
+		return false;
+	}
+
+	GLenum target = EGL3Types::asEGL3Target(textureDesc.getTexDim(), textureDesc.isMultiSample());
 	if (target == GL_INVALID_ENUM)
 		return false;
 
-	if (internalFormat == GL_INVALID_ENUM)
-		return false;
-
-	GL_CHECK(glGenTextures(1, &_texture));
 	GL_CHECK(glBindTexture(target, _texture));
 
 	GLsizei w = (GLsizei)textureDesc.getWidth();
 	GLsizei h = (GLsizei)textureDesc.getHeight();
 	GLsizei depth = (GLsizei)textureDesc.getDepth();
 
-	applySamplerWrap(target, textureDesc.getSamplerWrap());
-	applySamplerFilter(target, textureDesc.getSamplerFilter());
-	applyTextureAnis(target, textureDesc.getSamplerAnis());
+	if (!applySamplerWrap(target, textureDesc.getSamplerWrap()))
+		return false;
+
+	if (!applySamplerFilter(target, textureDesc.getSamplerFilter()))
+		return false;
+
+	if (!applySamplerAnis(target, textureDesc.getSamplerAnis()))
+		return false;
+
+	auto internalFormat = EGL3Types::asEGL3Internalformat(textureDesc.getTexFormat());
+	if (internalFormat == GL_INVALID_ENUM)
+		return false;
 
 	GLsizei level = target == GL_TEXTURE_CUBE_MAP ? 6 : 1;
 	level = std::max(level, textureDesc.getMipLevel());
 
 	if (target == GL_TEXTURE_2D)
-		glTexStorage2D(GL_TEXTURE_2D, level, internalFormat, w, h);
+		GL_CHECK(glTexStorage2D(GL_TEXTURE_2D, level, internalFormat, w, h));
 	else if (target == GL_TEXTURE_2D_MULTISAMPLE)
-		glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, level, internalFormat, w, h, GL_FALSE);
+		GL_CHECK(glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, level, internalFormat, w, h, GL_FALSE));
 	else if (target == GL_TEXTURE_2D_ARRAY)
-		glTexStorage3D(GL_TEXTURE_2D_ARRAY, level, internalFormat, w, h, depth);
+		GL_CHECK(glTexStorage3D(GL_TEXTURE_2D_ARRAY, level, internalFormat, w, h, depth));
 	else if (target == GL_TEXTURE_3D)
-		glTexStorage3D(GL_TEXTURE_3D, level, internalFormat, w, h, depth);
+		GL_CHECK(glTexStorage3D(GL_TEXTURE_3D, level, internalFormat, w, h, depth));
 	else if (target == GL_TEXTURE_CUBE_MAP)
-		glTexStorage2D(GL_TEXTURE_CUBE_MAP, level, internalFormat, w, h);
+		GL_CHECK(glTexStorage2D(GL_TEXTURE_CUBE_MAP, level, internalFormat, w, h));
 
+	auto stream = textureDesc.getStream();
 	if (stream)
 	{
 		if (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT ||
@@ -172,72 +184,39 @@ EGL3Texture::getInstanceID() const noexcept
 	return _texture;
 }
 
-const GraphicsTextureDesc&
-EGL3Texture::getGraphicsTextureDesc() const noexcept
-{
-	return _textureDesc;
-}
-
-void
+bool
 EGL3Texture::applySamplerWrap(GLenum target, SamplerWrap wrap) noexcept
 {
-	if (SamplerWrap::Repeat == wrap)
+	GLenum glwrap = EGL3Types::asSamplerWrap(wrap);
+	if (glwrap != GL_INVALID_ENUM)
 	{
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_REPEAT));
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_REPEAT));
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_R, GL_REPEAT));
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_S, glwrap));
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_T, glwrap));
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_R, glwrap));
+
+		return true;
 	}
-	else if (SamplerWrap::ClampToEdge == wrap)
-	{
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
-	}
-	else if (SamplerWrap::Mirror == wrap)
-	{
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT));
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT));
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT));
-	}
+
+	return false;
 }
 
-void
+bool
 EGL3Texture::applySamplerFilter(GLenum target, SamplerFilter filter) noexcept
 {
-	if (filter == SamplerFilter::Nearest)
+	GLenum glfilter = EGL3Types::asSamplerFilter(filter);
+	if (glfilter != GL_INVALID_ENUM)
 	{
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, glfilter));
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, glfilter));
+
+		return true;
 	}
-	else if (filter == SamplerFilter::Linear)
-	{
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-	}
-	else if (filter == SamplerFilter::NearestMipmapLinear)
-	{
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_LINEAR));
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
-	}
-	else if (filter == SamplerFilter::NearestMipmapNearest)
-	{
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST));
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST));
-	}
-	else if (filter == SamplerFilter::LinearMipmapNearest)
-	{
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST));
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST));
-	}
-	else if (filter == SamplerFilter::LinearMipmapLinear)
-	{
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR));
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
-	}
+
+	return false;
 }
 
-void
-EGL3Texture::applyTextureAnis(GLenum target, SamplerAnis anis) noexcept
+bool
+EGL3Texture::applySamplerAnis(GLenum target, SamplerAnis anis) noexcept
 {
 	if (anis == SamplerAnis::Anis1)
 		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1));
@@ -249,6 +228,34 @@ EGL3Texture::applyTextureAnis(GLenum target, SamplerAnis anis) noexcept
 		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8));
 	else if (anis == SamplerAnis::Anis16)
 		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16));
+	else
+	{
+		if (anis != SamplerAnis::Anis0)
+		{
+			GL_PLATFORM_LOG("Invalid SamplerAnis");
+			return false;
+		}
+	}
+
+	return true;
+}
+
+const GraphicsTextureDesc&
+EGL3Texture::getGraphicsTextureDesc() const noexcept
+{
+	return _textureDesc;
+}
+
+void
+EGL3Texture::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL3Texture::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

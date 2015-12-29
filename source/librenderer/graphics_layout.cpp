@@ -40,24 +40,25 @@ _NAME_BEGIN
 
 __ImplementSubInterface(GraphicsLayout, GraphicsChild, "GraphicsLayoutDesc")
 
-
 VertexComponent::VertexComponent() noexcept
 	: _format(VertexFormat::Float)
-	, _attrib(0)
-	, _vertexCount(0)
-	, _vertexSize(0)
+	, _index(0)
+	, _slot(0)
+	, _count(0)
+	, _size(0)
 	, _divisor(0)
 {
 }
 
-VertexComponent::VertexComponent(VertexFormat format, std::uint8_t attrib, bool normalize, std::uint8_t divisor) noexcept
+VertexComponent::VertexComponent(const std::string& semantic, std::uint8_t semanticIndex, VertexFormat format, std::uint8_t slot, std::uint8_t divisor) noexcept
 	: _format(format)
-	, _attrib(attrib)
-	, _normalize(normalize)
+	, _semantic(semantic)
+	, _index(semanticIndex)
+	, _slot(slot)
 	, _divisor(divisor)
 {
-	_vertexCount = getVertexCount(format);
-	_vertexSize = getVertexSize(format);
+	_count = getVertexCount(format);
+	_size = getVertexSize(format);
 }
 
 VertexComponent::~VertexComponent() noexcept
@@ -65,9 +66,9 @@ VertexComponent::~VertexComponent() noexcept
 }
 
 void
-VertexComponent::setVertexAttrib(std::uint8_t attrib) noexcept
+VertexComponent::setSemantic(const std::string& semantic) noexcept
 {
-	_attrib = attrib;
+	_semantic = semantic;
 }
 
 void
@@ -75,23 +76,29 @@ VertexComponent::setVertexFormat(VertexFormat format) noexcept
 {
 	if (_format != format)
 	{
-		_vertexCount = getVertexCount(format);
-		_vertexSize = getVertexSize(format);
+		_count = getVertexCount(format);
+		_size = getVertexSize(format);
 
 		_format = format;
 	}
 }
 
-void
-VertexComponent::setNormalize(bool normalize) noexcept
+const std::string&
+VertexComponent::getSemantic() const noexcept
 {
-	_normalize = normalize;
+	return _semantic;
 }
 
-std::uint8_t
-VertexComponent::getVertexAttrib() const noexcept
+void 
+VertexComponent::setSemanticIndex(std::uint8_t index) noexcept
 {
-	return _attrib;
+	_index = index;
+}
+
+std::uint8_t 
+VertexComponent::getSemanticIndex() const noexcept
+{
+	return _index;
 }
 
 VertexFormat
@@ -101,33 +108,39 @@ VertexComponent::getVertexFormat() const noexcept
 }
 
 void 
+VertexComponent::setVertexSlot(std::uint8_t slot) noexcept
+{
+	_slot = slot;
+}
+
+std::uint8_t 
+VertexComponent::getVertexSlot() const noexcept
+{
+	return _slot;
+}
+
+void
 VertexComponent::setVertexDivisor(std::uint8_t divisor) noexcept
 {
 	_divisor = divisor;
 }
 
-std::uint8_t 
+std::uint8_t
 VertexComponent::getVertexDivisor() const noexcept
 {
 	return _divisor;
 }
 
-bool
-VertexComponent::getNormalize() const noexcept
-{
-	return _normalize;
-}
-
 std::uint8_t
 VertexComponent::getVertexCount() const noexcept
 {
-	return _vertexCount;
+	return _count;
 }
 
 std::uint8_t
 VertexComponent::getVertexSize() const noexcept
 {
-	return _vertexSize;
+	return _size;
 }
 
 std::uint8_t
@@ -252,7 +265,7 @@ GraphicsLayoutDesc::getVertexComponents() const noexcept
 void
 GraphicsLayoutDesc::addComponent(const VertexComponent& compoent) noexcept
 {
-	auto it = std::find_if(_components.begin(), _components.end(), [compoent](const VertexComponent& it) { return it.getVertexAttrib() == compoent.getVertexAttrib();});
+	auto it = std::find_if(_components.begin(), _components.end(), [compoent](const VertexComponent& it) { return it.getSemantic() == compoent.getSemantic();});
 	if (it == _components.end())
 		_components.push_back(compoent);
 }
@@ -260,18 +273,18 @@ GraphicsLayoutDesc::addComponent(const VertexComponent& compoent) noexcept
 void
 GraphicsLayoutDesc::removeComponent(const VertexComponent& compoent) noexcept
 {
-	auto it = std::find_if(_components.begin(), _components.end(), [compoent](const VertexComponent& it) { return it.getVertexAttrib() == compoent.getVertexAttrib();});
+	auto it = std::find_if(_components.begin(), _components.end(), [compoent](const VertexComponent& it) { return it.getSemantic() == compoent.getSemantic();});
 	if (it != _components.end())
 		_components.erase(it);
 }
 
-void 
+void
 GraphicsLayoutDesc::setIndexType(IndexType type) noexcept
 {
 	_indexType = type;
 }
 
-IndexType 
+IndexType
 GraphicsLayoutDesc::getIndexType() const noexcept
 {
 	return _indexType;
@@ -286,7 +299,7 @@ GraphicsLayoutDesc::getVertexSize() const noexcept
 	return size;
 }
 
-std::uint32_t 
+std::uint32_t
 GraphicsLayoutDesc::getIndexSize() const noexcept
 {
 	return _indexType == IndexType::Uint16 ? sizeof(std::uint16_t) : sizeof(std::uint32_t);

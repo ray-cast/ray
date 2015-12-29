@@ -498,7 +498,6 @@ void
 RenderSystem::renderBegin() noexcept
 {
 	assert(_pipelineManager);
-
 	_pipelineManager->renderBegin();
 }
 
@@ -506,20 +505,6 @@ void
 RenderSystem::renderEnd() noexcept
 {
 	assert(_pipelineManager);
-
-	for (auto& scene : _sceneList)
-	{
-		auto& cameras = scene->getCameraList();
-		for (auto& camera : cameras)
-		{
-			auto context = camera->getGraphicsContext();
-			if (context)
-			{
-				context->present();
-			}
-		}
-	}
-
 	_pipelineManager->renderEnd();
 }
 

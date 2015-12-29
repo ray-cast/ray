@@ -78,4 +78,64 @@ archive::getOpenMode() const noexcept
 	return _mode;
 }
 
+std::string
+archive::getCurrentNodeName() const noexcept
+{
+	return this->rdbuf()->getCurrentNodeName();
+}
+
+std::string
+archive::getCurrentNodePath() const noexcept
+{
+	return this->rdbuf()->getCurrentNodePath();
+}
+
+bool
+archive::setToNode(const std::string& path) noexcept
+{
+	return this->rdbuf()->setToNode(path);
+}
+
+bool
+archive::setToFirstChild() noexcept
+{
+	return this->rdbuf()->setToFirstChild();
+}
+
+bool
+archive::setToFirstChild(const std::string& name) noexcept
+{
+	return this->rdbuf()->setToFirstChild(name);
+}
+
+bool
+archive::setToNextChild() noexcept
+{
+	return this->rdbuf()->setToNextChild();
+}
+
+bool
+archive::setToNextChild(const std::string& name) noexcept
+{
+	return this->rdbuf()->setToNextChild(name);
+}
+
+bool
+archive::setToParent() noexcept
+{
+	return this->rdbuf()->setToParent();
+}
+
+bool
+archive::setToRoot() noexcept
+{
+	return this->rdbuf()->setToRoot();
+}
+
+bool
+archive::hasChild() const noexcept
+{
+	return this->rdbuf()->hasChild();
+}
+
 _NAME_END

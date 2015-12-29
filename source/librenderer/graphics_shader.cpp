@@ -38,6 +38,9 @@
 
 _NAME_BEGIN
 
+__ImplementSubInterface(ShaderParameter, rtti::Interface, "ShaderParameter")
+__ImplementSubInterface(ShaderAttribute, ShaderParameter, "ShaderAttribute")
+__ImplementSubInterface(ShaderUniform, ShaderParameter, "ShaderUniform")
 __ImplementSubInterface(GraphicsShader, GraphicsChild, "GraphicsShader")
 __ImplementSubInterface(GraphicsProgram, GraphicsChild, "GraphicsProgram")
 
@@ -50,7 +53,6 @@ ShaderVariant::~ShaderVariant() noexcept
 }
 
 ShaderParameter::ShaderParameter() noexcept
-	: _needUpdate(true)
 {
 }
 
@@ -70,25 +72,59 @@ ShaderParameter::getName() const noexcept
 	return _name;
 }
 
-void
-ShaderParameter::needUpdate(bool update) noexcept
+ShaderAttribute::ShaderAttribute() noexcept
+	: _index(0)
 {
-	_needUpdate = update;
 }
 
-bool
-ShaderParameter::needUpdate() const noexcept
+ShaderAttribute::~ShaderAttribute() noexcept
 {
-	return _needUpdate;
+}
+
+void 
+ShaderAttribute::setSemantic(const std::string& semantic) noexcept
+{
+	_semantic = semantic;
+}
+
+const std::string& 
+ShaderAttribute::getSemantic() const noexcept
+{
+	return _semantic;
+}
+
+void
+ShaderAttribute::setSemanticIndex(std::uint8_t index) noexcept
+{
+	_index = index;
+}
+
+std::uint8_t 
+ShaderAttribute::getSemanticIndex() const noexcept
+{
+	return _index;
 }
 
 ShaderUniform::ShaderUniform(ShaderVariant* value) noexcept
 	: _value(value)
+	, _needUpdate(true)
 {
 }
 
 ShaderUniform::~ShaderUniform() noexcept
 {
+}
+
+void
+ShaderUniform::needUpdate(bool update) noexcept
+{
+	_needUpdate = update;
+}
+
+bool
+ShaderUniform::needUpdate() const noexcept
+{
+	return _needUpdate;
 }
 
 void
@@ -198,10 +234,10 @@ ShaderDesc::ShaderDesc() noexcept
 {
 }
 
-ShaderDesc::ShaderDesc(ShaderType type, const std::string& code) noexcept
+ShaderDesc::ShaderDesc(ShaderType type, const std::vector<char>& code) noexcept
 {
 	this->setType(type);
-	this->setSource(code);
+	this->setByteCodes(code);
 }
 
 ShaderDesc::~ShaderDesc() noexcept
@@ -214,22 +250,22 @@ ShaderDesc::setType(ShaderType type) noexcept
 	_type = type;
 }
 
-void
-ShaderDesc::setSource(const std::string& source) noexcept
-{
-	_source = source;
-}
-
 ShaderType
 ShaderDesc::getType()const noexcept
 {
 	return _type;
 }
 
-const std::string&
-ShaderDesc::getSource() const noexcept
+void
+ShaderDesc::setByteCodes(const std::vector<char>& codes) noexcept
 {
-	return _source;
+	_bytecodes = codes;
+}
+
+const std::vector<char>&
+ShaderDesc::getByteCodes() const noexcept
+{
+	return _bytecodes;
 }
 
 ShaderObjectDesc::ShaderObjectDesc() noexcept
@@ -240,15 +276,18 @@ ShaderObjectDesc::~ShaderObjectDesc() noexcept
 {
 }
 
-void
+bool
 ShaderObjectDesc::addShader(const ShaderDesc& shader) noexcept
 {
-	if (shader.getSource().empty())
-		return;
+	if (shader.getByteCodes().empty())
+		return false;
 
 	auto it = std::find_if(_shaders.begin(), _shaders.end(), [&](const ShaderDesc& shaderDesc) { return shaderDesc.getType() == shader.getType();});
-	if (it == _shaders.end())
-		_shaders.push_back(shader);
+	if (it != _shaders.end())
+		return false;
+
+	_shaders.push_back(shader);
+	return true;
 }
 
 void

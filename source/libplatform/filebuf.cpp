@@ -89,13 +89,9 @@ filebuf::tellg() noexcept
 }
 
 streamsize
-filebuf::size() noexcept
+filebuf::size() const noexcept
 {
-	std::size_t off = this->tellg();
-    this->seekg(0, ios_base::end);
-    std::size_t size = this->tellg();
-    this->seekg(off, ios_base::beg);
-    return size;
+	return _file.size();
 }
 
 int

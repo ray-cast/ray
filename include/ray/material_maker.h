@@ -48,16 +48,20 @@ public:
 	MaterialMaker() noexcept;
 	~MaterialMaker() noexcept;
 
-	MaterialPtr load(MaterialManager& manager, const std::string& filename) except;
 	MaterialPtr load(MaterialManager& manager, iarchive& reader) except;
+	MaterialPtr load(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
+	MaterialPtr load(MaterialManager& manager, const std::string& filename) except;
 
 private:
 
-	MaterialPassPtr instancePass(MaterialManager& manager, iarchive& reader) except;
-	MaterialTechPtr instanceTech(MaterialManager& manager, iarchive& reader) except;
+	void instancePass(MaterialManager& manager, MaterialTechPtr& tech, iarchive& reader) except;
+	void instanceTech(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
+	void instanceSampler(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
 	void instanceParameter(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
-	MaterialParamPtr instanceBuffer(MaterialPtr& material, iarchive& reader) except;
-	ShaderDesc instanceShader(MaterialManager& manager, iarchive& reader) except;
+	void instanceBuffer(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
+	void instanceCodes(MaterialManager& manager, iarchive& reader) except;
+	void instanceShader(MaterialManager& manager, ShaderObjectDesc& program, iarchive& reader) except;
+	void instanceInclude(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
 
 	static VertexType stringToPrimitive(const std::string& primitive) noexcept;
 	static CullMode stringToCullMode(const std::string& cullmode) noexcept;
@@ -74,7 +78,7 @@ private:
 
 private:
 
-	std::map<std::string, std::string> _shaderCodes;
+	std::map<std::string, std::vector<char>> _shaderCodes;
 };
 
 _NAME_END

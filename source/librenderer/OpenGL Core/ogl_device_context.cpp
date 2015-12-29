@@ -62,7 +62,7 @@ OGLDeviceContext::~OGLDeviceContext() noexcept
 }
 
 bool
-OGLDeviceContext::open(WindHandle window) except
+OGLDeviceContext::open(WindHandle window) noexcept
 {
 	if (!_initOpenGL)
 	{
@@ -116,17 +116,29 @@ OGLDeviceContext::close() noexcept
 }
 
 void
-OGLDeviceContext::renderBegin() noexcept
+OGLDeviceContext::setActive(bool active) noexcept
 {
 	assert(_glcontext);
-	_glcontext->setActive(true);
+	_glcontext->setActive(active);
+}
+
+bool 
+OGLDeviceContext::getActive() const noexcept
+{
+	assert(_glcontext);
+	return _glcontext->getActive();
+}
+
+void
+OGLDeviceContext::renderBegin() noexcept
+{
 }
 
 void
 OGLDeviceContext::renderEnd() noexcept
 {
 	assert(_glcontext);
-	_glcontext->setActive(false);
+	_glcontext->present();
 }
 
 void
@@ -174,24 +186,29 @@ OGLDeviceContext::getSwapInterval() const noexcept
 void
 OGLDeviceContext::setGraphicsState(GraphicsStatePtr state) noexcept
 {
-	if (state)
+	if (_state != state)
 	{
-		auto oglState = state->downcast<OGLGraphicsState>();
-		if (oglState)
+		if (state)
 		{
-			oglState->apply(_stateCaptured);
+			auto glstate = state->downcast<OGLGraphicsState>();
+			if (glstate)
+			{
+				glstate->apply(_stateCaptured);
 
-			_state = oglState;
-			_stateCaptured = oglState->getGraphicsStateDesc();
+				_state = glstate;
+				_stateCaptured = glstate->getGraphicsStateDesc();
+			}
+			else
+			{
+				_state = nullptr;
+				_stateDefault->apply(_stateCaptured);
+			}
 		}
 		else
 		{
-			assert(false);
+			_state = nullptr;
+			_stateDefault->apply(_stateCaptured);
 		}
-	}
-	else
-	{
-		_stateDefalut->apply(_stateCaptured);
 	}
 }
 
@@ -323,9 +340,6 @@ OGLDeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 	if (!_inputLayout || !_vbo)
 		return;
 
-	if (_vbo->size() < _inputLayout->getVertexSize() * (renderable.startVertice + renderable.numVertices))
-		return;
-
 	if (_inputLayout->getIndexType() != GL_NONE)
 	{
 		if (!_ibo)
@@ -349,14 +363,14 @@ OGLDeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 	if (_needUpdateLayout)
 	{
 		if (_inputLayout)
-			_inputLayout->bindLayout();
+			_inputLayout->bindLayout(_shaderObject);
 		_needUpdateLayout = false;
 	}
 
 	if (_needUpdateVbo)
 	{
 		if (_vbo)
-			_inputLayout->bindVbo(_vbo);
+			_inputLayout->bindVbo(_vbo, 0);
 		_needUpdateVbo = false;
 	}
 
@@ -369,7 +383,7 @@ OGLDeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 
 	if (_ibo)
 	{
-		GLenum drawType = OGLTypes::asOGLVertexType(primitiveType);
+		GLenum drawType = OGLTypes::asVertexType(primitiveType);
 		GLenum indexType = _inputLayout->getIndexType();
 		GLsizei numInstance = std::max(1, renderable.numInstances);
 		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_inputLayout->getIndexSize() * renderable.startIndice);
@@ -378,7 +392,7 @@ OGLDeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 	else
 	{
 		GLsizei numInstance = std::max(1, renderable.numInstances);
-		GLenum drawType = OGLTypes::asOGLVertexType(primitiveType);
+		GLenum drawType = OGLTypes::asVertexType(primitiveType);
 		glDrawArraysInstancedBaseInstance(drawType, renderable.startVertice, renderable.numVertices, numInstance, renderable.startInstances);
 	}
 }
@@ -567,7 +581,7 @@ OGLDeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, flo
 {
 	GLbitfield mode = 0;
 
-	if (flags & ClearFlags::CLEAR_COLOR)
+	if (flags & ClearFlags::Color)
 	{
 		mode |= GL_COLOR_BUFFER_BIT;
 
@@ -578,7 +592,7 @@ OGLDeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, flo
 		}
 	}
 
-	if (flags & ClearFlags::CLEAR_DEPTH)
+	if (flags & ClearFlags::Depth)
 	{
 		mode |= GL_DEPTH_BUFFER_BIT;
 
@@ -589,7 +603,7 @@ OGLDeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, flo
 		}
 	}
 
-	if (flags & ClearFlags::CLEAR_STENCIL)
+	if (flags & ClearFlags::Stencil)
 	{
 		mode |= GL_STENCIL_BUFFER_BIT;
 
@@ -603,14 +617,14 @@ OGLDeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, flo
 	if (mode != 0)
 	{
 		auto depthWriteMask = _stateCaptured.getDepthState().depthWriteMask;
-		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
+		if (!depthWriteMask && flags & ClearFlags::Depth)
 		{
 			glDepthMask(GL_TRUE);
 		}
 
 		glClear(mode);
 
-		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
+		if (!depthWriteMask && flags & ClearFlags::Depth)
 		{
 			glDepthMask(GL_FALSE);
 		}
@@ -620,10 +634,10 @@ OGLDeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, flo
 void
 OGLDeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
-	if (flags & ClearFlags::CLEAR_DEPTH)
+	if (flags & ClearFlags::Depth)
 	{
 		auto depthWriteMask = _stateCaptured.getDepthState().depthWriteMask;
-		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
+		if (!depthWriteMask && flags & ClearFlags::Depth)
 		{
 			glDepthMask(GL_TRUE);
 		}
@@ -631,19 +645,19 @@ OGLDeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, flo
 		GLfloat f = depth;
 		glClearBufferfv(GL_DEPTH, 0, &f);
 
-		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
+		if (!depthWriteMask && flags & ClearFlags::Depth)
 		{
 			glDepthMask(GL_FALSE);
 		}
 	}
 
-	if (flags & ClearFlags::CLEAR_STENCIL)
+	if (flags & ClearFlags::Stencil)
 	{
 		GLint s = stencil;
 		glClearBufferiv(GL_STENCIL, 0, &s);
 	}
 
-	if (flags & ClearFlags::CLEAR_COLOR)
+	if (flags & ClearFlags::Color)
 	{
 		glClearBufferfv(GL_COLOR, i, color.ptr());
 	}
@@ -667,8 +681,8 @@ OGLDeviceContext::readRenderTexture(GraphicsRenderTexturePtr target, TextureForm
 
 	if (target)
 	{
-		GLenum format = OGLTypes::asOGLFormat(pfd);
-		GLenum type = OGLTypes::asOGLType(pfd);
+		GLenum format = OGLTypes::asTextureFormat(pfd);
+		GLenum type = OGLTypes::asTextureType(pfd);
 
 		if (format != GL_INVALID_ENUM && type != GL_INVALID_ENUM)
 		{
@@ -841,7 +855,7 @@ OGLDeviceContext::initCommandList() noexcept
 	dibo.setUsage(UsageFlags::MAP_WRITE_BIT | UsageFlags::IMMUTABLE_STORAGE);
 
 	_drawIndirectBuffer = std::make_shared<OGLDrawIndirectBuffer>();
-	_drawIndirectBuffer->open(dibo);
+	_drawIndirectBuffer->setup(dibo);
 	_drawIndirectBuffer->bind();
 }
 
@@ -889,10 +903,22 @@ OGLDeviceContext::initStateSystem() noexcept
 
 	_viewport.resize(_maxViewports);
 
-	_stateDefalut = std::make_shared<OGLGraphicsState>();
-	_stateDefalut->setup(GraphicsStateDesc());
+	_stateDefault = std::make_shared<OGLGraphicsState>();
+	_stateDefault->setup(GraphicsStateDesc());
 
 	_stateCaptured = GraphicsStateDesc();
+}
+
+void
+OGLDeviceContext::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+OGLDeviceContext::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

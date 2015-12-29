@@ -77,11 +77,26 @@ private:
 	GLuint _bindingProgram;
 };
 
-class EGLShaderUniform final : public ShaderUniform
+class EGL3ShaderAttribute final : public ShaderAttribute
 {
+	__DeclareSubClass(OGLShaderAttribute, ShaderAttribute)
 public:
-	EGLShaderUniform() noexcept;
-	~EGLShaderUniform() noexcept;
+	EGL3ShaderAttribute() noexcept;
+	~EGL3ShaderAttribute() noexcept;
+
+	void setLocation(GLint location) noexcept;
+	GLint getLocation() const noexcept;
+
+private:
+	GLint  _location;
+};
+
+class EGL3ShaderUniform final : public ShaderUniform
+{
+	__DeclareSubClass(EGL3ShaderUniform, ShaderUniform)
+public:
+	EGL3ShaderUniform() noexcept;
+	~EGL3ShaderUniform() noexcept;
 
 	void setName(const std::string& name) noexcept;
 	void setType(ShaderVariantType type) noexcept;
@@ -92,8 +107,8 @@ public:
 	void setBindingProgram(GLuint program) noexcept;
 	GLuint getBindingProgram() const noexcept;
 private:
-	EGLShaderUniform(const EGLShaderUniform&) noexcept = delete;
-	EGLShaderUniform& operator=(const EGLShaderUniform&) noexcept = delete;
+	EGL3ShaderUniform(const EGL3ShaderUniform&) noexcept = delete;
+	EGL3ShaderUniform& operator=(const EGL3ShaderUniform&) noexcept = delete;
 
 private:
 	EGL3ShaderVariant _value;
@@ -106,13 +121,23 @@ public:
 	EGL3Shader() noexcept;
 	~EGL3Shader() noexcept;
 
-	bool setup(const ShaderDesc& desc) except;
+	bool setup(const ShaderDesc& desc) noexcept;
 	void close() noexcept;
 
 	GLuint getInstanceID() const noexcept;
 
 private:
+	friend class EGL3Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	EGL3Shader(const EGL3Shader&) noexcept = delete;
+	EGL3Shader& operator=(const EGL3Shader&) noexcept = delete;
+
+private:
 	GLuint _instance;
+	GraphicsDeviceWeakPtr _device;
 };
 
 class EGL3ShaderObject final : public GraphicsProgram
@@ -122,7 +147,7 @@ public:
 	EGL3ShaderObject() noexcept;
 	~EGL3ShaderObject() noexcept;
 
-	bool setup(const ShaderObjectDesc& desc) except;
+	bool setup(const ShaderObjectDesc& desc) noexcept;
 	void close() noexcept;
 
 	void setActive(bool active) noexcept;
@@ -139,6 +164,15 @@ private:
 	void _initActiveUniformBlock() noexcept;
 
 private:
+	friend class EGL3Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	EGL3ShaderObject(const EGL3ShaderObject&) noexcept = delete;
+	EGL3ShaderObject& operator=(const EGL3ShaderObject&) noexcept = delete;
+
+private:
 
 	bool _isActive;
 
@@ -148,6 +182,8 @@ private:
 
 	ShaderUniforms    _activeUniforms;
 	ShaderAttributes  _activeAttributes;
+
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

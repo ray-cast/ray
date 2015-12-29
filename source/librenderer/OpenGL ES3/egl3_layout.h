@@ -63,11 +63,16 @@ public:
 	GLsizei getIndexSize() const noexcept;
 	GLsizei getVertexSize() const noexcept;
 
-	void bindLayout() noexcept;
+	void bindLayout(const EGL3ShaderObjectPtr& program) noexcept;
 	void bindVbo(const EGL3VertexBufferPtr& vbo) noexcept;
 	void bindIbo(const EGL3IndexBufferPtr& ibo) noexcept;
 
 	const GraphicsLayoutDesc& getGraphicsLayout() const noexcept;
+
+private:
+	friend class EGL3Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
 
 private:
 	EGL3GraphicsLayout(const EGL3GraphicsLayout&) noexcept = delete;
@@ -80,7 +85,9 @@ private:
 	GLsizei _vertexSize;
 	GraphicsDataPtr _vbo;
 	GraphicsDataPtr _ibo;
+	GraphicsProgramPtr _program;
 	GraphicsLayoutDesc _layout;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

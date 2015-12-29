@@ -45,13 +45,12 @@ class WGLCanvas
 {
 public:
 	WGLCanvas() noexcept;
-	WGLCanvas(WindHandle hwnd) except;
 	~WGLCanvas() noexcept;
 
-	void open(WindHandle hwnd) except;
+	bool open(WindHandle hwnd) noexcept;
 	void close() noexcept;
 
-	void setActive(bool active) except;
+	void setActive(bool active) noexcept;
 	bool getActive() const noexcept;
 
 	void setSwapInterval(SwapInterval interval) noexcept;

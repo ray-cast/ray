@@ -41,7 +41,7 @@ _NAME_BEGIN
 __ImplementSubClass(OGLSampler, GraphicsSampler, "OGLSampler")
 
 OGLSampler::OGLSampler() noexcept
-	: _sampler(0)
+	: _sampler(GL_NONE)
 {
 }
 
@@ -51,13 +51,18 @@ OGLSampler::~OGLSampler() noexcept
 }
 
 bool
-OGLSampler::setup(const GraphicsSamplerDesc& desc) except
+OGLSampler::setup(const GraphicsSamplerDesc& desc) noexcept
 {
 	assert(!_sampler);
 
 	glCreateSamplers(1, &_sampler);
+	if (_sampler == GL_NONE)
+	{
+		GL_PLATFORM_LOG("glCreateSamplers() fail");
+		return false;
+	}
 
-	auto wrap = desc.getSamplerWrap();
+	SamplerWrap wrap = desc.getSamplerWrap();
 	if (SamplerWrap::Repeat == wrap)
 	{
 		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -76,8 +81,13 @@ OGLSampler::setup(const GraphicsSamplerDesc& desc) except
 		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
 	}
+	else
+	{
+		GL_PLATFORM_LOG("Invalid SamplerWrap");
+		return false;
+	}
 
-	auto filter = desc.getSamplerFilter();
+	SamplerFilter filter = desc.getSamplerFilter();
 	if (filter == SamplerFilter::Nearest)
 	{
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -108,8 +118,13 @@ OGLSampler::setup(const GraphicsSamplerDesc& desc) except
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	}
+	else
+	{
+		GL_PLATFORM_LOG("Invalid SamplerFilter");
+		return false;
+	}
 
-	auto anis = desc.getSamplerAnis();
+	SamplerAnis anis = desc.getSamplerAnis();
 	if (anis == SamplerAnis::Anis1)
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
 	else if (anis == SamplerAnis::Anis2)
@@ -120,9 +135,16 @@ OGLSampler::setup(const GraphicsSamplerDesc& desc) except
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
 	else if (anis == SamplerAnis::Anis16)
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
+	else
+	{
+		if (anis != SamplerAnis::Anis0)
+		{
+			GL_PLATFORM_LOG("Invalid SamplerAnis");
+			return false;
+		}
+	}
 
 	_desc = desc;
-
 	return true;
 }
 
@@ -146,6 +168,18 @@ const GraphicsSamplerDesc&
 OGLSampler::getGraphicsSamplerDesc() const noexcept
 {
 	return _desc;
+}
+
+void
+OGLSampler::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+OGLSampler::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

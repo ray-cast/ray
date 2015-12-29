@@ -60,7 +60,7 @@ EGL3DeviceContext::~EGL3DeviceContext() noexcept
 }
 
 bool
-EGL3DeviceContext::open(WindHandle window) except
+EGL3DeviceContext::open(WindHandle window) noexcept
 {
 	if (!_initOpenGL)
 	{
@@ -117,17 +117,28 @@ EGL3DeviceContext::close() noexcept
 }
 
 void
-EGL3DeviceContext::renderBegin() noexcept
+EGL3DeviceContext::setActive(bool active) noexcept
 {
 	assert(_glcontext);
-	_glcontext->setActive(true);
+	_glcontext->setActive(active);
+}
+
+bool
+EGL3DeviceContext::getActive() const noexcept
+{
+	assert(_glcontext);
+	return _glcontext->getActive();
+}
+
+void
+EGL3DeviceContext::renderBegin() noexcept
+{
 }
 
 void
 EGL3DeviceContext::renderEnd() noexcept
 {
-	assert(_glcontext);
-	_glcontext->setActive(false);
+	_glcontext->present();
 }
 
 void
@@ -193,13 +204,13 @@ EGL3DeviceContext::setGraphicsState(GraphicsStatePtr state) noexcept
 			else
 			{
 				_state = nullptr;
-				_stateDefalut->apply(_stateCaptured);
+				_stateDefault->apply(_stateCaptured);
 			}
 		}
 		else
 		{
 			_state = nullptr;
-			_stateDefalut->apply(_stateCaptured);
+			_stateDefault->apply(_stateCaptured);
 		}
 	}
 }
@@ -242,20 +253,16 @@ EGL3DeviceContext::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cn
 {
 	if (data)
 	{
-		auto max = std::numeric_limits<GLsizeiptr>::max();
-		if (cnt < max)
-		{
-			if (data->isInstanceOf<EGL3VertexBuffer>())
-				this->setVertexBufferData(data);
-			else if (data->isInstanceOf<EGL3IndexBuffer>())
-				this->setIndexBufferData(data);
-			else
-				return false;
+		if (data->isInstanceOf<EGL3VertexBuffer>())
+			this->setVertexBufferData(data);
+		else if (data->isInstanceOf<EGL3IndexBuffer>())
+			this->setIndexBufferData(data);
+		else
+			return false;
 
-			auto _data = data->cast<EGL3GraphicsData>();
-			_data->resize((const char*)str, cnt);
-			return true;
-		}
+		auto _data = data->cast<EGL3GraphicsData>();
+		_data->resize((const char*)str, cnt);
+		return true;
 	}
 
 	return false;
@@ -383,7 +390,7 @@ EGL3DeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 	if (_needUpdateLayout)
 	{
 		if (_inputLayout)
-			_inputLayout->bindLayout();
+			_inputLayout->bindLayout(_shaderObject);
 		_needUpdateLayout = false;
 	}
 
@@ -605,7 +612,7 @@ EGL3DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, fl
 {
 	GLbitfield mode = 0;
 
-	if (flags & ClearFlags::CLEAR_COLOR)
+	if (flags & ClearFlags::Color)
 	{
 		mode |= GL_COLOR_BUFFER_BIT;
 
@@ -616,7 +623,7 @@ EGL3DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, fl
 		}
 	}
 
-	if (flags & ClearFlags::CLEAR_DEPTH)
+	if (flags & ClearFlags::Depth)
 	{
 		mode |= GL_DEPTH_BUFFER_BIT;
 
@@ -627,7 +634,7 @@ EGL3DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, fl
 		}
 	}
 
-	if (flags & ClearFlags::CLEAR_STENCIL)
+	if (flags & ClearFlags::Stencil)
 	{
 		mode |= GL_STENCIL_BUFFER_BIT;
 
@@ -641,14 +648,14 @@ EGL3DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, fl
 	if (mode != 0)
 	{
 		auto depthWriteMask = _stateCaptured.getDepthState().depthWriteMask;
-		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
+		if (!depthWriteMask && flags & ClearFlags::Depth)
 		{
 			glDepthMask(GL_TRUE);
 		}
 
 		GL_CHECK(glClear(mode));
 
-		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
+		if (!depthWriteMask && flags & ClearFlags::Depth)
 		{
 			glDepthMask(GL_FALSE);
 		}
@@ -658,10 +665,10 @@ EGL3DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, fl
 void
 EGL3DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
-	if (flags & ClearFlags::CLEAR_DEPTH)
+	if (flags & ClearFlags::Depth)
 	{
 		auto depthWriteMask = _stateCaptured.getDepthState().depthWriteMask;
-		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
+		if (!depthWriteMask && flags & ClearFlags::Depth)
 		{
 			glDepthMask(GL_TRUE);
 		}
@@ -669,19 +676,19 @@ EGL3DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, fl
 		GLfloat f = depth;
 		GL_CHECK(glClearBufferfv(GL_DEPTH, 0, &f));
 
-		if (!depthWriteMask && flags & ClearFlags::CLEAR_DEPTH)
+		if (!depthWriteMask && flags & ClearFlags::Depth)
 		{
 			glDepthMask(GL_FALSE);
 		}
 	}
 
-	if (flags & ClearFlags::CLEAR_STENCIL)
+	if (flags & ClearFlags::Stencil)
 	{
 		GLint s = stencil;
 		GL_CHECK(glClearBufferiv(GL_STENCIL, 0, &s));
 	}
 
-	if (flags & ClearFlags::CLEAR_COLOR)
+	if (flags & ClearFlags::Color)
 	{
 		GL_CHECK(glClearBufferfv(GL_COLOR, i, color.ptr()));
 	}
@@ -746,13 +753,6 @@ GraphicsProgramPtr
 EGL3DeviceContext::getGraphicsProgram() const noexcept
 {
 	return _shaderObject;
-}
-
-void
-EGL3DeviceContext::present() noexcept
-{
-	assert(_glcontext);
-	_glcontext->present();
 }
 
 void
@@ -914,9 +914,20 @@ EGL3DeviceContext::initStateSystem() noexcept
 
     _textureUnits.resize(_maxTextureUnits);
 
-    _stateDefalut = std::make_shared<EGL3GraphicsState>();
+    _stateDefault = std::make_shared<EGL3GraphicsState>();
     _stateCaptured = GraphicsStateDesc();
+}
 
+void
+EGL3DeviceContext::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL3DeviceContext::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

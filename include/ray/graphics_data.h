@@ -80,6 +80,9 @@ public:
 	void setType(GraphicsStream type) noexcept;
 	GraphicsStream getType() const noexcept;
 
+	void setStride(std::uint32_t stride) noexcept;
+	std::uint32_t getStride() const noexcept;
+
 	void setStream(std::uint8_t* data) noexcept;
 	std::uint8_t* getStream() const noexcept;
 
@@ -88,6 +91,7 @@ public:
 
 private:
 	std::uint32_t _usage;
+	std::uint32_t _stride;
 	std::uint8_t* _data;
 	std::uint32_t _dataSize;
 	GraphicsStream _type;

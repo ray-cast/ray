@@ -56,7 +56,7 @@ public:
     streamoff seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
     streamoff tellg() noexcept;
 
-    streamsize size() noexcept;
+    streamsize size() const noexcept;
     void resize(streamsize size) noexcept;
 
     char* map() noexcept;
@@ -98,6 +98,7 @@ public:
 	MemoryWrite() noexcept;
 	~MemoryWrite() noexcept;
 
+	streamsize size() const noexcept;
 	void resize(streamsize size) noexcept;
 
 	char* map() noexcept;

@@ -1,0 +1,46 @@
+<?xml version='1.0'?>
+<effect language="hlsl">
+    <include name="sys:fx/GBuffer.fxml"/>
+    <parameter name="matModel" semantic="matModel" />
+    <parameter name="matModelInverseTranspose" semantic="matModelInverseTranspose" />
+    <parameter name="matViewProject" semantic="matViewProject"/>
+    <parameter name="decal" type="texture"/>
+    <shader>
+        <![CDATA[
+            uniform float4x4 matModel;
+            uniform float4x4 matModelInverseTranspose;
+            uniform float4x4 matViewProject;
+            uniform Texture2D decal;
+
+            float4 sampleSphere(Texture2D source, float3 normal)
+            {
+                const float invPI = 1.0f / 3.1415926;
+                float2 coord = float2(atan2(normal.x, -normal.z) * invPI * 0.5f + 0.5f, acos(normal.y) * invPI);
+                return source.Sample(PointClamp, coord);
+            }
+
+            void SkyVS(
+                in float4 Position : POSITION,
+                in float4 Normal : NORMAL0,
+                out float4 oNormal : TEXCOORD0,
+                out float4 oPosition : SV_Position)
+            {
+                oNormal = mul(Normal, matModelInverseTranspose);
+                oPosition = mul(mul(Position, matModel), matViewProject);
+            }
+
+            float4 SkyPS(in float4 normal : TEXCOORD0) : SV_Target
+            {
+                return rgba2srgba(sampleSphere(decal, normal.xyz));
+            }
+        ]]>
+    </shader>
+    <technique name="opaque">
+        <pass name="specific">
+            <state name="vertex" value="SkyVS"/>
+            <state name="fragment" value="SkyPS"/>
+
+            <state name="cullmode" value="front"/>
+        </pass>
+    </technique>
+</effect>

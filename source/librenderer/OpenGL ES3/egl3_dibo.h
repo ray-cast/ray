@@ -46,10 +46,9 @@ class EGL3DrawIndirectBuffer final : public EGL3GraphicsData
 	__DeclareSubClass(EGL3DrawIndirectBuffer, EGL3GraphicsData)
 public:
 	EGL3DrawIndirectBuffer() noexcept;
-	EGL3DrawIndirectBuffer(const GraphicsDataDesc& desc) noexcept;
 	~EGL3DrawIndirectBuffer() noexcept;
 
-	void open(const GraphicsDataDesc& desc) noexcept;
+	bool setup(const GraphicsDataDesc& desc) noexcept;
 	void close() noexcept;
 
 	void bind() noexcept;

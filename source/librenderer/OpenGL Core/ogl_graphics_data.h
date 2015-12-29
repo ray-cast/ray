@@ -63,12 +63,18 @@ public:
 
 	GLuint getInstanceID() const noexcept;
 
+protected:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
 private:
 	OGLGraphicsData(const OGLGraphicsData&) noexcept = delete;
 	OGLGraphicsData& operator=(const OGLGraphicsData&) noexcept = delete;
 
 private:
 	OGLGraphicsBuf* _buf;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

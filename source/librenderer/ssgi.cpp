@@ -83,7 +83,7 @@ SSGI::computeRawAO(RenderPipeline& pipeline, GraphicsRenderTexturePtr dest) noex
 	_clipInfo->assign(pipeline.getCamera()->getClipConstant());
 
 	pipeline.setRenderTexture(dest);
-	pipeline.drawSceneQuad(_ambientOcclusionPass);
+	pipeline.drawScreenQuad(_ambientOcclusionPass);
 }
 
 void
@@ -115,7 +115,7 @@ SSGI::blurDirection(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, G
 	_blurTexSource->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(dest);
-	pipeline.drawSceneQuad(_ambientOcclusionBlurPass);
+	pipeline.drawScreenQuad(_ambientOcclusionBlurPass);
 }
 
 void
@@ -124,7 +124,7 @@ SSGI::shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, Graphic
 	_copyAmbient->assign(ao->getResolveTexture());
 
 	pipeline.setRenderTexture(source);
-	pipeline.drawSceneQuad(_ambientOcclusionCopyPass);
+	pipeline.drawScreenQuad(_ambientOcclusionCopyPass);
 }
 
 void

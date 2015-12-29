@@ -4,34 +4,34 @@
 // +----------------------------------------------------------------------
 // | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
-// | * Redistribution and use of this software in source and binary forms, 
-// |   with or without modification, are permitted provided that the following 
+// | * Redistribution and use of this software in source and binary forms,
+// |   with or without modification, are permitted provided that the following
 // |   conditions are met:
 // |
 // | * Redistributions of source code must retain the above
 // |   copyright notice, this list of conditions and the
 // |   following disclaimer.
-// | 
+// |
 // | * Redistributions in binary form must reproduce the above
 // |   copyright notice, this list of conditions and the
 // |   following disclaimer in the documentation and/or other
 // |   materials provided with the distribution.
-// | 
+// |
 // | * Neither the name of the ray team, nor the names of its
 // |   contributors may be used to endorse or promote products
 // |   derived from this software without specific prior
 // |   written permission of the ray team.
 // |
-// | THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
-// | "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+// | THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// | "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 // | LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// | A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
+// | A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
 // | OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// | SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+// | SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
 // | LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// | DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
-// | THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
-// | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+// | DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// | THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "egl2_canvas.h"
@@ -39,60 +39,47 @@
 _NAME_BEGIN
 
 EGL2Canvas::EGL2Canvas() noexcept
-    : _display(EGL_NO_DISPLAY)
-    , _surface(EGL_NO_SURFACE)
-    , _context(EGL_NO_CONTEXT)
-    , _config(0)
-	, _interval(SwapInterval::GPU_VSYNC)
-	, _isActive(false)
-{
-	initPixelFormat(_fbconfig, _ctxconfig);
-}
-
-EGL2Canvas::EGL2Canvas(WindHandle hwnd) except
 	: _display(EGL_NO_DISPLAY)
 	, _surface(EGL_NO_SURFACE)
 	, _context(EGL_NO_CONTEXT)
 	, _config(0)
-	, _interval(SwapInterval::GPU_VSYNC)
+	, _interval(SwapInterval::Vsync)
 	, _isActive(false)
 {
 	initPixelFormat(_fbconfig, _ctxconfig);
-
-	this->open(hwnd);
 }
 
 EGL2Canvas::~EGL2Canvas() noexcept
 {
-    this->close();
+	this->close();
 }
-void
-EGL2Canvas::open(WindHandle hwnd) except
+
+bool
+EGL2Canvas::open(WindHandle hwnd) noexcept
 {
 	EGLint attribs[80];
 	EGLint index = 0, mask = 0, startegy = 0;
 
-#if !defined(__ANDROID__)
 	if (_ctxconfig.forward)
 	{
 		attribs[index++] = EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE;
 		attribs[index++] = EGL_TRUE;
 	}
 
-    if (_ctxconfig.api != GPU_OPENGL_ES_API)
-    {
-        if (_ctxconfig.profile == GPU_GL_CORE_PROFILE)
-            mask = EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT;
+	if (_ctxconfig.api != OPENGL_ES_API)
+	{
+		if (_ctxconfig.profile == GL_CORE_PROFILE)
+			mask = EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT;
 
-        if (_ctxconfig.profile == GPU_GL_COMPAT_PROFILE)
-            mask = EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT;
-    }
+		if (_ctxconfig.profile == GL_COMPAT_PROFILE)
+			mask = EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT;
+	}
 
 	if (_ctxconfig.robustness)
 	{
-		if (_ctxconfig.robustness == GPU_GL_REST_NOTIFICATION)
+		if (_ctxconfig.robustness == GL_REST_NOTIFICATION)
 			startegy = EGL_NO_RESET_NOTIFICATION;
-		else if (_ctxconfig.robustness == GPU_GL_LOSE_CONTEXT_ONREST)
+		else if (_ctxconfig.robustness == GL_LOSE_CONTEXT_ONREST)
 			startegy = EGL_LOSE_CONTEXT_ON_RESET;
 
 		if (startegy)
@@ -104,7 +91,6 @@ EGL2Canvas::open(WindHandle hwnd) except
 			attribs[index++] = EGL_TRUE;
 		}
 	}
-#endif
 
 	if (_ctxconfig.major > 0 && _ctxconfig.major < 4)
 	{
@@ -121,8 +107,8 @@ EGL2Canvas::open(WindHandle hwnd) except
 		attribs[index++] = mask;
 	}
 
-    attribs[index++] = EGL_NONE;
-    attribs[index++] = EGL_NONE;
+	attribs[index++] = EGL_NONE;
+	attribs[index++] = EGL_NONE;
 
 	const EGLint pixelformat[] =
 	{
@@ -143,44 +129,61 @@ EGL2Canvas::open(WindHandle hwnd) except
 
 	_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	if (_display == EGL_NO_DISPLAY)
-		throw failure(__TEXT("eglGetDisplay() fail"));
+	{
+		GL_PLATFORM_LOG("eglGetDisplay() fail : %d", eglGetError());
+		return false;
+	}
 
-	if (::eglInitialize(_display, 0, 0) == EGL_FALSE)
-		throw failure(__TEXT("eglInitialize() fail"));
+	if (::eglInitialize(_display, &_ctxconfig.major, &_ctxconfig.minor) == EGL_FALSE)
+	{
+		GL_PLATFORM_LOG("eglInitialize() fail : %d", eglGetError());
+		return false;
+	}
 
-	if (::eglBindAPI(EGL_OPENGL_ES_API) != EGL_TRUE)
-		throw failure(__TEXT("eglBindAPI() fail"));
+	if (::eglBindAPI(EGL_OPENGL_ES_API) == EGL_FALSE)
+	{
+		GL_PLATFORM_LOG("eglBindAPI() fail : %d", eglGetError());
+		return false;
+	}
 
 	EGLint num = 0;
 	if (::eglChooseConfig(_display, pixelformat, &_config, 1, &num) == EGL_FALSE)
-		throw failure(__TEXT("eglChooseConfig() fail"));
+	{
+		GL_PLATFORM_LOG("eglChooseConfig() fail : %d", eglGetError());
+		return false;
+	}
 
 	_surface = ::eglCreateWindowSurface(_display, _config, _hwnd, NULL);
-	if (!_surface)
-		throw failure(__TEXT("eglCreateContext() fail"));
+	if (eglGetError() != EGL_SUCCESS)
+	{
+		GL_PLATFORM_LOG("eglCreateContext() fail : %d", eglGetError());
+		return false;
+	}
 
-    _context = ::eglCreateContext(_display, _config, _ctxconfig.share, attribs);
-    if (!_context)
-		throw failure(__TEXT("eglCreateContext() fail"));
+	_context = ::eglCreateContext(_display, _config, _ctxconfig.share, attribs);
+	if (eglGetError() != EGL_SUCCESS)
+	{
+		GL_PLATFORM_LOG("eglCreateContext() fail : %d", eglGetError());
+		return false;
+	}
 
-	if (!::eglMakeCurrent(_display, _surface, _surface, _context))
-		throw failure(__TEXT("eglMakeCurrent() fail"));
+	return true;
 }
 
 void
 EGL2Canvas::close() noexcept
 {
-    if (_surface != EGL_NO_SURFACE)
-    {
-        ::eglDestroySurface(_display, _surface);
-        _surface = EGL_NO_SURFACE;
-    }
+	if (_surface != EGL_NO_SURFACE)
+	{
+		::eglDestroySurface(_display, _surface);
+		_surface = EGL_NO_SURFACE;
+	}
 
-    if (_context != EGL_NO_CONTEXT)
-    {
-        ::eglDestroyContext(_display, _context);
-        _context = EGL_NO_CONTEXT;
-    }
+	if (_context != EGL_NO_CONTEXT)
+	{
+		::eglDestroyContext(_display, _context);
+		_context = EGL_NO_CONTEXT;
+	}
 
 	if (_display != EGL_NO_DISPLAY)
 	{
@@ -190,19 +193,25 @@ EGL2Canvas::close() noexcept
 }
 
 void
-EGL2Canvas::setActive(bool active) except
+EGL2Canvas::setActive(bool active) noexcept
 {
 	if (_isActive != active)
 	{
 		if (active)
 		{
-			if (!eglMakeCurrent(_display, _surface, _surface, _context))
-				throw failure(__TEXT("eglMakeCurrent() fail"));
+			if (eglMakeCurrent(_display, _surface, _surface, _context) == EGL_FALSE)
+			{
+				GL_PLATFORM_LOG("eglMakeCurrent() fail : %d", eglGetError());
+				return;
+			}
 		}
 		else
 		{
-			if (!eglMakeCurrent(_display, _surface, _surface, EGL_NO_CONTEXT))
-				throw failure(__TEXT("eglMakeCurrent() fail"));
+			if (eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) == EGL_FALSE)
+			{
+				GL_PLATFORM_LOG("eglMakeCurrent() fail : %d", eglGetError());
+				return;
+			}
 		}
 
 		_isActive = active;
@@ -218,27 +227,31 @@ EGL2Canvas::getActive() const noexcept
 void
 EGL2Canvas::setSwapInterval(SwapInterval interval) noexcept
 {
-    assert(_display != EGL_NO_DISPLAY);
+	assert(_display != EGL_NO_DISPLAY);
 
 	if (_interval != interval)
 	{
 		switch (interval)
 		{
-		case ray::GPU_FREE:
-			eglSwapInterval(_display, 0);
+		case SwapInterval::Free:
+			if (eglSwapInterval(_display, 0) == GL_FALSE)
+				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Free) fail : %d", eglGetError());
 			break;
-		case ray::GPU_VSYNC:
-			eglSwapInterval(_display, 1);
+		case SwapInterval::Vsync:
+			if (eglSwapInterval(_display, 1) == GL_FALSE)
+				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Vsync) fail : %d", eglGetError());
 			break;
-		case ray::GPU_FPS30:
-			eglSwapInterval(_display, 2);
+		case SwapInterval::Fps30:
+			if (eglSwapInterval(_display, 2) == GL_FALSE)
+				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Fps30) fail : %d", eglGetError());
 			break;
-		case ray::GPU_FPS15:
-			eglSwapInterval(_display, 3);
+		case SwapInterval::Fps15:
+			if (eglSwapInterval(_display, 3) == GL_FALSE)
+				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Fps15) fail : %d", eglGetError());
 			break;
 		default:
-			assert(false);
-			eglSwapInterval(_display, 1);
+			GL_PLATFORM_LOG("Invlid SwapInterval");
+			return;
 		}
 
 		_interval = interval;
@@ -254,9 +267,12 @@ EGL2Canvas::getSwapInterval() const noexcept
 void
 EGL2Canvas::present() noexcept
 {
-    assert(_display != EGL_NO_DISPLAY);
-    assert(_surface != EGL_NO_SURFACE);
-	::eglSwapBuffers(_display, _surface);
+	assert(_isActive);
+	assert(_display != EGL_NO_DISPLAY);
+	assert(_surface != EGL_NO_SURFACE);
+
+	if (::eglSwapBuffers(_display, _surface) == EGL_FALSE)
+		GL_PLATFORM_LOG("eglSwapBuffers() fail : %d", eglGetError());
 }
 
 WindHandle
@@ -286,9 +302,9 @@ EGL2Canvas::initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noex
 	ctxconfig.minor = 0;
 	ctxconfig.release = 0;
 	ctxconfig.robustness = 0;
-	ctxconfig.share = nullptr;
-	ctxconfig.api = GPU_OPENGL_ES_API;
-	ctxconfig.profile = GPU_GL_CORE_PROFILE;
+	ctxconfig.share = EGL_NO_CONTEXT;
+	ctxconfig.api = GLapi::OPENGL_ES_API;
+	ctxconfig.profile = GLattr::GL_CORE_PROFILE;
 	ctxconfig.forward = 0;
 	ctxconfig.multithread = false;
 }

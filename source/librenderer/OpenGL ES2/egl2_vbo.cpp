@@ -46,23 +46,17 @@ EGL2VertexBuffer::EGL2VertexBuffer() noexcept
 {
 }
 
-EGL2VertexBuffer::EGL2VertexBuffer(const GraphicsDataDesc& desc) noexcept
-	: EGL2GraphicsData(&_vertexData)
-{
-	this->open(desc);
-}
-
 EGL2VertexBuffer::~EGL2VertexBuffer() noexcept
 {
 	this->close();
 }
 
-void
-EGL2VertexBuffer::open(const GraphicsDataDesc& desc) noexcept
+bool
+EGL2VertexBuffer::setup(const GraphicsDataDesc& desc) noexcept
 {
 	assert(desc.getType() == GraphicsStream::VBO);
 	assert(desc.getStreamSize() > 0);
-	_vertexData.open(desc);
+	return _vertexData.open(desc);
 }
 
 void

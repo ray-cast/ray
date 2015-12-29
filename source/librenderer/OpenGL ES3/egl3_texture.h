@@ -59,14 +59,20 @@ public:
 
 private:
 
-	static void applySamplerWrap(GLenum, SamplerWrap wrap) noexcept;
-	static void applySamplerFilter(GLenum target, SamplerFilter filter) noexcept;
-	static void applyTextureAnis(GLenum target, SamplerAnis anis) noexcept;
+	static bool applySamplerWrap(GLenum, SamplerWrap wrap) noexcept;
+	static bool applySamplerFilter(GLenum target, SamplerFilter filter) noexcept;
+	static bool applySamplerAnis(GLenum target, SamplerAnis anis) noexcept;
+
+private:
+	friend class EGL3Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
 
 private:
 	GLenum _target;
 	GLuint _texture;
 	GraphicsTextureDesc _textureDesc;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

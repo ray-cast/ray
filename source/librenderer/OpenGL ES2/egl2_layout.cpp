@@ -35,6 +35,9 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "egl2_layout.h"
+#include "egl2_ibo.h"
+#include "egl2_vbo.h"
+#include "egl2_shader.h"
 
 _NAME_BEGIN
 
@@ -54,7 +57,7 @@ EGL2GraphicsLayout::~EGL2GraphicsLayout() noexcept
 bool
 EGL2GraphicsLayout::open(const GraphicsLayoutDesc& layout) noexcept
 {
-	_indexType = EGL2Types::asEGL2IndexType(layout.getIndexType());
+	_indexType = EGL2Types::asIndexType(layout.getIndexType());
 	if (_indexType == GL_INVALID_ENUM)
 		return false;
 
@@ -133,14 +136,78 @@ EGL2GraphicsLayout::getVertexSize() const noexcept
 }
 
 void
-EGL2GraphicsLayout::getGraphicsLayout(GraphicsLayoutDesc& layout) const noexcept
+EGL2GraphicsLayout::bindLayout(const EGL2ShaderObjectPtr& program) noexcept
 {
-	layout = _layout;
+	if (_program != program)
+	{
+		GLuint offset = 0;
+
+		auto& components = this->getVertexComponents();
+		for (auto& it : components)
+		{
+			GLuint attribIndex = GL_INVALID_ENUM;
+			GLuint bindingIndex = it.getVertexSlot();
+			GLenum type = EGL2Types::asVertexFormat(it.getVertexFormat());
+
+			auto& attributes = program->getActiveAttributes();
+			for (auto& attrib : attributes)
+			{
+				if (attrib->getSemanticIndex() == it.getSemanticIndex() && attrib->getSemantic() == it.getSemantic())
+				{
+					attribIndex = attrib->downcast<EGL2ShaderAttribute>()->getLocation();
+					break;
+				}
+			}
+
+			if (attribIndex != GL_INVALID_ENUM && it.getVertexDivisor() == 0)
+			{
+				glEnableVertexAttribArray(attribIndex);
+				glVertexAttribPointer(attribIndex, it.getVertexCount(), type, GL_FALSE, _vertexSize, (GLchar*)offset);
+			}
+
+			offset += it.getVertexSize();
+		}
+
+		_program = program;
+	}
 }
 
 void
-EGL2GraphicsLayout::bindLayout() noexcept
+EGL2GraphicsLayout::bindVbo(const EGL2VertexBufferPtr& vbo) noexcept
 {
+	if (_vbo != vbo)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, vbo->getInstanceID());
+		_vbo = vbo;
+	}
+}
+
+void
+EGL2GraphicsLayout::bindIbo(const EGL2IndexBufferPtr& ibo) noexcept
+{
+	if (_ibo != ibo)
+	{
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID());
+		_ibo = ibo;
+	}
+}
+
+const GraphicsLayoutDesc&
+EGL2GraphicsLayout::getGraphicsLayout() const noexcept
+{
+	return _layout;
+}
+
+void
+EGL2GraphicsLayout::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL2GraphicsLayout::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

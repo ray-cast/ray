@@ -50,9 +50,6 @@ public:
 	void setLocation(GLint location) noexcept;
 	GLint getLocation() const noexcept;
 
-	void setBindingProgram(GLuint program) noexcept;
-	GLuint getBindingProgram() const noexcept;
-
 	void setType(ShaderVariantType type) noexcept;
 	ShaderVariantType getType() const noexcept;
 
@@ -103,28 +100,38 @@ private:
 		std::vector<float4>* farray4;
 	} _value;
 
-	ShaderVariantType _type;
-
-	ShaderVariants _params;
-
 	GLint _location;
-	GLuint _bindingProgram;
+
+	ShaderVariantType _type;
+	ShaderVariants _params;
 };
 
-class EGLShaderUniform final : public ShaderUniform
+class EGL2ShaderAttribute final : public ShaderAttribute
 {
+	__DeclareSubClass(OGLShaderAttribute, ShaderAttribute)
 public:
-	EGLShaderUniform() noexcept;
-	~EGLShaderUniform() noexcept;
+	EGL2ShaderAttribute() noexcept;
+	~EGL2ShaderAttribute() noexcept;
+
+	void setLocation(GLint location) noexcept;
+	GLint getLocation() const noexcept;
+
+private:
+	GLint  _location;
+};
+
+class EGL2ShaderUniform final : public ShaderUniform
+{
+	__DeclareSubClass(EGL2ShaderUniform, ShaderUniform)
+public:
+	EGL2ShaderUniform() noexcept;
+	~EGL2ShaderUniform() noexcept;
 
 	void setName(const std::string& name) noexcept;
 	void setType(ShaderVariantType type) noexcept;
 
 	void setLocation(GLint location) noexcept;
 	GLint getLocation() const noexcept;
-
-	void setBindingProgram(GLuint program) noexcept;
-	GLuint getBindingProgram() const noexcept;
 
 	bool getBool() const noexcept;
 	int getInt() const noexcept;
@@ -138,50 +145,57 @@ public:
 	const std::vector<float>& getFloatArray() const noexcept;
 	const std::vector<float2>& getFloat2Array() const noexcept;
 
-	TexturePtr getTexture() const noexcept;
+	GraphicsTexturePtr getTexture() const noexcept;
 	GraphicsSamplerPtr getSampler() const noexcept;
 
 private:
-	EGLShaderUniform(const EGLShaderUniform&) noexcept = delete;
-	EGLShaderUniform& operator=(const EGLShaderUniform&) noexcept = delete;
+	EGL2ShaderUniform(const EGL2ShaderUniform&) noexcept = delete;
+	EGL2ShaderUniform& operator=(const EGL2ShaderUniform&) noexcept = delete;
 
 private:
 	EGL2ShaderVariant _value;
 };
 
-class EGL2Shader final : public Shader
+class EGL2Shader final : public GraphicsShader
 {
+	__DeclareSubClass(EGL2Shader, GraphicsShader)
 public:
 	EGL2Shader() noexcept;
 	~EGL2Shader() noexcept;
 
-	virtual bool setup() except;
-	virtual void close() noexcept;
+	bool setup(const ShaderDesc& desc) noexcept;
+	void close() noexcept;
 
-	virtual std::size_t getInstanceID() const noexcept;
+	GLuint getInstanceID() const noexcept;
+
+private:
+	friend class EGL2Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	EGL2Shader(const EGL2Shader&) noexcept = delete;
+	EGL2Shader& operator=(const EGL2Shader&) noexcept = delete;
 
 private:
 	GLuint _instance;
+	GraphicsDeviceWeakPtr _device;
 };
 
-class EGL2ShaderObject final : public ShaderObject
+class EGL2ShaderObject final : public GraphicsProgram
 {
+	__DeclareSubClass(EGL2ShaderObject, GraphicsProgram)
 public:
 	EGL2ShaderObject() noexcept;
 	~EGL2ShaderObject() noexcept;
 
-	bool setup() except;
+	bool setup(const ShaderObjectDesc& desc) noexcept;
 	void close() noexcept;
 
 	void setActive(bool active) noexcept;
 	bool getActive() noexcept;
 
-	void addShader(ShaderPtr shader) noexcept;
-	void removeShader(ShaderPtr shader) noexcept;
-
-	const Shaders& getShaders() const noexcept;
-
-	std::size_t getInstanceID() noexcept;
+	GLuint getInstanceID() const noexcept;
 
 	ShaderUniforms& getActiveUniforms() noexcept;
 	ShaderAttributes& getActiveAttributes() noexcept;
@@ -189,8 +203,16 @@ public:
 private:
 	void _initActiveAttribute() noexcept;
 	void _initActiveUniform() noexcept;
+	void _updateShaderUniform(ShaderUniformPtr it) noexcept;
 
-	void _updateShaderUniform(ShaderUniformPtr uniform) noexcept;
+private:
+	friend class EGL2Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	EGL2ShaderObject(const EGL2ShaderObject&) noexcept = delete;
+	EGL2ShaderObject& operator=(const EGL2ShaderObject&) noexcept = delete;
 
 private:
 
@@ -198,10 +220,12 @@ private:
 
 	GLuint _program;
 
-	Shaders _shaders;
+	EGL2Shaders _shaders;
 
 	ShaderUniforms    _activeUniforms;
 	ShaderAttributes  _activeAttributes;
+
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

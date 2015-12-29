@@ -79,6 +79,7 @@
     <object>
         <attribute name="sun"/>
         <attribute position="0, 250, 0"/>
+        <attribute lookat="0,0,1" />
         <attribute up="0,0,1"/>
         <attribute active="true"/>
         <component class="Light">

@@ -177,10 +177,10 @@ AnimotionComponent::_updateVertex(MeshPropertyPtr mesh, MeshPropertyPtr model)
 		auto p3 = vertices[i] - b3.getPosition();
 		auto p4 = vertices[i] - b4.getPosition();
 
-		auto v1 = b1.getTransform() * p1;
-		auto v2 = b2.getTransform() * p2;
-		auto v3 = b3.getTransform() * p3;
-		auto v4 = b4.getTransform() * p4;
+		auto v1 = p1 * b1.getTransform();
+		auto v2 = p2 * b2.getTransform();
+		auto v3 = p3 * b3.getTransform();
+		auto v4 = p4 * b4.getTransform();
 
 		mesh->getVertexArray()[i] = weight.weight1 * v1 + weight.weight2 * v2 + weight.weight3 * v3 + weight.weight4 * v4;
 	}

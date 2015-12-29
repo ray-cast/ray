@@ -241,27 +241,32 @@ GameScene::instanceObject(iarchive& reader, GameObjectPtr parent) except
 void
 GameScene::load(iarchive& reader) except
 {
-	std::string nodeName;
-	nodeName = reader.getCurrentNodeName();
-	if (nodeName == "scene")
+	if (reader.getCurrentNodeName() == "xml")
 	{
 		reader.setToFirstChild();
 
-		do
+		std::string nodeName;
+		nodeName = reader.getCurrentNodeName();
+		if (nodeName == "scene")
 		{
-			nodeName = reader.getCurrentNodeName();
-			if (nodeName == "attribute")
-			{
-				std::string name = "unknown";
-				reader >> make_archive(name, "name");
+			reader.setToFirstChild();
 
-				this->setName(name);
-			}
-			else if (nodeName == "object")
+			do
 			{
-				instanceObject(reader, this->getRootObject());
-			}
-		} while (reader.setToNextChild());
+				nodeName = reader.getCurrentNodeName();
+				if (nodeName == "attribute")
+				{
+					std::string name = "unknown";
+					reader >> make_archive(name, "name");
+
+					this->setName(name);
+				}
+				else if (nodeName == "object")
+				{
+					instanceObject(reader, this->getRootObject());
+				}
+			} while (reader.setToNextChild());
+		}
 	}
 }
 _NAME_END

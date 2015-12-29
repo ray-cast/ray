@@ -45,6 +45,10 @@
 
 _NAME_BEGIN
 
+#ifndef MAX_VERTEX_UNIT
+#	define MAX_VERTEX_UNIT 16
+#endif
+
 #ifndef MAX_TEXTURE_UNIT
 #	define MAX_TEXTURE_UNIT 32
 #endif
@@ -69,6 +73,8 @@ typedef std::shared_ptr<class GraphicsRenderTexture> GraphicsRenderTexturePtr;
 typedef std::shared_ptr<class GraphicsMultiRenderTexture> GraphicsMultiRenderTexturePtr;
 typedef std::shared_ptr<class GraphicsShader> GraphicsShaderPtr;
 typedef std::shared_ptr<class GraphicsProgram> GraphicsProgramPtr;
+
+typedef std::weak_ptr<GraphicsDevice>  GraphicsDeviceWeakPtr;
 
 typedef std::shared_ptr<class ShaderDesc> ShaderDescPtr;
 typedef std::shared_ptr<class ShaderVariant> ShaderVariantPtr;
@@ -100,137 +106,136 @@ enum
 
 enum SwapInterval
 {
-	GPU_FREE,
-	GPU_VSYNC,
-	GPU_FPS30,
-	GPU_FPS15,
+	Free,
+	Vsync,
+	Fps30,
+	Fps15,
 };
 
 enum GLapi
 {
-	GPU_OPENGL_API,
-	GPU_OPENGL_ES_API
+	OPENGL_API,
+	OPENGL_ES_API
 };
 
 enum GLattr
 {
-	GPU_GL_RED_SIZE,
-	GPU_GL_GREEN_SIZE,
-	GPU_GL_BLUE_SIZE,
-	GPU_GL_ALPHA_SIZE,
-	GPU_GL_BUFFER_SIZE,
-	GPU_GL_DOUBLEBUFFER,
-	GPU_GL_DEPTH_SIZE,
-	GPU_GL_STENCIL_SIZE,
-	GPU_GL_ACCUM_RED_SIZE,
-	GPU_GL_ACCUM_GREEN_SIZE,
-	GPU_GL_ACCUM_BLUE_SIZE,
-	GPU_GL_ACCUM_ALPHA_SIZE,
-	GPU_GL_STEREO,
-	GPU_GL_MULTISAMPLEBUFFERS,
-	GPU_GL_MULTISAMPLESAMPLES,
-	GPU_GL_ACCELERATED_VISUAL,
-	GPU_GL_RETAINED_BACKING,
-	GPU_GL_CONTEXT_MAJOR_VERSION,
-	GPU_GL_CONTEXT_MINOR_VERSION,
-	GPU_GL_CONTEXT_EGL,
-	GPU_GL_CONTEXT_FLAGS,
-	GPU_GL_CONTEXT_PROFILE_MASK,
-	GPU_GL_SHARE_WITH_CURRENT_CONTEXT,
-	GPU_GL_FRAMEBUFFER_SRGB_CAPABLE,
-	GPU_GL_DEBUG_FLAG,
-	GPU_GL_CORE_PROFILE,
-	GPU_GL_COMPAT_PROFILE,
-	GPU_GL_ANY_PROFILE,
-	GPU_GL_REST_NOTIFICATION,
-	GPU_GL_LOSE_CONTEXT_ONREST
+	GL_RED_SIZE,
+	GL_GREEN_SIZE,
+	GL_BLUE_SIZE,
+	GL_ALPHA_SIZE,
+	GL_BUFFER_SIZE,
+	GL_DOUBLEBUFFER,
+	GL_DEPTH_SIZE,
+	GL_STENCIL_SIZE,
+	GL_ACCUM_RED_SIZE,
+	GL_ACCUM_GREEN_SIZE,
+	GL_ACCUM_BLUE_SIZE,
+	GL_ACCUM_ALPHA_SIZE,
+	GL_STEREO,
+	GL_MULTISAMPLEBUFFERS,
+	GL_MULTISAMPLESAMPLES,
+	GL_ACCELERATED_VISUAL,
+	GL_RETAINED_BACKING,
+	GL_CONTEXT_MAJOR_VERSION,
+	GL_CONTEXT_MINOR_VERSION,
+	GL_CONTEXT_EGL,
+	GL_CONTEXT_FLAGS,
+	GL_CONTEXT_PROFILE_MASK,
+	GL_SHARE_WITH_CURRENT_CONTEXT,
+	GL_FRAMEBUFFER_SRGB_CAPABLE,
+	GL_DEBUG_FLAG,
+	GL_CORE_PROFILE,
+	GL_COMPAT_PROFILE,
+	GL_ANY_PROFILE,
+	GL_REST_NOTIFICATION,
+	GL_LOSE_CONTEXT_ONREST
 };
 
 enum CompareFunction
 {
-	GPU_NONE,
-	GPU_LEQUAL,
-	GPU_EQUAL,
-	GPU_GREATER,
-	GPU_LESS,
-	GPU_GEQUAL,
-	GPU_NOTEQUAL,
-	GPU_ALWAYS,
-	GPU_NEVER,
+	None,
+	Lequal,
+	Equal,
+	Greater,
+	Less,
+	Gequal,
+	NotEqual,
+	Always,
+	Never,
 };
 
 enum BlendFactor
 {
-	GPU_ZERO,
-	GPU_ONE,
-	GPU_DSTCOL,
-	GPU_SRCCOLOR,
-	GPU_SRCALPHA,
-	GPU_DSTALPHA,
-	GPU_ONEMINUSSRCCOL,
-	GPU_ONEMINUSDSTCOL,
-	GPU_ONEMINUSSRCALPHA,
-	GPU_ONEMINUSDSTALPHA,
-	GPU_CONSTANT_COLOR,
-	GPU_CONSTANT_ALPHA,
-	GPU_ONE_MINUS_CONSTANT_COLOR,
-	GPU_ONE_MINUS_CONSTANT_ALPHA,
-	GPU_SRC_ALPHA_SATURATE
+	Zero,
+	One,
+	DstCol,
+	SrcColor,
+	SrcAlpha,
+	DstAlpha,
+	OneMinusSrcCol,
+	OneMinusDstCol,
+	OneMinusSrcAlpha,
+	OneMinusDstAlpha,
+	ConstantColor,
+	ConstantAlpha,
+	OneMinusConstantColor,
+	OneMinusConstantAlpha,
+	SrcAlphaSaturate
 };
 
 enum BlendOperation
 {
-	GPU_ADD,
-	GPU_SUBSTRACT,
-	GPU_REVSUBTRACT,
+	Add,
+	Subtract,
+	RevSubtract,
 };
 
 enum ColorMask
 {
-	GPU_COLORMASK_RED = 1UL << 0,
-	GPU_COLORMASK_GREEN = 1UL << 1,
-	GPU_COLORMASK_BLUE = 1UL << 2,
-	GPU_COLORMASK_ALPHA = 1UL << 3,
-	GPU_COLORMASK_RGB = GPU_COLORMASK_RED | GPU_COLORMASK_GREEN | GPU_COLORMASK_BLUE,
-	GPU_COLORMASK_RGBA = GPU_COLORMASK_RED | GPU_COLORMASK_GREEN | GPU_COLORMASK_BLUE | GPU_COLORMASK_ALPHA
+	COLORMASK_RED = 1UL << 0,
+	COLORMASK_GREEN = 1UL << 1,
+	COLORMASK_BLUE = 1UL << 2,
+	COLORMASK_ALPHA = 1UL << 3,
+	COLORMASK_RGB = COLORMASK_RED | COLORMASK_GREEN | COLORMASK_BLUE,
+	COLORMASK_RGBA = COLORMASK_RED | COLORMASK_GREEN | COLORMASK_BLUE | COLORMASK_ALPHA
 };
 
-enum CullMode
+enum class CullMode
 {
-	GPU_CULL_NONE,
-	GPU_CULL_FRONT,
-	GPU_CULL_BACK,
-	GPU_CULL_FRONT_BACK,
+	None,
+	Front,
+	Back,
+	FrontBack,
 };
 
-enum FillMode
+enum class FillMode
 {
 	PointMode,
 	WireframeMode,
 	SolidMode,
 };
 
-enum StencilOperation
+enum class StencilOperation
 {
-	STENCILOP_KEEP,
-	STENCILOP_REPLACE,
-	STENCILOP_INCR,
-	STENCILOP_DECR,
-	STENCILOP_ZERO,
-	STENCILOP_INCR_WRAP,
-	STENCILOP_DECR_WRAP
+	Keep,
+	Replace,
+	Incr,
+	Decr,
+	Zero,
+	IncrWrap,
+	DecrWrap
 };
 
 enum ClearFlags
 {
-	CLEAR_NONE,
-	CLEAR_COLOR = 1UL << 0,
-	CLEAR_DEPTH = 1UL << 1,
-	CLEAR_STENCIL = 1UL << 2,
-	CLEAR_COLOR_DEPTH = CLEAR_COLOR | CLEAR_DEPTH,
-	CLEAR_COLOR_STENCIL = CLEAR_COLOR | CLEAR_STENCIL,
-	CLEAR_DEPTH_STENCIL = CLEAR_DEPTH | CLEAR_STENCIL,
-	CLEAR_ALL = CLEAR_COLOR | CLEAR_DEPTH | CLEAR_STENCIL
+	Color = 1UL << 0,
+	Depth = 1UL << 1,
+	Stencil = 1UL << 2,
+	ColorDepth = Color | Depth,
+	ColorStencil = Color | Stencil,
+	DepthStencil = Depth | Stencil,
+	Default = Color | Depth | Stencil
 };
 
 enum class TextureFormat
@@ -241,18 +246,23 @@ enum class TextureFormat
 	DEPTH_COMPONENT32,
 	DEPTH24_STENCIL8,
 	DEPTH32_STENCIL8,
+	R4G4B4A4,
+	R5G6B5,
+	R5G5B5A1,
+	R10G10B10A2,
 	R8G8B8,
 	R8G8B8A8,
+	R8G8B8_SNORM,
+	R8G8B8A8_SNORM,
 	R16G16B16,
 	R16G16B16A16,
+	R16G16B16_SNORM,
 	R16G16B16A16_SNORM,
 	R16G16B16F,
 	R32G32B32F,
 	R16G16B16A16F,
 	R32G32B32A32F,
 	R11G11B10F,
-	SRGB,
-	SRGBA,
 	SR8G8B8,
 	SR8G8B8A8,
 	R8,
@@ -384,8 +394,6 @@ enum class ShaderType
 	Compute,
 	TessEvaluation,
 	TessControl,
-	VertexCg,
-	FragmentCg,
 };
 
 enum class ShaderVariantType
@@ -406,23 +414,6 @@ enum class ShaderVariantType
 	Float4Array,
 	Texture,
 	Buffer,
-};
-
-class VertexAttrib
-{
-public:
-	enum
-	{
-		Position,
-		Normal,
-		Texcoord,
-		Diffuse,
-		Specular,
-		Weight,
-		Tangent,
-		Bitangent,
-		Nums,
-	};
 };
 
 class EXPORT RenderIndirect final

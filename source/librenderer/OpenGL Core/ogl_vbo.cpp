@@ -45,23 +45,17 @@ OGLVertexBuffer::OGLVertexBuffer() noexcept
 {
 }
 
-OGLVertexBuffer::OGLVertexBuffer(const GraphicsDataDesc& desc) noexcept
-	: OGLGraphicsData(&_vertexData)
-{
-	this->open(desc);
-}
-
 OGLVertexBuffer::~OGLVertexBuffer() noexcept
 {
 	this->close();
 }
 
-void
-OGLVertexBuffer::open(const GraphicsDataDesc& desc) noexcept
+bool
+OGLVertexBuffer::setup(const GraphicsDataDesc& desc) noexcept
 {
 	assert(desc.getType() == GraphicsStream::VBO);
 	assert(desc.getStreamSize() > 0);
-	_vertexData.open(desc);
+	return _vertexData.setup(desc);
 }
 
 void

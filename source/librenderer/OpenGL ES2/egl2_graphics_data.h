@@ -61,12 +61,22 @@ public:
 	void* map(GLintptr offset, GLsizeiptr cnt, std::uint32_t access) noexcept;
 	void unmap() noexcept;
 
+	GLuint getInstanceID() const noexcept;
+
+	const GraphicsDataDesc& getGraphicsDataDesc() const noexcept;
+
+private:
+	friend class EGL2Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
 private:
 	EGL2GraphicsData(const EGL2GraphicsData&) noexcept = delete;
 	EGL2GraphicsData& operator=(const EGL2GraphicsData&) noexcept = delete;
 
 private:
 	EGL2GraphicsBuf* _buf;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<effect version="1270" language="hlsl">
+    <shader>
+        <![CDATA[
+            float2 PosToCoord(float2 Position)
+            {
+                return mad(Position, 0.5, 0.5);
+            }
+
+            float3 PosToCoord(float3 Position)
+            {
+                return mad(Position, 0.5, 0.5);
+            }
+
+            float4 PosToCoord(float4 Position)
+            {
+                return mad(Position, 0.5, 0.5);
+            }
+        ]]>
+    </shader>
+</effect>

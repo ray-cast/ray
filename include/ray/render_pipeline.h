@@ -50,6 +50,9 @@ public:
 	void open(WindHandle window, std::uint32_t w, std::uint32_t h) except;
 	void close() noexcept;
 
+	void setGraphicsContext(GraphicsContextPtr context) noexcept;
+	GraphicsContextPtr getGraphicsContext() const noexcept;
+
 	void setDefaultGraphicsContext(GraphicsContextPtr context) noexcept;
 	GraphicsContextPtr getDefaultGraphicsContext() const noexcept;
 
@@ -116,7 +119,7 @@ public:
 
 	void drawCone(MaterialPassPtr pass) noexcept;
 	void drawSphere(MaterialPassPtr pass) noexcept;
-	void drawSceneQuad(MaterialPassPtr pass) noexcept;
+	void drawScreenQuad(MaterialPassPtr pass) noexcept;
 	void drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const RenderIndirect& renderable) noexcept;
 	void drawRenderQueue(RenderQueue type, RenderPass pass, MaterialPassPtr material = nullptr, GraphicsRenderTexturePtr target = nullptr) noexcept;
 
@@ -147,13 +150,13 @@ private:
 	GraphicsDevicePtr _graphicsDevice;
 	GraphicsContextPtr _graphicsContext;
 
-	RenderBufferPtr _renderSceneQuad;
+	RenderBufferPtr _renderScreenQuad;
 	RenderBufferPtr _renderSphere;
 	RenderBufferPtr _renderCone;
 
 	RenderIndirect _renderConeIndirect;
 	RenderIndirect _renderSphereIndirect;
-	RenderIndirect _renderSceneQuadIndirect;
+	RenderIndirect _renderScreenQuadIndirect;
 
 	MaterialManagerPtr _materialManager;
 	MaterialSemanticPtr _materialMatModel;

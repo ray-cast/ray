@@ -114,8 +114,6 @@ RenderPipelineManager::getWindowResolution(std::uint32_t& w, std::uint32_t& h) c
 void
 RenderPipelineManager::renderBegin() noexcept
 {
-	if (_renderPipeline)
-		_renderPipeline->renderBegin();
 }
 
 void 
@@ -131,8 +129,9 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 		if (!context)
 			context = _renderPipeline->getDefaultGraphicsContext();
 
-		context->renderBegin();
+		_renderPipeline->setGraphicsContext(context);
 
+		_renderPipeline->renderBegin();
 		_renderPipeline->setCamera(camera);
 
 		_deferredLighting->onRenderPre(*_renderPipeline);
@@ -148,15 +147,13 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 
 		_deferredLighting->onRenderPost(*_renderPipeline);
 
-		context->renderEnd();
+		_renderPipeline->renderEnd();
 	}
 }
 
 void 
 RenderPipelineManager::renderEnd() noexcept
 {
-	if (_renderPipeline)
-		_renderPipeline->renderEnd();
 }
 
 _NAME_END

@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_layout.h"
+#include "ogl_shader.h"
 #include "ogl_vbo.h"
 #include "ogl_ibo.h"
 
@@ -44,9 +45,7 @@ __ImplementSubClass(OGLGraphicsLayout, GraphicsLayout, "OGLGraphicsLayout")
 
 OGLGraphicsLayout::OGLGraphicsLayout() noexcept
 	: _vao(GL_NONE)
-	, _vbo(GL_NONE)
 	, _ibo(GL_NONE)
-	, _vertexSize(0)
 	, _indexType(GL_NONE)
 	, _indexSize(0)
 {
@@ -61,7 +60,7 @@ OGLGraphicsLayout::open(const GraphicsLayoutDesc& layout) noexcept
 {
 	assert(!_vao);
 
-	_indexType = OGLTypes::asOGLIndexType(layout.getIndexType());
+	_indexType = OGLTypes::asIndexType(layout.getIndexType());
 	if (_indexType == GL_INVALID_ENUM)
 		return false;
 
@@ -72,75 +71,36 @@ OGLGraphicsLayout::open(const GraphicsLayoutDesc& layout) noexcept
 			return false;
 	}
 
-	_vertexSize = layout.getVertexSize();
-	if (_vertexSize == GL_NONE)
-		return false;
+	auto& component = layout.getVertexComponents();
+	for (auto& it : component)
+	{
+		auto& semantic = it.getSemantic();
+		if (semantic.empty())
+		{
+			GL_PLATFORM_LOG("Empty semantic");
+			return false;
+		}
+
+		for (auto& ch : semantic)
+		{
+			if (ch < 'a' && ch > 'z')
+			{
+				GL_PLATFORM_LOG("Error semantic describe : %s", semantic);
+				return false;
+			}
+		}
+	}
 
 	_layout = layout;
 
 	glCreateVertexArrays(1, &_vao);
-	if (_vao != GL_NONE)
+	if (_vao == GL_NONE)
 	{
-		GLuint offset = 0;
-		GLuint bindingIndex = 0;
-
-		auto& components = this->getVertexComponents();
-		for (auto& it : components)
-		{
-			GLboolean normalize = it.getNormalize() ? GL_TRUE : GL_FALSE;
-
-			if (it.getVertexDivisor() > 0)
-			{
-				if (it.getVertexFormat() == VertexFormat::Float3x3 ||
-					it.getVertexFormat() == VertexFormat::Float4x4)
-				{
-					GLuint count = it.getVertexFormat() == VertexFormat::Float3x3 ? 3 : 4;
-
-					for (GLuint i = 0; i < count; i++)
-					{
-						glEnableVertexArrayAttrib(_vao, it.getVertexAttrib());
-						glVertexArrayAttribBinding(_vao, it.getVertexAttrib(), bindingIndex);
-						glVertexArrayBindingDivisor(_vao, bindingIndex, it.getVertexDivisor());
-						glVertexArrayAttribFormat(_vao, it.getVertexAttrib(), count, GL_FLOAT, normalize, offset);
-
-						offset += (count * sizeof(float));
-						bindingIndex++;
-					}
-				}
-				else
-				{
-					GLenum type = OGLTypes::asOGLVertexFormat(it.getVertexFormat());
-					if (type != GL_INVALID_ENUM)
-					{
-						glEnableVertexArrayAttrib(_vao, it.getVertexAttrib());
-						glVertexArrayAttribBinding(_vao, it.getVertexAttrib(), bindingIndex);
-						glVertexArrayBindingDivisor(_vao, bindingIndex, it.getVertexDivisor());
-						glVertexArrayAttribFormat(_vao, it.getVertexAttrib(), it.getVertexCount(), type, normalize, offset);
-
-						bindingIndex++;
-					}
-
-					offset += it.getVertexSize();
-				}
-			}
-			else
-			{
-				GLenum type = OGLTypes::asOGLVertexFormat(it.getVertexFormat());
-				if (type != GL_INVALID_ENUM)
-				{
-					glEnableVertexArrayAttrib(_vao, it.getVertexAttrib());
-					glVertexArrayAttribBinding(_vao, it.getVertexAttrib(), bindingIndex);
-					glVertexArrayAttribFormat(_vao, it.getVertexAttrib(), it.getVertexCount(), type, normalize, offset);
-				}
-
-				offset += it.getVertexSize();
-			}
-		}
-
-		return true;
+		GL_PLATFORM_LOG("glCreateVertexArrays() fail");
+		return false;
 	}
 
-	return false;
+	return true;
 }
 
 void
@@ -200,12 +160,6 @@ OGLGraphicsLayout::getIndexSize() const noexcept
 	return _indexSize;
 }
 
-GLsizei
-OGLGraphicsLayout::getVertexSize() const noexcept
-{
-	return _vertexSize;
-}
-
 GLuint 
 OGLGraphicsLayout::getInstanceID() const noexcept
 {
@@ -219,33 +173,61 @@ OGLGraphicsLayout::getGraphicsLayout() const noexcept
 }
 
 void
-OGLGraphicsLayout::bindLayout() noexcept
+OGLGraphicsLayout::bindLayout(OGLShaderObjectPtr program) noexcept
 {
 	glBindVertexArray(_vao);
-}
 
-void
-OGLGraphicsLayout::bindVbo(OGLVertexBufferPtr vbo) noexcept
-{
-	assert(vbo);
-
-	if (_vbo != vbo)
+	if (_program != program)
 	{
-		glVertexArrayVertexBuffer(_vao, 0, vbo->getInstanceID(), 0, _vertexSize);
-
-		GLuint bindingIndex = 1;
+		GLuint offset = 0;
 
 		auto& components = this->getVertexComponents();
 		for (auto& it : components)
 		{
-			if (it.getVertexDivisor() > 0)
+			GLuint attribIndex = GL_INVALID_INDEX;
+			GLuint bindingIndex = it.getVertexSlot();
+			GLenum type = OGLTypes::asVertexFormat(it.getVertexFormat());
+
+			auto& attributes = program->getActiveAttributes();
+			for (auto& attrib : attributes)
 			{
-				glVertexArrayVertexBuffer(_vao, bindingIndex, vbo->getInstanceID(), 0, it.getVertexSize());
-				bindingIndex++;
+				if (attrib->getSemanticIndex() == it.getSemanticIndex() && attrib->getSemantic() == it.getSemantic())
+				{
+					attribIndex = attrib->downcast<OGLShaderAttribute>()->getLocation();
+					break;
+				}
 			}
+
+			if (attribIndex != GL_INVALID_INDEX)
+			{
+				glEnableVertexArrayAttrib(_vao, attribIndex);
+				glVertexArrayAttribBinding(_vao, attribIndex, bindingIndex);
+				glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, GL_FALSE, offset);
+
+				if (it.getVertexDivisor() > 0)
+					glVertexArrayBindingDivisor(_vao, bindingIndex, it.getVertexDivisor());
+			}
+
+			offset += it.getVertexSize();
 		}
 
-		_vbo = vbo;
+		_program = program;
+	}
+}
+
+void
+OGLGraphicsLayout::bindVbo(OGLVertexBufferPtr vbo, std::uint8_t slot) noexcept
+{
+	assert(vbo);
+
+	if (slot > MAX_VERTEX_UNIT)
+		return;
+
+	if (_vbo[slot] != vbo)
+	{
+		GLuint stride = vbo->getGraphicsDataDesc().getStride();
+		glVertexArrayVertexBuffer(_vao, slot, vbo->getInstanceID(), 0, stride);
+		_vbo[slot] = vbo;
 	}
 }
 
@@ -260,6 +242,18 @@ OGLGraphicsLayout::bindIbo(OGLIndexBufferPtr ibo) noexcept
 		glVertexArrayElementBuffer(_vao, ibo->getInstanceID());
 		_ibo = ibo;
 	}	
+}
+
+void
+OGLGraphicsLayout::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+OGLGraphicsLayout::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

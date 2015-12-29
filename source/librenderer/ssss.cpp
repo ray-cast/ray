@@ -110,7 +110,7 @@ SSSS::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) except
 
 			if (light->getLightType() == LightType::LT_SUN)
 			{
-				pipeline.drawSceneQuad(_translucency);
+				pipeline.drawScreenQuad(_translucency);
 			}
 		}
 	}*/
@@ -118,13 +118,13 @@ SSSS::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) except
 	_sssColor->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(_SSSS);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0);
-	pipeline.drawSceneQuad(_blurX);
+	pipeline.clearRenderTexture(ClearFlags::Default, Vector4::Zero, 1.0, 0);
+	pipeline.drawScreenQuad(_blurX);
 
 	_sssColor->assign(_SSSS->getResolveTexture());
 
 	pipeline.setRenderTexture(source);
-	pipeline.drawSceneQuad(_blurY);
+	pipeline.drawScreenQuad(_blurY);
 }
 
 _NAME_END

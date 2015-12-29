@@ -41,70 +41,36 @@
 
 _NAME_BEGIN
 
-class EGL2Texture final : public Texture
+class EGL2Texture final : public GraphicsTexture
 {
+	__DeclareSubClass(EGL2Texture, GraphicsTexture)
 public:
 	EGL2Texture() noexcept;
 	~EGL2Texture() noexcept;
 
-	bool setup() except;
+	bool setup(const GraphicsTextureDesc& textureDesc) noexcept;
 	void close() noexcept;
 
+	GLenum getTarget() const noexcept;
 	GLuint getInstanceID() noexcept;
 
-private:
-
-	static void applyTextureWrap(GLenum target, SamplerWrap wrap) noexcept;
-	static void applyTextureFilter(GLenum target, SamplerFilter filter) noexcept;
-	static void applyTextureAnis(GLenum target, SamplerAnis anis) noexcept;
+	const GraphicsTextureDesc& getGraphicsTextureDesc() const noexcept;
 
 private:
+	static bool applySamplerWrap(GLenum target, SamplerWrap wrap) noexcept;
+	static bool applySamplerFilter(GLenum target, SamplerFilter filter) noexcept;
+	static bool applySamplerAnis(GLenum target, SamplerAnis anis) noexcept;
 
+private:
+	friend class EGL2Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	GLenum _target;
 	GLuint _texture;
-};
-
-class EGL2RenderTexture final : public RenderTexture
-{
-public:
-	EGL2RenderTexture() noexcept;
-	~EGL2RenderTexture() noexcept;
-
-	virtual bool setup(TexturePtr texture) except;
-	virtual void setup(std::size_t w, std::size_t h, TextureDim dim, TextureFormat format) except;
-	virtual void setup(std::size_t w, std::size_t h, std::size_t d, TextureDim dim, TextureFormat format) except;
-	virtual void close() noexcept;
-
-	void setLayer(GLuint layer) noexcept;
-	GLuint getLayer() const noexcept;
-
-	GLuint getInstanceID() noexcept;
-
-private:
-	void bindRenderTexture(TexturePtr texture, GLenum attachment) noexcept;
-	void onSetRenderTextureAfter(RenderTexturePtr target) noexcept;
-
-private:
-	GLuint _fbo;
-	GLuint _layer;
-};
-
-class EGL2MultiRenderTexture final : public MultiRenderTexture
-{
-public:
-	EGL2MultiRenderTexture() noexcept;
-	~EGL2MultiRenderTexture() noexcept;
-
-	virtual bool setup() noexcept;
-	virtual void close() noexcept;
-
-	GLuint getInstanceID() noexcept;
-
-private:
-	void bindRenderTexture(RenderTexturePtr target, GLenum attachment) noexcept;
-
-private:
-
-	GLuint _fbo;
+	GraphicsTextureDesc _textureDesc;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

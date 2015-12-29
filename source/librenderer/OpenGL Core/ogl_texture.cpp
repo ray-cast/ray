@@ -52,27 +52,37 @@ OGLTexture::~OGLTexture() noexcept
 }
 
 bool
-OGLTexture::setup(const GraphicsTextureDesc& textureDesc) except
+OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 {
-	auto target = OGLTypes::asOGLTarget(textureDesc.getTexDim(), textureDesc.isMultiSample());
-	auto internalFormat = OGLTypes::asOGLInternalformat(textureDesc.getTexFormat());
-	auto stream = textureDesc.getStream();
+	assert(_texture == GL_NONE);
 
+	GLenum target = OGLTypes::asTextureTarget(textureDesc.getTexDim(), textureDesc.isMultiSample());
 	if (target == GL_INVALID_ENUM)
 		return false;
 
-	if (internalFormat == GL_INVALID_ENUM)
-		return false;
-
 	glCreateTextures(target, 1, &_texture);
+	if (_texture == GL_NONE)
+	{
+		GL_PLATFORM_LOG("glCreateTextures fail");
+		return false;
+	}
 
 	GLsizei w = (GLsizei)textureDesc.getWidth();
 	GLsizei h = (GLsizei)textureDesc.getHeight();
 	GLsizei depth = (GLsizei)textureDesc.getDepth();
 
-	this->applySamplerWrap(textureDesc.getSamplerWrap());
-	this->applySamplerFilter(textureDesc.getSamplerFilter());
-	this->applySamplerAnis(textureDesc.getSamplerAnis());
+	if (!applySamplerWrap(textureDesc.getSamplerWrap()))
+		return false;
+
+	if (!applySamplerFilter(textureDesc.getSamplerFilter()))
+		return false;
+
+	if (!applySamplerAnis(textureDesc.getSamplerAnis()))
+		return false;
+
+	GLenum internalFormat = OGLTypes::asTextureInternalFormat(textureDesc.getTexFormat());
+	if (internalFormat == GL_INVALID_ENUM)
+		return false;
 
 	GLsizei level = target == GL_TEXTURE_CUBE_MAP ? 6 : 1;
 	level = std::max(level, textureDesc.getMipLevel());
@@ -92,6 +102,7 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) except
 	else if (target == GL_TEXTURE_CUBE_MAP_ARRAY)
 		glTextureStorage3D(_texture, level, internalFormat, w, h, depth);
 
+	auto stream = textureDesc.getStream();
 	if (stream)
 	{
 		if (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT ||
@@ -118,9 +129,9 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) except
 		}
 		else
 		{
-			GLenum format = OGLTypes::asOGLFormat(textureDesc.getTexFormat());
-			GLenum type = OGLTypes::asOGLType(textureDesc.getTexFormat());
-			
+			GLenum format = OGLTypes::asTextureFormat(textureDesc.getTexFormat());
+			GLenum type = OGLTypes::asTextureType(textureDesc.getTexFormat());
+
 			switch (target)
 			{
 			case GL_TEXTURE_2D:
@@ -144,7 +155,10 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) except
 	}
 
 	if (textureDesc.isMipmap())
+	{
 		glGenerateTextureMipmap(_texture);
+	}
+
 
 	_target = target;
 	_textureDesc = textureDesc;
@@ -186,65 +200,37 @@ OGLTexture::getGraphicsTextureDesc() const noexcept
 	return _textureDesc;
 }
 
-void
+bool
 OGLTexture::applySamplerWrap(SamplerWrap wrap) noexcept
 {
-	if (SamplerWrap::Repeat == wrap)
+	GLenum glwrap = OGLTypes::asSamplerWrap(wrap);
+	if (glwrap != GL_INVALID_ENUM)
 	{
-		glTextureParameteri(_texture, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTextureParameteri(_texture, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTextureParameteri(_texture, GL_TEXTURE_WRAP_R, GL_REPEAT);
+		glTextureParameteri(_texture, GL_TEXTURE_WRAP_S, glwrap);
+		glTextureParameteri(_texture, GL_TEXTURE_WRAP_T, glwrap);
+		glTextureParameteri(_texture, GL_TEXTURE_WRAP_R, glwrap);
+
+		return true;
 	}
-	else if (SamplerWrap::ClampToEdge == wrap)
-	{
-		glTextureParameteri(_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTextureParameteri(_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTextureParameteri(_texture, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	}
-	else if (SamplerWrap::Mirror == wrap)
-	{
-		glTextureParameteri(_texture, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-		glTextureParameteri(_texture, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-		glTextureParameteri(_texture, GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
-	}
+
+	return false;
 }
 
-void
+bool
 OGLTexture::applySamplerFilter(SamplerFilter filter) noexcept
 {
-	if (filter == SamplerFilter::Nearest)
+	GLenum glfilter = OGLTypes::asSamplerFilter(filter);
+	if (glfilter != GL_INVALID_ENUM)
 	{
-		glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, glfilter);
+		glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, glfilter);
+		return true;
 	}
-	else if (filter == SamplerFilter::Linear)
-	{
-		glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	}
-	else if (filter == SamplerFilter::NearestMipmapLinear)
-	{
-		glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-		glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-	}
-	else if (filter == SamplerFilter::NearestMipmapNearest)
-	{
-		glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-		glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-	}
-	else if (filter == SamplerFilter::LinearMipmapNearest)
-	{
-		glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-		glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-	}
-	else if (filter == SamplerFilter::LinearMipmapLinear)
-	{
-		glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	}
+
+	return false;
 }
 
-void
+bool
 OGLTexture::applySamplerAnis(SamplerAnis anis) noexcept
 {
 	if (anis == SamplerAnis::Anis1)
@@ -257,6 +243,28 @@ OGLTexture::applySamplerAnis(SamplerAnis anis) noexcept
 		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
 	else if (anis == SamplerAnis::Anis16)
 		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
+	else
+	{
+		if (anis != SamplerAnis::Anis0)
+		{
+			GL_PLATFORM_LOG("Invalid SamplerAnis");
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void
+OGLTexture::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+OGLTexture::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

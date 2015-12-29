@@ -48,7 +48,7 @@ public:
 	OGLSampler() noexcept;
 	~OGLSampler() noexcept;
 
-	bool setup(const GraphicsSamplerDesc& desc) except;
+	bool setup(const GraphicsSamplerDesc& desc) noexcept;
 	void close() noexcept;
 
 	GLuint getInstanceID() noexcept;
@@ -56,9 +56,15 @@ public:
 	const GraphicsSamplerDesc& getGraphicsSamplerDesc() const noexcept;
 
 private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
 
 	GLuint _sampler;
 	GraphicsSamplerDesc _desc;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

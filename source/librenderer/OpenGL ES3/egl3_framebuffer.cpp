@@ -62,6 +62,12 @@ EGL3RenderTexture::setup(const GraphicsRenderTextureDesc& framebufferDesc) excep
 		return false;
 
 	GL_CHECK(glGenFramebuffers(1, &_fbo));
+	if (_fbo == GL_NONE)
+	{
+		GL_PLATFORM_LOG("glGenFramebuffers fail");
+		return false;
+	}
+
 	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, _fbo));
 
 	auto sharedDepthTarget = framebufferDesc.getSharedDepthTexture();
@@ -151,9 +157,9 @@ EGL3RenderTexture::setLayer(GLuint layer) noexcept
 		GLenum attachment = GL_COLOR_ATTACHMENT0;
 
 		if (textureDesc.getTexDim() == TextureDim::DIM_2D_ARRAY)
-			glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, 0, layer);
+			GL_CHECK(glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, textureID, 0, layer));
 		else if (textureDesc.getTexDim() == TextureDim::DIM_CUBE)
-			glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer, textureID, 0);
+			GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer, textureID, 0));
 
 		_layer = layer;
 	}
@@ -169,7 +175,7 @@ void
 EGL3RenderTexture::discard() noexcept
 {
 	GLenum attachment = GL_COLOR_ATTACHMENT0;
-	glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, &attachment);
+	GL_CHECK(glInvalidateFramebuffer(GL_FRAMEBUFFER, 1, &attachment));
 }
 
 void
@@ -182,15 +188,15 @@ EGL3RenderTexture::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachme
 	auto target = gltexture->getTarget();
 
 	if (target == GL_TEXTURE_2D)
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0);
+		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0));
 	else if (target == GL_TEXTURE_2D_MULTISAMPLE)
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, handle, 0);
+		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, handle, 0));
 	else if (target == GL_TEXTURE_2D_ARRAY)
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_ARRAY, handle, 0);
+		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_ARRAY, handle, 0));
 	else if (target == GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE_ARRAY, handle, 0);
+		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE_ARRAY, handle, 0));
 	else if (target == GL_TEXTURE_CUBE_MAP)
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0);
+		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0));
 	else
 		assert(false);
 }
@@ -213,6 +219,18 @@ EGL3RenderTexture::getGraphicsRenderTextureDesc() const noexcept
 	return _framebufferDesc;
 }
 
+void
+EGL3RenderTexture::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL3RenderTexture::getDevice() noexcept
+{
+	return _device.lock();
+}
+
 EGL3MultiRenderTexture::EGL3MultiRenderTexture() noexcept
 	: _fbo(GL_NONE)
 	, _isActive(false)
@@ -230,6 +248,12 @@ EGL3MultiRenderTexture::setup(const GraphicsMultiRenderTextureDesc& multiFramebu
 	assert(GL_NONE == _fbo);
 
 	GL_CHECK(glGenFramebuffers(1, &_fbo));
+	if (_fbo == GL_NONE)
+	{
+		GL_PLATFORM_LOG("glGenFramebuffers fail");
+		return false;
+	}
+
 	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, _fbo));
 
 	auto sharedDepthTarget = multiFramebufferDesc.getSharedDepthTexture();
@@ -380,6 +404,18 @@ EGL3MultiRenderTexture::bindRenderTexture(GraphicsTexturePtr texture, GLenum att
 		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0));
 	else
 		assert(false);
+}
+
+void
+EGL3MultiRenderTexture::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL3MultiRenderTexture::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

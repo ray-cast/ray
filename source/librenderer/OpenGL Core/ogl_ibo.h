@@ -46,10 +46,9 @@ class OGLIndexBuffer final : public OGLGraphicsData
 	__DeclareSubClass(OGLIndexBuffer, OGLGraphicsData)
 public:
 	OGLIndexBuffer() noexcept;
-	OGLIndexBuffer(const GraphicsDataDesc& desc) noexcept;
 	~OGLIndexBuffer() noexcept;
 
-	void open(const GraphicsDataDesc& desc) noexcept;
+	bool setup(const GraphicsDataDesc& desc) noexcept;
 	void close() noexcept;
 
 	bool is_open() const noexcept;

@@ -48,8 +48,11 @@ public:
 	EGL2DeviceContext() noexcept;
 	~EGL2DeviceContext() noexcept;
 
-	bool open(WindHandle hwnd) except;
+	bool open(WindHandle hwnd) noexcept;
 	void close() noexcept;
+
+	void setActive(bool active) noexcept;
+	bool getActive() const noexcept;
 
 	void renderBegin() noexcept;
 	void renderEnd() noexcept;
@@ -76,33 +79,31 @@ public:
 	void setVertexBufferData(GraphicsDataPtr data) noexcept;
 	GraphicsDataPtr getVertexBufferData() const noexcept;
 
-	void setTexture(TexturePtr texture, std::uint32_t slot) noexcept;
-	void setTexture(TexturePtr textures[], std::uint32_t first, std::uint32_t count) noexcept;
+	void setGraphicsTexture(GraphicsTexturePtr texture, std::uint32_t slot) noexcept;
+	void setGraphicsTexture(GraphicsTexturePtr textures[], std::uint32_t first, std::uint32_t count) noexcept;
 
 	void setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept;
 	void setGraphicsSampler(GraphicsSamplerPtr samplers[], std::uint32_t first, std::uint32_t count) noexcept;
 
-	void setRenderTexture(RenderTexturePtr target) noexcept;
-	void setRenderTextureLayer(RenderTexturePtr target, std::int32_t layer) noexcept;
-	void setMultiRenderTexture(MultiRenderTexturePtr target) noexcept;
+	void setRenderTexture(GraphicsRenderTexturePtr target) noexcept;
+	void setRenderTextureLayer(GraphicsRenderTexturePtr target, std::int32_t layer) noexcept;
+	void setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept;
 	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
 	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
 	void discardRenderTexture() noexcept;
-	void blitRenderTexture(RenderTexturePtr src, const Viewport& v1, RenderTexturePtr dest, const Viewport& v2) noexcept;
-	void readRenderTexture(RenderTexturePtr source, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
-	RenderTexturePtr getRenderTexture() const noexcept;
-	MultiRenderTexturePtr getMultiRenderTexture() const noexcept;
+	void blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, GraphicsRenderTexturePtr dest, const Viewport& v2) noexcept;
+	void readRenderTexture(GraphicsRenderTexturePtr source, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	GraphicsRenderTexturePtr getRenderTexture() const noexcept;
+	GraphicsMultiRenderTexturePtr getMultiRenderTexture() const noexcept;
 
 	void setGraphicsState(GraphicsStatePtr state) noexcept;
 	GraphicsStatePtr getGraphicsState() const noexcept;
 
-	void setShaderObject(ShaderObjectPtr shader) noexcept;
-	ShaderObjectPtr getShaderObject() const noexcept;
+	void setGraphicsProgram(GraphicsProgramPtr shader) noexcept;
+	GraphicsProgramPtr getGraphicsProgram() const noexcept;
 
 	void drawRenderBuffer(const RenderIndirect& renderable) noexcept;
-	void drawRenderBuffer(const RenderIndirects& renderable) noexcept;
-
-	void present() noexcept;
+	void drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept;
 
 private:
 
@@ -110,6 +111,11 @@ private:
 	void initStateSystem() noexcept;
 
 	static void GLAPIENTRY debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept;
+
+private:
+	friend class EGL2Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
 
 private:
 	EGL2DeviceContext(const EGL2DeviceContext&) noexcept = delete;
@@ -129,8 +135,7 @@ private:
 	GLuint _maxViewports;
 	GLuint _maxTextureUnits;
 
-	RenderTexturePtr _renderTexture;
-	MultiRenderTexturePtr _multiRenderTexture;
+	EGL2RenderTexturePtr _renderTexture;
 
 	bool _needUpdateLayout;
 	bool _needUpdateVbo;
@@ -139,15 +144,17 @@ private:
 	EGL2VertexBufferPtr _vbo;
 	EGL2IndexBufferPtr _ibo;
 	EGL2GraphicsLayoutPtr _inputLayout;
-
-	ShaderObjectPtr _shaderObject;
+	EGL2ShaderObjectPtr _shaderObject;
 
 	EGL2CanvasPtr _glcontext;
-	RenderBufferPtr _renderBuffer;
+
 	EGL2GraphicsStatePtr _state;
-	EGL2GraphicsStatePtr _stateCaptured;
+	EGL2GraphicsStatePtr _stateDefault;
+	GraphicsStateDesc _stateCaptured;
 
 	std::vector<GLint> _textureUnits;
+
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

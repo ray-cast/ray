@@ -822,10 +822,10 @@ MeshProperty::makePlane(float width, float height, std::uint32_t widthSegments, 
 			_texcoords.push_back(Vector2((float)ix / gridX, (float)(1 - iy) / gridY));
 			_texcoords.push_back(Vector2((float)(ix + 1) / gridX, (float)(1 - iy) / gridY));
 
-			unsigned short a = static_cast<unsigned short>(ix + gridX1 * iy);
-			unsigned short b = static_cast<unsigned short>(ix + gridX1 * (iy + 1));
-			unsigned short c = static_cast<unsigned short>(ix + gridX1 * (iy + 1) + 1);
-			unsigned short d = static_cast<unsigned short>(ix + gridX1 * iy + 1);
+			std::int32_t a = static_cast<std::int32_t>(ix + gridX1 * iy);
+			std::int32_t b = static_cast<std::int32_t>(ix + gridX1 * (iy + 1));
+			std::int32_t c = static_cast<std::int32_t>(ix + gridX1 * (iy + 1) + 1);
+			std::int32_t d = static_cast<std::int32_t>(ix + gridX1 * iy + 1);
 
 			_faces.push_back(c);
 			_faces.push_back(b);
@@ -901,18 +901,18 @@ MeshProperty::makePlane(float width, float height, float depth, std::uint32_t wi
 	{
 		for (std::uint32_t ix = 0; ix < gridX; ix++)
 		{
-			unsigned short a = static_cast<unsigned short>(ix + gridX1 * iy);
-			unsigned short b = static_cast<unsigned short>(ix + gridX1 * (iy + 1));
-			unsigned short c = static_cast<unsigned short>(ix + gridX1 * (iy + 1) + 1);
-			unsigned short d = static_cast<unsigned short>(ix + gridX1 * iy + 1);
+			std::int32_t a = static_cast<std::int32_t>(ix + gridX1 * iy);
+			std::int32_t b = static_cast<std::int32_t>(ix + gridX1 * (iy + 1));
+			std::int32_t c = static_cast<std::int32_t>(ix + gridX1 * (iy + 1) + 1);
+			std::int32_t d = static_cast<std::int32_t>(ix + gridX1 * iy + 1);
 
-			_faces.push_back((unsigned short)(a + offset));
-			_faces.push_back((unsigned short)(b + offset));
-			_faces.push_back((unsigned short)(c + offset));
+			_faces.push_back((std::int32_t)(a + offset));
+			_faces.push_back((std::int32_t)(b + offset));
+			_faces.push_back((std::int32_t)(c + offset));
 
-			_faces.push_back((unsigned short)(c + offset));
-			_faces.push_back((unsigned short)(d + offset));
-			_faces.push_back((unsigned short)(a + offset));
+			_faces.push_back((std::int32_t)(c + offset));
+			_faces.push_back((std::int32_t)(d + offset));
+			_faces.push_back((std::int32_t)(a + offset));
 
 			_texcoords.push_back(Vector2((float)ix / gridX, (float)(1 - (iy + 1)) / gridY));
 			_texcoords.push_back(Vector2((float)(ix + 1) / gridX, (float)(1 - (iy + 1)) / gridY));
@@ -1389,9 +1389,9 @@ MeshProperty::computeFaceNormals() noexcept
 		Vector3 normal = edge1.cross(edge2);
 		normal.normalize();
 
-		(_facesNormal)[f1] = normal;
-		(_facesNormal)[f2] = normal;
-		(_facesNormal)[f3] = normal;
+		_facesNormal[f1] = normal;
+		_facesNormal[f2] = normal;
+		_facesNormal[f3] = normal;
 	}
 }
 

@@ -39,6 +39,7 @@
 
 #include <ray/ioarchive.h>
 
+class TiXmlNode;
 class TiXmlDocument;
 class TiXmlElement;
 class TiXmlAttribute;
@@ -51,20 +52,32 @@ public:
 	XmlBuf() noexcept;
 	~XmlBuf() noexcept;
 
-	virtual bool open(StreamReader& stream) noexcept;
+	virtual bool open() noexcept;
 	virtual void close() noexcept;
 
 	virtual bool is_open() const noexcept;
 
+	virtual bool load(StreamReader& stream) noexcept;
+	virtual bool save(StreamWrite& stream) noexcept;
+
 	virtual std::string getCurrentNodeName() const noexcept;
 	virtual std::string getCurrentNodePath() const noexcept;
 
-	virtual void setToNode(const std::string& path) noexcept;
+	virtual bool addAttribute(const std::string& key, const std::string& value) noexcept;
+	virtual void setAttribute(const std::string& key, const std::string& value) noexcept;
+	virtual void removeAttribute(const std::string& key) noexcept;
+
+	virtual bool addDeclaration(const std::string& version, const std::string& encoding, const std::string& standalone) noexcept;
+	virtual bool addNode(const std::string& key) noexcept;
+	virtual bool addSubNode(const std::string& key) noexcept;
+
+	virtual bool setToNode(const std::string& path) noexcept;
 	virtual bool setToFirstChild() noexcept;
 	virtual bool setToFirstChild(const std::string& name) noexcept;
 	virtual bool setToNextChild() noexcept;
 	virtual bool setToNextChild(const std::string& name) noexcept;
 	virtual bool setToParent() noexcept;
+	virtual bool setToRoot() noexcept;
 
 	virtual bool hasChild() const noexcept;
 
@@ -90,15 +103,13 @@ public:
 
 	virtual const char* errorString() const noexcept;
 
-	virtual void copy(const archivebuf& other) noexcept;
-
 private:
 	XmlBuf(const XmlBuf&) noexcept = delete;
 	XmlBuf& operator=(const XmlBuf&) noexcept = delete;
 
 private:
 
-	TiXmlElement* _currentNode;
+	TiXmlNode* _currentNode;
 	TiXmlElement* _currentAttrNode;
 	std::vector<std::string> _attrNames;
 	std::vector<TiXmlAttribute*> _attrLists;
@@ -111,8 +122,37 @@ public:
     XMLReader() noexcept;
     ~XMLReader() noexcept;
 
-private:
+	XMLReader& open(StreamReader& stream) noexcept;
+	XMLReader& close() noexcept;
 
+	bool is_open() const noexcept;
+
+	XMLReader& load(StreamReader& stream) noexcept;
+
+private:
+	XMLReader(const XMLReader&) noexcept = delete;
+	XMLReader& operator=(const XMLReader&) noexcept = delete;
+
+private:
+	XmlBuf _xml;
+};
+
+class EXPORT XMLWrite final : public oarchive
+{
+public:
+	XMLWrite() noexcept;
+	~XMLWrite() noexcept;
+
+	XMLWrite& open(const std::string& version, const std::string& encoding, const std::string& standalone) noexcept;
+	XMLWrite& close() noexcept;
+
+	XMLWrite& save(StreamWrite& ostream) noexcept;
+
+private:
+	XMLWrite(const XMLWrite&) noexcept = delete;
+	XMLWrite& operator=(const XMLWrite&) noexcept = delete;
+
+private:
 	XmlBuf _xml;
 };
 

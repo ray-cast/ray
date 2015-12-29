@@ -61,10 +61,22 @@ EGL2Sampler::close() noexcept
 {
 }
 
-void
-EGL2Sampler::getGraphicsSamplerDesc(GraphicsSamplerDesc& desc) const noexcept
+const GraphicsSamplerDesc&
+EGL2Sampler::getGraphicsSamplerDesc() const noexcept
 {
-	desc = _desc;
+	return _desc;
+}
+
+void
+EGL2Sampler::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL2Sampler::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

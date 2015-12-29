@@ -27,8 +27,8 @@
     </object>
     <object>
         <attribute name="sun"/>
-        <attribute position="0,0,-10"/>
-        <attribute lookat="0,0,1" />
+        <attribute position="0,0,-2"/>
+        <attribute lookat="0,0,0" />
         <attribute active="true"/>
         <component class="Light">
             <attribute type="sun"/>

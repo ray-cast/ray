@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<effect version="1270" language="hlsl">
+    <include name="sys:fx/math.fxml"/>
+    <include name="sys:fx/sampler.fxml"/>
+    <shader>
+        <![CDATA[
+            float4 StoreGBufferRT0(float4 diffuse, float3 specular)
+            {
+                return float4(diffuse.rgb, luminance(specular));
+            }
+
+            float4 StoreGBufferRT0(float4 diffuse, float specular)
+            {
+                return float4(diffuse.rgb, specular);
+            }
+
+            float4 StoreGBufferRT1(float3 n, float roughness)
+            {
+                return float4(packNormal(n), roughness);
+            }
+
+            float3 restoreRGB(texture2D mrt0, float2 coord)
+            {
+                return mrt0.Sample(PointClamp, coord).rgb;
+            }
+
+            float restoreSpecular(float4 mrt0)
+            {
+                return mrt0.a;
+            }
+
+            float3 restoreNormal(float4 mrt1)
+            {
+                return unpackNormal(mrt1.xyz);
+            }
+
+            float restoreRoughness(float4 mrt1)
+            {
+                return mrt1.w;
+            }
+
+            float3 restorePosition(texture2D texDepth, float4x4 matInverse, float2 coord)
+            {
+                float depth  = texDepth.Sample(PointClamp, coord.xy).r;
+                float4 result = mul(float4(coord * 2.0 - 1.0, depth, 1.0), matInverse);
+                result /= result.w;
+                return result.xyz;
+            }
+
+            float3 restorePosition(texture2D texDepthLinear, float4 projInfo, float2 coord)
+            {
+                float depth = texDepthLinear.Sample(PointClamp, coord).r;
+                return float3(projInfo.xy * coord + projInfo.zw, 1.0) * depth;
+            }
+        ]]>
+    </shader>
+ </effect>

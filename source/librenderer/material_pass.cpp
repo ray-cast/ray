@@ -58,7 +58,15 @@ MaterialPass::setup(Material& material) except
 	auto& uniforms = _graphicsShader->getActiveUniforms();
 	for (auto& uniform : uniforms)
 	{
-		auto param = material.getParameter(uniform->getName());
+		auto uniformName = uniform->getName();
+		if (uniform->getType() == ShaderVariantType::Texture)
+		{
+			auto pos = uniformName.find_first_of('_X_');
+			if (pos != std::string::npos)
+				uniformName = uniformName.substr(0, pos);
+		}
+
+		auto param = material.getParameter(uniformName);
 		if (param)
 		{
 			param->addShaderUniform(uniform);

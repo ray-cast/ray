@@ -61,15 +61,19 @@ public:
 	GLenum getIndexType() const noexcept;
 
 	GLsizei getIndexSize() const noexcept;
-	GLsizei getVertexSize() const noexcept;
 
 	GLuint getInstanceID() const noexcept;
 
-	void bindLayout() noexcept;
-	void bindVbo(OGLVertexBufferPtr vbo) noexcept;
+	void bindVbo(OGLVertexBufferPtr vbo, std::uint8_t slot) noexcept;
 	void bindIbo(OGLIndexBufferPtr ibo) noexcept;
+	void bindLayout(OGLShaderObjectPtr program) noexcept;
 
 	const GraphicsLayoutDesc& getGraphicsLayout() const noexcept;
+
+private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
 
 private:
 	OGLGraphicsLayout(const OGLGraphicsLayout&) noexcept = delete;
@@ -79,10 +83,11 @@ private:
 	GLuint _vao;
 	GLenum _indexType;
 	GLsizei _indexSize;
-	GLsizei _vertexSize;
-	GraphicsDataPtr _vbo;
+	GraphicsDataPtr _vbo[MAX_VERTEX_UNIT];
 	GraphicsDataPtr _ibo;
+	GraphicsProgramPtr _program;
 	GraphicsLayoutDesc _layout;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

@@ -45,18 +45,30 @@ EGL2GraphicsState::~EGL2GraphicsState() noexcept
 {
 }
 
-void 
-EGL2GraphicsState::apply(const GraphicsState& _stateCaptured) noexcept
+bool
+EGL2GraphicsState::setup(const GraphicsStateDesc& desc) noexcept
 {
-	const auto& blendState = this->getBlendState();
-	const auto& rasterState = this->getRasterState();
-	const auto& depthState = this->getDepthState();
-	const auto& stencilState = this->getStencilState();
+	_stateDesc = desc;
+	return true;
+}
 
-	auto& _dstBlendState = _stateCaptured.getBlendState();
-	auto& _dstRasterState = _stateCaptured.getRasterState();
-	auto& _dstDepthState = _stateCaptured.getDepthState();
-	auto& _dstStencilState = _stateCaptured.getStencilState();
+void
+EGL2GraphicsState::close() noexcept
+{
+}
+
+void
+EGL2GraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
+{
+	const auto& blendState = _stateDesc.getBlendState();
+	const auto& rasterState = _stateDesc.getRasterState();
+	const auto& depthState = _stateDesc.getDepthState();
+	const auto& stencilState = _stateDesc.getStencilState();
+
+	auto& _dstBlendState = lastStateDesc.getBlendState();
+	auto& _dstRasterState = lastStateDesc.getRasterState();
+	auto& _dstDepthState = lastStateDesc.getDepthState();
+	auto& _dstStencilState = lastStateDesc.getStencilState();
 
 	if (blendState.blendEnable)
 	{
@@ -115,7 +127,7 @@ EGL2GraphicsState::apply(const GraphicsState& _stateCaptured) noexcept
 
 	if (_dstRasterState.cullMode != rasterState.cullMode)
 	{
-		if (rasterState.cullMode != GPU_CULL_NONE)
+		if (rasterState.cullMode != CullMode::None)
 		{
 			GLenum mode = EGL2Types::asCullMode(rasterState.cullMode);
 			glEnable(GL_CULL_FACE);
@@ -266,6 +278,24 @@ EGL2GraphicsState::apply(const GraphicsState& _stateCaptured) noexcept
 			glDisable(GL_STENCIL_TEST);
 		}
 	}
+}
+
+const GraphicsStateDesc&
+EGL2GraphicsState::getGraphicsStateDesc() const noexcept
+{
+	return _stateDesc;
+}
+
+void
+EGL2GraphicsState::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL2GraphicsState::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

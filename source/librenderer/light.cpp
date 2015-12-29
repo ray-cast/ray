@@ -265,7 +265,6 @@ Light::_updateShadow() const noexcept
 	}
 
 	_shadowCamera->setViewport(Viewport(0, 0, _shadowSize, _shadowSize));
-
 	_shadowCamera->makeLookAt(this->getTransform().getTranslate(), _shadowLookAt, _shadowUpVector);
 	_shadowCamera->makePerspective(90.0, 0.1, _lightRange);
 

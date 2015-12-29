@@ -51,7 +51,7 @@ EGL3GraphicsBuf::~EGL3GraphicsBuf() noexcept
 }
 
 bool
-EGL3GraphicsBuf::open(const GraphicsDataDesc& desc) noexcept
+EGL3GraphicsBuf::setup(const GraphicsDataDesc& desc) noexcept
 {
 	assert(!_buffer);
 

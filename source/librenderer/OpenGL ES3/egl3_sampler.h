@@ -54,10 +54,16 @@ public:
 	GLuint getInstanceID() noexcept;
 
 	const GraphicsSamplerDesc& getGraphicsSamplerDesc() const noexcept;
-private:
 
+private:
+	friend class EGL3Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
 	GLuint _sampler;
     GraphicsSamplerDesc _desc;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

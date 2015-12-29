@@ -41,17 +41,16 @@
 
 _NAME_BEGIN
 
-class XGLCanvas : public RenderWindow
+class XGLCanvas
 {
 public:
 	XGLCanvas() noexcept;
-	XGLCanvas(WindHandle hwnd) except;
 	~XGLCanvas() noexcept;
 
-	void open(WindHandle hwnd) except;
+	bool open(WindHandle hwnd) noexcept;
 	void close() noexcept;
 
-	void setActive(bool active) except;
+	void setActive(bool active) noexcept;
 	void getActive() noexcept;
 
 	void setSwapInterval(SwapInterval interval) noexcept;

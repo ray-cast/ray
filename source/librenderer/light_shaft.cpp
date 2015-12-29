@@ -86,7 +86,7 @@ void
 LightShaft::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) except
 {
 	pipeline.setRenderTexture(_texSample);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_ALL, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(ClearFlags::Default, Vector4::Zero, 1.0, 0);
 
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
@@ -111,7 +111,7 @@ LightShaft::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) 
 				_illuminationPosition->assign(Vector2(view.x, view.y));
 				_illuminationSource->assign(source->getResolveTexture());
 
-				pipeline.drawSceneQuad(_lightShaft);
+				pipeline.drawScreenQuad(_lightShaft);
 			}
 		}
 	}
@@ -119,7 +119,7 @@ LightShaft::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) 
 	_illuminationSource->assign(_texSample->getResolveTexture());
 
 	pipeline.setRenderTexture(source);
-	pipeline.drawSceneQuad(_lightShaftCopy);
+	pipeline.drawScreenQuad(_lightShaftCopy);
 }
 
 _NAME_END

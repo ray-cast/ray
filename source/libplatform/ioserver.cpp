@@ -203,21 +203,18 @@ IoServer::openFileFromFileSystem(StreamWritePtr& stream, const std::string& path
 IoServer&
 IoServer::openFileFromDisk(StreamWritePtr& result, const std::string& path, open_mode mode) noexcept
 {
-	assert(false);
-
 	std::string resolvePath;
 	this->getResolveAssign(path, resolvePath);
 
 	if (resolvePath.empty())
 		resolvePath = path;
 
-	auto stream = std::make_shared<ofstream>();
+	auto stream = std::make_shared<fstream>();
 	stream->setOpenMode(mode);
-
 	if (stream->open(resolvePath))
 	{
 		result = stream;
-		this->clear(ios_base::goodbit);
+		this->setstate(ios_base::goodbit);
 		return *this;
 	}
 

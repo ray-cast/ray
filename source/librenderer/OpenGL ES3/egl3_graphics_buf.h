@@ -47,7 +47,7 @@ public:
 	EGL3GraphicsBuf() noexcept;
 	~EGL3GraphicsBuf() noexcept;
 
-	bool open(const GraphicsDataDesc& desc) noexcept;
+	bool setup(const GraphicsDataDesc& desc) noexcept;
 	void close() noexcept;
 
 	bool is_open() const noexcept;
@@ -72,9 +72,9 @@ public:
 
 	GLuint getInstanceID() noexcept;
 
-	const GraphicsDataDesc& getGraphicsDataDesc() const noexcept;
-
 	void bind() noexcept;
+
+	const GraphicsDataDesc& getGraphicsDataDesc() const noexcept;
 
 private:
 	EGL3GraphicsBuf(const EGL3GraphicsBuf&) noexcept = delete;

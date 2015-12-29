@@ -46,10 +46,9 @@ class OGLDrawIndirectBuffer final : public OGLGraphicsData
 	__DeclareSubClass(OGLDrawIndirectBuffer, OGLGraphicsData)
 public:
 	OGLDrawIndirectBuffer() noexcept;
-	OGLDrawIndirectBuffer(const GraphicsDataDesc& desc) noexcept;
 	~OGLDrawIndirectBuffer() noexcept;
 
-	void open(const GraphicsDataDesc& desc) noexcept;
+	bool setup(const GraphicsDataDesc& desc) noexcept;
 	void close() noexcept;
 
 	void bind() noexcept;

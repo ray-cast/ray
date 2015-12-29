@@ -81,7 +81,7 @@
                 return float3(RGB2sRGB(c.x),RGB2sRGB(c.y),RGB2sRGB(c.z));
             }
 
-            float4 RGBA2sRGB(float4 c)
+            float4 RGBA2sRGBA(float4 c)
             {
                 return float4(RGB2sRGB(c.x),RGB2sRGB(c.y),RGB2sRGB(c.z), c.a);
             }

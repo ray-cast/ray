@@ -127,9 +127,9 @@ FimicToneMapping::sample4(RenderPipeline& pipeline, GraphicsRenderTexturePtr sou
 	_toneSource->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(dest);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(ClearFlags::Color, Vector4::Zero, 1.0, 0);
 
-	pipeline.drawSceneQuad(_sample4);
+	pipeline.drawScreenQuad(_sample4);
 }
 
 void
@@ -138,9 +138,9 @@ FimicToneMapping::sample8(RenderPipeline& pipeline, GraphicsRenderTexturePtr sou
 	_toneSource->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(dest);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(ClearFlags::Color, Vector4::Zero, 1.0, 0);
 
-	pipeline.drawSceneQuad(_sample8);
+	pipeline.drawScreenQuad(_sample8);
 }
 
 void
@@ -149,9 +149,9 @@ FimicToneMapping::sampleLog(RenderPipeline& pipeline, GraphicsRenderTexturePtr s
 	_toneSource->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(dest);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(ClearFlags::Color, Vector4::Zero, 1.0, 0);
 
-	pipeline.drawSceneQuad(_samplelog);
+	pipeline.drawScreenQuad(_samplelog);
 }
 
 void
@@ -160,9 +160,9 @@ FimicToneMapping::generateBloom(RenderPipeline& pipeline, GraphicsRenderTextureP
 	_toneSource->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(dest);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(ClearFlags::Color, Vector4::Zero, 1.0, 0);
 
-	pipeline.drawSceneQuad(_bloom);
+	pipeline.drawScreenQuad(_bloom);
 }
 
 void
@@ -173,7 +173,7 @@ FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsRenderTexturePtr sourc
 	_toneSource->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(dest);
-	pipeline.drawSceneQuad(_blurh);
+	pipeline.drawScreenQuad(_blurh);
 }
 
 void
@@ -184,7 +184,7 @@ FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsRenderTexturePtr sourc
 	_toneSource->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(dest);
-	pipeline.drawSceneQuad(_blurv);
+	pipeline.drawScreenQuad(_blurv);
 }
 
 void
@@ -194,7 +194,7 @@ FimicToneMapping::generateToneMapping(RenderPipeline& pipeline, GraphicsRenderTe
 	_toneBloom->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(dest);
-	pipeline.drawSceneQuad(_tone);
+	pipeline.drawScreenQuad(_tone);
 }
 
 void

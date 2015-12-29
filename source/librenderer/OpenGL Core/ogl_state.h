@@ -56,11 +56,17 @@ public:
 	const GraphicsStateDesc& getGraphicsStateDesc() const noexcept;
 
 private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
 	OGLGraphicsState(const OGLGraphicsState&) = delete;
 	OGLGraphicsState& operator=(const OGLGraphicsState&) = delete;
 
 private:
 	GraphicsStateDesc _stateDesc;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

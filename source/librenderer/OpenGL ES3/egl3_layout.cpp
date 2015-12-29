@@ -37,6 +37,7 @@
 #include "egl3_layout.h"
 #include "egl3_vbo.h"
 #include "egl3_ibo.h"
+#include "egl3_shader.h"
 
 _NAME_BEGIN
 
@@ -74,37 +75,36 @@ EGL3GraphicsLayout::open(const GraphicsLayoutDesc& layout) noexcept
 	if (_vertexSize == GL_NONE)
 		return false;
 
+	auto& component = layout.getVertexComponents();
+	for (auto& it : component)
+	{
+		auto& semantic = it.getSemantic();
+		if (semantic.empty())
+		{
+			GL_PLATFORM_LOG("Empty semantic");
+			return false;
+		}
+
+		for (auto& ch : semantic)
+		{
+			if (ch < 'a' && ch > 'z')
+			{
+				GL_PLATFORM_LOG("Error semantic describe : %s", semantic);
+				return false;
+			}
+		}
+	}
+
 	_layout = layout;
 
 	glGenVertexArrays(1, &_vao);
-	if (_vao != GL_NONE)
+	if (_vao == GL_NONE)
 	{
-		glBindVertexArray(_vao);
-
-		GLuint offset = 0;
-
-		auto& components = this->getVertexComponents();
-		for (auto& it : components)
-		{
-			GLenum type = EGL3Types::asEGL3VertexFormat(it.getVertexFormat());
-			if (type != GL_INVALID_ENUM)
-			{
-				GLboolean normalize = it.getNormalize() ? GL_TRUE : GL_FALSE;
-
-				glEnableVertexAttribArray((GLuint)it.getVertexAttrib());
-				glVertexAttribFormat(it.getVertexAttrib(), it.getVertexCount(), type, normalize, offset);
-				glVertexAttribBinding(it.getVertexAttrib(), 0);
-			}
-
-			offset += it.getVertexSize();
-		}
-
-		glBindVertexArray(GL_NONE);
-
-		return true;
+		GL_PLATFORM_LOG("glCreateVertexArrays() fail");
+		return false;
 	}
 
-	return false;
+	return true;
 }
 
 void
@@ -177,9 +177,46 @@ EGL3GraphicsLayout::getGraphicsLayout() const noexcept
 }
 
 void
-EGL3GraphicsLayout::bindLayout() noexcept
+EGL3GraphicsLayout::bindLayout(const EGL3ShaderObjectPtr& program) noexcept
 {
 	glBindVertexArray(_vao);
+
+	if (_program != program)
+	{
+		GLuint offset = 0;
+
+		auto& components = this->getVertexComponents();
+		for (auto& it : components)
+		{
+			GLuint attribIndex = GL_INVALID_INDEX;
+			GLuint bindingIndex = it.getVertexSlot();
+			GLenum type = EGL3Types::asEGL3VertexFormat(it.getVertexFormat());
+
+			auto& attributes = program->getActiveAttributes();
+			for (auto& attrib : attributes)
+			{
+				if (attrib->getSemanticIndex() == it.getSemanticIndex() && attrib->getSemantic() == it.getSemantic())
+				{
+					attribIndex = attrib->downcast<EGL3ShaderAttribute>()->getLocation();
+					break;
+				}
+			}
+
+			if (attribIndex != GL_INVALID_INDEX)
+			{
+				glEnableVertexAttribArray(attribIndex);
+				glVertexAttribBinding(attribIndex, bindingIndex);
+				glVertexAttribFormat(attribIndex, it.getVertexCount(), type, GL_FALSE, offset);
+
+				if (it.getVertexDivisor() > 0)
+					glVertexBindingDivisor(bindingIndex, it.getVertexDivisor());
+			}
+
+			offset += it.getVertexSize();
+		}
+
+		_program = program;
+	}
 }
 
 void
@@ -201,6 +238,18 @@ EGL3GraphicsLayout::bindIbo(const EGL3IndexBufferPtr& ibo) noexcept
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID());
 		_ibo = ibo;
 	}
+}
+
+void
+EGL3GraphicsLayout::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL3GraphicsLayout::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

@@ -72,9 +72,9 @@ public:
 
 	GLuint getInstanceID() noexcept;
 
-	void getGraphicsDataDesc(GraphicsDataDesc& desc) const noexcept;
-
 	void bind() noexcept;
+
+	const GraphicsDataDesc& getGraphicsDataDesc() const noexcept;
 
 private:
 	EGL2GraphicsBuf(const EGL2GraphicsBuf&) noexcept = delete;

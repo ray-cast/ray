@@ -51,10 +51,16 @@ public:
 	bool setup(const GraphicsSamplerDesc& desc) except;
 	void close() noexcept;
 
-	void getGraphicsSamplerDesc(GraphicsSamplerDesc& desc) const noexcept;
+	const GraphicsSamplerDesc& getGraphicsSamplerDesc() const noexcept;
+private:
+	friend class EGL2Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
 private:
 
 	GraphicsSamplerDesc _desc;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

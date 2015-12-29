@@ -1,5 +1,5 @@
 <?xml version='1.0'?>
 <material>
     <attribute decal="dlc:SSRR/texture/sky.png"/>
-    <attribute shader="dlc:SSRR/fx/sky.glsl"/>
+    <attribute shader="dlc:SSRR/fx/sky.fxml.o"/>
 </material>

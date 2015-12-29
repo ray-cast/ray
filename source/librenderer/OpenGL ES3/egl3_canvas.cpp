@@ -43,56 +43,43 @@ EGL3Canvas::EGL3Canvas() noexcept
     , _surface(EGL_NO_SURFACE)
     , _context(EGL_NO_CONTEXT)
     , _config(0)
-	, _interval(SwapInterval::GPU_VSYNC)
+	, _interval(SwapInterval::Vsync)
 	, _isActive(false)
 {
 	initPixelFormat(_fbconfig, _ctxconfig);
-}
-
-EGL3Canvas::EGL3Canvas(WindHandle hwnd) except
-	: _display(EGL_NO_DISPLAY)
-	, _surface(EGL_NO_SURFACE)
-	, _context(EGL_NO_CONTEXT)
-	, _config(0)
-	, _interval(SwapInterval::GPU_VSYNC)
-	, _isActive(false)
-{
-	initPixelFormat(_fbconfig, _ctxconfig);
-
-	this->open(hwnd);
 }
 
 EGL3Canvas::~EGL3Canvas() noexcept
 {
     this->close();
 }
-void
-EGL3Canvas::open(WindHandle hwnd) except
+
+bool
+EGL3Canvas::open(WindHandle hwnd) noexcept
 {
 	EGLint attribs[80];
 	EGLint index = 0, mask = 0, startegy = 0;
 
-#if !defined(__ANDROID__)
 	if (_ctxconfig.forward)
 	{
 		attribs[index++] = EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE;
 		attribs[index++] = EGL_TRUE;
 	}
 
-    if (_ctxconfig.api != GPU_OPENGL_ES_API)
+    if (_ctxconfig.api != OPENGL_ES_API)
     {
-        if (_ctxconfig.profile == GPU_GL_CORE_PROFILE)
+        if (_ctxconfig.profile == GL_CORE_PROFILE)
             mask = EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT;
 
-        if (_ctxconfig.profile == GPU_GL_COMPAT_PROFILE)
+        if (_ctxconfig.profile == GL_COMPAT_PROFILE)
             mask = EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT;
     }
 
 	if (_ctxconfig.robustness)
 	{
-		if (_ctxconfig.robustness == GPU_GL_REST_NOTIFICATION)
+		if (_ctxconfig.robustness == GL_REST_NOTIFICATION)
 			startegy = EGL_NO_RESET_NOTIFICATION;
-		else if (_ctxconfig.robustness == GPU_GL_LOSE_CONTEXT_ONREST)
+		else if (_ctxconfig.robustness == GL_LOSE_CONTEXT_ONREST)
 			startegy = EGL_LOSE_CONTEXT_ON_RESET;
 
 		if (startegy)
@@ -104,7 +91,6 @@ EGL3Canvas::open(WindHandle hwnd) except
 			attribs[index++] = EGL_TRUE;
 		}
 	}
-#endif
 
 	if (_ctxconfig.major > 0 && _ctxconfig.major < 4)
 	{
@@ -127,7 +113,7 @@ EGL3Canvas::open(WindHandle hwnd) except
 	const EGLint pixelformat[] =
 	{
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
 		EGL_RED_SIZE, _fbconfig.redSize,
 		EGL_GREEN_SIZE, _fbconfig.greenSize,
 		EGL_BLUE_SIZE, _fbconfig.blueSize,
@@ -143,25 +129,45 @@ EGL3Canvas::open(WindHandle hwnd) except
 
 	_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	if (_display == EGL_NO_DISPLAY)
-		throw failure(__TEXT("eglGetDisplay() fail"));
+	{
+		GL_PLATFORM_LOG("eglGetDisplay() fail : %d", eglGetError());
+		return false;
+	}
 
-	if (::eglInitialize(_display, 0, 0) == EGL_FALSE)
-		throw failure(__TEXT("eglInitialize() fail"));
+	if (::eglInitialize(_display, &_ctxconfig.major, &_ctxconfig.minor) == EGL_FALSE)
+	{
+		GL_PLATFORM_LOG("eglInitialize() fail : %d", eglGetError());
+		return false;
+	}
 
-	if (::eglBindAPI(EGL_OPENGL_ES_API) != EGL_TRUE)
-		throw failure(__TEXT("eglBindAPI() fail"));
+	if (::eglBindAPI(EGL_OPENGL_ES_API) == EGL_FALSE)
+	{
+		GL_PLATFORM_LOG("eglBindAPI() fail : %d", eglGetError());
+		return false;
+	}
 
 	EGLint num = 0;
 	if (::eglChooseConfig(_display, pixelformat, &_config, 1, &num) == EGL_FALSE)
-		throw failure(__TEXT("eglChooseConfig() fail"));
+	{
+		GL_PLATFORM_LOG("eglChooseConfig() fail : %d", eglGetError());
+		return false;
+	}
 
 	_surface = ::eglCreateWindowSurface(_display, _config, _hwnd, NULL);
-	if (!_surface)
-		throw failure(__TEXT("eglCreateContext() fail"));
+	if (eglGetError() != EGL_SUCCESS)
+	{
+		GL_PLATFORM_LOG("eglCreateContext() fail : %d", eglGetError());
+		return false;
+	}
 
     _context = ::eglCreateContext(_display, _config, _ctxconfig.share, attribs);
-    if (!_context)
-		throw failure(__TEXT("eglCreateContext() fail"));
+    if (eglGetError() != EGL_SUCCESS)
+    {
+    	GL_PLATFORM_LOG("eglCreateContext() fail : %d", eglGetError());
+    	return false;
+    }
+
+	return true;
 }
 
 void
@@ -187,19 +193,25 @@ EGL3Canvas::close() noexcept
 }
 
 void
-EGL3Canvas::setActive(bool active) except
+EGL3Canvas::setActive(bool active) noexcept
 {
 	if (_isActive != active)
 	{
 		if (active)
 		{
-			if (!eglMakeCurrent(_display, _surface, _surface, _context))
-				throw failure(__TEXT("eglMakeCurrent() fail"));
+			if (eglMakeCurrent(_display, _surface, _surface, _context) == EGL_FALSE)
+			{
+				GL_PLATFORM_LOG("eglMakeCurrent() fail : %d", eglGetError());
+				return;
+			}
 		}
 		else
 		{
-			/*if (!eglMakeCurrent(_display, _surface, _surface, EGL_NO_CONTEXT))
-				throw failure(__TEXT("eglMakeCurrent() fail"));*/
+			if (eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) == EGL_FALSE)
+			{
+				GL_PLATFORM_LOG("eglMakeCurrent() fail : %d", eglGetError());
+				return;
+			}
 		}
 
 		_isActive = active;
@@ -221,21 +233,25 @@ EGL3Canvas::setSwapInterval(SwapInterval interval) noexcept
 	{
 		switch (interval)
 		{
-		case ray::GPU_FREE:
-			eglSwapInterval(_display, 0);
+		case SwapInterval::Free:
+			if (eglSwapInterval(_display, 0) == GL_FALSE)
+				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Free) fail : %d", eglGetError());
 			break;
-		case ray::GPU_VSYNC:
-			eglSwapInterval(_display, 1);
+		case SwapInterval::Vsync:
+			if (eglSwapInterval(_display, 1) == GL_FALSE)
+				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Vsync) fail : %d", eglGetError());
 			break;
-		case ray::GPU_FPS30:
-			eglSwapInterval(_display, 2);
+		case SwapInterval::Fps30:
+			if (eglSwapInterval(_display, 2) == GL_FALSE)
+				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Fps30) fail : %d", eglGetError());
 			break;
-		case ray::GPU_FPS15:
-			eglSwapInterval(_display, 3);
+		case SwapInterval::Fps15:
+			if (eglSwapInterval(_display, 3) == GL_FALSE)
+				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Fps15) fail : %d", eglGetError());
 			break;
 		default:
-			assert(false);
-			eglSwapInterval(_display, 1);
+			GL_PLATFORM_LOG("Invlid SwapInterval");
+			return;
 		}
 
 		_interval = interval;
@@ -251,9 +267,12 @@ EGL3Canvas::getSwapInterval() const noexcept
 void
 EGL3Canvas::present() noexcept
 {
+	assert(_isActive);
     assert(_display != EGL_NO_DISPLAY);
     assert(_surface != EGL_NO_SURFACE);
-	::eglSwapBuffers(_display, _surface);
+
+	if (::eglSwapBuffers(_display, _surface) == EGL_FALSE)
+		GL_PLATFORM_LOG("eglSwapBuffers() fail : %d", eglGetError());
 }
 
 WindHandle
@@ -283,9 +302,9 @@ EGL3Canvas::initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noex
 	ctxconfig.minor = 1;
 	ctxconfig.release = 0;
 	ctxconfig.robustness = 0;
-	ctxconfig.share = nullptr;
-	ctxconfig.api = GPU_OPENGL_ES_API;
-	ctxconfig.profile = GPU_GL_CORE_PROFILE;
+	ctxconfig.share = EGL_NO_CONTEXT;
+	ctxconfig.api = GLapi::OPENGL_ES_API;
+	ctxconfig.profile = GLattr::GL_CORE_PROFILE;
 	ctxconfig.forward = 0;
 	ctxconfig.multithread = false;
 }

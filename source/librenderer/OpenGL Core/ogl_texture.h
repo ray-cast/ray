@@ -48,7 +48,7 @@ public:
 	OGLTexture() noexcept;
 	~OGLTexture() noexcept;
 
-	bool setup(const GraphicsTextureDesc& textureDesc) except;
+	bool setup(const GraphicsTextureDesc& textureDesc) noexcept;
 	void close() noexcept;
 
 	bool isMultiSample() const noexcept;
@@ -59,15 +59,21 @@ public:
 	const GraphicsTextureDesc& getGraphicsTextureDesc() const noexcept;
 
 private:
-	void applySamplerWrap(SamplerWrap wrap) noexcept;
-	void applySamplerFilter(SamplerFilter filter) noexcept;
-	void applySamplerAnis(SamplerAnis anis) noexcept;
+	bool applySamplerWrap(SamplerWrap wrap) noexcept;
+	bool applySamplerFilter(SamplerFilter filter) noexcept;
+	bool applySamplerAnis(SamplerAnis anis) noexcept;
+
+private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
 
 private:
 
 	GLenum _target;
 	GLuint _texture;
 	GraphicsTextureDesc _textureDesc;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

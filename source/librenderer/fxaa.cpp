@@ -74,7 +74,7 @@ FXAA::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexce
 	_texelStep->assign(float2(1.0f / textureDesc.getWidth(), 1.0f / textureDesc.getHeight()));
 
 	pipeline.setRenderTexture(source);
-	pipeline.drawSceneQuad(_fxaaPass);
+	pipeline.drawScreenQuad(_fxaaPass);
 }
 
 _NAME_END

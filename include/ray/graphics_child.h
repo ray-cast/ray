@@ -43,10 +43,12 @@ _NAME_BEGIN
 
 class EXPORT GraphicsChild : public rtti::Interface
 {
-	__DeclareSubClass(GraphicsChild, rtti::Interface)
+	__DeclareSubInterface(GraphicsChild, rtti::Interface)
 public:
 	GraphicsChild() noexcept;
 	virtual ~GraphicsChild() noexcept;
+
+	virtual GraphicsDevicePtr getDevice() noexcept = 0;
 
 private:
 	GraphicsChild(const GraphicsChild&) noexcept = delete;

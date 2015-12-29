@@ -45,23 +45,17 @@ EGL3IndexBuffer::EGL3IndexBuffer() noexcept
 {
 }
 
-EGL3IndexBuffer::EGL3IndexBuffer(const GraphicsDataDesc& desc) noexcept
-	: EGL3GraphicsData(&_indexData)
-{
-	this->open(desc);
-}
-
 EGL3IndexBuffer::~EGL3IndexBuffer() noexcept
 {
 	this->close();
 }
 
-void
-EGL3IndexBuffer::open(const GraphicsDataDesc& desc) noexcept
+bool
+EGL3IndexBuffer::setup(const GraphicsDataDesc& desc) noexcept
 {
 	assert(desc.getType() == GraphicsStream::IBO);
 	assert(desc.getStreamSize() > 0);
-	_indexData.open(desc);
+	return _indexData.setup(desc);
 }
 
 void

@@ -94,6 +94,8 @@ public:
     streamoff seek(streamoff _off, ios_base::seekdir seek) noexcept;
     streamoff tell() const noexcept;
 
+	streamsize size() const noexcept;
+
     streamsize read(void* buf, streamsize size) noexcept;
     streamsize write(const void* buf, streamsize size) noexcept;
 

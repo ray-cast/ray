@@ -43,6 +43,7 @@ _NAME_BEGIN
 
 class EXPORT iarchive : virtual public archive
 {
+protected:
 	class isentry final
 	{
 	public:
@@ -63,23 +64,6 @@ class EXPORT iarchive : virtual public archive
 public:
 	iarchive(archivebuf* buf) noexcept;
 	virtual ~iarchive() noexcept;
-
-	iarchive& open(StreamReader& stream) noexcept;
-	iarchive& close() noexcept;
-
-	bool is_open() const noexcept;
-
-	std::string getCurrentNodeName() const noexcept;
-	std::string getCurrentNodePath() const noexcept;
-
-	void setToNode(const std::string& path) noexcept;
-	bool setToFirstChild() noexcept;
-	bool setToFirstChild(const std::string& name) noexcept;
-	bool setToNextChild() noexcept;
-	bool setToNextChild(const std::string& name) noexcept;
-	bool setToParent() noexcept;
-
-	bool hasChild() const noexcept;
 
 	bool hasAttr(const char* name) const noexcept;
 	void clearAttrs() noexcept;

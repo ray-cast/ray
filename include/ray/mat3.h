@@ -37,7 +37,7 @@
 #ifndef _H_MATRIX3X3_H_
 #define _H_MATRIX3X3_H_
 
-#include <ray/vector2.h>
+#include <ray/vector3.h>
 
 _NAME_BEGIN
 
@@ -45,23 +45,20 @@ template<typename T>
 class Matrix3x3t
 {
 public:
-
     Matrix3x3t()
     {
-        // empty
     }
 
-    explicit Matrix3x3t(T _a1, T _a2, T _a3, T _b1, T _b2, T _b3, T _c1, T _c2, T _c3)
-        :a1(_a1), a2(_a2), a3(_a3)
+    Matrix3x3t(T _a1, T _a2, T _a3, T _b1, T _b2, T _b3, T _c1, T _c2, T _c3)
+        : a1(_a1), a2(_a2), a3(_a3)
         , b1(_b1), b2(_b2), b3(_b3)
         , c1(_c1), c2(_c2), c3(_c3)
     {
-        // empty
     }
 
-    explicit Matrix3x3t(const Matrix3x3t<T>& m1, const Matrix3x3t<T>& m2)
+    Matrix3x3t(const Matrix3x3t<T>& m1, const Matrix3x3t<T>& m2)
     {
-        *this = m1 * m2;
+        this->multiplyMatrices(m1, m2);
     }
 
     template <typename S>
@@ -72,8 +69,6 @@ public:
         c1 = m.c1; c2 = m.c2; c3 = m.c3;
     }
 
-    // ------------------------------------------------------------------------------------------------
-    // Construction from a 4x4 matrix. The remaining parts of the matrix are ignored.
     template <typename S>
     explicit Matrix3x3t(const Matrix4x4t<S>& m)
     {
@@ -91,6 +86,15 @@ public:
             static_cast<S>(c1), static_cast<S>(c2), static_cast<S>(c3));
     }
 
+	template <typename S>
+	Matrix3x3t<T>& operator -= (const Matrix3x3t<S>& m)
+	{
+		a1 -= m.a1; b1 -= m.a2; c1 -= m.c1;
+		a2 -= m.a2; b2 -= m.a2; c2 -= m.c2;
+		a3 -= m.a3; b3 -= m.a2; c3 -= m.c3;
+		return *this;
+	}
+
     template <typename S>
     Matrix3x3t<T>& operator += (const Matrix3x3t<S>& m)
     {
@@ -100,7 +104,8 @@ public:
         return *this;
     }
 
-    Matrix3x3t<T>& operator *= (const Matrix3x3t<T>& m)
+	template <typename S>
+    Matrix3x3t<T>& operator *= (const Matrix3x3t<S>& m)
     {
         *this = Matrix3x3t<T>(
             m.a1 * a1 + m.b1 * a2 + m.c1 * a3,
@@ -115,24 +120,24 @@ public:
         return *this;
     }
 
-    T& operator()(std::size_t m, std::size_t n)
+    T& operator() (std::size_t m, std::size_t n)
     {
-        return (&a1)[m * 3 + n];
+        return *(&a1)[m * 3 + n];
     }
 
-    const T operator()(std::size_t m, std::size_t n) const
+    const T& operator() (std::size_t m, std::size_t n) const
     {
-        return (&a1)[m * 3 + n];
+        return *(&a1)[m * 3 + n];
     }
 
-    T* operator[](std::size_t n)
+    T& operator[] (std::size_t n)
     {
-        return &this->a1 + n * 3;
+        return *(&a1)[n];
     }
 
-    const T* operator[](std::size_t n) const
+    const T& operator[] (std::size_t n) const
     {
-        return &this->a1 + n * 3;
+        return *(&a1)[n];
     }
 
     explicit operator T*()
@@ -146,8 +151,9 @@ public:
     }
 
     T* ptr() { return (T*)&a1; }
-    const T* ptr() const { return (const T*)&a1; }
     T* data() { return (T*)&a1; }
+
+    const T* ptr() const { return (const T*)&a1; }
     const T* data() const { return (const T*)&a1; }
 
     Matrix3x3t<T>& set(T mt00, T mt01, T mt02, T mt10, T mt11, T mt12, T mt20, T mt21, T mt22)
@@ -180,11 +186,6 @@ public:
         return *this;
     }
 
-    Matrix3x3t<T>& makeNormalMatrix(const Matrix3x3t<T>& m)
-    {
-        return inverse(m).transpose();
-    }
-
     bool isIdentity() const
     {
         return
@@ -193,15 +194,7 @@ public:
             c1 == 0 && c2 == 0 && c3 == 1;
     }
 
-    T innerProduct(const Matrix3x3t<T>& m1, const Matrix3x3t<T>& m2, int r, int c) const
-    {
-        return
-            (m1._m[r][0] * m2._m[0][c]) +
-            (m1._m[r][1] * m2._m[1][c]) +
-            (m1._m[r][2] * m2._m[2][c]);
-    }
-
-    void getRotate()
+    Quaterniont<T> getRotate() const
     {
         T x, y, z, w;
         T t = 1 + a1 + b2 + c3;
@@ -254,23 +247,19 @@ public:
             (c1*v.x + c2*v.y + c3*v.z));
     }
 
-    const Matrix3x3t<T> mult(const Matrix3x3t<T>& lhs, const Matrix3x3t<T>& m2) const
+    Matrix3x3t<T>& multiplyMatrices(const Matrix3x3t<T>& m1, const Matrix3x3t<T>& m2)
     {
-        Matrix3x3t<T> m;
-        m(0, 0) = innerProduct(lhs, m2, 0, 0);
-        m(0, 1) = innerProduct(lhs, m2, 0, 1);
-        m(0, 2) = innerProduct(lhs, m2, 0, 2);
-        m(1, 0) = innerProduct(lhs, m2, 1, 0);
-        m(1, 1) = innerProduct(lhs, m2, 1, 1);
-        m(1, 2) = innerProduct(lhs, m2, 1, 2);
-        m(2, 0) = innerProduct(lhs, m2, 2, 0);
-        m(2, 1) = innerProduct(lhs, m2, 2, 1);
-        m(2, 2) = innerProduct(lhs, m2, 2, 2);
-
-        return m;
+		a1 = m1.a1 * m2.a1 + m1.b1 * m2.a2 + m1.c1 * m2.a3;
+		a2 = m1.a2 * m2.a1 + m1.b2 * m2.a2 + m1.c2 * m2.a3;
+		a3 = m1.a3 * m2.a1 + m1.b3 * m2.a2 + m1.c3 * m2.a3;
+		b1 = m1.a1 * m2.b1 + m1.b1 * m2.b2 + m1.c1 * m2.b3;
+		b2 = m1.a2 * m2.b1 + m1.b2 * m2.b2 + m1.c2 * m2.b3;
+		b3 = m1.a3 * m2.b1 + m1.b3 * m2.b2 + m1.c3 * m2.b3;
+		c1 = m1.a1 * m2.c1 + m1.b1 * m2.c2 + m1.c1 * m2.c3;
+		c2 = m1.a2 * m2.c1 + m1.b2 * m2.c2 + m1.c2 * m2.c3;
+		c3 = m1.a3 * m2.c1 + m1.b3 * m2.c2 + m1.c3 * m2.c3;
+		return *this;
     }
-
-    Matrix3x3t<T> mult(const Matrix3x3t<T>& m2) const { return mult(*this, m2); }
 
     Matrix3x3t<T>& transpose()
     {
@@ -298,8 +287,7 @@ public:
     Matrix3x3t<T>& inverse()
     {
         // Compute the reciprocal determinant
-        // Compute the reciprocal determinant
-        const T det = determinant();
+        const T det = this->determinant();
         if (det == static_cast<T>(0.0))
         {
             // Matrix not invertible. Setting all elements to nan is not really
@@ -316,22 +304,22 @@ public:
 
         T invdet = static_cast<T>(1.0) / det;
 
-        a1 = invdet * (b2 * c3 - b3 * c2);
+        a1 =  invdet * (b2 * c3 - b3 * c2);
         a2 = -invdet * (a2 * c3 - a3 * c2);
-        a3 = invdet * (a2 * b3 - a3 * b2);
+        a3 =  invdet * (a2 * b3 - a3 * b2);
         b1 = -invdet * (b1 * c3 - b3 * c1);
-        b2 = invdet * (a1 * c3 - a3 * c1);
+        b2 =  invdet * (a1 * c3 - a3 * c1);
         b3 = -invdet * (a1 * b3 - a3 * b1);
-        c1 = invdet * (b1 * c2 - b2 * c1);
+        c1 =  invdet * (b1 * c2 - b2 * c1);
         c2 = -invdet * (a1 * c2 - a2 * c1);
-        c3 = invdet * (a1 * b2 - a2 * b1);
+        c3 =  invdet * (a1 * b2 - a2 * b1);
 
         return *this;
     }
 
     T determinant() const
     {
-        return a1*b2*c3 - a1*b3*c2 + a2*b3*c1 - a2*b1*c3 + a3*b1*c2 - a3*b2*c1;
+        return a1 * b2 * c3 - a1 * b3 * c2 + a2 * b3 * c1 - a2 * b1 * c3 + a3 * b1 * c2 - a3 * b2 * c1;
     }
 
 	Matrix3x3t<T>& setRotate(const Quaterniont<T>& q) { return setRotate(q.w, q.x, q.y, q.z); }
@@ -398,15 +386,15 @@ public:
         T bf = b * f;
 
         a1 = c * e;
-        b1 = -c * f;
-        c1 = d;
+        a2 = -c * f;
+        a3 = d;
 
-        a2 = af + be * d;
+        b1 = af + be * d;
         b2 = ae - bf * d;
-        c2 = -b * c;
+        b3 = -b * c;
 
-        a3 = bf - ae * d;
-        b3 = be + af * d;
+        c1 = bf - ae * d;
+        c2 = be + af * d;
         c3 = a * c;
 
         return *this;
@@ -643,23 +631,23 @@ inline Vector3t<T> operator*(const Matrix3x3t<T>& m, const Vector3t<T>& v)
 }
 
 template<typename T>
-inline Matrix3x3t<T> operator*(T& scale, const Matrix3x3t<T>& m)
+inline Matrix3x3t<T> operator*(T& scale, const Matrix3x3t<T>& m1)
 {
-    Matrix3x3t<T> n;
-    n.a1 = m.a1 * scale; n.b1 = m.b1 * scale; n.c1 = m.c1 * scale;
-    n.a2 = m.a2 * scale; n.b2 = m.b2 * scale; n.c2 = m.c2 * scale;
-    n.a3 = m.a3 * scale; n.b3 = m.b3 * scale; n.c3 = m.c3 * scale;
-    return n;
+    Matrix3x3t<T> m;
+    m.a1 = m1.a1 * scale; m.b1 = m1.b1 * scale; m.c1 = m1.c1 * scale;
+    m.a2 = m1.a2 * scale; m.b2 = m1.b2 * scale; m.c2 = m1.c2 * scale;
+    m.a3 = m1.a3 * scale; m.b3 = m1.b3 * scale; m.c3 = m1.c3 * scale;
+    return m;
 }
 
 template<typename T>
-inline Matrix3x3t<T> operator*(const Matrix3x3t<T>& m, T& scale)
+inline Matrix3x3t<T> operator*(const Matrix3x3t<T>& m1, T& scale)
 {
-    Matrix3x3t<T> n;
-    n.a1 = m.a1 * scale; n.b1 = m.b1 * scale; n.c1 = m.c1 * scale;
-    n.a2 = m.a2 * scale; n.b2 = m.b2 * scale; n.c2 = m.c2 * scale;
-    n.a3 = m.a3 * scale; n.b3 = m.b3 * scale; n.c3 = m.c3 * scale;
-    return n;
+    Matrix3x3t<T> m;
+    m.a1 = m1.a1 * scale; m.b1 = m1.b1 * scale; m.c1 = m1.c1 * scale;
+    m.a2 = m1.a2 * scale; m.b2 = m1.b2 * scale; m.c2 = m1.c2 * scale;
+    m.a3 = m1.a3 * scale; m.b3 = m1.b3 * scale; m.c3 = m1.c3 * scale;
+    return m;
 }
 
 template<typename T>

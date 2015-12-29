@@ -91,7 +91,7 @@
                     roughness = log2(roughness) / 13.0f;
                     roughness = max(0.5f / 16.0f, roughness);
 
-                    vec2 envBRDF = texture(texLUT, vec2(NdotV, 1.0f - roughness)).rg;
+                    float2 envBRDF = texture(texLUT, float2(NdotV, 1.0f - roughness)).rg;
 
                     return (mad(specular, envBRDF.x, envBRDF.y));
                 }
@@ -159,14 +159,14 @@
 
             float pointLighting(float3 lightPosition, float3 world, float3 atten)
             {
-                float distance = distance(lightPosition, world);
+                float distance = length(lightPosition - world);
                 float attenuation = max(1.0f - (distance / atten.y), 0.0f);
                 return attenuation;
             }
 
             float shadowLighting(sampler2D shadowMap, mat4 shadowMatrix, float shadowFactor, float3 P)
             {
-                vec4 proj = shadowMatrix * vec4(P, 1.0f);
+                float4 proj = shadowMatrix * float4(P, 1.0f);
                 proj.xyz /= proj.w;
                 proj.xy = mad(proj.xy, 0.5f, 0.5f);
 

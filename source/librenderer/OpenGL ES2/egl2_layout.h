@@ -63,9 +63,16 @@ public:
 	GLsizei getIndexSize() const noexcept;
 	GLsizei getVertexSize() const noexcept;
 
-	void getGraphicsLayout(GraphicsLayoutDesc& layout) const noexcept;
+	void bindLayout(const EGL2ShaderObjectPtr& program) noexcept;
+	void bindVbo(const EGL2VertexBufferPtr& vbo) noexcept;
+	void bindIbo(const EGL2IndexBufferPtr& ibo) noexcept;
 
-	void bindLayout() noexcept;
+	const GraphicsLayoutDesc& getGraphicsLayout() const noexcept;
+
+private:
+	friend class EGL2Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
 
 private:
 	EGL2GraphicsLayout(const EGL2GraphicsLayout&) noexcept = delete;
@@ -75,7 +82,11 @@ private:
 	GLenum _indexType;
 	GLsizei _indexSize;
 	GLsizei _vertexSize;
+	GraphicsDataPtr _vbo;
+	GraphicsDataPtr _ibo;
+	GraphicsProgramPtr _program;
 	GraphicsLayoutDesc _layout;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

@@ -1204,6 +1204,160 @@ void split(std::vector<std::wstring>& result, const std::wstring& _source, const
 	}
 }
 
+std::string ltrim(const std::string& str, char ch)
+{
+	std::size_t len = str.size();
+	for (std::size_t i = 0; i < len; i++)
+	{
+		if (str[i] != ch)
+			break;
+	}
+
+	return str.substr(len);
+}
+
+std::wstring ltrim(const std::wstring& str, wchar_t ch)
+{
+	std::size_t len = str.size();
+	for (std::size_t i = 0; i < len; i++)
+	{
+		if (str[i] != ch)
+			break;
+	}
+
+	return str.substr(len);
+}
+
+std::string rtrim(const std::string& str, char ch)
+{
+	std::size_t len = str.size();
+	for (std::size_t i = len - 1; i > 0; i++)
+	{
+		if (str[i] != ch)
+			break;
+	}
+
+	return str.substr(0, len + 1);
+}
+
+std::wstring rtrim(const std::wstring& str, wchar_t ch)
+{
+	std::size_t len = str.size();
+	for (std::size_t i = len - 1; i > 0; i++)
+	{
+		if (str[i] != ch)
+			break;
+	}
+
+	return str.substr(0, len + 1);
+}
+
+std::string trim(const std::string& str, char ch)
+{
+	std::size_t len = str.size();
+	
+	std::size_t off1 = 0;
+	std::size_t off2 = len - 1;
+	for (; off1 < len; off1++)
+	{
+		if (str[off1] != ch)
+			break;
+	}
+
+	for (; off2 > 0; off2--)
+	{
+		if (str[off2] != ch)
+			break;
+	}
+
+	if ((off2 + 1) > off1)
+		return str.substr(off1, (off2 + 1) - off1);
+	else
+		return str;
+}
+
+std::wstring trim(const std::wstring& str, char ch)
+{
+	std::size_t len = str.size();
+
+	std::size_t off1 = 0;
+	std::size_t off2 = len - 1;
+	for (; off1 < len; off1++)
+	{
+		if (str[off1] != ch)
+			break;
+	}
+
+	for (; off2 > 0; off2--)
+	{
+		if (str[off2] != ch)
+			break;
+	}
+
+	if ((off2 + 1) > off1)
+		return str.substr(off1, (off2 + 1) - off1);
+	else
+		return str;
+}
+
+std::size_t hex2str(std::string& out, const char* in, std::size_t size, std::size_t split)
+{
+	out.resize(size * 3 + size / split);
+
+	std::size_t i = 0, j = 0, k = 1;
+	for (; i < size; i++, k++)
+	{
+		std::uint8_t ch = in[i];
+		out[j] = "0123456789abcdef"[(ch >> 4) & 0x0f];
+		out[j + 1] = "0123456789abcdef"[ch & 0x0f];
+		out[j + 2] = ' ';
+
+		if (k == split)
+		{
+			out[j + 3] = '\n';
+			k = 0;
+			j += 4;
+		}
+		else
+		{
+			j += 3;
+		}
+	}
+
+	return i;
+}
+
+bool _str2hex(char in, char& out)
+{
+	if (in < '0' || in > 'f')
+		return false;
+	if (in > '9' && in < 'a')
+		return false;
+
+	out = in;
+	if (out >= 'a')
+		out -= ('a' - 10);
+	else
+		out -= '0';
+	return true;
+}
+
+std::size_t str2hex(std::vector<char>& out, const char* in, std::size_t size)
+{
+	std::size_t i = 0;
+	while (i < size)
+	{
+		char high, low;
+		if (!_str2hex(in[i], high)) { i++; continue; }
+		if (!_str2hex(in[i + 1], low)) { i++; continue; }
+
+		out.push_back(high << 4 | low);
+		i += 2;
+	}
+
+	return out.size();
+}
+
 } // namespace util
 
 _NAME_END

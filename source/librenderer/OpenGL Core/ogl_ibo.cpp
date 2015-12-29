@@ -45,23 +45,17 @@ OGLIndexBuffer::OGLIndexBuffer() noexcept
 {
 }
 
-OGLIndexBuffer::OGLIndexBuffer(const GraphicsDataDesc& desc) noexcept
-	: OGLGraphicsData(&_indexData)
-{
-	this->open(desc);
-}
-
 OGLIndexBuffer::~OGLIndexBuffer() noexcept
 {
 	this->close();
 }
 
-void
-OGLIndexBuffer::open(const GraphicsDataDesc& desc) noexcept
+bool
+OGLIndexBuffer::setup(const GraphicsDataDesc& desc) noexcept
 {
 	assert(desc.getType() == GraphicsStream::IBO);
 	assert(desc.getStreamSize() > 0);
-	_indexData.open(desc);
+	return _indexData.setup(desc);
 }
 
 void

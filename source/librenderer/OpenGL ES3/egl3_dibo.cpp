@@ -45,22 +45,17 @@ EGL3DrawIndirectBuffer::EGL3DrawIndirectBuffer() noexcept
 {
 }
 
-EGL3DrawIndirectBuffer::EGL3DrawIndirectBuffer(const GraphicsDataDesc& desc) noexcept
-	: EGL3GraphicsData(&_indirectData)
-{
-	this->open(desc);
-}
-
 EGL3DrawIndirectBuffer::~EGL3DrawIndirectBuffer() noexcept
 {
+	this->close();
 }
 
-void
-EGL3DrawIndirectBuffer::open(const GraphicsDataDesc& desc) noexcept
+bool
+EGL3DrawIndirectBuffer::setup(const GraphicsDataDesc& desc) noexcept
 {
 	assert(desc.getType() == GraphicsStream::DIBO);
 	assert(desc.getStreamSize() > 0);
-	_indirectData.open(desc);
+	return _indirectData.setup(desc);
 }
 
 void

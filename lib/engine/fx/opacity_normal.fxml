@@ -1,0 +1,97 @@
+<?xml version='1.0'?>
+<effect language="glsl">
+    <include name="sys:fx/Gbuffer.fxml"/>
+    <parameter name="matModel" semantic="matModel" />
+    <parameter name="matModelInverseTranspose" semantic="matModelInverseTranspose" />
+    <parameter name="matView" semantic="matView"/>
+    <parameter name="matViewProject" semantic="matViewProject"/>
+    <parameter name="diffuse" type="float4" />
+    <parameter name="specular" type="float4" />
+    <parameter name="shininess" type="float" />
+    <parameter name="texDiffuse" type="texture"/>
+    <parameter name="texSpecular" type="texture" />
+    <parameter name="texNormal" type="texture" />
+    <shader name="vertex">
+        <![CDATA[
+            uniform float4x4 matModel;
+            uniform float4x4 matModelInverseTranspose;
+            uniform float4x4 matView;
+            uniform float4x4 matViewProject;
+
+            uniform float shininess;
+            uniform float4 diffuse;
+            uniform float4 specular;
+
+            uniform Texture2D texDiffuse;
+            uniform Texture2D texSpecular;
+            uniform Texture2D texNormal;
+
+            float3 SphereNormalMap(Texture2D texNormal, float2 coord)
+            {
+                float3 bump;
+                bump.xy = texNormal.Sample(PointClamp, coord).gr * 2.0 - 1.0;
+                bump.z = sqrt(1.0 - bump.x * bump.x - bump.y * bump.y);
+                return normalize(bump);
+            }
+
+            void OpaqueNormalVS(
+                in float4 Position : POSITION,
+                in float4 Normal : NORMAL,
+                in float4 Tangent : TANGENT,
+                in float4 Texcoord : TEXCOORD0,
+                out float2 oCoord  : TEXCOORD0,
+                out float4 oNormal : TEXCOORD1,
+                out float4 oTangent : TEXCOORD2,
+                out float4 oPosition : SV_Position)
+            {
+                oCoord = Texcoord.xy;
+                oTangent = Tangent;
+                oNormal = mul(Normal, matModelInverseTranspose);
+                oNormal = mul(float4(oNormal.rgb, 0.0), matView);
+                oPosition = mul(mul(Position, matModel), matViewProject);
+            }
+
+            void OpaqueNormalPS(
+                in float2 coord  : TEXCOORD0,
+                in float4 normal : TEXCOORD1,
+                in float4 tangent : TEXCOORD2,
+                out float4 FragData0 : SV_Target0,
+                out float4 FragData1 : SV_Target1)
+            {
+                float4 albedo;
+                float3 spec;
+
+                float3 N = normalize(normal.xyz);
+                float3 T = normalize(tangent.xyz);
+                float3 B = cross(N, T);
+
+                float3x3 tbn = float3x3(T, B, N);
+                float3 tangentNormal = SphereNormalMap(texNormal, coord);
+                float3 highNormal = mul(tangentNormal, tbn);
+
+                if (diffuse.w > 0.0f)
+                    albedo = diffuse;
+                else
+                    albedo = texDiffuse.Sample(PointClamp, coord);
+
+                if (specular.w > 0.0f)
+                    spec = specular.rgb;
+                else
+                    spec = texSpecular.Sample(PointClamp, coord).rgb;
+
+                FragData0 = StoreGBufferRT0(rgba2srgba(albedo), spec);
+                FragData1 = StoreGBufferRT1(highNormal, shininess);
+            }
+        ]]>
+    </shader>
+    <technique name="opaque">
+        <pass name="opaque">
+            <state name="vertex" value="OpaqueNormalVS"/>
+            <state name="fragment" value="OpaqueNormalPS"/>
+
+            <state name="primitive" value="triangle_or_line" />
+
+            <state name="cullmode" value="none"/>
+        </pass>
+    </technique>
+</effect>

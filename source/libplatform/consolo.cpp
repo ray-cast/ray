@@ -88,7 +88,7 @@ consolebuf::tellg() noexcept
 }
 
 streamsize
-consolebuf::size() noexcept
+consolebuf::size() const noexcept
 {
 	return 0;
 }

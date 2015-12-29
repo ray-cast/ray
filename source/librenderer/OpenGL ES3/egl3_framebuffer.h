@@ -68,6 +68,11 @@ private:
 	void bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment) noexcept;
 
 private:
+	friend class EGL3Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
 	EGL3RenderTexture(const EGL3RenderTexture&) noexcept = delete;
 	EGL3RenderTexture& operator=(const EGL3RenderTexture&) noexcept = delete;
 
@@ -77,6 +82,7 @@ private:
 	GLuint _fbo;
 	GLuint _layer;
 
+	GraphicsDeviceWeakPtr _device;
 	GraphicsRenderTextureDesc _framebufferDesc;
 };
 
@@ -106,6 +112,11 @@ private:
 	void bindRenderTexture(GraphicsTexturePtr target, GLenum attachment) noexcept;
 
 private:
+	friend class EGL3Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
 	EGL3MultiRenderTexture(const EGL3MultiRenderTexture&) noexcept = delete;
 	EGL3MultiRenderTexture& operator=(const EGL3MultiRenderTexture&) noexcept = delete;
 
@@ -113,6 +124,7 @@ private:
 
 	bool _isActive;
 	GLuint _fbo;
+	GraphicsDeviceWeakPtr _device;
 	GraphicsMultiRenderTextureDesc _multiFramebufferDesc;
 };
 

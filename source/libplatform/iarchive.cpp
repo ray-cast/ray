@@ -67,94 +67,6 @@ iarchive::~iarchive() noexcept
 }
 
 bool
-iarchive::is_open() const noexcept
-{
-	return this->rdbuf()->is_open();
-}
-
-iarchive&
-iarchive::open(StreamReader& stream) noexcept
-{
-	const isentry ok(this);
-	if (ok)
-	{
-		if (!this->rdbuf()->open(stream))
-			this->setstate(ios_base::failbit);
-		else
-			this->clear(ios_base::goodbit);
-	}
-
-	return (*this);
-}
-
-iarchive&
-iarchive::close() noexcept
-{
-	const isentry ok(this);
-	if (ok)
-	{
-		if (!this->fail())
-			this->rdbuf()->close();
-	}
-
-	return (*this);
-}
-
-std::string
-iarchive::getCurrentNodeName() const noexcept
-{
-	return this->rdbuf()->getCurrentNodeName();
-}
-
-std::string
-iarchive::getCurrentNodePath() const noexcept
-{
-	return this->rdbuf()->getCurrentNodePath();
-}
-
-void
-iarchive::setToNode(const std::string& path) noexcept
-{
-	return this->rdbuf()->setToNode(path);
-}
-
-bool
-iarchive::setToFirstChild() noexcept
-{
-	return this->rdbuf()->setToFirstChild();
-}
-
-bool
-iarchive::setToFirstChild(const std::string& name) noexcept
-{
-	return this->rdbuf()->setToFirstChild(name);
-}
-
-bool
-iarchive::setToNextChild() noexcept
-{
-	return this->rdbuf()->setToNextChild();
-}
-
-bool
-iarchive::setToNextChild(const std::string& name) noexcept
-{
-	return this->rdbuf()->setToNextChild(name);
-}
-
-bool
-iarchive::setToParent() noexcept
-{
-	return this->rdbuf()->setToParent();
-}
-
-bool
-iarchive::hasChild() const noexcept
-{
-	return this->rdbuf()->hasChild();
-}
-
-bool
 iarchive::hasAttr(const char* name) const noexcept
 {
 	return this->rdbuf()->hasAttr(name);
@@ -199,130 +111,70 @@ iarchive::getText() const noexcept
 iarchive&
 iarchive::getValue(const std::string& name, bool& result) noexcept
 {
-    const isentry ok(this);
-    if (ok)
-    {
-        if (!this->bad() && this->rdbuf()->getValue(name, result))
-            this->setstate(ios_base::failbit);
-    }
-
+    this->rdbuf()->getValue(name, result);
     return (*this);
 }
 
 iarchive&
 iarchive::getValue(const std::string& name, int1& result) noexcept
 {
-    const isentry ok(this);
-    if (ok)
-    {
-        if (!this->bad() && this->rdbuf()->getValue(name, result))
-            this->setstate(ios_base::failbit);
-    }
-
+    this->rdbuf()->getValue(name, result);
     return (*this);
 }
 
 iarchive&
 iarchive::getValue(const std::string& name, int2& result) noexcept
 {
-    const isentry ok(this);
-    if (ok)
-    {
-        if (!this->bad() && this->rdbuf()->getValue(name, result))
-            this->setstate(ios_base::failbit);
-    }
-
+    this->rdbuf()->getValue(name, result);
     return (*this);
 }
 
 iarchive&
 iarchive::getValue(const std::string& name, int3& result) noexcept
 {
-    const isentry ok(this);
-    if (ok)
-    {
-        if (!this->bad() && this->rdbuf()->getValue(name, result))
-            this->setstate(ios_base::failbit);
-    }
-
+    this->rdbuf()->getValue(name, result);
     return (*this);
 }
 
 iarchive&
 iarchive::getValue(const std::string& name, int4& result) noexcept
 {
-    const isentry ok(this);
-    if (ok)
-    {
-        if (!this->bad() && this->rdbuf()->getValue(name, result))
-            this->setstate(ios_base::failbit);
-    }
-
+    this->rdbuf()->getValue(name, result);
     return (*this);
 }
 
 iarchive&
 iarchive::getValue(const std::string& name, float1& result) noexcept
 {
-    const isentry ok(this);
-    if (ok)
-    {
-        if (!this->bad() && this->rdbuf()->getValue(name, result))
-            this->setstate(ios_base::failbit);
-    }
-
+    this->rdbuf()->getValue(name, result);
     return (*this);
 }
 
 iarchive&
 iarchive::getValue(const std::string& name, float2& result) noexcept
 {
-    const isentry ok(this);
-    if (ok)
-    {
-        if (!this->bad() && this->rdbuf()->getValue(name, result))
-            this->setstate(ios_base::failbit);
-    }
-
+    this->rdbuf()->getValue(name, result);
     return (*this);
 }
 
 iarchive&
 iarchive::getValue(const std::string& name, float3& result) noexcept
 {
-    const isentry ok(this);
-    if (ok)
-    {
-        if (!this->bad() && this->rdbuf()->getValue(name, result))
-            this->setstate(ios_base::failbit);
-    }
-
+    this->rdbuf()->getValue(name, result);
     return (*this);
 }
 
 iarchive&
 iarchive::getValue(const std::string& name, float4& result) noexcept
 {
-    const isentry ok(this);
-    if (ok)
-    {
-        if (!this->bad() && this->rdbuf()->getValue(name, result))
-            this->setstate(ios_base::failbit);
-    }
-
+    this->rdbuf()->getValue(name, result);
     return (*this);
 }
 
 iarchive&
 iarchive::getValue(const std::string& name, std::string& result) noexcept
 {
-    const isentry ok(this);
-    if (ok)
-    {
-        if (!this->bad() && this->rdbuf()->getValue(name, result))
-            this->setstate(ios_base::failbit);
-    }
-
+    this->rdbuf()->getValue(name, result);
     return (*this);
 }
 

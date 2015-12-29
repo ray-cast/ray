@@ -36,10 +36,15 @@
 // +----------------------------------------------------------------------
 #include "ogl_shader.h"
 
+#define EXCLUDE_PSTDINT
+#include <hlslcc.hpp>
+
 _NAME_BEGIN
 
 __ImplementSubClass(OGLShader, GraphicsShader, "OGLShader")
 __ImplementSubClass(OGLShaderObject, GraphicsProgram, "OGLShaderObject")
+__ImplementSubClass(OGLShaderAttribute, ShaderAttribute, "OGLShaderAttribute")
+__ImplementSubClass(OGLShaderUniform, ShaderUniform, "OGLShaderUniform")
 
 OGLShaderVariant::OGLShaderVariant() noexcept
 	: _bindingProgram(0)
@@ -162,13 +167,13 @@ OGLShaderAttribute::~OGLShaderAttribute() noexcept
 {
 }
 
-void
+void 
 OGLShaderAttribute::setLocation(GLint location) noexcept
 {
 	_location = location;
 }
 
-GLint
+GLint 
 OGLShaderAttribute::getLocation() const noexcept
 {
 	return _location;
@@ -224,24 +229,45 @@ OGLShader::~OGLShader() noexcept
 }
 
 bool
-OGLShader::setup(const ShaderDesc& shader) except
+OGLShader::setup(const ShaderDesc& shaderDesc) noexcept
 {
-	assert(!_instance);
+	assert(_instance == GL_NONE);
 
-	if (shader.getSource().empty())
-		throw failure(__TEXT("This shader code cannot be null"));
+	GLenum shaderType = OGLTypes::asShaderType(shaderDesc.getType());
+	if (shaderType == GL_INVALID_ENUM)
+		return false;
 
-	GLenum shaderType = OGLTypes::asOGLShaderType(shader.getType());
+	if (shaderDesc.getByteCodes().empty())
+	{
+		GL_PLATFORM_LOG("This shader code cannot be null");
+		return false;
+	}
+
+	GLSLShader shader;
+	GLSLCrossDependencyData dependency;
+
+	std::uint32_t flags = HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT | HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
+	if (shaderDesc.getType() == ShaderType::Geometry)
+		flags = HLSLCC_FLAG_GS_ENABLED;
+	else if (shaderDesc.getType() == ShaderType::TessControl)
+		flags = HLSLCC_FLAG_TESS_ENABLED;
+	else if (shaderDesc.getType() == ShaderType::TessEvaluation)
+		flags = HLSLCC_FLAG_TESS_ENABLED;
+
+	if (!TranslateHLSLFromMem(shaderDesc.getByteCodes().data(), flags, GLLang::LANG_DEFAULT, 0, &dependency, &shader))
+	{
+		GL_PLATFORM_LOG("Can't conv bytecodes to glsl");
+		return false;
+	}
+
 	_instance = glCreateShader(shaderType);
 	if (_instance == GL_NONE)
-		throw failure(__TEXT("glCreateShader fail"));
-
-	const GLchar* codes[1] =
 	{
-		shader.getSource().c_str()
-	};
+		GL_PLATFORM_LOG("glCreateShader() fail");
+		return false;
+	}
 
-	glShaderSource(_instance, 1, codes, 0);
+	glShaderSource(_instance, 1, &shader.sourceCode, 0);
 	glCompileShader(_instance);
 
 	GLint result = GL_FALSE;
@@ -254,7 +280,8 @@ OGLShader::setup(const ShaderDesc& shader) except
 		std::string log((std::size_t)length, 0);
 		glGetShaderInfoLog(_instance, length, &length, (char*)log.data());
 
-		throw failure(log);
+		GL_PLATFORM_LOG(log);
+		return false;
 	}
 
 	return true;
@@ -276,6 +303,18 @@ OGLShader::getInstanceID() const noexcept
 	return _instance;
 }
 
+void
+OGLShader::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+OGLShader::getDevice() noexcept
+{
+	return _device.lock();
+}
+
 OGLShaderObject::OGLShaderObject() noexcept
 	: _program(0)
 	, _isActive(false)
@@ -288,7 +327,7 @@ OGLShaderObject::~OGLShaderObject() noexcept
 }
 
 bool
-OGLShaderObject::setup(const ShaderObjectDesc& program) except
+OGLShaderObject::setup(const ShaderObjectDesc& program) noexcept
 {
 	assert(!_program);
 
@@ -296,6 +335,11 @@ OGLShaderObject::setup(const ShaderObjectDesc& program) except
 		return false;
 
 	_program = glCreateProgram();
+	if (_program == GL_NONE)
+	{
+		GL_PLATFORM_LOG("glCreateProgram() fail");
+		return false;
+	}
 
 	for (auto shader : program.getShaders())
 	{
@@ -303,7 +347,10 @@ OGLShaderObject::setup(const ShaderObjectDesc& program) except
 		if (glshader)
 		{
 			if (glshader->setup(shader))
+			{
 				glAttachShader(_program, glshader->getInstanceID());
+				_shaders.push_back(glshader);
+			}
 		}
 	}
 
@@ -318,8 +365,12 @@ OGLShaderObject::setup(const ShaderObjectDesc& program) except
 
 		std::string log((std::size_t)length, 0);
 		glGetProgramInfoLog(_program, length, &length, (GLchar*)log.data());
-		throw failure(log.data());
+
+		GL_PLATFORM_LOG(log);
+		return false;
 	}
+
+    _isActive = false;
 
 	_initActiveAttribute();
 	_initActiveUniform();
@@ -400,9 +451,29 @@ OGLShaderObject::_initActiveAttribute() noexcept
 			glGetActiveAttrib(_program, (GLuint)i, maxAttribute, GL_NONE, &size, &type, nameAttribute.get());
 			GLint location = glGetAttribLocation(_program, nameAttribute.get());
 
+			std::string name = nameAttribute.get();
+			std::string semantic;
+
+			std::size_t off = name.find_last_of('_');
+			if (off != std::string::npos)
+			{
+				semantic = name.substr(off + 1);
+				name = name.substr(0, off);
+			}
+
+			std::uint8_t semanticIndex = 0;
+			auto it = std::find_if(semantic.begin(), semantic.end(), [](char ch) { return ch >= '0' && ch <= '9'; });
+			if (it != semantic.end())
+			{
+				semanticIndex = atoi(&*it);
+				semantic = semantic.substr(0, it - semantic.begin());
+			}
+
 			auto attrib = std::make_shared<OGLShaderAttribute>();
-			attrib->setName(nameAttribute.get());
+			attrib->setName(name);
 			attrib->setLocation(location);
+			attrib->setSemantic(semantic);
+			attrib->setSemanticIndex(semanticIndex);
 
 			_activeAttributes.push_back(attrib);
 		}
@@ -430,9 +501,6 @@ OGLShaderObject::_initActiveUniform() noexcept
 		GLenum type;
 
 		glGetActiveUniform(_program, (GLuint)i, maxUniformLength, 0, &size, &type, nameUniform.get());
-
-		if (std::strstr(nameUniform.get(), ".") != 0 || nameUniform[0] == '_')
-			continue;
 
 		GLuint location = glGetUniformLocation(_program, nameUniform.get());
 		if (location == GL_INVALID_INDEX)
@@ -565,6 +633,18 @@ OGLShaderObject::_initActiveUniformBlock() noexcept
 			}
 		}
 	}
+}
+
+void
+OGLShaderObject::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+OGLShaderObject::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

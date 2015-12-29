@@ -78,6 +78,7 @@ private:
 
 class OGLShaderAttribute final : public ShaderAttribute
 {
+	__DeclareSubClass(OGLShaderAttribute, ShaderAttribute)
 public:
 	OGLShaderAttribute() noexcept;
 	~OGLShaderAttribute() noexcept;
@@ -86,11 +87,12 @@ public:
 	GLint getLocation() const noexcept;
 
 private:
-	GLint _location;
+	GLint  _location;
 };
 
 class OGLShaderUniform final : public ShaderUniform
 {
+	__DeclareSubClass(OGLShaderUniform, ShaderUniform)
 public:
 	OGLShaderUniform() noexcept;
 	~OGLShaderUniform() noexcept;
@@ -118,18 +120,23 @@ public:
 	OGLShader() noexcept;
 	~OGLShader() noexcept;
 
-	bool setup(const ShaderDesc& shader) except;
+	bool setup(const ShaderDesc& shader) noexcept;
 	void close() noexcept;
 
 	GLuint getInstanceID() const noexcept;
+
+private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
 
 private:
 	OGLShader(const OGLShader&) noexcept = delete;
 	OGLShader& operator=(const OGLShader&) noexcept = delete;
 
 private:
-
 	GLuint _instance;
+	GraphicsDeviceWeakPtr _device;
 };
 
 class OGLShaderObject final : public GraphicsProgram
@@ -139,7 +146,7 @@ public:
 	OGLShaderObject() noexcept;
 	~OGLShaderObject() noexcept;
 
-	bool setup(const ShaderObjectDesc& program) except;
+	bool setup(const ShaderObjectDesc& program) noexcept;
 	void close() noexcept;
 
 	void setActive(bool active) noexcept;
@@ -151,10 +158,18 @@ public:
 	virtual ShaderAttributes& getActiveAttributes() noexcept;
 
 private:
-
 	void _initActiveAttribute() noexcept;
 	void _initActiveUniform() noexcept;
 	void _initActiveUniformBlock() noexcept;
+
+private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	OGLShaderObject(const OGLShaderObject&) noexcept = delete;
+	OGLShaderObject& operator=(const OGLShaderObject&) noexcept = delete;
 
 private:
 
@@ -166,6 +181,8 @@ private:
 
 	ShaderUniforms _activeUniforms;
 	ShaderAttributes  _activeAttributes;
+
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

@@ -51,7 +51,7 @@ OGLGraphicsBuf::~OGLGraphicsBuf() noexcept
 }
 
 bool
-OGLGraphicsBuf::open(const GraphicsDataDesc& desc) noexcept
+OGLGraphicsBuf::setup(const GraphicsDataDesc& desc) noexcept
 {
 	assert(!_buffer);
 
@@ -80,7 +80,10 @@ OGLGraphicsBuf::open(const GraphicsDataDesc& desc) noexcept
 
 	glCreateBuffers(1, &_buffer);
 	if (_buffer == GL_NONE)
+	{
+		GL_PLATFORM_LOG("glCreateBuffers() fail");
 		return false;
+	}
 
 	auto usage = desc.getUsage();
 	if (usage & UsageFlags::IMMUTABLE_STORAGE)

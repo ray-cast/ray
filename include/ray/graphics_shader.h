@@ -66,8 +66,9 @@ private:
 	ShaderVariant& operator=(const ShaderVariant&) noexcept = delete;
 };
 
-class EXPORT ShaderParameter
+class EXPORT ShaderParameter : public rtti::Interface
 {
+	__DeclareSubInterface(ShaderParameter, rtti::Interface)
 public:
 	ShaderParameter() noexcept;
 	virtual ~ShaderParameter() noexcept;
@@ -75,24 +76,45 @@ public:
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 
-	void needUpdate(bool update) noexcept;
-	bool needUpdate() const noexcept;
+private:
+	ShaderParameter(const ShaderParameter&) noexcept = delete;
+	ShaderParameter& operator=(const ShaderParameter&) noexcept = delete;
 
 private:
 	std::string _name;
-
-	bool _needUpdate;
 };
 
 class EXPORT ShaderAttribute : public ShaderParameter
 {
+	__DeclareSubInterface(ShaderAttribute, ShaderParameter)
+public:
+	ShaderAttribute() noexcept;
+	virtual ~ShaderAttribute() noexcept;
+
+	void setSemantic(const std::string& semantic) noexcept;
+	const std::string& getSemantic() const noexcept;
+
+	void setSemanticIndex(std::uint8_t index) noexcept;
+	std::uint8_t getSemanticIndex() const noexcept;
+
+private:
+	ShaderAttribute(const ShaderAttribute&) noexcept = delete;
+	ShaderAttribute& operator=(const ShaderAttribute&) noexcept = delete;
+
+private:
+	std::uint8_t _index;
+	std::string _semantic;
 };
 
 class EXPORT ShaderUniform : public ShaderParameter
 {
+	__DeclareSubInterface(ShaderUniform, ShaderParameter)
 public:
 	ShaderUniform(ShaderVariant* value) noexcept;
 	virtual ~ShaderUniform() noexcept;
+
+	void needUpdate(bool update) noexcept;
+	bool needUpdate() const noexcept;
 
 	ShaderVariantType getType() const noexcept;
 
@@ -118,6 +140,8 @@ private:
 	ShaderUniform& operator=(const ShaderUniform&) noexcept = delete;
 
 private:
+	bool _needUpdate;
+
 	ShaderVariantType _type;
 	ShaderVariant* _value;
 };
@@ -126,18 +150,18 @@ class EXPORT ShaderDesc final
 {
 public:
 	ShaderDesc() noexcept;
-	ShaderDesc(ShaderType type, const std::string& code) noexcept;
+	ShaderDesc(ShaderType type, const std::vector<char>& code) noexcept;
 	virtual ~ShaderDesc() noexcept;
 
-	virtual void setType(ShaderType type) noexcept;
-	virtual ShaderType  getType() const noexcept;
+	void setType(ShaderType type) noexcept;
+	ShaderType  getType() const noexcept;
 
-	virtual void setSource(const std::string& source) noexcept;
-	virtual const std::string& getSource() const noexcept;
+	void setByteCodes(const std::vector<char>& source) noexcept;
+	const std::vector<char>& getByteCodes() const noexcept;
 
 private:
 	ShaderType _type;
-	std::string _source;
+	std::vector<char> _bytecodes;
 };
 
 class EXPORT ShaderObjectDesc final
@@ -146,7 +170,7 @@ public:
 	ShaderObjectDesc() noexcept;
 	virtual ~ShaderObjectDesc() noexcept;
 
-	void addShader(const ShaderDesc& shader) noexcept;
+	bool addShader(const ShaderDesc& shader) noexcept;
 	void removeShader(ShaderType type) noexcept;
 
 	const ShadersDesc& getShaders() const noexcept;

@@ -466,6 +466,16 @@ IOFILE::tell() const noexcept
 }
 
 streamsize
+IOFILE::size() const noexcept
+{
+	std::size_t off = this->tell();
+	fseek(_stream, 0, ios_base::end);
+	std::size_t size = this->tell();
+	fseek(_stream, off, ios_base::beg);
+	return size;
+}
+
+streamsize
 IOFILE::read(void* buf, streamsize size) noexcept
 {
     return fread(buf, size, _stream);

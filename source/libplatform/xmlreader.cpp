@@ -53,34 +53,18 @@ XmlBuf::~XmlBuf() noexcept
 }
 
 bool 
-XmlBuf::open(StreamReader& stream) noexcept
+XmlBuf::open() noexcept
 {
 	assert(0 == _document);
 	assert(0 == _currentNode);
 
-	std::size_t length = stream.size();
-	if (length == 0)
-		return false;
+	_document = std::make_unique<TiXmlDocument>();
+	_document->SetValue("xml");
 
-	std::string data;
-	data.resize(length);
+	_currentNode = _document->ToDocument();
+	_currentAttrNode = nullptr;
 
-	if (!stream.read((char*)data.c_str(), length))
-		return false;
-
-	TiXmlDocument document;
-	document.Parse(data.c_str());
-
-	if (!document.Error() && document.RootElement())
-	{
-		_document = std::make_unique<TiXmlDocument>(document);
-		_currentNode = _document->RootElement();
-		_currentAttrNode = nullptr;
-
-		return true;
-	}
-
-	return false;
+	return true;
 }
 
 void 
@@ -103,6 +87,43 @@ bool
 XmlBuf::is_open() const noexcept
 {
 	return _document.get() ? true : false;
+}
+
+bool
+XmlBuf::load(StreamReader& stream) noexcept
+{
+	std::size_t length = stream.size();
+	if (length == 0)
+		return false;
+
+	std::string data;
+	data.resize(length);
+
+	if (!stream.read((char*)data.c_str(), length))
+		return false;
+
+	_document->Parse(data.c_str());
+	if (!_document->Error())
+	{
+		_currentNode = _document->ToDocument();
+		_currentAttrNode = nullptr;
+		return true;
+	}
+
+	return false;
+}
+
+bool 
+XmlBuf::save(StreamWrite& stream) noexcept
+{
+	TiXmlPrinter printer;
+	if (_currentNode->Accept(&printer))
+	{
+		stream.write(printer.CStr(), printer.Size());
+		return true;
+	}
+
+	return false;
 }
 
 std::string 
@@ -146,10 +167,115 @@ XmlBuf::getCurrentNodePath() const noexcept
 	return path;
 }
 
-void
+bool 
+XmlBuf::addAttribute(const std::string& key, const std::string& value) noexcept
+{
+	auto element = _currentNode->ToElement();
+	if (element)
+	{
+		if (!key.empty())
+		{
+			if (!element->Attribute(key.c_str()))
+			{
+				element->SetAttribute(key.c_str(), value.c_str());
+				return true;
+			}
+		}
+		else
+		{
+			if (element->FirstChild())
+				return false;
+
+			TiXmlText text(value.c_str());
+			text.SetCDATA(true);
+			return element->InsertEndChild(text) ? true : false;
+		}
+	}
+	
+	return false;
+}
+
+void 
+XmlBuf::setAttribute(const std::string& key, const std::string& value) noexcept
+{
+	auto element = _currentNode->ToElement();
+	if (element)
+		element->SetAttribute(key.c_str(), value.c_str());
+}
+
+void 
+XmlBuf::removeAttribute(const std::string& key) noexcept
+{
+	auto element = _currentNode->ToElement();
+	if (element)
+		element->RemoveAttribute(key.c_str());
+}
+
+bool
+XmlBuf::addDeclaration(const std::string& version, const std::string& encoding, const std::string& standalone) noexcept
+{
+	TiXmlDeclaration declaration(version.c_str(), encoding.c_str(), standalone.c_str());
+	TiXmlNode* node = nullptr;
+
+	if (_currentNode)
+	{
+		auto parent = _currentNode->Parent();
+		if (parent)
+			node = parent->InsertEndChild(declaration);
+		else
+			node = _currentNode->InsertEndChild(declaration);
+
+		_currentNode = node;
+		return node ? true : false;
+	}
+
+	return false;
+}
+
+bool
+XmlBuf::addNode(const std::string& key) noexcept
+{
+	TiXmlElement element(key.c_str());
+	TiXmlNode* node = nullptr;
+
+	if (_currentNode)
+	{
+		auto parent = _currentNode->Parent();
+		if (parent)
+			node = parent->InsertEndChild(element);
+		else
+			node = _currentNode->InsertEndChild(element);
+
+		if (node)
+			_currentNode = node->ToElement();
+
+		return node ? true : false;
+	}
+
+	return false;
+}
+
+bool
+XmlBuf::addSubNode(const std::string& key) noexcept
+{
+	TiXmlElement element(key.c_str());
+	TiXmlNode* node = nullptr;
+
+	if (!_currentNode)
+		node = _document->InsertEndChild(element);
+	else
+		node = _currentNode->InsertEndChild(element);
+
+	if (node)
+		_currentNode = node->ToElement();
+
+	return node ? true : false;
+}
+
+bool
 XmlBuf::setToNode(const std::string& path) noexcept
 {
-	assert(false);
+	return false;
 }
 
 bool
@@ -249,13 +375,21 @@ XmlBuf::setToParent() noexcept
 	TiXmlNode* parent = _currentNode->Parent();
 	if (parent)
 	{
-		this->_currentNode = parent->ToElement();
-		return true;
+		_currentNode = parent->ToElement();
+		return _currentNode ? true : false;
 	}
-	else
-	{
-		return false;
-	}
+
+	return false;
+}
+
+bool 
+XmlBuf::setToRoot() noexcept
+{
+	assert(_currentNode);
+
+	this->clearAttrs();
+	this->_currentNode = _document->ToDocument();
+	return _currentNode ? true : false;
 }
 
 bool
@@ -268,7 +402,10 @@ bool
 XmlBuf::hasAttr(const char* name) const noexcept
 {
 	assert(_currentNode);
-	return _currentNode->Attribute(name) ? true : false;
+	auto element = _currentNode->ToElement();
+	if (element)
+		return element->Attribute(name) ? true : false;
+	return false;
 }
 
 void
@@ -283,13 +420,17 @@ XmlBuf::addAttrs() noexcept
 {
 	assert(this->_currentNode);
 
-	TiXmlAttribute* attr = this->_currentNode->FirstAttribute();
-	while (attr)
+	auto element = _currentNode->ToElement();
+	if (element)
 	{
-		_attrNames.push_back(attr->Name());
-		_attrLists.push_back(attr);
+		TiXmlAttribute* attr = element->FirstAttribute();
+		while (attr)
+		{
+			_attrNames.push_back(attr->Name());
+			_attrLists.push_back(attr);
 
-		attr = attr->Next();
+			attr = attr->Next();
+		}
 	}
 
 	return true;
@@ -363,9 +504,13 @@ XmlBuf::getAttrList() const noexcept
 std::string
 XmlBuf::getText() const noexcept
 {
-	auto result = _currentNode->GetText();
-	if (result)
-		return result;
+	auto element = _currentNode->ToElement();
+	if (element)
+	{
+		auto result = element->GetText();
+		if (result)
+			return result;
+	}
 	return "";
 }
 
@@ -589,11 +734,15 @@ XmlBuf::getValue(const std::string& name, std::string& result) const noexcept
 {
 	if (_attrLists.empty())
 	{
-		auto value = _currentNode->Attribute(name.c_str());
-		if (value)
+		auto element = _currentNode->ToElement();
+		if (element)
 		{
-			result = value;
-			return true;
+			auto value = element->Attribute(name.c_str());
+			if (value)
+			{
+				result = value;
+				return true;
+			}
 		}
 	}
 
@@ -615,12 +764,6 @@ XmlBuf::errorString() const noexcept
 	return _document->ErrorDesc();
 }
 
-void 
-XmlBuf::copy(const archivebuf& other) noexcept
-{
-	assert(false);
-}
-
 XMLReader::XMLReader() noexcept
 	: iarchive(&_xml)
 {
@@ -628,6 +771,112 @@ XMLReader::XMLReader() noexcept
 
 XMLReader::~XMLReader() noexcept
 {
+}
+
+XMLReader&
+XMLReader::open(StreamReader& stream) noexcept
+{
+	const isentry ok(this);
+	if (ok)
+	{
+		if (!_xml.open())
+			this->setstate(ios_base::failbit);
+		else
+			this->clear(ios_base::goodbit);
+	}
+
+	return this->load(stream);
+}
+
+XMLReader&
+XMLReader::close() noexcept
+{
+	const isentry ok(this);
+	if (ok)
+	{
+		if (!this->fail())
+			_xml.close();
+	}
+
+	return (*this);
+}
+
+bool
+XMLReader::is_open() const noexcept
+{
+	return _xml.is_open();
+}
+
+XMLReader&
+XMLReader::load(StreamReader& stream) noexcept
+{
+	const isentry ok(this);
+	if (ok)
+	{
+		if (!_xml.load(stream))
+			this->setstate(ios_base::failbit);
+		else
+			this->clear(ios_base::goodbit);
+	}
+
+	return (*this);
+}
+
+XMLWrite::XMLWrite() noexcept
+	: oarchive(&_xml)
+{
+}
+
+XMLWrite::~XMLWrite() noexcept
+{
+	this->close();
+}
+
+XMLWrite&
+XMLWrite::open(const std::string& version, const std::string& encoding, const std::string& standalone) noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (_xml.open())
+		{
+			_xml.addDeclaration(version, encoding, standalone);
+			this->clear(ios_base::goodbit);
+			return (*this);
+		}
+	}
+
+	this->setstate(ios_base::failbit);
+	return (*this);
+}
+
+XMLWrite&
+XMLWrite::close() noexcept
+{
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!this->fail())
+			_xml.close();
+	}
+
+	return (*this);
+}
+
+XMLWrite&
+XMLWrite::save(StreamWrite& ostream) noexcept
+{
+	assert(ostream);
+	assert(ostream.good());
+
+	const osentry ok(this);
+	if (ok)
+	{
+		if (!this->fail() && !_xml.save(ostream))
+			this->setstate(ios_base::failbit);
+	}
+
+	return (*this);
 }
 
 _NAME_END

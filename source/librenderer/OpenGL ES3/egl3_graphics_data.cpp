@@ -55,12 +55,6 @@ EGL3GraphicsData::size() const noexcept
 	return _buf->size();
 }
 
-const GraphicsDataDesc&
-EGL3GraphicsData::getGraphicsDataDesc() const noexcept
-{
-	return _buf->getGraphicsDataDesc();
-}
-
 void
 EGL3GraphicsData::resize(const char* data, GLsizeiptr datasize) noexcept
 {
@@ -101,6 +95,24 @@ GLuint
 EGL3GraphicsData::getInstanceID() const noexcept
 {
 	return _buf->getInstanceID();
+}
+
+const GraphicsDataDesc&
+EGL3GraphicsData::getGraphicsDataDesc() const noexcept
+{
+	return _buf->getGraphicsDataDesc();
+}
+
+void
+EGL3GraphicsData::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL3GraphicsData::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

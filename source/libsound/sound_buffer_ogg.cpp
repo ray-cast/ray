@@ -226,7 +226,7 @@ OggStreamBuffer::tellg() noexcept
 }
 
 streamsize 
-OggStreamBuffer::size() noexcept
+OggStreamBuffer::size() const noexcept
 {
 	assert(this->is_open());
 	auto info = ::ov_info(_oggVorbisFile, -1);

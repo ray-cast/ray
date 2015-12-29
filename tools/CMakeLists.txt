@@ -4,6 +4,7 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 
 FOREACH(tools
     FontGen
+    HLSLcc
 )
 ADD_SUBDIRECTORY(${tools})
 

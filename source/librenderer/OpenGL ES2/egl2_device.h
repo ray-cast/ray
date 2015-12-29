@@ -46,22 +46,82 @@ class EGL2Device final : public GraphicsDevice
 	__DeclareSubClass(EGL2Device, GraphicsDevice)
 public:
 	EGL2Device() noexcept;
-	~EGL2Device() noexcept;
+	virtual ~EGL2Device() noexcept;
 
-	virtual GraphicsContextPtr createGraphicsContext(WindHandle hwnd) noexcept;
-	virtual GraphicsStatePtr createGraphicsState() noexcept;
+	virtual bool open(WindHandle hwnd) noexcept;
+	virtual void close() noexcept;
+
+	virtual GraphicsContextPtr createGraphicsContext(WindHandle window) noexcept;
+	virtual void setGraphicsContext(GraphicsContextPtr context) noexcept;
+	virtual GraphicsContextPtr getGraphicsContext() const noexcept;
+
+	virtual void renderBegin() noexcept;
+	virtual void renderEnd() noexcept;
+
+	virtual void setWireframeMode(bool enable) noexcept;
+	virtual bool getWireframeMode() const noexcept;
+
+	virtual void setViewport(const Viewport& viewport, std::size_t i) noexcept;
+	virtual const Viewport& getViewport(std::size_t i) const noexcept;
+
+	virtual void setSwapInterval(SwapInterval interval) noexcept;
+	virtual SwapInterval getSwapInterval() const noexcept;
+
 	virtual GraphicsLayoutPtr createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept;
+	virtual void setGraphicsLayout(GraphicsLayoutPtr data) noexcept;
+	virtual GraphicsLayoutPtr getGraphicsLayout() const noexcept;
+
 	virtual GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
-	virtual TexturePtr createTexture() noexcept;
-	virtual GraphicsSamplerPtr createGraphicsSampler() noexcept;
-	virtual RenderTexturePtr createRenderTexture() noexcept;
-	virtual MultiRenderTexturePtr createMultiRenderTexture() noexcept;
-	virtual ShaderPtr createShader() noexcept;
-	virtual ShaderObjectPtr createShaderObject() noexcept;
+	virtual bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;
+	virtual void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
+	virtual void unmapBuffer(GraphicsDataPtr& data) noexcept;
+
+	virtual void setIndexBufferData(GraphicsDataPtr data) noexcept;
+	virtual GraphicsDataPtr getIndexBufferData() const noexcept;
+
+	virtual void setVertexBufferData(GraphicsDataPtr data) noexcept;
+	virtual GraphicsDataPtr getVertexBufferData() const noexcept;
+
+	virtual GraphicsTexturePtr createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept;
+	virtual void setGraphicsTexture(GraphicsTexturePtr texture, std::uint32_t slot) noexcept;
+	virtual void setGraphicsTexture(GraphicsTexturePtr texture[], std::uint32_t first, std::uint32_t count) noexcept;
+
+	virtual GraphicsSamplerPtr createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept;
+	virtual void setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept;
+	virtual void setGraphicsSampler(GraphicsSamplerPtr sampler[], std::uint32_t first, std::uint32_t count) noexcept;
+
+	virtual GraphicsRenderTexturePtr createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept;
+	virtual void setRenderTexture(GraphicsRenderTexturePtr target) noexcept;
+	virtual void setRenderTextureLayer(GraphicsRenderTexturePtr target, std::int32_t layer) noexcept;
+	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
+	virtual void discardRenderTexture() noexcept;
+	virtual void blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, GraphicsRenderTexturePtr dest, const Viewport& v2) noexcept;
+	virtual void readRenderTexture(GraphicsRenderTexturePtr source, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	virtual GraphicsRenderTexturePtr getRenderTexture() const noexcept;
+
+	virtual GraphicsMultiRenderTexturePtr createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept;
+	virtual void setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept;
+	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
+	virtual GraphicsMultiRenderTexturePtr getMultiRenderTexture() const noexcept;
+
+	virtual GraphicsStatePtr createGraphicsState(const GraphicsStateDesc& desc) noexcept;
+	virtual void setGraphicsState(GraphicsStatePtr state) noexcept;
+	virtual GraphicsStatePtr getGraphicsState() const noexcept;
+
+	virtual GraphicsShaderPtr createShader(const ShaderDesc& desc) noexcept;
+	virtual GraphicsProgramPtr createShaderProgram(const ShaderObjectDesc& desc) noexcept;
+	virtual void setGraphicsProgram(GraphicsProgramPtr shader) noexcept;
+	virtual GraphicsProgramPtr getGraphicsProgram() const noexcept;
+
+	virtual void drawRenderBuffer(const RenderIndirect& renderable) noexcept;
+	virtual void drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept;
 
 private:
 	EGL2Device(const EGL2Device&) noexcept = delete;
 	EGL2Device& operator=(const EGL2Device&) noexcept = delete;
+
+private:
+	EGL2DeviceContextPtr _glcontext;
 };
 
 _NAME_END

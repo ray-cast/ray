@@ -130,7 +130,7 @@ MaterialManager::createMaterial(const std::string& name) except
 	if (!material)
 	{
 		MaterialMaker maker;
-		_materials[name] = maker.load(*this, name);
+		material = maker.load(*this, name);
 	}
 
 	return material;

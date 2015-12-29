@@ -520,15 +520,27 @@ MaterialParam::assign(const std::vector<float4>& value) noexcept
 }
 
 void
-MaterialParam::assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
+MaterialParam::assign(GraphicsTexturePtr texture) noexcept
 {
 	_texture = texture;
+}
+
+void
+MaterialParam::assign(GraphicsSamplerPtr sampler) noexcept
+{
+	_sampler = sampler;
 }
 
 GraphicsTexturePtr
 MaterialParam::getTexture() const noexcept
 {
 	return _texture;
+}
+
+GraphicsSamplerPtr
+MaterialParam::getSampler() const noexcept
+{
+	return _sampler;
 }
 
 void

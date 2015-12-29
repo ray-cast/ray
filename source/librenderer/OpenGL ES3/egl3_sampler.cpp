@@ -41,7 +41,7 @@ _NAME_BEGIN
 __ImplementSubClass(EGL3Sampler, GraphicsSampler, "EGL3Sampler")
 
 EGL3Sampler::EGL3Sampler() noexcept
-	: _sampler(0)
+	: _sampler(GL_NONE)
 {
 }
 
@@ -53,9 +53,14 @@ EGL3Sampler::~EGL3Sampler() noexcept
 bool
 EGL3Sampler::setup(const GraphicsSamplerDesc& desc) except
 {
-	assert(!_sampler);
+	assert(_sampler == GL_NONE);
 
 	glGenSamplers(1, &_sampler);
+	if (_sampler == GL_NONE)
+	{
+		GL_PLATFORM_LOG("glGenSamplers() fail");
+		return false;
+	}
 
 	auto wrap = desc.getSamplerWrap();
 	if (SamplerWrap::Repeat == wrap)
@@ -75,6 +80,11 @@ EGL3Sampler::setup(const GraphicsSamplerDesc& desc) except
 		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
+	}
+	else
+	{
+		GL_PLATFORM_LOG("Invalid SamplerWrap");
+		return false;
 	}
 
 	auto filter = desc.getSamplerFilter();
@@ -108,6 +118,11 @@ EGL3Sampler::setup(const GraphicsSamplerDesc& desc) except
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	}
+	else
+	{
+		GL_PLATFORM_LOG("Invalid SamplerFilter");
+		return false;
+	}
 
 	auto anis = desc.getSamplerAnis();
 	if (anis == SamplerAnis::Anis1)
@@ -120,6 +135,14 @@ EGL3Sampler::setup(const GraphicsSamplerDesc& desc) except
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
 	else if (anis == SamplerAnis::Anis16)
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
+	else
+	{
+		if (anis != SamplerAnis::Anis0)
+		{
+			GL_PLATFORM_LOG("Invalid SamplerAnis");
+			return false;
+		}
+	}
 
 	_desc = desc;
 
@@ -146,6 +169,18 @@ const GraphicsSamplerDesc&
 EGL3Sampler::getGraphicsSamplerDesc() const noexcept
 {
 	return _desc;
+}
+
+void
+EGL3Sampler::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL3Sampler::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

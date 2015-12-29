@@ -59,7 +59,7 @@ bool OGLFeatures::NV_vertex_buffer_unified_memory = 0;
 #endif
 
 GLenum
-OGLTypes::asOGLVertexType(VertexType type) noexcept
+OGLTypes::asVertexType(VertexType type) noexcept
 {
 	switch (type)
 	{
@@ -78,13 +78,13 @@ OGLTypes::asOGLVertexType(VertexType type) noexcept
 	case VertexType::FanOrLine:
 		return GL_TRIANGLE_FAN;
 	default:
-		assert(false);
-		return GL_TRIANGLES;
+		GL_PLATFORM_LOG("Invalid vertex type");
+		return false;
 	}
 }
 
 GLenum
-OGLTypes::asOGLVertexFormat(VertexFormat format) noexcept
+OGLTypes::asVertexFormat(VertexFormat format) noexcept
 {
 	switch (format)
 	{
@@ -122,15 +122,17 @@ OGLTypes::asOGLVertexFormat(VertexFormat format) noexcept
 	case VertexFormat::Float2:
 	case VertexFormat::Float3:
 	case VertexFormat::Float4:
+	case VertexFormat::Float3x3:
+	case VertexFormat::Float4x4:
 		return GL_FLOAT;
 	default:
-		assert(false);
-		return GL_INVALID_ENUM;
+		GL_PLATFORM_LOG("Invalid vertex format");
+		return false;
 	}
 }
 
 GLenum
-OGLTypes::asOGLIndexType(IndexType type) noexcept
+OGLTypes::asIndexType(IndexType type) noexcept
 {
 	switch (type)
 	{
@@ -141,13 +143,13 @@ OGLTypes::asOGLIndexType(IndexType type) noexcept
 	case IndexType::Uint32:
 		return GL_UNSIGNED_INT;
 	default:
-		assert(false);
-		return GL_UNSIGNED_SHORT;
+		GL_PLATFORM_LOG("Invalid index type");
+		return false;
 	}
 }
 
 GLenum
-OGLTypes::asOGLShaderType(ShaderType type) noexcept
+OGLTypes::asShaderType(ShaderType type) noexcept
 {
 	switch (type)
 	{
@@ -163,18 +165,14 @@ OGLTypes::asOGLShaderType(ShaderType type) noexcept
 		return GL_TESS_CONTROL_SHADER;
 	case ShaderType::TessEvaluation:
 		return GL_TESS_EVALUATION_SHADER;
-	case ShaderType::VertexCg:
-		return GL_CG_VERTEX_SHADER_EXT;
-	case ShaderType::FragmentCg:
-		return GL_CG_FRAGMENT_SHADER_EXT;
 	default:
-		assert(false);
-		return GL_VERTEX_SHADER;
+		GL_PLATFORM_LOG("Invalid shader type");
+		return GL_INVALID_ENUM;
 	}
 }
 
 GLenum
-OGLTypes::asOGLTarget(TextureDim target, bool multisampler) noexcept
+OGLTypes::asTextureTarget(TextureDim target, bool multisampler) noexcept
 {
 	if (target == TextureDim::DIM_2D)
 	{
@@ -185,10 +183,13 @@ OGLTypes::asOGLTarget(TextureDim target, bool multisampler) noexcept
 	}
 	else if (target == TextureDim::DIM_3D)
 	{
-		if (multisampler)
-			return GL_INVALID_ENUM;
-		else
+		if (!multisampler)
 			return GL_TEXTURE_3D;
+		else
+		{
+			GL_PLATFORM_LOG("Can't support 3d texture multisampler");
+			return GL_INVALID_ENUM;
+		}
 	}
 	else if (target == TextureDim::DIM_2D_ARRAY)
 	{
@@ -206,120 +207,142 @@ OGLTypes::asOGLTarget(TextureDim target, bool multisampler) noexcept
 	}
 	else if (target == TextureDim::DIM_CUBE)
 	{
-		if (multisampler)
-			return GL_INVALID_ENUM;
-		else
+		if (!multisampler)
 			return GL_TEXTURE_CUBE_MAP;
+		else
+		{
+			GL_PLATFORM_LOG("Can't support cube multisampler");
+			return GL_INVALID_ENUM;
+		}
 	}
 	else if (target == TextureDim::DIM_CUBE_ARRAY)
 	{
-		if (multisampler)
-			return GL_INVALID_ENUM;
-		else
+		if (!multisampler)
 			return GL_TEXTURE_CUBE_MAP_ARRAY;
+		else
+		{
+			GL_PLATFORM_LOG("Can't support cube array multisampler");
+			return GL_INVALID_ENUM;
+		}
 	}
 
-	assert(false);
-	return (GLenum)GL_INVALID_ENUM;
+	GL_PLATFORM_LOG("Invalid texture target");
+	return GL_INVALID_ENUM;
 }
 
 GLenum
-OGLTypes::asOGLFormat(TextureFormat format) noexcept
+OGLTypes::asTextureFormat(TextureFormat format) noexcept
 {
-	if (format == TextureFormat::DEPTH_COMPONENT16 || format == TextureFormat::DEPTH_COMPONENT24 || format == TextureFormat::DEPTH_COMPONENT32)
-		return GL_DEPTH_COMPONENT;
-
-	if (format == TextureFormat::DEPTH24_STENCIL8 || format == TextureFormat::DEPTH32_STENCIL8)
-		return GL_DEPTH_STENCIL;
-
-	if (format == TextureFormat::STENCIL8)
+	switch (format)
+	{
+	case TextureFormat::STENCIL8:
 		return GL_STENCIL_INDEX;
-
-	if (format == TextureFormat::R8G8B8 || format == TextureFormat::R16G16B16 || format == TextureFormat::R16G16B16F || format == TextureFormat::R32G32B32F)
+	case TextureFormat::DEPTH_COMPONENT16:
+	case TextureFormat::DEPTH_COMPONENT24:
+	case TextureFormat::DEPTH_COMPONENT32:
+		return GL_DEPTH_COMPONENT;
+	case TextureFormat::DEPTH24_STENCIL8:
+	case TextureFormat::DEPTH32_STENCIL8:
+		return GL_DEPTH_STENCIL;
+	case TextureFormat::R5G6B5:
+	case TextureFormat::R8G8B8:
+	case TextureFormat::R16G16B16:
+	case TextureFormat::R11G11B10F:
+	case TextureFormat::R16G16B16F:
+	case TextureFormat::R32G32B32F:
+	case TextureFormat::R8G8B8_SNORM:
+	case TextureFormat::R16G16B16_SNORM:
 		return GL_RGB;
-
-	if (format == TextureFormat::R8G8B8A8 || format == TextureFormat::R16G16B16A16 || format == TextureFormat::R16G16B16A16F || format == TextureFormat::R32G32B32A32F)
+	case TextureFormat::R4G4B4A4:
+	case TextureFormat::R5G5B5A1:
+	case TextureFormat::R8G8B8A8:
+	case TextureFormat::R10G10B10A2:
+	case TextureFormat::R16G16B16A16:
+	case TextureFormat::R16G16B16A16F:
+	case TextureFormat::R32G32B32A32F:
+	case TextureFormat::R8G8B8A8_SNORM:
+	case TextureFormat::R16G16B16A16_SNORM:
 		return GL_RGBA;
-
-	if (format == TextureFormat::R16G16B16A16_SNORM)
-		return GL_RGBA;
-
-	if (format == TextureFormat::SR8G8B8 || format == TextureFormat::SRGB)
-		return GL_RGB;
-
-	if (format == TextureFormat::SR8G8B8A8 || format == TextureFormat::SRGBA)
-		return GL_RGBA;
-
-	if (format == TextureFormat::R8 || format == TextureFormat::R16F || format == TextureFormat::R32F)
+	case TextureFormat::SR8G8B8:
+		return GL_SRGB;
+	case TextureFormat::SR8G8B8A8:
+		return GL_SRGB_ALPHA_EXT;
+	case TextureFormat::R8:
+	case TextureFormat::R16F:
+	case TextureFormat::R32F:
 		return GL_RED;
-
-	if (format == TextureFormat::RG16F || format == TextureFormat::RG32F)
+	case TextureFormat::RG16F:
+	case TextureFormat::RG32F:
 		return GL_RG;
-
-	if (format == TextureFormat::R11G11B10F)
-		return GL_RGB;
-
-	assert(false);
-	return GL_INVALID_ENUM;
+	case TextureFormat::RGB_DXT1:
+	case TextureFormat::RGBA_DXT1:
+	case TextureFormat::RGBA_DXT3:
+	case TextureFormat::RGBA_DXT5:
+	case TextureFormat::RG_ATI2:
+	default:
+		GL_PLATFORM_LOG("Invalid texture format");
+		return GL_INVALID_ENUM;
+	}
 }
 
 GLenum
-OGLTypes::asOGLType(TextureFormat format) noexcept
+OGLTypes::asTextureType(TextureFormat format) noexcept
 {
-	if (format == TextureFormat::DEPTH24_STENCIL8)
+	switch (format)
+	{
+	case TextureFormat::STENCIL8:
+		return GL_STENCIL_INDEX8;
+	case TextureFormat::DEPTH_COMPONENT16:
+	case TextureFormat::DEPTH_COMPONENT24:
+	case TextureFormat::DEPTH_COMPONENT32:
+		return GL_UNSIGNED_INT;
+	case TextureFormat::DEPTH24_STENCIL8:
 		return GL_UNSIGNED_INT_24_8;
-
-	if (format == TextureFormat::DEPTH32_STENCIL8)
+	case TextureFormat::DEPTH32_STENCIL8:
 		return GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
-
-	if (format == TextureFormat::STENCIL8)
+	case TextureFormat::R4G4B4A4:
+		return GL_UNSIGNED_SHORT_4_4_4_4;
+	case TextureFormat::R5G6B5:
+		return GL_UNSIGNED_SHORT_5_6_5;
+	case TextureFormat::R5G5B5A1:
+		return GL_UNSIGNED_SHORT_5_6_5;
+	case TextureFormat::R8:
+	case TextureFormat::R8G8B8:
+	case TextureFormat::R8G8B8A8:
+	case TextureFormat::SR8G8B8:
+	case TextureFormat::SR8G8B8A8:
+	case TextureFormat::R10G10B10A2:
 		return GL_UNSIGNED_BYTE;
-
-	if (format == TextureFormat::DEPTH_COMPONENT32)
-		return GL_FLOAT;
-
-	if (format == TextureFormat::DEPTH_COMPONENT16 || format == TextureFormat::DEPTH_COMPONENT24)
-		return GL_UNSIGNED_BYTE;
-
-	if (format == TextureFormat::R8G8B8 || format == TextureFormat::R8G8B8A8)
-		return GL_UNSIGNED_BYTE;
-
-	if (format == TextureFormat::R16G16B16 || format == TextureFormat::R16G16B16A16)
+	case TextureFormat::R16G16B16:
+	case TextureFormat::R16G16B16A16:
 		return GL_UNSIGNED_SHORT;
-
-	if (format == TextureFormat::R8)
-		return GL_UNSIGNED_BYTE;
-
-	if (format == TextureFormat::R16G16B16F || format == TextureFormat::R32G32B32F)
+	case TextureFormat::R8G8B8_SNORM:
+	case TextureFormat::R8G8B8A8_SNORM:
+	case TextureFormat::R16G16B16_SNORM:
+	case TextureFormat::R16G16B16A16_SNORM:
+	case TextureFormat::R16G16B16F:
+	case TextureFormat::R16G16B16A16F:
+	case TextureFormat::R32G32B32F:
+	case TextureFormat::R32G32B32A32F:
+	case TextureFormat::R11G11B10F:
+	case TextureFormat::R16F:
+	case TextureFormat::R32F:
+	case TextureFormat::RG16F:
+	case TextureFormat::RG32F:
 		return GL_FLOAT;
-
-	if (format == TextureFormat::R16G16B16A16_SNORM)
-		return GL_FLOAT;
-
-	if (format == TextureFormat::R16G16B16A16F || format == TextureFormat::R32G32B32A32F)
-		return GL_FLOAT;
-
-	if (format == TextureFormat::SR8G8B8 || format == TextureFormat::SRGB)
-		return GL_UNSIGNED_BYTE;
-
-	if (format == TextureFormat::SR8G8B8A8 || format == TextureFormat::SRGBA)
-		return GL_UNSIGNED_BYTE;
-
-	if (format == TextureFormat::R16F || format == TextureFormat::R32F)
-		return GL_FLOAT;
-
-	if (format == TextureFormat::RG16F || format == TextureFormat::RG32F)
-		return GL_FLOAT;
-
-	if (format == TextureFormat::R11G11B10F)
-		return GL_FLOAT;
-
-	assert(false);
-	return GL_INVALID_ENUM;
+	case TextureFormat::RGB_DXT1:
+	case TextureFormat::RGBA_DXT1:
+	case TextureFormat::RGBA_DXT3:
+	case TextureFormat::RGBA_DXT5:
+	case TextureFormat::RG_ATI2:
+	default:
+		GL_PLATFORM_LOG("Invalid texture type");
+		return GL_INVALID_ENUM;
+	}
 }
 
-GLint
-OGLTypes::asOGLInternalformat(TextureFormat format) noexcept
+GLenum
+OGLTypes::asTextureInternalFormat(TextureFormat format) noexcept
 {
 	switch (format)
 	{
@@ -335,16 +358,30 @@ OGLTypes::asOGLInternalformat(TextureFormat format) noexcept
 		return GL_DEPTH24_STENCIL8;
 	case TextureFormat::DEPTH32_STENCIL8:
 		return GL_DEPTH32F_STENCIL8;
+	case TextureFormat::R4G4B4A4:
+		return GL_RGBA4;
+	case TextureFormat::R5G6B5:
+		return GL_RGB565;
+	case TextureFormat::R5G5B5A1:
+		return GL_RGB5_A1;
+	case TextureFormat::R10G10B10A2:
+		return GL_RGB10_A2;
+	case TextureFormat::R8G8B8_SNORM:
+		return GL_RGB8_SNORM;
+	case TextureFormat::R8G8B8A8_SNORM:
+		return GL_RGBA8_SNORM;
+	case TextureFormat::R16G16B16_SNORM:
+		return GL_RGB16_SNORM;
+	case TextureFormat::R16G16B16A16_SNORM:
+		return GL_RGBA16_SNORM;
 	case TextureFormat::R8G8B8:
 		return GL_RGB8;
 	case TextureFormat::R8G8B8A8:
 		return GL_RGBA8;
 	case TextureFormat::R16G16B16:
-		return GL_RGB16UI;
+		return GL_RGB16;
 	case TextureFormat::R16G16B16A16:
-		return GL_RGBA16UI;
-	case TextureFormat::R16G16B16A16_SNORM:
-		return GL_RGBA16_SNORM;
+		return GL_RGBA16;
 	case TextureFormat::R16G16B16F:
 		return GL_RGB16F;
 	case TextureFormat::R32G32B32F:
@@ -357,10 +394,6 @@ OGLTypes::asOGLInternalformat(TextureFormat format) noexcept
 		return GL_SRGB8;
 	case TextureFormat::SR8G8B8A8:
 		return GL_SRGB8_ALPHA8;
-	case TextureFormat::SRGB:
-		return GL_SRGB;
-	case TextureFormat::SRGBA:
-		return GL_SRGB_ALPHA_EXT;
 	case TextureFormat::R8:
 		return GL_R8;
 	case TextureFormat::R16F:
@@ -384,7 +417,7 @@ OGLTypes::asOGLInternalformat(TextureFormat format) noexcept
 	case TextureFormat::RG_ATI2:
 		return GL_COMPRESSED_RG_RGTC2;
 	default:
-		assert(false);
+		GL_PLATFORM_LOG("Invalid texture internal format");
 		return GL_INVALID_ENUM;
 	}
 }
@@ -394,27 +427,27 @@ OGLTypes::asCompareFunction(CompareFunction func) noexcept
 {
 	switch (func)
 	{
-	case ray::GPU_NONE:
+	case CompareFunction::None:
 		return GL_NONE;
-	case ray::GPU_LEQUAL:
+	case CompareFunction::Lequal:
 		return GL_LEQUAL;
-	case ray::GPU_EQUAL:
+	case CompareFunction::Equal:
 		return GL_EQUAL;
-	case ray::GPU_GREATER:
+	case CompareFunction::Greater:
 		return GL_GREATER;
-	case ray::GPU_LESS:
+	case CompareFunction::Less:
 		return GL_LESS;
-	case ray::GPU_GEQUAL:
+	case CompareFunction::Gequal:
 		return GL_GEQUAL;
-	case ray::GPU_NOTEQUAL:
+	case CompareFunction::NotEqual:
 		return GL_NOTEQUAL;
-	case ray::GPU_ALWAYS:
+	case CompareFunction::Always:
 		return GL_ALWAYS;
-	case ray::GPU_NEVER:
+	case CompareFunction::Never:
 		return GL_NEVER;
 	default:
-		assert(false);
-		return GL_ALWAYS;
+		GL_PLATFORM_LOG("Invalid compare function");
+		return GL_INVALID_ENUM;
 	}
 }
 
@@ -423,39 +456,39 @@ OGLTypes::asBlendFactor(BlendFactor func) noexcept
 {
 	switch (func)
 	{
-	case ray::GPU_ZERO:
+	case BlendFactor::Zero:
 		return GL_ZERO;
-	case ray::GPU_ONE:
+	case BlendFactor::One:
 		return GL_ONE;
-	case ray::GPU_DSTCOL:
+	case BlendFactor::DstCol:
 		return GL_DST_COLOR;
-	case ray::GPU_SRCCOLOR:
+	case BlendFactor::SrcColor:
 		return GL_SRC_COLOR;
-	case ray::GPU_SRCALPHA:
+	case BlendFactor::SrcAlpha:
 		return GL_SRC_ALPHA;
-	case ray::GPU_DSTALPHA:
+	case BlendFactor::DstAlpha:
 		return GL_DST_ALPHA;
-	case ray::GPU_ONEMINUSSRCCOL:
+	case BlendFactor::OneMinusSrcCol:
 		return GL_ONE_MINUS_SRC_COLOR;
-	case ray::GPU_ONEMINUSDSTCOL:
+	case BlendFactor::OneMinusDstCol:
 		return GL_ONE_MINUS_DST_COLOR;
-	case ray::GPU_ONEMINUSSRCALPHA:
+	case BlendFactor::OneMinusSrcAlpha:
 		return GL_ONE_MINUS_SRC_ALPHA;
-	case ray::GPU_ONEMINUSDSTALPHA:
+	case BlendFactor::OneMinusDstAlpha:
 		return GL_ONE_MINUS_DST_ALPHA;
-	case ray::GPU_CONSTANT_COLOR:
+	case BlendFactor::ConstantColor:
 		return GL_CONSTANT_COLOR;
-	case ray::GPU_CONSTANT_ALPHA:
+	case BlendFactor::ConstantAlpha:
 		return GL_CONSTANT_ALPHA;
-	case GPU_ONE_MINUS_CONSTANT_COLOR:
+	case BlendFactor::OneMinusConstantColor:
 		return GL_CONSTANT_ALPHA;
-	case GPU_ONE_MINUS_CONSTANT_ALPHA:
+	case BlendFactor::OneMinusConstantAlpha:
 		return GL_CONSTANT_ALPHA;
-	case GPU_SRC_ALPHA_SATURATE:
+	case BlendFactor::SrcAlphaSaturate:
 		return GL_SRC_ALPHA_SATURATE;
 	default:
-		assert(false);
-		return GL_ZERO;
+		GL_PLATFORM_LOG("Invalid blend factor");
+		return GL_INVALID_ENUM;
 	}
 }
 
@@ -464,15 +497,15 @@ OGLTypes::asBlendOperation(BlendOperation blendop) noexcept
 {
 	switch (blendop)
 	{
-	case ray::GPU_ADD:
+	case BlendOperation::Add:
 		return GL_FUNC_ADD;
-	case ray::GPU_SUBSTRACT:
+	case BlendOperation::Subtract:
 		return GL_FUNC_SUBTRACT;
-	case ray::GPU_REVSUBTRACT:
+	case BlendOperation::RevSubtract:
 		return GL_FUNC_REVERSE_SUBTRACT;
 	default:
-		assert(false);
-		return GL_FUNC_ADD;
+		GL_PLATFORM_LOG("Invalid blend operation");
+		return GL_INVALID_ENUM;
 	}
 }
 
@@ -481,40 +514,35 @@ OGLTypes::asCullMode(CullMode mode) noexcept
 {
 	switch (mode)
 	{
-	case ray::GPU_CULL_NONE:
+	case CullMode::None:
 		return GL_NONE;
-	case ray::GPU_CULL_FRONT:
+	case CullMode::Front:
 		return GL_FRONT;
-	case ray::GPU_CULL_BACK:
+	case CullMode::Back:
 		return GL_BACK;
-	case ray::GPU_CULL_FRONT_BACK:
+	case CullMode::FrontBack:
 		return GL_FRONT_AND_BACK;
 	default:
-		assert(false);
-		return GL_NONE;
+		GL_PLATFORM_LOG("Invalid cull mode");
+		return GL_INVALID_ENUM;
 	}
 }
 
 GLenum
 OGLTypes::asFillMode(FillMode mode) noexcept
 {
-#if !defined(EGLAPI)
 	switch (mode)
 	{
-	case ray::PointMode:
+	case FillMode::PointMode:
 		return GL_POINT;
-	case ray::WireframeMode:
+	case FillMode::WireframeMode:
 		return GL_LINE;
-	case ray::SolidMode:
+	case FillMode::SolidMode:
 		return GL_FILL;
 	default:
-		assert(false);
-		return GL_FILL;
+		GL_PLATFORM_LOG("Invalid fill mode");
+		return GL_INVALID_ENUM;
 	}
-#else
-	assert(false);
-	return GL_INVALID_ENUM;
-#endif
 }
 
 GLenum
@@ -522,23 +550,63 @@ OGLTypes::asStencilOperation(StencilOperation stencilop) noexcept
 {
 	switch (stencilop)
 	{
-	case ray::STENCILOP_KEEP:
+	case StencilOperation::Keep:
 		return GL_KEEP;
-	case ray::STENCILOP_REPLACE:
+	case StencilOperation::Replace:
 		return GL_REPLACE;
-	case ray::STENCILOP_INCR:
+	case StencilOperation::Incr:
 		return GL_INCR;
-	case ray::STENCILOP_DECR:
+	case StencilOperation::Decr:
 		return GL_DECR;
-	case ray::STENCILOP_ZERO:
+	case StencilOperation::Zero:
 		return GL_ZERO;
-	case ray::STENCILOP_INCR_WRAP:
+	case StencilOperation::IncrWrap:
 		return GL_INCR_WRAP;
-	case ray::STENCILOP_DECR_WRAP:
+	case StencilOperation::DecrWrap:
 		return GL_DECR_WRAP;
 	default:
-		assert(false);
-		return GL_KEEP;
+		GL_PLATFORM_LOG("Invalid stencil operation");
+		return GL_INVALID_ENUM;
+	}
+}
+
+GLenum
+OGLTypes::asSamplerWrap(SamplerWrap wrap) noexcept
+{
+	switch (wrap)
+	{
+	case SamplerWrap::Repeat:
+		return GL_REPEAT;
+	case SamplerWrap::Mirror:
+		return GL_MIRRORED_REPEAT;
+	case SamplerWrap::ClampToEdge:
+		return GL_CLAMP_TO_EDGE;
+	default:
+		GL_PLATFORM_LOG("Invalid sampler wrap");
+		return GL_INVALID_ENUM;
+	}
+}
+
+GLenum
+OGLTypes::asSamplerFilter(SamplerFilter filter) noexcept
+{
+	switch (filter)
+	{
+	case SamplerFilter::Nearest:
+		return GL_NEAREST;
+	case SamplerFilter::Linear:
+		return GL_LINEAR;
+	case SamplerFilter::NearestMipmapLinear:
+		return GL_NEAREST_MIPMAP_LINEAR;
+	case SamplerFilter::NearestMipmapNearest:
+		return GL_NEAREST_MIPMAP_NEAREST;
+	case SamplerFilter::LinearMipmapNearest:
+		return GL_LINEAR_MIPMAP_NEAREST;
+	case SamplerFilter::LinearMipmapLinear:
+		return GL_LINEAR_MIPMAP_LINEAR;
+	default:
+		GL_PLATFORM_LOG("Invalid sampler filter");
+		return GL_INVALID_ENUM;
 	}
 }
 
@@ -560,14 +628,14 @@ OGLExtenstion::initExtensions() except
 
 	OGLFeatures::ARB_bindless_texture = GLEW_ARB_bindless_texture ? true : false;
 	OGLFeatures::ARB_vertex_array_object = GLEW_ARB_vertex_array_object ? true : false;
-	OGLFeatures::ARB_vertex_attrib_binding = false; //GLEW_ARB_vertex_attrib_binding ? true : false;
+	OGLFeatures::ARB_vertex_attrib_binding = GLEW_ARB_vertex_attrib_binding ? true : false;
 	OGLFeatures::ARB_provoking_vertex = GLEW_ARB_provoking_vertex ? true : false;
 	OGLFeatures::ARB_direct_state_access = GLEW_ARB_direct_state_access ? true : false;
 	OGLFeatures::ARB_buffer_storage = GLEW_ARB_buffer_storage ? true : false;
 	OGLFeatures::ARB_viewport_array = GLEW_ARB_viewport_array ? true : false;
 	OGLFeatures::KHR_debug = GLEW_KHR_debug;
-	OGLFeatures::NV_shader_buffer_load = false; //GLEW_NV_shader_buffer_load ? true : false;
-	OGLFeatures::NV_vertex_buffer_unified_memory = false;//GLEW_NV_vertex_buffer_unified_memory ? true : false;
+	OGLFeatures::NV_shader_buffer_load = GLEW_NV_shader_buffer_load ? true : false;
+	OGLFeatures::NV_vertex_buffer_unified_memory = GLEW_NV_vertex_buffer_unified_memory ? true : false;
 
 #endif
 
@@ -579,35 +647,34 @@ OGLExtenstion::initExtensions() except
 void
 OGLCheck::checkError() noexcept
 {
-#ifdef _DEBUG
 	GLenum result = ::glGetError();
 	if (GL_NO_ERROR != result)
 	{
 		switch (result)
 		{
 		case GL_INVALID_ENUM:
-			std::cerr << "GL_INVALID_ENUM";
+			GL_PLATFORM_LOG("glGetError() fail : GL_INVALID_ENUM");
 			break;
 		case GL_INVALID_VALUE:
-			std::cerr << "GL_INVALID_VALUE";
+			GL_PLATFORM_LOG("glGetError() fail : GL_INVALID_VALUE");
 			break;
 		case GL_INVALID_OPERATION:
-			std::cerr << "GL_INVALID_OPERATION";
+			GL_PLATFORM_LOG("glGetError() fail : GL_INVALID_OPERATION");
 			break;
 		case GL_STACK_OVERFLOW:
-			std::cerr << "GL_STACK_OVERFLOW";
+			GL_PLATFORM_LOG("glGetError() fail : GL_STACK_OVERFLOW");
 			break;
 		case GL_STACK_UNDERFLOW:
-			std::cerr << "GL_STACK_UNDERFLOW";
+			GL_PLATFORM_LOG("glGetError() fail : GL_STACK_UNDERFLOW");
 			break;
 		case GL_OUT_OF_MEMORY:
-			std::cerr << "GL_OUT_OF_MEMORY";
+			GL_PLATFORM_LOG("glGetError() fail : GL_OUT_OF_MEMORY");
 			break;
 		case GL_INVALID_FRAMEBUFFER_OPERATION:
-			std::cerr << "GL_INVALID_FRAMEBUFFER_OPERATION";
+			GL_PLATFORM_LOG("glGetError() fail : GL_INVALID_FRAMEBUFFER_OPERATION");
 			break;
 		default:
-			assert(false);
+			GL_PLATFORM_LOG("glGetError() fail : Unknown");
 		};
 	}
 
@@ -617,25 +684,35 @@ OGLCheck::checkError() noexcept
 		switch (result)
 		{
 		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-			std::cerr << "FBO:Incomplete attachment";
+			GL_PLATFORM_LOG("FBO:Incompleteattachment");
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-			std::cerr << "FBO:Incomplete missing attachment";
+			GL_PLATFORM_LOG("FBO:Incomplete missingattachment");
 			break;
 		case GL_FRAMEBUFFER_UNSUPPORTED:
-			std::cerr << "FBO:Unsupported";
+			GL_PLATFORM_LOG("FBO:Unsupported");
 			break;
-#if !defined(EGLAPI)
 		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-			std::cerr << "FBO:Incomplete draw buffer";
+			GL_PLATFORM_LOG("FBO:Incomplete drawbuffer");
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-			std::cerr << "FBO:Incomplete read buffer";
+			GL_PLATFORM_LOG("FBO:Incomplete readbuffer");
 			break;
-#endif
+		default:
+			GL_PLATFORM_LOG("FBO:Unknown");
 		}
 	}
-#endif
+}
+
+void
+OGLCheck::debugOutput(const std::string& message, ...) noexcept
+{
+	std::string out = message + "\n";
+
+	va_list va;
+	va_start(va, &message);
+	vprintf(out.c_str(), va);
+	va_end(va);
 }
 
 _NAME_END

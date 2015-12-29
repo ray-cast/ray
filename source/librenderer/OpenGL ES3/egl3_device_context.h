@@ -48,8 +48,11 @@ public:
 	EGL3DeviceContext() noexcept;
 	~EGL3DeviceContext() noexcept;
 
-	bool open(WindHandle hwnd) except;
+	bool open(WindHandle hwnd) noexcept;
 	void close() noexcept;
+
+	void setActive(bool active) noexcept;
+	bool getActive() const noexcept;
 
 	void renderBegin() noexcept;
 	void renderEnd() noexcept;
@@ -102,14 +105,17 @@ public:
 	void drawRenderBuffer(const RenderIndirect& renderable) noexcept;
 	void drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept;
 
-	void present() noexcept;
-
 private:
 
 	void initDebugControl() noexcept;
 	void initStateSystem() noexcept;
 
 	static void GLAPIENTRY debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept;
+
+private:
+	friend class EGL3Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
 
 private:
 	EGL3DeviceContext(const EGL3DeviceContext&) noexcept = delete;
@@ -144,10 +150,12 @@ private:
 	EGL3CanvasPtr _glcontext;
 
 	EGL3GraphicsStatePtr _state;
-	EGL3GraphicsStatePtr _stateDefalut;
+	EGL3GraphicsStatePtr _stateDefault;
 	GraphicsStateDesc _stateCaptured;
 
 	std::vector<GLint> _textureUnits;
+
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

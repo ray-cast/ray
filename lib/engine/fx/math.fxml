@@ -1,0 +1,240 @@
+<?xml version="1.0"?>
+<effect version="1270" language="hlsl">
+    <include name="sys:fx/common.fxml"/>
+    <shader>
+    	<![CDATA[
+		#define InvLog2 3.32192809489f
+		#define InvPIE 0.318309886142f
+		#define InvPIE8 0.039788735767f
+		#define InvPIE4 0.079577471535f
+		#define PIE 3.141592654f
+
+		float fract(float x)
+		{
+			return frac(x);
+		}
+
+		float2 fract(float2 x)
+		{
+			return frac(x);
+		}
+
+		float3 fract(float3 x)
+		{
+			return frac(x);
+		}
+
+		float4 fract(float4 x)
+		{
+			return frac(x);
+		}
+
+		float rgb2srgb(float x)
+		{
+			if (x < 0.04045f)
+				return x / 12.92f;
+			else
+				return pow((x + 0.055f) / (1.0f + 0.055f), 2.4f);
+		}
+
+		float srgb2rgb(float x)
+		{
+			if (x <= 0.00031308f)
+				return 12.92f * x;
+			else
+				return 1.055f* pow(x, (1.0f / 2.4f)) - 0.055f;
+		}
+
+		float3 rgb2srgb(float3 c)
+		{
+			return float3(rgb2srgb(c.x), rgb2srgb(c.y), rgb2srgb(c.z));
+		}
+
+		float4 rgba2srgba(float4 c)
+		{
+			return float4(rgb2srgb(c.rgb), c.a);
+		}
+
+		float3 srgb2rgb(float3 c)
+		{
+			return float3(srgb2rgb(c.x), srgb2rgb(c.y), srgb2rgb(c.z));
+		}
+
+		float3 rgb2ycbcr(float3 rgb)
+		{
+			// rgb2ycbcr
+			// float Y = 0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b;
+			// float Cb = 0.5 + (-0.168 * rgb.r - 0.331 * rgb.g + 0.5 * rgb.b);
+			// float Cr = 0.5 + (0.5 * rgb.r - 0.418 * rgb.g - 0.081 * rgb.b);
+			// return float3(Y, Cb, Cr);
+			const float4x4 RGBToYCbCr = float4x4(
+				float4(0.299, -0.168, 0.5, 0.0),
+				float4(0.587, -0.331, -0.418, 0.0),
+				float4(0.114, 0.5, -0.081, 0.0),
+				float4(0.0, 0.5, 0.5, 0.0));
+			float4 YCbCr = mul(RGBToYCbCr, float4(rgb, 1.0));
+			return YCbCr.rgb;
+		}
+
+		float3 ycbcr2rgb(float3 YCbCr)
+		{
+			// ycbcr2rgb
+			// float R = YCbCr.r + 1.402 * (YCbCr.b - 0.5);
+			// float G = YCbCr.r - 0.344 * (YCbCr.g - 0.5) - 0.714 * (YCbCr.b - 0.5);
+			// float B = YCbCr.r + 1.772 * (YCbCr.g - 0.5);
+			// return float3(R, G, B);
+			const float4x4 YCbCrToRGB = float4x4(
+				float4(1.0, 1.0, 1.0, 0.0),
+				float4(0.0, -0.344, 1.772, 0.0),
+				float4(1.402, -0.714, 0.0, 0.0),
+				float4(-0.701, 0.529, -0.886, 0.0));
+			float4 rgb = mul(YCbCrToRGB, float4(YCbCr, 1.0));
+			return rgb.rgb;
+		}
+
+		float3 ycbcrMulycbcr(float3 YCbCr1, float3 YCbCr2)
+		{
+			float Y = YCbCr1.r * YCbCr2.r;
+			float Cb = (YCbCr1.g + YCbCr2.g) * 0.5;
+			float Cr = (YCbCr1.b + YCbCr2.b) * 0.5;
+			return float3(Y, Cb, Cr);
+		}
+
+		float3 ycbcrAddycbcr(float3 YCbCr1, float3 YCbCr2)
+		{
+			float Y = (YCbCr1.r + YCbCr2.r);
+			float Cb = (YCbCr1.g + YCbCr2.g) * 0.5;
+			float Cr = (YCbCr1.b + YCbCr2.b) * 0.5;
+			return float3(Y, Cb, Cr);
+		}
+
+		float3 rgb2hsv(float3 rgb)
+		{
+			float minValue = min(min(rgb.r, rgb.g), rgb.b);
+			float maxValue = max(max(rgb.r, rgb.g), rgb.b);
+			float d = maxValue - minValue;
+
+			float3 hsv = float3(0.0, 0.0, 0.0);
+			hsv.b = maxValue;
+			if (d != 0.0f)
+			{
+				hsv.g = d / maxValue;
+
+				float3 delrgb = (((float3(maxValue, maxValue, maxValue)-rgb) / 6.0) + d / 2.0) / d;
+				if (maxValue == rgb.r) { hsv.r = delrgb.b - delrgb.g; }
+				else if (maxValue == rgb.g) { hsv.r = 1.0 / 3.0 + delrgb.r - delrgb.b; }
+				else if (maxValue == rgb.b) { hsv.r = 2.0 / 3.0 + delrgb.g - delrgb.r; }
+
+				if (hsv.r < 0.0) { hsv.r += 1.0; }
+				if (hsv.r > 1.0) { hsv.r -= 1.0; }
+			}
+			return hsv;
+		}
+
+		float3 rgb2xyz(float3 rgb)
+		{
+			const float3x3 m = float3x3 (
+				0.5141364, 0.3238786, 0.16036376,
+				0.265068, 0.67023428, 0.06409157,
+				0.0241188, 0.1228178, 0.84442666);
+			return mul(m, rgb);
+		}
+
+		float3 xyz2rgb(float3 xyz)
+		{
+			const float3x3 m = float3x3(
+				2.5651, -1.1665, -0.3986,
+				-1.0217, 1.9777, 0.0439,
+				0.0753, -0.2543, 1.1892);
+			return mul(m, xyz);
+		}
+
+		float3 xyz2yxy(float3 xyz)
+		{
+			float w = xyz.r + xyz.g + xyz.b;
+			if (w > 0.0)
+			{
+				float3 Yxy;
+				Yxy.r = xyz.g;
+				Yxy.g = xyz.r / w;
+				Yxy.b = xyz.g / w;
+				return Yxy;
+			}
+			else
+			{
+				return float3(0.0, 0.0, 0.0);
+			}
+		}
+
+		float3 yxy2xyz(float3 Yxy)
+		{
+			float3 xyz;
+			xyz.g = Yxy.r;
+			if (Yxy.b > 0.0f)
+			{
+				xyz.r = Yxy.r * Yxy.g / Yxy.b;
+				xyz.b = Yxy.r * (1.0f - Yxy.g - Yxy.b) / Yxy.b;
+			}
+			else
+			{
+				xyz.rb = float2(0.0, 0.0);
+			}
+			return xyz;
+		}
+
+		float3 hsv2rgb(float3 hsv)
+		{
+			float h = hsv.r;
+			float s = hsv.g;
+			float v = hsv.b;
+
+			float3 rgb = float3(v, v, v);
+			if (hsv.g != 0.0)
+			{
+				int h_i = int(h) * 6;
+				float f = 6.0f * h - float(h_i);
+
+				float p = v * (1.0f - s);
+				float q = v * (1.0f - f * s);
+				float t = v * (1.0f - (1.0f - f) * s);
+
+				if (h_i == 0) { rgb = float3(v, t, p); }
+				else if (h_i == 1) { rgb = float3(q, v, p); }
+				else if (h_i == 2) { rgb = float3(p, v, t); }
+				else if (h_i == 3) { rgb = float3(p, q, v); }
+				else if (h_i == 4) { rgb = float3(t, p, v); }
+				else { rgb = float3(v, p, q); }
+			}
+			return rgb;
+		}
+
+		float luminance(float3 rgb)
+		{
+			const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
+			return dot(rgb, lumfact);
+		}
+
+		float3 packNormal(float3 normal)
+		{
+			float p = sqrt(-normal.z * 8.0f + 8.0f);
+			float2 enc = normal.xy / p + 0.5f;
+			float2 enc255 = enc * 255.0f;
+			float2 residual = floor(fract(enc255) * 16.0f);
+			return float3(floor(enc255), residual.x * 16.0f + residual.y) / 255.0f;
+		}
+
+		float3 unpackNormal(float3 enc)
+		{
+			float nz = floor(enc.z * 255.0f) / 16.0f;
+			enc.xy += float2(floor(nz) / 16.0f, fract(nz)) / 255.0f;
+			float2 fenc = enc.xy * 4.0f - 2.0f;
+			float f = dot(fenc, fenc);
+			float g = sqrt(1.0f - f / 4.0f);
+			float3 normal;
+			normal.xy = fenc * g;
+			normal.z = f * 0.5f - 1.0f;
+			return normal;
+		}
+    	]]>
+    </shader>
+ </effect>

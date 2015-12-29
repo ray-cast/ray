@@ -83,11 +83,7 @@ streamsize
 MemoryBuf::write(const char* src, std::streamsize cnt) noexcept
 {
     if (_data.size() < _next + cnt)
-    {
-        cnt = _data.size() - _next;
-        if (cnt == 0)
-            return 0;
-    }
+		_data.resize(_next + cnt);
 
     std::memcpy(_data.data() + _next, src, cnt);
     _next += cnt;
@@ -136,7 +132,7 @@ MemoryBuf::tellg() noexcept
 }
 
 streamsize
-MemoryBuf::size() noexcept
+MemoryBuf::size() const noexcept
 {
     return _data.size();
 }
@@ -225,6 +221,12 @@ MemoryWrite::MemoryWrite() noexcept
 
 MemoryWrite::~MemoryWrite() noexcept
 {
+}
+
+streamsize 
+MemoryWrite::size() const noexcept
+{
+	return _buf.size();
 }
 
 void

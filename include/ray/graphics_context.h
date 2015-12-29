@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GRAPHICS_DEVICE_CONTEXT_H_
-#define _H_GRAPHICS_DEVICE_CONTEXT_H_
+#ifndef _H_GRAPHICS_CONTEXT_H_
+#define _H_GRAPHICS_CONTEXT_H_
 
 #include <ray/graphics_child.h>
 
@@ -47,59 +47,6 @@ class GraphicsContext : public GraphicsChild
 public:
 	GraphicsContext() noexcept;
 	virtual ~GraphicsContext() noexcept;
-
-	virtual void renderBegin() noexcept = 0;
-	virtual void renderEnd() noexcept = 0;
-
-	virtual void setWireframeMode(bool enable) noexcept = 0;
-	virtual bool getWireframeMode() const noexcept = 0;
-
-	virtual void setViewport(const Viewport& viewport, std::size_t i = 0) noexcept = 0;
-	virtual const Viewport& getViewport(std::size_t i = 0) const noexcept = 0;
-
-	virtual void setSwapInterval(SwapInterval interval) noexcept = 0;
-	virtual SwapInterval getSwapInterval() const noexcept = 0;
-
-	virtual void setGraphicsLayout(GraphicsLayoutPtr data) noexcept = 0;
-	virtual GraphicsLayoutPtr getGraphicsLayout() const noexcept = 0;
-
-	virtual bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept = 0;
-	virtual void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept = 0;
-	virtual void unmapBuffer(GraphicsDataPtr& data) noexcept = 0;
-
-	virtual void setIndexBufferData(GraphicsDataPtr data) noexcept = 0;
-	virtual GraphicsDataPtr getIndexBufferData() const noexcept = 0;
-
-	virtual void setVertexBufferData(GraphicsDataPtr data) noexcept = 0;
-	virtual GraphicsDataPtr getVertexBufferData() const noexcept = 0;
-
-	virtual void setGraphicsTexture(GraphicsTexturePtr texture, std::uint32_t slot) noexcept = 0;
-	virtual void setGraphicsTexture(GraphicsTexturePtr texture[], std::uint32_t first, std::uint32_t count) noexcept = 0;
-
-	virtual void setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept = 0;
-	virtual void setGraphicsSampler(GraphicsSamplerPtr sampler[], std::uint32_t first, std::uint32_t count) noexcept = 0;
-
-	virtual void setRenderTexture(GraphicsRenderTexturePtr target) noexcept = 0;
-	virtual void setRenderTextureLayer(GraphicsRenderTexturePtr target, std::int32_t layer) noexcept = 0;
-	virtual void setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept = 0;
-	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept = 0;
-	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept = 0;
-	virtual void discardRenderTexture() noexcept = 0;
-	virtual void blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, GraphicsRenderTexturePtr dest, const Viewport& v2) noexcept = 0;
-	virtual void readRenderTexture(GraphicsRenderTexturePtr source, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept = 0;
-	virtual GraphicsRenderTexturePtr getRenderTexture() const noexcept = 0;
-	virtual GraphicsMultiRenderTexturePtr getMultiRenderTexture() const noexcept = 0;
-
-	virtual void setGraphicsState(GraphicsStatePtr state) noexcept = 0;
-	virtual GraphicsStatePtr getGraphicsState() const noexcept = 0;
-
-	virtual void setGraphicsProgram(GraphicsProgramPtr shader) noexcept = 0;
-	virtual GraphicsProgramPtr getGraphicsProgram() const noexcept = 0;
-
-	virtual void drawRenderBuffer(const RenderIndirect& renderable) noexcept = 0;
-	virtual void drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept = 0;
-
-	virtual void present() noexcept = 0;
 
 private:
 	GraphicsContext(const GraphicsContext&) noexcept = delete;

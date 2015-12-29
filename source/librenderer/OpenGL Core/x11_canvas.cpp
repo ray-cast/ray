@@ -51,7 +51,7 @@ XGLCanvas::~XGLCanvas() noexcept
 }
 
 void
-XGLCanvas::open(WindHandle window) except
+XGLCanvas::open(WindHandle window) noexcept
 {
 	GLint attribs[80];
 	GLint index = 0, mask = 0, flags = 0, startegy = 0;
@@ -137,24 +137,31 @@ XGLCanvas::open(WindHandle window) except
 
 	_display = ::XOpenDisplay(NULL);
 	if (_display == nullptr)
-		throw failure("Cannot connect to X server");
+	{
+		GL_PLATFORM_LOG("Cannot connect to X server");
+		return false;
+	}
+		
 
     int glx_major, glx_minor;
     if (!glXQueryVersion(_display, &glx_major, &glx_minor))
 	{
-		throw failure("Cannot query GLX version");
+		GL_PLATFORM_LOG("Cannot query GLX version");
+		return false;
 	}
 
     if (( glx_major == 1 ) && ( glx_minor < 3 ) || ( glx_major < 1))
     {
-        throw failure("GLX version 1.3 is required");
+		GL_PLATFORM_LOG("GLX version 1.3 is required");
+		return false;
     }
 
     int fbcount = 0;
     _cfg = glXChooseFBConfig(_display, 0, att, &fbcount);
     if (!_cfg)
     {
-        throw failure("Failed to retrieve a framebuffer config.");
+		GL_PLATFORM_LOG("Failed to retrieve a framebuffer config.");
+		return false;
     }
     
 	_window = window;
@@ -181,14 +188,16 @@ XGLCanvas::open(WindHandle window) except
 
 	if (!_glc)
 	{
-		throw failure("Failed to create context");
+		GL_PLATFORM_LOG("Failed to create context");
+		return false;
 	}
 
 	glXMakeContextCurrent(_display, _window, _window, _glc);
 
     if (GLEW_OK != glewInit())
     {
-        throw failure("Unable to initialize glext");
+		GL_PLATFORM_LOG("Unable to initialize glext");
+		return false;
     }
 }
 
@@ -246,11 +255,7 @@ XGLCanvas::getActive() noexcept
 bool
 XGLCanvas::present() noexcept
 {
-    if (_mode.double_enable)
-        glXSwapBuffers(_display, _window);
-    else
-        glFlush();
-
+	glXSwapBuffers(_display, _window);
     return true;
 }
 

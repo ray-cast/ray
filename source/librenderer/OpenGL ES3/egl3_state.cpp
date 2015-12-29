@@ -127,7 +127,7 @@ EGL3GraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 
 	if (_dstRasterState.cullMode != rasterState.cullMode)
 	{
-		if (rasterState.cullMode != GPU_CULL_NONE)
+		if (rasterState.cullMode != CullMode::None)
 		{
 			GLenum mode = EGL3Types::asCullMode(rasterState.cullMode);
 			glEnable(GL_CULL_FACE);
@@ -284,6 +284,18 @@ const GraphicsStateDesc&
 EGL3GraphicsState::getGraphicsStateDesc() const noexcept
 {
 	return _stateDesc;
+}
+
+void
+EGL3GraphicsState::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL3GraphicsState::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

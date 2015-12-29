@@ -53,6 +53,19 @@ public:
 	archivebuf* rdbuf() const noexcept;
 	void set_rdbuf(archivebuf* buf) noexcept;
 
+	std::string getCurrentNodeName() const noexcept;
+	std::string getCurrentNodePath() const noexcept;
+
+	bool setToNode(const std::string& path) noexcept;
+	bool setToFirstChild() noexcept;
+	bool setToFirstChild(const std::string& name) noexcept;
+	bool setToNextChild() noexcept;
+	bool setToNextChild(const std::string& name) noexcept;
+	bool setToParent() noexcept;
+	bool setToRoot() noexcept;
+
+	bool hasChild() const noexcept;
+
 protected:
 	void _init(archivebuf* _buf, ios_base::openmode mode) noexcept;
 

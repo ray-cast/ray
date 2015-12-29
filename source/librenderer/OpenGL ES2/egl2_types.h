@@ -39,12 +39,11 @@
 
 #include <ray/graphics_device.h>
 #include <ray/graphics_context.h>
-#include <ray/graphics_data.h>
-#include <ray/graphics_sampler.h>
 #include <ray/graphics_state.h>
-#include <ray/render_texture.h>
-#include <ray/render_command.h>
-#include <ray/shader.h>
+#include <ray/graphics_sampler.h>
+#include <ray/graphics_texture.h>
+#include <ray/graphics_view.h>
+#include <ray/graphics_shader.h>
 
 #include <EGL\egl.h>
 #include <GLES2\gl2.h>
@@ -52,7 +51,7 @@
 
 _NAME_BEGIN
 
-#if defined(EGLAPI)
+#if defined(GL_KHR_debug)
 #	define GL_DEBUG_OUTPUT_SYNCHRONOUS   GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR
 #   define GL_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH GL_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_KHR
 #   define GL_DEBUG_CALLBACK_FUNCTION    GL_DEBUG_CALLBACK_FUNCTION_KHR
@@ -108,6 +107,15 @@ _NAME_BEGIN
 #	define GL_CHECK(x) x
 #endif
 
+#if _DEBUG
+#	if defined(_VISUAL_STUDIO_)
+#		pragma warning(disable : 4127)
+#	endif
+#	define GL_PLATFORM_LOG(format, ...) EGL2Check::debugOutput(format, __VA_ARGS__)
+#else
+#	define GL_PLATFORM_LOG(format, ...)
+#endif
+
 struct GPUfbconfig
 {
 	int redSize;
@@ -143,39 +151,50 @@ struct GPUctxconfig
 };
 
 typedef std::shared_ptr<class EGL2Canvas> EGL2CanvasPtr;
-typedef std::shared_ptr<class EGL2Framebuffer> EGL2RenderTexturePtr;
+typedef std::shared_ptr<class EGL2Device> EGL2DevicePtr;
+typedef std::shared_ptr<class EGL2DeviceContext> EGL2DeviceContextPtr;
+typedef std::shared_ptr<class EGL2RenderTexture> EGL2RenderTexturePtr;
+typedef std::shared_ptr<class EGL2MultiRenderTexture> EGL2MultiRenderTexturePtr;
 typedef std::shared_ptr<class EGL2Shader> EGL2ShaderPtr;
 typedef std::shared_ptr<class EGL2ShaderObject> EGL2ShaderObjectPtr;
-typedef std::shared_ptr<class EGL2GraphicsState> EGL2GraphicsStatePtr;
 typedef std::shared_ptr<class EGL2VertexBuffer> EGL2VertexBufferPtr;
 typedef std::shared_ptr<class EGL2IndexBuffer> EGL2IndexBufferPtr;
 typedef std::shared_ptr<class EGL2GraphicsLayout> EGL2GraphicsLayoutPtr;
+typedef std::shared_ptr<class EGL2DrawIndirectBuffer> EGL2DrawIndirectBufferPtr;
+typedef std::shared_ptr<class EGL2GraphicsState> EGL2GraphicsStatePtr;
+typedef std::shared_ptr<class EGL2Texture> EGL2TexturePtr;
 typedef std::shared_ptr<class EGL2Sampler> EGL2SamplerPtr;
+
+typedef std::vector<EGL2ShaderPtr> EGL2Shaders;
 
 class EGL2Types
 {
 public:
 
-	static GLenum asEGL2VertexType(VertexType type) noexcept;
-	static GLenum asEGL2VertexFormat(VertexFormat format) noexcept;
-	static GLenum asEGL2IndexType(IndexType type) noexcept;
-	static GLenum asEGL2ShaderType(ShaderType type) noexcept;
-	static GLenum asEGL2Target(TextureDim mapping) noexcept;
-	static GLenum asEGL2Format(TextureFormat format) noexcept;
-	static GLenum asEGL2Type(TextureFormat format) noexcept;
-	static GLint  asEGL2Internalformat(TextureFormat format) noexcept;
+	static GLenum asVertexType(VertexType type) noexcept;
+	static GLenum asVertexFormat(VertexFormat format) noexcept;
+	static GLenum asIndexType(IndexType type) noexcept;
+	static GLenum asShaderType(ShaderType type) noexcept;
+	static GLenum asTarget(TextureDim mapping, bool multisampler) noexcept;
+	static GLenum asFormat(TextureFormat format) noexcept;
+	static GLenum asType(TextureFormat format) noexcept;
+	static GLint  asInternalformat(TextureFormat format) noexcept;
 	static GLenum asCompareFunction(CompareFunction func) noexcept;
 	static GLenum asBlendFactor(BlendFactor func) noexcept;
 	static GLenum asBlendOperation(BlendOperation op) noexcept;
 	static GLenum asCullMode(CullMode mode) noexcept;
 	static GLenum asFillMode(FillMode mode) noexcept;
 	static GLenum asStencilOperation(StencilOperation stencilop) noexcept;
+	static GLenum asSamplerWrap(SamplerWrap wrap) noexcept;
+	static GLenum asSamplerFilter(SamplerFilter filter) noexcept;
 };
 
 class EGL2Check
 {
 public:
 	static void checkError() noexcept;
+
+	static void debugOutput(const std::string& message, ...) noexcept;
 };
 
 _NAME_END

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -44,9 +44,6 @@
 #include <ray/xmlreader.h>
 #include <ray/parse.h>
 
-#define EXCLUDE_PSTDINT
-#include <hlslcc.hpp>
-
 _NAME_BEGIN
 
 MaterialMaker::MaterialMaker() noexcept
@@ -57,8 +54,19 @@ MaterialMaker::~MaterialMaker() noexcept
 {
 }
 
-ShaderDesc
-MaterialMaker::instanceShader(MaterialManager& manager, iarchive& reader) except
+void
+MaterialMaker::instanceCodes(MaterialManager& manager, iarchive& reader) except
+{
+	std::string name = reader.getValue<std::string>("name");
+	if (name.empty())
+		throw failure(__TEXT("Empty shader name : ") + reader.getCurrentNodePath());
+
+	std::string str = reader.getText();
+	ray::util::str2hex(_shaderCodes[name], str.c_str(), str.size());
+}
+
+void
+MaterialMaker::instanceShader(MaterialManager& manager, ShaderObjectDesc& program, iarchive& reader) except
 {
 	std::string type;
 	reader.getValue("name", type);
@@ -85,25 +93,19 @@ MaterialMaker::instanceShader(MaterialManager& manager, iarchive& reader) except
 	else
 		throw failure(__TEXT("Unknown shader type : ") + type);
 
-	std::string method = _shaderCodes[type];
-	if (method.empty())
-		throw failure(__TEXT("Empty shader code : ") + type);
-
-	std::size_t off = method.find(value.data());
-	if (off == std::string::npos)
-		throw failure(__TEXT("Unknown shader entry point : ") + value);
-
-	method.replace(off, value.size(), "main");
+	std::vector<char>& bytecodes = _shaderCodes[value];
+	if (bytecodes.empty())
+		throw failure(__TEXT("Empty shader code : ") + value);
 
 	ShaderDesc shader;
 	shader.setType(shaderType);
-	shader.setSource(method);
+	shader.setByteCodes(bytecodes);
 
-	return shader;
+	program.addShader(shader);
 }
 
-MaterialPassPtr
-MaterialMaker::instancePass(MaterialManager& manager, iarchive& reader) except
+void
+MaterialMaker::instancePass(MaterialManager& manager, MaterialTechPtr& tech, iarchive& reader) except
 {
 	RenderPass passType = RenderPass::RP_CUSTOM;
 
@@ -149,9 +151,9 @@ MaterialMaker::instancePass(MaterialManager& manager, iarchive& reader) except
 			std::string value = reader.getValue<std::string>("value");
 
 			if (name == "vertex")
-				shaderObjectDesc.addShader(instanceShader(manager, reader));
+				this->instanceShader(manager, shaderObjectDesc, reader);
 			else if (name == "fragment")
-				shaderObjectDesc.addShader(instanceShader(manager, reader));
+				this->instanceShader(manager, shaderObjectDesc, reader);
 			else if (name == "cullmode")
 				rasterState.cullMode = stringToCullMode(reader.getValue<std::string>("value"));
 			else if (name == "fillmode")
@@ -238,13 +240,12 @@ MaterialMaker::instancePass(MaterialManager& manager, iarchive& reader) except
 
 		pass->setGraphicsState(state);
 		pass->setGraphicsProgram(program);
+		tech->addPass(pass);
 	}
-
-	return pass;
 }
 
-MaterialTechPtr
-MaterialMaker::instanceTech(MaterialManager& manager, iarchive& reader) except
+void
+MaterialMaker::instanceTech(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
 {
 	RenderQueue queue = RenderQueue::RQ_OPAQUE;
 
@@ -276,12 +277,12 @@ MaterialMaker::instanceTech(MaterialManager& manager, iarchive& reader) except
 			auto name = reader.getCurrentNodeName();
 			if (name == "pass")
 			{
-				tech->addPass(instancePass(manager, reader));
+				this->instancePass(manager, tech, reader);
 			}
 		} while (reader.setToNextChild());
 	}
 
-	return tech;
+	material->addTech(tech);
 }
 
 void
@@ -317,6 +318,10 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialPtr& material
 			param->setType(ShaderVariantType::Float3x3);
 		else if (type == "mat4")
 			param->setType(ShaderVariantType::Float4x4);
+		else if (type == "float3x3")
+			param->setType(ShaderVariantType::Float3x3);
+		else if (type == "float4x4")
+			param->setType(ShaderVariantType::Float4x4);
 		else if (type == "float[]")
 			param->setType(ShaderVariantType::FloatArray);
 		else if (type == "float2[]")
@@ -325,7 +330,7 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialPtr& material
 			param->setType(ShaderVariantType::Float3Array);
 		else if (type == "float4[]")
 			param->setType(ShaderVariantType::Float4Array);
-		else if (type == "sampler2D")
+		else if (type == "texture")
 			param->setType(ShaderVariantType::Texture);
 		else if (type == "buffer")
 			param->setType(ShaderVariantType::Buffer);
@@ -350,8 +355,53 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialPtr& material
 	}
 }
 
-MaterialParamPtr
-MaterialMaker::instanceBuffer(MaterialPtr& material, iarchive& reader) except
+void
+MaterialMaker::instanceSampler(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+{
+	std::string samplerName;
+	reader.getValue("name", samplerName);
+
+	if (samplerName.empty())
+		throw failure(__TEXT("Empty sampler empty"));
+
+	if (reader.setToFirstChild())
+	{
+		GraphicsSamplerDesc desc;
+		desc.setSamplerWrap(SamplerWrap::Repeat);
+
+		do
+		{
+			std::string stateName = reader.getValue<std::string>("name");
+			std::string stateValue = reader.getValue<std::string>("value");
+			if (stateName == "filter")
+			{
+				if (stateValue == "point")
+					desc.setSamplerFilter(SamplerFilter::Nearest);
+				else if (stateValue == "linear")
+					desc.setSamplerFilter(SamplerFilter::Linear);
+			}
+			else if (stateName == "wrap")
+			{
+				if (stateValue == "clamp")
+					desc.setSamplerWrap(SamplerWrap::ClampToEdge);
+				else if (stateValue == "mirror")
+					desc.setSamplerWrap(SamplerWrap::Mirror);
+				else if (stateValue == "repeat")
+					desc.setSamplerWrap(SamplerWrap::Repeat);
+			}
+
+		} while (reader.setToNextChild());
+
+		auto param = std::make_shared<MaterialParam>();
+		param->setName(samplerName);
+		param->assign(manager.getGraphicsDevice()->createGraphicsSampler(desc));	
+
+		material->addParameter(param);
+	}
+}
+
+void
+MaterialMaker::instanceBuffer(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
 {
 	auto buffer = std::make_shared<MaterialParam>();
 	buffer->setType(ShaderVariantType::Buffer);
@@ -362,11 +412,17 @@ MaterialMaker::instanceBuffer(MaterialPtr& material, iarchive& reader) except
 		do
 		{
 		} while (reader.setToNextChild());
-
-		return buffer;
 	}
+}
 
-	return nullptr;
+void 
+MaterialMaker::instanceInclude(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+{
+	auto path = reader.getValue<std::string>("name");
+	if (!path.empty())
+	{
+		this->load(manager, path);
+	}
 }
 
 MaterialPtr
@@ -380,7 +436,10 @@ MaterialMaker::load(MaterialManager& manager, const std::string& filename) excep
 
 		XMLReader reader;
 		if (reader.open(*stream))
+		{
+			reader.setToFirstChild();
 			return this->load(manager, reader);
+		}
 
 		return nullptr;
 	}
@@ -388,6 +447,39 @@ MaterialMaker::load(MaterialManager& manager, const std::string& filename) excep
 	{
 		throw failure(__TEXT("in ") + filename + __TEXT(" ") + e.message(), e.stack());
 	}
+}
+
+MaterialPtr 
+MaterialMaker::load(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+{
+	std::string nodeName;
+	nodeName = reader.getCurrentNodeName();
+	if (nodeName != "material" && nodeName != "effect")
+		throw failure("Unknown node name " + nodeName + ", so I can't open it");
+
+	std::string language = reader.getValue<std::string>("language");
+	if (language != "bytecodes")
+		throw failure("Can't support language : " + language);
+
+	if (!reader.setToFirstChild())
+		throw failure("The file has been damaged and can't be recovered, so I can't open it");
+
+	do
+	{
+		std::string name = reader.getCurrentNodeName();
+		if (name == "include")
+			instanceInclude(manager, material, reader);
+		else if (name == "parameter")
+			instanceParameter(manager, material, reader);
+		else if (name == "sampler")
+			instanceSampler(manager, material, reader);
+		else if (name == "shader")
+			instanceCodes(manager, reader);
+		else if (name == "technique")
+			instanceTech(manager, material, reader);
+	} while (reader.setToNextChild());
+
+	return material;
 }
 
 MaterialPtr
@@ -454,62 +546,11 @@ MaterialMaker::load(MaterialManager& manager, iarchive& reader) except
 	else if (nodeName == "effect")
 	{
 		auto material = std::make_shared<Material>();
-
-		if (!reader.setToFirstChild())
-			throw failure(__TEXT("The file has been damaged and can't be recovered, so I can't open it"));
-
-		do
+		if (this->load(manager, material, reader))
 		{
-			std::string name = reader.getCurrentNodeName();
-			if (name == "parameter")
-			{
-				instanceParameter(manager, material, reader);
-			}
-			else if (name == "buffer")
-			{
-				auto buffer = instanceBuffer(material, reader);
-				if (buffer)
-					material->addParameter(buffer);
-			}
-			else if (name == "include")
-			{
-				auto path = reader.getValue<std::string>("name");
-				if (!path.empty())
-				{
-					this->load(manager, path);
-				}
-			}
-			else if (name == "shader")
-			{
-				auto type = reader.getValue<std::string>("name");
-				if (!type.empty())
-				{
-					auto str = reader.getText();
-					for (std::size_t i = 0; i < str.size(); i++)
-					{
-						if (util::isSpaceOrNewLine(str[i]))
-							str.erase(str.begin());
-						else
-							break;
-					}
-
-					_shaderCodes[type] += str;
-				}
-				else
-				{
-					throw failure(__TEXT("Empty shader name : ") + reader.getCurrentNodePath());
-				}
-			}
-			else if (name == "technique")
-			{
-				auto tech = instanceTech(manager, reader);
-				if (tech)
-					material->addTech(tech);
-			}
-		} while (reader.setToNextChild());
-		
-		material->setup();
-		return material;
+			material->setup();
+			return material;
+		}	
 	}
 
 	return nullptr;
@@ -543,17 +584,17 @@ CullMode
 MaterialMaker::stringToCullMode(const std::string& cullmode) noexcept
 {
 	if (cullmode == "back")
-		return CullMode::GPU_CULL_BACK;
+		return CullMode::Back;
 	else if (cullmode == "front")
-		return CullMode::GPU_CULL_FRONT;
+		return CullMode::Front;
 	else if (cullmode == "frontback")
-		return CullMode::GPU_CULL_FRONT_BACK;
+		return CullMode::FrontBack;
 	else if (cullmode == "none")
-		return CullMode::GPU_CULL_NONE;
+		return CullMode::None;
 	else
 	{
 		assert(false);
-		return CullMode::GPU_CULL_NONE;
+		return CullMode::None;
 	}
 }
 
@@ -577,15 +618,15 @@ BlendOperation
 MaterialMaker::stringToBlendOperation(const std::string& blendop) noexcept
 {
 	if (blendop == "sub")
-		return GPU_SUBSTRACT;
+		return BlendOperation::Subtract;
 	else if (blendop == "revsub")
-		return GPU_REVSUBTRACT;
+		return BlendOperation::RevSubtract;
 	else if (blendop == "add")
-		return GPU_ADD;
+		return BlendOperation::Add;
 	else
 	{
 		assert(false);
-		return GPU_ADD;
+		return BlendOperation::Add;
 	}
 }
 
@@ -593,29 +634,29 @@ BlendFactor
 MaterialMaker::stringToBlendFactor(const std::string& factor) noexcept
 {
 	if (factor == "zero")
-		return GPU_ZERO;
+		return BlendFactor::Zero;
 	else if (factor == "one")
-		return GPU_ONE;
+		return BlendFactor::One;
 	else if (factor == "dstcol")
-		return GPU_DSTCOL;
+		return BlendFactor::DstCol;
 	else if (factor == "srccol")
-		return GPU_SRCCOLOR;
+		return BlendFactor::SrcColor;
 	else if (factor == "srcalpha")
-		return GPU_SRCALPHA;
+		return BlendFactor::SrcAlpha;
 	else if (factor == "dstalpha")
-		return GPU_DSTALPHA;
+		return BlendFactor::DstAlpha;
 	else if (factor == "invsrccol")
-		return GPU_ONEMINUSSRCCOL;
+		return BlendFactor::OneMinusSrcCol;
 	else if (factor == "invdstcol")
-		return GPU_ONEMINUSDSTCOL;
+		return BlendFactor::OneMinusDstCol;
 	else if (factor == "invsrcalpha")
-		return GPU_ONEMINUSSRCALPHA;
+		return BlendFactor::OneMinusSrcAlpha;
 	else if (factor == "invdstalpha")
-		return GPU_ONEMINUSDSTALPHA;
+		return BlendFactor::OneMinusDstAlpha;
 	else
 	{
 		assert(false);
-		return GPU_ZERO;
+		return BlendFactor::Zero;
 	}
 }
 
@@ -623,21 +664,21 @@ ColorMask
 MaterialMaker::stringToColorMask(const std::string& mask) noexcept
 {
 	if (mask == "red")
-		return ColorMask::GPU_COLORMASK_RED;
+		return ColorMask::COLORMASK_RED;
 	else if (mask == "green")
-		return ColorMask::GPU_COLORMASK_GREEN;
+		return ColorMask::COLORMASK_GREEN;
 	else if (mask == "blue")
-		return ColorMask::GPU_COLORMASK_BLUE;
+		return ColorMask::COLORMASK_BLUE;
 	else if (mask == "alpha")
-		return ColorMask::GPU_COLORMASK_ALPHA;
+		return ColorMask::COLORMASK_ALPHA;
 	else if (mask == "rgb")
-		return ColorMask::GPU_COLORMASK_RGB;
+		return ColorMask::COLORMASK_RGB;
 	else if (mask == "rgba")
-		return ColorMask::GPU_COLORMASK_RGBA;
+		return ColorMask::COLORMASK_RGBA;
 	else
 	{
 		assert(false);
-		return ColorMask::GPU_COLORMASK_RGBA;
+		return ColorMask::COLORMASK_RGBA;
 	}
 }
 
@@ -645,27 +686,27 @@ CompareFunction
 MaterialMaker::stringToCompareFunc(const std::string& func) noexcept
 {
 	if (func == "lequal")
-		return GPU_LEQUAL;
+		return CompareFunction::Lequal;
 	else if (func == "equal")
-		return GPU_EQUAL;
+		return CompareFunction::Equal;
 	else if (func == "greater")
-		return GPU_GREATER;
+		return CompareFunction::Greater;
 	else if (func == "less")
-		return GPU_LESS;
+		return CompareFunction::Less;
 	else if (func == "gequal")
-		return GPU_GEQUAL;
+		return CompareFunction::Gequal;
 	else if (func == "notequal")
-		return GPU_NOTEQUAL;
+		return CompareFunction::NotEqual;
 	else if (func == "always")
-		return GPU_ALWAYS;
+		return CompareFunction::Always;
 	else if (func == "never")
-		return GPU_NEVER;
+		return CompareFunction::Never;
 	else if (func == "none")
-		return GPU_NONE;
+		return CompareFunction::None;
 	else
 	{
 		assert(false);
-		return GPU_NONE;
+		return CompareFunction::None;
 	}
 }
 
@@ -673,21 +714,21 @@ StencilOperation
 MaterialMaker::stringToStencilOp(const std::string& stencilop) noexcept
 {
 	if (stencilop == "keep")
-		return STENCILOP_KEEP;
+		return StencilOperation::Keep;
 	else if (stencilop == "replace")
-		return STENCILOP_REPLACE;
+		return StencilOperation::Replace;
 	else if (stencilop == "inc")
-		return STENCILOP_INCR;
+		return StencilOperation::Incr;
 	else if (stencilop == "dec")
-		return STENCILOP_DECR;
+		return StencilOperation::Decr;
 	else if (stencilop == "incwrap")
-		return STENCILOP_INCR_WRAP;
+		return StencilOperation::IncrWrap;
 	else if (stencilop == "decwrap")
-		return STENCILOP_DECR_WRAP;
+		return StencilOperation::DecrWrap;
 	else
 	{
 		assert(false);
-		return STENCILOP_KEEP;
+		return StencilOperation::Keep;
 	}
 }
 

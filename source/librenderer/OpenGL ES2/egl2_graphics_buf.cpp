@@ -293,10 +293,10 @@ EGL2GraphicsBuf::getInstanceID() noexcept
 	return _buffer;
 }
 
-void
-EGL2GraphicsBuf::getGraphicsDataDesc(GraphicsDataDesc& desc) const noexcept
+const GraphicsDataDesc&
+EGL2GraphicsBuf::getGraphicsDataDesc() const noexcept
 {
-	desc = _desc;
+	return _desc;
 }
 
 void

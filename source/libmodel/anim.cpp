@@ -341,7 +341,7 @@ AnimationProperty::updateBoneMatrix(Bone& bone)
 	{
 		auto parent = _bones.at(bone.getParent());
 		updateBoneMatrix(parent);
-		bone.setTransform(parent.getTransform() * bone.getLocalTransform());
+		bone.setTransform(bone.getLocalTransform() * parent.getTransform());
 	}
 	else
 	{
@@ -392,8 +392,8 @@ AnimationProperty::updateIK(const IKAttr& ik) noexcept
 			getCurrentBoneMatrix(worldInverse, bone);
 			worldInverse.inverse();
 
-			Vector3 basis2Effector = worldInverse * effectorPos;
-			Vector3 basis2Target = worldInverse * targetPos;
+			Vector3 basis2Effector = effectorPos * worldInverse;
+			Vector3 basis2Target = targetPos * worldInverse;
 
 			basis2Effector.normalize();
 			basis2Target.normalize();

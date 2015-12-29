@@ -36,11 +36,18 @@
 // +----------------------------------------------------------------------
 #include "egl2_shader.h"
 
+#define EXCLUDE_PSTDINT
+#include <hlslcc.hpp>
+
 _NAME_BEGIN
 
+__ImplementSubClass(EGL2Shader, GraphicsShader, "EGL2Shader")
+__ImplementSubClass(EGL2ShaderObject, GraphicsProgram, "EGL2ShaderObject")
+__ImplementSubClass(EGL2ShaderAttribute, ShaderAttribute, "EGL2ShaderAttribute")
+__ImplementSubClass(EGL2ShaderUniform, ShaderUniform, "EGL2ShaderUniform")
+
 EGL2ShaderVariant::EGL2ShaderVariant() noexcept
-	: _bindingProgram(0)
-	, _location(0)
+	: _location(0)
 {
 }
 
@@ -58,18 +65,6 @@ GLint
 EGL2ShaderVariant::getLocation() const noexcept
 {
 	return _location;
-}
-
-void
-EGL2ShaderVariant::setBindingProgram(GLuint program) noexcept
-{
-	_bindingProgram = program;
-}
-
-GLuint
-EGL2ShaderVariant::getBindingProgram() const noexcept
-{
-	return _bindingProgram;
 }
 
 void
@@ -328,113 +323,122 @@ EGL2ShaderVariant::getFloat2Array() const noexcept
 	return *_value.farray2;
 }
 
-EGLShaderUniform::EGLShaderUniform() noexcept
-	: ShaderUniform(&_value)
+EGL2ShaderAttribute::EGL2ShaderAttribute() noexcept
+	: _location(GL_NONE)
 {
 }
 
-EGLShaderUniform::~EGLShaderUniform() noexcept
+EGL2ShaderAttribute::~EGL2ShaderAttribute() noexcept
 {
 }
 
 void
-EGLShaderUniform::setName(const std::string& name) noexcept
+EGL2ShaderAttribute::setLocation(GLint location) noexcept
+{
+	_location = location;
+}
+
+GLint
+EGL2ShaderAttribute::getLocation() const noexcept
+{
+	return _location;
+}
+
+EGL2ShaderUniform::EGL2ShaderUniform() noexcept
+	: ShaderUniform(&_value)
+{
+}
+
+EGL2ShaderUniform::~EGL2ShaderUniform() noexcept
+{
+}
+
+void
+EGL2ShaderUniform::setName(const std::string& name) noexcept
 {
 	ShaderUniform::setName(name);
 }
 
 void
-EGLShaderUniform::setType(ShaderVariantType type) noexcept
+EGL2ShaderUniform::setType(ShaderVariantType type) noexcept
 {
 	ShaderUniform::setType(type);
 }
 
 void
-EGLShaderUniform::setLocation(GLint location) noexcept
+EGL2ShaderUniform::setLocation(GLint location) noexcept
 {
 	_value.setLocation(location);
 }
 
 GLint
-EGLShaderUniform::getLocation() const noexcept
+EGL2ShaderUniform::getLocation() const noexcept
 {
 	return _value.getLocation();
 }
 
-void
-EGLShaderUniform::setBindingProgram(GLuint program) noexcept
-{
-	_value.setBindingProgram(program);
-}
-
-GLuint
-EGLShaderUniform::getBindingProgram() const noexcept
-{
-	return _value.getBindingProgram();
-}
-
 bool
-EGLShaderUniform::getBool() const noexcept
+EGL2ShaderUniform::getBool() const noexcept
 {
 	return _value.getBool();
 }
 
 int
-EGLShaderUniform::getInt() const noexcept
+EGL2ShaderUniform::getInt() const noexcept
 {
 	return _value.getInt();
 }
 
 float
-EGLShaderUniform::getFloat() const noexcept
+EGL2ShaderUniform::getFloat() const noexcept
 {
 	return _value.getFloat();
 }
 
 const int2&
-EGLShaderUniform::getInt2() const noexcept
+EGL2ShaderUniform::getInt2() const noexcept
 {
 	return _value.getInt2();
 }
 
 const float2&
-EGLShaderUniform::getFloat2() const noexcept
+EGL2ShaderUniform::getFloat2() const noexcept
 {
 	return _value.getFloat2();
 }
 
 const float3&
-EGLShaderUniform::getFloat3() const noexcept
+EGL2ShaderUniform::getFloat3() const noexcept
 {
 	return _value.getFloat3();
 }
 
 const float4&
-EGLShaderUniform::getFloat4() const noexcept
+EGL2ShaderUniform::getFloat4() const noexcept
 {
 	return _value.getFloat4();
 }
 
 const float3x3&
-EGLShaderUniform::getFloat3x3() const noexcept
+EGL2ShaderUniform::getFloat3x3() const noexcept
 {
 	return _value.getFloat3x3();
 }
 
 const float4x4&
-EGLShaderUniform::getFloat4x4() const noexcept
+EGL2ShaderUniform::getFloat4x4() const noexcept
 {
 	return _value.getFloat4x4();
 }
 
 const std::vector<float>&
-EGLShaderUniform::getFloatArray() const noexcept
+EGL2ShaderUniform::getFloatArray() const noexcept
 {
 	return _value.getFloatArray();
 }
 
 const std::vector<float2>&
-EGLShaderUniform::getFloat2Array() const noexcept
+EGL2ShaderUniform::getFloat2Array() const noexcept
 {
 	return _value.getFloat2Array();
 }
@@ -450,24 +454,45 @@ EGL2Shader::~EGL2Shader() noexcept
 }
 
 bool
-EGL2Shader::setup() except
+EGL2Shader::setup(const ShaderDesc& shaderDesc) noexcept
 {
-	assert(!_instance);
+	assert(_instance == GL_NONE);
 
-	GLenum shaderType = EGL2Types::asEGL2ShaderType(this->getType());
+	GLenum shaderType = EGL2Types::asShaderType(shaderDesc.getType());
+	if (shaderType == GL_INVALID_ENUM)
+		return false;
+
+	if (shaderDesc.getByteCodes().empty())
+	{
+		GL_PLATFORM_LOG("This shader code cannot be null");
+		return false;
+	}
+
+	GLSLShader shader;
+	GLSLCrossDependencyData dependency;
+
+	std::uint32_t flags = HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT | HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
+	if (shaderDesc.getType() == ShaderType::Geometry)
+		flags = HLSLCC_FLAG_GS_ENABLED;
+	else if (shaderDesc.getType() == ShaderType::TessControl)
+		flags = HLSLCC_FLAG_TESS_ENABLED;
+	else if (shaderDesc.getType() == ShaderType::TessEvaluation)
+		flags = HLSLCC_FLAG_TESS_ENABLED;
+
+	if (!TranslateHLSLFromMem(shaderDesc.getByteCodes().data(), flags, GLLang::LANG_ES_100, 0, &dependency, &shader))
+	{
+		GL_PLATFORM_LOG("Can't conv bytecodes to glsl");
+		return false;
+	}
+
 	_instance = glCreateShader(shaderType);
 	if (_instance == GL_NONE)
-		throw failure(__TEXT("glCreateShader fail"));
-
-	if (this->getSource().empty())
-		throw failure(__TEXT("This shader code cannot be null"));
-
-	const GLchar* codes[1] =
 	{
-		this->getSource().c_str()
-	};
+		GL_PLATFORM_LOG("glCreateShader() fail");
+		return false;
+	}
 
-	glShaderSource(_instance, 1, codes, 0);
+	glShaderSource(_instance, 1, &shader.sourceCode, 0);
 	glCompileShader(_instance);
 
 	GLint result = GL_FALSE;
@@ -480,8 +505,8 @@ EGL2Shader::setup() except
 		std::string log((std::size_t)length, 0);
 		glGetShaderInfoLog(_instance, length, &length, (char*)log.data());
 
-		glDeleteShader(_instance);
-		throw failure(log);
+		GL_PLATFORM_LOG(log);
+		return false;
 	}
 
 	return true;
@@ -497,10 +522,22 @@ EGL2Shader::close() noexcept
 	}
 }
 
-std::size_t
+GLuint
 EGL2Shader::getInstanceID() const noexcept
 {
 	return _instance;
+}
+
+void
+EGL2Shader::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL2Shader::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 EGL2ShaderObject::EGL2ShaderObject() noexcept
@@ -515,21 +552,19 @@ EGL2ShaderObject::~EGL2ShaderObject() noexcept
 }
 
 bool
-EGL2ShaderObject::setup() except
+EGL2ShaderObject::setup(const ShaderObjectDesc& programDesc) noexcept
 {
-	assert(!_program);
+	assert(_program == GL_NONE);
 
 	_program = glCreateProgram();
 
-	for (auto& shader : _shaders)
+	for (auto& shader : programDesc.getShaders())
 	{
-		auto glshader = std::dynamic_pointer_cast<EGL2Shader>(shader);
-		if (glshader)
+		auto glshader = std::make_shared<EGL2Shader>();
+		if (glshader->setup(shader))
 		{
-			if (!glshader->getInstanceID())
-				glshader->setup();
-
 			glAttachShader(_program, glshader->getInstanceID());
+			_shaders.push_back(glshader);
 		}
 	}
 
@@ -545,8 +580,8 @@ EGL2ShaderObject::setup() except
 		std::string log((std::size_t)length, 0);
 		glGetProgramInfoLog(_program, length, &length, (GLchar*)log.data());
 
-		glDeleteProgram(_program);
-		throw failure(log.data());
+		GL_PLATFORM_LOG(log);
+		return false;
 	}
 
 	_isActive = false;
@@ -597,28 +632,8 @@ EGL2ShaderObject::getActive() noexcept
 	return _isActive;
 }
 
-void
-EGL2ShaderObject::addShader(ShaderPtr shader) noexcept
-{
-	_shaders.push_back(shader);
-}
-
-void
-EGL2ShaderObject::removeShader(ShaderPtr shader) noexcept
-{
-	auto it = std::find(_shaders.begin(), _shaders.end(), shader);
-	if (it != _shaders.end())
-		_shaders.erase(it);
-}
-
-const Shaders&
-EGL2ShaderObject::getShaders() const noexcept
-{
-	return _shaders;
-}
-
-std::size_t
-EGL2ShaderObject::getInstanceID() noexcept
+GLuint
+EGL2ShaderObject::getInstanceID() const noexcept
 {
 	return _program;
 }
@@ -657,9 +672,29 @@ EGL2ShaderObject::_initActiveAttribute() noexcept
 			glGetActiveAttrib(_program, (GLuint)i, maxAttribute, GL_NONE, &size, &type, nameAttribute.get());
 			GLint location = glGetAttribLocation(_program, nameAttribute.get());
 
-			auto attrib = std::make_shared<ShaderAttribute>();
+			std::string name = nameAttribute.get();
+			std::string semantic;
+
+			std::size_t off = name.find_last_of('_');
+			if (off != std::string::npos)
+			{
+				semantic = name.substr(off + 1);
+				name = name.substr(0, off);
+			}
+
+			std::uint8_t semanticIndex = 0;
+			auto it = std::find_if(semantic.begin(), semantic.end(), [](char ch) { return ch >= '0' && ch <= '9'; });
+			if (it != semantic.end())
+			{
+				semanticIndex = atoi(&*it);
+				semantic = semantic.substr(0, it - semantic.begin());
+			}
+
+			auto attrib = std::make_shared<EGL2ShaderAttribute>();
 			attrib->setName(nameAttribute.get());
-			//attrib->setLocation(location);
+			attrib->setLocation(location);
+			attrib->setSemantic(semantic);
+			attrib->setSemanticIndex(semanticIndex);
 
 			_activeAttributes.push_back(attrib);
 		}
@@ -695,10 +730,9 @@ EGL2ShaderObject::_initActiveUniform() noexcept
 		if (location == -1)
 			continue;
 
-		auto uniform = std::make_shared<EGLShaderUniform>();
+		auto uniform = std::make_shared<EGL2ShaderUniform>();
 		uniform->setName(nameUniform.get());
 		uniform->setLocation(location);
-		uniform->setBindingProgram(_program);
 
 		if (type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE)
 		{
@@ -759,7 +793,7 @@ EGL2ShaderObject::_updateShaderUniform(ShaderUniformPtr it) noexcept
 {
 	assert(it);
 
-	auto uniform = std::dynamic_pointer_cast<EGLShaderUniform>(it);
+	auto uniform = std::dynamic_pointer_cast<EGL2ShaderUniform>(it);
 
 	auto type = uniform->getType();
 	if (type != ShaderVariantType::Texture)
@@ -770,7 +804,6 @@ EGL2ShaderObject::_updateShaderUniform(ShaderUniformPtr it) noexcept
 	}
 
 	auto location = uniform->getLocation();
-	auto program = uniform->getBindingProgram();
 
 	switch (type)
 	{
@@ -838,6 +871,18 @@ EGL2ShaderObject::_updateShaderUniform(ShaderUniformPtr it) noexcept
 		assert(false);
 		break;
 	}
+}
+
+void
+EGL2ShaderObject::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL2ShaderObject::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

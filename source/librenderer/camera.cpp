@@ -63,7 +63,7 @@ Camera::Camera() noexcept
 	, _cameraType(CameraType::CT_PERSPECTIVE)
 	, _cameraOrder(CameraOrder::CO_MAIN)
 	, _cameraRender(CameraRender::CR_RENDER_TO_SCREEN)
-	, _clearFlags(ClearFlags::CLEAR_ALL)
+	, _clearFlags(ClearFlags::Default)
 	, _clearColor(Vector4::Zero)
 {
 }
@@ -205,28 +205,20 @@ Camera::makeOrtho(float left, float right, float top, float bottom, float znear,
 	_projectInverse = _project;
 	_projectInverse.inverse();
 
-	this->makeViewPorject();
-
 	_projLength.x = _project.a1;
 	_projLength.y = _project.b2;
 
-#ifdef _BUILD_OPENGL
 	_projConstant.x = 2.0 / _projLength.x;
 	_projConstant.y = 2.0 / _projLength.y;
-	_projConstant.z = -(1.0 + _project.a3) / _projLength.x;
-	_projConstant.w = -(1.0 + _project.b3) / _projLength.y;
-#else //DirectX
-	_projConstant.x = 2.0 / _projLength.x;
-	_projConstant.y = -2.0 / _projLength.y;
-	_projConstant.z = -(1.0 + _project.a3) / _projLength.x;
-	_projConstant.w = (1.0 - _project.b3) / _projLength.y;
-#endif
+	_projConstant.z = -(1.0 + _project.c1) / _projLength.x;
+	_projConstant.w = -(1.0 + _project.c2) / _projLength.y;
 
 	_clipConstant.x = (_zNear * _zFar);
 	_clipConstant.y = _zFar - _zNear;
 	_clipConstant.z = _zFar;
 	_clipConstant.w = 1.0;
 
+	this->makeViewPorject();
 	this->setCameraType(CT_ORTHO);
 }
 
@@ -242,41 +234,33 @@ Camera::makePerspective(float aperture, float znear, float zfar, float ratio) no
 	_projectInverse = _project;
 	_projectInverse.inverse();
 
-	this->makeViewPorject();
-
 	_projLength.x = _project.a1;
 	_projLength.y = _project.b2;
 
-#ifdef _BUILD_OPENGL
 	_projConstant.x = 2.0 / _projLength.x;
 	_projConstant.y = 2.0 / _projLength.y;
-	_projConstant.z = -(1.0 + _project.a3) / _projLength.x;
-	_projConstant.w = -(1.0 + _project.b3) / _projLength.y;
-#else //DirectX
-	_projConstant.x = 2.0 / _projLength.x;
-	_projConstant.y = -2.0 / _projLength.y;
-	_projConstant.z = -(1.0 + _project.a3) / _projLength.x;
-	_projConstant.w = (1.0 - _project.b3) / _projLength.y;
-#endif
+	_projConstant.z = -(1.0 + _project.c1) / _projLength.x;
+	_projConstant.w = -(1.0 + _project.c2) / _projLength.y;
 
 	_clipConstant.x = (_zNear * _zFar);
 	_clipConstant.y = _zFar - _zNear;
 	_clipConstant.z = _zFar;
 	_clipConstant.w = 1.0;
 
+	this->makeViewPorject();
 	this->setCameraType(CT_PERSPECTIVE);
 }
 
 void 
 Camera::makeViewPorject() noexcept
 {
-	_viewProejct = _project * this->getView();
+	_viewProejct = this->getView() * _project;
 	_viewProjectInverse = _viewProejct;
 	_viewProjectInverse.inverse();
 
 #ifdef _BUILD_OPENGL
-	auto adjustProject = (Matrix4x4().makeTranslate(0, 0, -1) * Matrix4x4().makeScale(1.0, 1.0, 2.0));
-	_viewProejct = adjustProject * _viewProejct;
+	auto adjustProject = (Matrix4x4().makeScale(1.0, 1.0, 2.0) * Matrix4x4().makeTranslate(0, 0, -1));
+	_viewProejct = _viewProejct * adjustProject;
 #endif
 }
 
@@ -307,7 +291,7 @@ Camera::worldToScreen(const Vector3& pos) const noexcept
 	int w = (int)_viewport.width >> 1;
 	int h = (int)_viewport.height >> 1;
 
-	Vector4 v = _viewProejct * pos;
+	Vector4 v = pos * _viewProejct;
 	if (v.w != 0)
 		v /= v.w;
 
@@ -323,7 +307,7 @@ Camera::worldToProject(const Vector3& pos) const noexcept
 {
 	Vector4 v(pos);
 
-	v = _viewProejct * v;
+	v = v * _viewProejct;
 	if (v.w != 0)
 		v /= v.w;
 
@@ -342,7 +326,7 @@ Camera::screenToWorld(const Vector3& pos) const noexcept
 	v.x = v.x / w - 1.0f - _viewport.left;
 	v.y = v.y / h - 1.0f - _viewport.top;
 
-	v = _viewProjectInverse * v;
+	v = v * _viewProjectInverse;
 	if (v.w != 0)
 		v /= v.w;
 
@@ -360,7 +344,7 @@ Camera::screenToDirection(const Vector2& pos) const noexcept
 	v.x = v.x / w - 1.0f - _viewport.left;
 	v.y = v.y / h - 1.0f - _viewport.top;
 
-	return (this->getViewInverse() * float4((_projectInverse * v).xy(), 1.0f, 1.0f)).xyz();
+	return (float4((_projectInverse * v).xy(), 1.0f, 1.0f) * this->getViewInverse()).xyz();
 }
 
 void

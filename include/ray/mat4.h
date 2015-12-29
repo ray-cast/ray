@@ -58,7 +58,7 @@ public:
 		T _b1, T _b2, T _b3, T _b4,
 		T _c1, T _c2, T _c3, T _c4,
 		T _d1, T _d2, T _d3, T _d4)
-		:a1(_a1), a2(_a2), a3(_a3), a4(_a4)
+		: a1(_a1), a2(_a2), a3(_a3), a4(_a4)
 		, b1(_b1), b2(_b2), b3(_b3), b4(_b4)
 		, c1(_c1), c2(_c2), c3(_c3), c4(_c4)
 		, d1(_d1), d2(_d2), d3(_d3), d4(_d4)
@@ -76,7 +76,7 @@ public:
 	}
 
 	template<typename S>
-	explicit Matrix4x4t(const Matrix4x4t<S> m)
+	explicit Matrix4x4t(const Matrix4x4t<S>& m)
 	{
 		a1 = static_cast<T>(m.a1); a2 = static_cast<T>(m.a2); a3 = static_cast<T>(m.a3); a4 = static_cast<T>(m.a4);
 		b1 = static_cast<T>(m.b1); b2 = static_cast<T>(m.b2); b3 = static_cast<T>(m.b3); b4 = static_cast<T>(m.b4);
@@ -84,7 +84,7 @@ public:
 		d1 = static_cast<T>(m.d1); d2 = static_cast<T>(m.d2); d3 = static_cast<T>(m.d3); d4 = static_cast<T>(m.d4);
 	}
 
-	Matrix4x4t(const Matrix4x4t<T>m1, const Matrix4x4t<T>& m2)
+	Matrix4x4t(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2)
 	{
 		this->multiplyMatrices(m1, m2);
 	}
@@ -107,14 +107,14 @@ public:
 		d1 = static_cast<T>(0.0); d2 = static_cast<T>(0.0); d3 = static_cast<T>(0.0); d4 = static_cast<T>(1.0);
 	}
 
-	T* operator[](unsigned int p_iIndex)
+	T& operator[](std::size_t n)
 	{
-		return &this->a1 + p_iIndex * 4;
+		return *((&a1) + n);
 	}
 
-	const T* operator[](unsigned int p_iIndex) const
+	const T& operator[](std::size_t n) const
 	{
-		return &this->a1 + p_iIndex * 4;
+		return *((&a1) + n);
 	}
 
 	explicit operator T*()
@@ -127,37 +127,12 @@ public:
 		return this->ptr();
 	}
 
-	inline Matrix4x4t<T>& operator*=(const Matrix4x4t<T>& m)
-	{
-		*this = Matrix4x4t<T>(
-			m.a1 * a1 + m.b1 * a2 + m.c1 * a3 + m.d1 * a4,
-			m.a2 * a1 + m.b2 * a2 + m.c2 * a3 + m.d2 * a4,
-			m.a3 * a1 + m.b3 * a2 + m.c3 * a3 + m.d3 * a4,
-			m.a4 * a1 + m.b4 * a2 + m.c4 * a3 + m.d4 * a4,
-			m.a1 * b1 + m.b1 * b2 + m.c1 * b3 + m.d1 * b4,
-			m.a2 * b1 + m.b2 * b2 + m.c2 * b3 + m.d2 * b4,
-			m.a3 * b1 + m.b3 * b2 + m.c3 * b3 + m.d3 * b4,
-			m.a4 * b1 + m.b4 * b2 + m.c4 * b3 + m.d4 * b4,
-			m.a1 * c1 + m.b1 * c2 + m.c1 * c3 + m.d1 * c4,
-			m.a2 * c1 + m.b2 * c2 + m.c2 * c3 + m.d2 * c4,
-			m.a3 * c1 + m.b3 * c2 + m.c3 * c3 + m.d3 * c4,
-			m.a4 * c1 + m.b4 * c2 + m.c4 * c3 + m.d4 * c4,
-			m.a1 * d1 + m.b1 * d2 + m.c1 * d3 + m.d1 * d4,
-			m.a2 * d1 + m.b2 * d2 + m.c2 * d3 + m.d2 * d4,
-			m.a3 * d1 + m.b3 * d2 + m.c3 * d3 + m.d3 * d4,
-			m.a4 * d1 + m.b4 * d2 + m.c4 * d3 + m.d4 * d4);
-		return *this;
-	}
-
 	T* ptr() { return (T*)&a1; }
 	const T* ptr() const { return (const T*)&a1; }
 	T* data() { return (T*)&a1; }
 	const T* data() const { return (const T*)&a1; }
 
-	Matrix4x4t<T>& set(T mt00, T mt01, T mt02, T mt03,
-		T mt10, T mt11, T mt12, T mt13,
-		T mt20, T mt21, T mt22, T mt23,
-		T mt30, T mt31, T mt32, T mt33)
+	Matrix4x4t<T>& set(T mt00, T mt01, T mt02, T mt03, T mt10, T mt11, T mt12, T mt13, T mt20, T mt21, T mt22, T mt23, T mt30, T mt31, T mt32, T mt33)
 	{
 		a1 = static_cast<T>(mt00);
 		a2 = static_cast<T>(mt01);
@@ -221,7 +196,7 @@ public:
 	T determinant() const
 	{
 		return
-			a1*b2*c3*d4 - a1*b2*c4*d3 + a1*b3*c4*d2 - a1*b3*c2*d4
+			  a1*b2*c3*d4 - a1*b2*c4*d3 + a1*b3*c4*d2 - a1*b3*c2*d4
 			+ a1*b4*c2*d3 - a1*b4*c3*d2 - a2*b3*c4*d1 + a2*b3*c1*d4
 			- a2*b4*c1*d3 + a2*b4*c3*d1 - a2*b1*c3*d4 + a2*b1*c4*d3
 			+ a3*b4*c1*d2 - a3*b4*c2*d1 + a3*b1*c2*d4 - a3*b1*c4*d2
@@ -250,22 +225,22 @@ public:
 
 		const T invdet = static_cast<T>(1.0) / det;
 
-		m.a1 = invdet * (b2 * (c3 * d4 - c4 * d3) + b3 * (c4 * d2 - c2 * d4) + b4 * (c2 * d3 - c3 * d2));
+		m.a1 =  invdet * (b2 * (c3 * d4 - c4 * d3) + b3 * (c4 * d2 - c2 * d4) + b4 * (c2 * d3 - c3 * d2));
 		m.a2 = -invdet * (a2 * (c3 * d4 - c4 * d3) + a3 * (c4 * d2 - c2 * d4) + a4 * (c2 * d3 - c3 * d2));
-		m.a3 = invdet * (a2 * (b3 * d4 - b4 * d3) + a3 * (b4 * d2 - b2 * d4) + a4 * (b2 * d3 - b3 * d2));
+		m.a3 =  invdet * (a2 * (b3 * d4 - b4 * d3) + a3 * (b4 * d2 - b2 * d4) + a4 * (b2 * d3 - b3 * d2));
 		m.a4 = -invdet * (a2 * (b3 * c4 - b4 * c3) + a3 * (b4 * c2 - b2 * c4) + a4 * (b2 * c3 - b3 * c2));
 		m.b1 = -invdet * (b1 * (c3 * d4 - c4 * d3) + b3 * (c4 * d1 - c1 * d4) + b4 * (c1 * d3 - c3 * d1));
-		m.b2 = invdet * (a1 * (c3 * d4 - c4 * d3) + a3 * (c4 * d1 - c1 * d4) + a4 * (c1 * d3 - c3 * d1));
+		m.b2 =  invdet * (a1 * (c3 * d4 - c4 * d3) + a3 * (c4 * d1 - c1 * d4) + a4 * (c1 * d3 - c3 * d1));
 		m.b3 = -invdet * (a1 * (b3 * d4 - b4 * d3) + a3 * (b4 * d1 - b1 * d4) + a4 * (b1 * d3 - b3 * d1));
-		m.b4 = invdet * (a1 * (b3 * c4 - b4 * c3) + a3 * (b4 * c1 - b1 * c4) + a4 * (b1 * c3 - b3 * c1));
-		m.c1 = invdet * (b1 * (c2 * d4 - c4 * d2) + b2 * (c4 * d1 - c1 * d4) + b4 * (c1 * d2 - c2 * d1));
+		m.b4 =  invdet * (a1 * (b3 * c4 - b4 * c3) + a3 * (b4 * c1 - b1 * c4) + a4 * (b1 * c3 - b3 * c1));
+		m.c1 =  invdet * (b1 * (c2 * d4 - c4 * d2) + b2 * (c4 * d1 - c1 * d4) + b4 * (c1 * d2 - c2 * d1));
 		m.c2 = -invdet * (a1 * (c2 * d4 - c4 * d2) + a2 * (c4 * d1 - c1 * d4) + a4 * (c1 * d2 - c2 * d1));
-		m.c3 = invdet * (a1 * (b2 * d4 - b4 * d2) + a2 * (b4 * d1 - b1 * d4) + a4 * (b1 * d2 - b2 * d1));
+		m.c3 =  invdet * (a1 * (b2 * d4 - b4 * d2) + a2 * (b4 * d1 - b1 * d4) + a4 * (b1 * d2 - b2 * d1));
 		m.c4 = -invdet * (a1 * (b2 * c4 - b4 * c2) + a2 * (b4 * c1 - b1 * c4) + a4 * (b1 * c2 - b2 * c1));
 		m.d1 = -invdet * (b1 * (c2 * d3 - c3 * d2) + b2 * (c3 * d1 - c1 * d3) + b3 * (c1 * d2 - c2 * d1));
-		m.d2 = invdet * (a1 * (c2 * d3 - c3 * d2) + a2 * (c3 * d1 - c1 * d3) + a3 * (c1 * d2 - c2 * d1));
+		m.d2 =  invdet * (a1 * (c2 * d3 - c3 * d2) + a2 * (c3 * d1 - c1 * d3) + a3 * (c1 * d2 - c2 * d1));
 		m.d3 = -invdet * (a1 * (b2 * d3 - b3 * d2) + a2 * (b3 * d1 - b1 * d3) + a3 * (b1 * d2 - b2 * d1));
-		m.d4 = invdet * (a1 * (b2 * c3 - b3 * c2) + a2 * (b3 * c1 - b1 * c3) + a3 * (b1 * c2 - b2 * c1));
+		m.d4 =  invdet * (a1 * (b2 * c3 - b3 * c2) + a2 * (b3 * c1 - b1 * c3) + a3 * (b1 * c2 - b2 * c1));
 
 		*this = m;
 		return *this;
@@ -276,18 +251,18 @@ public:
 		const static T epsilon = 10e-3f;
 
 		return (
+			a1 <= epsilon && a1 >= -epsilon &&
 			a2 <= epsilon && a2 >= -epsilon &&
 			a3 <= epsilon && a3 >= -epsilon &&
-			a4 <= epsilon && a4 >= -epsilon &&
 			b1 <= epsilon && b1 >= -epsilon &&
+			b2 <= epsilon && b2 >= -epsilon &&
 			b3 <= epsilon && b3 >= -epsilon &&
-			b4 <= epsilon && b4 >= -epsilon &&
 			c1 <= epsilon && c1 >= -epsilon &&
 			c2 <= epsilon && c2 >= -epsilon &&
-			c4 <= epsilon && c4 >= -epsilon &&
-			a1 <= 1.f + epsilon && a1 >= 1.f - epsilon &&
-			b2 <= 1.f + epsilon && b2 >= 1.f - epsilon &&
-			c3 <= 1.f + epsilon && c3 >= 1.f - epsilon);
+			c3 <= epsilon && c3 >= -epsilon &&
+			a4 <= 1.f + epsilon && a4 >= 1.f - epsilon &&
+			b4 <= 1.f + epsilon && b4 >= 1.f - epsilon &&
+			c4 <= 1.f + epsilon && c4 >= 1.f - epsilon);
 	}
 
 	void decompose(Vector3t<T>& scaling, Quaterniont<T>& rotation, Vector3t<T>& position) const
@@ -359,8 +334,6 @@ public:
 
 	Matrix4x4t<T>& fromEulerAnglesXYZ(T x, T y, T z)
 	{
-		Matrix4x4t<T>& _this = *this;
-
 		T cr = cos(x);
 		T sr = sin(x);
 		T cp = cos(y);
@@ -368,20 +341,20 @@ public:
 		T cy = cos(z);
 		T sy = sin(z);
 
-		_this.a1 = cp*cy;
-		_this.a2 = cp*sy;
-		_this.a3 = -sp;
-
 		T srsp = sr*sp;
 		T crsp = cr*sp;
 
-		_this.b1 = srsp*cy - cr*sy;
-		_this.b2 = srsp*sy + cr*cy;
-		_this.b3 = sr*cp;
+		a1 = cp * cy;
+		a2 = cp * sy;
+		a3 = -sp;
 
-		_this.c1 = crsp*cy + sr*sy;
-		_this.c2 = crsp*sy - sr*cy;
-		_this.c3 = cr*cp;
+		b1 = srsp * cy - cr * sy;
+		b2 = srsp * sy + cr * cy;
+		b3 = sr * cp;
+
+		c1 = crsp * cy + sr * sy;
+		c2 = crsp * sy - sr * cy;
+		c3 = cr * cp;
 
 		return *this;
 	}
@@ -438,22 +411,22 @@ public:
 	void setTranslate(T x, T y) { setTranslate(x, y); }
 	void setTranslate(T x, T y, T z)
 	{
-		d1 = x;
-		d2 = y;
-		d3 = z;
+		a4 = x;
+		b4 = y;
+		c4 = z;
 	}
 
 	void setTranslate(T x, T y, T z, T w)
 	{
-		d1 = x;
-		d2 = y;
-		d3 = z;
+		a4 = x;
+		b4 = y;
+		c4 = z;
 		d4 = w;
 	}
 
-	const Vector3t<T>& getTranslate() const
+	Vector3t<T> getTranslate() const
 	{
-		return (Vector3t<T>&)d1;
+		return Vector3t<T>(a4, b4, c4);
 	}
 
 	void translate(const Vector2t<T>& pt) { translate(pt.x, pt.y, 0); }
@@ -461,36 +434,9 @@ public:
 	void translate(T x, T y) { translate(x, y, 0); }
 	void translate(T x, T y, T z)
 	{
-		d1 += x;
-		d2 += y;
-		d3 += z;
-	}
-
-	void postMultTranslate(const Vector3t<T>& v)
-	{
-		if (v.x != 0)
-		{
-			a1 += v.x * a4;
-			b1 += v.x * b4;
-			c1 += v.x * c4;
-			d1 += v.x * c4;
-		}
-
-		if (v.y != 0)
-		{
-			a2 += v.y * a4;
-			b2 += v.y * b4;
-			c2 += v.y * c4;
-			d2 += v.y * c4;
-		}
-
-		if (v.z != 0)
-		{
-			a3 += v.z * a4;
-			b3 += v.z * b4;
-			c3 += v.z * c4;
-			d3 += v.z * c4;
-		}
+		a4 += x;
+		b4 += y;
+		c4 += z;
 	}
 
 	Matrix4x4t<T>& makeTranslate(const Vector2t<T>& pt) { return makeTranslate(pt.x, pt.y, 0); }
@@ -498,10 +444,10 @@ public:
 	Matrix4x4t<T>& makeTranslate(T x, T y) { return makeTranslate(x, y, 0); }
 	Matrix4x4t<T>& makeTranslate(T x, T y, T z)
 	{
-		set(1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			x, y, z, 1);
+		set(1, 0, 0, x,
+			0, 1, 0, y,
+			0, 0, 1, z,
+			0, 0, 0, 1);
 		return *this;
 	}
 
@@ -570,23 +516,23 @@ public:
 	Matrix4x4t<T>& makeRotate(const Quaterniont<T>& q)
 	{
 		a1 = 1.0f - 2.0f * (q.y * q.y + q.z * q.z);
-		b1 = 2.0f * (q.x * q.y - q.z * q.w);
-		c1 = 2.0f * (q.x * q.z + q.y * q.w);
-		d1 = 0;
-
-		a2 = 2.0f * (q.x * q.y + q.z * q.w);
-		b2 = 1.0f - 2.0f * (q.x * q.x + q.z * q.z);
-		c2 = 2.0f * (q.y * q.z - q.x * q.w);
-		d2 = 0;
-
-		a3 = 2.0f * (q.x * q.z - q.y * q.w);
-		b3 = 2.0f * (q.y * q.z + q.x * q.w);
-		c3 = 1.0f - 2.0f * (q.x * q.x + q.y * q.y);
-		d3 = 0;
-
+		a2 = 2.0f * (q.x * q.y - q.z * q.w);
+		a3 = 2.0f * (q.x * q.z + q.y * q.w);
 		a4 = 0;
+
+		b1 = 2.0f * (q.x * q.y + q.z * q.w);
+		b2 = 1.0f - 2.0f * (q.x * q.x + q.z * q.z);
+		b3 = 2.0f * (q.y * q.z - q.x * q.w);
 		b4 = 0;
+
+		c1 = 2.0f * (q.x * q.z - q.y * q.w);
+		c2 = 2.0f * (q.y * q.z + q.x * q.w);
+		c3 = 1.0f - 2.0f * (q.x * q.x + q.y * q.y);
 		c4 = 0;
+
+		d1 = 0;
+		d2 = 0;
+		d3 = 0;
 		d4 = 1;
 
 		return *this;
@@ -632,23 +578,23 @@ public:
 		T bf = b * f;
 
 		a1 = c * e;
-		b1 = -c * f;
-		c1 = d;
-		d1 = 0;
-
-		a2 = af + be * d;
-		b2 = ae - bf * d;
-		c2 = -b * c;
-		d2 = 0;
-
-		a3 = bf - ae * d;
-		b3 = be + af * d;
-		c3 = a * c;
-		d3 = 0;
-
+		a2 = -c * f;
+		a3 = d;
 		a4 = 0;
+
+		b1 = af + be * d;
+		b2 = ae - bf * d;
+		b3 = -b * c;
 		b4 = 0;
+
+		c1 = bf - ae * d;
+		c2 = be + af * d;
+		c3 = a * c;
 		c4 = 0;
+
+		d1 = 0;
+		d2 = 0;
+		d3 = 0;
 		d4 = 1;
 		return *this;
 	}
@@ -820,8 +766,8 @@ public:
 
 		set(cx, 0.0, 0.0, 0.0,
 			0.0, cy, 0.0, 0.0,
-			0.0, 0.0, cz, 0.0,
-			0.0, 0.0, tz, 1.0);
+			0.0, 0.0, cz, tz,
+			0.0, 0.0, 0.0, 1.0);
 
 		return *this;
 	}
@@ -835,10 +781,10 @@ public:
 		T cy = 2.0f / (top - bottom);
 		T cz = 1.0f / (zFar - zNear);
 
-		set(cx, 0.0, 0.0, 0.0,
-			0.0, cy, 0.0, 0.0,
-			0.0, 0.0, cz, 0.0,
-			tx, ty, tz, 1.0);
+		set(cx, 0.0, 0.0, tx,
+			0.0, cy, 0.0, ty,
+			0.0, 0.0, cz, tz,
+			0.0, 0.0, 0.0, 1.0);
 
 		return *this;
 	}
@@ -852,10 +798,10 @@ public:
 		T cy = 2.0f / (top - bottom);
 		T cz = -2.0f / (zFar - zNear);
 
-		set(cx, 0.0, 0.0, 0.0,
-			0.0, cy, 0.0, 0.0,
-			0.0, 0.0, cz, 0.0,
-			tx, ty, tz, 1.0);
+		set(cx, 0.0, 0.0, tx,
+			0.0, cy, 0.0, ty,
+			0.0, 0.0, cz, tz,
+			0.0, 0.0, 0.0, 1.0);
 
 		return *this;
 	}
@@ -885,10 +831,10 @@ public:
 		T cx = 2.0f * zNear / (right - left);
 		T cy = 2.0f * zNear / (top - bottom);
 
-		set(cx, 0.0, 0.0, 0.0,
-			0.0, cy, 0.0, 0.0,
-			A, B, C, 1.0,
-			0.0, 0.0, D, 0.0);
+		set(cx, 0.0, A, 0.0,
+			0.0, cy, B, 0.0,
+			0.0, 0.0, C, D,
+			0.0, 0.0, 1.0, 0.0);
 
 		return *this;
 	}
@@ -902,10 +848,10 @@ public:
 		T cx = 2.0f * zNear / (right - left);
 		T cy = 2.0f * zNear / (top - bottom);
 
-		set(cx, 0.0, 0.0, 0.0,
-			0.0, cy, 0.0, 0.0,
-			A, B, C, -1.0,
-			0.0, 0.0, D, 0.0);
+		set(cx, 0.0, A, 0.0,
+			0.0, cy, B, 0.0,
+			0.0, 0.0, C, D,
+			0.0, 0.0, -1.0, 0.0);
 
 		return *this;
 	}
@@ -990,34 +936,34 @@ public:
 		y = z.cross(x);
 		y.normalize();
 
-		set(x.x, y.x, z.x, 0.0,
-			x.y, y.y, z.y, 0.0,
-			x.z, y.z, z.z, 0.0,
+		set(x.x, x.y, x.z, 0.0,
+			y.x, y.y, y.z, 0.0,
+			z.x, z.y, z.z, 0.0,
 			0.0, 0.0, 0.0, 1.0);
 
 		Vector3t<T> tmp = -eye;
 		if (tmp.x != 0)
 		{
-			d1 += tmp.x * a1;
-			d2 += tmp.x * a2;
-			d3 += tmp.x * a3;
-			d4 += tmp.x * a4;
+			a4 += tmp.x * a1;
+			b4 += tmp.x * b1;
+			c4 += tmp.x * c1;
+			d4 += tmp.x * d1;
 		}
 
 		if (tmp.y != 0)
 		{
-			d1 += tmp.y * b1;
-			d2 += tmp.y * b2;
-			d3 += tmp.y * b3;
-			d4 += tmp.y * b4;
+			a4 += tmp.y * a2;
+			b4 += tmp.y * b2;
+			c4 += tmp.y * c2;
+			d4 += tmp.y * d2;
 		}
 
 		if (tmp.z != 0)
 		{
-			d1 += tmp.z * c1;
-			d2 += tmp.z * c2;
-			d3 += tmp.z * c3;
-			d4 += tmp.z * c4;
+			a4 += tmp.z * a3;
+			b4 += tmp.z * b3;
+			c4 += tmp.z * c3;
+			d4 += tmp.z * d3;
 		}
 
 		return *this;
@@ -1036,34 +982,34 @@ public:
 		y = z.cross(x);
 		y.normalize();
 
-		set(x.x, y.x, z.x, 0.0,
-			x.y, y.y, z.y, 0.0,
-			x.z, y.z, z.z, 0.0,
+		set(x.x, x.y, x.z, 0.0,
+			y.x, y.y, y.z, 0.0,
+			z.x, z.y, z.z, 0.0,
 			0.0, 0.0, 0.0, 1.0);
 
 		Vector3t<T> tmp = -eye;
 		if (tmp.x != 0)
 		{
-			d1 += tmp.x * a1;
-			d2 += tmp.x * a2;
-			d3 += tmp.x * a3;
-			d4 += tmp.x * a4;
+			a4 += tmp.x * a1;
+			b4 += tmp.x * b1;
+			c4 += tmp.x * c1;
+			d4 += tmp.x * d1;
 		}
 
 		if (tmp.y != 0)
 		{
-			d1 += tmp.y * b1;
-			d2 += tmp.y * b2;
-			d3 += tmp.y * b3;
-			d4 += tmp.y * b4;
+			a4 += tmp.y * a2;
+			b4 += tmp.y * b2;
+			c4 += tmp.y * c2;
+			d4 += tmp.y * d2;
 		}
 
 		if (tmp.z != 0)
 		{
-			d1 += tmp.z * c1;
-			d2 += tmp.z * c2;
-			d3 += tmp.z * c3;
-			d4 += tmp.z * c4;
+			a4 += tmp.z * a3;
+			b4 += tmp.z * b3;
+			c4 += tmp.z * c3;
+			d4 += tmp.z * d3;
 		}
 
 		return *this;
@@ -1076,10 +1022,10 @@ public:
 		T A = cx + left;
 		T B = cy + top;
 
-		set(cx, 0.0, 0.0, 0.0,
-			0.0, cy, 0.0, 0.0,
-			0.0, 0.0, 0.5, 0.0,
-			A, B, 0.5, 1.0);
+		set(cx, 0.0, 0.0, A,
+			0.0, cy, 0.0, B,
+			0.0, 0.0, 0.5, 0.5,
+			0.0, 0.0, 0.0, 1.0);
 
 		return *this;
 	}
@@ -1222,6 +1168,29 @@ inline Vector4t<T>& operator*=(Vector4t<T>& v, const Matrix4x4t<T>& m)
 {
 	v = v * m;
 	return v;
+}
+
+template<typename T>
+inline Matrix4x4t<T>& operator*=(Matrix4x4t<T> m1, const Matrix4x4t<T>& m2)
+{
+	m1 = Matrix4x4t<T>(
+		m1.a1 * m2.a1 + m1.b1 * m2.a2 + m1.c1 * m2.a3 + m1.d1 * m2.a4,
+		m1.a2 * m2.a1 + m1.b2 * m2.a2 + m1.c2 * m2.a3 + m1.d2 * m2.a4,
+		m1.a3 * m2.a1 + m1.b3 * m2.a2 + m1.c3 * m2.a3 + m1.d3 * m2.a4,
+		m1.a4 * m2.a1 + m1.b4 * m2.a2 + m1.c4 * m2.a3 + m1.d4 * m2.a4,
+		m1.a1 * m2.b1 + m1.b1 * m2.b2 + m1.c1 * m2.b3 + m1.d1 * m2.b4,
+		m1.a2 * m2.b1 + m1.b2 * m2.b2 + m1.c2 * m2.b3 + m1.d2 * m2.b4,
+		m1.a3 * m2.b1 + m1.b3 * m2.b2 + m1.c3 * m2.b3 + m1.d3 * m2.b4,
+		m1.a4 * m2.b1 + m1.b4 * m2.b2 + m1.c4 * m2.b3 + m1.d4 * m2.b4,
+		m1.a1 * m2.c1 + m1.b1 * m2.c2 + m1.c1 * m2.c3 + m1.d1 * m2.c4,
+		m1.a2 * m2.c1 + m1.b2 * m2.c2 + m1.c2 * m2.c3 + m1.d2 * m2.c4,
+		m1.a3 * m2.c1 + m1.b3 * m2.c2 + m1.c3 * m2.c3 + m1.d3 * m2.c4,
+		m1.a4 * m2.c1 + m1.b4 * m2.c2 + m1.c4 * m2.c3 + m1.d4 * m2.c4,
+		m1.a1 * m2.d1 + m1.b1 * m2.d2 + m1.c1 * m2.d3 + m1.d1 * m2.d4,
+		m1.a2 * m2.d1 + m1.b2 * m2.d2 + m1.c2 * m2.d3 + m1.d2 * m2.d4,
+		m1.a3 * m2.d1 + m1.b3 * m2.d2 + m1.c3 * m2.d3 + m1.d3 * m2.d4,
+		m1.a4 * m2.d1 + m1.b4 * m2.d2 + m1.c4 * m2.d3 + m1.d4 * m2.d4);
+	return m1;
 }
 
 _NAME_END

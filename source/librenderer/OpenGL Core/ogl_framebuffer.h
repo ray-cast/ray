@@ -68,6 +68,11 @@ private:
 	void bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment) noexcept;
 
 private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
 	OGLRenderTexture(const OGLRenderTexture&) noexcept = delete;
 	OGLRenderTexture& operator=(const OGLRenderTexture&) noexcept = delete;
 
@@ -77,6 +82,7 @@ private:
 	GLuint _fbo;
 	GLuint _layer;
 
+	GraphicsDeviceWeakPtr _device;
 	GraphicsRenderTextureDesc _framebufferDesc;
 };
 
@@ -106,6 +112,11 @@ private:
 	void bindRenderTexture(GraphicsTexturePtr target, GLenum attachment) noexcept;
 
 private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
 	OGLMultiRenderTexture(const OGLMultiRenderTexture&) noexcept = delete;
 	OGLMultiRenderTexture& operator=(const OGLMultiRenderTexture&) noexcept = delete;
 
@@ -114,6 +125,7 @@ private:
 
 	GLuint _fbo;
 
+	GraphicsDeviceWeakPtr _device;
 	GraphicsMultiRenderTextureDesc _multiFramebufferDesc;
 };
 

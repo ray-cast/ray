@@ -47,7 +47,7 @@ public:
 	OGLGraphicsBuf() noexcept;
 	~OGLGraphicsBuf() noexcept;
 
-	bool open(const GraphicsDataDesc& desc) noexcept;
+	bool setup(const GraphicsDataDesc& desc) noexcept;
 	void close() noexcept;
 
 	bool is_open() const noexcept;

@@ -1,0 +1,47 @@
+<?xml version='1.0'?>
+<effect language="hlsl">
+    <include name="sys:fx/sampler.fxml"/>
+    <parameter name="scaleY" type="float" />
+    <parameter name="decal" type="texture"/>
+    <shader>
+        <![CDATA[
+        int scaleY;
+        Texture2D decal;
+
+        void UILayoutVS(
+            in float4 Position : POSITION0,
+            in float4 Diffuse  : COLOR0,
+            in float4 Texcoord : TEXCOORD0,
+
+            out float4 oDiffuse : TEXCOORD0,
+            out float2 oCoord   : TEXCOORD1,
+            out float4 oPosition : SV_Position)
+        {
+            oPosition = Position;
+            oDiffuse = Diffuse;
+            oCoord = float2(Texcoord.x, Texcoord.y * scaleY);
+        }
+
+        float4 UILayoutPS(
+            in float4 Diffuse : TEXCOORD0,
+            in float2 Coord   : TEXCOORD1) : SV_Target
+        {
+            return decal.Sample(samLinear, Coord) * (Diffuse / 255);
+        }
+        ]]>
+    </shader>
+    <technique name="opaque">
+        <pass name="ui">
+            <state name="vertex" value="UILayoutVS"/>
+            <state name="fragment" value="UILayoutPS"/>
+
+            <state name="primitive" value="triangle" />
+
+            <state name="cullmode" value="none"/>
+
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="srcalpha"/>
+            <state name="blenddst" value="invsrcalpha"/>
+        </pass>
+    </technique>
+</effect>

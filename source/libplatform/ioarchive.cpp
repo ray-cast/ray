@@ -40,6 +40,7 @@ _NAME_BEGIN
 
 ioarchive::ioarchive(archivebuf* buf)
 	: iarchive(buf)
+	, oarchive(buf)
 {
 }
 

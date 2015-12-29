@@ -140,9 +140,11 @@ public:
 	void assign(const std::vector<float2>& value) noexcept;
 	void assign(const std::vector<float3>& value) noexcept;
 	void assign(const std::vector<float4>& value) noexcept;
-	void assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
+	void assign(GraphicsTexturePtr texture) noexcept;
+	void assign(GraphicsSamplerPtr sampler) noexcept;
 
 	GraphicsTexturePtr getTexture() const noexcept;
+	GraphicsSamplerPtr getSampler() const noexcept;
 
 	void addShaderUniform(ShaderUniformPtr& uniform) noexcept;
 	void removeShaderUniform(ShaderUniformPtr& uniform) noexcept;
@@ -157,6 +159,7 @@ private:
 	std::string _name;
 	MaterialSemanticPtr _semantic;
 	GraphicsTexturePtr _texture;
+	GraphicsSamplerPtr _sampler;
 	ShaderVariantType _type;
 	ShaderUniforms _uniforms;
 };

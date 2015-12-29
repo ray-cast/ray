@@ -64,7 +64,10 @@ OGLRenderTexture::setup(const GraphicsRenderTextureDesc& framebufferDesc) except
 
 	glCreateFramebuffers(1, &_fbo);
 	if (_fbo == GL_NONE)
+	{
+		GL_PLATFORM_LOG("glCreateFramebuffers() fail");
 		return false;
+	}
 
 	auto sharedDepthTarget = framebufferDesc.getSharedDepthTexture();
 	auto sharedStencilTarget = framebufferDesc.getSharedStencilTexture();
@@ -174,7 +177,6 @@ OGLRenderTexture::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachmen
 
 	auto gltexture = texture->downcast<OGLTexture>();
 	auto handle = gltexture->getInstanceID();
-	auto target = gltexture->getTarget();
 
 	glNamedFramebufferTexture(_fbo, attachment, handle, 0);
 }
@@ -197,6 +199,18 @@ OGLRenderTexture::getGraphicsRenderTextureDesc() const noexcept
 	return _framebufferDesc;
 }
 
+void
+OGLRenderTexture::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+OGLRenderTexture::getDevice() noexcept
+{
+	return _device.lock();
+}
+
 OGLMultiRenderTexture::OGLMultiRenderTexture() noexcept
 	: _fbo(GL_NONE)
 	, _isActive(false)
@@ -215,7 +229,10 @@ OGLMultiRenderTexture::setup(const GraphicsMultiRenderTextureDesc& multiFramebuf
 
 	glCreateFramebuffers(1, &_fbo);
 	if (_fbo == GL_NONE)
+	{
+		GL_PLATFORM_LOG("glCreateFramebuffers() fail");
 		return false;
+	}
 
 	auto sharedDepthTarget = multiFramebufferDesc.getSharedDepthTexture();
 	auto sharedStencilTarget = multiFramebufferDesc.getSharedStencilTexture();
@@ -347,9 +364,20 @@ OGLMultiRenderTexture::bindRenderTexture(GraphicsTexturePtr texture, GLenum atta
 
 	auto gltexture = texture->downcast<OGLTexture>();
 	auto handle = gltexture->getInstanceID();
-	auto target = gltexture->getTarget();
 
 	glNamedFramebufferTexture(_fbo, attachment, handle, 0);
+}
+
+void
+OGLMultiRenderTexture::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+OGLMultiRenderTexture::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

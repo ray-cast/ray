@@ -46,10 +46,9 @@ class EGL3IndexBuffer final : public EGL3GraphicsData
 	__DeclareSubClass(EGL3IndexBuffer, EGL3GraphicsData)
 public:
 	EGL3IndexBuffer() noexcept;
-	EGL3IndexBuffer(const GraphicsDataDesc& desc) noexcept;
 	~EGL3IndexBuffer() noexcept;
 
-	void open(const GraphicsDataDesc& desc) noexcept;
+	bool setup(const GraphicsDataDesc& desc) noexcept;
 	void close() noexcept;
 
 	bool is_open() const noexcept;

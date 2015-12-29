@@ -40,13 +40,13 @@
 _NAME_BEGIN
 
 #ifdef GLEW_MX
-	#ifdef _WIN32
+#	ifdef _WIN32
 		WGLEWContext _wglewctx;
-		#define wglewGetContext() (&_wglewctx)
-	#elif !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
+#		define wglewGetContext() (&_wglewctx)
+#	elif !defined(__APPLE__) || defined(GLEW_APPLE_GLX)
 		GLXEWContext _glxewctx;
-		#define glxewGetContext() (&_glxewctx)
-	#endif
+#	define glxewGetContext() (&_glxewctx)
+#	endif
 #endif
 
 typedef BOOL(WINAPI * PFNWGLSWAPBUFFERSPROC) (HDC hdc);
@@ -72,22 +72,10 @@ WGLCanvas::WGLCanvas() noexcept
 	: _hwnd(nullptr)
 	, _hdc(nullptr)
 	, _context(nullptr)
-	, _interval(SwapInterval::GPU_VSYNC)
+	, _interval(SwapInterval::Vsync)
 	, _isActive(true)
 {
 	initPixelFormat(_fbconfig, _ctxconfig);
-}
-
-WGLCanvas::WGLCanvas(WindHandle window) except
-	: _hwnd(nullptr)
-	, _hdc(nullptr)
-	, _context(nullptr)
-	, _interval(SwapInterval::GPU_VSYNC)
-	, _isActive(false)
-{
-	initPixelFormat(_fbconfig, _ctxconfig);
-
-	this->open(window);
 }
 
 WGLCanvas::~WGLCanvas() noexcept
@@ -95,8 +83,8 @@ WGLCanvas::~WGLCanvas() noexcept
 	this->close();
 }
 
-void
-WGLCanvas::open(WindHandle hwnd) except
+bool
+WGLCanvas::open(WindHandle hwnd) noexcept
 {
 	assert(hwnd);
 
@@ -105,38 +93,44 @@ WGLCanvas::open(WindHandle hwnd) except
 		(_ctxconfig.major == 2 && _ctxconfig.minor > 1) ||
 		(_ctxconfig.major == 3 && _ctxconfig.minor > 3))
 	{
-		throw failure(__TEXT("Invlid major and minor"));
+		GL_PLATFORM_LOG("Invlid major and minor");
+		return false;
 	}
 
 	if (_ctxconfig.profile)
 	{
-		if (_ctxconfig.profile != GPU_GL_CORE_PROFILE &&
-			_ctxconfig.profile != GPU_GL_COMPAT_PROFILE)
+		if (_ctxconfig.profile != GLattr::GL_CORE_PROFILE &&
+			_ctxconfig.profile != GLattr::GL_COMPAT_PROFILE)
 		{
-			throw failure(__TEXT("Invlid profile"));
+			GL_PLATFORM_LOG("Invlid profile");
+			return false;
 		}
 
 		if (_ctxconfig.major < 3 || (_ctxconfig.major == 3 && _ctxconfig.minor < 2))
 		{
-			throw failure(__TEXT("The version is small"));
+			GL_PLATFORM_LOG("The version is small");
+			return false;
 		}
 	}
 
 	if (_ctxconfig.forward && _ctxconfig.major < 3)
 	{
-		throw failure(__TEXT("The version is small"));
+		GL_PLATFORM_LOG("The version is small");
+		return false;
 	}
 
 	if (!IsWindow((HWND)hwnd))
 	{
-		throw failure(__TEXT("Invlid HWND"));
+		GL_PLATFORM_LOG("Invlid HWND");
+		return false;
 	}
 
 	_hwnd = (HWND)hwnd;
 	_hdc = ::GetDC(_hwnd);
 	if (!_hdc)
 	{
-		throw failure(__TEXT("GetDC() fail"));
+		GL_PLATFORM_LOG("GetDC() fail");
+		return false;
 	}
 
 	PIXELFORMATDESCRIPTOR pfd;
@@ -172,22 +166,26 @@ WGLCanvas::open(WindHandle hwnd) except
 	int pixelFormat = ::ChoosePixelFormat(_hdc, &pfd);
 	if (!pixelFormat)
 	{
-		throw failure(__TEXT("ChoosePixelFormat() fail"));
+		GL_PLATFORM_LOG("ChoosePixelFormat() fail");
+		return false;
 	}
 
 	if (!::DescribePixelFormat(_hdc, pixelFormat, sizeof(pfd), &pfd))
 	{
-		throw failure(__TEXT("DescribePixelFormat() fail"));
+		GL_PLATFORM_LOG("DescribePixelFormat() fail");
+		return false;
 	}
 
 	if (!::SetPixelFormat(_hdc, pixelFormat, &pfd))
 	{
-		throw failure(__TEXT("SetPixelFormat() fail"));
+		GL_PLATFORM_LOG("SetPixelFormat() fail");
+		return false;
 	}
 
 	if (!initWGLExtensions(_hdc))
 	{
-		throw failure(__TEXT("initWGLExtensions() fail"));
+		GL_PLATFORM_LOG("initWGLExtensions() fail");
+		return false;
 	}
 
 	int attribs[40];
@@ -203,10 +201,10 @@ WGLCanvas::open(WindHandle hwnd) except
 
 	if (_ctxconfig.profile)
 	{
-		if (_ctxconfig.profile == GPU_GL_CORE_PROFILE)
+		if (_ctxconfig.profile == GLattr::GL_CORE_PROFILE)
 			mask = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
 
-		if (_ctxconfig.profile == GPU_GL_COMPAT_PROFILE)
+		if (_ctxconfig.profile == GLattr::GL_COMPAT_PROFILE)
 			mask = WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
 	}
 
@@ -214,9 +212,9 @@ WGLCanvas::open(WindHandle hwnd) except
 	{
 		if (_ctxconfig.robustness)
 		{
-			if (_ctxconfig.robustness == GPU_GL_REST_NOTIFICATION)
+			if (_ctxconfig.robustness == GLattr::GL_REST_NOTIFICATION)
 				startegy = WGL_NO_RESET_NOTIFICATION_ARB;
-			else if (_ctxconfig.robustness == GPU_GL_LOSE_CONTEXT_ONREST)
+			else if (_ctxconfig.robustness == GLattr::GL_LOSE_CONTEXT_ONREST)
 				startegy = WGL_LOSE_CONTEXT_ON_RESET_ARB;
 
 			flags |= WGL_CONTEXT_ROBUST_ACCESS_BIT_ARB;
@@ -256,7 +254,8 @@ WGLCanvas::open(WindHandle hwnd) except
 	_context = __wglCreateContextAttribsARB(_hdc, nullptr, attribs);
 	if (!_context)
 	{
-		throw failure(__TEXT("wglCreateContextAttribs fail"));
+		GL_PLATFORM_LOG("wglCreateContextAttribs fail");
+		return false;
 	}
 
 	::wglMakeCurrent(_hdc, _context);
@@ -285,19 +284,19 @@ WGLCanvas::close() noexcept
 }
 
 void
-WGLCanvas::setActive(bool active) except
+WGLCanvas::setActive(bool active) noexcept
 {
 	if (_isActive != active)
 	{
 		if (active)
 		{
 			if (!::wglMakeCurrent(_hdc, _context))
-				throw failure(__TEXT("wglMakeCurrent() fail"));
+				GL_PLATFORM_LOG("wglMakeCurrent() fail");
 		}
 		else
 		{
 			if (!::wglMakeCurrent(0, 0))
-				throw failure(__TEXT("wglMakeCurrent() fail"));
+				GL_PLATFORM_LOG("wglMakeCurrent() fail");
 		}
 
 		_isActive = active;
@@ -319,21 +318,24 @@ WGLCanvas::setSwapInterval(SwapInterval interval) noexcept
 	{
 		switch (interval)
 		{
-		case ray::GPU_FREE:
-			__wglSwapIntervalEXT(0);
+		case SwapInterval::Free:
+			if (!__wglSwapIntervalEXT(0))
+				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Free) fail");
 			break;
-		case ray::GPU_VSYNC:
-			__wglSwapIntervalEXT(1);
+		case SwapInterval::Vsync:
+			if (!__wglSwapIntervalEXT(0))
+				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Vsync) fail");
 			break;
-		case ray::GPU_FPS30:
-			__wglSwapIntervalEXT(2);
+		case SwapInterval::Fps30:
+			if (!__wglSwapIntervalEXT(0))
+				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Fps30) fail");
 			break;
-		case ray::GPU_FPS15:
-			__wglSwapIntervalEXT(3);
+		case SwapInterval::Fps15:
+			if (!__wglSwapIntervalEXT(0))
+				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Fps15) fail");
 			break;
 		default:
-			assert(false);
-			__wglSwapIntervalEXT(1);
+			GL_PLATFORM_LOG("Invalid swap interval");
 		}
 
 		_interval = interval;
@@ -375,7 +377,7 @@ WGLCanvas::initWGLExtensions(HDC hdc) except
 	HGLRC context = ::wglCreateContext(hdc);
 	if (!context)
 	{
-		throw failure(__TEXT("wglCreateContext fail"));
+		GL_PLATFORM_LOG("wglCreateContext fail");
 	}
 
 	::wglMakeCurrent(hdc, context);
@@ -446,7 +448,8 @@ WGLCanvas::initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexc
 	ctxconfig.release = 0;
 	ctxconfig.robustness = 0;
 	ctxconfig.share = nullptr;
-	ctxconfig.profile = GPU_GL_CORE_PROFILE;
+	ctxconfig.api = GLapi::OPENGL_API;
+	ctxconfig.profile = GLattr::GL_CORE_PROFILE;
 	ctxconfig.forward = 0;
 	ctxconfig.multithread = false;
 }

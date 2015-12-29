@@ -107,12 +107,12 @@ EnvironmentIrradiance::renderParaboloidEnvMap(RenderPipeline& pipeline, Graphics
 	_sphericalHarmonicConvolveYlmDW1->assign(_paraboloidSHWeights[1]);
 
 	pipeline.setMultiRenderTexture(_paraboloidDualMaps);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0);
-	pipeline.drawSceneQuad(_irradianceParaboloid);
+	pipeline.clearRenderTexture(ClearFlags::Color, Vector4::Zero, 1.0, 0);
+	pipeline.drawScreenQuad(_irradianceParaboloid);
 
 	pipeline.setRenderTexture(_irradianceSHCoefficients);
-	pipeline.clearRenderTexture(ClearFlags::CLEAR_COLOR, Vector4::Zero, 1.0, 0);
-	pipeline.drawSceneQuad(_irradianceProjectDualParaboloidToSH);
+	pipeline.clearRenderTexture(ClearFlags::Color, Vector4::Zero, 1.0, 0);
+	pipeline.drawScreenQuad(_irradianceProjectDualParaboloidToSH);
 }
 
 void

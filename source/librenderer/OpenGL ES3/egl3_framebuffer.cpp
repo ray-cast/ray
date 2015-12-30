@@ -73,18 +73,20 @@ EGL3RenderTexture::setup(const GraphicsRenderTextureDesc& framebufferDesc) excep
 	auto sharedDepthTarget = framebufferDesc.getSharedDepthTexture();
 	auto sharedStencilTarget = framebufferDesc.getSharedStencilTexture();
 
-	if (sharedDepthTarget == sharedStencilTarget)
+	if (sharedDepthTarget || sharedStencilTarget)
 	{
-		if (sharedDepthTarget)
+		if (sharedDepthTarget == sharedStencilTarget)
+		{
 			this->bindRenderTexture(sharedDepthTarget->getResolveTexture(), GL_DEPTH_STENCIL_ATTACHMENT);
-	}
-	else
-	{
-		if (sharedDepthTarget)
-			this->bindRenderTexture(sharedDepthTarget->getResolveTexture(), GL_DEPTH_ATTACHMENT);
+		}
+		else
+		{
+			if (sharedDepthTarget)
+				this->bindRenderTexture(sharedDepthTarget->getResolveTexture(), GL_DEPTH_ATTACHMENT);
 
-		if (sharedStencilTarget)
-			this->bindRenderTexture(sharedStencilTarget->getResolveTexture(), GL_STENCIL_ATTACHMENT);
+			if (sharedStencilTarget)
+				this->bindRenderTexture(sharedStencilTarget->getResolveTexture(), GL_STENCIL_ATTACHMENT);
+		}
 	}
 
 	auto texture = framebufferDesc.getGraphicsTexture();

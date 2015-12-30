@@ -72,18 +72,20 @@ OGLRenderTexture::setup(const GraphicsRenderTextureDesc& framebufferDesc) except
 	auto sharedDepthTarget = framebufferDesc.getSharedDepthTexture();
 	auto sharedStencilTarget = framebufferDesc.getSharedStencilTexture();
 
-	if (sharedDepthTarget == sharedStencilTarget)
+	if (sharedDepthTarget || sharedStencilTarget)
 	{
-		if (sharedDepthTarget)
+		if (sharedDepthTarget == sharedStencilTarget)
+		{
 			this->bindRenderTexture(sharedDepthTarget->getResolveTexture(), GL_DEPTH_STENCIL_ATTACHMENT);
-	}
-	else
-	{
-		if (sharedDepthTarget)
-			this->bindRenderTexture(sharedDepthTarget->getResolveTexture(), GL_DEPTH_ATTACHMENT);
+		}
+		else
+		{
+			if (sharedDepthTarget)
+				this->bindRenderTexture(sharedDepthTarget->getResolveTexture(), GL_DEPTH_ATTACHMENT);
 
-		if (sharedStencilTarget)
-			this->bindRenderTexture(sharedStencilTarget->getResolveTexture(), GL_STENCIL_ATTACHMENT);
+			if (sharedStencilTarget)
+				this->bindRenderTexture(sharedStencilTarget->getResolveTexture(), GL_STENCIL_ATTACHMENT);
+		}
 	}
 
 	auto texture = framebufferDesc.getGraphicsTexture();
@@ -167,7 +169,7 @@ void
 OGLRenderTexture::discard() noexcept
 {
 	GLenum attachment = GL_COLOR_ATTACHMENT0;
-	glInvalidateNamedFramebufferData(_fbo, 1, &attachment);	
+	glInvalidateNamedFramebufferData(_fbo, 1, &attachment);
 }
 
 void
@@ -297,7 +299,7 @@ OGLMultiRenderTexture::getActive() noexcept
 	return _isActive;
 }
 
-void 
+void
 OGLMultiRenderTexture::setLayer(GraphicsRenderTexturePtr renderTexture, GLuint layer) noexcept
 {
 	auto texture = renderTexture->getResolveTexture()->downcast<OGLTexture>();
@@ -321,7 +323,7 @@ OGLMultiRenderTexture::setLayer(GraphicsRenderTexturePtr renderTexture, GLuint l
 	glNamedFramebufferTextureLayer(_fbo, attachment, textureID, 0, layer);
 }
 
-GLuint 
+GLuint
 OGLMultiRenderTexture::getLayer() const noexcept
 {
 	return 0;

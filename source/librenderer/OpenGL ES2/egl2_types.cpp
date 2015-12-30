@@ -649,7 +649,7 @@ EGL2Check::debugOutput(const std::string& message, ...) noexcept
 {
 	va_list va;
 	va_start(va, &message);
-	vprintf(message.c_str(), va);
+	vprintf((message + "\n").c_str(), va);
 	va_end(va);
 }
 

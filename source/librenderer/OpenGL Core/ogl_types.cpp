@@ -707,11 +707,9 @@ OGLCheck::checkError() noexcept
 void
 OGLCheck::debugOutput(const std::string& message, ...) noexcept
 {
-	std::string out = message + "\n";
-
 	va_list va;
 	va_start(va, &message);
-	vprintf(out.c_str(), va);
+	vprintf((message + "\n").c_str(), va);
 	va_end(va);
 }
 

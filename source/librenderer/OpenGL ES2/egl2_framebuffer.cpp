@@ -73,25 +73,25 @@ EGL2RenderTexture::setup(const GraphicsRenderTextureDesc& framebufferDesc) excep
 	auto sharedDepthTarget = framebufferDesc.getSharedDepthTexture();
 	auto sharedStencilTarget = framebufferDesc.getSharedStencilTexture();
 
-	if (sharedDepthTarget == sharedStencilTarget)
+	if (sharedDepthTarget || sharedStencilTarget)
 	{
-		GL_PLATFORM_LOG("Can't support GL_DEPTH_STENCIL_ATTACHMENT");
-		return false;
-	}
-	else
-	{
-		if (sharedDepthTarget)
-			this->bindRenderTexture(sharedDepthTarget->getResolveTexture(), GL_DEPTH_ATTACHMENT);
+		if (sharedDepthTarget == sharedStencilTarget)
+		{
+			GL_PLATFORM_LOG("Can't support GL_DEPTH_STENCIL_ATTACHMENT");
+			return false;
+		}
+		else
+		{
+			if (sharedDepthTarget)
+				this->bindRenderTexture(sharedDepthTarget->getResolveTexture(), GL_DEPTH_ATTACHMENT);
 
-		if (sharedStencilTarget)
-			this->bindRenderTexture(sharedStencilTarget->getResolveTexture(), GL_STENCIL_ATTACHMENT);
+			if (sharedStencilTarget)
+				this->bindRenderTexture(sharedStencilTarget->getResolveTexture(), GL_STENCIL_ATTACHMENT);
+		}
 	}
 
 	auto texture = framebufferDesc.getGraphicsTexture();
-	auto textureDesc = texture->getGraphicsTextureDesc();
-
-	TextureFormat format = textureDesc.getTexFormat();
-
+	TextureFormat format = texture->getGraphicsTextureDesc().getTexFormat();
 	if (format == TextureFormat::DEPTH24_STENCIL8 || format == TextureFormat::DEPTH32_STENCIL8)
 	{
 		GL_PLATFORM_LOG("Can't support GL_DEPTH_STENCIL_ATTACHMENT");

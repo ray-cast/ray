@@ -289,9 +289,9 @@ GuiInputKey::Code KeyCodetoGuiKey(InputKey::Code key) noexcept
 		return GuiInputKey::Code::Y;
 	case InputKey::Z:
 		return GuiInputKey::Code::Z;
+	default:
+		return GuiInputKey::Code::None;
 	}
-
-	return GuiInputKey::Code::None;
 }
 
 class ImageLoader : public GuiImageLoader

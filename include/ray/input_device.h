@@ -67,13 +67,13 @@ public:
 	virtual void removeInputListener(InputListenerPtr listener) noexcept;
 	virtual void clearInputListener() noexcept;
 
-	virtual void sendEvent(const InputEventPtr& event) noexcept;
-	virtual void postEvent(const InputEventPtr& event) noexcept;
+	virtual void sendEvent(const InputEvent& event) noexcept;
+	virtual void postEvent(const InputEvent& event) noexcept;
 
-	virtual void peekEvents(InputEventPtr& event) noexcept;
-	virtual bool pollEvents(InputEventPtr& event) noexcept;
-	virtual bool waitEvents(InputEventPtr& event) noexcept;
-	virtual bool waitEvents(InputEventPtr& event, int timeout) noexcept;
+	virtual bool peekEvents(InputEvent& event) noexcept;
+	virtual bool pollEvents(InputEvent& event) noexcept;
+	virtual bool waitEvents(InputEvent& event) noexcept;
+	virtual bool waitEvents(InputEvent& event, int timeout) noexcept;
 	virtual void flushEvent() noexcept;
 
 	virtual InputDevicePtr clone() const noexcept;
@@ -84,7 +84,7 @@ private:
 
 private:
 
-	typedef std::queue<InputEventPtr>  InputEvents;
+	typedef std::queue<InputEvent>  InputEvents;
 	typedef std::vector<InputListenerPtr> InputListeners;
 	
 	InputEvents _events;

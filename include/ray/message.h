@@ -51,8 +51,8 @@ public:
 	void setInstanceID(std::uint32_t instance) noexcept;
 	std::uint32_t getInstanceID() const noexcept;
 
-	virtual void write(StreamWrite& stream) noexcept;
-	virtual void read(StreamReader& stream) noexcept;
+	virtual std::streamsize write(const char* str, std::streamsize cnt) noexcept;
+	virtual std::streamsize read(char* str, std::streamsize cnt) noexcept;
 
 private:
 

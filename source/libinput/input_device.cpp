@@ -96,14 +96,14 @@ DefaultInputDevice::clearInputListener() noexcept
 }
 
 void
-DefaultInputDevice::sendEvent(const InputEventPtr& event) noexcept
+DefaultInputDevice::sendEvent(const InputEvent& event) noexcept
 {
 	for (auto& it : _inputListeners)
 		it->onInputEvent(event);
 }
 
 void
-DefaultInputDevice::postEvent(const InputEventPtr& event) noexcept
+DefaultInputDevice::postEvent(const InputEvent& event) noexcept
 {
 	if (_enableEventPosting)
 	{
@@ -115,14 +115,15 @@ DefaultInputDevice::postEvent(const InputEventPtr& event) noexcept
 	}
 }
 
-void
-DefaultInputDevice::peekEvents(InputEventPtr& event) noexcept
+bool
+DefaultInputDevice::peekEvents(InputEvent& event) noexcept
 {
 	ToplevelInputDevice::peekEvents(event);
+	return true;
 }
 
 bool
-DefaultInputDevice::pollEvents(InputEventPtr& event) noexcept
+DefaultInputDevice::pollEvents(InputEvent& event) noexcept
 {
 	ToplevelInputDevice::pollEvents(event);
 
@@ -141,7 +142,7 @@ DefaultInputDevice::pollEvents(InputEventPtr& event) noexcept
 }
 
 bool
-DefaultInputDevice::waitEvents(InputEventPtr& event) noexcept
+DefaultInputDevice::waitEvents(InputEvent& event) noexcept
 {
 	ToplevelInputDevice::waitEvents(event);
 
@@ -155,7 +156,7 @@ DefaultInputDevice::waitEvents(InputEventPtr& event) noexcept
 }
 
 bool
-DefaultInputDevice::waitEvents(InputEventPtr& event, int timeout) noexcept
+DefaultInputDevice::waitEvents(InputEvent& event, int timeout) noexcept
 {
 	ToplevelInputDevice::waitEvents(event, timeout);
 
@@ -174,7 +175,7 @@ DefaultInputDevice::flushEvent() noexcept
 	ToplevelInputDevice::flushEvent();
 
 	_mutex.lock();
-	_events = std::queue<InputEventPtr>();
+	_events = std::queue<InputEvent>();
 	_mutex.unlock();
 }
 

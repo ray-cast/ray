@@ -98,9 +98,8 @@ struct JoyHatEvent {};
 struct JoyButtonEvent {};
 struct JoyDeviceEvent {};
 
-class EXPORT InputEvent : public Message
+class EXPORT InputEvent final
 {
-	__DeclareSubClass(InputEvent, Message)
 public:
     enum Type
     {

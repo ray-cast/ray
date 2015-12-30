@@ -67,7 +67,7 @@ private:
 	virtual void onObtainCapture() noexcept;
 	virtual void onReset() noexcept;
 
-	virtual void onInputEvent(const InputEventPtr& event) noexcept;
+	virtual void onInputEvent(const InputEvent& event) noexcept;
 
 private:
 	DefaultInputKeyboard(const DefaultInputKeyboard&) noexcept = delete;

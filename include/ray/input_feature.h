@@ -38,9 +38,23 @@
 #define _H_INPUT_FEATURES_H_
 
 #include <ray/game_features.h>
-#include <ray/input_base.h>
+#include <ray/input_event.h>
 
 _NAME_BEGIN
+
+class EXPORT InputMessage final : public Message
+{
+	__DeclareSubClass(InputMessage, Message)
+public:
+	InputMessage() noexcept;
+	~InputMessage() noexcept;
+
+	void setEvent(const InputEvent& event) noexcept;
+	const InputEvent& getEvent() const noexcept;
+
+private:
+	InputEvent _event;
+};
 
 class EXPORT InputFeature final : public GameFeature
 {

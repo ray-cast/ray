@@ -37,9 +37,10 @@
 #if defined(_BUILD_GUI)
 #include <ray/gui_feature.h>
 #include <ray/gui_system.h>
+#include <ray/input_feature.h>
+#include <ray/input_event.h>
 #include <ray/timer.h>
 #include <ray/image.h>
-#include <ray/input_event.h>
 
 #include <ray/game_server.h>
 #include <ray/game_application.h>
@@ -52,22 +53,29 @@ GuiInputButton::Code ButtonCodeToGuiButton(InputButton::Code button) noexcept
 {
 	switch (button)
 	{
-	case ray::InputButton::LEFT:
+	case InputButton::LEFT:
 		return GuiInputButton::Code::Left;
-	case ray::InputButton::RIGHT:
+	case InputButton::RIGHT:
 		return GuiInputButton::Code::Right;
-	case ray::InputButton::MIDDLE:
+	case InputButton::MIDDLE:
 		return GuiInputButton::Code::Middle;
-	case ray::InputButton::MOUSE3:
+	case InputButton::MOUSE3:
 		return GuiInputButton::Code::Button3;
-	case ray::InputButton::MOUSE4:
+	case InputButton::MOUSE4:
 		return GuiInputButton::Code::Button4;
-	case ray::InputButton::MOUSE5:
+	case InputButton::MOUSE5:
 		return GuiInputButton::Code::Button5;
-	case ray::InputButton::MOUSE6:
+	case InputButton::MOUSE6:
 		return GuiInputButton::Code::Button6;
-	case ray::InputButton::MOUSE7:
+	case InputButton::MOUSE7:
 		return GuiInputButton::Code::Button7;
+	case InputButton::MOUSE8:
+	case InputButton::MOUSELAST:
+	case InputButton::MOUSEWHEEL:
+	case InputButton::MOUSEX:
+	case InputButton::MOUSEY:
+	case InputButton::MOUSEZ:
+		return GuiInputButton::Code::None;
 	}
 
 	return GuiInputButton::Code::None;
@@ -411,30 +419,31 @@ GuiFeature::onMessage(const MessagePtr& message) except
 {
 	assert(_platform);
 
-	if (message->isInstanceOf<InputEvent>())
+	if (message->isInstanceOf<InputMessage>())
 	{
-		InputEventPtr event = std::dynamic_pointer_cast<InputEvent>(message);
-		if (event)
+		auto inputMessage = message->downcast<InputMessage>();
+		if (inputMessage)
 		{
-			switch (event->event)
+			InputEvent event = inputMessage->getEvent();
+			switch (event.event)
 			{
 			case InputEvent::MouseMotion:
-				_platform->injectMouseMove(event->motion.x, event->motion.y, 0);
+				_platform->injectMouseMove(event.motion.x, event.motion.y, 0);
 				break;
 			case InputEvent::MouseButtonDown:
-				_platform->injectMousePress(event->button.x, event->button.y, ButtonCodeToGuiButton((InputButton::Code)event->button.button));
+				_platform->injectMousePress(event.button.x, event.button.y, ButtonCodeToGuiButton((InputButton::Code)event.button.button));
 				break;
 			case InputEvent::MouseButtonUp:
-				_platform->injectMouseRelease(event->button.x, event->button.y, ButtonCodeToGuiButton((InputButton::Code)event->button.button));
+				_platform->injectMouseRelease(event.button.x, event.button.y, ButtonCodeToGuiButton((InputButton::Code)event.button.button));
 				break;
 			case InputEvent::KeyDown:
-				_platform->injectKeyPress(KeyCodetoGuiKey((InputKey::Code)event->key.keysym.sym), event->key.keysym.unicode);
+				_platform->injectKeyPress(KeyCodetoGuiKey((InputKey::Code)event.key.keysym.sym), event.key.keysym.unicode);
 				break;
 			case InputEvent::KeyUp:
-				_platform->injectKeyRelease(KeyCodetoGuiKey((InputKey::Code)event->key.keysym.sym));
+				_platform->injectKeyRelease(KeyCodetoGuiKey((InputKey::Code)event.key.keysym.sym));
 				break;
 			case InputEvent::Character:
-				_platform->injectKeyPress(KeyCodetoGuiKey(InputKey::Code::None), event->key.keysym.unicode);
+				_platform->injectKeyPress(KeyCodetoGuiKey(InputKey::Code::None), event.key.keysym.unicode);
 			}
 		}
 	}

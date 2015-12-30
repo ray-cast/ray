@@ -64,14 +64,16 @@ Message::getInstanceID() const noexcept
 	return _instanceID;
 }
 
-void 
-Message::write(StreamWrite& stream) noexcept
+std::streamsize
+Message::write(const char* str, std::streamsize cnt) noexcept
 {
+	return 0;
 }
 
-void 
-Message::read(StreamReader& stream) noexcept
+std::streamsize
+Message::read(char* str, std::streamsize cnt) noexcept
 {
+	return 0;
 }
 
 MessageBatch::MessageBatch() noexcept

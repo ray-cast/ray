@@ -58,13 +58,13 @@ public:
 	virtual void enableEventPosting(bool enable) noexcept = 0;
 	virtual bool enableEventPosting() const noexcept = 0;
 
-	virtual void sendEvent(const InputEventPtr& event) noexcept = 0;
-	virtual void postEvent(const InputEventPtr& event) noexcept = 0;
+	virtual void sendEvent(const InputEvent& event) noexcept = 0;
+	virtual void postEvent(const InputEvent& event) noexcept = 0;
 
-	virtual void peekEvents(InputEventPtr& event) noexcept = 0;
-	virtual bool pollEvents(InputEventPtr& event) noexcept = 0;
-	virtual bool waitEvents(InputEventPtr& event) noexcept = 0;
-	virtual bool waitEvents(InputEventPtr& event, int timeout) noexcept = 0;
+	virtual bool peekEvents(InputEvent& event) noexcept = 0;
+	virtual bool pollEvents(InputEvent& event) noexcept = 0;
+	virtual bool waitEvents(InputEvent& event) noexcept = 0;
+	virtual bool waitEvents(InputEvent& event, int timeout) noexcept = 0;
 	virtual void flushEvent() noexcept = 0;
 
 	virtual InputDevicePtr clone() const noexcept = 0;

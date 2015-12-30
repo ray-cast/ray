@@ -188,15 +188,8 @@ MyGuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture
 	MyGuiVertexBuffer* buffer = static_cast<MyGuiVertexBuffer*>(_buffer);
 	if (buffer)
 	{
-		if (_texture)
-		{
-			MyGuiTexture* texture = static_cast<MyGuiTexture*>(_texture);
-			_materialDecal->assign(texture->getTexture());
-		}
-		else
-		{
-			_materialDecal->assign(nullptr);
-		}
+		MyGuiTexture* texture = static_cast<MyGuiTexture*>(_texture);
+		_materialDecal->assign(texture ? texture->getTexture() : nullptr);
 
 		auto renderBuffer = buffer->getBuffer();
 		if (renderBuffer)
@@ -212,7 +205,7 @@ MyGuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture
 	}
 	else
 	{
-		MYGUI_PLATFORM_ASSERT(buffer, "buffer is not created");
+		MYGUI_PLATFORM_ASSERT(buffer, "buffer is not valid");
 	}
 }
 

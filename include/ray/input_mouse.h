@@ -84,7 +84,7 @@ private:
 	virtual void onObtainCapture() noexcept;
 	virtual void onReleaseCapture() noexcept;
 
-	virtual void onInputEvent(const InputEventPtr& event) noexcept;
+	virtual void onInputEvent(const InputEvent& event) noexcept;
 
 private:
 	DefaultInputMouse(const DefaultInputMouse&) noexcept = delete;

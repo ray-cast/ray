@@ -332,14 +332,14 @@ DefaultInput::clearInputListener() noexcept
 }
 
 void 
-DefaultInput::sendInputEvent(const InputEventPtr& event) noexcept
+DefaultInput::sendInputEvent(const InputEvent& event) noexcept
 {
 	if (_inputDevice)
 		_inputDevice->sendEvent(event);
 }
 
 void
-DefaultInput::postInputEvent(const InputEventPtr& event) noexcept
+DefaultInput::postInputEvent(const InputEvent& event) noexcept
 {
 	if (_inputDevice)
 		_inputDevice->postEvent(event);
@@ -361,7 +361,7 @@ DefaultInput::update() noexcept
 	if (!_inputDevice)
 		return;
 
-	InputEventPtr event;
+	InputEvent event;
 	while (_inputDevice->pollEvents(event))
 	{
 		if (_keyboardCaptureDevice)

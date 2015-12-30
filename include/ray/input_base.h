@@ -94,7 +94,7 @@ public:
 	virtual void removeInputListener(InputListenerPtr listener) noexcept = 0;
 	virtual void clearInputListener() noexcept = 0;
 
-	virtual void sendInputEvent(const InputEventPtr& event) noexcept = 0;
+	virtual void sendInputEvent(const InputEvent& event) noexcept = 0;
 
 	virtual void updateBegin() noexcept = 0;
 	virtual void update() noexcept = 0;

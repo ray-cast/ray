@@ -38,6 +38,4 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(InputEvent, Message, "InputEvent")
-
 _NAME_END

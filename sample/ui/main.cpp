@@ -37,7 +37,7 @@
 #include <ray/game_application.h>
 #include <ray/game_event.h>
 
-#include <ray/input_event.h>
+#include <ray/input_feature.h>
 
 #define GLFW_EXPOSE_NATIVE_WGL
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -99,8 +99,12 @@ public:
 		GameEngine* engine = (GameEngine*)glfwGetWindowUserPointer(window);
 		if (engine)
 		{
-			auto event = ray::make_message<ray::InputEvent>();
-			event->event = ray::InputEvent::AppQuit;
+			ray::InputEvent inputEvent;
+			inputEvent.event = ray::InputEvent::AppQuit;
+
+			auto event = ray::make_message<ray::InputMessage>();
+			event->setEvent(inputEvent);
+
 			engine->sendMessage(event);
 		}
 	}
@@ -112,14 +116,22 @@ public:
 		{
 			if (focus)
 			{
-				auto event = ray::make_message<ray::InputEvent>();
-				event->event = ray::InputEvent::GetFocus;
+				ray::InputEvent inputEvent;
+				inputEvent.event = ray::InputEvent::GetFocus;
+
+				auto event = ray::make_message<ray::InputMessage>();
+				event->setEvent(inputEvent);
+
 				engine->sendMessage(event);
 			}
 			else
 			{
-				auto event = ray::make_message<ray::InputEvent>();
-				event->event = ray::InputEvent::LostFocus;
+				ray::InputEvent inputEvent;
+				inputEvent.event = ray::InputEvent::LostFocus;
+
+				auto event = ray::make_message<ray::InputMessage>();
+				event->setEvent(inputEvent);
+
 				engine->sendMessage(event);
 			}
 		}

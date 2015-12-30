@@ -116,13 +116,13 @@ DefaultInputKeyboard::onReset() noexcept
 }
 
 void
-DefaultInputKeyboard::onInputEvent(const InputEventPtr& event) noexcept
+DefaultInputKeyboard::onInputEvent(const InputEvent& event) noexcept
 {
-	switch (event->event)
+	switch (event.event)
 	{
 	case InputEvent::KeyDown:
 	{
-		auto& key = this->_keyState[event->key.keysym.sym];
+		auto& key = this->_keyState[event.key.keysym.sym];
 		if (!key.pressed)
 		{
 			key.down = true;
@@ -132,7 +132,7 @@ DefaultInputKeyboard::onInputEvent(const InputEventPtr& event) noexcept
 	break;
 	case InputEvent::KeyUp:
 	{
-		auto& key = this->_keyState[event->key.keysym.sym];
+		auto& key = this->_keyState[event.key.keysym.sym];
 		key.up = true;
 		key.pressed = false;
 	}

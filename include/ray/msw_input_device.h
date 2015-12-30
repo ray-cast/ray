@@ -50,10 +50,10 @@ public:
 	virtual void setCaptureObject(CaptureObject window) noexcept;
 	virtual CaptureObject getCaptureObject() const noexcept;
 
-	virtual void peekEvents(InputEventPtr& event) noexcept;
-	virtual bool pollEvents(InputEventPtr& event) noexcept;
-	virtual bool waitEvents(InputEventPtr& event) noexcept;
-	virtual bool waitEvents(InputEventPtr& event, int timeout) noexcept;
+	virtual bool peekEvents(InputEvent& event) noexcept;
+	virtual bool pollEvents(InputEvent& event) noexcept;
+	virtual bool waitEvents(InputEvent& event) noexcept;
+	virtual bool waitEvents(InputEvent& event, int timeout) noexcept;
 	virtual void flushEvent() noexcept;
 
 private:

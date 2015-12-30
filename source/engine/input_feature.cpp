@@ -43,7 +43,28 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(InputMessage, Message, "InputMessage")
 __ImplementSubClass(InputFeature, GameFeature, "Input")
+
+InputMessage::InputMessage() noexcept
+{
+}
+
+InputMessage::~InputMessage() noexcept
+{
+}
+
+void
+InputMessage::setEvent(const InputEvent& event) noexcept
+{
+	_event = event;
+}
+
+const InputEvent&
+InputMessage::getEvent() const noexcept
+{
+	return _event;
+}
 
 class InputEventListener : public InputListener
 {
@@ -53,9 +74,12 @@ public:
 	{
 	}
 
-	void onInputEvent(const InputEventPtr& event) noexcept
+	void onInputEvent(const InputEvent& event) noexcept
 	{
-		_input.sendMessage(event);
+		auto message = std::make_shared<InputMessage>();
+		message->setEvent(event);
+
+		_input.sendMessage(message);
 	}
 
 private:
@@ -155,10 +179,10 @@ InputFeature::onMessage(const MessagePtr& message) except
 {
 	assert(_input);
 
-	if (message->isInstanceOf<InputEvent>())
+	if (message->isInstanceOf<InputMessage>())
 	{
-		auto inputEvent = message->downcast<InputEvent>();
-		_input->sendInputEvent(inputEvent);
+		auto inputEvent = message->downcast<InputMessage>();
+		_input->sendInputEvent(inputEvent->getEvent());
 	}
 }
 

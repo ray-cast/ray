@@ -53,18 +53,18 @@ Camera::Camera() noexcept
 	, _translate(0, 0, 0)
 	, _lookat(0, 0, 1)
 	, _up(0, 1, 0)
+	, _projLength(0, 0)
+	, _projConstant(0, 0, 0, 0)
 	, _project(Matrix4x4::One)
 	, _projectInverse(Matrix4x4::One)
 	, _viewProejct(Matrix4x4::One)
 	, _viewProjectInverse(Matrix4x4::One)
 	, _viewport(0, 0, 0, 0)
-	, _projLength(0, 0)
-	, _projConstant(0, 0, 0, 0)
+	, _clearFlags(ClearFlags::Default)
+	, _clearColor(Vector4::Zero)
 	, _cameraType(CameraType::CT_PERSPECTIVE)
 	, _cameraOrder(CameraOrder::CO_MAIN)
 	, _cameraRender(CameraRender::CR_RENDER_TO_SCREEN)
-	, _clearFlags(ClearFlags::Default)
-	, _clearColor(Vector4::Zero)
 {
 }
 

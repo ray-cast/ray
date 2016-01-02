@@ -191,7 +191,7 @@ class Sine
     {
         if (i > max_recursive) { return 1.0; }
 
-        return 1.0 - (fRad * fRad / (2.0 * i + 2.0) / (2.0 * i + 3.0) * series(fRad, ++i));
+        return 1.0 - (fRad * fRad / (2.0 * i + 2.0) / (2.0 * i + 3.0) * series(fRad, i + 1));
     }
 };
 

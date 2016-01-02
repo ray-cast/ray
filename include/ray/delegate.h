@@ -37,18 +37,17 @@
 #ifndef _H_DELEGATE_H_
 #define _H_DELEGATE_H_
 
-#include <vector>
-#include <assert.h>
-#include <functional>
-#include <ray/trait.h>
 #include <ray/macro.h>
+#include <ray/except.h>
+
+#include <functional>
 
 _NAME_BEGIN
 
 template <typename T>
 inline T InvalidCall()
 {
-	throw std::exception("Didn't inherit the function");
+	throw failure("Didn't inherit the function");
 }
 
 template <>

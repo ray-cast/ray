@@ -1073,8 +1073,6 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 		row.clear();
 	}
 
-	Vector3Array& v = _vertices;
-
 	for (std::uint32_t y = 0; y < heightSegments; y++)
 	{
 		for (std::uint32_t x = 0; x < widthSegments; x++)
@@ -1083,11 +1081,6 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 			std::uint32_t v2 = vertices[y][x];
 			std::uint32_t v3 = vertices[(y + 1)][x];
 			std::uint32_t v4 = vertices[(y + 1)][(x + 1)];
-
-			Vector3 n1 = ~v[v1];
-			Vector3 n2 = ~v[v2];
-			Vector3 n3 = ~v[v3];
-			Vector3 n4 = ~v[v4];
 
 			if (abs((_vertices)[v1].y) == radius)
 			{

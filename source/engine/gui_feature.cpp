@@ -444,6 +444,7 @@ GuiFeature::onMessage(const MessagePtr& message) except
 				break;
 			case InputEvent::Character:
 				_platform->injectKeyPress(KeyCodetoGuiKey(InputKey::Code::None), event.key.keysym.unicode);
+				break;
 			}
 		}
 	}

@@ -245,9 +245,9 @@ MyGUI::KeyCode GuiKeyToMyGUI(GuiInputKey::Code key)
 
 MyGuiSystem::MyGuiSystem() noexcept
 	: _isInitialise(false)
-	, _logManager(nullptr)
 	, _renderer(nullptr)
 	, _resLoader(nullptr)
+	, _logManager(nullptr)
 {
 }
 
@@ -426,4 +426,5 @@ MyGuiSystem::render(float delta) noexcept
 }
 
 _NAME_END
+
 #endif

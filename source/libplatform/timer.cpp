@@ -43,14 +43,14 @@
 _NAME_BEGIN
 
 Timer::Timer() noexcept
-	: _appTime(0)
+	: _fps(0)
+	, _averageFps(0)
+	, _appTime(0)
+	, _startTime(0)
 	, _frameTime(0)
 	, _accumulateTime(0)
 	, _accumulateFps(0)
-	, _fps(0)
-	, _averageFps(0)
 	, _numFrames(0)
-	, _startTime(0)
 	, _currentFramePerSecond(0)
 {
 	this->reset();

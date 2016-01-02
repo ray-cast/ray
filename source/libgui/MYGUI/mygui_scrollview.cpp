@@ -42,16 +42,16 @@ __ImplementSubClass(MyGuiScrollView, GuiScrollView, "MyGuiScrollView")
 __ImplementSubClass(MyGuiScrollViewImpl, MyGuiWidget, "MyGuiScrollViewImpl")
 
 MyGuiScrollViewImpl::MyGuiScrollViewImpl() noexcept
-	: _parent(nullptr)
+	: _destroy(true)
+	, _parent(nullptr)
 	, _scrollView(nullptr)
-	, _destroy(true)
 {
 }
 
 MyGuiScrollViewImpl::MyGuiScrollViewImpl(MyGUI::ScrollView* self, bool destroy) noexcept
-	: _parent(nullptr)
+	: _destroy(false)
+	, _parent(nullptr)
 	, _scrollView(self)
-	, _destroy(false)
 {
 	this->setWidget(self);
 }

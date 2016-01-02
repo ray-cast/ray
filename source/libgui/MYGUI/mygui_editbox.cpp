@@ -45,16 +45,16 @@ __ImplementSubClass(MyGuiEditBox, GuiEditBox, "MyGuiEditBox")
 __ImplementSubClass(MyGuiEditBoxImpl, MyGuiWidget, "MyGuiEditBoxImpl")
 
 MyGuiEditBoxImpl::MyGuiEditBoxImpl() noexcept
-	: _editBox(nullptr)
+	: _destroy(true)
 	, _parent(nullptr)
-	, _destroy(true)
+	, _editBox(nullptr)
 {
 }
 
 MyGuiEditBoxImpl::MyGuiEditBoxImpl(MyGUI::EditBox* self, bool destroy) noexcept
-	: _parent(nullptr)
+	: _destroy(destroy)
+	, _parent(nullptr)
 	, _editBox(self)
-	, _destroy(destroy)
 {
 }
 

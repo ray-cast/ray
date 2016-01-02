@@ -47,6 +47,7 @@
 #   include <dos.h>
 #   include <io.h>
 #elif defined(__LINUX__) || defined(__ANDROID__)
+#	include <sys/stat.h>
 #	include <sys/types.h>
 #	include <sys/param.h>
 #	include <unistd.h>
@@ -176,37 +177,29 @@ inline int stat64(const std::string& filename, struct __stat* stat)
 	return ::__stat(filename.data(), stat);
 }
 
-inline int stat64(const wchar_t* filename, struct _stat64* stat)
+inline int stat64(const wchar_t* filename, struct __stat* stat)
 {
 #if defined(__WINDOWS__)
 	return ::__wstat(filename, stat);
 #elif defined(__LINUX__)
-	//    char fn[PATHLIMIT];
-	//    char m[PATHLIMIT];
-	//    if (::wcstombs(fn, filename, PATHLIMIT) == (std::size_t)-1)
-	//    {
-	//        return EOF;
-	//    }
-	//
-	//    return ::__stat(fn stat);
+	char fn[PATHLIMIT];
+	if (::wcstombs(fn, filename, PATHLIMIT) == (std::size_t)-1)
+		return EOF;
+	return ::__stat(fn, stat);
 #else
 	return EOF;
 #endif
 }
 
-inline int stat64(const std::wstring& filename, struct _stat64* stat)
+inline int stat64(const std::wstring& filename, struct __stat* stat)
 {
 #if defined(__WINDOWS__)
 	return ::__wstat(filename.data(), stat);
 #elif defined(__LINUX__)
-	//    char fn[PATHLIMIT];
-	//    char m[PATHLIMIT];
-	//    if (::wcstombs(fn, filename.c_str(), PATHLIMIT) == (std::size_t)-1)
-	//    {
-	//        return EOF;
-	//    }
-	//
-	//    return ::__stat(fn stat);
+	char fn[PATHLIMIT];
+	if (::wcstombs(fn, filename.c_str(), PATHLIMIT) == (std::size_t)-1)
+		return EOF;
+	return ::__stat(fn, stat);
 #else
 	return EOF;
 #endif

@@ -39,8 +39,8 @@
 _NAME_BEGIN
 
 MemoryBuf::MemoryBuf() noexcept
-    : _next(0)
-	, _isMappinged(false)
+    : _isMappinged(false)
+	, _next(0)
 {
 }
 

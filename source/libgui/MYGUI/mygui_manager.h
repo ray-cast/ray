@@ -61,6 +61,8 @@ private:
 	bool _isInitialise;
 
 	std::string _resolvePath;
+
+	MyGUI::VectorString _string;
 };
 
 _NAME_END

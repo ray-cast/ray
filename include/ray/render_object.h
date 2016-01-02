@@ -103,14 +103,10 @@ private:
 
 private:
 
-	bool _isCastShadow;
-	bool _isReceiveShadow;
-
 	std::uint8_t _layer;
 
-	Matrix4x4 _transform;
-	Matrix4x4 _transformInverse;
-	Matrix4x4 _transformInverseTranspose;
+	bool _isCastShadow;
+	bool _isReceiveShadow;
 
 	Bound _boundingBox;
 
@@ -122,6 +118,10 @@ private:
 	MaterialPtr _material;
 
 	RenderObjects _renderObjects;
+
+	Matrix4x4 _transform;
+	Matrix4x4 _transformInverse;
+	Matrix4x4 _transformInverseTranspose;
 };
 
 _NAME_END

@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class EXPORT exception
+class EXPORT exception : public std::exception
 {
 public:
 	exception(const error_code::int_type code) noexcept;
@@ -51,9 +51,9 @@ public:
 
 	virtual ~exception() noexcept;
 
-	const util::string& message() const noexcept;
-	const util::string& stack() const noexcept;
-	const util::string& what() const noexcept;
+	const char* message() const noexcept;
+	const char* stack() const noexcept;
+	const char* what() const noexcept;
 
 	const error_code& code() const noexcept;
 

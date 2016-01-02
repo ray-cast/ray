@@ -77,7 +77,7 @@ public:
 
     void lock()
     {
-        std::size_t hash = std::this_thread::get_id();
+        std::thread::id hash = std::this_thread::get_id();
         if (_thread_id == hash && _count > 0)
             ++_count;
         else

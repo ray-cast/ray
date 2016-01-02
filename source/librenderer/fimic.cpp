@@ -78,7 +78,7 @@ FimicToneMapping::setSetting(const Setting& setting) noexcept
 	_bloomThreshold->assign(_setting.bloomThreshold);
 	_bloomIntensity->assign(_setting.bloomIntensity);
 
-	_toneLumAve->assign(setting.lumAve);
+	_toneLumAve->assign(1.0f / setting.lumAve);
 	_toneLumKey->assign(setting.lumKey);
 	_toneLumExposure->assign(setting.lumExposure);
 
@@ -115,8 +115,8 @@ FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsRenderTextu
 
 	_lumAdapt = _lumAdapt + ((lum - _lumAdapt) * (1.0f - pow(_setting.lumKey, _setting.lumDelta * delta)));
 	_lumAdapt += 0.001f;
-
-	_toneLumAve->assign(_lumAdapt);
+	
+	_toneLumAve->assign(1.0f / _lumAdapt);
 	_toneLumKey->assign(ToneKey(_lumAdapt));
 	_toneLumExposure->assign(ToneExposure(_lumAdapt));
 }

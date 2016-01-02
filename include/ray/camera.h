@@ -50,8 +50,6 @@ enum CameraType
 enum CameraOrder
 {
 	CO_SHADOW,
-	CO_DEPTH_OPAQUES,
-	CO_DEPTH_TRANSPARENT,
 	CO_COLOR,
 	CO_NORMAL,
 	CO_LIGHT,

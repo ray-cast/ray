@@ -67,6 +67,7 @@ OGLDevice::open(WindHandle win) noexcept
 	if (context)
 	{
 		_glcontext = context->downcast<OGLDeviceContext>();
+		_glcontext->setSwapInterval(SwapInterval::Vsync);
 		return true;
 	}
 
@@ -473,6 +474,7 @@ OGLDevice::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 	assert(_glcontext);
 	_glcontext->drawRenderBuffer(renderable);
 }
+
 void
 OGLDevice::drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept
 {

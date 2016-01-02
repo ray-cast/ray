@@ -251,7 +251,6 @@ public:
 		t *= ood;
 		v *= ood;
 		w *= ood;
-		float u = 1.0f - v - w;
 		return true;
 	}
 };

@@ -186,3 +186,16 @@ IF(BUILD_PLATFORM_SDL2)
 ENDIF()
 
 SET_TARGET_ATTRIBUTE(ray "engine")
+
+SET(PLATFORM_LIST
+    ${HEADER_PATH}/ray.h
+    ${HEADER_PATH}/ray_main.h
+    ${SOURCE_PATH}/ray_pc.cpp
+    ${SOURCE_PATH}/ray_ndk.cpp
+    ${SOURCE_PATH}/ray_jni.cpp
+)
+SOURCE_GROUP("ray" FILES ${PLATFORM_LIST})
+
+ADD_LIBRARY(ray-c STATIC ${PLATFORM_LIST})
+TARGET_LINK_LIBRARIES(ray-c ray glfw)
+SET_TARGET_ATTRIBUTE("ray-c" "engine")

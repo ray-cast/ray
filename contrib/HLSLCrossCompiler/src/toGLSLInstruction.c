@@ -10,6 +10,10 @@
 #define min(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 
+#ifndef max
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
+#endif
+
 extern void AddIndentation(HLSLCrossCompilerContext* psContext);
 static int IsIntegerImmediateOpcode(OPCODE_TYPE eOpcode);
 

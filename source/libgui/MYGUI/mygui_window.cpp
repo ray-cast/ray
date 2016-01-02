@@ -43,8 +43,8 @@ __ImplementSubClass(MyGuiWindow, GuiWindow, "MyGuiWindow")
 __ImplementSubClass(MyGuiWindowImpl, MyGuiWidget, "MyGuiWindowImpl")
 
 MyGuiWindowImpl::MyGuiWindowImpl() noexcept
-	: _window(nullptr)
-	, _parent(nullptr)
+	: _parent(nullptr)
+	, _window(nullptr)
 {
 }
 

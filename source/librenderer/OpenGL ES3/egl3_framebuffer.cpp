@@ -195,8 +195,6 @@ EGL3RenderTexture::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachme
 		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, handle, 0));
 	else if (target == GL_TEXTURE_2D_ARRAY)
 		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_ARRAY, handle, 0));
-	else if (target == GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
-		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE_ARRAY, handle, 0));
 	else if (target == GL_TEXTURE_CUBE_MAP)
 		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0));
 	else
@@ -234,8 +232,8 @@ EGL3RenderTexture::getDevice() noexcept
 }
 
 EGL3MultiRenderTexture::EGL3MultiRenderTexture() noexcept
-	: _fbo(GL_NONE)
-	, _isActive(false)
+	: _isActive(false)
+	, _fbo(GL_NONE)
 {
 }
 
@@ -400,8 +398,6 @@ EGL3MultiRenderTexture::bindRenderTexture(GraphicsTexturePtr texture, GLenum att
 		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE, handle, 0));
 	else if (target == GL_TEXTURE_2D_ARRAY)
 		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_ARRAY, handle, 0));
-	else if (target == GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
-		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D_MULTISAMPLE_ARRAY, handle, 0));
 	else if (target == GL_TEXTURE_CUBE_MAP)
 		GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, handle, 0));
 	else

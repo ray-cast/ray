@@ -65,16 +65,6 @@ public:
 	{
 	}
 
-	template<typename U>
-	operator Matrix4x4t() const
-	{
-		return Matrix4x4t<U>(
-			static_cast<U>(a1), static_cast<U>(a2), static_cast<U>(a3), static_cast<U>(a4),
-			static_cast<U>(b1), static_cast<U>(b2), static_cast<U>(b3), static_cast<U>(b4),
-			static_cast<U>(c1), static_cast<U>(c2), static_cast<U>(c3), static_cast<U>(c4),
-			static_cast<U>(d1), static_cast<U>(d2), static_cast<U>(d3), static_cast<U>(d4));
-	}
-
 	template<typename S>
 	explicit Matrix4x4t(const Matrix4x4t<S>& m)
 	{

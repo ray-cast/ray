@@ -154,13 +154,13 @@ int strncmp(const wchar_t* s1, const wchar_t* s2, std::size_t cnt)
 
 int stricmp(const std::string& a, const std::string& b)
 {
-	register int i = (int)b.length() - (int)a.length();
+	int i = (int)b.length() - (int)a.length();
 	return (i ? i : stricmp(a.c_str(), b.c_str()));
 }
 
 int stricmp(const std::wstring& a, const std::wstring& b)
 {
-	register int i = (int)b.length() - (int)a.length();
+	int i = (int)b.length() - (int)a.length();
 	return (i ? i : stricmp(a.c_str(), b.c_str()));
 }
 
@@ -171,7 +171,7 @@ int stricmp(const char *s1, const char *s2)
 #elif defined __GNUWIN__
 	return ::strcasecmp(s1, s2);
 #else
-	register char c1, c2;
+	char c1, c2;
 
 	if (s1 == s2)
 		return 0;
@@ -193,7 +193,7 @@ int stricmp(const wchar_t *s1, const wchar_t *s2)
 #elif defined __GNUWIN__
 	return ::wcsicmp(s1, s2);
 #else
-	register wint_t c1, c2;
+	wint_t c1, c2;
 
 	if (s1 == s2)
 		return 0;
@@ -215,7 +215,7 @@ int strnicmp(const char *s1, const char *s2, std::size_t n)
 #elif defined __GNUWIN__
 	return ::strncasecmp(s1, s2, n);
 #else
-	register char c1, c2;
+	char c1, c2;
 
 	if (s1 == s2)
 		return 0;
@@ -239,7 +239,7 @@ int strnicmp(const wchar_t *s1, const wchar_t *s2, std::size_t n)
 #if defined _VISUAL_STUDIO_
 	return ::_wcsnicmp(s1, s2, n);
 #else
-	register std::wint_t c1, c2;
+	std::wint_t c1, c2;
 	std::size_t p = 0;
 
 	if (s1 == s2)

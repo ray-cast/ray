@@ -161,10 +161,13 @@ EGL3Types::asEGL3Target(TextureDim target, bool multisampler) noexcept
 	}
 	else if (target == TextureDim::DIM_2D_ARRAY)
 	{
-		if (multisampler)
-			return GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
-		else
+		if (!multisampler)
 			return GL_TEXTURE_2D_ARRAY;
+		else
+		{
+			GL_PLATFORM_LOG("Can't support 2d texture array multisampler");
+			return GL_INVALID_ENUM;
+		}
 	}
 	else if (target == TextureDim::DIM_3D)
 	{
@@ -178,10 +181,13 @@ EGL3Types::asEGL3Target(TextureDim target, bool multisampler) noexcept
 	}
 	else if (target == TextureDim::DIM_3D_ARRAY)
 	{
-		if (multisampler)
-			return GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
-		else
+		if (!multisampler)
 			return GL_TEXTURE_2D;
+		else
+		{
+			GL_PLATFORM_LOG("Can't support 3d texture array multisampler");
+			return GL_INVALID_ENUM;
+		}
 	}
 	else if (target == TextureDim::DIM_CUBE)
 	{
@@ -352,9 +358,9 @@ EGL3Types::asEGL3Internalformat(TextureFormat format) noexcept
 	case TextureFormat::R8G8B8A8:
 		return GL_RGBA8;
 	case TextureFormat::R16G16B16:
-		return GL_RGB16;
+		return GL_RGB16UI;
 	case TextureFormat::R16G16B16A16:
-		return GL_RGBA16;
+		return GL_RGBA16UI;
 	case TextureFormat::R16G16B16F:
 		return GL_RGB16F;
 	case TextureFormat::R32G32B32F:
@@ -379,10 +385,6 @@ EGL3Types::asEGL3Internalformat(TextureFormat format) noexcept
 		return GL_RG32F;
 	case TextureFormat::R11G11B10F:
 		return GL_R11F_G11F_B10F;
-	case TextureFormat::R16G16B16_SNORM:
-		return GL_RGB16_SNORM_EXT;
-	case TextureFormat::R16G16B16A16_SNORM:
-		return GL_RGBA16_SNORM_EXT;
 	case TextureFormat::RGB_DXT1:
 		return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 	case TextureFormat::RGBA_DXT1:
@@ -391,6 +393,12 @@ EGL3Types::asEGL3Internalformat(TextureFormat format) noexcept
 		return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 	case TextureFormat::RGBA_DXT5:
 		return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+	case TextureFormat::R16G16B16_SNORM:
+		GL_PLATFORM_LOG("Can't support R16G16B16_SNORM");
+		return GL_INVALID_ENUM;
+	case TextureFormat::R16G16B16A16_SNORM:
+		GL_PLATFORM_LOG("Can't support R16G16B16A16_SNORM");
+		return GL_INVALID_ENUM;
 	case TextureFormat::RG_ATI2:
 		GL_PLATFORM_LOG("Can't support RG_ATI2");
 		return GL_INVALID_ENUM;

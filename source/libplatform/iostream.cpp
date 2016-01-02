@@ -39,8 +39,8 @@
 _NAME_BEGIN
 
 Stream::iosentry::iosentry(Stream* _istr)
-    :_myIostr(_istr)
-    , _ok(true)
+    : _ok(true)
+	, _myIostr(_istr)
 {
     if (_myIostr->rdbuf() != 0)
         _myIostr->rdbuf()->lock();

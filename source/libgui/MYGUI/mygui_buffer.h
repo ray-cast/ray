@@ -66,7 +66,6 @@ private:
 
 	std::size_t _vertexCount;
 	std::size_t _needVertexCount;
-	std::size_t _sizeInBytes;
 };
 
 _NAME_END

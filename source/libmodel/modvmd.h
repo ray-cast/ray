@@ -133,7 +133,7 @@ class VMDHandler final : public ModelHandler
 {
 public:
 	VMDHandler() noexcept;
-	~VMDHandler();
+	~VMDHandler() noexcept;
 
 	bool doCanRead(StreamReader& stream) const noexcept;
 

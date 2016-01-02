@@ -41,8 +41,8 @@ _NAME_BEGIN
 __ImplementSingleton(IoInterface)
 
 IoLoader::IoLoader() noexcept
-	: _cached(true)
-	, _loaded(false)
+	: _loaded(false)
+	, _cached(true)
 {
 }
 
@@ -107,8 +107,8 @@ IoLoader::getName() const noexcept
 }
 
 IoInterface::IoInterface() noexcept
-	: _isPause(false)
-	, _isQuit(false)
+	: _isQuit(false)
+	, _isPause(false)
 {
 }
 

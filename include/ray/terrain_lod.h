@@ -57,8 +57,8 @@ class Lod : public down_cast<T>
 {
 public:
 	Lod() noexcept
-		: _max_depth(0)
-		, _min_depth(0)
+		: _min_depth(0)
+		, _max_depth(0)
 	{
 	}
 

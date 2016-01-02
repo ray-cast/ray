@@ -3,15 +3,16 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_PATH})
 
-FOREACH(mylauncher
-    cubes
-    ssrr
-    sssss
-    ui
-    sound
+FOREACH(mySamples
+    "1.HelloWorld"
+    "2.UI"
+    "3.Sound"
+    "4.SSRR"
+    "5.SSSSS"
+    "6.CubeWorld"
 )
-ADD_SUBDIRECTORY(${mylauncher})
+ADD_SUBDIRECTORY(${mySamples})
 
-SET_TARGET_ATTRIBUTE(${mylauncher} "sample")
+SET_TARGET_ATTRIBUTE(${mySamples} "sample")
 
 ENDFOREACH()

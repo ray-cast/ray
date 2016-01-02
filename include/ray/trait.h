@@ -188,10 +188,10 @@ namespace trait
     };
 
     template<typename _Ty>
-    struct char_traits;
+    class char_traits;
 
     template<>
-    struct char_traits<char> : public _Char_traits<char, long>
+    class char_traits<char> : public _Char_traits<char, long>
     {
     public:
         static const std::string towcs(const wchar_t* str) noexcept
@@ -203,29 +203,29 @@ namespace trait
         }
 
         static const_pointer towcs(const char* str) noexcept
-            {
- return (str);
-}
+		{
+			return (str);
+		}
 
-static pointer get_pointer(pointer name) noexcept
-    {
-return name;
-}
+		static pointer get_pointer(pointer name) noexcept
+		{
+			return name;
+		}
 
-static const_pointer get_pointer(const_pointer name) noexcept
-    {
-return name;
-}
+		static const_pointer get_pointer(const_pointer name) noexcept
+		{
+			return name;
+		}
 
-static void set_pointer(const_pointer*& str, const_pointer* value) noexcept
-    {
-str = value;
-}
+		static void set_pointer(const_pointer*& str, const_pointer* value) noexcept
+		{
+			str = value;
+		}
 
-static bool empty(const_pointer* str)
-    {
-return nullptr == str;
-}
+		static bool empty(const_pointer* str)
+		{
+			return nullptr == str;
+		}
     };
 
     template<>
@@ -241,86 +241,86 @@ return nullptr == str;
         }
 
         static const_pointer towcs(const wchar_t* str) noexcept
-            {
- return str;
-}
+        {
+			return str;
+		}
 
-static pointer get_pointer(pointer str) noexcept
-    {
-return str;
-}
+		static pointer get_pointer(pointer str) noexcept
+		{
+			return str;
+		}
 
-static const_pointer get_pointer(const_pointer str) noexcept
-    {
-return str;
-}
+		static const_pointer get_pointer(const_pointer str) noexcept
+		{
+			return str;
+		}
 
-static void set_pointer(const_pointer*& str, const_pointer* value) noexcept
-    {
-str = value;
-}
+		static void set_pointer(const_pointer*& str, const_pointer* value) noexcept
+		{
+			str = value;
+		}
 
-static bool empty(const_pointer* str)
-    {
-return nullptr == str;
-}
+		static bool empty(const_pointer* str)
+		{
+			return nullptr == str;
+		}
     };
 
     template<>
     class char_traits<std::string> : public _Char_traits<char, long>
     {
     public:
-        static const_pointer get_pointer(const std::string& name) noexcept
-            {
- return name.c_str();
-}
+        static const_pointer get_pointer(const std::string& name) noexcept  
+		{
+			return name.c_str();
+		}
 
-static void set_pointer(std::string& str, const_pointer value) noexcept
-{
-    if (nullptr == value)
-        str.clear();
-    else
-        str = value;
-}
+		static void set_pointer(std::string& str, const_pointer value) noexcept
+		{
+			if (nullptr == value)
+				str.clear();
+			else
+				str = value;
+		}
 
-static void set_poineter(std::string& s1, const std::string& s2) noexcept
-    {
-s1 = s2;
-}
+		static void set_poineter(std::string& s1, const std::string& s2) noexcept
+		{
+			s1 = s2;
+		}
 
-static bool empty(const std::string& str)
-    {
-return str.empty();
-}
+		static bool empty(const std::string& str)
+		{
+			return str.empty();
+		}
     };
 
     template<>
     class char_traits<std::wstring> : public _Char_traits<wchar_t, long>
     {
     public:
-        static const_pointer get_pointer(const std::wstring& str) noexcept
-            {
- return str.c_str();
-}
+		static const_pointer get_pointer(const std::wstring& str) noexcept
+		{
+			return str.c_str();
+		}
 
-static void set_pointer(std::wstring& str, const_pointer value) noexcept
-{
-    if (nullptr == value)
-        str.clear();
-    else
-        str = value;
-}
+		static void set_pointer(std::wstring& str, const_pointer value) noexcept
+		{
+			if (nullptr == value)
+				str.clear();
+			else
+				str = value;
+		}
 
-static void set_poineter(std::wstring& s1, const std::wstring& s2) noexcept
-    {
-s1 = s2;
-}
+		static void set_poineter(std::wstring& s1, const std::wstring& s2) noexcept
+		{
+			s1 = s2;
+		}
 
-static bool empty(const std::wstring& str)
-    {
-return str.empty();
-}
-    };
+		static bool empty(const std::wstring& str)
+		{
+			return str.empty();
+		}
+	};
 }
 
 _NAME_END

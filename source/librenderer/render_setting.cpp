@@ -39,16 +39,16 @@
 _NAME_BEGIN
 
 RenderSetting::RenderSetting() noexcept
-	: enableSAT(false)
-	, enableSSAO(false)
+	: enableSSAO(false)
 	, enableSSGI(false)
+	, enableSAT(false)
 	, enableSSR(false)
 	, enableSSSS(false)
-	, enableDOF(false)
 	, enableFog(false)
+	, enableDOF(false)
 	, enableFimic(false)
-	, enableLightShaft(false)
 	, enableFXAA(false)
+	, enableLightShaft(false)
 	, enableColorGrading(false)
 {
 }

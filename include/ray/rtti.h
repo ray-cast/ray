@@ -65,9 +65,8 @@ namespace rtti
 
 	private:
 
-		const Rtti* _parent;
-
 		std::string _name;
+		const Rtti* _parent;
 		RttiConstruct _construct;
 	};
 

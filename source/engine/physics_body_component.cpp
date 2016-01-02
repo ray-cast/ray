@@ -46,11 +46,11 @@ _NAME_BEGIN
 __ImplementSubClass(PhysicsBodyComponent, GameComponent, "PhysicsBody")
 
 PhysicsBodyComponent::PhysicsBodyComponent() noexcept
-	: _constantForce(Vector3::Zero)
+	: _enableKinematic(false)
+	, _constantForce(Vector3::Zero)
 	, _constantTorque(Vector3::Zero)
 	, _constantVelocity(Vector3::Zero)
 	, _constantAngularVelocity(Vector3::Zero)
-	, _enableKinematic(false)
 {
 	_body = std::make_unique<PhysicsRigidbody>();
 	_body->setRigidbodyListener(this);

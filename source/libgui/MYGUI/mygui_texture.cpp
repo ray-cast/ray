@@ -45,12 +45,12 @@ using namespace MyGUI;
 
 MyGuiTexture::MyGuiTexture(const std::string& _name, GuiImageLoaderPtr _loader) noexcept
 	: _name(_name)
+	, _lock(false)
 	, _width(0)
 	, _height(0)
-	, _originalUsage(TextureUsage::Default)
 	, _numElemBytes(0)
 	, _dataSize(0)
-	, _lock(false)
+	, _originalUsage(TextureUsage::Default)
 	, _imageLoader(_loader)
 	, _renderTarget(nullptr)
 {

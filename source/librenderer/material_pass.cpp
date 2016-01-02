@@ -61,7 +61,7 @@ MaterialPass::setup(Material& material) except
 		auto uniformName = uniform->getName();
 		if (uniform->getType() == ShaderVariantType::Texture)
 		{
-			auto pos = uniformName.find_first_of('_X_');
+			auto pos = uniformName.find_first_of("_X_");
 			if (pos != std::string::npos)
 				uniformName = uniformName.substr(0, pos);
 		}

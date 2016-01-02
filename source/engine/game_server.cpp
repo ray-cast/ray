@@ -48,9 +48,9 @@ _NAME_BEGIN
 __ImplementSubClass(GameServer, rtti::Interface, "GameServer")
 
 GameServer::GameServer() noexcept
-	: _gameApp(nullptr)
-	, _isActive(false)
+	: _isActive(false)
 	, _isQuitRequest(false)
+	, _gameApp(nullptr)
 {
 }
 

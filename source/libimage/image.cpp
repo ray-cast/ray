@@ -308,9 +308,9 @@ Image::find(StreamReader& stream, ImageType type, ImageHandlerPtr& out) const no
 void
 Image::cmyk_to_rgb(image_buf rgb, const image_buf cmyk) noexcept
 {
-    register int k = 255 - cmyk[3];
-    register int k2 = cmyk[3];
-    register int c;
+    int k = 255 - cmyk[3];
+    int k2 = cmyk[3];
+    int c;
 
     c = k + k2 * (255 - cmyk[0]) / 255;
     rgb[0] = (pass_val)((c > 255) ? 0 : (255 - c));
@@ -325,9 +325,9 @@ Image::cmyk_to_rgb(image_buf rgb, const image_buf cmyk) noexcept
 void
 Image::cmyk_to_rgba(image_buf rgba, const image_buf cmyk) noexcept
 {
-    register int k = 255 - cmyk[3];
-    register int k2 = cmyk[3];
-    register int c;
+    int k = 255 - cmyk[3];
+    int k2 = cmyk[3];
+    int c;
 
     c = k + k2 * (255 - cmyk[0]) / 255;
     rgba[0] = (pass_val)((c > 255) ? 0 : (255 - c));
@@ -344,35 +344,35 @@ Image::cmyk_to_rgba(image_buf rgba, const image_buf cmyk) noexcept
 void
 Image::cmyk_to_rgb(RGB* texel, const image_buf cmyk) noexcept
 {
-    register int k = 255 - cmyk[3];
-    register int k2 = cmyk[3];
-    register int c;
+    int k = 255 - cmyk[3];
+    int k2 = cmyk[3];
+    int c;
 
     c = k + k2 * (255 - cmyk[0]) / 255;
-    texel->r = (unsigned char)((c > 255) ? 0 : (255 - c));
+    texel->r = (std::uint8_t)((c > 255) ? 0 : (255 - c));
 
     c = k + k2 * (255 - cmyk[1]) / 255;
-    texel->g = (unsigned char)((c > 255) ? 0 : (255 - c));
+    texel->g = (std::uint8_t)((c > 255) ? 0 : (255 - c));
 
     c = k + k2 * (255 - cmyk[2]) / 255;
-    texel->b = (unsigned char)((c > 255) ? 0 : (255 - c));
+    texel->b = (std::uint8_t)((c > 255) ? 0 : (255 - c));
 }
 
 void
 Image::cmyk_to_rgba(RGBA* texel, const image_buf cmyk) noexcept
 {
-    register int k = 255 - cmyk[3];
-    register int k2 = cmyk[3];
-    register int c;
+    int k = 255 - cmyk[3];
+    int k2 = cmyk[3];
+    int c;
 
     c = k + k2 * (255 - cmyk[0]) / 255;
-    texel->r = (unsigned char)((c > 255) ? 0 : (255 - c));
+    texel->r = (std::uint8_t)((c > 255) ? 0 : (255 - c));
 
     c = k + k2 * (255 - cmyk[1]) / 255;
-    texel->g = (unsigned char)((c > 255) ? 0 : (255 - c));
+    texel->g = (std::uint8_t)((c > 255) ? 0 : (255 - c));
 
     c = k + k2 * (255 - cmyk[2]) / 255;
-    texel->b = (unsigned char)((c > 255) ? 0 : (255 - c));
+    texel->b = (std::uint8_t)((c > 255) ? 0 : (255 - c));
 
     texel->a = 255;
 }
@@ -396,34 +396,34 @@ Image::hsv_to_rgb(RGB& rgb, float h, float s, float v) noexcept
     switch (i)
     {
     case 0:
-        rgb.r = (unsigned char)(255 * v);
-        rgb.g = (unsigned char)(255 * t);
-        rgb.b = (unsigned char)(255 * p);
+        rgb.r = (std::uint8_t)(255 * v);
+        rgb.g = (std::uint8_t)(255 * t);
+        rgb.b = (std::uint8_t)(255 * p);
         break;
     case 1:
-        rgb.r = (unsigned char)(255 * q);
-        rgb.g = (unsigned char)(255 * v);
-        rgb.b = (unsigned char)(255 * p);
+        rgb.r = (std::uint8_t)(255 * q);
+        rgb.g = (std::uint8_t)(255 * v);
+        rgb.b = (std::uint8_t)(255 * p);
         break;
     case 2:
-        rgb.r = (unsigned char)(255 * p);
-        rgb.g = (unsigned char)(255 * v);
-        rgb.b = (unsigned char)(255 * t);
+        rgb.r = (std::uint8_t)(255 * p);
+        rgb.g = (std::uint8_t)(255 * v);
+        rgb.b = (std::uint8_t)(255 * t);
         break;
     case 3:
-        rgb.r = (unsigned char)(255 * p);
-        rgb.g = (unsigned char)(255 * q);
-        rgb.b = (unsigned char)(255 * v);
+        rgb.r = (std::uint8_t)(255 * p);
+        rgb.g = (std::uint8_t)(255 * q);
+        rgb.b = (std::uint8_t)(255 * v);
         break;
     case 4:
-        rgb.r = (unsigned char)(255 * t);
-        rgb.g = (unsigned char)(255 * p);
-        rgb.b = (unsigned char)(255 * v);
+        rgb.r = (std::uint8_t)(255 * t);
+        rgb.g = (std::uint8_t)(255 * p);
+        rgb.b = (std::uint8_t)(255 * v);
         break;
     case 5:
-        rgb.r = (unsigned char)(255 * v);
-        rgb.g = (unsigned char)(255 * p);
-        rgb.b = (unsigned char)(255 * q);
+        rgb.r = (std::uint8_t)(255 * v);
+        rgb.g = (std::uint8_t)(255 * p);
+        rgb.b = (std::uint8_t)(255 * q);
         break;
     }
 }
@@ -446,34 +446,34 @@ Image::hsv_to_rgba(RGBA& rgb, float h, float s, float v) noexcept
     switch (i)
     {
     case 0:
-        rgb.r = (unsigned char)(255 * v);
-        rgb.g = (unsigned char)(255 * t);
-        rgb.b = (unsigned char)(255 * p);
+        rgb.r = (std::uint8_t)(255 * v);
+        rgb.g = (std::uint8_t)(255 * t);
+        rgb.b = (std::uint8_t)(255 * p);
         break;
     case 1:
-        rgb.r = (unsigned char)(255 * q);
-        rgb.g = (unsigned char)(255 * v);
-        rgb.b = (unsigned char)(255 * p);
+        rgb.r = (std::uint8_t)(255 * q);
+        rgb.g = (std::uint8_t)(255 * v);
+        rgb.b = (std::uint8_t)(255 * p);
         break;
     case 2:
-        rgb.r = (unsigned char)(255 * p);
-        rgb.g = (unsigned char)(255 * v);
-        rgb.b = (unsigned char)(255 * t);
+        rgb.r = (std::uint8_t)(255 * p);
+        rgb.g = (std::uint8_t)(255 * v);
+        rgb.b = (std::uint8_t)(255 * t);
         break;
     case 3:
-        rgb.r = (unsigned char)(255 * p);
-        rgb.g = (unsigned char)(255 * q);
-        rgb.b = (unsigned char)(255 * v);
+        rgb.r = (std::uint8_t)(255 * p);
+        rgb.g = (std::uint8_t)(255 * q);
+        rgb.b = (std::uint8_t)(255 * v);
         break;
     case 4:
-        rgb.r = (unsigned char)(255 * t);
-        rgb.g = (unsigned char)(255 * p);
-        rgb.b = (unsigned char)(255 * v);
+        rgb.r = (std::uint8_t)(255 * t);
+        rgb.g = (std::uint8_t)(255 * p);
+        rgb.b = (std::uint8_t)(255 * v);
         break;
     case 5:
-        rgb.r = (unsigned char)(255 * v);
-        rgb.g = (unsigned char)(255 * p);
-        rgb.b = (unsigned char)(255 * q);
+        rgb.r = (std::uint8_t)(255 * v);
+        rgb.g = (std::uint8_t)(255 * p);
+        rgb.b = (std::uint8_t)(255 * q);
         break;
     }
 

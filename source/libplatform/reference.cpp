@@ -41,9 +41,9 @@ _NAME_BEGIN
 __ImplementSubClass(Reference, rtti::Interface, "Reference")
 
 Reference::Reference() noexcept
-	: _pointer(nullptr)
-	, _gc(false)
+	: _gc(false)
 	, _count(1)
+	, _pointer(nullptr)
 {
 }
 

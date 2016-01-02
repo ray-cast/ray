@@ -34,3 +34,73 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#ifndef _H_RAY_H_
+#define _H_RAY_H_
+
+#ifndef RAY_C_LINKAGE
+#	ifdef __cplusplus
+#		define RAY_C_LINKAGE extern "C"
+#	else
+#		define RAY_C_LINKAGE extern
+#	endif
+#endif
+
+#if defined(_BUILD_PLATFORM_WINDOWS)
+#	ifndef __WIN32__
+#		define __WIN32__ 1
+#	endif
+
+#	if defined(_BUILD_DLL_EXPORT)
+#		define RAY_EXPORT
+#		define RAY_EXPORT_WINONLY
+#	else
+#		define RAY_EXPORT
+#		define RAY_EXPORT_WINONLY
+#	endif
+
+#	ifndef  RAY_CALL
+#		define RAY_CALL __stdcall
+#	endif
+
+#elif defined(_BUILD_PLATFORM_ANDROID)
+#include <jni.h>
+
+#	ifndef RAY_EXPORT
+#		define RAY_EXPORT JNIEXPORT
+#		define RAY_EXPORT_WINONLY
+#	endif
+
+#	ifndef  RAY_CALL
+#		define RAY_CALL JNICALL
+#	endif
+
+#endif
+
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL rayInit(const char* gamedir, const char* scenename) noexcept;
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL rayTerminate() noexcept;
+
+RAY_C_LINKAGE RAY_EXPORT bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept;
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL rayCloseWindow() noexcept;
+
+RAY_C_LINKAGE RAY_EXPORT bool RAY_CALL rayIsQuitRequest() noexcept;
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL rayUpdate() noexcept;
+
+#if defined(_BUILD_PLATFORM_ANDROID)
+
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeConfig(JNIEnv*  env, jobject thiz, jstring gamedir, jstring scenename, jboolean bShader);
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeStorage(JNIEnv*  env, jobject thiz, jint type, jstring pakagename, jstring apklocation);
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeOpen(JNIEnv*  env, jobject thiz, jint w, jint h, jfloat dpiw, jfloat dpih, jobject assetManager);
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeClose(JNIEnv* env, jobject thiz);
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeRender(JNIEnv* env, jobject obj);
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeOnPause(JNIEnv* env, jobject obj);
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeOnResume(JNIEnv* env, jobject obj);
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeOnStop(JNIEnv* env, jobject obj);
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeTouchesBegin(JNIEnv* env, jobject obj, jint pIDs, jfloat pXs, jfloat pYs);
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeTouchesMove(JNIEnv* env, jobject obj, jintArray pIDs, jfloatArray pXs, jfloatArray pYs);
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeTouchesEnd(JNIEnv* env, jobject obj, jint pIDs, jfloat pXs, jfloat pYs);
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeTouchesCancel(JNIEnv* env, jobject obj, jintArray pIDs, jfloatArray pXs, jfloatArray pYs);
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeKeyPress(JNIEnv* env, jobject obj, jint pKeyCode);
+
+#endif
+
+#endif

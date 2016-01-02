@@ -74,12 +74,11 @@ private:
 
 private:
 
-    float _startTime;
-
-    float _averageFps;
-
     float _fps;
+	float _averageFps;
+
     float _appTime;
+	float _startTime;
     float _lastTime;
     float _frameTime;
     float _accumulateTime;

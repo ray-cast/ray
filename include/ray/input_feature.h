@@ -38,7 +38,7 @@
 #define _H_INPUT_FEATURES_H_
 
 #include <ray/game_features.h>
-#include <ray/input_event.h>
+#include <ray/input.h>
 
 _NAME_BEGIN
 

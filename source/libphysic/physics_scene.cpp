@@ -44,11 +44,11 @@
 _NAME_BEGIN
 
 PhysicsScene::Setting::Setting() noexcept
-    : gravity(0.0f, 9.81f, 0.0f)
-    , length(1.0f)
+    : length(1.0f)
     , mass(1000.0f)
     , speed(10.0f)
     , skinWidth(0.0001f)
+	, gravity(0.0f, 9.81f, 0.0f)
 {
     aabb.min = Vector3(-1000, -1000, -1000);
     aabb.max = Vector3(1000, 1000, 1000);

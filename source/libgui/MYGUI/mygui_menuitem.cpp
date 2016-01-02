@@ -44,8 +44,8 @@ __ImplementSubClass(MyGuiMenuItemImpl, MyGuiWidget, "MyGuiMenuItemImpl")
 __ImplementSubClass(MyGuiMenuItem, GuiMenuItem, "MyGuiMenuItem")
 
 MyGuiMenuItemImpl::MyGuiMenuItemImpl() noexcept
-	: _menuItem(nullptr)
-	, _parent(nullptr)
+	: _parent(nullptr)
+	, _menuItem(nullptr)
 {
 }
 

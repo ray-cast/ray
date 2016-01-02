@@ -44,16 +44,16 @@ __ImplementSubClass(MyGuiButtonImpl, MyGuiWidget, "MyGuiButtonImpl")
 __ImplementSubClass(MyGuiButton, GuiButton, "MyGuiButton")
 
 MyGuiButtonImpl::MyGuiButtonImpl() noexcept
-	: _button(nullptr)
+	: _destroy(true)
 	, _parent(nullptr)
-	, _destroy(true)
+	, _button(nullptr)
 {
 }
 
 MyGuiButtonImpl::MyGuiButtonImpl(MyGUI::Button* self, bool destroy) noexcept
-	: _button(self)
+	: _destroy(destroy)
 	, _parent(nullptr)
-	, _destroy(destroy)
+	, _button(self)
 {
 	_textbox = std::make_shared<MyGuiTextBox>(_button, false);
 }

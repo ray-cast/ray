@@ -47,8 +47,6 @@ public:
 	GameApplication() noexcept;
 	virtual ~GameApplication() noexcept;
 
-	bool initialize(int argc, char *argv[]) except;
-
 	bool open(WindHandle hwnd, std::size_t width, std::size_t height) except;
 	void close() noexcept;
 
@@ -87,7 +85,6 @@ private:
 private:
 
 	bool _isInitialize;
-	bool _isQuitRequest;
 
 	std::uint32_t _width;
 	std::uint32_t _height;

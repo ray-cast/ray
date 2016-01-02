@@ -69,14 +69,13 @@
 _NAME_BEGIN
 
 GameApplication::GameApplication() noexcept
-	: _ioServer(nullptr)
-	, _ioInterface(nullptr)
-	, _isQuitRequest(false)
-	, _isInitialize(false)
+	: _isInitialize(false)
 	, _workDir("")
 	, _engineDir("..\\..\\engine\\")
 	, _resourceBaseDir("..\\..\\dlc\\")
 {
+	_ioServer = IoServer::instance();
+	_ioInterface = IoInterface::instance();
 }
 
 GameApplication::~GameApplication() noexcept
@@ -85,38 +84,14 @@ GameApplication::~GameApplication() noexcept
 }
 
 bool
-GameApplication::initialize(int argc, char *argv[]) except
-{
-	if (!_isInitialize)
-	{
-		if (argc != 0)
-		{
-			if (fcntl::access(argv[0], 0) != 0)
-				return false;
-			_workDir = util::directory(argv[0]);
-		}
-
-		_ioServer = IoServer::instance();
-		_ioServer->addAssign(IoAssign("sys", _workDir + _engineDir));
-		_ioServer->addAssign(IoAssign("dlc", _workDir + _resourceBaseDir));
-		_ioServer->mountArchives();
-
-		_ioInterface = IoInterface::instance();
-		_ioInterface->open();
-
-		rtti::Factory::instance()->open();
-
-		_isInitialize = true;
-	}
-
-	return _isInitialize;
-}
-
-bool
 GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) except
 {
-	if (!_isInitialize)
+	if (_isInitialize)
 		return false;
+
+	rtti::Factory::instance()->open();
+
+	_ioInterface->open();
 
 	_gameServer = std::make_shared<GameServer>();
 	_gameServer->_setGameApp(this);
@@ -169,6 +144,7 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) ex
 #endif
 	this->start();
 
+	_isInitialize = true;
 	return _isInitialize;
 }
 

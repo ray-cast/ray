@@ -40,9 +40,8 @@
 _NAME_BEGIN
 
 MyGuiVertexBuffer::MyGuiVertexBuffer() noexcept
-	: _needVertexCount(0)
-	, _sizeInBytes(0)
-	, _vertexCount(0)
+	: _vertexCount(0)
+	, _needVertexCount(0)
 {
 }
 

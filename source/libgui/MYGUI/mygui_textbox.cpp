@@ -43,16 +43,16 @@ __ImplementSubClass(MyGuiTextBox, GuiTextBox, "MyGuiTextBox")
 __ImplementSubClass(MyGuiTextBoxImpl, MyGuiWidget, "MyGuiTextBoxImpl")
 
 MyGuiTextBoxImpl::MyGuiTextBoxImpl() noexcept
-	: _table(nullptr)
+	: _destroy(true)
 	, _parent(nullptr)
-	, _destroy(true)
+	, _table(nullptr)
 {
 }
 
 MyGuiTextBoxImpl::MyGuiTextBoxImpl(MyGUI::TextBox* self, bool destroy) noexcept
-	: _table(self)
+	: _destroy(destroy)
 	, _parent(nullptr)
-	, _destroy(destroy)
+	, _table(self)
 {
 	this->setWidget(self);
 }

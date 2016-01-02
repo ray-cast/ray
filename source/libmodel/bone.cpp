@@ -41,7 +41,6 @@ _NAME_BEGIN
 Bone::Bone() noexcept
 	: _parent(-1)
 	, _child(-1)
-	, _needUpdate(true)
 {
 	_worldTransform.loadIdentity();
 	_localTransform.loadIdentity();

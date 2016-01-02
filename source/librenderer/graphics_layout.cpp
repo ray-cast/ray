@@ -41,21 +41,21 @@ _NAME_BEGIN
 __ImplementSubInterface(GraphicsLayout, GraphicsChild, "GraphicsLayoutDesc")
 
 VertexComponent::VertexComponent() noexcept
-	: _format(VertexFormat::Float)
-	, _index(0)
+	: _index(0)
 	, _slot(0)
 	, _count(0)
 	, _size(0)
 	, _divisor(0)
+	, _format(VertexFormat::Float)
 {
 }
 
 VertexComponent::VertexComponent(const std::string& semantic, std::uint8_t semanticIndex, VertexFormat format, std::uint8_t slot, std::uint8_t divisor) noexcept
-	: _format(format)
-	, _semantic(semantic)
+	: _semantic(semantic)
 	, _index(semanticIndex)
 	, _slot(slot)
 	, _divisor(divisor)
+	, _format(format)
 {
 	_count = getVertexCount(format);
 	_size = getVertexSize(format);

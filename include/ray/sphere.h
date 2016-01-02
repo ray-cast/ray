@@ -143,8 +143,8 @@ public:
 	bool intersects(const AABBt<T>& _box) const noexcept
 	{
 		Vector3t<T>  point = _box.closestPoint(_center);
-
-		return center.sqrDistance(point) < _radius * _radius;
+		float dinstance2 = _center.sqrDistance(point);
+		return  dinstance2 < (_radius * _radius);
 	}
 
 	bool intersects(const Raycast3t<T>& ray) const noexcept

@@ -79,4 +79,5 @@ GuiCameraComponent::onPostRender() noexcept
 }
 
 _NAME_END
+
 #endif

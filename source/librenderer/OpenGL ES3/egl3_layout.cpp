@@ -45,9 +45,9 @@ __ImplementSubClass(EGL3GraphicsLayout, GraphicsLayout, "EGL3GraphicsLayout")
 
 EGL3GraphicsLayout::EGL3GraphicsLayout() noexcept
 	: _vao(GL_NONE)
-	, _vertexSize(0)
 	, _indexType(GL_NONE)
 	, _indexSize(0)
+	, _vertexSize(0)
 {
 }
 
@@ -224,7 +224,6 @@ EGL3GraphicsLayout::bindVbo(const EGL3VertexBufferPtr& vbo) noexcept
 {
 	if (_vbo != vbo)
 	{
-		GLsizei vertexByteSize = this->getVertexSize();
 		glBindVertexBuffer(0, vbo->getInstanceID(), 0, _vertexSize);
 		_vbo = vbo;
 	}

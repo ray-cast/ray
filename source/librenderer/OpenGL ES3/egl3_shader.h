@@ -73,7 +73,6 @@ private:
 
 private:
 	GLint _location;
-	GLint  _bindingPoint;
 	GLuint _bindingProgram;
 };
 

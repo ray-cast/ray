@@ -43,8 +43,8 @@ __ImplementSubClass(MyGuiImageBox, GuiImageBox, "MyGuiImageBox")
 __ImplementSubClass(MyGuiImageBoxImpl, GuiWidgetImpl, "MyGuiImageBoxImpl")
 
 MyGuiImageBoxImpl::MyGuiImageBoxImpl() noexcept
-	: _imagebox(nullptr)
-	, _parent(nullptr)
+	: _parent(nullptr)
+	, _imagebox(nullptr)
 {
 }
 

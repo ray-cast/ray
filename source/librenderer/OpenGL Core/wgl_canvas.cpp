@@ -72,7 +72,7 @@ WGLCanvas::WGLCanvas() noexcept
 	: _hwnd(nullptr)
 	, _hdc(nullptr)
 	, _context(nullptr)
-	, _interval(SwapInterval::Vsync)
+	, _interval(SwapInterval::Fps15)
 	, _isActive(true)
 {
 	initPixelFormat(_fbconfig, _ctxconfig);
@@ -264,6 +264,8 @@ WGLCanvas::open(WindHandle hwnd) noexcept
 	_fbconfig = _fbconfig;
 	_ctxconfig = _ctxconfig;
 	_interval = (SwapInterval)wglGetSwapIntervalEXT();
+
+	return true;
 }
 
 void

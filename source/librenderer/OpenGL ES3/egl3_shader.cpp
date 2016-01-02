@@ -47,8 +47,8 @@ __ImplementSubClass(EGL3ShaderAttribute, ShaderAttribute, "EGL3ShaderAttribute")
 __ImplementSubClass(EGL3ShaderUniform, ShaderUniform, "EGL3ShaderUniform")
 
 EGL3ShaderVariant::EGL3ShaderVariant() noexcept
-	: _bindingProgram(0)
-	, _location(0)
+	: _location(0)
+	, _bindingProgram(0)
 {
 }
 
@@ -322,8 +322,8 @@ EGL3Shader::getDevice() noexcept
 }
 
 EGL3ShaderObject::EGL3ShaderObject() noexcept
-	: _program(0)
-	, _isActive(false)
+	: _isActive(false)
+	, _program(0)
 {
 }
 

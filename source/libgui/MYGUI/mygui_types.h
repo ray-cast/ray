@@ -60,11 +60,13 @@
 #include <ray/gui_imageloader.h>
 #include <ray/gui_system_base.h>
 
-#pragma warning(push)
-#pragma warning(disable : 4297)
-#pragma warning(disable : 4127)
-#pragma warning(disable : 5026)
-#pragma warning(disable : 5027)
+#if defined(_VISUAL_STUDIO_)
+#	pragma warning(push)
+#	pragma warning(disable : 4297)
+#	pragma warning(disable : 4127)
+#	pragma warning(disable : 5026)
+#	pragma warning(disable : 5027)
+#endif
 
 #include <MyGUI.h>
 #include <MyGUI_Gui.h>
@@ -77,7 +79,9 @@
 #include <MyGUI_RenderFormat.h>
 #include <MyGUI_RenderManager.h>
 
-#pragma warning(pop)
+#if defined(_VISUAL_STUDIO_)
+#	pragma warning(pop)
+#endif
 
 _NAME_BEGIN
 

@@ -77,10 +77,10 @@ struct KdimensionNode : public KdimensionData<_Ty>
 	}
 
 	KdimensionNode(const _Tx& pt, std::uint8_t flag) noexcept
-		: left(nullptr)
-		, right(nullptr)
-		, pos(pt)
+		: pos(pt)
 		, split(flag)
+		, left(nullptr)
+		, right(nullptr)
 	{
 	}
 
@@ -113,8 +113,8 @@ class KdimensionNearest final
 {
 public:
 	KdimensionNearest() noexcept
-		: _item(nullptr)
-		, _distanceSqrt(0)
+		: _distanceSqrt(0)
+		,_item(nullptr)
 	{
 	}
 
@@ -207,9 +207,9 @@ class KdimensionTreeBase
 {
 public:
 	KdimensionTreeBase() noexcept
-		: _root(nullptr)
-		, _count(0)
+		: _count(0)
 		, _dimension(sizeof(_Tx) / sizeof(typename _Tx::value_type))
+		, _root(nullptr)
 	{
 	}
 

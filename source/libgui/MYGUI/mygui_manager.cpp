@@ -147,8 +147,7 @@ const MyGUI::VectorString&
 MyGuiResManager::getDataListNames(const std::string& _pattern)
 {
 	assert(false);
-	MyGUI::VectorString v;
-	return v;
+	return _string;
 }
 
 const std::string& 

@@ -587,21 +587,19 @@ DeferredRenderPipeline::onRenderPost(RenderPipeline& pipeline) noexcept
 		if (!renderTexture)
 			renderTexture = _deferredShadingMap;
 
-		auto& textureDesc = renderTexture->getResolveTexture()->getGraphicsTextureDesc();
-		auto v1 = Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight());
-		auto v2 = camera->getViewport();
-		if (v2.width == 0 || v2.height == 0)
+		auto v1 = camera->getViewport();
+		if (v1.width == 0 || v1.height == 0)
 		{
 			std::uint32_t width, height;
 			pipeline.getWindowResolution(width, height);
 
-			v2.left = 0;
-			v2.top = 0;
-			v2.width = width;
-			v2.height = height;
+			v1.left = 0;
+			v1.top = 0;
+			v1.width = width;
+			v1.height = height;
 		}
 
-		this->copyRenderTexture(pipeline, renderTexture, nullptr, v2);
+		this->copyRenderTexture(pipeline, renderTexture, nullptr, v1);
 	}
 
 	/*if (_deferredGraphicMap)

@@ -633,7 +633,7 @@ OGLExtenstion::initExtensions() except
 	OGLFeatures::ARB_direct_state_access = GLEW_ARB_direct_state_access ? true : false;
 	OGLFeatures::ARB_buffer_storage = GLEW_ARB_buffer_storage ? true : false;
 	OGLFeatures::ARB_viewport_array = GLEW_ARB_viewport_array ? true : false;
-	OGLFeatures::KHR_debug = GLEW_KHR_debug;
+	OGLFeatures::KHR_debug = GLEW_KHR_debug ? true : false;
 	OGLFeatures::NV_shader_buffer_load = GLEW_NV_shader_buffer_load ? true : false;
 	OGLFeatures::NV_vertex_buffer_unified_memory = GLEW_NV_vertex_buffer_unified_memory ? true : false;
 
@@ -641,7 +641,7 @@ OGLExtenstion::initExtensions() except
 
 	initExtention = true;
 
-	return initExtention;
+	return true;
 }
 
 void

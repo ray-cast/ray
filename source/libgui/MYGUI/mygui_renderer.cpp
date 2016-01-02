@@ -42,10 +42,10 @@
 _NAME_BEGIN
 
 MyGuiRenderer::MyGuiRenderer() noexcept
-	: _imageLoader(nullptr)
+	: _isUpdate(true)
 	, _isInitialise(false)
-	, _isUpdate(true)
 	, _vertexFormat(MyGUI::VertexColourType::ColourABGR)
+	, _imageLoader(nullptr)
 {
 }
 

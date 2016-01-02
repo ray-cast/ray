@@ -44,7 +44,6 @@ _NAME_BEGIN
 struct EXPORT AnimeTranslate
 {
 	double _time;
-
 	Vector3 _translate;
 
 	AnimeTranslate()
@@ -82,7 +81,6 @@ struct EXPORT AnimeTranslate
 struct EXPORT AnimeRotation
 {
 	double _time;
-
 	Quaternion _rotate;
 
 	AnimeRotation()
@@ -122,9 +120,8 @@ struct EXPORT AnimeRotation
 class EXPORT AnimeScaling
 {
 public:
-	Vector3 _scale;
-
 	double _time;
+	Vector3 _scale;
 
 	AnimeScaling()
 		: _time(0)
@@ -133,8 +130,8 @@ public:
 	}
 
 	AnimeScaling(const AnimeScaling& copy)
-		:_scale(copy._scale)
-		, _time(copy._time)
+		: _time(copy._time)
+		, _scale(copy._scale)
 	{
 	}
 
@@ -175,7 +172,6 @@ class EXPORT AnimeFrame
 {
 public:
 	double _time;
-
 	std::size_t _key_frame;
 
 	AnimeFrame() { }
@@ -293,8 +289,6 @@ private:
 	AnimeTranslate _position;
 	AnimeRotation  _rotation;
 	AnimeScaling   _scaling;
-
-	mutable bool _needUpdate;
 
 	mutable Matrix4x4 _transform;
 	mutable Matrix4x4 _worldTransform;

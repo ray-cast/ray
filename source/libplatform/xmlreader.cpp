@@ -41,9 +41,9 @@
 _NAME_BEGIN
 
 XmlBuf::XmlBuf() noexcept
-	: _document(nullptr)
-	, _currentNode(nullptr)
+	: _currentNode(nullptr)
 	, _currentAttrNode(nullptr)
+	, _document(nullptr)
 {
 }
 

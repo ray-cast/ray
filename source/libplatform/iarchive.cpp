@@ -39,8 +39,8 @@
 _NAME_BEGIN
 
 iarchive::isentry::isentry(iarchive* _istr)
-	: _my_istr(_istr)
-	, _ok(true)
+	: _ok(true)
+	, _my_istr(_istr)
 {
 	if (_my_istr->rdbuf() != 0)
 		_my_istr->rdbuf()->lock();

@@ -60,6 +60,7 @@ EGL3Canvas::open(WindHandle hwnd) noexcept
 	EGLint attribs[80];
 	EGLint index = 0, mask = 0, startegy = 0;
 
+#if !defined(_BUILD_PLATFORM_ANDROID)
 	if (_ctxconfig.forward)
 	{
 		attribs[index++] = EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE;
@@ -92,6 +93,12 @@ EGL3Canvas::open(WindHandle hwnd) noexcept
 		}
 	}
 
+	if (mask)
+	{
+		attribs[index++] = EGL_CONTEXT_OPENGL_PROFILE_MASK;
+		attribs[index++] = mask;
+	}
+
 	if (_ctxconfig.major > 0 && _ctxconfig.major < 4)
 	{
 		attribs[index++] = EGL_CONTEXT_MAJOR_VERSION;
@@ -100,12 +107,10 @@ EGL3Canvas::open(WindHandle hwnd) noexcept
 		attribs[index++] = EGL_CONTEXT_MINOR_VERSION;
 		attribs[index++] = _ctxconfig.minor;
 	}
+#endif
 
-	if (mask)
-	{
-		attribs[index++] = EGL_CONTEXT_OPENGL_PROFILE_MASK;
-		attribs[index++] = mask;
-	}
+	attribs[index++] = EGL_CONTEXT_CLIENT_VERSION;
+	attribs[index++] = _ctxconfig.major;
 
     attribs[index++] = EGL_NONE;
     attribs[index++] = EGL_NONE;
@@ -113,7 +118,7 @@ EGL3Canvas::open(WindHandle hwnd) noexcept
 	const EGLint pixelformat[] =
 	{
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 		EGL_RED_SIZE, _fbconfig.redSize,
 		EGL_GREEN_SIZE, _fbconfig.greenSize,
 		EGL_BLUE_SIZE, _fbconfig.blueSize,

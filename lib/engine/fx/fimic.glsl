@@ -168,7 +168,7 @@
                 float3 color = sampleCoord(texSource, coord).rgb;
                 float3 bloom =  sampleCoord(texBloom, coord).rgb;
 
-                color = color * (lumKey / lumAve) + bloom;
+                color = color * (lumKey * lumAve) + bloom;
                 color = FilmicTonemap(color, exposure);
 
                 glsl_FragColor0 = float4(sRGB2RGB(color), 1.0);

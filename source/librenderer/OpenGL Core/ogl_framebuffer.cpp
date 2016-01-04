@@ -168,8 +168,41 @@ OGLRenderTexture::getLayer() const noexcept
 void
 OGLRenderTexture::discard() noexcept
 {
-	GLenum attachment = GL_COLOR_ATTACHMENT0;
-	glInvalidateNamedFramebufferData(_fbo, 1, &attachment);
+	GLenum attachment[3];
+	GLsizei index = 0;
+
+	auto sharedDepthTarget = _framebufferDesc.getSharedDepthTexture();
+	auto sharedStencilTarget = _framebufferDesc.getSharedStencilTexture();
+
+	if (sharedDepthTarget == sharedStencilTarget)
+	{
+		if (sharedDepthTarget)
+			attachment[index++] = GL_DEPTH_STENCIL_ATTACHMENT;
+	}
+	else
+	{
+		if (sharedDepthTarget)
+			attachment[index++] = GL_DEPTH_ATTACHMENT;
+
+		if (sharedStencilTarget)
+			attachment[index++] = GL_STENCIL_ATTACHMENT;
+	}
+
+	auto texture = _framebufferDesc.getGraphicsTexture();
+	auto textureDesc = texture->getGraphicsTextureDesc();
+
+	TextureFormat format = textureDesc.getTexFormat();
+
+	if (format == TextureFormat::DEPTH24_STENCIL8 || format == TextureFormat::DEPTH32_STENCIL8)
+		attachment[index++] = GL_DEPTH_STENCIL_ATTACHMENT;
+	else if (format == TextureFormat::DEPTH_COMPONENT16 || format == TextureFormat::DEPTH_COMPONENT24 || format == TextureFormat::DEPTH_COMPONENT32)
+		attachment[index++] = GL_DEPTH_ATTACHMENT;
+	else if (format == TextureFormat::STENCIL8)
+		attachment[index++] = GL_STENCIL_ATTACHMENT;
+	else
+		attachment[index++] = GL_COLOR_ATTACHMENT0;
+
+	glInvalidateNamedFramebufferData(_fbo, index, attachment);
 }
 
 void

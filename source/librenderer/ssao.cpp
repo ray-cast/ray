@@ -199,7 +199,7 @@ SSAO::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-SSAO::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) except
+SSAO::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except
 {
 	this->computeRawAO(pipeline, source, _texAmbient);
 

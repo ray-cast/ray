@@ -49,8 +49,6 @@ public:
     MSWInputKeyboard() noexcept;
     virtual ~MSWInputKeyboard() noexcept;
 
-protected:
-
     virtual bool getKeyState(InputKey::Code key) const noexcept;
 
 private:

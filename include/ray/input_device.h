@@ -43,6 +43,9 @@
 #elif defined(_BUILD_PLATFORM_WINDOWS)
 #	include <ray/msw_input_device.h>
 #   define ToplevelInputDevice MSWInputDevice
+#elif defined(_BUILD_PLATFORM_ANDROID)
+#	include <ray/ndk_input_device.h>
+#   define ToplevelInputDevice NDKInputDevice
 #endif
 
 #if defined(ToplevelInputDevice)

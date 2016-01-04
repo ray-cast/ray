@@ -77,8 +77,9 @@ RenderSystem::open(WindHandle window, std::size_t w, std::size_t h) except
 
 	RenderSetting setting;
 	setting.enableSSAO = false;
-	setting.enableFimic = false;
-	setting.enableFXAA = false;
+	setting.enableFimic = true;
+	setting.enableFXAA = true;
+	setting.enableColorGrading = true;
 	this->setRenderSetting(setting);
 }
 

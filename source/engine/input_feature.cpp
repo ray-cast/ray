@@ -92,33 +92,41 @@ private:
 
 InputFeature::InputFeature() noexcept
 {
-	_input = std::make_shared<DefaultInput>();
-
-#if !defined(__ANDROID__)
 	auto inputDevice = std::make_shared<DefaultInputDevice>();
-	auto inputKeyboard = std::make_shared<DefaultInputKeyboard>();
-	auto inputMouse = std::make_shared<DefaultInputMouse>();
+	
+	_input = std::make_shared<DefaultInput>();
 	_input->open(inputDevice);
-	_input->obtainKeyboardCapture(inputKeyboard);
-	_input->obtainMouseCapture(inputMouse);
 	_input->addInputListener(std::make_shared<InputEventListener>(*this));
+
+#if defined(ToplevelInputKeyboard)
+	auto inputKeyboard = std::make_shared<DefaultInputKeyboard>();
+	_input->obtainKeyboardCapture(inputKeyboard);
 #endif
+	
+#if defined(ToplevelInputMouse)
+	auto inputMouse = std::make_shared<DefaultInputMouse>();
+	_input->obtainMouseCapture(inputMouse);
+#endif	
 }
 
 InputFeature::InputFeature(CaptureObject hwnd) noexcept
 {
-	_input = std::make_shared<DefaultInput>();
-
-#if !defined(__ANDROID__)
 	auto inputDevice = std::make_shared<DefaultInputDevice>();
-	auto inputKeyboard = std::make_shared<DefaultInputKeyboard>();
-	auto inputMouse = std::make_shared<DefaultInputMouse>();
+
+	_input = std::make_shared<DefaultInput>();
 	_input->open(inputDevice);
-	_input->obtainKeyboardCapture(inputKeyboard);
-	_input->obtainMouseCapture(inputMouse);
 	_input->addInputListener(std::make_shared<InputEventListener>(*this));
 	_input->setCaptureObject(hwnd);
+
+#if defined(ToplevelInputKeyboard)
+	auto inputKeyboard = std::make_shared<DefaultInputKeyboard>();
+	_input->obtainKeyboardCapture(inputKeyboard);
 #endif
+
+#if defined(ToplevelInputMouse)
+	auto inputMouse = std::make_shared<DefaultInputMouse>();
+	_input->obtainMouseCapture(inputMouse);
+#endif	
 }
 
 InputFeature::~InputFeature() noexcept
@@ -181,8 +189,8 @@ InputFeature::onMessage(const MessagePtr& message) except
 
 	if (message->isInstanceOf<InputMessage>())
 	{
-		auto inputEvent = message->downcast<InputMessage>();
-		_input->sendInputEvent(inputEvent->getEvent());
+		auto inputMessage = message->downcast<InputMessage>();
+		_input->sendInputEvent(inputMessage->getEvent());
 	}
 }
 

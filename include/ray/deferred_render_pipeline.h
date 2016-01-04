@@ -163,6 +163,8 @@ private:
 	GraphicsRenderTexturePtr _deferredNormalMap;
 	GraphicsRenderTexturePtr _deferredLightMap;
 	GraphicsRenderTexturePtr _deferredShadingMap;
+	GraphicsRenderTexturePtr _deferredSwapMap;
+	GraphicsRenderTexturePtr _deferredFinalMap;
 
 	GraphicsMultiRenderTexturePtr _deferredGraphicMaps;
 };

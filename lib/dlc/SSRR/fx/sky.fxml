@@ -31,7 +31,7 @@
 
             float4 SkyPS(in float4 normal : TEXCOORD0) : SV_Target
             {
-                return rgba2srgba(sampleSphere(decal, normal.xyz));
+                return srgb2linear(sampleSphere(decal, normal.xyz));
             }
         ]]>
     </shader>

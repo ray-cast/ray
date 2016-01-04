@@ -174,7 +174,7 @@ SSGI::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-SSGI::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept
+SSGI::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
 	this->computeRawAO(pipeline, _texAmbient);
 

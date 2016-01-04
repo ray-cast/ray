@@ -51,7 +51,7 @@ ColorGrading::onActivate(RenderPipeline& pipeline) except
 {
 	_texColorGrading = pipeline.createTexture("sys:media/color_grading.png");
 
-	_material = pipeline.createMaterial("sys:fx/color_grading.glsl");
+	_material = pipeline.createMaterial("sys:fx/color_grading.fxml.o");
 	_colorGrading = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("grading");
 	_texGrading = _material->getParameter("texColorGrading");
 	_texSource = _material->getParameter("texSource");
@@ -65,11 +65,12 @@ ColorGrading::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-ColorGrading::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) except
+ColorGrading::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except
 {
 	_texSource->assign(source->getResolveTexture());
 
-	pipeline.setRenderTexture(source);
+	pipeline.setRenderTexture(dest);
+	pipeline.discradRenderTexture();
 	pipeline.drawScreenQuad(_colorGrading);
 }
 

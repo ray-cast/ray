@@ -83,7 +83,7 @@ LightShaft::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-LightShaft::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) except
+LightShaft::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except
 {
 	pipeline.setRenderTexture(_texSample);
 	pipeline.clearRenderTexture(ClearFlags::Default, Vector4::Zero, 1.0, 0);

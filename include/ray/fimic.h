@@ -42,6 +42,10 @@
 
 _NAME_BEGIN
 
+#define SAMPLE_COUNT 6
+#define SAMPLE_LOG_SIZE 32
+#define SAMPLE_LOG_COUNT SAMPLE_LOG_SIZE * SAMPLE_LOG_SIZE
+
 class EXPORT FimicToneMapping final : public RenderPostProcess
 {
 public:
@@ -50,16 +54,9 @@ public:
 		float bloomThreshold;
 		float bloomIntensity;
 
-		float lumAve;
 		float lumKey;
 		float lumDelta;
 		float lumExposure;
-
-		float illuminationNumber;
-		float illuminationWeight;
-		float illuminationDecay;
-
-		float burnout;
 
 		Setting() noexcept;
 	};
@@ -73,14 +70,13 @@ public:
 
 private:
 
-	void sample4(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void sample8(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void sampleLog(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void sunLum(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void sunLumLog(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
 	void measureLuminance(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept;
 
 	void generateBloom(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void generateToneMapping(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void generateToneMapping(RenderPipeline& pipeline, GraphicsRenderTexturePtr bloom, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
 	void blurh(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 	void blurv(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
@@ -90,7 +86,7 @@ private:
 	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept;
+	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
 private:
 
@@ -101,9 +97,8 @@ private:
 	Setting _setting;
 
 	MaterialPtr _fimic;
-	MaterialPassPtr _sample4;
-	MaterialPassPtr _sample8;
-	MaterialPassPtr _samplelog;
+	MaterialPassPtr _sunLum;
+	MaterialPassPtr _sunLumLog;
 	MaterialPassPtr _bloom;
 	MaterialPassPtr _blurh;
 	MaterialPassPtr _blurv;
@@ -121,10 +116,11 @@ private:
 	MaterialParamPtr _toneBurnout;
 	MaterialParamPtr _toneDefocus;
 
+	GraphicsRenderTexturePtr _texBloom[SAMPLE_COUNT];
 	GraphicsRenderTexturePtr _texSample4;
 	GraphicsRenderTexturePtr _texSample8;
 	GraphicsRenderTexturePtr _texSampleLog;
-	GraphicsRenderTexturePtr _texBloom;
+	GraphicsRenderTexturePtr _texCombie;
 };
 
 _NAME_END

@@ -125,7 +125,7 @@ public:
 
 	void addPostProcess(RenderPostProcessPtr postprocess) except;
 	void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
-	void renderPostProcess(GraphicsRenderTexturePtr renderTexture) except;
+	void renderPostProcess(GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr swap, GraphicsRenderTexturePtr& dest) except;
 
 	void renderBegin() noexcept;
 	void renderEnd() noexcept;

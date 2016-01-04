@@ -34,7 +34,7 @@
                 return unpackNormal(mrt1.xyz);
             }
 
-            float restoreRoughness(float4 mrt1)
+            float restoreSmoothness(float4 mrt1)
             {
                 return mrt1.w;
             }

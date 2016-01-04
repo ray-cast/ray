@@ -50,7 +50,7 @@ public:
 	virtual void onActivate(RenderPipeline& pipeline) except;
 	virtual void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept;
+	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
 	void blurh(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 	void blurv(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;

@@ -112,11 +112,11 @@ DeferredRenderPipeline::render3DEnvMap(RenderPipeline& pipeline) noexcept
 	this->renderTransparentShading(_deferredShadingMap);
 	this->renderTransparentSpecificShading(_deferredShadingMap);*/
 
-	pipeline.renderPostProcess(_deferredShadingMap);
+	pipeline.renderPostProcess(_deferredShadingMap, _deferredSwapMap, _deferredFinalMap);
 
 	auto renderTexture = pipeline.getCamera()->getRenderTexture();
 	if (renderTexture)
-		this->copyRenderTexture(pipeline, _deferredShadingMap, renderTexture, pipeline.getCamera()->getViewport());
+		this->copyRenderTexture(pipeline, _deferredFinalMap, renderTexture, pipeline.getCamera()->getViewport());
 }
 
 void
@@ -418,7 +418,7 @@ DeferredRenderPipeline::setupRenderTextures(RenderPipeline& pipeline)
 
 	GraphicsRenderTextureDesc deferredLightDesc;
 	deferredLightDesc.setSharedStencilTexture(_deferredDepthMap);
-	deferredLightDesc.setGraphicsTexture(pipeline.createTexture(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8));
+	deferredLightDesc.setGraphicsTexture(pipeline.createTexture(width, height, TextureDim::DIM_2D, TextureFormat::R16G16B16A16F));
 	_deferredLightMap = pipeline.createRenderTexture(deferredLightDesc);
 
 	GraphicsRenderTextureDesc deferredShadingDesc;
@@ -426,6 +426,12 @@ DeferredRenderPipeline::setupRenderTextures(RenderPipeline& pipeline)
 	deferredShadingDesc.setSharedStencilTexture(_deferredDepthMap);
 	deferredShadingDesc.setGraphicsTexture(pipeline.createTexture(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8));
 	_deferredShadingMap = pipeline.createRenderTexture(deferredShadingDesc);
+
+	GraphicsRenderTextureDesc deferredSwapDesc;
+	deferredSwapDesc.setSharedDepthTexture(_deferredDepthMap);
+	deferredSwapDesc.setSharedStencilTexture(_deferredDepthMap);
+	deferredSwapDesc.setGraphicsTexture(pipeline.createTexture(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8));
+	_deferredSwapMap = pipeline.createRenderTexture(deferredSwapDesc);
 
 	GraphicsMultiRenderTextureDesc deferredGraphicDesc;
 	deferredGraphicDesc.setSharedDepthTexture(_deferredDepthMap);
@@ -585,7 +591,7 @@ DeferredRenderPipeline::onRenderPost(RenderPipeline& pipeline) noexcept
 	{
 		auto renderTexture = camera->getRenderTexture();
 		if (!renderTexture)
-			renderTexture = _deferredShadingMap;
+			renderTexture = _deferredFinalMap;
 
 		auto v1 = camera->getViewport();
 		if (v1.width == 0 || v1.height == 0)

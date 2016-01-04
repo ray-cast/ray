@@ -112,7 +112,7 @@ DepthOfField::shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr color, 
 }
 
 void
-DepthOfField::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept
+DepthOfField::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
 	_texColor->assign(source->getResolveTexture());
 

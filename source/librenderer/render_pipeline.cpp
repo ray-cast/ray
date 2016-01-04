@@ -75,6 +75,7 @@ RenderPipeline::open(WindHandle window, std::uint32_t w, std::uint32_t h) except
 {
 	_graphicsDevice = std::make_shared<RenderDevice>();
 	_graphicsDevice->open(window);
+	_graphicsDevice->setSwapInterval(SwapInterval::Free);
 
 	_graphicsContext = _graphicsDevice->getGraphicsContext();
 
@@ -976,7 +977,7 @@ RenderPipeline::drawRenderQueue(RenderQueue queue, RenderPass pass, MaterialPass
 		for (auto& it : postprocess)
 		{
 			it->onRenderPre(*this);
-			it->onRender(*this, target);
+			it->onRender(*this, target, nullptr);
 			it->onRenderPost(*this);
 		}
 	}
@@ -1041,18 +1042,23 @@ RenderPipeline::removePostProcess(RenderPostProcessPtr postprocess) noexcept
 }
 
 void
-RenderPipeline::renderPostProcess(GraphicsRenderTexturePtr renderTexture) except
+RenderPipeline::renderPostProcess(GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr swap, GraphicsRenderTexturePtr& dest) except
 {
 	auto& renderPostProcess = _postprocessors[RenderQueue::RQ_POSTPROCESS];
+
+	dest = source;
 
 	for (auto& it : renderPostProcess)
 	{
 		if (it->getActive())
 		{
 			it->onRenderPre(*this);
-			it->onRender(*this, renderTexture);
+			it->onRender(*this, source, swap);
 			it->onRenderPost(*this);
 		}
+
+		dest = swap;
+		std::swap(source, swap);
 	}
 }
 

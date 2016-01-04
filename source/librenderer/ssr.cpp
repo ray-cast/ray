@@ -52,7 +52,7 @@ SSR::~SSR() noexcept
 }
 
 void
-SSR::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept
+SSR::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
 	//_projInfo->assign(pipeline.camera->getProjConstant());
 	//_clipInfo->assign(pipeline.camera->getClipConstant());

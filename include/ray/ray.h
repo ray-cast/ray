@@ -87,19 +87,19 @@ RAY_C_LINKAGE RAY_EXPORT void RAY_CALL rayUpdate() noexcept;
 
 #if defined(_BUILD_PLATFORM_ANDROID)
 
-RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeConfig(JNIEnv*  env, jobject thiz, jstring gamedir, jstring scenename, jboolean bShader);
-RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeStorage(JNIEnv*  env, jobject thiz, jint type, jstring pakagename, jstring apklocation);
-RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeOpen(JNIEnv*  env, jobject thiz, jint w, jint h, jfloat dpiw, jfloat dpih, jobject assetManager);
-RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeClose(JNIEnv* env, jobject thiz);
-RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeRender(JNIEnv* env, jobject obj);
-RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeOnPause(JNIEnv* env, jobject obj);
-RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeOnResume(JNIEnv* env, jobject obj);
-RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeOnStop(JNIEnv* env, jobject obj);
-RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeTouchesBegin(JNIEnv* env, jobject obj, jint pIDs, jfloat pXs, jfloat pYs);
-RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeTouchesMove(JNIEnv* env, jobject obj, jintArray pIDs, jfloatArray pXs, jfloatArray pYs);
-RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeTouchesEnd(JNIEnv* env, jobject obj, jint pIDs, jfloat pXs, jfloat pYs);
-RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeTouchesCancel(JNIEnv* env, jobject obj, jintArray pIDs, jfloatArray pXs, jfloatArray pYs);
-RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeKeyPress(JNIEnv* env, jobject obj, jint pKeyCode);
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeConfig(JNIEnv*  env, jobject thiz, jstring gamedir, jstring scenename, jboolean bShader) noexcept;
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeStorage(JNIEnv*  env, jobject thiz, jint type, jstring pakagename, jstring apklocation) noexcept;
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeOpen(JNIEnv*  env, jobject thiz, jint w, jint h, jfloat dpiw, jfloat dpih, jobject assetManager) noexcept;
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeClose(JNIEnv* env, jobject thiz) noexcept;
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeRender(JNIEnv* env, jobject obj) noexcept;
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeOnPause(JNIEnv* env, jobject obj) noexcept;
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeOnResume(JNIEnv* env, jobject obj) noexcept;
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeOnStop(JNIEnv* env, jobject obj) noexcept;
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeTouchesBegin(JNIEnv* env, jobject obj, jint pIDs, jfloat pXs, jfloat pYs) noexcept;
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeTouchesMove(JNIEnv* env, jobject obj, jintArray pIDs, jfloatArray pXs, jfloatArray pYs) noexcept;
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeTouchesEnd(JNIEnv* env, jobject obj, jint pIDs, jfloat pXs, jfloat pYs) noexcept;
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeTouchesCancel(JNIEnv* env, jobject obj, jintArray pIDs, jfloatArray pXs, jfloatArray pYs) noexcept;
+RAY_C_LINKAGE RAY_EXPORT void RAY_CALL Java_org_ray_lib_Ray3DRenderer_nativeKeyPress(JNIEnv* env, jobject obj, jint pKeyCode) noexcept;
 
 #endif
 

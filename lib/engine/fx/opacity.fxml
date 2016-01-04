@@ -34,7 +34,7 @@
             {
                 oCoord = Texcoord.xy;
                 oNormal = mul(Normal, matModelInverseTranspose);
-                oNormal = mul(float4(oNormal.rgb, 0.0), matView);
+                oNormal = mul(float4(oNormal.xyz, 0.0), matView);
                 oPosition = mul(mul(Position, matModel), matViewProject);
             }
 
@@ -57,7 +57,7 @@
                 else
                     spec = texSpecular.Sample(PointClamp, coord).rgb;
 
-                FragData0 = StoreGBufferRT0(rgba2srgba(albedo), spec);
+                FragData0 = StoreGBufferRT0(srgb2linear(albedo), spec);
                 FragData1 = StoreGBufferRT1(normalize(normal.xyz), shininess);
             }
         ]]>

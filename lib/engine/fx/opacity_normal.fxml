@@ -79,7 +79,7 @@
                 else
                     spec = texSpecular.Sample(PointClamp, coord).rgb;
 
-                FragData0 = StoreGBufferRT0(rgba2srgba(albedo), spec);
+                FragData0 = StoreGBufferRT0(srgb2linear(albedo), spec);
                 FragData1 = StoreGBufferRT1(highNormal, shininess);
             }
         ]]>

@@ -142,7 +142,7 @@
 #   endif
 #endif
 
-#if defined(linux) || defined(__linux) || defined(__linux__)
+#if defined(linux) || defined(__linux) || defined(__linux__) || defined(__gnu_linux__)
 #   ifndef __LINUX__
 #       define __LINUX__   1
 #   endif
@@ -158,15 +158,15 @@
 #   endif
 #endif
 
+#if defined(__clang__)
+#	ifndef __CLANG__
+#		define __CLANG__ 1
+#	endif
+#endif
+
 #if defined(__llvm__)
 #   ifndef __LLVM__
 #       define __LLVM__  1
-#   endif
-#endif
-
-#if defined(ANDROID)
-#   ifndef __ANDROID__
-#       define __ANDROID__ 1
 #   endif
 #endif
 
@@ -230,6 +230,12 @@
 #   endif
 #endif
 
+#if defined(ANDROID)
+#   ifndef __ANDROID__
+#       define __ANDROID__ 1
+#   endif
+#endif
+
 #if defined(_DEBUG) || defined(DEBUG)
 #   ifndef __DEBUG__
 #       define __DEBUG__ 1
@@ -250,7 +256,7 @@
 #   endif
 #endif
 
-#if defined(__UNIX__) || defined(__LINUX__)
+#if defined(__UNIX__) || defined(__LINUX__) && !defined(__CLANG__)
 #   define final
 #endif
 

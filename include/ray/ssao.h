@@ -102,7 +102,7 @@ private:
 	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) except;
+	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except;
 
 private:
 

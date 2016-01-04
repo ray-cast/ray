@@ -8,4 +8,8 @@
         <state name="filter"  value="linear"/>
         <state name="wrap"  value="repeat"/>
     </sampler>
+    <sampler name="LinearClamp">
+        <state name="filter"  value="linear"/>
+        <state name="wrap"  value="clamp"/>
+    </sampler>
 </effect>

@@ -52,13 +52,15 @@ private:
 	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept;
+	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
 private:
 
 	MaterialPtr _fxaa;
 	MaterialPassPtr _fxaaPass;
+	MaterialPassPtr _copyPass;
 
+	MaterialParamPtr _texelSource;
 	MaterialParamPtr _texelStep;
 };
 

@@ -18,13 +18,13 @@
             return specular + (1.0f - specular) * exp2((-5.55473 * LdotH - 6.98316) * LdotH);
         }
 
-        float roughnessTerm(float NdotH, float roughness)
+        float smoothnessTerm(float NdotH, float smoothness)
         {
             // https://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel
-            // pow(dotHN, K)
-            // = exp(-K*(1-dotHN))
-            // = exp2(K / InvLog2 * dotHN - K / InvLog2)
-            return (roughness * InvPIE8 + InvPIE4) * exp2(roughness * InvLog2 * NdotH - roughness * InvLog2);
+            // pow(NdotH, smoothness)
+            // = exp(-smoothness*(1-NdotH))
+            // = exp2(smoothness / InvLog2 * NdotH - smoothness / InvLog2)
+            return (smoothness * InvPIE8 + InvPIE4) * exp2(smoothness * InvLog2 * NdotH - smoothness * InvLog2);
         }
 
         float geometricShadowingSchlickBeckmann(float NdotV, float k)
@@ -61,9 +61,9 @@
                 float nh = max(0.0f, dot(H, N));
                 float nv = max(0.0f, dot(V, N));
                 float lh = max(0.0f, dot(L, H));
-                float roughness = pow(8192.0f, gloss);
+                float smoothness = pow(8192.0f, gloss);
 
-                float D = roughnessTerm(nh, roughness);
+                float D = smoothnessTerm(nh, smoothness);
                 float F = fresnelSchlick(specular, lh);
                 float G = geometricShadowingSmith(gloss, nl, nv, lh);
 
@@ -78,16 +78,16 @@
             return prefilteredColor;
         }
 
-        float brdfEnvironmentSpecular(Texture2D texLUT, float3 N, float3 V, float roughness, float specular)
+        float brdfEnvironmentSpecular(Texture2D texLUT, float3 N, float3 V, float gloss, float specular)
         {
             float NdotV = dot(N, V);
             if (NdotV > 0.0f)
             {
-                roughness = pow(8192.0f, roughness);
-                roughness = log2(roughness) / 13.0f;
-                roughness = max(0.5f / 16.0f, roughness);
+                float smoothness = pow(8192.0f, gloss);
+                smoothness = log2(smoothness) / 13.0f;
+                smoothness = max(0.5f / 16.0f, smoothness);
 
-                float2 envBRDF = texLUT.Sample(PointClamp, float2(NdotV, 1.0f - roughness)).rg;
+                float2 envBRDF = texLUT.Sample(PointClamp, float2(NdotV, 1.0f - smoothness)).rg;
 
                 return (mad(specular, envBRDF.x, envBRDF.y));
             }
@@ -95,23 +95,23 @@
             return 0.0f;
         }
 
-        float brdfEnvironmentSpecular(float3 N, float3 V, float roughness, float specular)
+        float brdfEnvironmentSpecular(float3 N, float3 V, float gloss, float specular)
         {
             float NdotV = dot(N, V);
 
-            roughness = pow(8192.0f, roughness);
-            roughness = log2(roughness) / 13.0f;
-            roughness = max(0.5f / 16.0f, roughness);
+            float smoothness = pow(8192.0f, gloss);
+            smoothness = log2(smoothness) / 13.0f;
+            smoothness = max(0.5f / 16.0f, smoothness);
 
             float2 envBRDF;
-            float4 tmp = ((float4(-4.996914762f, 7.253111161f, -1.963867075f, -0.170416225f) * roughness
-                + float4(8.993475061f, -15.42473953f, 4.712593001f, 0.448102365f)) * roughness
-                + float4(-4.928234727f, 10.95286522f, -3.852980973f, -0.389332014f)) * roughness
+            float4 tmp = ((float4(-4.996914762f, 7.253111161f, -1.963867075f, -0.170416225f) * smoothness
+                + float4(8.993475061f, -15.42473953f, 4.712593001f, 0.448102365f)) * smoothness
+                + float4(-4.928234727f, 10.95286522f, -3.852980973f, -0.389332014f)) * smoothness
                 + float4(0.846124834f, -1.596815751f, 1.005729748f, 0.113484128f);
             envBRDF.x = (((tmp.x * NdotV + tmp.y) * NdotV + tmp.z) * NdotV) + tmp.w;
-            tmp = ((float4(-0.684077741f, 1.316163916f, -0.70869252f, 0.073264505f) * roughness
-                + float4(0.719315865f, -1.384932814f, 0.775880046f, -0.105818706f)) * roughness
-                + float4(-0.101034049f, 0.18680998f, -0.117919199f, 0.030727381f)) * roughness
+            tmp = ((float4(-0.684077741f, 1.316163916f, -0.70869252f, 0.073264505f) * smoothness
+                + float4(0.719315865f, -1.384932814f, 0.775880046f, -0.105818706f)) * smoothness
+                + float4(-0.101034049f, 0.18680998f, -0.117919199f, 0.030727381f)) * smoothness
                 + float4(0.001922126f, 0.006697305f, -0.015741592f, 0.007229544f);
             envBRDF.y = (((tmp.x * NdotV + tmp.y) * NdotV + tmp.z) * NdotV) + tmp.w;
             envBRDF = clamp(envBRDF, 0.0f, 1.0f);

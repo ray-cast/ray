@@ -90,7 +90,7 @@ SSSS::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-SSSS::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) except
+SSSS::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except
 {
 	pipeline.setRenderTexture(source);
 

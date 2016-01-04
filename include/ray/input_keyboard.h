@@ -43,6 +43,9 @@
 #elif defined(_BUILD_PLATFORM_WINDOWS)
 #	include <ray/msw_input_keyboard.h>
 #   define ToplevelInputKeyboard MSWInputKeyboard
+#elif defined(_BUILD_PLATFORM_ANDROID)
+#	include <ray/ndk_input_keyboard.h>
+#   define ToplevelInputKeyboard NDKInputKeyboard
 #endif
 
 #if defined(ToplevelInputKeyboard)

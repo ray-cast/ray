@@ -9,55 +9,26 @@
 		#define InvPIE4 0.079577471535f
 		#define PIE 3.141592654f
 
-		float fract(float x)
+		float3 srgb2linear(float3 rgb)
 		{
-			return frac(x);
+			const float ALPHA = 0.055f;
+			return rgb < 0.04045f ? rgb / 12.92f : pow((rgb + ALPHA) / (1 + ALPHA), 2.4f);
 		}
 
-		float2 fract(float2 x)
+		float4 srgb2linear(float4 c)
 		{
-			return frac(x);
+			return float4(srgb2linear(c.rgb), c.a);
 		}
 
-		float3 fract(float3 x)
+		float3 linear2srgb(float3 srgb)
 		{
-			return frac(x);
+			const float ALPHA = 0.055f;
+			return srgb < 0.0031308f ? 12.92f * srgb : (1 + ALPHA) * pow(srgb, 1 / 2.4f) - ALPHA;
 		}
 
-		float4 fract(float4 x)
+		float4 linear2srgb(float4 c)
 		{
-			return frac(x);
-		}
-
-		float rgb2srgb(float x)
-		{
-			if (x < 0.04045f)
-				return x / 12.92f;
-			else
-				return pow((x + 0.055f) / (1.0f + 0.055f), 2.4f);
-		}
-
-		float srgb2rgb(float x)
-		{
-			if (x <= 0.00031308f)
-				return 12.92f * x;
-			else
-				return 1.055f* pow(x, (1.0f / 2.4f)) - 0.055f;
-		}
-
-		float3 rgb2srgb(float3 c)
-		{
-			return float3(rgb2srgb(c.x), rgb2srgb(c.y), rgb2srgb(c.z));
-		}
-
-		float4 rgba2srgba(float4 c)
-		{
-			return float4(rgb2srgb(c.rgb), c.a);
-		}
-
-		float3 srgb2rgb(float3 c)
-		{
-			return float3(srgb2rgb(c.x), srgb2rgb(c.y), srgb2rgb(c.z));
+			return float4(linear2srgb(c.rgb), c.a);
 		}
 
 		float3 rgb2ycbcr(float3 rgb)
@@ -219,14 +190,14 @@
 			float p = sqrt(-normal.z * 8.0f + 8.0f);
 			float2 enc = normal.xy / p + 0.5f;
 			float2 enc255 = enc * 255.0f;
-			float2 residual = floor(fract(enc255) * 16.0f);
+			float2 residual = floor(frac(enc255) * 16.0f);
 			return float3(floor(enc255), residual.x * 16.0f + residual.y) / 255.0f;
 		}
 
 		float3 unpackNormal(float3 enc)
 		{
 			float nz = floor(enc.z * 255.0f) / 16.0f;
-			enc.xy += float2(floor(nz) / 16.0f, fract(nz)) / 255.0f;
+			enc.xy += float2(floor(nz) / 16.0f, frac(nz)) / 255.0f;
 			float2 fenc = enc.xy * 4.0f - 2.0f;
 			float f = dot(fenc, fenc);
 			float g = sqrt(1.0f - f / 4.0f);

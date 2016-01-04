@@ -63,7 +63,7 @@ public:
 	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) noexcept;
 
-	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept;
+	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
 private:
 

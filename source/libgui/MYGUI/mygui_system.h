@@ -61,6 +61,7 @@ public:
 	bool injectMouseMove(int _absx, int _absy, int _absz) noexcept;
 	bool injectMousePress(int _absx, int _absy, GuiInputButton::Code _id) noexcept;
 	bool injectMouseRelease(int _absx, int _absy, GuiInputButton::Code _id) noexcept;
+
 	bool injectKeyPress(GuiInputKey::Code _key, GuiInputChar _char) noexcept;
 	bool injectKeyRelease(GuiInputKey::Code _key) noexcept;
 

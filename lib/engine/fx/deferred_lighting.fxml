@@ -128,7 +128,7 @@
                 float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
 
-                float roughness = restoreRoughness(MRT1);
+                float smoothness = restoreSmoothness(MRT1);
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
@@ -138,7 +138,7 @@
 
                 float4 lighting;
                 lighting.rgb = lightColor * brdfLambert(N, L);
-                lighting.a = brdfSpecular(N, L, V, roughness, specular);
+                lighting.a = brdfSpecular(N, L, V, smoothness, specular);
 
                 return lighting;
             }
@@ -148,7 +148,7 @@
                 float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
 
-                float roughness = restoreRoughness(MRT1);
+                float smoothness = restoreSmoothness(MRT1);
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
@@ -161,7 +161,7 @@
 
                 float4 lighting;
                 lighting.rgb = lightColor * brdfLambert(N, L);
-                lighting.a = brdfSpecular(N, L, V, roughness, specular);
+                lighting.a = brdfSpecular(N, L, V, smoothness, specular);
                 lighting *= shadowLighting(shadowMap, shadowMatrix, shadowFactor, world.xyz);
 
                 return lighting;
@@ -172,7 +172,7 @@
                 float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
 
-                float roughness = restoreRoughness(MRT1);
+                float smoothness = restoreSmoothness(MRT1);
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
@@ -182,7 +182,7 @@
 
                 float4 lighting;
                 lighting.rgb = lightColor * brdfLambert(N, L);
-                lighting.a = brdfSpecular(N, L, V, roughness, specular);
+                lighting.a = brdfSpecular(N, L, V, smoothness, specular);
 
                 return MRT1;
             }
@@ -192,7 +192,7 @@
                 float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
 
-                float roughness = restoreRoughness(MRT1);
+                float smoothness = restoreSmoothness(MRT1);
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
@@ -205,7 +205,7 @@
 
                 float4 lighting;
                 lighting.rgb = lightColor * brdfLambert(N, L);
-                lighting.a = brdfSpecular(N, L, V, roughness, specular);
+                lighting.a = brdfSpecular(N, L, V, smoothness, specular);
                 lighting *= shadowLighting(shadowMap, shadowMatrix, shadowFactor, world.xyz);
 
                 return lighting;
@@ -216,7 +216,7 @@
                 float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
 
-                float roughness = restoreRoughness(MRT1);
+                float smoothness = restoreSmoothness(MRT1);
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
@@ -226,7 +226,7 @@
 
                 float4 lighting;
                 lighting.rgb = lightColor * brdfLambert(N, L);
-                lighting.a = brdfSpecular(N, L, V, roughness, specular);
+                lighting.a = brdfSpecular(N, L, V, smoothness, specular);
                 lighting *= spotLighting(lightPosition, P, lightDirection, lightSpotInnerCone, lightSpotOuterCone, lightAttenuation);
 
                 return lighting;
@@ -237,7 +237,7 @@
                 float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
 
-                float roughness = restoreRoughness(MRT1);
+                float smoothness = restoreSmoothness(MRT1);
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
@@ -247,7 +247,7 @@
 
                 float4 lighting;
                 lighting.rgb = lightColor * brdfLambert(N, L);
-                lighting.a = brdfSpecular(N, L, V, roughness, specular);
+                lighting.a = brdfSpecular(N, L, V, smoothness, specular);
                 lighting *= pointLighting(lightPosition, P, lightAttenuation);
 
                 return lighting;
@@ -258,7 +258,7 @@
                 float4 MRT1 = texMRT1.Sample(PointClamp, coord);
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
 
-                float roughness = restoreRoughness(MRT1);
+                float smoothness = restoreSmoothness(MRT1);
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = mul(restoreNormal(MRT1), (float3x3)matViewInverse);
@@ -267,7 +267,7 @@
 
                 float4 lighting;
                 lighting.rgb = lightColor;
-                lighting.a = brdfEnvironmentSpecular(N, V, roughness, specular);
+                lighting.a = brdfEnvironmentSpecular(N, V, smoothness, specular);
 
                 return lighting;
             }

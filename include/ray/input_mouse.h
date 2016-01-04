@@ -43,6 +43,9 @@
 #elif defined(_BUILD_PLATFORM_WINDOWS)
 #	include <ray/msw_input_mouse.h>
 #   define ToplevelInputMouse MSWInputMouse
+#elif defined(_BUILD_PLATFORM_ANDROID)
+#	include <ray/ndk_input_touch.h>
+#   define ToplevelInputMouse NDKInputTouch
 #endif
 
 #if defined(ToplevelInputMouse)

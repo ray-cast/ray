@@ -50,7 +50,7 @@ public:
 	virtual void onActivate(RenderPipeline& pipeline) except;
 	virtual void onDeactivate(RenderPipeline& pipeline) except;
 
-	virtual void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr texture) except;
+	virtual void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except;
 
 private:
 

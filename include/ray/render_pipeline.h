@@ -117,15 +117,15 @@ public:
 	void drawRenderBuffer(const RenderIndirect& renderable) noexcept;
 	void drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept;
 
+	void addPostProcess(RenderPostProcessPtr postprocess) except;
+	void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
+
 	void drawCone(MaterialPassPtr pass) noexcept;
 	void drawSphere(MaterialPassPtr pass) noexcept;
 	void drawScreenQuad(MaterialPassPtr pass) noexcept;
 	void drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const RenderIndirect& renderable) noexcept;
 	void drawRenderQueue(RenderQueue type, RenderPass pass, MaterialPassPtr material = nullptr, GraphicsRenderTexturePtr target = nullptr) noexcept;
-
-	void addPostProcess(RenderPostProcessPtr postprocess) except;
-	void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
-	void renderPostProcess(GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr swap, GraphicsRenderTexturePtr& dest) except;
+	void drawPostProcess(RenderQueue queue, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr swap, GraphicsRenderTexturePtr& dest) noexcept;
 
 	void renderBegin() noexcept;
 	void renderEnd() noexcept;

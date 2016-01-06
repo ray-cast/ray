@@ -47,28 +47,35 @@ public:
 	SSSS() noexcept;
 	~SSSS() noexcept;
 
+	void blurX(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void blurY(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+
+	void translucency(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept;
+
+private:
+
 	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except;
+	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
 private:
+
+	float _sssStrength;
+	float _gaussianWidth;
 
 	MaterialPtr _material;
 	MaterialPassPtr _translucency;
 	MaterialPassPtr _blurX;
 	MaterialPassPtr _blurY;
 
-	MaterialParamPtr _clipInfo;
-
-	MaterialParamPtr _correction;
-	MaterialParamPtr _strength;
 	MaterialParamPtr _sssWidth;
-	MaterialParamPtr _sssStencil;
-	MaterialParamPtr _sssColor;
+	MaterialParamPtr _sssStep;
+	MaterialParamPtr _sssCorrection;
+	MaterialParamPtr _sssSource;
 
+	MaterialParamPtr _lightColor;
 	MaterialParamPtr _lightDirection;
-	MaterialParamPtr _lightFarPlane;
 	MaterialParamPtr _lightShadowMap;
 	MaterialParamPtr _lightShadowMatrix;
 

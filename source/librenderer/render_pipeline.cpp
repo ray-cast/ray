@@ -970,17 +970,6 @@ RenderPipeline::drawRenderQueue(RenderQueue queue, RenderPass pass, MaterialPass
 		this->onRenderObject(*it, queue, pass, material);
 		this->onRenderObjectPost(*it, queue, pass, material);
 	}
-
-	if (pass == RenderPass::RP_POSTPROCESS)
-	{
-		auto postprocess = _postprocessors[queue];
-		for (auto& it : postprocess)
-		{
-			it->onRenderPre(*this);
-			it->onRender(*this, target, nullptr);
-			it->onRenderPost(*this);
-		}
-	}
 }
 
 void
@@ -988,8 +977,8 @@ RenderPipeline::setWindowResolution(std::uint32_t width, std::uint32_t height) n
 {
 	if (_width != width || _height != height)
 	{
-		auto& renderPostProcess = _postprocessors[RenderQueue::RQ_POSTPROCESS];
-		for (auto& it : renderPostProcess)
+		auto& drawPostProcess = _postprocessors[RenderQueue::RQ_POSTPROCESS];
+		for (auto& it : drawPostProcess)
 		{
 			if (it->getActive())
 				it->onResolutionChangeBefore(*this);
@@ -998,7 +987,7 @@ RenderPipeline::setWindowResolution(std::uint32_t width, std::uint32_t height) n
 		_width = width;
 		_height = height;
 
-		for (auto& it : renderPostProcess)
+		for (auto& it : drawPostProcess)
 		{
 			if (it->getActive())
 				it->onResolutionChangeAfter(*this);
@@ -1017,13 +1006,13 @@ void
 RenderPipeline::addPostProcess(RenderPostProcessPtr postprocess) except
 {
 	auto renderQueue = postprocess->getRenderQueue();
-	auto& renderPostProcess = _postprocessors[renderQueue];
+	auto& drawPostProcess = _postprocessors[renderQueue];
 
-	if (std::find(renderPostProcess.begin(), renderPostProcess.end(), postprocess) == renderPostProcess.end())
+	if (std::find(drawPostProcess.begin(), drawPostProcess.end(), postprocess) == drawPostProcess.end())
 	{
 		postprocess->_setRenderPipeline(this);
 		postprocess->setActive(true);
-		renderPostProcess.push_back(postprocess);
+		drawPostProcess.push_back(postprocess);
 	}
 }
 
@@ -1031,24 +1020,23 @@ void
 RenderPipeline::removePostProcess(RenderPostProcessPtr postprocess) noexcept
 {
 	auto renderQueue = postprocess->getRenderQueue();
-	auto& renderPostProcess = _postprocessors[renderQueue];
+	auto& drawPostProcess = _postprocessors[renderQueue];
 
-	auto it = std::find(renderPostProcess.begin(), renderPostProcess.end(), postprocess);
-	if (it != renderPostProcess.end())
+	auto it = std::find(drawPostProcess.begin(), drawPostProcess.end(), postprocess);
+	if (it != drawPostProcess.end())
 	{
 		postprocess->setActive(false);
-		renderPostProcess.erase(it);
+		drawPostProcess.erase(it);
 	}
 }
 
 void
-RenderPipeline::renderPostProcess(GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr swap, GraphicsRenderTexturePtr& dest) except
+RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr swap, GraphicsRenderTexturePtr& dest) noexcept
 {
-	auto& renderPostProcess = _postprocessors[RenderQueue::RQ_POSTPROCESS];
-
 	dest = source;
 
-	for (auto& it : renderPostProcess)
+	auto& drawPostProcess = _postprocessors[queue];
+	for (auto& it : drawPostProcess)
 	{
 		if (it->getActive())
 		{

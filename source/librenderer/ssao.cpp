@@ -54,7 +54,7 @@ SSAO::Setting::Setting() noexcept
 
 SSAO::SSAO() noexcept
 {
-	this->setRenderQueue(RenderQueue::RQ_OPAQUE);
+	this->setRenderQueue(RenderQueue::RQ_LIGHTING);
 }
 
 SSAO::~SSAO() noexcept
@@ -68,7 +68,6 @@ SSAO::setSetting(const Setting& setting) noexcept
 	const float blurFalloff = 1.0 / (2.0 * blurSigma * blurSigma);
 
 	_blurFactor->assign(blurFalloff);
-	_blurRadius->assign(_setting.blurRadius);
 	_blurSharpness->assign(_setting.blurSharpness);
 
 	_occlusionRadius->assign(_setting.radius);
@@ -92,7 +91,7 @@ SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, Gr
 	_cameraProjScale->assign(pipeline.getCamera()->getProjLength().y * _setting.radius);
 
 	pipeline.setRenderTexture(dest);
-	pipeline.clearRenderTexture(ClearFlags::Color, Vector4::Zero, 1.0, 0);
+	pipeline.discradRenderTexture();
 	pipeline.drawScreenQuad(_ambientOcclusionPass);
 }
 
@@ -125,16 +124,16 @@ SSAO::blurDirection(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, G
 	_blurSource->assign(source->getResolveTexture());
 
 	pipeline.setRenderTexture(dest);
-	pipeline.clearRenderTexture(ClearFlags::Color, Vector4::Zero, 1.0, 0);
+	pipeline.discradRenderTexture();
 	pipeline.drawScreenQuad(_ambientOcclusionBlurPass);
 }
 
 void
-SSAO::shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr ao) noexcept
+SSAO::shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr ambient, GraphicsRenderTexturePtr dest) noexcept
 {
-	_occlusionAmbient->assign(ao->getResolveTexture());
+	_occlusionAmbient->assign(ambient->getResolveTexture());
 
-	pipeline.setRenderTexture(source);
+	pipeline.setRenderTexture(dest);
 	pipeline.drawScreenQuad(_ambientOcclusionCopyPass);
 }
 
@@ -166,7 +165,7 @@ SSAO::onActivate(RenderPipeline& pipeline) except
 	_texAmbient = pipeline.createRenderTexture(width, height, TextureDim::DIM_2D, TextureFormat::R16F);
 	_texBlur = pipeline.createRenderTexture(width, height, TextureDim::DIM_2D, TextureFormat::R16F);
 
-	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssao.glsl");
+	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssao.fxml.o");
 	_ambientOcclusionPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ao");
 	_ambientOcclusionBlurPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("blur");
 	_ambientOcclusionCopyPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("copy");
@@ -209,10 +208,10 @@ SSAO::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, Graphi
 		this->blurVertical(pipeline, _texBlur, _texAmbient);
 	}
 
-	this->shading(pipeline, source, _texAmbient);
+	this->shading(pipeline, _texAmbient, dest);
 
-	//pipeline.blitRenderTexture(_texAmbient, Viewport(0, 0, 1376, 768), source, Viewport(0, 0, 1376, 768));
-	//pipeline.blitRenderTexture(_texAmbient, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));
+	// pipeline.blitRenderTexture(_texAmbient, Viewport(0, 0, 1376, 768), dest, Viewport(0, 0, 1376, 768));
+	// pipeline.blitRenderTexture(_texAmbient, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));
 }
 
 _NAME_END

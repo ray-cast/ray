@@ -302,6 +302,7 @@ OGLMultiRenderTexture::setup(const GraphicsMultiRenderTextureDesc& multiFramebuf
 
 	glNamedFramebufferDrawBuffers(_fbo, count, draw);
 
+	_multiFramebufferDesc = multiFramebufferDesc;
 	return true;
 }
 

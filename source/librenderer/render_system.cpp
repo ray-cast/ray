@@ -76,8 +76,9 @@ RenderSystem::open(WindHandle window, std::size_t w, std::size_t h) except
 	_pipelineManager->open(_renderPipeline);
 
 	RenderSetting setting;
+	setting.enableSSSS = false;
 	setting.enableSSAO = false;
-	setting.enableFimic = true;
+	setting.enableFimic = false;
 	setting.enableFXAA = true;
 	setting.enableColorGrading = true;
 	this->setRenderSetting(setting);

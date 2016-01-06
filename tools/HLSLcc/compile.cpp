@@ -314,7 +314,7 @@ FxmlCompile::load(ray::iarchive& reader) except
 						if (it.value == "point")
 							_hlslCodes += "Filter = MIN_MAG_MIP_POINT;";
 						else if (it.value == "linear")
-							_hlslCodes += "Filter = MIN_MAG_MIP_LINEAR;";						
+							_hlslCodes += "Filter = MIN_MAG_MIP_LINEAR;";
 					}
 					else if (it.name == "wrap")
 					{

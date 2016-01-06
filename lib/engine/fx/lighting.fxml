@@ -4,7 +4,7 @@
     <include name="sys:fx/sampler.fxml"/>
     <shader>
         <![CDATA[
-        float fresnelSchlick(float specular, float LdotH)
+        float fresnelSchlick(float LdotH, float specular)
         {
             // https://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel
             // pow(1 - LdotH, 5)
@@ -13,9 +13,19 @@
             return specular + (1.0f - specular) * exp2((-5.55473 * LdotH - 6.98316) * LdotH);
         }
 
-        float3 fresnelSchlick(float3 specular, float LdotH)
+        float3 fresnelSchlick(float LdotH, float3 specular)
         {
             return specular + (1.0f - specular) * exp2((-5.55473 * LdotH - 6.98316) * LdotH);
+        }
+
+        float3 fresnelSchlick(float3 L, float3 H, float specular)
+        {
+            return fresnelSchlick(dot(L, H), specular);
+        }
+
+        float3 fresnelSchlick(float3 L, float3 H, float3 specular)
+        {
+            return fresnelSchlick(dot(L, H), specular);
         }
 
         float smoothnessTerm(float NdotH, float smoothness)
@@ -51,6 +61,14 @@
             return max(0.0f, nl);
         }
 
+        float skinBeckmann(float ndoth, float m)
+        {
+            float alpha = acos(ndoth);
+            float ta = tan( alpha );
+            float val = 1.0f / (m * m * pow(ndoth,4.0f)) * exp(-(ta * ta) / (m * m ));
+            return val;
+        }
+
         float brdfSpecular(float3 N, float3 L, float3 V, float gloss, float specular)
         {
             float nl = max(0.0f, dot(N, L));
@@ -63,8 +81,9 @@
                 float lh = max(0.0f, dot(L, H));
                 float smoothness = pow(8192.0f, gloss);
 
+                float S = skinBeckmann(nh, gloss);
                 float D = smoothnessTerm(nh, smoothness);
-                float F = fresnelSchlick(specular, lh);
+                float F = fresnelSchlick(lh, specular);
                 float G = geometricShadowingSmith(gloss, nl, nv, lh);
 
                 return max(0.0f, D * F * G * nl);
@@ -114,7 +133,7 @@
                 + float4(-0.101034049f, 0.18680998f, -0.117919199f, 0.030727381f)) * smoothness
                 + float4(0.001922126f, 0.006697305f, -0.015741592f, 0.007229544f);
             envBRDF.y = (((tmp.x * NdotV + tmp.y) * NdotV + tmp.z) * NdotV) + tmp.w;
-            envBRDF = clamp(envBRDF, 0.0f, 1.0f);
+            envBRDF = saturate(envBRDF);
 
             return specular * envBRDF.x + envBRDF.y;
         }
@@ -130,14 +149,6 @@
             float d2 = dot(v, v);
             float d = sqrt(d2);
             return 1.0f / dot(atten, float3(1.0f, d, d2));
-        }
-
-        float skinBeckmann(float ndoth, float m)
-        {
-            float alpha = acos( ndoth );
-            float ta = tan( alpha );
-            float val = 1.0f/(m*m*pow(ndoth,4.0f))*exp(-(ta*ta)/(m*m));
-            return val;
         }
 
         float directionLighting(float3 P, float3 N, float3 L, float3 lightAttenuation)
@@ -160,22 +171,16 @@
             return attenuation;
         }
 
-        float shadowLighting(Texture2D shadowMap, float4x4 shadowMatrix, float shadowFactor, float3 P)
+        float shadowLighting(Texture2D shadowMap, float4x4 shadowMatrix, float shadowFactor, float3 worldPosition)
         {
-            float4 proj = mul(float4(P, 1.0f), shadowMatrix);
-            proj.xyz /= proj.w;
-            proj.xy = mad(proj.xy, 0.5f, 0.5f);
-
-            if (proj.x < 0.0f || proj.y < 0.0f ||
-                proj.x > 1.0f || proj.y > 1.0f)
-            {
-                return 1.0f;
-            }
+            float4 proj = mul(float4(worldPosition, 1.0), shadowMatrix);
+            proj /= proj.w;
+            proj.xy = PosToCoord(proj.xy);
 
             float d1 = shadowMap.Sample(PointClamp, proj.xy).r;
             float d2 = proj.z;
-            float d = shadowFactor * (d1 - d2);
-            float shadow = clamp(exp(d), 0.0f, 1.0f);
+            float d = exp(shadowFactor * (d1 - d2));
+            float shadow = saturate(d);
 
             return shadow;
         }
@@ -183,24 +188,18 @@
         float shadowLighting(Texture2DArray shadowMap, float4x4 shadowMatrix, float shadowFactor, float3 worldPosition, int index)
         {
             float4 proj = mul(float4(worldPosition, 1.0), shadowMatrix);
-            proj.xy /= proj.w;
-            proj.xy = proj.xy * 0.5 + 0.5;
-
-            if (proj.x < 0 || proj.y < 0 ||
-                proj.x > 1 || proj.y > 1)
-            {
-                return 1;
-            }
+            proj /= proj.w;
+            proj.xy = PosToCoord(proj.xy);
 
             float d1 = shadowMap.Sample(PointClamp, float3(proj.xy,index)).r;
             float d2 = proj.z;
-            float d = shadowFactor * (d1 - d2);
-            float shadow = clamp(exp(d), 0, 1);
+            float d = exp(shadowFactor * (d1 - d2));
+            float shadow = saturate(d);
 
             return shadow;
         }
 
-        float shadowCubeLighting(Texture2DArray shadowMap, float4x4 shadowMatrix, float shadowFactor, float3 worldPosition, float3 lightPosition, float3 world)
+        float shadowCubeLighting(Texture2DArray shadowMap, float4x4 shadowMatrix, float shadowFactor, float4 worldPosition, float3 lightPosition, float3 world)
         {
             float3 L = lightPosition - world;
 

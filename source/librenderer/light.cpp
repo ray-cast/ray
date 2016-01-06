@@ -259,7 +259,7 @@ Light::_updateShadow() const noexcept
 	{
 		if (!_shadowCamera->getRenderTexture())
 		{
-			auto depthTexture = RenderSystem::instance()->createRenderTexture(_shadowSize, _shadowSize, TextureDim::DIM_2D, TextureFormat::DEPTH_COMPONENT32);
+			auto depthTexture = RenderSystem::instance()->createRenderTexture(_shadowSize, _shadowSize, TextureDim::DIM_2D, TextureFormat::DEPTH_COMPONENT16);
 			_shadowCamera->setRenderTexture(depthTexture);
 		}
 	}
@@ -272,16 +272,16 @@ Light::_updateShadow() const noexcept
 
 	/*if (_lightType == LT_SUN)
 	{
-	auto camera = *_renderScene->getCameraList().rbegin();
+		auto camera = *_renderScene->getCameraList().rbegin();
 
-	auto translate = _shadowTranslate + camera->getTranslate();
-	translate.y = _shadowTranslate.y;
+		auto translate = _shadowTranslate + camera->getTranslate();
+		translate.y = _shadowTranslate.y;
 
-	auto lookat = _shadowLookAt + camera->getTranslate();
-	lookat.y = _shadowLookAt.y;
+		auto lookat = _shadowLookAt + camera->getTranslate();
+		lookat.y = _shadowLookAt.y;
 
-	_shadowCamera->makeLookAt(translate, lookat, Vector3::UnitZ);
-	_shadowCamera->makeViewProject();
+		_shadowCamera->makeLookAt(translate, lookat, Vector3::UnitZ);
+		_shadowCamera->makeViewProject();
 	}*/
 }
 
@@ -291,6 +291,8 @@ Light::onWillRenderObject(const Camera& camera) noexcept
 	auto listener = this->getOwnerListener();
 	if (listener)
 		listener->onWillRenderObject(camera);
+
+	this->_updateShadow();
 }
 
 void 

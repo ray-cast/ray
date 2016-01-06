@@ -353,7 +353,7 @@ OGLTypes::asTextureInternalFormat(TextureFormat format) noexcept
 	case TextureFormat::DEPTH_COMPONENT24:
 		return GL_DEPTH_COMPONENT24;
 	case TextureFormat::DEPTH_COMPONENT32:
-		return GL_DEPTH_COMPONENT32F;
+		return GL_DEPTH_COMPONENT32;
 	case TextureFormat::DEPTH24_STENCIL8:
 		return GL_DEPTH24_STENCIL8;
 	case TextureFormat::DEPTH32_STENCIL8:

@@ -311,9 +311,8 @@ public:
 	void applyMatrix(const Matrix4x4t<T>& m) noexcept
 	{
 		assert(!empty());
-
-		min += m.getTranslate();
-		max += m.getTranslate();
+		min = min * m;
+		max = max * m;
 	}
 
 	T intersects(const Line3t<T>& line, Vector3t<T>* returnNormal) const noexcept

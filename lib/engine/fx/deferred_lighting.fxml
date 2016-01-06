@@ -143,21 +143,20 @@
                 return lighting;
             }
 
-            float4 DeferredSunLightShadowPS(in float2 coord : TEXCOORD0) : SV_Target
+            float4 DeferredSunLightShadowPS(in float4 coord : TEXCOORD0) : SV_Target
             {
-                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
-                float4 MRT0 = texMRT0.Sample(PointClamp, coord);
+                float4 MRT1 = texMRT1.Sample(PointClamp, coord.xy);
+                float4 MRT0 = texMRT0.Sample(PointClamp, coord.xy);
 
                 float smoothness = restoreSmoothness(MRT1);
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
-                float3 P = restorePosition(texDepthLinear, projInfo, coord);
+                float3 P = restorePosition(texDepthLinear, projInfo, coord.xy);
                 float3 V = normalize(eyePosition - P);
                 float3 L = lightDirection;
 
                 float4 world = mul(float4(P, 1.0), matViewInverse);
-                world /= world.w;
 
                 float4 lighting;
                 lighting.rgb = lightColor * brdfLambert(N, L);
@@ -276,7 +275,7 @@
             {
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
 
-                float3 color = restoreRGB(texMRT0, coord);
+                float3 color = restoreDiffuse(texMRT0, coord);
                 float4 light = texLight.Sample(PointClamp, coord);
 
                 color = color * light.rgb + light.rgb * light.a;
@@ -288,7 +287,7 @@
             {
                 float4 MRT0 = texMRT0.Sample(PointClamp, coord);
 
-                float3 color = restoreRGB(texMRT0, coord);
+                float3 color = restoreDiffuse(texMRT0, coord);
                 float4 light = texLight.Sample(PointClamp, coord);
 
                 color = color * light.rgb + light.rgb * light.a;

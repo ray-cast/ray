@@ -16,6 +16,21 @@
             {
                 return mad(Position, 0.5, 0.5);
             }
+
+            float2 CoordToPos(float2 coord)
+            {
+                return mad(coord, 2.0, -1.0);
+            }
+
+            float3 CoordToPos(float3 coord)
+            {
+                return mad(coord, 2.0, -1.0);
+            }
+
+            float4 CoordToPos(float4 coord)
+            {
+                return mad(coord, 2.0, -1.0);
+            }
         ]]>
     </shader>
 </effect>

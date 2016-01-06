@@ -44,7 +44,7 @@
 
 _NAME_BEGIN
 
-const float ESM_FACTOR = 1000.0f;
+const float ESM_FACTOR = 300.0f;
 
 DeferredRenderPipeline::DeferredRenderPipeline() noexcept
 {
@@ -74,10 +74,8 @@ void
 DeferredRenderPipeline::renderShadowMap(RenderPipeline& pipeline) noexcept
 {
 	pipeline.setRenderTexture(pipeline.getCamera()->getRenderTexture());
-	pipeline.clearRenderTexture(ClearFlags::Default, Vector4::Zero, 1.0, 0);
-
+	pipeline.clearRenderTexture(ClearFlags::Depth, Vector4::Zero, 1.0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_OPAQUES, _deferredDepthOnly);
-	pipeline.drawRenderQueue(RenderQueue::RQ_TRANSPARENT, RenderPass::RP_TRANSPARENT, _deferredDepthOnly);
 }
 
 void
@@ -112,7 +110,7 @@ DeferredRenderPipeline::render3DEnvMap(RenderPipeline& pipeline) noexcept
 	this->renderTransparentShading(_deferredShadingMap);
 	this->renderTransparentSpecificShading(_deferredShadingMap);*/
 
-	pipeline.renderPostProcess(_deferredShadingMap, _deferredSwapMap, _deferredFinalMap);
+	pipeline.drawPostProcess(RenderQueue::RQ_POSTPROCESS, _deferredShadingMap, _deferredSwapMap, _deferredFinalMap);
 
 	auto renderTexture = pipeline.getCamera()->getRenderTexture();
 	if (renderTexture)
@@ -134,7 +132,7 @@ DeferredRenderPipeline::renderOpaquesDepthLinear(RenderPipeline& pipeline, Graph
 	_projInfo->assign(pipeline.getCamera()->getProjConstant());
 
 	pipeline.setRenderTexture(target);
-	pipeline.clearRenderTexture(ClearFlags::Default, Vector4::Zero, 1.0, 0);
+	pipeline.discradRenderTexture();
 	pipeline.drawScreenQuad(_deferredDepthLinear);
 }
 
@@ -142,7 +140,7 @@ void
 DeferredRenderPipeline::renderOpaquesShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target, int layer) noexcept
 {
 	pipeline.setRenderTexture(target);
-	pipeline.clearRenderTexture(ClearFlags::Color, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(ClearFlags::Color, pipeline.getCamera()->getClearColor(), 1.0, 0);
 	pipeline.drawScreenQuad(_deferredShadingOpaques);
 }
 
@@ -151,7 +149,7 @@ DeferredRenderPipeline::renderOpaquesSpecificShading(RenderPipeline& pipeline, G
 {
 	pipeline.setRenderTexture(target);
 	pipeline.drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_SPECIFIC);
-	pipeline.drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_POSTPROCESS, nullptr, target);
+	pipeline.drawPostProcess(RenderQueue::RQ_OPAQUE, target, target, _deferredFinalMap);
 }
 
 void
@@ -227,6 +225,8 @@ DeferredRenderPipeline::renderLights(RenderPipeline& pipeline, GraphicsRenderTex
 			break;
 		}
 	}
+
+	pipeline.drawPostProcess(RenderQueue::RQ_LIGHTING, target, target, _deferredFinalMap);
 }
 
 void
@@ -607,7 +607,7 @@ DeferredRenderPipeline::onRenderPost(RenderPipeline& pipeline) noexcept
 
 		this->copyRenderTexture(pipeline, renderTexture, nullptr, v1);
 	}
-
+	
 	/*if (_deferredGraphicMap)
 		pipeline.blitRenderTexture(_deferredGraphicMap, Viewport(0, 0, 1376, 768), 0, Viewport(0, 768 / 2, 1376 / 3, 768));
 	if (_deferredNormalMap)

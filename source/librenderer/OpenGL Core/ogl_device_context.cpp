@@ -496,6 +496,14 @@ OGLDeviceContext::setRenderTexture(GraphicsRenderTexturePtr target) noexcept
 
 		_multiRenderTexture = nullptr;
 	}
+	else
+	{
+		if (_multiRenderTexture)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+			_multiRenderTexture = nullptr;
+		}
+	}
 }
 
 void
@@ -530,6 +538,10 @@ OGLDeviceContext::setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) no
 		}
 
 		_renderTexture = nullptr;
+	}
+	else
+	{
+		assert(false);
 	}
 }
 
@@ -707,6 +719,8 @@ OGLDeviceContext::setGraphicsProgram(GraphicsProgramPtr shader) noexcept
 
 			if (_shaderObject)
 				_shaderObject->setActive(true);
+
+			_needUpdateLayout = true;
 		}
 	}
 	else

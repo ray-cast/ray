@@ -213,9 +213,9 @@ Camera::makeOrtho(float left, float right, float top, float bottom, float znear,
 	_projConstant.z = -(1.0 + _project.c1) / _projLength.x;
 	_projConstant.w = -(1.0 + _project.c2) / _projLength.y;
 
-	_clipConstant.x = (_zNear * _zFar);
+	_clipConstant.x = (2 * _zNear * _zFar);
 	_clipConstant.y = _zFar - _zNear;
-	_clipConstant.z = _zFar;
+	_clipConstant.z = _zFar + _zNear;
 	_clipConstant.w = 1.0;
 
 	this->makeViewPorject();
@@ -242,9 +242,9 @@ Camera::makePerspective(float aperture, float znear, float zfar, float ratio) no
 	_projConstant.z = -(1.0 + _project.c1) / _projLength.x;
 	_projConstant.w = -(1.0 + _project.c2) / _projLength.y;
 
-	_clipConstant.x = (_zNear * _zFar);
+	_clipConstant.x = (2 * _zNear * _zFar);
 	_clipConstant.y = _zFar - _zNear;
-	_clipConstant.z = _zFar;
+	_clipConstant.z = _zFar + _zNear;
 	_clipConstant.w = 1.0;
 
 	this->makeViewPorject();

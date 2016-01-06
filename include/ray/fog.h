@@ -50,7 +50,7 @@ public:
 	virtual void onActivate(RenderPipeline& pipeline) except;
 	virtual void onDeactivate(RenderPipeline& pipeline) except;
 
-	virtual void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr texture) except;
+	virtual void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except;
 
 private:
 
@@ -60,6 +60,7 @@ private:
 	MaterialParamPtr _fogFalloff;
 	MaterialParamPtr _fogDensity;
 	MaterialParamPtr _fogColor;
+	MaterialParamPtr _texSource;
 };
 
 _NAME_END

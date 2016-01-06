@@ -237,16 +237,16 @@ RenderScene::computVisiable(const Matrix4x4& viewProject, OcclusionCullList& lis
 
 	for (auto& it : _renderObjectList)
 	{
-		if (fru.contains(it->getBoundingBoxInWorld().aabb()))
-		{
-			list.insert(it, eyePosition.sqrDistance(it->getTransform().getTranslate()));
+		if (!fru.contains(it->getBoundingBoxInWorld().aabb()))
+			continue;
 
-			for (auto& child : it->getSubeRenderObjects())
+		list.insert(it, eyePosition.sqrDistance(it->getTransform().getTranslate()));
+
+		for (auto& child : it->getSubeRenderObjects())
+		{
+			if (fru.contains(child->getBoundingBoxInWorld().aabb()))
 			{
-				if (fru.contains(child->getBoundingBoxInWorld().aabb()))
-				{
-					list.insert(it, eyePosition.sqrDistance(it->getBoundingBoxInWorld().center()));
-				}
+				list.insert(it, eyePosition.sqrDistance(it->getBoundingBoxInWorld().center()));
 			}
 		}
 	}

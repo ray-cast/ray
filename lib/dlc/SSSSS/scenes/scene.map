@@ -3,8 +3,8 @@
     <attribute name="SSSSS"/>
     <object>
         <attribute name="first_person_camera"/>
-        <attribute position="0,0,-2" />
-        <attribute lookat="0,0,1" />
+        <attribute position="0,0,-2"/>
+        <attribute lookat="0,0,0" />
         <attribute active="true"/>
         <component class="Camera">
             <attribute aperture="45.0"/>
@@ -15,7 +15,11 @@
         </component>
     </object>
     <object>
-        <attribute name="head" position="0,0,0" rotate="0,0,0" scale="1,1,1" active="true"/>
+        <attribute name="head"/>
+        <attribute position="0,0,0"/>
+        <attribute rotate="0,0,0"/>
+        <attribute scale="1,1,1"/>
+        <attribute active="true"/>
         <component class="Mesh">
             <attribute name="dlc:SSSSS/models/head/Head.sdkmesh"/>
         </component>
@@ -26,27 +30,39 @@
         </component>
     </object>
     <object>
+        <attribute name="plane"/>
+        <attribute position="0,-2,0"/>
+        <attribute scale="10,1,10"/>
+        <attribute active="false"/>
+        <component class="Mesh">
+            <attribute name="dlc:sssss/models/cube.pmx"/>
+        </component>
+        <component class="MeshRender">
+            <attribute material="dlc:sssss/materials/plane.mat"/>
+        </component>
+    </object>
+    <object>
         <attribute name="sun"/>
-        <attribute position="0,0,-2"/>
+        <attribute position="0,2,-3"/>
         <attribute lookat="0,0,0" />
         <attribute active="true"/>
         <component class="Light">
             <attribute type="sun"/>
             <attribute color="1.0,1.0,1.0"/>
-            <attribute range="200.0"/>
+            <attribute range="30.0"/>
             <attribute intensity="1.0"/>
-            <attribute shadow="false"/>
+            <attribute shadow="true"/>
         </component>
     </object>
     <object>
         <attribute name="light"/>
         <attribute position="0, 0, 0"/>
-        <attribute active="false"/>
+        <attribute active="true"/>
         <component class="Light">
             <attribute type="ambient"/>
             <attribute color="1.0,1.0,1.0"/>
             <attribute range="200.0"/>
-            <attribute intensity="0.6"/>
+            <attribute intensity="0.1"/>
         </component>
     </object>
 </scene>

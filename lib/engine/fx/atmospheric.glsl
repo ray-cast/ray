@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
-<effect version="1270" language="glsl">
-    <include name="sys:fx/common.glsl"/>
+<effect version="1270" language="hlsl">
     <parameter name="matViewProject" semantic="matViewProject" />
     <parameter name="eyePosition" semantic="CameraPosition" />
     <parameter name="lightDirection" type="float3" />
@@ -16,7 +15,7 @@
     <parameter name="scaleFactor" type="float" />
     <parameter name="scaleDepth" type="float" />
     <parameter name="scaleOverScaleDepth" type="float" />
-    <shader name="vertex">
+    <shader>
         <![CDATA[
         uniform vec3 eyePosition;
         uniform vec3 lightDirection;
@@ -195,10 +194,7 @@
 
             gl_Position = matViewProject * position;
         }
-        ]]>
-    </shader>
-    <shader name="fragment">
-        <![CDATA[
+
         const float g = -0.990;
         const float g2 = g * g;
 

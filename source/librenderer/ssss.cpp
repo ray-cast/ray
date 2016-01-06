@@ -41,8 +41,10 @@
 _NAME_BEGIN
 
 SSSS::SSSS() noexcept
+	: _sssStrength(0.6f)
+	, _gaussianWidth(6.0f)
 {
-	this->setRenderQueue(RenderQueue::RQ_OPAQUE);
+	this->setRenderQueue(RenderQueue::RQ_POSTPROCESS);
 }
 
 SSSS::~SSSS() noexcept
@@ -50,9 +52,59 @@ SSSS::~SSSS() noexcept
 }
 
 void
+SSSS::blurX(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+{
+	std::uint32_t widght = source->getResolveTexture()->getGraphicsTextureDesc().getWidth();
+
+	_sssSource->assign(source->getResolveTexture());
+	_sssStep->assign(float2(1.0 / widght, 0.0) * _sssStrength * _gaussianWidth);
+
+	pipeline.setRenderTexture(dest);
+	pipeline.discradRenderTexture();
+	pipeline.drawScreenQuad(_blurX);
+}
+
+void 
+SSSS::blurY(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+{
+	std::uint32_t height = source->getResolveTexture()->getGraphicsTextureDesc().getHeight();
+
+	_sssSource->assign(source->getResolveTexture());
+	_sssStep->assign(float2(0.0, 1.0 / height) * _sssStrength * _gaussianWidth);
+
+	pipeline.setRenderTexture(dest);
+	pipeline.discradRenderTexture();
+	pipeline.drawScreenQuad(_blurY);
+}
+
+void
+SSSS::translucency(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept
+{
+	pipeline.setRenderTexture(source);
+
+	auto lights = pipeline.getRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS);
+	for (auto& it : lights)
+	{
+		auto light = it->downcast<Light>();
+		if (light->getShadow())
+		{
+			_lightColor->assign(light->getLightColor() * light->getIntensity());
+			_lightShadowMap->assign(light->getShadowMap());
+			_lightShadowMatrix->assign(light->getShadowCamera()->getViewProject());
+			_lightDirection->assign(~(light->getTransform().getTranslate() - light->getLightLookat()) * float3x3(pipeline.getCamera()->getView()));
+
+			if (light->getLightType() == LightType::LT_SUN)
+			{
+				pipeline.drawScreenQuad(_translucency);
+			}
+		}
+	}
+}
+
+void
 SSSS::onActivate(RenderPipeline& pipeline) except
 {
-	_material = pipeline.createMaterial("sys:fx/ssss.glsl");
+	_material = pipeline.createMaterial("sys:fx/ssss.fxml.o");
 
 	_translucency = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("translucency");
 	_blurX = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("blurX");
@@ -61,27 +113,22 @@ SSSS::onActivate(RenderPipeline& pipeline) except
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_SSSS = pipeline.createRenderTexture(width, height, TextureDim::DIM_2D, TextureFormat::R16G16B16F);
+	_SSSS = pipeline.createRenderTexture(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
 
-	float sssLevel = 0.025f * float(47) / (100 - 0);
-	float sssProject = 1.0 / tan(0.5 * radians(20.0)) / 3.0;
+	float sssLevel = 0.125f * float(47) / (100 - 0);
 
-	_correction = _material->getParameter("correction");
-	_strength = _material->getParameter("strength");
 	_sssWidth = _material->getParameter("sssWidth");
-	_sssColor = _material->getParameter("texColor");
+	_sssStep = _material->getParameter("sssStep");
+	_sssCorrection = _material->getParameter("sssCorrection");
+	_sssSource = _material->getParameter("texSource");
 
-	_clipInfo = _material->getParameter("clipInfo");
-
-	_lightFarPlane = _material->getParameter("lightFarPlane");
+	_lightColor = _material->getParameter("lightColor");
 	_lightDirection = _material->getParameter("lightDirection");
-
 	_lightShadowMap = _material->getParameter("lightShadowMap");
 	_lightShadowMatrix = _material->getParameter("lightShadowMatrix");
 
-	_correction->assign(sssLevel);
-	_strength->assign(sssLevel * sssProject);
 	_sssWidth->assign(sssLevel);
+	_sssCorrection->assign(sssLevel);
 }
 
 void
@@ -90,41 +137,12 @@ SSSS::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-SSSS::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except
+SSSS::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	pipeline.setRenderTexture(source);
+	this->translucency(pipeline, source);
 
-	/*auto lights = pipeline.getRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS);
-	for (auto& it : lights)
-	{
-		auto light = std::dynamic_pointer_cast<Light>(it);
-
-		if (light->getShadowMap())
-		{
-			auto lightDirection = float3x3(pipeline.getCamera()->getView()) * ~(light->getTransform().getTranslate() - light->getLightLookat());
-
-			_lightDirection->assign(lightDirection);
-			_lightFarPlane->assign(light->getShadowCamera()->getFar());
-			_lightShadowMap->assign(light->getShadowCamera()->getRenderTexture()->getResolveTexture());
-			_lightShadowMatrix->assign(light->getShadowCamera()->getViewProject());
-
-			if (light->getLightType() == LightType::LT_SUN)
-			{
-				pipeline.drawScreenQuad(_translucency);
-			}
-		}
-	}*/
-
-	_sssColor->assign(source->getResolveTexture());
-
-	pipeline.setRenderTexture(_SSSS);
-	pipeline.clearRenderTexture(ClearFlags::Default, Vector4::Zero, 1.0, 0);
-	pipeline.drawScreenQuad(_blurX);
-
-	_sssColor->assign(_SSSS->getResolveTexture());
-
-	pipeline.setRenderTexture(source);
-	pipeline.drawScreenQuad(_blurY);
+	this->blurX(pipeline, source, _SSSS);
+	this->blurY(pipeline, _SSSS, dest);
 }
 
 _NAME_END

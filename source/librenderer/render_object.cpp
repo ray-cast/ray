@@ -237,7 +237,7 @@ RenderObject::_updateBoundingBoxInWorld() const noexcept
 	if (_needUpdate)
 	{
 		_worldBoundingxBox = _boundingBox;
-		_worldBoundingxBox.center(_boundingBox.center() + _transform.getTranslate());
+		_worldBoundingxBox.applyMatrix(_transform);
 		_needUpdate = false;
 	}
 }

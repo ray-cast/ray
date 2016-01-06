@@ -122,23 +122,19 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 	if (!_renderPipeline)
 		return;
 
+	_renderPipeline->setGraphicsContext(_renderPipeline->getDefaultGraphicsContext());
+	_renderPipeline->renderBegin();
+
 	auto& cameras = scene.getCameraList();
 	for (auto& camera : cameras)
 	{
-		auto context = camera->getGraphicsContext();
-		if (!context)
-			context = _renderPipeline->getDefaultGraphicsContext();
-
-		_renderPipeline->setGraphicsContext(context);
-
-		_renderPipeline->renderBegin();
-		_renderPipeline->setCamera(camera);
-
 		_deferredLighting->onRenderPre(*_renderPipeline);
 
 		RenderListener* renderListener = camera->getOwnerListener();
 		if (renderListener)
 			renderListener->onWillRenderObject(*camera);
+
+		_renderPipeline->setCamera(camera);
 
 		_deferredLighting->onRenderPipeline(*_renderPipeline);
 
@@ -146,9 +142,9 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 			renderListener->onRenderObject(*camera);
 
 		_deferredLighting->onRenderPost(*_renderPipeline);
-
-		_renderPipeline->renderEnd();
 	}
+
+	_renderPipeline->renderEnd();
 }
 
 void 

@@ -54,6 +54,7 @@ Fog::onActivate(RenderPipeline& pipeline) except
 	_fogFalloff = _material->getParameter("fogFalloff");
 	_fogDensity = _material->getParameter("fogDensity");
 	_fogColor = _material->getParameter("fogColor");
+	_texSource = _material->getParameter("texSource");
 
 	_fogFalloff->assign(10.0f);
 	_fogDensity->assign(0.0001f);
@@ -66,9 +67,12 @@ Fog::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-Fog::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr texture) except
+Fog::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except
 {
-	pipeline.setRenderTexture(texture);
+	_texSource->assign(source->getResolveTexture());
+
+	pipeline.setRenderTexture(dest);
+	pipeline.discradRenderTexture();
 	pipeline.drawScreenQuad(_fog);
 }
 

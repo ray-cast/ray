@@ -93,7 +93,7 @@ private:
 	void blurHorizontal(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 	void blurVertical(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 	void blurDirection(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest, const float2& direction) noexcept;
-	void shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr color, GraphicsRenderTexturePtr ao) noexcept;
+	void shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr ambient, GraphicsRenderTexturePtr dest) noexcept;
 
 	void createSphereNoise();
 
@@ -124,9 +124,9 @@ private:
 	MaterialParamPtr _occlusionAmbient;
 	MaterialParamPtr _occlusionSphere;
 
-	MaterialParamPtr _blurRadius;
 	MaterialParamPtr _blurSource;
 	MaterialParamPtr _blurFactor;
+	MaterialParamPtr _blurRadius;
 	MaterialParamPtr _blurSharpness;
 	MaterialParamPtr _blurDirection;
 	MaterialParamPtr _blurGaussian;

@@ -19,7 +19,7 @@
                 return float4(packNormal(n), roughness);
             }
 
-            float3 restoreRGB(texture2D mrt0, float2 coord)
+            float3 restoreDiffuse(texture2D mrt0, float2 coord)
             {
                 return mrt0.Sample(PointClamp, coord).rgb;
             }

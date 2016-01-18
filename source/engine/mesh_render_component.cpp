@@ -308,7 +308,7 @@ MeshRenderComponent::buildRenderObjects(MeshPropertyPtr mesh) noexcept
 	}
 }
 
-RenderObjectPtr
+RenderMeshPtr
 MeshRenderComponent::buildRenderObject(MeshPropertyPtr mesh, RenderBufferPtr buffer) noexcept
 {
 	auto material = this->getMaterial();

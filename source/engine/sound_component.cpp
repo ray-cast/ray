@@ -228,7 +228,7 @@ SoundComponent::play() noexcept
 				_sound->setMinDistance(_distanceMax);
 
 				_sound->setTranslate(actor->getTranslate());
-				_sound->setOrientation(actor->getLookAt(), actor->getUpVector());
+				_sound->setOrientation(actor->getForward(), actor->getUpVector());
 
 				_sound->loop(_isLoop);
 
@@ -371,7 +371,7 @@ SoundComponent::onMoveAfter() noexcept
 	assert(actor);
 
 	_sound->setTranslate(actor->getTranslate());
-	_sound->setOrientation(actor->getLookAt(), actor->getUpVector());
+	_sound->setOrientation(actor->getForward(), actor->getUpVector());
 }
 
 void 

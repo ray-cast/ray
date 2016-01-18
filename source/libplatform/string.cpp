@@ -1081,17 +1081,6 @@ bool tokenMatchI(const char*& in, const char* token, std::size_t len)
 	return false;
 }
 
-int integer_pow(int base, int power)
-{
-	//@TODO: move somewhere where it fits better in than here
-
-	int res = 1;
-	for (int i = 0; i < power; ++i)
-		res *= base;
-
-	return res;
-}
-
 std::string directory(const std::string& path)
 {
 	auto begin = path.rbegin();
@@ -1276,7 +1265,7 @@ std::string trim(const std::string& str, char ch)
 		return str;
 }
 
-std::wstring trim(const std::wstring& str, char ch)
+std::wstring trim(const std::wstring& str, wchar_t ch)
 {
 	std::size_t len = str.size();
 

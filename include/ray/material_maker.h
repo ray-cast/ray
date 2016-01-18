@@ -58,6 +58,7 @@ private:
 	void instanceTech(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
 	void instanceSampler(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
 	void instanceParameter(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
+	void instanceMacro(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
 	void instanceBuffer(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
 	void instanceCodes(MaterialManager& manager, iarchive& reader) except;
 	void instanceShader(MaterialManager& manager, ShaderObjectDesc& program, iarchive& reader) except;

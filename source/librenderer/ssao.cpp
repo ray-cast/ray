@@ -39,8 +39,6 @@
 
 _NAME_BEGIN
 
-#define NUM_SAMPLE 10
-
 SSAO::Setting::Setting() noexcept
 	: radius(1.0)
 	, bias(0.002)
@@ -141,10 +139,11 @@ void
 SSAO::createSphereNoise()
 {
 	std::vector<float2> sphere;
+	std::size_t numSample = _sampleNumber->getInt();
 
-	for (std::size_t i = 0; i < NUM_SAMPLE; i++)
+	for (std::size_t i = 0; i < numSample; i++)
 	{
-		float sampleAlpha = (i + 0.5) * (1.0 / NUM_SAMPLE);
+		float sampleAlpha = (i + 0.5) * (1.0 / numSample);
 		float angle = sampleAlpha * M_TWO_PI * 7;
 
 		float2 rotate;
@@ -183,9 +182,13 @@ SSAO::onActivate(RenderPipeline& pipeline) except
 	_blurSource = _ambientOcclusion->getParameter("texSource");
 	_blurFactor = _ambientOcclusion->getParameter("blurFactor");
 	_blurSharpness = _ambientOcclusion->getParameter("blurSharpness");
-	_blurRadius = _ambientOcclusion->getParameter("blurRadius");
 	_blurDirection = _ambientOcclusion->getParameter("blurDirection");
 	_blurGaussian = _ambientOcclusion->getParameter("blurGaussian");
+
+	_blurRadius = _ambientOcclusion->getMacro("BLUR_RADIUS");
+	_sampleNumber = _ambientOcclusion->getMacro("NUM_SAMPLE");
+
+	_setting.blurRadius = _blurRadius->getInt();
 
 	this->createSphereNoise();
 

@@ -289,6 +289,18 @@ FxmlCompile::load(ray::iarchive& reader) except
 
 			_parameters.push_back(parameter);
 		}
+		else if (name == "macro")
+		{
+			Parameter macro;
+			macro.name = reader.getValue<std::string>("name");
+			macro.type = reader.getValue<std::string>("type");
+			macro.semantic = reader.getValue<std::string>("semantic");
+			macro.value = reader.getValue<std::string>("value");
+
+			_hlslCodes += "#define " + macro.name + " " + macro.value + "\n";
+
+			_macros.push_back(macro);
+		}
 		else if (name == "sampler")
 		{
 			Sampler sampler;
@@ -384,6 +396,20 @@ FxmlCompile::save(ray::oarchive& reader) except
 			reader.addAttribute("semantic", parameter.semantic);
 		if (!parameter.value.empty())
 			reader.addAttribute("value", parameter.value);
+		reader.setToParent();
+	}
+
+	for (auto& macro : _macros)
+	{
+		reader.addSubNode("macro");
+		if (!macro.name.empty())
+			reader.addAttribute("name", macro.name);
+		if (!macro.type.empty())
+			reader.addAttribute("type", macro.type);
+		if (!macro.semantic.empty())
+			reader.addAttribute("semantic", macro.semantic);
+		if (!macro.value.empty())
+			reader.addAttribute("value", macro.value);
 		reader.setToParent();
 	}
 

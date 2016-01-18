@@ -172,7 +172,6 @@ private:
 	MaterialSemanticPtr _materialCameraAperture;
 	MaterialSemanticPtr _materialCameraFar;
 	MaterialSemanticPtr _materialCameraNear;
-	MaterialSemanticPtr _materialCameraView;
 	MaterialSemanticPtr _materialCameraPosition;
 	MaterialSemanticPtr _materialCameraDirection;
 

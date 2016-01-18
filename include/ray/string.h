@@ -196,7 +196,6 @@ EXPORT bool tokenMatchI(const char*& in, const char* token, std::size_t len);
 EXPORT std::string getNextToken(const char*& in);
 EXPORT std::wstring getNextToken(const wchar_t*& in);
 
-EXPORT int integer_pow(int base, int power);
 EXPORT std::string directory(const std::string& path);
 EXPORT std::wstring directory(const std::wstring& path);
 

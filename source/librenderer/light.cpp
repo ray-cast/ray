@@ -56,8 +56,6 @@ Light::Light() noexcept
 	, _shadow(false)
 	, _shadowUpdated(false)
 	, _shadowSize(512)
-	, _shadowUpVector(Vector3::UnitY)
-	, _shadowLookAt(Vector3::Zero)
 {
 	_shadowCamera = std::make_shared<Camera>();
 	_shadowCamera->setOwnerListener(this);
@@ -85,6 +83,7 @@ void
 Light::setRange(float range) noexcept
 {
 	_lightRange = range;
+	this->_updateBoundingBox();
 }
 
 void
@@ -103,6 +102,7 @@ void
 Light::setSpotOuterCone(float value) noexcept
 {
 	_spotOuterCone = value;
+	this->_updateBoundingBox();
 }
 
 LightType
@@ -129,36 +129,10 @@ Light::getLightColor() const noexcept
 	return _lightColor;
 }
 
-void 
-Light::setLightUp(const Vector3& up) noexcept
-{
-	_shadowUpVector = up;
-	_shadowUpdated = false;
-}
-
-void
-Light::setLightLookat(const Vector3& lookat) noexcept
-{
-	_shadowLookAt = lookat;
-	_shadowUpdated = false;
-}
-
 void
 Light::setLightAttenuation(const Vector3& attenuation) noexcept
 {
 	_lightAttenuation = attenuation;
-}
-
-const Vector3&
-Light::getLightUp() const noexcept
-{
-	return _shadowUpVector;
-}
-
-const Vector3&
-Light::getLightLookat() const noexcept
-{
-	return _shadowLookAt;
 }
 
 const Vector3&
@@ -220,35 +194,6 @@ Light::getShadowMap() const noexcept
 	return _shadowCamera->getRenderTexture()->getResolveTexture();
 }
 
-void
-Light::setRenderScene(RenderScenePtr scene) noexcept
-{
-	auto renderScene = _renderScene.lock();
-	if (renderScene)
-	{
-		if (this->getShadow())
-			_shadowCamera->setRenderScene(nullptr);
-
-		renderScene->removeLight(this->downcast<Light>());
-	}
-
-	_renderScene = scene;
-
-	if (scene)
-	{
-		if (this->getShadow())
-			_shadowCamera->setRenderScene(scene);
-
-		scene->addLight(this->downcast<Light>());
-	}
-}
-
-RenderScenePtr
-Light::getRenderScene() const noexcept
-{
-	return _renderScene.lock();
-}
-
 void 
 Light::_updateShadow() const noexcept
 {
@@ -265,24 +210,76 @@ Light::_updateShadow() const noexcept
 	}
 
 	_shadowCamera->setViewport(Viewport(0, 0, _shadowSize, _shadowSize));
-	_shadowCamera->makeLookAt(this->getTransform().getTranslate(), _shadowLookAt, _shadowUpVector);
-	_shadowCamera->makePerspective(90.0, 0.1, _lightRange);
+	_shadowCamera->setAperture(90.0);
+	_shadowCamera->setNear(0.1);
+	_shadowCamera->setFar(_lightRange);
+	_shadowCamera->setRatio(1.0);
+
+	_shadowCamera->setTransform(this->getTransform());
+	_shadowCamera->setTransformInverse(this->getTransformInverse());
+	_shadowCamera->setTransformInverseTranspose(this->getTransformInverseTranspose());
 
 	_shadowUpdated = true;
+}
 
-	/*if (_lightType == LT_SUN)
+void
+Light::_updateBoundingBox() noexcept
+{
+	Bound bound;
+
+	if (_lightType == LightType::LT_SUN ||
+		_lightType == LightType::LT_AMBIENT)
 	{
-		auto camera = *_renderScene->getCameraList().rbegin();
+		float infinity = std::numeric_limits<float>::max();
 
-		auto translate = _shadowTranslate + camera->getTranslate();
-		translate.y = _shadowTranslate.y;
+		Vector3 min(-infinity, -infinity, -infinity);
+		Vector3 max(infinity, infinity, infinity);
 
-		auto lookat = _shadowLookAt + camera->getTranslate();
-		lookat.y = _shadowLookAt.y;
+		bound.encapsulate(min);
+		bound.encapsulate(max);
+	}
+	else if (_lightType == LightType::LT_POINT)
+	{
+		Vector3 min(-_lightRange, -_lightRange, -_lightRange);
+		Vector3 max(_lightRange, _lightRange, _lightRange);
 
-		_shadowCamera->makeLookAt(translate, lookat, Vector3::UnitZ);
-		_shadowCamera->makeViewProject();
-	}*/
+		bound.encapsulate(min);
+		bound.encapsulate(max);
+	}
+	else if (_lightType == LightType::LT_AREA ||
+		_lightType == LightType::LT_SPOT ||
+		_lightType == LightType::LT_HEMI_SPHERE)
+	{
+		Vector3 min(-_lightRange, -_lightRange, -_lightRange);
+		Vector3 max(_lightRange, _lightRange, _lightRange);
+
+		bound.encapsulate(min);
+		bound.encapsulate(max);
+	}
+
+	this->setBoundingBox(bound);
+}
+
+void 
+Light::onSceneChangeBefor() noexcept
+{
+	auto renderScene = this->getRenderScene();
+	if (renderScene)
+	{
+		if (_shadowCamera)
+			_shadowCamera->setRenderScene(nullptr);
+	}
+}
+
+void 
+Light::onSceneChangeAfter() noexcept
+{
+	auto renderScene = this->getRenderScene();
+	if (renderScene)
+	{
+		if (_shadowCamera)
+			_shadowCamera->setRenderScene(renderScene);
+	}
 }
 
 void 

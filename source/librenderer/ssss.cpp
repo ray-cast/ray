@@ -91,7 +91,7 @@ SSSS::translucency(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) no
 			_lightColor->assign(light->getLightColor() * light->getIntensity());
 			_lightShadowMap->assign(light->getShadowMap());
 			_lightShadowMatrix->assign(light->getShadowCamera()->getViewProject());
-			_lightDirection->assign(~(light->getTransform().getTranslate() - light->getLightLookat()) * float3x3(pipeline.getCamera()->getView()));
+			_lightDirection->assign(-light->getForward() * float3x3(pipeline.getCamera()->getView()));
 
 			if (light->getLightType() == LightType::LT_SUN)
 			{
@@ -116,6 +116,7 @@ SSSS::onActivate(RenderPipeline& pipeline) except
 	_SSSS = pipeline.createRenderTexture(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
 
 	float sssLevel = 0.125f * float(47) / (100 - 0);
+	float sssStrength = 8.25 * (1.0 - 0.83) / sssLevel;
 
 	_sssWidth = _material->getParameter("sssWidth");
 	_sssStep = _material->getParameter("sssStep");
@@ -127,7 +128,7 @@ SSSS::onActivate(RenderPipeline& pipeline) except
 	_lightShadowMap = _material->getParameter("lightShadowMap");
 	_lightShadowMatrix = _material->getParameter("lightShadowMatrix");
 
-	_sssWidth->assign(sssLevel);
+	_sssWidth->assign(sssStrength);
 	_sssCorrection->assign(sssLevel);
 }
 

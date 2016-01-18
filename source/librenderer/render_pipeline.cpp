@@ -40,6 +40,9 @@
 #include <ray/render_scene.h>
 #include <ray/render_object.h>
 #include <ray/render_buffer.h>
+#include <ray/light.h>
+#include <ray/render_mesh.h>
+#include <ray/camera.h>
 #include <ray/material.h>
 #include <ray/material_manager.h>
 #include <ray/model.h>
@@ -95,7 +98,6 @@ RenderPipeline::open(WindHandle window, std::uint32_t w, std::uint32_t h) except
 	_materialCameraAperture = _materialManager->createSemantic("CameraAperture", ShaderVariantType::Float);
 	_materialCameraFar = _materialManager->createSemantic("CameraFar", ShaderVariantType::Float);
 	_materialCameraNear = _materialManager->createSemantic("CameraNear", ShaderVariantType::Float);
-	_materialCameraView = _materialManager->createSemantic("CameraView", ShaderVariantType::Float3);
 	_materialCameraPosition = _materialManager->createSemantic("CameraPosition", ShaderVariantType::Float3);
 	_materialCameraDirection = _materialManager->createSemantic("CameraDirection", ShaderVariantType::Float3);
 
@@ -157,7 +159,6 @@ RenderPipeline::close() noexcept
 	_materialCameraAperture.reset();
 	_materialCameraFar.reset();
 	_materialCameraNear.reset();
-	_materialCameraView.reset();
 	_materialCameraPosition.reset();
 	_materialCameraDirection.reset();
 
@@ -237,64 +238,14 @@ RenderPipeline::getSwapInterval() const noexcept
 void
 RenderPipeline::setCamera(CameraPtr camera) noexcept
 {
-	if (camera->getCameraOrder() != CameraOrder::CO_SHADOW)
-	{
-		if (camera->getCameraType() == CameraType::CT_PERSPECTIVE)
-		{
-			float ratio;
-			float aperture;
-			float znear;
-			float zfar;
-			camera->getPerspective(aperture, ratio, znear, zfar);
-
-			std::uint32_t width, height;
-			this->getWindowResolution(width, height);
-
-			float windowRatio = (float)width / (float)height;
-			if (ratio != windowRatio)
-			{
-				ratio = windowRatio;
-				camera->makePerspective(aperture, znear, zfar, ratio);
-			}
-		}
-		else
-		{
-			float left;
-			float right;
-			float top;
-			float bottom;
-			float ratio;
-			float znear;
-			float zfar;
-			camera->getOrtho(left, right, top, bottom, ratio, znear, zfar);
-
-			std::uint32_t width, height;
-			this->getWindowResolution(width, height);
-
-			float windowRatio = (float)width / (float)height;
-			if (ratio != windowRatio)
-			{
-				ratio = windowRatio;
-				camera->makeOrtho(left, right, top, bottom, znear, zfar, ratio);
-			}
-		}
-	}
-
-	float ratio;
-	float aperture;
-	float znear;
-	float zfar;
-	camera->getPerspective(aperture, ratio, znear, zfar);
-
-	_materialCameraNear->assign(znear);
-	_materialCameraFar->assign(zfar);
-	_materialCameraAperture->assign(aperture);
-	_materialCameraView->assign(camera->getLookAt());
+	_materialCameraNear->assign(camera->getNear());
+	_materialCameraFar->assign(camera->getFar());
+	_materialCameraAperture->assign(camera->getAperture());
 	_materialCameraPosition->assign(camera->getTranslate());
-	_materialCameraDirection->assign(camera->getLookAt() - camera->getTranslate());
+	_materialCameraDirection->assign(camera->getForward());
 	_materialMatView->assign(camera->getView());
 	_materialMatViewInverse->assign(camera->getViewInverse());
-	_materialMatViewInverseTranspose->assign(camera->getViewInverseTranspose());
+	_materialMatViewInverseTranspose->assign(camera->getTransformInverseTranspose());
 	_materialMatProject->assign(camera->getProject());
 	_materialMatProjectInverse->assign(camera->getProjectInverse());
 	_materialMatViewProject->assign(camera->getViewProject());
@@ -1077,7 +1028,7 @@ RenderPipeline::onRenderObjectPost(RenderObject& object, RenderQueue queue, Rend
 void
 RenderPipeline::onRenderObject(RenderObject& object, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) except
 {
-	auto pass = _pass ? _pass : object.getMaterial()->getTech(queue)->getPass(passType);
+	auto pass = _pass ? _pass : object.downcast<RenderMesh>()->getMaterial()->getTech(queue)->getPass(passType);
 
 	if (pass)
 	{
@@ -1085,7 +1036,7 @@ RenderPipeline::onRenderObject(RenderObject& object, RenderQueue queue, RenderPa
 		_materialMatModelInverse->assign(object.getTransformInverse());
 		_materialMatModelInverseTranspose->assign(object.getTransformInverseTranspose());
 
-		this->drawMesh(pass, object.getRenderBuffer(), *object.getRenderIndirect());
+		this->drawMesh(pass, object.downcast<RenderMesh>()->getRenderBuffer(), *object.downcast<RenderMesh>()->getRenderIndirect());
 
 		auto listener = object.getOwnerListener();
 		if (listener)

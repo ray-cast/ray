@@ -56,18 +56,24 @@ public:
 	MaterialTechPtr getTech(RenderQueue queue) noexcept;
 	MaterialTechniques& getTechs() noexcept;
 
-	void addParameter(MaterialParamPtr technique) noexcept;
-	void removeParameter(MaterialParamPtr technique) noexcept;
+	void addParameter(MaterialParamPtr parameter) noexcept;
+	void removeParameter(MaterialParamPtr parameter) noexcept;
 	MaterialParamPtr getParameter(const std::string& name) const noexcept;
 	MaterialParams& getParameters() noexcept;
 	const MaterialParams& getParameters() const noexcept;
+
+	void addMacro(MaterialVariantPtr macro) noexcept;
+	void removeMacro(MaterialVariantPtr macro) noexcept;
+	MaterialVariantPtr getMacro(const std::string& name) const noexcept;
+	MaterialVariants& getMacros() noexcept;
+	const MaterialVariants& getMacros() const noexcept;
 
 private:
 	Material(const Material&) noexcept = delete;
 	Material& operator=(const Material&) noexcept = delete;
 
 private:
-
+	MaterialVariants _macros;
 	MaterialParams _parameters;
 	MaterialTechniques _techniques;
 };

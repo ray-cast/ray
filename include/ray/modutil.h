@@ -64,9 +64,9 @@ public:
             transform = m;
         }
 
-		void makeTransform(const float3& translate, const float3& rotate, const float3& scale)
+		void makeTransform(const float3& translate, const EulerAngles& euler, const float3& scale)
 		{
-			transform.makeTransform(translate, Quaternion(rotate), scale);
+			transform.makeTransform(translate, Quaternion().makeRotate(euler), scale);
 		}
 
         const Matrix4x4& getTransform() const

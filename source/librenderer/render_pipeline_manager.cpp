@@ -37,6 +37,7 @@
 #include <ray/render_pipeline_manager.h>
 #include <ray/render_pipeline.h>
 #include <ray/render_scene.h>
+#include <ray/camera.h>
 #include <ray/graphics_context.h>
 #include <ray/deferred_render_pipeline.h>
 

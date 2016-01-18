@@ -53,96 +53,49 @@ public:
     typedef typename trait::_typeaddition<T>::reference reference;
     typedef typename trait::_typeaddition<T>::const_reference const_reference;
 
-    value_type x, y;
+	T x, y;
 
     static const Vector2t<T> Zero;
     static const Vector2t<T> One;
     static const Vector2t<T> UnitX;
     static const Vector2t<T> UnitY;
+	static const Vector2t<T> Right;
+	static const Vector2t<T> Forward;
 
-    Vector2t() noexcept
-    {
-    }
+    Vector2t() noexcept {}
+	Vector2t(T xy) noexcept : x(xy), y(xy) {}
+    Vector2t(T xx, T yy) noexcept : x(xx), y(yy) {}
+    Vector2t(const Vector2t<T>& v) noexcept : x(v.x), y(v.y) {}
 
-    Vector2t(value_type xx, value_type yy) noexcept
-        : x(xx)
-        , y(yy)
-    {
-    }
+	Vector2t<T>& operator+=(T scale) noexcept { x += scale; y += scale; return *this; }
+	Vector2t<T>& operator-=(T scale) noexcept { x -= scale; y -= scale; return *this; }
+	Vector2t<T>& operator*=(T scale) noexcept { x *= scale; y *= scale; return *this; }
+	Vector2t<T>& operator/=(T scale) noexcept { x /= scale; y /= scale; return *this; }
 
-    Vector2t(value_type xx, value_type yy, bool normal) noexcept
-        : x(xx)
-        , y(yy)
-    {
-        if (normal)
-            this->normalize();
-    }
+    Vector2t<T>& operator+=(const Vector2t<T>& v) noexcept { x += v.x; y += v.y; return *this; }
+    Vector2t<T>& operator-=(const Vector2t<T>& v) noexcept { x -= v.x; y -= v.y; return *this; }
+    Vector2t<T>& operator*=(const Vector2t<T>& v) noexcept { x *= v.x; y *= v.y; return *this; }
+    Vector2t<T>& operator/=(const Vector2t<T>& v) noexcept { x /= v.x; y /= v.y; return *this; }
 
-    Vector2t(const Vector2t<T>& copy) noexcept
-        : x(copy.x)
-        , y(copy.y)
-    {
-    }
+	template <typename S>
+	explicit operator Vector2t<S>() const
+	{
+		return Vector2t<S>(static_cast<S>(x), static_cast<S>(y));
+	}
 
-    Vector2t<T>& operator+=(const Vector2t<T>& v) noexcept
-    {
-        x += v.x;
-        y += v.y;
-        return *this;
-    }
-
-    Vector2t<T>& operator-=(const Vector2t<T>& v) noexcept
-    {
-        x -= v.x;
-        y -= v.y;
-        return *this;
-    }
-
-    Vector2t<T>& operator*=(const Vector2t<T>& v) noexcept
-    {
-        x *= v.x;
-        y *= v.y;
-        return *this;
-    }
-
-    Vector2t<T>& operator/=(const Vector2t<T>& v) noexcept
-    {
-        x /= v.x;
-        y /= v.y;
-        return *this;
-    }
-
-    Vector2t<T>& operator*=(value_type scale) noexcept
-    {
-        x *= scale;
-        y *= scale;
-        return *this;
-    }
-
-    Vector2t<T>& operator/=(value_type scale) noexcept
-    {
-        x /= scale;
-        y /= scale;
-        return *this;
-    }
-
-    Vector2t<T> operator-() noexcept { return Vector2t<T>(-x, -y); }
-
-    value_type operator[](unsigned int i) const noexcept { return *(&x + i); }
+    T operator[](unsigned int i) const noexcept { return *(&x + i); }
     reference operator[](unsigned int i) noexcept { return *(&x + i); }
 
-    Vector2t<T>& operator= (value_type f) noexcept { x = y = f; return *this; }
+    void set(T val) noexcept { x = y = val; }
+    void set(T xx, T yy) noexcept { x = xx; y = yy; }
 
-    void set(value_type val) noexcept { x = y = val; }
-    void set(value_type xx, value_type yy) noexcept { x = xx; y = yy; }
+	T dot(const Vector2t<T>& v) const noexcept { return x * v.x + y * v.y; }
 
-	value_type dot(const Vector2t<T>& v) const noexcept { return x * v.x + y * v.y; }
+    T length() const noexcept { return sqrt(length2()); }
+    T length2() const noexcept { return x * x + y * y; }
 
-    value_type length() const noexcept { return sqrt(length2()); }
-    value_type length2() const noexcept { return x * x + y * y; }
-
-    value_type distance(const Vector2t<T>& v) const noexcept { return (v - *this).length(); }
-    value_type sqrDistance(const Vector2t<T>& v) const noexcept { return (v - *this).length2(); }
+    T distance(const Vector2t<T>& v) const noexcept { return (v - *this).length(); }
+    T sqrDistance(const Vector2t<T>& v) const noexcept { return (v - *this).length2(); }
 
     reference getComponent(unsigned char index) noexcept
     {
@@ -157,13 +110,13 @@ public:
         }
     }
 
-    value_type normalize() noexcept
+    T normalize() noexcept
     {
-        value_type magSq = length2();
+        T magSq = length2();
 
-        if (magSq > static_cast<value_type>(0.0))
+        if (magSq > static_cast<T>(0.0))
         {
-            value_type invSqrt = 1 / sqrt(magSq);
+            T invSqrt = 1 / sqrt(magSq);
             *this *= invSqrt;
         }
 
@@ -185,6 +138,8 @@ template<typename T> const Vector2t<T> Vector2t<T>::Zero = Vector2t<T>((T)0, (T)
 template<typename T> const Vector2t<T> Vector2t<T>::One = Vector2t<T>((T)1, (T)1);
 template<typename T> const Vector2t<T> Vector2t<T>::UnitX = Vector2t<T>((T)1, (T)0);
 template<typename T> const Vector2t<T> Vector2t<T>::UnitY = Vector2t<T>((T)0, (T)1);
+template<typename T> const Vector2t<T> Vector2t<T>::Right = Vector2t<T>((T)1, (T)0);
+template<typename T> const Vector2t<T> Vector2t<T>::Forward = Vector2t<T>((T)0, (T)1);
 
 template <typename T>
 inline Vector2t<T> min(const Vector2t<T>& a, const Vector2t<T>& b) noexcept

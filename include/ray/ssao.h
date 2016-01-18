@@ -126,10 +126,12 @@ private:
 
 	MaterialParamPtr _blurSource;
 	MaterialParamPtr _blurFactor;
-	MaterialParamPtr _blurRadius;
 	MaterialParamPtr _blurSharpness;
 	MaterialParamPtr _blurDirection;
 	MaterialParamPtr _blurGaussian;
+
+	MaterialVariantPtr _sampleNumber;
+	MaterialVariantPtr _blurRadius;
 
 	GraphicsRenderTexturePtr _texBlur;
 	GraphicsRenderTexturePtr _texAmbient;

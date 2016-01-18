@@ -70,17 +70,13 @@ public:
 	float getSpotOuterCone() const noexcept;
 
 	void setLightType(LightType type) noexcept;
-	void setLightUp(const Vector3& up) noexcept;
-	void setLightColor(const Vector3& color) noexcept;
-	void setLightLookat(const Vector3& lookat) noexcept;
-	void setLightAttenuation(const Vector3& attenuation) noexcept;
-
-	const Vector3& getLightUp() const noexcept;
-	const Vector3& getLightLookat() const noexcept;
-	const Vector3& getLightColor() const noexcept;
-	const Vector3& getLightAttenuation() const noexcept;
-
 	LightType getLightType() const noexcept;
+
+	void setLightColor(const Vector3& color) noexcept;
+	const Vector3& getLightColor() const noexcept;
+
+	const Vector3& getLightAttenuation() const noexcept;
+	void setLightAttenuation(const Vector3& attenuation) noexcept;
 
 	void setShadow(bool enable) noexcept;
 	bool getShadow() const noexcept;
@@ -90,14 +86,16 @@ public:
 	CameraPtr getShadowCamera() const noexcept;
 	GraphicsTexturePtr getShadowMap() const noexcept;
 
-	void setRenderScene(RenderScenePtr scene) noexcept;
-	RenderScenePtr getRenderScene() const noexcept;
-
 	LightPtr clone() const noexcept;
+
+private:
+	virtual void onSceneChangeBefor() noexcept;
+	virtual void onSceneChangeAfter() noexcept;
 
 private:
 
 	void _updateShadow() const noexcept;
+	void _updateBoundingBox() noexcept;
 
 	void onWillRenderObject(const Camera& camera) noexcept;
 	void onRenderObject(const Camera& camera) noexcept;
@@ -122,8 +120,6 @@ private:
 	bool _shadow;
 	mutable bool _shadowUpdated;
 	std::size_t _shadowSize;
-	Vector3 _shadowUpVector;
-	Vector3 _shadowLookAt;
 	CameraPtr _shadowCamera;
 
 	RenderSceneWeakPtr _renderScene;

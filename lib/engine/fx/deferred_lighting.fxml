@@ -28,7 +28,7 @@
     <parameter name="lightSpotOuterCone" type="float"/>
     <parameter name="shadowChannel" type="int" />
     <parameter name="shadowMap" type="texture" />
-    <parameter name="shadowFactor" type="float"/>
+    <parameter name="shadowFactor" type="float2"/>
     <parameter name="shadowMatrix" type="float4x4" />
     <shader>
         <![CDATA[
@@ -61,7 +61,7 @@
             uniform Texture2D texSource;
             uniform TextureCube texEnvironmentMap;
 
-            uniform float shadowFactor;
+            uniform float2 shadowFactor;
             uniform float4x4 shadowMatrix;
             uniform Texture2D shadowMap;
 
@@ -92,7 +92,7 @@
                 Position.xyz += lightDirection * lightRange;
                 Position = mul(Position, matModel);
                 Position = mul(Position, matViewProject);
-                oTexcoord = PosToCoord(Position);
+                oTexcoord = PosToCoord(Position.xy);
                 oPosition = Position;
             }
 
@@ -104,7 +104,7 @@
                 Position.xyz *= lightRange;
                 Position = mul(Position, matModel);
                 Position = mul(Position, matViewProject);
-                oTexcoord = PosToCoord(Position);
+                oTexcoord = PosToCoord(Position.xy);
                 oPosition = Position;
             }
 
@@ -137,7 +137,7 @@
                 float3 L = lightDirection;
 
                 float4 lighting;
-                lighting.rgb = lightColor * brdfLambert(N, L);
+                lighting.rgb = brdfLambert(N, L, lightColor);
                 lighting.a = brdfSpecular(N, L, V, smoothness, specular);
 
                 return lighting;
@@ -152,16 +152,16 @@
                 float specular = restoreSpecular(MRT0);
 
                 float3 N = restoreNormal(MRT1);
-                float3 P = restorePosition(texDepthLinear, projInfo, coord.xy);
+                float3 P = restorePosition(texDepthLinear, projInfo, coord);
                 float3 V = normalize(eyePosition - P);
                 float3 L = lightDirection;
 
-                float4 world = mul(float4(P, 1.0), matViewInverse);
+                float3 world = mul(float4(P, 1.0), matViewInverse);
 
                 float4 lighting;
-                lighting.rgb = lightColor * brdfLambert(N, L);
+                lighting.rgb = brdfLambert(N, L, lightColor);
                 lighting.a = brdfSpecular(N, L, V, smoothness, specular);
-                lighting *= shadowLighting(shadowMap, shadowMatrix, shadowFactor, world.xyz);
+                lighting *= shadowLighting(shadowMap, shadowMatrix, shadowFactor.x, shadowFactor.y, world);
 
                 return lighting;
             }
@@ -180,7 +180,7 @@
                 float3 L = lightDirection;
 
                 float4 lighting;
-                lighting.rgb = lightColor * brdfLambert(N, L);
+                lighting.rgb = brdfLambert(N, L, lightColor);
                 lighting.a = brdfSpecular(N, L, V, smoothness, specular);
 
                 return MRT1;
@@ -203,9 +203,9 @@
                 world = world / world.w;
 
                 float4 lighting;
-                lighting.rgb = lightColor * brdfLambert(N, L);
+                lighting.rgb = brdfLambert(N, L, lightColor);
                 lighting.a = brdfSpecular(N, L, V, smoothness, specular);
-                lighting *= shadowLighting(shadowMap, shadowMatrix, shadowFactor, world.xyz);
+                lighting *= shadowLighting(shadowMap, shadowMatrix, shadowFactor.x, shadowFactor.y, world.xyz);
 
                 return lighting;
             }
@@ -224,7 +224,7 @@
                 float3 L = normalize(lightPosition - P);
 
                 float4 lighting;
-                lighting.rgb = lightColor * brdfLambert(N, L);
+                lighting.rgb = brdfLambert(N, L, lightColor);
                 lighting.a = brdfSpecular(N, L, V, smoothness, specular);
                 lighting *= spotLighting(lightPosition, P, lightDirection, lightSpotInnerCone, lightSpotOuterCone, lightAttenuation);
 
@@ -245,7 +245,7 @@
                 float3 L = normalize(lightPosition - P);
 
                 float4 lighting;
-                lighting.rgb = lightColor * brdfLambert(N, L);
+                lighting.rgb = brdfLambert(N, L, lightColor);
                 lighting.a = brdfSpecular(N, L, V, smoothness, specular);
                 lighting *= pointLighting(lightPosition, P, lightAttenuation);
 

@@ -541,9 +541,7 @@ inline bool closeTo(double a, double b, double epsilon)
 inline float safeAcos(float x)
 {
     if (x <= -1.0) { return M_PI; }
-
     if (x >= 1.0) { return 0.0; }
-
     return acos(x);
 }
 

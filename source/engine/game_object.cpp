@@ -46,13 +46,13 @@ GameObject::GameObject() noexcept
 	: _active(false)
 	, _layer(0)
 	, _needUpdates(true)
-	, _rotation(0, 0, 0, 1)
-	, _scaling(1, 1, 1)
-	, _translate(0, 0, 0)
-	, _lookAt(0, 0, 0)
-	, _upVector(0, 1, 0)
+	, _quat(0, 0, 0, 1)
+	, _scaling(Vector3::One)
+	, _translate(Vector3::Zero)
+	, _right(Vector3::UnitX)
+	, _up(Vector3::UnitY)
+	, _forward(Vector3::UnitZ)
 {
-	_worldTransform.loadIdentity();
 	_transform.loadIdentity();
 	_transformInverse.loadIdentity();
 	_transformInverseTranspose.loadIdentity();
@@ -560,7 +560,7 @@ GameObject::setRotateZ(float dist) noexcept
 }
 
 void
-GameObject::setRotateOnAxis(float dist, const Quaternion& axis) noexcept
+GameObject::setRotateOnAxis(float dist, const Vector3& axis) noexcept
 {
 	if (axis.x) this->setRotateX(dist);
 	if (axis.y) this->setRotateY(dist);
@@ -576,7 +576,9 @@ GameObject::setRotateAccum(float v) noexcept
 void
 GameObject::setRotateAccum(float x, float y, float z) noexcept
 {
-	this->setRotateAccum(Quaternion(x, y, z));
+	Quaternion quat;
+	quat.makeRotate(EulerAngles(x, y, z));
+	this->setRotateAccum(quat);
 }
 
 void
@@ -604,7 +606,7 @@ GameObject::setRotateAccumZ(float dist) noexcept
 }
 
 void
-GameObject::setRotateAccumOnAxis(float dist, const Quaternion& axis) noexcept
+GameObject::setRotateAccumOnAxis(float dist, const Vector3& axis) noexcept
 {
 	if (axis.x) this->setRotateAccumX(dist);
 	if (axis.y) this->setRotateAccumY(dist);
@@ -614,20 +616,25 @@ GameObject::setRotateAccumOnAxis(float dist, const Quaternion& axis) noexcept
 void
 GameObject::setRotateAccum(const Quaternion& rotate) noexcept
 {
-	this->setRotate(this->getRotate() + rotate);
+	this->setRotate(rotate.cross(this->getRotate()));
 }
 
 void
-GameObject::setRotate(const Quaternion& rotate) noexcept
+GameObject::setRotate(const Quaternion& quat) noexcept
 {
-	if (_rotation != rotate)
+	if (_quat != quat)
 	{
 		if (this->getActive())
 		{
 			this->_onMoveBefore();
 		}
 
-		_rotation = rotate;
+		_quat = quat;
+
+		_right = _quat.rotate(Vector3::Right);
+		_up = _quat.rotate(Vector3::Up);
+		_forward = _quat.rotate(Vector3::Forward);
+
 		_needUpdates = true;
 
 		if (this->getActive())
@@ -637,105 +644,32 @@ GameObject::setRotate(const Quaternion& rotate) noexcept
 	}
 }
 
+void 
+GameObject::setRotate(float x, float y, float z) noexcept
+{
+	EulerAngles euler(x, y, z);
+	this->setRotate(Quaternion(euler));
+}
+
 const Quaternion&
 GameObject::getRotate() const noexcept
 {
-	return _rotation;
+	return _quat;
 }
 
 void
-GameObject::setLookAtX(float dist) noexcept
+GameObject::setRight(const Vector3& right) noexcept
 {
-	auto lookat = this->getLookAt();
-	lookat.x = dist;
-	this->setLookAt(lookat);
-}
-
-void
-GameObject::setLookAtY(float dist) noexcept
-{
-	auto lookat = this->getLookAt();
-	lookat.y = dist;
-	this->setLookAt(lookat);
-}
-
-void
-GameObject::setLookAtZ(float dist) noexcept
-{
-	auto lookat = this->getLookAt();
-	lookat.z = dist;
-	this->setLookAt(lookat);
-}
-
-void
-GameObject::setLookAtOnAxis(float dist, const Vector3& axis) noexcept
-{
-	if (axis.x) this->setLookAtX(dist);
-	if (axis.y) this->setLookAtY(dist);
-	if (axis.z) this->setLookAtZ(dist);
-}
-
-void
-GameObject::setLookAtAccum(float v) noexcept
-{
-	this->setLookAtAccum(v, v, v);
-}
-
-void
-GameObject::setLookAtAccum(float x, float y, float z) noexcept
-{
-	this->setLookAtAccum(Vector3(x, y, z));
-}
-
-void
-GameObject::setLookAtAccumX(float dist) noexcept
-{
-	auto lookat = this->getLookAt();
-	lookat.z += dist;
-	this->setLookAt(lookat);
-}
-
-void
-GameObject::setLookAtAccumY(float dist) noexcept
-{
-	auto lookat = this->getLookAt();
-	lookat.z += dist;
-	this->setLookAt(lookat);
-}
-
-void
-GameObject::setLookAtAccumZ(float dist) noexcept
-{
-	auto lookat = this->getLookAt();
-	lookat.z += dist;
-	this->setLookAt(lookat);
-}
-
-void
-GameObject::setLookAtAccumOnAxis(float dist, const Vector3& axis) noexcept
-{
-	if (axis.x) this->setLookAtAccumX(dist);
-	if (axis.y) this->setLookAtAccumY(dist);
-	if (axis.z) this->setLookAtAccumZ(dist);
-}
-
-void
-GameObject::setLookAtAccum(const Vector3& pos) noexcept
-{
-	this->setLookAt(this->getLookAt() + pos);
-}
-
-void
-GameObject::setLookAt(const Vector3& pos) noexcept
-{
-	if (_lookAt != pos)
+	if (_right != right)
 	{
 		if (this->getActive())
 		{
 			this->_onMoveBefore();
 		}
 
-		_lookAt = pos;
+		_right = right;
+		_right.normalize();
+
 		_needUpdates = true;
 
 		if (this->getActive())
@@ -746,104 +680,24 @@ GameObject::setLookAt(const Vector3& pos) noexcept
 }
 
 const Vector3&
-GameObject::getLookAt() const noexcept
+GameObject::getRight() const noexcept
 {
-	return _lookAt;
-}
-
-void
-GameObject::setUpVectorX(float dist) noexcept
-{
-	auto up = this->getUpVector();
-	up.x = dist;
-	this->setUpVector(up);
-}
-
-void
-GameObject::setUpVectorY(float dist) noexcept
-{
-	auto up = this->getUpVector();
-	up.y = dist;
-	this->setUpVector(up);
-}
-
-void
-GameObject::setUpVectorZ(float dist) noexcept
-{
-	auto up = this->getUpVector();
-	up.z = dist;
-	this->setUpVector(up);
-}
-
-void
-GameObject::setUpVectorOnAxis(float dist, const Vector3& axis) noexcept
-{
-	if (axis.x) this->setUpVectorX(dist);
-	if (axis.y) this->setUpVectorY(dist);
-	if (axis.z) this->setUpVectorZ(dist);
-}
-
-void
-GameObject::setUpVectorAccum(float v) noexcept
-{
-	this->setUpVectorAccum(v, v, v);
-}
-
-void
-GameObject::setUpVectorAccum(float x, float y, float z) noexcept
-{
-	this->setUpVectorAccum(Vector3(x, y, z));
-}
-
-void
-GameObject::setUpVectorAccumX(float dist) noexcept
-{
-	auto up = this->getUpVector();
-	up.z += dist;
-	this->setUpVector(up);
-}
-
-void
-GameObject::setUpVectorAccumY(float dist) noexcept
-{
-	auto up = this->getUpVector();
-	up.z += dist;
-	this->setUpVector(up);
-}
-
-void
-GameObject::setUpVectorAccumZ(float dist) noexcept
-{
-	auto up = this->getUpVector();
-	up.z += dist;
-	this->setUpVector(up);
-}
-
-void
-GameObject::setUpVectorAccumOnAxis(float dist, const Vector3& axis) noexcept
-{
-	if (axis.x) this->setUpVectorAccumX(dist);
-	if (axis.y) this->setUpVectorAccumY(dist);
-	if (axis.z) this->setUpVectorAccumZ(dist);
-}
-
-void
-GameObject::setUpVectorAccum(const Vector3& pos) noexcept
-{
-	this->setUpVector(this->getUpVector() + pos);
+	return _right;
 }
 
 void
 GameObject::setUpVector(const Vector3& up) noexcept
 {
-	if (_upVector != up)
+	if (_up != up)
 	{
 		if (this->getActive())
 		{
 			this->_onMoveBefore();
 		}
 
-		_upVector = up;
+		_up = up;
+		_up.normalize();
+
 		_needUpdates = true;
 
 		if (this->getActive())
@@ -856,33 +710,35 @@ GameObject::setUpVector(const Vector3& up) noexcept
 const Vector3&
 GameObject::getUpVector() const noexcept
 {
-	return _upVector;
+	return _up;
 }
 
 void
-GameObject::setTransform(const Matrix4x4& m) noexcept
+GameObject::setForward(const Vector3& forward) noexcept
 {
-	_transform = m;
-	_transformInverse = m;
-	_transformInverse.inverse();
-	_transformInverseTranspose = Matrix4x4(_transformInverse).transpose();
+	if (_forward != forward)
+	{
+		if (this->getActive())
+		{
+			this->_onMoveBefore();
+		}
+
+		_forward = forward;
+		_forward.normalize();
+
+		_needUpdates = true;
+
+		if (this->getActive())
+		{
+			this->_onMoveAfter();
+		}
+	}
 }
 
-void
-GameObject::setTransformInverse(const Matrix4x4& m) noexcept
+const Vector3&
+GameObject::getForward() const noexcept
 {
-	_transform = m;
-	_transformInverse = m;
-	_transformInverse.inverse();
-	_transformInverseTranspose = Matrix4x4(_transformInverse).transpose();
-}
-
-void
-GameObject::setTransform(const Vector3& translate, const Quaternion& rotate, const Vector3& scale) noexcept
-{
-	this->setTranslate(translate);
-	this->setRotate(rotate);
-	this->setScale(scale);
+	return _forward;
 }
 
 const Matrix4x4&
@@ -906,30 +762,20 @@ GameObject::getTransformInverseTranspose() const noexcept
 	return _transformInverseTranspose;
 }
 
-const Matrix4x4&
-GameObject::getWorldTransform() const noexcept
-{
-	this->_updateTransform();
-	return _worldTransform;
-}
-
 void
 GameObject::_updateTransform() const noexcept
 {
 	if (_needUpdates)
 	{
-		Matrix4x4 rotate;
-		rotate.makeRotate(_rotation);
-
-		_worldTransform = rotate;
-		_worldTransform.setTranslate(_translate);
-
-		_transform = _worldTransform;
+		_transform.makeRotate(_quat);
+		_transform.setTranslate(_translate);
 		_transform.scale(_scaling);
 
 		_transformInverse = _transform;
 		_transformInverse.inverse();
-		_transformInverseTranspose = rotate;
+
+		_transformInverseTranspose = _transformInverse;
+		_transformInverseTranspose.transpose();
 
 		_needUpdates = false;
 	}
@@ -1117,6 +963,24 @@ GameObject::sendMessageDownwards(const MessagePtr& message) noexcept
 		it->sendMessageDownwards(message);
 }
 
+GameServer*
+GameObject::getGameServer() noexcept
+{
+	auto parent = _parent.lock();
+	if (parent)
+		return parent->getGameServer();
+	return nullptr;
+}
+
+GameScene*
+GameObject::getGameScene() noexcept
+{
+	auto parent = _parent.lock();
+	if (parent)
+		return parent->getGameScene();
+	return nullptr;
+}
+
 void 
 GameObject::load(iarchive& reader) noexcept
 {
@@ -1126,8 +990,9 @@ GameObject::load(iarchive& reader) noexcept
 	float3 position = float3::Zero;
 	float3 scale = float3::One;
 	float3 rotate = float3::Zero;
-	float3 lookat = float3::UnitZ;
+	float3 right = float3::UnitX;
 	float3 up = float3::UnitY;
+	float3 forward = float3::UnitZ;
 
 	reader >> make_archive(name, "name");
 	reader >> make_archive(active, "active");
@@ -1135,17 +1000,22 @@ GameObject::load(iarchive& reader) noexcept
 	reader >> make_archive(position, "position");
 	reader >> make_archive(scale, "scale");
 	reader >> make_archive(rotate, "rotate");
-	reader >> make_archive(lookat, "lookat");
+	reader >> make_archive(right, "right");
+	reader >> make_archive(forward, "forward");
 	reader >> make_archive(up, "up");
+
+	right.normalize();
+	up.normalize();
+	forward.normalize();
 
 	this->setName(name);
 	this->setActive(active);
 	this->setLayer(layer);
+	this->setUpVector(up);
+	this->setForward(forward);
 	this->setTranslate(position);
 	this->setScale(scale);
-	this->setRotate(rotate);
-	this->setLookAt(lookat);
-	this->setUpVector(up);
+	this->setRotate(Quaternion(rotate));
 }
 
 void 
@@ -1160,7 +1030,7 @@ GameObject::clone() const except
 	instance->setParent(this->getParent());
 	instance->setName(this->getName());
 	instance->setLayer(this->getLayer());
-	instance->setLookAt(this->getLookAt());
+	instance->setForward(this->getForward());
 	instance->setUpVector(this->getUpVector());
 	instance->setRotate(this->getRotate());
 	instance->setScale(this->getScale());
@@ -1232,24 +1102,6 @@ GameObject::_onMoveAfter() except
 
 	for (auto& it : _children)
 		it->_onMoveAfter();
-}
-
-GameServer*
-GameObject::getGameServer() noexcept
-{
-	auto parent = _parent.lock();
-	if (parent)
-		return parent->getGameServer();
-	return nullptr;
-}
-
-GameScene*
-GameObject::getGameScene() noexcept
-{
-	auto parent = _parent.lock();
-	if (parent)
-		return parent->getGameScene();
-	return nullptr;
 }
 
 _NAME_END

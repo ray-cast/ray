@@ -118,7 +118,7 @@ SoundListenerComponent::onMoveAfter() noexcept
 	assert(actor);
 
 	_listener->setTranslate(actor->getTranslate());
-	_listener->setOrientation(actor->getLookAt(), actor->getUpVector());
+	_listener->setOrientation(actor->getForward(), actor->getUpVector());
 }
 
 _NAME_END

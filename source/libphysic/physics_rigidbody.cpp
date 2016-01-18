@@ -48,7 +48,7 @@ PhysicsRigidbody::PhysicsRigidbody() noexcept
     , _linearDamping(0.05f)
     , _angularDamping(0.05f)
     , _position(Vector3::Zero)
-    , _rotate(Vector3::Zero)
+    , _rotate(0,0,0,1)
     , _inertia(Vector3::Zero)
     , _gravity(Vector3::Zero)
     , _linearVelocity(Vector3::Zero)

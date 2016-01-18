@@ -61,67 +61,63 @@ public:
 	void setLayer(std::uint8_t layer) noexcept;
 	std::uint8_t getLayer() const noexcept;
 
-	void setCastShadow(bool enable) noexcept;
-	void setReceiveShadow(bool enable) noexcept;
-	void setOwnerListener(RenderListener* listener) noexcept;
-	void setBoundingBox(const Bound& bound) noexcept;
+	Vector3 getTranslate() const noexcept;
+
+	Vector3 getRight() const noexcept;
+	Vector3 getUpVector() const noexcept;
+	Vector3 getForward() const noexcept;
 
 	void setTransform(const Matrix4x4& m) noexcept;
 	void setTransformInverse(const Matrix4x4& m) noexcept;
 	void setTransformInverseTranspose(const Matrix4x4& m) noexcept;
 
-	bool getReceiveShadow() const noexcept;
-	bool getCastShadow() const noexcept;
-
-	RenderListener* getOwnerListener() noexcept;
-
 	const Matrix4x4& getTransform() const noexcept;
 	const Matrix4x4& getTransformInverse() const noexcept;
 	const Matrix4x4& getTransformInverseTranspose() const noexcept;
 
+	void setCastShadow(bool enable) noexcept;
+	bool getCastShadow() const noexcept;
+
+	void setReceiveShadow(bool enable) noexcept;
+	bool getReceiveShadow() const noexcept;
+
+	void setOwnerListener(RenderListener* listener) noexcept;
+	RenderListener* getOwnerListener() noexcept;
+
+	void setBoundingBox(const Bound& bound) noexcept;
 	const Bound& getBoundingBox() const noexcept;
 	const Bound& getBoundingBoxInWorld() const noexcept;
 
-	void setMaterial(MaterialPtr material) noexcept;
-	MaterialPtr getMaterial() noexcept;
+	void setRenderScene(RenderScenePtr scene) noexcept;
+	RenderScenePtr getRenderScene() const noexcept;
 
 	void addSubRenderObject(RenderObjectPtr object) noexcept;
 	void removeSubRenderObject(RenderObjectPtr object) noexcept;
 	RenderObjects& getSubeRenderObjects() noexcept;
 
-	virtual void setRenderBuffer(RenderBufferPtr geometry) noexcept;
-	virtual RenderBufferPtr getRenderBuffer() noexcept;
+protected:
+	virtual void onMoveBefor() noexcept;
+	virtual void onMoveAfter() noexcept;
 
-	virtual void setRenderIndirect(RenderIndirectPtr renderable) noexcept;
-	virtual RenderIndirectPtr getRenderIndirect() noexcept;
-
-	virtual void setRenderScene(RenderScenePtr scene) noexcept = 0;
-	virtual RenderScenePtr getRenderScene() const noexcept = 0;
+	virtual void onSceneChangeBefor() noexcept;
+	virtual void onSceneChangeAfter() noexcept;
 
 private:
-	void _updateBoundingBoxInWorld() const noexcept;
-
-private:
-
 	std::uint8_t _layer;
 
 	bool _isCastShadow;
 	bool _isReceiveShadow;
 
 	Bound _boundingBox;
-
-	mutable bool _needUpdate;
-	mutable Bound _worldBoundingxBox;
-
-	RenderListener* _renderListener;
-
-	MaterialPtr _material;
-
-	RenderObjects _renderObjects;
+	Bound _worldBoundingxBox;
 
 	Matrix4x4 _transform;
 	Matrix4x4 _transformInverse;
 	Matrix4x4 _transformInverseTranspose;
+
+	RenderObjects _renderObjects;
+	RenderListener* _renderListener;
+	RenderSceneWeakPtr  _renderScene;
 };
 
 _NAME_END

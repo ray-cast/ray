@@ -134,7 +134,7 @@ Atmospheric::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source,
 
 		if (light->getLightType() == LightType::LT_SUN)
 		{
-			auto lightDirection = ~(light->getTransform().getTranslate() - light->getLightLookat());
+			auto lightDirection = ~light->getForward();
 
 			_lightDirection->assign(lightDirection);
 

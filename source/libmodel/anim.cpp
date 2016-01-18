@@ -409,7 +409,7 @@ AnimationProperty::updateIK(const IKAttr& ik) noexcept
 
 			Quaternion q0(rotationAxis, rotationAngle);
 			Quaternion q1 = bone.getRotation();
-			Quaternion qq = q1 * q0;
+			Quaternion qq = q1.cross(q0);
 
 			Matrix4x4 m;
 			m.makeRotate(qq);

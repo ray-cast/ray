@@ -34,7 +34,7 @@
             // pow(NdotH, smoothness)
             // = exp(-smoothness*(1-NdotH))
             // = exp2(smoothness / InvLog2 * NdotH - smoothness / InvLog2)
-            return (smoothness * InvPIE8 + InvPIE4) * exp2(smoothness * InvLog2 * NdotH - smoothness * InvLog2);
+            return (smoothness * 0.125 + 0.25) * exp2(smoothness * InvLog2 * NdotH - smoothness * InvLog2);
         }
 
         float geometricShadowingSchlickBeckmann(float NdotV, float k)
@@ -53,12 +53,10 @@
             return 1.0f / (LdotH * LdotH * invK2 + k2);
         }
 
-        float brdfLambert(float3 N, float3 L)
+        float3 brdfLambert(float3 N, float3 L, float3 diffuse)
         {
             float nl = dot(N, L);
-            float lambert = mad(nl, 0.5f, 0.5f);
-            float diffuse = smoothstep(0.0f, 1.5f, lambert);
-            return max(0.0f, nl);
+            return diffuse * max(0.0f, nl);
         }
 
         float skinBeckmann(float ndoth, float m)
@@ -171,35 +169,35 @@
             return attenuation;
         }
 
-        float shadowLighting(Texture2D shadowMap, float4x4 shadowMatrix, float shadowFactor, float3 worldPosition)
+        float shadowLighting(Texture2D shadowMap, float4x4 shadowMatrix, float shadowFactor, float shadowBias, float3 worldPosition)
         {
             float4 proj = mul(float4(worldPosition, 1.0), shadowMatrix);
             proj /= proj.w;
-            proj.xy = PosToCoord(proj.xy);
+            proj = proj * 0.5 + 0.5;
 
             float d1 = shadowMap.Sample(PointClamp, proj.xy).r;
             float d2 = proj.z;
-            float d = exp(shadowFactor * (d1 - d2));
+            float d = exp(shadowFactor * (d1 - d2 + shadowBias));
             float shadow = saturate(d);
 
             return shadow;
         }
 
-        float shadowLighting(Texture2DArray shadowMap, float4x4 shadowMatrix, float shadowFactor, float3 worldPosition, int index)
+        float shadowLighting(Texture2DArray shadowMap, float4x4 shadowMatrix, float shadowFactor, float shadowBias, float3 worldPosition, int index)
         {
             float4 proj = mul(float4(worldPosition, 1.0), shadowMatrix);
             proj /= proj.w;
-            proj.xy = PosToCoord(proj.xy);
+            proj = proj * 0.5 + 0.5;
 
             float d1 = shadowMap.Sample(PointClamp, float3(proj.xy,index)).r;
             float d2 = proj.z;
-            float d = exp(shadowFactor * (d1 - d2));
+            float d = exp(shadowFactor * (d1 - d2 + shadowBias));
             float shadow = saturate(d);
 
             return shadow;
         }
 
-        float shadowCubeLighting(Texture2DArray shadowMap, float4x4 shadowMatrix, float shadowFactor, float4 worldPosition, float3 lightPosition, float3 world)
+        float shadowCubeLighting(Texture2DArray shadowMap, float4x4 shadowMatrix, float shadowFactor, float shadowBias, float3 worldPosition, float3 lightPosition, float3 world)
         {
             float3 L = lightPosition - world;
 
@@ -220,7 +218,7 @@
                 }
             }
 
-            return shadowLighting(shadowMap, shadowMatrix, shadowFactor, worldPosition, index);
+            return shadowLighting(shadowMap, shadowMatrix, shadowFactor, shadowBias, worldPosition, index);
         }
         ]]>
     </shader>

@@ -306,6 +306,10 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialPtr& material
 			param->setType(ShaderVariantType::Int);
 		else if (type == "int2")
 			param->setType(ShaderVariantType::Int2);
+		else if (type == "int3")
+			param->setType(ShaderVariantType::Int3);
+		else if (type == "int4")
+			param->setType(ShaderVariantType::Int4);
 		else if (type == "float")
 			param->setType(ShaderVariantType::Float);
 		else if (type == "float2")
@@ -352,6 +356,76 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialPtr& material
 		param->setName(name);
 		param->setSemantic(materialSemantic);
 		material->addParameter(param);
+	}
+}
+
+void
+MaterialMaker::instanceMacro(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+{
+	auto name = reader.getValue<std::string>("name");
+	auto type = reader.getValue<std::string>("type");
+	auto semantic = reader.getValue<std::string>("semantic");
+	auto value = reader.getValue<std::string>("value");
+
+	if (name.empty())
+		throw failure(__TEXT("The parameter name can not be empty"));
+
+	if (!type.empty())
+	{
+		auto macro = std::make_shared<MaterialVariant>();
+		macro->setName(name);
+		if (type == "bool")
+		{
+			macro->setType(ShaderVariantType::Bool);
+			macro->assign(reader.getValue<bool>("value"));
+		}
+		else if (type == "int")
+		{
+			macro->setType(ShaderVariantType::Int);
+			macro->assign(reader.getValue<int1>("value"));
+		}
+		else if (type == "int2")
+		{
+			macro->setType(ShaderVariantType::Int2);
+			macro->assign(reader.getValue<int2>("value"));
+		}
+		else if (type == "int3")
+		{
+			macro->setType(ShaderVariantType::Int3);
+			macro->assign(reader.getValue<int3>("value"));
+		}
+		else if (type == "int4")
+		{
+			macro->setType(ShaderVariantType::Int4);
+			macro->assign(reader.getValue<int4>("value"));
+		}
+		else if (type == "float")
+		{
+			macro->setType(ShaderVariantType::Float);
+			macro->assign(reader.getValue<float1>("value"));
+		}
+		else if (type == "float2")
+		{
+			macro->setType(ShaderVariantType::Float2);
+			macro->assign(reader.getValue<float2>("value"));
+		}
+		else if (type == "float3")
+		{
+			macro->setType(ShaderVariantType::Float3);
+			macro->assign(reader.getValue<float3>("value"));
+		}
+		else if (type == "float4")
+		{
+			macro->setType(ShaderVariantType::Float4);
+			macro->assign(reader.getValue<float4>("value"));
+		}
+		else
+		{
+			assert(false);
+			throw failure(__TEXT("Unknown macro type : ") + name);
+		}
+
+		material->addMacro(macro);
 	}
 }
 
@@ -471,6 +545,8 @@ MaterialMaker::load(MaterialManager& manager, MaterialPtr& material, iarchive& r
 			instanceInclude(manager, material, reader);
 		else if (name == "parameter")
 			instanceParameter(manager, material, reader);
+		else if (name == "macro")
+			instanceMacro(manager, material, reader);
 		else if (name == "sampler")
 			instanceSampler(manager, material, reader);
 		else if (name == "shader")

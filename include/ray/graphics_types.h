@@ -235,7 +235,7 @@ enum ClearFlags
 	ColorDepth = Color | Depth,
 	ColorStencil = Color | Stencil,
 	DepthStencil = Depth | Stencil,
-	Default = Color | Depth | Stencil
+	All = Color | Depth | Stencil
 };
 
 enum class TextureFormat
@@ -402,6 +402,8 @@ enum class ShaderVariantType
 	Bool,
 	Int,
 	Int2,
+	Int3,
+	Int4,
 	Float,
 	Float2,
 	Float3,

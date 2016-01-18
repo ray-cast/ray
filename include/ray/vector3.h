@@ -58,46 +58,75 @@ public:
     static const Vector3t<T> UnitX;
     static const Vector3t<T> UnitY;
     static const Vector3t<T> UnitZ;
+	static const Vector3t<T> Right;
+	static const Vector3t<T> Up;
+	static const Vector3t<T> Forward;
 
     Vector3t() {}
-    Vector3t(T x, T y, T z) :x(x), y(y), z(z) { }
-    Vector3t(T x, T y, T z, bool normal) :x(x), y(y), z(z) { if (normal) this->normalize(); }
-    Vector3t(const Vector2t<T>& _xy, T _z) :x(_xy.x), y(_xy.y), z(_z) {}
+	Vector3t(T xyz) :x(xyz), y(xyz), z(xyz) {}
+    Vector3t(T xx, T yy, T zz) :x(xx), y(yy), z(zz) { }
+	Vector3t(T xx, const Vector2t<T>& yz) :x(xx), y(yz.x), z(yz.y) {}
+    Vector3t(const Vector2t<T>& xy, T zz) :x(xy.x), y(xy.y), z(zz) {}
     Vector3t(const Vector3t<T>& v) :x(v.x), y(v.y), z(v.z) {}
-    explicit Vector3t(T xyz) :x(xyz), y(xyz), z(xyz) {}
-    explicit Vector3t(const Vector2t<T>& v) :x(v.x), y(v.y), z(0.0) {}
-    explicit Vector3t(const Vector3t<T>& v, bool normal) :x(v.x), y(v.y), z(v.z) { if (normal) this->normalize(); }
-    explicit Vector3t(const Vector4t<T>& v) :x(v.x / v.w), y(v.y / v.w), z(v.z / v.w) {}
+    Vector3t(const Vector4t<T>& v) :x(v.x / v.w), y(v.y / v.w), z(v.z / v.w) {}
 
-    template<typename S>
-    Vector3t<T>& operator+=(const Vector3t<S>& pt) { x += pt.x; y += pt.y; z += pt.z; return *this; }
+	Vector3t<T>& operator+=(const T sz) { x += sz; y += sz; z += sz; return *this; }
+	Vector3t<T>& operator-=(const T sz) { x -= sz; y -= sz; z -= sz; return *this; }
+	Vector3t<T>& operator*=(const T sz) { x *= sz; y *= sz; z *= sz; return *this; }
+	Vector3t<T>& operator/=(const T sz) { x /= sz; y /= sz; z /= sz; return *this; }
 
-    template<typename S>
-    Vector3t<T>& operator-=(const Vector3t<S>& pt) { x -= pt.x; y -= pt.y; z -= pt.z; return *this; }
+	Vector3t<T>& operator+=(const Vector2t<T>& rt) { x += rt.x; y += rt.y; return *this; }
+	Vector3t<T>& operator-=(const Vector2t<T>& rt) { x -= rt.x; y -= rt.y; return *this; }
+	Vector3t<T>& operator/=(const Vector2t<T>& rt) { x *= rt.x; y *= rt.y; return *this; }
+	Vector3t<T>& operator*=(const Vector2t<T>& rt) { x /= rt.x; y /= rt.y; return *this; }
 
-    template<typename S>
-    Vector3t<T>& operator*=(const Vector3t<S>& pt) { x *= pt.x; y *= pt.y; z *= pt.z; return *this; }
+    Vector3t<T>& operator+=(const Vector3t<T>& pt) { x += pt.x; y += pt.y; z += pt.z; return *this; }
+    Vector3t<T>& operator-=(const Vector3t<T>& pt) { x -= pt.x; y -= pt.y; z -= pt.z; return *this; }
+    Vector3t<T>& operator*=(const Vector3t<T>& pt) { x *= pt.x; y *= pt.y; z *= pt.z; return *this; }
+    Vector3t<T>& operator/=(const Vector3t<T>& pt) { x /= pt.x; y /= pt.y; z /= pt.z; return *this; }
 
-    template<typename S>
-    Vector3t<T>& operator/=(const Vector3t<S>& pt) { x /= pt.x; y /= pt.y; z /= pt.z; return *this; }
-
-    template<typename S>
-    Vector3t<T>& operator+=(const S sz) { x += sz; y += sz; z += sz; return *this; }
-
-    template<typename S>
-    Vector3t<T>& operator-=(const S sz) { x -= sz; y -= sz; z -= sz; return *this; }
-
-    template<typename S>
-    Vector3t<T>& operator*=(const S sz) { x *= sz; y *= sz; z *= sz; return *this; }
-
-    template<typename S>
-    Vector3t<T>& operator/=(const S sz) { x /= sz; y /= sz; z /= sz; return *this; }
-
-    template <typename U>
-    explicit operator Vector3t<U>() const
+    template <typename S>
+    explicit operator Vector3t<S>() const
     {
-        return Vector3t<U>(static_cast<U>(x), static_cast<U>(y), static_cast<U>(z));
+        return Vector3t<S>(static_cast<S>(x), static_cast<S>(y), static_cast<S>(z));
     }
+
+	Vector2t<T> xx()  const { return Vector2t<T>(x, x); }
+	Vector2t<T> xy()  const { return Vector2t<T>(x, y); }
+	Vector2t<T> xz()  const { return Vector2t<T>(x, z); }
+	Vector3t<T> xxx() const { return Vector3t<T>(x, x, x); }
+	Vector3t<T> xxy() const { return Vector3t<T>(x, x, y); }
+	Vector3t<T> xxz() const { return Vector3t<T>(x, x, z); }
+	Vector3t<T> xyx() const { return Vector3t<T>(x, y, x); }
+	Vector3t<T> xyy() const { return Vector3t<T>(x, y, y); }
+	Vector3t<T> xyz() const { return Vector3t<T>(x, y, z); }
+	Vector3t<T> xzx() const { return Vector3t<T>(x, z, x); }
+	Vector3t<T> xzy() const { return Vector3t<T>(x, z, y); }
+	Vector3t<T> xzz() const { return Vector3t<T>(x, z, z); }
+	Vector2t<T> yx()  const { return Vector2t<T>(y, x); }
+	Vector2t<T> yy()  const { return Vector2t<T>(y, y); }
+	Vector2t<T> yz()  const { return Vector2t<T>(y, z); }
+	Vector3t<T> yxx() const { return Vector3t<T>(y, x, x); }
+	Vector3t<T> yxy() const { return Vector3t<T>(y, x, y); }
+	Vector3t<T> yxz() const { return Vector3t<T>(y, x, z); }
+	Vector3t<T> yyx() const { return Vector3t<T>(y, y, x); }
+	Vector3t<T> yyy() const { return Vector3t<T>(y, y, y); }
+	Vector3t<T> yyz() const { return Vector3t<T>(y, y, z); }
+	Vector3t<T> yzx() const { return Vector3t<T>(y, z, x); }
+	Vector3t<T> yzy() const { return Vector3t<T>(y, z, y); }
+	Vector3t<T> yzz() const { return Vector3t<T>(y, z, z); }
+	Vector2t<T> zx()  const { return Vector2t<T>(z, x); }
+	Vector2t<T> zy()  const { return Vector2t<T>(z, y); }
+	Vector2t<T> zz()  const { return Vector2t<T>(z, z); }
+	Vector3t<T> zxx() const { return Vector3t<T>(z, x, x); }
+	Vector3t<T> zxy() const { return Vector3t<T>(z, x, y); }
+	Vector3t<T> zxz() const { return Vector3t<T>(z, x, z); }
+	Vector3t<T> zyx() const { return Vector3t<T>(z, y, x); }
+	Vector3t<T> zyy() const { return Vector3t<T>(z, y, y); }
+	Vector3t<T> zyz() const { return Vector3t<T>(z, y, z); }
+	Vector3t<T> zzx() const { return Vector3t<T>(z, z, x); }
+	Vector3t<T> zzy() const { return Vector3t<T>(z, z, y); }
+	Vector3t<T> zzz() const { return Vector3t<T>(z, z, z); }
 
     T operator[](unsigned int i) const
     {
@@ -109,10 +138,8 @@ public:
         return *(&x + i);
     }
 
-    void set(T val) { x = y = z = val; }
-    void set(T xx, T yy, T zz) { x = xx; y = yy; z = zz; }
-    void zero() { set(0.0); }
-    void one() { set(1.0); }
+	Vector3t<T>& set(T val) { x = y = z = val; return *this; }
+	Vector3t<T>& set(T xx, T yy, T zz) { x = xx; y = yy; z = zz; return *this; }
 
     T dot(const Vector3t<T>& v) const { return x * v.x + y * v.y + z * v.z; }
 
@@ -124,7 +151,7 @@ public:
             x * v.y - y * v.x);
     }
 
-    float normalize()
+    T normalize()
     {
         T magSq = length2();
         if (magSq > 0)
@@ -174,6 +201,9 @@ template<typename T> const Vector3t<T> Vector3t<T>::One = Vector3t<T>((T)1.0, (T
 template<typename T> const Vector3t<T> Vector3t<T>::UnitX = Vector3t<T>((T)1.0, (T)0.0, (T)0.0);
 template<typename T> const Vector3t<T> Vector3t<T>::UnitY = Vector3t<T>((T)0.0, (T)1.0, (T)0.0);
 template<typename T> const Vector3t<T> Vector3t<T>::UnitZ = Vector3t<T>((T)0.0, (T)0.0, (T)1.0);
+template<typename T> const Vector3t<T> Vector3t<T>::Right = Vector3t<T>((T)1.0, (T)0.0, (T)0.0);
+template<typename T> const Vector3t<T> Vector3t<T>::Up = Vector3t<T>((T)0.0, (T)1.0, (T)0.0);
+template<typename T> const Vector3t<T> Vector3t<T>::Forward = Vector3t<T>((T)0.0, (T)0.0, (T)1.0);
 
 template <typename T>
 inline Vector3t<T> min(const Vector3t<T>& a, const Vector3t<T>& b)

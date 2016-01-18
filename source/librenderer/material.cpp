@@ -153,4 +153,48 @@ Material::getParameters() const noexcept
 	return _parameters;
 }
 
+void
+Material::addMacro(MaterialVariantPtr macro) noexcept
+{
+	assert(macro);
+	assert(std::find(_macros.begin(), _macros.end(), macro) == _macros.end());
+	_macros.push_back(macro);
+}
+
+void
+Material::removeMacro(MaterialVariantPtr macro) noexcept
+{
+	assert(macro);
+	auto it = std::find(_macros.begin(), _macros.end(), macro);
+	if (it != _macros.end())
+	{
+		_macros.erase(it);
+	}
+}
+
+MaterialVariantPtr
+Material::getMacro(const std::string& name) const noexcept
+{
+	assert(!name.empty());
+	for (auto& it : _macros)
+	{
+		if (it->getName() == name)
+			return it;
+	}
+
+	return nullptr;
+}
+
+MaterialVariants&
+Material::getMacros() noexcept
+{
+	return _macros;
+}
+
+const MaterialVariants&
+Material::getMacros() const noexcept
+{
+	return _macros;
+}
+
 _NAME_END

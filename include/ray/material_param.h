@@ -41,12 +41,12 @@
 
 _NAME_BEGIN
 
-class EXPORT MaterialSemantic final
+class EXPORT MaterialVariant
 {
 public:
-	MaterialSemantic() noexcept;
-	MaterialSemantic(const std::string& name, ShaderVariantType type) noexcept;
-	~MaterialSemantic() noexcept;
+	MaterialVariant() noexcept;
+	MaterialVariant(const std::string& name, ShaderVariantType type) noexcept;
+	virtual ~MaterialVariant() noexcept;
 
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
@@ -59,6 +59,8 @@ public:
 	void assign(bool value) noexcept;
 	void assign(int value) noexcept;
 	void assign(const int2& value) noexcept;
+	void assign(const int3& value) noexcept;
+	void assign(const int4& value) noexcept;
 	void assign(float value) noexcept;
 	void assign(const float2& value) noexcept;
 	void assign(const float3& value) noexcept;
@@ -74,6 +76,8 @@ public:
 	bool getBool() const noexcept;
 	int getInt() const noexcept;
 	const int2& getInt2() const noexcept;
+	const int3& getInt3() const noexcept;
+	const int4& getInt4() const noexcept;
 	float getFloat() const noexcept;
 	const float2& getFloat2() const noexcept;
 	const float3& getFloat3() const noexcept;
@@ -109,6 +113,14 @@ private:
 
 	ShaderVariantType _type;
 	ShaderVariants _params;
+};
+
+class EXPORT MaterialSemantic final : public MaterialVariant
+{
+public:
+	MaterialSemantic() noexcept;
+	MaterialSemantic(const std::string& name, ShaderVariantType type) noexcept;
+	virtual ~MaterialSemantic() noexcept;
 };
 
 class EXPORT MaterialParam final

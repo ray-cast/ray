@@ -3,13 +3,12 @@
     <attribute name="SSSSS"/>
     <object>
         <attribute name="first_person_camera"/>
-        <attribute position="0,0,-2"/>
-        <attribute lookat="0,0,0" />
+        <attribute position="0,0,-3"/>
         <attribute active="true"/>
         <component class="Camera">
             <attribute aperture="45.0"/>
             <attribute znear="0.1"/>
-            <attribute zfar="65535.0"/>
+            <attribute zfar="100.0"/>
         </component>
         <component class="FirstPersonCamera">
         </component>
@@ -33,7 +32,7 @@
         <attribute name="plane"/>
         <attribute position="0,-2,0"/>
         <attribute scale="10,1,10"/>
-        <attribute active="false"/>
+        <attribute active="true"/>
         <component class="Mesh">
             <attribute name="dlc:sssss/models/cube.pmx"/>
         </component>
@@ -44,7 +43,7 @@
     <object>
         <attribute name="sun"/>
         <attribute position="0,2,-3"/>
-        <attribute lookat="0,0,0" />
+        <attribute rotate="1,0,0"/>
         <attribute active="true"/>
         <component class="Light">
             <attribute type="sun"/>
@@ -57,7 +56,7 @@
     <object>
         <attribute name="light"/>
         <attribute position="0, 0, 0"/>
-        <attribute active="true"/>
+        <attribute active="false"/>
         <component class="Light">
             <attribute type="ambient"/>
             <attribute color="1.0,1.0,1.0"/>

@@ -48,21 +48,19 @@ public:
 	RenderMesh() noexcept;
 	~RenderMesh() noexcept;
 
+	void setMaterial(MaterialPtr material) noexcept;
+	MaterialPtr getMaterial() noexcept;
+
 	void setRenderBuffer(RenderBufferPtr geometry) noexcept;
 	RenderBufferPtr getRenderBuffer() noexcept;
 
 	void setRenderIndirect(RenderIndirectPtr renderable) noexcept;
 	RenderIndirectPtr getRenderIndirect() noexcept;
 
-	void setRenderScene(RenderScenePtr scene) noexcept;
-	RenderScenePtr getRenderScene() const noexcept;
-
 private:
-
+	MaterialPtr _material;
 	RenderBufferPtr _geometry;
 	RenderIndirectPtr _renderable;
-
-	RenderSceneWeakPtr _renderScene;
 };
 
 _NAME_END

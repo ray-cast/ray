@@ -73,28 +73,29 @@ public:
 	Camera() noexcept;
 	~Camera() noexcept;
 
-	void makeLookAt(const Vector3& pos, const Vector3& lookat, const Vector3& up) noexcept;
-	void makeOrtho(float left, float right, float top, float bottom, float znear, float zfar, float ratio = 1.0) noexcept;
-	void makePerspective(float aperture, float znear, float zfar, float ratio = 1.0) noexcept;
-	void makeViewPorject() noexcept;
-
-	void getOrtho(float& left, float& right, float& top, float& bottom, float& ratio, float& znear, float& zfar) noexcept;
-	void getPerspective(float& aperture, float& ratio, float& znear, float& zfar) noexcept;
-
+	void setAperture(float aspect) noexcept;
 	float getAperture() const noexcept;
+
+	void setNear(float znear) noexcept;
 	float getNear() const noexcept;
+
+	void setFar(float znear) noexcept;
 	float getFar() const noexcept;
 
-	const Vector3& getTranslate() const noexcept;
-	const Vector3& getLookAt() const noexcept;
-	const Vector3& getUpVector() const noexcept;
+	void setRatio(float ratio) noexcept;
+	float getRatio() const noexcept;
 
-	const Matrix4x4& getProject() const noexcept;
-	const Matrix4x4& getProjectInverse() const noexcept;
+	void setViewport(const Viewport& viewport) noexcept;
+	const Viewport&  getViewport() const noexcept;
+
+	void setOrtho(float left, float right, float top, float bottom) noexcept;
+	void getOrtho(float& left, float& right, float& top, float& bottom) noexcept;
 
 	const Matrix4x4& getView() const noexcept;
 	const Matrix4x4& getViewInverse() const noexcept;
-	const Matrix4x4& getViewInverseTranspose() const noexcept;
+
+	const Matrix4x4& getProject() const noexcept;
+	const Matrix4x4& getProjectInverse() const noexcept;
 
 	const Matrix4x4& getViewProject() const noexcept;
 	const Matrix4x4& getViewProjectInverse() const noexcept;
@@ -116,69 +117,67 @@ public:
 	void setClearColor(const Vector4& color) noexcept;
 	const Vector4& getClearColor() const noexcept;
 
-	void setViewport(const Viewport& viewport) noexcept;
-	const Viewport&  getViewport() const noexcept;
-
 	void setCameraType(CameraType type) noexcept;
-	void setCameraOrder(CameraOrder order) noexcept;
-	void setCameraRender(CameraRender mode) noexcept;
-
 	CameraType getCameraType() const noexcept;
-	CameraOrder getCameraOrder() const noexcept;
+
+	void setCameraRender(CameraRender mode) noexcept;
 	CameraRender getCameraRender() const noexcept;
 
-	void setRenderScene(RenderScenePtr scene) noexcept;
-	void setRenderTexture(GraphicsRenderTexturePtr texture) noexcept;
-	void setGraphicsContext(GraphicsContextPtr window) noexcept;
+	void setCameraOrder(CameraOrder order) noexcept;
+	CameraOrder getCameraOrder() const noexcept;
 
-	RenderScenePtr getRenderScene() const noexcept;
+	void setRenderTexture(GraphicsRenderTexturePtr texture) noexcept;
 	GraphicsRenderTexturePtr getRenderTexture() const noexcept;
+
+	void setGraphicsContext(GraphicsContextPtr window) noexcept;
 	GraphicsContextPtr getGraphicsContext() const noexcept;
 
-	CameraPtr clone() const noexcept;
+private:
+	void _updateOrtho() const noexcept;
+	void _updatePerspective() const noexcept;
+	void _updateProject() const noexcept;
+	void _updateViewProject() const noexcept;
+
+	void onMoveAfter() noexcept;
 
 private:
 	Camera(const Camera&) noexcept = delete;
 	Camera& operator=(const Camera&) noexcept = delete;
 
 private:
-
 	float _left;
 	float _right;
 	float _top;
 	float _bottom;
 	float _aperture;
 	float _ratio;
-	float _zNear;
-	float _zFar;
-
-	Vector3 _translate;
-	Vector3 _lookat;
-	Vector3 _up;
-
-	Vector2 _projLength;
-	Vector4 _projConstant;
-	Vector4 _clipConstant;
-
-	Matrix4x4 _project;
-	Matrix4x4 _projectInverse;
-
-	Matrix4x4 _viewProejct;
-	Matrix4x4 _viewProjectInverse;
+	float _znear;
+	float _zfar;
 
 	Viewport _viewport;
 
 	ClearFlags _clearFlags;
-	Vector4     _clearColor;
+	Vector4    _clearColor;
 
 	CameraType   _cameraType;
 	CameraOrder  _cameraOrder;
 	CameraRender _cameraRender;
 
-	GraphicsRenderTexturePtr _renderTexture;
 	GraphicsContextPtr _graphicsContext;
+	GraphicsRenderTexturePtr _renderTexture;
 
-	RenderSceneWeakPtr  _renderScene;
+	mutable bool _needUpdateProject;
+	mutable bool _needUpdateViewProject;
+
+	mutable Vector2 _projLength;
+	mutable Vector4 _projConstant;
+	mutable Vector4 _clipConstant;
+
+	mutable Matrix4x4 _project;
+	mutable Matrix4x4 _projectInverse;
+
+	mutable Matrix4x4 _viewProejct;
+	mutable Matrix4x4 _viewProjectInverse;
 };
 
 _NAME_END

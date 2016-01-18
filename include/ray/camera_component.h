@@ -49,13 +49,23 @@ public:
 	CameraComponent() noexcept;
 	~CameraComponent() noexcept;
 
-	void makeLookAt(const Vector3& pos, const Vector3& lookat, const Vector3& up) noexcept;
-	void makeOrtho(float left, float right, float bottom, float top, float znear, float zfar) noexcept;
-	void makePerspective(float aperture, float znear, float zfar) noexcept;
+	void setAperture(float aspect) noexcept;
+	float getAperture() const noexcept;
+
+	void setNear(float znear) noexcept;
+	float getNear() const noexcept;
+
+	void setFar(float zfar) noexcept;
+	float getFar() const noexcept;
+
+	void setRatio(float ratio) noexcept;
+	float getRatio() const noexcept;
+
+	void setOrtho(float left, float right, float bottom, float top) noexcept;
+	void getOrtho(float& left, float& right, float& bottom, float& top) noexcept;
 
 	const Matrix4x4& getView() const noexcept;
 	const Matrix4x4& getViewInverse() const noexcept;
-	const Matrix4x4& getViewInverseTranspose() const noexcept;
 
 	const Matrix4x4& getProject() const noexcept;
 	const Matrix4x4& getProjectInverse() const noexcept;

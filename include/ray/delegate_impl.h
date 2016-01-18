@@ -53,6 +53,7 @@
 #else
 #define DELEGATE_COMMA ,
 #endif
+
 template <typename Result DELEGATE_COMMA DELEGATE_TEMPLATE_PARAMS>
 class delegate<Result(DELEGATE_TEMPLATE_ARGS)>
 {

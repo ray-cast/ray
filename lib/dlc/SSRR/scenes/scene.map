@@ -191,6 +191,7 @@
     <object>
         <attribute name="sun"/>
         <attribute position="0, 50, -25"/>
+        <attribute forward="0, -50, 25"/>
         <attribute active="true"/>
         <component class="Light">
             <attribute type="sun"/>

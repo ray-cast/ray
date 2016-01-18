@@ -42,41 +42,60 @@
 
 _NAME_BEGIN
 
-exception::exception(const error_code::int_type code) noexcept
-	: _message()
-	, _code(code)
+exception::exception() noexcept
 {
-	this->printStack();
-}
-
-exception::exception(const error_code& code) noexcept
-	: _message()
-	, _code(code)
-{
-	this->printStack();
-}
-
-exception::exception(const util::string& msg, const error_code& code) noexcept
-	: _message(msg)
-	, _code(code)
-{
-	this->printStack();
-}
-
-exception::exception(const util::string& msg, const util::string& stack, const error_code& code) noexcept
-	: _stack(stack)
-	, _message(msg)
-	, _code(code)
-{
-	this->printStack();
 }
 
 exception::~exception() noexcept
 {
 }
 
-void 
-exception::printStack() noexcept
+failure::failure(const error_code& code) noexcept
+	: _code(code)
+{
+	this->printStack();
+}
+
+failure::failure(const error_code::int_type& code) noexcept
+	: _code(code)
+{
+	this->printStack();
+}
+
+failure::failure(const char* msg, const error_code& code) noexcept
+	: _message(msg)
+	, _code(code)
+{
+	this->printStack();
+}
+
+failure::failure(const char* msg, const char* stack, const error_code& code) noexcept
+	: _message(msg)
+	, _stack(stack)
+	, _code(code)
+{
+}
+
+failure::failure(const util::string& msg, const error_code& code) noexcept
+	: _message(msg)
+	, _code(code)
+{
+	this->printStack();
+}
+
+failure::failure(const util::string& msg, const util::string& stack, const error_code& code) noexcept
+	: _message(msg)
+	, _stack(stack)
+	, _code(code)
+{
+}
+
+failure::~failure() noexcept
+{
+}
+
+void
+failure::printStack() noexcept
 {
 #ifdef _BUILD_PLATFORM_WINDOWS
 	StackWalker stack;
@@ -92,51 +111,27 @@ exception::printStack() noexcept
 }
 
 const char*
-exception::message() const noexcept
+failure::message() const noexcept
 {
 	return _message.c_str();
 }
 
 const char*
-exception::stack() const noexcept
+failure::stack() const noexcept
 {
 	return _stack.c_str();
 }
 
 const char*
-exception::what() const noexcept
+failure::what() const noexcept
 {
 	return _info.c_str();
 }
 
-const error_code& 
-exception::code() const noexcept
+const error_code&
+failure::code() const noexcept
 {
-	return (this->_code);
-}
-
-failure::failure(const util::string& _msg, const error_code& _code) noexcept
-	: exception(_msg, _code)
-{
-}
-
-failure::failure(const util::string& _msg, const util::string& _stack, const error_code& _code) noexcept
-	: exception(_msg, _stack, _code)
-{
-}
-
-failure::failure(const error_code& _code) noexcept
-	: exception(_code)
-{
-}
-
-failure::failure(const error_code::int_type& _code) noexcept
-	: exception(_code)
-{
-}
-
-failure::~failure() noexcept
-{
+	return (_code);
 }
 
 _NAME_END

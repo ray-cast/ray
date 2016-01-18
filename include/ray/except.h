@@ -44,12 +44,23 @@ _NAME_BEGIN
 class EXPORT exception : public std::exception
 {
 public:
-	exception(const error_code::int_type code) noexcept;
-	exception(const error_code& code) noexcept;
-	exception(const util::string& msg, const error_code& code) noexcept;
-	exception(const util::string& msg, const util::string& stack, const error_code& code) noexcept;
-
+	exception() noexcept;
 	virtual ~exception() noexcept;
+
+	virtual const char* what() const noexcept = 0;
+	virtual const error_code& code() const noexcept = 0;
+};
+
+class EXPORT failure : public exception
+{
+public:
+	failure(const error_code& code) noexcept;
+	failure(const error_code::int_type& code) noexcept;
+	failure(const char* msg, const error_code& code = make_error_code(error_code::none)) noexcept;
+	failure(const char* msg, const char* stack, const error_code& code = make_error_code(error_code::none)) noexcept;
+	failure(const util::string& msg, const error_code& code = make_error_code(error_code::none)) noexcept;
+	failure(const util::string& msg, const util::string& stack, const error_code& code = make_error_code(error_code::none)) noexcept;
+	virtual ~failure() noexcept;
 
 	const char* message() const noexcept;
 	const char* stack() const noexcept;
@@ -58,27 +69,13 @@ public:
 	const error_code& code() const noexcept;
 
 private:
-
 	void printStack() noexcept;
 
 private:
-
 	util::string _info;
-	util::string _stack;
 	util::string _message;
-
-    error_code _code;
-};
-
-class EXPORT failure : public exception
-{
-public:
-	failure(const util::string& _msg, const error_code& _code = make_error_code(error_code::UNKNOWN_ERROR)) noexcept;
-	failure(const util::string& _msg, const util::string& _stack, const error_code& _code = make_error_code(error_code::UNKNOWN_ERROR)) noexcept;
-	failure(const error_code& _code) noexcept;
-	failure(const error_code::int_type& _code) noexcept;
-
-	virtual ~failure() noexcept;
+	util::string _stack;
+	error_code _code;
 };
 
 _NAME_END

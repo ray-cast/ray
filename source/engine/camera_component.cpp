@@ -38,6 +38,7 @@
 #include <ray/camera_component.h>
 #include <ray/render_feature.h>
 #include <ray/game_server.h>
+#include <ray/game_application.h>
 
 _NAME_BEGIN
 
@@ -55,22 +56,64 @@ CameraComponent::~CameraComponent() noexcept
 	_camera->setRenderScene(nullptr);
 }
 
-void
-CameraComponent::makeLookAt(const Vector3& pos, const Vector3& lookat, const Vector3& up) noexcept
+void 
+CameraComponent::setAperture(float aspect) noexcept
 {
-	_camera->makeLookAt(pos, lookat, up);
+	_camera->setAperture(aspect);
+}
+
+float 
+CameraComponent::getAperture() const noexcept
+{
+	return _camera->getAperture();
+}
+
+void 
+CameraComponent::setNear(float znear) noexcept
+{
+	_camera->setNear(znear);
+}
+
+float 
+CameraComponent::getNear() const noexcept
+{
+	return _camera->getNear();
+}
+
+void 
+CameraComponent::setFar(float zfar) noexcept
+{
+	_camera->setFar(zfar);
+}
+
+float 
+CameraComponent::getFar() const noexcept
+{
+	return _camera->getFar();
+}
+
+void 
+CameraComponent::setRatio(float ratio) noexcept
+{
+	_camera->setRatio(ratio);
+}
+
+float 
+CameraComponent::getRatio() const noexcept
+{
+	return _camera->getRatio();
 }
 
 void
-CameraComponent::makeOrtho(float left, float right, float bottom, float top, float znear, float zfar) noexcept
+CameraComponent::setOrtho(float left, float right, float bottom, float top) noexcept
 {
-	_camera->makeOrtho(left, right, bottom, top, znear, zfar);
+	_camera->setOrtho(left, right, bottom, top);
 }
 
-void
-CameraComponent::makePerspective(float aperture, float znear, float zfar) noexcept
+void 
+CameraComponent::getOrtho(float& left, float& right, float& bottom, float& top) noexcept
 {
-	_camera->makePerspective(aperture, znear, zfar);
+	_camera->getOrtho(left, right, bottom, top);
 }
 
 const Matrix4x4&
@@ -79,16 +122,10 @@ CameraComponent::getView() const noexcept
 	return _camera->getView();
 }
 
-const Matrix4x4&
+const Matrix4x4& 
 CameraComponent::getViewInverse() const noexcept
 {
 	return _camera->getViewInverse();
-}
-
-const Matrix4x4&
-CameraComponent::getViewInverseTranspose() const noexcept
-{
-	return _camera->getViewInverseTranspose();
 }
 
 const Matrix4x4&
@@ -176,6 +213,7 @@ CameraComponent::load(iarchive& reader) noexcept
 	float aperture = 70.0;
 	float znear = 0.1;
 	float zfar = 1000.0;
+	float ratio = 1.0;
 	float4 viewport = float4::Zero;
 	float4 ortho = float4::Zero;
 
@@ -187,18 +225,22 @@ CameraComponent::load(iarchive& reader) noexcept
 	reader >> make_archive(zfar, "zfar");
 	reader >> make_archive(viewport, "viewport");
 	reader >> make_archive(ortho, "ortho");
+	reader >> make_archive(ratio, "ratio");
 
+	this->setNear(znear);
+	this->setFar(zfar);
+	this->setRatio(ratio);
 	this->setViewport(Viewport(viewport.x, viewport.y, viewport.z, viewport.w));
 
 	if (type == "ortho")
 	{
 		this->setCameraType(CameraType::CT_ORTHO);
-		this->makeOrtho(ortho.x, ortho.y, ortho.z, ortho.w, znear, zfar);
+		this->setOrtho(ortho.x, ortho.y, ortho.z, ortho.w);
 	}
 	else
 	{
 		this->setCameraType(CameraType::CT_PERSPECTIVE);
-		this->makePerspective(aperture, znear, zfar);
+		this->setAperture(aperture);		
 	}
 }
 
@@ -210,18 +252,22 @@ CameraComponent::save(oarchive& write) noexcept
 void
 CameraComponent::onActivate() noexcept
 {
-	auto renderer = this->getGameObject()->getGameServer()->getFeature<RenderFeature>();
+	auto renderer = this->getGameServer()->getFeature<RenderFeature>();
 	if (renderer)
 	{
 		auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
 		if (renderScene)
 		{
-			_camera->makeLookAt(
-				this->getGameObject()->getTranslate(),
-				this->getGameObject()->getLookAt(),
-				this->getGameObject()->getUpVector()
-				);
+			std::uint32_t w, h;
+			this->getGameServer()->getGameApp()->getWindowResolution(w, h);
+
+			_camera->setRatio((float)w / h);
+			_camera->setViewport(Viewport(0, 0, w, h));
 			_camera->setRenderScene(renderScene);
+
+			_camera->setTransform(this->getGameObject()->getTransform());
+			_camera->setTransformInverse(this->getGameObject()->getTransformInverse());
+			_camera->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
 		}
 	}
 }
@@ -235,22 +281,27 @@ CameraComponent::onDeactivate() noexcept
 void
 CameraComponent::onMoveAfter() noexcept
 {
-	_camera->makeLookAt(
-		this->getGameObject()->getTranslate(),
-		this->getGameObject()->getLookAt(),
-		this->getGameObject()->getUpVector()
-		);
+	_camera->setTransform(this->getGameObject()->getTransform());
+	_camera->setTransformInverse(this->getGameObject()->getTransformInverse());
+	_camera->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
 }
 
 GameComponentPtr
 CameraComponent::clone() const noexcept
 {
-	auto instance = std::make_shared<CameraComponent>();
-	instance->setName(this->getName());
-	instance->_camera = _camera->clone();
+	auto camera = std::make_shared<CameraComponent>();
+	camera->setName(this->getName());
+	camera->setCameraOrder(this->getCameraOrder());
+	camera->setCameraType(this->getCameraType());
+	camera->setViewport(this->getViewport());
+	camera->setAperture(this->getAperture());
+	camera->setNear(this->getNear());
+	camera->setFar(this->getFar());
+	camera->setRatio(this->getRatio());
 
-	return instance;
+	return camera;
 }
 
 _NAME_END
+
 #endif

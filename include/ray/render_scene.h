@@ -37,9 +37,7 @@
 #ifndef _H_RENDER_SCENE_H_
 #define _H_RENDER_SCENE_H_
 
-#include <ray/camera.h>
-#include <ray/light.h>
-#include <ray/kdtree.h>
+#include <ray/render_types.h>
 
 _NAME_BEGIN
 
@@ -95,27 +93,19 @@ public:
 
 	void addCamera(CameraPtr camera) noexcept;
 	void removeCamera(CameraPtr camera) noexcept;
-	void sortCamera() noexcept;
-
 	Cameras& getCameraList() noexcept;
 	const Cameras& getCameraList() const noexcept;
 
-	void addLight(LightPtr light) noexcept;
-	void removeLight(LightPtr light) noexcept;
-	void sortLight() noexcept;
-
-	Lights& getLightList() noexcept;
-
 	void addRenderObject(RenderObjectPtr object) noexcept;
 	void removeRenderObject(RenderObjectPtr object) noexcept;
-
-	void computVisiableLight(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept;
 	void computVisiable(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept;
+
+private:
+	void sortCamera() noexcept;
 
 private:
 
 	Cameras _cameraList;
-	Lights _lightList;
 	RenderObjects _renderObjectList;
 };
 

@@ -79,6 +79,14 @@ public:
 		this->multiplyMatrices(m1, m2);
 	}
 
+	explicit Matrix4x4t(const Matrix3x3t<T>& m)
+	{
+		a1 = m.a1; a2 = m.a2; a3 = m.a3; a4 = static_cast<T>(0.0);
+		b1 = m.b1; b2 = m.b2; b3 = m.b3; b4 = static_cast<T>(0.0);
+		c1 = m.c1; c2 = m.c2; c3 = m.c3; c4 = static_cast<T>(0.0);
+		d1 = static_cast<T>(0.0); d2 = static_cast<T>(0.0); d3 = static_cast<T>(0.0); d4 = static_cast<T>(1.0);
+	}
+
 	template <typename S>
 	operator Matrix4x4t<S>() const
 	{
@@ -87,14 +95,6 @@ public:
 			static_cast<S>(b1), static_cast<S>(b2), static_cast<S>(b3), static_cast<S>(b4),
 			static_cast<S>(c1), static_cast<S>(c2), static_cast<S>(c3), static_cast<S>(c4),
 			static_cast<S>(d1), static_cast<S>(d2), static_cast<S>(d3), static_cast<S>(d4));
-	}
-
-	explicit Matrix4x4t(const Matrix3x3t<T>& m)
-	{
-		a1 = m.a1; a2 = m.a2; a3 = m.a3; a4 = static_cast<T>(0.0);
-		b1 = m.b1; b2 = m.b2; b3 = m.b3; b4 = static_cast<T>(0.0);
-		c1 = m.c1; c2 = m.c2; c3 = m.c3; c4 = static_cast<T>(0.0);
-		d1 = static_cast<T>(0.0); d2 = static_cast<T>(0.0); d3 = static_cast<T>(0.0); d4 = static_cast<T>(1.0);
 	}
 
 	T& operator[](std::size_t n)
@@ -322,49 +322,13 @@ public:
 		rotation = Quaterniont<T>((Matrix3x3t<T>)_this);
 	}
 
-	Matrix4x4t<T>& fromEulerAnglesXYZ(T x, T y, T z)
-	{
-		T cr = cos(x);
-		T sr = sin(x);
-		T cp = cos(y);
-		T sp = sin(y);
-		T cy = cos(z);
-		T sy = sin(z);
-
-		T srsp = sr*sp;
-		T crsp = cr*sp;
-
-		a1 = cp * cy;
-		a2 = cp * sy;
-		a3 = -sp;
-
-		b1 = srsp * cy - cr * sy;
-		b2 = srsp * sy + cr * cy;
-		b3 = sr * cp;
-
-		c1 = crsp * cy + sr * sy;
-		c2 = crsp * sy - sr * cy;
-		c3 = cr * cp;
-
-		return *this;
-	}
-
-	Matrix4x4t<T>& fromEulerAnglesXYZ(const Vector3t<T>& blubb)
-	{
-		return fromEulerAnglesXYZ(blubb.x, blubb.y, blubb.z);
-	}
-
-	Matrix4x4t<T>& makeNormalMatrix(const Matrix4x4t<T>& m)
-	{
-		return inverse(m).transpose();
-	}
-
 	Matrix4x4t<T>& applyMatrix(const Matrix4x4t<T>& m)
 	{
 		Matrix4x4t matrix(*this);
 		multiplyMatrices(matrix, m);
 		return *this;
 	}
+
 	Matrix4x4t<T>& multiplyMatrices(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2)
 	{
 		a1 = m1.a1 * m2.a1 + m1.b1 * m2.a2 + m1.c1 * m2.a3 + m1.d1 * m2.a4;
@@ -395,40 +359,6 @@ public:
 		return *this;
 	}
 
-	void setTranslate(const Vector2t<T>& pt) { setTranslate(pt.x, pt.y, 0); }
-	void setTranslate(const Vector3t<T>& pt) { setTranslate(pt.x, pt.y, pt.z); }
-	void setTranslate(const Vector4t<T>& pt) { setTranslate(pt.x, pt.y, pt.z, pt.w); }
-	void setTranslate(T x, T y) { setTranslate(x, y); }
-	void setTranslate(T x, T y, T z)
-	{
-		a4 = x;
-		b4 = y;
-		c4 = z;
-	}
-
-	void setTranslate(T x, T y, T z, T w)
-	{
-		a4 = x;
-		b4 = y;
-		c4 = z;
-		d4 = w;
-	}
-
-	Vector3t<T> getTranslate() const
-	{
-		return Vector3t<T>(a4, b4, c4);
-	}
-
-	void translate(const Vector2t<T>& pt) { translate(pt.x, pt.y, 0); }
-	void translate(const Vector3t<T>& pt) { translate(pt.x, pt.y, pt.z); }
-	void translate(T x, T y) { translate(x, y, 0); }
-	void translate(T x, T y, T z)
-	{
-		a4 += x;
-		b4 += y;
-		c4 += z;
-	}
-
 	Matrix4x4t<T>& makeTranslate(const Vector2t<T>& pt) { return makeTranslate(pt.x, pt.y, 0); }
 	Matrix4x4t<T>& makeTranslate(const Vector3t<T>& pt) { return makeTranslate(pt.x, pt.y, pt.z); }
 	Matrix4x4t<T>& makeTranslate(T x, T y) { return makeTranslate(x, y, 0); }
@@ -441,36 +371,36 @@ public:
 		return *this;
 	}
 
-	void setScale(const Vector2t<T>& sz) { setScale(sz.x, sz.y, 0); }
-	void setScale(const Vector3t<T>& sz) { setScale(sz.x, sz.y, sz.z); }
-	void setScale(T cx, T cy) { setScale(cx, cy, 0); }
-	void setScale(T x, T y, T z)
+	Matrix4x4t<T>& setTranslate(const Vector2t<T>& pt) { return setTranslate(pt.x, pt.y, 0); }
+	Matrix4x4t<T>& setTranslate(const Vector3t<T>& pt) { return setTranslate(pt.x, pt.y, pt.z); }
+	Matrix4x4t<T>& setTranslate(T x, T y) { return setTranslate(x, y); }
+	Matrix4x4t<T>& setTranslate(T x, T y, T z)
 	{
-		a1 = x;
-		b2 = y;
-		c3 = z;
+		a4 = x;
+		b4 = y;
+		c4 = z;
+		return *this;
 	}
 
-	void scale(const Vector2t<T>& sz) { scale(sz.x, sz.y, 0); }
-	void scale(const Vector3t<T>& sz) { scale(sz.x, sz.y, sz.z); }
-	void scale(T v) { scale(v, v, v); }
-	void scale(T cx, T cy) { scale(cx, cy, 0); }
-	void scale(T x, T y, T z)
+	Matrix4x4t<T>& translate(const Vector2t<T>& pt) { return translate(pt.x, pt.y, 0); }
+	Matrix4x4t<T>& translate(const Vector3t<T>& pt) { return translate(pt.x, pt.y, pt.z); }
+	Matrix4x4t<T>& translate(T x, T y) { return translate(x, y, 0); }
+	Matrix4x4t<T>& translate(T x, T y, T z)
 	{
-		a1 *= x;
-		b1 *= x;
-		c1 *= x;
-		a2 *= y;
-		b2 *= y;
-		c2 *= y;
-		a3 *= z;
-		b3 *= z;
-		c3 *= z;
+		a4 += x;
+		b4 += y;
+		c4 += z;
+		return *this;
 	}
 
-	Matrix4x4t<T>& makeScale(const Vector2t<T>& sz) { return makeScale(sz.x, sz.y, 0); }
+	Vector3t<T> getTranslate() const
+	{
+		return Vector3t<T>(a4, b4, c4);
+	}
+
+	Matrix4x4t<T>& makeScale(const Vector2t<T>& sz) { return makeScale(sz.x, sz.y, 1.0f); }
 	Matrix4x4t<T>& makeScale(const Vector3t<T>& sz) { return makeScale(sz.x, sz.y, sz.z); }
-	Matrix4x4t<T>& makeScale(T cx, T cy) { return makeScale(cx, cy, 0); }
+	Matrix4x4t<T>& makeScale(T cx, T cy) { return makeScale(cx, cy, 1.0f); }
 	Matrix4x4t<T>& makeScale(T x, T y, T z)
 	{
 		set(
@@ -481,25 +411,120 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& rotate(T angle, const Vector3t<T>& axis)
+	Matrix4x4t<T>& scale(const Vector2t<T>& sz) { return scale(sz.x, sz.y, 1.0f); }
+	Matrix4x4t<T>& scale(const Vector3t<T>& sz) { return scale(sz.x, sz.y, sz.z); }
+	Matrix4x4t<T>& scale(T v) { return scale(v, v, v); }
+	Matrix4x4t<T>& scale(T cx, T cy) { return scale(cx, cy, 1.0f); }
+	Matrix4x4t<T>& scale(T x, T y, T z)
 	{
-		rotate(angle, axis.x, axis.y, axis.z);
+		a1 *= x;
+		a2 *= x;
+		a3 *= x;
+		b1 *= y;
+		b2 *= y;
+		b3 *= y;
+		c1 *= z;
+		c2 *= z;
+		c3 *= z;
 		return *this;
 	}
 
-	Matrix4x4t<T>& rotate(T angle, T x, T y, T z)
+	Matrix4x4t<T>& makeRotationX(T theta)
 	{
-		Matrix4x4t<T> m;
-		m.makeRotate(angle, x, y, z);
-		applyMatrix(m);
+		T c, s, ang = theta;
+
+		sinCos(&s, &c, ang);
+
+		set(
+			1, 0, 0, 0,
+			0, c, -s, 0,
+			0, s, c, 0,
+			0, 0, 0, 1);
+
 		return *this;
 	}
 
-	Matrix4x4t<T>& rotate(const Quaterniont<T>& q)
+	Matrix4x4t<T>& makeRotationY(T theta)
 	{
-		Matrix4x4t<T> m;
-		m.makeRotate(q);
-		applyMatrix(m);
+		T c, s, ang = theta;
+
+		sinCos(&s, &c, ang);
+
+		set(
+			c, 0, s, 0,
+			0, 1, 0, 0,
+			-s, 0, c, 0,
+			0, 0, 0, 1);
+
+		return *this;
+	}
+
+	Matrix4x4t<T>& makeRotationZ(T theta)
+	{
+		T c, s, ang = theta;
+
+		sinCos(&s, &c, ang);
+
+		set(
+			c, -s, 0, 0,
+			s, c, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1);
+
+		return *this;
+	}
+
+	Matrix4x4t<T>& makeRotate(const EulerAnglest<T>& euler)
+	{
+		T sh, ch, sp, cp, sb, cb;
+
+		sinCos(&sp, &cp, euler.x);
+		sinCos(&sh, &ch, euler.y);
+		sinCos(&sb, &cb, euler.z);
+
+		a1 = ch * cb + sh * sp * sb;
+		a2 = -ch * sb + sh * sp * cb;
+		a3 = sh * cp;
+
+		b1 = sb * cp;
+		b2 = cb * cp;
+		b3 = -sp;
+
+		c1 = -sh * cb + ch * sp * sb;
+		c2 = sb * sh + ch * sp * cb;
+		c3 = ch * cp;
+
+		d1 = 0;
+		d2 = 0;
+		d3 = 0;
+		d4 = 1;
+
+		return *this;
+	}
+
+	Matrix4x4t<T>& makeRotateEulerAngles(T x, T y, T z)
+	{
+		EulerAnglest<T> euler(x, y, z);
+		this->makeRotate(euler);
+		return *this;
+	}
+
+	Matrix4x4t<T>& makeRotateEulerAngles(const Vector3t<T>& xyz)
+	{
+		EulerAnglest<T> euler(xyz);
+		this->makeRotate(euler);
+	}
+
+	Matrix4x4t<T>& makeRotate(T angle, T x, T y, T z)
+	{
+		return makeRotate(angle, Vector3t<T>(x, y, z));
+	}
+
+	Matrix4x4t<T>& makeRotate(const Vector3t<T>& from, const Vector3t<T>& to)
+	{
+		Matrix3x3t<T> m3;
+		Matrix3x3t<T>::fromToMatrix(from, to, m3);
+		*this = Matrix4x4t<T>(m3);
 		return *this;
 	}
 
@@ -526,72 +551,6 @@ public:
 		d4 = 1;
 
 		return *this;
-	}
-
-	void makeRotate(const EulerAnglest<T>& orientation)
-	{
-		T sh, ch, sp, cp, sb, cb;
-
-		sinCos(&sh, &ch, orientation.heading);
-		sinCos(&sp, &cp, orientation.pitch);
-		sinCos(&sb, &cb, orientation.bank);
-
-		a1 = ch * cb + sh * sp * sb;
-		a2 = -ch * sb + sh * sp * cb;
-		a3 = sh * cp;
-
-		b1 = sb * cp;
-		b2 = cb * cp;
-		b3 = -sp;
-
-		c1 = -sh * cb + ch * sp * sb;
-		c2 = sb * sh + ch * sp * cb;
-		c3 = ch * cp;
-
-		d1 = 0;
-		d2 = 0;
-		d3 = 0;
-		d4 = 1;
-	}
-
-	Matrix4x4t<T>& makeRotate(const Vector3t<T>& axis)
-	{
-		T a, b, c, d, e, f;
-
-		sinCos(&b, &a, axis.x);
-		sinCos(&d, &c, axis.y);
-		sinCos(&f, &e, axis.z);
-
-		T ae = a * e;
-		T af = a * f;
-		T be = b * e;
-		T bf = b * f;
-
-		a1 = c * e;
-		a2 = -c * f;
-		a3 = d;
-		a4 = 0;
-
-		b1 = af + be * d;
-		b2 = ae - bf * d;
-		b3 = -b * c;
-		b4 = 0;
-
-		c1 = bf - ae * d;
-		c2 = be + af * d;
-		c3 = a * c;
-		c4 = 0;
-
-		d1 = 0;
-		d2 = 0;
-		d3 = 0;
-		d4 = 1;
-		return *this;
-	}
-
-	Matrix4x4t<T>& makeRotate(T angle, T x, T y, T z)
-	{
-		return makeRotate(angle, Vector3t<T>(x, y, z));
 	}
 
 	Matrix4x4t<T>& makeRotate(T angle, const Vector3t<T>& axis)
@@ -629,6 +588,28 @@ public:
 		d3 = 0;
 		d4 = 1;
 
+		return *this;
+	}
+
+	Matrix4x4t<T>& rotate(T angle, const Vector3t<T>& axis)
+	{
+		rotate(angle, axis.x, axis.y, axis.z);
+		return *this;
+	}
+
+	Matrix4x4t<T>& rotate(T angle, T x, T y, T z)
+	{
+		Matrix4x4t<T> m;
+		m.makeRotate(angle, x, y, z);
+		applyMatrix(m);
+		return *this;
+	}
+
+	Matrix4x4t<T>& rotate(const Quaterniont<T>& q)
+	{
+		Matrix4x4t<T> m;
+		m.makeRotate(q);
+		applyMatrix(m);
 		return *this;
 	}
 
@@ -684,59 +665,6 @@ public:
 		q.z *= s;
 
 		return q;
-	}
-
-	Matrix4x4t<T>& makeRotationX(T theta)
-	{
-		T c, s, ang = theta;
-
-		sinCos(&s, &c, ang);
-
-		set(
-			1, 0, 0, 0,
-			0, c, -s, 0,
-			0, s, c, 0,
-			0, 0, 0, 1);
-
-		return *this;
-	}
-
-	Matrix4x4t<T>& makeRotationY(T theta)
-	{
-		T c, s, ang = theta;
-
-		sinCos(&s, &c, ang);
-
-		set(
-			c, 0, s, 0,
-			0, 1, 0, 0,
-			-s, 0, c, 0,
-			0, 0, 0, 1);
-
-		return *this;
-	}
-
-	Matrix4x4t<T>& makeRotationZ(T theta)
-	{
-		T c, s, ang = theta;
-
-		sinCos(&s, &c, ang);
-
-		set(
-			c, -s, 0, 0,
-			s, c, 0, 0,
-			0, 0, 1, 0,
-			0, 0, 0, 1);
-
-		return *this;
-	}
-
-	static Matrix4x4t<T>& fromToMatrix(const Vector3t<T>& from, const Vector3t<T>& to, Matrix4x4t& out)
-	{
-		Matrix3x3t<T> m3;
-		Matrix3x3t<T>::fromToMatrix(from, to, m3);
-		out = Matrix4x4t<T>(m3);
-		return out;
 	}
 
 	Matrix4x4t<T>& makeTransform(const Vector3t<T>& translate, const Quaterniont<T>& rotate, const Vector3t<T>& scale)
@@ -1018,36 +946,6 @@ public:
 			0.0, 0.0, 0.0, 1.0);
 
 		return *this;
-	}
-
-	void fromInertialToObjectQuaterniont(const Quaterniont<T>& q)
-	{
-		a1 = 1.0f - 2.0f * (q.y * q.y + q.z * q.z);
-		a2 = 2.0f * (q.x * q.y + q.w * q.z);
-		a3 = 2.0f * (q.x * q.z - q.w * q.y);
-
-		b1 = 2.0f * (q.x * q.y - q.w * q.z);
-		b2 = 1.0f - 2.0f * (q.x * q.x + q.z * q.z);
-		b3 = 2.0f * (q.y * q.z + q.w * q.x);
-
-		c1 = 2.0f * (q.x * q.z + q.w * q.y);
-		c2 = 2.0f * (q.y * q.z - q.w * q.x);
-		c3 = 1.0f - 2.0f * (q.x * q.x + q.y * q.y);
-	}
-
-	void fromObjectToInertialQuaterniont(const Quaterniont<T>& q)
-	{
-		a1 = 1.0f - 2.0f * (q.y * q.y + q.z * q.z);
-		a2 = 2.0f * (q.x * q.y - q.w * q.z);
-		a3 = 2.0f * (q.x * q.z + q.w * q.y);
-
-		b1 = 2.0f * (q.x * q.y + q.w * q.z);
-		b2 = 1.0f - 2.0f * (q.x * q.x + q.z * q.z);
-		b3 = 2.0f * (q.y * q.z - q.w * q.x);
-
-		c1 = 2.0f * (q.x * q.z - q.w * q.y);
-		c2 = 2.0f * (q.y * q.z + q.w * q.x);
-		c3 = 1.0f - 2.0f * (q.x * q.x + q.y * q.y);
 	}
 
 	Vector3t<T> inertialToObject(const Vector3t<T>& v) const

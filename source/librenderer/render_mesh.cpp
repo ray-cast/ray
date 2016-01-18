@@ -51,6 +51,18 @@ RenderMesh::~RenderMesh() noexcept
 }
 
 void
+RenderMesh::setMaterial(MaterialPtr material) noexcept
+{
+	_material = material;
+}
+
+MaterialPtr
+RenderMesh::getMaterial() noexcept
+{
+	return _material;
+}
+
+void
 RenderMesh::setRenderBuffer(RenderBufferPtr geometry) noexcept
 {
 	_geometry = geometry;
@@ -72,32 +84,6 @@ RenderIndirectPtr
 RenderMesh::getRenderIndirect() noexcept
 {
 	return _renderable;
-}
-
-void
-RenderMesh::setRenderScene(RenderScenePtr scene) noexcept
-{
-	if (_renderScene.lock() != scene)
-	{
-		auto renderScene = _renderScene.lock();
-		if (renderScene)
-		{
-			renderScene->removeRenderObject(this->downcast<RenderMesh>());
-		}
-
-		_renderScene = scene;
-
-		if (scene)
-		{
-			scene->addRenderObject(this->downcast<RenderMesh>());
-		}
-	}
-}
-
-RenderScenePtr
-RenderMesh::getRenderScene() const noexcept
-{
-	return _renderScene.lock();
 }
 
 _NAME_END

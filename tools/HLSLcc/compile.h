@@ -127,6 +127,7 @@ private:
 	std::map<std::string, FxmlOptions> _shaders;
 
 	std::vector<Shader> _shader;
+	std::vector<Parameter> _macros;
 	std::vector<Parameter> _parameters;
 	std::vector<Sampler> _samplers;
 	std::vector<Technique> _techniques;

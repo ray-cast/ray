@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_object.h>
+#include <ray/render_scene.h>
 
 _NAME_BEGIN
 
@@ -52,48 +53,18 @@ RenderObject::RenderObject() noexcept
 	: _layer(0)
 	, _isCastShadow(true)
 	, _isReceiveShadow(true)
-	, _needUpdate(true)
-	, _renderListener(nullptr)
+	, _boundingBox(Vector3::Zero, Vector3::Zero)
+	, _worldBoundingxBox(Vector3::Zero, Vector3::Zero)
 	, _transform(Matrix4x4::One)
 	, _transformInverse(Matrix4x4::One)
 	, _transformInverseTranspose(Matrix4x4::One)
+	, _renderListener(nullptr)
 {
 }
 
 RenderObject::~RenderObject() noexcept
 {
-}
-
-void
-RenderObject::setTransform(const Matrix4x4& transform) noexcept
-{
-	_transform = transform;
-	_needUpdate = true;
-}
-
-void
-RenderObject::setTransformInverse(const Matrix4x4& transform) noexcept
-{
-	_transformInverse = transform;
-}
-
-void
-RenderObject::setTransformInverseTranspose(const Matrix4x4& transform) noexcept
-{
-	_transformInverseTranspose = transform;
-}
-
-void
-RenderObject::setBoundingBox(const Bound& bound) noexcept
-{
-	_boundingBox = bound;
-	_needUpdate = true;
-}
-
-void
-RenderObject::setReceiveShadow(bool enable) noexcept
-{
-	_isReceiveShadow = enable;
+	this->setRenderScene(nullptr);
 }
 
 void
@@ -106,6 +77,68 @@ std::uint8_t
 RenderObject::getLayer() const noexcept
 {
 	return _layer;
+}
+
+Vector3
+RenderObject::getTranslate() const noexcept
+{
+	return _transform.getTranslate();
+}
+
+Vector3 
+RenderObject::getRight() const noexcept
+{
+	return Vector3(_transform.a1, _transform.b1, _transform.c1);
+}
+
+Vector3
+RenderObject::getUpVector() const noexcept
+{
+	return Vector3(_transform.a2, _transform.b2, _transform.c2);
+}
+
+Vector3
+RenderObject::getForward() const noexcept
+{
+	return Vector3(_transform.a3, _transform.b3, _transform.c3);
+}
+
+void
+RenderObject::setTransform(const Matrix4x4& transform) noexcept
+{
+	this->onMoveBefor();
+	_transform = transform;
+	_worldBoundingxBox.applyMatrix(_transform);
+	this->onMoveAfter();
+}
+
+void
+RenderObject::setTransformInverse(const Matrix4x4& transform) noexcept
+{
+	this->onMoveBefor();
+	_transformInverse = transform;
+	this->onMoveAfter();
+}
+
+void
+RenderObject::setTransformInverseTranspose(const Matrix4x4& transform) noexcept
+{
+	this->onMoveBefor();
+	_transformInverseTranspose = transform;
+	this->onMoveAfter();
+}
+
+void
+RenderObject::setBoundingBox(const Bound& bound) noexcept
+{
+	_worldBoundingxBox = _boundingBox = bound;
+	_worldBoundingxBox.applyMatrix(_transform);
+}
+
+void
+RenderObject::setReceiveShadow(bool enable) noexcept
+{
+	_isReceiveShadow = enable;
 }
 
 void
@@ -165,44 +198,7 @@ RenderObject::getBoundingBox() const noexcept
 const Bound&
 RenderObject::getBoundingBoxInWorld() const noexcept
 {
-	this->_updateBoundingBoxInWorld();
 	return _worldBoundingxBox;
-}
-
-void
-RenderObject::setMaterial(MaterialPtr material) noexcept
-{
-	_material = material;
-}
-
-MaterialPtr
-RenderObject::getMaterial() noexcept
-{
-	return _material;
-}
-
-void
-RenderObject::setRenderBuffer(RenderBufferPtr geometry) noexcept
-{
-	assert(nullptr);
-}
-
-RenderBufferPtr
-RenderObject::getRenderBuffer() noexcept
-{
-	return nullptr;
-}
-
-void
-RenderObject::setRenderIndirect(RenderIndirectPtr renderable) noexcept
-{
-	assert(nullptr);
-}
-
-RenderIndirectPtr
-RenderObject::getRenderIndirect() noexcept
-{
-	return nullptr;
 }
 
 void 
@@ -232,14 +228,48 @@ RenderObject::getSubeRenderObjects() noexcept
 }
 
 void
-RenderObject::_updateBoundingBoxInWorld() const noexcept
+RenderObject::setRenderScene(RenderScenePtr scene) noexcept
 {
-	if (_needUpdate)
+	if (_renderScene.lock() != scene)
 	{
-		_worldBoundingxBox = _boundingBox;
-		_worldBoundingxBox.applyMatrix(_transform);
-		_needUpdate = false;
+		this->onSceneChangeBefor();
+		
+		if (_renderScene.use_count())
+			_renderScene.lock()->removeRenderObject(this->cast<RenderObject>());
+
+		if (scene)
+			scene->addRenderObject(this->cast<RenderObject>());
+
+		_renderScene = scene;
+
+		this->onSceneChangeAfter();
 	}
+}
+
+RenderScenePtr
+RenderObject::getRenderScene() const noexcept
+{
+	return _renderScene.lock();
+}
+
+void 
+RenderObject::onMoveBefor() noexcept
+{
+}
+
+void 
+RenderObject::onMoveAfter() noexcept
+{
+}
+
+void 
+RenderObject::onSceneChangeBefor() noexcept
+{
+}
+
+void 
+RenderObject::onSceneChangeAfter() noexcept
+{
 }
 
 _NAME_END

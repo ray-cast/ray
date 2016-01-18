@@ -38,51 +38,8 @@
 
 _NAME_BEGIN
 
-template<>
-std::vector<std::string> basic_error<std::string>::_table =
-{
-    "Successful operation",
-    "Unable to remove custom importer: I can't find you ...",
-    "No suitable reader found for the file format of stream .",
-    "Unknown bitdepth in file.",
-    "Unknown encoding in file.",
-    "The file extension is already in use",
-    "Encoding doesn't match bitdepth.",
-    "invalid image",
-    "Image width too large",
-    "Image height too large",
-    "File size too large",
-    "Callbacks is Invalid.",
-    "Memory allocation failure",
-    "Stream operator failure",
-    "Calling a didn't inherit the function",
-    "This stream is not buf"
-};
-
-template<>
-std::vector<std::wstring> basic_error<std::wstring>::_table =
-{
-    L"Successful operation",
-    L"Unable to remove custom importer: I can't find you ...",
-    L"No suitable reader found for the file format of stream .",
-    L"Unknown bitdepth in file.",
-    L"Unknown encoding in file.",
-    L"The file extension is already in use",
-    L"Encoding doesn't match bitdepth.",
-    L"invalid image",
-    L"Image width too large",
-    L"Image height too large",
-    L"File size too large",
-    L"Callbacks is Invalid.",
-    L"Memory allocation failure",
-    L"Stream operator failure",
-    L"Calling a didn't inherit the function",
-    L"This stream is not buf"
-};
-
 error_code::error_code() noexcept
 {
-    this->assign(_Mybase::UNKNOWN_ERROR);
 }
 
 error_code::error_code(int_type code) noexcept
@@ -93,8 +50,6 @@ error_code::error_code(int_type code) noexcept
 error_code&
 error_code::assign(int_type value) noexcept
 {
-    assert(value >= _Mybase::min());
-    assert(value <= _Mybase::max());
     _Myval = value;
     return *this;
 }
@@ -103,16 +58,6 @@ error_code::int_type
 error_code::value() const noexcept
 {
     return _Myval;
-}
-
-error_code::operator const char*() noexcept
-{
-    return basic_error<std::string>::get(_Myval).c_str();
-}
-
-error_code::operator const wchar_t*() noexcept
-{
-    return basic_error<std::wstring>::get(_Myval).c_str();
 }
 
 _NAME_END

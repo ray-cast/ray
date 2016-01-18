@@ -73,6 +73,8 @@ GameApplication::GameApplication() noexcept
 	, _workDir("")
 	, _engineDir("..\\..\\engine\\")
 	, _resourceBaseDir("..\\..\\dlc\\")
+	, _width(0)
+	, _height(0)
 {
 	_ioServer = IoServer::instance();
 	_ioInterface = IoInterface::instance();
@@ -92,6 +94,9 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) ex
 	rtti::Factory::instance()->open();
 
 	_ioInterface->open();
+
+	_width = width;
+	_height = height;
 
 	_gameServer = std::make_shared<GameServer>();
 	_gameServer->_setGameApp(this);

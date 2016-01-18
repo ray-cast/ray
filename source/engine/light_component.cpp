@@ -199,9 +199,10 @@ LightComponent::onActivate() noexcept
 		auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
 		if (renderScene)
 		{
-			_light->setLightUp(this->getGameObject()->getUpVector());
-			_light->setLightLookat(this->getGameObject()->getLookAt());
 			_light->setTransform(this->getGameObject()->getTransform());
+			_light->setTransformInverse(this->getGameObject()->getTransformInverse());
+			_light->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
+
 			_light->setRenderScene(renderScene);
 		}
 	}
@@ -216,9 +217,9 @@ LightComponent::onDeactivate() noexcept
 void
 LightComponent::onMoveAfter() noexcept
 {
-	_light->setLightUp(this->getGameObject()->getUpVector());
-	_light->setLightLookat(this->getGameObject()->getLookAt());
 	_light->setTransform(this->getGameObject()->getTransform());
+	_light->setTransformInverse(this->getGameObject()->getTransformInverse());
+	_light->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
 }
 
 _NAME_END

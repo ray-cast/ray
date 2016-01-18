@@ -50,6 +50,11 @@ public:
         this->reset();
     }
 
+	Boundt(const Vector3t<T>& min, const Vector3t<T>& max) noexcept
+		: _sp(min, max)
+	{
+	}
+
     Boundt(const Vector3t<T> pt[], int n) noexcept
     {
         this->reset();

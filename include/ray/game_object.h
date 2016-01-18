@@ -106,56 +106,30 @@ public:
 	void setRotateX(float dist) noexcept;
 	void setRotateY(float dist) noexcept;
 	void setRotateZ(float dist) noexcept;
-	void setRotateOnAxis(float dist, const Quaternion& axis) noexcept;
+	void setRotateOnAxis(float dist, const Vector3& axis) noexcept;
 	void setRotateAccum(float v) noexcept;
 	void setRotateAccum(float x, float y, float z) noexcept;
 	void setRotateAccumX(float dist) noexcept;
 	void setRotateAccumY(float dist) noexcept;
 	void setRotateAccumZ(float dist) noexcept;
-	void setRotateAccumOnAxis(float dist, const Quaternion& axis) noexcept;
+	void setRotateAccumOnAxis(float dist, const Vector3& axis) noexcept;
 	void setRotateAccum(const Quaternion& v) noexcept;
 	void setRotate(const Quaternion& v) noexcept;
-
+	void setRotate(float x, float y, float z) noexcept;
 	const Quaternion& getRotate() const noexcept;
 
-	void setLookAtX(float dist) noexcept;
-	void setLookAtY(float dist) noexcept;
-	void setLookAtZ(float dist) noexcept;
-	void setLookAtOnAxis(float dist, const Vector3& axis) noexcept;
-	void setLookAtAccum(float v) noexcept;
-	void setLookAtAccum(float x, float y, float z) noexcept;
-	void setLookAtAccumX(float dist) noexcept;
-	void setLookAtAccumY(float dist) noexcept;
-	void setLookAtAccumZ(float dist) noexcept;
-	void setLookAtAccumOnAxis(float dist, const Vector3& axis) noexcept;
-	void setLookAtAccum(const Vector3& v) noexcept;
-	void setLookAt(const Vector3& v) noexcept;
+	void setRight(const Vector3& v) noexcept;
+	const Vector3& getRight() const noexcept;
 
-	const Vector3& getLookAt() const noexcept;
-
-	void setUpVectorX(float dist) noexcept;
-	void setUpVectorY(float dist) noexcept;
-	void setUpVectorZ(float dist) noexcept;
-	void setUpVectorOnAxis(float dist, const Vector3& axis) noexcept;
-	void setUpVectorAccum(float v) noexcept;
-	void setUpVectorAccum(float x, float y, float z) noexcept;
-	void setUpVectorAccumX(float dist) noexcept;
-	void setUpVectorAccumY(float dist) noexcept;
-	void setUpVectorAccumZ(float dist) noexcept;
-	void setUpVectorAccumOnAxis(float dist, const Vector3& axis) noexcept;
-	void setUpVectorAccum(const Vector3& v) noexcept;
 	void setUpVector(const Vector3& v) noexcept;
-
 	const Vector3& getUpVector() const noexcept;
 
-	void setTransform(const Matrix4x4& m) noexcept;
-	void setTransformInverse(const Matrix4x4& m) noexcept;
-	void setTransform(const Vector3& translate, const Quaternion& rotate, const Vector3& scale) noexcept;
+	void setForward(const Vector3& v) noexcept;
+	const Vector3& getForward() const noexcept;
 
 	const Matrix4x4& getTransform() const noexcept;
 	const Matrix4x4& getTransformInverse() const noexcept;
 	const Matrix4x4& getTransformInverseTranspose() const noexcept;
-	const Matrix4x4& getWorldTransform() const noexcept;
 
 	void addComponent(GameComponentPtr component) except;
 	void removeComponent(GameComponentPtr component) noexcept;
@@ -215,15 +189,13 @@ private:
 
 	Vector3 _translate;
 	Vector3 _scaling;
+	Quaternion _quat;
 
-	Quaternion _rotation;
-
-	Vector3 _lookAt;
-	Vector3 _upVector;
+	Vector3 _right;
+	Vector3 _up;
+	Vector3 _forward;
 
 	mutable bool _needUpdates;
-
-	mutable Matrix4x4 _worldTransform;
 
 	mutable Matrix4x4 _transform;
 	mutable Matrix4x4 _transformInverse;

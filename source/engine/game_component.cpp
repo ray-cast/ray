@@ -79,13 +79,15 @@ GameComponent::_setGameObject(GameObject* gameobj) noexcept
 GameObjectPtr
 GameComponent::getGameObject() noexcept
 {
-	return std::dynamic_pointer_cast<GameObject>(_gameObject->shared_from_this());
+	assert(_gameObject);
+	return _gameObject->downcast<GameObject>();
 }
 
 const GameObjectPtr
 GameComponent::getGameObject() const noexcept
 {
-	return std::dynamic_pointer_cast<GameObject>(_gameObject->shared_from_this());
+	assert(_gameObject);
+	return _gameObject->downcast<GameObject>();
 }
 
 GameServer*

@@ -35,6 +35,9 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_scene.h>
+#include <ray/camera.h>
+#include <ray/light.h>
+#include <ray/render_mesh.h>
 
 _NAME_BEGIN
 
@@ -140,6 +143,8 @@ RenderScene::~RenderScene() noexcept
 void
 RenderScene::addCamera(CameraPtr camera) noexcept
 {
+	assert(!camera->getRenderScene());
+
 	auto it = std::find(_cameraList.begin(), _cameraList.end(), camera);
 	if (it == _cameraList.end())
 	{
@@ -151,6 +156,8 @@ RenderScene::addCamera(CameraPtr camera) noexcept
 void
 RenderScene::removeCamera(CameraPtr camera) noexcept
 {
+	assert(camera->getRenderScene() == this->cast<RenderScene>());
+
 	auto it = std::find(_cameraList.begin(), _cameraList.end(), camera);
 	if (it != _cameraList.end())
 	{
@@ -182,39 +189,18 @@ RenderScene::sortCamera() noexcept
 }
 
 void
-RenderScene::addLight(LightPtr light) noexcept
-{
-	assert(_lightList.end() == std::find(_lightList.begin(), _lightList.end(), light));
-
-	_lightList.push_back(light);
-}
-
-void
-RenderScene::removeLight(LightPtr light) noexcept
-{
-	auto it = std::find(_lightList.begin(), _lightList.end(), light);
-	if (it != _lightList.end())
-	{
-		_lightList.erase(it);
-	}
-}
-
-Lights&
-RenderScene::getLightList() noexcept
-{
-	return _lightList;
-}
-
-void
-RenderScene::sortLight() noexcept
-{
-}
-
-void
 RenderScene::addRenderObject(RenderObjectPtr object) noexcept
 {
-	assert(std::find(_renderObjectList.begin(), _renderObjectList.end(), object) == _renderObjectList.end());
-	_renderObjectList.push_back(object);
+	assert(!object->getRenderScene());
+
+	if (object->isInstanceOf<Camera>())
+	{
+		this->addCamera(object->downcast<Camera>());
+	}
+	else 
+	{
+		_renderObjectList.push_back(object);
+	}
 }
 
 void
@@ -248,61 +234,6 @@ RenderScene::computVisiable(const Matrix4x4& viewProject, OcclusionCullList& lis
 			{
 				list.insert(it, eyePosition.sqrDistance(it->getBoundingBoxInWorld().center()));
 			}
-		}
-	}
-}
-
-void
-RenderScene::computVisiableLight(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept
-{
-	Frustum fru;
-	fru.extract(viewProject);
-
-	auto eyePosition = viewProject.getTranslate();
-
-	for (auto& light : _lightList)
-	{
-		Bound bound;
-
-		LightType type = light->getLightType();
-
-		auto range = light->getRange();
-
-		if (type == LightType::LT_SUN ||
-			type == LightType::LT_AMBIENT)
-		{
-			float infinity = std::numeric_limits<float>::max();
-
-			Vector3 min(-infinity, -infinity, -infinity);
-			Vector3 max(infinity, infinity, infinity);
-
-			bound.encapsulate(min);
-			bound.encapsulate(max);
-		}
-		else if (type == LightType::LT_POINT)
-		{
-			Vector3 min(-range, -range, -range);
-			Vector3 max(range, range, range);
-
-			bound.encapsulate(min);
-			bound.encapsulate(max);
-		}
-		else if (type == LightType::LT_AREA ||
-			type == LightType::LT_SPOT ||
-			type == LightType::LT_HEMI_SPHERE)
-		{
-			Vector3 min(-range, -range, -range);
-			Vector3 max(range, range, range);
-
-			bound.encapsulate(min);
-			bound.encapsulate(max);
-		}
-
-		light->setBoundingBox(bound);
-
-		if (fru.contains(light->getBoundingBoxInWorld().aabb()))
-		{
-			list.insert(light, eyePosition.sqrDistance(light->getBoundingBoxInWorld().center()));
 		}
 	}
 }

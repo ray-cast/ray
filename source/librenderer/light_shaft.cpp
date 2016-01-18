@@ -86,7 +86,7 @@ void
 LightShaft::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except
 {
 	pipeline.setRenderTexture(_texSample);
-	pipeline.clearRenderTexture(ClearFlags::Default, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(ClearFlags::All, Vector4::Zero, 1.0, 0);
 
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);

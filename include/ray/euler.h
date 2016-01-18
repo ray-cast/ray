@@ -45,51 +45,84 @@ template<typename T>
 class EulerAnglest
 {
 public:
-    T heading, pitch, bank;
+    T x, y, z;
 
     EulerAnglest() noexcept {};
-
-    EulerAnglest(T h, T p, T b)
-        :heading(h)
-        , pitch(p)
-        , bank(b)
+    EulerAnglest(T xx, T yy, T zz) noexcept
+        : x(xx)
+		, y(yy)
+        , z(zz)
     {
     }
 
-    void identity() noexcept
+	EulerAnglest(const Vector3t<T>& v) noexcept
+		: x(v.x)
+		, y(v.y)
+		, z(v.z)
+	{
+	}
+
+	EulerAnglest(const Quaterniont<T>& q) noexcept
+	{
+		this->makeRotate(q);
+	}
+
+	EulerAnglest<T>& identity() noexcept
     {
-        pitch = bank = heading = 0.0f;
+        x = z = y = 0.0f;
     }
 
-    void canonize() noexcept
+    EulerAnglest<T>& canonize() noexcept
     {
-        pitch = wrapPI(pitch);
+        x = wrapPI(x);
 
-        if (pitch <-M_PI_2)
+        if (x <-M_PI_2)
         {
-            pitch = -M_PI - pitch;
-            heading += M_PI;
-            bank += M_PI;
+            x = -M_PI - x;
+            y += M_PI;
+            z += M_PI;
         }
-        else if (pitch > M_PI_2)
+        else if (x > M_PI_2)
         {
-            pitch = M_PI - pitch;
-            heading += M_PI;
-            bank += M_PI;
+            x = M_PI - x;
+            y += M_PI;
+            z += M_PI;
         }
 
-        if (fabs(pitch) > M_PI_2 - 1e-4)
+        if (fabs(x) > M_PI_2 - 1e-4)
         {
-            heading += bank;
-            bank = 0.0f;
+            y += z;
+            z = 0.0f;
         }
         else
         {
-            bank = wrapPI(bank);
+            z = wrapPI(z);
         }
 
-        heading = wrapPI(heading);
+        y = wrapPI(y);
+
+		return *this;
     }
+
+	EulerAnglest<T>& makeRotate(const Quaterniont<T>& q) noexcept
+	{
+		T sp = -2.0f * (q.y * q.z + q.w * q.x);
+
+		if (std::fabs(sp) > 0.9999f)
+		{
+			this->x = M_PI_2 * sp;
+			this->y = atan2(-q.x * q.z - q.w * q.y, 0.5f - q.y * q.y - q.z * q.z);
+			this->z = 0.0f;
+		}
+		else
+		{
+			this->x = asin(sp);
+			this->y = atan2(q.x * q.z - q.w * q.y, 0.5f - q.x * q.x - q.y * q.y);
+			this->z = atan2(q.x * q.y - q.w * q.z, 0.5f - q.x * q.x - q.z * q.z);
+		}
+
+		return *this;
+	}
 };
 
 _NAME_END

@@ -126,16 +126,7 @@ PhysicsCharacterComponent::onDeactivate() noexcept
 void
 PhysicsCharacterComponent::onFrameEnd() noexcept
 {
-	auto& position = _character->getMovePosition();
-	if (position != this->getGameObject()->getTranslate())
-	{
-		auto lookat = this->getGameObject()->getLookAt();
-		auto translate = this->getGameObject()->getTranslate();
-		lookat = lookat - translate;
-
-		this->getGameObject()->setTranslate(position);
-		this->getGameObject()->setLookAt(position + lookat);
-	}
+	this->getGameObject()->setTranslate(_character->getMovePosition());
 }
 
 void

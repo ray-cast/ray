@@ -50,6 +50,13 @@ public:
 	{
 	}
 
+	Spheret(const Vector3t<T>& min, const Vector3t<T>& max) noexcept
+		: _box(min, max)
+	{
+		_center = _box.center();
+		_radius = _box.size().length() * 0.5f;
+	}
+
 	Spheret(const Vector3t<T>& pt, T radius) noexcept
 		: _center(pt)
 		, _radius(radius)

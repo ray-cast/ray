@@ -294,7 +294,7 @@ void
 MyGuiRenderTexture::begin() noexcept
 {
 	RenderSystem::instance()->getRenderPipeline()->setRenderTexture(_renderTexture);
-	RenderSystem::instance()->getRenderPipeline()->clearRenderTexture(ClearFlags::Default, Vector4(0, 0, 0, 0), 1.0, 0);
+	RenderSystem::instance()->getRenderPipeline()->clearRenderTexture(ClearFlags::All, Vector4(0, 0, 0, 0), 1.0, 0);
 }
 
 void 

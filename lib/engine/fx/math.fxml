@@ -79,29 +79,6 @@
 			return float3(Y, Cb, Cr);
 		}
 
-		float3 rgb2hsv(float3 rgb)
-		{
-			float minValue = min(min(rgb.r, rgb.g), rgb.b);
-			float maxValue = max(max(rgb.r, rgb.g), rgb.b);
-			float d = maxValue - minValue;
-
-			float3 hsv = float3(0.0, 0.0, 0.0);
-			hsv.b = maxValue;
-			if (d != 0.0f)
-			{
-				hsv.g = d / maxValue;
-
-				float3 delrgb = (((float3(maxValue, maxValue, maxValue)-rgb) / 6.0) + d / 2.0) / d;
-				if (maxValue == rgb.r) { hsv.r = delrgb.b - delrgb.g; }
-				else if (maxValue == rgb.g) { hsv.r = 1.0 / 3.0 + delrgb.r - delrgb.b; }
-				else if (maxValue == rgb.b) { hsv.r = 2.0 / 3.0 + delrgb.g - delrgb.r; }
-
-				if (hsv.r < 0.0) { hsv.r += 1.0; }
-				if (hsv.r > 1.0) { hsv.r -= 1.0; }
-			}
-			return hsv;
-		}
-
 		float3 rgb2xyz(float3 rgb)
 		{
 			const float3x3 m = float3x3 (
@@ -151,6 +128,29 @@
 				xyz.rb = float2(0.0, 0.0);
 			}
 			return xyz;
+		}
+
+		float3 rgb2hsv(float3 rgb)
+		{
+			float minValue = min(min(rgb.r, rgb.g), rgb.b);
+			float maxValue = max(max(rgb.r, rgb.g), rgb.b);
+			float d = maxValue - minValue;
+
+			float3 hsv = float3(0.0, 0.0, 0.0);
+			hsv.b = maxValue;
+			if (d != 0.0f)
+			{
+				hsv.g = d / maxValue;
+
+				float3 delrgb = (((float3(maxValue, maxValue, maxValue)-rgb) / 6.0) + d / 2.0) / d;
+				if (maxValue == rgb.r) { hsv.r = delrgb.b - delrgb.g; }
+				else if (maxValue == rgb.g) { hsv.r = 1.0 / 3.0 + delrgb.r - delrgb.b; }
+				else if (maxValue == rgb.b) { hsv.r = 2.0 / 3.0 + delrgb.g - delrgb.r; }
+
+				if (hsv.r < 0.0) { hsv.r += 1.0; }
+				if (hsv.r > 1.0) { hsv.r -= 1.0; }
+			}
+			return hsv;
 		}
 
 		float3 hsv2rgb(float3 hsv)

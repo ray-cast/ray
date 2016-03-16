@@ -48,24 +48,16 @@ public:
     T x, y, z;
 
     EulerAnglest() noexcept {};
-    EulerAnglest(T xx, T yy, T zz) noexcept
-        : x(xx)
-		, y(yy)
-        , z(zz)
-    {
-    }
+    EulerAnglest(T xx, T yy, T zz) noexcept : x(xx), y(yy), z(zz) {}
+	EulerAnglest(const EulerAnglest<T>& e) noexcept : x(e.x), y(e.y), z(e.z) {}
 
-	EulerAnglest(const Vector3t<T>& v) noexcept
-		: x(v.x)
-		, y(v.y)
-		, z(v.z)
-	{
-	}
+	explicit EulerAnglest(const Vector3t<T>& v) noexcept : x(v.x) , y(v.y), z(v.z) {}
+	explicit EulerAnglest(const Quaterniont<T>& q) noexcept { this->makeRotate(q); }
 
-	EulerAnglest(const Quaterniont<T>& q) noexcept
-	{
-		this->makeRotate(q);
-	}
+	EulerAnglest<T>& operator+=(const EulerAnglest<T>& e) { x += e.x; y += e.y; z += e.z; return *this; }
+	EulerAnglest<T>& operator-=(const EulerAnglest<T>& e) { x -= e.x; y -= e.y; z -= e.z; return *this; }
+	EulerAnglest<T>& operator*=(const EulerAnglest<T>& e) { x *= e.x; y *= e.y; z *= e.z; return *this; }
+	EulerAnglest<T>& operator/=(const EulerAnglest<T>& e) { x /= e.x; y /= e.y; z /= e.z; return *this; }
 
 	EulerAnglest<T>& identity() noexcept
     {
@@ -106,24 +98,48 @@ public:
 
 	EulerAnglest<T>& makeRotate(const Quaterniont<T>& q) noexcept
 	{
-		T sp = -2.0f * (q.y * q.z + q.w * q.x);
-
-		if (std::fabs(sp) > 0.9999f)
-		{
-			this->x = M_PI_2 * sp;
-			this->y = atan2(-q.x * q.z - q.w * q.y, 0.5f - q.y * q.y - q.z * q.z);
-			this->z = 0.0f;
-		}
-		else
-		{
-			this->x = asin(sp);
-			this->y = atan2(q.x * q.z - q.w * q.y, 0.5f - q.x * q.x - q.y * q.y);
-			this->z = atan2(q.x * q.y - q.w * q.z, 0.5f - q.x * q.x - q.z * q.z);
-		}
-
+		this->x = asin(2.0f * (q.w * q.x - q.y * q.z));
+		this->y = atan2(q.w * q.y + q.x * q.z, 1.0f - 2.0f * (q.x * q.x + q.y * q.y));
+		this->z = atan2(q.w * q.z + q.x * q.y, 1.0f - 2.0f * (q.x * q.x + q.z * q.z));
 		return *this;
 	}
 };
+
+template<typename T>
+inline bool operator==(const EulerAnglest<T>& e1, const EulerAnglest<T>& e2) noexcept
+{
+	return e1.x == e2.x && e1.y == e2.y && e1.z == e2.z;
+}
+
+template<typename T>
+inline bool operator!=(const EulerAnglest<T>& e1, const EulerAnglest<T>& e2) noexcept
+{
+	return e1.x != e2.x || e1.y != e2.y || e1.z != e2.z;
+}
+
+template<typename T>
+inline EulerAnglest<T> operator+(const EulerAnglest<T>& v1, const EulerAnglest<T>& v2)
+{
+	return EulerAnglest<T>(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
+}
+
+template<typename T>
+inline EulerAnglest<T> operator-(const EulerAnglest<T>& v1, const EulerAnglest<T>& v2)
+{
+	return EulerAnglest<T>(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
+}
+
+template<typename T>
+inline EulerAnglest<T> operator*(const EulerAnglest<T>& v1, const EulerAnglest<T>& v2)
+{
+	return EulerAnglest<T>(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z);
+}
+
+template<typename T>
+inline EulerAnglest<T> operator/(const EulerAnglest<T>& v1, const EulerAnglest<T>& v2)
+{
+	return EulerAnglest<T>(v1.x / v2.x, v1.y / v2.y, v1.z / v2.z);
+}
 
 _NAME_END
 

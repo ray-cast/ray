@@ -54,7 +54,7 @@ public:
 	T x, y, z, w;
 
 	Vector4t() noexcept {}
-	Vector4t(T xyz, T ww = 1.0) noexcept : x(xyz), y(xyz), z(xyz), w(ww) {}
+	Vector4t(T xyz, T ww)  noexcept : x(xyz), y(xyz), z(xyz), w(ww) {}
 	Vector4t(T xx, T yy, T zz, T ww = 1.0)  noexcept : x(xx), y(yy), z(zz), w(ww) {}
 	Vector4t(const Vector3t<T>& v, T w = 1.0)  noexcept : x(v.x) , y(v.y) , z(v.z), w(w) {}
 	Vector4t(const Vector4t<T>& v) noexcept : x(v.x), y(v.y) , z(v.z), w(v.w) {}
@@ -62,6 +62,8 @@ public:
 	Vector4t(const Vector2t<T>& xy, float z, float w = 1.0) noexcept : x(xy.x), y(xy.y), z(z), w(w) {}
 	Vector4t(T xx, const Vector2t<T>& yz, T ww = 1.0) noexcept : x(xx), y(yz.x), z(yz.y), w(ww) {}
 	Vector4t(T xx, T yy, const Vector2t<T>& zw) noexcept : x(xx), y(yy), z(zw.x), w(zw.y) {}
+
+	explicit Vector4t(T xyzw) noexcept : x(xyz), y(xyz), z(xyz), w(xyzw) {}
 
 	Vector4t<T>& operator+=(T scale) noexcept { x += scale; y += scale; z += scale; w += scale; return *this; }
 	Vector4t<T>& operator-=(T scale) noexcept { x -= scale; y -= scale; z -= scale; w -= scale; return *this; }

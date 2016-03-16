@@ -141,7 +141,6 @@ XGLCanvas::open(WindHandle window) noexcept
 		GL_PLATFORM_LOG("Cannot connect to X server");
 		return false;
 	}
-		
 
     int glx_major, glx_minor;
     if (!glXQueryVersion(_display, &glx_major, &glx_minor))
@@ -163,7 +162,7 @@ XGLCanvas::open(WindHandle window) noexcept
 		GL_PLATFORM_LOG("Failed to retrieve a framebuffer config.");
 		return false;
     }
-    
+
 	_window = window;
 
     GLXCREATECONTEXTATTRIBSARB glXCreateContextAttribsARB = nullptr;
@@ -173,7 +172,7 @@ XGLCanvas::open(WindHandle window) noexcept
 		_glc = glXCreateContextAttribsARB(_display, _cfg, _ctxconfig.share, true, attribs);
 		if (!_glc)
 		{
-			if (_ctxconfig.api == GPU_OPENGL_API && 
+			if (_ctxconfig.api == GPU_OPENGL_API &&
 				_ctxconfig.profile == GPU_GL_ANY_PROFILE &&
 				_ctxconfig.forward == GL_FALSE)
 			{
@@ -243,7 +242,7 @@ XGLCanvas::setActive(bool active) noexcepts
 		else
 			glXMakeContextCurrent(_display, 0, 0, 0);
 		_isActive = active;
-	}		
+	}
 }
 
 void

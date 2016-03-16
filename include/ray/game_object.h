@@ -73,50 +73,21 @@ public:
 	GameObjects& getChildren() noexcept;
 	const GameObjects& getChildren() const noexcept;
 
-	void setTranslateX(float dist) noexcept;
-	void setTranslateY(float dist) noexcept;
-	void setTranslateZ(float dist) noexcept;
-	void setTranslateOnAxis(float dist, const Vector3& axis) noexcept;
-	void setTranslateAccum(float v) noexcept;
-	void setTranslateAccum(float x, float y, float z) noexcept;
-	void setTranslateAccumX(float dist) noexcept;
-	void setTranslateAccumY(float dist) noexcept;
-	void setTranslateAccumZ(float dist) noexcept;
-	void setTranslateAccumOnAxis(float dist, const Vector3& axis) noexcept;
-	void setTranslateAccum(const Vector3& v) noexcept;
 	void setTranslate(const Vector3& v) noexcept;
-
+	void setTranslateAccum(const Vector3& v) noexcept;
 	const Vector3& getTranslate() const noexcept;
 
-	void setScaleX(float dist) noexcept;
-	void setScaleY(float dist) noexcept;
-	void setScaleZ(float dist) noexcept;
-	void setScaleOnAxis(float dist, const Vector3& axis) noexcept;
-	void setScaleAccum(float v) noexcept;
-	void setScaleAccum(float x, float y, float z) noexcept;
-	void setScaleAccumX(float dist) noexcept;
-	void setScaleAccumY(float dist) noexcept;
-	void setScaleAccumZ(float dist) noexcept;
-	void setScaleAccumOnAxis(float dist, const Vector3& axis) noexcept;
-	void setScaleAccum(const Vector3& v) noexcept;
 	void setScale(const Vector3& v) noexcept;
-
+	void setScaleAccum(const Vector3& v) noexcept;
 	const Vector3& getScale() const noexcept;
 
-	void setRotateX(float dist) noexcept;
-	void setRotateY(float dist) noexcept;
-	void setRotateZ(float dist) noexcept;
-	void setRotateOnAxis(float dist, const Vector3& axis) noexcept;
-	void setRotateAccum(float v) noexcept;
-	void setRotateAccum(float x, float y, float z) noexcept;
-	void setRotateAccumX(float dist) noexcept;
-	void setRotateAccumY(float dist) noexcept;
-	void setRotateAccumZ(float dist) noexcept;
-	void setRotateAccumOnAxis(float dist, const Vector3& axis) noexcept;
-	void setRotateAccum(const Quaternion& v) noexcept;
-	void setRotate(const Quaternion& v) noexcept;
-	void setRotate(float x, float y, float z) noexcept;
-	const Quaternion& getRotate() const noexcept;
+	void setQuaternion(const Quaternion& quat) noexcept;
+	void setQuaternionAccum(const Quaternion& quat) noexcept;
+	const Quaternion& getQuaternion() const noexcept;
+
+	void setEulerAngles(const EulerAngles& euler) noexcept;
+	void setEulerAnglesAccum(const EulerAngles& euler) noexcept;
+	const EulerAngles& getEulerAngles() const noexcept;
 
 	void setRight(const Vector3& v) noexcept;
 	const Vector3& getRight() const noexcept;
@@ -190,6 +161,7 @@ private:
 	Vector3 _translate;
 	Vector3 _scaling;
 	Quaternion _quat;
+	EulerAngles _euler;
 
 	Vector3 _right;
 	Vector3 _up;

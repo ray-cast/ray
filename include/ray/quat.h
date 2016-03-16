@@ -45,22 +45,17 @@ template <typename T>
 class Quaterniont
 {
 public:
-	static const Quaterniont Zero;
-	static const Quaterniont One;
-	static const Quaterniont UnitX;
-	static const Quaterniont UnitY;
-	static const Quaterniont UnitZ;
-
 	T x, y, z, w;
 
 	Quaterniont() noexcept {}
 	Quaterniont(T x, T y, T z, T w) noexcept : x(x), y(y), z(z), w(w) {}
 	Quaterniont(const Quaterniont& q) noexcept : x(q.x), y(q.y), z(q.z), w(q.w) {}
-	Quaterniont(const Vector3t<T>& euler) noexcept { this->makeRotate(euler); }
-	Quaterniont(const Vector3t<T>& axis, T angle) noexcept { this->makeRotate(axis, angle);	}
-	Quaterniont(const EulerAnglest<T>& euler) noexcept { this->makeRotate(euler); }
-	Quaterniont(const Matrix3x3t<T>& rotate) noexcept { this->makeRotate(rotate); }
-	Quaterniont(const Matrix4x4t<T>& rotate) noexcept { this->makeRotate(rotate); }
+	Quaterniont(const Vector3t<T>& axis, T angle) noexcept { this->makeRotate(axis, angle); }
+
+	explicit Quaterniont(const Vector3t<T>& euler) noexcept { this->makeRotate(euler); }
+	explicit Quaterniont(const EulerAnglest<T>& euler) noexcept { this->makeRotate(euler); }
+	explicit Quaterniont(const Matrix3x3t<T>& rotate) noexcept { this->makeRotate(rotate); }
+	explicit Quaterniont(const Matrix4x4t<T>& rotate) noexcept { this->makeRotate(rotate); }
 
 	Quaterniont& operator+=(T f) noexcept { w += w; x += f; y += f; z += f; return *this; }
 	Quaterniont& operator-=(T f) noexcept { w -= w; x -= f; y -= f; z -= f; return *this; }
@@ -284,8 +279,8 @@ public:
 		sinCos(&sb, &cb, euler.z * 0.5f);
 
 		x = ch * sp * cb + sh * cp * sb;
-		y = -ch * sp * sb + sh * cp * cb;
-		z = -sh * sp * cb + ch * cp * sb;
+		y = sh * cp * cb - ch * sp * sb;
+		z = ch * cp * sb - sh * sp * cb;
 		w = ch * cp * cb + sh * sp * sb;
 		return *this;
 	}

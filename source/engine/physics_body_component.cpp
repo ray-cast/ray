@@ -242,7 +242,7 @@ PhysicsBodyComponent::onActivate() noexcept
 		{
 			_body->setup(shape);
 			_body->setMovePosition(this->getGameObject()->getTranslate());
-			_body->setMoveRotation(this->getGameObject()->getRotate());
+			_body->setMoveRotation(this->getGameObject()->getQuaternion());
 			_body->setPhysicsScene(physicsScene.get());
 		}
 		else
@@ -275,7 +275,7 @@ void
 PhysicsBodyComponent::onFrameEnd() noexcept
 {
 	this->getGameObject()->setTranslate(_body->getMovePosition());
-	this->getGameObject()->setRotate(_body->getMoveRotation());
+	this->getGameObject()->setQuaternion(_body->getMoveRotation());
 }
 
 void

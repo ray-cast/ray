@@ -63,9 +63,10 @@ public:
 	static const Vector2t<T> Forward;
 
     Vector2t() noexcept {}
-	Vector2t(T xy) noexcept : x(xy), y(xy) {}
     Vector2t(T xx, T yy) noexcept : x(xx), y(yy) {}
     Vector2t(const Vector2t<T>& v) noexcept : x(v.x), y(v.y) {}
+
+	explicit Vector2t(T xy) noexcept : x(xy), y(xy) {}
 
 	Vector2t<T>& operator+=(T scale) noexcept { x += scale; y += scale; return *this; }
 	Vector2t<T>& operator-=(T scale) noexcept { x -= scale; y -= scale; return *this; }

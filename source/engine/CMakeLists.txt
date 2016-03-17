@@ -18,6 +18,8 @@ SET(GAMEAPP_LIST
     ${HEADER_PATH}/game_server.h
     ${SOURCE_PATH}/game_scene.cpp
     ${HEADER_PATH}/game_scene.h
+    ${SOURCE_PATH}/game_scene_manager.cpp
+    ${HEADER_PATH}/game_scene_manager.h
     ${HEADER_PATH}/game_types.h
 )
 SOURCE_GROUP("system\\app" FILES ${GAMEAPP_LIST})

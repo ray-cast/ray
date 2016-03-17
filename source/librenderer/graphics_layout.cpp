@@ -46,11 +46,11 @@ VertexComponent::VertexComponent() noexcept
 	, _count(0)
 	, _size(0)
 	, _divisor(0)
-	, _format(VertexFormat::Float)
+	, _format(GraphicsFormat::GraphicsFormatUndefined)
 {
 }
 
-VertexComponent::VertexComponent(const std::string& semantic, std::uint8_t semanticIndex, VertexFormat format, std::uint8_t slot, std::uint8_t divisor) noexcept
+VertexComponent::VertexComponent(const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint8_t slot, std::uint8_t divisor) noexcept
 	: _semantic(semantic)
 	, _index(semanticIndex)
 	, _slot(slot)
@@ -72,7 +72,7 @@ VertexComponent::setSemantic(const std::string& semantic) noexcept
 }
 
 void
-VertexComponent::setVertexFormat(VertexFormat format) noexcept
+VertexComponent::setVertexFormat(GraphicsFormat format) noexcept
 {
 	if (_format != format)
 	{
@@ -101,7 +101,7 @@ VertexComponent::getSemanticIndex() const noexcept
 	return _index;
 }
 
-VertexFormat
+GraphicsFormat
 VertexComponent::getVertexFormat() const noexcept
 {
 	return _format;
@@ -144,105 +144,80 @@ VertexComponent::getVertexSize() const noexcept
 }
 
 std::uint8_t
-VertexComponent::getVertexCount(VertexFormat format) noexcept
+VertexComponent::getVertexCount(GraphicsFormat format) noexcept
 {
-	if (format == VertexFormat::Char || format == VertexFormat::Uchar ||
-		format == VertexFormat::Short || format == VertexFormat::Ushort ||
-		format == VertexFormat::Int || format == VertexFormat::Uint ||
-		format == VertexFormat::Float)
+	switch (format)
 	{
-		return 1;
-	}
-	else if (format == VertexFormat::Char2 || format == VertexFormat::Uchar2 ||
-		format == VertexFormat::Short2 || format == VertexFormat::Ushort2 ||
-		format == VertexFormat::Int2 || format == VertexFormat::Uint2 ||
-		format == VertexFormat::Float2)
-	{
+	case GraphicsFormat::GraphicsFormatR16G16SFloat:
+	case GraphicsFormat::GraphicsFormatR16G16SInt:
+	case GraphicsFormat::GraphicsFormatR16G16UInt:
+	case GraphicsFormat::GraphicsFormatR32G32SFloat:
+	case GraphicsFormat::GraphicsFormatR32G32SInt:
+	case GraphicsFormat::GraphicsFormatR32G32UInt:
 		return 2;
-	}
-	else if (format == VertexFormat::Char3 || format == VertexFormat::Uchar3 ||
-		format == VertexFormat::Short3 || format == VertexFormat::Short3 ||
-		format == VertexFormat::Int3 || format == VertexFormat::Uint3 ||
-		format == VertexFormat::Float3)
-	{
+	case GraphicsFormat::GraphicsFormatR16G16B16SFloat:
+	case GraphicsFormat::GraphicsFormatR16G16B16SInt:
+	case GraphicsFormat::GraphicsFormatR16G16B16UInt:
+	case GraphicsFormat::GraphicsFormatR32G32B32SFloat:
+	case GraphicsFormat::GraphicsFormatR32G32B32SInt:
+	case GraphicsFormat::GraphicsFormatR32G32B32UInt:
 		return 3;
-	}
-	else if (format == VertexFormat::Char4 || format == VertexFormat::Uchar4 ||
-		format == VertexFormat::Short4 || format == VertexFormat::Ushort4 ||
-		format == VertexFormat::Int4 || format == VertexFormat::Uint4 ||
-		format == VertexFormat::Float4)
-	{
+	case GraphicsFormat::GraphicsFormatR8G8B8A8UNorm:
+	case GraphicsFormat::GraphicsFormatR8G8B8A8SNorm:
+	case GraphicsFormat::GraphicsFormatR16G16B16A16SFloat:
+	case GraphicsFormat::GraphicsFormatR16G16B16A16SInt:
+	case GraphicsFormat::GraphicsFormatR16G16B16A16UInt:
+	case GraphicsFormat::GraphicsFormatR32G32B32A32SFloat:
+	case GraphicsFormat::GraphicsFormatR32G32B32A32SInt:
+	case GraphicsFormat::GraphicsFormatR32G32B32A32UInt:
 		return 4;
-	}
-	else if (format == VertexFormat::Float3x3)
-	{
-		return 12;
-	}
-	else if (format == VertexFormat::Float4x4)
-	{
-		return 16;
-	}
-	else
-	{
+	default:
 		assert(false);
 		return 0;
 	}
 }
 
 std::uint8_t
-VertexComponent::getVertexSize(VertexFormat format) noexcept
+VertexComponent::getVertexSize(GraphicsFormat format) noexcept
 {
 	switch (format)
 	{
-	case VertexFormat::Char:
-	case VertexFormat::Uchar:
-		return 1;
-	case VertexFormat::Char2:
-	case VertexFormat::Uchar2:
-	case VertexFormat::Short:
-	case VertexFormat::Ushort:
-		return 2;
-	case VertexFormat::Char3:
-	case VertexFormat::Uchar3:
+	case GraphicsFormat::GraphicsFormatR8G8B8UNorm:
+	case GraphicsFormat::GraphicsFormatR8G8B8SNorm:
 		return 3;
-	case VertexFormat::Char4:
-	case VertexFormat::Uchar4:
-	case VertexFormat::Short2:
-	case VertexFormat::Ushort2:
-	case VertexFormat::Int:
-	case VertexFormat::Uint:
-	case VertexFormat::Float:
+	case GraphicsFormat::GraphicsFormatR8G8B8A8UNorm:
+	case GraphicsFormat::GraphicsFormatR8G8B8A8SNorm:
+	case GraphicsFormat::GraphicsFormatR16G16SFloat:
+	case GraphicsFormat::GraphicsFormatR16G16SInt:
+	case GraphicsFormat::GraphicsFormatR16G16UInt:
 		return 4;
-	case VertexFormat::Short3:
-	case VertexFormat::Ushort3:
+	case GraphicsFormat::GraphicsFormatR16G16B16SFloat:
+	case GraphicsFormat::GraphicsFormatR16G16B16SInt:
+	case GraphicsFormat::GraphicsFormatR16G16B16UInt:
 		return 6;
-	case VertexFormat::Int2:
-	case VertexFormat::Uint2:
-	case VertexFormat::Short4:
-	case VertexFormat::Ushort4:
-	case VertexFormat::Float2:
+	case GraphicsFormat::GraphicsFormatR32G32SFloat:
+	case GraphicsFormat::GraphicsFormatR32G32SInt:
+	case GraphicsFormat::GraphicsFormatR32G32UInt:
+	case GraphicsFormat::GraphicsFormatR16G16B16A16SFloat:
+	case GraphicsFormat::GraphicsFormatR16G16B16A16SInt:
+	case GraphicsFormat::GraphicsFormatR16G16B16A16UInt:
 		return 8;
-	case VertexFormat::Int3:
-	case VertexFormat::Uint3:
-	case VertexFormat::Float3:
+	case GraphicsFormat::GraphicsFormatR32G32B32SFloat:
+	case GraphicsFormat::GraphicsFormatR32G32B32SInt:
+	case GraphicsFormat::GraphicsFormatR32G32B32UInt:
 		return 12;
-	case VertexFormat::Float4:
-	case VertexFormat::Int4:
-	case VertexFormat::Uint4:
+	case GraphicsFormat::GraphicsFormatR32G32B32A32SFloat:
+	case GraphicsFormat::GraphicsFormatR32G32B32A32SInt:
+	case GraphicsFormat::GraphicsFormatR32G32B32A32UInt:
 		return 16;
-	case VertexFormat::Float3x3:
-		return 48;
-	case VertexFormat::Float4x4:
-		return 56;
 	default:
 		assert(false);
+		return 0;
 	}
-
-	return 0;
 }
 
 GraphicsLayoutDesc::GraphicsLayoutDesc() noexcept
-	: _indexType(IndexType::None)
+	: _indexType(GraphicsIndexType::GraphicsIndexTypeNone)
 {
 }
 
@@ -279,12 +254,12 @@ GraphicsLayoutDesc::removeComponent(const VertexComponent& compoent) noexcept
 }
 
 void
-GraphicsLayoutDesc::setIndexType(IndexType type) noexcept
+GraphicsLayoutDesc::setIndexType(GraphicsIndexType type) noexcept
 {
 	_indexType = type;
 }
 
-IndexType
+GraphicsIndexType
 GraphicsLayoutDesc::getIndexType() const noexcept
 {
 	return _indexType;
@@ -302,7 +277,17 @@ GraphicsLayoutDesc::getVertexSize() const noexcept
 std::uint32_t
 GraphicsLayoutDesc::getIndexSize() const noexcept
 {
-	return _indexType == IndexType::Uint16 ? sizeof(std::uint16_t) : sizeof(std::uint32_t);
+	if (_indexType == GraphicsIndexType::GraphicsIndexTypeNone)
+		return 0;
+	else if (_indexType == GraphicsIndexType::GraphicsIndexTypeUint16)
+		return sizeof(std::uint16_t);
+	else if (_indexType == GraphicsIndexType::GraphicsIndexTypeUint32)
+		return sizeof(std::uint32_t);
+	else
+	{
+		assert(false);
+		return 0;
+	}
 }
 
 GraphicsLayout::GraphicsLayout() noexcept

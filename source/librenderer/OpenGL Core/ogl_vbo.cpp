@@ -53,7 +53,7 @@ OGLVertexBuffer::~OGLVertexBuffer() noexcept
 bool
 OGLVertexBuffer::setup(const GraphicsDataDesc& desc) noexcept
 {
-	assert(desc.getType() == GraphicsStream::VBO);
+	assert(desc.getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
 	assert(desc.getStreamSize() > 0);
 	return _vertexData.setup(desc);
 }

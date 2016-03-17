@@ -45,7 +45,7 @@ class EXPORT VertexComponent final
 {
 public:
 	VertexComponent() noexcept;
-	VertexComponent(const std::string& semantic, std::uint8_t semanticIndex, VertexFormat format, std::uint8_t slot = 0, std::uint8_t divisor = 0) noexcept;
+	VertexComponent(const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint8_t slot = 0, std::uint8_t divisor = 0) noexcept;
 	~VertexComponent() noexcept;
 
 	void setSemantic(const std::string& semantic) noexcept;
@@ -54,8 +54,8 @@ public:
 	void setSemanticIndex(std::uint8_t index) noexcept;
 	std::uint8_t getSemanticIndex() const noexcept;
 
-	void setVertexFormat(VertexFormat format) noexcept;
-	VertexFormat getVertexFormat() const noexcept;
+	void setVertexFormat(GraphicsFormat format) noexcept;
+	GraphicsFormat getVertexFormat() const noexcept;
 
 	void setVertexSlot(std::uint8_t slot) noexcept;
 	std::uint8_t getVertexSlot() const noexcept;
@@ -66,8 +66,8 @@ public:
 	std::uint8_t getVertexCount() const noexcept;
 	std::uint8_t getVertexSize() const noexcept;
 
-	static std::uint8_t getVertexCount(VertexFormat) noexcept;
-	static std::uint8_t getVertexSize(VertexFormat) noexcept;
+	static std::uint8_t getVertexCount(GraphicsFormat) noexcept;
+	static std::uint8_t getVertexSize(GraphicsFormat) noexcept;
 
 private:
 	std::string _semantic;
@@ -76,7 +76,7 @@ private:
 	std::uint8_t _count;
 	std::uint8_t _size;
 	std::uint8_t _divisor;
-	VertexFormat _format;
+	GraphicsFormat _format;
 };
 
 class EXPORT GraphicsLayoutDesc final
@@ -91,14 +91,14 @@ public:
 	void addComponent(const VertexComponent& compoent) noexcept;
 	void removeComponent(const VertexComponent& compoent) noexcept;
 
-	void setIndexType(IndexType type) noexcept;
-	IndexType getIndexType() const noexcept;
+	void setIndexType(GraphicsIndexType type) noexcept;
+	GraphicsIndexType getIndexType() const noexcept;
 
 	std::uint32_t getVertexSize() const noexcept;
 	std::uint32_t getIndexSize() const noexcept;
 
 private:
-	IndexType _indexType;
+	GraphicsIndexType _indexType;
 	VertexComponents _components;
 };
 

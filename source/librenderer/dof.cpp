@@ -57,8 +57,8 @@ DepthOfField::onActivate(RenderPipeline& pipeline) except
 	_computeNear = _dof->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("computeNear");
 	_final = _dof->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("final");
 
-	_texTemp = pipeline.createRenderTexture(512, 512, TextureDim::DIM_2D, TextureFormat::R8G8B8);
-	_texBlur = pipeline.createRenderTexture(512, 512, TextureDim::DIM_2D, TextureFormat::R8G8B8);
+	_texTemp = pipeline.createRenderTexture(512, 512, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_texBlur = pipeline.createRenderTexture(512, 512, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 
 	_texColor = _dof->getParameter("texColor");
 	_texShrunk = _dof->getParameter("texShrunk");

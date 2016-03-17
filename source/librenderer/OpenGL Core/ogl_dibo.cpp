@@ -53,7 +53,7 @@ OGLDrawIndirectBuffer::~OGLDrawIndirectBuffer() noexcept
 bool
 OGLDrawIndirectBuffer::setup(const GraphicsDataDesc& desc) noexcept
 {
-	assert(desc.getType() == GraphicsStream::DIBO);
+	assert(desc.getType() == GraphicsDataType::GraphicsDataTypeStorageBuffer);
 	assert(desc.getStreamSize() > 0);
 	return _indirectData.setup(desc);
 }

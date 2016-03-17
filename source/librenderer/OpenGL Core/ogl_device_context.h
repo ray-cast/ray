@@ -88,11 +88,11 @@ public:
 	void setRenderTexture(GraphicsRenderTexturePtr target) noexcept;
 	void setRenderTextureLayer(GraphicsRenderTexturePtr target, std::int32_t layer) noexcept;
 	void setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept;
-	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
-	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
+	void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
+	void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
 	void discardRenderTexture() noexcept;
 	void blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, GraphicsRenderTexturePtr dest, const Viewport& v2) noexcept;
-	void readRenderTexture(GraphicsRenderTexturePtr source, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	void readRenderTexture(GraphicsRenderTexturePtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
 	GraphicsRenderTexturePtr getRenderTexture() const noexcept;
 	GraphicsMultiRenderTexturePtr getMultiRenderTexture() const noexcept;
 
@@ -110,7 +110,6 @@ public:
 private:
 	void initDebugControl() noexcept;
 	void initStateSystem() noexcept;
-	void initCommandList() noexcept;
 
 	static void GLAPIENTRY debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept;
 
@@ -159,8 +158,6 @@ private:
 	OGLVertexBufferPtr _vbo;
 	OGLIndexBufferPtr _ibo;
 	OGLGraphicsLayoutPtr _inputLayout;
-
-	OGLDrawIndirectBufferPtr _drawIndirectBuffer;
 
 	std::vector<Viewport> _viewport;
 

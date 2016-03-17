@@ -59,9 +59,9 @@ public:
 	const GraphicsTextureDesc& getGraphicsTextureDesc() const noexcept;
 
 private:
-	bool applySamplerWrap(SamplerWrap wrap) noexcept;
-	bool applySamplerFilter(SamplerFilter filter) noexcept;
-	bool applySamplerAnis(SamplerAnis anis) noexcept;
+	bool applySamplerWrap(GraphicsSamplerWrap wrap) noexcept;
+	bool applySamplerFilter(GraphicsSamplerFilter filter) noexcept;
+	bool applySamplerAnis(GraphicsSamplerAnis anis) noexcept;
 
 private:
 	friend class OGLDevice;

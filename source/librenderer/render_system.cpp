@@ -77,10 +77,10 @@ RenderSystem::open(WindHandle window, std::size_t w, std::size_t h) except
 
 	RenderSetting setting;
 	setting.enableSSSS = false;
-	setting.enableSSAO = true;
+	setting.enableSSAO = false;
 	setting.enableFimic = false;
-	setting.enableFXAA = true;
-	setting.enableColorGrading = true;
+	setting.enableFXAA = false;
+	setting.enableColorGrading = false;
 	this->setRenderSetting(setting);
 }
 
@@ -399,7 +399,7 @@ RenderSystem::createTexture(const GraphicsTextureDesc& desc) noexcept
 }
 
 GraphicsTexturePtr
-RenderSystem::createTexture(std::uint32_t w, std::uint32_t h, TextureDim dim, TextureFormat format) noexcept
+RenderSystem::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept
 {
 	assert(_renderPipeline);
 	return _renderPipeline->createTexture(w, h, dim, format);
@@ -427,7 +427,7 @@ RenderSystem::createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcep
 }
 
 GraphicsRenderTexturePtr
-RenderSystem::createRenderTexture(std::uint32_t w, std::uint32_t h, TextureDim dim, TextureFormat format) noexcept
+RenderSystem::createRenderTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept
 {
 	assert(_renderPipeline);
 	return _renderPipeline->createRenderTexture(w, h, dim, format);

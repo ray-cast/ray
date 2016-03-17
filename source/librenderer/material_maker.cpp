@@ -80,16 +80,16 @@ MaterialMaker::instanceShader(MaterialManager& manager, ShaderObjectDesc& progra
 	if (value.empty())
 		throw failure(__TEXT("The shader value can not be empty"));
 
-	ShaderType shaderType;
+	GraphicsShaderStage shaderType;
 
 	if (type == "vertex")
-		shaderType = ShaderType::Vertex;
+		shaderType = GraphicsShaderStage::GraphicsShaderStageVertex;
 	else if (type == "fragment")
-		shaderType = ShaderType::Fragment;
+		shaderType = GraphicsShaderStage::GraphicsShaderStageFragment;
 	else if (type == "geometry")
-		shaderType = ShaderType::Geometry;
+		shaderType = GraphicsShaderStage::GraphicsShaderStageGeometry;
 	else if (type == "compute")
-		shaderType = ShaderType::Compute;
+		shaderType = GraphicsShaderStage::GraphicsShaderStageCompute;
 	else
 		throw failure(__TEXT("Unknown shader type : ") + type);
 
@@ -301,43 +301,43 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialPtr& material
 		auto param = std::make_shared<MaterialParam>();
 		param->setName(name);
 		if (type == "bool")
-			param->setType(ShaderVariantType::Bool);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeBool);
 		else if (type == "int")
-			param->setType(ShaderVariantType::Int);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeInt);
 		else if (type == "int2")
-			param->setType(ShaderVariantType::Int2);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeInt2);
 		else if (type == "int3")
-			param->setType(ShaderVariantType::Int3);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeInt3);
 		else if (type == "int4")
-			param->setType(ShaderVariantType::Int4);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeInt4);
 		else if (type == "float")
-			param->setType(ShaderVariantType::Float);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat);
 		else if (type == "float2")
-			param->setType(ShaderVariantType::Float2);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat2);
 		else if (type == "float3")
-			param->setType(ShaderVariantType::Float3);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat3);
 		else if (type == "float4")
-			param->setType(ShaderVariantType::Float4);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat4);
 		else if (type == "mat3")
-			param->setType(ShaderVariantType::Float3x3);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat3x3);
 		else if (type == "mat4")
-			param->setType(ShaderVariantType::Float4x4);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat4x4);
 		else if (type == "float3x3")
-			param->setType(ShaderVariantType::Float3x3);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat3x3);
 		else if (type == "float4x4")
-			param->setType(ShaderVariantType::Float4x4);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat4x4);
 		else if (type == "float[]")
-			param->setType(ShaderVariantType::FloatArray);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeFloatArray);
 		else if (type == "float2[]")
-			param->setType(ShaderVariantType::Float2Array);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat2Array);
 		else if (type == "float3[]")
-			param->setType(ShaderVariantType::Float3Array);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat3Array);
 		else if (type == "float4[]")
-			param->setType(ShaderVariantType::Float4Array);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat4Array);
 		else if (type == "texture")
-			param->setType(ShaderVariantType::Texture);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeTexture);
 		else if (type == "buffer")
-			param->setType(ShaderVariantType::Buffer);
+			param->setType(GraphicsVariantType::GraphicsVariantTypeBuffer);
 		else
 		{
 			assert(false);
@@ -376,47 +376,47 @@ MaterialMaker::instanceMacro(MaterialManager& manager, MaterialPtr& material, ia
 		macro->setName(name);
 		if (type == "bool")
 		{
-			macro->setType(ShaderVariantType::Bool);
+			macro->setType(GraphicsVariantType::GraphicsVariantTypeBool);
 			macro->assign(reader.getValue<bool>("value"));
 		}
 		else if (type == "int")
 		{
-			macro->setType(ShaderVariantType::Int);
+			macro->setType(GraphicsVariantType::GraphicsVariantTypeInt);
 			macro->assign(reader.getValue<int1>("value"));
 		}
 		else if (type == "int2")
 		{
-			macro->setType(ShaderVariantType::Int2);
+			macro->setType(GraphicsVariantType::GraphicsVariantTypeInt2);
 			macro->assign(reader.getValue<int2>("value"));
 		}
 		else if (type == "int3")
 		{
-			macro->setType(ShaderVariantType::Int3);
+			macro->setType(GraphicsVariantType::GraphicsVariantTypeInt3);
 			macro->assign(reader.getValue<int3>("value"));
 		}
 		else if (type == "int4")
 		{
-			macro->setType(ShaderVariantType::Int4);
+			macro->setType(GraphicsVariantType::GraphicsVariantTypeInt4);
 			macro->assign(reader.getValue<int4>("value"));
 		}
 		else if (type == "float")
 		{
-			macro->setType(ShaderVariantType::Float);
+			macro->setType(GraphicsVariantType::GraphicsVariantTypeFloat);
 			macro->assign(reader.getValue<float1>("value"));
 		}
 		else if (type == "float2")
 		{
-			macro->setType(ShaderVariantType::Float2);
+			macro->setType(GraphicsVariantType::GraphicsVariantTypeFloat2);
 			macro->assign(reader.getValue<float2>("value"));
 		}
 		else if (type == "float3")
 		{
-			macro->setType(ShaderVariantType::Float3);
+			macro->setType(GraphicsVariantType::GraphicsVariantTypeFloat3);
 			macro->assign(reader.getValue<float3>("value"));
 		}
 		else if (type == "float4")
 		{
-			macro->setType(ShaderVariantType::Float4);
+			macro->setType(GraphicsVariantType::GraphicsVariantTypeFloat4);
 			macro->assign(reader.getValue<float4>("value"));
 		}
 		else
@@ -441,7 +441,7 @@ MaterialMaker::instanceSampler(MaterialManager& manager, MaterialPtr& material, 
 	if (reader.setToFirstChild())
 	{
 		GraphicsSamplerDesc desc;
-		desc.setSamplerWrap(SamplerWrap::Repeat);
+		desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat);
 
 		do
 		{
@@ -450,18 +450,18 @@ MaterialMaker::instanceSampler(MaterialManager& manager, MaterialPtr& material, 
 			if (stateName == "filter")
 			{
 				if (stateValue == "point")
-					desc.setSamplerFilter(SamplerFilter::Nearest);
+					desc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
 				else if (stateValue == "linear")
-					desc.setSamplerFilter(SamplerFilter::Linear);
+					desc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 			}
 			else if (stateName == "wrap")
 			{
 				if (stateValue == "clamp")
-					desc.setSamplerWrap(SamplerWrap::ClampToEdge);
+					desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 				else if (stateValue == "mirror")
-					desc.setSamplerWrap(SamplerWrap::Mirror);
+					desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapMirror);
 				else if (stateValue == "repeat")
-					desc.setSamplerWrap(SamplerWrap::Repeat);
+					desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat);
 			}
 
 		} while (reader.setToNextChild());
@@ -478,7 +478,7 @@ void
 MaterialMaker::instanceBuffer(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
 {
 	auto buffer = std::make_shared<MaterialParam>();
-	buffer->setType(ShaderVariantType::Buffer);
+	buffer->setType(GraphicsVariantType::GraphicsVariantTypeBuffer);
 	buffer->setName(reader.getValue<std::string>("name"));
 
 	if (reader.setToFirstChild())
@@ -596,19 +596,19 @@ MaterialMaker::load(MaterialManager& manager, iarchive& reader) except
 						auto type = param->getType();
 						switch (type)
 						{
-						case ShaderVariantType::Float:
+						case GraphicsVariantType::GraphicsVariantTypeFloat:
 							param->assign(parseFloat<Float>(arg.second));
 							break;
-						case ShaderVariantType::Float2:
+						case GraphicsVariantType::GraphicsVariantTypeFloat2:
 							param->assign(parseFloat2(arg.second));
 							break;
-						case ShaderVariantType::Float3:
+						case GraphicsVariantType::GraphicsVariantTypeFloat3:
 							param->assign(parseFloat3(arg.second));
 							break;
-						case ShaderVariantType::Float4:
+						case GraphicsVariantType::GraphicsVariantTypeFloat4:
 							param->assign(parseFloat4(arg.second));
 							break;
-						case ShaderVariantType::Texture:
+						case GraphicsVariantType::GraphicsVariantTypeTexture:
 							param->assign(RenderSystem::instance()->createTexture(arg.second));
 							break;
 						}
@@ -632,179 +632,177 @@ MaterialMaker::load(MaterialManager& manager, iarchive& reader) except
 	return nullptr;
 }
 
-VertexType
+GraphicsVertexType
 MaterialMaker::stringToPrimitive(const std::string& primitive) noexcept
 {
 	if (primitive == "point")
-		return VertexType::Point;
-	else if (primitive == "point_or_line")
-		return VertexType::PointOrLine;
+		return GraphicsVertexType::GraphicsVertexTypePointList;
 	else if (primitive == "line")
-		return VertexType::Line;
+		return GraphicsVertexType::GraphicsVertexTypeLineList;
+	else if (primitive == "line_strip")
+		return GraphicsVertexType::GraphicsVertexTypeLineStrip;
 	else if (primitive == "triangle")
-		return VertexType::Triangle;
-	else if (primitive == "triangle_or_line")
-		return VertexType::TriangleOrLine;
-	else if (primitive == "fan")
-		return VertexType::Fan;
-	else if (primitive == "fan_or_line")
-		return VertexType::FanOrLine;
+		return GraphicsVertexType::GraphicsVertexTypeTriangleList;
+	else if (primitive == "triangle_strip")
+		return GraphicsVertexType::GraphicsVertexTypeTriangleStrip;
+	else if (primitive == "triangle_fan")
+		return GraphicsVertexType::GraphicsVertexTypeTriangleFan;
 	else
 	{
 		assert(false);
-		return VertexType::Triangle;
+		return GraphicsVertexType::GraphicsVertexTypeTriangleList;
 	}
 }
 
-CullMode
+GraphicsCullMode
 MaterialMaker::stringToCullMode(const std::string& cullmode) noexcept
 {
 	if (cullmode == "back")
-		return CullMode::Back;
+		return GraphicsCullMode::GraphicsCullModeBack;
 	else if (cullmode == "front")
-		return CullMode::Front;
+		return GraphicsCullMode::GraphicsCullModeFront;
 	else if (cullmode == "frontback")
-		return CullMode::FrontBack;
+		return GraphicsCullMode::GraphicsCullModeFrontBack;
 	else if (cullmode == "none")
-		return CullMode::None;
+		return GraphicsCullMode::GraphicsCullModeNone;
 	else
 	{
 		assert(false);
-		return CullMode::None;
+		return GraphicsCullMode::GraphicsCullModeNone;
 	}
 }
 
-FillMode
+GraphicsPolygonMode
 MaterialMaker::stringToFillMode(const std::string& fillmode) noexcept
 {
 	if (fillmode == "point")
-		return FillMode::PointMode;
+		return GraphicsPolygonMode::GraphicsPolygonModePoint;
 	else if (fillmode == "line")
-		return FillMode::WireframeMode;
+		return GraphicsPolygonMode::GraphicsPolygonModeWireframe;
 	else if (fillmode == "solid")
-		return FillMode::SolidMode;
+		return GraphicsPolygonMode::GraphicsPolygonModeSolid;
 	else
 	{
 		assert(false);
-		return FillMode::SolidMode;
+		return GraphicsPolygonMode::GraphicsPolygonModeSolid;
 	}
 }
 
-BlendOperation
+GraphicsBlendOp
 MaterialMaker::stringToBlendOperation(const std::string& blendop) noexcept
 {
 	if (blendop == "sub")
-		return BlendOperation::Subtract;
+		return GraphicsBlendOp::GraphicsBlendOpSubtract;
 	else if (blendop == "revsub")
-		return BlendOperation::RevSubtract;
+		return GraphicsBlendOp::GraphicsBlendOpRevSubtract;
 	else if (blendop == "add")
-		return BlendOperation::Add;
+		return GraphicsBlendOp::GraphicsBlendOpAdd;
 	else
 	{
 		assert(false);
-		return BlendOperation::Add;
+		return GraphicsBlendOp::GraphicsBlendOpAdd;
 	}
 }
 
-BlendFactor
+GraphicsBlendFactor
 MaterialMaker::stringToBlendFactor(const std::string& factor) noexcept
 {
 	if (factor == "zero")
-		return BlendFactor::Zero;
+		return GraphicsBlendFactor::GraphicsBlendFactorZero;
 	else if (factor == "one")
-		return BlendFactor::One;
+		return GraphicsBlendFactor::GraphicsBlendFactorOne;
 	else if (factor == "dstcol")
-		return BlendFactor::DstCol;
+		return GraphicsBlendFactor::GraphicsBlendFactorDstCol;
 	else if (factor == "srccol")
-		return BlendFactor::SrcColor;
+		return GraphicsBlendFactor::GraphicsBlendFactorSrcColor;
 	else if (factor == "srcalpha")
-		return BlendFactor::SrcAlpha;
+		return GraphicsBlendFactor::GraphicsBlendFactorSrcAlpha;
 	else if (factor == "dstalpha")
-		return BlendFactor::DstAlpha;
+		return GraphicsBlendFactor::GraphicsBlendFactorDstAlpha;
 	else if (factor == "invsrccol")
-		return BlendFactor::OneMinusSrcCol;
+		return GraphicsBlendFactor::GraphicsBlendFactorOneMinusSrcCol;
 	else if (factor == "invdstcol")
-		return BlendFactor::OneMinusDstCol;
+		return GraphicsBlendFactor::GraphicsBlendFactorOneMinusDstCol;
 	else if (factor == "invsrcalpha")
-		return BlendFactor::OneMinusSrcAlpha;
+		return GraphicsBlendFactor::GraphicsBlendFactorOneMinusSrcAlpha;
 	else if (factor == "invdstalpha")
-		return BlendFactor::OneMinusDstAlpha;
+		return GraphicsBlendFactor::GraphicsBlendFactorOneMinusDstAlpha;
 	else
 	{
 		assert(false);
-		return BlendFactor::Zero;
+		return GraphicsBlendFactor::GraphicsBlendFactorZero;
 	}
 }
 
-ColorMask
+GraphicsColorMask
 MaterialMaker::stringToColorMask(const std::string& mask) noexcept
 {
 	if (mask == "red")
-		return ColorMask::COLORMASK_RED;
+		return GraphicsColorMask::GraphicsColorMaskR;
 	else if (mask == "green")
-		return ColorMask::COLORMASK_GREEN;
+		return GraphicsColorMask::GraphicsColorMaskG;
 	else if (mask == "blue")
-		return ColorMask::COLORMASK_BLUE;
+		return GraphicsColorMask::GraphicsColorMaskB;
 	else if (mask == "alpha")
-		return ColorMask::COLORMASK_ALPHA;
+		return GraphicsColorMask::GraphicsColorMaskA;
 	else if (mask == "rgb")
-		return ColorMask::COLORMASK_RGB;
+		return GraphicsColorMask::GraphicsColorMaskRGB;
 	else if (mask == "rgba")
-		return ColorMask::COLORMASK_RGBA;
+		return GraphicsColorMask::GraphicsColorMaskRGBA;
 	else
 	{
 		assert(false);
-		return ColorMask::COLORMASK_RGBA;
+		return GraphicsColorMask::GraphicsColorMaskRGBA;
 	}
 }
 
-CompareFunction
+GraphicsCompareFunc
 MaterialMaker::stringToCompareFunc(const std::string& func) noexcept
 {
 	if (func == "lequal")
-		return CompareFunction::Lequal;
+		return GraphicsCompareFunc::GraphicsCompareFuncLequal;
 	else if (func == "equal")
-		return CompareFunction::Equal;
+		return GraphicsCompareFunc::GraphicsCompareFuncEqual;
 	else if (func == "greater")
-		return CompareFunction::Greater;
+		return GraphicsCompareFunc::GraphicsCompareFuncGreater;
 	else if (func == "less")
-		return CompareFunction::Less;
+		return GraphicsCompareFunc::GraphicsCompareFuncLess;
 	else if (func == "gequal")
-		return CompareFunction::Gequal;
+		return GraphicsCompareFunc::GraphicsCompareFuncGequal;
 	else if (func == "notequal")
-		return CompareFunction::NotEqual;
+		return GraphicsCompareFunc::GraphicsCompareFuncNotEqual;
 	else if (func == "always")
-		return CompareFunction::Always;
+		return GraphicsCompareFunc::GraphicsCompareFuncAlways;
 	else if (func == "never")
-		return CompareFunction::Never;
+		return GraphicsCompareFunc::GraphicsCompareFuncNever;
 	else if (func == "none")
-		return CompareFunction::None;
+		return GraphicsCompareFunc::GraphicsCompareFuncNone;
 	else
 	{
 		assert(false);
-		return CompareFunction::None;
+		return GraphicsCompareFunc::GraphicsCompareFuncNone;
 	}
 }
 
-StencilOperation
+GraphicsStencilOp
 MaterialMaker::stringToStencilOp(const std::string& stencilop) noexcept
 {
 	if (stencilop == "keep")
-		return StencilOperation::Keep;
+		return GraphicsStencilOp::GraphicsStencilOpKeep;
 	else if (stencilop == "replace")
-		return StencilOperation::Replace;
+		return GraphicsStencilOp::GraphicsStencilOpReplace;
 	else if (stencilop == "inc")
-		return StencilOperation::Incr;
+		return GraphicsStencilOp::GraphicsStencilOpIncr;
 	else if (stencilop == "dec")
-		return StencilOperation::Decr;
+		return GraphicsStencilOp::GraphicsStencilOpDecr;
 	else if (stencilop == "incwrap")
-		return StencilOperation::IncrWrap;
+		return GraphicsStencilOp::GraphicsStencilOpIncrWrap;
 	else if (stencilop == "decwrap")
-		return StencilOperation::DecrWrap;
+		return GraphicsStencilOp::GraphicsStencilOpDecrWrap;
 	else
 	{
 		assert(false);
-		return StencilOperation::Keep;
+		return GraphicsStencilOp::GraphicsStencilOpKeep;
 	}
 }
 

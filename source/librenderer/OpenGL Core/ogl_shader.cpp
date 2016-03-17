@@ -189,7 +189,7 @@ OGLShaderUniform::~OGLShaderUniform() noexcept
 }
 
 void
-OGLShaderUniform::setType(ShaderVariantType type) noexcept
+OGLShaderUniform::setType(GraphicsVariantType type) noexcept
 {
 	ShaderUniform::setType(type);
 }
@@ -247,11 +247,11 @@ OGLShader::setup(const ShaderDesc& shaderDesc) noexcept
 	GLSLCrossDependencyData dependency;
 
 	std::uint32_t flags = HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT | HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
-	if (shaderDesc.getType() == ShaderType::Geometry)
+	if (shaderDesc.getType() == GraphicsShaderStage::GraphicsShaderStageGeometry)
 		flags = HLSLCC_FLAG_GS_ENABLED;
-	else if (shaderDesc.getType() == ShaderType::TessControl)
+	else if (shaderDesc.getType() == GraphicsShaderStage::GraphicsShaderStageTessControl)
 		flags = HLSLCC_FLAG_TESS_ENABLED;
-	else if (shaderDesc.getType() == ShaderType::TessEvaluation)
+	else if (shaderDesc.getType() == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
 		flags = HLSLCC_FLAG_TESS_ENABLED;
 
 	if (!TranslateHLSLFromMem(shaderDesc.getByteCodes().data(), flags, GLLang::LANG_DEFAULT, 0, &dependency, &shader))
@@ -516,50 +516,50 @@ OGLShaderObject::_initActiveUniform() noexcept
 			type == GL_SAMPLER_2D_ARRAY || type == GL_SAMPLER_CUBE ||
 			type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
 		{
-			uniform->setType(ShaderVariantType::Texture);
+			uniform->setType(GraphicsVariantType::GraphicsVariantTypeTexture);
 		}
 		else
 		{
 			bool isArray = uniform->getName().find("[0]") != std::string::npos;
 
 			if (type == GL_BOOL)
-				uniform->setType(ShaderVariantType::Bool);
+				uniform->setType(GraphicsVariantType::GraphicsVariantTypeBool);
 			else if (type == GL_INT)
-				uniform->setType(ShaderVariantType::Int);
+				uniform->setType(GraphicsVariantType::GraphicsVariantTypeInt);
 			else if (type == GL_INT_VEC2)
-				uniform->setType(ShaderVariantType::Int2);
+				uniform->setType(GraphicsVariantType::GraphicsVariantTypeInt2);
 			else if (type == GL_FLOAT)
 			{
 				if (isArray)
-					uniform->setType(ShaderVariantType::FloatArray);
+					uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloatArray);
 				else
-					uniform->setType(ShaderVariantType::Float);
+					uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat);
 			}
 			else if (type == GL_FLOAT_VEC2)
 			{
 				if (isArray)
-					uniform->setType(ShaderVariantType::Float2Array);
+					uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat2Array);
 				else
-					uniform->setType(ShaderVariantType::Float2);
+					uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat2);
 			}
 			else if (type == GL_FLOAT_VEC3)
 			{
 				if (isArray)
-					uniform->setType(ShaderVariantType::Float3Array);
+					uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat3Array);
 				else
-					uniform->setType(ShaderVariantType::Float3);
+					uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat3);
 			}
 			else if (type == GL_FLOAT_VEC4)
 			{
 				if (isArray)
-					uniform->setType(ShaderVariantType::Float4Array);
+					uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat4Array);
 				else
-					uniform->setType(ShaderVariantType::Float4);
+					uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat4);
 			}
 			else if (type == GL_FLOAT_MAT3)
-				uniform->setType(ShaderVariantType::Float3x3);
+				uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat3x3);
 			else if (type == GL_FLOAT_MAT4)
-				uniform->setType(ShaderVariantType::Float4x4);
+				uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat4x4);
 			else
 				assert(false);
 		}
@@ -626,7 +626,7 @@ OGLShaderObject::_initActiveUniformBlock() noexcept
 
 				auto uniformblock = std::make_shared<OGLShaderUniform>();
 				uniformblock->setName(nameUniformBlock.get());
-				uniformblock->setType(ShaderVariantType::Buffer);
+				uniformblock->setType(GraphicsVariantType::GraphicsVariantTypeBuffer);
 				uniformblock->setLocation(location);
 
 				_activeUniforms.push_back(uniformblock);

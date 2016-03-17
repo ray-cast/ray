@@ -62,20 +62,20 @@ OGLSampler::setup(const GraphicsSamplerDesc& desc) noexcept
 		return false;
 	}
 
-	SamplerWrap wrap = desc.getSamplerWrap();
-	if (SamplerWrap::Repeat == wrap)
+	GraphicsSamplerWrap wrap = desc.getSamplerWrap();
+	if (GraphicsSamplerWrap::GraphicsSamplerWrapRepeat == wrap)
 	{
 		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_R, GL_REPEAT);
 	}
-	else if (SamplerWrap::ClampToEdge == wrap)
+	else if (GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge == wrap)
 	{
 		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	}
-	else if (SamplerWrap::Mirror == wrap)
+	else if (GraphicsSamplerWrap::GraphicsSamplerWrapMirror == wrap)
 	{
 		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
@@ -87,33 +87,33 @@ OGLSampler::setup(const GraphicsSamplerDesc& desc) noexcept
 		return false;
 	}
 
-	SamplerFilter filter = desc.getSamplerFilter();
-	if (filter == SamplerFilter::Nearest)
+	GraphicsSamplerFilter filter = desc.getSamplerFilter();
+	if (filter == GraphicsSamplerFilter::GraphicsSamplerFilterNearest)
 	{
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	}
-	else if (filter == SamplerFilter::Linear)
+	else if (filter == GraphicsSamplerFilter::GraphicsSamplerFilterLinear)
 	{
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	}
-	else if (filter == SamplerFilter::NearestMipmapLinear)
+	else if (filter == GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapLinear)
 	{
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 		glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 	}
-	else if (filter == SamplerFilter::NearestMipmapNearest)
+	else if (filter == GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest)
 	{
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 		glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 	}
-	else if (filter == SamplerFilter::LinearMipmapNearest)
+	else if (filter == GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest)
 	{
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 		glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 	}
-	else if (filter == SamplerFilter::LinearMipmapLinear)
+	else if (filter == GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear)
 	{
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -124,20 +124,20 @@ OGLSampler::setup(const GraphicsSamplerDesc& desc) noexcept
 		return false;
 	}
 
-	SamplerAnis anis = desc.getSamplerAnis();
-	if (anis == SamplerAnis::Anis1)
+	GraphicsSamplerAnis anis = desc.getSamplerAnis();
+	if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis1)
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
-	else if (anis == SamplerAnis::Anis2)
+	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis2)
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2);
-	else if (anis == SamplerAnis::Anis4)
+	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis4)
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
-	else if (anis == SamplerAnis::Anis8)
+	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis8)
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
-	else if (anis == SamplerAnis::Anis16)
+	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis16)
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
 	else
 	{
-		if (anis != SamplerAnis::Anis0)
+		if (anis != GraphicsSamplerAnis::GraphicsSamplerAnis0)
 		{
 			GL_PLATFORM_LOG("Invalid SamplerAnis");
 			return false;

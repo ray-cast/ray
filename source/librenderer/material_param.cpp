@@ -40,11 +40,11 @@
 _NAME_BEGIN
 
 MaterialVariant::MaterialVariant() noexcept
-	: _type(ShaderVariantType::None)
+	: _type(GraphicsVariantType::GraphicsVariantTypeNone)
 {
 }
 
-MaterialVariant::MaterialVariant(const std::string& name, ShaderVariantType type) noexcept
+MaterialVariant::MaterialVariant(const std::string& name, GraphicsVariantType type) noexcept
 	: _name(name)
 {
 	this->setType(type);
@@ -71,23 +71,51 @@ MaterialVariant::getSize() const noexcept
 {
 	switch (_type)
 	{
-	case ShaderVariantType::Bool:
+	case GraphicsVariantType::GraphicsVariantTypeBool:
 		return sizeof(int);
-	case ShaderVariantType::Int:
+	case GraphicsVariantType::GraphicsVariantTypeShort:
+		return sizeof(short1);
+	case GraphicsVariantType::GraphicsVariantTypeShort2:
+		return sizeof(short2);
+	case GraphicsVariantType::GraphicsVariantTypeShort3:
+		return sizeof(short3);
+	case GraphicsVariantType::GraphicsVariantTypeShort4:
+		return sizeof(short4);
+	case GraphicsVariantType::GraphicsVariantTypeUShort:
+		return sizeof(ushort1);
+	case GraphicsVariantType::GraphicsVariantTypeUShort2:
+		return sizeof(ushort2);
+	case GraphicsVariantType::GraphicsVariantTypeUShort3:
+		return sizeof(ushort3);
+	case GraphicsVariantType::GraphicsVariantTypeUShort4:
+		return sizeof(ushort4);
+	case GraphicsVariantType::GraphicsVariantTypeInt:
 		return sizeof(int);
-	case ShaderVariantType::Int2:
+	case GraphicsVariantType::GraphicsVariantTypeInt2:
 		return sizeof(int2);
-	case ShaderVariantType::Float:
+	case GraphicsVariantType::GraphicsVariantTypeInt3:
+		return sizeof(int3);
+	case GraphicsVariantType::GraphicsVariantTypeInt4:
+		return sizeof(int4);
+	case GraphicsVariantType::GraphicsVariantTypeUInt:
+		return sizeof(uint);
+	case GraphicsVariantType::GraphicsVariantTypeUInt2:
+		return sizeof(uint2);
+	case GraphicsVariantType::GraphicsVariantTypeUInt3:
+		return sizeof(uint3);
+	case GraphicsVariantType::GraphicsVariantTypeUInt4:
+		return sizeof(uint4);
+	case GraphicsVariantType::GraphicsVariantTypeFloat:
 		return sizeof(float);
-	case ShaderVariantType::Float2:
+	case GraphicsVariantType::GraphicsVariantTypeFloat2:
 		return sizeof(float2);
-	case ShaderVariantType::Float3:
+	case GraphicsVariantType::GraphicsVariantTypeFloat3:
 		return sizeof(float3);
-	case ShaderVariantType::Float4:
+	case GraphicsVariantType::GraphicsVariantTypeFloat4:
 		return sizeof(float4);
-	case ShaderVariantType::Float3x3:
+	case GraphicsVariantType::GraphicsVariantTypeFloat3x3:
 		return sizeof(float3x3);
-	case ShaderVariantType::Float4x4:
+	case GraphicsVariantType::GraphicsVariantTypeFloat4x4:
 		return sizeof(float4x4);
 	default:
 		assert(false);
@@ -96,44 +124,44 @@ MaterialVariant::getSize() const noexcept
 }
 
 void
-MaterialVariant::setType(ShaderVariantType type) noexcept
+MaterialVariant::setType(GraphicsVariantType type) noexcept
 {
 	if (_type != type)
 	{
-		if (_type == ShaderVariantType::FloatArray)
+		if (_type == GraphicsVariantType::GraphicsVariantTypeFloatArray)
 		{
 			delete _value.farray;
 			_value.farray = nullptr;
 		}
-		else if (_type == ShaderVariantType::Float2Array)
+		else if (_type == GraphicsVariantType::GraphicsVariantTypeFloat2Array)
 		{
 			delete _value.farray2;
 			_value.farray2 = nullptr;
 		}
-		else if (_type == ShaderVariantType::Float3x3)
+		else if (_type == GraphicsVariantType::GraphicsVariantTypeFloat3x3)
 		{
 			delete _value.m3;
 			_value.m3 = nullptr;
 		}
-		else if (_type == ShaderVariantType::Float4x4)
+		else if (_type == GraphicsVariantType::GraphicsVariantTypeFloat4x4)
 		{
 			delete _value.m4;
 			_value.m4 = nullptr;
 		}
 
-		if (type == ShaderVariantType::FloatArray)
+		if (type == GraphicsVariantType::GraphicsVariantTypeFloatArray)
 		{
 			_value.farray = new std::vector<float>();
 		}
-		else if (type == ShaderVariantType::Float2Array)
+		else if (type == GraphicsVariantType::GraphicsVariantTypeFloat2Array)
 		{
 			_value.farray2 = new std::vector<float2>();
 		}
-		else if (type == ShaderVariantType::Float3x3)
+		else if (type == GraphicsVariantType::GraphicsVariantTypeFloat3x3)
 		{
 			_value.m3 = new Matrix3x3;
 		}
-		else if (type == ShaderVariantType::Float4x4)
+		else if (type == GraphicsVariantType::GraphicsVariantTypeFloat4x4)
 		{
 			_value.m4 = new Matrix4x4;
 		}
@@ -142,7 +170,7 @@ MaterialVariant::setType(ShaderVariantType type) noexcept
 	}
 }
 
-ShaderVariantType
+GraphicsVariantType
 MaterialVariant::getType() const noexcept
 {
 	return _type;
@@ -151,7 +179,7 @@ MaterialVariant::getType() const noexcept
 void
 MaterialVariant::assign(bool value) noexcept
 {
-	this->setType(ShaderVariantType::Bool);
+	this->setType(GraphicsVariantType::GraphicsVariantTypeBool);
 	if (_value.b != value)
 	{
 		_value.b = value;
@@ -161,7 +189,7 @@ MaterialVariant::assign(bool value) noexcept
 void
 MaterialVariant::assign(int value) noexcept
 {
-	this->setType(ShaderVariantType::Int);
+	this->setType(GraphicsVariantType::GraphicsVariantTypeInt);
 	if (_value.i[0] != value)
 	{
 		_value.i[0] = value;
@@ -171,7 +199,7 @@ MaterialVariant::assign(int value) noexcept
 void
 MaterialVariant::assign(const int2& value) noexcept
 {
-	this->setType(ShaderVariantType::Int2);
+	this->setType(GraphicsVariantType::GraphicsVariantTypeInt2);
 	if (_value.i[0] != value.x ||
 		_value.i[1] != value.y)
 	{
@@ -183,7 +211,7 @@ MaterialVariant::assign(const int2& value) noexcept
 void
 MaterialVariant::assign(const int3& value) noexcept
 {
-	this->setType(ShaderVariantType::Int3);
+	this->setType(GraphicsVariantType::GraphicsVariantTypeInt3);
 	if (_value.i[0] != value.x ||
 		_value.i[1] != value.y ||
 		_value.i[2] != value.z)
@@ -197,7 +225,7 @@ MaterialVariant::assign(const int3& value) noexcept
 void
 MaterialVariant::assign(const int4& value) noexcept
 {
-	this->setType(ShaderVariantType::Int3);
+	this->setType(GraphicsVariantType::GraphicsVariantTypeInt3);
 	if (_value.i[0] != value.x ||
 		_value.i[1] != value.y ||
 		_value.i[2] != value.z ||
@@ -213,7 +241,7 @@ MaterialVariant::assign(const int4& value) noexcept
 void
 MaterialVariant::assign(float value) noexcept
 {
-	this->setType(ShaderVariantType::Float);
+	this->setType(GraphicsVariantType::GraphicsVariantTypeFloat);
 	if (_value.f[0] != value)
 	{
 		_value.f[0] = value;
@@ -223,7 +251,7 @@ MaterialVariant::assign(float value) noexcept
 void
 MaterialVariant::assign(const float2& value) noexcept
 {
-	this->setType(ShaderVariantType::Float2);
+	this->setType(GraphicsVariantType::GraphicsVariantTypeFloat2);
 	if (_value.f[0] != value.x ||
 		_value.f[1] != value.y)
 	{
@@ -235,7 +263,7 @@ MaterialVariant::assign(const float2& value) noexcept
 void
 MaterialVariant::assign(const float3& value) noexcept
 {
-	this->setType(ShaderVariantType::Float3);
+	this->setType(GraphicsVariantType::GraphicsVariantTypeFloat3);
 	if (_value.f[0] != value.x ||
 		_value.f[1] != value.y ||
 		_value.f[2] != value.z)
@@ -249,7 +277,7 @@ MaterialVariant::assign(const float3& value) noexcept
 void
 MaterialVariant::assign(const float4& value) noexcept
 {
-	this->setType(ShaderVariantType::Float4);
+	this->setType(GraphicsVariantType::GraphicsVariantTypeFloat4);
 	if (_value.f[0] != value.x ||
 		_value.f[1] != value.y ||
 		_value.f[2] != value.z ||
@@ -265,49 +293,49 @@ MaterialVariant::assign(const float4& value) noexcept
 void
 MaterialVariant::assign(const float3x3& value) noexcept
 {
-	this->setType(ShaderVariantType::Float3x3);
+	this->setType(GraphicsVariantType::GraphicsVariantTypeFloat3x3);
 	*_value.m3 = value;
 }
 
 void
 MaterialVariant::assign(const float4x4& value) noexcept
 {
-	this->setType(ShaderVariantType::Float4x4);
+	this->setType(GraphicsVariantType::GraphicsVariantTypeFloat4x4);
 	*_value.m4 = value;
 }
 
 void
 MaterialVariant::assign(const std::vector<float>& value) noexcept
 {
-	this->setType(ShaderVariantType::FloatArray);
+	this->setType(GraphicsVariantType::GraphicsVariantTypeFloatArray);
 	*_value.farray = value;
 }
 
 void
 MaterialVariant::assign(const std::vector<float2>& value) noexcept
 {
-	this->setType(ShaderVariantType::Float2Array);
+	this->setType(GraphicsVariantType::GraphicsVariantTypeFloat2Array);
 	*_value.farray2 = value;
 }
 
 void
 MaterialVariant::assign(const std::vector<float3>& value) noexcept
 {
-	this->setType(ShaderVariantType::Float3Array);
+	this->setType(GraphicsVariantType::GraphicsVariantTypeFloat3Array);
 	*_value.farray3 = value;
 }
 
 void
 MaterialVariant::assign(const std::vector<float4>& value) noexcept
 {
-	this->setType(ShaderVariantType::Float4Array);
+	this->setType(GraphicsVariantType::GraphicsVariantTypeFloat4Array);
 	*_value.farray4 = value;
 }
 
 void
 MaterialVariant::assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
 {
-	this->setType(ShaderVariantType::Texture);
+	this->setType(GraphicsVariantType::GraphicsVariantTypeTexture);
 	if (_texture != texture)
 	{
 		_texture = texture;
@@ -318,119 +346,119 @@ MaterialVariant::assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) 
 bool
 MaterialVariant::getBool() const noexcept
 {
-	assert(_type == ShaderVariantType::Bool);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeBool);
 	return _value.b;
 }
 
 int
 MaterialVariant::getInt() const noexcept
 {
-	assert(_type == ShaderVariantType::Int);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeInt);
 	return _value.i[0];
 }
 
 const int2&
 MaterialVariant::getInt2() const noexcept
 {
-	assert(_type == ShaderVariantType::Int2);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeInt2);
 	return (int2&)_value.i[0];
 }
 
 const int3&
 MaterialVariant::getInt3() const noexcept
 {
-	assert(_type == ShaderVariantType::Int3);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeInt3);
 	return (int3&)_value.i[0];
 }
 
 const int4&
 MaterialVariant::getInt4() const noexcept
 {
-	assert(_type == ShaderVariantType::Int4);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeInt4);
 	return (int4&)_value.i[0];
 }
 
 float
 MaterialVariant::getFloat() const noexcept
 {
-	assert(_type == ShaderVariantType::Float);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeFloat);
 	return _value.f[0];
 }
 
 const float2&
 MaterialVariant::getFloat2() const noexcept
 {
-	assert(_type == ShaderVariantType::Float2);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeFloat2);
 	return (float2&)_value.f[0];
 }
 
 const float3&
 MaterialVariant::getFloat3() const noexcept
 {
-	assert(_type == ShaderVariantType::Float3);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeFloat3);
 	return (float3&)_value.f[0];
 }
 
 const float4&
 MaterialVariant::getFloat4() const noexcept
 {
-	assert(_type == ShaderVariantType::Float4);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeFloat4);
 	return (float4&)_value.f[0];
 }
 
 const float3x3&
 MaterialVariant::getFloat3x3() const noexcept
 {
-	assert(_type == ShaderVariantType::Float3x3);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeFloat3x3);
 	return (float3x3&)*_value.m3;
 }
 
 const float4x4&
 MaterialVariant::getFloat4x4() const noexcept
 {
-	assert(_type == ShaderVariantType::Float4x4);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeFloat4x4);
 	return (float4x4&)*_value.m4;
 }
 
 const std::vector<float>&
 MaterialVariant::getFloatArray() const noexcept
 {
-	assert(_type == ShaderVariantType::FloatArray);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeFloatArray);
 	return *_value.farray;
 }
 
 const std::vector<float2>&
 MaterialVariant::getFloat2Array() const noexcept
 {
-	assert(_type == ShaderVariantType::Float2Array);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeFloat2Array);
 	return *_value.farray2;
 }
 
 const std::vector<float3>&
 MaterialVariant::getFloat3Array() const noexcept
 {
-	assert(_type == ShaderVariantType::Float3Array);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeFloat3Array);
 	return *_value.farray3;
 }
 
 const std::vector<float4>&
 MaterialVariant::getFloat4Array() const noexcept
 {
-	assert(_type == ShaderVariantType::Float4Array);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeFloat4Array);
 	return *_value.farray4;
 }
 
 GraphicsTexturePtr
 MaterialVariant::getTexture() const noexcept
 {
-	assert(_type == ShaderVariantType::Texture);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeTexture);
 	return _texture;
 }
 
 GraphicsSamplerPtr
 MaterialVariant::getTextureSampler() const noexcept
 {
-	assert(_type == ShaderVariantType::Texture);
+	assert(_type == GraphicsVariantType::GraphicsVariantTypeTexture);
 	return _textureSampler;
 }
 
@@ -438,7 +466,7 @@ MaterialSemantic::MaterialSemantic() noexcept
 {
 }
 
-MaterialSemantic::MaterialSemantic(const std::string& name, ShaderVariantType type) noexcept
+MaterialSemantic::MaterialSemantic(const std::string& name, GraphicsVariantType type) noexcept
 	: MaterialVariant(name, type)
 {
 }
@@ -451,7 +479,7 @@ MaterialParam::MaterialParam() noexcept
 {
 }
 
-MaterialParam::MaterialParam(const std::string& name, ShaderVariantType type) noexcept
+MaterialParam::MaterialParam(const std::string& name, GraphicsVariantType type) noexcept
 	: _name(name)
 	, _type(type)
 {
@@ -474,12 +502,12 @@ MaterialParam::getName() const noexcept
 }
 
 void
-MaterialParam::setType(ShaderVariantType type) noexcept
+MaterialParam::setType(GraphicsVariantType type) noexcept
 {
 	_type = type;
 }
 
-ShaderVariantType
+GraphicsVariantType
 MaterialParam::getType() const noexcept
 {
 	return _type;

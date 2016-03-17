@@ -47,19 +47,21 @@ public:
 	GraphicsSamplerDesc() noexcept;
 	virtual ~GraphicsSamplerDesc() noexcept;
 
-	void setSamplerWrap(SamplerWrap wrap) noexcept;
-	void setSamplerFilter(SamplerFilter filter) noexcept;
-	void setSamplerAnis(SamplerAnis anis) noexcept;
+	void setSamplerOp(GraphicsSamplerOp op) noexcept;
+	void setSamplerWrap(GraphicsSamplerWrap wrap) noexcept;
+	void setSamplerFilter(GraphicsSamplerFilter filter) noexcept;
+	void setSamplerAnis(GraphicsSamplerAnis anis) noexcept;
 
-	SamplerWrap   getSamplerWrap() const noexcept;
-	SamplerFilter getSamplerFilter() const noexcept;
-	SamplerAnis   getSamplerAnis() const noexcept;
+	GraphicsSamplerOp getSamplerOp() const noexcept;
+	GraphicsSamplerWrap getSamplerWrap() const noexcept;
+	GraphicsSamplerFilter getSamplerFilter() const noexcept;
+	GraphicsSamplerAnis getSamplerAnis() const noexcept;
 
 private:
-	SamplerOp _texop;
-	SamplerWrap _wrap;
-	SamplerAnis _anis;
-	SamplerFilter _filter;
+	GraphicsSamplerOp _texop;
+	GraphicsSamplerWrap _wrap;
+	GraphicsSamplerAnis _anis;
+	GraphicsSamplerFilter _filter;
 };
 
 class GraphicsSampler : public GraphicsChild

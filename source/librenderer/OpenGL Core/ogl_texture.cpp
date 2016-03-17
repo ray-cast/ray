@@ -105,12 +105,7 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	auto stream = textureDesc.getStream();
 	if (stream)
 	{
-		if (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT ||
-			internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ||
-			internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT ||
-			internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT ||
-			internalFormat == GL_COMPRESSED_RG_RGTC2 ||
-			internalFormat == GL_COMPRESSED_SIGNED_RG_RGTC2)
+		if (OGLTypes::isCompressedTexture(textureDesc.getTexFormat()))
 		{
 			GLsizei offset = 0;
 			GLsizei blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;
@@ -159,7 +154,6 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		glGenerateTextureMipmap(_texture);
 	}
 
-
 	_target = target;
 	_textureDesc = textureDesc;
 
@@ -201,7 +195,7 @@ OGLTexture::getGraphicsTextureDesc() const noexcept
 }
 
 bool
-OGLTexture::applySamplerWrap(SamplerWrap wrap) noexcept
+OGLTexture::applySamplerWrap(GraphicsSamplerWrap wrap) noexcept
 {
 	GLenum glwrap = OGLTypes::asSamplerWrap(wrap);
 	if (glwrap != GL_INVALID_ENUM)
@@ -217,7 +211,7 @@ OGLTexture::applySamplerWrap(SamplerWrap wrap) noexcept
 }
 
 bool
-OGLTexture::applySamplerFilter(SamplerFilter filter) noexcept
+OGLTexture::applySamplerFilter(GraphicsSamplerFilter filter) noexcept
 {
 	GLenum glfilter = OGLTypes::asSamplerFilter(filter);
 	if (glfilter != GL_INVALID_ENUM)
@@ -231,21 +225,21 @@ OGLTexture::applySamplerFilter(SamplerFilter filter) noexcept
 }
 
 bool
-OGLTexture::applySamplerAnis(SamplerAnis anis) noexcept
+OGLTexture::applySamplerAnis(GraphicsSamplerAnis anis) noexcept
 {
-	if (anis == SamplerAnis::Anis1)
+	if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis1)
 		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
-	else if (anis == SamplerAnis::Anis2)
+	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis2)
 		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2);
-	else if (anis == SamplerAnis::Anis4)
+	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis4)
 		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
-	else if (anis == SamplerAnis::Anis8)
+	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis8)
 		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
-	else if (anis == SamplerAnis::Anis16)
+	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis16)
 		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
 	else
 	{
-		if (anis != SamplerAnis::Anis0)
+		if (anis != GraphicsSamplerAnis::GraphicsSamplerAnis0)
 		{
 			GL_PLATFORM_LOG("Invalid SamplerAnis");
 			return false;

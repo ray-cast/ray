@@ -42,16 +42,16 @@ __ImplementSubInterface(GraphicsTexture, GraphicsResource, "GraphicsTexture")
 
 GraphicsTextureDesc::GraphicsTextureDesc() noexcept
 	: _size(0, 0, 0)
-	, _format(TextureFormat::R8G8B8A8)
-	, _dim(TextureDim::DIM_2D)
+	, _format(GraphicsFormat::GraphicsFormatUndefined)
+	, _dim(GraphicsTextureDim::GraphicsTextureDim2D)
 	, _mipmap(false)
 	, _multisample(false)
 	, _mipLevel(0)
 	, _mipSize(0)
-	, _texop(SamplerOp::Add)
-	, _filter(SamplerFilter::Linear)
-	, _wrap(SamplerWrap::ClampToEdge)
-	, _anis(SamplerAnis::Anis0)
+	, _texop(GraphicsSamplerOp::GraphicsSamplerOpAdd)
+	, _filter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear)
+	, _wrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge)
+	, _anis(GraphicsSamplerAnis::GraphicsSamplerAnis0)
 	, _data(nullptr)
 {
 }
@@ -67,37 +67,37 @@ GraphicsTextureDesc::setTexMipmap(bool enable) noexcept
 }
 
 void
-GraphicsTextureDesc::setTexFormat(TextureFormat format) noexcept
+GraphicsTextureDesc::setTexFormat(GraphicsFormat format) noexcept
 {
 	_format = format;
 }
 
 void
-GraphicsTextureDesc::setTexDim(TextureDim map) noexcept
+GraphicsTextureDesc::setTexDim(GraphicsTextureDim map) noexcept
 {
 	_dim = map;
 }
 
 void
-GraphicsTextureDesc::setTexOp(SamplerOp op) noexcept
+GraphicsTextureDesc::setTexOp(GraphicsSamplerOp op) noexcept
 {
 	_texop = op;
 }
 
 void
-GraphicsTextureDesc::setSamplerWrap(SamplerWrap wrap) noexcept
+GraphicsTextureDesc::setSamplerWrap(GraphicsSamplerWrap wrap) noexcept
 {
 	_wrap = wrap;
 }
 
 void
-GraphicsTextureDesc::setSamplerFilter(SamplerFilter filter) noexcept
+GraphicsTextureDesc::setSamplerFilter(GraphicsSamplerFilter filter) noexcept
 {
 	_filter = filter;
 }
 
 void
-GraphicsTextureDesc::setSamplerAnis(SamplerAnis anis) noexcept
+GraphicsTextureDesc::setSamplerAnis(GraphicsSamplerAnis anis) noexcept
 {
 	_anis = anis;
 }
@@ -152,37 +152,37 @@ GraphicsTextureDesc::setStream(void* data) noexcept
 	_data = data;
 }
 
-SamplerOp
+GraphicsSamplerOp
 GraphicsTextureDesc::getTexOp() const noexcept
 {
 	return _texop;
 }
 
-TextureFormat
+GraphicsFormat
 GraphicsTextureDesc::getTexFormat() const noexcept
 {
 	return _format;
 }
 
-TextureDim
+GraphicsTextureDim
 GraphicsTextureDesc::getTexDim() const noexcept
 {
 	return _dim;
 }
 
-SamplerWrap
+GraphicsSamplerWrap
 GraphicsTextureDesc::getSamplerWrap() const noexcept
 {
 	return _wrap;
 }
 
-SamplerFilter
+GraphicsSamplerFilter
 GraphicsTextureDesc::getSamplerFilter() const noexcept
 {
 	return _filter;
 }
 
-SamplerAnis
+GraphicsSamplerAnis
 GraphicsTextureDesc::getSamplerAnis() const noexcept
 {
 	return _anis;

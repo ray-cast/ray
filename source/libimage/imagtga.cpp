@@ -59,6 +59,14 @@ struct TGAHeader
 
 #pragma pack(pop)
 
+TGAHandler::TGAHandler() noexcept
+{
+}
+
+TGAHandler::~TGAHandler() noexcept
+{
+}
+
 bool
 TGAHandler::doCanRead(StreamReader& stream) const noexcept
 {
@@ -119,6 +127,8 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 
 	if (!image.create(columns, rows, hdr.pixel_size))
 		return false;
+
+	image.setImageType(ImageType::ImageTypeTGA);
 
 	if (hdr.id_length != 0)
 		stream.seekg(hdr.id_length, ios_base::cur);

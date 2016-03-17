@@ -135,6 +135,8 @@ BMPHandler::loadDIB(Image& image, StreamReader& stream, const BITMAPINFO& info)
 	if (!image.create(columns, rows, (bpp_type)info.info.bpp))
 		return false;
 
+	image.setImageType(ImageType::ImageTypeBMP);
+
 	if (info.info.bpp == BMP_32BPP)
 	{
 		RGBA* rgba = (RGBA*)image.data();

@@ -41,12 +41,19 @@
 
 _NAME_BEGIN
 
-class TGAHandler : public ImageHandler
+class TGAHandler final : public ImageHandler
 {
-private:
+public:
+	TGAHandler() noexcept;
+	~TGAHandler() noexcept;
+
     bool doCanRead(StreamReader& stream) const noexcept;
     bool doLoad(Image& image, StreamReader& stream) noexcept;
     bool doSave(Image& image, StreamWrite& stream) noexcept;
+
+private:
+	TGAHandler(const TGAHandler&) noexcept = delete;
+	const TGAHandler& operator=(const TGAHandler&) noexcept = delete;
 };
 
 _NAME_END

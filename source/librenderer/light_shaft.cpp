@@ -58,7 +58,7 @@ LightShaft::onActivate(RenderPipeline& pipeline) except
 	pipeline.getWindowResolution(width, height);
 
 	_material = pipeline.createMaterial("sys:fx/light_shaft.glsl");
-	_texSample = pipeline.createRenderTexture(width*0.5, height*0.5, TextureDim::DIM_2D, TextureFormat::R11G11B10F);
+	_texSample = pipeline.createRenderTexture(width*0.5, height*0.5, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatB10G11R11UFloatPack32);
 
 	_lightShaft = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("LightScatter");
 	_lightShaftCopy = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("LightScatterCopy");
@@ -86,7 +86,7 @@ void
 LightShaft::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except
 {
 	pipeline.setRenderTexture(_texSample);
-	pipeline.clearRenderTexture(ClearFlags::All, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsAll, Vector4::Zero, 1.0, 0);
 
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);

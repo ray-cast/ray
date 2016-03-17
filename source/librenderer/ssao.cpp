@@ -161,8 +161,8 @@ SSAO::onActivate(RenderPipeline& pipeline) except
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_texAmbient = pipeline.createRenderTexture(width, height, TextureDim::DIM_2D, TextureFormat::R16F);
-	_texBlur = pipeline.createRenderTexture(width, height, TextureDim::DIM_2D, TextureFormat::R16F);
+	_texAmbient = pipeline.createRenderTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
+	_texBlur = pipeline.createRenderTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
 
 	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssao.fxml.o");
 	_ambientOcclusionPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ao");

@@ -41,12 +41,19 @@
 
 _NAME_BEGIN
 
-class PNGHandler : public ImageHandler
+class PNGHandler final : public ImageHandler
 {
-private:
+public:
+	PNGHandler() noexcept;
+	~PNGHandler() noexcept;
+
     bool doCanRead(StreamReader& stream) const noexcept;
     bool doLoad(Image& image, StreamReader& stream) noexcept;
     bool doSave(Image& image, StreamWrite& stream) noexcept;
+
+private:
+	PNGHandler(const PNGHandler&) noexcept = delete;
+	const PNGHandler& operator=(const PNGHandler&) noexcept = delete;
 };
 
 _NAME_END

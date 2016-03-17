@@ -224,11 +224,17 @@ typedef Plane3t<double> Plane3d;
 typedef Rect3t<double> Rect3d;
 typedef Spheret<double> Sphered;
 
-// int
+// short
 typedef short short1;
 typedef Vector2t<std::uint16_t> short2;
 typedef Vector3t<std::uint16_t> short3;
 typedef Vector4t<std::uint16_t> short4;
+
+// ushort
+typedef unsigned short ushort1;
+typedef Vector2t<std::uint16_t> ushort2;
+typedef Vector3t<std::uint16_t> ushort3;
+typedef Vector4t<std::uint16_t> ushort4;
 
 // int
 typedef int int1;

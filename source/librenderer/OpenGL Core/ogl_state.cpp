@@ -128,7 +128,7 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 
 	if (_dstRasterState.cullMode != rasterState.cullMode)
 	{
-		if (rasterState.cullMode != CullMode::None)
+		if (rasterState.cullMode != GraphicsCullMode::GraphicsCullModeNone)
 		{
 			GLenum mode = OGLTypes::asCullMode(rasterState.cullMode);
 			glEnable(GL_CULL_FACE);

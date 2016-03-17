@@ -49,7 +49,7 @@ public:
     Image() noexcept;
     Image(size_type width, size_type height, bpp_type bpp, bool clear = false) noexcept;
     Image(size_type width, size_type height, bpp_type bpp, std::size_t dataSize, image_buf data, bool static_data = false, bool clear = false) noexcept;
-    Image(StreamReader& stream, ImageType type = ImageType::unknown) noexcept;
+    Image(StreamReader& stream, ImageType type = ImageType::ImageTypeUnknown) noexcept;
     ~Image() noexcept;
 
     bool create(size_type width, size_type height, bpp_type bpp, bool clear = false) noexcept;
@@ -106,9 +106,9 @@ public:
 
 public:
 
-	bool load(const std::string& filename, ImageType type = ImageType::unknown) noexcept;
-    bool load(StreamReader& stream, ImageType type = ImageType::unknown) noexcept;
-    bool save(StreamWrite& stream, ImageType type = ImageType::png) noexcept;
+	bool load(const std::string& filename, ImageType type = ImageType::ImageTypeUnknown) noexcept;
+    bool load(StreamReader& stream, ImageType type = ImageType::ImageTypeUnknown) noexcept;
+    bool save(StreamWrite& stream, ImageType type = ImageType::ImageTypePNG) noexcept;
 
     bool emptyHandler() const noexcept;
     bool add(ImageHandlerPtr handler) noexcept;

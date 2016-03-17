@@ -77,8 +77,8 @@ public:
 	void setUsage(std::uint32_t usage) noexcept;
 	std::uint32_t getUsage() const noexcept;
 
-	void setType(GraphicsStream type) noexcept;
-	GraphicsStream getType() const noexcept;
+	void setType(GraphicsDataType type) noexcept;
+	GraphicsDataType getType() const noexcept;
 
 	void setStride(std::uint32_t stride) noexcept;
 	std::uint32_t getStride() const noexcept;
@@ -94,7 +94,7 @@ private:
 	std::uint32_t _stride;
 	std::uint8_t* _data;
 	std::uint32_t _dataSize;
-	GraphicsStream _type;
+	GraphicsDataType _type;
 };
 
 class EXPORT GraphicsData : public GraphicsResource

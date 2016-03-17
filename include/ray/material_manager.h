@@ -56,7 +56,7 @@ public:
 	MaterialPtr createMaterial(const std::string& name) except;
 	MaterialPtr getMaterial(const std::string& name) noexcept;
 
-	MaterialSemanticPtr createSemantic(const std::string& name, ShaderVariantType type) noexcept;
+	MaterialSemanticPtr createSemantic(const std::string& name, GraphicsVariantType type) noexcept;
 	void addSemantic(MaterialSemanticPtr semantc) noexcept;
 	void removeSemantic(MaterialSemanticPtr semantc) noexcept;
 	MaterialSemanticPtr getSemantic(const std::string& name) noexcept;

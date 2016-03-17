@@ -130,8 +130,8 @@ SSGI::shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, Graphic
 void
 SSGI::onActivate(RenderPipeline& pipeline) except
 {
-	_texAmbient = pipeline.createRenderTexture(1376, 768, TextureDim::DIM_2D, TextureFormat::R16G16B16A16F);
-	_texBlur = pipeline.createRenderTexture(1376, 768, TextureDim::DIM_2D, TextureFormat::R16G16B16A16F);
+	_texAmbient = pipeline.createRenderTexture(1376, 768, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16A16SFloat);
+	_texBlur = pipeline.createRenderTexture(1376, 768, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16A16SFloat);
 
 	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssgi.glsl");
 	_ambientOcclusionPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ao");

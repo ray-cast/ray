@@ -63,17 +63,17 @@ OGLGraphicsBuf::setup(const GraphicsDataDesc& desc) noexcept
 	_isMapping = false;
 
 	auto type = desc.getType();
-	if (type == GraphicsStream::VBO)
+	if (type == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer)
 		_target = GL_ARRAY_BUFFER;
-	else if (type == GraphicsStream::IBO)
+	else if (type == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer)
 		_target = GL_ELEMENT_ARRAY_BUFFER;
-	else if (type == GraphicsStream::UBO)
+	else if (type == GraphicsDataType::GraphicsDataTypeUniformBuffer)
 		_target = GL_UNIFORM_BUFFER;
-	else if (type == GraphicsStream::TBO)
+	else if (type == GraphicsDataType::GraphicsDataTypeStorageTexelBuffer)
 		_target = GL_TEXTURE_BUFFER;
-	else if (type == GraphicsStream::SSBO)
+	else if (type == GraphicsDataType::GraphicsDataTypeStorageBuffer)
 		_target = GL_SHADER_STORAGE_BUFFER;
-	else if (type == GraphicsStream::DIBO)
+	else if (type == GraphicsDataType::GraphicsDataTypeStorageBuffer)
 		_target = GL_DRAW_INDIRECT_BUFFER;
 	else
 		return false;

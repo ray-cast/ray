@@ -74,9 +74,9 @@ MaterialManager::getGraphicsDevice() noexcept
 }
 
 MaterialSemanticPtr
-MaterialManager::createSemantic(const std::string& name, ShaderVariantType type) noexcept
+MaterialManager::createSemantic(const std::string& name, GraphicsVariantType type) noexcept
 {
-	if (!name.empty() && type != ShaderVariantType::None)
+	if (!name.empty() && type != GraphicsVariantType::GraphicsVariantTypeNone)
 	{
 		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialSemanticPtr& it) { return it->getName() == name;});
 		if (it == _semantics.end())
@@ -92,7 +92,7 @@ MaterialManager::createSemantic(const std::string& name, ShaderVariantType type)
 void
 MaterialManager::addSemantic(MaterialSemanticPtr semantc) noexcept
 {
-	if (semantc && !semantc->getName().empty() && semantc->getType() != ShaderVariantType::None)
+	if (semantc && !semantc->getName().empty() && semantc->getType() != GraphicsVariantType::GraphicsVariantTypeNone)
 	{
 		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialSemanticPtr& it) { return it->getName() == semantc->getName();});
 		if (it == _semantics.end())
@@ -103,7 +103,7 @@ MaterialManager::addSemantic(MaterialSemanticPtr semantc) noexcept
 void
 MaterialManager::removeSemantic(MaterialSemanticPtr semantc) noexcept
 {
-	if (semantc && !semantc->getName().empty() && semantc->getType() != ShaderVariantType::None)
+	if (semantc && !semantc->getName().empty() && semantc->getType() != GraphicsVariantType::GraphicsVariantTypeNone)
 	{
 		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialSemanticPtr& it) { return it->getName() == semantc->getName();});
 		if (it == _semantics.end())
@@ -154,46 +154,46 @@ MaterialManager::setMaterialPass(MaterialPassPtr& pass) noexcept
 			auto type = semantic->getType();
 			switch (type)
 			{
-			case ray::ShaderVariantType::Bool:
+			case ray::GraphicsVariantType::GraphicsVariantTypeBool:
 				it->assign(semantic->getBool());
 				break;
-			case ray::ShaderVariantType::Int:
+			case ray::GraphicsVariantType::GraphicsVariantTypeInt:
 				it->assign(semantic->getInt());
 				break;
-			case ray::ShaderVariantType::Int2:
+			case ray::GraphicsVariantType::GraphicsVariantTypeInt2:
 				it->assign(semantic->getInt2());
 				break;
-			case ray::ShaderVariantType::Float:
+			case ray::GraphicsVariantType::GraphicsVariantTypeFloat:
 				it->assign(semantic->getFloat());
 				break;
-			case ray::ShaderVariantType::Float2:
+			case ray::GraphicsVariantType::GraphicsVariantTypeFloat2:
 				it->assign(semantic->getFloat2());
 				break;
-			case ray::ShaderVariantType::Float3:
+			case ray::GraphicsVariantType::GraphicsVariantTypeFloat3:
 				it->assign(semantic->getFloat3());
 				break;
-			case ray::ShaderVariantType::Float4:
+			case ray::GraphicsVariantType::GraphicsVariantTypeFloat4:
 				it->assign(semantic->getFloat4());
 				break;
-			case ray::ShaderVariantType::Float3x3:
+			case ray::GraphicsVariantType::GraphicsVariantTypeFloat3x3:
 				it->assign(semantic->getFloat3x3());
 				break;
-			case ray::ShaderVariantType::Float4x4:
+			case ray::GraphicsVariantType::GraphicsVariantTypeFloat4x4:
 				it->assign(semantic->getFloat4x4());
 				break;
-			case ray::ShaderVariantType::FloatArray:
+			case ray::GraphicsVariantType::GraphicsVariantTypeFloatArray:
 				it->assign(semantic->getFloatArray());
 				break;
-			case ray::ShaderVariantType::Float2Array:
+			case ray::GraphicsVariantType::GraphicsVariantTypeFloat2Array:
 				it->assign(semantic->getFloat2Array());
 				break;
-			case ray::ShaderVariantType::Float3Array:
+			case ray::GraphicsVariantType::GraphicsVariantTypeFloat3Array:
 				it->assign(semantic->getFloat3Array());
 				break;
-			case ray::ShaderVariantType::Float4Array:
+			case ray::GraphicsVariantType::GraphicsVariantTypeFloat4Array:
 				it->assign(semantic->getFloat4Array());
 				break;
-			case ray::ShaderVariantType::Texture:
+			case ray::GraphicsVariantType::GraphicsVariantTypeTexture:
 				it->assign(semantic->getTexture());
 				break;
 			default:

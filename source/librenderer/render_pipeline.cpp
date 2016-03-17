@@ -78,28 +78,28 @@ RenderPipeline::open(WindHandle window, std::uint32_t w, std::uint32_t h) except
 {
 	_graphicsDevice = std::make_shared<RenderDevice>();
 	_graphicsDevice->open(window);
-	_graphicsDevice->setSwapInterval(SwapInterval::Free);
+	_graphicsDevice->setSwapInterval(SwapInterval::SwapIntervalFree);
 
 	_graphicsContext = _graphicsDevice->getGraphicsContext();
 
 	_materialManager = std::make_shared<MaterialManager>();
 	_materialManager->open(_graphicsDevice);
 
-	_materialMatModel = _materialManager->createSemantic("matModel", ShaderVariantType::Float4x4);
-	_materialMatModelInverse = _materialManager->createSemantic("matModelInverse", ShaderVariantType::Float4x4);
-	_materialMatModelInverseTranspose = _materialManager->createSemantic("matModelInverseTranspose", ShaderVariantType::Float4x4);
-	_materialMatProject = _materialManager->createSemantic("matProject", ShaderVariantType::Float4x4);
-	_materialMatProjectInverse = _materialManager->createSemantic("matProjectInverse", ShaderVariantType::Float4x4);
-	_materialMatView = _materialManager->createSemantic("matView", ShaderVariantType::Float4x4);
-	_materialMatViewInverse = _materialManager->createSemantic("matViewInverse", ShaderVariantType::Float4x4);
-	_materialMatViewInverseTranspose = _materialManager->createSemantic("matViewInverseTranspose", ShaderVariantType::Float4x4);
-	_materialMatViewProject = _materialManager->createSemantic("matViewProject", ShaderVariantType::Float4x4);
-	_materialMatViewProjectInverse = _materialManager->createSemantic("matViewProjectInverse", ShaderVariantType::Float4x4);
-	_materialCameraAperture = _materialManager->createSemantic("CameraAperture", ShaderVariantType::Float);
-	_materialCameraFar = _materialManager->createSemantic("CameraFar", ShaderVariantType::Float);
-	_materialCameraNear = _materialManager->createSemantic("CameraNear", ShaderVariantType::Float);
-	_materialCameraPosition = _materialManager->createSemantic("CameraPosition", ShaderVariantType::Float3);
-	_materialCameraDirection = _materialManager->createSemantic("CameraDirection", ShaderVariantType::Float3);
+	_materialMatModel = _materialManager->createSemantic("matModel", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
+	_materialMatModelInverse = _materialManager->createSemantic("matModelInverse", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
+	_materialMatModelInverseTranspose = _materialManager->createSemantic("matModelInverseTranspose", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
+	_materialMatProject = _materialManager->createSemantic("matProject", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
+	_materialMatProjectInverse = _materialManager->createSemantic("matProjectInverse", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
+	_materialMatView = _materialManager->createSemantic("matView", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
+	_materialMatViewInverse = _materialManager->createSemantic("matViewInverse", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
+	_materialMatViewInverseTranspose = _materialManager->createSemantic("matViewInverseTranspose", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
+	_materialMatViewProject = _materialManager->createSemantic("matViewProject", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
+	_materialMatViewProjectInverse = _materialManager->createSemantic("matViewProjectInverse", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
+	_materialCameraAperture = _materialManager->createSemantic("CameraAperture", GraphicsVariantType::GraphicsVariantTypeFloat);
+	_materialCameraFar = _materialManager->createSemantic("CameraFar", GraphicsVariantType::GraphicsVariantTypeFloat);
+	_materialCameraNear = _materialManager->createSemantic("CameraNear", GraphicsVariantType::GraphicsVariantTypeFloat);
+	_materialCameraPosition = _materialManager->createSemantic("CameraPosition", GraphicsVariantType::GraphicsVariantTypeFloat3);
+	_materialCameraDirection = _materialManager->createSemantic("CameraDirection", GraphicsVariantType::GraphicsVariantTypeFloat3);
 
 	_dataManager = std::make_shared<DefaultRenderDataManager>();
 
@@ -318,7 +318,7 @@ RenderPipeline::createRenderTexture(const GraphicsRenderTextureDesc& desc) noexc
 }
 
 GraphicsRenderTexturePtr
-RenderPipeline::createRenderTexture(std::uint32_t w, std::uint32_t h, TextureDim dim, TextureFormat format) noexcept
+RenderPipeline::createRenderTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept
 {
 	assert(_graphicsDevice);
 	auto texture = this->createTexture(w, h, dim, format);
@@ -361,14 +361,14 @@ RenderPipeline::setRenderTextureLayer(GraphicsRenderTexturePtr target, int layer
 }
 
 void
-RenderPipeline::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
+RenderPipeline::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
 {
 	assert(_graphicsDevice);
 	_graphicsDevice->clearRenderTexture(flags, color, depth, stencil);
 }
 
 void
-RenderPipeline::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+RenderPipeline::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
 	assert(_graphicsDevice);
 	_graphicsDevice->clearRenderTexture(flags, color, depth, stencil, i);
@@ -382,7 +382,7 @@ RenderPipeline::discradRenderTexture() noexcept
 }
 
 void
-RenderPipeline::readRenderTexture(GraphicsRenderTexturePtr texture, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+RenderPipeline::readRenderTexture(GraphicsRenderTexturePtr texture, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
 	assert(_graphicsDevice);
 	_graphicsDevice->readRenderTexture(texture, pfd, w, h, data);
@@ -403,7 +403,7 @@ RenderPipeline::createTexture(const GraphicsTextureDesc& desc) noexcept
 }
 
 GraphicsTexturePtr
-RenderPipeline::createTexture(std::uint32_t w, std::uint32_t h, TextureDim dim, TextureFormat format) noexcept
+RenderPipeline::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept
 {
 	assert(_graphicsDevice);
 	GraphicsTextureDesc textureDesc;
@@ -423,22 +423,42 @@ RenderPipeline::createTexture(const std::string& name) except
 		Image image;
 		if (image.load(*stream))
 		{
-			TextureFormat format = TextureFormat::R8G8B8A8;
+			GraphicsFormat format = GraphicsFormat::GraphicsFormatUndefined;
 
-			if (image.getImageType() == ImageType::dds1)
-				format = TextureFormat::RGBA_DXT1;
-			else if (image.getImageType() == ImageType::dds3)
-				format = TextureFormat::RGBA_DXT3;
-			else if (image.getImageType() == ImageType::dds5)
-				format = TextureFormat::RGBA_DXT5;
-			else if (image.getImageType() == ImageType::ati2)
-				format = TextureFormat::RG_ATI2;
+			if (image.getImageType() == ImageType::ImageTypeBC1RGBU)
+				format = GraphicsFormat::GraphicsFormatBC1RGBUNormBlock;
+			else if (image.getImageType() == ImageType::ImageTypeBC1RGBAU)
+				format = GraphicsFormat::GraphicsFormatBC1RGBAUNormBlock;
+			else if (image.getImageType() == ImageType::ImageTypeBC1RGBSRGB)
+				format = GraphicsFormat::GraphicsFormatBC1RGBSRGBBlock;
+			else if (image.getImageType() == ImageType::ImageTypeBC1RGBASRGB)
+				format = GraphicsFormat::GraphicsFormatBC1RGBASRGBBlock;
+			else if (image.getImageType() == ImageType::ImageTypeBC3U)
+				format = GraphicsFormat::GraphicsFormatBC3UNormBlock;
+			else if (image.getImageType() == ImageType::ImageTypeBC3SRGB)
+				format = GraphicsFormat::GraphicsFormatBC3SRGBBlock;
+			else if (image.getImageType() == ImageType::ImageTypeBC4U)
+				format = GraphicsFormat::GraphicsFormatBC4UNormBlock;
+			else if (image.getImageType() == ImageType::ImageTypeBC4S)
+				format = GraphicsFormat::GraphicsFormatBC4SNormBlock;
+			else if (image.getImageType() == ImageType::ImageTypeBC5U)
+				format = GraphicsFormat::GraphicsFormatBC5UNormBlock;
+			else if (image.getImageType() == ImageType::ImageTypeBC5S)
+				format = GraphicsFormat::GraphicsFormatBC5SNormBlock;
+			else if (image.getImageType() == ImageType::ImageTypeBC6HUFloat)
+				format = GraphicsFormat::GraphicsFormatBC6HUFloatBlock;
+			else if (image.getImageType() == ImageType::ImageTypeBC6HSFloat)
+				format = GraphicsFormat::GraphicsFormatBC6HSFloatBlock;
+			else if (image.getImageType() == ImageType::ImageTypeBC7U)
+				format = GraphicsFormat::GraphicsFormatBC7UNormBlock;
+			else if (image.getImageType() == ImageType::ImageTypeBC7SRGB)
+				format = GraphicsFormat::GraphicsFormatBC7SRGBBlock;
 			else
 			{
 				if (image.bpp() == 24)
-					format = TextureFormat::R8G8B8;
+					format = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
 				else if (image.bpp() == 32)
-					format = TextureFormat::R8G8B8A8;
+					format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
 				else
 				{
 					assert(false);
@@ -449,7 +469,7 @@ RenderPipeline::createTexture(const std::string& name) except
 			textureDesc.setMipLevel(image.getMipLevel());
 			textureDesc.setMipSize(image.size());
 			textureDesc.setSize(image.width(), image.height());
-			textureDesc.setTexDim(TextureDim::DIM_2D);
+			textureDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 			textureDesc.setTexFormat(format);
 			textureDesc.setStream(image.data());
 
@@ -544,40 +564,40 @@ RenderPipeline::createRenderBuffer(const MeshProperty& mesh) except
 	if (!vertices.empty())
 	{
 		if (vertices.size() == numVertex)
-			components.push_back(VertexComponent("POSITION", 0, VertexFormat::Float3));
+			components.push_back(VertexComponent("POSITION", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
 	}
 
 	auto& colors = mesh.getColorArray();
 	if (!colors.empty())
 	{
 		if (colors.size() == numVertex)
-			components.push_back(VertexComponent("COLOR", 0, VertexFormat::Float4));
+			components.push_back(VertexComponent("COLOR", 0, GraphicsFormat::GraphicsFormatR32G32B32A32SFloat));
 	}
 
 	auto& normals = mesh.getNormalArray();
 	if (!normals.empty())
 	{
 		if (normals.size() == numVertex)
-			components.push_back(VertexComponent("NORMAL", 0, VertexFormat::Float3));
+			components.push_back(VertexComponent("NORMAL", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
 	}
 
 	auto& texcoords = mesh.getTexcoordArray();
 	if (!texcoords.empty())
 	{
 		if (texcoords.size() == numVertex)
-			components.push_back(VertexComponent("TEXCOORD", 0, VertexFormat::Float2));
+			components.push_back(VertexComponent("TEXCOORD", 0, GraphicsFormat::GraphicsFormatR32G32SFloat));
 	}
 
 	auto& tangent = mesh.getTangentArray();
 	if (!tangent.empty())
 	{
 		if (tangent.size() == numVertex)
-			components.push_back(VertexComponent("TANGENT", 0, VertexFormat::Float3));
+			components.push_back(VertexComponent("TANGENT", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
 	}
 
 	GraphicsLayoutDesc layout;
 	layout.setVertexComponents(components);
-	layout.setIndexType(IndexType::Uint32);
+	layout.setIndexType(GraphicsIndexType::GraphicsIndexTypeUint32);
 
 	GraphicsDataPtr vb;
 
@@ -636,6 +656,7 @@ RenderPipeline::createRenderBuffer(const MeshProperty& mesh) except
 		}
 
 		GraphicsDataDesc _vb;
+		_vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
 		_vb.setUsage(UsageFlags::MAP_READ_BIT);
 		_vb.setStream((std::uint8_t*)_data.data());
 		_vb.setStreamSize(_data.size());
@@ -650,7 +671,7 @@ RenderPipeline::createRenderBuffer(const MeshProperty& mesh) except
 	if (numIndices > 0)
 	{
 		GraphicsDataDesc _ib;
-		_ib.setType(GraphicsStream::IBO);
+		_ib.setType(GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
 		_ib.setUsage(UsageFlags::MAP_READ_BIT);
 		_ib.setStride(sizeof(std::uint32_t));
 		_ib.setStream((std::uint8_t*)faces.data());
@@ -684,17 +705,17 @@ RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) except
 	GraphicsLayoutDesc layout;
 
 	if (!meshes.front()->getVertexArray().empty())
-		layout.addComponent(VertexComponent("POSITION", 0, VertexFormat::Float3));
+		layout.addComponent(VertexComponent("POSITION", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
 	if (!meshes.front()->getColorArray().empty())
-		layout.addComponent(VertexComponent("COLOR", 0, VertexFormat::Float4));
+		layout.addComponent(VertexComponent("COLOR", 0, GraphicsFormat::GraphicsFormatR32G32B32A32SFloat));
 	if (!meshes.front()->getNormalArray().empty())
-		layout.addComponent(VertexComponent("NORMAL", 0, VertexFormat::Float3));
+		layout.addComponent(VertexComponent("NORMAL", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
 	if (!meshes.front()->getTexcoordArray().empty())
-		layout.addComponent(VertexComponent("TEXCOORD", 0, VertexFormat::Float2));
+		layout.addComponent(VertexComponent("TEXCOORD", 0, GraphicsFormat::GraphicsFormatR32G32SFloat));
 	if (!meshes.front()->getTangentArray().empty())
-		layout.addComponent(VertexComponent("TANGENT", 0, VertexFormat::Float3));
+		layout.addComponent(VertexComponent("TANGENT", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
 	if (!meshes.front()->getFaceArray().empty())
-		layout.setIndexType(IndexType::Uint32);
+		layout.setIndexType(GraphicsIndexType::GraphicsIndexTypeUint32);
 
 	GraphicsDataPtr vb;
 
@@ -780,6 +801,7 @@ RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) except
 		}
 
 		GraphicsDataDesc _vb;
+		_vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
 		_vb.setUsage(UsageFlags::MAP_READ_BIT);
 		_vb.setStream((std::uint8_t*)_data.data());
 		_vb.setStreamSize(_data.size());
@@ -815,7 +837,7 @@ RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) except
 		}
 
 		GraphicsDataDesc _ib;
-		_ib.setType(GraphicsStream::IBO);
+		_ib.setType(GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
 		_ib.setUsage(UsageFlags::MAP_READ_BIT);
 		_ib.setStream((std::uint8_t*)faces.data());
 		_ib.setStride(sizeof(std::uint32_t));

@@ -67,7 +67,7 @@
             <state name="vertex" value="OpaqueVS"/>
             <state name="fragment" value="OpaquePS"/>
 
-            <state name="primitive" value="triangle_or_line" />
+            <state name="primitive" value="triangle" />
 
             <state name="cullmode" value="none"/>
         </pass>

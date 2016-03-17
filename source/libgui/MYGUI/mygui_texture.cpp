@@ -90,16 +90,16 @@ MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::Pix
 {
 	MYGUI_PLATFORM_ASSERT(!_texture, "Texture already exist");
 
-	TextureFormat pixelFormat = TextureFormat::R8G8B8;
+	GraphicsFormat pixelFormat = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
 	_numElemBytes = 0;
 	if (_format == MyGUI::PixelFormat::R8G8B8)
 	{
-		pixelFormat = TextureFormat::R8G8B8;
+		pixelFormat = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
 		_numElemBytes = 3;
 	}
 	else if (_format == MyGUI::PixelFormat::R8G8B8A8)
 	{
-		pixelFormat = TextureFormat::R8G8B8A8;
+		pixelFormat = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
 		_numElemBytes = 4;
 	}
 	else
@@ -117,8 +117,8 @@ MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::Pix
 	GraphicsTextureDesc textureDesc;
 	textureDesc.setWidth(_width);
 	textureDesc.setHeight(_height);
-	textureDesc.setSamplerFilter(SamplerFilter::Linear);
-	textureDesc.setTexDim(TextureDim::DIM_2D);
+	textureDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
+	textureDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 	textureDesc.setTexFormat(pixelFormat);
 	textureDesc.setStream(_data);
 
@@ -294,7 +294,7 @@ void
 MyGuiRenderTexture::begin() noexcept
 {
 	RenderSystem::instance()->getRenderPipeline()->setRenderTexture(_renderTexture);
-	RenderSystem::instance()->getRenderPipeline()->clearRenderTexture(ClearFlags::All, Vector4(0, 0, 0, 0), 1.0, 0);
+	RenderSystem::instance()->getRenderPipeline()->clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsAll, Vector4(0, 0, 0, 0), 1.0, 0);
 }
 
 void 

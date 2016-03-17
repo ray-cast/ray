@@ -59,24 +59,16 @@ bool OGLFeatures::NV_vertex_buffer_unified_memory = 0;
 #endif
 
 GLenum
-OGLTypes::asVertexType(VertexType type) noexcept
+OGLTypes::asVertexType(GraphicsVertexType type) noexcept
 {
 	switch (type)
 	{
-	case VertexType::Point:
-		return GL_POINTS;
-	case VertexType::Line:
-		return GL_LINES;
-	case VertexType::Triangle:
-		return GL_TRIANGLES;
-	case VertexType::Fan:
-		return GL_TRIANGLE_FAN;
-	case VertexType::PointOrLine:
-		return GL_POINTS;
-	case VertexType::TriangleOrLine:
-		return GL_TRIANGLES;
-	case VertexType::FanOrLine:
-		return GL_TRIANGLE_FAN;
+	case GraphicsVertexType::GraphicsVertexTypePointList:     return GL_POINTS;
+	case GraphicsVertexType::GraphicsVertexTypeLineList:      return GL_LINES;
+	case GraphicsVertexType::GraphicsVertexTypeLineStrip:     return GL_LINE_STRIP;
+	case GraphicsVertexType::GraphicsVertexTypeTriangleList:  return GL_TRIANGLES;
+	case GraphicsVertexType::GraphicsVertexTypeTriangleStrip: return GL_TRIANGLE_STRIP;
+	case GraphicsVertexType::GraphicsVertexTypeTriangleFan:   return GL_TRIANGLE_FAN;
 	default:
 		GL_PLATFORM_LOG("Invalid vertex type");
 		return false;
@@ -84,87 +76,152 @@ OGLTypes::asVertexType(VertexType type) noexcept
 }
 
 GLenum
-OGLTypes::asVertexFormat(VertexFormat format) noexcept
+OGLTypes::asVertexFormat(GraphicsFormat format) noexcept
 {
 	switch (format)
 	{
-	case VertexFormat::Char:
-	case VertexFormat::Char2:
-	case VertexFormat::Char3:
-	case VertexFormat::Char4:
+	case GraphicsFormatR8SNorm:
+	case GraphicsFormatR8SScaled:
+	case GraphicsFormatR8SInt:
+	case GraphicsFormatR8SRGB:
+	case GraphicsFormatR8G8SNorm:
+	case GraphicsFormatR8G8SScaled:
+	case GraphicsFormatR8G8SInt:
+	case GraphicsFormatR8G8SRGB:
+	case GraphicsFormatR8G8B8SNorm:
+	case GraphicsFormatR8G8B8SScaled:
+	case GraphicsFormatR8G8B8SInt:
+	case GraphicsFormatR8G8B8SRGB:
+	case GraphicsFormatB8G8R8SNorm:
+	case GraphicsFormatB8G8R8SScaled:
+	case GraphicsFormatB8G8R8SInt:
+	case GraphicsFormatB8G8R8SRGB:
+	case GraphicsFormatR8G8B8A8SNorm:
+	case GraphicsFormatR8G8B8A8SScaled:
+	case GraphicsFormatR8G8B8A8SInt:
+	case GraphicsFormatR8G8B8A8SRGB:
+	case GraphicsFormatB8G8R8A8SNorm:
+	case GraphicsFormatB8G8R8A8SScaled:
+	case GraphicsFormatB8G8R8A8SInt:
+	case GraphicsFormatB8G8R8A8SRGB:
+	case GraphicsFormatA8B8G8R8SNormPack32:
+	case GraphicsFormatA8B8G8R8SScaledPack32:
+	case GraphicsFormatA8B8G8R8SIntPack32:
+	case GraphicsFormatA8B8G8R8SRGBPack32:
 		return GL_BYTE;
-	case VertexFormat::Short:
-	case VertexFormat::Short2:
-	case VertexFormat::Short3:
-	case VertexFormat::Short4:
-		return GL_SHORT;
-	case VertexFormat::Int:
-	case VertexFormat::Int2:
-	case VertexFormat::Int3:
-	case VertexFormat::Int4:
-		return GL_INT;
-	case VertexFormat::Uchar:
-	case VertexFormat::Uchar2:
-	case VertexFormat::Uchar3:
-	case VertexFormat::Uchar4:
+	case GraphicsFormatR8UNorm:
+	case GraphicsFormatR8UScaled:
+	case GraphicsFormatR8UInt:
+	case GraphicsFormatR8G8UNorm:
+	case GraphicsFormatR8G8UScaled:
+	case GraphicsFormatR8G8UInt:
+	case GraphicsFormatR8G8B8UNorm:
+	case GraphicsFormatR8G8B8UScaled:
+	case GraphicsFormatR8G8B8UInt:
+	case GraphicsFormatB8G8R8UNorm:
+	case GraphicsFormatB8G8R8UScaled:
+	case GraphicsFormatB8G8R8UInt:
+	case GraphicsFormatR8G8B8A8UNorm:
+	case GraphicsFormatR8G8B8A8UScaled:
+	case GraphicsFormatR8G8B8A8UInt:
+	case GraphicsFormatB8G8R8A8UNorm:
+	case GraphicsFormatB8G8R8A8UScaled:
+	case GraphicsFormatB8G8R8A8UInt:
+	case GraphicsFormatA8B8G8R8UNormPack32:
+	case GraphicsFormatA8B8G8R8UScaledPack32:
+	case GraphicsFormatA8B8G8R8UIntPack32:
 		return GL_UNSIGNED_BYTE;
-	case VertexFormat::Ushort:
-	case VertexFormat::Ushort2:
-	case VertexFormat::Ushort3:
-	case VertexFormat::Ushort4:
+	case GraphicsFormatR16SNorm:
+	case GraphicsFormatR16SScaled:
+	case GraphicsFormatR16SInt:
+	case GraphicsFormatR16SFloat:
+	case GraphicsFormatR16G16SNorm:
+	case GraphicsFormatR16G16SScaled:
+	case GraphicsFormatR16G16SInt:
+	case GraphicsFormatR16G16SFloat:
+	case GraphicsFormatR16G16B16SNorm:
+	case GraphicsFormatR16G16B16SScaled:
+	case GraphicsFormatR16G16B16SInt:
+	case GraphicsFormatR16G16B16SFloat:
+	case GraphicsFormatR16G16B16A16SNorm:
+	case GraphicsFormatR16G16B16A16SScaled:
+	case GraphicsFormatR16G16B16A16SInt:
+	case GraphicsFormatR16G16B16A16SFloat:
+		return GL_SHORT;
+	case GraphicsFormatR16UNorm:
+	case GraphicsFormatR16UScaled:
+	case GraphicsFormatR16UInt:
+	case GraphicsFormatR16G16UNorm:
+	case GraphicsFormatR16G16UScaled:
+	case GraphicsFormatR16G16UInt:
+	case GraphicsFormatR16G16B16UNorm:
+	case GraphicsFormatR16G16B16UScaled:
+	case GraphicsFormatR16G16B16UInt:
+	case GraphicsFormatR16G16B16A16UNorm:
+	case GraphicsFormatR16G16B16A16UScaled:
+	case GraphicsFormatR16G16B16A16UInt:
 		return GL_UNSIGNED_SHORT;
-	case VertexFormat::Uint:
-	case VertexFormat::Uint2:
-	case VertexFormat::Uint3:
-	case VertexFormat::Uint4:
+	case GraphicsFormatR32SInt:
+	case GraphicsFormatR32G32SInt:
+	case GraphicsFormatR32G32B32SInt:
+	case GraphicsFormatR32G32B32A32SInt:
+		return GL_INT;
+	case GraphicsFormatR32UInt:
+	case GraphicsFormatR32G32UInt:
+	case GraphicsFormatR32G32B32UInt:
+	case GraphicsFormatR32G32B32A32UInt:
 		return GL_UNSIGNED_INT;
-	case VertexFormat::Float:
-	case VertexFormat::Float2:
-	case VertexFormat::Float3:
-	case VertexFormat::Float4:
-	case VertexFormat::Float3x3:
-	case VertexFormat::Float4x4:
+	case GraphicsFormatR32SFloat:
+	case GraphicsFormatR32G32SFloat:
+	case GraphicsFormatR32G32B32SFloat:
+	case GraphicsFormatR32G32B32A32SFloat:
 		return GL_FLOAT;
+	case GraphicsFormatR64SInt:
+	case GraphicsFormatR64G64SInt:
+	case GraphicsFormatR64G64B64SInt:
+	case GraphicsFormatR64G64B64A64SInt:
+		return GL_INT64_ARB;
+	case GraphicsFormatR64UInt:
+	case GraphicsFormatR64G64UInt:
+	case GraphicsFormatR64G64B64UInt:
+	case GraphicsFormatR64G64B64A64UInt:
+		return GL_UNSIGNED_INT64_ARB;
+	case GraphicsFormatR64SFloat:
+	case GraphicsFormatR64G64SFloat:
+	case GraphicsFormatR64G64B64SFloat:
+	case GraphicsFormatR64G64B64A64SFloat:
+		return GL_DOUBLE;
 	default:
-		GL_PLATFORM_LOG("Invalid vertex format");
-		return false;
+		return GL_INVALID_ENUM;
+		break;
 	}
 }
 
 GLenum
-OGLTypes::asIndexType(IndexType type) noexcept
+OGLTypes::asIndexType(GraphicsIndexType type) noexcept
 {
 	switch (type)
 	{
-	case IndexType::None:
-		return GL_NONE;
-	case IndexType::Uint16:
-		return GL_UNSIGNED_SHORT;
-	case IndexType::Uint32:
-		return GL_UNSIGNED_INT;
+	case GraphicsIndexType::GraphicsIndexTypeNone:   return GL_NONE;
+	case GraphicsIndexType::GraphicsIndexTypeUint16: return GL_UNSIGNED_SHORT;
+	case GraphicsIndexType::GraphicsIndexTypeUint32: return GL_UNSIGNED_INT;
 	default:
 		GL_PLATFORM_LOG("Invalid index type");
-		return false;
+		return GL_INVALID_ENUM;
 	}
 }
 
 GLenum
-OGLTypes::asShaderType(ShaderType type) noexcept
+OGLTypes::asShaderType(GraphicsShaderStage stage) noexcept
 {
-	switch (type)
+	switch (stage)
 	{
-	case ShaderType::Vertex:
-		return GL_VERTEX_SHADER;
-	case ShaderType::Fragment:
-		return GL_FRAGMENT_SHADER;
-	case ShaderType::Compute:
-		return GL_COMPUTE_SHADER;
-	case ShaderType::Geometry:
-		return GL_GEOMETRY_SHADER;
-	case ShaderType::TessControl:
-		return GL_TESS_CONTROL_SHADER;
-	case ShaderType::TessEvaluation:
-		return GL_TESS_EVALUATION_SHADER;
+	case GraphicsShaderStage::GraphicsShaderStageVertex:         return GL_VERTEX_SHADER;
+	case GraphicsShaderStage::GraphicsShaderStageFragment:       return GL_FRAGMENT_SHADER;
+	case GraphicsShaderStage::GraphicsShaderStageCompute:        return GL_COMPUTE_SHADER;
+	case GraphicsShaderStage::GraphicsShaderStageGeometry:       return GL_GEOMETRY_SHADER;
+	case GraphicsShaderStage::GraphicsShaderStageTessControl:    return GL_TESS_CONTROL_SHADER;
+	case GraphicsShaderStage::GraphicsShaderStageTessEvaluation: return GL_TESS_EVALUATION_SHADER;
 	default:
 		GL_PLATFORM_LOG("Invalid shader type");
 		return GL_INVALID_ENUM;
@@ -172,16 +229,16 @@ OGLTypes::asShaderType(ShaderType type) noexcept
 }
 
 GLenum
-OGLTypes::asTextureTarget(TextureDim target, bool multisampler) noexcept
+OGLTypes::asTextureTarget(GraphicsTextureDim target, bool multisampler) noexcept
 {
-	if (target == TextureDim::DIM_2D)
+	if (target == GraphicsTextureDim::GraphicsTextureDim2D)
 	{
 		if (multisampler)
 			return GL_TEXTURE_2D_MULTISAMPLE;
 		else
 			return GL_TEXTURE_2D;
 	}
-	else if (target == TextureDim::DIM_3D)
+	else if (target == GraphicsTextureDim::GraphicsTextureDim3D)
 	{
 		if (!multisampler)
 			return GL_TEXTURE_3D;
@@ -191,21 +248,14 @@ OGLTypes::asTextureTarget(TextureDim target, bool multisampler) noexcept
 			return GL_INVALID_ENUM;
 		}
 	}
-	else if (target == TextureDim::DIM_2D_ARRAY)
+	else if (target == GraphicsTextureDim::GraphicsTextureDim2DArray)
 	{
 		if (multisampler)
 			return GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
 		else
 			return GL_TEXTURE_2D_ARRAY;
 	}
-	else if (target == TextureDim::DIM_3D_ARRAY)
-	{
-		if (multisampler)
-			return GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
-		else
-			return GL_TEXTURE_2D;
-	}
-	else if (target == TextureDim::DIM_CUBE)
+	else if (target == GraphicsTextureDim::GraphicsTextureDimCube)
 	{
 		if (!multisampler)
 			return GL_TEXTURE_CUBE_MAP;
@@ -215,7 +265,7 @@ OGLTypes::asTextureTarget(TextureDim target, bool multisampler) noexcept
 			return GL_INVALID_ENUM;
 		}
 	}
-	else if (target == TextureDim::DIM_CUBE_ARRAY)
+	else if (target == GraphicsTextureDim::GraphicsTextureDimCubeArray)
 	{
 		if (!multisampler)
 			return GL_TEXTURE_CUBE_MAP_ARRAY;
@@ -231,382 +281,699 @@ OGLTypes::asTextureTarget(TextureDim target, bool multisampler) noexcept
 }
 
 GLenum
-OGLTypes::asTextureFormat(TextureFormat format) noexcept
+OGLTypes::asTextureFormat(GraphicsFormat format) noexcept
 {
 	switch (format)
 	{
-	case TextureFormat::STENCIL8:
-		return GL_STENCIL_INDEX;
-	case TextureFormat::DEPTH_COMPONENT16:
-	case TextureFormat::DEPTH_COMPONENT24:
-	case TextureFormat::DEPTH_COMPONENT32:
-		return GL_DEPTH_COMPONENT;
-	case TextureFormat::DEPTH24_STENCIL8:
-	case TextureFormat::DEPTH32_STENCIL8:
-		return GL_DEPTH_STENCIL;
-	case TextureFormat::R5G6B5:
-	case TextureFormat::R8G8B8:
-	case TextureFormat::R16G16B16:
-	case TextureFormat::R11G11B10F:
-	case TextureFormat::R16G16B16F:
-	case TextureFormat::R32G32B32F:
-	case TextureFormat::R8G8B8_SNORM:
-	case TextureFormat::R16G16B16_SNORM:
-		return GL_RGB;
-	case TextureFormat::R4G4B4A4:
-	case TextureFormat::R5G5B5A1:
-	case TextureFormat::R8G8B8A8:
-	case TextureFormat::R10G10B10A2:
-	case TextureFormat::R16G16B16A16:
-	case TextureFormat::R16G16B16A16F:
-	case TextureFormat::R32G32B32A32F:
-	case TextureFormat::R8G8B8A8_SNORM:
-	case TextureFormat::R16G16B16A16_SNORM:
-		return GL_RGBA;
-	case TextureFormat::SR8G8B8:
-		return GL_SRGB;
-	case TextureFormat::SR8G8B8A8:
-		return GL_SRGB_ALPHA_EXT;
-	case TextureFormat::R8:
-	case TextureFormat::R16F:
-	case TextureFormat::R32F:
+	case GraphicsFormatR8UNorm:
+	case GraphicsFormatR8SNorm:
+	case GraphicsFormatR8UScaled:
+	case GraphicsFormatR8SScaled:
+	case GraphicsFormatR8UInt:
+	case GraphicsFormatR8SInt:
+	case GraphicsFormatR16UNorm:
+	case GraphicsFormatR16SNorm:
+	case GraphicsFormatR16UScaled:
+	case GraphicsFormatR16SScaled:
+	case GraphicsFormatR16UInt:
+	case GraphicsFormatR16SInt:
+	case GraphicsFormatR16SFloat:
+	case GraphicsFormatR32UInt:
+	case GraphicsFormatR32SInt:
+	case GraphicsFormatR32SFloat:
+	case GraphicsFormatR64UInt:
+	case GraphicsFormatR64SInt:
+	case GraphicsFormatR64SFloat:
 		return GL_RED;
-	case TextureFormat::RG16F:
-	case TextureFormat::RG32F:
+	case GraphicsFormatR4G4UNormPack8:
+	case GraphicsFormatR8G8UNorm:
+	case GraphicsFormatR8G8SNorm:
+	case GraphicsFormatR8G8UScaled:
+	case GraphicsFormatR8G8SScaled:
+	case GraphicsFormatR8G8UInt:
+	case GraphicsFormatR8G8SInt:
+	case GraphicsFormatR16G16UNorm:
+	case GraphicsFormatR16G16SNorm:
+	case GraphicsFormatR16G16UScaled:
+	case GraphicsFormatR16G16SScaled:
+	case GraphicsFormatR16G16UInt:
+	case GraphicsFormatR16G16SInt:
+	case GraphicsFormatR16G16SFloat:
+	case GraphicsFormatR32G32UInt:
+	case GraphicsFormatR32G32SInt:
+	case GraphicsFormatR32G32SFloat:
+	case GraphicsFormatR64G64UInt:
+	case GraphicsFormatR64G64SInt:
+	case GraphicsFormatR64G64SFloat:
 		return GL_RG;
-	case TextureFormat::RGB_DXT1:
-	case TextureFormat::RGBA_DXT1:
-	case TextureFormat::RGBA_DXT3:
-	case TextureFormat::RGBA_DXT5:
-	case TextureFormat::RG_ATI2:
+	case GraphicsFormatR5G6B5UNormPack16:
+	case GraphicsFormatR8G8B8UNorm:
+	case GraphicsFormatR8G8B8SNorm:
+	case GraphicsFormatR8G8B8UScaled:
+	case GraphicsFormatR8G8B8SScaled:
+	case GraphicsFormatR8G8B8UInt:
+	case GraphicsFormatR8G8B8SInt:
+	case GraphicsFormatR16G16B16UNorm:
+	case GraphicsFormatR16G16B16SNorm:
+	case GraphicsFormatR16G16B16UScaled:
+	case GraphicsFormatR16G16B16SScaled:
+	case GraphicsFormatR16G16B16UInt:
+	case GraphicsFormatR16G16B16SInt:
+	case GraphicsFormatR16G16B16SFloat:
+	case GraphicsFormatR64G64B64UInt:
+	case GraphicsFormatR64G64B64SInt:
+	case GraphicsFormatR64G64B64SFloat:
+		return GL_RGB;
+	case GraphicsFormatB5G6R5UNormPack16:
+	case GraphicsFormatB8G8R8UNorm:
+	case GraphicsFormatB8G8R8SNorm:
+	case GraphicsFormatB8G8R8UScaled:
+	case GraphicsFormatB8G8R8SScaled:
+	case GraphicsFormatB8G8R8UInt:
+	case GraphicsFormatB8G8R8SInt:
+	case GraphicsFormatR32G32B32UInt:
+	case GraphicsFormatR32G32B32SInt:
+	case GraphicsFormatR32G32B32SFloat:
+	case GraphicsFormatB10G11R11UFloatPack32:
+		return GL_BGR;
+	case GraphicsFormatR4G4B4A4UNormPack16:
+	case GraphicsFormatR5G5B5A1UNormPack16:
+	case GraphicsFormatA1R5G5B5UNormPack16:
+	case GraphicsFormatR8G8B8A8UNorm:
+	case GraphicsFormatR8G8B8A8SNorm:
+	case GraphicsFormatR8G8B8A8UScaled:
+	case GraphicsFormatR8G8B8A8SScaled:
+	case GraphicsFormatR8G8B8A8UInt:
+	case GraphicsFormatR8G8B8A8SInt:
+	case GraphicsFormatA2R10G10B10UNormPack32:
+	case GraphicsFormatA2R10G10B10SNormPack32:
+	case GraphicsFormatA2R10G10B10UScaledPack32:
+	case GraphicsFormatA2R10G10B10SScaledPack32:
+	case GraphicsFormatA2R10G10B10UIntPack32:
+	case GraphicsFormatA2R10G10B10SIntPack32:
+	case GraphicsFormatR16G16B16A16UNorm:
+	case GraphicsFormatR16G16B16A16SNorm:
+	case GraphicsFormatR16G16B16A16UScaled:
+	case GraphicsFormatR16G16B16A16SScaled:
+	case GraphicsFormatR16G16B16A16UInt:
+	case GraphicsFormatR16G16B16A16SInt:
+	case GraphicsFormatR16G16B16A16SFloat:
+	case GraphicsFormatR32G32B32A32UInt:
+	case GraphicsFormatR32G32B32A32SInt:
+	case GraphicsFormatR32G32B32A32SFloat:
+	case GraphicsFormatR64G64B64A64UInt:
+	case GraphicsFormatR64G64B64A64SInt:
+	case GraphicsFormatR64G64B64A64SFloat:
+		return GL_RGBA;
+	case GraphicsFormatB4G4R4A4UNormPack16:
+	case GraphicsFormatB5G5R5A1UNormPack16:
+	case GraphicsFormatB8G8R8A8UNorm:
+	case GraphicsFormatB8G8R8A8SNorm:
+	case GraphicsFormatB8G8R8A8UScaled:
+	case GraphicsFormatB8G8R8A8SScaled:
+	case GraphicsFormatB8G8R8A8UInt:
+	case GraphicsFormatB8G8R8A8SInt:
+	case GraphicsFormatA2B10G10R10UNormPack32:
+	case GraphicsFormatA2B10G10R10SNormPack32:
+	case GraphicsFormatA2B10G10R10UScaledPack32:
+	case GraphicsFormatA2B10G10R10SScaledPack32:
+	case GraphicsFormatA2B10G10R10UIntPack32:
+	case GraphicsFormatA2B10G10R10SIntPack32:
+		return GL_BGRA;
+	case GraphicsFormatA8B8G8R8UNormPack32:
+	case GraphicsFormatA8B8G8R8SNormPack32:
+	case GraphicsFormatA8B8G8R8UScaledPack32:
+	case GraphicsFormatA8B8G8R8SScaledPack32:
+	case GraphicsFormatA8B8G8R8UIntPack32:
+	case GraphicsFormatA8B8G8R8SIntPack32:
+		return GL_ABGR_EXT;
+	case GraphicsFormatR8SRGB:
+	case GraphicsFormatR8G8SRGB:
+	case GraphicsFormatR8G8B8SRGB:
+	case GraphicsFormatB8G8R8SRGB:
+		return GL_SRGB;
+	case GraphicsFormatR8G8B8A8SRGB:
+	case GraphicsFormatB8G8R8A8SRGB:
+	case GraphicsFormatA8B8G8R8SRGBPack32:
+		return GL_SRGB_ALPHA;
+	case GraphicsFormatD16UNorm:
+	case GraphicsFormatX8_D24UNormPack32:
+	case GraphicsFormatD32_SFLOAT:
+		return GL_DEPTH_COMPONENT;
+	case GraphicsFormatS8UInt:
+		return GL_STENCIL_INDEX;
+	case GraphicsFormatD16UNorm_S8UInt:
+	case GraphicsFormatD24UNorm_S8UInt:
+	case GraphicsFormatD32_SFLOAT_S8UInt:
+		return GL_DEPTH_STENCIL;
 	default:
-		GL_PLATFORM_LOG("Invalid texture format");
-		return GL_INVALID_ENUM;
+		GL_PLATFORM_ASSERT(false, "Invalid texture format");
 	}
+
+	return GL_INVALID_ENUM;
 }
 
 GLenum
-OGLTypes::asTextureType(TextureFormat format) noexcept
+OGLTypes::asTextureType(GraphicsFormat format) noexcept
 {
 	switch (format)
 	{
-	case TextureFormat::STENCIL8:
-		return GL_STENCIL_INDEX8;
-	case TextureFormat::DEPTH_COMPONENT16:
-	case TextureFormat::DEPTH_COMPONENT24:
-	case TextureFormat::DEPTH_COMPONENT32:
-		return GL_UNSIGNED_INT;
-	case TextureFormat::DEPTH24_STENCIL8:
-		return GL_UNSIGNED_INT_24_8;
-	case TextureFormat::DEPTH32_STENCIL8:
-		return GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
-	case TextureFormat::R4G4B4A4:
-		return GL_UNSIGNED_SHORT_4_4_4_4;
-	case TextureFormat::R5G6B5:
-		return GL_UNSIGNED_SHORT_5_6_5;
-	case TextureFormat::R5G5B5A1:
-		return GL_UNSIGNED_SHORT_5_6_5;
-	case TextureFormat::R8:
-	case TextureFormat::R8G8B8:
-	case TextureFormat::R8G8B8A8:
-	case TextureFormat::SR8G8B8:
-	case TextureFormat::SR8G8B8A8:
-	case TextureFormat::R10G10B10A2:
-		return GL_UNSIGNED_BYTE;
-	case TextureFormat::R16G16B16:
-	case TextureFormat::R16G16B16A16:
-		return GL_UNSIGNED_SHORT;
-	case TextureFormat::R8G8B8_SNORM:
-	case TextureFormat::R8G8B8A8_SNORM:
-	case TextureFormat::R16G16B16_SNORM:
-	case TextureFormat::R16G16B16A16_SNORM:
-	case TextureFormat::R16G16B16F:
-	case TextureFormat::R16G16B16A16F:
-	case TextureFormat::R32G32B32F:
-	case TextureFormat::R32G32B32A32F:
-	case TextureFormat::R11G11B10F:
-	case TextureFormat::R16F:
-	case TextureFormat::R32F:
-	case TextureFormat::RG16F:
-	case TextureFormat::RG32F:
-		return GL_FLOAT;
-	case TextureFormat::RGB_DXT1:
-	case TextureFormat::RGBA_DXT1:
-	case TextureFormat::RGBA_DXT3:
-	case TextureFormat::RGBA_DXT5:
-	case TextureFormat::RG_ATI2:
+	case GraphicsFormatR4G4UNormPack8:           return GL_UNSIGNED_BYTE;
+	case GraphicsFormatR4G4B4A4UNormPack16:      return GL_UNSIGNED_SHORT_4_4_4_4;
+	case GraphicsFormatB4G4R4A4UNormPack16:      return GL_UNSIGNED_SHORT_4_4_4_4;
+	case GraphicsFormatR5G6B5UNormPack16:        return GL_UNSIGNED_SHORT_5_6_5;
+	case GraphicsFormatB5G6R5UNormPack16:        return GL_UNSIGNED_SHORT_5_6_5;
+	case GraphicsFormatR5G5B5A1UNormPack16:      return GL_UNSIGNED_SHORT_5_5_5_1;
+	case GraphicsFormatB5G5R5A1UNormPack16:      return GL_UNSIGNED_SHORT_5_5_5_1;
+	case GraphicsFormatA1R5G5B5UNormPack16:      return GL_UNSIGNED_SHORT_1_5_5_5_REV;
+	case GraphicsFormatR8UNorm:                  return GL_UNSIGNED_BYTE;
+	case GraphicsFormatR8SNorm:                  return GL_BYTE;
+	case GraphicsFormatR8UScaled:                return GL_UNSIGNED_BYTE;
+	case GraphicsFormatR8SScaled:                return GL_BYTE;
+	case GraphicsFormatR8UInt:                   return GL_UNSIGNED_BYTE;
+	case GraphicsFormatR8SInt:                   return GL_BYTE;
+	case GraphicsFormatR8SRGB:                   return GL_UNSIGNED_BYTE;
+	case GraphicsFormatR8G8UNorm:                return GL_UNSIGNED_BYTE;
+	case GraphicsFormatR8G8SNorm:                return GL_BYTE;
+	case GraphicsFormatR8G8UScaled:              return GL_UNSIGNED_BYTE;
+	case GraphicsFormatR8G8SScaled:              return GL_BYTE;
+	case GraphicsFormatR8G8UInt:                 return GL_UNSIGNED_BYTE;
+	case GraphicsFormatR8G8SInt:                 return GL_BYTE;
+	case GraphicsFormatR8G8SRGB:                 return GL_UNSIGNED_BYTE;
+	case GraphicsFormatR8G8B8UNorm:              return GL_UNSIGNED_BYTE;
+	case GraphicsFormatR8G8B8SNorm:              return GL_BYTE;
+	case GraphicsFormatR8G8B8UScaled:            return GL_UNSIGNED_BYTE;
+	case GraphicsFormatR8G8B8SScaled:            return GL_BYTE;
+	case GraphicsFormatR8G8B8UInt:               return GL_UNSIGNED_BYTE;
+	case GraphicsFormatR8G8B8SInt:               return GL_BYTE;
+	case GraphicsFormatR8G8B8SRGB:               return GL_UNSIGNED_BYTE;
+	case GraphicsFormatB8G8R8UNorm:              return GL_UNSIGNED_BYTE;
+	case GraphicsFormatB8G8R8SNorm:              return GL_BYTE;
+	case GraphicsFormatB8G8R8UScaled:            return GL_UNSIGNED_BYTE;
+	case GraphicsFormatB8G8R8SScaled:            return GL_BYTE;
+	case GraphicsFormatB8G8R8UInt:               return GL_UNSIGNED_BYTE;
+	case GraphicsFormatB8G8R8SInt:               return GL_BYTE;
+	case GraphicsFormatB8G8R8SRGB:               return GL_BYTE;
+	case GraphicsFormatR8G8B8A8UNorm:            return GL_UNSIGNED_BYTE;
+	case GraphicsFormatR8G8B8A8SNorm:            return GL_BYTE;
+	case GraphicsFormatR8G8B8A8UScaled:          return GL_UNSIGNED_BYTE;
+	case GraphicsFormatR8G8B8A8SScaled:          return GL_BYTE;
+	case GraphicsFormatR8G8B8A8UInt:             return GL_UNSIGNED_BYTE;
+	case GraphicsFormatR8G8B8A8SInt:             return GL_BYTE;
+	case GraphicsFormatR8G8B8A8SRGB:             return GL_BYTE;
+	case GraphicsFormatB8G8R8A8UNorm:            return GL_UNSIGNED_BYTE;
+	case GraphicsFormatB8G8R8A8SNorm:            return GL_BYTE;
+	case GraphicsFormatB8G8R8A8UScaled:          return GL_UNSIGNED_BYTE;
+	case GraphicsFormatB8G8R8A8SScaled:          return GL_BYTE;
+	case GraphicsFormatB8G8R8A8UInt:             return GL_UNSIGNED_BYTE;
+	case GraphicsFormatB8G8R8A8SInt:             return GL_BYTE;
+	case GraphicsFormatB8G8R8A8SRGB:             return GL_BYTE;
+	case GraphicsFormatA8B8G8R8UNormPack32:      return GL_UNSIGNED_BYTE;
+	case GraphicsFormatA8B8G8R8SNormPack32:      return GL_BYTE;
+	case GraphicsFormatA8B8G8R8UScaledPack32:    return GL_UNSIGNED_BYTE;
+	case GraphicsFormatA8B8G8R8SScaledPack32:    return GL_BYTE;
+	case GraphicsFormatA8B8G8R8UIntPack32:       return GL_UNSIGNED_BYTE;
+	case GraphicsFormatA8B8G8R8SIntPack32:       return GL_BYTE;
+	case GraphicsFormatA8B8G8R8SRGBPack32:       return GL_UNSIGNED_BYTE;
+	case GraphicsFormatA2R10G10B10UNormPack32:   return GL_UNSIGNED_INT_2_10_10_10_REV;
+	case GraphicsFormatA2R10G10B10SNormPack32:   return GL_INT_2_10_10_10_REV;
+	case GraphicsFormatA2R10G10B10UScaledPack32: return GL_UNSIGNED_INT_2_10_10_10_REV;
+	case GraphicsFormatA2R10G10B10SScaledPack32: return GL_INT_2_10_10_10_REV;
+	case GraphicsFormatA2R10G10B10UIntPack32:    return GL_UNSIGNED_INT_2_10_10_10_REV;
+	case GraphicsFormatA2R10G10B10SIntPack32:    return GL_INT_2_10_10_10_REV;
+	case GraphicsFormatA2B10G10R10UNormPack32:   return GL_UNSIGNED_INT_2_10_10_10_REV;
+	case GraphicsFormatA2B10G10R10SNormPack32:   return GL_INT_2_10_10_10_REV;
+	case GraphicsFormatA2B10G10R10UScaledPack32: return GL_UNSIGNED_INT_2_10_10_10_REV;
+	case GraphicsFormatA2B10G10R10SScaledPack32: return GL_INT_2_10_10_10_REV;
+	case GraphicsFormatA2B10G10R10UIntPack32:    return GL_UNSIGNED_INT_2_10_10_10_REV;
+	case GraphicsFormatA2B10G10R10SIntPack32:    return GL_INT_2_10_10_10_REV;
+	case GraphicsFormatR16UNorm:                 return GL_UNSIGNED_SHORT;
+	case GraphicsFormatR16SNorm:                 return GL_SHORT;
+	case GraphicsFormatR16UScaled:               return GL_UNSIGNED_SHORT;
+	case GraphicsFormatR16SScaled:               return GL_SHORT;
+	case GraphicsFormatR16UInt:                  return GL_UNSIGNED_SHORT;
+	case GraphicsFormatR16SInt:                  return GL_SHORT;
+	case GraphicsFormatR16SFloat:                return GL_FLOAT;
+	case GraphicsFormatR16G16UNorm:              return GL_UNSIGNED_SHORT;
+	case GraphicsFormatR16G16SNorm:              return GL_SHORT;
+	case GraphicsFormatR16G16UScaled:            return GL_UNSIGNED_SHORT;
+	case GraphicsFormatR16G16SScaled:            return GL_SHORT;
+	case GraphicsFormatR16G16UInt:               return GL_UNSIGNED_SHORT;
+	case GraphicsFormatR16G16SInt:               return GL_SHORT;
+	case GraphicsFormatR16G16SFloat:             return GL_FLOAT;
+	case GraphicsFormatR16G16B16UNorm:           return GL_UNSIGNED_SHORT;
+	case GraphicsFormatR16G16B16SNorm:           return GL_SHORT;
+	case GraphicsFormatR16G16B16UScaled:         return GL_UNSIGNED_SHORT;
+	case GraphicsFormatR16G16B16SScaled:         return GL_SHORT;
+	case GraphicsFormatR16G16B16UInt:            return GL_UNSIGNED_SHORT;
+	case GraphicsFormatR16G16B16SInt:            return GL_SHORT;
+	case GraphicsFormatR16G16B16SFloat:          return GL_FLOAT;
+	case GraphicsFormatR16G16B16A16UNorm:        return GL_UNSIGNED_SHORT;
+	case GraphicsFormatR16G16B16A16SNorm:        return GL_SHORT;
+	case GraphicsFormatR16G16B16A16UScaled:      return GL_UNSIGNED_SHORT;
+	case GraphicsFormatR16G16B16A16SScaled:      return GL_SHORT;
+	case GraphicsFormatR16G16B16A16UInt:         return GL_UNSIGNED_SHORT;
+	case GraphicsFormatR16G16B16A16SInt:         return GL_SHORT;
+	case GraphicsFormatR16G16B16A16SFloat:       return GL_FLOAT;
+	case GraphicsFormatR32UInt:                  return GL_UNSIGNED_INT;
+	case GraphicsFormatR32SInt:                  return GL_INT;
+	case GraphicsFormatR32SFloat:                return GL_FLOAT;
+	case GraphicsFormatR32G32UInt:               return GL_UNSIGNED_INT;
+	case GraphicsFormatR32G32SInt:               return GL_INT;
+	case GraphicsFormatR32G32SFloat:             return GL_FLOAT;
+	case GraphicsFormatR32G32B32UInt:            return GL_UNSIGNED_INT;
+	case GraphicsFormatR32G32B32SInt:            return GL_INT;
+	case GraphicsFormatR32G32B32SFloat:          return GL_FLOAT;
+	case GraphicsFormatR32G32B32A32UInt:         return GL_UNSIGNED_INT;
+	case GraphicsFormatR32G32B32A32SInt:         return GL_INT;
+	case GraphicsFormatR32G32B32A32SFloat:       return GL_FLOAT;
+	case GraphicsFormatR64UInt:                  return GL_UNSIGNED_INT64_ARB;
+	case GraphicsFormatR64SInt:                  return GL_INT64_ARB;
+	case GraphicsFormatR64SFloat:                return GL_DOUBLE;
+	case GraphicsFormatR64G64UInt:               return GL_UNSIGNED_INT64_ARB;
+	case GraphicsFormatR64G64SInt:               return GL_INT64_ARB;
+	case GraphicsFormatR64G64SFloat:             return GL_DOUBLE;
+	case GraphicsFormatR64G64B64UInt:            return GL_UNSIGNED_INT64_ARB;
+	case GraphicsFormatR64G64B64SInt:            return GL_INT64_ARB;
+	case GraphicsFormatR64G64B64SFloat:          return GL_DOUBLE;
+	case GraphicsFormatR64G64B64A64UInt:         return GL_UNSIGNED_INT64_ARB;
+	case GraphicsFormatR64G64B64A64SInt:         return GL_INT64_ARB;
+	case GraphicsFormatR64G64B64A64SFloat:       return GL_DOUBLE;
+	case GraphicsFormatB10G11R11UFloatPack32:    return GL_UNSIGNED_INT_10F_11F_11F_REV;
+	case GraphicsFormatE5B9G9R9UFloatPack32:     return GL_UNSIGNED_INT_5_9_9_9_REV;
+	case GraphicsFormatD16UNorm:                 return GL_UNSIGNED_SHORT;
+	case GraphicsFormatX8_D24UNormPack32:        return GL_UNSIGNED_INT_24_8;
+	case GraphicsFormatD32_SFLOAT:               return GL_FLOAT;
+	case GraphicsFormatS8UInt:                   return GL_UNSIGNED_BYTE;
+	case GraphicsFormatD16UNorm_S8UInt:          return GL_INVALID_ENUM;
+	case GraphicsFormatD24UNorm_S8UInt:          return GL_UNSIGNED_INT_24_8;
+	case GraphicsFormatD32_SFLOAT_S8UInt:        return GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
 	default:
-		GL_PLATFORM_LOG("Invalid texture type");
-		return GL_INVALID_ENUM;
+		GL_PLATFORM_ASSERT(false, "Invlida texture data type.");
 	}
+
+	return GL_INVALID_ENUM;
 }
 
 GLenum
-OGLTypes::asTextureInternalFormat(TextureFormat format) noexcept
+OGLTypes::asTextureInternalFormat(GraphicsFormat format) noexcept
 {
+	GLenum internalFormat = GL_INVALID_ENUM;
 	switch (format)
 	{
-	case TextureFormat::STENCIL8:
-		return GL_STENCIL_INDEX8;
-	case TextureFormat::DEPTH_COMPONENT16:
-		return GL_DEPTH_COMPONENT16;
-	case TextureFormat::DEPTH_COMPONENT24:
-		return GL_DEPTH_COMPONENT24;
-	case TextureFormat::DEPTH_COMPONENT32:
-		return GL_DEPTH_COMPONENT32;
-	case TextureFormat::DEPTH24_STENCIL8:
-		return GL_DEPTH24_STENCIL8;
-	case TextureFormat::DEPTH32_STENCIL8:
-		return GL_DEPTH32F_STENCIL8;
-	case TextureFormat::R4G4B4A4:
-		return GL_RGBA4;
-	case TextureFormat::R5G6B5:
-		return GL_RGB565;
-	case TextureFormat::R5G5B5A1:
-		return GL_RGB5_A1;
-	case TextureFormat::R10G10B10A2:
-		return GL_RGB10_A2;
-	case TextureFormat::R8G8B8_SNORM:
-		return GL_RGB8_SNORM;
-	case TextureFormat::R8G8B8A8_SNORM:
-		return GL_RGBA8_SNORM;
-	case TextureFormat::R16G16B16_SNORM:
-		return GL_RGB16_SNORM;
-	case TextureFormat::R16G16B16A16_SNORM:
-		return GL_RGBA16_SNORM;
-	case TextureFormat::R8G8B8:
-		return GL_RGB8;
-	case TextureFormat::R8G8B8A8:
-		return GL_RGBA8;
-	case TextureFormat::R16G16B16:
-		return GL_RGB16;
-	case TextureFormat::R16G16B16A16:
-		return GL_RGBA16;
-	case TextureFormat::R16G16B16F:
-		return GL_RGB16F;
-	case TextureFormat::R32G32B32F:
-		return GL_RGB32F;
-	case TextureFormat::R16G16B16A16F:
-		return GL_RGBA16F;
-	case TextureFormat::R32G32B32A32F:
-		return GL_RGBA32F;
-	case TextureFormat::SR8G8B8:
-		return GL_SRGB8;
-	case TextureFormat::SR8G8B8A8:
-		return GL_SRGB8_ALPHA8;
-	case TextureFormat::R8:
-		return GL_R8;
-	case TextureFormat::R16F:
-		return GL_R16F;
-	case TextureFormat::R32F:
-		return GL_R32F;
-	case TextureFormat::RG16F:
-		return GL_RG16F;
-	case TextureFormat::RG32F:
-		return GL_RG32F;
-	case TextureFormat::R11G11B10F:
-		return GL_R11F_G11F_B10F;
-	case TextureFormat::RGB_DXT1:
-		return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-	case TextureFormat::RGBA_DXT1:
-		return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-	case TextureFormat::RGBA_DXT3:
-		return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-	case TextureFormat::RGBA_DXT5:
-		return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-	case TextureFormat::RG_ATI2:
-		return GL_COMPRESSED_RG_RGTC2;
+	case GraphicsFormatR4G4UNormPack8:	         internalFormat = GL_LUMINANCE4_ALPHA4; break;
+	case GraphicsFormatR4G4B4A4UNormPack16:	     internalFormat = GL_RGBA4; break;
+	case GraphicsFormatB4G4R4A4UNormPack16:	     internalFormat = GL_RGBA4; break;
+	case GraphicsFormatR5G6B5UNormPack16:	     internalFormat = GL_RGB565; break;
+	case GraphicsFormatB5G6R5UNormPack16:	     internalFormat = GL_RGB565; break;
+	case GraphicsFormatR5G5B5A1UNormPack16:	     internalFormat = GL_RGB5_A1; break;
+	case GraphicsFormatB5G5R5A1UNormPack16:	     internalFormat = GL_RGB5_A1; break;
+	case GraphicsFormatA1R5G5B5UNormPack16:	     internalFormat = GL_RGB5_A1; break;
+	case GraphicsFormatR8UNorm:	                 internalFormat = GL_R8; break;
+	case GraphicsFormatR8SNorm:	                 internalFormat = GL_R8_SNORM; break;
+	case GraphicsFormatR8UScaled:	             internalFormat = GL_R8UI; break;
+	case GraphicsFormatR8SScaled:	             internalFormat = GL_R8I; break;
+	case GraphicsFormatR8UInt:	                 internalFormat = GL_R8UI; break;
+	case GraphicsFormatR8SInt:	                 internalFormat = GL_R8I; break;
+	case GraphicsFormatR8SRGB:	                 internalFormat = GL_R8; break;
+	case GraphicsFormatR8G8UNorm:	             internalFormat = GL_RG8; break;
+	case GraphicsFormatR8G8SNorm:	             internalFormat = GL_RG8_SNORM; break;
+	case GraphicsFormatR8G8UScaled:	             internalFormat = GL_RG8UI; break;
+	case GraphicsFormatR8G8SScaled:	             internalFormat = GL_RG8I; break;
+	case GraphicsFormatR8G8UInt:	             internalFormat = GL_RG8UI; break;
+	case GraphicsFormatR8G8SInt:	             internalFormat = GL_RG8I; break;
+	case GraphicsFormatR8G8SRGB:	             internalFormat = GL_RG8; break;
+	case GraphicsFormatR8G8B8UNorm:	             internalFormat = GL_RGB8; break;
+	case GraphicsFormatR8G8B8SNorm:	             internalFormat = GL_RGB8_SNORM; break;
+	case GraphicsFormatR8G8B8UScaled:	         internalFormat = GL_RGB8UI; break;
+	case GraphicsFormatR8G8B8SScaled:	         internalFormat = GL_RGB8I; break;
+	case GraphicsFormatR8G8B8UInt:	             internalFormat = GL_RGB8UI; break;
+	case GraphicsFormatR8G8B8SInt:	             internalFormat = GL_RGB8I; break;
+	case GraphicsFormatR8G8B8SRGB:	             internalFormat = GL_SRGB8; break;
+	case GraphicsFormatB8G8R8UNorm:	             internalFormat = GL_RGB8; break;
+	case GraphicsFormatB8G8R8SNorm:	             internalFormat = GL_RGB8_SNORM; break;
+	case GraphicsFormatB8G8R8UScaled:	         internalFormat = GL_RGB8UI; break;
+	case GraphicsFormatB8G8R8SScaled:	         internalFormat = GL_RGB8I; break;
+	case GraphicsFormatB8G8R8UInt:	             internalFormat = GL_RGB8I; break;
+	case GraphicsFormatB8G8R8SInt:	             internalFormat = GL_RGB8UI; break;
+	case GraphicsFormatB8G8R8SRGB:	             internalFormat = GL_SRGB8; break;
+	case GraphicsFormatR8G8B8A8UNorm:	         internalFormat = GL_RGBA8; break;
+	case GraphicsFormatR8G8B8A8SNorm:	         internalFormat = GL_RGBA8_SNORM; break;
+	case GraphicsFormatR8G8B8A8UScaled:	         internalFormat = GL_RGBA8; break;
+	case GraphicsFormatR8G8B8A8SScaled:	         internalFormat = GL_RGBA8; break;
+	case GraphicsFormatR8G8B8A8UInt:	         internalFormat = GL_RGBA8UI; break;
+	case GraphicsFormatR8G8B8A8SInt:	         internalFormat = GL_RGBA8I; break;
+	case GraphicsFormatR8G8B8A8SRGB:	         internalFormat = GL_SRGB8_ALPHA8; break;
+	case GraphicsFormatB8G8R8A8UNorm:	         internalFormat = GL_RGBA8; break;
+	case GraphicsFormatB8G8R8A8SNorm:	         internalFormat = GL_RGBA8_SNORM; break;
+	case GraphicsFormatB8G8R8A8UScaled:	         internalFormat = GL_RGBA8UI; break;
+	case GraphicsFormatB8G8R8A8SScaled:	         internalFormat = GL_RGBA8I; break;
+	case GraphicsFormatB8G8R8A8UInt:	         internalFormat = GL_RGBA8UI; break;
+	case GraphicsFormatB8G8R8A8SInt:	         internalFormat = GL_RGBA8I; break;
+	case GraphicsFormatB8G8R8A8SRGB:	         internalFormat = GL_SRGB8_ALPHA8; break;
+	case GraphicsFormatA8B8G8R8UNormPack32:	     internalFormat = GL_RGBA8; break;
+	case GraphicsFormatA8B8G8R8SNormPack32:	     internalFormat = GL_RGBA8_SNORM; break;
+	case GraphicsFormatA8B8G8R8UScaledPack32:	 internalFormat = GL_RGBA8UI; break;
+	case GraphicsFormatA8B8G8R8SScaledPack32:	 internalFormat = GL_RGBA8I; break;
+	case GraphicsFormatA8B8G8R8UIntPack32:	     internalFormat = GL_RGBA8UI; break;
+	case GraphicsFormatA8B8G8R8SIntPack32:	     internalFormat = GL_RGBA8I; break;
+	case GraphicsFormatA8B8G8R8SRGBPack32:	     internalFormat = GL_SRGB8_ALPHA8; break;
+	case GraphicsFormatA2R10G10B10UNormPack32:	 internalFormat = GL_RGB10_A2UI; break;
+	case GraphicsFormatA2R10G10B10SNormPack32:	 internalFormat = GL_RGB10_A2; break;
+	case GraphicsFormatA2R10G10B10UScaledPack32: internalFormat = GL_RGB10_A2UI; break;
+	case GraphicsFormatA2R10G10B10SScaledPack32: internalFormat = GL_RGB10_A2; break;
+	case GraphicsFormatA2R10G10B10UIntPack32:	 internalFormat = GL_RGB10_A2UI; break;
+	case GraphicsFormatA2R10G10B10SIntPack32:	 internalFormat = GL_RGB10_A2; break;
+	case GraphicsFormatA2B10G10R10UNormPack32:	 internalFormat = GL_RGB10_A2UI; break;
+	case GraphicsFormatA2B10G10R10SNormPack32:	 internalFormat = GL_RGB10_A2; break;
+	case GraphicsFormatA2B10G10R10UScaledPack32: internalFormat = GL_RGB10_A2UI; break;
+	case GraphicsFormatA2B10G10R10SScaledPack32: internalFormat = GL_RGB10_A2; break;
+	case GraphicsFormatA2B10G10R10UIntPack32:	 internalFormat = GL_RGB10_A2UI; break;
+	case GraphicsFormatA2B10G10R10SIntPack32:	 internalFormat = GL_RGB10_A2; break;
+	case GraphicsFormatR16UNorm:	             internalFormat = GL_R16; break;
+	case GraphicsFormatR16SNorm:	             internalFormat = GL_R16_SNORM; break;
+	case GraphicsFormatR16UScaled:	             internalFormat = GL_R16; break;
+	case GraphicsFormatR16SScaled:	             internalFormat = GL_R16; break;
+	case GraphicsFormatR16UInt:	                 internalFormat = GL_R16UI; break;
+	case GraphicsFormatR16SInt:	                 internalFormat = GL_R16I; break;
+	case GraphicsFormatR16SFloat:	             internalFormat = GL_R16F; break;
+	case GraphicsFormatR16G16UNorm:	             internalFormat = GL_RG16; break;
+	case GraphicsFormatR16G16SNorm:	             internalFormat = GL_RG16_SNORM; break;
+	case GraphicsFormatR16G16UScaled:	         internalFormat = GL_RG16; break;
+	case GraphicsFormatR16G16SScaled:	         internalFormat = GL_RG16; break;
+	case GraphicsFormatR16G16UInt:	             internalFormat = GL_RG16UI; break;
+	case GraphicsFormatR16G16SInt:	             internalFormat = GL_RG16I; break;
+	case GraphicsFormatR16G16SFloat:	         internalFormat = GL_RG16F; break;
+	case GraphicsFormatR16G16B16UNorm:	         internalFormat = GL_RGB16; break;
+	case GraphicsFormatR16G16B16SNorm:	         internalFormat = GL_RGB16_SNORM; break;
+	case GraphicsFormatR16G16B16UScaled:	     internalFormat = GL_RGB16; break;
+	case GraphicsFormatR16G16B16SScaled:	     internalFormat = GL_RGB16; break;
+	case GraphicsFormatR16G16B16UInt:	         internalFormat = GL_RGB16UI; break;
+	case GraphicsFormatR16G16B16SInt:	         internalFormat = GL_RGB16I; break;
+	case GraphicsFormatR16G16B16SFloat:	         internalFormat = GL_RGB16F; break;
+	case GraphicsFormatR16G16B16A16UNorm:	     internalFormat = GL_RGBA16; break;
+	case GraphicsFormatR16G16B16A16SNorm:	     internalFormat = GL_RGBA16_SNORM; break;
+	case GraphicsFormatR16G16B16A16UScaled:	     internalFormat = GL_RGBA16; break;
+	case GraphicsFormatR16G16B16A16SScaled:	     internalFormat = GL_RGBA16; break;
+	case GraphicsFormatR16G16B16A16UInt:	     internalFormat = GL_RGBA16UI; break;
+	case GraphicsFormatR16G16B16A16SInt:	     internalFormat = GL_RGBA16I; break;
+	case GraphicsFormatR16G16B16A16SFloat:	     internalFormat = GL_RGBA16F; break;
+	case GraphicsFormatR32UInt:	                 internalFormat = GL_R32UI; break;
+	case GraphicsFormatR32SInt:	                 internalFormat = GL_R32I; break;
+	case GraphicsFormatR32SFloat:	             internalFormat = GL_R32F; break;
+	case GraphicsFormatR32G32UInt:	             internalFormat = GL_RG32UI; break;
+	case GraphicsFormatR32G32SInt:	             internalFormat = GL_RG32I; break;
+	case GraphicsFormatR32G32SFloat:	         internalFormat = GL_RG32F; break;
+	case GraphicsFormatR32G32B32UInt:	         internalFormat = GL_RGB32UI; break;
+	case GraphicsFormatR32G32B32SInt:	         internalFormat = GL_RGB32I; break;
+	case GraphicsFormatR32G32B32SFloat:	         internalFormat = GL_RGB32F; break;
+	case GraphicsFormatR32G32B32A32UInt:	     internalFormat = GL_RGBA32UI; break;
+	case GraphicsFormatR32G32B32A32SInt:	     internalFormat = GL_RGBA32I; break;
+	case GraphicsFormatR32G32B32A32SFloat:	     internalFormat = GL_RGBA32F; break;
+	case GraphicsFormatR64UInt:	                 internalFormat = GL_R; break;
+	case GraphicsFormatR64SInt:	                 internalFormat = GL_R; break;
+	case GraphicsFormatR64SFloat:	             internalFormat = GL_R; break;
+	case GraphicsFormatR64G64UInt:	             internalFormat = GL_RG; break;
+	case GraphicsFormatR64G64SInt:	             internalFormat = GL_RG; break;
+	case GraphicsFormatR64G64SFloat:	         internalFormat = GL_RG; break;
+	case GraphicsFormatR64G64B64UInt:	         internalFormat = GL_RGB; break;
+	case GraphicsFormatR64G64B64SInt:	         internalFormat = GL_RGB; break;
+	case GraphicsFormatR64G64B64SFloat:	         internalFormat = GL_RGB; break;
+	case GraphicsFormatR64G64B64A64UInt:	     internalFormat = GL_RGBA; break;
+	case GraphicsFormatR64G64B64A64SInt:	     internalFormat = GL_RGBA; break;
+	case GraphicsFormatR64G64B64A64SFloat:	     internalFormat = GL_RGBA; break;
+	case GraphicsFormatB10G11R11UFloatPack32:	 internalFormat = GL_R11F_G11F_B10F; break;
+	case GraphicsFormatE5B9G9R9UFloatPack32:	 internalFormat = GL_RGB9_E5; break;
+	case GraphicsFormatD16UNorm:	             internalFormat = GL_DEPTH_COMPONENT16; break;
+	case GraphicsFormatX8_D24UNormPack32:	     internalFormat = GL_DEPTH_COMPONENT24; break;
+	case GraphicsFormatD32_SFLOAT:	             internalFormat = GL_DEPTH_COMPONENT32; break;
+	case GraphicsFormatS8UInt:	                 internalFormat = GL_STENCIL_INDEX8; break;
+	case GraphicsFormatD16UNorm_S8UInt:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatD24UNorm_S8UInt:	         internalFormat = GL_DEPTH24_STENCIL8; break;
+	case GraphicsFormatD32_SFLOAT_S8UInt:	     internalFormat = GL_DEPTH32F_STENCIL8; break;
+	case GraphicsFormatBC1RGBUNormBlock:	     internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT; break;
+	case GraphicsFormatBC1RGBSRGBBlock:	         internalFormat = GL_COMPRESSED_SRGB_S3TC_DXT1_EXT; break;
+	case GraphicsFormatBC1RGBAUNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
+	case GraphicsFormatBC1RGBASRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT; break;
+	case GraphicsFormatBC2UNormBlock:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatBC2SRGBBlock:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatBC3UNormBlock:	         internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT; break;
+	case GraphicsFormatBC3SRGBBlock:	         internalFormat = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT; break;
+	case GraphicsFormatBC4UNormBlock:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatBC4SNormBlock:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatBC5UNormBlock:	         internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
+	case GraphicsFormatBC5SNormBlock:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatBC6HUFloatBlock:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatBC6HSFloatBlock:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatBC7UNormBlock:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatBC7SRGBBlock:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatETC2R8G8B8UNormBlock:	 internalFormat = GL_COMPRESSED_RGB8_ETC2; break;
+	case GraphicsFormatETC2R8G8B8SRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB8_ETC2; break;
+	case GraphicsFormatETC2R8G8B8A1UNormBlock:	 internalFormat = GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2; break;
+	case GraphicsFormatETC2R8G8B8A1SRGBBlock:	 internalFormat = GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2; break;
+	case GraphicsFormatETC2R8G8B8A8UNormBlock:	 internalFormat = GL_COMPRESSED_RGBA8_ETC2_EAC; break;
+	case GraphicsFormatETC2R8G8B8A8SRGBBlock:	 internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC; break;
+	case GraphicsFormatEACR11UNormBlock:	     internalFormat = GL_COMPRESSED_R11_EAC; break;
+	case GraphicsFormatEACR11SNormBlock:	     internalFormat = GL_COMPRESSED_SIGNED_R11_EAC; break;
+	case GraphicsFormatEACR11G11UNormBlock:	     internalFormat = GL_COMPRESSED_RG11_EAC; break;
+	case GraphicsFormatEACR11G11SNormBlock:	     internalFormat = GL_COMPRESSED_SIGNED_RG11_EAC; break;
+	case GraphicsFormatASTC4x4UNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_ASTC_4x4_KHR; break;
+	case GraphicsFormatASTC4x4SRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR; break;
+	case GraphicsFormatASTC5x4UNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_ASTC_4x4_KHR; break;
+	case GraphicsFormatASTC5x4SRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR; break;
+	case GraphicsFormatASTC5x5UNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_ASTC_5x5_KHR; break;
+	case GraphicsFormatASTC5x5SRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR; break;
+	case GraphicsFormatASTC6x5UNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_ASTC_6x5_KHR; break;
+	case GraphicsFormatASTC6x5SRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR; break;
+	case GraphicsFormatASTC6x6UNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_ASTC_6x6_KHR; break;
+	case GraphicsFormatASTC6x6SRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR; break;
+	case GraphicsFormatASTC8x5UNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_ASTC_8x5_KHR; break;
+	case GraphicsFormatASTC8x5SRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR; break;
+	case GraphicsFormatASTC8x6UNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_ASTC_8x6_KHR; break;
+	case GraphicsFormatASTC8x6SRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR; break;
+	case GraphicsFormatASTC8x8UNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_ASTC_8x8_KHR; break;
+	case GraphicsFormatASTC8x8SRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR; break;
+	case GraphicsFormatASTC10x5UNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_ASTC_10x5_KHR; break;
+	case GraphicsFormatASTC10x5SRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR; break;
+	case GraphicsFormatASTC10x6UNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_ASTC_10x6_KHR; break;
+	case GraphicsFormatASTC10x6SRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR; break;
+	case GraphicsFormatASTC10x8UNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_ASTC_10x8_KHR; break;
+	case GraphicsFormatASTC10x8SRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR; break;
+	case GraphicsFormatASTC10x10UNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_ASTC_10x10_KHR; break;
+	case GraphicsFormatASTC10x10SRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR; break;
+	case GraphicsFormatASTC12x10UNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_ASTC_12x10_KHR; break;
+	case GraphicsFormatASTC12x10SRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR; break;
+	case GraphicsFormatASTC12x12UNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_ASTC_12x12_KHR; break;
+	case GraphicsFormatASTC12x12SRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR; break;
 	default:
-		GL_PLATFORM_LOG("Invalid texture internal format");
+		assert(false);
 		return GL_INVALID_ENUM;
 	}
+
+	GL_PLATFORM_ASSERT(internalFormat != GL_INVALID_ENUM, "Invalid texture internal format.");
+	return internalFormat;
 }
 
 GLenum
-OGLTypes::asCompareFunction(CompareFunction func) noexcept
+OGLTypes::asCompareFunction(GraphicsCompareFunc func) noexcept
 {
 	switch (func)
 	{
-	case CompareFunction::None:
-		return GL_NONE;
-	case CompareFunction::Lequal:
-		return GL_LEQUAL;
-	case CompareFunction::Equal:
-		return GL_EQUAL;
-	case CompareFunction::Greater:
-		return GL_GREATER;
-	case CompareFunction::Less:
-		return GL_LESS;
-	case CompareFunction::Gequal:
-		return GL_GEQUAL;
-	case CompareFunction::NotEqual:
-		return GL_NOTEQUAL;
-	case CompareFunction::Always:
-		return GL_ALWAYS;
-	case CompareFunction::Never:
-		return GL_NEVER;
+	case GraphicsCompareFunc::GraphicsCompareFuncNone:     return GL_NONE;
+	case GraphicsCompareFunc::GraphicsCompareFuncLequal:   return GL_LEQUAL;
+	case GraphicsCompareFunc::GraphicsCompareFuncEqual:    return GL_EQUAL;
+	case GraphicsCompareFunc::GraphicsCompareFuncGreater:  return GL_GREATER;
+	case GraphicsCompareFunc::GraphicsCompareFuncLess:     return GL_LESS;
+	case GraphicsCompareFunc::GraphicsCompareFuncGequal:   return GL_GEQUAL;
+	case GraphicsCompareFunc::GraphicsCompareFuncNotEqual: return GL_NOTEQUAL;
+	case GraphicsCompareFunc::GraphicsCompareFuncAlways:   return GL_ALWAYS;
+	case GraphicsCompareFunc::GraphicsCompareFuncNever:    return GL_NEVER;
 	default:
-		GL_PLATFORM_LOG("Invalid compare function");
+		GL_PLATFORM_ASSERT(false, "Invalid compare function");
 		return GL_INVALID_ENUM;
 	}
 }
 
 GLenum
-OGLTypes::asBlendFactor(BlendFactor func) noexcept
+OGLTypes::asBlendFactor(GraphicsBlendFactor func) noexcept
 {
 	switch (func)
 	{
-	case BlendFactor::Zero:
-		return GL_ZERO;
-	case BlendFactor::One:
-		return GL_ONE;
-	case BlendFactor::DstCol:
-		return GL_DST_COLOR;
-	case BlendFactor::SrcColor:
-		return GL_SRC_COLOR;
-	case BlendFactor::SrcAlpha:
-		return GL_SRC_ALPHA;
-	case BlendFactor::DstAlpha:
-		return GL_DST_ALPHA;
-	case BlendFactor::OneMinusSrcCol:
-		return GL_ONE_MINUS_SRC_COLOR;
-	case BlendFactor::OneMinusDstCol:
-		return GL_ONE_MINUS_DST_COLOR;
-	case BlendFactor::OneMinusSrcAlpha:
-		return GL_ONE_MINUS_SRC_ALPHA;
-	case BlendFactor::OneMinusDstAlpha:
-		return GL_ONE_MINUS_DST_ALPHA;
-	case BlendFactor::ConstantColor:
-		return GL_CONSTANT_COLOR;
-	case BlendFactor::ConstantAlpha:
-		return GL_CONSTANT_ALPHA;
-	case BlendFactor::OneMinusConstantColor:
-		return GL_CONSTANT_ALPHA;
-	case BlendFactor::OneMinusConstantAlpha:
-		return GL_CONSTANT_ALPHA;
-	case BlendFactor::SrcAlphaSaturate:
-		return GL_SRC_ALPHA_SATURATE;
+	case GraphicsBlendFactor::GraphicsBlendFactorZero:                  return GL_ZERO;
+	case GraphicsBlendFactor::GraphicsBlendFactorOne:                   return GL_ONE;
+	case GraphicsBlendFactor::GraphicsBlendFactorDstCol:                return GL_DST_COLOR;
+	case GraphicsBlendFactor::GraphicsBlendFactorSrcColor:              return GL_SRC_COLOR;
+	case GraphicsBlendFactor::GraphicsBlendFactorSrcAlpha:              return GL_SRC_ALPHA;
+	case GraphicsBlendFactor::GraphicsBlendFactorDstAlpha:              return GL_DST_ALPHA;
+	case GraphicsBlendFactor::GraphicsBlendFactorOneMinusSrcCol:        return GL_ONE_MINUS_SRC_COLOR;
+	case GraphicsBlendFactor::GraphicsBlendFactorOneMinusDstCol:        return GL_ONE_MINUS_DST_COLOR;
+	case GraphicsBlendFactor::GraphicsBlendFactorOneMinusSrcAlpha:      return GL_ONE_MINUS_SRC_ALPHA;
+	case GraphicsBlendFactor::GraphicsBlendFactorOneMinusDstAlpha:      return GL_ONE_MINUS_DST_ALPHA;
+	case GraphicsBlendFactor::GraphicsBlendFactorConstantColor:         return GL_CONSTANT_COLOR;
+	case GraphicsBlendFactor::GraphicsBlendFactorConstantAlpha:         return GL_CONSTANT_ALPHA;
+	case GraphicsBlendFactor::GraphicsBlendFactorOneMinusConstantColor: return GL_CONSTANT_ALPHA;
+	case GraphicsBlendFactor::GraphicsBlendFactorOneMinusConstantAlpha: return GL_CONSTANT_ALPHA;
+	case GraphicsBlendFactor::GraphicsBlendFactorSrcAlphaSaturate:      return GL_SRC_ALPHA_SATURATE;
 	default:
-		GL_PLATFORM_LOG("Invalid blend factor");
+		GL_PLATFORM_ASSERT(false, "Invalid blend factor");
 		return GL_INVALID_ENUM;
 	}
 }
 
 GLenum
-OGLTypes::asBlendOperation(BlendOperation blendop) noexcept
+OGLTypes::asBlendOperation(GraphicsBlendOp blendop) noexcept
 {
 	switch (blendop)
 	{
-	case BlendOperation::Add:
-		return GL_FUNC_ADD;
-	case BlendOperation::Subtract:
-		return GL_FUNC_SUBTRACT;
-	case BlendOperation::RevSubtract:
-		return GL_FUNC_REVERSE_SUBTRACT;
+	case GraphicsBlendOp::GraphicsBlendOpAdd:        return GL_FUNC_ADD;
+	case GraphicsBlendOp::GraphicsBlendOpSubtract:   return GL_FUNC_SUBTRACT;
+	case GraphicsBlendOp::GraphicsBlendOpRevSubtract:return GL_FUNC_REVERSE_SUBTRACT;
 	default:
-		GL_PLATFORM_LOG("Invalid blend operation");
+		GL_PLATFORM_ASSERT(false, "Invalid blend operation");
 		return GL_INVALID_ENUM;
 	}
 }
 
 GLenum
-OGLTypes::asCullMode(CullMode mode) noexcept
+OGLTypes::asCullMode(GraphicsCullMode mode) noexcept
 {
 	switch (mode)
 	{
-	case CullMode::None:
-		return GL_NONE;
-	case CullMode::Front:
-		return GL_FRONT;
-	case CullMode::Back:
-		return GL_BACK;
-	case CullMode::FrontBack:
-		return GL_FRONT_AND_BACK;
+	case GraphicsCullMode::GraphicsCullModeNone:      return GL_NONE;
+	case GraphicsCullMode::GraphicsCullModeFront:     return GL_FRONT;
+	case GraphicsCullMode::GraphicsCullModeBack:      return GL_BACK;
+	case GraphicsCullMode::GraphicsCullModeFrontBack: return GL_FRONT_AND_BACK;
 	default:
-		GL_PLATFORM_LOG("Invalid cull mode");
+		GL_PLATFORM_ASSERT(false, "Invalid cull mode");
 		return GL_INVALID_ENUM;
 	}
 }
 
 GLenum
-OGLTypes::asFillMode(FillMode mode) noexcept
+OGLTypes::asFillMode(GraphicsPolygonMode mode) noexcept
 {
 	switch (mode)
 	{
-	case FillMode::PointMode:
-		return GL_POINT;
-	case FillMode::WireframeMode:
-		return GL_LINE;
-	case FillMode::SolidMode:
-		return GL_FILL;
+	case GraphicsPolygonMode::GraphicsPolygonModePoint:     return GL_POINT;
+	case GraphicsPolygonMode::GraphicsPolygonModeWireframe: return GL_LINE;
+	case GraphicsPolygonMode::GraphicsPolygonModeSolid:     return GL_FILL;
 	default:
-		GL_PLATFORM_LOG("Invalid fill mode");
+		GL_PLATFORM_ASSERT(false, "Invalid fill mode");
 		return GL_INVALID_ENUM;
 	}
 }
 
 GLenum
-OGLTypes::asStencilOperation(StencilOperation stencilop) noexcept
+OGLTypes::asStencilOperation(GraphicsStencilOp stencilop) noexcept
 {
 	switch (stencilop)
 	{
-	case StencilOperation::Keep:
-		return GL_KEEP;
-	case StencilOperation::Replace:
-		return GL_REPLACE;
-	case StencilOperation::Incr:
-		return GL_INCR;
-	case StencilOperation::Decr:
-		return GL_DECR;
-	case StencilOperation::Zero:
-		return GL_ZERO;
-	case StencilOperation::IncrWrap:
-		return GL_INCR_WRAP;
-	case StencilOperation::DecrWrap:
-		return GL_DECR_WRAP;
+	case GraphicsStencilOp::GraphicsStencilOpKeep:     return GL_KEEP;
+	case GraphicsStencilOp::GraphicsStencilOpReplace:  return GL_REPLACE;
+	case GraphicsStencilOp::GraphicsStencilOpIncr:     return GL_INCR;
+	case GraphicsStencilOp::GraphicsStencilOpDecr:     return GL_DECR;
+	case GraphicsStencilOp::GraphicsStencilOpZero:     return GL_ZERO;
+	case GraphicsStencilOp::GraphicsStencilOpIncrWrap: return GL_INCR_WRAP;
+	case GraphicsStencilOp::GraphicsStencilOpDecrWrap: return GL_DECR_WRAP;
 	default:
-		GL_PLATFORM_LOG("Invalid stencil operation");
+		GL_PLATFORM_ASSERT(false, "Invalid stencil operation");
 		return GL_INVALID_ENUM;
 	}
 }
 
 GLenum
-OGLTypes::asSamplerWrap(SamplerWrap wrap) noexcept
+OGLTypes::asSamplerWrap(GraphicsSamplerWrap wrap) noexcept
 {
 	switch (wrap)
 	{
-	case SamplerWrap::Repeat:
-		return GL_REPEAT;
-	case SamplerWrap::Mirror:
-		return GL_MIRRORED_REPEAT;
-	case SamplerWrap::ClampToEdge:
-		return GL_CLAMP_TO_EDGE;
+	case GraphicsSamplerWrap::GraphicsSamplerWrapRepeat:      return GL_REPEAT;
+	case GraphicsSamplerWrap::GraphicsSamplerWrapMirror:      return GL_MIRRORED_REPEAT;
+	case GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge: return GL_CLAMP_TO_EDGE;
 	default:
-		GL_PLATFORM_LOG("Invalid sampler wrap");
+		GL_PLATFORM_ASSERT(false, "Invalid sampler wrap");
 		return GL_INVALID_ENUM;
 	}
 }
 
 GLenum
-OGLTypes::asSamplerFilter(SamplerFilter filter) noexcept
+OGLTypes::asSamplerFilter(GraphicsSamplerFilter filter) noexcept
 {
 	switch (filter)
 	{
-	case SamplerFilter::Nearest:
-		return GL_NEAREST;
-	case SamplerFilter::Linear:
-		return GL_LINEAR;
-	case SamplerFilter::NearestMipmapLinear:
-		return GL_NEAREST_MIPMAP_LINEAR;
-	case SamplerFilter::NearestMipmapNearest:
-		return GL_NEAREST_MIPMAP_NEAREST;
-	case SamplerFilter::LinearMipmapNearest:
-		return GL_LINEAR_MIPMAP_NEAREST;
-	case SamplerFilter::LinearMipmapLinear:
-		return GL_LINEAR_MIPMAP_LINEAR;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterNearest:              return GL_NEAREST;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterLinear:               return GL_LINEAR;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapLinear:  return GL_NEAREST_MIPMAP_LINEAR;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest: return GL_NEAREST_MIPMAP_NEAREST;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest:  return GL_LINEAR_MIPMAP_NEAREST;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear:   return GL_LINEAR_MIPMAP_LINEAR;
 	default:
-		GL_PLATFORM_LOG("Invalid sampler filter");
+		GL_PLATFORM_ASSERT(false, "Invalid sampler filter");
 		return GL_INVALID_ENUM;
+	}
+}
+
+GLboolean
+OGLTypes::isCompressedTexture(GraphicsFormat format) noexcept
+{
+	switch (format)
+	{
+	case GraphicsFormatBC1RGBUNormBlock:
+	case GraphicsFormatBC1RGBSRGBBlock:
+	case GraphicsFormatBC1RGBAUNormBlock:
+	case GraphicsFormatBC1RGBASRGBBlock:
+	case GraphicsFormatBC2UNormBlock:
+	case GraphicsFormatBC2SRGBBlock:
+	case GraphicsFormatBC3UNormBlock:
+	case GraphicsFormatBC3SRGBBlock:
+	case GraphicsFormatBC4UNormBlock:
+	case GraphicsFormatBC4SNormBlock:
+	case GraphicsFormatBC5UNormBlock:
+	case GraphicsFormatBC5SNormBlock:
+	case GraphicsFormatBC6HUFloatBlock:
+	case GraphicsFormatBC6HSFloatBlock:
+	case GraphicsFormatBC7UNormBlock:
+	case GraphicsFormatBC7SRGBBlock:
+	case GraphicsFormatETC2R8G8B8UNormBlock:
+	case GraphicsFormatETC2R8G8B8SRGBBlock:
+	case GraphicsFormatETC2R8G8B8A1UNormBlock:
+	case GraphicsFormatETC2R8G8B8A1SRGBBlock:
+	case GraphicsFormatETC2R8G8B8A8UNormBlock:
+	case GraphicsFormatETC2R8G8B8A8SRGBBlock:
+	case GraphicsFormatEACR11UNormBlock:
+	case GraphicsFormatEACR11SNormBlock:
+	case GraphicsFormatEACR11G11UNormBlock:
+	case GraphicsFormatEACR11G11SNormBlock:
+	case GraphicsFormatASTC4x4UNormBlock:
+	case GraphicsFormatASTC4x4SRGBBlock:
+	case GraphicsFormatASTC5x4UNormBlock:
+	case GraphicsFormatASTC5x4SRGBBlock:
+	case GraphicsFormatASTC5x5UNormBlock:
+	case GraphicsFormatASTC5x5SRGBBlock:
+	case GraphicsFormatASTC6x5UNormBlock:
+	case GraphicsFormatASTC6x5SRGBBlock:
+	case GraphicsFormatASTC6x6UNormBlock:
+	case GraphicsFormatASTC6x6SRGBBlock:
+	case GraphicsFormatASTC8x5UNormBlock:
+	case GraphicsFormatASTC8x5SRGBBlock:
+	case GraphicsFormatASTC8x6UNormBlock:
+	case GraphicsFormatASTC8x6SRGBBlock:
+	case GraphicsFormatASTC8x8UNormBlock:
+	case GraphicsFormatASTC8x8SRGBBlock:
+	case GraphicsFormatASTC10x5UNormBlock:
+	case GraphicsFormatASTC10x5SRGBBlock:
+	case GraphicsFormatASTC10x6UNormBlock:
+	case GraphicsFormatASTC10x6SRGBBlock:
+	case GraphicsFormatASTC10x8UNormBlock:
+	case GraphicsFormatASTC10x8SRGBBlock:
+	case GraphicsFormatASTC10x10UNormBlock:
+	case GraphicsFormatASTC10x10SRGBBlock:
+	case GraphicsFormatASTC12x10UNormBlock:
+	case GraphicsFormatASTC12x10SRGBBlock:
+	case GraphicsFormatASTC12x12UNormBlock:
+	case GraphicsFormatASTC12x12SRGBBlock:
+		return GL_TRUE;
+	default:
+		return GL_FALSE;
 	}
 }
 

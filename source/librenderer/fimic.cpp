@@ -88,7 +88,7 @@ FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsRenderTextu
 	float delta = _timer->delta();
 
 	auto& textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
-	pipeline.readRenderTexture(source, TextureFormat::R16F, textureDesc.getWidth(), textureDesc.getHeight(), data);
+	pipeline.readRenderTexture(source, GraphicsFormat::GraphicsFormatR16SFloat, textureDesc.getWidth(), textureDesc.getHeight(), data);
 
 	for (std::size_t i = 0; i < SAMPLE_LOG_COUNT; ++i)
 		lum += data[i];
@@ -172,11 +172,11 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) except
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_texSample4 = pipeline.createRenderTexture(width / 4.0, height / 4.0, TextureDim::DIM_2D, TextureFormat::R8G8B8);
-	_texSample8 = pipeline.createRenderTexture(width / 8.0, height / 8.0, TextureDim::DIM_2D, TextureFormat::R8G8B8);
-	_texCombie = pipeline.createRenderTexture(width / 4.0, height / 4.0, TextureDim::DIM_2D, TextureFormat::R8G8B8);
+	_texSample4 = pipeline.createRenderTexture(width / 4.0, height / 4.0, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_texSample8 = pipeline.createRenderTexture(width / 8.0, height / 8.0, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_texCombie = pipeline.createRenderTexture(width / 4.0, height / 4.0, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 
-	_texSampleLog = pipeline.createRenderTexture(SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, TextureDim::DIM_2D, TextureFormat::R16F);
+	_texSampleLog = pipeline.createRenderTexture(SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
 
 	_fimic = pipeline.createMaterial("sys:fx/fimic.fxml.o");
 

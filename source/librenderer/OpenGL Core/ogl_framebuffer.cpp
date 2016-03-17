@@ -91,13 +91,13 @@ OGLRenderTexture::setup(const GraphicsRenderTextureDesc& framebufferDesc) except
 	auto texture = framebufferDesc.getGraphicsTexture();
 	auto textureDesc = texture->getGraphicsTextureDesc();
 
-	TextureFormat format = textureDesc.getTexFormat();
+	GraphicsFormat format = textureDesc.getTexFormat();
 
-	if (format == TextureFormat::DEPTH24_STENCIL8 || format == TextureFormat::DEPTH32_STENCIL8)
+	if (format == GraphicsFormat::GraphicsFormatD24UNorm_S8UInt || format == GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt)
 		this->bindRenderTexture(texture, GL_DEPTH_STENCIL_ATTACHMENT);
-	else if (format == TextureFormat::DEPTH_COMPONENT16 || format == TextureFormat::DEPTH_COMPONENT24 || format == TextureFormat::DEPTH_COMPONENT32)
+	else if (format == GraphicsFormat::GraphicsFormatD16UNorm || format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 || format == GraphicsFormat::GraphicsFormatD32_SFLOAT)
 		this->bindRenderTexture(texture, GL_DEPTH_ATTACHMENT);
-	else if (format == TextureFormat::STENCIL8)
+	else if (format == GraphicsFormat::GraphicsFormatS8UInt)
 		this->bindRenderTexture(texture, GL_STENCIL_ATTACHMENT);
 	else
 		this->bindRenderTexture(texture, GL_COLOR_ATTACHMENT0);
@@ -143,8 +143,9 @@ OGLRenderTexture::setLayer(GLuint layer) noexcept
 	if (_layer != layer)
 	{
 		auto& textureDesc = _framebufferDesc.getGraphicsTexture()->getGraphicsTextureDesc();
-		if (textureDesc.getTexDim() != TextureDim::DIM_2D_ARRAY ||
-			textureDesc.getTexDim() != TextureDim::DIM_CUBE)
+		if (textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDim2DArray ||
+			textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCube ||
+			textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCubeArray)
 		{
 			return;
 		}
@@ -191,13 +192,13 @@ OGLRenderTexture::discard() noexcept
 	auto texture = _framebufferDesc.getGraphicsTexture();
 	auto textureDesc = texture->getGraphicsTextureDesc();
 
-	TextureFormat format = textureDesc.getTexFormat();
+	GraphicsFormat format = textureDesc.getTexFormat();
 
-	if (format == TextureFormat::DEPTH24_STENCIL8 || format == TextureFormat::DEPTH32_STENCIL8)
+	if (format == GraphicsFormat::GraphicsFormatD24UNorm_S8UInt || format == GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt)
 		attachment[index++] = GL_DEPTH_STENCIL_ATTACHMENT;
-	else if (format == TextureFormat::DEPTH_COMPONENT16 || format == TextureFormat::DEPTH_COMPONENT24 || format == TextureFormat::DEPTH_COMPONENT32)
+	else if (format == GraphicsFormat::GraphicsFormatD16UNorm || format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 || format == GraphicsFormat::GraphicsFormatD32_SFLOAT)
 		attachment[index++] = GL_DEPTH_ATTACHMENT;
-	else if (format == TextureFormat::STENCIL8)
+	else if (format == GraphicsFormat::GraphicsFormatS8UInt)
 		attachment[index++] = GL_STENCIL_ATTACHMENT;
 	else
 		attachment[index++] = GL_COLOR_ATTACHMENT0;
@@ -339,8 +340,9 @@ OGLMultiRenderTexture::setLayer(GraphicsRenderTexturePtr renderTexture, GLuint l
 	auto texture = renderTexture->getResolveTexture()->downcast<OGLTexture>();
 	auto textureID = texture->getInstanceID();
 	auto& textureDesc = renderTexture->getResolveTexture()->getGraphicsTextureDesc();
-	if (textureDesc.getTexDim() != TextureDim::DIM_2D_ARRAY ||
-		textureDesc.getTexDim() != TextureDim::DIM_CUBE)
+	if (textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDim2DArray ||
+		textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCube ||
+		textureDesc.getTexDim() != GraphicsTextureDim::GraphicsTextureDimCubeArray)
 	{
 		return;
 	}

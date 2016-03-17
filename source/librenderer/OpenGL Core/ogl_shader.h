@@ -97,7 +97,7 @@ public:
 	OGLShaderUniform() noexcept;
 	~OGLShaderUniform() noexcept;
 
-	void setType(ShaderVariantType type) noexcept;
+	void setType(GraphicsVariantType type) noexcept;
 
 	void setLocation(GLint location) noexcept;
 	GLint getLocation() const noexcept;

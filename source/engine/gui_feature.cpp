@@ -76,9 +76,9 @@ GuiInputButton::Code ButtonCodeToGuiButton(InputButton::Code button) noexcept
 	case InputButton::MOUSEY:
 	case InputButton::MOUSEZ:
 		return GuiInputButton::Code::None;
+	default:
+		return GuiInputButton::Code::None;
 	}
-
-	return GuiInputButton::Code::None;
 }
 
 GuiInputKey::Code KeyCodetoGuiKey(InputKey::Code key) noexcept
@@ -445,6 +445,8 @@ GuiFeature::onMessage(const MessagePtr& message) except
 			case InputEvent::Character:
 				_platform->injectKeyPress(KeyCodetoGuiKey(InputKey::Code::None), event.key.keysym.unicode);
 				break;
+			default:
+				return;
 			}
 		}
 	}

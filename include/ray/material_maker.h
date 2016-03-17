@@ -64,14 +64,14 @@ private:
 	void instanceShader(MaterialManager& manager, ShaderObjectDesc& program, iarchive& reader) except;
 	void instanceInclude(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
 
-	static VertexType stringToPrimitive(const std::string& primitive) noexcept;
-	static CullMode stringToCullMode(const std::string& cullmode) noexcept;
-	static FillMode stringToFillMode(const std::string& fillmode) noexcept;
-	static BlendOperation stringToBlendOperation(const std::string& blendop) noexcept;
-	static BlendFactor stringToBlendFactor(const std::string& factor) noexcept;
-	static ColorMask stringToColorMask(const std::string& mask) noexcept;
-	static CompareFunction stringToCompareFunc(const std::string& func) noexcept;
-	static StencilOperation stringToStencilOp(const std::string& stencilop) noexcept;
+	static GraphicsVertexType stringToPrimitive(const std::string& primitive) noexcept;
+	static GraphicsCullMode stringToCullMode(const std::string& cullmode) noexcept;
+	static GraphicsPolygonMode stringToFillMode(const std::string& fillmode) noexcept;
+	static GraphicsBlendOp stringToBlendOperation(const std::string& blendop) noexcept;
+	static GraphicsBlendFactor stringToBlendFactor(const std::string& factor) noexcept;
+	static GraphicsColorMask stringToColorMask(const std::string& mask) noexcept;
+	static GraphicsCompareFunc stringToCompareFunc(const std::string& func) noexcept;
+	static GraphicsStencilOp stringToStencilOp(const std::string& stencilop) noexcept;
 
 private:
 	MaterialMaker(const MaterialMaker&) noexcept = delete;

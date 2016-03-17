@@ -141,11 +141,11 @@ void
 OGLGraphicsLayout::setIndexType(GLenum type) noexcept
 {
 	if (type == GL_UNSIGNED_SHORT)
-		_layout.setIndexType(IndexType::Uint16);
+		_layout.setIndexType(GraphicsIndexType::GraphicsIndexTypeUint16);
 	else if (type == GL_UNSIGNED_INT)
-		_layout.setIndexType(IndexType::Uint32);
+		_layout.setIndexType(GraphicsIndexType::GraphicsIndexTypeUint32);
 	else
-		_layout.setIndexType(IndexType::None);
+		_layout.setIndexType(GraphicsIndexType::GraphicsIndexTypeNone);
 }
 
 GLenum
@@ -235,7 +235,7 @@ void
 OGLGraphicsLayout::bindIbo(OGLIndexBufferPtr ibo) noexcept
 {
 	assert(ibo);
-	assert(_layout.getIndexType() != IndexType::None);
+	assert(_layout.getIndexType() != GraphicsIndexType::GraphicsIndexTypeNone);
 
 	if (_ibo != ibo)
 	{

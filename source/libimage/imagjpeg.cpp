@@ -122,6 +122,14 @@ extern "C" void jpeg_term_source(j_decompress_ptr)
     // nothing to see here
 }
 
+JPEGHandler::JPEGHandler() noexcept
+{
+}
+
+JPEGHandler::~JPEGHandler() noexcept
+{
+}
+
 bool
 JPEGHandler::doCanRead(StreamReader& stream) const noexcept
 {
@@ -183,6 +191,8 @@ JPEGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 
     if (image.create(cinfo.image_width, cinfo.image_height, (bpp_type)(cinfo.num_components << 3)))
     {
+		image.setImageType(ImageType::ImageTypeJPEG);
+
         RGB* data = (RGB*)image.data();
         JDIMENSION stride = cinfo.image_width * cinfo.num_components;
         JSAMPARRAY row_pointer = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, stride, 1);

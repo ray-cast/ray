@@ -46,24 +46,24 @@ struct EXPORT RenderBlendState
 	bool           blendEnable;
 	bool           blendSeparateEnable;
 
-	BlendOperation blendOp;
-	BlendFactor    blendSrc;
-	BlendFactor    blendDest;
+	GraphicsBlendOp     blendOp;
+	GraphicsBlendFactor blendSrc;
+	GraphicsBlendFactor blendDest;
 
-	BlendOperation blendAlphaOp;
-	BlendFactor    blendAlphaSrc;
-	BlendFactor    blendAlphaDest;
+	GraphicsBlendOp     blendAlphaOp;
+	GraphicsBlendFactor blendAlphaSrc;
+	GraphicsBlendFactor blendAlphaDest;
 
-	ColorMask      colorWriteMask;
+	GraphicsColorMask      colorWriteMask;
 
 	RenderBlendState() noexcept;
 };
 
 struct EXPORT RenderRasterState
 {
-	CullMode            cullMode;
-	FillMode            fillMode;
-	VertexType          primitiveType;
+	GraphicsCullMode    cullMode;
+	GraphicsPolygonMode fillMode;
+	GraphicsVertexType  primitiveType;
 	bool                scissorTestEnable;
 	bool                srgbEnable;
 	bool                multisampleEnable;
@@ -75,7 +75,7 @@ struct EXPORT RenderDepthState
 {
 	bool                depthEnable;
 	bool                depthWriteMask;
-	CompareFunction     depthFunc;
+	GraphicsCompareFunc depthFunc;
 
 	bool                depthBiasEnable;
 	float               depthBias;
@@ -88,20 +88,20 @@ struct EXPORT RenderStencilState
 {
 	bool                stencilEnable;
 	int                 stencilRef;
-	CompareFunction     stencilFunc;
+	GraphicsCompareFunc stencilFunc;
 	unsigned int        stencilReadMask;
 	unsigned int        stencilWriteMask;
-	StencilOperation    stencilFail;
-	StencilOperation    stencilZFail;
-	StencilOperation    stencilPass;
+	GraphicsStencilOp   stencilFail;
+	GraphicsStencilOp   stencilZFail;
+	GraphicsStencilOp   stencilPass;
 
 	bool                stencilTwoEnable;
-	CompareFunction     stencilTwoFunc;
+	GraphicsCompareFunc stencilTwoFunc;
 	unsigned int        stencilTwoReadMask;
 	unsigned int        stencilTwoWriteMask;
-	StencilOperation    stencilTwoFail;
-	StencilOperation    stencilTwoZFail;
-	StencilOperation    stencilTwoPass;
+	GraphicsStencilOp   stencilTwoFail;
+	GraphicsStencilOp   stencilTwoZFail;
+	GraphicsStencilOp   stencilTwoPass;
 
 	RenderStencilState() noexcept;
 };

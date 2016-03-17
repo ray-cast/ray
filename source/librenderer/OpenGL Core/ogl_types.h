@@ -90,6 +90,33 @@ _NAME_BEGIN
 #	define GL_PLATFORM_LOG(format, ...)
 #endif
 
+#if _DEBUG
+#	if defined(_VISUAL_STUDIO_)
+#		pragma warning(disable : 4127)
+#	endif
+#	define GL_PLATFORM_ASSERT(expr, format) if (!expr) { OGLCheck::debugOutput(format); assert(expr); }
+#else
+#	define GL_PLATFORM_ASSERT(expr, format)
+#endif
+
+typedef std::shared_ptr<class OGLCanvas> OGLCanvasPtr;
+typedef std::shared_ptr<class OGLDevice> OGLDevicePtr;
+typedef std::shared_ptr<class OGLDeviceContext> OGLDeviceContextPtr;
+typedef std::shared_ptr<class OGLRenderTexture> OGLRenderTexturePtr;
+typedef std::shared_ptr<class OGLMultiRenderTexture> OGLMultiRenderTexturePtr;
+typedef std::shared_ptr<class OGLShader> OGLShaderPtr;
+typedef std::shared_ptr<class OGLShaderObject> OGLShaderObjectPtr;
+typedef std::shared_ptr<class OGLVertexBuffer> OGLVertexBufferPtr;
+typedef std::shared_ptr<class OGLIndexBuffer> OGLIndexBufferPtr;
+typedef std::shared_ptr<class OGLGraphicsData> OGLGraphicsDataPtr;
+typedef std::shared_ptr<class OGLGraphicsLayout> OGLGraphicsLayoutPtr;
+typedef std::shared_ptr<class OGLDrawIndirectBuffer> OGLDrawIndirectBufferPtr;
+typedef std::shared_ptr<class OGLGraphicsState> OGLGraphicsStatePtr;
+typedef std::shared_ptr<class OGLTexture> OGLTexturePtr;
+typedef std::shared_ptr<class OGLSampler> OGLSamplerPtr;
+
+typedef std::vector<OGLShaderPtr> OGLShaders;
+
 struct GPUfbconfig
 {
 	int redSize;
@@ -156,43 +183,27 @@ private:
 	static int initExtention;
 };
 
-typedef std::shared_ptr<class OGLCanvas> OGLCanvasPtr;
-typedef std::shared_ptr<class OGLDevice> OGLDevicePtr;
-typedef std::shared_ptr<class OGLDeviceContext> OGLDeviceContextPtr;
-typedef std::shared_ptr<class OGLRenderTexture> OGLRenderTexturePtr;
-typedef std::shared_ptr<class OGLMultiRenderTexture> OGLMultiRenderTexturePtr;
-typedef std::shared_ptr<class OGLShader> OGLShaderPtr;
-typedef std::shared_ptr<class OGLShaderObject> OGLShaderObjectPtr;
-typedef std::shared_ptr<class OGLVertexBuffer> OGLVertexBufferPtr;
-typedef std::shared_ptr<class OGLIndexBuffer> OGLIndexBufferPtr;
-typedef std::shared_ptr<class OGLGraphicsData> OGLGraphicsDataPtr;
-typedef std::shared_ptr<class OGLGraphicsLayout> OGLGraphicsLayoutPtr;
-typedef std::shared_ptr<class OGLDrawIndirectBuffer> OGLDrawIndirectBufferPtr;
-typedef std::shared_ptr<class OGLGraphicsState> OGLGraphicsStatePtr;
-typedef std::shared_ptr<class OGLTexture> OGLTexturePtr;
-typedef std::shared_ptr<class OGLSampler> OGLSamplerPtr;
-
-typedef std::vector<OGLShaderPtr> OGLShaders;
-
 class OGLTypes
 {
 public:
-	static GLenum asVertexType(VertexType type) noexcept;
-	static GLenum asVertexFormat(VertexFormat format) noexcept;
-	static GLenum asIndexType(IndexType type) noexcept;
-	static GLenum asShaderType(ShaderType type) noexcept;
-	static GLenum asTextureTarget(TextureDim mapping, bool multisampler) noexcept;
-	static GLenum asTextureFormat(TextureFormat format) noexcept;
-	static GLenum asTextureType(TextureFormat format) noexcept;
-	static GLenum asTextureInternalFormat(TextureFormat format) noexcept;
-	static GLenum asCompareFunction(CompareFunction func) noexcept;
-	static GLenum asBlendFactor(BlendFactor func) noexcept;
-	static GLenum asBlendOperation(BlendOperation op) noexcept;
-	static GLenum asCullMode(CullMode mode) noexcept;
-	static GLenum asFillMode(FillMode mode) noexcept;
-	static GLenum asStencilOperation(StencilOperation stencilop) noexcept;
-	static GLenum asSamplerWrap(SamplerWrap wrap) noexcept;
-	static GLenum asSamplerFilter(SamplerFilter filter) noexcept;
+	static GLenum asVertexType(GraphicsVertexType type) noexcept;
+	static GLenum asVertexFormat(GraphicsFormat format) noexcept;
+	static GLenum asIndexType(GraphicsIndexType type) noexcept;
+	static GLenum asShaderType(GraphicsShaderStage type) noexcept;
+	static GLenum asTextureTarget(GraphicsTextureDim mapping, bool multisampler) noexcept;
+	static GLenum asTextureFormat(GraphicsFormat format) noexcept;
+	static GLenum asTextureType(GraphicsFormat format) noexcept;
+	static GLenum asTextureInternalFormat(GraphicsFormat format) noexcept;
+	static GLenum asCompareFunction(GraphicsCompareFunc func) noexcept;
+	static GLenum asBlendFactor(GraphicsBlendFactor func) noexcept;
+	static GLenum asBlendOperation(GraphicsBlendOp op) noexcept;
+	static GLenum asCullMode(GraphicsCullMode mode) noexcept;
+	static GLenum asFillMode(GraphicsPolygonMode mode) noexcept;
+	static GLenum asStencilOperation(GraphicsStencilOp stencilop) noexcept;
+	static GLenum asSamplerWrap(GraphicsSamplerWrap wrap) noexcept;
+	static GLenum asSamplerFilter(GraphicsSamplerFilter filter) noexcept;
+
+	static GLboolean isCompressedTexture(GraphicsFormat format) noexcept;
 };
 
 class OGLCheck

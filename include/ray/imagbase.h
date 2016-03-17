@@ -63,73 +63,31 @@ private:
     const ImageBase& operator=(const ImageBase&) noexcept = delete;
 };
 
-class ImageType
+enum ImageType
 {
-public:
-	enum Type
-	{
-		unknown = UNKNOWN_HANDLER,
-#if _BUILD_BMP_HANDLER
-		bmp = BMP_HANDLER,
-#endif
-#if _BUILD_JPEG_HANDLER
-		jpeg = JPEG_HANDLER,
-#endif
-#if _BUILD_PNG_HANDLER
-		png = PNG_HANDLER,
-#endif
-#if _BUILD_TGA_HANDLER
-		tga = TGA_HANDLER,
-#endif
-#if _BUILD_DDS_HANDLER
-		dds1 = DDS1_HANDLER,
-		dds3 = DDS3_HANDLER,
-		dds5 = DDS5_HANDLER,
-		bc4u = BC4U_HANDLER,
-		bc4s = BC4S_HANDLER,
-		bc5s = BC5S_HANDLER,
-		ati2 = ATI2_HANDLER
-#endif
-	};
-
-	ImageType()
-		: _value(ImageType::unknown)
-	{
-	}
-
-	ImageType(Type value)
-		: _value(value)
-	{
-	}
-
-	Type getValue() const noexcept
-	{
-		return _value;
-	}
-
-private:
-	Type _value;
+	ImageTypeUnknown,
+	ImageTypeBMP,
+	ImageTypeJPEG,
+	ImageTypePNG,
+	ImageTypeTGA,
+	ImageTypeBC1RGBU,
+	ImageTypeBC1RGBSRGB,
+	ImageTypeBC1RGBAU,
+	ImageTypeBC1RGBASRGB,
+	ImageTypeBC2U,
+	ImageTypeBC2SRGB,
+	ImageTypeBC3U,
+	ImageTypeBC3SRGB,
+	ImageTypeBC4U,
+	ImageTypeBC4S,
+	ImageTypeBC5U,
+	ImageTypeBC5S,
+	ImageTypeBC6HUFloat,
+	ImageTypeBC6HSFloat,
+	ImageTypeBC7U,
+	ImageTypeBC7SRGB,
+	ImageTypeATI2
 };
-
-inline bool operator==(const ImageType& a, const ImageType& b) noexcept
-{
-	return a.getValue() == b.getValue();
-}
-
-inline bool operator!=(const ImageType& a, const ImageType& b) noexcept
-{
-	return a.getValue() != b.getValue();
-}
-
-inline bool operator==(const ImageType& a, ImageType::Type b) noexcept
-{
-	return a.getValue() == b;
-}
-
-inline bool operator!=(const ImageType& a, ImageType::Type b) noexcept
-{
-	return a.getValue() != b;
-}
 
 _NAME_END
 

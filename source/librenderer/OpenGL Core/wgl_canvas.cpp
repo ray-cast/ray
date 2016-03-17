@@ -72,7 +72,7 @@ WGLCanvas::WGLCanvas() noexcept
 	: _hwnd(nullptr)
 	, _hdc(nullptr)
 	, _context(nullptr)
-	, _interval(SwapInterval::Fps15)
+	, _interval(SwapInterval::SwapIntervalFps15)
 	, _isActive(true)
 {
 	initPixelFormat(_fbconfig, _ctxconfig);
@@ -320,19 +320,19 @@ WGLCanvas::setSwapInterval(SwapInterval interval) noexcept
 	{
 		switch (interval)
 		{
-		case SwapInterval::Free:
+		case SwapInterval::SwapIntervalFree:
 			if (!__wglSwapIntervalEXT(0))
 				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Free) fail");
 			break;
-		case SwapInterval::Vsync:
+		case SwapInterval::SwapIntervalVsync:
 			if (!__wglSwapIntervalEXT(0))
 				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Vsync) fail");
 			break;
-		case SwapInterval::Fps30:
+		case SwapInterval::SwapIntervalFps30:
 			if (!__wglSwapIntervalEXT(0))
 				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Fps30) fail");
 			break;
-		case SwapInterval::Fps15:
+		case SwapInterval::SwapIntervalFps15:
 			if (!__wglSwapIntervalEXT(0))
 				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Fps15) fail");
 			break;

@@ -113,7 +113,7 @@ SSSS::onActivate(RenderPipeline& pipeline) except
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_SSSS = pipeline.createRenderTexture(width, height, TextureDim::DIM_2D, TextureFormat::R8G8B8A8);
+	_SSSS = pipeline.createRenderTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 
 	float sssLevel = 0.125f * float(47) / (100 - 0);
 	float sssStrength = 8.25 * (1.0 - 0.83) / sssLevel;

@@ -130,6 +130,14 @@ struct DDSRawPixelData
 #define DDS_MAX(a, b) (a > b ? a : b)
 #define DDS_MIN(a, b) (a > b ? b : a)
 
+DDSHandler::DDSHandler() noexcept
+{
+}
+
+DDSHandler::~DDSHandler() noexcept
+{
+}
+
 bool 
 DDSHandler::doCanRead(StreamReader& stream) const noexcept
 {
@@ -163,25 +171,25 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 			switch (info.format.fourcc)
 			{
 			case DDS_FOURCC_DXT1:
-				image.setImageType(ImageType::dds1);
+				image.setImageType(ImageType::ImageTypeBC1RGBU);
 				break;
 			case DDS_FOURCC_DXT3:
-				image.setImageType(ImageType::dds3);
-				break;
-			case DDS_FOURCC_DXT5:
-				image.setImageType(ImageType::dds5);
+				image.setImageType(ImageType::ImageTypeBC3U);
 				break;
 			case DDS_FOURCC_BC4U:
-				image.setImageType(ImageType::bc4u);
+				image.setImageType(ImageType::ImageTypeBC4U);
 				break;
 			case DDS_FOURCC_BC4S:
-				image.setImageType(ImageType::bc4s);
+				image.setImageType(ImageType::ImageTypeBC4S);
+				break;
+			case DDS_FOURCC_DXT5:
+				image.setImageType(ImageType::ImageTypeBC5U);
 				break;
 			case DDS_FOURCC_BC5S:
-				image.setImageType(ImageType::bc5s);
+				image.setImageType(ImageType::ImageTypeBC5S);
 				break;
 			case DDS_FOURCC_ATI2:
-				image.setImageType(ImageType::ati2);
+				image.setImageType(ImageType::ImageTypeATI2);
 				break;
 			default:
 				assert(false);

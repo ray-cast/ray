@@ -128,12 +128,12 @@ ShaderUniform::needUpdate() const noexcept
 }
 
 void
-ShaderUniform::setType(ShaderVariantType type) noexcept
+ShaderUniform::setType(GraphicsVariantType type) noexcept
 {
 	_type = type;
 }
 
-ShaderVariantType
+GraphicsVariantType
 ShaderUniform::getType() const noexcept
 {
 	return _type;
@@ -234,7 +234,7 @@ ShaderDesc::ShaderDesc() noexcept
 {
 }
 
-ShaderDesc::ShaderDesc(ShaderType type, const std::vector<char>& code) noexcept
+ShaderDesc::ShaderDesc(GraphicsShaderStage type, const std::vector<char>& code) noexcept
 {
 	this->setType(type);
 	this->setByteCodes(code);
@@ -245,12 +245,12 @@ ShaderDesc::~ShaderDesc() noexcept
 }
 
 void
-ShaderDesc::setType(ShaderType type) noexcept
+ShaderDesc::setType(GraphicsShaderStage type) noexcept
 {
 	_type = type;
 }
 
-ShaderType
+GraphicsShaderStage
 ShaderDesc::getType()const noexcept
 {
 	return _type;
@@ -291,9 +291,9 @@ ShaderObjectDesc::addShader(const ShaderDesc& shader) noexcept
 }
 
 void
-ShaderObjectDesc::removeShader(ShaderType type) noexcept
+ShaderObjectDesc::removeShader(GraphicsShaderStage stage) noexcept
 {
-	auto it = std::find_if(_shaders.begin(), _shaders.end(), [&](const ShaderDesc& shaderDesc) { return shaderDesc.getType() == type;});
+	auto it = std::find_if(_shaders.begin(), _shaders.end(), [&](const ShaderDesc& shaderDesc) { return shaderDesc.getType() == stage;});
 	if (it != _shaders.end())
 		_shaders.erase(it);
 }

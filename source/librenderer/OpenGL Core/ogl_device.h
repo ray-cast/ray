@@ -93,15 +93,15 @@ public:
 	virtual GraphicsRenderTexturePtr createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept;
 	virtual void setRenderTexture(GraphicsRenderTexturePtr target) noexcept;
 	virtual void setRenderTextureLayer(GraphicsRenderTexturePtr target, std::int32_t layer) noexcept;
-	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
+	virtual void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
 	virtual void discardRenderTexture() noexcept;
 	virtual void blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, GraphicsRenderTexturePtr dest, const Viewport& v2) noexcept;
-	virtual void readRenderTexture(GraphicsRenderTexturePtr source, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	virtual void readRenderTexture(GraphicsRenderTexturePtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
 	virtual GraphicsRenderTexturePtr getRenderTexture() const noexcept;
 
 	virtual GraphicsMultiRenderTexturePtr createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept;
 	virtual void setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept;
-	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
+	virtual void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
 	virtual GraphicsMultiRenderTexturePtr getMultiRenderTexture() const noexcept;
 
 	virtual GraphicsStatePtr createGraphicsState(const GraphicsStateDesc& desc) noexcept;

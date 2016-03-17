@@ -41,12 +41,19 @@
 
 _NAME_BEGIN
 
-class JPEGHandler : public ImageHandler
+class JPEGHandler final : public ImageHandler
 {
-private:
+public:
+	JPEGHandler() noexcept;
+	~JPEGHandler() noexcept;
+
     bool doCanRead(StreamReader& stream) const noexcept;
     bool doLoad(Image& image, StreamReader& stream) noexcept;
     bool doSave(Image& image, StreamWrite& stream) noexcept;
+
+private:
+	JPEGHandler(const JPEGHandler&) noexcept = delete;
+	const JPEGHandler& operator=(const JPEGHandler&) noexcept = delete;
 };
 
 _NAME_END

@@ -53,7 +53,7 @@ OGLIndexBuffer::~OGLIndexBuffer() noexcept
 bool
 OGLIndexBuffer::setup(const GraphicsDataDesc& desc) noexcept
 {
-	assert(desc.getType() == GraphicsStream::IBO);
+	assert(desc.getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
 	assert(desc.getStreamSize() > 0);
 	return _indexData.setup(desc);
 }

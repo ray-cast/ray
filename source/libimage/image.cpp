@@ -82,7 +82,7 @@ Image::create(size_type width, size_type height, bpp_type bpp, bool clear) noexc
 	_isStatic = false;
 	_data = new pass_val[destLength];
 
-	this->setImageType(ImageType::unknown);
+	this->setImageType(ImageType::ImageTypeUnknown);
 
 	if (clear) this->clear();
 
@@ -103,7 +103,7 @@ Image::create(size_type width, size_type height, bpp_type bpp, std::size_t dataS
 	_size = dataSize;
 	_isStatic = staticData;
 
-	this->setImageType(ImageType::unknown);
+	this->setImageType(ImageType::ImageTypeUnknown);
 
 	if (clear) this->clear();
 
@@ -281,7 +281,7 @@ Image::find(StreamReader& stream, ImageHandlerPtr& out) const noexcept
 bool
 Image::find(ImageType type, ImageHandlerPtr& out) const noexcept
 {
-    std::size_t index = (std::size_t)type.getValue();
+    std::size_t index = type;
     if (_handlers.size() < index)
     {
         out = _handlers[index];
@@ -294,7 +294,7 @@ Image::find(ImageType type, ImageHandlerPtr& out) const noexcept
 bool
 Image::find(StreamReader& stream, ImageType type, ImageHandlerPtr& out) const noexcept
 {
-    if (type != ImageType::unknown)
+    if (type != ImageType::ImageTypeUnknown)
     {
         if (this->find(type, out))
         {

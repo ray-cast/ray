@@ -204,7 +204,7 @@ Light::_updateShadow() const noexcept
 	{
 		if (!_shadowCamera->getRenderTexture())
 		{
-			auto depthTexture = RenderSystem::instance()->createRenderTexture(_shadowSize, _shadowSize, TextureDim::DIM_2D, TextureFormat::DEPTH_COMPONENT16);
+			auto depthTexture = RenderSystem::instance()->createRenderTexture(_shadowSize, _shadowSize, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatD16UNorm);
 			_shadowCamera->setRenderTexture(depthTexture);
 		}
 	}

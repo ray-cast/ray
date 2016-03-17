@@ -45,7 +45,7 @@ GraphicsDataDesc::GraphicsDataDesc() noexcept
 	, _dataSize(0)
 	, _stride(0)
 	, _usage(UsageFlags::MAP_READ_BIT | UsageFlags::IMMUTABLE_STORAGE)
-	, _type(GraphicsStream::VBO)
+	, _type(GraphicsDataType::GraphicsDataTypeNone)
 {
 }
 
@@ -66,12 +66,12 @@ GraphicsDataDesc::getUsage() const noexcept
 }
 
 void
-GraphicsDataDesc::setType(GraphicsStream type) noexcept
+GraphicsDataDesc::setType(GraphicsDataType type) noexcept
 {
 	_type = type;
 }
 
-GraphicsStream 
+GraphicsDataType
 GraphicsDataDesc::getType() const noexcept
 {
 	return _type;

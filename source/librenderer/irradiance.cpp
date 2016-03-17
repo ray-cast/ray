@@ -73,8 +73,8 @@ EnvironmentIrradiance::EnvironmentIrradiance(RenderPipeline& pipeline) except
 	_sphericalHarmonicConvolveYlmDW0 = _irradiance->getParameter("SHConvolveYlmDW0");
 	_sphericalHarmonicConvolveYlmDW1 = _irradiance->getParameter("SHConvolveYlmDW1");
 
-	_paraboloidFrontMap = pipeline.createRenderTexture(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, TextureDim::DIM_2D, TextureFormat::R11G11B10F);
-	_paraboloidBackMap = pipeline.createRenderTexture(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, TextureDim::DIM_2D, TextureFormat::R11G11B10F);
+	_paraboloidFrontMap = pipeline.createRenderTexture(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16SFloat);
+	_paraboloidBackMap = pipeline.createRenderTexture(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16SFloat);
 
 	GraphicsMultiRenderTextureDesc paraboloidDualDesc;
 	paraboloidDualDesc.attach(_paraboloidFrontMap);
@@ -82,7 +82,7 @@ EnvironmentIrradiance::EnvironmentIrradiance(RenderPipeline& pipeline) except
 
 	_paraboloidDualMaps = pipeline.createMultiRenderTexture(paraboloidDualDesc);
 
-	_irradianceSHCoefficients = pipeline.createRenderTexture(NUM_ORDER_P2, NUM_ORDER_P2, TextureDim::DIM_2D, TextureFormat::R16G16B16F);
+	_irradianceSHCoefficients = pipeline.createRenderTexture(NUM_ORDER_P2, NUM_ORDER_P2, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16SFloat);
 
 	this->_buildDualParaboloidWeightTextures(pipeline, _paraboloidSHWeights, NUM_ORDER, NUM_RADIANCE_SAMPLES);
 }
@@ -107,11 +107,11 @@ EnvironmentIrradiance::renderParaboloidEnvMap(RenderPipeline& pipeline, Graphics
 	_sphericalHarmonicConvolveYlmDW1->assign(_paraboloidSHWeights[1]);
 
 	pipeline.setMultiRenderTexture(_paraboloidDualMaps);
-	pipeline.clearRenderTexture(ClearFlags::Color, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColor, Vector4::Zero, 1.0, 0);
 	pipeline.drawScreenQuad(_irradianceParaboloid);
 
 	pipeline.setRenderTexture(_irradianceSHCoefficients);
-	pipeline.clearRenderTexture(ClearFlags::Color, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColor, Vector4::Zero, 1.0, 0);
 	pipeline.drawScreenQuad(_irradianceProjectDualParaboloidToSH);
 }
 
@@ -296,8 +296,8 @@ EnvironmentIrradiance::_buildDualParaboloidWeightTextures(RenderPipeline& pipeli
 		}
 
 		GraphicsTextureDesc textureDesc;
-		textureDesc.setTexDim(TextureDim::DIM_2D);
-		textureDesc.setTexFormat(TextureFormat::R32F);
+		textureDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+		textureDesc.setTexFormat(GraphicsFormat::GraphicsFormatR32SFloat);
 		textureDesc.setSize(size*size, size*size);
 		textureDesc.setStream(coefficients);
 

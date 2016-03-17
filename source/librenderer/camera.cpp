@@ -52,7 +52,7 @@ Camera::Camera() noexcept
 	, _znear(0.1f)
 	, _zfar(100.0f)
 	, _viewport(0, 0, 0, 0)
-	, _clearFlags(ClearFlags::All)
+	, _clearFlags(GraphicsClearFlags::GraphicsClearFlagsAll)
 	, _clearColor(Vector4::Zero)
 	, _cameraType(CameraType::CT_PERSPECTIVE)
 	, _cameraOrder(CameraOrder::CO_MAIN)
@@ -263,12 +263,12 @@ Camera::screenToDirection(const Vector2& pos) const noexcept
 }
 
 void
-Camera::setClearFlags(ClearFlags flags) noexcept
+Camera::setClearFlags(GraphicsClearFlags flags) noexcept
 {
 	_clearFlags = flags;
 }
 
-ClearFlags
+GraphicsClearFlags
 Camera::getCameraFlags() const noexcept
 {
 	return _clearFlags;

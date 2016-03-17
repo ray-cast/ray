@@ -41,12 +41,19 @@
 
 _NAME_BEGIN
 
-class DDSHandler : public ImageHandler
+class DDSHandler final : public ImageHandler
 {
-private:
+public:
+	DDSHandler() noexcept;
+	~DDSHandler() noexcept;
+
 	bool doCanRead(StreamReader& stream) const noexcept;
 	bool doLoad(Image& image, StreamReader& stream) noexcept;
 	bool doSave(Image& image, StreamWrite& stream) noexcept;
+
+private:
+	DDSHandler(const DDSHandler&) noexcept = delete;
+	const DDSHandler& operator=(const DDSHandler&) noexcept = delete;
 };
 
 _NAME_END

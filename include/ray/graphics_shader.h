@@ -116,7 +116,7 @@ public:
 	void needUpdate(bool update) noexcept;
 	bool needUpdate() const noexcept;
 
-	ShaderVariantType getType() const noexcept;
+	GraphicsVariantType getType() const noexcept;
 
 	void assign(bool value) noexcept;
 	void assign(int value) noexcept;
@@ -133,7 +133,7 @@ public:
 	void assign(const std::vector<float4>& value) noexcept;
 
 protected:
-	void setType(ShaderVariantType type) noexcept;
+	void setType(GraphicsVariantType type) noexcept;
 	
 private:
 	ShaderUniform(const ShaderUniform&) noexcept = delete;
@@ -142,7 +142,7 @@ private:
 private:
 	bool _needUpdate;
 
-	ShaderVariantType _type;
+	GraphicsVariantType _type;
 	ShaderVariant* _value;
 };
 
@@ -150,17 +150,17 @@ class EXPORT ShaderDesc final
 {
 public:
 	ShaderDesc() noexcept;
-	ShaderDesc(ShaderType type, const std::vector<char>& code) noexcept;
+	ShaderDesc(GraphicsShaderStage type, const std::vector<char>& code) noexcept;
 	virtual ~ShaderDesc() noexcept;
 
-	void setType(ShaderType type) noexcept;
-	ShaderType  getType() const noexcept;
+	void setType(GraphicsShaderStage type) noexcept;
+	GraphicsShaderStage getType() const noexcept;
 
 	void setByteCodes(const std::vector<char>& source) noexcept;
 	const std::vector<char>& getByteCodes() const noexcept;
 
 private:
-	ShaderType _type;
+	GraphicsShaderStage _type;
 	std::vector<char> _bytecodes;
 };
 
@@ -171,7 +171,7 @@ public:
 	virtual ~ShaderObjectDesc() noexcept;
 
 	bool addShader(const ShaderDesc& shader) noexcept;
-	void removeShader(ShaderType type) noexcept;
+	void removeShader(GraphicsShaderStage type) noexcept;
 
 	const ShadersDesc& getShaders() const noexcept;
 

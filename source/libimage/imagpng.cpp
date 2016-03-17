@@ -77,6 +77,14 @@ void PNGAPI PNG_stream_reader(png_structp png_ptr, png_bytep data, png_size_t le
 	info->stream.in->read((char*)data, (std::streamsize)length);
 }
 
+PNGHandler::PNGHandler() noexcept
+{
+}
+
+PNGHandler::~PNGHandler() noexcept
+{
+}
+
 bool
 PNGHandler::doCanRead(StreamReader& stream) const noexcept
 {
@@ -224,6 +232,8 @@ PNGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 
 	::png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 
+	if (result)
+		image.setImageType(ImageType::ImageTypePNG);
 	return result;
 }
 

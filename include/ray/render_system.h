@@ -72,13 +72,13 @@ public:
 	void removeRenderScene(RenderScenePtr scene) noexcept;
 
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
-	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, TextureDim dim, TextureFormat format) noexcept;
+	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
 	GraphicsTexturePtr createTexture(const std::string& name) except;
 
 	MaterialPtr createMaterial(const std::string& name) except;
 
 	GraphicsRenderTexturePtr createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept;
-	GraphicsRenderTexturePtr createRenderTexture(std::uint32_t w, std::uint32_t h, TextureDim dim, TextureFormat format) noexcept;
+	GraphicsRenderTexturePtr createRenderTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
 
 	GraphicsMultiRenderTexturePtr createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept;
 

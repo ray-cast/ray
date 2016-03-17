@@ -48,14 +48,14 @@ public:
 	~GraphicsTextureDesc() noexcept;
 	
 	void setTexMipmap(bool enable) noexcept;
-	void setTexFormat(TextureFormat format) noexcept;
-	void setTexOp(SamplerOp op) noexcept;
-	void setSamplerWrap(SamplerWrap wrap) noexcept;
-	void setSamplerFilter(SamplerFilter filter) noexcept;
-	void setTexDim(TextureDim mapping) noexcept;
+	void setTexFormat(GraphicsFormat format) noexcept;
+	void setTexOp(GraphicsSamplerOp op) noexcept;
+	void setSamplerWrap(GraphicsSamplerWrap wrap) noexcept;
+	void setSamplerFilter(GraphicsSamplerFilter filter) noexcept;
+	void setTexDim(GraphicsTextureDim mapping) noexcept;
 	void setMipLevel(std::uint8_t level) noexcept;
 	void setMipSize(std::uint32_t size) noexcept;
-	void setSamplerAnis(SamplerAnis anis) noexcept;
+	void setSamplerAnis(GraphicsSamplerAnis anis) noexcept;
 	void setMultisample(bool enable) noexcept;
 	void setWidth(int w) noexcept;
 	void setHeight(int h) noexcept;
@@ -63,12 +63,12 @@ public:
 	void setStream(void* data) noexcept;
 	void setSize(int w, int h, int depth = 0) noexcept;
 
-	TextureFormat getTexFormat()  const noexcept;
-	TextureDim    getTexDim() const noexcept;
-	SamplerOp     getTexOp()   const noexcept;
-	SamplerWrap   getSamplerWrap() const noexcept;
-	SamplerFilter getSamplerFilter() const noexcept;
-	SamplerAnis   getSamplerAnis() const noexcept;
+	GraphicsFormat getTexFormat()  const noexcept;
+	GraphicsTextureDim getTexDim() const noexcept;
+	GraphicsSamplerOp getTexOp()   const noexcept;
+	GraphicsSamplerWrap getSamplerWrap() const noexcept;
+	GraphicsSamplerFilter getSamplerFilter() const noexcept;
+	GraphicsSamplerAnis getSamplerAnis() const noexcept;
 
 	int getWidth()   const noexcept;
 	int getHeight()  const noexcept;
@@ -93,12 +93,12 @@ private:
 	std::int32_t _mipLevel;
 	std::uint32_t _mipSize;
 
-	TextureFormat _format;
-	TextureDim _dim;
-	SamplerOp _texop;
-	SamplerFilter _filter;
-	SamplerWrap _wrap;
-	SamplerAnis _anis;
+	GraphicsFormat _format;
+	GraphicsTextureDim _dim;
+	GraphicsSamplerOp _texop;
+	GraphicsSamplerFilter _filter;
+	GraphicsSamplerWrap _wrap;
+	GraphicsSamplerAnis _anis;
 
 	void* _data;
 };

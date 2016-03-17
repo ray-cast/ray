@@ -81,19 +81,19 @@ public:
 	RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept;
 
 	GraphicsRenderTexturePtr createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept;
-	GraphicsRenderTexturePtr createRenderTexture(std::uint32_t w, std::uint32_t h, TextureDim dim, TextureFormat format) noexcept;
+	GraphicsRenderTexturePtr createRenderTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
 	GraphicsMultiRenderTexturePtr createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept;
 	void setRenderTexture(GraphicsRenderTexturePtr target) noexcept;
 	void setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept;
 	void setRenderTextureLayer(GraphicsRenderTexturePtr target, int layer) noexcept;
-	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
-	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
+	void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
+	void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
 	void discradRenderTexture() noexcept;
-	void readRenderTexture(GraphicsRenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	void readRenderTexture(GraphicsRenderTexturePtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
 	void blitRenderTexture(GraphicsRenderTexturePtr srcTarget, const Viewport& src, GraphicsRenderTexturePtr destTarget, const Viewport& dest) noexcept;
 
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
-	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, TextureDim dim, TextureFormat format) noexcept;
+	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
 	GraphicsTexturePtr createTexture(const std::string& name) except;
 
 	MaterialPtr createMaterial(const std::string& name) except;

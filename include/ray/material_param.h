@@ -45,14 +45,14 @@ class EXPORT MaterialVariant
 {
 public:
 	MaterialVariant() noexcept;
-	MaterialVariant(const std::string& name, ShaderVariantType type) noexcept;
+	MaterialVariant(const std::string& name, GraphicsVariantType type) noexcept;
 	virtual ~MaterialVariant() noexcept;
 
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 
-	void setType(ShaderVariantType type) noexcept;
-	ShaderVariantType getType() const noexcept;
+	void setType(GraphicsVariantType type) noexcept;
+	GraphicsVariantType getType() const noexcept;
 
 	std::size_t getSize() const noexcept;
 
@@ -111,7 +111,7 @@ private:
 		std::vector<float4>* farray4;
 	} _value;
 
-	ShaderVariantType _type;
+	GraphicsVariantType _type;
 	ShaderVariants _params;
 };
 
@@ -119,7 +119,7 @@ class EXPORT MaterialSemantic final : public MaterialVariant
 {
 public:
 	MaterialSemantic() noexcept;
-	MaterialSemantic(const std::string& name, ShaderVariantType type) noexcept;
+	MaterialSemantic(const std::string& name, GraphicsVariantType type) noexcept;
 	virtual ~MaterialSemantic() noexcept;
 };
 
@@ -127,14 +127,14 @@ class EXPORT MaterialParam final
 {
 public:
 	MaterialParam() noexcept;
-	MaterialParam(const std::string& name, ShaderVariantType type) noexcept;
+	MaterialParam(const std::string& name, GraphicsVariantType type) noexcept;
 	virtual ~MaterialParam() noexcept;
 
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 
-	void setType(ShaderVariantType type) noexcept;
-	ShaderVariantType getType() const noexcept;
+	void setType(GraphicsVariantType type) noexcept;
+	GraphicsVariantType getType() const noexcept;
 
 	void setSemantic(MaterialSemanticPtr semantic) noexcept;
 	MaterialSemanticPtr getSemantic() const noexcept;
@@ -172,7 +172,7 @@ private:
 	MaterialSemanticPtr _semantic;
 	GraphicsTexturePtr _texture;
 	GraphicsSamplerPtr _sampler;
-	ShaderVariantType _type;
+	GraphicsVariantType _type;
 	ShaderUniforms _uniforms;
 };
 

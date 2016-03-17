@@ -71,7 +71,6 @@ OGLDeviceContext::open(WindHandle window) noexcept
 
 		this->initDebugControl();
 		this->initStateSystem();
-		this->initCommandList();
 
 		_initOpenGL = true;
 	}
@@ -349,17 +348,6 @@ OGLDeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 			return;
 	}
 
-	auto primitiveType = _stateCaptured.getRasterState().primitiveType;
-	if (_enableWireframe)
-	{
-		if (primitiveType == VertexType::PointOrLine ||
-			primitiveType == VertexType::TriangleOrLine ||
-			primitiveType == VertexType::FanOrLine)
-		{
-			primitiveType = VertexType::Line;
-		}
-	}
-
 	if (_needUpdateLayout)
 	{
 		if (_inputLayout)
@@ -381,6 +369,7 @@ OGLDeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 		_needUpdateIbo = false;
 	}
 
+	auto primitiveType = _stateCaptured.getRasterState().primitiveType;
 	if (_ibo)
 	{
 		GLenum drawType = OGLTypes::asVertexType(primitiveType);
@@ -589,11 +578,11 @@ OGLDeviceContext::getMultiRenderTexture() const noexcept
 }
 
 void
-OGLDeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
+OGLDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
 {
 	GLbitfield mode = 0;
 
-	if (flags & ClearFlags::Color)
+	if (flags & GraphicsClearFlags::GraphicsClearFlagsColor)
 	{
 		mode |= GL_COLOR_BUFFER_BIT;
 
@@ -604,7 +593,7 @@ OGLDeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, flo
 		}
 	}
 
-	if (flags & ClearFlags::Depth)
+	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 	{
 		mode |= GL_DEPTH_BUFFER_BIT;
 
@@ -615,7 +604,7 @@ OGLDeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, flo
 		}
 	}
 
-	if (flags & ClearFlags::Stencil)
+	if (flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
 	{
 		mode |= GL_STENCIL_BUFFER_BIT;
 
@@ -629,14 +618,14 @@ OGLDeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, flo
 	if (mode != 0)
 	{
 		auto depthWriteMask = _stateCaptured.getDepthState().depthWriteMask;
-		if (!depthWriteMask && flags & ClearFlags::Depth)
+		if (!depthWriteMask && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_TRUE);
 		}
 
 		glClear(mode);
 
-		if (!depthWriteMask && flags & ClearFlags::Depth)
+		if (!depthWriteMask && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_FALSE);
 		}
@@ -644,12 +633,12 @@ OGLDeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, flo
 }
 
 void
-OGLDeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+OGLDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
-	if (flags & ClearFlags::Depth)
+	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 	{
 		auto depthWriteMask = _stateCaptured.getDepthState().depthWriteMask;
-		if (!depthWriteMask && flags & ClearFlags::Depth)
+		if (!depthWriteMask && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_TRUE);
 		}
@@ -657,19 +646,19 @@ OGLDeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, flo
 		GLfloat f = depth;
 		glClearBufferfv(GL_DEPTH, 0, &f);
 
-		if (!depthWriteMask && flags & ClearFlags::Depth)
+		if (!depthWriteMask && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_FALSE);
 		}
 	}
 
-	if (flags & ClearFlags::Stencil)
+	if (flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
 	{
 		GLint s = stencil;
 		glClearBufferiv(GL_STENCIL, 0, &s);
 	}
 
-	if (flags & ClearFlags::Color)
+	if (flags & GraphicsClearFlags::GraphicsClearFlagsColor)
 	{
 		glClearBufferfv(GL_COLOR, i, color.ptr());
 	}
@@ -687,7 +676,7 @@ OGLDeviceContext::discardRenderTexture() noexcept
 }
 
 void
-OGLDeviceContext::readRenderTexture(GraphicsRenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+OGLDeviceContext::readRenderTexture(GraphicsRenderTexturePtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
 	assert(w && h && data);
 
@@ -856,21 +845,6 @@ OGLDeviceContext::initDebugControl() noexcept
 	// disable ids
 	glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 6, ids, GL_FALSE);
 #endif
-}
-
-void
-OGLDeviceContext::initCommandList() noexcept
-{
-	initCommandListNV();
-
-	GraphicsDataDesc dibo;
-	dibo.setType(GraphicsStream::DIBO);
-	dibo.setStreamSize(sizeof(DrawElementsIndirectCommand));
-	dibo.setUsage(UsageFlags::MAP_WRITE_BIT | UsageFlags::IMMUTABLE_STORAGE);
-
-	_drawIndirectBuffer = std::make_shared<OGLDrawIndirectBuffer>();
-	_drawIndirectBuffer->setup(dibo);
-	_drawIndirectBuffer->bind();
 }
 
 void

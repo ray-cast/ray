@@ -67,7 +67,7 @@ OGLDevice::open(WindHandle win) noexcept
 	if (context)
 	{
 		_glcontext = context->downcast<OGLDeviceContext>();
-		_glcontext->setSwapInterval(SwapInterval::Vsync);
+		_glcontext->setSwapInterval(SwapInterval::SwapIntervalVsync);
 		return true;
 	}
 
@@ -196,26 +196,30 @@ OGLDevice::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
 	auto type = desc.getType();
 
-	if (type == GraphicsStream::VBO)
+	if (type == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer)
 	{
 		auto data = std::make_shared<OGLVertexBuffer>();
 		data->setDevice(this->downcast<OGLDevice>());
 		if (data->setup(desc))
 			return data;
 	}
-	else if (type == GraphicsStream::IBO)
+	else if (type == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer)
 	{
 		auto data = std::make_shared<OGLIndexBuffer>();
 		data->setDevice(this->downcast<OGLDevice>());
 		if (data->setup(desc))
 			return data;
 	}
-	else if (type == GraphicsStream::DIBO)
+	else if (type == GraphicsDataType::GraphicsDataTypeStorageBuffer)
 	{
 		auto data = std::make_shared<OGLDrawIndirectBuffer>();
 		data->setDevice(this->downcast<OGLDevice>());
 		if (data->setup(desc))
 			return data;
+	}
+	else
+	{
+		assert(false);
 	}
 
 	return nullptr;
@@ -344,7 +348,7 @@ OGLDevice::setRenderTextureLayer(GraphicsRenderTexturePtr target, std::int32_t l
 }
 
 void
-OGLDevice::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
+OGLDevice::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
 {
 	assert(_glcontext);
 	_glcontext->clearRenderTexture(flags, color, depth, stencil);
@@ -365,7 +369,7 @@ OGLDevice::blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, G
 }
 
 void
-OGLDevice::readRenderTexture(GraphicsRenderTexturePtr source, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+OGLDevice::readRenderTexture(GraphicsRenderTexturePtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
 	assert(_glcontext);
 	_glcontext->readRenderTexture(source, pfd, w, h, data);
@@ -396,7 +400,7 @@ OGLDevice::setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept
 }
 
 void
-OGLDevice::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+OGLDevice::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
 	assert(_glcontext);
 	_glcontext->clearRenderTexture(flags, color, depth, stencil, i);

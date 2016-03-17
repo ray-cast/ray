@@ -111,8 +111,8 @@ public:
 	Vector3 screenToWorld(const Vector3& pos) const noexcept;
 	Vector3 screenToDirection(const Vector2& pos) const noexcept;
 
-	void setClearFlags(ClearFlags flags) noexcept;
-	ClearFlags getCameraFlags() const noexcept;
+	void setClearFlags(GraphicsClearFlags flags) noexcept;
+	GraphicsClearFlags getCameraFlags() const noexcept;
 
 	void setClearColor(const Vector4& color) noexcept;
 	const Vector4& getClearColor() const noexcept;
@@ -156,8 +156,8 @@ private:
 
 	Viewport _viewport;
 
-	ClearFlags _clearFlags;
 	Vector4    _clearColor;
+	GraphicsClearFlags _clearFlags;
 
 	CameraType   _cameraType;
 	CameraOrder  _cameraOrder;

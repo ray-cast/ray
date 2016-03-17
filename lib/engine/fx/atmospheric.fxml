@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<effect version="1270" language="hlsl">
+    <include name="sys:fx/lighting.fxml" />
+    <parameter name="eyePosition" type="float3"/>
+    <parameter name="matModelViewProject" type="float4x4"/>
+    <parameter name="atmosphereTop" type="float"/>
+    <parameter name="lightDirection" type="float3"/>
+    <parameter name="earth_color_tex" type="texture" />
+    <parameter name="ocean_mask_tex" type="texture" />
+    <shader>
+        <![CDATA[
+        static float planetRadius = 1;
+        static float3 beta = float3(38.05, 82.36, 214.65);
+        static float3 absorb = float3(0.75, 0.85, 1);
+        static float  density = 0.00119;
+        static float LN2 = 0.693147181;
+        static float H50 = density * LN2;
+        static float3 BETA50 = beta * LN2;
+        static float  INV_H50 = (1 / H50);
+        static float X50 = planetRadius / H50;
+        static float atmosphereTop = 1.011;
+
+        uniform float3 eyePosition;
+        uniform float3 lightDirection;
+        uniform float4x4 matModelViewProject;
+
+        uniform Texture2D earth_color_tex;
+        uniform Texture2D ocean_mask_tex;
+
+        float Chapman(float X, float h, float cos_chi)
+        {
+            // this is the approximate Chapman function,
+            // corrected for transitive consistency
+
+            float c = sqrt(X + h);
+            float c_exp_h = c * exp2(-h);
+            if (cos_chi >= 0)
+            {
+                return c_exp_h / (c * cos_chi + 1);
+            }
+            else
+            {
+                float x0 = sqrt(1 - cos_chi * cos_chi) * (X + h);
+                float c0 = sqrt(x0);
+                return 2 * c0 * exp2(X - x0) - c_exp_h / (1 - c * cos_chi);
+            }
+        }
+
+        float3 Transmittance(float3 r, float3 view_dir)
+        {
+            // a quick function to get the transmittance
+            // looking from point p into infinity
+
+            float x = length(r) * INV_H50;
+            float h = x - X50;
+            float cos_chi = dot(normalize(r), view_dir);
+
+            return exp2(-BETA50 * H50 * Chapman(X50, h, cos_chi));
+        }
+
+        void AerialPerspective(float3 r0, float3 r1, bool infinite, out float3 result_t, out float3 result_s)
+        {
+            // compute the full aerial perspective
+            // from point r0 to point r1,
+            // all positions relative to the planet center
+            // if the infinite flag is true, the ray is followed beyond r1 into open space
+
+            result_t = 1;
+            result_s = 0;
+
+            // get the principal integration bounds
+            // as the intersection of the viewing ray
+            // with the atmosphere boundary
+            // t0 = start, t1 = end
+
+            float t0 = 0;
+            float t1 = 0;
+            float3 dr = r1 - r0;
+            float3 drn = normalize(dr);
+
+            float dp = dot(r0, drn);
+            float r0sq = dot(r0, r0);
+            float top2 = atmosphereTop * atmosphereTop;
+            float D = dp * dp - r0sq + top2;
+
+            if (D >= 0)
+            {
+                float sd = sqrt(D);
+                t0 = max(0, -dp - sd);
+                t1 = -dp + sd;
+            }
+            else
+            {
+                return;
+            }
+
+            // the infinite flag means the viewing ray extends
+            // beyond the point of x1 (into space)
+            // otherwise it ends at x1 (onto ground)
+
+            float inf_neg = 1;
+            if (!infinite)
+            {
+                float len_dr = length(dr);
+                t0 = min(t0, len_dr);
+                t1 = min(t1, len_dr);
+                inf_neg = -1;
+            }
+
+            // initialization of
+            // the integration loop variables
+
+            int N = 4;
+            float range = t1 - t0;
+            float dt = range / (N - 1);
+
+            float last_amtl = 0;
+            float last_mray = 0;
+            {
+                float3 r = r0 + drn * t1;
+                float rl = length(r);
+                float x = rl * INV_H50;
+                float h = x - X50;
+                r /= rl;
+                float cos_chi_sun = dot(r, lightDirection);
+                float cos_chi_ray = dot(r, inf_neg * drn);
+
+                last_amtl = H50 * Chapman(X50, h, cos_chi_sun);
+                last_mray = inf_neg * H50 * Chapman(X50, h, cos_chi_ray);
+            }
+
+            float cos_theta = dot(drn, lightDirection);
+            float phase = 3.0f / 4 * (1 + cos_theta * cos_theta);
+
+            // main loop
+            // integrate along the ray in reverse order
+            // (back to front)
+
+            for (int i = N - 1; i > 0; -- i)
+            {
+                // calculate altitude r along the ray
+                float t = i * dt + t0;
+                float3 r = r0 + drn * t;
+                float rl = length(r);
+                r /= rl;
+
+                // normalize altitude to 50%-height
+                float x = rl * INV_H50;
+                float h = x - X50;
+
+                // calculate local incidence angle with the sunlight
+                float cos_chi_sun = dot(r, lightDirection);
+                float cos_chi_ray = dot(r, inf_neg * drn);
+
+                // calculate the airmass along this segment of the ray
+                float mray = inf_neg * H50 * Chapman(X50, h, cos_chi_ray);
+                float msegment = mray - last_mray;
+
+                // calculate inscatter for this segment
+                // amtl = airmass to light
+                // for simplicity, the sun irradiance is assumed to be 1
+                // so this is just the transmittance towards the sun, Tsun
+                // for a Rayleigh atmosphere
+                float amtl = H50 * Chapman(X50, h, cos_chi_sun);
+                float3 segment_s = phase * exp2(-BETA50 * (amtl + last_amtl) * 0.5f);
+
+                // calculate the transmittance for this segment
+                float3 segment_t = exp2(-BETA50 * msegment);
+
+                // propagate the integration
+                // previous inscatter is attenuated by current transmittance, plus the new inscatter
+                // previous transmittance is attenuated by current transmittance
+                result_s = lerp(segment_s, result_s, segment_t);
+                result_t = result_t * segment_t;
+
+                // keep these variables for the next iteration
+                last_amtl = amtl;
+                last_mray = mray;
+            }
+
+            // Factored the average absorbtion color out of the loop
+            // This would not be possible with different absorbtion colors at different scale heights
+            result_s *= absorb;
+        }
+
+        void PlanetVS(
+            in float4 pos           : POSITION,
+            in float2 tex           : TEXCOORD0,
+            out float2 oTex         : TEXCOORD0,
+            out float3 oPosOS       : TEXCOORD1,
+            out float3 oViewDir     : TEXCOORD2,
+            out float4 oPos         : SV_Position)
+        {
+            oTex = tex;
+            oPosOS = pos.xyz;
+            oPos = mul(float4(oPosOS, pos.w), matModelViewProject);
+            oViewDir = oPosOS - eyePosition;
+        }
+
+        float4 PlanetPS(float2 tex : TEXCOORD0, float3 pos_os : TEXCOORD1, float3 view_dir : TEXCOORD2) : SV_Target
+        {
+            float3 color = 0;
+            view_dir = normalize(view_dir);
+
+            // we have hit a surface point
+            // get surfance normal and generate spherical texture coordinates
+            float3 N = normalize(pos_os);
+            float2 uv = 0.5f + float2(0.15915494f, 0.31830989f) * float2(atan2(N.z, N.x), asin(-N.y));
+
+            float3 P = N;
+
+            float3 surface_color = earth_color_tex.Sample(LinearClamp, uv).xyz;
+
+            // get the direct light color
+            // from the transmittance of the sun through the atmosphere
+            float3 light_color = Transmittance(P, lightDirection);
+
+            // for shading the landmass we use the Lommel-Seeliger law
+            float3 V = -view_dir;
+            float dot_nv = max(0, dot(N, V));
+            float dot_nl = max(0, dot(N, lightDirection));
+            float3 land_color = light_color * surface_color * dot_nl / (dot_nl + dot_nv);
+
+            // for shading the ocean
+            // we obtain the skycolor reflection
+            // via the aerial perspective of the reflection vector,
+            // and mix it with an approximate fresnel factor
+            float3 t, s;
+            AerialPerspective(P, P - reflect(V, N), true, t, s);
+            float fresnel = fresnelSchlick(V, N, 0.027f).x;
+            float3 ocean_color = lerp(land_color, s, fresnel);
+
+            // we also add the specular reflection of the sun to the ocean
+            // uses the micro-facet shading model described in ShaderX7
+            float3 H = normalize(lightDirection + V);
+            float dot_nh = max(0, dot(N, H));
+            float dot_lh = max(0, dot(lightDirection, H));
+            ocean_color += light_color * 0.02f * smoothnessTerm(dot(H, N), 32) / pow(dot_lh, 3) * dot_nl;
+
+            // final shaded surface color
+            surface_color = lerp(land_color, ocean_color, ocean_mask_tex.Sample(LinearClamp, uv).x);
+
+            // finally obtain the aerial perspective of the shaded surface point
+            // from the camera's point of view
+            AerialPerspective(eyePosition, P, false, t, s);
+            color = s + t * surface_color;
+
+            return float4(max(color, 0), 1);
+        }
+
+        void AtmosphereVS(float4 pos        : POSITION,
+                            float2 tex              : TEXCOORD0,
+                            out float2 oTex         : TEXCOORD0,
+                            out float3 oPosOS       : TEXCOORD1,
+                            out float3 oViewDir     : TEXCOORD2,
+                            out float4 oPos         : SV_Position)
+        {
+            oTex = tex;
+            oPosOS = pos.xyz * atmosphereTop;
+            oPos = mul(float4(oPosOS, pos.w), matModelViewProject);
+            oViewDir = oPosOS - eyePosition;
+        }
+
+        float4 AtmospherePS(float2 tex : TEXCOORD0, float3 pos_os : TEXCOORD1, float3 view_dir : TEXCOORD2) : SV_Target
+        {
+            float3 color = 0;
+            view_dir = normalize(view_dir);
+
+            // there was no surface intersection
+            // this is simply the aerial perspective of empty space
+            float3 t, s;
+            AerialPerspective(eyePosition, eyePosition + view_dir, true, t, s);
+            color = s;
+
+            return float4(max(color, 0), 1);
+        }
+        ]]>
+    </shader>
+    <technique name="PlanetTech">
+        <pass name="p0">
+            <state name="vertex" value="PlanetVS"/>
+            <state name="fragment" value="PlanetPS"/>
+        </pass>
+    </technique>
+    <technique name="AtmosphereTech">
+        <pass name="p0">
+            <state name="vertex" value="AtmosphereVS"/>
+            <state name="fragment" value="AtmospherePS"/>
+        </pass>
+    </technique>
+</effect>

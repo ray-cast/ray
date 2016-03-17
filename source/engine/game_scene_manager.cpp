@@ -34,24 +34,24 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/game_object_manager.h>
-#include <ray/game_object.h>
+#include <ray/game_scene_manager.h>
+#include <ray/game_scene.h>
 
 _NAME_BEGIN
 
-__ImplementSubClass(GameObjectManager, GameFeature, "GameObjectManager")
-__ImplementSingleton(GameObjectManager)
+__ImplementSubClass(GameSceneManager, GameFeature, "GameSceneManager")
+__ImplementSingleton(GameSceneManager)
 
-GameObjectManager::GameObjectManager() noexcept
+GameSceneManager::GameSceneManager() noexcept
 {
 }
 
-GameObjectManager::~GameObjectManager() noexcept
+GameSceneManager::~GameSceneManager() noexcept
 {
 }
 
 void
-GameObjectManager::_instanceObject(GameObject* entity, std::uint32_t& instanceID) noexcept
+GameSceneManager::_instanceScene(GameScene* entity, std::uint32_t& instanceID) noexcept
 {
 	if (_emptyLists.empty())
 		_instanceLists.push_back(entity);
@@ -65,17 +65,17 @@ GameObjectManager::_instanceObject(GameObject* entity, std::uint32_t& instanceID
 	instanceID = _instanceLists.size();
 }
 
-void 
-GameObjectManager::_unsetObject(GameObject* entity) noexcept
+void
+GameSceneManager::_unsetScene(GameScene* entity) noexcept
 {
 	auto instanceID = entity->getInstanceID();
 	_instanceLists[instanceID - 1] = nullptr;
 	_emptyLists.push_back(instanceID);
-	this->_activeObject(entity, false);
+	this->_activeScene(entity, false);
 }
 
-void 
-GameObjectManager::_activeObject(GameObject* entity, bool active) noexcept
+void
+GameSceneManager::_activeScene(GameScene* entity, bool active) noexcept
 {
 	if (active)
 	{
@@ -96,8 +96,8 @@ GameObjectManager::_activeObject(GameObject* entity, bool active) noexcept
 	}
 }
 
-GameObjectPtr
-GameObjectManager::findObject(const std::string& name) noexcept
+GameScenePtr
+GameSceneManager::findScene(const std::string& name) noexcept
 {
 	for (auto& it : _instanceLists)
 	{
@@ -105,14 +105,14 @@ GameObjectManager::findObject(const std::string& name) noexcept
 			continue;
 
 		if (it->getName() == name)
-			return it->downcast<GameObject>();
+			return it->downcast<GameScene>();
 	}
 
 	return nullptr;
 }
 
-GameObjectPtr 
-GameObjectManager::findActiveObject(const std::string& name) noexcept
+GameScenePtr
+GameSceneManager::findActiveScene(const std::string& name) noexcept
 {
 	for (auto& it : _activeActors)
 	{
@@ -120,80 +120,52 @@ GameObjectManager::findActiveObject(const std::string& name) noexcept
 			continue;
 
 		if (it->getName() == name && it->getActive())
-			return it->downcast<GameObject>();
+			return it->downcast<GameScene>();
 	}
 
 	return nullptr;
 }
 
-GameObjectPtr 
-GameObjectManager::instantiate(const std::string& name) except
+GameScenePtr
+GameSceneManager::instantiate(const std::string& name) except
 {
-	auto object =this->findObject(name);
-	if (object)
-		return object->clone();
+	auto scene = this->findScene(name);
+	if (scene)
+		return scene->clone();
 	return nullptr;
 }
 
-bool 
-GameObjectManager::activeObject(const std::string& name) noexcept
+bool
+GameSceneManager::activeScene(const std::string& name) noexcept
 {
 	for (auto& it : _instanceLists)
 	{
-		if (it)
+		if (!it)
+			continue;
+
+		if (it->getName() == name)
 		{
-			if (it->getName() == name)
-			{
-				it->setActive(true);
-				return true;
-			}
+			it->setActive(true);
+			return true;
 		}
 	}
 
 	return false;
 }
 
-void 
-GameObjectManager::onFrameBegin() noexcept
+void
+GameSceneManager::onFrameBegin() noexcept
 {
-	for (std::size_t i = 0; i < _activeActors.size(); i++)
-	{
-		if (_activeActors[i])
-			_activeActors[i]->_onFrameBegin();
-	}
 }
 
-void 
-GameObjectManager::onFrame() noexcept
+void
+GameSceneManager::onFrame() noexcept
 {
-	for (std::size_t i = 0; i < _activeActors.size(); i++)
-	{
-		if (_activeActors[i])
-			_activeActors[i]->_onFrame();
-	}
 }
 
-void 
-GameObjectManager::onFrameEnd() noexcept
+void
+GameSceneManager::onFrameEnd() noexcept
 {
-	for (std::size_t i = 0; i < _activeActors.size(); i++)
-	{
-		if (_activeActors[i])
-			_activeActors[i]->_onFrameEnd();
-	}
-
-	if (_hasEmptyActors)
-	{
-		for (auto it = _activeActors.begin(); it != _activeActors.end();)
-		{
-			if (!(*it))
-				it = _activeActors.erase(it);
-			else
-				++it;
-		}
-
-		_hasEmptyActors = false;
-	}
 }
 
 _NAME_END

@@ -1,0 +1,710 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<effect language="glsl330">
+    <parameter name="sssWidth" type="float" />
+    <parameter name="sssStep" type="float2" />
+    <parameter name="sssCorrection" type="float" />
+    <parameter name="lightDirection" type="float3" />
+    <parameter name="texDepth" semantic="DepthMap" />
+    <parameter name="texSource" type="texture" />
+    <parameter name="lightColor" type="float3" />
+    <parameter name="lightShadowMap" type="texture" />
+    <parameter name="lightShadowMatrix" type="float4x4" />
+    <parameter name="texMRT0" semantic="DeferredGraphicMap" />
+    <parameter name="texMRT1" semantic="DeferredNormalMap" />
+    <parameter name="matViewProjectInverse" semantic="matViewProjectInverse" />
+    <sampler name="PointClamp">
+        <state name="filter" value="point" />
+        <state name="wrap" value="clamp" />
+    </sampler>
+    <sampler name="samLinear">
+        <state name="filter" value="linear" />
+        <state name="wrap" value="repeat" />
+    </sampler>
+    <sampler name="LinearClamp">
+        <state name="filter" value="linear" />
+        <state name="wrap" value="clamp" />
+    </sampler>
+    <shader name="BlurX">
+        <![CDATA[
+#version 330
+struct vec1 {
+	float x;
+};
+struct uvec1 {
+	uint x;
+};
+struct ivec1 {
+	int x;
+};
+uniform 	float sssWidth;
+uniform 	float sssCorrection;
+uniform 	vec2 sssStep;
+uniform 	vec3 lightColor;
+uniform 	vec3 lightDirection;
+uniform 	mat4 lightShadowMatrix;
+uniform 	mat4 matViewProjectInverse;
+uniform sampler2D texSource;
+uniform sampler2D texDepth;
+ in  vec4 DomOutput0;
+vec4 Input0;
+layout(location = 0) out  vec4 PixOutput0;
+#define Output0 PixOutput0
+vec4 Temp[6];
+ivec4 Temp_int[6];
+uvec4 Temp_uint[6];
+void main()
+{
+    //--- Start Early Main ---
+    Input0 = DomOutput0;
+    //--- End Early Main ---
+    //Instruction 224
+    //SAMPLE
+    Temp[0] = texture(texSource, Input0.xy);
+    //Instruction 225
+    //MUL
+    Temp[1].xy = Temp[0].ww * sssStep.xxxy.zw;
+    //Instruction 226
+    //SAMPLE
+    Temp[2] = texture(texDepth, Input0.xy);
+    //Instruction 227
+    //DIV
+    Temp[1].xy = Temp[1].xy / Temp[2].xx;
+    //Instruction 228
+    //ADD
+    Temp[1].zw = (-Temp[1].xy) + Input0.xy;
+    //Instruction 229
+    //SAMPLE
+    Temp[3] = texture(texDepth, Temp[1].zw);
+    //Instruction 230
+    //SAMPLE
+    Temp[4] = texture(texSource, Temp[1].zw);
+    //Instruction 231
+    //ADD
+    Temp[1].z = Temp[2].x + (-Temp[3].x);
+    //Instruction 232
+    //MUL
+    Temp[1].z = abs(Temp[1].z) * sssCorrection;
+    //Instruction 233
+    //MIN
+    Temp[1].z = min(Temp[1].z, intBitsToFloat(0x3F800000));
+    //Instruction 234
+    //ADD
+    Temp[2].yzw = Temp[0].xyz + (-Temp[4].xyz);
+    //Instruction 235
+    //MAD
+    Temp[2].yzw = Temp[1].zzz * Temp[2].yzw + Temp[4].xyz;
+    //Instruction 236
+    //MUL
+    Temp[3] = Temp[0] * vec4(intBitsToFloat(0x3EC39581), intBitsToFloat(0x3EC39581), intBitsToFloat(0x3EC39581), intBitsToFloat(0x3EC39581));
+    //Instruction 237
+    //MAD
+    Temp[2].yzw = Temp[2].yzw * vec3(intBitsToFloat(0x3BC49BA6), intBitsToFloat(0x3BC49BA6), intBitsToFloat(0x3BC49BA6)) + Temp[3].xyz;
+    //Instruction 238
+    //MOV
+    Output0.w = Temp[3].w;
+    //Instruction 239
+    //MAD
+    Temp[3] = Temp[1].xyxy * vec4(intBitsToFloat(int(0xBF2AACDAu)), intBitsToFloat(int(0xBF2AACDAu)), intBitsToFloat(int(0xBEAAA64Cu)), intBitsToFloat(int(0xBEAAA64Cu))) + Input0.xyxy;
+    //Instruction 240
+    //SAMPLE
+    Temp[4] = texture(texDepth, Temp[3].xy);
+    //Instruction 241
+    //ADD
+    Temp[0].w = Temp[2].x + (-Temp[4].x);
+    //Instruction 242
+    //MUL
+    Temp[0].w = abs(Temp[0].w) * sssCorrection;
+    //Instruction 243
+    //MIN
+    Temp[0].w = min(Temp[0].w, intBitsToFloat(0x3F800000));
+    //Instruction 244
+    //SAMPLE
+    Temp[4] = texture(texSource, Temp[3].xy);
+    //Instruction 245
+    //ADD
+    Temp[5].xyz = Temp[0].xyz + (-Temp[4].xyz);
+    //Instruction 246
+    //MAD
+    Temp[4].xyz = Temp[0].www * Temp[5].xyz + Temp[4].xyz;
+    //Instruction 247
+    //MAD
+    Temp[2].yzw = Temp[4].xyz * vec3(intBitsToFloat(0x3D79DB23), intBitsToFloat(0x3D79DB23), intBitsToFloat(0x3D79DB23)) + Temp[2].yzw;
+    //Instruction 248
+    //SAMPLE
+    Temp[4] = texture(texDepth, Temp[3].zw);
+    //Instruction 249
+    //SAMPLE
+    Temp[3] = texture(texSource, Temp[3].zw);
+    //Instruction 250
+    //ADD
+    Temp[0].w = Temp[2].x + (-Temp[4].x);
+    //Instruction 251
+    //MUL
+    Temp[0].w = abs(Temp[0].w) * sssCorrection;
+    //Instruction 252
+    //MIN
+    Temp[0].w = min(Temp[0].w, intBitsToFloat(0x3F800000));
+    //Instruction 253
+    //ADD
+    Temp[4].xyz = Temp[0].xyz + (-Temp[3].xyz);
+    //Instruction 254
+    //MAD
+    Temp[3].xyz = Temp[0].www * Temp[4].xyz + Temp[3].xyz;
+    //Instruction 255
+    //MAD
+    Temp[2].yzw = Temp[3].xyz * vec3(intBitsToFloat(0x3E77CED9), intBitsToFloat(0x3E77CED9), intBitsToFloat(0x3E77CED9)) + Temp[2].yzw;
+    //Instruction 256
+    //MAD
+    Temp[3] = Temp[1].xyxy * vec4(intBitsToFloat(0x3EAAA64C), intBitsToFloat(0x3EAAA64C), intBitsToFloat(0x3F2AACDA), intBitsToFloat(0x3F2AACDA)) + Input0.xyxy;
+    //Instruction 257
+    //ADD
+    Temp[1].xy = Temp[1].xy + Input0.xy;
+    //Instruction 258
+    //SAMPLE
+    Temp[4] = texture(texDepth, Temp[3].xy);
+    //Instruction 259
+    //ADD
+    Temp[0].w = Temp[2].x + (-Temp[4].x);
+    //Instruction 260
+    //MUL
+    Temp[0].w = abs(Temp[0].w) * sssCorrection;
+    //Instruction 261
+    //MIN
+    Temp[0].w = min(Temp[0].w, intBitsToFloat(0x3F800000));
+    //Instruction 262
+    //SAMPLE
+    Temp[4] = texture(texSource, Temp[3].xy);
+    //Instruction 263
+    //ADD
+    Temp[5].xyz = Temp[0].xyz + (-Temp[4].xyz);
+    //Instruction 264
+    //MAD
+    Temp[4].xyz = Temp[0].www * Temp[5].xyz + Temp[4].xyz;
+    //Instruction 265
+    //MAD
+    Temp[2].yzw = Temp[4].xyz * vec3(intBitsToFloat(0x3E77CED9), intBitsToFloat(0x3E77CED9), intBitsToFloat(0x3E77CED9)) + Temp[2].yzw;
+    //Instruction 266
+    //SAMPLE
+    Temp[4] = texture(texDepth, Temp[3].zw);
+    //Instruction 267
+    //SAMPLE
+    Temp[3] = texture(texSource, Temp[3].zw);
+    //Instruction 268
+    //ADD
+    Temp[0].w = Temp[2].x + (-Temp[4].x);
+    //Instruction 269
+    //MUL
+    Temp[0].w = abs(Temp[0].w) * sssCorrection;
+    //Instruction 270
+    //MIN
+    Temp[0].w = min(Temp[0].w, intBitsToFloat(0x3F800000));
+    //Instruction 271
+    //ADD
+    Temp[4].xyz = Temp[0].xyz + (-Temp[3].xyz);
+    //Instruction 272
+    //MAD
+    Temp[3].xyz = Temp[0].www * Temp[4].xyz + Temp[3].xyz;
+    //Instruction 273
+    //MAD
+    Temp[2].yzw = Temp[3].xyz * vec3(intBitsToFloat(0x3D79DB23), intBitsToFloat(0x3D79DB23), intBitsToFloat(0x3D79DB23)) + Temp[2].yzw;
+    //Instruction 274
+    //SAMPLE
+    Temp[3] = texture(texDepth, Temp[1].xy);
+    //Instruction 275
+    //SAMPLE
+    Temp[1] = texture(texSource, Temp[1].xy);
+    //Instruction 276
+    //ADD
+    Temp[0].w = Temp[2].x + (-Temp[3].x);
+    //Instruction 277
+    //MUL
+    Temp[0].w = abs(Temp[0].w) * sssCorrection;
+    //Instruction 278
+    //MIN
+    Temp[0].w = min(Temp[0].w, intBitsToFloat(0x3F800000));
+    //Instruction 279
+    //ADD
+    Temp[0].xyz = Temp[0].xyz + (-Temp[1].xyz);
+    //Instruction 280
+    //MAD
+    Temp[0].xyz = Temp[0].www * Temp[0].xyz + Temp[1].xyz;
+    //Instruction 281
+    //MAD
+    Output0.xyz = Temp[0].xyz * vec3(intBitsToFloat(0x3BC49BA6), intBitsToFloat(0x3BC49BA6), intBitsToFloat(0x3BC49BA6)) + Temp[2].yzw;
+    //Instruction 282
+    //RET
+    return;
+}
+]]>
+    </shader>
+    <shader name="BlurY">
+        <![CDATA[
+#version 330
+struct vec1 {
+	float x;
+};
+struct uvec1 {
+	uint x;
+};
+struct ivec1 {
+	int x;
+};
+uniform 	float sssWidth;
+uniform 	float sssCorrection;
+uniform 	vec2 sssStep;
+uniform 	vec3 lightColor;
+uniform 	vec3 lightDirection;
+uniform 	mat4 lightShadowMatrix;
+uniform 	mat4 matViewProjectInverse;
+uniform sampler2D texSource;
+uniform sampler2D texDepth;
+ in  vec4 DomOutput0;
+vec4 Input0;
+layout(location = 0) out  vec4 PixOutput0;
+#define Output0 PixOutput0
+vec4 Temp[6];
+ivec4 Temp_int[6];
+uvec4 Temp_uint[6];
+void main()
+{
+    //--- Start Early Main ---
+    Input0 = DomOutput0;
+    //--- End Early Main ---
+    //Instruction 283
+    //SAMPLE
+    Temp[0] = texture(texSource, Input0.xy);
+    //Instruction 284
+    //MUL
+    Temp[1].xy = Temp[0].ww * sssStep.xxxy.zw;
+    //Instruction 285
+    //SAMPLE
+    Temp[2] = texture(texDepth, Input0.xy);
+    //Instruction 286
+    //DIV
+    Temp[1].xy = Temp[1].xy / Temp[2].xx;
+    //Instruction 287
+    //ADD
+    Temp[1].zw = (-Temp[1].xy) + Input0.xy;
+    //Instruction 288
+    //SAMPLE
+    Temp[3] = texture(texDepth, Temp[1].zw);
+    //Instruction 289
+    //SAMPLE
+    Temp[4] = texture(texSource, Temp[1].zw);
+    //Instruction 290
+    //ADD
+    Temp[1].z = Temp[2].x + (-Temp[3].x);
+    //Instruction 291
+    //MUL
+    Temp[1].z = abs(Temp[1].z) * sssCorrection;
+    //Instruction 292
+    //MIN
+    Temp[1].z = min(Temp[1].z, intBitsToFloat(0x3F800000));
+    //Instruction 293
+    //ADD
+    Temp[2].yzw = Temp[0].xyz + (-Temp[4].xyz);
+    //Instruction 294
+    //MAD
+    Temp[2].yzw = Temp[1].zzz * Temp[2].yzw + Temp[4].xyz;
+    //Instruction 295
+    //MUL
+    Temp[3] = Temp[0] * vec4(intBitsToFloat(0x3EC39581), intBitsToFloat(0x3EC39581), intBitsToFloat(0x3EC39581), intBitsToFloat(0x3EC39581));
+    //Instruction 296
+    //MAD
+    Temp[2].yzw = Temp[2].yzw * vec3(intBitsToFloat(0x3BC49BA6), intBitsToFloat(0x3BC49BA6), intBitsToFloat(0x3BC49BA6)) + Temp[3].xyz;
+    //Instruction 297
+    //MOV
+    Output0.w = Temp[3].w;
+    //Instruction 298
+    //MAD
+    Temp[3] = Temp[1].xyxy * vec4(intBitsToFloat(int(0xBF2AACDAu)), intBitsToFloat(int(0xBF2AACDAu)), intBitsToFloat(int(0xBEAAA64Cu)), intBitsToFloat(int(0xBEAAA64Cu))) + Input0.xyxy;
+    //Instruction 299
+    //SAMPLE
+    Temp[4] = texture(texDepth, Temp[3].xy);
+    //Instruction 300
+    //ADD
+    Temp[0].w = Temp[2].x + (-Temp[4].x);
+    //Instruction 301
+    //MUL
+    Temp[0].w = abs(Temp[0].w) * sssCorrection;
+    //Instruction 302
+    //MIN
+    Temp[0].w = min(Temp[0].w, intBitsToFloat(0x3F800000));
+    //Instruction 303
+    //SAMPLE
+    Temp[4] = texture(texSource, Temp[3].xy);
+    //Instruction 304
+    //ADD
+    Temp[5].xyz = Temp[0].xyz + (-Temp[4].xyz);
+    //Instruction 305
+    //MAD
+    Temp[4].xyz = Temp[0].www * Temp[5].xyz + Temp[4].xyz;
+    //Instruction 306
+    //MAD
+    Temp[2].yzw = Temp[4].xyz * vec3(intBitsToFloat(0x3D79DB23), intBitsToFloat(0x3D79DB23), intBitsToFloat(0x3D79DB23)) + Temp[2].yzw;
+    //Instruction 307
+    //SAMPLE
+    Temp[4] = texture(texDepth, Temp[3].zw);
+    //Instruction 308
+    //SAMPLE
+    Temp[3] = texture(texSource, Temp[3].zw);
+    //Instruction 309
+    //ADD
+    Temp[0].w = Temp[2].x + (-Temp[4].x);
+    //Instruction 310
+    //MUL
+    Temp[0].w = abs(Temp[0].w) * sssCorrection;
+    //Instruction 311
+    //MIN
+    Temp[0].w = min(Temp[0].w, intBitsToFloat(0x3F800000));
+    //Instruction 312
+    //ADD
+    Temp[4].xyz = Temp[0].xyz + (-Temp[3].xyz);
+    //Instruction 313
+    //MAD
+    Temp[3].xyz = Temp[0].www * Temp[4].xyz + Temp[3].xyz;
+    //Instruction 314
+    //MAD
+    Temp[2].yzw = Temp[3].xyz * vec3(intBitsToFloat(0x3E77CED9), intBitsToFloat(0x3E77CED9), intBitsToFloat(0x3E77CED9)) + Temp[2].yzw;
+    //Instruction 315
+    //MAD
+    Temp[3] = Temp[1].xyxy * vec4(intBitsToFloat(0x3EAAA64C), intBitsToFloat(0x3EAAA64C), intBitsToFloat(0x3F2AACDA), intBitsToFloat(0x3F2AACDA)) + Input0.xyxy;
+    //Instruction 316
+    //ADD
+    Temp[1].xy = Temp[1].xy + Input0.xy;
+    //Instruction 317
+    //SAMPLE
+    Temp[4] = texture(texDepth, Temp[3].xy);
+    //Instruction 318
+    //ADD
+    Temp[0].w = Temp[2].x + (-Temp[4].x);
+    //Instruction 319
+    //MUL
+    Temp[0].w = abs(Temp[0].w) * sssCorrection;
+    //Instruction 320
+    //MIN
+    Temp[0].w = min(Temp[0].w, intBitsToFloat(0x3F800000));
+    //Instruction 321
+    //SAMPLE
+    Temp[4] = texture(texSource, Temp[3].xy);
+    //Instruction 322
+    //ADD
+    Temp[5].xyz = Temp[0].xyz + (-Temp[4].xyz);
+    //Instruction 323
+    //MAD
+    Temp[4].xyz = Temp[0].www * Temp[5].xyz + Temp[4].xyz;
+    //Instruction 324
+    //MAD
+    Temp[2].yzw = Temp[4].xyz * vec3(intBitsToFloat(0x3E77CED9), intBitsToFloat(0x3E77CED9), intBitsToFloat(0x3E77CED9)) + Temp[2].yzw;
+    //Instruction 325
+    //SAMPLE
+    Temp[4] = texture(texDepth, Temp[3].zw);
+    //Instruction 326
+    //SAMPLE
+    Temp[3] = texture(texSource, Temp[3].zw);
+    //Instruction 327
+    //ADD
+    Temp[0].w = Temp[2].x + (-Temp[4].x);
+    //Instruction 328
+    //MUL
+    Temp[0].w = abs(Temp[0].w) * sssCorrection;
+    //Instruction 329
+    //MIN
+    Temp[0].w = min(Temp[0].w, intBitsToFloat(0x3F800000));
+    //Instruction 330
+    //ADD
+    Temp[4].xyz = Temp[0].xyz + (-Temp[3].xyz);
+    //Instruction 331
+    //MAD
+    Temp[3].xyz = Temp[0].www * Temp[4].xyz + Temp[3].xyz;
+    //Instruction 332
+    //MAD
+    Temp[2].yzw = Temp[3].xyz * vec3(intBitsToFloat(0x3D79DB23), intBitsToFloat(0x3D79DB23), intBitsToFloat(0x3D79DB23)) + Temp[2].yzw;
+    //Instruction 333
+    //SAMPLE
+    Temp[3] = texture(texDepth, Temp[1].xy);
+    //Instruction 334
+    //SAMPLE
+    Temp[1] = texture(texSource, Temp[1].xy);
+    //Instruction 335
+    //ADD
+    Temp[0].w = Temp[2].x + (-Temp[3].x);
+    //Instruction 336
+    //MUL
+    Temp[0].w = abs(Temp[0].w) * sssCorrection;
+    //Instruction 337
+    //MIN
+    Temp[0].w = min(Temp[0].w, intBitsToFloat(0x3F800000));
+    //Instruction 338
+    //ADD
+    Temp[0].xyz = Temp[0].xyz + (-Temp[1].xyz);
+    //Instruction 339
+    //MAD
+    Temp[0].xyz = Temp[0].www * Temp[0].xyz + Temp[1].xyz;
+    //Instruction 340
+    //MAD
+    Output0.xyz = Temp[0].xyz * vec3(intBitsToFloat(0x3BC49BA6), intBitsToFloat(0x3BC49BA6), intBitsToFloat(0x3BC49BA6)) + Temp[2].yzw;
+    //Instruction 341
+    //RET
+    return;
+}
+]]>
+    </shader>
+    <shader name="PostProcessVS">
+        <![CDATA[
+#version 330
+struct vec1 {
+	float x;
+};
+struct uvec1 {
+	uint x;
+};
+struct ivec1 {
+	int x;
+};
+layout(location = 0)  in  vec4 dcl_Input0;
+vec4 Input0;
+layout(location = 1)  in  vec4 dcl_Input1;
+vec4 Input1;
+ out  vec4 VtxOutput0;
+#define Output0 VtxOutput0
+#undef Output1
+#define Output1 phase0_Output1
+vec4 phase0_Output1;
+void main()
+{
+    //--- Start Early Main ---
+    Input0 = dcl_Input0;
+    Input1 = dcl_Input1;
+    //--- End Early Main ---
+    //Instruction 171
+    //MOV
+    Output0 = Input1;
+    //Instruction 172
+    //MOV
+    Output1 = Input0;
+    //Instruction 173
+    //RET
+    //--- Post shader code ---
+    gl_Position = vec4(phase0_Output1);
+    //--- End post shader code ---
+    return;
+}
+]]>
+    </shader>
+    <shader name="TranslucencyPS">
+        <![CDATA[
+#version 330
+struct vec1 {
+	float x;
+};
+struct uvec1 {
+	uint x;
+};
+struct ivec1 {
+	int x;
+};
+uniform 	float sssWidth;
+uniform 	float sssCorrection;
+uniform 	vec2 sssStep;
+uniform 	vec3 lightColor;
+uniform 	vec3 lightDirection;
+uniform 	mat4 lightShadowMatrix;
+uniform 	mat4 matViewProjectInverse;
+uniform sampler2D texDepth;
+uniform sampler2D texMRT0;
+uniform sampler2D texMRT1;
+uniform sampler2D lightShadowMap;
+ in  vec4 DomOutput0;
+vec4 Input0;
+layout(location = 0) out  vec4 PixOutput0;
+#define Output0 PixOutput0
+vec4 Temp[3];
+ivec4 Temp_int[3];
+uvec4 Temp_uint[3];
+void main()
+{
+    //--- Start Early Main ---
+    Input0 = DomOutput0;
+    //--- End Early Main ---
+    //Instruction 174
+    //SAMPLE
+    Temp[0] = texture(texDepth, Input0.xy).yzxw;
+    //Instruction 175
+    //MAD
+    Temp[0].xy = Input0.xy * vec2(intBitsToFloat(int(0x40000000u)), intBitsToFloat(int(0x40000000u))) + vec2(intBitsToFloat(int(0xBF800000u)), intBitsToFloat(int(0xBF800000u)));
+    //Instruction 176
+    //MOV
+    Temp[0].w = intBitsToFloat(0x3F800000);
+    //Instruction 177
+    //DP4
+    Temp[1].x = dot(Temp[0], matViewProjectInverse[0]);
+    //Instruction 178
+    //DP4
+    Temp[1].y = dot(Temp[0], matViewProjectInverse[1]);
+    //Instruction 179
+    //DP4
+    Temp[1].z = dot(Temp[0], matViewProjectInverse[2]);
+    //Instruction 180
+    //DP4
+    Temp[0].x = dot(Temp[0], matViewProjectInverse[3]);
+    //Instruction 181
+    //DIV
+    Temp[0].xyz = Temp[1].xyz / Temp[0].xxx;
+    //Instruction 182
+    //MOV
+    Temp[0].w = intBitsToFloat(0x3F800000);
+    //Instruction 183
+    //DP4
+    Temp[1].x = dot(Temp[0], lightShadowMatrix[0]);
+    //Instruction 184
+    //DP4
+    Temp[1].y = dot(Temp[0], lightShadowMatrix[1]);
+    //Instruction 185
+    //DP4
+    Temp[1].z = dot(Temp[0], lightShadowMatrix[2]);
+    //Instruction 186
+    //DP4
+    Temp[0].x = dot(Temp[0], lightShadowMatrix[3]);
+    //Instruction 187
+    //DIV
+    Temp[0].xyz = Temp[1].xyz / Temp[0].xxx;
+    //Instruction 188
+    //MAD
+    Temp[0].xy = Temp[0].xy * vec2(intBitsToFloat(0x3F000000), intBitsToFloat(0x3F000000)) + vec2(intBitsToFloat(0x3F000000), intBitsToFloat(0x3F000000));
+    //Instruction 189
+    //SAMPLE
+    Temp[1] = texture(lightShadowMap, Temp[0].xy);
+    //Instruction 190
+    //ADD
+    Temp[0].x = Temp[0].z + (-Temp[1].x);
+    //Instruction 191
+    //MUL
+    Temp[0].x = abs(Temp[0].x) * sssWidth;
+    //Instruction 192
+    //MUL
+    Temp[0].x = Temp[0].x * (-Temp[0].x);
+    //Instruction 193
+    //MUL
+    Temp[1] = Temp[0].xxxx * vec4(intBitsToFloat(int(0x43616BCDu)), intBitsToFloat(int(0x41EE7645u)), intBitsToFloat(int(0x40F6E0D7u)), intBitsToFloat(int(0x4022D809u)));
+    //Instruction 194
+    //MUL
+    Temp[0].xy = Temp[0].xx * vec2(intBitsToFloat(0x3F3997CB), intBitsToFloat(0x3E475E4F));
+    //Instruction 195
+    //EXP
+    Temp[0].xy = exp2(Temp[0].xy);
+    //Instruction 196
+    //EXP
+    Temp[1] = exp2(Temp[1]);
+    //Instruction 197
+    //MUL
+    Temp[2].xyz = Temp[1].yyy * vec3(intBitsToFloat(0x3DCCCCCD), intBitsToFloat(0x3EAC0831), intBitsToFloat(0x3EB020C5));
+    //Instruction 198
+    //MAD
+    Temp[2].xyz = Temp[1].xxx * vec3(intBitsToFloat(0x3E6E978D), intBitsToFloat(0x3EE8F5C3), intBitsToFloat(0x3F2624DD)) + Temp[2].xyz;
+    //Instruction 199
+    //MAD
+    Temp[1].xyz = Temp[1].zzz * vec3(intBitsToFloat(0x3DF1A9FC), intBitsToFloat(0x3E4AC083), intBitsToFloat(0x0)) + Temp[2].xyz;
+    //Instruction 200
+    //MAD
+    Temp[1].xyz = Temp[1].www * vec3(intBitsToFloat(0x3DE76C8B), intBitsToFloat(0x3BE56042), intBitsToFloat(0x3BE56042)) + Temp[1].xyz;
+    //Instruction 201
+    //MAD
+    Temp[0].xzw = Temp[0].xxx * vec3(intBitsToFloat(0x3EB74BC7), intBitsToFloat(0x3B83126F), intBitsToFloat(0x0)) + Temp[1].xyz;
+    //Instruction 202
+    //MAD
+    Temp[0].xyz = Temp[0].yyy * vec3(intBitsToFloat(0x3D9FBE77), intBitsToFloat(0x0), intBitsToFloat(0x0)) + Temp[0].xzw;
+    //Instruction 203
+    //SAMPLE
+    Temp[1] = texture(texMRT1, Input0.xy);
+    //Instruction 204
+    //MUL
+    Temp[0].w = Temp[1].z * intBitsToFloat(int(0x437F0000u));
+    //Instruction 205
+    //ROUND_NI
+    Temp[0].w = floor(Temp[0].w);
+    //Instruction 206
+    //MUL
+    Temp[0].w = Temp[0].w * intBitsToFloat(0x3D800000);
+    //Instruction 207
+    //ROUND_NI
+    Temp[2].x = floor(Temp[0].w);
+    //Instruction 208
+    //FRC
+    Temp[2].y = fract(Temp[0].w);
+    //Instruction 209
+    //MAD
+    Temp[1].xy = Temp[2].xy * vec2(intBitsToFloat(0x39808081), intBitsToFloat(0x3B808081)) + Temp[1].xy;
+    //Instruction 210
+    //MAD
+    Temp[1].xy = Temp[1].xy * vec2(intBitsToFloat(int(0x40800000u)), intBitsToFloat(int(0x40800000u))) + vec2(intBitsToFloat(int(0xC0000000u)), intBitsToFloat(int(0xC0000000u)));
+    //Instruction 211
+    //DP2
+    Temp[0].w = dot(Temp[1].xy, Temp[1].xy);
+    //Instruction 212
+    //MAD
+    Temp[1].z = (-Temp[0].w) * intBitsToFloat(0x3E800000) + intBitsToFloat(0x3F800000);
+    //Instruction 213
+    //MAD
+    Temp[2].z = Temp[0].w * intBitsToFloat(0x3F000000) + intBitsToFloat(int(0xBF800000u));
+    //Instruction 214
+    //SQRT
+    Temp[0].w = sqrt(Temp[1].z);
+    //Instruction 215
+    //MUL
+    Temp[2].xy = Temp[0].ww * Temp[1].xy;
+    //Instruction 216
+    //DP3
+    Temp[0].w = dot(Temp[2].xyz, lightDirection.xyzx.xyz);
+    //Instruction 217
+    //ADD
+    Temp[0].w = Temp[0].w + intBitsToFloat(0x3E99999A);
+    Temp[0].w = clamp(Temp[0].w, 0.0, 1.0);
+    //Instruction 218
+    //MUL
+    Temp[0].xyz = Temp[0].www * Temp[0].xyz;
+    //Instruction 219
+    //MUL
+    Temp[0].xyz = Temp[0].xyz * lightColor.xyzx.xyz;
+    //Instruction 220
+    //SAMPLE
+    Temp[1] = texture(texMRT0, Input0.xy);
+    //Instruction 221
+    //MUL
+    Output0.xyz = Temp[0].xyz * Temp[1].xyz;
+    //Instruction 222
+    //MOV
+    Output0.w = intBitsToFloat(0x0);
+    //Instruction 223
+    //RET
+    return;
+}
+]]>
+    </shader>
+    <technique name="postprocess">
+        <pass name="translucency">
+            <state name="vertex" value="PostProcessVS" />
+            <state name="fragment" value="TranslucencyPS" />
+            <state name="cullmode" value="none" />
+            <state name="depthtest" value="false" />
+            <state name="depthwrite" value="false" />
+            <state name="blend" value="true" />
+            <state name="blenddst" value="one" />
+            <state name="blendsrc" value="one" />
+        </pass>
+        <pass name="blurX">
+            <state name="vertex" value="PostProcessVS" />
+            <state name="fragment" value="BlurX" />
+            <state name="cullmode" value="none" />
+            <state name="depthtest" value="false" />
+            <state name="depthwrite" value="false" />
+        </pass>
+        <pass name="blurY">
+            <state name="vertex" value="PostProcessVS" />
+            <state name="fragment" value="BlurY" />
+            <state name="cullmode" value="none" />
+            <state name="depthtest" value="false" />
+            <state name="depthwrite" value="false" />
+        </pass>
+    </technique>
+</effect>

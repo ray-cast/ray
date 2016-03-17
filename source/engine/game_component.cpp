@@ -77,29 +77,17 @@ GameComponent::_setGameObject(GameObject* gameobj) noexcept
 }
 
 GameObjectPtr
-GameComponent::getGameObject() noexcept
-{
-	assert(_gameObject);
-	return _gameObject->downcast<GameObject>();
-}
-
-const GameObjectPtr
 GameComponent::getGameObject() const noexcept
 {
 	assert(_gameObject);
 	return _gameObject->downcast<GameObject>();
 }
 
-GameServer*
-GameComponent::getGameServer() noexcept
-{
-	return this->getGameObject()->getGameServer();
-}
-
-const GameServer*
+GameServerPtr
 GameComponent::getGameServer() const noexcept
 {
-	return this->getGameObject()->getGameServer();
+	assert(_gameObject);
+	return _gameObject->getGameServer();
 }
 
 void 

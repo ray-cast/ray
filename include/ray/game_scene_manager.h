@@ -34,81 +34,45 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GAME_COMPONENT_H_
-#define _H_GAME_COMPONENT_H_
+#ifndef _H_GAME_SCENE_MANAGER_H_
+#define _H_GAME_SCENE_MANAGER_H_
 
-#include <ray/game_object.h>
+#include <ray/game_features.h>
 
 _NAME_BEGIN
 
-class EXPORT GameComponent : public MessageListener
+class EXPORT GameSceneManager final : public GameFeature
 {
-	__DeclareSubInterface(GameComponent, MessageListener)
+	__DeclareSubClass(GameSceneManager, GameFeature)
+	__DeclareSingleton(GameSceneManager)
 public:
-	GameComponent() noexcept;
-	virtual ~GameComponent() noexcept;
+	GameSceneManager() noexcept;
+	~GameSceneManager() noexcept;
 
-	void setActive(bool active) except;
-	bool getActive() const noexcept;
+	GameScenePtr findScene(const std::string& name) noexcept;
+	GameScenePtr findActiveScene(const std::string& name) noexcept;
 
-	void setName(const std::string& name) noexcept;
-	const std::string& getName() const noexcept;
+	GameScenePtr instantiate(const std::string& name) except;
 
-	GameObjectPtr getGameObject() const noexcept;
-	GameServerPtr getGameServer() const noexcept;
+	bool activeScene(const std::string& name) noexcept;
 
-	template<typename T>
-	std::shared_ptr<T> getComponent() const noexcept 
-		{ return std::dynamic_pointer_cast<T>(this->getComponent(T::RTTI)); }
-
-	GameComponentPtr getComponent(const rtti::Rtti* type) const noexcept;
-	GameComponentPtr getComponent(const rtti::Rtti& type) const noexcept;
-	const GameComponents& getComponents() const noexcept;
-
-	virtual void load(iarchive& reader) noexcept;
-	virtual void save(oarchive& write) noexcept;
-
-	virtual GameComponentPtr clone() const except = 0;
-
-protected:
-
-	virtual void sendMessage(const MessagePtr& message) except;
-	virtual void sendMessageUpwards(const MessagePtr& message) except;
-	virtual void sendMessageDownwards(const MessagePtr& message) except;
-
-	virtual void onAttach() except;
-	virtual void onDetach() except;
-
-	virtual void onAttachComponent(GameComponentPtr& component) except;
-	virtual void onDetachComponent(GameComponentPtr& component) except;
-
-	virtual void onActivate() except;
-	virtual void onDeactivate() except;
-
-	virtual void onFrameBegin() except;
-	virtual void onFrame() except;
-	virtual void onFrameEnd() except;
-
-	virtual void onMoveBefore() except;
-	virtual void onMoveAfter() except;
-
-	virtual void onParentChangeBefore() except;
-	virtual void onParentChangeAfter() except;
-
-	virtual void onLayerChangeBefore() except;
-	virtual void onLayerChangeAfter() except;
+	void onFrameBegin() noexcept;
+	void onFrame() noexcept;
+	void onFrameEnd() noexcept;
 
 private:
-	friend GameObject;
-	void _setGameObject(GameObject* gameobj) noexcept;
+	friend GameScene;
+	void _instanceScene(GameScene* entity, std::uint32_t& instanceID) noexcept;
+	void _unsetScene(GameScene* entity) noexcept;
+	void _activeScene(GameScene* entity, bool active) noexcept;
 
 private:
 
-	bool _active;
+	bool _hasEmptyActors;
 
-	std::string _name;
-
-	GameObject* _gameObject;
+	std::vector<std::size_t> _emptyLists;
+	std::vector<GameScene*> _instanceLists;
+	std::vector<GameScene*> _activeActors;
 };
 
 _NAME_END

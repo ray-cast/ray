@@ -64,43 +64,11 @@ public:
         x = z = y = 0.0f;
     }
 
-    EulerAnglest<T>& canonize() noexcept
-    {
-        x = wrapPI(x);
-
-        if (x <-M_PI_2)
-        {
-            x = -M_PI - x;
-            y += M_PI;
-            z += M_PI;
-        }
-        else if (x > M_PI_2)
-        {
-            x = M_PI - x;
-            y += M_PI;
-            z += M_PI;
-        }
-
-        if (fabs(x) > M_PI_2 - 1e-4)
-        {
-            y += z;
-            z = 0.0f;
-        }
-        else
-        {
-            z = wrapPI(z);
-        }
-
-        y = wrapPI(y);
-
-		return *this;
-    }
-
 	EulerAnglest<T>& makeRotate(const Quaterniont<T>& q) noexcept
 	{
-		this->x = asin(2.0f * (q.w * q.x - q.y * q.z));
-		this->y = atan2(q.w * q.y + q.x * q.z, 1.0f - 2.0f * (q.x * q.x + q.y * q.y));
-		this->z = atan2(q.w * q.z + q.x * q.y, 1.0f - 2.0f * (q.x * q.x + q.z * q.z));
+		this->x = RAD_TO_DEG(asin(2.0f * (q.w * q.x - q.y * q.z)));
+		this->y = RAD_TO_DEG(atan2(q.w * q.y + q.x * q.z, 1.0f - 2.0f * (q.x * q.x + q.y * q.y)));
+		this->z = RAD_TO_DEG(atan2(q.w * q.z + q.x * q.y, 1.0f - 2.0f * (q.x * q.x + q.z * q.z)));
 		return *this;
 	}
 };

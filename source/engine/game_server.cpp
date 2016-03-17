@@ -144,7 +144,7 @@ GameServer::openScene(const std::string& filename) except
 		if (xml.open(*stream))
 		{
 			auto scene = std::make_shared<GameScene>();
-			scene->setGameServer(this);
+			scene->setGameServer(this->downcast<GameServer>());
 			scene->load(xml);
 			return true;
 		}

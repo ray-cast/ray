@@ -102,7 +102,6 @@
     <object>
         <attribute name="first_person_camera"/>
         <attribute position="0,62,0" />
-        <attribute lookat="0,62,1" />
         <attribute active="true"/>
         <component class="Camera">
             <attribute aperture="75.0"/>

@@ -145,9 +145,9 @@ public:
 
 	Matrix4x4t<T>& set(const Matrix3x3t<T>& m)
 	{
-		a1 = m.a1; a2 = m.a2; a3 = m.a3; a4 = 0.0;
-		b1 = m.b1; b2 = m.b2; b3 = m.b3; b4 = 0.0;
-		c1 = m.c1; c2 = m.c2; c3 = m.c3; c4 = 0.0;
+		a1 = m.a1; a2 = m.a2; a3 = m.a3;
+		b1 = m.b1; b2 = m.b2; b3 = m.b3;
+		c1 = m.c1; c2 = m.c2; c3 = m.c3;
 		return *this;
 	}
 
@@ -160,6 +160,23 @@ public:
 	Matrix4x4t<T>& set(std::size_t line, const Vector3t<T>& v)
 	{
 		((Vector3t<T>&)(*(*this)[line])) = v;
+		return *this;
+	}
+
+	Matrix4x4t<T>& set(const Vector3t<T>& v1, const Vector3t<T>& v2, const Vector3t<T>& v3)
+	{
+		a1 = v1.x; a2 = v1.y; a3 = v1.z;
+		b1 = v2.x; b2 = v2.y; b3 = v2.z;
+		c1 = v3.x; c2 = v3.y; c3 = v3.z;
+		return *this;
+	}
+
+	Matrix4x4t<T>& set(const Vector4t<T>& v1, const Vector4t<T>& v2, const Vector4t<T>& v3, const Vector4t<T>& v4)
+	{
+		a1 = v1.x; a2 = v1.y; a3 = v1.z; a4 = v1.w;
+		b1 = v2.x; b2 = v2.y; b3 = v2.z; b4 = v2.w;
+		c1 = v3.x; c2 = v3.y; c3 = v3.z; c4 = v3.w;
+		d1 = v4.x; d2 = v4.y; d3 = v4.z; d4 = v4.w;
 		return *this;
 	}
 
@@ -431,7 +448,7 @@ public:
 
 	Matrix4x4t<T>& makeRotationX(T theta)
 	{
-		T c, s, ang = theta;
+		T c, s, ang = DEG_TO_RAD(theta);
 
 		sinCos(&s, &c, ang);
 
@@ -446,7 +463,7 @@ public:
 
 	Matrix4x4t<T>& makeRotationY(T theta)
 	{
-		T c, s, ang = theta;
+		T c, s, ang = DEG_TO_RAD(theta);
 
 		sinCos(&s, &c, ang);
 
@@ -461,7 +478,7 @@ public:
 
 	Matrix4x4t<T>& makeRotationZ(T theta)
 	{
-		T c, s, ang = theta;
+		T c, s, ang = DEG_TO_RAD(theta);
 
 		sinCos(&s, &c, ang);
 
@@ -557,7 +574,7 @@ public:
 	{
 		T c, s;
 
-		sinCos(&s, &c, angle);
+		sinCos(&s, &c, DEG_TO_RAD(angle));
 
 		Vector3t<T> v = ~axis;
 

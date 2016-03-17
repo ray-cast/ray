@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/game_base_features.h>
 #include <ray/game_object_manager.h>
+#include <ray/game_scene_manager.h>
 
 _NAME_BEGIN
 
@@ -52,18 +53,21 @@ GameBaseFeatures::~GameBaseFeatures() noexcept
 void 
 GameBaseFeatures::onFrameBegin() noexcept
 {
+	GameSceneManager::instance()->onFrameBegin();
 	GameObjectManager::instance()->onFrameBegin();
 }
 
 void 
 GameBaseFeatures::onFrame() noexcept
 {
+	GameSceneManager::instance()->onFrame();
 	GameObjectManager::instance()->onFrame();
 }
 
 void 
 GameBaseFeatures::onFrameEnd() noexcept
 {
+	GameSceneManager::instance()->onFrameEnd();
 	GameObjectManager::instance()->onFrameEnd();
 }
 

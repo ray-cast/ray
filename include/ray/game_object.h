@@ -129,8 +129,8 @@ public:
 
 	GameObjectPtr clone() const except;
 
-	virtual GameServer* getGameServer() noexcept;
-	virtual GameScene* getGameScene() noexcept;
+	virtual GameServerPtr getGameServer() noexcept;
+	virtual GameScenePtr getGameScene() noexcept;
 
 private:
 

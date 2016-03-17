@@ -35,8 +35,11 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/game_scene.h>
+#include <ray/game_scene_manager.h>
+
 #include <ray/game_server.h>
 #include <ray/game_component.h>
+
 #include <ray/rtti_factory.h>
 
 _NAME_BEGIN
@@ -59,56 +62,57 @@ GameScene::Setting::Setting() noexcept
 GameScene::RootObject::RootObject(GameScene* scene) noexcept
 	: _scene(scene)
 {
+	assert(scene);
 }
 
 GameScene::RootObject::~RootObject() noexcept
 {
 }
 
-GameServer*
+GameServerPtr
 GameScene::RootObject::getGameServer() noexcept
 {
-	return _scene->getGameServer();
+	return this->getGameScene()->getGameServer();
 }
 
-GameScene*
+GameScenePtr
 GameScene::RootObject::getGameScene() noexcept
 {
-	return _scene;
+	return _scene->downcast<GameScene>();
 }
 
 GameScene::GameScene() noexcept
-	: _gameServer(nullptr)
-	, _instanceID(++_instanceCount)
-{	
+	: _root(std::make_unique<RootObject>(this))
+{
+	GameSceneManager::instance()->_instanceScene(this, _instanceID);
 }
 
 GameScene::GameScene(const std::string& name) noexcept
-	: _gameServer(nullptr)
+	:_name(name)
 {
-	this->setName(name);
+	GameSceneManager::instance()->_instanceScene(this, _instanceID);
 }
 
 GameScene::~GameScene() noexcept
 {
-	this->setActive(false);
+	GameSceneManager::instance()->_unsetScene(this);
 }
 
 void
 GameScene::setActive(bool active) except
 {
-	if (!_root)
-		_root = std::make_unique<RootObject>(this);
-	if (_root)
+	if (this->getActive() != active)
+	{
+		GameSceneManager::instance()->_activeScene(this, active);
+
 		_root->setActive(active);
+	}
 }
 
 bool
 GameScene::getActive() const noexcept
 {
-	if (_root)
-		_root->getActive();
-	return false;
+	return _root->getActive();
 }
 
 void
@@ -148,24 +152,25 @@ GameScene::getRootObject() noexcept
 }
 
 void
-GameScene::setGameServer(GameServer* server) noexcept
+GameScene::setGameServer(GameServerPtr server) noexcept
 {
-	if (_gameServer != server)
+	auto gameServer = _gameServer.lock();
+	if (gameServer != server)
 	{
-		if (_gameServer)
-			_gameServer->removeScene(std::dynamic_pointer_cast<GameScene>(this->shared_from_this()));
+		if (gameServer)
+			gameServer->removeScene(this->downcast<GameScene>());
 		
 		_gameServer = server;
 
-		if (_gameServer)
-			_gameServer->addScene(std::dynamic_pointer_cast<GameScene>(this->shared_from_this()));
+		if (server)
+			server->addScene(this->downcast<GameScene>());
 	}
 }
 
-GameServer*
+GameServerPtr
 GameScene::getGameServer() noexcept
 {
-	return _gameServer;
+	return _gameServer.lock();
 }
 
 void
@@ -269,4 +274,19 @@ GameScene::load(iarchive& reader) except
 		}
 	}
 }
+
+void 
+GameScene::save(oarchive& reader) except
+{
+}
+
+GameScenePtr
+GameScene::clone() const noexcept
+{
+	auto scene = std::make_shared<GameScene>();
+	scene->setName(this->getName());
+	scene->_root = _root->clone();
+	return scene;
+}
+
 _NAME_END

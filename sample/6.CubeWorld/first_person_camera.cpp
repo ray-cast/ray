@@ -196,11 +196,12 @@ FirstPersonCameraComponent::rotateCamera(float mouseX, float mouseY, float lastX
 	if (mouseX == lastX && mouseY == lastY)
 		return;
 
-	float angleY = -(lastX - mouseX) / 100.0;
-	float angleX = -(lastY - mouseY) / 100.0;
+	float angleY = -(lastX - mouseX);
+	float angleX = -(lastY - mouseY);
+
 	float angle = angleX + this->getGameObject()->getEulerAngles().x;
 
-	if (angle > -1.0 && angle < 1.0)
+	if (angle > -90.0 && angle < 90.0)
 		rotateCamera(angleX, this->getGameObject()->getRight());
 
 	rotateCamera(angleY, ray::float3::UnitY);

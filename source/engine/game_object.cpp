@@ -54,9 +54,6 @@ GameObject::GameObject() noexcept
 	, _up(Vector3::Up)
 	, _forward(Vector3::Forward)
 {
-	_transform.loadIdentity();
-	_transformInverse.loadIdentity();
-	_transformInverseTranspose.loadIdentity();
 	GameObjectManager::instance()->_instanceObject(this, _instanceID);
 }
 
@@ -578,9 +575,7 @@ GameObject::_updateTransform() const noexcept
 {
 	if (_needUpdates)
 	{
-		_transform.makeRotate(_quat);
-		_transform.setTranslate(_translate);
-		_transform.scale(_scaling);
+		_transform.makeTransform(_translate, _quat, _scaling);
 
 		_transformInverse = _transform;
 		_transformInverse.inverse();
@@ -645,8 +640,6 @@ GameObject::removeComponent(GameComponentPtr component) noexcept
 void
 GameObject::cleanupComponents() noexcept
 {
-	this->setActive(false);
-
 	for (auto& it : _components)
 	{
 		for (auto& component : _components)
@@ -654,6 +647,9 @@ GameObject::cleanupComponents() noexcept
 			if (it != component)
 				it->onDetachComponent(component);
 		}
+
+		if (it->getActive())
+			it->onDeactivate();
 
 		it->onDetach();
 	}
@@ -774,7 +770,7 @@ GameObject::sendMessageDownwards(const MessagePtr& message) noexcept
 		it->sendMessageDownwards(message);
 }
 
-GameServer*
+GameServerPtr
 GameObject::getGameServer() noexcept
 {
 	auto parent = _parent.lock();
@@ -783,7 +779,7 @@ GameObject::getGameServer() noexcept
 	return nullptr;
 }
 
-GameScene*
+GameScenePtr
 GameObject::getGameScene() noexcept
 {
 	auto parent = _parent.lock();
@@ -849,6 +845,9 @@ GameObject::clone() const except
 
 	for (auto& it : _components)
 		instance->addComponent(it->clone());
+
+	for (auto& it : this->getChildren())
+		instance->addChild(it->clone());
 
 	return instance;
 }

@@ -1,0 +1,161 @@
+<?xml version='1.0'?>
+<effect language="hlsl">
+    <include name="sys:fx/Gbuffer.fxml"/>
+    <parameter name="sssWidth" type="float" />
+    <parameter name="sssStep" type="float2"/>
+    <parameter name="sssCorrection" type="float" />
+    <parameter name="lightDirection" type="float3" />
+    <parameter name="texDepth" semantic="DepthMap" />
+    <parameter name="texSource" type="texture" />
+    <parameter name="lightColor" type="float3"/>
+    <parameter name="lightShadowMap" type="texture" />
+    <parameter name='lightShadowMatrix' type="float4x4" />
+    <parameter name="texMRT0" semantic="DeferredGraphicMap" />
+    <parameter name="texMRT1" semantic="DeferredNormalMap" />
+    <parameter name="matViewProjectInverse" semantic="matViewProjectInverse"/>
+    <shader name="vertex">
+        <![CDATA[
+        uniform texture2D texSource;
+        uniform texture2D texDepth;
+        uniform texture2D texMRT0;
+        uniform texture2D texMRT1;
+
+        uniform float sssWidth;
+        uniform float sssCorrection;
+        uniform float2 sssStep;
+
+        uniform float3 lightColor;
+        uniform float3 lightDirection;
+        uniform float4x4 lightShadowMatrix;
+        uniform float4x4 matViewProjectInverse;
+
+        uniform texture2D lightShadowMap;
+
+        float3 samplePosition(float2 coord)
+        {
+            float depth  = texDepth.Sample(PointClamp, coord).r;
+            float4 result = mul(float4(coord * 2.0 - 1.0, depth, 1.0), matViewProjectInverse);
+            result /= result.w;
+            return result.xyz;
+        }
+
+        float3 sampleNormal(float2 uv)
+        {
+            float4 normal = texMRT1.Sample(PointClamp, uv);
+            return restoreNormal(normal);
+        }
+
+        float3 SSSSTransmittance(float d)
+        {
+            float dd = -d * d;
+            return float3(0.233f, 0.455f, 0.649f) * exp(dd / 0.0064f)
+                + float3(0.1f, 0.336f, 0.344f) * exp(dd / 0.0484f)
+                + float3(0.118f, 0.198f, 0.0f) * exp(dd / 0.187f)
+                + float3(0.113f, 0.007f, 0.007f) * exp(dd / 0.567f)
+                + float3(0.358f, 0.004f, 0.0f) * exp(dd / 1.99f)
+                + float3(0.078f, 0.0f, 0.0f) * exp(dd / 7.41f);
+        }
+
+        float4 SSSSTranslucency(float2 coord, float strength)
+        {
+            float3 normal = sampleNormal(coord.xy);
+            float3 position = samplePosition(coord.xy);
+
+            float4 shadowPosition = mul(float4(position, 1.0), lightShadowMatrix);
+            shadowPosition /= shadowPosition.w;
+            shadowPosition.xy = PosToCoord(shadowPosition.xy);
+
+            float d1 = lightShadowMap.Sample(PointClamp, shadowPosition.xy).r;
+            float d2 = shadowPosition.z;
+            float d = abs(d2 - d1);
+            float irradiance = saturate(0.3 + dot(normal, lightDirection));
+            float3 diffuse = restoreDiffuse(texMRT0, coord);
+
+            return float4(SSSSTransmittance(d * strength) * irradiance * lightColor * diffuse, 0.0);
+        }
+
+        float4 SSSSBlurPS(float2 coord, texture2D texSource, texture2D texDepth, float correction, float2 step)
+        {
+            float w[6] = { 0.006f,   0.061f,   0.242f,  0.242f,  0.061f, 0.006f };
+            float o[6] = {  -1.0f, -0.6667f, -0.3333f, 0.3333f, 0.6667f,   1.0f };
+
+            float4 colorM = texSource.Sample(PointClamp, coord);
+            float depthM = texDepth.Sample(PointClamp, coord).r;
+
+            float2 finalStep = colorM.a * step / depthM;
+            float4 colorBlurred = colorM * 0.382;
+
+            [unroll]
+            for (int i = 0; i < 6; i++)
+            {
+                float2 offset = coord +  o[i] * finalStep;
+                float3 color = texSource.Sample(PointClamp, offset).rgb;
+                float depth = texDepth.Sample(PointClamp, offset).r;
+                float s = min(correction * abs(depthM - depth), 1);
+                colorBlurred.rgb += w[i] * lerp(color, colorM.rgb, s);
+            }
+
+            return colorBlurred;
+        }
+
+        void PostProcessVS(
+            in float4 Position : POSITION0,
+            in float4 Texcoord : TEXCOORD0,
+            out float4 oTexcoord : TEXCOORD0,
+            out float4 oPosition : SV_Position
+            )
+        {
+            oTexcoord = Texcoord;
+            oPosition = Position;
+        }
+
+        float4 TranslucencyPS(in float4 coord : TEXCOORD0) : SV_Target
+        {
+            return SSSSTranslucency(coord.xy, sssWidth);
+        }
+
+        float4 BlurX(in float4 coord : TEXCOORD0) : SV_Target
+        {
+            return SSSSBlurPS(coord.xy, texSource, texDepth, sssCorrection, sssStep);
+        }
+
+        float4 BlurY(in float4 coord : TEXCOORD0) : SV_Target
+        {
+            return SSSSBlurPS(coord.xy, texSource, texDepth, sssCorrection, sssStep);
+        }
+        ]]>
+    </shader>
+    <technique name="postprocess">
+        <pass name="translucency">
+            <state name="vertex" value="PostProcessVS"/>
+            <state name="fragment" value="TranslucencyPS"/>
+
+            <state name="cullmode" value="none" />
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="blend" value="true"/>
+            <state name="blenddst" value="one"/>
+            <state name="blendsrc" value="one"/>
+        </pass>
+        <pass name="blurX">
+            <state name="vertex" value="PostProcessVS"/>
+            <state name="fragment" value="BlurX"/>
+
+            <state name="cullmode" value="none" />
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+        <pass name="blurY">
+            <state name="vertex" value="PostProcessVS"/>
+            <state name="fragment" value="BlurY"/>
+
+            <state name="cullmode" value="none" />
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+</effect>

@@ -1,0 +1,53 @@
+<?xml version='1.0'?>
+<effect language="hlsl">
+    <include name="sys:fx/math.fxml"/>
+    <include name="sys:fx/sampler.fxml"/>
+    <parameter name="texSource" type="texture"/>
+    <parameter name="texColorGrading" type="texture"/>
+    <shader>
+        <![CDATA[
+            uniform Texture2D texSource;
+            uniform Texture2D texColorGrading;
+
+            void PostProcessVS(
+                in float4 Position : POSITION0,
+                in float4 Texcoord : TEXCOORD0,
+                out float4 oTexcoord : TEXCOORD0,
+                out float4 oPosition : SV_Position
+                )
+            {
+                oTexcoord = Texcoord;
+                oPosition = Position;
+            }
+
+            float3 ColorGradingPS(in float4 coord : TEXCOORD0) : SV_Target
+            {
+                float3 rgb = texSource.Sample(PointClamp, coord.xy).rgb;
+                rgb = linear2srgb(rgb);
+                return rgb;
+
+                const float DIM = 16;
+                rgb.xy = (rgb.xy * (DIM - 1)) / DIM;
+                float slice = rgb.z * (DIM - 1);
+                float s = frac(slice);
+                slice -= s;
+                rgb.y = (rgb.y + slice) / DIM;
+
+                float3 col0 = texColorGrading.Sample(LinearClamp, rgb.xy).xyz;
+                float3 col1 = texColorGrading.Sample(LinearClamp, float2(rgb.x, rgb.y + 1.0f / DIM)).xyz;
+                return lerp(col0, col1, s);
+            }
+        ]]>
+    </shader>
+    <technique name="postprocess">
+        <pass name="grading">
+            <state name="vertex" value="PostProcessVS"/>
+            <state name="fragment" value="ColorGradingPS"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="cullmode" value="none"/>
+        </pass>
+    </technique>
+</effect>

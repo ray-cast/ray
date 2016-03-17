@@ -1,0 +1,176 @@
+<?xml version="1.0"?>
+<effect version="1270" language="hlsl">
+    <include name="sys:fx/sampler.fxml"/>
+    <include name="sys:fx/gbuffer.fxml"/>
+    <parameter name="projScale" type="float"/>
+    <parameter name="projInfo" type="float4"/>
+    <parameter name="radius" type="float"/>
+    <parameter name="radius2" type="float"/>
+    <parameter name="sphere[0]" type="float2[]"/>
+    <parameter name="bias" type="float"/>
+    <parameter name="intensity" type="float"/>
+    <parameter name="blurFactor" type="float" />
+    <parameter name="blurSharpness" type="float" />
+    <parameter name="blurDirection" type="float2"/>
+    <parameter name="texDepth" semantic="DeferredDepthLinearMap" />
+    <parameter name="texNormal" semantic="NormalMap" />
+    <parameter name="texOcclusion" type="texture" />
+    <parameter name="texSource" type="texture"/>
+    <macro name="NUM_SAMPLE" type="int" value="10"/>
+    <macro name="NUM_SAMPLE_INV" type="float" value="0.1"/>
+    <macro name="BLUR_RADIUS" type="int" value="4"/>
+    <shader>
+        <![CDATA[
+            uniform float radius;
+            uniform float radius2;
+            uniform float projScale;
+            uniform float bias;
+            uniform float intensity;
+            uniform float4 projInfo;
+            uniform float2 sphere[NUM_SAMPLE];
+
+            uniform float blurFactor;
+            uniform float blurSharpness;
+            uniform float2 blurDirection;
+
+            uniform Texture2D texDepth;
+            uniform Texture2D texNormal;
+            uniform Texture2D texOcclusion;
+            uniform Texture2D texSource;
+
+            float linearizeDepth(float2 uv)
+            {
+                return texDepth.Sample(PointClamp, uv).r;
+            }
+
+            float3 GetPosition(float2 uv)
+            {
+                float d = linearizeDepth(uv);
+                return float3(projInfo.xy * uv + projInfo.zw, 1.0) * d;
+            }
+
+            float3 GetNormal(float2 uv)
+            {
+                float4 MRT1 = texNormal.Sample(PointClamp, uv);
+                return restoreNormal(MRT1);
+            }
+
+            float2 tapLocation(int sampleIndex, float2 sampleNoise, float radius)
+            {
+                float cosacosb = sphere[sampleIndex].x * sampleNoise.x;
+                float sinasinb = sphere[sampleIndex].y * sampleNoise.y;
+                float sinacosb = sphere[sampleIndex].y * sampleNoise.x;
+                float cosasinb = sphere[sampleIndex].x * sampleNoise.y;
+                return float2(cosacosb-sinasinb, sinacosb+cosasinb) * radius * (float(sampleIndex) * NUM_SAMPLE_INV);
+            }
+
+            float bilateralfilter(float2 coord, float r, float center_d)
+            {
+                float d = linearizeDepth(coord);
+                float ddiff = (d - center_d) * blurSharpness;
+                return exp2(-r * r * blurFactor - ddiff * ddiff);
+            }
+
+            void PostProcessVS(
+                in float4 Position : POSITION0,
+                in float4 Texcoord : TEXCOORD0,
+                out float4 oTexcoord : TEXCOORD0,
+                out float4 oPosition : SV_Position
+                )
+            {
+                oTexcoord = Texcoord;
+                oPosition = Position;
+            }
+
+            float AmbientOcclustionPS(
+                in float4 coord : TEXCOORD0,
+                in float4 screenSpace : SV_Position) : SV_Target
+            {
+                float3 viewPosition = GetPosition(coord.xy);
+                float3 viewNormal = GetNormal(coord.xy);
+
+                int2 ssC = int2(screenSpace.xy);
+                float sampleAngle = float(3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10.0f;
+                float sampleRadius = projScale * radius / viewPosition.z;
+                float sampleAmbient = 0.0f;
+
+                float2 sampleNoise = float2(cos(sampleAngle), sin(sampleAngle));
+
+                for (int i = 0; i < NUM_SAMPLE; ++i)
+                {
+                    float2 sampleOffset = coord.xy + tapLocation(i, sampleNoise, sampleRadius);
+                    float3 samplePosition = GetPosition(sampleOffset);
+                    float3 sampleDirection = samplePosition - viewPosition;
+
+                    float sampleDepth = linearizeDepth(sampleOffset);
+                    float sampleAngle = dot(sampleDirection, viewNormal);
+                    float sampleLength2 = dot(sampleDirection, sampleDirection);
+
+                    float f = max(radius2 - sampleLength2, 0.0f);
+
+                    sampleAmbient += max((sampleAngle - sampleDepth * bias) * rsqrt(sampleLength2), 0.0f);
+                }
+
+                return max(0.0f, 1.0f - sampleAmbient * intensity * NUM_SAMPLE_INV);
+            }
+
+            float BilateralFilterPS(in float4 coord : TEXCOORD0) : SV_Target
+            {
+                float center_d = linearizeDepth(coord.xy);
+
+                float total_c = 0.f;
+                float total_w = 0.f;
+
+                for (int r = -BLUR_RADIUS; r < BLUR_RADIUS; r++)
+                {
+                    float2 offset = coord.xy + blurDirection * float(r);
+
+                    float bilateralWeight = bilateralfilter(offset, float(r), center_d);
+
+                    total_c += texSource.Sample(PointClamp, offset).r * bilateralWeight;
+                    total_w += bilateralWeight;
+                }
+
+                return total_c / total_w;
+            }
+
+            float4 ApplyOcclustionPS(in float4 coord : TEXCOORD0) : SV_Target
+            {
+                return texOcclusion.Sample(PointClamp, coord.xy).rrrr;
+            }
+        ]]>
+    </shader>
+    <technique name="postprocess">
+        <pass name="ao">
+            <state name="vertex" value="PostProcessVS"/>
+            <state name="fragment" value="AmbientOcclustionPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+        <pass name="blur">
+            <state name="vertex" value="PostProcessVS"/>
+            <state name="fragment" value="BilateralFilterPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+        <pass name="copy">
+            <state name="vertex" value="PostProcessVS"/>
+            <state name="fragment" value="ApplyOcclustionPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="zero" />
+            <state name="blenddst" value="srcalpha" />
+        </pass>
+    </technique>
+</effect>

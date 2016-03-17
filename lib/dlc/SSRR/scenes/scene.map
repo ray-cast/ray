@@ -4,7 +4,6 @@
     <object>
         <attribute name="first_person_camera"/>
         <attribute position="0,0,-15" />
-        <attribute lookat="0,0,-9" />
         <attribute active="true"/>
         <component class="Camera">
             <attribute aperture="45.0"/>
@@ -191,7 +190,7 @@
     <object>
         <attribute name="sun"/>
         <attribute position="0, 50, -25"/>
-        <attribute forward="0, -50, 25"/>
+        <attribute rotate="1, 0, 0"/>
         <attribute active="true"/>
         <component class="Light">
             <attribute type="sun"/>

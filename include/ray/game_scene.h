@@ -69,19 +69,22 @@ public:
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 
-	std::uint32_t getInstanceID() const noexcept;
-
 	void setEnvironment(const Setting& setting) noexcept;
 	const Setting& getEnvironment() const noexcept;
 
+	std::uint32_t getInstanceID() const noexcept;
+
 	GameObjectPtr getRootObject() noexcept;
 
-	void setGameServer(GameServer* server) noexcept;
-	GameServer* getGameServer() noexcept;
+	void setGameServer(GameServerPtr server) noexcept;
+	GameServerPtr getGameServer() noexcept;
 
 	void sendMessage(const MessagePtr& message) except;
 
 	void load(iarchive& reader) except;
+	void save(oarchive& reader) except;
+
+	GameScenePtr clone() const noexcept;
 
 	GameObjectPtr instanceObject(iarchive& reader, GameObjectPtr parent) except;
 
@@ -93,8 +96,8 @@ private:
 		RootObject(GameScene* scene) noexcept;
 		virtual ~RootObject() noexcept;
 
-		virtual GameServer* getGameServer() noexcept;
-		virtual GameScene* getGameScene() noexcept;
+		virtual GameServerPtr getGameServer() noexcept;
+		virtual GameScenePtr getGameScene() noexcept;
 
 	private:
 
@@ -105,7 +108,7 @@ private:
 
 	Setting _setting;
 	GameObjectPtr  _root;
-	GameServer* _gameServer;
+	GameServerWeakPtr _gameServer;
 
 	std::uint32_t _instanceID;
 	static std::uint32_t _instanceCount;

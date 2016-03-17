@@ -224,7 +224,7 @@ public:
 
 	Quaterniont<T>& makeRotateAboutX(T theta) noexcept
 	{
-		T thetaOver2 = theta * 0.5f;
+		T thetaOver2 = DEG_TO_RAD(theta * 0.5f);
 
 		w = cos(thetaOver2);
 		x = sin(thetaOver2);
@@ -235,7 +235,7 @@ public:
 
 	Quaterniont<T>& makeRotateAboutY(T theta) noexcept
 	{
-		T thetaOver2 = theta * 0.5f;
+		T thetaOver2 = DEG_TO_RAD(theta * 0.5f);
 
 		w = cos(thetaOver2);
 		x = 0.0f;
@@ -246,22 +246,22 @@ public:
 
 	Quaterniont<T>& makeRotateAboutZ(T theta) noexcept
 	{
-		T thetaOver2 = theta * 0.5f;
+		T thetaOver2 = DEG_TO_RAD(theta * 0.5f);
 
 		w = cos(thetaOver2);
 		x = 0.0f;
 		y = 0.0f;
 		z = sin(thetaOver2);
-
 		return *this;
 	}
 
-	Quaterniont<T>& makeRotate(const Vector3t<T>& axis, T angle) noexcept
+	Quaterniont<T>& makeRotate(const Vector3t<T>& axis, T theta) noexcept
 	{
-		assert(axis.x <= 1.0 && axis.y <= 1.0 && axis.z <= 1.0);
+		T thetaOver2 = DEG_TO_RAD(theta * 0.5f);
 
-		const T sin_a = sin(angle / 2);
-		const T cos_a = cos(angle / 2);
+		const T sin_a = sin(thetaOver2);
+		const T cos_a = cos(thetaOver2);
+
 		x = axis.x * sin_a;
 		y = axis.y * sin_a;
 		z = axis.z * sin_a;

@@ -286,13 +286,9 @@ public:
 
     Matrix3x3t<T>& inverse()
     {
-        // Compute the reciprocal determinant
         const T det = this->determinant();
         if (det == static_cast<T>(0.0))
         {
-            // Matrix not invertible. Setting all elements to nan is not really
-            // correct in a mathematical sense but it is easy to debug for the
-            // programmer.
             const T nan = std::numeric_limits<T>::quiet_NaN();
             *this = Matrix3x3t<T>(
                 nan, nan, nan,
@@ -342,7 +338,7 @@ public:
     {
         T c, s;
 
-        sinCos(&s, &c, angle);
+        sinCos(&s, &c, DEG_TO_RAD(angle));
 
         Vector3t<T> v = axis;
         v.normalize();
@@ -402,7 +398,7 @@ public:
 
     void makeRotationX(T theta)
     {
-        T ang = theta;
+        T ang = DEG_TO_RAD(theta);
         T c, s;
 
         sinCos(&s, &c, ang);
@@ -415,7 +411,7 @@ public:
 
     void makeRotationY(T theta)
     {
-        T ang = theta;
+        T ang = DEG_TO_RAD(theta);
         T c, s;
 
         sinCos(&s, &c, ang);
@@ -428,7 +424,7 @@ public:
 
     void makeRotationZ(T theta)
     {
-        T c, s, ang = theta;
+        T c, s, ang = DEG_TO_RAD(theta);
 
         sinCos(&s, &c, ang);
 
@@ -487,104 +483,6 @@ public:
         a1 = x.x; a2 = x.y; a3 = x.z;
         b1 = y.x; b2 = y.y; b3 = y.z;
         c1 = z.x; c3 = z.y; c3 = z.z;
-    }
-
-    static Matrix3x3t& translation(const Vector2t<T>& v, Matrix3x3t& out)
-    {
-        out = Matrix3x3t<T>();
-        out.a3 = v.x;
-        out.b3 = v.y;
-        return out;
-    }
-
-    // -------------------------------------------------------------------
-    /** @brief A function for creating a rotation matrix that rotates a
-        *  vector called "from" into another vector called "to".
-        * Input : from[3], to[3] which both must be *normalized* non-zero vectors
-        * Output: mtx[3][3] -- a 3x3 matrix in colum-major form
-        * Authors: Tomas Möller, John Hughes
-        *          "Efficiently Building a Matrix to Rotate One Vector to Another"
-        *          Journal of Graphics Tools, 4(4):1-4, 1999
-        */
-    static Matrix3x3t<T>& fromToMatrix(const Vector3t<T>& from, const Vector3t<T>& to, Matrix3x3t<T>& out)
-    {
-        const T e = from * to;
-        const T f = (e < 0) ? -e : e;
-
-        if (f > static_cast<T>(1.0) - static_cast<T>(0.00001))     /* "from" and "to"-vector almost parallel */
-        {
-            Vector3t<T> u, v;     /* temporary storage vectors */
-            Vector3t<T> x;       /* vector most nearly orthogonal to "from" */
-
-            x.x = (from.x > 0.0) ? from.x : -from.x;
-            x.y = (from.y > 0.0) ? from.y : -from.y;
-            x.z = (from.z > 0.0) ? from.z : -from.z;
-
-            if (x.x < x.y)
-            {
-                if (x.x < x.z)
-                {
-                    x.x = static_cast<T>(1.0); x.y = x.z = static_cast<T>(0.0);
-                }
-                else
-                {
-                    x.z = static_cast<T>(1.0); x.y = x.z = static_cast<T>(0.0);
-                }
-            }
-            else
-            {
-                if (x.y < x.z)
-                {
-                    x.y = static_cast<T>(1.0); x.x = x.z = static_cast<T>(0.0);
-                }
-                else
-                {
-                    x.z = static_cast<T>(1.0); x.x = x.y = static_cast<T>(0.0);
-                }
-            }
-
-            u.x = x.x - from.x; u.y = x.y - from.y; u.z = x.z - from.z;
-            v.x = x.x - to.x;   v.y = x.y - to.y;   v.z = x.z - to.z;
-
-            const T c1 = static_cast<T>(2.0) / (u * u);
-            const T c2 = static_cast<T>(2.0) / (v * v);
-            const T c3 = c1 * c2  * (u * v);
-
-            out.a1 = -c1 * u.x * u.x - c2 * v.x * v.x + c3 * v.x * v.x;
-            out.a2 = -c1 * u.x * u.y - c2 * v.x * v.y + c3 * v.x * v.y;
-            out.a3 = -c1 * u.x * u.z - c2 * v.x * v.z + c3 * v.x * v.y;
-
-            out.b1 = -c1 * u.y * u.x - c2 * v.y * v.x + c3 * v.y * v.x;
-            out.b2 = -c1 * u.y * u.y - c2 * v.y * v.y + c3 * v.y * v.y;
-            out.b3 = -c1 * u.y * u.z - c2 * v.y * v.z + c3 * v.y * v.z;
-
-            out.c1 = -c1 * u.z * u.x - c2 * v.z * v.x + c3 * v.z * v.z;
-            out.c2 = -c1 * u.z * u.y - c2 * v.z * v.y + c3 * v.z * v.z;
-            out.c3 = -c1 * u.z * u.z - c2 * v.z * v.z + c3 * v.z * v.z;
-        }
-        else  /* the most common case, unless "from"="to", or "from"=-"to" */
-        {
-            const Vector3t<T> v = from ^ to;
-            /* ... use this hand optimized version (9 mults less) */
-            const T h = static_cast<T>(1.0) / (static_cast<T>(1.0) + e);      /* optimization by Gottfried Chen */
-            const T hvx = h * v.x;
-            const T hvz = h * v.z;
-            const T hvxy = hvx * v.y;
-            const T hvxz = hvx * v.z;
-            const T hvyz = hvz * v.y;
-            out.a1 = e + hvx * v.x;
-            out.a2 = hvxy - v.z;
-            out.a3 = hvxz + v.y;
-
-            out.b1 = hvxy + v.z;
-            out.b2 = e + h * v.y * v.y;
-            out.b3 = hvyz - v.x;
-
-            out.c1 = hvxz - v.y;
-            out.c2 = hvyz + v.x;
-            out.c3 = e + hvz * v.z;
-        }
-        return out;
     }
 
 public:

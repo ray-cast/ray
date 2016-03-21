@@ -51,14 +51,15 @@ RenderPipelineManager::~RenderPipelineManager() noexcept
 {
 }
 
-void 
-RenderPipelineManager::open(RenderPipelinePtr pipeline) except
+bool
+RenderPipelineManager::open(RenderPipelinePtr pipeline) noexcept
 {
 	_renderPipeline = pipeline;
 
 	_deferredLighting = std::make_shared<DeferredRenderPipeline>();
 	_deferredLighting->_setRenderPipeline(_renderPipeline);
 	_deferredLighting->setActive(true);
+	return true;
 }
 
 void 
@@ -123,7 +124,6 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 	if (!_renderPipeline)
 		return;
 
-	_renderPipeline->setGraphicsContext(_renderPipeline->getDefaultGraphicsContext());
 	_renderPipeline->renderBegin();
 
 	auto& cameras = scene.getCameraList();
@@ -140,7 +140,7 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 		_deferredLighting->onRenderPipeline(*_renderPipeline);
 
 		if (renderListener)
-			renderListener->onRenderObject(*camera);
+			renderListener->onRenderObject(*_renderPipeline, *camera);
 
 		_deferredLighting->onRenderPost(*_renderPipeline);
 	}

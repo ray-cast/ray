@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -40,7 +40,7 @@ _NAME_BEGIN
 
 RenderPostProcess::RenderPostProcess() noexcept
 	: _active(false)
-	, _renderQueue(RenderQueue::RQ_POSTPROCESS)
+	, _renderQueue(RenderQueue::RenderQueuePostprocess)
 	, _renderPipeline(nullptr)
 {
 }
@@ -112,7 +112,7 @@ RenderPostProcess::onRenderPost(RenderPipeline& pipeline) except
 }
 
 void 
-RenderPostProcess::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except
+RenderPostProcess::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) except
 {
 }
 

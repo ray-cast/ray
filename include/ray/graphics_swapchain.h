@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,41 +34,69 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/graphics_command.h>
+#ifndef _H_GRAPHICS_SWAPCHAIN_H_
+#define _H_GRAPHICS_SWAPCHINA_H_
+
+#include <ray/graphics_child.h>
 
 _NAME_BEGIN
 
-RenderIndirect::RenderIndirect() noexcept
-	: startVertice(0)
-	, numVertices(0)
-	, startIndice(0)
-	, numIndices(0)
-	, numInstances(0)
-	, startInstances(0)
+class GraphicsSwapchainDesc final
 {
-}
+public:
+	GraphicsSwapchainDesc() noexcept;
+	~GraphicsSwapchainDesc() noexcept;
 
-void 
-RenderCommand::clear() noexcept
+	void setWindHandle(WindHandle hwnd) noexcept;
+	WindHandle getWindHandle() const noexcept;
+
+	void setWidth(std::uint32_t width) noexcept;
+	std::uint32_t getWidth() const noexcept;
+
+	void setHeight(std::uint32_t height) noexcept;
+	std::uint32_t getHeight() const noexcept;
+
+	void setSwapInterval(SwapInterval interval) noexcept;
+	SwapInterval getSwapInterval() const noexcept;
+
+	void setColorFormat(GraphicsFormat format) noexcept;
+	GraphicsFormat getColorFormat() const noexcept;
+
+	void setDepthFormat(GraphicsFormat format) noexcept;
+	GraphicsFormat getDepthFormat() const noexcept;
+
+	void setImageNums(std::uint32_t imageNums) noexcept;
+	std::uint32_t getImageNums() const noexcept;
+
+private:
+	WindHandle _window;
+	std::uint32_t _width;
+	std::uint32_t _height;
+
+	std::uint32_t _imageNums;
+
+	SwapInterval _interval;
+
+	GraphicsFormat _format;
+	GraphicsFormat _depthFormat;
+};
+
+class GraphicsSwapchain : public GraphicsChild
 {
-	_next = 0;
-}
+public:
+	GraphicsSwapchain() noexcept;
+	virtual ~GraphicsSwapchain() noexcept;
 
-void 
-RenderCommand::write(const void* data, std::size_t length)
-{
-	if (length > _data.size() - _next)
-		_data.resize((_data.size() << 1) + length);
+	virtual void setSwapInterval(SwapInterval interval) noexcept = 0;
+	virtual SwapInterval getSwapInterval() const noexcept = 0;
 
-	std::memcpy(&_data[_next], data, length);
+	virtual const GraphicsSwapchainDesc& getGraphicsSwapchainDesc() const noexcept = 0;
 
-	_next += length;
-}
-
-const char* 
-RenderCommand::data() const noexcept
-{
-	return _data.data();
-}
+private:
+	GraphicsSwapchain(const GraphicsSwapchain&) = delete;
+	GraphicsSwapchain& operator=(const GraphicsSwapchain&) = delete;
+};
 
 _NAME_END
+
+#endif

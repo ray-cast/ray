@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -36,12 +36,15 @@
 // +----------------------------------------------------------------------
 #include <ray/ssr.h>
 
+#include <ray/graphics_view.h>
+#include <ray/graphics_texture.h>
+
 _NAME_BEGIN
 
 SSR::SSR() noexcept
 {
 	//_ssr = MaterialMaker("sys:fx/ssr.glsl");
-	//_ssrPass = _ssr->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ssr");
+	//_ssrPass = _ssr->getTech(RenderQueue::RenderQueuePostprocess)->getPass("ssr");
 
 	//_projInfo = _ssr->getParameter("projInfo");
 	//_clipInfo = _ssr->getParameter("clipInfo");
@@ -52,12 +55,12 @@ SSR::~SSR() noexcept
 }
 
 void
-SSR::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSR::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
 	//_projInfo->assign(pipeline.camera->getProjConstant());
 	//_clipInfo->assign(pipeline.camera->getClipConstant());
 
-	pipeline.setRenderTexture(source);
+	pipeline.setRenderTexture(dest);
 	pipeline.drawScreenQuad(_ssrPass);
 }
 

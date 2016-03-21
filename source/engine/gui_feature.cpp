@@ -297,6 +297,14 @@ GuiInputKey::Code KeyCodetoGuiKey(InputKey::Code key) noexcept
 class ImageLoader : public GuiImageLoader
 {
 public:
+	ImageLoader() noexcept
+	{
+	}
+
+	~ImageLoader() noexcept
+	{
+	}
+
 	bool loadImage(int& _width, int& _height, PixelFormat& _format, const std::string& _filename, MemoryStream& stream)
 	{
 		ray::Image image;
@@ -312,9 +320,10 @@ public:
 			else
 			{
 				assert(false);
+				return false;
 			}
 
-			size_t size = image.size();
+			std::size_t size = image.size();
 
 			stream.resize(size);
 			stream.write((char*)image.data(), size);
@@ -327,6 +336,10 @@ public:
 	void saveImage(int _width, int _height, PixelFormat _format, void* _texture, const std::string& _filename)
 	{
 	}
+
+private:
+	ImageLoader(const ImageLoader&) noexcept = delete;
+	ImageLoader& operator=(const ImageLoader&) noexcept = delete;
 };
 
 GuiFeature::GuiFeature() noexcept
@@ -453,4 +466,5 @@ GuiFeature::onMessage(const MessagePtr& message) except
 }
 
 _NAME_END
+
 #endif

@@ -58,6 +58,9 @@ class Binaryt;
 template<typename T = Float>
 class Viewportt;
 
+template<typename T = int>
+class Scissort;
+
 template<typename T = Float>
 class Vector2t;
 
@@ -139,6 +142,7 @@ typedef Pointt<> Point;
 typedef Rectt<> Rect;
 typedef Binaryt<> Binary;
 typedef Viewportt<> Viewport;
+typedef Scissort<> Scissor;
 typedef Vector2t<> Vector2;
 typedef Vector3t<> Vector3;
 typedef Vector4t<> Vector4;

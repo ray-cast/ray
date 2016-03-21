@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -41,17 +41,6 @@
 
 _NAME_BEGIN
 
-enum LightType
-{
-	LT_SUN,
-	LT_DIRECTIONAL,
-	LT_AMBIENT,
-	LT_POINT,
-	LT_SPOT,
-	LT_AREA,
-	LT_HEMI_SPHERE
-};
-
 class EXPORT Light final : public RenderObject, public RenderListener
 {
 	__DeclareSubClass(Light, RenderObject)
@@ -72,21 +61,19 @@ public:
 	void setLightType(LightType type) noexcept;
 	LightType getLightType() const noexcept;
 
-	void setLightColor(const Vector3& color) noexcept;
-	const Vector3& getLightColor() const noexcept;
+	void setLightColor(const float3& color) noexcept;
+	const float3& getLightColor() const noexcept;
 
-	const Vector3& getLightAttenuation() const noexcept;
-	void setLightAttenuation(const Vector3& attenuation) noexcept;
+	void setLightAttenuation(const float3& attenuation) noexcept;
+	const float3& getLightAttenuation() const noexcept;
 
 	void setShadow(bool enable) noexcept;
 	bool getShadow() const noexcept;
 
-	void setTransform(const Matrix4x4& m) noexcept;
-
 	CameraPtr getShadowCamera() const noexcept;
 	GraphicsTexturePtr getShadowMap() const noexcept;
 
-	LightPtr clone() const noexcept;
+	RenderObjectPtr clone() const noexcept;
 
 private:
 	virtual void onSceneChangeBefor() noexcept;
@@ -98,7 +85,9 @@ private:
 	void _updateBoundingBox() noexcept;
 
 	void onWillRenderObject(const Camera& camera) noexcept;
-	void onRenderObject(const Camera& camera) noexcept;
+	void onRenderObject(RenderPipeline& pipeline, const Camera& camera) noexcept;
+
+	void onMoveAfter() noexcept;
 
 private:
 	Light(const Light&) noexcept = delete;
@@ -111,8 +100,8 @@ private:
 	float _lightRange;
 	float _lightIntensity;
 
-	Vector3 _lightColor;
-	Vector3 _lightAttenuation;
+	float3 _lightColor;
+	float3 _lightAttenuation;
 
 	float _spotInnerCone;
 	float _spotOuterCone;
@@ -121,6 +110,9 @@ private:
 	mutable bool _shadowUpdated;
 	std::size_t _shadowSize;
 	CameraPtr _shadowCamera;
+	
+	mutable GraphicsTexturePtr _shaodwMap;
+	mutable GraphicsRenderTexturePtr _shaodwView;
 
 	RenderSceneWeakPtr _renderScene;
 };

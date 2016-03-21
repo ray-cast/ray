@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -61,7 +61,7 @@ RenderBuffer::setIndexBuffer(GraphicsDataPtr ibo) noexcept
 }
 
 void 
-RenderBuffer::setGraphicsLayout(GraphicsLayoutPtr layout) noexcept
+RenderBuffer::setInputLayout(GraphicsInputLayoutPtr layout) noexcept
 {
 	_layout = layout;
 }
@@ -78,8 +78,8 @@ RenderBuffer::getIndexBuffer() noexcept
 	return _ibo;
 }
 
-GraphicsLayoutPtr
-RenderBuffer::getGraphicsLayout() noexcept
+GraphicsInputLayoutPtr
+RenderBuffer::getInputLayout() noexcept
 {
 	return _layout;
 }

@@ -128,6 +128,7 @@ bool rayOpenWindow(const char* title, int w, int h) noexcept
 		::glfwSetWindowUserPointer(_window, nullptr);
 		::glfwSetWindowFocusCallback(_window, &onWindowFocus);
 		::glfwSetWindowCloseCallback(_window, &onWindowClose);
+		::glfwSetWindowSizeCallback(_window, &onWindowResize);
 
 		HWND hwnd = ::glfwGetWin32Window(_window);
 

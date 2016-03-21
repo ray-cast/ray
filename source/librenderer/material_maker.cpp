@@ -36,9 +36,16 @@
 // +----------------------------------------------------------------------
 #include <ray/material_maker.h>
 #include <ray/material_manager.h>
+#include <ray/material_pass.h>
+#include <ray/material_tech.h>
+#include <ray/material_param.h>
+
 #include <ray/graphics_state.h>
 #include <ray/graphics_device.h>
 #include <ray/graphics_shader.h>
+#include <ray/graphics_pipeline.h>
+#include <ray/graphics_sampler.h>
+
 #include <ray/render_system.h>
 #include <ray/ioserver.h>
 #include <ray/xmlreader.h>
@@ -62,11 +69,11 @@ MaterialMaker::instanceCodes(MaterialManager& manager, iarchive& reader) except
 		throw failure(__TEXT("Empty shader name : ") + reader.getCurrentNodePath());
 
 	std::string str = reader.getText();
-	ray::util::str2hex(_shaderCodes[name], str.c_str(), str.size());
+	util::str2hex(_shaderCodes[name], str.c_str(), str.size());
 }
 
 void
-MaterialMaker::instanceShader(MaterialManager& manager, ShaderObjectDesc& program, iarchive& reader) except
+MaterialMaker::instanceShader(MaterialManager& manager, GraphicsProgramDesc& program, iarchive& reader) except
 {
 	std::string type;
 	reader.getValue("name", type);
@@ -97,17 +104,17 @@ MaterialMaker::instanceShader(MaterialManager& manager, ShaderObjectDesc& progra
 	if (bytecodes.empty())
 		throw failure(__TEXT("Empty shader code : ") + value);
 
-	ShaderDesc shader;
+	GraphicsShaderDesc shader;
 	shader.setType(shaderType);
 	shader.setByteCodes(bytecodes);
 
-	program.addShader(shader);
+	program.addShader(manager.getGraphicsDevice()->createShader(shader));
 }
 
 void
 MaterialMaker::instancePass(MaterialManager& manager, MaterialTechPtr& tech, iarchive& reader) except
 {
-	RenderPass passType = RenderPass::RP_CUSTOM;
+	RenderPass passType = RenderPass::RenderPassCustom;
 
 	std::string passName;
 	reader.getValue("name", passName);
@@ -115,22 +122,23 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialTechPtr& tech, iar
 		throw failure(__TEXT("The pass name can not be empty"));
 
 	if (passName == "custom")
-		passType = RenderPass::RP_CUSTOM;
+		passType = RenderPass::RenderPassCustom;
 	else if (passName == "shadow")
-		passType = RenderPass::RP_SHADOW;
+		passType = RenderPass::RenderPassShadow;
 	else if (passName == "opaque")
-		passType = RenderPass::RP_OPAQUES;
+		passType = RenderPass::RenderPassOpaques;
 	else if (passName == "transparent")
-		passType = RenderPass::RP_TRANSPARENT;
+		passType = RenderPass::RenderPassTransparent;
 	else if (passName == "light")
-		passType = RenderPass::RP_LIGHTS;
+		passType = RenderPass::RenderPassLights;
 	else if (passName == "specific")
-		passType = RenderPass::RP_SPECIFIC;
+		passType = RenderPass::RenderPassSpecific;
 	else if (passName == "postprocess")
-		passType = RenderPass::RP_POSTPROCESS;
+		passType = RenderPass::RenderPassPostprocess;
 
-	auto pass = std::make_shared<MaterialPass>(passType);
+	auto pass = std::make_shared<MaterialPass>();
 	pass->setName(passName);
+	pass->setRenderPass(passType);
 
 	if (reader.setToFirstChild())
 	{
@@ -139,7 +147,7 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialTechPtr& tech, iar
 		RenderBlendState blendState;
 		RenderStencilState stencilState;
 
-		ShaderObjectDesc shaderObjectDesc;
+		GraphicsProgramDesc GraphicsProgramDesc;
 
 		do
 		{
@@ -151,13 +159,13 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialTechPtr& tech, iar
 			std::string value = reader.getValue<std::string>("value");
 
 			if (name == "vertex")
-				this->instanceShader(manager, shaderObjectDesc, reader);
+				this->instanceShader(manager, GraphicsProgramDesc, reader);
 			else if (name == "fragment")
-				this->instanceShader(manager, shaderObjectDesc, reader);
+				this->instanceShader(manager, GraphicsProgramDesc, reader);
 			else if (name == "cullmode")
 				rasterState.cullMode = stringToCullMode(reader.getValue<std::string>("value"));
-			else if (name == "fillmode")
-				rasterState.fillMode = stringToFillMode(reader.getValue<std::string>("value"));
+			else if (name == "polygonMode")
+				rasterState.polygonMode = stringToFillMode(reader.getValue<std::string>("value"));
 			else if (name == "scissorTestEnable")
 				rasterState.scissorTestEnable = reader.getValue<bool>("value");
 			else if (name == "primitive")
@@ -226,6 +234,8 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialTechPtr& tech, iar
 				stencilState.stencilTwoZFail = stringToStencilOp(reader.getValue<std::string>("value"));
 			else if (name == "stencilTwoPass")
 				stencilState.stencilTwoPass = stringToStencilOp(reader.getValue<std::string>("value"));
+			else
+				assert(false);
 
 		} while (reader.setToNextChild());
 
@@ -235,40 +245,44 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialTechPtr& tech, iar
 		stateDesc.setRasterState(rasterState);
 		stateDesc.setStencilState(stencilState);
 
-		auto state = manager.getGraphicsDevice()->createGraphicsState(stateDesc);
-		auto program = manager.getGraphicsDevice()->createShaderProgram(shaderObjectDesc);
+		auto state = manager.getGraphicsDevice()->createRenderState(stateDesc);
+		auto program = manager.getGraphicsDevice()->createProgram(GraphicsProgramDesc);
 
-		pass->setGraphicsState(state);
-		pass->setGraphicsProgram(program);
+		GraphicsPipelineDesc pipelineDesc;
+		pipelineDesc.setGraphicsState(state);
+		pipelineDesc.setGraphicsProgram(program);
+		pass->setRenderPipeline(manager.getGraphicsDevice()->createRenderPipeline(pipelineDesc));
+
 		tech->addPass(pass);
 	}
 }
 
 void
-MaterialMaker::instanceTech(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+MaterialMaker::instanceTech(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
 {
-	RenderQueue queue = RenderQueue::RQ_OPAQUE;
+	RenderQueue queue = RenderQueue::RenderQueueOpaque;
 
 	std::string techName = reader.getValue<std::string>("name");
 	if (techName.empty())
 		throw failure(__TEXT("The technique name can not be empty"));
 
 	if (techName == "custom")
-		queue = RenderQueue::RQ_CUSTOM;
+		queue = RenderQueue::RenderQueueCustom;
 	else if (techName == "opaque")
-		queue = RenderQueue::RQ_OPAQUE;
+		queue = RenderQueue::RenderQueueOpaque;
 	else if (techName == "transparent")
-		queue = RenderQueue::RQ_TRANSPARENT;
+		queue = RenderQueue::RenderQueueTransparent;
 	else if (techName == "lighting")
-		queue = RenderQueue::RQ_LIGHTING;
+		queue = RenderQueue::RenderQueueLighting;
 	else if (techName == "postprocess")
-		queue = RenderQueue::RQ_POSTPROCESS;
+		queue = RenderQueue::RenderQueuePostprocess;
 	else
 	{
 		throw failure(__TEXT("Unknown technique name : ") + techName);
 	}
 
-	auto tech = std::make_shared<MaterialTech>(queue);
+	auto tech = std::make_shared<MaterialTech>();
+	tech->setRenderQueue(queue);
 
 	if (reader.setToFirstChild())
 	{
@@ -282,11 +296,11 @@ MaterialMaker::instanceTech(MaterialManager& manager, MaterialPtr& material, iar
 		} while (reader.setToNextChild());
 	}
 
-	material->addTech(tech);
+	material.addTech(tech);
 }
 
 void
-MaterialMaker::instanceParameter(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+MaterialMaker::instanceParameter(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
 {
 	auto name = reader.getValue<std::string>("name");
 	auto type = reader.getValue<std::string>("type");
@@ -296,71 +310,66 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialPtr& material
 	if (name.empty())
 		throw failure(__TEXT("The parameter name can not be empty"));
 
-	if (!type.empty())
-	{
-		auto param = std::make_shared<MaterialParam>();
-		param->setName(name);
-		if (type == "bool")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeBool);
-		else if (type == "int")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeInt);
-		else if (type == "int2")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeInt2);
-		else if (type == "int3")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeInt3);
-		else if (type == "int4")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeInt4);
-		else if (type == "float")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat);
-		else if (type == "float2")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat2);
-		else if (type == "float3")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat3);
-		else if (type == "float4")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat4);
-		else if (type == "mat3")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat3x3);
-		else if (type == "mat4")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat4x4);
-		else if (type == "float3x3")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat3x3);
-		else if (type == "float4x4")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat4x4);
-		else if (type == "float[]")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeFloatArray);
-		else if (type == "float2[]")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat2Array);
-		else if (type == "float3[]")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat3Array);
-		else if (type == "float4[]")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeFloat4Array);
-		else if (type == "texture")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeTexture);
-		else if (type == "buffer")
-			param->setType(GraphicsVariantType::GraphicsVariantTypeBuffer);
-		else
-		{
-			assert(false);
-			throw failure(__TEXT("Unknown parameter type : ") + name);
-		}
+	auto param = std::make_shared<MaterialParam>();
+	param->setName(name);
 
-		material->addParameter(param);
+	if (type == "bool") param->setType(GraphicsUniformType::GraphicsUniformTypeBool);
+	else if (type == "int") param->setType(GraphicsUniformType::GraphicsUniformTypeInt);
+	else if (type == "int2") param->setType(GraphicsUniformType::GraphicsUniformTypeInt2);
+	else if (type == "int3") param->setType(GraphicsUniformType::GraphicsUniformTypeInt3);
+	else if (type == "int4") param->setType(GraphicsUniformType::GraphicsUniformTypeInt4);
+	else if (type == "uint") param->setType(GraphicsUniformType::GraphicsUniformTypeUint);
+	else if (type == "uint2") param->setType(GraphicsUniformType::GraphicsUniformTypeUint2);
+	else if (type == "uint3") param->setType(GraphicsUniformType::GraphicsUniformTypeUint3);
+	else if (type == "uint4") param->setType(GraphicsUniformType::GraphicsUniformTypeUint4);
+	else if (type == "float") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat);
+	else if (type == "float2") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat2);
+	else if (type == "float3") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat3);
+	else if (type == "float4") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat4);
+	else if (type == "float3x3") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat3x3);
+	else if (type == "float4x4")param->setType(GraphicsUniformType::GraphicsUniformTypeFloat4x4);
+	else if (type == "bool[]") param->setType(GraphicsUniformType::GraphicsUniformTypeBoolArray);
+	else if (type == "int[]") param->setType(GraphicsUniformType::GraphicsUniformTypeIntArray);
+	else if (type == "int2[]") param->setType(GraphicsUniformType::GraphicsUniformTypeInt2Array);
+	else if (type == "int3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeInt3Array);
+	else if (type == "int4[]") param->setType(GraphicsUniformType::GraphicsUniformTypeInt4Array);
+	else if (type == "uint[]") param->setType(GraphicsUniformType::GraphicsUniformTypeUintArray);
+	else if (type == "uint2[]") param->setType(GraphicsUniformType::GraphicsUniformTypeUint2Array);
+	else if (type == "uint3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeUint3Array);
+	else if (type == "uint4[]") param->setType(GraphicsUniformType::GraphicsUniformTypeUint4Array);
+	else if (type == "half[]") param->setType(GraphicsUniformType::GraphicsUniformTypeHalfArray);
+	else if (type == "half2[]") param->setType(GraphicsUniformType::GraphicsUniformTypeHalf2Array);
+	else if (type == "half3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeHalf3Array);
+	else if (type == "half4[]") param->setType(GraphicsUniformType::GraphicsUniformTypeHalf4Array);
+	else if (type == "float[]") param->setType(GraphicsUniformType::GraphicsUniformTypeFloatArray);
+	else if (type == "float2[]")param->setType(GraphicsUniformType::GraphicsUniformTypeFloat2Array);
+	else if (type == "float3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat3Array);
+	else if (type == "float4[]") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat4Array);
+	else if (type == "float3x3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat3x3Array);
+	else if (type == "float4x4[]")param->setType(GraphicsUniformType::GraphicsUniformTypeFloat4x4Array);
+	else if (type == "texture2D")param->setType(GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	else if (type == "texture3D") param->setType(GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	else if (type == "buffer") param->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
+	else
+	{
+		assert(false);
+		throw failure(__TEXT("Unknown parameter type : ") + name);
 	}
-	else if (!semantic.empty())
+	
+	if (!semantic.empty())
 	{
 		auto materialSemantic = manager.getSemantic(semantic);
 		if (!materialSemantic)
 			throw failure(__TEXT("Unknown semantic : ") + semantic);
 
-		auto param = std::make_shared<MaterialParam>();
-		param->setName(name);
 		param->setSemantic(materialSemantic);
-		material->addParameter(param);
 	}
+
+	material.addParameter(param);
 }
 
 void
-MaterialMaker::instanceMacro(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+MaterialMaker::instanceMacro(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
 {
 	auto name = reader.getValue<std::string>("name");
 	auto type = reader.getValue<std::string>("type");
@@ -376,47 +385,47 @@ MaterialMaker::instanceMacro(MaterialManager& manager, MaterialPtr& material, ia
 		macro->setName(name);
 		if (type == "bool")
 		{
-			macro->setType(GraphicsVariantType::GraphicsVariantTypeBool);
+			macro->setType(GraphicsUniformType::GraphicsUniformTypeBool);
 			macro->assign(reader.getValue<bool>("value"));
 		}
 		else if (type == "int")
 		{
-			macro->setType(GraphicsVariantType::GraphicsVariantTypeInt);
+			macro->setType(GraphicsUniformType::GraphicsUniformTypeInt);
 			macro->assign(reader.getValue<int1>("value"));
 		}
 		else if (type == "int2")
 		{
-			macro->setType(GraphicsVariantType::GraphicsVariantTypeInt2);
+			macro->setType(GraphicsUniformType::GraphicsUniformTypeInt2);
 			macro->assign(reader.getValue<int2>("value"));
 		}
 		else if (type == "int3")
 		{
-			macro->setType(GraphicsVariantType::GraphicsVariantTypeInt3);
+			macro->setType(GraphicsUniformType::GraphicsUniformTypeInt3);
 			macro->assign(reader.getValue<int3>("value"));
 		}
 		else if (type == "int4")
 		{
-			macro->setType(GraphicsVariantType::GraphicsVariantTypeInt4);
+			macro->setType(GraphicsUniformType::GraphicsUniformTypeInt4);
 			macro->assign(reader.getValue<int4>("value"));
 		}
 		else if (type == "float")
 		{
-			macro->setType(GraphicsVariantType::GraphicsVariantTypeFloat);
+			macro->setType(GraphicsUniformType::GraphicsUniformTypeFloat);
 			macro->assign(reader.getValue<float1>("value"));
 		}
 		else if (type == "float2")
 		{
-			macro->setType(GraphicsVariantType::GraphicsVariantTypeFloat2);
+			macro->setType(GraphicsUniformType::GraphicsUniformTypeFloat2);
 			macro->assign(reader.getValue<float2>("value"));
 		}
 		else if (type == "float3")
 		{
-			macro->setType(GraphicsVariantType::GraphicsVariantTypeFloat3);
+			macro->setType(GraphicsUniformType::GraphicsUniformTypeFloat3);
 			macro->assign(reader.getValue<float3>("value"));
 		}
 		else if (type == "float4")
 		{
-			macro->setType(GraphicsVariantType::GraphicsVariantTypeFloat4);
+			macro->setType(GraphicsUniformType::GraphicsUniformTypeFloat4);
 			macro->assign(reader.getValue<float4>("value"));
 		}
 		else
@@ -425,12 +434,12 @@ MaterialMaker::instanceMacro(MaterialManager& manager, MaterialPtr& material, ia
 			throw failure(__TEXT("Unknown macro type : ") + name);
 		}
 
-		material->addMacro(macro);
+		material.addMacro(macro);
 	}
 }
 
 void
-MaterialMaker::instanceSampler(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+MaterialMaker::instanceSampler(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
 {
 	std::string samplerName;
 	reader.getValue("name", samplerName);
@@ -468,17 +477,17 @@ MaterialMaker::instanceSampler(MaterialManager& manager, MaterialPtr& material, 
 
 		auto param = std::make_shared<MaterialParam>();
 		param->setName(samplerName);
-		param->assign(manager.getGraphicsDevice()->createGraphicsSampler(desc));	
+		param->assign(nullptr, manager.getGraphicsDevice()->createGraphicsSampler(desc));	
 
-		material->addParameter(param);
+		material.addParameter(param);
 	}
 }
 
 void
-MaterialMaker::instanceBuffer(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+MaterialMaker::instanceBuffer(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
 {
 	auto buffer = std::make_shared<MaterialParam>();
-	buffer->setType(GraphicsVariantType::GraphicsVariantTypeBuffer);
+	buffer->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
 	buffer->setName(reader.getValue<std::string>("name"));
 
 	if (reader.setToFirstChild())
@@ -490,7 +499,7 @@ MaterialMaker::instanceBuffer(MaterialManager& manager, MaterialPtr& material, i
 }
 
 void 
-MaterialMaker::instanceInclude(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+MaterialMaker::instanceInclude(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
 {
 	auto path = reader.getValue<std::string>("name");
 	if (!path.empty())
@@ -500,7 +509,7 @@ MaterialMaker::instanceInclude(MaterialManager& manager, MaterialPtr& material, 
 }
 
 MaterialPtr
-MaterialMaker::load(MaterialManager& manager, const std::string& filename) except
+MaterialMaker::load(MaterialManager& manager, const std::string& filename) noexcept
 {
 	try
 	{
@@ -519,12 +528,13 @@ MaterialMaker::load(MaterialManager& manager, const std::string& filename) excep
 	}
 	catch (const failure& e)
 	{
-		throw failure(__TEXT("in ") + filename + __TEXT(" ") + e.message(), e.stack());
+		std::cout << __TEXT("in ") + filename + __TEXT(" ") + e.message() + e.stack();
+		return nullptr;
 	}
 }
 
-MaterialPtr 
-MaterialMaker::load(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+bool
+MaterialMaker::load(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
 {
 	std::string nodeName;
 	nodeName = reader.getCurrentNodeName();
@@ -555,7 +565,7 @@ MaterialMaker::load(MaterialManager& manager, MaterialPtr& material, iarchive& r
 			instanceTech(manager, material, reader);
 	} while (reader.setToNextChild());
 
-	return material;
+	return true;
 }
 
 MaterialPtr
@@ -591,27 +601,28 @@ MaterialMaker::load(MaterialManager& manager, iarchive& reader) except
 				for (auto& arg : args)
 				{
 					auto param = material->getParameter(arg.first);
-					if (param)
+					if (!param)
+						continue;
+
+					switch (param->getType())
 					{
-						auto type = param->getType();
-						switch (type)
-						{
-						case GraphicsVariantType::GraphicsVariantTypeFloat:
-							param->assign(parseFloat<Float>(arg.second));
-							break;
-						case GraphicsVariantType::GraphicsVariantTypeFloat2:
-							param->assign(parseFloat2(arg.second));
-							break;
-						case GraphicsVariantType::GraphicsVariantTypeFloat3:
-							param->assign(parseFloat3(arg.second));
-							break;
-						case GraphicsVariantType::GraphicsVariantTypeFloat4:
-							param->assign(parseFloat4(arg.second));
-							break;
-						case GraphicsVariantType::GraphicsVariantTypeTexture:
-							param->assign(RenderSystem::instance()->createTexture(arg.second));
-							break;
-						}
+					case GraphicsUniformType::GraphicsUniformTypeFloat:
+						param->assign(parseFloat<Float>(arg.second));
+						break;
+					case GraphicsUniformType::GraphicsUniformTypeFloat2:
+						param->assign(parseFloat2(arg.second));
+						break;
+					case GraphicsUniformType::GraphicsUniformTypeFloat3:
+						param->assign(parseFloat3(arg.second));
+						break;
+					case GraphicsUniformType::GraphicsUniformTypeFloat4:
+						param->assign(parseFloat4(arg.second));
+						break;
+					case GraphicsUniformType::GraphicsUniformTypeStorageImage:
+						param->assign(RenderSystem::instance()->createTexture(arg.second));
+						break;
+					default:
+						assert(false);
 					}
 				}
 
@@ -621,10 +632,11 @@ MaterialMaker::load(MaterialManager& manager, iarchive& reader) except
 	}
 	else if (nodeName == "effect")
 	{
-		auto material = std::make_shared<Material>();
-		if (this->load(manager, material, reader))
+		MaterialDesc materialDesc;
+		if (this->load(manager, materialDesc, reader))
 		{
-			material->setup();
+			auto material = std::make_shared<Material>();
+			material->setup(materialDesc);
 			return material;
 		}	
 	}

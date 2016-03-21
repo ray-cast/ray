@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -368,7 +368,7 @@ FontDistanceField::computeBitmaps(FT_Library library, FT_Face face, std::size_t 
 	assert(startCode <= _bitmapGlyphs.size());
 	assert(endCode <= _bitmapGlyphs.size());
 
-	ray::KdimensionTree<short2> nodes;
+	KdimensionTree<short2> nodes;
 
 	std::vector<float> distance(_distanceSize * _distanceSize);
 
@@ -411,7 +411,7 @@ FontDistanceField::computeBitmaps(FT_Library library, FT_Face face, std::size_t 
 }
 
 void 
-FontDistanceField::computeEdge(const FT_BitmapGlyph bitmapGlyph, std::size_t fontSize, std::size_t internalSize, ray::KdimensionTree<short2>& nodes)
+FontDistanceField::computeEdge(const FT_BitmapGlyph bitmapGlyph, std::size_t fontSize, std::size_t internalSize, KdimensionTree<short2>& nodes)
 {
 	std::size_t height = bitmapGlyph->bitmap.rows;
 	std::size_t width = bitmapGlyph->bitmap.pitch << 3;
@@ -438,7 +438,7 @@ FontDistanceField::computeEdge(const FT_BitmapGlyph bitmapGlyph, std::size_t fon
 }
 
 void
-FontDistanceField::computeDistance(const FT_BitmapGlyph bitmapGlyph, ray::KdimensionTree<short2>& nodes, std::size_t fontSize, std::size_t internalSize, std::size_t distanceSize, std::vector<float>& distance)
+FontDistanceField::computeDistance(const FT_BitmapGlyph bitmapGlyph, KdimensionTree<short2>& nodes, std::size_t fontSize, std::size_t internalSize, std::size_t distanceSize, std::vector<float>& distance)
 {
 	std::size_t _sampleSize = internalSize / distanceSize;
 	std::size_t _sampleHalf = _sampleSize >> 1;
@@ -453,7 +453,7 @@ FontDistanceField::computeDistance(const FT_BitmapGlyph bitmapGlyph, ray::Kdimen
 			std::size_t ix = _sampleHalf + x * _sampleSize;
 			std::size_t iy = _sampleHalf + y * _sampleSize;
 
-			ray::KdimensionNearest<short2> result;
+			KdimensionNearest<short2> result;
 			nodes.search(result, short2(ix, iy), fontSize);
 
 			std::size_t index = y * distanceSize + x;

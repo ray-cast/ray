@@ -41,22 +41,14 @@
 
 _NAME_BEGIN
 
-enum RenderQueue
+class EXPORT MaterialTech final : public rtti::Interface
 {
-	RQ_OPAQUE,
-	RQ_TRANSPARENT,
-	RQ_LIGHTING,
-	RQ_POSTPROCESS,
-	RQ_CUSTOM,
-	RQ_NUMS,
-};
-
-class EXPORT MaterialTech final
-{
+	__DeclareSubClass(MaterialTech, rtti::Interface)
 public:
-	MaterialTech(RenderQueue renderQueue) noexcept;
+	MaterialTech() noexcept;
 	~MaterialTech() noexcept;
 
+	void setRenderQueue(RenderQueue renderQueue) noexcept;
 	RenderQueue getRenderQueue() const noexcept;
 
 	void addPass(MaterialPassPtr pass);

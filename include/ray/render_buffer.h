@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,8 +37,7 @@
 #ifndef _H_RENDER_BUFFER_H_
 #define _H_RENDER_BUFFER_H_
 
-#include <ray/graphics_data.h>
-#include <ray/graphics_layout.h>
+#include <ray/render_types.h>
 
 _NAME_BEGIN
 
@@ -51,11 +50,11 @@ public:
 
 	void setVertexBuffer(GraphicsDataPtr vbo) noexcept;
 	void setIndexBuffer(GraphicsDataPtr ibo) noexcept;
-	void setGraphicsLayout(GraphicsLayoutPtr layout) noexcept;
+	void setInputLayout(GraphicsInputLayoutPtr layout) noexcept;
 
 	GraphicsDataPtr getVertexBuffer() noexcept;
 	GraphicsDataPtr getIndexBuffer() noexcept;
-	GraphicsLayoutPtr getGraphicsLayout() noexcept;
+	GraphicsInputLayoutPtr getInputLayout() noexcept;
 
 private:
 	RenderBuffer(const RenderBuffer&) noexcept = delete;
@@ -64,7 +63,7 @@ private:
 private:
 	GraphicsDataPtr _vbo;
 	GraphicsDataPtr _ibo;
-	GraphicsLayoutPtr _layout;
+	GraphicsInputLayoutPtr _layout;
 };
 
 _NAME_END

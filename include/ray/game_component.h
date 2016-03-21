@@ -68,7 +68,7 @@ public:
 	virtual void load(iarchive& reader) noexcept;
 	virtual void save(oarchive& write) noexcept;
 
-	virtual GameComponentPtr clone() const except = 0;
+	virtual GameComponentPtr clone() const noexcept = 0;
 
 protected:
 

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -41,31 +41,6 @@
 
 _NAME_BEGIN
 
-enum CameraType
-{
-	CT_ORTHO,
-	CT_PERSPECTIVE
-};
-
-enum CameraOrder
-{
-	CO_SHADOW,
-	CO_COLOR,
-	CO_NORMAL,
-	CO_LIGHT,
-	CO_SHADING,
-	CO_CUSTOM,
-	CO_CUBEMAP,
-	CO_MAIN
-};
-
-enum CameraRender
-{
-	CR_RENDER_TO_SCREEN,
-	CR_RENDER_TO_TEXTURE,
-	CR_RENDER_TO_CUBEMAP,
-};
-
 class EXPORT Camera final : public RenderObject
 {
 	__DeclareSubClass(Camera, RenderObject)
@@ -91,31 +66,31 @@ public:
 	void setOrtho(float left, float right, float top, float bottom) noexcept;
 	void getOrtho(float& left, float& right, float& top, float& bottom) noexcept;
 
-	const Matrix4x4& getView() const noexcept;
-	const Matrix4x4& getViewInverse() const noexcept;
+	const float4x4& getView() const noexcept;
+	const float4x4& getViewInverse() const noexcept;
 
-	const Matrix4x4& getProject() const noexcept;
-	const Matrix4x4& getProjectInverse() const noexcept;
+	const float4x4& getProject() const noexcept;
+	const float4x4& getProjectInverse() const noexcept;
 
-	const Matrix4x4& getViewProject() const noexcept;
-	const Matrix4x4& getViewProjectInverse() const noexcept;
+	const float4x4& getViewProject() const noexcept;
+	const float4x4& getViewProjectInverse() const noexcept;
 
-	const Vector2& getProjLength() const noexcept;
-	const Vector4& getProjConstant() const noexcept;
+	const float2& getProjLength() const noexcept;
+	const float4& getProjConstant() const noexcept;
 
-	const Vector4& getClipConstant() const noexcept;
+	const float4& getClipConstant() const noexcept;
 
-	Vector3 worldToScreen(const Vector3& pos) const noexcept;
-	Vector3 worldToProject(const Vector3& pos) const noexcept;
+	float3 worldToScreen(const float3& pos) const noexcept;
+	float3 worldToProject(const float3& pos) const noexcept;
 
-	Vector3 screenToWorld(const Vector3& pos) const noexcept;
-	Vector3 screenToDirection(const Vector2& pos) const noexcept;
+	float3 screenToWorld(const float3& pos) const noexcept;
+	float3 screenToDirection(const float2& pos) const noexcept;
 
 	void setClearFlags(GraphicsClearFlags flags) noexcept;
 	GraphicsClearFlags getCameraFlags() const noexcept;
 
-	void setClearColor(const Vector4& color) noexcept;
-	const Vector4& getClearColor() const noexcept;
+	void setClearColor(const float4& color) noexcept;
+	const float4& getClearColor() const noexcept;
 
 	void setCameraType(CameraType type) noexcept;
 	CameraType getCameraType() const noexcept;
@@ -156,7 +131,7 @@ private:
 
 	Viewport _viewport;
 
-	Vector4    _clearColor;
+	float4 _clearColor;
 	GraphicsClearFlags _clearFlags;
 
 	CameraType   _cameraType;
@@ -169,15 +144,15 @@ private:
 	mutable bool _needUpdateProject;
 	mutable bool _needUpdateViewProject;
 
-	mutable Vector2 _projLength;
-	mutable Vector4 _projConstant;
-	mutable Vector4 _clipConstant;
+	mutable float2 _projLength;
+	mutable float4 _projConstant;
+	mutable float4 _clipConstant;
 
-	mutable Matrix4x4 _project;
-	mutable Matrix4x4 _projectInverse;
+	mutable float4x4 _project;
+	mutable float4x4 _projectInverse;
 
-	mutable Matrix4x4 _viewProejct;
-	mutable Matrix4x4 _viewProjectInverse;
+	mutable float4x4 _viewProejct;
+	mutable float4x4 _viewProjectInverse;
 };
 
 _NAME_END

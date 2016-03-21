@@ -188,7 +188,7 @@ GuiWindowComponent::save(oarchive& write) noexcept
 }
 
 GameComponentPtr
-GuiWindowComponent::clone() const except
+GuiWindowComponent::clone() const noexcept
 {
 	return std::make_shared<GuiWindowComponent>();
 }

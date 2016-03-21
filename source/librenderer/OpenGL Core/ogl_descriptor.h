@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,34 +34,65 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_DATA_MANAGER_H_
-#define _H_RENDER_DATA_MANAGER_H_
+#ifndef _H_OGL_DESCRIPTOR_H_
+#define _H_OGL_DESCRIPTOR_H_
 
-#include <ray/render_data_manager_base.h>
-#include <ray/render_scene.h>
+#include "ogl_types.h"
 
 _NAME_BEGIN
 
-class DefaultRenderDataManager final : public RenderDataManager
+class OGLDescriptorSetLayout final : public GraphicsDescriptorSetLayout
 {
+	__DeclareSubClass(OGLDescriptorSetLayout, OGLGraphicsData)
 public:
-	DefaultRenderDataManager() noexcept;
-	~DefaultRenderDataManager() noexcept;
+	OGLDescriptorSetLayout() noexcept;
+	~OGLDescriptorSetLayout() noexcept;
 
-	void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept;
-	RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept;
+	bool setup(const GraphicsDescriptorSetLayoutDesc& desc) noexcept;
+	void close() noexcept;
 
-	void assginVisiable(CameraPtr camera) noexcept;
-
-private:
-	void sortMaterial(OcclusionCullList& list) noexcept;
-	void sortDistance(OcclusionCullList& list) noexcept;
+	const GraphicsDescriptorSetLayoutDesc& getGraphicsDescriptorSetLayoutDesc() const noexcept;
 
 private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
 
-	OcclusionCullList _visiable;
+private:
+	OGLDescriptorSetLayout(const OGLDescriptorSetLayout&) noexcept = delete;
+	OGLDescriptorSetLayout& operator=(const OGLDescriptorSetLayout&) noexcept = delete;
 
-	RenderObjects _renderQueue[RenderQueue::RQ_NUMS][RenderPass::RP_NUMPASS];
+private:
+	GraphicsDeviceWeakPtr _device;
+	GraphicsDescriptorSetLayoutDesc _descriptorSetDesc;
+};
+
+class OGLDescriptorSet final : public GraphicsDescriptorSet
+{
+	__DeclareSubClass(OGLDescriptorSet, OGLGraphicsData)
+public:
+	OGLDescriptorSet() noexcept;
+	~OGLDescriptorSet() noexcept;
+
+	bool setup(const GraphicsDescriptorSetDesc& desc) noexcept;
+	void close() noexcept;
+
+	void bindProgram(GraphicsProgramPtr program) noexcept;
+	
+	const GraphicsDescriptorSetDesc& getGraphicsDescriptorSetDesc() const noexcept;
+
+private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	OGLDescriptorSet(const OGLDescriptorSet&) noexcept = delete;
+	OGLDescriptorSet& operator=(const OGLDescriptorSet&) noexcept = delete;
+
+private:
+	GraphicsDeviceWeakPtr _device;
+	GraphicsDescriptorSetDesc _descriptorSetDesc;
 };
 
 _NAME_END

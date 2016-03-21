@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <effect language="bytecodes">
-    <parameter name="matModel" semantic="matModel" />
-    <parameter name="matModelInverseTranspose" semantic="matModelInverseTranspose" />
-    <parameter name="matViewProject" semantic="matViewProject" />
-    <parameter name="decal" type="texture" />
+    <parameter name="matModel" type="float4x4" semantic="matModel" />
+    <parameter name="matModelInverseTranspose" type="float4x4" semantic="matModelInverseTranspose" />
+    <parameter name="matViewProject" type="float4x4" semantic="matViewProject" />
+    <parameter name="decal" type="texture2D" />
     <sampler name="PointClamp">
         <state name="filter" value="point" />
         <state name="wrap" value="clamp" />
@@ -11,6 +11,10 @@
     <sampler name="samLinear">
         <state name="filter" value="linear" />
         <state name="wrap" value="repeat" />
+    </sampler>
+    <sampler name="LinearClamp">
+        <state name="filter" value="linear" />
+        <state name="wrap" value="clamp" />
     </sampler>
     <shader name="SkyPS">
         <![CDATA[

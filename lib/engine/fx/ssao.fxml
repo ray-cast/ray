@@ -12,10 +12,10 @@
     <parameter name="blurFactor" type="float" />
     <parameter name="blurSharpness" type="float" />
     <parameter name="blurDirection" type="float2"/>
-    <parameter name="texDepth" semantic="DeferredDepthLinearMap" />
-    <parameter name="texNormal" semantic="NormalMap" />
-    <parameter name="texOcclusion" type="texture" />
-    <parameter name="texSource" type="texture"/>
+    <parameter name="texDepth" type="texture2D" semantic="DeferredDepthLinearMap" />
+    <parameter name="texNormal" type="texture2D" semantic="NormalMap" />
+    <parameter name="texOcclusion" type="texture2d" />
+    <parameter name="texSource" type="texture2d"/>
     <macro name="NUM_SAMPLE" type="int" value="10"/>
     <macro name="NUM_SAMPLE_INV" type="float" value="0.1"/>
     <macro name="BLUR_RADIUS" type="int" value="4"/>

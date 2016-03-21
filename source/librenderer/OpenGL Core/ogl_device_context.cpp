@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -40,12 +40,13 @@
 #include "ogl_shader.h"
 #include "ogl_texture.h"
 #include "ogl_framebuffer.h"
-#include "ogl_layout.h"
+#include "ogl_input_layout.h"
 #include "ogl_vbo.h"
 #include "ogl_ibo.h"
-#include "ogl_dibo.h"
 #include "ogl_commandlist.h"
 #include "ogl_sampler.h"
+#include "ogl_descriptor.h"
+#include "ogl_render_pipeline.h"
 
 _NAME_BEGIN
 
@@ -62,13 +63,17 @@ OGLDeviceContext::~OGLDeviceContext() noexcept
 }
 
 bool
-OGLDeviceContext::open(WindHandle window) noexcept
+OGLDeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 {
-	if (!_initOpenGL)
-	{
-		_glcontext = std::make_shared<OGLCanvas>();
-		_glcontext->open(window);
+	if (_initOpenGL)
+		return false;
 
+	if (!desc.getSwapchain())
+		return false;
+
+	_glcontext = desc.getSwapchain()->downcast<OGLCanvas>();
+	if (_glcontext)
+	{
 		this->initDebugControl();
 		this->initStateSystem();
 
@@ -93,12 +98,6 @@ OGLDeviceContext::close() noexcept
 		_renderTexture = nullptr;
 	}
 
-	if (_multiRenderTexture)
-	{
-		_multiRenderTexture.reset();
-		_multiRenderTexture = nullptr;
-	}
-
 	if (_state)
 	{
 		_state.reset();
@@ -115,29 +114,15 @@ OGLDeviceContext::close() noexcept
 }
 
 void
-OGLDeviceContext::setActive(bool active) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setActive(active);
-}
-
-bool 
-OGLDeviceContext::getActive() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getActive();
-}
-
-void
 OGLDeviceContext::renderBegin() noexcept
 {
+	assert(_glcontext);
+	_glcontext->setActive(true);
 }
 
 void
 OGLDeviceContext::renderEnd() noexcept
 {
-	assert(_glcontext);
-	_glcontext->present();
 }
 
 void
@@ -156,90 +141,80 @@ OGLDeviceContext::getViewport(std::size_t i) const noexcept
 	return _viewport[i];
 }
 
-void
-OGLDeviceContext::setWireframeMode(bool enable) noexcept
+void 
+OGLDeviceContext::setScissor(const Scissor& scissor, std::size_t i) noexcept
 {
-	_enableWireframe = enable;
-}
-
-bool
-OGLDeviceContext::getWireframeMode() const noexcept
-{
-	return _enableWireframe;
-}
-
-void
-OGLDeviceContext::setSwapInterval(SwapInterval interval) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setSwapInterval(interval);
-}
-
-SwapInterval
-OGLDeviceContext::getSwapInterval() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getSwapInterval();
-}
-
-void
-OGLDeviceContext::setGraphicsState(GraphicsStatePtr state) noexcept
-{
-	if (_state != state)
+	if (_scissor[i] != scissor)
 	{
-		if (state)
-		{
-			auto glstate = state->downcast<OGLGraphicsState>();
-			if (glstate)
-			{
-				glstate->apply(_stateCaptured);
-
-				_state = glstate;
-				_stateCaptured = glstate->getGraphicsStateDesc();
-			}
-			else
-			{
-				_state = nullptr;
-				_stateDefault->apply(_stateCaptured);
-			}
-		}
-		else
-		{
-			_state = nullptr;
-			_stateDefault->apply(_stateCaptured);
-		}
+		glScissorIndexed(i, scissor.left, scissor.top, scissor.width, scissor.height);
+		_scissor[i] = scissor;
 	}
 }
 
-GraphicsStatePtr
-OGLDeviceContext::getGraphicsState() const noexcept
+const Scissor&
+OGLDeviceContext::getScissor(std::size_t i) const noexcept
 {
-	return _state;
+	return _scissor[i];
 }
 
 void
-OGLDeviceContext::setGraphicsLayout(GraphicsLayoutPtr layout) noexcept
+OGLDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
-	if (_inputLayout != layout)
+	assert(pipeline);
+
+	if (_pipeline != pipeline)
 	{
-		if (layout)
+		auto& pipelineDesc = pipeline->getGraphicsPipelineDesc();
+
+		auto glstate = pipelineDesc.getGraphicsState()->downcast<OGLGraphicsState>();
+		if (_state != glstate)
 		{
-			if (layout->isInstanceOf<OGLGraphicsLayout>())
-				_inputLayout = layout->downcast<OGLGraphicsLayout>();
-			else
-				_inputLayout = nullptr;
+			glstate->apply(_stateCaptured);
+
+			_state = glstate;
+			_stateCaptured = glstate->getGraphicsStateDesc();
 		}
-		else
+
+		auto glshader = pipelineDesc.getGraphicsProgram()->downcast<OGLShaderObject>();
+		if (_shaderObject != glshader)
 		{
-			_inputLayout = nullptr;
+			glUseProgram(glshader->getInstanceID());
+			_shaderObject = glshader;
 		}
 
 		_needUpdateLayout = true;
 	}
 }
 
-GraphicsLayoutPtr
-OGLDeviceContext::getGraphicsLayout() const noexcept
+GraphicsPipelinePtr 
+OGLDeviceContext::getRenderPipeline() const noexcept
+{
+	return _pipeline;
+}
+
+void 
+OGLDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
+{
+	_descriptorSet = descriptorSet->downcast<OGLDescriptorSet>();
+	_descriptorSet->bindProgram(_shaderObject);
+}
+
+GraphicsDescriptorSetPtr 
+OGLDeviceContext::getDescriptorSet() const noexcept
+{
+	return _descriptorSet;
+}
+
+void
+OGLDeviceContext::setInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept
+{
+	assert(inputLayout);
+	_inputLayout = inputLayout->downcast<OGLInputLayout>();
+	_needUpdateLayout = true;
+}
+
+GraphicsInputLayoutPtr
+OGLDeviceContext::getInputLayout() const noexcept
 {
 	return _inputLayout;
 }
@@ -334,17 +309,17 @@ OGLDeviceContext::getVertexBufferData() const noexcept
 }
 
 void
-OGLDeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
+OGLDeviceContext::drawRenderBuffer(const GraphicsIndirect& renderable) noexcept
 {
 	if (!_inputLayout || !_vbo)
 		return;
 
-	if (_inputLayout->getIndexType() != GL_NONE)
+	if (_inputLayout->getGraphicsInputLayoutDesc().getIndexType() != GraphicsIndexType::GraphicsIndexTypeNone)
 	{
 		if (!_ibo)
 			return;
 
-		if (_ibo->size() < _inputLayout->getIndexSize() * (renderable.startIndice + renderable.numIndices))
+		if (_ibo->size() < _inputLayout->getGraphicsInputLayoutDesc().getIndexSize() * (renderable.startIndice + renderable.numIndices))
 			return;
 	}
 
@@ -373,9 +348,9 @@ OGLDeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 	if (_ibo)
 	{
 		GLenum drawType = OGLTypes::asVertexType(primitiveType);
-		GLenum indexType = _inputLayout->getIndexType();
+		GLenum indexType = OGLTypes::asIndexType(_inputLayout->getGraphicsInputLayoutDesc().getIndexType());
 		GLsizei numInstance = std::max(1, renderable.numInstances);
-		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_inputLayout->getIndexSize() * renderable.startIndice);
+		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_inputLayout->getGraphicsInputLayoutDesc().getIndexSize() * renderable.startIndice);
 		glDrawElementsInstancedBaseVertexBaseInstance(drawType, renderable.numIndices, indexType, offsetIndices, numInstance, renderable.startVertice, renderable.startInstances);
 	}
 	else
@@ -387,75 +362,10 @@ OGLDeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 }
 
 void
-OGLDeviceContext::drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept
+OGLDeviceContext::drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept
 {
 	for (std::size_t i = first; i < first + count; i++)
 		this->drawRenderBuffer(renderable[i]);
-}
-
-void
-OGLDeviceContext::setGraphicsTexture(GraphicsTexturePtr texture, std::uint32_t slot) noexcept
-{
-	if (texture)
-	{
-		auto gltexture = texture->downcast<OGLTexture>();
-		GLuint textureID = gltexture->getInstanceID();
-		glBindTextureUnit(slot, textureID);
-	}
-	else
-	{
-		glBindTextureUnit(slot, 0);
-	}
-}
-
-void
-OGLDeviceContext::setGraphicsTexture(GraphicsTexturePtr texture[], std::uint32_t first, std::uint32_t count) noexcept
-{
-	if (count < MAX_TEXTURE_UNIT)
-	{
-		GLuint textures[MAX_TEXTURE_UNIT];
-		for (std::uint32_t i = 0; i < count; i++)
-		{
-			if (texture[i])
-				textures[i] = std::dynamic_pointer_cast<OGLTexture>(texture[i])->getInstanceID();
-			else
-				textures[i] = GL_NONE;
-		}
-
-		glBindTextures(first, count, textures);
-	}
-}
-
-void
-OGLDeviceContext::setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept
-{
-	if (sampler)
-	{
-		GLuint samplerID = sampler->downcast<OGLSampler>()->getInstanceID();
-		glBindSampler(slot, samplerID);
-	}
-	else
-	{
-		glBindSampler(slot, 0);
-	}
-}
-
-void
-OGLDeviceContext::setGraphicsSampler(GraphicsSamplerPtr sampler[], std::uint32_t first, std::uint32_t count) noexcept
-{
-	if (count < MAX_SAMPLER_UNIT)
-	{
-		GLuint samplers[MAX_SAMPLER_UNIT];
-		for (std::uint32_t i = 0; i < count; i++)
-		{
-			if (sampler[i])
-				samplers[i] = sampler[i]->downcast<OGLSampler>()->getInstanceID();
-			else
-				samplers[i] = GL_NONE;
-		}
-
-		glBindSamplers(first, count, samplers);
-	}
 }
 
 void
@@ -463,94 +373,38 @@ OGLDeviceContext::setRenderTexture(GraphicsRenderTexturePtr target) noexcept
 {
 	if (_renderTexture != target)
 	{
-		if (_renderTexture)
-			_renderTexture->setActive(false);
-
-		if (_multiRenderTexture)
-			_multiRenderTexture->setActive(false);
-
 		if (target)
 		{
 			_renderTexture = target->downcast<OGLRenderTexture>();
-			_renderTexture->setActive(true);
+			auto& textureDesc = _renderTexture->getGraphicsRenderTextureDesc();
+			auto& textures = textureDesc.getTextures();
 
-			auto textureDesc = _renderTexture->getResolveTexture()->getGraphicsTextureDesc();
-			this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), 0);
-		}
-		else
-		{
-			_renderTexture = nullptr;
-			glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
-		}
+			glBindFramebuffer(GL_FRAMEBUFFER, _renderTexture->getInstanceID());
 
-		_multiRenderTexture = nullptr;
-	}
-	else
-	{
-		if (_multiRenderTexture)
-		{
-			glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
-			_multiRenderTexture = nullptr;
-		}
-	}
-}
-
-void
-OGLDeviceContext::setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept
-{
-	if (_multiRenderTexture != target)
-	{
-		if (_renderTexture)
-			_renderTexture->setActive(false);
-
-		if (_multiRenderTexture)
-			_multiRenderTexture->setActive(false);
-
-		if (target)
-		{
-			_multiRenderTexture = target->downcast<OGLMultiRenderTexture>();
-			_multiRenderTexture->setActive(true);
-
-			auto& framebuffers = _multiRenderTexture->getGraphicsMultiRenderTextureDesc().getRenderTextures();
-			std::size_t size = framebuffers.size();
-			for (std::size_t index = 0; index < size; index++)
+			std::size_t size = textures.size();
+			if (size > 0)
 			{
-				auto framebuffer = framebuffers[index];
-				auto textureDesc = framebuffer->getResolveTexture()->getGraphicsTextureDesc();
-				this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), index);
+				for (std::size_t index = 0; index < size; index++)
+				{
+					auto& textureDesc = textures[index]->getGraphicsTextureDesc();
+					this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), index);
+				}
+			}
+			else
+			{
+				auto depthTexture = textureDesc.getSharedDepthTexture();
+				if (depthTexture)
+				{
+					auto& textureDesc = depthTexture->getGraphicsTextureDesc();
+					this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), 0);
+				}
 			}
 		}
 		else
 		{
-			_multiRenderTexture = nullptr;
 			glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+			_renderTexture = nullptr;
 		}
-
-		_renderTexture = nullptr;
-	}
-	else
-	{
-		assert(false);
-	}
-}
-
-void
-OGLDeviceContext::setRenderTextureLayer(GraphicsRenderTexturePtr renderTexture, std::int32_t layer) noexcept
-{
-	assert(renderTexture);
-
-	if (_multiRenderTexture)
-	{
-		_multiRenderTexture->setLayer(renderTexture, layer);
-	}
-	else if (_renderTexture == renderTexture)
-	{
-		_renderTexture->setLayer(layer);
-	}
-	else
-	{
-		this->setRenderTexture(renderTexture);
-		_renderTexture->setLayer(layer);
 	}
 }
 
@@ -560,7 +414,7 @@ OGLDeviceContext::blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport
 	assert(src);
 
 	auto readFramebuffer = src->downcast<OGLRenderTexture>()->getInstanceID();
-	auto drawFramebuffer = dest ? dest->downcast<OGLRenderTexture>()->getInstanceID() : 0;
+	auto drawFramebuffer = dest ? dest->downcast<OGLRenderTexture>()->getInstanceID() : GL_NONE;
 
 	glBlitNamedFramebuffer(readFramebuffer, drawFramebuffer, v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
@@ -569,12 +423,6 @@ GraphicsRenderTexturePtr
 OGLDeviceContext::getRenderTexture() const noexcept
 {
 	return _renderTexture;
-}
-
-GraphicsMultiRenderTexturePtr
-OGLDeviceContext::getMultiRenderTexture() const noexcept
-{
-	return _multiRenderTexture;
 }
 
 void
@@ -667,12 +515,8 @@ OGLDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& co
 void
 OGLDeviceContext::discardRenderTexture() noexcept
 {
-	assert(_renderTexture || _multiRenderTexture);
-
-	if (_renderTexture)
-		_renderTexture->downcast<OGLRenderTexture>()->discard();
-	else if (_multiRenderTexture)
-		_multiRenderTexture->downcast<OGLMultiRenderTexture>()->discard();
+	assert(_renderTexture);
+	_renderTexture->discard();
 }
 
 void
@@ -694,44 +538,10 @@ OGLDeviceContext::readRenderTexture(GraphicsRenderTexturePtr target, GraphicsFor
 }
 
 void
-OGLDeviceContext::setGraphicsProgram(GraphicsProgramPtr shader) noexcept
-{
-	if (shader)
-	{
-		auto glshader = shader->downcast<OGLShaderObject>();
-		if (_shaderObject != glshader)
-		{
-			if (_shaderObject)
-				_shaderObject->setActive(false);
-
-			_shaderObject = glshader;
-
-			if (_shaderObject)
-				_shaderObject->setActive(true);
-
-			_needUpdateLayout = true;
-		}
-	}
-	else
-	{
-		if (_shaderObject)
-			_shaderObject->setActive(false);
-
-		glUseProgram(GL_NONE);
-	}
-}
-
-GraphicsProgramPtr
-OGLDeviceContext::getGraphicsProgram() const noexcept
-{
-	return _shaderObject;
-}
-
-void
 OGLDeviceContext::present() noexcept
 {
-	assert(_glcontext);
-	_glcontext->present();
+	if (_glcontext)
+		_glcontext->present();
 }
 
 void
@@ -882,8 +692,6 @@ OGLDeviceContext::initStateSystem() noexcept
 	_clearColor.set(0.0, 0.0, 0.0, 0.0);
 	_clearDepth = 1.0;
 	_clearStencil = 0;
-
-	_enableWireframe = false;
 
 	_needUpdateLayout = false;
 	_needUpdateVbo = false;

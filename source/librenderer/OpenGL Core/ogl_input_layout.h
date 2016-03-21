@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,24 +34,47 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_PIPELINE_MANAGER_BASE_H_
-#define _H_RENDER_PIPELINE_MANAGER_BASE_H_
+#ifndef _H_OGL_LAYOUT_H_
+#define _H_OGL_LAYOUT_H_
 
-#include <ray/render_types.h>
-#include <ray/material.h>
+#include "ogl_types.h"
 
 _NAME_BEGIN
 
-class RenderDataManager
+class OGLInputLayout final : public GraphicsInputLayout
 {
+	__DeclareSubClass(OGLInputLayout, GraphicsInputLayout)
 public:
-	RenderDataManager() noexcept;
-	virtual ~RenderDataManager() noexcept;
+	OGLInputLayout() noexcept;
+	~OGLInputLayout() noexcept;
 
-	virtual void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept = 0;
-	virtual RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept = 0;
+	bool setup(const GraphicsInputLayoutDesc& desc) noexcept;
+	void close() noexcept;
 
-	virtual void assginVisiable(CameraPtr camera) noexcept = 0;
+	GLuint getInstanceID() const noexcept;
+
+	void bindVbo(OGLVertexBufferPtr vbo, std::uint8_t slot) noexcept;
+	void bindIbo(OGLIndexBufferPtr ibo) noexcept;
+	void bindLayout(OGLShaderObjectPtr program) noexcept;
+
+	const GraphicsInputLayoutDesc& getGraphicsInputLayoutDesc() const noexcept;
+
+private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	OGLInputLayout(const OGLInputLayout&) noexcept = delete;
+	OGLInputLayout& operator=(const OGLInputLayout&) noexcept = delete;
+
+private:
+	GLuint _vao;
+	GraphicsDataPtr _vbo[MAX_VERTEX_UNIT];
+	GraphicsDataPtr _ibo;
+	GraphicsProgramPtr _program;
+	GraphicsInputLayoutDesc _inputLayoutDesc;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

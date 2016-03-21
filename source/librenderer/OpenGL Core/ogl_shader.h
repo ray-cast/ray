@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -41,41 +41,6 @@
 
 _NAME_BEGIN
 
-class OGLShaderVariant final : public ShaderVariant
-{
-public:
-	OGLShaderVariant() noexcept;
-	virtual ~OGLShaderVariant() noexcept;
-
-	void setLocation(GLint location) noexcept;
-	GLint getLocation() const noexcept;
-
-	void setBindingProgram(GLuint program) noexcept;
-	GLuint getBindingProgram() const noexcept;
-
-	void assign(bool value) noexcept;
-	void assign(int value) noexcept;
-	void assign(const int2& value) noexcept;
-	void assign(float value) noexcept;
-	void assign(const float2& value) noexcept;
-	void assign(const float3& value) noexcept;
-	void assign(const float4& value) noexcept;
-	void assign(const float3x3& value) noexcept;
-	void assign(const float4x4& value) noexcept;
-	void assign(const std::vector<float>& value) noexcept;
-	void assign(const std::vector<float2>& value) noexcept;
-	void assign(const std::vector<float3>& value) noexcept;
-	void assign(const std::vector<float4>& value) noexcept;
-
-private:
-	OGLShaderVariant(const OGLShaderVariant&) noexcept = delete;
-	OGLShaderVariant& operator=(const OGLShaderVariant&) noexcept = delete;
-
-private:
-	GLint _location;
-	GLuint _bindingProgram;
-};
-
 class OGLShaderAttribute final : public ShaderAttribute
 {
 	__DeclareSubClass(OGLShaderAttribute, ShaderAttribute)
@@ -97,11 +62,6 @@ public:
 	OGLShaderUniform() noexcept;
 	~OGLShaderUniform() noexcept;
 
-	void setType(GraphicsVariantType type) noexcept;
-
-	void setLocation(GLint location) noexcept;
-	GLint getLocation() const noexcept;
-
 	void setBindingProgram(GLuint program) noexcept;
 	GLuint getBindingProgram() const noexcept;
 
@@ -110,7 +70,7 @@ private:
 	OGLShaderUniform& operator=(const OGLShaderUniform&) noexcept = delete;
 
 private:
-	OGLShaderVariant _value;
+	GLuint _program;
 };
 
 class OGLShader final : public GraphicsShader
@@ -120,10 +80,12 @@ public:
 	OGLShader() noexcept;
 	~OGLShader() noexcept;
 
-	bool setup(const ShaderDesc& shader) noexcept;
+	bool setup(const GraphicsShaderDesc& shader) noexcept;
 	void close() noexcept;
 
 	GLuint getInstanceID() const noexcept;
+
+	const GraphicsShaderDesc& getGraphicsShaderDesc() const noexcept;
 
 private:
 	friend class OGLDevice;
@@ -136,6 +98,8 @@ private:
 
 private:
 	GLuint _instance;
+
+	GraphicsShaderDesc _shaderDesc;
 	GraphicsDeviceWeakPtr _device;
 };
 
@@ -146,16 +110,15 @@ public:
 	OGLShaderObject() noexcept;
 	~OGLShaderObject() noexcept;
 
-	bool setup(const ShaderObjectDesc& program) noexcept;
+	bool setup(const GraphicsProgramDesc& program) noexcept;
 	void close() noexcept;
-
-	void setActive(bool active) noexcept;
-	bool getActive() noexcept;
 
 	GLuint getInstanceID() noexcept;
 
-	virtual ShaderUniforms& getActiveUniforms() noexcept;
-	virtual ShaderAttributes& getActiveAttributes() noexcept;
+	ShaderUniforms& getActiveUniforms() noexcept;
+	ShaderAttributes& getActiveAttributes() noexcept;
+
+	const GraphicsProgramDesc& getGraphicsProgramDesc() const noexcept;
 
 private:
 	void _initActiveAttribute() noexcept;
@@ -172,16 +135,10 @@ private:
 	OGLShaderObject& operator=(const OGLShaderObject&) noexcept = delete;
 
 private:
-
-	bool _isActive;
-
 	GLuint _program;
-
-	OGLShaders _shaders;
-
 	ShaderUniforms _activeUniforms;
 	ShaderAttributes  _activeAttributes;
-
+	GraphicsProgramDesc _programDesc;
 	GraphicsDeviceWeakPtr _device;
 };
 

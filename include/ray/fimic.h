@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -70,23 +70,23 @@ public:
 
 private:
 
-	void sunLum(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void sunLumLog(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
 	void measureLuminance(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept;
 
-	void generateBloom(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void generateToneMapping(RenderPipeline& pipeline, GraphicsRenderTexturePtr bloom, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void generateToneMapping(RenderPipeline& pipeline, GraphicsTexturePtr bloom, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
-	void blurh(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void blurv(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
 private:
 
 	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
 private:
 
@@ -116,11 +116,17 @@ private:
 	MaterialParamPtr _toneBurnout;
 	MaterialParamPtr _toneDefocus;
 
-	GraphicsRenderTexturePtr _texBloom[SAMPLE_COUNT];
-	GraphicsRenderTexturePtr _texSample4;
-	GraphicsRenderTexturePtr _texSample8;
-	GraphicsRenderTexturePtr _texSampleLog;
-	GraphicsRenderTexturePtr _texCombie;
+	GraphicsTexturePtr _texBloomMap[SAMPLE_COUNT];
+	GraphicsTexturePtr _texSample4Map;
+	GraphicsTexturePtr _texSample8Map;
+	GraphicsTexturePtr _texSampleLogMap;
+	GraphicsTexturePtr _texCombieMap;
+
+	GraphicsRenderTexturePtr _texBloomView[SAMPLE_COUNT];
+	GraphicsRenderTexturePtr _texSample4View;
+	GraphicsRenderTexturePtr _texSample8View;
+	GraphicsRenderTexturePtr _texSampleLogView;
+	GraphicsRenderTexturePtr _texCombieView;
 };
 
 _NAME_END

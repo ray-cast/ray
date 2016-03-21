@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -55,21 +55,27 @@ RenderBlendState::RenderBlendState() noexcept
 
 RenderRasterState::RenderRasterState() noexcept
 	: cullMode(GraphicsCullMode::GraphicsCullModeBack)
-	, fillMode(GraphicsPolygonMode::GraphicsPolygonModeSolid)
+	, polygonMode(GraphicsPolygonMode::GraphicsPolygonModeSolid)
 	, primitiveType(GraphicsVertexType::GraphicsVertexTypeTriangleList)
 	, scissorTestEnable(false)
 	, srgbEnable(false)
 	, multisampleEnable(false)
+	, rasterizerDiscardEnable(false)
 {
 }
 
 RenderDepthState::RenderDepthState() noexcept
 	: depthEnable(true)
+	, depthBoundsEnable(false)
+	, depthMin(0.0)
+	, depthMax(1.0)
 	, depthWriteMask(true)
 	, depthFunc(GraphicsCompareFunc::GraphicsCompareFuncLequal)
 	, depthBiasEnable(false)
 	, depthSlopScaleBias(0)
 	, depthBias(0)
+	, depthClampEnable(false)
+	, depthBiasClamp(false)
 {
 }
 
@@ -83,6 +89,7 @@ RenderStencilState::RenderStencilState() noexcept
 	, stencilZFail(GraphicsStencilOp::GraphicsStencilOpKeep)
 	, stencilPass(GraphicsStencilOp::GraphicsStencilOpKeep)
 	, stencilTwoEnable(false)
+	, stencilTwoRef(0)
 	, stencilTwoFunc(GraphicsCompareFunc::GraphicsCompareFuncAlways)
 	, stencilTwoReadMask(0xFFFFFFFF)
 	, stencilTwoWriteMask(0xFFFFFFFF)

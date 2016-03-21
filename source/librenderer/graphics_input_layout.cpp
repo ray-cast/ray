@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,11 +34,11 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/graphics_layout.h>
+#include <ray/graphics_input_layout.h>
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GraphicsLayout, GraphicsChild, "GraphicsLayoutDesc")
+__ImplementSubInterface(GraphicsInputLayout, GraphicsChild, "GraphicsInputLayoutDesc")
 
 VertexComponent::VertexComponent() noexcept
 	: _index(0)
@@ -89,13 +89,13 @@ VertexComponent::getSemantic() const noexcept
 	return _semantic;
 }
 
-void 
+void
 VertexComponent::setSemanticIndex(std::uint8_t index) noexcept
 {
 	_index = index;
 }
 
-std::uint8_t 
+std::uint8_t
 VertexComponent::getSemanticIndex() const noexcept
 {
 	return _index;
@@ -107,13 +107,13 @@ VertexComponent::getVertexFormat() const noexcept
 	return _format;
 }
 
-void 
+void
 VertexComponent::setVertexSlot(std::uint8_t slot) noexcept
 {
 	_slot = slot;
 }
 
-std::uint8_t 
+std::uint8_t
 VertexComponent::getVertexSlot() const noexcept
 {
 	return _slot;
@@ -148,6 +148,13 @@ VertexComponent::getVertexCount(GraphicsFormat format) noexcept
 {
 	switch (format)
 	{
+	case GraphicsFormat::GraphicsFormatR8G8UNorm:
+	case GraphicsFormat::GraphicsFormatR8G8SNorm:
+	case GraphicsFormat::GraphicsFormatR8G8UScaled:
+	case GraphicsFormat::GraphicsFormatR8G8SScaled:
+	case GraphicsFormat::GraphicsFormatR8G8SRGB:
+	case GraphicsFormat::GraphicsFormatR8G8SInt:
+	case GraphicsFormat::GraphicsFormatR8G8UInt:
 	case GraphicsFormat::GraphicsFormatR16G16SFloat:
 	case GraphicsFormat::GraphicsFormatR16G16SInt:
 	case GraphicsFormat::GraphicsFormatR16G16UInt:
@@ -155,6 +162,10 @@ VertexComponent::getVertexCount(GraphicsFormat format) noexcept
 	case GraphicsFormat::GraphicsFormatR32G32SInt:
 	case GraphicsFormat::GraphicsFormatR32G32UInt:
 		return 2;
+	case GraphicsFormat::GraphicsFormatR16G16B16UNorm:
+	case GraphicsFormat::GraphicsFormatR16G16B16SNorm:
+	case GraphicsFormat::GraphicsFormatR16G16B16UScaled:
+	case GraphicsFormat::GraphicsFormatR16G16B16SScaled:
 	case GraphicsFormat::GraphicsFormatR16G16B16SFloat:
 	case GraphicsFormat::GraphicsFormatR16G16B16SInt:
 	case GraphicsFormat::GraphicsFormatR16G16B16UInt:
@@ -164,6 +175,29 @@ VertexComponent::getVertexCount(GraphicsFormat format) noexcept
 		return 3;
 	case GraphicsFormat::GraphicsFormatR8G8B8A8UNorm:
 	case GraphicsFormat::GraphicsFormatR8G8B8A8SNorm:
+	case GraphicsFormat::GraphicsFormatR8G8B8A8UScaled:
+	case GraphicsFormat::GraphicsFormatR8G8B8A8SScaled:
+	case GraphicsFormat::GraphicsFormatR8G8B8A8UInt:
+	case GraphicsFormat::GraphicsFormatR8G8B8A8SInt:
+	case GraphicsFormat::GraphicsFormatR8G8B8A8SRGB:
+	case GraphicsFormat::GraphicsFormatB8G8R8A8UNorm:
+	case GraphicsFormat::GraphicsFormatB8G8R8A8SNorm:
+	case GraphicsFormat::GraphicsFormatB8G8R8A8UScaled:
+	case GraphicsFormat::GraphicsFormatB8G8R8A8SScaled:
+	case GraphicsFormat::GraphicsFormatB8G8R8A8UInt:
+	case GraphicsFormat::GraphicsFormatB8G8R8A8SInt:
+	case GraphicsFormat::GraphicsFormatB8G8R8A8SRGB:
+	case GraphicsFormat::GraphicsFormatA8B8G8R8UNormPack32:
+	case GraphicsFormat::GraphicsFormatA8B8G8R8SNormPack32:
+	case GraphicsFormat::GraphicsFormatA8B8G8R8UScaledPack32:
+	case GraphicsFormat::GraphicsFormatA8B8G8R8SScaledPack32:
+	case GraphicsFormat::GraphicsFormatA8B8G8R8UIntPack32:
+	case GraphicsFormat::GraphicsFormatA8B8G8R8SIntPack32:
+	case GraphicsFormat::GraphicsFormatA8B8G8R8SRGBPack32:
+	case GraphicsFormat::GraphicsFormatR16G16B16A16SNorm:
+	case GraphicsFormat::GraphicsFormatR16G16B16A16UNorm:
+	case GraphicsFormat::GraphicsFormatR16G16B16A16SScaled:
+	case GraphicsFormat::GraphicsFormatR16G16B16A16UScaled:
 	case GraphicsFormat::GraphicsFormatR16G16B16A16SFloat:
 	case GraphicsFormat::GraphicsFormatR16G16B16A16SInt:
 	case GraphicsFormat::GraphicsFormatR16G16B16A16UInt:
@@ -216,29 +250,29 @@ VertexComponent::getVertexSize(GraphicsFormat format) noexcept
 	}
 }
 
-GraphicsLayoutDesc::GraphicsLayoutDesc() noexcept
+GraphicsInputLayoutDesc::GraphicsInputLayoutDesc() noexcept
 	: _indexType(GraphicsIndexType::GraphicsIndexTypeNone)
 {
 }
 
-GraphicsLayoutDesc::~GraphicsLayoutDesc() noexcept
+GraphicsInputLayoutDesc::~GraphicsInputLayoutDesc() noexcept
 {
 }
 
 void
-GraphicsLayoutDesc::setVertexComponents(const VertexComponents& component) noexcept
+GraphicsInputLayoutDesc::setVertexComponents(const VertexComponents& component) noexcept
 {
 	_components = component;
 }
 
 const VertexComponents&
-GraphicsLayoutDesc::getVertexComponents() const noexcept
+GraphicsInputLayoutDesc::getVertexComponents() const noexcept
 {
 	return _components;
 }
 
 void
-GraphicsLayoutDesc::addComponent(const VertexComponent& compoent) noexcept
+GraphicsInputLayoutDesc::addComponent(const VertexComponent& compoent) noexcept
 {
 	auto it = std::find_if(_components.begin(), _components.end(), [compoent](const VertexComponent& it) { return it.getSemantic() == compoent.getSemantic();});
 	if (it == _components.end())
@@ -246,7 +280,7 @@ GraphicsLayoutDesc::addComponent(const VertexComponent& compoent) noexcept
 }
 
 void
-GraphicsLayoutDesc::removeComponent(const VertexComponent& compoent) noexcept
+GraphicsInputLayoutDesc::removeComponent(const VertexComponent& compoent) noexcept
 {
 	auto it = std::find_if(_components.begin(), _components.end(), [compoent](const VertexComponent& it) { return it.getSemantic() == compoent.getSemantic();});
 	if (it != _components.end())
@@ -254,19 +288,19 @@ GraphicsLayoutDesc::removeComponent(const VertexComponent& compoent) noexcept
 }
 
 void
-GraphicsLayoutDesc::setIndexType(GraphicsIndexType type) noexcept
+GraphicsInputLayoutDesc::setIndexType(GraphicsIndexType type) noexcept
 {
 	_indexType = type;
 }
 
 GraphicsIndexType
-GraphicsLayoutDesc::getIndexType() const noexcept
+GraphicsInputLayoutDesc::getIndexType() const noexcept
 {
 	return _indexType;
 }
 
 std::uint32_t
-GraphicsLayoutDesc::getVertexSize() const noexcept
+GraphicsInputLayoutDesc::getVertexSize() const noexcept
 {
 	std::uint32_t size = 0;
 	for (auto& it : _components)
@@ -275,7 +309,7 @@ GraphicsLayoutDesc::getVertexSize() const noexcept
 }
 
 std::uint32_t
-GraphicsLayoutDesc::getIndexSize() const noexcept
+GraphicsInputLayoutDesc::getIndexSize() const noexcept
 {
 	if (_indexType == GraphicsIndexType::GraphicsIndexTypeNone)
 		return 0;
@@ -290,11 +324,11 @@ GraphicsLayoutDesc::getIndexSize() const noexcept
 	}
 }
 
-GraphicsLayout::GraphicsLayout() noexcept
+GraphicsInputLayout::GraphicsInputLayout() noexcept
 {
 }
 
-GraphicsLayout::~GraphicsLayout() noexcept
+GraphicsInputLayout::~GraphicsInputLayout() noexcept
 {
 }
 

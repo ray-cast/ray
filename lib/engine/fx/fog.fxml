@@ -1,25 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <effect version="1270" language="hlsl">
     <include name="sys:fx/sampelr.fxml" />
-    <parameter name="matViewProjectInverse" semantic="matViewProjectInverse"/>
-    <parameter name="texDepth" type="texture"/>
-    <parameter name="texSource" type="texture"/>
+    <parameter name="matViewProjectInverse" type="float4x4" semantic="matViewProjectInverse"/>
+    <parameter name="texDepth" type="texture2D"/>
+    <parameter name="texSource" type="texture2D"/>
     <parameter name="eyePosition" type="float3"/>
     <parameter name="fogFalloff" type="float"/>
     <parameter name="fogDensity" type="float"/>
     <parameter name="fogColor" type="float3"/>
     <shader name="vertex">
         <![CDATA[
-            uniform float3 eyePosition;
-            uniform float3x3 matViewProjectInverse;
-
-            uniform float fogFalloff;
-            uniform float fogDensity;
-            uniform float3 fogColor;
-
-            uniform texture2D texSource;
-            uniform texture2D texDepth;
-
             float4 samplePosition(vec2 coord)
             {
                 float depth  = texDepth.Sample(PointClamp, coord.xy, 0).r;

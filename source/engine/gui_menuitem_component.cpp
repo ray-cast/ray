@@ -180,7 +180,7 @@ GuiMenuItemComponent::save(oarchive& write) noexcept
 }
 
 GameComponentPtr
-GuiMenuItemComponent::clone() const except
+GuiMenuItemComponent::clone() const noexcept
 {
 	return std::make_shared<GuiMenuItemComponent>();
 }

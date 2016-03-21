@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <effect language="bytecodes">
     <parameter name="texelStep" type="float2" />
-    <parameter name="texelSource" type="texture" />
+    <parameter name="texelSource" type="texture2D" />
     <sampler name="PointClamp">
         <state name="filter" value="point" />
         <state name="wrap" value="clamp" />

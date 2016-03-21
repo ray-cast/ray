@@ -38,12 +38,11 @@
 
 _NAME_BEGIN
 
-__ImplementSubInterface(GraphicsRenderTexture, GraphicsResource, "GraphicsRenderTexture")
-__ImplementSubInterface(GraphicsMultiRenderTexture, GraphicsResource, "GraphicsMultiRenderTexture")
+__ImplementSubInterface(GraphicsRenderTexture, GraphicsChild, "GraphicsRenderTexture")
 
 GraphicsRenderTextureDesc::GraphicsRenderTextureDesc() noexcept
-	: _sharedDepthTexture(0)
-	, _sharedStencilTexture(0)
+	: _width(0)
+	, _height(0)
 {
 }
 
@@ -52,51 +51,31 @@ GraphicsRenderTextureDesc::~GraphicsRenderTextureDesc() noexcept
 }
 
 void 
-GraphicsRenderTextureDesc::setGraphicsTexture(GraphicsTexturePtr texture) noexcept
+GraphicsRenderTextureDesc::setWidth(std::uint32_t w) noexcept
 {
-	_texture = texture;
+	_width = w;
 }
 
-GraphicsTexturePtr
-GraphicsRenderTextureDesc::getGraphicsTexture() const noexcept
+void 
+GraphicsRenderTextureDesc::setHeight(std::uint32_t h) noexcept
 {
-	return _texture;
+	_height = h;
 }
 
-void
-GraphicsRenderTextureDesc::setSharedDepthTexture(GraphicsRenderTexturePtr target) noexcept
+std::uint32_t 
+GraphicsRenderTextureDesc::getWidth() const noexcept
 {
-	_sharedDepthTexture = target;
+	return _width;
 }
 
-void
-GraphicsRenderTextureDesc::setSharedStencilTexture(GraphicsRenderTexturePtr target) noexcept
+std::uint32_t 
+GraphicsRenderTextureDesc::getHeight() const noexcept
 {
-	_sharedStencilTexture = target;
-}
-
-GraphicsRenderTexturePtr
-GraphicsRenderTextureDesc::getSharedDepthTexture() const noexcept
-{
-	return _sharedDepthTexture;
-}
-
-GraphicsRenderTexturePtr
-GraphicsRenderTextureDesc::getSharedStencilTexture() const noexcept
-{
-	return _sharedStencilTexture;
-}
-
-GraphicsMultiRenderTextureDesc::GraphicsMultiRenderTextureDesc() noexcept
-{
-}
-
-GraphicsMultiRenderTextureDesc::~GraphicsMultiRenderTextureDesc() noexcept
-{
+	return _height;
 }
 
 void
-GraphicsMultiRenderTextureDesc::attach(GraphicsRenderTexturePtr texture) noexcept
+GraphicsRenderTextureDesc::attach(GraphicsTexturePtr texture) noexcept
 {
 	assert(texture);
 	assert(std::find(_textures.begin(), _textures.end(), texture) == _textures.end());
@@ -105,45 +84,45 @@ GraphicsMultiRenderTextureDesc::attach(GraphicsRenderTexturePtr texture) noexcep
 }
 
 void
-GraphicsMultiRenderTextureDesc::detach(GraphicsRenderTexturePtr texture) noexcept
+GraphicsRenderTextureDesc::detach(GraphicsTexturePtr texture) noexcept
 {
 	auto it = std::find(_textures.begin(), _textures.end(), texture);
 	if (it != _textures.end())
 		_textures.erase(it);
 }
 
-GraphicsRenderTextures&
-GraphicsMultiRenderTextureDesc::getRenderTextures() noexcept
+GraphicsTextures&
+GraphicsRenderTextureDesc::getTextures() noexcept
 {
 	return _textures;
 }
 
-const GraphicsRenderTextures&
-GraphicsMultiRenderTextureDesc::getRenderTextures() const noexcept
+const GraphicsTextures&
+GraphicsRenderTextureDesc::getTextures() const noexcept
 {
 	return _textures;
 }
 
 void
-GraphicsMultiRenderTextureDesc::setSharedDepthTexture(GraphicsRenderTexturePtr target) noexcept
+GraphicsRenderTextureDesc::setSharedDepthTexture(GraphicsTexturePtr target) noexcept
 {
 	_sharedDepthTexture = target;
 }
 
 void
-GraphicsMultiRenderTextureDesc::setSharedStencilTexture(GraphicsRenderTexturePtr target) noexcept
+GraphicsRenderTextureDesc::setSharedStencilTexture(GraphicsTexturePtr target) noexcept
 {
 	_sharedStencilTexture = target;
 }
 
-GraphicsRenderTexturePtr
-GraphicsMultiRenderTextureDesc::getSharedDepthTexture() const noexcept
+GraphicsTexturePtr
+GraphicsRenderTextureDesc::getSharedDepthTexture() const noexcept
 {
 	return _sharedDepthTexture;
 }
 
-GraphicsRenderTexturePtr
-GraphicsMultiRenderTextureDesc::getSharedStencilTexture() const noexcept
+GraphicsTexturePtr
+GraphicsRenderTextureDesc::getSharedStencilTexture() const noexcept
 {
 	return _sharedStencilTexture;
 }
@@ -153,14 +132,6 @@ GraphicsRenderTexture::GraphicsRenderTexture() noexcept
 }
 
 GraphicsRenderTexture::~GraphicsRenderTexture() noexcept
-{
-}
-
-GraphicsMultiRenderTexture::GraphicsMultiRenderTexture() noexcept
-{
-}
-
-GraphicsMultiRenderTexture::~GraphicsMultiRenderTexture() noexcept
 {
 }
 

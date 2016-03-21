@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_GRAPHICS_LAYOUT_H_
-#define _H_GRAPHICS_LAYOUT_H_
+#ifndef _H_GRAPHICS_INPUT_LAYOUT_H_
+#define _H_GRAPHICS_INPUT_LAYOUT_H_
 
 #include <ray/graphics_child.h>
 
@@ -79,11 +79,11 @@ private:
 	GraphicsFormat _format;
 };
 
-class EXPORT GraphicsLayoutDesc final
+class EXPORT GraphicsInputLayoutDesc final
 {
 public:
-	GraphicsLayoutDesc() noexcept;
-	~GraphicsLayoutDesc() noexcept;
+	GraphicsInputLayoutDesc() noexcept;
+	~GraphicsInputLayoutDesc() noexcept;
 
 	void setVertexComponents(const VertexComponents& component) noexcept;
 	const VertexComponents& getVertexComponents() const noexcept;
@@ -102,18 +102,18 @@ private:
 	VertexComponents _components;
 };
 
-class EXPORT GraphicsLayout : public GraphicsChild
+class EXPORT GraphicsInputLayout : public GraphicsChild
 {
-	__DeclareSubInterface(GraphicsLayout, GraphicsChild)
+	__DeclareSubInterface(GraphicsInputLayout, GraphicsChild)
 public:
-	GraphicsLayout() noexcept;
-	virtual ~GraphicsLayout() noexcept;
+	GraphicsInputLayout() noexcept;
+	virtual ~GraphicsInputLayout() noexcept;
 
-	virtual const GraphicsLayoutDesc& getGraphicsLayout() const noexcept = 0;
+	virtual const GraphicsInputLayoutDesc& getGraphicsInputLayoutDesc() const noexcept = 0;
 
 private:
-	GraphicsLayout(const GraphicsLayout&) = delete;
-	GraphicsLayout& operator=(const GraphicsLayout&) = delete;
+	GraphicsInputLayout(const GraphicsInputLayout&) = delete;
+	GraphicsInputLayout& operator=(const GraphicsInputLayout&) = delete;
 };
 
 _NAME_END

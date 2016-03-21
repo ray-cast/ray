@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -40,12 +40,14 @@
 #include "ogl_state.h"
 #include "ogl_shader.h"
 #include "ogl_texture.h"
+#include "ogl_sampler.h"
 #include "ogl_framebuffer.h"
-#include "ogl_layout.h"
+#include "ogl_input_layout.h"
 #include "ogl_vbo.h"
 #include "ogl_ibo.h"
-#include "ogl_dibo.h"
-#include "ogl_sampler.h"
+#include "ogl_render_pipeline.h"
+#include "ogl_descriptor.h"
+#include "ogl_canvas.h"
 
 _NAME_BEGIN
 
@@ -63,132 +65,42 @@ OGLDevice::~OGLDevice() noexcept
 bool
 OGLDevice::open(WindHandle win) noexcept
 {
-	auto context = createGraphicsContext(win);
-	if (context)
-	{
-		_glcontext = context->downcast<OGLDeviceContext>();
-		_glcontext->setSwapInterval(SwapInterval::SwapIntervalVsync);
-		return true;
-	}
-
-	return false;
+	return true;
 }
 
 void
 OGLDevice::close() noexcept
 {
-	_glcontext.reset();
+}
+
+GraphicsSwapchainPtr 
+OGLDevice::createGraphicsSwapchain(const GraphicsSwapchainDesc& desc) noexcept
+{
+	auto swapchain = std::make_shared<OGLCanvas>();
+	swapchain->setDevice(this->downcast<OGLDevice>());
+	if (swapchain->setup(desc))
+		return swapchain;
+	return false;
 }
 
 GraphicsContextPtr
-OGLDevice::createGraphicsContext(WindHandle win) noexcept
+OGLDevice::createGraphicsContext(const GraphicsContextDesc& desc) noexcept
 {
 	auto context = std::make_shared<OGLDeviceContext>();
 	context->setDevice(this->downcast<OGLDevice>());
-	if (context->open(win))
+	if (context->setup(desc))
 		return context;
 	return false;
 }
 
-void
-OGLDevice::setGraphicsContext(GraphicsContextPtr context) noexcept
+GraphicsInputLayoutPtr
+OGLDevice::createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept
 {
-	if (_glcontext != context)
-	{
-		if (_glcontext)
-			_glcontext->setActive(false);
-
-		_glcontext = context->downcast<OGLDeviceContext>();
-
-		if (_glcontext)
-			_glcontext->setActive(true);
-	}
-}
-
-GraphicsContextPtr
-OGLDevice::getGraphicsContext() const noexcept
-{
-	return _glcontext;
-}
-
-void
-OGLDevice::renderBegin() noexcept
-{
-	assert(_glcontext);
-	_glcontext->renderBegin();
-}
-
-void
-OGLDevice::renderEnd() noexcept
-{
-	assert(_glcontext);
-	_glcontext->renderEnd();
-}
-
-void
-OGLDevice::setWireframeMode(bool enable) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setWireframeMode(enable);
-}
-
-bool
-OGLDevice::getWireframeMode() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getWireframeMode();
-}
-
-void
-OGLDevice::setViewport(const Viewport& viewport, std::size_t i) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setViewport(viewport, i);
-}
-
-const Viewport&
-OGLDevice::getViewport(std::size_t i) const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getViewport(i);
-}
-
-void
-OGLDevice::setSwapInterval(SwapInterval interval) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setSwapInterval(interval);
-}
-
-SwapInterval
-OGLDevice::getSwapInterval() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getSwapInterval();
-}
-
-GraphicsLayoutPtr
-OGLDevice::createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept
-{
-	auto layout = std::make_shared<OGLGraphicsLayout>();
-	layout->setDevice(this->downcast<OGLDevice>());
-	if (layout->open(desc))
-		return layout;
+	auto inputLayout = std::make_shared<OGLInputLayout>();
+	inputLayout->setDevice(this->downcast<OGLDevice>());
+	if (inputLayout->setup(desc))
+		return inputLayout;
 	return nullptr;
-}
-
-void
-OGLDevice::setGraphicsLayout(GraphicsLayoutPtr layout) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setGraphicsLayout(layout);
-}
-
-GraphicsLayoutPtr
-OGLDevice::getGraphicsLayout() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getGraphicsLayout();
 }
 
 GraphicsDataPtr
@@ -210,68 +122,12 @@ OGLDevice::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 		if (data->setup(desc))
 			return data;
 	}
-	else if (type == GraphicsDataType::GraphicsDataTypeStorageBuffer)
-	{
-		auto data = std::make_shared<OGLDrawIndirectBuffer>();
-		data->setDevice(this->downcast<OGLDevice>());
-		if (data->setup(desc))
-			return data;
-	}
 	else
 	{
 		assert(false);
 	}
 
 	return nullptr;
-}
-
-bool
-OGLDevice::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
-{
-	assert(_glcontext);
-	return _glcontext->updateBuffer(data, str, cnt);
-}
-
-void*
-OGLDevice::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
-{
-	assert(_glcontext);
-	return _glcontext->mapBuffer(data, access);
-}
-
-void
-OGLDevice::unmapBuffer(GraphicsDataPtr& data) noexcept
-{
-	assert(_glcontext);
-	_glcontext->unmapBuffer(data);
-}
-
-void
-OGLDevice::setIndexBufferData(GraphicsDataPtr data) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setIndexBufferData(data);
-}
-
-GraphicsDataPtr
-OGLDevice::getIndexBufferData() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getIndexBufferData();
-}
-
-void
-OGLDevice::setVertexBufferData(GraphicsDataPtr data) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setVertexBufferData(data);
-}
-
-GraphicsDataPtr
-OGLDevice::getVertexBufferData() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getVertexBufferData();
 }
 
 GraphicsTexturePtr
@@ -284,24 +140,9 @@ OGLDevice::createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept
 	return nullptr;
 }
 
-void
-OGLDevice::setGraphicsTexture(GraphicsTexturePtr texture, std::uint32_t slot) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setGraphicsTexture(texture, slot);
-}
-
-void
-OGLDevice::setGraphicsTexture(GraphicsTexturePtr texture[], std::uint32_t first, std::uint32_t count) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setGraphicsTexture(texture, first, count);
-}
-
 GraphicsSamplerPtr
 OGLDevice::createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept
 {
-	assert(_glcontext);
 	auto sampler = std::make_shared<OGLSampler>();
 	sampler->setDevice(this->downcast<OGLDevice>());
 	if (sampler->setup(desc))
@@ -309,114 +150,19 @@ OGLDevice::createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept
 	return nullptr;
 }
 
-void
-OGLDevice::setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setGraphicsSampler(sampler, slot);
-}
-
-void
-OGLDevice::setGraphicsSampler(GraphicsSamplerPtr sampler[], std::uint32_t first, std::uint32_t count) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setGraphicsSampler(sampler, first, count);
-}
-
 GraphicsRenderTexturePtr
 OGLDevice::createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept
 {
-	auto texture = std::make_shared<OGLRenderTexture>();
-	texture->setDevice(this->downcast<OGLDevice>());
-	if (texture->setup(desc))
-		return texture;
+	auto framebuffer = std::make_shared<OGLRenderTexture>();
+	framebuffer->setDevice(this->downcast<OGLDevice>());
+	if (framebuffer->setup(desc))
+		return framebuffer;
 	return nullptr;
-}
-
-void
-OGLDevice::setRenderTexture(GraphicsRenderTexturePtr target) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setRenderTexture(target);
-}
-
-void
-OGLDevice::setRenderTextureLayer(GraphicsRenderTexturePtr target, std::int32_t layer) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setRenderTextureLayer(target, layer);
-}
-
-void
-OGLDevice::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
-{
-	assert(_glcontext);
-	_glcontext->clearRenderTexture(flags, color, depth, stencil);
-}
-
-void
-OGLDevice::discardRenderTexture() noexcept
-{
-	assert(_glcontext);
-	_glcontext->discardRenderTexture();
-}
-
-void
-OGLDevice::blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, GraphicsRenderTexturePtr dest, const Viewport& v2) noexcept
-{
-	assert(_glcontext);
-	_glcontext->blitRenderTexture(src, v1, dest, v2);
-}
-
-void
-OGLDevice::readRenderTexture(GraphicsRenderTexturePtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
-{
-	assert(_glcontext);
-	_glcontext->readRenderTexture(source, pfd, w, h, data);
-}
-
-GraphicsRenderTexturePtr
-OGLDevice::getRenderTexture() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getRenderTexture();
-}
-
-GraphicsMultiRenderTexturePtr
-OGLDevice::createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept
-{
-	auto texture = std::make_shared<OGLMultiRenderTexture>();
-	texture->setDevice(this->downcast<OGLDevice>());
-	if (texture->setup(desc))
-		return texture;
-	return nullptr;
-}
-
-void
-OGLDevice::setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setMultiRenderTexture(target);
-}
-
-void
-OGLDevice::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
-{
-	assert(_glcontext);
-	_glcontext->clearRenderTexture(flags, color, depth, stencil, i);
-}
-
-GraphicsMultiRenderTexturePtr
-OGLDevice::getMultiRenderTexture() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getMultiRenderTexture();
 }
 
 GraphicsStatePtr
-OGLDevice::createGraphicsState(const GraphicsStateDesc& desc) noexcept
+OGLDevice::createRenderState(const GraphicsStateDesc& desc) noexcept
 {
-	assert(_glcontext);
 	auto state = std::make_shared<OGLGraphicsState>();
 	state->setDevice(this->downcast<OGLDevice>());
 	if (state->setup(desc))
@@ -424,22 +170,8 @@ OGLDevice::createGraphicsState(const GraphicsStateDesc& desc) noexcept
 	return nullptr;
 }
 
-void
-OGLDevice::setGraphicsState(GraphicsStatePtr state) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setGraphicsState(state);
-}
-
-GraphicsStatePtr
-OGLDevice::getGraphicsState() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getGraphicsState();
-}
-
 GraphicsShaderPtr
-OGLDevice::createShader(const ShaderDesc& desc) noexcept
+OGLDevice::createShader(const GraphicsShaderDesc& desc) noexcept
 {
 	auto shader = std::make_shared<OGLShader>();
 	shader->setDevice(this->downcast<OGLDevice>());
@@ -449,7 +181,7 @@ OGLDevice::createShader(const ShaderDesc& desc) noexcept
 }
 
 GraphicsProgramPtr
-OGLDevice::createShaderProgram(const ShaderObjectDesc& desc) noexcept
+OGLDevice::createProgram(const GraphicsProgramDesc& desc) noexcept
 {
 	auto program = std::make_shared<OGLShaderObject>();
 	program->setDevice(this->downcast<OGLDevice>());
@@ -458,32 +190,34 @@ OGLDevice::createShaderProgram(const ShaderObjectDesc& desc) noexcept
 	return nullptr;
 }
 
-void
-OGLDevice::setGraphicsProgram(GraphicsProgramPtr program) noexcept
+GraphicsPipelinePtr 
+OGLDevice::createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept
 {
-	assert(_glcontext);
-	_glcontext->setGraphicsProgram(program);
+	auto pipeline = std::make_shared<OGLRenderPipeline>();
+	pipeline->setDevice(this->downcast<OGLDevice>());
+	if (pipeline->setup(desc))
+		return pipeline;
+	return nullptr;
 }
 
-GraphicsProgramPtr
-OGLDevice::getGraphicsProgram() const noexcept
+GraphicsDescriptorSetPtr 
+OGLDevice::createGraphicsDescriptorSetPtr(const GraphicsDescriptorSetDesc& desc) noexcept
 {
-	assert(_glcontext);
-	return _glcontext->getGraphicsProgram();
+	auto descriptorSet = std::make_shared<OGLDescriptorSet>();
+	descriptorSet->setDevice(this->downcast<OGLDevice>());
+	if (descriptorSet->setup(desc))
+		return descriptorSet;
+	return nullptr;
 }
 
-void
-OGLDevice::drawRenderBuffer(const RenderIndirect& renderable) noexcept
+GraphicsDescriptorSetLayoutPtr 
+OGLDevice::createGraphicsDescriptorSetLayoutPtr(const GraphicsDescriptorSetLayoutDesc& desc) noexcept
 {
-	assert(_glcontext);
-	_glcontext->drawRenderBuffer(renderable);
-}
-
-void
-OGLDevice::drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept
-{
-	assert(_glcontext);
-	_glcontext->drawRenderBuffer(renderable, first, count);
+	auto descriptorSetLayout = std::make_shared<OGLDescriptorSetLayout>();
+	descriptorSetLayout->setDevice(this->downcast<OGLDevice>());
+	if (descriptorSetLayout->setup(desc))
+		return descriptorSetLayout;
+	return nullptr;
 }
 
 _NAME_END

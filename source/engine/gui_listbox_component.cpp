@@ -267,7 +267,7 @@ GuiListBoxComponent::save(oarchive& write) noexcept
 }
 
 GameComponentPtr
-GuiListBoxComponent::clone() const except
+GuiListBoxComponent::clone() const noexcept
 {
 	return std::make_shared<GuiListBoxComponent>();
 }

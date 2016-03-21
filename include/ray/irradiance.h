@@ -52,8 +52,7 @@ public:
 	void renderEvaluateConvolvedSH(RenderPipeline& pipeline, GraphicsRenderTexturePtr evalSHFunction, GraphicsRenderTexturePtr dest) noexcept;
 
 private:
-
-	bool _buildDualParaboloidWeightTextures(RenderPipeline& pipeline, GraphicsTexturePtr textures[], std::uint32_t order, std::uint32_t size);
+	bool _buildDualParaboloidWeightTextures(RenderPipeline& pipeline, GraphicsTexturePtr textures[2], std::uint32_t order, std::uint32_t size);
 	bool _paraboloidCoord(Vector3& vec, int face, const Vector2& uv);
 
 private:
@@ -70,13 +69,15 @@ private:
 	MaterialParamPtr _sphericalHarmonicConvolveYlmDW0;
 	MaterialParamPtr _sphericalHarmonicConvolveYlmDW1;
 
+	GraphicsTexturePtr _paraboloidFrontMap;
+	GraphicsTexturePtr _paraboloidBackMap;
+	GraphicsTexturePtr _paraboloidDualMaps;
 	GraphicsTexturePtr _paraboloidSHWeights[2];
+	GraphicsTexturePtr _paraboloidSphericalHarmonicMap;
+	GraphicsTexturePtr _irradianceSHCoefficientsMap;
 
-	GraphicsRenderTexturePtr _paraboloidFrontMap;
-	GraphicsRenderTexturePtr _paraboloidBackMap;
-	GraphicsRenderTexturePtr _paraboloidSphericalHarmonicMap;
-	GraphicsRenderTexturePtr _irradianceSHCoefficients;
-	GraphicsMultiRenderTexturePtr _paraboloidDualMaps;
+	GraphicsRenderTexturePtr _paraboloidDualViews;
+	GraphicsRenderTexturePtr _irradianceSHCoefficientsView;
 };
 
 _NAME_END

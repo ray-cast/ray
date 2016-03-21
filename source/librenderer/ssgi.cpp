@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -36,6 +36,9 @@
 // +----------------------------------------------------------------------
 #include <ray/ssgi.h>
 #include <ray/camera.h>
+
+#include <ray/graphics_view.h>
+#include <ray/graphics_texture.h>
 
 _NAME_BEGIN
 
@@ -76,7 +79,7 @@ SSGI::getSetting() const noexcept
 }
 
 void
-SSGI::computeRawAO(RenderPipeline& pipeline, GraphicsRenderTexturePtr dest) noexcept
+SSGI::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
 	_projInfo->assign(pipeline.getCamera()->getProjConstant());
 	_projScale->assign(pipeline.getCamera()->getProjLength().y * _setting.radius);
@@ -87,9 +90,9 @@ SSGI::computeRawAO(RenderPipeline& pipeline, GraphicsRenderTexturePtr dest) noex
 }
 
 void
-SSGI::blurHorizontal(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSGI::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	GraphicsTextureDesc textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
+	GraphicsTextureDesc textureDesc = source->getGraphicsTextureDesc();
 
 	float2 direction(_setting.blurScale, 0.0f);
 	direction.x /= textureDesc.getWidth();
@@ -98,9 +101,9 @@ SSGI::blurHorizontal(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, 
 }
 
 void
-SSGI::blurVertical(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSGI::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	GraphicsTextureDesc textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
+	GraphicsTextureDesc textureDesc = source->getGraphicsTextureDesc();
 
 	float2 direction(0.0f, _setting.blurScale);
 	direction.y /= textureDesc.getHeight();
@@ -109,34 +112,37 @@ SSGI::blurVertical(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, Gr
 }
 
 void
-SSGI::blurDirection(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest, const float2& direction) noexcept
+SSGI::blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest, const float2& direction) noexcept
 {
 	_blurDirection->assign(direction);
-	_blurTexSource->assign(source->getResolveTexture());
+	_blurTexSource->assign(source);
 
 	pipeline.setRenderTexture(dest);
 	pipeline.drawScreenQuad(_ambientOcclusionBlurPass);
 }
 
 void
-SSGI::shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr ao) noexcept
+SSGI::shading(RenderPipeline& pipeline, GraphicsTexturePtr ao, GraphicsRenderTexturePtr dest) noexcept
 {
-	_copyAmbient->assign(ao->getResolveTexture());
+	_copyAmbient->assign(ao);
 
-	pipeline.setRenderTexture(source);
+	pipeline.setRenderTexture(dest);
 	pipeline.drawScreenQuad(_ambientOcclusionCopyPass);
 }
 
 void
 SSGI::onActivate(RenderPipeline& pipeline) except
 {
-	_texAmbient = pipeline.createRenderTexture(1376, 768, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16A16SFloat);
-	_texBlur = pipeline.createRenderTexture(1376, 768, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16A16SFloat);
+	std::uint32_t width, height;
+	pipeline.getWindowResolution(width, height);
+
+	_texAmbientMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16A16SFloat);
+	_texBlurMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16A16SFloat);
 
 	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssgi.glsl");
-	_ambientOcclusionPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ao");
-	_ambientOcclusionBlurPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("blur");
-	_ambientOcclusionCopyPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("copy");
+	_ambientOcclusionPass = _ambientOcclusion->getTech(RenderQueue::RenderQueuePostprocess)->getPass("ao");
+	_ambientOcclusionBlurPass = _ambientOcclusion->getTech(RenderQueue::RenderQueuePostprocess)->getPass("blur");
+	_ambientOcclusionCopyPass = _ambientOcclusion->getTech(RenderQueue::RenderQueuePostprocess)->getPass("copy");
 
 	_radius = _ambientOcclusion->getParameter("radius");
 	_radius2 = _ambientOcclusion->getParameter("radius2");
@@ -174,17 +180,17 @@ SSGI::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-SSGI::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSGI::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	this->computeRawAO(pipeline, _texAmbient);
+	this->computeRawAO(pipeline, source, _texAmbientView);
 
 	if (_setting.blur)
 	{
-		this->blurHorizontal(pipeline, _texAmbient, _texBlur);
-		this->blurVertical(pipeline, _texBlur, _texAmbient);
+		this->blurHorizontal(pipeline, _texAmbientMap, _texBlurView);
+		this->blurVertical(pipeline, _texBlurMap, _texAmbientView);
 	}
 
-	this->shading(pipeline, source, _texAmbient);
+	this->shading(pipeline, _texAmbientMap, dest);
 }
 
 _NAME_END

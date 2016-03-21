@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -62,11 +62,12 @@ struct EXPORT RenderBlendState
 struct EXPORT RenderRasterState
 {
 	GraphicsCullMode    cullMode;
-	GraphicsPolygonMode fillMode;
+	GraphicsPolygonMode polygonMode;
 	GraphicsVertexType  primitiveType;
 	bool                scissorTestEnable;
 	bool                srgbEnable;
 	bool                multisampleEnable;
+	bool                rasterizerDiscardEnable;
 
 	RenderRasterState() noexcept;
 };
@@ -75,11 +76,17 @@ struct EXPORT RenderDepthState
 {
 	bool                depthEnable;
 	bool                depthWriteMask;
+	bool                depthBoundsEnable;
+	float               depthMin;
+	float               depthMax;
 	GraphicsCompareFunc depthFunc;
 
 	bool                depthBiasEnable;
 	float               depthBias;
 	float               depthSlopScaleBias;
+
+	bool				depthClampEnable;
+	bool				depthBiasClamp;
 
 	RenderDepthState() noexcept;
 };
@@ -96,6 +103,7 @@ struct EXPORT RenderStencilState
 	GraphicsStencilOp   stencilPass;
 
 	bool                stencilTwoEnable;
+	int                 stencilTwoRef;
 	GraphicsCompareFunc stencilTwoFunc;
 	unsigned int        stencilTwoReadMask;
 	unsigned int        stencilTwoWriteMask;

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -89,11 +89,11 @@ public:
 
 private:
 
-	void computeRawAO(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void blurHorizontal(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void blurVertical(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void blurDirection(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest, const float2& direction) noexcept;
-	void shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr ambient, GraphicsRenderTexturePtr dest) noexcept;
+	void computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest, const float2& direction) noexcept;
+	void shading(RenderPipeline& pipeline, GraphicsTexturePtr ambient, GraphicsRenderTexturePtr dest) noexcept;
 
 	void createSphereNoise();
 
@@ -102,7 +102,7 @@ private:
 	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except;
+	void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) except;
 
 private:
 
@@ -133,8 +133,11 @@ private:
 	MaterialVariantPtr _sampleNumber;
 	MaterialVariantPtr _blurRadius;
 
-	GraphicsRenderTexturePtr _texBlur;
-	GraphicsRenderTexturePtr _texAmbient;
+	GraphicsTexturePtr _texBlurMap;
+	GraphicsTexturePtr _texAmbientMap;
+
+	GraphicsRenderTexturePtr _texBlurView;
+	GraphicsRenderTexturePtr _texAmbientView;
 };
 
 _NAME_END

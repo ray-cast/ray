@@ -351,7 +351,7 @@ SoundComponent::save(oarchive& write) noexcept
 }
 
 GameComponentPtr
-SoundComponent::clone() const except
+SoundComponent::clone() const noexcept
 {
 	auto component = std::make_shared<SoundComponent>();
 	component->_volume = this->_volume;

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,60 +34,24 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_OGL_LAYOUT_H_
-#define _H_OGL_LAYOUT_H_
+#ifndef _H_MATERIAL_LOADER_H_
+#define _H_MATERIAL_LOADER_H_
 
-#include "ogl_types.h"
+#include <ray/material_fwd.h>
 
 _NAME_BEGIN
 
-class OGLGraphicsLayout final : public GraphicsLayout
+class MaterialLoader
 {
-	__DeclareSubClass(OGLGraphicsLayout, GraphicsLayout)
 public:
-	OGLGraphicsLayout() noexcept;
-	~OGLGraphicsLayout() noexcept;
+	MaterialLoader() noexcept;
+	virtual ~MaterialLoader() noexcept;
 
-	bool open(const GraphicsLayoutDesc& desc) noexcept;
-	void close() noexcept;
-
-	void setVertexComponents(const VertexComponents& component) noexcept;
-	const VertexComponents& getVertexComponents() const noexcept;
-
-	void addComponent(const VertexComponent& compoent) noexcept;
-	void removeComponent(const VertexComponent& compoent) noexcept;
-
-	void setIndexType(GLenum type) noexcept;
-	GLenum getIndexType() const noexcept;
-
-	GLsizei getIndexSize() const noexcept;
-
-	GLuint getInstanceID() const noexcept;
-
-	void bindVbo(OGLVertexBufferPtr vbo, std::uint8_t slot) noexcept;
-	void bindIbo(OGLIndexBufferPtr ibo) noexcept;
-	void bindLayout(OGLShaderObjectPtr program) noexcept;
-
-	const GraphicsLayoutDesc& getGraphicsLayout() const noexcept;
+	virtual MaterialPtr load(MaterialManager& manager, const std::string& filename) noexcept = 0;
 
 private:
-	friend class OGLDevice;
-	void setDevice(GraphicsDevicePtr device) noexcept;
-	GraphicsDevicePtr getDevice() noexcept;
-
-private:
-	OGLGraphicsLayout(const OGLGraphicsLayout&) noexcept = delete;
-	OGLGraphicsLayout& operator=(const OGLGraphicsLayout&) noexcept = delete;
-
-private:
-	GLuint _vao;
-	GLenum _indexType;
-	GLsizei _indexSize;
-	GraphicsDataPtr _vbo[MAX_VERTEX_UNIT];
-	GraphicsDataPtr _ibo;
-	GraphicsProgramPtr _program;
-	GraphicsLayoutDesc _layout;
-	GraphicsDeviceWeakPtr _device;
+	MaterialLoader(const MaterialLoader&) = delete;
+	MaterialLoader& operator=(const MaterialLoader&) = delete;
 };
 
 _NAME_END

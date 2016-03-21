@@ -48,7 +48,7 @@ CameraComponent::CameraComponent() noexcept
 {
 	_camera = std::make_shared<Camera>();
 	_camera->setOwnerListener(this);
-	_camera->setCameraOrder(CameraOrder::CO_MAIN);
+	_camera->setCameraOrder(CameraOrder::CameraOrderMain);
 }
 
 CameraComponent::~CameraComponent() noexcept
@@ -234,12 +234,12 @@ CameraComponent::load(iarchive& reader) noexcept
 
 	if (type == "ortho")
 	{
-		this->setCameraType(CameraType::CT_ORTHO);
+		this->setCameraType(CameraType::CameraTypeOrtho);
 		this->setOrtho(ortho.x, ortho.y, ortho.z, ortho.w);
 	}
 	else
 	{
-		this->setCameraType(CameraType::CT_PERSPECTIVE);
+		this->setCameraType(CameraType::CameraTypePerspective);
 		this->setAperture(aperture);		
 	}
 }
@@ -265,9 +265,11 @@ CameraComponent::onActivate() noexcept
 			_camera->setViewport(Viewport(0, 0, w, h));
 			_camera->setRenderScene(renderScene);
 
-			_camera->setTransform(this->getGameObject()->getTransform());
-			_camera->setTransformInverse(this->getGameObject()->getTransformInverse());
-			_camera->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
+			_camera->setTransform(
+				this->getGameObject()->getTransform(),
+				this->getGameObject()->getTransformInverse(),
+				this->getGameObject()->getTransformInverseTranspose()
+				);
 		}
 	}
 }
@@ -281,9 +283,11 @@ CameraComponent::onDeactivate() noexcept
 void
 CameraComponent::onMoveAfter() noexcept
 {
-	_camera->setTransform(this->getGameObject()->getTransform());
-	_camera->setTransformInverse(this->getGameObject()->getTransformInverse());
-	_camera->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
+	_camera->setTransform(
+		this->getGameObject()->getTransform(),
+		this->getGameObject()->getTransformInverse(),
+		this->getGameObject()->getTransformInverseTranspose()
+		);
 }
 
 GameComponentPtr

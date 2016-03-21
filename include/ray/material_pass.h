@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -41,23 +41,11 @@
 
 _NAME_BEGIN
 
-enum RenderPass
+class EXPORT MaterialPass final : public rtti::Interface
 {
-	RP_CUSTOM,
-	RP_DEPTH,
-	RP_SHADOW,
-	RP_OPAQUES,
-	RP_TRANSPARENT,
-	RP_SPECIFIC,
-	RP_LIGHTS,
-	RP_POSTPROCESS,
-	RP_NUMPASS
-};
-
-class EXPORT MaterialPass final
-{
+	__DeclareSubClass(MaterialPass, rtti::Interface)
 public:
-	MaterialPass(RenderPass pass) noexcept;
+	MaterialPass() noexcept;
 	~MaterialPass() noexcept;
 
 	void setup(Material& material) except;
@@ -66,29 +54,28 @@ public:
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 
+	void setRenderPass(RenderPass pass) noexcept;
 	RenderPass getRenderPass() const noexcept;
 
-	const MaterialParams& getTextures() const noexcept;
 	const MaterialParams& getParameters() const noexcept;
 	MaterialParamPtr getParameter(const std::string& name) const noexcept;
 
-	void setGraphicsState(GraphicsStatePtr state) noexcept;
-	GraphicsStatePtr getGraphicsState() noexcept;
+	void setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept;
+	GraphicsPipelinePtr getRenderPipeline() const noexcept;
 
-	void setGraphicsProgram(GraphicsProgramPtr shader) noexcept;
-	GraphicsProgramPtr getGraphicsProgram() noexcept;
+	void setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept;
+	GraphicsDescriptorSetPtr getDescriptorSet() const noexcept;
 
 private:
-
 	std::string _name;
 
 	RenderPass _pass;
-	
-	MaterialParams _textures;
 	MaterialParams _parameters;
 
-	GraphicsStatePtr _graphicsState;
-	GraphicsProgramPtr _graphicsShader;
+	GraphicsUniforms _uniforms;
+	GraphicsPipelinePtr _pipeline;
+	GraphicsDescriptorSetPtr _descriptorSet;
+	GraphicsDescriptorSetLayoutPtr _descriptorSetLayout;
 };
 
 _NAME_END

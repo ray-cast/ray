@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,15 +37,18 @@
 #ifndef _H_OGL_TYPES_H_
 #define _H_OGL_TYPES_H_
 
-#include <ray/graphics_data.h>
-#include <ray/graphics_layout.h>
 #include <ray/graphics_device.h>
+#include <ray/graphics_swapchain.h>
 #include <ray/graphics_context.h>
+#include <ray/graphics_data.h>
 #include <ray/graphics_state.h>
 #include <ray/graphics_sampler.h>
 #include <ray/graphics_texture.h>
 #include <ray/graphics_view.h>
 #include <ray/graphics_shader.h>
+#include <ray/graphics_pipeline.h>
+#include <ray/graphics_descriptor.h>
+#include <ray/graphics_input_layout.h>
 
 #if _BUILD_PLATFORM_WINDOWS
 #	include <GL/glew.h>
@@ -94,7 +97,7 @@ _NAME_BEGIN
 #	if defined(_VISUAL_STUDIO_)
 #		pragma warning(disable : 4127)
 #	endif
-#	define GL_PLATFORM_ASSERT(expr, format) if (!expr) { OGLCheck::debugOutput(format); assert(expr); }
+#	define GL_PLATFORM_ASSERT(expr, format) if (!(expr)) { OGLCheck::debugOutput(format); assert(expr); }
 #else
 #	define GL_PLATFORM_ASSERT(expr, format)
 #endif
@@ -103,17 +106,18 @@ typedef std::shared_ptr<class OGLCanvas> OGLCanvasPtr;
 typedef std::shared_ptr<class OGLDevice> OGLDevicePtr;
 typedef std::shared_ptr<class OGLDeviceContext> OGLDeviceContextPtr;
 typedef std::shared_ptr<class OGLRenderTexture> OGLRenderTexturePtr;
-typedef std::shared_ptr<class OGLMultiRenderTexture> OGLMultiRenderTexturePtr;
 typedef std::shared_ptr<class OGLShader> OGLShaderPtr;
 typedef std::shared_ptr<class OGLShaderObject> OGLShaderObjectPtr;
 typedef std::shared_ptr<class OGLVertexBuffer> OGLVertexBufferPtr;
 typedef std::shared_ptr<class OGLIndexBuffer> OGLIndexBufferPtr;
 typedef std::shared_ptr<class OGLGraphicsData> OGLGraphicsDataPtr;
-typedef std::shared_ptr<class OGLGraphicsLayout> OGLGraphicsLayoutPtr;
+typedef std::shared_ptr<class OGLInputLayout> OGLInputLayoutPtr;
 typedef std::shared_ptr<class OGLDrawIndirectBuffer> OGLDrawIndirectBufferPtr;
 typedef std::shared_ptr<class OGLGraphicsState> OGLGraphicsStatePtr;
 typedef std::shared_ptr<class OGLTexture> OGLTexturePtr;
 typedef std::shared_ptr<class OGLSampler> OGLSamplerPtr;
+typedef std::shared_ptr<class OGLRenderPipeline> OGLRenderPipelinePtr;
+typedef std::shared_ptr<class OGLDescriptorSet> OGLDescriptorSetPtr;
 
 typedef std::vector<OGLShaderPtr> OGLShaders;
 

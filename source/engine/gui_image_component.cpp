@@ -262,7 +262,7 @@ GuiImageComponent::save(oarchive& write) noexcept
 }
 
 GameComponentPtr
-GuiImageComponent::clone() const except
+GuiImageComponent::clone() const noexcept
 {
 	return std::make_shared<GuiImageComponent>();
 }

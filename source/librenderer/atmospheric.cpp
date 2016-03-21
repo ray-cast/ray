@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -56,7 +56,7 @@ Atmospheric::Setting::Setting() noexcept
 
 Atmospheric::Atmospheric() noexcept
 {
-	this->setRenderQueue(RenderQueue::RQ_OPAQUE);
+	this->setRenderQueue(RenderQueue::RenderQueueOpaque);
 }
 
 Atmospheric::~Atmospheric() noexcept
@@ -78,8 +78,8 @@ Atmospheric::onActivate(RenderPipeline& pipeline) except
 
 	_sat = pipeline.createMaterial("sys:fx/atmospheric.glsl");
 
-	_sky = _sat->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("sky");
-	_ground = _sat->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ground");
+	_sky = _sat->getTech(RenderQueue::RenderQueuePostprocess)->getPass("sky");
+	_ground = _sat->getTech(RenderQueue::RenderQueuePostprocess)->getPass("ground");
 	_lightDirection = _sat->getParameter("lightDirection");
 	_invWavelength = _sat->getParameter("invWavelength");
 	_outerRadius = _sat->getParameter("outerRadius");
@@ -123,16 +123,16 @@ Atmospheric::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 void
-Atmospheric::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+Atmospheric::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	pipeline.setRenderTexture(source);
+	pipeline.setRenderTexture(dest);
 
-	auto lights = pipeline.getRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS);
+	auto lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting, RenderPass::RenderPassLights);
 	for (auto& it : lights)
 	{
 		auto light = std::dynamic_pointer_cast<Light>(it);
 
-		if (light->getLightType() == LightType::LT_SUN)
+		if (light->getLightType() == LightType::LightTypeSun)
 		{
 			auto lightDirection = ~light->getForward();
 

@@ -1,0 +1,880 @@
+// +----------------------------------------------------------------------
+// | Project : ray.
+// | All rights reserved.
+// +----------------------------------------------------------------------
+// | Copyright (c) 2013-2016.
+// +----------------------------------------------------------------------
+// | * Redistribution and use of this software in source and binary forms,
+// |   with or without modification, are permitted provided that the following
+// |   conditions are met:
+// |
+// | * Redistributions of source code must retain the above
+// |   copyright notice, this list of conditions and the
+// |   following disclaimer.
+// |
+// | * Redistributions in binary form must reproduce the above
+// |   copyright notice, this list of conditions and the
+// |   following disclaimer in the documentation and/or other
+// |   materials provided with the distribution.
+// |
+// | * Neither the name of the ray team, nor the names of its
+// |   contributors may be used to endorse or promote products
+// |   derived from this software without specific prior
+// |   written permission of the ray team.
+// |
+// | THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// | "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// | LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// | A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// | OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// | SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// | LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// | DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// | THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// +----------------------------------------------------------------------
+#include <ray/graphics_variant.h>
+
+_NAME_BEGIN
+
+GraphicsVariant::GraphicsVariant() noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+}
+
+GraphicsVariant::GraphicsVariant(bool value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(int value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const int2& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const int3& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const int4& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(uint1 value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const uint2& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const uint3& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const uint4& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(float value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const float2& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const float3& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const float4& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const float3x3& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const float4x4& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const std::vector<int1>& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const std::vector<int2>& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const std::vector<int3>& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const std::vector<int4>& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const std::vector<uint1>& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const std::vector<uint2>& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const std::vector<uint3>& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const std::vector<uint4>& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const std::vector<float1>& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const std::vector<float2>& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const std::vector<float3>& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(const std::vector<float4>& value) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(value);
+}
+
+GraphicsVariant::GraphicsVariant(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
+	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+	this->assign(texture, sampler);
+}
+
+GraphicsVariant::~GraphicsVariant() noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeNone);
+}
+
+void
+GraphicsVariant::setType(GraphicsUniformType type) noexcept
+{
+	if (_type != type)
+	{
+		if (_type == GraphicsUniformType::GraphicsUniformTypeIntArray)
+		{
+			delete _value.iarray;
+			_value.iarray = nullptr;
+		}
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeInt2Array)
+		{
+			delete _value.iarray2;
+			_value.iarray2 = nullptr;
+		}
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeInt3Array)
+		{
+			delete _value.iarray3;
+			_value.iarray3 = nullptr;
+		}
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeInt4Array)
+		{
+			delete _value.iarray4;
+			_value.iarray4 = nullptr;
+		}
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeUintArray)
+		{
+			delete _value.uiarray;
+			_value.uiarray = nullptr;
+		}
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeUint2Array)
+		{
+			delete _value.uiarray2;
+			_value.uiarray2 = nullptr;
+		}
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeUint3Array)
+		{
+			delete _value.uiarray3;
+			_value.uiarray3 = nullptr;
+		}
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeUint4Array)
+		{
+			delete _value.uiarray4;
+			_value.uiarray4 = nullptr;
+		}
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeFloatArray)
+		{
+			delete _value.farray;
+			_value.farray = nullptr;
+		}
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeFloat2Array)
+		{
+			delete _value.farray2;
+			_value.farray2 = nullptr;
+		}
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeFloat3Array)
+		{
+			delete _value.farray3;
+			_value.farray3 = nullptr;
+		}
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeFloat4Array)
+		{
+			delete _value.farray4;
+			_value.farray4 = nullptr;
+		}
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeFloat3x3)
+		{
+			delete _value.m3;
+			_value.m3 = nullptr;
+		}
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeFloat4x4)
+		{
+			delete _value.m4;
+			_value.m4 = nullptr;
+		}
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeFloat3x3Array)
+		{
+			delete _value.m3array;
+			_value.m3array = nullptr;
+		}
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeFloat4x4Array)
+		{
+			delete _value.m4array;
+			_value.m4array = nullptr;
+		}
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
+			_type == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
+			_type == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
+		{
+			if (type != GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
+				type != GraphicsUniformType::GraphicsUniformTypeStorageImage ||
+				type != GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
+			{
+				delete _value.texture;
+				_value.texture = nullptr;
+			}
+		}
+
+		if (type == GraphicsUniformType::GraphicsUniformTypeIntArray)
+			_value.iarray = new std::vector<int1>();
+		else if (type == GraphicsUniformType::GraphicsUniformTypeInt2Array)
+			_value.iarray2 = new std::vector<int2>();
+		else if (type == GraphicsUniformType::GraphicsUniformTypeInt3Array)
+			_value.iarray3 = new std::vector<int3>();
+		else if (type == GraphicsUniformType::GraphicsUniformTypeInt4Array)
+			_value.iarray4 = new std::vector<int4>();
+		else if (type == GraphicsUniformType::GraphicsUniformTypeUintArray)
+			_value.uiarray = new std::vector<uint1>();
+		else if (type == GraphicsUniformType::GraphicsUniformTypeUint2Array)
+			_value.uiarray2 = new std::vector<uint2>();
+		else if (type == GraphicsUniformType::GraphicsUniformTypeUint3Array)
+			_value.uiarray3 = new std::vector<uint3>();
+		else if (type == GraphicsUniformType::GraphicsUniformTypeUint4Array)
+			_value.uiarray4 = new std::vector<uint4>();
+		else if (type == GraphicsUniformType::GraphicsUniformTypeFloatArray)
+			_value.farray = new std::vector<float>();
+		else if (type == GraphicsUniformType::GraphicsUniformTypeFloat2Array)
+			_value.farray2 = new std::vector<float2>();
+		else if (type == GraphicsUniformType::GraphicsUniformTypeFloat3Array)
+			_value.farray3 = new std::vector<float3>();
+		else if (type == GraphicsUniformType::GraphicsUniformTypeFloat4Array)
+			_value.farray4 = new std::vector<float4>();
+		else if (type == GraphicsUniformType::GraphicsUniformTypeFloat3x3)
+			_value.m3 = new Matrix3x3;
+		else if (type == GraphicsUniformType::GraphicsUniformTypeFloat4x4)
+			_value.m4 = new Matrix4x4;
+		else if (type == GraphicsUniformType::GraphicsUniformTypeFloat3x3Array)
+			_value.m3array = new std::vector<Matrix3x3>;
+		else if (type == GraphicsUniformType::GraphicsUniformTypeFloat4x4Array)
+			_value.m4array = new std::vector<Matrix4x4>;
+		else if (type == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
+			type == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
+			type == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
+		{
+			if (_type != GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
+				_type != GraphicsUniformType::GraphicsUniformTypeStorageImage ||
+				_type != GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
+			{
+				_value.texture = new TexturePack;
+			}
+			else
+			{
+				_value.texture->image = nullptr;
+				_value.texture->sampler = nullptr;
+			}
+		}			
+
+		_type = type;
+	}
+}
+
+GraphicsUniformType
+GraphicsVariant::getType() const noexcept
+{
+	return _type;
+}
+
+void
+GraphicsVariant::assign(bool value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeBool);
+	if (_value.b != value)
+	{
+		_value.b = value;
+	}
+}
+
+void
+GraphicsVariant::assign(int value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeInt);
+	if (_value.i[0] != value)
+	{
+		_value.i[0] = value;
+	}
+}
+
+void
+GraphicsVariant::assign(const int2& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeInt2);
+	if (_value.i[0] != value.x ||
+		_value.i[1] != value.y)
+	{
+		_value.i[0] = value.x;
+		_value.i[1] = value.y;
+	}
+}
+
+void
+GraphicsVariant::assign(const int3& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeInt3);
+	if (_value.i[0] != value.x ||
+		_value.i[1] != value.y ||
+		_value.i[2] != value.z)
+	{
+		_value.i[0] = value.x;
+		_value.i[1] = value.y;
+		_value.i[2] = value.z;
+	}
+}
+
+void
+GraphicsVariant::assign(const int4& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeInt4);
+	if (_value.i[0] != value.x ||
+		_value.i[1] != value.y ||
+		_value.i[2] != value.z ||
+		_value.i[3] != value.w)
+	{
+		_value.i[0] = value.x;
+		_value.i[1] = value.y;
+		_value.i[2] = value.z;
+		_value.i[3] = value.w;
+	}
+}
+
+void
+GraphicsVariant::assign(uint1 value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeUint);
+	if (_value.ui[0] != value)
+	{
+		_value.ui[0] = value;
+	}
+}
+
+void
+GraphicsVariant::assign(const uint2& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeUint2);
+	if (_value.ui[0] != value.x ||
+		_value.ui[1] != value.y)
+	{
+		_value.ui[0] = value.x;
+		_value.ui[1] = value.y;
+	}
+}
+
+void
+GraphicsVariant::assign(const uint3& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeUint3);
+	if (_value.ui[0] != value.x ||
+		_value.ui[1] != value.y ||
+		_value.ui[2] != value.z)
+	{
+		_value.ui[0] = value.x;
+		_value.ui[1] = value.y;
+		_value.ui[2] = value.z;
+	}
+}
+
+void
+GraphicsVariant::assign(const uint4& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeUint4);
+	if (_value.ui[0] != value.x ||
+		_value.ui[1] != value.y ||
+		_value.ui[2] != value.z ||
+		_value.ui[3] != value.w)
+	{
+		_value.ui[0] = value.x;
+		_value.ui[1] = value.y;
+		_value.ui[2] = value.z;
+		_value.ui[3] = value.w;
+	}
+}
+
+void
+GraphicsVariant::assign(float value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeFloat);
+	if (_value.f[0] != value)
+	{
+		_value.f[0] = value;
+	}
+}
+
+void
+GraphicsVariant::assign(const float2& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeFloat2);
+	if (_value.f[0] != value.x ||
+		_value.f[1] != value.y)
+	{
+		_value.f[0] = value.x;
+		_value.f[1] = value.y;
+	}
+}
+
+void
+GraphicsVariant::assign(const float3& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeFloat3);
+	if (_value.f[0] != value.x ||
+		_value.f[1] != value.y ||
+		_value.f[2] != value.z)
+	{
+		_value.f[0] = value.x;
+		_value.f[1] = value.y;
+		_value.f[2] = value.z;
+	}
+}
+
+void
+GraphicsVariant::assign(const float4& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeFloat4);
+	if (_value.f[0] != value.x ||
+		_value.f[1] != value.y ||
+		_value.f[2] != value.z ||
+		_value.f[3] != value.w)
+	{
+		_value.f[0] = value.x;
+		_value.f[1] = value.y;
+		_value.f[2] = value.z;
+		_value.f[3] = value.w;
+	}
+}
+
+void
+GraphicsVariant::assign(const float3x3& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeFloat3x3);
+	*_value.m3 = value;
+}
+
+void
+GraphicsVariant::assign(const float4x4& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeFloat4x4);
+	*_value.m4 = value;
+}
+
+void
+GraphicsVariant::assign(const std::vector<int1>& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeIntArray);
+	*_value.iarray = value;
+}
+
+void
+GraphicsVariant::assign(const std::vector<int2>& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeInt2Array);
+	*_value.iarray2 = value;
+}
+
+void
+GraphicsVariant::assign(const std::vector<int3>& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeInt3Array);
+	*_value.iarray3 = value;
+}
+
+void
+GraphicsVariant::assign(const std::vector<int4>& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeInt4Array);
+	*_value.iarray4 = value;
+}
+
+void
+GraphicsVariant::assign(const std::vector<uint1>& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeUintArray);
+	*_value.uiarray = value;
+}
+
+void
+GraphicsVariant::assign(const std::vector<uint2>& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeUint2Array);
+	*_value.uiarray2 = value;
+}
+
+void
+GraphicsVariant::assign(const std::vector<uint3>& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeUint3Array);
+	*_value.uiarray3 = value;
+}
+
+void
+GraphicsVariant::assign(const std::vector<uint4>& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeUint4Array);
+	*_value.uiarray4 = value;
+}
+
+void
+GraphicsVariant::assign(const std::vector<float1>& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeFloatArray);
+	*_value.farray = value;
+}
+
+void
+GraphicsVariant::assign(const std::vector<float2>& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeFloat2Array);
+	*_value.farray2 = value;
+}
+
+void
+GraphicsVariant::assign(const std::vector<float3>& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeFloat3Array);
+	*_value.farray3 = value;
+}
+
+void
+GraphicsVariant::assign(const std::vector<float4>& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeFloat4Array);
+	*_value.farray4 = value;
+}
+
+void
+GraphicsVariant::assign(const std::vector<float3x3>& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeFloat3x3Array);
+	*_value.m3array = value;
+}
+
+void
+GraphicsVariant::assign(const std::vector<float4x4>& value) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeFloat4x4Array);
+	*_value.m4array = value;
+}
+
+void 
+GraphicsVariant::assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
+{
+	this->setType(GraphicsUniformType::GraphicsUniformTypeSamplerImage);
+	_value.texture->image = texture;
+	_value.texture->sampler = sampler;
+}
+
+bool
+GraphicsVariant::getBool() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeBool);
+	return _value.b;
+}
+
+int
+GraphicsVariant::getInt() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeInt);
+	return _value.i[0];
+}
+
+const int2&
+GraphicsVariant::getInt2() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeInt2);
+	return (int2&)_value.i;
+}
+
+const int3&
+GraphicsVariant::getInt3() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeInt3);
+	return (int3&)_value.i;
+}
+
+const int4&
+GraphicsVariant::getInt4() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeInt4);
+	return (int4&)_value.i;
+}
+
+uint1
+GraphicsVariant::getUint() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUint);
+	return _value.ui[0];
+}
+
+const uint2&
+GraphicsVariant::getUint2() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUint2);
+	return (uint2&)_value.ui;
+}
+
+const uint3&
+GraphicsVariant::getUint3() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUint3);
+	return (uint3&)_value.ui;
+}
+
+const uint4&
+GraphicsVariant::getUint4() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUint4);
+	return (uint4&)_value.ui;
+}
+
+float
+GraphicsVariant::getFloat() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat);
+	return _value.f[0];
+}
+
+const float2&
+GraphicsVariant::getFloat2() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat2);
+	return (float2&)_value.f;
+}
+
+const float3&
+GraphicsVariant::getFloat3() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat3);
+	return (float3&)_value.f;
+}
+
+const float4&
+GraphicsVariant::getFloat4() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat4);
+	return (float4&)_value.f;
+}
+
+const float3x3&
+GraphicsVariant::getFloat3x3() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat3x3);
+	return (float3x3&)*_value.m3;
+}
+
+const float4x4&
+GraphicsVariant::getFloat4x4() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat4x4);
+	return (float4x4&)*_value.m4;
+}
+
+const std::vector<int1>&
+GraphicsVariant::getIntArray() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeIntArray);
+	return *_value.iarray;
+}
+
+const std::vector<int2>&
+GraphicsVariant::getInt2Array() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeInt2Array);
+	return *_value.iarray2;
+}
+
+const std::vector<int3>&
+GraphicsVariant::getInt3Array() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeInt3Array);
+	return *_value.iarray3;
+}
+
+const std::vector<int4>&
+GraphicsVariant::getInt4Array() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeInt4Array);
+	return *_value.iarray4;
+}
+
+const std::vector<uint1>&
+GraphicsVariant::getUintArray() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUintArray);
+	return *_value.uiarray;
+}
+
+const std::vector<uint2>&
+GraphicsVariant::getUint2Array() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUint2Array);
+	return *_value.uiarray2;
+}
+
+const std::vector<uint3>&
+GraphicsVariant::getUint3Array() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUint3Array);
+	return *_value.uiarray3;
+}
+
+const std::vector<uint4>&
+GraphicsVariant::getUint4Array() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUint4Array);
+	return *_value.uiarray4;
+}
+
+const std::vector<float>&
+GraphicsVariant::getFloatArray() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloatArray);
+	return *_value.farray;
+}
+
+const std::vector<float2>&
+GraphicsVariant::getFloat2Array() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat2Array);
+	return *_value.farray2;
+}
+
+const std::vector<float3>&
+GraphicsVariant::getFloat3Array() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat3Array);
+	return *_value.farray3;
+}
+
+const std::vector<float4>&
+GraphicsVariant::getFloat4Array() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat4Array);
+	return *_value.farray4;
+}
+
+const std::vector<float3x3>&
+GraphicsVariant::getFloat3x3Array() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat3x3Array);
+	return *_value.m3array;
+}
+
+const std::vector<float4x4>&
+GraphicsVariant::getFloat4x4Array() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat4x4Array);
+	return *_value.m4array;
+}
+
+
+GraphicsTexturePtr
+GraphicsVariant::getTexture() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeSamplerImage || _type == GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	return _value.texture->image;
+}
+
+GraphicsSamplerPtr
+GraphicsVariant::getTextureSampler() const noexcept
+{
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeSamplerImage || _type == GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	return _value.texture->sampler;
+}
+
+_NAME_END

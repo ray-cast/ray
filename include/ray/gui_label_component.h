@@ -78,7 +78,7 @@ public:
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
 
-	GameComponentPtr clone() const except;
+	GameComponentPtr clone() const noexcept;
 
 private:
 	GuiLabelComponent(const GuiLabelComponent&) noexcept = delete;

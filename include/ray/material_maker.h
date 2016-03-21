@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,32 +37,33 @@
 #ifndef _H_MATERIAL_MAKETER_H_
 #define _H_MATERIAL_MAKETER_H_
 
-#include <ray/material.h>
+#include <ray/material_loader.h>
 #include <ray/iarchive.h>
+#include <ray/material.h>
 
 _NAME_BEGIN
 
-class EXPORT MaterialMaker final
+class EXPORT MaterialMaker final : public MaterialLoader
 {
 public:
 	MaterialMaker() noexcept;
 	~MaterialMaker() noexcept;
 
 	MaterialPtr load(MaterialManager& manager, iarchive& reader) except;
-	MaterialPtr load(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
-	MaterialPtr load(MaterialManager& manager, const std::string& filename) except;
+	MaterialPtr load(MaterialManager& manager, const std::string& filename) noexcept;
+	bool load(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
 
 private:
 
 	void instancePass(MaterialManager& manager, MaterialTechPtr& tech, iarchive& reader) except;
-	void instanceTech(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
-	void instanceSampler(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
-	void instanceParameter(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
-	void instanceMacro(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
-	void instanceBuffer(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
+	void instanceTech(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
+	void instanceSampler(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
+	void instanceParameter(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
+	void instanceMacro(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
+	void instanceBuffer(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
 	void instanceCodes(MaterialManager& manager, iarchive& reader) except;
-	void instanceShader(MaterialManager& manager, ShaderObjectDesc& program, iarchive& reader) except;
-	void instanceInclude(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
+	void instanceShader(MaterialManager& manager, GraphicsProgramDesc& program, iarchive& reader) except;
+	void instanceInclude(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
 
 	static GraphicsVertexType stringToPrimitive(const std::string& primitive) noexcept;
 	static GraphicsCullMode stringToCullMode(const std::string& cullmode) noexcept;

@@ -221,7 +221,7 @@ GuiLabelComponent::save(oarchive& write) noexcept
 }
 
 GameComponentPtr 
-GuiLabelComponent::clone() const except
+GuiLabelComponent::clone() const noexcept
 {
 	auto other = std::make_shared<GuiLabelComponent>();
 	return other;

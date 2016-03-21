@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -43,14 +43,6 @@ __ImplementSubInterface(ShaderAttribute, ShaderParameter, "ShaderAttribute")
 __ImplementSubInterface(ShaderUniform, ShaderParameter, "ShaderUniform")
 __ImplementSubInterface(GraphicsShader, GraphicsChild, "GraphicsShader")
 __ImplementSubInterface(GraphicsProgram, GraphicsChild, "GraphicsProgram")
-
-ShaderVariant::ShaderVariant() noexcept
-{
-}
-
-ShaderVariant::~ShaderVariant() noexcept
-{
-}
 
 ShaderParameter::ShaderParameter() noexcept
 {
@@ -105,9 +97,8 @@ ShaderAttribute::getSemanticIndex() const noexcept
 	return _index;
 }
 
-ShaderUniform::ShaderUniform(ShaderVariant* value) noexcept
-	: _value(value)
-	, _needUpdate(true)
+ShaderUniform::ShaderUniform() noexcept
+	: _bindingPoint(0)
 {
 }
 
@@ -116,173 +107,86 @@ ShaderUniform::~ShaderUniform() noexcept
 }
 
 void
-ShaderUniform::needUpdate(bool update) noexcept
+ShaderUniform::setBindingPoint(std::uint32_t bindingPoint) noexcept
 {
-	_needUpdate = update;
+	_bindingPoint = bindingPoint;
 }
 
-bool
-ShaderUniform::needUpdate() const noexcept
+std::uint32_t 
+ShaderUniform::getBindingPoint() const noexcept
 {
-	return _needUpdate;
+	return _bindingPoint;
 }
 
 void
-ShaderUniform::setType(GraphicsVariantType type) noexcept
+ShaderUniform::setType(GraphicsUniformType type) noexcept
 {
 	_type = type;
 }
 
-GraphicsVariantType
+GraphicsUniformType
 ShaderUniform::getType() const noexcept
 {
 	return _type;
 }
 
-void
-ShaderUniform::assign(bool value) noexcept
-{
-	assert(_value);
-	_value->assign(value);
-}
-
-void
-ShaderUniform::assign(int value) noexcept
-{
-	assert(_value);
-	_value->assign(value);
-}
-
-void
-ShaderUniform::assign(const int2& value) noexcept
-{
-	assert(_value);
-	_value->assign(value);
-}
-
-void
-ShaderUniform::assign(float value) noexcept
-{
-	assert(_value);
-	_value->assign(value);
-}
-
-void
-ShaderUniform::assign(const float2& value) noexcept
-{
-	assert(_value);
-	_value->assign(value);
-}
-
-void
-ShaderUniform::assign(const float3& value) noexcept
-{
-	assert(_value);
-	_value->assign(value);
-}
-
-void
-ShaderUniform::assign(const float4& value) noexcept
-{
-	assert(_value);
-	_value->assign(value);
-}
-
-void
-ShaderUniform::assign(const float3x3& value) noexcept
-{
-	assert(_value);
-	_value->assign(value);
-}
-
-void
-ShaderUniform::assign(const float4x4& value) noexcept
-{
-	assert(_value);
-	_value->assign(value);
-}
-
-void
-ShaderUniform::assign(const std::vector<float>& value) noexcept
-{
-	assert(_value);
-	_value->assign(value);
-}
-
-void
-ShaderUniform::assign(const std::vector<float2>& value) noexcept
-{
-	assert(_value);
-	_value->assign(value);
-}
-
-void
-ShaderUniform::assign(const std::vector<float3>& value) noexcept
-{
-	assert(_value);
-	_value->assign(value);
-}
-
-void
-ShaderUniform::assign(const std::vector<float4>& value) noexcept
-{
-	assert(_value);
-	_value->assign(value);
-}
-
-ShaderDesc::ShaderDesc() noexcept
+GraphicsShaderDesc::GraphicsShaderDesc() noexcept
 {
 }
 
-ShaderDesc::ShaderDesc(GraphicsShaderStage type, const std::vector<char>& code) noexcept
+GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderStage type, const std::vector<char>& code) noexcept
 {
 	this->setType(type);
 	this->setByteCodes(code);
 }
 
-ShaderDesc::~ShaderDesc() noexcept
+GraphicsShaderDesc::~GraphicsShaderDesc() noexcept
 {
 }
 
 void
-ShaderDesc::setType(GraphicsShaderStage type) noexcept
+GraphicsShaderDesc::setType(GraphicsShaderStage type) noexcept
 {
 	_type = type;
 }
 
 GraphicsShaderStage
-ShaderDesc::getType()const noexcept
+GraphicsShaderDesc::getType()const noexcept
 {
 	return _type;
 }
 
 void
-ShaderDesc::setByteCodes(const std::vector<char>& codes) noexcept
+GraphicsShaderDesc::setByteCodes(const std::vector<char>& codes) noexcept
 {
 	_bytecodes = codes;
 }
 
 const std::vector<char>&
-ShaderDesc::getByteCodes() const noexcept
+GraphicsShaderDesc::getByteCodes() const noexcept
 {
 	return _bytecodes;
 }
 
-ShaderObjectDesc::ShaderObjectDesc() noexcept
+GraphicsProgramDesc::GraphicsProgramDesc() noexcept
 {
 }
 
-ShaderObjectDesc::~ShaderObjectDesc() noexcept
+GraphicsProgramDesc::~GraphicsProgramDesc() noexcept
 {
 }
 
 bool
-ShaderObjectDesc::addShader(const ShaderDesc& shader) noexcept
+GraphicsProgramDesc::addShader(GraphicsShaderPtr shader) noexcept
 {
-	if (shader.getByteCodes().empty())
-		return false;
+	assert(shader);
 
-	auto it = std::find_if(_shaders.begin(), _shaders.end(), [&](const ShaderDesc& shaderDesc) { return shaderDesc.getType() == shader.getType();});
+	auto comp = [&](const GraphicsShaderPtr& it) 
+	{
+		return it->getGraphicsShaderDesc().getType() == shader->getGraphicsShaderDesc().getType();
+	};
+
+	auto it = std::find_if(_shaders.begin(), _shaders.end(), comp);
 	if (it != _shaders.end())
 		return false;
 
@@ -291,15 +195,15 @@ ShaderObjectDesc::addShader(const ShaderDesc& shader) noexcept
 }
 
 void
-ShaderObjectDesc::removeShader(GraphicsShaderStage stage) noexcept
+GraphicsProgramDesc::removeShader(GraphicsShaderPtr shader) noexcept
 {
-	auto it = std::find_if(_shaders.begin(), _shaders.end(), [&](const ShaderDesc& shaderDesc) { return shaderDesc.getType() == stage;});
+	auto it = std::find(_shaders.begin(), _shaders.end(), shader);
 	if (it != _shaders.end())
 		_shaders.erase(it);
 }
 
-const ShadersDesc&
-ShaderObjectDesc::getShaders() const noexcept
+const GraphicsShaders&
+GraphicsProgramDesc::getShaders() const noexcept
 {
 	return _shaders;
 }

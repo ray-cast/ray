@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -52,7 +52,7 @@ ColorGrading::onActivate(RenderPipeline& pipeline) except
 	_texColorGrading = pipeline.createTexture("sys:media/color_grading.png");
 
 	_material = pipeline.createMaterial("sys:fx/color_grading.fxml.o");
-	_colorGrading = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("grading");
+	_colorGrading = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("grading");
 	_texGrading = _material->getParameter("texColorGrading");
 	_texSource = _material->getParameter("texSource");
 
@@ -65,9 +65,9 @@ ColorGrading::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-ColorGrading::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except
+ColorGrading::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) except
 {
-	_texSource->assign(source->getResolveTexture());
+	_texSource->assign(source);
 
 	pipeline.setRenderTexture(dest);
 	pipeline.discradRenderTexture();

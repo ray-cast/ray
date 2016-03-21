@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,33 +34,115 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_OGL_DIBO_H_
-#define _H_OGL_DIBO_H_
-
-#include "ogl_graphics_data.h"
+#include <ray/graphics_swapchain.h>
 
 _NAME_BEGIN
 
-class OGLDrawIndirectBuffer final : public OGLGraphicsData
+GraphicsSwapchainDesc::GraphicsSwapchainDesc() noexcept
+	: _format(GraphicsFormat::GraphicsFormatB8G8R8A8UNorm)
+	, _depthFormat(GraphicsFormat::GraphicsFormatD16UNorm)
+	, _interval(SwapInterval::SwapIntervalVsync)
+	, _imageNums(2)
+	, _window(0)
+	, _width(0)
+	, _height(0)
 {
-	__DeclareSubClass(OGLDrawIndirectBuffer, OGLGraphicsData)
-public:
-	OGLDrawIndirectBuffer() noexcept;
-	~OGLDrawIndirectBuffer() noexcept;
+}
 
-	bool setup(const GraphicsDataDesc& desc) noexcept;
-	void close() noexcept;
+GraphicsSwapchainDesc::~GraphicsSwapchainDesc() noexcept
+{
+}
 
-	void bind() noexcept;
+void
+GraphicsSwapchainDesc::setWindHandle(WindHandle hwnd) noexcept
+{
+	_window = hwnd;
+}
 
-private:
-	OGLDrawIndirectBuffer(const OGLDrawIndirectBuffer&) noexcept = delete;
-	OGLDrawIndirectBuffer& operator=(const OGLDrawIndirectBuffer&) noexcept = delete;
+WindHandle
+GraphicsSwapchainDesc::getWindHandle() const noexcept
+{
+	return _window;
+}
 
-private:
-	OGLGraphicsBuf _indirectData;
-};
+void
+GraphicsSwapchainDesc::setWidth(std::uint32_t width) noexcept
+{
+	_width = width;
+}
+
+std::uint32_t
+GraphicsSwapchainDesc::getWidth() const noexcept
+{
+	return _width;
+}
+
+void
+GraphicsSwapchainDesc::setHeight(std::uint32_t height) noexcept
+{
+	_height = height;
+}
+
+std::uint32_t
+GraphicsSwapchainDesc::getHeight() const noexcept
+{
+	return _height;
+}
+
+void 
+GraphicsSwapchainDesc::setSwapInterval(SwapInterval interval) noexcept
+{
+	_interval = interval;
+}
+
+SwapInterval 
+GraphicsSwapchainDesc::getSwapInterval() const noexcept
+{
+	return _interval;
+}
+
+void
+GraphicsSwapchainDesc::setColorFormat(GraphicsFormat format) noexcept
+{
+	_format = format;
+}
+
+GraphicsFormat
+GraphicsSwapchainDesc::getColorFormat() const noexcept
+{
+	return _format;
+}
+
+void
+GraphicsSwapchainDesc::setDepthFormat(GraphicsFormat format) noexcept
+{
+	_depthFormat = format;
+}
+
+GraphicsFormat
+GraphicsSwapchainDesc::getDepthFormat() const noexcept
+{
+	return _depthFormat;
+}
+
+void
+GraphicsSwapchainDesc::setImageNums(std::uint32_t imageNums) noexcept
+{
+	_imageNums = imageNums;
+}
+
+std::uint32_t
+GraphicsSwapchainDesc::getImageNums() const noexcept
+{
+	return _imageNums;
+}
+
+GraphicsSwapchain::GraphicsSwapchain() noexcept
+{
+}
+
+GraphicsSwapchain::~GraphicsSwapchain() noexcept
+{
+}
 
 _NAME_END
-
-#endif

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -47,17 +47,17 @@ public:
 	SSSS() noexcept;
 	~SSSS() noexcept;
 
-	void blurX(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void blurY(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void blurX(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void blurY(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
-	void translucency(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept;
+	void translucency(RenderPipeline& pipeline, GraphicsRenderTexturePtr dest) noexcept;
 
 private:
 
 	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
 private:
 
@@ -79,7 +79,8 @@ private:
 	MaterialParamPtr _lightShadowMap;
 	MaterialParamPtr _lightShadowMatrix;
 
-	GraphicsRenderTexturePtr _SSSS;
+	GraphicsTexturePtr _SSSSMap;
+	GraphicsRenderTexturePtr _SSSSView;
 };
 
 _NAME_END

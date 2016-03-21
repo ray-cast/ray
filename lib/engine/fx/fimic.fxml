@@ -2,8 +2,8 @@
 <effect version="1270" language="hlsl">
     <include name="sys:fx/math.fxml"/>
     <include name="sys:fx/sampler.fxml"/>
-    <parameter name="texSource" type="texture" />
-    <parameter name="texBloom" type="texture" />
+    <parameter name="texSource" type="texture2D" />
+    <parameter name="texBloom" type="texture2D" />
     <parameter name="bloomThreshold" type="float" />
     <parameter name="bloomIntensity" type="float" />
     <parameter name="bloomSizeInv" type="float2" />
@@ -19,15 +19,6 @@
             #ifndef TONEMAP_OPERATOR
             #   define TONEMAP_OPERATOR TONEMAP_FILMIC
             #endif
-
-            uniform Texture2D texSource;
-            uniform Texture2D texBloom;
-
-            uniform float bloomThreshold;
-            uniform float bloomIntensity;
-            uniform float2 bloomSizeInv;
-
-            uniform float exposure;
 
             float3 Uncharted2Tonemap(float3 x)
             {

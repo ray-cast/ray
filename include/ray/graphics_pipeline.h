@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,8 +34,52 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/terrain_map.h>
+#ifndef _H_GRAPHICS_PIPELINE_H_
+#define _H_GRAPHICS_PIPELINE_H_
+
+#include <ray/graphics_child.h>
 
 _NAME_BEGIN
 
+class GraphicsPipelineDesc final
+{
+public:
+	GraphicsPipelineDesc() noexcept;
+	~GraphicsPipelineDesc() noexcept;
+
+	void setGraphicsProgram(GraphicsProgramPtr program) noexcept;
+	GraphicsProgramPtr getGraphicsProgram() const noexcept;
+
+	void setGraphicsInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept;
+	GraphicsInputLayoutPtr getGraphicsInputLayout() const noexcept;
+
+	void setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr descriptorSet) noexcept;
+	GraphicsDescriptorSetLayoutPtr getGraphicsDescriptorSetLayout() const noexcept;
+
+	void setGraphicsState(GraphicsStatePtr state) noexcept;
+	GraphicsStatePtr getGraphicsState() const noexcept;
+
+private:
+	GraphicsStatePtr _state;
+	GraphicsProgramPtr _program;
+	GraphicsInputLayoutPtr _inputLayout;
+	GraphicsDescriptorSetLayoutPtr _descriptorSet;
+};
+
+class GraphicsPipeline : public GraphicsChild
+{
+	__DeclareSubInterface(GraphicsPipeline, GraphicsChild)
+public:
+	GraphicsPipeline() noexcept;
+	virtual ~GraphicsPipeline() noexcept;
+
+	virtual const GraphicsPipelineDesc& getGraphicsPipelineDesc() const noexcept = 0;
+
+private:
+	GraphicsPipeline(const GraphicsPipeline&) noexcept = delete;
+	GraphicsPipeline& operator=(const GraphicsPipeline&) noexcept = delete;
+};
+
 _NAME_END
+
+#endif

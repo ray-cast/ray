@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -39,6 +39,36 @@
 _NAME_BEGIN
 
 __ImplementSubInterface(GraphicsContext, GraphicsChild, "GraphicsContext")
+
+GraphicsIndirect::GraphicsIndirect() noexcept
+	: startVertice(0)
+	, numVertices(0)
+	, startIndice(0)
+	, numIndices(0)
+	, numInstances(0)
+	, startInstances(0)
+{
+}
+
+GraphicsContextDesc::GraphicsContextDesc() noexcept
+{
+}
+
+GraphicsContextDesc::~GraphicsContextDesc() noexcept
+{
+}
+
+void
+GraphicsContextDesc::setSwapchain(GraphicsSwapchainPtr swapchain) noexcept
+{
+	_swapchain = swapchain;
+}
+
+GraphicsSwapchainPtr
+GraphicsContextDesc::getSwapchain() const noexcept
+{
+	return _swapchain;
+}
 
 GraphicsContext::GraphicsContext() noexcept
 {

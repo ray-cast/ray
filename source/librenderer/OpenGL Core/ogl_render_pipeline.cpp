@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,16 +34,51 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/render_data_manager_base.h>
+#include "ogl_render_pipeline.h"
 
 _NAME_BEGIN
 
-RenderDataManager::RenderDataManager() noexcept
+__ImplementSubClass(OGLRenderPipeline, GraphicsPipeline, "OGLRenderPipeline")
+
+OGLRenderPipeline::OGLRenderPipeline() noexcept
 {
 }
 
-RenderDataManager::~RenderDataManager() noexcept
+OGLRenderPipeline::~OGLRenderPipeline() noexcept
 {
+	this->close();
+}
+
+bool
+OGLRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
+{
+	assert(pipelineDesc.getGraphicsState());
+	assert(pipelineDesc.getGraphicsProgram());
+	_pipelineDesc = pipelineDesc;
+	return true;
+}
+
+void 
+OGLRenderPipeline::close() noexcept
+{
+}
+
+const GraphicsPipelineDesc&
+OGLRenderPipeline::getGraphicsPipelineDesc() const noexcept
+{
+	return _pipelineDesc;
+}
+
+void
+OGLRenderPipeline::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+OGLRenderPipeline::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

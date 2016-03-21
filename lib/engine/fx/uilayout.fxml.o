@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <effect language="bytecodes">
-    <parameter name="scaleY" type="float" />
-    <parameter name="decal" type="texture" />
+    <parameter name="scaleY" type="int" />
+    <parameter name="decal" type="texture2D" />
     <sampler name="PointClamp">
         <state name="filter" value="point" />
         <state name="wrap" value="clamp" />

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -38,13 +38,16 @@
 #include <ray/camera.h>
 #include <ray/light.h>
 
+#include <ray/graphics_view.h>
+#include <ray/graphics_texture.h>
+
 _NAME_BEGIN
 
 SSSS::SSSS() noexcept
 	: _sssStrength(0.6f)
 	, _gaussianWidth(6.0f)
 {
-	this->setRenderQueue(RenderQueue::RQ_POSTPROCESS);
+	this->setRenderQueue(RenderQueue::RenderQueuePostprocess);
 }
 
 SSSS::~SSSS() noexcept
@@ -52,11 +55,11 @@ SSSS::~SSSS() noexcept
 }
 
 void
-SSSS::blurX(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSSS::blurX(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	std::uint32_t widght = source->getResolveTexture()->getGraphicsTextureDesc().getWidth();
+	std::uint32_t widght = source->getGraphicsTextureDesc().getWidth();
 
-	_sssSource->assign(source->getResolveTexture());
+	_sssSource->assign(source);
 	_sssStep->assign(float2(1.0 / widght, 0.0) * _sssStrength * _gaussianWidth);
 
 	pipeline.setRenderTexture(dest);
@@ -65,11 +68,11 @@ SSSS::blurX(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsR
 }
 
 void 
-SSSS::blurY(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSSS::blurY(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	std::uint32_t height = source->getResolveTexture()->getGraphicsTextureDesc().getHeight();
+	std::uint32_t height = source->getGraphicsTextureDesc().getHeight();
 
-	_sssSource->assign(source->getResolveTexture());
+	_sssSource->assign(source);
 	_sssStep->assign(float2(0.0, 1.0 / height) * _sssStrength * _gaussianWidth);
 
 	pipeline.setRenderTexture(dest);
@@ -78,11 +81,11 @@ SSSS::blurY(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsR
 }
 
 void
-SSSS::translucency(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept
+SSSS::translucency(RenderPipeline& pipeline, GraphicsRenderTexturePtr dest) noexcept
 {
-	pipeline.setRenderTexture(source);
+	pipeline.setRenderTexture(dest);
 
-	auto lights = pipeline.getRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS);
+	auto lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting, RenderPass::RenderPassLights);
 	for (auto& it : lights)
 	{
 		auto light = it->downcast<Light>();
@@ -93,7 +96,7 @@ SSSS::translucency(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) no
 			_lightShadowMatrix->assign(light->getShadowCamera()->getViewProject());
 			_lightDirection->assign(-light->getForward() * float3x3(pipeline.getCamera()->getView()));
 
-			if (light->getLightType() == LightType::LT_SUN)
+			if (light->getLightType() == LightType::LightTypeSun)
 			{
 				pipeline.drawScreenQuad(_translucency);
 			}
@@ -106,14 +109,14 @@ SSSS::onActivate(RenderPipeline& pipeline) except
 {
 	_material = pipeline.createMaterial("sys:fx/ssss.fxml.o");
 
-	_translucency = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("translucency");
-	_blurX = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("blurX");
-	_blurY = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("blurY");
+	_translucency = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("translucency");
+	_blurX = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("blurX");
+	_blurY = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("blurY");
 
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_SSSS = pipeline.createRenderTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_SSSSMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 
 	float sssLevel = 0.125f * float(47) / (100 - 0);
 	float sssStrength = 8.25 * (1.0 - 0.83) / sssLevel;
@@ -138,12 +141,12 @@ SSSS::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-SSSS::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSSS::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	this->translucency(pipeline, source);
+	this->blurX(pipeline, source, _SSSSView);
+	this->blurY(pipeline, _SSSSMap, dest);
 
-	this->blurX(pipeline, source, _SSSS);
-	this->blurY(pipeline, _SSSS, dest);
+	this->translucency(pipeline, dest);
 }
 
 _NAME_END

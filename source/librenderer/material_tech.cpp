@@ -38,8 +38,10 @@
 
 _NAME_BEGIN
 
-MaterialTech::MaterialTech(RenderQueue renderQueue) noexcept
-	: _renderQueue(renderQueue)
+__ImplementSubClass(MaterialTech, rtti::Interface, "MaterialTech")
+
+MaterialTech::MaterialTech() noexcept
+	: _renderQueue(RenderQueue::RenderQueueCustom)
 {
 }
 
@@ -96,6 +98,12 @@ MaterialPassList&
 MaterialTech::getPassList() noexcept
 {
 	return _passList;
+}
+
+void
+MaterialTech::setRenderQueue(RenderQueue renderQueue) noexcept
+{
+	_renderQueue = renderQueue;
 }
 
 RenderQueue

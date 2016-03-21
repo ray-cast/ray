@@ -37,7 +37,7 @@
 #ifndef _H_GRAPHICS_VIEW_H_
 #define _H_GRAPHICS_VIEW_H_
 
-#include <ray/graphics_resource.h>
+#include <ray/graphics_child.h>
 
 _NAME_BEGIN
 
@@ -47,72 +47,45 @@ public:
 	GraphicsRenderTextureDesc() noexcept;
 	virtual ~GraphicsRenderTextureDesc() noexcept;
 
-	void setGraphicsTexture(GraphicsTexturePtr desc) noexcept;
-	GraphicsTexturePtr getGraphicsTexture() const noexcept;
+	void setWidth(std::uint32_t w) noexcept;
+	void setHeight(std::uint32_t h) noexcept;
 
-	void setSharedDepthTexture(GraphicsRenderTexturePtr target) noexcept;
-	void setSharedStencilTexture(GraphicsRenderTexturePtr target) noexcept;
+	std::uint32_t getWidth() const noexcept;
+	std::uint32_t getHeight() const noexcept;
 
-	GraphicsRenderTexturePtr getSharedDepthTexture() const noexcept;
-	GraphicsRenderTexturePtr getSharedStencilTexture() const noexcept;
+	void attach(GraphicsTexturePtr texture) noexcept;
+	void detach(GraphicsTexturePtr texture) noexcept;
 
-private:
-	GraphicsTexturePtr _texture;
-	GraphicsRenderTexturePtr _sharedDepthTexture;
-	GraphicsRenderTexturePtr _sharedStencilTexture;
-};
+	GraphicsTextures& getTextures() noexcept;
+	const GraphicsTextures& getTextures() const noexcept;
 
-class EXPORT GraphicsMultiRenderTextureDesc final
-{
-public:
-	GraphicsMultiRenderTextureDesc() noexcept;
-	virtual ~GraphicsMultiRenderTextureDesc() noexcept;
+	void setSharedDepthTexture(GraphicsTexturePtr target) noexcept;
+	void setSharedStencilTexture(GraphicsTexturePtr target) noexcept;
 
-	void attach(GraphicsRenderTexturePtr texture) noexcept;
-	void detach(GraphicsRenderTexturePtr texture) noexcept;
-
-	GraphicsRenderTextures& getRenderTextures() noexcept;
-	const GraphicsRenderTextures& getRenderTextures() const noexcept;
-
-	void setSharedDepthTexture(GraphicsRenderTexturePtr target) noexcept;
-	void setSharedStencilTexture(GraphicsRenderTexturePtr target) noexcept;
-
-	GraphicsRenderTexturePtr getSharedDepthTexture() const noexcept;
-	GraphicsRenderTexturePtr getSharedStencilTexture() const noexcept;
+	GraphicsTexturePtr getSharedDepthTexture() const noexcept;
+	GraphicsTexturePtr getSharedStencilTexture() const noexcept;
 	
 private:
-	GraphicsRenderTextures _textures;
-	GraphicsRenderTexturePtr _sharedDepthTexture;
-	GraphicsRenderTexturePtr _sharedStencilTexture;
+	std::uint32_t _width;
+	std::uint32_t _height;
+
+	GraphicsTextures _textures;
+	GraphicsTexturePtr _sharedDepthTexture;
+	GraphicsTexturePtr _sharedStencilTexture;
 };
 
-class EXPORT GraphicsRenderTexture : public GraphicsResource
+class EXPORT GraphicsRenderTexture : public GraphicsChild
 {
 	__DeclareSubInterface(GraphicsRenderTexture, GraphicsResource)
 public:
 	GraphicsRenderTexture() noexcept;
 	virtual ~GraphicsRenderTexture() noexcept;
 
-	virtual GraphicsTexturePtr getResolveTexture() const noexcept = 0;
 	virtual const GraphicsRenderTextureDesc& getGraphicsRenderTextureDesc() const noexcept = 0;
 
 private:
 	GraphicsRenderTexture(GraphicsRenderTexture&) noexcept = delete;
-	GraphicsRenderTexture& operator=(const GraphicsRenderTexture&)noexcept = delete;
-};
-
-class EXPORT GraphicsMultiRenderTexture : public GraphicsResource
-{
-	__DeclareSubInterface(GraphicsRenderTexture, GraphicsResource)
-public:
-	GraphicsMultiRenderTexture() noexcept;
-	virtual ~GraphicsMultiRenderTexture() noexcept;
-
-	virtual const GraphicsMultiRenderTextureDesc& getGraphicsMultiRenderTextureDesc() const noexcept = 0;
-
-private:
-	GraphicsMultiRenderTexture(GraphicsMultiRenderTexture&) noexcept = delete;
-	GraphicsMultiRenderTexture& operator=(const GraphicsMultiRenderTexture&) noexcept = delete;
+	GraphicsRenderTexture& operator=(const GraphicsRenderTexture&) noexcept = delete;
 };
 
 _NAME_END

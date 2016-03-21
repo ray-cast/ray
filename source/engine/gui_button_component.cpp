@@ -174,7 +174,7 @@ GuiButtonComponent::save(oarchive& write) noexcept
 }
 
 GameComponentPtr
-GuiButtonComponent::clone() const except
+GuiButtonComponent::clone() const noexcept
 {
 	return std::make_shared<GuiButtonComponent>();
 }

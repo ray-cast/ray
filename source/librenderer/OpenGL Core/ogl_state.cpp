@@ -1,5 +1,5 @@
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -140,9 +140,9 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 		}
 	}
 
-	if (_dstRasterState.fillMode != rasterState.fillMode)
+	if (_dstRasterState.polygonMode != rasterState.polygonMode)
 	{
-		GLenum mode = OGLTypes::asFillMode(rasterState.fillMode);
+		GLenum mode = OGLTypes::asFillMode(rasterState.polygonMode);
 		glPolygonMode(GL_FRONT_AND_BACK, mode);
 	}
 
@@ -225,9 +225,14 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 			{
 				GLenum frontfunc = OGLTypes::asCompareFunction(stencilState.stencilFunc);
 				glStencilFuncSeparate(GL_FRONT, frontfunc, stencilState.stencilRef, stencilState.stencilReadMask);
+			}
 
+			if (_dstStencilState.stencilTwoFunc != stencilState.stencilTwoFunc ||
+				_dstStencilState.stencilTwoRef != stencilState.stencilTwoRef ||
+				_dstStencilState.stencilTwoReadMask != stencilState.stencilTwoReadMask)
+			{
 				GLenum backfunc = OGLTypes::asCompareFunction(stencilState.stencilTwoFunc);
-				glStencilFuncSeparate(GL_BACK, backfunc, stencilState.stencilRef, stencilState.stencilTwoReadMask);
+				glStencilFuncSeparate(GL_BACK, backfunc, stencilState.stencilTwoRef, stencilState.stencilTwoReadMask);
 			}
 
 			if (_dstStencilState.stencilFail != _dstStencilState.stencilFail ||
@@ -238,7 +243,12 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 				GLenum frontzfail = OGLTypes::asStencilOperation(_dstStencilState.stencilZFail);
 				GLenum frontpass = OGLTypes::asStencilOperation(_dstStencilState.stencilPass);
 				glStencilOpSeparate(GL_FRONT, frontfail, frontzfail, frontpass);
+			}
 
+			if (_dstStencilState.stencilTwoFail != _dstStencilState.stencilTwoFail ||
+				_dstStencilState.stencilTwoZFail != _dstStencilState.stencilTwoZFail ||
+				_dstStencilState.stencilTwoPass != _dstStencilState.stencilTwoPass)
+			{
 				GLenum backfail = OGLTypes::asStencilOperation(_dstStencilState.stencilTwoFail);
 				GLenum backzfail = OGLTypes::asStencilOperation(_dstStencilState.stencilTwoZFail);
 				GLenum backpass = OGLTypes::asStencilOperation(_dstStencilState.stencilTwoPass);

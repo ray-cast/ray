@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -35,6 +35,9 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +-----------------------------------------------------------------------
 #include <ray/fimic.h>
+
+#include <ray/graphics_view.h>
+#include <ray/graphics_texture.h>
 
 _NAME_BEGIN
 
@@ -87,8 +90,7 @@ FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsRenderTextu
 	float data[SAMPLE_LOG_COUNT];
 	float delta = _timer->delta();
 
-	auto& textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
-	pipeline.readRenderTexture(source, GraphicsFormat::GraphicsFormatR16SFloat, textureDesc.getWidth(), textureDesc.getHeight(), data);
+	pipeline.readRenderTexture(source, GraphicsFormat::GraphicsFormatR16SFloat, SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, data);
 
 	for (std::size_t i = 0; i < SAMPLE_LOG_COUNT; ++i)
 		lum += data[i];
@@ -102,9 +104,9 @@ FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsRenderTextu
 }
 
 void
-FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	_toneSource->assign(source->getResolveTexture());
+	_toneSource->assign(source);
 
 	pipeline.setRenderTexture(dest);
 	pipeline.discradRenderTexture();
@@ -112,9 +114,9 @@ FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsRenderTexturePtr sour
 }
 
 void
-FimicToneMapping::sunLumLog(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+FimicToneMapping::sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	_toneSource->assign(source->getResolveTexture());
+	_toneSource->assign(source);
 
 	pipeline.setRenderTexture(dest);
 	pipeline.discradRenderTexture();
@@ -122,9 +124,9 @@ FimicToneMapping::sunLumLog(RenderPipeline& pipeline, GraphicsRenderTexturePtr s
 }
 
 void
-FimicToneMapping::generateBloom(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+FimicToneMapping::generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	_toneSource->assign(source->getResolveTexture());
+	_toneSource->assign(source);
 
 	pipeline.setRenderTexture(dest);
 	pipeline.discradRenderTexture();
@@ -132,11 +134,11 @@ FimicToneMapping::generateBloom(RenderPipeline& pipeline, GraphicsRenderTextureP
 }
 
 void
-FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	auto& textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
+	auto& textureDesc = source->getGraphicsTextureDesc();
 	_bloomTexSizeInv->assign(float2(1.0 / textureDesc.getWidth(), 1.0 / textureDesc.getHeight()));
-	_toneSource->assign(source->getResolveTexture());
+	_toneSource->assign(source);
 
 	pipeline.setRenderTexture(dest);
 	pipeline.discradRenderTexture();
@@ -144,11 +146,11 @@ FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsRenderTexturePtr sourc
 }
 
 void
-FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	auto& textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
+	auto& textureDesc = source->getGraphicsTextureDesc();
 	_bloomTexSizeInv->assign(float2(1.0 / textureDesc.getWidth(), 1.0 / textureDesc.getHeight()));
-	_toneSource->assign(source->getResolveTexture());
+	_toneSource->assign(source);
 
 	pipeline.setRenderTexture(dest);
 	pipeline.discradRenderTexture();
@@ -156,10 +158,10 @@ FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsRenderTexturePtr sourc
 }
 
 void
-FimicToneMapping::generateToneMapping(RenderPipeline& pipeline, GraphicsRenderTexturePtr bloom, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+FimicToneMapping::generateToneMapping(RenderPipeline& pipeline, GraphicsTexturePtr bloom, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	_toneSource->assign(source->getResolveTexture());
-	_toneBloom->assign(bloom->getResolveTexture());
+	_toneSource->assign(source);
+	_toneBloom->assign(bloom);
 
 	pipeline.setRenderTexture(dest);
 	pipeline.discradRenderTexture();
@@ -172,20 +174,36 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) except
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_texSample4 = pipeline.createRenderTexture(width / 4.0, height / 4.0, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
-	_texSample8 = pipeline.createRenderTexture(width / 8.0, height / 8.0, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
-	_texCombie = pipeline.createRenderTexture(width / 4.0, height / 4.0, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_texSample4Map = pipeline.createTexture(width / 4.0, height / 4.0, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_texSample8Map = pipeline.createTexture(width / 8.0, height / 8.0, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_texSampleLogMap = pipeline.createTexture(SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
 
-	_texSampleLog = pipeline.createRenderTexture(SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
+	_texCombieMap = pipeline.createTexture(width / 4.0, height / 4.0, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+
+	GraphicsRenderTextureDesc sample4ViewDesc;
+	sample4ViewDesc.attach(_texSample4Map);
+	_texSample4View = pipeline.createRenderTexture(sample4ViewDesc);
+
+	GraphicsRenderTextureDesc sample8ViewDesc;
+	sample8ViewDesc.attach(_texSample8Map);
+	_texSample8View = pipeline.createRenderTexture(sample8ViewDesc);
+
+	GraphicsRenderTextureDesc sampleLogViewDesc;
+	sampleLogViewDesc.attach(_texSampleLogMap);
+	_texSampleLogView = pipeline.createRenderTexture(sampleLogViewDesc);
+
+	GraphicsRenderTextureDesc sampleCombieViewDesc;
+	sampleCombieViewDesc.attach(_texCombieMap);
+	_texCombieView = pipeline.createRenderTexture(sampleCombieViewDesc);
 
 	_fimic = pipeline.createMaterial("sys:fx/fimic.fxml.o");
 
-	_sunLum = _fimic->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("SumLum");
-	_sunLumLog = _fimic->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("SumLumLog");
-	_bloom = _fimic->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("GenerateBloom");
-	_blurh = _fimic->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("BlurBloomh");
-	_blurv = _fimic->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("BlurBloomv");
-	_tone = _fimic->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("FimicTongMapping");
+	_sunLum = _fimic->getTech(RenderQueue::RenderQueuePostprocess)->getPass("SumLum");
+	_sunLumLog = _fimic->getTech(RenderQueue::RenderQueuePostprocess)->getPass("SumLumLog");
+	_bloom = _fimic->getTech(RenderQueue::RenderQueuePostprocess)->getPass("GenerateBloom");
+	_blurh = _fimic->getTech(RenderQueue::RenderQueuePostprocess)->getPass("BlurBloomh");
+	_blurv = _fimic->getTech(RenderQueue::RenderQueuePostprocess)->getPass("BlurBloomv");
+	_tone = _fimic->getTech(RenderQueue::RenderQueuePostprocess)->getPass("FimicTongMapping");
 
 	_bloomThreshold = _fimic->getParameter("bloomThreshold");
 	_bloomIntensity = _fimic->getParameter("bloomIntensity");
@@ -203,46 +221,32 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) except
 void
 FimicToneMapping::onDeactivate(RenderPipeline& pipeline) except
 {
-	if (_texSample4)
-	{
-		_texSample4.reset();
-		_texSample4 = nullptr;
-	}
+	_texSample4Map.reset();
+	_texSample8Map.reset();
+	_texSampleLogMap.reset();
+	_texCombieMap.reset();
 
-	if (_texSample8)
-	{
-		_texSample8.reset();
-		_texSample8 = nullptr;
-	}
-
-	if (_texSampleLog)
-	{
-		_texSampleLog.reset();
-		_texSampleLog = nullptr;
-	}
-
-	if (_texCombie)
-	{
-		_texCombie.reset();
-		_texCombie = nullptr;
-	}
+	_texSample4View.reset();
+	_texSample8View.reset();
+	_texSampleLogView.reset();
+	_texCombieView.reset();
 }
 
 void
-FimicToneMapping::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+FimicToneMapping::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	this->sunLum(pipeline, source, _texSample4);
-	this->sunLum(pipeline, _texSample4, _texSample8);
-	this->sunLumLog(pipeline, _texSample8, _texSampleLog);
+	this->sunLum(pipeline, source, _texSample4View);
+	this->sunLum(pipeline, _texSample4Map, _texSample8View);
+	this->sunLumLog(pipeline, _texSample8Map, _texSampleLogView);
 
-	this->measureLuminance(pipeline, _texSampleLog);
+	this->measureLuminance(pipeline, _texSampleLogView);
 
-	this->generateBloom(pipeline, _texSample4, _texCombie);
+	this->generateBloom(pipeline, _texSample4Map, _texCombieView);
 
-	this->blurh(pipeline, _texCombie, _texSample4);
-	this->blurv(pipeline, _texSample4, _texCombie);
+	this->blurh(pipeline, _texCombieMap, _texSample4View);
+	this->blurv(pipeline, _texSample4Map, _texCombieView);
 
-	this->generateToneMapping(pipeline, _texCombie, source, dest);
+	this->generateToneMapping(pipeline, _texCombieMap, source, dest);
 }
 
 _NAME_END

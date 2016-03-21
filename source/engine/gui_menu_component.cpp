@@ -227,7 +227,7 @@ GuiMenuComponent::save(oarchive& write) noexcept
 }
 
 GameComponentPtr
-GuiMenuComponent::clone() const except
+GuiMenuComponent::clone() const noexcept
 {
 	return std::make_shared<GuiMenuComponent>();
 }

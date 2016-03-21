@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -36,12 +36,17 @@
 // +----------------------------------------------------------------------
 #include <ray/material_pass.h>
 #include <ray/material.h>
+#include <ray/graphics_device.h>
 #include <ray/graphics_shader.h>
+#include <ray/graphics_pipeline.h>
+#include <ray/graphics_descriptor.h>
 
 _NAME_BEGIN
 
-MaterialPass::MaterialPass(RenderPass pass) noexcept
-	:_pass(pass)
+__ImplementSubClass(MaterialPass, rtti::Interface, "MaterialPass")
+
+MaterialPass::MaterialPass() noexcept
+	:_pass(RenderPass::RenderPassCustom)
 {
 }
 
@@ -53,13 +58,13 @@ MaterialPass::~MaterialPass() noexcept
 void 
 MaterialPass::setup(Material& material) except
 {
-	assert(_graphicsShader);
+	assert(_pipeline);
 
-	auto& uniforms = _graphicsShader->getActiveUniforms();
-	for (auto& uniform : uniforms)
+	auto& activeUniforms = _pipeline->getGraphicsPipelineDesc().getGraphicsProgram()->getActiveUniforms();
+	for (auto& activeUniform : activeUniforms)
 	{
-		auto uniformName = uniform->getName();
-		if (uniform->getType() == GraphicsVariantType::GraphicsVariantTypeTexture)
+		auto uniformName = activeUniform->getName();
+		if (activeUniform->getType() == GraphicsUniformType::GraphicsUniformTypeStorageImage)
 		{
 			auto pos = uniformName.find_first_of("_X_");
 			if (pos != std::string::npos)
@@ -67,41 +72,53 @@ MaterialPass::setup(Material& material) except
 		}
 
 		auto param = material.getParameter(uniformName);
-		if (param)
+		if (param && param->getType() == activeUniform->getType())
 		{
+			auto uniform = std::make_shared<GraphicsUniform>(GraphicsShaderStage::GraphicsShaderStageNone, activeUniform->getBindingPoint(), activeUniform->getType());
+
 			param->addShaderUniform(uniform);
 
-			if (uniform->getType() == GraphicsVariantType::GraphicsVariantTypeTexture)
-				_textures.push_back(param);
-
+			_uniforms.push_back(uniform);
 			_parameters.push_back(param);
 		}
+		else
+		{
+			assert(false);
+		}
 	}
+
+	GraphicsDescriptorSetLayoutDesc descriptorSetLayoutDesc;
+	descriptorSetLayoutDesc.setUniformComponents(_uniforms);
+	_descriptorSetLayout = _pipeline->getDevice()->createGraphicsDescriptorSetLayoutPtr(descriptorSetLayoutDesc);
+
+	GraphicsDescriptorSetDesc descriptorSet;
+	descriptorSet.setGraphicsDescriptorSetLayout(_descriptorSetLayout);
+	_descriptorSet = _pipeline->getDevice()->createGraphicsDescriptorSetPtr(descriptorSet);
 }
 
 void
 MaterialPass::close() noexcept
 {
-	if (_graphicsShader)
+	if (_pipeline)
 	{
-		auto uniforms = _graphicsShader->getActiveUniforms();
+		auto& pipelineDesc = _pipeline->getGraphicsPipelineDesc();
+		auto uniforms = pipelineDesc.getGraphicsProgram()->getActiveUniforms();
+
 		for (auto& it : uniforms)
 		{
 			auto param = this->getParameter(it->getName());
 			if (param)
 			{
-				param->removeShaderUniform(it);
+				for (auto& uniform : _uniforms)
+				{
+					if (it->getBindingPoint() == uniform->getBindingPoint())
+						param->removeShaderUniform(uniform);
+				}
 			}
 		}
 
-		_graphicsShader.reset();
-		_graphicsShader = nullptr;
-	}
-
-	if (_graphicsState)
-	{
-		_graphicsState.reset();
-		_graphicsState = nullptr;
+		_pipeline.reset();
+		_pipeline = nullptr;
 	}
 
 	_parameters.clear();
@@ -119,16 +136,16 @@ MaterialPass::getName() const noexcept
 	return _name;
 }
 
+void
+MaterialPass::setRenderPass(RenderPass pass) noexcept
+{
+	_pass = pass;
+}
+
 RenderPass
 MaterialPass::getRenderPass() const noexcept
 {
 	return _pass;
-}
-
-const MaterialParams& 
-MaterialPass::getTextures() const noexcept
-{
-	return _textures;
 }
 
 const MaterialParams& 
@@ -154,27 +171,27 @@ MaterialPass::getParameter(const std::string& name) const noexcept
 }
 
 void
-MaterialPass::setGraphicsProgram(GraphicsProgramPtr shader) noexcept
+MaterialPass::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
-	_graphicsShader = shader;
+	_pipeline = pipeline;
 }
 
-void
-MaterialPass::setGraphicsState(GraphicsStatePtr state) noexcept
+GraphicsPipelinePtr
+MaterialPass::getRenderPipeline() const noexcept
 {
-	_graphicsState = state;
+	return _pipeline;
 }
 
-GraphicsProgramPtr
-MaterialPass::getGraphicsProgram() noexcept
+void 
+MaterialPass::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
 {
-	return _graphicsShader;
+	_descriptorSet = descriptorSet;
 }
 
-GraphicsStatePtr
-MaterialPass::getGraphicsState() noexcept
+GraphicsDescriptorSetPtr 
+MaterialPass::getDescriptorSet() const noexcept
 {
-	return _graphicsState;
+	return _descriptorSet;
 }
 
 _NAME_END

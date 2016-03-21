@@ -1,17 +1,12 @@
 <?xml version='1.0'?>
 <effect language="hlsl">
     <include name="sys:fx/GBuffer.fxml"/>
-    <parameter name="matModel" semantic="matModel" />
-    <parameter name="matModelInverseTranspose" semantic="matModelInverseTranspose" />
-    <parameter name="matViewProject" semantic="matViewProject"/>
-    <parameter name="decal" type="texture"/>
+    <parameter name="matModel" type="float4x4" semantic="matModel" />
+    <parameter name="matModelInverseTranspose" type="float4x4" semantic="matModelInverseTranspose" />
+    <parameter name="matViewProject" type="float4x4" semantic="matViewProject"/>
+    <parameter name="decal" type="texture2D"/>
     <shader>
         <![CDATA[
-            uniform float4x4 matModel;
-            uniform float4x4 matModelInverseTranspose;
-            uniform float4x4 matViewProject;
-            uniform Texture2D decal;
-
             float4 sampleSphere(Texture2D source, float3 normal)
             {
                 const float invPI = 1.0f / 3.1415926;

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -48,7 +48,7 @@ public:
 	virtual ~RenderListener() noexcept;
 
 	virtual void onWillRenderObject(const Camera& camera) noexcept = 0;
-	virtual void onRenderObject(const Camera& camera) noexcept = 0;
+	virtual void onRenderObject(RenderPipeline& pipeline, const Camera& camera) noexcept = 0;
 };
 
 class EXPORT RenderObject : public rtti::Interface
@@ -60,20 +60,6 @@ public:
 
 	void setLayer(std::uint8_t layer) noexcept;
 	std::uint8_t getLayer() const noexcept;
-
-	Vector3 getTranslate() const noexcept;
-
-	Vector3 getRight() const noexcept;
-	Vector3 getUpVector() const noexcept;
-	Vector3 getForward() const noexcept;
-
-	void setTransform(const Matrix4x4& m) noexcept;
-	void setTransformInverse(const Matrix4x4& m) noexcept;
-	void setTransformInverseTranspose(const Matrix4x4& m) noexcept;
-
-	const Matrix4x4& getTransform() const noexcept;
-	const Matrix4x4& getTransformInverse() const noexcept;
-	const Matrix4x4& getTransformInverseTranspose() const noexcept;
 
 	void setCastShadow(bool enable) noexcept;
 	bool getCastShadow() const noexcept;
@@ -90,6 +76,17 @@ public:
 
 	void setRenderScene(RenderScenePtr scene) noexcept;
 	RenderScenePtr getRenderScene() const noexcept;
+
+	void setTransform(const Matrix4x4& transform, const Matrix4x4& inverse, const Matrix4x4& inverseTranspose) noexcept;
+	const Matrix4x4& getTransform() const noexcept;
+	const Matrix4x4& getTransformInverse() const noexcept;
+	const Matrix4x4& getTransformInverseTranspose() const noexcept;
+
+	Vector3 getTranslate() const noexcept;
+
+	Vector3 getRight() const noexcept;
+	Vector3 getUpVector() const noexcept;
+	Vector3 getForward() const noexcept;
 
 	void addSubRenderObject(RenderObjectPtr object) noexcept;
 	void removeSubRenderObject(RenderObjectPtr object) noexcept;

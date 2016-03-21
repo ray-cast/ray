@@ -455,24 +455,37 @@ public:
     typedef T size_type;
     typedef Viewportt<T> _Myt;
 
-    size_type left, top, width, height;
+    size_type left, top, width, height, minDepth, maxDepth;
 
     Viewportt() noexcept
     {}
 
     Viewportt(const Pointt<T>& pt, const Sizet<T>& sz) noexcept
-        :left(pt.x)
+        : left(pt.x)
         , top(pt.y)
         , width(sz.x)
         , height(sz.y)
+		, minDepth(0.0f)
+		, maxDepth(1.0f)
     {}
 
     Viewportt(size_type _left, size_type _top, size_type _width, size_type _height) noexcept
-        :left(_left)
+        : left(_left)
         , top(_top)
         , width(_width)
         , height(_height)
+		, minDepth(0.0f)
+		, maxDepth(1.0f)
     {}
+
+	Viewportt(size_type _left, size_type _top, size_type _width, size_type _height, size_type _minDepth, size_type _maxDepth) noexcept
+		: left(_left)
+		, top(_top)
+		, width(_width)
+		, height(_height)
+		, minDepth(_minDepth)
+		, maxDepth(_maxDepth)
+	{}
 
     bool operator==(const _Myt& v) noexcept
     {
@@ -496,6 +509,56 @@ public:
     {
         return &left;
     }
+};
+
+template<typename T>
+class Scissort
+{
+public:
+	typedef T size_type;
+	typedef Scissort<T> _Myt;
+
+	size_type left, top, width, height;
+
+	Scissort() noexcept
+	{}
+
+	Scissort(const Pointt<T>& pt, const Sizet<T>& sz) noexcept
+		: left(pt.x)
+		, top(pt.y)
+		, width(sz.x)
+		, height(sz.y)
+	{}
+
+	Scissort(size_type _left, size_type _top, size_type _width, size_type _height) noexcept
+		: left(_left)
+		, top(_top)
+		, width(_width)
+		, height(_height)
+	{}
+
+	bool operator==(const _Myt& v) noexcept
+	{
+		return left == v.left && top == v.top && width == v.width && height == v.height;
+	}
+
+	bool operator!=(const _Myt& v) noexcept
+	{
+		return left != v.left || top != v.top || width != v.width || height != v.height;
+	}
+
+	size_type& operator[](int n) noexcept { return ((size_type*)this)[n]; }
+	const size_type& operator[](int n) const noexcept { return ((size_type*)this)[n]; }
+
+	const T* ptr() const noexcept
+	{
+		return &left;
+	}
+
+	T* ptr() noexcept
+	{
+		return &left;
+	}
 };
 
 _NAME_END

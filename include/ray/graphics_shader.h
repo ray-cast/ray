@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -40,31 +40,6 @@
 #include <ray/graphics_child.h>
 
 _NAME_BEGIN
-
-class EXPORT ShaderVariant
-{
-public:
-	ShaderVariant() noexcept;
-	virtual ~ShaderVariant() noexcept;
-
-	virtual void assign(bool value) noexcept = 0;
-	virtual void assign(int value) noexcept = 0;
-	virtual void assign(const int2& value) noexcept = 0;
-	virtual void assign(float value) noexcept = 0;
-	virtual void assign(const float2& value) noexcept = 0;
-	virtual void assign(const float3& value) noexcept = 0;
-	virtual void assign(const float4& value) noexcept = 0;
-	virtual void assign(const float3x3& value) noexcept = 0;
-	virtual void assign(const float4x4& value) noexcept = 0;
-	virtual void assign(const std::vector<float>& value) noexcept = 0;
-	virtual void assign(const std::vector<float2>& value) noexcept = 0;
-	virtual void assign(const std::vector<float3>& value) noexcept = 0;
-	virtual void assign(const std::vector<float4>& value) noexcept = 0;
-
-private:
-	ShaderVariant(const ShaderVariant&) noexcept = delete;
-	ShaderVariant& operator=(const ShaderVariant&) noexcept = delete;
-};
 
 class EXPORT ShaderParameter : public rtti::Interface
 {
@@ -110,48 +85,30 @@ class EXPORT ShaderUniform : public ShaderParameter
 {
 	__DeclareSubInterface(ShaderUniform, ShaderParameter)
 public:
-	ShaderUniform(ShaderVariant* value) noexcept;
+	ShaderUniform() noexcept;
 	virtual ~ShaderUniform() noexcept;
 
-	void needUpdate(bool update) noexcept;
-	bool needUpdate() const noexcept;
+	void setType(GraphicsUniformType type) noexcept;
+	GraphicsUniformType getType() const noexcept;
 
-	GraphicsVariantType getType() const noexcept;
+	void setBindingPoint(std::uint32_t bindingPoint) noexcept;
+	std::uint32_t getBindingPoint() const noexcept;
 
-	void assign(bool value) noexcept;
-	void assign(int value) noexcept;
-	void assign(const int2& value) noexcept;
-	void assign(float value) noexcept;
-	void assign(const float2& value) noexcept;
-	void assign(const float3& value) noexcept;
-	void assign(const float4& value) noexcept;
-	void assign(const float3x3& value) noexcept;
-	void assign(const float4x4& value) noexcept;
-	void assign(const std::vector<float>& value) noexcept;
-	void assign(const std::vector<float2>& value) noexcept;
-	void assign(const std::vector<float3>& value) noexcept;
-	void assign(const std::vector<float4>& value) noexcept;
-
-protected:
-	void setType(GraphicsVariantType type) noexcept;
-	
 private:
 	ShaderUniform(const ShaderUniform&) noexcept = delete;
 	ShaderUniform& operator=(const ShaderUniform&) noexcept = delete;
 
 private:
-	bool _needUpdate;
-
-	GraphicsVariantType _type;
-	ShaderVariant* _value;
+	std::uint32_t _bindingPoint;
+	GraphicsUniformType _type;
 };
 
-class EXPORT ShaderDesc final
+class EXPORT GraphicsShaderDesc final
 {
 public:
-	ShaderDesc() noexcept;
-	ShaderDesc(GraphicsShaderStage type, const std::vector<char>& code) noexcept;
-	virtual ~ShaderDesc() noexcept;
+	GraphicsShaderDesc() noexcept;
+	GraphicsShaderDesc(GraphicsShaderStage type, const std::vector<char>& code) noexcept;
+	virtual ~GraphicsShaderDesc() noexcept;
 
 	void setType(GraphicsShaderStage type) noexcept;
 	GraphicsShaderStage getType() const noexcept;
@@ -164,20 +121,19 @@ private:
 	std::vector<char> _bytecodes;
 };
 
-class EXPORT ShaderObjectDesc final
+class EXPORT GraphicsProgramDesc final
 {
 public:
-	ShaderObjectDesc() noexcept;
-	virtual ~ShaderObjectDesc() noexcept;
+	GraphicsProgramDesc() noexcept;
+	virtual ~GraphicsProgramDesc() noexcept;
 
-	bool addShader(const ShaderDesc& shader) noexcept;
-	void removeShader(GraphicsShaderStage type) noexcept;
+	bool addShader(GraphicsShaderPtr shader) noexcept;
+	void removeShader(GraphicsShaderPtr shader) noexcept;
 
-	const ShadersDesc& getShaders() const noexcept;
+	const GraphicsShaders& getShaders() const noexcept;
 
 private:
-
-	ShadersDesc _shaders;
+	GraphicsShaders _shaders;
 };
 
 class EXPORT GraphicsShader : public GraphicsChild
@@ -186,6 +142,8 @@ class EXPORT GraphicsShader : public GraphicsChild
 public:
 	GraphicsShader() noexcept;
 	virtual ~GraphicsShader() noexcept;
+
+	virtual const GraphicsShaderDesc& getGraphicsShaderDesc() const noexcept = 0;
 
 private:
 	GraphicsShader(const GraphicsShader&) noexcept = delete;
@@ -201,6 +159,8 @@ public:
 
 	virtual ShaderUniforms& getActiveUniforms() noexcept = 0;
 	virtual ShaderAttributes& getActiveAttributes() noexcept = 0;
+
+	virtual const GraphicsProgramDesc& getGraphicsProgramDesc() const noexcept = 0;
 
 private:
 	GraphicsProgram(const GraphicsProgram&) noexcept = delete;

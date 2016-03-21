@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -53,15 +53,15 @@ public:
 	void render2DEnvMap(RenderPipeline& pipeline) noexcept;
 	void render3DEnvMap(RenderPipeline& pipeline) noexcept;
 
-	void renderOpaques(RenderPipeline& pipeline, GraphicsMultiRenderTexturePtr target) noexcept;
+	void renderOpaques(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
 	void renderOpaquesDepthLinear(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
-	void renderOpaquesShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target, int layer = 0) noexcept;
-	void renderOpaquesSpecificShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target, int layer = 0) noexcept;
+	void renderOpaquesShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
+	void renderOpaquesSpecificShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
 
-	void renderTransparent(RenderPipeline& pipeline, GraphicsMultiRenderTexturePtr target) noexcept;
+	void renderTransparent(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
 	void renderTransparentDepthLinear(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
-	void renderTransparentShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target, int layer = 0) noexcept;
-	void renderTransparentSpecificShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target, int layer = 0) noexcept;
+	void renderTransparentShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
+	void renderTransparentSpecificShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
 
 	void renderLights(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
 	void renderSunLight(RenderPipeline& pipeline, const Light& light) noexcept;
@@ -72,7 +72,7 @@ public:
 	void renderHemiSphereLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderAreaLight(RenderPipeline& pipeline, const Light& light) noexcept;
 
-	void copyRenderTexture(RenderPipeline& pipeline, GraphicsRenderTexturePtr src, GraphicsRenderTexturePtr dst, const Viewport& view) noexcept;
+	void copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr src, GraphicsRenderTexturePtr dst, const Viewport& view) noexcept;
 
 private:
 	void setupSemantic(RenderPipeline& pipeline);
@@ -147,26 +147,34 @@ private:
 	MaterialParamPtr _lightSpotInnerCone;
 	MaterialParamPtr _lightSpotOuterCone;
 
-	MaterialSemanticPtr _materialDepthMap;
-	MaterialSemanticPtr _materialColorMap;
-	MaterialSemanticPtr _materialNormalMap;
-	MaterialSemanticPtr _materialDeferredDepthMap;
-	MaterialSemanticPtr _materialDeferredDepthLinearMap;
-	MaterialSemanticPtr _materialDeferredGraphicMap;
-	MaterialSemanticPtr _materialDeferredNormalMap;
-	MaterialSemanticPtr _materialDeferredLightMap;
-	MaterialSemanticPtr _materialDeferredShadowMap;
+	MaterialVariantPtr _materialDepthMap;
+	MaterialVariantPtr _materialColorMap;
+	MaterialVariantPtr _materialNormalMap;
+	MaterialVariantPtr _materialDeferredDepthMap;
+	MaterialVariantPtr _materialDeferredDepthLinearMap;
+	MaterialVariantPtr _materialDeferredGraphicMap;
+	MaterialVariantPtr _materialDeferredNormalMap;
+	MaterialVariantPtr _materialDeferredLightMap;
+	MaterialVariantPtr _materialDeferredShadowMap;
 
-	GraphicsRenderTexturePtr _deferredDepthMap;
-	GraphicsRenderTexturePtr _deferredDepthLinearMap;
-	GraphicsRenderTexturePtr _deferredGraphicMap;
-	GraphicsRenderTexturePtr _deferredNormalMap;
-	GraphicsRenderTexturePtr _deferredLightMap;
-	GraphicsRenderTexturePtr _deferredShadingMap;
-	GraphicsRenderTexturePtr _deferredSwapMap;
-	GraphicsRenderTexturePtr _deferredFinalMap;
+	GraphicsTexturePtr _deferredDepthMap;
+	GraphicsTexturePtr _deferredDepthLinearMap;
+	GraphicsTexturePtr _deferredGraphicMap;
+	GraphicsTexturePtr _deferredNormalMap;
+	GraphicsTexturePtr _deferredLightMap;
+	GraphicsTexturePtr _deferredShadingMap;
+	GraphicsTexturePtr _deferredSwapMap;
+	GraphicsTexturePtr _deferredFinalMap;
 
-	GraphicsMultiRenderTexturePtr _deferredGraphicMaps;
+	GraphicsRenderTexturePtr _deferredDepthView;
+	GraphicsRenderTexturePtr _deferredDepthLinearView;
+	GraphicsRenderTexturePtr _deferredGraphicView;
+	GraphicsRenderTexturePtr _deferredNormalView;
+	GraphicsRenderTexturePtr _deferredLightView;
+	GraphicsRenderTexturePtr _deferredShadingView;
+	GraphicsRenderTexturePtr _deferredSwapView;
+	GraphicsRenderTexturePtr _deferredFinalView;
+	GraphicsRenderTexturePtr _deferredGraphicViews;
 };
 
 _NAME_END

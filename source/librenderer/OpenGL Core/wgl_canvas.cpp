@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -69,10 +69,8 @@ bool WGLCanvas::_ARB_create_context_robustness = 0;
 bool WGLCanvas::_EXT_swap_control = 0;
 
 WGLCanvas::WGLCanvas() noexcept
-	: _hwnd(nullptr)
-	, _hdc(nullptr)
+	: _hdc(nullptr)
 	, _context(nullptr)
-	, _interval(SwapInterval::SwapIntervalFps15)
 	, _isActive(true)
 {
 	initPixelFormat(_fbconfig, _ctxconfig);
@@ -84,9 +82,9 @@ WGLCanvas::~WGLCanvas() noexcept
 }
 
 bool
-WGLCanvas::open(WindHandle hwnd) noexcept
+WGLCanvas::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 {
-	assert(hwnd);
+	assert(swapchainDesc.getWindHandle());
 
 	if ((_ctxconfig.major < 1 || _ctxconfig.minor < 0) ||
 		(_ctxconfig.major == 1 && _ctxconfig.minor > 5) ||
@@ -119,14 +117,14 @@ WGLCanvas::open(WindHandle hwnd) noexcept
 		return false;
 	}
 
-	if (!IsWindow((HWND)hwnd))
+	if (!IsWindow((HWND)swapchainDesc.getWindHandle()))
 	{
 		GL_PLATFORM_LOG("Invlid HWND");
 		return false;
 	}
 
-	_hwnd = (HWND)hwnd;
-	_hdc = ::GetDC(_hwnd);
+	HWND hwnd = (HWND)swapchainDesc.getWindHandle();
+	_hdc = ::GetDC(hwnd);
 	if (!_hdc)
 	{
 		GL_PLATFORM_LOG("GetDC() fail");
@@ -259,22 +257,22 @@ WGLCanvas::open(WindHandle hwnd) noexcept
 	}
 
 	::wglMakeCurrent(_hdc, _context);
+	__wglSwapIntervalEXT(_swapchainDesc.getSwapInterval());
 
 	_isActive = false;
 	_fbconfig = _fbconfig;
 	_ctxconfig = _ctxconfig;
-	_interval = (SwapInterval)wglGetSwapIntervalEXT();
 
+	_swapchainDesc = swapchainDesc;
 	return true;
 }
 
 void
 WGLCanvas::close() noexcept
 {
-	if (_hwnd && _hdc)
+	if (_hdc)
 	{
-		::ReleaseDC(_hwnd, _hdc);
-		_hwnd = nullptr;
+		::ReleaseDC((HWND)_swapchainDesc.getWindHandle(), _hdc);
 		_hdc = nullptr;
 	}
 
@@ -316,7 +314,7 @@ WGLCanvas::setSwapInterval(SwapInterval interval) noexcept
 {
 	assert(__wglSwapIntervalEXT);
 
-	if (_interval != interval)
+	if (_swapchainDesc.getSwapInterval() != interval)
 	{
 		switch (interval)
 		{
@@ -325,29 +323,29 @@ WGLCanvas::setSwapInterval(SwapInterval interval) noexcept
 				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Free) fail");
 			break;
 		case SwapInterval::SwapIntervalVsync:
-			if (!__wglSwapIntervalEXT(0))
+			if (!__wglSwapIntervalEXT(1))
 				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Vsync) fail");
 			break;
 		case SwapInterval::SwapIntervalFps30:
-			if (!__wglSwapIntervalEXT(0))
+			if (!__wglSwapIntervalEXT(2))
 				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Fps30) fail");
 			break;
 		case SwapInterval::SwapIntervalFps15:
-			if (!__wglSwapIntervalEXT(0))
+			if (!__wglSwapIntervalEXT(3))
 				GL_PLATFORM_LOG("eglSwapInterval(SwapInterval::Fps15) fail");
 			break;
 		default:
 			GL_PLATFORM_LOG("Invalid swap interval");
 		}
 
-		_interval = interval;
+		_swapchainDesc.setSwapInterval(interval);
 	}
 }
 
 SwapInterval
 WGLCanvas::getSwapInterval() const noexcept
 {
-	return _interval;
+	return _swapchainDesc.getSwapInterval();
 }
 
 void
@@ -355,12 +353,6 @@ WGLCanvas::present() noexcept
 {
 	assert(__wglSwapBuffers);
 	__wglSwapBuffers(_hdc);
-}
-
-WindHandle
-WGLCanvas::getWindHandle() const noexcept
-{
-	return _hwnd;
 }
 
 bool
@@ -454,6 +446,24 @@ WGLCanvas::initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexc
 	ctxconfig.profile = GLattr::GL_CORE_PROFILE;
 	ctxconfig.forward = 0;
 	ctxconfig.multithread = false;
+}
+
+const GraphicsSwapchainDesc& 
+WGLCanvas::getGraphicsSwapchainDesc() const noexcept
+{
+	return _swapchainDesc;
+}
+
+void
+WGLCanvas::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+WGLCanvas::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 _NAME_END

@@ -44,9 +44,12 @@ _NAME_BEGIN
 class GraphicsSystem : public rtti::Interface
 {
 	__DeclareSubClass(GraphicsSystem, rtti::Interface)
+	__DeclareSingleton(GraphicsSystem)
 public:
 	GraphicsSystem() noexcept;
 	virtual ~GraphicsSystem() noexcept;
+
+	virtual GraphicsDevicePtr createDevice(GraphicsDeviceType deviceType) noexcept;
 
 private:
 	GraphicsSystem(const GraphicsSystem&) = delete;

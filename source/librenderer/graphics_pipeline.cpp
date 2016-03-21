@@ -2,18 +2,18 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
-// | * Redistribution and use of _graphicsDevice software in source and binary forms,
+// | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
 // |   conditions are met:
 // |
 // | * Redistributions of source code must retain the above
-// |   copyright notice, _graphicsDevice list of conditions and the
+// |   copyright notice, this list of conditions and the
 // |   following disclaimer.
 // |
 // | * Redistributions in binary form must reproduce the above
-// |   copyright notice, _graphicsDevice list of conditions and the
+// |   copyright notice, this list of conditions and the
 // |   following disclaimer in the documentation and/or other
 // |   materials provided with the distribution.
 // |
@@ -34,22 +34,73 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/render_setting.h>
+#include <ray/graphics_pipeline.h>
 
 _NAME_BEGIN
 
-RenderSetting::RenderSetting() noexcept
-	: enableSSAO(false)
-	, enableSSGI(false)
-	, enableSAT(false)
-	, enableSSR(false)
-	, enableSSSS(false)
-	, enableFog(false)
-	, enableDOF(false)
-	, enableFimic(false)
-	, enableFXAA(false)
-	, enableLightShaft(false)
-	, enableColorGrading(false)
+__ImplementSubInterface(GraphicsPipeline, GraphicsChild, "GraphicsPipeline")
+
+GraphicsPipelineDesc::GraphicsPipelineDesc() noexcept
+{
+}
+
+GraphicsPipelineDesc::~GraphicsPipelineDesc() noexcept
+{
+}
+
+void
+GraphicsPipelineDesc::setGraphicsProgram(GraphicsProgramPtr program) noexcept
+{
+	_program = program;
+}
+
+GraphicsProgramPtr
+GraphicsPipelineDesc::getGraphicsProgram() const noexcept
+{
+	return _program;
+}
+
+void
+GraphicsPipelineDesc::setGraphicsInputLayout(GraphicsInputLayoutPtr layout) noexcept
+{
+	_inputLayout = layout;
+}
+
+GraphicsInputLayoutPtr
+GraphicsPipelineDesc::getGraphicsInputLayout() const noexcept
+{
+	return _inputLayout;
+}
+
+void
+GraphicsPipelineDesc::setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr descriptorSet) noexcept
+{
+	_descriptorSet = descriptorSet;
+}
+
+GraphicsDescriptorSetLayoutPtr
+GraphicsPipelineDesc::getGraphicsDescriptorSetLayout() const noexcept
+{
+	return _descriptorSet;
+}
+
+void
+GraphicsPipelineDesc::setGraphicsState(GraphicsStatePtr state) noexcept
+{
+	_state = state;
+}
+
+GraphicsStatePtr
+GraphicsPipelineDesc::getGraphicsState() const noexcept
+{
+	return _state;
+}
+
+GraphicsPipeline::GraphicsPipeline() noexcept
+{
+}
+
+GraphicsPipeline::~GraphicsPipeline() noexcept
 {
 }
 

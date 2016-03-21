@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -36,6 +36,8 @@
 // +----------------------------------------------------------------------
 #include <ray/material_manager.h>
 #include <ray/material_maker.h>
+#include <ray/material_param.h>
+#include <ray/material_pass.h>
 
 _NAME_BEGIN
 
@@ -51,14 +53,27 @@ MaterialManager::~MaterialManager() noexcept
 void
 MaterialManager::open(GraphicsDevicePtr device) noexcept
 {
-	_semantics.clear();
 	_graphicsDevice = device;
+	_materialLoader = std::make_shared<MaterialMaker>();
 }
 
 void
 MaterialManager::close() noexcept
 {
 	_semantics.clear();
+}
+
+void
+MaterialManager::setMaterialLoader(MaterialLoaderPtr loader) noexcept
+{
+	assert(loader);
+	_materialLoader = loader;
+}
+
+MaterialLoaderPtr
+MaterialManager::getMaterialLoader() const noexcept
+{
+	return _materialLoader;
 }
 
 void
@@ -73,50 +88,50 @@ MaterialManager::getGraphicsDevice() noexcept
 	return _graphicsDevice;
 }
 
-MaterialSemanticPtr
-MaterialManager::createSemantic(const std::string& name, GraphicsVariantType type) noexcept
+MaterialVariantPtr
+MaterialManager::createSemantic(const std::string& name, GraphicsUniformType type) noexcept
 {
-	if (!name.empty() && type != GraphicsVariantType::GraphicsVariantTypeNone)
+	assert(!name.empty());
+	assert(type != GraphicsUniformType::GraphicsUniformTypeNone);
+
+	auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialVariantPtr& it) { return it->getName() == name;});
+	if (it == _semantics.end())
 	{
-		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialSemanticPtr& it) { return it->getName() == name;});
-		if (it == _semantics.end())
-		{
-			_semantics.push_back(std::make_shared<MaterialSemantic>(name, type));
-			return _semantics.back();
-		}
+		_semantics.push_back(std::make_shared<MaterialVariant>(name, type));
+		return _semantics.back();
 	}
 
 	return nullptr;
 }
 
 void
-MaterialManager::addSemantic(MaterialSemanticPtr semantc) noexcept
+MaterialManager::addSemantic(MaterialVariantPtr semantc) noexcept
 {
-	if (semantc && !semantc->getName().empty() && semantc->getType() != GraphicsVariantType::GraphicsVariantTypeNone)
+	if (semantc && !semantc->getName().empty() && semantc->getType() != GraphicsUniformType::GraphicsUniformTypeNone)
 	{
-		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialSemanticPtr& it) { return it->getName() == semantc->getName();});
+		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialVariantPtr& it) { return it->getName() == semantc->getName();});
 		if (it == _semantics.end())
 			_semantics.push_back(semantc);
 	}
 }
 
 void
-MaterialManager::removeSemantic(MaterialSemanticPtr semantc) noexcept
+MaterialManager::removeSemantic(MaterialVariantPtr semantc) noexcept
 {
-	if (semantc && !semantc->getName().empty() && semantc->getType() != GraphicsVariantType::GraphicsVariantTypeNone)
+	if (semantc && !semantc->getName().empty() && semantc->getType() != GraphicsUniformType::GraphicsUniformTypeNone)
 	{
-		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialSemanticPtr& it) { return it->getName() == semantc->getName();});
+		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialVariantPtr& it) { return it->getName() == semantc->getName();});
 		if (it == _semantics.end())
 			_semantics.push_back(semantc);
 	}
 }
 
-MaterialSemanticPtr
+MaterialVariantPtr
 MaterialManager::getSemantic(const std::string& name) noexcept
 {
 	if (!name.empty())
 	{
-		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialSemanticPtr it) { return it->getName() == name;});
+		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialVariantPtr it) { return it->getName() == name;});
 		if (it != _semantics.end())
 			return *it;
 	}
@@ -124,15 +139,11 @@ MaterialManager::getSemantic(const std::string& name) noexcept
 }
 
 MaterialPtr
-MaterialManager::createMaterial(const std::string& name) except
+MaterialManager::createMaterial(const std::string& name) noexcept
 {
 	auto& material = _materials[name];
 	if (!material)
-	{
-		MaterialMaker maker;
-		material = maker.load(*this, name);
-	}
-
+		_materials[name] = _materialLoader->load(*this, name);
 	return material;
 }
 
@@ -140,81 +151,6 @@ MaterialPtr
 MaterialManager::getMaterial(const std::string& name) noexcept
 {
 	return _materials[name];
-}
-
-void
-MaterialManager::setMaterialPass(MaterialPassPtr& pass) noexcept
-{
-	auto& semantics = pass->getParameters();
-	for (auto& it : semantics)
-	{
-		auto semantic = it->getSemantic();
-		if (semantic)
-		{
-			auto type = semantic->getType();
-			switch (type)
-			{
-			case ray::GraphicsVariantType::GraphicsVariantTypeBool:
-				it->assign(semantic->getBool());
-				break;
-			case ray::GraphicsVariantType::GraphicsVariantTypeInt:
-				it->assign(semantic->getInt());
-				break;
-			case ray::GraphicsVariantType::GraphicsVariantTypeInt2:
-				it->assign(semantic->getInt2());
-				break;
-			case ray::GraphicsVariantType::GraphicsVariantTypeFloat:
-				it->assign(semantic->getFloat());
-				break;
-			case ray::GraphicsVariantType::GraphicsVariantTypeFloat2:
-				it->assign(semantic->getFloat2());
-				break;
-			case ray::GraphicsVariantType::GraphicsVariantTypeFloat3:
-				it->assign(semantic->getFloat3());
-				break;
-			case ray::GraphicsVariantType::GraphicsVariantTypeFloat4:
-				it->assign(semantic->getFloat4());
-				break;
-			case ray::GraphicsVariantType::GraphicsVariantTypeFloat3x3:
-				it->assign(semantic->getFloat3x3());
-				break;
-			case ray::GraphicsVariantType::GraphicsVariantTypeFloat4x4:
-				it->assign(semantic->getFloat4x4());
-				break;
-			case ray::GraphicsVariantType::GraphicsVariantTypeFloatArray:
-				it->assign(semantic->getFloatArray());
-				break;
-			case ray::GraphicsVariantType::GraphicsVariantTypeFloat2Array:
-				it->assign(semantic->getFloat2Array());
-				break;
-			case ray::GraphicsVariantType::GraphicsVariantTypeFloat3Array:
-				it->assign(semantic->getFloat3Array());
-				break;
-			case ray::GraphicsVariantType::GraphicsVariantTypeFloat4Array:
-				it->assign(semantic->getFloat4Array());
-				break;
-			case ray::GraphicsVariantType::GraphicsVariantTypeTexture:
-				it->assign(semantic->getTexture());
-				break;
-			default:
-				break;
-			}
-		}
-	}
-
-	_material = pass;
-}
-
-MaterialPassPtr&
-MaterialManager::getMaterialPass() noexcept
-{
-	return _material;
-}
-
-const MaterialPassPtr&
-MaterialManager::getMaterialPass() const noexcept
-{
-	return _material;
 }
 
 _NAME_END

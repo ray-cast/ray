@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -35,45 +35,23 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/material.h>
+#include <ray/material_tech.h>
+#include <ray/material_param.h>
 
 _NAME_BEGIN
 
-Material::Material() noexcept
+__ImplementSubClass(Material, rtti::Interface, "Material")
+
+MaterialDesc::MaterialDesc() noexcept
 {
 }
 
-Material::~Material() noexcept
+MaterialDesc::~MaterialDesc() noexcept
 {
-	this->close();
 }
 
 void
-Material::setup() except
-{
-	for (auto& technique : _techniques)
-	{
-		auto& passList = technique->getPassList();
-		for (auto& pass : passList)
-			pass->setup(*this);
-	}
-}
-
-void
-Material::close() noexcept
-{
-	for (auto& technique : _techniques)
-	{
-		auto& passList = technique->getPassList();
-		for (auto& pass : passList)
-			pass->close();
-	}
-
-	_techniques.clear();
-	_parameters.clear();
-}
-
-void
-Material::addTech(MaterialTechPtr technique) noexcept
+MaterialDesc::addTech(MaterialTechPtr technique) noexcept
 {
 	assert(technique);
 	assert(std::find(_techniques.begin(), _techniques.end(), technique) == _techniques.end());
@@ -81,7 +59,7 @@ Material::addTech(MaterialTechPtr technique) noexcept
 }
 
 void
-Material::removeTech(MaterialTechPtr technique) noexcept
+MaterialDesc::removeTech(MaterialTechPtr technique) noexcept
 {
 	assert(technique);
 	auto it = std::find(_techniques.begin(), _techniques.end(), technique);
@@ -92,7 +70,7 @@ Material::removeTech(MaterialTechPtr technique) noexcept
 }
 
 MaterialTechPtr
-Material::getTech(RenderQueue queue) noexcept
+MaterialDesc::getTech(RenderQueue queue) noexcept
 {
 	for (auto& it : _techniques)
 	{
@@ -104,13 +82,13 @@ Material::getTech(RenderQueue queue) noexcept
 }
 
 MaterialTechniques&
-Material::getTechs() noexcept
+MaterialDesc::getTechs() noexcept
 {
 	return _techniques;
 }
 
 void
-Material::addParameter(MaterialParamPtr parameter) noexcept
+MaterialDesc::addParameter(MaterialParamPtr parameter) noexcept
 {
 	assert(parameter);
 	assert(std::find(_parameters.begin(), _parameters.end(), parameter) == _parameters.end());
@@ -118,7 +96,7 @@ Material::addParameter(MaterialParamPtr parameter) noexcept
 }
 
 void
-Material::removeParameter(MaterialParamPtr parameter) noexcept
+MaterialDesc::removeParameter(MaterialParamPtr parameter) noexcept
 {
 	assert(parameter);
 	auto it = std::find(_parameters.begin(), _parameters.end(), parameter);
@@ -129,7 +107,7 @@ Material::removeParameter(MaterialParamPtr parameter) noexcept
 }
 
 MaterialParamPtr
-Material::getParameter(const std::string& name) const noexcept
+MaterialDesc::getParameter(const std::string& name) const noexcept
 {
 	assert(!name.empty());
 	for (auto& it : _parameters)
@@ -142,19 +120,19 @@ Material::getParameter(const std::string& name) const noexcept
 }
 
 MaterialParams&
-Material::getParameters() noexcept
+MaterialDesc::getParameters() noexcept
 {
 	return _parameters;
 }
 
 const MaterialParams&
-Material::getParameters() const noexcept
+MaterialDesc::getParameters() const noexcept
 {
 	return _parameters;
 }
 
 void
-Material::addMacro(MaterialVariantPtr macro) noexcept
+MaterialDesc::addMacro(MaterialVariantPtr macro) noexcept
 {
 	assert(macro);
 	assert(std::find(_macros.begin(), _macros.end(), macro) == _macros.end());
@@ -162,7 +140,7 @@ Material::addMacro(MaterialVariantPtr macro) noexcept
 }
 
 void
-Material::removeMacro(MaterialVariantPtr macro) noexcept
+MaterialDesc::removeMacro(MaterialVariantPtr macro) noexcept
 {
 	assert(macro);
 	auto it = std::find(_macros.begin(), _macros.end(), macro);
@@ -173,7 +151,7 @@ Material::removeMacro(MaterialVariantPtr macro) noexcept
 }
 
 MaterialVariantPtr
-Material::getMacro(const std::string& name) const noexcept
+MaterialDesc::getMacro(const std::string& name) const noexcept
 {
 	assert(!name.empty());
 	for (auto& it : _macros)
@@ -186,15 +164,90 @@ Material::getMacro(const std::string& name) const noexcept
 }
 
 MaterialVariants&
-Material::getMacros() noexcept
+MaterialDesc::getMacros() noexcept
 {
 	return _macros;
 }
 
 const MaterialVariants&
-Material::getMacros() const noexcept
+MaterialDesc::getMacros() const noexcept
 {
 	return _macros;
+}
+
+Material::Material() noexcept
+{
+}
+
+Material::~Material() noexcept
+{
+	this->close();
+}
+
+void
+Material::setup(const MaterialDesc& materialDesc) except
+{
+	_materialDesc = materialDesc;
+
+	for (auto& technique : _materialDesc.getTechs())
+	{
+		auto& passList = technique->getPassList();
+		for (auto& pass : passList)
+			pass->setup(*this);
+	}
+}
+
+void
+Material::close() noexcept
+{
+}
+
+MaterialTechPtr
+Material::getTech(RenderQueue queue) noexcept
+{
+	return _materialDesc.getTech(queue);
+}
+
+MaterialTechniques&
+Material::getTechs() noexcept
+{
+	return _materialDesc.getTechs();
+}
+
+MaterialParamPtr
+Material::getParameter(const std::string& name) const noexcept
+{
+	return _materialDesc.getParameter(name);
+}
+
+MaterialParams&
+Material::getParameters() noexcept
+{
+	return _materialDesc.getParameters();
+}
+
+const MaterialParams&
+Material::getParameters() const noexcept
+{
+	return _materialDesc.getParameters();
+}
+
+MaterialVariantPtr
+Material::getMacro(const std::string& name) const noexcept
+{
+	return _materialDesc.getMacro(name);
+}
+
+MaterialVariants&
+Material::getMacros() noexcept
+{
+	return _materialDesc.getMacros();
+}
+
+const MaterialVariants&
+Material::getMacros() const noexcept
+{
+	return _materialDesc.getMacros();
 }
 
 _NAME_END

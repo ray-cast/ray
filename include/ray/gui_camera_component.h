@@ -48,13 +48,13 @@ public:
 	GuiCameraComponent() noexcept;
 	virtual ~GuiCameraComponent() noexcept;
 
-	GameComponentPtr clone() const except;
+	GameComponentPtr clone() const noexcept;
 
 private:
 	void onAttachComponent(GameComponentPtr& component) except;
 	void onDetachComponent(GameComponentPtr& component) noexcept;
 
-	void onPostRender() noexcept;
+	void onPostRender(class RenderPipeline& pipeline) noexcept;
 
 private:
 	GuiCameraComponent(const GuiCameraComponent&) noexcept = delete;

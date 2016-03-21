@@ -61,7 +61,7 @@ private:
 
 	RenderBufferPtr _buffer;
 
-	GraphicsLayoutDesc _layout;
+	GraphicsInputLayoutDesc _layout;
 	GraphicsDataPtr _vb;
 
 	std::size_t _vertexCount;

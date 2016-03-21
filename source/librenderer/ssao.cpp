@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,6 +37,9 @@
 #include <ray/ssao.h>
 #include <ray/camera.h>
 
+#include <ray/graphics_view.h>
+#include <ray/graphics_texture.h>
+
 _NAME_BEGIN
 
 SSAO::Setting::Setting() noexcept
@@ -52,7 +55,7 @@ SSAO::Setting::Setting() noexcept
 
 SSAO::SSAO() noexcept
 {
-	this->setRenderQueue(RenderQueue::RQ_LIGHTING);
+	this->setRenderQueue(RenderQueue::RenderQueueLighting);
 }
 
 SSAO::~SSAO() noexcept
@@ -83,7 +86,7 @@ SSAO::getSetting() const noexcept
 }
 
 void
-SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
 	_cameraProjInfo->assign(pipeline.getCamera()->getProjConstant());
 	_cameraProjScale->assign(pipeline.getCamera()->getProjLength().y * _setting.radius);
@@ -94,9 +97,9 @@ SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, Gr
 }
 
 void
-SSAO::blurHorizontal(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSAO::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	GraphicsTextureDesc textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
+	GraphicsTextureDesc textureDesc = source->getGraphicsTextureDesc();
 
 	float2 direction(_setting.blurScale, 0.0f);
 	direction.x /= textureDesc.getWidth();
@@ -105,9 +108,9 @@ SSAO::blurHorizontal(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, 
 }
 
 void
-SSAO::blurVertical(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSAO::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	GraphicsTextureDesc textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
+	GraphicsTextureDesc textureDesc = source->getGraphicsTextureDesc();
 
 	float2 direction(0.0f, _setting.blurScale);
 	direction.y /= textureDesc.getHeight();
@@ -116,10 +119,10 @@ SSAO::blurVertical(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, Gr
 }
 
 void
-SSAO::blurDirection(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest, const float2& direction) noexcept
+SSAO::blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest, const float2& direction) noexcept
 {
 	_blurDirection->assign(direction);
-	_blurSource->assign(source->getResolveTexture());
+	_blurSource->assign(source);
 
 	pipeline.setRenderTexture(dest);
 	pipeline.discradRenderTexture();
@@ -127,9 +130,9 @@ SSAO::blurDirection(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, G
 }
 
 void
-SSAO::shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr ambient, GraphicsRenderTexturePtr dest) noexcept
+SSAO::shading(RenderPipeline& pipeline, GraphicsTexturePtr ambient, GraphicsRenderTexturePtr dest) noexcept
 {
-	_occlusionAmbient->assign(ambient->getResolveTexture());
+	_occlusionAmbient->assign(ambient);
 
 	pipeline.setRenderTexture(dest);
 	pipeline.drawScreenQuad(_ambientOcclusionCopyPass);
@@ -161,13 +164,21 @@ SSAO::onActivate(RenderPipeline& pipeline) except
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_texAmbient = pipeline.createRenderTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
-	_texBlur = pipeline.createRenderTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
+	_texAmbientMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
+	_texBlurMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
+
+	GraphicsRenderTextureDesc ambientViewDesc;
+	ambientViewDesc.attach(_texAmbientMap);
+	_texAmbientView = pipeline.createRenderTexture(ambientViewDesc);
+
+	GraphicsRenderTextureDesc blurViewDesc;
+	blurViewDesc.attach(_texBlurMap);
+	_texBlurView = pipeline.createRenderTexture(blurViewDesc);
 
 	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssao.fxml.o");
-	_ambientOcclusionPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("ao");
-	_ambientOcclusionBlurPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("blur");
-	_ambientOcclusionCopyPass = _ambientOcclusion->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("copy");
+	_ambientOcclusionPass = _ambientOcclusion->getTech(RenderQueue::RenderQueuePostprocess)->getPass("ao");
+	_ambientOcclusionBlurPass = _ambientOcclusion->getTech(RenderQueue::RenderQueuePostprocess)->getPass("blur");
+	_ambientOcclusionCopyPass = _ambientOcclusion->getTech(RenderQueue::RenderQueuePostprocess)->getPass("copy");
 
 	_cameraProjScale = _ambientOcclusion->getParameter("projScale");
 	_cameraProjInfo = _ambientOcclusion->getParameter("projInfo");
@@ -201,17 +212,17 @@ SSAO::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-SSAO::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except
+SSAO::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) except
 {
-	this->computeRawAO(pipeline, source, _texAmbient);
+	this->computeRawAO(pipeline, source, _texAmbientView);
 
 	if (_setting.blur)
 	{
-		this->blurHorizontal(pipeline, _texAmbient, _texBlur);
-		this->blurVertical(pipeline, _texBlur, _texAmbient);
+		this->blurHorizontal(pipeline, _texAmbientMap, _texBlurView);
+		this->blurVertical(pipeline, _texBlurMap, _texAmbientView);
 	}
 
-	this->shading(pipeline, _texAmbient, dest);
+	this->shading(pipeline, _texAmbientMap, dest);
 
 	// pipeline.blitRenderTexture(_texAmbient, Viewport(0, 0, 1376, 768), dest, Viewport(0, 0, 1376, 768));
 	// pipeline.blitRenderTexture(_texAmbient, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));

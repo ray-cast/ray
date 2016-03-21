@@ -287,6 +287,8 @@ FxmlCompile::load(ray::iarchive& reader) except
 			parameter.semantic = reader.getValue<std::string>("semantic");
 			parameter.value = reader.getValue<std::string>("value");
 
+			_hlslCodes += "uniform " + parameter.type + " " + parameter.name + ";\n";
+
 			_parameters.push_back(parameter);
 		}
 		else if (name == "macro")

@@ -156,19 +156,19 @@ LightComponent::load(iarchive& reader) noexcept
 	reader >> make_archive(lightType, "type");
 
 	if (lightType == "sun")
-		this->setLightType(LightType::LT_SUN);
+		this->setLightType(LightType::LightTypeSun);
 	else if (lightType == "point")
-		this->setLightType(LightType::LT_POINT);
+		this->setLightType(LightType::LightTypePoint);
 	else if (lightType == "spot")
-		this->setLightType(LightType::LT_SPOT);
+		this->setLightType(LightType::LightTypeSpot);
 	else if (lightType == "area")
-		this->setLightType(LightType::LT_AREA);
+		this->setLightType(LightType::LightTypeArea);
 	else if (lightType == "hemiSphere")
-		this->setLightType(LightType::LT_HEMI_SPHERE);
+		this->setLightType(LightType::LightTypeHemiSphere);
 	else if (lightType == "ambient")
-		this->setLightType(LightType::LT_AMBIENT);
+		this->setLightType(LightType::LightTypeAmbient);
 	else
-		this->setLightType(LightType::LT_POINT);
+		this->setLightType(LightType::LightTypePoint);
 
 	_light->setLightColor(lightColor);
 	_light->setRange(lightRange);
@@ -186,7 +186,7 @@ GameComponentPtr
 LightComponent::clone() const noexcept
 {
 	auto instance = std::make_shared<LightComponent>();
-	instance->_light = _light->clone();
+	instance->_light = _light->clone()->downcast<Light>();
 	return instance;
 }
 
@@ -199,9 +199,11 @@ LightComponent::onActivate() noexcept
 		auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
 		if (renderScene)
 		{
-			_light->setTransform(this->getGameObject()->getTransform());
-			_light->setTransformInverse(this->getGameObject()->getTransformInverse());
-			_light->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
+			_light->setTransform(
+				this->getGameObject()->getTransform(),
+				this->getGameObject()->getTransformInverse(),
+				this->getGameObject()->getTransformInverseTranspose()
+				);
 
 			_light->setRenderScene(renderScene);
 		}
@@ -217,9 +219,11 @@ LightComponent::onDeactivate() noexcept
 void
 LightComponent::onMoveAfter() noexcept
 {
-	_light->setTransform(this->getGameObject()->getTransform());
-	_light->setTransformInverse(this->getGameObject()->getTransformInverse());
-	_light->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
+	_light->setTransform(
+		this->getGameObject()->getTransform(),
+		this->getGameObject()->getTransformInverse(),
+		this->getGameObject()->getTransformInverseTranspose()
+		);
 }
 
 _NAME_END

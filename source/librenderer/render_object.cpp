@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -79,13 +79,107 @@ RenderObject::getLayer() const noexcept
 	return _layer;
 }
 
+void
+RenderObject::setBoundingBox(const Bound& bound) noexcept
+{
+	_worldBoundingxBox = _boundingBox = bound;
+	_worldBoundingxBox.applyMatrix(_transform);
+}
+
+const Bound&
+RenderObject::getBoundingBox() const noexcept
+{
+	return _boundingBox;
+}
+
+const Bound&
+RenderObject::getBoundingBoxInWorld() const noexcept
+{
+	return _worldBoundingxBox;
+}
+
+void
+RenderObject::setReceiveShadow(bool enable) noexcept
+{
+	_isReceiveShadow = enable;
+}
+
+bool
+RenderObject::getReceiveShadow() const noexcept
+{
+	return _isReceiveShadow;
+}
+
+void
+RenderObject::setCastShadow(bool value) noexcept
+{
+	_isCastShadow = value;
+}
+
+bool
+RenderObject::getCastShadow()  const noexcept
+{
+	return _isCastShadow;
+}
+
+void
+RenderObject::setOwnerListener(RenderListener* listener) noexcept
+{
+	_renderListener = listener;
+}
+
+RenderListener*
+RenderObject::getOwnerListener() noexcept
+{
+	return _renderListener;
+}
+
+void
+RenderObject::setRenderScene(RenderScenePtr scene) noexcept
+{
+	if (_renderScene.lock() != scene)
+	{
+		this->onSceneChangeBefor();
+
+		if (_renderScene.use_count())
+			_renderScene.lock()->removeRenderObject(this->cast<RenderObject>());
+
+		if (scene)
+			scene->addRenderObject(this->cast<RenderObject>());
+
+		_renderScene = scene;
+
+		this->onSceneChangeAfter();
+	}
+}
+
+RenderScenePtr
+RenderObject::getRenderScene() const noexcept
+{
+	return _renderScene.lock();
+}
+
+void
+RenderObject::setTransform(const Matrix4x4& transform, const Matrix4x4& inverse, const Matrix4x4& inverseTranspose) noexcept
+{
+	this->onMoveBefor();
+
+	_transform = transform;
+	_transformInverse = inverse;
+	_transformInverseTranspose = inverseTranspose;
+
+	_worldBoundingxBox.applyMatrix(_transform);
+
+	this->onMoveAfter();
+}
+
 Vector3
 RenderObject::getTranslate() const noexcept
 {
 	return _transform.getTranslate();
 }
 
-Vector3 
+Vector3
 RenderObject::getRight() const noexcept
 {
 	return Vector3(_transform.a1, _transform.b1, _transform.c1);
@@ -101,56 +195,6 @@ Vector3
 RenderObject::getForward() const noexcept
 {
 	return Vector3(_transform.a3, _transform.b3, _transform.c3);
-}
-
-void
-RenderObject::setTransform(const Matrix4x4& transform) noexcept
-{
-	this->onMoveBefor();
-	_transform = transform;
-	_worldBoundingxBox.applyMatrix(_transform);
-	this->onMoveAfter();
-}
-
-void
-RenderObject::setTransformInverse(const Matrix4x4& transform) noexcept
-{
-	this->onMoveBefor();
-	_transformInverse = transform;
-	this->onMoveAfter();
-}
-
-void
-RenderObject::setTransformInverseTranspose(const Matrix4x4& transform) noexcept
-{
-	this->onMoveBefor();
-	_transformInverseTranspose = transform;
-	this->onMoveAfter();
-}
-
-void
-RenderObject::setBoundingBox(const Bound& bound) noexcept
-{
-	_worldBoundingxBox = _boundingBox = bound;
-	_worldBoundingxBox.applyMatrix(_transform);
-}
-
-void
-RenderObject::setReceiveShadow(bool enable) noexcept
-{
-	_isReceiveShadow = enable;
-}
-
-void
-RenderObject::setCastShadow(bool value) noexcept
-{
-	_isCastShadow = value;
-}
-
-void
-RenderObject::setOwnerListener(RenderListener* listener) noexcept
-{
-	_renderListener = listener;
 }
 
 const Matrix4x4&
@@ -169,36 +213,6 @@ const Matrix4x4&
 RenderObject::getTransformInverseTranspose() const noexcept
 {
 	return _transformInverseTranspose;
-}
-
-bool
-RenderObject::getReceiveShadow() const noexcept
-{
-	return _isReceiveShadow;
-}
-
-bool
-RenderObject::getCastShadow()  const noexcept
-{
-	return _isCastShadow;
-}
-
-RenderListener*
-RenderObject::getOwnerListener() noexcept
-{
-	return _renderListener;
-}
-
-const Bound&
-RenderObject::getBoundingBox() const noexcept
-{
-	return _boundingBox;
-}
-
-const Bound&
-RenderObject::getBoundingBoxInWorld() const noexcept
-{
-	return _worldBoundingxBox;
 }
 
 void 
@@ -225,31 +239,6 @@ RenderObjects&
 RenderObject::getSubeRenderObjects() noexcept
 {
 	return _renderObjects;
-}
-
-void
-RenderObject::setRenderScene(RenderScenePtr scene) noexcept
-{
-	if (_renderScene.lock() != scene)
-	{
-		this->onSceneChangeBefor();
-		
-		if (_renderScene.use_count())
-			_renderScene.lock()->removeRenderObject(this->cast<RenderObject>());
-
-		if (scene)
-			scene->addRenderObject(this->cast<RenderObject>());
-
-		_renderScene = scene;
-
-		this->onSceneChangeAfter();
-	}
-}
-
-RenderScenePtr
-RenderObject::getRenderScene() const noexcept
-{
-	return _renderScene.lock();
 }
 
 void 

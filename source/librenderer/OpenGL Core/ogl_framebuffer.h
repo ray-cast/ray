@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -43,29 +43,25 @@ _NAME_BEGIN
 
 class OGLRenderTexture final : public GraphicsRenderTexture
 {
-	__DeclareSubClass(OGLRenderTexture, GraphicsRenderTexture)
+	__DeclareSubClass(OGLGraphicsRenderTexture, GraphicsRenderTexture)
 public:
 	OGLRenderTexture() noexcept;
 	~OGLRenderTexture() noexcept;
 
-	bool setup(const GraphicsRenderTextureDesc& framebufferDesc) except;
+	bool setup(const GraphicsRenderTextureDesc& multiFramebufferDesc) noexcept;
 	void close() noexcept;
 
-	void setLayer(GLuint layer) noexcept;
+	void setLayer(GraphicsTexturePtr texture, GLuint layer) noexcept;
 	GLuint getLayer() const noexcept;
-
-	void setActive(bool active) noexcept;
-	bool getActive() noexcept;
 
 	void discard() noexcept;
 
 	GLuint getInstanceID() noexcept;
 
-	GraphicsTexturePtr getResolveTexture() const noexcept;
 	const GraphicsRenderTextureDesc& getGraphicsRenderTextureDesc() const noexcept;
 
 private:
-	void bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment) noexcept;
+	void bindRenderTexture(GraphicsTexturePtr target, GLenum attachment) noexcept;
 
 private:
 	friend class OGLDevice;
@@ -77,56 +73,10 @@ private:
 	OGLRenderTexture& operator=(const OGLRenderTexture&) noexcept = delete;
 
 private:
-	bool _isActive;
-
 	GLuint _fbo;
-	GLuint _layer;
 
 	GraphicsDeviceWeakPtr _device;
 	GraphicsRenderTextureDesc _framebufferDesc;
-};
-
-class OGLMultiRenderTexture final : public GraphicsMultiRenderTexture
-{
-	__DeclareSubClass(OGLMultiRenderTexture, GraphicsMultiRenderTexture)
-public:
-	OGLMultiRenderTexture() noexcept;
-	~OGLMultiRenderTexture() noexcept;
-
-	bool setup(const GraphicsMultiRenderTextureDesc& multiFramebufferDesc) noexcept;
-	void close() noexcept;
-
-	void setActive(bool active) noexcept;
-	bool getActive() noexcept;
-
-	void setLayer(GraphicsRenderTexturePtr texture, GLuint layer) noexcept;
-	GLuint getLayer() const noexcept;
-
-	void discard() noexcept;
-
-	GLuint getInstanceID() noexcept;
-
-	const GraphicsMultiRenderTextureDesc& getGraphicsMultiRenderTextureDesc() const noexcept;
-
-private:
-	void bindRenderTexture(GraphicsTexturePtr target, GLenum attachment) noexcept;
-
-private:
-	friend class OGLDevice;
-	void setDevice(GraphicsDevicePtr device) noexcept;
-	GraphicsDevicePtr getDevice() noexcept;
-
-private:
-	OGLMultiRenderTexture(const OGLMultiRenderTexture&) noexcept = delete;
-	OGLMultiRenderTexture& operator=(const OGLMultiRenderTexture&) noexcept = delete;
-
-private:
-	bool _isActive;
-
-	GLuint _fbo;
-
-	GraphicsDeviceWeakPtr _device;
-	GraphicsMultiRenderTextureDesc _multiFramebufferDesc;
 };
 
 _NAME_END

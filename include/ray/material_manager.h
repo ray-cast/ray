@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -50,26 +50,25 @@ public:
 	void open(GraphicsDevicePtr device) noexcept;
 	void close() noexcept;
 
+	void setMaterialLoader(MaterialLoaderPtr loader) noexcept;
+	MaterialLoaderPtr getMaterialLoader() const noexcept;
+
 	void setGraphicsDevice(GraphicsDevicePtr device) noexcept;
 	GraphicsDevicePtr getGraphicsDevice() noexcept;
 
-	MaterialPtr createMaterial(const std::string& name) except;
+	MaterialPtr createMaterial(const std::string& name) noexcept;
 	MaterialPtr getMaterial(const std::string& name) noexcept;
 
-	MaterialSemanticPtr createSemantic(const std::string& name, GraphicsVariantType type) noexcept;
-	void addSemantic(MaterialSemanticPtr semantc) noexcept;
-	void removeSemantic(MaterialSemanticPtr semantc) noexcept;
-	MaterialSemanticPtr getSemantic(const std::string& name) noexcept;
+	MaterialVariantPtr createSemantic(const std::string& name, GraphicsUniformType type) noexcept;
+	void addSemantic(MaterialVariantPtr semantc) noexcept;
+	void removeSemantic(MaterialVariantPtr semantc) noexcept;
+	MaterialVariantPtr getSemantic(const std::string& name) noexcept;
 
-	void setMaterialPass(MaterialPassPtr& pass) noexcept;
-	MaterialPassPtr& getMaterialPass() noexcept;
-	const MaterialPassPtr& getMaterialPass() const noexcept;
 
 private:
+	MaterialLoaderPtr _materialLoader;
+	MaterialVariants _semantics;
 	GraphicsDevicePtr _graphicsDevice;
-	MaterialPassPtr _material;
-	MaterialSemantics _semantics;
-
 	std::map<std::string, MaterialPtr> _materials;
 };
 

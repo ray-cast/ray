@@ -387,7 +387,7 @@ GuiEditBoxComponent::save(oarchive& write) noexcept
 }
 
 GameComponentPtr
-GuiEditBoxComponent::clone() const except
+GuiEditBoxComponent::clone() const noexcept
 {
 	return std::make_shared<GuiEditBoxComponent>();
 }

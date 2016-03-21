@@ -2,19 +2,19 @@
 <effect version="1270" language="hlsl">
     <include name="sys:fx/GBuffer.fxml"/>
     <include name="sys:fx/lighting.fxml"/>
-    <parameter name="matModel" semantic="matModel" />
-    <parameter name="matViewProject" semantic="matViewProject" />
-    <parameter name="matView" semantic="matView" />
-    <parameter name="matViewInverse" semantic="matViewInverse" />
-    <parameter name="matProjectInverse" semantic="matProjectInverse" />
-    <parameter name="matViewProjectInverse" semantic="matViewProjectInverse" />
-    <parameter name="texMRT0" semantic="DeferredGraphicMap" />
-    <parameter name="texMRT1" semantic="DeferredNormalMap" />
-    <parameter name="texDepth" semantic="DeferredDepthMap" />
-    <parameter name="texDepthLinear" semantic="DeferredDepthLinearMap" />
-    <parameter name="texLight" semantic="DeferredLightMap" />
-    <parameter name="texSource" type="texture"/>
-    <parameter name="texEnvironmentMap" type="texture"/>
+    <parameter name="matModel" type="float4x4" semantic="matModel" />
+    <parameter name="matViewProject" type="float4x4" semantic="matViewProject" />
+    <parameter name="matView" type="float4x4" semantic="matView" />
+    <parameter name="matViewInverse" type="float4x4" semantic="matViewInverse" />
+    <parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse" />
+    <parameter name="matViewProjectInverse" type="float4x4" semantic="matViewProjectInverse" />
+    <parameter name="texMRT0" type="texture2D" semantic="DeferredGraphicMap" />
+    <parameter name="texMRT1" type="texture2D" semantic="DeferredNormalMap" />
+    <parameter name="texDepth" type="texture2D" semantic="DeferredDepthMap" />
+    <parameter name="texDepthLinear" type="texture2D" semantic="DeferredDepthLinearMap" />
+    <parameter name="texLight" type="texture2D" semantic="DeferredLightMap" />
+    <parameter name="texSource" type="texture2D"/>
+    <parameter name="texEnvironmentMap" type="texture2D"/>
     <parameter name="eyePosition" type="float3" />
     <parameter name="clipInfo" type="float4"/>
     <parameter name="projInfo" type="float4"/>
@@ -27,44 +27,11 @@
     <parameter name="lightSpotInnerCone" type="float"/>
     <parameter name="lightSpotOuterCone" type="float"/>
     <parameter name="shadowChannel" type="int" />
-    <parameter name="shadowMap" type="texture" />
+    <parameter name="shadowMap" type="texture2D" />
     <parameter name="shadowFactor" type="float2"/>
     <parameter name="shadowMatrix" type="float4x4" />
     <shader>
         <![CDATA[
-            uniform float4x4 matModel;
-            uniform float4x4 matView;
-            uniform float4x4 matViewInverse;
-            uniform float4x4 matViewProject;
-            uniform float4x4 matViewProjectInverse;
-            uniform float4x4 matProjectInverse;
-
-            uniform float3 eyePosition;
-            uniform float4 clipInfo;
-            uniform float4 projInfo;
-
-            uniform float3 lightColor;
-            uniform float3 lightPosition;
-            uniform float3 lightDirection;
-            uniform float3 lightAttenuation;
-
-            uniform float lightRange;
-            uniform float lightIntensity;
-            uniform float lightSpotInnerCone;
-            uniform float lightSpotOuterCone;
-
-            uniform Texture2D texMRT0;
-            uniform Texture2D texMRT1;
-            uniform Texture2D texDepth;
-            uniform Texture2D texDepthLinear;
-            uniform Texture2D texLight;
-            uniform Texture2D texSource;
-            uniform TextureCube texEnvironmentMap;
-
-            uniform float2 shadowFactor;
-            uniform float4x4 shadowMatrix;
-            uniform Texture2D shadowMap;
-
             void DeferredDepthOnlyVS(
                 in float4 Position : POSITION,
                 out float4 oPosition : SV_Position)

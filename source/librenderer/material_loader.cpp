@@ -2,18 +2,18 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
-// | * Redistribution and use of this software in source and binary forms,
+// | * Redistribution and use of _graphicsDevice software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
 // |   conditions are met:
 // |
 // | * Redistributions of source code must retain the above
-// |   copyright notice, this list of conditions and the
+// |   copyright notice, _graphicsDevice list of conditions and the
 // |   following disclaimer.
 // |
 // | * Redistributions in binary form must reproduce the above
-// |   copyright notice, this list of conditions and the
+// |   copyright notice, _graphicsDevice list of conditions and the
 // |   following disclaimer in the documentation and/or other
 // |   materials provided with the distribution.
 // |
@@ -34,40 +34,16 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "ogl_dibo.h"
+#include <ray/material_loader.h>
 
 _NAME_BEGIN
 
-__ImplementSubClass(OGLDrawIndirectBuffer, OGLGraphicsData, "OGLDrawIndirectBuffer")
-
-OGLDrawIndirectBuffer::OGLDrawIndirectBuffer() noexcept
-	: OGLGraphicsData(&_indirectData)
+MaterialLoader::MaterialLoader() noexcept
 {
 }
 
-OGLDrawIndirectBuffer::~OGLDrawIndirectBuffer() noexcept
+MaterialLoader::~MaterialLoader() noexcept
 {
-	this->close();
-}
-
-bool
-OGLDrawIndirectBuffer::setup(const GraphicsDataDesc& desc) noexcept
-{
-	assert(desc.getType() == GraphicsDataType::GraphicsDataTypeStorageBuffer);
-	assert(desc.getStreamSize() > 0);
-	return _indirectData.setup(desc);
-}
-
-void
-OGLDrawIndirectBuffer::close() noexcept
-{
-	_indirectData.close();
-}
-
-void
-OGLDrawIndirectBuffer::bind() noexcept
-{
-	_indirectData.bind();
 }
 
 _NAME_END

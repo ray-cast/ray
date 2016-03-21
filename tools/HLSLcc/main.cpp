@@ -194,6 +194,14 @@ void SetEntryPointCommand(Options& option)
 	option.options.main = ray::util::trim(option.options.main, '"');
 }
 
+void SaveCommand(Options& options)
+{
+	if (!options.options.complieOut.empty())
+		options.compile.save(options.options.complieOut);
+	else
+		options.compile.save(options.options.complieIn + ".o");
+}
+
 void CompileCommand(Options& options)
 {
 	try
@@ -201,11 +209,6 @@ void CompileCommand(Options& options)
 		options.compile.clear();
 		options.compile.load(options.options.complieIn);
 		options.compile.compile();
-
-		if (!options.options.complieOut.empty())
-			options.compile.save(options.options.complieOut);
-		else
-			options.compile.save(options.options.complieIn + ".o");
 
 		std::cout << "compile " << options.options.hlsl << " success." << std::endl;
 	}
@@ -269,6 +272,7 @@ int main(int argc, char** argv)
 	commandlist.push_back(std::make_pair("-conv=", &SetGLSLCommand));
 	commandlist.push_back(std::make_pair("-main=", &SetEntryPointCommand));
 	commandlist.push_back(std::make_pair("-compile", &CompileCommand));
+	commandlist.push_back(std::make_pair("-save", &SaveCommand));
 	commandlist.push_back(std::make_pair("-show", &ShowCommand));
 
 	for (;;)

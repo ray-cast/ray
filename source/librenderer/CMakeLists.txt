@@ -44,29 +44,37 @@ ENDIF()
 SET(RENDERER_CORE
     ${HEADER_PATH}/graphics_child.h
     ${SOURCE_PATH}/graphics_child.cpp
-    ${HEADER_PATH}/graphics_data.h
-    ${SOURCE_PATH}/graphics_data.cpp
-    ${HEADER_PATH}/graphics_layout.h
-    ${SOURCE_PATH}/graphics_layout.cpp
-    ${HEADER_PATH}/graphics_resource.h
-    ${SOURCE_PATH}/graphics_resource.cpp
-    ${HEADER_PATH}/graphics_device.h
-    ${SOURCE_PATH}/graphics_device.cpp
     ${HEADER_PATH}/graphics_context.h
     ${SOURCE_PATH}/graphics_context.cpp
-    ${HEADER_PATH}/graphics_state.h
-    ${SOURCE_PATH}/graphics_state.cpp
+    ${HEADER_PATH}/graphics_data.h
+    ${SOURCE_PATH}/graphics_data.cpp
+    ${HEADER_PATH}/graphics_descriptor.h
+    ${SOURCE_PATH}/graphics_descriptor.cpp
+    ${HEADER_PATH}/graphics_device.h
+    ${SOURCE_PATH}/graphics_device.cpp
+    ${HEADER_PATH}/graphics_input_layout.h
+    ${SOURCE_PATH}/graphics_input_layout.cpp
+    ${HEADER_PATH}/graphics_pipeline.h
+    ${SOURCE_PATH}/graphics_pipeline.cpp
+    ${HEADER_PATH}/graphics_resource.h
+    ${SOURCE_PATH}/graphics_resource.cpp
     ${HEADER_PATH}/graphics_sampler.h
     ${SOURCE_PATH}/graphics_sampler.cpp
-    ${HEADER_PATH}/graphics_types.h
-    ${HEADER_PATH}/graphics_texture.h
-    ${SOURCE_PATH}/graphics_texture.cpp
-    ${HEADER_PATH}/graphics_view.h
-    ${SOURCE_PATH}/graphics_view.cpp
-    ${HEADER_PATH}/graphics_command.h
-    ${SOURCE_PATH}/graphics_command.cpp
     ${HEADER_PATH}/graphics_shader.h
     ${SOURCE_PATH}/graphics_shader.cpp
+    ${HEADER_PATH}/graphics_state.h
+    ${SOURCE_PATH}/graphics_state.cpp
+    ${HEADER_PATH}/graphics_swapchain.h
+    ${SOURCE_PATH}/graphics_swapchain.cpp
+    ${HEADER_PATH}/graphics_system.h
+    ${SOURCE_PATH}/graphics_system.cpp
+    ${HEADER_PATH}/graphics_texture.h
+    ${SOURCE_PATH}/graphics_texture.cpp
+    ${HEADER_PATH}/graphics_types.h
+    ${HEADER_PATH}/graphics_view.h
+    ${SOURCE_PATH}/graphics_view.cpp
+    ${HEADER_PATH}/graphics_variant.h
+    ${SOURCE_PATH}/graphics_variant.cpp
 )
 SOURCE_GROUP("core" FILES ${RENDERER_CORE})
 
@@ -96,22 +104,30 @@ SET(RENDERER_MATERIAL
     ${HEADER_PATH}/material.h
     ${SOURCE_PATH}/material.cpp
     ${HEADER_PATH}/material_fwd.h
-    ${HEADER_PATH}/material_param.h
-    ${SOURCE_PATH}/material_param.cpp
-    ${HEADER_PATH}/material_manager.h
-    ${SOURCE_PATH}/material_manager.cpp
-    ${HEADER_PATH}/material_pass.h
-    ${SOURCE_PATH}/material_pass.cpp
-    ${HEADER_PATH}/material_tech.h
-    ${SOURCE_PATH}/material_tech.cpp
+    ${HEADER_PATH}/material_loader.h
+    ${SOURCE_PATH}/material_loader.cpp
     ${HEADER_PATH}/material_maker.h
     ${SOURCE_PATH}/material_maker.cpp
+    ${HEADER_PATH}/material_manager.h
+    ${SOURCE_PATH}/material_manager.cpp
+    ${HEADER_PATH}/material_param.h
+    ${SOURCE_PATH}/material_param.cpp
+    ${HEADER_PATH}/material_pass.h
+    ${SOURCE_PATH}/material_pass.cpp
+    ${HEADER_PATH}/material_variant.h
+    ${SOURCE_PATH}/material_variant.cpp
+    ${HEADER_PATH}/material_tech.h
+    ${SOURCE_PATH}/material_tech.cpp
 )
 SOURCE_GROUP("renderer\\material" FILES ${RENDERER_MATERIAL})
 
 SET(RENDERER_SCENE
     ${HEADER_PATH}/render_object.h
     ${SOURCE_PATH}/render_object.cpp
+    ${HEADER_PATH}/render_object_manager.h
+    ${SOURCE_PATH}/render_object_manager.cpp
+    ${HEADER_PATH}/render_object_manager_base.h
+    ${SOURCE_PATH}/render_object_manager_base.cpp
     ${HEADER_PATH}/render_scene.h
     ${SOURCE_PATH}/render_scene.cpp
 )
@@ -162,8 +178,6 @@ SET(RENDERER_TERRAIN
     ${SOURCE_PATH}/terrain_height_map.cpp
     ${HEADER_PATH}/terrain_lod.h
     ${SOURCE_PATH}/terrain_lod.cpp
-    ${HEADER_PATH}/terrain_map.h
-    ${SOURCE_PATH}/terrain_map.cpp
     ${HEADER_PATH}/terrain_mipmapping.h
     ${SOURCE_PATH}/terrain_mipmapping.cpp
     ${HEADER_PATH}/terrain_observer.h
@@ -179,20 +193,16 @@ SET(RENDER_PIPELINE
 SOURCE_GROUP("renderer\\pipeline" FILES ${RENDER_PIPELINE})
 
 SET(RENDERER_SYSTEM
-    ${HEADER_PATH}/render_data_manager.h
-    ${SOURCE_PATH}/render_data_manager.cpp
-    ${HEADER_PATH}/render_data_manager_base.h
-    ${SOURCE_PATH}/render_data_manager_base.cpp
     ${HEADER_PATH}/render_pipeline.h
     ${SOURCE_PATH}/render_pipeline.cpp
+    ${HEADER_PATH}/render_pipeline_context.h
+    ${SOURCE_PATH}/render_pipeline_context.cpp
     ${HEADER_PATH}/render_pipeline_controller.h
     ${SOURCE_PATH}/render_pipeline_controller.cpp
     ${HEADER_PATH}/render_pipeline_manager.h
     ${SOURCE_PATH}/render_pipeline_manager.cpp
     ${HEADER_PATH}/render_post_process.h
     ${SOURCE_PATH}/render_post_process.cpp
-    ${HEADER_PATH}/render_setting.h
-    ${SOURCE_PATH}/render_setting.cpp
     ${HEADER_PATH}/render_system.h
     ${SOURCE_PATH}/render_system.cpp
     ${HEADER_PATH}/render_types.h

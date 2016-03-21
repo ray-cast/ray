@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -50,14 +50,14 @@ public:
 	virtual void onActivate(RenderPipeline& pipeline) except;
 	virtual void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
 	void blurh(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 	void blurv(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
 
 	void computeNear(RenderPipeline& pipeline, GraphicsRenderTexturePtr shrunk, GraphicsRenderTexturePtr blured, GraphicsRenderTexturePtr dest) noexcept;
 
-	void shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr color, GraphicsRenderTexturePtr texSmall, GraphicsRenderTexturePtr large);
+	void shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr color, GraphicsTexturePtr texSmall, GraphicsTexturePtr large);
 
 private:
 
@@ -75,8 +75,11 @@ private:
 	MaterialParamPtr _texSmall;
 	MaterialParamPtr _texLarge;
 
-	GraphicsRenderTexturePtr _texTemp;
-	GraphicsRenderTexturePtr _texBlur;
+	GraphicsTexturePtr _texTempMap;
+	GraphicsTexturePtr _texBlurMap;
+
+	GraphicsTexturePtr _texTemp;
+	GraphicsTexturePtr _texBlur;
 };
 
 _NAME_END

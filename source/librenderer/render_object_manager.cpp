@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,7 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/render_data_manager.h>
+#include <ray/render_object_manager.h>
 #include <ray/camera.h>
 #include <ray/light.h>
 #include <ray/render_mesh.h>
@@ -53,7 +53,7 @@ void
 DefaultRenderDataManager::addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept
 {
 	assert(object);
-	assert(queue == RenderQueue::RQ_OPAQUE || queue == RenderQueue::RQ_TRANSPARENT || queue == RenderQueue::RQ_LIGHTING);
+	assert(queue == RenderQueue::RenderQueueOpaque || queue == RenderQueue::RenderQueueTransparent || queue == RenderQueue::RenderQueueLighting);
 
 	_renderQueue[queue][pass].push_back(object);
 }
@@ -61,7 +61,7 @@ DefaultRenderDataManager::addRenderData(RenderQueue queue, RenderPass pass, Rend
 RenderObjects&
 DefaultRenderDataManager::getRenderData(RenderQueue queue, RenderPass pass) noexcept
 {
-	assert(queue == RenderQueue::RQ_OPAQUE || queue == RenderQueue::RQ_TRANSPARENT || queue == RenderQueue::RQ_LIGHTING);
+	assert(queue == RenderQueue::RenderQueueOpaque || queue == RenderQueue::RenderQueueTransparent || queue == RenderQueue::RenderQueueLighting);
 
 	return _renderQueue[queue][pass];
 }
@@ -71,11 +71,11 @@ DefaultRenderDataManager::assginVisiable(CameraPtr camera) noexcept
 {
 	assert(camera);
 
-	_renderQueue[RenderQueue::RQ_OPAQUE][RenderPass::RP_OPAQUES].clear();
-	_renderQueue[RenderQueue::RQ_OPAQUE][RenderPass::RP_SPECIFIC].clear();
-	_renderQueue[RenderQueue::RQ_TRANSPARENT][RenderPass::RP_TRANSPARENT].clear();
-	_renderQueue[RenderQueue::RQ_TRANSPARENT][RenderPass::RP_SPECIFIC].clear();
-	_renderQueue[RenderQueue::RQ_LIGHTING][RenderPass::RP_LIGHTS].clear();
+	_renderQueue[RenderQueue::RenderQueueOpaque][RenderPass::RenderPassOpaques].clear();
+	_renderQueue[RenderQueue::RenderQueueOpaque][RenderPass::RenderPassSpecific].clear();
+	_renderQueue[RenderQueue::RenderQueueTransparent][RenderPass::RenderPassTransparent].clear();
+	_renderQueue[RenderQueue::RenderQueueTransparent][RenderPass::RenderPassSpecific].clear();
+	_renderQueue[RenderQueue::RenderQueueLighting][RenderPass::RenderPassLights].clear();
 
 	_visiable.clear();
 
@@ -89,7 +89,7 @@ DefaultRenderDataManager::assginVisiable(CameraPtr camera) noexcept
 	{
 		auto object = it.getOcclusionCullNode();
 
-		if (camera->getCameraOrder() == CameraOrder::CO_SHADOW)
+		if (camera->getCameraOrder() == CameraOrder::CameraOrderShadow)
 		{
 			if (!object->getCastShadow())
 				return;
@@ -101,7 +101,7 @@ DefaultRenderDataManager::assginVisiable(CameraPtr camera) noexcept
 
 		if (object->isInstanceOf<Light>())
 		{
-			this->addRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS, object);
+			this->addRenderData(RenderQueue::RenderQueueLighting, RenderPass::RenderPassLights, object);
 		}
 		else
 		{

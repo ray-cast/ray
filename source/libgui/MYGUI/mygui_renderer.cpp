@@ -73,7 +73,7 @@ MyGuiRenderer::open() except
 	MYGUI_PLATFORM_LOG(Info, "* Initialise: " << getClassTypeName());
 
 	_material = RenderSystem::instance()->createMaterial("sys:fx/uilayout.fxml.o");
-	_materialPass = _material->getTech(RenderQueue::RQ_OPAQUE)->getPass("ui");
+	_materialPass = _material->getTech(RenderQueue::RenderQueueOpaque)->getPass("ui");
 	_materialDecal = _material->getParameter("decal");
 	_materialScaleY = _material->getParameter("scaleY");
 	_materialScaleY->assign(1);
@@ -194,7 +194,7 @@ MyGuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture
 		auto renderBuffer = buffer->getBuffer();
 		if (renderBuffer)
 		{
-			RenderIndirect renderable;
+			GraphicsIndirect renderable;
 			renderable.numVertices = _count;
 			RenderSystem::instance()->getRenderPipeline()->drawMesh(_materialPass, renderBuffer, renderable);
 		}

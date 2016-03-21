@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -61,39 +61,79 @@ _NAME_BEGIN
 #	define MAX_COLOR_ATTACHMENTS 15
 #endif
 
-typedef std::shared_ptr<class GraphicsData> GraphicsDataPtr;
-typedef std::shared_ptr<class GraphicsResource> GraphicsResourcePtr;
-typedef std::shared_ptr<class GraphicsLayout> GraphicsLayoutPtr;
 typedef std::shared_ptr<class GraphicsDevice> GraphicsDevicePtr;
+typedef std::shared_ptr<class GraphicsSwapchain> GraphicsSwapchainPtr;
+typedef std::shared_ptr<class GraphicsResource> GraphicsResourcePtr;
 typedef std::shared_ptr<class GraphicsContext> GraphicsContextPtr;
+typedef std::shared_ptr<class GraphicsData> GraphicsDataPtr;
+typedef std::shared_ptr<class GraphicsInputLayout> GraphicsInputLayoutPtr;
 typedef std::shared_ptr<class GraphicsState> GraphicsStatePtr;
 typedef std::shared_ptr<class GraphicsTexture> GraphicsTexturePtr;
 typedef std::shared_ptr<class GraphicsSampler> GraphicsSamplerPtr;
 typedef std::shared_ptr<class GraphicsRenderTexture> GraphicsRenderTexturePtr;
-typedef std::shared_ptr<class GraphicsMultiRenderTexture> GraphicsMultiRenderTexturePtr;
 typedef std::shared_ptr<class GraphicsShader> GraphicsShaderPtr;
 typedef std::shared_ptr<class GraphicsProgram> GraphicsProgramPtr;
+typedef std::shared_ptr<class GraphicsPipeline> GraphicsPipelinePtr;
+typedef std::shared_ptr<class GraphicsDescriptorPool> GraphicsDescriptorPoolPtr;
+typedef std::shared_ptr<class GraphicsDescriptorSet> GraphicsDescriptorSetPtr;
+typedef std::shared_ptr<class GraphicsDescriptorSetLayout> GraphicsDescriptorSetLayoutPtr;
+typedef std::shared_ptr<class GraphicsUniform> GraphicsUniformPtr;
+typedef std::shared_ptr<class GraphicsVariant> GraphicsVariantPtr;
 
-typedef std::weak_ptr<GraphicsDevice>  GraphicsDeviceWeakPtr;
+typedef std::weak_ptr<class GraphicsDevice> GraphicsDeviceWeakPtr;
+typedef std::weak_ptr<class GraphicsSwapchain> GraphicsSwapchainWeakPtr;
+typedef std::weak_ptr<class GraphicsResource> GraphicsResourceWeakPtr;
+typedef std::weak_ptr<class GraphicsContext> GraphicsContextWeakPtr;
+typedef std::weak_ptr<class GraphicsData> GraphicsDataWeakPtr;
+typedef std::weak_ptr<class GraphicsInputLayout> GraphicsInputLayoutWeakPtr;
+typedef std::weak_ptr<class GraphicsState> GraphicsStateWeakPtr;
+typedef std::weak_ptr<class GraphicsTexture> GraphicsTextureWeakPtr;
+typedef std::weak_ptr<class GraphicsSampler> GraphicsSamplerWeakPtr;
+typedef std::weak_ptr<class GraphicsRenderTexture> GraphicsRenderTextureWeakPtr;
+typedef std::weak_ptr<class GraphicsShader> GraphicsShaderWeakPtr;
+typedef std::weak_ptr<class GraphicsProgram> GraphicsProgramWeakPtr;
+typedef std::weak_ptr<class GraphicsPipeline> GraphicsPipelineWeakPtr;
+typedef std::weak_ptr<class GraphicsDescriptorPool> GraphicsDescriptorPoolWeakPtr;
+typedef std::weak_ptr<class GraphicsDescriptorSet> GraphicsDescriptorSetWeakPtr;
+typedef std::weak_ptr<class GraphicsDescriptorSetLayout> GraphicsDescriptorSetLayoutWeakPtr;
+typedef std::weak_ptr<class GraphicsUniform> GraphicsUniformWeakPtr;
+typedef std::weak_ptr<class GraphicsVariant> GraphicsVariantWeakPtr;
 
-typedef std::shared_ptr<class ShaderDesc> ShaderDescPtr;
 typedef std::shared_ptr<class ShaderVariant> ShaderVariantPtr;
 typedef std::shared_ptr<class ShaderParameter> ShaderParameterPtr;
 typedef std::shared_ptr<class ShaderAttribute> ShaderAttributePtr;
 typedef std::shared_ptr<class ShaderUniform> ShaderUniformPtr;
 typedef std::shared_ptr<class ShaderSubroutine> ShaderSubroutinePtr;
-typedef std::shared_ptr<class ShaderObjectDesc> ShaderObjectDescPtr;
 
-typedef std::shared_ptr<class RenderIndirect> RenderIndirectPtr;
+typedef std::shared_ptr<class GraphicsIndirect> GraphicsIndirectPtr;
 
-typedef std::vector<ShaderDesc> ShadersDesc;
+typedef std::vector<GraphicsShaderPtr> GraphicsShaders;
+typedef std::vector<GraphicsVariantPtr> GraphicsVariants;
+typedef std::vector<GraphicsRenderTexturePtr> GraphicsRenderTextures;
+typedef std::vector<GraphicsIndirectPtr> GraphicsIndirects;
+typedef std::vector<GraphicsUniformPtr> GraphicsUniforms;
+typedef std::vector<GraphicsTexturePtr> GraphicsTextures;
+typedef std::vector<class VertexComponent> VertexComponents;
+typedef std::vector<class GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponents;
 typedef std::vector<ShaderAttributePtr> ShaderAttributes;
 typedef std::vector<ShaderUniformPtr> ShaderUniforms;
 typedef std::vector<ShaderSubroutinePtr> ShaderSubroutines;
 typedef std::vector<ShaderVariantPtr> ShaderVariants;
-typedef std::vector<GraphicsRenderTexturePtr> GraphicsRenderTextures;
-typedef std::vector<class VertexComponent> VertexComponents;
-typedef std::vector<RenderIndirectPtr> RenderIndirects;
+
+class GraphicsSwapchainDesc;
+class GraphicsContextDesc;
+class GraphicsInputLayoutDesc;
+class GraphicsDataDesc;
+class GraphicsTextureDesc;
+class GraphicsSamplerDesc;
+class GraphicsRenderTextureDesc;
+class GraphicsStateDesc;
+class GraphicsShaderDesc;
+class GraphicsProgramDesc;
+class GraphicsPipelineDesc;
+class GraphicsDescriptorSetDesc;
+class GraphicsDescriptorSetLayoutDesc;
+class GraphicsDescriptorPoolDesc;
 
 typedef void* WindHandle;
 
@@ -594,55 +634,76 @@ enum GraphicsShaderStage
 	GraphicsShaderStageMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsVariantType
+enum GraphicsUniformType
 {
-	GraphicsVariantTypeNone,
-	GraphicsVariantTypeBool,
-	GraphicsVariantTypeShort,
-	GraphicsVariantTypeShort2,
-	GraphicsVariantTypeShort3,
-	GraphicsVariantTypeShort4,
-	GraphicsVariantTypeUShort,
-	GraphicsVariantTypeUShort2,
-	GraphicsVariantTypeUShort3,
-	GraphicsVariantTypeUShort4,
-	GraphicsVariantTypeInt,
-	GraphicsVariantTypeInt2,
-	GraphicsVariantTypeInt3,
-	GraphicsVariantTypeInt4,
-	GraphicsVariantTypeUInt,
-	GraphicsVariantTypeUInt2,
-	GraphicsVariantTypeUInt3,
-	GraphicsVariantTypeUInt4,
-	GraphicsVariantTypeFloat,
-	GraphicsVariantTypeFloat2,
-	GraphicsVariantTypeFloat3,
-	GraphicsVariantTypeFloat4,
-	GraphicsVariantTypeFloat3x3,
-	GraphicsVariantTypeFloat4x4,
-	GraphicsVariantTypeFloatArray,
-	GraphicsVariantTypeFloat2Array,
-	GraphicsVariantTypeFloat3Array,
-	GraphicsVariantTypeFloat4Array,
-	GraphicsVariantTypeTexture,
-	GraphicsVariantTypeBuffer,
-	GraphicsVariantTypeBeginRange = GraphicsVariantTypeNone,
-	GraphicsVariantTypeEndRange = GraphicsVariantTypeBuffer,
-	GraphicsVariantTypeRangeSize = (GraphicsVariantTypeEndRange - GraphicsVariantTypeBeginRange + 1),
-	GraphicsVariantTypeMaxEnum = 0x7FFFFFFF
+	GraphicsUniformTypeNone,
+    GraphicsUniformTypeBool,
+    GraphicsUniformTypeInt,
+    GraphicsUniformTypeInt2,
+    GraphicsUniformTypeInt3,
+    GraphicsUniformTypeInt4,
+    GraphicsUniformTypeUint,
+    GraphicsUniformTypeUint2,
+    GraphicsUniformTypeUint3,
+    GraphicsUniformTypeUint4,
+    GraphicsUniformTypeFloat,
+    GraphicsUniformTypeFloat2,
+    GraphicsUniformTypeFloat3,
+    GraphicsUniformTypeFloat4,
+    GraphicsUniformTypeFloat3x3,
+    GraphicsUniformTypeFloat4x4,
+    GraphicsUniformTypeBoolArray,
+    GraphicsUniformTypeIntArray,
+    GraphicsUniformTypeInt2Array,
+    GraphicsUniformTypeInt3Array,
+    GraphicsUniformTypeInt4Array,
+    GraphicsUniformTypeUintArray,
+    GraphicsUniformTypeUint2Array,
+    GraphicsUniformTypeUint3Array,
+    GraphicsUniformTypeUint4Array,
+    GraphicsUniformTypeHalfArray,
+    GraphicsUniformTypeHalf2Array,
+    GraphicsUniformTypeHalf3Array,
+    GraphicsUniformTypeHalf4Array,
+    GraphicsUniformTypeFloatArray,
+    GraphicsUniformTypeFloat2Array,
+    GraphicsUniformTypeFloat3Array,
+    GraphicsUniformTypeFloat4Array,
+    GraphicsUniformTypeFloat3x3Array,
+    GraphicsUniformTypeFloat4x4Array,
+	GraphicsUniformTypeSampler,
+	GraphicsUniformTypeSamplerImage,
+	GraphicsUniformTypeCombinedImageSampler,
+	GraphicsUniformTypeStorageImage,
+	GraphicsUniformTypeStorageTexelBuffer,
+	GraphicsUniformTypeStorageBuffer,
+	GraphicsUniformTypeStorageBufferDynamic,
+	GraphicsUniformTypeUniformTexelBuffer,
+	GraphicsUniformTypeUniformBuffer,
+	GraphicsUniformTypeUniformBufferDynamic,
+	GraphicsUniformTypeInputAttachment,
+	GraphicsUniformTypeBeginRange = GraphicsUniformTypeNone,
+	GraphicsUniformTypeEndRange = GraphicsUniformTypeInputAttachment,
+	GraphicsUniformTypeRangeSize = (GraphicsUniformTypeInputAttachment - GraphicsUniformTypeNone + 1),
+	GraphicsUniformTypeMaxEnum = 0x7FFFFFFF
 };
 
-class EXPORT RenderIndirect final
+enum GraphicsViewLayout
 {
-public:
-	std::int32_t startVertice;
-	std::int32_t startIndice;
-	std::int32_t startInstances;
-	std::int32_t numVertices;
-	std::int32_t numIndices;
-	std::int32_t numInstances;
-
-	RenderIndirect() noexcept;
+	GraphicsViewLayoutUndefined,
+	GraphicsViewLayoutGeneral,
+	GraphicsViewLayoutColorAttachmentOptimal,
+	GraphicsViewLayoutDepthStencilAttachmentOptimal,
+	GraphicsViewLayoutDepthStencilReadOnlyOptimal,
+	GraphicsViewLayoutShaderReadOnlyOptimal,
+	GraphicsViewLayoutTransferSrcOptimal,
+	GraphicsViewLayoutTransferDstOptimal,
+	GraphicsViewLayoutPreinitialized,
+	GraphicsViewLayoutPresentSrcKhr,
+	GraphicsViewLayoutBeginRange = GraphicsViewLayoutUndefined,
+	GraphicsViewLayoutEndRange = GraphicsViewLayoutPreinitialized,
+	GraphicsViewLayoutRangeSize = (GraphicsViewLayoutPreinitialized - GraphicsViewLayoutUndefined + 1),
+	GraphicsViewLayoutMaxEnum = 0x7FFFFFFF
 };
 
 _NAME_END

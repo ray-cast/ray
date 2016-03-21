@@ -85,19 +85,19 @@ RenderComponent::addPreRenderListener(std::function<void()> func) noexcept
 void
 RenderComponent::removePreRenderListener(std::function<void()> func) noexcept
 {
-	assert(_onPostRender.find(func));
-	_onPostRender.remove(func);
+	assert(_onPreRender.find(func));
+	_onPreRender.remove(func);
 }
 
 void
-RenderComponent::addPostRenderListener(std::function<void()> func) noexcept
+RenderComponent::addPostRenderListener(std::function<void(RenderPipeline&)> func) noexcept
 {
 	assert(!_onPostRender.find(func));
 	_onPostRender.attach(func);
 }
 
 void
-RenderComponent::removePostRenderListener(std::function<void()> func) noexcept
+RenderComponent::removePostRenderListener(std::function<void(RenderPipeline&)> func) noexcept
 {
 	assert(_onPostRender.find(func));
 	_onPostRender.remove(func);
@@ -128,9 +128,9 @@ RenderComponent::onWillRenderObject(const Camera& camera) noexcept
 }
 
 void
-RenderComponent::onRenderObject(const Camera& camera) noexcept
+RenderComponent::onRenderObject(RenderPipeline& pipeline, const Camera& camera) noexcept
 {
-	_onPostRender.run();
+	_onPostRender.run(pipeline);
 }
 
 _NAME_END

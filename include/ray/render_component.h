@@ -58,15 +58,15 @@ public:
 	void addPreRenderListener(std::function<void()> listener) noexcept;
 	void removePreRenderListener(std::function<void()> listener) noexcept;
 
-	void addPostRenderListener(std::function<void()> listener) noexcept;
-	void removePostRenderListener(std::function<void()> listener) noexcept;
+	void addPostRenderListener(std::function<void(RenderPipeline&)> listener) noexcept;
+	void removePostRenderListener(std::function<void(RenderPipeline&)> listener) noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
 
 protected:
 	virtual void onWillRenderObject(const Camera& camera) noexcept;
-	virtual void onRenderObject(const Camera& camera) noexcept;
+	virtual void onRenderObject(RenderPipeline& pipeline, const Camera& camera) noexcept;
 
 private:
 	RenderComponent(const RenderComponent&) = delete;
@@ -77,7 +77,7 @@ protected:
 	bool _isReceiveShadow;
 
 	delegate<void()> _onPreRender;
-	delegate<void()> _onPostRender;
+	delegate<void(RenderPipeline&)> _onPostRender;
 };
 
 _NAME_END

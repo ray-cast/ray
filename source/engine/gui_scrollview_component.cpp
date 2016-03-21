@@ -159,7 +159,7 @@ GuiScrollViewComponent::save(oarchive& write) noexcept
 }
 
 GameComponentPtr
-GuiScrollViewComponent::clone() const except
+GuiScrollViewComponent::clone() const noexcept
 {
 	return std::make_shared<GuiScrollViewComponent>();
 }

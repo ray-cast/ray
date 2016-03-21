@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -41,13 +41,13 @@
 
 _NAME_BEGIN
 
-class WGLCanvas
+class WGLCanvas : public GraphicsSwapchain
 {
 public:
 	WGLCanvas() noexcept;
-	~WGLCanvas() noexcept;
+	virtual ~WGLCanvas() noexcept;
 
-	bool open(WindHandle hwnd) noexcept;
+	bool setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
 	void close() noexcept;
 
 	void setActive(bool active) noexcept;
@@ -58,7 +58,12 @@ public:
 
 	void present() noexcept;
 
-	WindHandle getWindHandle() const noexcept;
+	const GraphicsSwapchainDesc& getGraphicsSwapchainDesc() const noexcept;
+
+private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
 
 private:
 	static bool initWGLExtensions(HDC hdc) except;
@@ -80,14 +85,14 @@ private:
 
 	bool _isActive;
 
-	HWND _hwnd;
 	HDC _hdc;
 	HGLRC _context;
 
 	GPUfbconfig _fbconfig;
 	GPUctxconfig _ctxconfig;
 
-	SwapInterval _interval;
+	GraphicsSwapchainDesc _swapchainDesc;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

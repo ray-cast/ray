@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,44 +34,34 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "ogl_layout.h"
+#include "ogl_input_layout.h"
 #include "ogl_shader.h"
 #include "ogl_vbo.h"
 #include "ogl_ibo.h"
 
 _NAME_BEGIN
 
-__ImplementSubClass(OGLGraphicsLayout, GraphicsLayout, "OGLGraphicsLayout")
+__ImplementSubClass(OGLInputLayout, GraphicsInputLayout, "OGLInputLayout")
 
-OGLGraphicsLayout::OGLGraphicsLayout() noexcept
+OGLInputLayout::OGLInputLayout() noexcept
 	: _vao(GL_NONE)
 	, _ibo(GL_NONE)
-	, _indexType(GL_NONE)
-	, _indexSize(0)
 {
 }
 
-OGLGraphicsLayout::~OGLGraphicsLayout() noexcept
+OGLInputLayout::~OGLInputLayout() noexcept
 {
 }
 
 bool
-OGLGraphicsLayout::open(const GraphicsLayoutDesc& layout) noexcept
+OGLInputLayout::setup(const GraphicsInputLayoutDesc& inputLayout) noexcept
 {
 	assert(!_vao);
 
-	_indexType = OGLTypes::asIndexType(layout.getIndexType());
-	if (_indexType == GL_INVALID_ENUM)
+	if (OGLTypes::asIndexType(inputLayout.getIndexType()) == GL_INVALID_ENUM)
 		return false;
 
-	_indexSize = layout.getIndexSize();
-	if (_indexType != GL_NONE)
-	{
-		if (_indexSize == 0)
-			return false;
-	}
-
-	auto& component = layout.getVertexComponents();
+	auto& component = inputLayout.getVertexComponents();
 	for (auto& it : component)
 	{
 		auto& semantic = it.getSemantic();
@@ -91,8 +81,6 @@ OGLGraphicsLayout::open(const GraphicsLayoutDesc& layout) noexcept
 		}
 	}
 
-	_layout = layout;
-
 	glCreateVertexArrays(1, &_vao);
 	if (_vao == GL_NONE)
 	{
@@ -100,11 +88,12 @@ OGLGraphicsLayout::open(const GraphicsLayoutDesc& layout) noexcept
 		return false;
 	}
 
+	_inputLayoutDesc = inputLayout;
 	return true;
 }
 
 void
-OGLGraphicsLayout::close() noexcept
+OGLInputLayout::close() noexcept
 {
 	if (_vao)
 	{
@@ -113,67 +102,20 @@ OGLGraphicsLayout::close() noexcept
 	}
 }
 
-void
-OGLGraphicsLayout::setVertexComponents(const VertexComponents& component) noexcept
-{
-	_layout.setVertexComponents(component);
-}
-
-const VertexComponents&
-OGLGraphicsLayout::getVertexComponents() const noexcept
-{
-	return _layout.getVertexComponents();
-}
-
-void
-OGLGraphicsLayout::addComponent(const VertexComponent& compoent) noexcept
-{
-	_layout.addComponent(compoent);
-}
-
-void
-OGLGraphicsLayout::removeComponent(const VertexComponent& compoent) noexcept
-{
-	_layout.removeComponent(compoent);
-}
-
-void
-OGLGraphicsLayout::setIndexType(GLenum type) noexcept
-{
-	if (type == GL_UNSIGNED_SHORT)
-		_layout.setIndexType(GraphicsIndexType::GraphicsIndexTypeUint16);
-	else if (type == GL_UNSIGNED_INT)
-		_layout.setIndexType(GraphicsIndexType::GraphicsIndexTypeUint32);
-	else
-		_layout.setIndexType(GraphicsIndexType::GraphicsIndexTypeNone);
-}
-
-GLenum
-OGLGraphicsLayout::getIndexType() const noexcept
-{
-	return _indexType;
-}
-
-GLsizei
-OGLGraphicsLayout::getIndexSize() const noexcept
-{
-	return _indexSize;
-}
-
 GLuint 
-OGLGraphicsLayout::getInstanceID() const noexcept
+OGLInputLayout::getInstanceID() const noexcept
 {
 	return _vao;
 }
 
-const GraphicsLayoutDesc&
-OGLGraphicsLayout::getGraphicsLayout() const noexcept
+const GraphicsInputLayoutDesc&
+OGLInputLayout::getGraphicsInputLayoutDesc() const noexcept
 {
-	return _layout;
+	return _inputLayoutDesc;
 }
 
 void
-OGLGraphicsLayout::bindLayout(OGLShaderObjectPtr program) noexcept
+OGLInputLayout::bindLayout(OGLShaderObjectPtr program) noexcept
 {
 	glBindVertexArray(_vao);
 
@@ -181,7 +123,7 @@ OGLGraphicsLayout::bindLayout(OGLShaderObjectPtr program) noexcept
 	{
 		GLuint offset = 0;
 
-		auto& components = this->getVertexComponents();
+		auto& components = _inputLayoutDesc.getVertexComponents();
 		for (auto& it : components)
 		{
 			GLuint attribIndex = GL_INVALID_INDEX;
@@ -216,7 +158,7 @@ OGLGraphicsLayout::bindLayout(OGLShaderObjectPtr program) noexcept
 }
 
 void
-OGLGraphicsLayout::bindVbo(OGLVertexBufferPtr vbo, std::uint8_t slot) noexcept
+OGLInputLayout::bindVbo(OGLVertexBufferPtr vbo, std::uint8_t slot) noexcept
 {
 	assert(vbo);
 
@@ -232,10 +174,10 @@ OGLGraphicsLayout::bindVbo(OGLVertexBufferPtr vbo, std::uint8_t slot) noexcept
 }
 
 void
-OGLGraphicsLayout::bindIbo(OGLIndexBufferPtr ibo) noexcept
+OGLInputLayout::bindIbo(OGLIndexBufferPtr ibo) noexcept
 {
 	assert(ibo);
-	assert(_layout.getIndexType() != GraphicsIndexType::GraphicsIndexTypeNone);
+	assert(_inputLayoutDesc.getIndexType() != GraphicsIndexType::GraphicsIndexTypeNone);
 
 	if (_ibo != ibo)
 	{
@@ -245,13 +187,13 @@ OGLGraphicsLayout::bindIbo(OGLIndexBufferPtr ibo) noexcept
 }
 
 void
-OGLGraphicsLayout::setDevice(GraphicsDevicePtr device) noexcept
+OGLInputLayout::setDevice(GraphicsDevicePtr device) noexcept
 {
 	_device = device;
 }
 
 GraphicsDevicePtr
-OGLGraphicsLayout::getDevice() noexcept
+OGLInputLayout::getDevice() noexcept
 {
 	return _device.lock();
 }

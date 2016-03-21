@@ -127,7 +127,7 @@ public:
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
 
-	GameObjectPtr clone() const except;
+	GameObjectPtr clone() const noexcept;
 
 	virtual GameServerPtr getGameServer() noexcept;
 	virtual GameScenePtr getGameScene() noexcept;

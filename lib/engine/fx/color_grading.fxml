@@ -2,13 +2,10 @@
 <effect language="hlsl">
     <include name="sys:fx/math.fxml"/>
     <include name="sys:fx/sampler.fxml"/>
-    <parameter name="texSource" type="texture"/>
-    <parameter name="texColorGrading" type="texture"/>
+    <parameter name="texSource" type="texture2D"/>
+    <parameter name="texColorGrading" type="texture2D"/>
     <shader>
         <![CDATA[
-            uniform Texture2D texSource;
-            uniform Texture2D texColorGrading;
-
             void PostProcessVS(
                 in float4 Position : POSITION0,
                 in float4 Texcoord : TEXCOORD0,

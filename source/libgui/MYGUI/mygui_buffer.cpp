@@ -37,6 +37,8 @@
 #if defined(_BUILD_MYGUI)
 #include "mygui_buffer.h"
 
+#include <ray/graphics_data.h>
+
 _NAME_BEGIN
 
 MyGuiVertexBuffer::MyGuiVertexBuffer() noexcept
@@ -72,7 +74,7 @@ MyGuiVertexBuffer::lock() noexcept
 			_layout.addComponent(VertexComponent("COLOR", 0, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm));
 			_layout.addComponent(VertexComponent("TEXCOORD", 0, GraphicsFormat::GraphicsFormatR32G32SFloat));
 
-			auto layout = RenderSystem::instance()->createGraphicsLayout(_layout);
+			auto layout = RenderSystem::instance()->createInputLayout(_layout);
 
 			GraphicsDataDesc vb;
 			vb.setUsage(UsageFlags::MAP_READ_BIT | UsageFlags::MAP_WRITE_BIT);
@@ -83,7 +85,7 @@ MyGuiVertexBuffer::lock() noexcept
 			_vb = RenderSystem::instance()->createGraphicsData(vb);
 
 			_buffer = RenderSystem::instance()->createRenderBuffer(_vb, nullptr);
-			_buffer->setGraphicsLayout(layout);
+			_buffer->setInputLayout(layout);
 
 			_vertexCount = _needVertexCount;
 		}

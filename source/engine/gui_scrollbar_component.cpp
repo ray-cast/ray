@@ -231,7 +231,7 @@ GuiScrollBarComponent::save(oarchive& write) noexcept
 }
 
 GameComponentPtr
-GuiScrollBarComponent::clone() const except
+GuiScrollBarComponent::clone() const noexcept
 {
 	return std::make_shared<GuiScrollBarComponent>();
 }

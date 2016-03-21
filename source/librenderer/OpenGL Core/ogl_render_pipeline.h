@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,26 +34,37 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_COMMAND_H_
-#define _H_RENDER_COMMAND_H_
+#ifndef _H_OGL_RENDER_PIPELINE_H_
+#define _H_OGL_RENDER_PIPELINE_H_
 
-#include <ray/render_types.h>
+#include "ogl_types.h"
 
 _NAME_BEGIN
 
-class RenderCommand
+class OGLRenderPipeline final : public GraphicsPipeline
 {
+	__DeclareSubClass(OGLRenderPipeline, GraphicsPipeline)
 public:
-	void clear() noexcept;
+	OGLRenderPipeline() noexcept;
+	virtual ~OGLRenderPipeline() noexcept;
 
-	void write(const void* data, std::size_t length);
+	bool setup(const GraphicsPipelineDesc& pipelineDesc) noexcept;
+	void close() noexcept;
 
-	const char* data() const noexcept;
+	const GraphicsPipelineDesc& getGraphicsPipelineDesc() const noexcept;
 
 private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
 
-	std::size_t _next;
-	std::vector<char> _data;
+private:
+	OGLRenderPipeline(const OGLRenderPipeline&) noexcept = delete;
+	OGLRenderPipeline& operator=(const OGLRenderPipeline&) noexcept = delete;
+
+private:
+	GraphicsPipelineDesc _pipelineDesc;
+	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

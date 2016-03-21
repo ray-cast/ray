@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -41,26 +41,25 @@
 
 _NAME_BEGIN
 
-class EXPORT MaterialVariant
+class EXPORT MaterialParam final
 {
 public:
-	MaterialVariant() noexcept;
-	MaterialVariant(const std::string& name, GraphicsVariantType type) noexcept;
-	virtual ~MaterialVariant() noexcept;
+	MaterialParam() noexcept;
+	MaterialParam(const std::string& name, GraphicsUniformType type) noexcept;
+	virtual ~MaterialParam() noexcept;
 
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 
-	void setType(GraphicsVariantType type) noexcept;
-	GraphicsVariantType getType() const noexcept;
+	void setType(GraphicsUniformType type) noexcept;
+	GraphicsUniformType getType() const noexcept;
 
-	std::size_t getSize() const noexcept;
+	void setSemantic(MaterialVariantPtr semantic) noexcept;
+	MaterialVariantPtr getSemantic() const noexcept;
 
 	void assign(bool value) noexcept;
 	void assign(int value) noexcept;
 	void assign(const int2& value) noexcept;
-	void assign(const int3& value) noexcept;
-	void assign(const int4& value) noexcept;
 	void assign(float value) noexcept;
 	void assign(const float2& value) noexcept;
 	void assign(const float3& value) noexcept;
@@ -73,94 +72,9 @@ public:
 	void assign(const std::vector<float4>& value) noexcept;
 	void assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
 
-	bool getBool() const noexcept;
-	int getInt() const noexcept;
-	const int2& getInt2() const noexcept;
-	const int3& getInt3() const noexcept;
-	const int4& getInt4() const noexcept;
-	float getFloat() const noexcept;
-	const float2& getFloat2() const noexcept;
-	const float3& getFloat3() const noexcept;
-	const float4& getFloat4() const noexcept;
-	const float3x3& getFloat3x3() const noexcept;
-	const float4x4& getFloat4x4() const noexcept;
-	const std::vector<float>& getFloatArray() const noexcept;
-	const std::vector<float2>& getFloat2Array() const noexcept;
-	const std::vector<float3>& getFloat3Array() const noexcept;
-	const std::vector<float4>& getFloat4Array() const noexcept;
-	GraphicsTexturePtr getTexture() const noexcept;
-	GraphicsSamplerPtr getTextureSampler() const noexcept;
-
-private:
-
-	std::string _name;
-
-	GraphicsTexturePtr _texture;
-	GraphicsSamplerPtr _textureSampler;
-
-	union
-	{
-		bool b;
-		int i[4];
-		float f[4];
-		float3x3* m3;
-		float4x4* m4;
-		std::vector<float>* farray;
-		std::vector<float2>* farray2;
-		std::vector<float3>* farray3;
-		std::vector<float4>* farray4;
-	} _value;
-
-	GraphicsVariantType _type;
-	ShaderVariants _params;
-};
-
-class EXPORT MaterialSemantic final : public MaterialVariant
-{
-public:
-	MaterialSemantic() noexcept;
-	MaterialSemantic(const std::string& name, GraphicsVariantType type) noexcept;
-	virtual ~MaterialSemantic() noexcept;
-};
-
-class EXPORT MaterialParam final
-{
-public:
-	MaterialParam() noexcept;
-	MaterialParam(const std::string& name, GraphicsVariantType type) noexcept;
-	virtual ~MaterialParam() noexcept;
-
-	void setName(const std::string& name) noexcept;
-	const std::string& getName() const noexcept;
-
-	void setType(GraphicsVariantType type) noexcept;
-	GraphicsVariantType getType() const noexcept;
-
-	void setSemantic(MaterialSemanticPtr semantic) noexcept;
-	MaterialSemanticPtr getSemantic() const noexcept;
-
-	void assign(bool value) noexcept;
-	void assign(int value) noexcept;
-	void assign(const int2& value) noexcept;
-	void assign(float value) noexcept;
-	void assign(const float2& value) noexcept;
-	void assign(const float3& value) noexcept;
-	void assign(const float4& value) noexcept;
-	void assign(const float3x3& value) noexcept;
-	void assign(const float4x4& value) noexcept;
-	void assign(const std::vector<float>& value) noexcept;
-	void assign(const std::vector<float2>& value) noexcept;
-	void assign(const std::vector<float3>& value) noexcept;
-	void assign(const std::vector<float4>& value) noexcept;
-	void assign(GraphicsTexturePtr texture) noexcept;
-	void assign(GraphicsSamplerPtr sampler) noexcept;
-
-	GraphicsTexturePtr getTexture() const noexcept;
-	GraphicsSamplerPtr getSampler() const noexcept;
-
-	void addShaderUniform(ShaderUniformPtr& uniform) noexcept;
-	void removeShaderUniform(ShaderUniformPtr& uniform) noexcept;
-	ShaderUniforms& getShaderUniform() noexcept;;
+	void addShaderUniform(GraphicsUniformPtr uniform) noexcept;
+	void removeShaderUniform(GraphicsUniformPtr uniform) noexcept;
+	GraphicsUniforms& getShaderUniform() noexcept;;
 
 private:
 	MaterialParam(const MaterialParam&) = delete;
@@ -169,11 +83,9 @@ private:
 private:
 
 	std::string _name;
-	MaterialSemanticPtr _semantic;
-	GraphicsTexturePtr _texture;
-	GraphicsSamplerPtr _sampler;
-	GraphicsVariantType _type;
-	ShaderUniforms _uniforms;
+	MaterialVariantPtr _semantic;
+	GraphicsUniformType _type;
+	GraphicsUniforms _uniforms;
 };
 
 _NAME_END

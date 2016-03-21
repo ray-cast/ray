@@ -831,7 +831,7 @@ GameObject::save(oarchive& write) noexcept
 }
 
 GameObjectPtr
-GameObject::clone() const except
+GameObject::clone() const noexcept
 {
 	auto instance = std::make_shared<GameObject>();
 	instance->setParent(this->getParent());

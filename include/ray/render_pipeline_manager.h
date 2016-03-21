@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -47,7 +47,7 @@ public:
 	RenderPipelineManager() noexcept;
     ~RenderPipelineManager() noexcept;
 
-	void open(RenderPipelinePtr pipeline) except;
+	bool open(RenderPipelinePtr pipeline) noexcept;
 	void close() noexcept;
 
 	void setRenderPipeline(RenderPipelinePtr pipeline) noexcept;

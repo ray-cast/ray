@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,19 +37,18 @@
 #ifndef _H_METERIAL_H_
 #define _H_METERIAL_H_
 
+#include <ray/material_pass.h>
 #include <ray/material_tech.h>
 #include <ray/material_param.h>
+#include <ray/material_variant.h>
 
 _NAME_BEGIN
 
-class EXPORT Material final
+class EXPORT MaterialDesc final
 {
 public:
-	Material() noexcept;
-	~Material() noexcept;
-
-	void setup() except;
-	void close() noexcept;
+	MaterialDesc() noexcept;
+	~MaterialDesc() noexcept;
 
 	void addTech(MaterialTechPtr technique) noexcept;
 	void removeTech(MaterialTechPtr technique) noexcept;
@@ -69,13 +68,38 @@ public:
 	const MaterialVariants& getMacros() const noexcept;
 
 private:
+	MaterialParams _parameters;
+	MaterialVariants _macros;
+	MaterialTechniques _techniques;
+};
+
+class EXPORT Material final : public rtti::Interface
+{
+	__DeclareSubClass(Material, rtti::Interface)
+public:
+	Material() noexcept;
+	~Material() noexcept;
+
+	void setup(const MaterialDesc& materialDesc) except;
+	void close() noexcept;
+
+	MaterialTechPtr getTech(RenderQueue queue) noexcept;
+	MaterialTechniques& getTechs() noexcept;
+
+	MaterialParamPtr getParameter(const std::string& name) const noexcept;
+	MaterialParams& getParameters() noexcept;
+	const MaterialParams& getParameters() const noexcept;
+
+	MaterialVariantPtr getMacro(const std::string& name) const noexcept;
+	MaterialVariants& getMacros() noexcept;
+	const MaterialVariants& getMacros() const noexcept;
+
+private:
 	Material(const Material&) noexcept = delete;
 	Material& operator=(const Material&) noexcept = delete;
 
 private:
-	MaterialVariants _macros;
-	MaterialParams _parameters;
-	MaterialTechniques _techniques;
+	MaterialDesc _materialDesc;
 };
 
 _NAME_END

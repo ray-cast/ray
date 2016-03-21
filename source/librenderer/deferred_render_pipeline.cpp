@@ -40,6 +40,8 @@
 #include <ray/light.h>
 #include <ray/render_scene.h>
 #include <ray/graphics_state.h>
+#include <ray/graphics_texture.h>
+#include <ray/graphics_view.h>
 #include <ray/material_manager.h>
 
 _NAME_BEGIN
@@ -54,16 +56,6 @@ DeferredRenderPipeline::DeferredRenderPipeline() noexcept
 	_backCamera = std::make_shared<Camera>();
 	_topCamera = std::make_shared<Camera>();
 	_bottomCamera = std::make_shared<Camera>();
-
-	_materialDepthMap = std::make_shared<MaterialSemantic>("DepthMap", GraphicsVariantType::GraphicsVariantTypeTexture);
-	_materialColorMap = std::make_shared<MaterialSemantic>("ColorMap", GraphicsVariantType::GraphicsVariantTypeTexture);
-	_materialNormalMap = std::make_shared<MaterialSemantic>("NormalMap", GraphicsVariantType::GraphicsVariantTypeTexture);
-	_materialDeferredDepthMap = std::make_shared<MaterialSemantic>("DeferredDepthMap", GraphicsVariantType::GraphicsVariantTypeTexture);
-	_materialDeferredDepthLinearMap = std::make_shared<MaterialSemantic>("DeferredDepthLinearMap", GraphicsVariantType::GraphicsVariantTypeTexture);
-	_materialDeferredGraphicMap = std::make_shared<MaterialSemantic>("DeferredGraphicMap", GraphicsVariantType::GraphicsVariantTypeTexture);
-	_materialDeferredNormalMap = std::make_shared<MaterialSemantic>("DeferredNormalMap", GraphicsVariantType::GraphicsVariantTypeTexture);
-	_materialDeferredLightMap = std::make_shared<MaterialSemantic>("DeferredLightMap", GraphicsVariantType::GraphicsVariantTypeTexture);
-	_materialDeferredShadowMap = std::make_shared<MaterialSemantic>("DeferredShadowMap", GraphicsVariantType::GraphicsVariantTypeTexture);
 }
 
 DeferredRenderPipeline::~DeferredRenderPipeline() noexcept
@@ -75,42 +67,43 @@ DeferredRenderPipeline::renderShadowMap(RenderPipeline& pipeline) noexcept
 {
 	pipeline.setRenderTexture(pipeline.getCamera()->getRenderTexture());
 	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsDepth, Vector4::Zero, 1.0, 0);
-	pipeline.drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_OPAQUES, _deferredDepthOnly);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, RenderPass::RenderPassOpaques, _deferredDepthOnly);
 }
 
 void
 DeferredRenderPipeline::render2DEnvMap(RenderPipeline& pipeline) noexcept
 {
-	pipeline.setRenderTexture(_deferredShadingMap);
+	pipeline.setRenderTexture(_deferredFinalView);
+	pipeline.setViewport(Viewport(0, 0, 1376, 768), 0);
 	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsAll, pipeline.getCamera()->getClearColor(), 1.0, 0);
-	pipeline.drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_OPAQUES);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, RenderPass::RenderPassOpaques);
 }
 
 void
 DeferredRenderPipeline::render3DEnvMap(RenderPipeline& pipeline) noexcept
 {
-	_materialDeferredDepthMap->assign(_deferredDepthMap->getResolveTexture());
-	_materialDeferredDepthLinearMap->assign(_deferredDepthLinearMap->getResolveTexture());
-	_materialDeferredNormalMap->assign(_deferredNormalMap->getResolveTexture());
-	_materialDeferredGraphicMap->assign(_deferredGraphicMap->getResolveTexture());
-	_materialDeferredLightMap->assign(_deferredLightMap->getResolveTexture());
+	_materialDeferredDepthMap->assign(_deferredDepthMap);
+	_materialDeferredDepthLinearMap->assign(_deferredDepthLinearMap);
+	_materialDeferredNormalMap->assign(_deferredNormalMap);
+	_materialDeferredGraphicMap->assign(_deferredGraphicMap);
+	_materialDeferredLightMap->assign(_deferredLightMap);
 
-	_materialDepthMap->assign(_deferredDepthMap->getResolveTexture());
-	_materialColorMap->assign(_deferredShadingMap->getResolveTexture());
-	_materialNormalMap->assign(_deferredNormalMap->getResolveTexture());
+	_materialDepthMap->assign(_deferredDepthMap);
+	_materialColorMap->assign(_deferredShadingMap);
+	_materialNormalMap->assign(_deferredNormalMap);
 
-	this->renderOpaques(pipeline, _deferredGraphicMaps);
-	this->renderOpaquesDepthLinear(pipeline, _deferredDepthLinearMap);
-	this->renderLights(pipeline, _deferredLightMap);
-	this->renderOpaquesShading(pipeline, _deferredShadingMap);
-	this->renderOpaquesSpecificShading(pipeline, _deferredShadingMap);
+	this->renderOpaques(pipeline, _deferredGraphicViews);
+	this->renderOpaquesDepthLinear(pipeline, _deferredDepthLinearView);
+	this->renderLights(pipeline, _deferredLightView);
+	this->renderOpaquesShading(pipeline, _deferredShadingView);
+	this->renderOpaquesSpecificShading(pipeline, _deferredShadingView);
 
-	/*this->renderTransparent(_deferredGraphicMaps);
-	this->renderLights(_deferredLightMap);
-	this->renderTransparentShading(_deferredShadingMap);
-	this->renderTransparentSpecificShading(_deferredShadingMap);*/
+	/*this->renderTransparent(_deferredGraphicViews);
+	this->renderLights(_deferredLightView);
+	this->renderTransparentShading(_deferredShadingView);
+	this->renderTransparentSpecificShading(_deferredShadingView);*/
 
-	pipeline.drawPostProcess(RenderQueue::RQ_POSTPROCESS, _deferredShadingMap, _deferredSwapMap, _deferredFinalMap);
+	pipeline.drawPostProcess(RenderQueue::RenderQueuePostprocess, _deferredShadingMap, _deferredSwapView, _deferredFinalView);
 
 	auto renderTexture = pipeline.getCamera()->getRenderTexture();
 	if (renderTexture)
@@ -118,11 +111,11 @@ DeferredRenderPipeline::render3DEnvMap(RenderPipeline& pipeline) noexcept
 }
 
 void
-DeferredRenderPipeline::renderOpaques(RenderPipeline& pipeline, GraphicsMultiRenderTexturePtr target) noexcept
+DeferredRenderPipeline::renderOpaques(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept
 {
-	pipeline.setMultiRenderTexture(target);
+	pipeline.setRenderTexture(target);
 	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsAll, Vector4::Zero, 1.0, 0);
-	pipeline.drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_OPAQUES);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, RenderPass::RenderPassOpaques);
 }
 
 void
@@ -137,7 +130,7 @@ DeferredRenderPipeline::renderOpaquesDepthLinear(RenderPipeline& pipeline, Graph
 }
 
 void
-DeferredRenderPipeline::renderOpaquesShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target, int layer) noexcept
+DeferredRenderPipeline::renderOpaquesShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept
 {
 	pipeline.setRenderTexture(target);
 	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColor, pipeline.getCamera()->getClearColor(), 1.0, 0);
@@ -145,19 +138,19 @@ DeferredRenderPipeline::renderOpaquesShading(RenderPipeline& pipeline, GraphicsR
 }
 
 void
-DeferredRenderPipeline::renderOpaquesSpecificShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target, int layer) noexcept
+DeferredRenderPipeline::renderOpaquesSpecificShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept
 {
 	pipeline.setRenderTexture(target);
-	pipeline.drawRenderQueue(RenderQueue::RQ_OPAQUE, RenderPass::RP_SPECIFIC);
-	pipeline.drawPostProcess(RenderQueue::RQ_OPAQUE, target, target, _deferredFinalMap);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, RenderPass::RenderPassSpecific);
+	pipeline.drawPostProcess(RenderQueue::RenderQueueOpaque, target->getGraphicsRenderTextureDesc().getTextures()[0], target, _deferredFinalView);
 }
 
 void
-DeferredRenderPipeline::renderTransparent(RenderPipeline& pipeline, GraphicsMultiRenderTexturePtr renderTexture) noexcept
+DeferredRenderPipeline::renderTransparent(RenderPipeline& pipeline, GraphicsRenderTexturePtr renderTexture) noexcept
 {
-	pipeline.setMultiRenderTexture(renderTexture);
+	pipeline.setRenderTexture(renderTexture);
 	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColorStencil, Vector4::Zero, 1.0, 0, 0);
-	pipeline.drawRenderQueue(RenderQueue::RQ_TRANSPARENT, RenderPass::RP_TRANSPARENT);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent, RenderPass::RenderPassTransparent);
 }
 
 void
@@ -165,24 +158,22 @@ DeferredRenderPipeline::renderTransparentDepthLinear(RenderPipeline& pipeline, G
 {
 	pipeline.setRenderTexture(target);
 	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColor, Vector4::Zero, 1.0, 0, 0);
-	pipeline.drawRenderQueue(RenderQueue::RQ_TRANSPARENT, RenderPass::RP_DEPTH, _deferredDepthLinear);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent, RenderPass::RenderPassDepth, _deferredDepthLinear);
 }
 
 void
-DeferredRenderPipeline::renderTransparentShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target, int layer) noexcept
+DeferredRenderPipeline::renderTransparentShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept
 {
 	pipeline.setRenderTexture(target);
-	pipeline.setRenderTextureLayer(target, layer);
 	pipeline.drawScreenQuad(_deferredShadingTransparents);
 }
 
 void
-DeferredRenderPipeline::renderTransparentSpecificShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target, int layer) noexcept
+DeferredRenderPipeline::renderTransparentSpecificShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept
 {
 	pipeline.setRenderTexture(target);
-	pipeline.setRenderTextureLayer(target, layer);
-	pipeline.drawRenderQueue(RenderQueue::RQ_TRANSPARENT, RenderPass::RP_SPECIFIC);
-	pipeline.drawRenderQueue(RenderQueue::RQ_TRANSPARENT, RenderPass::RP_POSTPROCESS);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent, RenderPass::RenderPassSpecific);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent, RenderPass::RenderPassPostprocess);
 }
 
 void
@@ -191,32 +182,32 @@ DeferredRenderPipeline::renderLights(RenderPipeline& pipeline, GraphicsRenderTex
 	pipeline.setRenderTexture(target);
 	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColor, Vector4::Zero, 1.0, 0);
 
-	auto& lights = pipeline.getRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS);
+	auto& lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting, RenderPass::RenderPassLights);
 	for (auto& it : lights)
 	{
 		auto light = std::dynamic_pointer_cast<Light>(it);
 
 		switch (light->getLightType())
 		{
-		case ray::LT_SUN:
+		case LightType::LightTypeSun:
 			this->renderSunLight(pipeline, *light);
 			break;
-		case ray::LT_DIRECTIONAL:
+		case LightType::LightTypeDirectional:
 			this->renderDirectionalLight(pipeline, *light);
 			break;
-		case ray::LT_POINT:
+		case LightType::LightTypePoint:
 			this->renderPointLight(pipeline, *light);
 			break;
-		case ray::LT_AREA:
+		case LightType::LightTypeArea:
 			this->renderAreaLight(pipeline, *light);
 			break;
-		case ray::LT_SPOT:
+		case LightType::LightTypeSpot:
 			this->renderSpotLight(pipeline, *light);
 			break;
-		case ray::LT_HEMI_SPHERE:
+		case LightType::LightTypeHemiSphere:
 			this->renderHemiSphereLight(pipeline, *light);
 			break;
-		case ray::LT_AMBIENT:
+		case LightType::LightTypeAmbient:
 			this->renderAmbientLight(pipeline, *light);
 			break;
 		default:
@@ -224,7 +215,7 @@ DeferredRenderPipeline::renderLights(RenderPipeline& pipeline, GraphicsRenderTex
 		}
 	}
 
-	pipeline.drawPostProcess(RenderQueue::RQ_LIGHTING, target, target, _deferredFinalMap);
+	pipeline.drawPostProcess(RenderQueue::RenderQueueLighting, target->getGraphicsRenderTextureDesc().getTextures()[0], target, _deferredFinalView);
 }
 
 void
@@ -241,7 +232,7 @@ DeferredRenderPipeline::renderSunLight(RenderPipeline& pipeline, const Light& li
 	if (light.getShadow())
 	{
 		_shadowFactor->assign(float2(ESM_FACTOR, 0.001));
-		_shadowMap->assign(light.getShadowCamera()->getRenderTexture()->getResolveTexture());
+		_shadowMap->assign(light.getShadowMap());
 		_shadowMatrix->assign(light.getShadowCamera()->getViewProject());
 
 		pipeline.drawScreenQuad(_deferredSunLightShadow);
@@ -266,7 +257,7 @@ DeferredRenderPipeline::renderDirectionalLight(RenderPipeline& pipeline, const L
 	if (light.getShadow())
 	{
 		_shadowFactor->assign(float2(ESM_FACTOR, 0.001));
-		_shadowMap->assign(light.getShadowCamera()->getRenderTexture()->getResolveTexture());
+		_shadowMap->assign(light.getShadowMap());
 		_shadowMatrix->assign(light.getShadowCamera()->getViewProject());
 
 		pipeline.drawScreenQuad(_deferredDirectionalLightShadow);
@@ -289,8 +280,7 @@ DeferredRenderPipeline::renderPointLight(RenderPipeline& pipeline, const Light& 
 
 	_eyePosition->assign(pipeline.getCamera()->getView().getTranslate() * float3x3(pipeline.getCamera()->getView()));
 
-	pipeline.setModelMatrix(light.getTransform());
-	pipeline.drawSphere(_deferredPointLight);
+	pipeline.drawSphere(_deferredPointLight, light.getTransform());
 }
 
 void
@@ -307,8 +297,7 @@ DeferredRenderPipeline::renderSpotLight(RenderPipeline& pipeline, const Light& l
 
 	_eyePosition->assign(pipeline.getCamera()->getView().getTranslate() * float3x3(pipeline.getCamera()->getView()));
 
-	pipeline.setModelMatrix(light.getTransform());
-	pipeline.drawCone(_deferredSpotLight);
+	pipeline.drawCone(_deferredSpotLight, light.getTransform());
 }
 
 void
@@ -337,9 +326,9 @@ DeferredRenderPipeline::renderAreaLight(RenderPipeline& pipeline, const Light& l
 }
 
 void
-DeferredRenderPipeline::copyRenderTexture(RenderPipeline& pipeline, GraphicsRenderTexturePtr src, GraphicsRenderTexturePtr dst, const Viewport& view) noexcept
+DeferredRenderPipeline::copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr src, GraphicsRenderTexturePtr dst, const Viewport& view) noexcept
 {
-	_texSource->assign(src->getResolveTexture());
+	_texSource->assign(src);
 	pipeline.setRenderTexture(dst);
 	pipeline.drawScreenQuad(_deferredCopyOnly);
 }
@@ -348,6 +337,17 @@ void
 DeferredRenderPipeline::setupSemantic(RenderPipeline& pipeline)
 {
 	auto materialManager = pipeline.getMaterialManager();
+
+	_materialDepthMap = std::make_shared<MaterialVariant>("DepthMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_materialColorMap = std::make_shared<MaterialVariant>("ColorMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_materialNormalMap = std::make_shared<MaterialVariant>("NormalMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_materialDeferredDepthMap = std::make_shared<MaterialVariant>("DeferredDepthMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_materialDeferredDepthLinearMap = std::make_shared<MaterialVariant>("DeferredDepthLinearMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_materialDeferredGraphicMap = std::make_shared<MaterialVariant>("DeferredGraphicMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_materialDeferredNormalMap = std::make_shared<MaterialVariant>("DeferredNormalMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_materialDeferredLightMap = std::make_shared<MaterialVariant>("DeferredLightMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_materialDeferredShadowMap = std::make_shared<MaterialVariant>("DeferredShadowMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+
 	materialManager->addSemantic(_materialDepthMap);
 	materialManager->addSemantic(_materialColorMap);
 	materialManager->addSemantic(_materialNormalMap);
@@ -363,18 +363,18 @@ void
 DeferredRenderPipeline::setupMaterials(RenderPipeline& pipeline)
 {
 	_deferredLighting = pipeline.createMaterial("sys:fx\\deferred_lighting.fxml.o");
-	_deferredDepthOnly = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredDepthOnly");
-	_deferredDepthLinear = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredDepthLinear");
-	_deferredPointLight = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredPointLight");
-	_deferredAmbientLight = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredAmbientLight");
-	_deferredSunLight = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredSunLight");
-	_deferredSunLightShadow = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredSunLightShadow");
-	_deferredDirectionalLight = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DirectionalLight");
-	_deferredDirectionalLightShadow = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DirectionalLightShadow");
-	_deferredSpotLight = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredSpotLight");
-	_deferredShadingOpaques = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredShadingOpaques");
-	_deferredShadingTransparents = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredShadingTransparents");
-	_deferredCopyOnly = _deferredLighting->getTech(RenderQueue::RQ_CUSTOM)->getPass("DeferredCopyOnly");
+	_deferredDepthOnly = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredDepthOnly");
+	_deferredDepthLinear = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredDepthLinear");
+	_deferredPointLight = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredPointLight");
+	_deferredAmbientLight = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredAmbientLight");
+	_deferredSunLight = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredSunLight");
+	_deferredSunLightShadow = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredSunLightShadow");
+	_deferredDirectionalLight = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DirectionalLight");
+	_deferredDirectionalLightShadow = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DirectionalLightShadow");
+	_deferredSpotLight = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredSpotLight");
+	_deferredShadingOpaques = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredShadingOpaques");
+	_deferredShadingTransparents = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredShadingTransparents");
+	_deferredCopyOnly = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredCopyOnly");
 
 	_texMRT0 = _deferredLighting->getParameter("texMRT0");
 	_texMRT1 = _deferredLighting->getParameter("texMRT1");
@@ -409,35 +409,61 @@ DeferredRenderPipeline::setupRenderTextures(RenderPipeline& pipeline)
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_deferredDepthMap = pipeline.createRenderTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt);
-	_deferredDepthLinearMap = pipeline.createRenderTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR32SFloat);
-	_deferredGraphicMap = pipeline.createRenderTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
-	_deferredNormalMap = pipeline.createRenderTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_deferredDepthMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt);
+	_deferredDepthLinearMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR32SFloat);
+	_deferredGraphicMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_deferredNormalMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_deferredLightMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16A16SFloat);
+	_deferredShadingMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_deferredSwapMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_deferredFinalMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 
-	GraphicsRenderTextureDesc deferredLightDesc;
-	deferredLightDesc.setSharedStencilTexture(_deferredDepthMap);
-	deferredLightDesc.setGraphicsTexture(pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16A16SFloat));
-	_deferredLightMap = pipeline.createRenderTexture(deferredLightDesc);
+	GraphicsRenderTextureDesc deferredDepthDesc;
+	deferredDepthDesc.setSharedDepthTexture(_deferredDepthMap);
+	deferredDepthDesc.setSharedStencilTexture(_deferredDepthMap);
+	_deferredDepthView = pipeline.createRenderTexture(deferredDepthDesc);
 
-	GraphicsRenderTextureDesc deferredShadingDesc;
-	deferredShadingDesc.setSharedDepthTexture(_deferredDepthMap);
-	deferredShadingDesc.setSharedStencilTexture(_deferredDepthMap);
-	deferredShadingDesc.setGraphicsTexture(pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm));
-	_deferredShadingMap = pipeline.createRenderTexture(deferredShadingDesc);
+	GraphicsRenderTextureDesc deferredDepthLinearDesc;
+	deferredDepthLinearDesc.attach(_deferredDepthLinearMap);
+	_deferredDepthLinearView = pipeline.createRenderTexture(deferredDepthLinearDesc);
 
-	GraphicsRenderTextureDesc deferredSwapDesc;
-	deferredSwapDesc.setSharedDepthTexture(_deferredDepthMap);
-	deferredSwapDesc.setSharedStencilTexture(_deferredDepthMap);
-	deferredSwapDesc.setGraphicsTexture(pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm));
-	_deferredSwapMap = pipeline.createRenderTexture(deferredSwapDesc);
+	GraphicsRenderTextureDesc deferredGraphicsDesc;
+	deferredGraphicsDesc.attach(_deferredGraphicMap);
+	_deferredGraphicView = pipeline.createRenderTexture(deferredGraphicsDesc);
 
-	GraphicsMultiRenderTextureDesc deferredGraphicDesc;
+	GraphicsRenderTextureDesc deferredNormalDesc;
+	deferredNormalDesc.attach(_deferredNormalMap);
+	_deferredNormalView = pipeline.createRenderTexture(deferredNormalDesc);
+
+	GraphicsRenderTextureDesc deferredGraphicDesc;
 	deferredGraphicDesc.setSharedDepthTexture(_deferredDepthMap);
 	deferredGraphicDesc.setSharedStencilTexture(_deferredDepthMap);
 	deferredGraphicDesc.attach(_deferredGraphicMap);
 	deferredGraphicDesc.attach(_deferredNormalMap);
+	_deferredGraphicViews = pipeline.createRenderTexture(deferredGraphicDesc);
 
-	_deferredGraphicMaps = pipeline.createMultiRenderTexture(deferredGraphicDesc);
+	GraphicsRenderTextureDesc deferredLightDesc;
+	deferredLightDesc.setSharedStencilTexture(_deferredDepthMap);
+	deferredLightDesc.attach(_deferredLightMap);
+	_deferredLightView = pipeline.createRenderTexture(deferredLightDesc);
+
+	GraphicsRenderTextureDesc deferredShadingDesc;
+	deferredShadingDesc.setSharedDepthTexture(_deferredDepthMap);
+	deferredShadingDesc.setSharedStencilTexture(_deferredDepthMap);
+	deferredShadingDesc.attach(_deferredShadingMap);
+	_deferredShadingView = pipeline.createRenderTexture(deferredShadingDesc);
+
+	GraphicsRenderTextureDesc deferredFinalDesc;
+	deferredFinalDesc.setSharedDepthTexture(_deferredDepthMap);
+	deferredFinalDesc.setSharedStencilTexture(_deferredDepthMap);
+	deferredFinalDesc.attach(_deferredFinalMap);
+	_deferredFinalView = pipeline.createRenderTexture(deferredFinalDesc);
+
+	GraphicsRenderTextureDesc deferredSwapDesc;
+	deferredSwapDesc.setSharedDepthTexture(_deferredDepthMap);
+	deferredSwapDesc.setSharedStencilTexture(_deferredDepthMap);
+	deferredSwapDesc.attach(_deferredSwapMap);
+	_deferredSwapView = pipeline.createRenderTexture(deferredSwapDesc);
 }
 
 void
@@ -453,6 +479,16 @@ DeferredRenderPipeline::destroySemantic(RenderPipeline& pipeline)
 	materialManager->removeSemantic(_materialDeferredNormalMap);
 	materialManager->removeSemantic(_materialDeferredLightMap);
 	materialManager->removeSemantic(_materialDeferredShadowMap);
+
+	_materialDepthMap.reset();
+	_materialColorMap.reset();
+	_materialNormalMap.reset();
+	_materialDeferredDepthMap.reset();
+	_materialDeferredDepthLinearMap.reset();
+	_materialDeferredGraphicMap.reset();
+	_materialDeferredNormalMap.reset();
+	_materialDeferredLightMap.reset();
+	_materialDeferredShadowMap.reset();
 }
 
 void
@@ -511,7 +547,19 @@ DeferredRenderPipeline::destroyRenderTextures(RenderPipeline& pipeline)
 	_deferredGraphicMap.reset();
 	_deferredNormalMap.reset();
 	_deferredLightMap.reset();
-	_deferredGraphicMaps.reset();
+	_deferredShadingMap.reset();
+	_deferredSwapMap.reset();
+	_deferredFinalMap.reset();
+
+	_deferredDepthView.reset();
+	_deferredDepthLinearView.reset();
+	_deferredGraphicView.reset();
+	_deferredNormalView.reset();
+	_deferredLightView.reset();
+	_deferredShadingView.reset();
+	_deferredSwapView.reset();
+	_deferredFinalView.reset();
+	_deferredGraphicViews.reset();
 }
 
 void
@@ -557,27 +605,31 @@ DeferredRenderPipeline::onRenderPipeline(RenderPipeline& pipeline) noexcept
 	auto cameraOrder = camera->getCameraOrder();
 	switch (cameraOrder)
 	{
-	case CO_SHADOW:
+	case CameraOrder::CameraOrderShadow:
 		this->renderShadowMap(pipeline);
 		break;
-	case CO_LIGHT:
+	case CameraOrder::CameraOrderLight:
 		this->renderLights(pipeline, camera->getRenderTexture());
 		break;
-	case CO_MAIN:
+	case CameraOrder::CameraOrderMain:
 	{
 		switch (camera->getCameraType())
 		{
-		case CameraType::CT_PERSPECTIVE:
+		case CameraType::CameraTypePerspective:
 			this->render3DEnvMap(pipeline);
 			break;
-		case CameraType::CT_ORTHO:
+		case CameraType::CameraTypeOrtho:
 			this->render2DEnvMap(pipeline);
 			break;
 		default:
+			assert(false);
 			break;
 		}
+		break;
 	}
-	break;
+	default:
+		assert(false);
+		break;
 	}
 }
 
@@ -585,11 +637,11 @@ void
 DeferredRenderPipeline::onRenderPost(RenderPipeline& pipeline) noexcept
 {
 	auto camera = pipeline.getCamera();
-	if (camera->getCameraRender() == CR_RENDER_TO_SCREEN)
+	if (camera->getCameraRender() == CameraRender::CameraRenderScreen)
 	{
 		auto renderTexture = camera->getRenderTexture();
 		if (!renderTexture)
-			renderTexture = _deferredFinalMap ? _deferredFinalMap : _deferredShadingMap;
+			renderTexture = _deferredFinalView ? _deferredFinalView : _deferredShadingView;
 
 		auto v1 = camera->getViewport();
 		if (v1.width == 0 || v1.height == 0)
@@ -603,17 +655,17 @@ DeferredRenderPipeline::onRenderPost(RenderPipeline& pipeline) noexcept
 			v1.height = height;
 		}
 
-		this->copyRenderTexture(pipeline, renderTexture, nullptr, v1);
+		this->copyRenderTexture(pipeline, renderTexture->getGraphicsRenderTextureDesc().getTextures()[0], nullptr, v1);
 	}
 	
-	/*if (_deferredGraphicMap)
-		pipeline.blitRenderTexture(_deferredGraphicMap, Viewport(0, 0, 1376, 768), 0, Viewport(0, 768 / 2, 1376 / 3, 768));
-	if (_deferredNormalMap)
-		pipeline.blitRenderTexture(_deferredNormalMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3, 768 / 2, 1376 / 3 * 2, 768));
-	if (_deferredLightMap)
-		pipeline.blitRenderTexture(_deferredLightMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3 * 2, 768 / 2, 1376, 768));
-	if (_deferredShadingMap)
-		pipeline.blitRenderTexture(_deferredShadingMap, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3 * 2, 0, 1376, 768 / 2));*/
+	/*if (_deferredGraphicView)
+		pipeline.blitRenderTexture(_deferredGraphicView, Viewport(0, 0, 1376, 768), 0, Viewport(0, 768 / 2, 1376 / 3, 768));
+	if (_deferredNormalView)
+		pipeline.blitRenderTexture(_deferredNormalView, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3, 768 / 2, 1376 / 3 * 2, 768));
+	if (_deferredLightView)
+		pipeline.blitRenderTexture(_deferredLightView, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3 * 2, 768 / 2, 1376, 768));
+	if (_deferredShadingView)
+		pipeline.blitRenderTexture(_deferredShadingView, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3 * 2, 0, 1376, 768 / 2));*/
 }
 
 _NAME_END

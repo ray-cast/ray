@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -38,7 +38,6 @@
 #include <ray/camera.h>
 #include <ray/graphics_view.h>
 #include <ray/graphics_texture.h>
-#include <ray/render_scene.h>
 #include <ray/render_system.h>
 
 _NAME_BEGIN
@@ -46,10 +45,10 @@ _NAME_BEGIN
 __ImplementSubClass(Light, RenderObject, "Light")
 
 Light::Light() noexcept
-	: _lightType(LightType::LT_POINT)
+	: _lightType(LightType::LightTypePoint)
 	, _lightRange(1.0f)
 	, _lightIntensity(1.0f)
-	, _lightColor(Vector3(1.0, 1.0, 1.0))
+	, _lightColor(float3(1.0, 1.0, 1.0))
 	, _lightAttenuation(1, 1, 1)
 	, _spotInnerCone(cos(degrees(20.0f)))
 	, _spotOuterCone(cos(degrees(40.0f)))
@@ -59,8 +58,8 @@ Light::Light() noexcept
 {
 	_shadowCamera = std::make_shared<Camera>();
 	_shadowCamera->setOwnerListener(this);
-	_shadowCamera->setCameraOrder(CameraOrder::CO_SHADOW);
-	_shadowCamera->setCameraRender(CameraRender::CR_RENDER_TO_TEXTURE);
+	_shadowCamera->setCameraOrder(CameraOrder::CameraOrderShadow);
+	_shadowCamera->setCameraRender(CameraRender::CameraRenderTexture);
 }
 
 Light::~Light() noexcept
@@ -87,7 +86,7 @@ Light::setRange(float range) noexcept
 }
 
 void
-Light::setLightColor(const Vector3& color) noexcept
+Light::setLightColor(const float3& color) noexcept
 {
 	_lightColor = color;
 }
@@ -123,19 +122,19 @@ Light::getRange() const noexcept
 	return _lightRange;
 }
 
-const Vector3&
+const float3&
 Light::getLightColor() const noexcept
 {
 	return _lightColor;
 }
 
 void
-Light::setLightAttenuation(const Vector3& attenuation) noexcept
+Light::setLightAttenuation(const float3& attenuation) noexcept
 {
 	_lightAttenuation = attenuation;
 }
 
-const Vector3&
+const float3&
 Light::getLightAttenuation() const noexcept
 {
 	return _lightAttenuation;
@@ -173,13 +172,6 @@ Light::getShadow() const noexcept
 	return _shadow;
 }
 
-void
-Light::setTransform(const Matrix4x4& m) noexcept
-{
-	RenderObject::setTransform(m);
-	_shadowUpdated = false;
-}
-
 CameraPtr
 Light::getShadowCamera() const noexcept
 {
@@ -191,7 +183,7 @@ GraphicsTexturePtr
 Light::getShadowMap() const noexcept
 {
 	_updateShadow();
-	return _shadowCamera->getRenderTexture()->getResolveTexture();
+	return _shaodwMap;
 }
 
 void 
@@ -204,21 +196,22 @@ Light::_updateShadow() const noexcept
 	{
 		if (!_shadowCamera->getRenderTexture())
 		{
-			auto depthTexture = RenderSystem::instance()->createRenderTexture(_shadowSize, _shadowSize, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatD16UNorm);
-			_shadowCamera->setRenderTexture(depthTexture);
+			_shaodwMap = RenderSystem::instance()->createTexture(_shadowSize, _shadowSize, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatD16UNorm);
+
+			GraphicsRenderTextureDesc shadowViewDesc;
+			shadowViewDesc.setSharedDepthTexture(_shaodwMap);
+			_shaodwView = RenderSystem::instance()->createRenderTexture(shadowViewDesc);
+
+			_shadowCamera->setRenderTexture(_shaodwView);
 		}
 	}
 
-	_shadowCamera->setViewport(Viewport(0, 0, _shadowSize, _shadowSize));
 	_shadowCamera->setAperture(90.0);
 	_shadowCamera->setNear(0.1);
 	_shadowCamera->setFar(_lightRange);
 	_shadowCamera->setRatio(1.0);
-
-	_shadowCamera->setTransform(this->getTransform());
-	_shadowCamera->setTransformInverse(this->getTransformInverse());
-	_shadowCamera->setTransformInverseTranspose(this->getTransformInverseTranspose());
-
+	_shadowCamera->setViewport(Viewport(0, 0, _shadowSize, _shadowSize));
+	_shadowCamera->setTransform(this->getTransform(), this->getTransformInverse(), this->getTransformInverseTranspose());
 	_shadowUpdated = true;
 }
 
@@ -227,8 +220,8 @@ Light::_updateBoundingBox() noexcept
 {
 	Bound bound;
 
-	if (_lightType == LightType::LT_SUN ||
-		_lightType == LightType::LT_AMBIENT)
+	if (_lightType == LightType::LightTypeSun ||
+		_lightType == LightType::LightTypeAmbient)
 	{
 		float infinity = std::numeric_limits<float>::max();
 
@@ -237,27 +230,28 @@ Light::_updateBoundingBox() noexcept
 
 		bound.encapsulate(min);
 		bound.encapsulate(max);
+		this->setBoundingBox(bound);
 	}
-	else if (_lightType == LightType::LT_POINT)
+	else if (_lightType == LightType::LightTypePoint)
 	{
 		Vector3 min(-_lightRange, -_lightRange, -_lightRange);
 		Vector3 max(_lightRange, _lightRange, _lightRange);
 
 		bound.encapsulate(min);
 		bound.encapsulate(max);
+		this->setBoundingBox(bound);
 	}
-	else if (_lightType == LightType::LT_AREA ||
-		_lightType == LightType::LT_SPOT ||
-		_lightType == LightType::LT_HEMI_SPHERE)
+	else if (_lightType == LightType::LightTypeArea ||
+		_lightType == LightType::LightTypeSpot ||
+		_lightType == LightType::LightTypeHemiSphere)
 	{
 		Vector3 min(-_lightRange, -_lightRange, -_lightRange);
 		Vector3 max(_lightRange, _lightRange, _lightRange);
 
 		bound.encapsulate(min);
 		bound.encapsulate(max);
+		this->setBoundingBox(bound);
 	}
-
-	this->setBoundingBox(bound);
 }
 
 void 
@@ -293,14 +287,20 @@ Light::onWillRenderObject(const Camera& camera) noexcept
 }
 
 void 
-Light::onRenderObject(const Camera& camera) noexcept
+Light::onRenderObject(RenderPipeline& pipeline, const Camera& camera) noexcept
 {
 	auto listener = this->getOwnerListener();
 	if (listener)
-		listener->onRenderObject(camera);
+		listener->onRenderObject(pipeline, camera);
 }
 
-LightPtr
+void 
+Light::onMoveAfter() noexcept
+{
+	_shadowUpdated = false;
+}
+
+RenderObjectPtr
 Light::clone() const noexcept
 {
 	auto light = std::make_shared<Light>();
@@ -311,7 +311,7 @@ Light::clone() const noexcept
 	light->setCastShadow(this->getCastShadow());
 	light->setSpotInnerCone(this->getSpotInnerCone());
 	light->setSpotOuterCone(this->getSpotOuterCone());
-	light->setTransform(this->getTransform());
+	light->setTransform(this->getTransform(), this->getTransformInverse(), this->getTransformInverseTranspose());
 	light->setBoundingBox(this->getBoundingBox());
 
 	return light;

@@ -44,7 +44,7 @@
 #include <ray/render_mesh.h>
 
 #include <ray/game_server.h>
-
+#include <ray/graphics_context.h>
 #include <ray/resource.h>
 
 _NAME_BEGIN
@@ -186,9 +186,11 @@ MeshRenderComponent::onDetachComponent(GameComponentPtr& component) except
 void
 MeshRenderComponent::onMoveAfter() noexcept
 {
-	_renderObject->setTransform(this->getGameObject()->getTransform());
-	_renderObject->setTransformInverse(this->getGameObject()->getTransformInverse());
-	_renderObject->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
+	_renderObject->setTransform(
+		this->getGameObject()->getTransform(),
+		this->getGameObject()->getTransformInverse(),
+		this->getGameObject()->getTransformInverseTranspose()
+		);
 }
 
 void
@@ -286,7 +288,7 @@ MeshRenderComponent::buildRenderObjects(MeshPropertyPtr mesh) noexcept
 			auto submesh = this->buildRenderObject(it, renderBuffer);
 			if (submesh)
 			{
-				auto renderable = submesh->getRenderIndirect();
+				auto renderable = submesh->getGraphicsIndirect();
 
 #if !defined(EGLAPI)
 				renderable->startVertice = startVertice;
@@ -326,18 +328,20 @@ MeshRenderComponent::buildRenderObject(MeshPropertyPtr mesh, RenderBufferPtr buf
 
 		renderObject->setLayer(this->getGameObject()->getLayer());
 
-		renderObject->setTransform(this->getGameObject()->getTransform());
-		renderObject->setTransformInverse(this->getGameObject()->getTransformInverse());
-		renderObject->setTransformInverseTranspose(this->getGameObject()->getTransformInverseTranspose());
+		renderObject->setTransform(
+			this->getGameObject()->getTransform(),
+			this->getGameObject()->getTransformInverse(),
+			this->getGameObject()->getTransformInverseTranspose()
+			);
 
-		auto renderable = std::make_shared<RenderIndirect>();
+		auto renderable = std::make_shared<GraphicsIndirect>();
 		renderable->startVertice = 0;
 		renderable->startIndice = 0;
 		renderable->numVertices = mesh->getNumVertices();
 		renderable->numIndices = mesh->getNumIndices();
 		renderable->numInstances = 0;
 
-		renderObject->setRenderIndirect(renderable);
+		renderObject->setGraphicsIndirect(renderable);
 
 		return renderObject;
 	}

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,11 +37,26 @@
 #ifndef _H_RENDER_SYSTEM_H_
 #define _H_RENDER_SYSTEM_H_
 
-#include <ray/render_setting.h>
-#include <ray/graphics_data.h>
-#include <ray/graphics_layout.h>
+#include <ray/render_types.h>
 
 _NAME_BEGIN
+
+struct EXPORT RenderSetting
+{
+	bool enableSSAO;
+	bool enableSSGI;
+	bool enableSAT;
+	bool enableSSR;
+	bool enableSSSS;
+	bool enableFog;
+	bool enableDOF;
+	bool enableFimic;
+	bool enableFXAA;
+	bool enableLightShaft;
+	bool enableColorGrading;
+
+	RenderSetting() noexcept;
+};
 
 class EXPORT RenderSystem final
 {
@@ -50,22 +65,19 @@ public:
 	RenderSystem() noexcept;
 	~RenderSystem() noexcept;
 
-	void open(WindHandle window, std::size_t w, std::size_t h) except;
+	bool open(WindHandle window, std::size_t w, std::size_t h) noexcept;
 	void close() noexcept;
 
-	void setRenderSetting(const RenderSetting& setting) except;
+	void setRenderSetting(const RenderSetting& setting) noexcept;
 	const RenderSetting& getRenderSetting() const noexcept;
 
-	void setRenderPipeline(RenderPipelinePtr pipeline) except;
+	void setRenderPipeline(RenderPipelinePtr pipeline) noexcept;
 	RenderPipelinePtr getRenderPipeline() const noexcept;
 
-	void setWireframeMode(bool enable) noexcept;
-	bool getWireframeMode() const noexcept;
-
-	void setWindowResolution(std::uint32_t w, std::uint32_t h) except;
+	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
-	void setSwapInterval(SwapInterval interval) except;
+	void setSwapInterval(SwapInterval interval) noexcept;
 	SwapInterval getSwapInterval() const noexcept;
 
 	bool addRenderScene(RenderScenePtr scene) noexcept;
@@ -73,25 +85,22 @@ public:
 
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
-	GraphicsTexturePtr createTexture(const std::string& name) except;
+	GraphicsTexturePtr createTexture(const std::string& name) noexcept;
 
-	MaterialPtr createMaterial(const std::string& name) except;
+	MaterialPtr createMaterial(const std::string& name) noexcept;
 
 	GraphicsRenderTexturePtr createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept;
-	GraphicsRenderTexturePtr createRenderTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
-
-	GraphicsMultiRenderTexturePtr createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept;
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
 	bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;
 	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
 	void unmapBuffer(GraphicsDataPtr& data) noexcept;
 
-	GraphicsLayoutPtr createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept;
+	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
 
 	RenderBufferPtr createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
-	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) except;
-	RenderBufferPtr createRenderBuffer(const MeshPropertys& meshes) except;
+	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) noexcept;
+	RenderBufferPtr createRenderBuffer(const MeshPropertys& meshes) noexcept;
 
 	void renderBegin() noexcept;
 	void render() noexcept;
@@ -106,7 +115,8 @@ private:
 	RenderSetting _setting;
 
 	RenderScenes _sceneList;
-	RenderPipelinePtr _renderPipeline;
+
+	RenderPipelinePtr _pipeline;
 	RenderPipelineManagerPtr _pipelineManager;
 
 	RenderPostProcessPtr _SSGI;

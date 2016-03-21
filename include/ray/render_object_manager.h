@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,28 +34,34 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_SETTING_H_
-#define _H_RENDER_SETTING_H_
+#ifndef _H_RENDER_OBJECT_MANAGER_H_
+#define _H_RENDER_OBJECT_MANAGER_H_
 
-#include <ray/render_types.h>
+#include <ray/render_scene.h>
+#include <ray/render_object_manager_base.h>
 
 _NAME_BEGIN
 
-struct EXPORT RenderSetting
+class DefaultRenderDataManager final : public RenderDataManager
 {
-	bool enableSSAO;
-	bool enableSSGI;
-	bool enableSAT;
-	bool enableSSR;
-	bool enableSSSS;
-	bool enableFog;
-	bool enableDOF;
-	bool enableFimic;
-	bool enableFXAA;
-	bool enableLightShaft;
-	bool enableColorGrading;
+public:
+	DefaultRenderDataManager() noexcept;
+	~DefaultRenderDataManager() noexcept;
 
-	RenderSetting() noexcept;
+	void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept;
+	RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept;
+
+	void assginVisiable(CameraPtr camera) noexcept;
+
+private:
+	void sortMaterial(OcclusionCullList& list) noexcept;
+	void sortDistance(OcclusionCullList& list) noexcept;
+
+private:
+
+	OcclusionCullList _visiable;
+
+	RenderObjects _renderQueue[RenderQueue::RenderQueueRangeSize][RenderPass::RenderPassRangeSize];
 };
 
 _NAME_END

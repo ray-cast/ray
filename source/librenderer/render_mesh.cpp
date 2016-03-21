@@ -35,8 +35,6 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_mesh.h>
-#include <ray/render_scene.h>
-#include <ray/render_buffer.h>
 
 _NAME_BEGIN
 
@@ -75,13 +73,13 @@ RenderMesh::getRenderBuffer() noexcept
 }
 
 void 
-RenderMesh::setRenderIndirect(RenderIndirectPtr renderable) noexcept
+RenderMesh::setGraphicsIndirect(GraphicsIndirectPtr renderable) noexcept
 {
 	_renderable = renderable;
 }
 
-RenderIndirectPtr
-RenderMesh::getRenderIndirect() noexcept
+GraphicsIndirectPtr
+RenderMesh::getGraphicsIndirect() noexcept
 {
 	return _renderable;
 }

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -46,118 +46,6 @@ __ImplementSubClass(OGLShaderObject, GraphicsProgram, "OGLShaderObject")
 __ImplementSubClass(OGLShaderAttribute, ShaderAttribute, "OGLShaderAttribute")
 __ImplementSubClass(OGLShaderUniform, ShaderUniform, "OGLShaderUniform")
 
-OGLShaderVariant::OGLShaderVariant() noexcept
-	: _bindingProgram(0)
-	, _location(0)
-{
-}
-
-OGLShaderVariant::~OGLShaderVariant() noexcept
-{
-}
-
-void
-OGLShaderVariant::setLocation(GLint location) noexcept
-{
-	_location = location;
-}
-
-GLint
-OGLShaderVariant::getLocation() const noexcept
-{
-	return _location;
-}
-
-void
-OGLShaderVariant::setBindingProgram(GLuint program) noexcept
-{
-	_bindingProgram = program;
-}
-
-GLuint
-OGLShaderVariant::getBindingProgram() const noexcept
-{
-	return _bindingProgram;
-}
-
-void
-OGLShaderVariant::assign(bool value) noexcept
-{
-	glProgramUniform1i(_bindingProgram, _location, value);
-}
-
-void
-OGLShaderVariant::assign(int value) noexcept
-{
-	glProgramUniform1i(_bindingProgram, _location, value);
-}
-
-void
-OGLShaderVariant::assign(const int2& value) noexcept
-{
-	glProgramUniform2iv(_bindingProgram, _location, 1, value.ptr());
-}
-
-void
-OGLShaderVariant::assign(float value) noexcept
-{
-	glProgramUniform1f(_bindingProgram, _location, value);
-}
-
-void
-OGLShaderVariant::assign(const float2& value) noexcept
-{
-	glProgramUniform2fv(_bindingProgram, _location, 1, value.ptr());
-}
-
-void
-OGLShaderVariant::assign(const float3& value) noexcept
-{
-	glProgramUniform3fv(_bindingProgram, _location, 1, value.ptr());
-}
-
-void
-OGLShaderVariant::assign(const float4& value) noexcept
-{
-	glProgramUniform4fv(_bindingProgram, _location, 1, value.ptr());
-}
-
-void
-OGLShaderVariant::assign(const float3x3& value) noexcept
-{
-	glProgramUniformMatrix3fv(_bindingProgram, _location, 1, GL_FALSE, value.ptr());
-}
-
-void
-OGLShaderVariant::assign(const float4x4& value) noexcept
-{
-	glProgramUniformMatrix4fv(_bindingProgram, _location, 1, GL_FALSE, value.ptr());
-}
-
-void
-OGLShaderVariant::assign(const std::vector<float>& value) noexcept
-{
-	glProgramUniform1fv(_bindingProgram, _location, value.size(), value.data());
-}
-
-void
-OGLShaderVariant::assign(const std::vector<float2>& value) noexcept
-{
-	glProgramUniform2fv(_bindingProgram, _location, value.size(), (GLfloat*)value.data());
-}
-
-void
-OGLShaderVariant::assign(const std::vector<float3>& value) noexcept
-{
-	glProgramUniform3fv(_bindingProgram, _location, value.size(), (GLfloat*)value.data());
-}
-
-void
-OGLShaderVariant::assign(const std::vector<float4>& value) noexcept
-{
-	glProgramUniform4fv(_bindingProgram, _location, value.size(), (GLfloat*)value.data());
-}
-
 OGLShaderAttribute::OGLShaderAttribute() noexcept
 	: _location(GL_NONE)
 {
@@ -180,7 +68,7 @@ OGLShaderAttribute::getLocation() const noexcept
 }
 
 OGLShaderUniform::OGLShaderUniform() noexcept
-	: ShaderUniform(&_value)
+	: _program(GL_NONE)
 {
 }
 
@@ -189,33 +77,15 @@ OGLShaderUniform::~OGLShaderUniform() noexcept
 }
 
 void
-OGLShaderUniform::setType(GraphicsVariantType type) noexcept
-{
-	ShaderUniform::setType(type);
-}
-
-void
-OGLShaderUniform::setLocation(GLint location) noexcept
-{
-	_value.setLocation(location);
-}
-
-GLint
-OGLShaderUniform::getLocation() const noexcept
-{
-	return _value.getLocation();
-}
-
-void
 OGLShaderUniform::setBindingProgram(GLuint program) noexcept
 {
-	_value.setBindingProgram(program);
+	_program = program;
 }
 
 GLuint
 OGLShaderUniform::getBindingProgram() const noexcept
 {
-	return _value.getBindingProgram();
+	return _program;
 }
 
 OGLShader::OGLShader() noexcept
@@ -229,7 +99,7 @@ OGLShader::~OGLShader() noexcept
 }
 
 bool
-OGLShader::setup(const ShaderDesc& shaderDesc) noexcept
+OGLShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 {
 	assert(_instance == GL_NONE);
 
@@ -284,6 +154,7 @@ OGLShader::setup(const ShaderDesc& shaderDesc) noexcept
 		return false;
 	}
 
+	_shaderDesc = shaderDesc;
 	return true;
 }
 
@@ -303,6 +174,12 @@ OGLShader::getInstanceID() const noexcept
 	return _instance;
 }
 
+const GraphicsShaderDesc& 
+OGLShader::getGraphicsShaderDesc() const noexcept
+{
+	return _shaderDesc;
+}
+
 void
 OGLShader::setDevice(GraphicsDevicePtr device) noexcept
 {
@@ -316,8 +193,7 @@ OGLShader::getDevice() noexcept
 }
 
 OGLShaderObject::OGLShaderObject() noexcept
-	: _program(0)
-	, _isActive(false)
+	: _program(GL_NONE)
 {
 }
 
@@ -327,11 +203,11 @@ OGLShaderObject::~OGLShaderObject() noexcept
 }
 
 bool
-OGLShaderObject::setup(const ShaderObjectDesc& program) noexcept
+OGLShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 {
-	assert(!_program);
+	assert(_program == GL_NONE);
 
-	if (program.getShaders().empty())
+	if (programDesc.getShaders().empty())
 		return false;
 
 	_program = glCreateProgram();
@@ -341,17 +217,11 @@ OGLShaderObject::setup(const ShaderObjectDesc& program) noexcept
 		return false;
 	}
 
-	for (auto shader : program.getShaders())
+	for (auto& shader : programDesc.getShaders())
 	{
-		auto glshader = std::make_shared<OGLShader>();
+		auto glshader = shader->downcast<OGLShader>();
 		if (glshader)
-		{
-			if (glshader->setup(shader))
-			{
-				glAttachShader(_program, glshader->getInstanceID());
-				_shaders.push_back(glshader);
-			}
-		}
+			glAttachShader(_program, glshader->getInstanceID());
 	}
 
 	glLinkProgram(_program);
@@ -370,12 +240,11 @@ OGLShaderObject::setup(const ShaderObjectDesc& program) noexcept
 		return false;
 	}
 
-    _isActive = false;
-
 	_initActiveAttribute();
 	_initActiveUniform();
 	_initActiveUniformBlock();
 
+	_programDesc = programDesc;
 	return true;
 }
 
@@ -388,33 +257,20 @@ OGLShaderObject::close() noexcept
 		_program = 0;
 	}
 
-	_shaders.clear();
-
 	_activeAttributes.clear();
 	_activeUniforms.clear();
-}
-
-void
-OGLShaderObject::setActive(bool active) noexcept
-{
-	if (_isActive != active)
-	{
-		if (active)
-			glUseProgram(_program);
-		_isActive = active;
-	}
-}
-
-bool
-OGLShaderObject::getActive() noexcept
-{
-	return _isActive;
 }
 
 GLuint
 OGLShaderObject::getInstanceID() noexcept
 {
 	return _program;
+}
+
+const GraphicsProgramDesc& 
+OGLShaderObject::getGraphicsProgramDesc() const noexcept
+{
+	return _programDesc;
 }
 
 ShaderAttributes&
@@ -438,7 +294,7 @@ OGLShaderObject::_initActiveAttribute() noexcept
 	glGetProgramiv(_program, GL_ACTIVE_ATTRIBUTES, &numAttribute);
 	glGetProgramiv(_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxAttribute);
 
-	if (numAttribute)
+	if (numAttribute > 0)
 	{
 		auto nameAttribute = std::make_unique<GLchar[]>(maxAttribute + 1);
 		nameAttribute[maxAttribute] = 0;
@@ -508,7 +364,7 @@ OGLShaderObject::_initActiveUniform() noexcept
 
 		auto uniform = std::make_shared<OGLShaderUniform>();
 		uniform->setName(nameUniform.get());
-		uniform->setLocation(location);
+		uniform->setBindingPoint(location);
 		uniform->setBindingProgram(_program);
 
 		if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
@@ -516,50 +372,50 @@ OGLShaderObject::_initActiveUniform() noexcept
 			type == GL_SAMPLER_2D_ARRAY || type == GL_SAMPLER_CUBE ||
 			type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
 		{
-			uniform->setType(GraphicsVariantType::GraphicsVariantTypeTexture);
+			uniform->setType(GraphicsUniformType::GraphicsUniformTypeStorageImage);
 		}
 		else
 		{
 			bool isArray = uniform->getName().find("[0]") != std::string::npos;
 
 			if (type == GL_BOOL)
-				uniform->setType(GraphicsVariantType::GraphicsVariantTypeBool);
+				uniform->setType(GraphicsUniformType::GraphicsUniformTypeBool);
 			else if (type == GL_INT)
-				uniform->setType(GraphicsVariantType::GraphicsVariantTypeInt);
+				uniform->setType(GraphicsUniformType::GraphicsUniformTypeInt);
 			else if (type == GL_INT_VEC2)
-				uniform->setType(GraphicsVariantType::GraphicsVariantTypeInt2);
+				uniform->setType(GraphicsUniformType::GraphicsUniformTypeInt2);
 			else if (type == GL_FLOAT)
 			{
 				if (isArray)
-					uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloatArray);
+					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloatArray);
 				else
-					uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat);
+					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat);
 			}
 			else if (type == GL_FLOAT_VEC2)
 			{
 				if (isArray)
-					uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat2Array);
+					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat2Array);
 				else
-					uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat2);
+					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat2);
 			}
 			else if (type == GL_FLOAT_VEC3)
 			{
 				if (isArray)
-					uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat3Array);
+					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat3Array);
 				else
-					uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat3);
+					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat3);
 			}
 			else if (type == GL_FLOAT_VEC4)
 			{
 				if (isArray)
-					uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat4Array);
+					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat4Array);
 				else
-					uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat4);
+					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat4);
 			}
 			else if (type == GL_FLOAT_MAT3)
-				uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat3x3);
+				uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat3x3);
 			else if (type == GL_FLOAT_MAT4)
-				uniform->setType(GraphicsVariantType::GraphicsVariantTypeFloat4x4);
+				uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat4x4);
 			else
 				assert(false);
 		}
@@ -626,8 +482,9 @@ OGLShaderObject::_initActiveUniformBlock() noexcept
 
 				auto uniformblock = std::make_shared<OGLShaderUniform>();
 				uniformblock->setName(nameUniformBlock.get());
-				uniformblock->setType(GraphicsVariantType::GraphicsVariantTypeBuffer);
-				uniformblock->setLocation(location);
+				uniformblock->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
+				uniformblock->setBindingPoint(location);
+				uniformblock->setBindingProgram(_program);
 
 				_activeUniforms.push_back(uniformblock);
 			}

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -50,7 +50,7 @@ void
 Fog::onActivate(RenderPipeline& pipeline) except
 {
 	_material = pipeline.createMaterial("sys:fx/fog.glsl");
-	_fog = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("fog");
+	_fog = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("fog");
 	_fogFalloff = _material->getParameter("fogFalloff");
 	_fogDensity = _material->getParameter("fogDensity");
 	_fogColor = _material->getParameter("fogColor");
@@ -67,9 +67,9 @@ Fog::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-Fog::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except
+Fog::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) except
 {
-	_texSource->assign(source->getResolveTexture());
+	_texSource->assign(source);
 
 	pipeline.setRenderTexture(dest);
 	pipeline.discradRenderTexture();

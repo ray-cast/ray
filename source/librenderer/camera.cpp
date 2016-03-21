@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -53,10 +53,10 @@ Camera::Camera() noexcept
 	, _zfar(100.0f)
 	, _viewport(0, 0, 0, 0)
 	, _clearFlags(GraphicsClearFlags::GraphicsClearFlagsAll)
-	, _clearColor(Vector4::Zero)
-	, _cameraType(CameraType::CT_PERSPECTIVE)
-	, _cameraOrder(CameraOrder::CO_MAIN)
-	, _cameraRender(CameraRender::CR_RENDER_TO_SCREEN)
+	, _clearColor(float4::Zero)
+	, _cameraType(CameraType::CameraTypePerspective)
+	, _cameraOrder(CameraOrder::CameraOrderMain)
+	, _cameraRender(CameraRender::CameraRenderScreen)
 	, _needUpdateProject(true)
 	, _needUpdateViewProject(true)
 {
@@ -137,74 +137,74 @@ Camera::getOrtho(float& left, float& right, float& top, float& bottom) noexcept
 	bottom = _bottom;
 }
 
-const Matrix4x4&
+const float4x4&
 Camera::getView() const noexcept
 {
 	return this->getTransformInverse();
 }
 
-const Matrix4x4&
+const float4x4&
 Camera::getViewInverse() const noexcept
 {
 	return this->getTransform();
 }
 
-const Matrix4x4&
+const float4x4&
 Camera::getProject() const noexcept
 {
 	_updateViewProject();
 	return _project;
 }
 
-const Matrix4x4&
+const float4x4&
 Camera::getProjectInverse() const noexcept
 {
 	_updateViewProject();
 	return _projectInverse;
 }
 
-const Matrix4x4&
+const float4x4&
 Camera::getViewProject() const noexcept
 {
 	_updateViewProject();
 	return _viewProejct;
 }
 
-const Matrix4x4&
+const float4x4&
 Camera::getViewProjectInverse() const noexcept
 {
 	_updateViewProject();
 	return _viewProjectInverse;
 }
 
-const Vector2&
+const float2&
 Camera::getProjLength() const noexcept
 {
 	_updateViewProject();
 	return _projLength;
 }
 
-const Vector4&
+const float4&
 Camera::getProjConstant() const noexcept
 {
 	_updateViewProject();
 	return _projConstant;
 }
 
-const Vector4&
+const float4&
 Camera::getClipConstant() const noexcept
 {
 	_updateViewProject();
 	return _clipConstant;
 }
 
-Vector3
-Camera::worldToScreen(const Vector3& pos) const noexcept
+float3
+Camera::worldToScreen(const float3& pos) const noexcept
 {
 	int w = (int)_viewport.width >> 1;
 	int h = (int)_viewport.height >> 1;
 
-	Vector4 v = pos * this->getViewProject();
+	float4 v = pos * this->getViewProject();
 	if (v.w != 0)
 		v /= v.w;
 
@@ -214,13 +214,13 @@ Camera::worldToScreen(const Vector3& pos) const noexcept
 	v.z = v.z * 0.5 + 0.5;
 #endif
 
-	return Vector3(v.x, v.y, v.z);
+	return float3(v.x, v.y, v.z);
 }
 
-Vector3
-Camera::worldToProject(const Vector3& pos) const noexcept
+float3
+Camera::worldToProject(const float3& pos) const noexcept
 {
-	Vector4 v(pos);
+	float4 v(pos);
 
 	v = v * this->getViewProject();
 	if (v.w != 0)
@@ -229,13 +229,13 @@ Camera::worldToProject(const Vector3& pos) const noexcept
 	return v.xyz();
 }
 
-Vector3
-Camera::screenToWorld(const Vector3& pos) const noexcept
+float3
+Camera::screenToWorld(const float3& pos) const noexcept
 {
 	int w = (int)_viewport.width >> 1;
 	int h = (int)_viewport.height >> 1;
 
-	Vector4 v(pos);
+	float4 v(pos);
 	v.y = _viewport.height - pos.y;
 
 	v.x = v.x / w - 1.0f - _viewport.left;
@@ -245,16 +245,16 @@ Camera::screenToWorld(const Vector3& pos) const noexcept
 	if (v.w != 0)
 		v /= v.w;
 
-	return Vector3(v.x, v.y, v.z);
+	return float3(v.x, v.y, v.z);
 }
 
-Vector3
-Camera::screenToDirection(const Vector2& pos) const noexcept
+float3
+Camera::screenToDirection(const float2& pos) const noexcept
 {
 	int w = (int)_viewport.width >> 1;
 	int h = (int)_viewport.height >> 1;
 
-	Vector4 v(pos, 1.0, 1.0);
+	float4 v(pos, 1.0, 1.0);
 
 	v.x = v.x / w - 1.0f - _viewport.left;
 	v.y = v.y / h - 1.0f - _viewport.top;
@@ -275,12 +275,12 @@ Camera::getCameraFlags() const noexcept
 }
 
 void
-Camera::setClearColor(const Vector4& color) noexcept
+Camera::setClearColor(const float4& color) noexcept
 {
 	_clearColor = color;
 }
 
-const Vector4&
+const float4&
 Camera::getClearColor() const noexcept
 {
 	return _clearColor;
@@ -406,7 +406,7 @@ Camera::_updateProject() const noexcept
 {
 	if (_needUpdateProject)
 	{
-		if (_cameraType == CameraType::CT_PERSPECTIVE)
+		if (_cameraType == CameraType::CameraTypePerspective)
 			this->_updatePerspective();
 		else
 			this->_updateOrtho();

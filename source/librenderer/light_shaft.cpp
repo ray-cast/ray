@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -38,6 +38,9 @@
 #include <ray/light.h>
 #include <ray/camera.h>
 
+#include <ray/graphics_view.h>
+#include <ray/graphics_texture.h>
+
 _NAME_BEGIN
 
 LightShaft::LightShaft() noexcept
@@ -58,10 +61,9 @@ LightShaft::onActivate(RenderPipeline& pipeline) except
 	pipeline.getWindowResolution(width, height);
 
 	_material = pipeline.createMaterial("sys:fx/light_shaft.glsl");
-	_texSample = pipeline.createRenderTexture(width*0.5, height*0.5, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatB10G11R11UFloatPack32);
 
-	_lightShaft = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("LightScatter");
-	_lightShaftCopy = _material->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("LightScatterCopy");
+	_lightShaft = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("LightScatter");
+	_lightShaftCopy = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("LightScatterCopy");
 
 	_illuminationSample = _material->getParameter("illuminationSample");
 	_illuminationPosition = _material->getParameter("illuminationPosition");
@@ -75,6 +77,12 @@ LightShaft::onActivate(RenderPipeline& pipeline) except
 	sample.w = illuminationDecay;
 
 	_illuminationSample->assign(sample);
+
+	_sampleMap = pipeline.createTexture(width * 0.5, height * 0.5, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatB10G11R11UFloatPack32);
+
+	GraphicsRenderTextureDesc sampleViewDesc;
+	sampleViewDesc.attach(_sampleMap);
+	_sampleView = pipeline.createRenderTexture(sampleViewDesc);
 }
 
 void
@@ -83,9 +91,9 @@ LightShaft::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-LightShaft::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) except
+LightShaft::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) except
 {
-	pipeline.setRenderTexture(_texSample);
+	pipeline.setRenderTexture(_sampleView);
 	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsAll, Vector4::Zero, 1.0, 0);
 
 	std::uint32_t width, height;
@@ -93,12 +101,12 @@ LightShaft::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, 
 
 	_illuminationRadio->assign((float)width / height);
 
-	auto lights = pipeline.getRenderData(RenderQueue::RQ_LIGHTING, RenderPass::RP_LIGHTS);
+	auto lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting, RenderPass::RenderPassLights);
 	for (auto& it : lights)
 	{
 		auto light = std::dynamic_pointer_cast<Light>(it);
 
-		if (light->getLightType() == LightType::LT_SUN)
+		if (light->getLightType() == LightType::LightTypeSun)
 		{
 			auto sun = pipeline.getCamera()->getTranslate() + light->getTransform().getTranslate();
 			auto view = pipeline.getCamera()->worldToProject(sun);
@@ -109,16 +117,16 @@ LightShaft::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, 
 				view.y >= -0.5f && view.y <= 2.0f && view.z < 1.0f)
 			{
 				_illuminationPosition->assign(Vector2(view.x, view.y));
-				_illuminationSource->assign(source->getResolveTexture());
+				_illuminationSource->assign(source);
 
 				pipeline.drawScreenQuad(_lightShaft);
 			}
 		}
 	}
 
-	_illuminationSource->assign(_texSample->getResolveTexture());
+	_illuminationSource->assign(_sampleMap);
 
-	pipeline.setRenderTexture(source);
+	pipeline.setRenderTexture(dest);
 	pipeline.drawScreenQuad(_lightShaftCopy);
 }
 

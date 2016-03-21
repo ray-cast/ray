@@ -2,7 +2,7 @@
 <effect version="1270" language="hlsl">
     <include name="sys:fx/sampler.fxml"/>
     <parameter name="texelStep" type="float2" />
-    <parameter name="texelSource" type="texture" />
+    <parameter name="texelSource" type="texture2D" />
     <shader>
         <![CDATA[
             #define FXAA_PC 1
@@ -997,9 +997,6 @@
             }
             /*==========================================================================*/
             #endif
-
-            uniform Texture2D texelSource;
-            uniform float2 texelStep;
 
             void PostProcessVS(
                 in float4 Position : POSITION0,

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -46,15 +46,50 @@ typedef std::shared_ptr<class MaterialPass> MaterialPassPtr;
 typedef std::shared_ptr<class MaterialTech> MaterialTechPtr;
 typedef std::shared_ptr<class MaterialParam> MaterialParamPtr;
 typedef std::shared_ptr<class MaterialVariant> MaterialVariantPtr;
-typedef std::shared_ptr<class MaterialSemantic> MaterialSemanticPtr;
+typedef std::shared_ptr<class MaterialLoader> MaterialLoaderPtr;
 typedef std::shared_ptr<class MaterialManager> MaterialManagerPtr;
+
+typedef std::weak_ptr<class Material> MaterialWeakPtr;
+typedef std::weak_ptr<class MaterialPass> MaterialPassWeakPtr;
+typedef std::weak_ptr<class MaterialTech> MaterialTechWeakPtr;
+typedef std::weak_ptr<class MaterialParam> MaterialParamWeakPtr;
+typedef std::weak_ptr<class MaterialVariant> MaterialVariantWeakPtr;
+typedef std::weak_ptr<class MaterialManager> MaterialManagerWeakPtr;
 
 typedef std::vector<MaterialPtr> Materials;
 typedef std::vector<MaterialPassPtr> MaterialPassList;
 typedef std::vector<MaterialTechPtr> MaterialTechniques;
 typedef std::vector<MaterialParamPtr> MaterialParams;
 typedef std::vector<MaterialVariantPtr> MaterialVariants;
-typedef std::vector<MaterialSemanticPtr> MaterialSemantics;
+
+enum RenderQueue
+{
+	RenderQueueCustom,
+	RenderQueueOpaque,
+	RenderQueueTransparent,
+	RenderQueueLighting,
+	RenderQueuePostprocess,
+	RenderQueueBeginRange = RenderQueueCustom,
+	RenderQueueEndRange = RenderQueuePostprocess,
+	RenderQueueRangeSize = (RenderQueueEndRange - RenderQueueBeginRange + 1),
+	RenderQueueMaxEnum = 0x7FFFFFFF
+};
+
+enum RenderPass
+{
+	RenderPassCustom,
+	RenderPassDepth,
+	RenderPassShadow,
+	RenderPassOpaques,
+	RenderPassTransparent,
+	RenderPassSpecific,
+	RenderPassLights,
+	RenderPassPostprocess,
+	RenderPassBeginRange = RenderPassCustom,
+	RenderPassEndRange = RenderPassPostprocess,
+	RenderPassRangeSize = (RenderPassEndRange - RenderPassBeginRange + 1),
+	RenderPassMaxEnum = 0x7FFFFFFF
+};
 
 _NAME_END
 

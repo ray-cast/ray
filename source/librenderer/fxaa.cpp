@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -36,6 +36,8 @@
 // +----------------------------------------------------------------------
 #include <ray/fxaa.h>
 
+#include <ray/graphics_texture.h>
+
 _NAME_BEGIN
 
 FXAA::FXAA() noexcept
@@ -50,8 +52,8 @@ void
 FXAA::onActivate(RenderPipeline& pipeline) except
 {
 	_fxaa = pipeline.createMaterial("sys:fx/fxaa.fxml.o");
-	_fxaaPass = _fxaa->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("fxaa");
-	_copyPass = _fxaa->getTech(RenderQueue::RQ_POSTPROCESS)->getPass("copy");
+	_fxaaPass = _fxaa->getTech(RenderQueue::RenderQueuePostprocess)->getPass("fxaa");
+	_copyPass = _fxaa->getTech(RenderQueue::RenderQueuePostprocess)->getPass("copy");
 
 	_texelStep = _fxaa->getParameter("texelStep");
 	_texelSource = _fxaa->getParameter("texelSource");
@@ -71,11 +73,11 @@ FXAA::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-FXAA::onRender(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+FXAA::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
 {
-	auto& textureDesc = source->getResolveTexture()->getGraphicsTextureDesc();
+	auto& textureDesc = source->getGraphicsTextureDesc();
 	_texelStep->assign(float2(1.0f / textureDesc.getWidth(), 1.0f / textureDesc.getHeight()));
-	_texelSource->assign(source->getResolveTexture());
+	_texelSource->assign(source);
 
 	pipeline.setRenderTexture(dest);
 	pipeline.discradRenderTexture();

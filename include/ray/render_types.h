@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,10 +37,9 @@
 #ifndef _H_RENDER_TYPES_H_
 #define _H_RENDER_TYPES_H_
 
-#include <ray/graphics_data.h>
-#include <ray/graphics_layout.h>
-#include <ray/graphics_view.h>
-#include <ray/graphics_texture.h>
+#include <ray/graphics_types.h>
+
+#include <ray/material.h>
 
 _NAME_BEGIN
 
@@ -54,9 +53,6 @@ typedef std::shared_ptr<class RenderMesh> RenderMeshPtr;
 typedef std::shared_ptr<class RenderSystem> RenderSystemPtr;
 typedef std::shared_ptr<class RenderBuffer> RenderBufferPtr;
 typedef std::shared_ptr<class RenderScene> RenderScenePtr;
-
-typedef std::shared_ptr<class Material> MaterialPtr;
-typedef std::shared_ptr<class MaterialPass> MaterialPassPtr;
 
 typedef std::shared_ptr<class Camera> CameraPtr;
 typedef std::shared_ptr<class Light> LightPtr;
@@ -73,6 +69,58 @@ typedef std::vector<RenderPostProcessPtr> RenderPostProcessor;
 
 typedef std::vector<CameraPtr> Cameras;
 typedef std::vector<LightPtr> Lights;
+
+enum CameraType
+{
+	CameraTypeOrtho,
+	CameraTypePerspective,
+	CameraTypeBeginRange = CameraTypeOrtho,
+	CameraTypeEndRange = CameraTypePerspective,
+	CameraTypeRangeSize = (CameraTypeEndRange - CameraTypeBeginRange + 1),
+	CameraTypeMaxEnum = 0x7FFFFFFF
+};
+
+enum CameraOrder
+{
+	CameraOrderShadow,
+	CameraOrderColor,
+	CameraOrderNormal,
+	CameraOrderLight,
+	CameraOrderShading,
+	CameraOrderCustom,
+	CameraOrderCubeMap,
+	CameraOrderMain,
+	CameraOrderBeginRange = CameraOrderShadow,
+	CameraOrderEndRange = CameraOrderMain,
+	CameraOrderRangeSize = (CameraOrderEndRange - CameraOrderBeginRange + 1),
+	CameraOrderMaxEnum = 0x7FFFFFFF
+};
+
+enum CameraRender
+{
+	CameraRenderScreen,
+	CameraRenderTexture,
+	CameraRenderCubeMap,
+	CameraRenderBeginRange = CameraRenderScreen,
+	CameraRenderEndRange = CameraRenderCubeMap,
+	CameraRenderRangeSize = (CameraRenderEndRange - CameraRenderBeginRange + 1),
+	CameraRenderMaxEnum = 0x7FFFFFFF
+};
+
+enum LightType
+{
+	LightTypeSun,
+	LightTypeDirectional,
+	LightTypeAmbient,
+	LightTypePoint,
+	LightTypeSpot,
+	LightTypeArea,
+	LightTypeHemiSphere,
+	LightTypeBeginRange = LightTypeSun,
+	LightTypeEndRange = LightTypeHemiSphere,
+	LightTypeRangeSize = (LightTypeEndRange - LightTypeBeginRange + 1),
+	LightTypeMaxEnum = 0x7FFFFFFF
+};
 
 _NAME_END
 

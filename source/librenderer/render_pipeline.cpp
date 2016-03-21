@@ -35,7 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_pipeline.h>
-#include <ray/render_data_manager.h>
+#include <ray/render_object_manager.h>
 #include <ray/render_post_process.h>
 #include <ray/render_scene.h>
 #include <ray/render_object.h>
@@ -51,16 +51,13 @@
 #include <ray/mstream.h>
 #include <ray/resource.h>
 
-#if defined(_BUILD_OPENGL_CORE)
-#	include "OpenGL Core/ogl_device.h"
-#	define RenderDevice OGLDevice
-#elif defined(_BUILD_OPENGL_ES3)
-#	include "OpenGL ES3/egl3_device.h"
-#	define RenderDevice EGL3Device
-#elif defined(_BUILD_OPENGL_ES2)
-#	include "OpenGL ES2/egl2_device.h"
-#	define RenderDevice EGL2Device
-#endif
+#include <ray/graphics_system.h>
+#include <ray/graphics_device.h>
+#include <ray/graphics_swapchain.h>
+#include <ray/graphics_data.h>
+#include <ray/graphics_view.h>
+#include <ray/graphics_texture.h>
+#include <ray/graphics_input_layout.h>
 
 _NAME_BEGIN
 
@@ -73,33 +70,43 @@ RenderPipeline::~RenderPipeline() noexcept
 	this->close();
 }
 
-void
-RenderPipeline::open(WindHandle window, std::uint32_t w, std::uint32_t h) except
+bool
+RenderPipeline::open(WindHandle window, std::uint32_t w, std::uint32_t h) noexcept
 {
-	_graphicsDevice = std::make_shared<RenderDevice>();
-	_graphicsDevice->open(window);
-	_graphicsDevice->setSwapInterval(SwapInterval::SwapIntervalFree);
+	_graphicsDevice = GraphicsSystem::instance()->createDevice(GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore);
 
-	_graphicsContext = _graphicsDevice->getGraphicsContext();
+	GraphicsSwapchainDesc swapchainDesc;
+	swapchainDesc.setWindHandle(window);
+	swapchainDesc.setWidth(w);
+	swapchainDesc.setHeight(h);
+	_graphicsSwapchain = _graphicsDevice->createGraphicsSwapchain(swapchainDesc);
+	if (!_graphicsSwapchain)
+		return false;
+
+	GraphicsContextDesc contextDesc;
+	contextDesc.setSwapchain(_graphicsSwapchain);
+	_graphicsContext = _graphicsDevice->createGraphicsContext(contextDesc);
+	if (!_graphicsContext)
+		return false;
 
 	_materialManager = std::make_shared<MaterialManager>();
 	_materialManager->open(_graphicsDevice);
 
-	_materialMatModel = _materialManager->createSemantic("matModel", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
-	_materialMatModelInverse = _materialManager->createSemantic("matModelInverse", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
-	_materialMatModelInverseTranspose = _materialManager->createSemantic("matModelInverseTranspose", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
-	_materialMatProject = _materialManager->createSemantic("matProject", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
-	_materialMatProjectInverse = _materialManager->createSemantic("matProjectInverse", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
-	_materialMatView = _materialManager->createSemantic("matView", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
-	_materialMatViewInverse = _materialManager->createSemantic("matViewInverse", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
-	_materialMatViewInverseTranspose = _materialManager->createSemantic("matViewInverseTranspose", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
-	_materialMatViewProject = _materialManager->createSemantic("matViewProject", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
-	_materialMatViewProjectInverse = _materialManager->createSemantic("matViewProjectInverse", GraphicsVariantType::GraphicsVariantTypeFloat4x4);
-	_materialCameraAperture = _materialManager->createSemantic("CameraAperture", GraphicsVariantType::GraphicsVariantTypeFloat);
-	_materialCameraFar = _materialManager->createSemantic("CameraFar", GraphicsVariantType::GraphicsVariantTypeFloat);
-	_materialCameraNear = _materialManager->createSemantic("CameraNear", GraphicsVariantType::GraphicsVariantTypeFloat);
-	_materialCameraPosition = _materialManager->createSemantic("CameraPosition", GraphicsVariantType::GraphicsVariantTypeFloat3);
-	_materialCameraDirection = _materialManager->createSemantic("CameraDirection", GraphicsVariantType::GraphicsVariantTypeFloat3);
+	_materialMatModel = _materialManager->createSemantic("matModel", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
+	_materialMatModelInverse = _materialManager->createSemantic("matModelInverse", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
+	_materialMatModelInverseTranspose = _materialManager->createSemantic("matModelInverseTranspose", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
+	_materialMatProject = _materialManager->createSemantic("matProject", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
+	_materialMatProjectInverse = _materialManager->createSemantic("matProjectInverse", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
+	_materialMatView = _materialManager->createSemantic("matView", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
+	_materialMatViewInverse = _materialManager->createSemantic("matViewInverse", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
+	_materialMatViewInverseTranspose = _materialManager->createSemantic("matViewInverseTranspose", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
+	_materialMatViewProject = _materialManager->createSemantic("matViewProject", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
+	_materialMatViewProjectInverse = _materialManager->createSemantic("matViewProjectInverse", GraphicsUniformType::GraphicsUniformTypeFloat4x4);
+	_materialCameraAperture = _materialManager->createSemantic("CameraAperture", GraphicsUniformType::GraphicsUniformTypeFloat);
+	_materialCameraFar = _materialManager->createSemantic("CameraFar", GraphicsUniformType::GraphicsUniformTypeFloat);
+	_materialCameraNear = _materialManager->createSemantic("CameraNear", GraphicsUniformType::GraphicsUniformTypeFloat);
+	_materialCameraPosition = _materialManager->createSemantic("CameraPosition", GraphicsUniformType::GraphicsUniformTypeFloat3);
+	_materialCameraDirection = _materialManager->createSemantic("CameraDirection", GraphicsUniformType::GraphicsUniformTypeFloat3);
 
 	_dataManager = std::make_shared<DefaultRenderDataManager>();
 
@@ -132,6 +139,8 @@ RenderPipeline::open(WindHandle window, std::uint32_t w, std::uint32_t h) except
 	_renderConeIndirect.numInstances = 0;
 
 	this->setWindowResolution(w, h);
+
+	return true;
 }
 
 void
@@ -166,38 +175,13 @@ RenderPipeline::close() noexcept
 	_renderSphere.reset();
 	_renderCone.reset();
 	_dataManager.reset();
-	_graphicsDevice.reset();
-}
-
-void 
-RenderPipeline::setGraphicsContext(GraphicsContextPtr context) noexcept
-{
-	assert(_graphicsDevice);
-	_graphicsDevice->setGraphicsContext(context);
-}
-
-GraphicsContextPtr 
-RenderPipeline::getGraphicsContext() const noexcept
-{
-	assert(_graphicsDevice);
-	return _graphicsDevice->getGraphicsContext();
-}
-
-void
-RenderPipeline::setDefaultGraphicsContext(GraphicsContextPtr context) noexcept
-{
-	_graphicsContext = context;
-}
-
-GraphicsContextPtr
-RenderPipeline::getDefaultGraphicsContext() const noexcept
-{
-	return _graphicsContext;
+	_graphicsContext.reset();
 }
 
 void
 RenderPipeline::setRenderDataManager(RenderDataManagerPtr manager) noexcept
 {
+	assert(manager);
 	_dataManager = manager;
 }
 
@@ -208,31 +192,17 @@ RenderPipeline::getRenderDataManagerPtr() const noexcept
 }
 
 void
-RenderPipeline::setWireframeMode(bool enable) noexcept
-{
-	assert(_graphicsDevice);
-	_graphicsDevice->setWireframeMode(enable);
-}
-
-bool
-RenderPipeline::getWireframeMode() const noexcept
-{
-	assert(_graphicsDevice);
-	return _graphicsDevice->getWireframeMode();
-}
-
-void
 RenderPipeline::setSwapInterval(SwapInterval interval) noexcept
 {
-	assert(_graphicsDevice);
-	_graphicsDevice->setSwapInterval(interval);
+	assert(_graphicsSwapchain);
+	_graphicsSwapchain->setSwapInterval(interval);
 }
 
 SwapInterval
 RenderPipeline::getSwapInterval() const noexcept
 {
-	assert(_graphicsDevice);
-	return _graphicsDevice->getSwapInterval();
+	assert(_graphicsSwapchain);
+	return _graphicsSwapchain->getSwapInterval();
 }
 
 void
@@ -262,137 +232,11 @@ RenderPipeline::getCamera() const noexcept
 	return _camera;
 }
 
-void
-RenderPipeline::setModelMatrix(const float4x4& m) noexcept
+MaterialPtr
+RenderPipeline::createMaterial(const std::string& name) noexcept
 {
-	_materialMatModel->assign(m);
-}
-
-const float4x4&
-RenderPipeline::getModelMatrix() const noexcept
-{
-	return _materialMatModel->getFloat4x4();
-}
-
-void
-RenderPipeline::setViewport(const Viewport& view) noexcept
-{
-	assert(_graphicsDevice);
-	_graphicsDevice->setViewport(view);
-}
-
-const Viewport&
-RenderPipeline::getViewport() const noexcept
-{
-	assert(_graphicsDevice);
-	return _graphicsDevice->getViewport();
-}
-
-void
-RenderPipeline::addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept
-{
-	assert(_dataManager);
-	_dataManager->addRenderData(queue, pass, object);
-}
-
-RenderObjects&
-RenderPipeline::getRenderData(RenderQueue queue, RenderPass pass) noexcept
-{
-	assert(_dataManager);
-	return _dataManager->getRenderData(queue, pass);
-}
-
-void
-RenderPipeline::drawMesh(MaterialPassPtr pass, RenderBufferPtr buffer, const RenderIndirect& renderable) noexcept
-{
-	this->setMaterialPass(pass);
-	this->setRenderBuffer(buffer);
-	this->drawRenderBuffer(renderable);
-}
-
-GraphicsRenderTexturePtr
-RenderPipeline::createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept
-{
-	assert(_graphicsDevice);
-	return _graphicsDevice->createRenderTexture(desc);
-}
-
-GraphicsRenderTexturePtr
-RenderPipeline::createRenderTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept
-{
-	assert(_graphicsDevice);
-	auto texture = this->createTexture(w, h, dim, format);
-	if (texture)
-	{
-		GraphicsRenderTextureDesc framebufferDesc;
-		framebufferDesc.setGraphicsTexture(texture);
-		return _graphicsDevice->createRenderTexture(framebufferDesc);
-	}
-
-	return nullptr;
-}
-
-GraphicsMultiRenderTexturePtr
-RenderPipeline::createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept
-{
-	assert(_graphicsDevice);
-	return _graphicsDevice->createMultiRenderTexture(desc);
-}
-
-void
-RenderPipeline::setRenderTexture(GraphicsRenderTexturePtr target) noexcept
-{
-	assert(_graphicsDevice);
-	_graphicsDevice->setRenderTexture(target);
-}
-
-void
-RenderPipeline::setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept
-{
-	assert(_graphicsDevice);
-	_graphicsDevice->setMultiRenderTexture(target);
-}
-
-void
-RenderPipeline::setRenderTextureLayer(GraphicsRenderTexturePtr target, int layer) noexcept
-{
-	assert(_graphicsDevice);
-	_graphicsDevice->setRenderTextureLayer(target, layer);
-}
-
-void
-RenderPipeline::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
-{
-	assert(_graphicsDevice);
-	_graphicsDevice->clearRenderTexture(flags, color, depth, stencil);
-}
-
-void
-RenderPipeline::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
-{
-	assert(_graphicsDevice);
-	_graphicsDevice->clearRenderTexture(flags, color, depth, stencil, i);
-}
-
-void
-RenderPipeline::discradRenderTexture() noexcept
-{
-	assert(_graphicsDevice);
-	_graphicsDevice->discardRenderTexture();
-}
-
-void
-RenderPipeline::readRenderTexture(GraphicsRenderTexturePtr texture, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
-{
-	assert(_graphicsDevice);
-	_graphicsDevice->readRenderTexture(texture, pfd, w, h, data);
-}
-
-void
-RenderPipeline::blitRenderTexture(GraphicsRenderTexturePtr srcTarget, const Viewport& src, GraphicsRenderTexturePtr destTarget, const Viewport& dest) noexcept
-{
-	assert(_graphicsDevice);
-	_graphicsDevice->blitRenderTexture(srcTarget, src, destTarget, dest);
+	assert(_materialManager);
+	return _materialManager->createMaterial(name);
 }
 
 GraphicsTexturePtr
@@ -415,7 +259,7 @@ RenderPipeline::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureD
 }
 
 GraphicsTexturePtr
-RenderPipeline::createTexture(const std::string& name) except
+RenderPipeline::createTexture(const std::string& name) noexcept
 {
 	StreamReaderPtr stream;
 	if (IoServer::instance()->openFile(stream, name))
@@ -480,67 +324,11 @@ RenderPipeline::createTexture(const std::string& name) except
 	return nullptr;
 }
 
-MaterialPtr
-RenderPipeline::createMaterial(const std::string& name) except
+GraphicsRenderTexturePtr
+RenderPipeline::createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept
 {
-	return _materialManager->createMaterial(name);
-}
-
-void
-RenderPipeline::setMaterialPass(MaterialPassPtr pass) noexcept
-{
-	_materialManager->setMaterialPass(pass);
-
-	std::size_t bindCount = 0;
-
-	GraphicsTexturePtr bindTextures[MAX_TEXTURE_UNIT];
-	GraphicsSamplerPtr bindSamplers[MAX_SAMPLER_UNIT];
-
-	auto& textures = pass->getTextures();
-	auto  textureCount = std::min((std::size_t)MAX_TEXTURE_UNIT, textures.size());
-	for (std::size_t i = 0; i < textureCount; i++)
-	{
-		auto& uniforms = textures[i]->getShaderUniform();
-		auto texture = textures[i]->getTexture();
-
-		for (auto& it : uniforms)
-			it->assign((int)i);
-
-		if (textures[i]->getTexture())
-		{
-			bindTextures[i] = textures[i]->getTexture();
-			bindSamplers[i] = textures[i]->getSampler();
-
-			bindCount++;
-		}
-	}
-
-	if (bindCount > 0)
-	{
-		_graphicsDevice->setGraphicsTexture(bindTextures, 0, bindCount);
-		_graphicsDevice->setGraphicsSampler(bindSamplers, 0, bindCount);
-	}
-
-	_graphicsDevice->setGraphicsState(pass->getGraphicsState());
-	_graphicsDevice->setGraphicsProgram(pass->getGraphicsProgram());
-}
-
-void
-RenderPipeline::setMaterialManager(MaterialManagerPtr manager) noexcept
-{
-	_materialManager = manager;
-}
-
-MaterialPassPtr
-RenderPipeline::getMaterialPass() noexcept
-{
-	return _materialManager->getMaterialPass();
-}
-
-MaterialManagerPtr
-RenderPipeline::getMaterialManager() noexcept
-{
-	return _materialManager;
+	assert(_graphicsDevice);
+	return _graphicsDevice->createRenderTexture(desc);
 }
 
 RenderBufferPtr
@@ -553,7 +341,7 @@ RenderPipeline::createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexc
 }
 
 RenderBufferPtr
-RenderPipeline::createRenderBuffer(const MeshProperty& mesh) except
+RenderPipeline::createRenderBuffer(const MeshProperty& mesh) noexcept
 {
 	auto numVertex = mesh.getNumVertices();
 	auto numIndices = mesh.getNumIndices();
@@ -595,7 +383,7 @@ RenderPipeline::createRenderBuffer(const MeshProperty& mesh) except
 			components.push_back(VertexComponent("TANGENT", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
 	}
 
-	GraphicsLayoutDesc layout;
+	GraphicsInputLayoutDesc layout;
 	layout.setVertexComponents(components);
 	layout.setIndexType(GraphicsIndexType::GraphicsIndexTypeUint32);
 
@@ -683,7 +471,7 @@ RenderPipeline::createRenderBuffer(const MeshProperty& mesh) except
 	auto buffer = this->createRenderBuffer(vb, ib);
 	if (buffer)
 	{
-		buffer->setGraphicsLayout(this->createGraphicsLayout(layout));
+		buffer->setInputLayout(this->createInputLayout(layout));
 		return buffer;
 	}
 
@@ -691,7 +479,7 @@ RenderPipeline::createRenderBuffer(const MeshProperty& mesh) except
 }
 
 RenderBufferPtr
-RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) except
+RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) noexcept
 {
 	auto numVertex = 0;
 	auto numIndices = 0;
@@ -702,7 +490,7 @@ RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) except
 		numIndices += it->getNumIndices();
 	}
 
-	GraphicsLayoutDesc layout;
+	GraphicsInputLayoutDesc layout;
 
 	if (!meshes.front()->getVertexArray().empty())
 		layout.addComponent(VertexComponent("POSITION", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
@@ -849,18 +637,18 @@ RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) except
 	auto buffer = this->createRenderBuffer(vb, ib);
 	if (buffer)
 	{
-		buffer->setGraphicsLayout(this->createGraphicsLayout(layout));
+		buffer->setInputLayout(this->createInputLayout(layout));
 		return buffer;
 	}
 
 	return nullptr;
 }
 
-GraphicsLayoutPtr
-RenderPipeline::createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept
+GraphicsInputLayoutPtr
+RenderPipeline::createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept
 {
 	assert(_graphicsDevice);
-	return _graphicsDevice->createGraphicsLayout(desc);
+	return _graphicsDevice->createInputLayout(desc);
 }
 
 GraphicsDataPtr
@@ -870,48 +658,232 @@ RenderPipeline::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 	return _graphicsDevice->createGraphicsData(desc);
 }
 
+void
+RenderPipeline::addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept
+{
+	assert(_dataManager);
+	_dataManager->addRenderData(queue, pass, object);
+}
+
+RenderObjects&
+RenderPipeline::getRenderData(RenderQueue queue, RenderPass pass) noexcept
+{
+	assert(_dataManager);
+	return _dataManager->getRenderData(queue, pass);
+}
+
+void
+RenderPipeline::renderBegin() noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->renderBegin();
+}
+
+void
+RenderPipeline::renderEnd() noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->renderEnd();
+	_graphicsContext->present();
+}
+
+void
+RenderPipeline::setViewport(const Viewport& view, std::size_t i) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->setViewport(view, i);
+}
+
+const Viewport&
+RenderPipeline::getViewport(std::size_t i) const noexcept
+{
+	assert(_graphicsContext);
+	return _graphicsContext->getViewport(i);
+}
+
+void
+RenderPipeline::setRenderTexture(GraphicsRenderTexturePtr target) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->setRenderTexture(target);
+}
+
+void
+RenderPipeline::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->clearRenderTexture(flags, color, depth, stencil);
+}
+
+void
+RenderPipeline::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->clearRenderTexture(flags, color, depth, stencil, i);
+}
+
+void
+RenderPipeline::discradRenderTexture() noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->discardRenderTexture();
+}
+
+void
+RenderPipeline::readRenderTexture(GraphicsRenderTexturePtr texture, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->readRenderTexture(texture, pfd, w, h, data);
+}
+
+void
+RenderPipeline::blitRenderTexture(GraphicsRenderTexturePtr srcTarget, const Viewport& src, GraphicsRenderTexturePtr destTarget, const Viewport& dest) noexcept
+{
+	assert(_graphicsContext);
+	_graphicsContext->blitRenderTexture(srcTarget, src, destTarget, dest);
+}
+
+void
+RenderPipeline::setMaterialManager(MaterialManagerPtr manager) noexcept
+{
+	_materialManager = manager;
+}
+
+MaterialManagerPtr
+RenderPipeline::getMaterialManager() noexcept
+{
+	return _materialManager;
+}
+
+void
+RenderPipeline::setMaterialPass(MaterialPassPtr pass) noexcept
+{
+	if (_materialPass == pass)
+		return;
+
+	auto& semantics = pass->getParameters();
+	for (auto& it : semantics)
+	{
+		auto semantic = it->getSemantic();
+		if (semantic)
+		{
+			auto type = semantic->getType();
+			switch (type)
+			{
+			case GraphicsUniformType::GraphicsUniformTypeBool:
+				it->assign(semantic->getBool());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeInt:
+				it->assign(semantic->getInt());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeInt2:
+				it->assign(semantic->getInt2());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat:
+				it->assign(semantic->getFloat());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat2:
+				it->assign(semantic->getFloat2());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat3:
+				it->assign(semantic->getFloat3());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat4:
+				it->assign(semantic->getFloat4());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat3x3:
+				it->assign(semantic->getFloat3x3());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat4x4:
+				it->assign(semantic->getFloat4x4());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloatArray:
+				it->assign(semantic->getFloatArray());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat2Array:
+				it->assign(semantic->getFloat2Array());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat3Array:
+				it->assign(semantic->getFloat3Array());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeFloat4Array:
+				it->assign(semantic->getFloat4Array());
+				break;
+			case GraphicsUniformType::GraphicsUniformTypeStorageImage:
+				it->assign(semantic->getTexture());
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	_graphicsContext->setRenderPipeline(pass->getRenderPipeline());
+	_graphicsContext->setDescriptorSet(pass->getDescriptorSet());
+}
+
+MaterialPassPtr
+RenderPipeline::getMaterialPass() noexcept
+{
+	return _materialPass;
+}
+
 bool
 RenderPipeline::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
 {
-	assert(_graphicsDevice);
-	return _graphicsDevice->updateBuffer(data, str, cnt);
+	assert(_graphicsContext);
+	return _graphicsContext->updateBuffer(data, str, cnt);
 }
 
 void*
 RenderPipeline::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
 {
-	assert(_graphicsDevice);
-	return _graphicsDevice->mapBuffer(data, access);
+	assert(_graphicsContext);
+	return _graphicsContext->mapBuffer(data, access);
 }
 
 void
 RenderPipeline::unmapBuffer(GraphicsDataPtr& data) noexcept
 {
-	assert(_graphicsDevice);
-	return _graphicsDevice->unmapBuffer(data);
+	assert(_graphicsContext);
+	return _graphicsContext->unmapBuffer(data);
 }
 
 void
-RenderPipeline::setRenderBuffer(RenderBufferPtr buffer) except
+RenderPipeline::setRenderBuffer(RenderBufferPtr buffer) noexcept
 {
-	assert(_graphicsDevice);
-	_graphicsDevice->setGraphicsLayout(buffer->getGraphicsLayout());
-	_graphicsDevice->setVertexBufferData(buffer->getVertexBuffer());
-	_graphicsDevice->setIndexBufferData(buffer->getIndexBuffer());
+	assert(_graphicsContext);
+	_graphicsContext->setInputLayout(buffer->getInputLayout());
+	_graphicsContext->setVertexBufferData(buffer->getVertexBuffer());
+	_graphicsContext->setIndexBufferData(buffer->getIndexBuffer());
 }
 
 void
-RenderPipeline::drawRenderBuffer(const RenderIndirect& renderable) noexcept
+RenderPipeline::drawRenderBuffer(const GraphicsIndirect& renderable) noexcept
 {
-	assert(_graphicsDevice);
-	_graphicsDevice->drawRenderBuffer(renderable);
+	assert(_graphicsContext);
+	_graphicsContext->drawRenderBuffer(renderable);
 }
 
 void
-RenderPipeline::drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept
+RenderPipeline::drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept
 {
-	assert(_graphicsDevice);
-	_graphicsDevice->drawRenderBuffer(renderable, first, count);
+	assert(_graphicsContext);
+	_graphicsContext->drawRenderBuffer(renderable, first, count);
+}
+
+void
+RenderPipeline::drawSphere(MaterialPassPtr pass, const float4x4& transform) noexcept
+{
+	_materialMatModel->assign(transform);
+	this->drawMesh(pass, _renderSphere, _renderSphereIndirect);
+}
+
+void
+RenderPipeline::drawCone(MaterialPassPtr pass, const float4x4& transform) noexcept
+{
+	_materialMatModel->assign(transform);
+	this->drawMesh(pass, _renderCone, _renderConeIndirect);
 }
 
 void
@@ -922,15 +894,11 @@ RenderPipeline::drawScreenQuad(MaterialPassPtr pass) noexcept
 }
 
 void
-RenderPipeline::drawSphere(MaterialPassPtr pass) noexcept
+RenderPipeline::drawMesh(MaterialPassPtr pass, RenderBufferPtr buffer, const GraphicsIndirect& renderable) noexcept
 {
-	this->drawMesh(pass, _renderSphere, _renderSphereIndirect);
-}
-
-void
-RenderPipeline::drawCone(MaterialPassPtr pass) noexcept
-{
-	this->drawMesh(pass, _renderCone, _renderConeIndirect);
+	this->setMaterialPass(pass);
+	this->setRenderBuffer(buffer);
+	this->drawRenderBuffer(renderable);
 }
 
 void
@@ -950,7 +918,7 @@ RenderPipeline::setWindowResolution(std::uint32_t width, std::uint32_t height) n
 {
 	if (_width != width || _height != height)
 	{
-		auto& drawPostProcess = _postprocessors[RenderQueue::RQ_POSTPROCESS];
+		auto& drawPostProcess = _postprocessors[RenderQueue::RenderQueuePostprocess];
 		for (auto& it : drawPostProcess)
 		{
 			if (it->getActive())
@@ -976,7 +944,7 @@ RenderPipeline::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const no
 }
 
 void
-RenderPipeline::addPostProcess(RenderPostProcessPtr postprocess) except
+RenderPipeline::addPostProcess(RenderPostProcessPtr postprocess) noexcept
 {
 	auto renderQueue = postprocess->getRenderQueue();
 	auto& drawPostProcess = _postprocessors[renderQueue];
@@ -1004,9 +972,10 @@ RenderPipeline::removePostProcess(RenderPostProcessPtr postprocess) noexcept
 }
 
 void
-RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr swap, GraphicsRenderTexturePtr& dest) noexcept
+RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsTexturePtr source, GraphicsRenderTexturePtr swap, GraphicsRenderTexturePtr dest) noexcept
 {
-	dest = source;
+	GraphicsRenderTexturePtr view = dest;
+	GraphicsRenderTexturePtr cur;
 
 	auto& drawPostProcess = _postprocessors[queue];
 	for (auto& it : drawPostProcess)
@@ -1014,41 +983,37 @@ RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsRenderTexturePtr sour
 		if (it->getActive())
 		{
 			it->onRenderPre(*this);
-			it->onRender(*this, source, swap);
+			it->onRender(*this, source, view);
 			it->onRenderPost(*this);
 		}
 
-		dest = swap;
-		std::swap(source, swap);
+		cur = view;
+		source = view->getGraphicsRenderTextureDesc().getTextures()[0];
+
+		std::swap(swap, view);
+	}
+
+	if (cur != dest && cur)
+	{
+		std::uint32_t w = source->getGraphicsTextureDesc().getWidth();
+		std::uint32_t h = source->getGraphicsTextureDesc().getHeight();
+		Viewport viewport(0, 0, w, h);
+		this->blitRenderTexture(cur, viewport, dest, viewport);
 	}
 }
 
 void
-RenderPipeline::renderBegin() noexcept
-{
-	assert(_graphicsDevice);
-	_graphicsDevice->renderBegin();
-}
-
-void
-RenderPipeline::renderEnd() noexcept
-{
-	assert(_graphicsDevice);
-	_graphicsDevice->renderEnd();
-}
-
-void
-RenderPipeline::onRenderObjectPre(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except
+RenderPipeline::onRenderObjectPre(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) noexcept
 {
 }
 
 void
-RenderPipeline::onRenderObjectPost(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) except
+RenderPipeline::onRenderObjectPost(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) noexcept
 {
 }
 
 void
-RenderPipeline::onRenderObject(RenderObject& object, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) except
+RenderPipeline::onRenderObject(RenderObject& object, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept
 {
 	auto pass = _pass ? _pass : object.downcast<RenderMesh>()->getMaterial()->getTech(queue)->getPass(passType);
 
@@ -1058,11 +1023,11 @@ RenderPipeline::onRenderObject(RenderObject& object, RenderQueue queue, RenderPa
 		_materialMatModelInverse->assign(object.getTransformInverse());
 		_materialMatModelInverseTranspose->assign(object.getTransformInverseTranspose());
 
-		this->drawMesh(pass, object.downcast<RenderMesh>()->getRenderBuffer(), *object.downcast<RenderMesh>()->getRenderIndirect());
+		this->drawMesh(pass, object.downcast<RenderMesh>()->getRenderBuffer(), *object.downcast<RenderMesh>()->getGraphicsIndirect());
 
 		auto listener = object.getOwnerListener();
 		if (listener)
-			listener->onRenderObject(*this->getCamera());
+			listener->onRenderObject(*this, *this->getCamera());
 	}
 }
 

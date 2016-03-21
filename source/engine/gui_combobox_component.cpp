@@ -267,7 +267,7 @@ GuiComboBoxComponent::save(oarchive& write) noexcept
 }
 
 GameComponentPtr
-GuiComboBoxComponent::clone() const except
+GuiComboBoxComponent::clone() const noexcept
 {
 	return std::make_shared<GuiComboBoxComponent>();
 }

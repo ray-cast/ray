@@ -50,14 +50,14 @@ public:
 	virtual void onActivate(RenderPipeline& pipeline) except;
 	virtual void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
-	void blurh(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void blurv(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void blurh(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept;
+	void blurv(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept;
 
-	void computeNear(RenderPipeline& pipeline, GraphicsRenderTexturePtr shrunk, GraphicsRenderTexturePtr blured, GraphicsRenderTexturePtr dest) noexcept;
+	void computeNear(RenderPipeline& pipeline, GraphicsFramebufferPtr shrunk, GraphicsFramebufferPtr blured, GraphicsFramebufferPtr dest) noexcept;
 
-	void shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr color, GraphicsTexturePtr texSmall, GraphicsTexturePtr large);
+	void shading(RenderPipeline& pipeline, GraphicsFramebufferPtr color, GraphicsTexturePtr texSmall, GraphicsTexturePtr large);
 
 private:
 

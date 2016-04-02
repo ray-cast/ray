@@ -70,7 +70,8 @@ typedef std::shared_ptr<class GraphicsInputLayout> GraphicsInputLayoutPtr;
 typedef std::shared_ptr<class GraphicsState> GraphicsStatePtr;
 typedef std::shared_ptr<class GraphicsTexture> GraphicsTexturePtr;
 typedef std::shared_ptr<class GraphicsSampler> GraphicsSamplerPtr;
-typedef std::shared_ptr<class GraphicsRenderTexture> GraphicsRenderTexturePtr;
+typedef std::shared_ptr<class GraphicsFramebuffer> GraphicsFramebufferPtr;
+typedef std::shared_ptr<class GraphicsFramebufferLayout> GraphicsFramebufferLayoutPtr;
 typedef std::shared_ptr<class GraphicsShader> GraphicsShaderPtr;
 typedef std::shared_ptr<class GraphicsProgram> GraphicsProgramPtr;
 typedef std::shared_ptr<class GraphicsPipeline> GraphicsPipelinePtr;
@@ -79,6 +80,10 @@ typedef std::shared_ptr<class GraphicsDescriptorSet> GraphicsDescriptorSetPtr;
 typedef std::shared_ptr<class GraphicsDescriptorSetLayout> GraphicsDescriptorSetLayoutPtr;
 typedef std::shared_ptr<class GraphicsUniform> GraphicsUniformPtr;
 typedef std::shared_ptr<class GraphicsVariant> GraphicsVariantPtr;
+typedef std::shared_ptr<class GraphicsSystem> GraphicsSystemPtr;
+typedef std::shared_ptr<class GraphicsCommandPool> GraphicsCommandPoolPtr;
+typedef std::shared_ptr<class GraphicsCommandQueue> GraphicsCommandQueuePtr;
+typedef std::shared_ptr<class GraphicsCommandList> GraphicsCommandListPtr;
 
 typedef std::weak_ptr<class GraphicsDevice> GraphicsDeviceWeakPtr;
 typedef std::weak_ptr<class GraphicsSwapchain> GraphicsSwapchainWeakPtr;
@@ -89,7 +94,7 @@ typedef std::weak_ptr<class GraphicsInputLayout> GraphicsInputLayoutWeakPtr;
 typedef std::weak_ptr<class GraphicsState> GraphicsStateWeakPtr;
 typedef std::weak_ptr<class GraphicsTexture> GraphicsTextureWeakPtr;
 typedef std::weak_ptr<class GraphicsSampler> GraphicsSamplerWeakPtr;
-typedef std::weak_ptr<class GraphicsRenderTexture> GraphicsRenderTextureWeakPtr;
+typedef std::weak_ptr<class GraphicsFramebuffer> GraphicsFramebufferWeakPtr;
 typedef std::weak_ptr<class GraphicsShader> GraphicsShaderWeakPtr;
 typedef std::weak_ptr<class GraphicsProgram> GraphicsProgramWeakPtr;
 typedef std::weak_ptr<class GraphicsPipeline> GraphicsPipelineWeakPtr;
@@ -98,6 +103,11 @@ typedef std::weak_ptr<class GraphicsDescriptorSet> GraphicsDescriptorSetWeakPtr;
 typedef std::weak_ptr<class GraphicsDescriptorSetLayout> GraphicsDescriptorSetLayoutWeakPtr;
 typedef std::weak_ptr<class GraphicsUniform> GraphicsUniformWeakPtr;
 typedef std::weak_ptr<class GraphicsVariant> GraphicsVariantWeakPtr;
+typedef std::weak_ptr<class GraphicsSystem> GraphicsSystemWeakPtr;
+typedef std::weak_ptr<class GraphicsCommandPool> GraphicsCommandPoolWeakPtr;
+typedef std::weak_ptr<class GraphicsCommandQueue> GraphicsCommandQueueWeakPtr;
+typedef std::weak_ptr<class GraphicsCommandList> GraphicsCommandPoolListWeakPtr;
+
 
 typedef std::shared_ptr<class ShaderVariant> ShaderVariantPtr;
 typedef std::shared_ptr<class ShaderParameter> ShaderParameterPtr;
@@ -109,24 +119,26 @@ typedef std::shared_ptr<class GraphicsIndirect> GraphicsIndirectPtr;
 
 typedef std::vector<GraphicsShaderPtr> GraphicsShaders;
 typedef std::vector<GraphicsVariantPtr> GraphicsVariants;
-typedef std::vector<GraphicsRenderTexturePtr> GraphicsRenderTextures;
+typedef std::vector<GraphicsFramebufferPtr> GraphicsFramebuffers;
 typedef std::vector<GraphicsIndirectPtr> GraphicsIndirects;
 typedef std::vector<GraphicsUniformPtr> GraphicsUniforms;
 typedef std::vector<GraphicsTexturePtr> GraphicsTextures;
 typedef std::vector<class VertexComponent> VertexComponents;
 typedef std::vector<class GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponents;
+typedef std::vector<class GraphicsAttachmentDesc> GraphicsAttachmentDescs;
 typedef std::vector<ShaderAttributePtr> ShaderAttributes;
 typedef std::vector<ShaderUniformPtr> ShaderUniforms;
 typedef std::vector<ShaderSubroutinePtr> ShaderSubroutines;
 typedef std::vector<ShaderVariantPtr> ShaderVariants;
 
+class GraphicsDeviceDesc;
 class GraphicsSwapchainDesc;
 class GraphicsContextDesc;
 class GraphicsInputLayoutDesc;
 class GraphicsDataDesc;
 class GraphicsTextureDesc;
 class GraphicsSamplerDesc;
-class GraphicsRenderTextureDesc;
+class GraphicsFramebufferDesc;
 class GraphicsStateDesc;
 class GraphicsShaderDesc;
 class GraphicsProgramDesc;
@@ -136,20 +148,6 @@ class GraphicsDescriptorSetLayoutDesc;
 class GraphicsDescriptorPoolDesc;
 
 typedef void* WindHandle;
-
-enum SwapInterval
-{
-	SwapIntervalFree,
-	SwapIntervalVsync,
-	SwapIntervalFps30,
-	SwapIntervalFps15,
-};
-
-enum GLapi
-{
-	OPENGL_API,
-	OPENGL_ES_API
-};
 
 enum GLattr
 {
@@ -200,6 +198,14 @@ enum GraphicsDeviceType
 	GraphicsDeviceTypeEndRange = GraphicsDeviceTypeVulkan,
 	GraphicsDeviceTypeRangeSize = (GraphicsDeviceTypeEndRange - GraphicsDeviceTypeBeginRange + 1),
 	GraphicsDeviceTypeMaxEnum = 0x7FFFFFFF
+};
+
+enum GraphicsSwapInterval
+{
+	GraphicsSwapIntervalFree,
+	GraphicsSwapIntervalVsync,
+	GraphicsSwapIntervalFps30,
+	GraphicsSwapIntervalFps15,
 };
 
 enum GraphicsCompareFunc
@@ -275,6 +281,16 @@ enum GraphicsCullMode
 	GraphicsCullModeMaxEnum = 0x7FFFFFFF
 };
 
+enum GraphicsFrontFace
+{
+	GraphicsFrontFaceCW = 0,
+	GraphicsFrontFaceCCW = 1,
+	GraphicsFrontFaceBeginRange = GraphicsFrontFaceCW,
+	GraphicsFrontFaceEndRange = GraphicsFrontFaceCCW,
+	GraphicsFrontFaceRangeSize = (GraphicsFrontFaceEndRange - GraphicsFrontFaceBeginRange + 1),
+	GraphicsFrontFaceMaxEnum = 0x7FFFFFFF
+};
+
 enum GraphicsPolygonMode
 {
 	GraphicsPolygonModePoint,
@@ -297,7 +313,7 @@ enum GraphicsStencilOp
 	GraphicsStencilOpDecrWrap,
 	GraphicsStencilOpBeginRange = GraphicsStencilOpKeep,
 	GraphicsStencilOpEndRange = GraphicsStencilOpDecrWrap,
-	GraphicsStencilOpRangeSize = (GraphicsStencilOpEndRange - GraphicsStencilOpKeep + 1),
+	GraphicsStencilOpRangeSize = (GraphicsStencilOpEndRange - GraphicsStencilOpBeginRange + 1),
 	GraphicsStencilOpMaxEnum = 0x7FFFFFFF
 };
 
@@ -310,6 +326,73 @@ enum GraphicsClearFlags
 	GraphicsClearFlagsColorStencil = GraphicsClearFlagsColor | GraphicsClearFlagsStencil,
 	GraphicsClearFlagsDepthStencil = GraphicsClearFlagsDepth | GraphicsClearFlagsStencil,
 	GraphicsClearFlagsAll = GraphicsClearFlagsColor | GraphicsClearFlagsDepth | GraphicsClearFlagsStencil
+};
+
+enum GraphicsFormatType
+{
+	GraphicsFormatTypeNone,
+	GraphicsFormatTypeRInt,
+	GraphicsFormatTypeRUInt,
+	GraphicsFormatTypeRSRGB,
+	GraphicsFormatTypeRSNorm,
+	GraphicsFormatTypeRUNorm,
+	GraphicsFormatTypeRSScaled,
+	GraphicsFormatTypeRUScaled,
+	GraphicsFormatTypeRFloat,
+	GraphicsFormatTypeRGInt,
+	GraphicsFormatTypeRGUInt,
+	GraphicsFormatTypeRGSRGB,
+	GraphicsFormatTypeRGSNorm,
+	GraphicsFormatTypeRGUNorm,
+	GraphicsFormatTypeRGSScaled,
+	GraphicsFormatTypeRGUScaled,
+	GraphicsFormatTypeRGFloat,
+	GraphicsFormatTypeRGBInt,
+	GraphicsFormatTypeRGBUInt,
+	GraphicsFormatTypeRGBSRGB,
+	GraphicsFormatTypeRGBSNorm,
+	GraphicsFormatTypeRGBUNorm,
+	GraphicsFormatTypeRGBSScaled,
+	GraphicsFormatTypeRGBUScaled,
+	GraphicsFormatTypeRGBFloat,
+	GraphicsFormatTypeRGBAInt,
+	GraphicsFormatTypeRGBAUInt,
+	GraphicsFormatTypeRGBASRGB,
+	GraphicsFormatTypeRGBASNorm,
+	GraphicsFormatTypeRGBAUNorm,
+	GraphicsFormatTypeRGBASScaled,
+	GraphicsFormatTypeRGBAUScaled,
+	GraphicsFormatTypeRGBAFloat,
+	GraphicsFormatTypeBGRInt,
+	GraphicsFormatTypeBGRUInt,
+	GraphicsFormatTypeBGRSRGB,
+	GraphicsFormatTypeBGRSNorm,
+	GraphicsFormatTypeBGRUNorm,
+	GraphicsFormatTypeBGRSScaled,
+	GraphicsFormatTypeBGRUScaled,
+	GraphicsFormatTypeBGRFloat,
+	GraphicsFormatTypeBGRAInt,
+	GraphicsFormatTypeBGRAUInt,
+	GraphicsFormatTypeBGRASRGB,
+	GraphicsFormatTypeBGRASNorm,
+	GraphicsFormatTypeBGRAUNorm,
+	GraphicsFormatTypeBGRASScaled,
+	GraphicsFormatTypeBGRAUScaled,
+	GraphicsFormatTypeBGRAFloat,
+	GraphicsFormatTypeABGRInt,
+	GraphicsFormatTypeABGRUInt,
+	GraphicsFormatTypeABGRSRGB,
+	GraphicsFormatTypeABGRSNorm,
+	GraphicsFormatTypeABGRUNorm,
+	GraphicsFormatTypeABGRSScaled,
+	GraphicsFormatTypeABGRUScaled,
+	GraphicsFormatTypeABGRFloat,
+	GraphicsFormatTypeDepth,
+	GraphicsFormatTypeDepthStencil,
+	GraphicsFormatTypeBeginRange = GraphicsFormatTypeNone,
+	GraphicsFormatTypeEndRange = GraphicsFormatTypeDepthStencil,
+	GraphicsFormatTypeRangeSize = (GraphicsFormatTypeEndRange - GraphicsFormatTypeBeginRange + 1),
+	GraphicsFormatTypeMaxEnum = 0x7FFFFFFF
 };
 
 enum GraphicsFormat
@@ -526,6 +609,8 @@ enum GraphicsSamplerAnis
 	GraphicsSamplerAnis4,
 	GraphicsSamplerAnis8,
 	GraphicsSamplerAnis16,
+	GraphicsSamplerAnis32,
+	GraphicsSamplerAnis64,
 	GraphicsSamplerAnisBeginRange = GraphicsSamplerAnis0,
 	GraphicsSamplerAnisEndRange = GraphicsSamplerAnis16,
 	GraphicsSamplerAnisRangeSize = (GraphicsSamplerAnisEndRange - GraphicsSamplerAnisBeginRange + 1),
@@ -572,6 +657,17 @@ enum GraphicsSamplerFilter
 	GraphicsSamplerFilterMaxEnum = 0x7FFFFFFF
 };
 
+enum GraphicsSampleFlagBits
+{
+	GraphicsSampleFlagBits1Bit = 0x00000001,
+	GraphicsSampleFlagBits2Bit = 0x00000002,
+	GraphicsSampleFlagBits4Bit = 0x00000004,
+	GraphicsSampleFlagBits8Bit = 0x00000008,
+	GraphicsSampleFlagBits16Bit = 0x00000010,
+	GraphicsSampleFlagBits32Bit = 0x00000020,
+	GraphicsSampleFlagBits64Bit = 0x00000040,
+};
+
 enum GraphicsDataType
 {
 	GraphicsDataTypeNone,
@@ -611,10 +707,10 @@ enum GraphicsVertexType
 enum GraphicsIndexType
 {
 	GraphicsIndexTypeNone,
-	GraphicsIndexTypeUint16,
-	GraphicsIndexTypeUint32,
+	GraphicsIndexTypeUInt16,
+	GraphicsIndexTypeUInt32,
 	GraphicsIndexTypeBeginRange = GraphicsIndexTypeNone,
-	GraphicsIndexTypeEndRange = GraphicsIndexTypeUint32,
+	GraphicsIndexTypeEndRange = GraphicsIndexTypeUInt32,
 	GraphicsIndexTypeRangeSize = (GraphicsIndexTypeEndRange - GraphicsIndexTypeBeginRange + 1),
 	GraphicsIndexTypeMaxEnum = 0x7FFFFFFF
 };
@@ -642,10 +738,10 @@ enum GraphicsUniformType
     GraphicsUniformTypeInt2,
     GraphicsUniformTypeInt3,
     GraphicsUniformTypeInt4,
-    GraphicsUniformTypeUint,
-    GraphicsUniformTypeUint2,
-    GraphicsUniformTypeUint3,
-    GraphicsUniformTypeUint4,
+    GraphicsUniformTypeUInt,
+    GraphicsUniformTypeUInt2,
+    GraphicsUniformTypeUInt3,
+    GraphicsUniformTypeUInt4,
     GraphicsUniformTypeFloat,
     GraphicsUniformTypeFloat2,
     GraphicsUniformTypeFloat3,
@@ -657,10 +753,10 @@ enum GraphicsUniformType
     GraphicsUniformTypeInt2Array,
     GraphicsUniformTypeInt3Array,
     GraphicsUniformTypeInt4Array,
-    GraphicsUniformTypeUintArray,
-    GraphicsUniformTypeUint2Array,
-    GraphicsUniformTypeUint3Array,
-    GraphicsUniformTypeUint4Array,
+    GraphicsUniformTypeUIntArray,
+    GraphicsUniformTypeUInt2Array,
+    GraphicsUniformTypeUInt3Array,
+    GraphicsUniformTypeUInt4Array,
     GraphicsUniformTypeHalfArray,
     GraphicsUniformTypeHalf2Array,
     GraphicsUniformTypeHalf3Array,
@@ -704,6 +800,63 @@ enum GraphicsViewLayout
 	GraphicsViewLayoutEndRange = GraphicsViewLayoutPreinitialized,
 	GraphicsViewLayoutRangeSize = (GraphicsViewLayoutPreinitialized - GraphicsViewLayoutUndefined + 1),
 	GraphicsViewLayoutMaxEnum = 0x7FFFFFFF
+};
+
+enum GraphicsViewUsageFlagBits
+{
+	GraphicsViewUsageFlagBitsTransferSrcBit = 0x00000001,
+	GraphicsViewUsageFlagBitsTransferDstBit = 0x00000002,
+	GraphicsViewUsageFlagBitsSampledBit = 0x00000004,
+	GraphicsViewUsageFlagBitsStorageBit = 0x00000008,
+	GraphicsViewUsageFlagBitsColorAttachmentBit = 0x00000010,
+	GraphicsViewUsageFlagBitsDepthStencilAttachmentBit = 0x00000020,
+	GraphicsViewUsageFlagBitsTransientAttachmentBit = 0x00000040,
+	GraphicsViewUsageFlagBitsInputAttachmentBit = 0x00000080,
+};
+
+enum GraphicsUsageFlags
+{
+	GraphicsUsageFlagsReadBit = 0x00000001,
+	GraphicsUsageFlagsWriteBit = 0x00000002,
+	GraphicsUsageFlagsPersistentBit = 0x00000004,
+	GraphicsUsageFlagsCoherentBit = 0x00000008,
+	GraphicsUsageFlagsFlushExplicitBit = 0x00000010,
+	GraphicsUsageFlagsDynamicStorageBit = 0x00000020,
+	GraphicsUsageFlagsClientStorageBit = 0x00000040,
+	GraphicsUsageFlagsImmutableStorage = 0x00000080
+};
+
+enum GraphicsAccessFlagsBits
+{
+	GraphicsAccessFlagsMapReadBit = 0x00000001,
+	GraphicsAccessFlagsMapWriteBit = 0x00000002,
+	GraphicsAccessFlagsUnsynchronizedBit = 0x00000004
+};
+
+enum GraphicsCommandListType
+{
+	GraphicsCommandListTypeGraphics = 0,
+	GraphicsCommandListTypeCompute = 1,
+	GraphicsCommandListTypeBundle = 2,
+	GraphicsCommandListTypeCopy = 3
+};
+
+enum GraphicsCommandQueueFlags
+{
+	GraphicsCommandQueueFlagsNone = 0,
+	GraphicsCommandQueueFlagsDisableGpuTimeOut = 0x1
+};
+
+enum GraphicsCommandQueuePriority
+{
+	GraphicsCommandQueuePriorityNormal = 0,
+	GraphicsCommandQueuePriorityHigh = 100
+};
+
+enum GraphicsCommandPoolFlags
+{
+	GraphicsCommandPoolTransientBit = 0x00000001,
+	GraphicsCommandPoolResetCommandBuffer = 0x00000002
 };
 
 _NAME_END

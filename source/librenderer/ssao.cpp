@@ -37,7 +37,7 @@
 #include <ray/ssao.h>
 #include <ray/camera.h>
 
-#include <ray/graphics_view.h>
+#include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 
 _NAME_BEGIN
@@ -86,7 +86,7 @@ SSAO::getSetting() const noexcept
 }
 
 void
-SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	_cameraProjInfo->assign(pipeline.getCamera()->getProjConstant());
 	_cameraProjScale->assign(pipeline.getCamera()->getProjLength().y * _setting.radius);
@@ -97,7 +97,7 @@ SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 }
 
 void
-SSAO::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSAO::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	GraphicsTextureDesc textureDesc = source->getGraphicsTextureDesc();
 
@@ -108,7 +108,7 @@ SSAO::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphi
 }
 
 void
-SSAO::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSAO::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	GraphicsTextureDesc textureDesc = source->getGraphicsTextureDesc();
 
@@ -119,7 +119,7 @@ SSAO::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 }
 
 void
-SSAO::blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest, const float2& direction) noexcept
+SSAO::blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, const float2& direction) noexcept
 {
 	_blurDirection->assign(direction);
 	_blurSource->assign(source);
@@ -130,7 +130,7 @@ SSAO::blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphic
 }
 
 void
-SSAO::shading(RenderPipeline& pipeline, GraphicsTexturePtr ambient, GraphicsRenderTexturePtr dest) noexcept
+SSAO::shading(RenderPipeline& pipeline, GraphicsTexturePtr ambient, GraphicsFramebufferPtr dest) noexcept
 {
 	_occlusionAmbient->assign(ambient);
 
@@ -167,11 +167,11 @@ SSAO::onActivate(RenderPipeline& pipeline) except
 	_texAmbientMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
 	_texBlurMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
 
-	GraphicsRenderTextureDesc ambientViewDesc;
+	GraphicsFramebufferDesc ambientViewDesc;
 	ambientViewDesc.attach(_texAmbientMap);
 	_texAmbientView = pipeline.createRenderTexture(ambientViewDesc);
 
-	GraphicsRenderTextureDesc blurViewDesc;
+	GraphicsFramebufferDesc blurViewDesc;
 	blurViewDesc.attach(_texBlurMap);
 	_texBlurView = pipeline.createRenderTexture(blurViewDesc);
 
@@ -212,7 +212,7 @@ SSAO::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-SSAO::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) except
+SSAO::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) except
 {
 	this->computeRawAO(pipeline, source, _texAmbientView);
 

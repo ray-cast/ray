@@ -112,7 +112,7 @@ RenderPostProcess::onRenderPost(RenderPipeline& pipeline) except
 }
 
 void 
-RenderPostProcess::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) except
+RenderPostProcess::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) except
 {
 }
 

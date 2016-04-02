@@ -45,6 +45,9 @@
 #if defined(_BUILD_OPENGL_ES3)
 #	include "OpenGL ES3/egl3_device.h"
 #endif
+#if defined(_BUILD_VULKAN)
+#	include "Vulkan/vk_device.h"
+#endif
 
 _NAME_BEGIN
 
@@ -60,21 +63,48 @@ GraphicsSystem::~GraphicsSystem() noexcept
 }
 
 GraphicsDevicePtr 
-GraphicsSystem::createDevice(GraphicsDeviceType deviceType) noexcept
+GraphicsSystem::createDevice(const GraphicsDeviceDesc& desc) noexcept
 {
+	auto deviceType = desc.getDeviceType();
+
 #if defined(_BUILD_OPENGL_CORE)
 	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
-		return std::make_shared<OGLDevice>();
+	{
+		auto device = std::make_shared<OGLDevice>();
+		if (device->setup(desc))
+			return device;
+		return nullptr;
+	}
+		
 #endif
 #if defined(_BUILD_OPENGL_ES2)
 	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES2)
-		return std::make_shared<EGL2Device>();
+	{
+		auto device = std::make_shared<EGL2Device>();
+		if (device->setup(desc))
+			return device;
+		return nullptr;
+	}
 #endif
 #if defined(_BUILD_OPENGL_ES3)
-	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES3)
-		return std::make_shared<EGL3Device>();
+	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES3 ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES31)
+	{
+		auto device = std::make_shared<EGL3Device>();
+		if (device->setup(desc))
+			return device;
+		return nullptr;
+	}
 #endif
-
+#if defined(_BUILD_VULKAN)
+	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
+	{
+		auto device = std::make_shared<OGLDevice>();
+		if (device->setup(desc))
+			return device;
+		return nullptr;
+	}
+#endif
 	return nullptr;
 }
 

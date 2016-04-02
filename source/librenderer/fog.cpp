@@ -67,7 +67,7 @@ Fog::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-Fog::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) except
+Fog::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) except
 {
 	_texSource->assign(source);
 

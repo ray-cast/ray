@@ -39,7 +39,7 @@
 #include "mygui_renderer.h"
 #include "mygui_system.h"
 
-#include <ray/graphics_view.h>
+#include <ray/graphics_framebuffer.h>
 
 _NAME_BEGIN
 
@@ -282,7 +282,7 @@ MyGuiRenderTexture::MyGuiRenderTexture(GraphicsTexturePtr texture) noexcept
 	_renderTargetInfo.pixScaleX = 1.0f / float(textureDes.getWidth());
 	_renderTargetInfo.pixScaleY = 1.0f / float(textureDes.getHeight());
 
-	GraphicsRenderTextureDesc framebufferDesc;
+	GraphicsFramebufferDesc framebufferDesc;
 	framebufferDesc.attach(texture);
 	_renderTexture = RenderSystem::instance()->createRenderTexture(framebufferDesc);
 }
@@ -317,4 +317,5 @@ MyGuiRenderTexture::getInfo() noexcept
 }
 
 _NAME_END
+
 #endif

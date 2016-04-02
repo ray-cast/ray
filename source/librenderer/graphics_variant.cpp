@@ -241,22 +241,22 @@ GraphicsVariant::setType(GraphicsUniformType type) noexcept
 			delete _value.iarray4;
 			_value.iarray4 = nullptr;
 		}
-		else if (_type == GraphicsUniformType::GraphicsUniformTypeUintArray)
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeUIntArray)
 		{
 			delete _value.uiarray;
 			_value.uiarray = nullptr;
 		}
-		else if (_type == GraphicsUniformType::GraphicsUniformTypeUint2Array)
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeUInt2Array)
 		{
 			delete _value.uiarray2;
 			_value.uiarray2 = nullptr;
 		}
-		else if (_type == GraphicsUniformType::GraphicsUniformTypeUint3Array)
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeUInt3Array)
 		{
 			delete _value.uiarray3;
 			_value.uiarray3 = nullptr;
 		}
-		else if (_type == GraphicsUniformType::GraphicsUniformTypeUint4Array)
+		else if (_type == GraphicsUniformType::GraphicsUniformTypeUInt4Array)
 		{
 			delete _value.uiarray4;
 			_value.uiarray4 = nullptr;
@@ -322,16 +322,16 @@ GraphicsVariant::setType(GraphicsUniformType type) noexcept
 			_value.iarray3 = new std::vector<int3>();
 		else if (type == GraphicsUniformType::GraphicsUniformTypeInt4Array)
 			_value.iarray4 = new std::vector<int4>();
-		else if (type == GraphicsUniformType::GraphicsUniformTypeUintArray)
+		else if (type == GraphicsUniformType::GraphicsUniformTypeUIntArray)
 			_value.uiarray = new std::vector<uint1>();
-		else if (type == GraphicsUniformType::GraphicsUniformTypeUint2Array)
+		else if (type == GraphicsUniformType::GraphicsUniformTypeUInt2Array)
 			_value.uiarray2 = new std::vector<uint2>();
-		else if (type == GraphicsUniformType::GraphicsUniformTypeUint3Array)
+		else if (type == GraphicsUniformType::GraphicsUniformTypeUInt3Array)
 			_value.uiarray3 = new std::vector<uint3>();
-		else if (type == GraphicsUniformType::GraphicsUniformTypeUint4Array)
+		else if (type == GraphicsUniformType::GraphicsUniformTypeUInt4Array)
 			_value.uiarray4 = new std::vector<uint4>();
 		else if (type == GraphicsUniformType::GraphicsUniformTypeFloatArray)
-			_value.farray = new std::vector<float>();
+			_value.farray = new std::vector<float1>();
 		else if (type == GraphicsUniformType::GraphicsUniformTypeFloat2Array)
 			_value.farray2 = new std::vector<float2>();
 		else if (type == GraphicsUniformType::GraphicsUniformTypeFloat3Array)
@@ -438,7 +438,7 @@ GraphicsVariant::assign(const int4& value) noexcept
 void
 GraphicsVariant::assign(uint1 value) noexcept
 {
-	this->setType(GraphicsUniformType::GraphicsUniformTypeUint);
+	this->setType(GraphicsUniformType::GraphicsUniformTypeUInt);
 	if (_value.ui[0] != value)
 	{
 		_value.ui[0] = value;
@@ -448,7 +448,7 @@ GraphicsVariant::assign(uint1 value) noexcept
 void
 GraphicsVariant::assign(const uint2& value) noexcept
 {
-	this->setType(GraphicsUniformType::GraphicsUniformTypeUint2);
+	this->setType(GraphicsUniformType::GraphicsUniformTypeUInt2);
 	if (_value.ui[0] != value.x ||
 		_value.ui[1] != value.y)
 	{
@@ -460,7 +460,7 @@ GraphicsVariant::assign(const uint2& value) noexcept
 void
 GraphicsVariant::assign(const uint3& value) noexcept
 {
-	this->setType(GraphicsUniformType::GraphicsUniformTypeUint3);
+	this->setType(GraphicsUniformType::GraphicsUniformTypeUInt3);
 	if (_value.ui[0] != value.x ||
 		_value.ui[1] != value.y ||
 		_value.ui[2] != value.z)
@@ -474,7 +474,7 @@ GraphicsVariant::assign(const uint3& value) noexcept
 void
 GraphicsVariant::assign(const uint4& value) noexcept
 {
-	this->setType(GraphicsUniformType::GraphicsUniformTypeUint4);
+	this->setType(GraphicsUniformType::GraphicsUniformTypeUInt4);
 	if (_value.ui[0] != value.x ||
 		_value.ui[1] != value.y ||
 		_value.ui[2] != value.z ||
@@ -584,28 +584,28 @@ GraphicsVariant::assign(const std::vector<int4>& value) noexcept
 void
 GraphicsVariant::assign(const std::vector<uint1>& value) noexcept
 {
-	this->setType(GraphicsUniformType::GraphicsUniformTypeUintArray);
+	this->setType(GraphicsUniformType::GraphicsUniformTypeUIntArray);
 	*_value.uiarray = value;
 }
 
 void
 GraphicsVariant::assign(const std::vector<uint2>& value) noexcept
 {
-	this->setType(GraphicsUniformType::GraphicsUniformTypeUint2Array);
+	this->setType(GraphicsUniformType::GraphicsUniformTypeUInt2Array);
 	*_value.uiarray2 = value;
 }
 
 void
 GraphicsVariant::assign(const std::vector<uint3>& value) noexcept
 {
-	this->setType(GraphicsUniformType::GraphicsUniformTypeUint3Array);
+	this->setType(GraphicsUniformType::GraphicsUniformTypeUInt3Array);
 	*_value.uiarray3 = value;
 }
 
 void
 GraphicsVariant::assign(const std::vector<uint4>& value) noexcept
 {
-	this->setType(GraphicsUniformType::GraphicsUniformTypeUint4Array);
+	this->setType(GraphicsUniformType::GraphicsUniformTypeUInt4Array);
 	*_value.uiarray4 = value;
 }
 
@@ -695,30 +695,30 @@ GraphicsVariant::getInt4() const noexcept
 }
 
 uint1
-GraphicsVariant::getUint() const noexcept
+GraphicsVariant::getUInt() const noexcept
 {
-	assert(_type == GraphicsUniformType::GraphicsUniformTypeUint);
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUInt);
 	return _value.ui[0];
 }
 
 const uint2&
-GraphicsVariant::getUint2() const noexcept
+GraphicsVariant::getUInt2() const noexcept
 {
-	assert(_type == GraphicsUniformType::GraphicsUniformTypeUint2);
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUInt2);
 	return (uint2&)_value.ui;
 }
 
 const uint3&
-GraphicsVariant::getUint3() const noexcept
+GraphicsVariant::getUInt3() const noexcept
 {
-	assert(_type == GraphicsUniformType::GraphicsUniformTypeUint3);
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUInt3);
 	return (uint3&)_value.ui;
 }
 
 const uint4&
-GraphicsVariant::getUint4() const noexcept
+GraphicsVariant::getUInt4() const noexcept
 {
-	assert(_type == GraphicsUniformType::GraphicsUniformTypeUint4);
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUInt4);
 	return (uint4&)_value.ui;
 }
 
@@ -793,30 +793,30 @@ GraphicsVariant::getInt4Array() const noexcept
 }
 
 const std::vector<uint1>&
-GraphicsVariant::getUintArray() const noexcept
+GraphicsVariant::getUIntArray() const noexcept
 {
-	assert(_type == GraphicsUniformType::GraphicsUniformTypeUintArray);
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUIntArray);
 	return *_value.uiarray;
 }
 
 const std::vector<uint2>&
-GraphicsVariant::getUint2Array() const noexcept
+GraphicsVariant::getUInt2Array() const noexcept
 {
-	assert(_type == GraphicsUniformType::GraphicsUniformTypeUint2Array);
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUInt2Array);
 	return *_value.uiarray2;
 }
 
 const std::vector<uint3>&
-GraphicsVariant::getUint3Array() const noexcept
+GraphicsVariant::getUInt3Array() const noexcept
 {
-	assert(_type == GraphicsUniformType::GraphicsUniformTypeUint3Array);
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUInt3Array);
 	return *_value.uiarray3;
 }
 
 const std::vector<uint4>&
-GraphicsVariant::getUint4Array() const noexcept
+GraphicsVariant::getUInt4Array() const noexcept
 {
-	assert(_type == GraphicsUniformType::GraphicsUniformTypeUint4Array);
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeUInt4Array);
 	return *_value.uiarray4;
 }
 

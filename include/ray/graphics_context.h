@@ -54,7 +54,7 @@ public:
 	std::int32_t numInstances;
 };
 
-class GraphicsContextDesc final
+class EXPORT GraphicsContextDesc final
 {
 public:
 	GraphicsContextDesc() noexcept;
@@ -67,7 +67,7 @@ private:
 	GraphicsSwapchainPtr _swapchain;
 };
 
-class GraphicsContext : public GraphicsChild
+class EXPORT GraphicsContext : public GraphicsChild
 {
 	__DeclareSubInterface(GraphicsContext, GraphicsChild)
 public:
@@ -102,13 +102,13 @@ public:
 	virtual void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept = 0;
 	virtual void unmapBuffer(GraphicsDataPtr& data) noexcept = 0;
 
-	virtual void setRenderTexture(GraphicsRenderTexturePtr target) noexcept = 0;
+	virtual void setRenderTexture(GraphicsFramebufferPtr target) noexcept = 0;
 	virtual void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept = 0;
 	virtual void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept = 0;
 	virtual void discardRenderTexture() noexcept = 0;
-	virtual void blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, GraphicsRenderTexturePtr dest, const Viewport& v2) noexcept = 0;
-	virtual void readRenderTexture(GraphicsRenderTexturePtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept = 0;
-	virtual GraphicsRenderTexturePtr getRenderTexture() const noexcept = 0;
+	virtual void blitRenderTexture(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept = 0;
+	virtual void readRenderTexture(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept = 0;
+	virtual GraphicsFramebufferPtr getRenderTexture() const noexcept = 0;
 
 	virtual void drawRenderBuffer(const GraphicsIndirect& renderable) noexcept = 0;
 	virtual void drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept = 0;

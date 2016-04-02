@@ -44,19 +44,13 @@
 #include <ray/graphics_state.h>
 #include <ray/graphics_sampler.h>
 #include <ray/graphics_texture.h>
-#include <ray/graphics_view.h>
+#include <ray/graphics_framebuffer.h>
 #include <ray/graphics_shader.h>
 #include <ray/graphics_pipeline.h>
 #include <ray/graphics_descriptor.h>
 #include <ray/graphics_input_layout.h>
 
-#if _BUILD_PLATFORM_WINDOWS
-#	include <GL/glew.h>
-#	include <GL/wglew.h>
-#elif _BUILD_PLATFORM_LINUX
-#	include <GL/glew.h>
-#	include <GL/glxew.h>
-#endif
+#include "ogl_basic.h"
 
 _NAME_BEGIN
 
@@ -102,14 +96,12 @@ _NAME_BEGIN
 #	define GL_PLATFORM_ASSERT(expr, format)
 #endif
 
-typedef std::shared_ptr<class OGLCanvas> OGLCanvasPtr;
+typedef std::shared_ptr<class OGLSwapchain> OGLSwapchainPtr;
 typedef std::shared_ptr<class OGLDevice> OGLDevicePtr;
 typedef std::shared_ptr<class OGLDeviceContext> OGLDeviceContextPtr;
-typedef std::shared_ptr<class OGLRenderTexture> OGLRenderTexturePtr;
+typedef std::shared_ptr<class OGLFramebuffer> OGLFramebufferPtr;
 typedef std::shared_ptr<class OGLShader> OGLShaderPtr;
 typedef std::shared_ptr<class OGLShaderObject> OGLShaderObjectPtr;
-typedef std::shared_ptr<class OGLVertexBuffer> OGLVertexBufferPtr;
-typedef std::shared_ptr<class OGLIndexBuffer> OGLIndexBufferPtr;
 typedef std::shared_ptr<class OGLGraphicsData> OGLGraphicsDataPtr;
 typedef std::shared_ptr<class OGLInputLayout> OGLInputLayoutPtr;
 typedef std::shared_ptr<class OGLDrawIndirectBuffer> OGLDrawIndirectBufferPtr;
@@ -157,36 +149,6 @@ struct GPUctxconfig
 #endif
 };
 
-struct OGLFeatures
-{
-	static bool ARB_bindless_texture;
-	static bool ARB_vertex_array_object;
-	static bool ARB_vertex_attrib_binding;
-	static bool ARB_provoking_vertex;
-	static bool ARB_direct_state_access;
-	static bool ARB_buffer_storage;
-	static bool ARB_viewport_array;
-
-	static bool KHR_debug;
-
-	static bool NV_command_list;
-	static bool NV_shader_buffer_load;
-	static bool NV_vertex_buffer_unified_memory;
-};
-
-class OGLExtenstion final
-{
-public:
-	OGLExtenstion() noexcept;
-	~OGLExtenstion() noexcept;
-
-	static bool initExtensions() except;
-
-private:
-
-	static int initExtention;
-};
-
 class OGLTypes
 {
 public:
@@ -213,7 +175,7 @@ public:
 class OGLCheck
 {
 public:
-	static void checkError() noexcept;
+	static bool checkError() noexcept;
 
 	static void debugOutput(const std::string& message, ...) noexcept;
 };

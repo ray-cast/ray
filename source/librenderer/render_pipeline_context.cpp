@@ -116,7 +116,7 @@ RenderPipelineContext::unmapBuffer(GraphicsDataPtr& data) noexcept
 }
 
 void
-RenderPipelineContext::setRenderTexture(GraphicsRenderTexturePtr target) noexcept
+RenderPipelineContext::setRenderTexture(GraphicsFramebufferPtr target) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->setRenderTexture(target);
@@ -144,14 +144,14 @@ RenderPipelineContext::discradRenderTexture() noexcept
 }
 
 void
-RenderPipelineContext::readRenderTexture(GraphicsRenderTexturePtr texture, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+RenderPipelineContext::readRenderTexture(GraphicsFramebufferPtr texture, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->readRenderTexture(texture, pfd, w, h, data);
 }
 
 void
-RenderPipelineContext::blitRenderTexture(GraphicsRenderTexturePtr srcTarget, const Viewport& src, GraphicsRenderTexturePtr destTarget, const Viewport& dest) noexcept
+RenderPipelineContext::blitRenderTexture(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->blitRenderTexture(srcTarget, src, destTarget, dest);
@@ -286,7 +286,7 @@ RenderPipelineContext::drawScreenQuad(MaterialPassPtr pass) noexcept
 }
 
 void
-RenderPipelineContext::drawRenderQueue(RenderQueue queue, RenderPass pass, MaterialPassPtr material, GraphicsRenderTexturePtr target) noexcept
+RenderPipelineContext::drawRenderQueue(RenderQueue queue, RenderPass pass, MaterialPassPtr material, GraphicsFramebufferPtr target) noexcept
 {
 	auto& renderable = this->getRenderData(queue, pass);
 	for (auto& it : renderable)
@@ -308,7 +308,7 @@ RenderPipelineContext::removePostProcess(RenderPostProcessPtr postprocess) noexc
 }
 
 void
-RenderPipelineContext::drawPostProcess(RenderQueue queue, GraphicsTexturePtr source, GraphicsRenderTexturePtr swap, GraphicsRenderTexturePtr dest) noexcept
+RenderPipelineContext::drawPostProcess(RenderQueue queue, GraphicsTexturePtr source, GraphicsFramebufferPtr swap, GraphicsFramebufferPtr dest) noexcept
 {
 }
 

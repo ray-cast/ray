@@ -562,6 +562,8 @@ FxmlCompile::compile(FxmlOptions& options) except
 			std::uint32_t flags = HLSLCC_FLAG_GS_ENABLED | HLSLCC_FLAG_TESS_ENABLED | HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT;
 			if (TranslateHLSLFromMem((const char*)binary->GetBufferPointer(), flags, ConvGLLang(options.conv), NULL, &dependency, &shader))
 				options.convCode = shader.sourceCode;
+
+			FreeGLSLShader(&shader);
 		}
 	}
 

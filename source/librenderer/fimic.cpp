@@ -36,7 +36,7 @@
 // +-----------------------------------------------------------------------
 #include <ray/fimic.h>
 
-#include <ray/graphics_view.h>
+#include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 
 _NAME_BEGIN
@@ -82,7 +82,7 @@ FimicToneMapping::getSetting() const noexcept
 }
 
 void
-FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept
+FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsFramebufferPtr source) noexcept
 {
 	_timer->update();
 
@@ -104,7 +104,7 @@ FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsRenderTextu
 }
 
 void
-FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	_toneSource->assign(source);
 
@@ -114,7 +114,7 @@ FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, Gr
 }
 
 void
-FimicToneMapping::sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+FimicToneMapping::sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	_toneSource->assign(source);
 
@@ -124,7 +124,7 @@ FimicToneMapping::sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source,
 }
 
 void
-FimicToneMapping::generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+FimicToneMapping::generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	_toneSource->assign(source);
 
@@ -134,7 +134,7 @@ FimicToneMapping::generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr sou
 }
 
 void
-FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	auto& textureDesc = source->getGraphicsTextureDesc();
 	_bloomTexSizeInv->assign(float2(1.0 / textureDesc.getWidth(), 1.0 / textureDesc.getHeight()));
@@ -146,7 +146,7 @@ FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, Gra
 }
 
 void
-FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	auto& textureDesc = source->getGraphicsTextureDesc();
 	_bloomTexSizeInv->assign(float2(1.0 / textureDesc.getWidth(), 1.0 / textureDesc.getHeight()));
@@ -158,7 +158,7 @@ FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, Gra
 }
 
 void
-FimicToneMapping::generateToneMapping(RenderPipeline& pipeline, GraphicsTexturePtr bloom, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+FimicToneMapping::generateToneMapping(RenderPipeline& pipeline, GraphicsTexturePtr bloom, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	_toneSource->assign(source);
 	_toneBloom->assign(bloom);
@@ -180,19 +180,19 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) except
 
 	_texCombieMap = pipeline.createTexture(width / 4.0, height / 4.0, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 
-	GraphicsRenderTextureDesc sample4ViewDesc;
+	GraphicsFramebufferDesc sample4ViewDesc;
 	sample4ViewDesc.attach(_texSample4Map);
 	_texSample4View = pipeline.createRenderTexture(sample4ViewDesc);
 
-	GraphicsRenderTextureDesc sample8ViewDesc;
+	GraphicsFramebufferDesc sample8ViewDesc;
 	sample8ViewDesc.attach(_texSample8Map);
 	_texSample8View = pipeline.createRenderTexture(sample8ViewDesc);
 
-	GraphicsRenderTextureDesc sampleLogViewDesc;
+	GraphicsFramebufferDesc sampleLogViewDesc;
 	sampleLogViewDesc.attach(_texSampleLogMap);
 	_texSampleLogView = pipeline.createRenderTexture(sampleLogViewDesc);
 
-	GraphicsRenderTextureDesc sampleCombieViewDesc;
+	GraphicsFramebufferDesc sampleCombieViewDesc;
 	sampleCombieViewDesc.attach(_texCombieMap);
 	_texCombieView = pipeline.createRenderTexture(sampleCombieViewDesc);
 
@@ -233,7 +233,7 @@ FimicToneMapping::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-FimicToneMapping::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+FimicToneMapping::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	this->sunLum(pipeline, source, _texSample4View);
 	this->sunLum(pipeline, _texSample4Map, _texSample8View);

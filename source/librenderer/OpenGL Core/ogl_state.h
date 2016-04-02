@@ -37,7 +37,7 @@
 #ifndef _H_OGL_STATE_H_
 #define _H_OGL_STATE_H_
 
-#include "ogl_canvas.h"
+#include "ogl_types.h"
 
 _NAME_BEGIN
 

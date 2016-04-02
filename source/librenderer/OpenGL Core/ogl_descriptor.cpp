@@ -130,17 +130,17 @@ OGLDescriptorSet::bindProgram(GraphicsProgramPtr shaderObject) noexcept
 		case GraphicsUniformType::GraphicsUniformTypeInt4:
 			glProgramUniform4iv(program, it->getBindingPoint(), 1, (GLint*)it->getInt4().ptr());
 			break;
-		case GraphicsUniformType::GraphicsUniformTypeUint:
-			glProgramUniform1ui(program, it->getBindingPoint(), it->getUint());
+		case GraphicsUniformType::GraphicsUniformTypeUInt:
+			glProgramUniform1ui(program, it->getBindingPoint(), it->getUInt());
 			break;
-		case GraphicsUniformType::GraphicsUniformTypeUint2:
-			glProgramUniform2uiv(program, it->getBindingPoint(), 1, (GLuint*)it->getUint2().ptr());
+		case GraphicsUniformType::GraphicsUniformTypeUInt2:
+			glProgramUniform2uiv(program, it->getBindingPoint(), 1, (GLuint*)it->getUInt2().ptr());
 			break;
-		case GraphicsUniformType::GraphicsUniformTypeUint3:
-			glProgramUniform3uiv(program, it->getBindingPoint(), 1, (GLuint*)it->getUint3().ptr());
+		case GraphicsUniformType::GraphicsUniformTypeUInt3:
+			glProgramUniform3uiv(program, it->getBindingPoint(), 1, (GLuint*)it->getUInt3().ptr());
 			break;
-		case GraphicsUniformType::GraphicsUniformTypeUint4:
-			glProgramUniform4uiv(program, it->getBindingPoint(), 1, (GLuint*)it->getUint4().ptr());
+		case GraphicsUniformType::GraphicsUniformTypeUInt4:
+			glProgramUniform4uiv(program, it->getBindingPoint(), 1, (GLuint*)it->getUInt4().ptr());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat:
 			glProgramUniform1f(program, it->getBindingPoint(), it->getFloat());
@@ -172,17 +172,17 @@ OGLDescriptorSet::bindProgram(GraphicsProgramPtr shaderObject) noexcept
 		case GraphicsUniformType::GraphicsUniformTypeInt4Array:
 			glProgramUniform4iv(program, it->getBindingPoint(), it->getInt4Array().size(), (GLint*)it->getInt4Array().data());
 			break;
-		case GraphicsUniformType::GraphicsUniformTypeUintArray:
-			glProgramUniform1uiv(program, it->getBindingPoint(), it->getUintArray().size(), it->getUintArray().data());
+		case GraphicsUniformType::GraphicsUniformTypeUIntArray:
+			glProgramUniform1uiv(program, it->getBindingPoint(), it->getUIntArray().size(), it->getUIntArray().data());
 			break;
-		case GraphicsUniformType::GraphicsUniformTypeUint2Array:
-			glProgramUniform2uiv(program, it->getBindingPoint(), it->getUint2Array().size(), (GLuint*)it->getUint2Array().data());
+		case GraphicsUniformType::GraphicsUniformTypeUInt2Array:
+			glProgramUniform2uiv(program, it->getBindingPoint(), it->getUInt2Array().size(), (GLuint*)it->getUInt2Array().data());
 			break;
-		case GraphicsUniformType::GraphicsUniformTypeUint3Array:
-			glProgramUniform3uiv(program, it->getBindingPoint(), it->getUint3Array().size(), (GLuint*)it->getUint3Array().data());
+		case GraphicsUniformType::GraphicsUniformTypeUInt3Array:
+			glProgramUniform3uiv(program, it->getBindingPoint(), it->getUInt3Array().size(), (GLuint*)it->getUInt3Array().data());
 			break;
-		case GraphicsUniformType::GraphicsUniformTypeUint4Array:
-			glProgramUniform4uiv(program, it->getBindingPoint(), it->getUint4Array().size(), (GLuint*)it->getUint4Array().data());
+		case GraphicsUniformType::GraphicsUniformTypeUInt4Array:
+			glProgramUniform4uiv(program, it->getBindingPoint(), it->getUInt4Array().size(), (GLuint*)it->getUInt4Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloatArray:
 			glProgramUniform1fv(program, it->getBindingPoint(), it->getFloatArray().size(), (GLfloat*)it->getFloatArray().data());

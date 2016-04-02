@@ -77,8 +77,8 @@ public:
 	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
-	void setSwapInterval(SwapInterval interval) noexcept;
-	SwapInterval getSwapInterval() const noexcept;
+	void setSwapInterval(GraphicsSwapInterval interval) noexcept;
+	GraphicsSwapInterval getSwapInterval() const noexcept;
 
 	bool addRenderScene(RenderScenePtr scene) noexcept;
 	void removeRenderScene(RenderScenePtr scene) noexcept;
@@ -89,7 +89,7 @@ public:
 
 	MaterialPtr createMaterial(const std::string& name) noexcept;
 
-	GraphicsRenderTexturePtr createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept;
+	GraphicsFramebufferPtr createRenderTexture(const GraphicsFramebufferDesc& desc) noexcept;
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
 	bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,35 +37,26 @@
 #ifndef _H_EGL2_FRAMEBUFFER_H_
 #define _H_EGL2_FRAMEBUFFER_H_
 
-#include "egl2_canvas.h"
+#include "egl2_types.h"
 
 _NAME_BEGIN
 
-class EGL2RenderTexture final : public GraphicsRenderTexture
+class EGL2Framebuffer final : public GraphicsFramebuffer
 {
-	__DeclareSubClass(EGL2RenderTexture, GraphicsRenderTexture)
+	__DeclareSubClass(EGL2Framebuffer, GraphicsFramebuffer)
 public:
-	EGL2RenderTexture() noexcept;
-	~EGL2RenderTexture() noexcept;
+	EGL2Framebuffer() noexcept;
+	~EGL2Framebuffer() noexcept;
 
-	bool setup(const GraphicsRenderTextureDesc& framebufferDesc) except;
+	bool setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept;
 	void close() noexcept;
-
-	void setLayer(GLuint layer) noexcept;
-	GLuint getLayer() const noexcept;
-
-	void setActive(bool active) noexcept;
-	bool getActive() noexcept;
-
-	void discard() noexcept;
 
 	GLuint getInstanceID() noexcept;
 
-	GraphicsTexturePtr getResolveTexture() const noexcept;
-	const GraphicsRenderTextureDesc& getGraphicsRenderTextureDesc() const noexcept;
+	const GraphicsFramebufferDesc& getGraphicsFramebufferDesc() const noexcept;
 
 private:
-	void bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment) noexcept;
+	bool bindRenderTexture(GraphicsTexturePtr target, GLenum attachment) noexcept;
 
 private:
 	friend class EGL2Device;
@@ -73,42 +64,16 @@ private:
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
-	EGL2RenderTexture(const EGL2RenderTexture&) noexcept = delete;
-	EGL2RenderTexture& operator=(const EGL2RenderTexture&) noexcept = delete;
+	EGL2Framebuffer(const EGL2Framebuffer&) noexcept = delete;
+	EGL2Framebuffer& operator=(const EGL2Framebuffer&) noexcept = delete;
 
 private:
-	bool _isActive;
-
 	GLuint _fbo;
-	GLuint _layer;
 
 	GraphicsDeviceWeakPtr _device;
-	GraphicsRenderTextureDesc _framebufferDesc;
+	GraphicsFramebufferDesc _framebufferDesc;
 };
 
-class EGL2MultiRenderTexture final : public GraphicsMultiRenderTexture
-{
-	__DeclareSubClass(EGL2MultiRenderTexture, GraphicsMultiRenderTexture)
-public:
-	EGL2MultiRenderTexture() noexcept;
-	~EGL2MultiRenderTexture() noexcept;
-
-	const GraphicsMultiRenderTextureDesc& getGraphicsMultiRenderTextureDesc() const noexcept;
-
-private:
-	friend class EGL2Device;
-	void setDevice(GraphicsDevicePtr device) noexcept;
-	GraphicsDevicePtr getDevice() noexcept;
-
-private:
-	EGL2MultiRenderTexture(const EGL2MultiRenderTexture&) noexcept = delete;
-	EGL2MultiRenderTexture& operator=(const EGL2MultiRenderTexture&) noexcept = delete;
-
-private:
-
-	GraphicsDeviceWeakPtr _device;
-	GraphicsMultiRenderTextureDesc _multiFramebufferDesc;
-};
 
 _NAME_END
 

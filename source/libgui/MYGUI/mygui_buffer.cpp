@@ -71,13 +71,13 @@ MyGuiVertexBuffer::lock() noexcept
 		if (!_vb)
 		{
 			_layout.addComponent(VertexComponent("POSITION", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
-			_layout.addComponent(VertexComponent("COLOR", 0, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm));
+			_layout.addComponent(VertexComponent("COLOR", 0, GraphicsFormat::GraphicsFormatR8G8B8A8UInt));
 			_layout.addComponent(VertexComponent("TEXCOORD", 0, GraphicsFormat::GraphicsFormatR32G32SFloat));
 
 			auto layout = RenderSystem::instance()->createInputLayout(_layout);
 
 			GraphicsDataDesc vb;
-			vb.setUsage(UsageFlags::MAP_READ_BIT | UsageFlags::MAP_WRITE_BIT);
+			vb.setUsage(GraphicsUsageFlags::GraphicsUsageFlagsReadBit | GraphicsUsageFlags::GraphicsUsageFlagsWriteBit);
 			vb.setStride(_layout.getVertexSize());
 			vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
 			vb.setStreamSize(_layout.getVertexSize() * _needVertexCount);
@@ -95,7 +95,7 @@ MyGuiVertexBuffer::lock() noexcept
 		}
 	}
 
-	return (MyGUI::Vertex*)RenderSystem::instance()->mapBuffer(_vb, AccessFlags::MAP_READ_BIT | AccessFlags::MAP_WRITE_BIT);
+	return (MyGUI::Vertex*)RenderSystem::instance()->mapBuffer(_vb, GraphicsAccessFlagsBits::GraphicsAccessFlagsMapReadBit | GraphicsAccessFlagsBits::GraphicsAccessFlagsMapWriteBit);
 }
 
 void 

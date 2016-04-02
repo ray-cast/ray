@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -38,21 +38,23 @@
 #define _H_EGL3_TYPES_H_
 
 #include <ray/graphics_device.h>
+#include <ray/graphics_swapchain.h>
 #include <ray/graphics_context.h>
+#include <ray/graphics_data.h>
 #include <ray/graphics_state.h>
 #include <ray/graphics_sampler.h>
 #include <ray/graphics_texture.h>
-#include <ray/graphics_view.h>
+#include <ray/graphics_framebuffer.h>
 #include <ray/graphics_shader.h>
+#include <ray/graphics_pipeline.h>
+#include <ray/graphics_descriptor.h>
+#include <ray/graphics_input_layout.h>
 
 #include <EGL\egl.h>
-
 #include <GLES2\gl2.h>
 #include <GLES2\gl2ext.h>
-
 #include <GLES3\gl3.h>
 #include <GLES3\gl3ext.h>
-
 #include <GLES3\gl31.h>
 
 _NAME_BEGIN
@@ -117,9 +119,18 @@ _NAME_BEGIN
 #	if defined(_VISUAL_STUDIO_)
 #		pragma warning(disable : 4127)
 #	endif
-#	define GL_PLATFORM_LOG(format, ...) EGL3Check::debugOutput(format, __VA_ARGS__)
+#	define GL_PLATFORM_LOG(format, ...) do { EGL3Check::debugOutput(format, __VA_ARGS__); } while(false)
 #else
 #	define GL_PLATFORM_LOG(format, ...)
+#endif
+
+#if _DEBUG
+#	if defined(_VISUAL_STUDIO_)
+#		pragma warning(disable : 4127)
+#	endif
+#	define GL_PLATFORM_ASSERT(expr, format) if (!(expr)) { EGL3Check::debugOutput(format); assert(expr); }
+#else
+#	define GL_PLATFORM_ASSERT(expr, format)
 #endif
 
 struct GPUfbconfig
@@ -156,49 +167,50 @@ struct GPUctxconfig
 	EGLContext share;
 };
 
-typedef std::shared_ptr<class EGL3Canvas> EGL3CanvasPtr;
+typedef std::shared_ptr<class EGL3Swapchain> EGL3SwapchainPtr;
 typedef std::shared_ptr<class EGL3Device> EGL3DevicePtr;
 typedef std::shared_ptr<class EGL3DeviceContext> EGL3DeviceContextPtr;
-typedef std::shared_ptr<class EGL3RenderTexture> EGL3RenderTexturePtr;
-typedef std::shared_ptr<class EGL3MultiRenderTexture> EGL3MultiRenderTexturePtr;
+typedef std::shared_ptr<class EGL3Framebuffer> EGL3FramebufferPtr;
 typedef std::shared_ptr<class EGL3Shader> EGL3ShaderPtr;
 typedef std::shared_ptr<class EGL3ShaderObject> EGL3ShaderObjectPtr;
-typedef std::shared_ptr<class EGL3VertexBuffer> EGL3VertexBufferPtr;
-typedef std::shared_ptr<class EGL3IndexBuffer> EGL3IndexBufferPtr;
-typedef std::shared_ptr<class EGL3GraphicsLayout> EGL3GraphicsLayoutPtr;
-typedef std::shared_ptr<class EGL3DrawIndirectBuffer> EGL3DrawIndirectBufferPtr;
+typedef std::shared_ptr<class EGL3InputLayout> EGL3InputLayoutPtr;
+typedef std::shared_ptr<class EGL3GraphicsData> EGL3GraphicsDataPtr;
 typedef std::shared_ptr<class EGL3GraphicsState> EGL3GraphicsStatePtr;
 typedef std::shared_ptr<class EGL3Texture> EGL3TexturePtr;
 typedef std::shared_ptr<class EGL3Sampler> EGL3SamplerPtr;
+typedef std::shared_ptr<class EGL3RenderPipeline> EGL3RenderPipelinePtr;
+typedef std::shared_ptr<class EGL3DescriptorSet> EGL3DescriptorSetPtr;
+typedef std::shared_ptr<class EGL3DescriptorSetLayout> EGL3DescriptorSetLayoutPtr;
 
 typedef std::vector<EGL3ShaderPtr> EGL3Shaders;
 
 class EGL3Types
 {
 public:
+	static GLenum asVertexType(GraphicsVertexType type) noexcept;
+	static GLenum asVertexFormat(GraphicsFormat format) noexcept;
+	static GLenum asIndexType(GraphicsIndexType type) noexcept;
+	static GLenum asShaderType(GraphicsShaderStage type) noexcept;
+	static GLenum asTextureTarget(GraphicsTextureDim mapping, bool multisampler) noexcept;
+	static GLenum asTextureFormat(GraphicsFormat format) noexcept;
+	static GLenum asTextureType(GraphicsFormat format) noexcept;
+	static GLenum asTextureInternalFormat(GraphicsFormat format) noexcept;
+	static GLenum asCompareFunction(GraphicsCompareFunc func) noexcept;
+	static GLenum asBlendFactor(GraphicsBlendFactor func) noexcept;
+	static GLenum asBlendOperation(GraphicsBlendOp op) noexcept;
+	static GLenum asCullMode(GraphicsCullMode mode) noexcept;
+	static GLenum asFillMode(GraphicsPolygonMode mode) noexcept;
+	static GLenum asStencilOperation(GraphicsStencilOp stencilop) noexcept;
+	static GLenum asSamplerWrap(GraphicsSamplerWrap wrap) noexcept;
+	static GLenum asSamplerFilter(GraphicsSamplerFilter filter) noexcept;
 
-	static GLenum asEGL3VertexType(VertexType type) noexcept;
-	static GLenum asEGL3VertexFormat(VertexFormat format) noexcept;
-	static GLenum asEGL3IndexType(IndexType type) noexcept;
-	static GLenum asEGL3ShaderType(ShaderType type) noexcept;
-	static GLenum asEGL3Target(TextureDim mapping, bool multisampler) noexcept;
-	static GLenum asEGL3Format(TextureFormat format) noexcept;
-	static GLenum asEGL3Type(TextureFormat format) noexcept;
-	static GLint  asEGL3Internalformat(TextureFormat format) noexcept;
-	static GLenum asCompareFunction(CompareFunction func) noexcept;
-	static GLenum asBlendFactor(BlendFactor func) noexcept;
-	static GLenum asBlendOperation(BlendOperation op) noexcept;
-	static GLenum asCullMode(CullMode mode) noexcept;
-	static GLenum asFillMode(FillMode mode) noexcept;
-	static GLenum asStencilOperation(StencilOperation stencilop) noexcept;
-	static GLenum asSamplerWrap(SamplerWrap wrap) noexcept;
-	static GLenum asSamplerFilter(SamplerFilter filter) noexcept;
+	static GLboolean isCompressedTexture(GraphicsFormat format) noexcept;
 };
 
 class EGL3Check
 {
 public:
-	static void checkError() noexcept;
+	static bool checkError() noexcept;
 
 	static void debugOutput(const std::string& message, ...) noexcept;
 };

@@ -35,9 +35,8 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_input_layout.h"
+#include "ogl_graphics_data.h"
 #include "ogl_shader.h"
-#include "ogl_vbo.h"
-#include "ogl_ibo.h"
 
 _NAME_BEGIN
 
@@ -158,7 +157,7 @@ OGLInputLayout::bindLayout(OGLShaderObjectPtr program) noexcept
 }
 
 void
-OGLInputLayout::bindVbo(OGLVertexBufferPtr vbo, std::uint8_t slot) noexcept
+OGLInputLayout::bindVbo(OGLGraphicsDataPtr vbo, std::uint8_t slot) noexcept
 {
 	assert(vbo);
 
@@ -174,7 +173,7 @@ OGLInputLayout::bindVbo(OGLVertexBufferPtr vbo, std::uint8_t slot) noexcept
 }
 
 void
-OGLInputLayout::bindIbo(OGLIndexBufferPtr ibo) noexcept
+OGLInputLayout::bindIbo(OGLGraphicsDataPtr ibo) noexcept
 {
 	assert(ibo);
 	assert(_inputLayoutDesc.getIndexType() != GraphicsIndexType::GraphicsIndexTypeNone);

@@ -70,23 +70,23 @@ public:
 
 private:
 
-	void sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	void sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
-	void measureLuminance(RenderPipeline& pipeline, GraphicsRenderTexturePtr source) noexcept;
+	void measureLuminance(RenderPipeline& pipeline, GraphicsFramebufferPtr source) noexcept;
 
-	void generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void generateToneMapping(RenderPipeline& pipeline, GraphicsTexturePtr bloom, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	void generateToneMapping(RenderPipeline& pipeline, GraphicsTexturePtr bloom, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
-	void blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	void blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
 private:
 
 	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
 private:
 
@@ -122,11 +122,11 @@ private:
 	GraphicsTexturePtr _texSampleLogMap;
 	GraphicsTexturePtr _texCombieMap;
 
-	GraphicsRenderTexturePtr _texBloomView[SAMPLE_COUNT];
-	GraphicsRenderTexturePtr _texSample4View;
-	GraphicsRenderTexturePtr _texSample8View;
-	GraphicsRenderTexturePtr _texSampleLogView;
-	GraphicsRenderTexturePtr _texCombieView;
+	GraphicsFramebufferPtr _texBloomView[SAMPLE_COUNT];
+	GraphicsFramebufferPtr _texSample4View;
+	GraphicsFramebufferPtr _texSample8View;
+	GraphicsFramebufferPtr _texSampleLogView;
+	GraphicsFramebufferPtr _texCombieView;
 };
 
 _NAME_END

@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class GraphicsPipelineDesc final
+class EXPORT GraphicsPipelineDesc final
 {
 public:
 	GraphicsPipelineDesc() noexcept;
@@ -56,6 +56,9 @@ public:
 	void setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr descriptorSet) noexcept;
 	GraphicsDescriptorSetLayoutPtr getGraphicsDescriptorSetLayout() const noexcept;
 
+	void setGraphicsFramebufferLayout(GraphicsFramebufferLayoutPtr framebufferLayout) noexcept;
+	GraphicsFramebufferLayoutPtr getGraphicsFramebufferLayout() const noexcept;
+
 	void setGraphicsState(GraphicsStatePtr state) noexcept;
 	GraphicsStatePtr getGraphicsState() const noexcept;
 
@@ -63,10 +66,11 @@ private:
 	GraphicsStatePtr _state;
 	GraphicsProgramPtr _program;
 	GraphicsInputLayoutPtr _inputLayout;
+	GraphicsFramebufferLayoutPtr _framebufferLayout;
 	GraphicsDescriptorSetLayoutPtr _descriptorSet;
 };
 
-class GraphicsPipeline : public GraphicsChild
+class EXPORT GraphicsPipeline : public GraphicsChild
 {
 	__DeclareSubInterface(GraphicsPipeline, GraphicsChild)
 public:

@@ -60,13 +60,13 @@ public:
 	void setRenderDataManager(RenderDataManagerPtr manager) noexcept;
 	RenderDataManagerPtr getRenderDataManagerPtr() const noexcept;
 
-	void setSwapInterval(SwapInterval interval) noexcept;
-	SwapInterval getSwapInterval() const noexcept;
+	void setSwapInterval(GraphicsSwapInterval interval) noexcept;
+	GraphicsSwapInterval getSwapInterval() const noexcept;
 	
 	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
-	GraphicsRenderTexturePtr createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept;
+	GraphicsFramebufferPtr createRenderTexture(const GraphicsFramebufferDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
 	GraphicsTexturePtr createTexture(const std::string& name) noexcept;
@@ -86,12 +86,12 @@ public:
 	void setViewport(const Viewport& view, std::size_t i) noexcept;
 	const Viewport& getViewport(std::size_t i) const noexcept;
 
-	void setRenderTexture(GraphicsRenderTexturePtr target) noexcept;
+	void setRenderTexture(GraphicsFramebufferPtr target) noexcept;
 	void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
 	void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
 	void discradRenderTexture() noexcept;
-	void readRenderTexture(GraphicsRenderTexturePtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
-	void blitRenderTexture(GraphicsRenderTexturePtr srcTarget, const Viewport& src, GraphicsRenderTexturePtr destTarget, const Viewport& dest) noexcept;
+	void readRenderTexture(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	void blitRenderTexture(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
 
 	void setMaterialPass(MaterialPassPtr pass) noexcept;
 	MaterialPassPtr getMaterialPass() noexcept;
@@ -114,8 +114,8 @@ public:
 	void drawSphere(MaterialPassPtr pass, const float4x4& transform) noexcept;
 	void drawScreenQuad(MaterialPassPtr pass) noexcept;
 	void drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const GraphicsIndirect& renderable) noexcept;
-	void drawRenderQueue(RenderQueue type, RenderPass pass, MaterialPassPtr material = nullptr, GraphicsRenderTexturePtr target = nullptr) noexcept;
-	void drawPostProcess(RenderQueue queue, GraphicsTexturePtr source, GraphicsRenderTexturePtr swap, GraphicsRenderTexturePtr dest) noexcept;
+	void drawRenderQueue(RenderQueue type, RenderPass pass, MaterialPassPtr material = nullptr, GraphicsFramebufferPtr target = nullptr) noexcept;
+	void drawPostProcess(RenderQueue queue, GraphicsTexturePtr source, GraphicsFramebufferPtr swap, GraphicsFramebufferPtr dest) noexcept;
 
 protected:
 

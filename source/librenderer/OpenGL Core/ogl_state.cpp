@@ -183,9 +183,9 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 		}
 	}
 
-	if (_dstDepthState.depthWriteMask != depthState.depthWriteMask)
+	if (_dstDepthState.depthWriteEnable != depthState.depthWriteEnable)
 	{
-		GLboolean enable = depthState.depthWriteMask ? GL_TRUE : GL_FALSE;
+		GLboolean enable = depthState.depthWriteEnable ? GL_TRUE : GL_FALSE;
 		glDepthMask(enable);
 	}
 
@@ -197,9 +197,9 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 		}
 
 		if (_dstDepthState.depthBias != depthState.depthBias ||
-			_dstDepthState.depthSlopScaleBias != depthState.depthSlopScaleBias)
+			_dstDepthState.depthSlopeScaleBias != depthState.depthSlopeScaleBias)
 		{
-			glPolygonOffset(depthState.depthSlopScaleBias, depthState.depthBias);
+			glPolygonOffset(depthState.depthSlopeScaleBias, depthState.depthBias);
 		}
 	}
 	else

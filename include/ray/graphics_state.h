@@ -64,6 +64,7 @@ struct EXPORT RenderRasterState
 	GraphicsCullMode    cullMode;
 	GraphicsPolygonMode polygonMode;
 	GraphicsVertexType  primitiveType;
+	GraphicsFrontFace   frontFace;
 	bool                scissorTestEnable;
 	bool                srgbEnable;
 	bool                multisampleEnable;
@@ -75,7 +76,7 @@ struct EXPORT RenderRasterState
 struct EXPORT RenderDepthState
 {
 	bool                depthEnable;
-	bool                depthWriteMask;
+	bool                depthWriteEnable;
 	bool                depthBoundsEnable;
 	float               depthMin;
 	float               depthMax;
@@ -83,7 +84,7 @@ struct EXPORT RenderDepthState
 
 	bool                depthBiasEnable;
 	float               depthBias;
-	float               depthSlopScaleBias;
+	float               depthSlopeScaleBias;
 
 	bool				depthClampEnable;
 	bool				depthBiasClamp;

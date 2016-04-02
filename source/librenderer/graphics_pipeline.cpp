@@ -84,6 +84,18 @@ GraphicsPipelineDesc::getGraphicsDescriptorSetLayout() const noexcept
 	return _descriptorSet;
 }
 
+void 
+GraphicsPipelineDesc::setGraphicsFramebufferLayout(GraphicsFramebufferLayoutPtr framebufferLayout) noexcept
+{
+	_framebufferLayout = framebufferLayout;
+}
+
+GraphicsFramebufferLayoutPtr
+GraphicsPipelineDesc::getGraphicsFramebufferLayout() const noexcept
+{
+	return _framebufferLayout;
+}
+
 void
 GraphicsPipelineDesc::setGraphicsState(GraphicsStatePtr state) noexcept
 {

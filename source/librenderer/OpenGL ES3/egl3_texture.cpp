@@ -56,16 +56,16 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 {
 	assert(_texture == GL_NONE);
 
+	GLenum target = EGL3Types::asTextureTarget(textureDesc.getTexDim(), textureDesc.isMultiSample());
+	if (target == GL_INVALID_ENUM)
+		return false;
+
 	GL_CHECK(glGenTextures(1, &_texture));
 	if (_texture == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glCreateTextures fail");
+		GL_PLATFORM_LOG("glGenTextures fail");
 		return false;
 	}
-
-	GLenum target = EGL3Types::asEGL3Target(textureDesc.getTexDim(), textureDesc.isMultiSample());
-	if (target == GL_INVALID_ENUM)
-		return false;
 
 	GL_CHECK(glBindTexture(target, _texture));
 
@@ -82,7 +82,7 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	if (!applySamplerAnis(target, textureDesc.getSamplerAnis()))
 		return false;
 
-	auto internalFormat = EGL3Types::asEGL3Internalformat(textureDesc.getTexFormat());
+	auto internalFormat = EGL3Types::asTextureInternalFormat(textureDesc.getTexFormat());
 	if (internalFormat == GL_INVALID_ENUM)
 		return false;
 
@@ -103,12 +103,8 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	auto stream = textureDesc.getStream();
 	if (stream)
 	{
-		if (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT ||
-			internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ||
-			internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT ||
-			internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
+		if (EGL3Types::isCompressedTexture(textureDesc.getTexFormat()))
 		{
-			GLint level = (GLint)textureDesc.getMipLevel();
 			GLsizei size = textureDesc.getMipSize();
 			std::size_t offset = 0;
 			std::size_t blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;
@@ -128,8 +124,8 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		else
 		{
 			auto level = 0;
-			auto format = EGL3Types::asEGL3Format(textureDesc.getTexFormat());
-			auto type = EGL3Types::asEGL3Type(textureDesc.getTexFormat());
+			auto format = EGL3Types::asTextureFormat(textureDesc.getTexFormat());
+			auto type = EGL3Types::asTextureType(textureDesc.getTexFormat());
 
 			switch (target)
 			{
@@ -159,7 +155,7 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	if (textureDesc.isMipmap())
 		GL_CHECK(glGenerateMipmap(target));
 
-	return true;
+	return EGL3Check::checkError();
 }
 
 void
@@ -167,7 +163,7 @@ EGL3Texture::close() noexcept
 {
 	if (_texture)
 	{
-		GL_CHECK(glDeleteTextures(1, &_texture));
+		glDeleteTextures(1, &_texture);
 		_texture = GL_NONE;
 	}
 }
@@ -185,7 +181,7 @@ EGL3Texture::getInstanceID() const noexcept
 }
 
 bool
-EGL3Texture::applySamplerWrap(GLenum target, SamplerWrap wrap) noexcept
+EGL3Texture::applySamplerWrap(GLenum target, GraphicsSamplerWrap wrap) noexcept
 {
 	GLenum glwrap = EGL3Types::asSamplerWrap(wrap);
 	if (glwrap != GL_INVALID_ENUM)
@@ -201,7 +197,7 @@ EGL3Texture::applySamplerWrap(GLenum target, SamplerWrap wrap) noexcept
 }
 
 bool
-EGL3Texture::applySamplerFilter(GLenum target, SamplerFilter filter) noexcept
+EGL3Texture::applySamplerFilter(GLenum target, GraphicsSamplerFilter filter) noexcept
 {
 	GLenum glfilter = EGL3Types::asSamplerFilter(filter);
 	if (glfilter != GL_INVALID_ENUM)
@@ -216,23 +212,23 @@ EGL3Texture::applySamplerFilter(GLenum target, SamplerFilter filter) noexcept
 }
 
 bool
-EGL3Texture::applySamplerAnis(GLenum target, SamplerAnis anis) noexcept
+EGL3Texture::applySamplerAnis(GLenum target, GraphicsSamplerAnis anis) noexcept
 {
-	if (anis == SamplerAnis::Anis1)
+	if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis1)
 		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1));
-	else if (anis == SamplerAnis::Anis2)
+	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis2)
 		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2));
-	else if (anis == SamplerAnis::Anis4)
+	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis4)
 		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4));
-	else if (anis == SamplerAnis::Anis8)
+	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis8)
 		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8));
-	else if (anis == SamplerAnis::Anis16)
+	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis16)
 		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16));
 	else
 	{
-		if (anis != SamplerAnis::Anis0)
+		if (anis != GraphicsSamplerAnis::GraphicsSamplerAnis0)
 		{
-			GL_PLATFORM_LOG("Invalid SamplerAnis");
+			GL_PLATFORM_LOG("Can't support anisotropy format");
 			return false;
 		}
 	}

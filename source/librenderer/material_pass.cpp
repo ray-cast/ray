@@ -89,11 +89,11 @@ MaterialPass::setup(Material& material) except
 
 	GraphicsDescriptorSetLayoutDesc descriptorSetLayoutDesc;
 	descriptorSetLayoutDesc.setUniformComponents(_uniforms);
-	_descriptorSetLayout = _pipeline->getDevice()->createGraphicsDescriptorSetLayoutPtr(descriptorSetLayoutDesc);
+	_descriptorSetLayout = _pipeline->getDevice()->createGraphicsDescriptorSetLayout(descriptorSetLayoutDesc);
 
 	GraphicsDescriptorSetDesc descriptorSet;
 	descriptorSet.setGraphicsDescriptorSetLayout(_descriptorSetLayout);
-	_descriptorSet = _pipeline->getDevice()->createGraphicsDescriptorSetPtr(descriptorSet);
+	_descriptorSet = _pipeline->getDevice()->createGraphicsDescriptorSet(descriptorSet);
 }
 
 void

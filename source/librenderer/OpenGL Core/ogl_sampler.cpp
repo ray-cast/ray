@@ -51,7 +51,7 @@ OGLSampler::~OGLSampler() noexcept
 }
 
 bool
-OGLSampler::setup(const GraphicsSamplerDesc& desc) noexcept
+OGLSampler::setup(const GraphicsSamplerDesc& samplerDesc) noexcept
 {
 	assert(!_sampler);
 
@@ -62,7 +62,7 @@ OGLSampler::setup(const GraphicsSamplerDesc& desc) noexcept
 		return false;
 	}
 
-	GraphicsSamplerWrap wrap = desc.getSamplerWrap();
+	GraphicsSamplerWrap wrap = samplerDesc.getSamplerWrap();
 	if (GraphicsSamplerWrap::GraphicsSamplerWrapRepeat == wrap)
 	{
 		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -87,7 +87,7 @@ OGLSampler::setup(const GraphicsSamplerDesc& desc) noexcept
 		return false;
 	}
 
-	GraphicsSamplerFilter filter = desc.getSamplerFilter();
+	GraphicsSamplerFilter filter = samplerDesc.getSamplerFilter();
 	if (filter == GraphicsSamplerFilter::GraphicsSamplerFilterNearest)
 	{
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -124,7 +124,7 @@ OGLSampler::setup(const GraphicsSamplerDesc& desc) noexcept
 		return false;
 	}
 
-	GraphicsSamplerAnis anis = desc.getSamplerAnis();
+	GraphicsSamplerAnis anis = samplerDesc.getSamplerAnis();
 	if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis1)
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
 	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis2)
@@ -144,7 +144,7 @@ OGLSampler::setup(const GraphicsSamplerDesc& desc) noexcept
 		}
 	}
 
-	_desc = desc;
+	_sampleDesc = samplerDesc;
 	return true;
 }
 
@@ -167,7 +167,7 @@ OGLSampler::getInstanceID() noexcept
 const GraphicsSamplerDesc&
 OGLSampler::getGraphicsSamplerDesc() const noexcept
 {
-	return _desc;
+	return _sampleDesc;
 }
 
 void

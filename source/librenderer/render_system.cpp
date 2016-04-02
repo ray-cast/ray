@@ -312,13 +312,13 @@ RenderSystem::getRenderPipeline() const noexcept
 }
 
 void 
-RenderSystem::setSwapInterval(SwapInterval interval) noexcept
+RenderSystem::setSwapInterval(GraphicsSwapInterval interval) noexcept
 {
 	assert(_pipeline);
 	_pipeline->setSwapInterval(interval);
 }
 
-SwapInterval 
+GraphicsSwapInterval
 RenderSystem::getSwapInterval() const noexcept
 {
 	assert(_pipeline);
@@ -376,8 +376,8 @@ RenderSystem::createMaterial(const std::string& name) noexcept
 	return _pipeline->createMaterial(name);
 }
 
-GraphicsRenderTexturePtr 
-RenderSystem::createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept
+GraphicsFramebufferPtr 
+RenderSystem::createRenderTexture(const GraphicsFramebufferDesc& desc) noexcept
 {
 	assert(_pipeline);
 	return _pipeline->createRenderTexture(desc);

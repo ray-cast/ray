@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -46,118 +46,6 @@ __ImplementSubClass(EGL3ShaderObject, GraphicsProgram, "EGL3ShaderObject")
 __ImplementSubClass(EGL3ShaderAttribute, ShaderAttribute, "EGL3ShaderAttribute")
 __ImplementSubClass(EGL3ShaderUniform, ShaderUniform, "EGL3ShaderUniform")
 
-EGL3ShaderVariant::EGL3ShaderVariant() noexcept
-	: _location(0)
-	, _bindingProgram(0)
-{
-}
-
-EGL3ShaderVariant::~EGL3ShaderVariant() noexcept
-{
-}
-
-void
-EGL3ShaderVariant::setLocation(GLint location) noexcept
-{
-	_location = location;
-}
-
-GLint
-EGL3ShaderVariant::getLocation() const noexcept
-{
-	return _location;
-}
-
-void
-EGL3ShaderVariant::setBindingProgram(GLuint program) noexcept
-{
-	_bindingProgram = program;
-}
-
-GLuint
-EGL3ShaderVariant::getBindingProgram() const noexcept
-{
-	return _bindingProgram;
-}
-
-void
-EGL3ShaderVariant::assign(bool value) noexcept
-{
-	GL_CHECK(glProgramUniform1i(_bindingProgram, _location, value));
-}
-
-void
-EGL3ShaderVariant::assign(int value) noexcept
-{
-	GL_CHECK(glProgramUniform1i(_bindingProgram, _location, value));
-}
-
-void
-EGL3ShaderVariant::assign(const int2& value) noexcept
-{
-	GL_CHECK(glProgramUniform2iv(_bindingProgram, _location, 1, value.ptr()));
-}
-
-void
-EGL3ShaderVariant::assign(float value) noexcept
-{
-	GL_CHECK(glProgramUniform1f(_bindingProgram, _location, value));
-}
-
-void
-EGL3ShaderVariant::assign(const float2& value) noexcept
-{
-	GL_CHECK(glProgramUniform2fv(_bindingProgram, _location, 1, value.ptr()));
-}
-
-void
-EGL3ShaderVariant::assign(const float3& value) noexcept
-{
-	GL_CHECK(glProgramUniform3fv(_bindingProgram, _location, 1, value.ptr()));
-}
-
-void
-EGL3ShaderVariant::assign(const float4& value) noexcept
-{
-	GL_CHECK(glProgramUniform4fv(_bindingProgram, _location, 1, value.ptr()));
-}
-
-void
-EGL3ShaderVariant::assign(const float3x3& value) noexcept
-{
-	GL_CHECK(glProgramUniformMatrix3fv(_bindingProgram, _location, 1, GL_FALSE, value.ptr()));
-}
-
-void
-EGL3ShaderVariant::assign(const float4x4& value) noexcept
-{
-	GL_CHECK(glProgramUniformMatrix4fv(_bindingProgram, _location, 1, GL_FALSE, value.ptr()));
-}
-
-void
-EGL3ShaderVariant::assign(const std::vector<float>& value) noexcept
-{
-	GL_CHECK(glProgramUniform1fv(_bindingProgram, _location, value.size(), value.data()));
-}
-
-void
-EGL3ShaderVariant::assign(const std::vector<float2>& value) noexcept
-{
-	GL_CHECK(glProgramUniform2fv(_bindingProgram, _location, value.size(), (GLfloat*)value.data()));
-}
-
-void
-EGL3ShaderVariant::assign(const std::vector<float3>& value) noexcept
-{
-	GL_CHECK(glProgramUniform3fv(_bindingProgram, _location, value.size(), (GLfloat*)value.data()));
-}
-
-void
-EGL3ShaderVariant::assign(const std::vector<float4>& value) noexcept
-{
-	GL_CHECK(glProgramUniform4fv(_bindingProgram, _location, value.size(), (GLfloat*)value.data()));
-}
-
 EGL3ShaderAttribute::EGL3ShaderAttribute() noexcept
 	: _location(GL_NONE)
 {
@@ -180,7 +68,7 @@ EGL3ShaderAttribute::getLocation() const noexcept
 }
 
 EGL3ShaderUniform::EGL3ShaderUniform() noexcept
-	: ShaderUniform(&_value)
+	: _program(0)
 {
 }
 
@@ -189,39 +77,15 @@ EGL3ShaderUniform::~EGL3ShaderUniform() noexcept
 }
 
 void
-EGL3ShaderUniform::setName(const std::string& name) noexcept
-{
-	ShaderUniform::setName(name);
-}
-
-void
-EGL3ShaderUniform::setType(ShaderVariantType type) noexcept
-{
-	ShaderUniform::setType(type);
-}
-
-void
-EGL3ShaderUniform::setLocation(GLint location) noexcept
-{
-	_value.setLocation(location);
-}
-
-GLint
-EGL3ShaderUniform::getLocation() const noexcept
-{
-	return _value.getLocation();
-}
-
-void
 EGL3ShaderUniform::setBindingProgram(GLuint program) noexcept
 {
-	_value.setBindingProgram(program);
+	_program = program;
 }
 
 GLuint
 EGL3ShaderUniform::getBindingProgram() const noexcept
 {
-	return _value.getBindingProgram();
+	return _program;
 }
 
 EGL3Shader::EGL3Shader() noexcept
@@ -235,17 +99,17 @@ EGL3Shader::~EGL3Shader() noexcept
 }
 
 bool
-EGL3Shader::setup(const ShaderDesc& shaderDesc) noexcept
+EGL3Shader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 {
 	assert(_instance == GL_NONE);
 
-	GLenum shaderType = EGL3Types::asEGL3ShaderType(shaderDesc.getType());
+	GLenum shaderType = EGL3Types::asShaderType(shaderDesc.getType());
 	if (shaderType == GL_INVALID_ENUM)
 		return false;
 
 	if (shaderDesc.getByteCodes().empty())
 	{
-		GL_PLATFORM_LOG("This shader code cannot be null");
+		GL_PLATFORM_LOG("This shader code cannot be null.");
 		return false;
 	}
 
@@ -253,28 +117,23 @@ EGL3Shader::setup(const ShaderDesc& shaderDesc) noexcept
 	GLSLCrossDependencyData dependency;
 
 	std::uint32_t flags = HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT | HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
-	if (shaderDesc.getType() == ShaderType::Geometry)
-		flags = HLSLCC_FLAG_GS_ENABLED;
-	else if (shaderDesc.getType() == ShaderType::TessControl)
-		flags = HLSLCC_FLAG_TESS_ENABLED;
-	else if (shaderDesc.getType() == ShaderType::TessEvaluation)
-		flags = HLSLCC_FLAG_TESS_ENABLED;
-
 	if (!TranslateHLSLFromMem(shaderDesc.getByteCodes().data(), flags, GLLang::LANG_ES_310, 0, &dependency, &shader))
 	{
-		GL_PLATFORM_LOG("Can't conv bytecodes to glsl");
+		GL_PLATFORM_LOG("Can't conv bytecodes to glsl.");
 		return false;
 	}
 
 	_instance = glCreateShader(shaderType);
 	if (_instance == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glCreateShader() fail");
+		GL_PLATFORM_LOG("glCreateShader() fail.");
 		return false;
 	}
 
 	glShaderSource(_instance, 1, &shader.sourceCode, 0);
 	glCompileShader(_instance);
+
+	FreeGLSLShader(&shader);
 
 	GLint result = GL_FALSE;
 	glGetShaderiv(_instance, GL_COMPILE_STATUS, &result);
@@ -290,6 +149,7 @@ EGL3Shader::setup(const ShaderDesc& shaderDesc) noexcept
 		return false;
 	}
 
+	_shaderDesc = shaderDesc;
 	return true;
 }
 
@@ -307,6 +167,12 @@ GLuint
 EGL3Shader::getInstanceID() const noexcept
 {
 	return _instance;
+}
+
+const GraphicsShaderDesc&
+EGL3Shader::getGraphicsShaderDesc() const noexcept
+{
+	return _shaderDesc;
 }
 
 void
@@ -333,7 +199,7 @@ EGL3ShaderObject::~EGL3ShaderObject() noexcept
 }
 
 bool
-EGL3ShaderObject::setup(const ShaderObjectDesc& programDesc) noexcept
+EGL3ShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 {
 	assert(_program == GL_NONE);
 
@@ -341,12 +207,9 @@ EGL3ShaderObject::setup(const ShaderObjectDesc& programDesc) noexcept
 
 	for (auto& shader : programDesc.getShaders())
 	{
-		auto glshader = std::make_shared<EGL3Shader>();
-		if (glshader->setup(shader))
-		{
+		auto glshader = shader->downcast<EGL3Shader>();
+		if (glshader)
 			glAttachShader(_program, glshader->getInstanceID());
-			_shaders.push_back(glshader);
-		}
 	}
 
 	glLinkProgram(_program);
@@ -371,6 +234,7 @@ EGL3ShaderObject::setup(const ShaderObjectDesc& programDesc) noexcept
 	_initActiveUniform();
 	_initActiveUniformBlock();
 
+	_programDesc = programDesc;
 	return true;
 }
 
@@ -382,8 +246,6 @@ EGL3ShaderObject::close() noexcept
 		glDeleteProgram(_program);
 		_program = 0;
 	}
-
-	_shaders.clear();
 
 	_activeAttributes.clear();
 	_activeUniforms.clear();
@@ -506,7 +368,7 @@ EGL3ShaderObject::_initActiveUniform() noexcept
 
 		auto uniform = std::make_shared<EGL3ShaderUniform>();
 		uniform->setName(nameUniform.get());
-		uniform->setLocation(location);
+		uniform->setBindingPoint(location);
 		uniform->setBindingProgram(_program);
 
 		if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
@@ -514,50 +376,50 @@ EGL3ShaderObject::_initActiveUniform() noexcept
 			type == GL_SAMPLER_2D_ARRAY || type == GL_SAMPLER_CUBE ||
 			type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
 		{
-			uniform->setType(ShaderVariantType::Texture);
+			uniform->setType(GraphicsUniformType::GraphicsUniformTypeStorageImage);
 		}
 		else
 		{
 			bool isArray = uniform->getName().find("[0]") != std::string::npos;
 
 			if (type == GL_BOOL)
-				uniform->setType(ShaderVariantType::Bool);
+				uniform->setType(GraphicsUniformType::GraphicsUniformTypeBool);
 			else if (type == GL_INT)
-				uniform->setType(ShaderVariantType::Int);
+				uniform->setType(GraphicsUniformType::GraphicsUniformTypeInt);
 			else if (type == GL_INT_VEC2)
-				uniform->setType(ShaderVariantType::Int2);
+				uniform->setType(GraphicsUniformType::GraphicsUniformTypeInt2);
 			else if (type == GL_FLOAT)
 			{
 				if (isArray)
-					uniform->setType(ShaderVariantType::FloatArray);
+					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloatArray);
 				else
-					uniform->setType(ShaderVariantType::Float);
+					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat);
 			}
 			else if (type == GL_FLOAT_VEC2)
 			{
 				if (isArray)
-					uniform->setType(ShaderVariantType::Float2Array);
+					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat2Array);
 				else
-					uniform->setType(ShaderVariantType::Float2);
+					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat2);
 			}
 			else if (type == GL_FLOAT_VEC3)
 			{
 				if (isArray)
-					uniform->setType(ShaderVariantType::Float3Array);
+					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat3Array);
 				else
-					uniform->setType(ShaderVariantType::Float3);
+					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat3);
 			}
 			else if (type == GL_FLOAT_VEC4)
 			{
 				if (isArray)
-					uniform->setType(ShaderVariantType::Float4Array);
+					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat4Array);
 				else
-					uniform->setType(ShaderVariantType::Float4);
+					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat4);
 			}
 			else if (type == GL_FLOAT_MAT3)
-				uniform->setType(ShaderVariantType::Float3x3);
+				uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat3x3);
 			else if (type == GL_FLOAT_MAT4)
-				uniform->setType(ShaderVariantType::Float4x4);
+				uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat4x4);
 			else
 				assert(false);
 		}
@@ -624,13 +486,19 @@ EGL3ShaderObject::_initActiveUniformBlock() noexcept
 
 				auto uniformblock = std::make_shared<EGL3ShaderUniform>();
 				uniformblock->setName(nameUniformBlock.get());
-				uniformblock->setType(ShaderVariantType::Buffer);
-				uniformblock->setLocation(location);
+				uniformblock->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
+				uniformblock->setBindingPoint(location);
 
 				_activeUniforms.push_back(uniformblock);
 			}
 		}
 	}
+}
+
+const GraphicsProgramDesc&
+EGL3ShaderObject::getGraphicsProgramDesc() const noexcept
+{
+	return _programDesc;
 }
 
 void

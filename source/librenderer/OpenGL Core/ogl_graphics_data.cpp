@@ -40,67 +40,305 @@ _NAME_BEGIN
 
 __ImplementSubInterface(OGLGraphicsData, GraphicsData, "OGLGraphicsData")
 
-OGLGraphicsData::OGLGraphicsData(OGLGraphicsBuf* buf) noexcept
-	: _buf(buf)
+OGLGraphicsData::OGLGraphicsData() noexcept
+	: _buffer(GL_NONE)
+	, _isMapping(GL_FALSE)
+	, _data(nullptr)
 {
 }
 
 OGLGraphicsData::~OGLGraphicsData() noexcept
 {
+	this->close();
 }
 
-GLsizeiptr 
+bool
+OGLGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
+{
+	assert(!_buffer);
+
+	_data = nullptr;
+	_dataOffset = 0;
+	_dataSize = desc.getStreamSize();
+	_usage = desc.getUsage();
+	_desc = desc;
+	_isMapping = false;
+
+	auto type = desc.getType();
+	if (type == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer)
+		_target = GL_ARRAY_BUFFER;
+	else if (type == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer)
+		_target = GL_ELEMENT_ARRAY_BUFFER;
+	else if (type == GraphicsDataType::GraphicsDataTypeUniformBuffer)
+		_target = GL_UNIFORM_BUFFER;
+	else if (type == GraphicsDataType::GraphicsDataTypeStorageTexelBuffer)
+		_target = GL_TEXTURE_BUFFER;
+	else if (type == GraphicsDataType::GraphicsDataTypeStorageBuffer)
+		_target = GL_SHADER_STORAGE_BUFFER;
+	else if (type == GraphicsDataType::GraphicsDataTypeStorageBuffer)
+		_target = GL_DRAW_INDIRECT_BUFFER;
+	else
+		return false;
+
+	glCreateBuffers(1, &_buffer);
+	if (_buffer == GL_NONE)
+	{
+		GL_PLATFORM_LOG("glCreateBuffers() fail");
+		return false;
+	}
+
+	auto usage = desc.getUsage();
+	if (usage & GraphicsUsageFlags::GraphicsUsageFlagsImmutableStorage)
+	{
+		GLbitfield flags = GL_MAP_READ_BIT;
+		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsReadBit)
+			flags |= GL_MAP_READ_BIT;
+		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsWriteBit)
+			flags |= GL_MAP_WRITE_BIT;
+		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsPersistentBit)
+			flags |= GL_MAP_PERSISTENT_BIT;
+		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsCoherentBit)
+			flags |= GL_MAP_COHERENT_BIT;
+		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsFlushExplicitBit)
+			flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
+		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsDynamicStorageBit)
+			flags |= GL_DYNAMIC_STORAGE_BIT;
+		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsClientStorageBit)
+			flags |= GL_CLIENT_STORAGE_BIT;
+
+		glNamedBufferStorage(_buffer, _dataSize, desc.getStream(), flags);
+	}
+	else
+	{
+		GLenum flags = GL_STATIC_DRAW;
+		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsReadBit)
+			flags = GL_STATIC_DRAW;
+		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsWriteBit)
+			flags = GL_DYNAMIC_READ;
+
+		glNamedBufferData(_buffer, _dataSize, desc.getStream(), flags);
+	}
+
+	return true;
+}
+
+bool
+OGLGraphicsData::is_open() const noexcept
+{
+	return _buffer == GL_NONE ? false : true;
+}
+
+void
+OGLGraphicsData::close() noexcept
+{
+	assert(!_isMapping);
+
+	if (_isMapping)
+	{
+		this->unmap();
+	}
+
+	if (_buffer)
+	{
+		glDeleteBuffers(1, &_buffer);
+		_buffer = 0;
+	}
+}
+
+GLsizeiptr
 OGLGraphicsData::size() const noexcept
 {
-	return _buf->size();
+	return _dataSize;
 }
 
-const GraphicsDataDesc&
-OGLGraphicsData::getGraphicsDataDesc() const noexcept
-{
-	return _buf->getGraphicsDataDesc();
-}
-
-void 
+void
 OGLGraphicsData::resize(const char* data, GLsizeiptr datasize) noexcept
 {
-	return _buf->resize(data, datasize);
+	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsImmutableStorage)
+		return;
+
+	GLenum flags = GL_STATIC_DRAW;
+	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsReadBit)
+		flags = GL_STATIC_DRAW;
+	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsWriteBit)
+		flags = GL_DYNAMIC_READ;
+
+	glNamedBufferData(_buffer, datasize, data, flags);
+	_dataSize = datasize;
 }
 
 int
 OGLGraphicsData::flush() noexcept
 {
-	return _buf->flush();
+	return this->flush(0, _dataSize);
 }
 
-int 
+int
 OGLGraphicsData::flush(GLintptr offset, GLsizeiptr cnt) noexcept
 {
-	return _buf->flush(offset, cnt);
+	glFlushMappedNamedBufferRange(_buffer, offset, cnt);
+	return cnt;
+}
+
+GLsizeiptr
+OGLGraphicsData::read(char* str, GLsizeiptr cnt) noexcept
+{
+	if (_dataSize < _dataOffset + cnt)
+	{
+		cnt = _dataSize - _dataOffset;
+		if (cnt == 0)
+			return 0;
+	}
+
+	void* data = this->map(_dataOffset, cnt, GraphicsAccessFlagsBits::GraphicsAccessFlagsMapReadBit);
+	if (data)
+	{
+		std::memcpy(str, data, cnt);
+		_dataOffset += cnt;
+	}
+
+	this->unmap();
+	return cnt;
+}
+
+GLsizeiptr
+OGLGraphicsData::write(const char* str, GLsizeiptr cnt) noexcept
+{
+	if (_dataSize >= _dataOffset + cnt)
+	{
+		cnt = _dataSize - _dataOffset;
+		if (cnt == 0)
+			return 0;
+	}
+
+	void* data = this->map(_dataOffset, cnt, GraphicsAccessFlagsBits::GraphicsAccessFlagsMapWriteBit);
+	if (data)
+	{
+		std::memcpy(data, str, cnt);
+		_dataOffset += cnt;
+		this->unmap();
+		return cnt;
+	}
+
+	this->unmap();
+	return 0;
+}
+
+streamoff
+OGLGraphicsData::seekg(GLintptr pos, ios_base::seekdir dir) noexcept
+{
+	assert(dir == ios_base::beg || dir == ios_base::cur || dir == ios_base::end);
+
+	if (dir == ios_base::beg)
+	{
+		_dataOffset = pos;
+		return pos;
+	}
+	else if (dir == ios_base::cur)
+	{
+		_dataOffset = _dataOffset + pos;
+		if (_dataOffset > _dataSize)
+		{
+			pos = _dataSize - _dataOffset;
+			_dataOffset = _dataSize;
+		}
+		return pos;
+	}
+	else if (dir == ios_base::end)
+	{
+		GLsizei size = _dataSize;
+		pos = size + pos;
+		if (pos > size)
+			_dataOffset = size;
+		else
+			_dataOffset = pos;
+		return pos;
+	}
+
+	return 0;
+}
+
+streamoff
+OGLGraphicsData::tellg() noexcept
+{
+	return _dataOffset;
 }
 
 void*
 OGLGraphicsData::map(std::uint32_t access) noexcept
 {
-	return _buf->map(access);
+	return this->map(0, _dataSize, access);
 }
 
-void* 
+void*
 OGLGraphicsData::map(GLintptr offset, GLsizeiptr cnt, std::uint32_t access) noexcept
 {
-	return _buf->map(offset, cnt, access);
+	if (!_data)
+	{
+		GLbitfield flags = GL_MAP_READ_BIT;
+		if (access & GraphicsAccessFlagsBits::GraphicsAccessFlagsMapReadBit)
+			flags |= GL_MAP_READ_BIT;
+		if (access & GraphicsAccessFlagsBits::GraphicsAccessFlagsMapWriteBit)
+			flags |= GL_MAP_WRITE_BIT;
+		if (access & GraphicsAccessFlagsBits::GraphicsAccessFlagsUnsynchronizedBit)
+			flags |= GL_MAP_UNSYNCHRONIZED_BIT;
+		if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsPersistentBit)
+			flags |= GL_MAP_PERSISTENT_BIT;
+		if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsCoherentBit)
+			flags |= GL_MAP_COHERENT_BIT;
+		if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsFlushExplicitBit)
+			flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
+
+		_data = glMapNamedBufferRange(_buffer, offset, cnt, flags);
+	}
+
+	if (_data)
+	{
+		_isMapping = GL_TRUE;
+		return _data;
+	}
+
+	return _data;
 }
 
-void 
+void
 OGLGraphicsData::unmap() noexcept
 {
-	_buf->unmap();
+	assert(_isMapping);
+
+	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsPersistentBit)
+	{
+		_isMapping = GL_FALSE;
+		return;
+	}
+
+	glUnmapNamedBuffer(_buffer);
+	_data = nullptr;
+	_isMapping = GL_FALSE;
+}
+
+bool
+OGLGraphicsData::isMapping() const noexcept
+{
+	return _isMapping ? GL_TRUE : GL_FALSE;
 }
 
 GLuint
 OGLGraphicsData::getInstanceID() const noexcept
 {
-	return _buf->getInstanceID();
+	return _buffer;
+}
+
+void
+OGLGraphicsData::bind() noexcept
+{
+	glBindBuffer(_target, _buffer);
+}
+
+const GraphicsDataDesc&
+OGLGraphicsData::getGraphicsDataDesc() const noexcept
+{
+	return _desc;
 }
 
 void 

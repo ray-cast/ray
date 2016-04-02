@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/ssr.h>
 
-#include <ray/graphics_view.h>
+#include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 
 _NAME_BEGIN
@@ -55,7 +55,7 @@ SSR::~SSR() noexcept
 }
 
 void
-SSR::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSR::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	//_projInfo->assign(pipeline.camera->getProjConstant());
 	//_clipInfo->assign(pipeline.camera->getClipConstant());

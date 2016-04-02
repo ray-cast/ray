@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,44 +37,9 @@
 #ifndef _H_EGL3_SHADER_H_
 #define _H_EGL3_SHADER_H_
 
-#include "egl3_canvas.h"
+#include "egl3_types.h"
 
 _NAME_BEGIN
-
-class EGL3ShaderVariant final : public ShaderVariant
-{
-public:
-	EGL3ShaderVariant() noexcept;
-	virtual ~EGL3ShaderVariant() noexcept;
-
-	void setLocation(GLint location) noexcept;
-	GLint getLocation() const noexcept;
-
-	void setBindingProgram(GLuint program) noexcept;
-	GLuint getBindingProgram() const noexcept;
-
-	void assign(bool value) noexcept;
-	void assign(int value) noexcept;
-	void assign(const int2& value) noexcept;
-	void assign(float value) noexcept;
-	void assign(const float2& value) noexcept;
-	void assign(const float3& value) noexcept;
-	void assign(const float4& value) noexcept;
-	void assign(const float3x3& value) noexcept;
-	void assign(const float4x4& value) noexcept;
-	void assign(const std::vector<float>& value) noexcept;
-	void assign(const std::vector<float2>& value) noexcept;
-	void assign(const std::vector<float3>& value) noexcept;
-	void assign(const std::vector<float4>& value) noexcept;
-
-private:
-	EGL3ShaderVariant(const EGL3ShaderVariant&) noexcept = delete;
-	EGL3ShaderVariant& operator=(const EGL3ShaderVariant&) noexcept = delete;
-
-private:
-	GLint _location;
-	GLuint _bindingProgram;
-};
 
 class EGL3ShaderAttribute final : public ShaderAttribute
 {
@@ -97,20 +62,15 @@ public:
 	EGL3ShaderUniform() noexcept;
 	~EGL3ShaderUniform() noexcept;
 
-	void setName(const std::string& name) noexcept;
-	void setType(ShaderVariantType type) noexcept;
-
-	void setLocation(GLint location) noexcept;
-	GLint getLocation() const noexcept;
-
 	void setBindingProgram(GLuint program) noexcept;
 	GLuint getBindingProgram() const noexcept;
+
 private:
 	EGL3ShaderUniform(const EGL3ShaderUniform&) noexcept = delete;
 	EGL3ShaderUniform& operator=(const EGL3ShaderUniform&) noexcept = delete;
 
 private:
-	EGL3ShaderVariant _value;
+	GLuint _program;
 };
 
 class EGL3Shader final : public GraphicsShader
@@ -120,10 +80,12 @@ public:
 	EGL3Shader() noexcept;
 	~EGL3Shader() noexcept;
 
-	bool setup(const ShaderDesc& desc) noexcept;
+	bool setup(const GraphicsShaderDesc& desc) noexcept;
 	void close() noexcept;
 
 	GLuint getInstanceID() const noexcept;
+
+	const GraphicsShaderDesc& getGraphicsShaderDesc() const noexcept;
 
 private:
 	friend class EGL3Device;
@@ -136,6 +98,7 @@ private:
 
 private:
 	GLuint _instance;
+	GraphicsShaderDesc _shaderDesc;
 	GraphicsDeviceWeakPtr _device;
 };
 
@@ -146,7 +109,7 @@ public:
 	EGL3ShaderObject() noexcept;
 	~EGL3ShaderObject() noexcept;
 
-	bool setup(const ShaderObjectDesc& desc) noexcept;
+	bool setup(const GraphicsProgramDesc& desc) noexcept;
 	void close() noexcept;
 
 	void setActive(bool active) noexcept;
@@ -156,6 +119,8 @@ public:
 
 	ShaderUniforms& getActiveUniforms() noexcept;
 	ShaderAttributes& getActiveAttributes() noexcept;
+
+	const GraphicsProgramDesc& getGraphicsProgramDesc() const noexcept;
 
 private:
 	void _initActiveAttribute() noexcept;
@@ -177,12 +142,11 @@ private:
 
 	GLuint _program;
 
-	EGL3Shaders _shaders;
-
 	ShaderUniforms    _activeUniforms;
 	ShaderAttributes  _activeAttributes;
 
 	GraphicsDeviceWeakPtr _device;
+	GraphicsProgramDesc _programDesc;
 };
 
 _NAME_END

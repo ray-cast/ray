@@ -65,7 +65,7 @@ ColorGrading::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-ColorGrading::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) except
+ColorGrading::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) except
 {
 	_texSource->assign(source);
 

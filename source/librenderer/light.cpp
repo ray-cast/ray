@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/light.h>
 #include <ray/camera.h>
-#include <ray/graphics_view.h>
+#include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 #include <ray/render_system.h>
 
@@ -198,7 +198,7 @@ Light::_updateShadow() const noexcept
 		{
 			_shaodwMap = RenderSystem::instance()->createTexture(_shadowSize, _shadowSize, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatD16UNorm);
 
-			GraphicsRenderTextureDesc shadowViewDesc;
+			GraphicsFramebufferDesc shadowViewDesc;
 			shadowViewDesc.setSharedDepthTexture(_shaodwMap);
 			_shaodwView = RenderSystem::instance()->createRenderTexture(shadowViewDesc);
 

@@ -63,7 +63,7 @@ public:
 	virtual void onRenderPre(RenderPipeline& pipeline) except;
 	virtual void onRenderPost(RenderPipeline& pipeline) except;
 
-	virtual void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) except;
+	virtual void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) except;
 
 	void _setRenderPipeline(RenderPipeline* pipeline) noexcept;
 

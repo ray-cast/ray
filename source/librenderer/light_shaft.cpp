@@ -38,7 +38,7 @@
 #include <ray/light.h>
 #include <ray/camera.h>
 
-#include <ray/graphics_view.h>
+#include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 
 _NAME_BEGIN
@@ -80,7 +80,7 @@ LightShaft::onActivate(RenderPipeline& pipeline) except
 
 	_sampleMap = pipeline.createTexture(width * 0.5, height * 0.5, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatB10G11R11UFloatPack32);
 
-	GraphicsRenderTextureDesc sampleViewDesc;
+	GraphicsFramebufferDesc sampleViewDesc;
 	sampleViewDesc.attach(_sampleMap);
 	_sampleView = pipeline.createRenderTexture(sampleViewDesc);
 }
@@ -91,7 +91,7 @@ LightShaft::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-LightShaft::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) except
+LightShaft::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) except
 {
 	pipeline.setRenderTexture(_sampleView);
 	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsAll, Vector4::Zero, 1.0, 0);

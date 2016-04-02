@@ -53,8 +53,8 @@ public:
 
 	GLuint getInstanceID() const noexcept;
 
-	void bindVbo(OGLVertexBufferPtr vbo, std::uint8_t slot) noexcept;
-	void bindIbo(OGLIndexBufferPtr ibo) noexcept;
+	void bindVbo(OGLGraphicsDataPtr vbo, std::uint8_t slot) noexcept;
+	void bindIbo(OGLGraphicsDataPtr ibo) noexcept;
 	void bindLayout(OGLShaderObjectPtr program) noexcept;
 
 	const GraphicsInputLayoutDesc& getGraphicsInputLayoutDesc() const noexcept;

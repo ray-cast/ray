@@ -48,10 +48,12 @@ GraphicsTextureDesc::GraphicsTextureDesc() noexcept
 	, _multisample(false)
 	, _mipLevel(0)
 	, _mipSize(0)
+	, _layer(1)
 	, _texop(GraphicsSamplerOp::GraphicsSamplerOpAdd)
 	, _filter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear)
 	, _wrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge)
 	, _anis(GraphicsSamplerAnis::GraphicsSamplerAnis0)
+	, _textureUsage(GraphicsViewUsageFlagBits::GraphicsViewUsageFlagBitsStorageBit)
 	, _data(nullptr)
 {
 }
@@ -139,11 +141,29 @@ GraphicsTextureDesc::setDepth(int d) noexcept
 }
 
 void
-GraphicsTextureDesc::setSize(int w, int h, int depth) noexcept
+GraphicsTextureDesc::setSize(std::uint32_t w, std::uint32_t h, std::uint32_t depth) noexcept
 {
 	_size.x = w;
 	_size.y = h;
 	_size.z = depth;
+}
+
+void 
+GraphicsTextureDesc::setTexUsage(std::uint32_t flags) noexcept
+{
+	_textureUsage = flags;
+}
+
+void
+GraphicsTextureDesc::setArrayLayer(std::uint32_t layer) noexcept
+{
+	_layer = layer;
+}
+
+void
+GraphicsTextureDesc::setStreamSize(std::uint32_t size) noexcept
+{
+	_dataSize = size;
 }
 
 void
@@ -200,25 +220,37 @@ GraphicsTextureDesc::getMipSize() const noexcept
 	return _mipSize;
 }
 
-int
+std::uint32_t
 GraphicsTextureDesc::getWidth() const noexcept
 {
 	return _size.x;
 }
 
-int
+std::uint32_t
 GraphicsTextureDesc::getHeight() const noexcept
 {
 	return _size.y;
 }
 
-int
+std::uint32_t
 GraphicsTextureDesc::getDepth() const noexcept
 {
 	return _size.z;
 }
 
-const int3&
+std::uint32_t
+GraphicsTextureDesc::getArrayLayer() const noexcept
+{
+	return _layer;
+}
+
+std::uint32_t
+GraphicsTextureDesc::getTexUsage() const noexcept
+{
+	return _textureUsage;
+}
+
+const uint3&
 GraphicsTextureDesc::getSize() const noexcept
 {
 	return _size;
@@ -228,6 +260,12 @@ void*
 GraphicsTextureDesc::getStream() const noexcept
 {
 	return _data;
+}
+
+std::uint32_t
+GraphicsTextureDesc::getStreamSize() const noexcept
+{
+	return _dataSize;
 }
 
 bool

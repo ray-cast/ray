@@ -38,7 +38,7 @@
 #include <ray/camera.h>
 #include <ray/light.h>
 
-#include <ray/graphics_view.h>
+#include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 
 _NAME_BEGIN
@@ -55,7 +55,7 @@ SSSS::~SSSS() noexcept
 }
 
 void
-SSSS::blurX(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSSS::blurX(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	std::uint32_t widght = source->getGraphicsTextureDesc().getWidth();
 
@@ -68,7 +68,7 @@ SSSS::blurX(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderT
 }
 
 void 
-SSSS::blurY(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSSS::blurY(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	std::uint32_t height = source->getGraphicsTextureDesc().getHeight();
 
@@ -81,7 +81,7 @@ SSSS::blurY(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderT
 }
 
 void
-SSSS::translucency(RenderPipeline& pipeline, GraphicsRenderTexturePtr dest) noexcept
+SSSS::translucency(RenderPipeline& pipeline, GraphicsFramebufferPtr dest) noexcept
 {
 	pipeline.setRenderTexture(dest);
 
@@ -141,7 +141,7 @@ SSSS::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-SSSS::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSSS::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	this->blurX(pipeline, source, _SSSSView);
 	this->blurY(pipeline, _SSSSMap, dest);

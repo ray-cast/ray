@@ -61,7 +61,10 @@ public:
 	void setHeight(int h) noexcept;
 	void setDepth(int d) noexcept;
 	void setStream(void* data) noexcept;
-	void setSize(int w, int h, int depth = 0) noexcept;
+	void setSize(std::uint32_t w, std::uint32_t h, std::uint32_t depth = 0) noexcept;
+	void setArrayLayer(std::uint32_t layer) noexcept;
+	void setStreamSize(std::uint32_t size) noexcept;
+	void setTexUsage(std::uint32_t flags) noexcept;
 
 	GraphicsFormat getTexFormat()  const noexcept;
 	GraphicsTextureDim getTexDim() const noexcept;
@@ -70,28 +73,32 @@ public:
 	GraphicsSamplerFilter getSamplerFilter() const noexcept;
 	GraphicsSamplerAnis getSamplerAnis() const noexcept;
 
-	int getWidth()   const noexcept;
-	int getHeight()  const noexcept;
-	int getDepth()   const noexcept;
-	const int3& getSize()  const noexcept;
+	std::uint32_t getWidth()   const noexcept;
+	std::uint32_t getHeight()  const noexcept;
+	std::uint32_t getDepth()   const noexcept;
+	const uint3& getSize()  const noexcept;
 
 	std::int32_t getMipLevel() const noexcept;
 	std::uint32_t getMipSize() const noexcept;
+	std::uint32_t getArrayLayer() const noexcept;
+	std::uint32_t getTexUsage() const noexcept;
 
 	void* getStream() const noexcept;
+	std::uint32_t getStreamSize() const noexcept;
 
 	bool isMipmap() const noexcept;
 	bool isMultiSample() const noexcept;
 
 private:
-
 	bool _mipmap;
 	bool _multisample;
 
-	int3 _size;
+	uint3 _size;
 
+	std::uint32_t _layer;
 	std::int32_t _mipLevel;
 	std::uint32_t _mipSize;
+	std::uint32_t _textureUsage;
 
 	GraphicsFormat _format;
 	GraphicsTextureDim _dim;
@@ -101,6 +108,7 @@ private:
 	GraphicsSamplerAnis _anis;
 
 	void* _data;
+	std::uint32_t _dataSize;
 };
 
 class EXPORT GraphicsTexture : public GraphicsResource

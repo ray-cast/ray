@@ -39,20 +39,20 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(OGLRenderTexture, GraphicsRenderTexture, "OGLRenderTexture")
+__ImplementSubClass(OGLFramebuffer, GraphicsFramebuffer, "OGLFramebuffer")
 
-OGLRenderTexture::OGLRenderTexture() noexcept
+OGLFramebuffer::OGLFramebuffer() noexcept
 	: _fbo(GL_NONE)
 {
 }
 
-OGLRenderTexture::~OGLRenderTexture() noexcept
+OGLFramebuffer::~OGLFramebuffer() noexcept
 {
 	this->close();
 }
 
 bool
-OGLRenderTexture::setup(const GraphicsRenderTextureDesc& framebufferDesc) noexcept
+OGLFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 {
 	assert(GL_NONE == _fbo);
 
@@ -97,11 +97,12 @@ OGLRenderTexture::setup(const GraphicsRenderTextureDesc& framebufferDesc) noexce
 	glNamedFramebufferDrawBuffers(_fbo, count, draw);
 
 	_framebufferDesc = framebufferDesc;
-	return true;
+
+	return OGLCheck::checkError();
 }
 
 void
-OGLRenderTexture::close() noexcept
+OGLFramebuffer::close() noexcept
 {
 	if (_fbo != GL_NONE)
 	{
@@ -111,7 +112,7 @@ OGLRenderTexture::close() noexcept
 }
 
 void
-OGLRenderTexture::setLayer(GraphicsTexturePtr renderTexture, GLuint layer) noexcept
+OGLFramebuffer::setLayer(GraphicsTexturePtr renderTexture, GLuint layer) noexcept
 {
 	auto texture = renderTexture->downcast<OGLTexture>();
 	auto textureID = texture->getInstanceID();
@@ -136,13 +137,13 @@ OGLRenderTexture::setLayer(GraphicsTexturePtr renderTexture, GLuint layer) noexc
 }
 
 GLuint
-OGLRenderTexture::getLayer() const noexcept
+OGLFramebuffer::getLayer() const noexcept
 {
 	return 0;
 }
 
 void
-OGLRenderTexture::discard() noexcept
+OGLFramebuffer::discard() noexcept
 {
 	GLenum attachments[24];
 	GLenum attachment = GL_COLOR_ATTACHMENT0;
@@ -160,13 +161,13 @@ OGLRenderTexture::discard() noexcept
 }
 
 GLuint
-OGLRenderTexture::getInstanceID() noexcept
+OGLFramebuffer::getInstanceID() noexcept
 {
 	return _fbo;
 }
 
 void
-OGLRenderTexture::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment) noexcept
+OGLFramebuffer::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment) noexcept
 {
 	assert(texture);
 
@@ -176,20 +177,20 @@ OGLRenderTexture::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachmen
 	glNamedFramebufferTexture(_fbo, attachment, handle, 0);
 }
 
-const GraphicsRenderTextureDesc&
-OGLRenderTexture::getGraphicsRenderTextureDesc() const noexcept
+const GraphicsFramebufferDesc&
+OGLFramebuffer::getGraphicsFramebufferDesc() const noexcept
 {
 	return _framebufferDesc;
 }
 
 void
-OGLRenderTexture::setDevice(GraphicsDevicePtr device) noexcept
+OGLFramebuffer::setDevice(GraphicsDevicePtr device) noexcept
 {
 	_device = device;
 }
 
 GraphicsDevicePtr
-OGLRenderTexture::getDevice() noexcept
+OGLFramebuffer::getDevice() noexcept
 {
 	return _device.lock();
 }

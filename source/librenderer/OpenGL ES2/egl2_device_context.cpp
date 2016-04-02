@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -38,11 +38,13 @@
 #include "egl2_state.h"
 #include "egl2_shader.h"
 #include "egl2_texture.h"
-#include "egl2_layout.h"
+#include "egl2_input_layout.h"
 #include "egl2_sampler.h"
 #include "egl2_framebuffer.h"
-#include "egl2_vbo.h"
-#include "egl2_ibo.h"
+#include "egl2_graphics_data.h"
+#include "egl2_swapchain.h"
+#include "egl2_render_pipeline.h"
+#include "egl2_descriptor.h"
 
 _NAME_BEGIN
 
@@ -68,12 +70,17 @@ EGL2DeviceContext::~EGL2DeviceContext() noexcept
 }
 
 bool
-EGL2DeviceContext::open(WindHandle window) noexcept
+EGL2DeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 {
-	if (!_initOpenGL)
+	if (_initOpenGL)
+		return false;
+
+	if (!desc.getSwapchain())
+		return false;
+
+	_glcontext = desc.getSwapchain()->downcast<EGL2Swapchain>();
+	if (_glcontext)
 	{
-		_glcontext = std::make_shared<EGL2Canvas>();
-		_glcontext->open(window);
 		_glcontext->setActive(true);
 
 		this->initDebugControl();
@@ -129,29 +136,15 @@ EGL2DeviceContext::close() noexcept
 }
 
 void
-EGL2DeviceContext::setActive(bool active) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setActive(active);
-}
-
-bool
-EGL2DeviceContext::getActive() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getActive();
-}
-
-void
 EGL2DeviceContext::renderBegin() noexcept
 {
+	assert(_glcontext);
+	_glcontext->setActive(true);
 }
 
 void
 EGL2DeviceContext::renderEnd() noexcept
 {
-	assert(_glcontext);
-	_glcontext->present();
 }
 
 void
@@ -167,6 +160,70 @@ EGL2DeviceContext::setViewport(const Viewport& view, std::size_t i) noexcept
 	}
 }
 
+void
+EGL2DeviceContext::setScissor(const Scissor& scissor, std::size_t i) noexcept
+{
+	if (_scissor != scissor)
+	{
+		glScissor(scissor.left, scissor.top, scissor.width, scissor.height);
+		_scissor = scissor;
+	}
+}
+
+const Scissor&
+EGL2DeviceContext::getScissor(std::size_t i) const noexcept
+{
+	return _scissor;
+}
+
+void
+EGL2DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
+{
+	assert(pipeline);
+
+	if (_pipeline != pipeline)
+	{
+		auto& pipelineDesc = pipeline->getGraphicsPipelineDesc();
+
+		auto glstate = pipelineDesc.getGraphicsState()->downcast<EGL2GraphicsState>();
+		if (_state != glstate)
+		{
+			glstate->apply(_stateCaptured);
+
+			_state = glstate;
+			_stateCaptured = glstate->getGraphicsStateDesc();
+		}
+
+		auto glshader = pipelineDesc.getGraphicsProgram()->downcast<EGL2ShaderObject>();
+		if (_shaderObject != glshader)
+		{
+			glUseProgram(glshader->getInstanceID());
+			_shaderObject = glshader;
+		}
+
+		_needUpdateLayout = true;
+	}
+}
+
+GraphicsPipelinePtr
+EGL2DeviceContext::getRenderPipeline() const noexcept
+{
+	return _pipeline;
+}
+
+void
+EGL2DeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
+{
+	_descriptorSet = descriptorSet->downcast<EGL2DescriptorSet>();
+	_descriptorSet->bindProgram(_shaderObject);
+}
+
+GraphicsDescriptorSetPtr
+EGL2DeviceContext::getDescriptorSet() const noexcept
+{
+	return _descriptorSet;
+}
+
 const Viewport&
 EGL2DeviceContext::getViewport(std::size_t i) const noexcept
 {
@@ -174,89 +231,15 @@ EGL2DeviceContext::getViewport(std::size_t i) const noexcept
 }
 
 void
-EGL2DeviceContext::setWireframeMode(bool enable) noexcept
+EGL2DeviceContext::setInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept
 {
-	_enableWireframe = enable;
+	assert(inputLayout);
+	_inputLayout = inputLayout->downcast<EGL2InputLayout>();
+	_needUpdateLayout = true;
 }
 
-bool
-EGL2DeviceContext::getWireframeMode() const noexcept
-{
-	return _enableWireframe;
-}
-
-void
-EGL2DeviceContext::setSwapInterval(SwapInterval interval) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setSwapInterval(interval);
-}
-
-SwapInterval
-EGL2DeviceContext::getSwapInterval() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getSwapInterval();
-}
-
-void
-EGL2DeviceContext::setGraphicsState(GraphicsStatePtr state) noexcept
-{
-	if (_state != state)
-	{
-		if (state)
-		{
-			auto glstate = state->downcast<EGL2GraphicsState>();
-			if (glstate)
-			{
-				glstate->apply(_stateCaptured);
-
-				_state = glstate;
-				_stateCaptured = glstate->getGraphicsStateDesc();
-			}
-			else
-			{
-				_state = nullptr;
-				_stateDefault->apply(_stateCaptured);
-			}
-		}
-		else
-		{
-			_state = nullptr;
-			_stateDefault->apply(_stateCaptured);
-		}
-	}
-}
-
-GraphicsStatePtr
-EGL2DeviceContext::getGraphicsState() const noexcept
-{
-	return _state;
-}
-
-void
-EGL2DeviceContext::setGraphicsLayout(GraphicsLayoutPtr layout) noexcept
-{
-	if (_inputLayout != layout)
-	{
-		if (layout)
-		{
-			if (layout->isInstanceOf<EGL2GraphicsLayout>())
-				_inputLayout = layout->downcast<EGL2GraphicsLayout>();
-			else
-				_inputLayout = nullptr;
-		}
-		else
-		{
-			_inputLayout = nullptr;
-		}
-
-		_needUpdateLayout = true;
-	}
-}
-
-GraphicsLayoutPtr
-EGL2DeviceContext::getGraphicsLayout() const noexcept
+GraphicsInputLayoutPtr
+EGL2DeviceContext::getInputLayout() const noexcept
 {
 	return _inputLayout;
 }
@@ -264,82 +247,23 @@ EGL2DeviceContext::getGraphicsLayout() const noexcept
 bool
 EGL2DeviceContext::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
 {
-	if (data)
-	{
-		auto max = std::numeric_limits<GLsizeiptr>::max();
-		if (cnt < max)
-		{
-			if (data->isInstanceOf<EGL2VertexBuffer>())
-				this->setVertexBufferData(data);
-			else if (data->isInstanceOf<EGL2IndexBuffer>())
-				this->setIndexBufferData(data);
-			else
-				return false;
-
-			auto _data = data->cast<EGL2GraphicsData>();
-			_data->resize((const char*)str, cnt);
-			return true;
-		}
-	}
-
-	return false;
+	auto _data = data->cast<EGL2GraphicsData>();
+	_data->resize((const char*)str, cnt);
+	return true;
 }
 
 void*
 EGL2DeviceContext::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
 {
-	if (data)
-	{
-		if (data->isInstanceOf<EGL2VertexBuffer>())
-			this->setVertexBufferData(data);
-		else if (data->isInstanceOf<EGL2IndexBuffer>())
-			this->setIndexBufferData(data);
-		else
-			return nullptr;
-
-		auto _data = data->cast<EGL2GraphicsData>();
-		return _data->map(access);
-	}
-
-	return nullptr;
+	auto _data = data->cast<EGL2GraphicsData>();
+	return _data->map(access);
 }
 
 void
 EGL2DeviceContext::unmapBuffer(GraphicsDataPtr& data) noexcept
 {
-	if (data)
-	{
-		if (data->isInstanceOf<EGL2VertexBuffer>())
-			this->setVertexBufferData(data);
-		else if (data->isInstanceOf<EGL2IndexBuffer>())
-			this->setIndexBufferData(data);
-		else
-			return;
-
-		auto _data = data->cast<EGL2GraphicsData>();
-		_data->unmap();
-	}
-}
-
-void
-EGL2DeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
-{
-	if (_ibo != data)
-	{
-		if (data)
-		{
-			if (data->isInstanceOf<EGL2IndexBuffer>())
-				_ibo = data->downcast<EGL2IndexBuffer>();
-			else
-				_ibo = nullptr;
-		}
-		else
-		{
-			_ibo = nullptr;
-		}
-
-		_needUpdateIbo = true;
-	}
+	auto _data = data->cast<EGL2GraphicsData>();
+	_data->unmap();
 }
 
 GraphicsDataPtr
@@ -351,21 +275,29 @@ EGL2DeviceContext::getIndexBufferData() const noexcept
 void
 EGL2DeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 {
+	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
+
 	if (_vbo != data)
 	{
-		if (data)
-		{
-			if (data->isInstanceOf<EGL2VertexBuffer>())
-				_vbo = data->downcast<EGL2VertexBuffer>();
-			else
-				_vbo = nullptr;
-		}
+		if (data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer)
+			_vbo = data->downcast<EGL2GraphicsData>();
 		else
-		{
 			_vbo = nullptr;
-		}
-
 		_needUpdateVbo = true;
+	}
+}
+
+void
+EGL2DeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
+{
+	if (_ibo != data)
+	{
+		if (data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer)
+			_ibo = data->downcast<EGL2GraphicsData>();
+		else
+			_ibo = nullptr;
+
+		_needUpdateIbo = true;
 	}
 }
 
@@ -376,33 +308,20 @@ EGL2DeviceContext::getVertexBufferData() const noexcept
 }
 
 void
-EGL2DeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
+EGL2DeviceContext::drawRenderBuffer(const GraphicsIndirect& renderable) noexcept
 {
 	if (!_inputLayout || !_vbo)
 		return;
 
-	if (_vbo->size() < _inputLayout->getVertexSize() * (renderable.startVertice + renderable.numVertices))
-		return;
-
-	if (_inputLayout->getIndexType() != GL_NONE)
+	if (_inputLayout->getGraphicsInputLayoutDesc().getIndexType() != GraphicsIndexType::GraphicsIndexTypeNone)
 	{
 		if (!_ibo)
 			return;
 
-		if (_ibo->size() < _inputLayout->getIndexSize() * (renderable.startIndice + renderable.numIndices))
+		if (_ibo->size() < _inputLayout->getGraphicsInputLayoutDesc().getIndexSize() * (renderable.startIndice + renderable.numIndices))
 			return;
 	}
 
-	auto primitiveType = _stateCaptured.getRasterState().primitiveType;
-	if (_enableWireframe)
-	{
-		if (primitiveType == VertexType::PointOrLine ||
-			primitiveType == VertexType::TriangleOrLine ||
-			primitiveType == VertexType::FanOrLine)
-		{
-			primitiveType = VertexType::Line;
-		}
-	}
 
 	if (_needUpdateLayout)
 	{
@@ -414,22 +333,23 @@ EGL2DeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 	if (_needUpdateVbo)
 	{
 		if (_vbo)
-			_vbo->bind(_inputLayout);
+			_inputLayout->bindVbo(_vbo);
 		_needUpdateVbo = false;
 	}
 
 	if (_needUpdateIbo)
 	{
 		if (_ibo)
-			_ibo->bind();
+			_inputLayout->bindIbo(_ibo);
 		_needUpdateIbo = false;
 	}
 
+	auto primitiveType = _stateCaptured.getRasterState().primitiveType;
 	if (_ibo)
 	{
 		GLenum drawType = EGL2Types::asVertexType(primitiveType);
-		GLenum indexType = _inputLayout->getIndexType();
-		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_inputLayout->getIndexSize() * renderable.startIndice);
+		GLenum indexType = _inputLayout->getGraphicsInputLayoutDesc().getIndexType();
+		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_inputLayout->getGraphicsInputLayoutDesc().getIndexSize() * renderable.startIndice);
 		GL_CHECK(glDrawElements(drawType, renderable.numIndices, indexType, offsetIndices));
 	}
 	else
@@ -440,128 +360,70 @@ EGL2DeviceContext::drawRenderBuffer(const RenderIndirect& renderable) noexcept
 }
 
 void
-EGL2DeviceContext::drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept
+EGL2DeviceContext::drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept
 {
 	for (std::size_t i = first; i < first + count; i++)
 		this->drawRenderBuffer(renderable[i]);
 }
 
 void
-EGL2DeviceContext::setGraphicsTexture(GraphicsTexturePtr texture, std::uint32_t slot) noexcept
-{
-	if (texture)
-	{
-		auto gltexture = texture->downcast<EGL2Texture>();
-
-		GLuint textureID = gltexture->getInstanceID();
-		GLenum textureDim = gltexture->getTarget();
-
-		GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
-		GL_CHECK(glBindTexture(textureDim, textureID));
-	}
-	else
-	{
-		GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
-		GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
-	}
-}
-
-void
-EGL2DeviceContext::setGraphicsTexture(GraphicsTexturePtr textures[], std::uint32_t first, std::uint32_t count) noexcept
-{
-	for (std::uint32_t i = first; i < first + count; i++)
-		this->setGraphicsTexture(textures[i], i);
-}
-
-void
-EGL2DeviceContext::setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept
-{
-	auto glsampler = sampler->downcast<EGL2Sampler>();
-	if (glsampler)
-	{
-	}
-	else
-	{
-	}
-}
-
-void
-EGL2DeviceContext::setGraphicsSampler(GraphicsSamplerPtr samplers[], std::uint32_t first, std::uint32_t count) noexcept
-{
-	for (std::uint32_t i = first; i < first + count; i++)
-		this->setGraphicsSampler(samplers[i], i);
-}
-
-void
-EGL2DeviceContext::setRenderTexture(GraphicsRenderTexturePtr target) noexcept
+EGL2DeviceContext::setRenderTexture(GraphicsFramebufferPtr target) noexcept
 {
 	if (_renderTexture != target)
 	{
-		if (_renderTexture)
-			_renderTexture->setActive(false);
-
 		if (target)
 		{
-			_renderTexture = target->downcast<EGL2RenderTexture>();
-			_renderTexture->setActive(true);
+			_renderTexture = target->downcast<EGL2Framebuffer>();
+			auto& renderTextureDesc = _renderTexture->getGraphicsFramebufferDesc();
+			auto& textures = renderTextureDesc.getTextures();
 
-			auto textureDesc = _renderTexture->getResolveTexture()->getGraphicsTextureDesc();
-			this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, _renderTexture->getInstanceID());
+
+			std::size_t size = textures.size();
+			if (size > 0)
+			{
+				for (std::size_t index = 0; index < size; index++)
+				{
+					auto& textureDesc = textures[index]->getGraphicsTextureDesc();
+					this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), index);
+				}
+			}
+			else
+			{
+				auto depthTexture = renderTextureDesc.getSharedDepthTexture();
+				if (depthTexture)
+				{
+					auto& textureDesc = depthTexture->getGraphicsTextureDesc();
+					this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), 0);
+				}
+			}
 		}
 		else
 		{
-			_renderTexture = nullptr;
 			glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+			_renderTexture = nullptr;
 		}
 	}
 }
 
 void
-EGL2DeviceContext::setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept
-{
-	GL_PLATFORM_LOG("Can't support MRT");
-}
-
-void
-EGL2DeviceContext::setRenderTextureLayer(GraphicsRenderTexturePtr renderTexture, std::int32_t layer) noexcept
-{
-	assert(renderTexture);
-
-	if (_renderTexture == renderTexture)
-	{
-		_renderTexture->setLayer(layer);
-	}
-	else
-	{
-		this->setRenderTexture(renderTexture);
-		_renderTexture->setLayer(layer);
-	}
-}
-
-void
-EGL2DeviceContext::blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, GraphicsRenderTexturePtr dest, const Viewport& v2) noexcept
+EGL2DeviceContext::blitRenderTexture(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
 {
 	GL_PLATFORM_LOG("Can't support blitRenderTexture");
 }
 
-GraphicsRenderTexturePtr
+GraphicsFramebufferPtr
 EGL2DeviceContext::getRenderTexture() const noexcept
 {
 	return _renderTexture;
 }
 
-GraphicsMultiRenderTexturePtr
-EGL2DeviceContext::getMultiRenderTexture() const noexcept
-{
-	return nullptr;
-}
-
 void
-EGL2DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
+EGL2DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
 {
 	GLbitfield mode = 0;
 
-	if (flags & ClearFlags::Color)
+	if (flags & GraphicsClearFlags::GraphicsClearFlagsColor)
 	{
 		mode |= GL_COLOR_BUFFER_BIT;
 
@@ -572,7 +434,7 @@ EGL2DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, fl
 		}
 	}
 
-	if (flags & ClearFlags::Depth)
+	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 	{
 		mode |= GL_DEPTH_BUFFER_BIT;
 
@@ -583,7 +445,7 @@ EGL2DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, fl
 		}
 	}
 
-	if (flags & ClearFlags::Stencil)
+	if (flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
 	{
 		mode |= GL_STENCIL_BUFFER_BIT;
 
@@ -596,15 +458,15 @@ EGL2DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, fl
 
 	if (mode != 0)
 	{
-		auto depthWriteMask = _stateCaptured.getDepthState().depthWriteMask;
-		if (!depthWriteMask && flags & ClearFlags::Depth)
+		auto depthWriteEnable = _stateCaptured.getDepthState().depthWriteEnable;
+		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
 			GL_CHECK(glDepthMask(GL_TRUE));
 		}
 
 		GL_CHECK(glClear(mode));
 
-		if (!depthWriteMask && flags & ClearFlags::Depth)
+		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_FALSE);
 		}
@@ -614,7 +476,7 @@ EGL2DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, fl
 }
 
 void
-EGL2DeviceContext::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+EGL2DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
 	this->clearRenderTexture(flags, color, depth, stencil);
 }
@@ -626,14 +488,14 @@ EGL2DeviceContext::discardRenderTexture() noexcept
 }
 
 void
-EGL2DeviceContext::readRenderTexture(GraphicsRenderTexturePtr target, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+EGL2DeviceContext::readRenderTexture(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
 	assert(w && h && data);
 
 	if (target)
 	{
-		GLenum format = EGL2Types::asFormat(pfd);
-		GLenum type = EGL2Types::asType(pfd);
+		GLenum format = EGL2Types::asTextureFormat(pfd);
+		GLenum type = EGL2Types::asTextureType(pfd);
 
 		if (format != GL_INVALID_ENUM && type != GL_INVALID_ENUM)
 		{
@@ -644,39 +506,10 @@ EGL2DeviceContext::readRenderTexture(GraphicsRenderTexturePtr target, TextureFor
 }
 
 void
-EGL2DeviceContext::setGraphicsProgram(GraphicsProgramPtr shader) noexcept
+EGL2DeviceContext::present() noexcept
 {
-	if (shader)
-	{
-		auto glshader = shader->downcast<EGL2ShaderObject>();
-		if (_shaderObject != glshader)
-		{
-			if (_shaderObject)
-				_shaderObject->setActive(false);
-
-			_shaderObject = glshader;
-
-			if (_shaderObject)
-				_shaderObject->setActive(true);
-		}
-		else
-		{
-			_shaderObject->setActive(true);
-		}
-	}
-	else
-	{
-		if (_shaderObject)
-			_shaderObject->setActive(false);
-
-		glUseProgram(GL_NONE);
-	}
-}
-
-GraphicsProgramPtr
-EGL2DeviceContext::getGraphicsProgram() const noexcept
-{
-	return _shaderObject;
+	assert(_glcontext);
+	_glcontext->present();
 }
 
 void

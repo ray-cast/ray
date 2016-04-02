@@ -48,8 +48,8 @@ public:
 	~EnvironmentIrradiance();
 
 	void renderParaboloidEnvMap(RenderPipeline& pipeline, GraphicsTexturePtr cubemap) noexcept;
-	void renderProjectParaboloidToSH(RenderPipeline& pipeline, GraphicsRenderTexturePtr evalSHFunction, GraphicsRenderTexturePtr dest) noexcept;
-	void renderEvaluateConvolvedSH(RenderPipeline& pipeline, GraphicsRenderTexturePtr evalSHFunction, GraphicsRenderTexturePtr dest) noexcept;
+	void renderProjectParaboloidToSH(RenderPipeline& pipeline, GraphicsFramebufferPtr evalSHFunction, GraphicsFramebufferPtr dest) noexcept;
+	void renderEvaluateConvolvedSH(RenderPipeline& pipeline, GraphicsFramebufferPtr evalSHFunction, GraphicsFramebufferPtr dest) noexcept;
 
 private:
 	bool _buildDualParaboloidWeightTextures(RenderPipeline& pipeline, GraphicsTexturePtr textures[2], std::uint32_t order, std::uint32_t size);
@@ -76,8 +76,8 @@ private:
 	GraphicsTexturePtr _paraboloidSphericalHarmonicMap;
 	GraphicsTexturePtr _irradianceSHCoefficientsMap;
 
-	GraphicsRenderTexturePtr _paraboloidDualViews;
-	GraphicsRenderTexturePtr _irradianceSHCoefficientsView;
+	GraphicsFramebufferPtr _paraboloidDualViews;
+	GraphicsFramebufferPtr _irradianceSHCoefficientsView;
 };
 
 _NAME_END

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,7 +37,7 @@
 #ifndef _H_EGL3_DEVICE_H_
 #define _H_EGL3_DEVICE_H_
 
-#include "egl3_canvas.h"
+#include <ray/graphics_device.h>
 
 _NAME_BEGIN
 
@@ -48,80 +48,33 @@ public:
 	EGL3Device() noexcept;
 	virtual ~EGL3Device() noexcept;
 
-	virtual bool open(WindHandle hwnd) noexcept;
-	virtual void close() noexcept;
+	bool setup(const GraphicsDeviceDesc& desc) noexcept;
+	void close() noexcept;
 
-	virtual GraphicsContextPtr createGraphicsContext(WindHandle window) noexcept;
-	virtual void setGraphicsContext(GraphicsContextPtr context) noexcept;
-	virtual GraphicsContextPtr getGraphicsContext() const noexcept;
+	GraphicsSwapchainPtr createGraphicsSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
+	GraphicsContextPtr createGraphicsContext(const GraphicsContextDesc& desc) noexcept;
+	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
+	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
+	GraphicsTexturePtr createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept;
+	GraphicsSamplerPtr createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept;
+	GraphicsFramebufferPtr createRenderTexture(const GraphicsFramebufferDesc& desc) noexcept;
+	GraphicsShaderPtr createShader(const GraphicsShaderDesc& desc) noexcept;
+	GraphicsProgramPtr createProgram(const GraphicsProgramDesc& desc) noexcept;
+	GraphicsStatePtr createRenderState(const GraphicsStateDesc& desc) noexcept;
+	GraphicsPipelinePtr createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept;
+	GraphicsDescriptorSetPtr createGraphicsDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept;
+	GraphicsDescriptorSetLayoutPtr createGraphicsDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept;
 
-	virtual void renderBegin() noexcept;
-	virtual void renderEnd() noexcept;
+	GraphicsFormat findCompatibleFormat(GraphicsPixelFormatDesc& desc) noexcept;
 
-	virtual void setWireframeMode(bool enable) noexcept;
-	virtual bool getWireframeMode() const noexcept;
-
-	virtual void setViewport(const Viewport& viewport, std::size_t i) noexcept;
-	virtual const Viewport& getViewport(std::size_t i) const noexcept;
-
-	virtual void setSwapInterval(SwapInterval interval) noexcept;
-	virtual SwapInterval getSwapInterval() const noexcept;
-
-	virtual GraphicsLayoutPtr createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept;
-	virtual void setGraphicsLayout(GraphicsLayoutPtr data) noexcept;
-	virtual GraphicsLayoutPtr getGraphicsLayout() const noexcept;
-
-	virtual GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
-	virtual bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;
-	virtual void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
-	virtual void unmapBuffer(GraphicsDataPtr& data) noexcept;
-
-	virtual void setIndexBufferData(GraphicsDataPtr data) noexcept;
-	virtual GraphicsDataPtr getIndexBufferData() const noexcept;
-
-	virtual void setVertexBufferData(GraphicsDataPtr data) noexcept;
-	virtual GraphicsDataPtr getVertexBufferData() const noexcept;
-
-	virtual GraphicsTexturePtr createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept;
-	virtual void setGraphicsTexture(GraphicsTexturePtr texture, std::uint32_t slot) noexcept;
-	virtual void setGraphicsTexture(GraphicsTexturePtr texture[], std::uint32_t first, std::uint32_t count) noexcept;
-
-	virtual GraphicsSamplerPtr createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept;
-	virtual void setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept;
-	virtual void setGraphicsSampler(GraphicsSamplerPtr sampler[], std::uint32_t first, std::uint32_t count) noexcept;
-
-	virtual GraphicsRenderTexturePtr createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept;
-	virtual void setRenderTexture(GraphicsRenderTexturePtr target) noexcept;
-	virtual void setRenderTextureLayer(GraphicsRenderTexturePtr target, std::int32_t layer) noexcept;
-	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
-	virtual void discardRenderTexture() noexcept;
-	virtual void blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, GraphicsRenderTexturePtr dest, const Viewport& v2) noexcept;
-	virtual void readRenderTexture(GraphicsRenderTexturePtr source, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
-	virtual GraphicsRenderTexturePtr getRenderTexture() const noexcept;
-
-	virtual GraphicsMultiRenderTexturePtr createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept;
-	virtual void setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept;
-	virtual void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
-	virtual GraphicsMultiRenderTexturePtr getMultiRenderTexture() const noexcept;
-
-	virtual GraphicsStatePtr createGraphicsState(const GraphicsStateDesc& desc) noexcept;
-	virtual void setGraphicsState(GraphicsStatePtr state) noexcept;
-	virtual GraphicsStatePtr getGraphicsState() const noexcept;
-
-	virtual GraphicsShaderPtr createShader(const ShaderDesc& desc) noexcept;
-	virtual GraphicsProgramPtr createShaderProgram(const ShaderObjectDesc& desc) noexcept;
-	virtual void setGraphicsProgram(GraphicsProgramPtr shader) noexcept;
-	virtual GraphicsProgramPtr getGraphicsProgram() const noexcept;
-
-	virtual void drawRenderBuffer(const RenderIndirect& renderable) noexcept;
-	virtual void drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept;
+	const GraphicsDeviceDesc& getGraphicsDeviceDesc() const noexcept;
 
 private:
 	EGL3Device(const EGL3Device&) noexcept = delete;
 	EGL3Device& operator=(const EGL3Device&) noexcept = delete;
 
 private:
-	EGL3DeviceContextPtr _glcontext;
+	GraphicsDeviceDesc _deviceDesc;
 };
 
 _NAME_END

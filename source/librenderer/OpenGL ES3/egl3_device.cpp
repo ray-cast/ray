@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -36,16 +36,16 @@
 // +----------------------------------------------------------------------
 #include "egl3_device.h"
 #include "egl3_device_context.h"
-#include "egl3_canvas.h"
+#include "egl3_swapchain.h"
 #include "egl3_state.h"
 #include "egl3_shader.h"
 #include "egl3_texture.h"
 #include "egl3_framebuffer.h"
-#include "egl3_layout.h"
-#include "egl3_vbo.h"
-#include "egl3_ibo.h"
-#include "egl3_dibo.h"
+#include "egl3_input_layout.h"
 #include "egl3_sampler.h"
+#include "egl3_render_pipeline.h"
+#include "egl3_descriptor.h"
+#include "egl3_graphics_data.h"
 
 _NAME_BEGIN
 
@@ -60,207 +60,56 @@ EGL3Device::~EGL3Device() noexcept
 	this->close();
 }
 
-bool 
-EGL3Device::open(WindHandle win) noexcept
+bool
+EGL3Device::setup(const GraphicsDeviceDesc& desc) noexcept
 {
-	_glcontext = std::make_shared<EGL3DeviceContext>();
-	_glcontext->setDevice(this->downcast<EGL3Device>());
-	return _glcontext->open(win);
+	_deviceDesc = desc;
+	return true;
 }
 
-void 
+void
 EGL3Device::close() noexcept
 {
-	_glcontext.reset();
+}
+
+GraphicsSwapchainPtr
+EGL3Device::createGraphicsSwapchain(const GraphicsSwapchainDesc& desc) noexcept
+{
+	auto swapchain = std::make_shared<EGL3Swapchain>();
+	swapchain->setDevice(this->downcast<EGL3Device>());
+	if (swapchain->setup(desc))
+		return swapchain;
+	return false;
 }
 
 GraphicsContextPtr
-EGL3Device::createGraphicsContext(WindHandle win) noexcept
+EGL3Device::createGraphicsContext(const GraphicsContextDesc& desc) noexcept
 {
 	auto context = std::make_shared<EGL3DeviceContext>();
 	context->setDevice(this->downcast<EGL3Device>());
-	context->open(win);
-	return context;
+	if (context->setup(desc))
+		return context;
+	return false;
 }
 
-void
-EGL3Device::setGraphicsContext(GraphicsContextPtr context) noexcept
+GraphicsInputLayoutPtr
+EGL3Device::createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept
 {
-	if (_glcontext != context)
-	{
-		if (_glcontext)
-			_glcontext->setActive(false);
-
-		_glcontext = context->downcast<EGL3DeviceContext>();
-
-		if (_glcontext)
-			_glcontext->setActive(true);
-	}
-}
-
-GraphicsContextPtr
-EGL3Device::getGraphicsContext() const noexcept
-{
-	return _glcontext;
-}
-
-void 
-EGL3Device::renderBegin() noexcept
-{
-	assert(_glcontext);
-	_glcontext->renderBegin();
-}
-
-void 
-EGL3Device::renderEnd() noexcept
-{
-	assert(_glcontext);
-	_glcontext->renderEnd();
-}
-
-void
-EGL3Device::setWireframeMode(bool enable) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setWireframeMode(enable);
-}
-
-bool
-EGL3Device::getWireframeMode() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getWireframeMode();
-}
-
-void
-EGL3Device::setViewport(const Viewport& viewport, std::size_t i) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setViewport(viewport, i);
-}
-
-const Viewport&
-EGL3Device::getViewport(std::size_t i) const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getViewport(i);
-}
-
-void
-EGL3Device::setSwapInterval(SwapInterval interval) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setSwapInterval(interval);
-}
-
-SwapInterval
-EGL3Device::getSwapInterval() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getSwapInterval();
-}
-
-GraphicsLayoutPtr
-EGL3Device::createGraphicsLayout(const GraphicsLayoutDesc& desc) noexcept
-{
-	auto layout = std::make_shared<EGL3GraphicsLayout>();
-	layout->setDevice(this->downcast<EGL3Device>());
-	if (layout->open(desc))
-		return layout;
+	auto inputLayout = std::make_shared<EGL3InputLayout>();
+	inputLayout->setDevice(this->downcast<EGL3Device>());
+	if (inputLayout->setup(desc))
+		return inputLayout;
 	return nullptr;
-}
-
-void
-EGL3Device::setGraphicsLayout(GraphicsLayoutPtr layout) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setGraphicsLayout(layout);
-}
-
-GraphicsLayoutPtr
-EGL3Device::getGraphicsLayout() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getGraphicsLayout();
 }
 
 GraphicsDataPtr
 EGL3Device::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
-	auto type = desc.getType();
-
-	if (type == GraphicsStream::VBO)
-	{
-		auto data = std::make_shared<EGL3VertexBuffer>();
-		data->setDevice(this->downcast<EGL3Device>());
-		if (data->setup(desc))
-			return data;
-	}
-	else if (type == GraphicsStream::IBO)
-	{
-		auto data = std::make_shared<EGL3IndexBuffer>();
-		data->setDevice(this->downcast<EGL3Device>());
-		if (data->setup(desc))
-			return data;
-	}
-	else if (type == GraphicsStream::DIBO)
-	{
-		auto data = std::make_shared<EGL3DrawIndirectBuffer>();
-		data->setDevice(this->downcast<EGL3Device>());
-		if (data->setup(desc))
-			return data;
-	}
-
+	auto data = std::make_shared<EGL3GraphicsData>();
+	data->setDevice(this->downcast<EGL3Device>());
+	if (data->setup(desc))
+		return data;
 	return nullptr;
-}
-
-bool
-EGL3Device::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
-{
-	assert(_glcontext);
-	return _glcontext->updateBuffer(data, str, cnt);
-}
-
-void*
-EGL3Device::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
-{
-	assert(_glcontext);
-	return _glcontext->mapBuffer(data, access);
-}
-
-void
-EGL3Device::unmapBuffer(GraphicsDataPtr& data) noexcept
-{
-	assert(_glcontext);
-	_glcontext->unmapBuffer(data);
-}
-
-void
-EGL3Device::setIndexBufferData(GraphicsDataPtr data) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setIndexBufferData(data);
-}
-
-GraphicsDataPtr
-EGL3Device::getIndexBufferData() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getIndexBufferData();
-}
-
-void
-EGL3Device::setVertexBufferData(GraphicsDataPtr data) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setVertexBufferData(data);
-}
-
-GraphicsDataPtr
-EGL3Device::getVertexBufferData() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getVertexBufferData();
 }
 
 GraphicsTexturePtr
@@ -273,24 +122,9 @@ EGL3Device::createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept
 	return nullptr;
 }
 
-void
-EGL3Device::setGraphicsTexture(GraphicsTexturePtr texture, std::uint32_t slot) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setGraphicsTexture(texture, slot);
-}
-
-void
-EGL3Device::setGraphicsTexture(GraphicsTexturePtr texture[], std::uint32_t first, std::uint32_t count) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setGraphicsTexture(texture, first, count);
-}
-
 GraphicsSamplerPtr
 EGL3Device::createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept
 {
-	assert(_glcontext);
 	auto sampler = std::make_shared<EGL3Sampler>();
 	sampler->setDevice(this->downcast<EGL3Device>());
 	if (sampler->setup(desc))
@@ -298,114 +132,19 @@ EGL3Device::createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept
 	return nullptr;
 }
 
-void
-EGL3Device::setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept
+GraphicsFramebufferPtr
+EGL3Device::createRenderTexture(const GraphicsFramebufferDesc& desc) noexcept
 {
-	assert(_glcontext);
-	_glcontext->setGraphicsSampler(sampler, slot);
-}
-
-void
-EGL3Device::setGraphicsSampler(GraphicsSamplerPtr sampler[], std::uint32_t first, std::uint32_t count) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setGraphicsSampler(sampler, first, count);
-}
-
-GraphicsRenderTexturePtr
-EGL3Device::createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept
-{
-	auto texture = std::make_shared<EGL3RenderTexture>();
-	texture->setDevice(this->downcast<EGL3Device>());
-	if (texture->setup(desc))
-		return texture;
+	auto framebuffer = std::make_shared<EGL3Framebuffer>();
+	framebuffer->setDevice(this->downcast<EGL3Device>());
+	if (framebuffer->setup(desc))
+		return framebuffer;
 	return nullptr;
-}
-
-void
-EGL3Device::setRenderTexture(GraphicsRenderTexturePtr target) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setRenderTexture(target);
-}
-
-void
-EGL3Device::setRenderTextureLayer(GraphicsRenderTexturePtr target, std::int32_t layer) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setRenderTextureLayer(target, layer);
-}
-
-void
-EGL3Device::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
-{
-	assert(_glcontext);
-	_glcontext->clearRenderTexture(flags, color, depth, stencil);
-}
-
-void
-EGL3Device::discardRenderTexture() noexcept
-{
-	assert(_glcontext);
-	_glcontext->discardRenderTexture();
-}
-
-void
-EGL3Device::blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, GraphicsRenderTexturePtr dest, const Viewport& v2) noexcept
-{
-	assert(_glcontext);
-	_glcontext->blitRenderTexture(src, v1, dest, v2);
-}
-
-void
-EGL3Device::readRenderTexture(GraphicsRenderTexturePtr source, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
-{
-	assert(_glcontext);
-	_glcontext->readRenderTexture(source, pfd, w, h, data);
-}
-
-GraphicsRenderTexturePtr
-EGL3Device::getRenderTexture() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getRenderTexture();
-}
-
-GraphicsMultiRenderTexturePtr
-EGL3Device::createMultiRenderTexture(const GraphicsMultiRenderTextureDesc& desc) noexcept
-{
-	auto texture = std::make_shared<EGL3MultiRenderTexture>();
-	texture->setDevice(this->downcast<EGL3Device>());
-	if (texture->setup(desc))
-		return texture;
-	return nullptr;
-}
-
-void
-EGL3Device::setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setMultiRenderTexture(target);
-}
-
-void
-EGL3Device::clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
-{
-	assert(_glcontext);
-	_glcontext->clearRenderTexture(flags, color, depth, stencil, i);
-}
-
-GraphicsMultiRenderTexturePtr
-EGL3Device::getMultiRenderTexture() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getMultiRenderTexture();
 }
 
 GraphicsStatePtr
-EGL3Device::createGraphicsState(const GraphicsStateDesc& desc) noexcept
+EGL3Device::createRenderState(const GraphicsStateDesc& desc) noexcept
 {
-	assert(_glcontext);
 	auto state = std::make_shared<EGL3GraphicsState>();
 	state->setDevice(this->downcast<EGL3Device>());
 	if (state->setup(desc))
@@ -413,22 +152,8 @@ EGL3Device::createGraphicsState(const GraphicsStateDesc& desc) noexcept
 	return nullptr;
 }
 
-void
-EGL3Device::setGraphicsState(GraphicsStatePtr state) noexcept
-{
-	assert(_glcontext);
-	_glcontext->setGraphicsState(state);
-}
-
-GraphicsStatePtr
-EGL3Device::getGraphicsState() const noexcept
-{
-	assert(_glcontext);
-	return _glcontext->getGraphicsState();
-}
-
 GraphicsShaderPtr
-EGL3Device::createShader(const ShaderDesc& desc) noexcept
+EGL3Device::createShader(const GraphicsShaderDesc& desc) noexcept
 {
 	auto shader = std::make_shared<EGL3Shader>();
 	shader->setDevice(this->downcast<EGL3Device>());
@@ -438,7 +163,7 @@ EGL3Device::createShader(const ShaderDesc& desc) noexcept
 }
 
 GraphicsProgramPtr
-EGL3Device::createShaderProgram(const ShaderObjectDesc& desc) noexcept
+EGL3Device::createProgram(const GraphicsProgramDesc& desc) noexcept
 {
 	auto program = std::make_shared<EGL3ShaderObject>();
 	program->setDevice(this->downcast<EGL3Device>());
@@ -447,31 +172,506 @@ EGL3Device::createShaderProgram(const ShaderObjectDesc& desc) noexcept
 	return nullptr;
 }
 
-void
-EGL3Device::setGraphicsProgram(GraphicsProgramPtr program) noexcept
+GraphicsPipelinePtr
+EGL3Device::createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept
 {
-	assert(_glcontext);
-	_glcontext->setGraphicsProgram(program);
+	auto pipeline = std::make_shared<EGL3RenderPipeline>();
+	pipeline->setDevice(this->downcast<EGL3Device>());
+	if (pipeline->setup(desc))
+		return pipeline;
+	return nullptr;
 }
 
-GraphicsProgramPtr
-EGL3Device::getGraphicsProgram() const noexcept
+GraphicsDescriptorSetPtr
+EGL3Device::createGraphicsDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept
 {
-	assert(_glcontext);
-	return _glcontext->getGraphicsProgram();
+	auto descriptorSet = std::make_shared<EGL3DescriptorSet>();
+	descriptorSet->setDevice(this->downcast<EGL3Device>());
+	if (descriptorSet->setup(desc))
+		return descriptorSet;
+	return nullptr;
 }
 
-void
-EGL3Device::drawRenderBuffer(const RenderIndirect& renderable) noexcept
+GraphicsDescriptorSetLayoutPtr
+EGL3Device::createGraphicsDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept
 {
-	assert(_glcontext);
-	_glcontext->drawRenderBuffer(renderable);
+	auto descriptorSetLayout = std::make_shared<EGL3DescriptorSetLayout>();
+	descriptorSetLayout->setDevice(this->downcast<EGL3Device>());
+	if (descriptorSetLayout->setup(desc))
+		return descriptorSetLayout;
+	return nullptr;
 }
-void
-EGL3Device::drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept
+
+GraphicsFormat
+EGL3Device::findCompatibleFormat(GraphicsPixelFormatDesc& desc) noexcept
 {
-	assert(_glcontext);
-	_glcontext->drawRenderBuffer(renderable, first, count);
+	auto minR = desc.getMinRedBits();
+	auto maxR = desc.getMaxRedBits();
+	auto minG = desc.getMinGreenBits();
+	auto maxG = desc.getMaxGreenBits();
+	auto minB = desc.getMinBlueBits();
+	auto maxB = desc.getMaxBlueBits();
+	auto minA = desc.getMinAlphaBits();
+	auto maxA = desc.getMaxAlphaBits();
+	auto minDepth = desc.getMinDepthBits();
+	auto maxDepth = desc.getMaxDepthBits();
+	auto minStencil = desc.getMinStencilBits();
+	auto maxStencil = desc.getMaxStencilBits();
+
+	auto type = desc.getFormatType();
+	switch (type)
+	{
+	case GraphicsFormatType::GraphicsFormatTypeRInt:
+	{
+		if (minR <= 32 && maxR >= 32)
+			return GraphicsFormat::GraphicsFormatR32SInt;
+		if (minR <= 16 && maxR >= 16)
+			return GraphicsFormat::GraphicsFormatR16SInt;
+		if (minR <= 8 && maxR >= 8)
+			return GraphicsFormat::GraphicsFormatR8SInt;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRUInt:
+	{
+		if (minR <= 32 && maxR >= 32)
+			return GraphicsFormat::GraphicsFormatR32UInt;
+		if (minR <= 16 && maxR >= 16)
+			return GraphicsFormat::GraphicsFormatR16UInt;
+		if (minR <= 8 && maxR >= 8)
+			return GraphicsFormat::GraphicsFormatR8UInt;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRSRGB:
+	{
+		if (minR <= 8 && maxR >= 8)
+			return GraphicsFormat::GraphicsFormatR8SRGB;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRSNorm:
+	{
+		if (minR <= 16 && maxR >= 16)
+			return GraphicsFormat::GraphicsFormatR16SNorm;
+		if (minR <= 8 && maxR >= 8)
+			return GraphicsFormat::GraphicsFormatR8SNorm;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRUNorm:
+	{
+		if (minR <= 16 && maxR >= 16)
+			return GraphicsFormat::GraphicsFormatR16UNorm;
+		if (minR <= 8 && maxR >= 8)
+			return GraphicsFormat::GraphicsFormatR8UNorm;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRSScaled:
+	{
+		if (minR <= 16 && maxR >= 16)
+			return GraphicsFormat::GraphicsFormatR16SScaled;
+		if (minR <= 8 && maxR >= 8)
+			return GraphicsFormat::GraphicsFormatR8UScaled;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRUScaled:
+	{
+		if (minR <= 16 && maxR >= 16)
+			return GraphicsFormat::GraphicsFormatR16UScaled;
+		if (minR <= 8 && maxR >= 8)
+			return GraphicsFormat::GraphicsFormatR8UScaled;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRFloat:
+	{
+		if (minR <= 32 && maxR >= 32)
+			return GraphicsFormat::GraphicsFormatR32SFloat;
+		if (minR <= 16 && maxR >= 16)
+			return GraphicsFormat::GraphicsFormatR16SFloat;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGInt:
+	{
+		if (minR <= 32 && maxR >= 32 && minG <= 32 && maxG >= 32)
+			return GraphicsFormat::GraphicsFormatR32G32SInt;
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16SInt;
+		if (minR <= 8 && maxR >= 8 && minR <= 8 && maxR >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8SInt;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGUInt:
+	{
+		if (minR <= 32 && maxR >= 32 && minG <= 32 && maxG >= 32)
+			return GraphicsFormat::GraphicsFormatR32G32UInt;
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16UInt;
+		if (minR <= 8 && maxR >= 8 && minR <= 8 && maxR >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8UInt;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGSRGB:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8SRGB;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGSNorm:
+	{
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16SNorm;
+		if (minR <= 8 && maxR >= 8 && minR <= 8 && maxR >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8SNorm;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGUNorm:
+	{
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16UNorm;
+		if (minR <= 8 && maxR >= 8 && minR <= 8 && maxR >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8UNorm;
+		if (minR <= 4 && maxR >= 4 && minR <= 4 && maxR >= 4)
+			return GraphicsFormat::GraphicsFormatR4G4UNormPack8;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGSScaled:
+	{
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16SScaled;
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8SScaled;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGUScaled:
+	{
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16UScaled;
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8UScaled;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGFloat:
+	{
+		if (minR <= 32 && maxR >= 32 && minG <= 32 && maxG >= 32)
+			return GraphicsFormat::GraphicsFormatR32G32SFloat;
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16SFloat;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGBInt:
+	{
+		if (minR <= 32 && maxR >= 32 && minG <= 32 && maxG >= 32 && minB <= 32 && maxB >= 32)
+			return GraphicsFormat::GraphicsFormatR32G32B32SInt;
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16 && minB <= 16 && maxB >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16B16SInt;
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8B8SInt;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGBUInt:
+	{
+		if (minR <= 32 && maxR >= 32 && minG <= 32 && maxG >= 32 && minB <= 32 && maxB >= 32)
+			return GraphicsFormat::GraphicsFormatR32G32B32UInt;
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16 && minB <= 16 && maxB >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16B16UInt;
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8B8UInt;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGBSRGB:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8B8SRGB;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGBSNorm:
+	{
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16 && minB <= 16 && maxB >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16B16SNorm;
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8B8SNorm;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGBUNorm:
+	{
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16 && minB <= 16 && maxB >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16B16UNorm;
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8B8UNorm;
+		if (minR <= 5 && maxR >= 5 && minG <= 6 && maxG >= 6 && minB <= 5 && maxB >= 5)
+			return GraphicsFormat::GraphicsFormatR5G6B5UNormPack16;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGBSScaled:
+	{
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16 && minB <= 16 && maxB >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16B16UScaled;
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8B8SScaled;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGBUScaled:
+	{
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16 && minB <= 16 && maxB >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16B16SScaled;
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8B8UScaled;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGBFloat:
+	{
+		if (minR <= 32 && maxR >= 32 && minG <= 32 && maxG >= 32 && minB <= 32 && maxB >= 32)
+			return GraphicsFormat::GraphicsFormatR32G32B32SFloat;
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16 && minB <= 16 && maxB >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16B16SFloat;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGBAInt:
+	{
+		if (minR <= 32 && maxR >= 32 && minG <= 32 && maxG >= 32 && minB <= 32 && maxB >= 32 && minA <= 32 && maxA >= 32)
+			return GraphicsFormat::GraphicsFormatR32G32B32A32SInt;
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16 && minB <= 16 && maxB >= 16 && minA <= 16 && maxA >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16B16A16SInt;
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8B8A8SInt;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGBAUInt:
+	{
+		if (minR <= 32 && maxR >= 32 && minG <= 32 && maxG >= 32 && minB <= 32 && maxB >= 32 && minA <= 32 && maxA >= 32)
+			return GraphicsFormat::GraphicsFormatR32G32B32A32UInt;
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16 && minB <= 16 && maxB >= 16 && minA <= 16 && maxA >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16B16A16UInt;
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8B8A8UInt;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGBASRGB:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8B8A8SRGB;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGBASNorm:
+	{
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16 && minB <= 16 && maxB >= 16 && minA <= 16 && maxA >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16B16SNorm;
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8B8SNorm;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGBAUNorm:
+	{
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16 && minB <= 16 && maxB >= 16 && minA <= 16 && maxA >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16B16UNorm;
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8B8UNorm;
+		if (minR <= 4 && maxR >= 4 && minG <= 4 && maxG >= 4 && minB <= 4 && maxB >= 4 && minA <= 4 && maxA >= 4)
+			return GraphicsFormat::GraphicsFormatR4G4B4A4UNormPack16;
+		if (minR <= 5 && maxR >= 5 && minG <= 5 && maxG >= 5 && minB <= 5 && maxB >= 5 && minA <= 1 && maxA >= 1)
+			return GraphicsFormat::GraphicsFormatR5G5B5A1UNormPack16;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGBASScaled:
+	{
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16 && minB <= 16 && maxB >= 16 && minA <= 16 && maxA >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16B16SScaled;
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8B8SScaled;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGBAUScaled:
+	{
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16 && minB <= 16 && maxB >= 16 && minA <= 16 && maxA >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16B16A16SScaled;
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatR8G8B8A8SScaled;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeRGBAFloat:
+	{
+		if (minR <= 32 && maxR >= 32 && minG <= 32 && maxG >= 32 && minB <= 32 && maxB >= 32 && minA <= 32 && maxA >= 32)
+			return GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
+		if (minR <= 16 && maxR >= 16 && minG <= 16 && maxG >= 16 && minB <= 16 && maxB >= 16 && minA <= 16 && maxA >= 16)
+			return GraphicsFormat::GraphicsFormatR16G16B16A16SFloat;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeBGRInt:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8)
+			return GraphicsFormat::GraphicsFormatB8G8R8SInt;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeBGRUInt:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8)
+			return GraphicsFormat::GraphicsFormatB8G8R8UInt;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeBGRSRGB:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8)
+			return GraphicsFormat::GraphicsFormatB8G8R8SRGB;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeBGRSNorm:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8)
+			return GraphicsFormat::GraphicsFormatB8G8R8SNorm;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeBGRUNorm:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8)
+			return GraphicsFormat::GraphicsFormatB8G8R8UNorm;
+		if (minR <= 5 && maxR >= 5 && minG <= 6 && maxG >= 6 && minB <= 5 && maxB >= 5)
+			return GraphicsFormat::GraphicsFormatB5G6R5UNormPack16;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeBGRSScaled:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8)
+			return GraphicsFormat::GraphicsFormatB8G8R8SScaled;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeBGRUScaled:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8)
+			return GraphicsFormat::GraphicsFormatB8G8R8UScaled;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeBGRAInt:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatB8G8R8A8SInt;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeBGRAUInt:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatB8G8R8A8UInt;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeBGRASRGB:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatB8G8R8A8SRGB;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeBGRASNorm:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatB8G8R8A8SNorm;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeBGRAUNorm:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatB8G8R8A8SRGB;
+		if (minR <= 5 && maxR >= 5 && minG <= 5 && maxG >= 5 && minB <= 5 && maxB >= 5 && minA <= 1 && maxA >= 1)
+			return GraphicsFormat::GraphicsFormatB5G5R5A1UNormPack16;
+		if (minR <= 4 && maxR >= 4 && minG <= 4 && maxG >= 4 && minB <= 4 && maxB >= 4 && minA <= 4 && maxA >= 4)
+			return GraphicsFormat::GraphicsFormatB4G4R4A4UNormPack16;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeBGRASScaled:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatB8G8R8A8SScaled;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeBGRAUScaled:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatB8G8R8A8UScaled;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeABGRInt:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8)
+			return GraphicsFormat::GraphicsFormatB8G8R8SInt;
+		if (minR <= 10 && maxR >= 10 && minG <= 10 && maxG >= 10 && minB <= 10 && maxB >= 10 && minA <= 2 && maxA >= 2)
+			return GraphicsFormat::GraphicsFormatA2B10G10R10SIntPack32;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeABGRUInt:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatA8B8G8R8UIntPack32;
+		if (minR <= 10 && maxR >= 10 && minG <= 10 && maxG >= 10 && minB <= 10 && maxB >= 10 && minA <= 2 && maxA >= 2)
+			return GraphicsFormat::GraphicsFormatA2B10G10R10UIntPack32;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeABGRSRGB:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatA8B8G8R8SRGBPack32;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeABGRSNorm:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatA8B8G8R8SNormPack32;
+		if (minR <= 10 && maxR >= 10 && minG <= 10 && maxG >= 10 && minB <= 10 && maxB >= 10 && minA <= 2 && maxA >= 2)
+			return GraphicsFormat::GraphicsFormatA2B10G10R10SNormPack32;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeABGRUNorm:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatA8B8G8R8UNormPack32;
+		if (minR <= 10 && maxR >= 10 && minG <= 10 && maxG >= 10 && minB <= 10 && maxB >= 10 && minA <= 2 && maxA >= 2)
+			return GraphicsFormat::GraphicsFormatA2B10G10R10UNormPack32;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeABGRSScaled:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatA8B8G8R8SScaledPack32;
+		if (minR <= 10 && maxR >= 10 && minG <= 10 && maxG >= 10 && minB <= 10 && maxB >= 10 && minA <= 2 && maxA >= 2)
+			return GraphicsFormat::GraphicsFormatA2B10G10R10SScaledPack32;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeABGRUScaled:
+	{
+		if (minR <= 8 && maxR >= 8 && minG <= 8 && maxG >= 8 && minB <= 8 && maxB >= 8 && minA <= 8 && maxA >= 8)
+			return GraphicsFormat::GraphicsFormatA8B8G8R8UScaledPack32;
+		if (minR <= 10 && maxR >= 10 && minG <= 10 && maxG >= 10 && minB <= 10 && maxB >= 10 && minA <= 2 && maxA >= 2)
+			return GraphicsFormat::GraphicsFormatA2B10G10R10UScaledPack32;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeDepth:
+	{
+		if (minDepth <= 32 && maxDepth >= 32)
+			return GraphicsFormat::GraphicsFormatD32_SFLOAT;
+		if (minDepth <= 24 && maxDepth >= 24)
+			return GraphicsFormat::GraphicsFormatX8_D24UNormPack32;
+		if (minDepth <= 16 && maxDepth >= 16)
+			return GraphicsFormat::GraphicsFormatD16UNorm;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeDepthStencil:
+	{
+		if (minDepth <= 32 && maxDepth >= 32 && minStencil <= 8 && maxStencil >= 8)
+			return GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt;
+		if (minDepth <= 24 && maxDepth >= 24 && minStencil <= 8 && maxStencil >= 8)
+			return GraphicsFormat::GraphicsFormatD24UNorm_S8UInt;
+		if (minDepth <= 16 && maxDepth >= 16 && minStencil <= 8 && maxStencil >= 8)
+			return GraphicsFormat::GraphicsFormatD16UNorm_S8UInt;
+	}
+	break;
+	case GraphicsFormatType::GraphicsFormatTypeBGRFloat:
+	case GraphicsFormatType::GraphicsFormatTypeBGRAFloat:
+	case GraphicsFormatType::GraphicsFormatTypeABGRFloat:
+	default:
+		GL_PLATFORM_ASSERT(false, "Can't support format");
+		return GraphicsFormat::GraphicsFormatUndefined;
+	}
+
+	return GraphicsFormat::GraphicsFormatUndefined;
+}
+
+const GraphicsDeviceDesc&
+EGL3Device::getGraphicsDeviceDesc() const noexcept
+{
+	return _deviceDesc;
 }
 
 _NAME_END

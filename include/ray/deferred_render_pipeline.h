@@ -53,17 +53,17 @@ public:
 	void render2DEnvMap(RenderPipeline& pipeline) noexcept;
 	void render3DEnvMap(RenderPipeline& pipeline) noexcept;
 
-	void renderOpaques(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
-	void renderOpaquesDepthLinear(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
-	void renderOpaquesShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
-	void renderOpaquesSpecificShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
+	void renderOpaques(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
+	void renderOpaquesDepthLinear(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
+	void renderOpaquesShading(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
+	void renderOpaquesSpecificShading(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
 
-	void renderTransparent(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
-	void renderTransparentDepthLinear(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
-	void renderTransparentShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
-	void renderTransparentSpecificShading(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
+	void renderTransparent(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
+	void renderTransparentDepthLinear(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
+	void renderTransparentShading(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
+	void renderTransparentSpecificShading(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
 
-	void renderLights(RenderPipeline& pipeline, GraphicsRenderTexturePtr target) noexcept;
+	void renderLights(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
 	void renderSunLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderDirectionalLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderAmbientLight(RenderPipeline& pipeline, const Light& light) noexcept;
@@ -72,7 +72,7 @@ public:
 	void renderHemiSphereLight(RenderPipeline& pipeline, const Light& light) noexcept;
 	void renderAreaLight(RenderPipeline& pipeline, const Light& light) noexcept;
 
-	void copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr src, GraphicsRenderTexturePtr dst, const Viewport& view) noexcept;
+	void copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr src, GraphicsFramebufferPtr dst, const Viewport& view) noexcept;
 
 private:
 	void setupSemantic(RenderPipeline& pipeline);
@@ -166,15 +166,15 @@ private:
 	GraphicsTexturePtr _deferredSwapMap;
 	GraphicsTexturePtr _deferredFinalMap;
 
-	GraphicsRenderTexturePtr _deferredDepthView;
-	GraphicsRenderTexturePtr _deferredDepthLinearView;
-	GraphicsRenderTexturePtr _deferredGraphicView;
-	GraphicsRenderTexturePtr _deferredNormalView;
-	GraphicsRenderTexturePtr _deferredLightView;
-	GraphicsRenderTexturePtr _deferredShadingView;
-	GraphicsRenderTexturePtr _deferredSwapView;
-	GraphicsRenderTexturePtr _deferredFinalView;
-	GraphicsRenderTexturePtr _deferredGraphicViews;
+	GraphicsFramebufferPtr _deferredDepthView;
+	GraphicsFramebufferPtr _deferredDepthLinearView;
+	GraphicsFramebufferPtr _deferredGraphicView;
+	GraphicsFramebufferPtr _deferredNormalView;
+	GraphicsFramebufferPtr _deferredLightView;
+	GraphicsFramebufferPtr _deferredShadingView;
+	GraphicsFramebufferPtr _deferredSwapView;
+	GraphicsFramebufferPtr _deferredFinalView;
+	GraphicsFramebufferPtr _deferredGraphicViews;
 };
 
 _NAME_END

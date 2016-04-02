@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,74 +37,9 @@
 #ifndef _H_EGL2_SHADER_H_
 #define _H_EGL2_SHADER_H_
 
-#include "egl2_canvas.h"
+#include "egl2_types.h"
 
 _NAME_BEGIN
-
-class EGL2ShaderVariant final : public ShaderVariant
-{
-public:
-	EGL2ShaderVariant() noexcept;
-	virtual ~EGL2ShaderVariant() noexcept;
-
-	void setLocation(GLint location) noexcept;
-	GLint getLocation() const noexcept;
-
-	void setType(ShaderVariantType type) noexcept;
-	ShaderVariantType getType() const noexcept;
-
-	void assign(bool value) noexcept;
-	void assign(int value) noexcept;
-	void assign(const int2& value) noexcept;
-	void assign(float value) noexcept;
-	void assign(const float2& value) noexcept;
-	void assign(const float3& value) noexcept;
-	void assign(const float4& value) noexcept;
-	void assign(const float3x3& value) noexcept;
-	void assign(const float4x4& value) noexcept;
-	void assign(const std::vector<float>& value) noexcept;
-	void assign(const std::vector<float2>& value) noexcept;
-	void assign(const std::vector<float3>& value) noexcept;
-	void assign(const std::vector<float4>& value) noexcept;
-
-	bool getBool() const noexcept;
-	int getInt() const noexcept;
-	float getFloat() const noexcept;
-	const int2& getInt2() const noexcept;
-	const float2& getFloat2() const noexcept;
-	const float3& getFloat3() const noexcept;
-	const float4& getFloat4() const noexcept;
-	const float3x3& getFloat3x3() const noexcept;
-	const float4x4& getFloat4x4() const noexcept;
-	const std::vector<float>& getFloatArray() const noexcept;
-	const std::vector<float2>& getFloat2Array() const noexcept;
-	
-private:
-	EGL2ShaderVariant(const EGL2ShaderVariant&) noexcept = delete;
-	EGL2ShaderVariant& operator=(const EGL2ShaderVariant&) noexcept = delete;
-
-private:
-
-	std::string _name;
-
-	union
-	{
-		bool b;
-		int i[4];
-		float f[4];
-		float3x3* m3;
-		float4x4* m4;
-		std::vector<float>* farray;
-		std::vector<float2>* farray2;
-		std::vector<float3>* farray3;
-		std::vector<float4>* farray4;
-	} _value;
-
-	GLint _location;
-
-	ShaderVariantType _type;
-	ShaderVariants _params;
-};
 
 class EGL2ShaderAttribute final : public ShaderAttribute
 {
@@ -127,33 +62,15 @@ public:
 	EGL2ShaderUniform() noexcept;
 	~EGL2ShaderUniform() noexcept;
 
-	void setName(const std::string& name) noexcept;
-	void setType(ShaderVariantType type) noexcept;
-
-	void setLocation(GLint location) noexcept;
-	GLint getLocation() const noexcept;
-
-	bool getBool() const noexcept;
-	int getInt() const noexcept;
-	float getFloat() const noexcept;
-	const int2& getInt2() const noexcept;
-	const float2& getFloat2() const noexcept;
-	const float3& getFloat3() const noexcept;
-	const float4& getFloat4() const noexcept;
-	const float3x3& getFloat3x3() const noexcept;
-	const float4x4& getFloat4x4() const noexcept;
-	const std::vector<float>& getFloatArray() const noexcept;
-	const std::vector<float2>& getFloat2Array() const noexcept;
-
-	GraphicsTexturePtr getTexture() const noexcept;
-	GraphicsSamplerPtr getSampler() const noexcept;
+	void setBindingProgram(GLuint program) noexcept;
+	GLuint getBindingProgram() const noexcept;
 
 private:
 	EGL2ShaderUniform(const EGL2ShaderUniform&) noexcept = delete;
 	EGL2ShaderUniform& operator=(const EGL2ShaderUniform&) noexcept = delete;
 
 private:
-	EGL2ShaderVariant _value;
+	GLuint _program;
 };
 
 class EGL2Shader final : public GraphicsShader
@@ -163,10 +80,12 @@ public:
 	EGL2Shader() noexcept;
 	~EGL2Shader() noexcept;
 
-	bool setup(const ShaderDesc& desc) noexcept;
+	bool setup(const GraphicsShaderDesc& desc) noexcept;
 	void close() noexcept;
 
 	GLuint getInstanceID() const noexcept;
+
+	const GraphicsShaderDesc& getGraphicsShaderDesc() const noexcept;
 
 private:
 	friend class EGL2Device;
@@ -180,6 +99,7 @@ private:
 private:
 	GLuint _instance;
 	GraphicsDeviceWeakPtr _device;
+	GraphicsShaderDesc _shaderDesc;
 };
 
 class EGL2ShaderObject final : public GraphicsProgram
@@ -189,7 +109,7 @@ public:
 	EGL2ShaderObject() noexcept;
 	~EGL2ShaderObject() noexcept;
 
-	bool setup(const ShaderObjectDesc& desc) noexcept;
+	bool setup(const GraphicsProgramDesc& desc) noexcept;
 	void close() noexcept;
 
 	void setActive(bool active) noexcept;
@@ -200,10 +120,11 @@ public:
 	ShaderUniforms& getActiveUniforms() noexcept;
 	ShaderAttributes& getActiveAttributes() noexcept;
 
+	const GraphicsProgramDesc& getGraphicsProgramDesc() const noexcept;
+
 private:
 	void _initActiveAttribute() noexcept;
 	void _initActiveUniform() noexcept;
-	void _updateShaderUniform(ShaderUniformPtr it) noexcept;
 
 private:
 	friend class EGL2Device;
@@ -226,6 +147,7 @@ private:
 	ShaderAttributes  _activeAttributes;
 
 	GraphicsDeviceWeakPtr _device;
+	GraphicsProgramDesc _programDesc;
 };
 
 _NAME_END

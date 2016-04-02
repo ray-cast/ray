@@ -52,7 +52,7 @@ private:
 	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) except;
+	void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) except;
 
 private:
 
@@ -70,7 +70,7 @@ private:
 	MaterialParamPtr _illuminationRadio;
 
 	GraphicsTexturePtr _sampleMap;
-	GraphicsRenderTexturePtr _sampleView;
+	GraphicsFramebufferPtr _sampleView;
 };
 
 _NAME_END

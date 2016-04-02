@@ -41,7 +41,7 @@ _NAME_BEGIN
 GraphicsSwapchainDesc::GraphicsSwapchainDesc() noexcept
 	: _format(GraphicsFormat::GraphicsFormatB8G8R8A8UNorm)
 	, _depthFormat(GraphicsFormat::GraphicsFormatD16UNorm)
-	, _interval(SwapInterval::SwapIntervalVsync)
+	, _interval(GraphicsSwapInterval::GraphicsSwapIntervalVsync)
 	, _imageNums(2)
 	, _window(0)
 	, _width(0)
@@ -90,12 +90,12 @@ GraphicsSwapchainDesc::getHeight() const noexcept
 }
 
 void 
-GraphicsSwapchainDesc::setSwapInterval(SwapInterval interval) noexcept
+GraphicsSwapchainDesc::setSwapInterval(GraphicsSwapInterval interval) noexcept
 {
 	_interval = interval;
 }
 
-SwapInterval 
+GraphicsSwapInterval
 GraphicsSwapchainDesc::getSwapInterval() const noexcept
 {
 	return _interval;

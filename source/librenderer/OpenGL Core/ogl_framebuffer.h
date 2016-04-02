@@ -37,18 +37,18 @@
 #ifndef _H_OGL_FRAMEBUFFER_H_
 #define _H_OGL_FRAMEBUFFER_H_
 
-#include "ogl_canvas.h"
+#include "ogl_types.h"
 
 _NAME_BEGIN
 
-class OGLRenderTexture final : public GraphicsRenderTexture
+class OGLFramebuffer final : public GraphicsFramebuffer
 {
-	__DeclareSubClass(OGLGraphicsRenderTexture, GraphicsRenderTexture)
+	__DeclareSubClass(OGLGraphicsFramebuffer, GraphicsFramebuffer)
 public:
-	OGLRenderTexture() noexcept;
-	~OGLRenderTexture() noexcept;
+	OGLFramebuffer() noexcept;
+	~OGLFramebuffer() noexcept;
 
-	bool setup(const GraphicsRenderTextureDesc& multiFramebufferDesc) noexcept;
+	bool setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept;
 	void close() noexcept;
 
 	void setLayer(GraphicsTexturePtr texture, GLuint layer) noexcept;
@@ -58,7 +58,7 @@ public:
 
 	GLuint getInstanceID() noexcept;
 
-	const GraphicsRenderTextureDesc& getGraphicsRenderTextureDesc() const noexcept;
+	const GraphicsFramebufferDesc& getGraphicsFramebufferDesc() const noexcept;
 
 private:
 	void bindRenderTexture(GraphicsTexturePtr target, GLenum attachment) noexcept;
@@ -69,14 +69,14 @@ private:
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
-	OGLRenderTexture(const OGLRenderTexture&) noexcept = delete;
-	OGLRenderTexture& operator=(const OGLRenderTexture&) noexcept = delete;
+	OGLFramebuffer(const OGLFramebuffer&) noexcept = delete;
+	OGLFramebuffer& operator=(const OGLFramebuffer&) noexcept = delete;
 
 private:
 	GLuint _fbo;
 
 	GraphicsDeviceWeakPtr _device;
-	GraphicsRenderTextureDesc _framebufferDesc;
+	GraphicsFramebufferDesc _framebufferDesc;
 };
 
 _NAME_END

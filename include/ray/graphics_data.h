@@ -41,33 +41,6 @@
 
 _NAME_BEGIN
 
-class EXPORT UsageFlags
-{
-public:
-	enum
-	{
-		MAP_READ_BIT = 1 << 0,
-		MAP_WRITE_BIT = 1 << 1,
-		MAP_PERSISTENT_BIT = 1 << 2,
-		MAP_COHERENT_BIT = 1 << 3,
-		MAP_FLUSH_EXPLICIT_BIT = 1 << 6,
-		DYNAMIC_STORAGE_BIT = 1 << 4,
-		CLIENT_STORAGE_BIT = 1 << 5,
-		IMMUTABLE_STORAGE = 1 << 7
-	};
-};
-
-class EXPORT AccessFlags
-{
-public:
-	enum
-	{
-		MAP_READ_BIT = 1 << 0,
-		MAP_WRITE_BIT = 1 << 1,
-		MAP_UNSYNCHRONIZED_BIT = 1 << 2
-	};
-};
-
 class EXPORT GraphicsDataDesc
 {
 public:

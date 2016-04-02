@@ -1,13 +1,12 @@
 PROJECT(glew C)
 SET(GLEW_NAME "glew")
 
-IF(BUILD_GLEW_SHARED)
+OPTION(GLEW_BUILD_SHARED_LIBS "on for use off for ignore" OFF)
+IF(GLEW_BUILD_SHARED_LIBS)
     ADD_DEFINITIONS(-DGLEW_BUILD)
 ELSE()
     ADD_DEFINITIONS(-DGLEW_STATIC)
 ENDIF()
-
-OPTION(GLEW_BUILD_SHARED_LIBS "on for use off for ignore" OFF)
 
 # Platform specific differences:
 IF(APPLE)

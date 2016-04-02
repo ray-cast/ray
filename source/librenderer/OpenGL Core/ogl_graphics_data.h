@@ -37,33 +37,47 @@
 #ifndef _H_OGL_GRAPHICS_DATA_H_
 #define _H_OGL_GRAPHICS_DATA_H_
 
-#include "ogl_graphics_buf.h"
+#include "ogl_types.h"
 
 _NAME_BEGIN
 
-class OGLGraphicsData : public GraphicsData
+class OGLGraphicsData final : public GraphicsData
 {
-	__DeclareSubInterface(OGLGraphicsData, GraphicsData)
+	__DeclareSubClass(OGLGraphicsData, GraphicsData)
 public:
-	OGLGraphicsData(OGLGraphicsBuf* buf) noexcept;
+	OGLGraphicsData() noexcept;
 	virtual ~OGLGraphicsData() noexcept;
 
-	GLsizeiptr size() const noexcept;
+	bool setup(const GraphicsDataDesc& desc) noexcept;
+	void close() noexcept;
 
-	const GraphicsDataDesc& getGraphicsDataDesc() const noexcept;
+	bool is_open() const noexcept;
+
+	GLsizeiptr size() const noexcept;
 
 	void resize(const char* data, GLsizeiptr datasize) noexcept;
 
 	int flush() noexcept;
 	int flush(GLintptr offset, GLsizeiptr cnt) noexcept;
 
+	GLsizeiptr read(char* data, GLsizeiptr cnt) noexcept;
+	GLsizeiptr write(const char* data, GLsizeiptr cnt) noexcept;
+
+	streamoff seekg(GLintptr pos, ios_base::seekdir dir) noexcept;
+	streamoff tellg() noexcept;
+
 	void* map(std::uint32_t access) noexcept;
 	void* map(GLintptr offset, GLsizeiptr cnt, std::uint32_t access) noexcept;
 	void unmap() noexcept;
+	bool isMapping() const noexcept;
 
 	GLuint getInstanceID() const noexcept;
 
-protected:
+	void bind() noexcept;
+
+	const GraphicsDataDesc& getGraphicsDataDesc() const noexcept;
+
+private:
 	friend class OGLDevice;
 	void setDevice(GraphicsDevicePtr device) noexcept;
 	GraphicsDevicePtr getDevice() noexcept;
@@ -73,7 +87,14 @@ private:
 	OGLGraphicsData& operator=(const OGLGraphicsData&) noexcept = delete;
 
 private:
-	OGLGraphicsBuf* _buf;
+	GLuint _buffer;
+	GLenum _target;
+	GLvoid* _data;
+	GLsizeiptr _dataSize;
+	GLintptr _dataOffset;
+	GLboolean _isMapping;
+	std::uint32_t _usage;
+	GraphicsDataDesc _desc;
 	GraphicsDeviceWeakPtr _device;
 };
 

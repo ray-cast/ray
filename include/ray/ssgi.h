@@ -65,18 +65,18 @@ public:
 
 private:
 
-	void computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest, const float2& direction) noexcept;
-	void shading(RenderPipeline& pipeline, GraphicsTexturePtr color, GraphicsRenderTexturePtr ao) noexcept;
+	void computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	void blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	void blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	void blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, const float2& direction) noexcept;
+	void shading(RenderPipeline& pipeline, GraphicsTexturePtr color, GraphicsFramebufferPtr ao) noexcept;
 
 private:
 
 	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
 private:
 
@@ -108,8 +108,8 @@ private:
 	GraphicsTexturePtr _texAmbientMap;
 	GraphicsTexturePtr _texBlurMap;
 
-	GraphicsRenderTexturePtr _texAmbientView;
-	GraphicsRenderTexturePtr _texBlurView;
+	GraphicsFramebufferPtr _texAmbientView;
+	GraphicsFramebufferPtr _texBlurView;
 };
 
 _NAME_END

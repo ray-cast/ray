@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -38,12 +38,17 @@
 #define _H_EGL2_TYPES_H_
 
 #include <ray/graphics_device.h>
+#include <ray/graphics_swapchain.h>
 #include <ray/graphics_context.h>
+#include <ray/graphics_data.h>
 #include <ray/graphics_state.h>
 #include <ray/graphics_sampler.h>
 #include <ray/graphics_texture.h>
-#include <ray/graphics_view.h>
+#include <ray/graphics_framebuffer.h>
 #include <ray/graphics_shader.h>
+#include <ray/graphics_pipeline.h>
+#include <ray/graphics_descriptor.h>
+#include <ray/graphics_input_layout.h>
 
 #include <EGL\egl.h>
 #include <GLES2\gl2.h>
@@ -116,6 +121,15 @@ _NAME_BEGIN
 #	define GL_PLATFORM_LOG(format, ...)
 #endif
 
+#if _DEBUG
+#	if defined(_VISUAL_STUDIO_)
+#		pragma warning(disable : 4127)
+#	endif
+#	define GL_PLATFORM_ASSERT(expr, format) if (!(expr)) { EGL2Check::debugOutput(format); assert(expr); }
+#else
+#	define GL_PLATFORM_ASSERT(expr, format)
+#endif
+
 struct GPUfbconfig
 {
 	int redSize;
@@ -150,49 +164,50 @@ struct GPUctxconfig
 	EGLContext share;
 };
 
-typedef std::shared_ptr<class EGL2Canvas> EGL2CanvasPtr;
+typedef std::shared_ptr<class EGL2Swapchain> EGL2SwapchainPtr;
 typedef std::shared_ptr<class EGL2Device> EGL2DevicePtr;
 typedef std::shared_ptr<class EGL2DeviceContext> EGL2DeviceContextPtr;
-typedef std::shared_ptr<class EGL2RenderTexture> EGL2RenderTexturePtr;
-typedef std::shared_ptr<class EGL2MultiRenderTexture> EGL2MultiRenderTexturePtr;
+typedef std::shared_ptr<class EGL2Framebuffer> EGL2FramebufferPtr;
 typedef std::shared_ptr<class EGL2Shader> EGL2ShaderPtr;
 typedef std::shared_ptr<class EGL2ShaderObject> EGL2ShaderObjectPtr;
-typedef std::shared_ptr<class EGL2VertexBuffer> EGL2VertexBufferPtr;
-typedef std::shared_ptr<class EGL2IndexBuffer> EGL2IndexBufferPtr;
-typedef std::shared_ptr<class EGL2GraphicsLayout> EGL2GraphicsLayoutPtr;
-typedef std::shared_ptr<class EGL2DrawIndirectBuffer> EGL2DrawIndirectBufferPtr;
+typedef std::shared_ptr<class EGL2GraphicsData> EGL2GraphicsDataPtr;
+typedef std::shared_ptr<class EGL2InputLayout> EGL2InputLayoutPtr;
 typedef std::shared_ptr<class EGL2GraphicsState> EGL2GraphicsStatePtr;
 typedef std::shared_ptr<class EGL2Texture> EGL2TexturePtr;
 typedef std::shared_ptr<class EGL2Sampler> EGL2SamplerPtr;
+typedef std::shared_ptr<class EGL2RenderPipeline> EGL2RenderPipelinePtr;
+typedef std::shared_ptr<class EGL2DescriptorSet> EGL2DescriptorSetPtr;
+typedef std::shared_ptr<class EGL2DescriptorSetLayout> EGL2DescriptorSetLayoutPtr;
 
 typedef std::vector<EGL2ShaderPtr> EGL2Shaders;
 
 class EGL2Types
 {
 public:
+	static GLenum asVertexType(GraphicsVertexType type) noexcept;
+	static GLenum asVertexFormat(GraphicsFormat format) noexcept;
+	static GLenum asIndexType(GraphicsIndexType type) noexcept;
+	static GLenum asShaderType(GraphicsShaderStage type) noexcept;
+	static GLenum asTextureTarget(GraphicsTextureDim mapping, bool multisampler) noexcept;
+	static GLenum asTextureFormat(GraphicsFormat format) noexcept;
+	static GLenum asTextureType(GraphicsFormat format) noexcept;
+	static GLenum asTextureInternalFormat(GraphicsFormat format) noexcept;
+	static GLenum asCompareFunction(GraphicsCompareFunc func) noexcept;
+	static GLenum asBlendFactor(GraphicsBlendFactor func) noexcept;
+	static GLenum asBlendOperation(GraphicsBlendOp op) noexcept;
+	static GLenum asCullMode(GraphicsCullMode mode) noexcept;
+	static GLenum asFillMode(GraphicsPolygonMode mode) noexcept;
+	static GLenum asStencilOperation(GraphicsStencilOp stencilop) noexcept;
+	static GLenum asSamplerWrap(GraphicsSamplerWrap wrap) noexcept;
+	static GLenum asSamplerFilter(GraphicsSamplerFilter filter) noexcept;
 
-	static GLenum asVertexType(VertexType type) noexcept;
-	static GLenum asVertexFormat(VertexFormat format) noexcept;
-	static GLenum asIndexType(IndexType type) noexcept;
-	static GLenum asShaderType(ShaderType type) noexcept;
-	static GLenum asTarget(TextureDim mapping, bool multisampler) noexcept;
-	static GLenum asFormat(TextureFormat format) noexcept;
-	static GLenum asType(TextureFormat format) noexcept;
-	static GLint  asInternalformat(TextureFormat format) noexcept;
-	static GLenum asCompareFunction(CompareFunction func) noexcept;
-	static GLenum asBlendFactor(BlendFactor func) noexcept;
-	static GLenum asBlendOperation(BlendOperation op) noexcept;
-	static GLenum asCullMode(CullMode mode) noexcept;
-	static GLenum asFillMode(FillMode mode) noexcept;
-	static GLenum asStencilOperation(StencilOperation stencilop) noexcept;
-	static GLenum asSamplerWrap(SamplerWrap wrap) noexcept;
-	static GLenum asSamplerFilter(SamplerFilter filter) noexcept;
+	static GLboolean isCompressedTexture(GraphicsFormat format) noexcept;
 };
 
 class EGL2Check
 {
 public:
-	static void checkError() noexcept;
+	static bool checkError() noexcept;
 
 	static void debugOutput(const std::string& message, ...) noexcept;
 };

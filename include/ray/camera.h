@@ -101,8 +101,8 @@ public:
 	void setCameraOrder(CameraOrder order) noexcept;
 	CameraOrder getCameraOrder() const noexcept;
 
-	void setRenderTexture(GraphicsRenderTexturePtr texture) noexcept;
-	GraphicsRenderTexturePtr getRenderTexture() const noexcept;
+	void setRenderTexture(GraphicsFramebufferPtr texture) noexcept;
+	GraphicsFramebufferPtr getRenderTexture() const noexcept;
 
 	void setGraphicsContext(GraphicsContextPtr window) noexcept;
 	GraphicsContextPtr getGraphicsContext() const noexcept;
@@ -139,7 +139,7 @@ private:
 	CameraRender _cameraRender;
 
 	GraphicsContextPtr _graphicsContext;
-	GraphicsRenderTexturePtr _renderTexture;
+	GraphicsFramebufferPtr _renderTexture;
 
 	mutable bool _needUpdateProject;
 	mutable bool _needUpdateViewProject;

@@ -218,9 +218,33 @@ VertexComponent::getVertexSize(GraphicsFormat format) noexcept
 	{
 	case GraphicsFormat::GraphicsFormatR8G8B8UNorm:
 	case GraphicsFormat::GraphicsFormatR8G8B8SNorm:
+	case GraphicsFormat::GraphicsFormatR8G8B8UScaled:
+	case GraphicsFormat::GraphicsFormatR8G8B8SScaled:
+	case GraphicsFormat::GraphicsFormatR8G8B8UInt:
+	case GraphicsFormat::GraphicsFormatR8G8B8SInt:
+	case GraphicsFormat::GraphicsFormatR8G8B8SRGB:
+	case GraphicsFormat::GraphicsFormatB8G8R8UNorm:
+	case GraphicsFormat::GraphicsFormatB8G8R8SNorm:
+	case GraphicsFormat::GraphicsFormatB8G8R8UScaled:
+	case GraphicsFormat::GraphicsFormatB8G8R8SScaled:
+	case GraphicsFormat::GraphicsFormatB8G8R8UInt:
+	case GraphicsFormat::GraphicsFormatB8G8R8SInt:
+	case GraphicsFormat::GraphicsFormatB8G8R8SRGB:
 		return 3;
 	case GraphicsFormat::GraphicsFormatR8G8B8A8UNorm:
 	case GraphicsFormat::GraphicsFormatR8G8B8A8SNorm:
+	case GraphicsFormat::GraphicsFormatR8G8B8A8UScaled:
+	case GraphicsFormat::GraphicsFormatR8G8B8A8SScaled:
+	case GraphicsFormat::GraphicsFormatR8G8B8A8UInt:
+	case GraphicsFormat::GraphicsFormatR8G8B8A8SInt:
+	case GraphicsFormat::GraphicsFormatR8G8B8A8SRGB:
+	case GraphicsFormat::GraphicsFormatB8G8R8A8UNorm:
+	case GraphicsFormat::GraphicsFormatB8G8R8A8SNorm:
+	case GraphicsFormat::GraphicsFormatB8G8R8A8UScaled:
+	case GraphicsFormat::GraphicsFormatB8G8R8A8SScaled:
+	case GraphicsFormat::GraphicsFormatB8G8R8A8UInt:
+	case GraphicsFormat::GraphicsFormatB8G8R8A8SInt:
+	case GraphicsFormat::GraphicsFormatB8G8R8A8SRGB:
 	case GraphicsFormat::GraphicsFormatR16G16SFloat:
 	case GraphicsFormat::GraphicsFormatR16G16SInt:
 	case GraphicsFormat::GraphicsFormatR16G16UInt:
@@ -313,9 +337,9 @@ GraphicsInputLayoutDesc::getIndexSize() const noexcept
 {
 	if (_indexType == GraphicsIndexType::GraphicsIndexTypeNone)
 		return 0;
-	else if (_indexType == GraphicsIndexType::GraphicsIndexTypeUint16)
+	else if (_indexType == GraphicsIndexType::GraphicsIndexTypeUInt16)
 		return sizeof(std::uint16_t);
-	else if (_indexType == GraphicsIndexType::GraphicsIndexTypeUint32)
+	else if (_indexType == GraphicsIndexType::GraphicsIndexTypeUInt32)
 		return sizeof(std::uint32_t);
 	else
 	{

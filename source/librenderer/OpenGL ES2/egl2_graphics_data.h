@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,31 +37,43 @@
 #ifndef _H_EGL2_GRAPHICS_DATA_H_
 #define _H_EGL2_GRAPHICS_DATA_H_
 
-#include "egl2_graphics_buf.h"
+#include "egl2_types.h"
 
 _NAME_BEGIN
 
-class EGL2GraphicsData : public GraphicsData
+class EGL2GraphicsData final : public GraphicsData
 {
-	__DeclareSubInterface(OGLGraphicsData, GraphicsData)
+	__DeclareSubClass(EGL2GraphicsData, GraphicsData)
 public:
-	EGL2GraphicsData(EGL2GraphicsBuf* buf) noexcept;
-	virtual ~EGL2GraphicsData() noexcept;
+	EGL2GraphicsData() noexcept;
+	~EGL2GraphicsData() noexcept;
+
+	bool setup(const GraphicsDataDesc& desc) noexcept;
+	void close() noexcept;
+
+	bool is_open() const noexcept;
 
 	GLsizeiptr size() const noexcept;
-
-	void getGraphicsDataDesc(GraphicsDataDesc& desc) const noexcept;
 
 	void resize(const char* data, GLsizeiptr datasize) noexcept;
 
 	int flush() noexcept;
 	int flush(GLintptr offset, GLsizeiptr cnt) noexcept;
 
+	GLsizeiptr read(char* data, GLsizeiptr cnt) noexcept;
+	GLsizeiptr write(const char* data, GLsizeiptr cnt) noexcept;
+
+	streamoff seekg(GLintptr pos, ios_base::seekdir dir) noexcept;
+	streamoff tellg() noexcept;
+
 	void* map(std::uint32_t access) noexcept;
 	void* map(GLintptr offset, GLsizeiptr cnt, std::uint32_t access) noexcept;
 	void unmap() noexcept;
+	bool isMapping() const noexcept;
 
-	GLuint getInstanceID() const noexcept;
+	GLuint getInstanceID() noexcept;
+
+	void bind() noexcept;
 
 	const GraphicsDataDesc& getGraphicsDataDesc() const noexcept;
 
@@ -75,7 +87,14 @@ private:
 	EGL2GraphicsData& operator=(const EGL2GraphicsData&) noexcept = delete;
 
 private:
-	EGL2GraphicsBuf* _buf;
+	GLuint _buffer;
+	GLenum _target;
+	GLvoid* _data;
+	GLsizeiptr _dataSize;
+	GLintptr _dataOffset;
+	GLboolean _isMapping;
+	std::uint32_t _usage;
+	GraphicsDataDesc _desc;
 	GraphicsDeviceWeakPtr _device;
 };
 

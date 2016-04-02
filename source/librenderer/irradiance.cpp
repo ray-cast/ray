@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/irradiance.h>
 
-#include <ray/graphics_view.h>
+#include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 
 #define PARABOLOID_SAMPLES 64
@@ -80,12 +80,12 @@ EnvironmentIrradiance::EnvironmentIrradiance(RenderPipeline& pipeline) except
 	_paraboloidBackMap = pipeline.createTexture(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16SFloat);
 	_irradianceSHCoefficientsMap = pipeline.createTexture(NUM_ORDER_P2, NUM_ORDER_P2, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16SFloat);
 
-	GraphicsRenderTextureDesc paraboloidDualDesc;
+	GraphicsFramebufferDesc paraboloidDualDesc;
 	paraboloidDualDesc.attach(_paraboloidFrontMap);
 	paraboloidDualDesc.attach(_paraboloidBackMap);
 	_paraboloidDualViews = pipeline.createRenderTexture(paraboloidDualDesc);
 
-	GraphicsRenderTextureDesc irradianceSHCoefficientsDesc;
+	GraphicsFramebufferDesc irradianceSHCoefficientsDesc;
 	irradianceSHCoefficientsDesc.attach(_paraboloidFrontMap);
 	irradianceSHCoefficientsDesc.attach(_paraboloidBackMap);
 	_irradianceSHCoefficientsView = pipeline.createRenderTexture(irradianceSHCoefficientsDesc);
@@ -122,12 +122,12 @@ EnvironmentIrradiance::renderParaboloidEnvMap(RenderPipeline& pipeline, Graphics
 }
 
 void
-EnvironmentIrradiance::renderProjectParaboloidToSH(RenderPipeline& pipeline, GraphicsRenderTexturePtr evalSHFunction, GraphicsRenderTexturePtr dest) noexcept
+EnvironmentIrradiance::renderProjectParaboloidToSH(RenderPipeline& pipeline, GraphicsFramebufferPtr evalSHFunction, GraphicsFramebufferPtr dest) noexcept
 {
 }
 
 void
-EnvironmentIrradiance::renderEvaluateConvolvedSH(RenderPipeline& pipeline, GraphicsRenderTexturePtr evalSHFunction, GraphicsRenderTexturePtr dest) noexcept
+EnvironmentIrradiance::renderEvaluateConvolvedSH(RenderPipeline& pipeline, GraphicsFramebufferPtr evalSHFunction, GraphicsFramebufferPtr dest) noexcept
 {
 }
 

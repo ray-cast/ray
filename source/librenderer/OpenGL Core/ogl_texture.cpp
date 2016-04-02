@@ -157,7 +157,7 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	_target = target;
 	_textureDesc = textureDesc;
 
-	return true;
+	return OGLCheck::checkError();
 }
 
 void
@@ -241,7 +241,7 @@ OGLTexture::applySamplerAnis(GraphicsSamplerAnis anis) noexcept
 	{
 		if (anis != GraphicsSamplerAnis::GraphicsSamplerAnis0)
 		{
-			GL_PLATFORM_LOG("Invalid SamplerAnis");
+			GL_PLATFORM_LOG("Can't support anisotropy format");
 			return false;
 		}
 	}

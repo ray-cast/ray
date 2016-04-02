@@ -509,27 +509,27 @@ GraphicsUniform::getInt4() const noexcept
 }
 
 uint
-GraphicsUniform::getUint() const noexcept
+GraphicsUniform::getUInt() const noexcept
 {
-	return _variant.getUint();
+	return _variant.getUInt();
 }
 
 const uint2&
-GraphicsUniform::getUint2() const noexcept
+GraphicsUniform::getUInt2() const noexcept
 {
-	return _variant.getUint2();
+	return _variant.getUInt2();
 }
 
 const uint3&
-GraphicsUniform::getUint3() const noexcept
+GraphicsUniform::getUInt3() const noexcept
 {
-	return _variant.getUint3();
+	return _variant.getUInt3();
 }
 
 const uint4&
-GraphicsUniform::getUint4() const noexcept
+GraphicsUniform::getUInt4() const noexcept
 {
-	return _variant.getUint4();
+	return _variant.getUInt4();
 }
 
 float
@@ -593,27 +593,27 @@ GraphicsUniform::getInt4Array() const noexcept
 }
 
 const std::vector<uint1>&
-GraphicsUniform::getUintArray() const noexcept
+GraphicsUniform::getUIntArray() const noexcept
 {
-	return _variant.getUintArray();
+	return _variant.getUIntArray();
 }
 
 const std::vector<uint2>&
-GraphicsUniform::getUint2Array() const noexcept
+GraphicsUniform::getUInt2Array() const noexcept
 {
-	return _variant.getUint2Array();
+	return _variant.getUInt2Array();
 }
 
 const std::vector<uint3>&
-GraphicsUniform::getUint3Array() const noexcept
+GraphicsUniform::getUInt3Array() const noexcept
 {
-	return _variant.getUint3Array();
+	return _variant.getUInt3Array();
 }
 
 const std::vector<uint4>&
-GraphicsUniform::getUint4Array() const noexcept
+GraphicsUniform::getUInt4Array() const noexcept
 {
-	return _variant.getUint4Array();
+	return _variant.getUInt4Array();
 }
 
 const std::vector<float1>&

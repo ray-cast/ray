@@ -112,7 +112,7 @@ private:
 	CameraPtr _shadowCamera;
 	
 	mutable GraphicsTexturePtr _shaodwMap;
-	mutable GraphicsRenderTexturePtr _shaodwView;
+	mutable GraphicsFramebufferPtr _shaodwView;
 
 	RenderSceneWeakPtr _renderScene;
 };

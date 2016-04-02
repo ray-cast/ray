@@ -79,13 +79,13 @@ public:
 	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
 	void unmapBuffer(GraphicsDataPtr& data) noexcept;
 
-	void setRenderTexture(GraphicsRenderTexturePtr target) noexcept;
+	void setRenderTexture(GraphicsFramebufferPtr target) noexcept;
 	void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
 	void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
 	void discardRenderTexture() noexcept;
-	void blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, GraphicsRenderTexturePtr dest, const Viewport& v2) noexcept;
-	void readRenderTexture(GraphicsRenderTexturePtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
-	GraphicsRenderTexturePtr getRenderTexture() const noexcept;
+	void blitRenderTexture(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept;
+	void readRenderTexture(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	GraphicsFramebufferPtr getRenderTexture() const noexcept;
 
 	void drawRenderBuffer(const GraphicsIndirect& renderable) noexcept;
 	void drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept;
@@ -110,7 +110,7 @@ private:
 private:
 	bool _initOpenGL;
 
-	OGLCanvasPtr _glcontext;
+	OGLSwapchainPtr _glcontext;
 
 	Vector4 _clearColor;
 	GLfloat _clearDepth;
@@ -119,7 +119,7 @@ private:
 	GLuint _maxViewports;
 	GLuint _maxTextureUnits;
 
-	OGLRenderTexturePtr _renderTexture;
+	OGLFramebufferPtr _renderTexture;
 
 	OGLShaderObjectPtr _shaderObject;
 
@@ -141,8 +141,8 @@ private:
 	bool _needUpdateVbo;
 	bool _needUpdateIbo;
 
-	OGLVertexBufferPtr _vbo;
-	OGLIndexBufferPtr _ibo;
+	OGLGraphicsDataPtr _vbo;
+	OGLGraphicsDataPtr _ibo;
 	OGLInputLayoutPtr _inputLayout;
 
 	std::vector<Viewport> _viewport;

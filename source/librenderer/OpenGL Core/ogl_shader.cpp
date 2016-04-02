@@ -109,7 +109,7 @@ OGLShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 
 	if (shaderDesc.getByteCodes().empty())
 	{
-		GL_PLATFORM_LOG("This shader code cannot be null");
+		GL_PLATFORM_LOG("This shader code cannot be null.");
 		return false;
 	}
 
@@ -126,19 +126,21 @@ OGLShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 
 	if (!TranslateHLSLFromMem(shaderDesc.getByteCodes().data(), flags, GLLang::LANG_DEFAULT, 0, &dependency, &shader))
 	{
-		GL_PLATFORM_LOG("Can't conv bytecodes to glsl");
+		GL_PLATFORM_LOG("Can't conv bytecodes to glsl.");
 		return false;
 	}
 
 	_instance = glCreateShader(shaderType);
 	if (_instance == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glCreateShader() fail");
+		GL_PLATFORM_LOG("glCreateShader() fail.");
 		return false;
 	}
 
 	glShaderSource(_instance, 1, &shader.sourceCode, 0);
 	glCompileShader(_instance);
+
+	FreeGLSLShader(&shader);
 
 	GLint result = GL_FALSE;
 	glGetShaderiv(_instance, GL_COMPILE_STATUS, &result);

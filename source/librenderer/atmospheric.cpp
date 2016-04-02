@@ -123,7 +123,7 @@ Atmospheric::onDeactivate(RenderPipeline& pipeline) noexcept
 }
 
 void
-Atmospheric::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+Atmospheric::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	pipeline.setRenderTexture(dest);
 

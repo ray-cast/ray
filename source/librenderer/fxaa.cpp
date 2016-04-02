@@ -73,7 +73,7 @@ FXAA::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-FXAA::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+FXAA::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	auto& textureDesc = source->getGraphicsTextureDesc();
 	_texelStep->assign(float2(1.0f / textureDesc.getWidth(), 1.0f / textureDesc.getHeight()));

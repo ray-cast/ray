@@ -37,7 +37,7 @@
 #ifndef _H_OGL_DEVICE_H_
 #define _H_OGL_DEVICE_H_
 
-#include "ogl_canvas.h"
+#include <ray/graphics_device.h>
 
 _NAME_BEGIN
 
@@ -48,26 +48,33 @@ public:
 	OGLDevice() noexcept;
 	virtual ~OGLDevice() noexcept;
 
-	virtual bool open(WindHandle hwnd) noexcept;
-	virtual void close() noexcept;
+	bool setup(const GraphicsDeviceDesc& desc) noexcept;
+	void close() noexcept;
 
-	virtual GraphicsSwapchainPtr createGraphicsSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
-	virtual GraphicsContextPtr createGraphicsContext(const GraphicsContextDesc& desc) noexcept;
-	virtual GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
-	virtual GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
-	virtual GraphicsTexturePtr createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept;
-	virtual GraphicsSamplerPtr createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept;
-	virtual GraphicsRenderTexturePtr createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept;
-	virtual GraphicsShaderPtr createShader(const GraphicsShaderDesc& desc) noexcept;
-	virtual GraphicsProgramPtr createProgram(const GraphicsProgramDesc& desc) noexcept;
-	virtual GraphicsStatePtr createRenderState(const GraphicsStateDesc& desc) noexcept;
-	virtual GraphicsPipelinePtr createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept;
-	virtual GraphicsDescriptorSetPtr createGraphicsDescriptorSetPtr(const GraphicsDescriptorSetDesc& desc) noexcept;
-	virtual GraphicsDescriptorSetLayoutPtr createGraphicsDescriptorSetLayoutPtr(const GraphicsDescriptorSetLayoutDesc& desc) noexcept;
+	GraphicsSwapchainPtr createGraphicsSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
+	GraphicsContextPtr createGraphicsContext(const GraphicsContextDesc& desc) noexcept;
+	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
+	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
+	GraphicsTexturePtr createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept;
+	GraphicsSamplerPtr createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept;
+	GraphicsFramebufferPtr createRenderTexture(const GraphicsFramebufferDesc& desc) noexcept;
+	GraphicsShaderPtr createShader(const GraphicsShaderDesc& desc) noexcept;
+	GraphicsProgramPtr createProgram(const GraphicsProgramDesc& desc) noexcept;
+	GraphicsStatePtr createRenderState(const GraphicsStateDesc& desc) noexcept;
+	GraphicsPipelinePtr createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept;
+	GraphicsDescriptorSetPtr createGraphicsDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept;
+	GraphicsDescriptorSetLayoutPtr createGraphicsDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept;
+
+	GraphicsFormat findCompatibleFormat(GraphicsPixelFormatDesc& desc) noexcept;
+
+	const GraphicsDeviceDesc& getGraphicsDeviceDesc() const noexcept;
 
 private:
 	OGLDevice(const OGLDevice&) noexcept = delete;
 	OGLDevice& operator=(const OGLDevice&) noexcept = delete;
+
+private:
+	GraphicsDeviceDesc _deviceDesc;
 };
 
 _NAME_END

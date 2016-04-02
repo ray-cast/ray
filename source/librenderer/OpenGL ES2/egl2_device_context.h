@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,7 +37,7 @@
 #ifndef _H_EGL2_DEVICE_CONTEXT_H_
 #define _H_EGL2_DEVICE_CONTEXT_H_
 
-#include "egl2_canvas.h"
+#include "egl2_types.h"
 
 _NAME_BEGIN
 
@@ -48,62 +48,49 @@ public:
 	EGL2DeviceContext() noexcept;
 	~EGL2DeviceContext() noexcept;
 
-	bool open(WindHandle hwnd) noexcept;
+	bool setup(const GraphicsContextDesc& desc) noexcept;
 	void close() noexcept;
-
-	void setActive(bool active) noexcept;
-	bool getActive() const noexcept;
 
 	void renderBegin() noexcept;
 	void renderEnd() noexcept;
 
-	void setWireframeMode(bool enable) noexcept;
-	bool getWireframeMode() const noexcept;
-
 	void setViewport(const Viewport& viewport, std::size_t i) noexcept;
 	const Viewport& getViewport(std::size_t i) const noexcept;
 
-	void setSwapInterval(SwapInterval interval) noexcept;
-	SwapInterval getSwapInterval() const noexcept;
-
-	void setGraphicsLayout(GraphicsLayoutPtr data) noexcept;
-	GraphicsLayoutPtr getGraphicsLayout() const noexcept;
-
-	bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;
-	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
-	void unmapBuffer(GraphicsDataPtr& data) noexcept;
-
-	void setIndexBufferData(GraphicsDataPtr data) noexcept;
-	GraphicsDataPtr getIndexBufferData() const noexcept;
+	void setScissor(const Scissor& scissor, std::size_t i) noexcept;
+	const Scissor& getScissor(std::size_t i) const noexcept;
 
 	void setVertexBufferData(GraphicsDataPtr data) noexcept;
 	GraphicsDataPtr getVertexBufferData() const noexcept;
 
-	void setGraphicsTexture(GraphicsTexturePtr texture, std::uint32_t slot) noexcept;
-	void setGraphicsTexture(GraphicsTexturePtr textures[], std::uint32_t first, std::uint32_t count) noexcept;
+	void setIndexBufferData(GraphicsDataPtr data) noexcept;
+	GraphicsDataPtr getIndexBufferData() const noexcept;
 
-	void setGraphicsSampler(GraphicsSamplerPtr sampler, std::uint32_t slot) noexcept;
-	void setGraphicsSampler(GraphicsSamplerPtr samplers[], std::uint32_t first, std::uint32_t count) noexcept;
+	void setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept;
+	GraphicsPipelinePtr getRenderPipeline() const noexcept;
 
-	void setRenderTexture(GraphicsRenderTexturePtr target) noexcept;
-	void setRenderTextureLayer(GraphicsRenderTexturePtr target, std::int32_t layer) noexcept;
-	void setMultiRenderTexture(GraphicsMultiRenderTexturePtr target) noexcept;
-	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
-	void clearRenderTexture(ClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
+	void setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept;
+	GraphicsDescriptorSetPtr getDescriptorSet() const noexcept;
+
+	void setInputLayout(GraphicsInputLayoutPtr data) noexcept;
+	GraphicsInputLayoutPtr getInputLayout() const noexcept;
+
+	bool updateBuffer(GraphicsDataPtr& data, void* buf, std::size_t cnt) noexcept;
+	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
+	void unmapBuffer(GraphicsDataPtr& data) noexcept;
+
+	void setRenderTexture(GraphicsFramebufferPtr target) noexcept;
+	void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
+	void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
 	void discardRenderTexture() noexcept;
-	void blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, GraphicsRenderTexturePtr dest, const Viewport& v2) noexcept;
-	void readRenderTexture(GraphicsRenderTexturePtr source, TextureFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
-	GraphicsRenderTexturePtr getRenderTexture() const noexcept;
-	GraphicsMultiRenderTexturePtr getMultiRenderTexture() const noexcept;
+	void blitRenderTexture(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept;
+	void readRenderTexture(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	GraphicsFramebufferPtr getRenderTexture() const noexcept;
 
-	void setGraphicsState(GraphicsStatePtr state) noexcept;
-	GraphicsStatePtr getGraphicsState() const noexcept;
+	void drawRenderBuffer(const GraphicsIndirect& renderable) noexcept;
+	void drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept;
 
-	void setGraphicsProgram(GraphicsProgramPtr shader) noexcept;
-	GraphicsProgramPtr getGraphicsProgram() const noexcept;
-
-	void drawRenderBuffer(const RenderIndirect& renderable) noexcept;
-	void drawRenderBuffer(const RenderIndirect renderable[], std::size_t first, std::size_t count) noexcept;
+	void present() noexcept;
 
 private:
 
@@ -131,22 +118,25 @@ private:
 	GLint   _clearStencil;
 
 	Viewport _viewport;
+	Scissor _scissor;
 
 	GLuint _maxViewports;
 	GLuint _maxTextureUnits;
 
-	EGL2RenderTexturePtr _renderTexture;
+	EGL2FramebufferPtr _renderTexture;
 
 	bool _needUpdateLayout;
 	bool _needUpdateVbo;
 	bool _needUpdateIbo;
 
-	EGL2VertexBufferPtr _vbo;
-	EGL2IndexBufferPtr _ibo;
-	EGL2GraphicsLayoutPtr _inputLayout;
+	EGL2GraphicsDataPtr _vbo;
+	EGL2GraphicsDataPtr _ibo;
+	EGL2InputLayoutPtr _inputLayout;
 	EGL2ShaderObjectPtr _shaderObject;
+	EGL2DescriptorSetPtr _descriptorSet;
+	EGL2RenderPipelinePtr _pipeline;
 
-	EGL2CanvasPtr _glcontext;
+	EGL2SwapchainPtr _glcontext;
 
 	EGL2GraphicsStatePtr _state;
 	EGL2GraphicsStatePtr _stateDefault;

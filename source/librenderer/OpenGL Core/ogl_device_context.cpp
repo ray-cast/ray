@@ -35,15 +35,13 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_device_context.h"
-#include "ogl_canvas.h"
+#include "ogl_swapchain.h"
 #include "ogl_state.h"
 #include "ogl_shader.h"
 #include "ogl_texture.h"
 #include "ogl_framebuffer.h"
 #include "ogl_input_layout.h"
-#include "ogl_vbo.h"
-#include "ogl_ibo.h"
-#include "ogl_commandlist.h"
+#include "ogl_graphics_data.h"
 #include "ogl_sampler.h"
 #include "ogl_descriptor.h"
 #include "ogl_render_pipeline.h"
@@ -71,7 +69,7 @@ OGLDeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 	if (!desc.getSwapchain())
 		return false;
 
-	_glcontext = desc.getSwapchain()->downcast<OGLCanvas>();
+	_glcontext = desc.getSwapchain()->downcast<OGLSwapchain>();
 	if (_glcontext)
 	{
 		this->initDebugControl();
@@ -259,17 +257,10 @@ OGLDeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
 {
 	if (_ibo != data)
 	{
-		if (data)
-		{
-			if (data->isInstanceOf<OGLIndexBuffer>())
-				_ibo = data->downcast<OGLIndexBuffer>();
-			else
-				_ibo = nullptr;
-		}
+		if (data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer)
+			_ibo = data->downcast<OGLGraphicsData>();
 		else
-		{
 			_ibo = nullptr;
-		}
 
 		_needUpdateIbo = true;
 	}
@@ -284,20 +275,14 @@ OGLDeviceContext::getIndexBufferData() const noexcept
 void
 OGLDeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 {
+	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
+
 	if (_vbo != data)
 	{
-		if (data)
-		{
-			if (data->isInstanceOf<OGLVertexBuffer>())
-				_vbo = data->downcast<OGLVertexBuffer>();
-			else
-				_vbo = nullptr;
-		}
+		if (data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer)
+			_vbo = data->downcast<OGLGraphicsData>();
 		else
-		{
 			_vbo = nullptr;
-		}
-
 		_needUpdateVbo = true;
 	}
 }
@@ -311,15 +296,14 @@ OGLDeviceContext::getVertexBufferData() const noexcept
 void
 OGLDeviceContext::drawRenderBuffer(const GraphicsIndirect& renderable) noexcept
 {
-	if (!_inputLayout || !_vbo)
-		return;
+	assert(_vbo && _inputLayout);
 
 	if (_inputLayout->getGraphicsInputLayoutDesc().getIndexType() != GraphicsIndexType::GraphicsIndexTypeNone)
 	{
 		if (!_ibo)
 			return;
 
-		if (_ibo->size() < _inputLayout->getGraphicsInputLayoutDesc().getIndexSize() * (renderable.startIndice + renderable.numIndices))
+		if (_ibo->downcast<OGLGraphicsData>()->size() < _inputLayout->getGraphicsInputLayoutDesc().getIndexSize() * (renderable.startIndice + renderable.numIndices))
 			return;
 	}
 
@@ -369,15 +353,15 @@ OGLDeviceContext::drawRenderBuffer(const GraphicsIndirect renderable[], std::siz
 }
 
 void
-OGLDeviceContext::setRenderTexture(GraphicsRenderTexturePtr target) noexcept
+OGLDeviceContext::setRenderTexture(GraphicsFramebufferPtr target) noexcept
 {
 	if (_renderTexture != target)
 	{
 		if (target)
 		{
-			_renderTexture = target->downcast<OGLRenderTexture>();
-			auto& textureDesc = _renderTexture->getGraphicsRenderTextureDesc();
-			auto& textures = textureDesc.getTextures();
+			_renderTexture = target->downcast<OGLFramebuffer>();
+			auto& renderTextureDesc = _renderTexture->getGraphicsFramebufferDesc();
+			auto& textures = renderTextureDesc.getTextures();
 
 			glBindFramebuffer(GL_FRAMEBUFFER, _renderTexture->getInstanceID());
 
@@ -392,7 +376,7 @@ OGLDeviceContext::setRenderTexture(GraphicsRenderTexturePtr target) noexcept
 			}
 			else
 			{
-				auto depthTexture = textureDesc.getSharedDepthTexture();
+				auto depthTexture = renderTextureDesc.getSharedDepthTexture();
 				if (depthTexture)
 				{
 					auto& textureDesc = depthTexture->getGraphicsTextureDesc();
@@ -409,17 +393,17 @@ OGLDeviceContext::setRenderTexture(GraphicsRenderTexturePtr target) noexcept
 }
 
 void
-OGLDeviceContext::blitRenderTexture(GraphicsRenderTexturePtr src, const Viewport& v1, GraphicsRenderTexturePtr dest, const Viewport& v2) noexcept
+OGLDeviceContext::blitRenderTexture(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
 {
 	assert(src);
 
-	auto readFramebuffer = src->downcast<OGLRenderTexture>()->getInstanceID();
-	auto drawFramebuffer = dest ? dest->downcast<OGLRenderTexture>()->getInstanceID() : GL_NONE;
+	auto readFramebuffer = src->downcast<OGLFramebuffer>()->getInstanceID();
+	auto drawFramebuffer = dest ? dest->downcast<OGLFramebuffer>()->getInstanceID() : GL_NONE;
 
 	glBlitNamedFramebuffer(readFramebuffer, drawFramebuffer, v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
-GraphicsRenderTexturePtr
+GraphicsFramebufferPtr
 OGLDeviceContext::getRenderTexture() const noexcept
 {
 	return _renderTexture;
@@ -465,15 +449,15 @@ OGLDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& co
 
 	if (mode != 0)
 	{
-		auto depthWriteMask = _stateCaptured.getDepthState().depthWriteMask;
-		if (!depthWriteMask && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+		auto depthWriteEnable = _stateCaptured.getDepthState().depthWriteEnable;
+		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_TRUE);
 		}
 
 		glClear(mode);
 
-		if (!depthWriteMask && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_FALSE);
 		}
@@ -485,8 +469,8 @@ OGLDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& co
 {
 	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 	{
-		auto depthWriteMask = _stateCaptured.getDepthState().depthWriteMask;
-		if (!depthWriteMask && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+		auto depthWriteEnable = _stateCaptured.getDepthState().depthWriteEnable;
+		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_TRUE);
 		}
@@ -494,7 +478,7 @@ OGLDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& co
 		GLfloat f = depth;
 		glClearBufferfv(GL_DEPTH, 0, &f);
 
-		if (!depthWriteMask && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_FALSE);
 		}
@@ -520,7 +504,7 @@ OGLDeviceContext::discardRenderTexture() noexcept
 }
 
 void
-OGLDeviceContext::readRenderTexture(GraphicsRenderTexturePtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+OGLDeviceContext::readRenderTexture(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
 	assert(w && h && data);
 
@@ -644,7 +628,7 @@ OGLDeviceContext::initDebugControl() noexcept
 		131218,
 		131204
 	};
-
+	
 	glEnable(GL_DEBUG_OUTPUT);
 
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);

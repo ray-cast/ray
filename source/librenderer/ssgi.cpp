@@ -37,7 +37,7 @@
 #include <ray/ssgi.h>
 #include <ray/camera.h>
 
-#include <ray/graphics_view.h>
+#include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 
 _NAME_BEGIN
@@ -79,7 +79,7 @@ SSGI::getSetting() const noexcept
 }
 
 void
-SSGI::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSGI::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	_projInfo->assign(pipeline.getCamera()->getProjConstant());
 	_projScale->assign(pipeline.getCamera()->getProjLength().y * _setting.radius);
@@ -90,7 +90,7 @@ SSGI::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 }
 
 void
-SSGI::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSGI::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	GraphicsTextureDesc textureDesc = source->getGraphicsTextureDesc();
 
@@ -101,7 +101,7 @@ SSGI::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphi
 }
 
 void
-SSGI::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSGI::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	GraphicsTextureDesc textureDesc = source->getGraphicsTextureDesc();
 
@@ -112,7 +112,7 @@ SSGI::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 }
 
 void
-SSGI::blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest, const float2& direction) noexcept
+SSGI::blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, const float2& direction) noexcept
 {
 	_blurDirection->assign(direction);
 	_blurTexSource->assign(source);
@@ -122,7 +122,7 @@ SSGI::blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphic
 }
 
 void
-SSGI::shading(RenderPipeline& pipeline, GraphicsTexturePtr ao, GraphicsRenderTexturePtr dest) noexcept
+SSGI::shading(RenderPipeline& pipeline, GraphicsTexturePtr ao, GraphicsFramebufferPtr dest) noexcept
 {
 	_copyAmbient->assign(ao);
 
@@ -180,7 +180,7 @@ SSGI::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-SSGI::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+SSGI::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	this->computeRawAO(pipeline, source, _texAmbientView);
 

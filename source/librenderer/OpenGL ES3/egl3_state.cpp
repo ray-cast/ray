@@ -1,5 +1,5 @@
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -127,7 +127,7 @@ EGL3GraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 
 	if (_dstRasterState.cullMode != rasterState.cullMode)
 	{
-		if (rasterState.cullMode != CullMode::None)
+		if (rasterState.cullMode != GraphicsCullMode::GraphicsCullModeNone)
 		{
 			GLenum mode = EGL3Types::asCullMode(rasterState.cullMode);
 			glEnable(GL_CULL_FACE);
@@ -176,9 +176,9 @@ EGL3GraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 		}
 	}
 
-	if (_dstDepthState.depthWriteMask != depthState.depthWriteMask)
+	if (_dstDepthState.depthWriteEnable != depthState.depthWriteEnable)
 	{
-		GLboolean enable = depthState.depthWriteMask ? GL_TRUE : GL_FALSE;
+		GLboolean enable = depthState.depthWriteEnable ? GL_TRUE : GL_FALSE;
 		glDepthMask(enable);
 	}
 
@@ -190,9 +190,9 @@ EGL3GraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 		}
 
 		if (_dstDepthState.depthBias != depthState.depthBias ||
-			_dstDepthState.depthSlopScaleBias != depthState.depthSlopScaleBias)
+			_dstDepthState.depthSlopeScaleBias != depthState.depthSlopeScaleBias)
 		{
-			glPolygonOffset(depthState.depthSlopScaleBias, depthState.depthBias);
+			glPolygonOffset(depthState.depthSlopeScaleBias, depthState.depthBias);
 		}
 	}
 	else

@@ -47,17 +47,17 @@ public:
 	SSSS() noexcept;
 	~SSSS() noexcept;
 
-	void blurX(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
-	void blurY(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void blurX(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	void blurY(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
-	void translucency(RenderPipeline& pipeline, GraphicsRenderTexturePtr dest) noexcept;
+	void translucency(RenderPipeline& pipeline, GraphicsFramebufferPtr dest) noexcept;
 
 private:
 
 	void onActivate(RenderPipeline& pipeline) except;
 	void onDeactivate(RenderPipeline& pipeline) except;
 
-	void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept;
+	void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
 private:
 
@@ -80,7 +80,7 @@ private:
 	MaterialParamPtr _lightShadowMatrix;
 
 	GraphicsTexturePtr _SSSSMap;
-	GraphicsRenderTexturePtr _SSSSView;
+	GraphicsFramebufferPtr _SSSSView;
 };
 
 _NAME_END

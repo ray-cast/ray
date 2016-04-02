@@ -195,13 +195,13 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialTechPtr& tech, iar
 			else if (name == "depthtest")
 				depthState.depthEnable = reader.getValue<bool>("value");
 			else if (name == "depthwrite")
-				depthState.depthWriteMask = reader.getValue<bool>("value");
+				depthState.depthWriteEnable = reader.getValue<bool>("value");
 			else if (name == "depthfunc")
 				depthState.depthFunc = stringToCompareFunc(reader.getValue<std::string>("value"));
 			else if (name == "depthBiasEnable")
 				depthState.depthBiasEnable = reader.getValue<bool>("value");
-			else if (name == "depthSlopScaleBias")
-				depthState.depthSlopScaleBias = reader.getValue<float>("value");
+			else if (name == "depthSlopeScaleBias")
+				depthState.depthSlopeScaleBias = reader.getValue<float>("value");
 			else if (name == "depthBias")
 				depthState.depthBias = reader.getValue<float>("value");
 			else if (name == "stencilTest")
@@ -318,10 +318,10 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialDesc& materia
 	else if (type == "int2") param->setType(GraphicsUniformType::GraphicsUniformTypeInt2);
 	else if (type == "int3") param->setType(GraphicsUniformType::GraphicsUniformTypeInt3);
 	else if (type == "int4") param->setType(GraphicsUniformType::GraphicsUniformTypeInt4);
-	else if (type == "uint") param->setType(GraphicsUniformType::GraphicsUniformTypeUint);
-	else if (type == "uint2") param->setType(GraphicsUniformType::GraphicsUniformTypeUint2);
-	else if (type == "uint3") param->setType(GraphicsUniformType::GraphicsUniformTypeUint3);
-	else if (type == "uint4") param->setType(GraphicsUniformType::GraphicsUniformTypeUint4);
+	else if (type == "uint") param->setType(GraphicsUniformType::GraphicsUniformTypeUInt);
+	else if (type == "uint2") param->setType(GraphicsUniformType::GraphicsUniformTypeUInt2);
+	else if (type == "uint3") param->setType(GraphicsUniformType::GraphicsUniformTypeUInt3);
+	else if (type == "uint4") param->setType(GraphicsUniformType::GraphicsUniformTypeUInt4);
 	else if (type == "float") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat);
 	else if (type == "float2") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat2);
 	else if (type == "float3") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat3);
@@ -333,10 +333,10 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialDesc& materia
 	else if (type == "int2[]") param->setType(GraphicsUniformType::GraphicsUniformTypeInt2Array);
 	else if (type == "int3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeInt3Array);
 	else if (type == "int4[]") param->setType(GraphicsUniformType::GraphicsUniformTypeInt4Array);
-	else if (type == "uint[]") param->setType(GraphicsUniformType::GraphicsUniformTypeUintArray);
-	else if (type == "uint2[]") param->setType(GraphicsUniformType::GraphicsUniformTypeUint2Array);
-	else if (type == "uint3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeUint3Array);
-	else if (type == "uint4[]") param->setType(GraphicsUniformType::GraphicsUniformTypeUint4Array);
+	else if (type == "uint[]") param->setType(GraphicsUniformType::GraphicsUniformTypeUIntArray);
+	else if (type == "uint2[]") param->setType(GraphicsUniformType::GraphicsUniformTypeUInt2Array);
+	else if (type == "uint3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeUInt3Array);
+	else if (type == "uint4[]") param->setType(GraphicsUniformType::GraphicsUniformTypeUInt4Array);
 	else if (type == "half[]") param->setType(GraphicsUniformType::GraphicsUniformTypeHalfArray);
 	else if (type == "half2[]") param->setType(GraphicsUniformType::GraphicsUniformTypeHalf2Array);
 	else if (type == "half3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeHalf3Array);

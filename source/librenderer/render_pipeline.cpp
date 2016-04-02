@@ -55,7 +55,7 @@
 #include <ray/graphics_device.h>
 #include <ray/graphics_swapchain.h>
 #include <ray/graphics_data.h>
-#include <ray/graphics_view.h>
+#include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 #include <ray/graphics_input_layout.h>
 
@@ -73,7 +73,10 @@ RenderPipeline::~RenderPipeline() noexcept
 bool
 RenderPipeline::open(WindHandle window, std::uint32_t w, std::uint32_t h) noexcept
 {
-	_graphicsDevice = GraphicsSystem::instance()->createDevice(GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore);
+	GraphicsDeviceDesc deviceDesc;
+	deviceDesc.setDeviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore);
+
+	_graphicsDevice = GraphicsSystem::instance()->createDevice(deviceDesc);
 
 	GraphicsSwapchainDesc swapchainDesc;
 	swapchainDesc.setWindHandle(window);
@@ -192,13 +195,13 @@ RenderPipeline::getRenderDataManagerPtr() const noexcept
 }
 
 void
-RenderPipeline::setSwapInterval(SwapInterval interval) noexcept
+RenderPipeline::setSwapInterval(GraphicsSwapInterval interval) noexcept
 {
 	assert(_graphicsSwapchain);
 	_graphicsSwapchain->setSwapInterval(interval);
 }
 
-SwapInterval
+GraphicsSwapInterval
 RenderPipeline::getSwapInterval() const noexcept
 {
 	assert(_graphicsSwapchain);
@@ -324,8 +327,8 @@ RenderPipeline::createTexture(const std::string& name) noexcept
 	return nullptr;
 }
 
-GraphicsRenderTexturePtr
-RenderPipeline::createRenderTexture(const GraphicsRenderTextureDesc& desc) noexcept
+GraphicsFramebufferPtr
+RenderPipeline::createRenderTexture(const GraphicsFramebufferDesc& desc) noexcept
 {
 	assert(_graphicsDevice);
 	return _graphicsDevice->createRenderTexture(desc);
@@ -385,7 +388,7 @@ RenderPipeline::createRenderBuffer(const MeshProperty& mesh) noexcept
 
 	GraphicsInputLayoutDesc layout;
 	layout.setVertexComponents(components);
-	layout.setIndexType(GraphicsIndexType::GraphicsIndexTypeUint32);
+	layout.setIndexType(GraphicsIndexType::GraphicsIndexTypeUInt32);
 
 	GraphicsDataPtr vb;
 
@@ -445,7 +448,7 @@ RenderPipeline::createRenderBuffer(const MeshProperty& mesh) noexcept
 
 		GraphicsDataDesc _vb;
 		_vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
-		_vb.setUsage(UsageFlags::MAP_READ_BIT);
+		_vb.setUsage(GraphicsUsageFlags::GraphicsUsageFlagsReadBit);
 		_vb.setStream((std::uint8_t*)_data.data());
 		_vb.setStreamSize(_data.size());
 		_vb.setStride(stride);
@@ -460,7 +463,7 @@ RenderPipeline::createRenderBuffer(const MeshProperty& mesh) noexcept
 	{
 		GraphicsDataDesc _ib;
 		_ib.setType(GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
-		_ib.setUsage(UsageFlags::MAP_READ_BIT);
+		_ib.setUsage(GraphicsUsageFlags::GraphicsUsageFlagsReadBit);
 		_ib.setStride(sizeof(std::uint32_t));
 		_ib.setStream((std::uint8_t*)faces.data());
 		_ib.setStreamSize(faces.size() * sizeof(std::uint32_t));
@@ -503,7 +506,7 @@ RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) noexcept
 	if (!meshes.front()->getTangentArray().empty())
 		layout.addComponent(VertexComponent("TANGENT", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
 	if (!meshes.front()->getFaceArray().empty())
-		layout.setIndexType(GraphicsIndexType::GraphicsIndexTypeUint32);
+		layout.setIndexType(GraphicsIndexType::GraphicsIndexTypeUInt32);
 
 	GraphicsDataPtr vb;
 
@@ -590,7 +593,7 @@ RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) noexcept
 
 		GraphicsDataDesc _vb;
 		_vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
-		_vb.setUsage(UsageFlags::MAP_READ_BIT);
+		_vb.setUsage(GraphicsUsageFlags::GraphicsUsageFlagsReadBit);
 		_vb.setStream((std::uint8_t*)_data.data());
 		_vb.setStreamSize(_data.size());
 		_vb.setStride(stride);
@@ -626,7 +629,7 @@ RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) noexcept
 
 		GraphicsDataDesc _ib;
 		_ib.setType(GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
-		_ib.setUsage(UsageFlags::MAP_READ_BIT);
+		_ib.setUsage(GraphicsUsageFlags::GraphicsUsageFlagsReadBit);
 		_ib.setStream((std::uint8_t*)faces.data());
 		_ib.setStride(sizeof(std::uint32_t));
 		_ib.setStreamSize(faces.size() * sizeof(std::uint32_t));
@@ -702,7 +705,7 @@ RenderPipeline::getViewport(std::size_t i) const noexcept
 }
 
 void
-RenderPipeline::setRenderTexture(GraphicsRenderTexturePtr target) noexcept
+RenderPipeline::setRenderTexture(GraphicsFramebufferPtr target) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->setRenderTexture(target);
@@ -730,14 +733,14 @@ RenderPipeline::discradRenderTexture() noexcept
 }
 
 void
-RenderPipeline::readRenderTexture(GraphicsRenderTexturePtr texture, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+RenderPipeline::readRenderTexture(GraphicsFramebufferPtr texture, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->readRenderTexture(texture, pfd, w, h, data);
 }
 
 void
-RenderPipeline::blitRenderTexture(GraphicsRenderTexturePtr srcTarget, const Viewport& src, GraphicsRenderTexturePtr destTarget, const Viewport& dest) noexcept
+RenderPipeline::blitRenderTexture(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->blitRenderTexture(srcTarget, src, destTarget, dest);
@@ -902,7 +905,7 @@ RenderPipeline::drawMesh(MaterialPassPtr pass, RenderBufferPtr buffer, const Gra
 }
 
 void
-RenderPipeline::drawRenderQueue(RenderQueue queue, RenderPass pass, MaterialPassPtr material, GraphicsRenderTexturePtr target) noexcept
+RenderPipeline::drawRenderQueue(RenderQueue queue, RenderPass pass, MaterialPassPtr material, GraphicsFramebufferPtr target) noexcept
 {
 	auto& renderable = this->getRenderData(queue, pass);
 	for (auto& it : renderable)
@@ -972,10 +975,10 @@ RenderPipeline::removePostProcess(RenderPostProcessPtr postprocess) noexcept
 }
 
 void
-RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsTexturePtr source, GraphicsRenderTexturePtr swap, GraphicsRenderTexturePtr dest) noexcept
+RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsTexturePtr source, GraphicsFramebufferPtr swap, GraphicsFramebufferPtr dest) noexcept
 {
-	GraphicsRenderTexturePtr view = dest;
-	GraphicsRenderTexturePtr cur;
+	GraphicsFramebufferPtr view = dest;
+	GraphicsFramebufferPtr cur;
 
 	auto& drawPostProcess = _postprocessors[queue];
 	for (auto& it : drawPostProcess)
@@ -988,7 +991,7 @@ RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsTexturePtr source, Gr
 		}
 
 		cur = view;
-		source = view->getGraphicsRenderTextureDesc().getTextures()[0];
+		source = view->getGraphicsFramebufferDesc().getTextures()[0];
 
 		std::swap(swap, view);
 	}

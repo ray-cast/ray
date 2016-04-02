@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class GraphicsSwapchainDesc final
+class EXPORT GraphicsSwapchainDesc final
 {
 public:
 	GraphicsSwapchainDesc() noexcept;
@@ -56,8 +56,8 @@ public:
 	void setHeight(std::uint32_t height) noexcept;
 	std::uint32_t getHeight() const noexcept;
 
-	void setSwapInterval(SwapInterval interval) noexcept;
-	SwapInterval getSwapInterval() const noexcept;
+	void setSwapInterval(GraphicsSwapInterval interval) noexcept;
+	GraphicsSwapInterval getSwapInterval() const noexcept;
 
 	void setColorFormat(GraphicsFormat format) noexcept;
 	GraphicsFormat getColorFormat() const noexcept;
@@ -75,20 +75,20 @@ private:
 
 	std::uint32_t _imageNums;
 
-	SwapInterval _interval;
+	GraphicsSwapInterval _interval;
 
 	GraphicsFormat _format;
 	GraphicsFormat _depthFormat;
 };
 
-class GraphicsSwapchain : public GraphicsChild
+class EXPORT GraphicsSwapchain : public GraphicsChild
 {
 public:
 	GraphicsSwapchain() noexcept;
 	virtual ~GraphicsSwapchain() noexcept;
 
-	virtual void setSwapInterval(SwapInterval interval) noexcept = 0;
-	virtual SwapInterval getSwapInterval() const noexcept = 0;
+	virtual void setSwapInterval(GraphicsSwapInterval interval) noexcept = 0;
+	virtual GraphicsSwapInterval getSwapInterval() const noexcept = 0;
 
 	virtual const GraphicsSwapchainDesc& getGraphicsSwapchainDesc() const noexcept = 0;
 

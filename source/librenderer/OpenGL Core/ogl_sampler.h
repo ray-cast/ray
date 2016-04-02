@@ -37,7 +37,7 @@
 #ifndef _H_OGL_SAMPLER_H_
 #define _H_OGL_SAMPLER_H_
 
-#include "ogl_canvas.h"
+#include "ogl_types.h"
 
 _NAME_BEGIN
 
@@ -63,7 +63,7 @@ private:
 private:
 
 	GLuint _sampler;
-	GraphicsSamplerDesc _desc;
+	GraphicsSamplerDesc _sampleDesc;
 	GraphicsDeviceWeakPtr _device;
 };
 

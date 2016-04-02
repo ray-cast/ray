@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2015.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -37,13 +37,13 @@
 #ifndef _H_EGL2_SAMPLER_H_
 #define _H_EGL2_SAMPLER_H_
 
-#include "egl2_canvas.h"
+#include "egl2_types.h"
 
 _NAME_BEGIN
 
 class EGL2Sampler final : public GraphicsSampler
 {
-	__DeclareSubClass(EGL3Sampler, GraphicsSampler)
+	__DeclareSubClass(EGL2Sampler, GraphicsSampler)
 public:
 	EGL2Sampler() noexcept;
 	~EGL2Sampler() noexcept;
@@ -58,7 +58,6 @@ private:
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
-
 	GraphicsSamplerDesc _desc;
 	GraphicsDeviceWeakPtr _device;
 };

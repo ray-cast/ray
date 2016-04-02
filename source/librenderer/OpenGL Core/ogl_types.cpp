@@ -38,20 +38,6 @@
 
 _NAME_BEGIN
 
-int OGLExtenstion::initExtention = 0;
-
-bool OGLFeatures::ARB_bindless_texture = 0;
-bool OGLFeatures::ARB_vertex_array_object = 0;
-bool OGLFeatures::ARB_vertex_attrib_binding = 0;
-bool OGLFeatures::ARB_provoking_vertex = 0;
-bool OGLFeatures::ARB_direct_state_access = 0;
-bool OGLFeatures::ARB_buffer_storage = 0;
-bool OGLFeatures::ARB_viewport_array = 0;
-bool OGLFeatures::KHR_debug = 0;
-bool OGLFeatures::NV_command_list = 0;
-bool OGLFeatures::NV_shader_buffer_load = 0;
-bool OGLFeatures::NV_vertex_buffer_unified_memory = 0;
-
 #ifdef _BUILD_OPENGL
 #	ifdef GLEW_MX
 	GLEWContext _glewctx;
@@ -203,8 +189,8 @@ OGLTypes::asIndexType(GraphicsIndexType type) noexcept
 	switch (type)
 	{
 	case GraphicsIndexType::GraphicsIndexTypeNone:   return GL_NONE;
-	case GraphicsIndexType::GraphicsIndexTypeUint16: return GL_UNSIGNED_SHORT;
-	case GraphicsIndexType::GraphicsIndexTypeUint32: return GL_UNSIGNED_INT;
+	case GraphicsIndexType::GraphicsIndexTypeUInt16: return GL_UNSIGNED_SHORT;
+	case GraphicsIndexType::GraphicsIndexTypeUInt32: return GL_UNSIGNED_INT;
 	default:
 		GL_PLATFORM_LOG("Invalid index type");
 		return GL_INVALID_ENUM;
@@ -340,6 +326,9 @@ OGLTypes::asTextureFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatR16G16B16UInt:
 	case GraphicsFormatR16G16B16SInt:
 	case GraphicsFormatR16G16B16SFloat:
+	case GraphicsFormatR32G32B32UInt:
+	case GraphicsFormatR32G32B32SInt:
+	case GraphicsFormatR32G32B32SFloat:
 	case GraphicsFormatR64G64B64UInt:
 	case GraphicsFormatR64G64B64SInt:
 	case GraphicsFormatR64G64B64SFloat:
@@ -351,9 +340,6 @@ OGLTypes::asTextureFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatB8G8R8SScaled:
 	case GraphicsFormatB8G8R8UInt:
 	case GraphicsFormatB8G8R8SInt:
-	case GraphicsFormatR32G32B32UInt:
-	case GraphicsFormatR32G32B32SInt:
-	case GraphicsFormatR32G32B32SFloat:
 	case GraphicsFormatB10G11R11UFloatPack32:
 		return GL_BGR;
 	case GraphicsFormatR4G4B4A4UNormPack16:
@@ -690,18 +676,18 @@ OGLTypes::asTextureInternalFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatR32G32B32A32UInt:	     internalFormat = GL_RGBA32UI; break;
 	case GraphicsFormatR32G32B32A32SInt:	     internalFormat = GL_RGBA32I; break;
 	case GraphicsFormatR32G32B32A32SFloat:	     internalFormat = GL_RGBA32F; break;
-	case GraphicsFormatR64UInt:	                 internalFormat = GL_R; break;
-	case GraphicsFormatR64SInt:	                 internalFormat = GL_R; break;
-	case GraphicsFormatR64SFloat:	             internalFormat = GL_R; break;
-	case GraphicsFormatR64G64UInt:	             internalFormat = GL_RG; break;
-	case GraphicsFormatR64G64SInt:	             internalFormat = GL_RG; break;
-	case GraphicsFormatR64G64SFloat:	         internalFormat = GL_RG; break;
-	case GraphicsFormatR64G64B64UInt:	         internalFormat = GL_RGB; break;
-	case GraphicsFormatR64G64B64SInt:	         internalFormat = GL_RGB; break;
-	case GraphicsFormatR64G64B64SFloat:	         internalFormat = GL_RGB; break;
-	case GraphicsFormatR64G64B64A64UInt:	     internalFormat = GL_RGBA; break;
-	case GraphicsFormatR64G64B64A64SInt:	     internalFormat = GL_RGBA; break;
-	case GraphicsFormatR64G64B64A64SFloat:	     internalFormat = GL_RGBA; break;
+	case GraphicsFormatR64UInt:	                 internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR64SInt:	                 internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR64SFloat:	             internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR64G64UInt:	             internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR64G64SInt:	             internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR64G64SFloat:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR64G64B64UInt:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR64G64B64SInt:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR64G64B64SFloat:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR64G64B64A64UInt:	     internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR64G64B64A64SInt:	     internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR64G64B64A64SFloat:	     internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatB10G11R11UFloatPack32:	 internalFormat = GL_R11F_G11F_B10F; break;
 	case GraphicsFormatE5B9G9R9UFloatPack32:	 internalFormat = GL_RGB9_E5; break;
 	case GraphicsFormatD16UNorm:	             internalFormat = GL_DEPTH_COMPONENT16; break;
@@ -977,46 +963,16 @@ OGLTypes::isCompressedTexture(GraphicsFormat format) noexcept
 	}
 }
 
-OGLExtenstion::OGLExtenstion() noexcept
-{
-}
-
-OGLExtenstion::~OGLExtenstion() noexcept
-{
-}
-
 bool
-OGLExtenstion::initExtensions() except
-{
-	if (initExtention) return 0;
-
-#if !defined(EGLAPI)
-	glewInit();
-
-	OGLFeatures::ARB_bindless_texture = GLEW_ARB_bindless_texture ? true : false;
-	OGLFeatures::ARB_vertex_array_object = GLEW_ARB_vertex_array_object ? true : false;
-	OGLFeatures::ARB_vertex_attrib_binding = GLEW_ARB_vertex_attrib_binding ? true : false;
-	OGLFeatures::ARB_provoking_vertex = GLEW_ARB_provoking_vertex ? true : false;
-	OGLFeatures::ARB_direct_state_access = GLEW_ARB_direct_state_access ? true : false;
-	OGLFeatures::ARB_buffer_storage = GLEW_ARB_buffer_storage ? true : false;
-	OGLFeatures::ARB_viewport_array = GLEW_ARB_viewport_array ? true : false;
-	OGLFeatures::KHR_debug = GLEW_KHR_debug ? true : false;
-	OGLFeatures::NV_shader_buffer_load = GLEW_NV_shader_buffer_load ? true : false;
-	OGLFeatures::NV_vertex_buffer_unified_memory = GLEW_NV_vertex_buffer_unified_memory ? true : false;
-
-#endif
-
-	initExtention = true;
-
-	return true;
-}
-
-void
 OGLCheck::checkError() noexcept
 {
+	bool success = true;
+
 	GLenum result = ::glGetError();
 	if (GL_NO_ERROR != result)
 	{
+		success = false;
+
 		switch (result)
 		{
 		case GL_INVALID_ENUM:
@@ -1048,6 +1004,8 @@ OGLCheck::checkError() noexcept
 	result = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (GL_FRAMEBUFFER_COMPLETE != result)
 	{
+		success = false;
+
 		switch (result)
 		{
 		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
@@ -1069,6 +1027,8 @@ OGLCheck::checkError() noexcept
 			GL_PLATFORM_LOG("FBO:Unknown");
 		}
 	}
+
+	return success;
 }
 
 void

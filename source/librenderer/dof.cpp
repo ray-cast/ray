@@ -73,7 +73,7 @@ DepthOfField::onDeactivate(RenderPipeline& pipeline) except
 }
 
 void
-DepthOfField::blurh(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+DepthOfField::blurh(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	/*_texColor->assign(source->getResolveTexture());
 
@@ -82,7 +82,7 @@ DepthOfField::blurh(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, G
 }
 
 void
-DepthOfField::blurv(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+DepthOfField::blurv(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	/*_texColor->assign(source->getResolveTexture());
 
@@ -91,7 +91,7 @@ DepthOfField::blurv(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, G
 }
 
 void
-DepthOfField::computeNear(RenderPipeline& pipeline, GraphicsRenderTexturePtr source, GraphicsRenderTexturePtr blured, GraphicsRenderTexturePtr dest) noexcept
+DepthOfField::computeNear(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr blured, GraphicsFramebufferPtr dest) noexcept
 {
 	/*_texShrunk->assign(source->getResolveTexture());
 	_texBlured->assign(blured->getResolveTexture());
@@ -101,9 +101,9 @@ DepthOfField::computeNear(RenderPipeline& pipeline, GraphicsRenderTexturePtr sou
 }
 
 void
-DepthOfField::shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr color, GraphicsTexturePtr texSmall, GraphicsTexturePtr large)
+DepthOfField::shading(RenderPipeline& pipeline, GraphicsFramebufferPtr color, GraphicsTexturePtr texSmall, GraphicsTexturePtr large)
 {
-	/*_texColor->assign(color->getGraphicsRenderTextureDesc().getTextures()[0]);
+	/*_texColor->assign(color->getGraphicsFramebufferDesc().getTextures()[0]);
 	_texSmall->assign(texSmall);
 	_texLarge->assign(large);
 
@@ -112,9 +112,9 @@ DepthOfField::shading(RenderPipeline& pipeline, GraphicsRenderTexturePtr color, 
 }
 
 void
-DepthOfField::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsRenderTexturePtr dest) noexcept
+DepthOfField::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	/*_texColor->assign(source->getGraphicsRenderTextureDesc().getTextures()[0]);
+	/*_texColor->assign(source->getGraphicsFramebufferDesc().getTextures()[0]);
 
 	pipeline.setRenderTexture(_texBlur);
 	pipeline.drawScreenQuad(_sample4);

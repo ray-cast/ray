@@ -64,26 +64,22 @@ VulkanCommandList::~VulkanCommandList() noexcept
 bool
 VulkanCommandList::setup(const GraphicsCommandListDesc& desc) noexcept
 {
-	auto pool = desc.getGraphicsCommandPool();
-	if (pool)
+	assert(desc.getGraphicsCommandPool());
+
+	VkCommandBufferAllocateInfo info;
+	info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	info.pNext = nullptr;
+	info.commandPool = desc.getGraphicsCommandPool()->downcast<VulkanCommandPool>()->getInstance();
+	info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	info.commandBufferCount = 1;
+
+	if (vkAllocateCommandBuffers(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &info, &_vkCommandBuffer) > 0)
 	{
-		VkCommandBufferAllocateInfo info;
-		info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		info.pNext = nullptr;
-		info.commandPool = pool->downcast<VulkanCommandPool>()->getInstance();
-		info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		info.commandBufferCount = 1;
-
-		if (vkAllocateCommandBuffers(pool->getDevice()->downcast<VulkanDevice>()->getDevice(), &info, &_vkCommandBuffer) > 0)
-		{
-			this->getDevice()->downcast<VulkanDevice>()->print("vkAllocateCommandBuffers fail");
-			return false;
-		}
-
-		return true;
+		VK_PLATFORM_LOG("vkAllocateCommandBuffers() fail.");
+		return false;
 	}
 
-	return false;
+	return true;
 }
 
 void 

@@ -45,22 +45,6 @@
 
 _NAME_BEGIN
 
-#ifndef MAX_VERTEX_UNIT
-#	define MAX_VERTEX_UNIT 16
-#endif
-
-#ifndef MAX_TEXTURE_UNIT
-#	define MAX_TEXTURE_UNIT 32
-#endif
-
-#ifndef MAX_SAMPLER_UNIT
-#	define MAX_SAMPLER_UNIT 32
-#endif
-
-#ifndef MAX_COLOR_ATTACHMENTS
-#	define MAX_COLOR_ATTACHMENTS 15
-#endif
-
 typedef std::shared_ptr<class GraphicsDevice> GraphicsDevicePtr;
 typedef std::shared_ptr<class GraphicsSwapchain> GraphicsSwapchainPtr;
 typedef std::shared_ptr<class GraphicsResource> GraphicsResourcePtr;
@@ -72,18 +56,24 @@ typedef std::shared_ptr<class GraphicsTexture> GraphicsTexturePtr;
 typedef std::shared_ptr<class GraphicsSampler> GraphicsSamplerPtr;
 typedef std::shared_ptr<class GraphicsFramebuffer> GraphicsFramebufferPtr;
 typedef std::shared_ptr<class GraphicsFramebufferLayout> GraphicsFramebufferLayoutPtr;
+typedef std::shared_ptr<class GraphicsParam> GraphicsParamPtr;
+typedef std::shared_ptr<class GraphicsAttribute> GraphicsAttributePtr;
+typedef std::shared_ptr<class GraphicsUniform> GraphicsUniformPtr;
+typedef std::shared_ptr<class GraphicsUniformBlock> GraphicsUniformBlockPtr;
 typedef std::shared_ptr<class GraphicsShader> GraphicsShaderPtr;
 typedef std::shared_ptr<class GraphicsProgram> GraphicsProgramPtr;
 typedef std::shared_ptr<class GraphicsPipeline> GraphicsPipelinePtr;
 typedef std::shared_ptr<class GraphicsDescriptorPool> GraphicsDescriptorPoolPtr;
 typedef std::shared_ptr<class GraphicsDescriptorSet> GraphicsDescriptorSetPtr;
 typedef std::shared_ptr<class GraphicsDescriptorSetLayout> GraphicsDescriptorSetLayoutPtr;
-typedef std::shared_ptr<class GraphicsUniform> GraphicsUniformPtr;
+typedef std::shared_ptr<class GraphicsUniformSet> GraphicsUniformSetPtr;
 typedef std::shared_ptr<class GraphicsVariant> GraphicsVariantPtr;
 typedef std::shared_ptr<class GraphicsSystem> GraphicsSystemPtr;
 typedef std::shared_ptr<class GraphicsCommandPool> GraphicsCommandPoolPtr;
 typedef std::shared_ptr<class GraphicsCommandQueue> GraphicsCommandQueuePtr;
 typedef std::shared_ptr<class GraphicsCommandList> GraphicsCommandListPtr;
+typedef std::shared_ptr<class GraphicsSemaphore> GraphicsSemaphorePtr;
+typedef std::shared_ptr<class GraphicsIndirect> GraphicsIndirectPtr;
 
 typedef std::weak_ptr<class GraphicsDevice> GraphicsDeviceWeakPtr;
 typedef std::weak_ptr<class GraphicsSwapchain> GraphicsSwapchainWeakPtr;
@@ -101,35 +91,25 @@ typedef std::weak_ptr<class GraphicsPipeline> GraphicsPipelineWeakPtr;
 typedef std::weak_ptr<class GraphicsDescriptorPool> GraphicsDescriptorPoolWeakPtr;
 typedef std::weak_ptr<class GraphicsDescriptorSet> GraphicsDescriptorSetWeakPtr;
 typedef std::weak_ptr<class GraphicsDescriptorSetLayout> GraphicsDescriptorSetLayoutWeakPtr;
-typedef std::weak_ptr<class GraphicsUniform> GraphicsUniformWeakPtr;
+typedef std::weak_ptr<class GraphicsUniformSet> GraphicsUniformWeakPtr;
 typedef std::weak_ptr<class GraphicsVariant> GraphicsVariantWeakPtr;
 typedef std::weak_ptr<class GraphicsSystem> GraphicsSystemWeakPtr;
 typedef std::weak_ptr<class GraphicsCommandPool> GraphicsCommandPoolWeakPtr;
 typedef std::weak_ptr<class GraphicsCommandQueue> GraphicsCommandQueueWeakPtr;
 typedef std::weak_ptr<class GraphicsCommandList> GraphicsCommandPoolListWeakPtr;
 
-
-typedef std::shared_ptr<class ShaderVariant> ShaderVariantPtr;
-typedef std::shared_ptr<class ShaderParameter> ShaderParameterPtr;
-typedef std::shared_ptr<class ShaderAttribute> ShaderAttributePtr;
-typedef std::shared_ptr<class ShaderUniform> ShaderUniformPtr;
-typedef std::shared_ptr<class ShaderSubroutine> ShaderSubroutinePtr;
-
-typedef std::shared_ptr<class GraphicsIndirect> GraphicsIndirectPtr;
-
 typedef std::vector<GraphicsShaderPtr> GraphicsShaders;
 typedef std::vector<GraphicsVariantPtr> GraphicsVariants;
 typedef std::vector<GraphicsFramebufferPtr> GraphicsFramebuffers;
 typedef std::vector<GraphicsIndirectPtr> GraphicsIndirects;
-typedef std::vector<GraphicsUniformPtr> GraphicsUniforms;
+typedef std::vector<GraphicsUniformSetPtr> GraphicsUniformSets;
 typedef std::vector<GraphicsTexturePtr> GraphicsTextures;
-typedef std::vector<class VertexComponent> VertexComponents;
+typedef std::vector<class GraphicsVertexLayout> GraphicsVertexLayouts;
 typedef std::vector<class GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponents;
 typedef std::vector<class GraphicsAttachmentDesc> GraphicsAttachmentDescs;
-typedef std::vector<ShaderAttributePtr> ShaderAttributes;
-typedef std::vector<ShaderUniformPtr> ShaderUniforms;
-typedef std::vector<ShaderSubroutinePtr> ShaderSubroutines;
-typedef std::vector<ShaderVariantPtr> ShaderVariants;
+typedef std::vector<GraphicsAttributePtr> GraphicsAttributes;
+typedef std::vector<GraphicsUniformPtr> GraphicsUniforms;
+typedef std::vector<GraphicsUniformBlockPtr> GraphicsUniformBlocks;
 
 class GraphicsDeviceDesc;
 class GraphicsSwapchainDesc;
@@ -146,6 +126,7 @@ class GraphicsPipelineDesc;
 class GraphicsDescriptorSetDesc;
 class GraphicsDescriptorSetLayoutDesc;
 class GraphicsDescriptorPoolDesc;
+class GraphicsSemaphoreDesc;
 
 typedef void* WindHandle;
 
@@ -704,6 +685,16 @@ enum GraphicsVertexType
 	GraphicsVertexTypeMaxEnum = 0x7FFFFFFF
 };
 
+enum GraphicsVertexDivisor
+{
+	GraphicsVertexDivisorVertex = 0,
+	GraphicsVertexDivisorInstance = 1,
+	GraphicsVertexDivisorBeginRange = GraphicsVertexDivisorVertex,
+	GraphicsVertexDivisorEndRange = GraphicsVertexDivisorInstance,
+	GraphicsVertexDivisorRangeSize = (GraphicsVertexDivisorEndRange - GraphicsVertexDivisorBeginRange + 1),
+	GraphicsVertexDivisorMaxEnum = 0x7FFFFFFF
+};
+
 enum GraphicsIndexType
 {
 	GraphicsIndexTypeNone,
@@ -734,6 +725,9 @@ enum GraphicsUniformType
 {
 	GraphicsUniformTypeNone,
     GraphicsUniformTypeBool,
+	GraphicsUniformTypeBool2,
+	GraphicsUniformTypeBool3,
+	GraphicsUniformTypeBool4,
     GraphicsUniformTypeInt,
     GraphicsUniformTypeInt2,
     GraphicsUniformTypeInt3,
@@ -746,9 +740,13 @@ enum GraphicsUniformType
     GraphicsUniformTypeFloat2,
     GraphicsUniformTypeFloat3,
     GraphicsUniformTypeFloat4,
+	GraphicsUniformTypeFloat2x2,
     GraphicsUniformTypeFloat3x3,
     GraphicsUniformTypeFloat4x4,
     GraphicsUniformTypeBoolArray,
+	GraphicsUniformTypeBool2Array,
+	GraphicsUniformTypeBool3Array,
+	GraphicsUniformTypeBool4Array,
     GraphicsUniformTypeIntArray,
     GraphicsUniformTypeInt2Array,
     GraphicsUniformTypeInt3Array,
@@ -765,6 +763,7 @@ enum GraphicsUniformType
     GraphicsUniformTypeFloat2Array,
     GraphicsUniformTypeFloat3Array,
     GraphicsUniformTypeFloat4Array,
+	GraphicsUniformTypeFloat2x2Array,
     GraphicsUniformTypeFloat3x3Array,
     GraphicsUniformTypeFloat4x4Array,
 	GraphicsUniformTypeSampler,
@@ -833,12 +832,12 @@ enum GraphicsAccessFlagsBits
 	GraphicsAccessFlagsUnsynchronizedBit = 0x00000004
 };
 
-enum GraphicsCommandListType
+enum GraphicsCommandType
 {
-	GraphicsCommandListTypeGraphics = 0,
-	GraphicsCommandListTypeCompute = 1,
-	GraphicsCommandListTypeBundle = 2,
-	GraphicsCommandListTypeCopy = 3
+	GraphicsCommandTypeGraphics = 0,
+	GraphicsCommandTypeCompute = 1,
+	GraphicsCommandTypeBundle = 2,
+	GraphicsCommandTypeCopy = 3
 };
 
 enum GraphicsCommandQueueFlags

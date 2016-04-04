@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/ssgi.h>
 #include <ray/camera.h>
-
+#include <ray/material.h>
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 

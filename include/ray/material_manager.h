@@ -58,11 +58,11 @@ public:
 
 	MaterialPtr createMaterial(const std::string& name) noexcept;
 	MaterialPtr getMaterial(const std::string& name) noexcept;
+	void destroyMaterial(MaterialPtr semantc) noexcept;
 
 	MaterialVariantPtr createSemantic(const std::string& name, GraphicsUniformType type) noexcept;
-	void addSemantic(MaterialVariantPtr semantc) noexcept;
-	void removeSemantic(MaterialVariantPtr semantc) noexcept;
 	MaterialVariantPtr getSemantic(const std::string& name) noexcept;
+	void destroySemantic(MaterialVariantPtr semantc) noexcept;
 
 
 private:

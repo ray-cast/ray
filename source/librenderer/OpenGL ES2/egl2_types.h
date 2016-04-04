@@ -103,6 +103,10 @@ _NAME_BEGIN
 #   define glDebugMessageControl glDebugMessageControlKHR
 #endif
 
+#ifndef GL_INVALID_INDEX
+#	define GL_INVALID_INDEX 0xFFFFFFFFu
+#endif
+
 #if GL_DEBUG
 #	if defined(_VISUAL_STUDIO_)
 #		pragma warning(disable : 4127)
@@ -164,9 +168,11 @@ struct GPUctxconfig
 	EGLContext share;
 };
 
-typedef std::shared_ptr<class EGL2Swapchain> EGL2SwapchainPtr;
 typedef std::shared_ptr<class EGL2Device> EGL2DevicePtr;
+typedef std::shared_ptr<class EGL2Surface> EGL2SurfacePtr;
+typedef std::shared_ptr<class EGL2Swapchain> EGL2SwapchainPtr;
 typedef std::shared_ptr<class EGL2DeviceContext> EGL2DeviceContextPtr;
+typedef std::shared_ptr<class EGL2FramebufferLayout> EGL2FramebufferLayoutPtr;
 typedef std::shared_ptr<class EGL2Framebuffer> EGL2FramebufferPtr;
 typedef std::shared_ptr<class EGL2Shader> EGL2ShaderPtr;
 typedef std::shared_ptr<class EGL2ShaderObject> EGL2ShaderObjectPtr;
@@ -176,8 +182,33 @@ typedef std::shared_ptr<class EGL2GraphicsState> EGL2GraphicsStatePtr;
 typedef std::shared_ptr<class EGL2Texture> EGL2TexturePtr;
 typedef std::shared_ptr<class EGL2Sampler> EGL2SamplerPtr;
 typedef std::shared_ptr<class EGL2RenderPipeline> EGL2RenderPipelinePtr;
+typedef std::shared_ptr<class EGL2DescriptorSetPool> EGL2DescriptorSetPoolPtr;
 typedef std::shared_ptr<class EGL2DescriptorSet> EGL2DescriptorSetPtr;
 typedef std::shared_ptr<class EGL2DescriptorSetLayout> EGL2DescriptorSetLayoutPtr;
+typedef std::shared_ptr<class EGL2GraphicsAttribute> EGL2GraphicsAttributePtr;
+typedef std::shared_ptr<class EGL2GraphicsUniform> EGL2GraphicsUniformPtr;
+typedef std::shared_ptr<class EGL2GraphicsUniformBlock> EGL2GraphicsUniformBlockPtr;
+
+typedef std::weak_ptr<class EGL2Device> EGL2DeviceWeakPtr;
+typedef std::weak_ptr<class EGL2Surface> EGL2SurfaceWeakPtr;
+typedef std::weak_ptr<class EGL2Swapchain> EGL2SwapchainWeakPtr;
+typedef std::weak_ptr<class EGL2DeviceContext> EGL2DeviceContextWeakPtr;
+typedef std::weak_ptr<class EGL2FramebufferLayout> EGL2FramebufferLayoutWeakPtr;
+typedef std::weak_ptr<class EGL2Framebuffer> EGL2FramebufferWeakPtr;
+typedef std::weak_ptr<class EGL2Shader> EGL2ShaderWeakPtr;
+typedef std::weak_ptr<class EGL2ShaderObject> EGL2ShaderObjectWeakPtr;
+typedef std::weak_ptr<class EGL2GraphicsData> EGL2GraphicsDataWeakPtr;
+typedef std::weak_ptr<class EGL2InputLayout> EGL2InputLayoutWeakPtr;
+typedef std::weak_ptr<class EGL2GraphicsState> EGL2GraphicsStateWeakPtr;
+typedef std::weak_ptr<class EGL2Texture> EGL2TextureWeakPtr;
+typedef std::weak_ptr<class EGL2Sampler> EGL2SamplerWeakPtr;
+typedef std::weak_ptr<class EGL2RenderPipeline> EGL2RenderPipelineWeakPtr;
+typedef std::weak_ptr<class EGL2DescriptorSetPool> EGL2DescriptorSetPoolWeakPtr;
+typedef std::weak_ptr<class EGL2DescriptorSet> EGL2DescriptorSetWeakPtr;
+typedef std::weak_ptr<class EGL2DescriptorSetLayout> EGL2DescriptorSetLayoutWeakPtr;
+typedef std::weak_ptr<class EGL2GraphicsAttribute> EGL2GraphicsAttributeWeakPtr;
+typedef std::weak_ptr<class EGL2GraphicsUniform> EGL2GraphicsUniformWeakPtr;
+typedef std::weak_ptr<class EGL2GraphicsUniformBlock> EGL2GraphicsUniformBlockWeakPtr;
 
 typedef std::vector<EGL2ShaderPtr> EGL2Shaders;
 

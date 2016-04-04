@@ -73,7 +73,7 @@ OGLDevice::close() noexcept
 }
 
 GraphicsSwapchainPtr
-OGLDevice::createGraphicsSwapchain(const GraphicsSwapchainDesc& desc) noexcept
+OGLDevice::createSwapchain(const GraphicsSwapchainDesc& desc) noexcept
 {
 	auto swapchain = std::make_shared<OGLSwapchain>();
 	swapchain->setDevice(this->downcast<OGLDevice>());
@@ -113,7 +113,7 @@ OGLDevice::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 }
 
 GraphicsTexturePtr
-OGLDevice::createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept
+OGLDevice::createTexture(const GraphicsTextureDesc& desc) noexcept
 {
 	auto texture = std::make_shared<OGLTexture>();
 	texture->setDevice(this->downcast<OGLDevice>());
@@ -123,7 +123,7 @@ OGLDevice::createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept
 }
 
 GraphicsSamplerPtr
-OGLDevice::createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept
+OGLDevice::createSampler(const GraphicsSamplerDesc& desc) noexcept
 {
 	auto sampler = std::make_shared<OGLSampler>();
 	sampler->setDevice(this->downcast<OGLDevice>());
@@ -133,7 +133,7 @@ OGLDevice::createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept
 }
 
 GraphicsFramebufferPtr
-OGLDevice::createRenderTexture(const GraphicsFramebufferDesc& desc) noexcept
+OGLDevice::createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept
 {
 	auto framebuffer = std::make_shared<OGLFramebuffer>();
 	framebuffer->setDevice(this->downcast<OGLDevice>());
@@ -183,7 +183,7 @@ OGLDevice::createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept
 }
 
 GraphicsDescriptorSetPtr
-OGLDevice::createGraphicsDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept
+OGLDevice::createDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept
 {
 	auto descriptorSet = std::make_shared<OGLDescriptorSet>();
 	descriptorSet->setDevice(this->downcast<OGLDevice>());
@@ -193,7 +193,7 @@ OGLDevice::createGraphicsDescriptorSet(const GraphicsDescriptorSetDesc& desc) no
 }
 
 GraphicsDescriptorSetLayoutPtr
-OGLDevice::createGraphicsDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept
+OGLDevice::createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept
 {
 	auto descriptorSetLayout = std::make_shared<OGLDescriptorSetLayout>();
 	descriptorSetLayout->setDevice(this->downcast<OGLDevice>());

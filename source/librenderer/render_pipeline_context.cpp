@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/render_pipeline_context.h>
 #include <ray/render_pipeline.h>
-
+#include <ray/material.h>
 #include <ray/graphics_context.h>
 #include <ray/render_buffer.h>
 
@@ -123,14 +123,14 @@ RenderPipelineContext::setRenderTexture(GraphicsFramebufferPtr target) noexcept
 }
 
 void
-RenderPipelineContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
+RenderPipelineContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->clearRenderTexture(flags, color, depth, stencil);
 }
 
 void
-RenderPipelineContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+RenderPipelineContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->clearRenderTexture(flags, color, depth, stencil, i);

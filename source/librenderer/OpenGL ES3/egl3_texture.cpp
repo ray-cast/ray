@@ -123,23 +123,22 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		}
 		else
 		{
-			auto level = 0;
 			auto format = EGL3Types::asTextureFormat(textureDesc.getTexFormat());
 			auto type = EGL3Types::asTextureType(textureDesc.getTexFormat());
 
 			switch (target)
 			{
 			case GL_TEXTURE_2D:
-				GL_CHECK(glTexSubImage2D(target, level, 0, 0, w, h, format, type, stream));
+				GL_CHECK(glTexSubImage2D(target, 0, 0, 0, w, h, format, type, stream));
 				break;
 			case GL_TEXTURE_2D_ARRAY:
-				GL_CHECK(glTexSubImage3D(target, level, 0, 0, 0, w, h, depth, format, type, stream));
+				GL_CHECK(glTexSubImage3D(target, 0, 0, 0, 0, w, h, depth, format, type, stream));
 				break;
 			case GL_TEXTURE_3D:
-				GL_CHECK(glTexSubImage3D(target, level, 0, 0, 0, w, h, depth, format, type, stream));
+				GL_CHECK(glTexSubImage3D(target, 0, 0, 0, 0, w, h, depth, format, type, stream));
 				break;
 			case GL_TEXTURE_CUBE_MAP:
-				GL_CHECK(glTexSubImage3D(target, level, 0, 0, 0, w, h, 6, format, type, stream));
+				GL_CHECK(glTexSubImage3D(target, 0, 0, 0, 0, w, h, 6, format, type, stream));
 				break;
 				break;
 			default:

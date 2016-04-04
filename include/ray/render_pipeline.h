@@ -42,8 +42,9 @@
 
 _NAME_BEGIN
 
-class EXPORT RenderPipeline
+class EXPORT RenderPipeline : public rtti::Interface
 {
+	__DeclareSubClass(RenderPipeline, rtti::Interface)
 public:
 	RenderPipeline() noexcept;
 	virtual ~RenderPipeline() noexcept;
@@ -66,7 +67,7 @@ public:
 	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
-	GraphicsFramebufferPtr createRenderTexture(const GraphicsFramebufferDesc& desc) noexcept;
+	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
 	GraphicsTexturePtr createTexture(const std::string& name) noexcept;
@@ -87,8 +88,8 @@ public:
 	const Viewport& getViewport(std::size_t i) const noexcept;
 
 	void setRenderTexture(GraphicsFramebufferPtr target) noexcept;
-	void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
-	void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
+	void clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
+	void clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
 	void discradRenderTexture() noexcept;
 	void readRenderTexture(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
 	void blitRenderTexture(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;

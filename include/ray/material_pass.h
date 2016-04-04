@@ -37,7 +37,7 @@
 #ifndef _H_MATERIAL_PASS_H_
 #define _H_MATERIAL_PASS_H_
 
-#include <ray/material_fwd.h>
+#include <ray/render_types.h>
 
 _NAME_BEGIN
 
@@ -48,7 +48,7 @@ public:
 	MaterialPass() noexcept;
 	~MaterialPass() noexcept;
 
-	void setup(Material& material) except;
+	bool setup(Material& material) noexcept;
 	void close() noexcept;
 
 	void setName(const std::string& name) noexcept;
@@ -72,7 +72,6 @@ private:
 	RenderPass _pass;
 	MaterialParams _parameters;
 
-	GraphicsUniforms _uniforms;
 	GraphicsPipelinePtr _pipeline;
 	GraphicsDescriptorSetPtr _descriptorSet;
 	GraphicsDescriptorSetLayoutPtr _descriptorSetLayout;

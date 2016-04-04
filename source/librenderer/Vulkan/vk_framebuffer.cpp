@@ -118,7 +118,10 @@ VulkanFramebufferLayout::setup(const GraphicsFramebufferLayoutDesc& passDesc) no
 	pass.pDependencies = nullptr;
 
 	if (vkCreateRenderPass(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &pass, nullptr, &_vkFramebufferLayout) > 0)
+	{
+		VK_PLATFORM_LOG("vkCreateRenderPass() fail.");
 		return false;
+	}
 
 	_renderPassDesc = passDesc;
 	return true;
@@ -208,7 +211,10 @@ VulkanFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcep
 	framebuffer.layers = 1;
 
 	if (vkCreateFramebuffer(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &framebuffer, nullptr, &_vkFramebuffer) > 0)
+	{
+		VK_PLATFORM_LOG("vkCreateFramebuffer() fail.");
 		return false;
+	}
 
 	_framebufferDesc = framebufferDesc;
 	return true;

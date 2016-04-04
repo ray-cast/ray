@@ -58,16 +58,22 @@ VulkanGraphicsData::setup(const GraphicsDataDesc& dataDesc) noexcept
 
 	auto type = dataDesc.getType();
 	if (type == GraphicsDataType::GraphicsDataTypeNone)
+	{
+		VK_PLATFORM_LOG("Unknown data type.");
 		return false;
+	}
 
 	auto streamSize = dataDesc.getStreamSize();
 	if (streamSize == 0)
+	{
+		VK_PLATFORM_LOG("Empty stream size");
 		return false;
+	}
 
 	VkBufferCreateInfo info;
 	info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	info.pNext = nullptr;
-	info.size = dataDesc.getStreamSize();
+	info.size = streamSize;
 	info.usage = VulkanTypes::asBufferUsageFlagBits(type);
 	info.flags = 0;
 	info.sharingMode = VkSharingMode::VK_SHARING_MODE_EXCLUSIVE;
@@ -75,7 +81,10 @@ VulkanGraphicsData::setup(const GraphicsDataDesc& dataDesc) noexcept
 	info.pQueueFamilyIndices = nullptr;
 
 	if (vkCreateBuffer(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &info, nullptr, &_vkBuffer) != VK_SUCCESS)
+	{
+		VK_PLATFORM_LOG("vkCreateBuffer() fail.")
 		return false;
+	}
 
 	VkMemoryRequirements memReq;
 	vkGetBufferMemoryRequirements(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkBuffer, &memReq);
@@ -95,7 +104,10 @@ VulkanGraphicsData::setup(const GraphicsDataDesc& dataDesc) noexcept
 	}
 
 	if (vkBindBufferMemory(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkBuffer, _memory.getDeviceMemory(), 0) != VK_SUCCESS)
+	{
+		VK_PLATFORM_LOG("vkBindBufferMemory() fail.")
 		return false;
+	}
 
 	return true;
 }
@@ -119,14 +131,13 @@ VulkanGraphicsData::getBuffer() const noexcept
 void
 VulkanGraphicsData::setDevice(GraphicsDevicePtr device) noexcept
 {
-	_device = device;
 	_memory.setDevice(device);
 }
 
 GraphicsDevicePtr
 VulkanGraphicsData::getDevice() noexcept
 {
-	return _device.lock();
+	return _memory.getDevice();
 }
 
 const GraphicsDataDesc&

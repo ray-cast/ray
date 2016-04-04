@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/ssao.h>
 #include <ray/camera.h>
-
+#include <ray/material.h>
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 
@@ -169,11 +169,11 @@ SSAO::onActivate(RenderPipeline& pipeline) except
 
 	GraphicsFramebufferDesc ambientViewDesc;
 	ambientViewDesc.attach(_texAmbientMap);
-	_texAmbientView = pipeline.createRenderTexture(ambientViewDesc);
+	_texAmbientView = pipeline.createFramebuffer(ambientViewDesc);
 
 	GraphicsFramebufferDesc blurViewDesc;
 	blurViewDesc.attach(_texBlurMap);
-	_texBlurView = pipeline.createRenderTexture(blurViewDesc);
+	_texBlurView = pipeline.createFramebuffer(blurViewDesc);
 
 	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssao.fxml.o");
 	_ambientOcclusionPass = _ambientOcclusion->getTech(RenderQueue::RenderQueuePostprocess)->getPass("ao");

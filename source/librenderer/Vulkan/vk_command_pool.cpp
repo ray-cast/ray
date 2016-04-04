@@ -66,7 +66,7 @@ VulkanCommandPool::setup(const GraphicsCommandPoolDesc& commandPooldesc) noexcep
 	std::uint32_t graphicsQueueNodeIndex = UINT32_MAX;
 	for (std::uint32_t i = 0; i < queueCount; i++)
 	{
-		if (commandPooldesc.getCommandListType() == GraphicsCommandListType::GraphicsCommandListTypeGraphics)
+		if (commandPooldesc.getCommandListType() == GraphicsCommandType::GraphicsCommandTypeGraphics)
 		{
 			if (props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			{
@@ -74,7 +74,7 @@ VulkanCommandPool::setup(const GraphicsCommandPoolDesc& commandPooldesc) noexcep
 				break;
 			}
 		}
-		else if (commandPooldesc.getCommandListType() == GraphicsCommandListType::GraphicsCommandListTypeCompute)
+		else if (commandPooldesc.getCommandListType() == GraphicsCommandType::GraphicsCommandTypeCompute)
 		{
 			if (props[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
 			{
@@ -84,23 +84,29 @@ VulkanCommandPool::setup(const GraphicsCommandPoolDesc& commandPooldesc) noexcep
 		}
 	}
 
-	if (graphicsQueueNodeIndex != UINT32_MAX)
+	if (graphicsQueueNodeIndex == UINT32_MAX)
 	{
-		VkCommandPoolCreateInfo info;
-		info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		info.pNext = NULL;
-		info.queueFamilyIndex = graphicsQueueNodeIndex;
-		info.flags = 0;
+		VK_PLATFORM_LOG("Can't find compatible command type.");
+		return false;
+	}
 
-		auto poolFlags = commandPooldesc.getCommandFlags();
-		if (poolFlags & GraphicsCommandPoolFlags::GraphicsCommandPoolTransientBit)
-			info.flags |= VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+	VkCommandPoolCreateInfo info;
+	info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	info.pNext = NULL;
+	info.queueFamilyIndex = graphicsQueueNodeIndex;
+	info.flags = 0;
 
-		if (poolFlags & GraphicsCommandPoolFlags::GraphicsCommandPoolResetCommandBuffer)
-			info.flags |= VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+	auto poolFlags = commandPooldesc.getCommandFlags();
+	if (poolFlags & GraphicsCommandPoolFlags::GraphicsCommandPoolTransientBit)
+		info.flags |= VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
 
-		if (vkCreateCommandPool(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &info, nullptr, &_vkCommandPool) > 0)
-			return false;
+	if (poolFlags & GraphicsCommandPoolFlags::GraphicsCommandPoolResetCommandBuffer)
+		info.flags |= VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+	if (vkCreateCommandPool(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &info, nullptr, &_vkCommandPool) > 0)
+	{
+		VK_PLATFORM_LOG("vkCreateCommandPool() fail.");
+		return false;
 	}
 
 	_commandPoolDesc = commandPooldesc;

@@ -41,36 +41,103 @@
 
 _NAME_BEGIN
 
-class OGLShaderAttribute final : public ShaderAttribute
+class OGLGraphicsAttribute final : public GraphicsAttribute
 {
-	__DeclareSubClass(OGLShaderAttribute, ShaderAttribute)
+	__DeclareSubClass(OGLGraphicsAttribute, GraphicsAttribute)
 public:
-	OGLShaderAttribute() noexcept;
-	~OGLShaderAttribute() noexcept;
+	OGLGraphicsAttribute() noexcept;
+	~OGLGraphicsAttribute() noexcept;
 
-	void setLocation(GLint location) noexcept;
-	GLint getLocation() const noexcept;
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
+	void setType(GraphicsUniformType type) noexcept;
+	GraphicsUniformType getType() const noexcept;
+
+	void setSemantic(const std::string& semantic) noexcept;
+	const std::string& getSemantic() const noexcept;
+
+	void setSemanticIndex(std::uint8_t index) noexcept;
+	std::uint8_t getSemanticIndex() const noexcept;
+
+	void setBindingPoint(GLuint bindingPoint) noexcept;
+	GLuint getBindingPoint() const noexcept;
 
 private:
-	GLint  _location;
+	OGLGraphicsAttribute(const OGLGraphicsAttribute&) noexcept = delete;
+	OGLGraphicsAttribute& operator=(const OGLGraphicsAttribute&) noexcept = delete;
+
+private:
+	std::string _name;
+	std::string _semantic;
+	std::uint8_t _index;
+	GLuint _bindingPoint;
+	GraphicsUniformType _type;
 };
 
-class OGLShaderUniform final : public ShaderUniform
+class OGLGraphicsUniform final : public GraphicsUniform
 {
-	__DeclareSubClass(OGLShaderUniform, ShaderUniform)
+	__DeclareSubClass(OGLGraphicsUniform, GraphicsUniform)
 public:
-	OGLShaderUniform() noexcept;
-	~OGLShaderUniform() noexcept;
+	OGLGraphicsUniform() noexcept;
+	~OGLGraphicsUniform() noexcept;
 
-	void setBindingProgram(GLuint program) noexcept;
-	GLuint getBindingProgram() const noexcept;
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
+	void setType(GraphicsUniformType type) noexcept;
+	GraphicsUniformType getType() const noexcept;
+
+	void setOffset(std::uint32_t offset) noexcept;
+	std::uint32_t getOffset() const noexcept;
+
+	void setBindingPoint(GLuint bindingPoint) noexcept;
+	GLuint getBindingPoint() const noexcept;
 
 private:
-	OGLShaderUniform(const OGLShaderUniform&) noexcept = delete;
-	OGLShaderUniform& operator=(const OGLShaderUniform&) noexcept = delete;
+	OGLGraphicsUniform(const OGLGraphicsUniform&) noexcept = delete;
+	OGLGraphicsUniform& operator=(const OGLGraphicsUniform&) noexcept = delete;
 
 private:
-	GLuint _program;
+	std::string _name;
+	std::uint32_t _offset;
+	GLuint _bindingPoint;
+	GraphicsUniformType _type;
+};
+
+class OGLGraphicsUniformBlock final : public GraphicsUniformBlock
+{
+	__DeclareSubClass(OGLGraphicsUniformBlock, GraphicsUniformBlock)
+public:
+	OGLGraphicsUniformBlock() noexcept;
+	~OGLGraphicsUniformBlock() noexcept;
+
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
+	void setType(GraphicsUniformType type) noexcept;
+	GraphicsUniformType getType() const noexcept;
+
+	void setBlockSize(std::uint32_t size) noexcept;
+	std::uint32_t getBlockSize() const noexcept;
+
+	void addGraphicsUniform(GraphicsUniformPtr uniform) noexcept;
+	void removeGraphicsUniform(GraphicsUniformPtr uniform) noexcept;
+	const GraphicsUniforms& getGraphicsUniforms() const noexcept;
+
+	void setBindingPoint(GLuint bindingPoint) noexcept;
+	GLuint getBindingPoint() const noexcept;
+
+private:
+	OGLGraphicsUniformBlock(const OGLGraphicsUniformBlock&) noexcept = delete;
+	OGLGraphicsUniformBlock& operator=(const OGLGraphicsUniformBlock&) noexcept = delete;
+
+private:
+	std::string _name;
+	std::uint32_t _size;
+	GLuint _bindingPoint;
+	GraphicsUniforms _uniforms;
+	GraphicsUniformType _type;
 };
 
 class OGLShader final : public GraphicsShader
@@ -115,8 +182,9 @@ public:
 
 	GLuint getInstanceID() noexcept;
 
-	ShaderUniforms& getActiveUniforms() noexcept;
-	ShaderAttributes& getActiveAttributes() noexcept;
+	const GraphicsUniforms& getActiveUniforms() const noexcept;
+	const GraphicsUniformBlocks& getActiveUniformBlocks() const noexcept;
+	const GraphicsAttributes& getActiveAttributes() const noexcept;
 
 	const GraphicsProgramDesc& getGraphicsProgramDesc() const noexcept;
 
@@ -124,6 +192,9 @@ private:
 	void _initActiveAttribute() noexcept;
 	void _initActiveUniform() noexcept;
 	void _initActiveUniformBlock() noexcept;
+
+private:
+	static GraphicsUniformType toGraphicsUniformType(const std::string& name, GLenum type) noexcept;
 
 private:
 	friend class OGLDevice;
@@ -136,8 +207,9 @@ private:
 
 private:
 	GLuint _program;
-	ShaderUniforms _activeUniforms;
-	ShaderAttributes  _activeAttributes;
+	GraphicsUniforms _activeUniforms;
+	GraphicsUniformBlocks _activeUniformBlocks;
+	GraphicsAttributes  _activeAttributes;
 	GraphicsProgramDesc _programDesc;
 	GraphicsDeviceWeakPtr _device;
 };

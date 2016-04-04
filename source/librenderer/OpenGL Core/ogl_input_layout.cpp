@@ -50,6 +50,7 @@ OGLInputLayout::OGLInputLayout() noexcept
 
 OGLInputLayout::~OGLInputLayout() noexcept
 {
+	this->close();
 }
 
 bool
@@ -60,7 +61,7 @@ OGLInputLayout::setup(const GraphicsInputLayoutDesc& inputLayout) noexcept
 	if (OGLTypes::asIndexType(inputLayout.getIndexType()) == GL_INVALID_ENUM)
 		return false;
 
-	auto& component = inputLayout.getVertexComponents();
+	auto& component = inputLayout.getGraphicsVertexLayouts();
 	for (auto& it : component)
 	{
 		auto& semantic = it.getSemantic();
@@ -94,7 +95,7 @@ OGLInputLayout::setup(const GraphicsInputLayoutDesc& inputLayout) noexcept
 void
 OGLInputLayout::close() noexcept
 {
-	if (_vao)
+	if (_vao != GL_NONE)
 	{
 		glDeleteVertexArrays(1, &_vao);
 		_vao = GL_NONE;
@@ -122,7 +123,7 @@ OGLInputLayout::bindLayout(OGLShaderObjectPtr program) noexcept
 	{
 		GLuint offset = 0;
 
-		auto& components = _inputLayoutDesc.getVertexComponents();
+		auto& components = _inputLayoutDesc.getGraphicsVertexLayouts();
 		for (auto& it : components)
 		{
 			GLuint attribIndex = GL_INVALID_INDEX;
@@ -134,7 +135,7 @@ OGLInputLayout::bindLayout(OGLShaderObjectPtr program) noexcept
 			{
 				if (attrib->getSemanticIndex() == it.getSemanticIndex() && attrib->getSemantic() == it.getSemantic())
 				{
-					attribIndex = attrib->downcast<OGLShaderAttribute>()->getLocation();
+					attribIndex = attrib->downcast<OGLGraphicsAttribute>()->getBindingPoint();
 					break;
 				}
 			}
@@ -145,8 +146,10 @@ OGLInputLayout::bindLayout(OGLShaderObjectPtr program) noexcept
 				glVertexArrayAttribBinding(_vao, attribIndex, bindingIndex);
 				glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, GL_FALSE, offset);
 
-				if (it.getVertexDivisor() > 0)
-					glVertexArrayBindingDivisor(_vao, bindingIndex, it.getVertexDivisor());
+				if (it.getVertexDivisor() == GraphicsVertexDivisor::GraphicsVertexDivisorInstance)
+					glVertexArrayBindingDivisor(_vao, bindingIndex, 1);
+				else
+					glVertexArrayBindingDivisor(_vao, bindingIndex, 0);
 			}
 
 			offset += it.getVertexSize();
@@ -161,15 +164,8 @@ OGLInputLayout::bindVbo(OGLGraphicsDataPtr vbo, std::uint8_t slot) noexcept
 {
 	assert(vbo);
 
-	if (slot > MAX_VERTEX_UNIT)
-		return;
-
-	if (_vbo[slot] != vbo)
-	{
-		GLuint stride = vbo->getGraphicsDataDesc().getStride();
-		glVertexArrayVertexBuffer(_vao, slot, vbo->getInstanceID(), 0, stride);
-		_vbo[slot] = vbo;
-	}
+	GLuint stride = vbo->getGraphicsDataDesc().getStride();
+	glVertexArrayVertexBuffer(_vao, slot, vbo->getInstanceID(), 0, stride);
 }
 
 void

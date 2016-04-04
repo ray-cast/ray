@@ -91,7 +91,7 @@ EGL3Framebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 		}
 	}
 
-	GLenum draw[MAX_COLOR_ATTACHMENTS] = { 0 };
+	std::vector<GLenum> draw;
 	GLenum attachment = GL_COLOR_ATTACHMENT0;
 	GLsizei count = 0;
 
@@ -99,11 +99,11 @@ EGL3Framebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 	{
 		if (!this->bindRenderTexture(texture, attachment))
 			return false;
-
-		draw[count++] = attachment++;
+		draw.push_back(attachment++);
+		count++;
 	}
 
-	GL_CHECK(glDrawBuffers(count, draw));
+	GL_CHECK(glDrawBuffers(count, draw.data()));
 
 	_framebufferDesc = framebufferDesc;
 
@@ -188,7 +188,7 @@ EGL3Framebuffer::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment
 	{
 		GL_PLATFORM_LOG("Invalid texture target");
 		return false;
-	}		
+	}
 
 	GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, target, handle, 0));
 

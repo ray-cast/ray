@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include "vk_descriptor_set_layout.h"
 #include "vk_device.h"
+#include "vk_shader.h"
 
 _NAME_BEGIN
 
@@ -63,8 +64,8 @@ VulkanDescriptorSetLayout::setup(const GraphicsDescriptorSetLayoutDesc& descript
 		layout.descriptorType = VulkanTypes::asDescriptorType(it->getType());
 		layout.descriptorCount = 1;
 		layout.pImmutableSamplers = nullptr;
-		layout.binding = it->getBindingPoint();
-		layout.stageFlags = VulkanTypes::asShaderStage(it->getShaderStage());
+		layout.binding = it->downcast<VulkanGraphicsUniform>()->getBindingPoint();
+		layout.stageFlags = VkShaderStageFlagBits::VK_SHADER_STAGE_ALL;
 
 		layouts.push_back(layout);
 	}
@@ -77,7 +78,10 @@ VulkanDescriptorSetLayout::setup(const GraphicsDescriptorSetLayoutDesc& descript
 	info.pBindings = layouts.data();
 
 	if (vkCreateDescriptorSetLayout(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &info, nullptr, &_vkDescriptorSetLayout) != VK_SUCCESS)
+	{
+		VK_PLATFORM_LOG("vkCreateDescriptorSetLayout() fail.");
 		return false;
+	}
 
 	_descriptorSetLayoutDesc = descriptorSetLayoutDesc;
 	return true;

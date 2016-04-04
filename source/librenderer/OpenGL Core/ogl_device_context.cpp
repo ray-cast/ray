@@ -253,26 +253,6 @@ OGLDeviceContext::unmapBuffer(GraphicsDataPtr& data) noexcept
 }
 
 void
-OGLDeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
-{
-	if (_ibo != data)
-	{
-		if (data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer)
-			_ibo = data->downcast<OGLGraphicsData>();
-		else
-			_ibo = nullptr;
-
-		_needUpdateIbo = true;
-	}
-}
-
-GraphicsDataPtr
-OGLDeviceContext::getIndexBufferData() const noexcept
-{
-	return _ibo;
-}
-
-void
 OGLDeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 {
 	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
@@ -291,6 +271,26 @@ GraphicsDataPtr
 OGLDeviceContext::getVertexBufferData() const noexcept
 {
 	return _vbo;
+}
+
+void
+OGLDeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
+{
+	if (_ibo != data)
+	{
+		if (data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer)
+			_ibo = data->downcast<OGLGraphicsData>();
+		else
+			_ibo = nullptr;
+
+		_needUpdateIbo = true;
+	}
+}
+
+GraphicsDataPtr
+OGLDeviceContext::getIndexBufferData() const noexcept
+{
+	return _ibo;
 }
 
 void
@@ -410,7 +410,7 @@ OGLDeviceContext::getRenderTexture() const noexcept
 }
 
 void
-OGLDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
+OGLDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	GLbitfield mode = 0;
 
@@ -465,7 +465,7 @@ OGLDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& co
 }
 
 void
-OGLDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+OGLDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
 	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 	{
@@ -670,7 +670,6 @@ OGLDeviceContext::initStateSystem() noexcept
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	_maxTextureUnits = MAX_TEXTURE_UNIT;
 	_maxViewports = 4;
 
 	_clearColor.set(0.0, 0.0, 0.0, 0.0);

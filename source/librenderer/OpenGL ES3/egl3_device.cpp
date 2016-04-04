@@ -73,7 +73,7 @@ EGL3Device::close() noexcept
 }
 
 GraphicsSwapchainPtr
-EGL3Device::createGraphicsSwapchain(const GraphicsSwapchainDesc& desc) noexcept
+EGL3Device::createSwapchain(const GraphicsSwapchainDesc& desc) noexcept
 {
 	auto swapchain = std::make_shared<EGL3Swapchain>();
 	swapchain->setDevice(this->downcast<EGL3Device>());
@@ -113,7 +113,7 @@ EGL3Device::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 }
 
 GraphicsTexturePtr
-EGL3Device::createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept
+EGL3Device::createTexture(const GraphicsTextureDesc& desc) noexcept
 {
 	auto texture = std::make_shared<EGL3Texture>();
 	texture->setDevice(this->downcast<EGL3Device>());
@@ -123,7 +123,7 @@ EGL3Device::createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept
 }
 
 GraphicsSamplerPtr
-EGL3Device::createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept
+EGL3Device::createSampler(const GraphicsSamplerDesc& desc) noexcept
 {
 	auto sampler = std::make_shared<EGL3Sampler>();
 	sampler->setDevice(this->downcast<EGL3Device>());
@@ -133,7 +133,7 @@ EGL3Device::createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept
 }
 
 GraphicsFramebufferPtr
-EGL3Device::createRenderTexture(const GraphicsFramebufferDesc& desc) noexcept
+EGL3Device::createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept
 {
 	auto framebuffer = std::make_shared<EGL3Framebuffer>();
 	framebuffer->setDevice(this->downcast<EGL3Device>());
@@ -183,7 +183,7 @@ EGL3Device::createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept
 }
 
 GraphicsDescriptorSetPtr
-EGL3Device::createGraphicsDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept
+EGL3Device::createDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept
 {
 	auto descriptorSet = std::make_shared<EGL3DescriptorSet>();
 	descriptorSet->setDevice(this->downcast<EGL3Device>());
@@ -193,7 +193,7 @@ EGL3Device::createGraphicsDescriptorSet(const GraphicsDescriptorSetDesc& desc) n
 }
 
 GraphicsDescriptorSetLayoutPtr
-EGL3Device::createGraphicsDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept
+EGL3Device::createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept
 {
 	auto descriptorSetLayout = std::make_shared<EGL3DescriptorSetLayout>();
 	descriptorSetLayout->setDevice(this->downcast<EGL3Device>());

@@ -89,7 +89,7 @@ public:
 
 	MaterialPtr createMaterial(const std::string& name) noexcept;
 
-	GraphicsFramebufferPtr createRenderTexture(const GraphicsFramebufferDesc& desc) noexcept;
+	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
 	bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;

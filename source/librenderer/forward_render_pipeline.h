@@ -34,61 +34,19 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MATERIAL_FWD_H_
-#define _H_MATERIAL_FWD_H_
+#ifndef _H_FORWARD_RENDER_PIPELINE_H_
+#define _H_FORWARD_RENDER_PIPELINE_H_
 
-#include <ray/graphics_types.h>
+#include <ray/render_pipeline.h>
 
 _NAME_BEGIN
 
-typedef std::shared_ptr<class Material> MaterialPtr;
-typedef std::shared_ptr<class MaterialPass> MaterialPassPtr;
-typedef std::shared_ptr<class MaterialTech> MaterialTechPtr;
-typedef std::shared_ptr<class MaterialParam> MaterialParamPtr;
-typedef std::shared_ptr<class MaterialVariant> MaterialVariantPtr;
-typedef std::shared_ptr<class MaterialLoader> MaterialLoaderPtr;
-typedef std::shared_ptr<class MaterialManager> MaterialManagerPtr;
-
-typedef std::weak_ptr<class Material> MaterialWeakPtr;
-typedef std::weak_ptr<class MaterialPass> MaterialPassWeakPtr;
-typedef std::weak_ptr<class MaterialTech> MaterialTechWeakPtr;
-typedef std::weak_ptr<class MaterialParam> MaterialParamWeakPtr;
-typedef std::weak_ptr<class MaterialVariant> MaterialVariantWeakPtr;
-typedef std::weak_ptr<class MaterialManager> MaterialManagerWeakPtr;
-
-typedef std::vector<MaterialPtr> Materials;
-typedef std::vector<MaterialPassPtr> MaterialPassList;
-typedef std::vector<MaterialTechPtr> MaterialTechniques;
-typedef std::vector<MaterialParamPtr> MaterialParams;
-typedef std::vector<MaterialVariantPtr> MaterialVariants;
-
-enum RenderQueue
+class ForwardRenderPipeline final : public RenderPipeline
 {
-	RenderQueueCustom,
-	RenderQueueOpaque,
-	RenderQueueTransparent,
-	RenderQueueLighting,
-	RenderQueuePostprocess,
-	RenderQueueBeginRange = RenderQueueCustom,
-	RenderQueueEndRange = RenderQueuePostprocess,
-	RenderQueueRangeSize = (RenderQueueEndRange - RenderQueueBeginRange + 1),
-	RenderQueueMaxEnum = 0x7FFFFFFF
-};
-
-enum RenderPass
-{
-	RenderPassCustom,
-	RenderPassDepth,
-	RenderPassShadow,
-	RenderPassOpaques,
-	RenderPassTransparent,
-	RenderPassSpecific,
-	RenderPassLights,
-	RenderPassPostprocess,
-	RenderPassBeginRange = RenderPassCustom,
-	RenderPassEndRange = RenderPassPostprocess,
-	RenderPassRangeSize = (RenderPassEndRange - RenderPassBeginRange + 1),
-	RenderPassMaxEnum = 0x7FFFFFFF
+	__DeclareSubClass(ForwardRenderPipeline, RenderPipeline)
+public:
+	ForwardRenderPipeline() noexcept;
+	virtual ~ForwardRenderPipeline() noexcept;
 };
 
 _NAME_END

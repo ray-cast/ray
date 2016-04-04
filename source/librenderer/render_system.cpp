@@ -377,10 +377,10 @@ RenderSystem::createMaterial(const std::string& name) noexcept
 }
 
 GraphicsFramebufferPtr 
-RenderSystem::createRenderTexture(const GraphicsFramebufferDesc& desc) noexcept
+RenderSystem::createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept
 {
 	assert(_pipeline);
-	return _pipeline->createRenderTexture(desc);
+	return _pipeline->createFramebuffer(desc);
 }
 
 GraphicsDataPtr

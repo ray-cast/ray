@@ -34,74 +34,12 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_SHADER_H_
-#define _H_SHADER_H_
+#ifndef _H_GRAPHICS_SHADER_H_
+#define _H_GRAPHICS_SHADER_H_
 
 #include <ray/graphics_child.h>
 
 _NAME_BEGIN
-
-class EXPORT ShaderParameter : public rtti::Interface
-{
-	__DeclareSubInterface(ShaderParameter, rtti::Interface)
-public:
-	ShaderParameter() noexcept;
-	virtual ~ShaderParameter() noexcept;
-
-	void setName(const std::string& name) noexcept;
-	const std::string& getName() const noexcept;
-
-private:
-	ShaderParameter(const ShaderParameter&) noexcept = delete;
-	ShaderParameter& operator=(const ShaderParameter&) noexcept = delete;
-
-private:
-	std::string _name;
-};
-
-class EXPORT ShaderAttribute : public ShaderParameter
-{
-	__DeclareSubInterface(ShaderAttribute, ShaderParameter)
-public:
-	ShaderAttribute() noexcept;
-	virtual ~ShaderAttribute() noexcept;
-
-	void setSemantic(const std::string& semantic) noexcept;
-	const std::string& getSemantic() const noexcept;
-
-	void setSemanticIndex(std::uint8_t index) noexcept;
-	std::uint8_t getSemanticIndex() const noexcept;
-
-private:
-	ShaderAttribute(const ShaderAttribute&) noexcept = delete;
-	ShaderAttribute& operator=(const ShaderAttribute&) noexcept = delete;
-
-private:
-	std::uint8_t _index;
-	std::string _semantic;
-};
-
-class EXPORT ShaderUniform : public ShaderParameter
-{
-	__DeclareSubInterface(ShaderUniform, ShaderParameter)
-public:
-	ShaderUniform() noexcept;
-	virtual ~ShaderUniform() noexcept;
-
-	void setType(GraphicsUniformType type) noexcept;
-	GraphicsUniformType getType() const noexcept;
-
-	void setBindingPoint(std::uint32_t bindingPoint) noexcept;
-	std::uint32_t getBindingPoint() const noexcept;
-
-private:
-	ShaderUniform(const ShaderUniform&) noexcept = delete;
-	ShaderUniform& operator=(const ShaderUniform&) noexcept = delete;
-
-private:
-	std::uint32_t _bindingPoint;
-	GraphicsUniformType _type;
-};
 
 class EXPORT GraphicsShaderDesc final
 {
@@ -136,6 +74,65 @@ private:
 	GraphicsShaders _shaders;
 };
 
+class EXPORT GraphicsParam : public rtti::Interface
+{
+	__DeclareSubInterface(GraphicsParam, rtti::Interface)
+public:
+	GraphicsParam() noexcept;
+	virtual ~GraphicsParam() noexcept;
+
+	virtual const std::string& getName() const noexcept = 0;
+	virtual GraphicsUniformType getType() const noexcept = 0;
+
+private:
+	GraphicsParam(const GraphicsParam&) noexcept = delete;
+	GraphicsParam& operator=(const GraphicsParam&) noexcept = delete;
+};
+
+class EXPORT GraphicsAttribute : public GraphicsParam
+{
+	__DeclareSubInterface(GraphicsAttribute, GraphicsParam)
+public:
+	GraphicsAttribute() noexcept;
+	virtual ~GraphicsAttribute() noexcept;
+
+	virtual const std::string& getSemantic() const noexcept = 0;
+	virtual std::uint8_t getSemanticIndex() const noexcept = 0;
+
+private:
+	GraphicsAttribute(const GraphicsAttribute&) noexcept = delete;
+	GraphicsAttribute& operator=(const GraphicsAttribute&) noexcept = delete;
+};
+
+class EXPORT GraphicsUniform : public GraphicsParam
+{
+	__DeclareSubInterface(GraphicsUniform, GraphicsParam)
+public:
+	GraphicsUniform() noexcept;
+	virtual ~GraphicsUniform() noexcept;
+
+	virtual std::uint32_t getOffset() const noexcept = 0;
+
+private:
+	GraphicsUniform(const GraphicsUniform&) noexcept = delete;
+	GraphicsUniform& operator=(const GraphicsUniform&) noexcept = delete;
+};
+
+class EXPORT GraphicsUniformBlock : public GraphicsParam
+{
+	__DeclareSubInterface(GraphicsUniformBlock, GraphicsParam)
+public:
+	GraphicsUniformBlock() noexcept;
+	~GraphicsUniformBlock() noexcept;
+
+	virtual std::uint32_t getBlockSize() const noexcept = 0;
+	virtual const GraphicsUniforms& getGraphicsUniforms() const noexcept = 0;
+
+private:
+	GraphicsUniformBlock(const GraphicsUniformBlock&) noexcept = delete;
+	GraphicsUniformBlock& operator=(const GraphicsUniformBlock&) noexcept = delete;
+};
+
 class EXPORT GraphicsShader : public GraphicsChild
 {
 	__DeclareSubInterface(GraphicsShader, GraphicsChild)
@@ -157,8 +154,9 @@ public:
 	GraphicsProgram() noexcept;
 	virtual ~GraphicsProgram() noexcept;
 
-	virtual ShaderUniforms& getActiveUniforms() noexcept = 0;
-	virtual ShaderAttributes& getActiveAttributes() noexcept = 0;
+	virtual const GraphicsUniforms& getActiveUniforms() const noexcept = 0;
+	virtual const GraphicsUniformBlocks& getActiveUniformBlocks() const noexcept = 0;
+	virtual const GraphicsAttributes& getActiveAttributes() const noexcept = 0;
 
 	virtual const GraphicsProgramDesc& getGraphicsProgramDesc() const noexcept = 0;
 

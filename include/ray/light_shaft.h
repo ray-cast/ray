@@ -48,11 +48,10 @@ public:
 	~LightShaft() noexcept;
 
 private:
+	void onActivate(RenderPipeline& pipeline) noexcept;
+	void onDeactivate(RenderPipeline& pipeline) noexcept;
 
-	void onActivate(RenderPipeline& pipeline) except;
-	void onDeactivate(RenderPipeline& pipeline) except;
-
-	void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) except;
+	void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 
 private:
 

@@ -284,7 +284,7 @@ MyGuiRenderTexture::MyGuiRenderTexture(GraphicsTexturePtr texture) noexcept
 
 	GraphicsFramebufferDesc framebufferDesc;
 	framebufferDesc.attach(texture);
-	_renderTexture = RenderSystem::instance()->createRenderTexture(framebufferDesc);
+	_renderTexture = RenderSystem::instance()->createFramebuffer(framebufferDesc);
 }
 
 MyGuiRenderTexture::~MyGuiRenderTexture() noexcept
@@ -295,7 +295,7 @@ void
 MyGuiRenderTexture::begin() noexcept
 {
 	RenderSystem::instance()->getRenderPipeline()->setRenderTexture(_renderTexture);
-	RenderSystem::instance()->getRenderPipeline()->clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsAll, Vector4(0, 0, 0, 0), 1.0, 0);
+	RenderSystem::instance()->getRenderPipeline()->clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsAll, Vector4::Zero, 1.0, 0);
 }
 
 void 

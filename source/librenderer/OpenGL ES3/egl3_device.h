@@ -51,19 +51,19 @@ public:
 	bool setup(const GraphicsDeviceDesc& desc) noexcept;
 	void close() noexcept;
 
-	GraphicsSwapchainPtr createGraphicsSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
+	GraphicsSwapchainPtr createSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
 	GraphicsContextPtr createGraphicsContext(const GraphicsContextDesc& desc) noexcept;
 	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
-	GraphicsTexturePtr createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept;
-	GraphicsSamplerPtr createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept;
-	GraphicsFramebufferPtr createRenderTexture(const GraphicsFramebufferDesc& desc) noexcept;
+	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
+	GraphicsSamplerPtr createSampler(const GraphicsSamplerDesc& desc) noexcept;
+	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
 	GraphicsShaderPtr createShader(const GraphicsShaderDesc& desc) noexcept;
 	GraphicsProgramPtr createProgram(const GraphicsProgramDesc& desc) noexcept;
 	GraphicsStatePtr createRenderState(const GraphicsStateDesc& desc) noexcept;
 	GraphicsPipelinePtr createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept;
-	GraphicsDescriptorSetPtr createGraphicsDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept;
-	GraphicsDescriptorSetLayoutPtr createGraphicsDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept;
+	GraphicsDescriptorSetPtr createDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept;
+	GraphicsDescriptorSetLayoutPtr createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept;
 
 	GraphicsFormat findCompatibleFormat(GraphicsPixelFormatDesc& desc) noexcept;
 

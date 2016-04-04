@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class ClearValueRect
+class ClearValueRect final
 {
 public:
 	std::int32_t x;
@@ -52,7 +52,7 @@ public:
 	std::uint32_t count;
 };
 
-class ClearValue
+class ClearValue final
 {
 public:
 	GraphicsClearFlags flags;
@@ -62,34 +62,50 @@ public:
 	std::int32_t stencil;
 };
 
-class GraphicsCommandQueueDesc
+class GraphicsCommandQueueDesc final
 {
 public:
-	GraphicsCommandListType type;
-	GraphicsCommandQueueFlags flags;
-	GraphicsCommandQueuePriority priority;
-	std::uint32_t mask;
+	GraphicsCommandQueueDesc() noexcept;
+	~GraphicsCommandQueueDesc() noexcept;
+
+	void setCommandQueueMask(std::uint32_t mask) noexcept;
+	std::uint32_t getCommandQueueMask() const noexcept;
+
+	void setCommandQueueType(GraphicsCommandType type) noexcept;
+	GraphicsCommandType getCommandQueueType() const noexcept;
+
+	void setCommandQueueFlags(GraphicsCommandQueueFlags type) noexcept;
+	GraphicsCommandQueueFlags getCommandQueueFlags() const noexcept;
+
+	void setCommandQueuePriority(GraphicsCommandQueuePriority type) noexcept;
+	GraphicsCommandQueuePriority getCommandQueuePriority() const noexcept;
+
+private:
+	std::uint32_t _mask;
+	GraphicsCommandType _type;
+	GraphicsCommandQueueFlags _flags;
+	GraphicsCommandQueuePriority _priority;
 };
 
-class GraphicsCommandPoolDesc
+class GraphicsCommandPoolDesc final
 {
 public:
 	GraphicsCommandPoolDesc() noexcept;
-	GraphicsCommandPoolDesc(GraphicsCommandListType type, std::uint32_t flags) noexcept;
+	GraphicsCommandPoolDesc(GraphicsCommandType type, std::uint32_t flags) noexcept;
 	~GraphicsCommandPoolDesc() noexcept;
 
-	void setCommandListType(GraphicsCommandListType type) noexcept;
-	GraphicsCommandListType getCommandListType() const noexcept;
+	void setCommandListType(GraphicsCommandType type) noexcept;
+	GraphicsCommandType getCommandListType() const noexcept;
 
 	void setCommandFlags(std::uint32_t flags) noexcept;
 	std::uint32_t getCommandFlags() const noexcept;
 
 private:
 	std::uint32_t _flags;
-	GraphicsCommandListType _type;
+	GraphicsCommandType _type;
 };
 
-class GraphicsCommandListDesc
+class GraphicsCommandListDesc final
 {
 public:
 	GraphicsCommandListDesc() noexcept;
@@ -119,6 +135,10 @@ public:
 	virtual void present(GraphicsSwapchainPtr canvas[], std::uint32_t count) noexcept = 0;
 
 	virtual const GraphicsCommandQueueDesc& getGraphicsCommandQueueDesc() const noexcept = 0;
+
+private:
+	GraphicsCommandQueue(const GraphicsCommandQueue&) = delete;
+	GraphicsCommandQueue& operator=(const GraphicsCommandQueue&) = delete;
 };
 
 class GraphicsCommandPool : public GraphicsChild
@@ -129,6 +149,10 @@ public:
 	virtual ~GraphicsCommandPool() noexcept;
 
 	virtual const GraphicsCommandPoolDesc& getGraphicsCommandPoolDesc() const noexcept = 0;
+
+private:
+	GraphicsCommandPool(const GraphicsCommandPool&) = delete;
+	GraphicsCommandPool& operator=(const GraphicsCommandPool&) = delete;
 };
 
 class GraphicsCommandList : public GraphicsChild
@@ -159,6 +183,10 @@ public:
 	virtual void drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t count) noexcept = 0;
 
 	virtual const GraphicsCommandListDesc& getGraphicsCommandListDesc() const noexcept = 0;
+
+private:
+	GraphicsCommandList(const GraphicsCommandList&) = delete;
+	GraphicsCommandList& operator=(const GraphicsCommandList&) = delete;
 };
 
 _NAME_END

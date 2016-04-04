@@ -69,32 +69,40 @@ OGLFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 	if (sharedDepthTarget == sharedStencilTarget)
 	{
 		if (sharedDepthTarget)
-			this->bindRenderTexture(sharedDepthTarget, GL_DEPTH_STENCIL_ATTACHMENT);
+		{
+			if (!this->bindRenderTexture(sharedDepthTarget, GL_DEPTH_STENCIL_ATTACHMENT))
+				return false;
+		}
 	}
 	else
 	{
 		if (sharedDepthTarget)
 		{
-			this->bindRenderTexture(sharedDepthTarget, GL_DEPTH_ATTACHMENT);
+			if (!this->bindRenderTexture(sharedDepthTarget, GL_DEPTH_ATTACHMENT))
+				return false;
 		}
 
 		if (sharedStencilTarget)
 		{
-			this->bindRenderTexture(sharedStencilTarget, GL_STENCIL_ATTACHMENT);
+			if (!this->bindRenderTexture(sharedStencilTarget, GL_STENCIL_ATTACHMENT))
+				return false;
 		}
 	}
 
-	GLenum draw[MAX_COLOR_ATTACHMENTS] = { 0 };
+	std::vector<GLenum> draw;
 	GLenum attachment = GL_COLOR_ATTACHMENT0;
 	GLsizei count = 0;
 
 	for (auto& texture : framebufferDesc.getTextures())
 	{
-		this->bindRenderTexture(texture, attachment);
-		draw[count++] = attachment++;
+		if (!this->bindRenderTexture(texture, attachment))
+			return false;
+
+		draw.push_back(attachment++);
+		count++;
 	}
 
-	glNamedFramebufferDrawBuffers(_fbo, count, draw);
+	glNamedFramebufferDrawBuffers(_fbo, count, draw.data());
 
 	_framebufferDesc = framebufferDesc;
 
@@ -166,15 +174,24 @@ OGLFramebuffer::getInstanceID() noexcept
 	return _fbo;
 }
 
-void
+bool
 OGLFramebuffer::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment) noexcept
 {
 	assert(texture);
 
 	auto gltexture = texture->downcast<OGLTexture>();
 	auto handle = gltexture->getInstanceID();
+	auto target = gltexture->getTarget();
+	
+	if (target != GL_TEXTURE_2D && target != GL_TEXTURE_2D_MULTISAMPLE && target != GL_TEXTURE_2D_ARRAY && target != GL_TEXTURE_CUBE_MAP)
+	{
+		GL_PLATFORM_LOG("Invalid texture target");
+		return false;
+	}
 
 	glNamedFramebufferTexture(_fbo, attachment, handle, 0);
+
+	return OGLCheck::checkError();
 }
 
 const GraphicsFramebufferDesc&

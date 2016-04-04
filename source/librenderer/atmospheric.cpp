@@ -37,6 +37,7 @@
 #include <ray/atmospheric.h>
 #include <ray/light.h>
 #include <ray/camera.h>
+#include <ray/material.h>
 
 _NAME_BEGIN
 

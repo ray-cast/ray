@@ -51,6 +51,8 @@ public:
 	bool setup(const GraphicsSemaphoreDesc& desc) noexcept;
 	void close() noexcept;
 
+	VkSemaphore getSemaphore() const noexcept;
+
 	const GraphicsSemaphoreDesc& getGraphicsSemaphoreDesc() const noexcept;
 
 private:

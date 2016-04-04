@@ -51,28 +51,35 @@ EGL2InputLayout::EGL2InputLayout() noexcept
 
 EGL2InputLayout::~EGL2InputLayout() noexcept
 {
+	this->close();
 }
 
 bool
-EGL2InputLayout::setup(const GraphicsInputLayoutDesc& layout) noexcept
+EGL2InputLayout::setup(const GraphicsInputLayoutDesc& inputLayoutDesc) noexcept
 {
-	_indexType = EGL2Types::asIndexType(layout.getIndexType());
+	_indexType = EGL2Types::asIndexType(inputLayoutDesc.getIndexType());
 	if (_indexType == GL_INVALID_ENUM)
 		return false;
 
-	_indexSize = layout.getIndexSize();
+	_indexSize = inputLayoutDesc.getIndexSize();
 	if (_indexType != GL_NONE)
 	{
 		if (_indexSize == 0)
 			return false;
 	}
 
-	_vertexSize = layout.getVertexSize();
+	_vertexSize = inputLayoutDesc.getVertexSize();
 	if (_vertexSize == GL_NONE)
 		return false;
 
-	_inputLayout = layout;
+	auto& vertexLayouts = inputLayoutDesc.getGraphicsVertexLayouts();
+	for (auto& it : vertexLayouts)
+	{
+		if (it.getVertexDivisor() != GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
+			return false;
+	}
 
+	_inputLayoutDesc = inputLayoutDesc;
 	return true;
 }
 
@@ -88,7 +95,7 @@ EGL2InputLayout::bindLayout(const EGL2ShaderObjectPtr& program) noexcept
 	{
 		GLuint offset = 0;
 
-		auto& components = _inputLayout.getVertexComponents();
+		auto& components = _inputLayoutDesc.getGraphicsVertexLayouts();
 		for (auto& it : components)
 		{
 			GLuint attribIndex = GL_INVALID_ENUM;
@@ -99,7 +106,7 @@ EGL2InputLayout::bindLayout(const EGL2ShaderObjectPtr& program) noexcept
 			{
 				if (attrib->getSemanticIndex() == it.getSemanticIndex() && attrib->getSemantic() == it.getSemantic())
 				{
-					attribIndex = attrib->downcast<EGL2ShaderAttribute>()->getLocation();
+					attribIndex = attrib->downcast<EGL2GraphicsAttribute>()->getBindingPoint();
 					break;
 				}
 			}
@@ -140,7 +147,7 @@ EGL2InputLayout::bindIbo(const EGL2GraphicsDataPtr& ibo) noexcept
 const GraphicsInputLayoutDesc&
 EGL2InputLayout::getGraphicsInputLayoutDesc() const noexcept
 {
-	return _inputLayout;
+	return _inputLayoutDesc;
 }
 
 void

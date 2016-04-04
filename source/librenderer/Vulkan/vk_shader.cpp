@@ -47,6 +47,218 @@ _NAME_BEGIN
 
 __ImplementSubClass(VulkanShader, GraphicsShader, "VulkanShader")
 __ImplementSubClass(VulkanShaderObject, GraphicsProgram, "VulkanShaderObject")
+__ImplementSubClass(VulkanGraphicsAttribute, GraphicsAttribute, "VulkanGraphicsAttribute")
+__ImplementSubClass(VulkanGraphicsUniform, GraphicsUniform, "VulkanGraphicsUniform")
+__ImplementSubClass(VulkanGraphicsUniformBlock, GraphicsUniformBlock, "VulkanGraphicsUniformBlock")
+
+VulkanGraphicsAttribute::VulkanGraphicsAttribute() noexcept
+	: _index(0)
+	, _bindingPoint(GL_INVALID_INDEX)
+	, _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+}
+
+VulkanGraphicsAttribute::~VulkanGraphicsAttribute() noexcept
+{
+}
+
+void
+VulkanGraphicsAttribute::setName(const std::string& name) noexcept
+{
+	_name = name;
+}
+
+const std::string&
+VulkanGraphicsAttribute::getName() const noexcept
+{
+	return _name;
+}
+
+void
+VulkanGraphicsAttribute::setType(GraphicsUniformType type) noexcept
+{
+	_type = type;
+}
+
+GraphicsUniformType
+VulkanGraphicsAttribute::getType() const noexcept
+{
+	return _type;
+}
+
+void
+VulkanGraphicsAttribute::setSemantic(const std::string& semantic) noexcept
+{
+	_semantic = semantic;
+}
+
+const std::string&
+VulkanGraphicsAttribute::getSemantic() const noexcept
+{
+	return _semantic;
+}
+
+void
+VulkanGraphicsAttribute::setSemanticIndex(std::uint8_t index) noexcept
+{
+	_index = index;
+}
+
+std::uint8_t
+VulkanGraphicsAttribute::getSemanticIndex() const noexcept
+{
+	return _index;
+}
+
+void
+VulkanGraphicsAttribute::setBindingPoint(GLuint bindingPoint) noexcept
+{
+	_bindingPoint = bindingPoint;
+}
+
+GLuint
+VulkanGraphicsAttribute::getBindingPoint() const noexcept
+{
+	return _bindingPoint;
+}
+
+VulkanGraphicsUniform::VulkanGraphicsUniform() noexcept
+	: _offset(0)
+	, _bindingPoint(GL_INVALID_INDEX)
+	, _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+}
+
+VulkanGraphicsUniform::~VulkanGraphicsUniform() noexcept
+{
+}
+
+void
+VulkanGraphicsUniform::setName(const std::string& name) noexcept
+{
+	_name = name;
+}
+
+const std::string&
+VulkanGraphicsUniform::getName() const noexcept
+{
+	return _name;
+}
+
+void
+VulkanGraphicsUniform::setType(GraphicsUniformType type) noexcept
+{
+	_type = type;
+}
+
+GraphicsUniformType
+VulkanGraphicsUniform::getType() const noexcept
+{
+	return _type;
+}
+
+void
+VulkanGraphicsUniform::setOffset(std::uint32_t offset) noexcept
+{
+	_offset = offset;
+}
+
+std::uint32_t
+VulkanGraphicsUniform::getOffset() const noexcept
+{
+	return _offset;
+}
+
+void
+VulkanGraphicsUniform::setBindingPoint(GLuint bindingPoint) noexcept
+{
+	_bindingPoint = bindingPoint;
+}
+
+GLuint
+VulkanGraphicsUniform::getBindingPoint() const noexcept
+{
+	return _bindingPoint;
+}
+
+VulkanGraphicsUniformBlock::VulkanGraphicsUniformBlock() noexcept
+	: _size(0)
+	, _bindingPoint(GL_INVALID_INDEX)
+	, _type(GraphicsUniformType::GraphicsUniformTypeUniformBuffer)
+{
+}
+
+VulkanGraphicsUniformBlock::~VulkanGraphicsUniformBlock() noexcept
+{
+}
+
+void
+VulkanGraphicsUniformBlock::setName(const std::string& name) noexcept
+{
+	_name = name;
+}
+
+const std::string&
+VulkanGraphicsUniformBlock::getName() const noexcept
+{
+	return _name;
+}
+
+void
+VulkanGraphicsUniformBlock::setType(GraphicsUniformType type) noexcept
+{
+	_type = type;
+}
+
+GraphicsUniformType
+VulkanGraphicsUniformBlock::getType() const noexcept
+{
+	return _type;
+}
+
+void
+VulkanGraphicsUniformBlock::setBlockSize(std::uint32_t size) noexcept
+{
+	_size = size;
+}
+
+std::uint32_t
+VulkanGraphicsUniformBlock::getBlockSize() const noexcept
+{
+	return _size;
+}
+
+void
+VulkanGraphicsUniformBlock::addGraphicsUniform(GraphicsUniformPtr uniform) noexcept
+{
+	_uniforms.push_back(uniform);
+}
+
+void
+VulkanGraphicsUniformBlock::removeGraphicsUniform(GraphicsUniformPtr uniform) noexcept
+{
+	auto it = std::find(_uniforms.begin(), _uniforms.end(), uniform);
+	if (it != _uniforms.end())
+		_uniforms.erase(it);
+}
+
+const GraphicsUniforms&
+VulkanGraphicsUniformBlock::getGraphicsUniforms() const noexcept
+{
+	return _uniforms;
+}
+
+void
+VulkanGraphicsUniformBlock::setBindingPoint(GLuint bindingPoint) noexcept
+{
+	_bindingPoint = bindingPoint;
+}
+
+GLuint
+VulkanGraphicsUniformBlock::getBindingPoint() const noexcept
+{
+	return _bindingPoint;
+}
 
 VulkanShader::VulkanShader() noexcept
 	: _vkShader(VK_NULL_HANDLE)
@@ -66,7 +278,7 @@ VulkanShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 	GLSLShader shader;
 	GLSLCrossDependencyData dependency;
 
-	std::uint32_t flags = HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
+	std::uint32_t flags = HLSLCC_FLAG_UNIFORM_BUFFER_OBJECT | HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
 	if (shaderDesc.getType() == GraphicsShaderStage::GraphicsShaderStageGeometry)
 		flags = HLSLCC_FLAG_GS_ENABLED;
 	else if (shaderDesc.getType() == GraphicsShaderStage::GraphicsShaderStageTessControl)
@@ -80,14 +292,16 @@ VulkanShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 		return false;
 	}
 
-	std::vector<std::uint32_t> bytecodes;
-	if (!GLSLtoSPV(VulkanTypes::asShaderStage(shaderDesc.getType()), shader.sourceCode, bytecodes))
-	{
-		FreeGLSLShader(&shader);
-		return false;
-	}
+	_glsl = shader.sourceCode;
 
 	FreeGLSLShader(&shader);
+
+	std::vector<std::uint32_t> bytecodes;
+	if (!GLSLtoSPV(VulkanTypes::asShaderStage(shaderDesc.getType()), _glsl.data(), bytecodes))
+	{
+		VK_PLATFORM_LOG("Can't conv glsl to spv.");
+		return false;
+	}
 
 	VkShaderModuleCreateInfo info;
 	info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -97,7 +311,10 @@ VulkanShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 	info.flags = 0;
 
 	if (vkCreateShaderModule(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &info, nullptr, &_vkShader) != VK_SUCCESS)
+	{
+		VK_PLATFORM_LOG("vkCreateShaderModule() fail.");
 		return false;
+	}
 
 	_shaderDesc = shaderDesc;
 	return true;
@@ -111,12 +328,20 @@ VulkanShader::close() noexcept
 		vkDestroyShaderModule(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkShader, nullptr);
 		_vkShader = VK_NULL_HANDLE;
 	}
+
+	_glsl.clear();
 }
 
 VkShaderModule
 VulkanShader::getShaderModule() const noexcept
 {
 	return _vkShader;
+}
+
+const std::string&
+VulkanShader::getGlslCodes() const noexcept
+{
+	return _glsl;
 }
 
 void
@@ -258,8 +483,8 @@ VulkanShader::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *psh
 	EShMessages messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
 	if (!shader.parse(&resources, 100, false, messages))
 	{
-		puts(shader.getInfoLog());
-		puts(shader.getInfoDebugLog());
+		VK_PLATFORM_LOG(shader->getInfoLog());
+		VK_PLATFORM_LOG(shader->getInfoDebugLog());
 		return false;
 	}
 
@@ -267,13 +492,12 @@ VulkanShader::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *psh
 
 	if (!program.link(messages)) 
 	{
-		puts(shader.getInfoLog());
-		puts(shader.getInfoDebugLog());
+		VK_PLATFORM_LOG(shader->getInfoLog());
+		VK_PLATFORM_LOG(shader->getInfoDebugLog());
 		return false;
 	}
 
 	glslang::GlslangToSpv(*program.getIntermediate(stage), spirv);
-
 	return true;
 }
 
@@ -382,15 +606,13 @@ VulkanShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 	resources.limits.generalVariableIndexing = 1;
 	resources.limits.generalConstantMatrixVectorIndexing = 1;
 
-	glslang::TProgram program;
+	std::vector<std::unique_ptr<glslang::TShader>> shaders;
 
-	auto& shaders = programDesc.getShaders();
-	for (auto& it : shaders)
+	for (auto& it : programDesc.getShaders())
 	{
-		const auto& shaderDesc = it->getGraphicsShaderDesc();
-		auto shaderStage = shaderDesc.getType();
-
 		EShLanguage stage = EShLangVertex;
+
+		auto shaderStage = it->downcast<VulkanShader>()->getGraphicsShaderDesc().getType();
 		if (shaderStage == VK_SHADER_STAGE_VERTEX_BIT)
 			stage = EShLangVertex;
 		else if (shaderStage == VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT)
@@ -405,23 +627,58 @@ VulkanShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 			stage = EShLangCompute;
 
 		const char *shaderStrings[1];
-		shaderStrings[0] = shaderDesc.getByteCodes().data();
+		shaderStrings[0] = it->downcast<VulkanShader>()->getGlslCodes().c_str();
 
-		auto glslShader = new glslang::TShader(stage);
+		auto glslShader = std::make_unique<glslang::TShader>(stage);
 		glslShader->setStrings(shaderStrings, 1);
-		glslShader->parse(&resources, 100, false, (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules));
+		if (!glslShader->parse(&resources, 100, false, (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules)))
+		{
+			VK_PLATFORM_LOG(glslShader->getInfoLog());
+			VK_PLATFORM_LOG(glslShader->getInfoDebugLog());
+			return false;
+		}
 
-		program.addShader(glslShader);
+		shaders.push_back(std::move(glslShader));
 	}
+
+	glslang::TProgram program;
+	for (auto& shader : shaders)
+		program.addShader(shader.get());
 
 	program.link(EShMessages::EShMsgDefault);
 	program.buildReflection();
 
-	std::size_t numVariables = program.getNumLiveUniformVariables();
-	for (std::size_t i = 0; i < numVariables; i++)
+	std::size_t numUniform = program.getNumLiveUniformVariables();
+	for (std::size_t i = 0; i < numUniform; i++)
 	{
 		auto name = program.getUniformName(i);
-		auto type = program.getUniformType(i);
+		auto index = program.getUniformIndex(name);
+		auto type = program.getUniformType(index);
+		auto offset = program.getUniformBufferOffset(index);
+
+		auto uniform = std::make_shared<VulkanGraphicsUniform>();
+		uniform->setName(name);
+		uniform->setType(toGraphicsUniformType(uniform->getName(), type));
+		uniform->setBindingPoint(index);
+		uniform->setOffset(offset);
+
+		_activeUniforms.push_back(uniform);
+	}
+
+	std::size_t numUniformBlock = program.getNumLiveUniformVariables();
+	for (std::size_t i = 0; i < numUniformBlock; i++)
+	{
+		auto index = program.getUniformBlockIndex(i);
+		auto name = program.getUniformBlockName(index);
+		auto size = program.getUniformBlockSize(index);
+
+		auto uniform = std::make_shared<VulkanGraphicsUniformBlock>();
+		uniform->setName(name);
+		uniform->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
+		uniform->setBindingPoint(index);
+		uniform->setBlockSize(size);
+
+		_activeUniformBlocks.push_back(uniform);
 	}
 
 	_programDesc = programDesc;
@@ -431,18 +688,154 @@ VulkanShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 void 
 VulkanShaderObject::close() noexcept
 {
+	_activeAttributes.clear();
+	_activeUniforms.clear();
+	_activeUniformBlocks.clear();
 }
 
-ShaderUniforms&
-VulkanShaderObject::getActiveUniforms() noexcept
+const GraphicsUniforms&
+VulkanShaderObject::getActiveUniforms() const noexcept
 {
 	return _activeUniforms;
 }
 
-ShaderAttributes& 
-VulkanShaderObject::getActiveAttributes() noexcept
+const GraphicsUniformBlocks&
+VulkanShaderObject::getActiveUniformBlocks() const noexcept
+{
+	return _activeUniformBlocks;
+}
+
+const GraphicsAttributes&
+VulkanShaderObject::getActiveAttributes() const noexcept
 {
 	return _activeAttributes;
+}
+
+GraphicsUniformType
+VulkanShaderObject::toGraphicsUniformType(const std::string& name, int type) noexcept
+{
+	if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
+		type == GL_SAMPLER_2D_SHADOW ||
+		type == GL_SAMPLER_2D_ARRAY || type == GL_SAMPLER_CUBE ||
+		type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
+	{
+		return GraphicsUniformType::GraphicsUniformTypeStorageImage;
+	}
+	else
+	{
+		bool isArray = name.find("[0]") != std::string::npos;
+
+		if (type == GL_BOOL)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeBoolArray;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeBool;
+		}
+		else if (type == GL_BOOL_VEC2)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeBool2Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeBool2;
+		}
+		else if (type == GL_BOOL_VEC3)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeBool3Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeBool3;
+		}
+		else if (type == GL_BOOL_VEC4)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeBool4Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeBool4;
+		}
+		else if (type == GL_INT)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeIntArray;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeInt;
+		}
+		else if (type == GL_INT_VEC2)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeInt2Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeInt2;
+		}
+		else if (type == GL_INT_VEC3)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeInt3Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeInt3;
+		}
+		else if (type == GL_INT_VEC4)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeInt4Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeInt4;
+		}
+		else if (type == GL_FLOAT)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloatArray;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat;
+		}
+		else if (type == GL_FLOAT_VEC2)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat2Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat2;
+		}
+		else if (type == GL_FLOAT_VEC3)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat3Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat3;
+		}
+		else if (type == GL_FLOAT_VEC4)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat4Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat4;
+		}
+		else if (type == GL_FLOAT_MAT2)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat2x2Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat2x2;
+		}
+		else if (type == GL_FLOAT_MAT3)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat3x3Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat3x3;
+		}
+		else if (type == GL_FLOAT_MAT4)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat4x4Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat4x4;
+		}
+		else
+		{
+			VK_PLATFORM_ASSERT(false, "Invlid uniform type");
+			return GraphicsUniformType::GraphicsUniformTypeNone;
+		}
+	}
 }
 
 const GraphicsProgramDesc&

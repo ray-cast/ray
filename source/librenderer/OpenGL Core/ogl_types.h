@@ -96,20 +96,47 @@ _NAME_BEGIN
 #	define GL_PLATFORM_ASSERT(expr, format)
 #endif
 
-typedef std::shared_ptr<class OGLSwapchain> OGLSwapchainPtr;
 typedef std::shared_ptr<class OGLDevice> OGLDevicePtr;
+typedef std::shared_ptr<class OGLSurface> OGLSurfacePtr;
+typedef std::shared_ptr<class OGLSwapchain> OGLSwapchainPtr;
 typedef std::shared_ptr<class OGLDeviceContext> OGLDeviceContextPtr;
+typedef std::shared_ptr<class OGLFramebufferLayout> OGLFramebufferLayoutPtr;
 typedef std::shared_ptr<class OGLFramebuffer> OGLFramebufferPtr;
 typedef std::shared_ptr<class OGLShader> OGLShaderPtr;
 typedef std::shared_ptr<class OGLShaderObject> OGLShaderObjectPtr;
 typedef std::shared_ptr<class OGLGraphicsData> OGLGraphicsDataPtr;
 typedef std::shared_ptr<class OGLInputLayout> OGLInputLayoutPtr;
-typedef std::shared_ptr<class OGLDrawIndirectBuffer> OGLDrawIndirectBufferPtr;
 typedef std::shared_ptr<class OGLGraphicsState> OGLGraphicsStatePtr;
 typedef std::shared_ptr<class OGLTexture> OGLTexturePtr;
 typedef std::shared_ptr<class OGLSampler> OGLSamplerPtr;
 typedef std::shared_ptr<class OGLRenderPipeline> OGLRenderPipelinePtr;
+typedef std::shared_ptr<class OGLDescriptorSetPool> OGLDescriptorSetPoolPtr;
 typedef std::shared_ptr<class OGLDescriptorSet> OGLDescriptorSetPtr;
+typedef std::shared_ptr<class OGLDescriptorSetLayout> OGLDescriptorSetLayoutPtr;
+typedef std::shared_ptr<class OGLGraphicsAttribute> OGLGraphicsAttributePtr;
+typedef std::shared_ptr<class OGLGraphicsUniform> OGLGraphicsUniformPtr;
+typedef std::shared_ptr<class OGLGraphicsUniformBlock> OGLGraphicsUniformBlockPtr;
+
+typedef std::weak_ptr<class OGLDevice> OGLDeviceWeakPtr;
+typedef std::weak_ptr<class OGLSurface> OGLSurfaceWeakPtr;
+typedef std::weak_ptr<class OGLSwapchain> OGLSwapchainWeakPtr;
+typedef std::weak_ptr<class OGLDeviceContext> OGLDeviceContextWeakPtr;
+typedef std::weak_ptr<class OGLFramebufferLayout> OGLFramebufferLayoutWeakPtr;
+typedef std::weak_ptr<class OGLFramebuffer> OGLFramebufferWeakPtr;
+typedef std::weak_ptr<class OGLShader> OGLShaderWeakPtr;
+typedef std::weak_ptr<class OGLShaderObject> OGLShaderObjectWeakPtr;
+typedef std::weak_ptr<class OGLGraphicsData> OGLGraphicsDataWeakPtr;
+typedef std::weak_ptr<class OGLInputLayout> OGLInputLayoutWeakPtr;
+typedef std::weak_ptr<class OGLGraphicsState> OGLGraphicsStateWeakPtr;
+typedef std::weak_ptr<class OGLTexture> OGLTextureWeakPtr;
+typedef std::weak_ptr<class OGLSampler> OGLSamplerWeakPtr;
+typedef std::weak_ptr<class OGLRenderPipeline> OGLRenderPipelineWeakPtr;
+typedef std::weak_ptr<class OGLDescriptorSetPool> OGLDescriptorSetPoolWeakPtr;
+typedef std::weak_ptr<class OGLDescriptorSet> OGLDescriptorSetWeakPtr;
+typedef std::weak_ptr<class OGLDescriptorSetLayout> OGLDescriptorSetLayoutWeakPtr;
+typedef std::weak_ptr<class OGLGraphicsAttribute> OGLGraphicsAttributeWeakPtr;
+typedef std::weak_ptr<class OGLGraphicsUniform> OGLGraphicsUniformWeakPtr;
+typedef std::weak_ptr<class OGLGraphicsUniformBlock> OGLGraphicsUniformBlockWeakPtr;
 
 typedef std::vector<OGLShaderPtr> OGLShaders;
 

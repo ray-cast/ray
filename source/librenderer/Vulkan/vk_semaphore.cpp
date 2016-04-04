@@ -54,8 +54,19 @@ VulkanSemaphore::~VulkanSemaphore() noexcept
 bool 
 VulkanSemaphore::setup(const GraphicsSemaphoreDesc& semaphoreDesc) noexcept
 {
+	VkSemaphoreCreateInfo semaphoreCreateInfo;
+	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	semaphoreCreateInfo.pNext = nullptr;
+	semaphoreCreateInfo.flags = 0;
+
+	if (vkCreateSemaphore(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &semaphoreCreateInfo, 0, &_vkSemaphore) > 0)
+	{
+		VK_PLATFORM_LOG("vkCreateSemaphore() fail.");
+		return false;
+	}
+
 	_semaphoreDesc = semaphoreDesc;
-	return false;
+	return true;
 }
 
 void 
@@ -66,6 +77,12 @@ VulkanSemaphore::close() noexcept
 		vkDestroySemaphore(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkSemaphore, nullptr);
 		_vkSemaphore = VK_NULL_HANDLE;
 	}
+}
+
+VkSemaphore 
+VulkanSemaphore::getSemaphore() const noexcept
+{
+	return _vkSemaphore;
 }
 
 void

@@ -42,124 +42,6 @@
 
 _NAME_BEGIN
 
-class EXPORT GraphicsUniform
-{
-public:
-	GraphicsUniform() noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, GraphicsUniformType type) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, bool value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, int value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const int2& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const int3& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const int4& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, uint1 value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const uint2& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const uint3& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const uint4& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, float value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const float2& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const float3& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const float4& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const float3x3& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const float4x4& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const std::vector<int1>& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const std::vector<int2>& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const std::vector<int3>& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const std::vector<int4>& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const std::vector<uint1>& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const std::vector<uint2>& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const std::vector<uint3>& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const std::vector<uint4>& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const std::vector<float1>& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const std::vector<float2>& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const std::vector<float3>& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, const std::vector<float4>& value) noexcept;
-	GraphicsUniform(GraphicsShaderStage stage, std::uint32_t binding, GraphicsTexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
-	virtual ~GraphicsUniform() noexcept;
-
-	void setShaderStage(GraphicsShaderStage stage) noexcept;
-	GraphicsShaderStage getShaderStage() const noexcept;
-
-	void setType(GraphicsUniformType type) noexcept;
-	GraphicsUniformType getType() const noexcept;
-
-	void setBindingPoint(std::uint32_t binding) noexcept;
-	std::uint32_t getBindingPoint() const noexcept;
-
-	void assign(bool value) noexcept;
-	void assign(int value) noexcept;
-	void assign(const int2& value) noexcept;
-	void assign(const int3& value) noexcept;
-	void assign(const int4& value) noexcept;
-	void assign(uint1 value) noexcept;
-	void assign(const uint2& value) noexcept;
-	void assign(const uint3& value) noexcept;
-	void assign(const uint4& value) noexcept;
-	void assign(float value) noexcept;
-	void assign(const float2& value) noexcept;
-	void assign(const float3& value) noexcept;
-	void assign(const float4& value) noexcept;
-	void assign(const float3x3& value) noexcept;
-	void assign(const float4x4& value) noexcept;
-	void assign(const std::vector<int1>& value) noexcept;
-	void assign(const std::vector<int2>& value) noexcept;
-	void assign(const std::vector<int3>& value) noexcept;
-	void assign(const std::vector<int4>& value) noexcept;
-	void assign(const std::vector<uint1>& value) noexcept;
-	void assign(const std::vector<uint2>& value) noexcept;
-	void assign(const std::vector<uint3>& value) noexcept;
-	void assign(const std::vector<uint4>& value) noexcept;
-	void assign(const std::vector<float1>& value) noexcept;
-	void assign(const std::vector<float2>& value) noexcept;
-	void assign(const std::vector<float3>& value) noexcept;
-	void assign(const std::vector<float4>& value) noexcept;
-	void assign(const std::vector<float3x3>& value) noexcept;
-	void assign(const std::vector<float4x4>& value) noexcept;
-	void assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
-
-	bool getBool() const noexcept;
-	int getInt() const noexcept;
-	const int2& getInt2() const noexcept;
-	const int3& getInt3() const noexcept;
-	const int4& getInt4() const noexcept;
-	uint getUInt() const noexcept;
-	const uint2& getUInt2() const noexcept;
-	const uint3& getUInt3() const noexcept;
-	const uint4& getUInt4() const noexcept;
-	float getFloat() const noexcept;
-	const float2& getFloat2() const noexcept;
-	const float3& getFloat3() const noexcept;
-	const float4& getFloat4() const noexcept;
-	const float3x3& getFloat3x3() const noexcept;
-	const float4x4& getFloat4x4() const noexcept;
-	const std::vector<int1>& getIntArray() const noexcept;
-	const std::vector<int2>& getInt2Array() const noexcept;
-	const std::vector<int3>& getInt3Array() const noexcept;
-	const std::vector<int4>& getInt4Array() const noexcept;
-	const std::vector<uint1>& getUIntArray() const noexcept;
-	const std::vector<uint2>& getUInt2Array() const noexcept;
-	const std::vector<uint3>& getUInt3Array() const noexcept;
-	const std::vector<uint4>& getUInt4Array() const noexcept;
-	const std::vector<float1>& getFloatArray() const noexcept;
-	const std::vector<float2>& getFloat2Array() const noexcept;
-	const std::vector<float3>& getFloat3Array() const noexcept;
-	const std::vector<float4>& getFloat4Array() const noexcept;
-	const std::vector<float3x3>& getFloat3x3Array() const noexcept;
-	const std::vector<float4x4>& getFloat4x4Array() const noexcept;
-	GraphicsTexturePtr getTexture() const noexcept;
-	GraphicsSamplerPtr getTextureSampler() const noexcept;
-
-private:
-	GraphicsUniform(const GraphicsUniform&) noexcept = delete;
-	GraphicsUniform& operator=(const GraphicsUniform&) noexcept = delete;
-
-private:
-	std::uint32_t _binding;
-	GraphicsVariant _variant;
-	GraphicsShaderStage _shaderStage;
-};
-
 class EXPORT GraphicsDescriptorPoolComponent final
 {
 public:
@@ -229,6 +111,51 @@ private:
 	GraphicsDescriptorSetLayoutPtr _layout;
 };
 
+class EXPORT GraphicsUniformSet : public rtti::Interface
+{
+	__DeclareSubInterface(GraphicsUniformSet, rtti::Interface)
+public:
+	GraphicsUniformSet() noexcept;
+	virtual ~GraphicsUniformSet() noexcept;
+
+	virtual void assign(bool value) noexcept = 0;
+	virtual void assign(int value) noexcept = 0;
+	virtual void assign(const int2& value) noexcept = 0;
+	virtual void assign(const int3& value) noexcept = 0;
+	virtual void assign(const int4& value) noexcept = 0;
+	virtual void assign(uint1 value) noexcept = 0;
+	virtual void assign(const uint2& value) noexcept = 0;
+	virtual void assign(const uint3& value) noexcept = 0;
+	virtual void assign(const uint4& value) noexcept = 0;
+	virtual void assign(float value) noexcept = 0;
+	virtual void assign(const float2& value) noexcept = 0;
+	virtual void assign(const float3& value) noexcept = 0;
+	virtual void assign(const float4& value) noexcept = 0;
+	virtual void assign(const float3x3& value) noexcept = 0;
+	virtual void assign(const float4x4& value) noexcept = 0;
+	virtual void assign(const std::vector<int1>& value) noexcept = 0;
+	virtual void assign(const std::vector<int2>& value) noexcept = 0;
+	virtual void assign(const std::vector<int3>& value) noexcept = 0;
+	virtual void assign(const std::vector<int4>& value) noexcept = 0;
+	virtual void assign(const std::vector<uint1>& value) noexcept = 0;
+	virtual void assign(const std::vector<uint2>& value) noexcept = 0;
+	virtual void assign(const std::vector<uint3>& value) noexcept = 0;
+	virtual void assign(const std::vector<uint4>& value) noexcept = 0;
+	virtual void assign(const std::vector<float1>& value) noexcept = 0;
+	virtual void assign(const std::vector<float2>& value) noexcept = 0;
+	virtual void assign(const std::vector<float3>& value) noexcept = 0;
+	virtual void assign(const std::vector<float4>& value) noexcept = 0;
+	virtual void assign(const std::vector<float3x3>& value) noexcept = 0;
+	virtual void assign(const std::vector<float4x4>& value) noexcept = 0;
+	virtual void assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept = 0;
+
+	virtual GraphicsUniformPtr getGraphicsUniform() const noexcept = 0;
+
+private:
+	GraphicsUniformSet(const GraphicsUniformSet&) noexcept = delete;
+	GraphicsUniformSet& operator=(const GraphicsUniformSet&) noexcept = delete;
+};
+
 class EXPORT GraphicsDescriptorPool : public GraphicsChild
 {
 	__DeclareSubInterface(GraphicsDescriptorPool, GraphicsChild)
@@ -264,6 +191,7 @@ public:
 	GraphicsDescriptorSet() noexcept;
 	virtual ~GraphicsDescriptorSet() noexcept;
 
+	virtual const GraphicsUniformSets& getGraphicsUniformSets() const noexcept = 0;
 	virtual const GraphicsDescriptorSetDesc& getGraphicsDescriptorSetDesc() const noexcept = 0;
 
 private:

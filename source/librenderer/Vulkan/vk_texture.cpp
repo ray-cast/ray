@@ -90,7 +90,10 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		image.queueFamilyIndexCount = 0;
 
 		if (vkCreateImage(device->getDevice(), &image, nullptr, &_vkImage) > 0)
+		{
+			VK_PLATFORM_LOG("vkCreateImage() fail");
 			return false;
+		}
 
 		VkMemoryRequirements memReqs;
 		vkGetImageMemoryRequirements(device->getDevice(), _vkImage, &memReqs);
@@ -111,7 +114,10 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		}
 
 		if (vkBindImageMemory(device->getDevice(), _vkImage, _vkMemory.getDeviceMemory(), 0) > 0)
+		{
+			VK_PLATFORM_LOG("vkBindImageMemory() fail");
 			return false;
+		}			
 	}
 
 	VkImageViewType viewType = VulkanTypes::asImageViewType(textureDesc.getTexDim());
@@ -119,15 +125,12 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		return false;
 
 	VkImageAspectFlags flags = VK_IMAGE_ASPECT_COLOR_BIT;
-	if (format == VK_FORMAT_S8_UINT || format == VK_FORMAT_D16_UNORM_S8_UINT ||
-		format == VK_FORMAT_D24_UNORM_S8_UINT || format == VK_FORMAT_D32_SFLOAT_S8_UINT)
-	{
-		flags = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
-	}
-	else if (format == VK_FORMAT_D16_UNORM || format == VK_FORMAT_X8_D24_UNORM_PACK32 || format == VK_FORMAT_D32_SFLOAT)
-	{
+	if (VulkanTypes::isStencilFormat(textureDesc.getTexFormat()))
+		flags = VK_IMAGE_ASPECT_STENCIL_BIT;
+	else if (VulkanTypes::isDepthFormat(textureDesc.getTexFormat()))
 		flags = VK_IMAGE_ASPECT_DEPTH_BIT;
-	}
+	else if (VulkanTypes::isDepthStencilFormat(textureDesc.getTexFormat()))
+		flags = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
 
 	VkImageViewCreateInfo view;
 	view.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -147,7 +150,10 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	view.viewType = viewType;
 
 	if (vkCreateImageView(device->getDevice(), &view, nullptr, &_vkImageView) > 0)
+	{
+		VK_PLATFORM_LOG("vkCreateImageView() fail");
 		return false;
+	}
 
 	_textureDesc = textureDesc;
 	return true;

@@ -786,4 +786,38 @@ VulkanTypes::asImageLayout(GraphicsViewLayout layout) noexcept
 	}
 }
 
+bool
+VulkanTypes::isStencilFormat(GraphicsFormat format) noexcept
+{
+	if (format == GraphicsFormat::GraphicsFormatS8UInt)
+		return true;
+	return false;
+}
+
+bool 
+VulkanTypes::isDepthFormat(GraphicsFormat format) noexcept
+{
+	if (format == GraphicsFormat::GraphicsFormatD16UNorm ||
+		format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 ||
+		format == GraphicsFormat::GraphicsFormatD32_SFLOAT)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool 
+VulkanTypes::isDepthStencilFormat(GraphicsFormat format) noexcept
+{
+	if (format == GraphicsFormat::GraphicsFormatD16UNorm_S8UInt ||
+		format == GraphicsFormat::GraphicsFormatD24UNorm_S8UInt ||
+		format == GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 _NAME_END

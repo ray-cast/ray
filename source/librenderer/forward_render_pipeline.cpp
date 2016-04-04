@@ -34,41 +34,18 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_RENDER_PIPELINE_MANAGER_H_
-#define _H_RENDER_PIPELINE_MANAGER_H_
-
-#include <ray/render_pipeline.h>
+#include "forward_render_pipeline.h"
 
 _NAME_BEGIN
 
-class RenderPipelineManager final
+__ImplementSubClass(ForwardRenderPipeline, RenderPipeline, "ForwardRenderPipeline")
+
+ForwardRenderPipeline::ForwardRenderPipeline() noexcept
 {
-public:
-	RenderPipelineManager() noexcept;
-    ~RenderPipelineManager() noexcept;
+}
 
-	bool open(RenderPipelinePtr pipeline) noexcept;
-	void close() noexcept;
-
-	void setRenderPipeline(RenderPipelinePtr pipeline) noexcept;
-	RenderPipelinePtr getRenderPipeline() noexcept;
-
-	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
-	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
-
-	void renderBegin() noexcept;
-	void render(const RenderScene& scene) noexcept;
-	void renderEnd() noexcept;
-
-private:
-	RenderPipelineManager(const RenderPipelineManager&) noexcept = delete;
-	RenderPipelineManager& operator = (const RenderPipelineManager&) noexcept = delete;
-
-private:
-	RenderPipelinePtr _renderPipeline;
-	RenderPipelineControllerPtr _deferredLighting;
-};
+ForwardRenderPipeline::~ForwardRenderPipeline() noexcept
+{
+}
 
 _NAME_END
-
-#endif

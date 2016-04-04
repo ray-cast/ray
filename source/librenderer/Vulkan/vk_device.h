@@ -46,7 +46,7 @@ class VulkanDevice final : public GraphicsDevice
 	__DeclareSubClass(VulkanDevice, GraphicsDevice)
 public:
 	VulkanDevice() noexcept;
-	~VulkanDevice() noexcept;
+	virtual ~VulkanDevice() noexcept;
 
 	bool setup(const GraphicsDeviceDesc& desc) noexcept;
 	void close() noexcept;
@@ -57,24 +57,25 @@ public:
 	VkDevice getDevice() const noexcept;
 	VkPhysicalDevice getPhysicsDevice() const noexcept;
 
-	GraphicsSwapchainPtr createGraphicsSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
+	GraphicsSwapchainPtr createSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
 	GraphicsContextPtr createGraphicsContext(const GraphicsContextDesc& desc) noexcept;
 	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
-	GraphicsTexturePtr createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept;
-	GraphicsSamplerPtr createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept;
-	GraphicsFramebufferPtr createRenderTexture(const GraphicsFramebufferDesc& desc) noexcept;
-	GraphicsFramebufferLayoutPtr createRenderTextureLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept;
+	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
+	GraphicsSamplerPtr createSampler(const GraphicsSamplerDesc& desc) noexcept;
+	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
+	GraphicsFramebufferLayoutPtr createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept;
 	GraphicsStatePtr createRenderState(const GraphicsStateDesc& desc) noexcept;
 	GraphicsShaderPtr createShader(const GraphicsShaderDesc& desc) noexcept;
 	GraphicsProgramPtr createProgram(const GraphicsProgramDesc& desc) noexcept;
 	GraphicsPipelinePtr createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept;
 	GraphicsDescriptorPoolPtr createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept;
-	GraphicsDescriptorSetPtr createGraphicsDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept;
-	GraphicsDescriptorSetLayoutPtr createGraphicsDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept;
+	GraphicsDescriptorSetPtr createDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept;
+	GraphicsDescriptorSetLayoutPtr createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept;
 	GraphicsCommandQueuePtr createGraphicsCommandQueue(const GraphicsCommandQueueDesc& desc) noexcept;
 	GraphicsCommandPoolPtr createGraphicsCommandPool(const GraphicsCommandPoolDesc& desc) noexcept;
 	GraphicsCommandListPtr createGraphicsCommandList(const GraphicsCommandListDesc& desc) noexcept;
+	GraphicsSemaphorePtr createSemaphore(const GraphicsSemaphoreDesc& desc) noexcept;
 
 	GraphicsFormat findCompatibleFormat(GraphicsPixelFormatDesc& desc) noexcept;
 

@@ -188,7 +188,7 @@ MaterialParam::getSemantic() const noexcept
 }
 
 void
-MaterialParam::addShaderUniform(GraphicsUniformPtr uniform) noexcept
+MaterialParam::addGraphicsUniform(GraphicsUniformSetPtr uniform) noexcept
 {
 	assert(uniform);
 	assert(std::find(_uniforms.begin(), _uniforms.end(), uniform) == _uniforms.end());
@@ -196,7 +196,7 @@ MaterialParam::addShaderUniform(GraphicsUniformPtr uniform) noexcept
 }
 
 void
-MaterialParam::removeShaderUniform(GraphicsUniformPtr uniform) noexcept
+MaterialParam::removeGraphicsUniform(GraphicsUniformSetPtr uniform) noexcept
 {
 	assert(uniform);
 	auto it = std::find(_uniforms.begin(), _uniforms.end(), uniform);
@@ -204,8 +204,8 @@ MaterialParam::removeShaderUniform(GraphicsUniformPtr uniform) noexcept
 		_uniforms.erase(it);
 }
 
-GraphicsUniforms&
-MaterialParam::getShaderUniform() noexcept
+GraphicsUniformSets&
+MaterialParam::getGraphicsUniform() noexcept
 {
 	return _uniforms;
 }

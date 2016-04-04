@@ -35,11 +35,11 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_pipeline_manager.h>
-#include <ray/render_pipeline.h>
 #include <ray/render_scene.h>
 #include <ray/camera.h>
 #include <ray/graphics_context.h>
-#include <ray/deferred_render_pipeline.h>
+
+#include "deferred_render_pipeline.h"
 
 _NAME_BEGIN
 

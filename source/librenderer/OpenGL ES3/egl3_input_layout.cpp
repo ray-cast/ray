@@ -52,6 +52,7 @@ EGL3InputLayout::EGL3InputLayout() noexcept
 
 EGL3InputLayout::~EGL3InputLayout() noexcept
 {
+	this->close();
 }
 
 bool
@@ -74,7 +75,7 @@ EGL3InputLayout::setup(const GraphicsInputLayoutDesc& layout) noexcept
 	if (_vertexSize == GL_NONE)
 		return false;
 
-	auto& component = layout.getVertexComponents();
+	auto& component = layout.getGraphicsVertexLayouts();
 	for (auto& it : component)
 	{
 		auto& semantic = it.getSemantic();
@@ -125,7 +126,7 @@ EGL3InputLayout::bindLayout(const EGL3ShaderObjectPtr& program) noexcept
 	{
 		GLuint offset = 0;
 
-		auto& components = _inputLayout.getVertexComponents();
+		auto& components = _inputLayout.getGraphicsVertexLayouts();
 		for (auto& it : components)
 		{
 			GLuint attribIndex = GL_INVALID_INDEX;
@@ -137,7 +138,7 @@ EGL3InputLayout::bindLayout(const EGL3ShaderObjectPtr& program) noexcept
 			{
 				if (attrib->getSemanticIndex() == it.getSemanticIndex() && attrib->getSemantic() == it.getSemantic())
 				{
-					attribIndex = attrib->downcast<EGL3ShaderAttribute>()->getLocation();
+					attribIndex = attrib->downcast<EGL3GraphicsAttribute>()->getBindingPoint();
 					break;
 				}
 			}
@@ -148,8 +149,10 @@ EGL3InputLayout::bindLayout(const EGL3ShaderObjectPtr& program) noexcept
 				glVertexAttribBinding(attribIndex, bindingIndex);
 				glVertexAttribFormat(attribIndex, it.getVertexCount(), type, GL_FALSE, offset);
 
-				if (it.getVertexDivisor() > 0)
-					glVertexBindingDivisor(bindingIndex, it.getVertexDivisor());
+				if (it.getVertexDivisor() == GraphicsVertexDivisor::GraphicsVertexDivisorInstance)
+					glVertexBindingDivisor(bindingIndex, 1);
+				else
+					glVertexBindingDivisor(bindingIndex, 0);
 			}
 
 			offset += it.getVertexSize();

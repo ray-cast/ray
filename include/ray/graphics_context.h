@@ -103,8 +103,8 @@ public:
 	virtual void unmapBuffer(GraphicsDataPtr& data) noexcept = 0;
 
 	virtual void setRenderTexture(GraphicsFramebufferPtr target) noexcept = 0;
-	virtual void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept = 0;
-	virtual void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept = 0;
+	virtual void clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept = 0;
+	virtual void clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept = 0;
 	virtual void discardRenderTexture() noexcept = 0;
 	virtual void blitRenderTexture(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept = 0;
 	virtual void readRenderTexture(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept = 0;

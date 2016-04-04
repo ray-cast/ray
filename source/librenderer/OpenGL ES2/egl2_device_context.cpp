@@ -52,7 +52,6 @@ __ImplementSubClass(EGL2DeviceContext, GraphicsContext, "EGL2DeviceContext")
 
 EGL2DeviceContext::EGL2DeviceContext() noexcept
 	: _initOpenGL(false)
-	, _maxTextureUnits(32)
 	, _maxViewports(4)
 	, _clearColor(0.0, 0.0, 0.0)
 	, _clearDepth(0.0)
@@ -419,7 +418,7 @@ EGL2DeviceContext::getRenderTexture() const noexcept
 }
 
 void
-EGL2DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
+EGL2DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	GLbitfield mode = 0;
 
@@ -476,7 +475,7 @@ EGL2DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& c
 }
 
 void
-EGL2DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+EGL2DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
 	this->clearRenderTexture(flags, color, depth, stencil);
 }
@@ -652,7 +651,6 @@ EGL2DeviceContext::initStateSystem() noexcept
 	GL_CHECK(glBlendEquation(GL_FUNC_ADD));
 	GL_CHECK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-	_maxTextureUnits = MAX_TEXTURE_UNIT;
 	_maxViewports = 4;
 
 	_clearColor.set(0.0, 0.0, 0.0, 0.0);
@@ -665,8 +663,6 @@ EGL2DeviceContext::initStateSystem() noexcept
 	_viewport.height = 0;
 
 	_enableWireframe = false;
-
-	_textureUnits.resize(_maxTextureUnits);
 
 	_stateDefault = std::make_shared<EGL2GraphicsState>();
 	_stateCaptured = GraphicsStateDesc();

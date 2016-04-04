@@ -122,19 +122,19 @@ public:
 	GraphicsDevice() noexcept;
 	virtual ~GraphicsDevice() noexcept;
 
-	virtual GraphicsSwapchainPtr createGraphicsSwapchain(const GraphicsSwapchainDesc& desc) noexcept = 0;
+	virtual GraphicsSwapchainPtr createSwapchain(const GraphicsSwapchainDesc& desc) noexcept = 0;
 	virtual GraphicsContextPtr createGraphicsContext(const GraphicsContextDesc& desc) noexcept = 0;
 	virtual GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept = 0;
 	virtual GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept = 0;
-	virtual GraphicsTexturePtr createGraphicsTexture(const GraphicsTextureDesc& desc) noexcept = 0;
-	virtual GraphicsSamplerPtr createGraphicsSampler(const GraphicsSamplerDesc& desc) noexcept = 0;
-	virtual GraphicsFramebufferPtr createRenderTexture(const GraphicsFramebufferDesc& desc) noexcept = 0;
+	virtual GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept = 0;
+	virtual GraphicsSamplerPtr createSampler(const GraphicsSamplerDesc& desc) noexcept = 0;
+	virtual GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept = 0;
 	virtual GraphicsStatePtr createRenderState(const GraphicsStateDesc& desc) noexcept = 0;
 	virtual GraphicsShaderPtr createShader(const GraphicsShaderDesc& desc) noexcept = 0;
 	virtual GraphicsProgramPtr createProgram(const GraphicsProgramDesc& desc) noexcept = 0;
 	virtual GraphicsPipelinePtr createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept = 0;
-	virtual GraphicsDescriptorSetPtr createGraphicsDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept = 0;
-	virtual GraphicsDescriptorSetLayoutPtr createGraphicsDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept = 0;
+	virtual GraphicsDescriptorSetPtr createDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept = 0;
+	virtual GraphicsDescriptorSetLayoutPtr createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept = 0;
 
 	virtual GraphicsFormat findCompatibleFormat(GraphicsPixelFormatDesc& desc) noexcept = 0;
 

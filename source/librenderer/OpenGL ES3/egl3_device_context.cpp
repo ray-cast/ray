@@ -402,7 +402,7 @@ EGL3DeviceContext::getRenderTexture() const noexcept
 }
 
 void
-EGL3DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
+EGL3DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	GLbitfield mode = 0;
 
@@ -457,7 +457,7 @@ EGL3DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& c
 }
 
 void
-EGL3DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+EGL3DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
 	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 	{
@@ -663,7 +663,6 @@ EGL3DeviceContext::initStateSystem() noexcept
 	GL_CHECK(glBlendEquation(GL_FUNC_ADD));
 	GL_CHECK(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-    _maxTextureUnits = MAX_TEXTURE_UNIT;
     _maxViewports = 4;
 
     _clearColor.set(0.0, 0.0, 0.0, 0.0);

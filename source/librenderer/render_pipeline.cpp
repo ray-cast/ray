@@ -61,6 +61,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(RenderPipeline, rtti::Interface, "RenderPipeline")
+
 RenderPipeline::RenderPipeline() noexcept
 {
 }
@@ -82,7 +84,7 @@ RenderPipeline::open(WindHandle window, std::uint32_t w, std::uint32_t h) noexce
 	swapchainDesc.setWindHandle(window);
 	swapchainDesc.setWidth(w);
 	swapchainDesc.setHeight(h);
-	_graphicsSwapchain = _graphicsDevice->createGraphicsSwapchain(swapchainDesc);
+	_graphicsSwapchain = _graphicsDevice->createSwapchain(swapchainDesc);
 	if (!_graphicsSwapchain)
 		return false;
 
@@ -246,7 +248,7 @@ GraphicsTexturePtr
 RenderPipeline::createTexture(const GraphicsTextureDesc& desc) noexcept
 {
 	assert(_graphicsDevice);
-	return _graphicsDevice->createGraphicsTexture(desc);
+	return _graphicsDevice->createTexture(desc);
 }
 
 GraphicsTexturePtr
@@ -258,7 +260,7 @@ RenderPipeline::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureD
 	textureDesc.setHeight(h);
 	textureDesc.setTexDim(dim);
 	textureDesc.setTexFormat(format);
-	return _graphicsDevice->createGraphicsTexture(textureDesc);
+	return _graphicsDevice->createTexture(textureDesc);
 }
 
 GraphicsTexturePtr
@@ -328,10 +330,10 @@ RenderPipeline::createTexture(const std::string& name) noexcept
 }
 
 GraphicsFramebufferPtr
-RenderPipeline::createRenderTexture(const GraphicsFramebufferDesc& desc) noexcept
+RenderPipeline::createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept
 {
 	assert(_graphicsDevice);
-	return _graphicsDevice->createRenderTexture(desc);
+	return _graphicsDevice->createFramebuffer(desc);
 }
 
 RenderBufferPtr
@@ -349,45 +351,45 @@ RenderPipeline::createRenderBuffer(const MeshProperty& mesh) noexcept
 	auto numVertex = mesh.getNumVertices();
 	auto numIndices = mesh.getNumIndices();
 
-	VertexComponents components;
+	GraphicsVertexLayouts components;
 
 	auto& vertices = mesh.getVertexArray();
 	if (!vertices.empty())
 	{
 		if (vertices.size() == numVertex)
-			components.push_back(VertexComponent("POSITION", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
+			components.push_back(GraphicsVertexLayout("POSITION", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
 	}
 
 	auto& colors = mesh.getColorArray();
 	if (!colors.empty())
 	{
 		if (colors.size() == numVertex)
-			components.push_back(VertexComponent("COLOR", 0, GraphicsFormat::GraphicsFormatR32G32B32A32SFloat));
+			components.push_back(GraphicsVertexLayout("COLOR", 0, GraphicsFormat::GraphicsFormatR32G32B32A32SFloat));
 	}
 
 	auto& normals = mesh.getNormalArray();
 	if (!normals.empty())
 	{
 		if (normals.size() == numVertex)
-			components.push_back(VertexComponent("NORMAL", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
+			components.push_back(GraphicsVertexLayout("NORMAL", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
 	}
 
 	auto& texcoords = mesh.getTexcoordArray();
 	if (!texcoords.empty())
 	{
 		if (texcoords.size() == numVertex)
-			components.push_back(VertexComponent("TEXCOORD", 0, GraphicsFormat::GraphicsFormatR32G32SFloat));
+			components.push_back(GraphicsVertexLayout("TEXCOORD", 0, GraphicsFormat::GraphicsFormatR32G32SFloat));
 	}
 
 	auto& tangent = mesh.getTangentArray();
 	if (!tangent.empty())
 	{
 		if (tangent.size() == numVertex)
-			components.push_back(VertexComponent("TANGENT", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
+			components.push_back(GraphicsVertexLayout("TANGENT", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
 	}
 
 	GraphicsInputLayoutDesc layout;
-	layout.setVertexComponents(components);
+	layout.setGraphicsVertexLayouts(components);
 	layout.setIndexType(GraphicsIndexType::GraphicsIndexTypeUInt32);
 
 	GraphicsDataPtr vb;
@@ -496,15 +498,15 @@ RenderPipeline::createRenderBuffer(const MeshPropertys& meshes) noexcept
 	GraphicsInputLayoutDesc layout;
 
 	if (!meshes.front()->getVertexArray().empty())
-		layout.addComponent(VertexComponent("POSITION", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
+		layout.addComponent(GraphicsVertexLayout("POSITION", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
 	if (!meshes.front()->getColorArray().empty())
-		layout.addComponent(VertexComponent("COLOR", 0, GraphicsFormat::GraphicsFormatR32G32B32A32SFloat));
+		layout.addComponent(GraphicsVertexLayout("COLOR", 0, GraphicsFormat::GraphicsFormatR32G32B32A32SFloat));
 	if (!meshes.front()->getNormalArray().empty())
-		layout.addComponent(VertexComponent("NORMAL", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
+		layout.addComponent(GraphicsVertexLayout("NORMAL", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
 	if (!meshes.front()->getTexcoordArray().empty())
-		layout.addComponent(VertexComponent("TEXCOORD", 0, GraphicsFormat::GraphicsFormatR32G32SFloat));
+		layout.addComponent(GraphicsVertexLayout("TEXCOORD", 0, GraphicsFormat::GraphicsFormatR32G32SFloat));
 	if (!meshes.front()->getTangentArray().empty())
-		layout.addComponent(VertexComponent("TANGENT", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
+		layout.addComponent(GraphicsVertexLayout("TANGENT", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
 	if (!meshes.front()->getFaceArray().empty())
 		layout.setIndexType(GraphicsIndexType::GraphicsIndexTypeUInt32);
 
@@ -712,14 +714,14 @@ RenderPipeline::setRenderTexture(GraphicsFramebufferPtr target) noexcept
 }
 
 void
-RenderPipeline::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
+RenderPipeline::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->clearRenderTexture(flags, color, depth, stencil);
 }
 
 void
-RenderPipeline::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+RenderPipeline::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->clearRenderTexture(flags, color, depth, stencil, i);

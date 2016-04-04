@@ -38,6 +38,7 @@
 #include <ray/camera.h>
 #include <ray/light.h>
 #include <ray/render_mesh.h>
+#include <ray/material.h>
 
 _NAME_BEGIN
 

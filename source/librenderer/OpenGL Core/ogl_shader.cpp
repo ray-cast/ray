@@ -43,49 +43,217 @@ _NAME_BEGIN
 
 __ImplementSubClass(OGLShader, GraphicsShader, "OGLShader")
 __ImplementSubClass(OGLShaderObject, GraphicsProgram, "OGLShaderObject")
-__ImplementSubClass(OGLShaderAttribute, ShaderAttribute, "OGLShaderAttribute")
-__ImplementSubClass(OGLShaderUniform, ShaderUniform, "OGLShaderUniform")
+__ImplementSubClass(OGLGraphicsAttribute, GraphicsAttribute, "OGLGraphicsAttribute")
+__ImplementSubClass(OGLGraphicsUniform, GraphicsUniform, "OGLGraphicsUniform")
+__ImplementSubClass(OGLGraphicsUniformBlock, GraphicsUniformBlock, "OGLGraphicsUniformBlock")
 
-OGLShaderAttribute::OGLShaderAttribute() noexcept
-	: _location(GL_NONE)
+OGLGraphicsAttribute::OGLGraphicsAttribute() noexcept
+	: _index(0)
+	, _bindingPoint(GL_INVALID_INDEX)
+	, _type(GraphicsUniformType::GraphicsUniformTypeNone)
 {
 }
 
-OGLShaderAttribute::~OGLShaderAttribute() noexcept
-{
-}
-
-void 
-OGLShaderAttribute::setLocation(GLint location) noexcept
-{
-	_location = location;
-}
-
-GLint 
-OGLShaderAttribute::getLocation() const noexcept
-{
-	return _location;
-}
-
-OGLShaderUniform::OGLShaderUniform() noexcept
-	: _program(GL_NONE)
-{
-}
-
-OGLShaderUniform::~OGLShaderUniform() noexcept
+OGLGraphicsAttribute::~OGLGraphicsAttribute() noexcept
 {
 }
 
 void
-OGLShaderUniform::setBindingProgram(GLuint program) noexcept
+OGLGraphicsAttribute::setName(const std::string& name) noexcept
 {
-	_program = program;
+	_name = name;
+}
+
+const std::string&
+OGLGraphicsAttribute::getName() const noexcept
+{
+	return _name;
+}
+
+void
+OGLGraphicsAttribute::setType(GraphicsUniformType type) noexcept
+{
+	_type = type;
+}
+
+GraphicsUniformType
+OGLGraphicsAttribute::getType() const noexcept
+{
+	return _type;
+}
+
+void
+OGLGraphicsAttribute::setSemantic(const std::string& semantic) noexcept
+{
+	_semantic = semantic;
+}
+
+const std::string&
+OGLGraphicsAttribute::getSemantic() const noexcept
+{
+	return _semantic;
+}
+
+void
+OGLGraphicsAttribute::setSemanticIndex(std::uint8_t index) noexcept
+{
+	_index = index;
+}
+
+std::uint8_t
+OGLGraphicsAttribute::getSemanticIndex() const noexcept
+{
+	return _index;
+}
+
+void 
+OGLGraphicsAttribute::setBindingPoint(GLuint bindingPoint) noexcept
+{
+	_bindingPoint = bindingPoint;
+}
+
+GLuint 
+OGLGraphicsAttribute::getBindingPoint() const noexcept
+{
+	return _bindingPoint;
+}
+
+OGLGraphicsUniform::OGLGraphicsUniform() noexcept
+	: _offset(0)
+	, _bindingPoint(GL_INVALID_INDEX)
+	, _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+}
+
+OGLGraphicsUniform::~OGLGraphicsUniform() noexcept
+{
+}
+
+void
+OGLGraphicsUniform::setName(const std::string& name) noexcept
+{
+	_name = name;
+}
+
+const std::string&
+OGLGraphicsUniform::getName() const noexcept
+{
+	return _name;
+}
+
+void
+OGLGraphicsUniform::setType(GraphicsUniformType type) noexcept
+{
+	_type = type;
+}
+
+GraphicsUniformType
+OGLGraphicsUniform::getType() const noexcept
+{
+	return _type;
+}
+
+void 
+OGLGraphicsUniform::setOffset(std::uint32_t offset) noexcept
+{
+	_offset = offset;
+}
+
+std::uint32_t 
+OGLGraphicsUniform::getOffset() const noexcept
+{
+	return _offset;
+}
+
+void
+OGLGraphicsUniform::setBindingPoint(GLuint bindingPoint) noexcept
+{
+	_bindingPoint = bindingPoint;
 }
 
 GLuint
-OGLShaderUniform::getBindingProgram() const noexcept
+OGLGraphicsUniform::getBindingPoint() const noexcept
 {
-	return _program;
+	return _bindingPoint;
+}
+
+OGLGraphicsUniformBlock::OGLGraphicsUniformBlock() noexcept
+	: _size(0)
+	, _bindingPoint(GL_INVALID_INDEX)
+	, _type(GraphicsUniformType::GraphicsUniformTypeUniformBuffer)
+{
+}
+
+OGLGraphicsUniformBlock::~OGLGraphicsUniformBlock() noexcept
+{
+}
+
+void
+OGLGraphicsUniformBlock::setName(const std::string& name) noexcept
+{
+	_name = name;
+}
+
+const std::string&
+OGLGraphicsUniformBlock::getName() const noexcept
+{
+	return _name;
+}
+
+void
+OGLGraphicsUniformBlock::setType(GraphicsUniformType type) noexcept
+{
+	_type = type;
+}
+
+GraphicsUniformType
+OGLGraphicsUniformBlock::getType() const noexcept
+{
+	return _type;
+}
+
+void
+OGLGraphicsUniformBlock::setBlockSize(std::uint32_t size) noexcept
+{
+	_size = size;
+}
+
+std::uint32_t
+OGLGraphicsUniformBlock::getBlockSize() const noexcept
+{
+	return _size;
+}
+
+void
+OGLGraphicsUniformBlock::addGraphicsUniform(GraphicsUniformPtr uniform) noexcept
+{
+	_uniforms.push_back(uniform);
+}
+
+void
+OGLGraphicsUniformBlock::removeGraphicsUniform(GraphicsUniformPtr uniform) noexcept
+{
+	auto it = std::find(_uniforms.begin(), _uniforms.end(), uniform);
+	if (it != _uniforms.end())
+		_uniforms.erase(it);
+}
+
+const GraphicsUniforms&
+OGLGraphicsUniformBlock::getGraphicsUniforms() const noexcept
+{
+	return _uniforms;
+}
+
+void
+OGLGraphicsUniformBlock::setBindingPoint(GLuint bindingPoint) noexcept
+{
+	_bindingPoint = bindingPoint;
+}
+
+GLuint
+OGLGraphicsUniformBlock::getBindingPoint() const noexcept
+{
+	return _bindingPoint;
 }
 
 OGLShader::OGLShader() noexcept
@@ -163,10 +331,10 @@ OGLShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 void
 OGLShader::close() noexcept
 {
-	if (_instance)
+	if (_instance != GL_NONE)
 	{
 		glDeleteShader(_instance);
-		_instance = 0;
+		_instance = GL_NONE;
 	}
 }
 
@@ -253,14 +421,15 @@ OGLShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 void
 OGLShaderObject::close() noexcept
 {
-	if (_program)
+	if (_program != GL_NONE)
 	{
 		glDeleteProgram(_program);
-		_program = 0;
+		_program = GL_NONE;
 	}
 
 	_activeAttributes.clear();
 	_activeUniforms.clear();
+	_activeUniformBlocks.clear();
 }
 
 GLuint
@@ -269,22 +438,22 @@ OGLShaderObject::getInstanceID() noexcept
 	return _program;
 }
 
-const GraphicsProgramDesc& 
-OGLShaderObject::getGraphicsProgramDesc() const noexcept
-{
-	return _programDesc;
-}
-
-ShaderAttributes&
-OGLShaderObject::getActiveAttributes() noexcept
+const GraphicsAttributes&
+OGLShaderObject::getActiveAttributes() const noexcept
 {
 	return _activeAttributes;
 }
 
-ShaderUniforms&
-OGLShaderObject::getActiveUniforms() noexcept
+const GraphicsUniforms&
+OGLShaderObject::getActiveUniforms() const noexcept
 {
 	return _activeUniforms;
+}
+
+const GraphicsUniformBlocks& 
+OGLShaderObject::getActiveUniformBlocks() const noexcept
+{
+	return _activeUniformBlocks;
 }
 
 void
@@ -323,15 +492,16 @@ OGLShaderObject::_initActiveAttribute() noexcept
 			auto it = std::find_if(semantic.begin(), semantic.end(), [](char ch) { return ch >= '0' && ch <= '9'; });
 			if (it != semantic.end())
 			{
-				semanticIndex = atoi(&*it);
+				semanticIndex = std::atoi(&*it);
 				semantic = semantic.substr(0, it - semantic.begin());
 			}
 
-			auto attrib = std::make_shared<OGLShaderAttribute>();
+			auto attrib = std::make_shared<OGLGraphicsAttribute>();
 			attrib->setName(name);
-			attrib->setLocation(location);
+			attrib->setBindingPoint(location);
 			attrib->setSemantic(semantic);
 			attrib->setSemanticIndex(semanticIndex);
+			attrib->setType(toGraphicsUniformType(attrib->getName(), type));
 
 			_activeAttributes.push_back(attrib);
 		}
@@ -357,70 +527,16 @@ OGLShaderObject::_initActiveUniform() noexcept
 	{
 		GLint size;
 		GLenum type;
-
 		glGetActiveUniform(_program, (GLuint)i, maxUniformLength, 0, &size, &type, nameUniform.get());
 
 		GLuint location = glGetUniformLocation(_program, nameUniform.get());
 		if (location == GL_INVALID_INDEX)
 			continue;
 
-		auto uniform = std::make_shared<OGLShaderUniform>();
+		auto uniform = std::make_shared<OGLGraphicsUniform>();
 		uniform->setName(nameUniform.get());
 		uniform->setBindingPoint(location);
-		uniform->setBindingProgram(_program);
-
-		if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
-			type == GL_SAMPLER_2D_SHADOW ||
-			type == GL_SAMPLER_2D_ARRAY || type == GL_SAMPLER_CUBE ||
-			type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
-		{
-			uniform->setType(GraphicsUniformType::GraphicsUniformTypeStorageImage);
-		}
-		else
-		{
-			bool isArray = uniform->getName().find("[0]") != std::string::npos;
-
-			if (type == GL_BOOL)
-				uniform->setType(GraphicsUniformType::GraphicsUniformTypeBool);
-			else if (type == GL_INT)
-				uniform->setType(GraphicsUniformType::GraphicsUniformTypeInt);
-			else if (type == GL_INT_VEC2)
-				uniform->setType(GraphicsUniformType::GraphicsUniformTypeInt2);
-			else if (type == GL_FLOAT)
-			{
-				if (isArray)
-					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloatArray);
-				else
-					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat);
-			}
-			else if (type == GL_FLOAT_VEC2)
-			{
-				if (isArray)
-					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat2Array);
-				else
-					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat2);
-			}
-			else if (type == GL_FLOAT_VEC3)
-			{
-				if (isArray)
-					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat3Array);
-				else
-					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat3);
-			}
-			else if (type == GL_FLOAT_VEC4)
-			{
-				if (isArray)
-					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat4Array);
-				else
-					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat4);
-			}
-			else if (type == GL_FLOAT_MAT3)
-				uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat3x3);
-			else if (type == GL_FLOAT_MAT4)
-				uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat4x4);
-			else
-				assert(false);
-		}
+		uniform->setType(toGraphicsUniformType(uniform->getName(), type));
 
 		_activeUniforms.push_back(uniform);
 	}
@@ -437,61 +553,196 @@ OGLShaderObject::_initActiveUniformBlock() noexcept
 	glGetProgramiv(_program, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &maxUniformBlockLength);
 	glGetProgramiv(_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformLength);
 
-	if (numUniformBlock)
+	if (numUniformBlock == 0)
+		return;
+
+	auto nameUniformBlock = make_scope<GLchar[]>(maxUniformBlockLength + 1);
+	nameUniformBlock[maxUniformBlockLength] = 0;
+
+	for (GLint i = 0; i < numUniformBlock; ++i)
 	{
-		auto nameUniformBlock = make_scope<GLchar[]>(maxUniformBlockLength + 1);
-		nameUniformBlock[maxUniformBlockLength] = 0;
+		GLsizei lengthUniformBlock = 0;
+		glGetActiveUniformBlockName(_program, (GLuint)i, maxUniformBlockLength, &lengthUniformBlock, nameUniformBlock.get());
+		if (lengthUniformBlock == 0)
+			continue;
 
-		for (GLint i = 0; i < numUniformBlock; ++i)
+		GLuint location = glGetUniformBlockIndex(_program, nameUniformBlock.get());
+		if (location == GL_INVALID_INDEX)
+			continue;
+
+		GLint count = 0;
+		glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &count);
+		if (count == 0)
+			continue;
+
+		GLint size = 0;
+		std::vector<GLint> indices(count);
+		std::vector<GLint> offset((std::size_t)count);
+		std::vector<GLint> type((std::size_t)count);
+		std::vector<GLint> datasize((std::size_t)count);
+		std::vector<GLchar> name(maxUniformLength);
+
+		glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_DATA_SIZE, &size);
+		glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices.data());
+		glGetActiveUniformsiv(_program, count, (GLuint*)&indices[0], GL_UNIFORM_OFFSET, &offset[0]);
+		glGetActiveUniformsiv(_program, count, (GLuint*)&indices[0], GL_UNIFORM_TYPE, &type[0]);
+		glGetActiveUniformsiv(_program, count, (GLuint*)&indices[0], GL_UNIFORM_SIZE, &datasize[0]);
+
+		auto uniformblock = std::make_shared<OGLGraphicsUniformBlock>();
+		uniformblock->setName(nameUniformBlock.get());
+		uniformblock->setBindingPoint(location);
+		uniformblock->setBlockSize(size);
+		uniformblock->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
+
+		for (GLint j = 0; j < count; j++)
 		{
-			GLsizei lengthUniformBlock;
-			glGetActiveUniformBlockName(_program, (GLuint)i, maxUniformBlockLength, &lengthUniformBlock, nameUniformBlock.get());
+			GLsizei length = 0;
+			glGetActiveUniformName(_program, indices[j], maxUniformLength, &length, name.data());
 
-			GLuint location = glGetUniformBlockIndex(_program, nameUniformBlock.get());
-			if (location == GL_INVALID_INDEX)
-				continue;
+			auto uniform = std::make_shared<OGLGraphicsUniform>();
+			uniform->setName(std::string(name.data(), length));
+			uniform->setBindingPoint(indices[j]);
+			uniform->setOffset(offset[j]);
+			uniform->setType(toGraphicsUniformType(uniform->getName(), type[j]));
 
-			glUniformBlockBinding(_program, location, location);
+			uniformblock->addGraphicsUniform(uniform);
+		}
 
-			GLint size;
-			GLint count;
+		_activeUniformBlocks.push_back(uniformblock);
+	}
+}
 
-			glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_DATA_SIZE, &size);
-			glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &count);
+GraphicsUniformType 
+OGLShaderObject::toGraphicsUniformType(const std::string& name, GLenum type) noexcept
+{
+	if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
+		type == GL_SAMPLER_2D_SHADOW ||
+		type == GL_SAMPLER_2D_ARRAY || type == GL_SAMPLER_CUBE ||
+		type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
+	{
+		return GraphicsUniformType::GraphicsUniformTypeStorageImage;
+	}
+	else
+	{
+		bool isArray = name.find("[0]") != std::string::npos;
 
-			if (count)
-			{
-				std::vector<GLint> indices(count);
-				glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices.data());
-
-				std::vector<GLint> offset((std::size_t)count);
-				std::vector<GLint> type((std::size_t)count);
-				std::vector<GLint> datasize((std::size_t)count);
-				std::vector<std::string> varlist((std::size_t)count);
-				std::vector<GLchar> name(maxUniformLength);
-
-				glGetActiveUniformsiv(_program, count, (GLuint*)&indices[0], GL_UNIFORM_OFFSET, &offset[0]);
-				glGetActiveUniformsiv(_program, count, (GLuint*)&indices[0], GL_UNIFORM_TYPE, &type[0]);
-				glGetActiveUniformsiv(_program, count, (GLuint*)&indices[0], GL_UNIFORM_SIZE, &datasize[0]);
-
-				for (GLint j = 0; j < count; ++j)
-				{
-					GLsizei length = 0;
-
-					glGetActiveUniformName(_program, indices[j], maxUniformLength, &length, name.data());
-					varlist[j].append(name.data(), length);
-				}
-
-				auto uniformblock = std::make_shared<OGLShaderUniform>();
-				uniformblock->setName(nameUniformBlock.get());
-				uniformblock->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
-				uniformblock->setBindingPoint(location);
-				uniformblock->setBindingProgram(_program);
-
-				_activeUniforms.push_back(uniformblock);
-			}
+		if (type == GL_BOOL)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeBoolArray;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeBool;
+		}
+		else if (type == GL_BOOL_VEC2)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeBool2Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeBool2;
+		}
+		else if (type == GL_BOOL_VEC3)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeBool3Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeBool3;
+		}
+		else if (type == GL_BOOL_VEC4)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeBool4Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeBool4;
+		}
+		else if (type == GL_INT)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeIntArray;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeInt;
+		}
+		else if (type == GL_INT_VEC2)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeInt2Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeInt2;
+		}
+		else if (type == GL_INT_VEC3)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeInt3Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeInt3;
+		}
+		else if (type == GL_INT_VEC4)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeInt4Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeInt4;
+		}
+		else if (type == GL_FLOAT)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloatArray;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat;
+		}
+		else if (type == GL_FLOAT_VEC2)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat2Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat2;
+		}
+		else if (type == GL_FLOAT_VEC3)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat3Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat3;
+		}
+		else if (type == GL_FLOAT_VEC4)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat4Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat4;
+		}
+		else if (type == GL_FLOAT_MAT2)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat2x2Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat2x2;
+		}
+		else if (type == GL_FLOAT_MAT3)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat3x3Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat3x3;
+		}
+		else if (type == GL_FLOAT_MAT4)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat4x4Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat4x4;
+		}
+		else
+		{
+			GL_PLATFORM_ASSERT(false, "Invlid uniform type");
+			return GraphicsUniformType::GraphicsUniformTypeNone;
 		}
 	}
+}
+
+const GraphicsProgramDesc&
+OGLShaderObject::getGraphicsProgramDesc() const noexcept
+{
+	return _programDesc;
 }
 
 void

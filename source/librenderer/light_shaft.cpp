@@ -37,7 +37,7 @@
 #include <ray/light_shaft.h>
 #include <ray/light.h>
 #include <ray/camera.h>
-
+#include <ray/material.h>
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 
@@ -55,7 +55,7 @@ LightShaft::~LightShaft() noexcept
 }
 
 void
-LightShaft::onActivate(RenderPipeline& pipeline) except
+LightShaft::onActivate(RenderPipeline& pipeline) noexcept
 {
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
@@ -78,23 +78,32 @@ LightShaft::onActivate(RenderPipeline& pipeline) except
 
 	_illuminationSample->assign(sample);
 
-	_sampleMap = pipeline.createTexture(width * 0.5, height * 0.5, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatB10G11R11UFloatPack32);
+	_sampleMap = pipeline.createTexture(width / 2, height / 2, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatB10G11R11UFloatPack32);
 
 	GraphicsFramebufferDesc sampleViewDesc;
 	sampleViewDesc.attach(_sampleMap);
-	_sampleView = pipeline.createRenderTexture(sampleViewDesc);
+	_sampleView = pipeline.createFramebuffer(sampleViewDesc);
 }
 
 void
-LightShaft::onDeactivate(RenderPipeline& pipeline) except
+LightShaft::onDeactivate(RenderPipeline& pipeline) noexcept
 {
+	_material.reset();
+	_lightShaft.reset();
+	_lightShaftCopy.reset();
+	_illuminationPosition.reset();
+	_illuminationSample.reset();
+	_illuminationSource.reset();
+	_illuminationRadio.reset();
+	_sampleMap.reset();
+	_sampleView.reset();
 }
 
 void
-LightShaft::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) except
+LightShaft::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	pipeline.setRenderTexture(_sampleView);
-	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsAll, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsAll, float4::Zero, 1.0, 0);
 
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);

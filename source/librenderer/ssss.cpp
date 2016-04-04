@@ -37,6 +37,7 @@
 #include <ray/ssss.h>
 #include <ray/camera.h>
 #include <ray/light.h>
+#include <ray/material.h>
 
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>

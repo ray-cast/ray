@@ -65,7 +65,6 @@ public:
 private:
 
 	RenderQueue _renderQueue;
-
 	MaterialPassList _passList;
 };
 

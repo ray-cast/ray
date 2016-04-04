@@ -38,97 +38,12 @@
 
 _NAME_BEGIN
 
-__ImplementSubInterface(ShaderParameter, rtti::Interface, "ShaderParameter")
-__ImplementSubInterface(ShaderAttribute, ShaderParameter, "ShaderAttribute")
-__ImplementSubInterface(ShaderUniform, ShaderParameter, "ShaderUniform")
+__ImplementSubInterface(GraphicsParam, rtti::Interface, "GraphicsParam")
+__ImplementSubInterface(GraphicsAttribute, GraphicsParam, "GraphicsAttribute")
+__ImplementSubInterface(GraphicsUniform, GraphicsParam, "GraphicsUniform")
+__ImplementSubInterface(GraphicsUniformBlock, GraphicsParam, "GraphicsUniformBlock")
 __ImplementSubInterface(GraphicsShader, GraphicsChild, "GraphicsShader")
 __ImplementSubInterface(GraphicsProgram, GraphicsChild, "GraphicsProgram")
-
-ShaderParameter::ShaderParameter() noexcept
-{
-}
-
-ShaderParameter::~ShaderParameter() noexcept
-{
-}
-
-void
-ShaderParameter::setName(const std::string& name) noexcept
-{
-	_name = name;
-}
-
-const std::string&
-ShaderParameter::getName() const noexcept
-{
-	return _name;
-}
-
-ShaderAttribute::ShaderAttribute() noexcept
-	: _index(0)
-{
-}
-
-ShaderAttribute::~ShaderAttribute() noexcept
-{
-}
-
-void 
-ShaderAttribute::setSemantic(const std::string& semantic) noexcept
-{
-	_semantic = semantic;
-}
-
-const std::string& 
-ShaderAttribute::getSemantic() const noexcept
-{
-	return _semantic;
-}
-
-void
-ShaderAttribute::setSemanticIndex(std::uint8_t index) noexcept
-{
-	_index = index;
-}
-
-std::uint8_t 
-ShaderAttribute::getSemanticIndex() const noexcept
-{
-	return _index;
-}
-
-ShaderUniform::ShaderUniform() noexcept
-	: _bindingPoint(0)
-{
-}
-
-ShaderUniform::~ShaderUniform() noexcept
-{
-}
-
-void
-ShaderUniform::setBindingPoint(std::uint32_t bindingPoint) noexcept
-{
-	_bindingPoint = bindingPoint;
-}
-
-std::uint32_t 
-ShaderUniform::getBindingPoint() const noexcept
-{
-	return _bindingPoint;
-}
-
-void
-ShaderUniform::setType(GraphicsUniformType type) noexcept
-{
-	_type = type;
-}
-
-GraphicsUniformType
-ShaderUniform::getType() const noexcept
-{
-	return _type;
-}
 
 GraphicsShaderDesc::GraphicsShaderDesc() noexcept
 {
@@ -206,6 +121,38 @@ const GraphicsShaders&
 GraphicsProgramDesc::getShaders() const noexcept
 {
 	return _shaders;
+}
+
+GraphicsParam::GraphicsParam() noexcept
+{
+}
+
+GraphicsParam::~GraphicsParam() noexcept
+{
+}
+
+GraphicsAttribute::GraphicsAttribute() noexcept
+{
+}
+
+GraphicsAttribute::~GraphicsAttribute() noexcept
+{
+}
+
+GraphicsUniform::GraphicsUniform() noexcept
+{
+}
+
+GraphicsUniform::~GraphicsUniform() noexcept
+{
+}
+
+GraphicsUniformBlock::GraphicsUniformBlock() noexcept
+{
+}
+
+GraphicsUniformBlock::~GraphicsUniformBlock() noexcept
+{
 }
 
 GraphicsShader::GraphicsShader() noexcept

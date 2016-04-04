@@ -42,13 +42,75 @@ __ImplementSubInterface(GraphicsCommandQueue, GraphicsChild, "GraphicsCommandQue
 __ImplementSubInterface(GraphicsCommandList, GraphicsChild, "GraphicsCommandList")
 __ImplementSubInterface(GraphicsCommandPool, GraphicsChild, "GraphicsCommandPool")
 
-GraphicsCommandPoolDesc::GraphicsCommandPoolDesc() noexcept
+GraphicsCommandQueueDesc::GraphicsCommandQueueDesc() noexcept
+	: _mask(0)
+	, _type(GraphicsCommandType::GraphicsCommandTypeGraphics)
+	, _flags(GraphicsCommandQueueFlags::GraphicsCommandQueueFlagsNone)
+	, _priority(GraphicsCommandQueuePriority::GraphicsCommandQueuePriorityNormal)
 {
 }
 
-GraphicsCommandPoolDesc::GraphicsCommandPoolDesc(GraphicsCommandListType type, std::uint32_t flags) noexcept
-	: _type(type)
-	, _flags(flags)
+GraphicsCommandQueueDesc::~GraphicsCommandQueueDesc() noexcept
+{
+}
+
+void 
+GraphicsCommandQueueDesc::setCommandQueueMask(std::uint32_t mask) noexcept
+{
+	_mask = mask;
+}
+
+std::uint32_t 
+GraphicsCommandQueueDesc::getCommandQueueMask() const noexcept
+{
+	return _mask;
+}
+
+void
+GraphicsCommandQueueDesc::setCommandQueueType(GraphicsCommandType type) noexcept
+{
+	_type = type;
+}
+
+GraphicsCommandType
+GraphicsCommandQueueDesc::getCommandQueueType() const noexcept
+{
+	return _type;
+}
+
+void 
+GraphicsCommandQueueDesc::setCommandQueueFlags(GraphicsCommandQueueFlags flags) noexcept
+{
+	_flags = flags;
+}
+
+GraphicsCommandQueueFlags 
+GraphicsCommandQueueDesc::getCommandQueueFlags() const noexcept
+{
+	return _flags;
+}
+
+void 
+GraphicsCommandQueueDesc::setCommandQueuePriority(GraphicsCommandQueuePriority priority) noexcept
+{
+	_priority = priority;
+}
+
+GraphicsCommandQueuePriority 
+GraphicsCommandQueueDesc::getCommandQueuePriority() const noexcept
+{
+	return _priority;
+}
+
+GraphicsCommandPoolDesc::GraphicsCommandPoolDesc() noexcept
+	: _flags(GraphicsCommandPoolFlags::GraphicsCommandPoolResetCommandBuffer)
+	, _type(GraphicsCommandType::GraphicsCommandTypeGraphics)
+{
+}
+
+GraphicsCommandPoolDesc::GraphicsCommandPoolDesc(GraphicsCommandType type, std::uint32_t flags) noexcept
+	: _flags(flags)
+	, _type(type)
 {
 }
 
@@ -57,12 +119,12 @@ GraphicsCommandPoolDesc::~GraphicsCommandPoolDesc() noexcept
 }
 
 void
-GraphicsCommandPoolDesc::setCommandListType(GraphicsCommandListType type) noexcept
+GraphicsCommandPoolDesc::setCommandListType(GraphicsCommandType type) noexcept
 {
 	_type = type;
 }
 
-GraphicsCommandListType
+GraphicsCommandType
 GraphicsCommandPoolDesc::getCommandListType() const noexcept
 {
 	return _type;

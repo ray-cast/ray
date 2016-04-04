@@ -37,7 +37,7 @@
 #ifndef _H_MATERIAL_PARAM_H_
 #define _H_MATERIAL_PARAM_H_
 
-#include <ray/material_fwd.h>
+#include <ray/render_types.h>
 
 _NAME_BEGIN
 
@@ -72,9 +72,9 @@ public:
 	void assign(const std::vector<float4>& value) noexcept;
 	void assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler = nullptr) noexcept;
 
-	void addShaderUniform(GraphicsUniformPtr uniform) noexcept;
-	void removeShaderUniform(GraphicsUniformPtr uniform) noexcept;
-	GraphicsUniforms& getShaderUniform() noexcept;;
+	void addGraphicsUniform(GraphicsUniformSetPtr uniform) noexcept;
+	void removeGraphicsUniform(GraphicsUniformSetPtr uniform) noexcept;
+	GraphicsUniformSets& getGraphicsUniform() noexcept;;
 
 private:
 	MaterialParam(const MaterialParam&) = delete;
@@ -85,7 +85,7 @@ private:
 	std::string _name;
 	MaterialVariantPtr _semantic;
 	GraphicsUniformType _type;
-	GraphicsUniforms _uniforms;
+	GraphicsUniformSets _uniforms;
 };
 
 _NAME_END

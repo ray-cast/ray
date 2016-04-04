@@ -39,10 +39,15 @@
 
 #include <ray/graphics_types.h>
 
-#include <ray/material.h>
-
 _NAME_BEGIN
 
+typedef std::shared_ptr<class Material> MaterialPtr;
+typedef std::shared_ptr<class MaterialPass> MaterialPassPtr;
+typedef std::shared_ptr<class MaterialTech> MaterialTechPtr;
+typedef std::shared_ptr<class MaterialParam> MaterialParamPtr;
+typedef std::shared_ptr<class MaterialVariant> MaterialVariantPtr;
+typedef std::shared_ptr<class MaterialLoader> MaterialLoaderPtr;
+typedef std::shared_ptr<class MaterialManager> MaterialManagerPtr;
 typedef std::shared_ptr<class RenderObject> RenderObjectPtr;
 typedef std::shared_ptr<class RenderPostProcess> RenderPostProcessPtr;
 typedef std::shared_ptr<class RenderPipelineController> RenderPipelineControllerPtr;
@@ -53,20 +58,39 @@ typedef std::shared_ptr<class RenderMesh> RenderMeshPtr;
 typedef std::shared_ptr<class RenderSystem> RenderSystemPtr;
 typedef std::shared_ptr<class RenderBuffer> RenderBufferPtr;
 typedef std::shared_ptr<class RenderScene> RenderScenePtr;
-
 typedef std::shared_ptr<class Camera> CameraPtr;
 typedef std::shared_ptr<class Light> LightPtr;
 
+typedef std::weak_ptr<class Material> MaterialWeakPtr;
+typedef std::weak_ptr<class MaterialPass> MaterialPassWeakPtr;
+typedef std::weak_ptr<class MaterialTech> MaterialTechWeakPtr;
+typedef std::weak_ptr<class MaterialParam> MaterialParamWeakPtr;
+typedef std::weak_ptr<class MaterialVariant> MaterialVariantWeakPtr;
+typedef std::weak_ptr<class MaterialLoader> MaterialLoaderWeakPtr;
+typedef std::weak_ptr<class MaterialManager> MaterialManagerWeakPtr;
+typedef std::weak_ptr<class RenderObject> RenderObjectWeakPtr;
+typedef std::weak_ptr<class RenderPostProcess> RenderPostProcessWeakPtr;
+typedef std::weak_ptr<class RenderPipelineController> RenderPipelineControllerWeakPtr;
+typedef std::weak_ptr<class RenderPipeline> RenderPipelineWeakPtr;
+typedef std::weak_ptr<class RenderPipelineManager> RenderPipelineManagerWeakPtr;
+typedef std::weak_ptr<class RenderDataManager> RenderDataManagerWeakPtr;
+typedef std::weak_ptr<class RenderMesh> RenderMeshWeakPtr;
+typedef std::weak_ptr<class RenderSystem> RenderSystemWeakPtr;
+typedef std::weak_ptr<class RenderBuffer> RenderBufferWeakPtr;
+typedef std::weak_ptr<class RenderScene> RenderSceneWeakPtr;
 typedef std::weak_ptr<class Camera> CameraWeakPtr;
 typedef std::weak_ptr<class Light> LightWeakPtr;
-typedef std::weak_ptr<class RenderScene> RenderSceneWeakPtr;
 
 typedef std::vector<RenderBufferPtr> RenderBuffers;
 typedef std::vector<RenderMeshPtr> RenderMeshes;
 typedef std::vector<RenderObjectPtr> RenderObjects;
 typedef std::vector<RenderScenePtr> RenderScenes;
 typedef std::vector<RenderPostProcessPtr> RenderPostProcessor;
-
+typedef std::vector<MaterialPtr> Materials;
+typedef std::vector<MaterialPassPtr> MaterialPassList;
+typedef std::vector<MaterialTechPtr> MaterialTechniques;
+typedef std::vector<MaterialParamPtr> MaterialParams;
+typedef std::vector<MaterialVariantPtr> MaterialVariants;
 typedef std::vector<CameraPtr> Cameras;
 typedef std::vector<LightPtr> Lights;
 
@@ -120,6 +144,35 @@ enum LightType
 	LightTypeEndRange = LightTypeHemiSphere,
 	LightTypeRangeSize = (LightTypeEndRange - LightTypeBeginRange + 1),
 	LightTypeMaxEnum = 0x7FFFFFFF
+};
+
+enum RenderQueue
+{
+	RenderQueueCustom,
+	RenderQueueOpaque,
+	RenderQueueTransparent,
+	RenderQueueLighting,
+	RenderQueuePostprocess,
+	RenderQueueBeginRange = RenderQueueCustom,
+	RenderQueueEndRange = RenderQueuePostprocess,
+	RenderQueueRangeSize = (RenderQueueEndRange - RenderQueueBeginRange + 1),
+	RenderQueueMaxEnum = 0x7FFFFFFF
+};
+
+enum RenderPass
+{
+	RenderPassCustom,
+	RenderPassDepth,
+	RenderPassShadow,
+	RenderPassOpaques,
+	RenderPassTransparent,
+	RenderPassSpecific,
+	RenderPassLights,
+	RenderPassPostprocess,
+	RenderPassBeginRange = RenderPassCustom,
+	RenderPassEndRange = RenderPassPostprocess,
+	RenderPassRangeSize = (RenderPassEndRange - RenderPassBeginRange + 1),
+	RenderPassMaxEnum = 0x7FFFFFFF
 };
 
 _NAME_END

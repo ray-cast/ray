@@ -80,8 +80,8 @@ public:
 	void unmapBuffer(GraphicsDataPtr& data) noexcept;
 
 	void setRenderTexture(GraphicsFramebufferPtr target) noexcept;
-	void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept;
-	void clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
+	void clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
+	void clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
 	void discardRenderTexture() noexcept;
 	void blitRenderTexture(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept;
 	void readRenderTexture(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
@@ -113,7 +113,7 @@ private:
 	bool _initOpenGL;
 	bool _enableWireframe;
 
-	Vector4 _clearColor;
+	float4 _clearColor;
 	GLfloat _clearDepth;
 	GLint   _clearStencil;
 
@@ -121,7 +121,6 @@ private:
 	Scissor _scissor;
 
 	GLuint _maxViewports;
-	GLuint _maxTextureUnits;
 
 	EGL2FramebufferPtr _renderTexture;
 
@@ -141,8 +140,6 @@ private:
 	EGL2GraphicsStatePtr _state;
 	EGL2GraphicsStatePtr _stateDefault;
 	GraphicsStateDesc _stateCaptured;
-
-	std::vector<GLint> _textureUnits;
 
 	GraphicsDeviceWeakPtr _device;
 };

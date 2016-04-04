@@ -38,6 +38,7 @@
 #include "vk_command_list.h"
 #include "vk_swapchain.h"
 #include "vk_device.h"
+#include "vk_semaphore.h"
 
 _NAME_BEGIN
 
@@ -68,7 +69,7 @@ VulkanCommandQueue::setup(const GraphicsCommandQueueDesc& commandQueueDesc) noex
 	std::uint32_t graphicsQueueNodeIndex = UINT32_MAX;
 	for (std::uint32_t i = 0; i < queueCount; i++)
 	{
-		if (commandQueueDesc.type == GraphicsCommandListType::GraphicsCommandListTypeGraphics)
+		if (commandQueueDesc.getCommandQueueType() == GraphicsCommandType::GraphicsCommandTypeGraphics)
 		{
 			if (props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			{
@@ -76,7 +77,7 @@ VulkanCommandQueue::setup(const GraphicsCommandQueueDesc& commandQueueDesc) noex
 				break;
 			}
 		}
-		else if (commandQueueDesc.type == GraphicsCommandListType::GraphicsCommandListTypeCompute)
+		else if (commandQueueDesc.getCommandQueueType() == GraphicsCommandType::GraphicsCommandTypeCompute)
 		{
 			if (props[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
 			{
@@ -87,7 +88,10 @@ VulkanCommandQueue::setup(const GraphicsCommandQueueDesc& commandQueueDesc) noex
 	}
 
 	if (graphicsQueueNodeIndex == UINT32_MAX)
+	{
+		VK_PLATFORM_LOG("Can't find compatible command type.");
 		return false;
+	}
 
 	vkGetDeviceQueue(device->getDevice(), graphicsQueueNodeIndex, 0, &_vkQueue);
 
@@ -172,7 +176,7 @@ VulkanCommandQueue::present(GraphicsSwapchainPtr canvas[], std::uint32_t count) 
 	for (std::uint32_t i = 0; i < count; i++)
 	{
 		VkSwapchainKHR swapchain = canvas[i]->downcast<VulkanSwapchain>()->getSwapchain();
-		VkSemaphore semaphore = canvas[i]->downcast<VulkanSwapchain>()->getSemaphore();
+		VkSemaphore semaphore = canvas[i]->downcast<VulkanSwapchain>()->getSemaphore()->downcast<VulkanSemaphore>()->getSemaphore();
 
 		if (swapchain != VK_NULL_HANDLE &&
 			semaphore != VK_NULL_HANDLE)

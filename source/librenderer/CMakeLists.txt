@@ -125,7 +125,6 @@ SOURCE_GROUP("renderer\\light" FILES ${RENDERER_LIGHT})
 SET(RENDERER_MATERIAL
     ${HEADER_PATH}/material.h
     ${SOURCE_PATH}/material.cpp
-    ${HEADER_PATH}/material_fwd.h
     ${HEADER_PATH}/material_loader.h
     ${SOURCE_PATH}/material_loader.cpp
     ${HEADER_PATH}/material_maker.h
@@ -209,8 +208,10 @@ SET(RENDERER_TERRAIN
 SOURCE_GROUP("renderer\\terrain" FILES ${RENDERER_TERRAIN})
 
 SET(RENDER_PIPELINE
-    ${HEADER_PATH}/deferred_render_pipeline.h
+    ${SOURCE_PATH}/deferred_render_pipeline.h
     ${SOURCE_PATH}/deferred_render_pipeline.cpp
+    ${SOURCE_PATH}/forward_render_pipeline.h
+    ${SOURCE_PATH}/forward_render_pipeline.cpp
 )
 SOURCE_GROUP("renderer\\pipeline" FILES ${RENDER_PIPELINE})
 

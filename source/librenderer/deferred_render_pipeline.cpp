@@ -34,7 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/deferred_render_pipeline.h>
+#include "deferred_render_pipeline.h"
 #include <ray/render_pipeline.h>
 #include <ray/camera.h>
 #include <ray/light.h>
@@ -66,7 +66,7 @@ void
 DeferredRenderPipeline::renderShadowMap(RenderPipeline& pipeline) noexcept
 {
 	pipeline.setRenderTexture(pipeline.getCamera()->getRenderTexture());
-	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsDepth, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsDepth, float4::Zero, 1.0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, RenderPass::RenderPassOpaques, _deferredDepthOnly);
 }
 
@@ -114,7 +114,7 @@ void
 DeferredRenderPipeline::renderOpaques(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept
 {
 	pipeline.setRenderTexture(target);
-	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsAll, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsAll, float4::Zero, 1.0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, RenderPass::RenderPassOpaques);
 }
 
@@ -125,7 +125,7 @@ DeferredRenderPipeline::renderOpaquesDepthLinear(RenderPipeline& pipeline, Graph
 	_projInfo->assign(pipeline.getCamera()->getProjConstant());
 
 	pipeline.setRenderTexture(target);
-	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsAll, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsAll, float4::Zero, 1.0, 0);
 	pipeline.drawScreenQuad(_deferredDepthLinear);
 }
 
@@ -149,7 +149,7 @@ void
 DeferredRenderPipeline::renderTransparent(RenderPipeline& pipeline, GraphicsFramebufferPtr renderTexture) noexcept
 {
 	pipeline.setRenderTexture(renderTexture);
-	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColorStencil, Vector4::Zero, 1.0, 0, 0);
+	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColorStencil, float4::Zero, 1.0, 0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent, RenderPass::RenderPassTransparent);
 }
 
@@ -157,7 +157,7 @@ void
 DeferredRenderPipeline::renderTransparentDepthLinear(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept
 {
 	pipeline.setRenderTexture(target);
-	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColor, Vector4::Zero, 1.0, 0, 0);
+	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColor, float4::Zero, 1.0, 0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent, RenderPass::RenderPassDepth, _deferredDepthLinear);
 }
 
@@ -180,7 +180,7 @@ void
 DeferredRenderPipeline::renderLights(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept
 {
 	pipeline.setRenderTexture(target);
-	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColor, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
 
 	auto& lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting, RenderPass::RenderPassLights);
 	for (auto& it : lights)
@@ -337,26 +337,15 @@ void
 DeferredRenderPipeline::setupSemantic(RenderPipeline& pipeline)
 {
 	auto materialManager = pipeline.getMaterialManager();
-
-	_materialDepthMap = std::make_shared<MaterialVariant>("DepthMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	_materialColorMap = std::make_shared<MaterialVariant>("ColorMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	_materialNormalMap = std::make_shared<MaterialVariant>("NormalMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	_materialDeferredDepthMap = std::make_shared<MaterialVariant>("DeferredDepthMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	_materialDeferredDepthLinearMap = std::make_shared<MaterialVariant>("DeferredDepthLinearMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	_materialDeferredGraphicMap = std::make_shared<MaterialVariant>("DeferredGraphicMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	_materialDeferredNormalMap = std::make_shared<MaterialVariant>("DeferredNormalMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	_materialDeferredLightMap = std::make_shared<MaterialVariant>("DeferredLightMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	_materialDeferredShadowMap = std::make_shared<MaterialVariant>("DeferredShadowMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
-
-	materialManager->addSemantic(_materialDepthMap);
-	materialManager->addSemantic(_materialColorMap);
-	materialManager->addSemantic(_materialNormalMap);
-	materialManager->addSemantic(_materialDeferredDepthMap);
-	materialManager->addSemantic(_materialDeferredDepthLinearMap);
-	materialManager->addSemantic(_materialDeferredGraphicMap);
-	materialManager->addSemantic(_materialDeferredNormalMap);
-	materialManager->addSemantic(_materialDeferredLightMap);
-	materialManager->addSemantic(_materialDeferredShadowMap);
+	_materialDepthMap = materialManager->createSemantic("DepthMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_materialColorMap = materialManager->createSemantic("ColorMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_materialNormalMap = materialManager->createSemantic("NormalMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_materialDeferredDepthMap = materialManager->createSemantic("DeferredDepthMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_materialDeferredDepthLinearMap = materialManager->createSemantic("DeferredDepthLinearMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_materialDeferredGraphicMap = materialManager->createSemantic("DeferredGraphicMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_materialDeferredNormalMap = materialManager->createSemantic("DeferredNormalMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_materialDeferredLightMap = materialManager->createSemantic("DeferredLightMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	_materialDeferredShadowMap = materialManager->createSemantic("DeferredShadowMap", GraphicsUniformType::GraphicsUniformTypeStorageImage);
 }
 
 void
@@ -421,64 +410,64 @@ DeferredRenderPipeline::setupRenderTextures(RenderPipeline& pipeline)
 	GraphicsFramebufferDesc deferredDepthDesc;
 	deferredDepthDesc.setSharedDepthTexture(_deferredDepthMap);
 	deferredDepthDesc.setSharedStencilTexture(_deferredDepthMap);
-	_deferredDepthView = pipeline.createRenderTexture(deferredDepthDesc);
+	_deferredDepthView = pipeline.createFramebuffer(deferredDepthDesc);
 
 	GraphicsFramebufferDesc deferredDepthLinearDesc;
 	deferredDepthLinearDesc.attach(_deferredDepthLinearMap);
-	_deferredDepthLinearView = pipeline.createRenderTexture(deferredDepthLinearDesc);
+	_deferredDepthLinearView = pipeline.createFramebuffer(deferredDepthLinearDesc);
 
 	GraphicsFramebufferDesc deferredGraphicsDesc;
 	deferredGraphicsDesc.attach(_deferredGraphicMap);
-	_deferredGraphicView = pipeline.createRenderTexture(deferredGraphicsDesc);
+	_deferredGraphicView = pipeline.createFramebuffer(deferredGraphicsDesc);
 
 	GraphicsFramebufferDesc deferredNormalDesc;
 	deferredNormalDesc.attach(_deferredNormalMap);
-	_deferredNormalView = pipeline.createRenderTexture(deferredNormalDesc);
+	_deferredNormalView = pipeline.createFramebuffer(deferredNormalDesc);
 
 	GraphicsFramebufferDesc deferredGraphicDesc;
 	deferredGraphicDesc.setSharedDepthTexture(_deferredDepthMap);
 	deferredGraphicDesc.setSharedStencilTexture(_deferredDepthMap);
 	deferredGraphicDesc.attach(_deferredGraphicMap);
 	deferredGraphicDesc.attach(_deferredNormalMap);
-	_deferredGraphicViews = pipeline.createRenderTexture(deferredGraphicDesc);
+	_deferredGraphicViews = pipeline.createFramebuffer(deferredGraphicDesc);
 
 	GraphicsFramebufferDesc deferredLightDesc;
 	deferredLightDesc.setSharedStencilTexture(_deferredDepthMap);
 	deferredLightDesc.attach(_deferredLightMap);
-	_deferredLightView = pipeline.createRenderTexture(deferredLightDesc);
+	_deferredLightView = pipeline.createFramebuffer(deferredLightDesc);
 
 	GraphicsFramebufferDesc deferredShadingDesc;
 	deferredShadingDesc.setSharedDepthTexture(_deferredDepthMap);
 	deferredShadingDesc.setSharedStencilTexture(_deferredDepthMap);
 	deferredShadingDesc.attach(_deferredShadingMap);
-	_deferredShadingView = pipeline.createRenderTexture(deferredShadingDesc);
+	_deferredShadingView = pipeline.createFramebuffer(deferredShadingDesc);
 
 	GraphicsFramebufferDesc deferredFinalDesc;
 	deferredFinalDesc.setSharedDepthTexture(_deferredDepthMap);
 	deferredFinalDesc.setSharedStencilTexture(_deferredDepthMap);
 	deferredFinalDesc.attach(_deferredFinalMap);
-	_deferredFinalView = pipeline.createRenderTexture(deferredFinalDesc);
+	_deferredFinalView = pipeline.createFramebuffer(deferredFinalDesc);
 
 	GraphicsFramebufferDesc deferredSwapDesc;
 	deferredSwapDesc.setSharedDepthTexture(_deferredDepthMap);
 	deferredSwapDesc.setSharedStencilTexture(_deferredDepthMap);
 	deferredSwapDesc.attach(_deferredSwapMap);
-	_deferredSwapView = pipeline.createRenderTexture(deferredSwapDesc);
+	_deferredSwapView = pipeline.createFramebuffer(deferredSwapDesc);
 }
 
 void
 DeferredRenderPipeline::destroySemantic(RenderPipeline& pipeline)
 {
 	auto materialManager = pipeline.getMaterialManager();
-	materialManager->removeSemantic(_materialDepthMap);
-	materialManager->removeSemantic(_materialColorMap);
-	materialManager->removeSemantic(_materialNormalMap);
-	materialManager->removeSemantic(_materialDeferredDepthMap);
-	materialManager->removeSemantic(_materialDeferredDepthLinearMap);
-	materialManager->removeSemantic(_materialDeferredGraphicMap);
-	materialManager->removeSemantic(_materialDeferredNormalMap);
-	materialManager->removeSemantic(_materialDeferredLightMap);
-	materialManager->removeSemantic(_materialDeferredShadowMap);
+	materialManager->destroySemantic(_materialDepthMap);
+	materialManager->destroySemantic(_materialColorMap);
+	materialManager->destroySemantic(_materialNormalMap);
+	materialManager->destroySemantic(_materialDeferredDepthMap);
+	materialManager->destroySemantic(_materialDeferredDepthLinearMap);
+	materialManager->destroySemantic(_materialDeferredGraphicMap);
+	materialManager->destroySemantic(_materialDeferredNormalMap);
+	materialManager->destroySemantic(_materialDeferredLightMap);
+	materialManager->destroySemantic(_materialDeferredShadowMap);
 
 	_materialDepthMap.reset();
 	_materialColorMap.reset();

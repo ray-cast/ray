@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +-----------------------------------------------------------------------
 #include <ray/fimic.h>
+#include <ray/material.h>
 
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
@@ -182,19 +183,19 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) except
 
 	GraphicsFramebufferDesc sample4ViewDesc;
 	sample4ViewDesc.attach(_texSample4Map);
-	_texSample4View = pipeline.createRenderTexture(sample4ViewDesc);
+	_texSample4View = pipeline.createFramebuffer(sample4ViewDesc);
 
 	GraphicsFramebufferDesc sample8ViewDesc;
 	sample8ViewDesc.attach(_texSample8Map);
-	_texSample8View = pipeline.createRenderTexture(sample8ViewDesc);
+	_texSample8View = pipeline.createFramebuffer(sample8ViewDesc);
 
 	GraphicsFramebufferDesc sampleLogViewDesc;
 	sampleLogViewDesc.attach(_texSampleLogMap);
-	_texSampleLogView = pipeline.createRenderTexture(sampleLogViewDesc);
+	_texSampleLogView = pipeline.createFramebuffer(sampleLogViewDesc);
 
 	GraphicsFramebufferDesc sampleCombieViewDesc;
 	sampleCombieViewDesc.attach(_texCombieMap);
-	_texCombieView = pipeline.createRenderTexture(sampleCombieViewDesc);
+	_texCombieView = pipeline.createFramebuffer(sampleCombieViewDesc);
 
 	_fimic = pipeline.createMaterial("sys:fx/fimic.fxml.o");
 

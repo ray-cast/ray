@@ -112,7 +112,7 @@ VulkanSystem::startDebugControl() noexcept
 	fpCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(_instance, "vkCreateDebugReportCallbackEXT");
 	if (!fpCreateDebugReportCallbackEXT)
 	{
-		this->print("vkGetInstanceProcAddr('vkCreateDebugReportCallbackEXT') fail");
+		this->print("vkGetInstanceProcAddr('vkCreateDebugReportCallbackEXT') fail.");
 		return false;
 	}
 
@@ -129,10 +129,10 @@ VulkanSystem::startDebugControl() noexcept
 	case VK_SUCCESS:
 		break;
 	case VK_ERROR_OUT_OF_HOST_MEMORY:
-		this->print("CreateDebugReportCallback: out of host memory\n CreateDebugReportCallback Failure");
+		this->print("CreateDebugReportCallback: out of host memory\n CreateDebugReportCallback Failure.");
 		return false;
 	default:
-		this->print("CreateDebugReportCallback: unknown failure\n CreateDebugReportCallback Failure");
+		this->print("CreateDebugReportCallback: unknown failure\n CreateDebugReportCallback Failure.");
 		return false;
 	}
 
@@ -148,7 +148,7 @@ VulkanSystem::stopDebugControl() noexcept
 		fpDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(_instance, "vkDestroyDebugReportCallbackEXT");
 		if (!fpDestroyDebugReportCallbackEXT)
 		{
-			this->print("vkGetInstanceProcAddr('DestroyDebugReportCallbackEXT') fail");
+			this->print("vkGetInstanceProcAddr('DestroyDebugReportCallbackEXT') fail.");
 			return;
 		}
 
@@ -172,7 +172,7 @@ VulkanSystem::checkInstanceLayer() noexcept
 
 	if (vkEnumerateInstanceLayerProperties(&instanceLayerCount, 0) > 0)
 	{
-		this->print("vkEnumerateInstanceLayerProperties fail");
+		this->print("vkEnumerateInstanceLayerProperties fail.");
 		return false;
 	}
 
@@ -182,7 +182,7 @@ VulkanSystem::checkInstanceLayer() noexcept
 
 		if (vkEnumerateInstanceLayerProperties(&instanceLayerCount, &instanceLayers[0]) > 0)
 		{
-			this->print("vkEnumerateInstanceLayerProperties fail");
+			this->print("vkEnumerateInstanceLayerProperties fail.");
 			return false;
 		}
 
@@ -234,7 +234,7 @@ VulkanSystem::checkInstanceExtenstion() noexcept
 
 	if (vkEnumerateInstanceExtensionProperties(0, &instanceExtensionCount, 0) > 0)
 	{
-		this->print("instanceExtensionCount fail");
+		this->print("instanceExtensionCount fail.");
 		return false;
 	}
 
@@ -244,7 +244,7 @@ VulkanSystem::checkInstanceExtenstion() noexcept
 
 		if (vkEnumerateInstanceExtensionProperties(0, &instanceExtensionCount, instanceExtensions.data()) > 0)
 		{
-			this->print("instanceExtensionCount fail");
+			this->print("instanceExtensionCount fail.");
 			return false;
 		}
 

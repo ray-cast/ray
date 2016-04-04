@@ -167,20 +167,47 @@ struct GPUctxconfig
 	EGLContext share;
 };
 
-typedef std::shared_ptr<class EGL3Swapchain> EGL3SwapchainPtr;
 typedef std::shared_ptr<class EGL3Device> EGL3DevicePtr;
+typedef std::shared_ptr<class EGL3Surface> EGL3SurfacePtr;
+typedef std::shared_ptr<class EGL3Swapchain> EGL3SwapchainPtr;
 typedef std::shared_ptr<class EGL3DeviceContext> EGL3DeviceContextPtr;
+typedef std::shared_ptr<class EGL3FramebufferLayout> EGL3FramebufferLayoutPtr;
 typedef std::shared_ptr<class EGL3Framebuffer> EGL3FramebufferPtr;
 typedef std::shared_ptr<class EGL3Shader> EGL3ShaderPtr;
 typedef std::shared_ptr<class EGL3ShaderObject> EGL3ShaderObjectPtr;
-typedef std::shared_ptr<class EGL3InputLayout> EGL3InputLayoutPtr;
 typedef std::shared_ptr<class EGL3GraphicsData> EGL3GraphicsDataPtr;
+typedef std::shared_ptr<class EGL3InputLayout> EGL3InputLayoutPtr;
 typedef std::shared_ptr<class EGL3GraphicsState> EGL3GraphicsStatePtr;
 typedef std::shared_ptr<class EGL3Texture> EGL3TexturePtr;
 typedef std::shared_ptr<class EGL3Sampler> EGL3SamplerPtr;
 typedef std::shared_ptr<class EGL3RenderPipeline> EGL3RenderPipelinePtr;
+typedef std::shared_ptr<class EGL3DescriptorSetPool> EGL3DescriptorSetPoolPtr;
 typedef std::shared_ptr<class EGL3DescriptorSet> EGL3DescriptorSetPtr;
 typedef std::shared_ptr<class EGL3DescriptorSetLayout> EGL3DescriptorSetLayoutPtr;
+typedef std::shared_ptr<class EGL3GraphicsAttribute> EGL3GraphicsAttributePtr;
+typedef std::shared_ptr<class EGL3GraphicsUniform> EGL3GraphicsUniformPtr;
+typedef std::shared_ptr<class EGL3GraphicsUniformBlock> EGL3GraphicsUniformBlockPtr;
+
+typedef std::weak_ptr<class EGL3Device> EGL3DeviceWeakPtr;
+typedef std::weak_ptr<class EGL3Surface> EGL3SurfaceWeakPtr;
+typedef std::weak_ptr<class EGL3Swapchain> EGL3SwapchainWeakPtr;
+typedef std::weak_ptr<class EGL3DeviceContext> EGL3DeviceContextWeakPtr;
+typedef std::weak_ptr<class EGL3FramebufferLayout> EGL3FramebufferLayoutWeakPtr;
+typedef std::weak_ptr<class EGL3Framebuffer> EGL3FramebufferWeakPtr;
+typedef std::weak_ptr<class EGL3Shader> EGL3ShaderWeakPtr;
+typedef std::weak_ptr<class EGL3ShaderObject> EGL3ShaderObjectWeakPtr;
+typedef std::weak_ptr<class EGL3GraphicsData> EGL3GraphicsDataWeakPtr;
+typedef std::weak_ptr<class EGL3InputLayout> EGL3InputLayoutWeakPtr;
+typedef std::weak_ptr<class EGL3GraphicsState> EGL3GraphicsStateWeakPtr;
+typedef std::weak_ptr<class EGL3Texture> EGL3TextureWeakPtr;
+typedef std::weak_ptr<class EGL3Sampler> EGL3SamplerWeakPtr;
+typedef std::weak_ptr<class EGL3RenderPipeline> EGL3RenderPipelineWeakPtr;
+typedef std::weak_ptr<class EGL3DescriptorSetPool> EGL3DescriptorSetPoolWeakPtr;
+typedef std::weak_ptr<class EGL3DescriptorSet> EGL3DescriptorSetWeakPtr;
+typedef std::weak_ptr<class EGL3DescriptorSetLayout> EGL3DescriptorSetLayoutWeakPtr;
+typedef std::weak_ptr<class EGL3GraphicsAttribute> EGL3GraphicsAttributeWeakPtr;
+typedef std::weak_ptr<class EGL3GraphicsUniform> EGL3GraphicsUniformWeakPtr;
+typedef std::weak_ptr<class EGL3GraphicsUniformBlock> EGL3GraphicsUniformBlockWeakPtr;
 
 typedef std::vector<EGL3ShaderPtr> EGL3Shaders;
 

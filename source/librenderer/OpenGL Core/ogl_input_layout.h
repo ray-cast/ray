@@ -70,7 +70,6 @@ private:
 
 private:
 	GLuint _vao;
-	GraphicsDataPtr _vbo[MAX_VERTEX_UNIT];
 	GraphicsDataPtr _ibo;
 	GraphicsProgramPtr _program;
 	GraphicsInputLayoutDesc _inputLayoutDesc;

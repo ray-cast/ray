@@ -41,6 +41,105 @@
 
 _NAME_BEGIN
 
+class VulkanGraphicsAttribute final : public GraphicsAttribute
+{
+	__DeclareSubClass(VulkanGraphicsAttribute, GraphicsAttribute)
+public:
+	VulkanGraphicsAttribute() noexcept;
+	~VulkanGraphicsAttribute() noexcept;
+
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
+	void setType(GraphicsUniformType type) noexcept;
+	GraphicsUniformType getType() const noexcept;
+
+	void setSemantic(const std::string& semantic) noexcept;
+	const std::string& getSemantic() const noexcept;
+
+	void setSemanticIndex(std::uint8_t index) noexcept;
+	std::uint8_t getSemanticIndex() const noexcept;
+
+	void setBindingPoint(std::uint32_t bindingPoint) noexcept;
+	std::uint32_t getBindingPoint() const noexcept;
+
+private:
+	VulkanGraphicsAttribute(const VulkanGraphicsAttribute&) noexcept = delete;
+	VulkanGraphicsAttribute& operator=(const VulkanGraphicsAttribute&) noexcept = delete;
+
+private:
+	std::string _name;
+	std::string _semantic;
+	std::uint8_t _index;
+	std::uint32_t _bindingPoint;
+	GraphicsUniformType _type;
+};
+
+class VulkanGraphicsUniform final : public GraphicsUniform
+{
+	__DeclareSubClass(VulkanGraphicsUniform, GraphicsUniform)
+public:
+	VulkanGraphicsUniform() noexcept;
+	~VulkanGraphicsUniform() noexcept;
+
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
+	void setType(GraphicsUniformType type) noexcept;
+	GraphicsUniformType getType() const noexcept;
+
+	void setOffset(std::uint32_t offset) noexcept;
+	std::uint32_t getOffset() const noexcept;
+
+	void setBindingPoint(std::uint32_t bindingPoint) noexcept;
+	std::uint32_t getBindingPoint() const noexcept;
+
+private:
+	VulkanGraphicsUniform(const VulkanGraphicsUniform&) noexcept = delete;
+	VulkanGraphicsUniform& operator=(const VulkanGraphicsUniform&) noexcept = delete;
+
+private:
+	std::string _name;
+	std::uint32_t _offset;
+	std::uint32_t _bindingPoint;
+	GraphicsUniformType _type;
+};
+
+class VulkanGraphicsUniformBlock final : public GraphicsUniformBlock
+{
+	__DeclareSubClass(VulkanGraphicsUniformBlock, GraphicsUniformBlock)
+public:
+	VulkanGraphicsUniformBlock() noexcept;
+	~VulkanGraphicsUniformBlock() noexcept;
+
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
+	void setType(GraphicsUniformType type) noexcept;
+	GraphicsUniformType getType() const noexcept;
+
+	void setBlockSize(std::uint32_t size) noexcept;
+	std::uint32_t getBlockSize() const noexcept;
+
+	void addGraphicsUniform(GraphicsUniformPtr uniform) noexcept;
+	void removeGraphicsUniform(GraphicsUniformPtr uniform) noexcept;
+	const GraphicsUniforms& getGraphicsUniforms() const noexcept;
+
+	void setBindingPoint(std::uint32_t bindingPoint) noexcept;
+	std::uint32_t getBindingPoint() const noexcept;
+
+private:
+	VulkanGraphicsUniformBlock(const VulkanGraphicsUniformBlock&) noexcept = delete;
+	VulkanGraphicsUniformBlock& operator=(const VulkanGraphicsUniformBlock&) noexcept = delete;
+
+private:
+	std::string _name;
+	std::uint32_t _size;
+	std::uint32_t _bindingPoint;
+	GraphicsUniforms _uniforms;
+	GraphicsUniformType _type;
+};
+
 class VulkanShader final : public GraphicsShader
 {
 	__DeclareSubClass(VulkanShader, GraphicsShader)
@@ -50,6 +149,8 @@ public:
 
 	bool setup(const GraphicsShaderDesc& desc) noexcept;
 	void close() noexcept;
+
+	const std::string& getGlslCodes() const noexcept;
 
 	VkShaderModule getShaderModule() const noexcept;
 
@@ -69,7 +170,7 @@ private:
 
 private:
 	VkShaderModule _vkShader;
-
+	std::string _glsl;
 	GraphicsShaderDesc _shaderDesc;
 	GraphicsDeviceWeakPtr _device;
 };
@@ -84,10 +185,14 @@ public:
 	bool setup(const GraphicsProgramDesc& desc) noexcept;
 	void close() noexcept;
 
-	ShaderUniforms& getActiveUniforms() noexcept;
-	ShaderAttributes& getActiveAttributes() noexcept;
+	const GraphicsUniforms& getActiveUniforms() const noexcept;
+	const GraphicsUniformBlocks& getActiveUniformBlocks() const noexcept;
+	const GraphicsAttributes& getActiveAttributes() const noexcept;
 
 	const GraphicsProgramDesc& getGraphicsProgramDesc() const noexcept;
+
+private:
+	static GraphicsUniformType toGraphicsUniformType(const std::string& name, int type) noexcept;
 
 private:
 	friend class VulkanDevice;
@@ -99,10 +204,12 @@ private:
 	VulkanShaderObject& operator=(const VulkanShaderObject&) noexcept = delete;
 
 private:
+	GraphicsUniforms    _activeUniforms;
+	GraphicsUniformBlocks _activeUniformBlocks;
+	GraphicsAttributes  _activeAttributes;
+
 	GraphicsDeviceWeakPtr _device;
 	GraphicsProgramDesc _programDesc;
-	ShaderUniforms _activeUniforms;
-	ShaderAttributes _activeAttributes;
 };
 
 _NAME_END

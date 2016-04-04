@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/ssr.h>
+#include <ray/material.h>
 
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>

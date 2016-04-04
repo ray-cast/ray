@@ -73,7 +73,10 @@ VulkanDescriptorPool::setup(const GraphicsDescriptorPoolDesc& descriptorPoolDesc
 	info.pPoolSizes = pool.data();
 
 	if (vkCreateDescriptorPool(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &info, nullptr, &_vkDescriptorPool) != VK_SUCCESS)
+	{
+		VK_PLATFORM_LOG("vkCreateDescriptorPool() fail.");
 		return false;
+	}
 
 	_descriptorPoolDesc = descriptorPoolDesc;
 	return true;

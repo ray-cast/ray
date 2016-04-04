@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-class EXPORT GraphicsDataDesc
+class EXPORT GraphicsDataDesc final
 {
 public:
 	GraphicsDataDesc() noexcept;

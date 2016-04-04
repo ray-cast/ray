@@ -84,6 +84,48 @@ _NAME_BEGIN
 #	define VK_PLATFORM_ASSERT(expr, format)
 #endif
 
+typedef std::shared_ptr<class VulkanDevice> VulkanDevicePtr;
+typedef std::shared_ptr<class VulkanSurface> VulkanSurfacePtr;
+typedef std::shared_ptr<class VulkanSwapchain> VulkanSwapchainPtr;
+typedef std::shared_ptr<class VulkanDeviceContext> VulkanDeviceContextPtr;
+typedef std::shared_ptr<class VulkanFramebufferLayout> VulkanFramebufferLayoutPtr;
+typedef std::shared_ptr<class VulkanFramebuffer> VulkanFramebufferPtr;
+typedef std::shared_ptr<class VulkanShader> VulkanShaderPtr;
+typedef std::shared_ptr<class VulkanShaderObject> VulkanShaderObjectPtr;
+typedef std::shared_ptr<class VulkanGraphicsData> VulkanGraphicsDataPtr;
+typedef std::shared_ptr<class VulkanInputLayout> VulkanInputLayoutPtr;
+typedef std::shared_ptr<class VulkanGraphicsState> VulkanGraphicsStatePtr;
+typedef std::shared_ptr<class VulkanTexture> VulkanTexturePtr;
+typedef std::shared_ptr<class VulkanSampler> VulkanSamplerPtr;
+typedef std::shared_ptr<class VulkanRenderPipeline> VulkanRenderPipelinePtr;
+typedef std::shared_ptr<class VulkanDescriptorSetPool> VulkanDescriptorSetPoolPtr;
+typedef std::shared_ptr<class VulkanDescriptorSet> VulkanDescriptorSetPtr;
+typedef std::shared_ptr<class VulkanDescriptorSetLayout> VulkanDescriptorSetLayoutPtr;
+typedef std::shared_ptr<class VulkanGraphicsAttribute> VulkanGraphicsAttributePtr;
+typedef std::shared_ptr<class VulkanGraphicsUniform> VulkanGraphicsUniformPtr;
+typedef std::shared_ptr<class VulkanGraphicsUniformBlock> VulkanGraphicsUniformBlockPtr;
+
+typedef std::weak_ptr<class VulkanDevice> VulkanDeviceWeakPtr;
+typedef std::weak_ptr<class VulkanSurface> VulkanSurfaceWeakPtr;
+typedef std::weak_ptr<class VulkanSwapchain> VulkanSwapchainWeakPtr;
+typedef std::weak_ptr<class VulkanDeviceContext> VulkanDeviceContextWeakPtr;
+typedef std::weak_ptr<class VulkanFramebufferLayout> VulkanFramebufferLayoutWeakPtr;
+typedef std::weak_ptr<class VulkanFramebuffer> VulkanFramebufferWeakPtr;
+typedef std::weak_ptr<class VulkanShader> VulkanShaderWeakPtr;
+typedef std::weak_ptr<class VulkanShaderObject> VulkanShaderObjectWeakPtr;
+typedef std::weak_ptr<class VulkanGraphicsData> VulkanGraphicsDataWeakPtr;
+typedef std::weak_ptr<class VulkanInputLayout> VulkanInputLayoutWeakPtr;
+typedef std::weak_ptr<class VulkanGraphicsState> VulkanGraphicsStateWeakPtr;
+typedef std::weak_ptr<class VulkanTexture> VulkanTextureWeakPtr;
+typedef std::weak_ptr<class VulkanSampler> VulkanSamplerWeakPtr;
+typedef std::weak_ptr<class VulkanRenderPipeline> VulkanRenderPipelineWeakPtr;
+typedef std::weak_ptr<class VulkanDescriptorSetPool> VulkanDescriptorSetPoolWeakPtr;
+typedef std::weak_ptr<class VulkanDescriptorSet> VulkanDescriptorSetWeakPtr;
+typedef std::weak_ptr<class VulkanDescriptorSetLayout> VulkanDescriptorSetLayoutWeakPtr;
+typedef std::weak_ptr<class VulkanGraphicsAttribute> VulkanGraphicsAttributeWeakPtr;
+typedef std::weak_ptr<class VulkanGraphicsUniform> VulkanGraphicsUniformWeakPtr;
+typedef std::weak_ptr<class VulkanGraphicsUniformBlock> VulkanGraphicsUniformBlockWeakPtr;
+
 class VulkanTypes
 {
 public:
@@ -103,6 +145,10 @@ public:
 	static VkDescriptorType asDescriptorType(GraphicsUniformType type) noexcept;
 	static VkPrimitiveTopology asPrimitiveTopology(GraphicsVertexType type) noexcept;
 	static VkImageLayout asImageLayout(GraphicsViewLayout layout) noexcept;
+	
+	static bool isStencilFormat(GraphicsFormat format) noexcept;
+	static bool isDepthFormat(GraphicsFormat format) noexcept;
+	static bool isDepthStencilFormat(GraphicsFormat format) noexcept;
 };
 
 _NAME_END

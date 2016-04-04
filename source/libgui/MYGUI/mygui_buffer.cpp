@@ -70,9 +70,9 @@ MyGuiVertexBuffer::lock() noexcept
 	{
 		if (!_vb)
 		{
-			_layout.addComponent(VertexComponent("POSITION", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
-			_layout.addComponent(VertexComponent("COLOR", 0, GraphicsFormat::GraphicsFormatR8G8B8A8UInt));
-			_layout.addComponent(VertexComponent("TEXCOORD", 0, GraphicsFormat::GraphicsFormatR32G32SFloat));
+			_layout.addComponent(GraphicsVertexLayout("POSITION", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
+			_layout.addComponent(GraphicsVertexLayout("COLOR", 0, GraphicsFormat::GraphicsFormatR8G8B8A8UInt));
+			_layout.addComponent(GraphicsVertexLayout("TEXCOORD", 0, GraphicsFormat::GraphicsFormatR32G32SFloat));
 
 			auto layout = RenderSystem::instance()->createInputLayout(_layout);
 

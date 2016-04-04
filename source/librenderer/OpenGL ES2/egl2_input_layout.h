@@ -73,7 +73,7 @@ private:
 	GraphicsDataPtr _vbo;
 	GraphicsDataPtr _ibo;
 	GraphicsProgramPtr _program;
-	GraphicsInputLayoutDesc _inputLayout;
+	GraphicsInputLayoutDesc _inputLayoutDesc;
 	GraphicsDeviceWeakPtr _device;
 };
 

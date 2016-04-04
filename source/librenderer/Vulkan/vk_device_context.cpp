@@ -67,13 +67,13 @@ VulkanDeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 			return false;
 
 		GraphicsCommandQueueDesc queueDesc;
-		queueDesc.flags = GraphicsCommandQueueFlags::GraphicsCommandQueueFlagsNone;
-		queueDesc.priority = GraphicsCommandQueuePriority::GraphicsCommandQueuePriorityNormal;
-		queueDesc.type = GraphicsCommandListType::GraphicsCommandListTypeGraphics;
-		queueDesc.mask = 0;
+		queueDesc.setCommandQueueFlags(GraphicsCommandQueueFlags::GraphicsCommandQueueFlagsNone);
+		queueDesc.setCommandQueueType(GraphicsCommandType::GraphicsCommandTypeGraphics);
+		queueDesc.setCommandQueuePriority(GraphicsCommandQueuePriority::GraphicsCommandQueuePriorityNormal);
+		queueDesc.setCommandQueueMask(0);
 
 		GraphicsCommandPoolDesc poolDesc;
-		poolDesc.setCommandListType(GraphicsCommandListType::GraphicsCommandListTypeGraphics);
+		poolDesc.setCommandListType(GraphicsCommandType::GraphicsCommandTypeGraphics);
 		poolDesc.setCommandFlags(GraphicsCommandPoolFlags::GraphicsCommandPoolResetCommandBuffer);
 
 		_commandQueue = device->createGraphicsCommandQueue(queueDesc);
@@ -163,12 +163,12 @@ VulkanDeviceContext::setRenderTexture(GraphicsFramebufferPtr framebuffer) noexce
 }
 
 void 
-VulkanDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil) noexcept
+VulkanDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 }
 
 void 
-VulkanDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const Vector4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+VulkanDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
 }
 

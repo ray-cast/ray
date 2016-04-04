@@ -35,7 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/irradiance.h>
-
+#include <ray/material.h>
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 
@@ -83,12 +83,12 @@ EnvironmentIrradiance::EnvironmentIrradiance(RenderPipeline& pipeline) except
 	GraphicsFramebufferDesc paraboloidDualDesc;
 	paraboloidDualDesc.attach(_paraboloidFrontMap);
 	paraboloidDualDesc.attach(_paraboloidBackMap);
-	_paraboloidDualViews = pipeline.createRenderTexture(paraboloidDualDesc);
+	_paraboloidDualViews = pipeline.createFramebuffer(paraboloidDualDesc);
 
 	GraphicsFramebufferDesc irradianceSHCoefficientsDesc;
 	irradianceSHCoefficientsDesc.attach(_paraboloidFrontMap);
 	irradianceSHCoefficientsDesc.attach(_paraboloidBackMap);
-	_irradianceSHCoefficientsView = pipeline.createRenderTexture(irradianceSHCoefficientsDesc);
+	_irradianceSHCoefficientsView = pipeline.createFramebuffer(irradianceSHCoefficientsDesc);
 
 	_buildDualParaboloidWeightTextures(pipeline, _paraboloidSHWeights, NUM_ORDER, NUM_RADIANCE_SAMPLES);
 }
@@ -113,11 +113,11 @@ EnvironmentIrradiance::renderParaboloidEnvMap(RenderPipeline& pipeline, Graphics
 	_sphericalHarmonicConvolveYlmDW1->assign(_paraboloidSHWeights[1]);
 
 	pipeline.setRenderTexture(_paraboloidDualViews);
-	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColor, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
 	pipeline.drawScreenQuad(_irradianceParaboloid);
 
 	pipeline.setRenderTexture(_irradianceSHCoefficientsView);
-	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColor, Vector4::Zero, 1.0, 0);
+	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
 	pipeline.drawScreenQuad(_irradianceProjectDualParaboloidToSH);
 }
 

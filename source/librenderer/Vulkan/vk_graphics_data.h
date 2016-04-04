@@ -68,7 +68,6 @@ private:
 	VulkanMemory _memory;
 
 	GraphicsDataDesc _dataDesc;
-	GraphicsDeviceWeakPtr _device;
 };
 
 _NAME_END

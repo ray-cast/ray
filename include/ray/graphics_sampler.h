@@ -34,18 +34,18 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_SAMPLER_OBJECT_H_
-#define _H_SAMPLER_OBJECT_H_
+#ifndef _H_GRAPHICS_SAMPLER_H_
+#define _H_GRAPHICS_SAMPLER_H_
 
 #include <ray/graphics_child.h>
 
 _NAME_BEGIN
 
-class EXPORT GraphicsSamplerDesc
+class EXPORT GraphicsSamplerDesc final
 {
 public:
 	GraphicsSamplerDesc() noexcept;
-	virtual ~GraphicsSamplerDesc() noexcept;
+	~GraphicsSamplerDesc() noexcept;
 
 	void setSamplerOp(GraphicsSamplerOp op) noexcept;
 	void setSamplerWrap(GraphicsSamplerWrap wrap) noexcept;

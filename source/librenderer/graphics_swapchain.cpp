@@ -116,6 +116,12 @@ GraphicsSwapchainDesc::getColorFormat() const noexcept
 void
 GraphicsSwapchainDesc::setDepthFormat(GraphicsFormat format) noexcept
 {
+	assert( format == GraphicsFormat::GraphicsFormatD16UNorm || 
+			format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 || 
+			format == GraphicsFormat::GraphicsFormatD32_SFLOAT ||
+			format == GraphicsFormat::GraphicsFormatD16UNorm_S8UInt ||
+			format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 ||
+			format == GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt);
 	_depthFormat = format;
 }
 

@@ -113,7 +113,7 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	vibs.push_back(vib);
 
 	std::uint32_t offset = 0;
-	const auto& components = inputLayoutDesc.getVertexComponents();
+	const auto& components = inputLayoutDesc.getGraphicsVertexLayouts();
 	for (auto& component : components)
 	{
 		VkVertexInputAttributeDescription attr;
@@ -226,15 +226,24 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
 
 	if (vkCreatePipelineLayout(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &pipelineLayoutCreateInfo, nullptr, &_vkPipelineLayout) != VK_SUCCESS)
+	{
+		VK_PLATFORM_LOG("vkCreatePipelineLayout() fail.");
 		return false;
+	}
 
 	pipelineCache.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 	if (vkCreatePipelineCache(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &pipelineCache, nullptr, &_vkPipelineCache) != VK_SUCCESS)
+	{
+		VK_PLATFORM_LOG("vkCreatePipelineCache() fail.");
 		return false;
+	}
 
 	pipeline.layout = _vkPipelineLayout;
 	if (vkCreateGraphicsPipelines(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkPipelineCache, 1, &pipeline, nullptr, &_vkPipeline) != VK_SUCCESS)
+	{
+		VK_PLATFORM_LOG("vkCreateGraphicsPipelines() fail.");
 		return false;
+	}
 
 	_pipelineDesc = pipelineDesc;
 	return true;

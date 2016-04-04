@@ -55,16 +55,31 @@ MaterialPass::~MaterialPass() noexcept
 	this->close();
 }
 
-void 
-MaterialPass::setup(Material& material) except
+bool
+MaterialPass::setup(Material& material) noexcept
 {
 	assert(_pipeline);
 
-	auto& activeUniforms = _pipeline->getGraphicsPipelineDesc().getGraphicsProgram()->getActiveUniforms();
-	for (auto& activeUniform : activeUniforms)
+	GraphicsDescriptorSetLayoutDesc descriptorSetLayoutDesc;
+	descriptorSetLayoutDesc.setUniformComponents(_pipeline->getGraphicsPipelineDesc().getGraphicsProgram()->getActiveUniforms());
+	_descriptorSetLayout = _pipeline->getDevice()->createDescriptorSetLayout(descriptorSetLayoutDesc);
+	if (!_descriptorSetLayout)
+		return false;
+
+	GraphicsDescriptorSetDesc descriptorSetDesc;
+	descriptorSetDesc.setGraphicsDescriptorSetLayout(_descriptorSetLayout);
+	_descriptorSet = _pipeline->getDevice()->createDescriptorSet(descriptorSetDesc);
+	if (!_descriptorSet)
+		return false;
+
+	auto& activeUniformSets = _descriptorSet->getGraphicsUniformSets();
+	for (auto& activeUniformSet : activeUniformSets)
 	{
+		auto activeUniform = activeUniformSet->getGraphicsUniform();
 		auto uniformName = activeUniform->getName();
-		if (activeUniform->getType() == GraphicsUniformType::GraphicsUniformTypeStorageImage)
+		if (activeUniform->getType() == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
+			activeUniform->getType() == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler ||
+			activeUniform->getType() == GraphicsUniformType::GraphicsUniformTypeSamplerImage)
 		{
 			auto pos = uniformName.find_first_of("_X_");
 			if (pos != std::string::npos)
@@ -72,56 +87,39 @@ MaterialPass::setup(Material& material) except
 		}
 
 		auto param = material.getParameter(uniformName);
-		if (param && param->getType() == activeUniform->getType())
+		if (!param)
+			continue;
+
+		if (param->getType() == activeUniform->getType())
 		{
-			auto uniform = std::make_shared<GraphicsUniform>(GraphicsShaderStage::GraphicsShaderStageNone, activeUniform->getBindingPoint(), activeUniform->getType());
-
-			param->addShaderUniform(uniform);
-
-			_uniforms.push_back(uniform);
+			param->addGraphicsUniform(activeUniformSet);
 			_parameters.push_back(param);
-		}
-		else
-		{
-			assert(false);
 		}
 	}
 
-	GraphicsDescriptorSetLayoutDesc descriptorSetLayoutDesc;
-	descriptorSetLayoutDesc.setUniformComponents(_uniforms);
-	_descriptorSetLayout = _pipeline->getDevice()->createGraphicsDescriptorSetLayout(descriptorSetLayoutDesc);
-
-	GraphicsDescriptorSetDesc descriptorSet;
-	descriptorSet.setGraphicsDescriptorSetLayout(_descriptorSetLayout);
-	_descriptorSet = _pipeline->getDevice()->createGraphicsDescriptorSet(descriptorSet);
+	return true;
 }
 
 void
 MaterialPass::close() noexcept
 {
-	if (_pipeline)
+	if (_descriptorSet)
 	{
-		auto& pipelineDesc = _pipeline->getGraphicsPipelineDesc();
-		auto uniforms = pipelineDesc.getGraphicsProgram()->getActiveUniforms();
-
-		for (auto& it : uniforms)
+		auto& activeUniformSets = _descriptorSet->getGraphicsUniformSets();
+		for (auto& activeUniformSet : activeUniformSets)
 		{
-			auto param = this->getParameter(it->getName());
+			auto activeUniform = activeUniformSet->getGraphicsUniform();
+			auto param = this->getParameter(activeUniform->getName());
 			if (param)
-			{
-				for (auto& uniform : _uniforms)
-				{
-					if (it->getBindingPoint() == uniform->getBindingPoint())
-						param->removeShaderUniform(uniform);
-				}
-			}
+				param->removeGraphicsUniform(activeUniformSet);
 		}
-
-		_pipeline.reset();
-		_pipeline = nullptr;
 	}
 
 	_parameters.clear();
+
+	_pipeline.reset();
+	_descriptorSet.reset();
+	_descriptorSetLayout.reset();
 }
 
 void

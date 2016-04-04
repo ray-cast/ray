@@ -75,10 +75,12 @@ public:
 
 	VkCommandBuffer getInstance() const noexcept;
 
+	const GraphicsCommandListDesc& getGraphicsCommandListDesc() const noexcept;
+
+private:
+	friend class VulkanDevice;
 	void setDevice(GraphicsDevicePtr device) noexcept;
 	GraphicsDevicePtr getDevice() noexcept;
-
-	const GraphicsCommandListDesc& getGraphicsCommandListDesc() const noexcept;
 
 private:
 	VkCommandBuffer _vkCommandBuffer;

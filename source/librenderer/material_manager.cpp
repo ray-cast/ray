@@ -105,18 +105,7 @@ MaterialManager::createSemantic(const std::string& name, GraphicsUniformType typ
 }
 
 void
-MaterialManager::addSemantic(MaterialVariantPtr semantc) noexcept
-{
-	if (semantc && !semantc->getName().empty() && semantc->getType() != GraphicsUniformType::GraphicsUniformTypeNone)
-	{
-		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialVariantPtr& it) { return it->getName() == semantc->getName();});
-		if (it == _semantics.end())
-			_semantics.push_back(semantc);
-	}
-}
-
-void
-MaterialManager::removeSemantic(MaterialVariantPtr semantc) noexcept
+MaterialManager::destroySemantic(MaterialVariantPtr semantc) noexcept
 {
 	if (semantc && !semantc->getName().empty() && semantc->getType() != GraphicsUniformType::GraphicsUniformTypeNone)
 	{
@@ -151,6 +140,12 @@ MaterialPtr
 MaterialManager::getMaterial(const std::string& name) noexcept
 {
 	return _materials[name];
+}
+
+void
+MaterialManager::destroyMaterial(MaterialPtr material) noexcept
+{
+	_materials[material->getName()] = nullptr;
 }
 
 _NAME_END

@@ -47,7 +47,6 @@ VulkanSwapchain::VulkanSwapchain() noexcept
 	: _colorSpace(VK_COLORSPACE_SRGB_NONLINEAR_KHR)
 	, _surface(VK_NULL_HANDLE)
 	, _vkSwapchain(VK_NULL_HANDLE)
-	, _vkSemaphore(VK_NULL_HANDLE)
 	, _swapImageIndex(0)
 {
 }
@@ -92,17 +91,12 @@ VulkanSwapchain::close() noexcept
 
 	_swapchainDepthImageView.reset();
 	_swapchainImageViews.clear();
+	_swapchainSemaphore.reset();
 
 	if (_vkSwapchain != VK_NULL_HANDLE)
 	{
 		vkDestroySwapchainKHR(device->getDevice(), _vkSwapchain, 0);
 		_vkSwapchain = VK_NULL_HANDLE;
-	}
-
-	if (_vkSemaphore != VK_NULL_HANDLE)
-	{
-		vkDestroySemaphore(device->getDevice(), _vkSemaphore, 0);
-		_vkSemaphore = VK_NULL_HANDLE;
 	}
 
 	if (_surface != VK_NULL_HANDLE)
@@ -115,7 +109,7 @@ VulkanSwapchain::close() noexcept
 void 
 VulkanSwapchain::setSwapInterval(GraphicsSwapInterval interval) noexcept
 {
-	_swapchainDesc.getSwapInterval();
+	_swapchainDesc.setSwapInterval(interval);
 }
 
 GraphicsSwapInterval 
@@ -135,7 +129,10 @@ VulkanSwapchain::initSurface() noexcept
 	info.hwnd = (HWND)_swapchainDesc.getWindHandle();
 
 	if (vkCreateWin32SurfaceKHR(this->getDevice()->downcast<VulkanDevice>()->getInstance(), &info, 0, &_surface) > 0)
+	{
+		VK_PLATFORM_LOG("vkCreateWin32SurfaceKHR() fail");
 		return false;
+	}
 
 	return true;
 }
@@ -143,15 +140,9 @@ VulkanSwapchain::initSurface() noexcept
 bool 
 VulkanSwapchain::initSemaphore() noexcept
 {
-	VkSemaphoreCreateInfo presentCompleteSemaphoreCreateInfo;
-	presentCompleteSemaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	presentCompleteSemaphoreCreateInfo.pNext = nullptr;
-	presentCompleteSemaphoreCreateInfo.flags = 0;
-
-	if (vkCreateSemaphore(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &presentCompleteSemaphoreCreateInfo, 0, &_vkSemaphore) > 0)
-		return false;
-
-	return true;
+	GraphicsSemaphoreDesc semaphoreDesc;
+	_swapchainSemaphore = this->getDevice()->downcast<VulkanDevice>()->createSemaphore(semaphoreDesc);
+	return _swapchainSemaphore ? true : false;
 }
 
 bool 
@@ -173,8 +164,18 @@ VulkanSwapchain::initSwapchain() noexcept
 		}
 	}
 
-	std::uint32_t queueCount = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(this->getDevice()->downcast<VulkanDevice>()->getPhysicsDevice(), &queueCount, 0);
+	if (!formatFound)
+	{
+		VK_PLATFORM_LOG("Can't support color format.");
+		return false;
+	}
+
+	if (!VulkanTypes::isDepthFormat(_swapchainDesc.getDepthFormat()) &&
+		!VulkanTypes::isDepthStencilFormat(_swapchainDesc.getDepthFormat()))
+	{
+		VK_PLATFORM_LOG("Invalid depth format");
+		return false;
+	}
 
 	VkSurfaceCapabilitiesKHR surfCapabilities;
 	if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(this->getDevice()->downcast<VulkanDevice>()->getPhysicsDevice(), _surface, &surfCapabilities) > 0)
@@ -189,8 +190,12 @@ VulkanSwapchain::initSwapchain() noexcept
 	if (_swapchainDesc.getImageNums() < surfCapabilities.minImageCount &&
 		_swapchainDesc.getImageNums() > surfCapabilities.maxImageCount)
 	{
+		VK_PLATFORM_LOG("Invlida image count, min: %d, max: %d", surfCapabilities.minImageCount, surfCapabilities.maxImageCount);
 		return false;
 	}
+
+	std::uint32_t queueCount = 0;
+	vkGetPhysicalDeviceQueueFamilyProperties(this->getDevice()->downcast<VulkanDevice>()->getPhysicsDevice(), &queueCount, 0);
 
 	std::uint32_t queueFamilyIndexCount = 0;
 	for (std::uint32_t i = 0; i < queueCount; i++)
@@ -209,7 +214,6 @@ VulkanSwapchain::initSwapchain() noexcept
 		return false;
 
 	std::vector<VkPresentModeKHR> presentModes(presentModeCount);
-
 	if (vkGetPhysicalDeviceSurfacePresentModesKHR(this->getDevice()->downcast<VulkanDevice>()->getPhysicsDevice(), _surface, &presentModeCount, &presentModes[0]) > 0)
 		return false;
 
@@ -298,7 +302,7 @@ VulkanSwapchain::initSwapchainDepthView() noexcept
 	textureDesc.setDepth(1);
 	textureDesc.setTexUsage(GraphicsViewUsageFlagBits::GraphicsViewUsageFlagBitsDepthStencilAttachmentBit);
 
-	_swapchainDepthImageView = this->getDevice()->createGraphicsTexture(textureDesc);
+	_swapchainDepthImageView = this->getDevice()->createTexture(textureDesc);
 	return true;
 }
 
@@ -308,7 +312,7 @@ VulkanSwapchain::initFramebuffer() noexcept
 	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
 	framebufferLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, _swapchainDesc.getColorFormat(), 0));
 	framebufferLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutShaderReadOnlyOptimal, _swapchainDesc.getDepthFormat(), 1));
-	_swapchainFramebufferLayout = this->getDevice()->downcast<VulkanDevice>()->createRenderTextureLayout(framebufferLayoutDesc);
+	_swapchainFramebufferLayout = this->getDevice()->downcast<VulkanDevice>()->createFramebufferLayout(framebufferLayoutDesc);
 
 	for (auto& swapchainImageView : _swapchainImageViews)
 	{
@@ -319,7 +323,7 @@ VulkanSwapchain::initFramebuffer() noexcept
 		framebufferDesc.attach(_swapchainDepthImageView);
 		framebufferDesc.setGraphicsFramebufferLayout(_swapchainFramebufferLayout);
 
-		auto framebuffer = this->getDevice()->createRenderTexture(framebufferDesc);
+		auto framebuffer = this->getDevice()->createFramebuffer(framebufferDesc);
 		_swapchainFramebuffers.push_back(framebuffer);
 	}
 
@@ -332,10 +336,10 @@ VulkanSwapchain::getSwapchain() const noexcept
 	return _vkSwapchain;
 }
 
-VkSemaphore
+GraphicsSemaphorePtr
 VulkanSwapchain::getSemaphore() const noexcept
 {
-	return _vkSemaphore;
+	return _swapchainSemaphore;
 }
 
 void

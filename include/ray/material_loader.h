@@ -37,11 +37,11 @@
 #ifndef _H_MATERIAL_LOADER_H_
 #define _H_MATERIAL_LOADER_H_
 
-#include <ray/material_fwd.h>
+#include <ray/render_types.h>
 
 _NAME_BEGIN
 
-class MaterialLoader
+class EXPORT MaterialLoader
 {
 public:
 	MaterialLoader() noexcept;

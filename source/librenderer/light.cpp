@@ -179,6 +179,12 @@ Light::getShadowCamera() const noexcept
 	return _shadowCamera;
 }
 
+void 
+Light::setShadowMap(GraphicsTexturePtr texture) noexcept
+{
+	_shaodwMap = texture;
+}
+
 GraphicsTexturePtr
 Light::getShadowMap() const noexcept
 {
@@ -200,7 +206,7 @@ Light::_updateShadow() const noexcept
 
 			GraphicsFramebufferDesc shadowViewDesc;
 			shadowViewDesc.setSharedDepthTexture(_shaodwMap);
-			_shaodwView = RenderSystem::instance()->createRenderTexture(shadowViewDesc);
+			_shaodwView = RenderSystem::instance()->createFramebuffer(shadowViewDesc);
 
 			_shadowCamera->setRenderTexture(_shaodwView);
 		}

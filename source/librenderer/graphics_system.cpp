@@ -99,7 +99,7 @@ GraphicsSystem::createDevice(const GraphicsDeviceDesc& desc) noexcept
 #if defined(_BUILD_VULKAN)
 	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
 	{
-		auto device = std::make_shared<OGLDevice>();
+		auto device = std::make_shared<VulkanDevice>();
 		if (device->setup(desc))
 			return device;
 		return nullptr;

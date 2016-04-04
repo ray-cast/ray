@@ -41,36 +41,103 @@
 
 _NAME_BEGIN
 
-class EGL3ShaderAttribute final : public ShaderAttribute
+class EGL3GraphicsAttribute final : public GraphicsAttribute
 {
-	__DeclareSubClass(OGLShaderAttribute, ShaderAttribute)
+	__DeclareSubClass(EGL3GraphicsAttribute, GraphicsAttribute)
 public:
-	EGL3ShaderAttribute() noexcept;
-	~EGL3ShaderAttribute() noexcept;
+	EGL3GraphicsAttribute() noexcept;
+	~EGL3GraphicsAttribute() noexcept;
 
-	void setLocation(GLint location) noexcept;
-	GLint getLocation() const noexcept;
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
+	void setType(GraphicsUniformType type) noexcept;
+	GraphicsUniformType getType() const noexcept;
+
+	void setSemantic(const std::string& semantic) noexcept;
+	const std::string& getSemantic() const noexcept;
+
+	void setSemanticIndex(std::uint8_t index) noexcept;
+	std::uint8_t getSemanticIndex() const noexcept;
+
+	void setBindingPoint(GLuint bindingPoint) noexcept;
+	GLuint getBindingPoint() const noexcept;
 
 private:
-	GLint  _location;
+	EGL3GraphicsAttribute(const EGL3GraphicsAttribute&) noexcept = delete;
+	EGL3GraphicsAttribute& operator=(const EGL3GraphicsAttribute&) noexcept = delete;
+
+private:
+	std::string _name;
+	std::string _semantic;
+	std::uint8_t _index;
+	GLuint _bindingPoint;
+	GraphicsUniformType _type;
 };
 
-class EGL3ShaderUniform final : public ShaderUniform
+class EGL3GraphicsUniform final : public GraphicsUniform
 {
-	__DeclareSubClass(EGL3ShaderUniform, ShaderUniform)
+	__DeclareSubClass(EGL3GraphicsUniform, GraphicsUniform)
 public:
-	EGL3ShaderUniform() noexcept;
-	~EGL3ShaderUniform() noexcept;
+	EGL3GraphicsUniform() noexcept;
+	~EGL3GraphicsUniform() noexcept;
 
-	void setBindingProgram(GLuint program) noexcept;
-	GLuint getBindingProgram() const noexcept;
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
+	void setType(GraphicsUniformType type) noexcept;
+	GraphicsUniformType getType() const noexcept;
+
+	void setOffset(std::uint32_t offset) noexcept;
+	std::uint32_t getOffset() const noexcept;
+
+	void setBindingPoint(GLuint bindingPoint) noexcept;
+	GLuint getBindingPoint() const noexcept;
 
 private:
-	EGL3ShaderUniform(const EGL3ShaderUniform&) noexcept = delete;
-	EGL3ShaderUniform& operator=(const EGL3ShaderUniform&) noexcept = delete;
+	EGL3GraphicsUniform(const EGL3GraphicsUniform&) noexcept = delete;
+	EGL3GraphicsUniform& operator=(const EGL3GraphicsUniform&) noexcept = delete;
 
 private:
-	GLuint _program;
+	std::string _name;
+	std::uint32_t _offset;
+	GLuint _bindingPoint;
+	GraphicsUniformType _type;
+};
+
+class EGL3GraphicsUniformBlock final : public GraphicsUniformBlock
+{
+	__DeclareSubClass(EGL3GraphicsUniformBlock, GraphicsUniformBlock)
+public:
+	EGL3GraphicsUniformBlock() noexcept;
+	~EGL3GraphicsUniformBlock() noexcept;
+
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
+	void setType(GraphicsUniformType type) noexcept;
+	GraphicsUniformType getType() const noexcept;
+
+	void setBlockSize(std::uint32_t size) noexcept;
+	std::uint32_t getBlockSize() const noexcept;
+
+	void addGraphicsUniform(GraphicsUniformPtr uniform) noexcept;
+	void removeGraphicsUniform(GraphicsUniformPtr uniform) noexcept;
+	const GraphicsUniforms& getGraphicsUniforms() const noexcept;
+
+	void setBindingPoint(GLuint bindingPoint) noexcept;
+	GLuint getBindingPoint() const noexcept;
+
+private:
+	EGL3GraphicsUniformBlock(const EGL3GraphicsUniformBlock&) noexcept = delete;
+	EGL3GraphicsUniformBlock& operator=(const EGL3GraphicsUniformBlock&) noexcept = delete;
+
+private:
+	std::string _name;
+	std::uint32_t _size;
+	GLuint _bindingPoint;
+	GraphicsUniforms _uniforms;
+	GraphicsUniformType _type;
 };
 
 class EGL3Shader final : public GraphicsShader
@@ -117,8 +184,9 @@ public:
 
 	GLuint getInstanceID() const noexcept;
 
-	ShaderUniforms& getActiveUniforms() noexcept;
-	ShaderAttributes& getActiveAttributes() noexcept;
+	const GraphicsUniforms& getActiveUniforms() const noexcept;
+	const GraphicsUniformBlocks& getActiveUniformBlocks() const noexcept;
+	const GraphicsAttributes& getActiveAttributes() const noexcept;
 
 	const GraphicsProgramDesc& getGraphicsProgramDesc() const noexcept;
 
@@ -126,6 +194,9 @@ private:
 	void _initActiveAttribute() noexcept;
 	void _initActiveUniform() noexcept;
 	void _initActiveUniformBlock() noexcept;
+
+private:
+	static GraphicsUniformType toGraphicsUniformType(const std::string& name, GLenum type) noexcept;
 
 private:
 	friend class EGL3Device;
@@ -142,8 +213,9 @@ private:
 
 	GLuint _program;
 
-	ShaderUniforms    _activeUniforms;
-	ShaderAttributes  _activeAttributes;
+	GraphicsUniforms    _activeUniforms;
+	GraphicsUniformBlocks _activeUniformBlocks;
+	GraphicsAttributes  _activeAttributes;
 
 	GraphicsDeviceWeakPtr _device;
 	GraphicsProgramDesc _programDesc;

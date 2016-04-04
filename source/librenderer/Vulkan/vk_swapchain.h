@@ -51,14 +51,15 @@ public:
 	bool setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
 	void close() noexcept;
 
+	VkSwapchainKHR getSwapchain() const noexcept;
+
 	void setSwapInterval(GraphicsSwapInterval interval) noexcept;
 	GraphicsSwapInterval getSwapInterval() const noexcept;
 
-	VkSwapchainKHR getSwapchain() const noexcept;
-	VkSemaphore getSemaphore() const noexcept;
-
 	void acquireNextImage() noexcept;
 	std::uint32_t getSwapchainImageIndex() noexcept;
+
+	GraphicsSemaphorePtr getSemaphore() const noexcept;
 
 	const GraphicsTextures& getSwapchainImages() const noexcept;
 	const GraphicsFramebuffers&  getSwapchainFramebuffers() const noexcept;
@@ -85,11 +86,12 @@ private:
 private:
 
 	VkSurfaceKHR _surface;
-	VkSemaphore _vkSemaphore;
 	VkColorSpaceKHR _colorSpace;
 	VkSwapchainKHR _vkSwapchain;
 
 	std::uint32_t _swapImageIndex;
+
+	GraphicsSemaphorePtr _swapchainSemaphore;
 
 	GraphicsTextures _swapchainImageViews;
 	GraphicsTexturePtr _swapchainDepthImageView;

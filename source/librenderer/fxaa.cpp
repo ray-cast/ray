@@ -35,7 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/fxaa.h>
-
+#include <ray/material.h>
 #include <ray/graphics_texture.h>
 
 _NAME_BEGIN

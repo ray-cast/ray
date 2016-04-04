@@ -314,6 +314,9 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialDesc& materia
 	param->setName(name);
 
 	if (type == "bool") param->setType(GraphicsUniformType::GraphicsUniformTypeBool);
+	else if (type == "bool2") param->setType(GraphicsUniformType::GraphicsUniformTypeBool2);
+	else if (type == "bool3") param->setType(GraphicsUniformType::GraphicsUniformTypeBool3);
+	else if (type == "bool4") param->setType(GraphicsUniformType::GraphicsUniformTypeBool4);
 	else if (type == "int") param->setType(GraphicsUniformType::GraphicsUniformTypeInt);
 	else if (type == "int2") param->setType(GraphicsUniformType::GraphicsUniformTypeInt2);
 	else if (type == "int3") param->setType(GraphicsUniformType::GraphicsUniformTypeInt3);
@@ -329,6 +332,9 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialDesc& materia
 	else if (type == "float3x3") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat3x3);
 	else if (type == "float4x4")param->setType(GraphicsUniformType::GraphicsUniformTypeFloat4x4);
 	else if (type == "bool[]") param->setType(GraphicsUniformType::GraphicsUniformTypeBoolArray);
+	else if (type == "bool2[]") param->setType(GraphicsUniformType::GraphicsUniformTypeBool2Array);
+	else if (type == "bool3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeBool3Array);
+	else if (type == "bool4[]") param->setType(GraphicsUniformType::GraphicsUniformTypeBool4Array);
 	else if (type == "int[]") param->setType(GraphicsUniformType::GraphicsUniformTypeIntArray);
 	else if (type == "int2[]") param->setType(GraphicsUniformType::GraphicsUniformTypeInt2Array);
 	else if (type == "int3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeInt3Array);
@@ -346,8 +352,8 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialDesc& materia
 	else if (type == "float3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat3Array);
 	else if (type == "float4[]") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat4Array);
 	else if (type == "float3x3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat3x3Array);
-	else if (type == "float4x4[]")param->setType(GraphicsUniformType::GraphicsUniformTypeFloat4x4Array);
-	else if (type == "texture2D")param->setType(GraphicsUniformType::GraphicsUniformTypeStorageImage);
+	else if (type == "float4x4[]") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat4x4Array);
+	else if (type == "texture2D") param->setType(GraphicsUniformType::GraphicsUniformTypeStorageImage);
 	else if (type == "texture3D") param->setType(GraphicsUniformType::GraphicsUniformTypeStorageImage);
 	else if (type == "buffer") param->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
 	else
@@ -477,7 +483,7 @@ MaterialMaker::instanceSampler(MaterialManager& manager, MaterialDesc& material,
 
 		auto param = std::make_shared<MaterialParam>();
 		param->setName(samplerName);
-		param->assign(nullptr, manager.getGraphicsDevice()->createGraphicsSampler(desc));	
+		param->assign(nullptr, manager.getGraphicsDevice()->createSampler(desc));	
 
 		material.addParameter(param);
 	}

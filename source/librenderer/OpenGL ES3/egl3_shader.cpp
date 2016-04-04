@@ -43,49 +43,217 @@ _NAME_BEGIN
 
 __ImplementSubClass(EGL3Shader, GraphicsShader, "EGL3Shader")
 __ImplementSubClass(EGL3ShaderObject, GraphicsProgram, "EGL3ShaderObject")
-__ImplementSubClass(EGL3ShaderAttribute, ShaderAttribute, "EGL3ShaderAttribute")
-__ImplementSubClass(EGL3ShaderUniform, ShaderUniform, "EGL3ShaderUniform")
+__ImplementSubClass(EGL3GraphicsAttribute, GraphicsAttribute, "EGL3GraphicsAttribute")
+__ImplementSubClass(EGL3GraphicsUniform, GraphicsUniform, "EGL3GraphicsUniform")
+__ImplementSubClass(EGL3GraphicsUniformBlock, GraphicsUniformBlock, "EGL3GraphicsUniformBlock")
 
-EGL3ShaderAttribute::EGL3ShaderAttribute() noexcept
-	: _location(GL_NONE)
+EGL3GraphicsAttribute::EGL3GraphicsAttribute() noexcept
+	: _index(0)
+	, _bindingPoint(GL_INVALID_INDEX)
+	, _type(GraphicsUniformType::GraphicsUniformTypeNone)
 {
 }
 
-EGL3ShaderAttribute::~EGL3ShaderAttribute() noexcept
-{
-}
-
-void
-EGL3ShaderAttribute::setLocation(GLint location) noexcept
-{
-	_location = location;
-}
-
-GLint
-EGL3ShaderAttribute::getLocation() const noexcept
-{
-	return _location;
-}
-
-EGL3ShaderUniform::EGL3ShaderUniform() noexcept
-	: _program(0)
-{
-}
-
-EGL3ShaderUniform::~EGL3ShaderUniform() noexcept
+EGL3GraphicsAttribute::~EGL3GraphicsAttribute() noexcept
 {
 }
 
 void
-EGL3ShaderUniform::setBindingProgram(GLuint program) noexcept
+EGL3GraphicsAttribute::setName(const std::string& name) noexcept
 {
-	_program = program;
+	_name = name;
+}
+
+const std::string&
+EGL3GraphicsAttribute::getName() const noexcept
+{
+	return _name;
+}
+
+void
+EGL3GraphicsAttribute::setType(GraphicsUniformType type) noexcept
+{
+	_type = type;
+}
+
+GraphicsUniformType
+EGL3GraphicsAttribute::getType() const noexcept
+{
+	return _type;
+}
+
+void
+EGL3GraphicsAttribute::setSemantic(const std::string& semantic) noexcept
+{
+	_semantic = semantic;
+}
+
+const std::string&
+EGL3GraphicsAttribute::getSemantic() const noexcept
+{
+	return _semantic;
+}
+
+void
+EGL3GraphicsAttribute::setSemanticIndex(std::uint8_t index) noexcept
+{
+	_index = index;
+}
+
+std::uint8_t
+EGL3GraphicsAttribute::getSemanticIndex() const noexcept
+{
+	return _index;
+}
+
+void
+EGL3GraphicsAttribute::setBindingPoint(GLuint bindingPoint) noexcept
+{
+	_bindingPoint = bindingPoint;
 }
 
 GLuint
-EGL3ShaderUniform::getBindingProgram() const noexcept
+EGL3GraphicsAttribute::getBindingPoint() const noexcept
 {
-	return _program;
+	return _bindingPoint;
+}
+
+EGL3GraphicsUniform::EGL3GraphicsUniform() noexcept
+	: _offset(0)
+	, _bindingPoint(GL_INVALID_INDEX)
+	, _type(GraphicsUniformType::GraphicsUniformTypeNone)
+{
+}
+
+EGL3GraphicsUniform::~EGL3GraphicsUniform() noexcept
+{
+}
+
+void
+EGL3GraphicsUniform::setName(const std::string& name) noexcept
+{
+	_name = name;
+}
+
+const std::string&
+EGL3GraphicsUniform::getName() const noexcept
+{
+	return _name;
+}
+
+void
+EGL3GraphicsUniform::setType(GraphicsUniformType type) noexcept
+{
+	_type = type;
+}
+
+GraphicsUniformType
+EGL3GraphicsUniform::getType() const noexcept
+{
+	return _type;
+}
+
+void
+EGL3GraphicsUniform::setOffset(std::uint32_t offset) noexcept
+{
+	_offset = offset;
+}
+
+std::uint32_t
+EGL3GraphicsUniform::getOffset() const noexcept
+{
+	return _offset;
+}
+
+void
+EGL3GraphicsUniform::setBindingPoint(GLuint bindingPoint) noexcept
+{
+	_bindingPoint = bindingPoint;
+}
+
+GLuint
+EGL3GraphicsUniform::getBindingPoint() const noexcept
+{
+	return _bindingPoint;
+}
+
+EGL3GraphicsUniformBlock::EGL3GraphicsUniformBlock() noexcept
+	: _size(0)
+	, _bindingPoint(GL_INVALID_INDEX)
+	, _type(GraphicsUniformType::GraphicsUniformTypeUniformBuffer)
+{
+}
+
+EGL3GraphicsUniformBlock::~EGL3GraphicsUniformBlock() noexcept
+{
+}
+
+void
+EGL3GraphicsUniformBlock::setName(const std::string& name) noexcept
+{
+	_name = name;
+}
+
+const std::string&
+EGL3GraphicsUniformBlock::getName() const noexcept
+{
+	return _name;
+}
+
+void
+EGL3GraphicsUniformBlock::setType(GraphicsUniformType type) noexcept
+{
+	_type = type;
+}
+
+GraphicsUniformType
+EGL3GraphicsUniformBlock::getType() const noexcept
+{
+	return _type;
+}
+
+void
+EGL3GraphicsUniformBlock::setBlockSize(std::uint32_t size) noexcept
+{
+	_size = size;
+}
+
+std::uint32_t
+EGL3GraphicsUniformBlock::getBlockSize() const noexcept
+{
+	return _size;
+}
+
+void
+EGL3GraphicsUniformBlock::addGraphicsUniform(GraphicsUniformPtr uniform) noexcept
+{
+	_uniforms.push_back(uniform);
+}
+
+void
+EGL3GraphicsUniformBlock::removeGraphicsUniform(GraphicsUniformPtr uniform) noexcept
+{
+	auto it = std::find(_uniforms.begin(), _uniforms.end(), uniform);
+	if (it != _uniforms.end())
+		_uniforms.erase(it);
+}
+
+const GraphicsUniforms&
+EGL3GraphicsUniformBlock::getGraphicsUniforms() const noexcept
+{
+	return _uniforms;
+}
+
+void
+EGL3GraphicsUniformBlock::setBindingPoint(GLuint bindingPoint) noexcept
+{
+	_bindingPoint = bindingPoint;
+}
+
+GLuint
+EGL3GraphicsUniformBlock::getBindingPoint() const noexcept
+{
+	return _bindingPoint;
 }
 
 EGL3Shader::EGL3Shader() noexcept
@@ -156,10 +324,10 @@ EGL3Shader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 void
 EGL3Shader::close() noexcept
 {
-	if (_instance)
+	if (_instance != GL_NONE)
 	{
 		glDeleteShader(_instance);
-		_instance = 0;
+		_instance = GL_NONE;
 	}
 }
 
@@ -241,14 +409,15 @@ EGL3ShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 void
 EGL3ShaderObject::close() noexcept
 {
-	if (_program)
+	if (_program != GL_NONE)
 	{
 		glDeleteProgram(_program);
-		_program = 0;
+		_program = GL_NONE;
 	}
 
 	_activeAttributes.clear();
 	_activeUniforms.clear();
+	_activeUniformBlocks.clear();
 }
 
 void
@@ -274,14 +443,20 @@ EGL3ShaderObject::getInstanceID() const noexcept
 	return _program;
 }
 
-ShaderUniforms&
-EGL3ShaderObject::getActiveUniforms() noexcept
+const GraphicsUniforms&
+EGL3ShaderObject::getActiveUniforms() const noexcept
 {
 	return _activeUniforms;
 }
 
-ShaderAttributes&
-EGL3ShaderObject::getActiveAttributes() noexcept
+const GraphicsUniformBlocks& 
+EGL3ShaderObject::getActiveUniformBlocks() const noexcept
+{
+	return _activeUniformBlocks;
+}
+
+const GraphicsAttributes&
+EGL3ShaderObject::getActiveAttributes() const noexcept
 {
 	return _activeAttributes;
 }
@@ -295,7 +470,7 @@ EGL3ShaderObject::_initActiveAttribute() noexcept
 	glGetProgramiv(_program, GL_ACTIVE_ATTRIBUTES, &numAttribute);
 	glGetProgramiv(_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxAttribute);
 
-	if (numAttribute)
+	if (numAttribute > 0)
 	{
 		auto nameAttribute = std::make_unique<GLchar[]>(maxAttribute + 1);
 		nameAttribute[maxAttribute] = 0;
@@ -326,11 +501,12 @@ EGL3ShaderObject::_initActiveAttribute() noexcept
 				semantic = semantic.substr(0, it - semantic.begin());
 			}
 
-			auto attrib = std::make_shared<EGL3ShaderAttribute>();
-			attrib->setName(nameAttribute.get());
-			attrib->setLocation(location);
+			auto attrib = std::make_shared<EGL3GraphicsAttribute>();
+			attrib->setName(name);
+			attrib->setBindingPoint(location);
 			attrib->setSemantic(semantic);
 			attrib->setSemanticIndex(semanticIndex);
+			attrib->setType(toGraphicsUniformType(attrib->getName(), type));
 
 			_activeAttributes.push_back(attrib);
 		}
@@ -359,70 +535,14 @@ EGL3ShaderObject::_initActiveUniform() noexcept
 
 		glGetActiveUniform(_program, (GLuint)i, maxUniformLength, 0, &size, &type, nameUniform.get());
 
-		if (std::strstr(nameUniform.get(), ".") != 0 || nameUniform[0] == '_')
-			continue;
-
 		GLuint location = glGetUniformLocation(_program, nameUniform.get());
 		if (location == GL_INVALID_INDEX)
 			continue;
 
-		auto uniform = std::make_shared<EGL3ShaderUniform>();
+		auto uniform = std::make_shared<EGL3GraphicsUniform>();
 		uniform->setName(nameUniform.get());
 		uniform->setBindingPoint(location);
-		uniform->setBindingProgram(_program);
-
-		if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
-			type == GL_SAMPLER_2D_SHADOW ||
-			type == GL_SAMPLER_2D_ARRAY || type == GL_SAMPLER_CUBE ||
-			type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
-		{
-			uniform->setType(GraphicsUniformType::GraphicsUniformTypeStorageImage);
-		}
-		else
-		{
-			bool isArray = uniform->getName().find("[0]") != std::string::npos;
-
-			if (type == GL_BOOL)
-				uniform->setType(GraphicsUniformType::GraphicsUniformTypeBool);
-			else if (type == GL_INT)
-				uniform->setType(GraphicsUniformType::GraphicsUniformTypeInt);
-			else if (type == GL_INT_VEC2)
-				uniform->setType(GraphicsUniformType::GraphicsUniformTypeInt2);
-			else if (type == GL_FLOAT)
-			{
-				if (isArray)
-					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloatArray);
-				else
-					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat);
-			}
-			else if (type == GL_FLOAT_VEC2)
-			{
-				if (isArray)
-					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat2Array);
-				else
-					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat2);
-			}
-			else if (type == GL_FLOAT_VEC3)
-			{
-				if (isArray)
-					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat3Array);
-				else
-					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat3);
-			}
-			else if (type == GL_FLOAT_VEC4)
-			{
-				if (isArray)
-					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat4Array);
-				else
-					uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat4);
-			}
-			else if (type == GL_FLOAT_MAT3)
-				uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat3x3);
-			else if (type == GL_FLOAT_MAT4)
-				uniform->setType(GraphicsUniformType::GraphicsUniformTypeFloat4x4);
-			else
-				assert(false);
-		}
+		uniform->setType(toGraphicsUniformType(uniform->getName(), type));
 
 		_activeUniforms.push_back(uniform);
 	}
@@ -439,58 +559,187 @@ EGL3ShaderObject::_initActiveUniformBlock() noexcept
 	glGetProgramiv(_program, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &maxUniformBlockLength);
 	glGetProgramiv(_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformLength);
 
-	if (numUniformBlock)
+	if (numUniformBlock == 0)
+		return;
+
+	auto nameUniformBlock = make_scope<GLchar[]>(maxUniformBlockLength + 1);
+	nameUniformBlock[maxUniformBlockLength] = 0;
+
+	for (GLint i = 0; i < numUniformBlock; ++i)
 	{
-		auto nameUniformBlock = make_scope<GLchar[]>(maxUniformBlockLength + 1);
-		nameUniformBlock[maxUniformBlockLength] = 0;
+		GLsizei lengthUniformBlock = 0;
+		glGetActiveUniformBlockName(_program, (GLuint)i, maxUniformBlockLength, &lengthUniformBlock, nameUniformBlock.get());
+		if (lengthUniformBlock == 0)
+			continue;
 
-		for (GLint i = 0; i < numUniformBlock; ++i)
+		GLuint location = glGetUniformBlockIndex(_program, nameUniformBlock.get());
+		if (location == GL_INVALID_INDEX)
+			continue;
+
+		GLint count = 0;
+		glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &count);
+		if (count == 0)
+			continue;
+
+		GLint size = 0;
+		std::vector<GLint> indices(count);
+		std::vector<GLint> offset((std::size_t)count);
+		std::vector<GLint> type((std::size_t)count);
+		std::vector<GLchar> name(maxUniformLength);
+
+		glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_DATA_SIZE, &size);
+		glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices.data());
+		glGetActiveUniformsiv(_program, count, (GLuint*)&indices[0], GL_UNIFORM_OFFSET, &offset[0]);
+
+		auto uniformblock = std::make_shared<EGL3GraphicsUniformBlock>();
+		uniformblock->setName(nameUniformBlock.get());
+		uniformblock->setBindingPoint(location);
+		uniformblock->setBlockSize(size);
+		uniformblock->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
+
+		for (GLint j = 0; j < count; j++)
 		{
-			GLsizei lengthUniformBlock;
-			glGetActiveUniformBlockName(_program, (GLuint)i, maxUniformBlockLength, &lengthUniformBlock, nameUniformBlock.get());
+			GLsizei length = 0;
+			GLsizei size;
+			GLenum type;
+			glGetActiveUniform(_program, indices[j], maxUniformLength, &length, &size, &type, name.data());
 
-			GLuint location = glGetUniformBlockIndex(_program, nameUniformBlock.get());
-			if (location == GL_INVALID_INDEX)
-				continue;
+			auto uniform = std::make_shared<EGL3GraphicsUniform>();
+			uniform->setName(std::string(name.data(), length));
+			uniform->setBindingPoint(indices[j]);
+			uniform->setOffset(offset[j]);
+			uniform->setType(toGraphicsUniformType(uniform->getName(), type));
 
-			glUniformBlockBinding(_program, location, location);
+			uniformblock->addGraphicsUniform(uniform);
+		}
 
-			GLint size;
-			GLint count;
+		_activeUniformBlocks.push_back(uniformblock);
+	}
+}
 
-			glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_DATA_SIZE, &size);
-			glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &count);
+GraphicsUniformType
+EGL3ShaderObject::toGraphicsUniformType(const std::string& name, GLenum type) noexcept
+{
+	if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
+		type == GL_SAMPLER_2D_SHADOW ||
+		type == GL_SAMPLER_2D_ARRAY || type == GL_SAMPLER_CUBE ||
+		type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
+	{
+		return GraphicsUniformType::GraphicsUniformTypeStorageImage;
+	}
+	else
+	{
+		bool isArray = name.find("[0]") != std::string::npos;
 
-			if (count)
-			{
-				std::vector<GLint> indices(count);
-				glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices.data());
-
-				std::vector<GLint> offset((std::size_t)count);
-				std::vector<GLint> type((std::size_t)count);
-				std::vector<GLint> datasize((std::size_t)count);
-				std::vector<std::string> varlist((std::size_t)count);
-				std::vector<GLchar> name(maxUniformLength);
-
-				glGetActiveUniformsiv(_program, count, (GLuint*)&indices[0], GL_UNIFORM_OFFSET, &offset[0]);
-				glGetActiveUniformsiv(_program, count, (GLuint*)&indices[0], GL_UNIFORM_TYPE, &type[0]);
-				glGetActiveUniformsiv(_program, count, (GLuint*)&indices[0], GL_UNIFORM_SIZE, &datasize[0]);
-
-				for (GLint j = 0; j < count; ++j)
-				{
-					GLsizei length = 0;
-
-					glGetActiveUniform(_program, indices[j], maxUniformLength, &length, &datasize[j], (GLenum*)&type[j], name.data());
-					varlist[j].append(name.data(), length);
-				}
-
-				auto uniformblock = std::make_shared<EGL3ShaderUniform>();
-				uniformblock->setName(nameUniformBlock.get());
-				uniformblock->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
-				uniformblock->setBindingPoint(location);
-
-				_activeUniforms.push_back(uniformblock);
-			}
+		if (type == GL_BOOL)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeBoolArray;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeBool;
+		}
+		else if (type == GL_BOOL_VEC2)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeBool2Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeBool2;
+		}
+		else if (type == GL_BOOL_VEC3)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeBool3Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeBool3;
+		}
+		else if (type == GL_BOOL_VEC4)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeBool4Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeBool4;
+		}
+		else if (type == GL_INT)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeIntArray;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeInt;
+		}
+		else if (type == GL_INT_VEC2)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeInt2Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeInt2;
+		}
+		else if (type == GL_INT_VEC3)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeInt3Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeInt3;
+		}
+		else if (type == GL_INT_VEC4)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeInt4Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeInt4;
+		}
+		else if (type == GL_FLOAT)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloatArray;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat;
+		}
+		else if (type == GL_FLOAT_VEC2)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat2Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat2;
+		}
+		else if (type == GL_FLOAT_VEC3)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat3Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat3;
+		}
+		else if (type == GL_FLOAT_VEC4)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat4Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat4;
+		}
+		else if (type == GL_FLOAT_MAT2)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat2x2Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat2x2;
+		}
+		else if (type == GL_FLOAT_MAT3)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat3x3Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat3x3;
+		}
+		else if (type == GL_FLOAT_MAT4)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeFloat4x4Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeFloat4x4;
+		}
+		else
+		{
+			GL_PLATFORM_ASSERT(false, "Invlid uniform type");
+			return GraphicsUniformType::GraphicsUniformTypeNone;
 		}
 	}
 }

@@ -41,12 +41,12 @@
 
 _NAME_BEGIN
 
-class EXPORT VertexComponent final
+class EXPORT GraphicsVertexLayout final
 {
 public:
-	VertexComponent() noexcept;
-	VertexComponent(const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint8_t slot = 0, std::uint8_t divisor = 0) noexcept;
-	~VertexComponent() noexcept;
+	GraphicsVertexLayout() noexcept;
+	GraphicsVertexLayout(const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint8_t slot = 0, GraphicsVertexDivisor divisor = GraphicsVertexDivisor::GraphicsVertexDivisorVertex) noexcept;
+	~GraphicsVertexLayout() noexcept;
 
 	void setSemantic(const std::string& semantic) noexcept;
 	const std::string& getSemantic() const noexcept;
@@ -60,8 +60,8 @@ public:
 	void setVertexSlot(std::uint8_t slot) noexcept;
 	std::uint8_t getVertexSlot() const noexcept;
 
-	void setVertexDivisor(std::uint8_t divisor) noexcept;
-	std::uint8_t getVertexDivisor() const noexcept;
+	void setVertexDivisor(GraphicsVertexDivisor divisor) noexcept;
+	GraphicsVertexDivisor getVertexDivisor() const noexcept;
 	
 	std::uint8_t getVertexCount() const noexcept;
 	std::uint8_t getVertexSize() const noexcept;
@@ -75,7 +75,7 @@ private:
 	std::uint8_t _slot;
 	std::uint8_t _count;
 	std::uint8_t _size;
-	std::uint8_t _divisor;
+	GraphicsVertexDivisor _divisor;
 	GraphicsFormat _format;
 };
 
@@ -85,11 +85,11 @@ public:
 	GraphicsInputLayoutDesc() noexcept;
 	~GraphicsInputLayoutDesc() noexcept;
 
-	void setVertexComponents(const VertexComponents& component) noexcept;
-	const VertexComponents& getVertexComponents() const noexcept;
+	void setGraphicsVertexLayouts(const GraphicsVertexLayouts& component) noexcept;
+	const GraphicsVertexLayouts& getGraphicsVertexLayouts() const noexcept;
 
-	void addComponent(const VertexComponent& compoent) noexcept;
-	void removeComponent(const VertexComponent& compoent) noexcept;
+	void addComponent(const GraphicsVertexLayout& compoent) noexcept;
+	void removeComponent(const GraphicsVertexLayout& compoent) noexcept;
 
 	void setIndexType(GraphicsIndexType type) noexcept;
 	GraphicsIndexType getIndexType() const noexcept;
@@ -99,7 +99,7 @@ public:
 
 private:
 	GraphicsIndexType _indexType;
-	VertexComponents _components;
+	GraphicsVertexLayouts _components;
 };
 
 class EXPORT GraphicsInputLayout : public GraphicsChild

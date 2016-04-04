@@ -54,6 +54,8 @@ VulkanMemory::~VulkanMemory() noexcept
 bool
 VulkanMemory::setup(const char* stream, std::uint32_t streamSize, std::uint32_t typeBits, std::uint32_t mask) noexcept
 {
+	assert(streamSize > 0);
+
 	VkMemoryAllocateInfo memInfo;
 	memInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	memInfo.pNext = nullptr;
@@ -66,10 +68,12 @@ VulkanMemory::setup(const char* stream, std::uint32_t streamSize, std::uint32_t 
 	memory_type_from_properties(memoryProperties.memoryTypes, typeBits, mask, &memInfo.memoryTypeIndex);
 
 	if (vkAllocateMemory(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &memInfo, nullptr, &_vkMemory) > 0)
+	{
+		VK_PLATFORM_LOG("vkAllocateMemory() fail.");
 		return false;
+	}
 
 	_size = streamSize;
-
 	if (stream)
 	{
 		void* data = this->map(GraphicsAccessFlagsBits::GraphicsAccessFlagsMapReadBit);

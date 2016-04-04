@@ -50,6 +50,18 @@ MaterialDesc::~MaterialDesc() noexcept
 {
 }
 
+void 
+MaterialDesc::setName(const std::string& name) noexcept
+{
+	_name = name;
+}
+
+const std::string& 
+MaterialDesc::getName() const noexcept
+{
+	return _name;
+}
+
 void
 MaterialDesc::addTech(MaterialTechPtr technique) noexcept
 {
@@ -184,8 +196,8 @@ Material::~Material() noexcept
 	this->close();
 }
 
-void
-Material::setup(const MaterialDesc& materialDesc) except
+bool
+Material::setup(const MaterialDesc& materialDesc) noexcept
 {
 	_materialDesc = materialDesc;
 
@@ -195,11 +207,25 @@ Material::setup(const MaterialDesc& materialDesc) except
 		for (auto& pass : passList)
 			pass->setup(*this);
 	}
+
+	return true;
 }
 
 void
 Material::close() noexcept
 {
+	for (auto& technique : _materialDesc.getTechs())
+	{
+		auto& passList = technique->getPassList();
+		for (auto& pass : passList)
+			pass->close();
+	}
+}
+
+const std::string&
+Material::getName() const noexcept
+{
+	return _materialDesc.getName();
 }
 
 MaterialTechPtr

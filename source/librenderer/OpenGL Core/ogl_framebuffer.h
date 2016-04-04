@@ -61,7 +61,7 @@ public:
 	const GraphicsFramebufferDesc& getGraphicsFramebufferDesc() const noexcept;
 
 private:
-	void bindRenderTexture(GraphicsTexturePtr target, GLenum attachment) noexcept;
+	bool bindRenderTexture(GraphicsTexturePtr target, GLenum attachment) noexcept;
 
 private:
 	friend class OGLDevice;

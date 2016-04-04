@@ -70,8 +70,10 @@ public:
 	void setShadow(bool enable) noexcept;
 	bool getShadow() const noexcept;
 
-	CameraPtr getShadowCamera() const noexcept;
+	void setShadowMap(GraphicsTexturePtr texture) noexcept;
 	GraphicsTexturePtr getShadowMap() const noexcept;
+
+	CameraPtr getShadowCamera() const noexcept;
 
 	RenderObjectPtr clone() const noexcept;
 

@@ -50,6 +50,9 @@ public:
 	MaterialDesc() noexcept;
 	~MaterialDesc() noexcept;
 
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
 	void addTech(MaterialTechPtr technique) noexcept;
 	void removeTech(MaterialTechPtr technique) noexcept;
 	MaterialTechPtr getTech(RenderQueue queue) noexcept;
@@ -68,6 +71,7 @@ public:
 	const MaterialVariants& getMacros() const noexcept;
 
 private:
+	std::string _name;
 	MaterialParams _parameters;
 	MaterialVariants _macros;
 	MaterialTechniques _techniques;
@@ -80,8 +84,10 @@ public:
 	Material() noexcept;
 	~Material() noexcept;
 
-	void setup(const MaterialDesc& materialDesc) except;
+	bool setup(const MaterialDesc& materialDesc) noexcept;
 	void close() noexcept;
+
+	const std::string& getName() const noexcept;
 
 	MaterialTechPtr getTech(RenderQueue queue) noexcept;
 	MaterialTechniques& getTechs() noexcept;

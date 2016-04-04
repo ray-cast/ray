@@ -139,7 +139,7 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 				glTextureSubImage3D(_texture, 0, 0, 0, 0, w, h, depth, format, type, stream);
 				break;
 			case GL_TEXTURE_CUBE_MAP:
-				glTextureSubImage3D(_texture, 0, 0, 0, 0, w, h, 6, format, type, stream);
+				glTextureSubImage3D(_texture, 0, 0, 0, 0, w, h, depth, format, type, stream);
 				break;
 			break;
 			default:

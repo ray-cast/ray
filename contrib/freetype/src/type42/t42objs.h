@@ -4,8 +4,7 @@
 /*                                                                         */
 /*    Type 42 objects manager (specification).                             */
 /*                                                                         */
-/*  Copyright 2002-2015 by                                                 */
-/*  Roberto Alameda.                                                       */
+/*  Copyright 2002, 2003, 2006, 2007 by Roberto Alameda.                   */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
 /*  modified, and distributed under the terms of the FreeType project      */
@@ -56,6 +55,7 @@ FT_BEGIN_HEADER
   {
     FT_DriverRec     root;
     FT_Driver_Class  ttclazz;
+    void*            extension_component;
 
   } T42_DriverRec, *T42_Driver;
 
@@ -65,36 +65,36 @@ FT_BEGIN_HEADER
 
   FT_LOCAL( FT_Error )
   T42_Face_Init( FT_Stream      stream,
-                 FT_Face        face,
+                 T42_Face       face,
                  FT_Int         face_index,
                  FT_Int         num_params,
                  FT_Parameter*  params );
 
 
   FT_LOCAL( void )
-  T42_Face_Done( FT_Face  face );
+  T42_Face_Done( T42_Face  face );
 
 
   FT_LOCAL( FT_Error )
-  T42_Size_Init( FT_Size  size );
+  T42_Size_Init( T42_Size  size );
 
 
   FT_LOCAL( FT_Error )
-  T42_Size_Request( FT_Size          size,
+  T42_Size_Request( T42_Size         size,
                     FT_Size_Request  req );
 
 
   FT_LOCAL( FT_Error )
-  T42_Size_Select( FT_Size   size,
+  T42_Size_Select( T42_Size  size,
                    FT_ULong  strike_index );
 
 
   FT_LOCAL( void )
-  T42_Size_Done( FT_Size  size );
+  T42_Size_Done( T42_Size  size );
 
 
   FT_LOCAL( FT_Error )
-  T42_GlyphSlot_Init( FT_GlyphSlot  slot );
+  T42_GlyphSlot_Init( T42_GlyphSlot  slot );
 
 
   FT_LOCAL( FT_Error )
@@ -104,14 +104,14 @@ FT_BEGIN_HEADER
                       FT_Int32      load_flags );
 
   FT_LOCAL( void )
-  T42_GlyphSlot_Done( FT_GlyphSlot  slot );
+  T42_GlyphSlot_Done( T42_GlyphSlot slot );
 
 
   FT_LOCAL( FT_Error )
-  T42_Driver_Init( FT_Module  module );
+  T42_Driver_Init( T42_Driver  driver );
 
   FT_LOCAL( void )
-  T42_Driver_Done( FT_Module  module );
+  T42_Driver_Done( T42_Driver  driver );
 
  /* */
 

@@ -4,8 +4,7 @@
 /*                                                                         */
 /*    TrueTypeGX/AAT trak table validation (body).                         */
 /*                                                                         */
-/*  Copyright 2004-2015 by                                                 */
-/*  suzuki toshiya, Masatake YAMATO, Red Hat K.K.,                         */
+/*  Copyright 2004, 2005 by suzuki toshiya, Masatake YAMATO, Red Hat K.K., */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -49,7 +48,7 @@
 
     /*
      * referred track table format specification:
-     * https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6trak.html
+     * http://developer.apple.com/fonts/TTRefMan/RM06/Chap6trak.html
      * last update was 1996.
      * ----------------------------------------------
      * [MINIMUM HEADER]: GXV_TRAK_SIZE_MIN
@@ -94,9 +93,9 @@
   gxv_trak_trackTable_validate( FT_Bytes       table,
                                 FT_Bytes       limit,
                                 FT_UShort      nTracks,
-                                GXV_Validator  gxvalid )
+                                GXV_Validator  valid )
   {
-    FT_Bytes  p = table;
+    FT_Bytes   p = table;
 
     FT_Fixed   track, t;
     FT_UShort  nameIndex;
@@ -123,7 +122,7 @@
       if ( offset > GXV_TRAK_DATA( trackValueOffset_max ) )
         GXV_TRAK_DATA( trackValueOffset_max ) = offset;
 
-      gxv_sfntName_validate( nameIndex, 256, 32767, gxvalid );
+      gxv_sfntName_validate( nameIndex, 256, 32767, valid );
 
       for ( j = i; j < nTracks; j ++ )
       {
@@ -135,7 +134,7 @@
       }
     }
 
-    gxvalid->subtable_length = (FT_ULong)( p - table );
+    valid->subtable_length = p - table;
     GXV_EXIT;
   }
 
@@ -143,7 +142,7 @@
   static void
   gxv_trak_trackData_validate( FT_Bytes       table,
                                FT_Bytes       limit,
-                               GXV_Validator  gxvalid )
+                               GXV_Validator  valid )
   {
     FT_Bytes   p = table;
     FT_UShort  nTracks;
@@ -162,35 +161,34 @@
     nSizes          = FT_NEXT_USHORT( p );
     sizeTableOffset = FT_NEXT_ULONG( p );
 
-    gxv_odtect_add_range( table, (FT_ULong)( p - table ),
-                          "trackData header", odtect );
+    gxv_odtect_add_range( table, p - table, "trackData header", odtect );
 
     /* validate trackTable */
-    gxv_trak_trackTable_validate( p, limit, nTracks, gxvalid );
-    gxv_odtect_add_range( p, gxvalid->subtable_length,
+    gxv_trak_trackTable_validate( p, limit, nTracks, valid );
+    gxv_odtect_add_range( p, valid->subtable_length,
                           "trackTable", odtect );
 
     /* sizeTable is array of FT_Fixed, don't check contents */
-    p = gxvalid->root->base + sizeTableOffset;
+    p = valid->root->base + sizeTableOffset;
     GXV_LIMIT_CHECK( nSizes * 4 );
     gxv_odtect_add_range( p, nSizes * 4, "sizeTable", odtect );
 
     /* validate trackValueOffet */
-    p = gxvalid->root->base + GXV_TRAK_DATA( trackValueOffset_min );
+    p = valid->root->base + GXV_TRAK_DATA( trackValueOffset_min );
     if ( limit - p < nTracks * nSizes * 2 )
       GXV_TRACE(( "too short trackValue array\n" ));
 
-    p = gxvalid->root->base + GXV_TRAK_DATA( trackValueOffset_max );
+    p = valid->root->base + GXV_TRAK_DATA( trackValueOffset_max );
     GXV_LIMIT_CHECK( nSizes * 2 );
 
-    gxv_odtect_add_range( gxvalid->root->base
+    gxv_odtect_add_range( valid->root->base
                             + GXV_TRAK_DATA( trackValueOffset_min ),
                           GXV_TRAK_DATA( trackValueOffset_max )
                             - GXV_TRAK_DATA( trackValueOffset_min )
                             + nSizes * 2,
                           "trackValue array", odtect );
 
-    gxv_odtect_validate( odtect, gxvalid );
+    gxv_odtect_validate( odtect, valid );
 
     GXV_EXIT;
   }
@@ -212,8 +210,8 @@
     FT_Bytes          p = table;
     FT_Bytes          limit = 0;
 
-    GXV_ValidatorRec  gxvalidrec;
-    GXV_Validator     gxvalid = &gxvalidrec;
+    GXV_ValidatorRec  validrec;
+    GXV_Validator     valid = &validrec;
     GXV_trak_DataRec  trakrec;
     GXV_trak_Data     trak = &trakrec;
 
@@ -227,11 +225,11 @@
     GXV_ODTECT( 3, odtect );
 
     GXV_ODTECT_INIT( odtect );
-    gxvalid->root       = ftvalid;
-    gxvalid->table_data = trak;
-    gxvalid->face       = face;
+    valid->root       = ftvalid;
+    valid->table_data = trak;
+    valid->face       = face;
 
-    limit      = gxvalid->root->limit;
+    limit      = valid->root->limit;
 
     FT_TRACE3(( "validating `trak' table\n" ));
     GXV_INIT;
@@ -267,19 +265,19 @@
     /* validate trackData */
     if ( 0 < horizOffset )
     {
-      gxv_trak_trackData_validate( table + horizOffset, limit, gxvalid );
-      gxv_odtect_add_range( table + horizOffset, gxvalid->subtable_length,
+      gxv_trak_trackData_validate( table + horizOffset, limit, valid );
+      gxv_odtect_add_range( table + horizOffset, valid->subtable_length,
                             "horizJustData", odtect );
     }
 
     if ( 0 < vertOffset )
     {
-      gxv_trak_trackData_validate( table + vertOffset, limit, gxvalid );
-      gxv_odtect_add_range( table + vertOffset, gxvalid->subtable_length,
+      gxv_trak_trackData_validate( table + vertOffset, limit, valid );
+      gxv_odtect_add_range( table + vertOffset, valid->subtable_length,
                             "vertJustData", odtect );
     }
 
-    gxv_odtect_validate( odtect, gxvalid );
+    gxv_odtect_validate( odtect, valid );
 
     FT_TRACE4(( "\n" ));
   }

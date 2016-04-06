@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Type 1 driver interface (body).                                      */
 /*                                                                         */
-/*  Copyright 1996-2015 by                                                 */
+/*  Copyright 1996-2004, 2006, 2007, 2009, 2011 by                         */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -32,7 +32,7 @@
 
 #include FT_SERVICE_MULTIPLE_MASTERS_H
 #include FT_SERVICE_GLYPH_DICT_H
-#include FT_SERVICE_FONT_FORMAT_H
+#include FT_SERVICE_XFREE86_NAME_H
 #include FT_SERVICE_POSTSCRIPT_NAME_H
 #include FT_SERVICE_POSTSCRIPT_CMAPS_H
 #include FT_SERVICE_POSTSCRIPT_INFO_H
@@ -61,7 +61,7 @@
   {
     FT_STRCPYN( buffer, face->type1.glyph_names[glyph_index], buffer_max );
 
-    return FT_Err_Ok;
+    return T1_Err_Ok;
   }
 
 
@@ -69,13 +69,13 @@
   t1_get_name_index( T1_Face     face,
                      FT_String*  glyph_name )
   {
-    FT_Int  i;
+    FT_Int      i;
+    FT_String*  gname;
 
 
     for ( i = 0; i < face->type1.num_glyphs; i++ )
     {
-      FT_String*  gname = face->type1.glyph_names[i];
-
+      gname = face->type1.glyph_names[i];
 
       if ( !ft_strcmp( glyph_name, gname ) )
         return (FT_UInt)i;
@@ -138,7 +138,7 @@
   {
     *afont_info = ((T1_Face)face)->type1.font_info;
 
-    return FT_Err_Ok;
+    return T1_Err_Ok;
   }
 
 
@@ -148,7 +148,7 @@
   {
     *afont_extra = ((T1_Face)face)->type1.font_extra;
 
-    return FT_Err_Ok;
+    return T1_Err_Ok;
   }
 
 
@@ -167,7 +167,7 @@
   {
     *afont_private = ((T1_Face)face)->type1.private_dict;
 
-    return FT_Err_Ok;
+    return T1_Err_Ok;
   }
 
 
@@ -176,11 +176,9 @@
                         PS_Dict_Keys  key,
                         FT_UInt       idx,
                         void         *value,
-                        FT_Long       value_len_ )
+                        FT_Long       value_len )
   {
-    FT_ULong  retval    = 0; /* always >= 1 if valid */
-    FT_ULong  value_len = value_len_ < 0 ? 0 : (FT_ULong)value_len_;
-
+    FT_Long  retval = -1;
     T1_Face  t1face = (T1_Face)face;
     T1_Font  type1  = &t1face->type1;
 
@@ -197,7 +195,7 @@
       if ( idx < sizeof ( type1->font_matrix ) /
                    sizeof ( type1->font_matrix.xx ) )
       {
-        FT_Fixed  val = 0;
+        FT_Fixed  val;
 
 
         retval = sizeof ( val );
@@ -227,7 +225,7 @@
       if ( idx < sizeof ( type1->font_bbox ) /
                    sizeof ( type1->font_bbox.xMin ) )
       {
-        FT_Fixed  val = 0;
+        FT_Fixed val;
 
 
         retval = sizeof ( val );
@@ -559,9 +557,12 @@
       if ( value && value_len >= retval )
         *((FT_Long *)value) = type1->font_info.italic_angle;
       break;
+
+    default:
+      break;
     }
 
-    return retval == 0 ? -1 : (FT_Long)retval;
+    return retval;
   }
 
 
@@ -592,7 +593,7 @@
   {
     { FT_SERVICE_ID_POSTSCRIPT_FONT_NAME, &t1_service_ps_name },
     { FT_SERVICE_ID_GLYPH_DICT,           &t1_service_glyph_dict },
-    { FT_SERVICE_ID_FONT_FORMAT,          FT_FONT_FORMAT_TYPE_1 },
+    { FT_SERVICE_ID_XF86_NAME,            FT_XF86_FORMAT_TYPE_1 },
     { FT_SERVICE_ID_POSTSCRIPT_INFO,      &t1_service_ps_info },
 
 #ifndef T1_CONFIG_OPTION_NO_AFM
@@ -606,11 +607,11 @@
   };
 
 
-  FT_CALLBACK_DEF( FT_Module_Interface )
-  Get_Interface( FT_Module         module,
+  static FT_Module_Interface
+  Get_Interface( FT_Driver         driver,
                  const FT_String*  t1_interface )
   {
-    FT_UNUSED( module );
+    FT_UNUSED( driver );
 
     return ft_service_list_lookup( t1_services, t1_interface );
   }
@@ -651,14 +652,11 @@
   /*    They can be implemented by format-specific interfaces.             */
   /*                                                                       */
   static FT_Error
-  Get_Kerning( FT_Face     t1face,        /* T1_Face */
+  Get_Kerning( T1_Face     face,
                FT_UInt     left_glyph,
                FT_UInt     right_glyph,
                FT_Vector*  kerning )
   {
-    T1_Face  face = (T1_Face)t1face;
-
-
     kerning->x = 0;
     kerning->y = 0;
 
@@ -668,7 +666,7 @@
                       right_glyph,
                       kerning );
 
-    return FT_Err_Ok;
+    return T1_Err_Ok;
   }
 
 
@@ -683,7 +681,7 @@
       FT_MODULE_DRIVER_SCALABLE   |
       FT_MODULE_DRIVER_HAS_HINTER,
 
-      sizeof ( FT_DriverRec ),
+      sizeof( FT_DriverRec ),
 
       "type1",
       0x10000L,
@@ -691,34 +689,38 @@
 
       0,   /* format interface */
 
-      T1_Driver_Init,
-      T1_Driver_Done,
-      Get_Interface,
+      (FT_Module_Constructor)T1_Driver_Init,
+      (FT_Module_Destructor) T1_Driver_Done,
+      (FT_Module_Requester)  Get_Interface,
     },
 
-    sizeof ( T1_FaceRec ),
-    sizeof ( T1_SizeRec ),
-    sizeof ( T1_GlyphSlotRec ),
+    sizeof( T1_FaceRec ),
+    sizeof( T1_SizeRec ),
+    sizeof( T1_GlyphSlotRec ),
 
-    T1_Face_Init,
-    T1_Face_Done,
-    T1_Size_Init,
-    T1_Size_Done,
-    T1_GlyphSlot_Init,
-    T1_GlyphSlot_Done,
+    (FT_Face_InitFunc)        T1_Face_Init,
+    (FT_Face_DoneFunc)        T1_Face_Done,
+    (FT_Size_InitFunc)        T1_Size_Init,
+    (FT_Size_DoneFunc)        T1_Size_Done,
+    (FT_Slot_InitFunc)        T1_GlyphSlot_Init,
+    (FT_Slot_DoneFunc)        T1_GlyphSlot_Done,
 
-    T1_Load_Glyph,
+#ifdef FT_CONFIG_OPTION_OLD_INTERNALS
+    ft_stub_set_char_sizes,
+    ft_stub_set_pixel_sizes,
+#endif
+    (FT_Slot_LoadFunc)        T1_Load_Glyph,
 
 #ifdef T1_CONFIG_OPTION_NO_AFM
-    0,                     /* FT_Face_GetKerningFunc */
-    0,                     /* FT_Face_AttachFunc     */
+    (FT_Face_GetKerningFunc)  0,
+    (FT_Face_AttachFunc)      0,
 #else
-    Get_Kerning,
-    T1_Read_Metrics,
+    (FT_Face_GetKerningFunc)  Get_Kerning,
+    (FT_Face_AttachFunc)      T1_Read_Metrics,
 #endif
-    T1_Get_Advances,
-    T1_Size_Request,
-    0                      /* FT_Size_SelectFunc     */
+    (FT_Face_GetAdvancesFunc) T1_Get_Advances,
+    (FT_Size_RequestFunc)     T1_Size_Request,
+    (FT_Size_SelectFunc)      0
   };
 
 

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Type 1 objects manager (body).                                       */
 /*                                                                         */
-/*  Copyright 1996-2015 by                                                 */
+/*  Copyright 1996-2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 by */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -72,11 +72,8 @@
 
 
   FT_LOCAL_DEF( void )
-  T1_Size_Done( FT_Size  t1size )          /* T1_Size */
+  T1_Size_Done( T1_Size  size )
   {
-    T1_Size  size = (T1_Size)t1size;
-
-
     if ( size->root.internal )
     {
       PSH_Globals_Funcs  funcs;
@@ -86,16 +83,15 @@
       if ( funcs )
         funcs->destroy( (PSH_Globals)size->root.internal );
 
-      size->root.internal = NULL;
+      size->root.internal = 0;
     }
   }
 
 
   FT_LOCAL_DEF( FT_Error )
-  T1_Size_Init( FT_Size  t1size )      /* T1_Size */
+  T1_Size_Init( T1_Size  size )
   {
-    T1_Size            size  = (T1_Size)t1size;
-    FT_Error           error = FT_Err_Ok;
+    FT_Error           error = T1_Err_Ok;
     PSH_Globals_Funcs  funcs = T1_Size_Get_Globals_Funcs( size );
 
 
@@ -116,10 +112,9 @@
 
 
   FT_LOCAL_DEF( FT_Error )
-  T1_Size_Request( FT_Size          t1size,     /* T1_Size */
+  T1_Size_Request( T1_Size          size,
                    FT_Size_Request  req )
   {
-    T1_Size            size  = (T1_Size)t1size;
     PSH_Globals_Funcs  funcs = T1_Size_Get_Globals_Funcs( size );
 
 
@@ -131,7 +126,7 @@
                         size->root.metrics.y_scale,
                         0, 0 );
 
-    return FT_Err_Ok;
+    return T1_Err_Ok;
   }
 
 
@@ -142,20 +137,20 @@
   /*************************************************************************/
 
   FT_LOCAL_DEF( void )
-  T1_GlyphSlot_Done( FT_GlyphSlot  slot )
+  T1_GlyphSlot_Done( T1_GlyphSlot  slot )
   {
-    slot->internal->glyph_hints = NULL;
+    slot->root.internal->glyph_hints = 0;
   }
 
 
   FT_LOCAL_DEF( FT_Error )
-  T1_GlyphSlot_Init( FT_GlyphSlot  slot )
+  T1_GlyphSlot_Init( T1_GlyphSlot  slot )
   {
     T1_Face           face;
     PSHinter_Service  pshinter;
 
 
-    face     = (T1_Face)slot->face;
+    face     = (T1_Face)slot->root.face;
     pshinter = (PSHinter_Service)face->pshinter;
 
     if ( pshinter )
@@ -163,18 +158,15 @@
       FT_Module  module;
 
 
-      module = FT_Get_Module( slot->face->driver->root.library,
-                              "pshinter" );
-      if ( module )
+      module = FT_Get_Module( slot->root.face->driver->root.library, "pshinter" );
+      if (module)
       {
         T1_Hints_Funcs  funcs;
 
-
         funcs = pshinter->get_t1_funcs( module );
-        slot->internal->glyph_hints = (void*)funcs;
+        slot->root.internal->glyph_hints = (void*)funcs;
       }
     }
-
     return 0;
   }
 
@@ -198,9 +190,8 @@
   /*    face :: A typeless pointer to the face object to destroy.          */
   /*                                                                       */
   FT_LOCAL_DEF( void )
-  T1_Face_Done( FT_Face  t1face )         /* T1_Face */
+  T1_Face_Done( T1_Face  face )
   {
-    T1_Face    face = (T1_Face)t1face;
     FT_Memory  memory;
     T1_Font    type1;
 
@@ -224,7 +215,7 @@
     }
 
     T1_Done_Blend( face );
-    face->blend = NULL;
+    face->blend = 0;
 #endif
 
     /* release font info strings */
@@ -298,12 +289,11 @@
   /*                                                                       */
   FT_LOCAL_DEF( FT_Error )
   T1_Face_Init( FT_Stream      stream,
-                FT_Face        t1face,          /* T1_Face */
+                T1_Face        face,
                 FT_Int         face_index,
                 FT_Int         num_params,
                 FT_Parameter*  params )
   {
-    T1_Face             face = (T1_Face)t1face;
     FT_Error            error;
     FT_Service_PsCMaps  psnames;
     PSAux_Service       psaux;
@@ -323,17 +313,9 @@
     face->psaux = FT_Get_Module_Interface( FT_FACE_LIBRARY( face ),
                                            "psaux" );
     psaux = (PSAux_Service)face->psaux;
-    if ( !psaux )
-    {
-      FT_ERROR(( "T1_Face_Init: cannot access `psaux' module\n" ));
-      error = FT_THROW( Missing_Module );
-      goto Exit;
-    }
 
     face->pshinter = FT_Get_Module_Interface( FT_FACE_LIBRARY( face ),
                                               "pshinter" );
-
-    FT_TRACE2(( "Type 1 driver\n" ));
 
     /* open the tokenizer; this will also check the font format */
     error = T1_Open_Face( face );
@@ -345,10 +327,10 @@
       goto Exit;
 
     /* check the face index */
-    if ( ( face_index & 0xFFFF ) > 0 )
+    if ( face_index > 0 )
     {
       FT_ERROR(( "T1_Face_Init: invalid face index\n" ));
-      error = FT_THROW( Invalid_Argument );
+      error = T1_Err_Invalid_Argument;
       goto Exit;
     }
 
@@ -364,16 +346,19 @@
       root->num_glyphs = type1->num_glyphs;
       root->face_index = 0;
 
-      root->face_flags |= FT_FACE_FLAG_SCALABLE    |
-                          FT_FACE_FLAG_HORIZONTAL  |
-                          FT_FACE_FLAG_GLYPH_NAMES |
-                          FT_FACE_FLAG_HINTER;
+      root->face_flags = FT_FACE_FLAG_SCALABLE    |
+                         FT_FACE_FLAG_HORIZONTAL  |
+                         FT_FACE_FLAG_GLYPH_NAMES |
+                         FT_FACE_FLAG_HINTER;
 
       if ( info->is_fixed_pitch )
         root->face_flags |= FT_FACE_FLAG_FIXED_WIDTH;
 
       if ( face->blend )
         root->face_flags |= FT_FACE_FLAG_MULTIPLE_MASTERS;
+
+      /* XXX: TODO -- add kerning with .afm support */
+
 
       /* The following code to extract the family and the style is very   */
       /* simplistic and might get some things wrong.  For a full-featured */
@@ -454,7 +439,7 @@
 
       /* no embedded bitmap support */
       root->num_fixed_sizes = 0;
-      root->available_sizes = NULL;
+      root->available_sizes = 0;
 
       root->bbox.xMin =   type1->font_bbox.xMin            >> 16;
       root->bbox.yMin =   type1->font_bbox.yMin            >> 16;
@@ -462,7 +447,7 @@
       root->bbox.xMax = ( type1->font_bbox.xMax + 0xFFFF ) >> 16;
       root->bbox.yMax = ( type1->font_bbox.yMax + 0xFFFF ) >> 16;
 
-      /* Set units_per_EM if we didn't set it in t1_parse_font_matrix. */
+      /* Set units_per_EM if we didn't set it in parse_font_matrix. */
       if ( !root->units_per_EM )
         root->units_per_EM = 1000;
 
@@ -486,7 +471,7 @@
         if ( !error )
           root->max_advance_width = (FT_Short)FIXED_TO_INT( max_advance );
         else
-          error = FT_Err_Ok;   /* clear error */
+          error = T1_Err_Ok;   /* clear error */
       }
 
       root->max_advance_height = root->height;
@@ -499,7 +484,7 @@
       FT_Face  root = &face->root;
 
 
-      if ( psnames )
+      if ( psnames && psaux )
       {
         FT_CharMapRec    charmap;
         T1_CMap_Classes  cmap_classes = psaux->t1_cmap_classes;
@@ -514,8 +499,7 @@
         charmap.encoding    = FT_ENCODING_UNICODE;
 
         error = FT_CMap_New( cmap_classes->unicode, NULL, &charmap, NULL );
-        if ( error                                      &&
-             FT_ERR_NEQ( error, No_Unicode_Glyph_Name ) )
+        if ( error && FT_Err_No_Unicode_Glyph_Name != error )
           goto Exit;
         error = FT_Err_Ok;
 
@@ -584,11 +568,11 @@
   /*    FreeType error code.  0 means success.                             */
   /*                                                                       */
   FT_LOCAL_DEF( FT_Error )
-  T1_Driver_Init( FT_Module  driver )
+  T1_Driver_Init( T1_Driver  driver )
   {
     FT_UNUSED( driver );
 
-    return FT_Err_Ok;
+    return T1_Err_Ok;
   }
 
 
@@ -604,7 +588,7 @@
   /*    driver :: A handle to the target Type 1 driver.                    */
   /*                                                                       */
   FT_LOCAL_DEF( void )
-  T1_Driver_Done( FT_Module  driver )
+  T1_Driver_Done( T1_Driver  driver )
   {
     FT_UNUSED( driver );
   }

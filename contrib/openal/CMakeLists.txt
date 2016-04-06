@@ -28,20 +28,88 @@ INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/openal/common)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/openal/openal32)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/openal/alc)
 
-
 SET(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE)
+SET(ALSOFT_DLOPEN TRUE)          # Check for the dlopen API for loading optional libs
+SET(ALSOFT_WERROR FALSE)         # Treat compile warnings as errors
+SET(ALSOFT_NO_CONFIG_UTIL TRUE)  # Disable building the alsoft-config utility
+SET(ALSOFT_EXAMPLES FALSE)       # Build and install example programs
+SET(ALSOFT_TESTS FALSE)          # Build and install test programs
+SET(ALSOFT_UTILS FALSE)          # Build and install utility programs
+SET(ALSOFT_CONFIG TRUE)          # Install alsoft.conf sample configuration file
+SET(ALSOFT_HRTF_DEFS TRUE)       # Install HRTF definition files
+SET(ALSOFT_INSTALL TRUE)         # Install headers and libraries
+SET(ALSOFT_REQUIRE_WINMM FALSE)  # Require Windows Multimedia backend
+SET(ALSOFT_REQUIRE_DSOUND FALSE)  # Require DirectSound backend
+SET(ALSOFT_REQUIRE_MMDEVAPI FALSE)  # Require MMDevApi backend
+SET(ALSOFT_REQUIRE_SOLARIS FALSE) # Require Solaris backend
+SET(ALSOFT_REQUIRE_PORTAUDIO FALSE) # "Require PortAudio backend"
+SET(ALSOFT_REQUIRE_ALSA FALSE) # "Require ALSA backend"
+SET(ALSOFT_REQUIRE_PULSEAUDIO FALSE) # "Require PulseAudio backend"
+SET(ALSOFT_REQUIRE_JACK FALSE) # "Require JACK backend"
+SET(ALSOFT_REQUIRE_OSS FALSE) # "Require OSS backend"
+SET(ALSOFT_REQUIRE_COREAUDIO FALSE) # "Require CoreAudio backend"
+SET(ALSOFT_REQUIRE_OPENSL FALSE) # "Require OpenSL backend"
+SET(ALSOFT_REQUIRE_NEON FALSE) # "Require ARM Neon support"
+SET(ALSOFT_REQUIRE_SNDIO FALSE) # "Require SndIO backend"
+SET(ALSOFT_REQUIRE_QSA FALSE) # "Require QSA backend"
+SET(ALSOFT_NO_UID_DEFS FALSE) # "Do not define GUIDs, IIDs, CLSIDs, or PropertyKeys"
+SET(ALSOFT_BUILD_IMPORT_LIB TRUE) #"Build an import .lib using dlltool (requires sed)"
+SET(ALSOFT_FORCE_STATIC_VCRT FALSE) # "Force /MT for static VC runtimes"
+SET(ALSOFT_REQUIRE_SSE FALSE) # "Require SSE support"
+SET(ALSOFT_REQUIRE_SSE2 FALSE) # "Require SSE2 support"
+SET(ALSOFT_REQUIRE_SSE2 FALSE) # "Require SSE3 support"
+SET(ALSOFT_REQUIRE_SSE4_1 FALSE) # "Require SSE4.1 support"
+SET(ALSOFT_CPUEXT_SSE TRUE) # "Enable SSE support"
+SET(ALSOFT_CPUEXT_SSE2 TRUE) # "Enable SSE2 support"
+SET(ALSOFT_CPUEXT_SSE3 TRUE) # "Enable SSE3 support"
+SET(ALSOFT_CPUEXT_SSE4_1 TRUE) # "Enable SSE4.1 support"
+SET(ALSOFT_CPUEXT_NEON TRUE) # "Enable ARM Neon support"
+SET(ALSOFT_BACKEND_ALSA TRUE) # "Enable ALSA backend"
+SET(ALSOFT_BACKEND_OSS TRUE) # "Enable OSS backend"
+SET(ALSOFT_BACKEND_SOLARIS TRUE) # "Enable Solaris backend"
+SET(ALSOFT_BACKEND_SNDIO TRUE) # "Enable SndIO backend"
+SET(ALSOFT_BACKEND_QSA TRUE) # "Enable QSA backend"
+SET(ALSOFT_BACKEND_WINMM TRUE) # "Enable Windows Multimedia backend"
+SET(ALSOFT_BACKEND_DSOUND TRUE) # "Enable DirectSound backend"
+SET(ALSOFT_BACKEND_MMDEVAPI TRUE) # "Enable MMDevApi backend"
+SET(ALSOFT_BACKEND_PORTAUDIO TRUE) # "Enable PortAudio backend"
+SET(ALSOFT_BACKEND_PULSEAUDIO TRUE) # "Enable PulseAudio backend"
+SET(ALSOFT_BACKEND_JACK TRUE) # "Enable JACK backend"
+SET(ALSOFT_BACKEND_COREAUDIO TRUE) # "Enable CoreAudio backend"
+SET(ALSOFT_BACKEND_OPENSL TRUE) # "Enable OpenSL backend"
+SET(ALSOFT_BACKEND_WAVE TRUE) # "Enable Wave Writer backend"
 
+IF(ALSOFT_REQUIRE_OSS)
+    FIND_PACKAGE(OSS)
+ENDIF()
 
-OPTION(ALSOFT_DLOPEN  "Check for the dlopen API for loading optional libs"  ON)
-OPTION(ALSOFT_WERROR  "Treat compile warnings as errors"      OFF)
-OPTION(ALSOFT_NO_CONFIG_UTIL "Disable building the alsoft-config utility" ON)
-OPTION(ALSOFT_EXAMPLES  "Build and install example programs"  OFF)
-OPTION(ALSOFT_TESTS     "Build and install test programs"     OFF)
-OPTION(ALSOFT_UTILS     "Build and install utility programs"  OFF)
-OPTION(ALSOFT_CONFIG "Install alsoft.conf sample configuration file" ON)
-OPTION(ALSOFT_HRTF_DEFS "Install HRTF definition files" ON)
-OPTION(ALSOFT_INSTALL "Install headers and libraries" ON)
+IF(ALSOFT_REQUIRE_PULSEAUDIO)
+    FIND_PACKAGE(PulseAudio)
+ENDIF()
 
+IF(ALSOFT_REQUIRE_JACK)
+    FIND_PACKAGE(JACK)
+ENDIF()
+
+IF(ALSOFT_REQUIRE_ALSA)
+    FIND_PACKAGE(ALSA)
+ENDIF()
+
+IF(ALSOFT_REQUIRE_SOLARIS)
+    FIND_PACKAGE(AudioIO)
+ENDIF()
+
+IF(ALSOFT_REQUIRE_PORTAUDIO)
+    FIND_PACKAGE(PortAudio)
+ENDIF()
+
+IF(ALSOFT_REQUIRE_SNDIO)
+    FIND_PACKAGE(SoundIO)
+ENDIF()
+
+IF(ALSOFT_REQUIRE_QSA)
+    FIND_PACKAGE(QSA)
+ENDIF()
 
 IF(NOT WIN32)
     SET(LIBNAME openal)
@@ -52,10 +120,8 @@ ELSE()
     # This option is mainly for static linking OpenAL Soft into another project
     # that already defines the IDs. It is up to that project to ensure all
     # required IDs are defined.
-    OPTION(ALSOFT_NO_UID_DEFS "Do not define GUIDs, IIDs, CLSIDs, or PropertyKeys" OFF)
 
     IF(MINGW)
-        OPTION(ALSOFT_BUILD_IMPORT_LIB "Build an import .lib using dlltool (requires sed)" ON)
         IF(NOT DLLTOOL)
             IF(HOST)
                 SET(DLLTOOL "${HOST}-dlltool")
@@ -65,7 +131,6 @@ ELSE()
         ENDIF()
     ENDIF()
 ENDIF()
-
 
 # QNX's gcc do not uses /usr/include and /usr/lib pathes by default
 IF ("${CMAKE_C_PLATFORM_ID}" STREQUAL "QNX")
@@ -85,10 +150,8 @@ SET(LIB_VERSION "${LIB_MAJOR_VERSION}.${LIB_MINOR_VERSION}.${LIB_REVISION}")
 SET(EXPORT_DECL "")
 SET(ALIGN_DECL "")
 
-
 CHECK_TYPE_SIZE("long" SIZEOF_LONG)
 CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG)
-
 
 CHECK_C_COMPILER_FLAG(-std=c11 HAVE_STD_C11)
 IF(HAVE_STD_C11)
@@ -246,8 +309,7 @@ IF(MSVC)
         MESSAGE(STATUS "Using DirectX SDK directory: ${DXSDK_DIR}")
     ENDIF()
 
-    OPTION(FORCE_STATIC_VCRT "Force /MT for static VC runtimes" OFF)
-    IF(FORCE_STATIC_VCRT)
+    IF(ALSOFT_FORCE_STATIC_VCRT)
         FOREACH(flag_var
                 CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
                 CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
@@ -625,10 +687,8 @@ SET(HAVE_OPENSL     0)
 SET(HAVE_WAVE       0)
 
 # Check for SSE support
-OPTION(ALSOFT_REQUIRE_SSE "Require SSE support" OFF)
 CHECK_INCLUDE_FILE(xmmintrin.h HAVE_XMMINTRIN_H "${SSE_SWITCH}")
 IF(HAVE_XMMINTRIN_H)
-    OPTION(ALSOFT_CPUEXT_SSE "Enable SSE support" ON)
     IF(ALSOFT_CPUEXT_SSE)
         IF(ALIGN_DECL OR HAVE_C11_ALIGNAS)
             SET(HAVE_SSE 1)
@@ -645,10 +705,8 @@ IF(ALSOFT_REQUIRE_SSE AND NOT HAVE_SSE)
     MESSAGE(FATAL_ERROR "Failed to enabled required SSE CPU extensions")
 ENDIF()
 
-OPTION(ALSOFT_REQUIRE_SSE2 "Require SSE2 support" OFF)
 CHECK_INCLUDE_FILE(emmintrin.h HAVE_EMMINTRIN_H "${SSE2_SWITCH}")
 IF(HAVE_EMMINTRIN_H)
-    OPTION(ALSOFT_CPUEXT_SSE2 "Enable SSE2 support" ON)
     IF(HAVE_SSE AND ALSOFT_CPUEXT_SSE2)
         IF(ALIGN_DECL OR HAVE_C11_ALIGNAS)
             SET(HAVE_SSE2 1)
@@ -665,10 +723,8 @@ IF(ALSOFT_REQUIRE_SSE2 AND NOT HAVE_SSE2)
     MESSAGE(FATAL_ERROR "Failed to enable required SSE2 CPU extensions")
 ENDIF()
 
-OPTION(ALSOFT_REQUIRE_SSE2 "Require SSE3 support" OFF)
 CHECK_INCLUDE_FILE(pmmintrin.h HAVE_PMMINTRIN_H "${SSE3_SWITCH}")
 IF(HAVE_EMMINTRIN_H)
-    OPTION(ALSOFT_CPUEXT_SSE3 "Enable SSE3 support" ON)
     IF(HAVE_SSE2 AND ALSOFT_CPUEXT_SSE3)
         IF(ALIGN_DECL OR HAVE_C11_ALIGNAS)
             SET(HAVE_SSE3 1)
@@ -685,10 +741,8 @@ IF(ALSOFT_REQUIRE_SSE3 AND NOT HAVE_SSE3)
     MESSAGE(FATAL_ERROR "Failed to enable required SSE3 CPU extensions")
 ENDIF()
 
-OPTION(ALSOFT_REQUIRE_SSE4_1 "Require SSE4.1 support" OFF)
 CHECK_INCLUDE_FILE(smmintrin.h HAVE_SMMINTRIN_H "${SSE4_1_SWITCH}")
 IF(HAVE_SMMINTRIN_H)
-    OPTION(ALSOFT_CPUEXT_SSE4_1 "Enable SSE4.1 support" ON)
     IF(HAVE_SSE2 AND ALSOFT_CPUEXT_SSE4_1)
         IF(ALIGN_DECL OR HAVE_C11_ALIGNAS)
             SET(HAVE_SSE4_1 1)
@@ -706,10 +760,8 @@ IF(ALSOFT_REQUIRE_SSE4_1 AND NOT HAVE_SSE4_1)
 ENDIF()
 
 # Check for ARM Neon support
-OPTION(ALSOFT_REQUIRE_NEON "Require ARM Neon support" OFF)
 CHECK_INCLUDE_FILE(arm_neon.h HAVE_ARM_NEON_H)
 IF(HAVE_ARM_NEON_H)
-    OPTION(ALSOFT_CPUEXT_NEON "Enable ARM Neon support" ON)
     IF(ALSOFT_CPUEXT_NEON)
         SET(HAVE_NEON 1)
         SET(ALC_OBJS  ${ALC_OBJS} Alc/mixer_neon.c)
@@ -741,10 +793,7 @@ SET(ALC_OBJS  ${ALC_OBJS}
 )
 
 # Check ALSA backend
-OPTION(ALSOFT_REQUIRE_ALSA "Require ALSA backend" OFF)
-FIND_PACKAGE(ALSA)
 IF(ALSA_FOUND)
-    OPTION(ALSOFT_BACKEND_ALSA "Enable ALSA backend" ON)
     IF(ALSOFT_BACKEND_ALSA)
         SET(HAVE_ALSA 1)
         SET(BACKENDS  "${BACKENDS} ALSA${IS_LINKED},")
@@ -760,10 +809,7 @@ IF(ALSOFT_REQUIRE_ALSA AND NOT HAVE_ALSA)
 ENDIF()
 
 # Check OSS backend
-OPTION(ALSOFT_REQUIRE_OSS "Require OSS backend" OFF)
-FIND_PACKAGE(OSS)
 IF(OSS_FOUND)
-    OPTION(ALSOFT_BACKEND_OSS "Enable OSS backend" ON)
     IF(ALSOFT_BACKEND_OSS)
         SET(HAVE_OSS 1)
         SET(BACKENDS  "${BACKENDS} OSS,")
@@ -778,10 +824,7 @@ IF(ALSOFT_REQUIRE_OSS AND NOT HAVE_OSS)
 ENDIF()
 
 # Check Solaris backend
-OPTION(ALSOFT_REQUIRE_SOLARIS "Require Solaris backend" OFF)
-FIND_PACKAGE(AudioIO)
 IF(AUDIOIO_FOUND)
-    OPTION(ALSOFT_BACKEND_SOLARIS "Enable Solaris backend" ON)
     IF(ALSOFT_BACKEND_SOLARIS)
         SET(HAVE_SOLARIS 1)
         SET(BACKENDS  "${BACKENDS} Solaris,")
@@ -796,10 +839,7 @@ IF(ALSOFT_REQUIRE_SOLARIS AND NOT HAVE_SOLARIS)
 ENDIF()
 
 # Check SndIO backend
-OPTION(ALSOFT_REQUIRE_SNDIO "Require SndIO backend" OFF)
-FIND_PACKAGE(SoundIO)
 IF(SOUNDIO_FOUND)
-    OPTION(ALSOFT_BACKEND_SNDIO "Enable SndIO backend" ON)
     IF(ALSOFT_BACKEND_SNDIO)
         SET(HAVE_SNDIO 1)
         SET(BACKENDS  "${BACKENDS} SndIO (linked),")
@@ -815,10 +855,7 @@ IF(ALSOFT_REQUIRE_SNDIO AND NOT HAVE_SNDIO)
 ENDIF()
 
 # Check QSA backend
-OPTION(ALSOFT_REQUIRE_QSA "Require QSA backend" OFF)
-FIND_PACKAGE(QSA)
 IF(QSA_FOUND)
-    OPTION(ALSOFT_BACKEND_QSA "Enable QSA backend" ON)
     IF(ALSOFT_BACKEND_QSA)
         SET(HAVE_QSA 1)
         SET(BACKENDS  "${BACKENDS} QSA (linked),")
@@ -834,16 +871,12 @@ IF(ALSOFT_REQUIRE_QSA AND NOT HAVE_QSA)
 ENDIF()
 
 # Check Windows-only backends
-OPTION(ALSOFT_REQUIRE_WINMM "Require Windows Multimedia backend" OFF)
-OPTION(ALSOFT_REQUIRE_DSOUND "Require DirectSound backend" OFF)
-OPTION(ALSOFT_REQUIRE_MMDEVAPI "Require MMDevApi backend" OFF)
 IF(HAVE_WINDOWS_H)
     # Check MMSystem backend
     CHECK_INCLUDE_FILES("windows.h;mmsystem.h" HAVE_MMSYSTEM_H -D_WIN32_WINNT=0x0502)
     IF(HAVE_MMSYSTEM_H)
         CHECK_SHARED_FUNCTION_EXISTS(waveOutOpen "windows.h;mmsystem.h" winmm "" HAVE_LIBWINMM)
         IF(HAVE_LIBWINMM)
-            OPTION(ALSOFT_BACKEND_WINMM "Enable Windows Multimedia backend" ON)
             IF(ALSOFT_BACKEND_WINMM)
                 SET(HAVE_WINMM 1)
                 SET(BACKENDS  "${BACKENDS} WinMM,")
@@ -856,7 +889,6 @@ IF(HAVE_WINDOWS_H)
     # Check DSound backend
     FIND_PACKAGE(DSound)
     IF(DSOUND_FOUND)
-        OPTION(ALSOFT_BACKEND_DSOUND "Enable DirectSound backend" ON)
         IF(ALSOFT_BACKEND_DSOUND)
             SET(HAVE_DSOUND 1)
             SET(BACKENDS  "${BACKENDS} DirectSound${IS_LINKED},")
@@ -871,7 +903,6 @@ IF(HAVE_WINDOWS_H)
     # Check for MMDevApi backend
     CHECK_INCLUDE_FILE(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
     IF(HAVE_MMDEVICEAPI_H)
-        OPTION(ALSOFT_BACKEND_MMDEVAPI "Enable MMDevApi backend" ON)
         IF(ALSOFT_BACKEND_MMDEVAPI)
             SET(HAVE_MMDEVAPI 1)
             SET(BACKENDS  "${BACKENDS} MMDevApi,")
@@ -890,10 +921,7 @@ IF(ALSOFT_REQUIRE_MMDEVAPI AND NOT HAVE_MMDEVAPI)
 ENDIF()
 
 # Check PortAudio backend
-OPTION(ALSOFT_REQUIRE_PORTAUDIO "Require PortAudio backend" OFF)
-FIND_PACKAGE(PortAudio)
 IF(PORTAUDIO_FOUND)
-    OPTION(ALSOFT_BACKEND_PORTAUDIO "Enable PortAudio backend" ON)
     IF(ALSOFT_BACKEND_PORTAUDIO)
         SET(HAVE_PORTAUDIO 1)
         SET(BACKENDS  "${BACKENDS} PortAudio${IS_LINKED},")
@@ -909,10 +937,7 @@ IF(ALSOFT_REQUIRE_PORTAUDIO AND NOT HAVE_PORTAUDIO)
 ENDIF()
 
 # Check PulseAudio backend
-OPTION(ALSOFT_REQUIRE_PULSEAUDIO "Require PulseAudio backend" OFF)
-FIND_PACKAGE(PulseAudio)
 IF(PULSEAUDIO_FOUND)
-    OPTION(ALSOFT_BACKEND_PULSEAUDIO "Enable PulseAudio backend" ON)
     IF(ALSOFT_BACKEND_PULSEAUDIO)
         SET(HAVE_PULSEAUDIO 1)
         SET(BACKENDS  "${BACKENDS} PulseAudio${IS_LINKED},")
@@ -928,10 +953,7 @@ IF(ALSOFT_REQUIRE_PULSEAUDIO AND NOT HAVE_PULSEAUDIO)
 ENDIF()
 
 # Check JACK backend
-OPTION(ALSOFT_REQUIRE_JACK "Require JACK backend" OFF)
-FIND_PACKAGE(JACK)
 IF(JACK_FOUND)
-    OPTION(ALSOFT_BACKEND_JACK "Enable JACK backend" ON)
     IF(ALSOFT_BACKEND_JACK)
         SET(HAVE_JACK 1)
         SET(BACKENDS  "${BACKENDS} JACK${IS_LINKED},")
@@ -947,45 +969,43 @@ IF(ALSOFT_REQUIRE_JACK AND NOT HAVE_JACK)
 ENDIF()
 
 # Check CoreAudio backend
-OPTION(ALSOFT_REQUIRE_COREAUDIO "Require CoreAudio backend" OFF)
-FIND_LIBRARY(COREAUDIO_FRAMEWORK
-             NAMES CoreAudio
-             PATHS /System/Library/Frameworks
-)
-IF(COREAUDIO_FRAMEWORK)
-    OPTION(ALSOFT_BACKEND_COREAUDIO "Enable CoreAudio backend" ON)
-    IF(ALSOFT_BACKEND_COREAUDIO)
-        SET(HAVE_COREAUDIO 1)
-        SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/coreaudio.c)
-        SET(BACKENDS  "${BACKENDS} CoreAudio,")
-        SET(EXTRA_LIBS ${COREAUDIO_FRAMEWORK} ${EXTRA_LIBS})
-        SET(EXTRA_LIBS /System/Library/Frameworks/AudioUnit.framework ${EXTRA_LIBS})
-        SET(EXTRA_LIBS /System/Library/Frameworks/ApplicationServices.framework ${EXTRA_LIBS})
+IF(ALSOFT_REQUIRE_COREAUDIO)
+    FIND_LIBRARY(COREAUDIO_FRAMEWORK
+                 NAMES CoreAudio
+                 PATHS /System/Library/Frameworks
+    )
+    IF(COREAUDIO_FRAMEWORK)
+        IF(ALSOFT_BACKEND_COREAUDIO)
+            SET(HAVE_COREAUDIO 1)
+            SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/coreaudio.c)
+            SET(BACKENDS  "${BACKENDS} CoreAudio,")
+            SET(EXTRA_LIBS ${COREAUDIO_FRAMEWORK} ${EXTRA_LIBS})
+            SET(EXTRA_LIBS /System/Library/Frameworks/AudioUnit.framework ${EXTRA_LIBS})
+            SET(EXTRA_LIBS /System/Library/Frameworks/ApplicationServices.framework ${EXTRA_LIBS})
 
-        # Some versions of OSX may need the AudioToolbox framework. Add it if
-        # it's found.
-        FIND_LIBRARY(AUDIOTOOLBOX_LIBRARY
-                     NAMES AudioToolbox
-                     PATHS ~/Library/Frameworks
-                           /Library/Frameworks
-                           /System/Library/Frameworks
-                    )
-        IF(AUDIOTOOLBOX_LIBRARY)
-            SET(EXTRA_LIBS ${AUDIOTOOLBOX_LIBRARY} ${EXTRA_LIBS})
+            # Some versions of OSX may need the AudioToolbox framework. Add it if
+            # it's found.
+            FIND_LIBRARY(AUDIOTOOLBOX_LIBRARY
+                         NAMES AudioToolbox
+                         PATHS ~/Library/Frameworks
+                               /Library/Frameworks
+                               /System/Library/Frameworks
+                        )
+            IF(AUDIOTOOLBOX_LIBRARY)
+                SET(EXTRA_LIBS ${AUDIOTOOLBOX_LIBRARY} ${EXTRA_LIBS})
+            ENDIF()
         ENDIF()
     ENDIF()
-ENDIF()
-IF(ALSOFT_REQUIRE_COREAUDIO AND NOT HAVE_COREAUDIO)
-    MESSAGE(FATAL_ERROR "Failed to enabled required CoreAudio backend")
+    IF(NOT HAVE_COREAUDIO)
+        MESSAGE(FATAL_ERROR "Failed to enabled required CoreAudio backend")
+    ENDIF()
 ENDIF()
 
 # Check for OpenSL (Android) backend
-OPTION(ALSOFT_REQUIRE_OPENSL "Require OpenSL backend" OFF)
 CHECK_INCLUDE_FILES("SLES/OpenSLES.h;SLES/OpenSLES_Android.h" HAVE_SLES_OPENSLES_ANDROID_H)
 IF(HAVE_SLES_OPENSLES_ANDROID_H)
     CHECK_SHARED_FUNCTION_EXISTS(slCreateEngine "SLES/OpenSLES.h" OpenSLES "" HAVE_LIBOPENSLES)
     IF(HAVE_LIBOPENSLES)
-        OPTION(ALSOFT_BACKEND_OPENSL "Enable OpenSL backend" ON)
         IF(ALSOFT_BACKEND_OPENSL)
             SET(HAVE_OPENSL 1)
             SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/opensl.c)
@@ -999,7 +1019,6 @@ IF(ALSOFT_REQUIRE_OPENSL AND NOT HAVE_OPENSL)
 ENDIF()
 
 # Optionally enable the Wave Writer backend
-OPTION(ALSOFT_BACKEND_WAVE "Enable Wave Writer backend" ON)
 IF(ALSOFT_BACKEND_WAVE)
     SET(HAVE_WAVE 1)
     SET(ALC_OBJS  ${ALC_OBJS} Alc/backends/wave.c)

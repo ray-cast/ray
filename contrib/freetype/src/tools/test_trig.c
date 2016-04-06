@@ -8,8 +8,9 @@
 #define  PI   3.14159265358979323846
 #define  SPI  (PI/FT_ANGLE_PI)
 
-/* the precision in 16.16 fixed-point checks. Expect between 2 and 5 */
-/* noise LSB bits during operations, due to rounding errors..        */
+/* the precision in 16.16 fixed float points of the checks. Expect */
+/* between 2 and 5 noise LSB bits during operations, due to        */
+/* rounding errors..                                               */
 #define  THRESHOLD  64
 
   static  error = 0;
@@ -17,16 +18,14 @@
   static void
   test_cos( void )
   {
-    int  i;
+    FT_Fixed  f1, f2;
+    double    d1, d2;
+    int       i;
 
-
-    for ( i = 0; i < FT_ANGLE_2PI; i += 0x10000L )
+    for ( i = 0; i < FT_ANGLE_2PI; i += 0x10000 )
     {
-      FT_Fixed  f1, f2;
-      double    d2;
-
-
       f1 = FT_Cos(i);
+      d1 = f1/65536.0;
       d2 = cos( i*SPI );
       f2 = (FT_Fixed)(d2*65536.0);
 
@@ -40,19 +39,18 @@
   }
 
 
+
   static void
   test_sin( void )
   {
-    int  i;
+    FT_Fixed  f1, f2;
+    double    d1, d2;
+    int       i;
 
-
-    for ( i = 0; i < FT_ANGLE_2PI; i += 0x10000L )
+    for ( i = 0; i < FT_ANGLE_2PI; i += 0x10000 )
     {
-      FT_Fixed  f1, f2;
-      double    d2;
-
-
       f1 = FT_Sin(i);
+      d1 = f1/65536.0;
       d2 = sin( i*SPI );
       f2 = (FT_Fixed)(d2*65536.0);
 
@@ -69,16 +67,14 @@
   static void
   test_tan( void )
   {
-    int  i;
+    FT_Fixed  f1, f2;
+    double    d1, d2;
+    int       i;
 
-
-    for ( i = 0; i < FT_ANGLE_PI2 - 0x2000000L; i += 0x10000L )
+    for ( i = 0; i < FT_ANGLE_PI2-0x2000000; i += 0x10000 )
     {
-      FT_Fixed  f1, f2;
-      double    d2;
-
-
       f1 = FT_Tan(i);
+      d1 = f1/65536.0;
       d2 = tan( i*SPI );
       f2 = (FT_Fixed)(d2*65536.0);
 
@@ -95,16 +91,12 @@
   static void
   test_atan2( void )
   {
-    int  i;
+    FT_Fixed  c2, s2;
+    double    l, a, c1, s1;
+    int       i, j;
 
-
-    for ( i = 0; i < FT_ANGLE_2PI; i += 0x10000L )
+    for ( i = 0; i < FT_ANGLE_2PI; i += 0x10000 )
     {
-      FT_Fixed  c2, s2;
-      double    l, a, c1, s1;
-      int       j;
-
-
       l  = 5.0;
       a  = i*SPI;
 
@@ -126,20 +118,16 @@
     }
   }
 
-
   static void
   test_unit( void )
   {
-    int  i;
+    FT_Vector  v;
+    double     a, c1, s1;
+    FT_Fixed   c2, s2;
+    int        i;
 
-
-    for ( i = 0; i < FT_ANGLE_2PI; i += 0x10000L )
+    for ( i = 0; i < FT_ANGLE_2PI; i += 0x10000 )
     {
-      FT_Vector  v;
-      double     a, c1, s1;
-      FT_Fixed   c2, s2;
-
-
       FT_Vector_Unit( &v, i );
       a  = ( i*SPI );
       c1 = cos(a);
@@ -163,15 +151,12 @@
   static void
   test_length( void )
   {
-    int  i;
+    FT_Vector  v;
+    FT_Fixed   l, l2;
+    int        i;
 
-
-    for ( i = 0; i < FT_ANGLE_2PI; i += 0x10000L )
+    for ( i = 0; i < FT_ANGLE_2PI; i += 0x10000 )
     {
-      FT_Vector  v;
-      FT_Fixed   l, l2;
-
-
       l   = (FT_Fixed)(500.0*65536.0);
       v.x = (FT_Fixed)( l * cos( i*SPI ) );
       v.y = (FT_Fixed)( l * sin( i*SPI ) );
@@ -190,26 +175,19 @@
   static void
   test_rotate( void )
   {
-    int  rotate;
+    FT_Fixed  c2, s2, c4, s4;
+    FT_Vector v;
+    double    l, ra, a, c1, s1, cra, sra, c3, s3;
+    int       i, j, rotate;
 
-
-    for ( rotate = 0; rotate < FT_ANGLE_2PI; rotate += 0x10000L )
+    for ( rotate = 0; rotate < FT_ANGLE_2PI; rotate += 0x10000 )
     {
-      double  ra, cra, sra;
-      int     i;
-
-
       ra  = rotate*SPI;
       cra = cos( ra );
       sra = sin( ra );
 
-      for ( i = 0; i < FT_ANGLE_2PI; i += 0x10000L )
+      for ( i = 0; i < FT_ANGLE_2PI; i += 0x10000 )
       {
-        FT_Fixed   c2, s2, c4, s4;
-        FT_Vector  v;
-        double     l, a, c1, s1, c3, s3;
-
-
         l  = 500.0;
         a  = i*SPI;
 

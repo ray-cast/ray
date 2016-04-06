@@ -32,10 +32,7 @@
 BDF_DIR := $(SRC_DIR)/bdf
 
 
-BDF_COMPILE := $(CC) $(ANSIFLAGS)                            \
-                     $I$(subst /,$(COMPILER_SEP),$(BDF_DIR)) \
-                     $(INCLUDE_FLAGS)                        \
-                     $(FT_CFLAGS)
+BDF_COMPILE := $(FT_COMPILE) $I$(subst /,$(COMPILER_SEP),$(BDF_DIR))
 
 
 # bdf driver sources (i.e., C files)

@@ -14,38 +14,38 @@ set(GLFW_VERSION_PATCH "0")
 set(GLFW_VERSION_EXTRA "")
 set(GLFW_VERSION "${GLFW_VERSION_MAJOR}.${GLFW_VERSION_MINOR}")
 set(GLFW_VERSION_FULL "${GLFW_VERSION}.${GLFW_VERSION_PATCH}${GLFW_VERSION_EXTRA}")
-set(LIB_SUFFIX "" CACHE STRING "Takes an empty string or 64. Directory where lib will be installed: lib or lib64")
+set(LIB_SUFFIX "") # "Takes an empty string or 64. Directory where lib will be installed: lib or lib64"
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-option(GLFW_BUILD_SHARED_LIBS "Build shared libraries" ON)
-option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
-option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
-option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
-option(GLFW_INSTALL "Generate installation target" OFF)
-option(GLFW_DOCUMENT_INTERNALS "Include internals in documentation" OFF)
+SET(GLFW_BUILD_SHARED_LIBS TRUE) #  "Build shared libraries"
+SET(GLFW_BUILD_EXAMPLES FALSE) #  "Build the GLFW example programs"
+SET(GLFW_BUILD_TESTS FALSE) #  "Build the GLFW test programs"
+SET(GLFW_BUILD_DOCS FALSE) #  "Build the GLFW documentation"
+SET(GLFW_INSTALL FALSE) #  "Generate installation target"
+SET(GLFW_DOCUMENT_INTERNALS FALSE) #  "Include internals in documentation"
 
 if (WIN32)
-    option(GLFW_USE_DWM_SWAP_INTERVAL "Set swap interval even when DWM compositing is enabled" OFF)
-    option(GLFW_USE_OPTIMUS_HPG "Force use of high-performance GPU on Optimus systems" OFF)
+    SET(GLFW_USE_DWM_SWAP_INTERVAL FALSE) #  "Set swap interval even when DWM compositing is enabled"
+    SET(GLFW_USE_OPTIMUS_HPG FALSE) #  "Force use of high-performance GPU on Optimus systems"
 endif()
 
 if (APPLE)
-    option(GLFW_BUILD_UNIVERSAL "Build GLFW as a Universal Binary" OFF)
-    option(GLFW_USE_CHDIR "Make glfwInit chdir to Contents/Resources" ON)
-    option(GLFW_USE_MENUBAR "Populate the menu bar on first window creation" ON)
-    option(GLFW_USE_RETINA "Use the full resolution of Retina displays" ON)
+    SET(GLFW_BUILD_UNIVERSAL FALSE) #  "Build GLFW as a Universal Binary"
+    SET(GLFW_USE_CHDIR TRUE) #  "Make glfwInit chdir to Contents/Resources"
+    SET(GLFW_USE_MENUBAR TRUE) #  "Populate the menu bar on first window creation"
+    SET(GLFW_USE_RETINA TRUE) #  "Use the full resolution of Retina displays"
 else()
-    option(GLFW_USE_EGL "Use EGL for context creation" OFF)
+    SET(GLFW_USE_EGL FALSE) #  "Use EGL for context creation"
 endif()
 
 if (UNIX AND NOT APPLE)
-    option(GLFW_USE_WAYLAND "Use Wayland for context creation (implies EGL as well)" OFF)
-    option(GLFW_USE_MIR     "Use Mir for context creation (implies EGL as well)" OFF)
+    SET(GLFW_USE_WAYLAND FALSE) #  "Use Wayland for context creation (implies EGL as well)"
+    SET(GLFW_USE_MIR FALSE) #      "Use Mir for context creation (implies EGL as well)"
 endif()
 
 if (MSVC)
-    option(USE_MSVC_RUNTIME_LIBRARY_DLL "Use MSVC runtime library DLL" ON)
+    SET(USE_MSVC_RUNTIME_LIBRARY_DLL TRUE) #  "Use MSVC runtime library DLL"
 endif()
 
 if (GLFW_BUILD_SHARED_LIBS)
@@ -490,7 +490,7 @@ endif()
 #--------------------------------------------------------------------
 # Export GLFW library dependencies
 #--------------------------------------------------------------------
-set(GLFW_LIBRARIES ${glfw_LIBRARIES} CACHE STRING "Dependencies of GLFW")
+set(GLFW_LIBRARIES ${glfw_LIBRARIES}) # "Dependencies of GLFW"
 foreach(arg ${glfw_PKG_DEPS})
     set(GLFW_PKG_DEPS "${GLFW_PKG_DEPS} ${arg}")
 endforeach()

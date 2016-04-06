@@ -1,6 +1,6 @@
 /*
  * Copyright 2000 Computing Research Labs, New Mexico State University
- * Copyright 2001-2004, 2011 Francesco Zappa Nardelli
+ * Copyright 2001, 2002, 2003, 2004 Francesco Zappa Nardelli
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -40,12 +40,12 @@ FT_BEGIN_HEADER
 
 /* Imported from bdfP.h */
 
-#define _bdf_glyph_modified( map, e )                     \
-          ( (map)[(e) >> 5] & ( 1UL << ( (e) & 31 ) ) )
-#define _bdf_set_glyph_modified( map, e )                 \
-          ( (map)[(e) >> 5] |= ( 1UL << ( (e) & 31 ) ) )
-#define _bdf_clear_glyph_modified( map, e )               \
-          ( (map)[(e) >> 5] &= ~( 1UL << ( (e) & 31 ) ) )
+#define _bdf_glyph_modified( map, e )                 \
+          ( (map)[(e) >> 5] & ( 1 << ( (e) & 31 ) ) )
+#define _bdf_set_glyph_modified( map, e )              \
+          ( (map)[(e) >> 5] |= ( 1 << ( (e) & 31 ) ) )
+#define _bdf_clear_glyph_modified( map, e )             \
+          ( (map)[(e) >> 5] &= ~( 1 << ( (e) & 31 ) ) )
 
 /* end of bdfP.h */
 
@@ -167,10 +167,10 @@ FT_BEGIN_HEADER
 
   typedef struct  hashtable_
   {
-    unsigned int  limit;
-    unsigned int  size;
-    unsigned int  used;
-    hashnode*     table;
+    int        limit;
+    int        size;
+    int        used;
+    hashnode*  table;
 
   } hashtable;
 
@@ -194,7 +194,7 @@ FT_BEGIN_HEADER
     char*            name;           /* Name of the font.                   */
     bdf_bbx_t        bbx;            /* Font bounding box.                  */
 
-    unsigned long    point_size;     /* Point size of the font.             */
+    long             point_size;     /* Point size of the font.             */
     unsigned long    resolution_x;   /* Font horizontal resolution.         */
     unsigned long    resolution_y;   /* Font vertical resolution.           */
 
@@ -226,10 +226,8 @@ FT_BEGIN_HEADER
 
     void*            internal;       /* Internal data for the font.         */
 
-    /* The size of the next two arrays must be in sync with the */
-    /* size of the `have' array in the `bdf_parse_t' structure. */
-    unsigned long    nmod[34816];    /* Bitmap indicating modified glyphs.  */
-    unsigned long    umod[34816];    /* Bitmap indicating modified          */
+    unsigned long    nmod[2048];     /* Bitmap indicating modified glyphs.  */
+    unsigned long    umod[2048];     /* Bitmap indicating modified          */
                                      /* unencoded glyphs.                   */
     unsigned short   modified;       /* Boolean indicating font modified.   */
     unsigned short   bpp;            /* Bits per pixel.                     */

@@ -4,8 +4,7 @@
 /*                                                                         */
 /*    High-level Type 42 driver interface (specification).                 */
 /*                                                                         */
-/*  Copyright 2002-2015 by                                                 */
-/*  Roberto Alameda.                                                       */
+/*  Copyright 2002 by Roberto Alameda.                                     */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
 /*  modified, and distributed under the terms of the FreeType project      */
@@ -28,7 +27,7 @@ FT_BEGIN_HEADER
 
 #ifdef FT_CONFIG_OPTION_PIC
 #error "this module does not support PIC yet"
-#endif
+#endif 
 
 
   FT_EXPORT_VAR( const FT_Driver_ClassRec )  t42_driver_class;

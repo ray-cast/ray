@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType API for validating TrueTyepGX/AAT tables (body).            */
 /*                                                                         */
-/*  Copyright 2004-2015 by                                                 */
+/*  Copyright 2004, 2005, 2006, 2010 by                                    */
 /*  Masatake YAMATO, Redhat K.K,                                           */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
@@ -26,8 +26,6 @@
 
 
 #include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-
 #include FT_INTERNAL_OBJECTS_H
 #include FT_SERVICE_GX_VALIDATE_H
 
@@ -46,13 +44,13 @@
 
     if ( !face )
     {
-      error = FT_THROW( Invalid_Face_Handle );
+      error = FT_Err_Invalid_Face_Handle;
       goto Exit;
     }
 
-    if ( !tables )
+    if ( tables == NULL )
     {
-      error = FT_THROW( Invalid_Argument );
+      error = FT_Err_Invalid_Argument;
       goto Exit;
     }
 
@@ -64,7 +62,7 @@
                                  tables,
                                  table_length );
     else
-      error = FT_THROW( Unimplemented_Feature );
+      error = FT_Err_Unimplemented_Feature;
 
   Exit:
     return error;
@@ -98,13 +96,13 @@
 
     if ( !face )
     {
-      error = FT_THROW( Invalid_Face_Handle );
+      error = FT_Err_Invalid_Face_Handle;
       goto Exit;
     }
 
-    if ( !ckern_table )
+    if ( ckern_table == NULL )
     {
-      error = FT_THROW( Invalid_Argument );
+      error = FT_Err_Invalid_Argument;
       goto Exit;
     }
 
@@ -115,7 +113,7 @@
                                  validation_flags,
                                  ckern_table );
     else
-      error = FT_THROW( Unimplemented_Feature );
+      error = FT_Err_Unimplemented_Feature;
 
   Exit:
     return error;

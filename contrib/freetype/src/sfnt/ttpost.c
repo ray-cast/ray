@@ -5,7 +5,7 @@
 /*    Postcript name table processing for TrueType and OpenType fonts      */
 /*    (body).                                                              */
 /*                                                                         */
-/*  Copyright 1996-2015 by                                                 */
+/*  Copyright 1996-2001, 2002, 2003, 2006, 2007, 2008, 2009, 2010 by       */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -52,7 +52,7 @@
 
 #include FT_SERVICE_POSTSCRIPT_CMAPS_H
 
-#define MAC_NAME( x )  (FT_String*)psnames->macintosh_name( (FT_UInt)(x) )
+#define MAC_NAME( x )  ( (FT_String*)psnames->macintosh_name( x ) )
 
 
 #else /* FT_CONFIG_OPTION_POSTSCRIPT_NAMES */
@@ -62,14 +62,14 @@
    /* table of Mac names.  Thus, it is possible to build a version of */
    /* FreeType without the Type 1 driver & PSNames module.            */
 
-#define MAC_NAME( x )  (FT_String*)tt_post_default_names[x]
+#define MAC_NAME( x )  ( (FT_String*)tt_post_default_names[x] )
 
-  /* the 258 default Mac PS glyph names; see file `tools/glnames.py' */
+  /* the 258 default Mac PS glyph names */
 
   static const FT_String* const  tt_post_default_names[258] =
   {
     /*   0 */
-    ".notdef", ".null", "nonmarkingreturn", "space", "exclam",
+    ".notdef", ".null", "CR", "space", "exclam",
     "quotedbl", "numbersign", "dollar", "percent", "ampersand",
     /*  10 */
     "quotesingle", "parenleft", "parenright", "asterisk", "plus",
@@ -120,7 +120,7 @@
     "ae", "oslash", "questiondown", "exclamdown", "logicalnot",
     "radical", "florin", "approxequal", "Delta", "guillemotleft",
     /* 170 */
-    "guillemotright", "ellipsis", "nonbreakingspace", "Agrave", "Atilde",
+    "guillemotright", "ellipsis", "nbspace", "Agrave", "Atilde",
     "Otilde", "OE", "oe", "endash", "emdash",
     /* 180 */
     "quotedblleft", "quotedblright", "quoteleft", "quoteright", "divide",
@@ -144,8 +144,8 @@
     "multiply", "onesuperior", "twosuperior", "threesuperior", "onehalf",
     "onequarter", "threequarters", "franc", "Gbreve", "gbreve",
     /* 250 */
-    "Idotaccent", "Scedilla", "scedilla", "Cacute", "cacute",
-    "Ccaron", "ccaron", "dcroat",
+    "Idot", "Scedilla", "scedilla", "Cacute", "cacute",
+    "Ccaron", "ccaron", "dmacron",
   };
 
 
@@ -155,7 +155,7 @@
   static FT_Error
   load_format_20( TT_Face    face,
                   FT_Stream  stream,
-                  FT_ULong   post_limit )
+                  FT_Long    post_limit )
   {
     FT_Memory   memory = stream->memory;
     FT_Error    error;
@@ -163,8 +163,8 @@
     FT_Int      num_glyphs;
     FT_UShort   num_names;
 
-    FT_UShort*  glyph_indices = NULL;
-    FT_Char**   name_strings  = NULL;
+    FT_UShort*  glyph_indices = 0;
+    FT_Char**   name_strings  = 0;
 
 
     if ( FT_READ_USHORT( num_glyphs ) )
@@ -178,7 +178,7 @@
 
     if ( num_glyphs > face->max_profile.numGlyphs )
     {
-      error = FT_THROW( Invalid_File_Format );
+      error = SFNT_Err_Invalid_File_Format;
       goto Exit;
     }
 
@@ -243,17 +243,14 @@
             goto Fail1;
         }
 
-        if ( len > post_limit                   ||
-             FT_STREAM_POS() > post_limit - len )
+        if ( (FT_Int)len > post_limit                   ||
+             FT_STREAM_POS() > post_limit - (FT_Int)len )
         {
-          FT_Int  d = (FT_Int)post_limit - (FT_Int)FT_STREAM_POS();
-
-
           FT_ERROR(( "load_format_20:"
                      " exceeding string length (%d),"
                      " truncating at end of post table (%d byte left)\n",
-                     len, d ));
-          len = (FT_UInt)FT_MAX( 0, d );
+                     len, post_limit - FT_STREAM_POS() ));
+          len = FT_MAX( 0, post_limit - FT_STREAM_POS() );
         }
 
         if ( FT_NEW_ARRAY( name_strings[n], len + 1 ) ||
@@ -287,7 +284,7 @@
       table->glyph_indices = glyph_indices;
       table->glyph_names   = name_strings;
     }
-    return FT_Err_Ok;
+    return SFNT_Err_Ok;
 
   Fail1:
     {
@@ -310,13 +307,13 @@
   static FT_Error
   load_format_25( TT_Face    face,
                   FT_Stream  stream,
-                  FT_ULong   post_limit )
+                  FT_Long    post_limit )
   {
     FT_Memory  memory = stream->memory;
     FT_Error   error;
 
     FT_Int     num_glyphs;
-    FT_Char*   offset_table = NULL;
+    FT_Char*   offset_table = 0;
 
     FT_UNUSED( post_limit );
 
@@ -328,7 +325,7 @@
     /* check the number of glyphs */
     if ( num_glyphs > face->max_profile.numGlyphs || num_glyphs > 258 )
     {
-      error = FT_THROW( Invalid_File_Format );
+      error = SFNT_Err_Invalid_File_Format;
       goto Exit;
     }
 
@@ -348,7 +345,7 @@
 
         if ( idx < 0 || idx > num_glyphs )
         {
-          error = FT_THROW( Invalid_File_Format );
+          error = SFNT_Err_Invalid_File_Format;
           goto Fail;
         }
       }
@@ -363,7 +360,7 @@
       table->offsets    = offset_table;
     }
 
-    return FT_Err_Ok;
+    return SFNT_Err_Ok;
 
   Fail:
     FT_FREE( offset_table );
@@ -380,7 +377,7 @@
     FT_Error   error;
     FT_Fixed   format;
     FT_ULong   post_len;
-    FT_ULong   post_limit;
+    FT_Long    post_limit;
 
 
     /* get a stream for the face's resource */
@@ -405,7 +402,7 @@
     else if ( format == 0x00028000L )
       error = load_format_25( face, stream, post_limit );
     else
-      error = FT_THROW( Invalid_File_Format );
+      error = SFNT_Err_Invalid_File_Format;
 
     face->postscript_names.loaded = 1;
 
@@ -491,15 +488,15 @@
 
 
     if ( !face )
-      return FT_THROW( Invalid_Face_Handle );
+      return SFNT_Err_Invalid_Face_Handle;
 
     if ( idx >= (FT_UInt)face->max_profile.numGlyphs )
-      return FT_THROW( Invalid_Glyph_Index );
+      return SFNT_Err_Invalid_Glyph_Index;
 
 #ifdef FT_CONFIG_OPTION_POSTSCRIPT_NAMES
     psnames = (FT_Service_PsCMaps)face->psnames;
     if ( !psnames )
-      return FT_THROW( Unimplemented_Feature );
+      return SFNT_Err_Unimplemented_Feature;
 #endif
 
     names = &face->postscript_names;
@@ -550,13 +547,16 @@
       }
 
       if ( idx < (FT_UInt)table->num_glyphs )    /* paranoid checking */
-        *PSname = MAC_NAME( (FT_Int)idx + table->offsets[idx] );
+      {
+        idx    += table->offsets[idx];
+        *PSname = MAC_NAME( idx );
+      }
     }
 
     /* nothing to do for format == 0x00030000L */
 
   End:
-    return FT_Err_Ok;
+    return SFNT_Err_Ok;
   }
 
 

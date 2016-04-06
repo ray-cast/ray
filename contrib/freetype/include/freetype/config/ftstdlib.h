@@ -5,7 +5,7 @@
 /*    ANSI-specific library and header configuration file (specification   */
 /*    only).                                                               */
 /*                                                                         */
-/*  Copyright 2002-2015 by                                                 */
+/*  Copyright 2002-2007, 2009, 2011 by                                     */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -64,7 +64,6 @@
 #define FT_INT_MAX     INT_MAX
 #define FT_INT_MIN     INT_MIN
 #define FT_UINT_MAX    UINT_MAX
-#define FT_LONG_MAX    LONG_MAX
 #define FT_ULONG_MAX   ULONG_MAX
 
 
@@ -142,7 +141,8 @@
   /**********************************************************************/
 
 
-#define ft_atol  atol
+#define ft_atol   atol
+#define ft_labs   labs
 
 
   /**********************************************************************/
@@ -159,7 +159,7 @@
                                 /*       on certain platforms           */
 
 #define ft_longjmp     longjmp
-#define ft_setjmp( b ) setjmp( *(ft_jmp_buf*) &(b) ) /* same thing here */
+#define ft_setjmp( b ) setjmp( *(jmp_buf*) &(b) )    /* same thing here */
 
 
   /* the following is only used for debugging purposes, i.e., if */

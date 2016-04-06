@@ -5,14 +5,14 @@ project(zlib C)
 
 set(VERSION "1.2.8")
 
-option(ASM686 "Enable building i686 assembly implementation")
-option(AMD64 "Enable building amd64 assembly implementation")
+SET(ASM686 FALSE) #Enable building i686 assembly implementation
+SET(AMD64 FALSE)  #Enable building amd64 assembly implementation
 
-set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "Installation directory for executables")
-set(INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE PATH "Installation directory for libraries")
-set(INSTALL_INC_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE PATH "Installation directory for headers")
-set(INSTALL_MAN_DIR "${CMAKE_INSTALL_PREFIX}/share/man" CACHE PATH "Installation directory for manual pages")
-set(INSTALL_PKGCONFIG_DIR "${CMAKE_INSTALL_PREFIX}/share/pkgconfig" CACHE PATH "Installation directory for pkgconfig (.pc) files")
+set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin")
+set(INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+set(INSTALL_INC_DIR "${CMAKE_INSTALL_PREFIX}/include")
+set(INSTALL_MAN_DIR "${CMAKE_INSTALL_PREFIX}/share/man")
+set(INSTALL_PKGCONFIG_DIR "${CMAKE_INSTALL_PREFIX}/share/pkgconfig")
 
 include(CheckTypeSize)
 include(CheckFunctionExists)
@@ -64,20 +64,6 @@ if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-endif()
-
-if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
-    # If we're doing an out of source build and the user has a zconf.h
-    # in their source tree...
-    if(EXISTS ${LIBRARY_OUTPUT_PATH}/zconf.h)
-        if(NOT EXISTS ${LIBRARY_OUTPUT_PATH}/zconf.h.included)
-            message(STATUS "Renaming")
-            message(STATUS "    ${LIBRARY_OUTPUT_PATH}/zconf.h")
-            message(STATUS "to 'zconf.h.included' because this file is included with zlib")
-            message(STATUS "but CMake generates it automatically in the build directory.")
-            file(RENAME ${LIBRARY_OUTPUT_PATH}/zconf.h ${LIBRARY_OUTPUT_PATH}/zconf.h.included)
-        endif()
-    endif()
 endif()
 
 set(ZLIB_PC ${LIBRARY_OUTPUT_PATH}/zlib.pc)

@@ -3,7 +3,7 @@
 #
 
 
-# Copyright 1996-2015 by
+# Copyright 1996-2000, 2001, 2003, 2011 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -17,13 +17,9 @@
 #
 SMOOTH_DIR := $(SRC_DIR)/smooth
 
-
 # compilation flags for the driver
 #
-SMOOTH_COMPILE := $(CC) $(ANSIFLAGS)                               \
-                        $I$(subst /,$(COMPILER_SEP),$(SMOOTH_DIR)) \
-                        $(INCLUDE_FLAGS)                           \
-                        $(FT_CFLAGS)
+SMOOTH_COMPILE := $(FT_COMPILE) $I$(subst /,$(COMPILER_SEP),$(SMOOTH_DIR))
 
 
 # smooth driver sources (i.e., C files)

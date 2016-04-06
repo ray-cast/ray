@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    High-level Type PFR driver interface (specification).                */
 /*                                                                         */
-/*  Copyright 2002-2015 by                                                 */
+/*  Copyright 2002 by                                                      */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -28,7 +28,7 @@ FT_BEGIN_HEADER
 
 #ifdef FT_CONFIG_OPTION_PIC
 #error "this module does not support PIC yet"
-#endif
+#endif 
 
 
   FT_EXPORT_VAR( const FT_Driver_ClassRec )  pfr_driver_class;

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    OpenType GDEF table validation (body).                               */
 /*                                                                         */
-/*  Copyright 2004-2015 by                                                 */
+/*  Copyright 2004, 2005, 2007 by                                          */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -45,7 +45,7 @@
 
   static void
   otv_O_x_Ox( FT_Bytes       table,
-              OTV_Validator  otvalid )
+              OTV_Validator  valid )
   {
     FT_Bytes           p = table;
     FT_Bytes           Coverage;
@@ -61,20 +61,20 @@
 
     OTV_TRACE(( " (GlyphCount = %d)\n", GlyphCount ));
 
-    otv_Coverage_validate( Coverage, otvalid, (FT_Int)GlyphCount );
+    otv_Coverage_validate( Coverage, valid, GlyphCount );
     if ( GlyphCount != otv_Coverage_get_count( Coverage ) )
       FT_INVALID_DATA;
 
     OTV_LIMIT_CHECK( GlyphCount * 2 );
 
-    otvalid->nesting_level++;
-    func          = otvalid->func[otvalid->nesting_level];
-    otvalid->extra1 = 0;
+    valid->nesting_level++;
+    func          = valid->func[valid->nesting_level];
+    valid->extra1 = 0;
 
     for ( ; GlyphCount > 0; GlyphCount-- )
-      func( table + FT_NEXT_USHORT( p ), otvalid );
+      func( table + FT_NEXT_USHORT( p ), valid );
 
-    otvalid->nesting_level--;
+    valid->nesting_level--;
 
     OTV_EXIT;
   }
@@ -92,7 +92,7 @@
 
   static void
   otv_CaretValue_validate( FT_Bytes       table,
-                           OTV_Validator  otvalid )
+                           OTV_Validator  valid )
   {
     FT_Bytes  p = table;
     FT_UInt   CaretValueFormat;
@@ -122,7 +122,7 @@
       OTV_LIMIT_CHECK( 2 );
 
       /* DeviceTable */
-      otv_Device_validate( table + FT_NEXT_USHORT( p ), otvalid );
+      otv_Device_validate( table + FT_NEXT_USHORT( p ), valid );
       break;
 
     default:
@@ -141,7 +141,7 @@
   /*************************************************************************/
   /*************************************************************************/
 
-  /* sets otvalid->glyph_count */
+  /* sets valid->glyph_count */
 
   FT_LOCAL_DEF( void )
   otv_GDEF_validate( FT_Bytes      table,
@@ -150,8 +150,8 @@
                      FT_UInt       glyph_count,
                      FT_Validator  ftvalid )
   {
-    OTV_ValidatorRec  otvalidrec;
-    OTV_Validator     otvalid = &otvalidrec;
+    OTV_ValidatorRec  validrec;
+    OTV_Validator     valid = &validrec;
     FT_Bytes          p     = table;
     FT_UInt           table_size;
     FT_Bool           need_MarkAttachClassDef;
@@ -162,7 +162,7 @@
     OTV_OPTIONAL_TABLE( MarkAttachClassDef );
 
 
-    otvalid->root = ftvalid;
+    valid->root = ftvalid;
 
     FT_TRACE3(( "validating GDEF table\n" ));
     OTV_INIT;
@@ -186,19 +186,19 @@
     else
       table_size = 10;              /* OpenType < 1.2  */
 
-    otvalid->glyph_count = glyph_count;
+    valid->glyph_count = glyph_count;
 
     OTV_OPTIONAL_OFFSET( GlyphClassDef );
     OTV_SIZE_CHECK( GlyphClassDef );
     if ( GlyphClassDef )
-      otv_ClassDef_validate( table + GlyphClassDef, otvalid );
+      otv_ClassDef_validate( table + GlyphClassDef, valid );
 
     OTV_OPTIONAL_OFFSET( AttachListOffset );
     OTV_SIZE_CHECK( AttachListOffset );
     if ( AttachListOffset )
     {
       OTV_NEST2( AttachList, AttachPoint );
-      OTV_RUN( table + AttachListOffset, otvalid );
+      OTV_RUN( table + AttachListOffset, valid );
     }
 
     OTV_OPTIONAL_OFFSET( LigCaretListOffset );
@@ -206,7 +206,7 @@
     if ( LigCaretListOffset )
     {
       OTV_NEST3( LigCaretList, LigGlyph, CaretValue );
-      OTV_RUN( table + LigCaretListOffset, otvalid );
+      OTV_RUN( table + LigCaretListOffset, valid );
     }
 
     if ( need_MarkAttachClassDef )
@@ -214,7 +214,7 @@
       OTV_OPTIONAL_OFFSET( MarkAttachClassDef );
       OTV_SIZE_CHECK( MarkAttachClassDef );
       if ( MarkAttachClassDef )
-        otv_ClassDef_validate( table + MarkAttachClassDef, otvalid );
+        otv_ClassDef_validate( table + MarkAttachClassDef, valid );
     }
 
     FT_TRACE4(( "\n" ));

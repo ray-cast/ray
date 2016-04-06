@@ -4,8 +4,7 @@
 /*                                                                         */
 /*    FreeType API for accessing CID font information (specification).     */
 /*                                                                         */
-/*  Copyright 2007-2015 by                                                 */
-/*  Dereg Clegg and Michael Toftdal.                                       */
+/*  Copyright 2007, 2009 by Dereg Clegg, Michael Toftdal.                  */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
 /*  modified, and distributed under the terms of the FreeType project      */
@@ -157,8 +156,7 @@ FT_BEGIN_HEADER
                                FT_UInt   glyph_index,
                                FT_UInt  *cid );
 
-  /* */
-
+ /* */
 
 FT_END_HEADER
 

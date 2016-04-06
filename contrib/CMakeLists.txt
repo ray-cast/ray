@@ -2,38 +2,28 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 INCLUDE_DIRECTORIES(${LIBRARY_OUTPUT_PATH})
 
-FOREACH(myplugins
-    unzip
-    zlib
-    libjpeg
-    libpng
-    libiconv
-    libvorbis
-    libogg
-    tinyxml
-    freetype
-    HLSLCrossCompiler
-)
-# 添加参与编译的子目录
-ADD_SUBDIRECTORY(${myplugins})
-ENDFOREACH()
+ADD_SUBDIRECTORY(unzip)
+ADD_SUBDIRECTORY(zlib)
+ADD_SUBDIRECTORY(libjpeg)
+ADD_SUBDIRECTORY(libpng)
+ADD_SUBDIRECTORY(libiconv)
+ADD_SUBDIRECTORY(libvorbis)
+ADD_SUBDIRECTORY(libogg)
+ADD_SUBDIRECTORY(tinyxml)
+ADD_SUBDIRECTORY(freetype)
+ADD_SUBDIRECTORY(HLSLCrossCompiler)
 
-FOREACH(myplugins
-    libjpeg
-    libpng
-    libiconv
-    libvorbis
-    libogg
-    unzip
-    zlib
-    zlibstatic
-    tinyxml
-    freetype
-    libHLSLcc
-)
-SET_TARGET_ATTRIBUTE(${myplugins} "contrib")
-
-ENDFOREACH()
+SET_TARGET_ATTRIBUTE(libjpeg "contrib")
+SET_TARGET_ATTRIBUTE(libpng "contrib")
+SET_TARGET_ATTRIBUTE(libiconv "contrib")
+SET_TARGET_ATTRIBUTE(libvorbis "contrib")
+SET_TARGET_ATTRIBUTE(libogg "contrib")
+SET_TARGET_ATTRIBUTE(unzip "contrib")
+SET_TARGET_ATTRIBUTE(zlib "contrib")
+SET_TARGET_ATTRIBUTE(zlibstatic "contrib")
+SET_TARGET_ATTRIBUTE(tinyxml "contrib")
+SET_TARGET_ATTRIBUTE(freetype "contrib")
+SET_TARGET_ATTRIBUTE(libHLSLcc "contrib")
 
 IF(BUILD_PHYSIC)
     ADD_SUBDIRECTORY(bullet)
@@ -74,11 +64,6 @@ ELSE()
         SET_TARGET_ATTRIBUTE(SPIRV "contrib")
         SET_TARGET_ATTRIBUTE(spirv-remap "contrib")
     ENDIF()
-ENDIF()
-
-IF(BUILD_SCRIPT)
-    ADD_SUBDIRECTORY(angelscript)
-    SET_TARGET_ATTRIBUTE(angelscript "contrib")
 ENDIF()
 
 IF(BUILD_GUI AND BUILD_MYGUI)

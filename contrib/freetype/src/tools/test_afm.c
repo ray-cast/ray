@@ -9,7 +9,7 @@
 
   void dump_fontinfo( AFM_FontInfo  fi )
   {
-    FT_UInt  i;
+    FT_Int  i;
 
 
     printf( "This AFM is for %sCID font.\n\n",
@@ -118,7 +118,7 @@
 
 
     if ( argc < 2 )
-      return FT_ERR( Invalid_Argument );
+      return FT_Err_Invalid_Argument;
 
     error = FT_Init_FreeType( &library );
     if ( error )

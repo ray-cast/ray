@@ -5,8 +5,7 @@
 /*    TrueTypeGX/AAT morx table validation                                 */
 /*    body for type5 (Contextual Glyph Insertion) subtable.                */
 /*                                                                         */
-/*  Copyright 2005-2015 by                                                 */
-/*  suzuki toshiya, Masatake YAMATO, Red Hat K.K.,                         */
+/*  Copyright 2005, 2007 by suzuki toshiya, Masatake YAMATO, Red Hat K.K., */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -65,12 +64,12 @@
   static void
   gxv_morx_subtable_type5_insertionGlyphList_load( FT_Bytes       table,
                                                    FT_Bytes       limit,
-                                                   GXV_Validator  gxvalid )
+                                                   GXV_Validator  valid )
   {
     FT_Bytes  p = table;
 
     GXV_morx_subtable_type5_StateOptRecData  optdata =
-      (GXV_morx_subtable_type5_StateOptRecData)gxvalid->xstatetable.optdata;
+      (GXV_morx_subtable_type5_StateOptRecData)valid->xstatetable.optdata;
 
 
     GXV_LIMIT_CHECK( 4 );
@@ -86,14 +85,14 @@
                                           FT_ULong*      classTable_length_p,
                                           FT_ULong*      stateArray_length_p,
                                           FT_ULong*      entryTable_length_p,
-                                          GXV_Validator  gxvalid )
+                                          GXV_Validator  valid )
   {
     FT_ULong   o[4];
     FT_ULong*  l[4];
     FT_ULong   buff[5];
 
     GXV_morx_subtable_type5_StateOptRecData  optdata =
-      (GXV_morx_subtable_type5_StateOptRecData)gxvalid->xstatetable.optdata;
+      (GXV_morx_subtable_type5_StateOptRecData)valid->xstatetable.optdata;
 
 
     o[0] = classTable;
@@ -105,7 +104,7 @@
     l[2] = entryTable_length_p;
     l[3] = &(optdata->insertionGlyphList_length);
 
-    gxv_set_length_by_ulong_offset( o, l, buff, 4, table_size, gxvalid );
+    gxv_set_length_by_ulong_offset( o, l, buff, 4, table_size, valid );
   }
 
 
@@ -114,9 +113,9 @@
                                                FT_UShort      count,
                                                FT_Bytes       table,
                                                FT_Bytes       limit,
-                                               GXV_Validator  gxvalid )
+                                               GXV_Validator  valid )
   {
-    FT_Bytes  p = table + table_index * 2;
+    FT_Bytes p = table + table_index * 2;
 
 
 #ifndef GXV_LOAD_TRACE_VARS
@@ -144,7 +143,7 @@
     GXV_StateTable_GlyphOffsetCPtr  glyphOffset_p,
     FT_Bytes                        table,
     FT_Bytes                        limit,
-    GXV_Validator                   gxvalid )
+    GXV_Validator                   valid )
   {
 #ifdef GXV_LOAD_UNUSED_VARS
     FT_Bool    setMark;
@@ -181,20 +180,20 @@
       gxv_morx_subtable_type5_InsertList_validate( currentInsertList,
                                                    currentInsertCount,
                                                    table, limit,
-                                                   gxvalid );
+                                                   valid );
 
     if ( markedInsertList && 0 != markedInsertCount )
       gxv_morx_subtable_type5_InsertList_validate( markedInsertList,
                                                    markedInsertCount,
                                                    table, limit,
-                                                   gxvalid );
+                                                   valid );
   }
 
 
   FT_LOCAL_DEF( void )
   gxv_morx_subtable_type5_validate( FT_Bytes       table,
                                     FT_Bytes       limit,
-                                    GXV_Validator  gxvalid )
+                                    GXV_Validator  valid )
   {
     FT_Bytes  p = table;
 
@@ -206,18 +205,18 @@
 
     GXV_LIMIT_CHECK( GXV_MORX_SUBTABLE_TYPE5_HEADER_SIZE );
 
-    gxvalid->xstatetable.optdata =
+    valid->xstatetable.optdata =
       et;
-    gxvalid->xstatetable.optdata_load_func =
+    valid->xstatetable.optdata_load_func =
       gxv_morx_subtable_type5_insertionGlyphList_load;
-    gxvalid->xstatetable.subtable_setup_func =
+    valid->xstatetable.subtable_setup_func =
       gxv_morx_subtable_type5_subtable_setup;
-    gxvalid->xstatetable.entry_glyphoffset_fmt =
+    valid->xstatetable.entry_glyphoffset_fmt =
       GXV_GLYPHOFFSET_ULONG;
-    gxvalid->xstatetable.entry_validate_func =
+    valid->xstatetable.entry_validate_func =
       gxv_morx_subtable_type5_entry_validate;
 
-    gxv_XStateTable_validate( p, limit, gxvalid );
+    gxv_XStateTable_validate( p, limit, valid );
 
     GXV_EXIT;
   }

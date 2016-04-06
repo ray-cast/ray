@@ -5,7 +5,7 @@
 /*    Auxiliary functions and data structures related to PostScript fonts  */
 /*    (specification).                                                     */
 /*                                                                         */
-/*  Copyright 1996-2015 by                                                 */
+/*  Copyright 1996-2001, 2002, 2003, 2004, 2006, 2008, 2009 by             */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -71,10 +71,10 @@ FT_BEGIN_HEADER
     (*done)( PS_Table  table );
 
     FT_Error
-    (*add)( PS_Table  table,
-            FT_Int    idx,
-            void*     object,
-            FT_UInt   length );
+    (*add)( PS_Table    table,
+            FT_Int      idx,
+            void*       object,
+            FT_PtrDist  length );
 
     void
     (*release)( PS_Table  table );
@@ -101,9 +101,6 @@ FT_BEGIN_HEADER
   /*    capacity  :: The current size of the heap block.  Increments by    */
   /*                 1kByte chunks.                                        */
   /*                                                                       */
-  /*    init      :: Set to 0xDEADBEEF if `elements' and `lengths' have    */
-  /*                 been allocated.                                       */
-  /*                                                                       */
   /*    max_elems :: The maximum number of elements in table.              */
   /*                                                                       */
   /*    num_elems :: The current number of elements in table.              */
@@ -122,12 +119,12 @@ FT_BEGIN_HEADER
     FT_Byte*           block;          /* current memory block           */
     FT_Offset          cursor;         /* current cursor in memory block */
     FT_Offset          capacity;       /* current size of memory block   */
-    FT_ULong           init;
+    FT_Long            init;
 
     FT_Int             max_elems;
     FT_Int             num_elems;
     FT_Byte**          elements;       /* addresses of table elements */
-    FT_UInt*           lengths;        /* lengths of table elements   */
+    FT_PtrDist*        lengths;        /* lengths of table elements   */
 
     FT_Memory          memory;
     PS_Table_FuncsRec  funcs;
@@ -186,7 +183,6 @@ FT_BEGIN_HEADER
     T1_FIELD_TYPE_STRING,
     T1_FIELD_TYPE_KEY,
     T1_FIELD_TYPE_BBOX,
-    T1_FIELD_TYPE_MM_BBOX,
     T1_FIELD_TYPE_INTEGER_ARRAY,
     T1_FIELD_TYPE_FIXED_ARRAY,
     T1_FIELD_TYPE_CALLBACK,
@@ -229,7 +225,7 @@ FT_BEGIN_HEADER
     T1_Field_ParseFunc  reader;
     FT_UInt             offset;       /* offset of field in object      */
     FT_Byte             size;         /* size of field in bytes         */
-    FT_UInt             array_max;    /* maximum number of elements for */
+    FT_UInt             array_max;    /* maximal number of elements for */
                                       /* array                          */
     FT_UInt             count_offset; /* offset of element count for    */
                                       /* arrays; must not be zero if in */
@@ -365,7 +361,7 @@ FT_BEGIN_HEADER
     (*to_bytes)( PS_Parser  parser,
                  FT_Byte*   bytes,
                  FT_Offset  max_bytes,
-                 FT_ULong*  pnum_bytes,
+                 FT_Long*   pnum_bytes,
                  FT_Bool    delimiters );
 
     FT_Int
@@ -535,7 +531,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    max_points   :: maximum points in builder outline                  */
   /*                                                                       */
-  /*    max_contours :: Maximum number of contours in builder outline.     */
+  /*    max_contours :: Maximal number of contours in builder outline.     */
   /*                                                                       */
   /*    pos_x        :: The horizontal translation (if composite glyph).   */
   /*                                                                       */
@@ -675,9 +671,9 @@ FT_BEGIN_HEADER
     FT_Byte**            glyph_names;
 
     FT_Int               lenIV;        /* internal for sub routine calls */
-    FT_Int               num_subrs;
+    FT_UInt              num_subrs;
     FT_Byte**            subrs;
-    FT_UInt*             subrs_len;    /* array of subrs length (optional) */
+    FT_PtrDist*          subrs_len;    /* array of subrs length (optional) */
 
     FT_Matrix            font_matrix;
     FT_Vector            font_offset;

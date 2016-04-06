@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    OpenType MATH table validation (body).                               */
 /*                                                                         */
-/*  Copyright 2007-2015 by                                                 */
+/*  Copyright 2007, 2008 by                                                */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  Written by George Williams.                                            */
@@ -44,7 +44,7 @@
 
   static void
   otv_MathConstants_validate( FT_Bytes       table,
-                              OTV_Validator  otvalid )
+                              OTV_Validator  valid )
   {
     FT_Bytes  p = table;
     FT_UInt   i;
@@ -66,7 +66,7 @@
       OTV_OPTIONAL_OFFSET( DeviceTableOffset );
       OTV_SIZE_CHECK( DeviceTableOffset );
       if ( DeviceTableOffset )
-        otv_Device_validate( table + DeviceTableOffset, otvalid );
+        otv_Device_validate( table + DeviceTableOffset, valid );
     }
 
     OTV_EXIT;
@@ -84,7 +84,7 @@
 
   static void
   otv_MathItalicsCorrectionInfo_validate( FT_Bytes       table,
-                                          OTV_Validator  otvalid,
+                                          OTV_Validator  valid,
                                           FT_Int         isItalic )
   {
     FT_Bytes  p = table;
@@ -108,7 +108,7 @@
     table_size = 4 + 4 * cnt;
 
     OTV_SIZE_CHECK( Coverage );
-    otv_Coverage_validate( table + Coverage, otvalid, (FT_Int)cnt );
+    otv_Coverage_validate( table + Coverage, valid, cnt );
 
     for ( i = 0; i < cnt; ++i )
     {
@@ -116,7 +116,7 @@
       OTV_OPTIONAL_OFFSET( DeviceTableOffset );
       OTV_SIZE_CHECK( DeviceTableOffset );
       if ( DeviceTableOffset )
-        otv_Device_validate( table + DeviceTableOffset, otvalid );
+        otv_Device_validate( table + DeviceTableOffset, valid );
     }
 
     OTV_EXIT;
@@ -133,7 +133,7 @@
 
   static void
   otv_MathKern_validate( FT_Bytes       table,
-                         OTV_Validator  otvalid )
+                         OTV_Validator  valid )
   {
     FT_Bytes  p = table;
     FT_UInt   i, cnt, table_size;
@@ -157,7 +157,7 @@
       OTV_OPTIONAL_OFFSET( DeviceTableOffset );
       OTV_SIZE_CHECK( DeviceTableOffset );
       if ( DeviceTableOffset )
-        otv_Device_validate( table + DeviceTableOffset, otvalid );
+        otv_Device_validate( table + DeviceTableOffset, valid );
     }
 
     /* One more Kerning value */
@@ -167,7 +167,7 @@
       OTV_OPTIONAL_OFFSET( DeviceTableOffset );
       OTV_SIZE_CHECK( DeviceTableOffset );
       if ( DeviceTableOffset )
-        otv_Device_validate( table + DeviceTableOffset, otvalid );
+        otv_Device_validate( table + DeviceTableOffset, valid );
     }
 
     OTV_EXIT;
@@ -176,7 +176,7 @@
 
   static void
   otv_MathKernInfo_validate( FT_Bytes       table,
-                             OTV_Validator  otvalid )
+                             OTV_Validator  valid )
   {
     FT_Bytes  p = table;
     FT_UInt   i, j, cnt, table_size;
@@ -196,7 +196,7 @@
     table_size = 4 + 8 * cnt;
 
     OTV_SIZE_CHECK( Coverage );
-    otv_Coverage_validate( table + Coverage, otvalid, (FT_Int)cnt );
+    otv_Coverage_validate( table + Coverage, valid, cnt );
 
     for ( i = 0; i < cnt; ++i )
     {
@@ -205,7 +205,7 @@
         OTV_OPTIONAL_OFFSET( MKRecordOffset );
         OTV_SIZE_CHECK( MKRecordOffset );
         if ( MKRecordOffset )
-          otv_MathKern_validate( table + MKRecordOffset, otvalid );
+          otv_MathKern_validate( table + MKRecordOffset, valid );
       }
     }
 
@@ -223,7 +223,7 @@
 
   static void
   otv_MathGlyphInfo_validate( FT_Bytes       table,
-                              OTV_Validator  otvalid )
+                              OTV_Validator  valid )
   {
     FT_Bytes  p = table;
     FT_UInt   MathItalicsCorrectionInfo, MathTopAccentAttachment;
@@ -241,22 +241,22 @@
 
     if ( MathItalicsCorrectionInfo )
       otv_MathItalicsCorrectionInfo_validate(
-        table + MathItalicsCorrectionInfo, otvalid, TRUE );
+        table + MathItalicsCorrectionInfo, valid, TRUE );
 
     /* Italic correction and Top Accent Attachment have the same format */
     if ( MathTopAccentAttachment )
       otv_MathItalicsCorrectionInfo_validate(
-        table + MathTopAccentAttachment, otvalid, FALSE );
+        table + MathTopAccentAttachment, valid, FALSE );
 
     if ( ExtendedShapeCoverage )
     {
       OTV_NAME_ENTER( "ExtendedShapeCoverage" );
-      otv_Coverage_validate( table + ExtendedShapeCoverage, otvalid, -1 );
+      otv_Coverage_validate( table + ExtendedShapeCoverage, valid, -1 );
       OTV_EXIT;
     }
 
     if ( MathKernInfo )
-      otv_MathKernInfo_validate( table + MathKernInfo, otvalid );
+      otv_MathKernInfo_validate( table + MathKernInfo, valid );
 
     OTV_EXIT;
   }
@@ -272,7 +272,7 @@
 
   static void
   otv_GlyphAssembly_validate( FT_Bytes       table,
-                              OTV_Validator  otvalid )
+                              OTV_Validator  valid )
   {
     FT_Bytes  p = table;
     FT_UInt   pcnt, table_size;
@@ -294,7 +294,7 @@
 
     OTV_SIZE_CHECK( DeviceTableOffset );
     if ( DeviceTableOffset )
-      otv_Device_validate( table + DeviceTableOffset, otvalid );
+      otv_Device_validate( table + DeviceTableOffset, valid );
 
     for ( i = 0; i < pcnt; ++i )
     {
@@ -302,7 +302,7 @@
 
 
       gid = FT_NEXT_USHORT( p );
-      if ( gid >= otvalid->glyph_count )
+      if ( gid >= valid->glyph_count )
         FT_INVALID_GLYPH_ID;
       p += 2*4;             /* skip the Start, End, Full, and Flags fields */
     }
@@ -313,7 +313,7 @@
 
   static void
   otv_MathGlyphConstruction_validate( FT_Bytes       table,
-                                      OTV_Validator  otvalid )
+                                      OTV_Validator  valid )
   {
     FT_Bytes  p = table;
     FT_UInt   vcnt, table_size;
@@ -338,14 +338,14 @@
 
 
       gid = FT_NEXT_USHORT( p );
-      if ( gid >= otvalid->glyph_count )
+      if ( gid >= valid->glyph_count )
         FT_INVALID_GLYPH_ID;
       p += 2;                          /* skip the size */
     }
 
     OTV_SIZE_CHECK( GlyphAssembly );
     if ( GlyphAssembly )
-      otv_GlyphAssembly_validate( table+GlyphAssembly, otvalid );
+      otv_GlyphAssembly_validate( table+GlyphAssembly, valid );
 
     /* OTV_EXIT; */
   }
@@ -353,7 +353,7 @@
 
   static void
   otv_MathVariants_validate( FT_Bytes       table,
-                             OTV_Validator  otvalid )
+                             OTV_Validator  valid )
   {
     FT_Bytes  p = table;
     FT_UInt   vcnt, hcnt, i, table_size;
@@ -378,24 +378,24 @@
 
     OTV_SIZE_CHECK( VCoverage );
     if ( VCoverage )
-      otv_Coverage_validate( table + VCoverage, otvalid, (FT_Int)vcnt );
+      otv_Coverage_validate( table + VCoverage, valid, vcnt );
 
     OTV_SIZE_CHECK( HCoverage );
     if ( HCoverage )
-      otv_Coverage_validate( table + HCoverage, otvalid, (FT_Int)hcnt );
+      otv_Coverage_validate( table + HCoverage, valid, hcnt );
 
     for ( i = 0; i < vcnt; ++i )
     {
       OTV_OPTIONAL_OFFSET( Offset );
       OTV_SIZE_CHECK( Offset );
-      otv_MathGlyphConstruction_validate( table + Offset, otvalid );
+      otv_MathGlyphConstruction_validate( table + Offset, valid );
     }
 
     for ( i = 0; i < hcnt; ++i )
     {
       OTV_OPTIONAL_OFFSET( Offset );
       OTV_SIZE_CHECK( Offset );
-      otv_MathGlyphConstruction_validate( table + Offset, otvalid );
+      otv_MathGlyphConstruction_validate( table + Offset, valid );
     }
 
     OTV_EXIT;
@@ -410,20 +410,20 @@
   /*************************************************************************/
   /*************************************************************************/
 
-  /* sets otvalid->glyph_count */
+  /* sets valid->glyph_count */
 
   FT_LOCAL_DEF( void )
   otv_MATH_validate( FT_Bytes      table,
                      FT_UInt       glyph_count,
                      FT_Validator  ftvalid )
   {
-    OTV_ValidatorRec  otvalidrec;
-    OTV_Validator     otvalid = &otvalidrec;
-    FT_Bytes          p       = table;
+    OTV_ValidatorRec  validrec;
+    OTV_Validator     valid = &validrec;
+    FT_Bytes          p     = table;
     FT_UInt           MathConstants, MathGlyphInfo, MathVariants;
 
 
-    otvalid->root = ftvalid;
+    valid->root = ftvalid;
 
     FT_TRACE3(( "validating MATH table\n" ));
     OTV_INIT;
@@ -437,14 +437,14 @@
     MathGlyphInfo = FT_NEXT_USHORT( p );
     MathVariants  = FT_NEXT_USHORT( p );
 
-    otvalid->glyph_count = glyph_count;
+    valid->glyph_count = glyph_count;
 
     otv_MathConstants_validate( table + MathConstants,
-                                otvalid );
+                                valid );
     otv_MathGlyphInfo_validate( table + MathGlyphInfo,
-                                otvalid );
+                                valid );
     otv_MathVariants_validate ( table + MathVariants,
-                                otvalid );
+                                valid );
 
     FT_TRACE4(( "\n" ));
   }

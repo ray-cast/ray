@@ -51,14 +51,13 @@ public:
 	bool setup(const GraphicsTextureDesc& textureDesc) noexcept;
 	void close() noexcept;
 
-	bool isMultiSample() const noexcept;
-
 	GLenum getTarget() const noexcept;
 	GLuint getInstanceID() noexcept;
 
 	const GraphicsTextureDesc& getGraphicsTextureDesc() const noexcept;
 
 private:
+	bool applyMipmapLimit(std::uint32_t min, std::uint32_t count) noexcept;
 	bool applySamplerWrap(GraphicsSamplerWrap wrap) noexcept;
 	bool applySamplerFilter(GraphicsSamplerFilter filter) noexcept;
 	bool applySamplerAnis(GraphicsSamplerAnis anis) noexcept;

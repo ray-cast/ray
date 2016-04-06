@@ -96,7 +96,7 @@ MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::Pix
 	_numElemBytes = 0;
 	if (_format == MyGUI::PixelFormat::R8G8B8)
 	{
-		pixelFormat = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
+		pixelFormat = GraphicsFormat::GraphicsFormatR8G8B8UInt;
 		_numElemBytes = 3;
 	}
 	else if (_format == MyGUI::PixelFormat::R8G8B8A8)

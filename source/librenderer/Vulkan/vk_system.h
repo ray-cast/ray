@@ -51,7 +51,7 @@ public:
 	bool open() noexcept;
 	void close() noexcept;
 
-	void print(const std::string& message) noexcept;
+	void print(const char* message, ...) noexcept;
 
 	bool startDebugControl() noexcept;
 	void stopDebugControl() noexcept;

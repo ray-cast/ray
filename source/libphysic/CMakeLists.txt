@@ -1,6 +1,8 @@
 SET(HEADER_PATH ${PROJECT_SOURCE_DIR}/include/ray)
 SET(SOURCE_PATH ${PROJECT_SOURCE_DIR}/source/libphysic)
 
+INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/bullet/src)
+
 SET(PHYSICS_SYSTEM_LIST
     ${SOURCE_PATH}/physics_scene.cpp
     ${HEADER_PATH}/physics_scene.h
@@ -42,4 +44,5 @@ ENDIF()
 IF(MINGW OR UNIX)
     SET_TARGET_PROPERTIES(libphysic PROPERTIES OUTPUT_NAME physic)
 ENDIF()
+
 SET_TARGET_ATTRIBUTE(libphysic "core")

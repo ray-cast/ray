@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include "vk_semaphore.h"
 #include "vk_device.h"
+#include "vk_system.h"
 
 _NAME_BEGIN
 
@@ -59,7 +60,7 @@ VulkanSemaphore::setup(const GraphicsSemaphoreDesc& semaphoreDesc) noexcept
 	semaphoreCreateInfo.pNext = nullptr;
 	semaphoreCreateInfo.flags = 0;
 
-	if (vkCreateSemaphore(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &semaphoreCreateInfo, 0, &_vkSemaphore) > 0)
+	if (vkCreateSemaphore(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &semaphoreCreateInfo, 0, &_vkSemaphore) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkCreateSemaphore() fail.");
 		return false;

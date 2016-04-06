@@ -60,10 +60,13 @@ public:
 	const MaterialParams& getParameters() const noexcept;
 	MaterialParamPtr getParameter(const std::string& name) const noexcept;
 
-	void setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept;
-	GraphicsPipelinePtr getRenderPipeline() const noexcept;
+	void setGraphicsProgram(GraphicsProgramPtr program) noexcept;
+	GraphicsProgramPtr getGraphicsProgram() const noexcept;
 
-	void setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept;
+	void setGraphicsState(GraphicsStatePtr program) noexcept;
+	GraphicsStatePtr getGraphicsState() const noexcept;
+
+	GraphicsPipelinePtr getRenderPipeline() const noexcept;
 	GraphicsDescriptorSetPtr getDescriptorSet() const noexcept;
 
 private:
@@ -72,9 +75,12 @@ private:
 	RenderPass _pass;
 	MaterialParams _parameters;
 
-	GraphicsPipelinePtr _pipeline;
+	GraphicsStatePtr _state;
+	GraphicsProgramPtr _program;
 	GraphicsDescriptorSetPtr _descriptorSet;
+	GraphicsDescriptorPoolPtr _descriptorPool;
 	GraphicsDescriptorSetLayoutPtr _descriptorSetLayout;
+	GraphicsPipelinePtr _pipeline;
 };
 
 _NAME_END

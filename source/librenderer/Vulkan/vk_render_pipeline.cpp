@@ -40,6 +40,7 @@
 #include "vk_input_layout.h"
 #include "vk_framebuffer.h"
 #include "vk_descriptor_set_layout.h"
+#include "vk_system.h"
 
 _NAME_BEGIN
 

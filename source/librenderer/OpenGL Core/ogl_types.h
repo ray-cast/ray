@@ -140,42 +140,6 @@ typedef std::weak_ptr<class OGLGraphicsUniformBlock> OGLGraphicsUniformBlockWeak
 
 typedef std::vector<OGLShaderPtr> OGLShaders;
 
-struct GPUfbconfig
-{
-	int redSize;
-	int greenSize;
-	int blueSize;
-	int alphaSize;
-
-	int bufferSize;
-	int depthSize;
-	int stencilSize;
-
-	int accumSize;
-	int accumRedSize;
-	int accumGreenSize;
-	int accumBlueSize;
-	int accumAlphaSize;
-
-	int samples;
-};
-
-struct GPUctxconfig
-{
-	int api;
-	int major;
-	int minor;
-	int forward;
-	int profile;
-	int robustness;
-	int release;
-	int multithread;
-
-#if _BUILD_PLATFORM_WINDOWS
-	HGLRC share;
-#endif
-};
-
 class OGLTypes
 {
 public:

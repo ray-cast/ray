@@ -44,7 +44,7 @@ GraphicsSamplerDesc::GraphicsSamplerDesc() noexcept
 	: _filter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest)
 	, _wrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat)
 	, _texop(GraphicsSamplerOp::GraphicsSamplerOpAdd)
-	, _anis(GraphicsSamplerAnis::GraphicsSamplerAnis0)
+	, _anis(GraphicsSamplerAnis::GraphicsSamplerAnis1)
 {
 }
 

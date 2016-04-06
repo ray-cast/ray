@@ -37,6 +37,7 @@
 #include "vk_framebuffer.h"
 #include "vk_texture.h"
 #include "vk_device.h"
+#include "vk_system.h"
 
 _NAME_BEGIN
 

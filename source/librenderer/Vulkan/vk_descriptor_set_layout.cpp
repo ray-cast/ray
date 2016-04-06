@@ -37,6 +37,7 @@
 #include "vk_descriptor_set_layout.h"
 #include "vk_device.h"
 #include "vk_shader.h"
+#include "vk_system.h"
 
 _NAME_BEGIN
 
@@ -60,14 +61,38 @@ VulkanDescriptorSetLayout::setup(const GraphicsDescriptorSetLayoutDesc& descript
 	const auto& uniforms = descriptorSetLayoutDesc.getUniformComponents();
 	for (const auto& it : uniforms)
 	{
-		VkDescriptorSetLayoutBinding layout;
-		layout.descriptorType = VulkanTypes::asDescriptorType(it->getType());
-		layout.descriptorCount = 1;
-		layout.pImmutableSamplers = nullptr;
-		layout.binding = it->downcast<VulkanGraphicsUniform>()->getBindingPoint();
-		layout.stageFlags = VkShaderStageFlagBits::VK_SHADER_STAGE_ALL;
+		auto type = it->getType();
+		if (type == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
+			type == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
+			type == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
+		{
+			VkDescriptorSetLayoutBinding layout;
+			layout.descriptorType = VulkanTypes::asDescriptorType(it->getType());
+			layout.descriptorCount = 1;
+			layout.pImmutableSamplers = nullptr;
+			layout.binding = it->downcast<VulkanGraphicsUniform>()->getBindingPoint();
+			layout.stageFlags = VkShaderStageFlagBits::VK_SHADER_STAGE_ALL;
 
-		layouts.push_back(layout);
+			layouts.push_back(layout);
+		}
+	}
+
+	const auto& uniformBlocks = descriptorSetLayoutDesc.getUniformBlockComponents();
+	for (const auto& it : uniformBlocks)
+	{
+		auto type = it->getType();
+		if (type == GraphicsUniformType::GraphicsUniformTypeUniformBuffer ||
+			type == GraphicsUniformType::GraphicsUniformTypeUniformBufferDynamic)
+		{
+			VkDescriptorSetLayoutBinding layout;
+			layout.descriptorType = VulkanTypes::asDescriptorType(it->getType());
+			layout.descriptorCount = 1;
+			layout.pImmutableSamplers = nullptr;
+			layout.binding = it->downcast<VulkanGraphicsUniformBlock>()->getBindingPoint();
+			layout.stageFlags = VkShaderStageFlagBits::VK_SHADER_STAGE_ALL;
+
+			layouts.push_back(layout);
+		}
 	}
 
 	VkDescriptorSetLayoutCreateInfo info;

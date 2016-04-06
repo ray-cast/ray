@@ -202,6 +202,16 @@ OGLDevice::createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc
 	return nullptr;
 }
 
+GraphicsDescriptorPoolPtr
+OGLDevice::createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept
+{
+	auto descriptorPool = std::make_shared<OGLDescriptorPool>();
+	descriptorPool->setDevice(this->downcast<OGLDevice>());
+	if (descriptorPool->setup(desc))
+		return descriptorPool;
+	return nullptr;
+}
+
 GraphicsFormat 
 OGLDevice::findCompatibleFormat(GraphicsPixelFormatDesc& desc) noexcept
 {

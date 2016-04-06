@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include "vk_texture.h"
 #include "vk_device.h"
+#include "vk_system.h"
 
 _NAME_BEGIN
 
@@ -79,7 +80,7 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		image.extent.height = textureDesc.getHeight();
 		image.extent.depth = textureDesc.getDepth();
 		image.mipLevels = textureDesc.getMipLevel();
-		image.arrayLayers = textureDesc.getArrayLayer();
+		image.arrayLayers = textureDesc.getLayerNums();
 		image.samples = VulkanTypes::asTextureSample(textureDesc.getSamplerAnis());
 		image.tiling = VK_IMAGE_TILING_OPTIMAL;
 		image.usage = VulkanTypes::asTextureUsage(textureDesc.getTexUsage());
@@ -142,10 +143,10 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	view.components.b = flags == VK_IMAGE_ASPECT_COLOR_BIT ? VK_COMPONENT_SWIZZLE_B : VK_COMPONENT_SWIZZLE_IDENTITY;
 	view.components.a = flags == VK_IMAGE_ASPECT_COLOR_BIT ? VK_COMPONENT_SWIZZLE_A : VK_COMPONENT_SWIZZLE_IDENTITY;
 	view.subresourceRange.aspectMask = flags;
-	view.subresourceRange.baseMipLevel = 0;
+	view.subresourceRange.baseMipLevel = textureDesc.getMipBase();
 	view.subresourceRange.levelCount = textureDesc.getMipLevel();
-	view.subresourceRange.baseArrayLayer = 0;
-	view.subresourceRange.layerCount = textureDesc.getArrayLayer();
+	view.subresourceRange.baseArrayLayer = textureDesc.getLayerBase();
+	view.subresourceRange.layerCount = textureDesc.getLayerNums();
 	view.flags = 0;
 	view.viewType = viewType;
 

@@ -133,40 +133,6 @@ _NAME_BEGIN
 #	define GL_PLATFORM_ASSERT(expr, format)
 #endif
 
-struct GPUfbconfig
-{
-	int redSize;
-	int greenSize;
-	int blueSize;
-	int alphaSize;
-
-	int bufferSize;
-	int depthSize;
-	int stencilSize;
-
-	int accumSize;
-	int accumRedSize;
-	int accumGreenSize;
-	int accumBlueSize;
-	int accumAlphaSize;
-
-	int samples;
-};
-
-struct GPUctxconfig
-{
-	int api;
-	int major;
-	int minor;
-	int forward;
-	int profile;
-	int robustness;
-	int release;
-	int multithread;
-
-	EGLContext share;
-};
-
 typedef std::shared_ptr<class EGL3Device> EGL3DevicePtr;
 typedef std::shared_ptr<class EGL3Surface> EGL3SurfacePtr;
 typedef std::shared_ptr<class EGL3Swapchain> EGL3SwapchainPtr;

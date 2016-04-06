@@ -39,6 +39,8 @@
 #include "vk_descriptor_pool.h"
 #include "vk_device.h"
 #include "vk_shader.h"
+#include "vk_graphics_data.h"
+#include "vk_system.h"
 
 _NAME_BEGIN
 
@@ -456,9 +458,9 @@ VulkanDescriptorSet::~VulkanDescriptorSet() noexcept
 bool
 VulkanDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) noexcept
 {
-	assert(_vkDescriptorSet == VK_NULL_HANDLE);
 	assert(descriptorSetDesc.getGraphicsDescriptorPool());
 	assert(descriptorSetDesc.getGraphicsDescriptorSetLayout());
+	assert(_vkDescriptorSet == VK_NULL_HANDLE);
 
 	auto descriptorPool = descriptorSetDesc.getGraphicsDescriptorPool();
 	auto descriptorSetLayout = descriptorSetDesc.getGraphicsDescriptorSetLayout();
@@ -480,14 +482,35 @@ VulkanDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) n
 	}
 
 	auto& descriptorSetLayoutDesc = descriptorSetDesc.getGraphicsDescriptorSetLayout()->getGraphicsDescriptorSetLayoutDesc();
-	auto& components = descriptorSetLayoutDesc.getUniformComponents();
-	for (auto& component : components)
+	auto& uniformBlockLayouts = descriptorSetLayoutDesc.getUniformBlockComponents();
+	for (auto& uniformBlockLayout : uniformBlockLayouts)
 	{
-		auto uniformSet = std::make_shared<VulkanGraphicsUniformSet>();
-		uniformSet->setGraphicsUniform(component);
-		uniformSet->setType(component->getType());
+		auto& name = uniformBlockLayout->getName();
+		if (name != "Globals")
+			continue;
 
-		_activeUniformSets.push_back(uniformSet);
+		GraphicsDataDesc uniformBufferDesc;
+		uniformBufferDesc.setType(GraphicsDataType::GraphicsDataTypeUniformBuffer);
+		uniformBufferDesc.setStreamSize(uniformBlockLayout->getBlockSize());
+		uniformBufferDesc.setUsage(GraphicsUsageFlags::GraphicsUsageFlagsReadBit | GraphicsUsageFlags::GraphicsUsageFlagsWriteBit | GraphicsUsageFlags::GraphicsUsageFlagsImmutableStorage);
+		auto ubo = this->getDevice()->createGraphicsData(uniformBufferDesc);
+		if (!ubo)
+		{
+			VK_PLATFORM_LOG("Can't create uniform buffer for %s", name);
+			return false;
+		}
+
+		_globalBuffers.push_back(std::make_pair(uniformBlockLayout, ubo));
+
+		auto& uniforms = uniformBlockLayout->getGraphicsUniforms();
+		for (auto& uniform : uniforms)
+		{
+			auto uniformSet = std::make_shared<VulkanGraphicsUniformSet>();
+			uniformSet->setType(uniformBlockLayout->getType());
+			uniformSet->setGraphicsUniform(uniform);
+
+			_activeUniformSets.push_back(uniformSet);
+		}
 	}
 
 	_descriptorSetDesc = descriptorSetDesc;
@@ -512,18 +535,25 @@ VulkanDescriptorSet::close() noexcept
 void 
 VulkanDescriptorSet::update() noexcept
 {
-	const auto& uniforms = _descriptorSetDesc.getGraphicsDescriptorSetLayout()->getGraphicsDescriptorSetLayoutDesc().getUniformComponents();
-	for (const auto& it : uniforms)
+	for (const auto& it : _globalBuffers)
 	{
+		auto uniformBlock = it.first->downcast<VulkanGraphicsUniform>();
+		auto data = it.second->downcast<VulkanGraphicsData>();
+
+		VkDescriptorBufferInfo bufferInfo;
+		bufferInfo.buffer = data->getBuffer();
+		bufferInfo.offset = 0;
+		bufferInfo.range = data->getGraphicsDataDesc().getStreamSize();
+
 		VkWriteDescriptorSet write;
 		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		write.pNext = nullptr;
-		write.descriptorType = VulkanTypes::asDescriptorType(it->getType());
+		write.descriptorType = VulkanTypes::asDescriptorType(uniformBlock->getType());
 		write.descriptorCount = 1;
 		write.dstSet = _vkDescriptorSet;
 		write.dstArrayElement = 0;
-		write.dstBinding = it->downcast<VulkanGraphicsUniform>()->getBindingPoint();
-		write.pBufferInfo = nullptr;
+		write.dstBinding = uniformBlock->getBindingPoint();
+		write.pBufferInfo = &bufferInfo;
 		write.pImageInfo = nullptr;
 		write.pTexelBufferView = nullptr;
 
@@ -531,6 +561,8 @@ VulkanDescriptorSet::update() noexcept
 	}
 
 	vkUpdateDescriptorSets(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _writes.size(), _writes.data(), 0, nullptr);
+
+	_writes.clear();
 }
 
 VkDescriptorSet

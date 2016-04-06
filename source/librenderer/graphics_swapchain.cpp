@@ -40,7 +40,7 @@ _NAME_BEGIN
 
 GraphicsSwapchainDesc::GraphicsSwapchainDesc() noexcept
 	: _format(GraphicsFormat::GraphicsFormatB8G8R8A8UNorm)
-	, _depthFormat(GraphicsFormat::GraphicsFormatD16UNorm)
+	, _depthStencilFormat(GraphicsFormat::GraphicsFormatD16UNorm)
 	, _interval(GraphicsSwapInterval::GraphicsSwapIntervalVsync)
 	, _imageNums(2)
 	, _window(0)
@@ -114,21 +114,21 @@ GraphicsSwapchainDesc::getColorFormat() const noexcept
 }
 
 void
-GraphicsSwapchainDesc::setDepthFormat(GraphicsFormat format) noexcept
+GraphicsSwapchainDesc::setDepthStencilFormat(GraphicsFormat format) noexcept
 {
 	assert( format == GraphicsFormat::GraphicsFormatD16UNorm || 
 			format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 || 
 			format == GraphicsFormat::GraphicsFormatD32_SFLOAT ||
 			format == GraphicsFormat::GraphicsFormatD16UNorm_S8UInt ||
-			format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 ||
+			format == GraphicsFormat::GraphicsFormatD24UNorm_S8UInt ||
 			format == GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt);
-	_depthFormat = format;
+	_depthStencilFormat = format;
 }
 
 GraphicsFormat
-GraphicsSwapchainDesc::getDepthFormat() const noexcept
+GraphicsSwapchainDesc::getDepthStencilFormat() const noexcept
 {
-	return _depthFormat;
+	return _depthStencilFormat;
 }
 
 void

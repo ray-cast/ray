@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include "vk_memory.h"
 #include "vk_device.h"
+#include "vk_system.h"
 
 _NAME_BEGIN
 

@@ -39,6 +39,7 @@
 #include "vk_swapchain.h"
 #include "vk_device.h"
 #include "vk_semaphore.h"
+#include "vk_system.h"
 
 _NAME_BEGIN
 

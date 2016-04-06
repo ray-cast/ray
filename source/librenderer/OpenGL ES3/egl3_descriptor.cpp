@@ -44,6 +44,7 @@ _NAME_BEGIN
 __ImplementSubClass(EGL3GraphicsUniformSet, GraphicsUniformSet, "EGL3GraphicsUniformSet")
 __ImplementSubClass(EGL3DescriptorSet, GraphicsDescriptorSet, "EGL3DescriptorSet")
 __ImplementSubClass(EGL3DescriptorSetLayout, GraphicsDescriptorSetLayout, "EGL3DescriptorSetLayout")
+__ImplementSubClass(EGL3DescriptorPool, GraphicsDescriptorPool, "EGL3DescriptorPool")
 
 EGL3GraphicsUniformSet::EGL3GraphicsUniformSet() noexcept
 {
@@ -441,6 +442,44 @@ GraphicsUniformPtr
 EGL3GraphicsUniformSet::getGraphicsUniform() const noexcept
 {
 	return _uniform;
+}
+
+EGL3DescriptorPool::EGL3DescriptorPool() noexcept
+{
+}
+
+EGL3DescriptorPool::~EGL3DescriptorPool() noexcept
+{
+	this->close();
+}
+
+bool
+EGL3DescriptorPool::setup(const GraphicsDescriptorPoolDesc& desc) noexcept
+{
+	return true;
+}
+
+void
+EGL3DescriptorPool::close() noexcept
+{
+}
+
+const GraphicsDescriptorPoolDesc&
+EGL3DescriptorPool::getGraphicsDescriptorPoolDesc() const noexcept
+{
+	return _descriptorPoolDesc;
+}
+
+void
+EGL3DescriptorPool::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL3DescriptorPool::getDevice() noexcept
+{
+	return _device.lock();
 }
 
 EGL3DescriptorSetLayout::EGL3DescriptorSetLayout() noexcept

@@ -44,6 +44,7 @@ _NAME_BEGIN
 __ImplementSubClass(OGLGraphicsUniformSet, GraphicsUniformSet, "OGLGraphicsUniformSet")
 __ImplementSubClass(OGLDescriptorSet, GraphicsDescriptorSet, "OGLDescriptorSet")
 __ImplementSubClass(OGLDescriptorSetLayout, GraphicsDescriptorSetLayout, "OGLDescriptorSetLayout")
+__ImplementSubClass(OGLDescriptorPool, GraphicsDescriptorPool, "OGLDescriptorPool")
 
 OGLGraphicsUniformSet::OGLGraphicsUniformSet() noexcept
 {
@@ -443,6 +444,44 @@ OGLGraphicsUniformSet::getGraphicsUniform() const noexcept
 	return _uniform;
 }
 
+OGLDescriptorPool::OGLDescriptorPool() noexcept
+{
+}
+
+OGLDescriptorPool::~OGLDescriptorPool() noexcept
+{
+	this->close();
+}
+
+bool 
+OGLDescriptorPool::setup(const GraphicsDescriptorPoolDesc& desc) noexcept
+{
+	return true;
+}
+
+void 
+OGLDescriptorPool::close() noexcept
+{
+}
+
+const GraphicsDescriptorPoolDesc&
+OGLDescriptorPool::getGraphicsDescriptorPoolDesc() const noexcept
+{
+	return _descriptorPoolDesc;
+}
+
+void
+OGLDescriptorPool::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+OGLDescriptorPool::getDevice() noexcept
+{
+	return _device.lock();
+}
+
 OGLDescriptorSetLayout::OGLDescriptorSetLayout() noexcept
 {
 }
@@ -453,9 +492,9 @@ OGLDescriptorSetLayout::~OGLDescriptorSetLayout() noexcept
 }
 
 bool
-OGLDescriptorSetLayout::setup(const GraphicsDescriptorSetLayoutDesc& descriptorSetDesc) noexcept
+OGLDescriptorSetLayout::setup(const GraphicsDescriptorSetLayoutDesc& descriptorSetLayoutDesc) noexcept
 {
-	_descriptorSetDesc = descriptorSetDesc;
+	_descripotrSetLayoutDesc = descriptorSetLayoutDesc;
 	return true;
 }
 
@@ -467,7 +506,7 @@ OGLDescriptorSetLayout::close() noexcept
 const GraphicsDescriptorSetLayoutDesc&
 OGLDescriptorSetLayout::getGraphicsDescriptorSetLayoutDesc() const noexcept
 {
-	return _descriptorSetDesc;
+	return _descripotrSetLayoutDesc;
 }
 
 void

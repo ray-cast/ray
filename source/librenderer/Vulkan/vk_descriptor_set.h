@@ -152,6 +152,7 @@ private:
 	VkDescriptorSet _vkDescriptorSet;
 
 	std::vector<VkWriteDescriptorSet> _writes;
+	std::vector<std::pair<GraphicsUniformBlockPtr, GraphicsDataPtr>> _globalBuffers;
 
 	GraphicsUniformSets _activeUniformSets;
 	GraphicsDescriptorSetDesc _descriptorSetDesc;

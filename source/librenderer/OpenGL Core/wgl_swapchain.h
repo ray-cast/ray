@@ -62,13 +62,15 @@ public:
 	const GraphicsSwapchainDesc& getGraphicsSwapchainDesc() const noexcept;
 
 private:
+	bool initSurface(const GraphicsSwapchainDesc& swapchainDesc);
+	bool initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
+	bool initWGLExtensions() noexcept;
+	bool initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
+
+private:
 	friend class OGLDevice;
 	void setDevice(GraphicsDevicePtr device) noexcept;
 	GraphicsDevicePtr getDevice() noexcept;
-
-private:
-	static bool initWGLExtensions(HDC hdc) except;
-	static void initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept;
 
 private:
 	WGLSwapchain(const WGLSwapchain&) noexcept = delete;
@@ -80,9 +82,6 @@ private:
 
 	HDC _hdc;
 	HGLRC _context;
-
-	GPUfbconfig _fbconfig;
-	GPUctxconfig _ctxconfig;
 
 	GraphicsSwapchainDesc _swapchainDesc;
 	GraphicsDeviceWeakPtr _device;

@@ -45,13 +45,14 @@ class EXPORT GraphicsDataDesc final
 {
 public:
 	GraphicsDataDesc() noexcept;
+	GraphicsDataDesc(GraphicsDataType type, std::uint32_t usage, const void* data, std::uint32_t size, std::uint32_t stride) noexcept;
 	~GraphicsDataDesc() noexcept;
 	
-	void setUsage(std::uint32_t usage) noexcept;
-	std::uint32_t getUsage() const noexcept;
-
 	void setType(GraphicsDataType type) noexcept;
 	GraphicsDataType getType() const noexcept;
+
+	void setUsage(std::uint32_t usage) noexcept;
+	std::uint32_t getUsage() const noexcept;
 
 	void setStride(std::uint32_t stride) noexcept;
 	std::uint32_t getStride() const noexcept;

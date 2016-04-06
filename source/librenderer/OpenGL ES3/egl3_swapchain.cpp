@@ -47,7 +47,6 @@ EGL3Swapchain::EGL3Swapchain() noexcept
     , _config(0)
 	, _isActive(false)
 {
-	initPixelFormat(_fbconfig, _ctxconfig);
 }
 
 EGL3Swapchain::~EGL3Swapchain() noexcept
@@ -58,113 +57,14 @@ EGL3Swapchain::~EGL3Swapchain() noexcept
 bool
 EGL3Swapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 {
-	EGLint attribs[80];
-	EGLint index = 0, mask = 0, startegy = 0;
-
-#if !defined(_BUILD_PLATFORM_ANDROID)
-	if (_ctxconfig.forward)
-	{
-		attribs[index++] = EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE;
-		attribs[index++] = EGL_TRUE;
-	}
-
-	if (_ctxconfig.robustness)
-	{
-		if (_ctxconfig.robustness == GL_REST_NOTIFICATION)
-			startegy = EGL_NO_RESET_NOTIFICATION;
-		else if (_ctxconfig.robustness == GL_LOSE_CONTEXT_ONREST)
-			startegy = EGL_LOSE_CONTEXT_ON_RESET;
-
-		if (startegy)
-		{
-			attribs[index++] = EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY;
-			attribs[index++] = startegy;
-
-			attribs[index++] = EGL_CONTEXT_OPENGL_ROBUST_ACCESS;
-			attribs[index++] = EGL_TRUE;
-		}
-	}
-
-	if (mask)
-	{
-		attribs[index++] = EGL_CONTEXT_OPENGL_PROFILE_MASK;
-		attribs[index++] = mask;
-	}
-
-	if (_ctxconfig.major > 0 && _ctxconfig.major < 4)
-	{
-		attribs[index++] = EGL_CONTEXT_MAJOR_VERSION;
-		attribs[index++] = _ctxconfig.major;
-
-		attribs[index++] = EGL_CONTEXT_MINOR_VERSION;
-		attribs[index++] = _ctxconfig.minor;
-	}
-#endif
-
-	attribs[index++] = EGL_CONTEXT_CLIENT_VERSION;
-	attribs[index++] = _ctxconfig.major;
-
-    attribs[index++] = EGL_NONE;
-    attribs[index++] = EGL_NONE;
-
-	const EGLint pixelformat[] =
-	{
-		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT,
-		EGL_RED_SIZE, _fbconfig.redSize,
-		EGL_GREEN_SIZE, _fbconfig.greenSize,
-		EGL_BLUE_SIZE, _fbconfig.blueSize,
-		EGL_ALPHA_SIZE, _fbconfig.alphaSize,
-		EGL_BUFFER_SIZE, _fbconfig.bufferSize,
-		EGL_DEPTH_SIZE, _fbconfig.depthSize,
-		EGL_STENCIL_SIZE, _fbconfig.stencilSize,
-		EGL_SAMPLES, _fbconfig.samples ? EGL_TRUE : EGL_FALSE,
-		EGL_NONE
-	};
-
-	EGLNativeWindowType hwnd = (EGLNativeWindowType)swapchainDesc.getWindHandle();
-
-	_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-	if (_display == EGL_NO_DISPLAY)
-	{
-		GL_PLATFORM_LOG("eglGetDisplay() fail : %d", eglGetError());
+	if (!initPixelFormat(swapchainDesc))
 		return false;
-	}
 
-	if (::eglInitialize(_display, nullptr, nullptr) == EGL_FALSE)
-	{
-		GL_PLATFORM_LOG("eglInitialize() fail : %d", eglGetError());
+	if (!initSurface(swapchainDesc))
 		return false;
-	}
 
-	if (::eglBindAPI(EGL_OPENGL_ES_API) == EGL_FALSE)
-	{
-		GL_PLATFORM_LOG("eglBindAPI() fail : %d", eglGetError());
+	if (!initSwapchain(swapchainDesc))
 		return false;
-	}
-
-	EGLint num = 0;
-	if (::eglChooseConfig(_display, pixelformat, &_config, 1, &num) == EGL_FALSE)
-	{
-		GL_PLATFORM_LOG("eglChooseConfig() fail : %d", eglGetError());
-		return false;
-	}
-
-	_surface = ::eglCreateWindowSurface(_display, _config, hwnd, NULL);
-	if (eglGetError() != EGL_SUCCESS)
-	{
-		GL_PLATFORM_LOG("eglCreateContext() fail : %d", eglGetError());
-		return false;
-	}
-
-    _context = ::eglCreateContext(_display, _config, _ctxconfig.share, attribs);
-    if (eglGetError() != EGL_SUCCESS)
-    {
-    	GL_PLATFORM_LOG("eglCreateContext() fail : %d", eglGetError());
-    	return false;
-    }
-
-	this->setSwapInterval(swapchainDesc.getSwapInterval());
 
 	_swapchainDesc = swapchainDesc;
 	return true;
@@ -272,31 +172,177 @@ EGL3Swapchain::present() noexcept
 		GL_PLATFORM_LOG("eglSwapBuffers() fail : %d", eglGetError());
 }
 
-void
-EGL3Swapchain::initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept
+bool
+EGL3Swapchain::initSurface(const GraphicsSwapchainDesc& swapchainDesc)
 {
-	fbconfig.redSize = 8;
-	fbconfig.greenSize = 8;
-	fbconfig.blueSize = 8;
-	fbconfig.alphaSize = 8;
-	fbconfig.bufferSize = 32;
-	fbconfig.depthSize = 24;
-	fbconfig.stencilSize = 8;
-	fbconfig.accumSize = 0;
-	fbconfig.accumRedSize = 0;
-	fbconfig.accumGreenSize = 0;
-	fbconfig.accumBlueSize = 0;
-	fbconfig.accumAlphaSize = 0;
-	fbconfig.samples = 0;
+	EGLNativeWindowType hwnd = (EGLNativeWindowType)swapchainDesc.getWindHandle();
+	_surface = ::eglCreateWindowSurface(_display, _config, hwnd, NULL);
+	if (eglGetError() != EGL_SUCCESS)
+	{
+		GL_PLATFORM_LOG("eglCreateContext() fail : %d", eglGetError());
+		return false;
+	}
 
-	ctxconfig.major = 3;
-	ctxconfig.minor = 1;
-	ctxconfig.release = 0;
-	ctxconfig.robustness = 0;
-	ctxconfig.share = EGL_NO_CONTEXT;
-	ctxconfig.profile = GLattr::GL_CORE_PROFILE;
-	ctxconfig.forward = 0;
-	ctxconfig.multithread = false;
+	return true;
+}
+
+bool 
+EGL3Swapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexcept
+{
+	EGLint pixelFormat[80];
+	EGLint index = 0;
+
+	pixelFormat[index++] = EGL_SURFACE_TYPE;
+	pixelFormat[index++] = EGL_WINDOW_BIT;
+
+	pixelFormat[index++] = EGL_RENDERABLE_TYPE;
+	pixelFormat[index++] = EGL_OPENGL_ES3_BIT;
+
+	if (swapchainDesc.getImageNums() != 2)
+	{
+		GL_PLATFORM_LOG("Invalid image number");
+		return false;
+	}
+
+	auto colorFormat = swapchainDesc.getColorFormat();
+	if (colorFormat == GraphicsFormat::GraphicsFormatB8G8R8A8UNorm)
+	{
+		pixelFormat[index++] = EGL_BUFFER_SIZE;
+		pixelFormat[index++] = 32;
+
+		pixelFormat[index++] = EGL_RED_SIZE;
+		pixelFormat[index++] = 8;
+
+		pixelFormat[index++] = EGL_GREEN_SIZE;
+		pixelFormat[index++] = 8;
+
+		pixelFormat[index++] = EGL_BLUE_SIZE;
+		pixelFormat[index++] = 8;
+
+		pixelFormat[index++] = EGL_ALPHA_SIZE;
+		pixelFormat[index++] = 8;
+	}
+	else
+	{
+		GL_PLATFORM_LOG("Can't support color format");
+		return false;
+	}
+	
+	auto depthStencilFormat = swapchainDesc.getDepthStencilFormat();
+	if (depthStencilFormat == GraphicsFormat::GraphicsFormatD16UNorm)
+	{
+		pixelFormat[index++] = EGL_DEPTH_SIZE;
+		pixelFormat[index++] = 16;
+
+		pixelFormat[index++] = EGL_STENCIL_SIZE;
+		pixelFormat[index++] = 0;
+	}
+	else if (depthStencilFormat == GraphicsFormat::GraphicsFormatX8_D24UNormPack32)
+	{
+		pixelFormat[index++] = EGL_DEPTH_SIZE;
+		pixelFormat[index++] = 24;
+
+		pixelFormat[index++] = EGL_STENCIL_SIZE;
+		pixelFormat[index++] = 0;
+	}
+	else if (depthStencilFormat == GraphicsFormat::GraphicsFormatD32_SFLOAT)
+	{
+		pixelFormat[index++] = EGL_DEPTH_SIZE;
+		pixelFormat[index++] = 32;
+
+		pixelFormat[index++] = EGL_STENCIL_SIZE;
+		pixelFormat[index++] = 0;
+	}
+	else if (depthStencilFormat == GraphicsFormat::GraphicsFormatD16UNorm_S8UInt)
+	{
+		pixelFormat[index++] = EGL_DEPTH_SIZE;
+		pixelFormat[index++] = 16;
+
+		pixelFormat[index++] = EGL_STENCIL_SIZE;
+		pixelFormat[index++] = 8;
+	}
+	else if (depthStencilFormat == GraphicsFormat::GraphicsFormatD24UNorm_S8UInt)
+	{
+		pixelFormat[index++] = EGL_DEPTH_SIZE;
+		pixelFormat[index++] = 24;
+
+		pixelFormat[index++] = EGL_STENCIL_SIZE;
+		pixelFormat[index++] = 8;
+	}
+	else if (depthStencilFormat == GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt)
+	{
+		pixelFormat[index++] = EGL_DEPTH_SIZE;
+		pixelFormat[index++] = 32;
+
+		pixelFormat[index++] = EGL_STENCIL_SIZE;
+		pixelFormat[index++] = 8;
+	}
+	else
+	{
+		GL_PLATFORM_LOG("Can't support depth stencil format");
+		return false;
+	}
+
+	pixelFormat[index++] = EGL_NONE;
+
+	_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	if (_display == EGL_NO_DISPLAY)
+	{
+		GL_PLATFORM_LOG("eglGetDisplay() fail : %d", eglGetError());
+		return false;
+	}
+
+	if (::eglInitialize(_display, nullptr, nullptr) == EGL_FALSE)
+	{
+		GL_PLATFORM_LOG("eglInitialize() fail : %d", eglGetError());
+		return false;
+	}
+
+	if (::eglBindAPI(EGL_OPENGL_ES_API) == EGL_FALSE)
+	{
+		GL_PLATFORM_LOG("eglBindAPI() fail : %d", eglGetError());
+		return false;
+	}
+
+	EGLint num = 0;
+	if (::eglChooseConfig(_display, pixelFormat, &_config, 1, &num) == EGL_FALSE)
+	{
+		GL_PLATFORM_LOG("eglChooseConfig() fail : %d", eglGetError());
+		return false;
+	}
+
+	return true;
+}
+
+bool 
+EGL3Swapchain::initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept
+{
+	EGLint attribs[80];
+	EGLint index = 0;
+
+#if !defined(_BUILD_PLATFORM_ANDROID)
+	attribs[index++] = EGL_CONTEXT_MAJOR_VERSION;
+	attribs[index++] = 3;
+
+	attribs[index++] = EGL_CONTEXT_MINOR_VERSION;
+	attribs[index++] = 0;
+#else
+	attribs[index++] = EGL_CONTEXT_CLIENT_VERSION;
+	attribs[index++] = 3;
+#endif
+
+	attribs[index++] = EGL_NONE;
+	attribs[index++] = EGL_NONE;
+
+	_context = ::eglCreateContext(_display, _config, EGL_NO_CONTEXT, attribs);
+	if (eglGetError() != EGL_SUCCESS)
+	{
+		GL_PLATFORM_LOG("eglCreateContext() fail : %d", eglGetError());
+		return false;
+	}
+
+	this->setSwapInterval(swapchainDesc.getSwapInterval());
+	return true;
 }
 
 const GraphicsSwapchainDesc&

@@ -130,40 +130,6 @@ class GraphicsSemaphoreDesc;
 
 typedef void* WindHandle;
 
-enum GLattr
-{
-	GL_RED_SIZE,
-	GL_GREEN_SIZE,
-	GL_BLUE_SIZE,
-	GL_ALPHA_SIZE,
-	GL_BUFFER_SIZE,
-	GL_DOUBLEBUFFER,
-	GL_DEPTH_SIZE,
-	GL_STENCIL_SIZE,
-	GL_ACCUM_RED_SIZE,
-	GL_ACCUM_GREEN_SIZE,
-	GL_ACCUM_BLUE_SIZE,
-	GL_ACCUM_ALPHA_SIZE,
-	GL_STEREO,
-	GL_MULTISAMPLEBUFFERS,
-	GL_MULTISAMPLESAMPLES,
-	GL_ACCELERATED_VISUAL,
-	GL_RETAINED_BACKING,
-	GL_CONTEXT_MAJOR_VERSION,
-	GL_CONTEXT_MINOR_VERSION,
-	GL_CONTEXT_EGL,
-	GL_CONTEXT_FLAGS,
-	GL_CONTEXT_PROFILE_MASK,
-	GL_SHARE_WITH_CURRENT_CONTEXT,
-	GL_FRAMEBUFFER_SRGB_CAPABLE,
-	GL_DEBUG_FLAG,
-	GL_CORE_PROFILE,
-	GL_COMPAT_PROFILE,
-	GL_ANY_PROFILE,
-	GL_REST_NOTIFICATION,
-	GL_LOSE_CONTEXT_ONREST
-};
-
 enum GraphicsDeviceType
 {
 	GraphicsDeviceTypeD3D9,
@@ -584,7 +550,6 @@ enum GraphicsTextureDim
 
 enum GraphicsSamplerAnis
 {
-	GraphicsSamplerAnis0,
 	GraphicsSamplerAnis1,
 	GraphicsSamplerAnis2,
 	GraphicsSamplerAnis4,
@@ -592,7 +557,7 @@ enum GraphicsSamplerAnis
 	GraphicsSamplerAnis16,
 	GraphicsSamplerAnis32,
 	GraphicsSamplerAnis64,
-	GraphicsSamplerAnisBeginRange = GraphicsSamplerAnis0,
+	GraphicsSamplerAnisBeginRange = GraphicsSamplerAnis1,
 	GraphicsSamplerAnisEndRange = GraphicsSamplerAnis16,
 	GraphicsSamplerAnisRangeSize = (GraphicsSamplerAnisEndRange - GraphicsSamplerAnisBeginRange + 1),
 	GraphicsSamplerAnisMaxEnum = 0x7FFFFFFF

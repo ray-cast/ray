@@ -72,8 +72,15 @@ public:
 	void setUniformComponents(const GraphicsUniforms& component) noexcept;
 	const GraphicsUniforms& getUniformComponents() const noexcept;
 
+	void addUniformBlockComponent(GraphicsUniformBlockPtr component) noexcept;
+	void removeUniformBlockComponent(GraphicsUniformBlockPtr component) noexcept;
+
+	void setUniformBlockComponents(const GraphicsUniformBlocks& component) noexcept;
+	const GraphicsUniformBlocks& getUniformBlockComponents() const noexcept;
+
 private:
 	GraphicsUniforms _uniforms;
+	GraphicsUniformBlocks _uniformBlocks;
 };
 
 class EXPORT GraphicsDescriptorPoolDesc final

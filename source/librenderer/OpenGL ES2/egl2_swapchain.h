@@ -45,19 +45,19 @@ class EGL2Swapchain final : public GraphicsSwapchain
 {
 	__DeclareSubClass(EGL2Swapchain, GraphicsSwapchain)
 public:
-    EGL2Swapchain() noexcept;
-    ~EGL2Swapchain() noexcept;
+	EGL2Swapchain() noexcept;
+	~EGL2Swapchain() noexcept;
 
-    bool setup(const GraphicsSwapchainDesc& desc) noexcept;
-    void close() noexcept;
+	bool setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
+	void close() noexcept;
 
 	void setActive(bool active) noexcept;
 	bool getActive() const noexcept;
 
-    void setSwapInterval(GraphicsSwapInterval interval) noexcept;
+	void setSwapInterval(GraphicsSwapInterval interval) noexcept;
 	GraphicsSwapInterval getSwapInterval() const noexcept;
 
-    void present() noexcept;
+	void present() noexcept;
 
 	const GraphicsSwapchainDesc& getGraphicsSwapchainDesc() const noexcept;
 
@@ -67,22 +67,21 @@ private:
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
-	static void initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept;
+	bool initSurface(const GraphicsSwapchainDesc& swapchainDesc);
+	bool initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
+	bool initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
 
 private:
-    EGL2Swapchain(const EGL2Swapchain&) noexcept = delete;
-    EGL2Swapchain& operator=(const EGL2Swapchain&) noexcept = delete;
+	EGL2Swapchain(const EGL2Swapchain&) noexcept = delete;
+	EGL2Swapchain& operator=(const EGL2Swapchain&) noexcept = delete;
 
 private:
 	bool _isActive;
 
-    EGLDisplay _display;
-    EGLSurface _surface;
-    EGLConfig _config;
-    EGLContext _context;
-
-    GPUfbconfig _fbconfig;
-    GPUctxconfig _ctxconfig;
+	EGLDisplay _display;
+	EGLSurface _surface;
+	EGLConfig _config;
+	EGLContext _context;
 
 	GraphicsSwapchainDesc _swapchainDesc;
 	GraphicsDeviceWeakPtr _device;

@@ -62,8 +62,8 @@ public:
 	void setColorFormat(GraphicsFormat format) noexcept;
 	GraphicsFormat getColorFormat() const noexcept;
 
-	void setDepthFormat(GraphicsFormat format) noexcept;
-	GraphicsFormat getDepthFormat() const noexcept;
+	void setDepthStencilFormat(GraphicsFormat format) noexcept;
+	GraphicsFormat getDepthStencilFormat() const noexcept;
 
 	void setImageNums(std::uint32_t imageNums) noexcept;
 	std::uint32_t getImageNums() const noexcept;
@@ -78,7 +78,7 @@ private:
 	GraphicsSwapInterval _interval;
 
 	GraphicsFormat _format;
-	GraphicsFormat _depthFormat;
+	GraphicsFormat _depthStencilFormat;
 };
 
 class EXPORT GraphicsSwapchain : public GraphicsChild

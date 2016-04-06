@@ -201,6 +201,16 @@ EGL2Device::createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& des
 	return nullptr;
 }
 
+GraphicsDescriptorPoolPtr
+EGL2Device::createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept
+{
+	auto descriptorPool = std::make_shared<EGL2DescriptorPool>();
+	descriptorPool->setDevice(this->downcast<EGL2Device>());
+	if (descriptorPool->setup(desc))
+		return descriptorPool;
+	return nullptr;
+}
+
 GraphicsFormat
 EGL2Device::findCompatibleFormat(GraphicsPixelFormatDesc& desc) noexcept
 {

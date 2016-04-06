@@ -45,6 +45,7 @@ class EXPORT GraphicsShaderDesc final
 {
 public:
 	GraphicsShaderDesc() noexcept;
+	GraphicsShaderDesc(GraphicsShaderStage type, const std::string& code) noexcept;
 	GraphicsShaderDesc(GraphicsShaderStage type, const std::vector<char>& code) noexcept;
 	virtual ~GraphicsShaderDesc() noexcept;
 

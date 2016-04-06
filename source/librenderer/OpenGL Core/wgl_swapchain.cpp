@@ -44,9 +44,8 @@ __ImplementSubClass(WGLSwapchain, GraphicsSwapchain, "WGLSwapchain")
 WGLSwapchain::WGLSwapchain() noexcept
 	: _hdc(nullptr)
 	, _context(nullptr)
-	, _isActive(true)
+	, _isActive(false)
 {
-	initPixelFormat(_fbconfig, _ctxconfig);
 }
 
 WGLSwapchain::~WGLSwapchain() noexcept
@@ -59,179 +58,19 @@ WGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 {
 	assert(swapchainDesc.getWindHandle());
 
-	if ((_ctxconfig.major < 1 || _ctxconfig.minor < 0) ||
-		(_ctxconfig.major == 1 && _ctxconfig.minor > 5) ||
-		(_ctxconfig.major == 2 && _ctxconfig.minor > 1) ||
-		(_ctxconfig.major == 3 && _ctxconfig.minor > 3))
-	{
-		GL_PLATFORM_LOG("Invlid major and minor");
+	if (!initSurface(swapchainDesc))
 		return false;
-	}
 
-	if (_ctxconfig.profile)
-	{
-		if (_ctxconfig.profile != GLattr::GL_CORE_PROFILE &&
-			_ctxconfig.profile != GLattr::GL_COMPAT_PROFILE)
-		{
-			GL_PLATFORM_LOG("Invlid profile");
-			return false;
-		}
-
-		if (_ctxconfig.major < 3 || (_ctxconfig.major == 3 && _ctxconfig.minor < 2))
-		{
-			GL_PLATFORM_LOG("The version is small");
-			return false;
-		}
-	}
-
-	if (_ctxconfig.forward && _ctxconfig.major < 3)
-	{
-		GL_PLATFORM_LOG("The version is small");
+	if (!initPixelFormat(swapchainDesc))
 		return false;
-	}
 
-	if (!IsWindow((HWND)swapchainDesc.getWindHandle()))
-	{
-		GL_PLATFORM_LOG("Invlid HWND");
+	if (!initWGLExtensions())
 		return false;
-	}
 
-	HWND hwnd = (HWND)swapchainDesc.getWindHandle();
-	_hdc = ::GetDC(hwnd);
-	if (!_hdc)
-	{
-		GL_PLATFORM_LOG("GetDC() fail");
+	if (!initSwapchain(swapchainDesc))
 		return false;
-	}
-
-	PIXELFORMATDESCRIPTOR pfd;
-	memset(&pfd, 0, sizeof(pfd));
-
-	pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-	pfd.nVersion = 1;
-	pfd.dwFlags |= PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER | PFD_STEREO;
-	pfd.iPixelType = PFD_TYPE_RGBA;
-	pfd.cColorBits = _fbconfig.bufferSize;
-	pfd.cRedBits = _fbconfig.redSize;
-	pfd.cRedShift = 0;
-	pfd.cGreenBits = _fbconfig.greenSize;
-	pfd.cGreenShift = 0;
-	pfd.cBlueBits = _fbconfig.blueSize;
-	pfd.cBlueShift = 0;
-	pfd.cAlphaBits = _fbconfig.alphaSize;
-	pfd.cAlphaShift = 0;
-	pfd.cAccumBits = _fbconfig.accumSize;
-	pfd.cAccumRedBits = _fbconfig.accumRedSize;
-	pfd.cAccumGreenBits = _fbconfig.accumGreenSize;
-	pfd.cAccumBlueBits = _fbconfig.accumBlueSize;
-	pfd.cAccumAlphaBits = _fbconfig.accumAlphaSize;
-	pfd.cDepthBits = _fbconfig.depthSize;
-	pfd.cStencilBits = _fbconfig.stencilSize;
-	pfd.cAuxBuffers = 0;
-	pfd.iLayerType = PFD_MAIN_PLANE;
-	pfd.bReserved = 0;
-	pfd.dwLayerMask = 0;
-	pfd.dwVisibleMask = 0;
-	pfd.dwDamageMask = 0;
-
-	int pixelFormat = ::ChoosePixelFormat(_hdc, &pfd);
-	if (!pixelFormat)
-	{
-		GL_PLATFORM_LOG("ChoosePixelFormat() fail");
-		return false;
-	}
-
-	if (!::DescribePixelFormat(_hdc, pixelFormat, sizeof(pfd), &pfd))
-	{
-		GL_PLATFORM_LOG("DescribePixelFormat() fail");
-		return false;
-	}
-
-	if (!::SetPixelFormat(_hdc, pixelFormat, &pfd))
-	{
-		GL_PLATFORM_LOG("SetPixelFormat() fail");
-		return false;
-	}
-
-	if (!initWGLExtensions(_hdc))
-	{
-		GL_PLATFORM_LOG("initWGLExtensions() fail");
-		return false;
-	}
-
-	int attribs[40];
-
-	int index = 0, mask = 0, flags = 0, startegy = 0;
-
-#if _DEBUG
-	flags |= WGL_CONTEXT_DEBUG_BIT_ARB;
-#endif
-
-	if (_ctxconfig.forward)
-		flags |= WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
-
-	if (_ctxconfig.profile)
-	{
-		if (_ctxconfig.profile == GLattr::GL_CORE_PROFILE)
-			mask = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
-		else if (_ctxconfig.profile == GLattr::GL_COMPAT_PROFILE)
-			mask = WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
-	}
-
-	if (_ctxconfig.robustness)
-	{
-		if (_ctxconfig.robustness == GLattr::GL_REST_NOTIFICATION)
-			startegy = WGL_NO_RESET_NOTIFICATION_ARB;
-		else if (_ctxconfig.robustness == GLattr::GL_LOSE_CONTEXT_ONREST)
-			startegy = WGL_LOSE_CONTEXT_ON_RESET_ARB;
-
-		flags |= WGL_CONTEXT_ROBUST_ACCESS_BIT_ARB;
-	}
-
-	if (_ctxconfig.major != 1 || _ctxconfig.minor != 0)
-	{
-		attribs[index++] = WGL_CONTEXT_MAJOR_VERSION_ARB;
-		attribs[index++] = _ctxconfig.major;
-
-		attribs[index++] = WGL_CONTEXT_MINOR_VERSION_ARB;
-		attribs[index++] = _ctxconfig.minor;
-	}
-
-	if (flags)
-	{
-		attribs[index++] = WGL_CONTEXT_FLAGS_ARB;
-		attribs[index++] = flags;
-	}
-
-	if (mask)
-	{
-		attribs[index++] = WGL_CONTEXT_PROFILE_MASK_ARB;
-		attribs[index++] = mask;
-	}
-
-	if (startegy)
-	{
-		attribs[index++] = WGL_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB;
-		attribs[index++] = startegy;
-	}
-
-	attribs[index] = 0;
-	attribs[index] = 0;
-
-	_context = __wglCreateContextAttribsARB(_hdc, nullptr, attribs);
-	if (!_context)
-	{
-		GL_PLATFORM_LOG("wglCreateContextAttribs fail");
-		return false;
-	}
-
-	::wglMakeCurrent(_hdc, _context);
-	this->setSwapInterval(_swapchainDesc.getSwapInterval());
 
 	_isActive = false;
-	_fbconfig = _fbconfig;
-	_ctxconfig = _ctxconfig;
-
 	_swapchainDesc = swapchainDesc;
 	return true;
 }
@@ -322,16 +161,163 @@ WGLSwapchain::present() noexcept
 }
 
 bool
-WGLSwapchain::initWGLExtensions(HDC hdc) except
+WGLSwapchain::initSurface(const GraphicsSwapchainDesc& swapchainDesc)
 {
-	HGLRC context = ::wglCreateContext(hdc);
+	if (!IsWindow((HWND)swapchainDesc.getWindHandle()))
+	{
+		GL_PLATFORM_LOG("Invlid HWND");
+		return false;
+	}
+
+	HWND hwnd = (HWND)swapchainDesc.getWindHandle();
+	_hdc = ::GetDC(hwnd);
+	if (!_hdc)
+	{
+		GL_PLATFORM_LOG("GetDC() fail");
+		return false;
+	}
+
+	return true;
+}
+
+bool
+WGLSwapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexcept
+{
+	PIXELFORMATDESCRIPTOR pfd;
+	std::memset(&pfd, 0, sizeof(pfd));
+	pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+	pfd.nVersion = 1;
+	pfd.dwFlags |= PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_STEREO;
+	pfd.iPixelType = PFD_TYPE_RGBA;
+	pfd.cAccumBits = 0;
+	pfd.cAccumRedBits = 0;
+	pfd.cAccumGreenBits = 0;
+	pfd.cAccumBlueBits = 0;
+	pfd.cAccumAlphaBits = 0;
+	pfd.cAuxBuffers = 0;
+	pfd.iLayerType = PFD_MAIN_PLANE;
+	pfd.bReserved = 0;
+	pfd.dwLayerMask = 0;
+	pfd.dwVisibleMask = 0;
+	pfd.dwDamageMask = 0;
+
+	if (swapchainDesc.getImageNums() != 1 && swapchainDesc.getImageNums() != 2)
+	{
+		GL_PLATFORM_LOG("Invalid image number");
+		return false;
+	}
+
+	if (swapchainDesc.getImageNums() == 2)
+		pfd.dwFlags |= PFD_DOUBLEBUFFER;
+
+	auto colorFormat = swapchainDesc.getColorFormat();
+	if (colorFormat == GraphicsFormat::GraphicsFormatB8G8R8A8UNorm)
+	{
+		pfd.cColorBits = 32;
+		pfd.cBlueBits = 8;
+		pfd.cBlueShift = 0;
+		pfd.cGreenBits = 8;
+		pfd.cGreenShift = 8;
+		pfd.cRedBits = 8;
+		pfd.cRedShift = 16;
+		pfd.cAlphaBits = 8;
+		pfd.cAlphaShift = 24;
+	}
+	else
+	{
+		GL_PLATFORM_LOG("Can't support color format");
+		return false;
+	}
+
+	auto depthStencilFormat = swapchainDesc.getDepthStencilFormat();
+	if (depthStencilFormat == GraphicsFormat::GraphicsFormatD16UNorm)
+	{
+		pfd.cDepthBits = 16;
+		pfd.cStencilBits = 0;
+	}
+	else if (depthStencilFormat == GraphicsFormat::GraphicsFormatX8_D24UNormPack32)
+	{
+		pfd.cDepthBits = 24;
+		pfd.cStencilBits = 0;
+	}
+	else if (depthStencilFormat == GraphicsFormat::GraphicsFormatD32_SFLOAT)
+	{
+		pfd.cDepthBits = 32;
+		pfd.cStencilBits = 0;
+	}
+	else if (depthStencilFormat == GraphicsFormat::GraphicsFormatD16UNorm_S8UInt)
+	{
+		pfd.cDepthBits = 16;
+		pfd.cStencilBits = 8;
+	}
+	else if (depthStencilFormat == GraphicsFormat::GraphicsFormatD24UNorm_S8UInt)
+	{
+		pfd.cDepthBits = 24;
+		pfd.cStencilBits = 8;
+	}
+	else if (depthStencilFormat == GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt)
+	{
+		pfd.cDepthBits = 32;
+		pfd.cStencilBits = 8;
+	}
+	else
+	{
+		GL_PLATFORM_LOG("Can't support depth stencil format");
+		return false;
+	}
+
+	int pixelFormat = ::ChoosePixelFormat(_hdc, &pfd);
+	if (!pixelFormat)
+	{
+		GL_PLATFORM_LOG("ChoosePixelFormat() fail");
+		return false;
+	}
+
+	PIXELFORMATDESCRIPTOR pfd2;
+	if (!::DescribePixelFormat(_hdc, pixelFormat, sizeof(pfd2), &pfd2))
+	{
+		GL_PLATFORM_LOG("DescribePixelFormat() fail");
+		return false;
+	}
+
+	if (pfd2.cRedBits != pfd.cRedBits ||
+		pfd2.cRedShift != pfd.cRedShift ||
+		pfd2.cGreenBits != pfd.cGreenBits ||
+		pfd2.cGreenShift != pfd.cGreenShift ||
+		pfd2.cBlueBits != pfd.cBlueBits ||
+		pfd2.cBlueShift != pfd.cBlueShift)
+	{
+		GL_PLATFORM_LOG("Can't support color format");
+		return false;
+	}
+
+	if (pfd2.cDepthBits != pfd.cDepthBits ||
+		pfd2.cStencilBits != pfd.cStencilBits)
+	{
+		GL_PLATFORM_LOG("Can't support depth stencil format");
+		return false;
+	}
+
+	if (!::SetPixelFormat(_hdc, pixelFormat, &pfd))
+	{
+		GL_PLATFORM_LOG("SetPixelFormat() fail");
+		return false;
+	}
+
+	return true;
+}
+
+bool
+WGLSwapchain::initWGLExtensions() noexcept
+{
+	HGLRC context = ::wglCreateContext(_hdc);
 	if (!context)
 	{
 		GL_PLATFORM_LOG("wglCreateContext fail");
 		return false;
 	}
 
-	if (!::wglMakeCurrent(hdc, context))
+	if (!::wglMakeCurrent(_hdc, context))
 	{
 		GL_PLATFORM_LOG("wglMakeCurrent fail");
 		::wglDeleteContext(context);
@@ -345,35 +331,48 @@ WGLSwapchain::initWGLExtensions(HDC hdc) except
 		return false;
 	}
 
-	return ::wglDeleteContext(context) ? true : false;
+	::wglDeleteContext(context);
+	return true;
 }
 
-void
-WGLSwapchain::initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept
+bool 
+WGLSwapchain::initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 {
-	fbconfig.redSize = 8;
-	fbconfig.greenSize = 8;
-	fbconfig.blueSize = 8;
-	fbconfig.alphaSize = 8;
-	fbconfig.bufferSize = 32;
-	fbconfig.depthSize = 24;
-	fbconfig.stencilSize = 8;
-	fbconfig.accumSize = 0;
-	fbconfig.accumRedSize = 0;
-	fbconfig.accumGreenSize = 0;
-	fbconfig.accumBlueSize = 0;
-	fbconfig.accumAlphaSize = 0;
-	fbconfig.samples = 0;
+	int index = 0;
+	int mask = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
+	int flags = 0;
 
-	ctxconfig.major = 3;
-	ctxconfig.minor = 3;
-	ctxconfig.release = 0;
-	ctxconfig.robustness = 0;
-	ctxconfig.share = nullptr;
-	ctxconfig.api = 0;
-	ctxconfig.profile = GLattr::GL_CORE_PROFILE;
-	ctxconfig.forward = 0;
-	ctxconfig.multithread = false;
+#if _DEBUG
+	flags |= WGL_CONTEXT_DEBUG_BIT_ARB;
+#endif
+
+	int attribs[40];
+	attribs[index++] = WGL_CONTEXT_MAJOR_VERSION_ARB;
+	attribs[index++] = 3;
+
+	attribs[index++] = WGL_CONTEXT_MINOR_VERSION_ARB;
+	attribs[index++] = 3;
+
+	attribs[index++] = WGL_CONTEXT_FLAGS_ARB;
+	attribs[index++] = flags;
+
+	attribs[index++] = WGL_CONTEXT_PROFILE_MASK_ARB;
+	attribs[index++] = mask;
+
+	attribs[index] = 0;
+	attribs[index] = 0;
+
+	_context = __wglCreateContextAttribsARB(_hdc, nullptr, attribs);
+	if (!_context)
+	{
+		GL_PLATFORM_LOG("wglCreateContextAttribs fail");
+		return false;
+	}
+
+	::wglMakeCurrent(_hdc, _context);
+
+	this->setSwapInterval(swapchainDesc.getSwapInterval());
+	return true;
 }
 
 const GraphicsSwapchainDesc&

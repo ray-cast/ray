@@ -1,8 +1,7 @@
 //========================================================================
-// GLFW 3.1 Win32 - www.glfw.org
+// GLFW 3.2 Cocoa - www.glfw.org
 //------------------------------------------------------------------------
-// Copyright (c) 2002-2006 Marcus Geelnard
-// Copyright (c) 2006-2010 Camilla Berglund <elmindreda@elmindreda.org>
+// Copyright (c) 2006-2014 Camilla Berglund <elmindreda@elmindreda.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -25,24 +24,44 @@
 //
 //========================================================================
 
-#ifndef _win32_tls_h_
-#define _win32_tls_h_
+#ifndef _glfw3_cocoa_joystick_h_
+#define _glfw3_cocoa_joystick_h_
 
-#define _GLFW_PLATFORM_LIBRARY_TLS_STATE _GLFWtlsWin32 win32_tls
+#include <IOKit/IOKitLib.h>
+#include <IOKit/IOCFPlugIn.h>
+#include <IOKit/hid/IOHIDLib.h>
+#include <IOKit/hid/IOHIDKeys.h>
+
+#define _GLFW_PLATFORM_LIBRARY_JOYSTICK_STATE _GLFWjoystickNS ns_js
 
 
-// Win32-specific global TLS data
+// Cocoa-specific per-joystick data
 //
-typedef struct _GLFWtlsWin32
+typedef struct _GLFWjoydeviceNS
 {
-    GLboolean       allocated;
-    DWORD           context;
+    GLFWbool        present;
+    char            name[256];
 
-} _GLFWtlsWin32;
+    IOHIDDeviceRef deviceRef;
 
+    CFMutableArrayRef axisElements;
+    CFMutableArrayRef buttonElements;
+    CFMutableArrayRef hatElements;
 
-int _glfwInitTLS(void);
-void _glfwTerminateTLS(void);
-void _glfwSetCurrentContext(_GLFWwindow* context);
+    float*          axes;
+    unsigned char*  buttons;
+} _GLFWjoydeviceNS;
 
-#endif // _win32_tls_h_
+// Cocoa-specific joystick API data
+//
+typedef struct _GLFWjoystickNS
+{
+    _GLFWjoydeviceNS js[GLFW_JOYSTICK_LAST + 1];
+
+    IOHIDManagerRef managerRef;
+} _GLFWjoystickNS;
+
+void _glfwInitJoysticksNS(void);
+void _glfwTerminateJoysticksNS(void);
+
+#endif // _glfw3_cocoa_joystick_h_

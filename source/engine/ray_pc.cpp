@@ -122,6 +122,8 @@ bool rayOpenWindow(const char* title, int w, int h) noexcept
 	if (::glfwInit() == GL_FALSE)
 		return false;
 
+	::glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
 	_window = ::glfwCreateWindow(w, h, title, nullptr, nullptr);
 	if (_window)
 	{
@@ -170,6 +172,7 @@ void rayCloseWindow() noexcept
 
 bool rayIsQuitRequest() noexcept
 {
+	glfwSwapBuffers(_window);
 	return ::glfwWindowShouldClose(_window) ? true : false;
 }
 

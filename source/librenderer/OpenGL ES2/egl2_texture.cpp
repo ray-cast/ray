@@ -41,7 +41,7 @@ _NAME_BEGIN
 __ImplementSubClass(EGL2Texture, GraphicsTexture, "EGL2Texture")
 
 EGL2Texture::EGL2Texture() noexcept
-	: _texture(0)
+	: _texture(GL_NONE)
 	, _target(GL_INVALID_ENUM)
 {
 }
@@ -75,7 +75,9 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 	GLsizei w = (GLsizei)textureDesc.getWidth();
 	GLsizei h = (GLsizei)textureDesc.getHeight();
-	GLsizei depth = (GLsizei)textureDesc.getDepth();
+
+	GLsizei mipBase = textureDesc.getMipBase();
+	GLsizei mipLevel = std::max((GLsizei)textureDesc.getMipLevel(), 1);
 
 	if (!applySamplerWrap(target, textureDesc.getSamplerWrap()))
 		return false;
@@ -89,13 +91,12 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	auto stream = textureDesc.getStream();
 	if (EGL2Types::isCompressedTexture(textureDesc.getTexFormat()))
 	{
-		GLint level = (GLint)textureDesc.getMipLevel();
 		std::size_t offset = 0;
 		std::size_t blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;
 
-		for (GLint mip = 0; mip < level; mip++)
+		for (GLint mip = mipBase; mip < mipBase + mipLevel; mip++)
 		{
-			auto mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
+			GLsizei mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
 
 			GL_CHECK(glCompressedTexImage2D(GL_TEXTURE_2D, mip, internalFormat, w, h, 0, mipSize, (char*)stream + offset));
 
@@ -110,21 +111,19 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		auto format = EGL2Types::asTextureFormat(textureDesc.getTexFormat());
 		auto type = EGL2Types::asTextureType(textureDesc.getTexFormat());
 
-		auto level = 0;
-
 		switch (target)
 		{
 		case GL_TEXTURE_2D:
-			GL_CHECK(glTexImage2D(target, level, internalFormat, w, h, 0, format, type, stream));
+			GL_CHECK(glTexImage2D(target, mipLevel, internalFormat, w, h, 0, format, type, stream));
 		break;
 		case GL_TEXTURE_CUBE_MAP:
 		{
-			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, internalFormat, w, h, 0, format, type, stream));
-			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, internalFormat, w, h, 0, format, type, stream));
-			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, internalFormat, w, h, 0, format, type, stream));
-			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, internalFormat, w, h, 0, format, type, stream));
-			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, internalFormat, w, h, 0, format, type, stream));
-			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, internalFormat, w, h, 0, format, type, stream));
+			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, mipLevel, internalFormat, w, h, 0, format, type, stream));
+			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, mipLevel, internalFormat, w, h, 0, format, type, stream));
+			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, mipLevel, internalFormat, w, h, 0, format, type, stream));
+			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, mipLevel, internalFormat, w, h, 0, format, type, stream));
+			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, mipLevel, internalFormat, w, h, 0, format, type, stream));
+			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, mipLevel, internalFormat, w, h, 0, format, type, stream));
 		}
 		break;
 		default:
@@ -132,9 +131,6 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 			break;
 		}
 	}
-
-	if (textureDesc.isMipmap())
-		GL_CHECK(glGenerateMipmap(target));
 
 	_target = target;
 	_textureDesc = textureDesc;
@@ -145,7 +141,7 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 void
 EGL2Texture::close() noexcept
 {
-	if (_texture)
+	if (_texture != GL_NONE)
 	{
 		glDeleteTextures(1, &_texture);
 		_texture = GL_NONE;
@@ -209,11 +205,8 @@ EGL2Texture::applySamplerAnis(GLenum target, GraphicsSamplerAnis anis) noexcept
 		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16));
 	else
 	{
-		if (anis != GraphicsSamplerAnis::GraphicsSamplerAnis0)
-		{
-			GL_PLATFORM_LOG("Can't support anisotropy format");
-			return false;
-		}
+		GL_PLATFORM_LOG("Can't support anisotropy format");
+		return false;
 	}
 
 	return true;

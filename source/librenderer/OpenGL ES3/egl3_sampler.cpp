@@ -137,11 +137,8 @@ EGL3Sampler::setup(const GraphicsSamplerDesc& samplerDesc) except
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
 	else
 	{
-		if (anis != GraphicsSamplerAnis::GraphicsSamplerAnis0)
-		{
-			GL_PLATFORM_LOG("Invalid SamplerAnis");
-			return false;
-		}
+		GL_PLATFORM_LOG("Invalid SamplerAnis");
+		return false;
 	}
 
 	_sampleDesc = samplerDesc;

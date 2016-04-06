@@ -67,8 +67,9 @@ private:
     GraphicsDevicePtr getDevice() noexcept;
 
 private:
-
-	static void initPixelFormat(GPUfbconfig& fbconfig, GPUctxconfig& ctxconfig) noexcept;
+	bool initSurface(const GraphicsSwapchainDesc& swapchainDesc);
+	bool initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
+	bool initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
 
 private:
     EGL3Swapchain(const EGL3Swapchain&) noexcept = delete;
@@ -81,9 +82,6 @@ private:
     EGLSurface _surface;
     EGLConfig _config;
     EGLContext _context;
-
-    GPUfbconfig _fbconfig;
-    GPUctxconfig _ctxconfig;
 
 	GraphicsSwapchainDesc _swapchainDesc;
 	GraphicsDeviceWeakPtr _device;

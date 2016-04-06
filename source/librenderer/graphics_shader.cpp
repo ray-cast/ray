@@ -46,7 +46,14 @@ __ImplementSubInterface(GraphicsShader, GraphicsChild, "GraphicsShader")
 __ImplementSubInterface(GraphicsProgram, GraphicsChild, "GraphicsProgram")
 
 GraphicsShaderDesc::GraphicsShaderDesc() noexcept
+	:_type(GraphicsShaderStage::GraphicsShaderStageNone)
 {
+}
+
+GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderStage type, const std::string& code) noexcept
+{
+	this->setType(type);
+	_bytecodes.insert(_bytecodes.begin(), code.begin(), code.end());
 }
 
 GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderStage type, const std::vector<char>& code) noexcept

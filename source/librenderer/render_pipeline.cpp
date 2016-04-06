@@ -58,6 +58,7 @@
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 #include <ray/graphics_input_layout.h>
+#include <ray/graphics_shader.h>
 
 _NAME_BEGIN
 
@@ -65,12 +66,23 @@ __ImplementSubClass(RenderPipeline, rtti::Interface, "RenderPipeline")
 
 RenderPipeline::RenderPipeline() noexcept
 {
-}
+}	
 
 RenderPipeline::~RenderPipeline() noexcept
 {
 	this->close();
 }
+
+static const float vb[6][5] =
+{
+	{ -1.0f, -1.0f,  0.25f,    0.0f, 1.0f },
+	{ 1.0f, -1.0f,  0.25f,     1.0f, 1.0f },
+	{ -1.0f,  1.0f,  1.0f,     0.0f, 0.0f },
+
+	{ 1.0f, -1.0f,  0.25f,     1.0f, 1.0f },
+	{ 1.0f,  1.0f,  1.0f,      1.0f, 0.0f },
+	{ -1.0f,  1.0f,  1.0f,     0.0f, 0.0f },
+};
 
 bool
 RenderPipeline::open(WindHandle window, std::uint32_t w, std::uint32_t h) noexcept
@@ -84,6 +96,9 @@ RenderPipeline::open(WindHandle window, std::uint32_t w, std::uint32_t h) noexce
 	swapchainDesc.setWindHandle(window);
 	swapchainDesc.setWidth(w);
 	swapchainDesc.setHeight(h);
+	swapchainDesc.setImageNums(2);
+	swapchainDesc.setColorFormat(GraphicsFormat::GraphicsFormatB8G8R8A8UNorm);
+	swapchainDesc.setDepthStencilFormat(GraphicsFormat::GraphicsFormatD24UNorm_S8UInt);
 	_graphicsSwapchain = _graphicsDevice->createSwapchain(swapchainDesc);
 	if (!_graphicsSwapchain)
 		return false;
@@ -315,12 +330,12 @@ RenderPipeline::createTexture(const std::string& name) noexcept
 			}
 
 			GraphicsTextureDesc textureDesc;
-			textureDesc.setMipLevel(image.getMipLevel());
-			textureDesc.setMipSize(image.size());
 			textureDesc.setSize(image.width(), image.height());
 			textureDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
 			textureDesc.setTexFormat(format);
 			textureDesc.setStream(image.data());
+			textureDesc.setStreamSize(image.size());
+			textureDesc.setMipLevel(image.getMipLevel());
 
 			return this->createTexture(textureDesc);
 		}

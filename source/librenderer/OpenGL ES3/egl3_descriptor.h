@@ -126,35 +126,35 @@ private:
 	GraphicsUniformPtr _uniform;
 };
 
-class EGL2DescriptorSetLayout final : public GraphicsDescriptorSetLayout
+class EGL3DescriptorPool final : public GraphicsDescriptorPool
 {
-	__DeclareSubClass(EGL2DescriptorSetLayout, OGLGraphicsData)
+	__DeclareSubClass(EGL3DescriptorPool, GraphicsDescriptorPool)
 public:
-	EGL2DescriptorSetLayout() noexcept;
-	~EGL2DescriptorSetLayout() noexcept;
+	EGL3DescriptorPool() noexcept;
+	~EGL3DescriptorPool() noexcept;
 
-	bool setup(const GraphicsDescriptorSetLayoutDesc& desc) noexcept;
+	bool setup(const GraphicsDescriptorPoolDesc& desc) noexcept;
 	void close() noexcept;
 
-	const GraphicsDescriptorSetLayoutDesc& getGraphicsDescriptorSetLayoutDesc() const noexcept;
+	const GraphicsDescriptorPoolDesc& getGraphicsDescriptorPoolDesc() const noexcept;
 
 private:
-	friend class EGL2Device;
+	friend class EGL3Device;
 	void setDevice(GraphicsDevicePtr device) noexcept;
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
-	EGL2DescriptorSetLayout(const EGL2DescriptorSetLayout&) noexcept = delete;
-	EGL2DescriptorSetLayout& operator=(const EGL2DescriptorSetLayout&) noexcept = delete;
+	EGL3DescriptorPool(const EGL3DescriptorPool&) noexcept = delete;
+	EGL3DescriptorPool& operator=(const EGL3DescriptorPool&) noexcept = delete;
 
 private:
 	GraphicsDeviceWeakPtr _device;
-	GraphicsDescriptorSetLayoutDesc _descriptorSetDesc;
+	GraphicsDescriptorPoolDesc _descriptorPoolDesc;
 };
 
 class EGL3DescriptorSetLayout final : public GraphicsDescriptorSetLayout
 {
-	__DeclareSubClass(EGL3DescriptorSetLayout, OGLGraphicsData)
+	__DeclareSubClass(EGL3DescriptorSetLayout, GraphicsDescriptorSetLayout)
 public:
 	EGL3DescriptorSetLayout() noexcept;
 	~EGL3DescriptorSetLayout() noexcept;
@@ -180,7 +180,7 @@ private:
 
 class EGL3DescriptorSet final : public GraphicsDescriptorSet
 {
-	__DeclareSubClass(EGL3DescriptorSet, OGLGraphicsData)
+	__DeclareSubClass(EGL3DescriptorSet, GraphicsDescriptorSet)
 public:
 	EGL3DescriptorSet() noexcept;
 	~EGL3DescriptorSet() noexcept;

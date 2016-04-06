@@ -248,10 +248,8 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialTechPtr& tech, iar
 		auto state = manager.getGraphicsDevice()->createRenderState(stateDesc);
 		auto program = manager.getGraphicsDevice()->createProgram(GraphicsProgramDesc);
 
-		GraphicsPipelineDesc pipelineDesc;
-		pipelineDesc.setGraphicsState(state);
-		pipelineDesc.setGraphicsProgram(program);
-		pass->setRenderPipeline(manager.getGraphicsDevice()->createRenderPipeline(pipelineDesc));
+		pass->setGraphicsState(state);
+		pass->setGraphicsProgram(program);
 
 		tech->addPass(pass);
 	}

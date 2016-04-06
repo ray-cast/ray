@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include "vk_graphics_data.h"
 #include "vk_device.h"
+#include "vk_system.h"
 
 _NAME_BEGIN
 
@@ -82,7 +83,7 @@ VulkanGraphicsData::setup(const GraphicsDataDesc& dataDesc) noexcept
 
 	if (vkCreateBuffer(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &info, nullptr, &_vkBuffer) != VK_SUCCESS)
 	{
-		VK_PLATFORM_LOG("vkCreateBuffer() fail.")
+		VK_PLATFORM_LOG("vkCreateBuffer() fail.");
 		return false;
 	}
 
@@ -105,7 +106,7 @@ VulkanGraphicsData::setup(const GraphicsDataDesc& dataDesc) noexcept
 
 	if (vkBindBufferMemory(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkBuffer, _memory.getDeviceMemory(), 0) != VK_SUCCESS)
 	{
-		VK_PLATFORM_LOG("vkBindBufferMemory() fail.")
+		VK_PLATFORM_LOG("vkBindBufferMemory() fail.");
 		return false;
 	}
 

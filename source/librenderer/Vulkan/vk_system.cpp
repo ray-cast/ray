@@ -97,9 +97,13 @@ VulkanSystem::close() noexcept
 }
 
 void
-VulkanSystem::print(const std::string& message) noexcept
+VulkanSystem::print(const char* message, ...) noexcept
 {
-	std::cerr << message;
+	va_list va;
+	va_start(va, &message);
+	vprintf(message, va);
+	printf("\n");
+	va_end(va);
 }
 
 bool
@@ -170,7 +174,7 @@ VulkanSystem::checkInstanceLayer() noexcept
 	std::uint32_t instanceLayerCount = 0;
 	std::uint32_t instanceEnabledLayerCount = sizeof(instanceValidationLayers) / sizeof(instanceValidationLayers[0]);
 
-	if (vkEnumerateInstanceLayerProperties(&instanceLayerCount, 0) > 0)
+	if (vkEnumerateInstanceLayerProperties(&instanceLayerCount, 0) != VK_SUCCESS)
 	{
 		this->print("vkEnumerateInstanceLayerProperties fail.");
 		return false;
@@ -180,7 +184,7 @@ VulkanSystem::checkInstanceLayer() noexcept
 	{
 		std::vector<VkLayerProperties> instanceLayers(instanceLayerCount);
 
-		if (vkEnumerateInstanceLayerProperties(&instanceLayerCount, &instanceLayers[0]) > 0)
+		if (vkEnumerateInstanceLayerProperties(&instanceLayerCount, &instanceLayers[0]) != VK_SUCCESS)
 		{
 			this->print("vkEnumerateInstanceLayerProperties fail.");
 			return false;
@@ -202,7 +206,7 @@ VulkanSystem::checkInstanceLayer() noexcept
 
 			if (!found)
 			{
-				this->print(std::string("Cannot find layer: ") + instanceValidationLayers[i]);
+				this->print("Cannot find layer: %s", instanceValidationLayers[i]);
 				validationFound = false;
 				break;
 			}
@@ -232,7 +236,7 @@ VulkanSystem::checkInstanceExtenstion() noexcept
 	std::uint32_t enabledExtensionCount = 0;
 	std::uint32_t instanceExtensionCount = 0;
 
-	if (vkEnumerateInstanceExtensionProperties(0, &instanceExtensionCount, 0) > 0)
+	if (vkEnumerateInstanceExtensionProperties(0, &instanceExtensionCount, 0) != VK_SUCCESS)
 	{
 		this->print("instanceExtensionCount fail.");
 		return false;
@@ -242,7 +246,7 @@ VulkanSystem::checkInstanceExtenstion() noexcept
 	{
 		std::vector<VkExtensionProperties> instanceExtensions(instanceExtensionCount);
 
-		if (vkEnumerateInstanceExtensionProperties(0, &instanceExtensionCount, instanceExtensions.data()) > 0)
+		if (vkEnumerateInstanceExtensionProperties(0, &instanceExtensionCount, instanceExtensions.data()) != VK_SUCCESS)
 		{
 			this->print("instanceExtensionCount fail.");
 			return false;

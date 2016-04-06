@@ -37,6 +37,7 @@
 #include "vk_command_pool.h"
 #include "vk_command_list.h"
 #include "vk_device.h"
+#include "vk_system.h"
 
 _NAME_BEGIN
 

@@ -81,12 +81,11 @@ public:
 
 	const GraphicsDeviceDesc& getGraphicsDeviceDesc() const noexcept;
 
-	void print(const std::string& message) noexcept;
-
 private:
-	bool checkInstance() noexcept;
-	bool checkDeviceLayer() noexcept;
-	bool checkDeviceExtension() noexcept;
+	bool initInstance() noexcept;
+	bool initPhysicalDevice() noexcept;
+	bool initPhysicalDeviceLayer() noexcept;
+	bool initPhysicalDeviceExtension() noexcept;
 
 private:
 	VulkanDevice(const VulkanDevice&) noexcept = delete;

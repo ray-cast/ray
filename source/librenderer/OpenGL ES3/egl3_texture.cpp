@@ -41,8 +41,8 @@ _NAME_BEGIN
 __ImplementSubClass(EGL3Texture, GraphicsTexture, "EGL3Texture")
 
 EGL3Texture::EGL3Texture() noexcept
-	: _texture(0)
-	, _target(GL_NONE)
+	: _texture(GL_NONE)
+	, _target(GL_INVALID_ENUM)
 {
 }
 
@@ -56,8 +56,12 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 {
 	assert(_texture == GL_NONE);
 
-	GLenum target = EGL3Types::asTextureTarget(textureDesc.getTexDim(), textureDesc.isMultiSample());
+	auto target = EGL3Types::asTextureTarget(textureDesc.getTexDim(), textureDesc.isMultiSample());
 	if (target == GL_INVALID_ENUM)
+		return false;
+
+	auto internalFormat = EGL3Types::asTextureInternalFormat(textureDesc.getTexFormat());
+	if (internalFormat == GL_INVALID_ENUM)
 		return false;
 
 	GL_CHECK(glGenTextures(1, &_texture));
@@ -73,6 +77,9 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	GLsizei h = (GLsizei)textureDesc.getHeight();
 	GLsizei depth = (GLsizei)textureDesc.getDepth();
 
+	GLsizei mipBase = textureDesc.getMipBase();
+	GLsizei mipLevel = std::max((GLsizei)textureDesc.getMipLevel(), 1);
+
 	if (!applySamplerWrap(target, textureDesc.getSamplerWrap()))
 		return false;
 
@@ -82,34 +89,29 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	if (!applySamplerAnis(target, textureDesc.getSamplerAnis()))
 		return false;
 
-	auto internalFormat = EGL3Types::asTextureInternalFormat(textureDesc.getTexFormat());
-	if (internalFormat == GL_INVALID_ENUM)
+	if (!applyMipmapLimit(target, mipBase, mipLevel))
 		return false;
 
-	GLsizei level = target == GL_TEXTURE_CUBE_MAP ? 6 : 1;
-	level = std::max(level, textureDesc.getMipLevel());
-
 	if (target == GL_TEXTURE_2D)
-		GL_CHECK(glTexStorage2D(GL_TEXTURE_2D, level, internalFormat, w, h));
+		GL_CHECK(glTexStorage2D(target, mipLevel, internalFormat, w, h));
 	else if (target == GL_TEXTURE_2D_MULTISAMPLE)
-		GL_CHECK(glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, level, internalFormat, w, h, GL_FALSE));
+		GL_CHECK(glTexStorage2DMultisample(target, mipLevel, internalFormat, w, h, GL_FALSE));
 	else if (target == GL_TEXTURE_2D_ARRAY)
-		GL_CHECK(glTexStorage3D(GL_TEXTURE_2D_ARRAY, level, internalFormat, w, h, depth));
+		GL_CHECK(glTexStorage3D(target, mipLevel, internalFormat, w, h, depth));
 	else if (target == GL_TEXTURE_3D)
-		GL_CHECK(glTexStorage3D(GL_TEXTURE_3D, level, internalFormat, w, h, depth));
+		GL_CHECK(glTexStorage3D(target, mipLevel, internalFormat, w, h, depth));
 	else if (target == GL_TEXTURE_CUBE_MAP)
-		GL_CHECK(glTexStorage2D(GL_TEXTURE_CUBE_MAP, level, internalFormat, w, h));
+		GL_CHECK(glTexStorage2D(target, mipLevel, internalFormat, w, h));
 
 	auto stream = textureDesc.getStream();
 	if (stream)
 	{
 		if (EGL3Types::isCompressedTexture(textureDesc.getTexFormat()))
 		{
-			GLsizei size = textureDesc.getMipSize();
 			std::size_t offset = 0;
 			std::size_t blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;
 
-			for (GLint mip = 0; mip < level; mip++)
+			for (GLint mip = mipBase; mip < mipBase + mipLevel; mip++)
 			{
 				auto mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
 
@@ -151,8 +153,12 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	_target = target;
 	_textureDesc = textureDesc;
 
-	if (textureDesc.isMipmap())
+	if (textureDesc.getMipLevel() > 0)
+	{
+		GL_CHECK(glTexParameteri(_target, GL_TEXTURE_BASE_LEVEL, textureDesc.getMipBase()));
+		GL_CHECK(glTexParameteri(_target, GL_TEXTURE_MAX_LEVEL, textureDesc.getMipBase() + textureDesc.getMipLevel()));
 		GL_CHECK(glGenerateMipmap(target));
+	}
 
 	return EGL3Check::checkError();
 }
@@ -160,7 +166,7 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 void
 EGL3Texture::close() noexcept
 {
-	if (_texture)
+	if (_texture != GL_NONE)
 	{
 		glDeleteTextures(1, &_texture);
 		_texture = GL_NONE;
@@ -177,6 +183,14 @@ GLuint
 EGL3Texture::getInstanceID() const noexcept
 {
 	return _texture;
+}
+
+bool
+EGL3Texture::applyMipmapLimit(GLenum target, std::uint32_t min, std::uint32_t count) noexcept
+{
+	GL_CHECK(glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, min));
+	GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, min + count));
+	return true;
 }
 
 bool
@@ -225,11 +239,8 @@ EGL3Texture::applySamplerAnis(GLenum target, GraphicsSamplerAnis anis) noexcept
 		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16));
 	else
 	{
-		if (anis != GraphicsSamplerAnis::GraphicsSamplerAnis0)
-		{
-			GL_PLATFORM_LOG("Can't support anisotropy format");
-			return false;
-		}
+		GL_PLATFORM_LOG("Can't support anisotropy format");
+		return false;
 	}
 
 	return true;

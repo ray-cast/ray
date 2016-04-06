@@ -58,22 +58,52 @@ MaterialPass::~MaterialPass() noexcept
 bool
 MaterialPass::setup(Material& material) noexcept
 {
-	assert(_pipeline);
+	assert(_program && _state);
 
 	GraphicsDescriptorSetLayoutDesc descriptorSetLayoutDesc;
-	descriptorSetLayoutDesc.setUniformComponents(_pipeline->getGraphicsPipelineDesc().getGraphicsProgram()->getActiveUniforms());
-	_descriptorSetLayout = _pipeline->getDevice()->createDescriptorSetLayout(descriptorSetLayoutDesc);
+	descriptorSetLayoutDesc.setUniformComponents(_program->getActiveUniforms());
+	descriptorSetLayoutDesc.setUniformBlockComponents(_program->getActiveUniformBlocks());
+	_descriptorSetLayout = _program->getDevice()->createDescriptorSetLayout(descriptorSetLayoutDesc);
 	if (!_descriptorSetLayout)
 		return false;
 
+	GraphicsPipelineDesc pipelineDesc;
+	pipelineDesc.setGraphicsState(_state);
+	pipelineDesc.setGraphicsProgram(_program);
+	pipelineDesc.setGraphicsDescriptorSetLayout(_descriptorSetLayout);
+	_pipeline = _program->getDevice()->createRenderPipeline(pipelineDesc);
+	if (!_pipeline)
+		return false;
+
+	GraphicsDescriptorPoolDesc  descriptorPoolDesc;
+	descriptorPoolDesc.setMaxSets(1);
+	for (auto& activeUniform : _program->getActiveUniforms())
+	{
+		auto type = activeUniform->getType();
+		if (type == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
+			type == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
+			type == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
+		{
+			descriptorPoolDesc.addGraphicsDescriptorPoolComponent(GraphicsDescriptorPoolComponent(activeUniform->getType(), 1));
+		}
+	}
+
+	for (auto& activeUniformBlock : _program->getActiveUniformBlocks())
+	{
+		descriptorPoolDesc.addGraphicsDescriptorPoolComponent(GraphicsDescriptorPoolComponent(activeUniformBlock->getType(), 1));
+	}		
+
+	_descriptorPool = _program->getDevice()->createDescriptorPool(descriptorPoolDesc);
+
 	GraphicsDescriptorSetDesc descriptorSetDesc;
 	descriptorSetDesc.setGraphicsDescriptorSetLayout(_descriptorSetLayout);
-	_descriptorSet = _pipeline->getDevice()->createDescriptorSet(descriptorSetDesc);
+	descriptorSetDesc.setGraphicsDescriptorPool(_descriptorPool);
+	_descriptorSet = _program->getDevice()->createDescriptorSet(descriptorSetDesc);
 	if (!_descriptorSet)
 		return false;
 
-	auto& activeUniformSets = _descriptorSet->getGraphicsUniformSets();
-	for (auto& activeUniformSet : activeUniformSets)
+	const auto& activeUniformSets = _descriptorSet->getGraphicsUniformSets();
+	for (const auto& activeUniformSet : activeUniformSets)
 	{
 		auto activeUniform = activeUniformSet->getGraphicsUniform();
 		auto uniformName = activeUniform->getName();
@@ -168,22 +198,34 @@ MaterialPass::getParameter(const std::string& name) const noexcept
 	return nullptr;
 }
 
-void
-MaterialPass::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
+void 
+MaterialPass::setGraphicsProgram(GraphicsProgramPtr program) noexcept
 {
-	_pipeline = pipeline;
+	_program = program;
+}
+
+GraphicsProgramPtr 
+MaterialPass::getGraphicsProgram() const noexcept
+{
+	return _program;
+}
+
+void 
+MaterialPass::setGraphicsState(GraphicsStatePtr program) noexcept
+{
+	_state = program;
+}
+
+GraphicsStatePtr 
+MaterialPass::getGraphicsState() const noexcept
+{
+	return _state;
 }
 
 GraphicsPipelinePtr
 MaterialPass::getRenderPipeline() const noexcept
 {
 	return _pipeline;
-}
-
-void 
-MaterialPass::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
-{
-	_descriptorSet = descriptorSet;
 }
 
 GraphicsDescriptorSetPtr 

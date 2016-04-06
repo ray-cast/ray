@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include "vk_shader.h"
 #include "vk_device.h"
+#include "vk_system.h"
 
 #include <GL/glew.h>
 #include <SPIRV/GlslangToSpv.h>
@@ -483,8 +484,8 @@ VulkanShader::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *psh
 	EShMessages messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
 	if (!shader.parse(&resources, 100, false, messages))
 	{
-		VK_PLATFORM_LOG(shader->getInfoLog());
-		VK_PLATFORM_LOG(shader->getInfoDebugLog());
+		VK_PLATFORM_LOG(shader.getInfoLog());
+		VK_PLATFORM_LOG(shader.getInfoDebugLog());
 		return false;
 	}
 
@@ -492,8 +493,8 @@ VulkanShader::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *psh
 
 	if (!program.link(messages)) 
 	{
-		VK_PLATFORM_LOG(shader->getInfoLog());
-		VK_PLATFORM_LOG(shader->getInfoDebugLog());
+		VK_PLATFORM_LOG(shader.getInfoLog());
+		VK_PLATFORM_LOG(shader.getInfoDebugLog());
 		return false;
 	}
 
@@ -606,44 +607,54 @@ VulkanShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 	resources.limits.generalVariableIndexing = 1;
 	resources.limits.generalConstantMatrixVectorIndexing = 1;
 
-	std::vector<std::unique_ptr<glslang::TShader>> shaders;
+	glslang::TShader vs(EShLangVertex);
+	glslang::TShader fs(EShLangFragment);
+	glslang::TShader gs(EShLangGeometry);
+	glslang::TShader cs(EShLangCompute);
+	glslang::TShader tessControl(EShLangTessControl);
+	glslang::TShader tessEvaluation(EShLangTessEvaluation);
+	glslang::TShader* shaders[EShLangCount];
+
+	shaders[EShLangVertex] = &vs;
+	shaders[EShLangFragment] = &fs;
+	shaders[EShLangGeometry] = &gs;
+	shaders[EShLangCompute] = &cs;
+	shaders[EShLangTessControl] = &tessControl;
+	shaders[EShLangTessEvaluation] = &tessEvaluation;
+
+	glslang::TProgram program;
 
 	for (auto& it : programDesc.getShaders())
 	{
 		EShLanguage stage = EShLangVertex;
 
 		auto shaderStage = it->downcast<VulkanShader>()->getGraphicsShaderDesc().getType();
-		if (shaderStage == VK_SHADER_STAGE_VERTEX_BIT)
+		if (shaderStage == GraphicsShaderStage::GraphicsShaderStageVertex)
 			stage = EShLangVertex;
-		else if (shaderStage == VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT)
-			stage = EShLangTessControl;
-		else if (shaderStage == VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT)
-			stage = EShLangTessEvaluation;
-		else if (shaderStage == VK_SHADER_STAGE_GEOMETRY_BIT)
-			stage = EShLangGeometry;
-		else if (shaderStage == VK_SHADER_STAGE_FRAGMENT_BIT)
+		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageFragment)
 			stage = EShLangFragment;
-		else if (shaderStage == VK_SHADER_STAGE_COMPUTE_BIT)
+		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageCompute)
 			stage = EShLangCompute;
+		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageGeometry)
+			stage = EShLangGeometry;
+		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessControl)
+			stage = EShLangTessControl;
+		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
+			stage = EShLangTessEvaluation;
 
 		const char *shaderStrings[1];
 		shaderStrings[0] = it->downcast<VulkanShader>()->getGlslCodes().c_str();
 
-		auto glslShader = std::make_unique<glslang::TShader>(stage);
-		glslShader->setStrings(shaderStrings, 1);
-		if (!glslShader->parse(&resources, 100, false, (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules)))
+		shaders[stage]->setStrings(shaderStrings, 1);
+		if (!shaders[stage]->parse(&resources, 100, false, (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules)))
 		{
-			VK_PLATFORM_LOG(glslShader->getInfoLog());
-			VK_PLATFORM_LOG(glslShader->getInfoDebugLog());
+			VK_PLATFORM_LOG(shaders[stage]->getInfoLog());
+			VK_PLATFORM_LOG(shaders[stage]->getInfoDebugLog());
 			return false;
 		}
 
-		shaders.push_back(std::move(glslShader));
+		program.addShader(shaders[stage]);
 	}
-
-	glslang::TProgram program;
-	for (auto& shader : shaders)
-		program.addShader(shader.get());
 
 	program.link(EShMessages::EShMsgDefault);
 	program.buildReflection();
@@ -656,29 +667,61 @@ VulkanShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 		auto type = program.getUniformType(index);
 		auto offset = program.getUniformBufferOffset(index);
 
-		auto uniform = std::make_shared<VulkanGraphicsUniform>();
-		uniform->setName(name);
-		uniform->setType(toGraphicsUniformType(uniform->getName(), type));
-		uniform->setBindingPoint(index);
-		uniform->setOffset(offset);
+		auto uniformType = toGraphicsUniformType(name, type);
+		if (uniformType == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
+			uniformType == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
+			uniformType == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
+		{
+			auto uniform = std::make_shared<VulkanGraphicsUniform>();
+			uniform->setName(name);
+			uniform->setType(uniformType);
+			uniform->setBindingPoint(index);
+			uniform->setOffset(offset);
 
-		_activeUniforms.push_back(uniform);
+			_activeUniforms.push_back(uniform);
+		}
 	}
 
-	std::size_t numUniformBlock = program.getNumLiveUniformVariables();
+	std::size_t numUniformBlock = program.getNumLiveUniformBlocks();
 	for (std::size_t i = 0; i < numUniformBlock; i++)
 	{
 		auto index = program.getUniformBlockIndex(i);
 		auto name = program.getUniformBlockName(index);
 		auto size = program.getUniformBlockSize(index);
 
-		auto uniform = std::make_shared<VulkanGraphicsUniformBlock>();
-		uniform->setName(name);
-		uniform->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
-		uniform->setBindingPoint(index);
-		uniform->setBlockSize(size);
+		auto uniformBlock = std::make_shared<VulkanGraphicsUniformBlock>();
+		uniformBlock->setName(name);
+		uniformBlock->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
+		uniformBlock->setBindingPoint(index);
+		uniformBlock->setBlockSize(size);
 
-		_activeUniformBlocks.push_back(uniform);
+		if (strncmp(name, "Globals", 7) == 0)
+		{
+			std::size_t numUniform = program.getNumLiveUniformVariables();
+			for (std::size_t i = 0; i < numUniform; i++)
+			{
+				auto name = program.getUniformName(i);
+				auto index = program.getUniformIndex(name);
+				auto type = program.getUniformType(index);
+				auto offset = program.getUniformBufferOffset(index);
+				auto uniformType = toGraphicsUniformType(name, type);
+
+				if (uniformType != GraphicsUniformType::GraphicsUniformTypeSamplerImage &&
+					uniformType != GraphicsUniformType::GraphicsUniformTypeStorageImage &&
+					uniformType != GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
+				{
+					auto uniform = std::make_shared<VulkanGraphicsUniform>();
+					uniform->setName(name);
+					uniform->setType(uniformType);
+					uniform->setBindingPoint(index);
+					uniform->setOffset(offset);
+
+					uniformBlock->addGraphicsUniform(uniform);
+				}
+			}
+		}
+
+		_activeUniformBlocks.push_back(uniformBlock);
 	}
 
 	_programDesc = programDesc;

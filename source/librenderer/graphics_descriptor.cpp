@@ -90,6 +90,37 @@ GraphicsDescriptorSetLayoutDesc::removeUniformComponent(GraphicsUniformPtr compo
 		_uniforms.erase(it);
 }
 
+void
+GraphicsDescriptorSetLayoutDesc::setUniformBlockComponents(const GraphicsUniformBlocks& component) noexcept
+{
+	_uniformBlocks = component;
+}
+
+const GraphicsUniformBlocks&
+GraphicsDescriptorSetLayoutDesc::getUniformBlockComponents() const noexcept
+{
+	return _uniformBlocks;
+}
+
+void
+GraphicsDescriptorSetLayoutDesc::addUniformBlockComponent(GraphicsUniformBlockPtr component) noexcept
+{
+	assert(component);
+	auto it = std::find(_uniformBlocks.begin(), _uniformBlocks.end(), component);
+	if (it == _uniformBlocks.end())
+		_uniformBlocks.erase(it);
+}
+
+void
+GraphicsDescriptorSetLayoutDesc::removeUniformBlockComponent(GraphicsUniformBlockPtr component) noexcept
+{
+	assert(component);
+	auto it = std::find(_uniformBlocks.begin(), _uniformBlocks.end(), component);
+	if (it != _uniformBlocks.end())
+		_uniformBlocks.erase(it);
+}
+
+
 GraphicsDescriptorPoolComponent::GraphicsDescriptorPoolComponent() noexcept
 	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
 	, _descriptorNums(0)

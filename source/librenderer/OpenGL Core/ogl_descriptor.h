@@ -126,6 +126,32 @@ private:
 	GraphicsUniformPtr _uniform;
 };
 
+class OGLDescriptorPool final : public GraphicsDescriptorPool
+{
+	__DeclareSubClass(OGLDescriptorPool, GraphicsDescriptorPool)
+public:
+	OGLDescriptorPool() noexcept;
+	~OGLDescriptorPool() noexcept;
+
+	bool setup(const GraphicsDescriptorPoolDesc& desc) noexcept;
+	void close() noexcept;
+
+	const GraphicsDescriptorPoolDesc& getGraphicsDescriptorPoolDesc() const noexcept;
+
+private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	OGLDescriptorPool(const OGLDescriptorPool&) noexcept = delete;
+	OGLDescriptorPool& operator=(const OGLDescriptorPool&) noexcept = delete;
+
+private:
+	GraphicsDeviceWeakPtr _device;
+	GraphicsDescriptorPoolDesc _descriptorPoolDesc;
+};
+
 class OGLDescriptorSetLayout final : public GraphicsDescriptorSetLayout
 {
 	__DeclareSubClass(OGLDescriptorSetLayout, OGLGraphicsData)
@@ -149,7 +175,7 @@ private:
 
 private:
 	GraphicsDeviceWeakPtr _device;
-	GraphicsDescriptorSetLayoutDesc _descriptorSetDesc;
+	GraphicsDescriptorSetLayoutDesc _descripotrSetLayoutDesc;
 };
 
 class OGLDescriptorSet final : public GraphicsDescriptorSet

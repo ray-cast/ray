@@ -126,6 +126,32 @@ private:
 	GraphicsUniformPtr _uniform;
 };
 
+class EGL2DescriptorPool final : public GraphicsDescriptorPool
+{
+	__DeclareSubClass(EGL2DescriptorPool, GraphicsDescriptorPool)
+public:
+	EGL2DescriptorPool() noexcept;
+	~EGL2DescriptorPool() noexcept;
+
+	bool setup(const GraphicsDescriptorPoolDesc& desc) noexcept;
+	void close() noexcept;
+
+	const GraphicsDescriptorPoolDesc& getGraphicsDescriptorPoolDesc() const noexcept;
+
+private:
+	friend class EGL2Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	EGL2DescriptorPool(const EGL2DescriptorPool&) noexcept = delete;
+	EGL2DescriptorPool& operator=(const EGL2DescriptorPool&) noexcept = delete;
+
+private:
+	GraphicsDeviceWeakPtr _device;
+	GraphicsDescriptorPoolDesc _descriptorPoolDesc;
+};
+
 class EGL2DescriptorSetLayout final : public GraphicsDescriptorSetLayout
 {
 	__DeclareSubClass(EGL2DescriptorSetLayout, OGLGraphicsData)

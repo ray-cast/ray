@@ -42,6 +42,7 @@
 #include "vk_descriptor_set.h"
 #include "vk_render_pipeline.h"
 #include "vk_graphics_data.h"
+#include "vk_system.h"
 
 _NAME_BEGIN
 
@@ -276,8 +277,8 @@ VulkanCommandList::clearRenderTexture(ClearValue value[], std::uint32_t first, s
 	VkClearRect rects[VK_MAX_ATTACHMENT];
 
 	auto framebuffer = _framebuffers->downcast<VulkanFramebuffer>();
-	auto framebufferDesc = framebuffer->getGraphicsFramebufferDesc().getTextures()[0]->getGraphicsTextureDesc();
-	auto renderTextures = framebuffer->getGraphicsFramebufferDesc().getTextures();
+	auto& textureDesc = framebuffer->getGraphicsFramebufferDesc().getTextures()[0]->getGraphicsTextureDesc();
+	auto& renderTextures = framebuffer->getGraphicsFramebufferDesc().getTextures();
 
 	for (std::uint32_t i = 0; i < count; i++, attachmentCount++)
 	{
@@ -326,12 +327,12 @@ VulkanCommandList::clearRenderTexture(ClearValue value[], std::uint32_t first, s
 		}
 		else
 		{
-			rects->baseArrayLayer = 0;
-			rects->layerCount = framebufferDesc.getArrayLayer();
+			rects->baseArrayLayer = textureDesc.getLayerBase();
+			rects->layerCount = textureDesc.getLayerNums();
 			rects->rect.offset.x = 0;
 			rects->rect.offset.y = 0;
-			rects->rect.extent.width = framebufferDesc.getWidth();
-			rects->rect.extent.height = framebufferDesc.getHeight();
+			rects->rect.extent.width = textureDesc.getWidth();
+			rects->rect.extent.height = textureDesc.getHeight();
 		}
 
 		if (attachmentCount == VK_MAX_VIEWPORT_ARRAY)

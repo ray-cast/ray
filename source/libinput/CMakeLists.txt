@@ -40,17 +40,17 @@ SET(INPUT_MSW_LIST
 )
 SOURCE_GROUP("input\\msw" FILES ${INPUT_MSW_LIST})
 
-SET(INPUT_SDL_LIST
-    ${HEADER_PATH}/sdl_input_device.h
-    ${SOURCE_PATH}/sdl_input_device.cpp
-    ${HEADER_PATH}/sdl_input_keyboard.h
-    ${SOURCE_PATH}/sdl_input_keyboard.cpp
-    ${HEADER_PATH}/sdl_input_mouse.h
-    ${SOURCE_PATH}/sdl_input_mouse.cpp
+SET(INPUT_NDK_LIST
+    ${HEADER_PATH}/ndk_input_device.h
+    ${SOURCE_PATH}/ndk_input_device.cpp
+    ${HEADER_PATH}/ndk_input_keyboard.h
+    ${SOURCE_PATH}/ndk_input_keyboard.cpp
+    ${HEADER_PATH}/ndk_input_mouse.h
+    ${SOURCE_PATH}/ndk_input_mouse.cpp
 )
-SOURCE_GROUP("input\\sdl" FILES ${INPUT_SDL_LIST})
+SOURCE_GROUP("input\\ndk" FILES ${INPUT_NDK_LIST})
 
-ADD_LIBRARY(libinput SHARED ${INPUT_CORE_LIST} ${INPUT_MSW_LIST} ${INPUT_SDL_LIST})
+ADD_LIBRARY(libinput SHARED ${INPUT_CORE_LIST} ${INPUT_MSW_LIST})
 
 TARGET_LINK_LIBRARIES(libinput libplatform)
 IF(BUILD_PLATFORM_WINDOWS)

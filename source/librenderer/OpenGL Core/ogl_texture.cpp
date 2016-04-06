@@ -41,8 +41,8 @@ _NAME_BEGIN
 __ImplementSubClass(OGLTexture, GraphicsTexture, "OGLTexture")
 
 OGLTexture::OGLTexture() noexcept
-	: _texture(0)
-	, _target(GL_NONE)
+	: _texture(GL_NONE)
+	, _target(GL_INVALID_ENUM)
 {
 }
 
@@ -60,6 +60,10 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	if (target == GL_INVALID_ENUM)
 		return false;
 
+	GLenum internalFormat = OGLTypes::asTextureInternalFormat(textureDesc.getTexFormat());
+	if (internalFormat == GL_INVALID_ENUM)
+		return false;
+
 	glCreateTextures(target, 1, &_texture);
 	if (_texture == GL_NONE)
 	{
@@ -71,6 +75,9 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	GLsizei h = (GLsizei)textureDesc.getHeight();
 	GLsizei depth = (GLsizei)textureDesc.getDepth();
 
+	GLsizei mipBase = textureDesc.getMipBase();
+	GLsizei mipLevel = std::max((GLsizei)textureDesc.getMipLevel(), 1);
+
 	if (!applySamplerWrap(textureDesc.getSamplerWrap()))
 		return false;
 
@@ -80,28 +87,24 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	if (!applySamplerAnis(textureDesc.getSamplerAnis()))
 		return false;
 
-	GLenum internalFormat = OGLTypes::asTextureInternalFormat(textureDesc.getTexFormat());
-	if (internalFormat == GL_INVALID_ENUM)
+	if (!applyMipmapLimit(mipBase, mipLevel))
 		return false;
 
-	GLsizei level = target == GL_TEXTURE_CUBE_MAP ? 6 : 1;
-	level = std::max(level, textureDesc.getMipLevel());
-
 	if (target == GL_TEXTURE_2D)
-		glTextureStorage2D(_texture, level, internalFormat, w, h);
+		glTextureStorage2D(_texture, mipLevel, internalFormat, w, h);
 	else if (target == GL_TEXTURE_2D_MULTISAMPLE)
-		glTextureStorage2DMultisample(_texture, level, internalFormat, w, h, GL_FALSE);
+		glTextureStorage2DMultisample(_texture, mipLevel, internalFormat, w, h, GL_FALSE);
 	else if (target == GL_TEXTURE_2D_ARRAY)
-		glTextureStorage3D(_texture, level, internalFormat, w, h, depth);
+		glTextureStorage3D(_texture, mipLevel, internalFormat, w, h, depth);
 	else if (target == GL_TEXTURE_2D_MULTISAMPLE_ARRAY)
-		glTextureStorage3DMultisample(_texture, level, internalFormat, w, h, depth, GL_FALSE);
+		glTextureStorage3DMultisample(_texture, mipLevel, internalFormat, w, h, depth, GL_FALSE);
 	else if (target == GL_TEXTURE_3D)
-		glTextureStorage3D(_texture, level, internalFormat, w, h, depth);
+		glTextureStorage3D(_texture, mipLevel, internalFormat, w, h, depth);
 	else if (target == GL_TEXTURE_CUBE_MAP)
-		glTextureStorage2D(_texture, level, internalFormat, w, h);
+		glTextureStorage2D(_texture, mipLevel, internalFormat, w, h);
 	else if (target == GL_TEXTURE_CUBE_MAP_ARRAY)
-		glTextureStorage3D(_texture, level, internalFormat, w, h, depth);
-
+		glTextureStorage3D(_texture, mipLevel, internalFormat, w, h, depth);
+	
 	auto stream = textureDesc.getStream();
 	if (stream)
 	{
@@ -110,7 +113,7 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 			GLsizei offset = 0;
 			GLsizei blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;
 
-			for (GLint mip = 0; mip < level; mip++)
+			for (GLint mip = mipBase; mip < mipBase + mipLevel; mip++)
 			{
 				GLsizei mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
 
@@ -126,7 +129,7 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		{
 			GLenum format = OGLTypes::asTextureFormat(textureDesc.getTexFormat());
 			GLenum type = OGLTypes::asTextureType(textureDesc.getTexFormat());
-
+			
 			switch (target)
 			{
 			case GL_TEXTURE_2D:
@@ -149,11 +152,6 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		}
 	}
 
-	if (textureDesc.isMipmap())
-	{
-		glGenerateTextureMipmap(_texture);
-	}
-
 	_target = target;
 	_textureDesc = textureDesc;
 
@@ -163,17 +161,11 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 void
 OGLTexture::close() noexcept
 {
-	if (_texture)
+	if (_texture != GL_NONE)
 	{
 		glDeleteTextures(1, &_texture);
 		_texture = GL_NONE;
 	}
-}
-
-bool
-OGLTexture::isMultiSample() const noexcept
-{
-	return _textureDesc.isMultiSample();
 }
 
 GLenum
@@ -188,10 +180,12 @@ OGLTexture::getInstanceID() noexcept
 	return _texture;
 }
 
-const GraphicsTextureDesc&
-OGLTexture::getGraphicsTextureDesc() const noexcept
+bool 
+OGLTexture::applyMipmapLimit(std::uint32_t min, std::uint32_t count) noexcept
 {
-	return _textureDesc;
+	glTextureParameteri(_texture, GL_TEXTURE_BASE_LEVEL, min);
+	glTextureParameteri(_texture, GL_TEXTURE_MAX_LEVEL, min + count);
+	return true;
 }
 
 bool
@@ -239,14 +233,17 @@ OGLTexture::applySamplerAnis(GraphicsSamplerAnis anis) noexcept
 		glTextureParameteri(_texture, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
 	else
 	{
-		if (anis != GraphicsSamplerAnis::GraphicsSamplerAnis0)
-		{
-			GL_PLATFORM_LOG("Can't support anisotropy format");
-			return false;
-		}
+		GL_PLATFORM_LOG("Can't support anisotropy format");
+		return false;
 	}
 
 	return true;
+}
+
+const GraphicsTextureDesc&
+OGLTexture::getGraphicsTextureDesc() const noexcept
+{
+	return _textureDesc;
 }
 
 void

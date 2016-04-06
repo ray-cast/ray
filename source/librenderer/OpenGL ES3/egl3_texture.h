@@ -52,14 +52,13 @@ public:
 	void close() noexcept;
 
 	GLenum getTarget() const noexcept;
-
 	GLuint getInstanceID() const noexcept;
 
 	const GraphicsTextureDesc& getGraphicsTextureDesc() const noexcept;
 
 private:
-
-	static bool applySamplerWrap(GLenum, GraphicsSamplerWrap wrap) noexcept;
+	static bool applyMipmapLimit(GLenum target, std::uint32_t min, std::uint32_t count) noexcept;
+	static bool applySamplerWrap(GLenum target, GraphicsSamplerWrap wrap) noexcept;
 	static bool applySamplerFilter(GLenum target, GraphicsSamplerFilter filter) noexcept;
 	static bool applySamplerAnis(GLenum target, GraphicsSamplerAnis anis) noexcept;
 

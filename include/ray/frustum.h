@@ -37,7 +37,7 @@
 #ifndef _H_FRUSTUM_H_
 #define _H_FRUSTUM_H_
 
-#include <ray/plane3.h>
+#include <ray/plane.h>
 #include <ray/mat4.h>
 
 _NAME_BEGIN
@@ -200,7 +200,7 @@ public:
 			if (plane.normal.z <= 0)
 				std::swap(min.z, max.z);
 
-			return (plane.normal.dot(max) + plane.distance) < 0 ? false : true;
+			return (math::dot(plane.normal, max) + plane.distance) < 0 ? false : true;
 		};
 
 		if (_contains(_left, box) && _contains(_right, box) &&
@@ -255,8 +255,6 @@ public:
 		return FRUSTUM_CONTAINS;
 	}
 
-	int classify(const Raycast3t<T>& ray) const  noexcept;
-	int classify(const Line3t<T>& line) const  noexcept;
 	int classify(const Rect3t<T>& rc) const  noexcept
 	{
 		if (!_left.classify(rc)) { return FRUSTUM_LEFT; }
@@ -295,7 +293,6 @@ public:
 	}
 
 private:
-
 	Plane3t<T> _left;
 	Plane3t<T> _right;
 	Plane3t<T> _top;

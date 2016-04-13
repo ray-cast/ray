@@ -1,18 +1,15 @@
 <?xml version='1.0'?>
 <effect language="hlsl">
+    <include name="sys:fx/math.fxml"/>
     <include name="sys:fx/GBuffer.fxml"/>
-    <parameter name="matModel" semantic="matModel" />
-    <parameter name="matModelInverseTranspose" semantic="matModelInverseTranspose" />
-    <parameter name="matViewProject" semantic="matViewProject"/>
-    <parameter name="decal" type="texture"/>
+    <include name="sys:fx/inputlayout.fxml"/>
+    <parameter name="matModel" semantic="matModel" type="float4x4"/>
+    <parameter name="matModelInverseTranspose" semantic="matModelInverseTranspose" type="float4x4"/>
+    <parameter name="matViewProject" semantic="matViewProject"type="float4x4"/>
+    <parameter name="decal" type="texture2D"/>
+    <parameter name="timer" type="float"/>
     <shader>
         <![CDATA[
-            uniform float4x4 matModel;
-            uniform float4x4 matModelInverseTranspose;
-            uniform float4x4 matViewProject;
-            uniform Texture2D decal;
-            uniform float timer;
-
             void SkyVS(
                 in float4 Position : POSITION,
                 in float4 Texcoord : TEXCOORD0,
@@ -28,15 +25,15 @@
                 float dayTimer = timer / 50;
                 dayTimer -= int(dayTimer);
 
-                return rgba2srgba(decal.Sample(PointClamp, float2(coord.x, dayTimer)));
+                return srgb2linear(decal.Sample(PointClamp, float2(coord.x, dayTimer)));
             }
         ]]>
     </shader>
-    <technique name="opaque">
-        <pass name="specific">
+    <technique name="opaquespecift">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F_UV2F"/>
             <state name="vertex" value="SkyVS"/>
             <state name="fragment" value="SkyPS"/>
-
             <state name="cullmode" value="front"/>
         </pass>
     </technique>

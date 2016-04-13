@@ -68,8 +68,8 @@ public:
 	void setVertexBuffers(GraphicsDataPtr data[], std::uint32_t first, std::uint32_t count) noexcept;
 	void setIndexBuffer(GraphicsDataPtr data) noexcept;
 
-	void drawRenderBuffer(const GraphicsIndirect& renderable) noexcept;
-	void drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t count) noexcept;
+	void drawRenderMesh(const GraphicsIndirect& renderable) noexcept;
+	void drawRenderMesh(const GraphicsIndirect renderable[], std::size_t count) noexcept;
 
 	void execute(const GraphicsCommandListPtr& command) noexcept;
 

@@ -103,20 +103,20 @@ private:
 private:
 
 	MaterialPtr _deferredLighting;
-	MaterialPassPtr _deferredDepthOnly;
-	MaterialPassPtr _deferredDepthLinear;
-	MaterialPassPtr _deferredSunLight;
-	MaterialPassPtr _deferredSunLightShadow;
-	MaterialPassPtr _deferredDirectionalLight;
-	MaterialPassPtr _deferredDirectionalLightShadow;
-	MaterialPassPtr _deferredSpotLight;
-	MaterialPassPtr _deferredSpotLightShadow;
-	MaterialPassPtr _deferredPointLight;
-	MaterialPassPtr _deferredAmbientLight;
-	MaterialPassPtr _deferredShadingOpaques;
-	MaterialPassPtr _deferredShadingTransparents;
-	MaterialPassPtr _deferredDebugLayer;
-	MaterialPassPtr _deferredCopyOnly;
+	MaterialTechPtr _deferredDepthOnly;
+	MaterialTechPtr _deferredDepthLinear;
+	MaterialTechPtr _deferredSunLight;
+	MaterialTechPtr _deferredSunLightShadow;
+	MaterialTechPtr _deferredDirectionalLight;
+	MaterialTechPtr _deferredDirectionalLightShadow;
+	MaterialTechPtr _deferredSpotLight;
+	MaterialTechPtr _deferredSpotLightShadow;
+	MaterialTechPtr _deferredPointLight;
+	MaterialTechPtr _deferredAmbientLight;
+	MaterialTechPtr _deferredShadingOpaques;
+	MaterialTechPtr _deferredShadingTransparents;
+	MaterialTechPtr _deferredDebugLayer;
+	MaterialTechPtr _deferredCopyOnly;
 
 	MaterialParamPtr _texMRT0;
 	MaterialParamPtr _texMRT1;
@@ -142,8 +142,8 @@ private:
 	MaterialParamPtr _lightOuterInner;
 
 	MaterialPtr _softBlur;
-	MaterialPassPtr  _softBlurShadowX;
-	MaterialPassPtr  _softBlurShadowY;
+	MaterialTechPtr  _softBlurShadowX;
+	MaterialTechPtr  _softBlurShadowY;
 	MaterialParamPtr _softBlurShadowSource;
 	MaterialParamPtr _softBlurShadowSourceInv;
 
@@ -155,7 +155,7 @@ private:
 	GraphicsFramebufferLayoutPtr _softShaodwViewLayout;
 
 	float _shaodwFactor;
-	float2 _shaodwMapSize;
+	float _shaodwMapSize;
 	GraphicsFormat _shadowFormat;
 
 	MaterialVariantPtr _materialDepthMap;

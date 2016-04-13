@@ -69,8 +69,8 @@ private:
 	float _gaussianWidth;
 
 	MaterialPtr _material;
-	MaterialPassPtr _translucency;
-	MaterialPassPtr _blur;
+	MaterialTechPtr _translucency;
+	MaterialTechPtr _blur;
 
 	MaterialParamPtr _sssStep;
 	MaterialParamPtr _sssCorrection;

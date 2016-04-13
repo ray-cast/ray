@@ -38,7 +38,7 @@
 #define _H_SPHERE_H_
 
 #include <ray/aabb.h>
-#include <ray/vector3.h>
+#include <ray/mathutil.h>
 
 _NAME_BEGIN
 
@@ -54,7 +54,7 @@ public:
 		: _box(min, max)
 	{
 		_center = _box.center();
-		_radius = _box.size().length() * 0.5f;
+		_radius = math::length(_box.size()) * 0.5f;
 	}
 
 	Spheret(const Vector3t<T>& pt, T radius) noexcept
@@ -79,7 +79,7 @@ public:
 	{
 		_box.encapsulate(pt);
 		_center = _box.center();
-		_radius = _box.size().length() * 0.5f;
+		_radius = math::length(_box.size()) * 0.5f;
 	}
 
 	void encapsulate(const Vector3t<T> pt[], std::size_t n) noexcept
@@ -88,21 +88,21 @@ public:
 
 		_box.encapsulate(pt, n);
 		_center = _box.center();
-		_radius = _box.size().length() * 0.5f;
+		_radius = math::length(_box.size()) * 0.5f;
 	}
 
 	void encapsulate(const Spheret<T>& sphere) noexcept
 	{
 		_box.encapsulate(sphere._box);
 		_center = _box.center();
-		_radius = _box.size().length() * 0.5f;
+		_radius = math::length(_box.size()) * 0.5f;
 	}
 
 	void applyMatrix(const Matrix4x4t<T>& m) noexcept
 	{
 		_box.applyMatrix(m);
 		_center = _box.center();
-		_radius = _box.size().length() * 0.5f;
+		_radius = math::length(_box.size()) * 0.5f;
 	}
 
 	bool contains(const Vector3t<T>& pt) const noexcept
@@ -210,7 +210,6 @@ public:
 	}
 
 private:
-
 	T _radius;
 	Vector3t<T> _center;
 	AABBt<T> _box;

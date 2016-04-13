@@ -63,8 +63,8 @@ LightShaft::onActivate(RenderPipeline& pipeline) noexcept
 
 	_material = pipeline.createMaterial("sys:fx/light_shaft.glsl");
 
-	_lightShaft = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("LightScatter");
-	_lightShaftCopy = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("LightScatterCopy");
+	_lightShaft = _material->getTech("LightScatter");
+	_lightShaftCopy = _material->getTech("LightScatterCopy");
 
 	_illuminationSample = _material->getParameter("illuminationSample");
 	_illuminationPosition = _material->getParameter("illuminationPosition");
@@ -113,7 +113,7 @@ LightShaft::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Gr
 
 	_illuminationRadio->assign((float)width / height);
 
-	auto lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting, RenderPass::RenderPassLights);
+	auto lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting);
 	for (auto& it : lights)
 	{
 		auto light = std::dynamic_pointer_cast<Light>(it);

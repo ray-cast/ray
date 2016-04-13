@@ -148,12 +148,15 @@ float noise2(float x, float y)
     g[1] = PERM[I + i1 + PERM[J + j1]] % 12;
     g[2] = PERM[I + 1 + PERM[J + 1]] % 12;
 
-    for (c = 0; c <= 2; c++) {
+    for (c = 0; c <= 2; c++) 
+	{
         f[c] = 0.5f - xx[c] * xx[c] - yy[c] * yy[c];
     }
 
-    for (c = 0; c <= 2; c++) {
-        if (f[c] > 0) {
+    for (c = 0; c <= 2; c++) 
+	{
+        if (f[c] > 0) 
+		{
             noise[c] = f[c] * f[c] * f[c] * f[c] *
                 (GRAD3[g[c]][0] * xx[c] + GRAD3[g[c]][1] * yy[c]);
         }
@@ -178,36 +181,45 @@ float noise3(float x, float y, float z)
     pos[0][1] = y - (j - t);
     pos[0][2] = z - (k - t);
 
-    if (pos[0][0] >= pos[0][1]) {
-        if (pos[0][1] >= pos[0][2]) {
+    if (pos[0][0] >= pos[0][1]) 
+	{
+        if (pos[0][1] >= pos[0][2]) 
+		{
             ASSIGN(o1, 1, 0, 0);
             ASSIGN(o2, 1, 1, 0);
         }
-        else if (pos[0][0] >= pos[0][2]) {
+        else if (pos[0][0] >= pos[0][2]) 
+		{
             ASSIGN(o1, 1, 0, 0);
             ASSIGN(o2, 1, 0, 1);
         }
-        else {
+        else 
+		{
             ASSIGN(o1, 0, 0, 1);
             ASSIGN(o2, 1, 0, 1);
         }
     }
-    else {
-        if (pos[0][1] < pos[0][2]) {
+    else 
+	{
+        if (pos[0][1] < pos[0][2]) 
+		{
             ASSIGN(o1, 0, 0, 1);
             ASSIGN(o2, 0, 1, 1);
         }
-        else if (pos[0][0] < pos[0][2]) {
+        else if (pos[0][0] < pos[0][2]) 
+		{
             ASSIGN(o1, 0, 1, 0);
             ASSIGN(o2, 0, 1, 1);
         }
-        else {
+        else 
+		{
             ASSIGN(o1, 0, 1, 0);
             ASSIGN(o2, 1, 1, 0);
         }
     }
 
-    for (c = 0; c <= 2; c++) {
+    for (c = 0; c <= 2; c++) 
+	{
         pos[3][c] = pos[0][c] - 1.0f + 3.0f * G3;
         pos[2][c] = pos[0][c] - o2[c] + 2.0f * G3;
         pos[1][c] = pos[0][c] - o1[c] + G3;
@@ -221,13 +233,16 @@ float noise3(float x, float y, float z)
     g[2] = PERM[I + o2[0] + PERM[J + o2[1] + PERM[o2[2] + K]]] % 12;
     g[3] = PERM[I + 1 + PERM[J + 1 + PERM[K + 1]]] % 12;
 
-    for (c = 0; c <= 3; c++) {
+    for (c = 0; c <= 3; c++) 
+	{
         f[c] = 0.6f - pos[c][0] * pos[c][0] - pos[c][1] * pos[c][1] -
             pos[c][2] * pos[c][2];
     }
 
-    for (c = 0; c <= 3; c++) {
-        if (f[c] > 0) {
+    for (c = 0; c <= 3; c++) 
+	{
+        if (f[c] > 0) 
+		{
             noise[c] = f[c] * f[c] * f[c] * f[c] * DOT3(pos[c], GRAD3[g[c]]);
         }
     }
@@ -295,7 +310,6 @@ PerlinNoise2::noise(float x, float y, float scale)
 {
     Vector2 pos(x * scale, y * scale);
 
-    //找到此点的方格子
     int iX0 = int(pos.x);
     int iX1 = iX0 + 1;
     int iY0 = int(pos.y);
@@ -306,7 +320,6 @@ PerlinNoise2::noise(float x, float y, float scale)
     float Y0 = (float)iY0;
     float Y1 = (float)iY1;
 
-    //获得此方格4个顶点的梯度值
     const Vector2& v0 = getVec(iX0, iY0);
     const Vector2& v1 = getVec(iX0, iY1);
     const Vector2& v2 = getVec(iX1, iY0);
@@ -317,7 +330,6 @@ PerlinNoise2::noise(float x, float y, float scale)
     Vector2 d2(pos.x - X1, pos.y - Y0);
     Vector2 d3(pos.x - X1, pos.y - Y1);
 
-    //通过内积算出方格4个顶点的权重
     float h0 = (d0.x * v0.x) + (d0.y * v0.y);
     float h1 = (d1.x * v1.x) + (d1.y * v1.y);
     float h2 = (d2.x * v2.x) + (d2.y * v2.y);
@@ -325,20 +337,12 @@ PerlinNoise2::noise(float x, float y, float scale)
 
     float Sx = d0.x, Sy = d0.y;
 
-    //柏林插值平滑函数f(x) = 6*x^5 - 15*x^4 + 10*x^3
-    //通过柏林方程式平滑此点
-
     Sx = (6 * powf(d0.x, 5.0f)) - (15 * powf(d0.x, 4.0f)) + (10 * powf(d0.x, 3.0f));
-
     Sy = (6 * powf(d0.y, 5.0f)) - (15 * powf(d0.y, 4.0f)) + (10 * powf(d0.y, 3.0f));
 
-    //在下2顶点的x轴上对权重点Sx进行线性插值
-    float avgX0 = lerp(h0, h2, Sx);
+    float avgX0 = math::lerp(h0, h2, Sx);
+    float avgX1 = math::lerp(h1, h3, Sx);
 
-    //在上2顶点的x轴上对权重点Sx进行线性插值
-    float avgX1 = lerp(h1, h3, Sx);
-
-    //在y轴上合并2个插值
     float result = avgX0 + (Sy*(avgX1 - avgX0));
 
     return result;

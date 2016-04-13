@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MATH_UTIL_H_
-#define _H_MATH_UTIL_H_
+#ifndef _H_MATH_CMN_H_
+#define _H_MATH_CMN_H_
 
 #include <ray/platform.h>
 
@@ -98,6 +98,9 @@ _NAME_BEGIN
 #   define COMPONENT_W 4
 #endif
 
+namespace math
+{
+
 inline bool equals(float a, float b)
 {
     return fabs(b - a) < EPSILON ? true : false;
@@ -113,19 +116,19 @@ inline T wrapPI(T theta)
 }
 
 template<typename T>
-inline static T max(T t1, T t2)
+inline T max(T t1, T t2)
 {
     return t1 > t2 ? t1 : t2;
 }
 
 template<typename T>
-inline static T min(T t1, T t2)
+inline T min(T t1, T t2)
 {
     return t1 < t2 ? t1 : t2;
 }
 
 template<typename T>
-inline static T middle(T t1, T t2, T t3)
+inline T middle(T t1, T t2, T t3)
 {
     if (t1 < t2)
     {
@@ -144,7 +147,7 @@ inline static T middle(T t1, T t2, T t3)
 }
 
 template<typename T>
-inline static T abs(T t)
+inline T abs(T t)
 {
     return t >= 0 ? t : -t;
 }
@@ -173,9 +176,6 @@ inline double invSqrt(double y)
     y = y * (threehalfs - (x2*y*y));
     return y;
 }
-
-EXPORT float fastSin(float theta);
-EXPORT float fastCos(float theta);
 
 template<double& R>
 class Sine
@@ -206,9 +206,7 @@ template<typename T>
 inline T safeAcos(T x)
 {
     if (x <= -1.0) { return M_PI; }
-
     if (x >= 1.0) { return 0; }
-
     return std::acos(x);
 }
 
@@ -305,30 +303,6 @@ inline T fast_exp2(T x)
     T m = (t * t + c[0] * t + c[1]) / (c[2] * t * c[1]);
 
     return std::ldexp<T>(m, e);
-}
-
-EXPORT void randomize();
-EXPORT int random(int min, int max);
-EXPORT float random(float min, float max);
-EXPORT double random(double min, double max);
-
-inline std::uint32_t part1by2(std::uint32_t n)
-{
-    n = (n ^ (n << 16)) & 0xff0000ff;
-    n = (n ^ (n << 8)) & 0x0300f00f;
-    n = (n ^ (n << 4)) & 0x030c30c3;
-    n = (n ^ (n << 2)) & 0x09249249;
-    return n;
-}
-
-inline std::uint32_t morton(std::uint32_t x, std::uint32_t y)
-{
-    return (part1by2(y) << 1) + part1by2(x);
-}
-
-inline std::uint32_t morton(std::uint32_t x, std::uint32_t y, std::uint32_t z)
-{
-    return (part1by2(z) << 2) + (part1by2(y) << 1) + part1by2(x);
 }
 
 inline constexpr int _hash_int_0(int key)
@@ -569,359 +543,18 @@ inline void GaussianKernel(std::vector<T>& weights, std::vector<T> offsets, std:
 		offsets[i] = i / size;
 }
 
-/*
-template<typename T>
-class Rect2
-{
-    T left;
-    T right;
-    T top;
-    T bottom;
+EXPORT void randomize();
+EXPORT int random(int min, int max);
+EXPORT float random(float min, float max);
+EXPORT double random(double min, double max);
 
-    Rect2()
-    {
-        left = top = right = bottom = 0.0;
-    }
+EXPORT float fastSin(float theta);
+EXPORT float fastCos(float theta);
 
-    Rect2(T l, T t, T r, T b)
-    {
-        left = l;
-        right = r;
-        top = t;
-        bottom = b;
-    }
+EXPORT std::uint32_t morton2(std::uint32_t x, std::uint32_t y);
+EXPORT std::uint32_t morton3(std::uint32_t x, std::uint32_t y, std::uint32_t z);
 
-    void setRect(T _left, T _top, T _right, T _bottom)
-    {
-        left    = _left;
-        top     = _top;
-        right   = _right;
-        bottom  = _bottom;
-    }
-
-    void setSize(T lWidth,T lHeight)
-    {
-        right = lWidth;
-        bottom = lHeight;
-    }
-
-    void setPos(const Vector2f& pt)
-    {
-        left += pt.x;
-        top += pt.y;
-        right += pt.x;
-        bottom += pt.y;
-    }
-
-    bool contains(const Vector2f& pt) const
-    {
-        return (pt.x <right && pt.x > left && pt.y > top && pt.y <bottom);
-    };
-};
-
-template<typename T = float>
-class Ray2
-{
-    Vector2t<T> origin;
-    Vector2t<T> normal;
-
-    Ray2()
-    {
-    }
-
-    Ray2(const Vector2t<T>& pt, const Vector2t<T>& normal)
-    {
-        origin = pt;
-        setNormal(normal);
-    }
-
-    void setNormal(const Vector2t<T>& n)
-    {
-        normal = n;
-        normal.normalize();
-    }
-
-    Vector2t<T> getPoint(float distance) const
-    {
-        return origin + normal * distance;
-    }
-
-    Vector2t<T> closestPoint(const Vector2t<T>& pt) const
-    {
-        Vector2t<T> vector = pt - origin;
-
-        float t = normal.dot(vector);
-
-        if (t <static_cast<T>(0.0)) return origin;
-
-        return origin + t * normal;
-    }
-
-    float sqrDistance(const Vector2t<T>& pt) const
-    {
-        Vector2t<T> ac = pt - origin;
-
-        float t = normal.dot(ac);
-
-        if (t <= static_cast<T>(0.0)) return ac.dot();
-
-        float denom = normal.dot();
-
-        return ac.dot() - t * t / denom;
-    }
-};
-
-template<typename T = float>
-class Line2
-{
-public:
-    Vector2t<T> pos0;
-    Vector2t<T> pos1;
-
-    Line2() { }
-    Line2(const Vector2t<T>& pt0, const Vector2t<T> pt1)
-        :pos0(pt0)
-        ,pos1(pt1) { }
-
-    void set(const Vector2t<T>& start, const Vector2t<T>& end)
-    {
-        pos0 = start;
-        pos1 = end;
-    }
-
-    Vector2t<T> size()   const { return pos1 - pos0; }
-    Vector2t<T> normal() const { return size().normalize(); }
-
-    Vector2t<T> closestPoint(const Vector2t<T>& pt) const
-    {
-        Vector2t<T> ab = pos1 - pos0;
-        Vector2t<T> ac = pt - pos0;
-
-        float t = ac.dot(ab);
-
-        if (t <= static_cast<T>(0.0)) { return pos0; }
-
-        float denom = ab.dot();
-
-        if (t >= denom) { return pos1; }
-
-        t = t / ab.dot();
-
-        return pos0 + t * ab;
-    }
-
-    float sqrDistance(const Vector2t<T>& pt) const
-    {
-        Vector2t<T> ab = pos1 - pos0;
-        Vector2t<T> ac = pt - pos0;
-
-        float t = ac.dot(ab);
-
-        if (t <= static_cast<T>(0.0)) return ac.dot();
-
-        float denom = ab.dot();
-
-        if (t >= denom)
-        {
-            Vector2t<T> bc = pt - pos1;
-
-            return bc.dot();
-        }
-
-        return ac.dot() - t * t / denom;
-    }
-};
-
-template<typename T = float>
-class Plane2
-{
-public:
-    Vector2t<T> normal;
-    float    distance;
-
-    Plane2()
-    {
-    }
-
-    Plane2(const Plane2& copy)
-        :normal(copy.normal)
-        ,distance(copy.distance)
-    {
-    }
-
-    Plane2(const Vector2t<T>& pt0, const Vector2t<T>& pt1)
-    {
-        compute(pt0, pt1);
-    }
-
-    Plane2(const Vector2t<T>& n, float dist)
-    {
-        setNormal(n);
-        distance = dist;
-    }
-
-    void setNormal(const Vector2t<T> n)
-    {
-        normal = n;
-        normal.normalize();
-    }
-
-    void setDistance(const Vector2t<T>& pt)
-    {
-        distance = -normal.dot(pt);
-    }
-
-    void compute(const Vector2t<T>& pt0, const Vector2t<T>& pt1)
-    {
-        setNormal(pt1 - pt0);
-        setDistance(pt0);
-    }
-
-    float getDistance(const Vector2t<T>& pt) const
-    {
-        return normal.dot(pt) + distance;
-    }
-
-    Vector2t<T> project(const Vector2t<T>& pt) const
-    {
-        return pt - getDistance(pt) * normal;
-    }
-};
-
-template<typename T=float>
-class Torus
-{
-public:
-    T radius;
-
-    Vector2t<T> center;
-};
-
-template<typename T>
-class CyrusBeck
-{
-public:
-    void setScissor(const Line2<T>* pt, size_t n)
-    {
-        for (size_t i = 0; i <n; i++)
-            lines_.push_back(*pt++);
-    }
-
-    bool scissor(const Line2<T>& line)
-    {
-        Vector2t<T> ray = line.normal();
-
-        size_t count = lines_.size();
-        for (size_t i = 0; i <count; i++)
-        {
-            Vector2t<T> ac = lines_[i].pos0 - line.pos0;
-        }
-    }
-
-private:
-    std::vector<Line2<T>> lines_;
-};
-
-class Morton
-{
-public:
-    static size_t part1By1(size_t n)
-    {
-        n = (n^(n <<8)) & 0x00ff00ff;
-        n = (n^(n <<4)) & 0x0f0f0f0f;
-        n = (n^(n <<2)) & 0x33333333;
-        n = (n^(n <<1)) & 0x55555555;
-        return n;
-    }
-
-    static size_t part1By2(size_t n)
-    {
-        n = (n^(n <<16)) & 0xff0000ff;
-        n = (n^(n << 8)) & 0x0300f00f;
-        n = (n^(n << 4)) & 0x030c30c3;
-        n = (n^(n << 2)) & 0x09249249;
-        return n;
-    }
-
-    static size_t morton(size_t x, size_t y)
-    {
-        return (part1By1(y) <<1) + part1By1(x);
-    }
-
-    static size_t morton(size_t x, size_t y, size_t z)
-    {
-        return (part1By2(z) <<2) + (part1By2(y) <<1) + part1By2(x);
-    }
-};
-
-template<typename T=float>
-class Polygon
-{
-    bool isConvex(const Vector3t<T> pt[], unsigned int n) const
-    {
-        T angleSum = 0.0f;
-
-        for (unsigned int i = 0; i <n; i++)
-        {
-            Vector3t<T> e1;
-            if (i==0)
-            {
-                e1 = pt[n - 1] - pt[i];
-            }
-            else
-            {
-                e1 = pt[i-1] - pt[i];
-            }
-
-            Vector3t<T> e2;
-            if (i == n-1)
-            {
-                e2 = pt[0] - pt[i];
-            }
-            else
-            {
-                e2 = pt[i + 1] - pt[i];
-            }
-
-            e1.normalize();
-            e2.normalize();
-
-            T d = e1.dot(e2);
-
-            T theta = ::safeAcos(d);
-
-            angleSum += theta;
-        }
-
-        T convexAngleSum = (T)(n - 2) * M_PI;
-
-        if (angleSum <convexAngleSum - (T)n * 0.0001f)
-        {
-            return false;
-        }
-
-        return true;
-    }
-};
-
-template<typename T=float>
-class Triangle2
-{
-    Vector2t<T> v[3];
-
-    Triangle2();
-    Triangle2(const Vector2t<T>& a, const Vector2t<T>& b, const Vector2t<T>& c);
-
-    float area() const;
-
-    Vector2t<T> barycentric(const Vector2t<T>& pt) const;
-
-    Vector2t<T> incenter() const;
-
-    Vector2t<T> circumcentrer() const;
-};
-
-*/
+}
 
 _NAME_END
 

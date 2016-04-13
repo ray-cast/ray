@@ -84,9 +84,9 @@ private:
 
 	MaterialPtr _ambientOcclusion;
 
-	MaterialPassPtr _ambientOcclusionPass;
-	MaterialPassPtr _ambientOcclusionBlurPass;
-	MaterialPassPtr _ambientOcclusionCopyPass;
+	MaterialTechPtr _ambientOcclusionPass;
+	MaterialTechPtr _ambientOcclusionBlurPass;
+	MaterialTechPtr _ambientOcclusionCopyPass;
 
 	MaterialParamPtr _radius;
 	MaterialParamPtr _radius2;

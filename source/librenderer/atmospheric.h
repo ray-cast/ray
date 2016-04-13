@@ -70,11 +70,11 @@ private:
 
 	Setting _setting;
 
-	RenderBufferPtr _sphere;
+	RenderMeshPtr _sphere;
 
 	MaterialPtr _sat;
-	MaterialPassPtr _sky;
-	MaterialPassPtr _ground;
+	MaterialTechPtr _sky;
+	MaterialTechPtr _ground;
 
 	MaterialParamPtr _lightDirection;
 	MaterialParamPtr _invWavelength;

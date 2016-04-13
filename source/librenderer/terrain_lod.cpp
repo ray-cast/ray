@@ -34,3 +34,117 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
+#include <ray/terrain_lod.h>
+
+_NAME_BEGIN
+
+TerrainLod::TerrainLod() noexcept
+	: _minDepth(0)
+	, _maxDepth(0)
+{
+}
+
+void
+TerrainLod::setMap(HeightMap* map) noexcept
+{
+	assert(map);
+	_map = map;
+	_size = _map->getSize();
+	_scale = (std::size_t)_map->getCellSize();
+	_maxDepth = 0;
+	_maxDepth = (std::uint8_t)math::bitScanReverse(_size - 1);
+}
+
+void 
+TerrainLod::setFrustum(Frustum* fru) 
+{
+	_frustum = fru; 
+}
+
+float 
+TerrainLod::getHeight(std::uint32_t x, std::uint32_t y) const
+{
+	return _map->getHeight(x, y); 
+}
+
+const Vector3&
+TerrainLod::getVertex(std::uint32_t x, std::uint32_t y) const 
+{
+	return _map->getVertex(x, y); 
+}
+
+std::size_t 
+TerrainLod::getScale() const 
+{
+	return _scale; 
+}
+
+std::uint32_t 
+TerrainLod::getSize() const 
+{
+	return _size; 
+}
+
+std::uint8_t 
+TerrainLod::getDepth() const 
+{
+	return _maxDepth; 
+}
+
+bool
+TerrainLod::isVisible(const Quadnode& node, std::uint8_t depth) const
+{
+	assert(_frustum);
+	assert(node.x < _size);
+	assert(node.y < _size);
+
+	std::intptr_t size = 1 << depth;
+
+	float R = size * _scale * 1.414f; //Ð±±ß
+
+	return _frustum->contains(_map->getVertex(node.x, node.y), R);
+}
+
+void
+TerrainLod::tessellate()
+{
+	_curNodes.push_back(_root);
+
+	for (std::uint8_t i = _maxDepth; i > _maxDepth; i--)
+	{
+		std::size_t size = _curNodes.size();
+
+		for (std::size_t j = 0; j < size; j++)
+		{
+			Quadnode node = _curNodes[j];
+
+			if (split(node, i))
+			{
+				int d = 1 << (i - 2);
+
+				Quadnode child;
+
+				child.x = node.x + d;
+				child.y = node.y + d;
+				_nextNodes.push_back(child);
+
+				child.x = node.x - d;
+				child.y = node.y + d;
+				_nextNodes.push_back(child);
+
+				child.x = node.x + d;
+				child.y = node.y - d;
+				_nextNodes.push_back(child);
+
+				child.x = node.x - d;
+				child.y = node.y - d;
+				_nextNodes.push_back(child);
+			}
+		}
+
+		_curNodes.swap(_nextNodes);
+		_nextNodes.clear();
+	}
+}
+
+_NAME_END

@@ -393,16 +393,6 @@ GameObject::setQuaternion(const Quaternion& quat) noexcept
 
 		_quat = quat;
 		_euler.makeRotate(_quat);
-
-		_right = _quat.rotate(Vector3::Right);
-		_right.normalize();
-
-		_up = _quat.rotate(Vector3::Up);
-		_up.normalize();
-
-		_forward = _quat.rotate(Vector3::Forward);
-		_forward.normalize();
-
 		_needUpdates = true;
 
 		if (this->getActive())
@@ -436,15 +426,7 @@ GameObject::setEulerAngles(const EulerAngles& euler) noexcept
 
 		_euler = euler;
 		_quat.makeRotate(euler);
-
-		_right = _quat.rotate(Vector3::Right);
-		_right.normalize();
-
-		_up = _quat.rotate(Vector3::Up);
-		_up.normalize();
-
-		_forward = _quat.rotate(Vector3::Forward);
-		_forward.normalize();
+		_needUpdates = true;
 
 		if (this->getActive())
 		{
@@ -465,87 +447,24 @@ GameObject::getEulerAngles() const noexcept
 	return _euler;
 }
 
-void
-GameObject::setRight(const Vector3& right) noexcept
-{
-	if (_right != right)
-	{
-		if (this->getActive())
-		{
-			this->_onMoveBefore();
-		}
-
-		_right = right;
-		_right.normalize();
-
-		_needUpdates = true;
-
-		if (this->getActive())
-		{
-			this->_onMoveAfter();
-		}
-	}
-}
-
 const Vector3&
 GameObject::getRight() const noexcept
 {
+	_updateTransform();
 	return _right;
-}
-
-void
-GameObject::setUpVector(const Vector3& up) noexcept
-{
-	if (_up != up)
-	{
-		if (this->getActive())
-		{
-			this->_onMoveBefore();
-		}
-
-		_up = up;
-		_up.normalize();
-
-		_needUpdates = true;
-
-		if (this->getActive())
-		{
-			this->_onMoveBefore();
-		}
-	}
 }
 
 const Vector3&
 GameObject::getUpVector() const noexcept
 {
+	_updateTransform();
 	return _up;
-}
-
-void
-GameObject::setForward(const Vector3& forward) noexcept
-{
-	if (_forward != forward)
-	{
-		if (this->getActive())
-		{
-			this->_onMoveBefore();
-		}
-
-		_forward = forward;
-		_forward.normalize();
-
-		_needUpdates = true;
-
-		if (this->getActive())
-		{
-			this->_onMoveAfter();
-		}
-	}
 }
 
 const Vector3&
 GameObject::getForward() const noexcept
 {
+	_updateTransform();
 	return _forward;
 }
 
@@ -568,23 +487,6 @@ GameObject::getTransformInverseTranspose() const noexcept
 {
 	this->_updateTransform();
 	return _transformInverseTranspose;
-}
-
-void
-GameObject::_updateTransform() const noexcept
-{
-	if (_needUpdates)
-	{
-		_transform.makeTransform(_translate, _quat, _scaling);
-
-		_transformInverse = _transform;
-		_transformInverse.inverse();
-
-		_transformInverseTranspose = _transformInverse;
-		_transformInverseTranspose.transpose();
-
-		_needUpdates = false;
-	}
 }
 
 void
@@ -797,9 +699,6 @@ GameObject::load(iarchive& reader) noexcept
 	float3 position = float3::Zero;
 	float3 scale = float3::One;
 	float3 rotate = float3::Zero;
-	float3 right = float3::UnitX;
-	float3 up = float3::UnitY;
-	float3 forward = float3::UnitZ;
 
 	reader >> make_archive(name, "name");
 	reader >> make_archive(active, "active");
@@ -807,22 +706,13 @@ GameObject::load(iarchive& reader) noexcept
 	reader >> make_archive(position, "position");
 	reader >> make_archive(scale, "scale");
 	reader >> make_archive(rotate, "rotate");
-	reader >> make_archive(right, "right");
-	reader >> make_archive(forward, "forward");
-	reader >> make_archive(up, "up");
-
-	right.normalize();
-	up.normalize();
-	forward.normalize();
 
 	this->setName(name);
 	this->setActive(active);
 	this->setLayer(layer);
-	this->setUpVector(up);
-	this->setForward(forward);
 	this->setTranslate(position);
 	this->setScale(scale);
-	this->setEulerAngles(EulerAngles(DEG_TO_RAD(rotate.x), DEG_TO_RAD(rotate.y), DEG_TO_RAD(rotate.z)));
+	this->setEulerAngles(EulerAngles(rotate));
 }
 
 void 
@@ -837,8 +727,6 @@ GameObject::clone() const noexcept
 	instance->setParent(this->getParent());
 	instance->setName(this->getName());
 	instance->setLayer(this->getLayer());
-	instance->setForward(this->getForward());
-	instance->setUpVector(this->getUpVector());
 	instance->setQuaternion(this->getQuaternion());
 	instance->setScale(this->getScale());
 	instance->setTranslate(this->getTranslate());
@@ -912,6 +800,26 @@ GameObject::_onMoveAfter() except
 
 	for (auto& it : _children)
 		it->_onMoveAfter();
+}
+
+void
+GameObject::_updateTransform() const noexcept
+{
+	if (_needUpdates)
+	{
+		_right = _quat.rotate(Vector3::Right);
+		_up = _quat.rotate(Vector3::Up);
+		_forward = _quat.rotate(Vector3::Forward);
+
+		_transform.makeRotate(_forward, _up, _right);
+		_transform.scale(_scaling);
+		_transform.setTranslate(_translate);
+
+		_transformInverse = math::inverse(_transform);
+		_transformInverseTranspose = math::transpose(_transformInverse);
+
+		_needUpdates = false;
+	}
 }
 
 _NAME_END

@@ -45,8 +45,6 @@
 #include <ray/euler.h>
 #include <ray/frustum.h>
 #include <ray/line3.h>
-#include <ray/mathfwd.h>
-#include <ray/mathutil.h>
 #include <ray/mat2.h>
 #include <ray/mat3.h>
 #include <ray/mat4.h>
@@ -54,7 +52,7 @@
 #include <ray/obb.h>
 #include <ray/octree.h>
 #include <ray/gdicmn.h>
-#include <ray/plane3.h>
+#include <ray/plane.h>
 #include <ray/quat.h>
 #include <ray/raycast.h>
 #include <ray/rect3.h>
@@ -63,5 +61,6 @@
 #include <ray/vector2.h>
 #include <ray/vector3.h>
 #include <ray/vector4.h>
+#include <ray/mathutil.h>
 
 #endif

@@ -49,14 +49,14 @@ SSAO::Setting::Setting() noexcept
 	, intensity(2)
 	, blur(true)
 	, blurRadius(6)
-	, blurScale(2)
-	, blurSharpness(8)
+	, blurScale(1.5)
+	, blurSharpness(4)
 {
 }
 
 SSAO::SSAO() noexcept
 {
-	this->setRenderQueue(RenderQueue::RenderQueueLighting);
+	this->setRenderQueue(RenderQueue::RenderQueueOpaqueSpecific);
 }
 
 SSAO::~SSAO() noexcept
@@ -151,7 +151,7 @@ SSAO::createSphereNoise() noexcept
 		float angle = sampleAlpha * M_TWO_PI * 7;
 
 		float2 rotate;
-		sinCos(&rotate.y, &rotate.x, angle);
+		math::sinCos(&rotate.y, &rotate.x, angle);
 
 		sphere.push_back(rotate);
 	}
@@ -168,18 +168,28 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 	_texAmbientMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
 	_texBlurMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
 
+	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
+	framebufferLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR16SFloat, 0));
+	_framebufferLayout = pipeline.createFramebufferLayout(framebufferLayoutDesc);
+
 	GraphicsFramebufferDesc ambientViewDesc;
+	ambientViewDesc.setWidth(width);
+	ambientViewDesc.setHeight(height);
 	ambientViewDesc.attach(_texAmbientMap);
+	ambientViewDesc.setGraphicsFramebufferLayout(_framebufferLayout);
 	_texAmbientView = pipeline.createFramebuffer(ambientViewDesc);
 
 	GraphicsFramebufferDesc blurViewDesc;
+	blurViewDesc.setWidth(width);
+	blurViewDesc.setHeight(height);
 	blurViewDesc.attach(_texBlurMap);
+	blurViewDesc.setGraphicsFramebufferLayout(_framebufferLayout);
 	_texBlurView = pipeline.createFramebuffer(blurViewDesc);
 
 	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssao.fxml.o");
-	_ambientOcclusionPass = _ambientOcclusion->getTech(RenderQueue::RenderQueuePostprocess)->getPass("ao");
-	_ambientOcclusionBlurPass = _ambientOcclusion->getTech(RenderQueue::RenderQueuePostprocess)->getPass("blur");
-	_ambientOcclusionCopyPass = _ambientOcclusion->getTech(RenderQueue::RenderQueuePostprocess)->getPass("copy");
+	_ambientOcclusionPass = _ambientOcclusion->getTech("ComputeAO");
+	_ambientOcclusionBlurPass = _ambientOcclusion->getTech("BlurAO");
+	_ambientOcclusionCopyPass = _ambientOcclusion->getTech("Copy");
 
 	_cameraProjScale = _ambientOcclusion->getParameter("projScale");
 	_cameraProjInfo = _ambientOcclusion->getParameter("projInfo");
@@ -189,7 +199,7 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 	_occlusionBias = _ambientOcclusion->getParameter("bias");
 	_occlusionIntensity = _ambientOcclusion->getParameter("intensity");
 	_occlusionAmbient = _ambientOcclusion->getParameter("texOcclusion");
-	_occlusionSphere = _ambientOcclusion->getParameter("sphere[0]");
+	_occlusionSphere = _ambientOcclusion->getParameter("sphere");
 
 	_blurSource = _ambientOcclusion->getParameter("texSource");
 	_blurFactor = _ambientOcclusion->getParameter("blurFactor");
@@ -227,8 +237,8 @@ SSAO::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Graphics
 
 	this->shading(pipeline, _texAmbientMap, dest);
 
-	// pipeline.blitFramebuffer(_texAmbient, Viewport(0, 0, 1376, 768), dest, Viewport(0, 0, 1376, 768));
-	// pipeline.blitFramebuffer(_texAmbient, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));
+	//pipeline.blitFramebuffer(_texAmbientView, Viewport(0, 0, 1376, 768), dest, Viewport(0, 0, 1376, 768));
+	//pipeline.blitFramebuffer(_texAmbient, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));
 
 	return true;
 }

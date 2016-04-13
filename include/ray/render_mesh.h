@@ -37,33 +37,30 @@
 #ifndef _H_RENDER_MESH_H_
 #define _H_RENDER_MESH_H_
 
-#include <ray/render_object.h>
+#include <ray/render_types.h>
 
 _NAME_BEGIN
 
-class EXPORT RenderMesh final : public RenderObject
+class EXPORT RenderMesh final : public rtti::Interface
 {
-	__DeclareSubClass(RenderMesh, RenderObject)
+	__DeclareSubClass(RenderMesh, rtti::Interface)
 public:
 	RenderMesh() noexcept;
-	~RenderMesh() noexcept;
+	virtual ~RenderMesh() noexcept;
 
-	void setMaterial(MaterialPtr material) noexcept;
-	MaterialPtr getMaterial() noexcept;
+	void setVertexBuffer(GraphicsDataPtr vbo) noexcept;
+	void setIndexBuffer(GraphicsDataPtr ibo) noexcept;
 
-	void setRenderBuffer(RenderBufferPtr geometry) noexcept;
-	RenderBufferPtr getRenderBuffer() noexcept;
-
-	void setGraphicsIndirect(GraphicsIndirectPtr renderable) noexcept;
-	GraphicsIndirectPtr getGraphicsIndirect() noexcept;
+	GraphicsDataPtr getVertexBuffer() noexcept;
+	GraphicsDataPtr getIndexBuffer() noexcept;
 
 private:
-	void onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept;
+	RenderMesh(const RenderMesh&) noexcept = delete;
+	RenderMesh& operator=(const RenderMesh&) noexcept = delete;
 
 private:
-	MaterialPtr _material;
-	RenderBufferPtr _geometry;
-	GraphicsIndirectPtr _renderable;
+	GraphicsDataPtr _vbo;
+	GraphicsDataPtr _ibo;
 };
 
 _NAME_END

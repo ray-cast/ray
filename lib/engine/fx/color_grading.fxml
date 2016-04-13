@@ -4,7 +4,7 @@
     <include name="sys:fx/sampler.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
     <parameter name="texSource" type="texture2D"/>
-    <parameter name="texColorGrading" type="texture2D"/>
+    <parameter name="texColorGrading" type="texture3D"/>
     <shader>
         <![CDATA[
             void PostProcessVS(
@@ -42,8 +42,8 @@
             }
         ]]>
     </shader>
-    <technique name="postprocess">
-        <pass name="grading">
+    <technique name="ColorGrading">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
 
             <state name="vertex" value="PostProcessVS"/>

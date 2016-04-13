@@ -59,7 +59,7 @@ HeightMap::~HeightMap()
 bool
 HeightMap::init(int size, const AABB& world)
 {
-	assert((ceilToPowerOfTwo(size) == 0) || (ceilToPowerOfTwo(size) == 1));
+	assert((math::ceilToPowerOfTwo(size) == 0) || (math::ceilToPowerOfTwo(size) == 1));
 
 	size_ = size;
 
@@ -76,7 +76,7 @@ HeightMap::init(int size, const AABB& world)
 bool
 HeightMap::init(std::string szMapName, int size, const AABB& world)
 {
-	assert((ceilToPowerOfTwo(size) == 0) || (ceilToPowerOfTwo(size) == 1));
+	assert((math::ceilToPowerOfTwo(size) == 0) || (math::ceilToPowerOfTwo(size) == 1));
 
 	size_ = size;
 
@@ -96,17 +96,17 @@ HeightMap::computeVertexMap()
 
 	float invfre = 0.013f;
 
-	for (int y = 0; y < size_; y++)
+	for (std::uint32_t y = 0; y < size_; y++)
 	{
-		for (int x = 0; x < size_; x++)
+		for (std::uint32_t x = 0; x < size_; x++)
 		{
 			float accum = 0;
 
 			accum += PL.noise(x * invfre, y*invfre, 0.8f) * 1.0f;
-			//  accum += PL.noise(x * invfre + 0.3f, y * invfre + 0.3f, 1.0f) * 0.9f;
-			//  accum += PL.noise(x * invfre, y*invfre, 3.0f) * 0.17f;
-			//  accum += PL.noise(x * invfre, y*invfre, 3.4f) * 0.12f;
-			//  accum += PL.noise(x * invfre, y*invfre, 3.7f) * 0.1f;
+			accum += PL.noise(x * invfre + 0.3f, y * invfre + 0.3f, 1.0f) * 0.9f;
+			accum += PL.noise(x * invfre, y*invfre, 3.0f) * 0.17f;
+			accum += PL.noise(x * invfre, y*invfre, 3.4f) * 0.12f;
+			accum += PL.noise(x * invfre, y*invfre, 3.7f) * 0.1f;
 
 			accum *= 0.1f;
 			accum += 0.5f;
@@ -146,40 +146,38 @@ HeightMap::computeNormalMap()
 			if (y > 0)
 				down = this->getVertex(x, y - 1) - cur;
 
-			Vector3f lu = left.cross(up);
-			Vector3f ru = up.cross(right);
-			Vector3f rd = right.cross(down);
-			Vector3f ld = down.cross(left);
+			Vector3f lu = math::cross(left, up);
+			Vector3f ru = math::cross(up, right);
+			Vector3f rd = math::cross(right, down);
+			Vector3f ld = math::cross(down, left);
 
 			int average = 0;
 
 			if (x > 0 && y > 0)
 			{
-				ld.normalize();
+				math::normalize(ld);
 				average++;
 			}
 
 			if (x > 0 && y + 1 < size_)
 			{
-				lu.normalize();
+				math::normalize(lu);
 				average++;
 			}
 
 			if (y > 0 && x + 1 < size_)
 			{
-				rd.normalize();
+				math::normalize(rd);
 				average++;
 			}
 
 			if (x + 1 < size_ && y + 1 < size_)
 			{
-				ru.normalize();
+				math::normalize(ru);
 				average++;
 			}
 
-			Vector3f cur_normal = (lu + ru + ld + rd) / (float)average;
-
-			cur_normal.normalize();
+			Vector3f cur_normal = math::normalize((lu + ru + ld + rd) / (float)average);
 
 			_normals.push_back(cur_normal);
 		}

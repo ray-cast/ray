@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/render_object.h>
 #include <ray/render_scene.h>
-
+#include <ray/material.h>
 _NAME_BEGIN
 
 __ImplementSubInterface(RenderObject, rtti::Interface, "RenderObject")
@@ -182,19 +182,19 @@ RenderObject::getTranslate() const noexcept
 Vector3
 RenderObject::getRight() const noexcept
 {
-	return Vector3(_transform.a1, _transform.b1, _transform.c1);
+	return _transform.getRight();
 }
 
 Vector3
 RenderObject::getUpVector() const noexcept
 {
-	return Vector3(_transform.a2, _transform.b2, _transform.c2);
+	return _transform.getUpVector();
 }
 
 Vector3
 RenderObject::getForward() const noexcept
 {
-	return Vector3(_transform.a3, _transform.b3, _transform.c3);
+	return _transform.getForward();
 }
 
 const Matrix4x4&
@@ -242,13 +242,19 @@ RenderObject::getSubeRenderObjects() noexcept
 }
 
 void 
-RenderObject::render(RenderPipeline& pipelineContext, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept
+RenderObject::addRenderData(RenderDataManager& manager) noexcept
+{
+	this->onAddRenderData(manager);
+}
+
+void
+RenderObject::render(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTechPtr tech) noexcept
 {
 	auto listener = this->getOwnerListener();
 	if (listener)
 		listener->onRenderObjectPre(pipelineContext);
 
-	this->onRenderObject(pipelineContext, queue, passType, _pass);
+	this->onRenderObject(pipelineContext, queue, tech);
 
 	if (listener)
 		listener->onRenderObjectPost(pipelineContext);
@@ -274,8 +280,13 @@ RenderObject::onSceneChangeAfter() noexcept
 {
 }
 
-void
-RenderObject::onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept
+void 
+RenderObject::onAddRenderData(RenderDataManager& manager) noexcept
+{
+}
+
+void 
+RenderObject::onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTechPtr tech) noexcept
 {
 }
 

@@ -92,7 +92,7 @@ private:
 	MyGUI::RenderTargetInfo _info;
 
 	MaterialPtr _material;
-	MaterialPassPtr _materialPass;
+	MaterialTechPtr _materialTech;
 	MaterialParamPtr _materialScaleY;
 	MaterialParamPtr _materialDecal;
 

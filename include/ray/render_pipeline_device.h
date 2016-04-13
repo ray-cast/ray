@@ -66,14 +66,14 @@ public:
 	GraphicsFramebufferLayoutPtr createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
-	GraphicsTexturePtr createTexture(const std::string& name) noexcept;
+	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim) noexcept;
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
 	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
 
-	RenderBufferPtr createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
-	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) noexcept;
-	RenderBufferPtr createRenderBuffer(const MeshPropertys& mesh) noexcept;
+	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
+	RenderMeshPtr createRenderMesh(const MeshProperty& mesh) noexcept;
+	RenderMeshPtr createRenderMesh(const MeshPropertys& mesh) noexcept;
 
 private:
 	RenderPipelineDevice(const RenderPipelineDevice&) noexcept = delete;

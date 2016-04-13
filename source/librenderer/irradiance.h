@@ -57,8 +57,8 @@ private:
 
 private:
 	MaterialPtr _irradiance;
-	MaterialPassPtr _irradianceParaboloid;
-	MaterialPassPtr _irradianceProjectDualParaboloidToSH;
+	MaterialTechPtr _irradianceParaboloid;
+	MaterialTechPtr _irradianceProjectDualParaboloidToSH;
 
 	MaterialParamPtr _paraboloidSamplesInverse;
 	MaterialParamPtr _paraboloidCubeMapSampler;

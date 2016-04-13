@@ -52,10 +52,10 @@ ColorGrading::~ColorGrading() noexcept
 void
 ColorGrading::onActivate(RenderPipeline& pipeline) noexcept
 {
-	_texColorGrading = pipeline.createTexture("sys:media/color_grading.png");
+	_texColorGrading = pipeline.createTexture("sys:media/color_grading.png", GraphicsTextureDim::GraphicsTextureDim3D);
 
 	_material = pipeline.createMaterial("sys:fx/color_grading.fxml.o");
-	_colorGrading = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("grading");
+	_colorGrading = _material->getTech("ColorGrading");
 	_texGrading = _material->getParameter("texColorGrading");
 	_texSource = _material->getParameter("texSource");
 

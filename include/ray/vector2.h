@@ -90,14 +90,6 @@ public:
     void set(T val) noexcept { x = y = val; }
     void set(T xx, T yy) noexcept { x = xx; y = yy; }
 
-	T dot(const Vector2t<T>& v) const noexcept { return x * v.x + y * v.y; }
-
-    T length() const noexcept { return sqrt(length2()); }
-    T length2() const noexcept { return x * x + y * y; }
-
-    T distance(const Vector2t<T>& v) const noexcept { return (v - *this).length(); }
-    T sqrDistance(const Vector2t<T>& v) const noexcept { return (v - *this).length2(); }
-
     reference getComponent(unsigned char index) noexcept
     {
         switch (index)
@@ -109,24 +101,6 @@ public:
         default:
             assert(false);
         }
-    }
-
-    T normalize() noexcept
-    {
-        T magSq = length2();
-
-        if (magSq > static_cast<T>(0.0))
-        {
-            T invSqrt = 1 / sqrt(magSq);
-            *this *= invSqrt;
-        }
-
-        return magSq;
-    }
-
-    Vector2t<T> negate() const noexcept
-    {
-        return Vector2t<T>(-x, -y);
     }
 
     pointer ptr() noexcept { return (pointer)this; }
@@ -141,18 +115,6 @@ template<typename T> const Vector2t<T> Vector2t<T>::UnitX = Vector2t<T>((T)1, (T
 template<typename T> const Vector2t<T> Vector2t<T>::UnitY = Vector2t<T>((T)0, (T)1);
 template<typename T> const Vector2t<T> Vector2t<T>::Right = Vector2t<T>((T)1, (T)0);
 template<typename T> const Vector2t<T> Vector2t<T>::Forward = Vector2t<T>((T)0, (T)1);
-
-template <typename T>
-inline Vector2t<T> min(const Vector2t<T>& a, const Vector2t<T>& b) noexcept
-{
-    return Vector2t<T>(std::min(a.x, b.x), std::min(a.y, b.y));
-}
-
-template <typename T>
-inline Vector2t<T> max(const Vector2t<T>& a, const Vector2t<T>& b) noexcept
-{
-    return Vector2t<T>(std::max(a.x, b.x), std::max(a.y, b.y));
-}
 
 template <typename T>
 inline bool operator==(const Vector2t<T>& v1, const Vector2t<T>& v2) noexcept
@@ -248,6 +210,105 @@ template <typename T>
 inline Vector2t<T> operator/(unsigned scale, const Vector2t<T>& v) noexcept
 {
     return Vector2t<T>(v.x / scale, v.y / scale);
+}
+
+namespace math
+{
+	template<typename T>
+	inline T dot(const Vector2t<T>& v1, const Vector2t<T>& v2) noexcept
+	{
+		return v1.x * v2.x + v1.y * v2.y;
+	}
+
+	template<typename T>
+	Vector2t<T> cross(const Vector2t<T>& v1, const Vector3t<T>& v2) noexcept
+	{
+		return Vector2t<T>(
+			v1.y * v2.x - v1.x * v2.y,
+			v1.x * v2.y - v1.y * v2.x);
+	}
+
+	template<typename T>
+	inline T length2(const Vector2t<T>& v) noexcept
+	{
+		return dot(v, v);
+	}
+
+	template<typename T>
+	inline T length(const Vector2t<T>& v) noexcept
+	{
+		return std::sqrt(length2(v));
+	}
+
+	template<typename T>
+	inline T distance(const Vector2t<T>& v) noexcept
+	{
+		return length(v - *this);
+	}
+
+	template<typename T>
+	inline T sqrDistance(const Vector2t<T>& v1, const Vector2t<T>& v2) noexcept
+	{
+		return length2(v1 - v2);
+	}
+
+	template<typename T>
+	inline Vector2t<T> negate(const Vector2t<T>& v) noexcept
+	{
+		return Vector2t<T>(-v.x, -v.y);
+	}
+
+	template<typename T>
+	inline Vector2t<T> clamp(const Vector2t<T>& t, T min, T max)
+	{
+		return Vector2t<T>(
+			std::max(min, std::min(max, t.x)),
+			std::max(min, std::min(max, t.y))
+			);
+	}
+
+	template<typename T>
+	inline Vector2t<T> saturate(const Vector2t<T>& v) noexcept
+	{
+		return clamp(v, 0.0f, 1.0f);
+	}
+
+	template<typename T>
+	inline Vector2t<T> normalize(const Vector2t<T>& v) noexcept
+	{
+		T magSq = length2(v);
+		if (magSq > static_cast<T>(0.0))
+		{
+			T invSqrt = 1.0f / sqrt(magSq);
+			return v * invSqrt;
+		}
+
+		return v;
+	}
+
+	template <typename T>
+	inline Vector2t<T> min(const Vector2t<T>& a, const Vector2t<T>& b) noexcept
+	{
+		return Vector2t<T>(std::min(a.x, b.x), std::min(a.y, b.y));
+	}
+
+	template <typename T>
+	inline Vector2t<T> max(const Vector2t<T>& a, const Vector2t<T>& b) noexcept
+	{
+		return Vector2t<T>(std::max(a.x, b.x), std::max(a.y, b.y));
+	}
+
+	template<typename T>
+	inline Vector2t<T> abs(const Vector2t<T>& v)
+	{
+		return Vector2t<T>(std::abs(v.x), std::abs(v.y));
+	}
+
+	template<typename T>
+	inline Vector2t<T> random(const Vector2t<T>& min, const Vector2t<T>& max)
+	{
+		return Vector2t<T>(random(min.x, max.x), random(min.y, max.y));
+	}
 }
 
 _NAME_END

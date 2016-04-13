@@ -52,7 +52,7 @@ RenderSetting::RenderSetting() noexcept
 	, enableFog(false)
 	, enableDOF(false)
 	, enableFimic(false)
-	, enableFXAA(false)
+	, enableFXAA(true)
 	, enableLightShaft(false)
 	, enableColorGrading(true)
 {

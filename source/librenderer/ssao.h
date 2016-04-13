@@ -110,9 +110,9 @@ private:
 
 	MaterialPtr _ambientOcclusion;
 
-	MaterialPassPtr _ambientOcclusionPass;
-	MaterialPassPtr _ambientOcclusionBlurPass;
-	MaterialPassPtr _ambientOcclusionCopyPass;
+	MaterialTechPtr _ambientOcclusionPass;
+	MaterialTechPtr _ambientOcclusionBlurPass;
+	MaterialTechPtr _ambientOcclusionCopyPass;
 
 	MaterialParamPtr _cameraProjScale;
 	MaterialParamPtr _cameraProjInfo;
@@ -135,6 +135,8 @@ private:
 
 	GraphicsTexturePtr _texBlurMap;
 	GraphicsTexturePtr _texAmbientMap;
+
+	GraphicsFramebufferLayoutPtr _framebufferLayout;
 
 	GraphicsFramebufferPtr _texBlurView;
 	GraphicsFramebufferPtr _texAmbientView;

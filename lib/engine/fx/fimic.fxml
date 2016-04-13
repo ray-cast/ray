@@ -2,6 +2,13 @@
 <effect version="1270" language="hlsl">
     <include name="sys:fx/math.fxml"/>
     <include name="sys:fx/sampler.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
+    <macro name="TONEMAP_LINEAR" value="0"/>
+    <macro name="TONEMAP_EXPONENTIAL" value="1"/>
+    <macro name="TONEMAP_EXPONENTIAL_HSV" value="2"/>
+    <macro name="TONEMAP_REINHARD" value="3"/>
+    <macro name="TONEMAP_FILMIC" value="4"/>
+    <macro name="TONEMAP_OPERATOR" value="TONEMAP_FILMIC"/>
     <parameter name="texSource" type="texture2D" />
     <parameter name="texBloom" type="texture2D" />
     <parameter name="bloomThreshold" type="float" />
@@ -10,16 +17,6 @@
     <parameter name="exposure" type="float" />
     <shader>
         <![CDATA[
-            #define TONEMAP_LINEAR 0
-            #define TONEMAP_EXPONENTIAL 1
-            #define TONEMAP_EXPONENTIAL_HSV 2
-            #define TONEMAP_REINHARD 3
-            #define TONEMAP_FILMIC 4
-
-            #ifndef TONEMAP_OPERATOR
-            #   define TONEMAP_OPERATOR TONEMAP_FILMIC
-            #endif
-
             float3 Uncharted2Tonemap(float3 x)
             {
                 const float A = 0.15; // Shoulder Strength
@@ -54,7 +51,7 @@
                     color = xyz2rgb(Yxy2xyz(color));
                     return color;
                 #elif TONEMAP_OPERATOR == TONEMAP_FILMIC
-                    color = 2.0f * Uncharted2Tonemap(exposure * color);
+                    color = Uncharted2Tonemap(exposure * color);
                     float3 whiteScale = 1.0f / Uncharted2Tonemap(11.2);
                     color *= whiteScale;
                     return color;
@@ -73,19 +70,18 @@
             float3 ToneMapping(float3 color, float3 bloom, float exposure)
             {
                 color += bloom;
-                color = ToneBlueShift(color, luminance(color));
+                color += ToneBlueShift(color, luminance(color));
                 color = FilmicTonemap(color, exposure);
                 return saturate(color);
             }
 
             void PostProcessVS(
                 in float4 Position : POSITION0,
-                in float4 Texcoord : TEXCOORD0,
                 out float4 oTexcoord : TEXCOORD0,
                 out float4 oPosition : SV_Position)
             {
-                oTexcoord = Texcoord;
                 oPosition = Position;
+                oTexcoord = PosToCoord(Position);
             }
 
             float4 SumLumPS(in float4 coord : TEXCOORD0) : SV_Target0
@@ -155,14 +151,15 @@
             float4 FimicTongMappingPS(in float4 coord : TEXCOORD0) : SV_Target0
             {
                 float3 color = texSource.Sample(PointClamp, coord.xy).rgb;
-                float3 bloom =  texBloom.Sample(PointClamp, coord.xy).rgb;
+                float3 bloom = texBloom.Sample(PointClamp, coord.xy).rgb;
                 float3 LDR = ToneMapping(color, bloom, exposure);
                 return float4(LDR, luminance(LDR));
             }
         ]]>
     </shader>
-    <technique name="postprocess">
-        <pass name="SumLum">
+    <technique name="SumLum">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="PostProcessVS" />
             <state name="fragment" value="SumLumPS" />
 
@@ -171,7 +168,10 @@
 
             <state name="cullmode" value="none"/>
         </pass>
-        <pass name="SumLumLog">
+    </technique>
+    <technique name="SumLumLog">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="PostProcessVS" />
             <state name="fragment" value="SumLumLogPS" />
 
@@ -180,7 +180,10 @@
 
             <state name="cullmode" value="none"/>
         </pass>
-        <pass name="GenerateBloom">
+    </technique>
+    <technique name="GenerateBloom">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="PostProcessVS" />
             <state name="fragment" value="BloomPS" />
 
@@ -189,7 +192,10 @@
 
             <state name="cullmode" value="none"/>
         </pass>
-        <pass name="BlurBloomh">
+    </technique>
+    <technique name="BlurBloomh">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="PostProcessVS" />
             <state name="fragment" value="BlurhPS" />
 
@@ -198,7 +204,10 @@
 
             <state name="cullmode" value="none"/>
         </pass>
-        <pass name="BlurBloomv">
+    </technique>
+    <technique name="BlurBloomv">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="PostProcessVS" />
             <state name="fragment" value="BlurvPS" />
 
@@ -207,7 +216,10 @@
 
             <state name="cullmode" value="none"/>
         </pass>
-        <pass name="FimicTongMapping">
+    </technique>
+    <technique name="FimicTongMapping">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="PostProcessVS" />
             <state name="fragment" value="FimicTongMappingPS" />
 

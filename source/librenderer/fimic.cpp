@@ -49,11 +49,11 @@ float ToneExposure(float avgLum)
 }
 
 FimicToneMapping::Setting::Setting() noexcept
-	: bloomThreshold(0.6)
+	: bloomThreshold(0.4)
 	, bloomIntensity(1.0)
 	, lumKey(0.98)
-	, lumDelta(50.0)
-	, lumExposure(2.0)
+	, lumDelta(30.0)
+	, lumExposure(1.0)
 {
 }
 
@@ -102,7 +102,7 @@ FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsFramebuffer
 
 	_lumAdapt = _lumAdapt + ((lum - _lumAdapt) * (1.0f - pow(_setting.lumKey, _setting.lumDelta * delta)));
 	
-	_toneLumExposure->assign(ToneExposure(_lumAdapt));
+	_toneLumExposure->assign(_setting.lumExposure * ToneExposure(_lumAdapt));
 }
 
 void
@@ -178,34 +178,54 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 
 	_texSample4Map = pipeline.createTexture(width / 4.0, height / 4.0, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 	_texSample8Map = pipeline.createTexture(width / 8.0, height / 8.0, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
-	_texSampleLogMap = pipeline.createTexture(SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
-
 	_texCombieMap = pipeline.createTexture(width / 4.0, height / 4.0, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 
+	_texSampleLogMap = pipeline.createTexture(SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
+
+	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
+	framebufferLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm, 0));
+	_sampleViewLayout = pipeline.createFramebufferLayout(framebufferLayoutDesc);
+
+	GraphicsFramebufferLayoutDesc framebufferLogLayoutDesc;
+	framebufferLogLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR16SFloat, 0));
+	_sampleLogViewLayout = pipeline.createFramebufferLayout(framebufferLogLayoutDesc);
+
 	GraphicsFramebufferDesc sample4ViewDesc;
+	sample4ViewDesc.setWidth(width / 4.0);
+	sample4ViewDesc.setHeight(height / 4.0);
 	sample4ViewDesc.attach(_texSample4Map);
+	sample4ViewDesc.setGraphicsFramebufferLayout(_sampleViewLayout);
 	_texSample4View = pipeline.createFramebuffer(sample4ViewDesc);
 
 	GraphicsFramebufferDesc sample8ViewDesc;
+	sample8ViewDesc.setWidth(width / 8.0);
+	sample8ViewDesc.setHeight(height / 8.0);
 	sample8ViewDesc.attach(_texSample8Map);
+	sample8ViewDesc.setGraphicsFramebufferLayout(_sampleViewLayout);
 	_texSample8View = pipeline.createFramebuffer(sample8ViewDesc);
 
 	GraphicsFramebufferDesc sampleLogViewDesc;
+	sampleLogViewDesc.setWidth(SAMPLE_LOG_SIZE);
+	sampleLogViewDesc.setHeight(SAMPLE_LOG_SIZE);
 	sampleLogViewDesc.attach(_texSampleLogMap);
+	sampleLogViewDesc.setGraphicsFramebufferLayout(_sampleLogViewLayout);
 	_texSampleLogView = pipeline.createFramebuffer(sampleLogViewDesc);
 
 	GraphicsFramebufferDesc sampleCombieViewDesc;
+	sampleCombieViewDesc.setWidth(width / 4.0);
+	sampleCombieViewDesc.setHeight(height / 4.0);
 	sampleCombieViewDesc.attach(_texCombieMap);
+	sampleCombieViewDesc.setGraphicsFramebufferLayout(_sampleViewLayout);
 	_texCombieView = pipeline.createFramebuffer(sampleCombieViewDesc);
 
 	_fimic = pipeline.createMaterial("sys:fx/fimic.fxml.o");
 
-	_sunLum = _fimic->getTech(RenderQueue::RenderQueuePostprocess)->getPass("SumLum");
-	_sunLumLog = _fimic->getTech(RenderQueue::RenderQueuePostprocess)->getPass("SumLumLog");
-	_bloom = _fimic->getTech(RenderQueue::RenderQueuePostprocess)->getPass("GenerateBloom");
-	_blurh = _fimic->getTech(RenderQueue::RenderQueuePostprocess)->getPass("BlurBloomh");
-	_blurv = _fimic->getTech(RenderQueue::RenderQueuePostprocess)->getPass("BlurBloomv");
-	_tone = _fimic->getTech(RenderQueue::RenderQueuePostprocess)->getPass("FimicTongMapping");
+	_sunLum = _fimic->getTech("SumLum");
+	_sunLumLog = _fimic->getTech("SumLumLog");
+	_bloom = _fimic->getTech("GenerateBloom");
+	_blurh = _fimic->getTech("BlurBloomh");
+	_blurv = _fimic->getTech("BlurBloomv");
+	_tone = _fimic->getTech("FimicTongMapping");
 
 	_bloomThreshold = _fimic->getParameter("bloomThreshold");
 	_bloomIntensity = _fimic->getParameter("bloomIntensity");

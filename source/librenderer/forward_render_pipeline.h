@@ -67,7 +67,7 @@ private:
 	ForwardRenderPipeline& operator=(const ForwardRenderPipeline&) = delete;
 
 private:
-	MaterialPassPtr _depthOnly;
+	MaterialTechPtr _depthOnly;
 };
 
 _NAME_END

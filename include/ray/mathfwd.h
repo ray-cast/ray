@@ -98,6 +98,9 @@ template<typename T = Float>
 class Matrix4x4t;
 
 template<typename T = Float>
+class Raycast2t;
+
+template<typename T = Float>
 class Raycast3t;
 
 template<typename T = Float>
@@ -108,6 +111,9 @@ class EulerAnglest;
 
 template <typename T = Float>
 class Quaterniont;
+
+template<typename T = Float>
+class Line2t;
 
 template<typename T = Float>
 class Line3t;
@@ -126,6 +132,9 @@ class Boundt;
 
 template<typename T = Float>
 class Frustumt;
+
+template<typename T = Float>
+class Plane2t;
 
 template<typename T = Float>
 class Plane3t;

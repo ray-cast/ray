@@ -447,14 +447,14 @@ public:
 	}
 
 	template<typename ostream>
-	ostream& operator<<(ostream& os)
+	ostream& operator << (ostream& os)
 	{
 		os << x << ", " << y << ", " << z << ", " << w;
 		return os;
 	}
 
 	template<typename istream>
-	istream& operator>>(istream& is)
+	istream& operator >> (istream& is)
 	{
 		is >> x;
 		is.ignore(2);
@@ -481,34 +481,6 @@ public:
 		default:
 			assert(false);
 		}
-	}
-
-	T normalize()
-	{
-		T magSq = length2();
-
-		if (magSq > static_cast<T>(0.0))
-		{
-			T invSqrt = 1 / sqrt(magSq);
-			*this *= invSqrt;
-		}
-
-		return magSq;
-	}
-
-	T dot() const { return x * x + y * y + z * z + w * w; }
-	T dot(const Vector4t<T>& v) const { return x * v.x + y * v.y + z * v.z + w * v.w; }
-
-	T length() const { return sqrt(length2()); }
-	T length2() const { return x * x + y * y + z * z + w * w; }
-
-	Vector4t<T> cross(const Vector4t<T>& q) const
-	{
-		return Vector4t<T>(
-			w * q.x + x * q.w + z * q.y - y * q.z,
-			w * q.y + y * q.w + x * q.z - z * q.x,
-			w * q.z + z * q.w + y * q.x - x * q.y,
-			w * q.w - x * q.x - y * q.y - z * q.z);
 	}
 
 	T* ptr() { return (T*)this; }
@@ -607,12 +579,107 @@ inline Vector4t<T> operator/(const Vector4t<T>& v1, T scale) noexcept
 	return Vector4t<T>(v1.x / scale, v1.y / scale, v1.z / scale, v1.w / scale);
 }
 
-template <typename T>
-inline Vector4t<T> operator~(const Vector4t<T>& v)
+namespace math
 {
-	Vector4t<T> tmp = v;
-	tmp.normalize();
-	return tmp;
+	template<typename T>
+	inline T dot(const Vector4t<T>& v1, const Vector4t<T>& v2) noexcept
+	{
+		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
+	}
+
+	template<typename T>
+	Vector4t<T> cross(const Vector4t<T>& v1, const Vector4t<T>& v2) noexcept
+	{
+		return Vector4t<T>(
+			v1.w * v2.x + v1.x * v2.w + v1.z * v2.y - v1.y * v2.z,
+			v1.w * v2.y + v1.y * v2.w + v1.x * v2.z - v1.z * v2.x,
+			v1.w * v2.z + v1.z * v2.w + v1.y * v2.x - v1.x * v2.y,
+			v1.w * v2.w - v1.x * v2.x - v1.y * v2.y - v1.z * v2.z);
+	}
+
+	template<typename T>
+	inline T length2(const Vector4t<T>& v) noexcept
+	{
+		return dot(v, v);
+	}
+
+	template<typename T>
+	inline T length(const Vector4t<T>& v) noexcept
+	{
+		return std::sqrt(length2(v));
+	}
+
+	template<typename T>
+	inline T distance(const Vector4t<T>& v) noexcept
+	{
+		return length(v - *this);
+	}
+
+	template<typename T>
+	inline T sqrDistance(const Vector4t<T>& v1, const Vector4t<T>& v2) noexcept
+	{
+		return length2(v1 - v2);
+	}
+
+	template<typename T>
+	inline Vector4t<T> negate(const Vector4t<T>& v) noexcept
+	{
+		return Vector4t<T>(-v.x, -v.y, -v.z, -v.w);
+	}
+
+	template<typename T>
+	inline Vector4t<T> clamp(const Vector4t<T>& t, T min, T max)
+	{
+		return Vector4t<T>(
+			std::max(min, std::min(max, t.x)),
+			std::max(min, std::min(max, t.y)),
+			std::max(min, std::min(max, t.z)),
+			std::max(min, std::min(max, t.w))
+			);
+	}
+
+	template<typename T>
+	inline Vector4t<T> saturate(const Vector4t<T>& v) noexcept
+	{
+		return clamp(v, 0.0f, 1.0f);
+	}
+
+	template<typename T>
+	inline Vector4t<T> normalize(const Vector4t<T>& v) noexcept
+	{
+		T magSq = length2(v);
+		if (magSq > static_cast<T>(0.0))
+		{
+			T invSqrt = 1.0f / sqrt(magSq);
+			return v * invSqrt;
+		}
+
+		return v;
+	}
+
+	template <typename T>
+	inline Vector4t<T> min(const Vector4t<T>& a, const Vector4t<T>& b)
+	{
+		return Vector4t<T>(std::min(a.x, b.x), std::min(a.y, b.y), std::min(a.z, b.z), std::min(a.w, b.w));
+	}
+
+	template <typename T>
+	inline Vector4t<T> max(const Vector4t<T>& a, const Vector4t<T>& b)
+	{
+		return Vector4t<T>(std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z), std::max(a.w, b.w));
+	}
+
+	template<typename T>
+	inline Vector4t<T> abs(const Vector4t<T>& v)
+	{
+		return Vector4t<T>(std::abs(v.x), std::abs(v.y), std::abs(v.z), std::abs(v.w));
+	}
+
+	template<typename T>
+	inline Vector4t<T> random(const Vector4t<T>& min, const Vector4t<T>& max)
+	{
+		return Vector4t<T>(random(min.x, max.x), random(min.y, max.y), random(min.z, max.z), random(min.w, max.w));
+	}
 }
 
 _NAME_END

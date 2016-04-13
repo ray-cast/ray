@@ -42,6 +42,58 @@
 _NAME_BEGIN
 
 template<typename T>
+class Raycast2
+{
+	Vector2t<T> origin;
+	Vector2t<T> normal;
+
+	Raycast2()
+	{
+	}
+
+	Raycast2(const Vector2t<T>& pt, const Vector2t<T>& normal)
+	{
+		origin = pt;
+		setNormal(normal);
+	}
+
+	void setNormal(const Vector2t<T>& n)
+	{
+		normal = n;
+		normal.normalize();
+	}
+
+	Vector2t<T> getPoint(float distance) const
+	{
+		return origin + normal * distance;
+	}
+
+	Vector2t<T> closestPoint(const Vector2t<T>& pt) const
+	{
+		Vector2t<T> vector = pt - origin;
+
+		float t = normal.dot(vector);
+
+		if (t <static_cast<T>(0.0)) return origin;
+
+		return origin + t * normal;
+	}
+
+	float sqrDistance(const Vector2t<T>& pt) const
+	{
+		Vector2t<T> ac = pt - origin;
+
+		float t = normal.dot(ac);
+
+		if (t <= static_cast<T>(0.0)) return ac.dot();
+
+		float denom = normal.dot();
+
+		return ac.dot() - t * t / denom;
+	}
+};
+
+template<typename T>
 class Raycast3t
 {
 public:

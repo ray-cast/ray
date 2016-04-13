@@ -42,6 +42,62 @@
 _NAME_BEGIN
 
 template<typename T>
+class Plane2t
+{
+public:
+	float distance;
+	Vector2t<T> normal;
+
+	Plane2t()
+	{
+	}
+
+	Plane2t(const Plane2t& copy)
+		: distance(copy.distance)
+		, normal(copy.normal)
+	{
+	}
+
+	Plane2t(const Vector2t<T>& pt0, const Vector2t<T>& pt1)
+	{
+		compute(pt0, pt1);
+	}
+
+	Plane2t(const Vector2t<T>& n, float dist)
+	{
+		setNormal(n);
+		distance = dist;
+	}
+
+	void setNormal(const Vector2t<T>& n)
+	{
+		normal = n;
+		normal.normalize();
+	}
+
+	void setDistance(const Vector2t<T>& pt)
+	{
+		distance = -normal.dot(pt);
+	}
+
+	void compute(const Vector2t<T>& pt0, const Vector2t<T>& pt1)
+	{
+		setNormal(pt1 - pt0);
+		setDistance(pt0);
+	}
+
+	float getDistance(const Vector2t<T>& pt) const
+	{
+		return normal.dot(pt) + distance;
+	}
+
+	Vector2t<T> project(const Vector2t<T>& pt) const
+	{
+		return pt - getDistance(pt) * normal;
+	}
+};
+
+template<typename T>
 class Plane3t
 {
 public:
@@ -114,14 +170,14 @@ public:
 
     void normalize()
     {
-        float inv = 1 / normal.length();
+        float inv = 1 / math::length(normal);
         normal *= inv;
         distance *= inv;
     }
 
     void setDistance(const Vector3t<T>& pt)
     {
-        distance = -normal.dot(pt);
+        distance = dot(-normal, pt);
     }
 
     void compute(const Vector3t<T>& o, const Vector3t<T>& a, const Vector3t<T>& b)
@@ -129,10 +185,10 @@ public:
         Vector3t<T> edge1 = a - o;
         Vector3t<T> edge2 = b - o;
 
-        normal = edge2.cross(edge1);
+        normal = cross(edge2, edge1);
         normal.normalize();
 
-        distance = -normal.dot(o);
+        distance = math::dot(-normal, o);
     }
 
     void compute(const Vector3t<T> pt[], int n)
@@ -158,7 +214,7 @@ public:
 
         for (int i = 0; i < n; i++)
         {
-            dist = -normal.dot(pt[i]);
+            dist = math::dot(-normal, pt[i]);
         }
 
         distance = dist / n;
@@ -166,12 +222,12 @@ public:
 
     float getDistance(const Vector3t<T>& pt) const
     {
-        return normal.dot(pt) + distance;
+        return math::dot(normal, pt) + distance;
     }
 
     Vector3t<T> closestPoint(const Vector3t<T>& pt) const
     {
-        return pt - normal.dot(getDistance(pt));
+        return pt - math::dot(normal, getDistance(pt));
     }
 
     bool intersect(const Rect3t<T>& rc) const

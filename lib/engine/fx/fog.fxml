@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <effect version="1270" language="hlsl">
-    <include name="sys:fx/sampelr.fxml" />
+    <include name="sys:fx/sampelr.fxml"/>
+    <include name="sys:fx/common.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
     <parameter name="matViewProjectInverse" type="float4x4" semantic="matViewProjectInverse"/>
     <parameter name="texDepth" type="texture2D"/>
     <parameter name="texSource" type="texture2D"/>
@@ -10,14 +12,6 @@
     <parameter name="fogColor" type="float3"/>
     <shader name="vertex">
         <![CDATA[
-            float4 samplePosition(vec2 coord)
-            {
-                float depth  = texDepth.Sample(PointClamp, coord.xy, 0).r;
-                float4 result = matViewProjectInverse * float4(coord * 2.0 - 1.0, depth, 1.0);
-                result /= result.w;
-                return result;
-            }
-
             float fogFactorLinear(float dist, float start, float end)
             {
                 float fog = (end - dist) / (end - start);
@@ -50,15 +44,22 @@
                 return clamp(fogAmount, 0, 1);
             }
 
+            float4 samplePosition(vec2 coord)
+            {
+                float depth  = texDepth.Sample(PointClamp, coord.xy, 0).r;
+                float4 result = matViewProjectInverse * float4(coord * 2.0 - 1.0, depth, 1.0);
+                result /= result.w;
+                return result;
+            }
+
             void PostProcessVS(
                 in float4 Position : POSITION0,
-                in float4 Texcoord : TEXCOORD0,
                 out float4 oTexcoord : TEXCOORD0,
                 out float4 oPosition : SV_Position
                 )
             {
-                oTexcoord = Texcoord;
                 oPosition = Position;
+                oTexcoord = PosToCoord(Position);
             }
 
             float4 FogPS(in float4 coord : TEXCOORD0) : SV_Target
@@ -70,14 +71,13 @@
             }
         ]]>
     </shader>
-    <technique name="postprocess">
-        <pass name="fog">
+    <technique name="Fog">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="PostProcessVS"/>
             <state name="fragment" value="FogPS"/>
-
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
-
             <state name="cullmode" value="none" />
         </pass>
     </technique>

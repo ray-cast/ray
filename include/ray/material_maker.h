@@ -65,8 +65,6 @@ private:
 	void instanceShader(MaterialManager& manager, MaterialDesc& material, GraphicsProgramDesc& programDesc, iarchive& reader) except;
 	void instanceInputLayout(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
 
-	static RenderPass stringToRenderPass(const std::string& pass) noexcept;
-	static RenderQueue stringToRenderQueue(const std::string& queue) noexcept;
 	static GraphicsShaderStage stringToShaderStage(const std::string& stage) noexcept;
 	static GraphicsUniformType stringToUniformType(const std::string& type) noexcept;
 	static GraphicsVertexType stringToPrimitive(const std::string& primitive) noexcept;

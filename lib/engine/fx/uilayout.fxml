@@ -28,8 +28,8 @@
         }
         ]]>
     </shader>
-    <technique name="opaque">
-        <pass name="ui">
+    <technique name="ui">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F_COL4C_UV2F"/>
             <state name="vertex" value="UILayoutVS"/>
             <state name="fragment" value="UILayoutPS"/>

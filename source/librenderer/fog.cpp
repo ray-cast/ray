@@ -52,7 +52,7 @@ void
 Fog::onActivate(RenderPipeline& pipeline) noexcept
 {
 	_material = pipeline.createMaterial("sys:fx/fog.glsl");
-	_fog = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("fog");
+	_fog = _material->getTech("fog");
 	_fogFalloff = _material->getParameter("fogFalloff");
 	_fogDensity = _material->getParameter("fogDensity");
 	_fogColor = _material->getParameter("fogColor");

@@ -34,59 +34,102 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_MATERIAL_PASS_H_
-#define _H_MATERIAL_PASS_H_
+#ifndef _H_MATERIAL_DESC_H_
+#define _H_MATERIAL_DESC_H_
 
 #include <ray/render_types.h>
 
 _NAME_BEGIN
 
-class EXPORT MaterialPass final : public rtti::Interface
+class EXPORT MaterialPassDesc final
 {
-	__DeclareSubClass(MaterialPass, rtti::Interface)
 public:
-	MaterialPass() noexcept;
-	~MaterialPass() noexcept;
-
-	bool setup(Material& material) noexcept;
-	void close() noexcept;
-	
-	const MaterialParams& getParameters() const noexcept;
-	MaterialParamPtr getParameter(const std::string& name) const noexcept;
+	MaterialPassDesc() noexcept;
+	~MaterialPassDesc() noexcept;
 
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 
-	void setGraphicsState(GraphicsStatePtr state) noexcept;
-	void setGraphicsProgram(GraphicsProgramPtr program) noexcept;
-	void setGraphicsInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept;
-	void setGraphicsDescriptorPool(GraphicsDescriptorPoolPtr pool) noexcept;
-	void setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr descriptorSetLayout) noexcept;
+	void setGraphicsState(GraphicsStatePtr& state) noexcept;
+	void setGraphicsProgram(GraphicsProgramPtr& program) noexcept;
+	void setGraphicsInputLayout(GraphicsInputLayoutPtr& inputLayout) noexcept;
+	void setGraphicsDescriptorPool(GraphicsDescriptorPoolPtr& pool) noexcept;
+	void setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr& descriptorSetLayout) noexcept;
 
 	GraphicsStatePtr getGraphicsState() const noexcept;
 	GraphicsProgramPtr getGraphicsProgram() const noexcept;
 	GraphicsInputLayoutPtr getGraphicsInputLayout() const noexcept;
 	GraphicsDescriptorPoolPtr getGraphicsDescriptorPool() const noexcept;
 	GraphicsDescriptorSetLayoutPtr getGraphicsDescriptorSetLayout() const noexcept;
-	GraphicsPipelinePtr getRenderPipeline() const noexcept;
-	GraphicsDescriptorSetPtr getDescriptorSet() const noexcept;
-
-private:
-	MaterialPass(const MaterialPass&) = delete;
-	MaterialPass& operator=(const MaterialPass&) = delete;
 
 private:
 	std::string _name;
 
-	MaterialParams _parameters;
-
 	GraphicsStatePtr _state;
 	GraphicsProgramPtr _program;
 	GraphicsInputLayoutPtr _inputLayout;
-	GraphicsDescriptorSetPtr _descriptorSet;
 	GraphicsDescriptorPoolPtr _descriptorPool;
 	GraphicsDescriptorSetLayoutPtr _descriptorSetLayout;
-	GraphicsPipelinePtr _pipeline;
+};
+
+class EXPORT MaterialTechDesc final
+{
+public:
+	MaterialTechDesc() noexcept;
+	~MaterialTechDesc() noexcept;
+
+	void addPass(MaterialPassDescPtr pass) noexcept;
+	void removePass(MaterialPassDescPtr pass) noexcept;
+
+private:
+	std::vector<MaterialPassDescPtr> _passList;
+};
+
+class EXPORT MaterialDesc final
+{
+public:
+	MaterialDesc() noexcept;
+	~MaterialDesc() noexcept;
+
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
+	void addTech(MaterialTechPtr technique) noexcept;
+	void removeTech(MaterialTechPtr technique) noexcept;
+	MaterialTechPtr getTech(const std::string& name) noexcept;
+	MaterialTechniques& getTechs() noexcept;
+
+	void addParameter(MaterialParamPtr parameter) noexcept;
+	void removeParameter(MaterialParamPtr parameter) noexcept;
+	MaterialParamPtr getParameter(const std::string& name) const noexcept;
+	MaterialParams& getParameters() noexcept;
+	const MaterialParams& getParameters() const noexcept;
+
+	void addMacro(MaterialVariantPtr macro) noexcept;
+	void removeMacro(MaterialVariantPtr macro) noexcept;
+	MaterialVariantPtr getMacro(const std::string& name) const noexcept;
+	MaterialVariants& getMacros() noexcept;
+	const MaterialVariants& getMacros() const noexcept;
+
+	void addInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept;
+	void removeInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept;
+	GraphicsInputLayoutPtr getInputLayout(const std::string& name) const noexcept;
+	GraphicsInputLayouts& getInputLayouts() noexcept;
+	const GraphicsInputLayouts& getInputLayouts() const noexcept;
+
+	void addShader(GraphicsShaderPtr shader) noexcept;
+	void removeShader(GraphicsShaderPtr shader) noexcept;
+	GraphicsShaderPtr getShader(const std::string& name) const noexcept;
+	GraphicsShaders& getShaders() noexcept;
+	const GraphicsShaders& getShaders() const noexcept;
+
+private:
+	std::string _name;
+	MaterialParams _parameters;
+	MaterialVariants _macros;
+	MaterialTechniques _techniques;
+	GraphicsShaders _shaders;
+	GraphicsInputLayouts _inputLayouts;
 };
 
 _NAME_END

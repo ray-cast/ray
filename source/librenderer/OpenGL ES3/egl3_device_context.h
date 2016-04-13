@@ -83,8 +83,8 @@ public:
 	void readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
-	void drawRenderBuffer(const GraphicsIndirect& renderable) noexcept;
-	void drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept;
+	void drawRenderMesh(const GraphicsIndirect& renderable) noexcept;
+	void drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept;
 
 	void present() noexcept;
 

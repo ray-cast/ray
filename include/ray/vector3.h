@@ -142,39 +142,6 @@ public:
 	Vector3t<T>& set(T val) { x = y = z = val; return *this; }
 	Vector3t<T>& set(T xx, T yy, T zz) { x = xx; y = yy; z = zz; return *this; }
 
-    T dot(const Vector3t<T>& v) const { return x * v.x + y * v.y + z * v.z; }
-
-    Vector3t<T> cross(const Vector3t<T>& v) const
-    {
-        return Vector3t<T>(
-            y * v.z - z * v.y,
-            z * v.x - x * v.z,
-            x * v.y - y * v.x);
-    }
-
-    T normalize()
-    {
-        T magSq = length2();
-        if (magSq > 0)
-        {
-            T invSqrt = 1 / sqrt(magSq);
-            *this *= invSqrt;
-        }
-
-        return magSq;
-    }
-
-    T length() const { return sqrt(this->length2()); }
-    T length2() const { return x * x + y * y + z * z; }
-
-    T distance(const Vector3t<T>& v) const { return (v - *this).length(); }
-    T sqrDistance(const Vector3t<T>& v) const { return (v - *this).length2(); }
-
-    T min(T t1, T t2) const { return t1 < t2 ? t1 : t2; }
-    T max(T t1, T t2) const { return t1 > t2 ? t1 : t2; }
-    T min() const { return min(min(x, y), z); }
-    T max() const { return max(max(x, y), z); }
-
     T& getComponent(unsigned char index)
     {
         switch (index)
@@ -205,24 +172,6 @@ template<typename T> const Vector3t<T> Vector3t<T>::UnitZ = Vector3t<T>((T)0.0, 
 template<typename T> const Vector3t<T> Vector3t<T>::Right = Vector3t<T>((T)1.0, (T)0.0, (T)0.0);
 template<typename T> const Vector3t<T> Vector3t<T>::Up = Vector3t<T>((T)0.0, (T)1.0, (T)0.0);
 template<typename T> const Vector3t<T> Vector3t<T>::Forward = Vector3t<T>((T)0.0, (T)0.0, (T)1.0);
-
-template <typename T>
-inline Vector3t<T> min(const Vector3t<T>& a, const Vector3t<T>& b)
-{
-    return Vector3t<T>(std::min(a.x, b.x), std::min(a.y, b.y), std::min(a.z, b.z));
-}
-
-template <typename T>
-inline Vector3t<T> max(const Vector3t<T>& a, const Vector3t<T>& b)
-{
-    return Vector3t<T>(std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z));
-}
-
-template<typename T>
-inline Vector3t<T> abs(const Vector3t<T>& v)
-{
-    return Vector3t<T>(::abs(v.x), ::abs(v.y), ::abs(v.z));
-}
 
 template<typename T>
 inline bool operator==(const Vector3t<T>& v1, const Vector3t<T>& v2)
@@ -288,14 +237,6 @@ template<typename T>
 inline Vector3t<T> operator-(const Vector3t<T>& v)
 {
     return Vector3t<T>(-v.x, -v.y, -v.z);
-}
-
-template <typename T>
-inline Vector3t<T> operator~(const Vector3t<T>& v)
-{
-    Vector3t<T> n(v);
-    n.normalize();
-    return n;
 }
 
 template<typename _Tx, typename _Ty>
@@ -394,10 +335,106 @@ inline Vector3t<_Tx> operator/(const Vector3t<_Tx>& v, _Ty value)
     return Vector3t<_Tx>(v.x / value, v.y / value, v.z * value);
 }
 
-template<typename T>
-inline Vector3t<T> random(const Vector3t<T>& min, const Vector3t<T>& max)
+namespace math
 {
-    return Vector3t<T>(random(min.x, max.x), random(min.y, max.y), random(min.z, max.z));
+	template<typename T>
+	inline T dot(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
+	{
+		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+	}
+
+	template<typename T>
+	Vector3t<T> cross(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
+	{
+		return Vector3t<T>(
+			v1.y * v2.z - v1.z * v2.y,
+			v1.z * v2.x - v1.x * v2.z,
+			v1.x * v2.y - v1.y * v2.x);
+	}
+
+	template<typename T>
+	inline T length2(const Vector3t<T>& v) noexcept
+	{
+		return dot(v, v);
+	}
+
+	template<typename T>
+	inline T length(const Vector3t<T>& v) noexcept
+	{
+		return std::sqrt(length2(v));
+	}
+
+	template<typename T>
+	inline T distance(const Vector3t<T>& v) noexcept
+	{
+		return length(v - *this);
+	}
+
+
+	template<typename T>
+	inline T sqrDistance(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
+	{
+		return length2(v1 - v2);
+	}
+
+	template<typename T>
+	inline Vector3t<T> negate(const Vector3t<T>& v) noexcept
+	{
+		return Vector3t<T>(-v.x, -v.y, -v.z);
+	}
+
+	template<typename T>
+	inline Vector3t<T> clamp(const Vector3t<T>& t, T min, T max)
+	{
+		return Vector3t<T>(
+			std::max(min, std::min(max, t.x)),
+			std::max(min, std::min(max, t.y)),
+			std::max(min, std::min(max, t.z))
+			);
+	}
+
+	template<typename T>
+	inline Vector3t<T> saturate(const Vector3t<T>& v) noexcept
+	{
+		return clamp(v, 0.0f, 1.0f);
+	}
+
+	template<typename T>
+	inline Vector3t<T> normalize(const Vector3t<T>& v) noexcept
+	{
+		T magSq = length2(v);
+		if (magSq > static_cast<T>(0.0))
+		{
+			T invSqrt = 1.0f / sqrt(magSq);
+			return v * invSqrt;
+		}
+
+		return v;
+	}
+
+	template <typename T>
+	inline Vector3t<T> min(const Vector3t<T>& a, const Vector3t<T>& b)
+	{
+		return Vector3t<T>(std::min(a.x, b.x), std::min(a.y, b.y), std::min(a.z, b.z));
+	}
+
+	template <typename T>
+	inline Vector3t<T> max(const Vector3t<T>& a, const Vector3t<T>& b)
+	{
+		return Vector3t<T>(std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z));
+	}
+
+	template<typename T>
+	inline Vector3t<T> abs(const Vector3t<T>& v)
+	{
+		return Vector3t<T>(std::abs(v.x), std::abs(v.y), std::abs(v.z));
+	}
+
+	template<typename T>
+	inline Vector3t<T> random(const Vector3t<T>& min, const Vector3t<T>& max)
+	{
+		return Vector3t<T>(random(min.x, max.x), random(min.y, max.y), random(min.z, max.z));
+	}
 }
 
 _NAME_END

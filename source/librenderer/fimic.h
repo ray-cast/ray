@@ -97,12 +97,12 @@ private:
 	Setting _setting;
 
 	MaterialPtr _fimic;
-	MaterialPassPtr _sunLum;
-	MaterialPassPtr _sunLumLog;
-	MaterialPassPtr _bloom;
-	MaterialPassPtr _blurh;
-	MaterialPassPtr _blurv;
-	MaterialPassPtr _tone;
+	MaterialTechPtr _sunLum;
+	MaterialTechPtr _sunLumLog;
+	MaterialTechPtr _bloom;
+	MaterialTechPtr _blurh;
+	MaterialTechPtr _blurv;
+	MaterialTechPtr _tone;
 
 	MaterialParamPtr _bloomThreshold;
 	MaterialParamPtr _bloomIntensity;
@@ -121,6 +121,9 @@ private:
 	GraphicsTexturePtr _texSample8Map;
 	GraphicsTexturePtr _texSampleLogMap;
 	GraphicsTexturePtr _texCombieMap;
+
+	GraphicsFramebufferLayoutPtr _sampleViewLayout;
+	GraphicsFramebufferLayoutPtr _sampleLogViewLayout;
 
 	GraphicsFramebufferPtr _texBloomView[SAMPLE_COUNT];
 	GraphicsFramebufferPtr _texSample4View;

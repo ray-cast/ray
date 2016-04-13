@@ -389,7 +389,7 @@ VulkanCommandList::setIndexBuffer(GraphicsDataPtr data) noexcept
 }
 
 void 
-VulkanCommandList::drawRenderBuffer(const GraphicsIndirect& renderable) noexcept
+VulkanCommandList::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 {
 	if (renderable.numIndices > 0)
 		vkCmdDrawIndexed(_vkCommandBuffer, renderable.numIndices, renderable.numInstances, renderable.startIndice, renderable.startVertice, renderable.startInstances);
@@ -398,10 +398,10 @@ VulkanCommandList::drawRenderBuffer(const GraphicsIndirect& renderable) noexcept
 }
 
 void 
-VulkanCommandList::drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t count) noexcept
+VulkanCommandList::drawRenderMesh(const GraphicsIndirect renderable[], std::size_t count) noexcept
 {
 	for (std::size_t i = 0; i < count; i++)
-		this->drawRenderBuffer(renderable[i]);
+		this->drawRenderMesh(renderable[i]);
 }
 
 void

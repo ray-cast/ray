@@ -268,7 +268,6 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialDesc& material, Ma
 
 	auto pass = std::make_shared<MaterialPass>();
 	pass->setName(passName);
-	pass->setRenderPass(stringToRenderPass(passName));
 	pass->setGraphicsState(state);
 	pass->setGraphicsProgram(program);
 	pass->setGraphicsInputLayout(inputLayout);
@@ -283,16 +282,12 @@ MaterialMaker::instanceTech(MaterialManager& manager, MaterialDesc& material, ia
 	if (techName.empty())
 		throw failure(__TEXT("The technique name can not be empty"));
 
-	RenderQueue queue = stringToRenderQueue(techName);
-	if (queue == RenderQueue::RenderQueueMaxEnum)
-		throw failure(__TEXT("Unknown technique name : ") + techName);
-
-	auto tech = std::make_shared<MaterialTech>();
-	tech->setRenderQueue(queue);
-
 	if (!reader.setToFirstChild())
 		throw failure(__TEXT("Empty child : ") + reader.getCurrentNodePath());
-	
+
+	auto tech = std::make_shared<MaterialTech>();
+	tech->setName(techName);
+
 	do
 	{
 		auto name = reader.getCurrentNodeName();
@@ -319,6 +314,10 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialDesc& materia
 	auto uniformType = stringToUniformType(type);
 	if (uniformType == GraphicsUniformType::GraphicsUniformTypeMaxEnum)
 		throw failure(__TEXT("Unknown parameter type : ") + type);
+
+	auto pos = name.find_first_of('[');
+	if (pos != std::string::npos)
+		name = name.substr(0, pos);
 
 	auto param = std::make_shared<MaterialParam>();
 	param->setName(name);
@@ -591,7 +590,7 @@ MaterialMaker::load(MaterialManager& manager, iarchive& reader) except
 						param->assign(parseFloat4(arg.second));
 						break;
 					case GraphicsUniformType::GraphicsUniformTypeStorageImage:
-						param->assign(RenderSystem::instance()->createTexture(arg.second));
+						param->assign(RenderSystem::instance()->createTexture(arg.second, GraphicsTextureDim::GraphicsTextureDim2D));
 						break;
 					default:
 						assert(false);
@@ -614,33 +613,6 @@ MaterialMaker::load(MaterialManager& manager, iarchive& reader) except
 	}
 
 	return nullptr;
-}
-
-RenderPass
-MaterialMaker::stringToRenderPass(const std::string& passName) noexcept
-{
-	if (passName == "custom")      return RenderPass::RenderPassCustom;
-	if (passName == "shadow")      return RenderPass::RenderPassShadow;
-	if (passName == "opaque")      return RenderPass::RenderPassOpaques;
-	if (passName == "transparent") return RenderPass::RenderPassTransparent;
-	if (passName == "light")       return RenderPass::RenderPassLights;
-	if (passName == "specific")    return RenderPass::RenderPassSpecific;
-	if (passName == "postprocess") return RenderPass::RenderPassPostprocess;
-
-	return RenderPass::RenderPassCustom;
-}
-
-RenderQueue
-MaterialMaker::stringToRenderQueue(const std::string& techName) noexcept
-{
-	if (techName == "custom")      return RenderQueue::RenderQueueCustom;
-	if (techName == "opaque")      return RenderQueue::RenderQueueOpaque;
-	if (techName == "transparent") return RenderQueue::RenderQueueTransparent;
-	if (techName == "lighting")    return RenderQueue::RenderQueueLighting;
-	if (techName == "postprocess") return RenderQueue::RenderQueuePostprocess;
-
-	assert(false);
-	return RenderQueue::RenderQueueMaxEnum;
 }
 
 GraphicsShaderStage

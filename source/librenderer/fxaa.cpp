@@ -54,8 +54,7 @@ void
 FXAA::onActivate(RenderPipeline& pipeline) noexcept
 {
 	_fxaa = pipeline.createMaterial("sys:fx/fxaa.fxml.o");
-	_fxaaPass = _fxaa->getTech(RenderQueue::RenderQueuePostprocess)->getPass("fxaa");
-	_copyPass = _fxaa->getTech(RenderQueue::RenderQueuePostprocess)->getPass("copy");
+	_fxaaTech = _fxaa->getTech("fxaa");
 
 	_texelStep = _fxaa->getParameter("texelStep");
 	_texelSource = _fxaa->getParameter("texelSource");
@@ -70,7 +69,7 @@ FXAA::onDeactivate(RenderPipeline& pipeline) noexcept
 		_fxaa = nullptr;
 	}
 
-	_fxaaPass = nullptr;
+	_fxaaTech = nullptr;
 	_texelStep = nullptr;
 }
 
@@ -85,7 +84,7 @@ FXAA::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Graphics
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
-	pipeline.drawScreenQuad(_fxaaPass);
+	pipeline.drawScreenQuad(_fxaaTech);
 
 	return true;
 }

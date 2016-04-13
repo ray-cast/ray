@@ -179,8 +179,8 @@ public:
 	virtual void setVertexBuffers(GraphicsDataPtr data[], std::uint32_t first, std::uint32_t count) noexcept = 0;
 	virtual void setIndexBuffer(GraphicsDataPtr data) noexcept = 0;
 
-	virtual void drawRenderBuffer(const GraphicsIndirect& renderable) noexcept = 0;
-	virtual void drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t count) noexcept = 0;
+	virtual void drawRenderMesh(const GraphicsIndirect& renderable) noexcept = 0;
+	virtual void drawRenderMesh(const GraphicsIndirect renderable[], std::size_t count) noexcept = 0;
 
 	virtual const GraphicsCommandListDesc& getGraphicsCommandListDesc() const noexcept = 0;
 

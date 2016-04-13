@@ -34,42 +34,43 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/render_buffer.h>
+#ifndef _H_GEOMETRY_H_
+#define _H_GEOMETRY_H_
+
+#include <ray/render_object.h>
 
 _NAME_BEGIN
 
-__ImplementSubClass(RenderBuffer, rtti::Interface, "RenderBuffer")
-
-RenderBuffer::RenderBuffer() noexcept
+class EXPORT Geometry final : public RenderObject
 {
-}
+	__DeclareSubClass(Geometry, RenderObject)
+public:
+	Geometry() noexcept;
+	~Geometry() noexcept;
 
-RenderBuffer::~RenderBuffer() noexcept
-{
-}
+	void setMaterial(MaterialPtr material) noexcept;
+	MaterialPtr getMaterial() noexcept;
 
-void
-RenderBuffer::setVertexBuffer(GraphicsDataPtr vbo) noexcept
-{
-	_vbo = vbo;
-}
+	void setRenderMesh(RenderMeshPtr mesh) noexcept;
+	RenderMeshPtr getRenderMesh() noexcept;
 
-void 
-RenderBuffer::setIndexBuffer(GraphicsDataPtr ibo) noexcept
-{
-	_ibo = ibo;
-}
+	void setGraphicsIndirect(GraphicsIndirectPtr renderable) noexcept;
+	GraphicsIndirectPtr getGraphicsIndirect() noexcept;
 
-GraphicsDataPtr
-RenderBuffer::getVertexBuffer() noexcept
-{
-	return _vbo;
-}
+private:
+	void onAddRenderData(RenderDataManager& manager) noexcept;
+	void onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTechPtr tech) noexcept;
 
-GraphicsDataPtr 
-RenderBuffer::getIndexBuffer() noexcept
-{
-	return _ibo;
-}
+private:
+	static RenderQueue stringToRenderQueue(const std::string& techName) noexcept;
+
+private:
+	MaterialPtr _material;
+	RenderMeshPtr _mesh;
+	MaterialTechPtr _techniques[RenderQueue::RenderQueueRangeSize];
+	GraphicsIndirectPtr _renderable;
+};
 
 _NAME_END
+
+#endif

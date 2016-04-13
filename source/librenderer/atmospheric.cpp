@@ -76,12 +76,12 @@ Atmospheric::onActivate(RenderPipeline& pipeline) noexcept
 	_renderable.numVertices = mesh.getNumVertices();
 	_renderable.numIndices = mesh.getNumIndices();
 
-	_sphere = pipeline.createRenderBuffer(mesh);
+	_sphere = pipeline.createRenderMesh(mesh);
 
 	_sat = pipeline.createMaterial("sys:fx/atmospheric.glsl");
 
-	_sky = _sat->getTech(RenderQueue::RenderQueuePostprocess)->getPass("sky");
-	_ground = _sat->getTech(RenderQueue::RenderQueuePostprocess)->getPass("ground");
+	_sky = _sat->getTech("sky");
+	_ground = _sat->getTech("ground");
 	_lightDirection = _sat->getParameter("lightDirection");
 	_invWavelength = _sat->getParameter("invWavelength");
 	_outerRadius = _sat->getParameter("outerRadius");
@@ -129,16 +129,14 @@ Atmospheric::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, G
 {
 	pipeline.setFramebuffer(source);
 
-	auto lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting, RenderPass::RenderPassLights);
+	auto lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting);
 	for (auto& it : lights)
 	{
 		auto light = std::dynamic_pointer_cast<Light>(it);
 
 		if (light->getLightType() == LightType::LightTypeSun)
 		{
-			auto lightDirection = ~light->getForward();
-
-			_lightDirection->assign(lightDirection);
+			_lightDirection->assign(math::normalize(light->getForward()));
 
 			pipeline.drawMesh(_ground, _sphere, _renderable);
 			pipeline.drawMesh(_sky, _sphere, _renderable);

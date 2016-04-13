@@ -54,7 +54,7 @@ private:
 private:
 
 	MaterialPtr _ssr;
-	MaterialPassPtr _ssrPass;
+	MaterialTechPtr _ssrPass;
 
 	MaterialParamPtr _projInfo;
 	MaterialParamPtr _clipInfo;

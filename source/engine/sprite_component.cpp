@@ -98,30 +98,30 @@ ParticleEmitterComponent::emitter()
 void
 ParticleEmitterComponent::emitter(Particle* it) noexcept
 {
-	randomize();
+	math::randomize();
 
 	auto& position = this->getGameObject()->getTranslate();
 
-	it->age = random(_age_min, _age_max);
+	it->age = math::random(_age_min, _age_max);
 
-	it->position = random(position + _position_start, position + lerp(_position_start, _position_end, _position_variance));
+	it->position = math::random(position + _position_start, position + math::lerp(_position_start, _position_end, _position_variance));
 
-	it->size = random(_size_start, lerp(_size_start, _size_end, _size_variance));
-	it->sizeDelta = random(_size_start, lerp(_size_start, _size_end, it->age));
+	it->size = math::random(_size_start, math::lerp(_size_start, _size_end, _size_variance));
+	it->sizeDelta = math::random(_size_start, math::lerp(_size_start, _size_end, it->age));
 
-	it->spin = random(_spin_start, lerp(_spin_start, _spin_end, _spin_variance));
-	it->spinDelta = random(_spin_start, lerp(_spin_start, _spin_end, it->age));
+	it->spin = math::random(_spin_start, math::lerp(_spin_start, _spin_end, _spin_variance));
+	it->spinDelta = math::random(_spin_start, math::lerp(_spin_start, _spin_end, it->age));
 
-	it->color = random(_color_start, lerp(_color_start, _color_end, _color_variance));
-	it->colorDelta = random(_color_start, lerp(_color_start, _color_end, it->age));
+	it->color = math::random(_color_start, math::lerp(_color_start, _color_end, _color_variance));
+	it->colorDelta = math::random(_color_start, math::lerp(_color_start, _color_end, it->age));
 
-	it->velocity = random(_speed_min, lerp(_speed_min, _speed_max, _speed_variance));
+	it->velocity = math::random(_speed_min, math::lerp(_speed_min, _speed_max, _speed_variance));
 
-	it->gravity = random(_gravity_min, lerp(_gravity_min, _gravity_max, _gravity_variance));
+	it->gravity = math::random(_gravity_min, math::lerp(_gravity_min, _gravity_max, _gravity_variance));
 
-	it->radialAccel = random(_radial_min, lerp(_radial_min, _radial_max, _radial_variance));
+	it->radialAccel = math::random(_radial_min, math::lerp(_radial_min, _radial_max, _radial_variance));
 
-	it->tangentialAccel = random(_tangential_min, lerp(_tangential_min, _tangential_max, _tangential_variance));
+	it->tangentialAccel = math::random(_tangential_min, math::lerp(_tangential_min, _tangential_max, _tangential_variance));
 }
 
 void
@@ -152,7 +152,7 @@ ParticleEmitterComponent::simulate(float delta) noexcept
 			Vector3 accel1, accel2;
 
 			accel1 = it->position - this->getGameObject()->getTranslate();
-			accel1 *= invSqrt(accel1.length2());
+			accel1 *= math::invSqrt(math::length2(accel1));
 			accel2 = accel1;
 			accel1 *= it->radialAccel;
 

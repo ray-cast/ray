@@ -112,7 +112,7 @@ SSSS::translucency(RenderPipeline& pipeline, GraphicsFramebufferPtr dest) noexce
 {
 	pipeline.setFramebuffer(dest);
 
-	auto lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting, RenderPass::RenderPassLights);
+	auto lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting);
 	for (auto& it : lights)
 	{
 		auto light = it->downcast<Light>();
@@ -128,8 +128,8 @@ SSSS::onActivate(RenderPipeline& pipeline) noexcept
 {
 	_material = pipeline.createMaterial("sys:fx/ssss.fxml.o");
 
-	_translucency = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("translucency");
-	_blur = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("blur");
+	_translucency = _material->getTech("translucency");
+	_blur = _material->getTech("blur");
 
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);

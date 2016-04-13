@@ -330,17 +330,17 @@ RenderPipelineManager::getCamera() const noexcept
 }
 
 void
-RenderPipelineManager::addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept
+RenderPipelineManager::addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept
 {
 	assert(_pipeline);
-	_pipeline->addRenderData(queue, pass, object);
+	_pipeline->addRenderData(queue, object);
 }
 
 const RenderObjects&
-RenderPipelineManager::getRenderData(RenderQueue queue, RenderPass pass) const noexcept
+RenderPipelineManager::getRenderData(RenderQueue queue) const noexcept
 {
 	assert(_pipeline);
-	return _pipeline->getRenderData(queue, pass);
+	return _pipeline->getRenderData(queue);
 }
 
 void
@@ -433,31 +433,31 @@ RenderPipelineManager::unmapBuffer(GraphicsDataPtr& data) noexcept
 }
 
 void
-RenderPipelineManager::drawCone(MaterialPassPtr pass) noexcept
+RenderPipelineManager::drawCone(MaterialTechPtr tech) noexcept
 {
 	assert(_pipeline);
-	_pipeline->drawCone(pass);
+	_pipeline->drawCone(tech);
 }
 
 void
-RenderPipelineManager::drawSphere(MaterialPassPtr pass) noexcept
+RenderPipelineManager::drawSphere(MaterialTechPtr tech) noexcept
 {
 	assert(_pipeline);
-	_pipeline->drawSphere(pass);
+	_pipeline->drawSphere(tech);
 }
 
 void
-RenderPipelineManager::drawScreenQuad(MaterialPassPtr pass) noexcept
+RenderPipelineManager::drawScreenQuad(MaterialTechPtr tech) noexcept
 {
 	assert(_pipeline);
-	_pipeline->drawScreenQuad(pass);
+	_pipeline->drawScreenQuad(tech);
 }
 
 void
-RenderPipelineManager::drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const GraphicsIndirect& renderable) noexcept
+RenderPipelineManager::drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept
 {
 	assert(_pipeline);
-	_pipeline->drawMesh(pass, mesh, renderable);
+	_pipeline->drawMesh(tech, mesh, renderable);
 }
 
 void
@@ -556,10 +556,10 @@ RenderPipelineManager::createTexture(std::uint32_t w, std::uint32_t h, GraphicsT
 }
 
 GraphicsTexturePtr 
-RenderPipelineManager::createTexture(const std::string& name) noexcept
+RenderPipelineManager::createTexture(const std::string& name, GraphicsTextureDim dim) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createTexture(name);
+	return _pipelineDevice->createTexture(name, dim);
 }
 
 MaterialPtr 
@@ -589,25 +589,25 @@ RenderPipelineManager::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 	return _pipelineDevice->createGraphicsData(desc);
 }
 
-RenderBufferPtr 
-RenderPipelineManager::createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
+RenderMeshPtr 
+RenderPipelineManager::createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderBuffer(vb, ib);
+	return _pipelineDevice->createRenderMesh(vb, ib);
 }
 
-RenderBufferPtr
-RenderPipelineManager::createRenderBuffer(const MeshProperty& mesh) noexcept
+RenderMeshPtr
+RenderPipelineManager::createRenderMesh(const MeshProperty& mesh) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderBuffer(mesh);
+	return _pipelineDevice->createRenderMesh(mesh);
 }
 
-RenderBufferPtr
-RenderPipelineManager::createRenderBuffer(const MeshPropertys& mesh) noexcept
+RenderMeshPtr
+RenderPipelineManager::createRenderMesh(const MeshPropertys& mesh) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderBuffer(mesh);
+	return _pipelineDevice->createRenderMesh(mesh);
 }
 
 _NAME_END

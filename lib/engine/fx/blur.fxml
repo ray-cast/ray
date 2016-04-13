@@ -48,8 +48,8 @@
             }
         ]]>
     </shader>
-    <technique name="custom">
-        <pass name="blurX">
+    <technique name="blurX">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
 
             <state name="vertex" value="BlurVS"/>
@@ -60,7 +60,9 @@
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
         </pass>
-        <pass name="blurY">
+    </technique>
+    <technique name="blurY">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
 
             <state name="vertex" value="BlurVS"/>

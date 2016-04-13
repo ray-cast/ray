@@ -2351,13 +2351,15 @@ f2 00 10 00 02 00 00 00 46 10 10 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
 00 00 00 00 ]]>
     </shader>
-    <technique name="custom">
-        <pass name="DeferredDepthOnly">
+    <technique name="DeferredDepthOnly">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="DeferredDepthOnlyVS" />
             <state name="fragment" value="DeferredDepthOnlyPS" />
         </pass>
-        <pass name="DeferredDepthLinear">
+    </technique>
+    <technique name="DeferredDepthLinear">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="DeferredScreenQuadVS" />
             <state name="fragment" value="DeferredDepthLinearPS" />
@@ -2365,7 +2367,9 @@ f2 00 10 00 02 00 00 00 46 10 10 00 00 00 00 00
             <state name="depthtest" value="false" />
             <state name="depthwrite" value="false" />
         </pass>
-        <pass name="DeferredCopyOnly">
+    </technique>
+    <technique name="DeferredCopyOnly">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="DeferredScreenQuadVS" />
             <state name="fragment" value="DeferredCopyOnlyPS" />
@@ -2373,7 +2377,9 @@ f2 00 10 00 02 00 00 00 46 10 10 00 00 00 00 00
             <state name="depthtest" value="false" />
             <state name="depthwrite" value="false" />
         </pass>
-        <pass name="DeferredAmbientLight">
+    </technique>
+    <technique name="DeferredAmbientLight">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="DeferredLightingVS" />
             <state name="fragment" value="DeferredAmbientLightPS" />
@@ -2384,7 +2390,9 @@ f2 00 10 00 02 00 00 00 46 10 10 00 00 00 00 00
             <state name="blenddst" value="one" />
             <state name="cullmode" value="none" />
         </pass>
-        <pass name="DeferredSunLight">
+    </technique>
+    <technique name="DeferredSunLight">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="DeferredLightingVS" />
             <state name="fragment" value="DeferredSunLightPS" />
@@ -2395,7 +2403,9 @@ f2 00 10 00 02 00 00 00 46 10 10 00 00 00 00 00
             <state name="blendsrc" value="one" />
             <state name="blenddst" value="one" />
         </pass>
-        <pass name="DeferredSunLightShadow">
+    </technique>
+    <technique name="DeferredSunLightShadow">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="DeferredLightingVS" />
             <state name="fragment" value="DeferredSunLightShadowPS" />
@@ -2406,7 +2416,9 @@ f2 00 10 00 02 00 00 00 46 10 10 00 00 00 00 00
             <state name="blendsrc" value="one" />
             <state name="blenddst" value="one" />
         </pass>
-        <pass name="DeferredDirectionalLight">
+    </technique>
+    <technique name="DeferredDirectionalLight">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="DeferredLightingVS" />
             <state name="fragment" value="DeferredDirectionalLightPS" />
@@ -2417,7 +2429,9 @@ f2 00 10 00 02 00 00 00 46 10 10 00 00 00 00 00
             <state name="blendsrc" value="one" />
             <state name="blenddst" value="one" />
         </pass>
-        <pass name="DeferredDirectionalLightShadow">
+    </technique>
+    <technique name="DeferredDirectionalLightShadow">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="DeferredLightingVS" />
             <state name="fragment" value="DeferredDirectionalLightShadowPS" />
@@ -2428,7 +2442,9 @@ f2 00 10 00 02 00 00 00 46 10 10 00 00 00 00 00
             <state name="blendsrc" value="one" />
             <state name="blenddst" value="one" />
         </pass>
-        <pass name="DeferredPointLight">
+    </technique>
+    <technique name="DeferredPointLight">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="DeferredLighting2VS" />
             <state name="fragment" value="DeferredPointLightPS" />
@@ -2439,7 +2455,9 @@ f2 00 10 00 02 00 00 00 46 10 10 00 00 00 00 00
             <state name="blenddst" value="one" />
             <state name="cullmode" value="front" />
         </pass>
-        <pass name="DeferredSpotLight">
+    </technique>
+    <technique name="DeferredSpotLight">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="DeferredLighting2VS" />
             <state name="fragment" value="DeferredSpotLightPS" />
@@ -2450,7 +2468,9 @@ f2 00 10 00 02 00 00 00 46 10 10 00 00 00 00 00
             <state name="blenddst" value="one" />
             <state name="cullmode" value="front" />
         </pass>
-        <pass name="DeferredSpotLightShadow">
+    </technique>
+    <technique name="DeferredSpotLightShadow">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="DeferredLighting2VS" />
             <state name="fragment" value="DeferredSpotLightShadowPS" />
@@ -2461,7 +2481,9 @@ f2 00 10 00 02 00 00 00 46 10 10 00 00 00 00 00
             <state name="blenddst" value="one" />
             <state name="cullmode" value="front" />
         </pass>
-        <pass name="DeferredShadingOpaques">
+    </technique>
+    <technique name="DeferredShadingOpaques">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="DeferredScreenQuadVS" />
             <state name="fragment" value="DeferredShadingOpaquesPS" />
@@ -2469,7 +2491,9 @@ f2 00 10 00 02 00 00 00 46 10 10 00 00 00 00 00
             <state name="depthtest" value="false" />
             <state name="depthwrite" value="false" />
         </pass>
-        <pass name="DeferredShadingTransparents">
+    </technique>
+    <technique name="DeferredShadingTransparents">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="DeferredScreenQuadVS" />
             <state name="fragment" value="DeferredShadingTransparentsPS" />

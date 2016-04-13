@@ -92,7 +92,8 @@ public:
 	void removeSubRenderObject(RenderObjectPtr object) noexcept;
 	RenderObjects& getSubeRenderObjects() noexcept;
 
-	void render(RenderPipeline& pipelineContext, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept;
+	void addRenderData(RenderDataManager& manager) noexcept;
+	void render(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTechPtr tech) noexcept;
 
 protected:
 	virtual void onMoveBefor() noexcept;
@@ -101,7 +102,9 @@ protected:
 	virtual void onSceneChangeBefor() noexcept;
 	virtual void onSceneChangeAfter() noexcept;
 
-	virtual void onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept;
+	virtual void onAddRenderData(RenderDataManager& manager) noexcept;
+
+	virtual void onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTechPtr tech) noexcept;
 
 private:
 	std::uint8_t _layer;

@@ -62,11 +62,11 @@ public:
 private:
 
 	MaterialPtr _dof;
-	MaterialPassPtr _sample4;
-	MaterialPassPtr _blurv;
-	MaterialPassPtr _blurh;
-	MaterialPassPtr _computeNear;
-	MaterialPassPtr _final;
+	MaterialTechPtr _sample4;
+	MaterialTechPtr _blurv;
+	MaterialTechPtr _blurh;
+	MaterialTechPtr _computeNear;
+	MaterialTechPtr _final;
 
 	MaterialParamPtr _texColor;
 	MaterialParamPtr _texDepth;

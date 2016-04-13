@@ -134,8 +134,8 @@ f2 20 10 00 01 00 00 00 46 1e 10 00 00 00 00 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
 ]]>
     </shader>
-    <technique name="postprocess">
-        <pass name="grading">
+    <technique name="ColorGrading">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F" />
             <state name="vertex" value="PostProcessVS" />
             <state name="fragment" value="ColorGradingPS" />

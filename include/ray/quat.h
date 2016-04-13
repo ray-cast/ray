@@ -142,11 +142,11 @@ public:
 		if (t <= 0.0f) { *this = q1; return *this; }
 		if (t >= 1.0f) { *this = q2; return *this; }
 
-		T cosOmega = clamp<T>(q1.dot(q2), -1.0f, 1.0f);
+		T cosOmega = math::clamp(q1.dot(q2), -1.0f, 1.0f);
 
 		if (cosOmega < 0.0f)
 		{
-			double theta = acos(-cosOmega);
+			double theta = std::acos(-cosOmega);
 			if (fabs(theta) < 1.0e-10)
 			{
 				*this = q1;
@@ -274,9 +274,9 @@ public:
 		T sp, sb, sh;
 		T cp, cb, ch;
 
-		sinCos(&sp, &cp, euler.x * 0.5f);
-		sinCos(&sh, &ch, euler.y * 0.5f);
-		sinCos(&sb, &cb, euler.z * 0.5f);
+		math::sinCos(&sp, &cp, DEG_TO_RAD(euler.x) * 0.5f);
+		math::sinCos(&sh, &ch, DEG_TO_RAD(euler.y) * 0.5f);
+		math::sinCos(&sb, &cb, DEG_TO_RAD(euler.z) * 0.5f);
 
 		x = ch * sp * cb + sh * cp * sb;
 		y = sh * cp * cb - ch * sp * sb;
@@ -294,36 +294,36 @@ public:
 	{
 		T t = 1 + rotate.a1 + rotate.b2 + rotate.c3;
 
-		if (t > static_cast<T>(0.001))
+		if (t > 0.001f)
 		{
-			T s = sqrt(t) * static_cast<T>(2.0);
+			T s = sqrt(t) * 2.0f;
 			x = (rotate.c2 - rotate.b3) / s;
 			y = (rotate.a3 - rotate.c1) / s;
 			z = (rotate.b1 - rotate.a2) / s;
-			w = static_cast<T>(0.25) * s;
+			w = 0.25f * s;
 		}
 		else if (rotate.a1 > rotate.b2 && rotate.a1 > rotate.c3)
 		{
-			T s = sqrt(static_cast<T>(1.0) + rotate.a1 - rotate.b2 - rotate.c3) * static_cast<T>(2.0);
-			x = static_cast<T>(0.25) * s;
+			T s = sqrt(1.0f + rotate.a1 - rotate.b2 - rotate.c3) * 2.0f;
+			x = 0.25f * s;
 			y = (rotate.b1 + rotate.a2) / s;
 			z = (rotate.a3 + rotate.c1) / s;
 			w = (rotate.c2 - rotate.b3) / s;
 		}
 		else if (rotate.b2 > rotate.c3)
 		{
-			T s = sqrt(static_cast<T>(1.0) + rotate.b2 - rotate.a1 - rotate.c3) * static_cast<T>(2.0);
+			T s = sqrt(1.0f + rotate.b2 - rotate.a1 - rotate.c3) * 2.0f;
 			x = (rotate.b1 + rotate.a2) / s;
-			y = static_cast<T>(0.25) * s;
+			y = 0.25f * s;
 			z = (rotate.c2 + rotate.b3) / s;
 			w = (rotate.a3 - rotate.c1) / s;
 		}
 		else
 		{
-			T s = sqrt(static_cast<T>(1.0) + rotate.c3 - rotate.a1 - rotate.b2) * static_cast<T>(2.0);
+			T s = sqrt(1.0f + rotate.c3 - rotate.a1 - rotate.b2) * 2.0f;
 			x = (rotate.a3 + rotate.c1) / s;
 			y = (rotate.c2 + rotate.b3) / s;
-			z = static_cast<T>(0.25) * s;
+			z = 0.25f * s;
 			w = (rotate.b1 - rotate.a2) / s;
 		}
 

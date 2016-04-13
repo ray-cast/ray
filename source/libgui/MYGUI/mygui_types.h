@@ -41,7 +41,6 @@
 #include <ray/ioserver.h>
 #include <ray/graphics_texture.h>
 #include <ray/graphics_input_layout.h>
-#include <ray/render_buffer.h>
 #include <ray/render_system.h>
 #include <ray/render_pipeline.h>
 #include <ray/material_maker.h>

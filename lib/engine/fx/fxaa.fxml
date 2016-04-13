@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <effect version="1270" language="hlsl">
+    <include name="sys:fx/common.fxml"/>
     <include name="sys:fx/sampler.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
     <parameter name="texelStep" type="float2" />
     <parameter name="texelSource" type="texture2D" />
     <shader>
@@ -1000,13 +1002,12 @@
 
             void PostProcessVS(
                 in float4 Position : POSITION0,
-                in float4 Texcoord : TEXCOORD0,
                 out float4 oTexcoord : TEXCOORD0,
                 out float4 oPosition : SV_Position
                 )
             {
-                oTexcoord = Texcoord;
                 oPosition = Position;
+                oTexcoord = PosToCoord(Position);
             }
 
             float4 FXAA3(in float4 coord : TEXCOORD0) : SV_Target
@@ -1035,8 +1036,9 @@
             }
         ]]>
     </shader>
-    <technique name="postprocess">
-        <pass name="fxaa">
+    <technique name="fxaa">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="PostProcessVS"/>
             <state name="fragment" value="FXAA3"/>
 

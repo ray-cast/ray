@@ -285,7 +285,7 @@ OGLDeviceContext::getIndexBufferData() const noexcept
 }
 
 void
-OGLDeviceContext::drawRenderBuffer(const GraphicsIndirect& renderable) noexcept
+OGLDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 {
 	assert(_vbo && _inputLayout);
 
@@ -321,10 +321,10 @@ OGLDeviceContext::drawRenderBuffer(const GraphicsIndirect& renderable) noexcept
 }
 
 void
-OGLDeviceContext::drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept
+OGLDeviceContext::drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept
 {
 	for (std::size_t i = first; i < first + count; i++)
-		this->drawRenderBuffer(renderable[i]);
+		this->drawRenderMesh(renderable[i]);
 }
 
 void

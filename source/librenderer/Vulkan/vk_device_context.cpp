@@ -244,15 +244,15 @@ VulkanDeviceContext::unmapBuffer(GraphicsDataPtr& data) noexcept
 }
 
 void 
-VulkanDeviceContext::drawRenderBuffer(const GraphicsIndirect& renderable) noexcept
+VulkanDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 {
-	_commandList->drawRenderBuffer(renderable);
+	_commandList->drawRenderMesh(renderable);
 }
 
 void 
-VulkanDeviceContext::drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept
+VulkanDeviceContext::drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept
 {
-	_commandList->drawRenderBuffer(renderable + first, count);
+	_commandList->drawRenderMesh(renderable + first, count);
 }
 
 void

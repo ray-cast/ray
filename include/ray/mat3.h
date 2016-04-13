@@ -261,14 +261,6 @@ public:
 		return *this;
     }
 
-    Matrix3x3t<T>& transpose()
-    {
-        std::swap((T&)a2, (T&)b1);
-        std::swap((T&)a3, (T&)c1);
-        std::swap((T&)b3, (T&)c2);
-        return *this;
-    }
-
     template<typename S>
     Matrix3x3t<T>& multiplyScalar(S scale)
     {
@@ -284,36 +276,7 @@ public:
         return *this;
     }
 
-    Matrix3x3t<T>& inverse()
-    {
-        const T det = this->determinant();
-        if (det == static_cast<T>(0.0))
-        {
-            const T nan = std::numeric_limits<T>::quiet_NaN();
-            *this = Matrix3x3t<T>(
-                nan, nan, nan,
-                nan, nan, nan,
-                nan, nan, nan);
-
-            return *this;
-        }
-
-        T invdet = static_cast<T>(1.0) / det;
-
-        a1 =  invdet * (b2 * c3 - b3 * c2);
-        a2 = -invdet * (a2 * c3 - a3 * c2);
-        a3 =  invdet * (a2 * b3 - a3 * b2);
-        b1 = -invdet * (b1 * c3 - b3 * c1);
-        b2 =  invdet * (a1 * c3 - a3 * c1);
-        b3 = -invdet * (a1 * b3 - a3 * b1);
-        c1 =  invdet * (b1 * c2 - b2 * c1);
-        c2 = -invdet * (a1 * c2 - a2 * c1);
-        c3 =  invdet * (a1 * b2 - a2 * b1);
-
-        return *this;
-    }
-
-    T determinant() const
+	T determinant() const
     {
         return a1 * b2 * c3 - a1 * b3 * c2 + a2 * b3 * c1 - a2 * b1 * c3 + a3 * b1 * c2 - a3 * b2 * c1;
     }
@@ -470,21 +433,6 @@ public:
         set(2, 0, 0, z);
     }
 
-    void orthonormalize()
-    {
-        Vector3t<T> x(a1, b1, c1);
-        Vector3t<T> y(a2, b2, c2);
-        Vector3t<T> z;
-        x.normalize();
-        z = x ^ y;
-        z.normalize();
-        y = z ^ x;
-        y.normalize();
-        a1 = x.x; a2 = x.y; a3 = x.z;
-        b1 = y.x; b2 = y.y; b3 = y.z;
-        c1 = z.x; c3 = z.y; c3 = z.z;
-    }
-
 public:
 
     T a1, a2, a3;
@@ -566,6 +514,69 @@ inline Vector3t<T>& operator*=(Vector3t<T>& v, const Matrix3x3t<T>& m)
 {
     v = v * m;
     return v;
+}
+
+namespace math
+{
+	template<typename T>
+	Matrix3x3t<T> orthonormalize(const Matrix3x3t<T>& _m)
+	{
+		Matrix3x3t<T> m = _m;
+		Vector3t<T> x(m.a1, m.b1, m.c1);
+		Vector3t<T> y(m.a2, m.b2, m.c2);
+		Vector3t<T> z;
+		x = math::normalize(x);
+		z = math::cross(x, y);
+		z = math::normalize(z);
+		y = math::cross(z, x);
+		y = math::normalize(y);
+		m.a1 = x.x; m.a2 = x.y; m.a3 = x.z;
+		m.b1 = y.x; m.b2 = y.y; m.b3 = y.z;
+		m.c1 = z.x; m.c3 = z.y; m.c3 = z.z;
+		return m;
+	}
+
+	template<typename T>
+	Matrix3x3t<T> transpose(const Matrix3x3t<T>& _m)
+	{
+		Matrix3x3t<T> m = _m;
+		std::swap((T&)m.a2, (T&)m.b1);
+		std::swap((T&)m.a3, (T&)m.c1);
+		std::swap((T&)m.b3, (T&)m.c2);
+		return m;
+	}
+
+	template<typename T>
+	Matrix3x3t<T>& inverse(const Matrix3x3t<T>& _m)
+	{
+		Matrix4x4t<T> m = _m;
+
+		const T det = m.determinant();
+		if (det == static_cast<T>(0.0))
+		{
+			const T nan = std::numeric_limits<T>::quiet_NaN();
+			*this = Matrix3x3t<T>(
+				nan, nan, nan,
+				nan, nan, nan,
+				nan, nan, nan);
+
+			return *this;
+		}
+
+		T invdet = static_cast<T>(1.0) / det;
+
+		m.a1 = invdet  * (_m.b2 * _m.c3 - _m.b3 * _m.c2);
+		m.a2 = -invdet * (_m.a2 * _m.c3 - _m.a3 * _m.c2);
+		m.a3 = invdet  * (_m.a2 * _m.b3 - _m.a3 * _m.b2);
+		m.b1 = -invdet * (_m.b1 * _m.c3 - _m.b3 * _m.c1);
+		m.b2 = invdet  * (_m.a1 * _m.c3 - _m.a3 * _m.c1);
+		m.b3 = -invdet * (_m.a1 * _m.b3 - _m.a3 * _m.b1);
+		m.c1 = invdet  * (_m.b1 * _m.c2 - _m.b2 * _m.c1);
+		m.c2 = -invdet * (_m.a1 * _m.c2 - _m.a2 * _m.c1);
+		m.c3 = invdet  * (_m.a1 * _m.b2 - _m.a2 * _m.b1);
+
+		return m;
+	}
 }
 
 _NAME_END

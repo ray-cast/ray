@@ -123,6 +123,8 @@ SOURCE_GROUP("renderer\\light" FILES ${RENDERER_LIGHT})
 SET(RENDERER_MATERIAL
     ${HEADER_PATH}/material.h
     ${SOURCE_PATH}/material.cpp
+    ${HEADER_PATH}/material_desc.h
+    ${SOURCE_PATH}/material_desc.cpp
     ${HEADER_PATH}/material_loader.h
     ${SOURCE_PATH}/material_loader.cpp
     ${HEADER_PATH}/material_maker.h
@@ -155,10 +157,14 @@ SOURCE_GROUP("renderer\\renderable" FILES ${RENDERER_SCENE})
 SET(RENDERER_MESH
     ${HEADER_PATH}/render_mesh.h
     ${SOURCE_PATH}/render_mesh.cpp
-    ${SOURCE_PATH}/render_buffer.cpp
-    ${HEADER_PATH}/render_buffer.h
 )
 SOURCE_GROUP("renderer\\mesh" FILES ${RENDERER_MESH})
+
+SET(RENDERER_GEOMETRY
+    ${SOURCE_PATH}/geometry.cpp
+    ${HEADER_PATH}/geometry.h
+)
+SOURCE_GROUP("renderer\\geometry" FILES ${RENDERER_GEOMETRY})
 
 SET(RENDERER_POST_PROCESS
     ${SOURCE_PATH}/atmospheric.h
@@ -260,6 +266,7 @@ SET(RENDERER_LIST
     ${RENDERER_LIGHT}
     ${RENDERER_CAMERA}
     ${RENDERER_MESH}
+    ${RENDERER_GEOMETRY}
     ${RENDERER_TERRAIN}
     ${RENDERER_FONT}
     ${RENDERER_POST_PROCESS}

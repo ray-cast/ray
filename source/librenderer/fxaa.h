@@ -57,9 +57,7 @@ private:
 private:
 
 	MaterialPtr _fxaa;
-	MaterialPassPtr _fxaaPass;
-	MaterialPassPtr _copyPass;
-
+	MaterialTechPtr _fxaaTech;
 	MaterialParamPtr _texelSource;
 	MaterialParamPtr _texelStep;
 };

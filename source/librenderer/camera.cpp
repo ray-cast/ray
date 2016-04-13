@@ -363,8 +363,7 @@ void
 Camera::_updateOrtho() const noexcept
 {
 	_project.makeOrtho_lh(_left, _right, _bottom / _ratio, _top / _ratio, _znear, _zfar);
-	_projectInverse = _project;
-	_projectInverse.inverse();
+	_projectInverse = math::inverse(_project);
 
 	_projLength.x = _project.a1;
 	_projLength.y = _project.b2;
@@ -384,8 +383,7 @@ void
 Camera::_updatePerspective() const noexcept
 {
 	_project.makePerspective_lh(_aperture, _ratio, _znear, _zfar);
-	_projectInverse = _project;
-	_projectInverse.inverse();
+	_projectInverse = math::inverse(_project);
 
 	_projLength.x = _project.a1;
 	_projLength.y = _project.b2;
@@ -422,12 +420,13 @@ Camera::_updateViewProject() const noexcept
 
 	if (_needUpdateViewProject)
 	{
-		_viewProjectInverse = _viewProejct = this->getView() * _project;
-		_viewProjectInverse.inverse();
+		_viewProejct = this->getView() * _project;
+		_viewProjectInverse = math::inverse(_viewProejct);
 
 #ifdef _BUILD_OPENGL
 		_viewProejct = _viewProejct * adjustProject;
 #endif
+
 		_needUpdateViewProject = false;
 	}
 }

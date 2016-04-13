@@ -40,16 +40,7 @@ _NAME_BEGIN
 
 __ImplementSubClass(MaterialTech, rtti::Interface, "MaterialTech")
 
-MaterialTechDesc::MaterialTechDesc() noexcept
-{
-}
-
-MaterialTechDesc::~MaterialTechDesc() noexcept
-{
-}
-
 MaterialTech::MaterialTech() noexcept
-	: _renderQueue(RenderQueue::RenderQueueCustom)
 {
 }
 
@@ -75,20 +66,6 @@ MaterialTech::removePass(MaterialPassPtr pass)
 }
 
 MaterialPassPtr
-MaterialTech::getPass(RenderPass passType) noexcept
-{
-	for (auto& it : _passList)
-	{
-		if (it->getRenderPass() == passType)
-		{
-			return it;
-		}
-	}
-
-	return nullptr;
-}
-
-MaterialPassPtr
 MaterialTech::getPass(const std::string& name) noexcept
 {
 	for (auto& it : _passList)
@@ -107,15 +84,15 @@ MaterialTech::getPassList() const noexcept
 }
 
 void
-MaterialTech::setRenderQueue(RenderQueue renderQueue) noexcept
+MaterialTech::setName(const std::string& name) noexcept
 {
-	_renderQueue = renderQueue;
+	_name = name;
 }
 
-RenderQueue
-MaterialTech::getRenderQueue() const noexcept
+const std::string& 
+MaterialTech::getName() const noexcept
 {
-	return _renderQueue;
+	return _name;
 }
 
 bool

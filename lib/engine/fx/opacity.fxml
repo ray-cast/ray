@@ -51,13 +51,11 @@
         ]]>
     </shader>
     <technique name="opaque">
-        <pass name="opaque">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F_N3F_UV2F"/>
             <state name="vertex" value="OpaqueVS"/>
             <state name="fragment" value="OpaquePS"/>
-
             <state name="primitive" value="triangle" />
-
             <state name="cullmode" value="none"/>
         </pass>
     </technique>

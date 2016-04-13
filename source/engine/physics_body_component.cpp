@@ -104,28 +104,28 @@ PhysicsBodyComponent::setGravity(const Vector3& value) noexcept
 void
 PhysicsBodyComponent::setConstantForce(const Vector3& value) noexcept
 {
-	if (_constantForce.length2() > 0.01f)
+	if (math::length2(_constantForce) > 0.01f)
 		_constantForce = value;
 }
 
 void
 PhysicsBodyComponent::setConstantTorque(const Vector3& value) noexcept
 {
-	if (_constantTorque.length2() > 0.01f)
+	if (math::length2(_constantTorque) > 0.01f)
 		_constantTorque = value;
 }
 
 void
 PhysicsBodyComponent::setConstantVelocity(const Vector3& value) noexcept
 {
-	if (_constantVelocity.length2() > 0.01f)
+	if (math::length2(_constantVelocity) > 0.01f)
 		_constantVelocity = value;
 }
 
 void
 PhysicsBodyComponent::setConstanAngularVelocity(const Vector3& value) noexcept
 {
-	if (_constantAngularVelocity.length2() > 0.01f)
+	if (math::length2(_constantAngularVelocity) > 0.01f)
 		_constantAngularVelocity = value;
 }
 

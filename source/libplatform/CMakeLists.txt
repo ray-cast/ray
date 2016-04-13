@@ -139,7 +139,7 @@ SET(PLATFORM_MATH_LIST
     ${HEADER_PATH}/octree.h
     ${HEADER_PATH}/octree.inl
     ${HEADER_PATH}/parse.h
-    ${HEADER_PATH}/plane3.h
+    ${HEADER_PATH}/plane.h
     ${HEADER_PATH}/quat.h
     ${HEADER_PATH}/raycast.h
     ${HEADER_PATH}/rect3.h

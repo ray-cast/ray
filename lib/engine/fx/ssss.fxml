@@ -20,12 +20,12 @@
         float3 SSSSTransmittance(float d)
         {
             float dd = -d * d;
-            return float3(0.233f, 0.455f, 0.649f) * exp(dd / 0.0064f)
-                 + float3(0.1f, 0.336f, 0.344f)   * exp(dd / 0.0484f)
-                 + float3(0.118f, 0.198f, 0.0f)   * exp(dd / 0.187f)
-                 + float3(0.113f, 0.007f, 0.007f) * exp(dd / 0.567f)
-                 + float3(0.358f, 0.004f, 0.0f)   * exp(dd / 1.99f)
-                 + float3(0.078f, 0.0f, 0.0f)     * exp(dd / 7.41f);
+            return  float3(0.233, 0.455, 0.649) * exp(dd / 0.0064) +
+                    float3(0.1,   0.336, 0.344) * exp(dd / 0.0484) +
+                    float3(0.118, 0.198, 0.0)   * exp(dd / 0.187)  +
+                    float3(0.113, 0.007, 0.007) * exp(dd / 0.567)  +
+                    float3(0.358, 0.004, 0.0)   * exp(dd / 1.99)   +
+                    float3(0.078, 0.0,   0.0)   * exp(dd / 7.41);
         }
 
         float4 SSSSTranslucency(float2 coord)
@@ -101,8 +101,8 @@
         }
         ]]>
     </shader>
-    <technique name="postprocess">
-        <pass name="translucency">
+    <technique name="translucency">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
 
             <state name="vertex" value="PostProcessVS"/>
@@ -117,7 +117,9 @@
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
         </pass>
-        <pass name="blur">
+    </technique>
+    <technique name="blur">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
 
             <state name="vertex" value="PostProcessVS"/>

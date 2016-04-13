@@ -98,6 +98,8 @@ private:
 	void _updateShadow() noexcept;
 	void _updateBoundingBox() noexcept;
 
+	void onAddRenderData(RenderDataManager& manager) noexcept;
+
 	void onRenderObjectPre(RenderPipeline& pipeline) noexcept;
 	void onRenderObjectPost(RenderPipeline& pipeline) noexcept;
 

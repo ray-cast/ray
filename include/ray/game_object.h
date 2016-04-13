@@ -89,13 +89,8 @@ public:
 	void setEulerAnglesAccum(const EulerAngles& euler) noexcept;
 	const EulerAngles& getEulerAngles() const noexcept;
 
-	void setRight(const Vector3& v) noexcept;
 	const Vector3& getRight() const noexcept;
-
-	void setUpVector(const Vector3& v) noexcept;
 	const Vector3& getUpVector() const noexcept;
-
-	void setForward(const Vector3& v) noexcept;
 	const Vector3& getForward() const noexcept;
 
 	const Matrix4x4& getTransform() const noexcept;
@@ -163,11 +158,11 @@ private:
 	Quaternion _quat;
 	EulerAngles _euler;
 
-	Vector3 _right;
-	Vector3 _up;
-	Vector3 _forward;
-
 	mutable bool _needUpdates;
+
+	mutable Vector3 _right;
+	mutable Vector3 _up;
+	mutable Vector3 _forward;
 
 	mutable Matrix4x4 _transform;
 	mutable Matrix4x4 _transformInverse;

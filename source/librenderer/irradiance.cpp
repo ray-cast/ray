@@ -66,8 +66,8 @@ inline static std::uint32_t nextPow2(std::uint32_t i)
 EnvironmentIrradiance::EnvironmentIrradiance(RenderPipeline& pipeline) except
 {
 	_irradiance = pipeline.createMaterial("sys:fx\\irradiance.glsl");
-	_irradianceParaboloid = _irradiance->getTech(RenderQueue::RenderQueuePostprocess)->getPass("ConvertHemisphere");
-	_irradianceProjectDualParaboloidToSH = _irradiance->getTech(RenderQueue::RenderQueuePostprocess)->getPass("ProjectDualParaboloidToSH");
+	_irradianceParaboloid = _irradiance->getTech("ConvertHemisphere");
+	_irradianceProjectDualParaboloidToSH = _irradiance->getTech("ProjectDualParaboloidToSH");
 
 	_paraboloidCubeMapSampler = _irradiance->getParameter("paraboloidCubeMapSampler");
 	_paraboloidSamplesInverse = _irradiance->getParameter("paraboloidSamplesInverse");
@@ -148,10 +148,10 @@ EnvironmentIrradiance::_paraboloidCoord(Vector3& vec, int face, const Vector2& u
 
 	// compute normal on the parabaloid at uv
 	Vector3 N(uv.x, uv.y, 1.f);
-	N.normalize();
+	N = math::normalize(N);
 
 	// reflect axis around N, to compute sphere direction
-	float v_dot_n = axis.dot(N);
+	float v_dot_n = math::dot(axis, N);
 	Vector3 R = axis - 2 * v_dot_n*N;
 
 	vec = R;

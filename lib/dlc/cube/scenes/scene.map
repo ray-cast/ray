@@ -78,13 +78,12 @@
     </object>
     <object>
         <attribute name="sun"/>
-        <attribute position="0, 250, 0"/>
-        <attribute lookat="0,0,1" />
-        <attribute up="0,0,1"/>
+        <attribute position="0, 100, 0"/>
+        <attribute rotate="90,0,0" />
         <attribute active="true"/>
         <component class="Light">
             <attribute type="sun"/>
-            <attribute range="200.0"/>
+            <attribute range="400.0"/>
             <attribute shadow="false"/>
         </component>
     </object>
@@ -95,7 +94,7 @@
         <component class="Light">
             <attribute type="ambient"/>
             <attribute color="1.0,1.0,1.0"/>
-            <attribute range="200.0"/>
+            <attribute range="1000.0"/>
             <attribute intensity="0.1"/>
         </component>
     </object>

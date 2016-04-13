@@ -39,6 +39,7 @@
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
 #include <ray/render_system.h>
+#include <ray/render_object_manager.h>
 
 _NAME_BEGIN
 
@@ -49,8 +50,8 @@ Light::Light() noexcept
 	, _lightIntensity(1.0f)
 	, _lightColor(1.0, 1.0, 1.0)
 	, _lightAttenuation(1.0, 0.0, 0.0)
-	, _spotInnerCone(cos(degrees(5.0f)))
-	, _spotOuterCone(cos(degrees(40.0f)))
+	, _spotInnerCone(cos(math::degrees(5.0f)))
+	, _spotOuterCone(cos(math::degrees(40.0f)))
 	, _subsurfaceScattering(false)
 	, _shadow(false)
 	, _shadowSoftEnable(false)
@@ -300,8 +301,7 @@ Light::_updateBoundingBox() noexcept
 	auto lightRange = this->getRange();
 
 	if (_lightType == LightType::LightTypeSun ||
-		_lightType == LightType::LightTypeDirectional |
-		_lightType == LightType::LightTypeAmbient ||
+		_lightType == LightType::LightTypeDirectional ||
 		_lightType == LightType::LightTypeSpot)
 	{
 		Vector3 min(-lightRange, -lightRange * 2, -lightRange);
@@ -312,15 +312,17 @@ Light::_updateBoundingBox() noexcept
 
 		bound.encapsulate(min);
 		bound.encapsulate(max);
+
 		this->setBoundingBox(bound);
 	}
-	else if (_lightType == LightType::LightTypePoint)
+	else if (_lightType == LightType::LightTypePoint || _lightType == LightType::LightTypeAmbient)
 	{
 		Vector3 min(-lightRange, -lightRange, -lightRange);
 		Vector3 max(lightRange, lightRange, lightRange);
 
 		bound.encapsulate(min);
 		bound.encapsulate(max);
+
 		this->setBoundingBox(bound);
 	}
 }
@@ -345,6 +347,15 @@ Light::onSceneChangeAfter() noexcept
 		if (_shadowCamera)
 			_shadowCamera->setRenderScene(renderScene);
 	}
+}
+
+void
+Light::onAddRenderData(RenderDataManager& manager) noexcept
+{
+	if (this->getShadow())
+		manager.addRenderData(RenderQueue::RenderQueueShadow, this->upcast<RenderObject>());
+
+	manager.addRenderData(RenderQueue::RenderQueueLighting, this->upcast<RenderObject>());
 }
 
 void 

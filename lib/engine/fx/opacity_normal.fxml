@@ -22,9 +22,9 @@
             }
 
             void OpaqueNormalVS(
-                in float4 Position : POSITION,
-                in float4 Normal : NORMAL,
-                in float4 Tangent : TANGENT,
+                in float4 Position : POSITION0,
+                in float4 Normal : NORMAL0,
+                in float4 Tangent : TANGENT0,
                 in float4 Texcoord : TEXCOORD0,
                 out float2 oCoord  : TEXCOORD0,
                 out float4 oNormal : TEXCOORD1,
@@ -61,18 +61,23 @@
                 else
                     albedo = texDiffuse.Sample(PointClamp, coord);
 
+                float gloss = shininess;
                 if (specular.w > 0.0f)
                     spec = specular.rgb;
                 else
-                    spec = texSpecular.Sample(PointClamp, coord).rgb;
+                {
+                    float4 specularAO = texSpecular.Sample(PointClamp, coord);
+                    spec = specularAO.rgb;
+                    gloss = specularAO.a;
+                }
 
                 FragData0 = StoreGBufferRT0(srgb2linear(albedo), spec);
-                FragData1 = StoreGBufferRT1(highNormal, shininess);
+                FragData1 = StoreGBufferRT1(highNormal, gloss+0.2);
             }
         ]]>
     </shader>
     <technique name="opaque">
-        <pass name="opaque">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F_N3F_T3F_UV2F"/>
             <state name="vertex" value="OpaqueNormalVS"/>
             <state name="fragment" value="OpaqueNormalPS"/>

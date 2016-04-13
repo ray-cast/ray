@@ -40,8 +40,8 @@
 
 #include <ray/render_feature.h>
 #include <ray/render_system.h>
-#include <ray/render_buffer.h>
 #include <ray/render_mesh.h>
+#include <ray/geometry.h>
 
 #include <ray/game_server.h>
 #include <ray/graphics_context.h>
@@ -266,7 +266,7 @@ MeshRenderComponent::buildRenderObjects(MeshPropertyPtr mesh) noexcept
 	meshes.push_back(mesh);
 	meshes.insert(meshes.end(), children.begin(), children.end());
 
-	auto renderBuffer = RenderSystem::instance()->createRenderBuffer(meshes);
+	auto renderBuffer = RenderSystem::instance()->createRenderMesh(meshes);
 	if (children.empty())
 	{
 		auto renderObject = this->buildRenderObject(mesh, renderBuffer);
@@ -280,7 +280,7 @@ MeshRenderComponent::buildRenderObjects(MeshPropertyPtr mesh) noexcept
 		std::size_t startVertice = 0;
 		std::size_t startIndice = 0;
 
-		RenderObjectPtr root = std::make_shared<RenderMesh>();
+		RenderObjectPtr root = std::make_shared<Geometry>();
 		root->setBoundingBox(mesh->getBoundingBoxDownwards());
 
 		for (auto& it : meshes)
@@ -310,14 +310,14 @@ MeshRenderComponent::buildRenderObjects(MeshPropertyPtr mesh) noexcept
 	}
 }
 
-RenderMeshPtr
-MeshRenderComponent::buildRenderObject(MeshPropertyPtr mesh, RenderBufferPtr buffer) noexcept
+GeometryPtr
+MeshRenderComponent::buildRenderObject(MeshPropertyPtr mesh, RenderMeshPtr buffer) noexcept
 {
 	auto material = this->getMaterial();
 	if (material)
 	{
-		auto renderObject = std::make_shared<RenderMesh>();
-		renderObject->setRenderBuffer(buffer);
+		auto renderObject = std::make_shared<Geometry>();
+		renderObject->setRenderMesh(buffer);
 		renderObject->setBoundingBox(mesh->getBoundingBox());
 		renderObject->setOwnerListener(this);
 

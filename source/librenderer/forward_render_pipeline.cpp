@@ -68,7 +68,7 @@ ForwardRenderPipeline::renderShadowMap(RenderPipeline& pipeline) noexcept
 {
 	pipeline.setFramebuffer(pipeline.getCamera()->getFramebuffer());
 	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsDepth, float4::Zero, 1.0, 0);
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, RenderPass::RenderPassOpaques, _depthOnly);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, _depthOnly);
 }
 
 void
@@ -78,7 +78,7 @@ ForwardRenderPipeline::render2DEnvMap(RenderPipeline& pipeline) noexcept
 	pipeline.getWindowResolution(width, height);
 	pipeline.setViewport(Viewport(0, 0, width, height, 0, 1.0));
 	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsAll, pipeline.getCamera()->getClearColor(), 1.0, 0);
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, RenderPass::RenderPassOpaques);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
 }
 
 void

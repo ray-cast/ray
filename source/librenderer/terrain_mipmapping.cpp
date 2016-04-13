@@ -135,11 +135,11 @@ Mipmapping::isDivide(const Quadnode& node, std::uint8_t depth)
 
 	bool Divid = depth > 1;
 
-	unsigned int x = node.x;
-	unsigned int y = node.y;
-	unsigned int size = 1 << depth;
+	std::uint32_t x = node.x;
+	std::uint32_t y = node.y;
+	std::uint32_t size = 1 << depth;
 
-	float l = vecl.length2();
+	float l = math::length2(vecl);
 	float d = (float)size * getScale();
 	std::uint32_t r = pVariant_[y * _size + x];
 
@@ -234,7 +234,7 @@ Mipmapping::renderNode(const Quadnode& node, std::uint8_t level)
 
 	pt[i++] = lenght * (y - size) + x - size;
 
-	_build_trianlges += (i - 2);
+	_buildTrianlges += (i - 2);
 	/*
 	drawElement_.setCount(i);
 	drawElement_.setIndex(pt);
@@ -292,11 +292,16 @@ Mipmapping::split(const Quadnode& node, std::uint8_t depth)
 	return false;
 }
 
+std::size_t
+Mipmapping::buildTrianlges()
+{
+	return _buildTrianlges; 
+}
+
 void
 Mipmapping::render()
 {
-	_build_trianlges = 0;
-
+	_buildTrianlges = 0;
 	tessellate();
 }
 

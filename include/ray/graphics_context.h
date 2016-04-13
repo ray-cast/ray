@@ -107,8 +107,8 @@ public:
 	virtual void readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept = 0;
 	virtual GraphicsFramebufferPtr getFramebuffer() const noexcept = 0;
 
-	virtual void drawRenderBuffer(const GraphicsIndirect& renderable) noexcept = 0;
-	virtual void drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept = 0;
+	virtual void drawRenderMesh(const GraphicsIndirect& renderable) noexcept = 0;
+	virtual void drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept = 0;
 
 	virtual void present() noexcept = 0;
 

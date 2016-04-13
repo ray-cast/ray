@@ -1,6 +1,7 @@
 <?xml version='1.0'?>
 <effect language="hlsl">
     <include name="sys:fx/Gbuffer.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
     <parameter name="opacity" type="float"/>
     <parameter name="matModel" type="float4x4" semantic="matModel" />
     <parameter name="matModelInverseTranspose" type="float4x4" semantic="matModelInverseTranspose" />
@@ -54,7 +55,8 @@
         ]]>
     </shader>
     <technique name="transparent">
-        <pass name="transparent">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F_N3F_UV2F"/>
             <state name="vertex" value="TransparentVS"/>
             <state name="fragment" value="TransparentPS"/>
         </pass>

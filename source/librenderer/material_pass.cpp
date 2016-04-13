@@ -45,101 +45,7 @@ _NAME_BEGIN
 
 __ImplementSubClass(MaterialPass, rtti::Interface, "MaterialPass")
 
-MaterialPassDesc::MaterialPassDesc() noexcept
-	: _pass(RenderPass::RenderPassCustom)
-{
-}
-
-MaterialPassDesc::~MaterialPassDesc() noexcept
-{
-}
-
-void 
-MaterialPassDesc::setName(const std::string& name) noexcept
-{
-	_name = name;
-}
-
-const std::string&
-MaterialPassDesc::getName() const noexcept
-{
-	return _name;
-}
-
-void
-MaterialPassDesc::setMaterialPass(RenderPass pass) noexcept
-{
-	_pass = pass;
-}
-
-RenderPass 
-MaterialPassDesc::getMaterialPass() const noexcept
-{
-	return _pass;
-}
-
-void
-MaterialPassDesc::setGraphicsState(GraphicsStatePtr& state) noexcept
-{
-	_state = state;	
-}
-
-void
-MaterialPassDesc::setGraphicsProgram(GraphicsProgramPtr& program) noexcept
-{
-	_program = program;	
-}
-
-void
-MaterialPassDesc::setGraphicsInputLayout(GraphicsInputLayoutPtr& inputLayout) noexcept
-{
-	_inputLayout = inputLayout;	
-}
-
-void
-MaterialPassDesc::setGraphicsDescriptorPool(GraphicsDescriptorPoolPtr& descriptorPool) noexcept
-{
-	_descriptorPool = descriptorPool;
-}
-
-void
-MaterialPassDesc::setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr& descriptorSetLayout) noexcept
-{
-	_descriptorSetLayout = descriptorSetLayout;	
-}
-
-GraphicsStatePtr 
-MaterialPassDesc::getGraphicsState() const noexcept
-{
-	return _state;
-}
-
-GraphicsProgramPtr 
-MaterialPassDesc::getGraphicsProgram() const noexcept
-{
-	return _program;
-}
-
-GraphicsInputLayoutPtr 
-MaterialPassDesc::getGraphicsInputLayout() const noexcept
-{
-	return _inputLayout;
-}
-
-GraphicsDescriptorPoolPtr 
-MaterialPassDesc::getGraphicsDescriptorPool() const noexcept
-{
-	return _descriptorPool;
-}
-
-GraphicsDescriptorSetLayoutPtr 
-MaterialPassDesc::getGraphicsDescriptorSetLayout() const noexcept
-{
-	return _descriptorSetLayout;
-}
-
 MaterialPass::MaterialPass() noexcept
-	:_pass(RenderPass::RenderPassCustom)
 {
 }
 
@@ -211,7 +117,13 @@ MaterialPass::setup(Material& material) noexcept
 			if (pos != std::string::npos)
 				uniformName = uniformName.substr(0, pos);
 		}
-
+		else
+		{
+			auto pos = uniformName.find_first_of('[');
+			if (pos != std::string::npos)
+				uniformName = uniformName.substr(0, pos);
+		}
+		
 		auto param = material.getParameter(uniformName);
 		if (!param)
 			continue;
@@ -258,18 +170,6 @@ const std::string&
 MaterialPass::getName() const noexcept
 {
 	return _name;
-}
-
-void
-MaterialPass::setRenderPass(RenderPass pass) noexcept
-{
-	_pass = pass;
-}
-
-RenderPass
-MaterialPass::getRenderPass() const noexcept
-{
-	return _pass;
 }
 
 const MaterialParams& 

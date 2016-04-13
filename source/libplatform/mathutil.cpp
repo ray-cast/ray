@@ -35,56 +35,134 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/mathutil.h>
+#include <ray/math.h>
 
 _NAME_BEGIN
 
-unsigned int seed;
-
-float cos_look[361];
-float sin_look[361];
-float tan_look[361];
-
-float fastSin(float theta)
+namespace math
 {
-    theta = fmodf(theta, 360);
-    if (theta < 0) theta += 360.0;
-    int thet_aint = (int)theta;
-    float thet_afrac = theta - thet_aint;
+	unsigned int seed;
 
-    return sin_look[thet_aint] + thet_afrac * (sin_look[thet_aint + 1] - sin_look[thet_aint]);
-}
+	float cos_look[361];
+	float sin_look[361];
+	float tan_look[361];
 
-float fastCos(float theta)
-{
-    theta = fmodf(theta, 360);
-    if (theta < 0) theta += 360.0;
-    int thet_aint = (int)theta;
-    float thet_afrac = theta - thet_aint;
+	float fastSin(float theta)
+	{
+		theta = fmodf(theta, 360);
+		if (theta < 0) theta += 360.0;
+		int thet_aint = (int)theta;
+		float thet_afrac = theta - thet_aint;
 
-    return cos_look[thet_aint] + thet_afrac * (cos_look[thet_aint + 1] - cos_look[thet_aint]);
-}
+		return sin_look[thet_aint] + thet_afrac * (sin_look[thet_aint + 1] - sin_look[thet_aint]);
+	}
 
-void randomize()
-{
-    srand(seed);
-}
+	float fastCos(float theta)
+	{
+		theta = fmodf(theta, 360);
+		if (theta < 0) theta += 360.0;
+		int thet_aint = (int)theta;
+		float thet_afrac = theta - thet_aint;
 
-int random(int min, int max)
-{
-    seed = 214013 * seed + 2531011;
-    return    min + (seed ^ seed >> 15) % (max - min + 1);
-}
+		return cos_look[thet_aint] + thet_afrac * (cos_look[thet_aint + 1] - cos_look[thet_aint]);
+	}
 
-float random(float min, float max)
-{
-    seed = 214013 * seed + 2531011;
-    return min + (max - min) * (1.0f / 65535.0f) * (seed >> 16);
-}
+	void randomize()
+	{
+		srand(seed);
+	}
 
-double random(double min, double max)
-{
-    seed = 214013 * seed + 2531011;
-    return min + (max - min) * (1.0f / 65535.0f) * (seed >> 16);
+	int random(int min, int max)
+	{
+		seed = 214013 * seed + 2531011;
+		return    min + (seed ^ seed >> 15) % (max - min + 1);
+	}
+
+	float random(float min, float max)
+	{
+		seed = 214013 * seed + 2531011;
+		return min + (max - min) * (1.0f / 65535.0f) * (seed >> 16);
+	}
+
+	double random(double min, double max)
+	{
+		seed = 214013 * seed + 2531011;
+		return min + (max - min) * (1.0f / 65535.0f) * (seed >> 16);
+	}
+
+	std::uint32_t part1By1(std::uint32_t n)
+	{
+		n = (n ^ (n << 8)) & 0x00ff00ff;
+		n = (n ^ (n << 4)) & 0x0f0f0f0f;
+		n = (n ^ (n << 2)) & 0x33333333;
+		n = (n ^ (n << 1)) & 0x55555555;
+		return n;
+	}
+
+	std::uint32_t part1By2(std::uint32_t n)
+	{
+		n = (n ^ (n << 16)) & 0xff0000ff;
+		n = (n ^ (n << 8)) & 0x0300f00f;
+		n = (n ^ (n << 4)) & 0x030c30c3;
+		n = (n ^ (n << 2)) & 0x09249249;
+		return n;
+	}
+
+	std::uint32_t morton2(std::uint32_t x, std::uint32_t y)
+	{
+		return (part1By1(y) << 1) + part1By1(x);
+	}
+
+	std::uint32_t morton3(std::uint32_t x, std::uint32_t y, std::uint32_t z)
+	{
+		return (part1By2(z) << 2) + (part1By2(y) << 1) + part1By2(x);
+	}
+
+	bool isConvex(const float3 pt[], std::size_t n)
+	{
+		float angleSum = 0.0f;
+
+		for (std::size_t i = 0; i < n; i++)
+		{
+			Vector3t<float> e1;
+			if (i == 0)
+			{
+				e1 = pt[n - 1] - pt[i];
+			}
+			else
+			{
+				e1 = pt[i - 1] - pt[i];
+			}
+
+			Vector3t<float> e2;
+			if (i == n - 1)
+			{
+				e2 = pt[0] - pt[i];
+			}
+			else
+			{
+				e2 = pt[i + 1] - pt[i];
+			}
+
+			e1 = normalize(e1);
+			e2 = normalize(e2);
+
+			float d = dot(e1, e2);
+
+			float theta = safeAcos(d);
+
+			angleSum += theta;
+		}
+
+		float convexAngleSum = (float)(n - 2) * M_PI;
+
+		if (angleSum < convexAngleSum - (float)n * 0.0001f)
+		{
+			return false;
+		}
+
+		return true;
+	}
 }
 
 _NAME_END

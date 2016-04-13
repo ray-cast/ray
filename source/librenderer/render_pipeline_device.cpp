@@ -40,10 +40,9 @@
 #include <ray/render_object_manager.h>
 #include <ray/render_post_process.h>
 #include <ray/render_scene.h>
-#include <ray/render_object.h>
-#include <ray/render_buffer.h>
-#include <ray/light.h>
 #include <ray/render_mesh.h>
+#include <ray/light.h>
+#include <ray/geometry.h>
 #include <ray/camera.h>
 #include <ray/material.h>
 #include <ray/material_manager.h>
@@ -142,7 +141,7 @@ RenderPipelineDevice::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTe
 }
 
 GraphicsTexturePtr
-RenderPipelineDevice::createTexture(const std::string& name) noexcept
+RenderPipelineDevice::createTexture(const std::string& name, GraphicsTextureDim dim) noexcept
 {
 	StreamReaderPtr stream;
 	if (IoServer::instance()->openFile(stream, name))
@@ -235,17 +234,17 @@ RenderPipelineDevice::createFramebuffer(const GraphicsFramebufferDesc& desc) noe
 	return _graphicsDevice->createFramebuffer(desc);
 }
 
-RenderBufferPtr
-RenderPipelineDevice::createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
+RenderMeshPtr
+RenderPipelineDevice::createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
 {
-	auto mesh = std::make_shared<RenderBuffer>();
+	auto mesh = std::make_shared<RenderMesh>();
 	mesh->setVertexBuffer(vb);
 	mesh->setIndexBuffer(ib);
 	return mesh;
 }
 
-RenderBufferPtr
-RenderPipelineDevice::createRenderBuffer(const MeshProperty& mesh) noexcept
+RenderMeshPtr
+RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh) noexcept
 {
 	auto numVertex = mesh.getNumVertices();
 	auto numIndices = mesh.getNumIndices();
@@ -360,11 +359,11 @@ RenderPipelineDevice::createRenderBuffer(const MeshProperty& mesh) noexcept
 		ib = this->createGraphicsData(_ib);
 	}
 
-	return this->createRenderBuffer(vb, ib);
+	return this->createRenderMesh(vb, ib);
 }
 
-RenderBufferPtr
-RenderPipelineDevice::createRenderBuffer(const MeshPropertys& meshes) noexcept
+RenderMeshPtr
+RenderPipelineDevice::createRenderMesh(const MeshPropertys& meshes) noexcept
 {
 	auto numVertex = 0;
 	auto numIndices = 0;
@@ -512,7 +511,7 @@ RenderPipelineDevice::createRenderBuffer(const MeshPropertys& meshes) noexcept
 		ib = this->createGraphicsData(_ib);
 	}
 
-	return this->createRenderBuffer(vb, ib);
+	return this->createRenderMesh(vb, ib);
 }
 
 GraphicsInputLayoutPtr

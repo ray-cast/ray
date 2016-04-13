@@ -67,8 +67,8 @@ public:
 	void setViewport(const Viewport& view) noexcept;
 	const Viewport& getViewport() const noexcept;
 
-	void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept;
-	const RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) const noexcept;
+	void addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept;
+	const RenderObjects& getRenderData(RenderQueue queue) const noexcept;
 
 	void setTransform(const float4x4& transform) noexcept;
 	void setTransformInverse(const float4x4& transform) noexcept;
@@ -84,11 +84,11 @@ public:
 	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
 	void unmapBuffer(GraphicsDataPtr& data) noexcept;
 	
-	void drawCone(MaterialPassPtr pass) noexcept;
-	void drawSphere(MaterialPassPtr pass) noexcept;
-	void drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const GraphicsIndirect& renderable) noexcept;
-	void drawScreenQuad(MaterialPassPtr pass) noexcept;
-	void drawRenderQueue(RenderQueue type, RenderPass pass, MaterialPassPtr material = nullptr) noexcept;
+	void drawCone(MaterialTechPtr tech) noexcept;
+	void drawSphere(MaterialTechPtr tech) noexcept;
+	void drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept;
+	void drawScreenQuad(MaterialTechPtr tech) noexcept;
+	void drawRenderQueue(RenderQueue queue, MaterialTechPtr tech = nullptr) noexcept;
 	void drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr source, GraphicsFramebufferPtr swap, GraphicsFramebufferPtr dest) noexcept;
 
 	void addPostProcess(RenderPostProcessPtr postprocess) noexcept;
@@ -99,16 +99,16 @@ public:
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
 	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
-	GraphicsTexturePtr createTexture(const std::string& name) noexcept;
+	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim) noexcept;
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
 	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
 	GraphicsFramebufferLayoutPtr createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept;
 
 	MaterialPtr createMaterial(const std::string& name) noexcept;
-	RenderBufferPtr createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
-	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) noexcept;
-	RenderBufferPtr createRenderBuffer(const MeshPropertys& mesh) noexcept;
+	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
+	RenderMeshPtr createRenderMesh(const MeshProperty& mesh) noexcept;
+	RenderMeshPtr createRenderMesh(const MeshPropertys& mesh) noexcept;
 
 	MaterialVariantPtr createSemantic(const std::string& name, GraphicsUniformType type) noexcept;
 	void destroySemantic(MaterialVariantPtr semantic) const noexcept;
@@ -140,9 +140,9 @@ private:
 
 	CameraPtr _camera;
 
-	RenderBufferPtr _renderScreenQuad;
-	RenderBufferPtr _renderSphere;
-	RenderBufferPtr _renderCone;
+	RenderMeshPtr _renderScreenQuad;
+	RenderMeshPtr _renderSphere;
+	RenderMeshPtr _renderCone;
 
 	GraphicsIndirect _renderConeIndirect;
 	GraphicsIndirect _renderSphereIndirect;
@@ -157,6 +157,7 @@ private:
 	MaterialVariantPtr _materialMatViewInverse;
 	MaterialVariantPtr _materialMatViewInverseTranspose;
 	MaterialVariantPtr _materialMatViewProject;
+	MaterialVariantPtr _materialMatViewProjectAdj;
 	MaterialVariantPtr _materialMatViewProjectInverse;
 	MaterialVariantPtr _materialMatModelView;
 	MaterialVariantPtr _materialMatModelViewProject;

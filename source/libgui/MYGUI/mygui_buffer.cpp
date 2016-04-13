@@ -83,7 +83,7 @@ MyGuiVertexBuffer::lock() noexcept
 
 			_vb = RenderSystem::instance()->createGraphicsData(vb);
 
-			_buffer = RenderSystem::instance()->createRenderBuffer(_vb, nullptr);
+			_buffer = RenderSystem::instance()->createRenderMesh(_vb, nullptr);
 
 			_vertexCount = _needVertexCount;
 		}
@@ -102,7 +102,7 @@ MyGuiVertexBuffer::unlock() noexcept
 	RenderSystem::instance()->unmapBuffer(_vb);
 }
 
-RenderBufferPtr 
+RenderMeshPtr
 MyGuiVertexBuffer::getBuffer() const
 {
 	return _buffer;

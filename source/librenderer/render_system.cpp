@@ -167,31 +167,31 @@ RenderSystem::blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& 
 }
 
 void
-RenderSystem::drawCone(MaterialPassPtr pass) noexcept
+RenderSystem::drawCone(MaterialTechPtr tech) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->drawCone(pass);
+	_pipelineManager->drawCone(tech);
 }
 
 void
-RenderSystem::drawSphere(MaterialPassPtr pass) noexcept
+RenderSystem::drawSphere(MaterialTechPtr tech) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->drawSphere(pass);
+	_pipelineManager->drawSphere(tech);
 }
 
 void
-RenderSystem::drawScreenQuad(MaterialPassPtr pass) noexcept
+RenderSystem::drawScreenQuad(MaterialTechPtr tech) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->drawScreenQuad(pass);
+	_pipelineManager->drawScreenQuad(tech);
 }
 
 void
-RenderSystem::drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const GraphicsIndirect& renderable) noexcept
+RenderSystem::drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->drawMesh(pass, mesh, renderable);
+	_pipelineManager->drawMesh(tech, mesh, renderable);
 }
 
 GraphicsTexturePtr
@@ -209,10 +209,10 @@ RenderSystem::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim
 }
 
 GraphicsTexturePtr
-RenderSystem::createTexture(const std::string& name) noexcept
+RenderSystem::createTexture(const std::string& name, GraphicsTextureDim dim) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->createTexture(name);
+	return _pipelineManager->createTexture(name, dim);
 }
 
 MaterialPtr
@@ -271,25 +271,25 @@ RenderSystem::createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept
 	return _pipelineManager->createInputLayout(desc);
 }
 
-RenderBufferPtr 
-RenderSystem::createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
+RenderMeshPtr 
+RenderSystem::createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->createRenderBuffer(vb, ib);
+	return _pipelineManager->createRenderMesh(vb, ib);
 }
 
-RenderBufferPtr 
-RenderSystem::createRenderBuffer(const MeshProperty& mesh) noexcept
+RenderMeshPtr 
+RenderSystem::createRenderMesh(const MeshProperty& mesh) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->createRenderBuffer(mesh);
+	return _pipelineManager->createRenderMesh(mesh);
 }
 
-RenderBufferPtr 
-RenderSystem::createRenderBuffer(const MeshPropertys& meshes) noexcept
+RenderMeshPtr 
+RenderSystem::createRenderMesh(const MeshPropertys& meshes) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->createRenderBuffer(meshes);
+	return _pipelineManager->createRenderMesh(meshes);
 }
 
 void

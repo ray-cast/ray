@@ -60,8 +60,8 @@ private:
 	float illuminationDecay;
 
 	MaterialPtr _material;
-	MaterialPassPtr _lightShaft;
-	MaterialPassPtr _lightShaftCopy;
+	MaterialTechPtr _lightShaft;
+	MaterialTechPtr _lightShaftCopy;
 
 	MaterialParamPtr _illuminationPosition;
 	MaterialParamPtr _illuminationSample;

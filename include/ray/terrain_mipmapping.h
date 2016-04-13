@@ -42,9 +42,8 @@
 
 _NAME_BEGIN
 
-class Mipmapping : public Lod<Mipmapping>
+class Mipmapping : public TerrainLod
 {
-	friend class Lod<Mipmapping>;
 public:
 	enum
 	{
@@ -57,11 +56,11 @@ public:
 	Mipmapping();
 	~Mipmapping();
 
-	bool init(HeightMap* T);        //初始化地形层次细节
+	bool init(HeightMap* T);
 
-	void render(); //计算地形的LOD
+	void render();
 
-	std::size_t buildTrianlges() { return _build_trianlges; }
+	std::size_t buildTrianlges();
 
 	void setFactor(float f) { factor_ = f; }
 
@@ -80,13 +79,13 @@ private:
 	Binary bits_;
 	std::size_t _size;
 	std::size_t _adjct_act[4];
-	std::size_t _build_trianlges;
+	std::size_t _buildTrianlges;
 
 	Quadnode        root_;
 	std::vector<Quadnode> cur_Nodes;
 	std::vector<Quadnode> next_Nodes;
 
-	std::vector<std::uint32_t>    pVariant_; //节点粗糙
+	std::vector<std::uint32_t> pVariant_; //节点粗糙
 };
 
 _NAME_END

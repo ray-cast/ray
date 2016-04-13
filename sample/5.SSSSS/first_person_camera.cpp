@@ -108,35 +108,29 @@ FirstPersonCameraComponent::onFrame() noexcept
 		}
 		else
 		{
-			ray::float3 walkDirection(0, 0, 0);
-			ray::float3 translate = this->getGameObject()->getTranslate();
-			ray::float3 forward = this->getGameObject()->getForward();
-			ray::float3 right = this->getGameObject()->getRight();
-			ray::float3 up = this->getGameObject()->getUpVector();
+			const ray::float3& forward = this->getGameObject()->getForward();
+			const ray::float3& right = this->getGameObject()->getRight();
 
+			ray::float3 walkDirection(0, 0, 0);
 			if (input->getKey(ray::InputKey::Code::W))
 			{
 				ray::float3 mov = forward;
-				mov.normalize();
 				walkDirection += mov;
 			}
 			if (input->getKey(ray::InputKey::Code::S))
 			{
 				ray::float3 mov = forward;
-				mov.normalize();
 				walkDirection -= mov;
 			}
 			if (input->getKey(ray::InputKey::Code::A))
 			{
 				ray::float3 mov = right;
-				mov.normalize();
-				walkDirection += mov;
+				walkDirection -= mov;
 			}
 			if (input->getKey(ray::InputKey::Code::D))
 			{
 				ray::float3 mov = right;
-				mov.normalize();
-				walkDirection -= mov;
+				walkDirection += mov;
 			}
 
 			character->setWalkDirection(walkDirection * step);

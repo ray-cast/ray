@@ -82,7 +82,6 @@ private:
 	MeshComponent& operator=(const MeshComponent&) noexcept = delete;
 
 private:
-
 	MeshPropertyPtr _mesh;
 	MeshPropertyPtr _sharedMesh;
 

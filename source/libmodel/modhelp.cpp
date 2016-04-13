@@ -1082,13 +1082,13 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 			std::uint32_t v3 = vertices[(y + 1)][x];
 			std::uint32_t v4 = vertices[(y + 1)][(x + 1)];
 
-			if (abs((_vertices)[v1].y) == radius)
+			if (math::abs((_vertices)[v1].y) == radius)
 			{
 				_faces.push_back(v1);
 				_faces.push_back(v3);
 				_faces.push_back(v4);
 			}
-			else if (abs((_vertices)[v3].y) == radius)
+			else if (math::abs((_vertices)[v3].y) == radius)
 			{
 				_faces.push_back(v1);
 				_faces.push_back(v2);
@@ -1169,7 +1169,7 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 		float sin;
 		float cos;
 
-		sinCos(&sin, &cos, thetaStart + i * segment);
+		math::sinCos(&sin, &cos, thetaStart + i * segment);
 
 		Vector3 v;
 		v.x = radius * cos;
@@ -1278,9 +1278,9 @@ MeshProperty::mergeMeshes(const CombineInstance& instance) noexcept
 				else
 				{
 					auto transformInverse = transform;
-					transformInverse.inverse();
+					transformInverse = math::inverse(transformInverse);
 
-					auto transformInverseTranspose = Matrix4x4(transformInverse).transpose();
+					auto transformInverseTranspose = math::transpose(transformInverse);
 
 					for (auto& v : mesh->getVertexArray())
 						_vertices.push_back(transform * v);
@@ -1333,8 +1333,8 @@ MeshProperty::mergeVertices() noexcept
 		const Vector3& v = (_vertices)[it];
 		const Vector3& n = (_normals)[it];
 
-		float vkey = hash_float(v.x, v.y, v.z);
-		float nkey = hash_float(n.z, n.y, n.x);
+		float vkey = math::hash_float(v.x, v.y, v.z);
+		float nkey = math::hash_float(n.z, n.y, n.x);
 		float key = vkey + nkey;
 
 		std::uint32_t value = vectorMap[key];
@@ -1379,8 +1379,7 @@ MeshProperty::computeFaceNormals() noexcept
 		Vector3 edge1 = c - b;
 		Vector3 edge2 = a - b;
 
-		Vector3 normal = edge1.cross(edge2);
-		normal.normalize();
+		Vector3 normal = math::normalize(math::cross(edge1, edge2));
 
 		_facesNormal[f1] = normal;
 		_facesNormal[f2] = normal;
@@ -1426,7 +1425,7 @@ MeshProperty::computeVertexNormals() noexcept
 			Vector3 edge1 = vc - vb;
 			Vector3 edge2 = va - vb;
 
-			Vector3 n = ~edge1.cross(edge2);
+			Vector3 n = math::normalize(math::cross(edge1, edge2));
 
 			normal[f1] += n;
 			normal[f2] += n;
@@ -1435,7 +1434,7 @@ MeshProperty::computeVertexNormals() noexcept
 	}
 
 	for (auto& it : normal)
-		it.normalize();
+		it = math::normalize(it);
 
 	_normals.swap(normal);
 }
@@ -1471,40 +1470,38 @@ MeshProperty::computeVertexNormals(std::size_t width, std::size_t height) noexce
 			if (y > 0)
 				down = getVertex(x, y - 1) - cur;
 
-			Vector3 lu = left.cross(up);
-			Vector3 ru = up.cross(right);
-			Vector3 rd = right.cross(down);
-			Vector3 ld = down.cross(left);
+			Vector3 lu = math::cross(left, up);
+			Vector3 ru = math::cross(up, right);
+			Vector3 rd = math::cross(right, down);
+			Vector3 ld = math::cross(down, left);
 
 			int average = 0;
 
 			if (x > 0 && y > 0)
 			{
-				ld.normalize();
+				ld = math::normalize(ld);
 				average++;
 			}
 
 			if (x > 0 && y + 1 < height)
 			{
-				lu.normalize();
+				lu = math::normalize(lu);
 				average++;
 			}
 
 			if (y > 0 && x + 1 < width)
 			{
-				rd.normalize();
+				rd = math::normalize(rd);
 				average++;
 			}
 
 			if (x + 1 < width && y + 1 < height)
 			{
-				ru.normalize();
+				ru = math::normalize(ru);
 				average++;
 			}
 
-			Vector3 cur_normal = (lu + ru + ld + rd) / (float)average;
-
-			cur_normal.normalize();
+			Vector3 cur_normal = math::normalize((lu + ru + ld + rd) / (float)average);
 
 			_normals.push_back(cur_normal);
 		}
@@ -1573,8 +1570,7 @@ MeshProperty::computeTangents() noexcept
 		auto n = _normals[i];
 		auto t = tan1[i];
 
-		_tangent[i] = (t - n * n.dot(t));
-		_tangent[i].normalize();
+		_tangent[i] = math::normalize(t - n * math::dot(n, t));
 	}
 }
 

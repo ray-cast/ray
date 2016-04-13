@@ -86,7 +86,7 @@ protected:
 	void _setRenderObject(RenderObjectPtr object) noexcept;
 	RenderObjectPtr _getRenderObject() noexcept;
 
-	RenderMeshPtr buildRenderObject(MeshPropertyPtr mesh, RenderBufferPtr buffer) noexcept;
+	GeometryPtr buildRenderObject(MeshPropertyPtr mesh, RenderMeshPtr buffer) noexcept;
 
 private:
 	MeshRenderComponent(const MeshRenderComponent&) noexcept = delete;

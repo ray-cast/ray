@@ -55,7 +55,7 @@ public:
 private:
 
 	MaterialPtr _material;
-	MaterialPassPtr _fog;
+	MaterialTechPtr _fog;
 
 	MaterialParamPtr _fogFalloff;
 	MaterialParamPtr _fogDensity;

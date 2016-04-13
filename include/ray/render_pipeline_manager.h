@@ -63,8 +63,8 @@ public:
 	void setCamera(CameraPtr renderer) noexcept;
 	CameraPtr getCamera() const noexcept;
 
-	void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept;
-	const RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) const noexcept;
+	void addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept;
+	const RenderObjects& getRenderData(RenderQueue queue) const noexcept;
 
 	void setViewport(const Viewport& view) noexcept;
 	const Viewport& getViewport() const noexcept;
@@ -83,10 +83,10 @@ public:
 	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
 	void unmapBuffer(GraphicsDataPtr& data) noexcept;
 
-	void drawCone(MaterialPassPtr pass) noexcept;
-	void drawSphere(MaterialPassPtr pass) noexcept;
-	void drawScreenQuad(MaterialPassPtr pass) noexcept;
-	void drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const GraphicsIndirect& renderable) noexcept;
+	void drawCone(MaterialTechPtr tech) noexcept;
+	void drawSphere(MaterialTechPtr tech) noexcept;
+	void drawScreenQuad(MaterialTechPtr tech) noexcept;
+	void drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept;
 
 	void addPostProcess(RenderPostProcessPtr postprocess) noexcept;
 	void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
@@ -100,7 +100,7 @@ public:
 	GraphicsFramebufferLayoutPtr createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
-	GraphicsTexturePtr createTexture(const std::string& name) noexcept;
+	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim) noexcept;
 
 	MaterialPtr createMaterial(const std::string& name) noexcept;
 	void destroyMaterial(MaterialPtr material) noexcept;
@@ -108,9 +108,9 @@ public:
 	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
-	RenderBufferPtr createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
-	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) noexcept;
-	RenderBufferPtr createRenderBuffer(const MeshPropertys& mesh) noexcept;
+	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
+	RenderMeshPtr createRenderMesh(const MeshProperty& mesh) noexcept;
+	RenderMeshPtr createRenderMesh(const MeshPropertys& mesh) noexcept;
 
 	void render(const RenderScene& scene) noexcept;
 

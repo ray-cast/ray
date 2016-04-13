@@ -390,22 +390,22 @@ AnimationProperty::updateIK(const IKAttr& ik) noexcept
 
 			Matrix4x4 worldInverse;
 			getCurrentBoneMatrix(worldInverse, bone);
-			worldInverse.inverse();
+			worldInverse = math::inverse(worldInverse);
 
 			Vector3 basis2Effector = effectorPos * worldInverse;
 			Vector3 basis2Target = targetPos * worldInverse;
 
-			basis2Effector.normalize();
-			basis2Target.normalize();
+			basis2Effector = math::normalize(basis2Effector);
+			basis2Target = math::normalize(basis2Target);
 
-			float rotationDotProduct = basis2Effector.dot(basis2Target);
-			rotationDotProduct = clamp(rotationDotProduct, -1.0f, 1.0f);
+			float rotationDotProduct = math::dot(basis2Effector, basis2Target);
+			rotationDotProduct = math::clamp(rotationDotProduct, -1.0f, 1.0f);
 
 			float rotationAngle = acosf(rotationDotProduct);
 			rotationAngle /= ik.IKLinkCount;
 
-			Vector3 rotationAxis = basis2Target.cross(basis2Effector);
-			rotationAxis.normalize();
+			Vector3 rotationAxis = math::cross(basis2Target, basis2Effector);
+			rotationAxis = math::normalize(rotationAxis);
 
 			Quaternion q0(rotationAxis, rotationAngle);
 			Quaternion q1 = bone.getRotation();

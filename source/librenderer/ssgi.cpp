@@ -141,9 +141,9 @@ SSGI::onActivate(RenderPipeline& pipeline) noexcept
 	_texBlurMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16A16SFloat);
 
 	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssgi.glsl");
-	_ambientOcclusionPass = _ambientOcclusion->getTech(RenderQueue::RenderQueuePostprocess)->getPass("ao");
-	_ambientOcclusionBlurPass = _ambientOcclusion->getTech(RenderQueue::RenderQueuePostprocess)->getPass("blur");
-	_ambientOcclusionCopyPass = _ambientOcclusion->getTech(RenderQueue::RenderQueuePostprocess)->getPass("copy");
+	_ambientOcclusionPass = _ambientOcclusion->getTech("ao");
+	_ambientOcclusionBlurPass = _ambientOcclusion->getTech("blur");
+	_ambientOcclusionCopyPass = _ambientOcclusion->getTech("copy");
 
 	_radius = _ambientOcclusion->getParameter("radius");
 	_radius2 = _ambientOcclusion->getParameter("radius2");

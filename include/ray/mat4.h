@@ -194,17 +194,6 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& transpose()
-	{
-		std::swap((T&)b1, (T&)a2);
-		std::swap((T&)c1, (T&)a3);
-		std::swap((T&)c2, (T&)b3);
-		std::swap((T&)d1, (T&)a4);
-		std::swap((T&)d2, (T&)b4);
-		std::swap((T&)d3, (T&)c4);
-		return *this;
-	}
-
 	T determinant() const
 	{
 		return
@@ -214,48 +203,6 @@ public:
 			+ a3*b4*c1*d2 - a3*b4*c2*d1 + a3*b1*c2*d4 - a3*b1*c4*d2
 			+ a3*b2*c4*d1 - a3*b2*c1*d4 - a4*b1*c2*d3 + a4*b1*c3*d2
 			- a4*b2*c3*d1 + a4*b2*c1*d3 - a4*b3*c1*d2 + a4*b3*c2*d1;
-	}
-
-	Matrix4x4t<T>& inverse() noexcept
-	{
-		Matrix4x4t<T> m;
-
-		const T det = this->determinant();
-		if (det == static_cast<T>(0.0))
-		{
-			const T nan = std::numeric_limits<T>::quiet_NaN();
-			m.set
-				(
-					nan, nan, nan, nan,
-					nan, nan, nan, nan,
-					nan, nan, nan, nan,
-					nan, nan, nan, nan
-					);
-
-			return *this;
-		}
-
-		const T invdet = static_cast<T>(1.0) / det;
-
-		m.a1 =  invdet * (b2 * (c3 * d4 - c4 * d3) + b3 * (c4 * d2 - c2 * d4) + b4 * (c2 * d3 - c3 * d2));
-		m.a2 = -invdet * (a2 * (c3 * d4 - c4 * d3) + a3 * (c4 * d2 - c2 * d4) + a4 * (c2 * d3 - c3 * d2));
-		m.a3 =  invdet * (a2 * (b3 * d4 - b4 * d3) + a3 * (b4 * d2 - b2 * d4) + a4 * (b2 * d3 - b3 * d2));
-		m.a4 = -invdet * (a2 * (b3 * c4 - b4 * c3) + a3 * (b4 * c2 - b2 * c4) + a4 * (b2 * c3 - b3 * c2));
-		m.b1 = -invdet * (b1 * (c3 * d4 - c4 * d3) + b3 * (c4 * d1 - c1 * d4) + b4 * (c1 * d3 - c3 * d1));
-		m.b2 =  invdet * (a1 * (c3 * d4 - c4 * d3) + a3 * (c4 * d1 - c1 * d4) + a4 * (c1 * d3 - c3 * d1));
-		m.b3 = -invdet * (a1 * (b3 * d4 - b4 * d3) + a3 * (b4 * d1 - b1 * d4) + a4 * (b1 * d3 - b3 * d1));
-		m.b4 =  invdet * (a1 * (b3 * c4 - b4 * c3) + a3 * (b4 * c1 - b1 * c4) + a4 * (b1 * c3 - b3 * c1));
-		m.c1 =  invdet * (b1 * (c2 * d4 - c4 * d2) + b2 * (c4 * d1 - c1 * d4) + b4 * (c1 * d2 - c2 * d1));
-		m.c2 = -invdet * (a1 * (c2 * d4 - c4 * d2) + a2 * (c4 * d1 - c1 * d4) + a4 * (c1 * d2 - c2 * d1));
-		m.c3 =  invdet * (a1 * (b2 * d4 - b4 * d2) + a2 * (b4 * d1 - b1 * d4) + a4 * (b1 * d2 - b2 * d1));
-		m.c4 = -invdet * (a1 * (b2 * c4 - b4 * c2) + a2 * (b4 * c1 - b1 * c4) + a4 * (b1 * c2 - b2 * c1));
-		m.d1 = -invdet * (b1 * (c2 * d3 - c3 * d2) + b2 * (c3 * d1 - c1 * d3) + b3 * (c1 * d2 - c2 * d1));
-		m.d2 =  invdet * (a1 * (c2 * d3 - c3 * d2) + a2 * (c3 * d1 - c1 * d3) + a3 * (c1 * d2 - c2 * d1));
-		m.d3 = -invdet * (a1 * (b2 * d3 - b3 * d2) + a2 * (b3 * d1 - b1 * d3) + a3 * (b1 * d2 - b2 * d1));
-		m.d4 =  invdet * (a1 * (b2 * c3 - b3 * c2) + a2 * (b3 * c1 - b1 * c3) + a3 * (b1 * c2 - b2 * c1));
-
-		*this = m;
-		return *this;
 	}
 
 	bool isOnlyTranslate() const
@@ -275,73 +222,6 @@ public:
 			a4 <= 1.f + epsilon && a4 >= 1.f - epsilon &&
 			b4 <= 1.f + epsilon && b4 >= 1.f - epsilon &&
 			c4 <= 1.f + epsilon && c4 >= 1.f - epsilon);
-	}
-
-	void decompose(Vector3t<T>& scaling, Quaterniont<T>& rotation, Vector3t<T>& position) const
-	{
-		const Matrix4x4t<T>& _this = *this;
-
-		// extract translation
-		position.x = _this[0][3];
-		position.y = _this[1][3];
-		position.z = _this[2][3];
-
-		// extract the rows of the matrix
-		Vector3t<T> vRows[3] =
-		{
-			Vector3t<T>(_this[0][0],_this[1][0],_this[2][0]),
-			Vector3t<T>(_this[0][1],_this[1][1],_this[2][1]),
-			Vector3t<T>(_this[0][2],_this[1][2],_this[2][2])
-		};
-
-		// extract the scaling factors
-		scaling.x = vRows[0].length();
-		scaling.y = vRows[1].length();
-		scaling.z = vRows[2].length();
-
-		// and the sign of the scaling
-		if (determinant() < 0)
-		{
-			scaling.x = -scaling.x;
-			scaling.y = -scaling.y;
-			scaling.z = -scaling.z;
-		}
-
-		// and remove all scaling from the matrix
-		if (scaling.x)
-		{
-			vRows[0] /= scaling.x;
-		}
-		if (scaling.y)
-		{
-			vRows[1] /= scaling.y;
-		}
-		if (scaling.z)
-		{
-			vRows[2] /= scaling.z;
-		}
-
-		// build a 3x3 rotation matrix
-		Matrix3x3t<T> m(
-			vRows[0].x, vRows[1].x, vRows[2].x,
-			vRows[0].y, vRows[1].y, vRows[2].y,
-			vRows[0].z, vRows[1].z, vRows[2].z);
-
-		// and generate the rotation quaternion from it
-		rotation = Quaterniont<T>(m);
-	}
-
-	void decompose(Quaterniont<T>& rotation, Vector3t<T>& position) const
-	{
-		const Matrix4x4t<T>& _this = *this;
-
-		// extract translation
-		position.x = _this[3][0];
-		position.y = _this[3][1];
-		position.z = _this[3][2];
-
-		// extract rotation
-		rotation = Quaterniont<T>((Matrix3x3t<T>)_this);
 	}
 
 	Matrix4x4t<T>& applyMatrix(const Matrix4x4t<T>& m)
@@ -415,21 +295,6 @@ public:
 		return *this;
 	}
 
-	Vector4t<T> getAxisX() const noexcept
-	{
-		return Vector4t<T>(a1, a2, a3, a4);
-	}
-
-	Vector4t<T> getAxisY() const noexcept
-	{
-		return Vector4t<T>(b1, b2, b3, b4);
-	}
-
-	Vector4t<T> getAxisZ() const noexcept
-	{
-		return Vector4t<T>(c1, c2, c3, c4);
-	}
-
 	Vector3t<T> getTranslate() const
 	{
 		return Vector3t<T>(a4, b4, c4);
@@ -470,7 +335,7 @@ public:
 	{
 		T c, s, ang = DEG_TO_RAD(theta);
 
-		sinCos(&s, &c, ang);
+		math::sinCos(&s, &c, ang);
 
 		set(
 			1, 0, 0, 0,
@@ -485,7 +350,7 @@ public:
 	{
 		T c, s, ang = DEG_TO_RAD(theta);
 
-		sinCos(&s, &c, ang);
+		math::sinCos(&s, &c, ang);
 
 		set(
 			c, 0, s, 0,
@@ -500,7 +365,7 @@ public:
 	{
 		T c, s, ang = DEG_TO_RAD(theta);
 
-		sinCos(&s, &c, ang);
+		math::sinCos(&s, &c, ang);
 
 		set(
 			c, -s, 0, 0,
@@ -515,9 +380,9 @@ public:
 	{
 		T sh, ch, sp, cp, sb, cb;
 
-		sinCos(&sp, &cp, euler.x);
-		sinCos(&sh, &ch, euler.y);
-		sinCos(&sb, &cb, euler.z);
+		math::sinCos(&sp, &cp, euler.x);
+		math::sinCos(&sh, &ch, euler.y);
+		math::sinCos(&sb, &cb, euler.z);
 
 		a1 = ch * cb + sh * sp * sb;
 		a2 = -ch * sb + sh * sp * cb;
@@ -594,7 +459,7 @@ public:
 	{
 		T c, s;
 
-		sinCos(&s, &c, DEG_TO_RAD(angle));
+		math::sinCos(&s, &c, DEG_TO_RAD(angle));
 
 		Vector3t<T> v = ~axis;
 
@@ -628,80 +493,58 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& rotate(T angle, const Vector3t<T>& axis)
+	Matrix4x4t<T>& makeRotate(const Vector3t<T>& forward, const Vector3t<T>& up, const Vector3t<T>& right)
 	{
-		rotate(angle, axis.x, axis.y, axis.z);
+		a1 = right.x;
+		b1 = right.y;
+		c1 = right.z;
+		d1 = 0.0f;
+		
+		a2 = up.x;
+		b2 = up.y;
+		c2 = up.z;
+		d2 = 0.0f;
+		
+		a3 = forward.x;
+		b3 = forward.y;
+		c3 = forward.z;
+		d3 = 0.0f;
+
+		a4 = 0.0f;
+		b4 = 0.0f;
+		c4 = 0.0f;
+		d4 = 1.0f;
 		return *this;
 	}
 
-	Matrix4x4t<T>& rotate(T angle, T x, T y, T z)
+	Vector3t<T> getRight() const noexcept
 	{
-		Matrix4x4t<T> m;
-		m.makeRotate(angle, x, y, z);
-		applyMatrix(m);
-		return *this;
+		return Vector3t<T>(a1, b1, c1);
 	}
 
-	Matrix4x4t<T>& rotate(const Quaterniont<T>& q)
+	Vector3t<T> getUpVector() const noexcept
 	{
-		Matrix4x4t<T> m;
-		m.makeRotate(q);
-		applyMatrix(m);
-		return *this;
+		return Vector3t<T>(a2, b2, c2);
 	}
 
-	Quaterniont<T> getRotate() const
+	Vector3t<T> getForward() const noexcept
 	{
-		Quaterniont<T> q;
+		return Vector3t<T>(a3, b3, c3);
+	}
 
-		T s;
-		T tq[4];
+	Vector4t<T> getAxisX() const noexcept
+	{
+		return Vector4t<T>(a1, a2, a3, a4);
+	}
 
-		int i, j;
-		tq[0] = 1 + a1 + b2 + c3;
-		tq[1] = 1 + a1 - b2 - c3;
-		tq[2] = 1 - a1 + b2 - c3;
-		tq[3] = 1 - a1 - b2 + c3;
+	Vector4t<T> getAxisY() const noexcept
+	{
+		return Vector4t<T>(b1, b2, b3, b4);
+	}
 
-		j = 0;
-		for (i = 1; i<4; i++) j = (tq[i]>tq[j]) ? i : j;
-
-		if (j == 0)
-		{
-			q.w = tq[0];
-			q.x = b3 - c2;
-			q.y = c1 - a3;
-			q.z = a2 - b1;
-		}
-		else if (j == 1)
-		{
-			q.w = b3 - c2;
-			q.x = tq[1];
-			q.y = a2 + b1;
-			q.z = c1 + a3;
-		}
-		else if (j == 2)
-		{
-			q.w = c1 - a3;
-			q.x = a2 + b1;
-			q.y = tq[2];
-			q.z = b3 + c2;
-		}
-		else
-		{
-			q.w = a2 - b1;
-			q.x = c1 + a3;
-			q.y = b3 + c2;
-			q.z = tq[3];
-		}
-
-		s = sqrt(0.25f / tq[j]);
-		q.w *= s;
-		q.x *= s;
-		q.y *= s;
-		q.z *= s;
-
-		return q;
+	Vector4t<T> getAxisZ() const noexcept
+	{
+		return Vector4t<T>(c1, c2, c3, c4);
 	}
 
 	Matrix4x4t<T>& makeTransform(const Vector3t<T>& translate, const Quaterniont<T>& rotate, const Vector3t<T>& scale)
@@ -710,6 +553,73 @@ public:
 		this->setTranslate(translate);
 		this->scale(scale);
 		return *this;
+	}
+
+	void getTransform(Quaterniont<T>& rotation, Vector3t<T>& position) const
+	{
+		const Matrix4x4t<T>& _this = *this;
+
+		// extract translation
+		position.x = _this[3][0];
+		position.y = _this[3][1];
+		position.z = _this[3][2];
+
+		// extract rotation
+		rotation = Quaterniont<T>((Matrix3x3t<T>)_this);
+	}
+
+	void getTransform(Vector3t<T>& scaling, Quaterniont<T>& rotation, Vector3t<T>& position) const
+	{
+		const Matrix4x4t<T>& _this = *this;
+
+		// extract translation
+		position.x = _this[0][3];
+		position.y = _this[1][3];
+		position.z = _this[2][3];
+
+		// extract the rows of the matrix
+		Vector3t<T> vRows[3] =
+		{
+			Vector3t<T>(_this[0][0],_this[1][0],_this[2][0]),
+			Vector3t<T>(_this[0][1],_this[1][1],_this[2][1]),
+			Vector3t<T>(_this[0][2],_this[1][2],_this[2][2])
+		};
+
+		// extract the scaling factors
+		scaling.x = vRows[0].length();
+		scaling.y = vRows[1].length();
+		scaling.z = vRows[2].length();
+
+		// and the sign of the scaling
+		if (determinant() < 0)
+		{
+			scaling.x = -scaling.x;
+			scaling.y = -scaling.y;
+			scaling.z = -scaling.z;
+		}
+
+		// and remove all scaling from the matrix
+		if (scaling.x)
+		{
+			vRows[0] /= scaling.x;
+		}
+		if (scaling.y)
+		{
+			vRows[1] /= scaling.y;
+		}
+		if (scaling.z)
+		{
+			vRows[2] /= scaling.z;
+		}
+
+		// build a 3x3 rotation matrix
+		Matrix3x3t<T> m(
+			vRows[0].x, vRows[1].x, vRows[2].x,
+			vRows[0].y, vRows[1].y, vRows[2].y,
+			vRows[0].z, vRows[1].z, vRows[2].z);
+
+		// and generate the rotation quaternion from it
+		rotation = Quaterniont<T>(m);
 	}
 
 	Matrix4x4t<T>& makeOrtho_lh(T width, T height, T zNear, T zFar)
@@ -833,7 +743,7 @@ public:
 
 	Matrix4x4t<T>& makePerspective_lh(T fovy, T aspectRatio, T zNear, T zFar)
 	{
-		T tan_fovy = tan(degrees(fovy * 0.5f));
+		T tan_fovy = tan(DEG_TO_RAD(fovy * 0.5f));
 		T right = tan_fovy * aspectRatio * zNear;
 		T left = -right;
 		T top = tan_fovy * zNear;
@@ -845,7 +755,7 @@ public:
 
 	Matrix4x4t<T>& makePerspective_rh(T fovy, T aspectRatio, T zNear, T zFar)
 	{
-		T tan_fovy = tan(degrees(fovy * 0.5f));
+		T tan_fovy = tan(DEG_TO_RAD(fovy * 0.5f));
 		T right = tan_fovy * aspectRatio * zNear;
 		T left = -right;
 		T top = tan_fovy * zNear;
@@ -883,13 +793,13 @@ public:
 		Vector3t<T> x, y, z;
 
 		z = center - eye;
-		z.normalize();
+		z = math::normalize(z);
 
-		x = up.cross(z);
-		x.normalize();
+		x = math::cross(up, z);
+		x = math::normalize(x);
 
-		y = z.cross(x);
-		y.normalize();
+		y = math::cross(z, x);
+		y = math::normalize(y);
 
 		set(x.x, x.y, x.z, 0.0,
 			y.x, y.y, y.z, 0.0,
@@ -929,13 +839,13 @@ public:
 		Vector3t<T> x, y, z;
 
 		z = eye - center;
-		z.normalize();
+		z = math::normalize(z);
 
-		x = up.cross(z);
-		x.normalize();
+		x = math::cross(up, z);
+		x = math::normalize(x);
 
-		y = z.cross(x);
-		y.normalize();
+		y = math::cross(z, x);
+		y = math::normalize(y);
 
 		set(x.x, x.y, x.z, 0.0,
 			y.x, y.y, y.z, 0.0,
@@ -983,22 +893,6 @@ public:
 			0.0, 0.0, 0.0, 1.0);
 
 		return *this;
-	}
-
-	Vector3t<T> inertialToObject(const Vector3t<T>& v) const
-	{
-		return Vector3t<T>(
-			a1 * v.x + b1 * v.y + c1 * v.z,
-			a2 * v.x + b2 * v.y + c2 * v.z,
-			a3 * v.x + b3 * v.y + c3 * v.z);
-	}
-
-	Vector3t<T> objectToInertial(const Vector3t<T>& v) const
-	{
-		return Vector3t<T>(
-			a1 * v.x + a2 * v.y + a3 * v.z,
-			b1 * v.x + b2 * v.y + b3 * v.z,
-			c1 * v.x + c2 * v.y + c3 * v.z);
 	}
 };
 
@@ -1113,6 +1007,81 @@ inline Matrix4x4t<T>& operator*=(Matrix4x4t<T> m1, const Matrix4x4t<T>& m2)
 	return m1;
 }
 
+namespace math
+{
+	template<typename T>
+	Matrix4x4t<T> orthonormalize(const Matrix4x4t<T>& _m)
+	{
+		Matrix4x4t<T> m = _m;
+		Vector3t<T> x(m.a1, m.b1, m.c1);
+		Vector3t<T> y(m.a2, m.b2, m.c2);
+		Vector3t<T> z;
+		x = math::normalize(x);
+		z = math::cross(x, y);
+		z = math::normalize(z);
+		y = math::cross(z, x);
+		y = math::normalize(y);
+		m.a1 = x.x; m.a2 = x.y; m.a3 = x.z;
+		m.b1 = y.x; m.b2 = y.y; m.b3 = y.z;
+		m.c1 = z.x; m.c3 = z.y; m.c3 = z.z;
+		return m;
+	}
+
+	template<typename T>
+	Matrix4x4t<T> transpose(const Matrix4x4t<T>& _m)
+	{
+		Matrix4x4t<T> m = _m;
+		std::swap((T&)m.b1, (T&)m.a2);
+		std::swap((T&)m.c1, (T&)m.a3);
+		std::swap((T&)m.c2, (T&)m.b3);
+		std::swap((T&)m.d1, (T&)m.a4);
+		std::swap((T&)m.d2, (T&)m.b4);
+		std::swap((T&)m.d3, (T&)m.c4);
+		return m;
+	}
+
+	template<typename T>
+	Matrix4x4t<T> inverse(const Matrix4x4t<T>& _m)
+	{
+		Matrix4x4t<T> m = _m;
+
+		const T det = m.determinant();
+		if (det == static_cast<T>(0.0))
+		{
+			const T nan = std::numeric_limits<T>::quiet_NaN();
+			m.set
+				(
+					nan, nan, nan, nan,
+					nan, nan, nan, nan,
+					nan, nan, nan, nan,
+					nan, nan, nan, nan
+					);
+
+			return m;
+		}
+
+		const T invdet = static_cast<T>(1.0) / det;
+		m.a1 = invdet * (_m.b2 * (_m.c3 * _m.d4 - _m.c4 * _m.d3) + _m.b3 * (_m.c4 * _m.d2 - _m.c2 * _m.d4) + _m.b4 * (_m.c2 * _m.d3 - _m.c3 * _m.d2));
+		m.a2 = -invdet * (_m.a2 * (_m.c3 * _m.d4 - _m.c4 * _m.d3) + _m.a3 * (_m.c4 * _m.d2 - _m.c2 * _m.d4) + _m.a4 * (_m.c2 * _m.d3 - _m.c3 * _m.d2));
+		m.a3 = invdet * (_m.a2 * (_m.b3 * _m.d4 - _m.b4 * _m.d3) + _m.a3 * (_m.b4 * _m.d2 - _m.b2 * _m.d4) + _m.a4 * (_m.b2 * _m.d3 - _m.b3 * _m.d2));
+		m.a4 = -invdet * (_m.a2 * (_m.b3 * _m.c4 - _m.b4 * _m.c3) + _m.a3 * (_m.b4 * _m.c2 - _m.b2 * _m.c4) + _m.a4 * (_m.b2 * _m.c3 - _m.b3 * _m.c2));
+		m.b1 = -invdet * (_m.b1 * (_m.c3 * _m.d4 - _m.c4 * _m.d3) + _m.b3 * (_m.c4 * _m.d1 - _m.c1 * _m.d4) + _m.b4 * (_m.c1 * _m.d3 - _m.c3 * _m.d1));
+		m.b2 = invdet * (_m.a1 * (_m.c3 * _m.d4 - _m.c4 * _m.d3) + _m.a3 * (_m.c4 * _m.d1 - _m.c1 * _m.d4) + _m.a4 * (_m.c1 * _m.d3 - _m.c3 * _m.d1));
+		m.b3 = -invdet * (_m.a1 * (_m.b3 * _m.d4 - _m.b4 * _m.d3) + _m.a3 * (_m.b4 * _m.d1 - _m.b1 * _m.d4) + _m.a4 * (_m.b1 * _m.d3 - _m.b3 * _m.d1));
+		m.b4 = invdet * (_m.a1 * (_m.b3 * _m.c4 - _m.b4 * _m.c3) + _m.a3 * (_m.b4 * _m.c1 - _m.b1 * _m.c4) + _m.a4 * (_m.b1 * _m.c3 - _m.b3 * _m.c1));
+		m.c1 = invdet * (_m.b1 * (_m.c2 * _m.d4 - _m.c4 * _m.d2) + _m.b2 * (_m.c4 * _m.d1 - _m.c1 * _m.d4) + _m.b4 * (_m.c1 * _m.d2 - _m.c2 * _m.d1));
+		m.c2 = -invdet * (_m.a1 * (_m.c2 * _m.d4 - _m.c4 * _m.d2) + _m.a2 * (_m.c4 * _m.d1 - _m.c1 * _m.d4) + _m.a4 * (_m.c1 * _m.d2 - _m.c2 * _m.d1));
+		m.c3 = invdet * (_m.a1 * (_m.b2 * _m.d4 - _m.b4 * _m.d2) + _m.a2 * (_m.b4 * _m.d1 - _m.b1 * _m.d4) + _m.a4 * (_m.b1 * _m.d2 - _m.b2 * _m.d1));
+		m.c4 = -invdet * (_m.a1 * (_m.b2 * _m.c4 - _m.b4 * _m.c2) + _m.a2 * (_m.b4 * _m.c1 - _m.b1 * _m.c4) + _m.a4 * (_m.b1 * _m.c2 - _m.b2 * _m.c1));
+		m.d1 = -invdet * (_m.b1 * (_m.c2 * _m.d3 - _m.c3 * _m.d2) + _m.b2 * (_m.c3 * _m.d1 - _m.c1 * _m.d3) + _m.b3 * (_m.c1 * _m.d2 - _m.c2 * _m.d1));
+		m.d2 = invdet * (_m.a1 * (_m.c2 * _m.d3 - _m.c3 * _m.d2) + _m.a2 * (_m.c3 * _m.d1 - _m.c1 * _m.d3) + _m.a3 * (_m.c1 * _m.d2 - _m.c2 * _m.d1));
+		m.d3 = -invdet * (_m.a1 * (_m.b2 * _m.d3 - _m.b3 * _m.d2) + _m.a2 * (_m.b3 * _m.d1 - _m.b1 * _m.d3) + _m.a3 * (_m.b1 * _m.d2 - _m.b2 * _m.d1));
+		m.d4 = invdet * (_m.a1 * (_m.b2 * _m.c3 - _m.b3 * _m.c2) + _m.a2 * (_m.b3 * _m.c1 - _m.b1 * _m.c3) + _m.a3 * (_m.b1 * _m.c2 - _m.b2 * _m.c1));
+
+		return m;
+	}
+}
+
 _NAME_END
 
-#endif // AI_MATRIX4X4_H_INC
+#endif

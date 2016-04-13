@@ -46,9 +46,9 @@
         <attribute rotate="90,0,0"/>
         <attribute active="true"/>
         <component class="Light">
-            <attribute type="point"/>
+            <attribute type="sun"/>
             <attribute color="1.0,1.0,1.0"/>
-            <attribute range="10.0"/>
+            <attribute range="20.0"/>
             <attribute intensity="1.0"/>
             <attribute shadow="true"/>
             <attribute soft="true"/>
@@ -63,7 +63,7 @@
             <attribute type="ambient"/>
             <attribute range="100.0"/>
             <attribute color="1.0,1.0,1.0"/>
-            <attribute intensity="0.5"/>
+            <attribute intensity="0.2"/>
         </component>
     </object>
 </scene>

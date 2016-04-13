@@ -41,55 +41,9 @@
 #include <ray/material_tech.h>
 #include <ray/material_param.h>
 #include <ray/material_variant.h>
+#include <ray/material_desc.h>
 
 _NAME_BEGIN
-
-class EXPORT MaterialDesc final
-{
-public:
-	MaterialDesc() noexcept;
-	~MaterialDesc() noexcept;
-
-	void setName(const std::string& name) noexcept;
-	const std::string& getName() const noexcept;
-
-	void addTech(MaterialTechPtr technique) noexcept;
-	void removeTech(MaterialTechPtr technique) noexcept;
-	MaterialTechPtr getTech(RenderQueue queue) noexcept;
-	MaterialTechniques& getTechs() noexcept;
-
-	void addParameter(MaterialParamPtr parameter) noexcept;
-	void removeParameter(MaterialParamPtr parameter) noexcept;
-	MaterialParamPtr getParameter(const std::string& name) const noexcept;
-	MaterialParams& getParameters() noexcept;
-	const MaterialParams& getParameters() const noexcept;
-
-	void addMacro(MaterialVariantPtr macro) noexcept;
-	void removeMacro(MaterialVariantPtr macro) noexcept;
-	MaterialVariantPtr getMacro(const std::string& name) const noexcept;
-	MaterialVariants& getMacros() noexcept;
-	const MaterialVariants& getMacros() const noexcept;
-
-	void addInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept;
-	void removeInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept;
-	GraphicsInputLayoutPtr getInputLayout(const std::string& name) const noexcept;
-	GraphicsInputLayouts& getInputLayouts() noexcept;
-	const GraphicsInputLayouts& getInputLayouts() const noexcept;
-
-	void addShader(GraphicsShaderPtr shader) noexcept;
-	void removeShader(GraphicsShaderPtr shader) noexcept;
-	GraphicsShaderPtr getShader(const std::string& name) const noexcept;
-	GraphicsShaders& getShaders() noexcept;
-	const GraphicsShaders& getShaders() const noexcept;
-
-private:
-	std::string _name;
-	MaterialParams _parameters;
-	MaterialVariants _macros;
-	MaterialTechniques _techniques;
-	GraphicsShaders _shaders;
-	GraphicsInputLayouts _inputLayouts;
-};
 
 class EXPORT Material final : public rtti::Interface
 {
@@ -103,7 +57,7 @@ public:
 
 	const std::string& getName() const noexcept;
 
-	MaterialTechPtr getTech(RenderQueue queue) noexcept;
+	MaterialTechPtr getTech(const std::string& name) noexcept;
 	MaterialTechniques& getTechs() noexcept;
 
 	MaterialParamPtr getParameter(const std::string& name) const noexcept;

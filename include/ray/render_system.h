@@ -69,13 +69,13 @@ public:
 	void readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
 
-	void drawCone(MaterialPassPtr pass) noexcept;
-	void drawSphere(MaterialPassPtr pass) noexcept;
-	void drawScreenQuad(MaterialPassPtr pass) noexcept;
-	void drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const GraphicsIndirect& renderable) noexcept;
+	void drawCone(MaterialTechPtr pass) noexcept;
+	void drawSphere(MaterialTechPtr pass) noexcept;
+	void drawScreenQuad(MaterialTechPtr pass) noexcept;
+	void drawMesh(MaterialTechPtr pass, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept;
 
-	GraphicsTexturePtr createTexture(const std::string& name) noexcept;
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
+	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim) noexcept;
 	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
@@ -84,9 +84,9 @@ public:
 	GraphicsFramebufferLayoutPtr createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept;
 	MaterialPtr createMaterial(const std::string& name) noexcept;
 
-	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) noexcept;
-	RenderBufferPtr createRenderBuffer(const MeshPropertys& meshes) noexcept;
-	RenderBufferPtr createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
+	RenderMeshPtr createRenderMesh(const MeshProperty& mesh) noexcept;
+	RenderMeshPtr createRenderMesh(const MeshPropertys& meshes) noexcept;
+	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
 
 	bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;
 	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;

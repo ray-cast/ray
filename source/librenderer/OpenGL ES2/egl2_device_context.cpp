@@ -297,7 +297,7 @@ EGL2DeviceContext::getVertexBufferData() const noexcept
 }
 
 void
-EGL2DeviceContext::drawRenderBuffer(const GraphicsIndirect& renderable) noexcept
+EGL2DeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 {
 	if (!_inputLayout || !_vbo)
 		return;
@@ -332,10 +332,10 @@ EGL2DeviceContext::drawRenderBuffer(const GraphicsIndirect& renderable) noexcept
 }
 
 void
-EGL2DeviceContext::drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept
+EGL2DeviceContext::drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept
 {
 	for (std::size_t i = first; i < first + count; i++)
-		this->drawRenderBuffer(renderable[i]);
+		this->drawRenderMesh(renderable[i]);
 }
 
 void

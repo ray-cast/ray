@@ -37,7 +37,7 @@
 #include <ray/render_scene.h>
 #include <ray/camera.h>
 #include <ray/light.h>
-#include <ray/render_mesh.h>
+#include <ray/geometry.h>
 
 _NAME_BEGIN
 
@@ -226,13 +226,13 @@ RenderScene::computVisiable(const Matrix4x4& viewProject, OcclusionCullList& lis
 		if (!fru.contains(it->getBoundingBoxInWorld().aabb()))
 			continue;
 
-		list.insert(it, eyePosition.sqrDistance(it->getTransform().getTranslate()));
+		list.insert(it, math::sqrDistance(eyePosition, it->getTransform().getTranslate()));
 
 		for (auto& child : it->getSubeRenderObjects())
 		{
 			if (fru.contains(child->getBoundingBoxInWorld().aabb()))
 			{
-				list.insert(it, eyePosition.sqrDistance(it->getBoundingBoxInWorld().center()));
+				list.insert(it, math::sqrDistance(eyePosition, it->getBoundingBoxInWorld().center()));
 			}
 		}
 	}
@@ -248,19 +248,19 @@ RenderScene::computVisiableObject(const Matrix4x4& viewProject, OcclusionCullLis
 
 	for (auto& it : _renderObjectList)
 	{
-		if (!it->isInstanceOf<RenderMesh>())
+		if (!it->isInstanceOf<Geometry>())
 			continue;
 
 		if (!fru.contains(it->getBoundingBoxInWorld().aabb()))
 			continue;
 
-		list.insert(it, eyePosition.sqrDistance(it->getTransform().getTranslate()));
+		list.insert(it, math::sqrDistance(eyePosition, it->getTransform().getTranslate()));
 
 		for (auto& child : it->getSubeRenderObjects())
 		{
 			if (fru.contains(child->getBoundingBoxInWorld().aabb()))
 			{
-				list.insert(it, eyePosition.sqrDistance(it->getBoundingBoxInWorld().center()));
+				list.insert(it, math::sqrDistance(eyePosition, it->getBoundingBoxInWorld().center()));
 			}
 		}
 	}
@@ -282,13 +282,13 @@ RenderScene::computVisiableLight(const Matrix4x4& viewProject, OcclusionCullList
 		if (!fru.contains(it->getBoundingBoxInWorld().aabb()))
 			continue;
 
-		list.insert(it, eyePosition.sqrDistance(it->getTransform().getTranslate()));
+		list.insert(it, math::sqrDistance(eyePosition, it->getTransform().getTranslate()));
 
 		for (auto& child : it->getSubeRenderObjects())
 		{
 			if (fru.contains(child->getBoundingBoxInWorld().aabb()))
 			{
-				list.insert(it, eyePosition.sqrDistance(it->getBoundingBoxInWorld().center()));
+				list.insert(it, math::sqrDistance(eyePosition, it->getBoundingBoxInWorld().center()));
 			}
 		}
 	}

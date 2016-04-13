@@ -38,7 +38,7 @@
 #include <ray/render_pipeline_device.h>
 
 #include <ray/render_post_process.h>
-#include <ray/render_buffer.h>
+#include <ray/render_mesh.h>
 
 #include <ray/graphics_context.h>
 #include <ray/graphics_swapchain.h>
@@ -46,7 +46,7 @@
 #include <ray/graphics_framebuffer.h>
 
 #include <ray/camera.h>
-#include <ray/render_mesh.h>
+#include <ray/geometry.h>
 
 #include <ray/render_object.h>
 #include <ray/render_object_manager.h>
@@ -117,17 +117,17 @@ RenderPipeline::getSwapInterval() const noexcept
 }
 
 void
-RenderPipeline::addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept
+RenderPipeline::addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept
 {
 	assert(_dataManager);
-	_dataManager->addRenderData(queue, pass, object);
+	_dataManager->addRenderData(queue, object);
 }
 
 const RenderObjects&
-RenderPipeline::getRenderData(RenderQueue queue, RenderPass pass) const noexcept
+RenderPipeline::getRenderData(RenderQueue queue) const noexcept
 {
 	assert(_dataManager);
-	return _dataManager->getRenderData(queue, pass);
+	return _dataManager->getRenderData(queue);
 }
 
 void
@@ -298,96 +298,101 @@ RenderPipeline::blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport
 }
 
 void
-RenderPipeline::drawSphere(MaterialPassPtr pass) noexcept
+RenderPipeline::drawSphere(MaterialTechPtr tech) noexcept
 {
-	this->drawMesh(pass, _renderSphere, _renderSphereIndirect);
+	this->drawMesh(tech, _renderSphere, _renderSphereIndirect);
 }
 
 void
-RenderPipeline::drawCone(MaterialPassPtr pass) noexcept
+RenderPipeline::drawCone(MaterialTechPtr tech) noexcept
 {
-	this->drawMesh(pass, _renderCone, _renderConeIndirect);
+	this->drawMesh(tech, _renderCone, _renderConeIndirect);
 }
 
 void
-RenderPipeline::drawScreenQuad(MaterialPassPtr pass) noexcept
+RenderPipeline::drawScreenQuad(MaterialTechPtr tech) noexcept
 {
-	this->drawMesh(pass, _renderScreenQuad, _renderScreenQuadIndirect);
+	this->drawMesh(tech, _renderScreenQuad, _renderScreenQuadIndirect);
 }
 
 void
-RenderPipeline::drawMesh(MaterialPassPtr pass, RenderBufferPtr buffer, const GraphicsIndirect& renderable) noexcept
+RenderPipeline::drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept
 {
-	auto& semantics = pass->getParameters();
-	for (auto& it : semantics)
+	_graphicsContext->setVertexBufferData(mesh->getVertexBuffer());
+	_graphicsContext->setIndexBufferData(mesh->getIndexBuffer());
+
+	auto& passList = tech->getPassList();
+	for (auto& pass : passList)
 	{
-		auto semantic = it->getSemantic();
-		if (semantic)
+		auto& semantics = pass->getParameters();
+		for (auto& it : semantics)
 		{
-			auto type = semantic->getType();
-			switch (type)
+			auto semantic = it->getSemantic();
+			if (semantic)
 			{
-			case GraphicsUniformType::GraphicsUniformTypeBool:
-				it->assign(semantic->getBool());
-				break;
-			case GraphicsUniformType::GraphicsUniformTypeInt:
-				it->assign(semantic->getInt());
-				break;
-			case GraphicsUniformType::GraphicsUniformTypeInt2:
-				it->assign(semantic->getInt2());
-				break;
-			case GraphicsUniformType::GraphicsUniformTypeFloat:
-				it->assign(semantic->getFloat());
-				break;
-			case GraphicsUniformType::GraphicsUniformTypeFloat2:
-				it->assign(semantic->getFloat2());
-				break;
-			case GraphicsUniformType::GraphicsUniformTypeFloat3:
-				it->assign(semantic->getFloat3());
-				break;
-			case GraphicsUniformType::GraphicsUniformTypeFloat4:
-				it->assign(semantic->getFloat4());
-				break;
-			case GraphicsUniformType::GraphicsUniformTypeFloat3x3:
-				it->assign(semantic->getFloat3x3());
-				break;
-			case GraphicsUniformType::GraphicsUniformTypeFloat4x4:
-				it->assign(semantic->getFloat4x4());
-				break;
-			case GraphicsUniformType::GraphicsUniformTypeFloatArray:
-				it->assign(semantic->getFloatArray());
-				break;
-			case GraphicsUniformType::GraphicsUniformTypeFloat2Array:
-				it->assign(semantic->getFloat2Array());
-				break;
-			case GraphicsUniformType::GraphicsUniformTypeFloat3Array:
-				it->assign(semantic->getFloat3Array());
-				break;
-			case GraphicsUniformType::GraphicsUniformTypeFloat4Array:
-				it->assign(semantic->getFloat4Array());
-				break;
-			case GraphicsUniformType::GraphicsUniformTypeStorageImage:
-				it->assign(semantic->getTexture());
-				break;
-			default:
-				break;
+				auto type = semantic->getType();
+				switch (type)
+				{
+				case GraphicsUniformType::GraphicsUniformTypeBool:
+					it->assign(semantic->getBool());
+					break;
+				case GraphicsUniformType::GraphicsUniformTypeInt:
+					it->assign(semantic->getInt());
+					break;
+				case GraphicsUniformType::GraphicsUniformTypeInt2:
+					it->assign(semantic->getInt2());
+					break;
+				case GraphicsUniformType::GraphicsUniformTypeFloat:
+					it->assign(semantic->getFloat());
+					break;
+				case GraphicsUniformType::GraphicsUniformTypeFloat2:
+					it->assign(semantic->getFloat2());
+					break;
+				case GraphicsUniformType::GraphicsUniformTypeFloat3:
+					it->assign(semantic->getFloat3());
+					break;
+				case GraphicsUniformType::GraphicsUniformTypeFloat4:
+					it->assign(semantic->getFloat4());
+					break;
+				case GraphicsUniformType::GraphicsUniformTypeFloat3x3:
+					it->assign(semantic->getFloat3x3());
+					break;
+				case GraphicsUniformType::GraphicsUniformTypeFloat4x4:
+					it->assign(semantic->getFloat4x4());
+					break;
+				case GraphicsUniformType::GraphicsUniformTypeFloatArray:
+					it->assign(semantic->getFloatArray());
+					break;
+				case GraphicsUniformType::GraphicsUniformTypeFloat2Array:
+					it->assign(semantic->getFloat2Array());
+					break;
+				case GraphicsUniformType::GraphicsUniformTypeFloat3Array:
+					it->assign(semantic->getFloat3Array());
+					break;
+				case GraphicsUniformType::GraphicsUniformTypeFloat4Array:
+					it->assign(semantic->getFloat4Array());
+					break;
+				case GraphicsUniformType::GraphicsUniformTypeStorageImage:
+					it->assign(semantic->getTexture());
+					break;
+				default:
+					break;
+				}
 			}
 		}
-	}
 
-	_graphicsContext->setRenderPipeline(pass->getRenderPipeline());
-	_graphicsContext->setDescriptorSet(pass->getDescriptorSet());
-	_graphicsContext->setVertexBufferData(buffer->getVertexBuffer());
-	_graphicsContext->setIndexBufferData(buffer->getIndexBuffer());
-	_graphicsContext->drawRenderBuffer(renderable);
+		_graphicsContext->setRenderPipeline(pass->getRenderPipeline());
+		_graphicsContext->setDescriptorSet(pass->getDescriptorSet());
+		_graphicsContext->drawRenderMesh(renderable);
+	}
 }
 
 void
-RenderPipeline::drawRenderQueue(RenderQueue queue, RenderPass pass, MaterialPassPtr material) noexcept
+RenderPipeline::drawRenderQueue(RenderQueue queue, MaterialTechPtr tech) noexcept
 {
-	auto& renderable = this->getRenderData(queue, pass);
+	auto& renderable = this->getRenderData(queue);
 	for (auto& it : renderable)
-		it->render(*this, queue, pass, material);
+		it->render(*this, queue, tech);
 }
 
 void
@@ -502,10 +507,10 @@ RenderPipeline::createTexture(const GraphicsTextureDesc& desc) noexcept
 }
 
 GraphicsTexturePtr
-RenderPipeline::createTexture(const std::string& name) noexcept
+RenderPipeline::createTexture(const std::string& name, GraphicsTextureDim dim) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createTexture(name);
+	return _pipelineDevice->createTexture(name, dim);
 }
 
 GraphicsTexturePtr 
@@ -522,25 +527,25 @@ RenderPipeline::createMaterial(const std::string& name) noexcept
 	return _pipelineDevice->createMaterial(name);
 }
 
-RenderBufferPtr
-RenderPipeline::createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
+RenderMeshPtr
+RenderPipeline::createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderBuffer(vb, ib);
+	return _pipelineDevice->createRenderMesh(vb, ib);
 }
 
-RenderBufferPtr
-RenderPipeline::createRenderBuffer(const MeshProperty& mesh) noexcept
+RenderMeshPtr
+RenderPipeline::createRenderMesh(const MeshProperty& mesh) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderBuffer(mesh);
+	return _pipelineDevice->createRenderMesh(mesh);
 }
 
-RenderBufferPtr
-RenderPipeline::createRenderBuffer(const MeshPropertys& mesh) noexcept
+RenderMeshPtr
+RenderPipeline::createRenderMesh(const MeshPropertys& mesh) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderBuffer(mesh);
+	return _pipelineDevice->createRenderMesh(mesh);
 }
 
 MaterialVariantPtr 
@@ -703,7 +708,7 @@ RenderPipeline::setupBaseMeshes() noexcept
 	MeshProperty mesh;
 	mesh.makePlane(2, 2, 1, 1);
 
-	_renderScreenQuad = this->createRenderBuffer(mesh);
+	_renderScreenQuad = this->createRenderMesh(mesh);
 	if (!_renderScreenQuad)
 		return false;
 
@@ -715,7 +720,7 @@ RenderPipeline::setupBaseMeshes() noexcept
 
 	mesh.makeSphere(1, 24, 18);
 
-	_renderSphere = this->createRenderBuffer(mesh);
+	_renderSphere = this->createRenderMesh(mesh);
 	if (!_renderSphere)
 		return false;
 
@@ -727,7 +732,7 @@ RenderPipeline::setupBaseMeshes() noexcept
 
 	mesh.makeCone(1, 1, 16);
 
-	_renderCone = this->createRenderBuffer(mesh);
+	_renderCone = this->createRenderMesh(mesh);
 	if (!_renderCone)
 		return false;
 

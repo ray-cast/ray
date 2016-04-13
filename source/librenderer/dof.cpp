@@ -53,11 +53,11 @@ DepthOfField::onActivate(RenderPipeline& pipeline) noexcept
 {
 	_dof = pipeline.createMaterial("sys:fx/dof.glsl");
 
-	_sample4 = _dof->getTech(RenderQueue::RenderQueuePostprocess)->getPass("sample");
-	_blurh = _dof->getTech(RenderQueue::RenderQueuePostprocess)->getPass("blurh");
-	_blurv = _dof->getTech(RenderQueue::RenderQueuePostprocess)->getPass("blurv");
-	_computeNear = _dof->getTech(RenderQueue::RenderQueuePostprocess)->getPass("computeNear");
-	_final = _dof->getTech(RenderQueue::RenderQueuePostprocess)->getPass("final");
+	_sample4 = _dof->getTech("sample");
+	_blurh = _dof->getTech("blurh");
+	_blurv = _dof->getTech("blurv");
+	_computeNear = _dof->getTech("computeNear");
+	_final = _dof->getTech("final");
 
 	_texTemp = pipeline.createTexture(512, 512, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 	_texBlur = pipeline.createTexture(512, 512, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);

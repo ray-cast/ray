@@ -50,7 +50,7 @@ _NAME_BEGIN
 
 DeferredRenderPipeline::DeferredRenderPipeline() noexcept
 	: _shaodwFactor(300.0f)
-	, _shaodwMapSize(512, 512)
+	, _shaodwMapSize(512)
 	, _shadowFormat(GraphicsFormat::GraphicsFormatR32SFloat)
 {
 }
@@ -63,7 +63,7 @@ DeferredRenderPipeline::~DeferredRenderPipeline() noexcept
 void
 DeferredRenderPipeline::renderShadowMaps(RenderPipeline& pipeline) noexcept
 {
-	const auto lights = pipeline.getRenderData(RenderQueue::RenderQueueShadow, RenderPass::RenderPassLights);
+	const auto lights = pipeline.getRenderData(RenderQueue::RenderQueueShadow);
 	
 	std::size_t numSoftLight = 0;
 	for (auto& it : lights)
@@ -78,13 +78,13 @@ DeferredRenderPipeline::renderShadowMaps(RenderPipeline& pipeline) noexcept
 		auto num = numSoftLight - _softShaodwViews.size();
 		for (std::size_t i = 0; i < num; i++)
 		{
-			auto blurShaodwMap = pipeline.createTexture(_shaodwMapSize.x, _shaodwMapSize.y, GraphicsTextureDim::GraphicsTextureDim2D, _shadowFormat);
+			auto blurShaodwMap = pipeline.createTexture(_shaodwMapSize, _shaodwMapSize, GraphicsTextureDim::GraphicsTextureDim2D, _shadowFormat);
 			if (!blurShaodwMap)
 				return;
 
 			GraphicsFramebufferDesc shadowViewDesc;
-			shadowViewDesc.setWidth(_shaodwMapSize.x);
-			shadowViewDesc.setHeight(_shaodwMapSize.y);
+			shadowViewDesc.setWidth(_shaodwMapSize);
+			shadowViewDesc.setHeight(_shaodwMapSize);
 			shadowViewDesc.attach(blurShaodwMap);
 			shadowViewDesc.setGraphicsFramebufferLayout(_softShaodwViewLayout);
 			auto blurShaodwView = pipeline.createFramebuffer(shadowViewDesc);
@@ -104,7 +104,7 @@ DeferredRenderPipeline::renderShadowMaps(RenderPipeline& pipeline) noexcept
 		pipeline.setCamera(light->getShadowCamera());
 		pipeline.setFramebuffer(light->getShadowCamera()->getFramebuffer());
 		pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsDepth, float4::Zero, 1.0, 0);
-		pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, RenderPass::RenderPassOpaques, _deferredDepthOnly);
+		pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, _deferredDepthOnly);
 
 		if (light->getSoftShadow())
 		{
@@ -128,7 +128,7 @@ DeferredRenderPipeline::render2DEnvMap(RenderPipeline& pipeline) noexcept
 {
 	pipeline.setFramebuffer(_deferredFinalView);
 	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsAll, pipeline.getCamera()->getClearColor(), 1.0, 0);
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, RenderPass::RenderPassOpaques);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
 }
 
 void
@@ -171,7 +171,7 @@ DeferredRenderPipeline::render3DEnvMap(RenderPipeline& pipeline) noexcept
 
 		std::size_t shadowIndex = 0;
 
-		auto& lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting, RenderPass::RenderPassLights);
+		auto& lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting);
 		for (auto& it : lights)
 		{
 			auto light = std::dynamic_pointer_cast<Light>(it);
@@ -201,7 +201,7 @@ DeferredRenderPipeline::renderOpaques(RenderPipeline& pipeline, GraphicsFramebuf
 {
 	pipeline.setFramebuffer(target);
 	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsAll, float4::Zero, 1.0, 0);
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, RenderPass::RenderPassOpaques);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
 }
 
 void
@@ -224,8 +224,8 @@ void
 DeferredRenderPipeline::renderOpaquesSpecificShading(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, RenderPass::RenderPassSpecific);
-	pipeline.drawPostProcess(RenderQueue::RenderQueueOpaque, target, target, _deferredFinalView);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaqueSpecific);
+	pipeline.drawPostProcess(RenderQueue::RenderQueueOpaqueSpecific, target, target, target);
 }
 
 void
@@ -233,7 +233,7 @@ DeferredRenderPipeline::renderTransparent(RenderPipeline& pipeline, GraphicsFram
 {
 	pipeline.setFramebuffer(renderTexture);
 	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsColorStencil, float4::Zero, 1.0, 0);
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent, RenderPass::RenderPassTransparent);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent);
 }
 
 void
@@ -241,7 +241,7 @@ DeferredRenderPipeline::renderTransparentDepthLinear(RenderPipeline& pipeline, G
 {
 	pipeline.setFramebuffer(target);
 	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent, RenderPass::RenderPassDepth, _deferredDepthLinear);
+	pipeline.drawScreenQuad(_deferredDepthLinear);
 }
 
 void
@@ -255,8 +255,8 @@ void
 DeferredRenderPipeline::renderTransparentSpecificShading(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent, RenderPass::RenderPassSpecific);
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent, RenderPass::RenderPassPostprocess);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentSpecific);
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparentPostprocess);
 }
 
 void
@@ -267,7 +267,7 @@ DeferredRenderPipeline::renderLights(RenderPipeline& pipeline, GraphicsFramebuff
 
 	std::size_t shadowIndex = 0;
 
-	auto& lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting, RenderPass::RenderPassLights);
+	auto& lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting);
 	for (auto& it : lights)
 	{
 		auto light = std::dynamic_pointer_cast<Light>(it);
@@ -300,8 +300,6 @@ DeferredRenderPipeline::renderLights(RenderPipeline& pipeline, GraphicsFramebuff
 			break;
 		}
 	}
-
-	pipeline.drawPostProcess(RenderQueue::RenderQueueLighting, target, target, _deferredFinalView);
 }
 
 void
@@ -454,19 +452,19 @@ bool
 DeferredRenderPipeline::setupDeferredMaterials(RenderPipeline& pipeline) noexcept
 {
 	_deferredLighting = pipeline.createMaterial("sys:fx/deferred_lighting.fxml.o");
-	_deferredDepthOnly = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredDepthOnly");
-	_deferredDepthLinear = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredDepthLinear");
-	_deferredPointLight = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredPointLight");
-	_deferredAmbientLight = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredAmbientLight");
-	_deferredSunLight = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredSunLight");
-	_deferredSunLightShadow = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredSunLightShadow");
-	_deferredDirectionalLight = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredDirectionalLight");
-	_deferredDirectionalLightShadow = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredDirectionalLightShadow");
-	_deferredSpotLight = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredSpotLight");
-	_deferredSpotLightShadow = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredSpotLightShadow");
-	_deferredShadingOpaques = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredShadingOpaques");
-	_deferredShadingTransparents = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredShadingTransparents");
-	_deferredCopyOnly = _deferredLighting->getTech(RenderQueue::RenderQueueCustom)->getPass("DeferredCopyOnly");
+	_deferredDepthOnly = _deferredLighting->getTech("DeferredDepthOnly");
+	_deferredDepthLinear = _deferredLighting->getTech("DeferredDepthLinear");
+	_deferredPointLight = _deferredLighting->getTech("DeferredPointLight");
+	_deferredAmbientLight = _deferredLighting->getTech("DeferredAmbientLight");
+	_deferredSunLight = _deferredLighting->getTech("DeferredSunLight");
+	_deferredSunLightShadow = _deferredLighting->getTech("DeferredSunLightShadow");
+	_deferredDirectionalLight = _deferredLighting->getTech("DeferredDirectionalLight");
+	_deferredDirectionalLightShadow = _deferredLighting->getTech("DeferredDirectionalLightShadow");
+	_deferredSpotLight = _deferredLighting->getTech("DeferredSpotLight");
+	_deferredSpotLightShadow = _deferredLighting->getTech("DeferredSpotLightShadow");
+	_deferredShadingOpaques = _deferredLighting->getTech("DeferredShadingOpaques");
+	_deferredShadingTransparents = _deferredLighting->getTech("DeferredShadingTransparents");
+	_deferredCopyOnly = _deferredLighting->getTech("DeferredCopyOnly");
 
 	_texMRT0 = _deferredLighting->getParameter("texMRT0");
 	_texMRT1 = _deferredLighting->getParameter("texMRT1");
@@ -696,8 +694,8 @@ bool
 DeferredRenderPipeline::setupShadowMaterial(RenderPipeline& pipeline) noexcept
 {
 	_softBlur = pipeline.createMaterial("sys:fx/blur.fxml.o");
-	_softBlurShadowX = _softBlur->getTech(RenderQueue::RenderQueueCustom)->getPass("blurX");
-	_softBlurShadowY = _softBlur->getTech(RenderQueue::RenderQueueCustom)->getPass("blurY");
+	_softBlurShadowX = _softBlur->getTech("blurX");
+	_softBlurShadowY = _softBlur->getTech("blurY");
 	_softBlurShadowSource = _softBlur->getParameter("texSource");
 	_softBlurShadowSourceInv = _softBlur->getParameter("texSourceInv");
 	return true;
@@ -712,13 +710,13 @@ DeferredRenderPipeline::setupShadowMap(RenderPipeline& pipeline) noexcept
 	if (!_softShaodwViewLayout)
 		return false;
 
-	_softShaodwMapTemp = pipeline.createTexture(_shaodwMapSize.x, _shaodwMapSize.y, GraphicsTextureDim::GraphicsTextureDim2D, _shadowFormat);
+	_softShaodwMapTemp = pipeline.createTexture(_shaodwMapSize, _shaodwMapSize, GraphicsTextureDim::GraphicsTextureDim2D, _shadowFormat);
 	if (!_softShaodwMapTemp)
 		return false;
 
 	GraphicsFramebufferDesc shadowViewDesc;
-	shadowViewDesc.setWidth(_shaodwMapSize.x);
-	shadowViewDesc.setHeight(_shaodwMapSize.y);
+	shadowViewDesc.setWidth(_shaodwMapSize);
+	shadowViewDesc.setHeight(_shaodwMapSize);
 	shadowViewDesc.attach(_softShaodwMapTemp);
 	shadowViewDesc.setGraphicsFramebufferLayout(_softShaodwViewLayout);
 	_softShaodwViewTemp = pipeline.createFramebuffer(shadowViewDesc);

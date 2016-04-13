@@ -68,7 +68,7 @@ TerrainMap::clear() noexcept
 bool
 TerrainMap::set(const TerrainData& data) noexcept
 {
-	std::size_t index = ray::hash_int(data.x, data.y, data.z) & _mask;
+	std::size_t index = ray::math::hash_int(data.x, data.y, data.z) & _mask;
 
 	auto* entry = &_data[index];
 
@@ -110,7 +110,7 @@ TerrainMap::set(const TerrainData& data) noexcept
 bool
 TerrainMap::get(TerrainData& data) noexcept
 {
-	std::size_t index = ray::hash_int(data.x, data.y, data.z) & _mask;
+	std::size_t index = ray::math::hash_int(data.x, data.y, data.z) & _mask;
 
 	TerrainData* entry = &_data[index];
 

@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2016.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -35,12 +35,10 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_mesh.h>
-#include <ray/render_pipeline.h>
-#include <ray/material.h>
 
 _NAME_BEGIN
 
-__ImplementSubClass(RenderMesh, RenderObject, "RenderMesh")
+__ImplementSubClass(RenderMesh, rtti::Interface, "RenderMesh")
 
 RenderMesh::RenderMesh() noexcept
 {
@@ -51,54 +49,27 @@ RenderMesh::~RenderMesh() noexcept
 }
 
 void
-RenderMesh::setMaterial(MaterialPtr material) noexcept
+RenderMesh::setVertexBuffer(GraphicsDataPtr vbo) noexcept
 {
-	_material = material;
-}
-
-MaterialPtr
-RenderMesh::getMaterial() noexcept
-{
-	return _material;
-}
-
-void
-RenderMesh::setRenderBuffer(RenderBufferPtr geometry) noexcept
-{
-	_geometry = geometry;
-}
-
-RenderBufferPtr
-RenderMesh::getRenderBuffer() noexcept
-{
-	return _geometry;
+	_vbo = vbo;
 }
 
 void 
-RenderMesh::setGraphicsIndirect(GraphicsIndirectPtr renderable) noexcept
+RenderMesh::setIndexBuffer(GraphicsDataPtr ibo) noexcept
 {
-	_renderable = renderable;
+	_ibo = ibo;
 }
 
-GraphicsIndirectPtr
-RenderMesh::getGraphicsIndirect() noexcept
+GraphicsDataPtr
+RenderMesh::getVertexBuffer() noexcept
 {
-	return _renderable;
+	return _vbo;
 }
 
-void
-RenderMesh::onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept
+GraphicsDataPtr 
+RenderMesh::getIndexBuffer() noexcept
 {
-	auto pass = _pass ? _pass : this->getMaterial()->getTech(queue)->getPass(passType);
-
-	if (pass)
-	{
-		pipelineContext.setTransform(this->getTransform());
-		pipelineContext.setTransformInverse(this->getTransformInverse());
-		pipelineContext.setTransformInverseTranspose(this->getTransformInverseTranspose());
-
-		pipelineContext.drawMesh(pass, this->getRenderBuffer(), *_renderable);
-	}
+	return _ibo;
 }
 
 _NAME_END

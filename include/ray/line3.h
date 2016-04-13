@@ -42,6 +42,72 @@
 _NAME_BEGIN
 
 template<typename T>
+class Line2t
+{
+public:
+	Vector2t<T> pos0;
+	Vector2t<T> pos1;
+
+	Line2t()
+	{
+	}
+
+	Line2t(const Vector2t<T>& pt0, const Vector2t<T> pt1)
+		: pos0(pt0)
+		, pos1(pt1) 
+	{
+	}
+
+	void set(const Vector2t<T>& start, const Vector2t<T>& end)
+	{
+		pos0 = start;
+		pos1 = end;
+	}
+
+	Vector2t<T> size()   const { return pos1 - pos0; }
+	Vector2t<T> normal() const { return size().normalize(); }
+
+	Vector2t<T> closestPoint(const Vector2t<T>& pt) const
+	{
+		Vector2t<T> ab = pos1 - pos0;
+		Vector2t<T> ac = pt - pos0;
+
+		float t = ac.dot(ab);
+
+		if (t <= static_cast<T>(0.0)) { return pos0; }
+
+		float denom = ab.dot();
+
+		if (t >= denom) { return pos1; }
+
+		t = t / ab.dot();
+
+		return pos0 + t * ab;
+	}
+
+	float sqrDistance(const Vector2t<T>& pt) const
+	{
+		Vector2t<T> ab = pos1 - pos0;
+		Vector2t<T> ac = pt - pos0;
+
+		float t = ac.dot(ab);
+
+		if (t <= static_cast<T>(0.0)) return ac.dot();
+
+		float denom = ab.dot();
+
+		if (t >= denom)
+		{
+			Vector2t<T> bc = pt - pos1;
+
+			return bc.dot();
+		}
+
+		return ac.dot() - t * t / denom;
+	}
+};
+
+template<typename T>
 class Line3t
 {
 public:

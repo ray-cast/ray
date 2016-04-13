@@ -2,11 +2,15 @@
 <effect version="1270" language="hlsl">
     <include name="sys:fx/sampler.fxml"/>
     <include name="sys:fx/gbuffer.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
+    <macro name="NUM_SAMPLE" type="int" value="10"/>
+    <macro name="NUM_SAMPLE_INV" type="float" value="0.1"/>
+    <macro name="BLUR_RADIUS" type="int" value="6"/>
     <parameter name="projScale" type="float"/>
     <parameter name="projInfo" type="float4"/>
     <parameter name="radius" type="float"/>
     <parameter name="radius2" type="float"/>
-    <parameter name="sphere[0]" type="float2[]"/>
+    <parameter name="sphere[NUM_SAMPLE]" type="float2[]"/>
     <parameter name="bias" type="float"/>
     <parameter name="intensity" type="float"/>
     <parameter name="blurFactor" type="float" />
@@ -14,30 +18,10 @@
     <parameter name="blurDirection" type="float2"/>
     <parameter name="texDepth" type="texture2D" semantic="DeferredDepthLinearMap" />
     <parameter name="texNormal" type="texture2D" semantic="NormalMap" />
-    <parameter name="texOcclusion" type="texture2d" />
-    <parameter name="texSource" type="texture2d"/>
-    <macro name="NUM_SAMPLE" type="int" value="10"/>
-    <macro name="NUM_SAMPLE_INV" type="float" value="0.1"/>
-    <macro name="BLUR_RADIUS" type="int" value="4"/>
+    <parameter name="texOcclusion" type="texture2D" />
+    <parameter name="texSource" type="texture2D"/>
     <shader>
         <![CDATA[
-            uniform float radius;
-            uniform float radius2;
-            uniform float projScale;
-            uniform float bias;
-            uniform float intensity;
-            uniform float4 projInfo;
-            uniform float2 sphere[NUM_SAMPLE];
-
-            uniform float blurFactor;
-            uniform float blurSharpness;
-            uniform float2 blurDirection;
-
-            uniform Texture2D texDepth;
-            uniform Texture2D texNormal;
-            uniform Texture2D texOcclusion;
-            uniform Texture2D texSource;
-
             float linearizeDepth(float2 uv)
             {
                 return texDepth.Sample(PointClamp, uv).r;
@@ -45,8 +29,7 @@
 
             float3 GetPosition(float2 uv)
             {
-                float d = linearizeDepth(uv);
-                return float3(projInfo.xy * uv + projInfo.zw, 1.0) * d;
+                return restorePosition(texDepth, projInfo, uv);
             }
 
             float3 GetNormal(float2 uv)
@@ -73,13 +56,12 @@
 
             void PostProcessVS(
                 in float4 Position : POSITION0,
-                in float4 Texcoord : TEXCOORD0,
                 out float4 oTexcoord : TEXCOORD0,
                 out float4 oPosition : SV_Position
                 )
             {
-                oTexcoord = Texcoord;
                 oPosition = Position;
+                oTexcoord = PosToCoord(Position);
             }
 
             float AmbientOcclustionPS(
@@ -108,7 +90,7 @@
 
                     float f = max(radius2 - sampleLength2, 0.0f);
 
-                    sampleAmbient += max((sampleAngle - sampleDepth * bias) * rsqrt(sampleLength2), 0.0f);
+                    sampleAmbient += max(0.0f, (sampleAngle - sampleDepth * bias) * rsqrt(sampleLength2));
                 }
 
                 return max(0.0f, 1.0f - sampleAmbient * intensity * NUM_SAMPLE_INV);
@@ -121,6 +103,7 @@
                 float total_c = 0.f;
                 float total_w = 0.f;
 
+                [unroll]
                 for (int r = -BLUR_RADIUS; r < BLUR_RADIUS; r++)
                 {
                     float2 offset = coord.xy + blurDirection * float(r);
@@ -140,8 +123,9 @@
             }
         ]]>
     </shader>
-    <technique name="postprocess">
-        <pass name="ao">
+    <technique name="ComputeAO">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="PostProcessVS"/>
             <state name="fragment" value="AmbientOcclustionPS"/>
 
@@ -150,7 +134,10 @@
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
         </pass>
-        <pass name="blur">
+    </technique>
+    <technique name="BlurAO">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="PostProcessVS"/>
             <state name="fragment" value="BilateralFilterPS"/>
 
@@ -159,7 +146,10 @@
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
         </pass>
-        <pass name="copy">
+    </technique>
+    <technique name="Copy">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="PostProcessVS"/>
             <state name="fragment" value="ApplyOcclustionPS"/>
 

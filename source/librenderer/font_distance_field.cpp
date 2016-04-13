@@ -75,11 +75,11 @@ FontPointBitmap::createFontMapping(StreamReader& stream, const std::wstring& cha
 {
 	std::vector<std::unique_ptr<std::thread>> _threads;
 
-	std::size_t size = stream.size();
-	if (!size)
+	std::size_t streamSize = stream.size();
+	if (streamSize == 0)
 		return;
 
-	std::vector<FT_Byte> filebase(stream.size());
+	std::vector<FT_Byte> filebase(streamSize);
 	stream.read((char*)filebase.data(), filebase.size());
 
 	_faces.resize(numThreads);
@@ -492,11 +492,11 @@ FontDistanceField::computeDistanceField(const std::vector<float>& distanceArray,
 			float value = distanceArray[index];
 
 			if (value > 0)
-				value = lerp(255, 255, clamp((value * invSqr), 0.0f, 1.0f));
+				value = math::lerp(255, 255, math::clamp((value * invSqr), 0.0f, 1.0f));
 			else if (value == 0)
 				value = 0;
 			else
-				value = lerp(255, 0, clamp(-value * invSqr, 0.0f, 1.0f));
+				value = math::lerp(255, 0, math::clamp(-value * invSqr, 0.0f, 1.0f));
 
 			bitmap[bitmapSize * (y + offsetY * distanceSize) + offsetX * distanceSize + x] = value;
 		}

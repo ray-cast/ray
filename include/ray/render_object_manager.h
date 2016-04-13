@@ -52,6 +52,8 @@ public:
 	RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept;
 
 	void assginVisiable(CameraPtr camera) noexcept;
+	void assginVisiableLight(CameraPtr camera) noexcept;
+	void assginVisiableObject(CameraPtr camera) noexcept;
 
 private:
 	void sortMaterial(OcclusionCullList& list) noexcept;

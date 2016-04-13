@@ -41,106 +41,163 @@
 
 _NAME_BEGIN
 
-struct EXPORT RenderBlendState
-{
-	bool           blendEnable;
-	bool           blendSeparateEnable;
-
-	GraphicsBlendOp     blendOp;
-	GraphicsBlendFactor blendSrc;
-	GraphicsBlendFactor blendDest;
-
-	GraphicsBlendOp     blendAlphaOp;
-	GraphicsBlendFactor blendAlphaSrc;
-	GraphicsBlendFactor blendAlphaDest;
-
-	GraphicsColorMask      colorWriteMask;
-
-	RenderBlendState() noexcept;
-};
-
-struct EXPORT RenderRasterState
-{
-	GraphicsCullMode    cullMode;
-	GraphicsPolygonMode polygonMode;
-	GraphicsVertexType  primitiveType;
-	GraphicsFrontFace   frontFace;
-	bool                scissorTestEnable;
-	bool                srgbEnable;
-	bool                multisampleEnable;
-	bool                rasterizerDiscardEnable;
-
-	RenderRasterState() noexcept;
-};
-
-struct EXPORT RenderDepthState
-{
-	bool                depthEnable;
-	bool                depthWriteEnable;
-	bool                depthBoundsEnable;
-	float               depthMin;
-	float               depthMax;
-	GraphicsCompareFunc depthFunc;
-
-	bool                depthBiasEnable;
-	float               depthBias;
-	float               depthSlopeScaleBias;
-
-	bool				depthClampEnable;
-	bool				depthBiasClamp;
-
-	RenderDepthState() noexcept;
-};
-
-struct EXPORT RenderStencilState
-{
-	bool                stencilEnable;
-	int                 stencilRef;
-	GraphicsCompareFunc stencilFunc;
-	unsigned int        stencilReadMask;
-	unsigned int        stencilWriteMask;
-	GraphicsStencilOp   stencilFail;
-	GraphicsStencilOp   stencilZFail;
-	GraphicsStencilOp   stencilPass;
-
-	bool                stencilTwoEnable;
-	int                 stencilTwoRef;
-	GraphicsCompareFunc stencilTwoFunc;
-	unsigned int        stencilTwoReadMask;
-	unsigned int        stencilTwoWriteMask;
-	GraphicsStencilOp   stencilTwoFail;
-	GraphicsStencilOp   stencilTwoZFail;
-	GraphicsStencilOp   stencilTwoPass;
-
-	RenderStencilState() noexcept;
-};
-
 class EXPORT GraphicsStateDesc final
 {
 public:
 	GraphicsStateDesc() noexcept;
 	~GraphicsStateDesc() noexcept;
 
-	void setBlendState(const RenderBlendState& state) noexcept;
-	void setRasterState(const RenderRasterState& state) noexcept;
-	void setDepthState(const RenderDepthState& state) noexcept;
-	void setStencilState(const RenderStencilState& state) noexcept;
+	void setBlendEnable(bool enable) noexcept;
+	void setBlendSeparateEnable(bool enable) noexcept;
+	void setBlendOp(GraphicsBlendOp blendop) noexcept;
+	void setBlendSrc(GraphicsBlendFactor factor) noexcept;
+	void setBlendDest(GraphicsBlendFactor factor) noexcept;
+	void setBlendAlphaOp(GraphicsBlendOp blendop) noexcept;
+	void setBlendAlphaSrc(GraphicsBlendFactor factor) noexcept;
+	void setBlendAlphaDest(GraphicsBlendFactor factor) noexcept;
 
-	RenderBlendState& getBlendState() noexcept;
-	RenderRasterState& getRasterState() noexcept;
-	RenderDepthState& getDepthState() noexcept;
-	RenderStencilState& getStencilState() noexcept;
+	void setColorWriteMask(GraphicsColorMask mask) noexcept;
+	void setCullMode(GraphicsCullMode mode) noexcept;
+	void setPolygonMode(GraphicsPolygonMode mode) noexcept;
+	void setPrimitiveType(GraphicsVertexType type) noexcept;
+	void setFrontFace(GraphicsFrontFace face) noexcept;
+	void setScissorTestEnable(bool enable) noexcept;
+	void setsRGBEnable(bool enable) noexcept;
+	void setMultisampleEnable(bool enable) noexcept;
+	void setRasterizerDiscardEnable(bool enable) noexcept;
 
-	const RenderBlendState& getBlendState() const noexcept;
-	const RenderRasterState& getRasterState() const noexcept;
-	const RenderDepthState& getDepthState() const noexcept;
-	const RenderStencilState& getStencilState() const noexcept;
+	void setDepthEnable(bool enable) noexcept;
+	void setDepthWriteEnable(bool enable) noexcept;
+	void setDepthBoundsEnable(bool enable) noexcept;
+	void setDepthMin(float mix) noexcept;
+	void setDepthMax(float max) noexcept;
+	void setDepthFunc(GraphicsCompareFunc func) noexcept;
+	void setDepthBiasEnable(bool enable) noexcept;
+	void setDepthBias(float bias) noexcept;
+	void setDepthSlopeScaleBias(float bias) noexcept;
+	void setDepthBiasClamp(bool bias) noexcept;
+	void setDepthClampEnable(bool enable) noexcept;
+
+	void setStencilEnable(bool enable) noexcept;
+	void setStencilRef(std::int32_t ref) noexcept;
+	void setStencilFunc(GraphicsCompareFunc func) noexcept;
+	void setStencilReadMask(std::uint32_t mask) noexcept;
+	void setStencilWriteMask(std::uint32_t mask) noexcept;
+	void setStencilFail(GraphicsStencilOp stencilOp) noexcept;
+	void setStencilZFail(GraphicsStencilOp stencilOp) noexcept;
+	void setStencilPass(GraphicsStencilOp stencilOp) noexcept;
+	void setStencilTwoEnable(bool enable) noexcept;
+	void setStencilTwoRef(std::int32_t ref) noexcept;
+	void setStencilTwoFunc(GraphicsCompareFunc func) noexcept;
+	void setStencilTwoReadMask(std::uint32_t mask) noexcept;
+	void setStencilTwoWriteMask(std::uint32_t mask) noexcept;
+	void setStencilTwoFail(GraphicsStencilOp stencilOp) noexcept;
+	void setStencilTwoZFail(GraphicsStencilOp stencilOp) noexcept;
+	void setStencilTwoPass(GraphicsStencilOp stencilOp) noexcept;
+
+	bool getBlendEnable() const noexcept;
+	bool getBlendSeparateEnable() const noexcept;
+	GraphicsBlendOp getBlendOp() const noexcept;
+	GraphicsBlendFactor getBlendSrc() const noexcept;
+	GraphicsBlendFactor getBlendDest() const noexcept;
+	GraphicsBlendOp getBlendAlphaOp() const noexcept;
+	GraphicsBlendFactor getBlendAlphaSrc() const noexcept;
+	GraphicsBlendFactor getBlendAlphaDest() const noexcept;
+
+	GraphicsColorMask getColorWriteMask() const noexcept;
+	GraphicsCullMode getCullMode() const noexcept;
+	GraphicsPolygonMode getPolygonMode() const noexcept;
+	GraphicsVertexType getPrimitiveType() const noexcept;
+	GraphicsFrontFace getFrontFace() const noexcept;
+	bool getScissorTestEnable() const noexcept;
+	bool getsRGBEnable() const noexcept;
+	bool getMultisampleEnable() const noexcept;
+	bool getRasterizerDiscardEnable() const noexcept;
+
+	bool getDepthEnable() const noexcept;
+	bool getDepthWriteEnable() const noexcept;
+	bool getDepthBoundsEnable() const noexcept;
+	float getDepthMin() const noexcept;
+	float getDepthMax() const noexcept;
+	GraphicsCompareFunc getDepthFunc() const noexcept;
+	bool getDepthBiasEnable() const noexcept;
+	float getDepthBias() const noexcept;
+	float getDepthSlopeScaleBias() const noexcept;
+	bool getDepthBiasClamp() const noexcept;
+	bool getDepthClampEnable() const noexcept;
+
+	bool getStencilEnable() const noexcept;
+	std::int32_t getStencilRef() const noexcept;
+	GraphicsCompareFunc getStencilFunc() const noexcept;
+	std::uint32_t getStencilReadMask() const noexcept;
+	std::uint32_t getStencilWriteMask() const noexcept;
+	GraphicsStencilOp getStencilFail() const noexcept;
+	GraphicsStencilOp getStencilZFail() const noexcept;
+	GraphicsStencilOp getStencilPass() const noexcept;
+	bool getStencilTwoEnable() const noexcept;
+	std::int32_t getStencilTwoRef() const noexcept;
+	GraphicsCompareFunc getStencilTwoFunc() const noexcept;
+	std::uint32_t getStencilTwoReadMask() const noexcept;
+	std::uint32_t getStencilTwoWriteMask() const noexcept;
+	GraphicsStencilOp getStencilTwoFail() const noexcept;
+	GraphicsStencilOp getStencilTwoZFail() const noexcept;
+	GraphicsStencilOp getStencilTwoPass() const noexcept;
 
 private:
-	RenderBlendState _blendState;
-	RenderRasterState _rasterState;
-	RenderDepthState _depthState;
-	RenderStencilState _stencilState;
+	bool _blendEnable;
+	bool _blendSeparateEnable;
+	bool _scissorTestEnable;
+	bool _srgbEnable;
+	bool _multisampleEnable;
+	bool _rasterizerDiscardEnable;
+	bool _depthEnable;
+	bool _depthWriteEnable;
+	bool _depthBoundsEnable;
+	bool _depthClampEnable;
+	bool _depthBiasEnable;
+	bool _depthBiasClamp;
+	bool _stencilEnable;
+	bool _stencilTwoEnable;
+
+	GraphicsBlendOp _blendOp;
+	GraphicsBlendOp _blendAlphaOp;
+
+	GraphicsBlendFactor _blendSrc;
+	GraphicsBlendFactor _blendDest;
+	GraphicsBlendFactor _blendAlphaSrc;
+	GraphicsBlendFactor _blendAlphaDest;
+
+	GraphicsColorMask _colorWriteMask;
+
+	GraphicsCullMode    _cullMode;
+	GraphicsPolygonMode _polygonMode;
+	GraphicsVertexType  _primitiveType;
+	GraphicsFrontFace   _frontFace;
+
+	float _depthMin;
+	float _depthMax;
+	float _depthBias;
+	float _depthSlopeScaleBias;
+	GraphicsCompareFunc _depthFunc;
+
+	std::int32_t _stencilRef;
+	std::int32_t _stencilTwoRef;
+
+	std::uint32_t _stencilReadMask;
+	std::uint32_t _stencilWriteMask;
+	std::uint32_t _stencilTwoReadMask;
+	std::uint32_t _stencilTwoWriteMask;
+
+	GraphicsCompareFunc _stencilFunc;
+	GraphicsCompareFunc _stencilTwoFunc;
+
+	GraphicsStencilOp _stencilFail;
+	GraphicsStencilOp _stencilZFail;
+	GraphicsStencilOp _stencilPass;
+	
+	GraphicsStencilOp _stencilTwoFail;
+	GraphicsStencilOp _stencilTwoZFail;
+	GraphicsStencilOp _stencilTwoPass;
 };
 
 class EXPORT GraphicsState : public GraphicsChild

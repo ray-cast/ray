@@ -55,8 +55,8 @@ public:
 	void setReceiveShadow(bool value) noexcept;
 	bool getReceiveShadow() const noexcept;
 
-	void addPreRenderListener(std::function<void()> listener) noexcept;
-	void removePreRenderListener(std::function<void()> listener) noexcept;
+	void addPreRenderListener(std::function<void(RenderPipeline&)> listener) noexcept;
+	void removePreRenderListener(std::function<void(RenderPipeline&)> listener) noexcept;
 
 	void addPostRenderListener(std::function<void(RenderPipeline&)> listener) noexcept;
 	void removePostRenderListener(std::function<void(RenderPipeline&)> listener) noexcept;
@@ -65,8 +65,8 @@ public:
 	void save(oarchive& write) noexcept;
 
 protected:
-	virtual void onWillRenderObject(const Camera& camera) noexcept;
-	virtual void onRenderObject(RenderPipeline& pipeline, const Camera& camera) noexcept;
+	virtual void onRenderObjectPre(RenderPipeline& pipeline) noexcept;
+	virtual void onRenderObjectPost(RenderPipeline& pipeline) noexcept;
 
 private:
 	RenderComponent(const RenderComponent&) = delete;
@@ -76,7 +76,7 @@ protected:
 	bool _isCastShadow;
 	bool _isReceiveShadow;
 
-	delegate<void()> _onPreRender;
+	delegate<void(RenderPipeline&)> _onPreRender;
 	delegate<void(RenderPipeline&)> _onPostRender;
 };
 

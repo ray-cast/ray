@@ -282,9 +282,14 @@ MyGuiRenderTexture::MyGuiRenderTexture(GraphicsTexturePtr texture) noexcept
 	_renderTargetInfo.pixScaleX = 1.0f / float(textureDes.getWidth());
 	_renderTargetInfo.pixScaleY = 1.0f / float(textureDes.getHeight());
 
+	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
+	framebufferLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, textureDes.getTexFormat(), 0));
+	_framebufferLayout = RenderSystem::instance()->createFramebufferLayout(framebufferLayoutDesc);
+
 	GraphicsFramebufferDesc framebufferDesc;
 	framebufferDesc.attach(texture);
-	_renderTexture = RenderSystem::instance()->createFramebuffer(framebufferDesc);
+	framebufferDesc.setGraphicsFramebufferLayout(_framebufferLayout);
+	_framebuffer = RenderSystem::instance()->createFramebuffer(framebufferDesc);
 }
 
 MyGuiRenderTexture::~MyGuiRenderTexture() noexcept
@@ -294,14 +299,14 @@ MyGuiRenderTexture::~MyGuiRenderTexture() noexcept
 void
 MyGuiRenderTexture::begin() noexcept
 {
-	RenderSystem::instance()->getRenderPipeline()->setRenderTexture(_renderTexture);
-	RenderSystem::instance()->getRenderPipeline()->clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsAll, Vector4::Zero, 1.0, 0);
+	RenderSystem::instance()->setFramebuffer(_framebuffer);
+	RenderSystem::instance()->clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsAll, Vector4::Zero, 1.0, 0);
 }
 
 void 
 MyGuiRenderTexture::end() noexcept
 {
-	RenderSystem::instance()->getRenderPipeline()->setRenderTexture(nullptr);
+	RenderSystem::instance()->setFramebuffer(nullptr);
 }
 
 void 

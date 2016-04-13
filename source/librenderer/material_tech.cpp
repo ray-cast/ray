@@ -40,6 +40,14 @@ _NAME_BEGIN
 
 __ImplementSubClass(MaterialTech, rtti::Interface, "MaterialTech")
 
+MaterialTechDesc::MaterialTechDesc() noexcept
+{
+}
+
+MaterialTechDesc::~MaterialTechDesc() noexcept
+{
+}
+
 MaterialTech::MaterialTech() noexcept
 	: _renderQueue(RenderQueue::RenderQueueCustom)
 {
@@ -86,16 +94,14 @@ MaterialTech::getPass(const std::string& name) noexcept
 	for (auto& it : _passList)
 	{
 		if (it->getName() == name)
-		{
 			return it;
-		}
 	}
 
 	return nullptr;
 }
 
-MaterialPassList&
-MaterialTech::getPassList() noexcept
+const MaterialPassList&
+MaterialTech::getPassList() const noexcept
 {
 	return _passList;
 }

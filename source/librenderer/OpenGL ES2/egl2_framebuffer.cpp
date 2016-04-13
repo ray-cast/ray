@@ -40,6 +40,46 @@
 _NAME_BEGIN
 
 __ImplementSubClass(EGL2Framebuffer, GraphicsFramebuffer, "EGL2Framebuffer")
+__ImplementSubClass(EGL2FramebufferLayout, GraphicsFramebufferLayout, "EGL2FramebufferLayout")
+
+EGL2FramebufferLayout::EGL2FramebufferLayout() noexcept
+{
+}
+
+EGL2FramebufferLayout::~EGL2FramebufferLayout() noexcept
+{
+	this->close();
+}
+
+bool
+EGL2FramebufferLayout::setup(const GraphicsFramebufferLayoutDesc& framebufferDesc) noexcept
+{
+	_framebufferLayoutDesc = framebufferDesc;
+	return true;
+}
+
+void
+EGL2FramebufferLayout::close() noexcept
+{
+}
+
+const GraphicsFramebufferLayoutDesc&
+EGL2FramebufferLayout::getGraphicsFramebufferLayoutDesc() const noexcept
+{
+	return _framebufferLayoutDesc;
+}
+
+void
+EGL2FramebufferLayout::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL2FramebufferLayout::getDevice() noexcept
+{
+	return _device.lock();
+}
 
 EGL2Framebuffer::EGL2Framebuffer() noexcept
 	: _fbo(GL_NONE)
@@ -55,6 +95,8 @@ bool
 EGL2Framebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 {
 	assert(GL_NONE == _fbo);
+	assert(framebufferDesc.getGraphicsFramebufferLayout());
+	assert(framebufferDesc.getWidth() > 0 && framebufferDesc.getHeight() > 0);
 
 	GL_CHECK(glGenFramebuffers(1, &_fbo));
 	if (_fbo == GL_NONE)

@@ -118,7 +118,7 @@ VulkanFramebufferLayout::setup(const GraphicsFramebufferLayoutDesc& passDesc) no
 	pass.dependencyCount = 0;
 	pass.pDependencies = nullptr;
 
-	if (vkCreateRenderPass(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &pass, nullptr, &_vkFramebufferLayout) > 0)
+	if (vkCreateRenderPass(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &pass, nullptr, &_vkFramebufferLayout) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkCreateRenderPass() fail.");
 		return false;
@@ -176,16 +176,61 @@ bool
 VulkanFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 {
 	assert(framebufferDesc.getGraphicsFramebufferLayout());
+	assert(framebufferDesc.getWidth() > 0 && framebufferDesc.getHeight() > 0);
 
 	const auto& renderTextures = framebufferDesc.getTextures();
 	const auto& framebufferLayoutDesc = framebufferDesc.getGraphicsFramebufferLayout()->getGraphicsFramebufferLayoutDesc();
 	const auto& framebufferAttachments = framebufferLayoutDesc.getComponents();
 
-	if (renderTextures.size() != framebufferAttachments.size())
-		return false;
+	for (auto& attachment : framebufferAttachments)
+	{
+		auto format = attachment.getFormat();
+		if (VulkanTypes::isDepthStencilFormat(format))
+		{
+			if (!framebufferDesc.getSharedDepthTexture())
+			{
+				VK_PLATFORM_LOG("Empty depth stencil texture");
+				return false;
+			}
+
+			if (format != framebufferDesc.getSharedDepthTexture()->getGraphicsTextureDesc().getTexFormat())
+			{
+				VK_PLATFORM_LOG("Invlid depth stencil texture");
+				return false;
+			}
+		}
+		else if (VulkanTypes::isDepthFormat(format))
+		{
+			if (!framebufferDesc.getSharedDepthTexture())
+			{
+				VK_PLATFORM_LOG("Empty depth texture");
+				return false;
+			}
+
+			if (format != framebufferDesc.getSharedDepthTexture()->getGraphicsTextureDesc().getTexFormat())
+			{
+				VK_PLATFORM_LOG("Invlid depth texture");
+				return false;
+			}
+		}
+		else if (VulkanTypes::isStencilFormat(format))
+		{
+			if (!framebufferDesc.getSharedStencilTexture())
+			{
+				VK_PLATFORM_LOG("Empty stencil texture");
+				return false;
+			}
+
+			if (format != framebufferDesc.getSharedStencilTexture()->getGraphicsTextureDesc().getTexFormat())
+			{
+				VK_PLATFORM_LOG("Invlid stencil texture");
+				return false;
+			}
+		}
+	}
 
 	std::vector<VkImageView> imageViews(renderTextures.size());
-	for (std::size_t i = 0; i < framebufferAttachments.size(); i++)
+	for (std::size_t i = 0; i < renderTextures.size(); i++)
 	{
 		const auto texture = renderTextures[i]->downcast<VulkanTexture>();
 		const auto& textureDesc = texture->getGraphicsTextureDesc();
@@ -200,6 +245,22 @@ VulkanFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcep
 		imageViews[i] = texture->getImageView();
 	}
 
+	if (framebufferDesc.getSharedDepthTexture() && framebufferDesc.getSharedDepthTexture())
+	{
+		const auto texture = framebufferDesc.getSharedDepthTexture()->downcast<VulkanTexture>();
+		imageViews.push_back(texture->getImageView());
+	}
+	else if (framebufferDesc.getSharedDepthTexture())
+	{
+		const auto texture = framebufferDesc.getSharedDepthTexture()->downcast<VulkanTexture>();
+		imageViews.push_back(texture->getImageView());
+	}
+	else if (framebufferDesc.getSharedStencilTexture())
+	{
+		const auto texture = framebufferDesc.getSharedStencilTexture()->downcast<VulkanTexture>();
+		imageViews.push_back(texture->getImageView());
+	}
+
 	VkFramebufferCreateInfo framebuffer;
 	framebuffer.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 	framebuffer.flags = 0;
@@ -211,7 +272,7 @@ VulkanFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcep
 	framebuffer.height = framebufferDesc.getHeight();
 	framebuffer.layers = 1;
 
-	if (vkCreateFramebuffer(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &framebuffer, nullptr, &_vkFramebuffer) > 0)
+	if (vkCreateFramebuffer(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &framebuffer, nullptr, &_vkFramebuffer) != VK_SUCCESS)
 	{
 		VK_PLATFORM_LOG("vkCreateFramebuffer() fail.");
 		return false;

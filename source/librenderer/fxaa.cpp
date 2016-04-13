@@ -34,9 +34,11 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/fxaa.h>
+#include "fxaa.h"
 #include <ray/material.h>
 #include <ray/graphics_texture.h>
+#include <ray/graphics_framebuffer.h>
+#include <ray/render_pipeline.h>
 
 _NAME_BEGIN
 
@@ -49,7 +51,7 @@ FXAA::~FXAA() noexcept
 }
 
 void
-FXAA::onActivate(RenderPipeline& pipeline) except
+FXAA::onActivate(RenderPipeline& pipeline) noexcept
 {
 	_fxaa = pipeline.createMaterial("sys:fx/fxaa.fxml.o");
 	_fxaaPass = _fxaa->getTech(RenderQueue::RenderQueuePostprocess)->getPass("fxaa");
@@ -60,7 +62,7 @@ FXAA::onActivate(RenderPipeline& pipeline) except
 }
 
 void
-FXAA::onDeactivate(RenderPipeline& pipeline) except
+FXAA::onDeactivate(RenderPipeline& pipeline) noexcept
 {
 	if (_fxaa)
 	{
@@ -72,16 +74,20 @@ FXAA::onDeactivate(RenderPipeline& pipeline) except
 	_texelStep = nullptr;
 }
 
-void
-FXAA::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+bool
+FXAA::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	auto& textureDesc = source->getGraphicsTextureDesc();
-	_texelStep->assign(float2(1.0f / textureDesc.getWidth(), 1.0f / textureDesc.getHeight()));
-	_texelSource->assign(source);
+	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
 
-	pipeline.setRenderTexture(dest);
+	auto& textureDesc = texture->getGraphicsTextureDesc();
+	_texelStep->assign(float2(1.0f / textureDesc.getWidth(), 1.0f / textureDesc.getHeight()));
+	_texelSource->assign(texture);
+
+	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
 	pipeline.drawScreenQuad(_fxaaPass);
+
+	return true;
 }
 
 _NAME_END

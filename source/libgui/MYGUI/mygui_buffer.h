@@ -60,8 +60,6 @@ private:
 	MemoryStream _stream;
 
 	RenderBufferPtr _buffer;
-
-	GraphicsInputLayoutDesc _layout;
 	GraphicsDataPtr _vb;
 
 	std::size_t _vertexCount;

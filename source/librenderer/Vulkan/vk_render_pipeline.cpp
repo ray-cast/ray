@@ -62,7 +62,7 @@ bool
 VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 {
 	assert(pipelineDesc.getGraphicsDescriptorSetLayout());
-	assert(pipelineDesc.getGraphicsFramebufferLayout());
+	//assert(pipelineDesc.getGraphicsFramebufferLayout());
 	assert(pipelineDesc.getGraphicsProgram());
 	assert(pipelineDesc.getGraphicsInputLayout());
 	assert(pipelineDesc.getGraphicsState());
@@ -88,10 +88,6 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	const auto& inputLayoutDesc = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc();
 	const auto& programDesc = pipelineDesc.getGraphicsProgram()->getGraphicsProgramDesc();
 
-	const auto& stencilState = stateDesc.getStencilState();
-	const auto& depthState = stateDesc.getDepthState();
-	const auto& rasterState = stateDesc.getRasterState();
-	
 	memset(&pipeline, 0, sizeof(pipeline));
 	memset(&pipelineCache, 0, sizeof(pipelineCache));
 	memset(&vi, 0, sizeof(vi));
@@ -113,17 +109,19 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 
 	vibs.push_back(vib);
 
-	std::uint32_t offset = 0;
+	std::uint16_t offset = 0;
+	std::uint16_t location = 0;
 	const auto& components = inputLayoutDesc.getGraphicsVertexLayouts();
 	for (auto& component : components)
 	{
 		VkVertexInputAttributeDescription attr;
 		attr.binding = component.getVertexSlot();
-		attr.location = component.getSemanticIndex();
+		attr.location = location;
 		attr.offset = offset;
 		attr.format = VulkanTypes::asGraphicsFormat(component.getVertexFormat());
 
 		offset += component.getVertexSize();
+		location++;
 
 		vias.push_back(attr);
 	}
@@ -135,43 +133,43 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	vi.pVertexAttributeDescriptions = vias.data();
 
 	ia.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-	ia.topology = VulkanTypes::asPrimitiveTopology(rasterState.primitiveType);
+	ia.topology = VulkanTypes::asPrimitiveTopology(stateDesc.getPrimitiveType());
 
 	rs.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-	rs.cullMode = VulkanTypes::asCullMode(rasterState.cullMode);
-	rs.frontFace = VulkanTypes::asFrontFace(rasterState.frontFace);
-	rs.polygonMode = VulkanTypes::asPolygonMode(rasterState.polygonMode);
-	rs.rasterizerDiscardEnable = rasterState.rasterizerDiscardEnable;
-	rs.depthBiasEnable = depthState.depthBiasEnable;
-	rs.depthBiasConstantFactor = depthState.depthBias;
-	rs.depthClampEnable = depthState.depthClampEnable;
-	rs.depthBiasClamp = depthState.depthBiasClamp;
-	rs.depthBiasSlopeFactor = depthState.depthSlopeScaleBias;
+	rs.cullMode = VulkanTypes::asCullMode(stateDesc.getCullMode());
+	rs.frontFace = VulkanTypes::asFrontFace(stateDesc.getFrontFace());
+	rs.polygonMode = VulkanTypes::asPolygonMode(stateDesc.getPolygonMode());
+	rs.rasterizerDiscardEnable = stateDesc.getRasterizerDiscardEnable();
+	rs.depthBiasEnable = stateDesc.getDepthBiasEnable();
+	rs.depthBiasConstantFactor = stateDesc.getDepthBias();
+	rs.depthClampEnable = stateDesc.getDepthClampEnable();
+	rs.depthBiasClamp = stateDesc.getDepthBiasClamp();
+	rs.depthBiasSlopeFactor = stateDesc.getDepthSlopeScaleBias();
 
 	cb.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 
 	ds.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	ds.depthTestEnable = depthState.depthEnable;
-	ds.depthWriteEnable = depthState.depthWriteEnable;
-	ds.depthCompareOp = VulkanTypes::asCompareOp(depthState.depthFunc);
-	ds.depthBoundsTestEnable = depthState.depthBoundsEnable;
-	ds.minDepthBounds = depthState.depthMin;
-	ds.maxDepthBounds = depthState.depthMax;
-	ds.stencilTestEnable = stencilState.stencilEnable;
-	ds.front.compareMask = stencilState.stencilReadMask;
-	ds.front.compareOp = VulkanTypes::asCompareOp(stencilState.stencilFunc);
-	ds.front.depthFailOp = VulkanTypes::asStencilOp(stencilState.stencilZFail);
-	ds.front.failOp = VulkanTypes::asStencilOp(stencilState.stencilFail);
-	ds.front.passOp = VulkanTypes::asStencilOp(stencilState.stencilPass);
-	ds.front.reference = stencilState.stencilRef;
-	ds.front.writeMask = stencilState.stencilWriteMask;
-	ds.back.compareMask = stencilState.stencilTwoEnable ? stencilState.stencilTwoReadMask : ds.front.compareMask;
-	ds.back.compareOp = stencilState.stencilTwoEnable ? VulkanTypes::asCompareOp(stencilState.stencilTwoFunc) : ds.front.compareOp;
-	ds.back.depthFailOp = stencilState.stencilTwoEnable ? VulkanTypes::asStencilOp(stencilState.stencilTwoZFail) : ds.front.depthFailOp ;
-	ds.back.failOp = stencilState.stencilTwoEnable ? VulkanTypes::asStencilOp(stencilState.stencilTwoFail) : ds.front.failOp;
-	ds.back.passOp = stencilState.stencilTwoEnable ? VulkanTypes::asStencilOp(stencilState.stencilTwoPass) : ds.front.passOp;
-	ds.back.reference = stencilState.stencilTwoEnable ? stencilState.stencilTwoRef : ds.front.reference;
-	ds.back.writeMask = stencilState.stencilTwoEnable ? stencilState.stencilTwoWriteMask : ds.front.writeMask;
+	ds.depthTestEnable = stateDesc.getDepthEnable();
+	ds.depthWriteEnable = stateDesc.getDepthWriteEnable();
+	ds.depthCompareOp = VulkanTypes::asCompareOp(stateDesc.getDepthFunc());
+	ds.depthBoundsTestEnable = stateDesc.getDepthBoundsEnable();
+	ds.minDepthBounds = stateDesc.getDepthMin();
+	ds.maxDepthBounds = stateDesc.getDepthMax();
+	ds.stencilTestEnable = stateDesc.getStencilEnable();
+	ds.front.compareMask = stateDesc.getStencilReadMask();
+	ds.front.compareOp = VulkanTypes::asCompareOp(stateDesc.getStencilFunc());
+	ds.front.depthFailOp = VulkanTypes::asStencilOp(stateDesc.getStencilZFail());
+	ds.front.failOp = VulkanTypes::asStencilOp(stateDesc.getStencilFail());
+	ds.front.passOp = VulkanTypes::asStencilOp(stateDesc.getStencilPass());
+	ds.front.reference = stateDesc.getStencilRef();
+	ds.front.writeMask = stateDesc.getStencilWriteMask();
+	ds.back.compareMask = stateDesc.getStencilTwoEnable() ? stateDesc.getStencilTwoReadMask() : ds.front.compareMask;
+	ds.back.compareOp = stateDesc.getStencilTwoEnable() ? VulkanTypes::asCompareOp(stateDesc.getStencilTwoFunc()) : ds.front.compareOp;
+	ds.back.depthFailOp = stateDesc.getStencilTwoEnable() ? VulkanTypes::asStencilOp(stateDesc.getStencilTwoZFail()) : ds.front.depthFailOp ;
+	ds.back.failOp = stateDesc.getStencilTwoEnable() ? VulkanTypes::asStencilOp(stateDesc.getStencilTwoFail()) : ds.front.failOp;
+	ds.back.passOp = stateDesc.getStencilTwoEnable() ? VulkanTypes::asStencilOp(stateDesc.getStencilTwoPass()) : ds.front.passOp;
+	ds.back.reference = stateDesc.getStencilTwoEnable() ? stateDesc.getStencilTwoRef() : ds.front.reference;
+	ds.back.writeMask = stateDesc.getStencilTwoEnable() ? stateDesc.getStencilTwoWriteMask() : ds.front.writeMask;
 
 	vp.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	vp.viewportCount = 1;
@@ -180,7 +178,7 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	ts.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
 
 	ms.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-	ms.sampleShadingEnable = rasterState.multisampleEnable;
+	ms.sampleShadingEnable = stateDesc.getMultisampleEnable();
 
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	dynamicState.pDynamicStates = dynamicStateEnables;
@@ -210,9 +208,9 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	pipeline.pViewportState = &vp;
 	pipeline.pTessellationState = &ts;
 	pipeline.pMultisampleState = &ms;
-	pipeline.pStages = shaderStages;	
+	pipeline.pStages = shaderStages;
 	pipeline.pDynamicState = &dynamicState;
-	pipeline.renderPass = pipelineDesc.getGraphicsFramebufferLayout()->downcast<VulkanFramebufferLayout>()->getRenderPass();
+	pipeline.renderPass = nullptr; //pipelineDesc.getGraphicsFramebufferLayout()->downcast<VulkanFramebufferLayout>()->getRenderPass();
 
 	VkDescriptorSetLayout descriptorSetLayout;
 	descriptorSetLayout = pipelineDesc.getGraphicsDescriptorSetLayout()->downcast<VulkanDescriptorSetLayout>()->getDescriptorSetLayout();
@@ -250,19 +248,25 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	return true;
 }
 
-void 
+void
 VulkanRenderPipeline::close() noexcept
 {
+	if (_vkPipeline != VK_NULL_HANDLE)
+	{
+		vkDestroyPipeline(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkPipeline, nullptr);
+		_vkPipeline = VK_NULL_HANDLE;
+	}
+
 	if (_vkPipelineCache != VK_NULL_HANDLE)
 	{
 		vkDestroyPipelineCache(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkPipelineCache, nullptr);
 		_vkPipelineCache = VK_NULL_HANDLE;
 	}
 
-	if (_vkPipeline != VK_NULL_HANDLE)
+	if (_vkPipelineLayout != VK_NULL_HANDLE)
 	{
-		vkDestroyPipeline(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkPipeline, nullptr);
-		_vkPipeline = VK_NULL_HANDLE;
+		vkDestroyPipelineLayout(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkPipelineLayout, nullptr);
+		_vkPipelineLayout = VK_NULL_HANDLE;
 	}
 }
 
@@ -290,7 +294,7 @@ VulkanRenderPipeline::getDevice() noexcept
 	return _device.lock();
 }
 
-const GraphicsPipelineDesc& 
+const GraphicsPipelineDesc&
 VulkanRenderPipeline::getGraphicsPipelineDesc() const noexcept
 {
 	return _pipelineDesc;

@@ -34,11 +34,12 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/ssgi.h>
+#include "ssgi.h"
 #include <ray/camera.h>
 #include <ray/material.h>
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
+#include <ray/render_pipeline.h>
 
 _NAME_BEGIN
 
@@ -85,7 +86,7 @@ SSGI::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 	_projScale->assign(pipeline.getCamera()->getProjLength().y * _setting.radius);
 	_clipInfo->assign(pipeline.getCamera()->getClipConstant());
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(_ambientOcclusionPass);
 }
 
@@ -117,7 +118,7 @@ SSGI::blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphic
 	_blurDirection->assign(direction);
 	_blurTexSource->assign(source);
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(_ambientOcclusionBlurPass);
 }
 
@@ -126,12 +127,12 @@ SSGI::shading(RenderPipeline& pipeline, GraphicsTexturePtr ao, GraphicsFramebuff
 {
 	_copyAmbient->assign(ao);
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(_ambientOcclusionCopyPass);
 }
 
 void
-SSGI::onActivate(RenderPipeline& pipeline) except
+SSGI::onActivate(RenderPipeline& pipeline) noexcept
 {
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
@@ -175,14 +176,16 @@ SSGI::onActivate(RenderPipeline& pipeline) except
 }
 
 void
-SSGI::onDeactivate(RenderPipeline& pipeline) except
+SSGI::onDeactivate(RenderPipeline& pipeline) noexcept
 {
 }
 
-void
-SSGI::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+bool
+SSGI::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	this->computeRawAO(pipeline, source, _texAmbientView);
+	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
+
+	this->computeRawAO(pipeline, texture, _texAmbientView);
 
 	if (_setting.blur)
 	{
@@ -191,6 +194,8 @@ SSGI::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFram
 	}
 
 	this->shading(pipeline, _texAmbientMap, dest);
+
+	return true;
 }
 
 _NAME_END

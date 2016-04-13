@@ -41,6 +41,42 @@
 
 _NAME_BEGIN
 
+class EXPORT MaterialPassDesc final
+{
+public:
+	MaterialPassDesc() noexcept;
+	~MaterialPassDesc() noexcept;
+
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+	
+	void setMaterialPass(RenderPass pass) noexcept;
+	RenderPass getMaterialPass() const noexcept;
+
+	void setGraphicsState(GraphicsStatePtr& state) noexcept;
+	void setGraphicsProgram(GraphicsProgramPtr& program) noexcept;
+	void setGraphicsInputLayout(GraphicsInputLayoutPtr& inputLayout) noexcept;
+	void setGraphicsDescriptorPool(GraphicsDescriptorPoolPtr& pool) noexcept;
+	void setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr& descriptorSetLayout) noexcept;
+
+	GraphicsStatePtr getGraphicsState() const noexcept;
+	GraphicsProgramPtr getGraphicsProgram() const noexcept;
+	GraphicsInputLayoutPtr getGraphicsInputLayout() const noexcept;
+	GraphicsDescriptorPoolPtr getGraphicsDescriptorPool() const noexcept;
+	GraphicsDescriptorSetLayoutPtr getGraphicsDescriptorSetLayout() const noexcept;
+
+private:
+	std::string _name;
+
+	RenderPass _pass;
+
+	GraphicsStatePtr _state;
+	GraphicsProgramPtr _program;
+	GraphicsInputLayoutPtr _inputLayout;
+	GraphicsDescriptorPoolPtr _descriptorPool;
+	GraphicsDescriptorSetLayoutPtr _descriptorSetLayout;
+};
+
 class EXPORT MaterialPass final : public rtti::Interface
 {
 	__DeclareSubClass(MaterialPass, rtti::Interface)
@@ -50,6 +86,9 @@ public:
 
 	bool setup(Material& material) noexcept;
 	void close() noexcept;
+	
+	const MaterialParams& getParameters() const noexcept;
+	MaterialParamPtr getParameter(const std::string& name) const noexcept;
 
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
@@ -57,17 +96,23 @@ public:
 	void setRenderPass(RenderPass pass) noexcept;
 	RenderPass getRenderPass() const noexcept;
 
-	const MaterialParams& getParameters() const noexcept;
-	MaterialParamPtr getParameter(const std::string& name) const noexcept;
-
+	void setGraphicsState(GraphicsStatePtr state) noexcept;
 	void setGraphicsProgram(GraphicsProgramPtr program) noexcept;
-	GraphicsProgramPtr getGraphicsProgram() const noexcept;
+	void setGraphicsInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept;
+	void setGraphicsDescriptorPool(GraphicsDescriptorPoolPtr pool) noexcept;
+	void setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr descriptorSetLayout) noexcept;
 
-	void setGraphicsState(GraphicsStatePtr program) noexcept;
 	GraphicsStatePtr getGraphicsState() const noexcept;
-
+	GraphicsProgramPtr getGraphicsProgram() const noexcept;
+	GraphicsInputLayoutPtr getGraphicsInputLayout() const noexcept;
+	GraphicsDescriptorPoolPtr getGraphicsDescriptorPool() const noexcept;
+	GraphicsDescriptorSetLayoutPtr getGraphicsDescriptorSetLayout() const noexcept;
 	GraphicsPipelinePtr getRenderPipeline() const noexcept;
 	GraphicsDescriptorSetPtr getDescriptorSet() const noexcept;
+
+private:
+	MaterialPass(const MaterialPass&) = delete;
+	MaterialPass& operator=(const MaterialPass&) = delete;
 
 private:
 	std::string _name;
@@ -77,6 +122,7 @@ private:
 
 	GraphicsStatePtr _state;
 	GraphicsProgramPtr _program;
+	GraphicsInputLayoutPtr _inputLayout;
 	GraphicsDescriptorSetPtr _descriptorSet;
 	GraphicsDescriptorPoolPtr _descriptorPool;
 	GraphicsDescriptorSetLayoutPtr _descriptorSetLayout;

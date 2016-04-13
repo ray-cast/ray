@@ -70,11 +70,25 @@ public:
 	MaterialVariants& getMacros() noexcept;
 	const MaterialVariants& getMacros() const noexcept;
 
+	void addInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept;
+	void removeInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept;
+	GraphicsInputLayoutPtr getInputLayout(const std::string& name) const noexcept;
+	GraphicsInputLayouts& getInputLayouts() noexcept;
+	const GraphicsInputLayouts& getInputLayouts() const noexcept;
+
+	void addShader(GraphicsShaderPtr shader) noexcept;
+	void removeShader(GraphicsShaderPtr shader) noexcept;
+	GraphicsShaderPtr getShader(const std::string& name) const noexcept;
+	GraphicsShaders& getShaders() noexcept;
+	const GraphicsShaders& getShaders() const noexcept;
+
 private:
 	std::string _name;
 	MaterialParams _parameters;
 	MaterialVariants _macros;
 	MaterialTechniques _techniques;
+	GraphicsShaders _shaders;
+	GraphicsInputLayouts _inputLayouts;
 };
 
 class EXPORT Material final : public rtti::Interface

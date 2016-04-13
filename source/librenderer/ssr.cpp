@@ -34,11 +34,12 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/ssr.h>
+#include "ssr.h"
 #include <ray/material.h>
 
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
+#include <ray/render_pipeline.h>
 
 _NAME_BEGIN
 
@@ -55,14 +56,16 @@ SSR::~SSR() noexcept
 {
 }
 
-void
-SSR::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+bool
+SSR::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	//_projInfo->assign(pipeline.camera->getProjConstant());
 	//_clipInfo->assign(pipeline.camera->getClipConstant());
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(_ssrPass);
+
+	return true;
 }
 
 _NAME_END

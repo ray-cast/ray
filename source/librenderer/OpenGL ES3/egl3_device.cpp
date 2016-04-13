@@ -83,7 +83,7 @@ EGL3Device::createSwapchain(const GraphicsSwapchainDesc& desc) noexcept
 }
 
 GraphicsContextPtr
-EGL3Device::createGraphicsContext(const GraphicsContextDesc& desc) noexcept
+EGL3Device::createDeviceContext(const GraphicsContextDesc& desc) noexcept
 {
 	auto context = std::make_shared<EGL3DeviceContext>();
 	context->setDevice(this->downcast<EGL3Device>());
@@ -139,6 +139,16 @@ EGL3Device::createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept
 	framebuffer->setDevice(this->downcast<EGL3Device>());
 	if (framebuffer->setup(desc))
 		return framebuffer;
+	return nullptr;
+}
+
+GraphicsFramebufferLayoutPtr
+EGL3Device::createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept
+{
+	auto framebufferLayout = std::make_shared<EGL3FramebufferLayout>();
+	framebufferLayout->setDevice(this->downcast<EGL3Device>());
+	if (framebufferLayout->setup(desc))
+		return framebufferLayout;
 	return nullptr;
 }
 

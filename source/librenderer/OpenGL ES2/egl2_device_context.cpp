@@ -147,7 +147,7 @@ EGL2DeviceContext::renderEnd() noexcept
 }
 
 void
-EGL2DeviceContext::setViewport(const Viewport& view, std::size_t i) noexcept
+EGL2DeviceContext::setViewport(const Viewport& view) noexcept
 {
 	if (_viewport.left != view.left ||
 		_viewport.top != view.top ||
@@ -160,7 +160,7 @@ EGL2DeviceContext::setViewport(const Viewport& view, std::size_t i) noexcept
 }
 
 void
-EGL2DeviceContext::setScissor(const Scissor& scissor, std::size_t i) noexcept
+EGL2DeviceContext::setScissor(const Scissor& scissor) noexcept
 {
 	if (_scissor != scissor)
 	{
@@ -170,7 +170,7 @@ EGL2DeviceContext::setScissor(const Scissor& scissor, std::size_t i) noexcept
 }
 
 const Scissor&
-EGL2DeviceContext::getScissor(std::size_t i) const noexcept
+EGL2DeviceContext::getScissor() const noexcept
 {
 	return _scissor;
 }
@@ -200,7 +200,12 @@ EGL2DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 			_shaderObject = glshader;
 		}
 
-		_needUpdateLayout = true;
+		auto inputLayout = pipelineDesc.getGraphicsInputLayout()->downcast<EGL2InputLayout>();
+		if (_inputLayout != inputLayout)
+		{
+			_inputLayout = inputLayout;
+			_needUpdateLayout = true;
+		}
 	}
 }
 
@@ -224,23 +229,9 @@ EGL2DeviceContext::getDescriptorSet() const noexcept
 }
 
 const Viewport&
-EGL2DeviceContext::getViewport(std::size_t i) const noexcept
+EGL2DeviceContext::getViewport() const noexcept
 {
 	return _viewport;
-}
-
-void
-EGL2DeviceContext::setInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept
-{
-	assert(inputLayout);
-	_inputLayout = inputLayout->downcast<EGL2InputLayout>();
-	_needUpdateLayout = true;
-}
-
-GraphicsInputLayoutPtr
-EGL2DeviceContext::getInputLayout() const noexcept
-{
-	return _inputLayout;
 }
 
 bool
@@ -282,7 +273,7 @@ EGL2DeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 			_vbo = data->downcast<EGL2GraphicsData>();
 		else
 			_vbo = nullptr;
-		_needUpdateVbo = true;
+		_needUpdateLayout = true;
 	}
 }
 
@@ -295,8 +286,7 @@ EGL2DeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
 			_ibo = data->downcast<EGL2GraphicsData>();
 		else
 			_ibo = nullptr;
-
-		_needUpdateIbo = true;
+		_needUpdateLayout = true;
 	}
 }
 
@@ -312,43 +302,26 @@ EGL2DeviceContext::drawRenderBuffer(const GraphicsIndirect& renderable) noexcept
 	if (!_inputLayout || !_vbo)
 		return;
 
-	if (_inputLayout->getGraphicsInputLayoutDesc().getIndexType() != GraphicsIndexType::GraphicsIndexTypeNone)
-	{
-		if (!_ibo)
-			return;
-
-		if (_ibo->size() < _inputLayout->getGraphicsInputLayoutDesc().getIndexSize() * (renderable.startIndice + renderable.numIndices))
-			return;
-	}
-
-
 	if (_needUpdateLayout)
 	{
 		if (_inputLayout)
 			_inputLayout->bindLayout(_shaderObject);
+
+		if (_vbo)
+			_inputLayout->bindVbo(_vbo);
+
+		if (_ibo)
+			_inputLayout->bindIbo(_ibo);
+
 		_needUpdateLayout = false;
 	}
 
-	if (_needUpdateVbo)
-	{
-		if (_vbo)
-			_inputLayout->bindVbo(_vbo);
-		_needUpdateVbo = false;
-	}
-
-	if (_needUpdateIbo)
-	{
-		if (_ibo)
-			_inputLayout->bindIbo(_ibo);
-		_needUpdateIbo = false;
-	}
-
-	auto primitiveType = _stateCaptured.getRasterState().primitiveType;
+	auto primitiveType = _stateCaptured.getPrimitiveType();
 	if (_ibo)
 	{
 		GLenum drawType = EGL2Types::asVertexType(primitiveType);
-		GLenum indexType = _inputLayout->getGraphicsInputLayoutDesc().getIndexType();
-		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_inputLayout->getGraphicsInputLayoutDesc().getIndexSize() * renderable.startIndice);
+		GLenum indexType = EGL2Types::asIndexType(renderable.indexType);
+		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_ibo->getGraphicsDataDesc().getStride() * renderable.startIndice);
 		GL_CHECK(glDrawElements(drawType, renderable.numIndices, indexType, offsetIndices));
 	}
 	else
@@ -366,36 +339,18 @@ EGL2DeviceContext::drawRenderBuffer(const GraphicsIndirect renderable[], std::si
 }
 
 void
-EGL2DeviceContext::setRenderTexture(GraphicsFramebufferPtr target) noexcept
+EGL2DeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 {
 	if (_renderTexture != target)
 	{
 		if (target)
 		{
 			_renderTexture = target->downcast<EGL2Framebuffer>();
-			auto& renderTextureDesc = _renderTexture->getGraphicsFramebufferDesc();
-			auto& textures = renderTextureDesc.getTextures();
+			auto& framebufferDesc = _renderTexture->getGraphicsFramebufferDesc();
 
 			glBindFramebuffer(GL_FRAMEBUFFER, _renderTexture->getInstanceID());
 
-			std::size_t size = textures.size();
-			if (size > 0)
-			{
-				for (std::size_t index = 0; index < size; index++)
-				{
-					auto& textureDesc = textures[index]->getGraphicsTextureDesc();
-					this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), index);
-				}
-			}
-			else
-			{
-				auto depthTexture = renderTextureDesc.getSharedDepthTexture();
-				if (depthTexture)
-				{
-					auto& textureDesc = depthTexture->getGraphicsTextureDesc();
-					this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), 0);
-				}
-			}
+			this->setViewport(Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
 		}
 		else
 		{
@@ -406,19 +361,19 @@ EGL2DeviceContext::setRenderTexture(GraphicsFramebufferPtr target) noexcept
 }
 
 void
-EGL2DeviceContext::blitRenderTexture(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
+EGL2DeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
 {
-	GL_PLATFORM_LOG("Can't support blitRenderTexture");
+	GL_PLATFORM_LOG("Can't support blitFramebuffer");
 }
 
 GraphicsFramebufferPtr
-EGL2DeviceContext::getRenderTexture() const noexcept
+EGL2DeviceContext::getFramebuffer() const noexcept
 {
 	return _renderTexture;
 }
 
 void
-EGL2DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
+EGL2DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	GLbitfield mode = 0;
 
@@ -457,7 +412,7 @@ EGL2DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& co
 
 	if (mode != 0)
 	{
-		auto depthWriteEnable = _stateCaptured.getDepthState().depthWriteEnable;
+		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
 		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
 			GL_CHECK(glDepthMask(GL_TRUE));
@@ -467,27 +422,19 @@ EGL2DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& co
 
 		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
-			glDepthMask(GL_FALSE);
+			GL_CHECK(glDepthMask(GL_FALSE));
 		}
 	}
-
-	EGL2Check::checkError();
 }
 
 void
-EGL2DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+EGL2DeviceContext::discardFramebuffer() noexcept
 {
-	this->clearRenderTexture(flags, color, depth, stencil);
+	GL_PLATFORM_LOG("Can't support discardFramebuffer");
 }
 
 void
-EGL2DeviceContext::discardRenderTexture() noexcept
-{
-	GL_PLATFORM_LOG("Can't support discardRenderTexture");
-}
-
-void
-EGL2DeviceContext::readRenderTexture(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+EGL2DeviceContext::readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
 	assert(w && h && data);
 
@@ -498,7 +445,7 @@ EGL2DeviceContext::readRenderTexture(GraphicsFramebufferPtr target, GraphicsForm
 
 		if (format != GL_INVALID_ENUM && type != GL_INVALID_ENUM)
 		{
-			this->setRenderTexture(target);
+			this->setFramebuffer(target);
 			glReadPixels(0, 0, w, h, format, type, data);
 		}
 	}

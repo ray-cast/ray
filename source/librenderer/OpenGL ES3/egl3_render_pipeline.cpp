@@ -54,6 +54,8 @@ EGL3RenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 {
 	assert(pipelineDesc.getGraphicsState());
 	assert(pipelineDesc.getGraphicsProgram());
+	assert(pipelineDesc.getGraphicsInputLayout());
+	assert(pipelineDesc.getGraphicsDescriptorSetLayout());
 	_pipelineDesc = pipelineDesc;
 	return true;
 }

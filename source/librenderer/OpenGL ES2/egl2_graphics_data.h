@@ -63,9 +63,6 @@ public:
 	GLsizeiptr read(char* data, GLsizeiptr cnt) noexcept;
 	GLsizeiptr write(const char* data, GLsizeiptr cnt) noexcept;
 
-	streamoff seekg(GLintptr pos, ios_base::seekdir dir) noexcept;
-	streamoff tellg() noexcept;
-
 	void* map(std::uint32_t access) noexcept;
 	void* map(GLintptr offset, GLsizeiptr cnt, std::uint32_t access) noexcept;
 	void unmap() noexcept;

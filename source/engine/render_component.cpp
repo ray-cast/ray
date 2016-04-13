@@ -76,14 +76,14 @@ RenderComponent::getReceiveShadow() const noexcept
 }
 
 void
-RenderComponent::addPreRenderListener(std::function<void()> func) noexcept
+RenderComponent::addPreRenderListener(std::function<void(RenderPipeline&)> func) noexcept
 {
 	assert(!_onPreRender.find(func));
 	_onPreRender.attach(func);
 }
 
 void
-RenderComponent::removePreRenderListener(std::function<void()> func) noexcept
+RenderComponent::removePreRenderListener(std::function<void(RenderPipeline&)> func) noexcept
 {
 	assert(_onPreRender.find(func));
 	_onPreRender.remove(func);
@@ -122,13 +122,13 @@ RenderComponent::save(oarchive& write) noexcept
 }
 
 void
-RenderComponent::onWillRenderObject(const Camera& camera) noexcept
+RenderComponent::onRenderObjectPre(RenderPipeline& pipeline) noexcept
 {
-	_onPreRender.run();
+	_onPreRender.run(pipeline);
 }
 
 void
-RenderComponent::onRenderObject(RenderPipeline& pipeline, const Camera& camera) noexcept
+RenderComponent::onRenderObjectPost(RenderPipeline& pipeline) noexcept
 {
 	_onPostRender.run(pipeline);
 }

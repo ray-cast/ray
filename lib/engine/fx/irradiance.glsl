@@ -61,7 +61,7 @@
                 return weightSample;
             }
 
-            float3 ConvolveSample(sampler2D weightMap,sampler2D colorMap, float2 coord, float2 pixelpos)
+            float3 ConvolveSample(sampler2D weightMap, sampler2D colorMap, float2 coord, float2 pixelpos)
             {
                 float3 color  = texture(colorMap,  coord).rgb;
                 float  weight = texture(weightMap, ComputeWeightSampleLocation(coord, pixelpos)).r;

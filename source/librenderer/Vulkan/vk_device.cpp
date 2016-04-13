@@ -56,7 +56,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(VulkanDevice, GraphicsDevice, "VulkanDevice")
+__ImplementSubClass(VulkanDevice, GraphicsDevice2, "VulkanDevice")
 
 char* deviceValidationLayers[] = {
 	"VK_LAYER_LUNARG_threading",      "VK_LAYER_LUNARG_mem_tracker",
@@ -168,7 +168,7 @@ VulkanDevice::createSwapchain(const GraphicsSwapchainDesc& desc) noexcept
 }
 
 GraphicsContextPtr 
-VulkanDevice::createGraphicsContext(const GraphicsContextDesc& desc) noexcept
+VulkanDevice::createDeviceContext(const GraphicsContextDesc& desc) noexcept
 {
 	auto context = std::make_shared<VulkanDeviceContext>();
 	context->setDevice(this->downcast<VulkanDevice>());
@@ -308,7 +308,7 @@ VulkanDevice::createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexc
 }
 
 GraphicsCommandQueuePtr
-VulkanDevice::createGraphicsCommandQueue(const GraphicsCommandQueueDesc& desc) noexcept
+VulkanDevice::createCommandQueue(const GraphicsCommandQueueDesc& desc) noexcept
 {
 	auto queue = std::make_shared<VulkanCommandQueue>();
 	queue->setDevice(this->downcast<VulkanDevice>());
@@ -318,7 +318,7 @@ VulkanDevice::createGraphicsCommandQueue(const GraphicsCommandQueueDesc& desc) n
 }
 
 GraphicsCommandPoolPtr
-VulkanDevice::createGraphicsCommandPool(const GraphicsCommandPoolDesc& desc) noexcept
+VulkanDevice::createCommandPool(const GraphicsCommandPoolDesc& desc) noexcept
 {
 	auto pool = std::make_shared<VulkanCommandPool>();
 	pool->setDevice(this->downcast<VulkanDevice>());
@@ -328,7 +328,7 @@ VulkanDevice::createGraphicsCommandPool(const GraphicsCommandPoolDesc& desc) noe
 }
 
 GraphicsCommandListPtr
-VulkanDevice::createGraphicsCommandList(const GraphicsCommandListDesc& desc) noexcept
+VulkanDevice::createCommandList(const GraphicsCommandListDesc& desc) noexcept
 {
 	auto list = std::make_shared<VulkanCommandList>();
 	list->setDevice(this->downcast<VulkanDevice>());

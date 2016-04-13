@@ -1,10 +1,10 @@
 <?xml version='1.0'?>
 <effect language="glsl">
     <include name="sys:fx/Gbuffer.fxml"/>
-    <parameter name="matModel" type="float4x4" semantic="matModel" />
+    <include name="sys:fx/inputlayout.fxml"/>
+    <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />
     <parameter name="matModelInverseTranspose" type="float4x4" semantic="matModelInverseTranspose" />
     <parameter name="matView" type="float4x4" semantic="matView"/>
-    <parameter name="matViewProject" type="float4x4" semantic="matViewProject"/>
     <parameter name="diffuse" type="float4" />
     <parameter name="specular" type="float4" />
     <parameter name="shininess" type="float" />
@@ -35,7 +35,7 @@
                 oTangent = Tangent;
                 oNormal = mul(Normal, matModelInverseTranspose);
                 oNormal = mul(float4(oNormal.rgb, 0.0), matView);
-                oPosition = mul(mul(Position, matModel), matViewProject);
+                oPosition = mul(Position, matModelViewProject);
             }
 
             void OpaqueNormalPS(
@@ -73,6 +73,7 @@
     </shader>
     <technique name="opaque">
         <pass name="opaque">
+            <state name="inputlayout" value="POS3F_N3F_T3F_UV2F"/>
             <state name="vertex" value="OpaqueNormalVS"/>
             <state name="fragment" value="OpaqueNormalPS"/>
 

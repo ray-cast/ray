@@ -51,7 +51,7 @@ public:
 	typedef typename trait::_typeaddition<T>::reference reference;
 	typedef typename trait::_typeaddition<T>::const_reference const_reference;
 
-    T x, y, z;
+	T x, y, z;
 
     static const Vector3t<T> Zero;
     static const Vector3t<T> One;

@@ -37,6 +37,8 @@
 #include <ray/material.h>
 #include <ray/material_tech.h>
 #include <ray/material_param.h>
+#include <ray/graphics_shader.h>
+#include <ray/graphics_input_layout.h>
 
 _NAME_BEGIN
 
@@ -185,6 +187,90 @@ const MaterialVariants&
 MaterialDesc::getMacros() const noexcept
 {
 	return _macros;
+}
+
+void
+MaterialDesc::addInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept
+{
+	_inputLayouts.push_back(inputLayout);
+}
+
+void 
+MaterialDesc::removeInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept
+{
+	assert(inputLayout);
+	auto it = std::find(_inputLayouts.begin(), _inputLayouts.end(), inputLayout);
+	if (it != _inputLayouts.end())
+	{
+		_inputLayouts.erase(it);
+	}
+}
+
+GraphicsInputLayoutPtr 
+MaterialDesc::getInputLayout(const std::string& name) const noexcept
+{
+	assert(!name.empty());
+	for (auto& it : _inputLayouts)
+	{
+		if (it->getGraphicsInputLayoutDesc().getName() == name)
+			return it;
+	}
+
+	return nullptr;
+}
+
+GraphicsInputLayouts& 
+MaterialDesc::getInputLayouts() noexcept
+{
+	return _inputLayouts;
+}
+
+const GraphicsInputLayouts& 
+MaterialDesc::getInputLayouts() const noexcept
+{
+	return _inputLayouts;
+}
+
+void
+MaterialDesc::addShader(GraphicsShaderPtr inputLayout) noexcept
+{
+	_shaders.push_back(inputLayout);
+}
+
+void
+MaterialDesc::removeShader(GraphicsShaderPtr inputLayout) noexcept
+{
+	assert(inputLayout);
+	auto it = std::find(_shaders.begin(), _shaders.end(), inputLayout);
+	if (it != _shaders.end())
+	{
+		_shaders.erase(it);
+	}
+}
+
+GraphicsShaderPtr
+MaterialDesc::getShader(const std::string& name) const noexcept
+{
+	assert(!name.empty());
+	for (auto& it : _shaders)
+	{
+		if (it->getGraphicsShaderDesc().getName() == name)
+			return it;
+	}
+
+	return nullptr;
+}
+
+GraphicsShaders&
+MaterialDesc::getShaders() noexcept
+{
+	return _shaders;
+}
+
+const GraphicsShaders&
+MaterialDesc::getShaders() const noexcept
+{
+	return _shaders;
 }
 
 Material::Material() noexcept

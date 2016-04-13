@@ -2,29 +2,28 @@
 <effect language="hlsl">
     <include name="sys:fx/math.fxml"/>
     <include name="sys:fx/sampler.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
     <parameter name="texSource" type="texture2D"/>
     <parameter name="texColorGrading" type="texture2D"/>
     <shader>
         <![CDATA[
             void PostProcessVS(
                 in float4 Position : POSITION0,
-                in float4 Texcoord : TEXCOORD0,
                 out float4 oTexcoord : TEXCOORD0,
                 out float4 oPosition : SV_Position
                 )
             {
-                oTexcoord = Texcoord;
                 oPosition = Position;
+                oTexcoord = PosToCoord(Position);
             }
 
-            float3 ColorGradingPS(in float4 coord : TEXCOORD0) : SV_Target
+            float3 ColorGrading(float3 rgb)
             {
-                float3 rgb = texSource.Sample(PointClamp, coord.xy).rgb;
-                rgb = linear2srgb(rgb);
-                return rgb;
+                rgb = saturate(rgb);
 
                 const float DIM = 16;
-                rgb.xy = (rgb.xy * (DIM - 1)) / DIM;
+
+                rgb.xy = (rgb.xy * (DIM - 1) + 0.5f) / DIM;
                 float slice = rgb.z * (DIM - 1);
                 float s = frac(slice);
                 slice -= s;
@@ -34,10 +33,19 @@
                 float3 col1 = texColorGrading.Sample(LinearClamp, float2(rgb.x, rgb.y + 1.0f / DIM)).xyz;
                 return lerp(col0, col1, s);
             }
+
+            float3 ColorGradingPS(in float4 coord : TEXCOORD0) : SV_Target
+            {
+                float3 rgb = texSource.Sample(PointClamp, coord.xy).rgb;
+                rgb = linear2srgb(rgb);
+                return rgb;
+            }
         ]]>
     </shader>
     <technique name="postprocess">
         <pass name="grading">
+            <state name="inputlayout" value="POS3F"/>
+
             <state name="vertex" value="PostProcessVS"/>
             <state name="fragment" value="ColorGradingPS"/>
 
@@ -45,6 +53,8 @@
             <state name="depthwrite" value="false"/>
 
             <state name="cullmode" value="none"/>
+
+            <state name="linear2srgb" value="false"/>
         </pass>
     </technique>
 </effect>

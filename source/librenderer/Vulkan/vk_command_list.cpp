@@ -231,7 +231,7 @@ VulkanCommandList::clearTexture(GraphicsTexturePtr texture, const ClearValue& va
 }
 
 void
-VulkanCommandList::setRenderTexture(GraphicsFramebufferPtr renderTexture) noexcept
+VulkanCommandList::setFramebuffer(GraphicsFramebufferPtr renderTexture) noexcept
 {
 	if (_vkFramebuffer != VK_NULL_HANDLE)
 	{
@@ -270,7 +270,7 @@ VulkanCommandList::setRenderTexture(GraphicsFramebufferPtr renderTexture) noexce
 }
 
 void
-VulkanCommandList::clearRenderTexture(ClearValue value[], std::uint32_t first, std::uint32_t count) noexcept
+VulkanCommandList::clearFramebuffer(ClearValue value[], std::uint32_t first, std::uint32_t count) noexcept
 {
 	std::uint32_t attachmentCount = 0;
 	VkClearAttachment attachment[VK_MAX_ATTACHMENT];

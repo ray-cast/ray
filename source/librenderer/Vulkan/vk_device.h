@@ -41,9 +41,9 @@
 
 _NAME_BEGIN
 
-class VulkanDevice final : public GraphicsDevice
+class VulkanDevice final : public GraphicsDevice2
 {
-	__DeclareSubClass(VulkanDevice, GraphicsDevice)
+	__DeclareSubClass(VulkanDevice, GraphicsDevice2)
 public:
 	VulkanDevice() noexcept;
 	virtual ~VulkanDevice() noexcept;
@@ -58,7 +58,7 @@ public:
 	VkPhysicalDevice getPhysicsDevice() const noexcept;
 
 	GraphicsSwapchainPtr createSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
-	GraphicsContextPtr createGraphicsContext(const GraphicsContextDesc& desc) noexcept;
+	GraphicsContextPtr createDeviceContext(const GraphicsContextDesc& desc) noexcept;
 	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
@@ -72,9 +72,9 @@ public:
 	GraphicsDescriptorPoolPtr createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept;
 	GraphicsDescriptorSetPtr createDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept;
 	GraphicsDescriptorSetLayoutPtr createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept;
-	GraphicsCommandQueuePtr createGraphicsCommandQueue(const GraphicsCommandQueueDesc& desc) noexcept;
-	GraphicsCommandPoolPtr createGraphicsCommandPool(const GraphicsCommandPoolDesc& desc) noexcept;
-	GraphicsCommandListPtr createGraphicsCommandList(const GraphicsCommandListDesc& desc) noexcept;
+	GraphicsCommandQueuePtr createCommandQueue(const GraphicsCommandQueueDesc& desc) noexcept;
+	GraphicsCommandPoolPtr createCommandPool(const GraphicsCommandPoolDesc& desc) noexcept;
+	GraphicsCommandListPtr createCommandList(const GraphicsCommandListDesc& desc) noexcept;
 	GraphicsSemaphorePtr createSemaphore(const GraphicsSemaphoreDesc& desc) noexcept;
 
 	GraphicsFormat findCompatibleFormat(GraphicsPixelFormatDesc& desc) noexcept;

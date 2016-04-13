@@ -48,47 +48,23 @@ _NAME_BEGIN
 __ImplementSubClass(RenderFeature, GameFeature, "Graphics")
 
 RenderFeature::RenderFeature() noexcept
-	: _hwnd(nullptr)
-	, _width(0)
-	, _height(0)
 {
 }
 
-RenderFeature::RenderFeature(WindHandle hwnd, std::uint32_t w, std::uint32_t h) noexcept
-	: _hwnd(hwnd)
-	, _width(w)
-	, _height(h)
+RenderFeature::RenderFeature(const RenderSetting& setting) noexcept
+	: _renderSetting(setting)
 {
+}
+
+RenderFeature::RenderFeature(WindHandle window, std::uint32_t w, std::uint32_t h) noexcept
+{
+	_renderSetting.window = window;
+	_renderSetting.width = w;
+	_renderSetting.height = h;
 }
 
 RenderFeature::~RenderFeature() noexcept
 {
-}
-
-void
-RenderFeature::setRenderWindow(WindHandle hwnd, std::uint32_t w, std::uint32_t h) noexcept
-{
-	_width = w;
-	_height = h;
-	_hwnd = hwnd;
-}
-
-WindHandle
-RenderFeature::getRenderWindow() const noexcept
-{
-	return _hwnd;
-}
-
-void
-RenderFeature::setRenderPipeline(RenderPipelinePtr pipeline) noexcept
-{
-	RenderSystem::instance()->setRenderPipeline(pipeline);
-}
-
-RenderPipelinePtr 
-RenderFeature::getRenderPipeline() const noexcept
-{
-	return RenderSystem::instance()->getRenderPipeline();
 }
 
 void
@@ -124,8 +100,7 @@ RenderFeature::clone() const noexcept
 void
 RenderFeature::onActivate() except
 {
-	RenderSystem::instance()->open(_hwnd, _width, _height);
-	RenderSystem::instance()->setRenderSetting(_renderSetting);
+	RenderSystem::instance()->setup(_renderSetting);
 }
 
 void

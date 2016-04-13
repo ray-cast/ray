@@ -45,15 +45,17 @@ GraphicsVertexLayout::GraphicsVertexLayout() noexcept
 	, _slot(0)
 	, _count(0)
 	, _size(0)
+	, _offset(0)
 	, _divisor(GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
 	, _format(GraphicsFormat::GraphicsFormatUndefined)
 {
 }
 
-GraphicsVertexLayout::GraphicsVertexLayout(const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint8_t slot, GraphicsVertexDivisor divisor) noexcept
+GraphicsVertexLayout::GraphicsVertexLayout(const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint16_t offset, std::uint8_t slot, GraphicsVertexDivisor divisor) noexcept
 	: _semantic(semantic)
 	, _index(semanticIndex)
 	, _slot(slot)
+	, _offset(offset)
 	, _divisor(divisor)
 	, _format(format)
 {
@@ -105,6 +107,18 @@ GraphicsFormat
 GraphicsVertexLayout::getVertexFormat() const noexcept
 {
 	return _format;
+}
+
+void
+GraphicsVertexLayout::setVertexOffset(std::uint16_t offset) noexcept
+{
+	_offset = offset;
+}
+
+std::uint16_t 
+GraphicsVertexLayout::getVertexOffset() const noexcept
+{
+	return _offset;
 }
 
 void
@@ -548,12 +562,36 @@ GraphicsVertexLayout::getVertexSize(GraphicsFormat format) noexcept
 }
 
 GraphicsInputLayoutDesc::GraphicsInputLayoutDesc() noexcept
-	: _indexType(GraphicsIndexType::GraphicsIndexTypeNone)
+	: _autoOffset(true)
 {
 }
 
 GraphicsInputLayoutDesc::~GraphicsInputLayoutDesc() noexcept
 {
+}
+
+void 
+GraphicsInputLayoutDesc::setName(const std::string& name) noexcept
+{
+	_name = name;
+}
+
+const std::string& 
+GraphicsInputLayoutDesc::getName() const noexcept
+{
+	return _name;
+}
+
+void 
+GraphicsInputLayoutDesc::setAutoOffset(bool enable) noexcept
+{
+	_autoOffset = enable;
+}
+
+bool 
+GraphicsInputLayoutDesc::getAutoOffset() const noexcept
+{
+	return _autoOffset;
 }
 
 void
@@ -584,18 +622,6 @@ GraphicsInputLayoutDesc::removeComponent(const GraphicsVertexLayout& compoent) n
 		_components.erase(it);
 }
 
-void
-GraphicsInputLayoutDesc::setIndexType(GraphicsIndexType type) noexcept
-{
-	_indexType = type;
-}
-
-GraphicsIndexType
-GraphicsInputLayoutDesc::getIndexType() const noexcept
-{
-	return _indexType;
-}
-
 std::uint32_t
 GraphicsInputLayoutDesc::getVertexSize() const noexcept
 {
@@ -603,22 +629,6 @@ GraphicsInputLayoutDesc::getVertexSize() const noexcept
 	for (auto& it : _components)
 		size += it.getVertexSize();
 	return size;
-}
-
-std::uint32_t
-GraphicsInputLayoutDesc::getIndexSize() const noexcept
-{
-	if (_indexType == GraphicsIndexType::GraphicsIndexTypeNone)
-		return 0;
-	else if (_indexType == GraphicsIndexType::GraphicsIndexTypeUInt16)
-		return sizeof(std::uint16_t);
-	else if (_indexType == GraphicsIndexType::GraphicsIndexTypeUInt32)
-		return sizeof(std::uint32_t);
-	else
-	{
-		assert(false);
-		return 0;
-	}
 }
 
 GraphicsInputLayout::GraphicsInputLayout() noexcept

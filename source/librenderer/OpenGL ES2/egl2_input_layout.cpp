@@ -57,17 +57,6 @@ EGL2InputLayout::~EGL2InputLayout() noexcept
 bool
 EGL2InputLayout::setup(const GraphicsInputLayoutDesc& inputLayoutDesc) noexcept
 {
-	_indexType = EGL2Types::asIndexType(inputLayoutDesc.getIndexType());
-	if (_indexType == GL_INVALID_ENUM)
-		return false;
-
-	_indexSize = inputLayoutDesc.getIndexSize();
-	if (_indexType != GL_NONE)
-	{
-		if (_indexSize == 0)
-			return false;
-	}
-
 	_vertexSize = inputLayoutDesc.getVertexSize();
 	if (_vertexSize == GL_NONE)
 		return false;

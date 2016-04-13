@@ -43,10 +43,11 @@
 
 namespace glslang {
 
-class TIntermTyped;
-
 // This is used to mean there is no size yet (unsized), it is waiting to get a size from somewhere else.
 const int UnsizedArraySize = 0;
+
+class TIntermTyped;
+extern bool SameSpecializationConstants(TIntermTyped*, TIntermTyped*);
 
 // Specialization constants need both a nominal size and a node that defines
 // the specialization constant being used.  Array types are the same when their
@@ -54,7 +55,15 @@ const int UnsizedArraySize = 0;
 struct TArraySize {
     unsigned int size;
     TIntermTyped* node;  // nullptr means no specialization constant node
-    bool operator==(const TArraySize& rhs) const { return size == rhs.size && node == rhs.node; }
+    bool operator==(const TArraySize& rhs) const
+    {
+        if (size != rhs.size)
+            return false;
+        if (node == nullptr || rhs.node == nullptr)
+            return node == rhs.node;
+
+        return SameSpecializationConstants(node, rhs.node);
+    }
 };
 
 //
@@ -277,6 +286,18 @@ struct TArraySizes {
         }
 
         return true;
+    }
+
+    // Returns true if any of the dimensions of the array is sized with a node
+    // instead of a front-end compile-time constant.
+    bool containsNode()
+    {
+        for (int d = 0; d < sizes.size(); ++d) {
+            if (sizes.getDimNode(d) != nullptr)
+                return true;
+        }
+
+        return false;
     }
 
     bool operator==(const TArraySizes& rhs) { return sizes == rhs.sizes; }

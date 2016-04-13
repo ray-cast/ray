@@ -56,6 +56,7 @@ bool
 EGL3GraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 {
 	assert(!_buffer);
+	assert(desc.getStride() > 0);
 
 	_data = nullptr;
 	_dataOffset = 0;
@@ -197,46 +198,6 @@ EGL3GraphicsData::write(const char* str, GLsizeiptr cnt) noexcept
 
 	this->unmap();
 	return 0;
-}
-
-streamoff
-EGL3GraphicsData::seekg(GLintptr pos, ios_base::seekdir dir) noexcept
-{
-	assert(dir == ios_base::beg || dir == ios_base::cur || dir == ios_base::end);
-
-	if (dir == ios_base::beg)
-	{
-		_dataOffset = pos;
-		return pos;
-	}
-	else if (dir == ios_base::cur)
-	{
-		_dataOffset = _dataOffset + pos;
-		if (_dataOffset > _dataSize)
-		{
-			pos = _dataSize - _dataOffset;
-			_dataOffset = _dataSize;
-		}
-		return pos;
-	}
-	else if (dir == ios_base::end)
-	{
-		GLsizei size = _dataSize;
-		pos = size + pos;
-		if (pos > size)
-			_dataOffset = size;
-		else
-			_dataOffset = pos;
-		return pos;
-	}
-
-	return 0;
-}
-
-streamoff
-EGL3GraphicsData::tellg() noexcept
-{
-	return _dataOffset;
 }
 
 void*

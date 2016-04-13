@@ -654,6 +654,34 @@ OGLShaderObject::toGraphicsUniformType(const std::string& name, GLenum type) noe
 			else
 				return GraphicsUniformType::GraphicsUniformTypeBool4;
 		}
+		else if (type == GL_UNSIGNED_INT)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeUIntArray;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeUInt;
+		}
+		else if (type == GL_UNSIGNED_INT_VEC2)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeUInt2Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeUInt2;
+		}
+		else if (type == GL_UNSIGNED_INT_VEC3)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeUInt3Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeUInt3;
+		}
+		else if (type == GL_UNSIGNED_INT_VEC4)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeUInt4Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeUInt4;
+		}
 		else if (type == GL_INT)
 		{
 			if (isArray)

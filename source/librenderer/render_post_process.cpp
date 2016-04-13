@@ -38,6 +38,8 @@
 
 _NAME_BEGIN
 
+__ImplementSubClass(RenderPostProcess, rtti::Interface, "RenderPostProcess")
+
 RenderPostProcess::RenderPostProcess() noexcept
 	: _active(false)
 	, _renderQueue(RenderQueue::RenderQueuePostprocess)
@@ -50,7 +52,7 @@ RenderPostProcess::~RenderPostProcess() noexcept
 }
 
 void 
-RenderPostProcess::setActive(bool active) except
+RenderPostProcess::setActive(bool active) noexcept
 {
 	if (_active != active)
 	{
@@ -82,38 +84,39 @@ RenderPostProcess::getRenderQueue() const noexcept
 }
 
 void
-RenderPostProcess::onActivate(RenderPipeline&) except
+RenderPostProcess::onActivate(RenderPipeline& pipeline) noexcept
 {
 }
 
 void
-RenderPostProcess::onDeactivate(RenderPipeline&) except
+RenderPostProcess::onDeactivate(RenderPipeline& pipeline) noexcept
 {
 }
 
 void
-RenderPostProcess::onResolutionChangeBefore(RenderPipeline&) except
+RenderPostProcess::onResolutionChangeBefore(RenderPipeline&) noexcept
 {
 }
 
 void
-RenderPostProcess::onResolutionChangeAfter(RenderPipeline&) except
+RenderPostProcess::onResolutionChangeAfter(RenderPipeline&) noexcept
 {
 }
 
 void
-RenderPostProcess::onRenderPre(RenderPipeline& pipeline) except
+RenderPostProcess::onRenderPre(RenderPipeline& pipeline) noexcept
 {
 }
 
 void
-RenderPostProcess::onRenderPost(RenderPipeline& pipeline) except
+RenderPostProcess::onRenderPost(RenderPipeline& pipeline) noexcept
 {
 }
 
-void 
-RenderPostProcess::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) except
+bool
+RenderPostProcess::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
+	return false;
 }
 
 void 

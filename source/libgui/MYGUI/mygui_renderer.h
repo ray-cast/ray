@@ -97,7 +97,6 @@ private:
 	MaterialParamPtr _materialDecal;
 
 	MapTexture _textures;
-
 	GuiImageLoaderPtr _imageLoader;
 };
 

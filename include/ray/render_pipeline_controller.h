@@ -41,25 +41,20 @@
 
 _NAME_BEGIN
 
-class RenderPipelineController
+class RenderPipelineController : public rtti::Interface
 {
+	__DeclareSubInterface(RenderPipelineController, rtti::Interface)
 public:
 	RenderPipelineController() noexcept;
 	virtual ~RenderPipelineController() noexcept;
 
-	void setActive(bool active) except;
-	bool getActive() const noexcept;
-
 protected:
-	virtual void onActivate(RenderPipeline& pipeline) except;
-	virtual void onDeactivate(RenderPipeline& pipeline) except;
+	virtual void onResolutionChangeBefore(RenderPipeline& pipeline) noexcept;
+	virtual void onResolutionChangeAfter(RenderPipeline& pipeline) noexcept;
 
-	virtual void onResolutionChangeBefore(RenderPipeline& pipeline) except;
-	virtual void onResolutionChangeAfter(RenderPipeline& pipeline) except;
-
-	virtual void onRenderPre(RenderPipeline& pipeline) except;
-	virtual void onRenderPipeline(RenderPipeline& pipeline) except;
-	virtual void onRenderPost(RenderPipeline& pipeline) except;
+	virtual void onRenderPre(RenderPipeline& pipeline) noexcept;
+	virtual void onRenderPipeline(RenderPipeline& pipeline, const CameraPtr& camera) noexcept;
+	virtual void onRenderPost(RenderPipeline& pipeline) noexcept;
 
 private:
 	friend class RenderPipelineManager;
@@ -70,8 +65,6 @@ private:
 	RenderPipelineController& operator=(const RenderPipelineController&) noexcept = delete;
 
 private:
-
-	bool _active;
 	RenderPipeline* _renderPipeline;
 };
 

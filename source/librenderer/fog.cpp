@@ -34,8 +34,9 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/fog.h>
+#include "fog.h"
 #include <ray/material.h>
+#include <ray/render_pipeline.h>
 
 _NAME_BEGIN
 
@@ -48,7 +49,7 @@ Fog::~Fog() noexcept
 }
 
 void
-Fog::onActivate(RenderPipeline& pipeline) except
+Fog::onActivate(RenderPipeline& pipeline) noexcept
 {
 	_material = pipeline.createMaterial("sys:fx/fog.glsl");
 	_fog = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("fog");
@@ -63,18 +64,18 @@ Fog::onActivate(RenderPipeline& pipeline) except
 }
 
 void
-Fog::onDeactivate(RenderPipeline& pipeline) except
+Fog::onDeactivate(RenderPipeline& pipeline) noexcept
 {
 }
 
-void
-Fog::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) except
+bool
+Fog::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	_texSource->assign(source);
-
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(source);
 	pipeline.discradRenderTexture();
 	pipeline.drawScreenQuad(_fog);
+
+	return false;
 }
 
 _NAME_END

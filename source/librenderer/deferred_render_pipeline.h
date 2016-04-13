@@ -37,7 +37,6 @@
 #ifndef _H_DEFERRED_RENDER_PIPELINE_H_
 #define _H_DEFERRED_RENDER_PIPELINE_H_
 
-#include <ray/material.h>
 #include <ray/render_pipeline_controller.h>
 
 _NAME_BEGIN
@@ -48,7 +47,10 @@ public:
 	DeferredRenderPipeline() noexcept;
 	~DeferredRenderPipeline() noexcept;
 
-	void renderShadowMap(RenderPipeline& pipeline) noexcept;
+	void setup(RenderPipeline& pipeline) noexcept;
+	void close() noexcept;
+
+	void renderShadowMaps(RenderPipeline& pipeline) noexcept;
 
 	void render2DEnvMap(RenderPipeline& pipeline) noexcept;
 	void render3DEnvMap(RenderPipeline& pipeline) noexcept;
@@ -64,44 +66,41 @@ public:
 	void renderTransparentSpecificShading(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
 
 	void renderLights(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept;
-	void renderSunLight(RenderPipeline& pipeline, const Light& light) noexcept;
-	void renderDirectionalLight(RenderPipeline& pipeline, const Light& light) noexcept;
-	void renderAmbientLight(RenderPipeline& pipeline, const Light& light) noexcept;
-	void renderPointLight(RenderPipeline& pipeline, const Light& light) noexcept;
-	void renderSpotLight(RenderPipeline& pipeline, const Light& light) noexcept;
-	void renderHemiSphereLight(RenderPipeline& pipeline, const Light& light) noexcept;
-	void renderAreaLight(RenderPipeline& pipeline, const Light& light) noexcept;
+	void renderSunLight(RenderPipeline& pipeline, const Light& light, GraphicsTexturePtr shadowMap) noexcept;
+	void renderDirectionalLight(RenderPipeline& pipeline, const Light& light, GraphicsTexturePtr shadowMap) noexcept;
+	void renderAmbientLight(RenderPipeline& pipeline, const Light& light, GraphicsTexturePtr shadowMap) noexcept;
+	void renderPointLight(RenderPipeline& pipeline, const Light& light, GraphicsTexturePtr shadowMap) noexcept;
+	void renderSpotLight(RenderPipeline& pipeline, const Light& light, GraphicsTexturePtr shadowMap) noexcept;
 
 	void copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr src, GraphicsFramebufferPtr dst, const Viewport& view) noexcept;
 
-private:
-	void setupSemantic(RenderPipeline& pipeline);
-	void setupMaterials(RenderPipeline& pipeline);
-	void setupRenderTextures(RenderPipeline& pipeline);
-
-	void destroySemantic(RenderPipeline& pipeline);
-	void destroyMaterials(RenderPipeline& pipeline);
-	void destroyRenderTextures(RenderPipeline& pipeline);
+	bool enableSSSS(bool enable) noexcept;
+	bool isEnableSSSS() const noexcept;
 
 private:
-	virtual void onActivate(RenderPipeline& pipeline) except;
-	virtual void onDeactivate(RenderPipeline& pipeline) noexcept;
+	bool setupSemantic(RenderPipeline& pipeline) noexcept;
+	bool setupDeferredMaterials(RenderPipeline& pipeline) noexcept;
+	bool setupDeferredRenderTextures(RenderPipeline& pipeline) noexcept;
+	bool setupDeferredRenderTextureLayouts(RenderPipeline& pipeline) noexcept;
+	bool setupShadowMaterial(RenderPipeline& pipeline) noexcept;
+	bool setupShadowMap(RenderPipeline& pipeline) noexcept;
 
+	void destroySemantic() noexcept;
+	void destroyDeferredMaterials() noexcept;
+	void destroyDeferredRenderTextures() noexcept;
+	void destroyDeferredRenderTextureLayouts() noexcept;
+	void destroyShadowMaterial() noexcept;
+	void destroyShadowMap() noexcept;
+
+private:
 	virtual void onResolutionChangeBefore(RenderPipeline& pipeline) noexcept;
 	virtual void onResolutionChangeAfter(RenderPipeline& pipeline) noexcept;
 
 	virtual void onRenderPre(RenderPipeline& pipeline) noexcept;
-	virtual void onRenderPipeline(RenderPipeline& pipeline) noexcept;
+	virtual void onRenderPipeline(RenderPipeline& pipeline, const CameraPtr& camera) noexcept;
 	virtual void onRenderPost(RenderPipeline& pipeline) noexcept;
 
 private:
-
-	CameraPtr _leftCamera;
-	CameraPtr _rightCamera;
-	CameraPtr _frontCamera;
-	CameraPtr _backCamera;
-	CameraPtr _topCamera;
-	CameraPtr _bottomCamera;
 
 	MaterialPtr _deferredLighting;
 	MaterialPassPtr _deferredDepthOnly;
@@ -111,6 +110,7 @@ private:
 	MaterialPassPtr _deferredDirectionalLight;
 	MaterialPassPtr _deferredDirectionalLightShadow;
 	MaterialPassPtr _deferredSpotLight;
+	MaterialPassPtr _deferredSpotLightShadow;
 	MaterialPassPtr _deferredPointLight;
 	MaterialPassPtr _deferredAmbientLight;
 	MaterialPassPtr _deferredShadingOpaques;
@@ -130,22 +130,33 @@ private:
 	MaterialParamPtr _projInfo;
 
 	MaterialParamPtr _shadowDecal;
-	MaterialParamPtr _shadowChannel;
 	MaterialParamPtr _shadowMap;
-	MaterialParamPtr _shadowArrayMap;
 	MaterialParamPtr _shadowFactor;
-	MaterialParamPtr _shadowMatrix;
-	MaterialParamPtr _shadowOffset;
-	MaterialParamPtr _shadowWeight;
+	MaterialParamPtr _shadowView2LightView;
+	MaterialParamPtr _shadowView2LightViewProject;
 
 	MaterialParamPtr _lightColor;
-	MaterialParamPtr _lightPosition;
-	MaterialParamPtr _lightDirection;
-	MaterialParamPtr _lightRange;
-	MaterialParamPtr _lightIntensity;
+	MaterialParamPtr _lightEyePosition;
+	MaterialParamPtr _lightEyeDirection;
 	MaterialParamPtr _lightAttenuation;
-	MaterialParamPtr _lightSpotInnerCone;
-	MaterialParamPtr _lightSpotOuterCone;
+	MaterialParamPtr _lightOuterInner;
+
+	MaterialPtr _softBlur;
+	MaterialPassPtr  _softBlurShadowX;
+	MaterialPassPtr  _softBlurShadowY;
+	MaterialParamPtr _softBlurShadowSource;
+	MaterialParamPtr _softBlurShadowSourceInv;
+
+	GraphicsTextures _softShaodwMaps;
+	GraphicsTexturePtr _softShaodwMapTemp;
+
+	GraphicsFramebuffers _softShaodwViews;
+	GraphicsFramebufferPtr _softShaodwViewTemp;
+	GraphicsFramebufferLayoutPtr _softShaodwViewLayout;
+
+	float _shaodwFactor;
+	float2 _shaodwMapSize;
+	GraphicsFormat _shadowFormat;
 
 	MaterialVariantPtr _materialDepthMap;
 	MaterialVariantPtr _materialColorMap;
@@ -159,22 +170,34 @@ private:
 
 	GraphicsTexturePtr _deferredDepthMap;
 	GraphicsTexturePtr _deferredDepthLinearMap;
-	GraphicsTexturePtr _deferredGraphicMap;
+	GraphicsTexturePtr _deferredGraphicsMap;
 	GraphicsTexturePtr _deferredNormalMap;
 	GraphicsTexturePtr _deferredLightMap;
 	GraphicsTexturePtr _deferredShadingMap;
 	GraphicsTexturePtr _deferredSwapMap;
 	GraphicsTexturePtr _deferredFinalMap;
 
+	GraphicsFramebufferLayoutPtr _deferredDepthViewLayout;
+	GraphicsFramebufferLayoutPtr _deferredDepthLinearViewLayout;
+	GraphicsFramebufferLayoutPtr _deferredGraphicsViewLayout;
+	GraphicsFramebufferLayoutPtr _deferredNormalViewLayout;
+	GraphicsFramebufferLayoutPtr _deferredLightingViewLayout;
+	GraphicsFramebufferLayoutPtr _deferredShadingViewLayout;
+	GraphicsFramebufferLayoutPtr _deferredSwapViewLayout;
+	GraphicsFramebufferLayoutPtr _deferredFinalViewLayout;
+	GraphicsFramebufferLayoutPtr _deferredGraphicsViewsLayout;
+
 	GraphicsFramebufferPtr _deferredDepthView;
 	GraphicsFramebufferPtr _deferredDepthLinearView;
-	GraphicsFramebufferPtr _deferredGraphicView;
+	GraphicsFramebufferPtr _deferredGraphicsView;
 	GraphicsFramebufferPtr _deferredNormalView;
-	GraphicsFramebufferPtr _deferredLightView;
+	GraphicsFramebufferPtr _deferredLightingView;
 	GraphicsFramebufferPtr _deferredShadingView;
 	GraphicsFramebufferPtr _deferredSwapView;
 	GraphicsFramebufferPtr _deferredFinalView;
-	GraphicsFramebufferPtr _deferredGraphicViews;
+	GraphicsFramebufferPtr _deferredGraphicsViews;
+
+	RenderPostProcessPtr _SSSS;
 };
 
 _NAME_END

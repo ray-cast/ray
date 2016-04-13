@@ -46,20 +46,24 @@ __ImplementSubClass(Light, RenderObject, "Light")
 
 Light::Light() noexcept
 	: _lightType(LightType::LightTypePoint)
-	, _lightRange(1.0f)
 	, _lightIntensity(1.0f)
-	, _lightColor(float3(1.0, 1.0, 1.0))
-	, _lightAttenuation(1, 1, 1)
-	, _spotInnerCone(cos(degrees(20.0f)))
+	, _lightColor(1.0, 1.0, 1.0)
+	, _lightAttenuation(1.0, 0.0, 0.0)
+	, _spotInnerCone(cos(degrees(5.0f)))
 	, _spotOuterCone(cos(degrees(40.0f)))
+	, _subsurfaceScattering(false)
 	, _shadow(false)
-	, _shadowUpdated(false)
+	, _shadowSoftEnable(false)
 	, _shadowSize(512)
+	, _shaodwFormat(GraphicsFormat::GraphicsFormatD16UNorm)
 {
 	_shadowCamera = std::make_shared<Camera>();
 	_shadowCamera->setOwnerListener(this);
 	_shadowCamera->setCameraOrder(CameraOrder::CameraOrderShadow);
 	_shadowCamera->setCameraRender(CameraRender::CameraRenderTexture);
+	_shadowCamera->setAperture(90.0);
+	_shadowCamera->setNear(0.1);
+	_shadowCamera->setRatio(1.0);
 }
 
 Light::~Light() noexcept
@@ -81,7 +85,7 @@ Light::setIntensity(float intensity) noexcept
 void
 Light::setRange(float range) noexcept
 {
-	_lightRange = range;
+	_shadowCamera->setFar(range);
 	this->_updateBoundingBox();
 }
 
@@ -94,13 +98,13 @@ Light::setLightColor(const float3& color) noexcept
 void
 Light::setSpotInnerCone(float value) noexcept
 {
-	_spotInnerCone = value;
+	_spotInnerCone = std::min(_spotOuterCone, cos(DEG_TO_RAD(value)));
 }
 
 void
 Light::setSpotOuterCone(float value) noexcept
 {
-	_spotOuterCone = value;
+	_spotOuterCone = std::max(_spotInnerCone, cos(DEG_TO_RAD(value)));
 	this->_updateBoundingBox();
 }
 
@@ -119,7 +123,7 @@ Light::getIntensity() const noexcept
 float
 Light::getRange() const noexcept
 {
-	return _lightRange;
+	return _shadowCamera->getFar();
 }
 
 const float3&
@@ -163,6 +167,11 @@ Light::setShadow(bool shadow) noexcept
 			_shadowCamera->setRenderScene(nullptr);
 
 		_shadow = shadow;
+
+		if (shadow)
+			this->setupShadowMap(_shadowSize);
+		else
+			this->destroyShadowMap();
 	}
 }
 
@@ -172,10 +181,33 @@ Light::getShadow() const noexcept
 	return _shadow;
 }
 
+void 
+Light::setSoftShadow(bool enable) noexcept
+{
+	_shadowSoftEnable = enable;
+}
+
+bool 
+Light::getSoftShadow() const noexcept
+{
+	return _shadowSoftEnable;
+}
+
+void
+Light::setSubsurfaceScattering(bool enable) noexcept
+{
+	_subsurfaceScattering = enable;
+}
+
+bool 
+Light::getSubsurfaceScattering() const noexcept
+{
+	return _subsurfaceScattering;
+}
+
 CameraPtr
 Light::getShadowCamera() const noexcept
 {
-	_updateShadow();
 	return _shadowCamera;
 }
 
@@ -188,51 +220,95 @@ Light::setShadowMap(GraphicsTexturePtr texture) noexcept
 GraphicsTexturePtr
 Light::getShadowMap() const noexcept
 {
-	_updateShadow();
 	return _shaodwMap;
 }
 
 void 
-Light::_updateShadow() const noexcept
+Light::setShadowSize(float size) noexcept
 {
-	if (_shadowUpdated)
-		return;
-
-	if (this->getShadow())
+	if (_shadowSize != size)
 	{
-		if (!_shadowCamera->getRenderTexture())
-		{
-			_shaodwMap = RenderSystem::instance()->createTexture(_shadowSize, _shadowSize, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatD16UNorm);
-
-			GraphicsFramebufferDesc shadowViewDesc;
-			shadowViewDesc.setSharedDepthTexture(_shaodwMap);
-			_shaodwView = RenderSystem::instance()->createFramebuffer(shadowViewDesc);
-
-			_shadowCamera->setRenderTexture(_shaodwView);
-		}
+		destroyShadowMap();
+		setupShadowMap(size);
+		_shadowSize = size;
 	}
+}
 
-	_shadowCamera->setAperture(90.0);
-	_shadowCamera->setNear(0.1);
-	_shadowCamera->setFar(_lightRange);
-	_shadowCamera->setRatio(1.0);
+float 
+Light::getShadowSize() const noexcept
+{
+	return _shadowSize;
+}
+
+bool
+Light::setupShadowMap(float size) noexcept
+{
+	assert(size > 0);
+	assert(!_shadowCamera->getFramebuffer());
+
+	if (!_shadow)
+		return false;
+
+	_shaodwMap = RenderSystem::instance()->createTexture(size, size, GraphicsTextureDim::GraphicsTextureDim2D, _shaodwFormat);
+	if (!_shaodwMap)
+		return false;
+
+	GraphicsFramebufferLayoutDesc shadowLayoutDesc;
+	shadowLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutDepthStencilAttachmentOptimal, _shaodwFormat, 0));
+	_shaodwViewLayout = RenderSystem::instance()->createFramebufferLayout(shadowLayoutDesc);
+	if (!_shaodwViewLayout)
+		return false;
+
+	GraphicsFramebufferDesc shadowViewDesc;
+	shadowViewDesc.setWidth(size);
+	shadowViewDesc.setHeight(size);
+	shadowViewDesc.setSharedDepthTexture(_shaodwMap);
+	shadowViewDesc.setGraphicsFramebufferLayout(_shaodwViewLayout);
+	_shaodwView = RenderSystem::instance()->createFramebuffer(shadowViewDesc);
+	if (!_shaodwView)
+		return false;
+
+	_shadowCamera->setFramebuffer(_shaodwView);
 	_shadowCamera->setViewport(Viewport(0, 0, _shadowSize, _shadowSize));
-	_shadowCamera->setTransform(this->getTransform(), this->getTransformInverse(), this->getTransformInverseTranspose());
-	_shadowUpdated = true;
+
+	return true;
+}
+
+void 
+Light::destroyShadowMap() noexcept
+{
+	_shaodwMap.reset();
+	_shaodwViewLayout.reset();
+	_shaodwView.reset();
+}
+
+void
+Light::_updateShadow() noexcept
+{
+	_shadowCamera->setTransform(
+		this->getTransform(), 
+		this->getTransformInverse(), 
+		this->getTransformInverseTranspose()
+		);
 }
 
 void
 Light::_updateBoundingBox() noexcept
 {
 	Bound bound;
+	
+	auto lightRange = this->getRange();
 
 	if (_lightType == LightType::LightTypeSun ||
-		_lightType == LightType::LightTypeAmbient)
+		_lightType == LightType::LightTypeDirectional |
+		_lightType == LightType::LightTypeAmbient ||
+		_lightType == LightType::LightTypeSpot)
 	{
-		float infinity = std::numeric_limits<float>::max();
+		Vector3 min(-lightRange, -lightRange * 2, -lightRange);
+		Vector3 max(lightRange, 0, lightRange);
 
-		Vector3 min(-infinity, -infinity, -infinity);
-		Vector3 max(infinity, infinity, infinity);
+		min *= 0.5;
+		max *= 0.5;
 
 		bound.encapsulate(min);
 		bound.encapsulate(max);
@@ -240,19 +316,8 @@ Light::_updateBoundingBox() noexcept
 	}
 	else if (_lightType == LightType::LightTypePoint)
 	{
-		Vector3 min(-_lightRange, -_lightRange, -_lightRange);
-		Vector3 max(_lightRange, _lightRange, _lightRange);
-
-		bound.encapsulate(min);
-		bound.encapsulate(max);
-		this->setBoundingBox(bound);
-	}
-	else if (_lightType == LightType::LightTypeArea ||
-		_lightType == LightType::LightTypeSpot ||
-		_lightType == LightType::LightTypeHemiSphere)
-	{
-		Vector3 min(-_lightRange, -_lightRange, -_lightRange);
-		Vector3 max(_lightRange, _lightRange, _lightRange);
+		Vector3 min(-lightRange, -lightRange, -lightRange);
+		Vector3 max(lightRange, lightRange, lightRange);
 
 		bound.encapsulate(min);
 		bound.encapsulate(max);
@@ -283,27 +348,25 @@ Light::onSceneChangeAfter() noexcept
 }
 
 void 
-Light::onWillRenderObject(const Camera& camera) noexcept
+Light::onRenderObjectPre(RenderPipeline& pipeline) noexcept
 {
 	auto listener = this->getOwnerListener();
 	if (listener)
-		listener->onWillRenderObject(camera);
-
-	this->_updateShadow();
+		listener->onRenderObjectPre(pipeline);
 }
 
 void 
-Light::onRenderObject(RenderPipeline& pipeline, const Camera& camera) noexcept
+Light::onRenderObjectPost(RenderPipeline& pipeline) noexcept
 {
 	auto listener = this->getOwnerListener();
 	if (listener)
-		listener->onRenderObject(pipeline, camera);
+		listener->onRenderObjectPost(pipeline);
 }
 
 void 
 Light::onMoveAfter() noexcept
 {
-	_shadowUpdated = false;
+	_updateShadow();
 }
 
 RenderObjectPtr

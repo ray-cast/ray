@@ -52,6 +52,7 @@ public:
 	std::int32_t numVertices;
 	std::int32_t numIndices;
 	std::int32_t numInstances;
+	GraphicsIndexType indexType;
 };
 
 class EXPORT GraphicsContextDesc final
@@ -77,20 +78,11 @@ public:
 	virtual void renderBegin() noexcept = 0;
 	virtual void renderEnd() noexcept = 0;
 
-	virtual void setViewport(const Viewport& viewport, std::size_t i) noexcept = 0;
-	virtual const Viewport& getViewport(std::size_t i) const noexcept = 0;
+	virtual void setViewport(const Viewport& viewport) noexcept = 0;
+	virtual const Viewport& getViewport() const noexcept = 0;
 
-	virtual void setScissor(const Scissor& viewport, std::size_t i) noexcept = 0;
-	virtual const Scissor& getScissor(std::size_t i) const noexcept = 0;
-
-	virtual void setInputLayout(GraphicsInputLayoutPtr data) noexcept = 0;
-	virtual GraphicsInputLayoutPtr getInputLayout() const noexcept = 0;
-
-	virtual void setVertexBufferData(GraphicsDataPtr data) noexcept = 0;
-	virtual GraphicsDataPtr getVertexBufferData() const noexcept = 0;
-
-	virtual void setIndexBufferData(GraphicsDataPtr data) noexcept = 0;
-	virtual GraphicsDataPtr getIndexBufferData() const noexcept = 0;
+	virtual void setScissor(const Scissor& scissor) noexcept = 0;
+	virtual const Scissor& getScissor() const noexcept = 0;
 
 	virtual void setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept = 0;
 	virtual GraphicsPipelinePtr getRenderPipeline() const noexcept = 0;
@@ -98,17 +90,22 @@ public:
 	virtual void setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept = 0;
 	virtual GraphicsDescriptorSetPtr getDescriptorSet() const noexcept = 0;
 
+	virtual void setVertexBufferData(GraphicsDataPtr data) noexcept = 0;
+	virtual GraphicsDataPtr getVertexBufferData() const noexcept = 0;
+
+	virtual void setIndexBufferData(GraphicsDataPtr data) noexcept = 0;
+	virtual GraphicsDataPtr getIndexBufferData() const noexcept = 0;
+
 	virtual bool updateBuffer(GraphicsDataPtr& data, void* buf, std::size_t cnt) noexcept = 0;
 	virtual void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept = 0;
 	virtual void unmapBuffer(GraphicsDataPtr& data) noexcept = 0;
 
-	virtual void setRenderTexture(GraphicsFramebufferPtr target) noexcept = 0;
-	virtual void clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept = 0;
-	virtual void clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept = 0;
-	virtual void discardRenderTexture() noexcept = 0;
-	virtual void blitRenderTexture(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept = 0;
-	virtual void readRenderTexture(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept = 0;
-	virtual GraphicsFramebufferPtr getRenderTexture() const noexcept = 0;
+	virtual void setFramebuffer(GraphicsFramebufferPtr target) noexcept = 0;
+	virtual void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept = 0;
+	virtual void discardFramebuffer() noexcept = 0;
+	virtual void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept = 0;
+	virtual void readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept = 0;
+	virtual GraphicsFramebufferPtr getFramebuffer() const noexcept = 0;
 
 	virtual void drawRenderBuffer(const GraphicsIndirect& renderable) noexcept = 0;
 	virtual void drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept = 0;
@@ -118,6 +115,20 @@ public:
 private:
 	GraphicsContext(const GraphicsContext&) noexcept = delete;
 	GraphicsContext& operator=(const GraphicsContext&) noexcept = delete;
+};
+
+class EXPORT GraphicsContext2 : public GraphicsContext
+{
+	__DeclareSubInterface(GraphicsContext2, GraphicsContext)
+public:
+	GraphicsContext2() noexcept;
+	virtual ~GraphicsContext2() noexcept;
+
+	virtual void clearFramebufferIndexed(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept = 0;
+
+private:
+	GraphicsContext2(const GraphicsContext2&) noexcept = delete;
+	GraphicsContext2& operator=(const GraphicsContext2&) noexcept = delete;
 };
 
 _NAME_END

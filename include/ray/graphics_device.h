@@ -123,12 +123,13 @@ public:
 	virtual ~GraphicsDevice() noexcept;
 
 	virtual GraphicsSwapchainPtr createSwapchain(const GraphicsSwapchainDesc& desc) noexcept = 0;
-	virtual GraphicsContextPtr createGraphicsContext(const GraphicsContextDesc& desc) noexcept = 0;
+	virtual GraphicsContextPtr createDeviceContext(const GraphicsContextDesc& desc) noexcept = 0;
 	virtual GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept = 0;
 	virtual GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept = 0;
 	virtual GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept = 0;
 	virtual GraphicsSamplerPtr createSampler(const GraphicsSamplerDesc& desc) noexcept = 0;
 	virtual GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept = 0;
+	virtual GraphicsFramebufferLayoutPtr createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept = 0;
 	virtual GraphicsStatePtr createRenderState(const GraphicsStateDesc& desc) noexcept = 0;
 	virtual GraphicsShaderPtr createShader(const GraphicsShaderDesc& desc) noexcept = 0;
 	virtual GraphicsProgramPtr createProgram(const GraphicsProgramDesc& desc) noexcept = 0;
@@ -144,6 +145,23 @@ public:
 private:
 	GraphicsDevice(const GraphicsDevice&) noexcept = delete;
 	GraphicsDevice& operator=(const GraphicsDevice&) noexcept = delete;
+};
+
+class EXPORT GraphicsDevice2 : public GraphicsDevice
+{
+	__DeclareSubInterface(GraphicsDevice2, GraphicsDevice)
+public:
+	GraphicsDevice2() noexcept;
+	virtual ~GraphicsDevice2() noexcept;
+
+	virtual GraphicsCommandQueuePtr createCommandQueue(const GraphicsCommandQueueDesc& desc) noexcept = 0;
+	virtual GraphicsCommandPoolPtr createCommandPool(const GraphicsCommandPoolDesc& desc) noexcept = 0;
+	virtual GraphicsCommandListPtr createCommandList(const GraphicsCommandListDesc& desc) noexcept = 0;
+	virtual GraphicsSemaphorePtr createSemaphore(const GraphicsSemaphoreDesc& desc) noexcept = 0;
+
+private:
+	GraphicsDevice2(const GraphicsDevice2&) noexcept = delete;
+	GraphicsDevice2& operator=(const GraphicsDevice2&) noexcept = delete;
 };
 
 _NAME_END

@@ -37,26 +37,9 @@
 #ifndef _H_RENDER_SYSTEM_H_
 #define _H_RENDER_SYSTEM_H_
 
-#include <ray/render_types.h>
+#include <ray/render_setting.h>
 
 _NAME_BEGIN
-
-struct EXPORT RenderSetting
-{
-	bool enableSSAO;
-	bool enableSSGI;
-	bool enableSAT;
-	bool enableSSR;
-	bool enableSSSS;
-	bool enableFog;
-	bool enableDOF;
-	bool enableFimic;
-	bool enableFXAA;
-	bool enableLightShaft;
-	bool enableColorGrading;
-
-	RenderSetting() noexcept;
-};
 
 class EXPORT RenderSystem final
 {
@@ -65,42 +48,49 @@ public:
 	RenderSystem() noexcept;
 	~RenderSystem() noexcept;
 
-	bool open(WindHandle window, std::size_t w, std::size_t h) noexcept;
+	bool setup(const RenderSetting& setting) noexcept;
 	void close() noexcept;
 
 	void setRenderSetting(const RenderSetting& setting) noexcept;
 	const RenderSetting& getRenderSetting() const noexcept;
 
-	void setRenderPipeline(RenderPipelinePtr pipeline) noexcept;
-	RenderPipelinePtr getRenderPipeline() const noexcept;
-
 	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
-
-	void setSwapInterval(GraphicsSwapInterval interval) noexcept;
-	GraphicsSwapInterval getSwapInterval() const noexcept;
 
 	bool addRenderScene(RenderScenePtr scene) noexcept;
 	void removeRenderScene(RenderScenePtr scene) noexcept;
 
+	void setViewport(const Viewport& view) noexcept;
+	const Viewport& getViewport() const noexcept;
+
+	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
+	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
+	void discradRenderTexture() noexcept;
+	void readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	void blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
+
+	void drawCone(MaterialPassPtr pass) noexcept;
+	void drawSphere(MaterialPassPtr pass) noexcept;
+	void drawScreenQuad(MaterialPassPtr pass) noexcept;
+	void drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const GraphicsIndirect& renderable) noexcept;
+
+	GraphicsTexturePtr createTexture(const std::string& name) noexcept;
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
-	GraphicsTexturePtr createTexture(const std::string& name) noexcept;
-
-	MaterialPtr createMaterial(const std::string& name) noexcept;
-
-	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
+	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
+	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
+	GraphicsFramebufferLayoutPtr createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept;
+	MaterialPtr createMaterial(const std::string& name) noexcept;
+
+	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) noexcept;
+	RenderBufferPtr createRenderBuffer(const MeshPropertys& meshes) noexcept;
+	RenderBufferPtr createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
+
 	bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;
 	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
 	void unmapBuffer(GraphicsDataPtr& data) noexcept;
-
-	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
-
-	RenderBufferPtr createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
-	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) noexcept;
-	RenderBufferPtr createRenderBuffer(const MeshPropertys& meshes) noexcept;
 
 	void renderBegin() noexcept;
 	void render() noexcept;
@@ -111,25 +101,8 @@ private:
 	RenderSystem& operator=(const RenderSystem&) noexcept = delete;
 
 private:
-
-	RenderSetting _setting;
-
 	RenderScenes _sceneList;
-
-	RenderPipelinePtr _pipeline;
 	RenderPipelineManagerPtr _pipelineManager;
-
-	RenderPostProcessPtr _SSGI;
-	RenderPostProcessPtr _SSAO;
-	RenderPostProcessPtr _SAT;
-	RenderPostProcessPtr _SSR;
-	RenderPostProcessPtr _SSSS;
-	RenderPostProcessPtr _DOF;
-	RenderPostProcessPtr _fog;
-	RenderPostProcessPtr _lightShaft;
-	RenderPostProcessPtr _fimicToneMapping;
-	RenderPostProcessPtr _FXAA;
-	RenderPostProcessPtr _colorGrading;
 };
 
 _NAME_END

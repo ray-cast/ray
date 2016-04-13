@@ -581,20 +581,19 @@ EGL3ShaderObject::_initActiveUniformBlock() noexcept
 		if (count == 0)
 			continue;
 
-		GLint size = 0;
+		GLint blockSize = 0;
 		std::vector<GLint> indices(count);
 		std::vector<GLint> offset((std::size_t)count);
-		std::vector<GLint> type((std::size_t)count);
 		std::vector<GLchar> name(maxUniformLength);
 
-		glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_DATA_SIZE, &size);
+		glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
 		glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices.data());
 		glGetActiveUniformsiv(_program, count, (GLuint*)&indices[0], GL_UNIFORM_OFFSET, &offset[0]);
 
 		auto uniformblock = std::make_shared<EGL3GraphicsUniformBlock>();
 		uniformblock->setName(nameUniformBlock.get());
 		uniformblock->setBindingPoint(location);
-		uniformblock->setBlockSize(size);
+		uniformblock->setBlockSize(blockSize);
 		uniformblock->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
 
 		for (GLint j = 0; j < count; j++)

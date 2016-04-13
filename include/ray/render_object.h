@@ -47,8 +47,8 @@ public:
 	RenderListener() noexcept;
 	virtual ~RenderListener() noexcept;
 
-	virtual void onWillRenderObject(const Camera& camera) noexcept = 0;
-	virtual void onRenderObject(RenderPipeline& pipeline, const Camera& camera) noexcept = 0;
+	virtual void onRenderObjectPre(RenderPipeline& pipeline) noexcept = 0;
+	virtual void onRenderObjectPost(RenderPipeline& pipeline) noexcept = 0;
 };
 
 class EXPORT RenderObject : public rtti::Interface
@@ -92,12 +92,16 @@ public:
 	void removeSubRenderObject(RenderObjectPtr object) noexcept;
 	RenderObjects& getSubeRenderObjects() noexcept;
 
+	void render(RenderPipeline& pipelineContext, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept;
+
 protected:
 	virtual void onMoveBefor() noexcept;
 	virtual void onMoveAfter() noexcept;
 
 	virtual void onSceneChangeBefor() noexcept;
 	virtual void onSceneChangeAfter() noexcept;
+
+	virtual void onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept;
 
 private:
 	std::uint8_t _layer;

@@ -340,6 +340,7 @@ MeshRenderComponent::buildRenderObject(MeshPropertyPtr mesh, RenderBufferPtr buf
 		renderable->numVertices = mesh->getNumVertices();
 		renderable->numIndices = mesh->getNumIndices();
 		renderable->numInstances = 0;
+		renderable->indexType = GraphicsIndexType::GraphicsIndexTypeUInt32;
 
 		renderObject->setGraphicsIndirect(renderable);
 

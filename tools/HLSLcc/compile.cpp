@@ -279,6 +279,22 @@ FxmlCompile::load(ray::iarchive& reader) except
 				_onceInclude[path] = true;
 			}
 		}
+		else if (name == "inputlayout")
+		{
+			InputLayout inputLayout;
+			inputLayout.name = reader.getValue<std::string>("name");
+			if (reader.setToFirstChild())
+			{
+				do
+				{
+					InputLayoutChild child;
+					child.name = reader.getValue<std::string>("name");
+					child.format = reader.getValue<std::string>("format");
+					inputLayout.layouts.push_back(child);
+				} while (reader.setToNextChild());
+			}
+			_inputLayouts.push_back(inputLayout);
+		}
 		else if (name == "parameter")
 		{
 			Parameter parameter;
@@ -425,6 +441,22 @@ FxmlCompile::save(ray::oarchive& reader) except
 			reader.addSubNode("state");
 			reader.addAttribute("name", state.name);
 			reader.addAttribute("value", state.value);
+			reader.setToParent();
+		}
+
+		reader.setToParent();
+	}
+
+	for (auto& inputLayout : _inputLayouts)
+	{
+		reader.addSubNode("inputlayout");
+		reader.addAttribute("name", inputLayout.name);
+
+		for (auto& layout : inputLayout.layouts)
+		{
+			reader.addSubNode("layout");
+			reader.addAttribute("name", layout.name);
+			reader.addAttribute("format", layout.format);
 			reader.setToParent();
 		}
 

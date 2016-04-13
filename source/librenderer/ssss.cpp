@@ -34,18 +34,23 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/ssss.h>
+#include "ssss.h"
 #include <ray/camera.h>
 #include <ray/light.h>
 #include <ray/material.h>
 
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
+#include <ray/render_pipeline.h>
 
 _NAME_BEGIN
 
+__ImplementSubClass(SSSS, RenderPostProcess, "SSSS")
+
 SSSS::SSSS() noexcept
-	: _sssStrength(0.6f)
+	: _sssScale(100.0f)
+	, _sssStrength(0.5f)
+	, _sssWidth(0.0125f)
 	, _gaussianWidth(6.0f)
 {
 	this->setRenderQueue(RenderQueue::RenderQueuePostprocess);
@@ -63,9 +68,8 @@ SSSS::blurX(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebu
 	_sssSource->assign(source);
 	_sssStep->assign(float2(1.0 / widght, 0.0) * _sssStrength * _gaussianWidth);
 
-	pipeline.setRenderTexture(dest);
-	pipeline.discradRenderTexture();
-	pipeline.drawScreenQuad(_blurX);
+	pipeline.setFramebuffer(dest);
+	pipeline.drawScreenQuad(_blur);
 }
 
 void 
@@ -76,78 +80,103 @@ SSSS::blurY(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebu
 	_sssSource->assign(source);
 	_sssStep->assign(float2(0.0, 1.0 / height) * _sssStrength * _gaussianWidth);
 
-	pipeline.setRenderTexture(dest);
-	pipeline.discradRenderTexture();
-	pipeline.drawScreenQuad(_blurY);
+	pipeline.setFramebuffer(dest);
+	pipeline.drawScreenQuad(_blur);
+}
+
+void
+SSSS::translucency(RenderPipeline& pipeline, LightPtr light, GraphicsTexturePtr shaodwMap, GraphicsFramebufferPtr dest) noexcept
+{
+	assert(light && shaodwMap && dest);
+	assert(light->getSubsurfaceScattering());
+
+	float3 clipConstant = light->getShadowCamera()->getClipConstant().xyz();
+	float shadowFactor = _sssScale / (light->getShadowCamera()->getFar() - light->getShadowCamera()->getNear());
+
+	_eyeProjInfo->assign(pipeline.getCamera()->getProjConstant());
+
+	_lightColor->assign(light->getLightColor() * light->getIntensity());
+	_lightEyePosition->assign(light->getTranslate() * pipeline.getCamera()->getView());
+
+	_shadowMap->assign(shaodwMap);
+	_shadowFactor->assign(float4(clipConstant, shadowFactor));
+	_shadowEye2LightView->assign((pipeline.getCamera()->getViewInverse() * light->getShadowCamera()->getView().getAxisZ()));
+	_shadowEye2LightViewProject->assign(pipeline.getCamera()->getViewInverse() * light->getShadowCamera()->getViewProject());
+
+	pipeline.setFramebuffer(dest);
+	pipeline.drawScreenQuad(_translucency);
 }
 
 void
 SSSS::translucency(RenderPipeline& pipeline, GraphicsFramebufferPtr dest) noexcept
 {
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 
 	auto lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting, RenderPass::RenderPassLights);
 	for (auto& it : lights)
 	{
 		auto light = it->downcast<Light>();
-		if (light->getShadow())
+		if (light->getShadow() && light->getSubsurfaceScattering())
 		{
-			_lightColor->assign(light->getLightColor() * light->getIntensity());
-			_lightShadowMap->assign(light->getShadowMap());
-			_lightShadowMatrix->assign(light->getShadowCamera()->getViewProject());
-			_lightDirection->assign(-light->getForward() * float3x3(pipeline.getCamera()->getView()));
-
-			if (light->getLightType() == LightType::LightTypeSun)
-			{
-				pipeline.drawScreenQuad(_translucency);
-			}
+			this->translucency(pipeline, light, light->getShadowMap(), dest);
 		}
 	}
 }
 
 void
-SSSS::onActivate(RenderPipeline& pipeline) except
+SSSS::onActivate(RenderPipeline& pipeline) noexcept
 {
 	_material = pipeline.createMaterial("sys:fx/ssss.fxml.o");
 
 	_translucency = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("translucency");
-	_blurX = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("blurX");
-	_blurY = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("blurY");
+	_blur = _material->getTech(RenderQueue::RenderQueuePostprocess)->getPass("blur");
 
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_SSSSMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_SSSSMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8UNorm);
 
-	float sssLevel = 0.125f * float(47) / (100 - 0);
-	float sssStrength = 8.25 * (1.0 - 0.83) / sssLevel;
+	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
+	framebufferLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR8G8B8UNorm, 0));
+	_SSSSViewLayout = pipeline.createFramebufferLayout(framebufferLayoutDesc);
 
-	_sssWidth = _material->getParameter("sssWidth");
+	GraphicsFramebufferDesc framebufferDesc;
+	framebufferDesc.setWidth(width);
+	framebufferDesc.setHeight(height);
+	framebufferDesc.attach(_SSSSMap);
+	framebufferDesc.setGraphicsFramebufferLayout(_SSSSViewLayout);
+	_SSSSView = pipeline.createFramebuffer(framebufferDesc);
+
 	_sssStep = _material->getParameter("sssStep");
 	_sssCorrection = _material->getParameter("sssCorrection");
 	_sssSource = _material->getParameter("texSource");
 
+	_texDepthLinear = _material->getParameter("texDepthLinear");
+	_eyeProjInfo = _material->getParameter("eyeProjInfo");
+
 	_lightColor = _material->getParameter("lightColor");
-	_lightDirection = _material->getParameter("lightDirection");
-	_lightShadowMap = _material->getParameter("lightShadowMap");
-	_lightShadowMatrix = _material->getParameter("lightShadowMatrix");
+	_lightEyePosition = _material->getParameter("lightEyePosition");
 
-	_sssWidth->assign(sssStrength);
-	_sssCorrection->assign(sssLevel);
+	_shadowMap = _material->getParameter("shadowMap");
+	_shadowFactor = _material->getParameter("shadowFactor");
+	_shadowEye2LightView = _material->getParameter("shadowEye2LightView");
+	_shadowEye2LightViewProject = _material->getParameter("shadowEye2LightViewProject");
+
+	_sssCorrection->assign(_sssWidth);
 }
 
 void
-SSSS::onDeactivate(RenderPipeline& pipeline) except
+SSSS::onDeactivate(RenderPipeline& pipeline) noexcept
 {
 }
 
-void
-SSSS::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+bool
+SSSS::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	this->blurX(pipeline, source, _SSSSView);
+	this->translucency(pipeline, source);
+	this->blurX(pipeline, source->getGraphicsFramebufferDesc().getTextures().front(), _SSSSView);
 	this->blurY(pipeline, _SSSSMap, dest);
-
-	this->translucency(pipeline, dest);
+	return true;
 }
 
 _NAME_END

@@ -41,6 +41,22 @@
 
 _NAME_BEGIN
 
+class EXPORT GraphicsPipelineLayoutDesc final
+{
+public:
+	GraphicsPipelineLayoutDesc() noexcept;
+	~GraphicsPipelineLayoutDesc() noexcept;
+
+	void setGraphicsDescriptorSetLayout(const GraphicsDescriptorSetLayouts& descriptorSetLayouts) noexcept;
+	const GraphicsDescriptorSetLayouts& getGraphicsDescriptorSetLayouts() const noexcept;
+
+	void addGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr& descriptorSetLayout) noexcept;
+	void removeGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr& descriptorSetLayout) noexcept;
+
+private:
+	GraphicsDescriptorSetLayouts _descriptorSetLayouts;
+};
+
 class EXPORT GraphicsPipelineDesc final
 {
 public:
@@ -67,7 +83,21 @@ private:
 	GraphicsProgramPtr _program;
 	GraphicsInputLayoutPtr _inputLayout;
 	GraphicsFramebufferLayoutPtr _framebufferLayout;
-	GraphicsDescriptorSetLayoutPtr _descriptorSet;
+	GraphicsDescriptorSetLayoutPtr _descriptorSetLayout;
+};
+
+class EXPORT GraphicsPipelineLayout : public GraphicsChild
+{
+	__DeclareSubInterface(GraphicsPipelineLayout, GraphicsChild)
+public:
+	GraphicsPipelineLayout() noexcept;
+	virtual ~GraphicsPipelineLayout() noexcept;
+
+	virtual const GraphicsPipelineLayoutDesc& getGraphicsPipelineLayoutDesc() const noexcept = 0;
+
+private:
+	GraphicsPipelineLayout(const GraphicsPipelineLayout&) noexcept = delete;
+	GraphicsPipelineLayout& operator=(const GraphicsPipelineLayout&) noexcept = delete;
 };
 
 class EXPORT GraphicsPipeline : public GraphicsChild

@@ -52,12 +52,13 @@ public:
 	void close() noexcept;
 
 	GraphicsSwapchainPtr createSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
-	GraphicsContextPtr createGraphicsContext(const GraphicsContextDesc& desc) noexcept;
+	GraphicsContextPtr createDeviceContext(const GraphicsContextDesc& desc) noexcept;
 	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
 	GraphicsSamplerPtr createSampler(const GraphicsSamplerDesc& desc) noexcept;
 	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
+	GraphicsFramebufferLayoutPtr createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept;
 	GraphicsShaderPtr createShader(const GraphicsShaderDesc& desc) noexcept;
 	GraphicsProgramPtr createProgram(const GraphicsProgramDesc& desc) noexcept;
 	GraphicsStatePtr createRenderState(const GraphicsStateDesc& desc) noexcept;

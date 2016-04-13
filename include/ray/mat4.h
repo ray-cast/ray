@@ -50,6 +50,11 @@ public:
 	static const Matrix4x4t<T> Zero;
 	static const Matrix4x4t<T> One;
 
+	T a1, a2, a3, a4;
+	T b1, b2, b3, b4;
+	T c1, c2, c3, c4;
+	T d1, d2, d3, d4;
+
 	Matrix4x4t()
 	{
 	}
@@ -408,6 +413,21 @@ public:
 		b4 += y;
 		c4 += z;
 		return *this;
+	}
+
+	Vector4t<T> getAxisX() const noexcept
+	{
+		return Vector4t<T>(a1, a2, a3, a4);
+	}
+
+	Vector4t<T> getAxisY() const noexcept
+	{
+		return Vector4t<T>(b1, b2, b3, b4);
+	}
+
+	Vector4t<T> getAxisZ() const noexcept
+	{
+		return Vector4t<T>(c1, c2, c3, c4);
 	}
 
 	Vector3t<T> getTranslate() const
@@ -778,8 +798,8 @@ public:
 	{
 		T A = (right + left) / (right - left);
 		T B = (top + bottom) / (top - bottom);
-		T C = (zFar > DBL_MAX) ? 1.0f : (zFar + zNear) / (zFar - zNear);
-		T D = (zFar > DBL_MAX) ? zNear : 2.0 * zNear * zFar / (zFar - zNear);
+		T C = (zFar > DBL_MAX) ? -1.0f : -(zFar + zNear) / (zFar - zNear);
+		T D = (zFar > DBL_MAX) ? -zNear : -2.0 * zFar * zNear / (zFar - zNear);
 		T cx = 2.0f * zNear / (right - left);
 		T cy = 2.0f * zNear / (top - bottom);
 
@@ -980,11 +1000,6 @@ public:
 			b1 * v.x + b2 * v.y + b3 * v.z,
 			c1 * v.x + c2 * v.y + c3 * v.z);
 	}
-
-	T a1, a2, a3, a4;
-	T b1, b2, b3, b4;
-	T c1, c2, c3, c4;
-	T d1, d2, d3, d4;
 };
 
 template<typename T> const Matrix4x4t<T> Matrix4x4t<T>::Zero(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);

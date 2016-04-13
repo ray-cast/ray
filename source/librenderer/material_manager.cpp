@@ -50,11 +50,12 @@ MaterialManager::~MaterialManager() noexcept
 	this->close();
 }
 
-void
-MaterialManager::open(GraphicsDevicePtr device) noexcept
+bool
+MaterialManager::setup(GraphicsDevicePtr device) noexcept
 {
 	_graphicsDevice = device;
 	_materialLoader = std::make_shared<MaterialMaker>();
+	return true;
 }
 
 void

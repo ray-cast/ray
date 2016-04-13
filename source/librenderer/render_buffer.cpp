@@ -60,12 +60,6 @@ RenderBuffer::setIndexBuffer(GraphicsDataPtr ibo) noexcept
 	_ibo = ibo;
 }
 
-void 
-RenderBuffer::setInputLayout(GraphicsInputLayoutPtr layout) noexcept
-{
-	_layout = layout;
-}
-
 GraphicsDataPtr
 RenderBuffer::getVertexBuffer() noexcept
 {
@@ -76,12 +70,6 @@ GraphicsDataPtr
 RenderBuffer::getIndexBuffer() noexcept
 {
 	return _ibo;
-}
-
-GraphicsInputLayoutPtr
-RenderBuffer::getInputLayout() noexcept
-{
-	return _layout;
 }
 
 _NAME_END

@@ -41,9 +41,35 @@
 
 _NAME_BEGIN
 
+class OGLFramebufferLayout final : public GraphicsFramebufferLayout
+{
+	__DeclareSubClass(OGLFramebufferLayout, GraphicsFramebufferLayout)
+public:
+	OGLFramebufferLayout() noexcept;
+	~OGLFramebufferLayout() noexcept;
+
+	bool setup(const GraphicsFramebufferLayoutDesc& framebufferDesc) noexcept;
+	void close() noexcept;
+
+	const GraphicsFramebufferLayoutDesc& getGraphicsFramebufferLayoutDesc() const noexcept;
+
+private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	OGLFramebufferLayout(const OGLFramebufferLayout&) noexcept = delete;
+	OGLFramebufferLayout& operator=(const OGLFramebufferLayout&) noexcept = delete;
+
+private:
+	GraphicsDeviceWeakPtr _device;
+	GraphicsFramebufferLayoutDesc _framebufferLayoutDesc;
+};
+
 class OGLFramebuffer final : public GraphicsFramebuffer
 {
-	__DeclareSubClass(OGLGraphicsFramebuffer, GraphicsFramebuffer)
+	__DeclareSubClass(OGLFramebuffer, GraphicsFramebuffer)
 public:
 	OGLFramebuffer() noexcept;
 	~OGLFramebuffer() noexcept;

@@ -34,8 +34,10 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/color_grading.h>
+#include "color_grading.h"
 #include <ray/material.h>
+#include <ray/graphics_framebuffer.h>
+#include <ray/render_pipeline.h>
 
 _NAME_BEGIN
 
@@ -48,7 +50,7 @@ ColorGrading::~ColorGrading() noexcept
 }
 
 void
-ColorGrading::onActivate(RenderPipeline& pipeline) except
+ColorGrading::onActivate(RenderPipeline& pipeline) noexcept
 {
 	_texColorGrading = pipeline.createTexture("sys:media/color_grading.png");
 
@@ -61,18 +63,20 @@ ColorGrading::onActivate(RenderPipeline& pipeline) except
 }
 
 void
-ColorGrading::onDeactivate(RenderPipeline& pipeline) except
+ColorGrading::onDeactivate(RenderPipeline& pipeline) noexcept
 {
 }
 
-void
-ColorGrading::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) except
+bool
+ColorGrading::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	_texSource->assign(source);
+	_texSource->assign(source->getGraphicsFramebufferDesc().getTextures().front());
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
 	pipeline.drawScreenQuad(_colorGrading);
+
+	return true;
 }
 
 _NAME_END

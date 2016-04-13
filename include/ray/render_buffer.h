@@ -50,11 +50,9 @@ public:
 
 	void setVertexBuffer(GraphicsDataPtr vbo) noexcept;
 	void setIndexBuffer(GraphicsDataPtr ibo) noexcept;
-	void setInputLayout(GraphicsInputLayoutPtr layout) noexcept;
 
 	GraphicsDataPtr getVertexBuffer() noexcept;
 	GraphicsDataPtr getIndexBuffer() noexcept;
-	GraphicsInputLayoutPtr getInputLayout() noexcept;
 
 private:
 	RenderBuffer(const RenderBuffer&) noexcept = delete;
@@ -63,7 +61,6 @@ private:
 private:
 	GraphicsDataPtr _vbo;
 	GraphicsDataPtr _ibo;
-	GraphicsInputLayoutPtr _layout;
 };
 
 _NAME_END

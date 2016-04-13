@@ -34,11 +34,12 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/ssao.h>
+#include "ssao.h"
 #include <ray/camera.h>
 #include <ray/material.h>
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
+#include <ray/render_pipeline.h>
 
 _NAME_BEGIN
 
@@ -91,7 +92,7 @@ SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 	_cameraProjInfo->assign(pipeline.getCamera()->getProjConstant());
 	_cameraProjScale->assign(pipeline.getCamera()->getProjLength().y * _setting.radius);
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
 	pipeline.drawScreenQuad(_ambientOcclusionPass);
 }
@@ -124,7 +125,7 @@ SSAO::blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphic
 	_blurDirection->assign(direction);
 	_blurSource->assign(source);
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
 	pipeline.drawScreenQuad(_ambientOcclusionBlurPass);
 }
@@ -134,12 +135,12 @@ SSAO::shading(RenderPipeline& pipeline, GraphicsTexturePtr ambient, GraphicsFram
 {
 	_occlusionAmbient->assign(ambient);
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(_ambientOcclusionCopyPass);
 }
 
 void
-SSAO::createSphereNoise()
+SSAO::createSphereNoise() noexcept
 {
 	std::vector<float2> sphere;
 	std::size_t numSample = _sampleNumber->getInt();
@@ -159,7 +160,7 @@ SSAO::createSphereNoise()
 }
 
 void
-SSAO::onActivate(RenderPipeline& pipeline) except
+SSAO::onActivate(RenderPipeline& pipeline) noexcept
 {
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
@@ -207,14 +208,16 @@ SSAO::onActivate(RenderPipeline& pipeline) except
 }
 
 void
-SSAO::onDeactivate(RenderPipeline& pipeline) except
+SSAO::onDeactivate(RenderPipeline& pipeline) noexcept
 {
 }
 
-void
-SSAO::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) except
+bool
+SSAO::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	this->computeRawAO(pipeline, source, _texAmbientView);
+	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
+
+	this->computeRawAO(pipeline, texture, _texAmbientView);
 
 	if (_setting.blur)
 	{
@@ -224,8 +227,10 @@ SSAO::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFram
 
 	this->shading(pipeline, _texAmbientMap, dest);
 
-	// pipeline.blitRenderTexture(_texAmbient, Viewport(0, 0, 1376, 768), dest, Viewport(0, 0, 1376, 768));
-	// pipeline.blitRenderTexture(_texAmbient, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));
+	// pipeline.blitFramebuffer(_texAmbient, Viewport(0, 0, 1376, 768), dest, Viewport(0, 0, 1376, 768));
+	// pipeline.blitFramebuffer(_texAmbient, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));
+
+	return true;
 }
 
 _NAME_END

@@ -30,8 +30,8 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-#ifndef YY_YY_E_PROJECTS_RAY_CONTRIB_GLSLANG_GLSLANG_MACHINEINDEPENDENT_GLSLANG_TAB_CPP_H_INCLUDED
-# define YY_YY_E_PROJECTS_RAY_CONTRIB_GLSLANG_GLSLANG_MACHINEINDEPENDENT_GLSLANG_TAB_CPP_H_INCLUDED
+#ifndef YY_YY_C_PROJECTS_GLSLANG_GLSLANG_MACHINEINDEPENDENT_GLSLANG_TAB_CPP_H_INCLUDED
+# define YY_YY_C_PROJECTS_GLSLANG_GLSLANG_MACHINEINDEPENDENT_GLSLANG_TAB_CPP_H_INCLUDED
 /* Enabling traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 1
@@ -311,7 +311,7 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 66 "E:/projects/ray/contrib/glslang/glslang/MachineIndependent/glslang.y"
+#line 66 "C:/Projects/glslang/glslang/MachineIndependent/glslang.y"
 
     struct {
         glslang::TSourceLoc loc;
@@ -345,7 +345,7 @@ typedef union YYSTYPE
 
 
 /* Line 2058 of yacc.c  */
-#line 349 "E:/projects/ray/contrib/glslang/glslang/MachineIndependent/glslang_tab.cpp.h"
+#line 349 "C:/Projects/glslang/glslang/MachineIndependent/glslang_tab.cpp.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -367,4 +367,4 @@ int yyparse ();
 #endif
 #endif /* ! YYPARSE_PARAM */
 
-#endif /* !YY_YY_E_PROJECTS_RAY_CONTRIB_GLSLANG_GLSLANG_MACHINEINDEPENDENT_GLSLANG_TAB_CPP_H_INCLUDED  */
+#endif /* !YY_YY_C_PROJECTS_GLSLANG_GLSLANG_MACHINEINDEPENDENT_GLSLANG_TAB_CPP_H_INCLUDED  */

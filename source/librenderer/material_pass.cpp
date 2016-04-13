@@ -45,6 +45,99 @@ _NAME_BEGIN
 
 __ImplementSubClass(MaterialPass, rtti::Interface, "MaterialPass")
 
+MaterialPassDesc::MaterialPassDesc() noexcept
+	: _pass(RenderPass::RenderPassCustom)
+{
+}
+
+MaterialPassDesc::~MaterialPassDesc() noexcept
+{
+}
+
+void 
+MaterialPassDesc::setName(const std::string& name) noexcept
+{
+	_name = name;
+}
+
+const std::string&
+MaterialPassDesc::getName() const noexcept
+{
+	return _name;
+}
+
+void
+MaterialPassDesc::setMaterialPass(RenderPass pass) noexcept
+{
+	_pass = pass;
+}
+
+RenderPass 
+MaterialPassDesc::getMaterialPass() const noexcept
+{
+	return _pass;
+}
+
+void
+MaterialPassDesc::setGraphicsState(GraphicsStatePtr& state) noexcept
+{
+	_state = state;	
+}
+
+void
+MaterialPassDesc::setGraphicsProgram(GraphicsProgramPtr& program) noexcept
+{
+	_program = program;	
+}
+
+void
+MaterialPassDesc::setGraphicsInputLayout(GraphicsInputLayoutPtr& inputLayout) noexcept
+{
+	_inputLayout = inputLayout;	
+}
+
+void
+MaterialPassDesc::setGraphicsDescriptorPool(GraphicsDescriptorPoolPtr& descriptorPool) noexcept
+{
+	_descriptorPool = descriptorPool;
+}
+
+void
+MaterialPassDesc::setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr& descriptorSetLayout) noexcept
+{
+	_descriptorSetLayout = descriptorSetLayout;	
+}
+
+GraphicsStatePtr 
+MaterialPassDesc::getGraphicsState() const noexcept
+{
+	return _state;
+}
+
+GraphicsProgramPtr 
+MaterialPassDesc::getGraphicsProgram() const noexcept
+{
+	return _program;
+}
+
+GraphicsInputLayoutPtr 
+MaterialPassDesc::getGraphicsInputLayout() const noexcept
+{
+	return _inputLayout;
+}
+
+GraphicsDescriptorPoolPtr 
+MaterialPassDesc::getGraphicsDescriptorPool() const noexcept
+{
+	return _descriptorPool;
+}
+
+GraphicsDescriptorSetLayoutPtr 
+MaterialPassDesc::getGraphicsDescriptorSetLayout() const noexcept
+{
+	return _descriptorSetLayout;
+}
+
 MaterialPass::MaterialPass() noexcept
 	:_pass(RenderPass::RenderPassCustom)
 {
@@ -58,7 +151,9 @@ MaterialPass::~MaterialPass() noexcept
 bool
 MaterialPass::setup(Material& material) noexcept
 {
-	assert(_program && _state);
+	assert(_state);
+	assert(_program);
+	assert(_inputLayout);
 
 	GraphicsDescriptorSetLayoutDesc descriptorSetLayoutDesc;
 	descriptorSetLayoutDesc.setUniformComponents(_program->getActiveUniforms());
@@ -70,6 +165,7 @@ MaterialPass::setup(Material& material) noexcept
 	GraphicsPipelineDesc pipelineDesc;
 	pipelineDesc.setGraphicsState(_state);
 	pipelineDesc.setGraphicsProgram(_program);
+	pipelineDesc.setGraphicsInputLayout(_inputLayout);
 	pipelineDesc.setGraphicsDescriptorSetLayout(_descriptorSetLayout);
 	_pipeline = _program->getDevice()->createRenderPipeline(pipelineDesc);
 	if (!_pipeline)
@@ -198,28 +294,64 @@ MaterialPass::getParameter(const std::string& name) const noexcept
 	return nullptr;
 }
 
-void 
+void
+MaterialPass::setGraphicsState(GraphicsStatePtr state) noexcept
+{
+	_state = state;
+}
+
+void
 MaterialPass::setGraphicsProgram(GraphicsProgramPtr program) noexcept
 {
 	_program = program;
 }
 
-GraphicsProgramPtr 
+void
+MaterialPass::setGraphicsInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept
+{
+	_inputLayout = inputLayout;
+}
+
+void
+MaterialPass::setGraphicsDescriptorPool(GraphicsDescriptorPoolPtr descriptorPool) noexcept
+{
+	_descriptorPool = descriptorPool;
+}
+
+void
+MaterialPass::setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr descriptorSetLayout) noexcept
+{
+	_descriptorSetLayout = descriptorSetLayout;
+}
+
+GraphicsStatePtr
+MaterialPass::getGraphicsState() const noexcept
+{
+	return _state;
+}
+
+GraphicsProgramPtr
 MaterialPass::getGraphicsProgram() const noexcept
 {
 	return _program;
 }
 
-void 
-MaterialPass::setGraphicsState(GraphicsStatePtr program) noexcept
+GraphicsInputLayoutPtr
+MaterialPass::getGraphicsInputLayout() const noexcept
 {
-	_state = program;
+	return _inputLayout;
 }
 
-GraphicsStatePtr 
-MaterialPass::getGraphicsState() const noexcept
+GraphicsDescriptorPoolPtr
+MaterialPass::getGraphicsDescriptorPool() const noexcept
 {
-	return _state;
+	return _descriptorPool;
+}
+
+GraphicsDescriptorSetLayoutPtr
+MaterialPass::getGraphicsDescriptorSetLayout() const noexcept
+{
+	return _descriptorSetLayout;
 }
 
 GraphicsPipelinePtr

@@ -31,7 +31,7 @@
     <object>
         <attribute name="plane"/>
         <attribute position="0,-2,0"/>
-        <attribute scale="10,1,10"/>
+        <attribute scale="40,1,40"/>
         <attribute active="true"/>
         <component class="Mesh">
             <attribute name="dlc:sssss/models/cube.pmx"/>
@@ -42,26 +42,28 @@
     </object>
     <object>
         <attribute name="sun"/>
-        <attribute position="0,2,-3"/>
-        <attribute rotate="1,0,0"/>
+        <attribute position="0,5,0"/>
+        <attribute rotate="90,0,0"/>
         <attribute active="true"/>
         <component class="Light">
-            <attribute type="sun"/>
+            <attribute type="point"/>
             <attribute color="1.0,1.0,1.0"/>
-            <attribute range="30.0"/>
+            <attribute range="10.0"/>
             <attribute intensity="1.0"/>
             <attribute shadow="true"/>
+            <attribute soft="true"/>
+            <attribute sss="false"/>
         </component>
     </object>
     <object>
         <attribute name="light"/>
         <attribute position="0, 0, 0"/>
-        <attribute active="false"/>
+        <attribute active="true"/>
         <component class="Light">
             <attribute type="ambient"/>
+            <attribute range="100.0"/>
             <attribute color="1.0,1.0,1.0"/>
-            <attribute range="200.0"/>
-            <attribute intensity="0.1"/>
+            <attribute intensity="0.5"/>
         </component>
     </object>
 </scene>

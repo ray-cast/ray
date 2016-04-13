@@ -39,6 +39,7 @@
 _NAME_BEGIN
 
 __ImplementSubInterface(GraphicsDevice, rtti::Interface, "GraphicsDevice")
+__ImplementSubInterface(GraphicsDevice2, GraphicsDevice, "GraphicsDevice2")
 
 GraphicsPixelFormatDesc::GraphicsPixelFormatDesc() noexcept
 	: _minColorBits(0)
@@ -269,6 +270,14 @@ GraphicsDevice::GraphicsDevice() noexcept
 }
 
 GraphicsDevice::~GraphicsDevice() noexcept
+{
+}
+
+GraphicsDevice2::GraphicsDevice2() noexcept
+{
+}
+
+GraphicsDevice2::~GraphicsDevice2() noexcept
 {
 }
 

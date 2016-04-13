@@ -39,9 +39,7 @@
 
 #include <ray/memory.h>
 #include <ray/math.h>
-#include <ray/except.h>
-#include <ray/variant.h>
-#include <ray/model.h>
+#include <ray/rtti.h>
 
 _NAME_BEGIN
 
@@ -63,6 +61,7 @@ typedef std::shared_ptr<class GraphicsUniformBlock> GraphicsUniformBlockPtr;
 typedef std::shared_ptr<class GraphicsShader> GraphicsShaderPtr;
 typedef std::shared_ptr<class GraphicsProgram> GraphicsProgramPtr;
 typedef std::shared_ptr<class GraphicsPipeline> GraphicsPipelinePtr;
+typedef std::shared_ptr<class GraphicsPipelineLayout> GraphicsPipelineLayoutPtr;
 typedef std::shared_ptr<class GraphicsDescriptorPool> GraphicsDescriptorPoolPtr;
 typedef std::shared_ptr<class GraphicsDescriptorSet> GraphicsDescriptorSetPtr;
 typedef std::shared_ptr<class GraphicsDescriptorSetLayout> GraphicsDescriptorSetLayoutPtr;
@@ -85,9 +84,11 @@ typedef std::weak_ptr<class GraphicsState> GraphicsStateWeakPtr;
 typedef std::weak_ptr<class GraphicsTexture> GraphicsTextureWeakPtr;
 typedef std::weak_ptr<class GraphicsSampler> GraphicsSamplerWeakPtr;
 typedef std::weak_ptr<class GraphicsFramebuffer> GraphicsFramebufferWeakPtr;
+typedef std::weak_ptr<class GraphicsFramebufferLayout> GraphicsFramebufferLayoutWeakPtr;
 typedef std::weak_ptr<class GraphicsShader> GraphicsShaderWeakPtr;
 typedef std::weak_ptr<class GraphicsProgram> GraphicsProgramWeakPtr;
 typedef std::weak_ptr<class GraphicsPipeline> GraphicsPipelineWeakPtr;
+typedef std::weak_ptr<class GraphicsPipelineLayout> GraphicsPipelineLayoutWeakPtr;
 typedef std::weak_ptr<class GraphicsDescriptorPool> GraphicsDescriptorPoolWeakPtr;
 typedef std::weak_ptr<class GraphicsDescriptorSet> GraphicsDescriptorSetWeakPtr;
 typedef std::weak_ptr<class GraphicsDescriptorSetLayout> GraphicsDescriptorSetLayoutWeakPtr;
@@ -97,6 +98,7 @@ typedef std::weak_ptr<class GraphicsSystem> GraphicsSystemWeakPtr;
 typedef std::weak_ptr<class GraphicsCommandPool> GraphicsCommandPoolWeakPtr;
 typedef std::weak_ptr<class GraphicsCommandQueue> GraphicsCommandQueueWeakPtr;
 typedef std::weak_ptr<class GraphicsCommandList> GraphicsCommandPoolListWeakPtr;
+typedef std::weak_ptr<class GraphicsSemaphoreDesc> GraphicsSemaphoreDescWeakPtr;
 
 typedef std::vector<GraphicsShaderPtr> GraphicsShaders;
 typedef std::vector<GraphicsVariantPtr> GraphicsVariants;
@@ -104,12 +106,14 @@ typedef std::vector<GraphicsFramebufferPtr> GraphicsFramebuffers;
 typedef std::vector<GraphicsIndirectPtr> GraphicsIndirects;
 typedef std::vector<GraphicsUniformSetPtr> GraphicsUniformSets;
 typedef std::vector<GraphicsTexturePtr> GraphicsTextures;
-typedef std::vector<class GraphicsVertexLayout> GraphicsVertexLayouts;
-typedef std::vector<class GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponents;
-typedef std::vector<class GraphicsAttachmentDesc> GraphicsAttachmentDescs;
 typedef std::vector<GraphicsAttributePtr> GraphicsAttributes;
 typedef std::vector<GraphicsUniformPtr> GraphicsUniforms;
 typedef std::vector<GraphicsUniformBlockPtr> GraphicsUniformBlocks;
+typedef std::vector<GraphicsDescriptorSetLayoutPtr> GraphicsDescriptorSetLayouts;
+typedef std::vector<GraphicsInputLayoutPtr> GraphicsInputLayouts;
+typedef std::vector<class GraphicsVertexLayout> GraphicsVertexLayouts;
+typedef std::vector<class GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponents;
+typedef std::vector<class GraphicsAttachmentDesc> GraphicsAttachmentDescs;
 
 class GraphicsDeviceDesc;
 class GraphicsSwapchainDesc;
@@ -119,28 +123,33 @@ class GraphicsDataDesc;
 class GraphicsTextureDesc;
 class GraphicsSamplerDesc;
 class GraphicsFramebufferDesc;
+class GraphicsFramebufferLayoutDesc;
 class GraphicsStateDesc;
 class GraphicsShaderDesc;
 class GraphicsProgramDesc;
 class GraphicsPipelineDesc;
+class GraphicsPipelineLayoutDesc;
 class GraphicsDescriptorSetDesc;
 class GraphicsDescriptorSetLayoutDesc;
 class GraphicsDescriptorPoolDesc;
+class GraphicsCommandQueueDesc;
+class GraphicsCommandPoolDesc;
+class GraphicsCommandListDesc;
 class GraphicsSemaphoreDesc;
 
 typedef void* WindHandle;
 
 enum GraphicsDeviceType
 {
-	GraphicsDeviceTypeD3D9,
-	GraphicsDeviceTypeD3D11,
-	GraphicsDeviceTypeD3D12,
-	GraphicsDeviceTypeOpenGL,
-	GraphicsDeviceTypeOpenGLCore,
-	GraphicsDeviceTypeOpenGLES2,
-	GraphicsDeviceTypeOpenGLES3,
-	GraphicsDeviceTypeOpenGLES31,
-	GraphicsDeviceTypeVulkan,
+	GraphicsDeviceTypeD3D9 = 0,
+	GraphicsDeviceTypeD3D11 = 1,
+	GraphicsDeviceTypeD3D12 = 2,
+	GraphicsDeviceTypeOpenGL = 3,
+	GraphicsDeviceTypeOpenGLCore = 4,
+	GraphicsDeviceTypeOpenGLES2 = 5,
+	GraphicsDeviceTypeOpenGLES3 = 6,
+	GraphicsDeviceTypeOpenGLES31 = 7,
+	GraphicsDeviceTypeVulkan = 8,
 	GraphicsDeviceTypeBeginRange = GraphicsDeviceTypeD3D9,
 	GraphicsDeviceTypeEndRange = GraphicsDeviceTypeVulkan,
 	GraphicsDeviceTypeRangeSize = (GraphicsDeviceTypeEndRange - GraphicsDeviceTypeBeginRange + 1),
@@ -149,23 +158,27 @@ enum GraphicsDeviceType
 
 enum GraphicsSwapInterval
 {
-	GraphicsSwapIntervalFree,
-	GraphicsSwapIntervalVsync,
-	GraphicsSwapIntervalFps30,
-	GraphicsSwapIntervalFps15,
+	GraphicsSwapIntervalFree = 0,
+	GraphicsSwapIntervalVsync = 1,
+	GraphicsSwapIntervalFps30 = 2,
+	GraphicsSwapIntervalFps15 = 3,
+	GraphicsSwapIntervalBeginRange = GraphicsSwapIntervalFree,
+	GraphicsSwapIntervalEndRange = GraphicsSwapIntervalFps15,
+	GraphicsSwapIntervalRangeSize = (GraphicsSwapIntervalEndRange - GraphicsSwapIntervalBeginRange + 1),
+	GraphicsSwapIntervalMaxEnum = 0x7FFFFFFF
 };
 
 enum GraphicsCompareFunc
 {
-	GraphicsCompareFuncNone,
-	GraphicsCompareFuncLequal,
-	GraphicsCompareFuncEqual,
-	GraphicsCompareFuncGreater,
-	GraphicsCompareFuncLess,
-	GraphicsCompareFuncGequal,
-	GraphicsCompareFuncNotEqual,
-	GraphicsCompareFuncAlways,
-	GraphicsCompareFuncNever,
+	GraphicsCompareFuncNone = 0,
+	GraphicsCompareFuncLequal = 1,
+	GraphicsCompareFuncEqual = 2,
+	GraphicsCompareFuncGreater = 3,
+	GraphicsCompareFuncLess = 4,
+	GraphicsCompareFuncGequal = 5,
+	GraphicsCompareFuncNotEqual = 6,
+	GraphicsCompareFuncAlways = 7,
+	GraphicsCompareFuncNever = 8,
 	GraphicsCompareFuncBeginRange = GraphicsCompareFuncNone,
 	GraphicsCompareFuncEndRange = GraphicsCompareFuncNever,
 	GraphicsCompareFuncRangeSize = (GraphicsCompareFuncEndRange - GraphicsCompareFuncBeginRange + 1),
@@ -174,21 +187,21 @@ enum GraphicsCompareFunc
 
 enum GraphicsBlendFactor
 {
-	GraphicsBlendFactorZero,
-	GraphicsBlendFactorOne,
-	GraphicsBlendFactorDstCol,
-	GraphicsBlendFactorSrcColor,
-	GraphicsBlendFactorSrcAlpha,
-	GraphicsBlendFactorDstAlpha,
-	GraphicsBlendFactorOneMinusSrcCol,
-	GraphicsBlendFactorOneMinusDstCol,
-	GraphicsBlendFactorOneMinusSrcAlpha,
-	GraphicsBlendFactorOneMinusDstAlpha,
-	GraphicsBlendFactorConstantColor,
-	GraphicsBlendFactorConstantAlpha,
-	GraphicsBlendFactorOneMinusConstantColor,
-	GraphicsBlendFactorOneMinusConstantAlpha,
-	GraphicsBlendFactorSrcAlphaSaturate,
+	GraphicsBlendFactorZero = 0,
+	GraphicsBlendFactorOne = 1,
+	GraphicsBlendFactorDstCol = 2,
+	GraphicsBlendFactorSrcColor = 3,
+	GraphicsBlendFactorSrcAlpha = 4,
+	GraphicsBlendFactorDstAlpha = 5,
+	GraphicsBlendFactorOneMinusSrcCol = 6,
+	GraphicsBlendFactorOneMinusDstCol = 7,
+	GraphicsBlendFactorOneMinusSrcAlpha = 8,
+	GraphicsBlendFactorOneMinusDstAlpha = 9,
+	GraphicsBlendFactorConstantColor = 10,
+	GraphicsBlendFactorConstantAlpha = 11,
+	GraphicsBlendFactorOneMinusConstantColor = 12,
+	GraphicsBlendFactorOneMinusConstantAlpha = 13,
+	GraphicsBlendFactorSrcAlphaSaturate = 14,
 	GraphicsBlendFactorBeginRange = GraphicsBlendFactorZero,
 	GraphicsBlendFactorEndRange = GraphicsBlendFactorSrcAlphaSaturate,
 	GraphicsBlendFactorRangeSize = (GraphicsBlendFactorEndRange - GraphicsBlendFactorBeginRange + 1),
@@ -197,9 +210,9 @@ enum GraphicsBlendFactor
 
 enum GraphicsBlendOp
 {
-	GraphicsBlendOpAdd,
-	GraphicsBlendOpSubtract,
-	GraphicsBlendOpRevSubtract,
+	GraphicsBlendOpAdd = 0,
+	GraphicsBlendOpSubtract = 1,
+	GraphicsBlendOpRevSubtract = 2,
 	GraphicsBlendOpBeginRange = GraphicsBlendOpAdd,
 	GraphicsBlendOpEndRange = GraphicsBlendOpRevSubtract,
 	GraphicsBlendOpRangeSize = (GraphicsBlendOpEndRange - GraphicsBlendOpBeginRange + 1),
@@ -218,10 +231,10 @@ enum GraphicsColorMask
 
 enum GraphicsCullMode
 {
-	GraphicsCullModeNone,
-	GraphicsCullModeFront,
-	GraphicsCullModeBack,
-	GraphicsCullModeFrontBack,
+	GraphicsCullModeNone = 0,
+	GraphicsCullModeFront = 1,
+	GraphicsCullModeBack = 2,
+	GraphicsCullModeFrontBack = 3,
 	GraphicsCullModeBeginRange = GraphicsCullModeNone,
 	GraphicsCullModeEndRange = GraphicsCullModeFrontBack,
 	GraphicsCullModeRangeSize = (GraphicsCullModeEndRange - GraphicsCullModeBeginRange + 1),
@@ -240,9 +253,9 @@ enum GraphicsFrontFace
 
 enum GraphicsPolygonMode
 {
-	GraphicsPolygonModePoint,
-	GraphicsPolygonModeWireframe,
-	GraphicsPolygonModeSolid,
+	GraphicsPolygonModePoint = 0,
+	GraphicsPolygonModeWireframe = 1,
+	GraphicsPolygonModeSolid = 2,
 	GraphicsPolygonModeBeginRange = GraphicsPolygonModePoint,
 	GraphicsPolygonModeEndRange = GraphicsPolygonModeSolid,
 	GraphicsPolygonModeRangeSize = (GraphicsPolygonModeEndRange - GraphicsPolygonModeBeginRange + 1),
@@ -251,13 +264,13 @@ enum GraphicsPolygonMode
 
 enum GraphicsStencilOp
 {
-	GraphicsStencilOpKeep,
-	GraphicsStencilOpReplace,
-	GraphicsStencilOpIncr,
-	GraphicsStencilOpDecr,
-	GraphicsStencilOpZero,
-	GraphicsStencilOpIncrWrap,
-	GraphicsStencilOpDecrWrap,
+	GraphicsStencilOpKeep = 0,
+	GraphicsStencilOpReplace = 1,
+	GraphicsStencilOpIncr = 2,
+	GraphicsStencilOpDecr = 3,
+	GraphicsStencilOpZero = 4,
+	GraphicsStencilOpIncrWrap = 5,
+	GraphicsStencilOpDecrWrap = 6,
 	GraphicsStencilOpBeginRange = GraphicsStencilOpKeep,
 	GraphicsStencilOpEndRange = GraphicsStencilOpDecrWrap,
 	GraphicsStencilOpRangeSize = (GraphicsStencilOpEndRange - GraphicsStencilOpBeginRange + 1),
@@ -277,65 +290,65 @@ enum GraphicsClearFlags
 
 enum GraphicsFormatType
 {
-	GraphicsFormatTypeNone,
-	GraphicsFormatTypeRInt,
-	GraphicsFormatTypeRUInt,
-	GraphicsFormatTypeRSRGB,
-	GraphicsFormatTypeRSNorm,
-	GraphicsFormatTypeRUNorm,
-	GraphicsFormatTypeRSScaled,
-	GraphicsFormatTypeRUScaled,
-	GraphicsFormatTypeRFloat,
-	GraphicsFormatTypeRGInt,
-	GraphicsFormatTypeRGUInt,
-	GraphicsFormatTypeRGSRGB,
-	GraphicsFormatTypeRGSNorm,
-	GraphicsFormatTypeRGUNorm,
-	GraphicsFormatTypeRGSScaled,
-	GraphicsFormatTypeRGUScaled,
-	GraphicsFormatTypeRGFloat,
-	GraphicsFormatTypeRGBInt,
-	GraphicsFormatTypeRGBUInt,
-	GraphicsFormatTypeRGBSRGB,
-	GraphicsFormatTypeRGBSNorm,
-	GraphicsFormatTypeRGBUNorm,
-	GraphicsFormatTypeRGBSScaled,
-	GraphicsFormatTypeRGBUScaled,
-	GraphicsFormatTypeRGBFloat,
-	GraphicsFormatTypeRGBAInt,
-	GraphicsFormatTypeRGBAUInt,
-	GraphicsFormatTypeRGBASRGB,
-	GraphicsFormatTypeRGBASNorm,
-	GraphicsFormatTypeRGBAUNorm,
-	GraphicsFormatTypeRGBASScaled,
-	GraphicsFormatTypeRGBAUScaled,
-	GraphicsFormatTypeRGBAFloat,
-	GraphicsFormatTypeBGRInt,
-	GraphicsFormatTypeBGRUInt,
-	GraphicsFormatTypeBGRSRGB,
-	GraphicsFormatTypeBGRSNorm,
-	GraphicsFormatTypeBGRUNorm,
-	GraphicsFormatTypeBGRSScaled,
-	GraphicsFormatTypeBGRUScaled,
-	GraphicsFormatTypeBGRFloat,
-	GraphicsFormatTypeBGRAInt,
-	GraphicsFormatTypeBGRAUInt,
-	GraphicsFormatTypeBGRASRGB,
-	GraphicsFormatTypeBGRASNorm,
-	GraphicsFormatTypeBGRAUNorm,
-	GraphicsFormatTypeBGRASScaled,
-	GraphicsFormatTypeBGRAUScaled,
-	GraphicsFormatTypeBGRAFloat,
-	GraphicsFormatTypeABGRInt,
-	GraphicsFormatTypeABGRUInt,
-	GraphicsFormatTypeABGRSRGB,
-	GraphicsFormatTypeABGRSNorm,
-	GraphicsFormatTypeABGRUNorm,
-	GraphicsFormatTypeABGRSScaled,
-	GraphicsFormatTypeABGRUScaled,
-	GraphicsFormatTypeABGRFloat,
-	GraphicsFormatTypeDepth,
-	GraphicsFormatTypeDepthStencil,
+	GraphicsFormatTypeNone = 0,
+	GraphicsFormatTypeRInt = 1,
+	GraphicsFormatTypeRUInt = 2,
+	GraphicsFormatTypeRSRGB = 3,
+	GraphicsFormatTypeRSNorm = 4,
+	GraphicsFormatTypeRUNorm = 5,
+	GraphicsFormatTypeRSScaled = 6,
+	GraphicsFormatTypeRUScaled = 7,
+	GraphicsFormatTypeRFloat = 8,
+	GraphicsFormatTypeRGInt = 9,
+	GraphicsFormatTypeRGUInt = 10,
+	GraphicsFormatTypeRGSRGB = 11,
+	GraphicsFormatTypeRGSNorm = 12,
+	GraphicsFormatTypeRGUNorm = 13,
+	GraphicsFormatTypeRGSScaled = 14,
+	GraphicsFormatTypeRGUScaled = 15,
+	GraphicsFormatTypeRGFloat = 16,
+	GraphicsFormatTypeRGBInt = 17,
+	GraphicsFormatTypeRGBUInt = 18,
+	GraphicsFormatTypeRGBSRGB = 19,
+	GraphicsFormatTypeRGBSNorm = 20,
+	GraphicsFormatTypeRGBUNorm = 21,
+	GraphicsFormatTypeRGBSScaled = 22,
+	GraphicsFormatTypeRGBUScaled =23,
+	GraphicsFormatTypeRGBFloat = 24,
+	GraphicsFormatTypeRGBAInt = 25,
+	GraphicsFormatTypeRGBAUInt = 26,
+	GraphicsFormatTypeRGBASRGB = 27,
+	GraphicsFormatTypeRGBASNorm = 28,
+	GraphicsFormatTypeRGBAUNorm = 29,
+	GraphicsFormatTypeRGBASScaled = 30,
+	GraphicsFormatTypeRGBAUScaled = 31,
+	GraphicsFormatTypeRGBAFloat = 32,
+	GraphicsFormatTypeBGRInt = 33,
+	GraphicsFormatTypeBGRUInt = 34,
+	GraphicsFormatTypeBGRSRGB = 35,
+	GraphicsFormatTypeBGRSNorm = 36,
+	GraphicsFormatTypeBGRUNorm = 37,
+	GraphicsFormatTypeBGRSScaled = 38,
+	GraphicsFormatTypeBGRUScaled = 39,
+	GraphicsFormatTypeBGRFloat = 40,
+	GraphicsFormatTypeBGRAInt = 41,
+	GraphicsFormatTypeBGRAUInt = 42,
+	GraphicsFormatTypeBGRASRGB = 43,
+	GraphicsFormatTypeBGRASNorm = 44,
+	GraphicsFormatTypeBGRAUNorm = 45,
+	GraphicsFormatTypeBGRASScaled = 46,
+	GraphicsFormatTypeBGRAUScaled = 47,
+	GraphicsFormatTypeBGRAFloat = 48,
+	GraphicsFormatTypeABGRInt = 49,
+	GraphicsFormatTypeABGRUInt = 50,
+	GraphicsFormatTypeABGRSRGB = 51,
+	GraphicsFormatTypeABGRSNorm = 52,
+	GraphicsFormatTypeABGRUNorm = 53,
+	GraphicsFormatTypeABGRSScaled = 54,
+	GraphicsFormatTypeABGRUScaled = 55,
+	GraphicsFormatTypeABGRFloat = 56,
+	GraphicsFormatTypeDepth = 57,
+	GraphicsFormatTypeDepthStencil = 58,
 	GraphicsFormatTypeBeginRange = GraphicsFormatTypeNone,
 	GraphicsFormatTypeEndRange = GraphicsFormatTypeDepthStencil,
 	GraphicsFormatTypeRangeSize = (GraphicsFormatTypeEndRange - GraphicsFormatTypeBeginRange + 1),
@@ -537,11 +550,11 @@ enum GraphicsFormat
 
 enum GraphicsTextureDim
 {
-	GraphicsTextureDim2D,
-	GraphicsTextureDim3D,
-	GraphicsTextureDimCube,
-	GraphicsTextureDim2DArray,
-	GraphicsTextureDimCubeArray,
+	GraphicsTextureDim2D = 0,
+	GraphicsTextureDim3D = 1,
+	GraphicsTextureDimCube = 2,
+	GraphicsTextureDim2DArray = 3,
+	GraphicsTextureDimCubeArray = 4,
 	GraphicsTextureDimBeginRange = GraphicsTextureDim2D,
 	GraphicsTextureDimEndRange = GraphicsTextureDimCubeArray,
 	GraphicsTextureDimRangeSize = (GraphicsTextureDimEndRange - GraphicsTextureDimBeginRange + 1),
@@ -550,13 +563,13 @@ enum GraphicsTextureDim
 
 enum GraphicsSamplerAnis
 {
-	GraphicsSamplerAnis1,
-	GraphicsSamplerAnis2,
-	GraphicsSamplerAnis4,
-	GraphicsSamplerAnis8,
-	GraphicsSamplerAnis16,
-	GraphicsSamplerAnis32,
-	GraphicsSamplerAnis64,
+	GraphicsSamplerAnis1 = 0,
+	GraphicsSamplerAnis2 = 1,
+	GraphicsSamplerAnis4 = 2,
+	GraphicsSamplerAnis8 = 3,
+	GraphicsSamplerAnis16 = 4,
+	GraphicsSamplerAnis32 = 5,
+	GraphicsSamplerAnis64 = 6,
 	GraphicsSamplerAnisBeginRange = GraphicsSamplerAnis1,
 	GraphicsSamplerAnisEndRange = GraphicsSamplerAnis16,
 	GraphicsSamplerAnisRangeSize = (GraphicsSamplerAnisEndRange - GraphicsSamplerAnisBeginRange + 1),
@@ -565,12 +578,12 @@ enum GraphicsSamplerAnis
 
 enum GraphicsSamplerOp
 {
-	GraphicsSamplerOpMultiply,    //* T = T1 * T2
-	GraphicsSamplerOpAdd,         //* T = T1 + T2
-	GraphicsSamplerOpSubtract,    //* T = T1 - T2
-	GraphicsSamplerOpDivide,      //* T = T1 / T2
-	GraphicsSamplerOpSmoothAdd,   //* T = (T1 + T2) - (T1 * T2)
-	GraphicsSamplerOpSignedAdd,   //* T = T1 + (T2-0.5)
+	GraphicsSamplerOpMultiply = 0,    //* T = T1 * T2
+	GraphicsSamplerOpAdd = 1,         //* T = T1 + T2
+	GraphicsSamplerOpSubtract = 2,    //* T = T1 - T2
+	GraphicsSamplerOpDivide = 3,      //* T = T1 / T2
+	GraphicsSamplerOpSmoothAdd = 4,   //* T = (T1 + T2) - (T1 * T2)
+	GraphicsSamplerOpSignedAdd = 5,   //* T = T1 + (T2-0.5)
 	GraphicsSamplerOpBeginRange = GraphicsSamplerOpMultiply,
 	GraphicsSamplerOpEndRange = GraphicsSamplerOpSignedAdd,
 	GraphicsSamplerOpRangeSize = (GraphicsSamplerOpEndRange - GraphicsSamplerOpBeginRange + 1),
@@ -579,10 +592,10 @@ enum GraphicsSamplerOp
 
 enum GraphicsSamplerWrap
 {
-	GraphicsSamplerWrapNone,
-	GraphicsSamplerWrapRepeat,
-	GraphicsSamplerWrapMirror,
-	GraphicsSamplerWrapClampToEdge,
+	GraphicsSamplerWrapNone = 0,
+	GraphicsSamplerWrapRepeat = 1,
+	GraphicsSamplerWrapMirror = 2,
+	GraphicsSamplerWrapClampToEdge = 3,
 	GraphicsSamplerWrapBeginRange = GraphicsSamplerWrapNone,
 	GraphicsSamplerWrapEndRange = GraphicsSamplerWrapClampToEdge,
 	GraphicsSamplerWrapRangeSize = (GraphicsSamplerWrapEndRange - GraphicsSamplerWrapBeginRange + 1),
@@ -591,12 +604,12 @@ enum GraphicsSamplerWrap
 
 enum GraphicsSamplerFilter
 {
-	GraphicsSamplerFilterNearest,
-	GraphicsSamplerFilterLinear,
-	GraphicsSamplerFilterNearestMipmapLinear,
-	GraphicsSamplerFilterNearestMipmapNearest,
-	GraphicsSamplerFilterLinearMipmapNearest,
-	GraphicsSamplerFilterLinearMipmapLinear,
+	GraphicsSamplerFilterNearest = 0,
+	GraphicsSamplerFilterLinear = 1,
+	GraphicsSamplerFilterNearestMipmapLinear = 2,
+	GraphicsSamplerFilterNearestMipmapNearest = 3,
+	GraphicsSamplerFilterLinearMipmapNearest = 4,
+	GraphicsSamplerFilterLinearMipmapLinear = 5,
 	GraphicsSamplerFilterBeginRange = GraphicsSamplerFilterNearest,
 	GraphicsSamplerFilterEndRange = GraphicsSamplerFilterLinearMipmapLinear,
 	GraphicsSamplerFilterRangeSize = (GraphicsSamplerFilterEndRange - GraphicsSamplerFilterBeginRange + 1),
@@ -616,15 +629,15 @@ enum GraphicsSampleFlagBits
 
 enum GraphicsDataType
 {
-	GraphicsDataTypeNone,
-	GraphicsDataTypeTransferSrc,
-	GraphicsDataTypeTransferDst,
-	GraphicsDataTypeUniformTexelBuffer,
-	GraphicsDataTypeUniformBuffer,
-	GraphicsDataTypeStorageTexelBuffer,
-	GraphicsDataTypeStorageBuffer,
-	GraphicsDataTypeStorageVertexBuffer,
-	GraphicsDataTypeStorageIndexBuffer,
+	GraphicsDataTypeNone = 0,
+	GraphicsDataTypeTransferSrc = 1,
+	GraphicsDataTypeTransferDst = 2,
+	GraphicsDataTypeUniformTexelBuffer = 3,
+	GraphicsDataTypeUniformBuffer = 4,
+	GraphicsDataTypeStorageTexelBuffer = 5,
+	GraphicsDataTypeStorageBuffer = 6,
+	GraphicsDataTypeStorageVertexBuffer = 7,
+	GraphicsDataTypeStorageIndexBuffer = 8,
 	GraphicsDataTypeBeginRange = GraphicsDataTypeNone,
 	GraphicsDataTypeEndRange = GraphicsDataTypeStorageIndexBuffer,
 	GraphicsDataTypeRangeSize = (GraphicsDataTypeEndRange - GraphicsDataTypeBeginRange + 1),
@@ -662,9 +675,9 @@ enum GraphicsVertexDivisor
 
 enum GraphicsIndexType
 {
-	GraphicsIndexTypeNone,
-	GraphicsIndexTypeUInt16,
-	GraphicsIndexTypeUInt32,
+	GraphicsIndexTypeNone = 0,
+	GraphicsIndexTypeUInt16 = 1,
+	GraphicsIndexTypeUInt32 = 2,
 	GraphicsIndexTypeBeginRange = GraphicsIndexTypeNone,
 	GraphicsIndexTypeEndRange = GraphicsIndexTypeUInt32,
 	GraphicsIndexTypeRangeSize = (GraphicsIndexTypeEndRange - GraphicsIndexTypeBeginRange + 1),
@@ -673,13 +686,13 @@ enum GraphicsIndexType
 
 enum GraphicsShaderStage
 {
-	GraphicsShaderStageNone,
-	GraphicsShaderStageVertex,
-	GraphicsShaderStageFragment,
-	GraphicsShaderStageGeometry,
-	GraphicsShaderStageCompute,
-	GraphicsShaderStageTessEvaluation,
-	GraphicsShaderStageTessControl,
+	GraphicsShaderStageNone = 0,
+	GraphicsShaderStageVertex = 1,
+	GraphicsShaderStageFragment = 2,
+	GraphicsShaderStageGeometry = 3,
+	GraphicsShaderStageCompute = 4,
+	GraphicsShaderStageTessEvaluation = 5,
+	GraphicsShaderStageTessControl = 6,
 	GraphicsShaderStageBeginRange = GraphicsShaderStageNone,
 	GraphicsShaderStageEndRange = GraphicsShaderStageTessControl,
 	GraphicsShaderStageRangeSize = (GraphicsShaderStageEndRange - GraphicsShaderStageBeginRange + 1),
@@ -688,60 +701,56 @@ enum GraphicsShaderStage
 
 enum GraphicsUniformType
 {
-	GraphicsUniformTypeNone,
-    GraphicsUniformTypeBool,
-	GraphicsUniformTypeBool2,
-	GraphicsUniformTypeBool3,
-	GraphicsUniformTypeBool4,
-    GraphicsUniformTypeInt,
-    GraphicsUniformTypeInt2,
-    GraphicsUniformTypeInt3,
-    GraphicsUniformTypeInt4,
-    GraphicsUniformTypeUInt,
-    GraphicsUniformTypeUInt2,
-    GraphicsUniformTypeUInt3,
-    GraphicsUniformTypeUInt4,
-    GraphicsUniformTypeFloat,
-    GraphicsUniformTypeFloat2,
-    GraphicsUniformTypeFloat3,
-    GraphicsUniformTypeFloat4,
-	GraphicsUniformTypeFloat2x2,
-    GraphicsUniformTypeFloat3x3,
-    GraphicsUniformTypeFloat4x4,
-    GraphicsUniformTypeBoolArray,
-	GraphicsUniformTypeBool2Array,
-	GraphicsUniformTypeBool3Array,
-	GraphicsUniformTypeBool4Array,
-    GraphicsUniformTypeIntArray,
-    GraphicsUniformTypeInt2Array,
-    GraphicsUniformTypeInt3Array,
-    GraphicsUniformTypeInt4Array,
-    GraphicsUniformTypeUIntArray,
-    GraphicsUniformTypeUInt2Array,
-    GraphicsUniformTypeUInt3Array,
-    GraphicsUniformTypeUInt4Array,
-    GraphicsUniformTypeHalfArray,
-    GraphicsUniformTypeHalf2Array,
-    GraphicsUniformTypeHalf3Array,
-    GraphicsUniformTypeHalf4Array,
-    GraphicsUniformTypeFloatArray,
-    GraphicsUniformTypeFloat2Array,
-    GraphicsUniformTypeFloat3Array,
-    GraphicsUniformTypeFloat4Array,
-	GraphicsUniformTypeFloat2x2Array,
-    GraphicsUniformTypeFloat3x3Array,
-    GraphicsUniformTypeFloat4x4Array,
-	GraphicsUniformTypeSampler,
-	GraphicsUniformTypeSamplerImage,
-	GraphicsUniformTypeCombinedImageSampler,
-	GraphicsUniformTypeStorageImage,
-	GraphicsUniformTypeStorageTexelBuffer,
-	GraphicsUniformTypeStorageBuffer,
-	GraphicsUniformTypeStorageBufferDynamic,
-	GraphicsUniformTypeUniformTexelBuffer,
-	GraphicsUniformTypeUniformBuffer,
-	GraphicsUniformTypeUniformBufferDynamic,
-	GraphicsUniformTypeInputAttachment,
+	GraphicsUniformTypeNone = 0,
+    GraphicsUniformTypeBool = 1,
+	GraphicsUniformTypeBool2 = 2,
+	GraphicsUniformTypeBool3 = 3,
+	GraphicsUniformTypeBool4 = 4,
+    GraphicsUniformTypeInt = 5,
+    GraphicsUniformTypeInt2 = 6,
+    GraphicsUniformTypeInt3 = 7,
+    GraphicsUniformTypeInt4 = 8,
+    GraphicsUniformTypeUInt = 9,
+    GraphicsUniformTypeUInt2 = 10,
+    GraphicsUniformTypeUInt3 = 11,
+    GraphicsUniformTypeUInt4 = 12,
+    GraphicsUniformTypeFloat = 13,
+    GraphicsUniformTypeFloat2 = 14,
+    GraphicsUniformTypeFloat3 = 15,
+    GraphicsUniformTypeFloat4 = 16,
+	GraphicsUniformTypeFloat2x2 = 17,
+    GraphicsUniformTypeFloat3x3 = 18,
+    GraphicsUniformTypeFloat4x4 = 19,
+	GraphicsUniformTypeBoolArray = 20,
+	GraphicsUniformTypeBool2Array = 21,
+	GraphicsUniformTypeBool3Array = 22,
+	GraphicsUniformTypeBool4Array = 23,
+    GraphicsUniformTypeIntArray = 24,
+    GraphicsUniformTypeInt2Array = 25,
+    GraphicsUniformTypeInt3Array = 26,
+    GraphicsUniformTypeInt4Array = 27,
+    GraphicsUniformTypeUIntArray = 28,
+    GraphicsUniformTypeUInt2Array = 29,
+    GraphicsUniformTypeUInt3Array = 30,
+    GraphicsUniformTypeUInt4Array = 31,
+    GraphicsUniformTypeFloatArray = 32,
+    GraphicsUniformTypeFloat2Array = 33,
+    GraphicsUniformTypeFloat3Array = 34,
+    GraphicsUniformTypeFloat4Array = 35,
+	GraphicsUniformTypeFloat2x2Array = 36,
+    GraphicsUniformTypeFloat3x3Array = 37,
+    GraphicsUniformTypeFloat4x4Array = 38,
+	GraphicsUniformTypeSampler = 39,
+	GraphicsUniformTypeSamplerImage = 40,
+	GraphicsUniformTypeCombinedImageSampler = 41,
+	GraphicsUniformTypeStorageImage = 42,
+	GraphicsUniformTypeStorageTexelBuffer = 43,
+	GraphicsUniformTypeStorageBuffer = 44,
+	GraphicsUniformTypeStorageBufferDynamic = 45,
+	GraphicsUniformTypeUniformTexelBuffer = 46,
+	GraphicsUniformTypeUniformBuffer = 47,
+	GraphicsUniformTypeUniformBufferDynamic = 48,
+	GraphicsUniformTypeInputAttachment = 49,
 	GraphicsUniformTypeBeginRange = GraphicsUniformTypeNone,
 	GraphicsUniformTypeEndRange = GraphicsUniformTypeInputAttachment,
 	GraphicsUniformTypeRangeSize = (GraphicsUniformTypeInputAttachment - GraphicsUniformTypeNone + 1),
@@ -750,16 +759,16 @@ enum GraphicsUniformType
 
 enum GraphicsViewLayout
 {
-	GraphicsViewLayoutUndefined,
-	GraphicsViewLayoutGeneral,
-	GraphicsViewLayoutColorAttachmentOptimal,
-	GraphicsViewLayoutDepthStencilAttachmentOptimal,
-	GraphicsViewLayoutDepthStencilReadOnlyOptimal,
-	GraphicsViewLayoutShaderReadOnlyOptimal,
-	GraphicsViewLayoutTransferSrcOptimal,
-	GraphicsViewLayoutTransferDstOptimal,
-	GraphicsViewLayoutPreinitialized,
-	GraphicsViewLayoutPresentSrcKhr,
+	GraphicsViewLayoutUndefined = 0,
+	GraphicsViewLayoutGeneral = 1,
+	GraphicsViewLayoutColorAttachmentOptimal = 2,
+	GraphicsViewLayoutDepthStencilAttachmentOptimal = 3,
+	GraphicsViewLayoutDepthStencilReadOnlyOptimal = 4,
+	GraphicsViewLayoutShaderReadOnlyOptimal = 5,
+	GraphicsViewLayoutTransferSrcOptimal = 6,
+	GraphicsViewLayoutTransferDstOptimal = 7,
+	GraphicsViewLayoutPreinitialized = 8,
+	GraphicsViewLayoutPresentSrcKhr = 9,
 	GraphicsViewLayoutBeginRange = GraphicsViewLayoutUndefined,
 	GraphicsViewLayoutEndRange = GraphicsViewLayoutPreinitialized,
 	GraphicsViewLayoutRangeSize = (GraphicsViewLayoutPreinitialized - GraphicsViewLayoutUndefined + 1),
@@ -802,7 +811,11 @@ enum GraphicsCommandType
 	GraphicsCommandTypeGraphics = 0,
 	GraphicsCommandTypeCompute = 1,
 	GraphicsCommandTypeBundle = 2,
-	GraphicsCommandTypeCopy = 3
+	GraphicsCommandTypeCopy = 3,
+	GraphicsCommandTypeBeginRange = GraphicsCommandTypeGraphics,
+	GraphicsCommandTypeEndRange = GraphicsCommandTypeCopy,
+	GraphicsCommandTypeRangeSize = (GraphicsCommandTypeEndRange - GraphicsCommandTypeBeginRange + 1),
+	GraphicsCommandTypeMaxEnum = 0x7FFFFFFF
 };
 
 enum GraphicsCommandQueueFlags
@@ -814,7 +827,11 @@ enum GraphicsCommandQueueFlags
 enum GraphicsCommandQueuePriority
 {
 	GraphicsCommandQueuePriorityNormal = 0,
-	GraphicsCommandQueuePriorityHigh = 100
+	GraphicsCommandQueuePriorityHigh = 1,
+	GraphicsCommandQueuePriorityBeginRange = GraphicsCommandQueuePriorityNormal,
+	GraphicsCommandQueuePriorityEndRange = GraphicsCommandQueuePriorityHigh,
+	GraphicsCommandQueuePriorityRangeSize = (GraphicsCommandQueuePriorityEndRange - GraphicsCommandQueuePriorityBeginRange + 1),
+	GraphicsCommandQueuePriorityMaxEnum = 0x7FFFFFFF
 };
 
 enum GraphicsCommandPoolFlags

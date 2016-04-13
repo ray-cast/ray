@@ -37,7 +37,7 @@
 #ifndef _H_RENDER_PIPELINE_H_
 #define _H_RENDER_PIPELINE_H_
 
-#include <ray/render_object_manager_base.h>
+#include <ray/render_types.h>
 #include <ray/graphics_context.h>
 
 _NAME_BEGIN
@@ -47,97 +47,98 @@ class EXPORT RenderPipeline : public rtti::Interface
 	__DeclareSubClass(RenderPipeline, rtti::Interface)
 public:
 	RenderPipeline() noexcept;
-	virtual ~RenderPipeline() noexcept;
+	~RenderPipeline() noexcept;
 
-	bool open(WindHandle window, std::uint32_t w, std::uint32_t h) noexcept;
+	bool setup(RenderPipelineDevicePtr pipelineDevice, WindHandle window, std::uint32_t w, std::uint32_t h) noexcept;
 	void close() noexcept;
 
 	void renderBegin() noexcept;
 	void renderEnd() noexcept;
 
-	void setCamera(CameraPtr renderer) noexcept;
-	CameraPtr getCamera() const noexcept;
-
-	void setRenderDataManager(RenderDataManagerPtr manager) noexcept;
-	RenderDataManagerPtr getRenderDataManagerPtr() const noexcept;
-
-	void setSwapInterval(GraphicsSwapInterval interval) noexcept;
-	GraphicsSwapInterval getSwapInterval() const noexcept;
-	
 	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
-	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
-	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
-	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
-	GraphicsTexturePtr createTexture(const std::string& name) noexcept;
+	void setSwapInterval(GraphicsSwapInterval interval) noexcept;
+	GraphicsSwapInterval getSwapInterval() const noexcept;
 
-	MaterialPtr createMaterial(const std::string& name) noexcept;
+	void setCamera(CameraPtr camera) noexcept;
+	CameraPtr getCamera() const noexcept;
 
-	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
-
-	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
-	RenderBufferPtr createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
-	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) noexcept;
-	RenderBufferPtr createRenderBuffer(const MeshPropertys& mesh) noexcept;
+	void setViewport(const Viewport& view) noexcept;
+	const Viewport& getViewport() const noexcept;
 
 	void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept;
-	RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) noexcept;
+	const RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) const noexcept;
 
-	void setViewport(const Viewport& view, std::size_t i) noexcept;
-	const Viewport& getViewport(std::size_t i) const noexcept;
+	void setTransform(const float4x4& transform) noexcept;
+	void setTransformInverse(const float4x4& transform) noexcept;
+	void setTransformInverseTranspose(const float4x4& transform) noexcept;
 
-	void setRenderTexture(GraphicsFramebufferPtr target) noexcept;
-	void clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
-	void clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
+	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
+	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void discradRenderTexture() noexcept;
-	void readRenderTexture(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
-	void blitRenderTexture(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
-
-	void setMaterialPass(MaterialPassPtr pass) noexcept;
-	MaterialPassPtr getMaterialPass() noexcept;
-
-	void setMaterialManager(MaterialManagerPtr manager) noexcept;
-	MaterialManagerPtr getMaterialManager() noexcept;
+	void readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	void blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
 
 	bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;
 	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
 	void unmapBuffer(GraphicsDataPtr& data) noexcept;
-
-	void setRenderBuffer(RenderBufferPtr buffer) noexcept;
-	void drawRenderBuffer(const GraphicsIndirect& renderable) noexcept;
-	void drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept;
+	
+	void drawCone(MaterialPassPtr pass) noexcept;
+	void drawSphere(MaterialPassPtr pass) noexcept;
+	void drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const GraphicsIndirect& renderable) noexcept;
+	void drawScreenQuad(MaterialPassPtr pass) noexcept;
+	void drawRenderQueue(RenderQueue type, RenderPass pass, MaterialPassPtr material = nullptr) noexcept;
+	void drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr source, GraphicsFramebufferPtr swap, GraphicsFramebufferPtr dest) noexcept;
 
 	void addPostProcess(RenderPostProcessPtr postprocess) noexcept;
 	void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
+	void destroyPostProcess() noexcept;
 
-	void drawCone(MaterialPassPtr pass, const float4x4& transform) noexcept;
-	void drawSphere(MaterialPassPtr pass, const float4x4& transform) noexcept;
-	void drawScreenQuad(MaterialPassPtr pass) noexcept;
-	void drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const GraphicsIndirect& renderable) noexcept;
-	void drawRenderQueue(RenderQueue type, RenderPass pass, MaterialPassPtr material = nullptr, GraphicsFramebufferPtr target = nullptr) noexcept;
-	void drawPostProcess(RenderQueue queue, GraphicsTexturePtr source, GraphicsFramebufferPtr swap, GraphicsFramebufferPtr dest) noexcept;
+	void present() noexcept;
 
-protected:
+	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
+	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
+	GraphicsTexturePtr createTexture(const std::string& name) noexcept;
+	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
+	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
+	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
+	GraphicsFramebufferLayoutPtr createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept;
 
-	virtual void onRenderObjectPre(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) noexcept;
-	virtual void onRenderObject(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) noexcept;
-	virtual void onRenderObjectPost(RenderObject& object, RenderQueue queue, RenderPass type, MaterialPassPtr pass) noexcept;
+	MaterialPtr createMaterial(const std::string& name) noexcept;
+	RenderBufferPtr createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
+	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) noexcept;
+	RenderBufferPtr createRenderBuffer(const MeshPropertys& mesh) noexcept;
+
+	MaterialVariantPtr createSemantic(const std::string& name, GraphicsUniformType type) noexcept;
+	void destroySemantic(MaterialVariantPtr semantic) const noexcept;
+	MaterialVariantPtr getSemantic(const std::string& semantic) const noexcept;
 
 private:
-	RenderPipeline(const RenderPipeline&) noexcept = delete;
-	RenderPipeline& operator=(const RenderPipeline&) noexcept = delete;
+	bool setupDeviceContext(WindHandle window, std::uint32_t w, std::uint32_t h) noexcept;
+	bool setupMaterialSemantic() noexcept;
+	bool setupBaseMeshes() noexcept;
+	bool setupDataManager() noexcept;
+
+	void destroyDeviceContext() noexcept;
+	void destroyMaterialSemantic() noexcept;
+	void destroyBaseMeshes() noexcept;
+	void destroyDataManager() noexcept;
 
 private:
+	RenderPipeline(const RenderPipeline&) = delete;
+	RenderPipeline& operator=(const RenderPipeline&) = delete;
 
+private:
 	std::uint32_t _width;
 	std::uint32_t _height;
 
-	CameraPtr _camera;
+	RenderPipelineDevicePtr _pipelineDevice;
 
-	GraphicsDevicePtr _graphicsDevice;
 	GraphicsSwapchainPtr _graphicsSwapchain;
 	GraphicsContextPtr _graphicsContext;
+
+	CameraPtr _camera;
 
 	RenderBufferPtr _renderScreenQuad;
 	RenderBufferPtr _renderSphere;
@@ -146,8 +147,6 @@ private:
 	GraphicsIndirect _renderConeIndirect;
 	GraphicsIndirect _renderSphereIndirect;
 	GraphicsIndirect _renderScreenQuadIndirect;
-
-	MaterialManagerPtr _materialManager;
 
 	MaterialVariantPtr _materialMatModel;
 	MaterialVariantPtr _materialMatModelInverse;
@@ -159,15 +158,25 @@ private:
 	MaterialVariantPtr _materialMatViewInverseTranspose;
 	MaterialVariantPtr _materialMatViewProject;
 	MaterialVariantPtr _materialMatViewProjectInverse;
+	MaterialVariantPtr _materialMatModelView;
+	MaterialVariantPtr _materialMatModelViewProject;
 	MaterialVariantPtr _materialCameraAperture;
 	MaterialVariantPtr _materialCameraFar;
 	MaterialVariantPtr _materialCameraNear;
 	MaterialVariantPtr _materialCameraPosition;
 	MaterialVariantPtr _materialCameraDirection;
-
-	MaterialPassPtr _materialPass;
+	MaterialVariantPtr _materialDepthMap;
+	MaterialVariantPtr _materialColorMap;
+	MaterialVariantPtr _materialNormalMap;
+	MaterialVariantPtr _materialDeferredDepthMap;
+	MaterialVariantPtr _materialDeferredDepthLinearMap;
+	MaterialVariantPtr _materialDeferredGraphicMap;
+	MaterialVariantPtr _materialDeferredNormalMap;
+	MaterialVariantPtr _materialDeferredLightMap;
+	MaterialVariantPtr _materialDeferredShadowMap;
 
 	RenderDataManagerPtr _dataManager;
+
 	RenderPostProcessor _postprocessors[RenderQueue::RenderQueueRangeSize];
 };
 

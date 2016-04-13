@@ -34,8 +34,9 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/dof.h>
+#include "dof.h"
 #include <ray/material.h>
+#include <ray/render_pipeline.h>
 
 _NAME_BEGIN
 
@@ -48,7 +49,7 @@ DepthOfField::~DepthOfField() noexcept
 }
 
 void 
-DepthOfField::onActivate(RenderPipeline& pipeline) except
+DepthOfField::onActivate(RenderPipeline& pipeline) noexcept
 {
 	_dof = pipeline.createMaterial("sys:fx/dof.glsl");
 
@@ -69,55 +70,55 @@ DepthOfField::onActivate(RenderPipeline& pipeline) except
 }
 
 void 
-DepthOfField::onDeactivate(RenderPipeline& pipeline) except
+DepthOfField::onDeactivate(RenderPipeline& pipeline) noexcept
 {
 }
 
 void
-DepthOfField::blurh(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
+DepthOfField::blurh(RenderPipelineDevice& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	/*_texColor->assign(source->getResolveTexture());
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(_blurh);*/
 }
 
 void
-DepthOfField::blurv(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
+DepthOfField::blurv(RenderPipelineDevice& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	/*_texColor->assign(source->getResolveTexture());
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(_blurv);*/
 }
 
 void
-DepthOfField::computeNear(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr blured, GraphicsFramebufferPtr dest) noexcept
+DepthOfField::computeNear(RenderPipelineDevice& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr blured, GraphicsFramebufferPtr dest) noexcept
 {
 	/*_texShrunk->assign(source->getResolveTexture());
 	_texBlured->assign(blured->getResolveTexture());
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(_computeNear);*/
 }
 
 void
-DepthOfField::shading(RenderPipeline& pipeline, GraphicsFramebufferPtr color, GraphicsTexturePtr texSmall, GraphicsTexturePtr large)
+DepthOfField::shading(RenderPipelineDevice& pipeline, GraphicsFramebufferPtr color, GraphicsTexturePtr texSmall, GraphicsTexturePtr large)
 {
 	/*_texColor->assign(color->getGraphicsFramebufferDesc().getTextures()[0]);
 	_texSmall->assign(texSmall);
 	_texLarge->assign(large);
 
-	pipeline.setRenderTexture(color);
+	pipeline.setFramebuffer(color);
 	pipeline.drawScreenQuad(_final);*/
 }
 
-void
-DepthOfField::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+bool
+DepthOfField::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
 	/*_texColor->assign(source->getGraphicsFramebufferDesc().getTextures()[0]);
 
-	pipeline.setRenderTexture(_texBlur);
+	pipeline.setFramebuffer(_texBlur);
 	pipeline.drawScreenQuad(_sample4);
 
 	this->blurh(pipeline, _texBlur, _texTemp);
@@ -126,6 +127,7 @@ DepthOfField::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, Grap
 	this->computeNear(pipeline, source, _texBlur, _texTemp);
 
 	this->shading(pipeline, source, _texTemp, _texBlur);*/
+	return false;
 }
 
 _NAME_END

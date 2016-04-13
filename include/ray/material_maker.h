@@ -54,17 +54,21 @@ public:
 	bool load(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
 
 private:
-
-	void instancePass(MaterialManager& manager, MaterialTechPtr& tech, iarchive& reader) except;
+	void instanceInclude(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
+	void instancePass(MaterialManager& manager, MaterialDesc& material, MaterialTechPtr& tech, iarchive& reader) except;
 	void instanceTech(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
 	void instanceSampler(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
 	void instanceParameter(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
 	void instanceMacro(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
 	void instanceBuffer(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
 	void instanceCodes(MaterialManager& manager, iarchive& reader) except;
-	void instanceShader(MaterialManager& manager, GraphicsProgramDesc& program, iarchive& reader) except;
-	void instanceInclude(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
+	void instanceShader(MaterialManager& manager, MaterialDesc& material, GraphicsProgramDesc& programDesc, iarchive& reader) except;
+	void instanceInputLayout(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
 
+	static RenderPass stringToRenderPass(const std::string& pass) noexcept;
+	static RenderQueue stringToRenderQueue(const std::string& queue) noexcept;
+	static GraphicsShaderStage stringToShaderStage(const std::string& stage) noexcept;
+	static GraphicsUniformType stringToUniformType(const std::string& type) noexcept;
 	static GraphicsVertexType stringToPrimitive(const std::string& primitive) noexcept;
 	static GraphicsCullMode stringToCullMode(const std::string& cullmode) noexcept;
 	static GraphicsPolygonMode stringToFillMode(const std::string& fillmode) noexcept;
@@ -73,13 +77,13 @@ private:
 	static GraphicsColorMask stringToColorMask(const std::string& mask) noexcept;
 	static GraphicsCompareFunc stringToCompareFunc(const std::string& func) noexcept;
 	static GraphicsStencilOp stringToStencilOp(const std::string& stencilop) noexcept;
+	static GraphicsFormat stringToFormat(const std::string& format) noexcept;
 
 private:
 	MaterialMaker(const MaterialMaker&) noexcept = delete;
 	MaterialMaker& operator=(const MaterialMaker&) noexcept = delete;
 
 private:
-
 	std::map<std::string, std::vector<char>> _shaderCodes;
 };
 

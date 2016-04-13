@@ -34,10 +34,11 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/atmospheric.h>
+#include "atmospheric.h"
 #include <ray/light.h>
 #include <ray/camera.h>
 #include <ray/material.h>
+#include <ray/render_pipeline.h>
 
 _NAME_BEGIN
 
@@ -65,7 +66,7 @@ Atmospheric::~Atmospheric() noexcept
 }
 
 void
-Atmospheric::onActivate(RenderPipeline& pipeline) except
+Atmospheric::onActivate(RenderPipeline& pipeline) noexcept
 {
 	MeshProperty mesh;
 	mesh.makeSphere(1, 128, 96);
@@ -123,10 +124,10 @@ Atmospheric::onDeactivate(RenderPipeline& pipeline) noexcept
 {
 }
 
-void
-Atmospheric::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+bool
+Atmospheric::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(source);
 
 	auto lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting, RenderPass::RenderPassLights);
 	for (auto& it : lights)
@@ -143,6 +144,8 @@ Atmospheric::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, Graph
 			pipeline.drawMesh(_sky, _sphere, _renderable);
 		}
 	}
+
+	return false;
 }
 
 _NAME_END

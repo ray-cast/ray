@@ -58,6 +58,9 @@ public:
 	GraphicsIndirectPtr getGraphicsIndirect() noexcept;
 
 private:
+	void onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept;
+
+private:
 	MaterialPtr _material;
 	RenderBufferPtr _geometry;
 	GraphicsIndirectPtr _renderable;

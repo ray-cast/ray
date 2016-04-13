@@ -54,17 +54,11 @@ public:
 	void renderBegin() noexcept;
 	void renderEnd() noexcept;
 
-	void setViewport(const Viewport& viewport, std::size_t i) noexcept;
-	const Viewport& getViewport(std::size_t i) const noexcept;
+	void setViewport(const Viewport& viewport) noexcept;
+	const Viewport& getViewport() const noexcept;
 
-	void setScissor(const Scissor& scissor, std::size_t i) noexcept;
-	const Scissor& getScissor(std::size_t i) const noexcept;
-
-	void setVertexBufferData(GraphicsDataPtr data) noexcept;
-	GraphicsDataPtr getVertexBufferData() const noexcept;
-
-	void setIndexBufferData(GraphicsDataPtr data) noexcept;
-	GraphicsDataPtr getIndexBufferData() const noexcept;
+	void setScissor(const Scissor& scissor) noexcept;
+	const Scissor& getScissor() const noexcept;
 
 	void setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept;
 	GraphicsPipelinePtr getRenderPipeline() const noexcept;
@@ -72,20 +66,22 @@ public:
 	void setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept;
 	GraphicsDescriptorSetPtr getDescriptorSet() const noexcept;
 
-	void setInputLayout(GraphicsInputLayoutPtr data) noexcept;
-	GraphicsInputLayoutPtr getInputLayout() const noexcept;
+	void setVertexBufferData(GraphicsDataPtr data) noexcept;
+	GraphicsDataPtr getVertexBufferData() const noexcept;
+
+	void setIndexBufferData(GraphicsDataPtr data) noexcept;
+	GraphicsDataPtr getIndexBufferData() const noexcept;
 
 	bool updateBuffer(GraphicsDataPtr& data, void* buf, std::size_t cnt) noexcept;
 	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
 	void unmapBuffer(GraphicsDataPtr& data) noexcept;
 
-	void setRenderTexture(GraphicsFramebufferPtr target) noexcept;
-	void clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
-	void clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
-	void discardRenderTexture() noexcept;
-	void blitRenderTexture(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept;
-	void readRenderTexture(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
-	GraphicsFramebufferPtr getRenderTexture() const noexcept;
+	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
+	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
+	void discardFramebuffer() noexcept;
+	void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept;
+	void readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
 	void drawRenderBuffer(const GraphicsIndirect& renderable) noexcept;
 	void drawRenderBuffer(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept;
@@ -139,8 +135,6 @@ private:
 	GraphicsStateDesc _stateCaptured;
 
 	bool _needUpdateLayout;
-	bool _needUpdateVbo;
-	bool _needUpdateIbo;
 
 	GraphicsDeviceWeakPtr _device;
 };

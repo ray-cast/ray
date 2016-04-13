@@ -48,7 +48,7 @@ namespace {
 bool is_positive_infinity(double x) {
 #ifdef _MSC_VER
   return _fpclass(x) == _FPCLASS_PINF;
-#elif defined __ANDROID__
+#elif defined __ANDROID__ || defined __linux__ || __MINGW32__ || __MINGW64__
   return std::isinf(x) && (x >= 0);
 #else
   return isinf(x) && (x >= 0);
@@ -96,7 +96,7 @@ protected:
 // Helper functions for printing, not part of traversing.
 //
 
-void OutputTreeText(TInfoSink& infoSink, const TIntermNode* node, const int depth)
+static void OutputTreeText(TInfoSink& infoSink, const TIntermNode* node, const int depth)
 {
     int i;
 
@@ -529,7 +529,7 @@ bool TOutputTraverser::visitSelection(TVisit /* visit */, TIntermSelection* node
     return false;
 }
 
-void OutputConstantUnion(TInfoSink& out, const TIntermTyped* node, const TConstUnionArray& constUnion, int depth)
+static void OutputConstantUnion(TInfoSink& out, const TIntermTyped* node, const TConstUnionArray& constUnion, int depth)
 {
     int size = node->getType().computeNumComponents();
 
@@ -605,6 +605,11 @@ void TOutputTraverser::visitSymbol(TIntermSymbol* node)
 
     if (! node->getConstArray().empty())
         OutputConstantUnion(infoSink, node, node->getConstArray(), depth + 1);
+    else if (node->getConstSubtree()) {
+        incrementDepth(node);
+        node->getConstSubtree()->traverse(this);
+        decrementDepth();
+    }
 }
 
 bool TOutputTraverser::visitLoop(TVisit /* visit */, TIntermLoop* node)
@@ -757,13 +762,9 @@ void TIntermediate::output(TInfoSink& infoSink, bool tree)
     case EShLangCompute:
         infoSink.debug << "local_size = (" << localSize[0] << ", " << localSize[1] << ", " << localSize[2] << ")\n";
         {
-            bool dumpSpecIds = false;
-            for (auto c : localSizeSpecId) {
-                if (c != TQualifier::layoutNotSet)
-                    dumpSpecIds = true;
-            }
-
-            if (dumpSpecIds) {
+            if (localSizeSpecId[0] != TQualifier::layoutNotSet ||
+                localSizeSpecId[1] != TQualifier::layoutNotSet ||
+                localSizeSpecId[2] != TQualifier::layoutNotSet) {
                 infoSink.debug << "local_size ids = (" <<
                     localSizeSpecId[0] << ", " <<
                     localSizeSpecId[1] << ", " <<

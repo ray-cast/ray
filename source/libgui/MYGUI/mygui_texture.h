@@ -113,7 +113,8 @@ public:
 
 private:
 
-	GraphicsFramebufferPtr _renderTexture;
+	GraphicsFramebufferPtr _framebuffer;
+	GraphicsFramebufferLayoutPtr _framebufferLayout;
 	MyGUI::RenderTargetInfo _renderTargetInfo;
 };
 

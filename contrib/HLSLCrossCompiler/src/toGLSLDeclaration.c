@@ -1451,8 +1451,14 @@ static void TranslateResourceTexture(HLSLCrossCompilerContext* psContext, const 
                 bcatcstr(glsl, ";\n");
             }
         }
+
         for (i = 0; i < psDecl->ui32SamplerUsedCount; i++)
         {
+			if (HaveUniformBindingsAndLocations(psContext->psShader->eTargetLanguage, psContext->psShader->extensions, psContext->flags))
+			{
+				bformata(glsl, "layout(binding = %d) ", psShader->sInfo.ui32NumConstantBuffers + psDecl->asOperands[0].ui32RegisterNumber);
+			}
+
             bcatcstr(glsl, "uniform ");
             bcatcstr(glsl, samplerTypeName);
             bcatcstr(glsl, " ");
@@ -1460,24 +1466,31 @@ static void TranslateResourceTexture(HLSLCrossCompilerContext* psContext, const 
             bcatcstr(glsl, ";\n");
         }
     }
+	else
+	{
+		if (samplerCanDoShadowCmp && psDecl->ui32IsShadowTex)
+		{
+			//Create shadow and non-shadow sampler.
+			//HLSL does not have separate types for depth compare, just different functions.
 
-    if(samplerCanDoShadowCmp && psDecl->ui32IsShadowTex)
-    {
-        //Create shadow and non-shadow sampler.
-        //HLSL does not have separate types for depth compare, just different functions.
+			bcatcstr(glsl, "uniform ");
+			bcatcstr(glsl, samplerTypeName);
+			bcatcstr(glsl, "Shadow ");
+			ResourceName(glsl, psContext, RGROUP_TEXTURE, psDecl->asOperands[0].ui32RegisterNumber, 1);
+			bcatcstr(glsl, ";\n");
+		}
 
-        bcatcstr(glsl, "uniform ");
-        bcatcstr(glsl, samplerTypeName);
-        bcatcstr(glsl, "Shadow ");
-		ResourceName(glsl, psContext, RGROUP_TEXTURE, psDecl->asOperands[0].ui32RegisterNumber, 1);
-        bcatcstr(glsl, ";\n");
-    }
-                        
-    bcatcstr(glsl, "uniform ");
-    bcatcstr(glsl, samplerTypeName);
-    bcatcstr(glsl, " ");
-	ResourceName(glsl, psContext, RGROUP_TEXTURE, psDecl->asOperands[0].ui32RegisterNumber, 0);
-    bcatcstr(glsl, ";\n");
+		if (HaveUniformBindingsAndLocations(psContext->psShader->eTargetLanguage, psContext->psShader->extensions, psContext->flags))
+		{
+			bformata(glsl, "layout(binding = %d) ", psShader->sInfo.ui32NumConstantBuffers + psDecl->asOperands[0].ui32RegisterNumber);
+		}
+
+		bcatcstr(glsl, "uniform ");
+		bcatcstr(glsl, samplerTypeName);
+		bcatcstr(glsl, " ");
+		ResourceName(glsl, psContext, RGROUP_TEXTURE, psDecl->asOperands[0].ui32RegisterNumber, 0);
+		bcatcstr(glsl, ";\n");
+	}
 }
 
 void TranslateDeclaration(HLSLCrossCompilerContext* psContext, const Declaration* psDecl)

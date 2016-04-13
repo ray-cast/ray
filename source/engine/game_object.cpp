@@ -822,7 +822,7 @@ GameObject::load(iarchive& reader) noexcept
 	this->setForward(forward);
 	this->setTranslate(position);
 	this->setScale(scale);
-	this->setEulerAngles(EulerAngles(rotate));
+	this->setEulerAngles(EulerAngles(DEG_TO_RAD(rotate.x), DEG_TO_RAD(rotate.y), DEG_TO_RAD(rotate.z)));
 }
 
 void 

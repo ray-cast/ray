@@ -37,36 +37,105 @@
 #ifndef _H_RENDER_PIPELINE_MANAGER_H_
 #define _H_RENDER_PIPELINE_MANAGER_H_
 
-#include <ray/render_pipeline.h>
+#include <ray/render_setting.h>
 
 _NAME_BEGIN
 
-class RenderPipelineManager final
+class RenderPipelineManager final : public rtti::Interface
 {
+	__DeclareSubClass(RenderPipelineManager, rtti::Interface)
 public:
 	RenderPipelineManager() noexcept;
     ~RenderPipelineManager() noexcept;
 
-	bool open(RenderPipelinePtr pipeline) noexcept;
+	bool setup(const RenderSetting& setting) noexcept;
 	void close() noexcept;
-
-	void setRenderPipeline(RenderPipelinePtr pipeline) noexcept;
-	RenderPipelinePtr getRenderPipeline() noexcept;
 
 	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept;
 
 	void renderBegin() noexcept;
-	void render(const RenderScene& scene) noexcept;
 	void renderEnd() noexcept;
+
+	void setRenderSetting(const RenderSetting& setting) noexcept;
+	const RenderSetting& getRenderSetting() const noexcept;
+
+	void setCamera(CameraPtr renderer) noexcept;
+	CameraPtr getCamera() const noexcept;
+
+	void addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept;
+	const RenderObjects& getRenderData(RenderQueue queue, RenderPass pass) const noexcept;
+
+	void setViewport(const Viewport& view) noexcept;
+	const Viewport& getViewport() const noexcept;
+
+	void setTransform(const float4x4& transform) noexcept;
+	void setTransformInverse(const float4x4& transform) noexcept;
+	void setTransformInverseTranspose(const float4x4& transform) noexcept;
+
+	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
+	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
+	void discradRenderTexture() noexcept;
+	void readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	void blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
+
+	bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;
+	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
+	void unmapBuffer(GraphicsDataPtr& data) noexcept;
+
+	void drawCone(MaterialPassPtr pass) noexcept;
+	void drawSphere(MaterialPassPtr pass) noexcept;
+	void drawScreenQuad(MaterialPassPtr pass) noexcept;
+	void drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const GraphicsIndirect& renderable) noexcept;
+
+	void addPostProcess(RenderPostProcessPtr postprocess) noexcept;
+	void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
+	void destroyPostProcess() noexcept;
+
+	RenderPipelinePtr createRenderPipeline(WindHandle window, std::uint32_t w, std::uint32_t h) noexcept;
+
+	GraphicsSwapchainPtr createSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
+	GraphicsContextPtr createDeviceContext(const GraphicsContextDesc& desc) noexcept;
+	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;
+	GraphicsFramebufferLayoutPtr createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept;
+	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
+	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
+	GraphicsTexturePtr createTexture(const std::string& name) noexcept;
+
+	MaterialPtr createMaterial(const std::string& name) noexcept;
+	void destroyMaterial(MaterialPtr material) noexcept;
+
+	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
+
+	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
+	RenderBufferPtr createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
+	RenderBufferPtr createRenderBuffer(const MeshProperty& mesh) noexcept;
+	RenderBufferPtr createRenderBuffer(const MeshPropertys& mesh) noexcept;
+
+	void render(const RenderScene& scene) noexcept;
 
 private:
 	RenderPipelineManager(const RenderPipelineManager&) noexcept = delete;
 	RenderPipelineManager& operator = (const RenderPipelineManager&) noexcept = delete;
 
 private:
-	RenderPipelinePtr _renderPipeline;
+	RenderSetting _setting;
+	RenderPostProcessPtr _SSGI;
+	RenderPostProcessPtr _SSAO;
+	RenderPostProcessPtr _SAT;
+	RenderPostProcessPtr _SSR;
+	RenderPostProcessPtr _SSSS;
+	RenderPostProcessPtr _DOF;
+	RenderPostProcessPtr _fog;
+	RenderPostProcessPtr _lightShaft;
+	RenderPostProcessPtr _fimicToneMapping;
+	RenderPostProcessPtr _FXAA;
+	RenderPostProcessPtr _colorGrading;
+
+	RenderPipelinePtr _pipeline;
+	RenderPipelineDevicePtr _pipelineDevice;
 	RenderPipelineControllerPtr _deferredLighting;
+	RenderPipelineControllerPtr _forwardShading;
 };
 
 _NAME_END

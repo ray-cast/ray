@@ -336,13 +336,13 @@ Camera::getCameraRender() const noexcept
 }
 
 void
-Camera::setRenderTexture(GraphicsFramebufferPtr texture) noexcept
+Camera::setFramebuffer(GraphicsFramebufferPtr texture) noexcept
 {
 	_renderTexture = texture;
 }
 
 GraphicsFramebufferPtr
-Camera::getRenderTexture() const noexcept
+Camera::getFramebuffer() const noexcept
 {
 	return _renderTexture;
 }
@@ -396,9 +396,9 @@ Camera::_updatePerspective() const noexcept
 	_projConstant.w = -(1.0 + _project.c2) / _projLength.y;
 
 	_clipConstant.x = (2 * _znear * _zfar);
-	_clipConstant.y = _zfar - _znear;
-	_clipConstant.z = _zfar + _znear;
-	_clipConstant.w = 1.0;
+	_clipConstant.y = _zfar + _znear;
+	_clipConstant.z = _zfar - _znear;
+	_clipConstant.w = _zfar;
 }
 
 void

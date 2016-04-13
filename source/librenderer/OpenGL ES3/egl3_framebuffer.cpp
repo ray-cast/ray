@@ -40,6 +40,46 @@
 _NAME_BEGIN
 
 __ImplementSubClass(EGL3Framebuffer, GraphicsFramebuffer, "EGL3Framebuffer")
+__ImplementSubClass(EGL3FramebufferLayout, GraphicsFramebufferLayout, "EGL3FramebufferLayout")
+
+EGL3FramebufferLayout::EGL3FramebufferLayout() noexcept
+{
+}
+
+EGL3FramebufferLayout::~EGL3FramebufferLayout() noexcept
+{
+	this->close();
+}
+
+bool
+EGL3FramebufferLayout::setup(const GraphicsFramebufferLayoutDesc& framebufferDesc) noexcept
+{
+	_framebufferLayoutDesc = framebufferDesc;
+	return true;
+}
+
+void
+EGL3FramebufferLayout::close() noexcept
+{
+}
+
+const GraphicsFramebufferLayoutDesc&
+EGL3FramebufferLayout::getGraphicsFramebufferLayoutDesc() const noexcept
+{
+	return _framebufferLayoutDesc;
+}
+
+void
+EGL3FramebufferLayout::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+EGL3FramebufferLayout::getDevice() noexcept
+{
+	return _device.lock();
+}
 
 EGL3Framebuffer::EGL3Framebuffer() noexcept
 	: _fbo(GL_NONE)
@@ -55,6 +95,8 @@ bool
 EGL3Framebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 {
 	assert(GL_NONE == _fbo);
+	assert(framebufferDesc.getGraphicsFramebufferLayout());
+	assert(framebufferDesc.getWidth() > 0 && framebufferDesc.getHeight() > 0);
 
 	GL_CHECK(glGenFramebuffers(1, &_fbo));
 	if (_fbo == GL_NONE)

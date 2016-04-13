@@ -54,7 +54,8 @@ void
 DefaultRenderDataManager::addRenderData(RenderQueue queue, RenderPass pass, RenderObjectPtr object) noexcept
 {
 	assert(object);
-	assert(queue == RenderQueue::RenderQueueOpaque || queue == RenderQueue::RenderQueueTransparent || queue == RenderQueue::RenderQueueLighting);
+	assert(queue >= RenderQueue::RenderQueueBeginRange && queue <= RenderQueue::RenderQueueEndRange);
+	assert(pass >= RenderPass::RenderPassBeginRange && pass <= RenderPass::RenderPassEndRange);
 
 	_renderQueue[queue][pass].push_back(object);
 }
@@ -62,9 +63,68 @@ DefaultRenderDataManager::addRenderData(RenderQueue queue, RenderPass pass, Rend
 RenderObjects&
 DefaultRenderDataManager::getRenderData(RenderQueue queue, RenderPass pass) noexcept
 {
-	assert(queue == RenderQueue::RenderQueueOpaque || queue == RenderQueue::RenderQueueTransparent || queue == RenderQueue::RenderQueueLighting);
+	assert(queue >= RenderQueue::RenderQueueBeginRange && queue <= RenderQueue::RenderQueueEndRange);
+	assert(pass >= RenderPass::RenderPassBeginRange && pass <= RenderPass::RenderPassEndRange);
 
 	return _renderQueue[queue][pass];
+}
+
+void
+DefaultRenderDataManager::assginVisiableLight(CameraPtr camera) noexcept
+{
+	_visiable.clear();
+
+	_renderQueue[RenderQueue::RenderQueueShadow][RenderPass::RenderPassLights].clear();
+	_renderQueue[RenderQueue::RenderQueueLighting][RenderPass::RenderPassLights].clear();
+
+	auto scene = camera->getRenderScene();
+	scene->computVisiableLight(camera->getViewProject(), _visiable);
+
+	this->sortMaterial(_visiable);
+
+	for (auto& it : _visiable.iter())
+	{
+		auto object = it.getOcclusionCullNode();
+
+		if (object->isInstanceOf<Light>())
+		{
+			auto light = object->downcast<Light>();
+			if (light->getShadow())
+				this->addRenderData(RenderQueue::RenderQueueShadow, RenderPass::RenderPassLights, light);
+
+			this->addRenderData(RenderQueue::RenderQueueLighting, RenderPass::RenderPassLights, light);
+		}
+	}
+}
+
+void 
+DefaultRenderDataManager::assginVisiableObject(CameraPtr camera) noexcept
+{
+	_visiable.clear();
+
+	auto scene = camera->getRenderScene();
+	scene->computVisiableObject(camera->getViewProject(), _visiable);
+
+	this->sortMaterial(_visiable);
+	this->sortDistance(_visiable);
+
+	for (auto& it : _visiable.iter())
+	{
+		auto object = it.getOcclusionCullNode();
+		auto material = object->downcast<RenderMesh>()->getMaterial();
+		if (material)
+		{
+			auto& techiniques = material->getTechs();
+			for (auto& technique : techiniques)
+			{
+				auto queue = technique->getRenderQueue();
+				for (auto& pass : technique->getPassList())
+				{
+					this->addRenderData(queue, pass->getRenderPass(), object);
+				}
+			}
+		}
+	}
 }
 
 void 
@@ -72,6 +132,7 @@ DefaultRenderDataManager::assginVisiable(CameraPtr camera) noexcept
 {
 	assert(camera);
 
+	_renderQueue[RenderQueue::RenderQueueShadow][RenderPass::RenderPassLights].clear();
 	_renderQueue[RenderQueue::RenderQueueOpaque][RenderPass::RenderPassOpaques].clear();
 	_renderQueue[RenderQueue::RenderQueueOpaque][RenderPass::RenderPassSpecific].clear();
 	_renderQueue[RenderQueue::RenderQueueTransparent][RenderPass::RenderPassTransparent].clear();
@@ -83,9 +144,6 @@ DefaultRenderDataManager::assginVisiable(CameraPtr camera) noexcept
 	auto scene = camera->getRenderScene();
 	scene->computVisiable(camera->getViewProject(), _visiable);
 
-	this->sortMaterial(_visiable);
-	this->sortDistance(_visiable);
-
 	for (auto& it : _visiable.iter())
 	{
 		auto object = it.getOcclusionCullNode();
@@ -96,13 +154,13 @@ DefaultRenderDataManager::assginVisiable(CameraPtr camera) noexcept
 				return;
 		}
 
-		auto listener = object->getOwnerListener();
-		if (listener)
-			listener->onWillRenderObject(*camera);
-
 		if (object->isInstanceOf<Light>())
 		{
-			this->addRenderData(RenderQueue::RenderQueueLighting, RenderPass::RenderPassLights, object);
+			auto light = object->downcast<Light>();
+			if (light->getShadow())
+				this->addRenderData(RenderQueue::RenderQueueShadow, RenderPass::RenderPassLights, light);
+				
+			this->addRenderData(RenderQueue::RenderQueueLighting, RenderPass::RenderPassLights, light);
 		}
 		else
 		{

@@ -34,11 +34,12 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +-----------------------------------------------------------------------
-#include <ray/fimic.h>
+#include "fimic.h"
 #include <ray/material.h>
 
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
+#include <ray/render_pipeline.h>
 
 _NAME_BEGIN
 
@@ -91,7 +92,7 @@ FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsFramebuffer
 	float data[SAMPLE_LOG_COUNT];
 	float delta = _timer->delta();
 
-	pipeline.readRenderTexture(source, GraphicsFormat::GraphicsFormatR16SFloat, SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, data);
+	pipeline.readFramebuffer(source, GraphicsFormat::GraphicsFormatR16SFloat, SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, data);
 
 	for (std::size_t i = 0; i < SAMPLE_LOG_COUNT; ++i)
 		lum += data[i];
@@ -109,7 +110,7 @@ FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, Gr
 {
 	_toneSource->assign(source);
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
 	pipeline.drawScreenQuad(_sunLum);
 }
@@ -119,7 +120,7 @@ FimicToneMapping::sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source,
 {
 	_toneSource->assign(source);
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
 	pipeline.drawScreenQuad(_sunLumLog);
 }
@@ -129,7 +130,7 @@ FimicToneMapping::generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr sou
 {
 	_toneSource->assign(source);
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
 	pipeline.drawScreenQuad(_bloom);
 }
@@ -141,7 +142,7 @@ FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, Gra
 	_bloomTexSizeInv->assign(float2(1.0 / textureDesc.getWidth(), 1.0 / textureDesc.getHeight()));
 	_toneSource->assign(source);
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
 	pipeline.drawScreenQuad(_blurh);
 }
@@ -153,7 +154,7 @@ FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, Gra
 	_bloomTexSizeInv->assign(float2(1.0 / textureDesc.getWidth(), 1.0 / textureDesc.getHeight()));
 	_toneSource->assign(source);
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
 	pipeline.drawScreenQuad(_blurv);
 }
@@ -164,13 +165,13 @@ FimicToneMapping::generateToneMapping(RenderPipeline& pipeline, GraphicsTextureP
 	_toneSource->assign(source);
 	_toneBloom->assign(bloom);
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
 	pipeline.drawScreenQuad(_tone);
 }
 
 void
-FimicToneMapping::onActivate(RenderPipeline& pipeline) except
+FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 {
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
@@ -220,7 +221,7 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) except
 }
 
 void
-FimicToneMapping::onDeactivate(RenderPipeline& pipeline) except
+FimicToneMapping::onDeactivate(RenderPipeline& pipeline) noexcept
 {
 	_texSample4Map.reset();
 	_texSample8Map.reset();
@@ -233,10 +234,12 @@ FimicToneMapping::onDeactivate(RenderPipeline& pipeline) except
 	_texCombieView.reset();
 }
 
-void
-FimicToneMapping::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+bool
+FimicToneMapping::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	this->sunLum(pipeline, source, _texSample4View);
+	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
+
+	this->sunLum(pipeline, texture, _texSample4View);
 	this->sunLum(pipeline, _texSample4Map, _texSample8View);
 	this->sunLumLog(pipeline, _texSample8Map, _texSampleLogView);
 
@@ -247,7 +250,9 @@ FimicToneMapping::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, 
 	this->blurh(pipeline, _texCombieMap, _texSample4View);
 	this->blurv(pipeline, _texSample4Map, _texCombieView);
 
-	this->generateToneMapping(pipeline, _texCombieMap, source, dest);
+	this->generateToneMapping(pipeline, _texCombieMap, texture, dest);
+
+	return true;
 }
 
 _NAME_END

@@ -109,7 +109,7 @@ EGL3DeviceContext::renderEnd() noexcept
 }
 
 void
-EGL3DeviceContext::setViewport(const Viewport& view, std::size_t i) noexcept
+EGL3DeviceContext::setViewport(const Viewport& view) noexcept
 {
 	if (_viewport != view)
 	{
@@ -119,13 +119,13 @@ EGL3DeviceContext::setViewport(const Viewport& view, std::size_t i) noexcept
 }
 
 const Viewport&
-EGL3DeviceContext::getViewport(std::size_t i) const noexcept
+EGL3DeviceContext::getViewport() const noexcept
 {
 	return _viewport;
 }
 
 void
-EGL3DeviceContext::setScissor(const Scissor& scissor, std::size_t i) noexcept
+EGL3DeviceContext::setScissor(const Scissor& scissor) noexcept
 {
 	if (_scissor != scissor)
 	{
@@ -135,7 +135,7 @@ EGL3DeviceContext::setScissor(const Scissor& scissor, std::size_t i) noexcept
 }
 
 const Scissor&
-EGL3DeviceContext::getScissor(std::size_t i) const noexcept
+EGL3DeviceContext::getScissor() const noexcept
 {
 	return _scissor;
 }
@@ -165,7 +165,12 @@ EGL3DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 			_shaderObject = glshader;
 		}
 
-		_needUpdateLayout = true;
+		auto inputLayout = pipelineDesc.getGraphicsInputLayout()->downcast<EGL3InputLayout>();
+		if (_inputLayout != inputLayout)
+		{
+			_inputLayout = inputLayout;
+			_needUpdateLayout = true;
+		}
 	}
 }
 
@@ -186,20 +191,6 @@ GraphicsDescriptorSetPtr
 EGL3DeviceContext::getDescriptorSet() const noexcept
 {
 	return _descriptorSet;
-}
-
-void
-EGL3DeviceContext::setInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept
-{
-	assert(inputLayout);
-	_inputLayout = inputLayout->downcast<EGL3InputLayout>();
-	_needUpdateLayout = true;
-}
-
-GraphicsInputLayoutPtr
-EGL3DeviceContext::getInputLayout() const noexcept
-{
-	return _inputLayout;
 }
 
 bool
@@ -243,7 +234,7 @@ EGL3DeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
 		else
 			_ibo = nullptr;
 
-		_needUpdateIbo = true;
+		_needUpdateLayout = true;
 	}
 }
 
@@ -264,7 +255,7 @@ EGL3DeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 			_vbo = data->downcast<EGL3GraphicsData>();
 		else
 			_vbo = nullptr;
-		_needUpdateVbo = true;
+		_needUpdateLayout = true;
 	}
 }
 
@@ -279,44 +270,27 @@ EGL3DeviceContext::drawRenderBuffer(const GraphicsIndirect& renderable) noexcept
 {
 	assert(_inputLayout || _vbo);
 
-	if (_inputLayout->getGraphicsInputLayoutDesc().getIndexType() != GraphicsIndexType::GraphicsIndexTypeNone)
-	{
-		if (!_ibo)
-			return;
-
-		if (_ibo->size() < _inputLayout->getGraphicsInputLayoutDesc().getIndexSize() * (renderable.startIndice + renderable.numIndices))
-			return;
-	}
-
-
 	if (_needUpdateLayout)
 	{
 		if (_inputLayout)
 			_inputLayout->bindLayout(_shaderObject);
+
+		if (_vbo)
+			_inputLayout->bindVbo(_vbo);
+
+		if (_ibo)
+			_inputLayout->bindIbo(_ibo);
+
 		_needUpdateLayout = false;
 	}
 
-	if (_needUpdateVbo)
-	{
-		if (_vbo)
-			_inputLayout->bindVbo(_vbo);
-		_needUpdateVbo = false;
-	}
-
-	if (_needUpdateIbo)
-	{
-		if (_ibo)
-			_inputLayout->bindIbo(_ibo);
-		_needUpdateIbo = false;
-	}
-
-	auto primitiveType = _stateCaptured.getRasterState().primitiveType;
+	auto primitiveType = _stateCaptured.getPrimitiveType();
 	if (_ibo)
 	{
 		GLenum drawType = EGL3Types::asVertexType(primitiveType);
-		GLenum indexType = EGL3Types::asIndexType(_inputLayout->getGraphicsInputLayoutDesc().getIndexType());
+		GLenum indexType = EGL3Types::asIndexType(renderable.indexType);
 		GLsizei numInstance = std::max(1, renderable.numInstances);
-		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_inputLayout->getGraphicsInputLayoutDesc().getIndexSize() * renderable.startIndice);
+		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_ibo->getGraphicsDataDesc().getStride() * renderable.startIndice);
 		GL_CHECK(glDrawElementsInstanced(drawType, renderable.numIndices, indexType, offsetIndices, numInstance));
 	}
 	else
@@ -335,36 +309,18 @@ EGL3DeviceContext::drawRenderBuffer(const GraphicsIndirect renderable[], std::si
 }
 
 void
-EGL3DeviceContext::setRenderTexture(GraphicsFramebufferPtr target) noexcept
+EGL3DeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 {
 	if (_renderTexture != target)
 	{
 		if (target)
 		{
 			_renderTexture = target->downcast<EGL3Framebuffer>();
-			auto& renderTextureDesc = _renderTexture->getGraphicsFramebufferDesc();
-			auto& textures = renderTextureDesc.getTextures();
+			auto& framebufferDesc = _renderTexture->getGraphicsFramebufferDesc();
 
 			glBindFramebuffer(GL_FRAMEBUFFER, _renderTexture->getInstanceID());
 
-			std::size_t size = textures.size();
-			if (size > 0)
-			{
-				for (std::size_t index = 0; index < size; index++)
-				{
-					auto& textureDesc = textures[index]->getGraphicsTextureDesc();
-					this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), index);
-				}
-			}
-			else
-			{
-				auto depthTexture = renderTextureDesc.getSharedDepthTexture();
-				if (depthTexture)
-				{
-					auto& textureDesc = depthTexture->getGraphicsTextureDesc();
-					this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), 0);
-				}
-			}
+			this->setViewport(Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
 		}
 		else
 		{
@@ -375,7 +331,7 @@ EGL3DeviceContext::setRenderTexture(GraphicsFramebufferPtr target) noexcept
 }
 
 void
-EGL3DeviceContext::blitRenderTexture(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
+EGL3DeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
 {
 	assert(src);
 
@@ -396,13 +352,13 @@ EGL3DeviceContext::blitRenderTexture(GraphicsFramebufferPtr src, const Viewport&
 }
 
 GraphicsFramebufferPtr
-EGL3DeviceContext::getRenderTexture() const noexcept
+EGL3DeviceContext::getFramebuffer() const noexcept
 {
 	return _renderTexture;
 }
 
 void
-EGL3DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
+EGL3DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	GLbitfield mode = 0;
 
@@ -441,7 +397,7 @@ EGL3DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& co
 
 	if (mode != 0)
 	{
-		auto depthWriteEnable = _stateCaptured.getDepthState().depthWriteEnable;
+		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
 		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_TRUE);
@@ -457,46 +413,14 @@ EGL3DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& co
 }
 
 void
-EGL3DeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
-{
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
-	{
-		auto depthWriteEnable = _stateCaptured.getDepthState().depthWriteEnable;
-		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
-		{
-			glDepthMask(GL_TRUE);
-		}
-
-		GLfloat f = depth;
-		GL_CHECK(glClearBufferfv(GL_DEPTH, 0, &f));
-
-		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
-		{
-			glDepthMask(GL_FALSE);
-		}
-	}
-
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
-	{
-		GLint s = stencil;
-		GL_CHECK(glClearBufferiv(GL_STENCIL, 0, &s));
-	}
-
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsColor)
-	{
-		GL_CHECK(glClearBufferfv(GL_COLOR, i, color.ptr()));
-	}
-}
-
-void
-EGL3DeviceContext::discardRenderTexture() noexcept
+EGL3DeviceContext::discardFramebuffer() noexcept
 {
 	if (_renderTexture)
 		_renderTexture->downcast<EGL3Framebuffer>()->discard();
 }
 
 void
-EGL3DeviceContext::readRenderTexture(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+EGL3DeviceContext::readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
 	assert(w && h && data);
 
@@ -507,7 +431,7 @@ EGL3DeviceContext::readRenderTexture(GraphicsFramebufferPtr target, GraphicsForm
 
 		if (format != GL_INVALID_ENUM && type != GL_INVALID_ENUM)
 		{
-			this->setRenderTexture(target);
+			this->setFramebuffer(target);
 			glReadPixels(0, 0, w, h, format, type, data);
 		}
 	}

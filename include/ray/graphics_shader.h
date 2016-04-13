@@ -49,6 +49,9 @@ public:
 	GraphicsShaderDesc(GraphicsShaderStage type, const std::vector<char>& code) noexcept;
 	virtual ~GraphicsShaderDesc() noexcept;
 
+	void setName(const std::string& name) noexcept;
+	const std::string& getName() const noexcept;
+
 	void setType(GraphicsShaderStage type) noexcept;
 	GraphicsShaderStage getType() const noexcept;
 
@@ -56,6 +59,7 @@ public:
 	const std::vector<char>& getByteCodes() const noexcept;
 
 private:
+	std::string _name;
 	GraphicsShaderStage _type;
 	std::vector<char> _bytecodes;
 };

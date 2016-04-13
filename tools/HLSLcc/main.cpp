@@ -200,6 +200,7 @@ void SaveCommand(Options& options)
 		options.compile.save(options.options.complieOut);
 	else
 		options.compile.save(options.options.complieIn + ".o");
+	std::cout << "save " << options.options.hlsl << " success." << std::endl;
 }
 
 void CompileCommand(Options& options)

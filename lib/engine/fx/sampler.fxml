@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<effect version="1270" language="hlsl">
+<effect>
     <sampler name="PointClamp">
         <state name="filter"  value="point"/>
         <state name="wrap"  value="clamp"/>

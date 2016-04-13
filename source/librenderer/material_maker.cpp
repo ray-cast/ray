@@ -45,11 +45,13 @@
 #include <ray/graphics_shader.h>
 #include <ray/graphics_pipeline.h>
 #include <ray/graphics_sampler.h>
+#include <ray/graphics_input_layout.h>
 
 #include <ray/render_system.h>
 #include <ray/ioserver.h>
 #include <ray/xmlreader.h>
 #include <ray/parse.h>
+#include <ray/except.h>
 
 _NAME_BEGIN
 
@@ -59,6 +61,44 @@ MaterialMaker::MaterialMaker() noexcept
 
 MaterialMaker::~MaterialMaker() noexcept
 {
+}
+
+void
+MaterialMaker::instanceInputLayout(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
+{
+	GraphicsInputLayoutDesc inputLayoutDesc;
+
+	std::string inputLayoutName = reader.getValue<std::string>("name");
+	inputLayoutDesc.setName(inputLayoutName);
+
+	if (!reader.setToFirstChild())
+		throw failure(__TEXT("Empty child : ") + reader.getCurrentNodePath());
+
+	do
+	{
+		std::string name = reader.getCurrentNodeName();
+		if (name == "layout")
+		{
+			std::string layoutName = reader.getValue<std::string>("name");
+			std::string layoutFormat = reader.getValue<std::string>("format");
+
+			if (layoutName.empty())
+				throw failure(__TEXT("Empty shader name : ") + reader.getCurrentNodePath());
+
+			GraphicsFormat format = stringToFormat(layoutFormat);
+			if (format == GraphicsFormat::GraphicsFormatMaxEnum)
+				throw failure(__TEXT("Undefined format: ") + reader.getCurrentNodePath());
+
+			inputLayoutDesc.addComponent(GraphicsVertexLayout(layoutName, 0, format));
+		}
+
+	} while (reader.setToNextChild());
+
+	auto inputLayout = manager.getGraphicsDevice()->createInputLayout(inputLayoutDesc);
+	if (!inputLayout)
+		throw failure(__TEXT("Can't create input layout") + reader.getCurrentNodeName());
+
+	material.addInputLayout(inputLayout);
 }
 
 void
@@ -73,226 +113,194 @@ MaterialMaker::instanceCodes(MaterialManager& manager, iarchive& reader) except
 }
 
 void
-MaterialMaker::instanceShader(MaterialManager& manager, GraphicsProgramDesc& program, iarchive& reader) except
+MaterialMaker::instanceShader(MaterialManager& manager, MaterialDesc& material, GraphicsProgramDesc& programDesc, iarchive& reader) except
 {
-	std::string type;
-	reader.getValue("name", type);
-
-	std::string value;
-	reader.getValue("value", value);
+	std::string type = reader.getValue<std::string>("name");
+	std::string value = reader.getValue<std::string>("value");
 
 	if (type.empty())
-		throw failure(__TEXT("The shader name can not be empty"));
+		throw failure(__TEXT("Empty shader name : ") + reader.getCurrentNodePath());
 
 	if (value.empty())
-		throw failure(__TEXT("The shader value can not be empty"));
+		throw failure(__TEXT("Empty shader entrypoint : ") + reader.getCurrentNodePath());
 
-	GraphicsShaderStage shaderType;
+	auto shader =  material.getShader(value);
+	if (!shader)
+	{
+		GraphicsShaderStage shaderType = stringToShaderStage(type);
+		if (shaderType == GraphicsShaderStage::GraphicsShaderStageMaxEnum)
+			throw failure(__TEXT("Unknown shader type : ") + type);
 
-	if (type == "vertex")
-		shaderType = GraphicsShaderStage::GraphicsShaderStageVertex;
-	else if (type == "fragment")
-		shaderType = GraphicsShaderStage::GraphicsShaderStageFragment;
-	else if (type == "geometry")
-		shaderType = GraphicsShaderStage::GraphicsShaderStageGeometry;
-	else if (type == "compute")
-		shaderType = GraphicsShaderStage::GraphicsShaderStageCompute;
-	else
-		throw failure(__TEXT("Unknown shader type : ") + type);
+		std::vector<char>& bytecodes = _shaderCodes[value];
+		if (bytecodes.empty())
+			throw failure(__TEXT("Empty shader code : ") + value);
 
-	std::vector<char>& bytecodes = _shaderCodes[value];
-	if (bytecodes.empty())
-		throw failure(__TEXT("Empty shader code : ") + value);
+		GraphicsShaderDesc shaderDesc;
+		shaderDesc.setName(value);
+		shaderDesc.setType(shaderType);
+		shaderDesc.setByteCodes(bytecodes);
 
-	GraphicsShaderDesc shader;
-	shader.setType(shaderType);
-	shader.setByteCodes(bytecodes);
+		shader = manager.getGraphicsDevice()->createShader(shaderDesc);
+		if (!shader)
+			throw failure(__TEXT("Can't create shader : ") + reader.getCurrentNodePath());
 
-	program.addShader(manager.getGraphicsDevice()->createShader(shader));
+		material.addShader(shader);
+	}
+
+	programDesc.addShader(shader);
 }
 
 void
-MaterialMaker::instancePass(MaterialManager& manager, MaterialTechPtr& tech, iarchive& reader) except
+MaterialMaker::instancePass(MaterialManager& manager, MaterialDesc& material, MaterialTechPtr& tech, iarchive& reader) except
 {
-	RenderPass passType = RenderPass::RenderPassCustom;
-
 	std::string passName;
 	reader.getValue("name", passName);
 	if (passName.empty())
-		throw failure(__TEXT("The pass name can not be empty"));
+		throw failure(__TEXT("Empty pass name : ") + reader.getCurrentNodePath());
 
-	if (passName == "custom")
-		passType = RenderPass::RenderPassCustom;
-	else if (passName == "shadow")
-		passType = RenderPass::RenderPassShadow;
-	else if (passName == "opaque")
-		passType = RenderPass::RenderPassOpaques;
-	else if (passName == "transparent")
-		passType = RenderPass::RenderPassTransparent;
-	else if (passName == "light")
-		passType = RenderPass::RenderPassLights;
-	else if (passName == "specific")
-		passType = RenderPass::RenderPassSpecific;
-	else if (passName == "postprocess")
-		passType = RenderPass::RenderPassPostprocess;
+	if (!reader.setToFirstChild())
+		throw failure(__TEXT("Empty child : ") + reader.getCurrentNodePath());
+	
+	GraphicsStateDesc stateDesc;
+	GraphicsProgramDesc programDesc;
+	GraphicsInputLayoutPtr inputLayout;
+
+	do
+	{
+		auto nodeName = reader.getCurrentNodeName();
+		if (nodeName != "state")
+			throw failure(__TEXT("Unkonwn node name : ") + nodeName + reader.getCurrentNodePath());
+
+		std::string name = reader.getValue<std::string>("name");
+
+		if (name == "vertex")
+			this->instanceShader(manager, material, programDesc, reader);
+		else if (name == "fragment")
+			this->instanceShader(manager, material, programDesc, reader);
+		else if (name == "inputlayout")
+			inputLayout = material.getInputLayout(reader.getValue<std::string>("value"));
+		else if (name == "cullmode")
+			stateDesc.setCullMode(stringToCullMode(reader.getValue<std::string>("value")));
+		else if (name == "polygonMode")
+			stateDesc.setPolygonMode(stringToFillMode(reader.getValue<std::string>("value")));
+		else if (name == "scissorTestEnable")
+			stateDesc.setScissorTestEnable(reader.getValue<bool>("value"));
+		else if (name == "primitive")
+			stateDesc.setPrimitiveType(stringToPrimitive(reader.getValue<std::string>("value")));
+		else if (name == "multisampleEnable")
+			stateDesc.setMultisampleEnable(reader.getValue<bool>("value"));
+		else if (name == "linear2srgb")
+			stateDesc.setsRGBEnable(reader.getValue<bool>("value"));
+		else if (name == "blend")
+			stateDesc.setBlendEnable(reader.getValue<bool>("value"));
+		else if (name == "blendSeparate")
+			stateDesc.setBlendSeparateEnable(reader.getValue<bool>("value"));
+		else if (name == "blendOp")
+			stateDesc.setBlendOp(stringToBlendOperation(reader.getValue<std::string>("value")));
+		else if (name == "blendsrc")
+			stateDesc.setBlendSrc(stringToBlendFactor(reader.getValue<std::string>("value")));
+		else if (name == "blenddst")
+			stateDesc.setBlendDest(stringToBlendFactor(reader.getValue<std::string>("value")));
+		else if (name == "blendalphaop")
+			stateDesc.setBlendAlphaOp(stringToBlendOperation(reader.getValue<std::string>("value")));
+		else if (name == "blendalphasrc")
+			stateDesc.setBlendAlphaSrc(stringToBlendFactor(reader.getValue<std::string>("value")));
+		else if (name == "blendalphadst")
+			stateDesc.setBlendAlphaDest(stringToBlendFactor(reader.getValue<std::string>("value")));
+		else if (name == "colormask")
+			stateDesc.setColorWriteMask(stringToColorMask(reader.getValue<std::string>("value")));
+		else if (name == "depthtest")
+			stateDesc.setDepthEnable(reader.getValue<bool>("value"));
+		else if (name == "depthwrite")
+			stateDesc.setDepthWriteEnable(reader.getValue<bool>("value"));
+		else if (name == "depthfunc")
+			stateDesc.setDepthFunc(stringToCompareFunc(reader.getValue<std::string>("value")));
+		else if (name == "depthBiasEnable")
+			stateDesc.setDepthBiasEnable(reader.getValue<bool>("value"));
+		else if (name == "depthSlopeScaleBias")
+			stateDesc.setDepthSlopeScaleBias(reader.getValue<float>("value"));
+		else if (name == "depthBias")
+			stateDesc.setDepthBias(reader.getValue<float>("value"));
+		else if (name == "stencilTest")
+			stateDesc.setStencilEnable(reader.getValue<bool>("value"));
+		else if (name == "stencilRef")
+			stateDesc.setStencilRef(reader.getValue<int>("value"));
+		else if (name == "stencilFunc")
+			stateDesc.setStencilFunc(stringToCompareFunc(reader.getValue<std::string>("value")));
+		else if (name == "stencilReadMask")
+			stateDesc.setStencilReadMask(reader.getValue<int>("value"));
+		else if (name == "stencilWriteMask")
+			stateDesc.setStencilWriteMask(reader.getValue<int>("value"));
+		else if (name == "stencilFail")
+			stateDesc.setStencilFail(stringToStencilOp(reader.getValue<std::string>("value")));
+		else if (name == "stencilZFail")
+			stateDesc.setStencilZFail(stringToStencilOp(reader.getValue<std::string>("value")));
+		else if (name == "stencilPass")
+			stateDesc.setStencilPass(stringToStencilOp(reader.getValue<std::string>("value")));
+		else if (name == "stencilTwoTest")
+			stateDesc.setStencilTwoEnable(reader.getValue<bool>("value"));
+		else if (name == "stencilTwoFunc")
+			stateDesc.setStencilTwoFunc(stringToCompareFunc(reader.getValue<std::string>("value")));
+		else if (name == "stencilTwoReadMask")
+			stateDesc.setStencilTwoReadMask(reader.getValue<int>("value"));
+		else if (name == "stencilTwoWriteMask")
+			stateDesc.setStencilTwoWriteMask(reader.getValue<int>("value"));
+		else if (name == "stencilTwoFail")
+			stateDesc.setStencilTwoFail(stringToStencilOp(reader.getValue<std::string>("value")));
+		else if (name == "stencilTwoZFail")
+			stateDesc.setStencilTwoZFail(stringToStencilOp(reader.getValue<std::string>("value")));
+		else if (name == "stencilTwoPass")
+			stateDesc.setStencilTwoPass(stringToStencilOp(reader.getValue<std::string>("value")));
+		else
+		{
+			throw failure(__TEXT("Unkonwn node name : ") + nodeName + reader.getCurrentNodePath());
+		}
+
+	} while (reader.setToNextChild());
+
+	auto state = manager.getGraphicsDevice()->createRenderState(stateDesc);
+	if (!state)
+		throw failure(__TEXT("Can't create render state : ") + reader.getCurrentNodePath());
+
+	auto program = manager.getGraphicsDevice()->createProgram(programDesc);
+	if (!state)
+		throw failure(__TEXT("Can't create program : ") + reader.getCurrentNodePath());
 
 	auto pass = std::make_shared<MaterialPass>();
 	pass->setName(passName);
-	pass->setRenderPass(passType);
+	pass->setRenderPass(stringToRenderPass(passName));
+	pass->setGraphicsState(state);
+	pass->setGraphicsProgram(program);
+	pass->setGraphicsInputLayout(inputLayout);
 
-	if (reader.setToFirstChild())
-	{
-		RenderDepthState depthState;
-		RenderRasterState rasterState;
-		RenderBlendState blendState;
-		RenderStencilState stencilState;
-
-		GraphicsProgramDesc GraphicsProgramDesc;
-
-		do
-		{
-			auto nodeName = reader.getCurrentNodeName();
-			if (nodeName != "state")
-				throw failure(__TEXT("Unkonwn node name ") + nodeName + reader.getCurrentNodePath());
-
-			std::string name = reader.getValue<std::string>("name");
-			std::string value = reader.getValue<std::string>("value");
-
-			if (name == "vertex")
-				this->instanceShader(manager, GraphicsProgramDesc, reader);
-			else if (name == "fragment")
-				this->instanceShader(manager, GraphicsProgramDesc, reader);
-			else if (name == "cullmode")
-				rasterState.cullMode = stringToCullMode(reader.getValue<std::string>("value"));
-			else if (name == "polygonMode")
-				rasterState.polygonMode = stringToFillMode(reader.getValue<std::string>("value"));
-			else if (name == "scissorTestEnable")
-				rasterState.scissorTestEnable = reader.getValue<bool>("value");
-			else if (name == "primitive")
-				rasterState.primitiveType = stringToPrimitive(reader.getValue<std::string>("value"));
-			else if (name == "multisampleEnable")
-				rasterState.multisampleEnable = reader.getValue<bool>("value");
-			else if (name == "srgbEnable")
-				rasterState.srgbEnable = reader.getValue<bool>("value");
-			else if (name == "blend")
-				blendState.blendEnable = reader.getValue<bool>("value");
-			else if (name == "blendSeparate")
-				blendState.blendSeparateEnable = reader.getValue<bool>("value");
-			else if (name == "blendOp")
-				blendState.blendOp = stringToBlendOperation(reader.getValue<std::string>("value"));
-			else if (name == "blendsrc")
-				blendState.blendSrc = stringToBlendFactor(reader.getValue<std::string>("value"));
-			else if (name == "blenddst")
-				blendState.blendDest = stringToBlendFactor(reader.getValue<std::string>("value"));
-			else if (name == "blendalphaop")
-				blendState.blendAlphaOp = stringToBlendOperation(reader.getValue<std::string>("value"));
-			else if (name == "blendalphasrc")
-				blendState.blendAlphaSrc = stringToBlendFactor(reader.getValue<std::string>("value"));
-			else if (name == "blendalphadst")
-				blendState.blendAlphaDest = stringToBlendFactor(reader.getValue<std::string>("value"));
-			else if (name == "colormask")
-				blendState.colorWriteMask = stringToColorMask(reader.getValue<std::string>("value"));
-			else if (name == "depthtest")
-				depthState.depthEnable = reader.getValue<bool>("value");
-			else if (name == "depthwrite")
-				depthState.depthWriteEnable = reader.getValue<bool>("value");
-			else if (name == "depthfunc")
-				depthState.depthFunc = stringToCompareFunc(reader.getValue<std::string>("value"));
-			else if (name == "depthBiasEnable")
-				depthState.depthBiasEnable = reader.getValue<bool>("value");
-			else if (name == "depthSlopeScaleBias")
-				depthState.depthSlopeScaleBias = reader.getValue<float>("value");
-			else if (name == "depthBias")
-				depthState.depthBias = reader.getValue<float>("value");
-			else if (name == "stencilTest")
-				stencilState.stencilEnable = reader.getValue<bool>("value");
-			else if (name == "stencilRef")
-				stencilState.stencilRef = reader.getValue<int>("value");
-			else if (name == "stencilFunc")
-				stencilState.stencilFunc = stringToCompareFunc(reader.getValue<std::string>("value"));
-			else if (name == "stencilReadMask")
-				stencilState.stencilReadMask = reader.getValue<int>("value");
-			else if (name == "stencilWriteMask")
-				stencilState.stencilWriteMask = reader.getValue<int>("value");
-			else if (name == "stencilFail")
-				stencilState.stencilFail = stringToStencilOp(reader.getValue<std::string>("value"));
-			else if (name == "stencilZFail")
-				stencilState.stencilZFail = stringToStencilOp(reader.getValue<std::string>("value"));
-			else if (name == "stencilPass")
-				stencilState.stencilPass = stringToStencilOp(reader.getValue<std::string>("value"));
-			else if (name == "stencilTwoTest")
-				stencilState.stencilTwoEnable = reader.getValue<bool>("value");
-			else if (name == "stencilTwoFunc")
-				stencilState.stencilTwoFunc = stringToCompareFunc(reader.getValue<std::string>("value"));
-			else if (name == "stencilTwoReadMask")
-				stencilState.stencilTwoReadMask = reader.getValue<int>("value");
-			else if (name == "stencilTwoWriteMask")
-				stencilState.stencilTwoWriteMask = reader.getValue<int>("value");
-			else if (name == "stencilTwoFail")
-				stencilState.stencilTwoFail = stringToStencilOp(reader.getValue<std::string>("value"));
-			else if (name == "stencilTwoZFail")
-				stencilState.stencilTwoZFail = stringToStencilOp(reader.getValue<std::string>("value"));
-			else if (name == "stencilTwoPass")
-				stencilState.stencilTwoPass = stringToStencilOp(reader.getValue<std::string>("value"));
-			else
-				assert(false);
-
-		} while (reader.setToNextChild());
-
-		GraphicsStateDesc stateDesc;
-		stateDesc.setDepthState(depthState);
-		stateDesc.setBlendState(blendState);
-		stateDesc.setRasterState(rasterState);
-		stateDesc.setStencilState(stencilState);
-
-		auto state = manager.getGraphicsDevice()->createRenderState(stateDesc);
-		auto program = manager.getGraphicsDevice()->createProgram(GraphicsProgramDesc);
-
-		pass->setGraphicsState(state);
-		pass->setGraphicsProgram(program);
-
-		tech->addPass(pass);
-	}
+	tech->addPass(pass);
 }
 
 void
 MaterialMaker::instanceTech(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
 {
-	RenderQueue queue = RenderQueue::RenderQueueOpaque;
-
 	std::string techName = reader.getValue<std::string>("name");
 	if (techName.empty())
 		throw failure(__TEXT("The technique name can not be empty"));
 
-	if (techName == "custom")
-		queue = RenderQueue::RenderQueueCustom;
-	else if (techName == "opaque")
-		queue = RenderQueue::RenderQueueOpaque;
-	else if (techName == "transparent")
-		queue = RenderQueue::RenderQueueTransparent;
-	else if (techName == "lighting")
-		queue = RenderQueue::RenderQueueLighting;
-	else if (techName == "postprocess")
-		queue = RenderQueue::RenderQueuePostprocess;
-	else
-	{
+	RenderQueue queue = stringToRenderQueue(techName);
+	if (queue == RenderQueue::RenderQueueMaxEnum)
 		throw failure(__TEXT("Unknown technique name : ") + techName);
-	}
 
 	auto tech = std::make_shared<MaterialTech>();
 	tech->setRenderQueue(queue);
 
-	if (reader.setToFirstChild())
+	if (!reader.setToFirstChild())
+		throw failure(__TEXT("Empty child : ") + reader.getCurrentNodePath());
+	
+	do
 	{
-		do
+		auto name = reader.getCurrentNodeName();
+		if (name == "pass")
 		{
-			auto name = reader.getCurrentNodeName();
-			if (name == "pass")
-			{
-				this->instancePass(manager, tech, reader);
-			}
-		} while (reader.setToNextChild());
-	}
+			this->instancePass(manager, material, tech, reader);
+		}
+	} while (reader.setToNextChild());
 
 	material.addTech(tech);
 }
@@ -308,58 +316,14 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialDesc& materia
 	if (name.empty())
 		throw failure(__TEXT("The parameter name can not be empty"));
 
+	auto uniformType = stringToUniformType(type);
+	if (uniformType == GraphicsUniformType::GraphicsUniformTypeMaxEnum)
+		throw failure(__TEXT("Unknown parameter type : ") + type);
+
 	auto param = std::make_shared<MaterialParam>();
 	param->setName(name);
+	param->setType(uniformType);
 
-	if (type == "bool") param->setType(GraphicsUniformType::GraphicsUniformTypeBool);
-	else if (type == "bool2") param->setType(GraphicsUniformType::GraphicsUniformTypeBool2);
-	else if (type == "bool3") param->setType(GraphicsUniformType::GraphicsUniformTypeBool3);
-	else if (type == "bool4") param->setType(GraphicsUniformType::GraphicsUniformTypeBool4);
-	else if (type == "int") param->setType(GraphicsUniformType::GraphicsUniformTypeInt);
-	else if (type == "int2") param->setType(GraphicsUniformType::GraphicsUniformTypeInt2);
-	else if (type == "int3") param->setType(GraphicsUniformType::GraphicsUniformTypeInt3);
-	else if (type == "int4") param->setType(GraphicsUniformType::GraphicsUniformTypeInt4);
-	else if (type == "uint") param->setType(GraphicsUniformType::GraphicsUniformTypeUInt);
-	else if (type == "uint2") param->setType(GraphicsUniformType::GraphicsUniformTypeUInt2);
-	else if (type == "uint3") param->setType(GraphicsUniformType::GraphicsUniformTypeUInt3);
-	else if (type == "uint4") param->setType(GraphicsUniformType::GraphicsUniformTypeUInt4);
-	else if (type == "float") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat);
-	else if (type == "float2") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat2);
-	else if (type == "float3") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat3);
-	else if (type == "float4") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat4);
-	else if (type == "float3x3") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat3x3);
-	else if (type == "float4x4")param->setType(GraphicsUniformType::GraphicsUniformTypeFloat4x4);
-	else if (type == "bool[]") param->setType(GraphicsUniformType::GraphicsUniformTypeBoolArray);
-	else if (type == "bool2[]") param->setType(GraphicsUniformType::GraphicsUniformTypeBool2Array);
-	else if (type == "bool3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeBool3Array);
-	else if (type == "bool4[]") param->setType(GraphicsUniformType::GraphicsUniformTypeBool4Array);
-	else if (type == "int[]") param->setType(GraphicsUniformType::GraphicsUniformTypeIntArray);
-	else if (type == "int2[]") param->setType(GraphicsUniformType::GraphicsUniformTypeInt2Array);
-	else if (type == "int3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeInt3Array);
-	else if (type == "int4[]") param->setType(GraphicsUniformType::GraphicsUniformTypeInt4Array);
-	else if (type == "uint[]") param->setType(GraphicsUniformType::GraphicsUniformTypeUIntArray);
-	else if (type == "uint2[]") param->setType(GraphicsUniformType::GraphicsUniformTypeUInt2Array);
-	else if (type == "uint3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeUInt3Array);
-	else if (type == "uint4[]") param->setType(GraphicsUniformType::GraphicsUniformTypeUInt4Array);
-	else if (type == "half[]") param->setType(GraphicsUniformType::GraphicsUniformTypeHalfArray);
-	else if (type == "half2[]") param->setType(GraphicsUniformType::GraphicsUniformTypeHalf2Array);
-	else if (type == "half3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeHalf3Array);
-	else if (type == "half4[]") param->setType(GraphicsUniformType::GraphicsUniformTypeHalf4Array);
-	else if (type == "float[]") param->setType(GraphicsUniformType::GraphicsUniformTypeFloatArray);
-	else if (type == "float2[]")param->setType(GraphicsUniformType::GraphicsUniformTypeFloat2Array);
-	else if (type == "float3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat3Array);
-	else if (type == "float4[]") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat4Array);
-	else if (type == "float3x3[]") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat3x3Array);
-	else if (type == "float4x4[]") param->setType(GraphicsUniformType::GraphicsUniformTypeFloat4x4Array);
-	else if (type == "texture2D") param->setType(GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	else if (type == "texture3D") param->setType(GraphicsUniformType::GraphicsUniformTypeStorageImage);
-	else if (type == "buffer") param->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
-	else
-	{
-		assert(false);
-		throw failure(__TEXT("Unknown parameter type : ") + name);
-	}
-	
 	if (!semantic.empty())
 	{
 		auto materialSemantic = manager.getSemantic(semantic);
@@ -445,46 +409,45 @@ MaterialMaker::instanceMacro(MaterialManager& manager, MaterialDesc& material, i
 void
 MaterialMaker::instanceSampler(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
 {
-	std::string samplerName;
-	reader.getValue("name", samplerName);
-
+	std::string samplerName = reader.getValue<std::string>("name");
 	if (samplerName.empty())
 		throw failure(__TEXT("Empty sampler empty"));
 
-	if (reader.setToFirstChild())
+	if (!reader.setToFirstChild())
+		throw failure(__TEXT("Empty child : ") + reader.getCurrentNodePath());
+
+	GraphicsSamplerDesc desc;
+	desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat);
+
+	do
 	{
-		GraphicsSamplerDesc desc;
-		desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat);
-
-		do
+		std::string stateName = reader.getValue<std::string>("name");
+		std::string stateValue = reader.getValue<std::string>("value");
+		if (stateName == "filter")
 		{
-			std::string stateName = reader.getValue<std::string>("name");
-			std::string stateValue = reader.getValue<std::string>("value");
-			if (stateName == "filter")
-			{
-				if (stateValue == "point")
-					desc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-				else if (stateValue == "linear")
-					desc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
-			}
-			else if (stateName == "wrap")
-			{
-				if (stateValue == "clamp")
-					desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
-				else if (stateValue == "mirror")
-					desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapMirror);
-				else if (stateValue == "repeat")
-					desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat);
-			}
+			if (stateValue == "point")
+				desc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+			else if (stateValue == "linear")
+				desc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
+		}
+		else if (stateName == "wrap")
+		{
+			if (stateValue == "clamp")
+				desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
+			else if (stateValue == "mirror")
+				desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapMirror);
+			else if (stateValue == "repeat")
+				desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat);
+		}
 
-		} while (reader.setToNextChild());
+	} while (reader.setToNextChild());
 
-		auto param = std::make_shared<MaterialParam>();
-		param->setName(samplerName);
-		param->assign(nullptr, manager.getGraphicsDevice()->createSampler(desc));	
+	auto param = std::make_shared<MaterialParam>();
+	param->setName(samplerName);
+	param->setType(GraphicsUniformType::GraphicsUniformTypeSamplerImage);
+	param->assign(nullptr, manager.getGraphicsDevice()->createSampler(desc));
 
-		material.addParameter(param);
-	}
+	material.addParameter(param);
 }
 
 void
@@ -494,15 +457,15 @@ MaterialMaker::instanceBuffer(MaterialManager& manager, MaterialDesc& material, 
 	buffer->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
 	buffer->setName(reader.getValue<std::string>("name"));
 
-	if (reader.setToFirstChild())
+	if (!reader.setToFirstChild())
+		throw failure(__TEXT("Empty child : ") + reader.getCurrentNodePath());
+
+	do
 	{
-		do
-		{
-		} while (reader.setToNextChild());
-	}
+	} while (reader.setToNextChild());
 }
 
-void 
+void
 MaterialMaker::instanceInclude(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
 {
 	auto path = reader.getValue<std::string>("name");
@@ -547,10 +510,12 @@ MaterialMaker::load(MaterialManager& manager, MaterialDesc& material, iarchive& 
 
 	std::string language = reader.getValue<std::string>("language");
 	if (language != "bytecodes")
-		throw failure("Can't support language : " + language);
+		throw failure("Can't support language : " + language + ", so I can't open it");
 
 	if (!reader.setToFirstChild())
 		throw failure("The file has been damaged and can't be recovered, so I can't open it");
+
+	_shaderCodes.clear();
 
 	do
 	{
@@ -567,6 +532,9 @@ MaterialMaker::load(MaterialManager& manager, MaterialDesc& material, iarchive& 
 			instanceCodes(manager, reader);
 		else if (name == "technique")
 			instanceTech(manager, material, reader);
+		else if (name == "inputlayout")
+			instanceInputLayout(manager, material, reader);
+
 	} while (reader.setToNextChild());
 
 	return true;
@@ -642,184 +610,340 @@ MaterialMaker::load(MaterialManager& manager, iarchive& reader) except
 			auto material = std::make_shared<Material>();
 			material->setup(materialDesc);
 			return material;
-		}	
+		}
 	}
 
 	return nullptr;
 }
 
+RenderPass
+MaterialMaker::stringToRenderPass(const std::string& passName) noexcept
+{
+	if (passName == "custom")      return RenderPass::RenderPassCustom;
+	if (passName == "shadow")      return RenderPass::RenderPassShadow;
+	if (passName == "opaque")      return RenderPass::RenderPassOpaques;
+	if (passName == "transparent") return RenderPass::RenderPassTransparent;
+	if (passName == "light")       return RenderPass::RenderPassLights;
+	if (passName == "specific")    return RenderPass::RenderPassSpecific;
+	if (passName == "postprocess") return RenderPass::RenderPassPostprocess;
+
+	return RenderPass::RenderPassCustom;
+}
+
+RenderQueue
+MaterialMaker::stringToRenderQueue(const std::string& techName) noexcept
+{
+	if (techName == "custom")      return RenderQueue::RenderQueueCustom;
+	if (techName == "opaque")      return RenderQueue::RenderQueueOpaque;
+	if (techName == "transparent") return RenderQueue::RenderQueueTransparent;
+	if (techName == "lighting")    return RenderQueue::RenderQueueLighting;
+	if (techName == "postprocess") return RenderQueue::RenderQueuePostprocess;
+
+	assert(false);
+	return RenderQueue::RenderQueueMaxEnum;
+}
+
+GraphicsShaderStage
+MaterialMaker::stringToShaderStage(const std::string& stage) noexcept
+{
+	if (stage == "vertex")   return GraphicsShaderStage::GraphicsShaderStageVertex;
+	if (stage == "fragment") return GraphicsShaderStage::GraphicsShaderStageFragment;
+	if (stage == "geometry") return GraphicsShaderStage::GraphicsShaderStageGeometry;
+	if (stage == "compute")  return GraphicsShaderStage::GraphicsShaderStageCompute;
+
+	assert(false);
+	return GraphicsShaderStage::GraphicsShaderStageMaxEnum;
+}
+
+GraphicsUniformType
+MaterialMaker::stringToUniformType(const std::string& type) noexcept
+{
+	if (type == "bool") 	   return GraphicsUniformType::GraphicsUniformTypeBool;
+	if (type == "int") 	       return GraphicsUniformType::GraphicsUniformTypeInt;
+	if (type == "int2") 	   return GraphicsUniformType::GraphicsUniformTypeInt2;
+	if (type == "int3") 	   return GraphicsUniformType::GraphicsUniformTypeInt3;
+	if (type == "int4") 	   return GraphicsUniformType::GraphicsUniformTypeInt4;
+	if (type == "uint") 	   return GraphicsUniformType::GraphicsUniformTypeUInt;
+	if (type == "uint2") 	   return GraphicsUniformType::GraphicsUniformTypeUInt2;
+	if (type == "uint3") 	   return GraphicsUniformType::GraphicsUniformTypeUInt3;
+	if (type == "uint4") 	   return GraphicsUniformType::GraphicsUniformTypeUInt4;
+	if (type == "float") 	   return GraphicsUniformType::GraphicsUniformTypeFloat;
+	if (type == "float2") 	   return GraphicsUniformType::GraphicsUniformTypeFloat2;
+	if (type == "float3") 	   return GraphicsUniformType::GraphicsUniformTypeFloat3;
+	if (type == "float4") 	   return GraphicsUniformType::GraphicsUniformTypeFloat4;
+	if (type == "float2x2")    return GraphicsUniformType::GraphicsUniformTypeFloat2x2;
+	if (type == "float3x3")    return GraphicsUniformType::GraphicsUniformTypeFloat3x3;
+	if (type == "float4x4")	   return GraphicsUniformType::GraphicsUniformTypeFloat4x4;
+	if (type == "int[]") 	   return GraphicsUniformType::GraphicsUniformTypeIntArray;
+	if (type == "int2[]") 	   return GraphicsUniformType::GraphicsUniformTypeInt2Array;
+	if (type == "int3[]") 	   return GraphicsUniformType::GraphicsUniformTypeInt3Array;
+	if (type == "int4[]") 	   return GraphicsUniformType::GraphicsUniformTypeInt4Array;
+	if (type == "uint[]") 	   return GraphicsUniformType::GraphicsUniformTypeUIntArray;
+	if (type == "uint2[]") 	   return GraphicsUniformType::GraphicsUniformTypeUInt2Array;
+	if (type == "uint3[]") 	   return GraphicsUniformType::GraphicsUniformTypeUInt3Array;
+	if (type == "uint4[]") 	   return GraphicsUniformType::GraphicsUniformTypeUInt4Array;
+	if (type == "float[]") 	   return GraphicsUniformType::GraphicsUniformTypeFloatArray;
+	if (type == "float2[]")	   return GraphicsUniformType::GraphicsUniformTypeFloat2Array;
+	if (type == "float3[]")    return GraphicsUniformType::GraphicsUniformTypeFloat3Array;
+	if (type == "float4[]")    return GraphicsUniformType::GraphicsUniformTypeFloat4Array;
+	if (type == "float2x2[]")  return GraphicsUniformType::GraphicsUniformTypeFloat2x2Array;
+	if (type == "float3x3[]")  return GraphicsUniformType::GraphicsUniformTypeFloat3x3Array;
+	if (type == "float4x4[]")  return GraphicsUniformType::GraphicsUniformTypeFloat4x4Array;
+	if (type == "texture2D")   return GraphicsUniformType::GraphicsUniformTypeStorageImage;
+	if (type == "texture3D")   return GraphicsUniformType::GraphicsUniformTypeStorageImage;
+	if (type == "buffer") 	   return GraphicsUniformType::GraphicsUniformTypeUniformBuffer;
+
+	assert(false);
+	return GraphicsUniformType::GraphicsUniformTypeMaxEnum;
+}
+
 GraphicsVertexType
 MaterialMaker::stringToPrimitive(const std::string& primitive) noexcept
 {
-	if (primitive == "point")
-		return GraphicsVertexType::GraphicsVertexTypePointList;
-	else if (primitive == "line")
-		return GraphicsVertexType::GraphicsVertexTypeLineList;
-	else if (primitive == "line_strip")
-		return GraphicsVertexType::GraphicsVertexTypeLineStrip;
-	else if (primitive == "triangle")
-		return GraphicsVertexType::GraphicsVertexTypeTriangleList;
-	else if (primitive == "triangle_strip")
-		return GraphicsVertexType::GraphicsVertexTypeTriangleStrip;
-	else if (primitive == "triangle_fan")
-		return GraphicsVertexType::GraphicsVertexTypeTriangleFan;
-	else
-	{
-		assert(false);
-		return GraphicsVertexType::GraphicsVertexTypeTriangleList;
-	}
+	if (primitive == "point")          return GraphicsVertexType::GraphicsVertexTypePointList;
+	if (primitive == "line")           return GraphicsVertexType::GraphicsVertexTypeLineList;
+	if (primitive == "line_strip")     return GraphicsVertexType::GraphicsVertexTypeLineStrip;
+	if (primitive == "triangle")       return GraphicsVertexType::GraphicsVertexTypeTriangleList;
+	if (primitive == "triangle_strip") return GraphicsVertexType::GraphicsVertexTypeTriangleStrip;
+	if (primitive == "triangle_fan")   return GraphicsVertexType::GraphicsVertexTypeTriangleFan;
+
+	assert(false);
+	return GraphicsVertexType::GraphicsVertexTypeMaxEnum;
 }
 
 GraphicsCullMode
 MaterialMaker::stringToCullMode(const std::string& cullmode) noexcept
 {
-	if (cullmode == "back")
-		return GraphicsCullMode::GraphicsCullModeBack;
-	else if (cullmode == "front")
-		return GraphicsCullMode::GraphicsCullModeFront;
-	else if (cullmode == "frontback")
-		return GraphicsCullMode::GraphicsCullModeFrontBack;
-	else if (cullmode == "none")
-		return GraphicsCullMode::GraphicsCullModeNone;
-	else
-	{
-		assert(false);
-		return GraphicsCullMode::GraphicsCullModeNone;
-	}
+	if (cullmode == "back")      return GraphicsCullMode::GraphicsCullModeBack;
+	if (cullmode == "front")     return GraphicsCullMode::GraphicsCullModeFront;
+	if (cullmode == "frontback") return GraphicsCullMode::GraphicsCullModeFrontBack;
+	if (cullmode == "none")      return GraphicsCullMode::GraphicsCullModeNone;
+
+	assert(false);
+	return GraphicsCullMode::GraphicsCullModeMaxEnum;
 }
 
 GraphicsPolygonMode
 MaterialMaker::stringToFillMode(const std::string& fillmode) noexcept
 {
-	if (fillmode == "point")
-		return GraphicsPolygonMode::GraphicsPolygonModePoint;
-	else if (fillmode == "line")
-		return GraphicsPolygonMode::GraphicsPolygonModeWireframe;
-	else if (fillmode == "solid")
-		return GraphicsPolygonMode::GraphicsPolygonModeSolid;
-	else
-	{
-		assert(false);
-		return GraphicsPolygonMode::GraphicsPolygonModeSolid;
-	}
+	if (fillmode == "point") return GraphicsPolygonMode::GraphicsPolygonModePoint;
+	if (fillmode == "line")  return GraphicsPolygonMode::GraphicsPolygonModeWireframe;
+	if (fillmode == "solid") return GraphicsPolygonMode::GraphicsPolygonModeSolid;
+
+	assert(false);
+	return GraphicsPolygonMode::GraphicsPolygonModeMaxEnum;
 }
 
 GraphicsBlendOp
 MaterialMaker::stringToBlendOperation(const std::string& blendop) noexcept
 {
-	if (blendop == "sub")
-		return GraphicsBlendOp::GraphicsBlendOpSubtract;
-	else if (blendop == "revsub")
-		return GraphicsBlendOp::GraphicsBlendOpRevSubtract;
-	else if (blendop == "add")
-		return GraphicsBlendOp::GraphicsBlendOpAdd;
-	else
-	{
-		assert(false);
-		return GraphicsBlendOp::GraphicsBlendOpAdd;
-	}
+	if (blendop == "sub")    return GraphicsBlendOp::GraphicsBlendOpSubtract;
+	if (blendop == "revsub") return GraphicsBlendOp::GraphicsBlendOpRevSubtract;
+	if (blendop == "add")    return GraphicsBlendOp::GraphicsBlendOpAdd;
+
+	assert(false);
+	return GraphicsBlendOp::GraphicsBlendOpMaxEnum;
 }
 
 GraphicsBlendFactor
 MaterialMaker::stringToBlendFactor(const std::string& factor) noexcept
 {
-	if (factor == "zero")
-		return GraphicsBlendFactor::GraphicsBlendFactorZero;
-	else if (factor == "one")
-		return GraphicsBlendFactor::GraphicsBlendFactorOne;
-	else if (factor == "dstcol")
-		return GraphicsBlendFactor::GraphicsBlendFactorDstCol;
-	else if (factor == "srccol")
-		return GraphicsBlendFactor::GraphicsBlendFactorSrcColor;
-	else if (factor == "srcalpha")
-		return GraphicsBlendFactor::GraphicsBlendFactorSrcAlpha;
-	else if (factor == "dstalpha")
-		return GraphicsBlendFactor::GraphicsBlendFactorDstAlpha;
-	else if (factor == "invsrccol")
-		return GraphicsBlendFactor::GraphicsBlendFactorOneMinusSrcCol;
-	else if (factor == "invdstcol")
-		return GraphicsBlendFactor::GraphicsBlendFactorOneMinusDstCol;
-	else if (factor == "invsrcalpha")
-		return GraphicsBlendFactor::GraphicsBlendFactorOneMinusSrcAlpha;
-	else if (factor == "invdstalpha")
-		return GraphicsBlendFactor::GraphicsBlendFactorOneMinusDstAlpha;
-	else
-	{
-		assert(false);
-		return GraphicsBlendFactor::GraphicsBlendFactorZero;
-	}
+	if (factor == "zero")        return GraphicsBlendFactor::GraphicsBlendFactorZero;
+	if (factor == "one")         return GraphicsBlendFactor::GraphicsBlendFactorOne;
+	if (factor == "dstcol")      return GraphicsBlendFactor::GraphicsBlendFactorDstCol;
+	if (factor == "srccol")      return GraphicsBlendFactor::GraphicsBlendFactorSrcColor;
+	if (factor == "srcalpha")    return GraphicsBlendFactor::GraphicsBlendFactorSrcAlpha;
+	if (factor == "dstalpha")    return GraphicsBlendFactor::GraphicsBlendFactorDstAlpha;
+	if (factor == "invsrccol")   return GraphicsBlendFactor::GraphicsBlendFactorOneMinusSrcCol;
+	if (factor == "invdstcol")   return GraphicsBlendFactor::GraphicsBlendFactorOneMinusDstCol;
+	if (factor == "invsrcalpha") return GraphicsBlendFactor::GraphicsBlendFactorOneMinusSrcAlpha;
+	if (factor == "invdstalpha") return GraphicsBlendFactor::GraphicsBlendFactorOneMinusDstAlpha;
+
+	assert(false);
+	return GraphicsBlendFactor::GraphicsBlendFactorMaxEnum;
 }
 
 GraphicsColorMask
 MaterialMaker::stringToColorMask(const std::string& mask) noexcept
 {
-	if (mask == "red")
-		return GraphicsColorMask::GraphicsColorMaskR;
-	else if (mask == "green")
-		return GraphicsColorMask::GraphicsColorMaskG;
-	else if (mask == "blue")
-		return GraphicsColorMask::GraphicsColorMaskB;
-	else if (mask == "alpha")
-		return GraphicsColorMask::GraphicsColorMaskA;
-	else if (mask == "rgb")
-		return GraphicsColorMask::GraphicsColorMaskRGB;
-	else if (mask == "rgba")
-		return GraphicsColorMask::GraphicsColorMaskRGBA;
-	else
-	{
-		assert(false);
-		return GraphicsColorMask::GraphicsColorMaskRGBA;
-	}
+	if (mask == "red")   return GraphicsColorMask::GraphicsColorMaskR;
+	if (mask == "green") return GraphicsColorMask::GraphicsColorMaskG;
+	if (mask == "blue")  return GraphicsColorMask::GraphicsColorMaskB;
+	if (mask == "alpha") return GraphicsColorMask::GraphicsColorMaskA;
+	if (mask == "rgb")   return GraphicsColorMask::GraphicsColorMaskRGB;
+	if (mask == "rgba")  return GraphicsColorMask::GraphicsColorMaskRGBA;
+
+	assert(false);
+	return GraphicsColorMask::GraphicsColorMaskRGBA;
 }
 
 GraphicsCompareFunc
 MaterialMaker::stringToCompareFunc(const std::string& func) noexcept
 {
-	if (func == "lequal")
-		return GraphicsCompareFunc::GraphicsCompareFuncLequal;
-	else if (func == "equal")
-		return GraphicsCompareFunc::GraphicsCompareFuncEqual;
-	else if (func == "greater")
-		return GraphicsCompareFunc::GraphicsCompareFuncGreater;
-	else if (func == "less")
-		return GraphicsCompareFunc::GraphicsCompareFuncLess;
-	else if (func == "gequal")
-		return GraphicsCompareFunc::GraphicsCompareFuncGequal;
-	else if (func == "notequal")
-		return GraphicsCompareFunc::GraphicsCompareFuncNotEqual;
-	else if (func == "always")
-		return GraphicsCompareFunc::GraphicsCompareFuncAlways;
-	else if (func == "never")
-		return GraphicsCompareFunc::GraphicsCompareFuncNever;
-	else if (func == "none")
-		return GraphicsCompareFunc::GraphicsCompareFuncNone;
-	else
-	{
-		assert(false);
-		return GraphicsCompareFunc::GraphicsCompareFuncNone;
-	}
+	if (func == "lequal")   return GraphicsCompareFunc::GraphicsCompareFuncLequal;
+	if (func == "equal")    return GraphicsCompareFunc::GraphicsCompareFuncEqual;
+	if (func == "greater")  return GraphicsCompareFunc::GraphicsCompareFuncGreater;
+	if (func == "less")     return GraphicsCompareFunc::GraphicsCompareFuncLess;
+	if (func == "gequal")   return GraphicsCompareFunc::GraphicsCompareFuncGequal;
+	if (func == "notequal") return GraphicsCompareFunc::GraphicsCompareFuncNotEqual;
+	if (func == "always")   return GraphicsCompareFunc::GraphicsCompareFuncAlways;
+	if (func == "never")    return GraphicsCompareFunc::GraphicsCompareFuncNever;
+	if (func == "none")     return GraphicsCompareFunc::GraphicsCompareFuncNone;
+
+	assert(false);
+	return GraphicsCompareFunc::GraphicsCompareFuncMaxEnum;
 }
 
 GraphicsStencilOp
 MaterialMaker::stringToStencilOp(const std::string& stencilop) noexcept
 {
-	if (stencilop == "keep")
-		return GraphicsStencilOp::GraphicsStencilOpKeep;
-	else if (stencilop == "replace")
-		return GraphicsStencilOp::GraphicsStencilOpReplace;
-	else if (stencilop == "inc")
-		return GraphicsStencilOp::GraphicsStencilOpIncr;
-	else if (stencilop == "dec")
-		return GraphicsStencilOp::GraphicsStencilOpDecr;
-	else if (stencilop == "incwrap")
-		return GraphicsStencilOp::GraphicsStencilOpIncrWrap;
-	else if (stencilop == "decwrap")
-		return GraphicsStencilOp::GraphicsStencilOpDecrWrap;
-	else
-	{
-		assert(false);
-		return GraphicsStencilOp::GraphicsStencilOpKeep;
-	}
+	if (stencilop == "keep")    return GraphicsStencilOp::GraphicsStencilOpKeep;
+	if (stencilop == "replace") return GraphicsStencilOp::GraphicsStencilOpReplace;
+	if (stencilop == "inc")     return GraphicsStencilOp::GraphicsStencilOpIncr;
+	if (stencilop == "dec")     return GraphicsStencilOp::GraphicsStencilOpDecr;
+	if (stencilop == "incwrap") return GraphicsStencilOp::GraphicsStencilOpIncrWrap;
+	if (stencilop == "decwrap") return GraphicsStencilOp::GraphicsStencilOpDecrWrap;
+
+	assert(false);
+	return GraphicsStencilOp::GraphicsStencilOpMaxEnum;
+}
+
+GraphicsFormat
+MaterialMaker::stringToFormat(const std::string& format) noexcept
+{
+	if (format == "R4G4UNormPack8")           return GraphicsFormat::GraphicsFormatR4G4UNormPack8;
+	if (format == "R8UNorm")                  return GraphicsFormat::GraphicsFormatR8UNorm;
+	if (format == "R8SNorm")                  return GraphicsFormat::GraphicsFormatR8SNorm;
+	if (format == "R8UScaled")                return GraphicsFormat::GraphicsFormatR8UScaled;
+	if (format == "R8SScaled")                return GraphicsFormat::GraphicsFormatR8SScaled;
+	if (format == "R8UInt")                   return GraphicsFormat::GraphicsFormatR8UInt;
+	if (format == "R8SInt")                   return GraphicsFormat::GraphicsFormatR8SInt;
+	if (format == "R8SRGB")                   return GraphicsFormat::GraphicsFormatR8SRGB;
+	if (format == "S8UInt")                   return GraphicsFormat::GraphicsFormatS8UInt;
+	if (format == "R4G4B4A4UNormPack16")      return GraphicsFormat::GraphicsFormatR4G4B4A4UNormPack16;
+	if (format == "B4G4R4A4UNormPack16")      return GraphicsFormat::GraphicsFormatB4G4R4A4UNormPack16;
+	if (format == "R5G6B5UNormPack16")        return GraphicsFormat::GraphicsFormatR5G6B5UNormPack16;
+	if (format == "B5G6R5UNormPack16")        return GraphicsFormat::GraphicsFormatB5G6R5UNormPack16;
+	if (format == "R5G5B5A1UNormPack16")      return GraphicsFormat::GraphicsFormatR5G5B5A1UNormPack16;
+	if (format == "B5G5R5A1UNormPack16")      return GraphicsFormat::GraphicsFormatB5G5R5A1UNormPack16;
+	if (format == "A1R5G5B5UNormPack16")      return GraphicsFormat::GraphicsFormatA1R5G5B5UNormPack16;
+	if (format == "R8G8UNorm")                return GraphicsFormat::GraphicsFormatR8G8UNorm;
+	if (format == "R8G8SNorm")                return GraphicsFormat::GraphicsFormatR8G8SNorm;
+	if (format == "R8G8UScaled")              return GraphicsFormat::GraphicsFormatR8G8UScaled;
+	if (format == "R8G8SScaled")              return GraphicsFormat::GraphicsFormatR8G8SScaled;
+	if (format == "R8G8UInt")                 return GraphicsFormat::GraphicsFormatR8G8UInt;
+	if (format == "R8G8SInt")                 return GraphicsFormat::GraphicsFormatR8G8SInt;
+	if (format == "R8G8SRGB")                 return GraphicsFormat::GraphicsFormatR8G8SRGB;
+	if (format == "R16UNorm")                 return GraphicsFormat::GraphicsFormatR16UNorm;
+	if (format == "R16SNorm")                 return GraphicsFormat::GraphicsFormatR16SNorm;
+	if (format == "R16UScaled")               return GraphicsFormat::GraphicsFormatR16UScaled;
+	if (format == "R16SScaled")               return GraphicsFormat::GraphicsFormatR16SScaled;
+	if (format == "R16UInt")                  return GraphicsFormat::GraphicsFormatR16UInt;
+	if (format == "R16SInt")                  return GraphicsFormat::GraphicsFormatR16SInt;
+	if (format == "R16SFloat")                return GraphicsFormat::GraphicsFormatR16SFloat;
+	if (format == "D16UNorm")                 return GraphicsFormat::GraphicsFormatD16UNorm;
+	if (format == "R8G8B8UNorm")              return GraphicsFormat::GraphicsFormatR8G8B8UNorm;
+	if (format == "R8G8B8SNorm")              return GraphicsFormat::GraphicsFormatR8G8B8SNorm;
+	if (format == "R8G8B8UScaled")            return GraphicsFormat::GraphicsFormatR8G8B8UScaled;
+	if (format == "R8G8B8SScaled")            return GraphicsFormat::GraphicsFormatR8G8B8SScaled;
+	if (format == "R8G8B8UInt")               return GraphicsFormat::GraphicsFormatR8G8B8UInt;
+	if (format == "R8G8B8SInt")               return GraphicsFormat::GraphicsFormatR8G8B8SInt;
+	if (format == "R8G8B8SRGB")               return GraphicsFormat::GraphicsFormatR8G8B8SRGB;
+	if (format == "B8G8R8UNorm")              return GraphicsFormat::GraphicsFormatB8G8R8UNorm;
+	if (format == "B8G8R8SNorm")              return GraphicsFormat::GraphicsFormatB8G8R8SNorm;
+	if (format == "B8G8R8UScaled")            return GraphicsFormat::GraphicsFormatB8G8R8UScaled;
+	if (format == "B8G8R8SScaled")            return GraphicsFormat::GraphicsFormatB8G8R8SScaled;
+	if (format == "B8G8R8UInt")               return GraphicsFormat::GraphicsFormatB8G8R8UInt;
+	if (format == "B8G8R8SInt")               return GraphicsFormat::GraphicsFormatB8G8R8SInt;
+	if (format == "B8G8R8SRGB")               return GraphicsFormat::GraphicsFormatB8G8R8SRGB;
+	if (format == "R8G8B8A8UNorm")            return GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
+	if (format == "R8G8B8A8SNorm")            return GraphicsFormat::GraphicsFormatR8G8B8A8SNorm;
+	if (format == "R8G8B8A8UScaled")          return GraphicsFormat::GraphicsFormatR8G8B8A8UScaled;
+	if (format == "R8G8B8A8SScaled")          return GraphicsFormat::GraphicsFormatR8G8B8A8SScaled;
+	if (format == "R8G8B8A8UInt")             return GraphicsFormat::GraphicsFormatR8G8B8A8UInt;
+	if (format == "R8G8B8A8SInt")             return GraphicsFormat::GraphicsFormatR8G8B8A8SInt;
+	if (format == "R8G8B8A8SRGB")             return GraphicsFormat::GraphicsFormatR8G8B8A8SRGB;
+	if (format == "B8G8R8A8UNorm")            return GraphicsFormat::GraphicsFormatB8G8R8A8UNorm;
+	if (format == "B8G8R8A8SNorm")            return GraphicsFormat::GraphicsFormatB8G8R8A8SNorm;
+	if (format == "B8G8R8A8UScaled")          return GraphicsFormat::GraphicsFormatB8G8R8A8UScaled;
+	if (format == "B8G8R8A8SScaled")          return GraphicsFormat::GraphicsFormatB8G8R8A8SScaled;
+	if (format == "B8G8R8A8UInt")             return GraphicsFormat::GraphicsFormatB8G8R8A8UInt;
+	if (format == "B8G8R8A8SInt")             return GraphicsFormat::GraphicsFormatB8G8R8A8SInt;
+	if (format == "B8G8R8A8SRGB")             return GraphicsFormat::GraphicsFormatB8G8R8A8SRGB;
+	if (format == "A8B8G8R8UNormPack32")      return GraphicsFormat::GraphicsFormatA8B8G8R8UNormPack32;
+	if (format == "A8B8G8R8SNormPack32")      return GraphicsFormat::GraphicsFormatA8B8G8R8SNormPack32;
+	if (format == "A8B8G8R8UScaledPack32")    return GraphicsFormat::GraphicsFormatA8B8G8R8UScaledPack32;
+	if (format == "A8B8G8R8SScaledPack32")    return GraphicsFormat::GraphicsFormatA8B8G8R8SScaledPack32;
+	if (format == "A8B8G8R8UIntPack32")       return GraphicsFormat::GraphicsFormatA8B8G8R8UIntPack32;
+	if (format == "A8B8G8R8SIntPack32")       return GraphicsFormat::GraphicsFormatA8B8G8R8SIntPack32;
+	if (format == "A8B8G8R8SRGBPack32")       return GraphicsFormat::GraphicsFormatA8B8G8R8SRGBPack32;
+	if (format == "R16G16SInt")               return GraphicsFormat::GraphicsFormatR16G16SInt;
+	if (format == "R16G16UInt")               return GraphicsFormat::GraphicsFormatR16G16UInt;
+	if (format == "R16G16SNorm")              return GraphicsFormat::GraphicsFormatR16G16SNorm;
+	if (format == "R16G16UNorm")              return GraphicsFormat::GraphicsFormatR16G16UNorm;
+	if (format == "R16G16UScaled")            return GraphicsFormat::GraphicsFormatR16G16UScaled;
+	if (format == "R16G16SScaled")            return GraphicsFormat::GraphicsFormatR16G16SScaled;
+	if (format == "R16G16SFloat")             return GraphicsFormat::GraphicsFormatR16G16SFloat;
+	if (format == "R32UInt")                  return GraphicsFormat::GraphicsFormatR32UInt;
+	if (format == "R32SInt")                  return GraphicsFormat::GraphicsFormatR32SInt;
+	if (format == "R32SFloat")                return GraphicsFormat::GraphicsFormatR32SFloat;
+	if (format == "A2R10G10B10UNormPack32")   return GraphicsFormat::GraphicsFormatA2R10G10B10UNormPack32;
+	if (format == "A2R10G10B10SNormPack32")   return GraphicsFormat::GraphicsFormatA2R10G10B10SNormPack32;
+	if (format == "A2R10G10B10UScaledPack32") return GraphicsFormat::GraphicsFormatA2R10G10B10UScaledPack32;
+	if (format == "A2R10G10B10SScaledPack32") return GraphicsFormat::GraphicsFormatA2R10G10B10SScaledPack32;
+	if (format == "A2R10G10B10UIntPack32")    return GraphicsFormat::GraphicsFormatA2R10G10B10UIntPack32;
+	if (format == "A2R10G10B10SIntPack32")    return GraphicsFormat::GraphicsFormatA2R10G10B10SIntPack32;
+	if (format == "A2B10G10R10UNormPack32")   return GraphicsFormat::GraphicsFormatA2B10G10R10UNormPack32;
+	if (format == "A2B10G10R10SNormPack32")   return GraphicsFormat::GraphicsFormatA2B10G10R10SNormPack32;
+	if (format == "A2B10G10R10UScaledPack32") return GraphicsFormat::GraphicsFormatA2B10G10R10UScaledPack32;
+	if (format == "A2B10G10R10SScaledPack32") return GraphicsFormat::GraphicsFormatA2B10G10R10SScaledPack32;
+	if (format == "A2B10G10R10UIntPack32")    return GraphicsFormat::GraphicsFormatA2B10G10R10UIntPack32;
+	if (format == "A2B10G10R10SIntPack32")    return GraphicsFormat::GraphicsFormatA2B10G10R10SIntPack32;
+	if (format == "X8_D24UNormPack32")        return GraphicsFormat::GraphicsFormatX8_D24UNormPack32;
+	if (format == "B10G11R11UFloatPack32")    return GraphicsFormat::GraphicsFormatB10G11R11UFloatPack32;
+	if (format == "E5B9G9R9UFloatPack32")     return GraphicsFormat::GraphicsFormatE5B9G9R9UFloatPack32;
+	if (format == "D32_SFLOAT")               return GraphicsFormat::GraphicsFormatD32_SFLOAT;
+	if (format == "D16UNorm_S8UInt")          return GraphicsFormat::GraphicsFormatD16UNorm_S8UInt;
+	if (format == "D24UNorm_S8UInt")          return GraphicsFormat::GraphicsFormatD24UNorm_S8UInt;
+	if (format == "D32_SFLOAT_S8UInt")        return GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt;
+	if (format == "R16G16B16SInt")            return GraphicsFormat::GraphicsFormatR16G16B16SInt;
+	if (format == "R16G16B16UInt")            return GraphicsFormat::GraphicsFormatR16G16B16UInt;
+	if (format == "R16G16B16SNorm")           return GraphicsFormat::GraphicsFormatR16G16B16SNorm;
+	if (format == "R16G16B16UNorm")           return GraphicsFormat::GraphicsFormatR16G16B16UNorm;
+	if (format == "R16G16B16UScaled")         return GraphicsFormat::GraphicsFormatR16G16B16UScaled;
+	if (format == "R16G16B16SScaled")         return GraphicsFormat::GraphicsFormatR16G16B16SScaled;
+	if (format == "R16G16B16SFloat")          return GraphicsFormat::GraphicsFormatR16G16B16SFloat;
+	if (format == "R32G32SFloat")             return GraphicsFormat::GraphicsFormatR32G32SFloat;
+	if (format == "R32G32SInt")               return GraphicsFormat::GraphicsFormatR32G32SInt;
+	if (format == "R32G32UInt")               return GraphicsFormat::GraphicsFormatR32G32UInt;
+	if (format == "R16G16B16A16SNorm")        return GraphicsFormat::GraphicsFormatR16G16B16A16SNorm;
+	if (format == "R16G16B16A16UNorm")        return GraphicsFormat::GraphicsFormatR16G16B16A16UNorm;
+	if (format == "R16G16B16A16SScaled")      return GraphicsFormat::GraphicsFormatR16G16B16A16SScaled;
+	if (format == "R16G16B16A16UScaled")      return GraphicsFormat::GraphicsFormatR16G16B16A16UScaled;
+	if (format == "R16G16B16A16SFloat")       return GraphicsFormat::GraphicsFormatR16G16B16A16SFloat;
+	if (format == "R16G16B16A16SInt")         return GraphicsFormat::GraphicsFormatR16G16B16A16SInt;
+	if (format == "R16G16B16A16UInt")         return GraphicsFormat::GraphicsFormatR16G16B16A16UInt;
+	if (format == "R64UInt")                  return GraphicsFormat::GraphicsFormatR64UInt;
+	if (format == "R64SInt")                  return GraphicsFormat::GraphicsFormatR64SInt;
+	if (format == "R64SFloat")                return GraphicsFormat::GraphicsFormatR64SFloat;
+	if (format == "R32G32B32SFloat")          return GraphicsFormat::GraphicsFormatR32G32B32SFloat;
+	if (format == "R32G32B32SInt")            return GraphicsFormat::GraphicsFormatR32G32B32SInt;
+	if (format == "R32G32B32UInt")            return GraphicsFormat::GraphicsFormatR32G32B32UInt;
+	if (format == "R32G32B32A32SFloat")       return GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
+	if (format == "R32G32B32A32SInt")         return GraphicsFormat::GraphicsFormatR32G32B32A32SInt;
+	if (format == "R32G32B32A32UInt")         return GraphicsFormat::GraphicsFormatR32G32B32A32UInt;
+	if (format == "R64G64UInt")               return GraphicsFormat::GraphicsFormatR64G64UInt;
+	if (format == "R64G64SInt")               return GraphicsFormat::GraphicsFormatR64G64SInt;
+	if (format == "R64G64SFloat")             return GraphicsFormat::GraphicsFormatR64G64SFloat;
+	if (format == "R64G64B64UInt")            return GraphicsFormat::GraphicsFormatR64G64B64UInt;
+	if (format == "R64G64B64SInt")            return GraphicsFormat::GraphicsFormatR64G64B64SInt;
+	if (format == "R64G64B64SFloat")          return GraphicsFormat::GraphicsFormatR64G64B64SFloat;
+	if (format == "R64G64B64A64UInt")         return GraphicsFormat::GraphicsFormatR64G64B64A64UInt;
+	if (format == "R64G64B64A64SInt")         return GraphicsFormat::GraphicsFormatR64G64B64A64SInt;
+	if (format == "R64G64B64A64SFloat")       return GraphicsFormat::GraphicsFormatR64G64B64A64SFloat;
+
+	assert(false);
+	return GraphicsFormat::GraphicsFormatMaxEnum;
 }
 
 _NAME_END

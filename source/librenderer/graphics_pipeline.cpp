@@ -39,6 +39,43 @@
 _NAME_BEGIN
 
 __ImplementSubInterface(GraphicsPipeline, GraphicsChild, "GraphicsPipeline")
+__ImplementSubInterface(GraphicsPipelineLayout, GraphicsChild, "GraphicsPipelineLayout")
+
+GraphicsPipelineLayoutDesc::GraphicsPipelineLayoutDesc() noexcept
+{
+}
+
+GraphicsPipelineLayoutDesc::~GraphicsPipelineLayoutDesc() noexcept
+{
+}
+
+void
+GraphicsPipelineLayoutDesc::setGraphicsDescriptorSetLayout(const GraphicsDescriptorSetLayouts& descriptorSetLayout) noexcept
+{
+	_descriptorSetLayouts = descriptorSetLayout;
+}
+
+const GraphicsDescriptorSetLayouts&
+GraphicsPipelineLayoutDesc::getGraphicsDescriptorSetLayouts() const noexcept
+{
+	return _descriptorSetLayouts;
+}
+
+void
+GraphicsPipelineLayoutDesc::addGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr& descriptorSetLayout) noexcept
+{
+	auto it = std::find(_descriptorSetLayouts.begin(), _descriptorSetLayouts.end(), descriptorSetLayout);
+	if (it == _descriptorSetLayouts.end())
+		_descriptorSetLayouts.push_back(descriptorSetLayout);
+}
+
+void 
+GraphicsPipelineLayoutDesc::removeGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr& descriptorSetLayout) noexcept
+{
+	auto it = std::find(_descriptorSetLayouts.begin(), _descriptorSetLayouts.end(), descriptorSetLayout);
+	if (it != _descriptorSetLayouts.end())
+		_descriptorSetLayouts.erase(it);
+}
 
 GraphicsPipelineDesc::GraphicsPipelineDesc() noexcept
 {
@@ -73,15 +110,15 @@ GraphicsPipelineDesc::getGraphicsInputLayout() const noexcept
 }
 
 void
-GraphicsPipelineDesc::setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr descriptorSet) noexcept
+GraphicsPipelineDesc::setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr descriptorSetLayout) noexcept
 {
-	_descriptorSet = descriptorSet;
+	_descriptorSetLayout = descriptorSetLayout;
 }
 
 GraphicsDescriptorSetLayoutPtr
 GraphicsPipelineDesc::getGraphicsDescriptorSetLayout() const noexcept
 {
-	return _descriptorSet;
+	return _descriptorSetLayout;
 }
 
 void 
@@ -106,6 +143,14 @@ GraphicsStatePtr
 GraphicsPipelineDesc::getGraphicsState() const noexcept
 {
 	return _state;
+}
+
+GraphicsPipelineLayout::GraphicsPipelineLayout() noexcept
+{
+}
+
+GraphicsPipelineLayout::~GraphicsPipelineLayout() noexcept
+{
 }
 
 GraphicsPipeline::GraphicsPipeline() noexcept

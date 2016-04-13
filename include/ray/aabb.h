@@ -311,8 +311,33 @@ public:
 	void applyMatrix(const Matrix4x4t<T>& m) noexcept
 	{
 		assert(!empty());
-		min = min * m;
-		max = max * m;
+
+		AABBt<T> aabb;
+
+		for (int i = 0; i < 3; i++)
+		{
+			aabb.min[i] = aabb.max[i] = m[i * 4 + 3];
+
+			for (int j = 0; j < 3; j++)
+			{
+				float e = min[j] * m[i * 4 + j];
+				float f = max[j] * m[i * 4 + j];
+
+				if (e < f)
+				{
+					aabb.min[i] += e;
+					aabb.max[i] += f;
+				}
+				else
+				{
+					aabb.min[i] += f;
+					aabb.max[i] += e;
+				}
+			}
+		}
+
+		min = aabb.min;
+		max = aabb.max;
 	}
 
 	T intersects(const Line3t<T>& line, Vector3t<T>* returnNormal) const noexcept

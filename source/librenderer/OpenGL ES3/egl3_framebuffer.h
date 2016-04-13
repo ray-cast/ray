@@ -41,6 +41,32 @@
 
 _NAME_BEGIN
 
+class EGL3FramebufferLayout final : public GraphicsFramebufferLayout
+{
+	__DeclareSubClass(EGL3FramebufferLayout, GraphicsFramebufferLayout)
+public:
+	EGL3FramebufferLayout() noexcept;
+	~EGL3FramebufferLayout() noexcept;
+
+	bool setup(const GraphicsFramebufferLayoutDesc& framebufferDesc) noexcept;
+	void close() noexcept;
+
+	const GraphicsFramebufferLayoutDesc& getGraphicsFramebufferLayoutDesc() const noexcept;
+
+private:
+	friend class EGL3Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	EGL3FramebufferLayout(const EGL3FramebufferLayout&) noexcept = delete;
+	EGL3FramebufferLayout& operator=(const EGL3FramebufferLayout&) noexcept = delete;
+
+private:
+	GraphicsDeviceWeakPtr _device;
+	GraphicsFramebufferLayoutDesc _framebufferLayoutDesc;
+};
+
 class EGL3Framebuffer final : public GraphicsFramebuffer
 {
 	__DeclareSubClass(EGL3Framebuffer, GraphicsFramebuffer)

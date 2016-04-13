@@ -76,13 +76,13 @@ VulkanDeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 		poolDesc.setCommandListType(GraphicsCommandType::GraphicsCommandTypeGraphics);
 		poolDesc.setCommandFlags(GraphicsCommandPoolFlags::GraphicsCommandPoolResetCommandBuffer);
 
-		_commandQueue = device->createGraphicsCommandQueue(queueDesc);
-		_commandPool = device->createGraphicsCommandPool(poolDesc);
+		_commandQueue = device->createCommandQueue(queueDesc);
+		_commandPool = device->createCommandPool(poolDesc);
 
 		GraphicsCommandListDesc commandListDesc;
 		commandListDesc.setGraphicsCommandPool(_commandPool);
 
-		_commandList = device->createGraphicsCommandList(commandListDesc);
+		_commandList = device->createCommandList(commandListDesc);
 
 		return true;
 	}
@@ -105,7 +105,7 @@ VulkanDeviceContext::renderBegin() noexcept
 	swapchaic->acquireNextImage();
 
 	_commandList->renderBegin();
-	_commandList->setRenderTexture(swapchaic->getSwapchainFramebuffers()[swapchaic->getSwapchainImageIndex()]);
+	_commandList->setFramebuffer(swapchaic->getSwapchainFramebuffers()[swapchaic->getSwapchainImageIndex()]);
 }
 
 void 
@@ -115,80 +115,66 @@ VulkanDeviceContext::renderEnd() noexcept
 }
 
 void 
-VulkanDeviceContext::setViewport(const Viewport& viewport, std::size_t i) noexcept
+VulkanDeviceContext::setViewport(const Viewport& viewport) noexcept
 {
-	_commandList->setViewport(&viewport, 0, i);
+	_commandList->setViewport(&viewport, 0, 1);
 }
 
 const Viewport& 
-VulkanDeviceContext::getViewport(std::size_t index) const noexcept
+VulkanDeviceContext::getViewport() const noexcept
 {
-	assert(_viewports.size() > index);
-	return _viewports[index];
+	return _viewports[0];
 }
 
 void 
-VulkanDeviceContext::setScissor(const Scissor& scissor, std::size_t i) noexcept
+VulkanDeviceContext::setScissor(const Scissor& scissor) noexcept
 {
-	_commandList->setScissor(&scissor, 0, i);
+	_commandList->setScissor(&scissor, 0, 1);
 }
 
 const Scissor& 
-VulkanDeviceContext::getScissor(std::size_t index) const noexcept
+VulkanDeviceContext::getScissor() const noexcept
 {
-	assert(_scissor.size() > index);
-	return _scissor[index];
+	return _scissor[0];
 }
 
 void 
-VulkanDeviceContext::setInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept
-{
-	_inputLayout = inputLayout;
-}
-
-GraphicsInputLayoutPtr 
-VulkanDeviceContext::getInputLayout() const noexcept
-{
-	return _inputLayout;
-}
-
-void 
-VulkanDeviceContext::setRenderTexture(GraphicsFramebufferPtr framebuffer) noexcept
+VulkanDeviceContext::setFramebuffer(GraphicsFramebufferPtr framebuffer) noexcept
 {
 	if (_framebuffer != framebuffer)
 	{
-		_commandList->setRenderTexture(framebuffer);
+		_commandList->setFramebuffer(framebuffer);
 		_framebuffer = framebuffer;
 	}
 }
 
 void 
-VulkanDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
+VulkanDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 }
 
 void 
-VulkanDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+VulkanDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
 }
 
 void 
-VulkanDeviceContext::discardRenderTexture() noexcept
+VulkanDeviceContext::discardFramebuffer() noexcept
 {
 }
 
 void 
-VulkanDeviceContext::blitRenderTexture(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
+VulkanDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
 {
 }
 
 void 
-VulkanDeviceContext::readRenderTexture(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+VulkanDeviceContext::readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
 }
 
 GraphicsFramebufferPtr 
-VulkanDeviceContext::getRenderTexture() const noexcept
+VulkanDeviceContext::getFramebuffer() const noexcept
 {
 	return _framebuffer;
 }

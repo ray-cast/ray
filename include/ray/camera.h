@@ -101,8 +101,8 @@ public:
 	void setCameraOrder(CameraOrder order) noexcept;
 	CameraOrder getCameraOrder() const noexcept;
 
-	void setRenderTexture(GraphicsFramebufferPtr texture) noexcept;
-	GraphicsFramebufferPtr getRenderTexture() const noexcept;
+	void setFramebuffer(GraphicsFramebufferPtr texture) noexcept;
+	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
 	void setGraphicsContext(GraphicsContextPtr window) noexcept;
 	GraphicsContextPtr getGraphicsContext() const noexcept;

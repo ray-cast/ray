@@ -120,6 +120,18 @@ private:
 		std::vector<Pass> pass;
 	};
 
+	struct InputLayoutChild
+	{
+		std::string name;
+		std::string format;
+	};
+
+	struct InputLayout
+	{
+		std::string name;
+		std::vector<InputLayoutChild> layouts;
+	};
+
 	std::string _conv;
 	std::string _hlslCodes;
 	
@@ -131,6 +143,7 @@ private:
 	std::vector<Parameter> _parameters;
 	std::vector<Sampler> _samplers;
 	std::vector<Technique> _techniques;
+	std::vector<InputLayout> _inputLayouts;
 };
 
 #endif

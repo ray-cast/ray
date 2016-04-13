@@ -1,6 +1,7 @@
 <?xml version='1.0'?>
 <effect language="hlsl">
     <include name="sys:fx/GBuffer.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
     <parameter name="matModel" type="float4x4" semantic="matModel" />
     <parameter name="matModelInverseTranspose" type="float4x4" semantic="matModelInverseTranspose" />
     <parameter name="matViewProject" type="float4x4" semantic="matViewProject"/>
@@ -32,9 +33,9 @@
     </shader>
     <technique name="opaque">
         <pass name="specific">
+            <state name="inputlayout" value="POS3F_N3F"/>
             <state name="vertex" value="SkyVS"/>
             <state name="fragment" value="SkyPS"/>
-
             <state name="cullmode" value="front"/>
         </pass>
     </technique>

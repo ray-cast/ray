@@ -41,6 +41,32 @@
 
 _NAME_BEGIN
 
+class EGL2FramebufferLayout final : public GraphicsFramebufferLayout
+{
+	__DeclareSubClass(EGL2FramebufferLayout, GraphicsFramebufferLayout)
+public:
+	EGL2FramebufferLayout() noexcept;
+	~EGL2FramebufferLayout() noexcept;
+
+	bool setup(const GraphicsFramebufferLayoutDesc& framebufferDesc) noexcept;
+	void close() noexcept;
+
+	const GraphicsFramebufferLayoutDesc& getGraphicsFramebufferLayoutDesc() const noexcept;
+
+private:
+	friend class EGL2Device;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	EGL2FramebufferLayout(const EGL2FramebufferLayout&) noexcept = delete;
+	EGL2FramebufferLayout& operator=(const EGL2FramebufferLayout&) noexcept = delete;
+
+private:
+	GraphicsDeviceWeakPtr _device;
+	GraphicsFramebufferLayoutDesc _framebufferLayoutDesc;
+};
+
 class EGL2Framebuffer final : public GraphicsFramebuffer
 {
 	__DeclareSubClass(EGL2Framebuffer, GraphicsFramebuffer)

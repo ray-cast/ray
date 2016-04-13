@@ -242,6 +242,19 @@ RenderObject::getSubeRenderObjects() noexcept
 }
 
 void 
+RenderObject::render(RenderPipeline& pipelineContext, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept
+{
+	auto listener = this->getOwnerListener();
+	if (listener)
+		listener->onRenderObjectPre(pipelineContext);
+
+	this->onRenderObject(pipelineContext, queue, passType, _pass);
+
+	if (listener)
+		listener->onRenderObjectPost(pipelineContext);
+}
+
+void 
 RenderObject::onMoveBefor() noexcept
 {
 }
@@ -258,6 +271,11 @@ RenderObject::onSceneChangeBefor() noexcept
 
 void 
 RenderObject::onSceneChangeAfter() noexcept
+{
+}
+
+void
+RenderObject::onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept
 {
 }
 

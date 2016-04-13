@@ -116,7 +116,13 @@ void TType::buildMangledName(TString& mangledName)
         const int maxSize = 11;
         char buf[maxSize];
         for (int i = 0; i < arraySizes->getNumDims(); ++i) {
-            snprintf(buf, maxSize, "%d", arraySizes->getDimSize(i));
+            if (arraySizes->getDimNode(i)) {
+                if (arraySizes->getDimNode(i)->getAsSymbolNode())
+                    snprintf(buf, maxSize, "s%d", arraySizes->getDimNode(i)->getAsSymbolNode()->getId());
+                else
+                    snprintf(buf, maxSize, "s%p", arraySizes->getDimNode(i));
+            } else
+                snprintf(buf, maxSize, "%d", arraySizes->getDimSize(i));
             mangledName += '[';
             mangledName += buf;
             mangledName += ']';
@@ -246,11 +252,14 @@ TVariable::TVariable(const TVariable& copyOf) : TSymbol(copyOf)
     if (copyOf.numExtensions != 0)
         setExtensions(copyOf.numExtensions, copyOf.extensions);
 
-    if (! copyOf.unionArray.empty()) {
+    if (! copyOf.constArray.empty()) {
         assert(! copyOf.type.isStruct());
-        TConstUnionArray newArray(copyOf.unionArray, 0, copyOf.unionArray.size());
-        unionArray = newArray;
+        TConstUnionArray newArray(copyOf.constArray, 0, copyOf.constArray.size());
+        constArray = newArray;
     }
+
+    // don't support specialization-constant subtrees in cloned tables
+    constSubtree = nullptr;
 }
 
 TVariable* TVariable::clone() const

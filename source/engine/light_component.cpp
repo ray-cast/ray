@@ -146,6 +146,8 @@ LightComponent::load(iarchive& reader) noexcept
 	float lightIntensity = 1.0f;
 	float lightRange = 1.0f;
 	bool shadow = false;
+	bool softShadow = false;
+	bool subsurfaceScattering = false;
 
 	GameComponent::load(reader);
 
@@ -154,17 +156,17 @@ LightComponent::load(iarchive& reader) noexcept
 	reader >> make_archive(shadow, "shadow");
 	reader >> make_archive(lightColor, "color");
 	reader >> make_archive(lightType, "type");
+	reader >> make_archive(softShadow, "soft");
+	reader >> make_archive(subsurfaceScattering, "sss");
 
 	if (lightType == "sun")
 		this->setLightType(LightType::LightTypeSun);
+	else if (lightType == "directional")
+		this->setLightType(LightType::LightTypeDirectional);
 	else if (lightType == "point")
 		this->setLightType(LightType::LightTypePoint);
 	else if (lightType == "spot")
 		this->setLightType(LightType::LightTypeSpot);
-	else if (lightType == "area")
-		this->setLightType(LightType::LightTypeArea);
-	else if (lightType == "hemiSphere")
-		this->setLightType(LightType::LightTypeHemiSphere);
 	else if (lightType == "ambient")
 		this->setLightType(LightType::LightTypeAmbient);
 	else
@@ -174,6 +176,8 @@ LightComponent::load(iarchive& reader) noexcept
 	_light->setRange(lightRange);
 	_light->setIntensity(lightIntensity);
 	_light->setShadow(shadow);
+	_light->setSoftShadow(softShadow);
+	_light->setSubsurfaceScattering(subsurfaceScattering);
 }
 
 void

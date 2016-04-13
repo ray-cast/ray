@@ -48,7 +48,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(OGLDeviceContext, GraphicsContext, "OGLDeviceContext")
+__ImplementSubClass(OGLDeviceContext, GraphicsContext2, "OGLDeviceContext")
 
 OGLDeviceContext::OGLDeviceContext() noexcept
 	: _initOpenGL(false)
@@ -124,35 +124,35 @@ OGLDeviceContext::renderEnd() noexcept
 }
 
 void
-OGLDeviceContext::setViewport(const Viewport& view, std::size_t i) noexcept
+OGLDeviceContext::setViewport(const Viewport& view) noexcept
 {
-	if (_viewport[i] != view)
+	if (_viewport != view)
 	{
-		glViewportIndexedf(i, view.left, view.top, view.width, view.height);
-		_viewport[i] = view;
+		glViewport(view.left, view.top, view.width, view.height);
+		_viewport = view;
 	}
 }
 
 const Viewport&
-OGLDeviceContext::getViewport(std::size_t i) const noexcept
+OGLDeviceContext::getViewport() const noexcept
 {
-	return _viewport[i];
+	return _viewport;
 }
 
 void 
-OGLDeviceContext::setScissor(const Scissor& scissor, std::size_t i) noexcept
+OGLDeviceContext::setScissor(const Scissor& scissor) noexcept
 {
-	if (_scissor[i] != scissor)
+	if (_scissor != scissor)
 	{
-		glScissorIndexed(i, scissor.left, scissor.top, scissor.width, scissor.height);
-		_scissor[i] = scissor;
+		glScissor(scissor.left, scissor.top, scissor.width, scissor.height);
+		_scissor = scissor;
 	}
 }
 
 const Scissor&
-OGLDeviceContext::getScissor(std::size_t i) const noexcept
+OGLDeviceContext::getScissor() const noexcept
 {
-	return _scissor[i];
+	return _scissor;
 }
 
 void
@@ -180,7 +180,12 @@ OGLDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 			_shaderObject = glshader;
 		}
 
-		_needUpdateLayout = true;
+		auto inputLayout = pipelineDesc.getGraphicsInputLayout()->downcast<OGLInputLayout>();
+		if (_inputLayout != inputLayout)
+		{
+			_inputLayout = inputLayout;
+			_needUpdateLayout = true;
+		}
 	}
 }
 
@@ -201,20 +206,6 @@ GraphicsDescriptorSetPtr
 OGLDeviceContext::getDescriptorSet() const noexcept
 {
 	return _descriptorSet;
-}
-
-void
-OGLDeviceContext::setInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept
-{
-	assert(inputLayout);
-	_inputLayout = inputLayout->downcast<OGLInputLayout>();
-	_needUpdateLayout = true;
-}
-
-GraphicsInputLayoutPtr
-OGLDeviceContext::getInputLayout() const noexcept
-{
-	return _inputLayout;
 }
 
 bool
@@ -263,7 +254,7 @@ OGLDeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 			_vbo = data->downcast<OGLGraphicsData>();
 		else
 			_vbo = nullptr;
-		_needUpdateVbo = true;
+		_needUpdateLayout = true;
 	}
 }
 
@@ -283,7 +274,7 @@ OGLDeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
 		else
 			_ibo = nullptr;
 
-		_needUpdateIbo = true;
+		_needUpdateLayout = true;
 	}
 }
 
@@ -298,43 +289,27 @@ OGLDeviceContext::drawRenderBuffer(const GraphicsIndirect& renderable) noexcept
 {
 	assert(_vbo && _inputLayout);
 
-	if (_inputLayout->getGraphicsInputLayoutDesc().getIndexType() != GraphicsIndexType::GraphicsIndexTypeNone)
-	{
-		if (!_ibo)
-			return;
-
-		if (_ibo->downcast<OGLGraphicsData>()->size() < _inputLayout->getGraphicsInputLayoutDesc().getIndexSize() * (renderable.startIndice + renderable.numIndices))
-			return;
-	}
-
 	if (_needUpdateLayout)
 	{
 		if (_inputLayout)
 			_inputLayout->bindLayout(_shaderObject);
+
+		if (_vbo)
+			_inputLayout->bindVbo(_vbo, 0);
+
+		if (_ibo)
+			_inputLayout->bindIbo(_ibo);
+
 		_needUpdateLayout = false;
 	}
 
-	if (_needUpdateVbo)
-	{
-		if (_vbo)
-			_inputLayout->bindVbo(_vbo, 0);
-		_needUpdateVbo = false;
-	}
-
-	if (_needUpdateIbo)
-	{
-		if (_ibo)
-			_inputLayout->bindIbo(_ibo);
-		_needUpdateIbo = false;
-	}
-
-	auto primitiveType = _stateCaptured.getRasterState().primitiveType;
+	auto primitiveType = _stateCaptured.getPrimitiveType();
 	if (_ibo)
 	{
 		GLenum drawType = OGLTypes::asVertexType(primitiveType);
-		GLenum indexType = OGLTypes::asIndexType(_inputLayout->getGraphicsInputLayoutDesc().getIndexType());
+		GLenum indexType = OGLTypes::asIndexType(renderable.indexType);
 		GLsizei numInstance = std::max(1, renderable.numInstances);
-		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_inputLayout->getGraphicsInputLayoutDesc().getIndexSize() * renderable.startIndice);
+		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_ibo->getGraphicsDataDesc().getStride() * renderable.startIndice);
 		glDrawElementsInstancedBaseVertexBaseInstance(drawType, renderable.numIndices, indexType, offsetIndices, numInstance, renderable.startVertice, renderable.startInstances);
 	}
 	else
@@ -353,36 +328,18 @@ OGLDeviceContext::drawRenderBuffer(const GraphicsIndirect renderable[], std::siz
 }
 
 void
-OGLDeviceContext::setRenderTexture(GraphicsFramebufferPtr target) noexcept
+OGLDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 {
 	if (_renderTexture != target)
 	{
 		if (target)
 		{
 			_renderTexture = target->downcast<OGLFramebuffer>();
-			auto& renderTextureDesc = _renderTexture->getGraphicsFramebufferDesc();
-			auto& textures = renderTextureDesc.getTextures();
+			auto& framebufferDesc = _renderTexture->getGraphicsFramebufferDesc();
 
 			glBindFramebuffer(GL_FRAMEBUFFER, _renderTexture->getInstanceID());
 
-			std::size_t size = textures.size();
-			if (size > 0)
-			{
-				for (std::size_t index = 0; index < size; index++)
-				{
-					auto& textureDesc = textures[index]->getGraphicsTextureDesc();
-					this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), index);
-				}
-			}
-			else
-			{
-				auto depthTexture = renderTextureDesc.getSharedDepthTexture();
-				if (depthTexture)
-				{
-					auto& textureDesc = depthTexture->getGraphicsTextureDesc();
-					this->setViewport(Viewport(0, 0, textureDesc.getWidth(), textureDesc.getHeight()), 0);
-				}
-			}
+			this->setViewport(Viewport(0, 0, framebufferDesc.getWidth(), framebufferDesc.getHeight()));
 		}
 		else
 		{
@@ -393,7 +350,7 @@ OGLDeviceContext::setRenderTexture(GraphicsFramebufferPtr target) noexcept
 }
 
 void
-OGLDeviceContext::blitRenderTexture(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
+OGLDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
 {
 	assert(src);
 
@@ -404,13 +361,13 @@ OGLDeviceContext::blitRenderTexture(GraphicsFramebufferPtr src, const Viewport& 
 }
 
 GraphicsFramebufferPtr
-OGLDeviceContext::getRenderTexture() const noexcept
+OGLDeviceContext::getFramebuffer() const noexcept
 {
 	return _renderTexture;
 }
 
 void
-OGLDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
+OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	GLbitfield mode = 0;
 
@@ -449,7 +406,7 @@ OGLDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& col
 
 	if (mode != 0)
 	{
-		auto depthWriteEnable = _stateCaptured.getDepthState().depthWriteEnable;
+		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
 		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_TRUE);
@@ -465,11 +422,11 @@ OGLDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& col
 }
 
 void
-OGLDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+OGLDeviceContext::clearFramebufferIndexed(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept
 {
 	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 	{
-		auto depthWriteEnable = _stateCaptured.getDepthState().depthWriteEnable;
+		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
 		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_TRUE);
@@ -497,14 +454,14 @@ OGLDeviceContext::clearRenderTexture(GraphicsClearFlags flags, const float4& col
 }
 
 void
-OGLDeviceContext::discardRenderTexture() noexcept
+OGLDeviceContext::discardFramebuffer() noexcept
 {
 	assert(_renderTexture);
 	_renderTexture->discard();
 }
 
 void
-OGLDeviceContext::readRenderTexture(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+OGLDeviceContext::readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
 {
 	assert(w && h && data);
 
@@ -515,7 +472,7 @@ OGLDeviceContext::readRenderTexture(GraphicsFramebufferPtr target, GraphicsForma
 
 		if (format != GL_INVALID_ENUM && type != GL_INVALID_ENUM)
 		{
-			this->setRenderTexture(target);
+			this->setFramebuffer(target);
 			glReadPixels(0, 0, w, h, format, type, data);
 		}
 	}
@@ -677,10 +634,9 @@ OGLDeviceContext::initStateSystem() noexcept
 	_clearStencil = 0;
 
 	_needUpdateLayout = false;
-	_needUpdateVbo = false;
-	_needUpdateIbo = false;
 
-	_viewport.resize(_maxViewports);
+	std::memset(&_viewport, 0, sizeof(_viewport));
+	std::memset(&_scissor, 0, sizeof(_scissor));
 
 	_stateDefault = std::make_shared<OGLGraphicsState>();
 	_stateDefault->setup(GraphicsStateDesc());

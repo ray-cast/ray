@@ -40,6 +40,46 @@
 _NAME_BEGIN
 
 __ImplementSubClass(OGLFramebuffer, GraphicsFramebuffer, "OGLFramebuffer")
+__ImplementSubClass(OGLFramebufferLayout, GraphicsFramebufferLayout, "OGLFramebufferLayout")
+
+OGLFramebufferLayout::OGLFramebufferLayout() noexcept
+{
+}
+
+OGLFramebufferLayout::~OGLFramebufferLayout() noexcept
+{
+	this->close();
+}
+
+bool 
+OGLFramebufferLayout::setup(const GraphicsFramebufferLayoutDesc& framebufferDesc) noexcept
+{
+	_framebufferLayoutDesc = framebufferDesc;
+	return true;
+}
+
+void 
+OGLFramebufferLayout::close() noexcept
+{
+}
+
+const GraphicsFramebufferLayoutDesc&
+OGLFramebufferLayout::getGraphicsFramebufferLayoutDesc() const noexcept
+{
+	return _framebufferLayoutDesc;
+}
+
+void
+OGLFramebufferLayout::setDevice(GraphicsDevicePtr device) noexcept
+{
+	_device = device;
+}
+
+GraphicsDevicePtr
+OGLFramebufferLayout::getDevice() noexcept
+{
+	return _device.lock();
+}
 
 OGLFramebuffer::OGLFramebuffer() noexcept
 	: _fbo(GL_NONE)
@@ -55,6 +95,8 @@ bool
 OGLFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 {
 	assert(GL_NONE == _fbo);
+	assert(framebufferDesc.getGraphicsFramebufferLayout());
+	assert(framebufferDesc.getWidth() > 0 && framebufferDesc.getHeight() > 0);
 
 	glCreateFramebuffers(1, &_fbo);
 	if (_fbo == GL_NONE)

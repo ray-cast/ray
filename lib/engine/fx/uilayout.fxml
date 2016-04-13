@@ -1,6 +1,7 @@
 <?xml version='1.0'?>
 <effect language="hlsl">
     <include name="sys:fx/sampler.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
     <parameter name="scaleY" type="int" />
     <parameter name="decal" type="texture2D"/>
     <shader>
@@ -15,7 +16,7 @@
             out float4 oPosition : SV_Position)
         {
             oPosition = Position;
-            oDiffuse = Diffuse;
+            oDiffuse = Diffuse / 255;
             oCoord = float2(Texcoord.x, Texcoord.y * scaleY);
         }
 
@@ -23,19 +24,17 @@
             in float4 Diffuse : TEXCOORD0,
             in float2 Coord   : TEXCOORD1) : SV_Target
         {
-            return decal.Sample(samLinear, Coord) * (Diffuse / 255);
+            return decal.Sample(samLinear, Coord) * Diffuse;
         }
         ]]>
     </shader>
     <technique name="opaque">
         <pass name="ui">
+            <state name="inputlayout" value="POS3F_COL4C_UV2F"/>
             <state name="vertex" value="UILayoutVS"/>
             <state name="fragment" value="UILayoutPS"/>
-
             <state name="primitive" value="triangle" />
-
             <state name="cullmode" value="none"/>
-
             <state name="blend" value="true"/>
             <state name="blendsrc" value="srcalpha"/>
             <state name="blenddst" value="invsrcalpha"/>

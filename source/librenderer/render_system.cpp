@@ -35,40 +35,11 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_system.h>
-#include <ray/render_scene.h>
-#include <ray/render_pipeline.h>
 #include <ray/render_pipeline_manager.h>
-#include <ray/graphics_context.h>
-#include <ray/atmospheric.h>
-#include <ray/ssao.h>
-#include <ray/ssgi.h>
-#include <ray/ssss.h>
-#include <ray/ssr.h>
-#include <ray/dof.h>
-#include <ray/fog.h>
-#include <ray/fimic.h>
-#include <ray/fxaa.h>
-#include <ray/light_shaft.h>
-#include <ray/color_grading.h>
 
 _NAME_BEGIN
 
 __ImplementSingleton(RenderSystem)
-
-RenderSetting::RenderSetting() noexcept
-	: enableSSAO(false)
-	, enableSSGI(false)
-	, enableSAT(false)
-	, enableSSR(false)
-	, enableSSSS(false)
-	, enableFog(false)
-	, enableDOF(false)
-	, enableFimic(false)
-	, enableFXAA(false)
-	, enableLightShaft(false)
-	, enableColorGrading(false)
-{
-}
 
 RenderSystem::RenderSystem() noexcept
 {
@@ -80,249 +51,21 @@ RenderSystem::~RenderSystem() noexcept
 }
 
 bool
-RenderSystem::open(WindHandle window, std::size_t w, std::size_t h) noexcept
+RenderSystem::setup(const RenderSetting& setting) noexcept
 {
-	assert(!_pipeline);
-
-	_pipeline = std::make_shared<RenderPipeline>();
-	if (!_pipeline->open(window, w, h))
-		return false;
+	assert(!_pipelineManager);
 
 	_pipelineManager = std::make_shared<RenderPipelineManager>();
-	if (!_pipelineManager->open(_pipeline))
+	if (!_pipelineManager->setup(setting))
 		return false;
 
-	RenderSetting setting;
-	setting.enableSSSS = false;
-	setting.enableSSAO = false;
-	setting.enableFimic = false;
-	setting.enableFXAA = false;
-	setting.enableColorGrading = true;
-	this->setRenderSetting(setting);
 	return true;
 }
 
 void
 RenderSystem::close() noexcept
 {
-	_SAT.reset();
-	_SSAO.reset();
-	_SSGI.reset();
-	_SSR.reset();
-	_SSSS.reset();
-	_fog.reset();
-	_DOF.reset();
-	_fimicToneMapping.reset();
-	_FXAA.reset();
-
-	_pipeline.reset();
 	_pipelineManager.reset();
-}
-
-void
-RenderSystem::setRenderSetting(const RenderSetting& setting) noexcept
-{
-	if (_setting.enableSAT != setting.enableSAT)
-	{
-		if (setting.enableSAT)
-		{
-			_SAT = std::make_shared<Atmospheric>();
-			_pipeline->addPostProcess(_SAT);
-		}
-		else if (_SAT)
-		{
-			_pipeline->removePostProcess(_SAT);
-			_SAT.reset();
-		}
-	}
-
-	if (_setting.enableSSAO != setting.enableSSAO)
-	{
-		if (setting.enableSSAO)
-		{
-			_SSAO = std::make_shared<SSAO>();
-			_pipeline->addPostProcess(_SSAO);
-		}
-		else if (_SSAO)
-		{
-			_pipeline->removePostProcess(_SSAO);
-			_SSAO.reset();
-		}
-	}
-
-	if (_setting.enableSSSS != setting.enableSSSS)
-	{
-		if (setting.enableSSSS)
-		{
-			_SSSS = std::make_shared<SSSS>();
-			_pipeline->addPostProcess(_SSSS);
-		}
-		else if (_SSSS)
-		{
-			_pipeline->removePostProcess(_SSSS);
-			_SSSS.reset();
-		}
-	}
-
-	if (_setting.enableFog != setting.enableFog)
-	{
-		if (setting.enableFog)
-		{
-			_fog = std::make_shared<Fog>();
-			_pipeline->addPostProcess(_fog);
-		}
-		else if (_fog)
-		{
-			_pipeline->removePostProcess(_fog);
-			_fog.reset();
-		}
-	}
-
-	if (_setting.enableSSGI != setting.enableSSGI)
-	{
-		if (setting.enableSSGI)
-		{
-			_SSGI = std::make_shared<SSGI>();
-			_pipeline->addPostProcess(_SSGI);
-		}
-		else if (_SSGI)
-		{
-			_pipeline->removePostProcess(_SSGI);
-			_SSGI.reset();
-		}
-	}
-
-	if (_setting.enableSSR != setting.enableSSR)
-	{
-		if (setting.enableSSR)
-		{
-			_SSR = std::make_shared<SSR>();
-			_pipeline->addPostProcess(_SSR);
-		}
-		else if (_SSR)
-		{
-			_pipeline->removePostProcess(_SSR);
-			_SSR.reset();
-		}
-	}
-
-	if (_setting.enableDOF != setting.enableDOF)
-	{
-		if (setting.enableDOF)
-		{
-			_DOF = std::make_shared<DepthOfField>();
-			_pipeline->addPostProcess(_DOF);
-		}
-		else if (_DOF)
-		{
-			_pipeline->removePostProcess(_DOF);
-			_DOF.reset();
-		}
-	}
-
-	if (_setting.enableLightShaft != setting.enableLightShaft)
-	{
-		if (setting.enableLightShaft)
-		{
-			_lightShaft = std::make_shared<LightShaft>();
-			_pipeline->addPostProcess(_lightShaft);
-		}
-		else if (_lightShaft)
-		{
-			_pipeline->removePostProcess(_lightShaft);
-			_lightShaft.reset();
-		}
-	}
-
-	if (_setting.enableFimic != setting.enableFimic)
-	{
-		if (setting.enableFimic)
-		{
-			_fimicToneMapping = std::make_shared<FimicToneMapping>();
-			_pipeline->addPostProcess(_fimicToneMapping);
-		}
-		else if (_fimicToneMapping)
-		{
-			_pipeline->removePostProcess(_fimicToneMapping);
-			_fimicToneMapping.reset();
-		}
-	}
-
-	if (_setting.enableFXAA != setting.enableFXAA)
-	{
-		if (setting.enableFXAA)
-		{
-			_FXAA = std::make_shared<FXAA>();
-			_pipeline->addPostProcess(_FXAA);
-		}
-		else if (_FXAA)
-		{
-			_pipeline->removePostProcess(_FXAA);
-			_FXAA.reset();
-		}
-	}
-
-	if (_setting.enableColorGrading != setting.enableColorGrading)
-	{
-		if (setting.enableColorGrading)
-		{
-			_colorGrading = std::make_shared<ColorGrading>();
-			_pipeline->addPostProcess(_colorGrading);
-		}
-		else if (_colorGrading)
-		{
-			_pipeline->removePostProcess(_colorGrading);
-			_colorGrading.reset();
-		}
-	}
-}
-
-const RenderSetting&
-RenderSystem::getRenderSetting() const noexcept
-{
-	return _setting;
-}
-
-void 
-RenderSystem::setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept
-{
-	assert(_pipeline);
-	_pipelineManager->setWindowResolution(w, h);
-}
-
-void 
-RenderSystem::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept
-{
-	assert(_pipeline);
-	_pipelineManager->getWindowResolution(w, h);
-}
-
-void 
-RenderSystem::setRenderPipeline(RenderPipelinePtr pipeline) noexcept
-{
-	assert(_pipeline);
-	_pipeline = pipeline;
-}
-
-RenderPipelinePtr 
-RenderSystem::getRenderPipeline() const noexcept
-{
-	assert(_pipeline);
-	return _pipeline;
-}
-
-void 
-RenderSystem::setSwapInterval(GraphicsSwapInterval interval) noexcept
-{
-	assert(_pipeline);
-	_pipeline->setSwapInterval(interval);
-}
-
-GraphicsSwapInterval
-RenderSystem::getSwapInterval() const noexcept
-{
-	assert(_pipeline);
-	return _pipeline->getSwapInterval();
 }
 
 bool
@@ -348,95 +91,205 @@ RenderSystem::removeRenderScene(RenderScenePtr scene) noexcept
 	}
 }
 
+void
+RenderSystem::setRenderSetting(const RenderSetting& setting) noexcept
+{
+	_pipelineManager->setRenderSetting(setting);
+}
+
+const RenderSetting&
+RenderSystem::getRenderSetting() const noexcept
+{
+	return _pipelineManager->getRenderSetting();
+}
+
+void 
+RenderSystem::setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->setWindowResolution(w, h);
+}
+
+void 
+RenderSystem::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->getWindowResolution(w, h);
+}
+
+void 
+RenderSystem::setViewport(const Viewport& view) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->setViewport(view);
+}
+
+const Viewport&
+RenderSystem::getViewport() const noexcept
+{
+	assert(_pipelineManager);
+	return _pipelineManager->getViewport();
+}
+
+void
+RenderSystem::setFramebuffer(GraphicsFramebufferPtr target) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->setFramebuffer(target);
+}
+
+void 
+RenderSystem::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->clearFramebuffer(flags, color, depth, stencil);
+}
+
+void 
+RenderSystem::discradRenderTexture() noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->discradRenderTexture();
+}
+
+void 
+RenderSystem::readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat format, std::size_t w, std::size_t h, void* data) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->readFramebuffer(target, format, w, h, data);
+}
+
+void 
+RenderSystem::blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->blitFramebuffer(srcTarget, src, destTarget, dest);
+}
+
+void
+RenderSystem::drawCone(MaterialPassPtr pass) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->drawCone(pass);
+}
+
+void
+RenderSystem::drawSphere(MaterialPassPtr pass) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->drawSphere(pass);
+}
+
+void
+RenderSystem::drawScreenQuad(MaterialPassPtr pass) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->drawScreenQuad(pass);
+}
+
+void
+RenderSystem::drawMesh(MaterialPassPtr pass, RenderBufferPtr mesh, const GraphicsIndirect& renderable) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->drawMesh(pass, mesh, renderable);
+}
+
 GraphicsTexturePtr
 RenderSystem::createTexture(const GraphicsTextureDesc& desc) noexcept
 {
-	assert(_pipeline);
-	return _pipeline->createTexture(desc);
+	assert(_pipelineManager);
+	return _pipelineManager->createTexture(desc);
 }
 
 GraphicsTexturePtr
 RenderSystem::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept
 {
-	assert(_pipeline);
-	return _pipeline->createTexture(w, h, dim, format);
+	assert(_pipelineManager);
+	return _pipelineManager->createTexture(w, h, dim, format);
 }
 
 GraphicsTexturePtr
 RenderSystem::createTexture(const std::string& name) noexcept
 {
-	assert(_pipeline);
-	return _pipeline->createTexture(name);
+	assert(_pipelineManager);
+	return _pipelineManager->createTexture(name);
 }
 
 MaterialPtr
 RenderSystem::createMaterial(const std::string& name) noexcept
 {
-	assert(_pipeline);
-	return _pipeline->createMaterial(name);
+	assert(_pipelineManager);
+	return _pipelineManager->createMaterial(name);
 }
 
 GraphicsFramebufferPtr 
 RenderSystem::createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept
 {
-	assert(_pipeline);
-	return _pipeline->createFramebuffer(desc);
+	assert(_pipelineManager);
+	return _pipelineManager->createFramebuffer(desc);
+}
+
+GraphicsFramebufferLayoutPtr
+RenderSystem::createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept
+{
+	assert(_pipelineManager);
+	return _pipelineManager->createFramebufferLayout(desc);
 }
 
 GraphicsDataPtr
 RenderSystem::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
-	assert(_pipeline);
-	return _pipeline->createGraphicsData(desc);
+	assert(_pipelineManager);
+	return _pipelineManager->createGraphicsData(desc);
 }
 
 bool
 RenderSystem::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
 {
-	assert(_pipeline);
-	return _pipeline->updateBuffer(data, str, cnt);
+	assert(_pipelineManager);
+	return _pipelineManager->updateBuffer(data, str, cnt);
 }
 
 void*
 RenderSystem::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
 {
-	assert(_pipeline);
-	return _pipeline->mapBuffer(data, access);
+	assert(_pipelineManager);
+	return _pipelineManager->mapBuffer(data, access);
 }
 
 void 
 RenderSystem::unmapBuffer(GraphicsDataPtr& data) noexcept
 {
-	assert(_pipeline);
-	_pipeline->unmapBuffer(data);
+	assert(_pipelineManager);
+	_pipelineManager->unmapBuffer(data);
 }
 
 GraphicsInputLayoutPtr
 RenderSystem::createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept
 {
-	assert(_pipeline);
-	return _pipeline->createInputLayout(desc);
+	assert(_pipelineManager);
+	return _pipelineManager->createInputLayout(desc);
 }
 
 RenderBufferPtr 
 RenderSystem::createRenderBuffer(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
 {
-	assert(_pipeline);
-	return _pipeline->createRenderBuffer(vb, ib);
+	assert(_pipelineManager);
+	return _pipelineManager->createRenderBuffer(vb, ib);
 }
 
 RenderBufferPtr 
 RenderSystem::createRenderBuffer(const MeshProperty& mesh) noexcept
 {
-	assert(_pipeline);
-	return _pipeline->createRenderBuffer(mesh);
+	assert(_pipelineManager);
+	return _pipelineManager->createRenderBuffer(mesh);
 }
 
 RenderBufferPtr 
 RenderSystem::createRenderBuffer(const MeshPropertys& meshes) noexcept
 {
-	assert(_pipeline);
-	return _pipeline->createRenderBuffer(meshes);
+	assert(_pipelineManager);
+	return _pipelineManager->createRenderBuffer(meshes);
 }
 
 void
@@ -456,7 +309,7 @@ RenderSystem::renderEnd() noexcept
 void
 RenderSystem::render() noexcept
 {
-	assert(_pipeline);
+	assert(_pipelineManager);
 
 	for (auto& scene : _sceneList)
 		_pipelineManager->render(*scene);

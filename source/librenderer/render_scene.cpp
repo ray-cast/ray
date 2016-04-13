@@ -238,4 +238,60 @@ RenderScene::computVisiable(const Matrix4x4& viewProject, OcclusionCullList& lis
 	}
 }
 
+void 
+RenderScene::computVisiableObject(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept
+{
+	Frustum fru;
+	fru.extract(viewProject);
+
+	auto eyePosition = viewProject.getTranslate();
+
+	for (auto& it : _renderObjectList)
+	{
+		if (!it->isInstanceOf<RenderMesh>())
+			continue;
+
+		if (!fru.contains(it->getBoundingBoxInWorld().aabb()))
+			continue;
+
+		list.insert(it, eyePosition.sqrDistance(it->getTransform().getTranslate()));
+
+		for (auto& child : it->getSubeRenderObjects())
+		{
+			if (fru.contains(child->getBoundingBoxInWorld().aabb()))
+			{
+				list.insert(it, eyePosition.sqrDistance(it->getBoundingBoxInWorld().center()));
+			}
+		}
+	}
+}
+
+void 
+RenderScene::computVisiableLight(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept
+{
+	Frustum fru;
+	fru.extract(viewProject);
+
+	auto eyePosition = viewProject.getTranslate();
+
+	for (auto& it : _renderObjectList)
+	{
+		if (!it->isInstanceOf<Light>())
+			continue;
+
+		if (!fru.contains(it->getBoundingBoxInWorld().aabb()))
+			continue;
+
+		list.insert(it, eyePosition.sqrDistance(it->getTransform().getTranslate()));
+
+		for (auto& child : it->getSubeRenderObjects())
+		{
+			if (fru.contains(child->getBoundingBoxInWorld().aabb()))
+			{
+				list.insert(it, eyePosition.sqrDistance(it->getBoundingBoxInWorld().center()));
+			}
+		}
+	}
+}
+
 _NAME_END

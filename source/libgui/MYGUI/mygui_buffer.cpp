@@ -68,30 +68,28 @@ MyGuiVertexBuffer::lock() noexcept
 {
 	if (!_vb || _needVertexCount != _vertexCount)
 	{
+		std::uint32_t inputSize = 0;
+		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
+		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR8G8B8A8UInt);
+		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32SFloat);
+		
 		if (!_vb)
 		{
-			_layout.addComponent(GraphicsVertexLayout("POSITION", 0, GraphicsFormat::GraphicsFormatR32G32B32SFloat));
-			_layout.addComponent(GraphicsVertexLayout("COLOR", 0, GraphicsFormat::GraphicsFormatR8G8B8A8UInt));
-			_layout.addComponent(GraphicsVertexLayout("TEXCOORD", 0, GraphicsFormat::GraphicsFormatR32G32SFloat));
-
-			auto layout = RenderSystem::instance()->createInputLayout(_layout);
-
 			GraphicsDataDesc vb;
 			vb.setUsage(GraphicsUsageFlags::GraphicsUsageFlagsReadBit | GraphicsUsageFlags::GraphicsUsageFlagsWriteBit);
-			vb.setStride(_layout.getVertexSize());
+			vb.setStride(inputSize);
 			vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
-			vb.setStreamSize(_layout.getVertexSize() * _needVertexCount);
+			vb.setStreamSize(inputSize * _needVertexCount);
 
 			_vb = RenderSystem::instance()->createGraphicsData(vb);
 
 			_buffer = RenderSystem::instance()->createRenderBuffer(_vb, nullptr);
-			_buffer->setInputLayout(layout);
 
 			_vertexCount = _needVertexCount;
 		}
 		else
 		{
-			RenderSystem::instance()->updateBuffer(_vb, nullptr, _needVertexCount * _layout.getVertexSize());
+			RenderSystem::instance()->updateBuffer(_vb, nullptr, inputSize * _needVertexCount);
 		}
 	}
 

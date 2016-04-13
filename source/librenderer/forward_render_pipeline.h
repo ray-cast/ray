@@ -37,16 +37,37 @@
 #ifndef _H_FORWARD_RENDER_PIPELINE_H_
 #define _H_FORWARD_RENDER_PIPELINE_H_
 
-#include <ray/render_pipeline.h>
+#include <ray/render_pipeline_controller.h>
 
 _NAME_BEGIN
 
-class ForwardRenderPipeline final : public RenderPipeline
+class ForwardRenderPipeline final : public RenderPipelineController
 {
-	__DeclareSubClass(ForwardRenderPipeline, RenderPipeline)
+	__DeclareSubClass(ForwardRenderPipeline, RenderPipelineController)
 public:
 	ForwardRenderPipeline() noexcept;
 	virtual ~ForwardRenderPipeline() noexcept;
+
+	bool setup(RenderPipeline& pipeline) noexcept;
+	void close() noexcept;
+
+	void renderShadowMap(RenderPipeline& pipeline) noexcept;
+	void render2DEnvMap(RenderPipeline& pipeline) noexcept;
+
+private:
+	virtual void onResolutionChangeBefore(RenderPipeline& pipeline) noexcept;
+	virtual void onResolutionChangeAfter(RenderPipeline& pipeline) noexcept;
+
+	virtual void onRenderPre(RenderPipeline& pipeline) noexcept;
+	virtual void onRenderPipeline(RenderPipeline& pipeline, const CameraPtr& camera) noexcept;
+	virtual void onRenderPost(RenderPipeline& pipeline) noexcept;
+
+private:
+	ForwardRenderPipeline(const ForwardRenderPipeline&) = delete;
+	ForwardRenderPipeline& operator=(const ForwardRenderPipeline&) = delete;
+
+private:
+	MaterialPassPtr _depthOnly;
 };
 
 _NAME_END

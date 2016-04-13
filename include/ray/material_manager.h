@@ -47,14 +47,14 @@ public:
 	MaterialManager() noexcept;
 	~MaterialManager() noexcept;
 
-	void open(GraphicsDevicePtr device) noexcept;
+	bool setup(GraphicsDevicePtr device) noexcept;
 	void close() noexcept;
-
-	void setMaterialLoader(MaterialLoaderPtr loader) noexcept;
-	MaterialLoaderPtr getMaterialLoader() const noexcept;
 
 	void setGraphicsDevice(GraphicsDevicePtr device) noexcept;
 	GraphicsDevicePtr getGraphicsDevice() noexcept;
+
+	void setMaterialLoader(MaterialLoaderPtr loader) noexcept;
+	MaterialLoaderPtr getMaterialLoader() const noexcept;
 
 	MaterialPtr createMaterial(const std::string& name) noexcept;
 	MaterialPtr getMaterial(const std::string& name) noexcept;
@@ -64,11 +64,14 @@ public:
 	MaterialVariantPtr getSemantic(const std::string& name) noexcept;
 	void destroySemantic(MaterialVariantPtr semantc) noexcept;
 
+private:
+	MaterialManager(const MaterialManager&) = delete;
+	MaterialManager& operator=(const MaterialManager&) = delete;
 
 private:
+	GraphicsDevicePtr _graphicsDevice;
 	MaterialLoaderPtr _materialLoader;
 	MaterialVariants _semantics;
-	GraphicsDevicePtr _graphicsDevice;
 	std::map<std::string, MaterialPtr> _materials;
 };
 

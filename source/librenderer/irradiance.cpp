@@ -34,10 +34,11 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/irradiance.h>
+#include "irradiance.h"
 #include <ray/material.h>
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
+#include <ray/render_pipeline.h>
 
 #define PARABOLOID_SAMPLES 64
 #define NUM_ORDER 3
@@ -102,22 +103,20 @@ EnvironmentIrradiance::renderParaboloidEnvMap(RenderPipeline& pipeline, Graphics
 {
 	assert(cubemap);
 
-	auto& textureDesc = cubemap->getGraphicsTextureDesc();
-
 	_paraboloidCubeMapSampler->assign(cubemap);
-	_paraboloidSamplesInverse->assign(1.0f / textureDesc.getWidth());
+	_paraboloidSamplesInverse->assign(1.0f / PARABOLOID_SAMPLES);
 
 	_sphericalHarmonicConvolveDE0->assign(_paraboloidFrontMap);
 	_sphericalHarmonicConvolveDE1->assign(_paraboloidBackMap);
 	_sphericalHarmonicConvolveYlmDW0->assign(_paraboloidSHWeights[0]);
 	_sphericalHarmonicConvolveYlmDW1->assign(_paraboloidSHWeights[1]);
 
-	pipeline.setRenderTexture(_paraboloidDualViews);
-	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
+	pipeline.setFramebuffer(_paraboloidDualViews);
+	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
 	pipeline.drawScreenQuad(_irradianceParaboloid);
 
-	pipeline.setRenderTexture(_irradianceSHCoefficientsView);
-	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
+	pipeline.setFramebuffer(_irradianceSHCoefficientsView);
+	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
 	pipeline.drawScreenQuad(_irradianceProjectDualParaboloidToSH);
 }
 

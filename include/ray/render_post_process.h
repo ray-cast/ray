@@ -37,38 +37,38 @@
 #ifndef _H_RENDER_POST_PROCESS_H_
 #define _H_RENDER_POST_PROCESS_H_
 
-#include <ray/render_pipeline.h>
+#include <ray/render_types.h>
 
 _NAME_BEGIN
 
-class EXPORT RenderPostProcess
+class EXPORT RenderPostProcess : public rtti::Interface
 {
+	__DeclareSubClass(RenderPostProcess, rtti::Interface)
 public:
 	RenderPostProcess() noexcept;
 	virtual ~RenderPostProcess() noexcept;
 
-	void setActive(bool active) except;
+	void setActive(bool active) noexcept;
 	bool getActive() const noexcept;
 
 	void setRenderQueue(RenderQueue queue) noexcept;
 	RenderQueue getRenderQueue() const noexcept;
 
 public:
-	virtual void onActivate(RenderPipeline& pipeline) except;
-	virtual void onDeactivate(RenderPipeline& pipeline) except;
+	virtual void onActivate(RenderPipeline& pipeline) noexcept;
+	virtual void onDeactivate(RenderPipeline& pipeline) noexcept;
 
-	virtual void onResolutionChangeBefore(RenderPipeline& pipeline) except;
-	virtual void onResolutionChangeAfter(RenderPipeline& pipeline) except;
+	virtual void onResolutionChangeBefore(RenderPipeline& pipeline) noexcept;
+	virtual void onResolutionChangeAfter(RenderPipeline& pipeline) noexcept;
 
-	virtual void onRenderPre(RenderPipeline& pipeline) except;
-	virtual void onRenderPost(RenderPipeline& pipeline) except;
+	virtual void onRenderPre(RenderPipeline& pipeline) noexcept;
+	virtual void onRenderPost(RenderPipeline& pipeline) noexcept;
 
-	virtual void onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) except;
+	virtual bool onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept;
 
 	void _setRenderPipeline(RenderPipeline* pipeline) noexcept;
 
 private:
-
 	bool _active;
 
 	RenderQueue _renderQueue;

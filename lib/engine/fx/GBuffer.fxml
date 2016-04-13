@@ -24,6 +24,11 @@
                 return mrt0.Sample(PointClamp, coord).rgb;
             }
 
+            float3 restoreDiffuse(float4 mrt0)
+            {
+                return mrt0.rgb;
+            }
+
             float restoreSpecular(float4 mrt0)
             {
                 return mrt0.a;
@@ -34,14 +39,14 @@
                 return unpackNormal(mrt1.xyz);
             }
 
-            float restoreSmoothness(float4 mrt1)
+            float restoreShininess(float4 mrt1)
             {
                 return mrt1.w;
             }
 
             float3 restorePosition(texture2D texDepth, float4x4 matInverse, float2 coord)
             {
-                float depth  = texDepth.Sample(PointClamp, coord.xy).r;
+                float depth = texDepth.Sample(PointClamp, coord.xy).r;
                 float4 result = mul(float4(coord * 2.0 - 1.0, depth, 1.0), matInverse);
                 result /= result.w;
                 return result.xyz;
@@ -51,6 +56,20 @@
             {
                 float depth = texDepthLinear.Sample(PointClamp, coord).r;
                 return float3(projInfo.xy * coord + projInfo.zw, 1.0) * depth;
+            }
+
+            float3 restorePosition(texture2D texDepthLinear, float2 coord, float3 viewdir, float farClipDist)
+            {
+                float depth = texDepthLinear.Sample(PointClamp, coord).r;
+                return viewdir * depth / viewdir.z;
+            }
+
+            float linearDepth(float3 clipConstant, float depth)
+            {
+                // clipConstant.x = (2 * znear * zfar);
+                // clipConstant.y = zfar + znear;
+                // clipConstant.z = zfar - znear;
+                return clipConstant.x / (clipConstant.y - clipConstant.z * depth);
             }
         ]]>
     </shader>

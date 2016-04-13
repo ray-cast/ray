@@ -112,7 +112,7 @@ private:
 	GraphicsTextures _textures;
 	GraphicsTexturePtr _sharedDepthTexture;
 	GraphicsTexturePtr _sharedStencilTexture;
-	GraphicsFramebufferLayoutPtr _renderTextureLayout;
+	GraphicsFramebufferLayoutPtr _framebufferLayout;
 };
 
 class EXPORT GraphicsFramebufferLayout : public GraphicsChild

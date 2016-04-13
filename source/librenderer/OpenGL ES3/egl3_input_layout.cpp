@@ -60,17 +60,6 @@ EGL3InputLayout::setup(const GraphicsInputLayoutDesc& layout) noexcept
 {
 	assert(!_vao);
 
-	_indexType = EGL3Types::asIndexType(layout.getIndexType());
-	if (_indexType == GL_INVALID_ENUM)
-		return false;
-
-	_indexSize = layout.getIndexSize();
-	if (_indexType != GL_NONE)
-	{
-		if (_indexSize == 0)
-			return false;
-	}
-
 	_vertexSize = layout.getVertexSize();
 	if (_vertexSize == GL_NONE)
 		return false;

@@ -53,7 +53,7 @@ OGLGraphicsState::setup(const GraphicsStateDesc& desc) noexcept
 	return true;
 }
 
-void 
+void
 OGLGraphicsState::close() noexcept
 {
 }
@@ -61,76 +61,66 @@ OGLGraphicsState::close() noexcept
 void
 OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 {
-	const auto& blendState = _stateDesc.getBlendState();
-	const auto& rasterState = _stateDesc.getRasterState();
-	const auto& depthState = _stateDesc.getDepthState();
-	const auto& stencilState = _stateDesc.getStencilState();
-
-	auto& _dstBlendState = lastStateDesc.getBlendState();
-	auto& _dstRasterState = lastStateDesc.getRasterState();
-	auto& _dstDepthState = lastStateDesc.getDepthState();
-	auto& _dstStencilState = lastStateDesc.getStencilState();
-
-	if (blendState.blendEnable)
+	if (_stateDesc.getBlendEnable())
 	{
-		if (!_dstBlendState.blendEnable)
+		if (!lastStateDesc.getBlendEnable())
 			glEnable(GL_BLEND);
 
-		if (blendState.blendSeparateEnable)
+		if (_stateDesc.getBlendSeparateEnable())
 		{
-			if (_dstBlendState.blendSrc != blendState.blendSrc ||
-				_dstBlendState.blendDest != blendState.blendDest ||
-				_dstBlendState.blendAlphaSrc != blendState.blendAlphaSrc ||
-				_dstBlendState.blendAlphaDest != blendState.blendAlphaDest)
+			if (lastStateDesc.getBlendSrc() != _stateDesc.getBlendSrc() ||
+				lastStateDesc.getBlendDest() != _stateDesc.getBlendDest() ||
+				lastStateDesc.getBlendAlphaSrc() != _stateDesc.getBlendAlphaSrc() ||
+				lastStateDesc.getBlendAlphaDest() != _stateDesc.getBlendAlphaDest())
 			{
-				GLenum sfactorRGB = OGLTypes::asBlendFactor(blendState.blendSrc);
-				GLenum dfactorRGB = OGLTypes::asBlendFactor(blendState.blendDest);
-				GLenum sfactorAlpha = OGLTypes::asBlendFactor(blendState.blendAlphaSrc);
-				GLenum dfactorAlpha = OGLTypes::asBlendFactor(blendState.blendAlphaDest);
+				GLenum sfactorRGB = OGLTypes::asBlendFactor(_stateDesc.getBlendSrc());
+				GLenum dfactorRGB = OGLTypes::asBlendFactor(_stateDesc.getBlendDest());
+				GLenum sfactorAlpha = OGLTypes::asBlendFactor(_stateDesc.getBlendAlphaSrc());
+				GLenum dfactorAlpha = OGLTypes::asBlendFactor(_stateDesc.getBlendAlphaDest());
 
 				glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
 			}
 
-			if (_dstBlendState.blendOp != blendState.blendOp ||
-				_dstBlendState.blendAlphaOp != blendState.blendAlphaOp)
+			if (lastStateDesc.getBlendOp() != _stateDesc.getBlendOp() ||
+				lastStateDesc.getBlendAlphaOp() != _stateDesc.getBlendAlphaOp())
 			{
-				GLenum modeRGB = OGLTypes::asBlendOperation(blendState.blendOp);
-				GLenum modeAlpha = OGLTypes::asBlendOperation(blendState.blendAlphaOp);
+				GLenum modeRGB = OGLTypes::asBlendOperation(_stateDesc.getBlendOp());
+				GLenum modeAlpha = OGLTypes::asBlendOperation(_stateDesc.getBlendAlphaOp());
 
 				glBlendEquationSeparate(modeRGB, modeAlpha);
 			}
 		}
 		else
 		{
-			if (_dstBlendState.blendSrc != blendState.blendSrc ||
-				_dstBlendState.blendDest != blendState.blendDest)
+			if (lastStateDesc.getBlendSrc() != _stateDesc.getBlendSrc() ||
+				lastStateDesc.getBlendDest() != _stateDesc.getBlendDest())
 			{
-				GLenum sfactorRGB = OGLTypes::asBlendFactor(blendState.blendSrc);
-				GLenum dfactorRGB = OGLTypes::asBlendFactor(blendState.blendDest);
+				GLenum sfactorRGB = OGLTypes::asBlendFactor(_stateDesc.getBlendSrc());
+				GLenum dfactorRGB = OGLTypes::asBlendFactor(_stateDesc.getBlendDest());
 
 				glBlendFunc(sfactorRGB, dfactorRGB);
 			}
 
-			if (_dstBlendState.blendOp != blendState.blendOp)
+			if (lastStateDesc.getBlendOp() != _stateDesc.getBlendOp())
 			{
-				GLenum modeRGB = OGLTypes::asBlendOperation(blendState.blendOp);
+				GLenum modeRGB = OGLTypes::asBlendOperation(_stateDesc.getBlendOp());
 				glBlendEquation(modeRGB);
 			}
 		}
 	}
 	else
 	{
-		if (_dstBlendState.blendEnable)
+		if (lastStateDesc.getBlendEnable())
 		{
 			glDisable(GL_BLEND);
 		}
 	}
 
-	if (_dstRasterState.cullMode != rasterState.cullMode)
+	if (lastStateDesc.getCullMode() != _stateDesc.getCullMode())
 	{
-		if (rasterState.cullMode != GraphicsCullMode::GraphicsCullModeNone)
+		if (_stateDesc.getCullMode() != GraphicsCullMode::GraphicsCullModeNone)
 		{
-			GLenum mode = OGLTypes::asCullMode(rasterState.cullMode);
+			GLenum mode = OGLTypes::asCullMode(_stateDesc.getCullMode());
 			glEnable(GL_CULL_FACE);
 			glCullFace(mode);
 		}
@@ -140,164 +130,164 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 		}
 	}
 
-	if (_dstRasterState.polygonMode != rasterState.polygonMode)
+	if (lastStateDesc.getPolygonMode() != _stateDesc.getPolygonMode())
 	{
-		GLenum mode = OGLTypes::asFillMode(rasterState.polygonMode);
+		GLenum mode = OGLTypes::asFillMode(_stateDesc.getPolygonMode());
 		glPolygonMode(GL_FRONT_AND_BACK, mode);
 	}
 
-	if (_dstRasterState.scissorTestEnable != rasterState.scissorTestEnable)
+	if (lastStateDesc.getScissorTestEnable() != _stateDesc.getScissorTestEnable())
 	{
-		if (rasterState.scissorTestEnable)
+		if (_stateDesc.getScissorTestEnable())
 			glEnable(GL_SCISSOR_TEST);
 		else
 			glDisable(GL_SCISSOR_TEST);
 	}
 
-	if (_dstRasterState.srgbEnable != rasterState.srgbEnable)
+	if (lastStateDesc.getsRGBEnable() != _stateDesc.getsRGBEnable())
 	{
-		if (rasterState.srgbEnable)
+		if (_stateDesc.getsRGBEnable())
 			glEnable(GL_FRAMEBUFFER_SRGB);
 		else
 			glDisable(GL_FRAMEBUFFER_SRGB);
 	}
 
-	if (depthState.depthEnable)
+	if (_stateDesc.getDepthEnable())
 	{
-		if (!_dstDepthState.depthEnable)
+		if (!lastStateDesc.getDepthEnable())
 		{
 			glEnable(GL_DEPTH_TEST);
 		}
 
-		if (_dstDepthState.depthFunc != depthState.depthFunc)
+		if (lastStateDesc.getDepthFunc() != _stateDesc.getDepthFunc())
 		{
-			GLenum func = OGLTypes::asCompareFunction(depthState.depthFunc);
+			GLenum func = OGLTypes::asCompareFunction(_stateDesc.getDepthFunc());
 			glDepthFunc(func);
 		}
 	}
 	else
 	{
-		if (_dstDepthState.depthEnable)
+		if (lastStateDesc.getDepthEnable())
 		{
 			glDisable(GL_DEPTH_TEST);
 		}
 	}
 
-	if (_dstDepthState.depthWriteEnable != depthState.depthWriteEnable)
+	if (lastStateDesc.getDepthWriteEnable() != _stateDesc.getDepthWriteEnable())
 	{
-		GLboolean enable = depthState.depthWriteEnable ? GL_TRUE : GL_FALSE;
+		GLboolean enable = _stateDesc.getDepthWriteEnable() ? GL_TRUE : GL_FALSE;
 		glDepthMask(enable);
 	}
 
-	if (depthState.depthBiasEnable)
+	if (_stateDesc.getDepthBiasEnable())
 	{
-		if (!_dstDepthState.depthBiasEnable)
+		if (!lastStateDesc.getDepthBiasEnable())
 		{
 			glEnable(GL_POLYGON_OFFSET_FILL);
 		}
 
-		if (_dstDepthState.depthBias != depthState.depthBias ||
-			_dstDepthState.depthSlopeScaleBias != depthState.depthSlopeScaleBias)
+		if (lastStateDesc.getDepthBias() != _stateDesc.getDepthBias() ||
+			lastStateDesc.getDepthSlopeScaleBias() != _stateDesc.getDepthSlopeScaleBias())
 		{
-			glPolygonOffset(depthState.depthSlopeScaleBias, depthState.depthBias);
+			glPolygonOffset(_stateDesc.getDepthSlopeScaleBias(), _stateDesc.getDepthBias());
 		}
 	}
 	else
 	{
-		if (_dstDepthState.depthBiasEnable)
+		if (lastStateDesc.getDepthBiasEnable())
 		{
 			glDisable(GL_POLYGON_OFFSET_FILL);
 		}
 	}
 
-	if (stencilState.stencilEnable)
+	if (_stateDesc.getStencilEnable())
 	{
-		if (!_dstStencilState.stencilEnable)
+		if (!lastStateDesc.getStencilEnable())
 		{
 			glEnable(GL_STENCIL_TEST);
 		}
 
-		if (stencilState.stencilTwoEnable)
+		if (_stateDesc.getStencilTwoEnable())
 		{
-			if (_dstStencilState.stencilFunc != stencilState.stencilFunc ||
-				_dstStencilState.stencilRef != stencilState.stencilRef ||
-				_dstStencilState.stencilReadMask != stencilState.stencilReadMask)
+			if (lastStateDesc.getStencilFunc() != _stateDesc.getStencilFunc() ||
+				lastStateDesc.getStencilRef() != _stateDesc.getStencilRef() ||
+				lastStateDesc.getStencilReadMask() != _stateDesc.getStencilReadMask())
 			{
-				GLenum frontfunc = OGLTypes::asCompareFunction(stencilState.stencilFunc);
-				glStencilFuncSeparate(GL_FRONT, frontfunc, stencilState.stencilRef, stencilState.stencilReadMask);
+				GLenum frontfunc = OGLTypes::asCompareFunction(_stateDesc.getStencilFunc());
+				glStencilFuncSeparate(GL_FRONT, frontfunc, _stateDesc.getStencilRef(), _stateDesc.getStencilReadMask());
 			}
 
-			if (_dstStencilState.stencilTwoFunc != stencilState.stencilTwoFunc ||
-				_dstStencilState.stencilTwoRef != stencilState.stencilTwoRef ||
-				_dstStencilState.stencilTwoReadMask != stencilState.stencilTwoReadMask)
+			if (lastStateDesc.getStencilTwoFunc() != _stateDesc.getStencilTwoFunc() ||
+				lastStateDesc.getStencilTwoRef() != _stateDesc.getStencilTwoRef() ||
+				lastStateDesc.getStencilTwoReadMask() != _stateDesc.getStencilTwoReadMask())
 			{
-				GLenum backfunc = OGLTypes::asCompareFunction(stencilState.stencilTwoFunc);
-				glStencilFuncSeparate(GL_BACK, backfunc, stencilState.stencilTwoRef, stencilState.stencilTwoReadMask);
+				GLenum backfunc = OGLTypes::asCompareFunction(_stateDesc.getStencilTwoFunc());
+				glStencilFuncSeparate(GL_BACK, backfunc, _stateDesc.getStencilTwoRef(), _stateDesc.getStencilTwoReadMask());
 			}
 
-			if (_dstStencilState.stencilFail != _dstStencilState.stencilFail ||
-				_dstStencilState.stencilZFail != _dstStencilState.stencilZFail ||
-				_dstStencilState.stencilPass != _dstStencilState.stencilPass)
+			if (lastStateDesc.getStencilFail() != lastStateDesc.getStencilFail() ||
+				lastStateDesc.getStencilZFail() != lastStateDesc.getStencilZFail() ||
+				lastStateDesc.getStencilPass() != lastStateDesc.getStencilPass())
 			{
-				GLenum frontfail = OGLTypes::asStencilOperation(_dstStencilState.stencilFail);
-				GLenum frontzfail = OGLTypes::asStencilOperation(_dstStencilState.stencilZFail);
-				GLenum frontpass = OGLTypes::asStencilOperation(_dstStencilState.stencilPass);
+				GLenum frontfail = OGLTypes::asStencilOperation(lastStateDesc.getStencilFail());
+				GLenum frontzfail = OGLTypes::asStencilOperation(lastStateDesc.getStencilZFail());
+				GLenum frontpass = OGLTypes::asStencilOperation(lastStateDesc.getStencilPass());
 				glStencilOpSeparate(GL_FRONT, frontfail, frontzfail, frontpass);
 			}
 
-			if (_dstStencilState.stencilTwoFail != _dstStencilState.stencilTwoFail ||
-				_dstStencilState.stencilTwoZFail != _dstStencilState.stencilTwoZFail ||
-				_dstStencilState.stencilTwoPass != _dstStencilState.stencilTwoPass)
+			if (lastStateDesc.getStencilTwoFail() != lastStateDesc.getStencilTwoFail() ||
+				lastStateDesc.getStencilTwoZFail() != lastStateDesc.getStencilTwoZFail() ||
+				lastStateDesc.getStencilTwoPass() != lastStateDesc.getStencilTwoPass())
 			{
-				GLenum backfail = OGLTypes::asStencilOperation(_dstStencilState.stencilTwoFail);
-				GLenum backzfail = OGLTypes::asStencilOperation(_dstStencilState.stencilTwoZFail);
-				GLenum backpass = OGLTypes::asStencilOperation(_dstStencilState.stencilTwoPass);
+				GLenum backfail = OGLTypes::asStencilOperation(lastStateDesc.getStencilTwoFail());
+				GLenum backzfail = OGLTypes::asStencilOperation(lastStateDesc.getStencilTwoZFail());
+				GLenum backpass = OGLTypes::asStencilOperation(lastStateDesc.getStencilTwoPass());
 				glStencilOpSeparate(GL_BACK, backfail, backzfail, backpass);
 			}
 
-			if (_dstStencilState.stencilWriteMask != stencilState.stencilWriteMask ||
-				_dstStencilState.stencilTwoWriteMask != stencilState.stencilTwoWriteMask)
+			if (lastStateDesc.getStencilWriteMask() != _stateDesc.getStencilWriteMask() ||
+				lastStateDesc.getStencilTwoWriteMask() != _stateDesc.getStencilTwoWriteMask())
 			{
-				glStencilMaskSeparate(GL_FRONT, stencilState.stencilWriteMask);
-				glStencilMaskSeparate(GL_BACK, stencilState.stencilTwoWriteMask);
+				glStencilMaskSeparate(GL_FRONT, _stateDesc.getStencilWriteMask());
+				glStencilMaskSeparate(GL_BACK, _stateDesc.getStencilTwoWriteMask());
 			}
 		}
 		else
 		{
-			if (_dstStencilState.stencilFunc != stencilState.stencilFunc ||
-				_dstStencilState.stencilRef != stencilState.stencilRef ||
-				_dstStencilState.stencilReadMask != stencilState.stencilReadMask)
+			if (lastStateDesc.getStencilFunc() != _stateDesc.getStencilFunc() ||
+				lastStateDesc.getStencilRef() != _stateDesc.getStencilRef() ||
+				lastStateDesc.getStencilReadMask() != _stateDesc.getStencilReadMask())
 			{
-				GLenum func = OGLTypes::asCompareFunction(stencilState.stencilFunc);
-				glStencilFunc(func, stencilState.stencilRef, stencilState.stencilReadMask);
+				GLenum func = OGLTypes::asCompareFunction(_stateDesc.getStencilFunc());
+				glStencilFunc(func, _stateDesc.getStencilRef(), _stateDesc.getStencilReadMask());
 			}
 
-			if (_dstStencilState.stencilFail != stencilState.stencilFail ||
-				_dstStencilState.stencilZFail != stencilState.stencilZFail ||
-				_dstStencilState.stencilPass != stencilState.stencilPass)
+			if (lastStateDesc.getStencilFail() != _stateDesc.getStencilFail() ||
+				lastStateDesc.getStencilZFail() != _stateDesc.getStencilZFail() ||
+				lastStateDesc.getStencilPass() != _stateDesc.getStencilPass())
 			{
-				GLenum fail = OGLTypes::asStencilOperation(stencilState.stencilFail);
-				GLenum zfail = OGLTypes::asStencilOperation(stencilState.stencilZFail);
-				GLenum pass = OGLTypes::asStencilOperation(stencilState.stencilPass);
+				GLenum fail = OGLTypes::asStencilOperation(_stateDesc.getStencilFail());
+				GLenum zfail = OGLTypes::asStencilOperation(_stateDesc.getStencilZFail());
+				GLenum pass = OGLTypes::asStencilOperation(_stateDesc.getStencilPass());
 				glStencilOp(fail, zfail, pass);
 			}
 
-			if (_dstStencilState.stencilWriteMask != stencilState.stencilWriteMask)
+			if (lastStateDesc.getStencilWriteMask() != _stateDesc.getStencilWriteMask())
 			{
-				glStencilMask(stencilState.stencilWriteMask);
+				glStencilMask(_stateDesc.getStencilWriteMask());
 			}
 		}
 	}
 	else
 	{
-		if (_dstStencilState.stencilEnable)
+		if (lastStateDesc.getStencilEnable())
 		{
 			glDisable(GL_STENCIL_TEST);
 		}
 	}
 }
 
-const GraphicsStateDesc& 
+const GraphicsStateDesc&
 OGLGraphicsState::getGraphicsStateDesc() const noexcept
 {
 	return _stateDesc;

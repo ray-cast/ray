@@ -93,7 +93,7 @@ struct TIoRange {
     int index;
 };
 
-// An IO range is a 2-D rectangle; the set of (binding, offset) pairs all lying
+// An offset range is a 2-D rectangle; the set of (binding, offset) pairs all lying
 // within the same binding and offset range.
 struct TOffsetRange {
     TOffsetRange(TRange binding, TRange offset)
@@ -124,11 +124,13 @@ class TVariable;
 //
 class TIntermediate {
 public:
-    explicit TIntermediate(EShLanguage l, int v = 0, EProfile p = ENoProfile) : language(l), treeRoot(0), profile(p), version(v), spv(0),
+    explicit TIntermediate(EShLanguage l, int v = 0, EProfile p = ENoProfile) :
+        source(EShSourceNone), language(l), profile(p), version(v), spv(0), treeRoot(0),
         numMains(0), numErrors(0), numPushConstants(0), recursive(false),
         invocations(TQualifier::layoutNotSet), vertices(TQualifier::layoutNotSet), inputPrimitive(ElgNone), outputPrimitive(ElgNone),
         pixelCenterInteger(false), originUpperLeft(false),
-        vertexSpacing(EvsNone), vertexOrder(EvoNone), pointMode(false), earlyFragmentTests(false), depthLayout(EldNone), depthReplacing(false), blendEquations(0), xfbMode(false)
+        vertexSpacing(EvsNone), vertexOrder(EvoNone), pointMode(false), earlyFragmentTests(false), depthLayout(EldNone), depthReplacing(false), blendEquations(0),
+        multiStream(false), xfbMode(false)
     {
         localSize[0] = 1;
         localSize[1] = 1;
@@ -142,8 +144,12 @@ public:
 
     bool postProcess(TIntermNode*, EShLanguage);
     void output(TInfoSink&, bool tree);
-	void removeTree();
+    void removeTree();
 
+    void setSource(EShSource s) { source = s; }
+    EShSource getSource() const { return source; }
+    void setEntryPoint(const char* ep) { entryPoint = ep; }
+    const std::string& getEntryPoint() const { return entryPoint; }
     void setVersion(int v) { version = v; }
     int getVersion() const { return version; }
     void setProfile(EProfile p) { profile = p; }
@@ -161,10 +167,10 @@ public:
     int getNumErrors() const { return numErrors; }
     void addPushConstantCount() { ++numPushConstants; }
     bool isRecursive() const { return recursive; }
-    
-    TIntermSymbol* addSymbol(int Id, const TString&, const TType&, const TConstUnionArray&, const TSourceLoc&);
-    TIntermSymbol* addSymbol(int Id, const TString&, const TType&, const TSourceLoc&);
+
+    TIntermSymbol* addSymbol(const TVariable&);
     TIntermSymbol* addSymbol(const TVariable&, const TSourceLoc&);
+    TIntermSymbol* addSymbol(const TType&, const TSourceLoc&);
     TIntermTyped* addConversion(TOperator, const TType&, TIntermTyped*) const;
     TIntermTyped* addBinaryMath(TOperator, TIntermTyped* left, TIntermTyped* right, TSourceLoc);
     TIntermTyped* addAssign(TOperator op, TIntermTyped* left, TIntermTyped* right, TSourceLoc);
@@ -267,9 +273,12 @@ public:
         localSizeSpecId[dim] = id;
         return true;
     }
+    int getLocalSizeSpecId(int dim) const { return localSizeSpecId[dim]; }
 
     void setXfbMode() { xfbMode = true; }
     bool getXfbMode() const { return xfbMode; }
+    void setMultiStream() { multiStream = true; }
+    bool isMultiStream() const { return multiStream; }
     bool setOutputPrimitive(TLayoutGeometry p)
     {
         if (outputPrimitive != ElgNone)
@@ -307,6 +316,7 @@ public:
 
     int addUsedLocation(const TQualifier&, const TType&, bool& typeCollision);
     int addUsedOffsets(int binding, int offset, int numOffsets);
+    bool addUsedConstantId(int id);
     int computeTypeLocationSize(const TType&) const;
 
     bool setXfbBufferStride(int buffer, unsigned stride)
@@ -321,6 +331,7 @@ public:
     static int getBaseAlignment(const TType&, int& size, int& stride, bool std140, bool rowMajor);
 
 protected:
+    TIntermSymbol* addSymbol(int Id, const TString&, const TType&, const TConstUnionArray&, TIntermTyped* subtree, const TSourceLoc&);
     void error(TInfoSink& infoSink, const char*);
     void mergeBodies(TInfoSink&, TIntermSequence& globals, const TIntermSequence& unitGlobals);
     void mergeLinkerObjects(TInfoSink&, TIntermSequence& linkerObjects, const TIntermSequence& unitLinkerObjects);
@@ -331,12 +342,16 @@ protected:
     TIntermSequence& findLinkerObjects() const;
     bool userOutputUsed() const;
     static int getBaseAlignmentScalar(const TType&, int& size);
+    bool isSpecializationOperation(const TIntermOperator&) const;
 
-    const EShLanguage language;
-    TIntermNode* treeRoot;
+
+    const EShLanguage language;  // stage, known at construction time
+    EShSource source;            // source language, known a bit later
+    std::string entryPoint;
     EProfile profile;
     int version;
     int spv;
+    TIntermNode* treeRoot;
     std::set<std::string> requestedExtensions;  // cumulation of all enabled or required extensions; not connected to what subset of the shader used them
     TBuiltInResource resources;
     int numMains;
@@ -359,6 +374,7 @@ protected:
     bool depthReplacing;
     int blendEquations;        // an 'or'ing of masks of shifts of TBlendEquationShift
     bool xfbMode;
+    bool multiStream;
 
     typedef std::list<TCall> TGraph;
     TGraph callGraph;
@@ -367,6 +383,7 @@ protected:
     std::vector<TIoRange> usedIo[4];        // sets of used locations, one for each of in, out, uniform, and buffers
     std::vector<TOffsetRange> usedAtomics;  // sets of bindings used by atomic counters
     std::vector<TXfbBuffer> xfbBuffers;     // all the data we need to track per xfb buffer
+    std::unordered_set<int> usedConstantId; // specialization constant ids used
 
 private:
     void operator=(TIntermediate&); // prevent assignments

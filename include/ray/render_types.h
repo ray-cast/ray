@@ -38,6 +38,7 @@
 #define _H_RENDER_TYPES_H_
 
 #include <ray/graphics_types.h>
+#include <ray/model.h>
 
 _NAME_BEGIN
 
@@ -50,9 +51,6 @@ typedef std::shared_ptr<class MaterialLoader> MaterialLoaderPtr;
 typedef std::shared_ptr<class MaterialManager> MaterialManagerPtr;
 typedef std::shared_ptr<class RenderObject> RenderObjectPtr;
 typedef std::shared_ptr<class RenderPostProcess> RenderPostProcessPtr;
-typedef std::shared_ptr<class RenderPipelineController> RenderPipelineControllerPtr;
-typedef std::shared_ptr<class RenderPipeline> RenderPipelinePtr;
-typedef std::shared_ptr<class RenderPipelineManager> RenderPipelineManagerPtr;
 typedef std::shared_ptr<class RenderDataManager> RenderDataManagerPtr;
 typedef std::shared_ptr<class RenderMesh> RenderMeshPtr;
 typedef std::shared_ptr<class RenderSystem> RenderSystemPtr;
@@ -60,6 +58,10 @@ typedef std::shared_ptr<class RenderBuffer> RenderBufferPtr;
 typedef std::shared_ptr<class RenderScene> RenderScenePtr;
 typedef std::shared_ptr<class Camera> CameraPtr;
 typedef std::shared_ptr<class Light> LightPtr;
+typedef std::shared_ptr<class RenderPipeline> RenderPipelinePtr;
+typedef std::shared_ptr<class RenderPipelineDevice> RenderPipelineDevicePtr;
+typedef std::shared_ptr<class RenderPipelineController> RenderPipelineControllerPtr;
+typedef std::shared_ptr<class RenderPipelineManager> RenderPipelineManagerPtr;
 
 typedef std::weak_ptr<class Material> MaterialWeakPtr;
 typedef std::weak_ptr<class MaterialPass> MaterialPassWeakPtr;
@@ -71,7 +73,7 @@ typedef std::weak_ptr<class MaterialManager> MaterialManagerWeakPtr;
 typedef std::weak_ptr<class RenderObject> RenderObjectWeakPtr;
 typedef std::weak_ptr<class RenderPostProcess> RenderPostProcessWeakPtr;
 typedef std::weak_ptr<class RenderPipelineController> RenderPipelineControllerWeakPtr;
-typedef std::weak_ptr<class RenderPipeline> RenderPipelineWeakPtr;
+typedef std::weak_ptr<class RenderPipelineDevice> RenderPipelineWeakPtr;
 typedef std::weak_ptr<class RenderPipelineManager> RenderPipelineManagerWeakPtr;
 typedef std::weak_ptr<class RenderDataManager> RenderDataManagerWeakPtr;
 typedef std::weak_ptr<class RenderMesh> RenderMeshWeakPtr;
@@ -138,10 +140,8 @@ enum LightType
 	LightTypeAmbient,
 	LightTypePoint,
 	LightTypeSpot,
-	LightTypeArea,
-	LightTypeHemiSphere,
 	LightTypeBeginRange = LightTypeSun,
-	LightTypeEndRange = LightTypeHemiSphere,
+	LightTypeEndRange = LightTypeSpot,
 	LightTypeRangeSize = (LightTypeEndRange - LightTypeBeginRange + 1),
 	LightTypeMaxEnum = 0x7FFFFFFF
 };
@@ -149,6 +149,7 @@ enum LightType
 enum RenderQueue
 {
 	RenderQueueCustom,
+	RenderQueueShadow,
 	RenderQueueOpaque,
 	RenderQueueTransparent,
 	RenderQueueLighting,

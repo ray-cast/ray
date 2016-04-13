@@ -69,6 +69,18 @@ void TIntermediate::error(TInfoSink& infoSink, const char* message)
 //
 void TIntermediate::merge(TInfoSink& infoSink, TIntermediate& unit)
 {
+    if (source == EShSourceNone)
+        source = unit.source;
+
+    if (source != unit.source)
+        error(infoSink, "can't link compilation units from different source languages");
+
+    if (source == EShSourceHlsl && unit.entryPoint.size() > 0) {
+        if (entryPoint.size() > 0)
+            error(infoSink, "can't handle multiple entry points per stage");
+        else
+            entryPoint = unit.entryPoint;
+    }
     numMains += unit.numMains;
     numErrors += unit.numErrors;
     numPushConstants += unit.numPushConstants;
@@ -355,8 +367,8 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
 // Also, lock in defaults of things not set, including array sizes.
 //
 void TIntermediate::finalCheck(TInfoSink& infoSink)
-{   
-    if (numMains < 1)
+{
+    if (source == EShSourceGlsl && numMains < 1)
         error(infoSink, "Missing entry point: Each stage requires one \"void main()\" entry point");
 
     if (numPushConstants > 1)
@@ -697,6 +709,19 @@ int TIntermediate::addUsedOffsets(int binding, int offset, int numOffsets)
     usedAtomics.push_back(range);
 
     return -1; // no collision
+}
+
+// Accumulate used constant_id values.
+//
+// Return false is one was already used.
+bool TIntermediate::addUsedConstantId(int id)
+{
+    if (usedConstantId.find(id) != usedConstantId.end())
+        return false;
+
+    usedConstantId.insert(id);
+
+    return true;
 }
 
 // Recursively figure out how many locations are used up by an input or output type.

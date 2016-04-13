@@ -1157,7 +1157,7 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 	this->clear();
 
 	_vertices.push_back(Vector3(0, 0, 0));
-	_vertices.push_back(Vector3(0, height, 0));
+	_vertices.push_back(Vector3(0, 0, -height));
 
 	_texcoords.push_back(Vector2(0, 0));
 	_texcoords.push_back(Vector2(1, 1));
@@ -1173,12 +1173,12 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 
 		Vector3 v;
 		v.x = radius * cos;
-		v.y = 0;
-		v.z = radius * sin;
+		v.y = -radius * sin;
+		v.z = 0;
 
 		_vertices.push_back(v);
 
-		_texcoords.push_back(Vector2((v.x / radius + 1), (v.z / radius + 1) / 2));
+		_texcoords.push_back(Vector2((v.x / radius + 1), (v.y / radius + 1) / 2));
 	}
 
 	for (std::uint32_t i = 2; i <= segments + 1; i++)
@@ -1187,9 +1187,9 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 		std::uint32_t v2 = 0;
 		std::uint32_t v3 = i + 1;
 
-		_faces.push_back(v3);
-		_faces.push_back(v2);
 		_faces.push_back(v1);
+		_faces.push_back(v2);
+		_faces.push_back(v3);
 	}
 
 	for (std::uint32_t i = 2; i <= segments + 1; i++)
@@ -1198,9 +1198,9 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 		std::uint32_t v2 = 1;
 		std::uint32_t v3 = i + 1;
 
-		_faces.push_back(v1);
-		_faces.push_back(v2);
 		_faces.push_back(v3);
+		_faces.push_back(v2);
+		_faces.push_back(v1);
 	}
 
 	this->computeVertexNormals();

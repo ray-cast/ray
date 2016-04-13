@@ -287,7 +287,12 @@ VulkanShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 	else if (shaderDesc.getType() == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
 		flags = HLSLCC_FLAG_TESS_ENABLED;
 
-	if (!TranslateHLSLFromMem(shaderDesc.getByteCodes().data(), flags, GLLang::LANG_DEFAULT, 0, &dependency, &shader))
+	GlExtensions extensions;
+	extensions.ARB_shading_language_420pack = true;
+	extensions.ARB_explicit_attrib_location = false;
+	extensions.ARB_explicit_uniform_location = true;
+
+	if (!TranslateHLSLFromMem(shaderDesc.getByteCodes().data(), flags, GLLang::LANG_DEFAULT, &extensions, &dependency, &shader))
 	{
 		VK_PLATFORM_LOG("Can't conv bytecodes to glsl.");
 		return false;
@@ -482,7 +487,7 @@ VulkanShader::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *psh
 	shader.setStrings(shaderStrings, 1);
 
 	EShMessages messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
-	if (!shader.parse(&resources, 100, false, messages))
+	if (!shader.parse(&resources, 330, false, messages))
 	{
 		VK_PLATFORM_LOG(shader.getInfoLog());
 		VK_PLATFORM_LOG(shader.getInfoDebugLog());
@@ -493,8 +498,8 @@ VulkanShader::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *psh
 
 	if (!program.link(messages)) 
 	{
-		VK_PLATFORM_LOG(shader.getInfoLog());
-		VK_PLATFORM_LOG(shader.getInfoDebugLog());
+		VK_PLATFORM_LOG(program.getInfoLog());
+		VK_PLATFORM_LOG(program.getInfoDebugLog());
 		return false;
 	}
 
@@ -656,16 +661,22 @@ VulkanShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 		program.addShader(shaders[stage]);
 	}
 
-	program.link(EShMessages::EShMsgDefault);
+	if (!program.link(EShMessages::EShMsgDefault))
+	{
+		VK_PLATFORM_LOG(program.getInfoLog());
+		VK_PLATFORM_LOG(program.getInfoDebugLog());
+		return false;
+	}
+
 	program.buildReflection();
 
-	std::size_t numUniform = program.getNumLiveUniformVariables();
-	for (std::size_t i = 0; i < numUniform; i++)
+	std::size_t numUniforms = program.getNumLiveUniformVariables();
+	for (std::size_t i = 0; i < numUniforms; i++)
 	{
 		auto name = program.getUniformName(i);
 		auto index = program.getUniformIndex(name);
-		auto type = program.getUniformType(index);
-		auto offset = program.getUniformBufferOffset(index);
+		auto type = program.getUniformType(i);
+		auto offset = program.getUniformBufferOffset(i);
 
 		auto uniformType = toGraphicsUniformType(name, type);
 		if (uniformType == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
@@ -686,8 +697,11 @@ VulkanShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 	for (std::size_t i = 0; i < numUniformBlock; i++)
 	{
 		auto index = program.getUniformBlockIndex(i);
-		auto name = program.getUniformBlockName(index);
-		auto size = program.getUniformBlockSize(index);
+		auto name = program.getUniformBlockName(i);
+		auto size = program.getUniformBlockSize(i);
+
+		if (index == -1)
+			continue;
 
 		auto uniformBlock = std::make_shared<VulkanGraphicsUniformBlock>();
 		uniformBlock->setName(name);
@@ -697,8 +711,8 @@ VulkanShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 
 		if (strncmp(name, "Globals", 7) == 0)
 		{
-			std::size_t numUniform = program.getNumLiveUniformVariables();
-			for (std::size_t i = 0; i < numUniform; i++)
+			std::size_t numUniformsInBlock = program.getNumLiveUniformVariables();
+			for (std::size_t i = 0; i < numUniformsInBlock; i++)
 			{
 				auto name = program.getUniformName(i);
 				auto index = program.getUniformIndex(name);
@@ -762,7 +776,7 @@ VulkanShaderObject::toGraphicsUniformType(const std::string& name, int type) noe
 		type == GL_SAMPLER_2D_ARRAY || type == GL_SAMPLER_CUBE ||
 		type == GL_SAMPLER_2D_ARRAY_SHADOW || type == GL_SAMPLER_CUBE_SHADOW)
 	{
-		return GraphicsUniformType::GraphicsUniformTypeStorageImage;
+		return GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler;
 	}
 	else
 	{
@@ -823,6 +837,34 @@ VulkanShaderObject::toGraphicsUniformType(const std::string& name, int type) noe
 				return GraphicsUniformType::GraphicsUniformTypeInt4Array;
 			else
 				return GraphicsUniformType::GraphicsUniformTypeInt4;
+		}
+		else if (type == GL_UNSIGNED_INT)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeUIntArray;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeUInt;
+		}
+		else if (type == GL_UNSIGNED_INT_VEC2)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeUInt2Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeUInt2;
+		}
+		else if (type == GL_UNSIGNED_INT_VEC3)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeUInt3Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeUInt3;
+		}
+		else if (type == GL_UNSIGNED_INT_VEC4)
+		{
+			if (isArray)
+				return GraphicsUniformType::GraphicsUniformTypeUInt4Array;
+			else
+				return GraphicsUniformType::GraphicsUniformTypeUInt4;
 		}
 		else if (type == GL_FLOAT)
 		{

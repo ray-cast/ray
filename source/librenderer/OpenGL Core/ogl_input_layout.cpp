@@ -58,9 +58,6 @@ OGLInputLayout::setup(const GraphicsInputLayoutDesc& inputLayout) noexcept
 {
 	assert(!_vao);
 
-	if (OGLTypes::asIndexType(inputLayout.getIndexType()) == GL_INVALID_ENUM)
-		return false;
-
 	auto& component = inputLayout.getGraphicsVertexLayouts();
 	for (auto& it : component)
 	{
@@ -172,7 +169,6 @@ void
 OGLInputLayout::bindIbo(OGLGraphicsDataPtr ibo) noexcept
 {
 	assert(ibo);
-	assert(_inputLayoutDesc.getIndexType() != GraphicsIndexType::GraphicsIndexTypeNone);
 
 	if (_ibo != ibo)
 	{

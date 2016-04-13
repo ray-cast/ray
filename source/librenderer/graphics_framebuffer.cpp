@@ -215,13 +215,13 @@ GraphicsFramebufferDesc::getSharedStencilTexture() const noexcept
 void
 GraphicsFramebufferDesc::setGraphicsFramebufferLayout(GraphicsFramebufferLayoutPtr layout) noexcept
 {
-	_renderTextureLayout = layout;
+	_framebufferLayout = layout;
 }
 
 GraphicsFramebufferLayoutPtr 
 GraphicsFramebufferDesc::getGraphicsFramebufferLayout() const noexcept
 {
-	return _renderTextureLayout;
+	return _framebufferLayout;
 }
 
 GraphicsFramebufferLayout::GraphicsFramebufferLayout() noexcept

@@ -38,6 +38,7 @@
 #include "mygui_renderer.h"
 #include "mygui_texture.h"
 #include "mygui_buffer.h"
+#include <ray/render_pipeline.h>
 
 _NAME_BEGIN
 
@@ -189,14 +190,18 @@ MyGuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture
 	if (buffer)
 	{
 		MyGuiTexture* texture = static_cast<MyGuiTexture*>(_texture);
-		_materialDecal->assign(texture ? texture->getTexture() : nullptr);
+
+		if (texture)
+			_materialDecal->assign(texture->getTexture());
+		else
+			_materialDecal->assign(nullptr);
 
 		auto renderBuffer = buffer->getBuffer();
 		if (renderBuffer)
 		{
 			GraphicsIndirect renderable;
 			renderable.numVertices = _count;
-			RenderSystem::instance()->getRenderPipeline()->drawMesh(_materialPass, renderBuffer, renderable);
+			RenderSystem::instance()->drawMesh(_materialPass, renderBuffer, renderable);
 		}
 		else
 		{

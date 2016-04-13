@@ -83,7 +83,7 @@ OGLDevice::createSwapchain(const GraphicsSwapchainDesc& desc) noexcept
 }
 
 GraphicsContextPtr
-OGLDevice::createGraphicsContext(const GraphicsContextDesc& desc) noexcept
+OGLDevice::createDeviceContext(const GraphicsContextDesc& desc) noexcept
 {
 	auto context = std::make_shared<OGLDeviceContext>();
 	context->setDevice(this->downcast<OGLDevice>());
@@ -139,6 +139,16 @@ OGLDevice::createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept
 	framebuffer->setDevice(this->downcast<OGLDevice>());
 	if (framebuffer->setup(desc))
 		return framebuffer;
+	return nullptr;
+}
+
+GraphicsFramebufferLayoutPtr
+OGLDevice::createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept
+{
+	auto framebufferLayout = std::make_shared<OGLFramebufferLayout>();
+	framebufferLayout->setDevice(this->downcast<OGLDevice>());
+	if (framebufferLayout->setup(desc))
+		return framebufferLayout;
 	return nullptr;
 }
 

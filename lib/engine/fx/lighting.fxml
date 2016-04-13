@@ -7,7 +7,7 @@
         float fresnelSchlick(float LdotH, float specular)
         {
             // https://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel
-            // pow(1 - LdotH, 5)
+            // pow(1.0 - LdotH, 5)
             // = exp2(-5.55473 * (LdotH * LdotH)- 6.98316 * LdotH))
             // = exp2((-5.55473 * LdotH - 6.98316) * LdotH)
             return specular + (1.0f - specular) * exp2((-5.55473 * LdotH - 6.98316) * LdotH);
@@ -28,61 +28,43 @@
             return fresnelSchlick(dot(L, H), specular);
         }
 
-        float smoothnessTerm(float NdotH, float smoothness)
+        float distributionTermBloackOpsII(float NdotH, float gloss)
         {
+            // http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_slides_v2.pdf
             // https://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel
             // pow(NdotH, smoothness)
             // = exp(-smoothness*(1-NdotH))
             // = exp2(smoothness / InvLog2 * NdotH - smoothness / InvLog2)
-            return (smoothness * 0.125 + 0.25) * exp2(smoothness * InvLog2 * NdotH - smoothness * InvLog2);
+            float smoothness = pow(8192.0f, gloss);
+            return ((smoothness + 2) / 8) * exp2(smoothness * InvLog2 * NdotH - smoothness * InvLog2);
         }
 
-        float geometricShadowingSchlickBeckmann(float NdotV, float k)
+        float geometricShadowingSchlickSmithBlackOpsII(float gloss, float VdotH)
         {
-            return NdotV / (NdotV * (1.0f - k) + k);
-        }
-
-        float geometricShadowingSmith(float gloss, float NdotL, float NdotV, float LdotH)
-        {
-            // http://www.filmicworlds.com/2014/04/21/optimizing-ggx-shaders-with-dotlh/
-            // geometricShadowingSchlickBeckmann(NdotL, k) * geometricShadowingSchlickBeckmann(NdotV, k);
-            // = geometricShadowingSchlickBeckmann(LdotH, k) * geometricShadowingSchlickBeckmann(LdotH, k);
+            // http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_slides_v2.pdf
             float k = min(1.0f, gloss + 0.545f);
-            float k2 = k * k;
-            float invK2 = 1.0f - k2;
-            return 1.0f / (LdotH * LdotH * invK2 + k2);
+            return 1 / (k * VdotH * VdotH + 1 - k);
         }
 
         float3 brdfLambert(float3 N, float3 L, float3 diffuse)
         {
-            float nl = dot(N, L);
-            return diffuse * max(0.0f, nl);
-        }
-
-        float skinBeckmann(float ndoth, float m)
-        {
-            float alpha = acos(ndoth);
-            float ta = tan( alpha );
-            float val = 1.0f / (m * m * pow(ndoth,4.0f)) * exp(-(ta * ta) / (m * m ));
-            return val;
+            return diffuse * max(0.0f, dot(N, L));
         }
 
         float brdfSpecular(float3 N, float3 L, float3 V, float gloss, float specular)
         {
-            float nl = max(0.0f, dot(N, L));
+            float nl = max(0.0, dot(N, L));
             if (nl > 0.0f)
             {
                 float3 H = normalize(L + V);
 
                 float nh = max(0.0f, dot(H, N));
-                float nv = max(0.0f, dot(V, N));
                 float lh = max(0.0f, dot(L, H));
-                float smoothness = pow(8192.0f, gloss);
+                float vh = max(0.0f, dot(V, H));
 
-                float S = skinBeckmann(nh, gloss);
-                float D = smoothnessTerm(nh, smoothness);
+                float D = distributionTermBloackOpsII(nh, gloss);
                 float F = fresnelSchlick(lh, specular);
-                float G = geometricShadowingSmith(gloss, nl, nv, lh);
+                float G = geometricShadowingSchlickSmithBlackOpsII(gloss, vh);
 
                 return max(0.0f, D * F * G * nl);
             }
@@ -136,30 +118,28 @@
             return specular * envBRDF.x + envBRDF.y;
         }
 
-        float rimLighting(float NdotV, float rimPower)
+        float attenuationTerm(float3 lightPosition, float3 P, float3 atten)
         {
-            return (1.0f - NdotV) * rimPower;// * (1 - LdoV);
-        }
-
-        float attenuationTerm(float3 lightPosition, float3 world, float3 atten)
-        {
-            float3 v = lightPosition - world;
+            float3 v = lightPosition - P;
             float d2 = dot(v, v);
             float d = sqrt(d2);
-            return 1.0f / dot(atten, float3(1.0f, d, d2));
+            return 1 / dot(atten, float3(1, d, d2));
         }
 
-        float directionLighting(float3 P, float3 N, float3 L, float3 lightAttenuation)
+        float spotLighting(float3 lightPosition, float3 lightDirection, float2 cosOuterInner, float3 pos)
         {
-            return max(dot(N, L), 0.0f);
+            // cosOuterInner is (cos_outer_cone, cos_inner_cone)
+            float3 v = normalize(pos - lightPosition);
+            float spotFactor = dot(v, lightDirection);
+            return smoothstep(cosOuterInner.x, cosOuterInner.y, spotFactor);
         }
 
-        float spotLighting(float3 spotPosition, float3 P, float3 spotDirection, float spotInnerCone, float spotOuterCone, float3 atten)
+        float spotLighting(float3 lightPosition, float3 lightDirection, float2 cosOuterInner, float3 atten, float3 P)
         {
-            float3 V = normalize(P - spotPosition);
-            float spotFactor = dot(V, spotDirection);
-            float attenuation = smoothstep(spotOuterCone, spotInnerCone, spotFactor);
-            return attenuation * attenuationTerm(spotPosition, P, atten);
+            float3 V = normalize(P - lightPosition);
+            float spotFactor = dot(V, lightDirection);
+            float attenuation = smoothstep(cosOuterInner.x, cosOuterInner.y, spotFactor);
+            return attenuation * attenuationTerm(lightPosition, P, atten);
         }
 
         float pointLighting(float3 lightPosition, float3 world, float3 atten)
@@ -169,18 +149,42 @@
             return attenuation;
         }
 
-        float shadowLighting(Texture2D shadowMap, float4x4 shadowMatrix, float shadowFactor, float shadowBias, float3 worldPosition)
+        float rimLighting(float3 lightColor, float LdotN, float NdotV, float LdotH)
         {
-            float4 proj = mul(float4(worldPosition, 1.0), shadowMatrix);
-            proj /= proj.w;
-            proj = proj * 0.5 + 0.5;
+            float rim = saturate(1 - NdotV * 1.5);
+            float rimPower = max(0,dot(NdotV, -LdotH));
+            return rim * (1.0f - NdotV) * rimPower;
+        }
 
-            float d1 = shadowMap.Sample(PointClamp, proj.xy).r;
-            float d2 = proj.z;
-            float d = exp(shadowFactor * (d1 - d2 + shadowBias));
+        float skinBeckmann(float ndoth, float m)
+        {
+            float alpha = acos(ndoth);
+            float ta = tan( alpha );
+            float val = 1.0f / (m * m * pow(ndoth,4.0f)) * exp(-(ta * ta) / (m * m ));
+            return val;
+        }
+
+        float shadowLighting(Texture2D shadowMap, float4x4 shadowEye2LightViewProject, float len, float4 shadowFactor, float3 viewPosition)
+        {
+            // shadowFactor.xyz is shadow clip constant
+            // shadowFactor.w is shadow scale
+
+            float4 proj = mul(float4(viewPosition, 1.0), shadowEye2LightViewProject);
+            proj /= proj.w;
+            proj.xy = PosToCoord(proj.xy);
+
+            float d1 = linearDepth(shadowFactor.xyz, shadowMap.Sample(LinearClamp, proj.xy).r);
+            float d2 = len;
+            float d = exp(shadowFactor.w * (d1 - d2));
             float shadow = saturate(d);
 
             return shadow;
+        }
+
+        float shadowLighting(Texture2D shadowMap, float4x4 shadowEye2LightViewProject, float4 shadowEye2LightView, float4 shadowFactor, float3 viewPosition)
+        {
+            float len = dot(float4(viewPosition, 1.0), shadowEye2LightView);
+            return shadowLighting(shadowMap, shadowEye2LightViewProject, len, shadowFactor, viewPosition);
         }
 
         float shadowLighting(Texture2DArray shadowMap, float4x4 shadowMatrix, float shadowFactor, float shadowBias, float3 worldPosition, int index)

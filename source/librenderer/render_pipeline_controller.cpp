@@ -38,9 +38,10 @@
 
 _NAME_BEGIN
 
+__ImplementSubInterface(RenderPipelineController, rtti::Interface, "RenderPipelineController")
+
 RenderPipelineController::RenderPipelineController() noexcept
-	: _active(false)
-	, _renderPipeline(nullptr)
+	: _renderPipeline(nullptr)
 {
 }
 
@@ -49,57 +50,27 @@ RenderPipelineController::~RenderPipelineController() noexcept
 }
 
 void
-RenderPipelineController::setActive(bool active) except
-{
-	if (_active != active)
-	{
-		if (active)
-			this->onActivate(*_renderPipeline);
-		else
-			this->onDeactivate(*_renderPipeline);
-
-		_active = active;
-	}
-}
-
-bool
-RenderPipelineController::getActive() const noexcept
-{
-	return _active;
-}
-
-void
-RenderPipelineController::onActivate(RenderPipeline&) except
+RenderPipelineController::onResolutionChangeBefore(RenderPipeline&) noexcept
 {
 }
 
 void
-RenderPipelineController::onDeactivate(RenderPipeline&) except
+RenderPipelineController::onResolutionChangeAfter(RenderPipeline&) noexcept
 {
 }
 
 void
-RenderPipelineController::onResolutionChangeBefore(RenderPipeline&) except
-{
-}
-
-void
-RenderPipelineController::onResolutionChangeAfter(RenderPipeline&) except
-{
-}
-
-void
-RenderPipelineController::onRenderPre(RenderPipeline& pipeline) except
+RenderPipelineController::onRenderPre(RenderPipeline& pipeline) noexcept
 {
 }
 
 void 
-RenderPipelineController::onRenderPipeline(RenderPipeline& pipeline) except
+RenderPipelineController::onRenderPipeline(RenderPipeline& pipeline, const CameraPtr& camera) noexcept
 {
 }
 
 void
-RenderPipelineController::onRenderPost(RenderPipeline& pipeline) except
+RenderPipelineController::onRenderPost(RenderPipeline& pipeline) noexcept
 {
 }
 

@@ -184,6 +184,17 @@ void rayUpdate() noexcept
 
 int main(int argc, const char* argv[]) noexcept
 {
+	ray::float4 world(0, 0, 0, 1.0);
+
+	ray::Matrix4x4 camera = ray::Matrix4x4().makePerspective_lh(45, 1.0, 0.1, 100) * ray::Matrix4x4().makeLookAt_lh(ray::float3(0, 0, 1), ray::float3(0, 0, -1), ray::float3(0, 1, 0));
+	ray::Matrix4x4 cameraInverse = camera;
+	cameraInverse.inverse();
+	ray::Matrix4x4 light = ray::Matrix4x4().makePerspective_lh(45, 1.0, 0.1, 100) * ray::Matrix4x4().makeLookAt_lh(ray::float3(0, 1, 0), ray::float3(0, 0, 0), ray::float3(0, 1, 0));
+
+	ray::float4 a = world * camera;
+	ray::float4 b = world * light;
+	ray::float4 c = a * cameraInverse * light;
+
 	if (argc != 0)
 	{
 		if (ray::fcntl::access(argv[0], 0) == 0)

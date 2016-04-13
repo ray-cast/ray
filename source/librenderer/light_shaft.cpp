@@ -34,12 +34,13 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/light_shaft.h>
+#include "light_shaft.h"
 #include <ray/light.h>
 #include <ray/camera.h>
 #include <ray/material.h>
 #include <ray/graphics_framebuffer.h>
 #include <ray/graphics_texture.h>
+#include <ray/render_pipeline.h>
 
 _NAME_BEGIN
 
@@ -99,11 +100,13 @@ LightShaft::onDeactivate(RenderPipeline& pipeline) noexcept
 	_sampleView.reset();
 }
 
-void
-LightShaft::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+bool
+LightShaft::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	pipeline.setRenderTexture(_sampleView);
-	pipeline.clearRenderTexture(GraphicsClearFlags::GraphicsClearFlagsAll, float4::Zero, 1.0, 0);
+	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
+
+	pipeline.setFramebuffer(_sampleView);
+	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsAll, float4::Zero, 1.0, 0);
 
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
@@ -126,7 +129,7 @@ LightShaft::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphi
 				view.y >= -0.5f && view.y <= 2.0f && view.z < 1.0f)
 			{
 				_illuminationPosition->assign(Vector2(view.x, view.y));
-				_illuminationSource->assign(source);
+				_illuminationSource->assign(texture);
 
 				pipeline.drawScreenQuad(_lightShaft);
 			}
@@ -135,8 +138,10 @@ LightShaft::onRender(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphi
 
 	_illuminationSource->assign(_sampleMap);
 
-	pipeline.setRenderTexture(dest);
+	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(_lightShaftCopy);
+
+	return true;
 }
 
 _NAME_END

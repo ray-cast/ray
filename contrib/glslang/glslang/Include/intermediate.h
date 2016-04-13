@@ -612,25 +612,29 @@ public:
     // if symbol is initialized as symbol(sym), the memory comes from the pool allocator of sym. If sym comes from
     // per process threadPoolAllocator, then it causes increased memory usage per compile
     // it is essential to use "symbol = sym" to assign to symbol
-    TIntermSymbol(int i, const TString& n, const TType& t) : 
-        TIntermTyped(t), id(i) { name = n;} 
+    TIntermSymbol(int i, const TString& n, const TType& t)
+        : TIntermTyped(t), id(i), constSubtree(nullptr)
+          { name = n; }
     virtual int getId() const { return id; }
     virtual const TString& getName() const { return name; }
     virtual void traverse(TIntermTraverser*);
     virtual       TIntermSymbol* getAsSymbolNode()       { return this; }
     virtual const TIntermSymbol* getAsSymbolNode() const { return this; }
-    void setConstArray(const TConstUnionArray& c) { unionArray = c; }
-    const TConstUnionArray& getConstArray() const { return unionArray; }
+    void setConstArray(const TConstUnionArray& c) { constArray = c; }
+    const TConstUnionArray& getConstArray() const { return constArray; }
+    void setConstSubtree(TIntermTyped* subtree) { constSubtree = subtree; }
+    TIntermTyped* getConstSubtree() const { return constSubtree; }
 protected:
-    int id;
-    TString name;
-    TConstUnionArray unionArray;
+    int id;                      // the unique id of the symbol this node represents
+    TString name;                // the name of the symbol this node represents
+    TConstUnionArray constArray; // if the symbol is a front-end compile-time constant, this is its value
+    TIntermTyped* constSubtree;
 };
 
 class TIntermConstantUnion : public TIntermTyped {
 public:
-    TIntermConstantUnion(const TConstUnionArray& ua, const TType& t) : TIntermTyped(t), unionArray(ua), literal(false) { }
-    const TConstUnionArray& getConstArray() const { return unionArray; }
+    TIntermConstantUnion(const TConstUnionArray& ua, const TType& t) : TIntermTyped(t), constArray(ua), literal(false) { }
+    const TConstUnionArray& getConstArray() const { return constArray; }
     virtual       TIntermConstantUnion* getAsConstantUnion()       { return this; }
     virtual const TIntermConstantUnion* getAsConstantUnion() const { return this; }
     virtual void traverse(TIntermTraverser*);
@@ -640,7 +644,7 @@ public:
     void setExpression() { literal = false; }
     bool isLiteral() const { return literal; }
 protected:
-    const TConstUnionArray unionArray;
+    const TConstUnionArray constArray;
     bool literal;  // true if node represents a literal in the source code
 };
 
@@ -946,7 +950,7 @@ enum TVisit
 //
 // Explicitly set postVisit to true if you want post visiting, otherwise,
 // filled in methods will only be called at pre-visit time (before processing
-// the subtree).  Similary for inVisit for in-order visiting of nodes with
+// the subtree).  Similarly for inVisit for in-order visiting of nodes with
 // multiple children.
 //
 // If you only want post-visits, explicitly turn off preVisit (and inVisit) 
@@ -1008,6 +1012,14 @@ protected:
     // All the nodes from root to the current node's parent during traversing.
     TVector<TIntermNode *> path;
 };
+
+// KHR_vulkan_glsl says "Two arrays sized with specialization constants are the same type only if
+// sized with the same symbol, involving no operations"
+inline bool SameSpecializationConstants(TIntermTyped* node1, TIntermTyped* node2)
+{
+    return node1->getAsSymbolNode() && node2->getAsSymbolNode() &&
+           node1->getAsSymbolNode()->getId() == node2->getAsSymbolNode()->getId();
+}
 
 } // end namespace glslang
 

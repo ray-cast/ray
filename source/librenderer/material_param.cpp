@@ -80,6 +80,7 @@ MaterialParam::getType() const noexcept
 void
 MaterialParam::assign(bool value) noexcept
 {
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeBool);
 	for (auto& it : _uniforms)
 		it->assign(value);
 }
@@ -87,6 +88,7 @@ MaterialParam::assign(bool value) noexcept
 void
 MaterialParam::assign(int value) noexcept
 {
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeInt);
 	for (auto& it : _uniforms)
 		it->assign(value);
 }
@@ -94,6 +96,7 @@ MaterialParam::assign(int value) noexcept
 void
 MaterialParam::assign(const int2& value) noexcept
 {
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeInt2);
 	for (auto& it : _uniforms)
 		it->assign(value);
 }
@@ -101,6 +104,7 @@ MaterialParam::assign(const int2& value) noexcept
 void
 MaterialParam::assign(float value) noexcept
 {
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat);
 	for (auto& it : _uniforms)
 		it->assign(value);
 }
@@ -108,6 +112,7 @@ MaterialParam::assign(float value) noexcept
 void
 MaterialParam::assign(const float2& value) noexcept
 {
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat2);
 	for (auto& it : _uniforms)
 		it->assign(value);
 }
@@ -115,6 +120,7 @@ MaterialParam::assign(const float2& value) noexcept
 void
 MaterialParam::assign(const float3& value) noexcept
 {
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat3);
 	for (auto& it : _uniforms)
 		it->assign(value);
 }
@@ -122,6 +128,7 @@ MaterialParam::assign(const float3& value) noexcept
 void
 MaterialParam::assign(const float4& value) noexcept
 {
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat4);
 	for (auto& it : _uniforms)
 		it->assign(value);
 }
@@ -129,6 +136,7 @@ MaterialParam::assign(const float4& value) noexcept
 void
 MaterialParam::assign(const float3x3& value) noexcept
 {
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat3x3);
 	for (auto& it : _uniforms)
 		it->assign(value);
 }
@@ -136,6 +144,7 @@ MaterialParam::assign(const float3x3& value) noexcept
 void
 MaterialParam::assign(const float4x4& value) noexcept
 {
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat4x4);
 	for (auto& it : _uniforms)
 		it->assign(value);
 }
@@ -143,6 +152,7 @@ MaterialParam::assign(const float4x4& value) noexcept
 void
 MaterialParam::assign(const std::vector<float>& value) noexcept
 {
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloatArray);
 	for (auto& it : _uniforms)
 		it->assign(value);
 }
@@ -150,6 +160,7 @@ MaterialParam::assign(const std::vector<float>& value) noexcept
 void
 MaterialParam::assign(const std::vector<float2>& value) noexcept
 {
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat2Array);
 	for (auto& it : _uniforms)
 		it->assign(value);
 }
@@ -157,6 +168,7 @@ MaterialParam::assign(const std::vector<float2>& value) noexcept
 void
 MaterialParam::assign(const std::vector<float3>& value) noexcept
 {
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat3Array);
 	for (auto& it : _uniforms)
 		it->assign(value);
 }
@@ -164,6 +176,7 @@ MaterialParam::assign(const std::vector<float3>& value) noexcept
 void
 MaterialParam::assign(const std::vector<float4>& value) noexcept
 {
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeFloat4Array);
 	for (auto& it : _uniforms)
 		it->assign(value);
 }
@@ -171,6 +184,7 @@ MaterialParam::assign(const std::vector<float4>& value) noexcept
 void
 MaterialParam::assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
 {
+	assert(_type == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler || _type == GraphicsUniformType::GraphicsUniformTypeStorageImage || _type == GraphicsUniformType::GraphicsUniformTypeSamplerImage);
 	for (auto& it : _uniforms)
 		it->assign(texture, sampler);
 }

@@ -41,6 +41,14 @@
 
 _NAME_BEGIN
 
+class EXPORT MaterialTechDesc final
+{
+public:
+	MaterialTechDesc() noexcept;
+	~MaterialTechDesc() noexcept;
+private:
+};
+
 class EXPORT MaterialTech final : public rtti::Interface
 {
 	__DeclareSubClass(MaterialTech, rtti::Interface)
@@ -57,13 +65,16 @@ public:
 	MaterialPassPtr getPass(RenderPass passType) noexcept;
 	MaterialPassPtr getPass(const std::string& name) noexcept;
 
-	MaterialPassList& getPassList() noexcept;
+	const MaterialPassList& getPassList() const noexcept;
 
 	bool empty() const noexcept;
 	std::size_t count() const noexcept;
 
 private:
+	MaterialTech(const MaterialTech&) = delete;
+	MaterialTech& operator=(const MaterialTech&) = delete;
 
+private:
 	RenderQueue _renderQueue;
 	MaterialPassList _passList;
 };

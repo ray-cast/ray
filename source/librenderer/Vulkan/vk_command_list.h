@@ -59,8 +59,8 @@ public:
 
 	void clearTexture(GraphicsTexturePtr texture, const ClearValue& value) noexcept;
 
-	void setRenderTexture(GraphicsFramebufferPtr framebuffer) noexcept;
-	void clearRenderTexture(ClearValue value[], std::uint32_t first, std::uint32_t count) noexcept;
+	void setFramebuffer(GraphicsFramebufferPtr framebuffer) noexcept;
+	void clearFramebuffer(ClearValue value[], std::uint32_t first, std::uint32_t count) noexcept;
 
 	void setPipeline(GraphicsPipelinePtr pipeline) noexcept;
 	void setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept;

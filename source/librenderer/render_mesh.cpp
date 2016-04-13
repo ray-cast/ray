@@ -35,6 +35,8 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/render_mesh.h>
+#include <ray/render_pipeline.h>
+#include <ray/material.h>
 
 _NAME_BEGIN
 
@@ -82,6 +84,21 @@ GraphicsIndirectPtr
 RenderMesh::getGraphicsIndirect() noexcept
 {
 	return _renderable;
+}
+
+void
+RenderMesh::onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, RenderPass passType, MaterialPassPtr _pass) noexcept
+{
+	auto pass = _pass ? _pass : this->getMaterial()->getTech(queue)->getPass(passType);
+
+	if (pass)
+	{
+		pipelineContext.setTransform(this->getTransform());
+		pipelineContext.setTransformInverse(this->getTransformInverse());
+		pipelineContext.setTransformInverseTranspose(this->getTransformInverseTranspose());
+
+		pipelineContext.drawMesh(pass, this->getRenderBuffer(), *_renderable);
+	}
 }
 
 _NAME_END

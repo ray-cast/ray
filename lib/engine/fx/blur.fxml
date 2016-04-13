@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<effect language="hlsl">
+    <include name="sys:fx/Gbuffer.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
+    <parameter name="texSource" type="texture2D" />
+    <parameter name="texSourceInv" type="float2" />
+    <shader>
+        <![CDATA[
+            void BlurVS(
+                in float4 Position : POSITION,
+                out float2 oTexcoord : TEXCOORD0,
+                out float4 oPosition : SV_Position)
+            {
+                oPosition = Position;
+                oTexcoord = PosToCoord(Position.xy);
+            }
+
+            float BlurXPS(in float2 coord : TEXCOORD0) : SV_Target0
+            {
+                const float offset[3] = { 0.0, 1.3846153846, 3.2307692308 };
+                const float weight[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
+
+                float shadow = texSource.Sample(LinearClamp, coord).r * weight[0];
+
+                for (int i = 1; i < 3; ++i)
+                {
+                    shadow += texSource.Sample(LinearClamp, coord + float2(offset[i], 0) * texSourceInv).r * weight[i];
+                    shadow += texSource.Sample(LinearClamp, coord - float2(offset[i], 0) * texSourceInv).r * weight[i];
+                }
+
+                return shadow;
+            }
+
+            float BlurYPS(in float2 coord : TEXCOORD0) : SV_Target0
+            {
+                const float offset[3] = { 0.0, 1.3846153846, 3.2307692308 };
+                const float weight[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
+
+                float shadow = texSource.Sample(LinearClamp, coord).r * weight[0];
+
+                for (int i = 1; i < 3; ++i)
+                {
+                    shadow += texSource.Sample(LinearClamp, coord + float2(0, offset[i]) * texSourceInv).r * weight[i];
+                    shadow += texSource.Sample(LinearClamp, coord - float2(0, offset[i]) * texSourceInv).r * weight[i];
+                }
+
+                return shadow;
+            }
+        ]]>
+    </shader>
+    <technique name="custom">
+        <pass name="blurX">
+            <state name="inputlayout" value="POS3F"/>
+
+            <state name="vertex" value="BlurVS"/>
+            <state name="fragment" value="BlurXPS" />
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+        <pass name="blurY">
+            <state name="inputlayout" value="POS3F"/>
+
+            <state name="vertex" value="BlurVS"/>
+            <state name="fragment" value="BlurYPS" />
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+</effect>

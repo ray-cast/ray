@@ -161,29 +161,29 @@ SET(RENDERER_MESH
 SOURCE_GROUP("renderer\\mesh" FILES ${RENDERER_MESH})
 
 SET(RENDERER_POST_PROCESS
-    ${HEADER_PATH}/atmospheric.h
+    ${SOURCE_PATH}/atmospheric.h
     ${SOURCE_PATH}/atmospheric.cpp
-    ${HEADER_PATH}/color_grading.h
+    ${SOURCE_PATH}/color_grading.h
     ${SOURCE_PATH}/color_grading.cpp
-    ${HEADER_PATH}/dof.h
+    ${SOURCE_PATH}/dof.h
     ${SOURCE_PATH}/dof.cpp
-    ${HEADER_PATH}/fog.h
+    ${SOURCE_PATH}/fog.h
     ${SOURCE_PATH}/fog.cpp
-    ${HEADER_PATH}/fxaa.h
+    ${SOURCE_PATH}/fxaa.h
     ${SOURCE_PATH}/fxaa.cpp
-    ${HEADER_PATH}/fimic.h
+    ${SOURCE_PATH}/fimic.h
     ${SOURCE_PATH}/fimic.cpp
-    ${HEADER_PATH}/light_shaft.h
+    ${SOURCE_PATH}/light_shaft.h
     ${SOURCE_PATH}/light_shaft.cpp
-    ${HEADER_PATH}/ssao.h
+    ${SOURCE_PATH}/ssao.h
     ${SOURCE_PATH}/ssao.cpp
-    ${HEADER_PATH}/ssgi.h
+    ${SOURCE_PATH}/ssgi.h
     ${SOURCE_PATH}/ssgi.cpp
-    ${HEADER_PATH}/ssr.h
+    ${SOURCE_PATH}/ssr.h
     ${SOURCE_PATH}/ssr.cpp
-    ${HEADER_PATH}/ssss.h
+    ${SOURCE_PATH}/ssss.h
     ${SOURCE_PATH}/ssss.cpp
-    ${HEADER_PATH}/irradiance.h
+    ${SOURCE_PATH}/irradiance.h
     ${SOURCE_PATH}/irradiance.cpp
 )
 SOURCE_GROUP("renderer\\postprocess" FILES ${RENDERER_POST_PROCESS})
@@ -216,8 +216,8 @@ SOURCE_GROUP("renderer\\pipeline" FILES ${RENDER_PIPELINE})
 SET(RENDERER_SYSTEM
     ${HEADER_PATH}/render_pipeline.h
     ${SOURCE_PATH}/render_pipeline.cpp
-    ${HEADER_PATH}/render_pipeline_context.h
-    ${SOURCE_PATH}/render_pipeline_context.cpp
+    ${HEADER_PATH}/render_pipeline_device.h
+    ${SOURCE_PATH}/render_pipeline_device.cpp
     ${HEADER_PATH}/render_pipeline_controller.h
     ${SOURCE_PATH}/render_pipeline_controller.cpp
     ${HEADER_PATH}/render_pipeline_manager.h
@@ -226,6 +226,8 @@ SET(RENDERER_SYSTEM
     ${SOURCE_PATH}/render_post_process.cpp
     ${HEADER_PATH}/render_system.h
     ${SOURCE_PATH}/render_system.cpp
+    ${HEADER_PATH}/render_setting.h
+    ${SOURCE_PATH}/render_setting.cpp
     ${HEADER_PATH}/render_types.h
 )
 SOURCE_GROUP("renderer" FILES ${RENDERER_SYSTEM})
@@ -304,6 +306,7 @@ IF(BUILD_VULKAN)
     TARGET_LINK_LIBRARIES(${LIB_NAME} ${VK_LINK_DIRECTORIES}/vulkan-1.lib)
     TARGET_LINK_LIBRARIES(${LIB_NAME} SPIRV)
     TARGET_LINK_LIBRARIES(${LIB_NAME} glslang)
+    TARGET_LINK_LIBRARIES(${LIB_NAME} HLSL)
     TARGET_LINK_LIBRARIES(${LIB_NAME} OGLCompiler)
     TARGET_LINK_LIBRARIES(${LIB_NAME} OSDependent)
 ENDIF()

@@ -8,6 +8,7 @@ The aim of the project is to create a lightweight 3D library with a very low lev
 ### Screenshot ###
 
 ![screenshot](https://coding.net/u/raycast/p/ray/git/blob/master/screenshot/atmospheric.png)
+![screenshot](https://coding.net/u/raycast/p/ray/git/blob/master/screenshot/ssss.jpg)
 
 ### Building ###
 

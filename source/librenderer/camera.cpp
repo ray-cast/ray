@@ -40,8 +40,6 @@ _NAME_BEGIN
 
 __ImplementSubClass(Camera, RenderObject, "Camera")
 
-static float4x4 adjustProject = (float4x4().makeScale(1.0, 1.0, 2.0).setTranslate(0, 0, -1));
-
 Camera::Camera() noexcept
 	: _left(0.0f)
 	, _right(0.0f)
@@ -382,7 +380,7 @@ Camera::_updateOrtho() const noexcept
 void
 Camera::_updatePerspective() const noexcept
 {
-	_project.makePerspective_lh(_aperture, _ratio, _znear, _zfar);
+	_project.makePerspective_off_center_lh(_aperture, _ratio, _znear, _zfar);
 	_projectInverse = math::inverse(_project);
 
 	_projLength.x = _project.a1;
@@ -422,10 +420,6 @@ Camera::_updateViewProject() const noexcept
 	{
 		_viewProejct = this->getView() * _project;
 		_viewProjectInverse = math::inverse(_viewProejct);
-
-#ifdef _BUILD_OPENGL
-		_viewProejct = _viewProejct * adjustProject;
-#endif
 
 		_needUpdateViewProject = false;
 	}

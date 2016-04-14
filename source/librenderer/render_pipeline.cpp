@@ -58,6 +58,8 @@ _NAME_BEGIN
 
 __ImplementSubClass(RenderPipeline, rtti::Interface, "RenderPipeline")
 
+static float4x4 adjustProject = (float4x4().makeScale(1.0, 1.0, 2.0).setTranslate(0, 0, -1));
+
 RenderPipeline::RenderPipeline() noexcept
 	: _width(0)
 	, _height(0)
@@ -183,7 +185,13 @@ RenderPipeline::setCamera(CameraPtr camera) noexcept
 	_materialMatViewInverseTranspose->assign(camera->getTransformInverseTranspose());
 	_materialMatProject->assign(camera->getProject());
 	_materialMatProjectInverse->assign(camera->getProjectInverse());
-	_materialMatViewProject->assign(camera->getViewProject());
+
+	GraphicsDeviceType type = _pipelineDevice->getDeviceType();
+	if (type == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
+		_materialMatViewProject->assign(camera->getViewProject() * adjustProject);
+	else	
+		_materialMatViewProject->assign(camera->getViewProject());
+
 	_materialMatViewProjectInverse->assign(camera->getViewProjectInverse());
 
 	_dataManager->assginVisiable(camera);

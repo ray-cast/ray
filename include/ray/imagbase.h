@@ -86,7 +86,19 @@ enum ImageType
 	ImageTypeBC6HSFloat,
 	ImageTypeBC7U,
 	ImageTypeBC7SRGB,
-	ImageTypeATI2
+	ImageTypeATI2,
+	ImageTypeCube,
+};
+
+enum ImageFormat
+{
+	ImageFormatUnknow,
+	ImageFormatL8,
+	ImageFormatL8A8,
+	ImageFormatR8G8B8,
+	ImageFormatR8G8B8A8,
+	ImageFormatB8G8R8,
+	ImageFormatB8G8R8A8
 };
 
 _NAME_END

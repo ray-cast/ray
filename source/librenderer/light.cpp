@@ -56,14 +56,14 @@ Light::Light() noexcept
 	, _shadow(false)
 	, _shadowSoftEnable(false)
 	, _shadowSize(512)
-	, _shaodwFormat(GraphicsFormat::GraphicsFormatD16UNorm)
+	, _shadowFormat(GraphicsFormat::GraphicsFormatD16UNorm)
 {
 	_shadowCamera = std::make_shared<Camera>();
 	_shadowCamera->setOwnerListener(this);
 	_shadowCamera->setCameraOrder(CameraOrder::CameraOrderShadow);
 	_shadowCamera->setCameraRender(CameraRender::CameraRenderTexture);
-	_shadowCamera->setAperture(90.0);
-	_shadowCamera->setNear(0.1);
+	_shadowCamera->setAperture(45.0);
+	_shadowCamera->setNear(0.0125);
 	_shadowCamera->setRatio(1.0);
 }
 
@@ -250,12 +250,17 @@ Light::setupShadowMap(float size) noexcept
 	if (!_shadow)
 		return false;
 
-	_shaodwMap = RenderSystem::instance()->createTexture(size, size, GraphicsTextureDim::GraphicsTextureDim2D, _shaodwFormat);
+	GraphicsTextureDesc textureDesc;
+	textureDesc.setWidth(size);
+	textureDesc.setHeight(size);
+	textureDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	textureDesc.setTexFormat(_shadowFormat);
+	_shaodwMap = RenderSystem::instance()->createTexture(textureDesc);
 	if (!_shaodwMap)
 		return false;
 
 	GraphicsFramebufferLayoutDesc shadowLayoutDesc;
-	shadowLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutDepthStencilAttachmentOptimal, _shaodwFormat, 0));
+	shadowLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutDepthStencilAttachmentOptimal, _shadowFormat, 0));
 	_shaodwViewLayout = RenderSystem::instance()->createFramebufferLayout(shadowLayoutDesc);
 	if (!_shaodwViewLayout)
 		return false;

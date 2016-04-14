@@ -3,6 +3,8 @@
     <include name="sys:fx/math.fxml"/>
     <include name="sys:fx/sampler.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
+    <macro name="MAX_TEX_DEPTH" type="int" value="16"/>
+    <parameter name="colorGrading" type="int2"/>
     <parameter name="texSource" type="texture2D"/>
     <parameter name="texColorGrading" type="texture3D"/>
     <shader>
@@ -23,6 +25,9 @@
 
                 const float DIM = 16;
 
+#if MAX_TEX_DEPTH > 1
+                return texColorGrading.Sample(LinearClamp, (rgb * (DIM - 1) + 0.5f) / DIM).xyz;
+#else
                 rgb.xy = (rgb.xy * (DIM - 1) + 0.5f) / DIM;
                 float slice = rgb.z * (DIM - 1);
                 float s = frac(slice);
@@ -32,12 +37,17 @@
                 float3 col0 = texColorGrading.Sample(LinearClamp, rgb.xy).xyz;
                 float3 col1 = texColorGrading.Sample(LinearClamp, float2(rgb.x, rgb.y + 1.0f / DIM)).xyz;
                 return lerp(col0, col1, s);
+#endif
             }
 
             float3 ColorGradingPS(in float4 coord : TEXCOORD0) : SV_Target
             {
                 float3 rgb = texSource.Sample(PointClamp, coord.xy).rgb;
-                rgb = linear2srgb(rgb);
+
+                if (colorGrading.x > 0)
+                    rgb = linear2srgb(rgb);
+                if (colorGrading.y > 0)
+                    rgb = ColorGrading(rgb);
                 return rgb;
             }
         ]]>

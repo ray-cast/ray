@@ -55,14 +55,14 @@ public:
 	T c1, c2, c3, c4;
 	T d1, d2, d3, d4;
 
-	Matrix4x4t()
+	Matrix4x4t() noexcept
 	{
 	}
 
 	Matrix4x4t(T _a1, T _a2, T _a3, T _a4,
 		T _b1, T _b2, T _b3, T _b4,
 		T _c1, T _c2, T _c3, T _c4,
-		T _d1, T _d2, T _d3, T _d4)
+		T _d1, T _d2, T _d3, T _d4) noexcept
 		: a1(_a1), a2(_a2), a3(_a3), a4(_a4)
 		, b1(_b1), b2(_b2), b3(_b3), b4(_b4)
 		, c1(_c1), c2(_c2), c3(_c3), c4(_c4)
@@ -71,7 +71,7 @@ public:
 	}
 
 	template<typename S>
-	explicit Matrix4x4t(const Matrix4x4t<S>& m)
+	explicit Matrix4x4t(const Matrix4x4t<S>& m) noexcept
 	{
 		a1 = static_cast<T>(m.a1); a2 = static_cast<T>(m.a2); a3 = static_cast<T>(m.a3); a4 = static_cast<T>(m.a4);
 		b1 = static_cast<T>(m.b1); b2 = static_cast<T>(m.b2); b3 = static_cast<T>(m.b3); b4 = static_cast<T>(m.b4);
@@ -79,12 +79,12 @@ public:
 		d1 = static_cast<T>(m.d1); d2 = static_cast<T>(m.d2); d3 = static_cast<T>(m.d3); d4 = static_cast<T>(m.d4);
 	}
 
-	Matrix4x4t(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2)
+	Matrix4x4t(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2) noexcept
 	{
 		this->multiplyMatrices(m1, m2);
 	}
 
-	explicit Matrix4x4t(const Matrix3x3t<T>& m)
+	explicit Matrix4x4t(const Matrix3x3t<T>& m) noexcept
 	{
 		a1 = m.a1; a2 = m.a2; a3 = m.a3; a4 = static_cast<T>(0.0);
 		b1 = m.b1; b2 = m.b2; b3 = m.b3; b4 = static_cast<T>(0.0);
@@ -93,7 +93,7 @@ public:
 	}
 
 	template <typename S>
-	operator Matrix4x4t<S>() const
+	operator Matrix4x4t<S>() const noexcept
 	{
 		return Matrix4x4t<S>(
 			static_cast<S>(a1), static_cast<S>(a2), static_cast<S>(a3), static_cast<S>(a4),
@@ -102,32 +102,32 @@ public:
 			static_cast<S>(d1), static_cast<S>(d2), static_cast<S>(d3), static_cast<S>(d4));
 	}
 
-	T& operator[](std::size_t n)
+	T& operator[](std::size_t n) noexcept
 	{
 		return *((&a1) + n);
 	}
 
-	const T& operator[](std::size_t n) const
+	const T& operator[](std::size_t n) const noexcept
 	{
 		return *((&a1) + n);
 	}
 
-	explicit operator T*()
+	explicit operator T*() noexcept
 	{
 		return this->ptr();
 	}
 
-	explicit operator const T*() const
+	explicit operator const T*() const noexcept
 	{
 		return this->ptr();
 	}
 
-	T* ptr() { return (T*)&a1; }
-	const T* ptr() const { return (const T*)&a1; }
-	T* data() { return (T*)&a1; }
-	const T* data() const { return (const T*)&a1; }
+	T* ptr() noexcept { return (T*)&a1; }
+	const T* ptr() const noexcept  { return (const T*)&a1; }
+	T* data() noexcept { return (T*)&a1; }
+	const T* data() const noexcept  { return (const T*)&a1; }
 
-	Matrix4x4t<T>& set(T mt00, T mt01, T mt02, T mt03, T mt10, T mt11, T mt12, T mt13, T mt20, T mt21, T mt22, T mt23, T mt30, T mt31, T mt32, T mt33)
+	Matrix4x4t<T>& set(T mt00, T mt01, T mt02, T mt03, T mt10, T mt11, T mt12, T mt13, T mt20, T mt21, T mt22, T mt23, T mt30, T mt31, T mt32, T mt33) noexcept
 	{
 		a1 = static_cast<T>(mt00);
 		a2 = static_cast<T>(mt01);
@@ -148,7 +148,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& set(const Matrix3x3t<T>& m)
+	Matrix4x4t<T>& set(const Matrix3x3t<T>& m) noexcept
 	{
 		a1 = m.a1; a2 = m.a2; a3 = m.a3;
 		b1 = m.b1; b2 = m.b2; b3 = m.b3;
@@ -156,19 +156,19 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& set(int line, const Vector3t<T>& v)
+	Matrix4x4t<T>& set(int line, const Vector3t<T>& v) noexcept
 	{
 		((Vector3t<T>&)(*(*this)[line])) = v;
 		return *this;
 	}
 
-	Matrix4x4t<T>& set(std::size_t line, const Vector3t<T>& v)
+	Matrix4x4t<T>& set(std::size_t line, const Vector3t<T>& v) noexcept
 	{
 		((Vector3t<T>&)(*(*this)[line])) = v;
 		return *this;
 	}
 
-	Matrix4x4t<T>& set(const Vector3t<T>& v1, const Vector3t<T>& v2, const Vector3t<T>& v3)
+	Matrix4x4t<T>& set(const Vector3t<T>& v1, const Vector3t<T>& v2, const Vector3t<T>& v3) noexcept
 	{
 		a1 = v1.x; a2 = v1.y; a3 = v1.z;
 		b1 = v2.x; b2 = v2.y; b3 = v2.z;
@@ -176,7 +176,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& set(const Vector4t<T>& v1, const Vector4t<T>& v2, const Vector4t<T>& v3, const Vector4t<T>& v4)
+	Matrix4x4t<T>& set(const Vector4t<T>& v1, const Vector4t<T>& v2, const Vector4t<T>& v3, const Vector4t<T>& v4) noexcept
 	{
 		a1 = v1.x; a2 = v1.y; a3 = v1.z; a4 = v1.w;
 		b1 = v2.x; b2 = v2.y; b3 = v2.z; b4 = v2.w;
@@ -185,7 +185,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& loadIdentity()
+	Matrix4x4t<T>& loadIdentity() noexcept
 	{
 		set(1, 0, 0, 0,
 			0, 1, 0, 0,
@@ -194,7 +194,7 @@ public:
 		return *this;
 	}
 
-	T determinant() const
+	T determinant() const noexcept
 	{
 		return
 			  a1*b2*c3*d4 - a1*b2*c4*d3 + a1*b3*c4*d2 - a1*b3*c2*d4
@@ -205,7 +205,7 @@ public:
 			- a4*b2*c3*d1 + a4*b2*c1*d3 - a4*b3*c1*d2 + a4*b3*c2*d1;
 	}
 
-	bool isOnlyTranslate() const
+	bool isOnlyTranslate() const noexcept
 	{
 		const static T epsilon = 10e-3f;
 
@@ -224,14 +224,14 @@ public:
 			c4 <= 1.f + epsilon && c4 >= 1.f - epsilon);
 	}
 
-	Matrix4x4t<T>& applyMatrix(const Matrix4x4t<T>& m)
+	Matrix4x4t<T>& applyMatrix(const Matrix4x4t<T>& m) noexcept
 	{
 		Matrix4x4t matrix(*this);
 		multiplyMatrices(matrix, m);
 		return *this;
 	}
 
-	Matrix4x4t<T>& multiplyMatrices(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2)
+	Matrix4x4t<T>& multiplyMatrices(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2) noexcept
 	{
 		a1 = m1.a1 * m2.a1 + m1.b1 * m2.a2 + m1.c1 * m2.a3 + m1.d1 * m2.a4;
 		a2 = m1.a2 * m2.a1 + m1.b2 * m2.a2 + m1.c2 * m2.a3 + m1.d2 * m2.a4;
@@ -252,7 +252,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& multiplyScalar(T scale)
+	Matrix4x4t<T>& multiplyScalar(T scale) noexcept
 	{
 		a1 *= scale; a2 *= scale; a3 *= scale; a4 *= scale;
 		b1 *= scale; b2 *= scale; b3 *= scale; b4 *= scale;
@@ -261,10 +261,10 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeTranslate(const Vector2t<T>& pt) { return makeTranslate(pt.x, pt.y, 0); }
-	Matrix4x4t<T>& makeTranslate(const Vector3t<T>& pt) { return makeTranslate(pt.x, pt.y, pt.z); }
-	Matrix4x4t<T>& makeTranslate(T x, T y) { return makeTranslate(x, y, 0); }
-	Matrix4x4t<T>& makeTranslate(T x, T y, T z)
+	Matrix4x4t<T>& makeTranslate(const Vector2t<T>& pt) noexcept { return makeTranslate(pt.x, pt.y, 0); }
+	Matrix4x4t<T>& makeTranslate(const Vector3t<T>& pt) noexcept  { return makeTranslate(pt.x, pt.y, pt.z); }
+	Matrix4x4t<T>& makeTranslate(T x, T y) noexcept { return makeTranslate(x, y, 0); }
+	Matrix4x4t<T>& makeTranslate(T x, T y, T z) noexcept
 	{
 		set(1, 0, 0, x,
 			0, 1, 0, y,
@@ -273,10 +273,10 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& setTranslate(const Vector2t<T>& pt) { return setTranslate(pt.x, pt.y, 0); }
-	Matrix4x4t<T>& setTranslate(const Vector3t<T>& pt) { return setTranslate(pt.x, pt.y, pt.z); }
-	Matrix4x4t<T>& setTranslate(T x, T y) { return setTranslate(x, y); }
-	Matrix4x4t<T>& setTranslate(T x, T y, T z)
+	Matrix4x4t<T>& setTranslate(const Vector2t<T>& pt) noexcept { return setTranslate(pt.x, pt.y, 0); }
+	Matrix4x4t<T>& setTranslate(const Vector3t<T>& pt) noexcept  { return setTranslate(pt.x, pt.y, pt.z); }
+	Matrix4x4t<T>& setTranslate(T x, T y) noexcept  { return setTranslate(x, y); }
+	Matrix4x4t<T>& setTranslate(T x, T y, T z) noexcept
 	{
 		a4 = x;
 		b4 = y;
@@ -284,10 +284,10 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& translate(const Vector2t<T>& pt) { return translate(pt.x, pt.y, 0); }
-	Matrix4x4t<T>& translate(const Vector3t<T>& pt) { return translate(pt.x, pt.y, pt.z); }
-	Matrix4x4t<T>& translate(T x, T y) { return translate(x, y, 0); }
-	Matrix4x4t<T>& translate(T x, T y, T z)
+	Matrix4x4t<T>& translate(const Vector2t<T>& pt) noexcept { return translate(pt.x, pt.y, 0); }
+	Matrix4x4t<T>& translate(const Vector3t<T>& pt) noexcept { return translate(pt.x, pt.y, pt.z); }
+	Matrix4x4t<T>& translate(T x, T y) noexcept { return translate(x, y, 0); }
+	Matrix4x4t<T>& translate(T x, T y, T z) noexcept
 	{
 		a4 += x;
 		b4 += y;
@@ -295,15 +295,15 @@ public:
 		return *this;
 	}
 
-	Vector3t<T> getTranslate() const
+	Vector3t<T> getTranslate() const noexcept
 	{
 		return Vector3t<T>(a4, b4, c4);
 	}
 
-	Matrix4x4t<T>& makeScale(const Vector2t<T>& sz) { return makeScale(sz.x, sz.y, 1.0f); }
-	Matrix4x4t<T>& makeScale(const Vector3t<T>& sz) { return makeScale(sz.x, sz.y, sz.z); }
-	Matrix4x4t<T>& makeScale(T cx, T cy) { return makeScale(cx, cy, 1.0f); }
-	Matrix4x4t<T>& makeScale(T x, T y, T z)
+	Matrix4x4t<T>& makeScale(const Vector2t<T>& sz) noexcept  { return makeScale(sz.x, sz.y, 1.0f); }
+	Matrix4x4t<T>& makeScale(const Vector3t<T>& sz) noexcept  { return makeScale(sz.x, sz.y, sz.z); }
+	Matrix4x4t<T>& makeScale(T cx, T cy) noexcept { return makeScale(cx, cy, 1.0f); }
+	Matrix4x4t<T>& makeScale(T x, T y, T z) noexcept
 	{
 		set(
 			x, 0, 0, 0,
@@ -313,11 +313,11 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& scale(const Vector2t<T>& sz) { return scale(sz.x, sz.y, 1.0f); }
-	Matrix4x4t<T>& scale(const Vector3t<T>& sz) { return scale(sz.x, sz.y, sz.z); }
-	Matrix4x4t<T>& scale(T v) { return scale(v, v, v); }
-	Matrix4x4t<T>& scale(T cx, T cy) { return scale(cx, cy, 1.0f); }
-	Matrix4x4t<T>& scale(T x, T y, T z)
+	Matrix4x4t<T>& scale(const Vector2t<T>& sz) noexcept  { return scale(sz.x, sz.y, 1.0f); }
+	Matrix4x4t<T>& scale(const Vector3t<T>& sz) noexcept { return scale(sz.x, sz.y, sz.z); }
+	Matrix4x4t<T>& scale(T v) noexcept  { return scale(v, v, v); }
+	Matrix4x4t<T>& scale(T cx, T cy) noexcept { return scale(cx, cy, 1.0f); }
+	Matrix4x4t<T>& scale(T x, T y, T z) noexcept
 	{
 		a1 *= x;
 		a2 *= x;
@@ -331,7 +331,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeRotationX(T theta)
+	Matrix4x4t<T>& makeRotationX(T theta) noexcept
 	{
 		T c, s, ang = DEG_TO_RAD(theta);
 
@@ -346,7 +346,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeRotationY(T theta)
+	Matrix4x4t<T>& makeRotationY(T theta) noexcept
 	{
 		T c, s, ang = DEG_TO_RAD(theta);
 
@@ -361,7 +361,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeRotationZ(T theta)
+	Matrix4x4t<T>& makeRotationZ(T theta) noexcept
 	{
 		T c, s, ang = DEG_TO_RAD(theta);
 
@@ -376,7 +376,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeRotate(const EulerAnglest<T>& euler)
+	Matrix4x4t<T>& makeRotate(const EulerAnglest<T>& euler) noexcept
 	{
 		T sh, ch, sp, cp, sb, cb;
 
@@ -404,25 +404,25 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeRotateEulerAngles(T x, T y, T z)
+	Matrix4x4t<T>& makeRotateEulerAngles(T x, T y, T z) noexcept
 	{
 		EulerAnglest<T> euler(x, y, z);
 		this->makeRotate(euler);
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeRotateEulerAngles(const Vector3t<T>& xyz)
+	Matrix4x4t<T>& makeRotateEulerAngles(const Vector3t<T>& xyz) noexcept
 	{
 		EulerAnglest<T> euler(xyz);
 		this->makeRotate(euler);
 	}
 
-	Matrix4x4t<T>& makeRotate(T angle, T x, T y, T z)
+	Matrix4x4t<T>& makeRotate(T angle, T x, T y, T z) noexcept
 	{
 		return makeRotate(angle, Vector3t<T>(x, y, z));
 	}
 
-	Matrix4x4t<T>& makeRotate(const Vector3t<T>& from, const Vector3t<T>& to)
+	Matrix4x4t<T>& makeRotate(const Vector3t<T>& from, const Vector3t<T>& to) noexcept
 	{
 		Matrix3x3t<T> m3;
 		Matrix3x3t<T>::fromToMatrix(from, to, m3);
@@ -430,7 +430,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeRotate(const Quaterniont<T>& q)
+	Matrix4x4t<T>& makeRotate(const Quaterniont<T>& q) noexcept
 	{
 		a1 = 1.0f - 2.0f * (q.y * q.y + q.z * q.z);
 		a2 = 2.0f * (q.x * q.y - q.z * q.w);
@@ -455,7 +455,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeRotate(T angle, const Vector3t<T>& axis)
+	Matrix4x4t<T>& makeRotate(T angle, const Vector3t<T>& axis) noexcept
 	{
 		T c, s;
 
@@ -493,7 +493,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeRotate(const Vector3t<T>& forward, const Vector3t<T>& up, const Vector3t<T>& right)
+	Matrix4x4t<T>& makeRotate(const Vector3t<T>& forward, const Vector3t<T>& up, const Vector3t<T>& right) noexcept
 	{
 		a1 = right.x;
 		b1 = right.y;
@@ -547,7 +547,7 @@ public:
 		return Vector4t<T>(c1, c2, c3, c4);
 	}
 
-	Matrix4x4t<T>& makeTransform(const Vector3t<T>& translate, const Quaterniont<T>& rotate, const Vector3t<T>& scale)
+	Matrix4x4t<T>& makeTransform(const Vector3t<T>& translate, const Quaterniont<T>& rotate, const Vector3t<T>& scale) noexcept
 	{
 		this->makeRotate(rotate);
 		this->setTranslate(translate);
@@ -555,7 +555,7 @@ public:
 		return *this;
 	}
 
-	void getTransform(Quaterniont<T>& rotation, Vector3t<T>& position) const
+	void getTransform(Quaterniont<T>& rotation, Vector3t<T>& position) const noexcept
 	{
 		const Matrix4x4t<T>& _this = *this;
 
@@ -568,7 +568,7 @@ public:
 		rotation = Quaterniont<T>((Matrix3x3t<T>)_this);
 	}
 
-	void getTransform(Vector3t<T>& scaling, Quaterniont<T>& rotation, Vector3t<T>& position) const
+	void getTransform(Vector3t<T>& scaling, Quaterniont<T>& rotation, Vector3t<T>& position) const noexcept
 	{
 		const Matrix4x4t<T>& _this = *this;
 
@@ -622,7 +622,7 @@ public:
 		rotation = Quaterniont<T>(m);
 	}
 
-	Matrix4x4t<T>& makeOrtho_lh(T width, T height, T zNear, T zFar)
+	Matrix4x4t<T>& makeOrtho_lh(T width, T height, T zNear, T zFar) noexcept
 	{
 		T cx = 2.0f / width;
 		T cy = 2.0f / height;
@@ -637,7 +637,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeOrtho_lh(T left, T right, T bottom, T top, T zNear, T zFar)
+	Matrix4x4t<T>& makeOrtho_lh(T left, T right, T bottom, T top, T zNear, T zFar) noexcept
 	{
 		T tx = -(right + left) / (right - left);
 		T ty = -(top + bottom) / (top - bottom);
@@ -654,7 +654,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeOrtho_rh(T left, T right, T bottom, T top, T zNear, T zFar)
+	Matrix4x4t<T>& makeOrtho_rh(T left, T right, T bottom, T top, T zNear, T zFar) noexcept
 	{
 		T tx = -(right + left) / (right - left);
 		T ty = -(top + bottom) / (top - bottom);
@@ -671,7 +671,7 @@ public:
 		return *this;
 	}
 
-	bool getOrtho_rh(T& left, T& right, T& bottom, T& top, T& zNear, T& zFar) const
+	bool getOrtho_rh(T& left, T& right, T& bottom, T& top, T& zNear, T& zFar) const noexcept
 	{
 		if (a4 != 0.0 || b4 != 0.0 || c4 != 0.0 || c4 != 1.0) return false;
 
@@ -687,7 +687,7 @@ public:
 		return true;
 	}
 
-	Matrix4x4t<T>& makeFrustumt_lh(T left, T right, T bottom, T top, T zNear, T zFar)
+	Matrix4x4t<T>& makeFrustumt_lh(T left, T right, T bottom, T top, T zNear, T zFar) noexcept
 	{
 		T A = (left + right) / (left - right);
 		T B = (bottom + top) / (bottom - top);
@@ -704,7 +704,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeFrustumt_rh(T left, T right, T bottom, T top, T zNear, T zFar)
+	Matrix4x4t<T>& makeFrustumt_rh(T left, T right, T bottom, T top, T zNear, T zFar) noexcept
 	{
 		T A = (right + left) / (right - left);
 		T B = (top + bottom) / (top - bottom);
@@ -721,7 +721,7 @@ public:
 		return *this;
 	}
 
-	bool getFrustumt_rh(T& left, T& right, T& bottom, T& top, T& zNear, T& zFar) const
+	bool getFrustumt_rh(T& left, T& right, T& bottom, T& top, T& zNear, T& zFar) const noexcept
 	{
 		if (a4 != 0.0 || b4 != 0.0 || c4 != -1.0 || c4 != 0.0)
 			return false;
@@ -741,19 +741,47 @@ public:
 		return true;
 	}
 
-	Matrix4x4t<T>& makePerspective_lh(T fovy, T aspectRatio, T zNear, T zFar)
+	template <typename T>
+	Matrix4x4t<T>& makePerspective_fov_lh(const T& fov, const T& aspect, const T& nearPlane, const T& farPlane) noexcept
+	{
+		T const h(1.0f / tan(DEG_TO_RAD(fov * 0.5f)));
+		T const w(h / aspect);
+		T const q(farPlane / (farPlane - nearPlane));
+
+		return Matrix4x4t<T>(
+			w, 0, 0, 0,
+			0, h, 0, 0,
+			0, 0, q, -nearPlane * q,
+			0, 0, 1.0f, 0);
+	}
+
+	template <typename T>
+	Matrix4x4t<T>& makePerspective_fov_rh(const T& fov, const T& aspect, const T& nearPlane, const T& farPlane) noexcept
+	{
+		T const h(1.0f / tan(DEG_TO_RAD(fov * 0.5f)));
+		T const w(h / aspect);
+		T const q(farPlane / (farPlane - nearPlane));
+
+		return Matrix4x4t<T>(
+			w, 0, 0, 0,
+			0, h, 0, 0,
+			0, 0, q, nearPlane * q,
+			0, 0, -1.0f, 0);
+	}
+
+	Matrix4x4t<T>& makePerspective_off_center_lh(const T& fovy, const T& aspectRatio, const T& znear, const T& zfar) noexcept
 	{
 		T tan_fovy = tan(DEG_TO_RAD(fovy * 0.5f));
-		T right = tan_fovy * aspectRatio * zNear;
+		T right = tan_fovy * aspectRatio * znear;
 		T left = -right;
-		T top = tan_fovy * zNear;
+		T top = tan_fovy * znear;
 		T bottom = -top;
 
-		makeFrustumt_lh(left, right, bottom, top, zNear, zFar);
+		makeFrustumt_lh(left, right, bottom, top, znear, zfar);
 		return *this;
 	}
 
-	Matrix4x4t<T>& makePerspective_rh(T fovy, T aspectRatio, T zNear, T zFar)
+	Matrix4x4t<T>& makePerspective_off_center_rh(const T& fovy, const T& aspectRatio, const T& zNear, const T& zFar) noexcept
 	{
 		T tan_fovy = tan(DEG_TO_RAD(fovy * 0.5f));
 		T right = tan_fovy * aspectRatio * zNear;
@@ -765,7 +793,7 @@ public:
 		return *this;
 	}
 
-	bool getPerspective_rh(T& fovy, T& aspectRatio, T& zNear, T& zFar) const
+	bool getPerspective_rh(T& fovy, T& aspectRatio, T& zNear, T& zFar) const noexcept
 	{
 		T right = 0.0;
 		T left = 0.0;
@@ -788,7 +816,7 @@ public:
 		return r;
 	}
 
-	Matrix4x4t<T>& makeLookAt_lh(const Vector3t<T>& eye, const Vector3t<T>& center, const Vector3t<T>& up)
+	Matrix4x4t<T>& makeLookAt_lh(const Vector3t<T>& eye, const Vector3t<T>& center, const Vector3t<T>& up) noexcept
 	{
 		Vector3t<T> x, y, z;
 
@@ -834,7 +862,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeLookAt_rh(const Vector3t<T>& eye, const Vector3t<T>& center, const Vector3t<T>& up)
+	Matrix4x4t<T>& makeLookAt_rh(const Vector3t<T>& eye, const Vector3t<T>& center, const Vector3t<T>& up) noexcept
 	{
 		Vector3t<T> x, y, z;
 
@@ -880,7 +908,7 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& makeViewport(std::size_t left, std::size_t top, std::size_t width, std::size_t height)
+	Matrix4x4t<T>& makeViewport(std::size_t left, std::size_t top, std::size_t width, std::size_t height) noexcept
 	{
 		T cx = (T)(width >> 1);
 		T cy = (T)(height >> 1);
@@ -900,7 +928,7 @@ template<typename T> const Matrix4x4t<T> Matrix4x4t<T>::Zero(0, 0, 0, 0, 0, 0, 0
 template<typename T> const Matrix4x4t<T> Matrix4x4t<T>::One(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
 
 template <typename T>
-inline bool operator==(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2)
+inline bool operator==(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2) noexcept
 {
 	return
 		m1.a1 == m2.a1 && m1.a2 == m2.a2 && m1.a3 == m2.a3 && m1.a4 == m2.a4 &&
@@ -910,7 +938,7 @@ inline bool operator==(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2)
 }
 
 template <typename T>
-inline bool operator!=(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2)
+inline bool operator!=(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2) noexcept
 {
 	return
 		m1.a1 != m2.a1 || m1.a2 != m2.a2 || m1.a3 != m2.a3 || m1.a4 != m2.a4 ||
@@ -920,13 +948,13 @@ inline bool operator!=(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2)
 }
 
 template<typename T>
-inline Matrix4x4t<T> operator*(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2)
+inline Matrix4x4t<T> operator*(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2) noexcept
 {
 	return Matrix4x4t<T>(m1, m2);
 }
 
 template<typename T>
-inline Vector3t<T> operator*(const Vector3t<T>& v, const Matrix4x4t<T>& m)
+inline Vector3t<T> operator*(const Vector3t<T>& v, const Matrix4x4t<T>& m) noexcept
 {
 	return Vector3t<T>(
 		m.a1 * v.x + m.a2 * v.y + m.a3 * v.z + m.a4,
@@ -935,7 +963,7 @@ inline Vector3t<T> operator*(const Vector3t<T>& v, const Matrix4x4t<T>& m)
 }
 
 template<typename T>
-inline Vector3t<T> operator*(const Matrix4x4t<T>& m, const Vector3t<T>& v)
+inline Vector3t<T> operator*(const Matrix4x4t<T>& m, const Vector3t<T>& v) noexcept
 {
 	return Vector3t<T>(
 		m.a1 * v.x + m.b1 * v.y + m.c1 * v.z + m.d1,
@@ -944,21 +972,21 @@ inline Vector3t<T> operator*(const Matrix4x4t<T>& m, const Vector3t<T>& v)
 }
 
 template<typename T>
-inline Vector3t<T>& operator*=(const Matrix4x4t<T>& m, Vector3t<T>& v)
+inline Vector3t<T>& operator*=(const Matrix4x4t<T>& m, Vector3t<T>& v) noexcept
 {
 	v = m * v;
 	return v;
 }
 
 template<typename T>
-inline Vector3t<T>& operator*=(Vector3t<T>& v, const Matrix4x4t<T>& m)
+inline Vector3t<T>& operator*=(Vector3t<T>& v, const Matrix4x4t<T>& m) noexcept
 {
 	v = v * m;
 	return v;
 }
 
 template<typename T>
-inline Vector4t<T> operator*(const Matrix4x4t<T>& m, const Vector4t<T>& v)
+inline Vector4t<T> operator*(const Matrix4x4t<T>& m, const Vector4t<T>& v) noexcept
 {
 	return Vector4t<T>(
 		m.a1 * v.x + m.b1 * v.y + m.c1 * v.z + m.d1 * v.w,
@@ -968,7 +996,7 @@ inline Vector4t<T> operator*(const Matrix4x4t<T>& m, const Vector4t<T>& v)
 }
 
 template<typename T>
-inline Vector4t<T> operator*(const Vector4t<T>& v, const Matrix4x4t<T>& m)
+inline Vector4t<T> operator*(const Vector4t<T>& v, const Matrix4x4t<T>& m) noexcept
 {
 	return Vector4t<T>(
 		m.a1 * v.x + m.a2 * v.y + m.a3 * v.z + v.w * m.a4,
@@ -978,14 +1006,14 @@ inline Vector4t<T> operator*(const Vector4t<T>& v, const Matrix4x4t<T>& m)
 }
 
 template<typename T>
-inline Vector4t<T>& operator*=(Vector4t<T>& v, const Matrix4x4t<T>& m)
+inline Vector4t<T>& operator*=(Vector4t<T>& v, const Matrix4x4t<T>& m) noexcept
 {
 	v = v * m;
 	return v;
 }
 
 template<typename T>
-inline Matrix4x4t<T>& operator*=(Matrix4x4t<T> m1, const Matrix4x4t<T>& m2)
+inline Matrix4x4t<T>& operator*=(Matrix4x4t<T> m1, const Matrix4x4t<T>& m2) noexcept
 {
 	m1 = Matrix4x4t<T>(
 		m1.a1 * m2.a1 + m1.b1 * m2.a2 + m1.c1 * m2.a3 + m1.d1 * m2.a4,
@@ -1010,7 +1038,7 @@ inline Matrix4x4t<T>& operator*=(Matrix4x4t<T> m1, const Matrix4x4t<T>& m2)
 namespace math
 {
 	template<typename T>
-	Matrix4x4t<T> orthonormalize(const Matrix4x4t<T>& _m)
+	Matrix4x4t<T> orthonormalize(const Matrix4x4t<T>& _m) noexcept
 	{
 		Matrix4x4t<T> m = _m;
 		Vector3t<T> x(m.a1, m.b1, m.c1);
@@ -1028,7 +1056,7 @@ namespace math
 	}
 
 	template<typename T>
-	Matrix4x4t<T> transpose(const Matrix4x4t<T>& _m)
+	Matrix4x4t<T> transpose(const Matrix4x4t<T>& _m) noexcept
 	{
 		Matrix4x4t<T> m = _m;
 		std::swap((T&)m.b1, (T&)m.a2);
@@ -1041,7 +1069,7 @@ namespace math
 	}
 
 	template<typename T>
-	Matrix4x4t<T> inverse(const Matrix4x4t<T>& _m)
+	Matrix4x4t<T> inverse(const Matrix4x4t<T>& _m) noexcept
 	{
 		Matrix4x4t<T> m = _m;
 

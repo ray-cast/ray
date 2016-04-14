@@ -126,7 +126,7 @@ private:
 	bool _subsurfaceScattering;
 	std::size_t _shadowSize;
 	CameraPtr _shadowCamera;
-	GraphicsFormat _shaodwFormat;
+	GraphicsFormat _shadowFormat;
 	GraphicsTexturePtr _shaodwMap;
 	GraphicsFramebufferPtr _shaodwView;
 	GraphicsFramebufferLayoutPtr _shaodwViewLayout;

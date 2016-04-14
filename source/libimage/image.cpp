@@ -77,6 +77,7 @@ Image::create(size_type width, size_type height, bpp_type bpp, bool clear) noexc
 
 	_width = width;
 	_height = height;
+	_depth = 1;
 	_bpp = bpp;
 	_size = destLength;
 	_isStatic = false;
@@ -92,12 +93,19 @@ Image::create(size_type width, size_type height, bpp_type bpp, bool clear) noexc
 bool
 Image::create(size_type width, size_type height, bpp_type bpp, std::size_t dataSize, image_buf data, bool staticData, bool clear) noexcept
 {
+	return this->create(width, height, 0, dataSize, data, staticData, clear);
+}
+
+bool
+Image::create(size_type width, size_type height, size_type depth, bpp_type bpp, std::size_t dataSize, image_buf data, bool staticData, bool clear) noexcept
+{
 	assert(data);
 
-    this->destroy();
+	this->destroy();
 
 	_width = width;
 	_height = height;
+	_depth = depth;
 	_bpp = bpp;
 	_data = data;
 	_size = dataSize;
@@ -119,6 +127,8 @@ Image::create(const Image& copy) noexcept
 void 
 Image::_init() noexcept
 {
+	_imageFormat = ImageFormat::ImageFormatUnknow;
+	_imageType = ImageType::ImageTypeUnknown;
 	_data = nullptr;
 	_mipLevel = 0;
 }
@@ -143,6 +153,18 @@ ImageType
 Image::getImageType() const noexcept
 {
 	return _imageType;
+}
+
+void 
+Image::setImageFormat(ImageFormat format) noexcept
+{
+	_imageFormat = format;
+}
+
+ImageFormat 
+Image::getImageFormat() const noexcept
+{
+	return _imageFormat;
 }
 
 void 

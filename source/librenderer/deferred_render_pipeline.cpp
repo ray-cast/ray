@@ -49,8 +49,8 @@
 _NAME_BEGIN
 
 DeferredRenderPipeline::DeferredRenderPipeline() noexcept
-	: _shaodwFactor(300.0f)
-	, _shaodwMapSize(512)
+	: _shadowEsmFactor(300.0f)
+	, _shadowMapSize(512)
 	, _shadowFormat(GraphicsFormat::GraphicsFormatR32SFloat)
 {
 }
@@ -78,13 +78,18 @@ DeferredRenderPipeline::renderShadowMaps(RenderPipeline& pipeline) noexcept
 		auto num = numSoftLight - _softShaodwViews.size();
 		for (std::size_t i = 0; i < num; i++)
 		{
-			auto blurShaodwMap = pipeline.createTexture(_shaodwMapSize, _shaodwMapSize, GraphicsTextureDim::GraphicsTextureDim2D, _shadowFormat);
+			GraphicsTextureDesc textureDesc;
+			textureDesc.setWidth(_shadowMapSize);
+			textureDesc.setHeight(_shadowMapSize);
+			textureDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+			textureDesc.setTexFormat(_shadowFormat);
+			auto blurShaodwMap = pipeline.createTexture(textureDesc);
 			if (!blurShaodwMap)
 				return;
 
 			GraphicsFramebufferDesc shadowViewDesc;
-			shadowViewDesc.setWidth(_shaodwMapSize);
-			shadowViewDesc.setHeight(_shaodwMapSize);
+			shadowViewDesc.setWidth(_shadowMapSize);
+			shadowViewDesc.setHeight(_shadowMapSize);
 			shadowViewDesc.attach(blurShaodwMap);
 			shadowViewDesc.setGraphicsFramebufferLayout(_softShaodwViewLayout);
 			auto blurShaodwView = pipeline.createFramebuffer(shadowViewDesc);
@@ -104,17 +109,18 @@ DeferredRenderPipeline::renderShadowMaps(RenderPipeline& pipeline) noexcept
 		pipeline.setCamera(light->getShadowCamera());
 		pipeline.setFramebuffer(light->getShadowCamera()->getFramebuffer());
 		pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsDepth, float4::Zero, 1.0, 0);
-		pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, _deferredDepthOnly);
+		pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, _softGenShadowMap);
 
 		if (light->getSoftShadow())
 		{
 			_softBlurShadowSource->assign(light->getShadowMap());
-			_softBlurShadowSourceInv->assign(float2(1.0f, 1.0f) / light->getShadowSize());
+			_softBlurShadowSourceInv->assign(float2(1.0f, 0.0f) / light->getShadowSize());
+			_softClipConstant->assign(float4(light->getShadowCamera()->getClipConstant().xyz(), 1.0));
 			pipeline.setFramebuffer(_softShaodwViewTemp);
 			pipeline.drawScreenQuad(_softBlurShadowX);
 
 			_softBlurShadowSource->assign(_softShaodwMapTemp);
-			_softBlurShadowSourceInv->assign(float2(1.0f, 1.0f) / _shaodwMapSize);
+			_softBlurShadowSourceInv->assign(float2(0.0f, 1.0f) / _shadowMapSize);
 			pipeline.setFramebuffer(_softShaodwViews[numSoftLight]);
 			pipeline.drawScreenQuad(_softBlurShadowY);
 
@@ -162,11 +168,9 @@ DeferredRenderPipeline::render3DEnvMap(RenderPipeline& pipeline) noexcept
 
 	if (_SSSS)
 	{
-		auto ssss = _SSSS->downcast<SSSS>();
-		if (!ssss->getActive())
+		if (!_SSSS->setup(pipeline))
 		{
-			_SSSS->_setRenderPipeline(&pipeline);
-			_SSSS->setActive(true);
+			_SSSS->setup(pipeline);
 		}
 
 		std::size_t shadowIndex = 0;
@@ -178,17 +182,16 @@ DeferredRenderPipeline::render3DEnvMap(RenderPipeline& pipeline) noexcept
 			if (light->getShadow() && light->getSubsurfaceScattering())
 			{
 				if (light->getSoftShadow())
-					ssss->translucency(pipeline, light, _softShaodwMaps[shadowIndex], _deferredFinalView);
+					_SSSS->applyTranslucency(pipeline, _deferredFinalView, light, _deferredDepthLinearMap, _softShaodwMaps[shadowIndex]);
 				else
-					ssss->translucency(pipeline, light, light->getShadowMap(), _deferredFinalView);
+					_SSSS->applyTranslucency(pipeline, _deferredFinalView, light, _deferredDepthLinearMap, light->getShadowMap());
 			}
 
 			if (light->getSoftShadow())
 				shadowIndex++;
 		}
 
-		ssss->blurX(pipeline, _deferredFinalMap, _deferredSwapView);
-		ssss->blurX(pipeline, _deferredSwapMap, _deferredFinalView);
+		_SSSS->applyGuassBlur(pipeline, _deferredFinalView, _deferredGraphicsMap, _deferredNormalMap, _deferredDepthLinearMap, _deferredSwapView);
 	}
 
 	auto renderTexture = pipeline.getCamera()->getFramebuffer();
@@ -312,7 +315,7 @@ DeferredRenderPipeline::renderSunLight(RenderPipeline& pipeline, const Light& li
 	if (light.getShadow())
 	{	
 		float3 clipConstant = light.getShadowCamera()->getClipConstant().xyz();
-		float shadowFactor = _shaodwFactor / (light.getShadowCamera()->getFar() - light.getShadowCamera()->getNear());
+		float shadowFactor = _shadowEsmFactor / (light.getShadowCamera()->getFar() - light.getShadowCamera()->getNear());
 
 		_shadowMap->assign(shadowMap ? shadowMap : light.getShadowMap());
 		_shadowFactor->assign(float4(clipConstant, shadowFactor));
@@ -337,7 +340,7 @@ DeferredRenderPipeline::renderDirectionalLight(RenderPipeline& pipeline, const L
 	if (light.getShadow())
 	{
 		float3 clipConstant = light.getShadowCamera()->getClipConstant().xyz();
-		float shadowFactor = _shaodwFactor / (light.getShadowCamera()->getFar() - light.getShadowCamera()->getNear());
+		float shadowFactor = _shadowEsmFactor / (light.getShadowCamera()->getFar() - light.getShadowCamera()->getNear());
 
 		_shadowMap->assign(shadowMap ? shadowMap : light.getShadowMap());
 		_shadowFactor->assign(float4(clipConstant, shadowFactor));
@@ -384,7 +387,7 @@ DeferredRenderPipeline::renderSpotLight(RenderPipeline& pipeline, const Light& l
 	if (light.getShadow())
 	{
 		_shadowMap->assign(shadowMap ? shadowMap : light.getShadowMap());
-		_shadowFactor->assign(float4(light.getShadowCamera()->getClipConstant().xyz(), _shaodwFactor / (light.getShadowCamera()->getFar() - light.getShadowCamera()->getNear())));
+		_shadowFactor->assign(float4(light.getShadowCamera()->getClipConstant().xyz(), _shadowEsmFactor / (light.getShadowCamera()->getFar() - light.getShadowCamera()->getNear())));
 		_shadowView2LightView->assign((pipeline.getCamera()->getViewInverse() * light.getShadowCamera()->getView()).getAxisZ());
 		_shadowView2LightViewProject->assign(pipeline.getCamera()->getViewInverse() * light.getShadowCamera()->getViewProject());
 
@@ -693,11 +696,13 @@ DeferredRenderPipeline::setupDeferredRenderTextures(RenderPipeline& pipeline) no
 bool
 DeferredRenderPipeline::setupShadowMaterial(RenderPipeline& pipeline) noexcept
 {
-	_softBlur = pipeline.createMaterial("sys:fx/blur.fxml.o");
-	_softBlurShadowX = _softBlur->getTech("blurX");
-	_softBlurShadowY = _softBlur->getTech("blurY");
+	_softBlur = pipeline.createMaterial("sys:fx/shadowmap.fxml.o");
+	_softGenShadowMap = _softBlur->getTech("GenShadowMap");
+	_softBlurShadowX = _softBlur->getTech("BlurX");
+	_softBlurShadowY = _softBlur->getTech("BlurY");
 	_softBlurShadowSource = _softBlur->getParameter("texSource");
 	_softBlurShadowSourceInv = _softBlur->getParameter("texSourceInv");
+	_softClipConstant = _softBlur->getParameter("clipConstant");
 	return true;
 }
 
@@ -710,13 +715,13 @@ DeferredRenderPipeline::setupShadowMap(RenderPipeline& pipeline) noexcept
 	if (!_softShaodwViewLayout)
 		return false;
 
-	_softShaodwMapTemp = pipeline.createTexture(_shaodwMapSize, _shaodwMapSize, GraphicsTextureDim::GraphicsTextureDim2D, _shadowFormat);
+	_softShaodwMapTemp = pipeline.createTexture(_shadowMapSize, _shadowMapSize, GraphicsTextureDim::GraphicsTextureDim2D, _shadowFormat);
 	if (!_softShaodwMapTemp)
 		return false;
 
 	GraphicsFramebufferDesc shadowViewDesc;
-	shadowViewDesc.setWidth(_shaodwMapSize);
-	shadowViewDesc.setHeight(_shaodwMapSize);
+	shadowViewDesc.setWidth(_shadowMapSize);
+	shadowViewDesc.setHeight(_shadowMapSize);
 	shadowViewDesc.attach(_softShaodwMapTemp);
 	shadowViewDesc.setGraphicsFramebufferLayout(_softShaodwViewLayout);
 	_softShaodwViewTemp = pipeline.createFramebuffer(shadowViewDesc);

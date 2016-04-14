@@ -84,6 +84,8 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 	if (!_pipeline)
 		return false;
 
+	_pipeline->setSwapInterval(setting.swapInterval);
+
 	auto deferredLighting = std::make_shared<DeferredRenderPipeline>();
 	deferredLighting->_setRenderPipeline(_pipeline);
 	deferredLighting->setup(*_pipeline);

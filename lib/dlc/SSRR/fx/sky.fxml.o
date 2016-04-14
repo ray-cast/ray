@@ -30,9 +30,18 @@
     <inputlayout name="POS3F">
         <layout name="POSITION" format="R32G32B32SFloat" />
     </inputlayout>
+    <inputlayout name="POS3F_UV2F">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="TEXCOORD" format="R32G32SFloat" />
+    </inputlayout>
     <inputlayout name="POS3F_N3F">
         <layout name="POSITION" format="R32G32B32SFloat" />
         <layout name="NORMAL" format="R32G32B32SFloat" />
+    </inputlayout>
+    <inputlayout name="POS3F_N3F_UV2F">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="NORMAL" format="R32G32B32SFloat" />
+        <layout name="TEXCOORD" format="R32G32SFloat" />
     </inputlayout>
     <shader name="SkyPS">
         <![CDATA[
@@ -238,8 +247,8 @@ f2 20 10 00 00 00 00 00 67 00 00 04 f2 20 10 00
 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
 ]]>
     </shader>
-    <technique name="opaque">
-        <pass name="specific">
+    <technique name="opaquespecific">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F_N3F" />
             <state name="vertex" value="SkyVS" />
             <state name="fragment" value="SkyPS" />

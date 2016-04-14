@@ -98,6 +98,12 @@ RenderPipelineDevice::close() noexcept
 	_graphicsDevice.reset();
 }
 
+GraphicsDeviceType 
+RenderPipelineDevice::getDeviceType() const noexcept
+{
+	return _graphicsDevice->getGraphicsDeviceDesc().getDeviceType();
+}
+
 RenderPipelinePtr
 RenderPipelineDevice::createRenderPipeline(WindHandle window, std::uint32_t w, std::uint32_t h) noexcept
 {
@@ -181,19 +187,44 @@ RenderPipelineDevice::createTexture(const std::string& name, GraphicsTextureDim 
 				format = GraphicsFormat::GraphicsFormatBC7SRGBBlock;
 			else
 			{
-				if (image.bpp() == 24)
-					format = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
-				else if (image.bpp() == 32)
-					format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
+				auto imageFormat = image.getImageFormat();
+				if (imageFormat != ImageFormat::ImageFormatUnknow)
+				{
+					if (imageFormat == ImageFormat::ImageFormatR8G8B8)
+						format = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
+					else if (imageFormat == ImageFormat::ImageFormatR8G8B8A8)
+						format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
+					else if (imageFormat == ImageFormat::ImageFormatB8G8R8)
+						format = GraphicsFormat::GraphicsFormatB8G8R8UNorm;
+					else if (imageFormat == ImageFormat::ImageFormatB8G8R8A8)
+						format = GraphicsFormat::GraphicsFormatB8G8R8A8UNorm;
+					else if (imageFormat == ImageFormat::ImageFormatL8)
+						format = GraphicsFormat::GraphicsFormatR8UNorm;
+					else if (imageFormat == ImageFormat::ImageFormatL8A8)
+						format = GraphicsFormat::GraphicsFormatR8G8UNorm;
+					else
+					{
+						assert(false);
+						return nullptr;
+					}
+				}
 				else
 				{
-					assert(false);
+					if (image.bpp() == 24)
+						format = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
+					else if (image.bpp() == 32)
+						format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
+					else
+					{
+						assert(false);
+						return nullptr;
+					}
 				}
 			}
 
 			GraphicsTextureDesc textureDesc;
-			textureDesc.setSize(image.width(), image.height());
-			textureDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+			textureDesc.setSize(image.width(), image.height(), image.depth());
+			textureDesc.setTexDim(dim);
 			textureDesc.setTexFormat(format);
 			textureDesc.setStream(image.data());
 			textureDesc.setStreamSize(image.size());

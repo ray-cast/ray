@@ -19,11 +19,11 @@
         <![CDATA[
             float3 Uncharted2Tonemap(float3 x)
             {
-                const float A = 0.15; // Shoulder Strength
-                const float B = 0.50; // Linear Strength
+                const float A = 0.22; // Shoulder Strength
+                const float B = 0.30; // Linear Strength
                 const float C = 0.10; // Linear Angle
                 const float D = 0.20; // Toe Strength
-                const float E = 0.02; // Toe Numerator
+                const float E = 0.01; // Toe Numerator
                 const float F = 0.30; // Toe Denominator E/F = Toe Angle
                 const float W = 11.2; // Linear White Point Value
                 return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;

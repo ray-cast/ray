@@ -142,10 +142,12 @@ private:
 	MaterialParamPtr _lightOuterInner;
 
 	MaterialPtr _softBlur;
-	MaterialTechPtr  _softBlurShadowX;
-	MaterialTechPtr  _softBlurShadowY;
+	MaterialTechPtr _softGenShadowMap;
+	MaterialTechPtr _softBlurShadowX;
+	MaterialTechPtr _softBlurShadowY;
 	MaterialParamPtr _softBlurShadowSource;
 	MaterialParamPtr _softBlurShadowSourceInv;
+	MaterialParamPtr _softClipConstant;
 
 	GraphicsTextures _softShaodwMaps;
 	GraphicsTexturePtr _softShaodwMapTemp;
@@ -154,8 +156,8 @@ private:
 	GraphicsFramebufferPtr _softShaodwViewTemp;
 	GraphicsFramebufferLayoutPtr _softShaodwViewLayout;
 
-	float _shaodwFactor;
-	float _shaodwMapSize;
+	float _shadowEsmFactor;
+	float _shadowMapSize;
 	GraphicsFormat _shadowFormat;
 
 	MaterialVariantPtr _materialDepthMap;
@@ -197,7 +199,7 @@ private:
 	GraphicsFramebufferPtr _deferredFinalView;
 	GraphicsFramebufferPtr _deferredGraphicsViews;
 
-	RenderPostProcessPtr _SSSS;
+	std::shared_ptr<class SSSS> _SSSS;
 };
 
 _NAME_END

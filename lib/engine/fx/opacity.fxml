@@ -1,5 +1,5 @@
 <?xml version='1.0'?>
-<effect language="glsl">
+<effect language="hlsl">
     <include name="sys:fx/Gbuffer.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
     <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />

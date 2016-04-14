@@ -41,11 +41,17 @@
 
 _NAME_BEGIN
 
-class ColorGrading : public RenderPostProcess
+class ColorGrading final : public RenderPostProcess
 {
 public:
 	ColorGrading() noexcept;
 	~ColorGrading() noexcept;
+
+	void setGammaGrading(bool enable) noexcept;
+	void setColorGrading(bool enable) noexcept;
+
+	bool getGammaGrading() const noexcept;
+	bool getColorGrading() const noexcept;
 
 	virtual void onActivate(RenderPipeline& pipeline) noexcept;
 	virtual void onDeactivate(RenderPipeline& pipeline) noexcept;
@@ -54,9 +60,13 @@ public:
 
 private:
 
+	bool _enableGammaGrading;
+	bool _enableColorGrading;
+
 	MaterialPtr _material;
 	MaterialTechPtr _colorGrading;
 
+	MaterialParamPtr _gammGrading;
 	MaterialParamPtr _texGrading;
 	MaterialParamPtr _texSource;
 

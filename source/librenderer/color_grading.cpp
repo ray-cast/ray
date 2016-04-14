@@ -42,6 +42,8 @@
 _NAME_BEGIN
 
 ColorGrading::ColorGrading() noexcept
+	: _enableGammaGrading(true)
+	, _enableColorGrading(true)
 {
 }
 
@@ -50,14 +52,39 @@ ColorGrading::~ColorGrading() noexcept
 }
 
 void
+ColorGrading::setGammaGrading(bool enable) noexcept
+{
+	_enableGammaGrading = enable;
+}
+
+void 
+ColorGrading::setColorGrading(bool enable) noexcept
+{
+	_enableColorGrading = enable;
+}
+
+bool 
+ColorGrading::getGammaGrading() const noexcept
+{
+	return _enableGammaGrading;
+}
+
+bool 
+ColorGrading::getColorGrading() const noexcept
+{
+	return _enableColorGrading;
+}
+
+void
 ColorGrading::onActivate(RenderPipeline& pipeline) noexcept
 {
-	_texColorGrading = pipeline.createTexture("sys:media/color_grading.png", GraphicsTextureDim::GraphicsTextureDim3D);
+	_texColorGrading = pipeline.createTexture("sys:media/color_grading.dds", GraphicsTextureDim::GraphicsTextureDim3D);
 
 	_material = pipeline.createMaterial("sys:fx/color_grading.fxml.o");
 	_colorGrading = _material->getTech("ColorGrading");
 	_texGrading = _material->getParameter("texColorGrading");
 	_texSource = _material->getParameter("texSource");
+	_gammGrading = _material->getParameter("colorGrading");
 
 	_texGrading->assign(_texColorGrading);
 }
@@ -70,6 +97,7 @@ ColorGrading::onDeactivate(RenderPipeline& pipeline) noexcept
 bool
 ColorGrading::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
+	_gammGrading->assign(int2(_enableGammaGrading, _enableColorGrading));
 	_texSource->assign(source->getGraphicsFramebufferDesc().getTextures().front());
 
 	pipeline.setFramebuffer(dest);

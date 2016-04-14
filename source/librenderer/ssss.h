@@ -41,56 +41,50 @@
 
 _NAME_BEGIN
 
-class SSSS : public RenderPostProcess
+class SSSS final
 {
-	__DeclareSubClass(SSSS, RenderPostProcess)
 public:
 	SSSS() noexcept;
 	~SSSS() noexcept;
 
-	void blurX(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
-	void blurY(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
+	bool setup(RenderPipeline& pipeline) noexcept;
+	void close() noexcept;
 
-	void translucency(RenderPipeline& pipeline, LightPtr light, GraphicsTexturePtr shaodwmap, GraphicsFramebufferPtr dest) noexcept;
-	void translucency(RenderPipeline& pipeline, GraphicsFramebufferPtr dest) noexcept;
+	void setScale(float scale) noexcept;
+	void setStrength(float strength) noexcept;
+	void setCorrection(float correction) noexcept;
+
+	float getScale() const noexcept;
+	float getStrength() const noexcept;
+	float getCorrection() const noexcept;
+
+	void applyTranslucency(RenderPipeline& pipeline, GraphicsFramebufferPtr source, LightPtr light, GraphicsTexturePtr linearDepth, GraphicsTexturePtr shaodwmap) noexcept;
+	void applyGuassBlur(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsTexturePtr MRT0, GraphicsTexturePtr MRT1, GraphicsTexturePtr linearDepth, GraphicsFramebufferPtr swap) noexcept;
 
 private:
-
-	void onActivate(RenderPipeline& pipeline) noexcept;
-	void onDeactivate(RenderPipeline& pipeline) noexcept;
-
-	bool onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept;
-
-private:
-
 	float _sssScale;
 	float _sssStrength;
-	float _sssWidth;
-	float _gaussianWidth;
+	float _sssCorrection;
 
 	MaterialPtr _material;
-	MaterialTechPtr _translucency;
-	MaterialTechPtr _blur;
+	MaterialTechPtr _sssTranslucency;
+	MaterialTechPtr _sssGuassBlur;
 
-	MaterialParamPtr _sssStep;
-	MaterialParamPtr _sssCorrection;
+	MaterialParamPtr _sssFactor;
 	MaterialParamPtr _sssSource;
 
+	MaterialParamPtr _texMRT0;
+	MaterialParamPtr _texMRT1;
 	MaterialParamPtr _texDepthLinear;
-
-	MaterialParamPtr _eyeProjInfo;
 
 	MaterialParamPtr _lightColor;
 	MaterialParamPtr _lightEyePosition;
+	MaterialParamPtr _lightEyeProjInfo;
 	
 	MaterialParamPtr _shadowMap;
 	MaterialParamPtr _shadowFactor;
 	MaterialParamPtr _shadowEye2LightView;
 	MaterialParamPtr _shadowEye2LightViewProject;
-
-	GraphicsTexturePtr _SSSSMap;
-	GraphicsFramebufferPtr _SSSSView;
-	GraphicsFramebufferLayoutPtr _SSSSViewLayout;
 };
 
 _NAME_END

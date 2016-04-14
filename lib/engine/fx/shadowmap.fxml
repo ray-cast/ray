@@ -1,0 +1,162 @@
+<?xml version="1.0"?>
+<effect language="hlsl">
+    <include name="sys:fx/Gbuffer.fxml"/>
+    <include name="sys:fx/inputlayout.fxml"/>
+    <parameter name="texSource" type="texture2D" />
+    <parameter name="texSourceInv" type="float2" />
+    <parameter name="clipConstant" type="float4" />
+    <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject"/>
+    <shader>
+        <![CDATA[
+            void GenShadowMapVS(
+                in float4 Position : POSITION,
+                out float4 oPosition : SV_Position)
+            {
+                oPosition = mul(Position, matModelViewProject);
+            }
+
+            void GenShadowMapPS()
+            {
+            }
+
+            void BlurVS(
+                in float4 Position : POSITION,
+                out float2 oTexcoord : TEXCOORD0,
+                out float4 oPosition : SV_Position)
+            {
+                oPosition = Position;
+                oTexcoord = PosToCoord(Position.xy);
+            }
+
+            float BlurXPS(in float2 coord : TEXCOORD0) : SV_Target0
+            {
+                const float offset[3] = { 0.0, 1.3846153846, 3.2307692308 };
+                const float weight[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
+
+                float shadow = texSource.Sample(LinearClamp, coord).r * weight[0];
+
+                for (int i = 1; i < 3; ++i)
+                {
+                    shadow += texSource.Sample(LinearClamp, coord + float2(offset[i], 0) * texSourceInv).r * weight[i];
+                    shadow += texSource.Sample(LinearClamp, coord - float2(offset[i], 0) * texSourceInv).r * weight[i];
+                }
+
+                return shadow;
+            }
+
+            float BlurYPS(in float2 coord : TEXCOORD0) : SV_Target0
+            {
+                const float offset[3] = { 0.0, 1.3846153846, 3.2307692308 };
+                const float weight[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
+
+                float shadow = texSource.Sample(LinearClamp, coord).r * weight[0];
+
+                for (int i = 1; i < 3; ++i)
+                {
+                    shadow += texSource.Sample(LinearClamp, coord + float2(0, offset[i]) * texSourceInv).r * weight[i];
+                    shadow += texSource.Sample(LinearClamp, coord - float2(0, offset[i]) * texSourceInv).r * weight[i];
+                }
+
+                return shadow;
+            }
+
+            float LogBlurXPS(in float2 coord : TEXCOORD0) : SV_Target0
+            {
+                const float offset[3] = { 0.0, 1.3846153846, 3.2307692308 };
+                const float weight[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
+
+                float d0 = linearDepth(clipConstant.xyz, texSource.Sample(LinearClamp, coord).r);
+                float d1 = 0;
+
+                for (int i = 0; i < 3; ++i)
+                {
+                    float d2 = linearDepth(clipConstant.xyz, texSource.Sample(LinearClamp, coord + float2(offset[i], 0) * texSourceInv).r);
+                    float d3 = linearDepth(clipConstant.xyz, texSource.Sample(LinearClamp, coord - float2(offset[i], 0) * texSourceInv).r);
+
+                    d1 += (exp(clipConstant.w * (d2 - d0)) + exp(clipConstant.w * (d3 - d0))) * weight[i];
+                }
+
+                return clipConstant.w * d0 + log(d1);
+            }
+
+            float LogBlurYPS(in float2 coord : TEXCOORD0) : SV_Target0
+            {
+                const float offset[3] = { 0.0, 1.3846153846, 3.2307692308 };
+                const float weight[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
+
+                float d0 = texSource.Sample(LinearClamp, coord).r;
+                float d1 = 0;
+
+                for (int i = 0; i < 3; ++i)
+                {
+                    float d2 = texSource.Sample(LinearClamp, coord + float2(0, offset[i]) * texSourceInv).r;
+                    float d3 = texSource.Sample(LinearClamp, coord - float2(0, offset[i]) * texSourceInv).r;
+
+                    d1 += (exp(d2 - d0) + exp(d3 - d0)) * weight[i];
+                }
+
+                return d0 + log(d1);
+            }
+        ]]>
+    </shader>
+    <technique name="GenShadowMap">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+
+            <state name="vertex" value="GenShadowMapVS"/>
+            <state name="fragment" value="GenShadowMapPS" />
+        </pass>
+    </technique>
+    <technique name="BlurX">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+
+            <state name="vertex" value="BlurVS"/>
+            <state name="fragment" value="BlurXPS" />
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+    <technique name="BlurY">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+
+            <state name="vertex" value="BlurVS"/>
+            <state name="fragment" value="BlurYPS" />
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+    <technique name="LogBlurX">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+
+            <state name="vertex" value="BlurVS"/>
+            <state name="fragment" value="LogBlurXPS" />
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+    <technique name="LogBlurY">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+
+            <state name="vertex" value="BlurVS"/>
+            <state name="fragment" value="LogBlurYPS" />
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+        </pass>
+    </technique>
+</effect>

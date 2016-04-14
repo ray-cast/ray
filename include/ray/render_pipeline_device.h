@@ -51,6 +51,8 @@ public:
 	bool open(GraphicsDeviceType type) noexcept;
 	void close() noexcept;
 
+	GraphicsDeviceType getDeviceType() const noexcept;
+
 	RenderPipelinePtr createRenderPipeline(WindHandle window, std::uint32_t w, std::uint32_t h) noexcept;
 
 	MaterialPtr createMaterial(const std::string& name) noexcept;

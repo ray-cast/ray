@@ -65,8 +65,7 @@ TerrainComponent::addBlockByMousePos(std::int32_t x, std::int32_t y) noexcept
 	auto translate = this->getGameObject()->getTranslate();
 
 	auto world = this->getComponent<ray::CameraComponent>()->screenToWorld(pos);
-	auto view = world - translate;
-	view.normalize();
+	auto view = ray::math::normalize(world - translate);
 
 	return this->addBlockByRaycast(translate, view);
 }
@@ -195,8 +194,7 @@ TerrainComponent::getChunkByMousePos(std::int32_t x, std::int32_t y, TerrainData
 	auto translate = this->getGameObject()->getTranslate();
 
 	auto world = this->getComponent<ray::CameraComponent>()->screenToWorld(pos);
-	auto view = world - translate;
-	view.normalize();
+	auto view = ray::math::normalize(world - translate);
 
 	return this->getChunkByRaycast(translate, view, out);
 }
@@ -215,7 +213,7 @@ TerrainComponent::getChunkByRaycast(const ray::Vector3& translate, const ray::Ve
 	float lastZ = z;
 
 	float cur = 0;
-	float step = view.length();
+	float step = ray::math::length(view);
 	if (std::isnan(step))
 	{
 		return nullptr;

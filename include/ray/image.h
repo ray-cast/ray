@@ -54,6 +54,7 @@ public:
 
     bool create(size_type width, size_type height, bpp_type bpp, bool clear = false) noexcept;
 	bool create(size_type width, size_type height, bpp_type bpp, std::size_t dataSize, image_buf data, bool staticData = false, bool clear = false) noexcept;
+	bool create(size_type width, size_type height, size_type depth, bpp_type bpp, std::size_t dataSize, image_buf data, bool staticData = false, bool clear = false) noexcept;
     bool create(const Image& src) noexcept;
 
     void destroy() noexcept;
@@ -61,6 +62,7 @@ public:
 
     size_type width()  const noexcept { return _width; }
     size_type height() const noexcept { return _height; }
+	size_type depth()  const noexcept { return _depth;  }
     size_type size()   const noexcept { return _size; }
     image_buf data()   const noexcept { return _data; }
     image_buf bits()   const noexcept { return _data; }
@@ -69,6 +71,9 @@ public:
 
 	void setImageType(ImageType type) noexcept;
 	ImageType getImageType() const noexcept;
+
+	void setImageFormat(ImageFormat format) noexcept;
+	ImageFormat getImageFormat() const noexcept;
 
 	// for dds
 	void setMipLevel(std::uint8_t level) noexcept;
@@ -138,12 +143,14 @@ private:
 private:
 
 	ImageType _imageType;
+	ImageFormat _imageFormat;
 
 	bool _isStatic;
 	bool _hasMask;
 
 	size_type _width;
 	size_type _height;
+	size_type _depth;
 	std::size_t _size;
 
 	image_buf _data;

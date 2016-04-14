@@ -43,7 +43,7 @@ RenderSetting::RenderSetting() noexcept
 	, width(0)
 	, height(0)
 	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
-	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalVsync)
+	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalFree)
 	, enableSSAO(false)
 	, enableSSGI(false)
 	, enableSAT(false)
@@ -51,9 +51,9 @@ RenderSetting::RenderSetting() noexcept
 	, enableSSSS(false)
 	, enableFog(false)
 	, enableDOF(false)
-	, enableFimic(false)
-	, enableFXAA(true)
 	, enableLightShaft(false)
+	, enableFimic(true)
+	, enableFXAA(true)
 	, enableColorGrading(true)
 {
 }

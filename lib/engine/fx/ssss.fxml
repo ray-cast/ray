@@ -2,84 +2,20 @@
 <effect language="hlsl">
     <include name="sys:fx/Gbuffer.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
-    <parameter name="sssStep" type="float2"/>
-    <parameter name="sssCorrection" type="float" />
     <parameter name="texSource" type="texture2D" />
-    <parameter name="texDepthLinear" type="texture2D" semantic="DeferredDepthLinearMap"/>
-    <parameter name="texMRT0" type="texture2D" semantic="DeferredGraphicMap" />
-    <parameter name="texMRT1" type="texture2D" semantic="DeferredNormalMap" />
+    <parameter name="texDepthLinear" type="texture2D"/>
+    <parameter name="texMRT0" type="texture2D"/>
+    <parameter name="texMRT1" type="texture2D"/>
     <parameter name="eyeProjInfo" type="float4"/>
     <parameter name="lightColor" type="float3"/>
     <parameter name="lightEyePosition" type="float3" />
+    <parameter name="blurFactor" type="float3"/>
     <parameter name="shadowFactor" type="float4"/>
     <parameter name="shadowMap" type="texture2D" />
-    <parameter name="shadowEye2LightView" type="float4"/>
+    <parameter name="shadowEye2LightView" type="float4x4"/>
     <parameter name="shadowEye2LightViewProject" type="float4x4"/>
     <shader name="vertex">
         <![CDATA[
-        float3 SSSSTransmittance(float d)
-        {
-            float dd = -d * d;
-            return  float3(0.233, 0.455, 0.649) * exp(dd / 0.0064) +
-                    float3(0.1,   0.336, 0.344) * exp(dd / 0.0484) +
-                    float3(0.118, 0.198, 0.0)   * exp(dd / 0.187)  +
-                    float3(0.113, 0.007, 0.007) * exp(dd / 0.567)  +
-                    float3(0.358, 0.004, 0.0)   * exp(dd / 1.99)   +
-                    float3(0.078, 0.0,   0.0)   * exp(dd / 7.41);
-        }
-
-        float4 SSSSTranslucency(float2 coord)
-        {
-            float4 MRT0 = texMRT0.Sample(PointClamp, coord);
-            float4 MRT1 = texMRT1.Sample(PointClamp, coord);
-
-            float3 N = restoreNormal(MRT1);
-            float3 P = restorePosition(texDepthLinear, eyeProjInfo, coord);
-            float3 L = normalize(P - lightEyePosition);
-            float4 transmittance = 0;
-
-            float irradiance = max(0.0, 0.3 + dot(N, L));
-            if (irradiance > 0.0)
-            {
-                float4 proj = mul(float4(P, 1.0), shadowEye2LightViewProject);
-                proj /= proj.w;
-                proj = PosToCoord(proj);
-
-                float d1 = linearDepth(shadowFactor.xyz, shadowMap.Sample(LinearClamp, proj.xy).r);
-                float d2 = dot(float4(P, 1.0), shadowEye2LightView);
-                float d = abs(d1 - d2);
-
-                float3 diffuse = restoreDiffuse(MRT0);
-                transmittance.xyz = SSSSTransmittance(d * shadowFactor.w) * irradiance * lightColor * diffuse;
-            }
-
-            return transmittance;
-        }
-
-        float4 SSSSBlurPS(float2 coord, texture2D texSource, texture2D texDepth, float correction, float2 step)
-        {
-            float w[6] = { 0.006f,   0.061f,   0.242f,  0.242f,  0.061f, 0.006f };
-            float o[6] = {  -1.0f, -0.6667f, -0.3333f, 0.3333f, 0.6667f,   1.0f };
-
-            float4 colorM = texSource.Sample(PointClamp, coord);
-            float depthM = texDepth.Sample(PointClamp, coord).r;
-
-            float2 finalStep = step / depthM;
-            float4 colorBlurred = colorM * 0.382;
-
-            [unroll]
-            for (int i = 0; i < 6; i++)
-            {
-                float2 offset = coord +  o[i] * finalStep;
-                float3 color = texSource.Sample(PointClamp, offset).rgb;
-                float depth = texDepth.Sample(PointClamp, offset).r;
-                float s = min(correction * abs(depthM - depth), 1);
-                colorBlurred.rgb += w[i] * lerp(color, colorM.rgb, s);
-            }
-
-            return colorBlurred;
-        }
-
         void PostProcessVS(
             in float4 Position : POSITION0,
             out float2 oTexcoord : TEXCOORD0,
@@ -90,14 +26,67 @@
             oTexcoord = PosToCoord(Position.xy);
         }
 
-        float4 TranslucencyPS(in float2 coord : TEXCOORD0) : SV_Target
+        float3 CalcTransmittance(float d)
         {
-            return SSSSTranslucency(coord);
+            float dd = -d * d;
+            return  float3(0.233, 0.455, 0.649) * exp(dd / 0.0064) +
+                    float3(0.1,   0.336, 0.344) * exp(dd / 0.0484) +
+                    float3(0.118, 0.198, 0.0)   * exp(dd / 0.187)  +
+                    float3(0.113, 0.007, 0.007) * exp(dd / 0.567)  +
+                    float3(0.358, 0.004, 0.0)   * exp(dd / 1.99)   +
+                    float3(0.078, 0.0,   0.0)   * exp(dd / 7.41);
         }
 
-        float4 BlurPS(in float4 coord : TEXCOORD0) : SV_Target
+        float4 TranslucencyPS(in float2 coord : TEXCOORD0, in float3 viewidr : TEXCOORD1) : SV_Target
         {
-            return SSSSBlurPS(coord.xy, texSource, texDepthLinear, sssCorrection, sssStep);
+            float4 MRT0 = texMRT0.Sample(PointClamp, coord);
+            float4 MRT1 = texMRT1.Sample(PointClamp, coord);
+
+            float3 N = restoreNormal(MRT1);
+            float3 P = restorePosition(texDepthLinear, eyeProjInfo, coord);
+            float3 L = normalize(P - lightEyePosition);
+            float3 transmittance = 0;
+
+            float irradiance = max(0.0, 0.3 + dot(N, L));
+            if (irradiance > 0.0)
+            {
+                float4 proj = mul(float4(P, 1.0), shadowEye2LightViewProject);
+                proj /= proj.w;
+                proj = PosToCoord(proj);
+
+                float d1 = linearDepth(shadowFactor.xyz, shadowMap.Sample(LinearClamp, proj.xy).r);
+                float d2 = length(mul(float4(P, 1.0), shadowEye2LightView).xyz);
+                float d = abs(d2 - d1);
+
+                float3 diffuse = restoreDiffuse(MRT0);
+                transmittance = CalcTransmittance(d * shadowFactor.w) * irradiance * lightColor * diffuse;
+            }
+
+            return float4(transmittance, 1.0);
+        }
+
+        float4 GuassBlurPS(in float4 coord : TEXCOORD0) : SV_Target
+        {
+            float w[6] = { 0.006f,   0.061f,   0.242f,  0.242f,  0.061f, 0.006f };
+            float o[6] = {  -1.0f, -0.6667f, -0.3333f, 0.3333f, 0.6667f,   1.0f };
+
+            float4 colorM = texSource.Sample(PointClamp, coord);
+            float depthM = texDepthLinear.Sample(PointClamp, coord).r;
+
+            float2 finalStep = blurFactor.xy / depthM;
+            float4 colorBlurred = colorM * 0.382;
+
+            [unroll]
+            for (int i = 0; i < 6; i++)
+            {
+                float2 offset = coord +  o[i] * finalStep;
+                float3 color = texSource.Sample(PointClamp, offset).rgb;
+                float depth = texDepthLinear.Sample(PointClamp, offset).r;
+                float s = min(0.0125 * blurFactor.z * abs(depthM - depth), 1);
+                colorBlurred.rgb += w[i] * lerp(color, colorM.rgb, s);
+            }
+
+            return colorBlurred;
         }
         ]]>
     </shader>
@@ -113,7 +102,7 @@
 
             <state name="cullmode" value="none"/>
 
-            <state name="blend" value="true"/>
+            <state name="blend" value="false"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
         </pass>
@@ -123,7 +112,7 @@
             <state name="inputlayout" value="POS3F"/>
 
             <state name="vertex" value="PostProcessVS"/>
-            <state name="fragment" value="BlurPS"/>
+            <state name="fragment" value="GuassBlurPS"/>
 
             <state name="cullmode" value="none" />
 

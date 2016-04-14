@@ -45,138 +45,131 @@
 
 _NAME_BEGIN
 
-__ImplementSubClass(SSSS, RenderPostProcess, "SSSS")
-
 SSSS::SSSS() noexcept
 	: _sssScale(100.0f)
-	, _sssStrength(0.5f)
-	, _sssWidth(0.0125f)
-	, _gaussianWidth(6.0f)
+	, _sssStrength(1.0f)
+	, _sssCorrection(1.0f)
 {
-	this->setRenderQueue(RenderQueue::RenderQueuePostprocess);
 }
 
 SSSS::~SSSS() noexcept
 {
 }
 
-void
-SSSS::blurX(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
+bool 
+SSSS::setup(RenderPipeline& pipeline) noexcept
 {
-	std::uint32_t widght = source->getGraphicsTextureDesc().getWidth();
-
-	_sssSource->assign(source);
-	_sssStep->assign(float2(1.0 / widght, 0.0) * _sssStrength * _gaussianWidth);
-
-	pipeline.setFramebuffer(dest);
-	pipeline.drawScreenQuad(_blur);
-}
-
-void 
-SSSS::blurY(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
-{
-	std::uint32_t height = source->getGraphicsTextureDesc().getHeight();
-
-	_sssSource->assign(source);
-	_sssStep->assign(float2(0.0, 1.0 / height) * _sssStrength * _gaussianWidth);
-
-	pipeline.setFramebuffer(dest);
-	pipeline.drawScreenQuad(_blur);
-}
-
-void
-SSSS::translucency(RenderPipeline& pipeline, LightPtr light, GraphicsTexturePtr shaodwMap, GraphicsFramebufferPtr dest) noexcept
-{
-	assert(light && shaodwMap && dest);
-	assert(light->getSubsurfaceScattering());
-
-	float3 clipConstant = light->getShadowCamera()->getClipConstant().xyz();
-	float shadowFactor = _sssScale / (light->getShadowCamera()->getFar() - light->getShadowCamera()->getNear());
-
-	_eyeProjInfo->assign(pipeline.getCamera()->getProjConstant());
-
-	_lightColor->assign(light->getLightColor() * light->getIntensity());
-	_lightEyePosition->assign(light->getTranslate() * pipeline.getCamera()->getView());
-
-	_shadowMap->assign(shaodwMap);
-	_shadowFactor->assign(float4(clipConstant, shadowFactor));
-	_shadowEye2LightView->assign((pipeline.getCamera()->getViewInverse() * light->getShadowCamera()->getView().getAxisZ()));
-	_shadowEye2LightViewProject->assign(pipeline.getCamera()->getViewInverse() * light->getShadowCamera()->getViewProject());
-
-	pipeline.setFramebuffer(dest);
-	pipeline.drawScreenQuad(_translucency);
-}
-
-void
-SSSS::translucency(RenderPipeline& pipeline, GraphicsFramebufferPtr dest) noexcept
-{
-	pipeline.setFramebuffer(dest);
-
-	auto lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting);
-	for (auto& it : lights)
-	{
-		auto light = it->downcast<Light>();
-		if (light->getShadow() && light->getSubsurfaceScattering())
-		{
-			this->translucency(pipeline, light, light->getShadowMap(), dest);
-		}
-	}
-}
-
-void
-SSSS::onActivate(RenderPipeline& pipeline) noexcept
-{
-	_material = pipeline.createMaterial("sys:fx/ssss.fxml.o");
-
-	_translucency = _material->getTech("translucency");
-	_blur = _material->getTech("blur");
-
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_SSSSMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8UNorm);
+	_material = pipeline.createMaterial("sys:fx/ssss.fxml.o");
+	if (!_material)
+		return false;
 
-	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
-	framebufferLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR8G8B8UNorm, 0));
-	_SSSSViewLayout = pipeline.createFramebufferLayout(framebufferLayoutDesc);
+	_sssTranslucency = _material->getTech("translucency");
+	_sssGuassBlur = _material->getTech("blur");
 
-	GraphicsFramebufferDesc framebufferDesc;
-	framebufferDesc.setWidth(width);
-	framebufferDesc.setHeight(height);
-	framebufferDesc.attach(_SSSSMap);
-	framebufferDesc.setGraphicsFramebufferLayout(_SSSSViewLayout);
-	_SSSSView = pipeline.createFramebuffer(framebufferDesc);
-
-	_sssStep = _material->getParameter("sssStep");
-	_sssCorrection = _material->getParameter("sssCorrection");
+	_sssFactor = _material->getParameter("blurFactor");
 	_sssSource = _material->getParameter("texSource");
 
+	_texMRT0 = _material->getParameter("texMRT0");
+	_texMRT1 = _material->getParameter("texMRT1");
 	_texDepthLinear = _material->getParameter("texDepthLinear");
-	_eyeProjInfo = _material->getParameter("eyeProjInfo");
 
 	_lightColor = _material->getParameter("lightColor");
 	_lightEyePosition = _material->getParameter("lightEyePosition");
+	_lightEyeProjInfo = _material->getParameter("eyeProjInfo");
 
 	_shadowMap = _material->getParameter("shadowMap");
 	_shadowFactor = _material->getParameter("shadowFactor");
 	_shadowEye2LightView = _material->getParameter("shadowEye2LightView");
 	_shadowEye2LightViewProject = _material->getParameter("shadowEye2LightViewProject");
 
-	_sssCorrection->assign(_sssWidth);
+	return true;
 }
 
 void
-SSSS::onDeactivate(RenderPipeline& pipeline) noexcept
+SSSS::close() noexcept
 {
 }
 
-bool
-SSSS::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
+void
+SSSS::setScale(float scale) noexcept
 {
-	this->translucency(pipeline, source);
-	this->blurX(pipeline, source->getGraphicsFramebufferDesc().getTextures().front(), _SSSSView);
-	this->blurY(pipeline, _SSSSMap, dest);
-	return true;
+	_sssScale = scale;
+}
+
+void 
+SSSS::setStrength(float strength) noexcept
+{
+	_sssStrength = strength;
+}
+
+void 
+SSSS::setCorrection(float correction) noexcept
+{
+	_sssCorrection = correction;
+}
+
+float 
+SSSS::getScale() const noexcept
+{
+	return _sssScale;
+}
+
+float 
+SSSS::getStrength() const noexcept
+{
+	return _sssStrength;
+}
+
+float 
+SSSS::getCorrection() const noexcept
+{
+	return _sssCorrection;
+}
+
+void
+SSSS::applyTranslucency(RenderPipeline& pipeline, GraphicsFramebufferPtr source, LightPtr light, GraphicsTexturePtr linearDepth, GraphicsTexturePtr shaodwMap) noexcept
+{
+	assert(light && shaodwMap && source);
+	assert(linearDepth);
+
+	_lightColor->assign(light->getLightColor() * light->getIntensity());
+	_lightEyePosition->assign(light->getTranslate() * pipeline.getCamera()->getView());
+	_lightEyeProjInfo->assign(pipeline.getCamera()->getProjConstant());
+
+	_texDepthLinear->assign(linearDepth);
+
+	_shadowMap->assign(shaodwMap);
+	_shadowFactor->assign(float4(light->getShadowCamera()->getClipConstant().xyz(), _sssScale));
+	_shadowEye2LightView->assign((pipeline.getCamera()->getViewInverse() * light->getShadowCamera()->getView()));
+	_shadowEye2LightViewProject->assign(pipeline.getCamera()->getViewInverse() * light->getShadowCamera()->getViewProject());
+
+	pipeline.setFramebuffer(source);
+	pipeline.drawScreenQuad(_sssTranslucency);
+}
+
+void
+SSSS::applyGuassBlur(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsTexturePtr MRT0, GraphicsTexturePtr MRT1, GraphicsTexturePtr linearDepth, GraphicsFramebufferPtr swap) noexcept
+{
+	std::uint32_t widght = source->getGraphicsFramebufferDesc().getWidth();
+	std::uint32_t height = source->getGraphicsFramebufferDesc().getHeight();
+
+	_texMRT0->assign(MRT0);
+	_texMRT1->assign(MRT1);
+	_texDepthLinear->assign(linearDepth);
+
+	_sssSource->assign(source->getGraphicsFramebufferDesc().getTextures().front());
+	_sssFactor->assign(float3(float2(_sssStrength / widght, 0.0), _sssCorrection));
+
+	pipeline.setFramebuffer(swap);
+	pipeline.drawScreenQuad(_sssGuassBlur);
+
+	_sssFactor->assign(float3(float2(0.0, _sssStrength / height), _sssCorrection));
+
+	pipeline.setFramebuffer(source);
+	pipeline.drawScreenQuad(_sssGuassBlur);
 }
 
 _NAME_END

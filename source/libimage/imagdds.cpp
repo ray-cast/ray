@@ -162,7 +162,7 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	auto size = stream.size() - sizeof(info);
 	auto data = make_scope<std::uint8_t[]>(size);
 
-	if (image.create(info.width, info.height, info.format.size, size, data.get(), false))
+	if (image.create(info.width, info.height, info.depth, info.format.size, size, data.get(), false))
 	{
 		if (stream.read((char*)image.data(), size))
 		{
@@ -192,8 +192,29 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 				image.setImageType(ImageType::ImageTypeATI2);
 				break;
 			default:
-				assert(false);
-				break;
+			{
+				if (info.depth > 0)
+				{
+					image.setImageType(ImageType::ImageTypeCube);
+					if (info.format.blue_mask > info.format.red_mask)
+					{
+						if (info.format.alpha_mask > 0)
+							image.setImageFormat(ImageFormat::ImageFormatR8G8B8A8);
+						else
+							image.setImageFormat(ImageFormat::ImageFormatR8G8B8);
+					}
+					else
+					{
+						if (info.format.alpha_mask > 0)
+							image.setImageFormat(ImageFormat::ImageFormatB8G8R8A8);
+						else
+							image.setImageFormat(ImageFormat::ImageFormatB8G8R8);
+					}
+				}
+				else
+					assert(false);
+			}
+			break;
 			}
 
 			image.setMipLevel(info.mip_level);

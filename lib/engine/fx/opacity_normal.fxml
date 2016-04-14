@@ -32,7 +32,7 @@
                 out float4 oPosition : SV_Position)
             {
                 oCoord = Texcoord.xy;
-                oTangent = Tangent;
+                oTangent = mul(Tangent, matModelInverseTranspose);
                 oNormal = mul(Normal, matModelInverseTranspose);
                 oNormal = mul(float4(oNormal.rgb, 0.0), matView);
                 oPosition = mul(Position, matModelViewProject);
@@ -46,7 +46,7 @@
                 out float4 FragData1 : SV_Target1)
             {
                 float4 albedo;
-                float3 spec;
+                float spec;
 
                 float3 N = normalize(normal.xyz);
                 float3 T = normalize(tangent.xyz);
@@ -63,16 +63,16 @@
 
                 float gloss = shininess;
                 if (specular.w > 0.0f)
-                    spec = specular.rgb;
+                    spec = luminance(specular.rgb);
                 else
                 {
-                    float4 specularAO = texSpecular.Sample(PointClamp, coord);
-                    spec = specularAO.rgb;
-                    gloss = specularAO.a;
+                    float3 specularAO = texSpecular.Sample(PointClamp, coord).rgb;
+                    spec = specularAO.r;
+                    gloss = specularAO.g;
                 }
 
                 FragData0 = StoreGBufferRT0(srgb2linear(albedo), spec);
-                FragData1 = StoreGBufferRT1(highNormal, gloss+0.2);
+                FragData1 = StoreGBufferRT1(highNormal, gloss);
             }
         ]]>
     </shader>

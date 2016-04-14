@@ -31,8 +31,8 @@
             }
         ]]>
     </shader>
-    <technique name="opaque">
-        <pass name="specific">
+    <technique name="opaquespecific">
+        <pass name="p0">
             <state name="inputlayout" value="POS3F_N3F"/>
             <state name="vertex" value="SkyVS"/>
             <state name="fragment" value="SkyPS"/>

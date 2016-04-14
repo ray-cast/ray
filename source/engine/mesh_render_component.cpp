@@ -290,11 +290,7 @@ MeshRenderComponent::buildRenderObjects(MeshPropertyPtr mesh) noexcept
 			{
 				auto renderable = submesh->getGraphicsIndirect();
 
-#if !defined(EGLAPI)
 				renderable->startVertice = startVertice;
-#else
-				renderable->startVertice = 0;
-#endif
 				renderable->startIndice = startIndice;
 				renderable->numVertices = it->getNumVertices();
 				renderable->numIndices = it->getNumIndices();

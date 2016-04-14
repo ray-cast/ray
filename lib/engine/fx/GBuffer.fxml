@@ -63,14 +63,6 @@
                 float depth = texDepthLinear.Sample(PointClamp, coord).r;
                 return viewdir * depth / viewdir.z;
             }
-
-            float linearDepth(float3 clipConstant, float depth)
-            {
-                // clipConstant.x = (2 * znear * zfar);
-                // clipConstant.y = zfar + znear;
-                // clipConstant.z = zfar - znear;
-                return clipConstant.x / (clipConstant.y - clipConstant.z * depth);
-            }
         ]]>
     </shader>
  </effect>

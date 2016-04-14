@@ -142,7 +142,7 @@ Geometry::stringToRenderQueue(const std::string& techName) noexcept
 {
 	if (techName == "custom")			return RenderQueue::RenderQueueCustom;
 	if (techName == "opaque")			return RenderQueue::RenderQueueOpaque;
-	if (techName == "opaquespecift")    return RenderQueue::RenderQueueOpaqueSpecific;
+	if (techName == "opaquespecific")   return RenderQueue::RenderQueueOpaqueSpecific;
 	if (techName == "transparent")		return RenderQueue::RenderQueueTransparent;
 	if (techName == "lighting")			return RenderQueue::RenderQueueLighting;
 	if (techName == "postprocess")		return RenderQueue::RenderQueuePostprocess;

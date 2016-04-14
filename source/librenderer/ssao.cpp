@@ -237,9 +237,6 @@ SSAO::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Graphics
 
 	this->shading(pipeline, _texAmbientMap, dest);
 
-	//pipeline.blitFramebuffer(_texAmbientView, Viewport(0, 0, 1376, 768), dest, Viewport(0, 0, 1376, 768));
-	//pipeline.blitFramebuffer(_texAmbient, Viewport(0, 0, 1376, 768), 0, Viewport(0, 0, 1376, 768));
-
 	return true;
 }
 

@@ -43,17 +43,22 @@
 
 _NAME_BEGIN
 
+float EyeAdaption(float lum)
+{
+	return math::lerp(0.2f, lum, 0.5f);
+}
+
 float ToneExposure(float avgLum)
 {
-	return 3 / (std::max(0.1f, 1 + 10 * avgLum)) * 1.6;
+	return 3 / (std::max(0.1f, 1 + 10 * EyeAdaption(avgLum)));
 }
 
 FimicToneMapping::Setting::Setting() noexcept
 	: bloomThreshold(0.4)
 	, bloomIntensity(1.0)
 	, lumKey(0.98)
-	, lumDelta(30.0)
-	, lumExposure(1.0)
+	, lumDelta(50.0)
+	, lumExposure(1.6)
 {
 }
 
@@ -100,8 +105,8 @@ FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsFramebuffer
 	lum /= SAMPLE_LOG_COUNT;
 	lum = std::exp(lum);
 
-	_lumAdapt = _lumAdapt + ((lum - _lumAdapt) * (1.0f - pow(_setting.lumKey, _setting.lumDelta * delta)));
-	
+	_lumAdapt = _lumAdapt +((lum - _lumAdapt) * (1.0f - pow(_setting.lumKey, _setting.lumDelta * delta)));
+
 	_toneLumExposure->assign(_setting.lumExposure * ToneExposure(_lumAdapt));
 }
 

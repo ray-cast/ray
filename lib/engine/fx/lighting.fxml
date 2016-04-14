@@ -186,44 +186,6 @@
             float len = dot(float4(viewPosition, 1.0), shadowEye2LightView);
             return shadowLighting(shadowMap, shadowEye2LightViewProject, len, shadowFactor, viewPosition);
         }
-
-        float shadowLighting(Texture2DArray shadowMap, float4x4 shadowMatrix, float shadowFactor, float shadowBias, float3 worldPosition, int index)
-        {
-            float4 proj = mul(float4(worldPosition, 1.0), shadowMatrix);
-            proj /= proj.w;
-            proj = proj * 0.5 + 0.5;
-
-            float d1 = shadowMap.Sample(PointClamp, float3(proj.xy,index)).r;
-            float d2 = proj.z;
-            float d = exp(shadowFactor * (d1 - d2 + shadowBias));
-            float shadow = saturate(d);
-
-            return shadow;
-        }
-
-        float shadowCubeLighting(Texture2DArray shadowMap, float4x4 shadowMatrix, float shadowFactor, float shadowBias, float3 worldPosition, float3 lightPosition, float3 world)
-        {
-            float3 L = lightPosition - world;
-
-            float axis[6];
-            axis[0] =  L.x;
-            axis[1] = -L.x;
-            axis[2] =  L.y;
-            axis[3] = -L.y;
-            axis[4] =  L.z;
-            axis[5] = -L.z;
-
-            int index = 0;
-            for (int i = 1; i < 6; i++)
-            {
-                if (axis[i] > axis[index])
-                {
-                    index = i;
-                }
-            }
-
-            return shadowLighting(shadowMap, shadowMatrix, shadowFactor, shadowBias, worldPosition, index);
-        }
         ]]>
     </shader>
 </effect>

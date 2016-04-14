@@ -139,7 +139,7 @@ OGLDeviceContext::getViewport() const noexcept
 	return _viewport;
 }
 
-void 
+void
 OGLDeviceContext::setScissor(const Scissor& scissor) noexcept
 {
 	if (_scissor != scissor)
@@ -186,23 +186,25 @@ OGLDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 			_inputLayout = inputLayout;
 			_needUpdateLayout = true;
 		}
+
+		_pipeline = pipeline->downcast<OGLRenderPipeline>();
 	}
 }
 
-GraphicsPipelinePtr 
+GraphicsPipelinePtr
 OGLDeviceContext::getRenderPipeline() const noexcept
 {
 	return _pipeline;
 }
 
-void 
+void
 OGLDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
 {
 	_descriptorSet = descriptorSet->downcast<OGLDescriptorSet>();
 	_descriptorSet->bindProgram(_shaderObject);
 }
 
-GraphicsDescriptorSetPtr 
+GraphicsDescriptorSetPtr
 OGLDeviceContext::getDescriptorSet() const noexcept
 {
 	return _descriptorSet;
@@ -585,7 +587,7 @@ OGLDeviceContext::initDebugControl() noexcept
 		131218,
 		131204
 	};
-	
+
 	glEnable(GL_DEBUG_OUTPUT);
 
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);

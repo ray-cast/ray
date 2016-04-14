@@ -8,7 +8,7 @@
         <component class="Camera">
             <attribute aperture="45.0"/>
             <attribute znear="0.1"/>
-            <attribute zfar="100.0"/>
+            <attribute zfar="500.0"/>
         </component>
         <component class="FirstPersonCamera">
         </component>
@@ -48,7 +48,7 @@
         <component class="Light">
             <attribute type="sun"/>
             <attribute color="1.0,1.0,1.0"/>
-            <attribute range="20.0"/>
+            <attribute range="10.0"/>
             <attribute intensity="1.0"/>
             <attribute shadow="true"/>
             <attribute soft="true"/>
@@ -63,7 +63,7 @@
             <attribute type="ambient"/>
             <attribute range="100.0"/>
             <attribute color="1.0,1.0,1.0"/>
-            <attribute intensity="0.2"/>
+            <attribute intensity="0.5"/>
         </component>
     </object>
 </scene>

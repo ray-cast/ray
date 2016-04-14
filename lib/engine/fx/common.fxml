@@ -31,6 +31,62 @@
             {
                 return mad(coord, 2.0, -1.0);
             }
+
+            float linearDepth(float2 clipConstant, float depth)
+            {
+                // clipConstant.x = _znear * (_zfar / (_zfar - _znear));
+                // clipConstant.y = _zfar / (_zfar - _znear);
+                return clipConstant.x / (clipConstant.y - depth);
+            }
+
+            float linearDepth(float3 clipConstant, float depth)
+            {
+                // clipConstant.x = (2 * znear * zfar);
+                // clipConstant.y = zfar + znear;
+                // clipConstant.z = zfar - znear;
+                return clipConstant.x / (clipConstant.y - clipConstant.z * depth);
+            }
+
+            float3 computeTangent(float3 viewdir, float2 coord)
+            {
+                float3 dp1 = ddx(viewdir);
+                float3 dp2 = ddy(viewdir);
+                float2 duv1 = ddx(coord);
+                float2 duv2 = ddy(coord);
+
+                float3x3 M = float3x3(dp1, dp2, cross(dp1, dp2));
+                float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
+                float3 T = mul(float2(duv1.x, duv2.x), I);
+                return T;
+            }
+
+            float3 computeBinormal(float3 N, float3 viewdir, float2 coord)
+            {
+                float3 dp1 = ddx(viewdir);
+                float3 dp2 = ddy(viewdir);
+                float2 duv1 = ddx(coord);
+                float2 duv2 = ddy(coord);
+
+                float3x3 M = float3x3(dp1, dp2, cross(dp1, dp2));
+                float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
+                float3 B = mul(float2(duv1.y, duv2.y), I);
+                return B;
+            }
+
+            float3x3 computeTangentBinormalNormal(float3 N, float3 viewdir, float2 coord)
+            {
+                float3 dp1 = ddx(viewdir);
+                float3 dp2 = ddy(viewdir);
+                float2 duv1 = ddx(coord);
+                float2 duv2 = ddy(coord);
+
+                float3x3 M = float3x3(dp1, dp2, cross(dp1, dp2));
+                float2x3 I = float2x3(cross(M[1], M[2]), cross(M[2], M[0]));
+                float3 T = mul(float2(duv1.x, duv2.x), I);
+                float3 B = mul(float2(duv1.y, duv2.y), I);
+
+                return float3x3(normalize(T), normalize(B), N);
+            }
         ]]>
     </shader>
 </effect>

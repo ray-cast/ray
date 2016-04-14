@@ -47,7 +47,7 @@ _NAME_BEGIN
 
 SSSS::SSSS() noexcept
 	: _sssScale(100.0f)
-	, _sssStrength(1.0f)
+	, _sssStrength(2.0f)
 	, _sssCorrection(1.0f)
 {
 }
@@ -160,16 +160,19 @@ SSSS::applyGuassBlur(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Gr
 	_texMRT1->assign(MRT1);
 	_texDepthLinear->assign(linearDepth);
 
-	_sssSource->assign(source->getGraphicsFramebufferDesc().getTextures().front());
-	_sssFactor->assign(float3(float2(_sssStrength / widght, 0.0), _sssCorrection));
+	for (int i = 0; i < 3; i++)
+	{
+		_sssSource->assign(source->getGraphicsFramebufferDesc().getTextures().front());
+		_sssFactor->assign(float3(float2(_sssStrength / widght, 0.0), _sssCorrection));
 
-	pipeline.setFramebuffer(swap);
-	pipeline.drawScreenQuad(_sssGuassBlur);
+		pipeline.setFramebuffer(swap);
+		pipeline.drawScreenQuad(_sssGuassBlur);
 
-	_sssFactor->assign(float3(float2(0.0, _sssStrength / height), _sssCorrection));
+		_sssFactor->assign(float3(float2(0.0, _sssStrength / height), _sssCorrection));
 
-	pipeline.setFramebuffer(source);
-	pipeline.drawScreenQuad(_sssGuassBlur);
+		pipeline.setFramebuffer(source);
+		pipeline.drawScreenQuad(_sssGuassBlur);
+	}
 }
 
 _NAME_END

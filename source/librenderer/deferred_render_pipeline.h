@@ -74,7 +74,7 @@ public:
 
 	void copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr src, GraphicsFramebufferPtr dst, const Viewport& view) noexcept;
 
-	bool enableSSSS(bool enable) noexcept;
+	bool enableSSSS(RenderPipeline& pipeline, bool enable) noexcept;
 	bool isEnableSSSS() const noexcept;
 
 private:

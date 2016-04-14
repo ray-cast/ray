@@ -168,11 +168,6 @@ DeferredRenderPipeline::render3DEnvMap(RenderPipeline& pipeline) noexcept
 
 	if (_SSSS)
 	{
-		if (!_SSSS->setup(pipeline))
-		{
-			_SSSS->setup(pipeline);
-		}
-
 		std::size_t shadowIndex = 0;
 
 		auto& lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting);
@@ -419,11 +414,12 @@ DeferredRenderPipeline::copyRenderTexture(RenderPipeline& pipeline, GraphicsText
 }
 
 bool
-DeferredRenderPipeline::enableSSSS(bool enable) noexcept
+DeferredRenderPipeline::enableSSSS(RenderPipeline& pipeline, bool enable) noexcept
 {
 	if (!_SSSS)
 	{
 		_SSSS = std::make_shared<SSSS>();
+		_SSSS->setup(pipeline);
 	}
 
 	return true;

@@ -151,9 +151,9 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 	if (_setting.enableSSSS != setting.enableSSSS)
 	{
 		if (setting.enableSSSS)
-			_deferredLighting->downcast<DeferredRenderPipeline>()->enableSSSS(true);
+			_deferredLighting->downcast<DeferredRenderPipeline>()->enableSSSS(*_pipeline, true);
 		else if (_SSSS)
-			_deferredLighting->downcast<DeferredRenderPipeline>()->enableSSSS(false);
+			_deferredLighting->downcast<DeferredRenderPipeline>()->enableSSSS(*_pipeline, false);
 	}
 
 	if (_setting.enableFog != setting.enableFog)

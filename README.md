@@ -7,8 +7,8 @@ The aim of the project is to create a lightweight 3D library with a very low lev
 
 ### Screenshot ###
 
-![screenshot](https://coding.net/u/raycast/p/ray/git/blob/master/screenshot/atmospheric.png)
-![screenshot](https://coding.net/u/raycast/p/ray/git/blob/master/screenshot/ssss.jpg)
+<img src="https://github.com/ray-cast/ray/blob/master/screenshot/atmospheric.png" width = "40%" height = "300" align=left />
+<img src="https://github.com/ray-cast/ray/blob/master/screenshot/ssss.png" width = "40%" height = "300" align=left />
 
 ### Building ###
 

@@ -44,7 +44,7 @@ RenderSetting::RenderSetting() noexcept
 	, height(0)
 	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
 	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalFree)
-	, enableSSAO(false)
+	, enableSSAO(true)
 	, enableSSGI(false)
 	, enableSAT(false)
 	, enableSSR(false)

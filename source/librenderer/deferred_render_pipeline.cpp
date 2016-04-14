@@ -159,10 +159,13 @@ DeferredRenderPipeline::render3DEnvMap(RenderPipeline& pipeline) noexcept
 	this->renderOpaquesShading(pipeline, _deferredShadingView);
 	this->renderOpaquesSpecificShading(pipeline, _deferredShadingView);
 
-	/*this->renderTransparent(_deferredGraphicsViews);
-	this->renderLights(_deferredLightingView);
-	this->renderTransparentShading(_deferredShadingView);
-	this->renderTransparentSpecificShading(_deferredShadingView);*/
+	if (!pipeline.getRenderData(RenderQueue::RenderQueueTransparent).empty())
+	{
+		this->renderTransparent(pipeline, _deferredGraphicsViews);
+		this->renderLights(pipeline, _deferredLightingView);
+		this->renderTransparentShading(pipeline, _deferredShadingView);
+		this->renderTransparentSpecificShading(pipeline, _deferredShadingView);
+	}
 
 	pipeline.drawPostProcess(RenderQueue::RenderQueuePostprocess, _deferredShadingView, _deferredSwapView, _deferredFinalView);
 

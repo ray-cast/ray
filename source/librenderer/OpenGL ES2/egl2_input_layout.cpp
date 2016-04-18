@@ -43,7 +43,7 @@ _NAME_BEGIN
 __ImplementSubClass(EGL2InputLayout, GraphicsInputLayout, "EGL2InputLayout")
 
 EGL2InputLayout::EGL2InputLayout() noexcept
-	: _vertexSize(0)
+	: _vao(GL_NONE)
 	, _indexType(GL_NONE)
 	, _indexSize(0)
 {
@@ -57,16 +57,27 @@ EGL2InputLayout::~EGL2InputLayout() noexcept
 bool
 EGL2InputLayout::setup(const GraphicsInputLayoutDesc& inputLayoutDesc) noexcept
 {
-	_vertexSize = inputLayoutDesc.getVertexSize();
-	if (_vertexSize == GL_NONE)
-		return false;
-
-	auto& vertexLayouts = inputLayoutDesc.getGraphicsVertexLayouts();
-	for (auto& it : vertexLayouts)
+	if (!EGL2Types::isSupportFeature(EGL2Features::EGL2_EXT_instanced_arrays))
 	{
-		if (it.getVertexDivisor() != GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
-			return false;
+		auto& vertexLayouts = inputLayoutDesc.getGraphicsVertexLayouts();
+		for (auto& it : vertexLayouts)
+		{
+			if (it.getVertexDivisor() != GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
+				return false;
+		}
 	}
+
+#ifndef __AMD__
+	if (EGL2Types::isSupportFeature(EGL2Features::EGL2_OES_vertex_array_object))
+	{
+		glGenVertexArraysOES(1, &_vao);
+		if (_vao == GL_NONE)
+		{
+			GL_PLATFORM_LOG("glCreateVertexArrays() fail");
+			return false;
+		}
+	}
+#endif
 
 	_inputLayoutDesc = inputLayoutDesc;
 	return true;
@@ -78,8 +89,15 @@ EGL2InputLayout::close() noexcept
 }
 
 void
-EGL2InputLayout::bindLayout(const EGL2ShaderObjectPtr& program) noexcept
+EGL2InputLayout::bindLayout(const EGL2ProgramPtr& program) noexcept
 {
+#ifndef __AMD__
+	if (EGL2Types::isSupportFeature(EGL2Features::EGL2_OES_vertex_array_object))
+	{
+		glBindVertexArrayOES(_vao);
+	}
+#endif
+
 	if (_program != program)
 	{
 		GLuint offset = 0;
@@ -116,21 +134,13 @@ EGL2InputLayout::bindLayout(const EGL2ShaderObjectPtr& program) noexcept
 void
 EGL2InputLayout::bindVbo(const EGL2GraphicsDataPtr& vbo) noexcept
 {
-	if (_vbo != vbo)
-	{
-		glBindBuffer(GL_ARRAY_BUFFER, vbo->getInstanceID());
-		_vbo = vbo;
-	}
+	glBindBuffer(GL_ARRAY_BUFFER, vbo->getInstanceID());
 }
 
 void
 EGL2InputLayout::bindIbo(const EGL2GraphicsDataPtr& ibo) noexcept
 {
-	if (_ibo != ibo)
-	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID());
-		_ibo = ibo;
-	}
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID());
 }
 
 const GraphicsInputLayoutDesc&

@@ -46,8 +46,8 @@
 _NAME_BEGIN
 
 SSSS::SSSS() noexcept
-	: _sssScale(100.0f)
-	, _sssStrength(2.0f)
+	: _sssScale(15.0f)
+	, _sssStrength(1.0f)
 	, _sssCorrection(1.0f)
 {
 }
@@ -135,11 +135,11 @@ SSSS::applyTranslucency(RenderPipeline& pipeline, GraphicsFramebufferPtr source,
 	assert(light && shaodwMap && source);
 	assert(linearDepth);
 
+	_texDepthLinear->assign(linearDepth);
+
 	_lightColor->assign(light->getLightColor() * light->getIntensity());
 	_lightEyePosition->assign(light->getTranslate() * pipeline.getCamera()->getView());
 	_lightEyeProjInfo->assign(pipeline.getCamera()->getProjConstant());
-
-	_texDepthLinear->assign(linearDepth);
 
 	_shadowMap->assign(shaodwMap);
 	_shadowFactor->assign(float4(light->getShadowCamera()->getClipConstant().xyz(), _sssScale));

@@ -38,7 +38,7 @@
 
 _NAME_BEGIN
 
-__ImplementSubInterface(OGLGraphicsData, GraphicsData, "OGLGraphicsData")
+__ImplementSubClass(OGLGraphicsData, GraphicsData, "OGLGraphicsData")
 
 OGLGraphicsData::OGLGraphicsData() noexcept
 	: _buffer(GL_NONE)
@@ -75,50 +75,27 @@ OGLGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 	else if (type == GraphicsDataType::GraphicsDataTypeStorageTexelBuffer)
 		_target = GL_TEXTURE_BUFFER;
 	else if (type == GraphicsDataType::GraphicsDataTypeStorageBuffer)
-		_target = GL_SHADER_STORAGE_BUFFER;
-	else if (type == GraphicsDataType::GraphicsDataTypeStorageBuffer)
-		_target = GL_DRAW_INDIRECT_BUFFER;
-	else
-		return false;
-
-	glCreateBuffers(1, &_buffer);
-	if (_buffer == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glCreateBuffers() fail");
+		GL_PLATFORM_LOG("Can't support SSBO.");
 		return false;
 	}
+	else
+	{
+		GL_PLATFORM_LOG("Unkown data type.");
+		return false;
+	}
+
+	GLenum flags = GL_STATIC_DRAW;
 
 	auto usage = desc.getUsage();
-	if (usage & GraphicsUsageFlags::GraphicsUsageFlagsImmutableStorage)
-	{
-		GLbitfield flags = GL_MAP_READ_BIT;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsReadBit)
-			flags |= GL_MAP_READ_BIT;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsWriteBit)
-			flags |= GL_MAP_WRITE_BIT;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsPersistentBit)
-			flags |= GL_MAP_PERSISTENT_BIT;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsCoherentBit)
-			flags |= GL_MAP_COHERENT_BIT;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsFlushExplicitBit)
-			flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsDynamicStorageBit)
-			flags |= GL_DYNAMIC_STORAGE_BIT;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsClientStorageBit)
-			flags |= GL_CLIENT_STORAGE_BIT;
+	if (usage & GraphicsUsageFlags::GraphicsUsageFlagsReadBit)
+		flags = GL_STATIC_DRAW;
+	if (usage & GraphicsUsageFlags::GraphicsUsageFlagsWriteBit)
+		flags = GL_DYNAMIC_READ;
 
-		glNamedBufferStorage(_buffer, _dataSize, desc.getStream(), flags);
-	}
-	else
-	{
-		GLenum flags = GL_STATIC_DRAW;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsReadBit)
-			flags = GL_STATIC_DRAW;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsWriteBit)
-			flags = GL_DYNAMIC_READ;
-
-		glNamedBufferData(_buffer, _dataSize, desc.getStream(), flags);
-	}
+	glGenBuffers(1, &_buffer);
+	glBindBuffer(_target, _buffer);
+	glBufferData(_target, _dataSize, desc.getStream(), flags);
 
 	return true;
 }
@@ -164,7 +141,8 @@ OGLGraphicsData::resize(const char* data, GLsizeiptr datasize) noexcept
 	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsWriteBit)
 		flags = GL_DYNAMIC_READ;
 
-	glNamedBufferData(_buffer, datasize, data, flags);
+	glBindBuffer(_target, _buffer);
+	glBufferData(_target, datasize, data, flags);
 	_dataSize = datasize;
 }
 
@@ -177,7 +155,8 @@ OGLGraphicsData::flush() noexcept
 int
 OGLGraphicsData::flush(GLintptr offset, GLsizeiptr cnt) noexcept
 {
-	glFlushMappedNamedBufferRange(_buffer, offset, cnt);
+	glBindBuffer(_target, _buffer);
+	glFlushMappedBufferRange(_buffer, offset, cnt);
 	return cnt;
 }
 
@@ -243,14 +222,12 @@ OGLGraphicsData::map(GLintptr offset, GLsizeiptr cnt, std::uint32_t access) noex
 			flags |= GL_MAP_WRITE_BIT;
 		if (access & GraphicsAccessFlagsBits::GraphicsAccessFlagsUnsynchronizedBit)
 			flags |= GL_MAP_UNSYNCHRONIZED_BIT;
-		if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsPersistentBit)
-			flags |= GL_MAP_PERSISTENT_BIT;
-		if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsCoherentBit)
-			flags |= GL_MAP_COHERENT_BIT;
 		if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsFlushExplicitBit)
 			flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
 
-		_data = glMapNamedBufferRange(_buffer, offset, cnt, flags);
+		glBindBuffer(_target, _buffer);
+		_data = glMapBufferRange(_target, offset, cnt, flags);
+		_data;
 	}
 
 	if (_data)
@@ -273,7 +250,8 @@ OGLGraphicsData::unmap() noexcept
 		return;
 	}
 
-	glUnmapNamedBuffer(_buffer);
+	glBindBuffer(_target, _buffer);
+	glUnmapBuffer(_target);
 	_data = nullptr;
 	_isMapping = GL_FALSE;
 }
@@ -290,19 +268,13 @@ OGLGraphicsData::getInstanceID() const noexcept
 	return _buffer;
 }
 
-void
-OGLGraphicsData::bind() noexcept
-{
-	glBindBuffer(_target, _buffer);
-}
-
 const GraphicsDataDesc&
 OGLGraphicsData::getGraphicsDataDesc() const noexcept
 {
 	return _desc;
 }
 
-void 
+void
 OGLGraphicsData::setDevice(GraphicsDevicePtr device) noexcept
 {
 	_device = device;

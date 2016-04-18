@@ -170,17 +170,19 @@ private:
 	GraphicsDeviceWeakPtr _device;
 };
 
-class OGLShaderObject final : public GraphicsProgram
+class OGLProgram final : public GraphicsProgram
 {
-	__DeclareSubClass(OGLShaderObject, GraphicsProgram)
+	__DeclareSubClass(OGLProgram, GraphicsProgram)
 public:
-	OGLShaderObject() noexcept;
-	~OGLShaderObject() noexcept;
+	OGLProgram() noexcept;
+	~OGLProgram() noexcept;
 
 	bool setup(const GraphicsProgramDesc& program) noexcept;
 	void close() noexcept;
 
-	GLuint getInstanceID() noexcept;
+	void apply() noexcept;
+
+	GLuint getInstanceID() const noexcept;
 
 	const GraphicsUniforms& getActiveUniforms() const noexcept;
 	const GraphicsUniformBlocks& getActiveUniformBlocks() const noexcept;
@@ -202,8 +204,8 @@ private:
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
-	OGLShaderObject(const OGLShaderObject&) noexcept = delete;
-	OGLShaderObject& operator=(const OGLShaderObject&) noexcept = delete;
+	OGLProgram(const OGLProgram&) noexcept = delete;
+	OGLProgram& operator=(const OGLProgram&) noexcept = delete;
 
 private:
 	GLuint _program;

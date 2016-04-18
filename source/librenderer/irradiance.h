@@ -44,16 +44,19 @@ _NAME_BEGIN
 class EnvironmentIrradiance
 {
 public:
-	EnvironmentIrradiance(RenderPipeline& pipeline) except;
-	~EnvironmentIrradiance();
+	EnvironmentIrradiance() noexcept;
+	~EnvironmentIrradiance() noexcept;
+
+	bool setup(RenderPipeline& pipeline) noexcept;
+	void close() noexcept;
 
 	void renderParaboloidEnvMap(RenderPipeline& pipeline, GraphicsTexturePtr cubemap) noexcept;
 	void renderProjectParaboloidToSH(RenderPipeline& pipeline, GraphicsFramebufferPtr evalSHFunction, GraphicsFramebufferPtr dest) noexcept;
 	void renderEvaluateConvolvedSH(RenderPipeline& pipeline, GraphicsFramebufferPtr evalSHFunction, GraphicsFramebufferPtr dest) noexcept;
 
 private:
-	bool _buildDualParaboloidWeightTextures(RenderPipeline& pipeline, GraphicsTexturePtr textures[2], std::uint32_t order, std::uint32_t size);
-	bool _paraboloidCoord(Vector3& vec, int face, const Vector2& uv);
+	bool _buildDualParaboloidWeightTextures(RenderPipeline& pipeline, GraphicsTexturePtr textures[2], std::uint32_t order, std::uint32_t size) noexcept;
+	bool _paraboloidCoord(Vector3& vec, int face, const Vector2& uv) noexcept;
 
 private:
 	MaterialPtr _irradiance;

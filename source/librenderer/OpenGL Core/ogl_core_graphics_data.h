@@ -34,53 +34,65 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "ogl_render_pipeline.h"
+#ifndef _H_OGL_CORE_GRAPHICS_DATA_H_
+#define _H_OGL_CORE_GRAPHICS_DATA_H_
+
+#include "ogl_types.h"
 
 _NAME_BEGIN
 
-__ImplementSubClass(OGLRenderPipeline, GraphicsPipeline, "OGLRenderPipeline")
-
-OGLRenderPipeline::OGLRenderPipeline() noexcept
+class OGLCoreGraphicsData final : public GraphicsData
 {
-}
+	__DeclareSubClass(OGLCoreGraphicsData, GraphicsData)
+public:
+	OGLCoreGraphicsData() noexcept;
+	virtual ~OGLCoreGraphicsData() noexcept;
 
-OGLRenderPipeline::~OGLRenderPipeline() noexcept
-{
-	this->close();
-}
+	bool setup(const GraphicsDataDesc& desc) noexcept;
+	void close() noexcept;
 
-bool
-OGLRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
-{
-	assert(pipelineDesc.getGraphicsState());
-	assert(pipelineDesc.getGraphicsProgram());
-	assert(pipelineDesc.getGraphicsInputLayout());
-	assert(pipelineDesc.getGraphicsDescriptorSetLayout());
-	_pipelineDesc = pipelineDesc;
-	return true;
-}
+	bool is_open() const noexcept;
 
-void 
-OGLRenderPipeline::close() noexcept
-{
-}
+	GLsizeiptr size() const noexcept;
 
-const GraphicsPipelineDesc&
-OGLRenderPipeline::getGraphicsPipelineDesc() const noexcept
-{
-	return _pipelineDesc;
-}
+	void resize(const char* data, GLsizeiptr datasize) noexcept;
 
-void
-OGLRenderPipeline::setDevice(GraphicsDevicePtr device) noexcept
-{
-	_device = device;
-}
+	int flush() noexcept;
+	int flush(GLintptr offset, GLsizeiptr cnt) noexcept;
 
-GraphicsDevicePtr
-OGLRenderPipeline::getDevice() noexcept
-{
-	return _device.lock();
-}
+	GLsizeiptr read(char* data, GLsizeiptr cnt) noexcept;
+	GLsizeiptr write(const char* data, GLsizeiptr cnt) noexcept;
+
+	void* map(std::uint32_t access) noexcept;
+	void* map(GLintptr offset, GLsizeiptr cnt, std::uint32_t access) noexcept;
+	void unmap() noexcept;
+	bool isMapping() const noexcept;
+
+	GLuint getInstanceID() const noexcept;
+
+	const GraphicsDataDesc& getGraphicsDataDesc() const noexcept;
+
+private:
+	friend class OGLDevice;
+	void setDevice(GraphicsDevicePtr device) noexcept;
+	GraphicsDevicePtr getDevice() noexcept;
+
+private:
+	OGLCoreGraphicsData(const OGLCoreGraphicsData&) noexcept = delete;
+	OGLCoreGraphicsData& operator=(const OGLCoreGraphicsData&) noexcept = delete;
+
+private:
+	GLuint _buffer;
+	GLenum _target;
+	GLvoid* _data;
+	GLsizeiptr _dataSize;
+	GLintptr _dataOffset;
+	GLboolean _isMapping;
+	std::uint32_t _usage;
+	GraphicsDataDesc _desc;
+	GraphicsDeviceWeakPtr _device;
+};
 
 _NAME_END
+
+#endif

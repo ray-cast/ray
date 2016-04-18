@@ -44,8 +44,8 @@ _NAME_BEGIN
 
 Atmospheric::Setting::Setting() noexcept
 {
-	outerRadius = 32800.0f;
-	innerRadius = 32000.0f;
+	outerRadius = 3230.0f;
+	innerRadius = 3200.0f;
 
 	wavelength.x = 0.650f; // 650 nm for red
 	wavelength.y = 0.570f; // 570 nm for green
@@ -58,7 +58,7 @@ Atmospheric::Setting::Setting() noexcept
 
 Atmospheric::Atmospheric() noexcept
 {
-	this->setRenderQueue(RenderQueue::RenderQueueOpaque);
+	this->setRenderQueue(RenderQueue::RenderQueueOpaqueSpecific);
 }
 
 Atmospheric::~Atmospheric() noexcept
@@ -78,7 +78,7 @@ Atmospheric::onActivate(RenderPipeline& pipeline) noexcept
 
 	_sphere = pipeline.createRenderMesh(mesh);
 
-	_sat = pipeline.createMaterial("sys:fx/atmospheric.glsl");
+	_sat = pipeline.createMaterial("sys:fx/atmospheric.fxml.o");
 
 	_sky = _sat->getTech("sky");
 	_ground = _sat->getTech("ground");
@@ -127,20 +127,17 @@ Atmospheric::onDeactivate(RenderPipeline& pipeline) noexcept
 bool
 Atmospheric::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	pipeline.setFramebuffer(source);
-
-	auto lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting);
-	for (auto& it : lights)
+	auto& lighting = pipeline.getRenderData(RenderQueue::RenderQueueLighting);
+	for (auto& it : lighting)
 	{
-		auto light = std::dynamic_pointer_cast<Light>(it);
+		if (it->downcast<Light>()->getLightType() != LightType::LightTypeSun)
+			continue;
 
-		if (light->getLightType() == LightType::LightTypeSun)
-		{
-			_lightDirection->assign(math::normalize(light->getForward()));
+		_lightDirection->assign(-it->downcast<Light>()->getForward());
 
-			pipeline.drawMesh(_ground, _sphere, _renderable);
-			pipeline.drawMesh(_sky, _sphere, _renderable);
-		}
+		pipeline.setFramebuffer(source);
+		pipeline.drawMesh(_ground, _sphere, _renderable);
+		pipeline.drawMesh(_sky, _sphere, _renderable);
 	}
 
 	return false;

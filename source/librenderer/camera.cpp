@@ -41,19 +41,19 @@ _NAME_BEGIN
 __ImplementSubClass(Camera, RenderObject, "Camera")
 
 Camera::Camera() noexcept
-	: _left(0.0f)
-	, _right(0.0f)
-	, _top(0.0f)
-	, _bottom(0.0f)
+	: _left(-1.0f)
+	, _right(1.0f)
+	, _top(1.0f)
+	, _bottom(-1.0f)
 	, _aperture(45.0f)
 	, _ratio(1.0f)
-	, _znear(0.1f)
+	, _znear(1.0f)
 	, _zfar(100.0f)
 	, _viewport(0, 0, 0, 0)
 	, _clearFlags(GraphicsClearFlags::GraphicsClearFlagsAll)
 	, _clearColor(float4::Zero)
 	, _cameraType(CameraType::CameraTypePerspective)
-	, _cameraOrder(CameraOrder::CameraOrderMain)
+	, _cameraOrder(CameraOrder::CameraOrder3D)
 	, _cameraRender(CameraRender::CameraRenderScreen)
 	, _needUpdateProject(true)
 	, _needUpdateViewProject(true)
@@ -117,7 +117,7 @@ Camera::getRatio() const noexcept
 }
 
 void
-Camera::setOrtho(float left, float right, float top, float bottom) noexcept
+Camera::setOrtho(float left, float right, float bottom, float top) noexcept
 {
 	_left = left;
 	_right = right;
@@ -127,7 +127,7 @@ Camera::setOrtho(float left, float right, float top, float bottom) noexcept
 }
 
 void
-Camera::getOrtho(float& left, float& right, float& top, float& bottom) noexcept
+Camera::getOrtho(float& left, float& right, float& bottom, float& top) noexcept
 {
 	left = _left;
 	right = _right;
@@ -208,9 +208,6 @@ Camera::worldToScreen(const float3& pos) const noexcept
 
 	v.x = v.x * w + w + _viewport.left;
 	v.y = v.y * h + h + _viewport.top;
-#ifdef _BUILD_OPENGL
-	v.z = v.z * 0.5 + 0.5;
-#endif
 
 	return float3(v.x, v.y, v.z);
 }
@@ -257,7 +254,7 @@ Camera::screenToDirection(const float2& pos) const noexcept
 	v.x = v.x / w - 1.0f - _viewport.left;
 	v.y = v.y / h - 1.0f - _viewport.top;
 
-	return (float4((this->getProjectInverse() * v).xy(), 1.0f, 1.0f) * this->getViewInverse()).xyz();
+	return (v * this->getProjectInverse()).xyz();
 }
 
 void
@@ -346,21 +343,9 @@ Camera::getFramebuffer() const noexcept
 }
 
 void
-Camera::setGraphicsContext(GraphicsContextPtr window) noexcept
-{
-	_graphicsContext = window;
-}
-
-GraphicsContextPtr
-Camera::getGraphicsContext() const noexcept
-{
-	return _graphicsContext;
-}
-
-void
 Camera::_updateOrtho() const noexcept
 {
-	_project.makeOrtho_lh(_left, _right, _bottom / _ratio, _top / _ratio, _znear, _zfar);
+	_project.makeOrtho_lh(_left, _right, _bottom, _top, _znear, _zfar);
 	_projectInverse = math::inverse(_project);
 
 	_projLength.x = _project.a1;
@@ -371,18 +356,18 @@ Camera::_updateOrtho() const noexcept
 	_projConstant.z = -(1.0 + _project.c1) / _projLength.x;
 	_projConstant.w = -(1.0 + _project.c2) / _projLength.y;
 
-	_clipConstant.x = (2 * _znear * _zfar);
-	_clipConstant.y = _zfar - _znear;
-	_clipConstant.z = _zfar + _znear;
-	_clipConstant.w = 1.0;
+	_clipConstant.x = _znear;
+	_clipConstant.y = (_zfar - _znear);
+	_clipConstant.z = _znear;
+	_clipConstant.w = _zfar;
 }
 
 void
 Camera::_updatePerspective() const noexcept
 {
-	_project.makePerspective_off_center_lh(_aperture, _ratio, _znear, _zfar);
+	_project.makePerspective_fov_lh(_aperture, _ratio, _znear, _zfar);
 	_projectInverse = math::inverse(_project);
-
+	
 	_projLength.x = _project.a1;
 	_projLength.y = _project.b2;
 
@@ -391,9 +376,9 @@ Camera::_updatePerspective() const noexcept
 	_projConstant.z = -(1.0 + _project.c1) / _projLength.x;
 	_projConstant.w = -(1.0 + _project.c2) / _projLength.y;
 
-	_clipConstant.x = (2 * _znear * _zfar);
-	_clipConstant.y = _zfar + _znear;
-	_clipConstant.z = _zfar - _znear;
+	_clipConstant.x = _znear * (_zfar / (_zfar - _znear));
+	_clipConstant.y = _zfar / (_zfar - _znear);
+	_clipConstant.z = 1.0;
 	_clipConstant.w = _zfar;
 }
 

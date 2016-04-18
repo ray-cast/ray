@@ -276,9 +276,9 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 	{
 		auto& it = _pmd.MaterialList[index];
 
-		Vector3Array points;
-		Vector3Array normals;
-		Vector2Array texcoords;
+		Float3Array points;
+		Float3Array normals;
+		Float2Array texcoords;
 		VertexWeights weights;
 		UintArray faces;
 

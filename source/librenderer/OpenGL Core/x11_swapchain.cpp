@@ -35,7 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #ifdef _BUILD_PLATFORM_LINUX
-#include "x11_swapchain.h"
+#include "x11_core_swapchain.h"
 
 _NAME_BEGIN
 

@@ -78,7 +78,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, int 
 	prop->type = type;
 	prop->index = index;
 	prop->length = sizeof(int);
-	prop->dataType = PTI_INTEGER;
+	prop->dataType = PropertyTypeInfoInt;
 	prop->data = new char[prop->length];
 
 	std::memcpy(prop->data, &value, prop->length);
@@ -114,7 +114,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, floa
 	prop->type = type;
 	prop->index = index;
 	prop->length = sizeof(float);
-	prop->dataType = PTI_FLOAT;
+	prop->dataType = PropertyTypeInfoFloat;
 	prop->data = new char[prop->length];
 
 	std::memcpy(prop->data, &value, prop->length);
@@ -150,7 +150,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, cons
 	prop->type = type;
 	prop->index = index;
 	prop->length = sizeof(Vector3);
-	prop->dataType = PTI_FLOAT | PTI_BUFFER;
+	prop->dataType = PropertyTypeInfoFloat | PropertyTypeInfoBuffer;
 	prop->data = new char[prop->length];
 
 	std::memcpy(prop->data, &value, prop->length);
@@ -186,7 +186,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, cons
 	prop->type = type;
 	prop->index = index;
 	prop->length = sizeof(Vector4);
-	prop->dataType = PTI_FLOAT | PTI_BUFFER;
+	prop->dataType = PropertyTypeInfoFloat | PropertyTypeInfoBuffer;
 	prop->data = new char[prop->length];
 
 	std::memcpy(prop->data, &value, prop->length);
@@ -240,7 +240,7 @@ MaterialProperty::set(const char* key, std::size_t type, std::size_t index, cons
 	prop->type = type;
 	prop->index = index;
 	prop->length = value.length();
-	prop->dataType = PTI_STRING;
+	prop->dataType = PropertyTypeInfoString;
 	prop->data = new char[prop->length];
 
 	std::memcpy(prop->data, value.data(), prop->length);
@@ -258,7 +258,7 @@ MaterialProperty::get(const char* key, std::size_t type, std::size_t index, int&
 	MaterialParam* prop = nullptr;
 	if (this->get(key, type, index, &prop))
 	{
-		if (prop->dataType == PTI_INTEGER)
+		if (prop->dataType == PropertyTypeInfoInt)
 		{
 			if (prop->length == sizeof(int))
 			{
@@ -279,7 +279,7 @@ MaterialProperty::get(const char* key, std::size_t type, std::size_t index, floa
 	MaterialParam* prop = nullptr;
 	if (this->get(key, type, index, &prop))
 	{
-		if (prop->dataType == PTI_FLOAT)
+		if (prop->dataType == PropertyTypeInfoFloat)
 		{
 			if (prop->length == sizeof(float))
 			{
@@ -300,8 +300,8 @@ MaterialProperty::get(const char* key, std::size_t type, std::size_t index, Vect
 	MaterialParam* prop = nullptr;
 	if (this->get(key, type, index, &prop))
 	{
-		if (prop->dataType & PTI_FLOAT &&
-			prop->dataType & PTI_BUFFER)
+		if (prop->dataType & PropertyTypeInfoFloat &&
+			prop->dataType & PropertyTypeInfoBuffer)
 		{
 			if (prop->length == sizeof(Vector3))
 			{
@@ -322,8 +322,8 @@ MaterialProperty::get(const char* key, std::size_t type, std::size_t index, Vect
 	MaterialParam* prop = nullptr;
 	if (this->get(key, type, index, &prop))
 	{
-		if (prop->dataType & PTI_FLOAT &&
-			prop->dataType & PTI_BUFFER)
+		if (prop->dataType & PropertyTypeInfoFloat &&
+			prop->dataType & PropertyTypeInfoBuffer)
 		{
 			if (prop->length == sizeof(Vector4))
 			{
@@ -344,7 +344,7 @@ MaterialProperty::get(const char* key, std::size_t type, std::size_t index, std:
 	MaterialParam* prop = nullptr;
 	if (this->get(key, type, index, &prop))
 	{
-		if (prop->dataType == PTI_STRING)
+		if (prop->dataType == PropertyTypeInfoString)
 		{
 			value.assign(prop->data, prop->length);
 			return true;
@@ -538,31 +538,31 @@ MeshProperty::getNumIndices() const noexcept
 }
 
 void
-MeshProperty::setVertexArray(const Vector3Array& array) noexcept
+MeshProperty::setVertexArray(const Float3Array& array) noexcept
 {
 	_vertices = array;
 }
 
 void
-MeshProperty::setNormalArray(const Vector3Array& array) noexcept
+MeshProperty::setNormalArray(const Float3Array& array) noexcept
 {
 	_normals = array;
 }
 
 void
-MeshProperty::setColorArray(const Vector4Array& array) noexcept
+MeshProperty::setColorArray(const Float4Array& array) noexcept
 {
 	_colors = array;
 }
 
 void
-MeshProperty::setTangentArray(const Vector3Array& array) noexcept
+MeshProperty::setTangentArray(const Float3Array& array) noexcept
 {
 	_tangent = array;
 }
 
 void
-MeshProperty::setTexcoordArray(const std::vector<Vector2>& array) noexcept
+MeshProperty::setTexcoordArray(const Float2Array& array) noexcept
 {
 	_texcoords = array;
 }
@@ -591,19 +591,19 @@ MeshProperty::setWeightArray(const VertexWeights& array) noexcept
 	_weights = array;
 }
 
-Vector3Array&
+Float3Array&
 MeshProperty::getVertexArray() noexcept
 {
 	return _vertices;
 }
 
-Vector3Array&
+Float3Array&
 MeshProperty::getNormalArray() noexcept
 {
 	return _normals;
 }
 
-Vector4Array&
+Float4Array&
 MeshProperty::getColorArray() noexcept
 {
 	return _colors;
@@ -639,31 +639,31 @@ MeshProperty::getFaceArray() noexcept
 	return _faces;
 }
 
-const Vector3Array&
+const Float3Array&
 MeshProperty::getVertexArray() const noexcept
 {
 	return _vertices;
 }
 
-const Vector3Array&
+const Float3Array&
 MeshProperty::getNormalArray() const noexcept
 {
 	return _normals;
 }
 
-const Vector3Array&
+const Float3Array&
 MeshProperty::getTangentArray() const noexcept
 {
 	return _tangent;
 }
 
-const Vector4Array&
+const Float4Array&
 MeshProperty::getColorArray() const noexcept
 {
 	return _colors;
 }
 
-const Vector2Array&
+const Float2Array&
 MeshProperty::getTexcoordArray() const noexcept
 {
 	return _texcoords;
@@ -708,12 +708,12 @@ MeshProperty::getBoundingBoxDownwards() const noexcept
 void
 MeshProperty::clear() noexcept
 {
-	_vertices = Vector3Array();
-	_normals = Vector3Array();
-	_colors = Vector4Array();
-	_texcoords = Vector2Array();
-	_tangent = Vector3Array();
-	_facesNormal = Vector3Array();
+	_vertices = Float3Array();
+	_normals = Float3Array();
+	_colors = Float4Array();
+	_texcoords = Float2Array();
+	_tangent = Float3Array();
+	_facesNormal = Float3Array();
 	_faces = UintArray();
 }
 
@@ -1325,8 +1325,8 @@ MeshProperty::mergeVertices() noexcept
 
 	std::map<float, std::uint32_t> vectorMap;
 
-	Vector3Array changeVertex;
-	Vector3Array changeNormal;
+	Float3Array changeVertex;
+	Float3Array changeNormal;
 
 	for (auto& it : _faces)
 	{
@@ -1392,7 +1392,7 @@ MeshProperty::computeVertexNormals() noexcept
 {
 	assert(!_vertices.empty() && !_faces.empty());
 
-	Vector3Array normal;
+	Float3Array normal;
 	normal.resize(_vertices.size());
 
 	if (!_facesNormal.empty())

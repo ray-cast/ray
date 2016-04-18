@@ -46,7 +46,7 @@
         <attribute rotate="90,0,0"/>
         <attribute active="true"/>
         <component class="Light">
-            <attribute type="sun"/>
+            <attribute type="spot"/>
             <attribute color="1.0,1.0,1.0"/>
             <attribute range="10.0"/>
             <attribute intensity="1.0"/>
@@ -58,12 +58,25 @@
     <object>
         <attribute name="light"/>
         <attribute position="0, 0, 0"/>
+        <attribute rotate="0,0,0"/>
         <attribute active="true"/>
         <component class="Light">
             <attribute type="ambient"/>
             <attribute range="100.0"/>
             <attribute color="1.0,1.0,1.0"/>
             <attribute intensity="0.5"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="light"/>
+        <attribute position="0, 0, 0"/>
+        <attribute rotate="180,0,0"/>
+        <attribute active="true"/>
+        <component class="Light">
+            <attribute type="ambient"/>
+            <attribute range="100.0"/>
+            <attribute color="1.0,1.0,1.0"/>
+            <attribute intensity="0.1"/>
         </component>
     </object>
 </scene>

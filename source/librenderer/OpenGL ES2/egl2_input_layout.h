@@ -51,7 +51,7 @@ public:
 	bool setup(const GraphicsInputLayoutDesc& desc) noexcept;
 	void close() noexcept;
 
-	void bindLayout(const EGL2ShaderObjectPtr& program) noexcept;
+	void bindLayout(const EGL2ProgramPtr& program) noexcept;
 	void bindVbo(const EGL2GraphicsDataPtr& vbo) noexcept;
 	void bindIbo(const EGL2GraphicsDataPtr& ibo) noexcept;
 
@@ -68,10 +68,9 @@ private:
 
 private:
 	GLenum _indexType;
+	GLuint _vao;
 	GLsizei _indexSize;
 	GLsizei _vertexSize;
-	GraphicsDataPtr _vbo;
-	GraphicsDataPtr _ibo;
 	GraphicsProgramPtr _program;
 	GraphicsInputLayoutDesc _inputLayoutDesc;
 	GraphicsDeviceWeakPtr _device;

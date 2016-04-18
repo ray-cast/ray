@@ -38,6 +38,81 @@
 
 _NAME_BEGIN
 
+GLboolean EGL2Types::_egl2init = GL_FALSE;
+GLboolean EGL2Types::_egl2Features[EGL2_RangeSize];
+
+bool
+EGL2Types::setup() noexcept
+{
+	if (_egl2init)
+		return true;
+
+	std::memset(_egl2Features, GL_FALSE, sizeof(_egl2Features));
+
+	const GLubyte* extension = glGetString(GL_EXTENSIONS);
+	if (!extension)
+		return false;
+
+	std::size_t extensionLength = std::strlen((const char*)extension);
+	if (extensionLength == 0)
+		return false;
+
+	const char* offset = (char*)extension;
+	for (;;)
+	{
+		const char* pos = std::strstr(offset, " ");
+		if (!pos)
+		{
+			std::size_t length = std::strlen(offset);
+			if (length == 0)
+				break;
+
+			pos = offset + length;
+		}
+
+
+		std::intptr_t length = pos - offset;
+		if (length < 0)
+			return false;
+
+		const char* src = pos - length;
+
+		if (strncmp(src, "GL_OES_required_internalformat", length) == 0)		   _egl2Features[EGL2Features::EGL2_OES_required_internalformat] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_read_format_bgra", length) == 0)             _egl2Features[EGL2Features::EGL2_EXT_read_format_bgra] = GL_TRUE;
+		else if (strncmp(src, "GL_ARM_rgba8", length) == 0)                        _egl2Features[EGL2Features::EGL2_ARM_rgba8] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_rgb8_rgba8", length) == 0)                   _egl2Features[EGL2Features::EGL2_OES_rgb8_rgba8] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_texture_format_BGRA8888", length) == 0)      _egl2Features[EGL2Features::EGL2_EXT_texture_format_BGRA8888] = GL_TRUE;
+		else if (strncmp(src, "GL_APPLE_texture_format_BGRA8888", length) == 0)    _egl2Features[EGL2Features::EGL2_APPLE_texture_format_BGRA8888] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_sRGB", length) == 0)                         _egl2Features[EGL2Features::EGL2_EXT_sRGB] = GL_TRUE;
+		else if (strncmp(src, "GL_NV_sRGB_formats", length) == 0)                  _egl2Features[EGL2Features::EGL2_NV_sRGB_formats] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_texture_rg", length) == 0)                   _egl2Features[EGL2Features::EGL2_EXT_texture_rg] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_texture_norm16", length) == 0)               _egl2Features[EGL2Features::EGL2_EXT_texture_norm16] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_texture_half_float", length) == 0)           _egl2Features[EGL2Features::EGL2_OES_texture_half_float] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_color_buffer_half_float", length) == 0)      _egl2Features[EGL2Features::EGL2_EXT_color_buffer_half_float] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_texture_float", length) == 0)                _egl2Features[EGL2Features::EGL2_OES_texture_float] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_color_buffer_float", length) == 0)           _egl2Features[EGL2Features::EGL2_EXT_color_buffer_float] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_texture_type_2_10_10_10_REV", length) == 0)  _egl2Features[EGL2Features::EGL2_EXT_texture_type_2_10_10_10_REV] = GL_TRUE;
+		else if (strncmp(src, "GL_APPLE_texture_packed_float", length) == 0)       _egl2Features[EGL2Features::EGL2_APPLE_texture_packed_float] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_depth_texture", length) == 0)                _egl2Features[EGL2Features::EGL2_OES_depth_texture] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_depth24", length) == 0)                      _egl2Features[EGL2Features::EGL2_OES_depth24] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_depth32", length) == 0)                      _egl2Features[EGL2Features::EGL2_OES_depth32] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_texture_stencil8", length) == 0)             _egl2Features[EGL2Features::EGL2_OES_texture_stencil8] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_packed_depth_stencil", length) == 0)         _egl2Features[EGL2Features::EGL2_OES_packed_depth_stencil] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_texture_compression_dxt1", length) == 0)     _egl2Features[EGL2Features::EGL2_EXT_texture_compression_dxt1] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_texture_compression_s3tc", length) == 0)     _egl2Features[EGL2Features::EGL2_EXT_texture_compression_s3tc] = GL_TRUE;
+		else if (strncmp(src, "GL_KHR_texture_compression_astc_ldr", length) == 0) _egl2Features[EGL2Features::EGL2_KHR_texture_compression_astc_ldr] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_vertex_type_10_10_10_2", length) == 0)       _egl2Features[EGL2Features::EGL2_OES_vertex_type_10_10_10_2] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_vertex_half_float", length) == 0)            _egl2Features[EGL2Features::EGL2_OES_vertex_half_float] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_texture_filter_anisotropic", length) == 0)   _egl2Features[EGL2Features::EGL2_EXT_texture_filter_anisotropic] = GL_TRUE;
+		else if (strncmp(src, "GL_KHR_debug", length) == 0)                        _egl2Features[EGL2Features::EGL2_KHR_debug] = GL_TRUE;
+
+		offset = pos + 1;
+	}
+
+	_egl2init = true;
+	return true;
+}
+
 GLenum
 EGL2Types::asVertexType(GraphicsVertexType type) noexcept
 {
@@ -191,7 +266,7 @@ EGL2Types::asIndexType(GraphicsIndexType type) noexcept
 }
 
 GLenum
-EGL2Types::asShaderType(GraphicsShaderStage stage) noexcept
+EGL2Types::asShaderStage(GraphicsShaderStage stage) noexcept
 {
 	switch (stage)
 	{
@@ -413,10 +488,10 @@ EGL2Types::asTextureFormat(GraphicsFormat format) noexcept
 		return GL_DEPTH_COMPONENT;
 	case GraphicsFormatS8UInt:
 		return GL_STENCIL_INDEX8;
-	case GraphicsFormatD16UNorm_S8UInt:
 	case GraphicsFormatD24UNorm_S8UInt:
+	case GraphicsFormatD16UNorm_S8UInt:
 	case GraphicsFormatD32_SFLOAT_S8UInt:
-		GL_PLATFORM_LOG("Can't support DepthStencil texture");
+		return GL_DEPTH_STENCIL_OES;
 	default:
 		GL_PLATFORM_ASSERT(false, "Invalid texture format");
 		return GL_INVALID_ENUM;
@@ -534,6 +609,10 @@ EGL2Types::asTextureType(GraphicsFormat format) noexcept
 	case GraphicsFormatD16UNorm:                 return GL_UNSIGNED_SHORT;
 	case GraphicsFormatD32_SFLOAT:               return GL_FLOAT;
 	case GraphicsFormatS8UInt:                   return GL_UNSIGNED_BYTE;
+	case GraphicsFormatX8_D24UNormPack32:        return GL_UNSIGNED_INT;
+	case GraphicsFormatD16UNorm_S8UInt:          return GL_INVALID_ENUM;
+	case GraphicsFormatD24UNorm_S8UInt:          return GL_UNSIGNED_INT_24_8_OES;
+	case GraphicsFormatD32_SFLOAT_S8UInt:        return GL_INVALID_ENUM;
 	case GraphicsFormatA2R10G10B10SNormPack32:   return GL_INVALID_ENUM;
 	case GraphicsFormatA2R10G10B10SScaledPack32: return GL_INVALID_ENUM;
 	case GraphicsFormatA2R10G10B10SIntPack32:    return GL_INVALID_ENUM;
@@ -542,10 +621,6 @@ EGL2Types::asTextureType(GraphicsFormat format) noexcept
 	case GraphicsFormatA2B10G10R10SIntPack32:    return GL_INVALID_ENUM;
 	case GraphicsFormatB10G11R11UFloatPack32:    return GL_INVALID_ENUM;
 	case GraphicsFormatE5B9G9R9UFloatPack32:     return GL_INVALID_ENUM;
-	case GraphicsFormatX8_D24UNormPack32:        return GL_INVALID_ENUM;
-	case GraphicsFormatD16UNorm_S8UInt:          return GL_INVALID_ENUM;
-	case GraphicsFormatD24UNorm_S8UInt:          return GL_INVALID_ENUM;
-	case GraphicsFormatD32_SFLOAT_S8UInt:        return GL_INVALID_ENUM;
 	case GraphicsFormatR64UInt:
 	case GraphicsFormatR64SInt:
 	case GraphicsFormatR64SFloat:
@@ -587,61 +662,61 @@ EGL2Types::asTextureInternalFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatR8SScaled:	             internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR8UInt:	                 internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR8SInt:	                 internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatR8SRGB:	                 internalFormat = GL_R8_EXT; break;
+	case GraphicsFormatR8SRGB:	                 internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR8G8UNorm:	             internalFormat = GL_RG8_EXT; break;
 	case GraphicsFormatR8G8SNorm:	             internalFormat = GL_RG8_SNORM; break;
 	case GraphicsFormatR8G8UScaled:	             internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR8G8SScaled:	             internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR8G8UInt:	             internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR8G8SInt:	             internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatR8G8SRGB:	             internalFormat = GL_RG8_EXT; break;
-	case GraphicsFormatR8G8B8UNorm:	             internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR8G8SRGB:	             internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR8G8B8UNorm:	             internalFormat = GL_RGB8_OES; break;
 	case GraphicsFormatR8G8B8SNorm:	             internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR8G8B8UScaled:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR8G8B8SScaled:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR8G8B8UInt:	             internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR8G8B8SInt:	             internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatR8G8B8SRGB:	             internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatB8G8R8UNorm:	             internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR8G8B8SRGB:	             internalFormat = GL_SRGB_EXT; break;
+	case GraphicsFormatB8G8R8UNorm:	             internalFormat = GL_RGB8_OES; break;
 	case GraphicsFormatB8G8R8SNorm:	             internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatB8G8R8UScaled:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatB8G8R8SScaled:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatB8G8R8UInt:	             internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatB8G8R8SInt:	             internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatB8G8R8SRGB:	             internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatR8G8B8A8UNorm:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatB8G8R8SRGB:	             internalFormat = GL_SRGB_EXT; break;
+	case GraphicsFormatR8G8B8A8UNorm:	         internalFormat = GL_RGBA8_OES; break;
 	case GraphicsFormatR8G8B8A8SNorm:	         internalFormat = GL_RGBA8_SNORM; break;
 	case GraphicsFormatR8G8B8A8UScaled:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR8G8B8A8SScaled:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR8G8B8A8UInt:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR8G8B8A8SInt:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR8G8B8A8SRGB:	         internalFormat = GL_SRGB8_ALPHA8_EXT; break;
-	case GraphicsFormatB8G8R8A8UNorm:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatB8G8R8A8UNorm:	         internalFormat = GL_RGB8_OES; break;
 	case GraphicsFormatB8G8R8A8SNorm:	         internalFormat = GL_RGBA8_SNORM; break;
 	case GraphicsFormatB8G8R8A8UScaled:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatB8G8R8A8SScaled:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatB8G8R8A8UInt:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatB8G8R8A8SInt:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatB8G8R8A8SRGB:	         internalFormat = GL_SRGB8_ALPHA8_EXT; break;
-	case GraphicsFormatA8B8G8R8UNormPack32:	     internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatA8B8G8R8UNormPack32:	     internalFormat = GL_RGBA8_OES; break;
 	case GraphicsFormatA8B8G8R8SNormPack32:	     internalFormat = GL_RGBA8_SNORM; break;
 	case GraphicsFormatA8B8G8R8UScaledPack32:	 internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatA8B8G8R8SScaledPack32:	 internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatA8B8G8R8UIntPack32:	     internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatA8B8G8R8SIntPack32:	     internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatA8B8G8R8SRGBPack32:	     internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatA2R10G10B10UNormPack32:	 internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatA2R10G10B10SNormPack32:	 internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatA8B8G8R8SRGBPack32:	     internalFormat = GL_SRGB8_ALPHA8_EXT; break;
+	case GraphicsFormatA2R10G10B10UNormPack32:	 internalFormat = GL_RGB10_A2_EXT; break;
+	case GraphicsFormatA2R10G10B10SNormPack32:	 internalFormat = GL_RGB10_A2_EXT; break;
 	case GraphicsFormatA2R10G10B10UScaledPack32: internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatA2R10G10B10SScaledPack32: internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatA2R10G10B10SScaledPack32: internalFormat = GL_RGB10_A2_EXT; break;
 	case GraphicsFormatA2R10G10B10UIntPack32:	 internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatA2R10G10B10SIntPack32:	 internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatA2R10G10B10SIntPack32:	 internalFormat = GL_RGB10_A2_EXT; break;
 	case GraphicsFormatA2B10G10R10UNormPack32:	 internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatA2B10G10R10SNormPack32:	 internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatA2B10G10R10SNormPack32:	 internalFormat = GL_RGB10_A2_EXT; break;
 	case GraphicsFormatA2B10G10R10UScaledPack32: internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatA2B10G10R10SScaledPack32: internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatA2B10G10R10SScaledPack32: internalFormat = GL_RGB10_A2_EXT; break;
 	case GraphicsFormatA2B10G10R10UIntPack32:	 internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatA2B10G10R10SIntPack32:	 internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatA2B10G10R10SIntPack32:	 internalFormat = GL_RGB10_A2_EXT; break;
 	case GraphicsFormatR16UNorm:	             internalFormat = GL_R16_EXT; break;
 	case GraphicsFormatR16SNorm:	             internalFormat = GL_R16_SNORM_EXT; break;
 	case GraphicsFormatR16UScaled:	             internalFormat = GL_R16_EXT; break;
@@ -655,14 +730,14 @@ EGL2Types::asTextureInternalFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatR16G16SScaled:	         internalFormat = GL_RG16_EXT; break;
 	case GraphicsFormatR16G16UInt:	             internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR16G16SInt:	             internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatR16G16SFloat:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR16G16SFloat:	         internalFormat = GL_RG16F_EXT; break;
 	case GraphicsFormatR16G16B16UNorm:	         internalFormat = GL_RGB16_EXT; break;
 	case GraphicsFormatR16G16B16SNorm:	         internalFormat = GL_RGB16_SNORM_EXT; break;
 	case GraphicsFormatR16G16B16UScaled:	     internalFormat = GL_RGB16_EXT; break;
 	case GraphicsFormatR16G16B16SScaled:	     internalFormat = GL_RGB16_EXT; break;
 	case GraphicsFormatR16G16B16UInt:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR16G16B16SInt:	         internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatR16G16B16SFloat:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatR16G16B16SFloat:	         internalFormat = GL_RGB16F_EXT; break;
 	case GraphicsFormatR16G16B16A16UNorm:	     internalFormat = GL_RGBA16_EXT; break;
 	case GraphicsFormatR16G16B16A16SNorm:	     internalFormat = GL_RGBA16_SNORM_EXT; break;
 	case GraphicsFormatR16G16B16A16UScaled:	     internalFormat = GL_RGBA16_EXT; break;
@@ -694,14 +769,14 @@ EGL2Types::asTextureInternalFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatR64G64B64A64UInt:	     internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR64G64B64A64SInt:	     internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatR64G64B64A64SFloat:	     internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatB10G11R11UFloatPack32:	 internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatE5B9G9R9UFloatPack32:	 internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatB10G11R11UFloatPack32:	 internalFormat = GL_R11F_G11F_B10F_APPLE; break;
+	case GraphicsFormatE5B9G9R9UFloatPack32:	 internalFormat = GL_RGB9_E5_APPLE; break;
 	case GraphicsFormatD16UNorm:	             internalFormat = GL_DEPTH_COMPONENT16; break;
-	case GraphicsFormatX8_D24UNormPack32:	     internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatD32_SFLOAT:	             internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatX8_D24UNormPack32:	     internalFormat = GL_DEPTH_COMPONENT24_OES; break;
+	case GraphicsFormatD32_SFLOAT:	             internalFormat = GL_DEPTH_COMPONENT32_OES; break;
 	case GraphicsFormatS8UInt:	                 internalFormat = GL_STENCIL_INDEX8; break;
 	case GraphicsFormatD16UNorm_S8UInt:	         internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatD24UNorm_S8UInt:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatD24UNorm_S8UInt:	         internalFormat = GL_DEPTH24_STENCIL8_OES; break;
 	case GraphicsFormatD32_SFLOAT_S8UInt:	     internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatBC1RGBUNormBlock:	     internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT; break;
 	case GraphicsFormatBC1RGBSRGBBlock:	         internalFormat = GL_INVALID_ENUM; break;
@@ -763,7 +838,7 @@ EGL2Types::asTextureInternalFormat(GraphicsFormat format) noexcept
 	}
 
 	GL_PLATFORM_ASSERT(internalFormat != GL_INVALID_ENUM, "Invalid texture internal format.")
-		return internalFormat;
+	return internalFormat;
 }
 
 GLenum
@@ -904,6 +979,47 @@ EGL2Types::asSamplerFilter(GraphicsSamplerFilter filter) noexcept
 		GL_PLATFORM_ASSERT(false, "Invalid sampler filter");
 		return GL_INVALID_ENUM;
 	}
+}
+
+GLboolean
+EGL2Types::isSupportFeature(EGL2Features features) noexcept
+{
+	assert(features >= EGL2Features::EGL2_BeginRange && features <= EGL2Features::EGL2_EndRange);
+	return _egl2Features[features];
+}
+
+GLboolean
+EGL2Types::isStencilFormat(GraphicsFormat format) noexcept
+{
+	if (format == GraphicsFormat::GraphicsFormatS8UInt)
+		return GL_TRUE;
+	return GL_FALSE;
+}
+
+GLboolean
+EGL2Types::isDepthFormat(GraphicsFormat format) noexcept
+{
+	if (format == GraphicsFormat::GraphicsFormatD16UNorm ||
+		format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 ||
+		format == GraphicsFormat::GraphicsFormatD32_SFLOAT)
+	{
+		return GL_TRUE;
+	}
+
+	return GL_FALSE;
+}
+
+GLboolean
+EGL2Types::isDepthStencilFormat(GraphicsFormat format) noexcept
+{
+	if (format == GraphicsFormat::GraphicsFormatD16UNorm_S8UInt ||
+		format == GraphicsFormat::GraphicsFormatD24UNorm_S8UInt ||
+		format == GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt)
+	{
+		return GL_TRUE;
+	}
+
+	return GL_FALSE;
 }
 
 GLboolean

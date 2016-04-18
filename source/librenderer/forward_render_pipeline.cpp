@@ -103,19 +103,9 @@ ForwardRenderPipeline::onRenderPipeline(RenderPipeline& pipeline, const CameraPt
 	case CameraOrder::CameraOrderShadow:
 		this->renderShadowMap(pipeline);
 		break;
-	case CameraOrder::CameraOrderMain:
-	{
-		switch (camera->getCameraType())
-		{
-		case CameraType::CameraTypeOrtho:
-			this->render2DEnvMap(pipeline);
-			break;
-		default:
-			assert(false);
-			break;
-		}
+	case CameraOrder::CameraOrder2D:
+		this->render2DEnvMap(pipeline);
 		break;
-	}
 	default:
 		assert(false);
 		break;

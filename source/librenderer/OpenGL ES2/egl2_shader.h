@@ -169,18 +169,17 @@ private:
 	GraphicsShaderDesc _shaderDesc;
 };
 
-class EGL2ShaderObject final : public GraphicsProgram
+class EGL2Program final : public GraphicsProgram
 {
-	__DeclareSubClass(EGL2ShaderObject, GraphicsProgram)
+	__DeclareSubClass(EGL2Program, GraphicsProgram)
 public:
-	EGL2ShaderObject() noexcept;
-	~EGL2ShaderObject() noexcept;
+	EGL2Program() noexcept;
+	~EGL2Program() noexcept;
 
 	bool setup(const GraphicsProgramDesc& desc) noexcept;
 	void close() noexcept;
 
-	void setActive(bool active) noexcept;
-	bool getActive() noexcept;
+	void apply() noexcept;
 
 	GLuint getInstanceID() const noexcept;
 
@@ -203,12 +202,10 @@ private:
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
-	EGL2ShaderObject(const EGL2ShaderObject&) noexcept = delete;
-	EGL2ShaderObject& operator=(const EGL2ShaderObject&) noexcept = delete;
+	EGL2Program(const EGL2Program&) noexcept = delete;
+	EGL2Program& operator=(const EGL2Program&) noexcept = delete;
 
 private:
-
-	bool _isActive;
 
 	GLuint _program;
 

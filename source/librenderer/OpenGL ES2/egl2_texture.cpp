@@ -56,18 +56,18 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 {
 	assert(_texture == GL_NONE);
 
-	auto target = EGL2Types::asTextureTarget(textureDesc.getTexDim(), textureDesc.isMultiSample());
+	GLenum target = EGL2Types::asTextureTarget(textureDesc.getTexDim(), textureDesc.isMultiSample());
 	if (target == GL_INVALID_ENUM)
 		return false;
 
-	auto internalFormat = EGL2Types::asTextureInternalFormat(textureDesc.getTexFormat());
+	GLenum internalFormat = EGL2Types::asTextureInternalFormat(textureDesc.getTexFormat());
 	if (internalFormat == GL_INVALID_ENUM)
 		return false;
 
 	GL_CHECK(glGenTextures(1, &_texture));
 	if (_texture == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glCreateTextures fail");
+		GL_PLATFORM_LOG("glGenTextures() fail");
 		return false;
 	}
 
@@ -77,7 +77,7 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	GLsizei h = (GLsizei)textureDesc.getHeight();
 
 	GLsizei mipBase = textureDesc.getMipBase();
-	GLsizei mipLevel = std::max((GLsizei)textureDesc.getMipLevel(), 1);
+	GLsizei mipLevel = textureDesc.getMipLevel();
 
 	if (!applySamplerWrap(target, textureDesc.getSamplerWrap()))
 		return false;
@@ -88,7 +88,8 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	if (!applySamplerAnis(target, textureDesc.getSamplerAnis()))
 		return false;
 
-	auto stream = textureDesc.getStream();
+	const char* stream = (const char*)textureDesc.getStream();
+
 	if (EGL2Types::isCompressedTexture(textureDesc.getTexFormat()))
 	{
 		std::size_t offset = 0;
@@ -96,41 +97,56 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 		for (GLint mip = mipBase; mip < mipBase + mipLevel; mip++)
 		{
-			GLsizei mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
+			auto mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
 
 			GL_CHECK(glCompressedTexImage2D(GL_TEXTURE_2D, mip, internalFormat, w, h, 0, mipSize, (char*)stream + offset));
 
 			w = std::max(w >> 1, 1);
 			h = std::max(h >> 1, 1);
 
-			offset += mipSize;
+			offset += stream ? mipSize : 0;
 		}
 	}
 	else
 	{
-		auto format = EGL2Types::asTextureFormat(textureDesc.getTexFormat());
-		auto type = EGL2Types::asTextureType(textureDesc.getTexFormat());
+		GLenum format = EGL2Types::asTextureFormat(textureDesc.getTexFormat());
+		GLenum type = EGL2Types::asTextureType(textureDesc.getTexFormat());
 
 		switch (target)
 		{
 		case GL_TEXTURE_2D:
+		case GL_TEXTURE_2D_MULTISAMPLE:
 			GL_CHECK(glTexImage2D(target, mipLevel, internalFormat, w, h, 0, format, type, stream));
-		break;
+			break;
 		case GL_TEXTURE_CUBE_MAP:
-		{
 			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, mipLevel, internalFormat, w, h, 0, format, type, stream));
 			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, mipLevel, internalFormat, w, h, 0, format, type, stream));
 			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, mipLevel, internalFormat, w, h, 0, format, type, stream));
 			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, mipLevel, internalFormat, w, h, 0, format, type, stream));
 			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, mipLevel, internalFormat, w, h, 0, format, type, stream));
 			GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, mipLevel, internalFormat, w, h, 0, format, type, stream));
-		}
-		break;
+			break;
+#ifndef __AMD__
+		case GL_TEXTURE_CUBE_MAP_ARRAY_EXT:
+			{
+				GLsizei depth = (GLsizei)textureDesc.getDepth();
+				GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_POSITIVE_X, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
+				GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
+				GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
+				GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
+				GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
+				GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
+			}
+			break;
+#endif
 		default:
 			assert(false);
+			return false;
 			break;
 		}
 	}
+
+	GL_CHECK(glBindTexture(target, GL_NONE));
 
 	_target = target;
 	_textureDesc = textureDesc;
@@ -155,7 +171,7 @@ EGL2Texture::getTarget() const noexcept
 }
 
 GLuint
-EGL2Texture::getInstanceID() noexcept
+EGL2Texture::getInstanceID() const noexcept
 {
 	return _texture;
 }
@@ -193,22 +209,24 @@ EGL2Texture::applySamplerFilter(GLenum target, GraphicsSamplerFilter filter) noe
 bool
 EGL2Texture::applySamplerAnis(GLenum target, GraphicsSamplerAnis anis) noexcept
 {
-	if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis1)
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1));
-	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis2)
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2));
-	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis4)
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4));
-	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis8)
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8));
-	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis16)
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16));
-	else
+	if (EGL2Types::isSupportFeature(EGL2Features::EGL2_EXT_texture_filter_anisotropic))
 	{
-		GL_PLATFORM_LOG("Can't support anisotropy format");
-		return false;
+		if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis1)
+			GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1));
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis2)
+			GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2));
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis4)
+			GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4));
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis8)
+			GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8));
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis16)
+			GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16));
+		else
+		{
+			GL_PLATFORM_LOG("Can't support anisotropy format");
+			return false;
+		}
 	}
-
 	return true;
 }
 

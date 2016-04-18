@@ -154,7 +154,7 @@ private:
 
 class EGL2DescriptorSetLayout final : public GraphicsDescriptorSetLayout
 {
-	__DeclareSubClass(EGL2DescriptorSetLayout, OGLGraphicsData)
+	__DeclareSubClass(EGL2DescriptorSetLayout, OGLCoreGraphicsData)
 public:
 	EGL2DescriptorSetLayout() noexcept;
 	~EGL2DescriptorSetLayout() noexcept;
@@ -180,7 +180,7 @@ private:
 
 class EGL2DescriptorSet final : public GraphicsDescriptorSet
 {
-	__DeclareSubClass(EGL2DescriptorSet, OGLGraphicsData)
+	__DeclareSubClass(EGL2DescriptorSet, OGLCoreGraphicsData)
 public:
 	EGL2DescriptorSet() noexcept;
 	~EGL2DescriptorSet() noexcept;
@@ -188,7 +188,7 @@ public:
 	bool setup(const GraphicsDescriptorSetDesc& desc) noexcept;
 	void close() noexcept;
 
-	void bindProgram(GraphicsProgramPtr program) noexcept;
+	void apply(GraphicsProgramPtr program) noexcept;
 
 	const GraphicsUniformSets& getGraphicsUniformSets() const noexcept;
 	const GraphicsDescriptorSetDesc& getGraphicsDescriptorSetDesc() const noexcept;

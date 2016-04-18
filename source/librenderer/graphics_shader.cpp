@@ -46,20 +46,24 @@ __ImplementSubInterface(GraphicsShader, GraphicsChild, "GraphicsShader")
 __ImplementSubInterface(GraphicsProgram, GraphicsChild, "GraphicsProgram")
 
 GraphicsShaderDesc::GraphicsShaderDesc() noexcept
-	:_type(GraphicsShaderStage::GraphicsShaderStageNone)
+	: _lang(GraphicsShaderLang::GraphicsShaderLangNone)
+	, _stage(GraphicsShaderStage::GraphicsShaderStageNone)
 {
 }
 
-GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderStage type, const std::string& code) noexcept
+GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderStage stage, const std::string& code) noexcept
+	: _bytecodes(code)
+	, _lang(lang)
+	, _stage(stage)
 {
-	this->setType(type);
+	
+}
+
+GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderStage stage, const std::vector<char>& code) noexcept
+	: _lang(lang)
+	, _stage(stage)
+{
 	_bytecodes.insert(_bytecodes.begin(), code.begin(), code.end());
-}
-
-GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderStage type, const std::vector<char>& code) noexcept
-{
-	this->setType(type);
-	this->setByteCodes(code);
 }
 
 GraphicsShaderDesc::~GraphicsShaderDesc() noexcept
@@ -79,24 +83,36 @@ GraphicsShaderDesc::getName() const noexcept
 }
 
 void
-GraphicsShaderDesc::setType(GraphicsShaderStage type) noexcept
+GraphicsShaderDesc::setLanguage(GraphicsShaderLang lang) noexcept
 {
-	_type = type;
+	_lang = lang;
 }
 
-GraphicsShaderStage
-GraphicsShaderDesc::getType()const noexcept
+GraphicsShaderLang 
+GraphicsShaderDesc::getLanguage() const noexcept
 {
-	return _type;
+	return _lang;
 }
 
 void
-GraphicsShaderDesc::setByteCodes(const std::vector<char>& codes) noexcept
+GraphicsShaderDesc::setStage(GraphicsShaderStage stage) noexcept
+{
+	_stage = stage;
+}
+
+GraphicsShaderStage
+GraphicsShaderDesc::getStage()const noexcept
+{
+	return _stage;
+}
+
+void
+GraphicsShaderDesc::setByteCodes(const std::string& codes) noexcept
 {
 	_bytecodes = codes;
 }
 
-const std::vector<char>&
+const std::string&
 GraphicsShaderDesc::getByteCodes() const noexcept
 {
 	return _bytecodes;
@@ -117,7 +133,7 @@ GraphicsProgramDesc::addShader(GraphicsShaderPtr shader) noexcept
 
 	auto comp = [&](const GraphicsShaderPtr& it) 
 	{
-		return it->getGraphicsShaderDesc().getType() == shader->getGraphicsShaderDesc().getType();
+		return it->getGraphicsShaderDesc().getStage() == shader->getGraphicsShaderDesc().getStage();
 	};
 
 	auto it = std::find_if(_shaders.begin(), _shaders.end(), comp);

@@ -77,25 +77,28 @@ public:
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void discradRenderTexture() noexcept;
-	void readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	void readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
 
-	bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;
-	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
-	void unmapBuffer(GraphicsDataPtr& data) noexcept;
+	bool updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept;
+	void* mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept;
+	void unmapBuffer(GraphicsDataPtr data) noexcept;
 	
 	void drawCone(MaterialTechPtr tech) noexcept;
 	void drawSphere(MaterialTechPtr tech) noexcept;
 	void drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept;
 	void drawScreenQuad(MaterialTechPtr tech) noexcept;
 	void drawRenderQueue(RenderQueue queue, MaterialTechPtr tech = nullptr) noexcept;
-	void drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr source, GraphicsFramebufferPtr swap, GraphicsFramebufferPtr dest) noexcept;
 
 	void addPostProcess(RenderPostProcessPtr postprocess) noexcept;
 	void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
+	void drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr source, GraphicsFramebufferPtr swap) noexcept;
 	void destroyPostProcess() noexcept;
 
 	void present() noexcept;
+
+	bool isTextureSupport(GraphicsFormat format) noexcept;
+	bool isVertexSupport(GraphicsFormat format) noexcept;
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
 	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
@@ -107,8 +110,8 @@ public:
 
 	MaterialPtr createMaterial(const std::string& name) noexcept;
 	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
-	RenderMeshPtr createRenderMesh(const MeshProperty& mesh) noexcept;
-	RenderMeshPtr createRenderMesh(const MeshPropertys& mesh) noexcept;
+	RenderMeshPtr createRenderMesh(const MeshProperty& mesh, std::uint32_t flags = ModelMakerFlagBits::ModelMakerFlagBitALL) noexcept;
+	RenderMeshPtr createRenderMesh(const MeshPropertys& mesh, std::uint32_t flags = ModelMakerFlagBits::ModelMakerFlagBitALL) noexcept;
 
 	MaterialVariantPtr createSemantic(const std::string& name, GraphicsUniformType type) noexcept;
 	void destroySemantic(MaterialVariantPtr semantic) const noexcept;

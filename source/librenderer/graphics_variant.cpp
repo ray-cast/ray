@@ -339,13 +339,13 @@ GraphicsVariant::setType(GraphicsUniformType type) noexcept
 		else if (type == GraphicsUniformType::GraphicsUniformTypeFloat4Array)
 			_value.farray4 = new std::vector<float4>();
 		else if (type == GraphicsUniformType::GraphicsUniformTypeFloat3x3)
-			_value.m3 = new Matrix3x3;
+			_value.m3 = new float3x3;
 		else if (type == GraphicsUniformType::GraphicsUniformTypeFloat4x4)
-			_value.m4 = new Matrix4x4;
+			_value.m4 = new float4x4;
 		else if (type == GraphicsUniformType::GraphicsUniformTypeFloat3x3Array)
-			_value.m3array = new std::vector<Matrix3x3>;
+			_value.m3array = new std::vector<float3x3>;
 		else if (type == GraphicsUniformType::GraphicsUniformTypeFloat4x4Array)
-			_value.m4array = new std::vector<Matrix4x4>;
+			_value.m4array = new std::vector<float4x4>;
 		else if (type == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
 			type == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
 			type == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
@@ -361,7 +361,7 @@ GraphicsVariant::setType(GraphicsUniformType type) noexcept
 				_value.texture->image = nullptr;
 				_value.texture->sampler = nullptr;
 			}
-		}			
+		}
 
 		_type = type;
 	}
@@ -651,7 +651,7 @@ GraphicsVariant::assign(const std::vector<float4x4>& value) noexcept
 	*_value.m4array = value;
 }
 
-void 
+void
 GraphicsVariant::assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
 {
 	this->setType(GraphicsUniformType::GraphicsUniformTypeSamplerImage);

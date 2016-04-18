@@ -145,11 +145,11 @@ bool rayOpenWindow(const char* title, int w, int h) noexcept
 		{
 			if (!_gameApp->openScene(_gameScenePath))
 				return false;
-		}			
+		}
 
 		return true;
 	}
-	
+
 	return false;
 }
 
@@ -166,13 +166,12 @@ void rayCloseWindow() noexcept
 		::glfwDestroyWindow(_window);
 		_window = nullptr;
 	}
-	
+
 	::glfwTerminate();
 }
 
 bool rayIsQuitRequest() noexcept
 {
-	glfwSwapBuffers(_window);
 	return ::glfwWindowShouldClose(_window) ? true : false;
 }
 

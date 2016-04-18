@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_OGL_STATE_H_
-#define _H_OGL_STATE_H_
+#ifndef _H_OGL_CORE_STATE_H_
+#define _H_OGL_CORE_STATE_H_
 
 #include "ogl_types.h"
 
@@ -43,17 +43,17 @@ _NAME_BEGIN
 
 class OGLGraphicsState final : public GraphicsState
 {
-    __DeclareSubClass(OGLGraphicsState, GraphicsState)
+    __DeclareSubClass(OGLGraphicsState, RenderState)
 public:
 	OGLGraphicsState() noexcept;
 	~OGLGraphicsState() noexcept;
 
-	bool setup(const GraphicsStateDesc& desc) noexcept;
-	void close() noexcept;
+    bool setup(const GraphicsStateDesc& desc) noexcept;
+    void close() noexcept;
 
 	void apply(const GraphicsStateDesc& last) noexcept;
 
-	const GraphicsStateDesc& getGraphicsStateDesc() const noexcept;
+    const GraphicsStateDesc& getGraphicsStateDesc() const noexcept;
 
 private:
 	friend class OGLDevice;
@@ -65,7 +65,7 @@ private:
 	OGLGraphicsState& operator=(const OGLGraphicsState&) = delete;
 
 private:
-	GraphicsStateDesc _stateDesc;
+    GraphicsStateDesc _stateDesc;
 	GraphicsDeviceWeakPtr _device;
 };
 

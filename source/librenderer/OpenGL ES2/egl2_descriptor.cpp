@@ -556,7 +556,7 @@ EGL2DescriptorSet::close() noexcept
 }
 
 void
-EGL2DescriptorSet::bindProgram(GraphicsProgramPtr shaderObject) noexcept
+EGL2DescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 {
 	std::uint32_t textureUnit = 0;
 	for (auto& it : _activeUniformSets)
@@ -636,7 +636,7 @@ EGL2DescriptorSet::bindProgram(GraphicsProgramPtr shaderObject) noexcept
 			if (uniform->getTexture())
 			{
 				GL_CHECK(glUniform1i(location, textureUnit));
-				GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit);)
+				GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
 				GL_CHECK(glBindTexture(uniform->getTexture()->downcast<EGL2Texture>()->getTarget(), uniform->getTexture()->downcast<EGL2Texture>()->getInstanceID()));
 				textureUnit++;
 			}
@@ -645,7 +645,7 @@ EGL2DescriptorSet::bindProgram(GraphicsProgramPtr shaderObject) noexcept
 			if (uniform->getTexture())
 			{
 				GL_CHECK(glUniform1i(location, textureUnit));
-				GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit);)
+				GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
 				GL_CHECK(glBindTexture(uniform->getTexture()->downcast<EGL2Texture>()->getTarget(), uniform->getTexture()->downcast<EGL2Texture>()->getInstanceID()));
 				textureUnit++;
 			}
@@ -654,7 +654,7 @@ EGL2DescriptorSet::bindProgram(GraphicsProgramPtr shaderObject) noexcept
 			if (uniform->getTexture())
 			{
 				GL_CHECK(glUniform1i(location, textureUnit));
-				GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit);)
+				GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
 				GL_CHECK(glBindTexture(uniform->getTexture()->downcast<EGL2Texture>()->getTarget(), uniform->getTexture()->downcast<EGL2Texture>()->getInstanceID()));
 				textureUnit++;
 			}

@@ -175,12 +175,12 @@ private:
 	GraphicsDeviceWeakPtr _device;
 };
 
-class VulkanShaderObject final : public GraphicsProgram
+class VulkanProgram final : public GraphicsProgram
 {
-	__DeclareSubClass(VulkanShaderObject, GraphicsProgram)
+	__DeclareSubClass(VulkanProgram, GraphicsProgram)
 public:
-	VulkanShaderObject() noexcept;
-	virtual ~VulkanShaderObject() noexcept;
+	VulkanProgram() noexcept;
+	virtual ~VulkanProgram() noexcept;
 
 	bool setup(const GraphicsProgramDesc& desc) noexcept;
 	void close() noexcept;
@@ -200,8 +200,8 @@ private:
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
-	VulkanShaderObject(const VulkanShaderObject&) noexcept = delete;
-	VulkanShaderObject& operator=(const VulkanShaderObject&) noexcept = delete;
+	VulkanProgram(const VulkanProgram&) noexcept = delete;
+	VulkanProgram& operator=(const VulkanProgram&) noexcept = delete;
 
 private:
 	GraphicsUniforms    _activeUniforms;

@@ -45,23 +45,27 @@ class EXPORT GraphicsShaderDesc final
 {
 public:
 	GraphicsShaderDesc() noexcept;
-	GraphicsShaderDesc(GraphicsShaderStage type, const std::string& code) noexcept;
-	GraphicsShaderDesc(GraphicsShaderStage type, const std::vector<char>& code) noexcept;
+	GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderStage type, const std::string& code) noexcept;
+	GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderStage type, const std::vector<char>& code) noexcept;
 	virtual ~GraphicsShaderDesc() noexcept;
 
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 
-	void setType(GraphicsShaderStage type) noexcept;
-	GraphicsShaderStage getType() const noexcept;
+	void setLanguage(GraphicsShaderLang lang) noexcept;
+	GraphicsShaderLang getLanguage() const noexcept;
 
-	void setByteCodes(const std::vector<char>& source) noexcept;
-	const std::vector<char>& getByteCodes() const noexcept;
+	void setStage(GraphicsShaderStage type) noexcept;
+	GraphicsShaderStage getStage() const noexcept;
+
+	void setByteCodes(const std::string& source) noexcept;
+	const std::string& getByteCodes() const noexcept;
 
 private:
 	std::string _name;
-	GraphicsShaderStage _type;
-	std::vector<char> _bytecodes;
+	std::string _bytecodes;
+	GraphicsShaderLang _lang;
+	GraphicsShaderStage _stage;
 };
 
 class EXPORT GraphicsProgramDesc final

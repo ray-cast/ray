@@ -98,6 +98,13 @@ EGL2Framebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 	assert(framebufferDesc.getGraphicsFramebufferLayout());
 	assert(framebufferDesc.getWidth() > 0 && framebufferDesc.getHeight() > 0);
 
+	std::uint32_t numAttachment = framebufferDesc.getTextures().size();
+	if (numAttachment > 1)
+	{
+		GL_PLATFORM_LOG("Can't support multi framebuffer");
+		return false;
+	}
+
 	GL_CHECK(glGenFramebuffers(1, &_fbo));
 	if (_fbo == GL_NONE)
 	{
@@ -107,38 +114,38 @@ EGL2Framebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 
 	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, _fbo));
 
-	auto sharedDepthTarget = framebufferDesc.getSharedDepthTexture();
-	auto sharedStencilTarget = framebufferDesc.getSharedStencilTexture();
-
-	if (sharedDepthTarget == sharedStencilTarget)
+	auto sharedDepthTarget = framebufferDesc.getSharedDepthStencilTexture();
+	if (sharedDepthTarget)
 	{
-		GL_PLATFORM_LOG("Can't support DepthStencil attachment");
-		return false;
-	}
-	else
-	{
-		if (sharedDepthTarget)
+		auto format = sharedDepthTarget->getGraphicsTextureDesc().getTexFormat();
+		if (EGL2Types::isDepthStencilFormat(format))
+		{
+			GL_PLATFORM_LOG("Can't support DepthStencil attachment");
+			return false;
+		}
+		else if (EGL2Types::isDepthFormat(format))
 		{
 			if (!this->bindRenderTexture(sharedDepthTarget, GL_DEPTH_ATTACHMENT))
 				return false;
 		}
-
-		if (sharedStencilTarget)
+		else if (EGL2Types::isStencilFormat(format))
 		{
-			if (!this->bindRenderTexture(sharedStencilTarget, GL_STENCIL_ATTACHMENT))
+			if (!this->bindRenderTexture(sharedDepthTarget, GL_STENCIL_ATTACHMENT))
 				return false;
+		}
+		else
+		{
+			GL_PLATFORM_LOG("Invalid texture format");
+			return false;
 		}
 	}
 
-	if (framebufferDesc.getTextures().size() > 0)
+	if (numAttachment != 0)
 	{
-		GL_PLATFORM_LOG("Can't support multi framebuffer");
-		return false;
+		if (!this->bindRenderTexture(framebufferDesc.getTextures().front(), GL_COLOR_ATTACHMENT0))
+			return false;
 	}
-
-	if (!this->bindRenderTexture(framebufferDesc.getTextures().front(), GL_COLOR_ATTACHMENT0))
-		return false;
-
+	
 	_framebufferDesc = framebufferDesc;
 
 	return EGL2Check::checkError();
@@ -177,7 +184,7 @@ EGL2Framebuffer::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment
 
 	GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, target, handle, 0));
 
-	return EGL2Check::checkError();
+	return true;
 }
 
 const GraphicsFramebufferDesc&

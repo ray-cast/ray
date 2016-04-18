@@ -66,13 +66,16 @@ public:
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void discradRenderTexture() noexcept;
-	void readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	void readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
 
 	void drawCone(MaterialTechPtr pass) noexcept;
 	void drawSphere(MaterialTechPtr pass) noexcept;
 	void drawScreenQuad(MaterialTechPtr pass) noexcept;
 	void drawMesh(MaterialTechPtr pass, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept;
+
+	bool isTextureSupport(GraphicsFormat format) noexcept;
+	bool isVertexSupport(GraphicsFormat format) noexcept;
 
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim) noexcept;
@@ -88,9 +91,9 @@ public:
 	RenderMeshPtr createRenderMesh(const MeshPropertys& meshes) noexcept;
 	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
 
-	bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;
-	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
-	void unmapBuffer(GraphicsDataPtr& data) noexcept;
+	bool updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept;
+	void* mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept;
+	void unmapBuffer(GraphicsDataPtr data) noexcept;
 
 	void renderBegin() noexcept;
 	void render() noexcept;

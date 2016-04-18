@@ -62,6 +62,30 @@ typedef std::vector<MeshPropertyPtr> MeshPropertys;
 typedef std::vector<Bone> Bones;
 typedef std::vector<IKAttr> InverseKinematics;
 
+enum TextureType
+{
+	TextureTypeNone,
+	TextureTypeDiffuse,
+	TextureTypeSpecular,
+	TextureTypeAmbient,
+	TextureTypeEmissive,
+	TextureTypeHeight,
+	TextureTypeNormals,
+	TextureTypeShininess,
+	TextureTypeOpacity,
+	TextureTypeDisplacement,
+	TextureTypeLightmap,
+	TextureTypeReflection,
+};
+
+enum PropertyTypeInfo
+{
+	PropertyTypeInfoFloat = 0x01,
+	PropertyTypeInfoString = 0x02,
+	PropertyTypeInfoInt = 0x04,
+	PropertyTypeInfoBuffer = 0x08,
+};
+
 _NAME_END
 
 #endif

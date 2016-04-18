@@ -275,7 +275,7 @@ RenderPipelineDevice::createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) n
 }
 
 RenderMeshPtr
-RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh) noexcept
+RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh, std::uint32_t flags) noexcept
 {
 	auto numVertex = mesh.getNumVertices();
 	auto numIndices = mesh.getNumIndices();
@@ -287,15 +287,15 @@ RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh) noexcept
 	const auto& texcoords = mesh.getTexcoordArray();
 
 	std::uint32_t inputSize = 0;
-	if (!vertices.empty())
+	if (!vertices.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitVertex)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
-	if (!colors.empty())
+	if (!colors.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitColor)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
-	if (!normals.empty())
+	if (!normals.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitNormal)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
-	if (!tangents.empty())
+	if (!tangents.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
-	if (!texcoords.empty())
+	if (!texcoords.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTexcoord)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32SFloat);
 
 	GraphicsDataPtr vb;
@@ -305,7 +305,7 @@ RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh) noexcept
 		std::size_t offset = 0;
 		std::vector<char> _data(numVertex * inputSize);
 
-		if (vertices.size() == numVertex)
+		if (vertices.size() == numVertex && flags & ModelMakerFlagBits::ModelMakerFlagBitVertex)
 		{
 			char* data = (char*)_data.data();
 			for (auto& it : vertices)
@@ -317,7 +317,7 @@ RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh) noexcept
 			offset += sizeof(float3);
 		}
 
-		if (colors.size() == numVertex)
+		if (colors.size() == numVertex && flags & ModelMakerFlagBits::ModelMakerFlagBitColor)
 		{
 			char* data = (char*)_data.data() + offset;
 			for (auto& it : colors)
@@ -329,7 +329,7 @@ RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh) noexcept
 			offset += sizeof(float4);
 		}
 
-		if (normals.size() == numVertex)
+		if (normals.size() == numVertex && flags & ModelMakerFlagBits::ModelMakerFlagBitNormal)
 		{
 			char* data = (char*)_data.data() + offset;
 			for (auto& it : normals)
@@ -341,7 +341,7 @@ RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh) noexcept
 			offset += sizeof(float3);
 		}
 
-		if (tangents.size() == numVertex)
+		if (tangents.size() == numVertex && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
 		{
 			char* data = (char*)_data.data() + offset;
 			for (auto& it : tangents)
@@ -353,7 +353,7 @@ RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh) noexcept
 			offset += sizeof(float3);
 		}
 
-		if (texcoords.size() == numVertex)
+		if (texcoords.size() == numVertex && flags & ModelMakerFlagBits::ModelMakerFlagBitTexcoord)
 		{
 			char* data = (char*)_data.data() + offset;
 			for (auto& it : texcoords)
@@ -378,7 +378,7 @@ RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh) noexcept
 	GraphicsDataPtr ib;
 
 	auto& faces = mesh.getFaceArray();
-	if (numIndices > 0)
+	if (numIndices > 0 && flags & ModelMakerFlagBits::ModelMakerFlagBitFace)
 	{
 		GraphicsDataDesc _ib;
 		_ib.setType(GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
@@ -394,7 +394,7 @@ RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh) noexcept
 }
 
 RenderMeshPtr
-RenderPipelineDevice::createRenderMesh(const MeshPropertys& meshes) noexcept
+RenderPipelineDevice::createRenderMesh(const MeshPropertys& meshes, std::uint32_t flags) noexcept
 {
 	auto numVertex = 0;
 	auto numIndices = 0;
@@ -406,15 +406,15 @@ RenderPipelineDevice::createRenderMesh(const MeshPropertys& meshes) noexcept
 	}
 
 	std::uint32_t inputSize = 0;
-	if (!meshes.front()->getVertexArray().empty())
+	if (!meshes.front()->getVertexArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitVertex)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
-	if (!meshes.front()->getColorArray().empty())
+	if (!meshes.front()->getColorArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitColor)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
-	if (!meshes.front()->getNormalArray().empty())
+	if (!meshes.front()->getNormalArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitNormal)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
-	if (!meshes.front()->getTangentArray().empty())
+	if (!meshes.front()->getTangentArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
-	if (!meshes.front()->getTexcoordArray().empty())
+	if (!meshes.front()->getTexcoordArray().empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTexcoord)
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32SFloat);
 
 	GraphicsDataPtr vb;
@@ -437,7 +437,7 @@ RenderPipelineDevice::createRenderMesh(const MeshPropertys& meshes) noexcept
 
 			std::size_t offset1 = 0;
 
-			if (!vertices.empty())
+			if (!vertices.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitVertex)
 			{
 				char* data = (char*)mapBuffer + offset1 + offsetVertices;
 				for (auto& it : vertices)
@@ -449,7 +449,7 @@ RenderPipelineDevice::createRenderMesh(const MeshPropertys& meshes) noexcept
 				offset1 += sizeof(float3);
 			}
 
-			if (!colors.empty())
+			if (!colors.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitColor)
 			{
 				char* data = (char*)mapBuffer + offset1 + offsetVertices;
 				for (auto& it : colors)
@@ -461,7 +461,7 @@ RenderPipelineDevice::createRenderMesh(const MeshPropertys& meshes) noexcept
 				offset1 += sizeof(float4);
 			}
 
-			if (!normals.empty())
+			if (!normals.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitNormal)
 			{
 				char* data = (char*)mapBuffer + offset1 + offsetVertices;
 				for (auto& it : normals)
@@ -473,7 +473,7 @@ RenderPipelineDevice::createRenderMesh(const MeshPropertys& meshes) noexcept
 				offset1 += sizeof(float3);
 			}
 
-			if (!tangents.empty())
+			if (!tangents.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTangent)
 			{
 				char* data = (char*)mapBuffer + offset1 + offsetVertices;
 				for (auto& it : tangents)
@@ -485,7 +485,7 @@ RenderPipelineDevice::createRenderMesh(const MeshPropertys& meshes) noexcept
 				offset1 += sizeof(float3);
 			}
 
-			if (!texcoords.empty())
+			if (!texcoords.empty() && flags & ModelMakerFlagBits::ModelMakerFlagBitTexcoord)
 			{
 				char* data = (char*)mapBuffer + offset1 + offsetVertices;
 				for (auto& it : texcoords)
@@ -512,7 +512,7 @@ RenderPipelineDevice::createRenderMesh(const MeshPropertys& meshes) noexcept
 
 	GraphicsDataPtr ib;
 
-	if (numIndices > 0)
+	if (numIndices > 0 && flags & ModelMakerFlagBits::ModelMakerFlagBitFace)
 	{
 		std::vector<std::uint32_t> faces(numIndices);
 		std::size_t offsetIndices = 0;

@@ -67,8 +67,6 @@ public:
 	GraphicsDescriptorSetLayoutPtr createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept;
 	GraphicsDescriptorPoolPtr createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept;
 
-	GraphicsFormat findCompatibleFormat(GraphicsPixelFormatDesc& desc) noexcept;
-
 	const GraphicsDeviceDesc& getGraphicsDeviceDesc() const noexcept;
 
 private:

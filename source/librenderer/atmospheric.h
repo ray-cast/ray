@@ -77,6 +77,7 @@ private:
 	MaterialTechPtr _ground;
 
 	MaterialParamPtr _lightDirection;
+	MaterialParamPtr _eyeDirection;
 	MaterialParamPtr _invWavelength;
 	MaterialParamPtr _outerRadius;
 	MaterialParamPtr _outerRadius2;

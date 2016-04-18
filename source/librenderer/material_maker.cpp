@@ -53,6 +53,9 @@
 #include <ray/parse.h>
 #include <ray/except.h>
 
+#define EXCLUDE_PSTDINT
+#include <hlslcc.hpp>
+
 _NAME_BEGIN
 
 MaterialMaker::MaterialMaker() noexcept
@@ -124,11 +127,11 @@ MaterialMaker::instanceShader(MaterialManager& manager, MaterialDesc& material, 
 	if (value.empty())
 		throw failure(__TEXT("Empty shader entrypoint : ") + reader.getCurrentNodePath());
 
-	auto shader =  material.getShader(value);
-	if (!shader)
+	auto shaderModule =  material.getShader(value);
+	if (!shaderModule)
 	{
-		GraphicsShaderStage shaderType = stringToShaderStage(type);
-		if (shaderType == GraphicsShaderStage::GraphicsShaderStageMaxEnum)
+		GraphicsShaderStage shaderStage = stringToShaderStage(type);
+		if (shaderStage == GraphicsShaderStage::GraphicsShaderStageMaxEnum)
 			throw failure(__TEXT("Unknown shader type : ") + type);
 
 		std::vector<char>& bytecodes = _shaderCodes[value];
@@ -137,17 +140,96 @@ MaterialMaker::instanceShader(MaterialManager& manager, MaterialDesc& material, 
 
 		GraphicsShaderDesc shaderDesc;
 		shaderDesc.setName(value);
-		shaderDesc.setType(shaderType);
-		shaderDesc.setByteCodes(bytecodes);
+		shaderDesc.setStage(shaderStage);
 
-		shader = manager.getGraphicsDevice()->createShader(shaderDesc);
-		if (!shader)
+		GraphicsDeviceType deviceType = manager.getGraphicsDevice()->getGraphicsDeviceDesc().getDeviceType();
+		if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES2 ||
+			deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES3 ||
+			deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES31)
+		{
+			GLSLShader shader;
+			GLSLCrossDependencyData dependency;
+
+			std::uint32_t flags = HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT | HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
+			if (!TranslateHLSLFromMem(bytecodes.data(), flags, GLLang::LANG_ES_300, 0, &dependency, &shader))
+			{
+				FreeGLSLShader(&shader);
+				throw failure(__TEXT("Can't conv hlsl bytecodes to glsl.") + value);
+			}
+
+			shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangGLSL);
+			shaderDesc.setByteCodes(shader.sourceCode);
+
+			FreeGLSLShader(&shader);
+		}
+		else if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL ||
+				 deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
+		{
+			GLSLShader shader;
+			GLSLCrossDependencyData dependency;
+
+			std::uint32_t flags = HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT | HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
+			if (shaderStage == GraphicsShaderStage::GraphicsShaderStageGeometry)
+				flags = HLSLCC_FLAG_GS_ENABLED;
+			else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessControl)
+				flags = HLSLCC_FLAG_TESS_ENABLED;
+			else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
+				flags = HLSLCC_FLAG_TESS_ENABLED;
+
+			if (!TranslateHLSLFromMem(bytecodes.data(), flags, GLLang::LANG_DEFAULT, 0, &dependency, &shader))
+			{
+				FreeGLSLShader(&shader);
+				throw failure(__TEXT("Can't conv hlsl bytecodes to glsl.") + value);
+			}
+
+			shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangGLSL);
+			shaderDesc.setByteCodes(shader.sourceCode);
+
+			FreeGLSLShader(&shader);
+		}
+		else if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
+		{
+			GLSLShader shader;
+			GLSLCrossDependencyData dependency;
+
+			std::uint32_t flags = HLSLCC_FLAG_UNIFORM_BUFFER_OBJECT | HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
+			if (shaderStage == GraphicsShaderStage::GraphicsShaderStageGeometry)
+				flags = HLSLCC_FLAG_GS_ENABLED;
+			else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessControl)
+				flags = HLSLCC_FLAG_TESS_ENABLED;
+			else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
+				flags = HLSLCC_FLAG_TESS_ENABLED;
+
+			GlExtensions extensions;
+			extensions.ARB_shading_language_420pack = true;
+			extensions.ARB_explicit_attrib_location = false;
+			extensions.ARB_explicit_uniform_location = true;
+
+			if (!TranslateHLSLFromMem(bytecodes.data(), flags, GLLang::LANG_DEFAULT, 0, &dependency, &shader))
+			{
+				FreeGLSLShader(&shader);
+				throw failure(__TEXT("Can't conv hlsl bytecodes to glsl.") + value);
+			}
+
+			shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangGLSL);
+			shaderDesc.setByteCodes(shader.sourceCode);
+
+			FreeGLSLShader(&shader);
+		}
+		else
+		{
+			shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangHLSL);
+			shaderDesc.setByteCodes(std::string(bytecodes.data(), bytecodes.size()));
+		}
+
+		shaderModule = manager.getGraphicsDevice()->createShader(shaderDesc);
+		if (!shaderModule)
 			throw failure(__TEXT("Can't create shader : ") + reader.getCurrentNodePath());
 
-		material.addShader(shader);
+		material.addShader(shaderModule);
 	}
 
-	programDesc.addShader(shader);
+	programDesc.addShader(shaderModule);
 }
 
 void

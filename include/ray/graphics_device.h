@@ -41,67 +41,6 @@
 
 _NAME_BEGIN
 
-class EXPORT GraphicsPixelFormatDesc final
-{
-public:
-	GraphicsPixelFormatDesc() noexcept;
-	~GraphicsPixelFormatDesc() noexcept;
-
-	void setFormatType(GraphicsFormatType type) noexcept;
-	GraphicsFormatType getFormatType() const noexcept;
-
-	void setMinColorBits(std::uint8_t min) noexcept;
-	void setMinRedBits(std::uint8_t min) noexcept;
-	void setMinGreenBits(std::uint8_t min) noexcept;
-	void setMinBlueBits(std::uint8_t min) noexcept;
-	void setMinAlphaBits(std::uint8_t min) noexcept;
-	void setMinDepthBits(std::uint8_t min) noexcept;
-	void setMinStencilBits(std::uint8_t min) noexcept;
-
-	void setMaxColorBits(std::uint8_t max) noexcept;
-	void setMaxRedBits(std::uint8_t max) noexcept;
-	void setMaxGreenBits(std::uint8_t max) noexcept;
-	void setMaxBlueBits(std::uint8_t max) noexcept;
-	void setMaxAlphaBits(std::uint8_t max) noexcept;
-	void setMaxDepthBits(std::uint8_t max) noexcept;
-	void setMaxStencilBits(std::uint8_t max) noexcept;
-
-	std::uint8_t getMinColorBits() const noexcept;
-	std::uint8_t getMinRedBits() const noexcept;
-	std::uint8_t getMinGreenBits() const noexcept;
-	std::uint8_t getMinBlueBits() const noexcept;
-	std::uint8_t getMinAlphaBits() const noexcept;
-	std::uint8_t getMinDepthBits() const noexcept;
-	std::uint8_t getMinStencilBits() const noexcept;
-
-	std::uint8_t getMaxColorBits() const noexcept;
-	std::uint8_t getMaxRedBits() const noexcept;
-	std::uint8_t getMaxGreenBits() const noexcept;
-	std::uint8_t getMaxBlueBits() const noexcept;
-	std::uint8_t getMaxAlphaBits() const noexcept;
-	std::uint8_t getMaxDepthBits() const noexcept;
-	std::uint8_t getMaxStencilBits() const noexcept;
-
-private:
-	std::uint8_t _minColorBits;
-	std::uint8_t _minRedBits;
-	std::uint8_t _minGreenBits;
-	std::uint8_t _minBlueBits;
-	std::uint8_t _minAlphaBits;
-	std::uint8_t _minDepthBits;
-	std::uint8_t _minStencilBits;
-
-	std::uint8_t _maxColorBits;
-	std::uint8_t _maxRedBits;
-	std::uint8_t _maxGreenBits;
-	std::uint8_t _maxBlueBits;
-	std::uint8_t _maxAlphaBits;
-	std::uint8_t _maxDepthBits;
-	std::uint8_t _maxStencilBits;
-
-	GraphicsFormatType _pixelType;
-};
-
 class EXPORT GraphicsDeviceDesc final
 {
 public:
@@ -137,8 +76,6 @@ public:
 	virtual GraphicsDescriptorSetPtr createDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept = 0;
 	virtual GraphicsDescriptorSetLayoutPtr createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc) noexcept = 0;
 	virtual GraphicsDescriptorPoolPtr createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept = 0;
-
-	virtual GraphicsFormat findCompatibleFormat(GraphicsPixelFormatDesc& desc) noexcept = 0;
 
 	virtual const GraphicsDeviceDesc& getGraphicsDeviceDesc() const noexcept = 0;
 

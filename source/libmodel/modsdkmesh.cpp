@@ -217,10 +217,10 @@ SDKMeshHandler::doLoad(Model& model, StreamReader& stream) noexcept
 	if (!stream.seekg(hdr.MaterialDataOffset, ios_base::beg)) return false;
 	if (!stream.read((char*)materials.data(), sizeof(SDKMESH_MATERIAL) * hdr.NumMaterials)) return false;
 
-	Vector3Array vertices;
-	Vector3Array normals;
-	Vector3Array tangets;
-	Vector2Array texcoord;
+	Float3Array vertices;
+	Float3Array normals;
+	Float3Array tangets;
+	Float2Array texcoord;
 	UintArray faces;
 
 	MeshPropertyPtr root = nullptr;

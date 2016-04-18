@@ -77,8 +77,6 @@ public:
 	GraphicsCommandListPtr createCommandList(const GraphicsCommandListDesc& desc) noexcept;
 	GraphicsSemaphorePtr createSemaphore(const GraphicsSemaphoreDesc& desc) noexcept;
 
-	GraphicsFormat findCompatibleFormat(GraphicsPixelFormatDesc& desc) noexcept;
-
 	const GraphicsDeviceDesc& getGraphicsDeviceDesc() const noexcept;
 
 private:

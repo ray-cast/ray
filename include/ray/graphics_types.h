@@ -699,6 +699,18 @@ enum GraphicsShaderStage
 	GraphicsShaderStageMaxEnum = 0x7FFFFFFF
 };
 
+enum GraphicsShaderLang
+{
+	GraphicsShaderLangNone = 0,
+	GraphicsShaderLangHLSL = 1,
+	GraphicsShaderLangHLSLbytecodes = 2,
+	GraphicsShaderLangGLSL = 3,
+	GraphicsShaderLangBeginRange = GraphicsShaderLangHLSL,
+	GraphicsShaderLangEndRange = GraphicsShaderLangGLSL,
+	GraphicsShaderLangRangeSize = (GraphicsShaderLangEndRange - GraphicsShaderLangBeginRange + 1),
+	GraphicsShaderLangMaxEnum = 0x7FFFFFFF
+};
+
 enum GraphicsUniformType
 {
 	GraphicsUniformTypeNone = 0,

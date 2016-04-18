@@ -50,12 +50,12 @@
 
 _NAME_BEGIN
 
-inline static bool isPow2(std::uint32_t i)
+bool isPow2(std::uint32_t i) noexcept
 {
 	return ((i&(i - 1)) == 0);
 }
 
-inline static std::uint32_t nextPow2(std::uint32_t i)
+std::uint32_t nextPow2(std::uint32_t i) noexcept
 {
 	std::uint32_t d = 0x1;
 	while (d < i)
@@ -63,102 +63,7 @@ inline static std::uint32_t nextPow2(std::uint32_t i)
 	return d;
 }
 
-EnvironmentIrradiance::EnvironmentIrradiance(RenderPipeline& pipeline) except
-{
-	_irradiance = pipeline.createMaterial("sys:fx\\irradiance.glsl");
-	_irradianceParaboloid = _irradiance->getTech("ConvertHemisphere");
-	_irradianceProjectDualParaboloidToSH = _irradiance->getTech("ProjectDualParaboloidToSH");
-
-	_paraboloidCubeMapSampler = _irradiance->getParameter("paraboloidCubeMapSampler");
-	_paraboloidSamplesInverse = _irradiance->getParameter("paraboloidSamplesInverse");
-
-	_sphericalHarmonicConvolveDE0 = _irradiance->getParameter("SHConvolveDE0");
-	_sphericalHarmonicConvolveDE1 = _irradiance->getParameter("SHConvolveDE1");
-	_sphericalHarmonicConvolveYlmDW0 = _irradiance->getParameter("SHConvolveYlmDW0");
-	_sphericalHarmonicConvolveYlmDW1 = _irradiance->getParameter("SHConvolveYlmDW1");
-
-	_paraboloidFrontMap = pipeline.createTexture(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16SFloat);
-	_paraboloidBackMap = pipeline.createTexture(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16SFloat);
-	_irradianceSHCoefficientsMap = pipeline.createTexture(NUM_ORDER_P2, NUM_ORDER_P2, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16SFloat);
-
-	GraphicsFramebufferDesc paraboloidDualDesc;
-	paraboloidDualDesc.attach(_paraboloidFrontMap);
-	paraboloidDualDesc.attach(_paraboloidBackMap);
-	_paraboloidDualViews = pipeline.createFramebuffer(paraboloidDualDesc);
-
-	GraphicsFramebufferDesc irradianceSHCoefficientsDesc;
-	irradianceSHCoefficientsDesc.attach(_paraboloidFrontMap);
-	irradianceSHCoefficientsDesc.attach(_paraboloidBackMap);
-	_irradianceSHCoefficientsView = pipeline.createFramebuffer(irradianceSHCoefficientsDesc);
-
-	_buildDualParaboloidWeightTextures(pipeline, _paraboloidSHWeights, NUM_ORDER, NUM_RADIANCE_SAMPLES);
-}
-
-EnvironmentIrradiance::~EnvironmentIrradiance()
-{
-}
-
-void
-EnvironmentIrradiance::renderParaboloidEnvMap(RenderPipeline& pipeline, GraphicsTexturePtr cubemap) noexcept
-{
-	assert(cubemap);
-
-	_paraboloidCubeMapSampler->assign(cubemap);
-	_paraboloidSamplesInverse->assign(1.0f / PARABOLOID_SAMPLES);
-
-	_sphericalHarmonicConvolveDE0->assign(_paraboloidFrontMap);
-	_sphericalHarmonicConvolveDE1->assign(_paraboloidBackMap);
-	_sphericalHarmonicConvolveYlmDW0->assign(_paraboloidSHWeights[0]);
-	_sphericalHarmonicConvolveYlmDW1->assign(_paraboloidSHWeights[1]);
-
-	pipeline.setFramebuffer(_paraboloidDualViews);
-	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
-	pipeline.drawScreenQuad(_irradianceParaboloid);
-
-	pipeline.setFramebuffer(_irradianceSHCoefficientsView);
-	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
-	pipeline.drawScreenQuad(_irradianceProjectDualParaboloidToSH);
-}
-
-void
-EnvironmentIrradiance::renderProjectParaboloidToSH(RenderPipeline& pipeline, GraphicsFramebufferPtr evalSHFunction, GraphicsFramebufferPtr dest) noexcept
-{
-}
-
-void
-EnvironmentIrradiance::renderEvaluateConvolvedSH(RenderPipeline& pipeline, GraphicsFramebufferPtr evalSHFunction, GraphicsFramebufferPtr dest) noexcept
-{
-}
-
-bool
-EnvironmentIrradiance::_paraboloidCoord(Vector3& vec, int face, const Vector2& uv)
-{
-	//  sphere direction is the reflection of the orthographic view direction (determined by
-	//  face), reflected about the normal to the paraboloid at uv
-	double r_sqr = uv.x * uv.x + uv.y * uv.y;
-
-	if (r_sqr > 1.0)
-		return false;
-
-	Vector3 axis;
-	if (face == 0)
-		axis = Vector3(0.f, 0.f, -1.f);
-	else
-		axis = Vector3(0.f, 0.f, 1.f);
-
-	// compute normal on the parabaloid at uv
-	Vector3 N(uv.x, uv.y, 1.f);
-	N = math::normalize(N);
-
-	// reflect axis around N, to compute sphere direction
-	float v_dot_n = math::dot(axis, N);
-	Vector3 R = axis - 2 * v_dot_n*N;
-
-	vec = R;
-	return true;
-}
-
-float* D3DXSHEvalDirection(float* out, std::uint32_t order, const Vector3 *dir)
+float* D3DXSHEvalDirection(float* out, std::uint32_t order, const Vector3 *dir) noexcept
 {
 	if ((order < MINORDER) || (order > MAXORDER))
 		return out;
@@ -215,8 +120,148 @@ float* D3DXSHEvalDirection(float* out, std::uint32_t order, const Vector3 *dir)
 	return out;
 }
 
+EnvironmentIrradiance::EnvironmentIrradiance() noexcept
+{
+}
+
+EnvironmentIrradiance::~EnvironmentIrradiance() noexcept
+{
+	this->close();
+}
+
+bool 
+EnvironmentIrradiance::setup(RenderPipeline& pipeline) noexcept
+{
+	_irradiance = pipeline.createMaterial("sys:fx/irradiance.fxml"); if (!_irradiance) return false;
+	_irradianceParaboloid = _irradiance->getTech("ConvertHemisphere"); if (!_irradianceParaboloid) return false;
+	_irradianceProjectDualParaboloidToSH = _irradiance->getTech("ProjectDualParaboloidToSH"); if (!_irradianceProjectDualParaboloidToSH) return false;
+
+	_paraboloidCubeMapSampler = _irradiance->getParameter("paraboloidCubeMapSampler"); if (!_paraboloidCubeMapSampler) return false;
+	_paraboloidSamplesInverse = _irradiance->getParameter("paraboloidSamplesInverse"); if (!_paraboloidSamplesInverse) return false;
+
+	_sphericalHarmonicConvolveDE0 = _irradiance->getParameter("SHConvolveDE0"); if (!_sphericalHarmonicConvolveDE0) return false;
+	_sphericalHarmonicConvolveDE1 = _irradiance->getParameter("SHConvolveDE1"); if (!_sphericalHarmonicConvolveDE1) return false;
+	_sphericalHarmonicConvolveYlmDW0 = _irradiance->getParameter("SHConvolveYlmDW0"); if (!_sphericalHarmonicConvolveYlmDW0) return false;
+	_sphericalHarmonicConvolveYlmDW1 = _irradiance->getParameter("SHConvolveYlmDW1"); if (!_sphericalHarmonicConvolveYlmDW1) return false;
+
+	_paraboloidFrontMap = pipeline.createTexture(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16SFloat);
+	if (!_paraboloidFrontMap)
+		return false;
+
+	_paraboloidBackMap = pipeline.createTexture(PARABOLOID_SAMPLES, PARABOLOID_SAMPLES, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16SFloat);
+	if (!_paraboloidBackMap)
+		return false;
+
+	_irradianceSHCoefficientsMap = pipeline.createTexture(NUM_ORDER_P2, NUM_ORDER_P2, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16G16B16SFloat);
+	if (!_irradianceSHCoefficientsMap)
+		return false;
+
+	GraphicsFramebufferDesc paraboloidDualDesc;
+	paraboloidDualDesc.attach(_paraboloidFrontMap);
+	paraboloidDualDesc.attach(_paraboloidBackMap);
+	_paraboloidDualViews = pipeline.createFramebuffer(paraboloidDualDesc);
+	if (!_paraboloidDualViews)
+		return false;
+
+	GraphicsFramebufferDesc irradianceSHCoefficientsDesc;
+	irradianceSHCoefficientsDesc.attach(_paraboloidFrontMap);
+	irradianceSHCoefficientsDesc.attach(_paraboloidBackMap);
+	_irradianceSHCoefficientsView = pipeline.createFramebuffer(irradianceSHCoefficientsDesc);
+	if (!_irradianceSHCoefficientsView)
+		return false;
+
+	return _buildDualParaboloidWeightTextures(pipeline, _paraboloidSHWeights, NUM_ORDER, NUM_RADIANCE_SAMPLES);
+}
+
+void 
+EnvironmentIrradiance::close() noexcept
+{
+	_irradiance.reset();
+	_irradianceParaboloid.reset();
+	_irradianceProjectDualParaboloidToSH.reset();
+
+	_paraboloidSamplesInverse.reset();
+	_paraboloidCubeMapSampler.reset();
+
+	_sphericalHarmonicConvolveDE0.reset();
+	_sphericalHarmonicConvolveDE1.reset();
+	_sphericalHarmonicConvolveYlmDW0.reset();
+	_sphericalHarmonicConvolveYlmDW1.reset();
+
+	_paraboloidFrontMap.reset();
+	_paraboloidBackMap.reset();
+	_paraboloidDualMaps.reset();
+	_paraboloidSHWeights[0].reset();
+	_paraboloidSHWeights[1].reset();
+	_paraboloidSphericalHarmonicMap.reset();
+	_irradianceSHCoefficientsMap.reset();
+
+	_paraboloidDualViews.reset();
+	_irradianceSHCoefficientsView.reset();
+}
+
+void
+EnvironmentIrradiance::renderParaboloidEnvMap(RenderPipeline& pipeline, GraphicsTexturePtr cubemap) noexcept
+{
+	assert(cubemap);
+
+	_paraboloidCubeMapSampler->assign(cubemap);
+	_paraboloidSamplesInverse->assign(1.0f / PARABOLOID_SAMPLES);
+
+	_sphericalHarmonicConvolveDE0->assign(_paraboloidFrontMap);
+	_sphericalHarmonicConvolveDE1->assign(_paraboloidBackMap);
+	_sphericalHarmonicConvolveYlmDW0->assign(_paraboloidSHWeights[0]);
+	_sphericalHarmonicConvolveYlmDW1->assign(_paraboloidSHWeights[1]);
+
+	pipeline.setFramebuffer(_paraboloidDualViews);
+	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
+	pipeline.drawScreenQuad(_irradianceParaboloid);
+
+	pipeline.setFramebuffer(_irradianceSHCoefficientsView);
+	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
+	pipeline.drawScreenQuad(_irradianceProjectDualParaboloidToSH);
+}
+
+void
+EnvironmentIrradiance::renderProjectParaboloidToSH(RenderPipeline& pipeline, GraphicsFramebufferPtr evalSHFunction, GraphicsFramebufferPtr dest) noexcept
+{
+}
+
+void
+EnvironmentIrradiance::renderEvaluateConvolvedSH(RenderPipeline& pipeline, GraphicsFramebufferPtr evalSHFunction, GraphicsFramebufferPtr dest) noexcept
+{
+}
+
 bool
-EnvironmentIrradiance::_buildDualParaboloidWeightTextures(RenderPipeline& pipeline, GraphicsTexturePtr textures[2], std::uint32_t order, std::uint32_t size)
+EnvironmentIrradiance::_paraboloidCoord(Vector3& vec, int face, const Vector2& uv) noexcept
+{
+	//  sphere direction is the reflection of the orthographic view direction (determined by
+	//  face), reflected about the normal to the paraboloid at uv
+	double r_sqr = uv.x * uv.x + uv.y * uv.y;
+
+	if (r_sqr > 1.0)
+		return false;
+
+	Vector3 axis;
+	if (face == 0)
+		axis = Vector3(0.f, 0.f, -1.f);
+	else
+		axis = Vector3(0.f, 0.f, 1.f);
+
+	// compute normal on the parabaloid at uv
+	Vector3 N(uv.x, uv.y, 1.f);
+	N = math::normalize(N);
+
+	// reflect axis around N, to compute sphere direction
+	float v_dot_n = math::dot(axis, N);
+	Vector3 R = axis - 2 * v_dot_n*N;
+
+	vec = R;
+	return true;
+}
+
+bool
+EnvironmentIrradiance::_buildDualParaboloidWeightTextures(RenderPipeline& pipeline, GraphicsTexturePtr textures[2], std::uint32_t order, std::uint32_t size) noexcept
 {
 	assert(textures || isPow2(size));
 

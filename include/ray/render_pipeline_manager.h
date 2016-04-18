@@ -76,12 +76,12 @@ public:
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void discradRenderTexture() noexcept;
-	void readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	void readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
 
-	bool updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept;
-	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
-	void unmapBuffer(GraphicsDataPtr& data) noexcept;
+	bool updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept;
+	void* mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept;
+	void unmapBuffer(GraphicsDataPtr data) noexcept;
 
 	void drawCone(MaterialTechPtr tech) noexcept;
 	void drawSphere(MaterialTechPtr tech) noexcept;
@@ -91,6 +91,9 @@ public:
 	void addPostProcess(RenderPostProcessPtr postprocess) noexcept;
 	void removePostProcess(RenderPostProcessPtr postprocess) noexcept;
 	void destroyPostProcess() noexcept;
+
+	bool isTextureSupport(GraphicsFormat format) noexcept;
+	bool isVertexSupport(GraphicsFormat format) noexcept;
 
 	RenderPipelinePtr createRenderPipeline(WindHandle window, std::uint32_t w, std::uint32_t h) noexcept;
 
@@ -122,7 +125,7 @@ private:
 	RenderSetting _setting;
 	RenderPostProcessPtr _SSGI;
 	RenderPostProcessPtr _SSAO;
-	RenderPostProcessPtr _SAT;
+	RenderPostProcessPtr _atmospheric;
 	RenderPostProcessPtr _SSR;
 	RenderPostProcessPtr _SSSS;
 	RenderPostProcessPtr _DOF;

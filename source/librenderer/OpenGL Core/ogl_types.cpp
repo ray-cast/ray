@@ -40,7 +40,7 @@ _NAME_BEGIN
 
 #ifdef _BUILD_OPENGL
 #	ifdef GLEW_MX
-	GLEWContext _glewctx;
+GLEWContext _glewctx;
 #	endif
 #endif
 
@@ -198,7 +198,7 @@ OGLTypes::asIndexType(GraphicsIndexType type) noexcept
 }
 
 GLenum
-OGLTypes::asShaderType(GraphicsShaderStage stage) noexcept
+OGLTypes::asShaderStage(GraphicsShaderStage stage) noexcept
 {
 	switch (stage)
 	{
@@ -624,15 +624,15 @@ OGLTypes::asTextureInternalFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatA8B8G8R8UIntPack32:	     internalFormat = GL_RGBA8UI; break;
 	case GraphicsFormatA8B8G8R8SIntPack32:	     internalFormat = GL_RGBA8I; break;
 	case GraphicsFormatA8B8G8R8SRGBPack32:	     internalFormat = GL_SRGB8_ALPHA8; break;
-	case GraphicsFormatA2R10G10B10UNormPack32:	 internalFormat = GL_RGB10_A2UI; break;
+	case GraphicsFormatA2R10G10B10UNormPack32:	 internalFormat = GL_RGB10_A2; break;
 	case GraphicsFormatA2R10G10B10SNormPack32:	 internalFormat = GL_RGB10_A2; break;
-	case GraphicsFormatA2R10G10B10UScaledPack32: internalFormat = GL_RGB10_A2UI; break;
+	case GraphicsFormatA2R10G10B10UScaledPack32: internalFormat = GL_RGB10_A2; break;
 	case GraphicsFormatA2R10G10B10SScaledPack32: internalFormat = GL_RGB10_A2; break;
 	case GraphicsFormatA2R10G10B10UIntPack32:	 internalFormat = GL_RGB10_A2UI; break;
 	case GraphicsFormatA2R10G10B10SIntPack32:	 internalFormat = GL_RGB10_A2; break;
-	case GraphicsFormatA2B10G10R10UNormPack32:	 internalFormat = GL_RGB10_A2UI; break;
+	case GraphicsFormatA2B10G10R10UNormPack32:	 internalFormat = GL_RGB10_A2; break;
 	case GraphicsFormatA2B10G10R10SNormPack32:	 internalFormat = GL_RGB10_A2; break;
-	case GraphicsFormatA2B10G10R10UScaledPack32: internalFormat = GL_RGB10_A2UI; break;
+	case GraphicsFormatA2B10G10R10UScaledPack32: internalFormat = GL_RGB10_A2; break;
 	case GraphicsFormatA2B10G10R10SScaledPack32: internalFormat = GL_RGB10_A2; break;
 	case GraphicsFormatA2B10G10R10UIntPack32:	 internalFormat = GL_RGB10_A2UI; break;
 	case GraphicsFormatA2B10G10R10SIntPack32:	 internalFormat = GL_RGB10_A2; break;
@@ -757,7 +757,7 @@ OGLTypes::asTextureInternalFormat(GraphicsFormat format) noexcept
 	}
 
 	GL_PLATFORM_ASSERT(internalFormat != GL_INVALID_ENUM, "Invalid texture internal format.")
-	return internalFormat;
+		return internalFormat;
 }
 
 GLenum
@@ -896,6 +896,40 @@ OGLTypes::asSamplerFilter(GraphicsSamplerFilter filter) noexcept
 		GL_PLATFORM_ASSERT(false, "Invalid sampler filter");
 		return GL_INVALID_ENUM;
 	}
+}
+
+GLboolean
+OGLTypes::isStencilFormat(GraphicsFormat format) noexcept
+{
+	if (format == GraphicsFormat::GraphicsFormatS8UInt)
+		return GL_TRUE;
+	return GL_FALSE;
+}
+
+GLboolean
+OGLTypes::isDepthFormat(GraphicsFormat format) noexcept
+{
+	if (format == GraphicsFormat::GraphicsFormatD16UNorm ||
+		format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 ||
+		format == GraphicsFormat::GraphicsFormatD32_SFLOAT)
+	{
+		return GL_TRUE;
+	}
+
+	return GL_FALSE;
+}
+
+GLboolean
+OGLTypes::isDepthStencilFormat(GraphicsFormat format) noexcept
+{
+	if (format == GraphicsFormat::GraphicsFormatD16UNorm_S8UInt ||
+		format == GraphicsFormat::GraphicsFormatD24UNorm_S8UInt ||
+		format == GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt)
+	{
+		return GL_TRUE;
+	}
+
+	return GL_FALSE;
 }
 
 GLboolean

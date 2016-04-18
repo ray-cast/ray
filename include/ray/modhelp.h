@@ -43,22 +43,6 @@
 
 _NAME_BEGIN
 
-enum TextureType
-{
-	TT_NONE,
-	TT_DIFFUSE,
-	TT_SPECULAR,
-	TT_AMBIENT,
-	TT_EMISSIVE,
-	TT_HEIGHT,
-	TT_NORMALS,
-	TT_SHININESS,
-	TT_OPACITY,
-	TT_DISPLACEMENT,
-	TT_LIGHTMAP,
-	TT_REFLECTION,
-};
-
 #define MATKEY_NAME               "?mat.name",0,0
 #define MATKEY_TWOSIDED           "$mat.twosided",0,0
 #define MATKEY_SHADING_MODEL      "$mat.shadingm",0,0
@@ -79,25 +63,17 @@ enum TextureType
 
 #define MATKEY_TEXTURE(type, N) "$tex.file", type, N
 
-#define MATKEY_TEXTURE_DIFFUSE(N)      MATKEY_TEXTURE(TT_DIFFUSE, N)
-#define MATKEY_TEXTURE_SPECULAR(N)     MATKEY_TEXTURE(TT_SPECULAR, N)
-#define MATKEY_TEXTURE_AMBIENT(N)      MATKEY_TEXTURE(TT_AMBIENT, N)
-#define MATKEY_TEXTURE_EMISSIVE(N)     MATKEY_TEXTURE(TT_EMISSIVE, N)
-#define MATKEY_TEXTURE_NORMALS(N)      MATKEY_TEXTURE(TT_NORMALS, N)
-#define MATKEY_TEXTURE_HEIGHT(N)       MATKEY_TEXTURE(TT_HEIGHT, N)
-#define MATKEY_TEXTURE_SHININESS(N)    MATKEY_TEXTURE(TT_SHININESS, N)
-#define MATKEY_TEXTURE_OPACITY(N)      MATKEY_TEXTURE(TT_OPACITY, N)
-#define MATKEY_TEXTURE_DISPLACEMENT(N) MATKEY_TEXTURE(TT_DISPLACEMENT, N)
-#define MATKEY_TEXTURE_LIGHTMAP(N)     MATKEY_TEXTURE(TT_LIGHTMAP, N)
-#define MATKEY_TEXTURE_REFLECTION(N)   MATKEY_TEXTURE(TT_REFLECTION, N)
-
-enum PropertyTypeInfo
-{
-	PTI_FLOAT = 0x01,
-	PTI_STRING = 0x02,
-	PTI_INTEGER = 0x04,
-	PTI_BUFFER = 0x08,
-};
+#define MATKEY_TEXTURE_DIFFUSE(N)      MATKEY_TEXTURE(TextureTypeDiffuse, N)
+#define MATKEY_TEXTURE_SPECULAR(N)     MATKEY_TEXTURE(TextureTypeSpecular, N)
+#define MATKEY_TEXTURE_AMBIENT(N)      MATKEY_TEXTURE(TextureTypeAmbient, N)
+#define MATKEY_TEXTURE_EMISSIVE(N)     MATKEY_TEXTURE(TextureTypeEmissive, N)
+#define MATKEY_TEXTURE_NORMALS(N)      MATKEY_TEXTURE(TextureTypeNormals, N)
+#define MATKEY_TEXTURE_HEIGHT(N)       MATKEY_TEXTURE(TextureTypeHeight, N)
+#define MATKEY_TEXTURE_SHININESS(N)    MATKEY_TEXTURE(TextureTypeShininess, N)
+#define MATKEY_TEXTURE_OPACITY(N)      MATKEY_TEXTURE(TextureTypeOpacity, N)
+#define MATKEY_TEXTURE_DISPLACEMENT(N) MATKEY_TEXTURE(TextureTypeDisplacement, N)
+#define MATKEY_TEXTURE_LIGHTMAP(N)     MATKEY_TEXTURE(TextureTypeLightmap, N)
+#define MATKEY_TEXTURE_REFLECTION(N)   MATKEY_TEXTURE(TextureTypeReflection, N)
 
 class EXPORT CameraProperty final
 {
@@ -191,30 +167,30 @@ public:
 	std::size_t getNumVertices() const noexcept;
 	std::size_t getNumIndices() const noexcept;
 
-	void setVertexArray(const Vector3Array& array) noexcept;
-	void setNormalArray(const Vector3Array& array) noexcept;
-	void setColorArray(const Vector4Array& array) noexcept;
-	void setTangentArray(const Vector3Array& array) noexcept;
-	void setTexcoordArray(const Vector2Array& array) noexcept;
+	void setVertexArray(const Float3Array& array) noexcept;
+	void setNormalArray(const Float3Array& array) noexcept;
+	void setColorArray(const Float4Array& array) noexcept;
+	void setTangentArray(const Float3Array& array) noexcept;
+	void setTexcoordArray(const Float2Array& array) noexcept;
 	void setWeightArray(const VertexWeights& array) noexcept;
 	void setBoneArray(const Bones& array) noexcept;
 	void setInverseKinematics(const InverseKinematics& iks) noexcept;
 	void setFaceArray(const UintArray& array) noexcept;
 
-	Vector3Array& getVertexArray() noexcept;
-	Vector3Array& getNormalArray() noexcept;
-	Vector4Array& getColorArray() noexcept;
-	Vector2Array& getTexcoordArray() noexcept;
+	Float3Array& getVertexArray() noexcept;
+	Float3Array& getNormalArray() noexcept;
+	Float4Array& getColorArray() noexcept;
+	Float2Array& getTexcoordArray() noexcept;
 	VertexWeights& getWeightArray() noexcept;
 	Bones& getBoneArray() noexcept;
 	InverseKinematics& getInverseKinematics() noexcept;
 	UintArray& getFaceArray() noexcept;
 
-	const Vector3Array& getVertexArray() const noexcept;
-	const Vector3Array& getNormalArray() const noexcept;
-	const Vector3Array& getTangentArray() const noexcept;
-	const Vector4Array& getColorArray() const noexcept;
-	const Vector2Array& getTexcoordArray() const noexcept;
+	const Float3Array& getVertexArray() const noexcept;
+	const Float3Array& getNormalArray() const noexcept;
+	const Float3Array& getTangentArray() const noexcept;
+	const Float4Array& getColorArray() const noexcept;
+	const Float2Array& getTexcoordArray() const noexcept;
 	const VertexWeights& getWeightArray() const noexcept;
 	const Bones& getBoneArray(const Bones& array) const noexcept;
 	const InverseKinematics& getInverseKinematics() const noexcept;
@@ -252,12 +228,12 @@ private:
 	std::string _name;
 	std::size_t _materialID;
 
-	Vector3Array _vertices;
-	Vector3Array _normals;
-	Vector4Array _colors;
-	Vector2Array _texcoords;
-	Vector3Array _tangent;
-	Vector3Array _facesNormal;
+	Float3Array _vertices;
+	Float3Array _normals;
+	Float4Array _colors;
+	Float2Array _texcoords;
+	Float3Array _tangent;
+	Float3Array _facesNormal;
 	VertexWeights _weights;
 
 	UintArray _faces;

@@ -51,14 +51,14 @@ OGLFramebufferLayout::~OGLFramebufferLayout() noexcept
 	this->close();
 }
 
-bool 
+bool
 OGLFramebufferLayout::setup(const GraphicsFramebufferLayoutDesc& framebufferDesc) noexcept
 {
 	_framebufferLayoutDesc = framebufferDesc;
 	return true;
 }
 
-void 
+void
 OGLFramebufferLayout::close() noexcept
 {
 }
@@ -96,55 +96,66 @@ OGLFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 {
 	assert(GL_NONE == _fbo);
 	assert(framebufferDesc.getGraphicsFramebufferLayout());
+	assert(framebufferDesc.getGraphicsFramebufferLayout()->isInstanceOf<OGLFramebufferLayout>());
 	assert(framebufferDesc.getWidth() > 0 && framebufferDesc.getHeight() > 0);
 
-	glCreateFramebuffers(1, &_fbo);
+	GL_CHECK(glGenFramebuffers(1, &_fbo));
 	if (_fbo == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glCreateFramebuffers() fail");
+		GL_PLATFORM_LOG("glCreateFramebuffers() fail.");
 		return false;
 	}
 
-	auto sharedDepthTarget = framebufferDesc.getSharedDepthTexture();
-	auto sharedStencilTarget = framebufferDesc.getSharedStencilTexture();
+	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, _fbo));
 
-	if (sharedDepthTarget == sharedStencilTarget)
+	auto sharedDepthStnecilTarget = framebufferDesc.getSharedDepthStencilTexture();
+	if (sharedDepthStnecilTarget)
 	{
-		if (sharedDepthTarget)
+		auto format = sharedDepthStnecilTarget->getGraphicsTextureDesc().getTexFormat();
+		if (OGLTypes::isDepthStencilFormat(format))
 		{
-			if (!this->bindRenderTexture(sharedDepthTarget, GL_DEPTH_STENCIL_ATTACHMENT))
+			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_DEPTH_STENCIL_ATTACHMENT))
 				return false;
+		}
+		else if (OGLTypes::isDepthFormat(format))
+		{
+			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_DEPTH_ATTACHMENT))
+				return false;
+		}
+		else if (OGLTypes::isStencilFormat(format))
+		{
+			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_STENCIL_ATTACHMENT))
+				return false;
+		}
+		else
+		{
+			GL_PLATFORM_LOG("Invalid texture format.");
+			return false;
 		}
 	}
-	else
-	{
-		if (sharedDepthTarget)
-		{
-			if (!this->bindRenderTexture(sharedDepthTarget, GL_DEPTH_ATTACHMENT))
-				return false;
-		}
 
-		if (sharedStencilTarget)
-		{
-			if (!this->bindRenderTexture(sharedStencilTarget, GL_STENCIL_ATTACHMENT))
-				return false;
-		}
+	GLenum draw[GL_COLOR_ATTACHMENT15 - GL_COLOR_ATTACHMENT0];
+	GLenum attachment = 0;
+
+	auto& textures = framebufferDesc.getTextures();
+	if (framebufferDesc.getTextures().size() > (sizeof(draw) / sizeof(draw[0])))
+	{
+		GL_PLATFORM_LOG("The color attachment in framebuffer is out of range.");
+		return false;
 	}
 
-	std::vector<GLenum> draw;
-	GLenum attachment = GL_COLOR_ATTACHMENT0;
-	GLsizei count = 0;
-
-	for (auto& texture : framebufferDesc.getTextures())
+	for (auto& texture : textures)
 	{
-		if (!this->bindRenderTexture(texture, attachment))
+		if (!this->bindRenderTexture(texture, GL_COLOR_ATTACHMENT0 + attachment))
 			return false;
 
-		draw.push_back(attachment++);
-		count++;
+		draw[attachment] = GL_COLOR_ATTACHMENT0 + attachment;
+
+		attachment++;
 	}
 
-	glNamedFramebufferDrawBuffers(_fbo, count, draw.data());
+	GL_CHECK(glDrawBuffers(attachment, draw));
+	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE));
 
 	_framebufferDesc = framebufferDesc;
 
@@ -183,7 +194,7 @@ OGLFramebuffer::setLayer(GraphicsTexturePtr renderTexture, GLuint layer) noexcep
 		attachment++;
 	}
 
-	glNamedFramebufferTextureLayer(_fbo, attachment, textureID, 0, layer);
+	glFramebufferTextureLayer(_fbo, attachment, textureID, 0, layer);
 }
 
 GLuint
@@ -207,7 +218,7 @@ OGLFramebuffer::discard() noexcept
 		attachment++;
 	}
 
-	glInvalidateNamedFramebufferData(_fbo, size, attachments);
+	glInvalidateFramebuffer(GL_FRAMEBUFFER, size, attachments);	
 }
 
 GLuint
@@ -220,18 +231,19 @@ bool
 OGLFramebuffer::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachment) noexcept
 {
 	assert(texture);
+	assert(texture->isInstanceOf<OGLTexture>());
 
 	auto gltexture = texture->downcast<OGLTexture>();
 	auto handle = gltexture->getInstanceID();
 	auto target = gltexture->getTarget();
-	
+
 	if (target != GL_TEXTURE_2D && target != GL_TEXTURE_2D_MULTISAMPLE && target != GL_TEXTURE_2D_ARRAY && target != GL_TEXTURE_CUBE_MAP)
 	{
 		GL_PLATFORM_LOG("Invalid texture target");
 		return false;
 	}
 
-	glNamedFramebufferTexture(_fbo, attachment, handle, 0);
+	GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, target, handle, 0));
 
 	return OGLCheck::checkError();
 }

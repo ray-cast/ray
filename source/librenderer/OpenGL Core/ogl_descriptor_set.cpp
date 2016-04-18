@@ -34,15 +34,16 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "ogl_descriptor.h"
+#include "ogl_descriptor_set.h"
+#include "ogl_core_descriptor.h"
 #include "ogl_texture.h"
 #include "ogl_shader.h"
 #include "ogl_sampler.h"
 
 _NAME_BEGIN
 
-__ImplementSubClass(OGLGraphicsUniformSet, GraphicsUniformSet, "OGLGraphicsUniformSet")
 __ImplementSubClass(OGLDescriptorSet, GraphicsDescriptorSet, "OGLDescriptorSet")
+__ImplementSubClass(OGLGraphicsUniformSet, GraphicsUniformSet, "OGLGraphicsUniformSet")
 __ImplementSubClass(OGLDescriptorSetLayout, GraphicsDescriptorSetLayout, "OGLDescriptorSetLayout")
 __ImplementSubClass(OGLDescriptorPool, GraphicsDescriptorPool, "OGLDescriptorPool")
 
@@ -453,13 +454,13 @@ OGLDescriptorPool::~OGLDescriptorPool() noexcept
 	this->close();
 }
 
-bool 
+bool
 OGLDescriptorPool::setup(const GraphicsDescriptorPoolDesc& desc) noexcept
 {
 	return true;
 }
 
-void 
+void
 OGLDescriptorPool::close() noexcept
 {
 }
@@ -521,6 +522,7 @@ OGLDescriptorSetLayout::getDevice() noexcept
 	return _device.lock();
 }
 
+
 OGLDescriptorSet::OGLDescriptorSet() noexcept
 {
 }
@@ -556,10 +558,10 @@ OGLDescriptorSet::close() noexcept
 }
 
 void
-OGLDescriptorSet::bindProgram(GraphicsProgramPtr shaderObject) noexcept
+OGLDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 {
 	std::uint32_t textureUnit = 0;
-	auto program = shaderObject->downcast<OGLShaderObject>()->getInstanceID();
+	auto program = shaderObject->downcast<OGLProgram>()->getInstanceID();
 	for (auto& it : _activeUniformSets)
 	{
 		auto uniform = it->downcast<OGLGraphicsUniformSet>();
@@ -658,35 +660,44 @@ OGLDescriptorSet::bindProgram(GraphicsProgramPtr shaderObject) noexcept
 			glBindSampler(location, uniform->getTextureSampler()->downcast<OGLSampler>()->getInstanceID());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
+		{
+			auto texture = uniform->getTexture();
+			if (texture)
 			{
-				if (uniform->getTexture())
-				{
-					glProgramUniform1i(program, location, textureUnit);
-					glBindTextureUnit(textureUnit, uniform->getTexture()->downcast<OGLTexture>()->getInstanceID());
-					textureUnit++;
-				}
+				auto gltexture = texture->downcast<OGLTexture>();
+				glProgramUniform1i(program, location, textureUnit);
+				glActiveTexture(GL_TEXTURE0 + textureUnit);
+				glBindTexture(gltexture->getTarget(), gltexture->getInstanceID());
+				textureUnit++;
 			}
-			break;
+		}
+		break;
 		case GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler:
+		{
+			auto texture = uniform->getTexture();
+			if (texture)
 			{
-				if (uniform->getTexture())
-				{
-					glProgramUniform1i(program, location, textureUnit);
-					glBindTextureUnit(textureUnit, uniform->getTexture()->downcast<OGLTexture>()->getInstanceID());
-					textureUnit++;
-				}
+				auto gltexture = texture->downcast<OGLTexture>();
+				glProgramUniform1i(program, location, textureUnit);
+				glActiveTexture(GL_TEXTURE0 + textureUnit);
+				glBindTexture(gltexture->getTarget(), gltexture->getInstanceID());
+				textureUnit++;
 			}
-			break;
+		}
+		break;
 		case GraphicsUniformType::GraphicsUniformTypeStorageImage:
+		{
+			auto texture = uniform->getTexture();
+			if (texture)
 			{
-				if (uniform->getTexture())
-				{
-					glProgramUniform1i(program, location, textureUnit);
-					glBindTextureUnit(textureUnit, uniform->getTexture()->downcast<OGLTexture>()->getInstanceID());
-					textureUnit++;
-				}
+				auto gltexture = texture->downcast<OGLTexture>();
+				glProgramUniform1i(program, location, textureUnit);
+				glActiveTexture(GL_TEXTURE0 + textureUnit);
+				glBindTexture(gltexture->getTarget(), gltexture->getInstanceID());
+				textureUnit++;
 			}
-			break;
+		}
+		break;
 		case GraphicsUniformType::GraphicsUniformTypeStorageTexelBuffer:
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeStorageBuffer:

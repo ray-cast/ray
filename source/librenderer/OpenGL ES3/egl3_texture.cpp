@@ -56,18 +56,18 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 {
 	assert(_texture == GL_NONE);
 
-	auto target = EGL3Types::asTextureTarget(textureDesc.getTexDim(), textureDesc.isMultiSample());
+	GLenum target = EGL3Types::asTextureTarget(textureDesc.getTexDim(), textureDesc.isMultiSample());
 	if (target == GL_INVALID_ENUM)
 		return false;
 
-	auto internalFormat = EGL3Types::asTextureInternalFormat(textureDesc.getTexFormat());
+	GLenum internalFormat = EGL3Types::asTextureInternalFormat(textureDesc.getTexFormat());
 	if (internalFormat == GL_INVALID_ENUM)
 		return false;
 
 	GL_CHECK(glGenTextures(1, &_texture));
 	if (_texture == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glGenTextures fail");
+		GL_PLATFORM_LOG("glGenTextures() fail");
 		return false;
 	}
 
@@ -150,15 +150,10 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		}
 	}
 
+	GL_CHECK(glBindTexture(target, GL_NONE));
+
 	_target = target;
 	_textureDesc = textureDesc;
-
-	if (textureDesc.getMipLevel() > 0)
-	{
-		GL_CHECK(glTexParameteri(_target, GL_TEXTURE_BASE_LEVEL, textureDesc.getMipBase()));
-		GL_CHECK(glTexParameteri(_target, GL_TEXTURE_MAX_LEVEL, textureDesc.getMipBase() + textureDesc.getMipLevel()));
-		GL_CHECK(glGenerateMipmap(target));
-	}
 
 	return EGL3Check::checkError();
 }
@@ -227,20 +222,23 @@ EGL3Texture::applySamplerFilter(GLenum target, GraphicsSamplerFilter filter) noe
 bool
 EGL3Texture::applySamplerAnis(GLenum target, GraphicsSamplerAnis anis) noexcept
 {
-	if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis1)
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1));
-	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis2)
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2));
-	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis4)
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4));
-	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis8)
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8));
-	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis16)
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16));
-	else
+	if (EGL3Types::isSupportFeature(EGL3Features::EGL3_EXT_texture_filter_anisotropic))
 	{
-		GL_PLATFORM_LOG("Can't support anisotropy format");
-		return false;
+		if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis1)
+			GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1));
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis2)
+			GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2));
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis4)
+			GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4));
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis8)
+			GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8));
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis16)
+			GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16));
+		else
+		{
+			GL_PLATFORM_LOG("Can't support anisotropy format");
+			return false;
+		}
 	}
 
 	return true;

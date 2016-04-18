@@ -52,7 +52,7 @@ struct EXPORT RenderSetting
 
 	bool enableSSAO;
 	bool enableSSGI;
-	bool enableSAT;
+	bool enableAtmospheric;
 	bool enableSSR;
 	bool enableSSSS;
 	bool enableFog;

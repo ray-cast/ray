@@ -72,22 +72,29 @@ public:
 	void setIndexBufferData(GraphicsDataPtr data) noexcept;
 	GraphicsDataPtr getIndexBufferData() const noexcept;
 
-	bool updateBuffer(GraphicsDataPtr& data, void* buf, std::size_t cnt) noexcept;
-	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
-	void unmapBuffer(GraphicsDataPtr& data) noexcept;
+	bool updateBuffer(GraphicsDataPtr data, void* buf, std::size_t cnt) noexcept;
+	void* mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept;
+	void unmapBuffer(GraphicsDataPtr data) noexcept;
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
 	void discardFramebuffer() noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept;
-	void readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	void readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
 	void drawRenderMesh(const GraphicsIndirect& renderable) noexcept;
 	void drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept;
 
+	bool isTextureSupport(GraphicsFormat format) noexcept;
+	bool isVertexSupport(GraphicsFormat format) noexcept;
+
 	void present() noexcept;
+
+private:
+	void initTextureSupports() noexcept;
+	void initVertexSupports() noexcept;
 
 private:
 	friend class VulkanDevice;
@@ -116,6 +123,9 @@ private:
 	GraphicsDescriptorSetPtr _descriptorSet;
 	GraphicsFramebufferPtr _framebuffer;
 	GraphicsInputLayoutPtr _inputLayout;
+
+	std::vector<GraphicsFormat> _supportTextures;
+	std::vector<GraphicsFormat> _supportAttribute;
 
 	GraphicsDeviceWeakPtr _device;
 };

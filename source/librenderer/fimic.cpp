@@ -97,7 +97,7 @@ FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsFramebuffer
 	float data[SAMPLE_LOG_COUNT];
 	float delta = _timer->delta();
 
-	pipeline.readFramebuffer(source, GraphicsFormat::GraphicsFormatR16SFloat, SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, data);
+	pipeline.readFramebuffer(source, GraphicsFormat::GraphicsFormatR16SFloat, SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, SAMPLE_LOG_COUNT * 4, data);
 
 	for (std::size_t i = 0; i < SAMPLE_LOG_COUNT; ++i)
 		lum += data[i];

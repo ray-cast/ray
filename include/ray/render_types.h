@@ -114,16 +114,17 @@ enum CameraType
 
 enum CameraOrder
 {
+	CameraOrderCustom,
 	CameraOrderShadow,
 	CameraOrderColor,
 	CameraOrderNormal,
 	CameraOrderLight,
 	CameraOrderShading,
-	CameraOrderCustom,
 	CameraOrderCubeMap,
-	CameraOrderMain,
-	CameraOrderBeginRange = CameraOrderShadow,
-	CameraOrderEndRange = CameraOrderMain,
+	CameraOrder2D,
+	CameraOrder3D,
+	CameraOrderBeginRange = CameraOrderCustom,
+	CameraOrderEndRange = CameraOrder3D,
 	CameraOrderRangeSize = (CameraOrderEndRange - CameraOrderBeginRange + 1),
 	CameraOrderMaxEnum = 0x7FFFFFFF
 };
@@ -168,6 +169,19 @@ enum RenderQueue
 	RenderQueueEndRange = RenderQueuePostprocess,
 	RenderQueueRangeSize = (RenderQueueEndRange - RenderQueueBeginRange + 1),
 	RenderQueueMaxEnum = 0x7FFFFFFF
+};
+
+enum ModelMakerFlagBits
+{
+	ModelMakerFlagBitVertex = 0x00000001,
+	ModelMakerFlagBitTexcoord = 0x00000002,
+	ModelMakerFlagBitNormal = 0x00000004,
+	ModelMakerFlagBitTangent = 0x00000008,
+	ModelMakerFlagBitBitangent = 0x00000016,
+	ModelMakerFlagBitWeight = 0x00000032,
+	ModelMakerFlagBitColor = 0x00000064,
+	ModelMakerFlagBitFace = 0x00000128,
+	ModelMakerFlagBitALL = 0x7FFFFFFF,
 };
 
 _NAME_END

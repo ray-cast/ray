@@ -34,24 +34,30 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_OGL_RENDER_PIPELINE_H_
-#define _H_OGL_RENDER_PIPELINE_H_
+#ifndef _H_OGL_CORE_INPUT_LAYOUT_H_
+#define _H_OGL_CORE_INPUT_LAYOUT_H_
 
 #include "ogl_types.h"
 
 _NAME_BEGIN
 
-class OGLRenderPipeline final : public GraphicsPipeline
+class OGLCoreInputLayout final : public GraphicsInputLayout
 {
-	__DeclareSubClass(OGLRenderPipeline, GraphicsPipeline)
+	__DeclareSubClass(OGLCoreInputLayout, GraphicsInputLayout)
 public:
-	OGLRenderPipeline() noexcept;
-	virtual ~OGLRenderPipeline() noexcept;
+	OGLCoreInputLayout() noexcept;
+	~OGLCoreInputLayout() noexcept;
 
-	bool setup(const GraphicsPipelineDesc& pipelineDesc) noexcept;
+	bool setup(const GraphicsInputLayoutDesc& desc) noexcept;
 	void close() noexcept;
 
-	const GraphicsPipelineDesc& getGraphicsPipelineDesc() const noexcept;
+	GLuint getInstanceID() const noexcept;
+
+	void bindVbo(OGLCoreGraphicsDataPtr vbo, GLuint slot) noexcept;
+	void bindIbo(OGLCoreGraphicsDataPtr ibo) noexcept;
+	void bindLayout(OGLProgramPtr program) noexcept;
+
+	const GraphicsInputLayoutDesc& getGraphicsInputLayoutDesc() const noexcept;
 
 private:
 	friend class OGLDevice;
@@ -59,11 +65,14 @@ private:
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
-	OGLRenderPipeline(const OGLRenderPipeline&) noexcept = delete;
-	OGLRenderPipeline& operator=(const OGLRenderPipeline&) noexcept = delete;
+	OGLCoreInputLayout(const OGLCoreInputLayout&) noexcept = delete;
+	OGLCoreInputLayout& operator=(const OGLCoreInputLayout&) noexcept = delete;
 
 private:
-	GraphicsPipelineDesc _pipelineDesc;
+	GLuint _vao;
+	GraphicsDataPtr _ibo;
+	GraphicsProgramPtr _program;
+	GraphicsInputLayoutDesc _inputLayoutDesc;
 	GraphicsDeviceWeakPtr _device;
 };
 

@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_OGL_DESCRIPTOR_H_
-#define _H_OGL_DESCRIPTOR_H_
+#ifndef _H_OGL_DESCRIPTOR_SET_H_
+#define _H_OGL_DESCRIPTOR_SET_H_
 
 #include "ogl_types.h"
 
@@ -154,7 +154,7 @@ private:
 
 class OGLDescriptorSetLayout final : public GraphicsDescriptorSetLayout
 {
-	__DeclareSubClass(OGLDescriptorSetLayout, OGLGraphicsData)
+	__DeclareSubClass(OGLDescriptorSetLayout, GraphicsDescriptorSetLayout)
 public:
 	OGLDescriptorSetLayout() noexcept;
 	~OGLDescriptorSetLayout() noexcept;
@@ -180,7 +180,7 @@ private:
 
 class OGLDescriptorSet final : public GraphicsDescriptorSet
 {
-	__DeclareSubClass(OGLDescriptorSet, OGLGraphicsData)
+	__DeclareSubClass(OGLDescriptorSet, GraphicsDescriptorSet)
 public:
 	OGLDescriptorSet() noexcept;
 	~OGLDescriptorSet() noexcept;
@@ -188,8 +188,8 @@ public:
 	bool setup(const GraphicsDescriptorSetDesc& desc) noexcept;
 	void close() noexcept;
 
-	void bindProgram(GraphicsProgramPtr program) noexcept;
-	
+	void apply(GraphicsProgramPtr program) noexcept;
+
 	const GraphicsUniformSets& getGraphicsUniformSets() const noexcept;
 	const GraphicsDescriptorSetDesc& getGraphicsDescriptorSetDesc() const noexcept;
 

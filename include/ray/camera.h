@@ -104,9 +104,6 @@ public:
 	void setFramebuffer(GraphicsFramebufferPtr texture) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
-	void setGraphicsContext(GraphicsContextPtr window) noexcept;
-	GraphicsContextPtr getGraphicsContext() const noexcept;
-
 private:
 	void _updateOrtho() const noexcept;
 	void _updatePerspective() const noexcept;
@@ -138,7 +135,6 @@ private:
 	CameraOrder  _cameraOrder;
 	CameraRender _cameraRender;
 
-	GraphicsContextPtr _graphicsContext;
 	GraphicsFramebufferPtr _renderTexture;
 
 	mutable bool _needUpdateProject;

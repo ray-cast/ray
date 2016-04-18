@@ -51,14 +51,14 @@ OGLSampler::~OGLSampler() noexcept
 }
 
 bool
-OGLSampler::setup(const GraphicsSamplerDesc& samplerDesc) noexcept
+OGLSampler::setup(const GraphicsSamplerDesc& samplerDesc) except
 {
-	assert(!_sampler);
+	assert(_sampler == GL_NONE);
 
-	glCreateSamplers(1, &_sampler);
+	glGenSamplers(1, &_sampler);
 	if (_sampler == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glCreateSamplers() fail");
+		GL_PLATFORM_LOG("glGenSamplers() fail");
 		return false;
 	}
 
@@ -124,21 +124,24 @@ OGLSampler::setup(const GraphicsSamplerDesc& samplerDesc) noexcept
 		return false;
 	}
 
-	GraphicsSamplerAnis anis = samplerDesc.getSamplerAnis();
-	if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis1)
-		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
-	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis2)
-		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2);
-	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis4)
-		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
-	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis8)
-		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
-	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis16)
-		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
-	else
+	if (GLEW_EXT_texture_filter_anisotropic)
 	{
-		GL_PLATFORM_LOG("Invalid SamplerAnis");
-		return false;
+		GraphicsSamplerAnis anis = samplerDesc.getSamplerAnis();
+		if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis1)
+			glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis2)
+			glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2);
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis4)
+			glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis8)
+			glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis16)
+			glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
+		else
+		{
+			GL_PLATFORM_LOG("Invalid SamplerAnis");
+			return false;
+		}
 	}
 
 	_sampleDesc = samplerDesc;

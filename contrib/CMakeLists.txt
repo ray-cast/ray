@@ -48,9 +48,11 @@ ELSE()
     ADD_SUBDIRECTORY(glfw)
     SET_TARGET_ATTRIBUTE(glfw "contrib")
 
-    IF(BUILD_OPENGL_ES)
+    IF(BUILD_OPENGL_ES2 OR BUILD_OPENGL_ES3)
         ADD_SUBDIRECTORY(gles)
-    ELSE()
+    ENDIF()
+
+    IF(BUILD_PLATFORM_WINDOWS)
         ADD_SUBDIRECTORY(glew)
         SET_TARGET_ATTRIBUTE(glew "contrib")
     ENDIF()

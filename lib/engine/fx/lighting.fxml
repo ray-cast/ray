@@ -72,50 +72,45 @@
             return 0.0f;
         }
 
-        float3 brdfEnvironmentDiffuse(float3 prefilteredColor)
+        float brefEnvironmentEnvMip(float roughness, int numMip)
         {
-            return prefilteredColor;
+            return lerp(numMip, 0, roughness);
         }
 
-        float brdfEnvironmentSpecular(Texture2D texLUT, float3 N, float3 V, float gloss, float specular)
+        float3 brefEnvironmentEnvVec(float3 normal, float3 view)
         {
-            float NdotV = dot(N, V);
-            if (NdotV > 0.0f)
-            {
-                float smoothness = pow(8192.0f, gloss);
-                smoothness = log2(smoothness) / 13.0f;
-                smoothness = max(0.5f / 16.0f, smoothness);
-
-                float2 envBRDF = texLUT.Sample(PointClamp, float2(NdotV, 1.0f - smoothness)).rg;
-
-                return (mad(specular, envBRDF.x, envBRDF.y));
-            }
-
-            return 0.0f;
+            return -reflect(view, normal);
         }
 
-        float brdfEnvironmentSpecular(float3 N, float3 V, float gloss, float specular)
+        float3 brdfEnvironmentDiffuse(float3 prefilteredColor, float3 diff)
         {
-            float NdotV = dot(N, V);
+            return prefilteredColor * diff;
+        }
 
-            float smoothness = pow(8192.0f, gloss);
-            smoothness = log2(smoothness) / 13.0f;
-            smoothness = max(0.5f / 16.0f, smoothness);
+        float brdfEnvironmentSpecular(float3 prefilteredColor, Texture2D texLUT, float3 N, float3 V, float gloss, float specular)
+        {
+            float NdotV = max(0, dot(N, V));
+            float2 envBRDF = texLUT.Sample(PointClamp, float2(NdotV, 1.0f - gloss)).rg;
+            return prefilteredColor * (specular * envBRDF.x + envBRDF.y);
+        }
 
+        float brdfEnvironmentSpecular(float3 prefilteredColor, float3 N, float3 V, float gloss, float specular)
+        {
+            float NdotV = max(0, dot(N, V));
+            gloss = max(0.5f / 16.0f, gloss);
             float2 envBRDF;
-            float4 tmp = ((float4(-4.996914762f, 7.253111161f, -1.963867075f, -0.170416225f) * smoothness
-                + float4(8.993475061f, -15.42473953f, 4.712593001f, 0.448102365f)) * smoothness
-                + float4(-4.928234727f, 10.95286522f, -3.852980973f, -0.389332014f)) * smoothness
+            float4 tmp = ((float4(-4.996914762f, 7.253111161f, -1.963867075f, -0.170416225f) * gloss
+                + float4(8.993475061f, -15.42473953f, 4.712593001f, 0.448102365f)) * gloss
+                + float4(-4.928234727f, 10.95286522f, -3.852980973f, -0.389332014f)) * gloss
                 + float4(0.846124834f, -1.596815751f, 1.005729748f, 0.113484128f);
             envBRDF.x = (((tmp.x * NdotV + tmp.y) * NdotV + tmp.z) * NdotV) + tmp.w;
-            tmp = ((float4(-0.684077741f, 1.316163916f, -0.70869252f, 0.073264505f) * smoothness
-                + float4(0.719315865f, -1.384932814f, 0.775880046f, -0.105818706f)) * smoothness
-                + float4(-0.101034049f, 0.18680998f, -0.117919199f, 0.030727381f)) * smoothness
+            tmp = ((float4(-0.684077741f, 1.316163916f, -0.70869252f, 0.073264505f) * gloss
+                + float4(0.719315865f, -1.384932814f, 0.775880046f, -0.105818706f)) * gloss
+                + float4(-0.101034049f, 0.18680998f, -0.117919199f, 0.030727381f)) * gloss
                 + float4(0.001922126f, 0.006697305f, -0.015741592f, 0.007229544f);
             envBRDF.y = (((tmp.x * NdotV + tmp.y) * NdotV + tmp.z) * NdotV) + tmp.w;
             envBRDF = saturate(envBRDF);
-
-            return specular * envBRDF.x + envBRDF.y;
+            return prefilteredColor * (specular * envBRDF.x + envBRDF.y);
         }
 
         float attenuationTerm(float3 lightPosition, float3 P, float3 atten)
@@ -134,14 +129,6 @@
             return smoothstep(cosOuterInner.x, cosOuterInner.y, spotFactor);
         }
 
-        float spotLighting(float3 lightPosition, float3 lightDirection, float2 cosOuterInner, float3 atten, float3 P)
-        {
-            float3 V = normalize(P - lightPosition);
-            float spotFactor = dot(V, lightDirection);
-            float attenuation = smoothstep(cosOuterInner.x, cosOuterInner.y, spotFactor);
-            return attenuation * attenuationTerm(lightPosition, P, atten);
-        }
-
         float pointLighting(float3 lightPosition, float3 world, float3 atten)
         {
             float distance = length(lightPosition - world);
@@ -156,35 +143,36 @@
             return rim * (1.0f - NdotV) * rimPower;
         }
 
-        float skinBeckmann(float ndoth, float m)
+        float shadowDirectionalLight(Texture2D shadowMap, float4x4 shadowEye2LightViewProject, float4 shadowEye2LightView, float4 shadowFactor, float3 viewPosition)
         {
-            float alpha = acos(ndoth);
-            float ta = tan( alpha );
-            float val = 1.0f / (m * m * pow(ndoth,4.0f)) * exp(-(ta * ta) / (m * m ));
-            return val;
-        }
-
-        float shadowLighting(Texture2D shadowMap, float4x4 shadowEye2LightViewProject, float len, float4 shadowFactor, float3 viewPosition)
-        {
-            // shadowFactor.xyz is shadow clip constant
-            // shadowFactor.w is shadow scale
+            // shadowFactor.xy is shadow clip constant
+            // shadowFactor.z is shadow scale
+            // shadowFactor.w is shadow bias
 
             float4 proj = mul(float4(viewPosition, 1.0), shadowEye2LightViewProject);
             proj /= proj.w;
             proj.xy = PosToCoord(proj.xy);
 
-            float d1 = linearDepth(shadowFactor.xyz, shadowMap.Sample(LinearClamp, proj.xy).r);
-            float d2 = len;
-            float d = exp(shadowFactor.w * (d1 - d2));
+            float d1 = linearDepthOrthoLH(shadowFactor.xy, shadowMap.Sample(LinearClamp, proj.xy).r);
+            float d2 = dot(float4(viewPosition, 1.0), shadowEye2LightView);
+            float d = exp((shadowFactor.z * (d1 - d2) + shadowFactor.w));
             float shadow = saturate(d);
 
             return shadow;
         }
 
-        float shadowLighting(Texture2D shadowMap, float4x4 shadowEye2LightViewProject, float4 shadowEye2LightView, float4 shadowFactor, float3 viewPosition)
+        float shadowSpotLight(Texture2D shadowMap, float4x4 shadowEye2LightViewProject, float4 shadowEye2LightView, float4 shadowFactor, float3 viewPosition)
         {
-            float len = dot(float4(viewPosition, 1.0), shadowEye2LightView);
-            return shadowLighting(shadowMap, shadowEye2LightViewProject, len, shadowFactor, viewPosition);
+            float4 proj = mul(float4(viewPosition, 1.0), shadowEye2LightViewProject);
+            proj /= proj.w;
+            proj.xy = PosToCoord(proj.xy);
+
+            float d1 = linearDepthPerspectiveFovLH(shadowFactor.xy, shadowMap.Sample(LinearClamp, proj.xy).r);
+            float d2 = dot(float4(viewPosition, 1.0), shadowEye2LightView);
+            float d = exp((shadowFactor.z * (d1 - d2) + shadowFactor.w));
+            float shadow = saturate(d);
+
+            return shadow;
         }
         ]]>
     </shader>

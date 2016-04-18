@@ -175,7 +175,7 @@ private:
 
 private:
 	GraphicsDeviceWeakPtr _device;
-	GraphicsDescriptorSetLayoutDesc _descriptorSetDesc;
+	GraphicsDescriptorSetLayoutDesc _descripotrSetLayoutDesc;
 };
 
 class EGL3DescriptorSet final : public GraphicsDescriptorSet
@@ -188,7 +188,7 @@ public:
 	bool setup(const GraphicsDescriptorSetDesc& desc) noexcept;
 	void close() noexcept;
 
-	void bindProgram(GraphicsProgramPtr program) noexcept;
+	void apply(GraphicsProgramPtr program) noexcept;
 
 	const GraphicsUniformSets& getGraphicsUniformSets() const noexcept;
 	const GraphicsDescriptorSetDesc& getGraphicsDescriptorSetDesc() const noexcept;

@@ -41,9 +41,9 @@
 
 _NAME_BEGIN
 
-class OGLDeviceContext final : public GraphicsContext2
+class OGLDeviceContext final : public GraphicsContext
 {
-	__DeclareSubClass(OGLDeviceContext, GraphicsContext2)
+	__DeclareSubClass(OGLDeviceContext, GraphicsContext)
 public:
 	OGLDeviceContext() noexcept;
 	~OGLDeviceContext() noexcept;
@@ -72,26 +72,31 @@ public:
 	void setIndexBufferData(GraphicsDataPtr data) noexcept;
 	GraphicsDataPtr getIndexBufferData() const noexcept;
 
-	bool updateBuffer(GraphicsDataPtr& data, void* buf, std::size_t cnt) noexcept;
-	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
-	void unmapBuffer(GraphicsDataPtr& data) noexcept;
+	bool updateBuffer(GraphicsDataPtr data, void* buf, std::size_t cnt) noexcept;
+	void* mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept;
+	void unmapBuffer(GraphicsDataPtr data) noexcept;
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
-	void clearFramebufferIndexed(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept;
 	void discardFramebuffer() noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept;
-	void readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	void readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
 	void drawRenderMesh(const GraphicsIndirect& renderable) noexcept;
 	void drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept;
 
+	bool isTextureSupport(GraphicsFormat format) noexcept;
+	bool isVertexSupport(GraphicsFormat format) noexcept;
+
 	void present() noexcept;
 
 private:
-	void initDebugControl() noexcept;
-	void initStateSystem() noexcept;
+	bool checkSupport() noexcept;
+	bool initDebugControl(const GraphicsContextDesc& desc) noexcept;
+	bool initStateSystem() noexcept;
+	bool initTextureSupports() noexcept;
+	bool initVertexSupports() noexcept;
 
 	static void GLAPIENTRY debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept;
 
@@ -105,42 +110,36 @@ private:
 	OGLDeviceContext& operator=(const OGLDeviceContext&) noexcept = delete;
 
 private:
-	bool _initOpenGL;
-
-	OGLSwapchainPtr _glcontext;
 
 	float4 _clearColor;
 	GLfloat _clearDepth;
 	GLint   _clearStencil;
 
+	Viewport _viewport;
+	Scissor _scissor;
+
 	GLuint _maxViewports;
+	
+	OGLPipelinePtr _pipeline;
+	OGLDescriptorSetPtr _descriptorSet;
 
 	OGLFramebufferPtr _renderTexture;
 
-	OGLShaderObjectPtr _shaderObject;
+	OGLGraphicsDataPtr _vbo;
+	OGLGraphicsDataPtr _ibo;
+	OGLInputLayoutPtr _inputLayout;
+	OGLProgramPtr _shaderObject;
 
-	OGLRenderPipelinePtr _pipeline;
-	OGLDescriptorSetPtr _descriptorSet;
+	OGLSwapchainPtr _glcontext;
 
 	OGLGraphicsStatePtr _state;
 	OGLGraphicsStatePtr _stateDefault;
 	GraphicsStateDesc _stateCaptured;
 
-	GLuint _stateObjDraw;
-	GLuint _stateObjDrawGeo;
-
-	GLuint      _tokenBuffer;
-	GLuint      _tokenCmdList;
-	std::string _tokenData;
-
 	bool _needUpdateLayout;
 
-	OGLGraphicsDataPtr _vbo;
-	OGLGraphicsDataPtr _ibo;
-	OGLInputLayoutPtr _inputLayout;
-
-	Viewport _viewport;
-	Scissor _scissor;
+	std::vector<GraphicsFormat> _supportTextures;
+	std::vector<GraphicsFormat> _supportAttribute;
 
 	GraphicsDeviceWeakPtr _device;
 };

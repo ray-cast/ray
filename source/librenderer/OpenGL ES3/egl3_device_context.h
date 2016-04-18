@@ -72,26 +72,31 @@ public:
 	void setIndexBufferData(GraphicsDataPtr data) noexcept;
 	GraphicsDataPtr getIndexBufferData() const noexcept;
 
-	bool updateBuffer(GraphicsDataPtr& data, void* buf, std::size_t cnt) noexcept;
-	void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept;
-	void unmapBuffer(GraphicsDataPtr& data) noexcept;
+	bool updateBuffer(GraphicsDataPtr data, void* buf, std::size_t cnt) noexcept;
+	void* mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept;
+	void unmapBuffer(GraphicsDataPtr data) noexcept;
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void discardFramebuffer() noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept;
-	void readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept;
+	void readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
 	void drawRenderMesh(const GraphicsIndirect& renderable) noexcept;
 	void drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept;
 
+	bool isTextureSupport(GraphicsFormat format) noexcept;
+	bool isVertexSupport(GraphicsFormat format) noexcept;
+
 	void present() noexcept;
 
 private:
-
-	void initDebugControl() noexcept;
-	void initStateSystem() noexcept;
+	bool checkSupport() noexcept;
+	bool initDebugControl(const GraphicsContextDesc& desc) noexcept;
+	bool initStateSystem() noexcept;
+	bool initTextureSupports() noexcept;
+	bool initVertexSupports() noexcept;
 
 	static void GLAPIENTRY debugCallBack(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) noexcept;
 
@@ -105,9 +110,6 @@ private:
 	EGL3DeviceContext& operator=(const EGL3DeviceContext&) noexcept = delete;
 
 private:
-
-	bool _initOpenGL;
-	bool _enableWireframe;
 
 	float4 _clearColor;
 	GLfloat _clearDepth;
@@ -126,7 +128,7 @@ private:
 	EGL3GraphicsDataPtr _vbo;
 	EGL3GraphicsDataPtr _ibo;
 	EGL3InputLayoutPtr _inputLayout;
-	EGL3ShaderObjectPtr _shaderObject;
+	EGL3ProgramPtr _shaderObject;
 
 	EGL3SwapchainPtr _glcontext;
 
@@ -135,6 +137,9 @@ private:
 	GraphicsStateDesc _stateCaptured;
 
 	bool _needUpdateLayout;
+
+	std::vector<GraphicsFormat> _supportTextures;
+	std::vector<GraphicsFormat> _supportAttribute;
 
 	GraphicsDeviceWeakPtr _device;
 };

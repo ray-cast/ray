@@ -1,4 +1,4 @@
-// +----------------------------------------------------------------------
+// +---------------------------------------------------------------------
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
@@ -35,23 +35,27 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_device_context.h"
-#include "ogl_swapchain.h"
 #include "ogl_state.h"
 #include "ogl_shader.h"
 #include "ogl_texture.h"
 #include "ogl_framebuffer.h"
 #include "ogl_input_layout.h"
-#include "ogl_graphics_data.h"
 #include "ogl_sampler.h"
-#include "ogl_descriptor.h"
-#include "ogl_render_pipeline.h"
+#include "ogl_descriptor_set.h"
+#include "ogl_pipeline.h"
+#include "ogl_swapchain.h"
+#include "ogl_graphics_data.h"
 
 _NAME_BEGIN
 
-__ImplementSubClass(OGLDeviceContext, GraphicsContext2, "OGLDeviceContext")
+__ImplementSubClass(OGLDeviceContext, GraphicsContext, "OGLDeviceContext")
 
 OGLDeviceContext::OGLDeviceContext() noexcept
-	: _initOpenGL(false)
+	: _clearColor(0.0f, 0.0f, 0.0f, 0.0f)
+	, _clearDepth(1.0f)
+	, _clearStencil(0)
+	, _viewport(0, 0, 0, 0)
+	, _stateDefault(std::make_shared<OGLGraphicsState>())
 {
 }
 
@@ -63,52 +67,50 @@ OGLDeviceContext::~OGLDeviceContext() noexcept
 bool
 OGLDeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 {
-	if (_initOpenGL)
-		return false;
-
-	if (!desc.getSwapchain())
-		return false;
+	assert(desc.getSwapchain());
+	assert(desc.getSwapchain()->isInstanceOf<OGLSwapchain>());
 
 	_glcontext = desc.getSwapchain()->downcast<OGLSwapchain>();
-	if (_glcontext)
-	{
-		this->initDebugControl();
-		this->initStateSystem();
+	_glcontext->setActive(true);
 
-		_initOpenGL = true;
+	if (_glcontext->getActive())
+	{
+		if (!this->checkSupport())
+			return false;
+
+		if (!this->initDebugControl(desc))
+			return false;
+
+		if (!this->initStateSystem())
+			return false;
+
+		if (!this->initTextureSupports())
+			return false;
+
+		if (!this->initVertexSupports())
+			return false;
+
+		return true;
 	}
 
-	return _initOpenGL;
+	return false;
 }
 
 void
 OGLDeviceContext::close() noexcept
 {
-	if (_shaderObject)
-	{
-		_shaderObject.reset();
-		_shaderObject = nullptr;
-	}
-
-	if (_renderTexture)
-	{
-		_renderTexture.reset();
-		_renderTexture = nullptr;
-	}
-
-	if (_state)
-	{
-		_state.reset();
-		_state = nullptr;
-	}
-
-	if (_glcontext)
-	{
-		_glcontext.reset();
-		_glcontext = nullptr;
-	}
-
-	_initOpenGL = false;
+	_renderTexture.reset();
+	_shaderObject.reset();
+	_pipeline.reset();
+	_descriptorSet.reset();
+	_state.reset();
+	_stateDefault.reset();
+	_vbo.reset();
+	_ibo.reset();
+	_inputLayout.reset();
+	_supportTextures.clear();
+	_supportAttribute.clear();
+	_glcontext.reset();
 }
 
 void
@@ -126,9 +128,11 @@ OGLDeviceContext::renderEnd() noexcept
 void
 OGLDeviceContext::setViewport(const Viewport& view) noexcept
 {
+	assert(_glcontext->getActive());
+
 	if (_viewport != view)
 	{
-		glViewport(view.left, view.top, view.width, view.height);
+		GL_CHECK(glViewport(view.left, view.top, view.width, view.height));
 		_viewport = view;
 	}
 }
@@ -142,9 +146,11 @@ OGLDeviceContext::getViewport() const noexcept
 void
 OGLDeviceContext::setScissor(const Scissor& scissor) noexcept
 {
+	assert(_glcontext->getActive());
+
 	if (_scissor != scissor)
 	{
-		glScissor(scissor.left, scissor.top, scissor.width, scissor.height);
+		GL_CHECK(glScissor(scissor.left, scissor.top, scissor.width, scissor.height));
 		_scissor = scissor;
 	}
 }
@@ -159,6 +165,8 @@ void
 OGLDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
 	assert(pipeline);
+	assert(pipeline->isInstanceOf<OGLPipeline>());
+	assert(_glcontext->getActive());
 
 	if (_pipeline != pipeline)
 	{
@@ -173,21 +181,21 @@ OGLDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 			_stateCaptured = glstate->getGraphicsStateDesc();
 		}
 
-		auto glshader = pipelineDesc.getGraphicsProgram()->downcast<OGLShaderObject>();
+		auto glshader = pipelineDesc.getGraphicsProgram()->downcast<OGLProgram>();
 		if (_shaderObject != glshader)
 		{
-			glUseProgram(glshader->getInstanceID());
 			_shaderObject = glshader;
+			_shaderObject->apply();
 		}
 
 		auto inputLayout = pipelineDesc.getGraphicsInputLayout()->downcast<OGLInputLayout>();
 		if (_inputLayout != inputLayout)
 		{
 			_inputLayout = inputLayout;
+			_inputLayout->bindLayout(_shaderObject);
+
 			_needUpdateLayout = true;
 		}
-
-		_pipeline = pipeline->downcast<OGLRenderPipeline>();
 	}
 }
 
@@ -200,8 +208,12 @@ OGLDeviceContext::getRenderPipeline() const noexcept
 void
 OGLDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
 {
+	assert(descriptorSet);
+	assert(descriptorSet->isInstanceOf<OGLDescriptorSet>());
+	assert(_glcontext->getActive());
+
 	_descriptorSet = descriptorSet->downcast<OGLDescriptorSet>();
-	_descriptorSet->bindProgram(_shaderObject);
+	_descriptorSet->apply(_shaderObject);
 }
 
 GraphicsDescriptorSetPtr
@@ -211,51 +223,82 @@ OGLDeviceContext::getDescriptorSet() const noexcept
 }
 
 bool
-OGLDeviceContext::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
+OGLDeviceContext::updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept
 {
-	if (data)
-	{
-		auto _data = data->cast<OGLGraphicsData>();
-		_data->resize((const char*)str, cnt);
-		return true;
-	}
+	assert(data);
+	assert(data->isInstanceOf<OGLGraphicsData>());
+	assert(_glcontext->getActive());
 
-	return false;
+	_needUpdateLayout = true;
+	data->downcast<OGLGraphicsData>()->resize((const char*)str, cnt);
+	return true;
 }
 
 void*
-OGLDeviceContext::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
+OGLDeviceContext::mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept
 {
-	if (data)
-	{
-		auto _data = data->cast<OGLGraphicsData>();
-		return _data->map(access);
-	}
+	assert(data);
+	assert(data->isInstanceOf<OGLGraphicsData>());
+	assert(_glcontext->getActive());
 
-	return nullptr;
+	_needUpdateLayout = true;
+	return data->downcast<OGLGraphicsData>()->map(access);
 }
 
 void
-OGLDeviceContext::unmapBuffer(GraphicsDataPtr& data) noexcept
+OGLDeviceContext::unmapBuffer(GraphicsDataPtr data) noexcept
 {
-	if (data)
-	{
-		auto _data = data->cast<OGLGraphicsData>();
-		_data->unmap();
-	}
+	assert(data);
+	assert(data->isInstanceOf<OGLGraphicsData>());
+	assert(_glcontext->getActive());
+
+	_needUpdateLayout = true;
+	data->downcast<OGLGraphicsData>()->unmap();
+}
+
+GraphicsDataPtr
+OGLDeviceContext::getIndexBufferData() const noexcept
+{
+	return _ibo;
 }
 
 void
 OGLDeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 {
+	assert(data);
+	assert(data->isInstanceOf<OGLGraphicsData>());
 	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
 
 	if (_vbo != data)
 	{
-		if (data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer)
+		if (data)
+		{
 			_vbo = data->downcast<OGLGraphicsData>();
+		}
+
+		_needUpdateLayout = true;
+	}
+}
+
+void
+OGLDeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
+{
+	assert(_glcontext->getActive());
+
+	if (_ibo != data)
+	{
+		if (data)
+		{
+			assert(data->isInstanceOf<OGLGraphicsData>());
+			assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
+
+			_ibo = data->downcast<OGLGraphicsData>();
+		}
 		else
-			_vbo = nullptr;
+		{
+			_ibo = nullptr;
+		}
+
 		_needUpdateLayout = true;
 	}
 }
@@ -267,35 +310,14 @@ OGLDeviceContext::getVertexBufferData() const noexcept
 }
 
 void
-OGLDeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
-{
-	if (_ibo != data)
-	{
-		if (data && data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer)
-			_ibo = data->downcast<OGLGraphicsData>();
-		else
-			_ibo = nullptr;
-
-		_needUpdateLayout = true;
-	}
-}
-
-GraphicsDataPtr
-OGLDeviceContext::getIndexBufferData() const noexcept
-{
-	return _ibo;
-}
-
-void
 OGLDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 {
-	assert(_vbo && _inputLayout);
+	assert(_vbo);
+	assert(_inputLayout);
+	assert(_glcontext->getActive());
 
 	if (_needUpdateLayout)
 	{
-		if (_inputLayout)
-			_inputLayout->bindLayout(_shaderObject);
-
 		if (_vbo)
 			_inputLayout->bindVbo(_vbo, 0);
 
@@ -305,20 +327,19 @@ OGLDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 		_needUpdateLayout = false;
 	}
 
-	auto primitiveType = _stateCaptured.getPrimitiveType();
 	if (_ibo)
 	{
-		GLenum drawType = OGLTypes::asVertexType(primitiveType);
+		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
 		GLenum indexType = OGLTypes::asIndexType(renderable.indexType);
 		GLsizei numInstance = std::max(1, renderable.numInstances);
 		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_ibo->getGraphicsDataDesc().getStride() * renderable.startIndice);
-		glDrawElementsInstancedBaseVertexBaseInstance(drawType, renderable.numIndices, indexType, offsetIndices, numInstance, renderable.startVertice, renderable.startInstances);
+		GL_CHECK(glDrawElementsInstanced(drawType, renderable.numIndices, indexType, offsetIndices, numInstance));
 	}
 	else
 	{
 		GLsizei numInstance = std::max(1, renderable.numInstances);
-		GLenum drawType = OGLTypes::asVertexType(primitiveType);
-		glDrawArraysInstancedBaseInstance(drawType, renderable.startVertice, renderable.numVertices, numInstance, renderable.startInstances);
+		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
+		GL_CHECK(glDrawArraysInstanced(drawType, renderable.startVertice, renderable.numVertices, numInstance));
 	}
 }
 
@@ -355,11 +376,21 @@ void
 OGLDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
 {
 	assert(src);
+	assert(src->isInstanceOf<OGLFramebuffer>());
+	assert(_glcontext->getActive());
 
-	auto readFramebuffer = src->downcast<OGLFramebuffer>()->getInstanceID();
-	auto drawFramebuffer = dest ? dest->downcast<OGLFramebuffer>()->getInstanceID() : GL_NONE;
+	auto srcTarget = src->downcast<OGLFramebuffer>()->getInstanceID();
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, srcTarget);
 
-	glBlitNamedFramebuffer(readFramebuffer, drawFramebuffer, v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	if (dest)
+	{
+		auto destTarget = dest->downcast<OGLFramebuffer>()->getInstanceID();
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destTarget);
+	}
+	else
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+	glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
 GraphicsFramebufferPtr
@@ -371,6 +402,8 @@ OGLDeviceContext::getFramebuffer() const noexcept
 void
 OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
+	assert(_glcontext->getActive());
+
 	GLbitfield mode = 0;
 
 	if (flags & GraphicsClearFlags::GraphicsClearFlagsColor)
@@ -390,7 +423,7 @@ OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color
 
 		if (_clearDepth != depth)
 		{
-			glClearDepthf(depth);
+			glClearDepth(depth);
 			_clearDepth = depth;
 		}
 	}
@@ -414,58 +447,26 @@ OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color
 			glDepthMask(GL_TRUE);
 		}
 
-		glClear(mode);
+		GL_CHECK(glClear(mode));
 
 		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_FALSE);
 		}
-	}
-}
-
-void
-OGLDeviceContext::clearFramebufferIndexed(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::uint32_t i) noexcept
-{
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
-	{
-		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
-		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
-		{
-			glDepthMask(GL_TRUE);
-		}
-
-		GLfloat f = depth;
-		glClearBufferfv(GL_DEPTH, 0, &f);
-
-		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
-		{
-			glDepthMask(GL_FALSE);
-		}
-	}
-
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
-	{
-		GLint s = stencil;
-		glClearBufferiv(GL_STENCIL, 0, &s);
-	}
-
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsColor)
-	{
-		glClearBufferfv(GL_COLOR, i, color.ptr());
 	}
 }
 
 void
 OGLDeviceContext::discardFramebuffer() noexcept
 {
-	assert(_renderTexture);
-	_renderTexture->discard();
+	assert(_glcontext->getActive());
 }
 
 void
-OGLDeviceContext::readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+OGLDeviceContext::readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept
 {
 	assert(w && h && data);
+	assert(_glcontext->getActive());
 
 	if (target)
 	{
@@ -483,8 +484,473 @@ OGLDeviceContext::readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat 
 void
 OGLDeviceContext::present() noexcept
 {
-	if (_glcontext)
-		_glcontext->present();
+	assert(_glcontext->getActive());
+	_glcontext->present();
+}
+
+bool
+OGLDeviceContext::isTextureSupport(GraphicsFormat format) noexcept
+{
+	return std::find(_supportTextures.begin(), _supportTextures.end(), format) != _supportTextures.end();
+}
+
+bool
+OGLDeviceContext::isVertexSupport(GraphicsFormat format) noexcept
+{
+	return std::find(_supportAttribute.begin(), _supportAttribute.end(), format) != _supportAttribute.end();
+}
+
+bool
+OGLDeviceContext::checkSupport() noexcept
+{
+	if (!GLEW_EXT_texture_object)
+	{
+		GL_PLATFORM_LOG("Can't support texture object");
+		return false;
+	}
+
+	if (!GLEW_EXT_packed_pixels)
+	{
+		GL_PLATFORM_LOG("Can't support packed pixels");
+		return false;
+	}
+
+	if (!GLEW_ARB_vertex_array_object)
+	{
+		GL_PLATFORM_LOG("Can't support vertex array object");
+		return false;
+	}
+
+	if (!GLEW_ARB_uniform_buffer_object)
+	{
+		GL_PLATFORM_LOG("Can't support uniform buffer object");
+		return false;
+	}
+
+	if (!GLEW_ARB_texture_buffer_object)
+	{
+		GL_PLATFORM_LOG("Can't support texture buffer object");
+		return false;
+	}
+
+	if (!GLEW_ARB_sampler_objects)
+	{
+		GL_PLATFORM_LOG("Can't support sampler object");
+		return false;
+	}
+
+	if (!GLEW_ARB_framebuffer_object)
+	{
+		GL_PLATFORM_LOG("Can't support framebuffer object");
+		return false;
+	}
+
+	if (!GLEW_EXT_texture_filter_anisotropic)
+	{
+		GL_PLATFORM_LOG("Can't support anisotropic sampler");
+		return false;
+	}
+
+	if (!GLEW_ARB_separate_shader_objects)
+	{
+		GL_PLATFORM_LOG("Can't support separate shader objects");
+		return false;
+	}
+
+	return true;
+}
+
+bool
+OGLDeviceContext::initTextureSupports() noexcept
+{
+	if (GLEW_VERSION_2_0 || GLEW_EXT_texture)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR4G4UNormPack8);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR4G4B4A4UNormPack16);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8UNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16UNorm);
+	}
+
+	if (GLEW_VERSION_2_0 || GLEW_EXT_texture || GLEW_EXT_bgra)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8UNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8UNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatB4G4R4A4UNormPack16);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatB5G5R5A1UNormPack16);
+	}
+
+	if (GLEW_VERSION_2_0 || GLEW_EXT_texture || GLEW_EXT_abgr)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatA1R5G5B5UNormPack16);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatA2R10G10B10UNormPack32);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatA2B10G10R10UNormPack32);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8UNormPack32);
+	}
+
+	if (GLEW_EXT_texture_integer)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16UInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16SInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16UInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16SInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32B32UInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32B32SInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32B32A32UInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32B32A32SInt);
+	}
+
+	if (GLEW_EXT_bgra && GLEW_EXT_texture_integer)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8SInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8SInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8UInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8UInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8SInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8SInt);
+	}
+
+	if (GLEW_EXT_abgr && GLEW_EXT_texture_integer)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8UIntPack32);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8SIntPack32);
+	}
+
+	if (GLEW_ARB_texture_float)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16SFloat);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16SFloat);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
+	}
+
+	if (GLEW_EXT_packed_float)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatB10G11R11UFloatPack32);
+	}
+
+	if (GLEW_EXT_texture_shared_exponent)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatE5B9G9R9UFloatPack32);
+	}
+
+	if (GLEW_ARB_texture_stencil8)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatS8UInt);
+	}
+
+	if (GLEW_ARB_depth_texture)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatD16UNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatX8_D24UNormPack32);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatD32_SFLOAT);
+	}
+
+	if (GLEW_ARB_depth_buffer_float || GLEW_NV_depth_buffer_float)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt);
+	}
+
+	if (GLEW_EXT_packed_depth_stencil || GLEW_ARB_framebuffer_object)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatD24UNorm_S8UInt);
+	}
+
+	if (GLEW_ARB_texture_rgb10_a2ui)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatA2B10G10R10UIntPack32);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatA2R10G10B10UIntPack32);
+	}
+
+	if (GLEW_EXT_texture_sRGB)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8SRGB);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8SRGB);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC1RGBSRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC1RGBASRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC3SRGBBlock);
+	}
+
+	if (GLEW_EXT_bgra && GLEW_EXT_texture_sRGB)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8SRGB);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8SRGB);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8SRGBPack32);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8SRGBPack32);
+	}
+
+	if (GLEW_EXT_abgr && GLEW_EXT_texture_sRGB)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8SRGBPack32);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8SRGBPack32);
+	}
+
+	if (GLEW_ARB_texture_rg)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8UNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16UNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16UInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16SInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16SFloat);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16UNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16UInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16SInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16SFloat);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16UNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32SInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32UInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32SInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32SFloat);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32UInt);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32SFloat);
+	}
+
+	if (GLEW_EXT_texture_snorm)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8SNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8SNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8SNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8SNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16SNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16SNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16SNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16SNorm);
+	}
+
+	if (GLEW_EXT_bgra && GLEW_EXT_texture_snorm)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8SNorm);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8SNorm);
+	}
+
+	if (GLEW_EXT_bgra && GLEW_EXT_texture_snorm)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8SNormPack32);
+	}	
+
+	if (GLEW_EXT_texture_compression_s3tc)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC1RGBUNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC1RGBAUNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC3UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC5UNormBlock);
+	}
+
+	if (GLEW_ARB_ES2_compatibility)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR5G6B5UNormPack16);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatB5G6R5UNormPack16);
+	}
+
+	if (GLEW_ARB_ES3_compatibility)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8A1UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8A8UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8A1SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8A8SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatEACR11UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatEACR11SNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatEACR11G11UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatEACR11G11SNormBlock);
+	}
+
+	if (GLEW_KHR_texture_compression_astc_ldr)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC4x4UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC4x4SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC5x4UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC5x4SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC5x5UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC5x5SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC6x5UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC6x5SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC6x6UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC6x6SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x5UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x5SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x6UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x6SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x8UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x8SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x5UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x5SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x6UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x6SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x8UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x8SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x10UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x10SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC12x10UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC12x10SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC12x12UNormBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC12x12SRGBBlock);
+	}
+
+	return true;
+}
+
+bool
+OGLDeviceContext::initVertexSupports() noexcept
+{
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8B8SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8B8UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8B8SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8B8UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16B16SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16B16UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16B16SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16B16UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32B32SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32B32UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32B32A32SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32B32A32UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32SFloat);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32SFloat);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
+
+	if (GLEW_ARB_vertex_attrib_64bit || GLEW_EXT_vertex_attrib_64bit)
+	{
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR64SInt);
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR64UInt);
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR64G64SInt);
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR64G64UInt);
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR64G64B64SInt);
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR64G64B64UInt);
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR64G64B64A64SInt);
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR64G64B64A64UInt);
+	}
+
+	if (GLEW_ARB_vertex_type_10f_11f_11f_rev)
+	{
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB10G11R11UFloatPack32);
+	}
+
+	if (GLEW_ARB_vertex_type_2_10_10_10_rev)
+	{
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatA2R10G10B10SIntPack32);
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatA2R10G10B10UIntPack32);
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatA2R10G10B10UNormPack32);
+
+		if (GLEW_ARB_vertex_array_bgra)
+		{
+			_supportAttribute.push_back(GraphicsFormat::GraphicsFormatA2B10G10R10SIntPack32);
+			_supportAttribute.push_back(GraphicsFormat::GraphicsFormatA2B10G10R10UIntPack32);
+			_supportAttribute.push_back(GraphicsFormat::GraphicsFormatA2B10G10R10UNormPack32);
+		}
+	}
+
+	if (GLEW_ARB_vertex_array_bgra)
+	{
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8SInt);
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8UInt);
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8SNorm);
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8UNorm);
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8SInt);
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8UInt);
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8SNorm);
+		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8UNorm);
+	}
+
+	return true;
+}
+
+bool
+OGLDeviceContext::initDebugControl(const GraphicsContextDesc& desc) noexcept
+{
+	if (!desc.getDebugMode())
+		return true;
+
+	if (GLEW_ARB_debug_output)
+	{
+		// 131184 memory info
+		// 131185 memory allocation info
+		GLuint ids[] =
+		{
+			131076,
+			131169,
+			131184,
+			131185,
+			131218,
+			131204
+		};
+
+		glEnable(GL_DEBUG_OUTPUT);
+
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+		glDebugMessageCallback(debugCallBack, this);
+		// enable all
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
+		// disable ids
+		glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 6, ids, GL_FALSE);
+
+		return true;
+	}
+
+	return false;
+}
+
+bool
+OGLDeviceContext::initStateSystem() noexcept
+{
+	glClearDepth(1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearStencil(0);
+
+	glViewport(0, 0, 0, 0);
+
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+	glDepthFunc(GL_LEQUAL);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CW);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glDisable(GL_STENCIL_TEST);
+	glStencilMask(0xFFFFFFFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF);
+
+	glDisable(GL_BLEND);
+	glBlendEquation(GL_FUNC_ADD);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	return true;
 }
 
 void
@@ -570,80 +1036,6 @@ OGLDeviceContext::debugCallBack(GLenum source, GLenum type, GLuint id, GLenum se
 	std::cerr << std::endl;
 
 	std::cerr << "message : " << message << std::endl;
-}
-
-void
-OGLDeviceContext::initDebugControl() noexcept
-{
-#if defined(_DEBUG) && !defined(__ANDROID__)
-	// 131184 memory info
-	// 131185 memory allocation info
-	GLuint ids[] =
-	{
-		131076,
-		131169,
-		131184,
-		131185,
-		131218,
-		131204
-	};
-
-	glEnable(GL_DEBUG_OUTPUT);
-
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-
-	glDebugMessageCallback(debugCallBack, this);
-	// enable all
-	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
-	// disable ids
-	glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 6, ids, GL_FALSE);
-#endif
-}
-
-void
-OGLDeviceContext::initStateSystem() noexcept
-{
-	glClearDepth(1.0);
-	glClearColor(0.0, 0.0, 0.0, 0.0);
-	glClearStencil(0);
-
-	glViewport(0, 0, 0, 0);
-
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-
-	glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_TRUE);
-	glDepthFunc(GL_LEQUAL);
-
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glFrontFace(GL_CW);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-	glDisable(GL_STENCIL_TEST);
-	glStencilMask(0xFFFFFFFF);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF);
-
-	glDisable(GL_BLEND);
-	glBlendEquation(GL_FUNC_ADD);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	_maxViewports = 4;
-
-	_clearColor.set(0.0, 0.0, 0.0, 0.0);
-	_clearDepth = 1.0;
-	_clearStencil = 0;
-
-	_needUpdateLayout = false;
-
-	std::memset(&_viewport, 0, sizeof(_viewport));
-	std::memset(&_scissor, 0, sizeof(_scissor));
-
-	_stateDefault = std::make_shared<OGLGraphicsState>();
-	_stateDefault->setup(GraphicsStateDesc());
-
-	_stateCaptured = GraphicsStateDesc();
 }
 
 void

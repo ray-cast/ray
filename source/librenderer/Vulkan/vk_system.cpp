@@ -347,20 +347,20 @@ VulkanSystem::initInstance() noexcept
 	{
 		this->print("Cannot find a compatible Vulkan installable client driver "
 			"(ICD).\n\nPlease look at the Getting Started guide for "
-			"additional information.\n");
+			"additional information.");
 		return false;
 	}
 	else if (err == VK_ERROR_EXTENSION_NOT_PRESENT)
 	{
 		this->print("Cannot find a specified extension library"
-			".\nMake sure your layers path is set appropriately.\n");
+			".\nMake sure your layers path is set appropriately.");
 		return false;
 	}
 	else if (err)
 	{
 		this->print("vkCreateInstance failed.\n\nDo you have a compatible Vulkan "
 			"installable client driver (ICD) installed?\nPlease look at "
-			"the Getting Started guide for additional information.\n");
+			"the Getting Started guide for additional information.");
 		return false;
 	}
 

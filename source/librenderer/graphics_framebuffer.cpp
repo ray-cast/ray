@@ -189,27 +189,15 @@ GraphicsFramebufferDesc::getTextures() const noexcept
 }
 
 void
-GraphicsFramebufferDesc::setSharedDepthTexture(GraphicsTexturePtr target) noexcept
+GraphicsFramebufferDesc::setSharedDepthStencilTexture(GraphicsTexturePtr target) noexcept
 {
-	_sharedDepthTexture = target;
-}
-
-void
-GraphicsFramebufferDesc::setSharedStencilTexture(GraphicsTexturePtr target) noexcept
-{
-	_sharedStencilTexture = target;
+	_sharedDepthStencilTexture = target;
 }
 
 GraphicsTexturePtr
-GraphicsFramebufferDesc::getSharedDepthTexture() const noexcept
+GraphicsFramebufferDesc::getSharedDepthStencilTexture() const noexcept
 {
-	return _sharedDepthTexture;
-}
-
-GraphicsTexturePtr
-GraphicsFramebufferDesc::getSharedStencilTexture() const noexcept
-{
-	return _sharedStencilTexture;
+	return _sharedDepthStencilTexture;
 }
 
 void

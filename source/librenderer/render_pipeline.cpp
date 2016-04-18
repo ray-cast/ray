@@ -185,13 +185,7 @@ RenderPipeline::setCamera(CameraPtr camera) noexcept
 	_materialMatViewInverseTranspose->assign(camera->getTransformInverseTranspose());
 	_materialMatProject->assign(camera->getProject());
 	_materialMatProjectInverse->assign(camera->getProjectInverse());
-
-	GraphicsDeviceType type = _pipelineDevice->getDeviceType();
-	if (type == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
-		_materialMatViewProject->assign(camera->getViewProject() * adjustProject);
-	else	
-		_materialMatViewProject->assign(camera->getViewProject());
-
+	_materialMatViewProject->assign(camera->getViewProject() * adjustProject);
 	_materialMatViewProjectInverse->assign(camera->getViewProjectInverse());
 
 	_dataManager->assginVisiable(camera);
@@ -250,21 +244,21 @@ RenderPipeline::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const no
 }
 
 bool
-RenderPipeline::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
+RenderPipeline::updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept
 {
 	assert(_graphicsContext);
 	return _graphicsContext->updateBuffer(data, str, cnt);
 }
 
 void*
-RenderPipeline::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
+RenderPipeline::mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept
 {
 	assert(_graphicsContext);
 	return _graphicsContext->mapBuffer(data, access);
 }
 
 void
-RenderPipeline::unmapBuffer(GraphicsDataPtr& data) noexcept
+RenderPipeline::unmapBuffer(GraphicsDataPtr data) noexcept
 {
 	assert(_graphicsContext);
 	return _graphicsContext->unmapBuffer(data);
@@ -292,10 +286,10 @@ RenderPipeline::discradRenderTexture() noexcept
 }
 
 void
-RenderPipeline::readFramebuffer(GraphicsFramebufferPtr texture, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+RenderPipeline::readFramebuffer(GraphicsFramebufferPtr texture, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept
 {
 	assert(_graphicsContext);
-	_graphicsContext->readFramebuffer(texture, pfd, w, h, data);
+	_graphicsContext->readFramebuffer(texture, pfd, w, h, bufsize, data);
 }
 
 void
@@ -444,10 +438,10 @@ RenderPipeline::destroyPostProcess() noexcept
 }
 
 void
-RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr source, GraphicsFramebufferPtr swap, GraphicsFramebufferPtr dest) noexcept
+RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr source, GraphicsFramebufferPtr swap) noexcept
 {
-	GraphicsFramebufferPtr view = dest;
-	GraphicsFramebufferPtr cur;
+	GraphicsFramebufferPtr view = swap;
+	GraphicsFramebufferPtr cur = source;
 
 	auto& drawPostProcess = _postprocessors[queue];
 	for (auto& it : drawPostProcess)
@@ -455,21 +449,21 @@ RenderPipeline::drawPostProcess(RenderQueue queue, GraphicsFramebufferPtr source
 		if (!it->getActive())
 			continue;
 
-		if (it->onRender(*this, source, view))
+		if (it->onRender(*this, cur, view))
 		{
-			cur = view;
-			source = view;
-
-			std::swap(swap, view);
+			std::swap(view, cur);
 		}
 	}
 
-	if (cur != dest && cur)
+	if (cur != source)
 	{
 		std::uint32_t w = source->getGraphicsFramebufferDesc().getWidth();
 		std::uint32_t h = source->getGraphicsFramebufferDesc().getHeight();
 		Viewport viewport(0, 0, w, h);
-		this->blitFramebuffer(cur, viewport, dest, viewport);
+		if (cur)
+			this->blitFramebuffer(cur, viewport, source, viewport);
+		else
+			this->blitFramebuffer(source, viewport, source, viewport);
 	}
 }
 
@@ -477,6 +471,18 @@ void
 RenderPipeline::present() noexcept
 {
 	_graphicsContext->present();
+}
+
+bool 
+RenderPipeline::isTextureSupport(GraphicsFormat format) noexcept
+{
+	return _graphicsContext->isTextureSupport(format);
+}
+
+bool
+RenderPipeline::isVertexSupport(GraphicsFormat format) noexcept
+{
+	return _graphicsContext->isVertexSupport(format);
 }
 
 GraphicsDataPtr 
@@ -543,17 +549,17 @@ RenderPipeline::createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcep
 }
 
 RenderMeshPtr
-RenderPipeline::createRenderMesh(const MeshProperty& mesh) noexcept
+RenderPipeline::createRenderMesh(const MeshProperty& mesh, std::uint32_t flags) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderMesh(mesh);
+	return _pipelineDevice->createRenderMesh(mesh, flags);
 }
 
 RenderMeshPtr
-RenderPipeline::createRenderMesh(const MeshPropertys& mesh) noexcept
+RenderPipeline::createRenderMesh(const MeshPropertys& mesh, std::uint32_t flags) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderMesh(mesh);
+	return _pipelineDevice->createRenderMesh(mesh, flags);
 }
 
 MaterialVariantPtr 
@@ -592,6 +598,7 @@ RenderPipeline::setupDeviceContext(WindHandle window, std::uint32_t w, std::uint
 		return false;
 
 	GraphicsContextDesc contextDesc;
+	contextDesc.setDebugMode(true);
 	contextDesc.setSwapchain(_graphicsSwapchain);
 	_graphicsContext = _pipelineDevice->createDeviceContext(contextDesc);
 	if (!_graphicsContext)
@@ -716,10 +723,10 @@ RenderPipeline::setupBaseMeshes() noexcept
 	MeshProperty mesh;
 	mesh.makePlane(2, 2, 1, 1);
 
-	_renderScreenQuad = this->createRenderMesh(mesh);
+	_renderScreenQuad = this->createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex | ModelMakerFlagBits::ModelMakerFlagBitFace);
 	if (!_renderScreenQuad)
 		return false;
-
+	
 	_renderScreenQuadIndirect.startVertice = 0;
 	_renderScreenQuadIndirect.numVertices = mesh.getNumVertices();
 	_renderScreenQuadIndirect.startIndice = 0;
@@ -728,7 +735,7 @@ RenderPipeline::setupBaseMeshes() noexcept
 
 	mesh.makeSphere(1, 24, 18);
 
-	_renderSphere = this->createRenderMesh(mesh);
+	_renderSphere = this->createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex | ModelMakerFlagBits::ModelMakerFlagBitFace);
 	if (!_renderSphere)
 		return false;
 
@@ -740,7 +747,7 @@ RenderPipeline::setupBaseMeshes() noexcept
 
 	mesh.makeCone(1, 1, 16);
 
-	_renderCone = this->createRenderMesh(mesh);
+	_renderCone = this->createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex | ModelMakerFlagBits::ModelMakerFlagBitFace);
 	if (!_renderCone)
 		return false;
 

@@ -96,56 +96,66 @@ EGL3Framebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 {
 	assert(GL_NONE == _fbo);
 	assert(framebufferDesc.getGraphicsFramebufferLayout());
+	assert(framebufferDesc.getGraphicsFramebufferLayout()->isInstanceOf<EGL3FramebufferLayout>());
 	assert(framebufferDesc.getWidth() > 0 && framebufferDesc.getHeight() > 0);
 
 	GL_CHECK(glGenFramebuffers(1, &_fbo));
 	if (_fbo == GL_NONE)
 	{
-		GL_PLATFORM_LOG("glCreateFramebuffers() fail");
+		GL_PLATFORM_LOG("glCreateFramebuffers() fail.");
 		return false;
 	}
 
 	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, _fbo));
 
-	auto sharedDepthTarget = framebufferDesc.getSharedDepthTexture();
-	auto sharedStencilTarget = framebufferDesc.getSharedStencilTexture();
-
-	if (sharedDepthTarget == sharedStencilTarget)
+	auto sharedDepthStnecilTarget = framebufferDesc.getSharedDepthStencilTexture();
+	if (sharedDepthStnecilTarget)
 	{
-		if (sharedDepthTarget)
+		auto format = sharedDepthStnecilTarget->getGraphicsTextureDesc().getTexFormat();
+		if (EGL3Types::isDepthStencilFormat(format))
 		{
-			if (!this->bindRenderTexture(sharedDepthTarget, GL_DEPTH_STENCIL_ATTACHMENT))
-				return false;
-		}		
-	}
-	else
-	{
-		if (sharedDepthTarget)
-		{
-			if (!this->bindRenderTexture(sharedDepthTarget, GL_DEPTH_ATTACHMENT))
+			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_DEPTH_STENCIL_ATTACHMENT))
 				return false;
 		}
-
-		if (sharedStencilTarget)
+		else if (EGL3Types::isDepthFormat(format))
 		{
-			if (!this->bindRenderTexture(sharedStencilTarget, GL_STENCIL_ATTACHMENT))
+			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_DEPTH_ATTACHMENT))
 				return false;
 		}
-	}
-
-	std::vector<GLenum> draw;
-	GLenum attachment = GL_COLOR_ATTACHMENT0;
-	GLsizei count = 0;
-
-	for (auto& texture : framebufferDesc.getTextures())
-	{
-		if (!this->bindRenderTexture(texture, attachment))
+		else if (EGL3Types::isStencilFormat(format))
+		{
+			if (!this->bindRenderTexture(sharedDepthStnecilTarget, GL_STENCIL_ATTACHMENT))
+				return false;
+		}
+		else
+		{
+			GL_PLATFORM_LOG("Invalid texture format.");
 			return false;
-		draw.push_back(attachment++);
-		count++;
+		}
 	}
 
-	GL_CHECK(glDrawBuffers(count, draw.data()));
+	GLenum draw[GL_COLOR_ATTACHMENT15 - GL_COLOR_ATTACHMENT0];
+	GLenum attachment = 0;
+
+	auto& textures = framebufferDesc.getTextures();
+	if (framebufferDesc.getTextures().size() > (sizeof(draw) / sizeof(draw[0])))
+	{
+		GL_PLATFORM_LOG("The color attachment in framebuffer is out of range.");
+		return false;
+	}
+
+	for (auto& texture : textures)
+	{
+		if (!this->bindRenderTexture(texture, GL_COLOR_ATTACHMENT0 + attachment))
+			return false;
+
+		draw[attachment] = GL_COLOR_ATTACHMENT0 + attachment;
+
+		attachment++;
+	}
+
+	GL_CHECK(glDrawBuffers(attachment, draw));
+	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE));
 
 	_framebufferDesc = framebufferDesc;
 

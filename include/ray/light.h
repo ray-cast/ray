@@ -49,14 +49,10 @@ public:
 	~Light() noexcept;
 
 	void setRange(float range) noexcept;
-	void setIntensity(float intensity) noexcept;
-	void setSpotInnerCone(float value) noexcept;
-	void setSpotOuterCone(float value) noexcept;
-
 	float getRange() const noexcept;
+
+	void setIntensity(float intensity) noexcept;
 	float getIntensity() const noexcept;
-	float getSpotInnerCone() const noexcept;
-	float getSpotOuterCone() const noexcept;
 
 	void setLightType(LightType type) noexcept;
 	LightType getLightType() const noexcept;
@@ -66,6 +62,13 @@ public:
 
 	void setLightAttenuation(const float3& attenuation) noexcept;
 	const float3& getLightAttenuation() const noexcept;
+
+	void setSpotInnerCone(float value) noexcept;
+	void setSpotOuterCone(float value) noexcept;
+	float getSpotInnerCone() const noexcept;
+	float getSpotOuterCone() const noexcept;
+	float getSpotCosInnerCone() const noexcept;
+	float getSpotCosOuterCone() const noexcept;
 
 	void setShadow(bool enable) noexcept;
 	bool getShadow() const noexcept;
@@ -81,22 +84,25 @@ public:
 
 	void setShadowSize(float size) noexcept;
 	float getShadowSize() const noexcept;
+	
+	void setShadowBias(float bias) noexcept;
+	float getShadowBias() const noexcept;
 
-	CameraPtr getShadowCamera() const noexcept;
+	CameraPtr getShadowCamera(std::uint8_t i = 0) const noexcept;
 
 	RenderObjectPtr clone() const noexcept;
 
 private:
-	virtual void onSceneChangeBefor() noexcept;
-	virtual void onSceneChangeAfter() noexcept;
 
-private:
-
-	bool setupShadowMap(float size) noexcept;
-	void destroyShadowMap() noexcept;
+	bool _buildShadowMap(float size) noexcept;
+	void _destroyShadowMap() noexcept;
 
 	void _updateShadow() noexcept;
 	void _updateBoundingBox() noexcept;
+
+private:
+	void onSceneChangeBefor() noexcept;
+	void onSceneChangeAfter() noexcept;
 
 	void onAddRenderData(RenderDataManager& manager) noexcept;
 
@@ -113,19 +119,21 @@ private:
 
 	LightType _lightType;
 
+	float _lightRange;
 	float _lightIntensity;
 
 	float3 _lightColor;
 	float3 _lightAttenuation;
 
-	float _spotInnerCone;
-	float _spotOuterCone;
+	float2 _spotInnerCone;
+	float2 _spotOuterCone;
 
 	bool _shadow;
 	bool _shadowSoftEnable;
 	bool _subsurfaceScattering;
+	float _shaodwBias;
 	std::size_t _shadowSize;
-	CameraPtr _shadowCamera;
+	CameraPtr _shadowCamera[6];
 	GraphicsFormat _shadowFormat;
 	GraphicsTexturePtr _shaodwMap;
 	GraphicsFramebufferPtr _shaodwView;

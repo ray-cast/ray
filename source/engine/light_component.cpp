@@ -145,6 +145,7 @@ LightComponent::load(iarchive& reader) noexcept
 	float3 lightColor(1, 1, 1);
 	float lightIntensity = 1.0f;
 	float lightRange = 1.0f;
+	float shadowBias = 0.0;
 	bool shadow = false;
 	bool softShadow = false;
 	bool subsurfaceScattering = false;
@@ -158,6 +159,7 @@ LightComponent::load(iarchive& reader) noexcept
 	reader >> make_archive(lightType, "type");
 	reader >> make_archive(softShadow, "soft");
 	reader >> make_archive(subsurfaceScattering, "sss");
+	reader >> make_archive(shadowBias, "bias");
 
 	if (lightType == "sun")
 		this->setLightType(LightType::LightTypeSun);
@@ -176,6 +178,7 @@ LightComponent::load(iarchive& reader) noexcept
 	_light->setRange(lightRange);
 	_light->setIntensity(lightIntensity);
 	_light->setShadow(shadow);
+	_light->setShadowBias(shadowBias);
 	_light->setSoftShadow(softShadow);
 	_light->setSubsurfaceScattering(subsurfaceScattering);
 }

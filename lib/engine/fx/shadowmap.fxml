@@ -65,18 +65,18 @@
                 const float offset[3] = { 0.0, 1.3846153846, 3.2307692308 };
                 const float weight[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
 
-                float d0 = linearDepth(clipConstant.xyz, texSource.Sample(LinearClamp, coord).r);
+                float d0 = linearDepthPerspectiveFovLH(clipConstant.xy, texSource.Sample(LinearClamp, coord).r);
                 float d1 = 0;
 
                 for (int i = 0; i < 3; ++i)
                 {
-                    float d2 = linearDepth(clipConstant.xyz, texSource.Sample(LinearClamp, coord + float2(offset[i], 0) * texSourceInv).r);
-                    float d3 = linearDepth(clipConstant.xyz, texSource.Sample(LinearClamp, coord - float2(offset[i], 0) * texSourceInv).r);
+                    float d2 = linearDepthPerspectiveFovLH(clipConstant.xy, texSource.Sample(LinearClamp, coord + float2(offset[i], 0) * texSourceInv).r);
+                    float d3 = linearDepthPerspectiveFovLH(clipConstant.xy, texSource.Sample(LinearClamp, coord - float2(offset[i], 0) * texSourceInv).r);
 
-                    d1 += (exp(clipConstant.w * (d2 - d0)) + exp(clipConstant.w * (d3 - d0))) * weight[i];
+                    d1 += (exp(clipConstant.z * (d2 - d0)) + exp(clipConstant.z * (d3 - d0))) * weight[i];
                 }
 
-                return clipConstant.w * d0 + log(d1);
+                return clipConstant.z * d0 + log(d1);
             }
 
             float LogBlurYPS(in float2 coord : TEXCOORD0) : SV_Target0

@@ -46,6 +46,7 @@ class WGLSwapchain : public GraphicsSwapchain
 	__DeclareSubClass(WGLSwapchain, GraphicsSwapchain)
 public:
 	WGLSwapchain() noexcept;
+	WGLSwapchain(GLuint major, GLuint minor) noexcept;
 	virtual ~WGLSwapchain() noexcept;
 
 	bool setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept;
@@ -82,6 +83,9 @@ private:
 
 	HDC _hdc;
 	HGLRC _context;
+
+	GLuint _major;
+	GLuint _minor;
 
 	GraphicsSwapchainDesc _swapchainDesc;
 	GraphicsDeviceWeakPtr _device;

@@ -492,7 +492,7 @@ e2 00 10 00 00 00 00 00 a6 0a 10 00 00 00 00 00
             <state name="depthtest" value="false" />
             <state name="depthwrite" value="false" />
             <state name="cullmode" value="none" />
-            <state name="blend" value="false" />
+            <state name="blend" value="true" />
             <state name="blendsrc" value="one" />
             <state name="blenddst" value="one" />
         </pass>

@@ -132,9 +132,9 @@ ObjHandler::parser(char* data, std::size_t)
 
     std::string s1;
 
-    Vector3Array _vn;
-    Vector2Array _vt;
-    Vector3Array _v;
+    Float3Array _vn;
+    Float2Array _vt;
+    Float3Array _v;
 
     std::vector<float> _fv;
     std::vector<float> _ft;

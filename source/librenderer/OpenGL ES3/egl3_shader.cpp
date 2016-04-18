@@ -36,13 +36,10 @@
 // +----------------------------------------------------------------------
 #include "egl3_shader.h"
 
-#define EXCLUDE_PSTDINT
-#include <hlslcc.hpp>
-
 _NAME_BEGIN
 
 __ImplementSubClass(EGL3Shader, GraphicsShader, "EGL3Shader")
-__ImplementSubClass(EGL3ShaderObject, GraphicsProgram, "EGL3ShaderObject")
+__ImplementSubClass(EGL3Program, GraphicsProgram, "EGL3Program")
 __ImplementSubClass(EGL3GraphicsAttribute, GraphicsAttribute, "EGL3GraphicsAttribute")
 __ImplementSubClass(EGL3GraphicsUniform, GraphicsUniform, "EGL3GraphicsUniform")
 __ImplementSubClass(EGL3GraphicsUniformBlock, GraphicsUniformBlock, "EGL3GraphicsUniformBlock")
@@ -270,38 +267,21 @@ bool
 EGL3Shader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 {
 	assert(_instance == GL_NONE);
+	assert(shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangGLSL);
+	assert(shaderDesc.getByteCodes().size() > 0);
+	assert(EGL3Types::asShaderStage(shaderDesc.getStage()) != GL_INVALID_ENUM);
 
-	GLenum shaderType = EGL3Types::asShaderType(shaderDesc.getType());
-	if (shaderType == GL_INVALID_ENUM)
-		return false;
-
-	if (shaderDesc.getByteCodes().empty())
-	{
-		GL_PLATFORM_LOG("This shader code cannot be null.");
-		return false;
-	}
-
-	GLSLShader shader;
-	GLSLCrossDependencyData dependency;
-
-	std::uint32_t flags = HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT | HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
-	if (!TranslateHLSLFromMem(shaderDesc.getByteCodes().data(), flags, GLLang::LANG_ES_310, 0, &dependency, &shader))
-	{
-		GL_PLATFORM_LOG("Can't conv bytecodes to glsl.");
-		return false;
-	}
-
-	_instance = glCreateShader(shaderType);
+	_instance = glCreateShader(EGL3Types::asShaderStage(shaderDesc.getStage()));
 	if (_instance == GL_NONE)
 	{
 		GL_PLATFORM_LOG("glCreateShader() fail.");
 		return false;
 	}
 
-	glShaderSource(_instance, 1, &shader.sourceCode, 0);
-	glCompileShader(_instance);
+	const char* codes = shaderDesc.getByteCodes().data();
 
-	FreeGLSLShader(&shader);
+	glShaderSource(_instance, 1, &codes, 0);
+	glCompileShader(_instance);
 
 	GLint result = GL_FALSE;
 	glGetShaderiv(_instance, GL_COMPILE_STATUS, &result);
@@ -355,23 +335,27 @@ EGL3Shader::getDevice() noexcept
 	return _device.lock();
 }
 
-EGL3ShaderObject::EGL3ShaderObject() noexcept
-	: _isActive(false)
-	, _program(0)
+EGL3Program::EGL3Program() noexcept
+	: _program(GL_NONE)
 {
 }
 
-EGL3ShaderObject::~EGL3ShaderObject() noexcept
+EGL3Program::~EGL3Program() noexcept
 {
 	this->close();
 }
 
 bool
-EGL3ShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
+EGL3Program::setup(const GraphicsProgramDesc& programDesc) noexcept
 {
 	assert(_program == GL_NONE);
 
 	_program = glCreateProgram();
+	if (_program == GL_NONE)
+	{
+		GL_PLATFORM_LOG("glCreateProgram() fail.");
+		return false;
+	}
 
 	for (auto& shader : programDesc.getShaders())
 	{
@@ -396,8 +380,6 @@ EGL3ShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 		return false;
 	}
 
-	_isActive = false;
-
 	_initActiveAttribute();
 	_initActiveUniform();
 	_initActiveUniformBlock();
@@ -407,7 +389,7 @@ EGL3ShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 }
 
 void
-EGL3ShaderObject::close() noexcept
+EGL3Program::close() noexcept
 {
 	if (_program != GL_NONE)
 	{
@@ -421,48 +403,37 @@ EGL3ShaderObject::close() noexcept
 }
 
 void
-EGL3ShaderObject::setActive(bool active) noexcept
+EGL3Program::apply() noexcept
 {
-	if (_isActive != active)
-	{
-		if (active)
-			glUseProgram(_program);
-		_isActive = active;
-	}
-}
-
-bool
-EGL3ShaderObject::getActive() noexcept
-{
-	return _isActive;
+	glUseProgram(_program);
 }
 
 GLuint
-EGL3ShaderObject::getInstanceID() const noexcept
+EGL3Program::getInstanceID() const noexcept
 {
 	return _program;
 }
 
 const GraphicsUniforms&
-EGL3ShaderObject::getActiveUniforms() const noexcept
+EGL3Program::getActiveUniforms() const noexcept
 {
 	return _activeUniforms;
 }
 
 const GraphicsUniformBlocks& 
-EGL3ShaderObject::getActiveUniformBlocks() const noexcept
+EGL3Program::getActiveUniformBlocks() const noexcept
 {
 	return _activeUniformBlocks;
 }
 
 const GraphicsAttributes&
-EGL3ShaderObject::getActiveAttributes() const noexcept
+EGL3Program::getActiveAttributes() const noexcept
 {
 	return _activeAttributes;
 }
 
 void
-EGL3ShaderObject::_initActiveAttribute() noexcept
+EGL3Program::_initActiveAttribute() noexcept
 {
 	GLint numAttribute = 0;
 	GLint maxAttribute = 0;
@@ -514,7 +485,7 @@ EGL3ShaderObject::_initActiveAttribute() noexcept
 }
 
 void
-EGL3ShaderObject::_initActiveUniform() noexcept
+EGL3Program::_initActiveUniform() noexcept
 {
 	GLint numUniform = 0;
 	GLint maxUniformLength = 0;
@@ -549,7 +520,7 @@ EGL3ShaderObject::_initActiveUniform() noexcept
 }
 
 void
-EGL3ShaderObject::_initActiveUniformBlock() noexcept
+EGL3Program::_initActiveUniformBlock() noexcept
 {
 	GLint numUniformBlock = 0;
 	GLint maxUniformBlockLength = 0;
@@ -617,7 +588,7 @@ EGL3ShaderObject::_initActiveUniformBlock() noexcept
 }
 
 GraphicsUniformType
-EGL3ShaderObject::toGraphicsUniformType(const std::string& name, GLenum type) noexcept
+EGL3Program::toGraphicsUniformType(const std::string& name, GLenum type) noexcept
 {
 	if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
 		type == GL_SAMPLER_2D_SHADOW ||
@@ -737,26 +708,26 @@ EGL3ShaderObject::toGraphicsUniformType(const std::string& name, GLenum type) no
 		}
 		else
 		{
-			GL_PLATFORM_ASSERT(false, "Invlid uniform type");
+			GL_PLATFORM_ASSERT(false, "Invlid uniform type.");
 			return GraphicsUniformType::GraphicsUniformTypeNone;
 		}
 	}
 }
 
 const GraphicsProgramDesc&
-EGL3ShaderObject::getGraphicsProgramDesc() const noexcept
+EGL3Program::getGraphicsProgramDesc() const noexcept
 {
 	return _programDesc;
 }
 
 void
-EGL3ShaderObject::setDevice(GraphicsDevicePtr device) noexcept
+EGL3Program::setDevice(GraphicsDevicePtr device) noexcept
 {
 	_device = device;
 }
 
 GraphicsDevicePtr
-EGL3ShaderObject::getDevice() noexcept
+EGL3Program::getDevice() noexcept
 {
 	return _device.lock();
 }

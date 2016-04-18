@@ -169,18 +169,17 @@ private:
 	GraphicsDeviceWeakPtr _device;
 };
 
-class EGL3ShaderObject final : public GraphicsProgram
+class EGL3Program final : public GraphicsProgram
 {
-	__DeclareSubClass(EGL3ShaderObject, GraphicsProgram)
+	__DeclareSubClass(EGL3Program, GraphicsProgram)
 public:
-	EGL3ShaderObject() noexcept;
-	~EGL3ShaderObject() noexcept;
+	EGL3Program() noexcept;
+	~EGL3Program() noexcept;
 
 	bool setup(const GraphicsProgramDesc& desc) noexcept;
 	void close() noexcept;
 
-	void setActive(bool active) noexcept;
-	bool getActive() noexcept;
+	void apply() noexcept;
 
 	GLuint getInstanceID() const noexcept;
 
@@ -204,8 +203,8 @@ private:
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
-	EGL3ShaderObject(const EGL3ShaderObject&) noexcept = delete;
-	EGL3ShaderObject& operator=(const EGL3ShaderObject&) noexcept = delete;
+	EGL3Program(const EGL3Program&) noexcept = delete;
+	EGL3Program& operator=(const EGL3Program&) noexcept = delete;
 
 private:
 

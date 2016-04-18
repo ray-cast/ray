@@ -153,10 +153,10 @@ RenderSystem::discradRenderTexture() noexcept
 }
 
 void 
-RenderSystem::readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat format, std::size_t w, std::size_t h, void* data) noexcept
+RenderSystem::readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat format, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept
 {
 	assert(_pipelineManager);
-	_pipelineManager->readFramebuffer(target, format, w, h, data);
+	_pipelineManager->readFramebuffer(target, format, w, h, bufsize, data);
 }
 
 void 
@@ -192,6 +192,20 @@ RenderSystem::drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsI
 {
 	assert(_pipelineManager);
 	_pipelineManager->drawMesh(tech, mesh, renderable);
+}
+
+bool 
+RenderSystem::isTextureSupport(GraphicsFormat format) noexcept
+{
+	assert(_pipelineManager);
+	return _pipelineManager->isTextureSupport(format);
+}
+
+bool 
+RenderSystem::isVertexSupport(GraphicsFormat format) noexcept
+{
+	assert(_pipelineManager);
+	return _pipelineManager->isVertexSupport(format);
 }
 
 GraphicsTexturePtr
@@ -244,21 +258,21 @@ RenderSystem::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 }
 
 bool
-RenderSystem::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
+RenderSystem::updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept
 {
 	assert(_pipelineManager);
 	return _pipelineManager->updateBuffer(data, str, cnt);
 }
 
 void*
-RenderSystem::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
+RenderSystem::mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept
 {
 	assert(_pipelineManager);
 	return _pipelineManager->mapBuffer(data, access);
 }
 
 void 
-RenderSystem::unmapBuffer(GraphicsDataPtr& data) noexcept
+RenderSystem::unmapBuffer(GraphicsDataPtr data) noexcept
 {
 	assert(_pipelineManager);
 	_pipelineManager->unmapBuffer(data);

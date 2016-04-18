@@ -499,12 +499,12 @@ public:
 		b1 = right.y;
 		c1 = right.z;
 		d1 = 0.0f;
-		
+
 		a2 = up.x;
 		b2 = up.y;
 		c2 = up.z;
 		d2 = 0.0f;
-		
+
 		a3 = forward.x;
 		b3 = forward.y;
 		c3 = forward.z;
@@ -744,29 +744,31 @@ public:
 	template <typename T>
 	Matrix4x4t<T>& makePerspective_fov_lh(const T& fov, const T& aspect, const T& nearPlane, const T& farPlane) noexcept
 	{
-		T const h(1.0f / tan(DEG_TO_RAD(fov * 0.5f)));
-		T const w(h / aspect);
-		T const q(farPlane / (farPlane - nearPlane));
+		const T h = 1.0f / tan(DEG_TO_RAD(fov * 0.5f));
+		const T w = h / aspect;
+		const T q = farPlane / (farPlane - nearPlane);
 
-		return Matrix4x4t<T>(
-			w, 0, 0, 0,
+		set(w, 0, 0, 0,
 			0, h, 0, 0,
 			0, 0, q, -nearPlane * q,
 			0, 0, 1.0f, 0);
+
+		return *this;
 	}
 
 	template <typename T>
 	Matrix4x4t<T>& makePerspective_fov_rh(const T& fov, const T& aspect, const T& nearPlane, const T& farPlane) noexcept
 	{
-		T const h(1.0f / tan(DEG_TO_RAD(fov * 0.5f)));
-		T const w(h / aspect);
-		T const q(farPlane / (farPlane - nearPlane));
+		const T h = 1.0f / tan(DEG_TO_RAD(fov * 0.5f));
+		const T w = h / aspect;
+		const T q = farPlane / (farPlane - nearPlane);
 
-		return Matrix4x4t<T>(
-			w, 0, 0, 0,
+		set(w, 0, 0, 0,
 			0, h, 0, 0,
 			0, 0, q, nearPlane * q,
 			0, 0, -1.0f, 0);
+
+		return *this;
 	}
 
 	Matrix4x4t<T>& makePerspective_off_center_lh(const T& fovy, const T& aspectRatio, const T& znear, const T& zfar) noexcept

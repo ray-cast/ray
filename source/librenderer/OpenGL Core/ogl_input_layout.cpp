@@ -35,8 +35,8 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_input_layout.h"
-#include "ogl_graphics_data.h"
 #include "ogl_shader.h"
+#include "ogl_graphics_data.h"
 
 _NAME_BEGIN
 
@@ -44,7 +44,6 @@ __ImplementSubClass(OGLInputLayout, GraphicsInputLayout, "OGLInputLayout")
 
 OGLInputLayout::OGLInputLayout() noexcept
 	: _vao(GL_NONE)
-	, _ibo(GL_NONE)
 {
 }
 
@@ -54,17 +53,24 @@ OGLInputLayout::~OGLInputLayout() noexcept
 }
 
 bool
-OGLInputLayout::setup(const GraphicsInputLayoutDesc& inputLayout) noexcept
+OGLInputLayout::setup(const GraphicsInputLayoutDesc& inputLayoutDesc) noexcept
 {
 	assert(!_vao);
 
-	auto& component = inputLayout.getGraphicsVertexLayouts();
+	auto& component = inputLayoutDesc.getGraphicsVertexLayouts();
 	for (auto& it : component)
 	{
 		auto& semantic = it.getSemantic();
 		if (semantic.empty())
 		{
 			GL_PLATFORM_LOG("Empty semantic");
+			return false;
+		}
+
+
+		if (it.getVertexDivisor() != GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
+		{
+			GL_PLATFORM_LOG("Can't support vertex divisor");
 			return false;
 		}
 
@@ -78,41 +84,29 @@ OGLInputLayout::setup(const GraphicsInputLayoutDesc& inputLayout) noexcept
 		}
 	}
 
-	glCreateVertexArrays(1, &_vao);
+	glGenVertexArrays(1, &_vao);
 	if (_vao == GL_NONE)
 	{
 		GL_PLATFORM_LOG("glCreateVertexArrays() fail");
 		return false;
 	}
 
-	_inputLayoutDesc = inputLayout;
+	_inputLayoutDesc = inputLayoutDesc;
 	return true;
 }
 
 void
 OGLInputLayout::close() noexcept
 {
-	if (_vao != GL_NONE)
+	if (_vao)
 	{
 		glDeleteVertexArrays(1, &_vao);
 		_vao = GL_NONE;
 	}
 }
 
-GLuint 
-OGLInputLayout::getInstanceID() const noexcept
-{
-	return _vao;
-}
-
-const GraphicsInputLayoutDesc&
-OGLInputLayout::getGraphicsInputLayoutDesc() const noexcept
-{
-	return _inputLayoutDesc;
-}
-
 void
-OGLInputLayout::bindLayout(OGLShaderObjectPtr program) noexcept
+OGLInputLayout::bindLayout(const OGLProgramPtr& program) noexcept
 {
 	glBindVertexArray(_vao);
 
@@ -139,14 +133,9 @@ OGLInputLayout::bindLayout(OGLShaderObjectPtr program) noexcept
 
 			if (attribIndex != GL_INVALID_INDEX)
 			{
-				glEnableVertexArrayAttrib(_vao, attribIndex);
-				glVertexArrayAttribBinding(_vao, attribIndex, bindingIndex);
-				glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, GL_FALSE, offset);
-
-				if (it.getVertexDivisor() == GraphicsVertexDivisor::GraphicsVertexDivisorInstance)
-					glVertexArrayBindingDivisor(_vao, bindingIndex, 1);
-				else
-					glVertexArrayBindingDivisor(_vao, bindingIndex, 0);
+				glEnableVertexAttribArray(attribIndex);
+				glVertexAttribBinding(attribIndex, bindingIndex);
+				glVertexAttribFormat(attribIndex, it.getVertexCount(), type, GL_FALSE, offset);
 			}
 
 			offset += it.getVertexSize();
@@ -157,24 +146,22 @@ OGLInputLayout::bindLayout(OGLShaderObjectPtr program) noexcept
 }
 
 void
-OGLInputLayout::bindVbo(OGLGraphicsDataPtr vbo, std::uint8_t slot) noexcept
+OGLInputLayout::bindVbo(const OGLGraphicsDataPtr& vbo, GLuint bindingPoint) noexcept
 {
-	assert(vbo);
-
 	GLuint stride = vbo->getGraphicsDataDesc().getStride();
-	glVertexArrayVertexBuffer(_vao, slot, vbo->getInstanceID(), 0, stride);
+	glBindVertexBuffer(bindingPoint, vbo->getInstanceID(), 0, stride);
 }
 
 void
-OGLInputLayout::bindIbo(OGLGraphicsDataPtr ibo) noexcept
+OGLInputLayout::bindIbo(const OGLGraphicsDataPtr& ibo) noexcept
 {
-	assert(ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID());
+}
 
-	if (_ibo != ibo)
-	{
-		glVertexArrayElementBuffer(_vao, ibo->getInstanceID());
-		_ibo = ibo;
-	}	
+const GraphicsInputLayoutDesc&
+OGLInputLayout::getGraphicsInputLayoutDesc() const noexcept
+{
+	return _inputLayoutDesc;
 }
 
 void

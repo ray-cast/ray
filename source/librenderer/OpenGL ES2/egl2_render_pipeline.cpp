@@ -35,6 +35,10 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "egl2_render_pipeline.h"
+#include "egl2_state.h"
+#include "egl2_shader.h"
+#include "egl2_input_layout.h"
+#include "egl2_descriptor.h"
 
 _NAME_BEGIN
 
@@ -56,6 +60,10 @@ EGL2RenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	assert(pipelineDesc.getGraphicsProgram());
 	assert(pipelineDesc.getGraphicsInputLayout());
 	assert(pipelineDesc.getGraphicsDescriptorSetLayout());
+	assert(pipelineDesc.getGraphicsState()->isInstanceOf<EGL2GraphicsState>());
+	assert(pipelineDesc.getGraphicsProgram()->isInstanceOf<EGL2Program>());
+	assert(pipelineDesc.getGraphicsInputLayout()->isInstanceOf<EGL2InputLayout>());
+	assert(pipelineDesc.getGraphicsDescriptorSetLayout()->isInstanceOf<EGL2DescriptorSetLayout>());
 	_pipelineDesc = pipelineDesc;
 	return true;
 }

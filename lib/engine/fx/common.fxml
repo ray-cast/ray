@@ -32,14 +32,21 @@
                 return mad(coord, 2.0, -1.0);
             }
 
-            float linearDepth(float2 clipConstant, float depth)
+            float linearDepthOrthoLH(float2 clipConstant, float depth)
+            {
+                // clipConstant.x = znear;
+                // clipConstant.y = zfar - znear;
+                return clipConstant.x + clipConstant.y * depth;
+            }
+
+            float linearDepthPerspectiveFovLH(float2 clipConstant, float depth)
             {
                 // clipConstant.x = _znear * (_zfar / (_zfar - _znear));
                 // clipConstant.y = _zfar / (_zfar - _znear);
                 return clipConstant.x / (clipConstant.y - depth);
             }
 
-            float linearDepth(float3 clipConstant, float depth)
+            float linearDepthPerspectiveOffCenterLH(float3 clipConstant, float depth)
             {
                 // clipConstant.x = (2 * znear * zfar);
                 // clipConstant.y = zfar + znear;

@@ -124,21 +124,24 @@ EGL3Sampler::setup(const GraphicsSamplerDesc& samplerDesc) except
 		return false;
 	}
 
-	GraphicsSamplerAnis anis = samplerDesc.getSamplerAnis();
-	if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis1)
-		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
-	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis2)
-		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2);
-	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis4)
-		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
-	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis8)
-		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
-	else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis16)
-		glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
-	else
+	if (EGL3Types::isSupportFeature(EGL3Features::EGL3_EXT_texture_filter_anisotropic))
 	{
-		GL_PLATFORM_LOG("Invalid SamplerAnis");
-		return false;
+		GraphicsSamplerAnis anis = samplerDesc.getSamplerAnis();
+		if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis1)
+			glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1);
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis2)
+			glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2);
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis4)
+			glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis8)
+			glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 8);
+		else if (anis == GraphicsSamplerAnis::GraphicsSamplerAnis16)
+			glSamplerParameteri(_sampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16);
+		else
+		{
+			GL_PLATFORM_LOG("Invalid SamplerAnis");
+			return false;
+		}
 	}
 
 	_sampleDesc = samplerDesc;

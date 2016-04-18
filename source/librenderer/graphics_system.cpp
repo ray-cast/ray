@@ -68,8 +68,8 @@ GraphicsSystem::createDevice(const GraphicsDeviceDesc& desc) noexcept
 	auto deviceType = desc.getDeviceType();
 
 #if defined(_BUILD_OPENGL_CORE)
-	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL ||
-		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
+	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
 	{
 		auto device = std::make_shared<OGLDevice>();
 		if (device->setup(desc))

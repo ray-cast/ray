@@ -325,7 +325,7 @@ EGL3Swapchain::initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcep
 	attribs[index++] = 3;
 
 	attribs[index++] = EGL_CONTEXT_MINOR_VERSION;
-	attribs[index++] = 0;
+	attribs[index++] = 1;
 #else
 	attribs[index++] = EGL_CONTEXT_CLIENT_VERSION;
 	attribs[index++] = 3;
@@ -341,7 +341,10 @@ EGL3Swapchain::initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcep
 		return false;
 	}
 
+	this->setActive(true);
 	this->setSwapInterval(swapchainDesc.getSwapInterval());
+	this->setActive(false);
+
 	return true;
 }
 

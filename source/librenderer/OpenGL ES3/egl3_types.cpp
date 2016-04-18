@@ -38,6 +38,81 @@
 
 _NAME_BEGIN
 
+GLboolean EGL3Types::_egl3init = GL_FALSE;
+GLboolean EGL3Types::_egl3Features[EGL3_RangeSize];
+
+bool
+EGL3Types::setup() noexcept
+{
+	if (_egl3init)
+		return true;
+
+	std::memset(_egl3Features, GL_FALSE, sizeof(_egl3Features));
+
+	const GLubyte* extension = glGetString(GL_EXTENSIONS);
+	if (!extension)
+		return false;
+
+	std::size_t extensionLength = std::strlen((const char*)extension);
+	if (extensionLength == 0)
+		return false;
+
+	const char* offset = (char*)extension;
+	for (;;)
+	{
+		const char* pos = std::strstr(offset, " ");
+		if (!pos)
+		{
+			std::size_t length = std::strlen(offset);
+			if (length == 0)
+				break;
+
+			pos = offset + length;
+		}
+	
+
+		std::intptr_t length = pos - offset;
+		if (length < 0)
+			return false;
+
+		const char* src = pos - length;
+
+		if (strncmp(src, "GL_OES_required_internalformat", length) == 0)		   _egl3Features[EGL3Features::EGL3_OES_required_internalformat] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_read_format_bgra", length) == 0)             _egl3Features[EGL3Features::EGL3_EXT_read_format_bgra] = GL_TRUE;
+		else if (strncmp(src, "GL_ARM_rgba8", length) == 0)                        _egl3Features[EGL3Features::EGL3_ARM_rgba8] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_rgb8_rgba8", length) == 0)                   _egl3Features[EGL3Features::EGL3_OES_rgb8_rgba8] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_texture_format_BGRA8888", length) == 0)      _egl3Features[EGL3Features::EGL3_EXT_texture_format_BGRA8888] = GL_TRUE;
+		else if (strncmp(src, "GL_APPLE_texture_format_BGRA8888", length) == 0)    _egl3Features[EGL3Features::EGL3_APPLE_texture_format_BGRA8888] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_sRGB", length) == 0)                         _egl3Features[EGL3Features::EGL3_EXT_sRGB] = GL_TRUE;
+		else if (strncmp(src, "GL_NV_sRGB_formats", length) == 0)                  _egl3Features[EGL3Features::EGL3_NV_sRGB_formats] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_texture_rg", length) == 0)                   _egl3Features[EGL3Features::EGL3_EXT_texture_rg] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_texture_norm16", length) == 0)               _egl3Features[EGL3Features::EGL3_EXT_texture_norm16] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_texture_half_float", length) == 0)           _egl3Features[EGL3Features::EGL3_OES_texture_half_float] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_color_buffer_half_float", length) == 0)      _egl3Features[EGL3Features::EGL3_EXT_color_buffer_half_float] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_texture_float", length) == 0)                _egl3Features[EGL3Features::EGL3_OES_texture_float] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_color_buffer_float", length) == 0)           _egl3Features[EGL3Features::EGL3_EXT_color_buffer_float] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_texture_type_2_10_10_10_REV", length) == 0)  _egl3Features[EGL3Features::EGL3_EXT_texture_type_2_10_10_10_REV] = GL_TRUE;
+		else if (strncmp(src, "GL_APPLE_texture_packed_float", length) == 0)       _egl3Features[EGL3Features::EGL3_APPLE_texture_packed_float] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_depth_texture", length) == 0)                _egl3Features[EGL3Features::EGL3_OES_depth_texture] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_depth24", length) == 0)                      _egl3Features[EGL3Features::EGL3_OES_depth24] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_depth32", length) == 0)                      _egl3Features[EGL3Features::EGL3_OES_depth32] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_texture_stencil8", length) == 0)             _egl3Features[EGL3Features::EGL3_OES_texture_stencil8] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_packed_depth_stencil", length) == 0)         _egl3Features[EGL3Features::EGL3_OES_packed_depth_stencil] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_texture_compression_dxt1", length) == 0)     _egl3Features[EGL3Features::EGL3_EXT_texture_compression_dxt1] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_texture_compression_s3tc", length) == 0)     _egl3Features[EGL3Features::EGL3_EXT_texture_compression_s3tc] = GL_TRUE;
+		else if (strncmp(src, "GL_KHR_texture_compression_astc_ldr", length) == 0) _egl3Features[EGL3Features::EGL3_KHR_texture_compression_astc_ldr] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_vertex_type_10_10_10_2", length) == 0)       _egl3Features[EGL3Features::EGL3_OES_vertex_type_10_10_10_2] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_vertex_half_float", length) == 0)            _egl3Features[EGL3Features::EGL3_OES_vertex_half_float] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_texture_filter_anisotropic", length) == 0)   _egl3Features[EGL3Features::EGL3_EXT_texture_filter_anisotropic] = GL_TRUE;
+		else if (strncmp(src, "GL_KHR_debug", length) == 0)                        _egl3Features[EGL3Features::EGL3_KHR_debug] = GL_TRUE;
+		
+		offset = pos + 1;
+	}
+
+	_egl3init = true;
+	return true;
+}
+
 GLenum
 EGL3Types::asVertexType(GraphicsVertexType type) noexcept
 {
@@ -191,7 +266,7 @@ EGL3Types::asIndexType(GraphicsIndexType type) noexcept
 }
 
 GLenum
-EGL3Types::asShaderType(GraphicsShaderStage stage) noexcept
+EGL3Types::asShaderStage(GraphicsShaderStage stage) noexcept
 {
 	switch (stage)
 	{
@@ -531,7 +606,7 @@ EGL3Types::asTextureType(GraphicsFormat format) noexcept
 	case GraphicsFormatB10G11R11UFloatPack32:    return GL_UNSIGNED_INT_10F_11F_11F_REV;
 	case GraphicsFormatE5B9G9R9UFloatPack32:     return GL_UNSIGNED_INT_5_9_9_9_REV;
 	case GraphicsFormatD16UNorm:                 return GL_UNSIGNED_SHORT;
-	case GraphicsFormatX8_D24UNormPack32:        return GL_UNSIGNED_INT_24_8;
+	case GraphicsFormatX8_D24UNormPack32:        return GL_UNSIGNED_INT;
 	case GraphicsFormatD32_SFLOAT:               return GL_FLOAT;
 	case GraphicsFormatS8UInt:                   return GL_UNSIGNED_BYTE;
 	case GraphicsFormatD16UNorm_S8UInt:          return GL_INVALID_ENUM;
@@ -754,7 +829,7 @@ EGL3Types::asTextureInternalFormat(GraphicsFormat format) noexcept
 	}
 
 	GL_PLATFORM_ASSERT(internalFormat != GL_INVALID_ENUM, "Invalid texture internal format.")
-		return internalFormat;
+	return internalFormat;
 }
 
 GLenum
@@ -895,6 +970,47 @@ EGL3Types::asSamplerFilter(GraphicsSamplerFilter filter) noexcept
 		GL_PLATFORM_ASSERT(false, "Invalid sampler filter");
 		return GL_INVALID_ENUM;
 	}
+}
+
+GLboolean 
+EGL3Types::isSupportFeature(EGL3Features features) noexcept
+{
+	assert(features >= EGL3Features::EGL3_BeginRange && features <= EGL3Features::EGL3_EndRange);
+	return _egl3Features[features];
+}
+
+GLboolean
+EGL3Types::isStencilFormat(GraphicsFormat format) noexcept
+{
+	if (format == GraphicsFormat::GraphicsFormatS8UInt)
+		return GL_TRUE;
+	return GL_FALSE;
+}
+
+GLboolean
+EGL3Types::isDepthFormat(GraphicsFormat format) noexcept
+{
+	if (format == GraphicsFormat::GraphicsFormatD16UNorm ||
+		format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 ||
+		format == GraphicsFormat::GraphicsFormatD32_SFLOAT)
+	{
+		return GL_TRUE;
+	}
+
+	return GL_FALSE;
+}
+
+GLboolean
+EGL3Types::isDepthStencilFormat(GraphicsFormat format) noexcept
+{
+	if (format == GraphicsFormat::GraphicsFormatD16UNorm_S8UInt ||
+		format == GraphicsFormat::GraphicsFormatD24UNorm_S8UInt ||
+		format == GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt)
+	{
+		return GL_TRUE;
+	}
+
+	return GL_FALSE;
 }
 
 GLboolean

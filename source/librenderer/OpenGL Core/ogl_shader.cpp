@@ -36,13 +36,10 @@
 // +----------------------------------------------------------------------
 #include "ogl_shader.h"
 
-#define EXCLUDE_PSTDINT
-#include <hlslcc.hpp>
-
 _NAME_BEGIN
 
 __ImplementSubClass(OGLShader, GraphicsShader, "OGLShader")
-__ImplementSubClass(OGLShaderObject, GraphicsProgram, "OGLShaderObject")
+__ImplementSubClass(OGLProgram, GraphicsProgram, "OGLProgram")
 __ImplementSubClass(OGLGraphicsAttribute, GraphicsAttribute, "OGLGraphicsAttribute")
 __ImplementSubClass(OGLGraphicsUniform, GraphicsUniform, "OGLGraphicsUniform")
 __ImplementSubClass(OGLGraphicsUniformBlock, GraphicsUniformBlock, "OGLGraphicsUniformBlock")
@@ -106,13 +103,13 @@ OGLGraphicsAttribute::getSemanticIndex() const noexcept
 	return _index;
 }
 
-void 
+void
 OGLGraphicsAttribute::setBindingPoint(GLuint bindingPoint) noexcept
 {
 	_bindingPoint = bindingPoint;
 }
 
-GLuint 
+GLuint
 OGLGraphicsAttribute::getBindingPoint() const noexcept
 {
 	return _bindingPoint;
@@ -153,13 +150,13 @@ OGLGraphicsUniform::getType() const noexcept
 	return _type;
 }
 
-void 
+void
 OGLGraphicsUniform::setOffset(std::uint32_t offset) noexcept
 {
 	_offset = offset;
 }
 
-std::uint32_t 
+std::uint32_t
 OGLGraphicsUniform::getOffset() const noexcept
 {
 	return _offset;
@@ -270,45 +267,20 @@ bool
 OGLShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 {
 	assert(_instance == GL_NONE);
+	assert(shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangGLSL);
+	assert(shaderDesc.getByteCodes().size() > 0);
+	assert(OGLTypes::asShaderStage(shaderDesc.getStage()) != GL_INVALID_ENUM);
 
-	GLenum shaderType = OGLTypes::asShaderType(shaderDesc.getType());
-	if (shaderType == GL_INVALID_ENUM)
-		return false;
-
-	if (shaderDesc.getByteCodes().empty())
-	{
-		GL_PLATFORM_LOG("This shader code cannot be null.");
-		return false;
-	}
-
-	GLSLShader shader;
-	GLSLCrossDependencyData dependency;
-
-	std::uint32_t flags = HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT | HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
-	if (shaderDesc.getType() == GraphicsShaderStage::GraphicsShaderStageGeometry)
-		flags = HLSLCC_FLAG_GS_ENABLED;
-	else if (shaderDesc.getType() == GraphicsShaderStage::GraphicsShaderStageTessControl)
-		flags = HLSLCC_FLAG_TESS_ENABLED;
-	else if (shaderDesc.getType() == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
-		flags = HLSLCC_FLAG_TESS_ENABLED;
-
-	if (!TranslateHLSLFromMem(shaderDesc.getByteCodes().data(), flags, GLLang::LANG_DEFAULT, 0, &dependency, &shader))
-	{
-		GL_PLATFORM_LOG("Can't conv bytecodes to glsl.");
-		return false;
-	}
-
-	_instance = glCreateShader(shaderType);
+	_instance = glCreateShader(OGLTypes::asShaderStage(shaderDesc.getStage()));
 	if (_instance == GL_NONE)
 	{
 		GL_PLATFORM_LOG("glCreateShader() fail.");
 		return false;
 	}
 
-	glShaderSource(_instance, 1, &shader.sourceCode, 0);
+	const char* codes = shaderDesc.getByteCodes().data();
+	glShaderSource(_instance, 1, &codes, 0);
 	glCompileShader(_instance);
-
-	FreeGLSLShader(&shader);
 
 	GLint result = GL_FALSE;
 	glGetShaderiv(_instance, GL_COMPILE_STATUS, &result);
@@ -344,7 +316,7 @@ OGLShader::getInstanceID() const noexcept
 	return _instance;
 }
 
-const GraphicsShaderDesc& 
+const GraphicsShaderDesc&
 OGLShader::getGraphicsShaderDesc() const noexcept
 {
 	return _shaderDesc;
@@ -362,18 +334,18 @@ OGLShader::getDevice() noexcept
 	return _device.lock();
 }
 
-OGLShaderObject::OGLShaderObject() noexcept
+OGLProgram::OGLProgram() noexcept
 	: _program(GL_NONE)
 {
 }
 
-OGLShaderObject::~OGLShaderObject() noexcept
+OGLProgram::~OGLProgram() noexcept
 {
 	this->close();
 }
 
 bool
-OGLShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
+OGLProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 {
 	assert(_program == GL_NONE);
 
@@ -419,7 +391,7 @@ OGLShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 }
 
 void
-OGLShaderObject::close() noexcept
+OGLProgram::close() noexcept
 {
 	if (_program != GL_NONE)
 	{
@@ -432,32 +404,38 @@ OGLShaderObject::close() noexcept
 	_activeUniformBlocks.clear();
 }
 
+void
+OGLProgram::apply() noexcept
+{
+	glUseProgram(_program);
+}
+
 GLuint
-OGLShaderObject::getInstanceID() noexcept
+OGLProgram::getInstanceID() const noexcept
 {
 	return _program;
 }
 
 const GraphicsAttributes&
-OGLShaderObject::getActiveAttributes() const noexcept
+OGLProgram::getActiveAttributes() const noexcept
 {
 	return _activeAttributes;
 }
 
 const GraphicsUniforms&
-OGLShaderObject::getActiveUniforms() const noexcept
+OGLProgram::getActiveUniforms() const noexcept
 {
 	return _activeUniforms;
 }
 
-const GraphicsUniformBlocks& 
-OGLShaderObject::getActiveUniformBlocks() const noexcept
+const GraphicsUniformBlocks&
+OGLProgram::getActiveUniformBlocks() const noexcept
 {
 	return _activeUniformBlocks;
 }
 
 void
-OGLShaderObject::_initActiveAttribute() noexcept
+OGLProgram::_initActiveAttribute() noexcept
 {
 	GLint numAttribute = 0;
 	GLint maxAttribute = 0;
@@ -509,7 +487,7 @@ OGLShaderObject::_initActiveAttribute() noexcept
 }
 
 void
-OGLShaderObject::_initActiveUniform() noexcept
+OGLProgram::_initActiveUniform() noexcept
 {
 	GLint numUniform = 0;
 	GLint maxUniformLength = 0;
@@ -543,7 +521,7 @@ OGLShaderObject::_initActiveUniform() noexcept
 }
 
 void
-OGLShaderObject::_initActiveUniformBlock() noexcept
+OGLProgram::_initActiveUniformBlock() noexcept
 {
 	GLint numUniformBlock = 0;
 	GLint maxUniformBlockLength = 0;
@@ -556,7 +534,7 @@ OGLShaderObject::_initActiveUniformBlock() noexcept
 	if (numUniformBlock == 0)
 		return;
 
-	auto nameUniformBlock = make_scope<GLchar[]>(maxUniformBlockLength + 1);
+	auto nameUniformBlock = std::make_unique<GLchar[]>(maxUniformBlockLength + 1);
 	nameUniformBlock[maxUniformBlockLength] = 0;
 
 	for (GLint i = 0; i < numUniformBlock; ++i)
@@ -612,8 +590,8 @@ OGLShaderObject::_initActiveUniformBlock() noexcept
 	}
 }
 
-GraphicsUniformType 
-OGLShaderObject::toGraphicsUniformType(const std::string& name, GLenum type) noexcept
+GraphicsUniformType
+OGLProgram::toGraphicsUniformType(const std::string& name, GLenum type) noexcept
 {
 	if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
 		type == GL_SAMPLER_2D_SHADOW ||
@@ -768,19 +746,19 @@ OGLShaderObject::toGraphicsUniformType(const std::string& name, GLenum type) noe
 }
 
 const GraphicsProgramDesc&
-OGLShaderObject::getGraphicsProgramDesc() const noexcept
+OGLProgram::getGraphicsProgramDesc() const noexcept
 {
 	return _programDesc;
 }
 
 void
-OGLShaderObject::setDevice(GraphicsDevicePtr device) noexcept
+OGLProgram::setDevice(GraphicsDevicePtr device) noexcept
 {
 	_device = device;
 }
 
 GraphicsDevicePtr
-OGLShaderObject::getDevice() noexcept
+OGLProgram::getDevice() noexcept
 {
 	return _device.lock();
 }

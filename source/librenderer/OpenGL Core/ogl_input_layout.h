@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_OGL_LAYOUT_H_
-#define _H_OGL_LAYOUT_H_
+#ifndef _H_OGL_INPUT_LAYOUT_H_
+#define _H_OGL_INPUT_LAYOUT_H_
 
 #include "ogl_types.h"
 
@@ -51,11 +51,9 @@ public:
 	bool setup(const GraphicsInputLayoutDesc& desc) noexcept;
 	void close() noexcept;
 
-	GLuint getInstanceID() const noexcept;
-
-	void bindVbo(OGLGraphicsDataPtr vbo, std::uint8_t slot) noexcept;
-	void bindIbo(OGLGraphicsDataPtr ibo) noexcept;
-	void bindLayout(OGLShaderObjectPtr program) noexcept;
+	void bindVbo(const OGLGraphicsDataPtr& vbo, GLuint slot) noexcept;
+	void bindIbo(const OGLGraphicsDataPtr& ibo) noexcept;
+	void bindLayout(const OGLProgramPtr& program) noexcept;
 
 	const GraphicsInputLayoutDesc& getGraphicsInputLayoutDesc() const noexcept;
 

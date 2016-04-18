@@ -56,7 +56,7 @@ _NAME_BEGIN
 
 #if _BUILD_OPENGL
 #	ifdef GLEW_MX
-	extern GLEWContext _glewctx;
+extern GLEWContext _glewctx;
 #	define glewGetContext() (&_glewctx)
 #	endif
 
@@ -103,19 +103,26 @@ typedef std::shared_ptr<class OGLDeviceContext> OGLDeviceContextPtr;
 typedef std::shared_ptr<class OGLFramebufferLayout> OGLFramebufferLayoutPtr;
 typedef std::shared_ptr<class OGLFramebuffer> OGLFramebufferPtr;
 typedef std::shared_ptr<class OGLShader> OGLShaderPtr;
-typedef std::shared_ptr<class OGLShaderObject> OGLShaderObjectPtr;
+typedef std::shared_ptr<class OGLProgram> OGLProgramPtr;
 typedef std::shared_ptr<class OGLGraphicsData> OGLGraphicsDataPtr;
 typedef std::shared_ptr<class OGLInputLayout> OGLInputLayoutPtr;
 typedef std::shared_ptr<class OGLGraphicsState> OGLGraphicsStatePtr;
 typedef std::shared_ptr<class OGLTexture> OGLTexturePtr;
 typedef std::shared_ptr<class OGLSampler> OGLSamplerPtr;
-typedef std::shared_ptr<class OGLRenderPipeline> OGLRenderPipelinePtr;
+typedef std::shared_ptr<class OGLPipeline> OGLPipelinePtr;
 typedef std::shared_ptr<class OGLDescriptorSetPool> OGLDescriptorSetPoolPtr;
 typedef std::shared_ptr<class OGLDescriptorSet> OGLDescriptorSetPtr;
 typedef std::shared_ptr<class OGLDescriptorSetLayout> OGLDescriptorSetLayoutPtr;
 typedef std::shared_ptr<class OGLGraphicsAttribute> OGLGraphicsAttributePtr;
 typedef std::shared_ptr<class OGLGraphicsUniform> OGLGraphicsUniformPtr;
 typedef std::shared_ptr<class OGLGraphicsUniformBlock> OGLGraphicsUniformBlockPtr;
+
+typedef std::shared_ptr<class OGLCoreDeviceContext> OGLCoreDeviceContextPtr;
+typedef std::shared_ptr<class OGLCoreFramebuffer> OGLCoreFramebufferPtr;
+typedef std::shared_ptr<class OGLCoreGraphicsData> OGLCoreGraphicsDataPtr;
+typedef std::shared_ptr<class OGLCoreInputLayout> OGLCoreInputLayoutPtr;
+typedef std::shared_ptr<class OGLCoreTexture> OGLCoreTexturePtr;
+typedef std::shared_ptr<class OGLCoreDescriptorSet> OGLCoreDescriptorSetPtr;
 
 typedef std::weak_ptr<class OGLDevice> OGLDeviceWeakPtr;
 typedef std::weak_ptr<class OGLSurface> OGLSurfaceWeakPtr;
@@ -124,13 +131,13 @@ typedef std::weak_ptr<class OGLDeviceContext> OGLDeviceContextWeakPtr;
 typedef std::weak_ptr<class OGLFramebufferLayout> OGLFramebufferLayoutWeakPtr;
 typedef std::weak_ptr<class OGLFramebuffer> OGLFramebufferWeakPtr;
 typedef std::weak_ptr<class OGLShader> OGLShaderWeakPtr;
-typedef std::weak_ptr<class OGLShaderObject> OGLShaderObjectWeakPtr;
+typedef std::weak_ptr<class OGLProgram> OGLProgramWeakPtr;
 typedef std::weak_ptr<class OGLGraphicsData> OGLGraphicsDataWeakPtr;
 typedef std::weak_ptr<class OGLInputLayout> OGLInputLayoutWeakPtr;
 typedef std::weak_ptr<class OGLGraphicsState> OGLGraphicsStateWeakPtr;
 typedef std::weak_ptr<class OGLTexture> OGLTextureWeakPtr;
 typedef std::weak_ptr<class OGLSampler> OGLSamplerWeakPtr;
-typedef std::weak_ptr<class OGLRenderPipeline> OGLRenderPipelineWeakPtr;
+typedef std::weak_ptr<class OGLPipeline> OGLPipelineWeakPtr;
 typedef std::weak_ptr<class OGLDescriptorSetPool> OGLDescriptorSetPoolWeakPtr;
 typedef std::weak_ptr<class OGLDescriptorSet> OGLDescriptorSetWeakPtr;
 typedef std::weak_ptr<class OGLDescriptorSetLayout> OGLDescriptorSetLayoutWeakPtr;
@@ -146,7 +153,7 @@ public:
 	static GLenum asVertexType(GraphicsVertexType type) noexcept;
 	static GLenum asVertexFormat(GraphicsFormat format) noexcept;
 	static GLenum asIndexType(GraphicsIndexType type) noexcept;
-	static GLenum asShaderType(GraphicsShaderStage type) noexcept;
+	static GLenum asShaderStage(GraphicsShaderStage type) noexcept;
 	static GLenum asTextureTarget(GraphicsTextureDim mapping, bool multisampler) noexcept;
 	static GLenum asTextureFormat(GraphicsFormat format) noexcept;
 	static GLenum asTextureType(GraphicsFormat format) noexcept;
@@ -160,6 +167,9 @@ public:
 	static GLenum asSamplerWrap(GraphicsSamplerWrap wrap) noexcept;
 	static GLenum asSamplerFilter(GraphicsSamplerFilter filter) noexcept;
 
+	static GLboolean isStencilFormat(GraphicsFormat format) noexcept;
+	static GLboolean isDepthFormat(GraphicsFormat format) noexcept;
+	static GLboolean isDepthStencilFormat(GraphicsFormat format) noexcept;
 	static GLboolean isCompressedTexture(GraphicsFormat format) noexcept;
 };
 

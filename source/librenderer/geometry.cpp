@@ -113,13 +113,20 @@ Geometry::onAddRenderData(RenderDataManager& manager) noexcept
 {
 	if (_material)
 	{
-		for (std::size_t i = 0; i < RenderQueue::RenderQueueRangeSize; i++)
-		{
-			if (!_techniques[i])
-				continue;
+		if (_techniques[RenderQueue::RenderQueueShadow] && this->getCastShadow())
+			manager.addRenderData(RenderQueue::RenderQueueShadow, this->upcast<RenderObject>());
 
-			manager.addRenderData((RenderQueue)(RenderQueueBeginRange + i), this->upcast<RenderObject>());
-		}
+		if (_techniques[RenderQueue::RenderQueueOpaque])
+			manager.addRenderData(RenderQueue::RenderQueueOpaque, this->upcast<RenderObject>());
+
+		if (_techniques[RenderQueue::RenderQueueOpaqueSpecific])
+			manager.addRenderData(RenderQueue::RenderQueueOpaqueSpecific, this->upcast<RenderObject>());
+
+		if (_techniques[RenderQueue::RenderQueueTransparent])
+			manager.addRenderData(RenderQueue::RenderQueueTransparent, this->upcast<RenderObject>());
+
+		if (_techniques[RenderQueue::RenderQueueTransparentSpecific])
+			manager.addRenderData(RenderQueue::RenderQueueTransparentSpecific, this->upcast<RenderObject>());
 	}
 }
 

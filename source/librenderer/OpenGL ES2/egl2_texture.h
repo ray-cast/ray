@@ -52,7 +52,7 @@ public:
 	void close() noexcept;
 
 	GLenum getTarget() const noexcept;
-	GLuint getInstanceID() noexcept;
+	GLuint getInstanceID() const noexcept;
 
 	const GraphicsTextureDesc& getGraphicsTextureDesc() const noexcept;
 

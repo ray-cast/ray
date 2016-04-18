@@ -35,6 +35,10 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "egl3_render_pipeline.h"
+#include "egl3_state.h"
+#include "egl3_shader.h"
+#include "egl3_input_layout.h"
+#include "egl3_descriptor.h"
 
 _NAME_BEGIN
 
@@ -56,6 +60,10 @@ EGL3RenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	assert(pipelineDesc.getGraphicsProgram());
 	assert(pipelineDesc.getGraphicsInputLayout());
 	assert(pipelineDesc.getGraphicsDescriptorSetLayout());
+	assert(pipelineDesc.getGraphicsState()->isInstanceOf<EGL3GraphicsState>());
+	assert(pipelineDesc.getGraphicsProgram()->isInstanceOf<EGL3Program>());
+	assert(pipelineDesc.getGraphicsInputLayout()->isInstanceOf<EGL3InputLayout>());
+	assert(pipelineDesc.getGraphicsDescriptorSetLayout()->isInstanceOf<EGL3DescriptorSetLayout>());
 	_pipelineDesc = pipelineDesc;
 	return true;
 }

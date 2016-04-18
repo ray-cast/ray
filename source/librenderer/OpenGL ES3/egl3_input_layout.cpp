@@ -44,9 +44,6 @@ __ImplementSubClass(EGL3InputLayout, GraphicsInputLayout, "EGL3InputLayout")
 
 EGL3InputLayout::EGL3InputLayout() noexcept
 	: _vao(GL_NONE)
-	, _indexType(GL_NONE)
-	, _indexSize(0)
-	, _vertexSize(0)
 {
 }
 
@@ -56,15 +53,11 @@ EGL3InputLayout::~EGL3InputLayout() noexcept
 }
 
 bool
-EGL3InputLayout::setup(const GraphicsInputLayoutDesc& layout) noexcept
+EGL3InputLayout::setup(const GraphicsInputLayoutDesc& inputLayoutDesc) noexcept
 {
 	assert(!_vao);
 
-	_vertexSize = layout.getVertexSize();
-	if (_vertexSize == GL_NONE)
-		return false;
-
-	auto& component = layout.getGraphicsVertexLayouts();
+	auto& component = inputLayoutDesc.getGraphicsVertexLayouts();
 	for (auto& it : component)
 	{
 		auto& semantic = it.getSemantic();
@@ -84,8 +77,6 @@ EGL3InputLayout::setup(const GraphicsInputLayoutDesc& layout) noexcept
 		}
 	}
 
-	_inputLayout = layout;
-
 	glGenVertexArrays(1, &_vao);
 	if (_vao == GL_NONE)
 	{
@@ -93,6 +84,7 @@ EGL3InputLayout::setup(const GraphicsInputLayoutDesc& layout) noexcept
 		return false;
 	}
 
+	_inputLayoutDesc = inputLayoutDesc;
 	return true;
 }
 
@@ -107,7 +99,7 @@ EGL3InputLayout::close() noexcept
 }
 
 void
-EGL3InputLayout::bindLayout(const EGL3ShaderObjectPtr& program) noexcept
+EGL3InputLayout::bindLayout(const EGL3ProgramPtr& program) noexcept
 {
 	glBindVertexArray(_vao);
 
@@ -115,7 +107,7 @@ EGL3InputLayout::bindLayout(const EGL3ShaderObjectPtr& program) noexcept
 	{
 		GLuint offset = 0;
 
-		auto& components = _inputLayout.getGraphicsVertexLayouts();
+		auto& components = _inputLayoutDesc.getGraphicsVertexLayouts();
 		for (auto& it : components)
 		{
 			GLuint attribIndex = GL_INVALID_INDEX;
@@ -152,29 +144,22 @@ EGL3InputLayout::bindLayout(const EGL3ShaderObjectPtr& program) noexcept
 }
 
 void
-EGL3InputLayout::bindVbo(const EGL3GraphicsDataPtr& vbo) noexcept
+EGL3InputLayout::bindVbo(const EGL3GraphicsDataPtr& vbo, GLuint bindingPoint) noexcept
 {
-	if (_vbo != vbo)
-	{
-		glBindVertexBuffer(0, vbo->getInstanceID(), 0, _vertexSize);
-		_vbo = vbo;
-	}
+	GLuint stride = vbo->getGraphicsDataDesc().getStride();
+	glBindVertexBuffer(bindingPoint, vbo->getInstanceID(), 0, stride);
 }
 
 void
 EGL3InputLayout::bindIbo(const EGL3GraphicsDataPtr& ibo) noexcept
 {
-	if (_ibo != ibo)
-	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID());
-		_ibo = ibo;
-	}
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID());
 }
 
 const GraphicsInputLayoutDesc&
 EGL3InputLayout::getGraphicsInputLayoutDesc() const noexcept
 {
-	return _inputLayout;
+	return _inputLayoutDesc;
 }
 
 void

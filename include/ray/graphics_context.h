@@ -61,10 +61,14 @@ public:
 	GraphicsContextDesc() noexcept;
 	~GraphicsContextDesc() noexcept;
 
+	void setDebugMode(bool mode) noexcept;
+	bool getDebugMode() const noexcept;
+
 	void setSwapchain(GraphicsSwapchainPtr swapchain) noexcept;
 	GraphicsSwapchainPtr getSwapchain() const noexcept;
 
 private:
+	bool _debugMode;
 	GraphicsSwapchainPtr _swapchain;
 };
 
@@ -96,19 +100,22 @@ public:
 	virtual void setIndexBufferData(GraphicsDataPtr data) noexcept = 0;
 	virtual GraphicsDataPtr getIndexBufferData() const noexcept = 0;
 
-	virtual bool updateBuffer(GraphicsDataPtr& data, void* buf, std::size_t cnt) noexcept = 0;
-	virtual void* mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept = 0;
-	virtual void unmapBuffer(GraphicsDataPtr& data) noexcept = 0;
+	virtual bool updateBuffer(GraphicsDataPtr data, void* buf, std::size_t cnt) noexcept = 0;
+	virtual void* mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept = 0;
+	virtual void unmapBuffer(GraphicsDataPtr data) noexcept = 0;
 
 	virtual void setFramebuffer(GraphicsFramebufferPtr target) noexcept = 0;
 	virtual void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept = 0;
 	virtual void discardFramebuffer() noexcept = 0;
 	virtual void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept = 0;
-	virtual void readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept = 0;
+	virtual void readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept = 0;
 	virtual GraphicsFramebufferPtr getFramebuffer() const noexcept = 0;
 
 	virtual void drawRenderMesh(const GraphicsIndirect& renderable) noexcept = 0;
 	virtual void drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept = 0;
+
+	virtual bool isTextureSupport(GraphicsFormat format) noexcept = 0;
+	virtual bool isVertexSupport(GraphicsFormat format) noexcept = 0;
 
 	virtual void present() noexcept = 0;
 

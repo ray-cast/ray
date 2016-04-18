@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_OGL_SAMPLER_H_
-#define _H_OGL_SAMPLER_H_
+#ifndef _H_OGL_CORE_SAMPLER_H_
+#define _H_OGL_CORE_SAMPLER_H_
 
 #include "ogl_types.h"
 
@@ -43,12 +43,12 @@ _NAME_BEGIN
 
 class OGLSampler final : public GraphicsSampler
 {
-	__DeclareSubClass(OGLSampler, GraphicsSampler)
+	__DeclareSubClass(OGLSampler, SamplerObject)
 public:
 	OGLSampler() noexcept;
 	~OGLSampler() noexcept;
 
-	bool setup(const GraphicsSamplerDesc& desc) noexcept;
+	bool setup(const GraphicsSamplerDesc& desc) except;
 	void close() noexcept;
 
 	GLuint getInstanceID() noexcept;
@@ -61,9 +61,8 @@ private:
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
-
 	GLuint _sampler;
-	GraphicsSamplerDesc _sampleDesc;
+    GraphicsSamplerDesc _sampleDesc;
 	GraphicsDeviceWeakPtr _device;
 };
 

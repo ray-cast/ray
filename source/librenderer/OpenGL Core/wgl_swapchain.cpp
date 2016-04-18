@@ -45,6 +45,17 @@ WGLSwapchain::WGLSwapchain() noexcept
 	: _hdc(nullptr)
 	, _context(nullptr)
 	, _isActive(false)
+	, _major(3)
+	, _minor(3)
+{
+}
+
+WGLSwapchain::WGLSwapchain(GLuint major, GLuint minor) noexcept
+	: _hdc(nullptr)
+	, _context(nullptr)
+	, _isActive(false)
+	, _major(major)
+	, _minor(minor)
 {
 }
 
@@ -70,7 +81,6 @@ WGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 	if (!initSwapchain(swapchainDesc))
 		return false;
 
-	_isActive = false;
 	_swapchainDesc = swapchainDesc;
 	return true;
 }
@@ -120,8 +130,6 @@ WGLSwapchain::getActive() const noexcept
 void
 WGLSwapchain::setSwapInterval(GraphicsSwapInterval interval) noexcept
 {
-	assert(__wglSwapIntervalEXT);
-
 	switch (interval)
 	{
 	case GraphicsSwapInterval::GraphicsSwapIntervalFree:
@@ -370,8 +378,9 @@ WGLSwapchain::initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 	}
 
 	::wglMakeCurrent(_hdc, _context);
-
 	this->setSwapInterval(swapchainDesc.getSwapInterval());
+	::wglMakeCurrent(NULL, NULL);
+
 	return true;
 }
 

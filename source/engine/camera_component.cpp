@@ -48,7 +48,7 @@ CameraComponent::CameraComponent() noexcept
 {
 	_camera = std::make_shared<Camera>();
 	_camera->setOwnerListener(this);
-	_camera->setCameraOrder(CameraOrder::CameraOrderMain);
+	_camera->setCameraOrder(CameraOrder::CameraOrder3D);
 }
 
 CameraComponent::~CameraComponent() noexcept
@@ -216,6 +216,7 @@ CameraComponent::load(iarchive& reader) noexcept
 	float ratio = 1.0;
 	float4 viewport = float4::Zero;
 	float4 ortho = float4::Zero;
+	std::string order;
 
 	GameComponent::load(reader);
 
@@ -226,6 +227,7 @@ CameraComponent::load(iarchive& reader) noexcept
 	reader >> make_archive(viewport, "viewport");
 	reader >> make_archive(ortho, "ortho");
 	reader >> make_archive(ratio, "ratio");
+	reader >> make_archive(order, "order");
 
 	this->setNear(znear);
 	this->setFar(zfar);
@@ -242,6 +244,11 @@ CameraComponent::load(iarchive& reader) noexcept
 		this->setCameraType(CameraType::CameraTypePerspective);
 		this->setAperture(aperture);		
 	}
+
+	if (order == "2D")
+		this->setCameraOrder(CameraOrder::CameraOrder2D);
+	else
+		this->setCameraOrder(CameraOrder::CameraOrder3D);
 }
 
 void

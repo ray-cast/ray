@@ -74,8 +74,8 @@ public:
 	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
 
 	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
-	RenderMeshPtr createRenderMesh(const MeshProperty& mesh) noexcept;
-	RenderMeshPtr createRenderMesh(const MeshPropertys& mesh) noexcept;
+	RenderMeshPtr createRenderMesh(const MeshProperty& mesh, std::uint32_t flags = ModelMakerFlagBits::ModelMakerFlagBitALL) noexcept;
+	RenderMeshPtr createRenderMesh(const MeshPropertys& mesh, std::uint32_t flags = ModelMakerFlagBits::ModelMakerFlagBitALL) noexcept;
 
 private:
 	RenderPipelineDevice(const RenderPipelineDevice&) noexcept = delete;

@@ -51,8 +51,8 @@ public:
 	bool setup(const GraphicsInputLayoutDesc& desc) noexcept;
 	void close() noexcept;
 
-	void bindLayout(const EGL3ShaderObjectPtr& program) noexcept;
-	void bindVbo(const EGL3GraphicsDataPtr& vbo) noexcept;
+	void bindLayout(const EGL3ProgramPtr& program) noexcept;
+	void bindVbo(const EGL3GraphicsDataPtr& vbo, GLuint bindingPoint) noexcept;
 	void bindIbo(const EGL3GraphicsDataPtr& ibo) noexcept;
 
 	const GraphicsInputLayoutDesc& getGraphicsInputLayoutDesc() const noexcept;
@@ -68,13 +68,8 @@ private:
 
 private:
 	GLuint _vao;
-	GLenum _indexType;
-	GLsizei _indexSize;
-	GLsizei _vertexSize;
-	GraphicsDataPtr _vbo;
-	GraphicsDataPtr _ibo;
 	GraphicsProgramPtr _program;
-	GraphicsInputLayoutDesc _inputLayout;
+	GraphicsInputLayoutDesc _inputLayoutDesc;
 	GraphicsDeviceWeakPtr _device;
 };
 

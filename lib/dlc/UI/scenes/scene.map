@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <scene>
     <attribute name="UI"/>
-    <object name="UIRoot" position="0,0,-1" lookat="0,0,1" active="true">
-        <component class="Camera" type="ortho" ortho="0,100,0,100" znear="0.1" zfar="10.0" w="1376" h="768"/>
+    <object name="UIRoot" position="0,0,-1" active="true">
+        <component class="Camera" type="ortho" order="2D"/>
         <component class="GuiCamera"/>
     </object>
     <object position="0,0,0"  scale="400, 400, 0" active="true">

@@ -70,8 +70,6 @@ public:
 
 	GLuint getInstanceID() const noexcept;
 
-	void bind() noexcept;
-
 	const GraphicsDataDesc& getGraphicsDataDesc() const noexcept;
 
 private:

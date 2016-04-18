@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_OGL_TEXTURE_H_
-#define _H_OGL_TEXTURE_H_
+#ifndef _H_EGL3_TEXTURE_H_
+#define _H_EGL3_TEXTURE_H_
 
 #include "ogl_types.h"
 
@@ -52,15 +52,15 @@ public:
 	void close() noexcept;
 
 	GLenum getTarget() const noexcept;
-	GLuint getInstanceID() noexcept;
+	GLuint getInstanceID() const noexcept;
 
 	const GraphicsTextureDesc& getGraphicsTextureDesc() const noexcept;
 
 private:
-	bool applyMipmapLimit(std::uint32_t min, std::uint32_t count) noexcept;
-	bool applySamplerWrap(GraphicsSamplerWrap wrap) noexcept;
-	bool applySamplerFilter(GraphicsSamplerFilter filter) noexcept;
-	bool applySamplerAnis(GraphicsSamplerAnis anis) noexcept;
+	static bool applyMipmapLimit(GLenum target, std::uint32_t min, std::uint32_t count) noexcept;
+	static bool applySamplerWrap(GLenum target, GraphicsSamplerWrap wrap) noexcept;
+	static bool applySamplerFilter(GLenum target, GraphicsSamplerFilter filter) noexcept;
+	static bool applySamplerAnis(GLenum target, GraphicsSamplerAnis anis) noexcept;
 
 private:
 	friend class OGLDevice;
@@ -68,7 +68,6 @@ private:
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
-
 	GLenum _target;
 	GLuint _texture;
 	GraphicsTextureDesc _textureDesc;

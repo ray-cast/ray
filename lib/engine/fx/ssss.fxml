@@ -54,7 +54,7 @@
                 proj /= proj.w;
                 proj = PosToCoord(proj);
 
-                float d1 = linearDepth(shadowFactor.xyz, shadowMap.Sample(LinearClamp, proj.xy).r);
+                float d1 = linearDepthPerspectiveOffCenterLH(shadowFactor.xyz, shadowMap.Sample(LinearClamp, proj.xy).r);
                 float d2 = length(mul(float4(P, 1.0), shadowEye2LightView).xyz);
                 float d = abs(d2 - d1);
 
@@ -102,7 +102,7 @@
 
             <state name="cullmode" value="none"/>
 
-            <state name="blend" value="false"/>
+            <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
         </pass>

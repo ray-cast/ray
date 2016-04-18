@@ -62,6 +62,9 @@ VulkanDeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 	auto device = this->getDevice()->downcast<VulkanDevice>();
 	if (device)
 	{
+		this->initTextureSupports();
+		this->initVertexSupports();
+
 		_swapchain = desc.getSwapchain();
 		if (!_swapchain)
 			return false;
@@ -169,7 +172,7 @@ VulkanDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport&
 }
 
 void 
-VulkanDeviceContext::readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+VulkanDeviceContext::readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept
 {
 }
 
@@ -227,19 +230,19 @@ VulkanDeviceContext::getIndexBufferData() const noexcept
 }
 
 bool 
-VulkanDeviceContext::updateBuffer(GraphicsDataPtr& data, void* buf, std::size_t cnt) noexcept
+VulkanDeviceContext::updateBuffer(GraphicsDataPtr data, void* buf, std::size_t cnt) noexcept
 {
 	return false;
 }
 
 void* 
-VulkanDeviceContext::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
+VulkanDeviceContext::mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept
 {
 	return nullptr;
 }
 
 void 
-VulkanDeviceContext::unmapBuffer(GraphicsDataPtr& data) noexcept
+VulkanDeviceContext::unmapBuffer(GraphicsDataPtr data) noexcept
 {
 }
 
@@ -261,6 +264,28 @@ VulkanDeviceContext::present() noexcept
 	_commandQueue->executeCommandLists(&_commandList, 1);
 	_commandQueue->present(&_swapchain, 1);
 	_commandQueue->wait();
+}
+
+bool
+VulkanDeviceContext::isTextureSupport(GraphicsFormat format) noexcept
+{
+	return std::find(_supportTextures.begin(), _supportTextures.end(), format) != _supportTextures.end();
+}
+
+bool
+VulkanDeviceContext::isVertexSupport(GraphicsFormat format) noexcept
+{
+	return std::find(_supportAttribute.begin(), _supportAttribute.end(), format) != _supportAttribute.end();
+}
+
+void
+VulkanDeviceContext::initTextureSupports() noexcept
+{
+}
+
+void
+VulkanDeviceContext::initVertexSupports() noexcept
+{
 }
 
 void

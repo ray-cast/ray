@@ -40,6 +40,7 @@
 #include "vk_input_layout.h"
 #include "vk_framebuffer.h"
 #include "vk_descriptor_set_layout.h"
+#include "vk_render_state.h"
 #include "vk_system.h"
 
 _NAME_BEGIN
@@ -66,6 +67,10 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	assert(pipelineDesc.getGraphicsProgram());
 	assert(pipelineDesc.getGraphicsInputLayout());
 	assert(pipelineDesc.getGraphicsState());
+	assert(pipelineDesc.getGraphicsState()->isInstanceOf<VulkanRenderState>());
+	assert(pipelineDesc.getGraphicsProgram()->isInstanceOf<VulkanProgram>());
+	assert(pipelineDesc.getGraphicsInputLayout()->isInstanceOf<VulkanInputLayout>());
+	assert(pipelineDesc.getGraphicsDescriptorSetLayout()->isInstanceOf<VulkanDescriptorSetLayout>());
 
 	VkGraphicsPipelineCreateInfo pipeline;
 	VkPipelineCacheCreateInfo pipelineCache;
@@ -192,7 +197,7 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 
 		shaderStages[pipeline.stageCount].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		shaderStages[pipeline.stageCount].module = module->getShaderModule();
-		shaderStages[pipeline.stageCount].stage = VulkanTypes::asShaderStage(module->getGraphicsShaderDesc().getType());
+		shaderStages[pipeline.stageCount].stage = VulkanTypes::asShaderStage(module->getGraphicsShaderDesc().getStage());
 		shaderStages[pipeline.stageCount].pName = "main";
 
 		pipeline.stageCount++;

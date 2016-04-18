@@ -143,9 +143,13 @@ EGL2GraphicsData::flush() noexcept
 int
 EGL2GraphicsData::flush(GLintptr offset, GLsizeiptr cnt) noexcept
 {
+#ifndef __AMD__
 	GL_CHECK(glBindBuffer(_target, _buffer));
 	GL_CHECK(glFlushMappedBufferRangeEXT(_target, offset, cnt));
 	return cnt;
+#else
+	return 0;
+#endif
 }
 
 GLsizeiptr
@@ -201,6 +205,7 @@ EGL2GraphicsData::map(std::uint32_t access) noexcept
 void*
 EGL2GraphicsData::map(GLintptr offset, GLsizeiptr cnt, std::uint32_t access) noexcept
 {
+#ifndef __AMD__
 	if (!_data)
 	{
 		GLbitfield flags = GL_MAP_READ_BIT_EXT;
@@ -225,11 +230,15 @@ EGL2GraphicsData::map(GLintptr offset, GLsizeiptr cnt, std::uint32_t access) noe
 	}
 
 	return _data;
+#else
+	return nullptr;
+#endif
 }
 
 void
 EGL2GraphicsData::unmap() noexcept
 {
+#ifndef __AMD__
 	assert(_isMapping);
 
 	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsPersistentBit)
@@ -242,6 +251,7 @@ EGL2GraphicsData::unmap() noexcept
 	GL_CHECK(glUnmapBufferOES(_target));
 	_data = nullptr;
 	_isMapping = GL_FALSE;
+#endif
 }
 
 bool

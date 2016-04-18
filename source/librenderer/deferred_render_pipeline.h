@@ -47,7 +47,7 @@ public:
 	DeferredRenderPipeline() noexcept;
 	~DeferredRenderPipeline() noexcept;
 
-	void setup(RenderPipeline& pipeline) noexcept;
+	bool setup(RenderPipeline& pipeline) noexcept;
 	void close() noexcept;
 
 	void renderShadowMaps(RenderPipeline& pipeline) noexcept;
@@ -78,8 +78,11 @@ public:
 	bool isEnableSSSS() const noexcept;
 
 private:
+	bool initTextureFormat(RenderPipeline& pipeline) noexcept;
+
 	bool setupSemantic(RenderPipeline& pipeline) noexcept;
 	bool setupDeferredMaterials(RenderPipeline& pipeline) noexcept;
+	bool setupDeferredTextures(RenderPipeline& pipeline) noexcept;
 	bool setupDeferredRenderTextures(RenderPipeline& pipeline) noexcept;
 	bool setupDeferredRenderTextureLayouts(RenderPipeline& pipeline) noexcept;
 	bool setupShadowMaterial(RenderPipeline& pipeline) noexcept;
@@ -87,6 +90,7 @@ private:
 
 	void destroySemantic() noexcept;
 	void destroyDeferredMaterials() noexcept;
+	void destroyDeferredTextures() noexcept;
 	void destroyDeferredRenderTextures() noexcept;
 	void destroyDeferredRenderTextureLayouts() noexcept;
 	void destroyShadowMaterial() noexcept;
@@ -149,12 +153,12 @@ private:
 	MaterialParamPtr _softBlurShadowSourceInv;
 	MaterialParamPtr _softClipConstant;
 
-	GraphicsTextures _softShaodwMaps;
-	GraphicsTexturePtr _softShaodwMapTemp;
+	GraphicsTextures _softShadowMaps;
+	GraphicsTexturePtr _softShadowMapTemp;
 
-	GraphicsFramebuffers _softShaodwViews;
-	GraphicsFramebufferPtr _softShaodwViewTemp;
-	GraphicsFramebufferLayoutPtr _softShaodwViewLayout;
+	GraphicsFramebuffers _softShadowViews;
+	GraphicsFramebufferPtr _softShadowViewTemp;
+	GraphicsFramebufferLayoutPtr _softShadowViewLayout;
 
 	float _shadowEsmFactor;
 	float _shadowMapSize;
@@ -170,6 +174,13 @@ private:
 	MaterialVariantPtr _materialDeferredLightMap;
 	MaterialVariantPtr _materialDeferredShadowMap;
 
+	GraphicsFormat _deferredDepthFormat;
+	GraphicsFormat _deferredDepthLinearFormat;
+	GraphicsFormat _deferredGraphicsFormat;
+	GraphicsFormat _deferredNormalFormat;
+	GraphicsFormat _deferredLightFormat;
+	GraphicsFormat _deferredShadingFormat;
+
 	GraphicsTexturePtr _deferredDepthMap;
 	GraphicsTexturePtr _deferredDepthLinearMap;
 	GraphicsTexturePtr _deferredGraphicsMap;
@@ -177,7 +188,6 @@ private:
 	GraphicsTexturePtr _deferredLightMap;
 	GraphicsTexturePtr _deferredShadingMap;
 	GraphicsTexturePtr _deferredSwapMap;
-	GraphicsTexturePtr _deferredFinalMap;
 
 	GraphicsFramebufferLayoutPtr _deferredDepthViewLayout;
 	GraphicsFramebufferLayoutPtr _deferredDepthLinearViewLayout;
@@ -185,8 +195,6 @@ private:
 	GraphicsFramebufferLayoutPtr _deferredNormalViewLayout;
 	GraphicsFramebufferLayoutPtr _deferredLightingViewLayout;
 	GraphicsFramebufferLayoutPtr _deferredShadingViewLayout;
-	GraphicsFramebufferLayoutPtr _deferredSwapViewLayout;
-	GraphicsFramebufferLayoutPtr _deferredFinalViewLayout;
 	GraphicsFramebufferLayoutPtr _deferredGraphicsViewsLayout;
 
 	GraphicsFramebufferPtr _deferredDepthView;
@@ -196,7 +204,6 @@ private:
 	GraphicsFramebufferPtr _deferredLightingView;
 	GraphicsFramebufferPtr _deferredShadingView;
 	GraphicsFramebufferPtr _deferredSwapView;
-	GraphicsFramebufferPtr _deferredFinalView;
 	GraphicsFramebufferPtr _deferredGraphicsViews;
 
 	std::shared_ptr<class SSSS> _SSSS;

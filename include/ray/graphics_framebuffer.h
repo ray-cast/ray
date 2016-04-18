@@ -96,11 +96,8 @@ public:
 	GraphicsTextures& getTextures() noexcept;
 	const GraphicsTextures& getTextures() const noexcept;
 
-	void setSharedDepthTexture(GraphicsTexturePtr target) noexcept;
-	void setSharedStencilTexture(GraphicsTexturePtr target) noexcept;
-
-	GraphicsTexturePtr getSharedDepthTexture() const noexcept;
-	GraphicsTexturePtr getSharedStencilTexture() const noexcept;
+	void setSharedDepthStencilTexture(GraphicsTexturePtr target) noexcept;
+	GraphicsTexturePtr getSharedDepthStencilTexture() const noexcept;
 
 	void setGraphicsFramebufferLayout(GraphicsFramebufferLayoutPtr layout) noexcept;
 	GraphicsFramebufferLayoutPtr getGraphicsFramebufferLayout() const noexcept;
@@ -110,8 +107,7 @@ private:
 	std::uint32_t _height;
 
 	GraphicsTextures _textures;
-	GraphicsTexturePtr _sharedDepthTexture;
-	GraphicsTexturePtr _sharedStencilTexture;
+	GraphicsTexturePtr _sharedDepthStencilTexture;
 	GraphicsFramebufferLayoutPtr _framebufferLayout;
 };
 

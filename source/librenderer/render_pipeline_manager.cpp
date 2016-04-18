@@ -88,7 +88,9 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 
 	auto deferredLighting = std::make_shared<DeferredRenderPipeline>();
 	deferredLighting->_setRenderPipeline(_pipeline);
-	deferredLighting->setup(*_pipeline);
+	if (!deferredLighting->setup(*_pipeline))
+		return false;
+
 	_deferredLighting = deferredLighting;
 
 	auto forwardShading = std::make_shared<ForwardRenderPipeline>();
@@ -103,7 +105,7 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 void 
 RenderPipelineManager::close() noexcept
 {
-	_SAT.reset();
+	_atmospheric.reset();
 	_SSAO.reset();
 	_SSGI.reset();
 	_SSR.reset();
@@ -120,17 +122,17 @@ RenderPipelineManager::close() noexcept
 void
 RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 {
-	if (_setting.enableSAT != setting.enableSAT)
+	if (_setting.enableAtmospheric != setting.enableAtmospheric)
 	{
-		if (setting.enableSAT)
+		if (setting.enableAtmospheric)
 		{
-			_SAT = std::make_shared<Atmospheric>();
-			this->addPostProcess(_SAT);
+			_atmospheric = std::make_shared<Atmospheric>();
+			this->addPostProcess(_atmospheric);
 		}
-		else if (_SAT)
+		else if (_atmospheric)
 		{
-			this->removePostProcess(_SAT);
-			_SAT.reset();
+			this->removePostProcess(_atmospheric);
+			_atmospheric.reset();
 		}
 	}
 
@@ -400,10 +402,10 @@ RenderPipelineManager::discradRenderTexture() noexcept
 }
 
 void
-RenderPipelineManager::readFramebuffer(GraphicsFramebufferPtr texture, GraphicsFormat pfd, std::size_t w, std::size_t h, void* data) noexcept
+RenderPipelineManager::readFramebuffer(GraphicsFramebufferPtr texture, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept
 {
 	assert(_pipeline);
-	_pipeline->readFramebuffer(texture, pfd, w, h, data);
+	_pipeline->readFramebuffer(texture, pfd, w, h, bufsize, data);
 }
 
 void
@@ -414,21 +416,21 @@ RenderPipelineManager::blitFramebuffer(GraphicsFramebufferPtr srcTarget, const V
 }
 
 bool
-RenderPipelineManager::updateBuffer(GraphicsDataPtr& data, void* str, std::size_t cnt) noexcept
+RenderPipelineManager::updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept
 {
 	assert(_pipeline);
 	return _pipeline->updateBuffer(data, str, cnt);
 }
 
 void*
-RenderPipelineManager::mapBuffer(GraphicsDataPtr& data, std::uint32_t access) noexcept
+RenderPipelineManager::mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept
 {
 	assert(_pipeline);
 	return _pipeline->mapBuffer(data, access);
 }
 
 void
-RenderPipelineManager::unmapBuffer(GraphicsDataPtr& data) noexcept
+RenderPipelineManager::unmapBuffer(GraphicsDataPtr data) noexcept
 {
 	assert(_pipeline);
 	return _pipeline->unmapBuffer(data);
@@ -506,6 +508,20 @@ RenderPipelineManager::destroyPostProcess() noexcept
 {
 	assert(_pipeline);
 	_pipeline->destroyPostProcess();
+}
+
+bool 
+RenderPipelineManager::isTextureSupport(GraphicsFormat format) noexcept
+{
+	assert(_pipeline);
+	return _pipeline->isTextureSupport(format);
+}
+
+bool 
+RenderPipelineManager::isVertexSupport(GraphicsFormat format) noexcept
+{
+	assert(_pipeline);
+	return _pipeline->isTextureSupport(format);
 }
 
 RenderPipelinePtr 

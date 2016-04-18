@@ -41,13 +41,10 @@
 #include <GL/glew.h>
 #include <SPIRV/GlslangToSpv.h>
 
-#define EXCLUDE_PSTDINT
-#include <hlslcc.hpp>
-
 _NAME_BEGIN
 
 __ImplementSubClass(VulkanShader, GraphicsShader, "VulkanShader")
-__ImplementSubClass(VulkanShaderObject, GraphicsProgram, "VulkanShaderObject")
+__ImplementSubClass(VulkanProgram, GraphicsProgram, "VulkanProgram")
 __ImplementSubClass(VulkanGraphicsAttribute, GraphicsAttribute, "VulkanGraphicsAttribute")
 __ImplementSubClass(VulkanGraphicsUniform, GraphicsUniform, "VulkanGraphicsUniform")
 __ImplementSubClass(VulkanGraphicsUniformBlock, GraphicsUniformBlock, "VulkanGraphicsUniformBlock")
@@ -276,34 +273,14 @@ VulkanShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 {
 	assert(_vkShader == VK_NULL_HANDLE);
 
-	GLSLShader shader;
-	GLSLCrossDependencyData dependency;
-
-	std::uint32_t flags = HLSLCC_FLAG_UNIFORM_BUFFER_OBJECT | HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
-	if (shaderDesc.getType() == GraphicsShaderStage::GraphicsShaderStageGeometry)
-		flags = HLSLCC_FLAG_GS_ENABLED;
-	else if (shaderDesc.getType() == GraphicsShaderStage::GraphicsShaderStageTessControl)
-		flags = HLSLCC_FLAG_TESS_ENABLED;
-	else if (shaderDesc.getType() == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
-		flags = HLSLCC_FLAG_TESS_ENABLED;
-
-	GlExtensions extensions;
-	extensions.ARB_shading_language_420pack = true;
-	extensions.ARB_explicit_attrib_location = false;
-	extensions.ARB_explicit_uniform_location = true;
-
-	if (!TranslateHLSLFromMem(shaderDesc.getByteCodes().data(), flags, GLLang::LANG_DEFAULT, &extensions, &dependency, &shader))
+	if (shaderDesc.getLanguage() != GraphicsShaderLang::GraphicsShaderLangGLSL)
 	{
-		VK_PLATFORM_LOG("Can't conv bytecodes to glsl.");
+		VK_PLATFORM_LOG("Can't support shader language.");
 		return false;
 	}
 
-	_glsl = shader.sourceCode;
-
-	FreeGLSLShader(&shader);
-
 	std::vector<std::uint32_t> bytecodes;
-	if (!GLSLtoSPV(VulkanTypes::asShaderStage(shaderDesc.getType()), _glsl.data(), bytecodes))
+	if (!GLSLtoSPV(VulkanTypes::asShaderStage(shaderDesc.getStage()), _glsl.data(), bytecodes))
 	{
 		VK_PLATFORM_LOG("Can't conv glsl to spv.");
 		return false;
@@ -507,16 +484,16 @@ VulkanShader::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *psh
 	return true;
 }
 
-VulkanShaderObject::VulkanShaderObject() noexcept
+VulkanProgram::VulkanProgram() noexcept
 {
 }
 
-VulkanShaderObject::~VulkanShaderObject() noexcept
+VulkanProgram::~VulkanProgram() noexcept
 {
 }
 
 bool 
-VulkanShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
+VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 {
 	TBuiltInResource resources;
 	resources.maxLights = 32;
@@ -633,7 +610,7 @@ VulkanShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 	{
 		EShLanguage stage = EShLangVertex;
 
-		auto shaderStage = it->downcast<VulkanShader>()->getGraphicsShaderDesc().getType();
+		auto shaderStage = it->downcast<VulkanShader>()->getGraphicsShaderDesc().getStage();
 		if (shaderStage == GraphicsShaderStage::GraphicsShaderStageVertex)
 			stage = EShLangVertex;
 		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageFragment)
@@ -743,7 +720,7 @@ VulkanShaderObject::setup(const GraphicsProgramDesc& programDesc) noexcept
 }
 
 void 
-VulkanShaderObject::close() noexcept
+VulkanProgram::close() noexcept
 {
 	_activeAttributes.clear();
 	_activeUniforms.clear();
@@ -751,25 +728,25 @@ VulkanShaderObject::close() noexcept
 }
 
 const GraphicsUniforms&
-VulkanShaderObject::getActiveUniforms() const noexcept
+VulkanProgram::getActiveUniforms() const noexcept
 {
 	return _activeUniforms;
 }
 
 const GraphicsUniformBlocks&
-VulkanShaderObject::getActiveUniformBlocks() const noexcept
+VulkanProgram::getActiveUniformBlocks() const noexcept
 {
 	return _activeUniformBlocks;
 }
 
 const GraphicsAttributes&
-VulkanShaderObject::getActiveAttributes() const noexcept
+VulkanProgram::getActiveAttributes() const noexcept
 {
 	return _activeAttributes;
 }
 
 GraphicsUniformType
-VulkanShaderObject::toGraphicsUniformType(const std::string& name, int type) noexcept
+VulkanProgram::toGraphicsUniformType(const std::string& name, int type) noexcept
 {
 	if (type == GL_SAMPLER_2D || type == GL_SAMPLER_3D ||
 		type == GL_SAMPLER_2D_SHADOW ||
@@ -924,19 +901,19 @@ VulkanShaderObject::toGraphicsUniformType(const std::string& name, int type) noe
 }
 
 const GraphicsProgramDesc&
-VulkanShaderObject::getGraphicsProgramDesc() const noexcept
+VulkanProgram::getGraphicsProgramDesc() const noexcept
 {
 	return _programDesc;
 }
 
 void
-VulkanShaderObject::setDevice(GraphicsDevicePtr device) noexcept
+VulkanProgram::setDevice(GraphicsDevicePtr device) noexcept
 {
 	_device = device;
 }
 
 GraphicsDevicePtr
-VulkanShaderObject::getDevice() noexcept
+VulkanProgram::getDevice() noexcept
 {
 	return _device.lock();
 }

@@ -492,9 +492,9 @@ EGL3DescriptorSetLayout::~EGL3DescriptorSetLayout() noexcept
 }
 
 bool
-EGL3DescriptorSetLayout::setup(const GraphicsDescriptorSetLayoutDesc& descriptorSetDesc) noexcept
+EGL3DescriptorSetLayout::setup(const GraphicsDescriptorSetLayoutDesc& descriptorSetLayoutDesc) noexcept
 {
-	_descriptorSetDesc = descriptorSetDesc;
+	_descripotrSetLayoutDesc = descriptorSetLayoutDesc;
 	return true;
 }
 
@@ -506,7 +506,7 @@ EGL3DescriptorSetLayout::close() noexcept
 const GraphicsDescriptorSetLayoutDesc&
 EGL3DescriptorSetLayout::getGraphicsDescriptorSetLayoutDesc() const noexcept
 {
-	return _descriptorSetDesc;
+	return _descripotrSetLayoutDesc;
 }
 
 void
@@ -556,10 +556,11 @@ EGL3DescriptorSet::close() noexcept
 }
 
 void
-EGL3DescriptorSet::bindProgram(GraphicsProgramPtr shaderObject) noexcept
+EGL3DescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 {
-	std::uint32_t textureUnit = 0;
-	auto program = shaderObject->downcast<EGL3ShaderObject>()->getInstanceID();
+	GLuint textureUnit = 0;
+	GLuint program = shaderObject->downcast<EGL3Program>()->getInstanceID();
+
 	for (auto& it : _activeUniformSets)
 	{
 		auto uniform = it->downcast<EGL3GraphicsUniformSet>();
@@ -655,37 +656,50 @@ EGL3DescriptorSet::bindProgram(GraphicsProgramPtr shaderObject) noexcept
 			GL_CHECK(glProgramUniformMatrix4fv(program, location, uniform->getFloat3x3Array().size(), GL_FALSE, (GLfloat*)uniform->getFloat4x4Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSampler:
-			glBindSampler(location, uniform->getTextureSampler()->downcast<EGL3Sampler>()->getInstanceID());
+			{
+				auto sampler = uniform->getTextureSampler();
+				if (sampler)
+				{
+					auto instance = sampler->downcast<EGL3Sampler>()->getInstanceID();
+					glBindSampler(location, instance);
+				}
+			}
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
 			{
-				if (uniform->getTexture())
+				auto texture = uniform->getTexture();
+				if (texture)
 				{
+					auto gltexture = texture->downcast<EGL3Texture>();
 					GL_CHECK(glProgramUniform1i(program, location, textureUnit));
-					GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit);)
-					GL_CHECK(glBindTexture(uniform->getTexture()->downcast<EGL3Texture>()->getTarget(), uniform->getTexture()->downcast<EGL3Texture>()->getInstanceID()));
+					GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
+					GL_CHECK(glBindTexture(gltexture->getTarget(), gltexture->getInstanceID()));
 					textureUnit++;
 				}
 			}
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler:
 			{
-				if (uniform->getTexture())
+				auto texture = uniform->getTexture();
+				if (texture)
 				{
+					auto gltexture = texture->downcast<EGL3Texture>();
 					GL_CHECK(glProgramUniform1i(program, location, textureUnit));
-					GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit);)
-					GL_CHECK(glBindTexture(uniform->getTexture()->downcast<EGL3Texture>()->getTarget(), uniform->getTexture()->downcast<EGL3Texture>()->getInstanceID()));
+					GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
+					GL_CHECK(glBindTexture(gltexture->getTarget(), gltexture->getInstanceID()));
 					textureUnit++;
 				}
 			}
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeStorageImage:
 			{
-				if (uniform->getTexture())
+				auto texture = uniform->getTexture();
+				if (texture)
 				{
+					auto gltexture = texture->downcast<EGL3Texture>();
 					GL_CHECK(glProgramUniform1i(program, location, textureUnit));
-					GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit);)
-					GL_CHECK(glBindTexture(uniform->getTexture()->downcast<EGL3Texture>()->getTarget(), uniform->getTexture()->downcast<EGL3Texture>()->getInstanceID()));
+					GL_CHECK(glActiveTexture(GL_TEXTURE0 + textureUnit));
+					GL_CHECK(glBindTexture(gltexture->getTarget(), gltexture->getInstanceID()));
 					textureUnit++;
 				}
 			}

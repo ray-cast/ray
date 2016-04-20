@@ -42,8 +42,8 @@ RenderSetting::RenderSetting() noexcept
 	: window(nullptr)
 	, width(0)
 	, height(0)
-	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
-	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalVsync)
+	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
+	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalFree)
 	, enableSSAO(false)
 	, enableSSGI(false)
 	, enableAtmospheric(false)
@@ -52,8 +52,8 @@ RenderSetting::RenderSetting() noexcept
 	, enableFog(false)
 	, enableDOF(false)
 	, enableLightShaft(false)
-	, enableFimic(true)
-	, enableFXAA(true)
+	, enableFimic(false)
+	, enableFXAA(false)
 	, enableColorGrading(true)
 {
 }

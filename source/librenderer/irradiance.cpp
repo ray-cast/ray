@@ -205,13 +205,13 @@ EnvironmentIrradiance::renderParaboloidEnvMap(RenderPipeline& pipeline, Graphics
 {
 	assert(cubemap);
 
-	_paraboloidCubeMapSampler->assign(cubemap);
-	_paraboloidSamplesInverse->assign(1.0f / PARABOLOID_SAMPLES);
+	_paraboloidCubeMapSampler->uniformTexture(cubemap);
+	_paraboloidSamplesInverse->uniform1f(1.0f / PARABOLOID_SAMPLES);
 
-	_sphericalHarmonicConvolveDE0->assign(_paraboloidFrontMap);
-	_sphericalHarmonicConvolveDE1->assign(_paraboloidBackMap);
-	_sphericalHarmonicConvolveYlmDW0->assign(_paraboloidSHWeights[0]);
-	_sphericalHarmonicConvolveYlmDW1->assign(_paraboloidSHWeights[1]);
+	_sphericalHarmonicConvolveDE0->uniformTexture(_paraboloidFrontMap);
+	_sphericalHarmonicConvolveDE1->uniformTexture(_paraboloidBackMap);
+	_sphericalHarmonicConvolveYlmDW0->uniformTexture(_paraboloidSHWeights[0]);
+	_sphericalHarmonicConvolveYlmDW1->uniformTexture(_paraboloidSHWeights[1]);
 
 	pipeline.setFramebuffer(_paraboloidDualViews);
 	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);

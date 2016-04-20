@@ -49,9 +49,6 @@ public:
 	GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderStage type, const std::vector<char>& code) noexcept;
 	virtual ~GraphicsShaderDesc() noexcept;
 
-	void setName(const std::string& name) noexcept;
-	const std::string& getName() const noexcept;
-
 	void setLanguage(GraphicsShaderLang lang) noexcept;
 	GraphicsShaderLang getLanguage() const noexcept;
 
@@ -62,7 +59,6 @@ public:
 	const std::string& getByteCodes() const noexcept;
 
 private:
-	std::string _name;
 	std::string _bytecodes;
 	GraphicsShaderLang _lang;
 	GraphicsShaderStage _stage;

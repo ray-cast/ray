@@ -58,6 +58,7 @@ public:
 	GraphicsSamplerAnis getSamplerAnis() const noexcept;
 
 private:
+	std::string _name;
 	GraphicsSamplerOp _texop;
 	GraphicsSamplerWrap _wrap;
 	GraphicsSamplerAnis _anis;

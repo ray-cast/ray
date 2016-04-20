@@ -79,12 +79,6 @@ public:
 	void setSubsurfaceScattering(bool enable) noexcept;
 	bool getSubsurfaceScattering() const noexcept;
 
-	void setShadowMap(GraphicsTexturePtr texture) noexcept;
-	GraphicsTexturePtr getShadowMap() const noexcept;
-
-	void setShadowSize(float size) noexcept;
-	float getShadowSize() const noexcept;
-	
 	void setShadowBias(float bias) noexcept;
 	float getShadowBias() const noexcept;
 
@@ -93,10 +87,6 @@ public:
 	RenderObjectPtr clone() const noexcept;
 
 private:
-
-	bool _buildShadowMap(float size) noexcept;
-	void _destroyShadowMap() noexcept;
-
 	void _updateShadow() noexcept;
 	void _updateBoundingBox() noexcept;
 
@@ -116,7 +106,6 @@ private:
 	Light& operator=(const Light&) noexcept = delete;
 
 private:
-
 	LightType _lightType;
 
 	float _lightRange;
@@ -132,13 +121,7 @@ private:
 	bool _shadowSoftEnable;
 	bool _subsurfaceScattering;
 	float _shaodwBias;
-	std::size_t _shadowSize;
 	CameraPtr _shadowCamera[6];
-	GraphicsFormat _shadowFormat;
-	GraphicsTexturePtr _shaodwMap;
-	GraphicsFramebufferPtr _shaodwView;
-	GraphicsFramebufferLayoutPtr _shaodwViewLayout;
-
 	RenderSceneWeakPtr _renderScene;
 };
 

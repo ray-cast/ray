@@ -137,9 +137,9 @@ EGL3GraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 			glDisable(GL_SCISSOR_TEST);
 	}
 
-	if (lastStateDesc.getsRGBEnable() != _stateDesc.getsRGBEnable())
+	if (lastStateDesc.getLinear2sRGBEnable() != _stateDesc.getLinear2sRGBEnable())
 	{
-		if (_stateDesc.getsRGBEnable())
+		if (_stateDesc.getLinear2sRGBEnable())
 			glEnable(GL_FRAMEBUFFER_SRGB);
 		else
 			glDisable(GL_FRAMEBUFFER_SRGB);
@@ -200,75 +200,50 @@ EGL3GraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 			glEnable(GL_STENCIL_TEST);
 		}
 
-		if (_stateDesc.getStencilTwoEnable())
+		if (lastStateDesc.getStencilFrontFunc() != _stateDesc.getStencilFrontFunc() ||
+			lastStateDesc.getStencilFrontRef() != _stateDesc.getStencilFrontRef() ||
+			lastStateDesc.getStencilFrontReadMask() != _stateDesc.getStencilFrontReadMask())
 		{
-			if (lastStateDesc.getStencilFunc() != _stateDesc.getStencilFunc() ||
-				lastStateDesc.getStencilRef() != _stateDesc.getStencilRef() ||
-				lastStateDesc.getStencilReadMask() != _stateDesc.getStencilReadMask())
-			{
-				GLenum frontfunc = EGL3Types::asCompareFunction(_stateDesc.getStencilFunc());
-				glStencilFuncSeparate(GL_FRONT, frontfunc, _stateDesc.getStencilRef(), _stateDesc.getStencilReadMask());
-			}
-
-			if (lastStateDesc.getStencilTwoFunc() != _stateDesc.getStencilTwoFunc() ||
-				lastStateDesc.getStencilTwoRef() != _stateDesc.getStencilTwoRef() ||
-				lastStateDesc.getStencilTwoReadMask() != _stateDesc.getStencilTwoReadMask())
-			{
-				GLenum backfunc = EGL3Types::asCompareFunction(_stateDesc.getStencilTwoFunc());
-				glStencilFuncSeparate(GL_BACK, backfunc, _stateDesc.getStencilTwoRef(), _stateDesc.getStencilTwoReadMask());
-			}
-
-			if (lastStateDesc.getStencilFail() != lastStateDesc.getStencilFail() ||
-				lastStateDesc.getStencilZFail() != lastStateDesc.getStencilZFail() ||
-				lastStateDesc.getStencilPass() != lastStateDesc.getStencilPass())
-			{
-				GLenum frontfail = EGL3Types::asStencilOperation(lastStateDesc.getStencilFail());
-				GLenum frontzfail = EGL3Types::asStencilOperation(lastStateDesc.getStencilZFail());
-				GLenum frontpass = EGL3Types::asStencilOperation(lastStateDesc.getStencilPass());
-				glStencilOpSeparate(GL_FRONT, frontfail, frontzfail, frontpass);
-			}
-
-			if (lastStateDesc.getStencilTwoFail() != lastStateDesc.getStencilTwoFail() ||
-				lastStateDesc.getStencilTwoZFail() != lastStateDesc.getStencilTwoZFail() ||
-				lastStateDesc.getStencilTwoPass() != lastStateDesc.getStencilTwoPass())
-			{
-				GLenum backfail = EGL3Types::asStencilOperation(lastStateDesc.getStencilTwoFail());
-				GLenum backzfail = EGL3Types::asStencilOperation(lastStateDesc.getStencilTwoZFail());
-				GLenum backpass = EGL3Types::asStencilOperation(lastStateDesc.getStencilTwoPass());
-				glStencilOpSeparate(GL_BACK, backfail, backzfail, backpass);
-			}
-
-			if (lastStateDesc.getStencilWriteMask() != _stateDesc.getStencilWriteMask() ||
-				lastStateDesc.getStencilTwoWriteMask() != _stateDesc.getStencilTwoWriteMask())
-			{
-				glStencilMaskSeparate(GL_FRONT, _stateDesc.getStencilWriteMask());
-				glStencilMaskSeparate(GL_BACK, _stateDesc.getStencilTwoWriteMask());
-			}
+			GLenum frontfunc = EGL3Types::asCompareFunction(_stateDesc.getStencilFrontFunc());
+			glStencilFuncSeparate(GL_FRONT, frontfunc, _stateDesc.getStencilFrontRef(), _stateDesc.getStencilFrontReadMask());
 		}
-		else
+
+		if (lastStateDesc.getStencilBackFunc() != _stateDesc.getStencilBackFunc() ||
+			lastStateDesc.getStencilBackRef() != _stateDesc.getStencilBackRef() ||
+			lastStateDesc.getStencilBackReadMask() != _stateDesc.getStencilBackReadMask())
 		{
-			if (lastStateDesc.getStencilFunc() != _stateDesc.getStencilFunc() ||
-				lastStateDesc.getStencilRef() != _stateDesc.getStencilRef() ||
-				lastStateDesc.getStencilReadMask() != _stateDesc.getStencilReadMask())
-			{
-				GLenum func = EGL3Types::asCompareFunction(_stateDesc.getStencilFunc());
-				glStencilFunc(func, _stateDesc.getStencilRef(), _stateDesc.getStencilReadMask());
-			}
+			GLenum backfunc = EGL3Types::asCompareFunction(_stateDesc.getStencilBackFunc());
+			glStencilFuncSeparate(GL_BACK, backfunc, _stateDesc.getStencilBackRef(), _stateDesc.getStencilBackReadMask());
+		}
 
-			if (lastStateDesc.getStencilFail() != _stateDesc.getStencilFail() ||
-				lastStateDesc.getStencilZFail() != _stateDesc.getStencilZFail() ||
-				lastStateDesc.getStencilPass() != _stateDesc.getStencilPass())
-			{
-				GLenum fail = EGL3Types::asStencilOperation(_stateDesc.getStencilFail());
-				GLenum zfail = EGL3Types::asStencilOperation(_stateDesc.getStencilZFail());
-				GLenum pass = EGL3Types::asStencilOperation(_stateDesc.getStencilPass());
-				glStencilOp(fail, zfail, pass);
-			}
+		if (lastStateDesc.getStencilFrontFail() != lastStateDesc.getStencilFrontFail() ||
+			lastStateDesc.getStencilFrontZFail() != lastStateDesc.getStencilFrontZFail() ||
+			lastStateDesc.getStencilFrontPass() != lastStateDesc.getStencilFrontPass())
+		{
+			GLenum frontfail = EGL3Types::asStencilOperation(lastStateDesc.getStencilFrontFail());
+			GLenum frontzfail = EGL3Types::asStencilOperation(lastStateDesc.getStencilFrontZFail());
+			GLenum frontpass = EGL3Types::asStencilOperation(lastStateDesc.getStencilFrontPass());
+			glStencilOpSeparate(GL_FRONT, frontfail, frontzfail, frontpass);
+		}
 
-			if (lastStateDesc.getStencilWriteMask() != _stateDesc.getStencilWriteMask())
-			{
-				glStencilMask(_stateDesc.getStencilWriteMask());
-			}
+		if (lastStateDesc.getStencilBackFail() != lastStateDesc.getStencilBackFail() ||
+			lastStateDesc.getStencilBackZFail() != lastStateDesc.getStencilBackZFail() ||
+			lastStateDesc.getStencilBackPass() != lastStateDesc.getStencilBackPass())
+		{
+			GLenum backfail = EGL3Types::asStencilOperation(lastStateDesc.getStencilBackFail());
+			GLenum backzfail = EGL3Types::asStencilOperation(lastStateDesc.getStencilBackZFail());
+			GLenum backpass = EGL3Types::asStencilOperation(lastStateDesc.getStencilBackPass());
+			glStencilOpSeparate(GL_BACK, backfail, backzfail, backpass);
+		}
+
+		if (lastStateDesc.getStencilFrontWriteMask() != _stateDesc.getStencilFrontWriteMask())
+		{
+			glStencilMaskSeparate(GL_FRONT, _stateDesc.getStencilFrontWriteMask());
+		}
+
+		if (lastStateDesc.getStencilBackWriteMask() != _stateDesc.getStencilBackWriteMask())
+		{
+			glStencilMaskSeparate(GL_BACK, _stateDesc.getStencilBackWriteMask());
 		}
 	}
 	else

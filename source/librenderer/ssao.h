@@ -73,7 +73,7 @@ public:
 		float intensity;
 
 		bool blur;
-		int blurRadius;
+		float blurRadius;
 		float blurScale;
 		float blurSharpness;
 
@@ -92,8 +92,6 @@ private:
 	void computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 	void blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
 	void blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept;
-	void blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, const float2& direction) noexcept;
-	void shading(RenderPipeline& pipeline, GraphicsTexturePtr ambient, GraphicsFramebufferPtr dest) noexcept;
 
 	void createSphereNoise() noexcept;
 
@@ -111,8 +109,8 @@ private:
 	MaterialPtr _ambientOcclusion;
 
 	MaterialTechPtr _ambientOcclusionPass;
-	MaterialTechPtr _ambientOcclusionBlurPass;
-	MaterialTechPtr _ambientOcclusionCopyPass;
+	MaterialTechPtr _ambientOcclusionBlurXPass;
+	MaterialTechPtr _ambientOcclusionBlurYPass;
 
 	MaterialParamPtr _cameraProjScale;
 	MaterialParamPtr _cameraProjInfo;
@@ -123,15 +121,14 @@ private:
 	MaterialParamPtr _occlusionIntensity;
 	MaterialParamPtr _occlusionAmbient;
 	MaterialParamPtr _occlusionSphere;
+	MaterialParamPtr _occlusionSampleNumber;
 
 	MaterialParamPtr _blurSource;
 	MaterialParamPtr _blurFactor;
 	MaterialParamPtr _blurSharpness;
 	MaterialParamPtr _blurDirection;
 	MaterialParamPtr _blurGaussian;
-
-	MaterialVariantPtr _sampleNumber;
-	MaterialVariantPtr _blurRadius;
+	MaterialParamPtr _blurRadius;
 
 	GraphicsTexturePtr _texBlurMap;
 	GraphicsTexturePtr _texAmbientMap;

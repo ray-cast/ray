@@ -49,8 +49,8 @@ SSAO::Setting::Setting() noexcept
 	, intensity(2)
 	, blur(true)
 	, blurRadius(6)
-	, blurScale(1.5)
-	, blurSharpness(4)
+	, blurScale(1.0)
+	, blurSharpness(1)
 {
 }
 
@@ -69,13 +69,13 @@ SSAO::setSetting(const Setting& setting) noexcept
 	const float blurSigma = _setting.blurRadius * 0.5;
 	const float blurFalloff = 1.0 / (2.0 * blurSigma * blurSigma);
 
-	_blurFactor->assign(blurFalloff);
-	_blurSharpness->assign(_setting.blurSharpness);
+	_blurFactor->uniform1f(blurFalloff);
+	_blurSharpness->uniform1f(_setting.blurSharpness);
 
-	_occlusionRadius->assign(_setting.radius);
-	_occlusionRadius2->assign(_setting.radius * _setting.radius);
-	_occlusionBias->assign(_setting.bias);
-	_occlusionIntensity->assign(_setting.intensity);
+	_occlusionRadius->uniform1f(_setting.radius);
+	_occlusionRadius2->uniform1f(_setting.radius * _setting.radius);
+	_occlusionBias->uniform1f(_setting.bias);
+	_occlusionIntensity->uniform1f(_setting.intensity);
 
 	_setting = setting;
 }
@@ -89,8 +89,8 @@ SSAO::getSetting() const noexcept
 void
 SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	_cameraProjInfo->assign(pipeline.getCamera()->getProjConstant());
-	_cameraProjScale->assign(pipeline.getCamera()->getProjLength().y * _setting.radius);
+	_cameraProjInfo->uniform4f(pipeline.getCamera()->getProjConstant());
+	_cameraProjScale->uniform1f(pipeline.getCamera()->getProjLength().y * _setting.radius);
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
@@ -105,7 +105,12 @@ SSAO::blurHorizontal(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphi
 	float2 direction(_setting.blurScale, 0.0f);
 	direction.x /= textureDesc.getWidth();
 
-	this->blurDirection(pipeline, source, dest, direction);
+	_blurDirection->uniform2f(direction);
+	_blurSource->uniformTexture(source);
+
+	pipeline.setFramebuffer(dest);
+	pipeline.discradRenderTexture();
+	pipeline.drawScreenQuad(_ambientOcclusionBlurXPass);
 }
 
 void
@@ -116,34 +121,19 @@ SSAO::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 	float2 direction(0.0f, _setting.blurScale);
 	direction.y /= textureDesc.getHeight();
 
-	this->blurDirection(pipeline, source, dest, direction);
-}
-
-void
-SSAO::blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, const float2& direction) noexcept
-{
-	_blurDirection->assign(direction);
-	_blurSource->assign(source);
+	_blurDirection->uniform2f(direction);
+	_blurSource->uniformTexture(source);
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
-	pipeline.drawScreenQuad(_ambientOcclusionBlurPass);
-}
-
-void
-SSAO::shading(RenderPipeline& pipeline, GraphicsTexturePtr ambient, GraphicsFramebufferPtr dest) noexcept
-{
-	_occlusionAmbient->assign(ambient);
-
-	pipeline.setFramebuffer(dest);
-	pipeline.drawScreenQuad(_ambientOcclusionCopyPass);
+	pipeline.drawScreenQuad(_ambientOcclusionBlurYPass);
 }
 
 void
 SSAO::createSphereNoise() noexcept
 {
 	std::vector<float2> sphere;
-	std::size_t numSample = _sampleNumber->getInt();
+	std::size_t numSample = _occlusionSampleNumber->getInt();
 
 	for (std::size_t i = 0; i < numSample; i++)
 	{
@@ -156,7 +146,7 @@ SSAO::createSphereNoise() noexcept
 		sphere.push_back(rotate);
 	}
 
-	_occlusionSphere->assign(sphere);
+	_occlusionSphere->uniform2fv(sphere);
 }
 
 void
@@ -165,11 +155,14 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_texAmbientMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
-	_texBlurMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
+	width *= 0.5;
+	height *= 0.5;
+
+	_texAmbientMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8UNorm);
+	_texBlurMap = pipeline.createTexture(width, height, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8UNorm);
 
 	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
-	framebufferLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR16SFloat, 0));
+	framebufferLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, GraphicsFormat::GraphicsFormatR8UNorm, 0));
 	_framebufferLayout = pipeline.createFramebufferLayout(framebufferLayoutDesc);
 
 	GraphicsFramebufferDesc ambientViewDesc;
@@ -188,8 +181,8 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 
 	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssao.fxml.o");
 	_ambientOcclusionPass = _ambientOcclusion->getTech("ComputeAO");
-	_ambientOcclusionBlurPass = _ambientOcclusion->getTech("BlurAO");
-	_ambientOcclusionCopyPass = _ambientOcclusion->getTech("Copy");
+	_ambientOcclusionBlurXPass = _ambientOcclusion->getTech("BlurXAO");
+	_ambientOcclusionBlurYPass = _ambientOcclusion->getTech("BlurYAO");
 
 	_cameraProjScale = _ambientOcclusion->getParameter("projScale");
 	_cameraProjInfo = _ambientOcclusion->getParameter("projInfo");
@@ -200,15 +193,15 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 	_occlusionIntensity = _ambientOcclusion->getParameter("intensity");
 	_occlusionAmbient = _ambientOcclusion->getParameter("texOcclusion");
 	_occlusionSphere = _ambientOcclusion->getParameter("sphere");
+	_occlusionSampleNumber = _ambientOcclusion->getMacro("NUM_SAMPLE");
 
 	_blurSource = _ambientOcclusion->getParameter("texSource");
 	_blurFactor = _ambientOcclusion->getParameter("blurFactor");
 	_blurSharpness = _ambientOcclusion->getParameter("blurSharpness");
 	_blurDirection = _ambientOcclusion->getParameter("blurDirection");
 	_blurGaussian = _ambientOcclusion->getParameter("blurGaussian");
-
 	_blurRadius = _ambientOcclusion->getMacro("BLUR_RADIUS");
-	_sampleNumber = _ambientOcclusion->getMacro("NUM_SAMPLE");
+	
 
 	_setting.blurRadius = _blurRadius->getInt();
 
@@ -227,16 +220,9 @@ SSAO::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Graphics
 {
 	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
 
-	this->computeRawAO(pipeline, texture, _texAmbientView);
-
-	if (_setting.blur)
-	{
-		this->blurHorizontal(pipeline, _texAmbientMap, _texBlurView);
-		this->blurVertical(pipeline, _texBlurMap, _texAmbientView);
-	}
-
-	this->shading(pipeline, _texAmbientMap, dest);
-
+	this->computeRawAO(pipeline, texture, _texAmbientView);	
+	this->blurHorizontal(pipeline, _texAmbientMap, _texBlurView);
+	this->blurVertical(pipeline, _texBlurMap, dest);
 	return true;
 }
 

@@ -170,8 +170,10 @@ public:
 
 	virtual void clearTexture(GraphicsTexturePtr texture, const ClearValue& value) noexcept = 0;
 
-	virtual void setFramebuffer(GraphicsFramebufferPtr framebuffer) noexcept = 0;
-	virtual void clearFramebuffer(ClearValue value[], std::uint32_t first, std::uint32_t count) noexcept = 0;
+	virtual void setFramebuffer(GraphicsFramebufferPtr target) noexcept = 0;
+	virtual void setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept = 0;
+	virtual void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept = 0;
+	virtual void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept = 0;
 
 	virtual void setPipeline(GraphicsPipelinePtr pipeline) noexcept = 0;
 	virtual void setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept = 0;

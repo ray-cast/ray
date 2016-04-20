@@ -88,6 +88,15 @@ public:
 	virtual void setScissor(const Scissor& scissor) noexcept = 0;
 	virtual const Scissor& getScissor() const noexcept = 0;
 
+	virtual void setStencilCompare(GraphicsStencilFace face, GraphicsCompareFunc func) noexcept = 0;
+	virtual GraphicsCompareFunc getStencilCompare(GraphicsStencilFace face) noexcept = 0;
+
+	virtual void setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept = 0;
+	virtual std::uint32_t getStencilReference(GraphicsStencilFace face) noexcept = 0;
+
+	virtual void setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept = 0;
+	virtual std::uint32_t getStencilFrontWriteMask(GraphicsStencilFace face) noexcept = 0;
+
 	virtual void setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept = 0;
 	virtual GraphicsPipelinePtr getRenderPipeline() const noexcept = 0;
 
@@ -105,6 +114,7 @@ public:
 	virtual void unmapBuffer(GraphicsDataPtr data) noexcept = 0;
 
 	virtual void setFramebuffer(GraphicsFramebufferPtr target) noexcept = 0;
+	virtual void setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept = 0;
 	virtual void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept = 0;
 	virtual void discardFramebuffer() noexcept = 0;
 	virtual void blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept = 0;
@@ -115,7 +125,9 @@ public:
 	virtual void drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept = 0;
 
 	virtual bool isTextureSupport(GraphicsFormat format) noexcept = 0;
+	virtual bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept = 0;
 	virtual bool isVertexSupport(GraphicsFormat format) noexcept = 0;
+	virtual bool isShaderSupport(GraphicsShaderStage stage) noexcept = 0;
 
 	virtual void present() noexcept = 0;
 

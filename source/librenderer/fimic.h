@@ -106,15 +106,18 @@ private:
 
 	MaterialParamPtr _bloomThreshold;
 	MaterialParamPtr _bloomIntensity;
-	MaterialParamPtr _bloomTexSizeInv;
+	MaterialParamPtr _bloomOffset;
+	MaterialParamPtr _bloomWeight;
 
-	MaterialParamPtr _toneSource;
 	MaterialParamPtr _toneBloom;
 	MaterialParamPtr _toneLumAve;
 	MaterialParamPtr _toneLumKey;
 	MaterialParamPtr _toneLumExposure;
 	MaterialParamPtr _toneBurnout;
 	MaterialParamPtr _toneDefocus;
+
+	MaterialParamPtr _texSource;
+	MaterialParamPtr _texSourceSizeInv;
 
 	GraphicsTexturePtr _texBloomMap[SAMPLE_COUNT];
 	GraphicsTexturePtr _texSample4Map;

@@ -79,8 +79,8 @@ FXAA::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Graphics
 	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
 
 	auto& textureDesc = texture->getGraphicsTextureDesc();
-	_texelStep->assign(float2(1.0f / textureDesc.getWidth(), 1.0f / textureDesc.getHeight()));
-	_texelSource->assign(texture);
+	_texelStep->uniform2f(float2(1.0f / textureDesc.getWidth(), 1.0f / textureDesc.getHeight()));
+	_texelSource->uniformTexture(texture);
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();

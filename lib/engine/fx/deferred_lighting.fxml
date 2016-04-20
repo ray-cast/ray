@@ -89,7 +89,7 @@
                 float3 L = -lightEyeDirection;
 
                 float4 lighting;
-                lighting.rgb = (dot(N, L) * 0.5 + 0.5) * lightColor;
+                lighting.rgb = saturate(dot(N, L) * 0.5 + 0.5) * lightColor;
                 lighting.a = 0;
                 return lighting;
             }
@@ -137,7 +137,7 @@
                 {
                     lighting.rgb = brdfLambert(N, L, lightColor);
                     lighting.a = brdfSpecular(N, L, V, shininess, specular);
-                    lighting *= shadowDirectionalLight(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
+                    lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
                 }
 
                 return lighting;
@@ -186,7 +186,7 @@
                 {
                     lighting.rgb = brdfLambert(N, L, lightColor);
                     lighting.a = brdfSpecular(N, L, V, shininess, specular);
-                    lighting *= shadowDirectionalLight(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
+                    lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
                 }
 
                 return lighting;
@@ -242,7 +242,7 @@
                     lighting.rgb = brdfLambert(N, L, lightColor);
                     lighting.a = brdfSpecular(N, L, V, shininess, specular);
                     lighting *= attenuationTerm(lightEyePosition, P, lightAttenuation);
-                    lighting *= shadowSpotLight(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
+                    lighting *= shadowLighting(shadowMap, shadowView2LightViewProject, shadowView2LightView, shadowFactor, P);
                     lighting *= spot;
                 }
 
@@ -345,11 +345,15 @@
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
 
+            <state name="cullmode" value="none"/>
+
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
 
-            <state name="cullmode" value="none"/>
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="equal"/>
+            <state name="stencilTwoFunc" value="equal"/>
         </pass>
     </technique>
     <technique name="DeferredSunLight">
@@ -367,6 +371,10 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="equal"/>
+            <state name="stencilTwoFunc" value="equal"/>
         </pass>
     </technique>
     <technique name="DeferredSunLightShadow">
@@ -384,6 +392,10 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="equal"/>
+            <state name="stencilTwoFunc" value="equal"/>
         </pass>
     </technique>
     <technique name="DeferredDirectionalLight">
@@ -401,6 +413,10 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="equal"/>
+            <state name="stencilTwoFunc" value="equal"/>
         </pass>
     </technique>
     <technique name="DeferredDirectionalLightShadow">
@@ -418,6 +434,10 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="equal"/>
+            <state name="stencilTwoFunc" value="equal"/>
         </pass>
     </technique>
     <technique name="DeferredPointLight">
@@ -435,6 +455,10 @@
             <state name="blenddst" value="one"/>
 
             <state name="cullmode" value="front"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="equal"/>
+            <state name="stencilTwoFunc" value="equal"/>
         </pass>
     </technique>
     <technique name="DeferredSpotLight">
@@ -452,6 +476,10 @@
             <state name="blenddst" value="one"/>
 
             <state name="cullmode" value="front"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="equal"/>
+            <state name="stencilTwoFunc" value="equal"/>
         </pass>
     </technique>
     <technique name="DeferredSpotLightShadow">
@@ -469,6 +497,10 @@
             <state name="blenddst" value="one"/>
 
             <state name="cullmode" value="front"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="equal"/>
+            <state name="stencilTwoFunc" value="equal"/>
         </pass>
     </technique>
     <technique name="DeferredShadingOpaques">

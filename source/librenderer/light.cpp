@@ -56,9 +56,7 @@ Light::Light() noexcept
 	, _subsurfaceScattering(false)
 	, _shadow(false)
 	, _shadowSoftEnable(false)
-	, _shadowSize(512)
 	, _shaodwBias(0.001)
-	, _shadowFormat(GraphicsFormat::GraphicsFormatD16UNorm)
 {
 	_shadowCamera[0]= std::make_shared<Camera>();
 	_shadowCamera[0]->setOwnerListener(this);
@@ -192,11 +190,6 @@ Light::setShadow(bool shadow) noexcept
 		}
 
 		_shadow = shadow;
-
-		if (shadow)
-			this->_buildShadowMap(_shadowSize);
-		else
-			this->_destroyShadowMap();
 	}
 }
 
@@ -238,35 +231,6 @@ Light::getShadowCamera(std::uint8_t i) const noexcept
 }
 
 void 
-Light::setShadowMap(GraphicsTexturePtr texture) noexcept
-{
-	_shaodwMap = texture;
-}
-
-GraphicsTexturePtr
-Light::getShadowMap() const noexcept
-{
-	return _shaodwMap;
-}
-
-void 
-Light::setShadowSize(float size) noexcept
-{
-	if (_shadowSize != size)
-	{
-		_destroyShadowMap();
-		_buildShadowMap(size);
-		_shadowSize = size;
-	}
-}
-
-float 
-Light::getShadowSize() const noexcept
-{
-	return _shadowSize;
-}
-
-void 
 Light::setShadowBias(float bias) noexcept
 {
 	_shaodwBias = bias;
@@ -276,69 +240,6 @@ float
 Light::getShadowBias() const noexcept
 {
 	return _shaodwBias;
-}
-
-bool
-Light::_buildShadowMap(float size) noexcept
-{
-	assert(size > 0);
-	assert(!_shadowCamera[0]->getFramebuffer());
-
-	if (!_shadow)
-		return false;
-
-	GraphicsFramebufferLayoutDesc shadowLayoutDesc;
-	shadowLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutDepthStencilAttachmentOptimal, _shadowFormat, 0));
-	_shaodwViewLayout = RenderSystem::instance()->createFramebufferLayout(shadowLayoutDesc);
-	if (!_shaodwViewLayout)
-		return false;
-
-	std::uint32_t loopCount = 0;
-
-	if (_lightType == LightType::LightTypeSun ||
-		_lightType == LightType::LightTypeDirectional ||
-		_lightType == LightType::LightTypeSpot)
-	{
-		loopCount = 1;
-	}
-	else if (_lightType == LightType::LightTypePoint)
-	{
-		loopCount = 6;
-	}
-
-	for (std::uint32_t i = 0; i < loopCount; i++)
-	{
-		GraphicsTextureDesc shaodwMapDesc;
-		shaodwMapDesc.setWidth(size);
-		shaodwMapDesc.setHeight(size);
-		shaodwMapDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
-		shaodwMapDesc.setTexFormat(_shadowFormat);
-		_shaodwMap = RenderSystem::instance()->createTexture(shaodwMapDesc);
-		if (!_shaodwMap)
-			return false;
-
-		GraphicsFramebufferDesc shadowViewDesc;
-		shadowViewDesc.setWidth(size);
-		shadowViewDesc.setHeight(size);
-		shadowViewDesc.setSharedDepthStencilTexture(_shaodwMap);
-		shadowViewDesc.setGraphicsFramebufferLayout(_shaodwViewLayout);
-		_shaodwView = RenderSystem::instance()->createFramebuffer(shadowViewDesc);
-		if (!_shaodwView)
-			return false;
-
-		_shadowCamera[i]->setFramebuffer(_shaodwView);
-		_shadowCamera[i]->setViewport(Viewport(0, 0, _shadowSize, _shadowSize));
-	}
-
-	return true;
-}
-
-void 
-Light::_destroyShadowMap() noexcept
-{
-	_shaodwMap.reset();
-	_shaodwViewLayout.reset();
-	_shaodwView.reset();
 }
 
 void

@@ -554,8 +554,8 @@ XmlBuf::getValue(const std::string& name, int2& result) const noexcept
 	std::string value;
 	if (this->getValue(name, value))
 	{
-		int i1 = 0;
-		int i2 = 0;
+		int1 i1 = 0;
+		int1 i2 = 0;
 
 		for (auto& it : value)
 		{
@@ -581,9 +581,9 @@ XmlBuf::getValue(const std::string& name, int3& result) const noexcept
 	std::string value;
 	if (this->getValue(name, value))
 	{
-		int i1 = 0;
-		int i2 = 0;
-		int i3 = 0;
+		int1 i1 = 0;
+		int1 i2 = 0;
+		int1 i3 = 0;
 
 		for (auto& it : value)
 		{
@@ -609,10 +609,10 @@ XmlBuf::getValue(const std::string& name, int4& result) const noexcept
 	std::string value;
 	if (this->getValue(name, value))
 	{
-		int i1 = 0;
-		int i2 = 0;
-		int i3 = 0;
-		int i4 = 0;
+		int1 i1 = 0;
+		int1 i2 = 0;
+		int1 i3 = 0;
+		int1 i4 = 0;
 
 		for (auto& it : value)
 		{
@@ -631,6 +631,104 @@ XmlBuf::getValue(const std::string& name, int4& result) const noexcept
 
 	return false;
 }
+
+bool
+XmlBuf::getValue(const std::string& name, uint1& result) const noexcept
+{
+	std::string value;
+	if (this->getValue(name, value))
+	{
+		result = atoi(value.c_str());
+		return true;
+	}
+
+	return false;
+}
+
+bool
+XmlBuf::getValue(const std::string& name, uint2& result) const noexcept
+{
+	std::string value;
+	if (this->getValue(name, value))
+	{
+		uint i1 = 0;
+		uint i2 = 0;
+
+		for (auto& it : value)
+		{
+			if (it == ',')
+			{
+				it = ' ';
+			}
+		}
+
+		std::istringstream sin(value.c_str());
+
+		sin >> i1 >> i2;
+		result.set(i1, i2);
+		return true;
+	}
+
+	return false;
+}
+
+bool
+XmlBuf::getValue(const std::string& name, uint3& result) const noexcept
+{
+	std::string value;
+	if (this->getValue(name, value))
+	{
+		uint i1 = 0;
+		uint i2 = 0;
+		uint i3 = 0;
+
+		for (auto& it : value)
+		{
+			if (it == ',')
+			{
+				it = ' ';
+			}
+		}
+
+		std::istringstream sin(value.c_str());
+
+		sin >> i1 >> i2 >> i3;
+		result.set(i1, i2, i3);
+		return true;
+	}
+
+	return false;
+}
+
+bool
+XmlBuf::getValue(const std::string& name, uint4& result) const noexcept
+{
+	std::string value;
+	if (this->getValue(name, value))
+	{
+		uint i1 = 0;
+		uint i2 = 0;
+		uint i3 = 0;
+		uint i4 = 0;
+
+		for (auto& it : value)
+		{
+			if (it == ',')
+			{
+				it = ' ';
+			}
+		}
+
+		std::istringstream sin(value.c_str());
+
+		sin >> i1 >> i2 >> i3 >> i4;
+		result.set(i1, i2, i3, i4);
+		return true;
+	}
+
+	return false;
+}
+
 
 bool
 XmlBuf::getValue(const std::string& name, float1& result) const noexcept

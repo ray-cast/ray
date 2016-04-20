@@ -55,8 +55,6 @@ public:
 	bool setup(const MaterialDesc& materialDesc) noexcept;
 	void close() noexcept;
 
-	const std::string& getName() const noexcept;
-
 	MaterialTechPtr getTech(const std::string& name) noexcept;
 	MaterialTechniques& getTechs() noexcept;
 
@@ -64,9 +62,9 @@ public:
 	MaterialParams& getParameters() noexcept;
 	const MaterialParams& getParameters() const noexcept;
 
-	MaterialVariantPtr getMacro(const std::string& name) const noexcept;
-	MaterialVariants& getMacros() noexcept;
-	const MaterialVariants& getMacros() const noexcept;
+	MaterialParamPtr getMacro(const std::string& name) const noexcept;
+	MaterialParams& getMacros() noexcept;
+	const MaterialParams& getMacros() const noexcept;
 
 private:
 	Material(const Material&) noexcept = delete;

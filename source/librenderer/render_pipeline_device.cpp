@@ -552,6 +552,13 @@ RenderPipelineDevice::createInputLayout(const GraphicsInputLayoutDesc& desc) noe
 	return _graphicsDevice->createInputLayout(desc);
 }
 
+GraphicsPipelinePtr 
+RenderPipelineDevice::createGraphicsPipeline(const GraphicsPipelineDesc& desc) noexcept
+{
+	assert(_graphicsDevice);
+	return _graphicsDevice->createRenderPipeline(desc);
+}
+
 GraphicsDataPtr
 RenderPipelineDevice::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
@@ -559,7 +566,7 @@ RenderPipelineDevice::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 	return _graphicsDevice->createGraphicsData(desc);
 }
 
-MaterialVariantPtr
+MaterialParamPtr
 RenderPipelineDevice::createSemantic(const std::string& name, GraphicsUniformType type) noexcept
 {
 	assert(_materialManager);
@@ -567,13 +574,13 @@ RenderPipelineDevice::createSemantic(const std::string& name, GraphicsUniformTyp
 }
 
 void
-RenderPipelineDevice::destroySemantic(MaterialVariantPtr semantic) const noexcept
+RenderPipelineDevice::destroySemantic(MaterialParamPtr semantic) const noexcept
 {
 	assert(_materialManager);
 	return _materialManager->destroySemantic(semantic);
 }
 
-MaterialVariantPtr
+MaterialParamPtr
 RenderPipelineDevice::getSemantic(const std::string& semantic) const noexcept
 {
 	assert(_materialManager);

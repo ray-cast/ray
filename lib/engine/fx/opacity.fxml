@@ -57,6 +57,9 @@
             <state name="fragment" value="OpaquePS"/>
             <state name="primitive" value="triangle" />
             <state name="cullmode" value="none"/>
+            <state name="stencilTest" value="true"/>
+            <state name="stencilPass" value="replace"/>
+            <state name="stencilTwoPass" value="replace"/>
         </pass>
     </technique>
 </effect>

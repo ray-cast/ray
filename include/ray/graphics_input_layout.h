@@ -45,7 +45,7 @@ class EXPORT GraphicsVertexLayout final
 {
 public:
 	GraphicsVertexLayout() noexcept;
-	GraphicsVertexLayout(const std::string& semantic, std::uint8_t index, GraphicsFormat format, std::uint16_t offset = 0, std::uint8_t slot = 0, GraphicsVertexDivisor divisor = GraphicsVertexDivisor::GraphicsVertexDivisorVertex) noexcept;
+	GraphicsVertexLayout(const std::string& semantic, std::uint8_t index, GraphicsFormat format, std::uint16_t offset = 0, std::uint8_t slot = 0) noexcept;
 	~GraphicsVertexLayout() noexcept;
 
 	void setSemantic(const std::string& semantic) noexcept;
@@ -60,12 +60,6 @@ public:
 	void setVertexOffset(std::uint16_t slot) noexcept;
 	std::uint16_t getVertexOffset() const noexcept;
 
-	void setVertexSlot(std::uint8_t slot) noexcept;
-	std::uint8_t getVertexSlot() const noexcept;
-
-	void setVertexDivisor(GraphicsVertexDivisor divisor) noexcept;
-	GraphicsVertexDivisor getVertexDivisor() const noexcept;
-	
 	std::uint8_t getVertexCount() const noexcept;
 	std::uint8_t getVertexSize() const noexcept;
 
@@ -75,11 +69,9 @@ public:
 private:
 	std::string _semantic;
 	std::uint8_t _index;
-	std::uint8_t _slot;
 	std::uint8_t _count;
 	std::uint8_t _size;
 	std::uint16_t _offset;
-	GraphicsVertexDivisor _divisor;
 	GraphicsFormat _format;
 };
 
@@ -88,12 +80,6 @@ class EXPORT GraphicsInputLayoutDesc final
 public:
 	GraphicsInputLayoutDesc() noexcept;
 	~GraphicsInputLayoutDesc() noexcept;
-
-	void setName(const std::string& name) noexcept;
-	const std::string& getName() const noexcept;
-
-	void setAutoOffset(bool enable) noexcept;
-	bool getAutoOffset() const noexcept;
 
 	void setGraphicsVertexLayouts(const GraphicsVertexLayouts& component) noexcept;
 	const GraphicsVertexLayouts& getGraphicsVertexLayouts() const noexcept;
@@ -104,8 +90,6 @@ public:
 	std::uint32_t getVertexSize() const noexcept;
 
 private:
-	bool _autoOffset;
-	std::string _name;
 	GraphicsVertexLayouts _components;
 };
 

@@ -58,9 +58,9 @@ Fog::onActivate(RenderPipeline& pipeline) noexcept
 	_fogColor = _material->getParameter("fogColor");
 	_texSource = _material->getParameter("texSource");
 
-	_fogFalloff->assign(10.0f);
-	_fogDensity->assign(0.0001f);
-	_fogColor->assign(Vector3(0.0, 0.3, 0.99));
+	_fogFalloff->uniform1f(10.0f);
+	_fogDensity->uniform1f(0.0001f);
+	_fogColor->uniform3f(Vector3(0.0, 0.3, 0.99));
 }
 
 void

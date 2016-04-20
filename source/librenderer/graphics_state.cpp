@@ -54,7 +54,6 @@ GraphicsStateDesc::GraphicsStateDesc() noexcept
 	, _depthClampEnable(false)
 	, _depthBiasClamp(false)
 	, _stencilEnable(false)
-	, _stencilTwoEnable(false)
 	, _blendOp(GraphicsBlendOp::GraphicsBlendOpAdd)
 	, _blendAlphaOp(GraphicsBlendOp::GraphicsBlendOpAdd)
 	, _blendSrc(GraphicsBlendFactor::GraphicsBlendFactorSrcAlpha)
@@ -71,20 +70,20 @@ GraphicsStateDesc::GraphicsStateDesc() noexcept
 	, _depthSlopeScaleBias(0)
 	, _depthBias(0)
 	, _depthFunc(GraphicsCompareFunc::GraphicsCompareFuncLequal)
-	, _stencilRef(0)
-	, _stencilTwoRef(0)
-	, _stencilReadMask(0xFFFFFFFF)
-	, _stencilWriteMask(0xFFFFFFFF)
-	, _stencilTwoReadMask(0xFFFFFFFF)
-	, _stencilTwoWriteMask(0xFFFFFFFF)
-	, _stencilFunc(GraphicsCompareFunc::GraphicsCompareFuncAlways)
-	, _stencilTwoFunc(GraphicsCompareFunc::GraphicsCompareFuncAlways)
-	, _stencilFail(GraphicsStencilOp::GraphicsStencilOpKeep)
-	, _stencilZFail(GraphicsStencilOp::GraphicsStencilOpKeep)
-	, _stencilPass(GraphicsStencilOp::GraphicsStencilOpKeep)	
-	, _stencilTwoFail(GraphicsStencilOp::GraphicsStencilOpKeep)
-	, _stencilTwoZFail(GraphicsStencilOp::GraphicsStencilOpKeep)
-	, _stencilTwoPass(GraphicsStencilOp::GraphicsStencilOpKeep)
+	, _stencilFrontRef(0)
+	, _stencilBackRef(0)
+	, _stencilFrontReadMask(0xFFFFFFFF)
+	, _stencilFrontWriteMask(0xFFFFFFFF)
+	, _stencilBackReadMask(0xFFFFFFFF)
+	, _stencilBackWriteMask(0xFFFFFFFF)
+	, _stencilFrontFunc(GraphicsCompareFunc::GraphicsCompareFuncAlways)
+	, _stencilBackFunc(GraphicsCompareFunc::GraphicsCompareFuncAlways)
+	, _stencilFrontFail(GraphicsStencilOp::GraphicsStencilOpKeep)
+	, _stencilFrontZFail(GraphicsStencilOp::GraphicsStencilOpKeep)
+	, _stencilFrontPass(GraphicsStencilOp::GraphicsStencilOpKeep)	
+	, _stencilBackFail(GraphicsStencilOp::GraphicsStencilOpKeep)
+	, _stencilBackZFail(GraphicsStencilOp::GraphicsStencilOpKeep)
+	, _stencilBackPass(GraphicsStencilOp::GraphicsStencilOpKeep)
 {
 }
 
@@ -177,7 +176,7 @@ GraphicsStateDesc::setScissorTestEnable(bool enable) noexcept
 }
 
 void
-GraphicsStateDesc::setsRGBEnable(bool enable) noexcept
+GraphicsStateDesc::setLinear2sRGBEnable(bool enable) noexcept
 {
 	_srgbEnable = enable;
 }
@@ -267,93 +266,87 @@ GraphicsStateDesc::setStencilEnable(bool enable) noexcept
 }
 
 void
-GraphicsStateDesc::setStencilRef(std::int32_t ref) noexcept
+GraphicsStateDesc::setStencilFrontRef(std::uint32_t ref) noexcept
 {
-	_stencilRef = ref;
+	_stencilFrontRef = ref;
 }
 
 void
-GraphicsStateDesc::setStencilFunc(GraphicsCompareFunc func) noexcept
+GraphicsStateDesc::setStencilFrontFunc(GraphicsCompareFunc func) noexcept
 {
-	_stencilFunc = func;
+	_stencilFrontFunc = func;
 }
 
 void
-GraphicsStateDesc::setStencilReadMask(std::uint32_t mask) noexcept
+GraphicsStateDesc::setStencilFrontReadMask(std::uint32_t mask) noexcept
 {
-	_stencilReadMask = mask;
+	_stencilFrontReadMask = mask;
 }
 
 void
-GraphicsStateDesc::setStencilWriteMask(std::uint32_t mask) noexcept
+GraphicsStateDesc::setStencilFrontWriteMask(std::uint32_t mask) noexcept
 {
-	_stencilWriteMask = mask;
+	_stencilFrontWriteMask = mask;
 }
 
 void
-GraphicsStateDesc::setStencilFail(GraphicsStencilOp stencilOp) noexcept
+GraphicsStateDesc::setStencilFrontFail(GraphicsStencilOp stencilOp) noexcept
 {
-	_stencilFail = stencilOp;
+	_stencilFrontFail = stencilOp;
 }
 
 void
-GraphicsStateDesc::setStencilZFail(GraphicsStencilOp stencilOp) noexcept
+GraphicsStateDesc::setStencilFrontZFail(GraphicsStencilOp stencilOp) noexcept
 {
-	_stencilZFail = stencilOp;
+	_stencilFrontZFail = stencilOp;
 }
 
 void
-GraphicsStateDesc::setStencilPass(GraphicsStencilOp stencilOp) noexcept
+GraphicsStateDesc::setStencilFrontPass(GraphicsStencilOp stencilOp) noexcept
 {
-	_stencilPass = stencilOp;
+	_stencilFrontPass = stencilOp;
 }
 
 void
-GraphicsStateDesc::setStencilTwoEnable(bool enable) noexcept
+GraphicsStateDesc::setStencilBackRef(std::uint32_t ref) noexcept
 {
-	_stencilTwoEnable = enable;
+	_stencilBackRef = ref;
 }
 
 void
-GraphicsStateDesc::setStencilTwoRef(std::int32_t ref) noexcept
+GraphicsStateDesc::setStencilBackFunc(GraphicsCompareFunc func) noexcept
 {
-	_stencilTwoRef = ref;
+	_stencilBackFunc = func;
 }
 
 void
-GraphicsStateDesc::setStencilTwoFunc(GraphicsCompareFunc func) noexcept
+GraphicsStateDesc::setStencilBackReadMask(std::uint32_t mask) noexcept
 {
-	_stencilTwoFunc = func;
+	_stencilBackReadMask = mask;
 }
 
 void
-GraphicsStateDesc::setStencilTwoReadMask(std::uint32_t mask) noexcept
+GraphicsStateDesc::setStencilBackWriteMask(std::uint32_t mask) noexcept
 {
-	_stencilTwoReadMask = mask;
+	_stencilBackWriteMask = mask;
 }
 
 void
-GraphicsStateDesc::setStencilTwoWriteMask(std::uint32_t mask) noexcept
+GraphicsStateDesc::setStencilBackFail(GraphicsStencilOp stencilOp) noexcept
 {
-	_stencilTwoWriteMask = mask;
+	_stencilBackFail = stencilOp;
 }
 
 void
-GraphicsStateDesc::setStencilTwoFail(GraphicsStencilOp stencilOp) noexcept
+GraphicsStateDesc::setStencilBackZFail(GraphicsStencilOp stencilOp) noexcept
 {
-	_stencilTwoFail = stencilOp;
+	_stencilBackZFail = stencilOp;
 }
 
 void
-GraphicsStateDesc::setStencilTwoZFail(GraphicsStencilOp stencilOp) noexcept
+GraphicsStateDesc::setStencilBackPass(GraphicsStencilOp stencilOp) noexcept
 {
-	_stencilTwoZFail = stencilOp;
-}
-
-void
-GraphicsStateDesc::setStencilTwoPass(GraphicsStencilOp stencilOp) noexcept
-{
-	_stencilTwoPass = stencilOp;
+	_stencilBackPass = stencilOp;
 }
 
 bool
@@ -441,7 +434,7 @@ GraphicsStateDesc::getScissorTestEnable() const noexcept
 }
 
 bool
-GraphicsStateDesc::getsRGBEnable() const noexcept
+GraphicsStateDesc::getLinear2sRGBEnable() const noexcept
 {
 	return _srgbEnable;
 }
@@ -530,94 +523,88 @@ GraphicsStateDesc::getStencilEnable() const noexcept
 	return _stencilEnable;
 }
 
-std::int32_t
-GraphicsStateDesc::getStencilRef() const noexcept
+std::uint32_t
+GraphicsStateDesc::getStencilFrontRef() const noexcept
 {
-	return _stencilRef;
+	return _stencilFrontRef;
 }
 
 GraphicsCompareFunc
-GraphicsStateDesc::getStencilFunc() const noexcept
+GraphicsStateDesc::getStencilFrontFunc() const noexcept
 {
-	return _stencilFunc;
+	return _stencilFrontFunc;
 }
 
 std::uint32_t
-GraphicsStateDesc::getStencilReadMask() const noexcept
+GraphicsStateDesc::getStencilFrontReadMask() const noexcept
 {
-	return _stencilReadMask;
+	return _stencilFrontReadMask;
 }
 
 std::uint32_t
-GraphicsStateDesc::getStencilWriteMask() const noexcept
+GraphicsStateDesc::getStencilFrontWriteMask() const noexcept
 {
-	return _stencilWriteMask;
+	return _stencilFrontWriteMask;
 }
 
 GraphicsStencilOp
-GraphicsStateDesc::getStencilFail() const noexcept
+GraphicsStateDesc::getStencilFrontFail() const noexcept
 {
-	return _stencilFail;
+	return _stencilFrontFail;
 }
 
 GraphicsStencilOp
-GraphicsStateDesc::getStencilZFail() const noexcept
+GraphicsStateDesc::getStencilFrontZFail() const noexcept
 {
-	return _stencilZFail;
+	return _stencilFrontZFail;
 }
 
 GraphicsStencilOp
-GraphicsStateDesc::getStencilPass() const noexcept
+GraphicsStateDesc::getStencilFrontPass() const noexcept
 {
-	return _stencilPass;
+	return _stencilFrontPass;
 }
 
-bool
-GraphicsStateDesc::getStencilTwoEnable() const noexcept
+std::uint32_t
+GraphicsStateDesc::getStencilBackRef() const noexcept
 {
-	return _stencilTwoEnable;
-}
-
-std::int32_t
-GraphicsStateDesc::getStencilTwoRef() const noexcept
-{
-	return _stencilTwoRef;
+	return _stencilBackRef;
 }
 
 GraphicsCompareFunc
-GraphicsStateDesc::getStencilTwoFunc() const noexcept
+GraphicsStateDesc::getStencilBackFunc() const noexcept
 {
-	return _stencilTwoFunc;
+	return _stencilBackFunc;
 }
 
 std::uint32_t
-GraphicsStateDesc::getStencilTwoReadMask() const noexcept
+GraphicsStateDesc::getStencilBackReadMask() const noexcept
 {
-	return _stencilTwoReadMask;
+	return _stencilBackReadMask;
 }
 
 std::uint32_t
-GraphicsStateDesc::getStencilTwoWriteMask() const noexcept
+GraphicsStateDesc::getStencilBackWriteMask() const noexcept
 {
-	return _stencilTwoWriteMask;
+	return _stencilBackWriteMask;
 }
 
 GraphicsStencilOp
-GraphicsStateDesc::getStencilTwoFail() const noexcept
+GraphicsStateDesc::getStencilBackFail() const noexcept
 {
-	return _stencilTwoFail;
+	return _stencilBackFail;
 }
 
 GraphicsStencilOp
-GraphicsStateDesc::getStencilTwoZFail() const noexcept
+GraphicsStateDesc::getStencilBackZFail() const noexcept
 {
-	return _stencilTwoZFail;
+	return _stencilBackZFail;
 }
 
 GraphicsStencilOp
-GraphicsStateDesc::getStencilTwoPass() const noexcept
+GraphicsStateDesc::getStencilBackPass() const noexcept
 {
-	return _stencilTwoPass;
+	return _stencilBackPass;
 }
 
 GraphicsState::GraphicsState() noexcept

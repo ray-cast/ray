@@ -53,6 +53,7 @@ SET(HEADER_PATH ${PROJECT_SOURCE_DIR}/include/ray)
 SET(SOURCE_PATH ${PROJECT_SOURCE_DIR}/source/librenderer)
 
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/HLSLCrossCompiler/include)
+INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/glsl-optimizer/src)
 
 IF(BUILD_OPENGL_CORE OR BUILD_OPENGL_COMPATIBLE)
     INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/glew/include)
@@ -236,6 +237,8 @@ SET(RENDER_PIPELINE
     ${SOURCE_PATH}/forward_render_pipeline.cpp
     ${SOURCE_PATH}/shadow_render_pipeline.h
     ${SOURCE_PATH}/shadow_render_pipeline.cpp
+    ${SOURCE_PATH}/post_render_pipeline.h
+    ${SOURCE_PATH}/post_render_pipeline.cpp
 )
 SOURCE_GROUP("renderer\\pipeline" FILES ${RENDER_PIPELINE})
 
@@ -309,7 +312,7 @@ ENDIF()
 
 ADD_LIBRARY(${LIB_NAME} SHARED ${RENDERER_LIST})
 
-TARGET_LINK_LIBRARIES(${LIB_NAME} libplatform libmodel libimage freetype libHLSLcc)
+TARGET_LINK_LIBRARIES(${LIB_NAME} libplatform libmodel libimage freetype libHLSLcc glsl_optimizer)
 
 IF(BUILD_PLATFORM_WINDOWS)
     IF(BUILD_PLATFORM_WINDOWS)

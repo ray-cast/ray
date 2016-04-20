@@ -105,6 +105,12 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="gequal"/>
+            <state name="stencilRef" value="1"/>
+            <state name="stencilTwoFunc" value="gequal"/>
+            <state name="stencilTwoRef" value="1"/>
         </pass>
     </technique>
     <technique name="blur">

@@ -113,9 +113,9 @@
         </component>
         <component class="Terrain">
         </component>
-        <component class="PhysicsCharacter">
+        <!--component class="PhysicsCharacter">
             <attribute radius="1"/>
             <attribute height="4"/>
-        </component>
+        </component-->
     </object>
 </scene>

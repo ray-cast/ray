@@ -79,6 +79,10 @@ public:
 	iarchive& getValue(const std::string& name, int2& result) noexcept;
 	iarchive& getValue(const std::string& name, int3& result) noexcept;
 	iarchive& getValue(const std::string& name, int4& result) noexcept;
+	iarchive& getValue(const std::string& name, uint1& result) noexcept;
+	iarchive& getValue(const std::string& name, uint2& result) noexcept;
+	iarchive& getValue(const std::string& name, uint3& result) noexcept;
+	iarchive& getValue(const std::string& name, uint4& result) noexcept;
 	iarchive& getValue(const std::string& name, float1& result) noexcept;
 	iarchive& getValue(const std::string& name, float2& result) noexcept;
 	iarchive& getValue(const std::string& name, float3& result) noexcept;

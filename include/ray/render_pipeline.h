@@ -84,10 +84,10 @@ public:
 	void* mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept;
 	void unmapBuffer(GraphicsDataPtr data) noexcept;
 	
-	void drawCone(MaterialTechPtr tech) noexcept;
-	void drawSphere(MaterialTechPtr tech) noexcept;
-	void drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept;
-	void drawScreenQuad(MaterialTechPtr tech) noexcept;
+	void drawCone(MaterialTechPtr tech, std::uint32_t layer = 0) noexcept;
+	void drawSphere(MaterialTechPtr tech, std::uint32_t layer = 0) noexcept;
+	void drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable, std::uint32_t layer = 0) noexcept;
+	void drawScreenQuad(MaterialTechPtr tech, std::uint32_t layer = 0) noexcept;
 	void drawRenderQueue(RenderQueue queue, MaterialTechPtr tech = nullptr) noexcept;
 
 	void addPostProcess(RenderPostProcessPtr postprocess) noexcept;
@@ -98,7 +98,9 @@ public:
 	void present() noexcept;
 
 	bool isTextureSupport(GraphicsFormat format) noexcept;
+	bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept;
 	bool isVertexSupport(GraphicsFormat format) noexcept;
+	bool isShaderSupport(GraphicsShaderStage stage) noexcept;
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
 	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
@@ -109,13 +111,15 @@ public:
 	GraphicsFramebufferLayoutPtr createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept;
 
 	MaterialPtr createMaterial(const std::string& name) noexcept;
+	void destroyMaterial(MaterialPtr material) noexcept;
+
 	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
 	RenderMeshPtr createRenderMesh(const MeshProperty& mesh, std::uint32_t flags = ModelMakerFlagBits::ModelMakerFlagBitALL) noexcept;
 	RenderMeshPtr createRenderMesh(const MeshPropertys& mesh, std::uint32_t flags = ModelMakerFlagBits::ModelMakerFlagBitALL) noexcept;
 
-	MaterialVariantPtr createSemantic(const std::string& name, GraphicsUniformType type) noexcept;
-	void destroySemantic(MaterialVariantPtr semantic) const noexcept;
-	MaterialVariantPtr getSemantic(const std::string& semantic) const noexcept;
+	MaterialParamPtr createSemantic(const std::string& name, GraphicsUniformType type) noexcept;
+	void destroySemantic(MaterialParamPtr semantic) const noexcept;
+	MaterialParamPtr getSemantic(const std::string& semantic) const noexcept;
 
 private:
 	bool setupDeviceContext(WindHandle window, std::uint32_t w, std::uint32_t h) noexcept;
@@ -151,33 +155,33 @@ private:
 	GraphicsIndirect _renderSphereIndirect;
 	GraphicsIndirect _renderScreenQuadIndirect;
 
-	MaterialVariantPtr _materialMatModel;
-	MaterialVariantPtr _materialMatModelInverse;
-	MaterialVariantPtr _materialMatModelInverseTranspose;
-	MaterialVariantPtr _materialMatProject;
-	MaterialVariantPtr _materialMatProjectInverse;
-	MaterialVariantPtr _materialMatView;
-	MaterialVariantPtr _materialMatViewInverse;
-	MaterialVariantPtr _materialMatViewInverseTranspose;
-	MaterialVariantPtr _materialMatViewProject;
-	MaterialVariantPtr _materialMatViewProjectAdj;
-	MaterialVariantPtr _materialMatViewProjectInverse;
-	MaterialVariantPtr _materialMatModelView;
-	MaterialVariantPtr _materialMatModelViewProject;
-	MaterialVariantPtr _materialCameraAperture;
-	MaterialVariantPtr _materialCameraFar;
-	MaterialVariantPtr _materialCameraNear;
-	MaterialVariantPtr _materialCameraPosition;
-	MaterialVariantPtr _materialCameraDirection;
-	MaterialVariantPtr _materialDepthMap;
-	MaterialVariantPtr _materialColorMap;
-	MaterialVariantPtr _materialNormalMap;
-	MaterialVariantPtr _materialDeferredDepthMap;
-	MaterialVariantPtr _materialDeferredDepthLinearMap;
-	MaterialVariantPtr _materialDeferredGraphicMap;
-	MaterialVariantPtr _materialDeferredNormalMap;
-	MaterialVariantPtr _materialDeferredLightMap;
-	MaterialVariantPtr _materialDeferredShadowMap;
+	MaterialParamPtr _materialMatModel;
+	MaterialParamPtr _materialMatModelInverse;
+	MaterialParamPtr _materialMatModelInverseTranspose;
+	MaterialParamPtr _materialMatProject;
+	MaterialParamPtr _materialMatProjectInverse;
+	MaterialParamPtr _materialMatView;
+	MaterialParamPtr _materialMatViewInverse;
+	MaterialParamPtr _materialMatViewInverseTranspose;
+	MaterialParamPtr _materialMatViewProject;
+	MaterialParamPtr _materialMatViewProjectAdj;
+	MaterialParamPtr _materialMatViewProjectInverse;
+	MaterialParamPtr _materialMatModelView;
+	MaterialParamPtr _materialMatModelViewProject;
+	MaterialParamPtr _materialCameraAperture;
+	MaterialParamPtr _materialCameraFar;
+	MaterialParamPtr _materialCameraNear;
+	MaterialParamPtr _materialCameraPosition;
+	MaterialParamPtr _materialCameraDirection;
+	MaterialParamPtr _materialDepthMap;
+	MaterialParamPtr _materialColorMap;
+	MaterialParamPtr _materialNormalMap;
+	MaterialParamPtr _materialDeferredDepthMap;
+	MaterialParamPtr _materialDeferredDepthLinearMap;
+	MaterialParamPtr _materialDeferredGraphicMap;
+	MaterialParamPtr _materialDeferredNormalMap;
+	MaterialParamPtr _materialDeferredLightMap;
+	MaterialParamPtr _materialDeferredShadowMap;
 
 	RenderDataManagerPtr _dataManager;
 

@@ -73,6 +73,30 @@ typedef std::shared_ptr<class GraphicsCommandQueue> GraphicsCommandQueuePtr;
 typedef std::shared_ptr<class GraphicsCommandList> GraphicsCommandListPtr;
 typedef std::shared_ptr<class GraphicsSemaphore> GraphicsSemaphorePtr;
 typedef std::shared_ptr<class GraphicsIndirect> GraphicsIndirectPtr;
+typedef std::shared_ptr<class GraphicsDeviceDesc> GraphicsDeviceDescPtr;
+typedef std::shared_ptr<class GraphicsSwapchainDesc> GraphicsSwapchainDescPtr;
+typedef std::shared_ptr<class GraphicsContextDesc> GraphicsContextDescPtr;
+typedef std::shared_ptr<class GraphicsInputLayoutDesc> GraphicsInputLayoutDescPtr;
+typedef std::shared_ptr<class GraphicsDataDesc> GraphicsDataDescPtr;
+typedef std::shared_ptr<class GraphicsTextureDesc> GraphicsTextureDescPtr;
+typedef std::shared_ptr<class GraphicsSamplerDesc> GraphicsSamplerDescPtr;
+typedef std::shared_ptr<class GraphicsFramebufferDesc> GraphicsFramebufferDescPtr;
+typedef std::shared_ptr<class GraphicsFramebufferLayoutDesc> GraphicsFramebufferLayoutDescPtr;
+typedef std::shared_ptr<class GraphicsStateDesc> GraphicsStateDescPtr;
+typedef std::shared_ptr<class GraphicsShaderDesc> GraphicsShaderDescPtr;
+typedef std::shared_ptr<class GraphicsProgramDesc> GraphicsProgramDescPtr;
+typedef std::shared_ptr<class GraphicsPipelineDesc> GraphicsPipelineDescPtr;
+typedef std::shared_ptr<class GraphicsPipelineLayoutDesc> GraphicsPipelineLayoutDescPtr;
+typedef std::shared_ptr<class GraphicsDescriptorSetDesc> GraphicsDescriptorSetDescPtr;
+typedef std::shared_ptr<class GraphicsDescriptorSetLayoutDesc> GraphicsDescriptorSetLayoutDescPtr;
+typedef std::shared_ptr<class GraphicsDescriptorPoolDesc> GraphicsDescriptorPoolDescPtr;
+typedef std::shared_ptr<class GraphicsCommandQueueDesc> GraphicsCommandQueueDescPtr;
+typedef std::shared_ptr<class GraphicsCommandPoolDesc> GraphicsCommandPoolDescPtr;
+typedef std::shared_ptr<class GraphicsCommandListDesc> GraphicsCommandListDescPtr;
+typedef std::shared_ptr<class GraphicsSemaphoreDesc> GraphicsSemaphoreDescPtr;
+typedef std::shared_ptr<class GraphicsVertexLayout> GraphicsVertexLayoutPtr;
+typedef std::shared_ptr<class GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponentPtr;
+typedef std::shared_ptr<class GraphicsAttachmentDesc> GraphicsAttachmentDescPtr;
 
 typedef std::weak_ptr<class GraphicsDevice> GraphicsDeviceWeakPtr;
 typedef std::weak_ptr<class GraphicsSwapchain> GraphicsSwapchainWeakPtr;
@@ -99,6 +123,30 @@ typedef std::weak_ptr<class GraphicsCommandPool> GraphicsCommandPoolWeakPtr;
 typedef std::weak_ptr<class GraphicsCommandQueue> GraphicsCommandQueueWeakPtr;
 typedef std::weak_ptr<class GraphicsCommandList> GraphicsCommandPoolListWeakPtr;
 typedef std::weak_ptr<class GraphicsSemaphoreDesc> GraphicsSemaphoreDescWeakPtr;
+typedef std::weak_ptr<class GraphicsDeviceDesc> GraphicsDeviceDescWeakPtr;
+typedef std::weak_ptr<class GraphicsSwapchainDesc> GraphicsSwapchainDescWeakPtr;
+typedef std::weak_ptr<class GraphicsContextDesc> GraphicsContextDescWeakPtr;
+typedef std::weak_ptr<class GraphicsInputLayoutDesc> GraphicsInputLayoutDescWeakPtr;
+typedef std::weak_ptr<class GraphicsDataDesc> GraphicsDataDescWeakPtr;
+typedef std::weak_ptr<class GraphicsTextureDesc> GraphicsTextureDescWeakPtr;
+typedef std::weak_ptr<class GraphicsSamplerDesc> GraphicsSamplerDescWeakPtr;
+typedef std::weak_ptr<class GraphicsFramebufferDesc> GraphicsFramebufferDescWeakPtr;
+typedef std::weak_ptr<class GraphicsFramebufferLayoutDesc> GraphicsFramebufferLayoutDescWeakPtr;
+typedef std::weak_ptr<class GraphicsStateDesc> GraphicsStateDescWeakPtr;
+typedef std::weak_ptr<class GraphicsShaderDesc> GraphicsShaderDescWeakPtr;
+typedef std::weak_ptr<class GraphicsProgramDesc> GraphicsProgramDescWeakPtr;
+typedef std::weak_ptr<class GraphicsPipelineDesc> GraphicsPipelineDescWeakPtr;
+typedef std::weak_ptr<class GraphicsPipelineLayoutDesc> GraphicsPipelineLayoutDescWeakPtr;
+typedef std::weak_ptr<class GraphicsDescriptorSetDesc> GraphicsDescriptorSetDescWeakPtr;
+typedef std::weak_ptr<class GraphicsDescriptorSetLayoutDesc> GraphicsDescriptorSetLayoutDescWeakPtr;
+typedef std::weak_ptr<class GraphicsDescriptorPoolDesc> GraphicsDescriptorPoolDescWeakPtr;
+typedef std::weak_ptr<class GraphicsCommandQueueDesc> GraphicsCommandQueueDescWeakPtr;
+typedef std::weak_ptr<class GraphicsCommandPoolDesc> GraphicsCommandPoolDescWeakPtr;
+typedef std::weak_ptr<class GraphicsCommandListDesc> GraphicsCommandListDescWeakPtr;
+typedef std::weak_ptr<class GraphicsSemaphoreDesc> GraphicsSemaphoreDescWeakPtr;
+typedef std::weak_ptr<class GraphicsVertexLayout> GraphicsVertexLayoutWeakPtr;
+typedef std::weak_ptr<class GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponentWeakPtr;
+typedef std::weak_ptr<class GraphicsAttachmentDesc> GraphicsAttachmentDescWeakPtr;
 
 typedef std::vector<GraphicsShaderPtr> GraphicsShaders;
 typedef std::vector<GraphicsVariantPtr> GraphicsVariants;
@@ -106,36 +154,37 @@ typedef std::vector<GraphicsFramebufferPtr> GraphicsFramebuffers;
 typedef std::vector<GraphicsIndirectPtr> GraphicsIndirects;
 typedef std::vector<GraphicsUniformSetPtr> GraphicsUniformSets;
 typedef std::vector<GraphicsTexturePtr> GraphicsTextures;
+typedef std::vector<GraphicsSamplerPtr> GraphicsSamplers;
 typedef std::vector<GraphicsAttributePtr> GraphicsAttributes;
 typedef std::vector<GraphicsUniformPtr> GraphicsUniforms;
 typedef std::vector<GraphicsUniformBlockPtr> GraphicsUniformBlocks;
 typedef std::vector<GraphicsDescriptorSetLayoutPtr> GraphicsDescriptorSetLayouts;
 typedef std::vector<GraphicsInputLayoutPtr> GraphicsInputLayouts;
-typedef std::vector<class GraphicsVertexLayout> GraphicsVertexLayouts;
-typedef std::vector<class GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponents;
-typedef std::vector<class GraphicsAttachmentDesc> GraphicsAttachmentDescs;
+typedef std::vector<GraphicsDeviceDescPtr> GraphicsDeviceDescs;
+typedef std::vector<GraphicsSwapchainDescPtr> GraphicsSwapchainDescs;
+typedef std::vector<GraphicsContextDescPtr> GraphicsContextDescs;
+typedef std::vector<GraphicsInputLayoutDescPtr> GraphicsInputLayoutDescs;
+typedef std::vector<GraphicsDataDescPtr> GraphicsDataDescs;
+typedef std::vector<GraphicsTextureDescPtr> GraphicsTextureDescs;
+typedef std::vector<GraphicsSamplerDescPtr> GraphicsSamplerDescs;
+typedef std::vector<GraphicsFramebufferDescPtr> GraphicsFramebufferDescs;
+typedef std::vector<GraphicsFramebufferLayoutDescPtr> GraphicsFramebufferLayoutDescs;
+typedef std::vector<GraphicsStateDescPtr> GraphicsStateDescs;
+typedef std::vector<GraphicsShaderDescPtr> GraphicsShaderDescs;
+typedef std::vector<GraphicsProgramDescPtr> GraphicsProgramDescs;
+typedef std::vector<GraphicsPipelineDescPtr> GraphicsPipelineDescs;
+typedef std::vector<GraphicsPipelineLayoutDescPtr> GraphicsPipelineLayoutDescs;
+typedef std::vector<GraphicsDescriptorSetDescPtr> GraphicsDescriptorSetDescs;
+typedef std::vector<GraphicsDescriptorSetLayoutDescPtr> GraphicsDescriptorSetLayoutDescs;
+typedef std::vector<GraphicsDescriptorPoolDescPtr> GraphicsDescriptorPoolDescs;
+typedef std::vector<GraphicsCommandQueueDescPtr> GraphicsCommandQueueDescs;
+typedef std::vector<GraphicsCommandPoolDescPtr> GraphicsCommandPoolDescs;
+typedef std::vector<GraphicsCommandListDescPtr> GraphicsCommandListDescs;
+typedef std::vector<GraphicsSemaphoreDescPtr> GraphicsSemaphoreDescs;
 
-class GraphicsDeviceDesc;
-class GraphicsSwapchainDesc;
-class GraphicsContextDesc;
-class GraphicsInputLayoutDesc;
-class GraphicsDataDesc;
-class GraphicsTextureDesc;
-class GraphicsSamplerDesc;
-class GraphicsFramebufferDesc;
-class GraphicsFramebufferLayoutDesc;
-class GraphicsStateDesc;
-class GraphicsShaderDesc;
-class GraphicsProgramDesc;
-class GraphicsPipelineDesc;
-class GraphicsPipelineLayoutDesc;
-class GraphicsDescriptorSetDesc;
-class GraphicsDescriptorSetLayoutDesc;
-class GraphicsDescriptorPoolDesc;
-class GraphicsCommandQueueDesc;
-class GraphicsCommandPoolDesc;
-class GraphicsCommandListDesc;
-class GraphicsSemaphoreDesc;
+typedef std::vector<GraphicsVertexLayout> GraphicsVertexLayouts;
+typedef std::vector<GraphicsDescriptorPoolComponent> GraphicsDescriptorPoolComponents;
+typedef std::vector<GraphicsAttachmentDesc> GraphicsAttachmentDescs;
 
 typedef void* WindHandle;
 
@@ -275,6 +324,17 @@ enum GraphicsStencilOp
 	GraphicsStencilOpEndRange = GraphicsStencilOpDecrWrap,
 	GraphicsStencilOpRangeSize = (GraphicsStencilOpEndRange - GraphicsStencilOpBeginRange + 1),
 	GraphicsStencilOpMaxEnum = 0x7FFFFFFF
+};
+
+enum GraphicsStencilFace
+{
+	GraphicsStencilFaceFront = 1,
+	GraphicsStencilFaceBack = 2,
+	GraphicsStencilFaceFrontBack = 3,
+	GraphicsStencilFaceBeginRange = GraphicsStencilFaceFront,
+	GraphicsStencilFaceEndRange = GraphicsStencilFaceBack,
+	GraphicsStencilFaceRangeSize = (GraphicsStencilFaceEndRange - GraphicsStencilFaceBeginRange + 1),
+	GraphicsStencilFaceMaxEnum = 0x7FFFFFFF
 };
 
 enum GraphicsClearFlags
@@ -715,9 +775,6 @@ enum GraphicsUniformType
 {
 	GraphicsUniformTypeNone = 0,
     GraphicsUniformTypeBool = 1,
-	GraphicsUniformTypeBool2 = 2,
-	GraphicsUniformTypeBool3 = 3,
-	GraphicsUniformTypeBool4 = 4,
     GraphicsUniformTypeInt = 5,
     GraphicsUniformTypeInt2 = 6,
     GraphicsUniformTypeInt3 = 7,
@@ -733,10 +790,6 @@ enum GraphicsUniformType
 	GraphicsUniformTypeFloat2x2 = 17,
     GraphicsUniformTypeFloat3x3 = 18,
     GraphicsUniformTypeFloat4x4 = 19,
-	GraphicsUniformTypeBoolArray = 20,
-	GraphicsUniformTypeBool2Array = 21,
-	GraphicsUniformTypeBool3Array = 22,
-	GraphicsUniformTypeBool4Array = 23,
     GraphicsUniformTypeIntArray = 24,
     GraphicsUniformTypeInt2Array = 25,
     GraphicsUniformTypeInt3Array = 26,

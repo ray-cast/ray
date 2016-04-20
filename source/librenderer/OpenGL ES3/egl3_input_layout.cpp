@@ -111,7 +111,6 @@ EGL3InputLayout::bindLayout(const EGL3ProgramPtr& program) noexcept
 		for (auto& it : components)
 		{
 			GLuint attribIndex = GL_INVALID_INDEX;
-			GLuint bindingIndex = it.getVertexSlot();
 			GLenum type = EGL3Types::asVertexFormat(it.getVertexFormat());
 
 			auto& attributes = program->getActiveAttributes();
@@ -127,13 +126,8 @@ EGL3InputLayout::bindLayout(const EGL3ProgramPtr& program) noexcept
 			if (attribIndex != GL_INVALID_INDEX)
 			{
 				glEnableVertexAttribArray(attribIndex);
-				glVertexAttribBinding(attribIndex, bindingIndex);
+				glVertexAttribBinding(attribIndex, 0);
 				glVertexAttribFormat(attribIndex, it.getVertexCount(), type, GL_FALSE, offset);
-
-				if (it.getVertexDivisor() == GraphicsVertexDivisor::GraphicsVertexDivisorInstance)
-					glVertexBindingDivisor(bindingIndex, 1);
-				else
-					glVertexBindingDivisor(bindingIndex, 0);
 			}
 
 			offset += it.getVertexSize();

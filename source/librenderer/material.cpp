@@ -80,12 +80,6 @@ Material::close() noexcept
 	}
 }
 
-const std::string&
-Material::getName() const noexcept
-{
-	return _materialDesc.getName();
-}
-
 MaterialTechPtr
 Material::getTech(const std::string& name) noexcept
 {
@@ -116,19 +110,19 @@ Material::getParameters() const noexcept
 	return _materialDesc.getParameters();
 }
 
-MaterialVariantPtr
+MaterialParamPtr
 Material::getMacro(const std::string& name) const noexcept
 {
 	return _materialDesc.getMacro(name);
 }
 
-MaterialVariants&
+MaterialParams&
 Material::getMacros() noexcept
 {
 	return _materialDesc.getMacros();
 }
 
-const MaterialVariants&
+const MaterialParams&
 Material::getMacros() const noexcept
 {
 	return _materialDesc.getMacros();

@@ -62,15 +62,15 @@ SSGI::setSetting(const Setting& set) noexcept
 	_setting.blurScale = set.blurScale;
 	_setting.blurSharpness = set.blurSharpness;
 
-	_radius->assign(_setting.radius);
-	_radius2->assign(_setting.radius * _setting.radius);
+	_radius->uniform1f(_setting.radius);
+	_radius2->uniform1f(_setting.radius * _setting.radius);
 
-	_bias->assign(_setting.bias);
-	_intensityDivR6->assign(_setting.intensity);
+	_bias->uniform1f(_setting.bias);
+	_intensityDivR6->uniform1f(_setting.intensity);
 
-	_blurRadius->assign(_setting.blurRadius);
-	_blurFactor->assign((float)1.0 / (2 * ((_setting.blurRadius + 1) / 2) * ((_setting.blurRadius + 1) / 2)));
-	_blurSharpness->assign(_setting.blurSharpness);
+	_blurRadius->uniform1f(_setting.blurRadius);
+	_blurFactor->uniform1f((float)1.0 / (2 * ((_setting.blurRadius + 1) / 2) * ((_setting.blurRadius + 1) / 2)));
+	_blurSharpness->uniform1f(_setting.blurSharpness);
 }
 
 const SSGI::Setting&
@@ -82,9 +82,9 @@ SSGI::getSetting() const noexcept
 void
 SSGI::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	_projInfo->assign(pipeline.getCamera()->getProjConstant());
-	_projScale->assign(pipeline.getCamera()->getProjLength().y * _setting.radius);
-	_clipInfo->assign(pipeline.getCamera()->getClipConstant());
+	_projInfo->uniform4f(pipeline.getCamera()->getProjConstant());
+	_projScale->uniform1f(pipeline.getCamera()->getProjLength().y * _setting.radius);
+	_clipInfo->uniform3f(pipeline.getCamera()->getClipConstant());
 
 	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(_ambientOcclusionPass);
@@ -115,8 +115,8 @@ SSGI::blurVertical(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 void
 SSGI::blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest, const float2& direction) noexcept
 {
-	_blurDirection->assign(direction);
-	_blurTexSource->assign(source);
+	_blurDirection->uniform2f(direction);
+	_blurTexSource->uniformTexture(source);
 
 	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(_ambientOcclusionBlurPass);
@@ -125,7 +125,7 @@ SSGI::blurDirection(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphic
 void
 SSGI::shading(RenderPipeline& pipeline, GraphicsTexturePtr ao, GraphicsFramebufferPtr dest) noexcept
 {
-	_copyAmbient->assign(ao);
+	_copyAmbient->uniformTexture(ao);
 
 	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(_ambientOcclusionCopyPass);

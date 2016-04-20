@@ -38,113 +38,8 @@
 #include <ray/material_tech.h>
 #include <ray/material_param.h>
 #include <ray/material_variant.h>
-#include <ray/graphics_input_layout.h>
-#include <ray/graphics_shader.h>
 
 _NAME_BEGIN
-
-MaterialPassDesc::MaterialPassDesc() noexcept
-{
-}
-
-MaterialPassDesc::~MaterialPassDesc() noexcept
-{
-}
-
-void
-MaterialPassDesc::setName(const std::string& name) noexcept
-{
-	_name = name;
-}
-
-const std::string&
-MaterialPassDesc::getName() const noexcept
-{
-	return _name;
-}
-
-void
-MaterialPassDesc::setGraphicsState(GraphicsStatePtr& state) noexcept
-{
-	_state = state;
-}
-
-void
-MaterialPassDesc::setGraphicsProgram(GraphicsProgramPtr& program) noexcept
-{
-	_program = program;
-}
-
-void
-MaterialPassDesc::setGraphicsInputLayout(GraphicsInputLayoutPtr& inputLayout) noexcept
-{
-	_inputLayout = inputLayout;
-}
-
-void
-MaterialPassDesc::setGraphicsDescriptorPool(GraphicsDescriptorPoolPtr& descriptorPool) noexcept
-{
-	_descriptorPool = descriptorPool;
-}
-
-void
-MaterialPassDesc::setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr& descriptorSetLayout) noexcept
-{
-	_descriptorSetLayout = descriptorSetLayout;
-}
-
-GraphicsStatePtr
-MaterialPassDesc::getGraphicsState() const noexcept
-{
-	return _state;
-}
-
-GraphicsProgramPtr
-MaterialPassDesc::getGraphicsProgram() const noexcept
-{
-	return _program;
-}
-
-GraphicsInputLayoutPtr
-MaterialPassDesc::getGraphicsInputLayout() const noexcept
-{
-	return _inputLayout;
-}
-
-GraphicsDescriptorPoolPtr
-MaterialPassDesc::getGraphicsDescriptorPool() const noexcept
-{
-	return _descriptorPool;
-}
-
-GraphicsDescriptorSetLayoutPtr
-MaterialPassDesc::getGraphicsDescriptorSetLayout() const noexcept
-{
-	return _descriptorSetLayout;
-}
-
-MaterialTechDesc::MaterialTechDesc() noexcept
-{
-}
-
-MaterialTechDesc::~MaterialTechDesc() noexcept
-{
-}
-
-void 
-MaterialTechDesc::addPass(MaterialPassDescPtr pass) noexcept
-{
-	_passList.push_back(pass);
-}
-
-void 
-MaterialTechDesc::removePass(MaterialPassDescPtr pass) noexcept
-{
-	assert(pass);
-	auto it = std::find(_passList.begin(), _passList.end(), pass);
-	if (it != _passList.end())
-		_passList.erase(it);
-}
 
 MaterialDesc::MaterialDesc() noexcept
 {
@@ -152,18 +47,6 @@ MaterialDesc::MaterialDesc() noexcept
 
 MaterialDesc::~MaterialDesc() noexcept
 {
-}
-
-void
-MaterialDesc::setName(const std::string& name) noexcept
-{
-	_name = name;
-}
-
-const std::string&
-MaterialDesc::getName() const noexcept
-{
-	return _name;
 }
 
 void
@@ -248,7 +131,7 @@ MaterialDesc::getParameters() const noexcept
 }
 
 void
-MaterialDesc::addMacro(MaterialVariantPtr macro) noexcept
+MaterialDesc::addMacro(MaterialParamPtr macro) noexcept
 {
 	assert(macro);
 	assert(std::find(_macros.begin(), _macros.end(), macro) == _macros.end());
@@ -256,7 +139,7 @@ MaterialDesc::addMacro(MaterialVariantPtr macro) noexcept
 }
 
 void
-MaterialDesc::removeMacro(MaterialVariantPtr macro) noexcept
+MaterialDesc::removeMacro(MaterialParamPtr macro) noexcept
 {
 	assert(macro);
 	auto it = std::find(_macros.begin(), _macros.end(), macro);
@@ -266,7 +149,7 @@ MaterialDesc::removeMacro(MaterialVariantPtr macro) noexcept
 	}
 }
 
-MaterialVariantPtr
+MaterialParamPtr
 MaterialDesc::getMacro(const std::string& name) const noexcept
 {
 	assert(!name.empty());
@@ -279,100 +162,16 @@ MaterialDesc::getMacro(const std::string& name) const noexcept
 	return nullptr;
 }
 
-MaterialVariants&
+MaterialParams&
 MaterialDesc::getMacros() noexcept
 {
 	return _macros;
 }
 
-const MaterialVariants&
+const MaterialParams&
 MaterialDesc::getMacros() const noexcept
 {
 	return _macros;
-}
-
-void
-MaterialDesc::addInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept
-{
-	_inputLayouts.push_back(inputLayout);
-}
-
-void
-MaterialDesc::removeInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept
-{
-	assert(inputLayout);
-	auto it = std::find(_inputLayouts.begin(), _inputLayouts.end(), inputLayout);
-	if (it != _inputLayouts.end())
-	{
-		_inputLayouts.erase(it);
-	}
-}
-
-GraphicsInputLayoutPtr
-MaterialDesc::getInputLayout(const std::string& name) const noexcept
-{
-	assert(!name.empty());
-	for (auto& it : _inputLayouts)
-	{
-		if (it->getGraphicsInputLayoutDesc().getName() == name)
-			return it;
-	}
-
-	return nullptr;
-}
-
-GraphicsInputLayouts&
-MaterialDesc::getInputLayouts() noexcept
-{
-	return _inputLayouts;
-}
-
-const GraphicsInputLayouts&
-MaterialDesc::getInputLayouts() const noexcept
-{
-	return _inputLayouts;
-}
-
-void
-MaterialDesc::addShader(GraphicsShaderPtr inputLayout) noexcept
-{
-	_shaders.push_back(inputLayout);
-}
-
-void
-MaterialDesc::removeShader(GraphicsShaderPtr inputLayout) noexcept
-{
-	assert(inputLayout);
-	auto it = std::find(_shaders.begin(), _shaders.end(), inputLayout);
-	if (it != _shaders.end())
-	{
-		_shaders.erase(it);
-	}
-}
-
-GraphicsShaderPtr
-MaterialDesc::getShader(const std::string& name) const noexcept
-{
-	assert(!name.empty());
-	for (auto& it : _shaders)
-	{
-		if (it->getGraphicsShaderDesc().getName() == name)
-			return it;
-	}
-
-	return nullptr;
-}
-
-GraphicsShaders&
-MaterialDesc::getShaders() noexcept
-{
-	return _shaders;
-}
-
-const GraphicsShaders&
-MaterialDesc::getShaders() const noexcept
-{
-	return _shaders;
 }
 
 _NAME_END

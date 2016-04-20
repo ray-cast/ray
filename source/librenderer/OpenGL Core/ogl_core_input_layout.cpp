@@ -44,6 +44,7 @@ __ImplementSubClass(OGLCoreInputLayout, GraphicsInputLayout, "OGLCoreInputLayout
 
 OGLCoreInputLayout::OGLCoreInputLayout() noexcept
 	: _vao(GL_NONE)
+	, _vbo(GL_NONE)
 	, _ibo(GL_NONE)
 {
 }
@@ -118,7 +119,6 @@ OGLCoreInputLayout::bindLayout(OGLProgramPtr program) noexcept
 		for (auto& it : components)
 		{
 			GLuint attribIndex = GL_INVALID_INDEX;
-			GLuint bindingIndex = it.getVertexSlot();
 			GLenum type = OGLTypes::asVertexFormat(it.getVertexFormat());
 
 			auto& attributes = program->getActiveAttributes();
@@ -134,13 +134,8 @@ OGLCoreInputLayout::bindLayout(OGLProgramPtr program) noexcept
 			if (attribIndex != GL_INVALID_INDEX)
 			{
 				glEnableVertexArrayAttrib(_vao, attribIndex);
-				glVertexArrayAttribBinding(_vao, attribIndex, bindingIndex);
+				glVertexArrayAttribBinding(_vao, attribIndex, 0);
 				glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, GL_FALSE, offset);
-
-				if (it.getVertexDivisor() == GraphicsVertexDivisor::GraphicsVertexDivisorInstance)
-					glVertexArrayBindingDivisor(_vao, bindingIndex, 1);
-				else
-					glVertexArrayBindingDivisor(_vao, bindingIndex, 0);
 			}
 
 			offset += it.getVertexSize();
@@ -154,7 +149,6 @@ void
 OGLCoreInputLayout::bindVbo(OGLCoreGraphicsDataPtr vbo, GLuint slot) noexcept
 {
 	assert(vbo);
-
 	GLuint stride = vbo->getGraphicsDataDesc().getStride();
 	glVertexArrayVertexBuffer(_vao, slot, vbo->getInstanceID(), 0, stride);
 }
@@ -163,12 +157,7 @@ void
 OGLCoreInputLayout::bindIbo(OGLCoreGraphicsDataPtr ibo) noexcept
 {
 	assert(ibo);
-
-	if (_ibo != ibo)
-	{
-		glVertexArrayElementBuffer(_vao, ibo->getInstanceID());
-		_ibo = ibo;
-	}	
+	glVertexArrayElementBuffer(_vao, ibo->getInstanceID());
 }
 
 void

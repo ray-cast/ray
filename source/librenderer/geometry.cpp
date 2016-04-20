@@ -37,6 +37,7 @@
 #include <ray/geometry.h>
 #include <ray/render_pipeline.h>
 #include <ray/render_object_manager.h>
+#include <ray/render_system.h>
 #include <ray/material.h>
 
 _NAME_BEGIN
@@ -108,6 +109,15 @@ Geometry::getGraphicsIndirect() noexcept
 	return _renderable;
 }
 
+void 
+Geometry::_updatePipeline() noexcept
+{
+	if (!_pipeline)
+	{
+		
+	}
+}
+
 void
 Geometry::onAddRenderData(RenderDataManager& manager) noexcept
 {
@@ -131,16 +141,16 @@ Geometry::onAddRenderData(RenderDataManager& manager) noexcept
 }
 
 void 
-Geometry::onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTechPtr _tech) noexcept
+Geometry::onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTechPtr _tech) noexcept
 {
 	auto tech = _tech ? _tech : _techniques[queue];
 	if (tech)
 	{
-		pipelineContext.setTransform(this->getTransform());
-		pipelineContext.setTransformInverse(this->getTransformInverse());
-		pipelineContext.setTransformInverseTranspose(this->getTransformInverseTranspose());
+		pipeline.setTransform(this->getTransform());
+		pipeline.setTransformInverse(this->getTransformInverse());
+		pipeline.setTransformInverseTranspose(this->getTransformInverseTranspose());
 
-		pipelineContext.drawMesh(tech, this->getRenderMesh(), *_renderable);
+		pipeline.drawMesh(tech, this->getRenderMesh(), *_renderable, this->getLayer());
 	}
 }
 

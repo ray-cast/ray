@@ -827,13 +827,13 @@ MeshProperty::makePlane(float width, float height, std::uint32_t widthSegments, 
 			std::int32_t c = static_cast<std::int32_t>(ix + gridX1 * (iy + 1) + 1);
 			std::int32_t d = static_cast<std::int32_t>(ix + gridX1 * iy + 1);
 
-			_faces.push_back(c);
+			_faces.push_back(a);
 			_faces.push_back(b);
-			_faces.push_back(a);
-
-			_faces.push_back(a);
-			_faces.push_back(d);
 			_faces.push_back(c);
+
+			_faces.push_back(c);
+			_faces.push_back(d);
+			_faces.push_back(a);
 		}
 	}
 

@@ -37,9 +37,37 @@
 #ifndef _H_MATERIAL_PASS_H_
 #define _H_MATERIAL_PASS_H_
 
-#include <ray/render_types.h>
+#include <ray/material_param.h>
 
 _NAME_BEGIN
+
+class EXPORT MaterialParamBinding final : public MaterialParamListener
+{
+public:
+	MaterialParamBinding() noexcept;
+	~MaterialParamBinding() noexcept;
+
+	void setMaterialParam(MaterialParamPtr param) noexcept;
+	MaterialParamPtr getMaterialParam() const noexcept;
+
+	void setGraphicsUniformSet(GraphicsUniformSetPtr uniformSet) noexcept;
+	GraphicsUniformSetPtr getGraphicsUniformSet() const noexcept;
+
+	void needUpdate(bool needUpdate) noexcept;
+	bool needUpdate() noexcept;
+
+private:
+	void onNeedUpdate() noexcept;
+
+private:
+	MaterialParamBinding(const MaterialParamBinding&) = delete;
+	MaterialParamBinding& operator=(const MaterialParamBinding&) = delete;
+
+private:
+	bool _needUpdate;
+	MaterialParamPtr _param;
+	GraphicsUniformSetPtr _uniformSet;
+};
 
 class EXPORT MaterialPass final : public rtti::Interface
 {
@@ -51,9 +79,6 @@ public:
 	bool setup(Material& material) noexcept;
 	void close() noexcept;
 	
-	const MaterialParams& getParameters() const noexcept;
-	MaterialParamPtr getParameter(const std::string& name) const noexcept;
-
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 
@@ -71,21 +96,24 @@ public:
 	GraphicsPipelinePtr getRenderPipeline() const noexcept;
 	GraphicsDescriptorSetPtr getDescriptorSet() const noexcept;
 
+	void update() noexcept;
+
 private:
 	MaterialPass(const MaterialPass&) = delete;
 	MaterialPass& operator=(const MaterialPass&) = delete;
 
 private:
-	std::string _name;
+	typedef std::vector<std::unique_ptr<MaterialParamBinding>> MaterialParamBindings;
 
-	MaterialParams _parameters;
+	std::string _name;
+	MaterialParamBindings _bindings;
 
 	GraphicsStatePtr _state;
 	GraphicsProgramPtr _program;
-	GraphicsInputLayoutPtr _inputLayout;
 	GraphicsDescriptorSetPtr _descriptorSet;
 	GraphicsDescriptorPoolPtr _descriptorPool;
 	GraphicsDescriptorSetLayoutPtr _descriptorSetLayout;
+	GraphicsInputLayoutPtr _inputLayout;
 	GraphicsPipelinePtr _pipeline;
 };
 

@@ -231,22 +231,25 @@ VulkanCommandList::clearTexture(GraphicsTexturePtr texture, const ClearValue& va
 }
 
 void
-VulkanCommandList::setFramebuffer(GraphicsFramebufferPtr renderTexture) noexcept
+VulkanCommandList::setFramebuffer(GraphicsFramebufferPtr framebuffer) noexcept
 {
+	assert(framebuffer);
+	assert(framebuffer->isInstanceOf<VulkanFramebuffer>());
+
 	if (_vkFramebuffer != VK_NULL_HANDLE)
 	{
 		vkCmdEndRenderPass(_vkCommandBuffer);
 		_vkFramebuffer = VK_NULL_HANDLE;
 	}
 
-	auto framebuffer = renderTexture->downcast<VulkanFramebuffer>();
-	auto framebufferDesc = framebuffer->getGraphicsFramebufferDesc();
+	_framebuffer = framebuffer->downcast<VulkanFramebuffer>();
+
+	auto& framebufferDesc = _framebuffer->getGraphicsFramebufferDesc();
 	auto framebufferLayout = framebufferDesc.getGraphicsFramebufferLayout();
-	auto framebufferLayoutDesc = framebufferLayout->getGraphicsFramebufferLayoutDesc();
 
 	VkClearValue clear[2];
 	clear[0].color.float32[0] = 0.0f;
-	clear[0].color.float32[1] = 0.0f;
+	clear[0].color.float32[1] = 1.0f;
 	clear[0].color.float32[2] = 0.0f;
 	clear[0].color.float32[3] = 0.0f;
 	clear[1].depthStencil.depth = 1.0f;
@@ -256,7 +259,7 @@ VulkanCommandList::setFramebuffer(GraphicsFramebufferPtr renderTexture) noexcept
 	cmd.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	cmd.pNext = 0;
 	cmd.renderPass = _vkFramebufferLayout = framebufferLayout->downcast<VulkanFramebufferLayout>()->getRenderPass();
-	cmd.framebuffer = framebuffer->getFramebuffer();
+	cmd.framebuffer = _framebuffer->getFramebuffer();
 	cmd.renderArea.offset.x = 0;
 	cmd.renderArea.offset.y = 0;
 	cmd.renderArea.extent.width = framebufferDesc.getWidth();
@@ -264,104 +267,209 @@ VulkanCommandList::setFramebuffer(GraphicsFramebufferPtr renderTexture) noexcept
 	cmd.clearValueCount = 2;
 	cmd.pClearValues = clear;
 
-	_framebuffers = renderTexture;
+	vkCmdBeginRenderPass(_vkCommandBuffer, &cmd, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+void
+VulkanCommandList::setFramebuffer(GraphicsFramebufferPtr framebuffer, const float4& color, float depth, std::int32_t stencil) noexcept
+{
+	assert(framebuffer);
+	assert(framebuffer->isInstanceOf<VulkanFramebuffer>());
+
+	VkClearValue attachment[VK_MAX_ATTACHMENT];
+
+	_framebuffer = framebuffer->downcast<VulkanFramebuffer>();
+
+	std::uint32_t usageCount = 0;
+	auto& framebufferDesc = _framebuffer->getGraphicsFramebufferDesc();
+	auto framebufferLayout = framebufferDesc.getGraphicsFramebufferLayout()->downcast<VulkanFramebufferLayout>();
+
+	auto txtureCount = framebufferDesc.getTextures().size();
+	for (std::uint32_t i = 0; i < txtureCount; i++)
+	{
+		attachment[usageCount].color.float32[0] = color.x;
+		attachment[usageCount].color.float32[1] = color.y;
+		attachment[usageCount].color.float32[2] = color.z;
+		attachment[usageCount].color.float32[3] = color.w;
+		usageCount++;
+	}
+
+	auto depthStencil = framebufferDesc.getSharedDepthStencilTexture();
+	if (depthStencil)
+	{
+		attachment[usageCount].depthStencil.depth = depth;
+		attachment[usageCount].depthStencil.stencil = stencil;
+		usageCount++;
+	}
+
+	if (_vkFramebuffer != VK_NULL_HANDLE)
+	{
+		vkCmdEndRenderPass(_vkCommandBuffer);
+		_vkFramebuffer = VK_NULL_HANDLE;
+	}
+
+	VkRenderPassBeginInfo cmd;
+	cmd.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	cmd.pNext = 0;
+	cmd.renderPass = _vkFramebufferLayout = framebufferLayout->downcast<VulkanFramebufferLayout>()->getRenderPass();
+	cmd.framebuffer = framebuffer->downcast<VulkanFramebuffer>()->getFramebuffer();
+	cmd.renderArea.offset.x = 0;
+	cmd.renderArea.offset.y = 0;
+	cmd.renderArea.extent.width = framebufferDesc.getWidth();
+	cmd.renderArea.extent.height = framebufferDesc.getHeight();
+	cmd.clearValueCount = usageCount;
+	cmd.pClearValues = attachment;
 
 	vkCmdBeginRenderPass(_vkCommandBuffer, &cmd, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 void
-VulkanCommandList::clearFramebuffer(ClearValue value[], std::uint32_t first, std::uint32_t count) noexcept
+VulkanCommandList::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
-	std::uint32_t attachmentCount = 0;
 	VkClearAttachment attachment[VK_MAX_ATTACHMENT];
 	VkClearRect rects[VK_MAX_ATTACHMENT];
 
-	auto framebuffer = _framebuffers->downcast<VulkanFramebuffer>();
-	auto& textureDesc = framebuffer->getGraphicsFramebufferDesc().getTextures()[0]->getGraphicsTextureDesc();
-	auto& renderTextures = framebuffer->getGraphicsFramebufferDesc().getTextures();
+	std::uint32_t usageCount = 0;
+	auto& framebufferDesc = _framebuffer->downcast<VulkanFramebuffer>()->getGraphicsFramebufferDesc();
 
-	for (std::uint32_t i = 0; i < count; i++, attachmentCount++)
+	if (flags & GraphicsClearFlags::GraphicsClearFlagsColor)
 	{
-		auto renderTexture = renderTextures[first + i]->downcast<VulkanTexture>();
-		auto format = renderTexture->getGraphicsTextureDesc().getTexFormat();
-
-		attachment[i].aspectMask = 0;
-		attachment[i].colorAttachment = first += i;
-
-		if (format == GraphicsFormat::GraphicsFormatD16UNorm || format == GraphicsFormat::GraphicsFormatD16UNorm_S8UInt ||
-			format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 || format == GraphicsFormat::GraphicsFormatD24UNorm_S8UInt ||
-			format == GraphicsFormat::GraphicsFormatD32_SFLOAT || format == GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt)
+		auto& textures = framebufferDesc.getTextures();
+		for (auto& texture : textures)
 		{
-			if (value[i].flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
-			{
-				attachment[i].clearValue.depthStencil.depth = value[i].depth;
-				attachment[i].aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
-			}
+			auto& textureDesc = texture->getGraphicsTextureDesc();
 
-			if (value[i].flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
-			{
-				attachment[i].clearValue.depthStencil.stencil = value[i].stencil;
-				attachment[i].aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-			}
-		}
-		else
-		{
-			if (value[i].flags & GraphicsClearFlags::GraphicsClearFlagsColor)
-			{
-				attachment[i].clearValue.color.float32[0] = value[i].color.x;
-				attachment[i].clearValue.color.float32[1] = value[i].color.y;
-				attachment[i].clearValue.color.float32[2] = value[i].color.z;
-				attachment[i].clearValue.color.float32[3] = value[i].color.w;
-				attachment[i].aspectMask |= VK_IMAGE_ASPECT_COLOR_BIT;
-			}
-		}
+			rects[usageCount].baseArrayLayer = textureDesc.getLayerBase();
+			rects[usageCount].layerCount = textureDesc.getLayerNums();
+			rects[usageCount].rect.offset.x = 0;
+			rects[usageCount].rect.offset.y = 0;
+			rects[usageCount].rect.extent.width = framebufferDesc.getWidth();
+			rects[usageCount].rect.extent.height = framebufferDesc.getHeight();
 
-		if (value[i].rect)
-		{
-			rects->baseArrayLayer = value[i].rect->first;
-			rects->layerCount = value[i].rect->count;
-			rects->rect.offset.x = value[i].rect->x;
-			rects->rect.offset.y = value[i].rect->y;
-			rects->rect.extent.width = value[i].rect->w;
-			rects->rect.extent.height = value[i].rect->h;
-		}
-		else
-		{
-			rects->baseArrayLayer = textureDesc.getLayerBase();
-			rects->layerCount = textureDesc.getLayerNums();
-			rects->rect.offset.x = 0;
-			rects->rect.offset.y = 0;
-			rects->rect.extent.width = textureDesc.getWidth();
-			rects->rect.extent.height = textureDesc.getHeight();
-		}
+			attachment[usageCount].aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			attachment[usageCount].colorAttachment = usageCount;
+			attachment[usageCount].clearValue.color.float32[0] = color.x;
+			attachment[usageCount].clearValue.color.float32[1] = color.y;
+			attachment[usageCount].clearValue.color.float32[2] = color.z;
+			attachment[usageCount].clearValue.color.float32[3] = color.w;
 
-		if (attachmentCount == VK_MAX_VIEWPORT_ARRAY)
-		{
-			vkCmdClearAttachments(_vkCommandBuffer, attachmentCount, attachment, attachmentCount, rects);
-			first += VK_MAX_VIEWPORT_ARRAY;
-			attachmentCount = 0;
+			usageCount++;
 		}
 	}
 
-	if (attachmentCount > 0)
+	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth ||
+		flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
 	{
-		vkCmdClearAttachments(_vkCommandBuffer, attachmentCount, attachment, attachmentCount, rects);
+		auto depthStencil = framebufferDesc.getSharedDepthStencilTexture();
+		if (depthStencil)
+		{
+			auto& textureDesc = depthStencil->getGraphicsTextureDesc();
+
+			rects[usageCount].baseArrayLayer = textureDesc.getLayerBase();
+			rects[usageCount].layerCount = textureDesc.getLayerNums();
+			rects[usageCount].rect.offset.x = 0;
+			rects[usageCount].rect.offset.y = 0;
+			rects[usageCount].rect.extent.width = framebufferDesc.getWidth();
+			rects[usageCount].rect.extent.height = framebufferDesc.getHeight();
+
+			if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+				attachment[usageCount].aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+			if (flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
+				attachment[usageCount].aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+
+			attachment[usageCount].clearValue.depthStencil.depth = depth;
+			attachment[usageCount].clearValue.depthStencil.stencil = stencil;
+			attachment[usageCount].colorAttachment = 0;
+
+			usageCount++;
+		}
 	}
+
+	vkCmdClearAttachments(_vkCommandBuffer, usageCount, attachment, usageCount, rects);
+}
+
+void
+VulkanCommandList::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
+{
+	VkClearAttachment attachment[VK_MAX_ATTACHMENT];
+	VkClearRect rects[VK_MAX_ATTACHMENT];
+
+	std::uint32_t usageCount = 0;
+	auto& framebufferDesc = _framebuffer->downcast<VulkanFramebuffer>()->getGraphicsFramebufferDesc();
+
+	if (flags & GraphicsClearFlags::GraphicsClearFlagsColor)
+	{
+		auto& textures = framebufferDesc.getTextures();
+		if (i < textures.size())
+		{
+			auto texture = textures[i];
+			auto& textureDesc = texture->getGraphicsTextureDesc();
+
+			rects[usageCount].baseArrayLayer = textureDesc.getLayerBase();
+			rects[usageCount].layerCount = textureDesc.getLayerNums();
+			rects[usageCount].rect.offset.x = 0;
+			rects[usageCount].rect.offset.y = 0;
+			rects[usageCount].rect.extent.width = framebufferDesc.getWidth();
+			rects[usageCount].rect.extent.height = framebufferDesc.getHeight();
+
+			attachment[usageCount].aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			attachment[usageCount].colorAttachment = usageCount;
+			attachment[usageCount].clearValue.color.float32[0] = color.x;
+			attachment[usageCount].clearValue.color.float32[1] = color.y;
+			attachment[usageCount].clearValue.color.float32[2] = color.z;
+			attachment[usageCount].clearValue.color.float32[3] = color.w;
+
+			usageCount++;
+		}
+	}
+
+	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth ||
+		flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
+	{
+		auto depthStencil = framebufferDesc.getSharedDepthStencilTexture();
+		if (depthStencil)
+		{
+			auto& textureDesc = depthStencil->getGraphicsTextureDesc();
+
+			rects[usageCount].baseArrayLayer = textureDesc.getLayerBase();
+			rects[usageCount].layerCount = textureDesc.getLayerNums();
+			rects[usageCount].rect.offset.x = 0;
+			rects[usageCount].rect.offset.y = 0;
+			rects[usageCount].rect.extent.width = framebufferDesc.getWidth();
+			rects[usageCount].rect.extent.height = framebufferDesc.getHeight();
+
+			if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+				attachment[usageCount].aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+			if (flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
+				attachment[usageCount].aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+
+			attachment[usageCount].clearValue.depthStencil.depth = depth;
+			attachment[usageCount].clearValue.depthStencil.stencil = stencil;
+			attachment[usageCount].colorAttachment = 0;
+
+			usageCount++;
+		}
+	}
+
+	vkCmdClearAttachments(_vkCommandBuffer, usageCount, attachment, usageCount, rects);
 }
 
 void 
 VulkanCommandList::setPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
 	assert(pipeline);
-	VkPipeline pipelineHandle = pipeline->downcast<VulkanRenderPipeline>()->getPipeline();
-	vkCmdBindPipeline(_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineHandle);
-	_pipeline = pipeline;
+	assert(pipeline->isInstanceOf<VulkanRenderPipeline>());
+
+	_pipeline = pipeline->downcast<VulkanRenderPipeline>();
+	vkCmdBindPipeline(_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline->getPipeline());
 }
 
 void 
 VulkanCommandList::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
 {
 	assert(descriptorSet);
+	assert(descriptorSet->isInstanceOf<VulkanDescriptorSet>());
+
 	VkPipelineLayout pipelineLayout = _pipeline->downcast<VulkanRenderPipeline>()->getPipelineLayout();
 	VkDescriptorSet descriptorSetHandle = descriptorSet->downcast<VulkanDescriptorSet>()->getDescriptorSet();
 	vkCmdBindDescriptorSets(_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSetHandle, 0, nullptr);

@@ -90,6 +90,12 @@ OGLDeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 		if (!this->initVertexSupports())
 			return false;
 
+		if (!this->initTextureDimSupports())
+			return false;
+
+		if (!this->initShaderSupports())
+			return false;
+
 		return true;
 	}
 
@@ -132,7 +138,7 @@ OGLDeviceContext::setViewport(const Viewport& view) noexcept
 
 	if (_viewport != view)
 	{
-		GL_CHECK(glViewport(view.left, view.top, view.width, view.height));
+		glViewport(view.left, view.top, view.width, view.height);
 		_viewport = view;
 	}
 }
@@ -150,7 +156,7 @@ OGLDeviceContext::setScissor(const Scissor& scissor) noexcept
 
 	if (_scissor != scissor)
 	{
-		GL_CHECK(glScissor(scissor.left, scissor.top, scissor.width, scissor.height));
+		glScissor(scissor.left, scissor.top, scissor.width, scissor.height);
 		_scissor = scissor;
 	}
 }
@@ -159,6 +165,105 @@ const Scissor&
 OGLDeviceContext::getScissor() const noexcept
 {
 	return _scissor;
+}
+
+void
+OGLDeviceContext::setStencilCompare(GraphicsStencilFace face, GraphicsCompareFunc func) noexcept
+{
+	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	{
+		if (_stateCaptured.getStencilFrontFunc() != func)
+		{
+			GLenum frontfunc = OGLTypes::asCompareFunction(func);
+			glStencilFuncSeparate(GL_FRONT, frontfunc, _stateCaptured.getStencilFrontRef(), _stateCaptured.getStencilFrontReadMask());
+			_stateCaptured.setStencilFrontFunc(func);
+		}
+	}
+	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	{
+		if (_stateCaptured.getStencilBackFunc() != func)
+		{
+			GLenum backfunc = OGLTypes::asCompareFunction(func);
+			glStencilFuncSeparate(GL_BACK, backfunc, _stateCaptured.getStencilFrontRef(), _stateCaptured.getStencilFrontReadMask());
+			_stateCaptured.setStencilBackFunc(func);
+		}
+	}
+}
+
+GraphicsCompareFunc 
+OGLDeviceContext::getStencilCompare(GraphicsStencilFace face) noexcept
+{
+	if (face == GraphicsStencilFace::GraphicsStencilFaceFront)
+		return _stateCaptured.getStencilFrontFunc();
+	if (face == GraphicsStencilFace::GraphicsStencilFaceBack)
+		return _stateCaptured.getStencilBackFunc();
+	return GraphicsCompareFunc::GraphicsCompareFuncNone;
+}
+
+void
+OGLDeviceContext::setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept
+{
+	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	{
+		if (_stateCaptured.getStencilFrontRef() != reference)
+		{
+			GLenum frontfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilFrontFunc());
+			glStencilFuncSeparate(GL_FRONT, frontfunc, reference, _stateCaptured.getStencilFrontReadMask());
+			_stateCaptured.setStencilFrontRef(reference);
+		}
+	}
+	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	{
+		if (_stateCaptured.getStencilBackRef() != reference)
+		{
+			GLenum backfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilBackFunc());
+			glStencilFuncSeparate(GL_BACK, backfunc, reference, _stateCaptured.getStencilFrontReadMask());
+			_stateCaptured.setStencilBackRef(reference);
+		}
+	}
+}
+
+std::uint32_t 
+OGLDeviceContext::getStencilReference(GraphicsStencilFace face) noexcept
+{
+	if (face == GraphicsStencilFace::GraphicsStencilFaceFront)
+		return _stateCaptured.getStencilFrontRef();
+	if (face == GraphicsStencilFace::GraphicsStencilFaceBack)
+		return _stateCaptured.getStencilBackRef();
+	return std::uint32_t(0);
+}
+
+void
+OGLDeviceContext::setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept
+{
+	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	{
+		if (_stateCaptured.getStencilFrontWriteMask() != mask)
+		{
+			GLenum frontfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilFrontFunc());
+			glStencilFuncSeparate(GL_FRONT, frontfunc, _stateCaptured.getStencilFrontRef(), mask);
+			_stateCaptured.setStencilFrontWriteMask(mask);
+		}
+	}
+	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	{
+		if (_stateCaptured.getStencilBackWriteMask() != mask)
+		{
+			GLenum backfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilBackFunc());
+			glStencilFuncSeparate(GL_BACK, backfunc, _stateCaptured.getStencilBackRef(), mask);
+			_stateCaptured.setStencilBackWriteMask(mask);
+		}
+	}
+}
+
+std::uint32_t 
+OGLDeviceContext::getStencilFrontWriteMask(GraphicsStencilFace face) noexcept
+{
+	if (face == GraphicsStencilFace::GraphicsStencilFaceFront)
+		return _stateCaptured.getStencilFrontWriteMask();
+	if (face == GraphicsStencilFace::GraphicsStencilFaceBack)
+		return _stateCaptured.getStencilBackWriteMask();
+	return std::uint32_t(0);
 }
 
 void
@@ -319,7 +424,7 @@ OGLDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 	if (_needUpdateLayout)
 	{
 		if (_vbo)
-			_inputLayout->bindVbo(_vbo, 0);
+			_inputLayout->bindVbo(_vbo);
 
 		if (_ibo)
 			_inputLayout->bindIbo(_ibo);
@@ -333,13 +438,13 @@ OGLDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 		GLenum indexType = OGLTypes::asIndexType(renderable.indexType);
 		GLsizei numInstance = std::max(1, renderable.numInstances);
 		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_ibo->getGraphicsDataDesc().getStride() * renderable.startIndice);
-		GL_CHECK(glDrawElementsInstanced(drawType, renderable.numIndices, indexType, offsetIndices, numInstance));
+		glDrawElementsInstanced(drawType, renderable.numIndices, indexType, offsetIndices, numInstance);
 	}
 	else
 	{
 		GLsizei numInstance = std::max(1, renderable.numInstances);
 		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());
-		GL_CHECK(glDrawArraysInstanced(drawType, renderable.startVertice, renderable.numVertices, numInstance));
+		glDrawArraysInstanced(drawType, renderable.startVertice, renderable.numVertices, numInstance);
 	}
 }
 
@@ -373,30 +478,10 @@ OGLDeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 }
 
 void
-OGLDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
+OGLDeviceContext::setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept
 {
-	assert(src);
-	assert(src->isInstanceOf<OGLFramebuffer>());
-	assert(_glcontext->getActive());
-
-	auto srcTarget = src->downcast<OGLFramebuffer>()->getInstanceID();
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, srcTarget);
-
-	if (dest)
-	{
-		auto destTarget = dest->downcast<OGLFramebuffer>()->getInstanceID();
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destTarget);
-	}
-	else
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
-	glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-}
-
-GraphicsFramebufferPtr
-OGLDeviceContext::getFramebuffer() const noexcept
-{
-	return _renderTexture;
+	this->setFramebuffer(target);
+	this->clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsAll, color, depth, stencil);
 }
 
 void
@@ -447,13 +532,36 @@ OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color
 			glDepthMask(GL_TRUE);
 		}
 
-		GL_CHECK(glClear(mode));
+		glClear(mode);
 
 		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_FALSE);
 		}
 	}
+}
+
+void
+OGLDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
+{
+	assert(src);
+	assert(src->isInstanceOf<OGLFramebuffer>());
+	assert(!dest || (dest && dest->isInstanceOf<OGLFramebuffer>()));
+	assert(_glcontext->getActive());
+
+	auto readFramebuffer = src->downcast<OGLFramebuffer>()->getInstanceID();
+	auto drawFramebuffer = dest ? dest->downcast<OGLFramebuffer>()->getInstanceID() : GL_NONE;
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, readFramebuffer);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, drawFramebuffer);
+
+	glBlitFramebuffer(v1.left, v1.top, v1.width, v1.height, v2.left, v2.top, v2.width, v2.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+}
+
+GraphicsFramebufferPtr
+OGLDeviceContext::getFramebuffer() const noexcept
+{
+	return _renderTexture;
 }
 
 void
@@ -495,9 +603,21 @@ OGLDeviceContext::isTextureSupport(GraphicsFormat format) noexcept
 }
 
 bool
+OGLDeviceContext::isTextureDimSupport(GraphicsTextureDim dimension) noexcept
+{
+	return std::find(_supportTextureDims.begin(), _supportTextureDims.end(), dimension) != _supportTextureDims.end();
+}
+
+bool
 OGLDeviceContext::isVertexSupport(GraphicsFormat format) noexcept
 {
 	return std::find(_supportAttribute.begin(), _supportAttribute.end(), format) != _supportAttribute.end();
+}
+
+bool
+OGLDeviceContext::isShaderSupport(GraphicsShaderStage stage) noexcept
+{
+	return std::find(_supportShaders.begin(), _supportShaders.end(), stage) != _supportShaders.end();
 }
 
 bool
@@ -792,6 +912,19 @@ OGLDeviceContext::initTextureSupports() noexcept
 }
 
 bool
+OGLDeviceContext::initTextureDimSupports() noexcept
+{
+	_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDim2D);
+	_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDim2DArray);
+	_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDimCube);
+
+	if (GLEW_ARB_texture_cube_map_array)
+		_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDimCubeArray);
+
+	return true;
+}
+
+bool
 OGLDeviceContext::initVertexSupports() noexcept
 {
 	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8SInt);
@@ -882,6 +1015,17 @@ OGLDeviceContext::initVertexSupports() noexcept
 		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8UNorm);
 	}
 
+	return true;
+}
+
+bool
+OGLDeviceContext::initShaderSupports() noexcept
+{
+	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageVertex);
+	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageFragment);
+
+	if (GLEW_ARB_geometry_shader4)
+		_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageGeometry);
 	return true;
 }
 

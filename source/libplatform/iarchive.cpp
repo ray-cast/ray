@@ -144,6 +144,34 @@ iarchive::getValue(const std::string& name, int4& result) noexcept
 }
 
 iarchive&
+iarchive::getValue(const std::string& name, uint1& result) noexcept
+{
+	this->rdbuf()->getValue(name, result);
+	return (*this);
+}
+
+iarchive&
+iarchive::getValue(const std::string& name, uint2& result) noexcept
+{
+	this->rdbuf()->getValue(name, result);
+	return (*this);
+}
+
+iarchive&
+iarchive::getValue(const std::string& name, uint3& result) noexcept
+{
+	this->rdbuf()->getValue(name, result);
+	return (*this);
+}
+
+iarchive&
+iarchive::getValue(const std::string& name, uint4& result) noexcept
+{
+	this->rdbuf()->getValue(name, result);
+	return (*this);
+}
+
+iarchive&
 iarchive::getValue(const std::string& name, float1& result) noexcept
 {
     this->rdbuf()->getValue(name, result);

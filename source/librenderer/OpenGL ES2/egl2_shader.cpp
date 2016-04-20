@@ -531,31 +531,7 @@ EGL2Program::toGraphicsUniformType(const std::string& name, GLenum type) noexcep
 
 		if (type == GL_BOOL)
 		{
-			if (isArray)
-				return GraphicsUniformType::GraphicsUniformTypeBoolArray;
-			else
 				return GraphicsUniformType::GraphicsUniformTypeBool;
-		}
-		else if (type == GL_BOOL_VEC2)
-		{
-			if (isArray)
-				return GraphicsUniformType::GraphicsUniformTypeBool2Array;
-			else
-				return GraphicsUniformType::GraphicsUniformTypeBool2;
-		}
-		else if (type == GL_BOOL_VEC3)
-		{
-			if (isArray)
-				return GraphicsUniformType::GraphicsUniformTypeBool3Array;
-			else
-				return GraphicsUniformType::GraphicsUniformTypeBool3;
-		}
-		else if (type == GL_BOOL_VEC4)
-		{
-			if (isArray)
-				return GraphicsUniformType::GraphicsUniformTypeBool4Array;
-			else
-				return GraphicsUniformType::GraphicsUniformTypeBool4;
 		}
 		else if (type == GL_INT)
 		{

@@ -52,6 +52,7 @@ public:
 	void close() noexcept;
 
 	VkBuffer getBuffer() const noexcept;
+	VkDeviceMemory getDeviceMemory() const noexcept;
 
 	void setDevice(GraphicsDevicePtr device) noexcept;
 	GraphicsDevicePtr getDevice() noexcept;

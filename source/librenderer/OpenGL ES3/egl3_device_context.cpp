@@ -87,7 +87,13 @@ EGL3DeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 		if (!this->initTextureSupports())
 			return false;
 
+		if (!this->initTextureDimSupports())
+			return false;
+
 		if (!this->initVertexSupports())
+			return false;
+
+		if (!this->initShaderSupports())
 			return false;
 
 		return true;
@@ -159,6 +165,105 @@ const Scissor&
 EGL3DeviceContext::getScissor() const noexcept
 {
 	return _scissor;
+}
+
+void
+EGL3DeviceContext::setStencilCompare(GraphicsStencilFace face, GraphicsCompareFunc func) noexcept
+{
+	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	{
+		if (_stateCaptured.getStencilFrontFunc() != func)
+		{
+			GLenum frontfunc = EGL3Types::asCompareFunction(func);
+			glStencilFuncSeparate(GL_FRONT, frontfunc, _stateCaptured.getStencilFrontRef(), _stateCaptured.getStencilFrontReadMask());
+			_stateCaptured.setStencilFrontFunc(func);
+		}
+	}
+	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	{
+		if (_stateCaptured.getStencilBackFunc() != func)
+		{
+			GLenum backfunc = EGL3Types::asCompareFunction(func);
+			glStencilFuncSeparate(GL_BACK, backfunc, _stateCaptured.getStencilFrontRef(), _stateCaptured.getStencilFrontReadMask());
+			_stateCaptured.setStencilBackFunc(func);
+		}
+	}
+}
+
+GraphicsCompareFunc
+EGL3DeviceContext::getStencilCompare(GraphicsStencilFace face) noexcept
+{
+	if (face == GraphicsStencilFace::GraphicsStencilFaceFront)
+		return _stateCaptured.getStencilFrontFunc();
+	if (face == GraphicsStencilFace::GraphicsStencilFaceBack)
+		return _stateCaptured.getStencilBackFunc();
+	return GraphicsCompareFunc::GraphicsCompareFuncNone;
+}
+
+void
+EGL3DeviceContext::setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept
+{
+	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	{
+		if (_stateCaptured.getStencilFrontRef() != reference)
+		{
+			GLenum frontfunc = EGL3Types::asCompareFunction(_stateCaptured.getStencilFrontFunc());
+			glStencilFuncSeparate(GL_FRONT, frontfunc, reference, _stateCaptured.getStencilFrontReadMask());
+			_stateCaptured.setStencilFrontRef(reference);
+		}
+	}
+	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	{
+		if (_stateCaptured.getStencilBackRef() != reference)
+		{
+			GLenum backfunc = EGL3Types::asCompareFunction(_stateCaptured.getStencilBackFunc());
+			glStencilFuncSeparate(GL_BACK, backfunc, reference, _stateCaptured.getStencilFrontReadMask());
+			_stateCaptured.setStencilBackRef(reference);
+		}
+	}
+}
+
+std::uint32_t
+EGL3DeviceContext::getStencilReference(GraphicsStencilFace face) noexcept
+{
+	if (face == GraphicsStencilFace::GraphicsStencilFaceFront)
+		return _stateCaptured.getStencilFrontRef();
+	if (face == GraphicsStencilFace::GraphicsStencilFaceBack)
+		return _stateCaptured.getStencilBackRef();
+	return std::uint32_t(0);
+}
+
+void
+EGL3DeviceContext::setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept
+{
+	if (face & GraphicsStencilFace::GraphicsStencilFaceFront)
+	{
+		if (_stateCaptured.getStencilFrontWriteMask() != mask)
+		{
+			GLenum frontfunc = EGL3Types::asCompareFunction(_stateCaptured.getStencilFrontFunc());
+			glStencilFuncSeparate(GL_FRONT, frontfunc, _stateCaptured.getStencilFrontRef(), mask);
+			_stateCaptured.setStencilFrontWriteMask(mask);
+		}
+	}
+	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
+	{
+		if (_stateCaptured.getStencilBackWriteMask() != mask)
+		{
+			GLenum backfunc = EGL3Types::asCompareFunction(_stateCaptured.getStencilBackFunc());
+			glStencilFuncSeparate(GL_BACK, backfunc, _stateCaptured.getStencilBackRef(), mask);
+			_stateCaptured.setStencilBackWriteMask(mask);
+		}
+	}
+}
+
+std::uint32_t
+EGL3DeviceContext::getStencilFrontWriteMask(GraphicsStencilFace face) noexcept
+{
+	if (face == GraphicsStencilFace::GraphicsStencilFaceFront)
+		return _stateCaptured.getStencilFrontWriteMask();
+	if (face == GraphicsStencilFace::GraphicsStencilFaceBack)
+		return _stateCaptured.getStencilBackWriteMask();
+	return std::uint32_t(0);
 }
 
 void
@@ -373,6 +478,13 @@ EGL3DeviceContext::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 }
 
 void
+EGL3DeviceContext::setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept
+{
+	this->setFramebuffer(target);
+	this->clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsAll, color, depth, stencil);
+}
+
+void
 EGL3DeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
 {
 	assert(src);
@@ -495,9 +607,21 @@ EGL3DeviceContext::isTextureSupport(GraphicsFormat format) noexcept
 }
 
 bool
+EGL3DeviceContext::isTextureDimSupport(GraphicsTextureDim dimension) noexcept
+{
+	return std::find(_supportTextureDims.begin(), _supportTextureDims.end(), dimension) != _supportTextureDims.end();
+}
+
+bool
 EGL3DeviceContext::isVertexSupport(GraphicsFormat format) noexcept
 {
 	return std::find(_supportAttribute.begin(), _supportAttribute.end(), format) != _supportAttribute.end();
+}
+
+bool
+EGL3DeviceContext::isShaderSupport(GraphicsShaderStage stage) noexcept
+{
+	return std::find(_supportShaders.begin(), _supportShaders.end(), stage) != _supportShaders.end();
 }
 
 bool
@@ -749,6 +873,22 @@ EGL3DeviceContext::initTextureSupports() noexcept
 }
 
 bool
+EGL3DeviceContext::initTextureDimSupports() noexcept
+{
+	_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDim2D);
+	_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDim2DArray);
+	_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDimCube);
+
+	if (EGL3Types::isSupportFeature(EGL3Features::EGL3_EXT_texture_cube_map_array))
+		_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDimCubeArray);
+	
+	if (EGL3Types::isSupportFeature(EGL3Features::EGL3_OES_texture_3D))
+		_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDim3D);
+
+	return true;
+}
+
+bool
 EGL3DeviceContext::initVertexSupports() noexcept
 {
 	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8SInt);
@@ -808,6 +948,19 @@ EGL3DeviceContext::initVertexSupports() noexcept
 		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16SFloat);
 	}
 
+	return true;
+}
+
+bool
+EGL3DeviceContext::initShaderSupports() noexcept
+{
+	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageVertex);
+	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageFragment);
+	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageCompute);
+
+	if (EGL3Types::isSupportFeature(EGL3Features::EGL3_EXT_geometry_shader))
+		_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageGeometry);
+	
 	return true;
 }
 

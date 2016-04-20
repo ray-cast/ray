@@ -60,6 +60,15 @@ public:
 	void setScissor(const Scissor& scissor) noexcept;
 	const Scissor& getScissor() const noexcept;
 	
+	void setStencilCompare(GraphicsStencilFace face, GraphicsCompareFunc func) noexcept;
+	GraphicsCompareFunc getStencilCompare(GraphicsStencilFace face) noexcept;
+
+	void setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept;
+	std::uint32_t getStencilReference(GraphicsStencilFace face) noexcept;
+
+	void setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept;
+	std::uint32_t getStencilFrontWriteMask(GraphicsStencilFace face) noexcept;
+
 	void setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept;
 	GraphicsPipelinePtr getRenderPipeline() const noexcept;
 
@@ -77,6 +86,7 @@ public:
 	void unmapBuffer(GraphicsDataPtr data) noexcept;
 
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
+	void setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept;
 	void discardFramebuffer() noexcept;
@@ -88,13 +98,18 @@ public:
 	void drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept;
 
 	bool isTextureSupport(GraphicsFormat format) noexcept;
+	bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept;
 	bool isVertexSupport(GraphicsFormat format) noexcept;
+	bool isShaderSupport(GraphicsShaderStage stage) noexcept;
 
 	void present() noexcept;
 
 private:
-	void initTextureSupports() noexcept;
-	void initVertexSupports() noexcept;
+	bool initCommandList() noexcept;
+	bool initTextureSupports() noexcept;
+	bool initTextureDimSupports() noexcept;
+	bool initVertexSupports() noexcept;
+	bool initShaderSupports() noexcept;
 
 private:
 	friend class VulkanDevice;
@@ -125,7 +140,9 @@ private:
 	GraphicsInputLayoutPtr _inputLayout;
 
 	std::vector<GraphicsFormat> _supportTextures;
+	std::vector<GraphicsTextureDim> _supportTextureDims;
 	std::vector<GraphicsFormat> _supportAttribute;
+	std::vector<GraphicsShaderStage> _supportShaders;
 
 	GraphicsDeviceWeakPtr _device;
 };

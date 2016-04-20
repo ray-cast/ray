@@ -95,6 +95,10 @@ public:
 	virtual bool getValue(const std::string& name, int2& result) const noexcept;
 	virtual bool getValue(const std::string& name, int3& result) const noexcept;
 	virtual bool getValue(const std::string& name, int4& result) const noexcept;
+	virtual bool getValue(const std::string& name, uint1& result) const noexcept;
+	virtual bool getValue(const std::string& name, uint2& result) const noexcept;
+	virtual bool getValue(const std::string& name, uint3& result) const noexcept;
+	virtual bool getValue(const std::string& name, uint4& result) const noexcept;
 	virtual bool getValue(const std::string& name, float1& result) const noexcept;
 	virtual bool getValue(const std::string& name, float2& result) const noexcept;
 	virtual bool getValue(const std::string& name, float3& result) const noexcept;

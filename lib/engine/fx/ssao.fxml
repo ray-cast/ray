@@ -3,9 +3,9 @@
     <include name="sys:fx/sampler.fxml"/>
     <include name="sys:fx/gbuffer.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
-    <macro name="NUM_SAMPLE" type="int" value="10"/>
-    <macro name="NUM_SAMPLE_INV" type="float" value="0.1"/>
-    <macro name="BLUR_RADIUS" type="int" value="6"/>
+    <macro name="NUM_SAMPLE" type="int" value="8"/>
+    <macro name="NUM_SAMPLE_INV" type="float" value="0.125"/>
+    <macro name="BLUR_RADIUS" type="int" value="8"/>
     <parameter name="projScale" type="float"/>
     <parameter name="projInfo" type="float4"/>
     <parameter name="radius" type="float"/>
@@ -50,8 +50,8 @@
             float bilateralfilter(float2 coord, float r, float center_d)
             {
                 float d = linearizeDepth(coord);
-                float ddiff = (d - center_d) * blurSharpness;
-                return exp2(-r * r * blurFactor - ddiff * ddiff);
+                float ddiff = (d - center_d);
+                return exp(-r * r * blurFactor - ddiff * ddiff * blurSharpness);
             }
 
             void PostProcessVS(
@@ -74,9 +74,11 @@
                 int2 ssC = int2(screenSpace.xy);
                 float sampleAngle = float(3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10.0f;
                 float sampleRadius = projScale * radius / viewPosition.z;
+                float sampleRadius2 = sampleRadius * sampleRadius;
                 float sampleAmbient = 0.0f;
 
-                float2 sampleNoise = float2(cos(sampleAngle), sin(sampleAngle));
+                float2 sampleNoise;
+                sincos(sampleAngle, sampleNoise.x, sampleNoise.y);
 
                 for (int i = 0; i < NUM_SAMPLE; ++i)
                 {
@@ -84,42 +86,34 @@
                     float3 samplePosition = GetPosition(sampleOffset);
                     float3 sampleDirection = samplePosition - viewPosition;
 
-                    float sampleDepth = linearizeDepth(sampleOffset);
                     float sampleAngle = dot(sampleDirection, viewNormal);
                     float sampleLength2 = dot(sampleDirection, sampleDirection);
 
-                    float f = max(radius2 - sampleLength2, 0.0f);
-
-                    sampleAmbient += max(0.0f, (sampleAngle - sampleDepth * bias) * rsqrt(sampleLength2));
+                    float epsilon = 0.0001f;
+                    sampleAmbient += max(0.0f, (sampleAngle - viewPosition.z * bias) / (sampleLength2 + epsilon));
                 }
 
                 return max(0.0f, 1.0f - sampleAmbient * intensity * NUM_SAMPLE_INV);
             }
 
-            float BilateralFilterPS(in float4 coord : TEXCOORD0) : SV_Target
+            float3 BilateralFilterPS(in float4 coord : TEXCOORD0) : SV_Target
             {
                 float center_d = linearizeDepth(coord.xy);
 
                 float total_c = 0.f;
                 float total_w = 0.f;
 
-                [unroll]
-                for (int r = -BLUR_RADIUS; r < BLUR_RADIUS; r++)
+                for (float r = -BLUR_RADIUS; r < BLUR_RADIUS; r++)
                 {
-                    float2 offset = coord.xy + blurDirection * float(r);
+                    float2 offset = coord.xy + blurDirection * r;
 
-                    float bilateralWeight = bilateralfilter(offset, float(r), center_d);
+                    float bilateralWeight = bilateralfilter(offset, r, center_d);
 
                     total_c += texSource.Sample(PointClamp, offset).r * bilateralWeight;
                     total_w += bilateralWeight;
                 }
 
                 return total_c / total_w;
-            }
-
-            float4 ApplyOcclustionPS(in float4 coord : TEXCOORD0) : SV_Target
-            {
-                return texOcclusion.Sample(PointClamp, coord.xy).rrrr;
             }
         ]]>
     </shader>
@@ -135,7 +129,7 @@
             <state name="depthwrite" value="false"/>
         </pass>
     </technique>
-    <technique name="BlurAO">
+    <technique name="BlurXAO">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="PostProcessVS"/>
@@ -147,11 +141,11 @@
             <state name="depthwrite" value="false"/>
         </pass>
     </technique>
-    <technique name="Copy">
+    <technique name="BlurYAO">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
             <state name="vertex" value="PostProcessVS"/>
-            <state name="fragment" value="ApplyOcclustionPS"/>
+            <state name="fragment" value="BilateralFilterPS"/>
 
             <state name="cullmode" value="none"/>
 
@@ -159,8 +153,8 @@
             <state name="depthwrite" value="false"/>
 
             <state name="blend" value="true"/>
-            <state name="blendsrc" value="zero" />
-            <state name="blenddst" value="srcalpha" />
+            <state name="blendsrc" value="dstcol" />
+            <state name="blenddst" value="zero" />
         </pass>
     </technique>
 </effect>

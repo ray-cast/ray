@@ -39,6 +39,10 @@
 #include "vk_swapchain.h"
 #include "vk_command_list.h"
 #include "vk_command_queue.h"
+#include "vk_render_pipeline.h"
+#include "vk_descriptor_set.h"
+#include "vk_graphics_data.h"
+#include "vk_system.h"
 
 _NAME_BEGIN
 
@@ -59,38 +63,27 @@ VulkanDeviceContext::~VulkanDeviceContext() noexcept
 bool
 VulkanDeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 {
-	auto device = this->getDevice()->downcast<VulkanDevice>();
-	if (device)
-	{
-		this->initTextureSupports();
-		this->initVertexSupports();
+	assert(desc.getSwapchain());
+	assert(desc.getSwapchain()->isInstanceOf<VulkanSwapchain>());
 
-		_swapchain = desc.getSwapchain();
-		if (!_swapchain)
-			return false;
+	_swapchain = desc.getSwapchain()->downcast<VulkanSwapchain>();
 
-		GraphicsCommandQueueDesc queueDesc;
-		queueDesc.setCommandQueueFlags(GraphicsCommandQueueFlags::GraphicsCommandQueueFlagsNone);
-		queueDesc.setCommandQueueType(GraphicsCommandType::GraphicsCommandTypeGraphics);
-		queueDesc.setCommandQueuePriority(GraphicsCommandQueuePriority::GraphicsCommandQueuePriorityNormal);
-		queueDesc.setCommandQueueMask(0);
+	if (!this->initTextureSupports())
+		return false;
 
-		GraphicsCommandPoolDesc poolDesc;
-		poolDesc.setCommandListType(GraphicsCommandType::GraphicsCommandTypeGraphics);
-		poolDesc.setCommandFlags(GraphicsCommandPoolFlags::GraphicsCommandPoolResetCommandBuffer);
+	if (!this->initTextureDimSupports())
+		return false;
 
-		_commandQueue = device->createCommandQueue(queueDesc);
-		_commandPool = device->createCommandPool(poolDesc);
+	if (!this->initVertexSupports())
+		return false;
 
-		GraphicsCommandListDesc commandListDesc;
-		commandListDesc.setGraphicsCommandPool(_commandPool);
+	if (!this->initShaderSupports())
+		return false;
 
-		_commandList = device->createCommandList(commandListDesc);
+	if (!this->initCommandList())
+		return false;
 
-		return true;
-	}
-
-	return false;
+	return true;
 }
 
 void 
@@ -141,6 +134,39 @@ VulkanDeviceContext::getScissor() const noexcept
 	return _scissor[0];
 }
 
+void
+VulkanDeviceContext::setStencilCompare(GraphicsStencilFace face, GraphicsCompareFunc func) noexcept
+{
+}
+
+GraphicsCompareFunc 
+VulkanDeviceContext::getStencilCompare(GraphicsStencilFace face) noexcept
+{
+	return GraphicsCompareFunc::GraphicsCompareFuncNone;
+}
+
+void
+VulkanDeviceContext::setStencilReference(GraphicsStencilFace face, std::uint32_t reference) noexcept
+{
+}
+
+std::uint32_t 
+VulkanDeviceContext::getStencilReference(GraphicsStencilFace face) noexcept
+{
+	return 0;
+}
+
+void
+VulkanDeviceContext::setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32_t mask) noexcept
+{
+}
+
+std::uint32_t 
+VulkanDeviceContext::getStencilFrontWriteMask(GraphicsStencilFace face) noexcept
+{
+	return 0;
+}
+
 void 
 VulkanDeviceContext::setFramebuffer(GraphicsFramebufferPtr framebuffer) noexcept
 {
@@ -151,14 +177,26 @@ VulkanDeviceContext::setFramebuffer(GraphicsFramebufferPtr framebuffer) noexcept
 	}
 }
 
+void
+VulkanDeviceContext::setFramebuffer(GraphicsFramebufferPtr framebuffer, const float4& color, float depth, std::int32_t stencil) noexcept
+{
+	if (_framebuffer != framebuffer)
+	{
+		_commandList->setFramebuffer(framebuffer, color, depth, stencil);
+		_framebuffer = framebuffer;
+	}
+}
+
 void 
 VulkanDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
+	_commandList->clearFramebuffer(flags, color, depth, stencil);
 }
 
 void 
 VulkanDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
+	_commandList->clearFramebuffer(flags, color, depth, stencil, i);
 }
 
 void 
@@ -185,6 +223,9 @@ VulkanDeviceContext::getFramebuffer() const noexcept
 void 
 VulkanDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
+	assert(pipeline);
+	assert(pipeline->isInstanceOf<VulkanRenderPipeline>());
+
 	_commandList->setPipeline(pipeline);
 }
 
@@ -197,6 +238,10 @@ VulkanDeviceContext::getRenderPipeline() const noexcept
 void 
 VulkanDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
 {
+	assert(descriptorSet);
+	assert(descriptorSet->isInstanceOf<VulkanDescriptorSet>());
+
+	descriptorSet->downcast<VulkanDescriptorSet>()->update();
 	_commandList->setDescriptorSet(descriptorSet);
 }
 
@@ -209,6 +254,12 @@ VulkanDeviceContext::getDescriptorSet() const noexcept
 void 
 VulkanDeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 {
+	assert(data);
+	assert(data->isInstanceOf<VulkanGraphicsData>());
+	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
+
+	_vertexBuffer = data;
+	_commandList->setVertexBuffers(&data, 0, 1);
 }
 
 GraphicsDataPtr
@@ -220,6 +271,11 @@ VulkanDeviceContext::getVertexBufferData() const noexcept
 void 
 VulkanDeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
 {
+	assert(data);
+	assert(data->isInstanceOf<VulkanGraphicsData>());
+	assert(data->getGraphicsDataDesc().getType() == GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
+
+	_indexBuffer = data;
 	_commandList->setIndexBuffer(data);
 }
 
@@ -229,21 +285,49 @@ VulkanDeviceContext::getIndexBufferData() const noexcept
 	return _indexBuffer;
 }
 
-bool 
+bool
 VulkanDeviceContext::updateBuffer(GraphicsDataPtr data, void* buf, std::size_t cnt) noexcept
 {
+	assert(data);
+	assert(data->isInstanceOf<VulkanGraphicsData>());
+
+	auto memory = data->downcast<VulkanGraphicsData>();
+	void* buffer = nullptr;
+	vkMapMemory(this->getDevice()->downcast<VulkanDevice>()->getDevice(), memory->getDeviceMemory(), 0, cnt, 0, &buffer);
+	if (buffer)
+	{
+		std::memcpy(buffer, buf, cnt);
+		vkUnmapMemory(this->getDevice()->downcast<VulkanDevice>()->getDevice(), memory->getDeviceMemory());
+		return true;
+	}
+
 	return false;
 }
 
-void* 
+void*
 VulkanDeviceContext::mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept
 {
-	return nullptr;
+	assert(data);
+	assert(data->isInstanceOf<VulkanGraphicsData>());
+
+	auto memory = data->downcast<VulkanGraphicsData>();
+	auto device = this->getDevice()->downcast<VulkanDevice>();
+
+	void* buffer = nullptr;
+	vkMapMemory(device->getDevice(), memory->getDeviceMemory(), 0, memory->getGraphicsDataDesc().getStreamSize(), 0, &buffer);
+	return buffer;
 }
 
-void 
+void
 VulkanDeviceContext::unmapBuffer(GraphicsDataPtr data) noexcept
 {
+	assert(data);
+	assert(data->isInstanceOf<VulkanGraphicsData>());
+
+	auto memory = data->downcast<VulkanGraphicsData>();
+	auto device = this->getDevice()->downcast<VulkanDevice>();
+
+	vkUnmapMemory(device->getDevice(), memory->getDeviceMemory());
 }
 
 void 
@@ -273,19 +357,290 @@ VulkanDeviceContext::isTextureSupport(GraphicsFormat format) noexcept
 }
 
 bool
+VulkanDeviceContext::isTextureDimSupport(GraphicsTextureDim dimension) noexcept
+{
+	return std::find(_supportTextureDims.begin(), _supportTextureDims.end(), dimension) != _supportTextureDims.end();
+}
+
+bool
 VulkanDeviceContext::isVertexSupport(GraphicsFormat format) noexcept
 {
 	return std::find(_supportAttribute.begin(), _supportAttribute.end(), format) != _supportAttribute.end();
 }
 
-void
-VulkanDeviceContext::initTextureSupports() noexcept
+bool
+VulkanDeviceContext::isShaderSupport(GraphicsShaderStage stage) noexcept
 {
+	return std::find(_supportShaders.begin(), _supportShaders.end(), stage) != _supportShaders.end();
 }
 
-void
+bool
+VulkanDeviceContext::initCommandList() noexcept
+{
+	auto device = this->getDevice()->downcast<VulkanDevice>();
+
+	GraphicsCommandQueueDesc queueDesc;
+	queueDesc.setCommandQueueFlags(GraphicsCommandQueueFlags::GraphicsCommandQueueFlagsNone);
+	queueDesc.setCommandQueueType(GraphicsCommandType::GraphicsCommandTypeGraphics);
+	queueDesc.setCommandQueuePriority(GraphicsCommandQueuePriority::GraphicsCommandQueuePriorityNormal);
+	queueDesc.setCommandQueueMask(0);
+	_commandQueue = device->createCommandQueue(queueDesc);
+	if (!_commandQueue)
+	{
+		VK_PLATFORM_LOG("Can't create command queue.");
+		return false;
+	}
+
+	GraphicsCommandPoolDesc poolDesc;
+	poolDesc.setCommandListType(GraphicsCommandType::GraphicsCommandTypeGraphics);
+	poolDesc.setCommandFlags(GraphicsCommandPoolFlags::GraphicsCommandPoolResetCommandBuffer);
+	_commandPool = device->createCommandPool(poolDesc);
+	if (!_commandPool)
+	{
+		VK_PLATFORM_LOG("Can't create command pool.");
+		return false;
+	}
+
+	GraphicsCommandListDesc commandListDesc;
+	commandListDesc.setGraphicsCommandPool(_commandPool);
+	_commandList = device->createCommandList(commandListDesc);
+	if (!_commandList)
+	{
+		VK_PLATFORM_LOG("Can't create command list.");
+		return false;
+	}
+
+	return true;
+}
+
+bool
+VulkanDeviceContext::initTextureSupports() noexcept
+{
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR4G4UNormPack8);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR4G4B4A4UNormPack16);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8UNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16UNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8UNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8UNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatB4G4R4A4UNormPack16);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatB5G5R5A1UNormPack16);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatA1R5G5B5UNormPack16);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatA2R10G10B10UNormPack32);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatA2B10G10R10UNormPack32);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8UNormPack32);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16UInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16SInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16UInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16SInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32B32UInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32B32SInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32B32A32UInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32B32A32SInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8SInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8SInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8UInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8UInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8SInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8SInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8UIntPack32);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8SIntPack32);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16SFloat);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16SFloat);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatB10G11R11UFloatPack32);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatE5B9G9R9UFloatPack32);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatS8UInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatD16UNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatX8_D24UNormPack32);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatD32_SFLOAT);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatD24UNorm_S8UInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatA2B10G10R10UIntPack32);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatA2R10G10B10UIntPack32);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8SRGB);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8SRGB);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC1RGBSRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC1RGBASRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC3SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8SRGB);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8SRGB);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8SRGBPack32);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8SRGBPack32);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8SRGBPack32);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8SRGBPack32);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8UNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16UNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16UInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16SInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16SFloat);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16UNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16UInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16SInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16SFloat);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16UNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32SInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32UInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32SInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32SFloat);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32UInt);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR32G32SFloat);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8SNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8SNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8SNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8SNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16SNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16SNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16SNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16SNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8SNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8SNorm);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8SNormPack32);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC1RGBUNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC1RGBAUNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC3UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC5UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatR5G6B5UNormPack16);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatB5G6R5UNormPack16);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8A1UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8A8UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8A1SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8A8SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatEACR11UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatEACR11SNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatEACR11G11UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatEACR11G11SNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC4x4UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC4x4SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC5x4UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC5x4SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC5x5UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC5x5SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC6x5UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC6x5SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC6x6UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC6x6SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x5UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x5SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x6UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x6SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x8UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x8SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x5UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x5SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x6UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x6SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x8UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x8SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x10UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x10SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC12x10UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC12x10SRGBBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC12x12UNormBlock);
+	_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC12x12SRGBBlock);
+
+	return true;
+}
+
+bool 
+VulkanDeviceContext::initTextureDimSupports() noexcept
+{
+	_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDim2D);
+	_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDim2DArray);
+	_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDim3D);
+	_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDimCube);
+	_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDimCubeArray);
+
+	return true;
+}
+
+bool
 VulkanDeviceContext::initVertexSupports() noexcept
 {
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8B8SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8B8UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8B8SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8B8UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16B16SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16B16UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16B16SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16B16UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32B32SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32B32UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32B32A32SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32B32A32UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32SFloat);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32SFloat);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR64SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR64UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR64G64SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR64G64UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR64G64B64SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR64G64B64UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR64G64B64A64SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR64G64B64A64UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB10G11R11UFloatPack32);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatA2R10G10B10SIntPack32);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatA2R10G10B10UIntPack32);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatA2R10G10B10UNormPack32);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatA2B10G10R10SIntPack32);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatA2B10G10R10UIntPack32);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatA2B10G10R10UNormPack32);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8UNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8SInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8UInt);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8SNorm);
+	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatB8G8R8A8UNorm);
+
+	return true;
+}
+
+bool
+VulkanDeviceContext::initShaderSupports() noexcept
+{
+	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageVertex);
+	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageFragment);
+	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageGeometry);
+	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageCompute);
+	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageTessControl);
+	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageTessEvaluation);
+	return true;
 }
 
 void

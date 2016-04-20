@@ -58,6 +58,9 @@ public:
 	GraphicsIndirectPtr getGraphicsIndirect() noexcept;
 
 private:
+	void _updatePipeline() noexcept;
+
+private:
 	void onAddRenderData(RenderDataManager& manager) noexcept;
 	void onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTechPtr tech) noexcept;
 
@@ -69,6 +72,7 @@ private:
 	RenderMeshPtr _mesh;
 	MaterialTechPtr _techniques[RenderQueue::RenderQueueRangeSize];
 	GraphicsIndirectPtr _renderable;
+	GraphicsPipelinePtr _pipeline;
 };
 
 _NAME_END

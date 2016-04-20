@@ -68,183 +68,363 @@ OGLGraphicsUniformSet::getType() const noexcept
 }
 
 void
-OGLGraphicsUniformSet::assign(bool value) noexcept
+OGLGraphicsUniformSet::uniform1b(bool value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform1b(value);
 }
 
 void
-OGLGraphicsUniformSet::assign(int value) noexcept
+OGLGraphicsUniformSet::uniform1i(std::int32_t i1) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform1i(i1);
 }
 
 void
-OGLGraphicsUniformSet::assign(const int2& value) noexcept
+OGLGraphicsUniformSet::uniform2i(const int2& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform2i(value);
 }
 
 void
-OGLGraphicsUniformSet::assign(const int3& value) noexcept
+OGLGraphicsUniformSet::uniform2i(std::int32_t i1, std::int32_t i2) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform2i(i1, i2);
 }
 
 void
-OGLGraphicsUniformSet::assign(const int4& value) noexcept
+OGLGraphicsUniformSet::uniform3i(const int3& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform3i(value);
 }
 
 void
-OGLGraphicsUniformSet::assign(uint1 value) noexcept
+OGLGraphicsUniformSet::uniform3i(std::int32_t i1, std::int32_t i2, std::int32_t i3) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform3i(i1, i2, i3);
 }
 
 void
-OGLGraphicsUniformSet::assign(const uint2& value) noexcept
+OGLGraphicsUniformSet::uniform4i(const int4& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform4i(value);
 }
 
 void
-OGLGraphicsUniformSet::assign(const uint3& value) noexcept
+OGLGraphicsUniformSet::uniform4i(std::int32_t i1, std::int32_t i2, std::int32_t i3, std::int32_t i4) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform4i(i1, i2, i3, i4);
 }
 
 void
-OGLGraphicsUniformSet::assign(const uint4& value) noexcept
+OGLGraphicsUniformSet::uniform1ui(std::uint32_t ui1) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform1ui(ui1);
 }
 
 void
-OGLGraphicsUniformSet::assign(float value) noexcept
+OGLGraphicsUniformSet::uniform2ui(const uint2& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform2ui(value);
 }
 
 void
-OGLGraphicsUniformSet::assign(const float2& value) noexcept
+OGLGraphicsUniformSet::uniform2ui(std::uint32_t ui1, std::uint32_t ui2) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform2ui(ui1, ui2);
 }
 
 void
-OGLGraphicsUniformSet::assign(const float3& value) noexcept
+OGLGraphicsUniformSet::uniform3ui(const uint3& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform3ui(value);
 }
 
 void
-OGLGraphicsUniformSet::assign(const float4& value) noexcept
+OGLGraphicsUniformSet::uniform3ui(std::uint32_t ui1, std::uint32_t ui2, std::uint32_t ui3) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform3ui(ui1, ui2, ui3);
 }
 
 void
-OGLGraphicsUniformSet::assign(const float3x3& value) noexcept
+OGLGraphicsUniformSet::uniform4ui(const uint4& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform4ui(value);
 }
 
 void
-OGLGraphicsUniformSet::assign(const float4x4& value) noexcept
+OGLGraphicsUniformSet::uniform4ui(std::uint32_t ui1, std::uint32_t ui2, std::uint32_t ui3, std::uint32_t ui4) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform4ui(ui1, ui2, ui3, ui4);
 }
 
 void
-OGLGraphicsUniformSet::assign(const std::vector<int1>& value) noexcept
+OGLGraphicsUniformSet::uniform1f(float f1) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform1f(f1);
 }
 
 void
-OGLGraphicsUniformSet::assign(const std::vector<int2>& value) noexcept
+OGLGraphicsUniformSet::uniform2f(const float2& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform2f(value);
 }
 
 void
-OGLGraphicsUniformSet::assign(const std::vector<int3>& value) noexcept
+OGLGraphicsUniformSet::uniform2f(float f1, float f2) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform2f(f1, f2);
 }
 
 void
-OGLGraphicsUniformSet::assign(const std::vector<int4>& value) noexcept
+OGLGraphicsUniformSet::uniform3f(const float3& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform3f(value);
 }
 
 void
-OGLGraphicsUniformSet::assign(const std::vector<uint1>& value) noexcept
+OGLGraphicsUniformSet::uniform3f(float f1, float f2, float f3) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform3f(f1, f2, f3);
 }
 
 void
-OGLGraphicsUniformSet::assign(const std::vector<uint2>& value) noexcept
+OGLGraphicsUniformSet::uniform4f(const float4& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform4f(value);
 }
 
 void
-OGLGraphicsUniformSet::assign(const std::vector<uint3>& value) noexcept
+OGLGraphicsUniformSet::uniform4f(float f1, float f2, float f3, float f4) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform4f(f1, f2, f3, f4);
 }
 
 void
-OGLGraphicsUniformSet::assign(const std::vector<uint4>& value) noexcept
+OGLGraphicsUniformSet::uniform2fmat(const float2x2& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform2fmat(value);
 }
 
 void
-OGLGraphicsUniformSet::assign(const std::vector<float1>& value) noexcept
+OGLGraphicsUniformSet::uniform2fmat(const float* mat2) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform2fmat(mat2);
 }
 
 void
-OGLGraphicsUniformSet::assign(const std::vector<float2>& value) noexcept
+OGLGraphicsUniformSet::uniform3fmat(const float3x3& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform3fmat(value);
 }
 
 void
-OGLGraphicsUniformSet::assign(const std::vector<float3>& value) noexcept
+OGLGraphicsUniformSet::uniform3fmat(const float* mat3) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform3fmat(mat3);
 }
 
 void
-OGLGraphicsUniformSet::assign(const std::vector<float4>& value) noexcept
+OGLGraphicsUniformSet::uniform4fmat(const float4x4& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform4fmat(value);
 }
 
 void
-OGLGraphicsUniformSet::assign(const std::vector<float3x3>& value) noexcept
+OGLGraphicsUniformSet::uniform4fmat(const float* mat4) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform4fmat(mat4);
 }
 
 void
-OGLGraphicsUniformSet::assign(const std::vector<float4x4>& value) noexcept
+OGLGraphicsUniformSet::uniform1iv(const std::vector<int1>& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform1iv(value);
 }
 
 void
-OGLGraphicsUniformSet::assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
+OGLGraphicsUniformSet::uniform1iv(std::size_t num, const std::int32_t* i1v) noexcept
 {
-	_variant.assign(texture, sampler);
+	_variant.uniform1iv(num, i1v);
+}
+
+void
+OGLGraphicsUniformSet::uniform2iv(const std::vector<int2>& value) noexcept
+{
+	_variant.uniform2iv(value);
+}
+
+void
+OGLGraphicsUniformSet::uniform2iv(std::size_t num, const std::int32_t* i2v) noexcept
+{
+	_variant.uniform2iv(num, i2v);
+}
+
+void
+OGLGraphicsUniformSet::uniform3iv(const std::vector<int3>& value) noexcept
+{
+	_variant.uniform3iv(value);
+}
+
+void
+OGLGraphicsUniformSet::uniform3iv(std::size_t num, const std::int32_t* i3v) noexcept
+{
+	_variant.uniform3iv(num, i3v);
+}
+
+void
+OGLGraphicsUniformSet::uniform4iv(const std::vector<int4>& value) noexcept
+{
+	_variant.uniform4iv(value);
+}
+
+void
+OGLGraphicsUniformSet::uniform4iv(std::size_t num, const std::int32_t* i4v) noexcept
+{
+	_variant.uniform4iv(num, i4v);
+}
+
+void
+OGLGraphicsUniformSet::uniform1uiv(const std::vector<uint1>& value) noexcept
+{
+	_variant.uniform1uiv(value);
+}
+
+void
+OGLGraphicsUniformSet::uniform1uiv(std::size_t num, const std::uint32_t* ui1v) noexcept
+{
+	_variant.uniform1uiv(num, ui1v);
+}
+
+void
+OGLGraphicsUniformSet::uniform2uiv(const std::vector<uint2>& value) noexcept
+{
+	_variant.uniform2uiv(value);
+}
+
+void
+OGLGraphicsUniformSet::uniform2uiv(std::size_t num, const std::uint32_t* ui2v) noexcept
+{
+	_variant.uniform2uiv(num, ui2v);
+}
+
+void
+OGLGraphicsUniformSet::uniform3uiv(const std::vector<uint3>& value) noexcept
+{
+	_variant.uniform3uiv(value);
+}
+
+void
+OGLGraphicsUniformSet::uniform3uiv(std::size_t num, const std::uint32_t* ui3v) noexcept
+{
+	_variant.uniform3uiv(num, ui3v);
+}
+
+void
+OGLGraphicsUniformSet::uniform4uiv(const std::vector<uint4>& value) noexcept
+{
+	_variant.uniform4uiv(value);
+}
+
+void
+OGLGraphicsUniformSet::uniform4uiv(std::size_t num, const std::uint32_t* ui4v) noexcept
+{
+	_variant.uniform4uiv(num, ui4v);
+}
+
+void
+OGLGraphicsUniformSet::uniform1fv(const std::vector<float1>& value) noexcept
+{
+	_variant.uniform1fv(value);
+}
+
+void
+OGLGraphicsUniformSet::uniform1fv(std::size_t num, const float* f1v) noexcept
+{
+	_variant.uniform1fv(num, f1v);
+}
+
+void
+OGLGraphicsUniformSet::uniform2fv(const std::vector<float2>& value) noexcept
+{
+	_variant.uniform2fv(value);
+}
+
+void
+OGLGraphicsUniformSet::uniform2fv(std::size_t num, const float* f2v) noexcept
+{
+	_variant.uniform2fv(num, f2v);
+}
+
+void
+OGLGraphicsUniformSet::uniform3fv(const std::vector<float3>& value) noexcept
+{
+	_variant.uniform3fv(value);
+}
+
+void
+OGLGraphicsUniformSet::uniform3fv(std::size_t num, const float* f3v) noexcept
+{
+	_variant.uniform3fv(num, f3v);
+}
+
+void
+OGLGraphicsUniformSet::uniform4fv(const std::vector<float4>& value) noexcept
+{
+	_variant.uniform4fv(value);
+}
+
+void
+OGLGraphicsUniformSet::uniform4fv(std::size_t num, const float* f4v) noexcept
+{
+	_variant.uniform4fv(num, f4v);
+}
+
+void
+OGLGraphicsUniformSet::uniform2fmatv(const std::vector<float2x2>& value) noexcept
+{
+	_variant.uniform2fmatv(value);
+}
+
+void
+OGLGraphicsUniformSet::uniform2fmatv(std::size_t num, const float* mat2) noexcept
+{
+	_variant.uniform2fmatv(num, mat2);
+}
+
+void
+OGLGraphicsUniformSet::uniform3fmatv(const std::vector<float3x3>& value) noexcept
+{
+	_variant.uniform3fmatv(value);
+}
+
+void
+OGLGraphicsUniformSet::uniform3fmatv(std::size_t num, const float* mat3) noexcept
+{
+	_variant.uniform3fmatv(num, mat3);
+}
+
+void
+OGLGraphicsUniformSet::uniform4fmatv(const std::vector<float4x4>& value) noexcept
+{
+	_variant.uniform4fmatv(value);
+}
+
+void
+OGLGraphicsUniformSet::uniform4fmatv(std::size_t num, const float* mat4) noexcept
+{
+	_variant.uniform4fmatv(num, mat4);
+}
+
+void
+OGLGraphicsUniformSet::uniformTexture(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
+{
+	_variant.uniformTexture(texture, sampler);
+}
+
+void
+OGLGraphicsUniformSet::uniformBuffer(GraphicsDataPtr ubo) noexcept
+{
+	_variant.uniformBuffer(ubo);
 }
 
 bool
@@ -323,6 +503,12 @@ const float4&
 OGLGraphicsUniformSet::getFloat4() const noexcept
 {
 	return _variant.getFloat4();
+}
+
+const float2x2&
+OGLGraphicsUniformSet::getFloat2x2() const noexcept
+{
+	return _variant.getFloat2x2();
 }
 
 const float3x3&
@@ -407,6 +593,12 @@ const std::vector<float4>&
 OGLGraphicsUniformSet::getFloat4Array() const noexcept
 {
 	return _variant.getFloat4Array();
+}
+
+const std::vector<float2x2>&
+OGLGraphicsUniformSet::getFloat2x2Array() const noexcept
+{
+	return _variant.getFloat2x2Array();
 }
 
 const std::vector<float3x3>&
@@ -560,7 +752,6 @@ OGLDescriptorSet::close() noexcept
 void
 OGLDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 {
-	std::uint32_t textureUnit = 0;
 	auto program = shaderObject->downcast<OGLProgram>()->getInstanceID();
 	for (auto& it : _activeUniformSets)
 	{
@@ -665,10 +856,8 @@ OGLDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 			if (texture)
 			{
 				auto gltexture = texture->downcast<OGLTexture>();
-				glProgramUniform1i(program, location, textureUnit);
-				glActiveTexture(GL_TEXTURE0 + textureUnit);
+				glActiveTexture(GL_TEXTURE0 + location);
 				glBindTexture(gltexture->getTarget(), gltexture->getInstanceID());
-				textureUnit++;
 			}
 		}
 		break;
@@ -678,10 +867,8 @@ OGLDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 			if (texture)
 			{
 				auto gltexture = texture->downcast<OGLTexture>();
-				glProgramUniform1i(program, location, textureUnit);
-				glActiveTexture(GL_TEXTURE0 + textureUnit);
+				glActiveTexture(GL_TEXTURE0 + location);
 				glBindTexture(gltexture->getTarget(), gltexture->getInstanceID());
-				textureUnit++;
 			}
 		}
 		break;
@@ -691,10 +878,8 @@ OGLDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 			if (texture)
 			{
 				auto gltexture = texture->downcast<OGLTexture>();
-				glProgramUniform1i(program, location, textureUnit);
-				glActiveTexture(GL_TEXTURE0 + textureUnit);
+				glActiveTexture(GL_TEXTURE0 + location);
 				glBindTexture(gltexture->getTarget(), gltexture->getInstanceID());
-				textureUnit++;
 			}
 		}
 		break;

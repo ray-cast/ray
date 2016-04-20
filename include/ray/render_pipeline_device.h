@@ -58,9 +58,9 @@ public:
 	MaterialPtr createMaterial(const std::string& name) noexcept;
 	void destroyMaterial(MaterialPtr material) noexcept;
 
-	MaterialVariantPtr createSemantic(const std::string& name, GraphicsUniformType type) noexcept;
-	void destroySemantic(MaterialVariantPtr semantic) const noexcept;
-	MaterialVariantPtr getSemantic(const std::string& semantic) const noexcept;
+	MaterialParamPtr createSemantic(const std::string& name, GraphicsUniformType type) noexcept;
+	void destroySemantic(MaterialParamPtr semantic) const noexcept;
+	MaterialParamPtr getSemantic(const std::string& semantic) const noexcept;
 
 	GraphicsSwapchainPtr createSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
 	GraphicsContextPtr createDeviceContext(const GraphicsContextDesc& desc) noexcept;
@@ -72,6 +72,7 @@ public:
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
 	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
+	GraphicsPipelinePtr createGraphicsPipeline(const GraphicsPipelineDesc& desc) noexcept;
 
 	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
 	RenderMeshPtr createRenderMesh(const MeshProperty& mesh, std::uint32_t flags = ModelMakerFlagBits::ModelMakerFlagBitALL) noexcept;

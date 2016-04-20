@@ -67,13 +67,6 @@ OGLInputLayout::setup(const GraphicsInputLayoutDesc& inputLayoutDesc) noexcept
 			return false;
 		}
 
-
-		if (it.getVertexDivisor() != GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
-		{
-			GL_PLATFORM_LOG("Can't support vertex divisor");
-			return false;
-		}
-
 		for (auto& ch : semantic)
 		{
 			if (ch < 'a' && ch > 'z')
@@ -109,47 +102,41 @@ void
 OGLInputLayout::bindLayout(const OGLProgramPtr& program) noexcept
 {
 	glBindVertexArray(_vao);
-
-	if (_program != program)
-	{
-		GLuint offset = 0;
-
-		auto& components = _inputLayoutDesc.getGraphicsVertexLayouts();
-		for (auto& it : components)
-		{
-			GLuint attribIndex = GL_INVALID_INDEX;
-			GLuint bindingIndex = it.getVertexSlot();
-			GLenum type = OGLTypes::asVertexFormat(it.getVertexFormat());
-
-			auto& attributes = program->getActiveAttributes();
-			for (auto& attrib : attributes)
-			{
-				if (attrib->getSemanticIndex() == it.getSemanticIndex() && attrib->getSemantic() == it.getSemantic())
-				{
-					attribIndex = attrib->downcast<OGLGraphicsAttribute>()->getBindingPoint();
-					break;
-				}
-			}
-
-			if (attribIndex != GL_INVALID_INDEX)
-			{
-				glEnableVertexAttribArray(attribIndex);
-				glVertexAttribBinding(attribIndex, bindingIndex);
-				glVertexAttribFormat(attribIndex, it.getVertexCount(), type, GL_FALSE, offset);
-			}
-
-			offset += it.getVertexSize();
-		}
-
-		_program = program;
-	}
+	_program = program;
 }
 
 void
-OGLInputLayout::bindVbo(const OGLGraphicsDataPtr& vbo, GLuint bindingPoint) noexcept
+OGLInputLayout::bindVbo(const OGLGraphicsDataPtr& vbo) noexcept
 {
+	glBindBuffer(GL_ARRAY_BUFFER, vbo->getInstanceID());
+
+	GLuint offset = 0;
 	GLuint stride = vbo->getGraphicsDataDesc().getStride();
-	glBindVertexBuffer(bindingPoint, vbo->getInstanceID(), 0, stride);
+
+	auto& components = _inputLayoutDesc.getGraphicsVertexLayouts();
+	for (auto& it : components)
+	{
+		GLuint attribIndex = GL_INVALID_INDEX;
+		GLenum type = OGLTypes::asVertexFormat(it.getVertexFormat());
+
+		auto& attributes = _program->getActiveAttributes();
+		for (auto& attrib : attributes)
+		{
+			if (attrib->getSemanticIndex() == it.getSemanticIndex() && attrib->getSemantic() == it.getSemantic())
+			{
+				attribIndex = attrib->downcast<OGLGraphicsAttribute>()->getBindingPoint();
+				break;
+			}
+		}
+
+		if (attribIndex != GL_INVALID_INDEX)
+		{
+			glEnableVertexAttribArray(attribIndex);
+			glVertexAttribPointer(attribIndex, it.getVertexCount(), type, GL_FALSE, stride, (char*)nullptr + offset);
+		}
+
+		offset += it.getVertexSize();
+	}
 }
 
 void

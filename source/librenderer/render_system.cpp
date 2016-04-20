@@ -250,6 +250,13 @@ RenderSystem::createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc)
 	return _pipelineManager->createFramebufferLayout(desc);
 }
 
+GraphicsPipelinePtr 
+RenderSystem::createGraphicsPipeline(const GraphicsPipelineDesc& desc) noexcept
+{
+	assert(_pipelineManager);
+	return _pipelineManager->createGraphicsPipeline(desc);
+}
+
 GraphicsDataPtr
 RenderSystem::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {

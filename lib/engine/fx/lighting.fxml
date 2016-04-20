@@ -143,7 +143,7 @@
             return rim * (1.0f - NdotV) * rimPower;
         }
 
-        float shadowDirectionalLight(Texture2D shadowMap, float4x4 shadowEye2LightViewProject, float4 shadowEye2LightView, float4 shadowFactor, float3 viewPosition)
+        float shadowLighting(Texture2D shadowMap, float4x4 shadowEye2LightViewProject, float4 shadowEye2LightView, float4 shadowFactor, float3 viewPosition)
         {
             // shadowFactor.xy is shadow clip constant
             // shadowFactor.z is shadow scale
@@ -153,21 +153,7 @@
             proj /= proj.w;
             proj.xy = PosToCoord(proj.xy);
 
-            float d1 = linearDepthOrthoLH(shadowFactor.xy, shadowMap.Sample(LinearClamp, proj.xy).r);
-            float d2 = dot(float4(viewPosition, 1.0), shadowEye2LightView);
-            float d = exp((shadowFactor.z * (d1 - d2) + shadowFactor.w));
-            float shadow = saturate(d);
-
-            return shadow;
-        }
-
-        float shadowSpotLight(Texture2D shadowMap, float4x4 shadowEye2LightViewProject, float4 shadowEye2LightView, float4 shadowFactor, float3 viewPosition)
-        {
-            float4 proj = mul(float4(viewPosition, 1.0), shadowEye2LightViewProject);
-            proj /= proj.w;
-            proj.xy = PosToCoord(proj.xy);
-
-            float d1 = linearDepthPerspectiveFovLH(shadowFactor.xy, shadowMap.Sample(LinearClamp, proj.xy).r);
+            float d1 = shadowMap.Sample(LinearClamp, proj.xy).r;
             float d2 = dot(float4(viewPosition, 1.0), shadowEye2LightView);
             float d = exp((shadowFactor.z * (d1 - d2) + shadowFactor.w));
             float shadow = saturate(d);

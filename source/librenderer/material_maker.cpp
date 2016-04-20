@@ -56,6 +56,8 @@
 #define EXCLUDE_PSTDINT
 #include <hlslcc.hpp>
 
+#include <glsl/glsl_optimizer.h>
+
 _NAME_BEGIN
 
 MaterialMaker::MaterialMaker() noexcept
@@ -72,7 +74,10 @@ MaterialMaker::instanceInputLayout(MaterialManager& manager, MaterialDesc& mater
 	GraphicsInputLayoutDesc inputLayoutDesc;
 
 	std::string inputLayoutName = reader.getValue<std::string>("name");
-	inputLayoutDesc.setName(inputLayoutName);
+	
+	auto inputLayout = manager.getInputLayout(inputLayoutName);
+	if (inputLayout)
+		return;
 
 	if (!reader.setToFirstChild())
 		throw failure(__TEXT("Empty child : ") + reader.getCurrentNodePath());
@@ -97,11 +102,9 @@ MaterialMaker::instanceInputLayout(MaterialManager& manager, MaterialDesc& mater
 
 	} while (reader.setToNextChild());
 
-	auto inputLayout = manager.getGraphicsDevice()->createInputLayout(inputLayoutDesc);
+	inputLayout = manager.createInputLayout(inputLayoutName, inputLayoutDesc);
 	if (!inputLayout)
 		throw failure(__TEXT("Can't create input layout") + reader.getCurrentNodeName());
-
-	material.addInputLayout(inputLayout);
 }
 
 void
@@ -127,107 +130,111 @@ MaterialMaker::instanceShader(MaterialManager& manager, MaterialDesc& material, 
 	if (value.empty())
 		throw failure(__TEXT("Empty shader entrypoint : ") + reader.getCurrentNodePath());
 
-	auto shaderModule =  material.getShader(value);
-	if (!shaderModule)
+	GraphicsShaderStage shaderStage = stringToShaderStage(type);
+	if (shaderStage == GraphicsShaderStage::GraphicsShaderStageMaxEnum)
+		throw failure(__TEXT("Unknown shader type : ") + type + reader.getCurrentNodePath());
+
+	std::vector<char>& bytecodes = _shaderCodes[value];
+	if (bytecodes.empty())
+		throw failure(__TEXT("Empty shader code : ") + value + reader.getCurrentNodePath());
+
+	GraphicsShaderDesc shaderDesc;
+	shaderDesc.setStage(shaderStage);
+
+	GraphicsDeviceType deviceType = manager.getDeviceType();
+	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES2 ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES3 ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES31 ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore ||
+		deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
 	{
-		GraphicsShaderStage shaderStage = stringToShaderStage(type);
-		if (shaderStage == GraphicsShaderStage::GraphicsShaderStageMaxEnum)
-			throw failure(__TEXT("Unknown shader type : ") + type);
+		std::uint32_t flags = HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
+		if (shaderStage == GraphicsShaderStage::GraphicsShaderStageGeometry)
+			flags = HLSLCC_FLAG_GS_ENABLED;
+		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessControl)
+			flags = HLSLCC_FLAG_TESS_ENABLED;
+		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
+			flags = HLSLCC_FLAG_TESS_ENABLED;
 
-		std::vector<char>& bytecodes = _shaderCodes[value];
-		if (bytecodes.empty())
-			throw failure(__TEXT("Empty shader code : ") + value);
+		GlExtensions extensions;
+		std::memset(&extensions, 0, sizeof(extensions));
+		if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
+		{
+			extensions.ARB_shading_language_420pack = true;
+			extensions.ARB_explicit_attrib_location = false;
+			extensions.ARB_explicit_uniform_location = true;
+			flags |= HLSLCC_FLAG_UNIFORM_BUFFER_OBJECT;
+		}
+		else
+		{
+			flags |= HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT;
+		}
 
-		GraphicsShaderDesc shaderDesc;
-		shaderDesc.setName(value);
-		shaderDesc.setStage(shaderStage);
-
-		GraphicsDeviceType deviceType = manager.getGraphicsDevice()->getGraphicsDeviceDesc().getDeviceType();
+		GLLang hlsl2glslLangType;
 		if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES2 ||
 			deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES3 ||
 			deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES31)
 		{
-			GLSLShader shader;
-			GLSLCrossDependencyData dependency;
-
-			std::uint32_t flags = HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT | HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
-			if (!TranslateHLSLFromMem(bytecodes.data(), flags, GLLang::LANG_ES_300, 0, &dependency, &shader))
-			{
-				FreeGLSLShader(&shader);
-				throw failure(__TEXT("Can't conv hlsl bytecodes to glsl.") + value);
-			}
-
-			shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangGLSL);
-			shaderDesc.setByteCodes(shader.sourceCode);
-
-			FreeGLSLShader(&shader);
-		}
-		else if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL ||
-				 deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
-		{
-			GLSLShader shader;
-			GLSLCrossDependencyData dependency;
-
-			std::uint32_t flags = HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT | HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
-			if (shaderStage == GraphicsShaderStage::GraphicsShaderStageGeometry)
-				flags = HLSLCC_FLAG_GS_ENABLED;
-			else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessControl)
-				flags = HLSLCC_FLAG_TESS_ENABLED;
-			else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
-				flags = HLSLCC_FLAG_TESS_ENABLED;
-
-			if (!TranslateHLSLFromMem(bytecodes.data(), flags, GLLang::LANG_DEFAULT, 0, &dependency, &shader))
-			{
-				FreeGLSLShader(&shader);
-				throw failure(__TEXT("Can't conv hlsl bytecodes to glsl.") + value);
-			}
-
-			shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangGLSL);
-			shaderDesc.setByteCodes(shader.sourceCode);
-
-			FreeGLSLShader(&shader);
-		}
-		else if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
-		{
-			GLSLShader shader;
-			GLSLCrossDependencyData dependency;
-
-			std::uint32_t flags = HLSLCC_FLAG_UNIFORM_BUFFER_OBJECT | HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
-			if (shaderStage == GraphicsShaderStage::GraphicsShaderStageGeometry)
-				flags = HLSLCC_FLAG_GS_ENABLED;
-			else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessControl)
-				flags = HLSLCC_FLAG_TESS_ENABLED;
-			else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
-				flags = HLSLCC_FLAG_TESS_ENABLED;
-
-			GlExtensions extensions;
-			extensions.ARB_shading_language_420pack = true;
-			extensions.ARB_explicit_attrib_location = false;
-			extensions.ARB_explicit_uniform_location = true;
-
-			if (!TranslateHLSLFromMem(bytecodes.data(), flags, GLLang::LANG_DEFAULT, 0, &dependency, &shader))
-			{
-				FreeGLSLShader(&shader);
-				throw failure(__TEXT("Can't conv hlsl bytecodes to glsl.") + value);
-			}
-
-			shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangGLSL);
-			shaderDesc.setByteCodes(shader.sourceCode);
-
-			FreeGLSLShader(&shader);
+			hlsl2glslLangType = GLLang::LANG_DEFAULT;
 		}
 		else
 		{
-			shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangHLSL);
-			shaderDesc.setByteCodes(std::string(bytecodes.data(), bytecodes.size()));
+			hlsl2glslLangType = GLLang::LANG_ES_300;
 		}
 
-		shaderModule = manager.getGraphicsDevice()->createShader(shaderDesc);
-		if (!shaderModule)
-			throw failure(__TEXT("Can't create shader : ") + reader.getCurrentNodePath());
+		GLSLShader shader;
+		GLSLCrossDependencyData dependency;
+		if (!TranslateHLSLFromMem(bytecodes.data(), flags, hlsl2glslLangType, &extensions, &dependency, &shader))
+		{
+			FreeGLSLShader(&shader);
+			throw failure(__TEXT("Can't conv hlsl bytecodes to glsl.") + value);
+		}
 
-		material.addShader(shaderModule);
+		shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangGLSL);
+		shaderDesc.setByteCodes(shader.sourceCode);
+
+		FreeGLSLShader(&shader);
+
+		if (hlsl2glslLangType == GLLang::LANG_ES_100 ||
+			hlsl2glslLangType == GLLang::LANG_ES_300 ||
+			hlsl2glslLangType == GLLang::LANG_ES_310)
+		{
+			if (shaderStage == GraphicsShaderStage::GraphicsShaderStageVertex || shaderStage == GraphicsShaderStage::GraphicsShaderStageFragment)
+			{
+				glslopt_shader_type glslopt_type = glslopt_shader_type::kGlslOptShaderVertex;
+				if (shaderStage == GraphicsShaderStage::GraphicsShaderStageFragment)
+					glslopt_type = glslopt_shader_type::kGlslOptShaderFragment;
+				
+				glslopt_target glslopt_target_type = glslopt_target::kGlslTargetOpenGLES20;
+				if (hlsl2glslLangType == GLLang::LANG_ES_300 || hlsl2glslLangType == GLLang::LANG_ES_310)
+					glslopt_target_type = glslopt_target::kGlslTargetOpenGLES30;
+
+				auto ctx = glslopt_initialize(glslopt_target_type);
+				if (ctx)
+				{
+					glslopt_shader* glslopt_shader = glslopt_optimize(ctx, glslopt_type, shaderDesc.getByteCodes().c_str(), 0);
+					bool optimizeOk = glslopt_get_status(glslopt_shader);
+					if (optimizeOk)
+					{
+						std::string textOpt = glslopt_get_output(glslopt_shader);
+						shaderDesc.setByteCodes(textOpt);
+					}
+
+					glslopt_cleanup(ctx);
+				}
+			}
+		}
 	}
+	else
+	{
+		shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangHLSL);
+		shaderDesc.setByteCodes(std::string(bytecodes.data(), bytecodes.size()));
+	}
+
+	auto shaderModule = manager.createShader(shaderDesc);
+	if (!shaderModule)
+		throw failure(__TEXT("Can't create shader : ") + reader.getCurrentNodePath());
 
 	programDesc.addShader(shaderModule);
 }
@@ -247,20 +254,23 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialDesc& material, Ma
 	GraphicsProgramDesc programDesc;
 	GraphicsInputLayoutPtr inputLayout;
 
+	std::string name;
+
 	do
 	{
 		auto nodeName = reader.getCurrentNodeName();
 		if (nodeName != "state")
 			throw failure(__TEXT("Unkonwn node name : ") + nodeName + reader.getCurrentNodePath());
 
-		std::string name = reader.getValue<std::string>("name");
+		if (!reader.getValue("name", name))
+			throw failure(__TEXT("Empty state name : ") + reader.getCurrentNodePath());
 
 		if (name == "vertex")
 			this->instanceShader(manager, material, programDesc, reader);
 		else if (name == "fragment")
 			this->instanceShader(manager, material, programDesc, reader);
 		else if (name == "inputlayout")
-			inputLayout = material.getInputLayout(reader.getValue<std::string>("value"));
+			inputLayout = manager.getInputLayout(reader.getValue<std::string>("value"));
 		else if (name == "cullmode")
 			stateDesc.setCullMode(stringToCullMode(reader.getValue<std::string>("value")));
 		else if (name == "polygonMode")
@@ -272,7 +282,7 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialDesc& material, Ma
 		else if (name == "multisampleEnable")
 			stateDesc.setMultisampleEnable(reader.getValue<bool>("value"));
 		else if (name == "linear2srgb")
-			stateDesc.setsRGBEnable(reader.getValue<bool>("value"));
+			stateDesc.setLinear2sRGBEnable(reader.getValue<bool>("value"));
 		else if (name == "blend")
 			stateDesc.setBlendEnable(reader.getValue<bool>("value"));
 		else if (name == "blendSeparate")
@@ -306,33 +316,31 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialDesc& material, Ma
 		else if (name == "stencilTest")
 			stateDesc.setStencilEnable(reader.getValue<bool>("value"));
 		else if (name == "stencilRef")
-			stateDesc.setStencilRef(reader.getValue<int>("value"));
+			stateDesc.setStencilFrontRef(reader.getValue<int>("value"));
 		else if (name == "stencilFunc")
-			stateDesc.setStencilFunc(stringToCompareFunc(reader.getValue<std::string>("value")));
+			stateDesc.setStencilFrontFunc(stringToCompareFunc(reader.getValue<std::string>("value")));
 		else if (name == "stencilReadMask")
-			stateDesc.setStencilReadMask(reader.getValue<int>("value"));
+			stateDesc.setStencilFrontReadMask(reader.getValue<int>("value"));
 		else if (name == "stencilWriteMask")
-			stateDesc.setStencilWriteMask(reader.getValue<int>("value"));
+			stateDesc.setStencilFrontWriteMask(reader.getValue<int>("value"));
 		else if (name == "stencilFail")
-			stateDesc.setStencilFail(stringToStencilOp(reader.getValue<std::string>("value")));
+			stateDesc.setStencilFrontFail(stringToStencilOp(reader.getValue<std::string>("value")));
 		else if (name == "stencilZFail")
-			stateDesc.setStencilZFail(stringToStencilOp(reader.getValue<std::string>("value")));
+			stateDesc.setStencilFrontZFail(stringToStencilOp(reader.getValue<std::string>("value")));
 		else if (name == "stencilPass")
-			stateDesc.setStencilPass(stringToStencilOp(reader.getValue<std::string>("value")));
-		else if (name == "stencilTwoTest")
-			stateDesc.setStencilTwoEnable(reader.getValue<bool>("value"));
+			stateDesc.setStencilFrontPass(stringToStencilOp(reader.getValue<std::string>("value")));
 		else if (name == "stencilTwoFunc")
-			stateDesc.setStencilTwoFunc(stringToCompareFunc(reader.getValue<std::string>("value")));
+			stateDesc.setStencilBackFunc(stringToCompareFunc(reader.getValue<std::string>("value")));
 		else if (name == "stencilTwoReadMask")
-			stateDesc.setStencilTwoReadMask(reader.getValue<int>("value"));
+			stateDesc.setStencilBackReadMask(reader.getValue<std::uint32_t>("value"));
 		else if (name == "stencilTwoWriteMask")
-			stateDesc.setStencilTwoWriteMask(reader.getValue<int>("value"));
+			stateDesc.setStencilBackWriteMask(reader.getValue<std::uint32_t>("value"));
 		else if (name == "stencilTwoFail")
-			stateDesc.setStencilTwoFail(stringToStencilOp(reader.getValue<std::string>("value")));
+			stateDesc.setStencilBackFail(stringToStencilOp(reader.getValue<std::string>("value")));
 		else if (name == "stencilTwoZFail")
-			stateDesc.setStencilTwoZFail(stringToStencilOp(reader.getValue<std::string>("value")));
+			stateDesc.setStencilBackZFail(stringToStencilOp(reader.getValue<std::string>("value")));
 		else if (name == "stencilTwoPass")
-			stateDesc.setStencilTwoPass(stringToStencilOp(reader.getValue<std::string>("value")));
+			stateDesc.setStencilBackPass(stringToStencilOp(reader.getValue<std::string>("value")));
 		else
 		{
 			throw failure(__TEXT("Unkonwn node name : ") + nodeName + reader.getCurrentNodePath());
@@ -340,11 +348,11 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialDesc& material, Ma
 
 	} while (reader.setToNextChild());
 
-	auto state = manager.getGraphicsDevice()->createRenderState(stateDesc);
+	auto state = manager.createRenderState(stateDesc);
 	if (!state)
 		throw failure(__TEXT("Can't create render state : ") + reader.getCurrentNodePath());
 
-	auto program = manager.getGraphicsDevice()->createProgram(programDesc);
+	auto program = manager.createProgram(programDesc);
 	if (!state)
 		throw failure(__TEXT("Can't create program : ") + reader.getCurrentNodePath());
 
@@ -430,52 +438,52 @@ MaterialMaker::instanceMacro(MaterialManager& manager, MaterialDesc& material, i
 
 	if (!type.empty())
 	{
-		auto macro = std::make_shared<MaterialVariant>();
+		auto macro = std::make_shared<MaterialParam>();
 		macro->setName(name);
 		if (type == "bool")
 		{
 			macro->setType(GraphicsUniformType::GraphicsUniformTypeBool);
-			macro->assign(reader.getValue<bool>("value"));
+			macro->uniform1b(reader.getValue<bool>("value"));
 		}
 		else if (type == "int")
 		{
 			macro->setType(GraphicsUniformType::GraphicsUniformTypeInt);
-			macro->assign(reader.getValue<int1>("value"));
+			macro->uniform1i(reader.getValue<int1>("value"));
 		}
 		else if (type == "int2")
 		{
 			macro->setType(GraphicsUniformType::GraphicsUniformTypeInt2);
-			macro->assign(reader.getValue<int2>("value"));
+			macro->uniform2i(reader.getValue<int2>("value"));
 		}
 		else if (type == "int3")
 		{
 			macro->setType(GraphicsUniformType::GraphicsUniformTypeInt3);
-			macro->assign(reader.getValue<int3>("value"));
+			macro->uniform3i(reader.getValue<int3>("value"));
 		}
 		else if (type == "int4")
 		{
 			macro->setType(GraphicsUniformType::GraphicsUniformTypeInt4);
-			macro->assign(reader.getValue<int4>("value"));
+			macro->uniform4i(reader.getValue<int4>("value"));
 		}
 		else if (type == "float")
 		{
 			macro->setType(GraphicsUniformType::GraphicsUniformTypeFloat);
-			macro->assign(reader.getValue<float1>("value"));
+			macro->uniform1f(reader.getValue<float1>("value"));
 		}
 		else if (type == "float2")
 		{
 			macro->setType(GraphicsUniformType::GraphicsUniformTypeFloat2);
-			macro->assign(reader.getValue<float2>("value"));
+			macro->uniform2f(reader.getValue<float2>("value"));
 		}
 		else if (type == "float3")
 		{
 			macro->setType(GraphicsUniformType::GraphicsUniformTypeFloat3);
-			macro->assign(reader.getValue<float3>("value"));
+			macro->uniform3f(reader.getValue<float3>("value"));
 		}
 		else if (type == "float4")
 		{
 			macro->setType(GraphicsUniformType::GraphicsUniformTypeFloat4);
-			macro->assign(reader.getValue<float4>("value"));
+			macro->uniform4f(reader.getValue<float4>("value"));
 		}
 		else
 		{
@@ -494,41 +502,80 @@ MaterialMaker::instanceSampler(MaterialManager& manager, MaterialDesc& material,
 	if (samplerName.empty())
 		throw failure(__TEXT("Empty sampler empty"));
 
+	auto sampler = manager.getSampler(samplerName);
+	if (sampler)
+		return;
+
 	if (!reader.setToFirstChild())
 		throw failure(__TEXT("Empty child : ") + reader.getCurrentNodePath());
 
-	GraphicsSamplerDesc desc;
-	desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat);
+	GraphicsSamplerDesc samplerDesc;
 
+	std::string stateName;
+	std::string stateValue;
+	
 	do
 	{
-		std::string stateName = reader.getValue<std::string>("name");
-		std::string stateValue = reader.getValue<std::string>("value");
+		if (!reader.getValue("name", stateName))
+			continue;
+
+		if (!reader.getValue("value", stateValue))
+			continue;
+
 		if (stateName == "filter")
 		{
 			if (stateValue == "point")
-				desc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+				samplerDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+			else if (stateValue == "point_mip_nearest")
+				samplerDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
+			else if (stateValue == "point_mip_lienar")
+				samplerDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapLinear);
 			else if (stateValue == "linear")
-				desc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
+				samplerDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
+			else if (stateValue == "linear_mip_nearest")
+				samplerDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest);
+			else if (stateValue == "linear_mip_linear")
+				samplerDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear);
+			else
+				throw failure(__TEXT("Unknown sampler filter type") + reader.getCurrentNodePath());
+
 		}
 		else if (stateName == "wrap")
 		{
 			if (stateValue == "clamp")
-				desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
+				samplerDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapClampToEdge);
 			else if (stateValue == "mirror")
-				desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapMirror);
+				samplerDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapMirror);
 			else if (stateValue == "repeat")
-				desc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat);
+				samplerDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat);
+			else
+				throw failure(__TEXT("Unknown sampler wrap type ") + reader.getCurrentNodePath());
+		}
+		else if (stateName == "anis")
+		{
+			if (stateValue == "1")
+				samplerDesc.setSamplerAnis(GraphicsSamplerAnis1);
+			else if (stateValue == "2")
+				samplerDesc.setSamplerAnis(GraphicsSamplerAnis2);
+			else if (stateValue == "4")
+				samplerDesc.setSamplerAnis(GraphicsSamplerAnis4);
+			else if (stateValue == "8")
+				samplerDesc.setSamplerAnis(GraphicsSamplerAnis8);
+			else if (stateValue == "16")
+				samplerDesc.setSamplerAnis(GraphicsSamplerAnis16);
+			else if (stateValue == "32")
+				samplerDesc.setSamplerAnis(GraphicsSamplerAnis32);
+			else if (stateValue == "64")
+				samplerDesc.setSamplerAnis(GraphicsSamplerAnis64);
+			else
+				throw failure(__TEXT("Unknown sampler anis level ") + reader.getCurrentNodePath());
 		}
 
 	} while (reader.setToNextChild());
-
-	auto param = std::make_shared<MaterialParam>();
-	param->setName(samplerName);
-	param->setType(GraphicsUniformType::GraphicsUniformTypeSamplerImage);
-	param->assign(nullptr, manager.getGraphicsDevice()->createSampler(desc));
-
-	material.addParameter(param);
+	
+	sampler = manager.createSampler(samplerName, samplerDesc);
+	if (!sampler)
+		throw failure(__TEXT("Can't create sampler ") + reader.getCurrentNodePath());
 }
 
 void
@@ -660,19 +707,19 @@ MaterialMaker::load(MaterialManager& manager, iarchive& reader) except
 					switch (param->getType())
 					{
 					case GraphicsUniformType::GraphicsUniformTypeFloat:
-						param->assign(parseFloat<Float>(arg.second));
+						param->uniform1f(parseFloat<Float>(arg.second));
 						break;
 					case GraphicsUniformType::GraphicsUniformTypeFloat2:
-						param->assign(parseFloat2(arg.second));
+						param->uniform2f(parseFloat2(arg.second));
 						break;
 					case GraphicsUniformType::GraphicsUniformTypeFloat3:
-						param->assign(parseFloat3(arg.second));
+						param->uniform3f(parseFloat3(arg.second));
 						break;
 					case GraphicsUniformType::GraphicsUniformTypeFloat4:
-						param->assign(parseFloat4(arg.second));
+						param->uniform4f(parseFloat4(arg.second));
 						break;
 					case GraphicsUniformType::GraphicsUniformTypeStorageImage:
-						param->assign(RenderSystem::instance()->createTexture(arg.second, GraphicsTextureDim::GraphicsTextureDim2D));
+						param->uniformTexture(RenderSystem::instance()->createTexture(arg.second, GraphicsTextureDim::GraphicsTextureDim2D));
 						break;
 					default:
 						assert(false);

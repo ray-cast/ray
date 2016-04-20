@@ -62,7 +62,7 @@ public:
 	void setPrimitiveType(GraphicsVertexType type) noexcept;
 	void setFrontFace(GraphicsFrontFace face) noexcept;
 	void setScissorTestEnable(bool enable) noexcept;
-	void setsRGBEnable(bool enable) noexcept;
+	void setLinear2sRGBEnable(bool enable) noexcept;
 	void setMultisampleEnable(bool enable) noexcept;
 	void setRasterizerDiscardEnable(bool enable) noexcept;
 
@@ -79,21 +79,20 @@ public:
 	void setDepthClampEnable(bool enable) noexcept;
 
 	void setStencilEnable(bool enable) noexcept;
-	void setStencilRef(std::int32_t ref) noexcept;
-	void setStencilFunc(GraphicsCompareFunc func) noexcept;
-	void setStencilReadMask(std::uint32_t mask) noexcept;
-	void setStencilWriteMask(std::uint32_t mask) noexcept;
-	void setStencilFail(GraphicsStencilOp stencilOp) noexcept;
-	void setStencilZFail(GraphicsStencilOp stencilOp) noexcept;
-	void setStencilPass(GraphicsStencilOp stencilOp) noexcept;
-	void setStencilTwoEnable(bool enable) noexcept;
-	void setStencilTwoRef(std::int32_t ref) noexcept;
-	void setStencilTwoFunc(GraphicsCompareFunc func) noexcept;
-	void setStencilTwoReadMask(std::uint32_t mask) noexcept;
-	void setStencilTwoWriteMask(std::uint32_t mask) noexcept;
-	void setStencilTwoFail(GraphicsStencilOp stencilOp) noexcept;
-	void setStencilTwoZFail(GraphicsStencilOp stencilOp) noexcept;
-	void setStencilTwoPass(GraphicsStencilOp stencilOp) noexcept;
+	void setStencilFrontRef(std::uint32_t ref) noexcept;
+	void setStencilFrontFunc(GraphicsCompareFunc func) noexcept;
+	void setStencilFrontReadMask(std::uint32_t mask) noexcept;
+	void setStencilFrontWriteMask(std::uint32_t mask) noexcept;
+	void setStencilFrontFail(GraphicsStencilOp stencilOp) noexcept;
+	void setStencilFrontZFail(GraphicsStencilOp stencilOp) noexcept;
+	void setStencilFrontPass(GraphicsStencilOp stencilOp) noexcept;
+	void setStencilBackRef(std::uint32_t ref) noexcept;
+	void setStencilBackFunc(GraphicsCompareFunc func) noexcept;
+	void setStencilBackReadMask(std::uint32_t mask) noexcept;
+	void setStencilBackWriteMask(std::uint32_t mask) noexcept;
+	void setStencilBackFail(GraphicsStencilOp stencilOp) noexcept;
+	void setStencilBackZFail(GraphicsStencilOp stencilOp) noexcept;
+	void setStencilBackPass(GraphicsStencilOp stencilOp) noexcept;
 
 	bool getBlendEnable() const noexcept;
 	bool getBlendSeparateEnable() const noexcept;
@@ -110,38 +109,37 @@ public:
 	GraphicsVertexType getPrimitiveType() const noexcept;
 	GraphicsFrontFace getFrontFace() const noexcept;
 	bool getScissorTestEnable() const noexcept;
-	bool getsRGBEnable() const noexcept;
+	bool getLinear2sRGBEnable() const noexcept;
 	bool getMultisampleEnable() const noexcept;
 	bool getRasterizerDiscardEnable() const noexcept;
 
 	bool getDepthEnable() const noexcept;
 	bool getDepthWriteEnable() const noexcept;
 	bool getDepthBoundsEnable() const noexcept;
-	float getDepthMin() const noexcept;
-	float getDepthMax() const noexcept;
-	GraphicsCompareFunc getDepthFunc() const noexcept;
 	bool getDepthBiasEnable() const noexcept;
-	float getDepthBias() const noexcept;
-	float getDepthSlopeScaleBias() const noexcept;
 	bool getDepthBiasClamp() const noexcept;
 	bool getDepthClampEnable() const noexcept;
+	float getDepthMin() const noexcept;
+	float getDepthMax() const noexcept;
+	float getDepthBias() const noexcept;
+	float getDepthSlopeScaleBias() const noexcept;
+	GraphicsCompareFunc getDepthFunc() const noexcept;
 
 	bool getStencilEnable() const noexcept;
-	std::int32_t getStencilRef() const noexcept;
-	GraphicsCompareFunc getStencilFunc() const noexcept;
-	std::uint32_t getStencilReadMask() const noexcept;
-	std::uint32_t getStencilWriteMask() const noexcept;
-	GraphicsStencilOp getStencilFail() const noexcept;
-	GraphicsStencilOp getStencilZFail() const noexcept;
-	GraphicsStencilOp getStencilPass() const noexcept;
-	bool getStencilTwoEnable() const noexcept;
-	std::int32_t getStencilTwoRef() const noexcept;
-	GraphicsCompareFunc getStencilTwoFunc() const noexcept;
-	std::uint32_t getStencilTwoReadMask() const noexcept;
-	std::uint32_t getStencilTwoWriteMask() const noexcept;
-	GraphicsStencilOp getStencilTwoFail() const noexcept;
-	GraphicsStencilOp getStencilTwoZFail() const noexcept;
-	GraphicsStencilOp getStencilTwoPass() const noexcept;
+	GraphicsCompareFunc getStencilFrontFunc() const noexcept;
+	std::uint32_t getStencilFrontRef() const noexcept;
+	std::uint32_t getStencilFrontReadMask() const noexcept;
+	std::uint32_t getStencilFrontWriteMask() const noexcept;
+	GraphicsStencilOp getStencilFrontFail() const noexcept;
+	GraphicsStencilOp getStencilFrontZFail() const noexcept;
+	GraphicsStencilOp getStencilFrontPass() const noexcept;
+	GraphicsCompareFunc getStencilBackFunc() const noexcept;
+	std::uint32_t getStencilBackRef() const noexcept;
+	std::uint32_t getStencilBackReadMask() const noexcept;
+	std::uint32_t getStencilBackWriteMask() const noexcept;
+	GraphicsStencilOp getStencilBackFail() const noexcept;
+	GraphicsStencilOp getStencilBackZFail() const noexcept;
+	GraphicsStencilOp getStencilBackPass() const noexcept;
 
 private:
 	bool _blendEnable;
@@ -157,7 +155,6 @@ private:
 	bool _depthBiasEnable;
 	bool _depthBiasClamp;
 	bool _stencilEnable;
-	bool _stencilTwoEnable;
 
 	GraphicsBlendOp _blendOp;
 	GraphicsBlendOp _blendAlphaOp;
@@ -180,24 +177,21 @@ private:
 	float _depthSlopeScaleBias;
 	GraphicsCompareFunc _depthFunc;
 
-	std::int32_t _stencilRef;
-	std::int32_t _stencilTwoRef;
+	std::uint32_t _stencilFrontRef;
+	std::uint32_t _stencilFrontReadMask;
+	std::uint32_t _stencilFrontWriteMask;
+	GraphicsStencilOp _stencilFrontFail;
+	GraphicsStencilOp _stencilFrontZFail;
+	GraphicsStencilOp _stencilFrontPass;
+	GraphicsCompareFunc _stencilFrontFunc;
 
-	std::uint32_t _stencilReadMask;
-	std::uint32_t _stencilWriteMask;
-	std::uint32_t _stencilTwoReadMask;
-	std::uint32_t _stencilTwoWriteMask;
-
-	GraphicsCompareFunc _stencilFunc;
-	GraphicsCompareFunc _stencilTwoFunc;
-
-	GraphicsStencilOp _stencilFail;
-	GraphicsStencilOp _stencilZFail;
-	GraphicsStencilOp _stencilPass;
-	
-	GraphicsStencilOp _stencilTwoFail;
-	GraphicsStencilOp _stencilTwoZFail;
-	GraphicsStencilOp _stencilTwoPass;
+	std::uint32_t _stencilBackRef;
+	std::uint32_t _stencilBackReadMask;
+	std::uint32_t _stencilBackWriteMask;
+	GraphicsStencilOp _stencilBackFail;
+	GraphicsStencilOp _stencilBackZFail;
+	GraphicsStencilOp _stencilBackPass;
+	GraphicsCompareFunc _stencilBackFunc;
 };
 
 class EXPORT GraphicsState : public GraphicsChild

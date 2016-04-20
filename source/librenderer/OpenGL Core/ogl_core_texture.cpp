@@ -154,7 +154,7 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 			}
 		}
 	}
-
+	
 	_target = target;
 	_textureDesc = textureDesc;
 

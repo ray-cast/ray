@@ -77,7 +77,7 @@ LightShaft::onActivate(RenderPipeline& pipeline) noexcept
 	sample.z = illuminationWeight;
 	sample.w = illuminationDecay;
 
-	_illuminationSample->assign(sample);
+	_illuminationSample->uniform4f(sample);
 
 	_sampleMap = pipeline.createTexture(width / 2, height / 2, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatB10G11R11UFloatPack32);
 
@@ -111,7 +111,7 @@ LightShaft::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Gr
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_illuminationRadio->assign((float)width / height);
+	_illuminationRadio->uniform1f((float)width / height);
 
 	auto lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting);
 	for (auto& it : lights)
@@ -128,15 +128,15 @@ LightShaft::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Gr
 			if (view.x >= -0.5f && view.x <= 2.0f &&
 				view.y >= -0.5f && view.y <= 2.0f && view.z < 1.0f)
 			{
-				_illuminationPosition->assign(Vector2(view.x, view.y));
-				_illuminationSource->assign(texture);
+				_illuminationPosition->uniform2f(Vector2(view.x, view.y));
+				_illuminationSource->uniformTexture(texture);
 
 				pipeline.drawScreenQuad(_lightShaft);
 			}
 		}
 	}
 
-	_illuminationSource->assign(_sampleMap);
+	_illuminationSource->uniformTexture(_sampleMap);
 
 	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(_lightShaftCopy);

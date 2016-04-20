@@ -68,7 +68,7 @@ VulkanDescriptorPool::setup(const GraphicsDescriptorPoolDesc& descriptorPoolDesc
 	VkDescriptorPoolCreateInfo info;
 	info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	info.pNext = nullptr;
-	info.flags = 0;
+	info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 	info.maxSets = descriptorPoolDesc.getMaxSets();
 	info.poolSizeCount = pool.size();
 	info.pPoolSizes = pool.data();

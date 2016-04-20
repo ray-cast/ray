@@ -129,6 +129,12 @@ VulkanGraphicsData::getBuffer() const noexcept
 	return _vkBuffer;
 }
 
+VkDeviceMemory
+VulkanGraphicsData::getDeviceMemory() const noexcept
+{
+	return _memory.getDeviceMemory();
+}
+
 void
 VulkanGraphicsData::setDevice(GraphicsDevicePtr device) noexcept
 {

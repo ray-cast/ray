@@ -89,6 +89,8 @@ public:
 	std::uint32_t getStreamSize() const noexcept;
 
 private:
+	std::string _name;
+
 	bool _multisample;
 
 	uint3 _size;

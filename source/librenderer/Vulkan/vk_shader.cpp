@@ -280,7 +280,7 @@ VulkanShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 	}
 
 	std::vector<std::uint32_t> bytecodes;
-	if (!GLSLtoSPV(VulkanTypes::asShaderStage(shaderDesc.getStage()), _glsl.data(), bytecodes))
+	if (!GLSLtoSPV(VulkanTypes::asShaderStage(shaderDesc.getStage()), shaderDesc.getByteCodes().data(), bytecodes))
 	{
 		VK_PLATFORM_LOG("Can't conv glsl to spv.");
 		return false;
@@ -303,7 +303,7 @@ VulkanShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 	return true;
 }
 
-void 
+void
 VulkanShader::close() noexcept
 {
 	if (_vkShader != VK_NULL_HANDLE)
@@ -339,7 +339,7 @@ VulkanShader::getDevice() noexcept
 	return _device.lock();
 }
 
-const GraphicsShaderDesc& 
+const GraphicsShaderDesc&
 VulkanShader::getGraphicsShaderDesc() const noexcept
 {
 	return _shaderDesc;
@@ -473,7 +473,7 @@ VulkanShader::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *psh
 
 	program.addShader(&shader);
 
-	if (!program.link(messages)) 
+	if (!program.link(messages))
 	{
 		VK_PLATFORM_LOG(program.getInfoLog());
 		VK_PLATFORM_LOG(program.getInfoDebugLog());
@@ -492,7 +492,7 @@ VulkanProgram::~VulkanProgram() noexcept
 {
 }
 
-bool 
+bool
 VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 {
 	TBuiltInResource resources;
@@ -719,7 +719,7 @@ VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 	return true;
 }
 
-void 
+void
 VulkanProgram::close() noexcept
 {
 	_activeAttributes.clear();
@@ -761,31 +761,7 @@ VulkanProgram::toGraphicsUniformType(const std::string& name, int type) noexcept
 
 		if (type == GL_BOOL)
 		{
-			if (isArray)
-				return GraphicsUniformType::GraphicsUniformTypeBoolArray;
-			else
-				return GraphicsUniformType::GraphicsUniformTypeBool;
-		}
-		else if (type == GL_BOOL_VEC2)
-		{
-			if (isArray)
-				return GraphicsUniformType::GraphicsUniformTypeBool2Array;
-			else
-				return GraphicsUniformType::GraphicsUniformTypeBool2;
-		}
-		else if (type == GL_BOOL_VEC3)
-		{
-			if (isArray)
-				return GraphicsUniformType::GraphicsUniformTypeBool3Array;
-			else
-				return GraphicsUniformType::GraphicsUniformTypeBool3;
-		}
-		else if (type == GL_BOOL_VEC4)
-		{
-			if (isArray)
-				return GraphicsUniformType::GraphicsUniformTypeBool4Array;
-			else
-				return GraphicsUniformType::GraphicsUniformTypeBool4;
+			return GraphicsUniformType::GraphicsUniformTypeBool;
 		}
 		else if (type == GL_INT)
 		{

@@ -67,183 +67,363 @@ EGL3GraphicsUniformSet::getType() const noexcept
 }
 
 void
-EGL3GraphicsUniformSet::assign(bool value) noexcept
+EGL3GraphicsUniformSet::uniform1b(bool value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform1b(value);
 }
 
 void
-EGL3GraphicsUniformSet::assign(int value) noexcept
+EGL3GraphicsUniformSet::uniform1i(std::int32_t i1) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform1i(i1);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const int2& value) noexcept
+EGL3GraphicsUniformSet::uniform2i(const int2& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform2i(value);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const int3& value) noexcept
+EGL3GraphicsUniformSet::uniform2i(std::int32_t i1, std::int32_t i2) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform2i(i1, i2);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const int4& value) noexcept
+EGL3GraphicsUniformSet::uniform3i(const int3& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform3i(value);
 }
 
 void
-EGL3GraphicsUniformSet::assign(uint1 value) noexcept
+EGL3GraphicsUniformSet::uniform3i(std::int32_t i1, std::int32_t i2, std::int32_t i3) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform3i(i1, i2, i3);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const uint2& value) noexcept
+EGL3GraphicsUniformSet::uniform4i(const int4& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform4i(value);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const uint3& value) noexcept
+EGL3GraphicsUniformSet::uniform4i(std::int32_t i1, std::int32_t i2, std::int32_t i3, std::int32_t i4) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform4i(i1, i2, i3, i4);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const uint4& value) noexcept
+EGL3GraphicsUniformSet::uniform1ui(std::uint32_t ui1) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform1ui(ui1);
 }
 
 void
-EGL3GraphicsUniformSet::assign(float value) noexcept
+EGL3GraphicsUniformSet::uniform2ui(const uint2& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform2ui(value);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const float2& value) noexcept
+EGL3GraphicsUniformSet::uniform2ui(std::uint32_t ui1, std::uint32_t ui2) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform2ui(ui1, ui2);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const float3& value) noexcept
+EGL3GraphicsUniformSet::uniform3ui(const uint3& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform3ui(value);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const float4& value) noexcept
+EGL3GraphicsUniformSet::uniform3ui(std::uint32_t ui1, std::uint32_t ui2, std::uint32_t ui3) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform3ui(ui1, ui2, ui3);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const float3x3& value) noexcept
+EGL3GraphicsUniformSet::uniform4ui(const uint4& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform4ui(value);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const float4x4& value) noexcept
+EGL3GraphicsUniformSet::uniform4ui(std::uint32_t ui1, std::uint32_t ui2, std::uint32_t ui3, std::uint32_t ui4) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform4ui(ui1, ui2, ui3, ui4);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const std::vector<int1>& value) noexcept
+EGL3GraphicsUniformSet::uniform1f(float f1) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform1f(f1);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const std::vector<int2>& value) noexcept
+EGL3GraphicsUniformSet::uniform2f(const float2& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform2f(value);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const std::vector<int3>& value) noexcept
+EGL3GraphicsUniformSet::uniform2f(float f1, float f2) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform2f(f1, f2);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const std::vector<int4>& value) noexcept
+EGL3GraphicsUniformSet::uniform3f(const float3& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform3f(value);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const std::vector<uint1>& value) noexcept
+EGL3GraphicsUniformSet::uniform3f(float f1, float f2, float f3) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform3f(f1, f2, f3);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const std::vector<uint2>& value) noexcept
+EGL3GraphicsUniformSet::uniform4f(const float4& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform4f(value);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const std::vector<uint3>& value) noexcept
+EGL3GraphicsUniformSet::uniform4f(float f1, float f2, float f3, float f4) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform4f(f1, f2, f3, f4);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const std::vector<uint4>& value) noexcept
+EGL3GraphicsUniformSet::uniform2fmat(const float2x2& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform2fmat(value);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const std::vector<float1>& value) noexcept
+EGL3GraphicsUniformSet::uniform2fmat(const float* mat2) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform2fmat(mat2);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const std::vector<float2>& value) noexcept
+EGL3GraphicsUniformSet::uniform3fmat(const float3x3& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform3fmat(value);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const std::vector<float3>& value) noexcept
+EGL3GraphicsUniformSet::uniform3fmat(const float* mat3) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform3fmat(mat3);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const std::vector<float4>& value) noexcept
+EGL3GraphicsUniformSet::uniform4fmat(const float4x4& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform4fmat(value);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const std::vector<float3x3>& value) noexcept
+EGL3GraphicsUniformSet::uniform4fmat(const float* mat4) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform4fmat(mat4);
 }
 
 void
-EGL3GraphicsUniformSet::assign(const std::vector<float4x4>& value) noexcept
+EGL3GraphicsUniformSet::uniform1iv(const std::vector<int1>& value) noexcept
 {
-	_variant.assign(value);
+	_variant.uniform1iv(value);
 }
 
 void
-EGL3GraphicsUniformSet::assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
+EGL3GraphicsUniformSet::uniform1iv(std::size_t num, const std::int32_t* i1v) noexcept
 {
-	_variant.assign(texture, sampler);
+	_variant.uniform1iv(num, i1v);
+}
+
+void
+EGL3GraphicsUniformSet::uniform2iv(const std::vector<int2>& value) noexcept
+{
+	_variant.uniform2iv(value);
+}
+
+void
+EGL3GraphicsUniformSet::uniform2iv(std::size_t num, const std::int32_t* i2v) noexcept
+{
+	_variant.uniform2iv(num, i2v);
+}
+
+void
+EGL3GraphicsUniformSet::uniform3iv(const std::vector<int3>& value) noexcept
+{
+	_variant.uniform3iv(value);
+}
+
+void
+EGL3GraphicsUniformSet::uniform3iv(std::size_t num, const std::int32_t* i3v) noexcept
+{
+	_variant.uniform3iv(num, i3v);
+}
+
+void
+EGL3GraphicsUniformSet::uniform4iv(const std::vector<int4>& value) noexcept
+{
+	_variant.uniform4iv(value);
+}
+
+void
+EGL3GraphicsUniformSet::uniform4iv(std::size_t num, const std::int32_t* i4v) noexcept
+{
+	_variant.uniform4iv(num, i4v);
+}
+
+void
+EGL3GraphicsUniformSet::uniform1uiv(const std::vector<uint1>& value) noexcept
+{
+	_variant.uniform1uiv(value);
+}
+
+void
+EGL3GraphicsUniformSet::uniform1uiv(std::size_t num, const std::uint32_t* ui1v) noexcept
+{
+	_variant.uniform1uiv(num, ui1v);
+}
+
+void
+EGL3GraphicsUniformSet::uniform2uiv(const std::vector<uint2>& value) noexcept
+{
+	_variant.uniform2uiv(value);
+}
+
+void
+EGL3GraphicsUniformSet::uniform2uiv(std::size_t num, const std::uint32_t* ui2v) noexcept
+{
+	_variant.uniform2uiv(num, ui2v);
+}
+
+void
+EGL3GraphicsUniformSet::uniform3uiv(const std::vector<uint3>& value) noexcept
+{
+	_variant.uniform3uiv(value);
+}
+
+void
+EGL3GraphicsUniformSet::uniform3uiv(std::size_t num, const std::uint32_t* ui3v) noexcept
+{
+	_variant.uniform3uiv(num, ui3v);
+}
+
+void
+EGL3GraphicsUniformSet::uniform4uiv(const std::vector<uint4>& value) noexcept
+{
+	_variant.uniform4uiv(value);
+}
+
+void
+EGL3GraphicsUniformSet::uniform4uiv(std::size_t num, const std::uint32_t* ui4v) noexcept
+{
+	_variant.uniform4uiv(num, ui4v);
+}
+
+void
+EGL3GraphicsUniformSet::uniform1fv(const std::vector<float1>& value) noexcept
+{
+	_variant.uniform1fv(value);
+}
+
+void
+EGL3GraphicsUniformSet::uniform1fv(std::size_t num, const float* f1v) noexcept
+{
+	_variant.uniform1fv(num, f1v);
+}
+
+void
+EGL3GraphicsUniformSet::uniform2fv(const std::vector<float2>& value) noexcept
+{
+	_variant.uniform2fv(value);
+}
+
+void
+EGL3GraphicsUniformSet::uniform2fv(std::size_t num, const float* f2v) noexcept
+{
+	_variant.uniform2fv(num, f2v);
+}
+
+void
+EGL3GraphicsUniformSet::uniform3fv(const std::vector<float3>& value) noexcept
+{
+	_variant.uniform3fv(value);
+}
+
+void
+EGL3GraphicsUniformSet::uniform3fv(std::size_t num, const float* f3v) noexcept
+{
+	_variant.uniform3fv(num, f3v);
+}
+
+void
+EGL3GraphicsUniformSet::uniform4fv(const std::vector<float4>& value) noexcept
+{
+	_variant.uniform4fv(value);
+}
+
+void
+EGL3GraphicsUniformSet::uniform4fv(std::size_t num, const float* f4v) noexcept
+{
+	_variant.uniform4fv(num, f4v);
+}
+
+void
+EGL3GraphicsUniformSet::uniform2fmatv(const std::vector<float2x2>& value) noexcept
+{
+	_variant.uniform2fmatv(value);
+}
+
+void
+EGL3GraphicsUniformSet::uniform2fmatv(std::size_t num, const float* mat2) noexcept
+{
+	_variant.uniform2fmatv(num, mat2);
+}
+
+void
+EGL3GraphicsUniformSet::uniform3fmatv(const std::vector<float3x3>& value) noexcept
+{
+	_variant.uniform3fmatv(value);
+}
+
+void
+EGL3GraphicsUniformSet::uniform3fmatv(std::size_t num, const float* mat3) noexcept
+{
+	_variant.uniform3fmatv(num, mat3);
+}
+
+void
+EGL3GraphicsUniformSet::uniform4fmatv(const std::vector<float4x4>& value) noexcept
+{
+	_variant.uniform4fmatv(value);
+}
+
+void
+EGL3GraphicsUniformSet::uniform4fmatv(std::size_t num, const float* mat4) noexcept
+{
+	_variant.uniform4fmatv(num, mat4);
+}
+
+void
+EGL3GraphicsUniformSet::uniformTexture(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
+{
+	_variant.uniformTexture(texture, sampler);
+}
+
+void
+EGL3GraphicsUniformSet::uniformBuffer(GraphicsDataPtr ubo) noexcept
+{
+	_variant.uniformBuffer(ubo);
 }
 
 bool
@@ -406,6 +586,12 @@ const std::vector<float4>&
 EGL3GraphicsUniformSet::getFloat4Array() const noexcept
 {
 	return _variant.getFloat4Array();
+}
+
+const std::vector<float2x2>& 
+EGL3GraphicsUniformSet::getFloat2x2Array() const noexcept
+{
+	return _variant.getFloat2x2Array();
 }
 
 const std::vector<float3x3>&

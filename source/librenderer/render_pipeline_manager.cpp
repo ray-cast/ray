@@ -150,14 +150,6 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 		}
 	}
 
-	if (_setting.enableSSSS != setting.enableSSSS)
-	{
-		if (setting.enableSSSS)
-			_deferredLighting->downcast<DeferredRenderPipeline>()->enableSSSS(*_pipeline, true);
-		else if (_SSSS)
-			_deferredLighting->downcast<DeferredRenderPipeline>()->enableSSSS(*_pipeline, false);
-	}
-
 	if (_setting.enableFog != setting.enableFog)
 	{
 		if (setting.enableFog)
@@ -598,6 +590,13 @@ RenderPipelineManager::createInputLayout(const GraphicsInputLayoutDesc& desc) no
 {
 	assert(_pipelineDevice);
 	return _pipelineDevice->createInputLayout(desc);
+}
+
+GraphicsPipelinePtr
+RenderPipelineManager::createGraphicsPipeline(const GraphicsPipelineDesc& desc) noexcept
+{
+	assert(_pipelineDevice);
+	return _pipelineDevice->createGraphicsPipeline(desc);
 }
 
 GraphicsDataPtr 

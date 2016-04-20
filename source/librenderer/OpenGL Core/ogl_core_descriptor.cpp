@@ -81,7 +81,6 @@ OGLCoreDescriptorSet::close() noexcept
 void
 OGLCoreDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 {
-	std::uint32_t textureUnit = 0;
 	auto program = shaderObject->downcast<OGLProgram>()->getInstanceID();
 	for (auto& it : _activeUniformSets)
 	{
@@ -182,31 +181,28 @@ OGLCoreDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
 			{
-				if (uniform->getTexture())
+				auto texture = uniform->getTexture();
+				if (texture)
 				{
-					glProgramUniform1i(program, location, textureUnit);
-					glBindTextureUnit(textureUnit, uniform->getTexture()->downcast<OGLCoreTexture>()->getInstanceID());
-					textureUnit++;
+					glBindTextureUnit(location, texture->downcast<OGLCoreTexture>()->getInstanceID());
 				}
 			}
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler:
 			{
-				if (uniform->getTexture())
+				auto texture = uniform->getTexture();
+				if (texture)
 				{
-					glProgramUniform1i(program, location, textureUnit);
-					glBindTextureUnit(textureUnit, uniform->getTexture()->downcast<OGLCoreTexture>()->getInstanceID());
-					textureUnit++;
+					glBindTextureUnit(location, texture->downcast<OGLCoreTexture>()->getInstanceID());
 				}
 			}
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeStorageImage:
 			{
-				if (uniform->getTexture())
+				auto texture = uniform->getTexture();
+				if (texture)
 				{
-					glProgramUniform1i(program, location, textureUnit);
-					glBindTextureUnit(textureUnit, uniform->getTexture()->downcast<OGLCoreTexture>()->getInstanceID());
-					textureUnit++;
+					glBindTextureUnit(location, texture->downcast<OGLCoreTexture>()->getInstanceID());
 				}
 			}
 			break;

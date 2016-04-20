@@ -41,58 +41,11 @@
 
 _NAME_BEGIN
 
-class EXPORT MaterialPassDesc final
-{
-public:
-	MaterialPassDesc() noexcept;
-	~MaterialPassDesc() noexcept;
-
-	void setName(const std::string& name) noexcept;
-	const std::string& getName() const noexcept;
-
-	void setGraphicsState(GraphicsStatePtr& state) noexcept;
-	void setGraphicsProgram(GraphicsProgramPtr& program) noexcept;
-	void setGraphicsInputLayout(GraphicsInputLayoutPtr& inputLayout) noexcept;
-	void setGraphicsDescriptorPool(GraphicsDescriptorPoolPtr& pool) noexcept;
-	void setGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr& descriptorSetLayout) noexcept;
-
-	GraphicsStatePtr getGraphicsState() const noexcept;
-	GraphicsProgramPtr getGraphicsProgram() const noexcept;
-	GraphicsInputLayoutPtr getGraphicsInputLayout() const noexcept;
-	GraphicsDescriptorPoolPtr getGraphicsDescriptorPool() const noexcept;
-	GraphicsDescriptorSetLayoutPtr getGraphicsDescriptorSetLayout() const noexcept;
-
-private:
-	std::string _name;
-
-	GraphicsStatePtr _state;
-	GraphicsProgramPtr _program;
-	GraphicsInputLayoutPtr _inputLayout;
-	GraphicsDescriptorPoolPtr _descriptorPool;
-	GraphicsDescriptorSetLayoutPtr _descriptorSetLayout;
-};
-
-class EXPORT MaterialTechDesc final
-{
-public:
-	MaterialTechDesc() noexcept;
-	~MaterialTechDesc() noexcept;
-
-	void addPass(MaterialPassDescPtr pass) noexcept;
-	void removePass(MaterialPassDescPtr pass) noexcept;
-
-private:
-	std::vector<MaterialPassDescPtr> _passList;
-};
-
 class EXPORT MaterialDesc final
 {
 public:
 	MaterialDesc() noexcept;
 	~MaterialDesc() noexcept;
-
-	void setName(const std::string& name) noexcept;
-	const std::string& getName() const noexcept;
 
 	void addTech(MaterialTechPtr technique) noexcept;
 	void removeTech(MaterialTechPtr technique) noexcept;
@@ -105,31 +58,16 @@ public:
 	MaterialParams& getParameters() noexcept;
 	const MaterialParams& getParameters() const noexcept;
 
-	void addMacro(MaterialVariantPtr macro) noexcept;
-	void removeMacro(MaterialVariantPtr macro) noexcept;
-	MaterialVariantPtr getMacro(const std::string& name) const noexcept;
-	MaterialVariants& getMacros() noexcept;
-	const MaterialVariants& getMacros() const noexcept;
-
-	void addInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept;
-	void removeInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept;
-	GraphicsInputLayoutPtr getInputLayout(const std::string& name) const noexcept;
-	GraphicsInputLayouts& getInputLayouts() noexcept;
-	const GraphicsInputLayouts& getInputLayouts() const noexcept;
-
-	void addShader(GraphicsShaderPtr shader) noexcept;
-	void removeShader(GraphicsShaderPtr shader) noexcept;
-	GraphicsShaderPtr getShader(const std::string& name) const noexcept;
-	GraphicsShaders& getShaders() noexcept;
-	const GraphicsShaders& getShaders() const noexcept;
+	void addMacro(MaterialParamPtr macro) noexcept;
+	void removeMacro(MaterialParamPtr macro) noexcept;
+	MaterialParamPtr getMacro(const std::string& name) const noexcept;
+	MaterialParams& getMacros() noexcept;
+	const MaterialParams& getMacros() const noexcept;
 
 private:
-	std::string _name;
 	MaterialParams _parameters;
-	MaterialVariants _macros;
+	MaterialParams _macros;
 	MaterialTechniques _techniques;
-	GraphicsShaders _shaders;
-	GraphicsInputLayouts _inputLayouts;
 };
 
 _NAME_END

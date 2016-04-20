@@ -39,6 +39,10 @@
 #include <ray/material_param.h>
 #include <ray/material_pass.h>
 
+#include <ray/graphics_sampler.h>
+#include <ray/graphics_texture.h>
+#include <ray/graphics_device.h>
+
 _NAME_BEGIN
 
 MaterialManager::MaterialManager() noexcept
@@ -54,8 +58,13 @@ bool
 MaterialManager::setup(GraphicsDevicePtr device) noexcept
 {
 	_graphicsDevice = device;
-	_materialLoader = std::make_shared<MaterialMaker>();
 	return true;
+}
+
+GraphicsDeviceType
+MaterialManager::getDeviceType() const noexcept
+{
+	return _graphicsDevice->getGraphicsDeviceDesc().getDeviceType();
 }
 
 void
@@ -64,41 +73,16 @@ MaterialManager::close() noexcept
 	_semantics.clear();
 }
 
-void
-MaterialManager::setMaterialLoader(MaterialLoaderPtr loader) noexcept
-{
-	assert(loader);
-	_materialLoader = loader;
-}
-
-MaterialLoaderPtr
-MaterialManager::getMaterialLoader() const noexcept
-{
-	return _materialLoader;
-}
-
-void
-MaterialManager::setGraphicsDevice(GraphicsDevicePtr device) noexcept
-{
-	_graphicsDevice = device;
-}
-
-GraphicsDevicePtr
-MaterialManager::getGraphicsDevice() noexcept
-{
-	return _graphicsDevice;
-}
-
-MaterialVariantPtr
+MaterialParamPtr
 MaterialManager::createSemantic(const std::string& name, GraphicsUniformType type) noexcept
 {
 	assert(!name.empty());
 	assert(type != GraphicsUniformType::GraphicsUniformTypeNone);
 
-	auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialVariantPtr& it) { return it->getName() == name;});
+	auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialParamPtr& it) { return it->getName() == name;});
 	if (it == _semantics.end())
 	{
-		_semantics.push_back(std::make_shared<MaterialVariant>(name, type));
+		_semantics.push_back(std::make_shared<MaterialParam>(name, type));
 		return _semantics.back();
 	}
 
@@ -106,25 +90,181 @@ MaterialManager::createSemantic(const std::string& name, GraphicsUniformType typ
 }
 
 void
-MaterialManager::destroySemantic(MaterialVariantPtr semantc) noexcept
+MaterialManager::destroySemantic(MaterialParamPtr semantc) noexcept
 {
 	if (semantc && !semantc->getName().empty() && semantc->getType() != GraphicsUniformType::GraphicsUniformTypeNone)
 	{
-		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialVariantPtr& it) { return it->getName() == semantc->getName();});
+		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialParamPtr& it) { return it->getName() == semantc->getName();});
 		if (it == _semantics.end())
 			_semantics.push_back(semantc);
 	}
 }
 
-MaterialVariantPtr
+GraphicsStatePtr
+MaterialManager::createRenderState(const GraphicsStateDesc& shaderDesc) noexcept
+{
+	return _graphicsDevice->createRenderState(shaderDesc);
+}
+
+GraphicsShaderPtr 
+MaterialManager::createShader(const GraphicsShaderDesc& shaderDesc) noexcept
+{
+	return _graphicsDevice->createShader(shaderDesc);
+}
+
+GraphicsProgramPtr 
+MaterialManager::createProgram(const GraphicsProgramDesc& programDesc) noexcept
+{
+	return _graphicsDevice->createProgram(programDesc);
+}
+
+GraphicsSamplerPtr
+MaterialManager::createSampler(const std::string& name, const GraphicsSamplerDesc& samplerDesc) noexcept
+{
+	if (name.empty())
+		return nullptr;
+
+	auto sampler = _samplers[name];
+	if (sampler)
+		return nullptr;
+
+	sampler = _graphicsDevice->createSampler(samplerDesc);
+	if (!sampler)
+		return nullptr;
+			
+	_samplers[name] = sampler;
+	return sampler;
+}
+
+void
+MaterialManager::destroySampler(GraphicsSamplerPtr sampler) noexcept
+{
+	assert(sampler);
+	for (auto& it : _samplers)
+	{
+		if (it.second == sampler)
+		{
+			it.second = nullptr;
+		}
+	}
+}
+
+void
+MaterialManager::destroySampler(const std::string& name) noexcept
+{
+	assert(name.empty());
+	_samplers[name] = nullptr;
+}
+
+GraphicsSamplerPtr
+MaterialManager::getSampler(const std::string& name) noexcept
+{
+	assert(!name.empty());
+	return _samplers[name];
+}
+
+GraphicsTexturePtr
+MaterialManager::createTexture(const std::string& name, GraphicsTextureDesc& textureDesc) noexcept
+{
+	if (name.empty())
+		return nullptr;
+
+	auto texture = _textures[name];
+	if (texture)
+		return nullptr;
+
+	texture = _graphicsDevice->createTexture(textureDesc);
+	if (!texture)
+		return nullptr;
+
+	_textures[name] = texture;
+	return texture;
+}
+
+void
+MaterialManager::destroyTexture(GraphicsTexturePtr texture) noexcept
+{
+	assert(texture);
+
+	for (auto& it : _textures)
+	{
+		if (it.second == texture)
+		{
+			it.second = nullptr;
+		}
+	}
+}
+
+void
+MaterialManager::destroyTexture(const std::string& name) noexcept
+{
+	assert(name.empty());
+	_textures[name] = nullptr;
+}
+
+GraphicsTexturePtr
+MaterialManager::getTexture(const std::string& name) noexcept
+{
+	assert(!name.empty());
+	return _textures[name];
+}
+
+GraphicsInputLayoutPtr
+MaterialManager::createInputLayout(const std::string& name, GraphicsInputLayoutDesc& inputLayoutDesc) noexcept
+{
+	if (name.empty())
+		return nullptr;
+
+	auto inputLayout = _inputLayouts[name];
+	if (inputLayout)
+		return nullptr;
+
+	inputLayout = _graphicsDevice->createInputLayout(inputLayoutDesc);
+	if (!inputLayout)
+		return nullptr;
+
+	_inputLayouts[name] = inputLayout;
+	return inputLayout;
+}
+
+void
+MaterialManager::destroyInputLayout(GraphicsInputLayoutPtr inputLayout) noexcept
+{
+	assert(inputLayout);
+
+	for (auto& it : _inputLayouts)
+	{
+		if (it.second == inputLayout)
+		{
+			it.second = nullptr;
+		}
+	}
+}
+
+void
+MaterialManager::destroyInputLayout(const std::string& name) noexcept
+{
+	assert(name.empty());
+	_inputLayouts[name] = nullptr;
+}
+
+GraphicsInputLayoutPtr
+MaterialManager::getInputLayout(const std::string& name) noexcept
+{
+	assert(!name.empty());
+	return _inputLayouts[name];
+}
+
+MaterialParamPtr
 MaterialManager::getSemantic(const std::string& name) noexcept
 {
 	if (!name.empty())
 	{
-		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialVariantPtr it) { return it->getName() == name;});
+		auto it = std::find_if(_semantics.begin(), _semantics.end(), [&](MaterialParamPtr it) { return it->getName() == name;});
 		if (it != _semantics.end())
 			return *it;
 	}
+
 	return nullptr;
 }
 
@@ -133,7 +273,10 @@ MaterialManager::createMaterial(const std::string& name) noexcept
 {
 	auto& material = _materials[name];
 	if (!material)
-		_materials[name] = _materialLoader->load(*this, name);
+	{
+		MaterialMaker materialLoader;
+		_materials[name] = materialLoader.load(*this, name);
+	}		
 	return material;
 }
 
@@ -143,10 +286,12 @@ MaterialManager::getMaterial(const std::string& name) noexcept
 	return _materials[name];
 }
 
-void
+void 
 MaterialManager::destroyMaterial(MaterialPtr material) noexcept
 {
-	_materials[material->getName()] = nullptr;
+	auto it = std::find_if(_materials.begin(), _materials.end(), [material](const std::pair<std::string, MaterialPtr>& pair) { return pair.second == material; });
+	if (it != _materials.end())
+		_materials.erase(it);
 }
 
 _NAME_END

@@ -45,6 +45,57 @@ _NAME_BEGIN
 
 __ImplementSubClass(MaterialPass, rtti::Interface, "MaterialPass")
 
+MaterialParamBinding::MaterialParamBinding() noexcept
+	: _needUpdate(true)
+{
+}
+
+MaterialParamBinding::~MaterialParamBinding() noexcept
+{
+}
+
+void 
+MaterialParamBinding::setMaterialParam(MaterialParamPtr param) noexcept
+{
+	_param = param;
+}
+
+MaterialParamPtr 
+MaterialParamBinding::getMaterialParam() const noexcept
+{
+	return _param;
+}
+
+void 
+MaterialParamBinding::setGraphicsUniformSet(GraphicsUniformSetPtr uniformSet) noexcept
+{
+	_uniformSet = uniformSet;
+}
+
+GraphicsUniformSetPtr 
+MaterialParamBinding::getGraphicsUniformSet() const noexcept
+{
+	return _uniformSet;
+}
+
+void 
+MaterialParamBinding::needUpdate(bool needUpdate) noexcept
+{
+	_needUpdate = needUpdate;
+}
+
+bool
+MaterialParamBinding::needUpdate() noexcept
+{
+	return _needUpdate;
+}
+
+void
+MaterialParamBinding::onNeedUpdate() noexcept
+{
+	this->needUpdate(true);
+}
+
 MaterialPass::MaterialPass() noexcept
 {
 }
@@ -130,8 +181,21 @@ MaterialPass::setup(Material& material) noexcept
 
 		if (param->getType() == activeUniform->getType())
 		{
-			param->addGraphicsUniform(activeUniformSet);
-			_parameters.push_back(param);
+			auto binding = std::make_unique<MaterialParamBinding>();
+			binding->setGraphicsUniformSet(activeUniformSet);
+
+			if (param->getSemantic())
+			{
+				param->getSemantic()->addParamListener(binding.get());
+				binding->setMaterialParam(param->getSemantic());
+			}
+			else
+			{
+				param->addParamListener(binding.get());
+				binding->setMaterialParam(param);
+			}				
+
+			_bindings.push_back(std::move(binding));
 		}
 	}
 
@@ -141,20 +205,12 @@ MaterialPass::setup(Material& material) noexcept
 void
 MaterialPass::close() noexcept
 {
-	if (_descriptorSet)
+	for (auto& it : _bindings)
 	{
-		auto& activeUniformSets = _descriptorSet->getGraphicsUniformSets();
-		for (auto& activeUniformSet : activeUniformSets)
-		{
-			auto activeUniform = activeUniformSet->getGraphicsUniform();
-			auto param = this->getParameter(activeUniform->getName());
-			if (param)
-				param->removeGraphicsUniform(activeUniformSet);
-		}
+		it->getMaterialParam()->removeParamListener(it.get());
 	}
 
-	_parameters.clear();
-
+	_bindings.clear();
 	_pipeline.reset();
 	_descriptorSet.reset();
 	_descriptorSetLayout.reset();
@@ -170,28 +226,6 @@ const std::string&
 MaterialPass::getName() const noexcept
 {
 	return _name;
-}
-
-const MaterialParams& 
-MaterialPass::getParameters() const noexcept
-{
-	return _parameters;
-}
-
-MaterialParamPtr
-MaterialPass::getParameter(const std::string& name) const noexcept
-{
-	assert(!name.empty());
-
-	for (auto& it : _parameters)
-	{
-		if (it->getName() == name)
-		{
-			return it;
-		}
-	}
-
-	return nullptr;
 }
 
 void
@@ -264,6 +298,149 @@ GraphicsDescriptorSetPtr
 MaterialPass::getDescriptorSet() const noexcept
 {
 	return _descriptorSet;
+}
+
+void 
+MaterialPass::update() noexcept
+{
+	for (auto& it : _bindings)
+	{
+		if (!it->needUpdate())
+			continue;
+
+		it->needUpdate(false);
+
+		auto param = it->getMaterialParam();
+		auto uniform = it->getGraphicsUniformSet();
+		auto type = param->getType();
+		switch (type)
+		{
+		case GraphicsUniformType::GraphicsUniformTypeBool:
+			uniform->uniform1b(param->getBool());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeInt:
+			uniform->uniform1i(param->getInt());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeInt2:
+			uniform->uniform2i(param->getInt2());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeInt3:
+			uniform->uniform3i(param->getInt3());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeInt4:
+			uniform->uniform4i(param->getInt4());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeUInt:
+			uniform->uniform1ui(param->getUInt());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeUInt2:
+			uniform->uniform2ui(param->getUInt2());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeUInt3:
+			uniform->uniform3ui(param->getUInt3());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeUInt4:
+			uniform->uniform4ui(param->getUInt4());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat:
+			uniform->uniform1f(param->getFloat());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat2:
+			uniform->uniform2f(param->getFloat2());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat3:
+			uniform->uniform3f(param->getFloat3());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat4:
+			uniform->uniform4f(param->getFloat4());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat2x2:
+			uniform->uniform2fmat(param->getFloat2x2());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat3x3:
+			uniform->uniform3fmat(param->getFloat3x3());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat4x4:
+			uniform->uniform4fmat(param->getFloat4x4());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeIntArray:
+			uniform->uniform1iv(param->getIntArray());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeInt2Array:
+			uniform->uniform2iv(param->getInt2Array());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeInt3Array:
+			uniform->uniform3iv(param->getInt3Array());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeInt4Array:
+			uniform->uniform4iv(param->getInt4Array());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeUIntArray:
+			uniform->uniform1uiv(param->getUIntArray());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeUInt2Array:
+			uniform->uniform2uiv(param->getUInt2Array());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeUInt3Array:
+			uniform->uniform3uiv(param->getUInt3Array());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeUInt4Array:
+			uniform->uniform4uiv(param->getUInt4Array());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloatArray:
+			uniform->uniform1fv(param->getFloatArray());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat2Array:
+			uniform->uniform2fv(param->getFloat2Array());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat3Array:
+			uniform->uniform3fv(param->getFloat3Array());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat4Array:
+			uniform->uniform4fv(param->getFloat4Array());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat2x2Array:
+			uniform->uniform2fmatv(param->getFloat2x2Array());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat3x3Array:
+			uniform->uniform3fmatv(param->getFloat3x3Array());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeFloat4x4Array:
+			uniform->uniform4fmatv(param->getFloat4x4Array());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeSampler:
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
+			uniform->uniformTexture(param->getTexture(), param->getTextureSampler());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler:
+			uniform->uniformTexture(param->getTexture(), param->getTextureSampler());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeStorageImage:
+			uniform->uniformTexture(param->getTexture(), param->getTextureSampler());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeStorageTexelBuffer:
+			uniform->uniformBuffer(param->getBuffer());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeStorageBuffer:
+			uniform->uniformBuffer(param->getBuffer());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeStorageBufferDynamic:
+			uniform->uniformBuffer(param->getBuffer());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeUniformTexelBuffer:
+			uniform->uniformBuffer(param->getBuffer());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeUniformBuffer:
+			uniform->uniformBuffer(param->getBuffer());
+			break;
+		case GraphicsUniformType::GraphicsUniformTypeUniformBufferDynamic:
+			uniform->uniformBuffer(param->getBuffer());
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 _NAME_END

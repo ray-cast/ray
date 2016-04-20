@@ -57,16 +57,6 @@ EGL2InputLayout::~EGL2InputLayout() noexcept
 bool
 EGL2InputLayout::setup(const GraphicsInputLayoutDesc& inputLayoutDesc) noexcept
 {
-	if (!EGL2Types::isSupportFeature(EGL2Features::EGL2_EXT_instanced_arrays))
-	{
-		auto& vertexLayouts = inputLayoutDesc.getGraphicsVertexLayouts();
-		for (auto& it : vertexLayouts)
-		{
-			if (it.getVertexDivisor() != GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
-				return false;
-		}
-	}
-
 #ifndef __AMD__
 	if (EGL2Types::isSupportFeature(EGL2Features::EGL2_OES_vertex_array_object))
 	{
@@ -118,7 +108,7 @@ EGL2InputLayout::bindLayout(const EGL2ProgramPtr& program) noexcept
 				}
 			}
 
-			if (attribIndex != GL_INVALID_ENUM && it.getVertexDivisor() == 0)
+			if (attribIndex != GL_INVALID_ENUM)
 			{
 				glEnableVertexAttribArray(attribIndex);
 				glVertexAttribPointer(attribIndex, it.getVertexCount(), type, GL_FALSE, _vertexSize, (GLchar*)nullptr + offset);

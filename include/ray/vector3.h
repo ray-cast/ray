@@ -67,8 +67,7 @@ public:
 	Vector3t(T xx, const Vector2t<T>& yz) :x(xx), y(yz.x), z(yz.y) {}
     Vector3t(const Vector2t<T>& xy, T zz) :x(xy.x), y(xy.y), z(zz) {}
     Vector3t(const Vector3t<T>& v) :x(v.x), y(v.y), z(v.z) {}
-    Vector3t(const Vector4t<T>& v) :x(v.x / v.w), y(v.y / v.w), z(v.z / v.w) {}
-
+    explicit Vector3t(const Vector4t<T>& v) :x(v.x / v.w), y(v.y / v.w), z(v.z / v.w) {}
 	explicit Vector3t(T xyz) :x(xyz), y(xyz), z(xyz) {}
 
 	Vector3t<T>& operator+=(const T sz) { x += sz; y += sz; z += sz; return *this; }

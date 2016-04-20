@@ -50,19 +50,34 @@ public:
 	bool setup(GraphicsDevicePtr device) noexcept;
 	void close() noexcept;
 
-	void setGraphicsDevice(GraphicsDevicePtr device) noexcept;
-	GraphicsDevicePtr getGraphicsDevice() noexcept;
-
-	void setMaterialLoader(MaterialLoaderPtr loader) noexcept;
-	MaterialLoaderPtr getMaterialLoader() const noexcept;
+	GraphicsDeviceType getDeviceType() const noexcept;
 
 	MaterialPtr createMaterial(const std::string& name) noexcept;
 	MaterialPtr getMaterial(const std::string& name) noexcept;
-	void destroyMaterial(MaterialPtr semantc) noexcept;
+	void destroyMaterial(MaterialPtr material) noexcept;
 
-	MaterialVariantPtr createSemantic(const std::string& name, GraphicsUniformType type) noexcept;
-	MaterialVariantPtr getSemantic(const std::string& name) noexcept;
-	void destroySemantic(MaterialVariantPtr semantc) noexcept;
+	MaterialParamPtr createSemantic(const std::string& name, GraphicsUniformType type) noexcept;
+	MaterialParamPtr getSemantic(const std::string& name) noexcept;
+	void destroySemantic(MaterialParamPtr semantc) noexcept;
+
+	GraphicsStatePtr createRenderState(const GraphicsStateDesc& shaderDesc) noexcept;
+	GraphicsShaderPtr createShader(const GraphicsShaderDesc& shaderDesc) noexcept;
+	GraphicsProgramPtr createProgram(const GraphicsProgramDesc& programDesc) noexcept;
+
+	GraphicsSamplerPtr createSampler(const std::string& name, const GraphicsSamplerDesc& samplerDesc) noexcept;
+	void destroySampler(GraphicsSamplerPtr sampler) noexcept;
+	void destroySampler(const std::string& name) noexcept;
+	GraphicsSamplerPtr getSampler(const std::string& name) noexcept;
+
+	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDesc& textureDesc) noexcept;
+	void destroyTexture(GraphicsTexturePtr texture) noexcept;
+	void destroyTexture(const std::string& name) noexcept;
+	GraphicsTexturePtr getTexture(const std::string& name) noexcept;
+
+	GraphicsInputLayoutPtr createInputLayout(const std::string& name, GraphicsInputLayoutDesc& textureDesc) noexcept;
+	void destroyInputLayout(GraphicsInputLayoutPtr texture) noexcept;
+	void destroyInputLayout(const std::string& name) noexcept;
+	GraphicsInputLayoutPtr getInputLayout(const std::string& name) noexcept;
 
 private:
 	MaterialManager(const MaterialManager&) = delete;
@@ -70,8 +85,12 @@ private:
 
 private:
 	GraphicsDevicePtr _graphicsDevice;
-	MaterialLoaderPtr _materialLoader;
-	MaterialVariants _semantics;
+	MaterialParams _semantics;
+
+	std::map<std::string, GraphicsShaderPtr> _shaders;
+	std::map<std::string, GraphicsSamplerPtr> _samplers;
+	std::map<std::string, GraphicsTexturePtr> _textures;
+	std::map<std::string, GraphicsInputLayoutPtr> _inputLayouts;
 	std::map<std::string, MaterialPtr> _materials;
 };
 

@@ -202,7 +202,7 @@ Camera::worldToScreen(const float3& pos) const noexcept
 	int w = (int)_viewport.width >> 1;
 	int h = (int)_viewport.height >> 1;
 
-	float4 v = pos * this->getViewProject();
+	float4 v = float4(pos, 1.0) * this->getViewProject();
 	if (v.w != 0)
 		v /= v.w;
 
@@ -215,7 +215,7 @@ Camera::worldToScreen(const float3& pos) const noexcept
 float3
 Camera::worldToProject(const float3& pos) const noexcept
 {
-	float4 v(pos);
+	float4 v(pos, 1.0);
 
 	v = v * this->getViewProject();
 	if (v.w != 0)
@@ -230,7 +230,7 @@ Camera::screenToWorld(const float3& pos) const noexcept
 	int w = (int)_viewport.width >> 1;
 	int h = (int)_viewport.height >> 1;
 
-	float4 v(pos);
+	float4 v(pos, 1.0);
 	v.y = _viewport.height - pos.y;
 
 	v.x = v.x / w - 1.0f - _viewport.left;

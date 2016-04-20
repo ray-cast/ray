@@ -70,18 +70,6 @@ GraphicsShaderDesc::~GraphicsShaderDesc() noexcept
 {
 }
 
-void 
-GraphicsShaderDesc::setName(const std::string& name) noexcept
-{
-	_name = name;
-}
-
-const std::string& 
-GraphicsShaderDesc::getName() const noexcept
-{
-	return _name;
-}
-
 void
 GraphicsShaderDesc::setLanguage(GraphicsShaderLang lang) noexcept
 {

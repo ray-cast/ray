@@ -136,23 +136,23 @@ void
 RenderPipeline::setTransform(const float4x4& transform) noexcept
 {
 	assert(_materialMatModel);
-	_materialMatModel->assign(transform);
-	_materialMatModelView->assign(transform * _materialMatView->getFloat4x4());
-	_materialMatModelViewProject->assign(transform * _materialMatViewProject->getFloat4x4());
+	_materialMatModel->uniform4fmat(transform);
+	_materialMatModelView->uniform4fmat(transform * _materialMatView->getFloat4x4());
+	_materialMatModelViewProject->uniform4fmat(transform * _materialMatViewProject->getFloat4x4());
 }
 
 void
 RenderPipeline::setTransformInverse(const float4x4& transform) noexcept
 {
 	assert(_materialMatModelInverse);
-	_materialMatModelInverse->assign(transform);
+	_materialMatModelInverse->uniform4fmat(transform);
 }
 
 void
 RenderPipeline::setTransformInverseTranspose(const float4x4& transform) noexcept
 {
 	assert(_materialMatModelInverseTranspose);
-	_materialMatModelInverseTranspose->assign(transform);
+	_materialMatModelInverseTranspose->uniform4fmat(transform);
 }
 
 void
@@ -175,18 +175,18 @@ RenderPipeline::setCamera(CameraPtr camera) noexcept
 	assert(camera);
 	assert(_dataManager);
 
-	_materialCameraNear->assign(camera->getNear());
-	_materialCameraFar->assign(camera->getFar());
-	_materialCameraAperture->assign(camera->getAperture());
-	_materialCameraPosition->assign(camera->getTranslate());
-	_materialCameraDirection->assign(camera->getForward());
-	_materialMatView->assign(camera->getView());
-	_materialMatViewInverse->assign(camera->getViewInverse());
-	_materialMatViewInverseTranspose->assign(camera->getTransformInverseTranspose());
-	_materialMatProject->assign(camera->getProject());
-	_materialMatProjectInverse->assign(camera->getProjectInverse());
-	_materialMatViewProject->assign(camera->getViewProject() * adjustProject);
-	_materialMatViewProjectInverse->assign(camera->getViewProjectInverse());
+	_materialCameraNear->uniform1f(camera->getNear());
+	_materialCameraFar->uniform1f(camera->getFar());
+	_materialCameraAperture->uniform1f(camera->getAperture());
+	_materialCameraPosition->uniform3f(camera->getTranslate());
+	_materialCameraDirection->uniform3f(camera->getForward());
+	_materialMatView->uniform4fmat(camera->getView());
+	_materialMatViewInverse->uniform4fmat(camera->getViewInverse());
+	_materialMatViewInverseTranspose->uniform4fmat(camera->getTransformInverseTranspose());
+	_materialMatProject->uniform4fmat(camera->getProject());
+	_materialMatProjectInverse->uniform4fmat(camera->getProjectInverse());
+	_materialMatViewProject->uniform4fmat(camera->getViewProject() * adjustProject);
+	_materialMatViewProjectInverse->uniform4fmat(camera->getViewProjectInverse());
 
 	_dataManager->assginVisiable(camera);
 
@@ -300,25 +300,25 @@ RenderPipeline::blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport
 }
 
 void
-RenderPipeline::drawSphere(MaterialTechPtr tech) noexcept
+RenderPipeline::drawSphere(MaterialTechPtr tech, std::uint32_t layer) noexcept
 {
-	this->drawMesh(tech, _renderSphere, _renderSphereIndirect);
+	this->drawMesh(tech, _renderSphere, _renderSphereIndirect, layer);
 }
 
 void
-RenderPipeline::drawCone(MaterialTechPtr tech) noexcept
+RenderPipeline::drawCone(MaterialTechPtr tech, std::uint32_t layer) noexcept
 {
-	this->drawMesh(tech, _renderCone, _renderConeIndirect);
+	this->drawMesh(tech, _renderCone, _renderConeIndirect, layer);
 }
 
 void
-RenderPipeline::drawScreenQuad(MaterialTechPtr tech) noexcept
+RenderPipeline::drawScreenQuad(MaterialTechPtr tech, std::uint32_t layer) noexcept
 {
-	this->drawMesh(tech, _renderScreenQuad, _renderScreenQuadIndirect);
+	this->drawMesh(tech, _renderScreenQuad, _renderScreenQuadIndirect, layer);
 }
 
 void
-RenderPipeline::drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept
+RenderPipeline::drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable, std::uint32_t layer) noexcept
 {
 	_graphicsContext->setVertexBufferData(mesh->getVertexBuffer());
 	_graphicsContext->setIndexBufferData(mesh->getIndexBuffer());
@@ -326,64 +326,10 @@ RenderPipeline::drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const Graphic
 	auto& passList = tech->getPassList();
 	for (auto& pass : passList)
 	{
-		auto& semantics = pass->getParameters();
-		for (auto& it : semantics)
-		{
-			auto semantic = it->getSemantic();
-			if (semantic)
-			{
-				auto type = semantic->getType();
-				switch (type)
-				{
-				case GraphicsUniformType::GraphicsUniformTypeBool:
-					it->assign(semantic->getBool());
-					break;
-				case GraphicsUniformType::GraphicsUniformTypeInt:
-					it->assign(semantic->getInt());
-					break;
-				case GraphicsUniformType::GraphicsUniformTypeInt2:
-					it->assign(semantic->getInt2());
-					break;
-				case GraphicsUniformType::GraphicsUniformTypeFloat:
-					it->assign(semantic->getFloat());
-					break;
-				case GraphicsUniformType::GraphicsUniformTypeFloat2:
-					it->assign(semantic->getFloat2());
-					break;
-				case GraphicsUniformType::GraphicsUniformTypeFloat3:
-					it->assign(semantic->getFloat3());
-					break;
-				case GraphicsUniformType::GraphicsUniformTypeFloat4:
-					it->assign(semantic->getFloat4());
-					break;
-				case GraphicsUniformType::GraphicsUniformTypeFloat3x3:
-					it->assign(semantic->getFloat3x3());
-					break;
-				case GraphicsUniformType::GraphicsUniformTypeFloat4x4:
-					it->assign(semantic->getFloat4x4());
-					break;
-				case GraphicsUniformType::GraphicsUniformTypeFloatArray:
-					it->assign(semantic->getFloatArray());
-					break;
-				case GraphicsUniformType::GraphicsUniformTypeFloat2Array:
-					it->assign(semantic->getFloat2Array());
-					break;
-				case GraphicsUniformType::GraphicsUniformTypeFloat3Array:
-					it->assign(semantic->getFloat3Array());
-					break;
-				case GraphicsUniformType::GraphicsUniformTypeFloat4Array:
-					it->assign(semantic->getFloat4Array());
-					break;
-				case GraphicsUniformType::GraphicsUniformTypeStorageImage:
-					it->assign(semantic->getTexture());
-					break;
-				default:
-					break;
-				}
-			}
-		}
+		pass->update();
 
 		_graphicsContext->setRenderPipeline(pass->getRenderPipeline());
+		_graphicsContext->setStencilReference(GraphicsStencilFace::GraphicsStencilFaceFrontBack, 1 << layer);
 		_graphicsContext->setDescriptorSet(pass->getDescriptorSet());
 		_graphicsContext->drawRenderMesh(renderable);
 	}
@@ -479,10 +425,22 @@ RenderPipeline::isTextureSupport(GraphicsFormat format) noexcept
 	return _graphicsContext->isTextureSupport(format);
 }
 
+bool 
+RenderPipeline::isTextureDimSupport(GraphicsTextureDim dimension) noexcept
+{
+	return _graphicsContext->isTextureDimSupport(dimension);
+}
+
 bool
 RenderPipeline::isVertexSupport(GraphicsFormat format) noexcept
 {
 	return _graphicsContext->isVertexSupport(format);
+}
+
+bool
+RenderPipeline::isShaderSupport(GraphicsShaderStage stage) noexcept
+{
+	return _graphicsContext->isShaderSupport(stage);
 }
 
 GraphicsDataPtr 
@@ -541,6 +499,13 @@ RenderPipeline::createMaterial(const std::string& name) noexcept
 	return _pipelineDevice->createMaterial(name);
 }
 
+void
+RenderPipeline::destroyMaterial(MaterialPtr material) noexcept
+{
+	assert(_pipelineDevice);
+	return _pipelineDevice->destroyMaterial(material);
+}
+
 RenderMeshPtr
 RenderPipeline::createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
 {
@@ -562,7 +527,7 @@ RenderPipeline::createRenderMesh(const MeshPropertys& mesh, std::uint32_t flags)
 	return _pipelineDevice->createRenderMesh(mesh, flags);
 }
 
-MaterialVariantPtr 
+MaterialParamPtr 
 RenderPipeline::createSemantic(const std::string& name, GraphicsUniformType type) noexcept
 {
 	assert(_pipelineDevice);
@@ -570,13 +535,13 @@ RenderPipeline::createSemantic(const std::string& name, GraphicsUniformType type
 }
 
 void 
-RenderPipeline::destroySemantic(MaterialVariantPtr semantic) const noexcept
+RenderPipeline::destroySemantic(MaterialParamPtr semantic) const noexcept
 {
 	assert(_pipelineDevice);
 	return _pipelineDevice->destroySemantic(semantic);
 }
 
-MaterialVariantPtr 
+MaterialParamPtr 
 RenderPipeline::getSemantic(const std::string& semantic) const noexcept
 {
 	assert(_pipelineDevice);

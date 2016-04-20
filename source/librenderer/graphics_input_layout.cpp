@@ -42,21 +42,17 @@ __ImplementSubInterface(GraphicsInputLayout, GraphicsChild, "GraphicsInputLayout
 
 GraphicsVertexLayout::GraphicsVertexLayout() noexcept
 	: _index(0)
-	, _slot(0)
 	, _count(0)
 	, _size(0)
 	, _offset(0)
-	, _divisor(GraphicsVertexDivisor::GraphicsVertexDivisorVertex)
 	, _format(GraphicsFormat::GraphicsFormatUndefined)
 {
 }
 
-GraphicsVertexLayout::GraphicsVertexLayout(const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint16_t offset, std::uint8_t slot, GraphicsVertexDivisor divisor) noexcept
+GraphicsVertexLayout::GraphicsVertexLayout(const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint16_t offset, std::uint8_t slot) noexcept
 	: _semantic(semantic)
 	, _index(semanticIndex)
-	, _slot(slot)
 	, _offset(offset)
-	, _divisor(divisor)
 	, _format(format)
 {
 	_count = getVertexCount(format);
@@ -119,30 +115,6 @@ std::uint16_t
 GraphicsVertexLayout::getVertexOffset() const noexcept
 {
 	return _offset;
-}
-
-void
-GraphicsVertexLayout::setVertexSlot(std::uint8_t slot) noexcept
-{
-	_slot = slot;
-}
-
-std::uint8_t
-GraphicsVertexLayout::getVertexSlot() const noexcept
-{
-	return _slot;
-}
-
-void
-GraphicsVertexLayout::setVertexDivisor(GraphicsVertexDivisor divisor) noexcept
-{
-	_divisor = divisor;
-}
-
-GraphicsVertexDivisor
-GraphicsVertexLayout::getVertexDivisor() const noexcept
-{
-	return _divisor;
 }
 
 std::uint8_t
@@ -562,36 +534,11 @@ GraphicsVertexLayout::getVertexSize(GraphicsFormat format) noexcept
 }
 
 GraphicsInputLayoutDesc::GraphicsInputLayoutDesc() noexcept
-	: _autoOffset(true)
 {
 }
 
 GraphicsInputLayoutDesc::~GraphicsInputLayoutDesc() noexcept
 {
-}
-
-void 
-GraphicsInputLayoutDesc::setName(const std::string& name) noexcept
-{
-	_name = name;
-}
-
-const std::string& 
-GraphicsInputLayoutDesc::getName() const noexcept
-{
-	return _name;
-}
-
-void 
-GraphicsInputLayoutDesc::setAutoOffset(bool enable) noexcept
-{
-	_autoOffset = enable;
-}
-
-bool 
-GraphicsInputLayoutDesc::getAutoOffset() const noexcept
-{
-	return _autoOffset;
 }
 
 void

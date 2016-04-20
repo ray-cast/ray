@@ -120,7 +120,7 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	for (auto& component : components)
 	{
 		VkVertexInputAttributeDescription attr;
-		attr.binding = component.getVertexSlot();
+		attr.binding = 0;
 		attr.location = location;
 		attr.offset = offset;
 		attr.format = VulkanTypes::asGraphicsFormat(component.getVertexFormat());
@@ -161,20 +161,20 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	ds.minDepthBounds = stateDesc.getDepthMin();
 	ds.maxDepthBounds = stateDesc.getDepthMax();
 	ds.stencilTestEnable = stateDesc.getStencilEnable();
-	ds.front.compareMask = stateDesc.getStencilReadMask();
-	ds.front.compareOp = VulkanTypes::asCompareOp(stateDesc.getStencilFunc());
-	ds.front.depthFailOp = VulkanTypes::asStencilOp(stateDesc.getStencilZFail());
-	ds.front.failOp = VulkanTypes::asStencilOp(stateDesc.getStencilFail());
-	ds.front.passOp = VulkanTypes::asStencilOp(stateDesc.getStencilPass());
-	ds.front.reference = stateDesc.getStencilRef();
-	ds.front.writeMask = stateDesc.getStencilWriteMask();
-	ds.back.compareMask = stateDesc.getStencilTwoEnable() ? stateDesc.getStencilTwoReadMask() : ds.front.compareMask;
-	ds.back.compareOp = stateDesc.getStencilTwoEnable() ? VulkanTypes::asCompareOp(stateDesc.getStencilTwoFunc()) : ds.front.compareOp;
-	ds.back.depthFailOp = stateDesc.getStencilTwoEnable() ? VulkanTypes::asStencilOp(stateDesc.getStencilTwoZFail()) : ds.front.depthFailOp ;
-	ds.back.failOp = stateDesc.getStencilTwoEnable() ? VulkanTypes::asStencilOp(stateDesc.getStencilTwoFail()) : ds.front.failOp;
-	ds.back.passOp = stateDesc.getStencilTwoEnable() ? VulkanTypes::asStencilOp(stateDesc.getStencilTwoPass()) : ds.front.passOp;
-	ds.back.reference = stateDesc.getStencilTwoEnable() ? stateDesc.getStencilTwoRef() : ds.front.reference;
-	ds.back.writeMask = stateDesc.getStencilTwoEnable() ? stateDesc.getStencilTwoWriteMask() : ds.front.writeMask;
+	ds.front.compareMask = stateDesc.getStencilFrontReadMask();
+	ds.front.compareOp = VulkanTypes::asCompareOp(stateDesc.getStencilFrontFunc());
+	ds.front.depthFailOp = VulkanTypes::asStencilOp(stateDesc.getStencilFrontZFail());
+	ds.front.failOp = VulkanTypes::asStencilOp(stateDesc.getStencilFrontFail());
+	ds.front.passOp = VulkanTypes::asStencilOp(stateDesc.getStencilFrontPass());
+	ds.front.reference = stateDesc.getStencilFrontRef();
+	ds.front.writeMask = stateDesc.getStencilFrontWriteMask();
+	ds.back.compareMask = stateDesc.getStencilBackReadMask();
+	ds.back.compareOp = VulkanTypes::asCompareOp(stateDesc.getStencilBackFunc());
+	ds.back.depthFailOp = VulkanTypes::asStencilOp(stateDesc.getStencilBackZFail());
+	ds.back.failOp = VulkanTypes::asStencilOp(stateDesc.getStencilBackFail());
+	ds.back.passOp = VulkanTypes::asStencilOp(stateDesc.getStencilBackPass());
+	ds.back.reference = stateDesc.getStencilBackRef();
+	ds.back.writeMask = stateDesc.getStencilBackWriteMask();
 
 	vp.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	vp.viewportCount = 1;

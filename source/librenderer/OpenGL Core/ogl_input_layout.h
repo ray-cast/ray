@@ -51,7 +51,7 @@ public:
 	bool setup(const GraphicsInputLayoutDesc& desc) noexcept;
 	void close() noexcept;
 
-	void bindVbo(const OGLGraphicsDataPtr& vbo, GLuint slot) noexcept;
+	void bindVbo(const OGLGraphicsDataPtr& vbo) noexcept;
 	void bindIbo(const OGLGraphicsDataPtr& ibo) noexcept;
 	void bindLayout(const OGLProgramPtr& program) noexcept;
 
@@ -68,7 +68,7 @@ private:
 
 private:
 	GLuint _vao;
-	GraphicsDataPtr _ibo;
+	GLuint _ibo;
 	GraphicsProgramPtr _program;
 	GraphicsInputLayoutDesc _inputLayoutDesc;
 	GraphicsDeviceWeakPtr _device;

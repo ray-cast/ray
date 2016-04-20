@@ -48,6 +48,7 @@ __ImplementSubClass(VulkanGraphicsUniformSet, GraphicsUniformSet, "VulkanGraphic
 __ImplementSubClass(VulkanDescriptorSet, GraphicsDescriptorSet, "VulkanDescriptorSet")
 
 VulkanGraphicsUniformSet::VulkanGraphicsUniformSet() noexcept
+	: _needUpdate(true)
 {
 }
 
@@ -68,183 +69,423 @@ VulkanGraphicsUniformSet::getType() const noexcept
 }
 
 void
-VulkanGraphicsUniformSet::assign(bool value) noexcept
+VulkanGraphicsUniformSet::uniform1b(bool value) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform1b(value);
 }
 
 void
-VulkanGraphicsUniformSet::assign(int value) noexcept
+VulkanGraphicsUniformSet::uniform1i(std::int32_t i1) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform1i(i1);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const int2& value) noexcept
+VulkanGraphicsUniformSet::uniform2i(const int2& value) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform2i(value);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const int3& value) noexcept
+VulkanGraphicsUniformSet::uniform2i(std::int32_t i1, std::int32_t i2) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform2i(i1, i2);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const int4& value) noexcept
+VulkanGraphicsUniformSet::uniform3i(const int3& value) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform3i(value);
 }
 
 void
-VulkanGraphicsUniformSet::assign(uint1 value) noexcept
+VulkanGraphicsUniformSet::uniform3i(std::int32_t i1, std::int32_t i2, std::int32_t i3) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform3i(i1, i2, i3);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const uint2& value) noexcept
+VulkanGraphicsUniformSet::uniform4i(const int4& value) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform4i(value);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const uint3& value) noexcept
+VulkanGraphicsUniformSet::uniform4i(std::int32_t i1, std::int32_t i2, std::int32_t i3, std::int32_t i4) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform4i(i1, i2, i3, i4);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const uint4& value) noexcept
+VulkanGraphicsUniformSet::uniform1ui(std::uint32_t ui1) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform1ui(ui1);
 }
 
 void
-VulkanGraphicsUniformSet::assign(float value) noexcept
+VulkanGraphicsUniformSet::uniform2ui(const uint2& value) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform2ui(value);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const float2& value) noexcept
+VulkanGraphicsUniformSet::uniform2ui(std::uint32_t ui1, std::uint32_t ui2) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform2ui(ui1, ui2);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const float3& value) noexcept
+VulkanGraphicsUniformSet::uniform3ui(const uint3& value) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform3ui(value);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const float4& value) noexcept
+VulkanGraphicsUniformSet::uniform3ui(std::uint32_t ui1, std::uint32_t ui2, std::uint32_t ui3) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform3ui(ui1, ui2, ui3);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const float3x3& value) noexcept
+VulkanGraphicsUniformSet::uniform4ui(const uint4& value) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform4ui(value);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const float4x4& value) noexcept
+VulkanGraphicsUniformSet::uniform4ui(std::uint32_t ui1, std::uint32_t ui2, std::uint32_t ui3, std::uint32_t ui4) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform4ui(ui1, ui2, ui3, ui4);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const std::vector<int1>& value) noexcept
+VulkanGraphicsUniformSet::uniform1f(float f1) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform1f(f1);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const std::vector<int2>& value) noexcept
+VulkanGraphicsUniformSet::uniform2f(const float2& value) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform2f(value);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const std::vector<int3>& value) noexcept
+VulkanGraphicsUniformSet::uniform2f(float f1, float f2) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform2f(f1, f2);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const std::vector<int4>& value) noexcept
+VulkanGraphicsUniformSet::uniform3f(const float3& value) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform3f(value);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const std::vector<uint1>& value) noexcept
+VulkanGraphicsUniformSet::uniform3f(float f1, float f2, float f3) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform3f(f1, f2, f3);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const std::vector<uint2>& value) noexcept
+VulkanGraphicsUniformSet::uniform4f(const float4& value) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform4f(value);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const std::vector<uint3>& value) noexcept
+VulkanGraphicsUniformSet::uniform4f(float f1, float f2, float f3, float f4) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform4f(f1, f2, f3, f4);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const std::vector<uint4>& value) noexcept
+VulkanGraphicsUniformSet::uniform2fmat(const float2x2& value) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform2fmat(value);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const std::vector<float1>& value) noexcept
+VulkanGraphicsUniformSet::uniform2fmat(const float* mat2) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform2fmat(mat2);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const std::vector<float2>& value) noexcept
+VulkanGraphicsUniformSet::uniform3fmat(const float3x3& value) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform3fmat(value);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const std::vector<float3>& value) noexcept
+VulkanGraphicsUniformSet::uniform3fmat(const float* mat3) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform3fmat(mat3);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const std::vector<float4>& value) noexcept
+VulkanGraphicsUniformSet::uniform4fmat(const float4x4& value) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform4fmat(value);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const std::vector<float3x3>& value) noexcept
+VulkanGraphicsUniformSet::uniform4fmat(const float* mat4) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform4fmat(mat4);
 }
 
 void
-VulkanGraphicsUniformSet::assign(const std::vector<float4x4>& value) noexcept
+VulkanGraphicsUniformSet::uniform1iv(const std::vector<int1>& value) noexcept
 {
-	_variant.assign(value);
+	this->needUpdate(true);
+	_variant.uniform1iv(value);
 }
 
 void
-VulkanGraphicsUniformSet::assign(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
+VulkanGraphicsUniformSet::uniform1iv(std::size_t num, const std::int32_t* i1v) noexcept
 {
-	_variant.assign(texture, sampler);
+	this->needUpdate(true);
+	_variant.uniform1iv(num, i1v);
+}
+
+void
+VulkanGraphicsUniformSet::uniform2iv(const std::vector<int2>& value) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform2iv(value);
+}
+
+void
+VulkanGraphicsUniformSet::uniform2iv(std::size_t num, const std::int32_t* i2v) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform2iv(num, i2v);
+}
+
+void
+VulkanGraphicsUniformSet::uniform3iv(const std::vector<int3>& value) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform3iv(value);
+}
+
+void
+VulkanGraphicsUniformSet::uniform3iv(std::size_t num, const std::int32_t* i3v) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform3iv(num, i3v);
+}
+
+void
+VulkanGraphicsUniformSet::uniform4iv(const std::vector<int4>& value) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform4iv(value);
+}
+
+void
+VulkanGraphicsUniformSet::uniform4iv(std::size_t num, const std::int32_t* i4v) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform4iv(num, i4v);
+}
+
+void
+VulkanGraphicsUniformSet::uniform1uiv(const std::vector<uint1>& value) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform1uiv(value);
+}
+
+void
+VulkanGraphicsUniformSet::uniform1uiv(std::size_t num, const std::uint32_t* ui1v) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform1uiv(num, ui1v);
+}
+
+void
+VulkanGraphicsUniformSet::uniform2uiv(const std::vector<uint2>& value) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform2uiv(value);
+}
+
+void
+VulkanGraphicsUniformSet::uniform2uiv(std::size_t num, const std::uint32_t* ui2v) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform2uiv(num, ui2v);
+}
+
+void
+VulkanGraphicsUniformSet::uniform3uiv(const std::vector<uint3>& value) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform3uiv(value);
+}
+
+void
+VulkanGraphicsUniformSet::uniform3uiv(std::size_t num, const std::uint32_t* ui3v) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform3uiv(num, ui3v);
+}
+
+void
+VulkanGraphicsUniformSet::uniform4uiv(const std::vector<uint4>& value) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform4uiv(value);
+}
+
+void
+VulkanGraphicsUniformSet::uniform4uiv(std::size_t num, const std::uint32_t* ui4v) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform4uiv(num, ui4v);
+}
+
+void
+VulkanGraphicsUniformSet::uniform1fv(const std::vector<float1>& value) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform1fv(value);
+}
+
+void
+VulkanGraphicsUniformSet::uniform1fv(std::size_t num, const float* f1v) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform1fv(num, f1v);
+}
+
+void
+VulkanGraphicsUniformSet::uniform2fv(const std::vector<float2>& value) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform2fv(value);
+}
+
+void
+VulkanGraphicsUniformSet::uniform2fv(std::size_t num, const float* f2v) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform2fv(num, f2v);
+}
+
+void
+VulkanGraphicsUniformSet::uniform3fv(const std::vector<float3>& value) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform3fv(value);
+}
+
+void
+VulkanGraphicsUniformSet::uniform3fv(std::size_t num, const float* f3v) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform3fv(num, f3v);
+}
+
+void
+VulkanGraphicsUniformSet::uniform4fv(const std::vector<float4>& value) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform4fv(value);
+}
+
+void
+VulkanGraphicsUniformSet::uniform4fv(std::size_t num, const float* f4v) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform4fv(num, f4v);
+}
+
+void
+VulkanGraphicsUniformSet::uniform2fmatv(const std::vector<float2x2>& value) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform2fmatv(value);
+}
+
+void
+VulkanGraphicsUniformSet::uniform2fmatv(std::size_t num, const float* mat2) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform2fmatv(num, mat2);
+}
+
+void
+VulkanGraphicsUniformSet::uniform3fmatv(const std::vector<float3x3>& value) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform3fmatv(value);
+}
+
+void
+VulkanGraphicsUniformSet::uniform3fmatv(std::size_t num, const float* mat3) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform3fmatv(num, mat3);
+}
+
+void
+VulkanGraphicsUniformSet::uniform4fmatv(const std::vector<float4x4>& value) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform4fmatv(value);
+}
+
+void
+VulkanGraphicsUniformSet::uniform4fmatv(std::size_t num, const float* mat4) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniform4fmatv(num, mat4);
+}
+
+void
+VulkanGraphicsUniformSet::uniformTexture(GraphicsTexturePtr texture, GraphicsSamplerPtr sampler) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniformTexture(texture, sampler);
+}
+
+void
+VulkanGraphicsUniformSet::uniformBuffer(GraphicsDataPtr ubo) noexcept
+{
+	this->needUpdate(true);
+	_variant.uniformBuffer(ubo);
 }
 
 bool
@@ -323,6 +564,12 @@ const float4&
 VulkanGraphicsUniformSet::getFloat4() const noexcept
 {
 	return _variant.getFloat4();
+}
+
+const float2x2&
+VulkanGraphicsUniformSet::getFloat2x2() const noexcept
+{
+	return _variant.getFloat2x2();
 }
 
 const float3x3&
@@ -409,6 +656,12 @@ VulkanGraphicsUniformSet::getFloat4Array() const noexcept
 	return _variant.getFloat4Array();
 }
 
+const std::vector<float2x2>&
+VulkanGraphicsUniformSet::getFloat2x2Array() const noexcept
+{
+	return _variant.getFloat2x2Array();
+}
+
 const std::vector<float3x3>&
 VulkanGraphicsUniformSet::getFloat3x3Array() const noexcept
 {
@@ -443,6 +696,30 @@ GraphicsUniformPtr
 VulkanGraphicsUniformSet::getGraphicsUniform() const noexcept
 {
 	return _uniform;
+}
+
+void
+VulkanGraphicsUniformSet::setGraphicsUniformBlock(GraphicsUniformBlockPtr uniformBlock) noexcept
+{
+	_uniformBlock = uniformBlock;
+}
+
+GraphicsUniformBlockPtr
+VulkanGraphicsUniformSet::getGraphicsUniformBlock() const noexcept
+{
+	return _uniformBlock;
+}
+
+void
+VulkanGraphicsUniformSet::needUpdate(bool needUpdate) noexcept
+{
+	_needUpdate = needUpdate;
+}
+
+bool
+VulkanGraphicsUniformSet::needUpdate() const noexcept
+{
+	return _needUpdate;
 }
 
 VulkanDescriptorSet::VulkanDescriptorSet() noexcept
@@ -482,35 +759,69 @@ VulkanDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) n
 	}
 
 	auto& descriptorSetLayoutDesc = descriptorSetDesc.getGraphicsDescriptorSetLayout()->getGraphicsDescriptorSetLayoutDesc();
-	auto& uniformBlockLayouts = descriptorSetLayoutDesc.getUniformBlockComponents();
-	for (auto& uniformBlockLayout : uniformBlockLayouts)
+	auto& uniformBlocks = descriptorSetLayoutDesc.getUniformBlockComponents();
+	for (auto& uniformBlock : uniformBlocks)
 	{
-		auto& name = uniformBlockLayout->getName();
-		if (name != "Globals")
-			continue;
-
-		GraphicsDataDesc uniformBufferDesc;
-		uniformBufferDesc.setType(GraphicsDataType::GraphicsDataTypeUniformBuffer);
-		uniformBufferDesc.setStreamSize(uniformBlockLayout->getBlockSize());
-		uniformBufferDesc.setUsage(GraphicsUsageFlags::GraphicsUsageFlagsReadBit | GraphicsUsageFlags::GraphicsUsageFlagsWriteBit | GraphicsUsageFlags::GraphicsUsageFlagsImmutableStorage);
-		auto ubo = this->getDevice()->createGraphicsData(uniformBufferDesc);
-		if (!ubo)
+		auto& name = uniformBlock->getName();
+		if (name == "Globals")
 		{
-			VK_PLATFORM_LOG("Can't create uniform buffer for %s", name);
-			return false;
+			GraphicsDataDesc uniformBufferDesc;
+			uniformBufferDesc.setType(GraphicsDataType::GraphicsDataTypeUniformBuffer);
+			uniformBufferDesc.setStreamSize(uniformBlock->getBlockSize());
+			uniformBufferDesc.setUsage(GraphicsUsageFlags::GraphicsUsageFlagsReadBit | GraphicsUsageFlags::GraphicsUsageFlagsWriteBit | GraphicsUsageFlags::GraphicsUsageFlagsImmutableStorage);
+			auto ubo = this->getDevice()->createGraphicsData(uniformBufferDesc);
+			if (!ubo)
+			{
+				VK_PLATFORM_LOG("Can't create uniform buffer for %s", name);
+				return false;
+			}
+
+			auto& uniforms = uniformBlock->getGraphicsUniforms();
+			for (auto& uniform : uniforms)
+			{
+				auto uniformSet = std::make_shared<VulkanGraphicsUniformSet>();
+				uniformSet->setType(uniform->getType());
+				uniformSet->setGraphicsUniform(uniform);
+
+				_activeUniformSets.push_back(uniformSet);
+			}
+
+			_globalUniformBlock = uniformBlock->downcast<VulkanGraphicsUniformBlock>();
+			_globalData = ubo->downcast<VulkanGraphicsData>();
 		}
-
-		_globalBuffers.push_back(std::make_pair(uniformBlockLayout, ubo));
-
-		auto& uniforms = uniformBlockLayout->getGraphicsUniforms();
-		for (auto& uniform : uniforms)
+		else
 		{
 			auto uniformSet = std::make_shared<VulkanGraphicsUniformSet>();
-			uniformSet->setType(uniformBlockLayout->getType());
-			uniformSet->setGraphicsUniform(uniform);
+			uniformSet->setType(uniformBlock->getType());
+			uniformSet->setGraphicsUniformBlock(uniformBlock);
 
 			_activeUniformSets.push_back(uniformSet);
 		}
+	}
+
+	if (_globalUniformBlock)
+	{
+		auto uniformBlock = _globalUniformBlock;
+		auto data = _globalData->downcast<VulkanGraphicsData>();
+
+		VkDescriptorBufferInfo bufferInfo;
+		bufferInfo.buffer = data->getBuffer();
+		bufferInfo.offset = 0;
+		bufferInfo.range = data->getGraphicsDataDesc().getStreamSize();
+
+		VkWriteDescriptorSet write;
+		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		write.pNext = nullptr;
+		write.descriptorType = VulkanTypes::asDescriptorType(uniformBlock->getType());
+		write.descriptorCount = 1;
+		write.dstSet = _vkDescriptorSet;
+		write.dstArrayElement = 0;
+		write.dstBinding = uniformBlock->getBindingPoint();
+		write.pBufferInfo = &bufferInfo;
+		write.pImageInfo = nullptr;
+		write.pTexelBufferView = nullptr;
+
+		vkUpdateDescriptorSets(this->getDevice()->downcast<VulkanDevice>()->getDevice(), 1, &write, 0, nullptr);
 	}
 
 	_descriptorSetDesc = descriptorSetDesc;
@@ -535,34 +846,133 @@ VulkanDescriptorSet::close() noexcept
 void 
 VulkanDescriptorSet::update() noexcept
 {
-	for (const auto& it : _globalBuffers)
+	if (_globalUniformBlock)
 	{
-		auto uniformBlock = it.first->downcast<VulkanGraphicsUniform>();
-		auto data = it.second->downcast<VulkanGraphicsData>();
+		void* buffer = nullptr;
 
-		VkDescriptorBufferInfo bufferInfo;
-		bufferInfo.buffer = data->getBuffer();
-		bufferInfo.offset = 0;
-		bufferInfo.range = data->getGraphicsDataDesc().getStreamSize();
+		std::size_t uniformCount = _activeUniformSets.size();
+		for (std::size_t i = 0; i < uniformCount; i++)
+		{
+			auto uniformSet = _activeUniformSets[i]->downcast<VulkanGraphicsUniformSet>();
+			if (!uniformSet->needUpdate())
+				continue;
 
-		VkWriteDescriptorSet write;
-		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		write.pNext = nullptr;
-		write.descriptorType = VulkanTypes::asDescriptorType(uniformBlock->getType());
-		write.descriptorCount = 1;
-		write.dstSet = _vkDescriptorSet;
-		write.dstArrayElement = 0;
-		write.dstBinding = uniformBlock->getBindingPoint();
-		write.pBufferInfo = &bufferInfo;
-		write.pImageInfo = nullptr;
-		write.pTexelBufferView = nullptr;
+			if (!buffer)
+			{
+				vkMapMemory(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _globalData->getDeviceMemory(), 0, _globalData->getGraphicsDataDesc().getStreamSize(), 0, &buffer);
+				if (!buffer)
+					break;
+			}
 
-		_writes.push_back(write);
+			auto uniform = _globalUniformBlock->getGraphicsUniforms().at(i);
+			auto uniformType = uniform->getType();
+			switch (uniformType)
+			{
+			case ray::GraphicsUniformTypeBool:
+				(*(int*)((char*)buffer + uniform->getOffset())) = uniformSet->getBool();
+				break;
+			case ray::GraphicsUniformTypeInt:
+				(*(int1*)((char*)buffer + uniform->getOffset())) = uniformSet->getInt();
+				break;
+			case ray::GraphicsUniformTypeInt2:
+				(*(int2*)((char*)buffer + uniform->getOffset())) = uniformSet->getInt2();
+				break;
+			case ray::GraphicsUniformTypeInt3:
+				(*(int3*)((char*)buffer + uniform->getOffset())) = uniformSet->getInt3();
+				break;
+			case ray::GraphicsUniformTypeInt4:
+				(*(int4*)((char*)buffer + uniform->getOffset())) = uniformSet->getInt4();
+				break;
+			case ray::GraphicsUniformTypeUInt:
+				(*(uint1*)((char*)buffer + uniform->getOffset())) = uniformSet->getUInt();
+				break;
+			case ray::GraphicsUniformTypeUInt2:
+				(*(uint2*)((char*)buffer + uniform->getOffset())) = uniformSet->getUInt2();
+				break;
+			case ray::GraphicsUniformTypeUInt3:
+				(*(uint3*)((char*)buffer + uniform->getOffset())) = uniformSet->getUInt3();
+				break;
+			case ray::GraphicsUniformTypeUInt4:
+				(*(uint4*)((char*)buffer + uniform->getOffset())) = uniformSet->getUInt4();
+				break;
+			case ray::GraphicsUniformTypeFloat:
+				(*(float1*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat();
+				break;
+			case ray::GraphicsUniformTypeFloat2:
+				(*(float2*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat2();
+				break;
+			case ray::GraphicsUniformTypeFloat3:
+				(*(float3*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat3();
+				break;
+			case ray::GraphicsUniformTypeFloat4:
+				(*(float4*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat4();
+				break;
+			case ray::GraphicsUniformTypeFloat2x2:
+				(*(float2x2*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat2x2();
+				break;
+			case ray::GraphicsUniformTypeFloat3x3:
+				(*(float3x3*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat3x3();
+				break;
+			case ray::GraphicsUniformTypeFloat4x4:
+				(*(float4x4*)((char*)buffer + uniform->getOffset())) = uniformSet->getFloat4x4();
+				break;
+			case ray::GraphicsUniformTypeIntArray:
+				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getIntArray().data(), uniformSet->getIntArray().size()* sizeof(int1));
+				break;
+			case ray::GraphicsUniformTypeInt2Array:
+				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getInt2Array().data(), uniformSet->getInt2Array().size() * sizeof(int2));
+				break;
+			case ray::GraphicsUniformTypeInt3Array:
+				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getInt3Array().data(), uniformSet->getInt3Array().size() * sizeof(int3));
+				break;
+			case ray::GraphicsUniformTypeInt4Array:
+				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getInt4Array().data(), uniformSet->getInt4Array().size() * sizeof(int4));
+				break;
+			case ray::GraphicsUniformTypeUIntArray:
+				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getUIntArray().data(), uniformSet->getUIntArray().size()* sizeof(uint1));
+				break;
+			case ray::GraphicsUniformTypeUInt2Array:
+				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getUInt2Array().data(), uniformSet->getUInt2Array().size() * sizeof(uint2));
+				break;
+			case ray::GraphicsUniformTypeUInt3Array:
+				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getUInt3Array().data(), uniformSet->getUInt3Array().size() * sizeof(uint3));
+				break;
+			case ray::GraphicsUniformTypeUInt4Array:
+				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getUInt4Array().data(), uniformSet->getUInt4Array().size() * sizeof(uint4));
+				break;
+			case ray::GraphicsUniformTypeFloatArray:
+				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloatArray().data(), uniformSet->getFloatArray().size() * sizeof(float1));
+				break;
+			case ray::GraphicsUniformTypeFloat2Array:
+				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat2Array().data(), uniformSet->getFloat2Array().size() * sizeof(float2));
+				break;
+			case ray::GraphicsUniformTypeFloat3Array:
+				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat3Array().data(), uniformSet->getFloat3Array().size() * sizeof(float3));
+				break;
+			case ray::GraphicsUniformTypeFloat4Array:
+				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat4Array().data(), uniformSet->getFloat4Array().size() * sizeof(float4));
+				break;
+			case ray::GraphicsUniformTypeFloat2x2Array:
+				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat4Array().data(), uniformSet->getFloat4Array().size() * sizeof(float2x2));
+				break;
+			case ray::GraphicsUniformTypeFloat3x3Array:
+				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat4Array().data(), uniformSet->getFloat4Array().size() * sizeof(float3x3));
+				break;
+			case ray::GraphicsUniformTypeFloat4x4Array:
+				std::memcpy((char*)buffer + uniform->getOffset(), uniformSet->getFloat4Array().data(), uniformSet->getFloat4Array().size() * sizeof(float4x4));
+				break;
+			default:
+				break;
+			}
+
+			uniformSet->needUpdate(false);
+		}
+
+		if (buffer)
+		{
+			vkUnmapMemory(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _globalData->getDeviceMemory());
+		}
 	}
-
-	vkUpdateDescriptorSets(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _writes.size(), _writes.data(), 0, nullptr);
-
-	_writes.clear();
 }
 
 VkDescriptorSet

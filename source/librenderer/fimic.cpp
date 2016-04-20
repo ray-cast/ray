@@ -74,10 +74,10 @@ FimicToneMapping::~FimicToneMapping() noexcept
 void
 FimicToneMapping::setSetting(const Setting& setting) noexcept
 {
-	_bloomThreshold->assign(_setting.bloomThreshold);
-	_bloomIntensity->assign(_setting.bloomIntensity);
+	_bloomThreshold->uniform1f(_setting.bloomThreshold);
+	_bloomIntensity->uniform1f(_setting.bloomIntensity);
 
-	_toneLumExposure->assign(setting.lumExposure);
+	_toneLumExposure->uniform1f(setting.lumExposure);
 
 	_setting = setting;
 }
@@ -107,13 +107,14 @@ FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsFramebuffer
 
 	_lumAdapt = _lumAdapt +((lum - _lumAdapt) * (1.0f - pow(_setting.lumKey, _setting.lumDelta * delta)));
 
-	_toneLumExposure->assign(_setting.lumExposure * ToneExposure(_lumAdapt));
+	_toneLumExposure->uniform1f(_setting.lumExposure * ToneExposure(_lumAdapt));
 }
 
 void
 FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	_toneSource->assign(source);
+	_texSource->uniformTexture(source);
+	_texSourceSizeInv->uniform2f(float2(1.0 / source->getGraphicsTextureDesc().getWidth(), 1.0 / source->getGraphicsTextureDesc().getHeight()));
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
@@ -123,7 +124,8 @@ FimicToneMapping::sunLum(RenderPipeline& pipeline, GraphicsTexturePtr source, Gr
 void
 FimicToneMapping::sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	_toneSource->assign(source);
+	_texSource->uniformTexture(source);
+	_texSourceSizeInv->uniform2f(float2(1.0 / source->getGraphicsTextureDesc().getWidth(), 1.0 / source->getGraphicsTextureDesc().getHeight()));
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
@@ -133,7 +135,7 @@ FimicToneMapping::sunLumLog(RenderPipeline& pipeline, GraphicsTexturePtr source,
 void
 FimicToneMapping::generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	_toneSource->assign(source);
+	_texSource->uniformTexture(source);
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
@@ -143,9 +145,7 @@ FimicToneMapping::generateBloom(RenderPipeline& pipeline, GraphicsTexturePtr sou
 void
 FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	auto& textureDesc = source->getGraphicsTextureDesc();
-	_bloomTexSizeInv->assign(float2(1.0 / textureDesc.getWidth(), 1.0 / textureDesc.getHeight()));
-	_toneSource->assign(source);
+	_texSource->uniformTexture(source);
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
@@ -155,9 +155,7 @@ FimicToneMapping::blurh(RenderPipeline& pipeline, GraphicsTexturePtr source, Gra
 void
 FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	auto& textureDesc = source->getGraphicsTextureDesc();
-	_bloomTexSizeInv->assign(float2(1.0 / textureDesc.getWidth(), 1.0 / textureDesc.getHeight()));
-	_toneSource->assign(source);
+	_texSource->uniformTexture(source);
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
@@ -167,8 +165,8 @@ FimicToneMapping::blurv(RenderPipeline& pipeline, GraphicsTexturePtr source, Gra
 void
 FimicToneMapping::generateToneMapping(RenderPipeline& pipeline, GraphicsTexturePtr bloom, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
-	_toneSource->assign(source);
-	_toneBloom->assign(bloom);
+	_texSource->uniformTexture(source);
+	_toneBloom->uniformTexture(bloom);
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();
@@ -181,9 +179,9 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_texSample4Map = pipeline.createTexture(width / 4.0, height / 4.0, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
-	_texSample8Map = pipeline.createTexture(width / 8.0, height / 8.0, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
-	_texCombieMap = pipeline.createTexture(width / 4.0, height / 4.0, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_texSample4Map = pipeline.createTexture(width / 4.0f, height / 4.0f, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_texSample8Map = pipeline.createTexture(256, 256, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
+	_texCombieMap = pipeline.createTexture(width / 4.0f, height / 4.0f, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 
 	_texSampleLogMap = pipeline.createTexture(SAMPLE_LOG_SIZE, SAMPLE_LOG_SIZE, GraphicsTextureDim::GraphicsTextureDim2D, GraphicsFormat::GraphicsFormatR16SFloat);
 
@@ -196,15 +194,15 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	_sampleLogViewLayout = pipeline.createFramebufferLayout(framebufferLogLayoutDesc);
 
 	GraphicsFramebufferDesc sample4ViewDesc;
-	sample4ViewDesc.setWidth(width / 4.0);
-	sample4ViewDesc.setHeight(height / 4.0);
+	sample4ViewDesc.setWidth(width / 4.0f);
+	sample4ViewDesc.setHeight(height / 4.0f);
 	sample4ViewDesc.attach(_texSample4Map);
 	sample4ViewDesc.setGraphicsFramebufferLayout(_sampleViewLayout);
 	_texSample4View = pipeline.createFramebuffer(sample4ViewDesc);
 
 	GraphicsFramebufferDesc sample8ViewDesc;
-	sample8ViewDesc.setWidth(width / 8.0);
-	sample8ViewDesc.setHeight(height / 8.0);
+	sample8ViewDesc.setWidth(256);
+	sample8ViewDesc.setHeight(256);
 	sample8ViewDesc.attach(_texSample8Map);
 	sample8ViewDesc.setGraphicsFramebufferLayout(_sampleViewLayout);
 	_texSample8View = pipeline.createFramebuffer(sample8ViewDesc);
@@ -217,8 +215,8 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	_texSampleLogView = pipeline.createFramebuffer(sampleLogViewDesc);
 
 	GraphicsFramebufferDesc sampleCombieViewDesc;
-	sampleCombieViewDesc.setWidth(width / 4.0);
-	sampleCombieViewDesc.setHeight(height / 4.0);
+	sampleCombieViewDesc.setWidth(width / 4.0f);
+	sampleCombieViewDesc.setHeight(height / 4.0f);
 	sampleCombieViewDesc.attach(_texCombieMap);
 	sampleCombieViewDesc.setGraphicsFramebufferLayout(_sampleViewLayout);
 	_texCombieView = pipeline.createFramebuffer(sampleCombieViewDesc);
@@ -234,13 +232,43 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 
 	_bloomThreshold = _fimic->getParameter("bloomThreshold");
 	_bloomIntensity = _fimic->getParameter("bloomIntensity");
-	_bloomTexSizeInv = _fimic->getParameter("bloomSizeInv");
+	_bloomOffset = _fimic->getParameter("bloomOffset");
+	_bloomWeight = _fimic->getParameter("bloomWeight");
 
-	_toneSource = _fimic->getParameter("texSource");
 	_toneBloom = _fimic->getParameter("texBloom");
 	_toneLumExposure = _fimic->getParameter("exposure");
 
+	_texSource = _fimic->getParameter("texSource");
+	_texSourceSizeInv = _fimic->getParameter("texSourceSizeInv");
+
 	_timer = std::make_shared<Timer>();
+
+	std::vector<float2> offset;
+	offset.push_back(float2(-5.0f / (width / 4.0f), -5.0f / (height / 4.0f)));
+	offset.push_back(float2(-4.0f / (width / 4.0f), -4.0f / (height / 4.0f)));
+	offset.push_back(float2(-3.0f / (width / 4.0f), -3.0f / (height / 4.0f)));
+	offset.push_back(float2(-2.0f / (width / 4.0f), -2.0f / (height / 4.0f)));
+	offset.push_back(float2(-1.0f / (width / 4.0f), -1.0f / (height / 4.0f)));
+	offset.push_back(float2(1.0f / (width / 4.0f), 1.0f / (height / 4.0f)));
+	offset.push_back(float2(2.0f / (width / 4.0f), 2.0f / (height / 4.0f)));
+	offset.push_back(float2(3.0f / (width / 4.0f), 3.0f / (height / 4.0f)));
+	offset.push_back(float2(4.0f / (width / 4.0f), 4.0f / (height / 4.0f)));
+	offset.push_back(float2(5.0f / (width / 4.0f), 5.0f / (height / 4.0f)));
+	_bloomOffset->uniform2fv(offset);
+
+	std::vector<float> weight;
+	weight.push_back(0.2);
+	weight.push_back(0.02);
+	weight.push_back(0.044);
+	weight.push_back(0.0716);
+	weight.push_back(0.1046);
+	weight.push_back(0.1686);
+	weight.push_back(0.1686);
+	weight.push_back(0.1046);
+	weight.push_back(0.0716);
+	weight.push_back(0.044);
+	weight.push_back(0.02);
+	_bloomWeight->uniform1fv(weight);
 
 	this->setSetting(_setting);
 }

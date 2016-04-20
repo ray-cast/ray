@@ -121,14 +121,14 @@ ShadowRenderPipeline::renderShadowMap(RenderPipeline& pipeline) noexcept
 
 		if (light->getSoftShadow())
 		{
-			_softBlurShadowSource->assign(light->getShadowMap());
-			_softBlurShadowSourceInv->assign(float2(1.0f, 0.0f) / light->getShadowSize());
-			_softClipConstant->assign(float4(light->getShadowCamera()->getClipConstant().xy(), 1.0));
+			//_softBlurShadowSource->uniformTexture(light->getShadowMap());
+			//_softBlurShadowSourceInv->uniform2f(float2(1.0f, 0.0f) / light->getShadowSize());
+			_softClipConstant->uniform4f(float4(light->getShadowCamera()->getClipConstant().xy(), 1.0));
 			pipeline.setFramebuffer(_softShadowViewTemp);
 			pipeline.drawScreenQuad(_softBlurShadowX);
 
-			_softBlurShadowSource->assign(_softShadowMapTemp);
-			_softBlurShadowSourceInv->assign(float2(0.0f, 1.0f) / _shadowMapSize);
+			_softBlurShadowSource->uniformTexture(_softShadowMapTemp);
+			_softBlurShadowSourceInv->uniform2f(float2(0.0f, 1.0f) / _shadowMapSize);
 			pipeline.setFramebuffer(_softShadowViews[numSoftLight]);
 			pipeline.drawScreenQuad(_softBlurShadowY);
 

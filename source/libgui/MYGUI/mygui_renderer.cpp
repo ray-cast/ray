@@ -38,7 +38,7 @@
 #include "mygui_renderer.h"
 #include "mygui_texture.h"
 #include "mygui_buffer.h"
-#include <ray/render_pipeline.h>
+#include <ray/material.h>
 
 _NAME_BEGIN
 
@@ -77,7 +77,7 @@ MyGuiRenderer::open() except
 	_materialTech = _material->getTech("ui");
 	_materialDecal = _material->getParameter("decal");
 	_materialScaleY = _material->getParameter("scaleY");
-	_materialScaleY->assign(1);
+	_materialScaleY->uniform1i(1);
 
 	_isInitialise = true;
 
@@ -178,9 +178,9 @@ MyGuiRenderer::destroyAllResources() noexcept
 void 
 MyGuiRenderer::doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept
 {
-	_materialScaleY->assign(-1.0f);
+	_materialScaleY->uniform1i(-1);
 	doRender(_buffer, _texture, _count);
-	_materialScaleY->assign(1.0f);
+	_materialScaleY->uniform1i(1);
 }
 
 void 
@@ -192,9 +192,9 @@ MyGuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture
 		MyGuiTexture* texture = static_cast<MyGuiTexture*>(_texture);
 
 		if (texture)
-			_materialDecal->assign(texture->getTexture());
+			_materialDecal->uniformTexture(texture->getTexture());
 		else
-			_materialDecal->assign(nullptr);
+			_materialDecal->uniformTexture(nullptr);
 
 		auto renderBuffer = buffer->getBuffer();
 		if (renderBuffer)

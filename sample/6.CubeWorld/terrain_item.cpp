@@ -75,12 +75,19 @@ TerrainObject::visiable(const TerrainChunk& chunk, const TerrainData& it, Visiab
 	TerrainData d5(it.x, it.y, it.z - 1);
 	TerrainData d6(it.x, it.y, it.z + 1);
 
-	bool f1 = chunk.get(d1);
-	bool f2 = chunk.get(d2);
-	bool f3 = chunk.get(d3);
-	bool f4 = chunk.get(d4);
-	bool f5 = chunk.get(d5);
-	bool f6 = chunk.get(d6);
+	bool f1 = false;
+	bool f2 = false;
+	bool f3 = false;
+	bool f4 = false;
+	bool f5 = false;
+	bool f6 = false;
+
+	if (it.x >= 0) f1 = chunk.get(d1);
+	if (it.y >= 0) f3 = chunk.get(d3);
+	if (it.z >= 0) f5 = chunk.get(d5);
+	if (it.x < chunk.size()) f2 = chunk.get(d2);
+	if (it.y < chunk.size()) f4 = chunk.get(d4);
+	if (it.z < chunk.size()) f6 = chunk.get(d6);
 
 	f1 = (d1.instanceID != it.instanceID) ? true : false;
 	f2 = (d2.instanceID != it.instanceID) ? true : false;

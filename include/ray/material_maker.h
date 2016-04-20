@@ -39,7 +39,6 @@
 
 #include <ray/material_loader.h>
 #include <ray/iarchive.h>
-#include <ray/material.h>
 
 _NAME_BEGIN
 

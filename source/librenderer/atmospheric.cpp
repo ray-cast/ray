@@ -101,22 +101,22 @@ Atmospheric::onActivate(RenderPipeline& pipeline) noexcept
 	invWavelength4.y = 1.0 / powf(_setting.wavelength.y, 4.0f);
 	invWavelength4.z = 1.0 / powf(_setting.wavelength.z, 4.0f);
 
-	_invWavelength->assign(invWavelength4);
+	_invWavelength->uniform3f(invWavelength4);
 
-	_innerRadius->assign(_setting.innerRadius);
-	_innerRadius2->assign(_setting.innerRadius * _setting.innerRadius);
-	_outerRadius->assign(_setting.outerRadius);
-	_outerRadius2->assign(_setting.outerRadius * _setting.outerRadius);
+	_innerRadius->uniform1f(_setting.innerRadius);
+	_innerRadius2->uniform1f(_setting.innerRadius * _setting.innerRadius);
+	_outerRadius->uniform1f(_setting.outerRadius);
+	_outerRadius2->uniform1f(_setting.outerRadius * _setting.outerRadius);
 
-	_krESun->assign(_setting.kr * _setting.sun);
-	_kmESun->assign(_setting.km * _setting.sun);
+	_krESun->uniform1f(_setting.kr * _setting.sun);
+	_kmESun->uniform1f(_setting.km * _setting.sun);
 
-	_kr4PI->assign(float(_setting.kr * 4.0f * M_PI));
-	_km4PI->assign(float(_setting.km * 4.0f * M_PI));
+	_kr4PI->uniform1f(float(_setting.kr * 4.0f * M_PI));
+	_km4PI->uniform1f(float(_setting.km * 4.0f * M_PI));
 
-	_scaleFactor->assign(1.0f / (_setting.outerRadius - _setting.innerRadius));
-	_scaleDepth->assign(0.25f);
-	_scaleOverScaleDepth->assign((1.0f / (_setting.outerRadius - _setting.innerRadius)) / 0.25f);
+	_scaleFactor->uniform1f(1.0f / (_setting.outerRadius - _setting.innerRadius));
+	_scaleDepth->uniform1f(0.25f);
+	_scaleOverScaleDepth->uniform1f((1.0f / (_setting.outerRadius - _setting.innerRadius)) / 0.25f);
 }
 
 void
@@ -133,7 +133,7 @@ Atmospheric::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, G
 		if (it->downcast<Light>()->getLightType() != LightType::LightTypeSun)
 			continue;
 
-		_lightDirection->assign(-it->downcast<Light>()->getForward());
+		_lightDirection->uniform3f(-it->downcast<Light>()->getForward());
 
 		pipeline.setFramebuffer(source);
 		pipeline.drawMesh(_ground, _sphere, _renderable);

@@ -479,7 +479,7 @@ OGLProgram::_initActiveAttribute() noexcept
 			attrib->setBindingPoint(location);
 			attrib->setSemantic(semantic);
 			attrib->setSemanticIndex(semanticIndex);
-			attrib->setType(toGraphicsUniformType(attrib->getName(), type));
+			attrib->setType(toGraphicsUniformType(name, type));
 
 			_activeAttributes.push_back(attrib);
 		}
@@ -501,6 +501,7 @@ OGLProgram::_initActiveUniform() noexcept
 	auto nameUniform = std::make_unique<GLchar[]>(maxUniformLength + 1);
 	nameUniform[maxUniformLength] = 0;
 
+	GLuint textureUnit = 0;
 	for (GLint i = 0; i < numUniform; ++i)
 	{
 		GLint size;
@@ -511,10 +512,18 @@ OGLProgram::_initActiveUniform() noexcept
 		if (location == GL_INVALID_INDEX)
 			continue;
 
+		auto uniformType = toGraphicsUniformType(nameUniform.get(), type);
 		auto uniform = std::make_shared<OGLGraphicsUniform>();
 		uniform->setName(nameUniform.get());
 		uniform->setBindingPoint(location);
 		uniform->setType(toGraphicsUniformType(uniform->getName(), type));
+
+		if (uniformType == GraphicsUniformType::GraphicsUniformTypeStorageImage)
+		{
+			glProgramUniform1i(_program, location, textureUnit);
+			uniform->setBindingPoint(textureUnit);
+			textureUnit++;
+		}
 
 		_activeUniforms.push_back(uniform);
 	}
@@ -606,31 +615,7 @@ OGLProgram::toGraphicsUniformType(const std::string& name, GLenum type) noexcept
 
 		if (type == GL_BOOL)
 		{
-			if (isArray)
-				return GraphicsUniformType::GraphicsUniformTypeBoolArray;
-			else
-				return GraphicsUniformType::GraphicsUniformTypeBool;
-		}
-		else if (type == GL_BOOL_VEC2)
-		{
-			if (isArray)
-				return GraphicsUniformType::GraphicsUniformTypeBool2Array;
-			else
-				return GraphicsUniformType::GraphicsUniformTypeBool2;
-		}
-		else if (type == GL_BOOL_VEC3)
-		{
-			if (isArray)
-				return GraphicsUniformType::GraphicsUniformTypeBool3Array;
-			else
-				return GraphicsUniformType::GraphicsUniformTypeBool3;
-		}
-		else if (type == GL_BOOL_VEC4)
-		{
-			if (isArray)
-				return GraphicsUniformType::GraphicsUniformTypeBool4Array;
-			else
-				return GraphicsUniformType::GraphicsUniformTypeBool4;
+			return GraphicsUniformType::GraphicsUniformTypeBool;
 		}
 		else if (type == GL_UNSIGNED_INT)
 		{

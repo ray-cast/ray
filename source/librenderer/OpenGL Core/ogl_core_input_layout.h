@@ -70,7 +70,8 @@ private:
 
 private:
 	GLuint _vao;
-	GraphicsDataPtr _ibo;
+	GLuint _vbo;
+	GLuint _ibo;
 	GraphicsProgramPtr _program;
 	GraphicsInputLayoutDesc _inputLayoutDesc;
 	GraphicsDeviceWeakPtr _device;

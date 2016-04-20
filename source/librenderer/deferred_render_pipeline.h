@@ -74,9 +74,6 @@ public:
 
 	void copyRenderTexture(RenderPipeline& pipeline, GraphicsTexturePtr src, GraphicsFramebufferPtr dst, const Viewport& view) noexcept;
 
-	bool enableSSSS(RenderPipeline& pipeline, bool enable) noexcept;
-	bool isEnableSSSS() const noexcept;
-
 private:
 	bool initTextureFormat(RenderPipeline& pipeline) noexcept;
 
@@ -147,32 +144,42 @@ private:
 
 	MaterialPtr _softBlur;
 	MaterialTechPtr _softGenShadowMap;
-	MaterialTechPtr _softBlurShadowX;
+	MaterialTechPtr _softBlurOrthoShadowX;
+	MaterialTechPtr _softBlurPerspectiveFovShadowX;
 	MaterialTechPtr _softBlurShadowY;
-	MaterialParamPtr _softBlurShadowSource;
-	MaterialParamPtr _softBlurShadowSourceInv;
+	MaterialTechPtr _softLogBlurShadowX;
+	MaterialTechPtr _softLogBlurShadowY;
+	MaterialTechPtr _softConvOrthoLinearDepth;
+	MaterialTechPtr _softConvPerspectiveFovLinearDepth;
+	MaterialParamPtr _softShadowSource;
+	MaterialParamPtr _softShadowSourceInv;
 	MaterialParamPtr _softClipConstant;
+	MaterialParamPtr _softOffset;
+	MaterialParamPtr _softWeight;
 
 	GraphicsTextures _softShadowMaps;
 	GraphicsTexturePtr _softShadowMapTemp;
-
+	GraphicsTexturePtr _softShadowDepthMapTemp;
 	GraphicsFramebuffers _softShadowViews;
 	GraphicsFramebufferPtr _softShadowViewTemp;
+	GraphicsFramebufferPtr _softShadowDepthViewTemp;
 	GraphicsFramebufferLayoutPtr _softShadowViewLayout;
+	GraphicsFramebufferLayoutPtr _softShadowDepthViewLayout;
 
 	float _shadowEsmFactor;
-	float _shadowMapSize;
+	std::uint32_t _shadowMapSize;
 	GraphicsFormat _shadowFormat;
+	GraphicsFormat _shadowDepthFormat;
 
-	MaterialVariantPtr _materialDepthMap;
-	MaterialVariantPtr _materialColorMap;
-	MaterialVariantPtr _materialNormalMap;
-	MaterialVariantPtr _materialDeferredDepthMap;
-	MaterialVariantPtr _materialDeferredDepthLinearMap;
-	MaterialVariantPtr _materialDeferredGraphicMap;
-	MaterialVariantPtr _materialDeferredNormalMap;
-	MaterialVariantPtr _materialDeferredLightMap;
-	MaterialVariantPtr _materialDeferredShadowMap;
+	MaterialParamPtr _materialDepthMap;
+	MaterialParamPtr _materialColorMap;
+	MaterialParamPtr _materialNormalMap;
+	MaterialParamPtr _materialDeferredDepthMap;
+	MaterialParamPtr _materialDeferredDepthLinearMap;
+	MaterialParamPtr _materialDeferredGraphicMap;
+	MaterialParamPtr _materialDeferredNormalMap;
+	MaterialParamPtr _materialDeferredLightMap;
+	MaterialParamPtr _materialDeferredShadowMap;
 
 	GraphicsFormat _deferredDepthFormat;
 	GraphicsFormat _deferredDepthLinearFormat;
@@ -205,8 +212,6 @@ private:
 	GraphicsFramebufferPtr _deferredShadingView;
 	GraphicsFramebufferPtr _deferredSwapView;
 	GraphicsFramebufferPtr _deferredGraphicsViews;
-
-	std::shared_ptr<class SSSS> _SSSS;
 };
 
 _NAME_END

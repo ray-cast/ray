@@ -155,6 +155,8 @@ VulkanDevice::close() noexcept
 		vkDestroyDevice(_device, 0);
 		_device = VK_NULL_HANDLE;
 	}
+
+	VulkanSystem::instance()->stopDebugControl();
 }
 
 GraphicsSwapchainPtr 

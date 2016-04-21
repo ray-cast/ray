@@ -51,7 +51,7 @@ _NAME_BEGIN
 __ImplementSubClass(EGL2DeviceContext, GraphicsContext, "EGL2DeviceContext")
 
 EGL2DeviceContext::EGL2DeviceContext() noexcept
-	: _clearColor(0.0, 0.0, 0.0)
+	: _clearColor(0.0f, 0.0f, 0.0f, 0.0f)
 	, _clearDepth(0.0)
 	, _clearStencil(0xFFFFFFFF)
 	, _viewport(0, 0, 0, 0)

@@ -293,7 +293,7 @@ EGL2Shader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 		std::string log((std::size_t)length, 0);
 		glGetShaderInfoLog(_instance, length, &length, (char*)log.data());
 
-		GL_PLATFORM_LOG(log);
+		GL_PLATFORM_LOG(log.c_str());
 		return false;
 	}
 
@@ -373,7 +373,7 @@ EGL2Program::setup(const GraphicsProgramDesc& programDesc) noexcept
 		std::string log((std::size_t)length, 0);
 		glGetProgramInfoLog(_program, length, &length, (GLchar*)log.data());
 
-		GL_PLATFORM_LOG(log);
+		GL_PLATFORM_LOG(log.c_str());
 		return false;
 	}
 

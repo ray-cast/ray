@@ -84,7 +84,7 @@ SSGI::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, Graphics
 {
 	_projInfo->uniform4f(pipeline.getCamera()->getProjConstant());
 	_projScale->uniform1f(pipeline.getCamera()->getProjLength().y * _setting.radius);
-	_clipInfo->uniform3f(pipeline.getCamera()->getClipConstant());
+	_clipInfo->uniform3f(pipeline.getCamera()->getClipConstant().xyz());
 
 	pipeline.setFramebuffer(dest);
 	pipeline.drawScreenQuad(_ambientOcclusionPass);

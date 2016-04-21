@@ -40,7 +40,7 @@ _NAME_BEGIN
 
 GraphicsSwapchainDesc::GraphicsSwapchainDesc() noexcept
 	: _format(GraphicsFormat::GraphicsFormatB8G8R8A8UNorm)
-	, _depthStencilFormat(GraphicsFormat::GraphicsFormatD16UNorm)
+	, _depthStencilFormat(GraphicsFormat::GraphicsFormatX8_D24UNormPack32)
 	, _interval(GraphicsSwapInterval::GraphicsSwapIntervalVsync)
 	, _imageNums(2)
 	, _window(0)

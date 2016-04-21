@@ -110,6 +110,7 @@ VulkanGraphicsData::setup(const GraphicsDataDesc& dataDesc) noexcept
 		return false;
 	}
 
+	_dataDesc = dataDesc;
 	return true;
 }
 

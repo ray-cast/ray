@@ -215,7 +215,7 @@ VulkanRenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	pipeline.pMultisampleState = &ms;
 	pipeline.pStages = shaderStages;
 	pipeline.pDynamicState = &dynamicState;
-	pipeline.renderPass = nullptr; //pipelineDesc.getGraphicsFramebufferLayout()->downcast<VulkanFramebufferLayout>()->getRenderPass();
+	pipeline.renderPass = VK_NULL_HANDLE; //pipelineDesc.getGraphicsFramebufferLayout()->downcast<VulkanFramebufferLayout>()->getRenderPass();
 
 	VkDescriptorSetLayout descriptorSetLayout;
 	descriptorSetLayout = pipelineDesc.getGraphicsDescriptorSetLayout()->downcast<VulkanDescriptorSetLayout>()->getDescriptorSetLayout();

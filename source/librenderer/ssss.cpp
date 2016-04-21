@@ -139,10 +139,10 @@ SSSS::applyTranslucency(RenderPipeline& pipeline, GraphicsFramebufferPtr source,
 
 	_lightColor->uniform3f(light->getLightColor() * light->getIntensity());
 	_lightEyePosition->uniform3f(light->getTranslate() * pipeline.getCamera()->getView());
-	_lightEyeProjInfo->uniform3f(pipeline.getCamera()->getProjConstant());
+	_lightEyeProjInfo->uniform4f(pipeline.getCamera()->getProjConstant());
 
 	_shadowMap->uniformTexture(shaodwMap);
-	_shadowFactor->uniform3f(float4(light->getShadowCamera()->getClipConstant().xyz(), _sssScale));
+	_shadowFactor->uniform4f(float4(light->getShadowCamera()->getClipConstant().xyz(), _sssScale));
 	_shadowEye2LightView->uniform4fmat((pipeline.getCamera()->getViewInverse() * light->getShadowCamera()->getView()));
 	_shadowEye2LightViewProject->uniform4fmat(pipeline.getCamera()->getViewInverse() * light->getShadowCamera()->getViewProject());
 

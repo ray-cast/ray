@@ -79,7 +79,7 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		image.extent.width = textureDesc.getWidth();
 		image.extent.height = textureDesc.getHeight();
 		image.extent.depth = textureDesc.getDepth();
-		image.mipLevels = textureDesc.getMipLevel();
+		image.mipLevels = std::max(textureDesc.getMipLevel(), std::uint32_t(1));
 		image.arrayLayers = textureDesc.getLayerNums();
 		image.samples = VulkanTypes::asTextureSample(textureDesc.getSamplerAnis());
 		image.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -144,7 +144,7 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	view.components.a = flags == VK_IMAGE_ASPECT_COLOR_BIT ? VK_COMPONENT_SWIZZLE_A : VK_COMPONENT_SWIZZLE_IDENTITY;
 	view.subresourceRange.aspectMask = flags;
 	view.subresourceRange.baseMipLevel = textureDesc.getMipBase();
-	view.subresourceRange.levelCount = textureDesc.getMipLevel();
+	view.subresourceRange.levelCount = std::max(textureDesc.getMipLevel(), std::uint32_t(1));
 	view.subresourceRange.baseArrayLayer = textureDesc.getLayerBase();
 	view.subresourceRange.layerCount = textureDesc.getLayerNums();
 	view.flags = 0;

@@ -1152,11 +1152,12 @@ EGL2Check::checkError() noexcept
 }
 
 void
-EGL2Check::debugOutput(const std::string& message, ...) noexcept
+EGL2Check::debugOutput(const char* message, ...) noexcept
 {
 	va_list va;
-	va_start(va, &message);
-	vprintf((message + "\n").c_str(), va);
+	va_start(va, message);
+	vprintf(message, va);
+	printf("\n");
 	va_end(va);
 }
 

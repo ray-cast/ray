@@ -100,7 +100,7 @@ void
 VulkanSystem::print(const char* message, ...) noexcept
 {
 	va_list va;
-	va_start(va, &message);
+	va_start(va, message);
 	vprintf(message, va);
 	printf("\n");
 	va_end(va);
@@ -125,7 +125,7 @@ VulkanSystem::startDebugControl() noexcept
 	info.pNext = 0;
 	info.pfnCallback = dbgFunc;
 	info.pUserData = this;
-	info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+	info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT;
 
 	VkResult err = fpCreateDebugReportCallbackEXT(_instance, &info, NULL, &_debugHandle);
 	switch (err)

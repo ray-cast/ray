@@ -123,7 +123,7 @@ ShadowRenderPipeline::renderShadowMap(RenderPipeline& pipeline) noexcept
 		{
 			//_softBlurShadowSource->uniformTexture(light->getShadowMap());
 			//_softBlurShadowSourceInv->uniform2f(float2(1.0f, 0.0f) / light->getShadowSize());
-			_softClipConstant->uniform4f(float4(light->getShadowCamera()->getClipConstant().xy(), 1.0));
+			_softClipConstant->uniform4f(float4(light->getShadowCamera()->getClipConstant().xy(), 1.0, 1.0));
 			pipeline.setFramebuffer(_softShadowViewTemp);
 			pipeline.drawScreenQuad(_softBlurShadowX);
 

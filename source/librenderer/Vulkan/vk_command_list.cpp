@@ -63,14 +63,14 @@ VulkanCommandList::~VulkanCommandList() noexcept
 }
 
 bool
-VulkanCommandList::setup(const GraphicsCommandListDesc& desc) noexcept
+VulkanCommandList::setup(const GraphicsCommandListDesc& commandListDesc) noexcept
 {
-	assert(desc.getGraphicsCommandPool());
+	assert(commandListDesc.getGraphicsCommandPool());
 
 	VkCommandBufferAllocateInfo info;
 	info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	info.pNext = nullptr;
-	info.commandPool = desc.getGraphicsCommandPool()->downcast<VulkanCommandPool>()->getInstance();
+	info.commandPool = commandListDesc.getGraphicsCommandPool()->downcast<VulkanCommandPool>()->getInstance();
 	info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	info.commandBufferCount = 1;
 
@@ -80,6 +80,7 @@ VulkanCommandList::setup(const GraphicsCommandListDesc& desc) noexcept
 		return false;
 	}
 
+	_commandListDesc = commandListDesc;
 	return true;
 }
 

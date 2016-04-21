@@ -451,7 +451,7 @@ class EGL2Check
 public:
 	static bool checkError() noexcept;
 
-	static void debugOutput(const std::string& message, ...) noexcept;
+	static void debugOutput(const char* message, ...) noexcept;
 };
 
 _NAME_END

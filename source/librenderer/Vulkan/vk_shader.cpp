@@ -625,10 +625,10 @@ VulkanProgram::setup(const GraphicsProgramDesc& programDesc) noexcept
 			stage = EShLangTessEvaluation;
 
 		const char *shaderStrings[1];
-		shaderStrings[0] = it->downcast<VulkanShader>()->getGlslCodes().c_str();
+		shaderStrings[0] = it->downcast<VulkanShader>()->getGraphicsShaderDesc().getByteCodes().c_str();
 
 		shaders[stage]->setStrings(shaderStrings, 1);
-		if (!shaders[stage]->parse(&resources, 100, false, (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules)))
+		if (!shaders[stage]->parse(&resources, 330, false, (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules)))
 		{
 			VK_PLATFORM_LOG(shaders[stage]->getInfoLog());
 			VK_PLATFORM_LOG(shaders[stage]->getInfoDebugLog());

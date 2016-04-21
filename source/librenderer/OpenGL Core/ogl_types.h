@@ -122,6 +122,7 @@ typedef std::shared_ptr<class OGLCoreFramebuffer> OGLCoreFramebufferPtr;
 typedef std::shared_ptr<class OGLCoreGraphicsData> OGLCoreGraphicsDataPtr;
 typedef std::shared_ptr<class OGLCoreInputLayout> OGLCoreInputLayoutPtr;
 typedef std::shared_ptr<class OGLCoreTexture> OGLCoreTexturePtr;
+typedef std::shared_ptr<class OGLCorePipeline> OGLCorePipelinePtr;
 typedef std::shared_ptr<class OGLCoreDescriptorSet> OGLCoreDescriptorSetPtr;
 
 typedef std::weak_ptr<class OGLDevice> OGLDeviceWeakPtr;

@@ -34,39 +34,42 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include "egl3_render_pipeline.h"
-#include "egl3_state.h"
-#include "egl3_shader.h"
-#include "egl3_input_layout.h"
-#include "egl3_descriptor.h"
-#include "egl3_graphics_data.h"
+#include "ogl_core_pipeline.h"
+#include "ogl_core_input_layout.h"
+#include "ogl_core_descriptor.h"
+#include "ogl_core_graphics_data.h"
+#include "ogl_state.h"
+#include "ogl_shader.h"
+#include "ogl_descriptor_set.h"
 
 _NAME_BEGIN
 
-__ImplementSubClass(EGL3RenderPipeline, GraphicsPipeline, "EGL3RenderPipeline")
+__ImplementSubClass(OGLCorePipeline, GraphicsPipeline, "OGLCorePipeline")
 
-EGL3RenderPipeline::EGL3RenderPipeline() noexcept
+OGLCorePipeline::OGLCorePipeline() noexcept
 	: _vao(GL_NONE)
+	, _vbo(GL_NONE)
+	, _ibo(GL_NONE)
 {
 }
 
-EGL3RenderPipeline::~EGL3RenderPipeline() noexcept
+OGLCorePipeline::~OGLCorePipeline() noexcept
 {
 	this->close();
 }
 
 bool
-EGL3RenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
+OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 {
 	assert(_vao == GL_NONE);
 	assert(pipelineDesc.getGraphicsState());
 	assert(pipelineDesc.getGraphicsProgram());
 	assert(pipelineDesc.getGraphicsInputLayout());
 	assert(pipelineDesc.getGraphicsDescriptorSetLayout());
-	assert(pipelineDesc.getGraphicsState()->isInstanceOf<EGL3GraphicsState>());
-	assert(pipelineDesc.getGraphicsProgram()->isInstanceOf<EGL3Program>());
-	assert(pipelineDesc.getGraphicsInputLayout()->isInstanceOf<EGL3InputLayout>());
-	assert(pipelineDesc.getGraphicsDescriptorSetLayout()->isInstanceOf<EGL3DescriptorSetLayout>());
+	assert(pipelineDesc.getGraphicsState()->isInstanceOf<OGLGraphicsState>());
+	assert(pipelineDesc.getGraphicsProgram()->isInstanceOf<OGLProgram>());
+	assert(pipelineDesc.getGraphicsInputLayout()->isInstanceOf<OGLCoreInputLayout>());
+	assert(pipelineDesc.getGraphicsDescriptorSetLayout()->isInstanceOf<OGLDescriptorSetLayout>());
 
 	auto& components = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getGraphicsVertexLayouts();
 	for (auto& it : components)
@@ -88,31 +91,29 @@ EGL3RenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 		}
 	}
 
-	GL_CHECK(glGenVertexArrays(1, &_vao));
+	glCreateVertexArrays(1, &_vao);
 	if (_vao == GL_NONE)
 	{
 		GL_PLATFORM_LOG("glCreateVertexArrays() fail");
 		return false;
 	}
 
-	GL_CHECK(glBindVertexArray(_vao));
-
 	GLuint offset = 0;
 	for (auto& it : components)
 	{
 		GLuint attribIndex = GL_INVALID_INDEX;
-		GLenum type = EGL3Types::asVertexFormat(it.getVertexFormat());
+		GLenum type = OGLTypes::asVertexFormat(it.getVertexFormat());
 
 		auto& attributes = pipelineDesc.getGraphicsProgram()->getActiveAttributes();
 		for (auto& attrib : attributes)
 		{
 			if (attrib->getSemanticIndex() == it.getSemanticIndex() && attrib->getSemantic() == it.getSemantic())
 			{
-				attribIndex = attrib->downcast<EGL3GraphicsAttribute>()->getBindingPoint();
+				attribIndex = attrib->downcast<OGLGraphicsAttribute>()->getBindingPoint();
 
-				GL_CHECK(glEnableVertexAttribArray(attribIndex));
-				GL_CHECK(glVertexAttribBinding(attribIndex, 0));
-				GL_CHECK(glVertexAttribFormat(attribIndex, it.getVertexCount(), type, GL_FALSE, offset));
+				glEnableVertexArrayAttrib(_vao, attribIndex);
+				glVertexArrayAttribBinding(_vao, attribIndex, 0);
+				glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, GL_FALSE, offset);
 
 				break;
 			}
@@ -121,14 +122,12 @@ EGL3RenderPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 		offset += it.getVertexSize();
 	}
 
-	GL_CHECK(glBindVertexArray(GL_NONE));
-
 	_pipelineDesc = pipelineDesc;
 	return true;
 }
 
 void
-EGL3RenderPipeline::close() noexcept
+OGLCorePipeline::close() noexcept
 {
 	if (_vao != GL_NONE)
 	{
@@ -137,41 +136,41 @@ EGL3RenderPipeline::close() noexcept
 	}
 }
 
-void
-EGL3RenderPipeline::apply() noexcept
-{
-	GL_CHECK(glBindVertexArray(_vao));
-}
-
-void
-EGL3RenderPipeline::bindVbo(const EGL3GraphicsDataPtr& vbo, GLuint slot) noexcept
-{
-	assert(vbo);
-	GLuint stride = vbo->getGraphicsDataDesc().getStride();
-	GL_CHECK(glBindVertexBuffer(slot, vbo->getInstanceID(), 0, stride));
-}
-
-void
-EGL3RenderPipeline::bindIbo(const EGL3GraphicsDataPtr& ibo) noexcept
-{
-	assert(ibo);
-	GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID()));
-}
-
 const GraphicsPipelineDesc&
-EGL3RenderPipeline::getGraphicsPipelineDesc() const noexcept
+OGLCorePipeline::getGraphicsPipelineDesc() const noexcept
 {
 	return _pipelineDesc;
 }
 
 void
-EGL3RenderPipeline::setDevice(GraphicsDevicePtr device) noexcept
+OGLCorePipeline::apply() noexcept
+{
+	glBindVertexArray(_vao);
+}
+
+void
+OGLCorePipeline::bindVbo(OGLCoreGraphicsDataPtr vbo, GLuint slot) noexcept
+{
+	assert(vbo);
+	GLuint stride = vbo->getGraphicsDataDesc().getStride();
+	glVertexArrayVertexBuffer(_vao, slot, vbo->getInstanceID(), 0, stride);
+}
+
+void
+OGLCorePipeline::bindIbo(OGLCoreGraphicsDataPtr ibo) noexcept
+{
+	assert(ibo);
+	glVertexArrayElementBuffer(_vao, ibo->getInstanceID());
+}
+
+void
+OGLCorePipeline::setDevice(GraphicsDevicePtr device) noexcept
 {
 	_device = device;
 }
 
 GraphicsDevicePtr
-EGL3RenderPipeline::getDevice() noexcept
+OGLCorePipeline::getDevice() noexcept
 {
 	return _device.lock();
 }

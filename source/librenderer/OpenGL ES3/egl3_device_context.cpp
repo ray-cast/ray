@@ -293,14 +293,10 @@ EGL3DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 			_shaderObject->apply();
 		}
 
-		auto inputLayout = pipelineDesc.getGraphicsInputLayout()->downcast<EGL3InputLayout>();
-		if (_inputLayout != inputLayout)
-		{
-			_inputLayout = inputLayout;
-			_inputLayout->bindLayout(_shaderObject);
+		_pipeline = pipeline->downcast<EGL3RenderPipeline>();
+		_pipeline->apply();
 
-			_needUpdateLayout = true;
-		}
+		_needUpdateLayout = true;
 	}
 }
 
@@ -418,16 +414,16 @@ void
 EGL3DeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 {
 	assert(_vbo);
-	assert(_inputLayout);
+	assert(_pipeline);
 	assert(_glcontext->getActive());
 
 	if (_needUpdateLayout)
 	{
 		if (_vbo)
-			_inputLayout->bindVbo(_vbo, 0);
+			_pipeline->bindVbo(_vbo, 0);
 
 		if (_ibo)
-			_inputLayout->bindIbo(_ibo);
+			_pipeline->bindIbo(_ibo);
 
 		_needUpdateLayout = false;
 	}

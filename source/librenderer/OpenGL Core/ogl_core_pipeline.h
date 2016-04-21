@@ -34,36 +34,44 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_EGL3_INPUT_LAYOUT_H_
-#define _H_EGL3_INPUT_LAYOUT_H_
+#ifndef _H_OGL_CORE_PIPELINE_H_
+#define _H_OGL_CORE_PIPELINE_H_
 
-#include "egl3_types.h"
+#include "ogl_types.h"
 
 _NAME_BEGIN
 
-class EGL3InputLayout final : public GraphicsInputLayout
+class OGLCorePipeline final : public GraphicsPipeline
 {
-	__DeclareSubClass(EGL3InputLayout, GraphicsInputLayout)
+	__DeclareSubClass(OGLCorePipeline, GraphicsPipeline)
 public:
-	EGL3InputLayout() noexcept;
-	~EGL3InputLayout() noexcept;
+	OGLCorePipeline() noexcept;
+	virtual ~OGLCorePipeline() noexcept;
 
-	bool setup(const GraphicsInputLayoutDesc& desc) noexcept;
+	bool setup(const GraphicsPipelineDesc& pipelineDesc) noexcept;
 	void close() noexcept;
 
-	const GraphicsInputLayoutDesc& getGraphicsInputLayoutDesc() const noexcept;
+	void bindVbo(OGLCoreGraphicsDataPtr vbo, GLuint slot) noexcept;
+	void bindIbo(OGLCoreGraphicsDataPtr ibo) noexcept;
+
+	void apply() noexcept;
+
+	const GraphicsPipelineDesc& getGraphicsPipelineDesc() const noexcept;
 
 private:
-	friend class EGL3Device;
+	friend class OGLDevice;
 	void setDevice(GraphicsDevicePtr device) noexcept;
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
-	EGL3InputLayout(const EGL3InputLayout&) noexcept = delete;
-	EGL3InputLayout& operator=(const EGL3InputLayout&) noexcept = delete;
+	OGLCorePipeline(const OGLCorePipeline&) noexcept = delete;
+	OGLCorePipeline& operator=(const OGLCorePipeline&) noexcept = delete;
 
 private:
-	GraphicsInputLayoutDesc _inputLayoutDesc;
+	GLuint _vao;
+	GLuint _vbo;
+	GLuint _ibo;
+	GraphicsPipelineDesc _pipelineDesc;
 	GraphicsDeviceWeakPtr _device;
 };
 

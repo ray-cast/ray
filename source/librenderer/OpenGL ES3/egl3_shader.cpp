@@ -298,7 +298,7 @@ EGL3Shader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 	}
 
 	_shaderDesc = shaderDesc;
-	return true;
+	return EGL3Check::checkError();
 }
 
 void
@@ -385,7 +385,7 @@ EGL3Program::setup(const GraphicsProgramDesc& programDesc) noexcept
 	_initActiveUniformBlock();
 
 	_programDesc = programDesc;
-	return true;
+	return EGL3Check::checkError();
 }
 
 void

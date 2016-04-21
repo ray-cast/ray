@@ -43,7 +43,6 @@ _NAME_BEGIN
 __ImplementSubClass(EGL3InputLayout, GraphicsInputLayout, "EGL3InputLayout")
 
 EGL3InputLayout::EGL3InputLayout() noexcept
-	: _vao(GL_NONE)
 {
 }
 
@@ -55,35 +54,6 @@ EGL3InputLayout::~EGL3InputLayout() noexcept
 bool
 EGL3InputLayout::setup(const GraphicsInputLayoutDesc& inputLayoutDesc) noexcept
 {
-	assert(!_vao);
-
-	auto& component = inputLayoutDesc.getGraphicsVertexLayouts();
-	for (auto& it : component)
-	{
-		auto& semantic = it.getSemantic();
-		if (semantic.empty())
-		{
-			GL_PLATFORM_LOG("Empty semantic");
-			return false;
-		}
-
-		for (auto& ch : semantic)
-		{
-			if (ch < 'a' && ch > 'z')
-			{
-				GL_PLATFORM_LOG("Error semantic describe : %s", semantic);
-				return false;
-			}
-		}
-	}
-
-	glGenVertexArrays(1, &_vao);
-	if (_vao == GL_NONE)
-	{
-		GL_PLATFORM_LOG("glCreateVertexArrays() fail");
-		return false;
-	}
-
 	_inputLayoutDesc = inputLayoutDesc;
 	return true;
 }
@@ -91,63 +61,6 @@ EGL3InputLayout::setup(const GraphicsInputLayoutDesc& inputLayoutDesc) noexcept
 void
 EGL3InputLayout::close() noexcept
 {
-	if (_vao)
-	{
-		glDeleteVertexArrays(1, &_vao);
-		_vao = GL_NONE;
-	}
-}
-
-void
-EGL3InputLayout::bindLayout(const EGL3ProgramPtr& program) noexcept
-{
-	glBindVertexArray(_vao);
-
-	if (_program != program)
-	{
-		GLuint offset = 0;
-
-		auto& components = _inputLayoutDesc.getGraphicsVertexLayouts();
-		for (auto& it : components)
-		{
-			GLuint attribIndex = GL_INVALID_INDEX;
-			GLenum type = EGL3Types::asVertexFormat(it.getVertexFormat());
-
-			auto& attributes = program->getActiveAttributes();
-			for (auto& attrib : attributes)
-			{
-				if (attrib->getSemanticIndex() == it.getSemanticIndex() && attrib->getSemantic() == it.getSemantic())
-				{
-					attribIndex = attrib->downcast<EGL3GraphicsAttribute>()->getBindingPoint();
-					break;
-				}
-			}
-
-			if (attribIndex != GL_INVALID_INDEX)
-			{
-				glEnableVertexAttribArray(attribIndex);
-				glVertexAttribBinding(attribIndex, 0);
-				glVertexAttribFormat(attribIndex, it.getVertexCount(), type, GL_FALSE, offset);
-			}
-
-			offset += it.getVertexSize();
-		}
-
-		_program = program;
-	}
-}
-
-void
-EGL3InputLayout::bindVbo(const EGL3GraphicsDataPtr& vbo, GLuint bindingPoint) noexcept
-{
-	GLuint stride = vbo->getGraphicsDataDesc().getStride();
-	glBindVertexBuffer(bindingPoint, vbo->getInstanceID(), 0, stride);
-}
-
-void
-EGL3InputLayout::bindIbo(const EGL3GraphicsDataPtr& ibo) noexcept
-{
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID());
 }
 
 const GraphicsInputLayoutDesc&

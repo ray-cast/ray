@@ -150,8 +150,6 @@ public:
 	bool setup(const GraphicsShaderDesc& desc) noexcept;
 	void close() noexcept;
 
-	const std::string& getGlslCodes() const noexcept;
-
 	VkShaderModule getShaderModule() const noexcept;
 
 	const GraphicsShaderDesc& getGraphicsShaderDesc() const noexcept;
@@ -170,7 +168,6 @@ private:
 
 private:
 	VkShaderModule _vkShader;
-	std::string _glsl;
 	GraphicsShaderDesc _shaderDesc;
 	GraphicsDeviceWeakPtr _device;
 };

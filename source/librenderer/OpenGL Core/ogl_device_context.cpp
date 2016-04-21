@@ -190,7 +190,7 @@ OGLDeviceContext::setStencilCompare(GraphicsStencilFace face, GraphicsCompareFun
 	}
 }
 
-GraphicsCompareFunc 
+GraphicsCompareFunc
 OGLDeviceContext::getStencilCompare(GraphicsStencilFace face) noexcept
 {
 	if (face == GraphicsStencilFace::GraphicsStencilFaceFront)
@@ -223,7 +223,7 @@ OGLDeviceContext::setStencilReference(GraphicsStencilFace face, std::uint32_t re
 	}
 }
 
-std::uint32_t 
+std::uint32_t
 OGLDeviceContext::getStencilReference(GraphicsStencilFace face) noexcept
 {
 	if (face == GraphicsStencilFace::GraphicsStencilFaceFront)
@@ -256,7 +256,7 @@ OGLDeviceContext::setStencilFrontWriteMask(GraphicsStencilFace face, std::uint32
 	}
 }
 
-std::uint32_t 
+std::uint32_t
 OGLDeviceContext::getStencilFrontWriteMask(GraphicsStencilFace face) noexcept
 {
 	if (face == GraphicsStencilFace::GraphicsStencilFaceFront)
@@ -846,7 +846,7 @@ OGLDeviceContext::initTextureSupports() noexcept
 	if (GLEW_EXT_bgra && GLEW_EXT_texture_snorm)
 	{
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatA8B8G8R8SNormPack32);
-	}	
+	}
 
 	if (GLEW_EXT_texture_compression_s3tc)
 	{

@@ -106,7 +106,7 @@ EGL3Framebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 		return false;
 	}
 
-	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, _fbo));
+	glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 
 	auto sharedDepthStnecilTarget = framebufferDesc.getSharedDepthStencilTexture();
 	if (sharedDepthStnecilTarget)
@@ -158,7 +158,6 @@ EGL3Framebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE));
 
 	_framebufferDesc = framebufferDesc;
-
 	return EGL3Check::checkError();
 }
 

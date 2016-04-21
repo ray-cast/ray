@@ -304,9 +304,8 @@
     <technique name="DeferredDepthOnly">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
-
             <state name="vertex" value="DeferredDepthOnlyVS"/>
-            <state name="fragment" value="DeferredDepthOnlyPS" />
+            <state name="fragment" value="DeferredDepthOnlyPS"/>
         </pass>
     </technique>
     <technique name="DeferredDepthLinear">

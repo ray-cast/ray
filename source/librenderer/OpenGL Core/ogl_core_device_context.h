@@ -136,7 +136,7 @@ private:
 
 	OGLProgramPtr _shaderObject;
 
-	OGLPipelinePtr _pipeline;
+	OGLCorePipelinePtr _pipeline;
 	OGLCoreDescriptorSetPtr _descriptorSet;
 
 	OGLGraphicsStatePtr _state;

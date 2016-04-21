@@ -42,7 +42,7 @@ RenderSetting::RenderSetting() noexcept
 	: window(nullptr)
 	, width(0)
 	, height(0)
-	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
+	, deviceType(GraphicsDeviceType::GraphicsDeviceTypeOpenGLES3)
 	, swapInterval(GraphicsSwapInterval::GraphicsSwapIntervalFree)
 	, enableSSAO(false)
 	, enableSSGI(false)

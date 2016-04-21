@@ -176,11 +176,11 @@ MaterialMaker::instanceShader(MaterialManager& manager, MaterialDesc& material, 
 			deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES3 ||
 			deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES31)
 		{
-			hlsl2glslLangType = GLLang::LANG_DEFAULT;
+			hlsl2glslLangType = GLLang::LANG_ES_300;
 		}
 		else
 		{
-			hlsl2glslLangType = GLLang::LANG_ES_300;
+			hlsl2glslLangType = GLLang::LANG_DEFAULT;
 		}
 
 		GLSLShader shader;
@@ -196,7 +196,7 @@ MaterialMaker::instanceShader(MaterialManager& manager, MaterialDesc& material, 
 
 		FreeGLSLShader(&shader);
 
-		if (hlsl2glslLangType == GLLang::LANG_ES_100 ||
+		/*if (hlsl2glslLangType == GLLang::LANG_ES_100 ||
 			hlsl2glslLangType == GLLang::LANG_ES_300 ||
 			hlsl2glslLangType == GLLang::LANG_ES_310)
 		{
@@ -224,7 +224,7 @@ MaterialMaker::instanceShader(MaterialManager& manager, MaterialDesc& material, 
 					glslopt_cleanup(ctx);
 				}
 			}
-		}
+		}*/
 	}
 	else
 	{

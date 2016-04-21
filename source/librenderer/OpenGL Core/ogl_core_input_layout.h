@@ -51,12 +51,6 @@ public:
 	bool setup(const GraphicsInputLayoutDesc& desc) noexcept;
 	void close() noexcept;
 
-	GLuint getInstanceID() const noexcept;
-
-	void bindVbo(OGLCoreGraphicsDataPtr vbo, GLuint slot) noexcept;
-	void bindIbo(OGLCoreGraphicsDataPtr ibo) noexcept;
-	void bindLayout(OGLProgramPtr program) noexcept;
-
 	const GraphicsInputLayoutDesc& getGraphicsInputLayoutDesc() const noexcept;
 
 private:
@@ -69,10 +63,6 @@ private:
 	OGLCoreInputLayout& operator=(const OGLCoreInputLayout&) noexcept = delete;
 
 private:
-	GLuint _vao;
-	GLuint _vbo;
-	GLuint _ibo;
-	GraphicsProgramPtr _program;
 	GraphicsInputLayoutDesc _inputLayoutDesc;
 	GraphicsDeviceWeakPtr _device;
 };

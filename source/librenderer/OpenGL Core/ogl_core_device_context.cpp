@@ -40,9 +40,9 @@
 #include "ogl_core_input_layout.h"
 #include "ogl_core_graphics_data.h"
 #include "ogl_core_descriptor.h"
+#include "ogl_core_pipeline.h"
 #include "ogl_state.h"
 #include "ogl_shader.h"
-#include "ogl_pipeline.h"
 #include "ogl_sampler.h"
 #include "ogl_swapchain.h"
 
@@ -272,7 +272,7 @@ void
 OGLCoreDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
 	assert(pipeline);
-	assert(pipeline->isInstanceOf<OGLPipeline>());
+	assert(pipeline->isInstanceOf<OGLCorePipeline>());
 	assert(_glcontext->getActive());
 
 	if (_pipeline != pipeline)
@@ -295,16 +295,10 @@ OGLCoreDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 			_shaderObject->apply();
 		}
 
-		auto inputLayout = pipelineDesc.getGraphicsInputLayout()->downcast<OGLCoreInputLayout>();
-		if (_inputLayout != inputLayout)
-		{
-			_inputLayout = inputLayout;
-			_inputLayout->bindLayout(_shaderObject);
+		_pipeline = pipeline->downcast<OGLCorePipeline>();
+		_pipeline->apply();
 
-			_needUpdateLayout = true;
-		}
-
-		_pipeline = pipeline->downcast<OGLPipeline>();
+		_needUpdateLayout = true;
 	}
 }
 
@@ -418,16 +412,16 @@ OGLCoreDeviceContext::getIndexBufferData() const noexcept
 void
 OGLCoreDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 {
-	assert(_vbo && _inputLayout);
+	assert(_vbo && _pipeline);
 	assert(_glcontext->getActive());
 
 	if (_needUpdateLayout)
 	{
 		if (_vbo)
-			_inputLayout->bindVbo(_vbo, 0);
+			_pipeline->bindVbo(_vbo, 0);
 
 		if (_ibo)
-			_inputLayout->bindIbo(_ibo);
+			_pipeline->bindIbo(_ibo);
 
 		_needUpdateLayout = false;
 	}

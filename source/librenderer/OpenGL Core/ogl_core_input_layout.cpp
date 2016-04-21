@@ -43,9 +43,6 @@ _NAME_BEGIN
 __ImplementSubClass(OGLCoreInputLayout, GraphicsInputLayout, "OGLCoreInputLayout")
 
 OGLCoreInputLayout::OGLCoreInputLayout() noexcept
-	: _vao(GL_NONE)
-	, _vbo(GL_NONE)
-	, _ibo(GL_NONE)
 {
 }
 
@@ -57,35 +54,6 @@ OGLCoreInputLayout::~OGLCoreInputLayout() noexcept
 bool
 OGLCoreInputLayout::setup(const GraphicsInputLayoutDesc& inputLayout) noexcept
 {
-	assert(!_vao);
-
-	auto& component = inputLayout.getGraphicsVertexLayouts();
-	for (auto& it : component)
-	{
-		auto& semantic = it.getSemantic();
-		if (semantic.empty())
-		{
-			GL_PLATFORM_LOG("Empty semantic");
-			return false;
-		}
-
-		for (auto& ch : semantic)
-		{
-			if (ch < 'a' && ch > 'z')
-			{
-				GL_PLATFORM_LOG("Error semantic describe : %s", semantic);
-				return false;
-			}
-		}
-	}
-
-	glCreateVertexArrays(1, &_vao);
-	if (_vao == GL_NONE)
-	{
-		GL_PLATFORM_LOG("glCreateVertexArrays() fail");
-		return false;
-	}
-
 	_inputLayoutDesc = inputLayout;
 	return true;
 }
@@ -93,71 +61,12 @@ OGLCoreInputLayout::setup(const GraphicsInputLayoutDesc& inputLayout) noexcept
 void
 OGLCoreInputLayout::close() noexcept
 {
-	if (_vao != GL_NONE)
-	{
-		glDeleteVertexArrays(1, &_vao);
-		_vao = GL_NONE;
-	}
 }
 
 const GraphicsInputLayoutDesc&
 OGLCoreInputLayout::getGraphicsInputLayoutDesc() const noexcept
 {
 	return _inputLayoutDesc;
-}
-
-void
-OGLCoreInputLayout::bindLayout(OGLProgramPtr program) noexcept
-{
-	glBindVertexArray(_vao);
-
-	if (_program != program)
-	{
-		GLuint offset = 0;
-
-		auto& components = _inputLayoutDesc.getGraphicsVertexLayouts();
-		for (auto& it : components)
-		{
-			GLuint attribIndex = GL_INVALID_INDEX;
-			GLenum type = OGLTypes::asVertexFormat(it.getVertexFormat());
-
-			auto& attributes = program->getActiveAttributes();
-			for (auto& attrib : attributes)
-			{
-				if (attrib->getSemanticIndex() == it.getSemanticIndex() && attrib->getSemantic() == it.getSemantic())
-				{
-					attribIndex = attrib->downcast<OGLGraphicsAttribute>()->getBindingPoint();
-					break;
-				}
-			}
-
-			if (attribIndex != GL_INVALID_INDEX)
-			{
-				glEnableVertexArrayAttrib(_vao, attribIndex);
-				glVertexArrayAttribBinding(_vao, attribIndex, 0);
-				glVertexArrayAttribFormat(_vao, attribIndex, it.getVertexCount(), type, GL_FALSE, offset);
-			}
-
-			offset += it.getVertexSize();
-		}
-
-		_program = program;
-	}
-}
-
-void
-OGLCoreInputLayout::bindVbo(OGLCoreGraphicsDataPtr vbo, GLuint slot) noexcept
-{
-	assert(vbo);
-	GLuint stride = vbo->getGraphicsDataDesc().getStride();
-	glVertexArrayVertexBuffer(_vao, slot, vbo->getInstanceID(), 0, stride);
-}
-
-void
-OGLCoreInputLayout::bindIbo(OGLCoreGraphicsDataPtr ibo) noexcept
-{
-	assert(ibo);
-	glVertexArrayElementBuffer(_vao, ibo->getInstanceID());
 }
 
 void

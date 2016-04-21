@@ -38,9 +38,6 @@
 #include "ogl_state.h"
 #include "ogl_shader.h"
 #include "ogl_input_layout.h"
-#include "ogl_core_input_layout.h"
-#include "ogl_core_input_layout.h"
-#include "ogl_core_descriptor.h"
 #include "ogl_descriptor_set.h"
 
 _NAME_BEGIN
@@ -65,7 +62,7 @@ OGLPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	assert(pipelineDesc.getGraphicsDescriptorSetLayout());
 	assert(pipelineDesc.getGraphicsState()->isInstanceOf<OGLGraphicsState>());
 	assert(pipelineDesc.getGraphicsProgram()->isInstanceOf<OGLProgram>());
-	assert(pipelineDesc.getGraphicsInputLayout()->isInstanceOf<OGLInputLayout>() || pipelineDesc.getGraphicsInputLayout()->isInstanceOf<OGLCoreInputLayout>());
+	assert(pipelineDesc.getGraphicsInputLayout()->isInstanceOf<OGLInputLayout>());
 	assert(pipelineDesc.getGraphicsDescriptorSetLayout()->isInstanceOf<OGLDescriptorSetLayout>());
 	_pipelineDesc = pipelineDesc;
 	return true;

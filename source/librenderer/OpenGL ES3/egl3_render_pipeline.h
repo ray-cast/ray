@@ -51,6 +51,11 @@ public:
 	bool setup(const GraphicsPipelineDesc& pipelineDesc) noexcept;
 	void close() noexcept;
 
+	void bindVbo(const EGL3GraphicsDataPtr& vbo, GLuint bindingPoint) noexcept;
+	void bindIbo(const EGL3GraphicsDataPtr& ibo) noexcept;
+
+	void apply() noexcept;
+
 	const GraphicsPipelineDesc& getGraphicsPipelineDesc() const noexcept;
 
 private:
@@ -63,6 +68,7 @@ private:
 	EGL3RenderPipeline& operator=(const EGL3RenderPipeline&) noexcept = delete;
 
 private:
+	GLuint _vao;
 	GraphicsPipelineDesc _pipelineDesc;
 	GraphicsDeviceWeakPtr _device;
 };

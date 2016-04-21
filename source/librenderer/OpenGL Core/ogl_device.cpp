@@ -53,6 +53,7 @@
 #include "ogl_core_input_layout.h"
 #include "ogl_core_descriptor.h"
 #include "ogl_core_graphics_data.h"
+#include "ogl_core_pipeline.h"
 
 _NAME_BEGIN
 
@@ -243,10 +244,20 @@ OGLDevice::createProgram(const GraphicsProgramDesc& desc) noexcept
 GraphicsPipelinePtr
 OGLDevice::createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept
 {
-	auto pipeline = std::make_shared<OGLPipeline>();
-	pipeline->setDevice(this->downcast<OGLDevice>());
-	if (pipeline->setup(desc))
-		return pipeline;
+	if (_deviceDesc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
+	{
+		auto pipeline = std::make_shared<OGLPipeline>();
+		pipeline->setDevice(this->downcast<OGLDevice>());
+		if (pipeline->setup(desc))
+			return pipeline;
+	}
+	else
+	{
+		auto pipeline = std::make_shared<OGLCorePipeline>();
+		pipeline->setDevice(this->downcast<OGLDevice>());
+		if (pipeline->setup(desc))
+			return pipeline;
+	}
 	return nullptr;
 }
 

@@ -311,20 +311,12 @@ VulkanShader::close() noexcept
 		vkDestroyShaderModule(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkShader, nullptr);
 		_vkShader = VK_NULL_HANDLE;
 	}
-
-	_glsl.clear();
 }
 
 VkShaderModule
 VulkanShader::getShaderModule() const noexcept
 {
 	return _vkShader;
-}
-
-const std::string&
-VulkanShader::getGlslCodes() const noexcept
-{
-	return _glsl;
 }
 
 void

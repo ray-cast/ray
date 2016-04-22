@@ -46,7 +46,7 @@ GraphicsTextureDesc::GraphicsTextureDesc() noexcept
 	, _layerBase(0)
 	, _layer(1)
 	, _mipBase(0)
-	, _mipLevel(0)
+	, _mipLevel(1)
 	, _format(GraphicsFormat::GraphicsFormatUndefined)
 	, _dim(GraphicsTextureDim::GraphicsTextureDim2D)
 	, _filter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear)

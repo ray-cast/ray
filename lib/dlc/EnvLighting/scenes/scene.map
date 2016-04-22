@@ -9,7 +9,7 @@
             <attribute aperture="45.0"/>
             <attribute znear="0.1"/>
             <attribute zfar="1000.0"/>
-            <attribute flags="screen |skylighting|shading"/>
+            <attribute flags="screen|skylighting|shading"/>
             <attribute skydiffuse="dlc:EnvLighting/texture/sky_diff.dds"/>
             <attribute skyspecular="dlc:EnvLighting/texture/sky_spec.dds"/>
         </component>
@@ -188,7 +188,7 @@
         <attribute name="sun"/>
         <attribute position="0, 50, -25"/>
         <attribute rotate="45, 0, 0"/>
-        <attribute active="true"/>
+        <attribute active="false"/>
         <component class="Light">
             <attribute type="sun"/>
             <attribute color="1.0,1.0,1.0"/>

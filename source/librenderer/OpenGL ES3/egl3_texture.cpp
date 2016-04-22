@@ -184,7 +184,7 @@ bool
 EGL3Texture::applyMipmapLimit(GLenum target, std::uint32_t min, std::uint32_t count) noexcept
 {
 	GL_CHECK(glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, min));
-	GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, min + count));
+	GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, min + count - 1));
 	return true;
 }
 

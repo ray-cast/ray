@@ -224,7 +224,8 @@ CameraComponent::setSkyLightMap(const std::string& texture) noexcept
 {
 	if (_skyMap != texture)
 	{
-		_loadSkybox(texture);
+		if (this->getCameraRenderFlags() & CameraRenderFlagBits::CameraRenderSkyboxBit)
+			_loadSkybox(texture);
 		_skyMap = texture;
 	}
 }
@@ -240,7 +241,8 @@ CameraComponent::setSkyLightDiffuse(const std::string& diffuse) noexcept
 {
 	if (_skyDiffuse != diffuse)
 	{
-		_loadSkyDiffuse(diffuse);
+		if (this->getCameraRenderFlags() & CameraRenderFlagBits::CameraRenderSkyLightingBit)
+			_loadSkyDiffuse(diffuse);
 		_skyDiffuse = diffuse;
 	}
 }
@@ -256,7 +258,8 @@ CameraComponent::setSkyLightSpecular(const std::string& specular) noexcept
 {
 	if (_skySpecular != specular)
 	{
-		_loadSkySpecular(specular);
+		if (this->getCameraRenderFlags() & CameraRenderFlagBits::CameraRenderSkyLightingBit)
+			_loadSkySpecular(specular);
 		_skySpecular = specular;
 	}
 }
@@ -424,7 +427,7 @@ CameraComponent::_loadSkySpecular(const std::string& texture) noexcept
 		_camera->setSkyLightSpecular(nullptr);
 		return true;
 	}
-		
+	
 	auto specular = RenderSystem::instance()->createTexture(texture, 
 		GraphicsTextureDim::GraphicsTextureDimCube, 
 		GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear);

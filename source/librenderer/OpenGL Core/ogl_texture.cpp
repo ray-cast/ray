@@ -89,8 +89,10 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	if (!applySamplerAnis(target, textureDesc.getSamplerAnis()))
 		return false;
 
-	const char* stream = (const char*)textureDesc.getStream();
+	if (!applyMipmapLimit(target, mipBase, mipLevel))
+		return false;
 
+	const char* stream = (const char*)textureDesc.getStream();
 	if (OGLTypes::isCompressedTexture(textureDesc.getTexFormat()))
 	{
 		std::size_t offset = 0;
@@ -112,39 +114,55 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	{
 		GLenum format = OGLTypes::asTextureFormat(textureDesc.getTexFormat());
 		GLenum type = OGLTypes::asTextureType(textureDesc.getTexFormat());
+		
+		GLsizei offset = 0;
+		GLsizei pixelSize = stream ? OGLTypes::getFormatNum(format) : 1;
 
-		switch (target)
+		GLenum cubeFace[] = 
 		{
-		case GL_TEXTURE_2D:
-		case GL_TEXTURE_2D_MULTISAMPLE:
-			glTexImage2D(target, mipLevel, internalFormat, w, h, 0, format, type, stream);
-			break;
-		case GL_TEXTURE_2D_ARRAY:
-		case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
-			glTexImage3D(target, mipLevel, internalFormat, w, h, depth, 0, format, type, stream);
-			break;
-		case GL_TEXTURE_3D:
-			glTexImage3D(target, mipLevel, internalFormat, w, h, depth, 0, format, type, stream);
-			break;
-		case GL_TEXTURE_CUBE_MAP:
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, mipLevel, internalFormat, w, h, 0, format, type, stream);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, mipLevel, internalFormat, w, h, 0, format, type, stream);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, mipLevel, internalFormat, w, h, 0, format, type, stream);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, mipLevel, internalFormat, w, h, 0, format, type, stream);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, mipLevel, internalFormat, w, h, 0, format, type, stream);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, mipLevel, internalFormat, w, h, 0, format, type, stream);
-			break;
-		case GL_TEXTURE_CUBE_MAP_ARRAY:
-			glTexImage3D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, mipLevel, internalFormat, w, h, depth, 0, format, type, stream);
-			glTexImage3D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, mipLevel, internalFormat, w, h, depth, 0, format, type, stream);
-			glTexImage3D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, mipLevel, internalFormat, w, h, depth, 0, format, type, stream);
-			glTexImage3D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, mipLevel, internalFormat, w, h, depth, 0, format, type, stream);
-			glTexImage3D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, mipLevel, internalFormat, w, h, depth, 0, format, type, stream);
-			glTexImage3D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, mipLevel, internalFormat, w, h, depth, 0, format, type, stream);
-			break;
-		default:
-			assert(false);
-			break;
+			GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+			GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+			GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z 
+		};
+
+		for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
+		{
+			GLsizei mipSize = w * h * pixelSize;
+			GLsizei layerBase = textureDesc.getLayerBase();
+			GLsizei layerLevel = textureDesc.getLayerNums();
+
+			for (GLsizei layer = layerBase; layer < layerBase + layerLevel; layer++)
+			{
+				if (target == GL_TEXTURE_2D ||
+					target == GL_TEXTURE_2D_MULTISAMPLE)
+				{
+					glTexImage2D(target, mip, internalFormat, w, h, 0, format, type, stream ? stream + offset : nullptr);
+				}
+				else
+				{
+					if (target == GL_TEXTURE_CUBE_MAP_ARRAY ||
+						target == GL_TEXTURE_CUBE_MAP)
+					{
+						for (GLsizei face = 0; face < 6; face++)
+						{
+							if (target == GL_TEXTURE_CUBE_MAP)
+								glTexImage2D(cubeFace[face], mip, internalFormat, w, h, 0, format, type, stream ? (char*)stream + offset : nullptr);
+							else
+								glTexImage3D(cubeFace[face], mip, internalFormat, w, h, layer, 0, format, type, stream ? (char*)stream + offset : nullptr);
+
+							offset += mipSize;
+						}
+					}
+					else
+					{
+						glTexImage3D(target, mip, internalFormat, w, h, depth * layer, 0, format, type, stream ? (char*)stream + offset : nullptr);
+						offset += mipSize;
+					}
+				}
+			}
+
+			w = std::max(w >> 1, 1);
+			h = std::max(h >> 1, 1);
 		}
 	}
 
@@ -182,7 +200,7 @@ bool
 OGLTexture::applyMipmapLimit(GLenum target, std::uint32_t min, std::uint32_t count) noexcept
 {
 	glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, min);
-	glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, min + count);
+	glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, min + count - 1);
 	return true;
 }
 
@@ -194,6 +212,7 @@ OGLTexture::applySamplerWrap(GLenum target, GraphicsSamplerWrap wrap) noexcept
 	{
 		glTexParameteri(target, GL_TEXTURE_WRAP_S, glwrap);
 		glTexParameteri(target, GL_TEXTURE_WRAP_T, glwrap);
+		glTexParameteri(target, GL_TEXTURE_WRAP_R, glwrap);
 
 		return true;
 	}

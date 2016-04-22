@@ -76,7 +76,7 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	GLsizei depth = (GLsizei)textureDesc.getDepth();
 
 	GLsizei mipBase = textureDesc.getMipBase();
-	GLsizei mipLevel = std::max((GLsizei)textureDesc.getMipLevel(), 1);
+	GLsizei mipLevel = textureDesc.getMipLevel();
 
 	if (!applySamplerWrap(textureDesc.getSamplerWrap()))
 		return false;
@@ -129,73 +129,40 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		{
 			GLenum format = OGLTypes::asTextureFormat(textureDesc.getTexFormat());
 			GLenum type = OGLTypes::asTextureType(textureDesc.getTexFormat());
-			std::size_t pixelSize = OGLTypes::getFormatNum(format);
+			
+			GLsizei offset = 0;
+			GLsizei pixelSize = OGLTypes::getFormatNum(format);
 
-			switch (target)
+			for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
 			{
-			case GL_TEXTURE_2D:
-			case GL_TEXTURE_2D_MULTISAMPLE:
+				GLsizei mipSize = w * h * pixelSize;
+				GLsizei layerBase = textureDesc.getLayerBase() + 1;
+				GLsizei layerLevel = textureDesc.getLayerNums();
+
+				for (GLsizei layer = layerBase; layer < layerBase + layerLevel; layer++)
 				{
-					GLsizei offset = 0;
-					for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
+					if (target == GL_TEXTURE_2D || target == GL_TEXTURE_2D_MULTISAMPLE)
 					{
 						glTextureSubImage2D(_texture, mip, 0, 0, w, h, format, type, (char*)stream + offset);
-
-						GLsizei mipSize = w * h * pixelSize;
-						w = std::max(w >> 1, 1);
-						h = std::max(h >> 1, 1);
-
 						offset += mipSize;
 					}
-				}				
-				break;
-			case GL_TEXTURE_3D:
-			case GL_TEXTURE_CUBE_MAP:
-				{
-					GLsizei offset = 0;
-					GLsizei depthScale = target == GL_TEXTURE_CUBE_MAP ? 6 : depth;
-
-					for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
+					else
 					{
-						glTextureSubImage3D(_texture, mip, 0, 0, 0, w, h, depthScale, format, type, (char*)stream + offset);
-
-						GLsizei mipSize = w * h * pixelSize * depthScale;
-						w = std::max(w >> 1, 1);
-						h = std::max(h >> 1, 1);
-
-						offset += mipSize;
-					}
-				}
-				break;
-			case GL_TEXTURE_2D_ARRAY:
-			case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
-			case GL_TEXTURE_CUBE_MAP_ARRAY:
-				{
-					GLsizei offset = 0;
-					GLsizei depthScale = target == GL_TEXTURE_CUBE_MAP_ARRAY ? 6 : 1;
-
-					for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
-					{
-						GLsizei layerBase = textureDesc.getLayerBase() + 1;
-						GLsizei layerLevel = textureDesc.getLayerNums();
-
-						for (GLsizei layer = layerBase; layer < layerBase + layerLevel; layer++)
+						if (target == GL_TEXTURE_CUBE_MAP || target == GL_TEXTURE_CUBE_MAP_ARRAY)
 						{
-							glTextureSubImage3D(_texture, mip, 0, 0, 0, w, h, depthScale * layer, format, type, (char*)stream + offset);
-
-							GLsizei mipSize = w * h * pixelSize * depthScale;
-							w = std::max(w >> 1, 1);
-							h = std::max(h >> 1, 1);
-
-							offset += mipSize;
+							glTextureSubImage3D(_texture, mip, 0, 0, 0, w, h, 6 * layer, format, type, (char*)stream + offset);
+							offset += mipSize * 6;
+						}
+						else
+						{
+							glTextureSubImage3D(_texture, mip, 0, 0, 0, w, h, depth * layer, format, type, (char*)stream + offset);
+							offset += mipSize * depth;
 						}
 					}
+
+					w = std::max(w >> 1, 1);
+					h = std::max(h >> 1, 1);
 				}
-				break;
-			break;
-			default:
-				assert(false);
-				break;
 			}
 		}
 	}
@@ -232,7 +199,7 @@ bool
 OGLCoreTexture::applyMipmapLimit(std::uint32_t min, std::uint32_t count) noexcept
 {
 	glTextureParameteri(_texture, GL_TEXTURE_BASE_LEVEL, min);
-	glTextureParameteri(_texture, GL_TEXTURE_MAX_LEVEL, min + count);
+	glTextureParameteri(_texture, GL_TEXTURE_MAX_LEVEL, min + count - 1);
 	return true;
 }
 

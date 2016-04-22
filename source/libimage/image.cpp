@@ -128,7 +128,7 @@ Image::_init() noexcept
 	_imageFormat = ImageFormat::ImageFormatUnknow;
 	_imageType = ImageType::ImageTypeUnknown;
 	_data = nullptr;
-	_mipLevel = 0;
+	_mipLevel = 1;
 }
 
 void

@@ -229,7 +229,7 @@ RenderPipelineDevice::createTexture(const std::string& name, GraphicsTextureDim 
 			textureDesc.setTexFormat(format);
 			textureDesc.setStream(image.data());
 			textureDesc.setStreamSize(image.size());
-			textureDesc.setMipLevel(image.getMipLevel());
+			textureDesc.setMipLevel(std::max(image.getMipLevel(), (std::uint8_t)1));
 			textureDesc.setSamplerFilter(filter);
 
 			return this->createTexture(textureDesc);

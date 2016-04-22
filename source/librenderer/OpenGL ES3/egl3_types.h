@@ -397,7 +397,8 @@ public:
 	static GLenum asFillMode(GraphicsPolygonMode mode) noexcept;
 	static GLenum asStencilOperation(GraphicsStencilOp stencilop) noexcept;
 	static GLenum asSamplerWrap(GraphicsSamplerWrap wrap) noexcept;
-	static GLenum asSamplerFilter(GraphicsSamplerFilter filter) noexcept;
+	static GLenum asSamplerMinFilter(GraphicsSamplerFilter filter) noexcept;
+	static GLenum asSamplerMagFilter(GraphicsSamplerFilter filter) noexcept;
 
 	static GLboolean isSupportFeature(EGL3Features features) noexcept;
 	static GLboolean isStencilFormat(GraphicsFormat format) noexcept;

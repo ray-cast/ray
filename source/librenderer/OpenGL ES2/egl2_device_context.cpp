@@ -790,8 +790,8 @@ EGL2DeviceContext::initTextureSupports() noexcept
 
 	if (EGL2Types::isSupportFeature(EGL2Features::EGL2_EXT_texture_compression_s3tc))
 	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC2UNormBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC3UNormBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatBC5UNormBlock);
 	}
 
 	if (EGL2Types::isSupportFeature(EGL2Features::EGL2_KHR_texture_compression_astc_ldr))

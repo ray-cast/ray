@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<scene>
+    <attribute name="EnvLighting"/>
+    <object>
+        <attribute name="first_person_camera"/>
+        <attribute position="0,0,-15" />
+        <attribute active="true"/>
+        <component class="Camera">
+            <attribute aperture="45.0"/>
+            <attribute znear="0.1"/>
+            <attribute zfar="1000.0"/>
+            <attribute flags="screen |skylighting|shading"/>
+            <attribute skydiffuse="dlc:EnvLighting/texture/sky_diff.dds"/>
+            <attribute skyspecular="dlc:EnvLighting/texture/sky_spec.dds"/>
+        </component>
+        <component class="FirstPersonCamera">
+        </component>
+    </object>
+    <object>
+        <attribute name="sky"/>
+        <attribute position="0,0,0" />
+        <attribute scale="1,1,1" />
+        <attribute active="true"/>
+        <component class="Mesh">
+            <attribute name="dlc:EnvLighting/models/sphere.pmx"/>
+        </component>
+        <component class="MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:EnvLighting/materials/sky.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere1"/>
+        <attribute position="0,0,-2.25" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component class="Mesh">
+            <attribute name="dlc:EnvLighting/models/sphere.pmx"/>
+        </component>
+        <component class="MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:EnvLighting/materials/sphere1.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere2"/>
+        <attribute position="0,0,-1.75" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component class="Mesh">
+            <attribute name="dlc:EnvLighting/models/sphere.pmx"/>
+        </component>
+        <component class="MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:EnvLighting/materials/sphere2.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere3"/>
+        <attribute position="0,0,-1.25" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component class="Mesh">
+            <attribute name="dlc:EnvLighting/models/sphere.pmx"/>
+        </component>
+        <component class="MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:EnvLighting/materials/sphere3.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere4"/>
+        <attribute position="0,0,-0.75" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component class="Mesh">
+            <attribute name="dlc:EnvLighting/models/sphere.pmx"/>
+        </component>
+        <component class="MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:EnvLighting/materials/sphere4.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere5"/>
+        <attribute position="0,0,-0.25" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component class="Mesh">
+            <attribute name="dlc:EnvLighting/models/sphere.pmx"/>
+        </component>
+        <component class="MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:EnvLighting/materials/sphere5.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere6"/>
+        <attribute position="0,0,0.25" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component class="Mesh">
+            <attribute name="dlc:EnvLighting/models/sphere.pmx"/>
+        </component>
+        <component class="MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:EnvLighting/materials/sphere6.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere7"/>
+        <attribute position="0,0,0.75" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component class="Mesh">
+            <attribute name="dlc:EnvLighting/models/sphere.pmx"/>
+        </component>
+        <component class="MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:EnvLighting/materials/sphere7.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere8"/>
+        <attribute position="0,0,1.25" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component class="Mesh">
+            <attribute name="dlc:EnvLighting/models/sphere.pmx"/>
+        </component>
+        <component class="MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:EnvLighting/materials/sphere8.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere9"/>
+        <attribute position="0,0,1.75" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component class="Mesh">
+            <attribute name="dlc:EnvLighting/models/sphere.pmx"/>
+        </component>
+        <component class="MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:EnvLighting/materials/sphere9.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere10"/>
+        <attribute position="0,0,2.25" />
+        <attribute scale="0.001,0.001,0.001" />
+        <attribute active="true"/>
+        <component class="Mesh">
+            <attribute name="dlc:EnvLighting/models/sphere.pmx"/>
+        </component>
+        <component class="MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:EnvLighting/materials/sphere10.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sphere11"/>
+        <attribute position="0,0,5" />
+        <attribute scale="0.005,0.005,0.005" />
+        <attribute active="true"/>
+        <component class="Mesh">
+            <attribute name="dlc:EnvLighting/models/sphere.pmx"/>
+        </component>
+        <component class="MeshRender">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:EnvLighting/materials/sphere10.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sun"/>
+        <attribute position="0, 50, -25"/>
+        <attribute rotate="45, 0, 0"/>
+        <attribute active="true"/>
+        <component class="Light">
+            <attribute type="sun"/>
+            <attribute color="1.0,1.0,1.0"/>
+            <attribute range="200.0"/>
+            <attribute intensity="2.0"/>
+            <attribute shadow="false"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="light"/>
+        <attribute position="0, 0, 0"/>
+        <attribute rotate="180, 0, 0"/>
+        <attribute active="false"/>
+        <component class="Light">
+            <attribute type="ambient"/>
+            <attribute color="1.0,1.0,1.0"/>
+            <attribute range="200.0"/>
+            <attribute intensity="0.1"/>
+        </component>
+    </object>
+</scene>

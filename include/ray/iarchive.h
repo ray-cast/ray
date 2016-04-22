@@ -74,20 +74,20 @@ public:
 
 	std::string getText() const noexcept;
 
-	iarchive& getValue(const std::string& name, bool& result) noexcept;
-	iarchive& getValue(const std::string& name, int1& result) noexcept;
-	iarchive& getValue(const std::string& name, int2& result) noexcept;
-	iarchive& getValue(const std::string& name, int3& result) noexcept;
-	iarchive& getValue(const std::string& name, int4& result) noexcept;
-	iarchive& getValue(const std::string& name, uint1& result) noexcept;
-	iarchive& getValue(const std::string& name, uint2& result) noexcept;
-	iarchive& getValue(const std::string& name, uint3& result) noexcept;
-	iarchive& getValue(const std::string& name, uint4& result) noexcept;
-	iarchive& getValue(const std::string& name, float1& result) noexcept;
-	iarchive& getValue(const std::string& name, float2& result) noexcept;
-	iarchive& getValue(const std::string& name, float3& result) noexcept;
-	iarchive& getValue(const std::string& name, float4& result) noexcept;
-	iarchive& getValue(const std::string& name, std::string& result) noexcept;
+	bool getValue(const std::string& name, bool& result) noexcept;
+	bool getValue(const std::string& name, int1& result) noexcept;
+	bool getValue(const std::string& name, int2& result) noexcept;
+	bool getValue(const std::string& name, int3& result) noexcept;
+	bool getValue(const std::string& name, int4& result) noexcept;
+	bool getValue(const std::string& name, uint1& result) noexcept;
+	bool getValue(const std::string& name, uint2& result) noexcept;
+	bool getValue(const std::string& name, uint3& result) noexcept;
+	bool getValue(const std::string& name, uint4& result) noexcept;
+	bool getValue(const std::string& name, float1& result) noexcept;
+	bool getValue(const std::string& name, float2& result) noexcept;
+	bool getValue(const std::string& name, float3& result) noexcept;
+	bool getValue(const std::string& name, float4& result) noexcept;
+	bool getValue(const std::string& name, std::string& result) noexcept;
 
 	template<typename T>
 	T getValue(const std::string& name)

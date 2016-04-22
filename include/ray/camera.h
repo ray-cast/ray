@@ -86,17 +86,23 @@ public:
 	float3 screenToWorld(const float3& pos) const noexcept;
 	float3 screenToDirection(const float2& pos) const noexcept;
 
-	void setClearFlags(GraphicsClearFlags flags) noexcept;
-	GraphicsClearFlags getCameraFlags() const noexcept;
-
 	void setClearColor(const float4& color) noexcept;
 	const float4& getClearColor() const noexcept;
+
+	void setSkyLightMap(GraphicsTexturePtr texture) noexcept;
+	GraphicsTexturePtr getSkyLightMap() const noexcept;
+
+	void setSkyLightDiffuse(GraphicsTexturePtr diffuse) noexcept;
+	GraphicsTexturePtr getSkyLightDiffuse() const noexcept;
+
+	void setSkyLightSpecular(GraphicsTexturePtr specular) noexcept;
+	GraphicsTexturePtr getSkyLightSpecular() const noexcept;
 
 	void setCameraType(CameraType type) noexcept;
 	CameraType getCameraType() const noexcept;
 
-	void setCameraRender(CameraRender mode) noexcept;
-	CameraRender getCameraRender() const noexcept;
+	void setCameraRenderFlags(CameraRenderFlags flags) noexcept;
+	CameraRenderFlags getCameraRenderFlags() const noexcept;
 
 	void setCameraOrder(CameraOrder order) noexcept;
 	CameraOrder getCameraOrder() const noexcept;
@@ -129,11 +135,14 @@ private:
 	Viewport _viewport;
 
 	float4 _clearColor;
-	GraphicsClearFlags _clearFlags;
 
 	CameraType   _cameraType;
 	CameraOrder  _cameraOrder;
-	CameraRender _cameraRender;
+	CameraRenderFlags _cameraRenderFlags;
+
+	GraphicsTexturePtr _envMap;
+	GraphicsTexturePtr _envDiffuse;
+	GraphicsTexturePtr _envSpecular;
 
 	GraphicsFramebufferPtr _renderTexture;
 

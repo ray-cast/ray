@@ -194,12 +194,12 @@ EGL2Texture::applySamplerWrap(GLenum target, GraphicsSamplerWrap wrap) noexcept
 bool
 EGL2Texture::applySamplerFilter(GLenum target, GraphicsSamplerFilter filter) noexcept
 {
-	GLenum glfilter = EGL2Types::asSamplerFilter(filter);
-	if (glfilter != GL_INVALID_ENUM)
+	GLenum min = EGL2Types::asSamplerMinFilter(filter);
+	GLenum mag = EGL2Types::asSamplerMagFilter(filter);
+	if (min != GL_INVALID_ENUM && mag != GL_INVALID_ENUM)
 	{
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, glfilter));
-		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, glfilter));
-
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MIN_FILTER, min));
+		GL_CHECK(glTexParameteri(target, GL_TEXTURE_MAG_FILTER, mag));
 		return true;
 	}
 

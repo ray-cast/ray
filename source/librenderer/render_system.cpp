@@ -57,7 +57,10 @@ RenderSystem::setup(const RenderSetting& setting) noexcept
 
 	_pipelineManager = std::make_shared<RenderPipelineManager>();
 	if (!_pipelineManager->setup(setting))
+	{
+		this->close();
 		return false;
+	}
 
 	return true;
 }
@@ -94,12 +97,14 @@ RenderSystem::removeRenderScene(RenderScenePtr scene) noexcept
 void
 RenderSystem::setRenderSetting(const RenderSetting& setting) noexcept
 {
+	assert(_pipelineManager);
 	_pipelineManager->setRenderSetting(setting);
 }
 
 const RenderSetting&
 RenderSystem::getRenderSetting() const noexcept
 {
+	assert(_pipelineManager);
 	return _pipelineManager->getRenderSetting();
 }
 
@@ -223,10 +228,10 @@ RenderSystem::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim
 }
 
 GraphicsTexturePtr
-RenderSystem::createTexture(const std::string& name, GraphicsTextureDim dim) noexcept
+RenderSystem::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter) noexcept
 {
 	assert(_pipelineManager);
-	return _pipelineManager->createTexture(name, dim);
+	return _pipelineManager->createTexture(name, dim, filter);
 }
 
 MaterialPtr

@@ -1,0 +1,5 @@
+<?xml version='1.0'?>
+<material>
+    <attribute decal="dlc:EnvLighting/texture/sky.png"/>
+    <attribute shader="dlc:EnvLighting/fx/sky.fxml.o"/>
+</material>

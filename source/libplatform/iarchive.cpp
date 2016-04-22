@@ -108,102 +108,116 @@ iarchive::getText() const noexcept
 	return this->rdbuf()->getText();
 }
 
-iarchive&
+bool
 iarchive::getValue(const std::string& name, bool& result) noexcept
 {
-    this->rdbuf()->getValue(name, result);
-    return (*this);
+    if (!this->rdbuf()->getValue(name, result))
+		return false;
+    return true;
 }
 
-iarchive&
+bool
 iarchive::getValue(const std::string& name, int1& result) noexcept
 {
-    this->rdbuf()->getValue(name, result);
-    return (*this);
+    if (!this->rdbuf()->getValue(name, result))
+		return false;
+    return true;
 }
 
-iarchive&
+bool
 iarchive::getValue(const std::string& name, int2& result) noexcept
 {
-    this->rdbuf()->getValue(name, result);
-    return (*this);
+    if (!this->rdbuf()->getValue(name, result))
+		return false;
+    return true;
 }
 
-iarchive&
+bool
 iarchive::getValue(const std::string& name, int3& result) noexcept
 {
-    this->rdbuf()->getValue(name, result);
-    return (*this);
+    if (!this->rdbuf()->getValue(name, result))
+		return false;
+    return true;
 }
 
-iarchive&
+bool
 iarchive::getValue(const std::string& name, int4& result) noexcept
 {
-    this->rdbuf()->getValue(name, result);
-    return (*this);
+    if (!this->rdbuf()->getValue(name, result))
+		return false;
+    return true;
 }
 
-iarchive&
+bool
 iarchive::getValue(const std::string& name, uint1& result) noexcept
 {
-	this->rdbuf()->getValue(name, result);
-	return (*this);
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
 }
 
-iarchive&
+bool
 iarchive::getValue(const std::string& name, uint2& result) noexcept
 {
-	this->rdbuf()->getValue(name, result);
-	return (*this);
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
 }
 
-iarchive&
+bool
 iarchive::getValue(const std::string& name, uint3& result) noexcept
 {
-	this->rdbuf()->getValue(name, result);
-	return (*this);
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
 }
 
-iarchive&
+bool
 iarchive::getValue(const std::string& name, uint4& result) noexcept
 {
-	this->rdbuf()->getValue(name, result);
-	return (*this);
+	if (!this->rdbuf()->getValue(name, result))
+		return false;
+	return true;
 }
 
-iarchive&
+bool
 iarchive::getValue(const std::string& name, float1& result) noexcept
 {
-    this->rdbuf()->getValue(name, result);
-    return (*this);
+    if (!this->rdbuf()->getValue(name, result))
+		return false;
+    return true;
 }
 
-iarchive&
+bool
 iarchive::getValue(const std::string& name, float2& result) noexcept
 {
-    this->rdbuf()->getValue(name, result);
-    return (*this);
+    if (!this->rdbuf()->getValue(name, result))
+		return false;
+    return true;
 }
 
-iarchive&
+bool
 iarchive::getValue(const std::string& name, float3& result) noexcept
 {
-    this->rdbuf()->getValue(name, result);
-    return (*this);
+    if (!this->rdbuf()->getValue(name, result))
+		return false;
+    return true;
 }
 
-iarchive&
+bool
 iarchive::getValue(const std::string& name, float4& result) noexcept
 {
-    this->rdbuf()->getValue(name, result);
-    return (*this);
+    if (!this->rdbuf()->getValue(name, result))
+		return false;
+    return true;
 }
 
-iarchive&
+bool
 iarchive::getValue(const std::string& name, std::string& result) noexcept
 {
-    this->rdbuf()->getValue(name, result);
-    return (*this);
+    if (!this->rdbuf()->getValue(name, result))
+		return false;
+    return true;
 }
 
 _NAME_END

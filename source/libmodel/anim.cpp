@@ -409,7 +409,7 @@ AnimationProperty::updateIK(const IKAttr& ik) noexcept
 
 			Quaternion q0(rotationAxis, rotationAngle);
 			Quaternion q1 = bone.getRotation();
-			Quaternion qq = q1.cross(q0);
+			Quaternion qq = math::cross(q1, q0);
 
 			Matrix4x4 m;
 			m.makeRotate(qq);
@@ -537,7 +537,7 @@ AnimationProperty::interpolateMotion(Quaternion& rotation, Vector3& position, co
 		Quaternion r0 = anim0.getRotation();
 		Quaternion r1 = anim1.getRotation();
 
-		rotation.slerp(r0, r1, tr);
+		rotation = math::slerp(r0, r1, tr);
 	}
 }
 

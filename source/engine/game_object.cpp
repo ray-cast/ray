@@ -405,7 +405,7 @@ GameObject::setQuaternion(const Quaternion& quat) noexcept
 void
 GameObject::setQuaternionAccum(const Quaternion& quat) noexcept
 {
-	this->setQuaternion(quat.cross(_quat));
+	this->setQuaternion(math::cross(quat, _quat));
 }
 
 const Quaternion&
@@ -694,25 +694,31 @@ void
 GameObject::load(iarchive& reader) noexcept
 {
 	std::string name;
-	bool active = false;
-	int layer = 0;
-	float3 position = float3::Zero;
-	float3 scale = float3::One;
-	float3 rotate = float3::Zero;
+	bool active;
+	int layer;
+	float3 position;
+	float3 scale;
+	float3 rotate;
 
-	reader >> make_archive(name, "name");
-	reader >> make_archive(active, "active");
-	reader >> make_archive(layer, "layer");
-	reader >> make_archive(position, "position");
-	reader >> make_archive(scale, "scale");
 	reader >> make_archive(rotate, "rotate");
 
-	this->setName(name);
-	this->setActive(active);
-	this->setLayer(layer);
-	this->setTranslate(position);
-	this->setScale(scale);
-	this->setEulerAngles(EulerAngles(rotate));
+	if (reader.getValue("name", name))
+		this->setName(name);
+
+	if (reader.getValue("active", active))
+		this->setActive(active);
+
+	if (reader.getValue("layer", layer))
+		this->setLayer(layer);
+
+	if (reader.getValue("position", position))
+		this->setTranslate(position);
+
+	if (reader.getValue("scale", scale))
+		this->setScale(scale);
+
+	if (reader.getValue("rotate", rotate))
+		this->setEulerAngles(EulerAngles(rotate));
 }
 
 void 
@@ -807,9 +813,9 @@ GameObject::_updateTransform() const noexcept
 {
 	if (_needUpdates)
 	{
-		_right = _quat.rotate(Vector3::Right);
-		_up = _quat.rotate(Vector3::Up);
-		_forward = _quat.rotate(Vector3::Forward);
+		_right = math::rotate(_quat, Vector3::Right);
+		_up = math::rotate(_quat, Vector3::Up);
+		_forward = math::rotate(_quat, Vector3::Forward);
 
 		_transform.makeRotate(_forward, _up, _right);
 		_transform.scale(_scaling);

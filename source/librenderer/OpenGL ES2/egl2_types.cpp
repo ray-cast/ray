@@ -782,13 +782,13 @@ EGL2Types::asTextureInternalFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatBC1RGBSRGBBlock:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatBC1RGBAUNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
 	case GraphicsFormatBC1RGBASRGBBlock:	     internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatBC2UNormBlock:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatBC2UNormBlock:	         internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT; break;
 	case GraphicsFormatBC2SRGBBlock:	         internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatBC3UNormBlock:	         internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT; break;
+	case GraphicsFormatBC3UNormBlock:	         internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
 	case GraphicsFormatBC3SRGBBlock:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatBC4UNormBlock:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatBC4SNormBlock:	         internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatBC5UNormBlock:	         internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
+	case GraphicsFormatBC5UNormBlock:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatBC5SNormBlock:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatBC6HUFloatBlock:	         internalFormat = GL_INVALID_ENUM; break;
 	case GraphicsFormatBC6HSFloatBlock:	         internalFormat = GL_INVALID_ENUM; break;
@@ -965,7 +965,7 @@ EGL2Types::asSamplerWrap(GraphicsSamplerWrap wrap) noexcept
 }
 
 GLenum
-EGL2Types::asSamplerFilter(GraphicsSamplerFilter filter) noexcept
+EGL2Types::asSamplerMinFilter(GraphicsSamplerFilter filter) noexcept
 {
 	switch (filter)
 	{
@@ -975,6 +975,23 @@ EGL2Types::asSamplerFilter(GraphicsSamplerFilter filter) noexcept
 	case GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest: return GL_NEAREST_MIPMAP_NEAREST;
 	case GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest:  return GL_LINEAR_MIPMAP_NEAREST;
 	case GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear:   return GL_LINEAR_MIPMAP_LINEAR;
+	default:
+		GL_PLATFORM_ASSERT(false, "Invalid sampler filter");
+		return GL_INVALID_ENUM;
+	}
+}
+
+GLenum
+EGL2Types::asSamplerMagFilter(GraphicsSamplerFilter filter) noexcept
+{
+	switch (filter)
+	{
+	case GraphicsSamplerFilter::GraphicsSamplerFilterNearest:              return GL_NEAREST;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterLinear:               return GL_LINEAR;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapLinear:  return GL_NEAREST;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest: return GL_NEAREST;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest:  return GL_LINEAR;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear:   return GL_LINEAR;
 	default:
 		GL_PLATFORM_ASSERT(false, "Invalid sampler filter");
 		return GL_INVALID_ENUM;

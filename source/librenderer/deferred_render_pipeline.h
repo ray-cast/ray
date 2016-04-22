@@ -116,6 +116,7 @@ private:
 	MaterialTechPtr _deferredAmbientLight;
 	MaterialTechPtr _deferredShadingOpaques;
 	MaterialTechPtr _deferredShadingTransparents;
+	MaterialTechPtr _deferredShadingWithEnvLight;
 	MaterialTechPtr _deferredDebugLayer;
 	MaterialTechPtr _deferredCopyOnly;
 
@@ -124,7 +125,9 @@ private:
 	MaterialParamPtr _texDepth;
 	MaterialParamPtr _texLight;
 	MaterialParamPtr _texSource;
-	MaterialParamPtr _texEnvironmentMap;
+	MaterialParamPtr _texEnvDiffuse;
+	MaterialParamPtr _texEnvSpecular;
+	MaterialParamPtr _texEnvMipNumber;
 
 	MaterialParamPtr _eyePosition;
 	MaterialParamPtr _clipInfo;
@@ -192,7 +195,7 @@ private:
 	GraphicsTexturePtr _deferredDepthLinearMap;
 	GraphicsTexturePtr _deferredGraphicsMap;
 	GraphicsTexturePtr _deferredNormalMap;
-	GraphicsTexturePtr _deferredLightMap;
+	GraphicsTexturePtr _deferredLightingMap;
 	GraphicsTexturePtr _deferredShadingMap;
 	GraphicsTexturePtr _deferredSwapMap;
 

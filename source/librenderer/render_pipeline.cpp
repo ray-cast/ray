@@ -302,23 +302,46 @@ RenderPipeline::blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport
 void
 RenderPipeline::drawSphere(MaterialTechPtr tech, std::uint32_t layer) noexcept
 {
-	this->drawMesh(tech, _renderSphere, _renderSphereIndirect, layer);
+	this->drawMeshLayer(tech, _renderSphere, _renderSphereIndirect, layer);
 }
 
 void
 RenderPipeline::drawCone(MaterialTechPtr tech, std::uint32_t layer) noexcept
 {
-	this->drawMesh(tech, _renderCone, _renderConeIndirect, layer);
+	this->drawMeshLayer(tech, _renderCone, _renderConeIndirect, layer);
 }
 
 void
-RenderPipeline::drawScreenQuad(MaterialTechPtr tech, std::uint32_t layer) noexcept
+RenderPipeline::drawScreenQuad(MaterialTechPtr tech) noexcept
 {
-	this->drawMesh(tech, _renderScreenQuad, _renderScreenQuadIndirect, layer);
+	this->drawMesh(tech, _renderScreenQuad, _renderScreenQuadIndirect);
 }
 
 void
-RenderPipeline::drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable, std::uint32_t layer) noexcept
+RenderPipeline::drawScreenQuadLayer(MaterialTechPtr tech, std::uint32_t layer) noexcept
+{
+	this->drawMeshLayer(tech, _renderScreenQuad, _renderScreenQuadIndirect, layer);
+}
+
+void
+RenderPipeline::drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept
+{
+	_graphicsContext->setVertexBufferData(mesh->getVertexBuffer());
+	_graphicsContext->setIndexBufferData(mesh->getIndexBuffer());
+
+	auto& passList = tech->getPassList();
+	for (auto& pass : passList)
+	{
+		pass->update();
+
+		_graphicsContext->setRenderPipeline(pass->getRenderPipeline());
+		_graphicsContext->setDescriptorSet(pass->getDescriptorSet());
+		_graphicsContext->drawRenderMesh(renderable);
+	}
+}
+
+void
+RenderPipeline::drawMeshLayer(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable, std::uint32_t layer) noexcept
 {
 	_graphicsContext->setVertexBufferData(mesh->getVertexBuffer());
 	_graphicsContext->setIndexBufferData(mesh->getIndexBuffer());
@@ -479,10 +502,10 @@ RenderPipeline::createTexture(const GraphicsTextureDesc& desc) noexcept
 }
 
 GraphicsTexturePtr
-RenderPipeline::createTexture(const std::string& name, GraphicsTextureDim dim) noexcept
+RenderPipeline::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createTexture(name, dim);
+	return _pipelineDevice->createTexture(name, dim, filter);
 }
 
 GraphicsTexturePtr 

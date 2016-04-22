@@ -129,23 +129,68 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		{
 			GLenum format = OGLTypes::asTextureFormat(textureDesc.getTexFormat());
 			GLenum type = OGLTypes::asTextureType(textureDesc.getTexFormat());
-			
+			std::size_t pixelSize = OGLTypes::getFormatNum(format);
+
 			switch (target)
 			{
 			case GL_TEXTURE_2D:
 			case GL_TEXTURE_2D_MULTISAMPLE:
-				glTextureSubImage2D(_texture, 0, 0, 0, w, h, format, type, stream);
+				{
+					GLsizei offset = 0;
+					for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
+					{
+						glTextureSubImage2D(_texture, mip, 0, 0, w, h, format, type, (char*)stream + offset);
+
+						GLsizei mipSize = w * h * pixelSize;
+						w = std::max(w >> 1, 1);
+						h = std::max(h >> 1, 1);
+
+						offset += mipSize;
+					}
+				}				
+				break;
+			case GL_TEXTURE_3D:
+			case GL_TEXTURE_CUBE_MAP:
+				{
+					GLsizei offset = 0;
+					GLsizei depthScale = target == GL_TEXTURE_CUBE_MAP ? 6 : depth;
+
+					for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
+					{
+						glTextureSubImage3D(_texture, mip, 0, 0, 0, w, h, depthScale, format, type, (char*)stream + offset);
+
+						GLsizei mipSize = w * h * pixelSize * depthScale;
+						w = std::max(w >> 1, 1);
+						h = std::max(h >> 1, 1);
+
+						offset += mipSize;
+					}
+				}
 				break;
 			case GL_TEXTURE_2D_ARRAY:
 			case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
-				glTextureSubImage3D(_texture, 0, 0, 0, 0, w, h, depth, format, type, stream);
-				break;
-			case GL_TEXTURE_3D:
-				glTextureSubImage3D(_texture, 0, 0, 0, 0, w, h, depth, format, type, stream);
-				break;
-			case GL_TEXTURE_CUBE_MAP:
 			case GL_TEXTURE_CUBE_MAP_ARRAY:
-				glTextureSubImage3D(_texture, 0, 0, 0, 0, w, h, depth, format, type, stream);
+				{
+					GLsizei offset = 0;
+					GLsizei depthScale = target == GL_TEXTURE_CUBE_MAP_ARRAY ? 6 : 1;
+
+					for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
+					{
+						GLsizei layerBase = textureDesc.getLayerBase() + 1;
+						GLsizei layerLevel = textureDesc.getLayerNums();
+
+						for (GLsizei layer = layerBase; layer < layerBase + layerLevel; layer++)
+						{
+							glTextureSubImage3D(_texture, mip, 0, 0, 0, w, h, depthScale * layer, format, type, (char*)stream + offset);
+
+							GLsizei mipSize = w * h * pixelSize * depthScale;
+							w = std::max(w >> 1, 1);
+							h = std::max(h >> 1, 1);
+
+							offset += mipSize;
+						}
+					}
+				}
 				break;
 			break;
 			default:
@@ -210,11 +255,12 @@ OGLCoreTexture::applySamplerWrap(GraphicsSamplerWrap wrap) noexcept
 bool
 OGLCoreTexture::applySamplerFilter(GraphicsSamplerFilter filter) noexcept
 {
-	GLenum glfilter = OGLTypes::asSamplerFilter(filter);
-	if (glfilter != GL_INVALID_ENUM)
+	GLenum min = OGLTypes::asSamplerMinFilter(filter);
+	GLenum mag = OGLTypes::asSamplerMagFilter(filter);
+	if (min != GL_INVALID_ENUM && mag != GL_INVALID_ENUM)
 	{
-		glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, glfilter);
-		glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, glfilter);
+		glTextureParameteri(_texture, GL_TEXTURE_MIN_FILTER, min);
+		glTextureParameteri(_texture, GL_TEXTURE_MAG_FILTER, mag);
 		return true;
 	}
 

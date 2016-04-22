@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/camera.h>
+#include <ray/graphics_texture.h>
 
 _NAME_BEGIN
 
@@ -50,11 +51,10 @@ Camera::Camera() noexcept
 	, _znear(1.0f)
 	, _zfar(100.0f)
 	, _viewport(0, 0, 0, 0)
-	, _clearFlags(GraphicsClearFlags::GraphicsClearFlagsAll)
-	, _clearColor(float4::Zero)
+	, _clearColor(float4(0.1,0.1,0.1,1.0))
 	, _cameraType(CameraType::CameraTypePerspective)
 	, _cameraOrder(CameraOrder::CameraOrder3D)
-	, _cameraRender(CameraRender::CameraRenderScreen)
+	, _cameraRenderFlags(CameraRenderFlagBits::CameraRenderScreenBit | CameraRenderFlagBits::CameraRenderShadingBit)
 	, _needUpdateProject(true)
 	, _needUpdateViewProject(true)
 {
@@ -258,18 +258,6 @@ Camera::screenToDirection(const float2& pos) const noexcept
 }
 
 void
-Camera::setClearFlags(GraphicsClearFlags flags) noexcept
-{
-	_clearFlags = flags;
-}
-
-GraphicsClearFlags
-Camera::getCameraFlags() const noexcept
-{
-	return _clearFlags;
-}
-
-void
 Camera::setClearColor(const float4& color) noexcept
 {
 	_clearColor = color;
@@ -279,6 +267,44 @@ const float4&
 Camera::getClearColor() const noexcept
 {
 	return _clearColor;
+}
+
+void
+Camera::setSkyLightMap(GraphicsTexturePtr texture) noexcept
+{
+	_envMap = texture;
+}
+
+GraphicsTexturePtr
+Camera::getSkyLightMap() const noexcept
+{
+	return _envMap;
+}
+
+void 
+Camera::setSkyLightDiffuse(GraphicsTexturePtr diffuse) noexcept
+{
+	assert(!diffuse || diffuse->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube);
+	_envDiffuse = diffuse;
+}
+
+GraphicsTexturePtr
+Camera::getSkyLightDiffuse() const noexcept
+{
+	return _envDiffuse;
+}
+
+void 
+Camera::setSkyLightSpecular(GraphicsTexturePtr specular) noexcept
+{
+	assert(!specular || specular->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube);
+	_envSpecular = specular;
+}
+
+GraphicsTexturePtr 
+Camera::getSkyLightSpecular() const noexcept
+{
+	return _envSpecular;
 }
 
 void
@@ -301,9 +327,9 @@ Camera::setCameraOrder(CameraOrder order) noexcept
 }
 
 void
-Camera::setCameraRender(CameraRender render) noexcept
+Camera::setCameraRenderFlags(CameraRenderFlags flags) noexcept
 {
-	_cameraRender = render;
+	_cameraRenderFlags = flags;
 }
 
 const Viewport&
@@ -324,10 +350,10 @@ Camera::getCameraOrder() const noexcept
 	return _cameraOrder;
 }
 
-CameraRender
-Camera::getCameraRender() const noexcept
+CameraRenderFlags
+Camera::getCameraRenderFlags() const noexcept
 {
-	return _cameraRender;
+	return _cameraRenderFlags;
 }
 
 void

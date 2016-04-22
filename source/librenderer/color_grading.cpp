@@ -78,18 +78,14 @@ ColorGrading::getColorGrading() const noexcept
 void
 ColorGrading::onActivate(RenderPipeline& pipeline) noexcept
 {
-	if (pipeline.isTextureDimSupport(GraphicsTextureDim::GraphicsTextureDim3D))
-		_texColorGrading = pipeline.createTexture("sys:media/color_grading.dds", GraphicsTextureDim::GraphicsTextureDim3D);
-	else
-	{
-		_enableColorGrading = false;
-	}
-
 	_material = pipeline.createMaterial("sys:fx/color_grading.fxml.o");
 	_colorGrading = _material->getTech("ColorGrading");
 	_texGrading = _material->getParameter("texColorGrading");
 	_texSource = _material->getParameter("texSource");
 	_gammGrading = _material->getParameter("colorGrading");
+
+	if (pipeline.isTextureDimSupport(GraphicsTextureDim::GraphicsTextureDim3D))
+		_texColorGrading = pipeline.createTexture("sys:media/color_grading.dds", GraphicsTextureDim::GraphicsTextureDim3D);
 
 	_texGrading->uniformTexture(_texColorGrading);
 }

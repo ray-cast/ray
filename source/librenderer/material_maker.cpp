@@ -329,6 +329,8 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialDesc& material, Ma
 			stateDesc.setStencilFrontZFail(stringToStencilOp(reader.getValue<std::string>("value")));
 		else if (name == "stencilPass")
 			stateDesc.setStencilFrontPass(stringToStencilOp(reader.getValue<std::string>("value")));
+		else if (name == "stencilTwoRef")
+			stateDesc.setStencilBackRef(reader.getValue<int>("value"));
 		else if (name == "stencilTwoFunc")
 			stateDesc.setStencilBackFunc(stringToCompareFunc(reader.getValue<std::string>("value")));
 		else if (name == "stencilTwoReadMask")
@@ -526,13 +528,13 @@ MaterialMaker::instanceSampler(MaterialManager& manager, MaterialDesc& material,
 		{
 			if (stateValue == "point")
 				samplerDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-			else if (stateValue == "point_mip_nearest")
+			else if (stateValue == "min_mag_mip_point")
 				samplerDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest);
 			else if (stateValue == "point_mip_lienar")
 				samplerDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapLinear);
 			else if (stateValue == "linear")
 				samplerDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
-			else if (stateValue == "linear_mip_nearest")
+			else if (stateValue == "min_mag_linear_mip_point")
 				samplerDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest);
 			else if (stateValue == "linear_mip_linear")
 				samplerDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear);
@@ -792,6 +794,7 @@ MaterialMaker::stringToUniformType(const std::string& type) noexcept
 	if (type == "float4x4[]")  return GraphicsUniformType::GraphicsUniformTypeFloat4x4Array;
 	if (type == "texture2D")   return GraphicsUniformType::GraphicsUniformTypeStorageImage;
 	if (type == "texture3D")   return GraphicsUniformType::GraphicsUniformTypeStorageImage;
+	if (type == "textureCUBE")   return GraphicsUniformType::GraphicsUniformTypeStorageImage;
 	if (type == "buffer") 	   return GraphicsUniformType::GraphicsUniformTypeUniformBuffer;
 
 	assert(false);

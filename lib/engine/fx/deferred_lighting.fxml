@@ -5,6 +5,7 @@
     <include name="sys:fx/inputlayout.fxml"/>
     <parameter name="matModelView" type="float4x4" semantic="matModelView"/>
     <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject"/>
+    <parameter name="matViewInverse" type="float4x4" semantic="matViewInverse" />
     <parameter name="matProjectInverse" type="float4x4" semantic="matProjectInverse" />
     <parameter name="texMRT0" type="texture2D" semantic="DeferredGraphicMap" />
     <parameter name="texMRT1" type="texture2D" semantic="DeferredNormalMap" />
@@ -12,7 +13,9 @@
     <parameter name="texDepthLinear" type="texture2D" semantic="DeferredDepthLinearMap" />
     <parameter name="texLight" type="texture2D" semantic="DeferredLightMap" />
     <parameter name="texSource" type="texture2D"/>
-    <parameter name="texEnvironmentMap" type="texture2D"/>
+    <parameter name="texEnvDiffuse" type="textureCUBE"/>
+    <parameter name="texEnvSpecular" type="textureCUBE"/>
+    <parameter name="texEnvMipNumber" type="int"/>
     <parameter name="clipInfo" type="float2"/>
     <parameter name="projInfo" type="float4"/>
     <parameter name="lightColor" type="float3" />
@@ -21,7 +24,7 @@
     <parameter name="lightAttenuation" type="float3"/>
     <parameter name="lightOuterInner" type="float2"/>
     <parameter name="shadowMap" type="texture2D" />
-    <parameter name="shadowFactor" type="float4"/>
+    <parameter name="shadowFactor" type="float2"/>
     <parameter name="shadowView2LightView" type="float4"/>
     <parameter name="shadowView2LightViewProject" type="float4x4" />
     <shader>
@@ -283,7 +286,7 @@
                 float3 diffuse = restoreDiffuse(texMRT0, coord);
                 float4 light = texLight.Sample(PointClamp, coord);
 
-                diffuse = diffuse * light.rgb + light.rgb * light.a;
+                diffuse = shadingLight(diffuse, light.rgb, light.a);
 
                 return float4(diffuse, 1.0);
             }
@@ -295,9 +298,38 @@
                 float3 diffuse = restoreDiffuse(texMRT0, coord);
                 float4 light = texLight.Sample(PointClamp, coord);
 
-                diffuse = diffuse * light.rgb + light.rgb * light.a;
+                diffuse = shadingLight(diffuse, light.rgb, light.a);
 
                 return float4(diffuse, 1.0);
+            }
+
+            float4 DeferredEnvLightShadingPS(in float2 coord : TEXCOORD0, in float3 viewdir : TEXCOORD1) : SV_Target
+            {
+                float4 MRT1 = texMRT1.Sample(PointClamp, coord);
+                float4 MRT0 = texMRT0.Sample(PointClamp, coord);
+
+                float shininess = restoreShininess(MRT1);
+                float specular = restoreSpecular(MRT0);
+                float3 diffuse = restoreDiffuse(texMRT0, coord);
+                float3 N = restoreNormal(MRT1);
+                float3 P = restorePosition(texDepthLinear, projInfo, coord);
+                float3 V = normalize(viewdir);
+                float4 light = texLight.Sample(PointClamp, coord);
+
+                float mipLayer = brefEnvironmentEnvMip(shininess, texEnvMipNumber);
+
+                float3 worldNormal = mul(N, (float3x3)matViewInverse);
+                float3 worldView = mul(V, (float3x3)matViewInverse);
+                float3 R = brdfEnvironmentEnvVec(worldNormal, worldView);
+
+                float3 prefilteredDiffuse = srgb2linear(texEnvDiffuse.Sample(PointClamp, worldNormal).rgb);
+                float3 prefilteredSpeculr = srgb2linear(texEnvSpecular.SampleLevel(PointClamp, R, mipLayer).rgb);
+
+                float3 shading = shadingLight(diffuse, light.rgb, light.a);
+                shading += brdfEnvironmentDiffuse(prefilteredDiffuse, diffuse);
+                shading += brdfEnvironmentSpecular(prefilteredSpeculr, worldNormal, worldView, shininess, specular);
+
+                return float4(shading, 1.0);
             }
         ]]>
     </shader>
@@ -513,6 +545,12 @@
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="notequal"/>
+            <state name="stencilTwoFunc" value="notequal"/>
+            <state name="stencilRef" value="0"/>
+            <state name="stencilTwoRef" value="0"/>
         </pass>
     </technique>
     <technique name="DeferredShadingTransparents">
@@ -530,6 +568,31 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="srcalpha"/>
             <state name="blenddst" value="invsrcalpha"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="notequal"/>
+            <state name="stencilTwoFunc" value="notequal"/>
+            <state name="stencilRef" value="0"/>
+            <state name="stencilTwoRef" value="0"/>
+        </pass>
+    </technique>
+    <technique name="DeferredShadingWithEnvLight">
+        <pass name="p0">
+            <state name="inputlayout" value="POS3F"/>
+
+            <state name="vertex" value="DeferredLightingVS"/>
+            <state name="fragment" value="DeferredEnvLightShadingPS"/>
+
+            <state name="cullmode" value="none"/>
+
+            <state name="depthtest" value="false"/>
+            <state name="depthwrite" value="false"/>
+
+            <state name="stencilTest" value="true"/>
+            <state name="stencilFunc" value="notequal"/>
+            <state name="stencilTwoFunc" value="notequal"/>
+            <state name="stencilRef" value="0"/>
+            <state name="stencilTwoRef" value="0"/>
         </pass>
     </technique>
 </effect>

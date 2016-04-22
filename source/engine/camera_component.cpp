@@ -37,6 +37,7 @@
 #if defined(_BUILD_RENDERER)
 #include <ray/camera_component.h>
 #include <ray/render_feature.h>
+#include <ray/render_system.h>
 #include <ray/game_server.h>
 #include <ray/game_application.h>
 
@@ -206,54 +207,235 @@ CameraComponent::getCameraOrder() const noexcept
 	return _camera->getCameraOrder();
 }
 
+void 
+CameraComponent::setCameraRenderFlags(CameraRenderFlags flags) noexcept
+{
+	_camera->setCameraRenderFlags(flags);
+}
+
+CameraRenderFlags
+CameraComponent::getCameraRenderFlags() const noexcept
+{
+	return _camera->getCameraRenderFlags();
+}
+
+void
+CameraComponent::setSkyLightMap(const std::string& texture) noexcept
+{
+	if (_skyMap != texture)
+	{
+		_loadSkybox(texture);
+		_skyMap = texture;
+	}
+}
+
+const std::string&
+CameraComponent::getSkyLightMap() const noexcept
+{
+	return _skyMap;
+}
+
+void
+CameraComponent::setSkyLightDiffuse(const std::string& diffuse) noexcept
+{
+	if (_skyDiffuse != diffuse)
+	{
+		_loadSkyDiffuse(diffuse);
+		_skyDiffuse = diffuse;
+	}
+}
+
+const std::string&
+CameraComponent::getSkyLightDiffuse() const noexcept
+{
+	return _skyDiffuse;
+}
+
+void
+CameraComponent::setSkyLightSpecular(const std::string& specular) noexcept
+{
+	if (_skySpecular != specular)
+	{
+		_loadSkySpecular(specular);
+		_skySpecular = specular;
+	}
+}
+
+const std::string&
+CameraComponent::getSkyLightSpecular() const noexcept
+{
+	return _skySpecular;
+}
+
 void
 CameraComponent::load(iarchive& reader) noexcept
 {
-	std::string type;
-	float aperture = 70.0;
-	float znear = 0.1;
-	float zfar = 1000.0;
-	float ratio = 1.0;
-	float4 viewport = float4::Zero;
-	float4 ortho = float4::Zero;
-	std::string order;
-
 	GameComponent::load(reader);
 
-	reader >> make_archive(type, "type");
-	reader >> make_archive(aperture, "aperture");
-	reader >> make_archive(znear, "znear");
-	reader >> make_archive(zfar, "zfar");
-	reader >> make_archive(viewport, "viewport");
-	reader >> make_archive(ortho, "ortho");
-	reader >> make_archive(ratio, "ratio");
-	reader >> make_archive(order, "order");
+	std::string type;
+	float aperture;
+	float znear;
+	float zfar;
+	float ratio;
+	float4 viewport;
+	float4 ortho;
+	std::string order;
+	std::string flagsString;
+	std::string skymap;
+	std::string skydiffuse;
+	std::string skyspecular;
 
-	this->setNear(znear);
-	this->setFar(zfar);
-	this->setRatio(ratio);
-	this->setViewport(Viewport(viewport.x, viewport.y, viewport.z, viewport.w));
+	if (reader.getValue("aperture", aperture))
+		this->setAperture(aperture);
 
-	if (type == "ortho")
-	{
-		this->setCameraType(CameraType::CameraTypeOrtho);
+	if (reader.getValue("znear", znear))
+		this->setNear(znear);
+
+	if (reader.getValue("zfar", zfar))
+		this->setFar(zfar);
+
+	if (reader.getValue("ratio", ratio))
+		this->setRatio(ratio);
+
+	if (reader.getValue("ortho", ortho))
 		this->setOrtho(ortho.x, ortho.y, ortho.z, ortho.w);
-	}
+
+	if (reader.getValue("viewport", viewport))
+		this->setViewport(Viewport(viewport.x, viewport.y, viewport.z, viewport.w));
 	else
 	{
-		this->setCameraType(CameraType::CameraTypePerspective);
-		this->setAperture(aperture);		
+		std::uint32_t w, h;
+		RenderSystem::instance()->getWindowResolution(w, h);
+		this->setViewport(Viewport(0, 0, w, h));
 	}
 
-	if (order == "2D")
-		this->setCameraOrder(CameraOrder::CameraOrder2D);
-	else
-		this->setCameraOrder(CameraOrder::CameraOrder3D);
+	if (reader.getValue("type", type))
+	{
+		if (type == "ortho")
+			this->setCameraType(CameraType::CameraTypeOrtho);
+		else
+			this->setCameraType(CameraType::CameraTypePerspective);
+	}
+
+	if (reader.getValue("order", order))
+	{
+		if (order == "2D")
+			this->setCameraOrder(CameraOrder::CameraOrder2D);
+		else
+			this->setCameraOrder(CameraOrder::CameraOrder3D);
+	}
+
+	if (reader.getValue("skymap", skymap))
+		this->setSkyLightMap(skymap);
+
+	if (reader.getValue("skydiffuse", skydiffuse))
+		this->setSkyLightDiffuse(skydiffuse);
+
+	if (reader.getValue("skyspecular", skyspecular))
+		this->setSkyLightSpecular(skyspecular);
+
+	if (reader.getValue("flags", flagsString))
+	{
+		CameraRenderFlags flags = 0;
+
+		std::vector<std::string> args;
+		util::split(args, flagsString, "|");
+
+		for (auto& flag : args)
+		{
+			flag = util::trim(flag, ' ');
+
+			if (flag == "screen")
+				flags |= CameraRenderFlagBits::CameraRenderScreenBit;
+			else if (flag == "render_to_texture")
+				flags |= CameraRenderFlagBits::CameraRenderTextureBit;
+			else if (flag == "skybox")
+				flags |= CameraRenderFlagBits::CameraRenderSkyboxBit;
+			else if (flag == "skylighting")
+				flags |= CameraRenderFlagBits::CameraRenderSkyLightingBit;
+			else if (flag == "gbuffer_diffuse")
+				flags |= CameraRenderFlagBits::CameraRenderGbufferDiffuseBit;
+			else if (flag == "gbuffer_normal")
+				flags |= CameraRenderFlagBits::CameraRenderGbufferNormalBit;
+			else if (flag == "lighting")
+				flags |= CameraRenderFlagBits::CameraRenderLightingBit;
+			else if (flag == "shading")
+				flags |= CameraRenderFlagBits::CameraRenderShadingBit;
+		}
+
+		this->setCameraRenderFlags(flags);
+	}
 }
 
 void
 CameraComponent::save(oarchive& write) noexcept
 {
+}
+
+bool 
+CameraComponent::_loadSkybox(const std::string& texture) noexcept
+{	
+	if (texture.empty())
+	{
+		_camera->setSkyLightMap(nullptr);
+		return true;
+	}
+
+	auto skymap = RenderSystem::instance()->createTexture(texture,
+		GraphicsTextureDim::GraphicsTextureDimCube,
+		GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+
+	if (skymap)
+	{
+		_camera->setSkyLightMap(skymap);
+		return true;
+	}
+
+	return false;
+}
+
+bool 
+CameraComponent::_loadSkyDiffuse(const std::string& texture) noexcept
+{
+	if (texture.empty())
+	{
+		_camera->setSkyLightDiffuse(nullptr);
+		return true;
+	}
+
+	auto diffuse = RenderSystem::instance()->createTexture(texture,
+		GraphicsTextureDim::GraphicsTextureDimCube,
+		GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+
+	if (diffuse)
+	{
+		_camera->setSkyLightDiffuse(diffuse);
+		return true;
+	}
+
+	return false;
+}
+
+bool 
+CameraComponent::_loadSkySpecular(const std::string& texture) noexcept
+{
+	if (texture.empty())
+	{
+		_camera->setSkyLightSpecular(nullptr);
+		return true;
+	}
+		
+	auto specular = RenderSystem::instance()->createTexture(texture, 
+		GraphicsTextureDim::GraphicsTextureDimCube, 
+		GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear);
+
+	if (specular)
+	{
+		_camera->setSkyLightSpecular(specular);
+		return true;
+	}
+		
+	return false;
 }
 
 void
@@ -277,6 +459,22 @@ CameraComponent::onActivate() noexcept
 				this->getGameObject()->getTransformInverse(),
 				this->getGameObject()->getTransformInverseTranspose()
 				);
+
+			auto flags = _camera->getCameraRenderFlags();
+			if (flags & CameraRenderFlagBits::CameraRenderSkyboxBit)
+			{
+				if (!_camera->getSkyLightMap())
+					_loadSkybox(_skyMap);
+			}
+
+			if (flags & CameraRenderFlagBits::CameraRenderSkyLightingBit)
+			{
+				if (!_camera->getSkyLightDiffuse())
+					_loadSkyDiffuse(_skyDiffuse);
+
+				if (!_camera->getSkyLightSpecular())
+					_loadSkySpecular(_skySpecular);
+			}
 		}
 	}
 }

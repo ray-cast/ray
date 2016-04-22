@@ -116,11 +116,6 @@ enum CameraOrder
 {
 	CameraOrderCustom,
 	CameraOrderShadow,
-	CameraOrderColor,
-	CameraOrderNormal,
-	CameraOrderLight,
-	CameraOrderShading,
-	CameraOrderCubeMap,
 	CameraOrder2D,
 	CameraOrder3D,
 	CameraOrderBeginRange = CameraOrderCustom,
@@ -129,16 +124,22 @@ enum CameraOrder
 	CameraOrderMaxEnum = 0x7FFFFFFF
 };
 
-enum CameraRender
+enum CameraRenderFlagBits
 {
-	CameraRenderScreen,
-	CameraRenderTexture,
-	CameraRenderCubeMap,
-	CameraRenderBeginRange = CameraRenderScreen,
-	CameraRenderEndRange = CameraRenderCubeMap,
-	CameraRenderRangeSize = (CameraRenderEndRange - CameraRenderBeginRange + 1),
-	CameraRenderMaxEnum = 0x7FFFFFFF
+	CameraRenderScreenBit  = 0x00000001,
+	CameraRenderTextureBit = 0x00000002,
+	CameraRenderSkyboxBit  = 0x00000004,
+	CameraRenderSkyLightingBit = 0x00000004,
+	CameraRenderGbufferDiffuseBit = 0x00000008,
+	CameraRenderGbufferNormalBit = 0x00000010,
+	CameraRenderLightingBit = 0x00000020,
+	CameraRenderShadingBit = 0x00000040,
+	CameraOrderBeginBit = CameraRenderScreenBit,
+	CameraOrderEndBit = CameraRenderSkyLightingBit,
+	CameraOrderMaxBit = 0x7FFFFFFF
 };
+
+typedef std::uint32_t CameraRenderFlags;
 
 enum LightType
 {

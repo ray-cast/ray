@@ -111,8 +111,6 @@ Image::create(size_type width, size_type height, size_type depth, bpp_type bpp, 
 	_size = dataSize;
 	_isStatic = staticData;
 
-	this->setImageType(ImageType::ImageTypeUnknown);
-
 	if (clear) this->clear();
 
 	return true;

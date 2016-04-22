@@ -150,7 +150,7 @@ Geometry::onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTe
 		pipeline.setTransformInverse(this->getTransformInverse());
 		pipeline.setTransformInverseTranspose(this->getTransformInverseTranspose());
 
-		pipeline.drawMesh(tech, this->getRenderMesh(), *_renderable, this->getLayer());
+		pipeline.drawMeshLayer(tech, this->getRenderMesh(), *_renderable, this->getLayer());
 	}
 }
 

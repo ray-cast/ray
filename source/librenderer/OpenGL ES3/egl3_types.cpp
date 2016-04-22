@@ -956,7 +956,7 @@ EGL3Types::asSamplerWrap(GraphicsSamplerWrap wrap) noexcept
 }
 
 GLenum
-EGL3Types::asSamplerFilter(GraphicsSamplerFilter filter) noexcept
+EGL3Types::asSamplerMinFilter(GraphicsSamplerFilter filter) noexcept
 {
 	switch (filter)
 	{
@@ -966,6 +966,23 @@ EGL3Types::asSamplerFilter(GraphicsSamplerFilter filter) noexcept
 	case GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest: return GL_NEAREST_MIPMAP_NEAREST;
 	case GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest:  return GL_LINEAR_MIPMAP_NEAREST;
 	case GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear:   return GL_LINEAR_MIPMAP_LINEAR;
+	default:
+		GL_PLATFORM_ASSERT(false, "Invalid sampler filter");
+		return GL_INVALID_ENUM;
+	}
+}
+
+GLenum
+EGL3Types::asSamplerMagFilter(GraphicsSamplerFilter filter) noexcept
+{
+	switch (filter)
+	{
+	case GraphicsSamplerFilter::GraphicsSamplerFilterNearest:              return GL_NEAREST;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterLinear:               return GL_LINEAR;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapLinear:  return GL_NEAREST;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest: return GL_NEAREST;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest:  return GL_LINEAR;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear:   return GL_LINEAR;
 	default:
 		GL_PLATFORM_ASSERT(false, "Invalid sampler filter");
 		return GL_INVALID_ENUM;

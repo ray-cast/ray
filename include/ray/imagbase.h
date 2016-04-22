@@ -87,6 +87,7 @@ enum ImageType
 	ImageTypeBC7U,
 	ImageTypeBC7SRGB,
 	ImageTypeATI2,
+	ImageType3D,
 	ImageTypeCube,
 };
 

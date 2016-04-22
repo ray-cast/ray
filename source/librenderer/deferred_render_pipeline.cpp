@@ -203,7 +203,7 @@ DeferredRenderPipeline::render3DEnvMap(RenderPipeline& pipeline) noexcept
 	_materialDeferredDepthLinearMap->uniformTexture(_deferredDepthLinearMap);
 	_materialDeferredNormalMap->uniformTexture(_deferredNormalMap);
 	_materialDeferredGraphicMap->uniformTexture(_deferredGraphicsMap);
-	_materialDeferredLightMap->uniformTexture(_deferredLightMap);
+	_materialDeferredLightMap->uniformTexture(_deferredLightingMap);
 
 	_materialDepthMap->uniformTexture(_deferredDepthMap);
 	_materialColorMap->uniformTexture(_deferredShadingMap);
@@ -247,9 +247,24 @@ DeferredRenderPipeline::renderOpaquesDepthLinear(RenderPipeline& pipeline, Graph
 void
 DeferredRenderPipeline::renderOpaquesShading(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept
 {
+	auto camera = pipeline.getCamera();
+	auto flags = pipeline.getCamera()->getCameraRenderFlags();
+
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsColor, float4::One, 1.0, 0);
-	pipeline.drawScreenQuad(_deferredShadingOpaques);
+	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsColor, camera->getClearColor(), 1.0, 0);
+
+	if (flags & CameraRenderFlagBits::CameraRenderSkyLightingBit && camera->getSkyLightDiffuse() && camera->getSkyLightSpecular())
+	{
+		_texEnvDiffuse->uniformTexture(camera->getSkyLightDiffuse());
+		_texEnvSpecular->uniformTexture(camera->getSkyLightSpecular());
+		_texEnvMipNumber->uniform1i(camera->getSkyLightSpecular()->getGraphicsTextureDesc().getMipLevel());
+
+		pipeline.drawScreenQuad(_deferredShadingWithEnvLight);
+	}
+	else
+	{
+		pipeline.drawScreenQuad(_deferredShadingOpaques);
+	}
 }
 
 void
@@ -342,20 +357,19 @@ DeferredRenderPipeline::renderSunLight(RenderPipeline& pipeline, const Light& li
 	
 	if (shadowMap)
 	{	
-		float2 clipConstant = light.getShadowCamera()->getClipConstant().xy();
 		float shadowFactor = _shadowEsmFactor / (light.getShadowCamera()->getFar() - light.getShadowCamera()->getNear());
 		float shaodwBias = light.getShadowBias();
 
 		_shadowMap->uniformTexture(shadowMap);
-		_shadowFactor->uniform4f(float4(clipConstant, shadowFactor, shaodwBias));
+		_shadowFactor->uniform2f(shadowFactor, shaodwBias);
 		_shadowView2LightView->uniform4f((pipeline.getCamera()->getViewInverse() * light.getShadowCamera()->getView()).getAxisZ());
 		_shadowView2LightViewProject->uniform4fmat(pipeline.getCamera()->getViewInverse() * light.getShadowCamera()->getViewProject());
 
-		pipeline.drawScreenQuad(_deferredSunLightShadow, light.getLayer());
+		pipeline.drawScreenQuadLayer(_deferredSunLightShadow, light.getLayer());
 	}
 	else
 	{
-		pipeline.drawScreenQuad(_deferredSunLight, light.getLayer());
+		pipeline.drawScreenQuadLayer(_deferredSunLight, light.getLayer());
 	}
 }
 
@@ -373,15 +387,15 @@ DeferredRenderPipeline::renderDirectionalLight(RenderPipeline& pipeline, const L
 		float shaodwBias = light.getShadowBias();
 
 		_shadowMap->uniformTexture(shadowMap);
-		_shadowFactor->uniform4f(float4(clipConstant, shadowFactor, shaodwBias));
+		_shadowFactor->uniform2f(shadowFactor, shaodwBias);
 		_shadowView2LightView->uniform4f((pipeline.getCamera()->getViewInverse() * light.getShadowCamera()->getView()).getAxisZ());
 		_shadowView2LightViewProject->uniform4fmat(pipeline.getCamera()->getViewInverse() * light.getShadowCamera()->getViewProject());
 
-		pipeline.drawScreenQuad(_deferredDirectionalLightShadow, light.getLayer());
+		pipeline.drawScreenQuadLayer(_deferredDirectionalLightShadow, light.getLayer());
 	}
 	else
 	{
-		pipeline.drawScreenQuad(_deferredDirectionalLight, light.getLayer());
+		pipeline.drawScreenQuadLayer(_deferredDirectionalLight, light.getLayer());
 	}
 }
 
@@ -421,7 +435,7 @@ DeferredRenderPipeline::renderSpotLight(RenderPipeline& pipeline, const Light& l
 		float shaodwBias = light.getShadowBias();
 
 		_shadowMap->uniformTexture(shadowMap);
-		_shadowFactor->uniform4f(float4(clipConstant, shadowFactor, shaodwBias));
+		_shadowFactor->uniform2f(shadowFactor, shaodwBias);
 		_shadowView2LightView->uniform4f((pipeline.getCamera()->getViewInverse() * light.getShadowCamera()->getView()).getAxisZ());
 		_shadowView2LightViewProject->uniform4fmat(pipeline.getCamera()->getViewInverse() * light.getShadowCamera()->getViewProject());
 
@@ -441,7 +455,7 @@ DeferredRenderPipeline::renderAmbientLight(RenderPipeline& pipeline, const Light
 	_lightEyeDirection->uniform3f(light.getForward() * float3x3(pipeline.getCamera()->getView()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 	
-	pipeline.drawScreenQuad(_deferredAmbientLight, light.getLayer());
+	pipeline.drawScreenQuadLayer(_deferredAmbientLight, light.getLayer());
 }
 
 void
@@ -544,6 +558,7 @@ DeferredRenderPipeline::setupDeferredMaterials(RenderPipeline& pipeline) noexcep
 	_deferredSpotLightShadow = _deferredLighting->getTech("DeferredSpotLightShadow"); if (!_deferredSpotLightShadow) return false;
 	_deferredShadingOpaques = _deferredLighting->getTech("DeferredShadingOpaques"); if (!_deferredShadingOpaques) return false;
 	_deferredShadingTransparents = _deferredLighting->getTech("DeferredShadingTransparents"); if (!_deferredShadingTransparents) return false;
+	_deferredShadingWithEnvLight = _deferredLighting->getTech("DeferredShadingWithEnvLight"); if (!_deferredShadingWithEnvLight) return false;
 	_deferredCopyOnly = _deferredLighting->getTech("DeferredCopyOnly"); if (!_deferredCopyOnly) return false;
 
 	_texMRT0 = _deferredLighting->getParameter("texMRT0"); if (!_texMRT0) return false;
@@ -551,7 +566,9 @@ DeferredRenderPipeline::setupDeferredMaterials(RenderPipeline& pipeline) noexcep
 	_texDepth = _deferredLighting->getParameter("texDepth"); if (!_texDepth) return false;
 	_texLight = _deferredLighting->getParameter("texLight"); if (!_texLight) return false;
 	_texSource = _deferredLighting->getParameter("texSource"); if (!_texSource) return false;
-	_texEnvironmentMap = _deferredLighting->getParameter("texEnvironmentMap"); if (!_texEnvironmentMap) return false;
+	_texEnvDiffuse = _deferredLighting->getParameter("texEnvDiffuse"); if (!_texEnvDiffuse) return false;
+	_texEnvSpecular = _deferredLighting->getParameter("texEnvSpecular"); if (!_texEnvSpecular) return false;
+	_texEnvMipNumber = _deferredLighting->getParameter("texEnvMipNumber"); if (!_texEnvMipNumber) return false;
 
 	_clipInfo = _deferredLighting->getParameter("clipInfo"); if (!_clipInfo) return false;
 	_projInfo = _deferredLighting->getParameter("projInfo"); if (!_projInfo) return false;
@@ -620,8 +637,8 @@ DeferredRenderPipeline::setupDeferredTextures(RenderPipeline& pipeline) noexcept
 	_deferredLightDesc.setTexDim(GraphicsTextureDim2D);
 	_deferredLightDesc.setTexFormat(_deferredLightFormat);
 	_deferredLightDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
-	_deferredLightMap = pipeline.createTexture(_deferredLightDesc);
-	if (!_deferredLightMap)
+	_deferredLightingMap = pipeline.createTexture(_deferredLightDesc);
+	if (!_deferredLightingMap)
 		return false;
 
 	GraphicsTextureDesc _deferredShadingDesc;
@@ -750,7 +767,7 @@ DeferredRenderPipeline::setupDeferredRenderTextures(RenderPipeline& pipeline) no
 	deferredLightingDesc.setWidth(width);
 	deferredLightingDesc.setHeight(height);
 	deferredLightingDesc.setSharedDepthStencilTexture(_deferredDepthMap);
-	deferredLightingDesc.attach(_deferredLightMap);
+	deferredLightingDesc.attach(_deferredLightingMap);
 	deferredLightingDesc.setGraphicsFramebufferLayout(_deferredLightingViewLayout);
 	_deferredLightingView = pipeline.createFramebuffer(deferredLightingDesc);
 	if (!_deferredLightingView)
@@ -885,7 +902,8 @@ DeferredRenderPipeline::destroyDeferredMaterials() noexcept
 	_texDepth.reset();
 	_texLight.reset();
 	_texSource.reset();
-	_texEnvironmentMap.reset();
+	_texEnvDiffuse.reset();
+	_texEnvSpecular.reset();
 
 	_clipInfo.reset();
 	_projInfo.reset();
@@ -922,7 +940,7 @@ DeferredRenderPipeline::destroyDeferredTextures() noexcept
 	_deferredDepthLinearMap.reset();
 	_deferredGraphicsMap.reset();
 	_deferredNormalMap.reset();
-	_deferredLightMap.reset();
+	_deferredLightingMap.reset();
 	_deferredShadingMap.reset();
 	_deferredSwapMap.reset();
 }
@@ -1007,35 +1025,46 @@ DeferredRenderPipeline::onRenderPost(RenderPipeline& pipeline) noexcept
 	if (!camera)
 		return;
 
-	if (camera->getCameraRender() == CameraRender::CameraRenderScreen)
+	auto viewport = camera->getViewport();
+	if (viewport.width == 0 || viewport.height == 0)
 	{
-		auto viewport = camera->getViewport();
-		if (viewport.width == 0 || viewport.height == 0)
-		{
-			std::uint32_t width, height;
-			pipeline.getWindowResolution(width, height);
+		std::uint32_t width, height;
+		pipeline.getWindowResolution(width, height);
 
-			viewport.left = 0;
-			viewport.top = 0;
-			viewport.width = width;
-			viewport.height = height;
-		}
+		viewport.left = 0;
+		viewport.top = 0;
+		viewport.width = width;
+		viewport.height = height;
+	}
 
+	auto flags = camera->getCameraRenderFlags();
+	if (flags & CameraRenderFlagBits::CameraRenderTextureBit)
+	{
 		auto framebuffer = camera->getFramebuffer();
 		if (framebuffer)
-			this->copyRenderTexture(pipeline, _deferredShadingMap, framebuffer, viewport);
-
-		this->copyRenderTexture(pipeline, _deferredShadingMap, nullptr, viewport);
+		{
+			if (flags & CameraRenderFlagBits::CameraRenderGbufferDiffuseBit)
+				this->copyRenderTexture(pipeline, _deferredShadingMap, framebuffer, viewport);
+			else if (flags & CameraRenderFlagBits::CameraRenderGbufferNormalBit)
+				this->copyRenderTexture(pipeline, _deferredNormalMap, framebuffer, viewport);
+			else if (flags & CameraRenderFlagBits::CameraRenderLightingBit)
+				this->copyRenderTexture(pipeline, _deferredLightingMap, framebuffer, viewport);
+			else if (flags & CameraRenderFlagBits::CameraRenderShadingBit)
+				this->copyRenderTexture(pipeline, _deferredShadingMap, framebuffer, viewport);
+		}
 	}
-	
-	/*if (_deferredGraphicsView)
-		pipeline.blitFramebuffer(_deferredGraphicsView, Viewport(0, 0, 1376, 768), 0, Viewport(0, 768 / 2, 1376 / 3, 768));
-	if (_deferredNormalView)
-		pipeline.blitFramebuffer(_deferredNormalView, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3, 768 / 2, 1376 / 3 * 2, 768));
-	if (_deferredLightingView)
-		pipeline.blitFramebuffer(_deferredLightingView, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3 * 2, 768 / 2, 1376, 768));
-	if (_deferredShadingView)
-		pipeline.blitFramebuffer(_deferredShadingView, Viewport(0, 0, 1376, 768), 0, Viewport(1376 / 3 * 2, 0, 1376, 768 / 2));*/
+
+	if (flags & CameraRenderFlagBits::CameraRenderScreenBit)
+	{
+		if (flags & CameraRenderFlagBits::CameraRenderGbufferDiffuseBit)
+			this->copyRenderTexture(pipeline, _deferredShadingMap, nullptr, viewport);
+		else if (flags & CameraRenderFlagBits::CameraRenderGbufferNormalBit)
+			this->copyRenderTexture(pipeline, _deferredNormalMap, nullptr, viewport);
+		else if (flags & CameraRenderFlagBits::CameraRenderLightingBit)
+			this->copyRenderTexture(pipeline, _deferredLightingMap, nullptr, viewport);
+		else if (flags & CameraRenderFlagBits::CameraRenderShadingBit)
+			this->copyRenderTexture(pipeline, _deferredShadingMap, nullptr, viewport);
+	}
 }
 
 _NAME_END

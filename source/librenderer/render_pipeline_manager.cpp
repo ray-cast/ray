@@ -566,10 +566,10 @@ RenderPipelineManager::createTexture(std::uint32_t w, std::uint32_t h, GraphicsT
 }
 
 GraphicsTexturePtr 
-RenderPipelineManager::createTexture(const std::string& name, GraphicsTextureDim dim) noexcept
+RenderPipelineManager::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createTexture(name, dim);
+	return _pipelineDevice->createTexture(name, dim, filter);
 }
 
 MaterialPtr 
@@ -582,6 +582,7 @@ RenderPipelineManager::createMaterial(const std::string& name) noexcept
 void
 RenderPipelineManager::destroyMaterial(MaterialPtr material) noexcept
 {
+	assert(_pipelineDevice);
 	_pipelineDevice->destroyMaterial(material);
 }
 

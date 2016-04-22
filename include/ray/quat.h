@@ -108,120 +108,6 @@ public:
 		return this->set(v.x, v.y, v.z, v.w);
 	}
 
-	Quaterniont& conjugate() noexcept
-	{
-		x = -x;
-		y = -y;
-		z = -z;
-		return *this;
-	}
-
-	Quaterniont& inverse() noexcept
-	{
-		return this->conjugate();
-	}
-
-	Quaterniont& pow(float exponent) noexcept
-	{
-		if (fabs(this->w) > 0.9999f)
-			return *this;
-
-		T alpha = acos(this->w);
-		T newAlpha = alpha * exponent;
-		T mult = sin(newAlpha) / sin(alpha);
-
-		x *= mult;
-		y *= mult;
-		z *= mult;
-		w = cos(newAlpha);
-		return *this;
-	}
-
-	Quaterniont<T>& slerp(const Quaterniont& q1, const Quaterniont& q2, T t) noexcept
-	{
-		if (t <= 0.0f) { *this = q1; return *this; }
-		if (t >= 1.0f) { *this = q2; return *this; }
-
-		T cosOmega = math::clamp(q1.dot(q2), -1.0f, 1.0f);
-
-		if (cosOmega < 0.0f)
-		{
-			double theta = std::acos(-cosOmega);
-			if (fabs(theta) < 1.0e-10)
-			{
-				*this = q1;
-				return *this;
-			}
-
-			double st = sin(theta);
-			double inv_st = 1.0 / st;
-			double c0 = sin((1.0 - t) * theta) * inv_st;
-			double c1 = sin(t * theta) * inv_st;
-
-			this->x = c0 * q1.x - c1 * q2.x;
-			this->y = c0 * q1.y - c1 * q2.y;
-			this->z = c0 * q1.z - c1 * q2.z;
-			this->w = c0 * q1.w - c1 * q2.w;
-		}
-		else
-		{
-			double theta = acos(cosOmega);
-			if (fabs(theta) < 1.0e-10)
-			{
-				*this = q1;
-				return *this;
-			}
-
-			double st = sin(theta);
-			double inv_st = 1.0 / st;
-			double c0 = sin((1.0 - t) * theta) * inv_st;
-			double c1 = sin(t * theta) * inv_st;
-
-			this->x = c0 * q1.x + c1 * q2.x;
-			this->y = c0 * q1.y + c1 * q2.y;
-			this->z = c0 * q1.z + c1 * q2.z;
-			this->w = c0 * q1.w + c1 * q2.w;
-		}
-
-		return *this;
-	}
-
-	Quaterniont<T>& interpolate(const Quaterniont& start, const Quaterniont& end, T factor) noexcept
-	{
-		T cosom = start.x * end.x + start.y * end.y + start.z * end.z + start.w * end.w;
-
-		Quaterniont end = end;
-		if (cosom <static_cast<T>(0.0))
-		{
-			cosom = -cosom;
-			end.x = -end.x;
-			end.y = -end.y;
-			end.z = -end.z;
-			end.w = -end.w;
-		}
-
-		T sclp, sclq;
-		if ((static_cast<T>(1.0) - cosom) > static_cast<T>(0.0001)) // 0.0001 -> some epsillon
-		{
-			T omega, sinom;
-			omega = acos(cosom);
-			sinom = sin(omega);
-			sclp = sin((static_cast<T>(1.0) - factor) * omega) / sinom;
-			sclq = sin(factor * omega) / sinom;
-		}
-		else
-		{
-			sclp = static_cast<T>(1.0) - factor;
-			sclq = factor;
-		}
-
-		x = sclp * start.x + sclq * end.x;
-		y = sclp * start.y + sclq * end.y;
-		z = sclp * start.z + sclq * end.z;
-		w = sclp * start.w + sclq * end.w;
-		return *this;
-	}
-
 	Quaterniont<T>& makeRotateAboutX(T theta) noexcept
 	{
 		T thetaOver2 = DEG_TO_RAD(theta * 0.5f);
@@ -335,44 +221,6 @@ public:
 		return makeRotate(Matrix3x3t<T>(m));
 	}
 
-	Quaterniont<T> cross(const Quaterniont<T>& q) const noexcept
-	{
-		return Quaterniont<T>(
-			w * q.x + x * q.w + y * q.z - z * q.y,
-			w * q.y + y * q.w + z * q.x - x * q.z,
-			w * q.z + z * q.w + x * q.y - y * q.x,
-			w * q.w - x * q.x - y * q.y - z * q.z);
-	}
-
-	T length() const noexcept
-	{
-		return sqrt(length2());
-	}
-
-	T length2() const noexcept
-	{
-		return x * x + y * y + z * z + w * w;
-	}
-
-	T dot(const Quaterniont<T>& q) const noexcept
-	{
-		return x * q.x + y * q.y + z * q.z + w * q.w;
-	}
-
-	T normalize() noexcept
-	{
-		const T magSqrt = this->length2();
-		if (magSqrt)
-		{
-			const T inv = (T)(1.0) / std::sqrt(magSqrt);
-			x *= inv;
-			y *= inv;
-			z *= inv;
-			w *= inv;
-		}
-		return magSqrt;
-	}
-
 	T getRotationAngle() const noexcept
 	{
 		return safeAcos(w) * 2.0f;
@@ -391,16 +239,6 @@ public:
 
 		return Vector3t<T>(x * oneOverSinThetaOver2, y * oneOverSinThetaOver2, z * oneOverSinThetaOver2);
 	}
-
-	Vector3t<T> rotate(const Vector3t<T>& v) const noexcept
-	{
-		Quaterniont q2(v.x, v.y, v.z, 0.f);
-		Quaterniont q = *this, qinv = *this;
-
-		qinv.inverse();
-		q = q.cross(q2.cross(qinv));
-		return Vector3t<T>(q.x, q.y, q.z);
-	}
 };
 
 template<typename T>
@@ -413,12 +251,6 @@ template<typename T>
 inline bool operator!=(const Quaterniont<T>& q1, const Quaterniont<T>& q2) noexcept
 {
 	return q1.x != q2.x || q1.y != q2.y || q1.z != q2.z || q1.w != q2.w;
-}
-
-template <typename T>
-inline Quaterniont<T> operator-(const Quaterniont<T>& q) noexcept
-{
-	return Quaterniont<T>(q).conjugate();
 }
 
 template <typename T>
@@ -451,10 +283,180 @@ inline Quaterniont<T> operator/(T f, const Quaterniont<T>& q) noexcept
 	return Quaterniont<T>(q.x / f, q.y / f, q.z / f, q.w / f);
 }
 
-template<typename T>
-inline Quaterniont<T> operator^(const Quaterniont<T>& q1, const Quaterniont<T>& q2) noexcept
+namespace math
 {
-	return q1.cross(q2);
+	template<typename T>
+	inline Quaterniont<T> conjugate(const Quaterniont<T>& q) noexcept
+	{
+		return Quaterniont<T>(-q.x, -q.y, -q.z, q.w);
+	}
+
+	template<typename T>
+	inline Quaterniont<T> inverse(const Quaterniont<T>& q) noexcept
+	{
+		return conjugate(q);
+	}
+
+	template<typename T>
+	inline Quaterniont<T> pow(const Quaterniont<T>& q, T exponent) noexcept
+	{
+		if (std::fabs(q.w) > 0.9999f)
+			return *this;
+
+		T alpha = std::acos(q.w);
+		T newAlpha = alpha * exponent;
+		T mult = std::sin(newAlpha) / std::sin(alpha);
+
+		Quaterniont<T> result;
+		result.x = q.x * mult;
+		result.y = q.y * mult;
+		result.z = q.z * mult;
+		result.w = std::cos(newAlpha);
+		return *this;
+	}
+
+	template<typename T>
+	inline Quaterniont<T> slerp(const Quaterniont<T>& q1, const Quaterniont<T>& q2, T t) noexcept
+	{
+		if (t <= 0.0f) { return q1; }
+		if (t >= 1.0f) { return q2; }
+
+		T cosOmega = clamp(dot(q1, q2), -1.0f, 1.0f);
+
+		if (cosOmega < 0.0f)
+		{
+			double theta = std::acos(-cosOmega);
+			if (std::fabs(theta) < 1.0e-10)
+			{
+				return q1;
+			}
+
+			T st = std::sin(theta);
+			T inv_st = 1.0 / st;
+			T c0 = std::sin((1.0 - t) * theta) * inv_st;
+			T c1 = std::sin(t * theta) * inv_st;
+
+			Quaterniont<T> result;
+			result.x = c0 * q1.x - c1 * q2.x;
+			result.y = c0 * q1.y - c1 * q2.y;
+			result.z = c0 * q1.z - c1 * q2.z;
+			result.w = c0 * q1.w - c1 * q2.w;
+			return result;
+		}
+		else
+		{
+			double theta = std::acos(cosOmega);
+			if (fabs(theta) < 1.0e-10)
+			{
+				return q1;
+			}
+
+			T st = std::sin(theta);
+			T inv_st = 1.0 / st;
+			T c0 = std::sin((1.0 - t) * theta) * inv_st;
+			T c1 = std::sin(t * theta) * inv_st;
+
+			Quaterniont<T> result;
+			result.x = c0 * q1.x + c1 * q2.x;
+			result.y = c0 * q1.y + c1 * q2.y;
+			result.z = c0 * q1.z + c1 * q2.z;
+			result.w = c0 * q1.w + c1 * q2.w;
+			return result;
+		}
+	}
+
+	template<typename T>
+	inline Quaterniont<T> interpolate(const Quaterniont<T>& start, const Quaterniont<T>& end, T factor) noexcept
+	{
+		T cosom = start.x * end.x + start.y * end.y + start.z * end.z + start.w * end.w;
+
+		Quaterniont<T> end = end;
+		if (cosom <static_cast<T>(0.0))
+		{
+			cosom = -cosom;
+			end.x = -end.x;
+			end.y = -end.y;
+			end.z = -end.z;
+			end.w = -end.w;
+		}
+
+		T sclp, sclq;
+		if ((static_cast<T>(1.0) - cosom) > static_cast<T>(0.0001)) // 0.0001 -> some epsillon
+		{
+			T omega, sinom;
+			omega = acos(cosom);
+			sinom = sin(omega);
+			sclp = sin((static_cast<T>(1.0) - factor) * omega) / sinom;
+			sclq = sin(factor * omega) / sinom;
+		}
+		else
+		{
+			sclp = static_cast<T>(1.0) - factor;
+			sclq = factor;
+		}
+
+		Quaterniont<T> result;
+		result.x = sclp * start.x + sclq * end.x;
+		result.y = sclp * start.y + sclq * end.y;
+		result.z = sclp * start.z + sclq * end.z;
+		result.w = sclp * start.w + sclq * end.w;
+		return result;
+	}
+
+	template<typename T>
+	inline Quaterniont<T> cross(const Quaterniont<T>& q1, const Quaterniont<T>& q2) noexcept
+	{
+		return Quaterniont<T>(
+			q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y,
+			q1.w * q2.y + q1.y * q2.w + q1.z * q2.x - q1.x * q2.z,
+			q1.w * q2.z + q1.z * q2.w + q1.x * q2.y - q1.y * q2.x,
+			q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z);
+	}
+
+	template<typename T>
+	inline T dot(const Quaterniont<T>& q1, const Quaterniont<T>& q2) noexcept
+	{
+		return q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
+	}
+
+	template<typename T>
+	inline T length2(const Quaterniont<T>& q) noexcept
+	{
+		return q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
+	}
+
+	template<typename T>
+	inline T length(const Quaterniont<T>& q) noexcept
+	{
+		return std::sqrt(length2(q));
+	}
+
+	template<typename T>
+	inline Quaterniont<T> normalize(const Quaterniont<T>& q) noexcept
+	{
+		Quaterniont<T> result = q;
+
+		const T magSqrt = length2(q);
+		if (magSqrt)
+		{
+			const T inv = (T)(1.0) / std::sqrt(magSqrt);
+			result.x *= inv;
+			result.y *= inv;
+			result.z *= inv;
+			result.w *= inv;
+		}
+
+		return result;
+	}
+
+	template<typename T>
+	inline Vector3t<T> rotate(const Quaterniont<T>& q, const Vector3t<T>& v) noexcept
+	{
+		Quaterniont<T> q1(v.x, v.y, v.z, 0.f);
+		Quaterniont<T> qinv = math::inverse(q);
+		Quaterniont<T> q2 = cross(q, math::cross(q1, qinv));
+		return Vector3t<T>(q2.x, q2.y, q2.z);
+	}
 }
 
 _NAME_END

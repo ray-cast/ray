@@ -86,8 +86,10 @@ public:
 	
 	void drawCone(MaterialTechPtr tech, std::uint32_t layer = 0) noexcept;
 	void drawSphere(MaterialTechPtr tech, std::uint32_t layer = 0) noexcept;
-	void drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable, std::uint32_t layer = 0) noexcept;
-	void drawScreenQuad(MaterialTechPtr tech, std::uint32_t layer = 0) noexcept;
+	void drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept;
+	void drawMeshLayer(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable, std::uint32_t layer) noexcept;
+	void drawScreenQuad(MaterialTechPtr tech) noexcept;
+	void drawScreenQuadLayer(MaterialTechPtr tech, std::uint32_t layer) noexcept;
 	void drawRenderQueue(RenderQueue queue, MaterialTechPtr tech = nullptr) noexcept;
 
 	void addPostProcess(RenderPostProcessPtr postprocess) noexcept;
@@ -104,7 +106,7 @@ public:
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
 	GraphicsInputLayoutPtr createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept;
-	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim) noexcept;
+	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear) noexcept;
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
 	GraphicsFramebufferPtr createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept;

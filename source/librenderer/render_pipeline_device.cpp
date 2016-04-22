@@ -147,7 +147,7 @@ RenderPipelineDevice::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTe
 }
 
 GraphicsTexturePtr
-RenderPipelineDevice::createTexture(const std::string& name, GraphicsTextureDim dim) noexcept
+RenderPipelineDevice::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter) noexcept
 {
 	StreamReaderPtr stream;
 	if (IoServer::instance()->openFile(stream, name))
@@ -155,35 +155,36 @@ RenderPipelineDevice::createTexture(const std::string& name, GraphicsTextureDim 
 		Image image;
 		if (image.load(*stream))
 		{
+			ImageType type = image.getImageType();
 			GraphicsFormat format = GraphicsFormat::GraphicsFormatUndefined;
 
-			if (image.getImageType() == ImageType::ImageTypeBC1RGBU)
+			if (type == ImageType::ImageTypeBC1RGBU)
 				format = GraphicsFormat::GraphicsFormatBC1RGBUNormBlock;
-			else if (image.getImageType() == ImageType::ImageTypeBC1RGBAU)
+			else if (type == ImageType::ImageTypeBC1RGBAU)
 				format = GraphicsFormat::GraphicsFormatBC1RGBAUNormBlock;
-			else if (image.getImageType() == ImageType::ImageTypeBC1RGBSRGB)
+			else if (type == ImageType::ImageTypeBC1RGBSRGB)
 				format = GraphicsFormat::GraphicsFormatBC1RGBSRGBBlock;
-			else if (image.getImageType() == ImageType::ImageTypeBC1RGBASRGB)
+			else if (type == ImageType::ImageTypeBC1RGBASRGB)
 				format = GraphicsFormat::GraphicsFormatBC1RGBASRGBBlock;
-			else if (image.getImageType() == ImageType::ImageTypeBC3U)
+			else if (type == ImageType::ImageTypeBC3U)
 				format = GraphicsFormat::GraphicsFormatBC3UNormBlock;
-			else if (image.getImageType() == ImageType::ImageTypeBC3SRGB)
+			else if (type == ImageType::ImageTypeBC3SRGB)
 				format = GraphicsFormat::GraphicsFormatBC3SRGBBlock;
-			else if (image.getImageType() == ImageType::ImageTypeBC4U)
+			else if (type == ImageType::ImageTypeBC4U)
 				format = GraphicsFormat::GraphicsFormatBC4UNormBlock;
-			else if (image.getImageType() == ImageType::ImageTypeBC4S)
+			else if (type == ImageType::ImageTypeBC4S)
 				format = GraphicsFormat::GraphicsFormatBC4SNormBlock;
-			else if (image.getImageType() == ImageType::ImageTypeBC5U)
-				format = GraphicsFormat::GraphicsFormatBC5UNormBlock;
-			else if (image.getImageType() == ImageType::ImageTypeBC5S)
+			else if (type == ImageType::ImageTypeBC5U)
+				format = GraphicsFormat::GraphicsFormatBC3UNormBlock;
+			else if (type == ImageType::ImageTypeBC5S)
 				format = GraphicsFormat::GraphicsFormatBC5SNormBlock;
-			else if (image.getImageType() == ImageType::ImageTypeBC6HUFloat)
+			else if (type == ImageType::ImageTypeBC6HUFloat)
 				format = GraphicsFormat::GraphicsFormatBC6HUFloatBlock;
-			else if (image.getImageType() == ImageType::ImageTypeBC6HSFloat)
+			else if (type == ImageType::ImageTypeBC6HSFloat)
 				format = GraphicsFormat::GraphicsFormatBC6HSFloatBlock;
-			else if (image.getImageType() == ImageType::ImageTypeBC7U)
+			else if (type == ImageType::ImageTypeBC7U)
 				format = GraphicsFormat::GraphicsFormatBC7UNormBlock;
-			else if (image.getImageType() == ImageType::ImageTypeBC7SRGB)
+			else if (type == ImageType::ImageTypeBC7SRGB)
 				format = GraphicsFormat::GraphicsFormatBC7SRGBBlock;
 			else
 			{
@@ -229,6 +230,7 @@ RenderPipelineDevice::createTexture(const std::string& name, GraphicsTextureDim 
 			textureDesc.setStream(image.data());
 			textureDesc.setStreamSize(image.size());
 			textureDesc.setMipLevel(image.getMipLevel());
+			textureDesc.setSamplerFilter(filter);
 
 			return this->createTexture(textureDesc);
 		}

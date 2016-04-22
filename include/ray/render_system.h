@@ -78,7 +78,7 @@ public:
 	bool isVertexSupport(GraphicsFormat format) noexcept;
 
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
-	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim) noexcept;
+	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear) noexcept;
 	GraphicsTexturePtr createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept;
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;

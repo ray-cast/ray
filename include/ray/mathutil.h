@@ -528,12 +528,12 @@ inline T GaussianDistribution(T x, T y, T r)
 }
 
 template<typename T>
-inline void GaussianKernel(std::vector<T>& weights, std::vector<T> offsets, std::size_t radius, T deviation, T size)
+inline void GaussianKernel(std::vector<T>& weights, std::vector<T>& offsets, std::size_t radius, T deviation, T size)
 {
 	weights.resize(radius);
 	offsets.resize(radius);
 
-	for (int i = 0; i < radius; ++i)
+	for (std::size_t i = 0; i < radius; ++i)
 		weights[i] = GaussianDistribution(-i, 0.0f, radius / deviation);
 
 	for (std::size_t i = 0; i < weights.size(); ++i)

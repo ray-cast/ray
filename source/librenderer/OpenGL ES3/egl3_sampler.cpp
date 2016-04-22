@@ -100,22 +100,22 @@ EGL3Sampler::setup(const GraphicsSamplerDesc& samplerDesc) except
 	}
 	else if (filter == GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapLinear)
 	{
-		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 	}
 	else if (filter == GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest)
 	{
-		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 	}
 	else if (filter == GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest)
 	{
-		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 	}
 	else if (filter == GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear)
 	{
-		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	}
 	else

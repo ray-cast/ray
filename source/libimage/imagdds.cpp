@@ -130,6 +130,45 @@ struct DDSRawPixelData
 #define DDS_MAX(a, b) (a > b ? a : b)
 #define DDS_MIN(a, b) (a > b ? b : a)
 
+void DDStoCubeMap(char* buffer, std::size_t mipBase, std::size_t mipLevel, std::size_t width, std::size_t height, std::size_t depth, std::size_t pixelSize, char* stream)
+{
+	std::size_t offset1 = 0;
+	std::size_t offset2 = 0;
+	std::size_t allLayerSize = 0;
+
+	std::size_t w = width;
+	std::size_t h = height;
+	for (std::size_t mip = mipBase; mip < mipBase + mipLevel; mip++)
+	{
+		std::size_t mipSize = w * h * pixelSize;
+
+		w = std::max(w >> 1, (std::size_t)1);
+		h = std::max(h >> 1, (std::size_t)1);
+
+		allLayerSize += mipSize;
+	}
+
+	w = width;
+	h = height;
+
+	for (std::size_t mip = mipBase; mip < mipBase + mipLevel; mip++)
+	{
+		std::size_t mipSize = w * h * 3;
+
+		for (std::size_t i = 0; i < depth; i++)
+		{
+			std::size_t offset = allLayerSize * i + offset1;
+			std::memcpy(buffer + offset2, (char*)stream + offset, mipSize);
+			offset2 += mipSize;
+		}
+
+		w = std::max(w >> 1, (std::size_t)1);
+		h = std::max(h >> 1, (std::size_t)1);
+
+		offset1 += mipSize;
+	}
+}
+
 DDSHandler::DDSHandler() noexcept
 {
 }
@@ -160,70 +199,77 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 		return false;
 
 	auto size = stream.size() - sizeof(info);
-	auto data = make_scope<std::uint8_t[]>(size);
+	auto data = make_scope<char[]>(size);	
+	if (!stream.read((char*)data.get(), size))
+		return false;
 
-	if (image.create(info.width, info.height, info.depth, info.format.size, size, data.get(), false))
+	image.setMipLevel(info.mip_level);
+
+	switch (info.format.fourcc)
 	{
-		if (stream.read((char*)image.data(), size))
+	case DDS_FOURCC_DXT1:
+		image.setImageType(ImageType::ImageTypeBC1RGBU);
+		break;
+	case DDS_FOURCC_DXT3:
+		image.setImageType(ImageType::ImageTypeBC3U);
+		break;
+	case DDS_FOURCC_DXT5:
+		image.setImageType(ImageType::ImageTypeBC5U);
+		break;
+	case DDS_FOURCC_BC4U:
+		image.setImageType(ImageType::ImageTypeBC4U);
+		break;
+	case DDS_FOURCC_BC4S:
+		image.setImageType(ImageType::ImageTypeBC4S);
+		break;
+	case DDS_FOURCC_BC5S:
+		image.setImageType(ImageType::ImageTypeBC5S);
+		break;
+	case DDS_FOURCC_ATI2:
+		image.setImageType(ImageType::ImageTypeATI2);
+		break;
+	default:
+	{
+		if (info.format.blue_mask > info.format.red_mask)
 		{
-			data.dismiss();
-
-			switch (info.format.fourcc)
-			{
-			case DDS_FOURCC_DXT1:
-				image.setImageType(ImageType::ImageTypeBC1RGBU);
-				break;
-			case DDS_FOURCC_DXT3:
-				image.setImageType(ImageType::ImageTypeBC3U);
-				break;
-			case DDS_FOURCC_BC4U:
-				image.setImageType(ImageType::ImageTypeBC4U);
-				break;
-			case DDS_FOURCC_BC4S:
-				image.setImageType(ImageType::ImageTypeBC4S);
-				break;
-			case DDS_FOURCC_DXT5:
-				image.setImageType(ImageType::ImageTypeBC5U);
-				break;
-			case DDS_FOURCC_BC5S:
-				image.setImageType(ImageType::ImageTypeBC5S);
-				break;
-			case DDS_FOURCC_ATI2:
-				image.setImageType(ImageType::ImageTypeATI2);
-				break;
-			default:
-			{
-				if (info.depth > 0)
-				{
-					image.setImageType(ImageType::ImageTypeCube);
-					if (info.format.blue_mask > info.format.red_mask)
-					{
-						if (info.format.alpha_mask > 0)
-							image.setImageFormat(ImageFormat::ImageFormatR8G8B8A8);
-						else
-							image.setImageFormat(ImageFormat::ImageFormatR8G8B8);
-					}
-					else
-					{
-						if (info.format.alpha_mask > 0)
-							image.setImageFormat(ImageFormat::ImageFormatB8G8R8A8);
-						else
-							image.setImageFormat(ImageFormat::ImageFormatB8G8R8);
-					}
-				}
-				else
-					assert(false);
-			}
-			break;
-			}
-
-			image.setMipLevel(info.mip_level);
-
-			return true;
+			if (info.format.bpp == 32)
+				image.setImageFormat(ImageFormat::ImageFormatR8G8B8A8);
+			else
+				image.setImageFormat(ImageFormat::ImageFormatR8G8B8);
 		}
+		else
+		{
+			if (info.format.bpp == 32)
+				image.setImageFormat(ImageFormat::ImageFormatB8G8R8A8);
+			else
+				image.setImageFormat(ImageFormat::ImageFormatB8G8R8);
+		}
+
+		if (info.depth > 0)
+			image.setImageType(ImageType::ImageType3D);
+		else
+			image.setImageType(ImageType::ImageTypeCube);
 	}
-	
-	return false;
+	break;
+	}
+
+	if (image.getImageType() != ImageType::ImageTypeCube)
+	{
+		if (!image.create(info.width, info.height, info.depth, info.format.size, size, (std::uint8_t*)data.get(), false))
+			return false;
+		data.dismiss();
+	}
+	else
+	{
+		auto swap = make_scope<char[]>(size);
+		std::size_t pixelSize = (info.format.bpp == 24) ? 3 : 4;
+		DDStoCubeMap(swap.get(), 0, info.mip_level, info.width, info.height, 6, pixelSize, data.get());
+		if (!image.create(info.width, info.height, info.depth, info.format.size, size, (std::uint8_t*)swap.get(), false))
+			return false;
+		swap.dismiss();
+	}
+
+	return true;
 }
 
 bool 

@@ -701,18 +701,18 @@ OGLTypes::asTextureInternalFormat(GraphicsFormat format) noexcept
 	case GraphicsFormatBC1RGBSRGBBlock:	         internalFormat = GL_COMPRESSED_SRGB_S3TC_DXT1_EXT; break;
 	case GraphicsFormatBC1RGBAUNormBlock:	     internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT; break;
 	case GraphicsFormatBC1RGBASRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT; break;
-	case GraphicsFormatBC2UNormBlock:	         internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatBC2SRGBBlock:	         internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatBC3UNormBlock:	         internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT; break;
-	case GraphicsFormatBC3SRGBBlock:	         internalFormat = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT; break;
-	case GraphicsFormatBC4UNormBlock:	         internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatBC4SNormBlock:	         internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatBC5UNormBlock:	         internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
-	case GraphicsFormatBC5SNormBlock:	         internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatBC6HUFloatBlock:	         internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatBC6HSFloatBlock:	         internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatBC7UNormBlock:	         internalFormat = GL_INVALID_ENUM; break;
-	case GraphicsFormatBC7SRGBBlock:	         internalFormat = GL_INVALID_ENUM; break;
+	case GraphicsFormatBC2UNormBlock:	         internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT; break;
+	case GraphicsFormatBC2SRGBBlock:	         internalFormat = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT; break;
+	case GraphicsFormatBC3UNormBlock:	         internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; break;
+	case GraphicsFormatBC3SRGBBlock:	         internalFormat = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT; break;
+	case GraphicsFormatBC4UNormBlock:	         internalFormat = GL_COMPRESSED_RED_RGTC1; break;
+	case GraphicsFormatBC4SNormBlock:	         internalFormat = GL_COMPRESSED_SIGNED_RED_RGTC1; break;
+	case GraphicsFormatBC5UNormBlock:	         internalFormat = GL_COMPRESSED_RG_RGTC2; break;
+	case GraphicsFormatBC5SNormBlock:	         internalFormat = GL_COMPRESSED_SIGNED_RG_RGTC2; break;
+	case GraphicsFormatBC6HUFloatBlock:	         internalFormat = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT; break;
+	case GraphicsFormatBC6HSFloatBlock:	         internalFormat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT; break;
+	case GraphicsFormatBC7UNormBlock:	         internalFormat = GL_COMPRESSED_RGBA_BPTC_UNORM; break;
+	case GraphicsFormatBC7SRGBBlock:	         internalFormat = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM; break;
 	case GraphicsFormatETC2R8G8B8UNormBlock:	 internalFormat = GL_COMPRESSED_RGB8_ETC2; break;
 	case GraphicsFormatETC2R8G8B8SRGBBlock:	     internalFormat = GL_COMPRESSED_SRGB8_ETC2; break;
 	case GraphicsFormatETC2R8G8B8A1UNormBlock:	 internalFormat = GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2; break;
@@ -882,7 +882,7 @@ OGLTypes::asSamplerWrap(GraphicsSamplerWrap wrap) noexcept
 }
 
 GLenum
-OGLTypes::asSamplerFilter(GraphicsSamplerFilter filter) noexcept
+OGLTypes::asSamplerMinFilter(GraphicsSamplerFilter filter) noexcept
 {
 	switch (filter)
 	{
@@ -895,6 +895,41 @@ OGLTypes::asSamplerFilter(GraphicsSamplerFilter filter) noexcept
 	default:
 		GL_PLATFORM_ASSERT(false, "Invalid sampler filter");
 		return GL_INVALID_ENUM;
+	}
+}
+
+GLenum
+OGLTypes::asSamplerMagFilter(GraphicsSamplerFilter filter) noexcept
+{
+	switch (filter)
+	{
+	case GraphicsSamplerFilter::GraphicsSamplerFilterNearest:              return GL_NEAREST;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterLinear:               return GL_LINEAR;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapLinear:  return GL_NEAREST;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterNearestMipmapNearest: return GL_NEAREST;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapNearest:  return GL_LINEAR;
+	case GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear:   return GL_LINEAR;
+	default:
+		GL_PLATFORM_ASSERT(false, "Invalid sampler filter");
+		return GL_INVALID_ENUM;
+	}
+}
+
+GLsizei 
+OGLTypes::getFormatNum(GLenum format) noexcept
+{
+	if (format == GL_RED)
+		return 1;
+	else if (format == GL_RG)
+		return 2;
+	else if (format == GL_RGB || format == GL_BGR || format == GL_SRGB)
+		return 3;
+	else if (format == GL_RGBA || format == GL_BGRA || format == GL_ABGR_EXT || format == GL_SRGB_ALPHA)
+		return 4;
+	else
+	{
+		assert(false);
+		return 0;
 	}
 }
 

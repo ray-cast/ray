@@ -61,7 +61,7 @@ Light::Light() noexcept
 	_shadowCamera[0]= std::make_shared<Camera>();
 	_shadowCamera[0]->setOwnerListener(this);
 	_shadowCamera[0]->setCameraOrder(CameraOrder::CameraOrderShadow);
-	_shadowCamera[0]->setCameraRender(CameraRender::CameraRenderTexture);
+	_shadowCamera[0]->setCameraRenderFlags(CameraRenderFlagBits::CameraRenderTextureBit);
 	_shadowCamera[0]->setAperture(90.0);
 	_shadowCamera[0]->setNear(0.1);
 	_shadowCamera[0]->setRatio(1.0);

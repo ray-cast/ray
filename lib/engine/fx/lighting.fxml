@@ -72,12 +72,12 @@
             return 0.0f;
         }
 
-        float brefEnvironmentEnvMip(float roughness, int numMip)
+        float brefEnvironmentEnvMip(float gloss, int numMip)
         {
-            return lerp(numMip, 0, roughness);
+            return lerp(numMip, 0, gloss);
         }
 
-        float3 brefEnvironmentEnvVec(float3 normal, float3 view)
+        float3 brdfEnvironmentEnvVec(float3 normal, float3 view)
         {
             return -reflect(view, normal);
         }
@@ -87,14 +87,14 @@
             return prefilteredColor * diff;
         }
 
-        float brdfEnvironmentSpecular(float3 prefilteredColor, Texture2D texLUT, float3 N, float3 V, float gloss, float specular)
+        float3 brdfEnvironmentSpecular(float3 prefilteredColor, Texture2D texLUT, float3 N, float3 V, float gloss, float specular)
         {
             float NdotV = max(0, dot(N, V));
             float2 envBRDF = texLUT.Sample(PointClamp, float2(NdotV, 1.0f - gloss)).rg;
             return prefilteredColor * (specular * envBRDF.x + envBRDF.y);
         }
 
-        float brdfEnvironmentSpecular(float3 prefilteredColor, float3 N, float3 V, float gloss, float specular)
+        float3 brdfEnvironmentSpecular(float3 prefilteredColor, float3 N, float3 V, float gloss, float specular)
         {
             float NdotV = max(0, dot(N, V));
             gloss = max(0.5f / 16.0f, gloss);
@@ -143,11 +143,10 @@
             return rim * (1.0f - NdotV) * rimPower;
         }
 
-        float shadowLighting(Texture2D shadowMap, float4x4 shadowEye2LightViewProject, float4 shadowEye2LightView, float4 shadowFactor, float3 viewPosition)
+        float shadowLighting(Texture2D shadowMap, float4x4 shadowEye2LightViewProject, float4 shadowEye2LightView, float2 shadowFactor, float3 viewPosition)
         {
-            // shadowFactor.xy is shadow clip constant
-            // shadowFactor.z is shadow scale
-            // shadowFactor.w is shadow bias
+            // shadowFactor.x is shadow scale
+            // shadowFactor.y is shadow bias
 
             float4 proj = mul(float4(viewPosition, 1.0), shadowEye2LightViewProject);
             proj /= proj.w;
@@ -155,10 +154,15 @@
 
             float d1 = shadowMap.Sample(LinearClamp, proj.xy).r;
             float d2 = dot(float4(viewPosition, 1.0), shadowEye2LightView);
-            float d = exp((shadowFactor.z * (d1 - d2) + shadowFactor.w));
+            float d = exp((shadowFactor.x * (d1 - d2) + shadowFactor.y));
             float shadow = saturate(d);
 
             return shadow;
+        }
+
+        float3 shadingLight(float3 diffuse, float3 lightDiffuse, float specular)
+        {
+            return diffuse * lightDiffuse + lightDiffuse * specular;
         }
         ]]>
     </shader>

@@ -204,12 +204,12 @@ OGLTexture::applySamplerWrap(GLenum target, GraphicsSamplerWrap wrap) noexcept
 bool
 OGLTexture::applySamplerFilter(GLenum target, GraphicsSamplerFilter filter) noexcept
 {
-	GLenum glfilter = OGLTypes::asSamplerFilter(filter);
-	if (glfilter != GL_INVALID_ENUM)
+	GLenum min = OGLTypes::asSamplerMinFilter(filter);
+	GLenum mag = OGLTypes::asSamplerMagFilter(filter);
+	if (min != GL_INVALID_ENUM && mag != GL_INVALID_ENUM)
 	{
-		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, glfilter);
-		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, glfilter);
-
+		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, min);
+		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, mag);
 		return true;
 	}
 

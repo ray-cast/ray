@@ -731,7 +731,7 @@ OGLCoreDeviceContext::initTextureSupports() noexcept
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16UNorm);
 	}
-
+	
 	if (GLEW_VERSION_2_0 || GLEW_EXT_texture || GLEW_EXT_bgra)
 	{
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8UNorm);
@@ -907,44 +907,52 @@ OGLCoreDeviceContext::initTextureSupports() noexcept
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8UNormBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8A1UNormBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8A8UNormBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8SRGBBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8A1SRGBBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8A8SRGBBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatEACR11UNormBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatEACR11SNormBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatEACR11G11UNormBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatEACR11G11SNormBlock);
 	}
 
-	if (GLEW_KHR_texture_compression_astc_ldr)
+	if (GLEW_ARB_ES3_compatibility && GL_EXT_texture_sRGB)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8A1SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatETC2R8G8B8A8SRGBBlock);
+	}
+
+	if (GLEW_KHR_texture_compression_astc_ldr || GL_KHR_texture_compression_astc_hdr)
 	{
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC4x4UNormBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC4x4SRGBBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC5x4UNormBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC5x4SRGBBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC5x5UNormBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC5x5SRGBBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC6x5UNormBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC6x5SRGBBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC6x6UNormBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC6x6SRGBBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x5UNormBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x5SRGBBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x6UNormBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x6SRGBBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x8UNormBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x8SRGBBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x5UNormBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x5SRGBBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x6UNormBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x6SRGBBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x8UNormBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x8SRGBBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x10UNormBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x10SRGBBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC12x10UNormBlock);
-		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC12x10SRGBBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC12x12UNormBlock);
+	}
+
+	if ((GLEW_KHR_texture_compression_astc_ldr || GL_KHR_texture_compression_astc_hdr) && GL_EXT_texture_sRGB)
+	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC4x4SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC5x4SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC5x5SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC6x5SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC6x6SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x5SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x6SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC8x8SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x5SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x6SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x8SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC10x10SRGBBlock);
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC12x10SRGBBlock);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatASTC12x12SRGBBlock);
 	}
 

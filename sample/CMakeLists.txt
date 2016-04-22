@@ -7,7 +7,7 @@ FOREACH(mySamples
     "1.HelloWorld"
     "2.UI"
     "3.Sound"
-    "4.SSRR"
+    "4.EnvLighting"
     "5.SSSSS"
     "6.CubeWorld"
 )

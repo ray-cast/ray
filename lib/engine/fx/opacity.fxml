@@ -6,7 +6,7 @@
     <parameter name="matModelInverseTranspose" type="float4x4" semantic="matModelInverseTranspose" />
     <parameter name="matView" type="float4x4" semantic="matView"/>
     <parameter name="diffuse" type="float4" />
-    <parameter name="specular" type="float4" />
+    <parameter name="specular" type="float" />
     <parameter name="shininess" type="float" />
     <parameter name="texDiffuse" type="texture2D"/>
     <parameter name="texSpecular" type="texture2D" />
@@ -40,12 +40,7 @@
                 else
                     albedo = texDiffuse.Sample(PointClamp, float2(coord.x, 1.0f - coord.y));
 
-                if (specular.w > 0.0f)
-                    spec = specular.rgb;
-                else
-                    spec = texSpecular.Sample(PointClamp, coord).rgb;
-
-                FragData0 = StoreGBufferRT0(srgb2linear(albedo), spec);
+                FragData0 = StoreGBufferRT0(srgb2linear(albedo), specular);
                 FragData1 = StoreGBufferRT1(normalize(normal.xyz), shininess);
             }
         ]]>

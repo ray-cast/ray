@@ -126,8 +126,8 @@ void
 GameComponent::load(iarchive& reader) noexcept
 {
 	std::string name;
-	reader >> make_archive(name, "name");
-	this->setName(name);
+	if (reader.getValue("name", name))
+		this->setName(name);
 }
 
 void

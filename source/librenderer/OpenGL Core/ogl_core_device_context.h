@@ -151,6 +151,7 @@ private:
 	std::string _tokenData;
 
 	bool _needUpdateLayout;
+	bool _needUpdateState;
 
 	OGLCoreGraphicsDataPtr _vbo;
 	OGLCoreGraphicsDataPtr _ibo;

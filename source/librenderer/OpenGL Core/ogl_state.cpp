@@ -59,60 +59,54 @@ OGLGraphicsState::close() noexcept
 }
 
 void
-OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
+OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 {
 	if (_stateDesc.getBlendEnable())
 	{
 		if (!lastStateDesc.getBlendEnable())
+		{
 			glEnable(GL_BLEND);
-
-		if (_stateDesc.getBlendSeparateEnable())
-		{
-			if (lastStateDesc.getBlendSrc() != _stateDesc.getBlendSrc() ||
-				lastStateDesc.getBlendDest() != _stateDesc.getBlendDest() ||
-				lastStateDesc.getBlendAlphaSrc() != _stateDesc.getBlendAlphaSrc() ||
-				lastStateDesc.getBlendAlphaDest() != _stateDesc.getBlendAlphaDest())
-			{
-				GLenum sfactorRGB = OGLTypes::asBlendFactor(_stateDesc.getBlendSrc());
-				GLenum dfactorRGB = OGLTypes::asBlendFactor(_stateDesc.getBlendDest());
-				GLenum sfactorAlpha = OGLTypes::asBlendFactor(_stateDesc.getBlendAlphaSrc());
-				GLenum dfactorAlpha = OGLTypes::asBlendFactor(_stateDesc.getBlendAlphaDest());
-
-				glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
-			}
-
-			if (lastStateDesc.getBlendOp() != _stateDesc.getBlendOp() ||
-				lastStateDesc.getBlendAlphaOp() != _stateDesc.getBlendAlphaOp())
-			{
-				GLenum modeRGB = OGLTypes::asBlendOperation(_stateDesc.getBlendOp());
-				GLenum modeAlpha = OGLTypes::asBlendOperation(_stateDesc.getBlendAlphaOp());
-
-				glBlendEquationSeparate(modeRGB, modeAlpha);
-			}
+			lastStateDesc.setBlendEnable(true);
 		}
-		else
+
+		if (lastStateDesc.getBlendSrc() != _stateDesc.getBlendSrc() ||
+			lastStateDesc.getBlendDest() != _stateDesc.getBlendDest() ||
+			lastStateDesc.getBlendAlphaSrc() != _stateDesc.getBlendAlphaSrc() ||
+			lastStateDesc.getBlendAlphaDest() != _stateDesc.getBlendAlphaDest())
 		{
-			if (lastStateDesc.getBlendSrc() != _stateDesc.getBlendSrc() ||
-				lastStateDesc.getBlendDest() != _stateDesc.getBlendDest())
-			{
-				GLenum sfactorRGB = OGLTypes::asBlendFactor(_stateDesc.getBlendSrc());
-				GLenum dfactorRGB = OGLTypes::asBlendFactor(_stateDesc.getBlendDest());
+			GLenum sfactorRGB = OGLTypes::asBlendFactor(_stateDesc.getBlendSrc());
+			GLenum dfactorRGB = OGLTypes::asBlendFactor(_stateDesc.getBlendDest());
+			GLenum sfactorAlpha = OGLTypes::asBlendFactor(_stateDesc.getBlendAlphaSrc());
+			GLenum dfactorAlpha = OGLTypes::asBlendFactor(_stateDesc.getBlendAlphaDest());
 
-				glBlendFunc(sfactorRGB, dfactorRGB);
-			}
+			glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
 
-			if (lastStateDesc.getBlendOp() != _stateDesc.getBlendOp())
-			{
-				GLenum modeRGB = OGLTypes::asBlendOperation(_stateDesc.getBlendOp());
-				glBlendEquation(modeRGB);
-			}
+			lastStateDesc.setBlendSrc(_stateDesc.getBlendSrc());
+			lastStateDesc.setBlendDest(_stateDesc.getBlendDest());
+			lastStateDesc.setBlendAlphaSrc(_stateDesc.getBlendAlphaSrc());
+			lastStateDesc.setBlendAlphaDest(_stateDesc.getBlendAlphaDest());
 		}
+
+		if (lastStateDesc.getBlendOp() != _stateDesc.getBlendOp() ||
+			lastStateDesc.getBlendAlphaOp() != _stateDesc.getBlendAlphaOp())
+		{
+			GLenum modeRGB = OGLTypes::asBlendOperation(_stateDesc.getBlendOp());
+			GLenum modeAlpha = OGLTypes::asBlendOperation(_stateDesc.getBlendAlphaOp());
+
+			glBlendEquationSeparate(modeRGB, modeAlpha);
+
+			lastStateDesc.setBlendOp(_stateDesc.getBlendOp());
+			lastStateDesc.setBlendAlphaOp(_stateDesc.getBlendAlphaOp());
+		}
+
 	}
 	else
 	{
 		if (lastStateDesc.getBlendEnable())
 		{
 			glDisable(GL_BLEND);
+
+			lastStateDesc.setBlendEnable(false);
 		}
 	}
 
@@ -123,10 +117,13 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 			GLenum mode = OGLTypes::asCullMode(_stateDesc.getCullMode());
 			glEnable(GL_CULL_FACE);
 			glCullFace(mode);
+
+			lastStateDesc.setCullMode(_stateDesc.getCullMode());
 		}
 		else
 		{
 			glDisable(GL_CULL_FACE);
+			lastStateDesc.setCullMode(GraphicsCullMode::GraphicsCullModeNone);
 		}
 	}
 
@@ -134,6 +131,7 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 	{
 		GLenum mode = OGLTypes::asFillMode(_stateDesc.getPolygonMode());
 		glPolygonMode(GL_FRONT_AND_BACK, mode);
+		lastStateDesc.setPolygonMode(_stateDesc.getPolygonMode());
 	}
 
 	if (lastStateDesc.getScissorTestEnable() != _stateDesc.getScissorTestEnable())
@@ -142,6 +140,7 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 			glEnable(GL_SCISSOR_TEST);
 		else
 			glDisable(GL_SCISSOR_TEST);
+		lastStateDesc.setScissorTestEnable(_stateDesc.getScissorTestEnable());
 	}
 
 	if (lastStateDesc.getLinear2sRGBEnable() != _stateDesc.getLinear2sRGBEnable())
@@ -150,6 +149,7 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 			glEnable(GL_FRAMEBUFFER_SRGB);
 		else
 			glDisable(GL_FRAMEBUFFER_SRGB);
+		lastStateDesc.setLinear2sRGBEnable(_stateDesc.getLinear2sRGBEnable());
 	}
 
 	if (_stateDesc.getDepthEnable())
@@ -157,12 +157,14 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 		if (!lastStateDesc.getDepthEnable())
 		{
 			glEnable(GL_DEPTH_TEST);
+			lastStateDesc.setDepthEnable(true);
 		}
 
 		if (lastStateDesc.getDepthFunc() != _stateDesc.getDepthFunc())
 		{
 			GLenum func = OGLTypes::asCompareFunction(_stateDesc.getDepthFunc());
 			glDepthFunc(func);
+			lastStateDesc.setDepthFunc(_stateDesc.getDepthFunc());
 		}
 	}
 	else
@@ -170,6 +172,7 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 		if (lastStateDesc.getDepthEnable())
 		{
 			glDisable(GL_DEPTH_TEST);
+			lastStateDesc.setDepthEnable(false);
 		}
 	}
 
@@ -177,6 +180,7 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 	{
 		GLboolean enable = _stateDesc.getDepthWriteEnable() ? GL_TRUE : GL_FALSE;
 		glDepthMask(enable);
+		lastStateDesc.setDepthWriteEnable(_stateDesc.getDepthWriteEnable());
 	}
 
 	if (_stateDesc.getDepthBiasEnable())
@@ -184,12 +188,16 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 		if (!lastStateDesc.getDepthBiasEnable())
 		{
 			glEnable(GL_POLYGON_OFFSET_FILL);
+			lastStateDesc.setDepthBiasEnable(true);
 		}
 
 		if (lastStateDesc.getDepthBias() != _stateDesc.getDepthBias() ||
 			lastStateDesc.getDepthSlopeScaleBias() != _stateDesc.getDepthSlopeScaleBias())
 		{
 			glPolygonOffset(_stateDesc.getDepthSlopeScaleBias(), _stateDesc.getDepthBias());
+
+			lastStateDesc.setDepthBias(_stateDesc.getDepthBias());
+			lastStateDesc.setDepthSlopeScaleBias(_stateDesc.getDepthSlopeScaleBias());
 		}
 	}
 	else
@@ -197,6 +205,7 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 		if (lastStateDesc.getDepthBiasEnable())
 		{
 			glDisable(GL_POLYGON_OFFSET_FILL);
+			lastStateDesc.setDepthBiasEnable(false);
 		}
 	}
 
@@ -205,6 +214,7 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 		if (!lastStateDesc.getStencilEnable())
 		{
 			glEnable(GL_STENCIL_TEST);
+			lastStateDesc.setStencilEnable(true);
 		}
 
 		if (lastStateDesc.getStencilFrontFunc() != _stateDesc.getStencilFrontFunc() ||
@@ -213,6 +223,10 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 		{
 			GLenum frontfunc = OGLTypes::asCompareFunction(_stateDesc.getStencilFrontFunc());
 			glStencilFuncSeparate(GL_FRONT, frontfunc, _stateDesc.getStencilFrontRef(), _stateDesc.getStencilFrontReadMask());
+
+			lastStateDesc.setStencilFrontFunc(_stateDesc.getStencilFrontFunc());
+			lastStateDesc.setStencilFrontRef(_stateDesc.getStencilFrontRef());
+			lastStateDesc.setStencilFrontReadMask(_stateDesc.getStencilFrontReadMask());
 		}
 
 		if (lastStateDesc.getStencilBackFunc() != _stateDesc.getStencilBackFunc() ||
@@ -221,6 +235,10 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 		{
 			GLenum backfunc = OGLTypes::asCompareFunction(_stateDesc.getStencilBackFunc());
 			glStencilFuncSeparate(GL_BACK, backfunc, _stateDesc.getStencilBackRef(), _stateDesc.getStencilBackReadMask());
+
+			lastStateDesc.setStencilBackFunc(_stateDesc.getStencilBackFunc());
+			lastStateDesc.setStencilBackRef(_stateDesc.getStencilBackRef());
+			lastStateDesc.setStencilBackReadMask(_stateDesc.getStencilBackReadMask());
 		}
 
 		if (lastStateDesc.getStencilFrontFail() != _stateDesc.getStencilFrontFail() ||
@@ -230,7 +248,12 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 			GLenum frontfail = OGLTypes::asStencilOperation(_stateDesc.getStencilFrontFail());
 			GLenum frontzfail = OGLTypes::asStencilOperation(_stateDesc.getStencilFrontZFail());
 			GLenum frontpass = OGLTypes::asStencilOperation(_stateDesc.getStencilFrontPass());
+
 			glStencilOpSeparate(GL_FRONT, frontfail, frontzfail, frontpass);
+
+			lastStateDesc.setStencilFrontFail(_stateDesc.getStencilFrontFail());
+			lastStateDesc.setStencilFrontZFail(_stateDesc.getStencilFrontZFail());
+			lastStateDesc.setStencilFrontPass(_stateDesc.getStencilFrontPass());
 		}
 
 		if (lastStateDesc.getStencilBackFail() != _stateDesc.getStencilBackFail() ||
@@ -241,16 +264,22 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 			GLenum backzfail = OGLTypes::asStencilOperation(_stateDesc.getStencilBackZFail());
 			GLenum backpass = OGLTypes::asStencilOperation(_stateDesc.getStencilBackPass());
 			glStencilOpSeparate(GL_BACK, backfail, backzfail, backpass);
+
+			lastStateDesc.setStencilBackFail(_stateDesc.getStencilBackFail());
+			lastStateDesc.setStencilBackZFail(_stateDesc.getStencilBackZFail());
+			lastStateDesc.setStencilBackPass(_stateDesc.getStencilBackPass());
 		}
 
 		if (lastStateDesc.getStencilFrontWriteMask() != _stateDesc.getStencilFrontWriteMask())
 		{
 			glStencilMaskSeparate(GL_FRONT, _stateDesc.getStencilFrontWriteMask());
+			lastStateDesc.setStencilFrontWriteMask(_stateDesc.getStencilFrontWriteMask());
 		}
 
 		if (lastStateDesc.getStencilBackWriteMask() != _stateDesc.getStencilBackWriteMask())
 		{
 			glStencilMaskSeparate(GL_BACK, _stateDesc.getStencilBackWriteMask());
+			lastStateDesc.setStencilBackWriteMask(_stateDesc.getStencilBackWriteMask());
 		}
 	}
 	else
@@ -258,6 +287,7 @@ OGLGraphicsState::apply(const GraphicsStateDesc& lastStateDesc) noexcept
 		if (lastStateDesc.getStencilEnable())
 		{
 			glDisable(GL_STENCIL_TEST);
+			lastStateDesc.setStencilEnable(false);
 		}
 	}
 }

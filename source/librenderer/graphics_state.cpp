@@ -42,7 +42,6 @@ __ImplementSubInterface(GraphicsState, GraphicsChild, "GraphicsState")
 
 GraphicsStateDesc::GraphicsStateDesc() noexcept
 	: _blendEnable(false)
-	, _blendSeparateEnable(false)
 	, _scissorTestEnable(false)
 	, _srgbEnable(false)
 	, _multisampleEnable(false)
@@ -95,12 +94,6 @@ void
 GraphicsStateDesc::setBlendEnable(bool enable) noexcept
 {
 	_blendEnable = enable;
-}
-
-void
-GraphicsStateDesc::setBlendSeparateEnable(bool enable) noexcept
-{
-	_blendSeparateEnable = enable;
 }
 
 void
@@ -353,12 +346,6 @@ bool
 GraphicsStateDesc::getBlendEnable() const noexcept
 {
 	return _blendEnable;
-}
-
-bool
-GraphicsStateDesc::getBlendSeparateEnable() const noexcept
-{
-	return _blendSeparateEnable;
 }
 
 GraphicsBlendOp

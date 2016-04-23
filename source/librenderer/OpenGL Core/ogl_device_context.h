@@ -151,6 +151,7 @@ private:
 	GraphicsStateDesc _stateCaptured;
 
 	bool _needUpdateLayout;
+	bool _needUpdateState;
 
 	std::vector<GraphicsFormat> _supportTextures;
 	std::vector<GraphicsTextureDim> _supportTextureDims;

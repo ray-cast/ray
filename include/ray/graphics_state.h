@@ -48,7 +48,6 @@ public:
 	~GraphicsStateDesc() noexcept;
 
 	void setBlendEnable(bool enable) noexcept;
-	void setBlendSeparateEnable(bool enable) noexcept;
 	void setBlendOp(GraphicsBlendOp blendop) noexcept;
 	void setBlendSrc(GraphicsBlendFactor factor) noexcept;
 	void setBlendDest(GraphicsBlendFactor factor) noexcept;
@@ -95,7 +94,6 @@ public:
 	void setStencilBackPass(GraphicsStencilOp stencilOp) noexcept;
 
 	bool getBlendEnable() const noexcept;
-	bool getBlendSeparateEnable() const noexcept;
 	GraphicsBlendOp getBlendOp() const noexcept;
 	GraphicsBlendFactor getBlendSrc() const noexcept;
 	GraphicsBlendFactor getBlendDest() const noexcept;
@@ -143,7 +141,6 @@ public:
 
 private:
 	bool _blendEnable;
-	bool _blendSeparateEnable;
 	bool _scissorTestEnable;
 	bool _srgbEnable;
 	bool _multisampleEnable;

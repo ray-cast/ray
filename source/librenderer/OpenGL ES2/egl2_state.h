@@ -51,7 +51,7 @@ public:
 	bool setup(const GraphicsStateDesc& desc) noexcept;
 	void close() noexcept;
 
-	void apply(const GraphicsStateDesc& last) noexcept;
+	void apply(GraphicsStateDesc& last) noexcept;
 
 	const GraphicsStateDesc& getGraphicsStateDesc() const noexcept;
 

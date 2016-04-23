@@ -133,6 +133,7 @@ private:
 
 	EGL2FramebufferPtr _renderTexture;
 
+	bool _needUpdateState;
 	bool _needUpdateLayout;
 
 	EGL2GraphicsDataPtr _vbo;

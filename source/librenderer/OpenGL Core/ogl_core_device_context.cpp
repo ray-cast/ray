@@ -55,6 +55,7 @@ OGLCoreDeviceContext::OGLCoreDeviceContext() noexcept
 	, _clearDepth(1.0f)
 	, _clearStencil(0)
 	, _needUpdateLayout(true)
+	, _needUpdateState(true)
 	, _stateDefault(std::make_shared<OGLGraphicsState>())
 {
 	std::memset(&_viewport, 0, sizeof(_viewport));
@@ -179,6 +180,7 @@ OGLCoreDeviceContext::setStencilCompare(GraphicsStencilFace face, GraphicsCompar
 			GLenum frontfunc = OGLTypes::asCompareFunction(func);
 			glStencilFuncSeparate(GL_FRONT, frontfunc, _stateCaptured.getStencilFrontRef(), _stateCaptured.getStencilFrontReadMask());
 			_stateCaptured.setStencilFrontFunc(func);
+			_needUpdateState = true;
 		}
 	}
 	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
@@ -188,6 +190,7 @@ OGLCoreDeviceContext::setStencilCompare(GraphicsStencilFace face, GraphicsCompar
 			GLenum backfunc = OGLTypes::asCompareFunction(func);
 			glStencilFuncSeparate(GL_BACK, backfunc, _stateCaptured.getStencilFrontRef(), _stateCaptured.getStencilFrontReadMask());
 			_stateCaptured.setStencilBackFunc(func);
+			_needUpdateState = true;
 		}
 	}
 }
@@ -212,6 +215,7 @@ OGLCoreDeviceContext::setStencilReference(GraphicsStencilFace face, std::uint32_
 			GLenum frontfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilFrontFunc());
 			glStencilFuncSeparate(GL_FRONT, frontfunc, reference, _stateCaptured.getStencilFrontReadMask());
 			_stateCaptured.setStencilFrontRef(reference);
+			_needUpdateState = true;
 		}
 	}
 	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
@@ -221,6 +225,7 @@ OGLCoreDeviceContext::setStencilReference(GraphicsStencilFace face, std::uint32_
 			GLenum backfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilBackFunc());
 			glStencilFuncSeparate(GL_BACK, backfunc, reference, _stateCaptured.getStencilFrontReadMask());
 			_stateCaptured.setStencilBackRef(reference);
+			_needUpdateState = true;
 		}
 	}
 }
@@ -245,6 +250,7 @@ OGLCoreDeviceContext::setStencilFrontWriteMask(GraphicsStencilFace face, std::ui
 			GLenum frontfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilFrontFunc());
 			glStencilFuncSeparate(GL_FRONT, frontfunc, _stateCaptured.getStencilFrontRef(), mask);
 			_stateCaptured.setStencilFrontWriteMask(mask);
+			_needUpdateState = true;
 		}
 	}
 	if (face & GraphicsStencilFace::GraphicsStencilFaceBack)
@@ -254,6 +260,7 @@ OGLCoreDeviceContext::setStencilFrontWriteMask(GraphicsStencilFace face, std::ui
 			GLenum backfunc = OGLTypes::asCompareFunction(_stateCaptured.getStencilBackFunc());
 			glStencilFuncSeparate(GL_BACK, backfunc, _stateCaptured.getStencilBackRef(), mask);
 			_stateCaptured.setStencilBackWriteMask(mask);
+			_needUpdateState = true;
 		}
 	}
 }
@@ -280,12 +287,12 @@ OGLCoreDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 		auto& pipelineDesc = pipeline->getGraphicsPipelineDesc();
 
 		auto glstate = pipelineDesc.getGraphicsState()->downcast<OGLGraphicsState>();
-		if (_state != glstate)
+		if (_state != glstate || _needUpdateState)
 		{
 			glstate->apply(_stateCaptured);
 
 			_state = glstate;
-			_stateCaptured = glstate->getGraphicsStateDesc();
+			_needUpdateState = false;
 		}
 
 		auto glshader = pipelineDesc.getGraphicsProgram()->downcast<OGLProgram>();

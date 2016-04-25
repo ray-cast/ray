@@ -49,7 +49,7 @@ EGL3Types::setup() noexcept
 
 	std::memset(_egl3Features, GL_FALSE, sizeof(_egl3Features));
 
-	const GLubyte* extension = glGetString(GL_EXTENSIONS);
+	const GLubyte* extension = ::glGetString(GL_EXTENSIONS);
 	if (!extension)
 		return false;
 
@@ -104,8 +104,10 @@ EGL3Types::setup() noexcept
 		else if (strncmp(src, "GL_OES_vertex_type_10_10_10_2", length) == 0)       _egl3Features[EGL3Features::EGL3_OES_vertex_type_10_10_10_2] = GL_TRUE;
 		else if (strncmp(src, "GL_OES_vertex_half_float", length) == 0)            _egl3Features[EGL3Features::EGL3_OES_vertex_half_float] = GL_TRUE;
 		else if (strncmp(src, "GL_EXT_texture_filter_anisotropic", length) == 0)   _egl3Features[EGL3Features::EGL3_EXT_texture_filter_anisotropic] = GL_TRUE;
+		else if (strncmp(src, "GL_OES_compressed_ETC1_RGB8_texture", length) == 0) _egl3Features[EGL3Features::EGL3_OES_compressed_ETC1_RGB8_texture] = GL_TRUE;
+		else if (strncmp(src, "GL_EXT_texture_cube_map_array", length) == 0)	   _egl3Features[EGL3Features::EGL3_EXT_texture_cube_map_array] = GL_TRUE;	
 		else if (strncmp(src, "GL_KHR_debug", length) == 0)                        _egl3Features[EGL3Features::EGL3_KHR_debug] = GL_TRUE;
-		
+
 		offset = pos + 1;
 	}
 
@@ -986,6 +988,24 @@ EGL3Types::asSamplerMagFilter(GraphicsSamplerFilter filter) noexcept
 	default:
 		GL_PLATFORM_ASSERT(false, "Invalid sampler filter");
 		return GL_INVALID_ENUM;
+	}
+}
+
+GLsizei
+EGL3Types::getFormatNum(GLenum format) noexcept
+{
+	if (format == GL_RED)
+		return 1;
+	else if (format == GL_RG)
+		return 2;
+	else if (format == GL_RGB || format == GL_SRGB)
+		return 3;
+	else if (format == GL_RGBA || format == GL_BGRA_EXT || format == GL_SRGB_ALPHA_EXT)
+		return 4;
+	else
+	{
+		assert(false);
+		return 0;
 	}
 }
 

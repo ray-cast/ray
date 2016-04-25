@@ -322,11 +322,10 @@
                 float3 worldView = mul(V, (float3x3)matViewInverse);
                 float3 R = brdfEnvironmentEnvVec(worldNormal, worldView);
 
-                float3 prefilteredDiffuse = srgb2linear(texEnvDiffuse.Sample(PointClamp, worldNormal).rgb);
-                float3 prefilteredSpeculr = srgb2linear(texEnvSpecular.SampleLevel(PointClamp, R, mipLayer).rgb);
+                float3 prefilteredDiffuse = texEnvDiffuse.Sample(PointClamp, worldNormal).rgb;
+                float3 prefilteredSpeculr = texEnvSpecular.SampleLevel(PointClamp, R, mipLayer).rgb;
 
-                float3 shading = shadingLight(diffuse, light.rgb, light.a);
-                shading += brdfEnvironmentDiffuse(prefilteredDiffuse, diffuse);
+                float3 shading = brdfEnvironmentDiffuse(prefilteredDiffuse, diffuse);
                 shading += brdfEnvironmentSpecular(prefilteredSpeculr, worldNormal, worldView, shininess, specular);
 
                 return float4(shading, 1.0);
@@ -381,6 +380,8 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
+            <state name="blendalphasrc" value="one"/>
+            <state name="blendalphadst" value="one"/>
 
             <state name="stencilTest" value="true"/>
             <state name="stencilFunc" value="equal"/>
@@ -402,6 +403,8 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
+            <state name="blendalphasrc" value="one"/>
+            <state name="blendalphadst" value="one"/>
 
             <state name="stencilTest" value="true"/>
             <state name="stencilFunc" value="equal"/>
@@ -423,6 +426,8 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
+            <state name="blendalphasrc" value="one"/>
+            <state name="blendalphadst" value="one"/>
 
             <state name="stencilTest" value="true"/>
             <state name="stencilFunc" value="equal"/>
@@ -444,6 +449,8 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
+            <state name="blendalphasrc" value="one"/>
+            <state name="blendalphadst" value="one"/>
 
             <state name="stencilTest" value="true"/>
             <state name="stencilFunc" value="equal"/>
@@ -465,6 +472,8 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
+            <state name="blendalphasrc" value="one"/>
+            <state name="blendalphadst" value="one"/>
 
             <state name="stencilTest" value="true"/>
             <state name="stencilFunc" value="equal"/>
@@ -484,6 +493,8 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
+            <state name="blendalphasrc" value="one"/>
+            <state name="blendalphadst" value="one"/>
 
             <state name="cullmode" value="front"/>
 
@@ -505,6 +516,8 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
+            <state name="blendalphasrc" value="one"/>
+            <state name="blendalphadst" value="one"/>
 
             <state name="cullmode" value="front"/>
 
@@ -526,6 +539,8 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="one"/>
             <state name="blenddst" value="one"/>
+            <state name="blendalphasrc" value="one"/>
+            <state name="blendalphadst" value="one"/>
 
             <state name="cullmode" value="front"/>
 
@@ -576,7 +591,7 @@
             <state name="stencilTwoRef" value="0"/>
         </pass>
     </technique>
-    <technique name="DeferredShadingWithEnvLight">
+    <technique name="DeferredSkyLighting">
         <pass name="p0">
             <state name="inputlayout" value="POS3F"/>
 
@@ -587,6 +602,12 @@
 
             <state name="depthtest" value="false"/>
             <state name="depthwrite" value="false"/>
+
+            <state name="blend" value="true"/>
+            <state name="blendsrc" value="one"/>
+            <state name="blenddst" value="one"/>
+            <state name="blendalphasrc" value="one"/>
+            <state name="blendalphadst" value="one"/>
 
             <state name="stencilTest" value="true"/>
             <state name="stencilFunc" value="notequal"/>

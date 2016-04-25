@@ -4,14 +4,14 @@
     <include name="sys:fx/sampler.fxml"/>
     <shader>
         <![CDATA[
-            float4 StoreGBufferRT0(float4 diffuse, float3 specular)
+            float4 StoreGBufferRT0(float3 diffuse, float3 specular)
             {
-                return float4(diffuse.rgb, luminance(specular));
+                return float4(diffuse, luminance(specular));
             }
 
-            float4 StoreGBufferRT0(float4 diffuse, float specular)
+            float4 StoreGBufferRT0(float3 diffuse, float specular)
             {
-                return float4(diffuse.rgb, specular);
+                return float4(diffuse, specular);
             }
 
             float4 StoreGBufferRT1(float3 n, float roughness)

@@ -5,11 +5,9 @@
     <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />
     <parameter name="matModelInverseTranspose" type="float4x4" semantic="matModelInverseTranspose" />
     <parameter name="matView" type="float4x4" semantic="matView"/>
-    <parameter name="diffuse" type="float4" />
+    <parameter name="diffuse" type="float3" />
     <parameter name="specular" type="float" />
     <parameter name="shininess" type="float" />
-    <parameter name="texDiffuse" type="texture2D"/>
-    <parameter name="texSpecular" type="texture2D" />
     <shader>
         <![CDATA[
             void OpaqueVS(
@@ -18,9 +16,11 @@
                 in float4 Texcoord : TEXCOORD0,
                 out float2 oCoord  : TEXCOORD0,
                 out float4 oNormal : TEXCOORD1,
+                out float3 oDiffuse : TEXCOORD2,
                 out float4 oPosition : SV_Position)
             {
                 oCoord = Texcoord.xy;
+                oDiffuse = srgb2linear(diffuse);
                 oNormal = mul(Normal, matModelInverseTranspose);
                 oNormal = mul(float4(oNormal.xyz, 0.0), matView);
                 oPosition = mul(Position, matModelViewProject);
@@ -29,19 +29,12 @@
             void OpaquePS(
                 in float2 coord  : TEXCOORD0,
                 in float4 normal : TEXCOORD1,
-                out float4 FragData0 : SV_Target0,
-                out float4 FragData1 : SV_Target1)
+                in float3 diffuse : TEXCOORD2,
+                out float4 fragData0 : SV_Target0,
+                out float4 fragData1 : SV_Target1)
             {
-                float4 albedo;
-                float3 spec;
-
-                if (diffuse.w > 0.0f)
-                    albedo = diffuse;
-                else
-                    albedo = texDiffuse.Sample(PointClamp, float2(coord.x, 1.0f - coord.y));
-
-                FragData0 = StoreGBufferRT0(srgb2linear(albedo), specular);
-                FragData1 = StoreGBufferRT1(normalize(normal.xyz), shininess);
+                fragData0 = StoreGBufferRT0(diffuse, specular);
+                fragData1 = StoreGBufferRT1(normalize(normal.xyz), shininess);
             }
         ]]>
     </shader>

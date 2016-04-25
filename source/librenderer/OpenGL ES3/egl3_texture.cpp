@@ -108,14 +108,14 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	{
 		if (EGL3Types::isCompressedTexture(textureDesc.getTexFormat()))
 		{
-			std::size_t offset = 0;
-			std::size_t blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;
+			GLsizei offset = 0;
+			GLsizei blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;
 
 			for (GLint mip = mipBase; mip < mipBase + mipLevel; mip++)
 			{
-				auto mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
+				GLsizei mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
 
-				GL_CHECK(glCompressedTexSubImage2D(GL_TEXTURE_2D, mip, 0, 0, w, h, internalFormat, mipSize, (char*)stream + offset));
+				glCompressedTexSubImage2D(target, mip, 0, 0, w, h, internalFormat, mipSize, (char*)stream + offset);
 
 				w = std::max(w >> 1, 1);
 				h = std::max(h >> 1, 1);
@@ -125,27 +125,42 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		}
 		else
 		{
-			auto format = EGL3Types::asTextureFormat(textureDesc.getTexFormat());
-			auto type = EGL3Types::asTextureType(textureDesc.getTexFormat());
+			GLenum format = EGL3Types::asTextureFormat(textureDesc.getTexFormat());
+			GLenum type = EGL3Types::asTextureType(textureDesc.getTexFormat());
 
-			switch (target)
+			GLsizei offset = 0;
+			GLsizei pixelSize = EGL3Types::getFormatNum(format);
+
+			for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
 			{
-			case GL_TEXTURE_2D:
-				GL_CHECK(glTexSubImage2D(target, 0, 0, 0, w, h, format, type, stream));
-				break;
-			case GL_TEXTURE_2D_ARRAY:
-				GL_CHECK(glTexSubImage3D(target, 0, 0, 0, 0, w, h, depth, format, type, stream));
-				break;
-			case GL_TEXTURE_3D:
-				GL_CHECK(glTexSubImage3D(target, 0, 0, 0, 0, w, h, depth, format, type, stream));
-				break;
-			case GL_TEXTURE_CUBE_MAP:
-				GL_CHECK(glTexSubImage3D(target, 0, 0, 0, 0, w, h, 6, format, type, stream));
-				break;
-				break;
-			default:
-				assert(false);
-				break;
+				GLsizei mipSize = w * h * pixelSize;
+				GLsizei layerBase = textureDesc.getLayerBase() + 1;
+				GLsizei layerLevel = textureDesc.getLayerNums();
+
+				for (GLsizei layer = layerBase; layer < layerBase + layerLevel; layer++)
+				{
+					if (target == GL_TEXTURE_2D || target == GL_TEXTURE_2D_MULTISAMPLE)
+					{
+						glTexSubImage2D(target, mip, 0, 0, w, h, format, type, (char*)stream + offset);
+						offset += mipSize;
+					}
+					else
+					{
+						if (target == GL_TEXTURE_CUBE_MAP || target == GL_TEXTURE_CUBE_MAP_ARRAY_EXT)
+						{
+							glTexSubImage3D(target, mip, 0, 0, 0, w, h, 6 * layer, format, type, (char*)stream + offset);
+							offset += mipSize * 6;
+						}
+						else
+						{
+							glTexSubImage3D(target, mip, 0, 0, 0, w, h, depth * layer, format, type, (char*)stream + offset);
+							offset += mipSize * depth;
+						}
+					}
+
+					w = std::max(w >> 1, 1);
+					h = std::max(h >> 1, 1);
+				}
 			}
 		}
 	}

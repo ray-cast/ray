@@ -71,7 +71,7 @@ EGL3DeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 {
 	assert(desc.getSwapchain());
 	assert(desc.getSwapchain()->isInstanceOf<EGL3Swapchain>());
-
+	
 	_glcontext = desc.getSwapchain()->downcast<EGL3Swapchain>();
 	_glcontext->setActive(true);
 

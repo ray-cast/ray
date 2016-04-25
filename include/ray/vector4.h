@@ -676,6 +676,12 @@ namespace math
 	}
 
 	template<typename T>
+	inline Vector4t<T> pow(const Vector4t<T>& v1, const Vector4t<T>& v2)
+	{
+		return Vector4t<T>(std::pow(v1.x, v2.x), std::pow(v1.y, v2.y), std::pow(v1.z, v2.z), std::pow(v1.w, v2.w));
+	}
+
+	template<typename T>
 	inline Vector4t<T> random(const Vector4t<T>& min, const Vector4t<T>& max)
 	{
 		return Vector4t<T>(random(min.x, max.x), random(min.y, max.y), random(min.z, max.z), random(min.w, max.w));

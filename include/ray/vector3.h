@@ -430,6 +430,12 @@ namespace math
 	}
 
 	template<typename T>
+	inline Vector3t<T> pow(const Vector3t<T>& v1, const Vector3t<T>& v2)
+	{
+		return Vector3t<T>(std::pow(v1.x, v2.x), std::pow(v1.y, v2.y), std::pow(v1.z, v2.z));
+	}
+
+	template<typename T>
 	inline Vector3t<T> random(const Vector3t<T>& min, const Vector3t<T>& max)
 	{
 		return Vector3t<T>(random(min.x, max.x), random(min.y, max.y), random(min.z, max.z));

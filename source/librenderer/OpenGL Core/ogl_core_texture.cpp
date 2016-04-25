@@ -63,7 +63,7 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	GLenum internalFormat = OGLTypes::asTextureInternalFormat(textureDesc.getTexFormat());
 	if (internalFormat == GL_INVALID_ENUM)
 		return false;
-
+	
 	glCreateTextures(target, 1, &_texture);
 	if (_texture == GL_NONE)
 	{

@@ -41,9 +41,11 @@
 
 _NAME_BEGIN
 
-class PostRenderPipeline
+class PostRenderPipeline final
 {
 public:
+	PostRenderPipeline() noexcept;
+	~PostRenderPipeline() noexcept;
 
 	bool enableSSSS(RenderPipeline& pipeline, bool enable) noexcept;
 	bool isEnableSSSS() const noexcept;

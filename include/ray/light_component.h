@@ -60,12 +60,21 @@ public:
 
 	float getRange() const noexcept;
 	float getIntensity() const noexcept;
-	float getSpotInnerCone() const noexcept;
-	float getSpotOuterCone() const noexcept;
+	const float2& getSpotInnerCone() const noexcept;
+	const float2& getSpotOuterCone() const noexcept;
 	const float3& getLightColor() const noexcept;
 
 	void setShadow(bool shadow) noexcept;
 	bool getShadow() const noexcept;
+
+	void setSoftShadow(bool softEnable) noexcept;
+	bool getSoftShadow() const noexcept;
+
+	void setShadowBias(float bias) noexcept;
+	float getShadowBias() const noexcept;
+
+	void setSubsurfaceScattering(bool enable) noexcept;
+	bool getSubsurfaceScattering() const noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;

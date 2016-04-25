@@ -41,7 +41,6 @@ _NAME_BEGIN
 __ImplementSubInterface(RenderPipelineController, rtti::Interface, "RenderPipelineController")
 
 RenderPipelineController::RenderPipelineController() noexcept
-	: _renderPipeline(nullptr)
 {
 }
 
@@ -50,34 +49,28 @@ RenderPipelineController::~RenderPipelineController() noexcept
 }
 
 void
-RenderPipelineController::onResolutionChangeBefore(RenderPipeline&) noexcept
+RenderPipelineController::onResolutionChangeBefore() noexcept
 {
 }
 
 void
-RenderPipelineController::onResolutionChangeAfter(RenderPipeline&) noexcept
+RenderPipelineController::onResolutionChangeAfter() noexcept
 {
 }
 
 void
-RenderPipelineController::onRenderPre(RenderPipeline& pipeline) noexcept
+RenderPipelineController::onRenderPre() noexcept
 {
 }
 
 void 
-RenderPipelineController::onRenderPipeline(RenderPipeline& pipeline, const CameraPtr& camera) noexcept
+RenderPipelineController::onRenderPipeline(const CameraPtr& camera) noexcept
 {
 }
 
 void
-RenderPipelineController::onRenderPost(RenderPipeline& pipeline) noexcept
+RenderPipelineController::onRenderPost() noexcept
 {
-}
-
-void
-RenderPipelineController::_setRenderPipeline(RenderPipelinePtr pipeline) noexcept
-{
-	_renderPipeline = pipeline.get();
 }
 
 _NAME_END

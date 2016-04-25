@@ -13,17 +13,14 @@
     <macro name="TONEMAP_EXPONENTIAL_HSV" value="2" />
     <macro name="TONEMAP_REINHARD" value="3" />
     <macro name="TONEMAP_FILMIC" value="4" />
-    <macro name="TONEMAP_OPERATOR" value="TONEMAP_FILMIC" />
+    <macro name="TONEMAP_UNCHARTED2" value="5" />
+    <macro name="TONEMAP_OPERATOR" value="TONEMAP_UNCHARTED2" />
     <sampler name="PointClamp">
-        <state name="filter" value="point" />
+        <state name="filter" value="min_mag_mip_point" />
         <state name="wrap" value="clamp" />
     </sampler>
-    <sampler name="samLinear">
-        <state name="filter" value="linear" />
-        <state name="wrap" value="repeat" />
-    </sampler>
     <sampler name="LinearClamp">
-        <state name="filter" value="linear" />
+        <state name="filter" value="min_mag_linear_mip_point" />
         <state name="wrap" value="clamp" />
     </sampler>
     <inputlayout name="POS3F_COL4C_UV2F">

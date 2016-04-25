@@ -42,6 +42,14 @@
 
 _NAME_BEGIN
 
+PostRenderPipeline::PostRenderPipeline() noexcept
+{
+}
+
+PostRenderPipeline::~PostRenderPipeline() noexcept
+{
+}
+
 bool
 PostRenderPipeline::enableSSSS(RenderPipeline& pipeline, bool enable) noexcept
 {

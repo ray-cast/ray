@@ -147,6 +147,8 @@ public:
 	GraphicsSamplerPtr getTextureSampler() const noexcept;
 	GraphicsDataPtr getBuffer() const noexcept;
 
+	void copy(const MaterialVariant& other) noexcept;
+
 private:
 	MaterialVariant(const MaterialVariant&) noexcept = delete;
 	MaterialVariant& operator=(const MaterialVariant&) noexcept = delete;
@@ -185,7 +187,7 @@ private:
 		std::vector<float3x3>* m3array;
 		std::vector<float4x4>* m4array;
 		TexturePack* texture;
-		GraphicsDataPtr* ubo;
+		GraphicsDataPtr* buffer;
 	} _value;
 
 	GraphicsUniformType _type;

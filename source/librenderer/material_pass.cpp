@@ -112,41 +112,50 @@ MaterialPass::setup(Material& material) noexcept
 	assert(_program);
 	assert(_inputLayout);
 
-	GraphicsDescriptorSetLayoutDesc descriptorSetLayoutDesc;
-	descriptorSetLayoutDesc.setUniformComponents(_program->getActiveUniforms());
-	descriptorSetLayoutDesc.setUniformBlockComponents(_program->getActiveUniformBlocks());
-	_descriptorSetLayout = _program->getDevice()->createDescriptorSetLayout(descriptorSetLayoutDesc);
 	if (!_descriptorSetLayout)
-		return false;
-
-	GraphicsPipelineDesc pipelineDesc;
-	pipelineDesc.setGraphicsState(_state);
-	pipelineDesc.setGraphicsProgram(_program);
-	pipelineDesc.setGraphicsInputLayout(_inputLayout);
-	pipelineDesc.setGraphicsDescriptorSetLayout(_descriptorSetLayout);
-	_pipeline = _program->getDevice()->createRenderPipeline(pipelineDesc);
-	if (!_pipeline)
-		return false;
-
-	GraphicsDescriptorPoolDesc  descriptorPoolDesc;
-	descriptorPoolDesc.setMaxSets(1);
-	for (auto& activeUniform : _program->getActiveUniforms())
 	{
-		auto type = activeUniform->getType();
-		if (type == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
-			type == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
-			type == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
-		{
-			descriptorPoolDesc.addGraphicsDescriptorPoolComponent(GraphicsDescriptorPoolComponent(activeUniform->getType(), 1));
-		}
+		GraphicsDescriptorSetLayoutDesc descriptorSetLayoutDesc;
+		descriptorSetLayoutDesc.setUniformComponents(_program->getActiveUniforms());
+		descriptorSetLayoutDesc.setUniformBlockComponents(_program->getActiveUniformBlocks());
+		_descriptorSetLayout = _program->getDevice()->createDescriptorSetLayout(descriptorSetLayoutDesc);
+		if (!_descriptorSetLayout)
+			return false;
 	}
 
-	for (auto& activeUniformBlock : _program->getActiveUniformBlocks())
+	if (!_pipeline)
 	{
-		descriptorPoolDesc.addGraphicsDescriptorPoolComponent(GraphicsDescriptorPoolComponent(activeUniformBlock->getType(), 1));
-	}		
+		GraphicsPipelineDesc pipelineDesc;
+		pipelineDesc.setGraphicsState(_state);
+		pipelineDesc.setGraphicsProgram(_program);
+		pipelineDesc.setGraphicsInputLayout(_inputLayout);
+		pipelineDesc.setGraphicsDescriptorSetLayout(_descriptorSetLayout);
+		_pipeline = _program->getDevice()->createRenderPipeline(pipelineDesc);
+		if (!_pipeline)
+			return false;
+	}
 
-	_descriptorPool = _program->getDevice()->createDescriptorPool(descriptorPoolDesc);
+	if (!_descriptorPool)
+	{
+		GraphicsDescriptorPoolDesc  descriptorPoolDesc;
+		descriptorPoolDesc.setMaxSets(1);
+		for (auto& activeUniform : _program->getActiveUniforms())
+		{
+			auto type = activeUniform->getType();
+			if (type == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
+				type == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
+				type == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
+			{
+				descriptorPoolDesc.addGraphicsDescriptorPoolComponent(GraphicsDescriptorPoolComponent(activeUniform->getType(), 1));
+			}
+		}
+
+		for (auto& activeUniformBlock : _program->getActiveUniformBlocks())
+		{
+			descriptorPoolDesc.addGraphicsDescriptorPoolComponent(GraphicsDescriptorPoolComponent(activeUniformBlock->getType(), 1));
+		}
+
+		_descriptorPool = _program->getDevice()->createDescriptorPool(descriptorPoolDesc);
+	}
 
 	GraphicsDescriptorSetDesc descriptorSetDesc;
 	descriptorSetDesc.setGraphicsDescriptorSetLayout(_descriptorSetLayout);
@@ -298,6 +307,19 @@ GraphicsDescriptorSetPtr
 MaterialPass::getDescriptorSet() const noexcept
 {
 	return _descriptorSet;
+}
+
+MaterialPassPtr 
+MaterialPass::clone() noexcept
+{
+	auto pass = std::make_shared<MaterialPass>();
+	pass->_state = this->_state;
+	pass->_program = this->_program;
+	pass->_descriptorPool = this->_descriptorPool;
+	pass->_descriptorSetLayout = this->_descriptorSetLayout;
+	pass->_inputLayout = this->_inputLayout;
+	pass->_pipeline = this->_pipeline;
+	return pass;
 }
 
 void 

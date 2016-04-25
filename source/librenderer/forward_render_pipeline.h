@@ -48,19 +48,18 @@ public:
 	ForwardRenderPipeline() noexcept;
 	virtual ~ForwardRenderPipeline() noexcept;
 
-	bool setup(RenderPipeline& pipeline) noexcept;
+	bool setup(RenderPipelinePtr pipeline) noexcept;
 	void close() noexcept;
 
-	void renderShadowMap(RenderPipeline& pipeline) noexcept;
 	void render2DEnvMap(RenderPipeline& pipeline) noexcept;
 
 private:
-	virtual void onResolutionChangeBefore(RenderPipeline& pipeline) noexcept;
-	virtual void onResolutionChangeAfter(RenderPipeline& pipeline) noexcept;
+	virtual void onResolutionChangeBefore() noexcept;
+	virtual void onResolutionChangeAfter() noexcept;
 
-	virtual void onRenderPre(RenderPipeline& pipeline) noexcept;
-	virtual void onRenderPipeline(RenderPipeline& pipeline, const CameraPtr& camera) noexcept;
-	virtual void onRenderPost(RenderPipeline& pipeline) noexcept;
+	virtual void onRenderPre() noexcept;
+	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
+	virtual void onRenderPost() noexcept;
 
 private:
 	ForwardRenderPipeline(const ForwardRenderPipeline&) = delete;
@@ -68,6 +67,8 @@ private:
 
 private:
 	MaterialTechPtr _depthOnly;
+
+	RenderPipelinePtr _pipeline;
 };
 
 _NAME_END

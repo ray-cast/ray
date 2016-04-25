@@ -1,8 +1,8 @@
 <?xml version='1.0'?>
 <material>
-    <attribute diffuse="0.0,0.47,0.8,1.0" />
-    <attribute specular="0.1, 0.1, 0.1, 1.0" />
+    <attribute diffuse="0.0,0.47,0.8,1.0"/>
+    <attribute specular="1.0"/>
     <attribute opacity="0.75"/>
-    <attribute shininess="0.1" />
+    <attribute shininess="1.0" />
     <attribute shader="sys:fx/transparent.fxml.o"/>
 </material>

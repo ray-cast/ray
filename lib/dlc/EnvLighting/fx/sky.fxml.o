@@ -5,15 +5,11 @@
     <parameter name="matViewProject" type="float4x4" semantic="matViewProject" />
     <parameter name="decal" type="texture2D" />
     <sampler name="PointClamp">
-        <state name="filter" value="point" />
+        <state name="filter" value="min_mag_mip_point" />
         <state name="wrap" value="clamp" />
     </sampler>
-    <sampler name="samLinear">
-        <state name="filter" value="linear" />
-        <state name="wrap" value="repeat" />
-    </sampler>
     <sampler name="LinearClamp">
-        <state name="filter" value="linear" />
+        <state name="filter" value="min_mag_linear_mip_point" />
         <state name="wrap" value="clamp" />
     </sampler>
     <inputlayout name="POS3F_COL4C_UV2F">

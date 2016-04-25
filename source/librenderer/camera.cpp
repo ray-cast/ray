@@ -36,6 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/camera.h>
 #include <ray/graphics_texture.h>
+#include <ray/render_object_manager.h>
 
 _NAME_BEGIN
 
@@ -58,6 +59,7 @@ Camera::Camera() noexcept
 	, _needUpdateProject(true)
 	, _needUpdateViewProject(true)
 {
+	_dataManager = std::make_shared<DefaultRenderDataManager>();
 }
 
 Camera::~Camera() noexcept
@@ -366,6 +368,19 @@ GraphicsFramebufferPtr
 Camera::getFramebuffer() const noexcept
 {
 	return _renderTexture;
+}
+
+void 
+Camera::setRenderDataManager(RenderDataManagerPtr manager) noexcept
+{
+	assert(manager);
+	_dataManager = manager;
+}
+
+RenderDataManagerPtr
+Camera::getRenderDataManager() const noexcept
+{
+	return _dataManager;
 }
 
 void

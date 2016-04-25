@@ -57,6 +57,7 @@ public:
 		float lumKey;
 		float lumDelta;
 		float lumExposure;
+		float lumMiddleGray;
 
 		Setting() noexcept;
 	};

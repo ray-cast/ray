@@ -71,7 +71,7 @@
                     gloss = specularAO.g;
                 }
 
-                FragData0 = StoreGBufferRT0(srgb2linear(albedo), spec);
+                FragData0 = StoreGBufferRT0(srgb2linear(albedo.rgb), spec);
                 FragData1 = StoreGBufferRT1(highNormal, gloss);
             }
         ]]>

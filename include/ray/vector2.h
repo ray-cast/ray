@@ -305,6 +305,12 @@ namespace math
 	}
 
 	template<typename T>
+	inline Vector2t<T> pow(const Vector2t<T>& v1, const Vector2t<T>& v2)
+	{
+		return Vector2t<T>(std::pow(v1.x, v2.x), std::pow(v1.y, v2.y));
+	}
+
+	template<typename T>
 	inline Vector2t<T> random(const Vector2t<T>& min, const Vector2t<T>& max)
 	{
 		return Vector2t<T>(random(min.x, max.x), random(min.y, max.y));

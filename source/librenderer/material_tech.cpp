@@ -107,4 +107,15 @@ MaterialTech::count() const noexcept
 	return _passList.size();
 }
 
+MaterialTechPtr
+MaterialTech::clone() const noexcept
+{
+	auto tech = std::make_shared<MaterialTech>();
+	tech->setName(this->getName());
+
+	for (auto& pass : _passList)
+		tech->addPass(pass->clone());
+	return tech;
+}
+
 _NAME_END

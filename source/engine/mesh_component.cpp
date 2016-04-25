@@ -177,17 +177,18 @@ MeshComponent::save(oarchive& write) noexcept
 GameComponentPtr
 MeshComponent::clone() const noexcept
 {
-	auto instance = std::make_shared<MeshComponent>();
-	instance->setName(this->getName());
+	auto result = std::make_shared<MeshComponent>();
+	result->setName(this->getName());
+	result->setActive(this->getActive());
 
 	auto mesh = this->getSharedMesh();
 	if (mesh)
 	{
-		instance->setMesh(mesh->clone());
-		instance->setSharedMesh(mesh);
+		result->setMesh(mesh->clone());
+		result->setSharedMesh(mesh);
 	}
 
-	return instance;
+	return result;
 }
 
 void

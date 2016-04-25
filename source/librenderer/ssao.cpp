@@ -89,8 +89,11 @@ SSAO::getSetting() const noexcept
 void
 SSAO::computeRawAO(RenderPipeline& pipeline, GraphicsTexturePtr source, GraphicsFramebufferPtr dest) noexcept
 {
+	std::uint32_t width, height;
+	pipeline.getWindowResolution(width, height);
+
 	_cameraProjInfo->uniform4f(pipeline.getCamera()->getProjConstant());
-	_cameraProjScale->uniform1f(pipeline.getCamera()->getProjLength().y * _setting.radius);
+	_cameraProjScale->uniform1f(((float)width / height) * _setting.radius);
 
 	pipeline.setFramebuffer(dest);
 	pipeline.discradRenderTexture();

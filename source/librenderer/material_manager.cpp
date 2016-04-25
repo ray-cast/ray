@@ -272,11 +272,15 @@ MaterialPtr
 MaterialManager::createMaterial(const std::string& name) noexcept
 {
 	auto& material = _materials[name];
+	if (material)
+		return material->clone();
+
 	if (!material)
 	{
 		MaterialMaker materialLoader;
 		_materials[name] = materialLoader.load(*this, name);
-	}		
+	}
+
 	return material;
 }
 

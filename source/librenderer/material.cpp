@@ -44,7 +44,6 @@ _NAME_BEGIN
 
 __ImplementSubClass(Material, rtti::Interface, "Material")
 
-
 Material::Material() noexcept
 {
 }
@@ -55,11 +54,9 @@ Material::~Material() noexcept
 }
 
 bool
-Material::setup(const MaterialDesc& materialDesc) noexcept
+Material::setup() noexcept
 {
-	_materialDesc = materialDesc;
-
-	for (auto& technique : _materialDesc.getTechs())
+	for (auto& technique : _techniques)
 	{
 		auto& passList = technique->getPassList();
 		for (auto& pass : passList)
@@ -72,60 +69,151 @@ Material::setup(const MaterialDesc& materialDesc) noexcept
 void
 Material::close() noexcept
 {
-	for (auto& technique : _materialDesc.getTechs())
+	_techniques.clear();
+}
+
+void
+Material::addTech(MaterialTechPtr technique) noexcept
+{
+	assert(technique);
+	assert(std::find(_techniques.begin(), _techniques.end(), technique) == _techniques.end());
+	_techniques.push_back(technique);
+}
+
+void
+Material::removeTech(MaterialTechPtr technique) noexcept
+{
+	assert(technique);
+	auto it = std::find(_techniques.begin(), _techniques.end(), technique);
+	if (it != _techniques.end())
 	{
-		auto& passList = technique->getPassList();
-		for (auto& pass : passList)
-			pass->close();
+		_techniques.erase(it);
 	}
 }
 
 MaterialTechPtr
 Material::getTech(const std::string& name) noexcept
 {
-	return _materialDesc.getTech(name);
+	for (auto& it : _techniques)
+	{
+		if (it->getName() == name)
+			return it;
+	}
+
+	return nullptr;
 }
 
 MaterialTechniques&
 Material::getTechs() noexcept
 {
-	return _materialDesc.getTechs();
+	return _techniques;
+}
+
+void
+Material::addParameter(MaterialParamPtr parameter) noexcept
+{
+	assert(parameter);
+	assert(std::find(_parameters.begin(), _parameters.end(), parameter) == _parameters.end());
+	_parameters.push_back(parameter);
+}
+
+void
+Material::removeParameter(MaterialParamPtr parameter) noexcept
+{
+	assert(parameter);
+	auto it = std::find(_parameters.begin(), _parameters.end(), parameter);
+	if (it != _parameters.end())
+	{
+		_parameters.erase(it);
+	}
 }
 
 MaterialParamPtr
 Material::getParameter(const std::string& name) const noexcept
 {
-	return _materialDesc.getParameter(name);
+	assert(!name.empty());
+	for (auto& it : _parameters)
+	{
+		if (it->getName() == name)
+			return it;
+	}
+
+	return nullptr;
 }
 
 MaterialParams&
 Material::getParameters() noexcept
 {
-	return _materialDesc.getParameters();
+	return _parameters;
 }
 
 const MaterialParams&
 Material::getParameters() const noexcept
 {
-	return _materialDesc.getParameters();
+	return _parameters;
+}
+
+void
+Material::addMacro(MaterialParamPtr macro) noexcept
+{
+	assert(macro);
+	assert(std::find(_macros.begin(), _macros.end(), macro) == _macros.end());
+	_macros.push_back(macro);
+}
+
+void
+Material::removeMacro(MaterialParamPtr macro) noexcept
+{
+	assert(macro);
+	auto it = std::find(_macros.begin(), _macros.end(), macro);
+	if (it != _macros.end())
+	{
+		_macros.erase(it);
+	}
 }
 
 MaterialParamPtr
 Material::getMacro(const std::string& name) const noexcept
 {
-	return _materialDesc.getMacro(name);
+	assert(!name.empty());
+	for (auto& it : _macros)
+	{
+		if (it->getName() == name)
+			return it;
+	}
+
+	return nullptr;
 }
 
 MaterialParams&
 Material::getMacros() noexcept
 {
-	return _materialDesc.getMacros();
+	return _macros;
 }
 
 const MaterialParams&
 Material::getMacros() const noexcept
 {
-	return _materialDesc.getMacros();
+	return _macros;
+}
+
+MaterialPtr
+Material::clone() const noexcept
+{
+	auto material = std::make_shared<Material>();
+	for (auto& it : _parameters)
+		material->addParameter(it->clone());
+
+	for (auto& it : _macros)
+		material->addParameter(it->clone());
+
+	for (auto& it : _techniques)
+		material->addTech(it->clone());
+
+	if (material->setup())
+		return material;
+
+	return nullptr;
 }
 
 _NAME_END

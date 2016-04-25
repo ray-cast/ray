@@ -65,7 +65,7 @@ EGL3Swapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 
 	if (!initSwapchain(swapchainDesc))
 		return false;
-
+	
 	_swapchainDesc = swapchainDesc;
 	return true;
 }

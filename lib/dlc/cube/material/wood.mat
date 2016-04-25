@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
 <material>
-    <attribute diffuse="0.30, 0.20, 0.15, 1.0" />
-    <attribute specular="0.1, 0.1, 0.1, 1.0" />
+    <attribute diffuse="0.30, 0.20, 0.15"/>
+    <attribute specular="0.1"/>
     <attribute shininess="0.1" />
     <attribute shader="sys:fx/opacity.fxml.o"/>
 </material>

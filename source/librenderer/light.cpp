@@ -54,9 +54,10 @@ Light::Light() noexcept
 	, _spotInnerCone(5.0f, cos(math::degrees(5.0f)))
 	, _spotOuterCone(40.0f, cos(math::degrees(40.0f)))
 	, _subsurfaceScattering(false)
-	, _shadow(false)
+	, _shadowType(LightShadowType::LightShadowTypeNone)
 	, _shadowSoftEnable(false)
-	, _shaodwBias(0.001)
+	, _shadowBias(0.001)
+	, _shadowFormat(GraphicsFormat::GraphicsFormatR32SFloat)
 {
 	_shadowCamera[0]= std::make_shared<Camera>();
 	_shadowCamera[0]->setOwnerListener(this);
@@ -148,55 +149,36 @@ Light::getLightAttenuation() const noexcept
 	return _lightAttenuation;
 }
 
-float
+const float2&
 Light::getSpotInnerCone() const noexcept
 {
-	return _spotInnerCone.x;
+	return _spotInnerCone;
 }
 
-float
+const float2&
 Light::getSpotOuterCone() const noexcept
 {
-	return _spotOuterCone.x;
-}
-
-float 
-Light::getSpotCosInnerCone() const noexcept
-{
-	return _spotInnerCone.y;
-}
-
-float 
-Light::getSpotCosOuterCone() const noexcept
-{
-	return _spotOuterCone.y;
+	return _spotOuterCone;
 }
 
 void
-Light::setShadow(bool shadow) noexcept
+Light::setShadowType(LightShadowType shadowType) noexcept
 {
-	if (_shadow != shadow)
+	if (_shadowType != shadowType)
 	{
-		auto loopCount = this->getLightType() == LightType::LightTypePoint ? 6 : 1;
-		for (auto i = 0; i < loopCount; i++)
-		{
-			if (!_shadowCamera[i])
-				continue;
+		if (shadowType != LightShadowType::LightShadowTypeNone)
+			this->setupShadowMap(shadowType);
+		else
+			this->destroyShadowMap();
 
-			if (shadow)
-				_shadowCamera[i]->setRenderScene(_renderScene.lock());
-			else
-				_shadowCamera[i]->setRenderScene(nullptr);
-		}
-
-		_shadow = shadow;
+		_shadowType = shadowType;
 	}
 }
 
-bool
-Light::getShadow() const noexcept
+LightShadowType
+Light::getShadowType() const noexcept
 {
-	return _shadow;
+	return _shadowType;
 }
 
 void 
@@ -233,13 +215,78 @@ Light::getShadowCamera(std::uint8_t i) const noexcept
 void 
 Light::setShadowBias(float bias) noexcept
 {
-	_shaodwBias = bias;
+	_shadowBias = bias;
 }
 
 float 
 Light::getShadowBias() const noexcept
 {
-	return _shaodwBias;
+	return _shadowBias;
+}
+
+void 
+Light::setShadowMap(GraphicsTexturePtr texture) noexcept
+{
+	_shadowMap = texture;
+}
+
+GraphicsTexturePtr 
+Light::getShadowMap() const noexcept
+{
+	return _shadowMap;
+}
+
+bool
+Light::setupShadowMap(LightShadowType type) noexcept
+{
+	if (type == LightShadowType::LightShadowTypeNone)
+		return true;
+
+	std::uint32_t shadowMapSize = 0;
+	if (type == LightShadowType::LightShadowTypeLow)
+		shadowMapSize = LightShadowSize::LightShadowSizeLow;
+	else if (type == LightShadowType::LightShadowTypeMedium)
+		shadowMapSize = LightShadowSize::LightShadowSizeMedium;
+	else if (type == LightShadowType::LightShadowTypeHigh)
+		shadowMapSize = LightShadowSize::LightShadowSizeHigh;
+	else
+		return false;
+
+	GraphicsTextureDesc textureDesc;
+	textureDesc.setWidth(shadowMapSize);
+	textureDesc.setHeight(shadowMapSize);
+	textureDesc.setTexDim(GraphicsTextureDim::GraphicsTextureDim2D);
+	textureDesc.setTexFormat(_shadowFormat);
+	_shadowMap = RenderSystem::instance()->createTexture(textureDesc);
+	if (!_shadowMap)
+		return false;
+
+	GraphicsFramebufferLayoutDesc shaodwMapLayoutDesc;
+	shaodwMapLayoutDesc.addComponent(GraphicsAttachmentDesc(GraphicsViewLayout::GraphicsViewLayoutColorAttachmentOptimal, _shadowFormat, 0));
+	_shadowViewLayout = RenderSystem::instance()->createFramebufferLayout(shaodwMapLayoutDesc);
+	if (!_shadowViewLayout)
+		return false;
+
+	GraphicsFramebufferDesc shadowViewDesc;
+	shadowViewDesc.setWidth(shadowMapSize);
+	shadowViewDesc.setHeight(shadowMapSize);
+	shadowViewDesc.attach(_shadowMap);
+	shadowViewDesc.setGraphicsFramebufferLayout(_shadowViewLayout);
+	_shadowView = RenderSystem::instance()->createFramebuffer(shadowViewDesc);
+	if (!_shadowView)
+		return false;
+
+	_shadowCamera[0]->setFramebuffer(_shadowView);
+	return true;
+}
+
+void
+Light::destroyShadowMap() noexcept
+{
+	_shadowCamera[0]->setFramebuffer(nullptr);
+	_shadowMap.reset();
+	_shadowViewLayout.reset();
+	_shadowView.reset();
 }
 
 void
@@ -296,7 +343,7 @@ Light::_updateBoundingBox() noexcept
 		}
 		else
 		{
-			_shadowCamera[0]->setAperture(this->getSpotOuterCone());
+			_shadowCamera[0]->setAperture(this->getSpotOuterCone().x);
 			_shadowCamera[0]->setFar(zfar);
 			_shadowCamera[0]->setCameraType(CameraType::CameraTypePerspective);
 		}
@@ -359,7 +406,7 @@ Light::onSceneChangeAfter() noexcept
 void
 Light::onAddRenderData(RenderDataManager& manager) noexcept
 {
-	if (this->getShadow())
+	if (this->getShadowType() != LightShadowType::LightShadowTypeNone)
 		manager.addRenderData(RenderQueue::RenderQueueShadow, this->upcast<RenderObject>());
 
 	manager.addRenderData(RenderQueue::RenderQueueLighting, this->upcast<RenderObject>());
@@ -396,8 +443,8 @@ Light::clone() const noexcept
 	light->setIntensity(this->getIntensity());
 	light->setRange(this->getRange());
 	light->setCastShadow(this->getCastShadow());
-	light->setSpotInnerCone(this->getSpotInnerCone());
-	light->setSpotOuterCone(this->getSpotOuterCone());
+	light->setSpotInnerCone(this->getSpotInnerCone().x);
+	light->setSpotOuterCone(this->getSpotOuterCone().x);
 	light->setTransform(this->getTransform(), this->getTransformInverse(), this->getTransformInverseTranspose());
 	light->setBoundingBox(this->getBoundingBox());
 

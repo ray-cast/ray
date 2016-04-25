@@ -48,24 +48,16 @@ public:
 	RenderPipelineController() noexcept;
 	virtual ~RenderPipelineController() noexcept;
 
-protected:
-	virtual void onResolutionChangeBefore(RenderPipeline& pipeline) noexcept;
-	virtual void onResolutionChangeAfter(RenderPipeline& pipeline) noexcept;
+	virtual void onResolutionChangeBefore() noexcept;
+	virtual void onResolutionChangeAfter() noexcept;
 
-	virtual void onRenderPre(RenderPipeline& pipeline) noexcept;
-	virtual void onRenderPipeline(RenderPipeline& pipeline, const CameraPtr& camera) noexcept;
-	virtual void onRenderPost(RenderPipeline& pipeline) noexcept;
-
-private:
-	friend class RenderPipelineManager;
-	void _setRenderPipeline(RenderPipelinePtr pipeline) noexcept;
+	virtual void onRenderPre() noexcept;
+	virtual void onRenderPipeline(const CameraPtr& camera) noexcept;
+	virtual void onRenderPost() noexcept;
 
 private:
 	RenderPipelineController(const RenderPipelineController&) noexcept = delete;
 	RenderPipelineController& operator=(const RenderPipelineController&) noexcept = delete;
-
-private:
-	RenderPipeline* _renderPipeline;
 };
 
 _NAME_END

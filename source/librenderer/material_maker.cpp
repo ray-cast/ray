@@ -69,7 +69,7 @@ MaterialMaker::~MaterialMaker() noexcept
 }
 
 void
-MaterialMaker::instanceInputLayout(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
+MaterialMaker::instanceInputLayout(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
 {
 	GraphicsInputLayoutDesc inputLayoutDesc;
 
@@ -119,7 +119,7 @@ MaterialMaker::instanceCodes(MaterialManager& manager, iarchive& reader) except
 }
 
 void
-MaterialMaker::instanceShader(MaterialManager& manager, MaterialDesc& material, GraphicsProgramDesc& programDesc, iarchive& reader) except
+MaterialMaker::instanceShader(MaterialManager& manager, MaterialPtr& material, GraphicsProgramDesc& programDesc, iarchive& reader) except
 {
 	std::string type = reader.getValue<std::string>("name");
 	std::string value = reader.getValue<std::string>("value");
@@ -240,7 +240,7 @@ MaterialMaker::instanceShader(MaterialManager& manager, MaterialDesc& material, 
 }
 
 void
-MaterialMaker::instancePass(MaterialManager& manager, MaterialDesc& material, MaterialTechPtr& tech, iarchive& reader) except
+MaterialMaker::instancePass(MaterialManager& manager, MaterialPtr& material, MaterialTechPtr& tech, iarchive& reader) except
 {
 	std::string passName;
 	reader.getValue("name", passName);
@@ -285,8 +285,6 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialDesc& material, Ma
 			stateDesc.setLinear2sRGBEnable(reader.getValue<bool>("value"));
 		else if (name == "blend")
 			stateDesc.setBlendEnable(reader.getValue<bool>("value"));
-		else if (name == "blendSeparate")
-			stateDesc.setBlendSeparateEnable(reader.getValue<bool>("value"));
 		else if (name == "blendOp")
 			stateDesc.setBlendOp(stringToBlendOperation(reader.getValue<std::string>("value")));
 		else if (name == "blendsrc")
@@ -368,7 +366,7 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialDesc& material, Ma
 }
 
 void
-MaterialMaker::instanceTech(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
+MaterialMaker::instanceTech(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
 {
 	std::string techName = reader.getValue<std::string>("name");
 	if (techName.empty())
@@ -389,11 +387,11 @@ MaterialMaker::instanceTech(MaterialManager& manager, MaterialDesc& material, ia
 		}
 	} while (reader.setToNextChild());
 
-	material.addTech(tech);
+	material->addTech(tech);
 }
 
 void
-MaterialMaker::instanceParameter(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
+MaterialMaker::instanceParameter(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
 {
 	auto name = reader.getValue<std::string>("name");
 	auto type = reader.getValue<std::string>("type");
@@ -424,11 +422,11 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialDesc& materia
 		param->setSemantic(materialSemantic);
 	}
 
-	material.addParameter(param);
+	material->addParameter(param);
 }
 
 void
-MaterialMaker::instanceMacro(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
+MaterialMaker::instanceMacro(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
 {
 	auto name = reader.getValue<std::string>("name");
 	auto type = reader.getValue<std::string>("type");
@@ -493,12 +491,12 @@ MaterialMaker::instanceMacro(MaterialManager& manager, MaterialDesc& material, i
 			throw failure(__TEXT("Unknown macro type : ") + name);
 		}
 
-		material.addMacro(macro);
+		material->addMacro(macro);
 	}
 }
 
 void
-MaterialMaker::instanceSampler(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
+MaterialMaker::instanceSampler(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
 {
 	std::string samplerName = reader.getValue<std::string>("name");
 	if (samplerName.empty())
@@ -581,7 +579,7 @@ MaterialMaker::instanceSampler(MaterialManager& manager, MaterialDesc& material,
 }
 
 void
-MaterialMaker::instanceBuffer(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
+MaterialMaker::instanceBuffer(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
 {
 	auto buffer = std::make_shared<MaterialParam>();
 	buffer->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
@@ -596,7 +594,7 @@ MaterialMaker::instanceBuffer(MaterialManager& manager, MaterialDesc& material, 
 }
 
 void
-MaterialMaker::instanceInclude(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
+MaterialMaker::instanceInclude(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
 {
 	auto path = reader.getValue<std::string>("name");
 	if (!path.empty())
@@ -628,46 +626,6 @@ MaterialMaker::load(MaterialManager& manager, const std::string& filename) noexc
 		std::cout << __TEXT("in ") + filename + __TEXT(" ") + e.message() + e.stack();
 		return nullptr;
 	}
-}
-
-bool
-MaterialMaker::load(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except
-{
-	std::string nodeName;
-	nodeName = reader.getCurrentNodeName();
-	if (nodeName != "material" && nodeName != "effect")
-		throw failure("Unknown node name " + nodeName + ", so I can't open it");
-
-	std::string language = reader.getValue<std::string>("language");
-	if (language != "bytecodes")
-		throw failure("Can't support language : " + language + ", so I can't open it");
-
-	if (!reader.setToFirstChild())
-		throw failure("The file has been damaged and can't be recovered, so I can't open it");
-
-	_shaderCodes.clear();
-
-	do
-	{
-		std::string name = reader.getCurrentNodeName();
-		if (name == "include")
-			instanceInclude(manager, material, reader);
-		else if (name == "parameter")
-			instanceParameter(manager, material, reader);
-		else if (name == "macro")
-			instanceMacro(manager, material, reader);
-		else if (name == "sampler")
-			instanceSampler(manager, material, reader);
-		else if (name == "shader")
-			instanceCodes(manager, reader);
-		else if (name == "technique")
-			instanceTech(manager, material, reader);
-		else if (name == "inputlayout")
-			instanceInputLayout(manager, material, reader);
-
-	} while (reader.setToNextChild());
-
-	return true;
 }
 
 MaterialPtr
@@ -734,13 +692,38 @@ MaterialMaker::load(MaterialManager& manager, iarchive& reader) except
 	}
 	else if (nodeName == "effect")
 	{
-		MaterialDesc materialDesc;
-		if (this->load(manager, materialDesc, reader))
+		auto material = std::make_shared<Material>();
+		std::string language = reader.getValue<std::string>("language");
+		if (language != "bytecodes")
+			throw failure("Can't support language : " + language + ", so I can't open it");
+
+		if (!reader.setToFirstChild())
+			throw failure("The file has been damaged and can't be recovered, so I can't open it");
+
+		_shaderCodes.clear();
+
+		do
 		{
-			auto material = std::make_shared<Material>();
-			material->setup(materialDesc);
+			std::string name = reader.getCurrentNodeName();
+			if (name == "include")
+				instanceInclude(manager, material, reader);
+			else if (name == "parameter")
+				instanceParameter(manager, material, reader);
+			else if (name == "macro")
+				instanceMacro(manager, material, reader);
+			else if (name == "sampler")
+				instanceSampler(manager, material, reader);
+			else if (name == "shader")
+				instanceCodes(manager, reader);
+			else if (name == "technique")
+				instanceTech(manager, material, reader);
+			else if (name == "inputlayout")
+				instanceInputLayout(manager, material, reader);
+
+		} while (reader.setToNextChild());
+
+		if (material->setup())
 			return material;
-		}
 	}
 
 	return nullptr;

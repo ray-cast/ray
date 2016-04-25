@@ -53,8 +53,10 @@ ForwardRenderPipeline::~ForwardRenderPipeline() noexcept
 }
 
 bool 
-ForwardRenderPipeline::setup(RenderPipeline& pipeline) noexcept
+ForwardRenderPipeline::setup(RenderPipelinePtr pipeline) noexcept
 {
+	assert(pipeline);
+	_pipeline = pipeline;
 	return true;
 }
 
@@ -64,61 +66,41 @@ ForwardRenderPipeline::close() noexcept
 }
 
 void
-ForwardRenderPipeline::renderShadowMap(RenderPipeline& pipeline) noexcept
-{
-	pipeline.setFramebuffer(pipeline.getCamera()->getFramebuffer());
-	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsDepth, float4::Zero, 1.0, 0);
-	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque, _depthOnly);
-}
-
-void
 ForwardRenderPipeline::render2DEnvMap(RenderPipeline& pipeline) noexcept
 {
-	std::uint32_t width, height;
-	pipeline.getWindowResolution(width, height);
-	pipeline.setViewport(Viewport(0, 0, width, height, 0, 1.0));
+	assert(pipeline.getCamera());
+
+	pipeline.setFramebuffer(pipeline.getCamera()->getFramebuffer());
 	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsAll, pipeline.getCamera()->getClearColor(), 1.0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
 }
 
 void
-ForwardRenderPipeline::onResolutionChangeBefore(RenderPipeline& pipeline) noexcept
+ForwardRenderPipeline::onResolutionChangeBefore() noexcept
 {
 }
 
 void
-ForwardRenderPipeline::onResolutionChangeAfter(RenderPipeline& pipeline) noexcept
+ForwardRenderPipeline::onResolutionChangeAfter() noexcept
 {
 }
 
 void
-ForwardRenderPipeline::onRenderPipeline(RenderPipeline& pipeline, const CameraPtr& camera) noexcept
+ForwardRenderPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
 {
-	if (!camera)
-		return;
-
-	auto cameraOrder = camera->getCameraOrder();
-	switch (cameraOrder)
-	{
-	case CameraOrder::CameraOrderShadow:
-		this->renderShadowMap(pipeline);
-		break;
-	case CameraOrder::CameraOrder2D:
-		this->render2DEnvMap(pipeline);
-		break;
-	default:
-		assert(false);
-		break;
-	}
+	assert(camera);
+	assert(camera->getCameraOrder() == CameraOrder::CameraOrder2D);
+	_pipeline->setCamera(camera);
+	this->render2DEnvMap(*_pipeline);
 }
 
 void
-ForwardRenderPipeline::onRenderPre(RenderPipeline& pipeline) noexcept
+ForwardRenderPipeline::onRenderPre() noexcept
 {
 }
 
 void
-ForwardRenderPipeline::onRenderPost(RenderPipeline& pipeline) noexcept
+ForwardRenderPipeline::onRenderPost() noexcept
 {
 }
 

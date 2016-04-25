@@ -41,7 +41,6 @@
 #include <ray/material_tech.h>
 #include <ray/material_param.h>
 #include <ray/material_variant.h>
-#include <ray/material_desc.h>
 
 _NAME_BEGIN
 
@@ -52,26 +51,36 @@ public:
 	Material() noexcept;
 	~Material() noexcept;
 
-	bool setup(const MaterialDesc& materialDesc) noexcept;
+	bool setup() noexcept;
 	void close() noexcept;
 
+	void addTech(MaterialTechPtr technique) noexcept;
+	void removeTech(MaterialTechPtr technique) noexcept;
 	MaterialTechPtr getTech(const std::string& name) noexcept;
 	MaterialTechniques& getTechs() noexcept;
 
+	void addParameter(MaterialParamPtr parameter) noexcept;
+	void removeParameter(MaterialParamPtr parameter) noexcept;
 	MaterialParamPtr getParameter(const std::string& name) const noexcept;
 	MaterialParams& getParameters() noexcept;
 	const MaterialParams& getParameters() const noexcept;
 
+	void addMacro(MaterialParamPtr macro) noexcept;
+	void removeMacro(MaterialParamPtr macro) noexcept;
 	MaterialParamPtr getMacro(const std::string& name) const noexcept;
 	MaterialParams& getMacros() noexcept;
 	const MaterialParams& getMacros() const noexcept;
+
+	MaterialPtr clone() const noexcept;
 
 private:
 	Material(const Material&) noexcept = delete;
 	Material& operator=(const Material&) noexcept = delete;
 
 private:
-	MaterialDesc _materialDesc;
+	MaterialParams _parameters;
+	MaterialParams _macros;
+	MaterialTechniques _techniques;
 };
 
 _NAME_END

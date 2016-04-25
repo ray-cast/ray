@@ -1015,7 +1015,6 @@
                 FxaaTex decal;
                 decal.smpl = PointClamp;
                 decal.tex = texelSource;
-
                 return FxaaPixelShader(coord.xy,
                             FxaaFloat4(0.0f, 0.0f, 0.0f, 0.0f),     // FxaaFloat4 fxaaConsolePosPos,
                             decal,                                  // FxaaTex tex,

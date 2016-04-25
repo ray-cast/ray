@@ -50,19 +50,18 @@ public:
 
 	MaterialPtr load(MaterialManager& manager, iarchive& reader) except;
 	MaterialPtr load(MaterialManager& manager, const std::string& filename) noexcept;
-	bool load(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
 
 private:
-	void instanceInclude(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
-	void instancePass(MaterialManager& manager, MaterialDesc& material, MaterialTechPtr& tech, iarchive& reader) except;
-	void instanceTech(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
-	void instanceSampler(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
-	void instanceParameter(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
-	void instanceMacro(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
-	void instanceBuffer(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
+	void instanceInclude(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
+	void instancePass(MaterialManager& manager, MaterialPtr& material, MaterialTechPtr& tech, iarchive& reader) except;
+	void instanceTech(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
+	void instanceSampler(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
+	void instanceParameter(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
+	void instanceMacro(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
+	void instanceBuffer(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
 	void instanceCodes(MaterialManager& manager, iarchive& reader) except;
-	void instanceShader(MaterialManager& manager, MaterialDesc& material, GraphicsProgramDesc& programDesc, iarchive& reader) except;
-	void instanceInputLayout(MaterialManager& manager, MaterialDesc& material, iarchive& reader) except;
+	void instanceShader(MaterialManager& manager, MaterialPtr& material, GraphicsProgramDesc& programDesc, iarchive& reader) except;
+	void instanceInputLayout(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
 
 	static GraphicsShaderStage stringToShaderStage(const std::string& stage) noexcept;
 	static GraphicsUniformType stringToUniformType(const std::string& type) noexcept;

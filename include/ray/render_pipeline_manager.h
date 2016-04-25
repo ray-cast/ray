@@ -57,7 +57,7 @@ public:
 	void renderBegin() noexcept;
 	void renderEnd() noexcept;
 
-	void setRenderSetting(const RenderSetting& setting) noexcept;
+	bool setRenderSetting(const RenderSetting& setting) noexcept;
 	const RenderSetting& getRenderSetting() const noexcept;
 
 	void setCamera(CameraPtr renderer) noexcept;
@@ -93,9 +93,9 @@ public:
 	void destroyPostProcess() noexcept;
 
 	bool isTextureSupport(GraphicsFormat format) noexcept;
+	bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept;
 	bool isVertexSupport(GraphicsFormat format) noexcept;
-
-	RenderPipelinePtr createRenderPipeline(WindHandle window, std::uint32_t w, std::uint32_t h) noexcept;
+	bool isShaderSupport(GraphicsShaderStage stage) noexcept;
 
 	GraphicsSwapchainPtr createSwapchain(const GraphicsSwapchainDesc& desc) noexcept;
 	GraphicsContextPtr createDeviceContext(const GraphicsContextDesc& desc) noexcept;
@@ -119,6 +119,10 @@ public:
 	void render(const RenderScene& scene) noexcept;
 
 private:
+	bool setupShadowRenderer(RenderPipelinePtr pipeline) noexcept;
+	void destroyShadowRenderer() noexcept;
+
+private:
 	RenderPipelineManager(const RenderPipelineManager&) noexcept = delete;
 	RenderPipelineManager& operator = (const RenderPipelineManager&) noexcept = delete;
 
@@ -140,6 +144,7 @@ private:
 	RenderPipelineDevicePtr _pipelineDevice;
 	RenderPipelineControllerPtr _deferredLighting;
 	RenderPipelineControllerPtr _forwardShading;
+	RenderPipelineControllerPtr _shadowMapGen;
 };
 
 _NAME_END

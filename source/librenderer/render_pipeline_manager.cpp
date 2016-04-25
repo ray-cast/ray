@@ -41,8 +41,9 @@
 #include <ray/render_scene.h>
 #include <ray/camera.h>
 
-#include "deferred_render_pipeline.h"
+#include "deferred_lighting_pipeline.h"
 #include "forward_render_pipeline.h"
+#include "shadow_render_pipeline.h"
 
 #include "atmospheric.h"
 #include "ssao.h"
@@ -80,23 +81,27 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 	if (!_pipelineDevice->open(setting.deviceType))
 		return false;
 
-	_pipeline = _pipelineDevice->createRenderPipeline(setting.window, setting.width, setting.height);
+	_pipeline = _pipelineDevice->createRenderPipeline(setting.window, setting.width, setting.height, setting.swapInterval);
 	if (!_pipeline)
 		return false;
 
-	_pipeline->setSwapInterval(setting.swapInterval);
-
-	auto deferredLighting = std::make_shared<DeferredRenderPipeline>();
-	deferredLighting->_setRenderPipeline(_pipeline);
-	if (!deferredLighting->setup(*_pipeline))
+	auto forwardShading = std::make_shared<ForwardRenderPipeline>();
+	if (!forwardShading->setup(_pipeline))
 		return false;
 
-	_deferredLighting = deferredLighting;
-
-	auto forwardShading = std::make_shared<ForwardRenderPipeline>();
-	forwardShading->_setRenderPipeline(_pipeline);
-	forwardShading->setup(*_pipeline);
 	_forwardShading = forwardShading;
+
+	if (!this->setupShadowRenderer(_pipeline))
+		return false;
+
+	if (setting.enableDeferredLighting)
+	{
+		auto deferredLighting = std::make_shared<DeferredLightingPipeline>();
+		if (!deferredLighting->setup(_pipeline))
+			return false;
+
+		_deferredLighting = deferredLighting;
+	}
 
 	this->setRenderSetting(setting);
 	return true;
@@ -105,6 +110,8 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 void 
 RenderPipelineManager::close() noexcept
 {
+	this->destroyShadowRenderer();
+
 	_atmospheric.reset();
 	_SSAO.reset();
 	_SSGI.reset();
@@ -119,7 +126,7 @@ RenderPipelineManager::close() noexcept
 	_pipeline.reset();
 }
 
-void
+bool
 RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 {
 	if (_setting.enableAtmospheric != setting.enableAtmospheric)
@@ -268,6 +275,7 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 	}
 
 	_setting = setting;
+	return true;
 }
 
 const RenderSetting&
@@ -291,18 +299,39 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 	auto& cameras = scene.getCameraList();
 	for (auto& camera : cameras)
 	{
-		_deferredLighting->onRenderPre(*_pipeline);
+		if (camera->getCameraOrder() == CameraOrder::CameraOrder3D)
+		{
+			_shadowMapGen->onRenderPre();
+			_shadowMapGen->onRenderPipeline(camera);
+			_shadowMapGen->onRenderPost();
+		}
+	}
+
+	for (auto& camera : cameras)
+	{
+		if (camera->getCameraOrder() != CameraOrder::CameraOrder3D &&
+			camera->getCameraOrder() != CameraOrder::CameraOrder2D)
+			continue;
+
+		auto renderPipeline = _forwardShading;
+		if (camera->getCameraOrder() == CameraOrder::CameraOrder3D)
+		{
+			if (_setting.enableDeferredLighting)
+				renderPipeline = _deferredLighting;
+		}
+
+		renderPipeline->onRenderPre();
 
 		RenderListener* renderListener = camera->getOwnerListener();
 		if (renderListener)
 			renderListener->onRenderObjectPre(*_pipeline);
 
-		_deferredLighting->onRenderPipeline(*_pipeline, camera);
+		renderPipeline->onRenderPipeline(camera);
 
 		if (renderListener)
 			renderListener->onRenderObjectPost(*_pipeline);
 
-		_deferredLighting->onRenderPost(*_pipeline);
+		renderPipeline->onRenderPost();
 	}
 }
 
@@ -461,13 +490,13 @@ RenderPipelineManager::setWindowResolution(std::uint32_t width, std::uint32_t he
 {
 	if (_setting.width != width || _setting.height != height)
 	{
-		_deferredLighting->onResolutionChangeBefore(*_pipeline);
-		_forwardShading->onResolutionChangeBefore(*_pipeline);
+		_deferredLighting->onResolutionChangeBefore();
+		_forwardShading->onResolutionChangeBefore();
 
 		_pipeline->setWindowResolution(width, height);
 
-		_deferredLighting->onResolutionChangeAfter(*_pipeline);
-		_forwardShading->onResolutionChangeAfter(*_pipeline);
+		_deferredLighting->onResolutionChangeAfter();
+		_forwardShading->onResolutionChangeAfter();
 
 		_setting.width = width;
 		_setting.height = height;
@@ -509,6 +538,13 @@ RenderPipelineManager::isTextureSupport(GraphicsFormat format) noexcept
 	return _pipeline->isTextureSupport(format);
 }
 
+bool
+RenderPipelineManager::isTextureDimSupport(GraphicsTextureDim format) noexcept
+{
+	assert(_pipeline);
+	return _pipeline->isTextureDimSupport(format);
+}
+
 bool 
 RenderPipelineManager::isVertexSupport(GraphicsFormat format) noexcept
 {
@@ -516,11 +552,11 @@ RenderPipelineManager::isVertexSupport(GraphicsFormat format) noexcept
 	return _pipeline->isTextureSupport(format);
 }
 
-RenderPipelinePtr 
-RenderPipelineManager::createRenderPipeline(WindHandle window, std::uint32_t w, std::uint32_t h) noexcept
+bool
+RenderPipelineManager::isShaderSupport(GraphicsShaderStage stage) noexcept
 {
-	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderPipeline(window, w, h);
+	assert(_pipeline);
+	return _pipeline->isShaderSupport(stage);
 }
 
 GraphicsSwapchainPtr 
@@ -626,6 +662,23 @@ RenderPipelineManager::createRenderMesh(const MeshPropertys& mesh) noexcept
 {
 	assert(_pipelineDevice);
 	return _pipelineDevice->createRenderMesh(mesh);
+}
+
+bool
+RenderPipelineManager::setupShadowRenderer(RenderPipelinePtr pipeline) noexcept
+{
+	auto shadowMapGen = std::make_shared<ShadowRenderPipeline>();
+	if (!shadowMapGen->setup(pipeline))
+		return false;
+
+	_shadowMapGen = shadowMapGen;
+	return true;
+}
+
+void
+RenderPipelineManager::destroyShadowRenderer() noexcept
+{
+	_shadowMapGen.reset();
 }
 
 _NAME_END

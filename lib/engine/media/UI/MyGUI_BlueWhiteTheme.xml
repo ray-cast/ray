@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<MyGUI type="List">
-	<List file="sys:media\ui\MyGUI_BlueWhiteImages.xml"/>
-	<List file="sys:media\ui\MyGUI_BlueWhiteSkins.xml"/>
-	<List file="sys:media\ui\MyGUI_BlueWhiteTemplates.xml"/>
-</MyGUI>

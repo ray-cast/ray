@@ -180,6 +180,23 @@ IoServer::openFileFromDisk(StreamReaderPtr& result, const std::string& path, ope
 		}
 	}
 
+	for (auto& assign : _assignTable)
+	{
+		resolvePath = assign.second + path;
+
+		if (this->existsFileFromDisk(resolvePath))
+		{
+			auto stream = std::make_shared<fstream>();
+			stream->setOpenMode(mode);
+			if (stream->open(resolvePath))
+			{
+				result = stream;
+				this->setstate(ios_base::goodbit);
+				return *this;
+			}
+		}
+	}
+
 	this->setstate(ios_base::failbit);
 	return *this;
 }
@@ -301,11 +318,25 @@ IoServer::existsFileFromDisk(const std::string& path) noexcept
 	if (resolvePath.empty())
 		resolvePath = path;
 
-	if (access(resolvePath.c_str(), 0) != 0)
-		this->setstate(ios_base::failbit);
-	else
+	if (fcntl::access(resolvePath.c_str(), 0) == 0)
+	{
 		this->clear(ios_base::goodbit);
+		return *this;
+	}		
 
+	for (auto& assign : _assignTable)
+	{
+		resolvePath = assign.second + path;
+
+		if (fcntl::access(resolvePath.c_str(), 0) == 0)
+		{
+			this->clear(ios_base::goodbit);
+			return *this;
+		}		
+		
+	}
+
+	this->setstate(ios_base::failbit);
 	return *this;
 }
 

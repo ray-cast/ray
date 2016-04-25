@@ -125,16 +125,20 @@ GameComponent::getName() const noexcept
 void
 GameComponent::load(iarchive& reader) noexcept
 {
+	bool active;
 	std::string name;
+	
 	if (reader.getValue("name", name))
 		this->setName(name);
+	if (reader.getValue("active", active))
+		this->setActive(active);
 }
 
 void
 GameComponent::save(oarchive& write) noexcept
 {
-	auto& name = this->getName();
-	write << make_archive(name, "name");
+	write << make_archive(_name, "name");
+	write << make_archive(_active, "name");
 }
 
 void

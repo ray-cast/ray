@@ -50,6 +50,7 @@ struct EXPORT RenderSetting
 	GraphicsDeviceType deviceType;
 	GraphicsSwapInterval swapInterval;
 
+	bool enableDeferredLighting;
 	bool enableSSAO;
 	bool enableSSGI;
 	bool enableAtmospheric;
@@ -57,6 +58,7 @@ struct EXPORT RenderSetting
 	bool enableSSSS;
 	bool enableFog;
 	bool enableDOF;
+	bool enableMotionBlur;
 	bool enableFimic;
 	bool enableFXAA;
 	bool enableLightShaft;

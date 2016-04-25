@@ -75,7 +75,9 @@ public:
 	void drawMesh(MaterialTechPtr pass, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept;
 
 	bool isTextureSupport(GraphicsFormat format) noexcept;
+	bool isTextureDimSupport(GraphicsTextureDim dimension) noexcept;
 	bool isVertexSupport(GraphicsFormat format) noexcept;
+	bool isShaderSupport(GraphicsShaderStage stage) noexcept;
 
 	GraphicsTexturePtr createTexture(const GraphicsTextureDesc& desc) noexcept;
 	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter = GraphicsSamplerFilter::GraphicsSamplerFilterLinear) noexcept;

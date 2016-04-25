@@ -110,6 +110,9 @@ public:
 	void setFramebuffer(GraphicsFramebufferPtr texture) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
+	void setRenderDataManager(RenderDataManagerPtr manager) noexcept;
+	RenderDataManagerPtr getRenderDataManager() const noexcept;
+
 private:
 	void _updateOrtho() const noexcept;
 	void _updatePerspective() const noexcept;
@@ -145,6 +148,8 @@ private:
 	GraphicsTexturePtr _envSpecular;
 
 	GraphicsFramebufferPtr _renderTexture;
+
+	RenderDataManagerPtr _dataManager;
 
 	mutable bool _needUpdateProject;
 	mutable bool _needUpdateViewProject;

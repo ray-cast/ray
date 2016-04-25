@@ -282,6 +282,7 @@ CameraComponent::load(iarchive& reader) noexcept
 	float ratio;
 	float4 viewport;
 	float4 ortho;
+	float4 clearColor;
 	std::string order;
 	std::string flagsString;
 	std::string skymap;
@@ -311,6 +312,9 @@ CameraComponent::load(iarchive& reader) noexcept
 		RenderSystem::instance()->getWindowResolution(w, h);
 		this->setViewport(Viewport(0, 0, w, h));
 	}
+
+	if (reader.getValue("color", clearColor))
+		_camera->setClearColor(clearColor);
 
 	if (reader.getValue("type", type))
 	{
@@ -408,7 +412,7 @@ CameraComponent::_loadSkyDiffuse(const std::string& texture) noexcept
 
 	auto diffuse = RenderSystem::instance()->createTexture(texture,
 		GraphicsTextureDim::GraphicsTextureDimCube,
-		GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
+		GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
 
 	if (diffuse)
 	{

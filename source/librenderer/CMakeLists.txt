@@ -234,8 +234,8 @@ SET(RENDERER_TERRAIN
 SOURCE_GROUP("renderer\\terrain" FILES ${RENDERER_TERRAIN})
 
 SET(RENDER_PIPELINE
-    ${SOURCE_PATH}/deferred_render_pipeline.h
-    ${SOURCE_PATH}/deferred_render_pipeline.cpp
+    ${SOURCE_PATH}/deferred_lighting_pipeline.h
+    ${SOURCE_PATH}/deferred_lighting_pipeline.cpp
     ${SOURCE_PATH}/forward_render_pipeline.h
     ${SOURCE_PATH}/forward_render_pipeline.cpp
     ${SOURCE_PATH}/shadow_render_pipeline.h

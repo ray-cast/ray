@@ -36,13 +36,12 @@
 // +----------------------------------------------------------------------
 #include <ray/mathutil.h>
 #include <ray/math.h>
+#include <time.h>
 
 _NAME_BEGIN
 
 namespace math
 {
-	unsigned int seed;
-
 	float cos_look[361];
 	float sin_look[361];
 	float tan_look[361];
@@ -69,25 +68,30 @@ namespace math
 
 	void randomize()
 	{
+		srand(time(NULL));
+	}
+
+	void randomize(unsigned int seed)
+	{
 		srand(seed);
 	}
 
 	int random(int min, int max)
 	{
-		seed = 214013 * seed + 2531011;
-		return    min + (seed ^ seed >> 15) % (max - min + 1);
+		int seed = rand();
+		return min + (seed ^ seed >> 15) % (max - min + 1);
 	}
 
 	float random(float min, float max)
 	{
-		seed = 214013 * seed + 2531011;
-		return min + (max - min) * (1.0f / 65535.0f) * (seed >> 16);
+		int seed = rand();
+		return min + (max - min) * (1.0f / RAND_MAX) * seed;
 	}
 
 	double random(double min, double max)
 	{
-		seed = 214013 * seed + 2531011;
-		return min + (max - min) * (1.0f / 65535.0f) * (seed >> 16);
+		int seed = rand();
+		return min + (max - min) * (1.0f / RAND_MAX) * seed;
 	}
 
 	std::uint32_t part1By1(std::uint32_t n)

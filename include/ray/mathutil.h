@@ -534,7 +534,7 @@ inline void GaussianKernel(std::vector<T>& weights, std::vector<T>& offsets, std
 	offsets.resize(radius);
 
 	for (std::size_t i = 0; i < radius; ++i)
-		weights[i] = GaussianDistribution(-i, 0.0f, radius / deviation);
+		weights[i] = GaussianDistribution(-1.0f * i, 0.0f, radius / deviation);
 
 	for (std::size_t i = 0; i < weights.size(); ++i)
 		weights[i] /= weights[0];
@@ -544,6 +544,7 @@ inline void GaussianKernel(std::vector<T>& weights, std::vector<T>& offsets, std
 }
 
 EXPORT void randomize();
+EXPORT void randomize(unsigned int);
 EXPORT int random(int min, int max);
 EXPORT float random(float min, float max);
 EXPORT double random(double min, double max);

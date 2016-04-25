@@ -354,12 +354,27 @@ WGLSwapchain::initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 	flags |= WGL_CONTEXT_DEBUG_BIT_ARB;
 #endif
 
+	int major = 0;
+	int minor = 0;
+
+	auto deviceType = this->getDevice()->getGraphicsDeviceDesc().getDeviceType();
+	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore)
+	{
+		major = 4;
+		minor = 5;
+	}
+	else
+	{
+		major = 3;
+		minor = 3;
+	}
+
 	int attribs[40];
 	attribs[index++] = WGL_CONTEXT_MAJOR_VERSION_ARB;
-	attribs[index++] = 3;
+	attribs[index++] = major;
 
 	attribs[index++] = WGL_CONTEXT_MINOR_VERSION_ARB;
-	attribs[index++] = 3;
+	attribs[index++] = minor;
 
 	attribs[index++] = WGL_CONTEXT_FLAGS_ARB;
 	attribs[index++] = flags;

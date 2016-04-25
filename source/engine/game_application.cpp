@@ -268,6 +268,7 @@ GameApplication::setFileServicePath(const std::string& path) noexcept
 	auto resourceBaseDir = tmp + _resourceBaseDir;
 
 	_ioServer->addAssign(IoAssign("sys", engineDir));
+	_ioServer->addAssign(IoAssign("sys:media/ui/", engineDir + "media/ui/"));
 	_ioServer->addAssign(IoAssign("dlc", resourceBaseDir));
 }
 

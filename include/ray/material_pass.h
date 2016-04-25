@@ -98,6 +98,8 @@ public:
 
 	void update() noexcept;
 
+	MaterialPassPtr clone() noexcept;
+
 private:
 	MaterialPass(const MaterialPass&) = delete;
 	MaterialPass& operator=(const MaterialPass&) = delete;

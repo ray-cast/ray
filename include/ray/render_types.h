@@ -154,6 +154,26 @@ enum LightType
 	LightTypeMaxEnum = 0x7FFFFFFF
 };
 
+enum LightShadowType
+{
+	LightShadowTypeNone,
+	LightShadowTypeLow,
+	LightShadowTypeMedium,
+	LightShadowTypeHigh,
+	LightShadowTypeBeginRange = LightShadowTypeNone,
+	LightShadowTypeEndRange = LightShadowTypeHigh,
+	LightShadowTypeRangeSize = (LightShadowTypeEndRange - LightShadowTypeBeginRange + 1),
+	LightShadowTypeMaxEnum = 0x7FFFFFFF
+};
+
+enum LightShadowSize
+{
+	LightShadowSizeLow = 256,
+	LightShadowSizeMedium = 512,
+	LightShadowSizeHigh = 1024,
+	LightShadowSizeEnumCount = 3
+};
+
 enum RenderQueue
 {
 	RenderQueueCustom,
@@ -163,12 +183,10 @@ enum RenderQueue
 	RenderQueueOpaqueBatch,
 	RenderQueueOpaqueSpecific,
 	RenderQueueOpaqueSpecificBatch,
-	RenderQueueOpaquePostprocess,
 	RenderQueueTransparent,
 	RenderQueueTransparentBatch,
 	RenderQueueTransparentSpecific,
 	RenderQueueTransparentSpecificBatch,
-	RenderQueueTransparentPostprocess,
 	RenderQueueLighting,
 	RenderQueuePostprocess,
 	RenderQueueBeginRange = RenderQueueCustom,

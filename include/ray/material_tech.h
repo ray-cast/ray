@@ -60,6 +60,8 @@ public:
 	bool empty() const noexcept;
 	std::size_t count() const noexcept;
 
+	MaterialTechPtr clone() const noexcept;
+
 private:
 	MaterialTech(const MaterialTech&) = delete;
 	MaterialTech& operator=(const MaterialTech&) = delete;

@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <scene>
     <attribute name="UI"/>
-    <object name="UIRoot" position="0,0,-1" active="true">
-        <component class="Camera" type="ortho" order="2D"/>
+    <object name="UIRoot">
+        <attribute position="0,0,-1"/>
+        <attribute active="true"/>
+        <component class="Camera">
+            <attribute type="ortho"/>
+            <attribute order="2D"/>
+            <attribute color="0.2,0.6,1.0,1"/>
+        </component>
         <component class="GuiCamera"/>
     </object>
     <object position="0,0,0"  scale="400, 400, 0" active="true">
         <component class="GuiWindow" skin="WindowCS" text="hello world" />
-        <object active="true" position="0,0,0" scale="400, 370, 0">
-            <component class="GuiScrollView" skin="ScrollView" canvasSize="256,256" align="Stretch" />
+        <object active="true" position="10,10,0" scale="350, 300, 0">
+            <component class="GuiScrollView" skin="ScrollViewEmpty" canvasSize="256,256" align="Stretch" />
             <object active="true" position="0,0,0" scale="256, 256, 0">
                 <component class="GuiImage" skin="ImageBox" texture="dlc:ui/textures/Crystal_Clear_View.png"/>
             </object>

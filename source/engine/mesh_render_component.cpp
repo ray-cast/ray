@@ -42,6 +42,7 @@
 #include <ray/render_system.h>
 #include <ray/render_mesh.h>
 #include <ray/geometry.h>
+#include <ray/material.h>
 
 #include <ray/game_server.h>
 #include <ray/graphics_context.h>
@@ -70,7 +71,7 @@ MeshRenderComponent::setMaterial(MaterialPtr material) noexcept
 void
 MeshRenderComponent::setSharedMaterial(MaterialPtr material) noexcept
 {
-	_material = material;
+	_sharedMaterial = material;
 }
 
 MaterialPtr
@@ -161,11 +162,17 @@ GameComponentPtr
 MeshRenderComponent::clone() const noexcept
 {
 	auto result = std::make_shared<MeshRenderComponent>();
+	result->setName(this->getName());
+	result->setActive(this->getActive());
 	result->setCastShadow(this->getCastShadow());
 	result->setReceiveShadow(this->getReceiveShadow());
-	result->setName(this->getName());
-	result->setMaterial(this->getSharedMaterial());
-	result->setSharedMaterial(this->getSharedMaterial());
+
+	if (_sharedMaterial)
+	{
+		result->setMaterial(_sharedMaterial->clone());
+		result->setSharedMaterial(_sharedMaterial);
+	}
+
 	return result;
 }
 
@@ -202,18 +209,25 @@ MeshRenderComponent::onLayerChangeAfter() noexcept
 void
 MeshRenderComponent::onActivate() except
 {
-	auto component = this->getGameObject()->getComponent<MeshComponent>();
-	if (component)
+	if (!_material)
 	{
 		buildMaterials();
+	}
 
-		auto mesh = component->getMesh();
-		if (mesh)
+	if (!_renderObject)
+	{
+		auto component = this->getGameObject()->getComponent<MeshComponent>();
+		if (component)
 		{
-			buildRenderObjects(mesh);
-			_attacRenderObjects();
+			auto mesh = component->getMesh();
+			if (mesh)
+			{
+				buildRenderObjects(mesh);
+			}
 		}
 	}
+	
+	_attacRenderObjects();
 }
 
 void

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<scene>
+    <attribute name="SSSSS"/>
+    <object>
+        <attribute name="first_person_camera"/>
+        <attribute position="0,0,-3"/>
+        <attribute active="true"/>
+        <component class="Camera">
+            <attribute aperture="45.0"/>
+            <attribute znear="0.1"/>
+            <attribute zfar="500.0"/>
+        </component>
+        <component class="FirstPersonCamera">
+        </component>
+    </object>
+    <object>
+        <attribute name="head"/>
+        <attribute position="0,0,0"/>
+        <attribute rotate="0,0,0"/>
+        <attribute scale="1,1,1"/>
+        <attribute active="true"/>
+        <component class="Mesh">
+            <attribute name="dlc:skinning/models/miku/YYB式初音ミク水着 PDF Ver.pmx"/>
+        </component>
+        <component class="MeshRender">
+            <attribute castshadow="true"/>
+            <attribute receiveshadow="false"/>
+            <attribute material="dlc:sssss/materials/sssss.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="plane"/>
+        <attribute position="0,-2,0"/>
+        <attribute scale="40,1,40"/>
+        <attribute active="true"/>
+        <component class="Mesh">
+            <attribute name="dlc:sssss/models/cube.pmx"/>
+        </component>
+        <component class="MeshRender">
+            <attribute material="dlc:sssss/materials/plane.mat"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="sun"/>
+        <attribute position="0,5,0"/>
+        <attribute rotate="90,0,0"/>
+        <attribute active="true"/>
+        <component class="Light">
+            <attribute type="spot"/>
+            <attribute color="1.0,1.0,1.0"/>
+            <attribute range="10.0"/>
+            <attribute intensity="1.0"/>
+            <attribute shadow="true"/>
+            <attribute soft="true"/>
+            <attribute sss="false"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="light"/>
+        <attribute position="0, 0, 0"/>
+        <attribute rotate="0,0,0"/>
+        <attribute active="true"/>
+        <component class="Light">
+            <attribute type="ambient"/>
+            <attribute range="100.0"/>
+            <attribute color="1.0,1.0,1.0"/>
+            <attribute intensity="0.5"/>
+        </component>
+    </object>
+    <object>
+        <attribute name="light"/>
+        <attribute position="0, 0, 0"/>
+        <attribute rotate="180,0,0"/>
+        <attribute active="true"/>
+        <component class="Light">
+            <attribute type="ambient"/>
+            <attribute range="100.0"/>
+            <attribute color="1.0,1.0,1.0"/>
+            <attribute intensity="0.1"/>
+        </component>
+    </object>
+</scene>

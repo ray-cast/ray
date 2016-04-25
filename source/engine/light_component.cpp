@@ -90,13 +90,13 @@ LightComponent::getIntensity() const noexcept
 	return _light->getIntensity();
 }
 
-float
+const float2&
 LightComponent::getSpotInnerCone() const noexcept
 {
 	return _light->getSpotInnerCone();
 }
 
-float
+const float2&
 LightComponent::getSpotOuterCone() const noexcept
 {
 	return _light->getSpotOuterCone();
@@ -105,13 +105,49 @@ LightComponent::getSpotOuterCone() const noexcept
 void
 LightComponent::setShadow(bool shadow) noexcept
 {
-	_light->setShadow(shadow);
+	_light->setShadowType(LightShadowType::LightShadowTypeMedium);
 }
 
 bool
 LightComponent::getShadow() const noexcept
 {
-	return _light->getShadow();
+	return _light->getShadowType() != LightShadowType::LightShadowTypeNone;
+}
+
+void
+LightComponent::setSoftShadow(bool softEnable) noexcept
+{
+	_light->setSoftShadow(softEnable);
+}
+
+bool
+LightComponent::getSoftShadow() const noexcept
+{
+	return _light->getSoftShadow();
+}
+
+void
+LightComponent::setShadowBias(float bias) noexcept
+{
+	_light->setShadowBias(bias);
+}
+
+float 
+LightComponent::getShadowBias() const noexcept
+{
+	return _light->getShadowBias();
+}
+
+void
+LightComponent::setSubsurfaceScattering(bool enable) noexcept
+{
+	_light->setSubsurfaceScattering(enable);
+}
+
+bool
+LightComponent::getSubsurfaceScattering() const noexcept
+{
+	return _light->getSubsurfaceScattering();
 }
 
 void
@@ -174,13 +210,13 @@ LightComponent::load(iarchive& reader) noexcept
 	else
 		this->setLightType(LightType::LightTypePoint);
 
-	_light->setLightColor(lightColor);
-	_light->setRange(lightRange);
-	_light->setIntensity(lightIntensity);
-	_light->setShadow(shadow);
-	_light->setShadowBias(shadowBias);
-	_light->setSoftShadow(softShadow);
-	_light->setSubsurfaceScattering(subsurfaceScattering);
+	this->setLightColor(lightColor);
+	this->setRange(lightRange);
+	this->setIntensity(lightIntensity);
+	this->setShadow(shadow);
+	this->setShadowBias(shadowBias);
+	this->setSoftShadow(softShadow);
+	this->setSubsurfaceScattering(subsurfaceScattering);
 }
 
 void
@@ -192,9 +228,10 @@ LightComponent::save(oarchive& write) noexcept
 GameComponentPtr
 LightComponent::clone() const noexcept
 {
-	auto instance = std::make_shared<LightComponent>();
-	instance->_light = _light->clone()->downcast<Light>();
-	return instance;
+	auto result = std::make_shared<LightComponent>();
+	result->setName(this->getName());
+	result->setActive(this->getActive());
+	return result;
 }
 
 void

@@ -8,7 +8,8 @@
     <macro name="TONEMAP_EXPONENTIAL_HSV" value="2"/>
     <macro name="TONEMAP_REINHARD" value="3"/>
     <macro name="TONEMAP_FILMIC" value="4"/>
-    <macro name="TONEMAP_OPERATOR" value="TONEMAP_FILMIC"/>
+    <macro name="TONEMAP_UNCHARTED2" value="5"/>
+    <macro name="TONEMAP_OPERATOR" value="TONEMAP_UNCHARTED2"/>
     <parameter name="texSource" type="texture2D" />
     <parameter name="texSourceSizeInv" type="float2" />
     <parameter name="texBloom" type="texture2D" />
@@ -53,6 +54,11 @@
                     color = xyz2rgb(Yxy2xyz(color));
                     return color;
                 #elif TONEMAP_OPERATOR == TONEMAP_FILMIC
+                    color = 2 * Uncharted2Tonemap(exposure * color);
+                    float3 whiteScale = 1.0f / Uncharted2Tonemap(11.2);
+                    color *= whiteScale;
+                    return color;
+                #elif TONEMAP_OPERATOR == TONEMAP_UNCHARTED2
                     color = Uncharted2Tonemap(exposure * color);
                     float3 whiteScale = 1.0f / Uncharted2Tonemap(11.2);
                     color *= whiteScale;

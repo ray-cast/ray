@@ -5,7 +5,7 @@
     <include name="sys:fx/inputlayout.fxml"/>
     <macro name="NUM_SAMPLE" type="int" value="8"/>
     <macro name="NUM_SAMPLE_INV" type="float" value="0.125"/>
-    <macro name="BLUR_RADIUS" type="int" value="8"/>
+    <macro name="BLUR_RADIUS" type="int" value="6"/>
     <parameter name="projScale" type="float"/>
     <parameter name="projInfo" type="float4"/>
     <parameter name="radius" type="float"/>
@@ -50,8 +50,8 @@
             float bilateralfilter(float2 coord, float r, float center_d)
             {
                 float d = linearizeDepth(coord);
-                float ddiff = (d - center_d);
-                return exp(-r * r * blurFactor - ddiff * ddiff * blurSharpness);
+                float ddiff = (d - center_d) * blurSharpness;
+                return exp2(-r * r * blurFactor - ddiff * ddiff);
             }
 
             void PostProcessVS(
@@ -73,7 +73,7 @@
 
                 int2 ssC = int2(screenSpace.xy);
                 float sampleAngle = float(3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10.0f;
-                float sampleRadius = projScale * radius / viewPosition.z;
+                float sampleRadius = projScale / viewPosition.z;
                 float sampleRadius2 = sampleRadius * sampleRadius;
                 float sampleAmbient = 0.0f;
 
@@ -90,7 +90,7 @@
                     float sampleLength2 = dot(sampleDirection, sampleDirection);
 
                     float epsilon = 0.0001f;
-                    sampleAmbient += max(0.0f, (sampleAngle - viewPosition.z * bias) / (sampleLength2 + epsilon));
+                    sampleAmbient += saturate((sampleAngle - viewPosition.z * bias) / (sampleLength2 + epsilon));
                 }
 
                 return max(0.0f, 1.0f - sampleAmbient * intensity * NUM_SAMPLE_INV);
@@ -155,6 +155,8 @@
             <state name="blend" value="true"/>
             <state name="blendsrc" value="dstcol" />
             <state name="blenddst" value="zero" />
+            <state name="blendalphasrc" value="zero" />
+            <state name="blendalphadst" value="dstalpha" />
         </pass>
     </technique>
 </effect>

@@ -169,6 +169,8 @@ public:
 	void addParamListener(MaterialParamListener* listener) noexcept;
 	void removeParamListener(MaterialParamListener* listener) noexcept;
 
+	MaterialParamPtr clone() const noexcept;
+
 private:
 	void _needUpdate() noexcept;
 

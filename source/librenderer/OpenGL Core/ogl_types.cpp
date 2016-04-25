@@ -548,7 +548,7 @@ OGLTypes::asTextureType(GraphicsFormat format) noexcept
 	case GraphicsFormatB10G11R11UFloatPack32:    return GL_UNSIGNED_INT_10F_11F_11F_REV;
 	case GraphicsFormatE5B9G9R9UFloatPack32:     return GL_UNSIGNED_INT_5_9_9_9_REV;
 	case GraphicsFormatD16UNorm:                 return GL_UNSIGNED_SHORT;
-	case GraphicsFormatX8_D24UNormPack32:        return GL_UNSIGNED_INT_24_8;
+	case GraphicsFormatX8_D24UNormPack32:        return GL_UNSIGNED_INT;
 	case GraphicsFormatD32_SFLOAT:               return GL_FLOAT;
 	case GraphicsFormatS8UInt:                   return GL_UNSIGNED_BYTE;
 	case GraphicsFormatD16UNorm_S8UInt:          return GL_INVALID_ENUM;

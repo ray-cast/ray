@@ -130,7 +130,7 @@ struct DDSRawPixelData
 #define DDS_MAX(a, b) (a > b ? a : b)
 #define DDS_MIN(a, b) (a > b ? b : a)
 
-void DDStoCubeMap(char* buffer, std::size_t mipBase, std::size_t mipLevel, std::size_t width, std::size_t height, std::size_t depth, std::size_t pixelSize, char* stream)
+bool DDStoCubeMap(char* buffer, std::size_t mipBase, std::size_t mipLevel, std::size_t width, std::size_t height, std::size_t depth, std::size_t bpp, char* stream)
 {
 	std::size_t offset1 = 0;
 	std::size_t offset2 = 0;
@@ -138,6 +138,19 @@ void DDStoCubeMap(char* buffer, std::size_t mipBase, std::size_t mipLevel, std::
 
 	std::size_t w = width;
 	std::size_t h = height;
+
+	std::size_t pixelSize = 0;
+	if (bpp == 24)
+		pixelSize = 3;
+	else if (bpp == 32)
+		pixelSize = 4;
+	else if (bpp == 64)
+		pixelSize = 8;
+	else if (bpp == 128)
+		pixelSize = 16;
+	else
+		return false;
+
 	for (std::size_t mip = mipBase; mip < mipBase + mipLevel; mip++)
 	{
 		std::size_t mipSize = w * h * pixelSize;
@@ -153,7 +166,7 @@ void DDStoCubeMap(char* buffer, std::size_t mipBase, std::size_t mipLevel, std::
 
 	for (std::size_t mip = mipBase; mip < mipBase + mipLevel; mip++)
 	{
-		std::size_t mipSize = w * h * 3;
+		std::size_t mipSize = w * h * pixelSize;
 
 		for (std::size_t i = 0; i < depth; i++)
 		{
@@ -167,6 +180,8 @@ void DDStoCubeMap(char* buffer, std::size_t mipBase, std::size_t mipLevel, std::
 
 		offset1 += mipSize;
 	}
+
+	return true;
 }
 
 DDSHandler::DDSHandler() noexcept
@@ -261,12 +276,27 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	}
 	else
 	{
-		auto swap = make_scope<char[]>(size);
-		std::size_t pixelSize = (info.format.bpp == 24) ? 3 : 4;
-		DDStoCubeMap(swap.get(), 0, info.mip_level, info.width, info.height, 6, pixelSize, data.get());
-		if (!image.create(info.width, info.height, info.depth, info.format.size, size, (std::uint8_t*)swap.get(), false))
-			return false;
-		swap.dismiss();
+		if (info.mip_level > 1)
+		{
+			if (info.format.bpp == 0)
+				return false;
+
+			auto swap = make_scope<char[]>(size);
+			if (!DDStoCubeMap(swap.get(), 0, info.mip_level, info.width, info.height, 6, info.format.size, data.get()))
+				return false;
+
+			if (!image.create(info.width, info.height, info.depth, info.format.size, size, (std::uint8_t*)swap.get(), false))
+				return false;
+
+			swap.dismiss();
+		}
+		else
+		{
+			if (!image.create(info.width, info.height, info.depth, info.format.size, size, (std::uint8_t*)data.get(), false))
+				return false;
+
+			data.dismiss();
+		}
 	}
 
 	return true;

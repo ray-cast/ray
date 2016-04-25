@@ -206,11 +206,25 @@ RenderSystem::isTextureSupport(GraphicsFormat format) noexcept
 	return _pipelineManager->isTextureSupport(format);
 }
 
+bool
+RenderSystem::isTextureDimSupport(GraphicsTextureDim dimension) noexcept
+{
+	assert(_pipelineManager);
+	return _pipelineManager->isTextureDimSupport(dimension);
+}
+
 bool 
 RenderSystem::isVertexSupport(GraphicsFormat format) noexcept
 {
 	assert(_pipelineManager);
 	return _pipelineManager->isVertexSupport(format);
+}
+
+bool 
+RenderSystem::isShaderSupport(GraphicsShaderStage stage) noexcept
+{
+	assert(_pipelineManager);
+	return _pipelineManager->isShaderSupport(stage);
 }
 
 GraphicsTexturePtr

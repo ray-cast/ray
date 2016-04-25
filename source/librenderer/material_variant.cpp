@@ -150,8 +150,8 @@ MaterialVariant::setType(GraphicsUniformType type) noexcept
 		}
 		else if (_type == GraphicsUniformType::GraphicsUniformTypeUniformBuffer)
 		{
-			delete _value.ubo;
-			_value.ubo = nullptr;
+			delete _value.buffer;
+			_value.buffer = nullptr;
 		}
 		else if (_type == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
 			_type == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
@@ -201,7 +201,7 @@ MaterialVariant::setType(GraphicsUniformType type) noexcept
 		else if (type == GraphicsUniformType::GraphicsUniformTypeFloat4x4Array)
 			_value.m4array = new std::vector<float4x4>;
 		else if (type == GraphicsUniformType::GraphicsUniformTypeUniformBuffer)
-			_value.ubo = new GraphicsDataPtr;
+			_value.buffer = new GraphicsDataPtr;
 		else if (type == GraphicsUniformType::GraphicsUniformTypeSamplerImage ||
 			type == GraphicsUniformType::GraphicsUniformTypeStorageImage ||
 			type == GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler)
@@ -694,10 +694,10 @@ MaterialVariant::uniformTexture(GraphicsTexturePtr texture, GraphicsSamplerPtr s
 }
 
 void
-MaterialVariant::uniformBuffer(GraphicsDataPtr ubo) noexcept
+MaterialVariant::uniformBuffer(GraphicsDataPtr buffer) noexcept
 {
 	assert(_type == GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
-	*_value.ubo = ubo;
+	*_value.buffer = buffer;
 }
 
 bool
@@ -936,8 +936,162 @@ GraphicsDataPtr
 MaterialVariant::getBuffer() const noexcept
 {
 	assert(_type == GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
-	return *_value.ubo;
+	return *_value.buffer;
 }
 
+void 
+MaterialVariant::copy(const MaterialVariant& other) noexcept
+{
+	this->setType(other.getType());
+
+	switch (_type)
+	{
+	case GraphicsUniformType::GraphicsUniformTypeBool:
+		_value.b = other._value.b;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeInt:
+		_value.i[0] = other._value.i[0];
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeInt2:
+		_value.i[0] = other._value.i[0];
+		_value.i[1] = other._value.i[1];
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeInt3:
+		_value.i[0] = other._value.i[0];
+		_value.i[1] = other._value.i[1];
+		_value.i[2] = other._value.i[2];
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeInt4:
+		_value.i[0] = other._value.i[0];
+		_value.i[1] = other._value.i[1];
+		_value.i[2] = other._value.i[2];
+		_value.i[3] = other._value.i[3];
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeUInt:
+		_value.ui[0] = other._value.ui[0];
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeUInt2:
+		_value.ui[0] = other._value.ui[0];
+		_value.ui[1] = other._value.ui[1];
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeUInt3:
+		_value.ui[0] = other._value.ui[0];
+		_value.ui[1] = other._value.ui[1];
+		_value.ui[2] = other._value.ui[2];
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeUInt4:
+		_value.ui[0] = other._value.ui[0];
+		_value.ui[1] = other._value.ui[1];
+		_value.ui[2] = other._value.ui[2];
+		_value.ui[3] = other._value.ui[3];
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeFloat:
+		_value.f[0] = other._value.f[0];
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeFloat2:
+		_value.f[0] = other._value.f[0];
+		_value.f[1] = other._value.f[1];
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeFloat3:
+		_value.f[0] = other._value.f[0];
+		_value.f[1] = other._value.f[1];
+		_value.f[2] = other._value.f[2];
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeFloat4:
+		_value.f[0] = other._value.f[0];
+		_value.f[1] = other._value.f[1];
+		_value.f[2] = other._value.f[2];
+		_value.f[3] = other._value.f[3];
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeFloat2x2:
+		std::memcpy(_value.m2, other._value.m2, sizeof(float2x2));
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeFloat3x3:
+		std::memcpy(_value.m3, other._value.m3, sizeof(float3x3));
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeFloat4x4:
+		std::memcpy(_value.m4, other._value.m4, sizeof(float4x4));
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeIntArray:
+		*_value.iarray = *other._value.iarray;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeInt2Array:
+		*_value.iarray2 = *other._value.iarray2;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeInt3Array:
+		*_value.iarray3 = *other._value.iarray3;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeInt4Array:
+		*_value.iarray4 = *other._value.iarray4;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeUIntArray:
+		*_value.uiarray = *other._value.uiarray;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeUInt2Array:
+		*_value.uiarray2 = *other._value.uiarray2;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeUInt3Array:
+		*_value.uiarray3 = *other._value.uiarray3;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeUInt4Array:
+		*_value.uiarray4 = *other._value.uiarray4;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeFloatArray:
+		*_value.farray = *other._value.farray;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeFloat2Array:
+		*_value.farray2 = *other._value.farray2;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeFloat3Array:
+		*_value.farray3 = *other._value.farray3;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeFloat4Array:
+		*_value.farray3 = *other._value.farray3;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeFloat2x2Array:
+		*_value.m2array = *other._value.m2array;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeFloat3x3Array:
+		*_value.m3array = *other._value.m3array;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeFloat4x4Array:
+		*_value.m4array = *other._value.m4array;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeSampler:
+		*_value.texture = *other._value.texture;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
+		*_value.texture = *other._value.texture;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler:
+		*_value.texture = *other._value.texture;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeStorageImage:
+		*_value.texture = *other._value.texture;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeStorageTexelBuffer:
+		*_value.buffer = *other._value.buffer;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeStorageBuffer:
+		*_value.buffer = *other._value.buffer;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeStorageBufferDynamic:
+		*_value.buffer = *other._value.buffer;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeUniformTexelBuffer:
+		*_value.buffer = *other._value.buffer;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeUniformBuffer:
+		*_value.buffer = *other._value.buffer;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeUniformBufferDynamic:
+		*_value.buffer = *other._value.buffer;
+		break;
+	case GraphicsUniformType::GraphicsUniformTypeInputAttachment:
+		break;
+	default:
+		break;
+	}
+}
 
 _NAME_END

@@ -736,6 +736,16 @@ MaterialParam::removeParamListener(MaterialParamListener* listener) noexcept
 		_listeners.erase(it);
 }
 
+MaterialParamPtr
+MaterialParam::clone() const noexcept
+{
+	auto param = std::make_shared<MaterialParam>();
+	param->setName(this->getName());
+	param->setSemantic(this->getSemantic());
+	param->_variant.copy(this->_variant);
+	return param;
+}
+
 void
 MaterialParam::_needUpdate() noexcept
 {

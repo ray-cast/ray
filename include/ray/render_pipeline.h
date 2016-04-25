@@ -49,7 +49,7 @@ public:
 	RenderPipeline() noexcept;
 	~RenderPipeline() noexcept;
 
-	bool setup(RenderPipelineDevicePtr pipelineDevice, WindHandle window, std::uint32_t w, std::uint32_t h) noexcept;
+	bool setup(RenderPipelineDevicePtr pipelineDevice, WindHandle window, std::uint32_t w, std::uint32_t h, GraphicsSwapInterval interval) noexcept;
 	void close() noexcept;
 
 	void renderBegin() noexcept;
@@ -66,6 +66,9 @@ public:
 
 	void setViewport(const Viewport& view) noexcept;
 	const Viewport& getViewport() const noexcept;
+
+	void setScissor(const Scissor& scissor) noexcept;
+	const Scissor& getScissor() const noexcept;
 
 	void addRenderData(RenderQueue queue, RenderObjectPtr object) noexcept;
 	const RenderObjects& getRenderData(RenderQueue queue) const noexcept;
@@ -124,10 +127,9 @@ public:
 	MaterialParamPtr getSemantic(const std::string& semantic) const noexcept;
 
 private:
-	bool setupDeviceContext(WindHandle window, std::uint32_t w, std::uint32_t h) noexcept;
+	bool setupDeviceContext(WindHandle window, std::uint32_t w, std::uint32_t h, GraphicsSwapInterval interval) noexcept;
 	bool setupMaterialSemantic() noexcept;
 	bool setupBaseMeshes() noexcept;
-	bool setupDataManager() noexcept;
 
 	void destroyDeviceContext() noexcept;
 	void destroyMaterialSemantic() noexcept;

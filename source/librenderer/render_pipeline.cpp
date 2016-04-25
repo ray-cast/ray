@@ -72,7 +72,7 @@ RenderPipeline::~RenderPipeline() noexcept
 }
 
 bool
-RenderPipeline::setup(RenderPipelineDevicePtr pipelineDevice, WindHandle window, std::uint32_t w, std::uint32_t h) noexcept
+RenderPipeline::setup(RenderPipelineDevicePtr pipelineDevice, WindHandle window, std::uint32_t w, std::uint32_t h, GraphicsSwapInterval interval) noexcept
 {
 	assert(pipelineDevice);
 
@@ -81,16 +81,13 @@ RenderPipeline::setup(RenderPipelineDevicePtr pipelineDevice, WindHandle window,
 
 	_pipelineDevice = pipelineDevice;
 
-	if (!setupDeviceContext(window, w, h))
+	if (!setupDeviceContext(window, w, h, interval))
 		return false;
 
 	if (!setupBaseMeshes())
 		return false;
 
 	if (!setupMaterialSemantic())
-		return false;
-
-	if (!setupDataManager())
 		return false;
 
 	return true;
@@ -156,6 +153,36 @@ RenderPipeline::setTransformInverseTranspose(const float4x4& transform) noexcept
 }
 
 void
+RenderPipeline::setWindowResolution(std::uint32_t width, std::uint32_t height) noexcept
+{
+	if (_width != width || _height != height)
+	{
+		auto& drawPostProcess = _postprocessors[RenderQueue::RenderQueuePostprocess];
+		for (auto& it : drawPostProcess)
+		{
+			if (it->getActive())
+				it->onResolutionChangeBefore(*this);
+		}
+
+		_width = width;
+		_height = height;
+
+		for (auto& it : drawPostProcess)
+		{
+			if (it->getActive())
+				it->onResolutionChangeAfter(*this);
+		}
+	}
+}
+
+void
+RenderPipeline::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept
+{
+	w = _width;
+	h = _height;
+}
+
+void
 RenderPipeline::renderBegin() noexcept
 {
 	assert(_graphicsContext);
@@ -173,7 +200,7 @@ void
 RenderPipeline::setCamera(CameraPtr camera) noexcept
 {
 	assert(camera);
-	assert(_dataManager);
+	assert(camera->getRenderDataManager());
 
 	_materialCameraNear->uniform1f(camera->getNear());
 	_materialCameraFar->uniform1f(camera->getFar());
@@ -188,6 +215,7 @@ RenderPipeline::setCamera(CameraPtr camera) noexcept
 	_materialMatViewProject->uniform4fmat(camera->getViewProject() * adjustProject);
 	_materialMatViewProjectInverse->uniform4fmat(camera->getViewProjectInverse());
 
+	_dataManager = camera->getRenderDataManager();
 	_dataManager->assginVisiable(camera);
 
 	_camera = camera;
@@ -214,33 +242,17 @@ RenderPipeline::getViewport() const noexcept
 }
 
 void 
-RenderPipeline::setWindowResolution(std::uint32_t width, std::uint32_t height) noexcept
+RenderPipeline::setScissor(const Scissor& scissor) noexcept
 {
-	if (_width != width || _height != height)
-	{
-		auto& drawPostProcess = _postprocessors[RenderQueue::RenderQueuePostprocess];
-		for (auto& it : drawPostProcess)
-		{
-			if (it->getActive())
-				it->onResolutionChangeBefore(*this);
-		}
-
-		_width = width;
-		_height = height;
-
-		for (auto& it : drawPostProcess)
-		{
-			if (it->getActive())
-				it->onResolutionChangeAfter(*this);
-		}
-	}
+	assert(_graphicsContext);
+	_graphicsContext->setScissor(scissor);
 }
 
-void 
-RenderPipeline::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept
+const Scissor& 
+RenderPipeline::getScissor() const noexcept
 {
-	w = _width;
-	h = _height;
+	assert(_graphicsContext);
+	return _graphicsContext->getScissor();
 }
 
 bool
@@ -326,15 +338,14 @@ RenderPipeline::drawScreenQuadLayer(MaterialTechPtr tech, std::uint32_t layer) n
 void
 RenderPipeline::drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept
 {
-	_graphicsContext->setVertexBufferData(mesh->getVertexBuffer());
-	_graphicsContext->setIndexBufferData(mesh->getIndexBuffer());
-
 	auto& passList = tech->getPassList();
 	for (auto& pass : passList)
 	{
 		pass->update();
 
 		_graphicsContext->setRenderPipeline(pass->getRenderPipeline());
+		_graphicsContext->setVertexBufferData(mesh->getVertexBuffer());
+		_graphicsContext->setIndexBufferData(mesh->getIndexBuffer());
 		_graphicsContext->setDescriptorSet(pass->getDescriptorSet());
 		_graphicsContext->drawRenderMesh(renderable);
 	}
@@ -343,15 +354,14 @@ RenderPipeline::drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const Graphic
 void
 RenderPipeline::drawMeshLayer(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable, std::uint32_t layer) noexcept
 {
-	_graphicsContext->setVertexBufferData(mesh->getVertexBuffer());
-	_graphicsContext->setIndexBufferData(mesh->getIndexBuffer());
-
 	auto& passList = tech->getPassList();
 	for (auto& pass : passList)
 	{
 		pass->update();
 
 		_graphicsContext->setRenderPipeline(pass->getRenderPipeline());
+		_graphicsContext->setVertexBufferData(mesh->getVertexBuffer());
+		_graphicsContext->setIndexBufferData(mesh->getIndexBuffer());
 		_graphicsContext->setStencilReference(GraphicsStencilFace::GraphicsStencilFaceFrontBack, 1 << layer);
 		_graphicsContext->setDescriptorSet(pass->getDescriptorSet());
 		_graphicsContext->drawRenderMesh(renderable);
@@ -572,12 +582,13 @@ RenderPipeline::getSemantic(const std::string& semantic) const noexcept
 }
 
 bool
-RenderPipeline::setupDeviceContext(WindHandle window, std::uint32_t w, std::uint32_t h) noexcept
+RenderPipeline::setupDeviceContext(WindHandle window, std::uint32_t w, std::uint32_t h, GraphicsSwapInterval interval) noexcept
 {
 	GraphicsSwapchainDesc swapchainDesc;
 	swapchainDesc.setWindHandle(window);
 	swapchainDesc.setWidth(w);
 	swapchainDesc.setHeight(h);
+	swapchainDesc.setSwapInterval(interval);
 	swapchainDesc.setImageNums(2);
 	swapchainDesc.setColorFormat(GraphicsFormat::GraphicsFormatB8G8R8A8UNorm);
 	swapchainDesc.setDepthStencilFormat(GraphicsFormat::GraphicsFormatD24UNorm_S8UInt);
@@ -745,13 +756,6 @@ RenderPipeline::setupBaseMeshes() noexcept
 	_renderConeIndirect.numIndices = mesh.getNumIndices();
 	_renderConeIndirect.numInstances = 0;
 
-	return true;
-}
-
-bool
-RenderPipeline::setupDataManager() noexcept
-{
-	_dataManager = std::make_shared<DefaultRenderDataManager>();
 	return true;
 }
 

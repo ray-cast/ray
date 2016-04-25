@@ -65,13 +65,11 @@ public:
 
 	void setSpotInnerCone(float value) noexcept;
 	void setSpotOuterCone(float value) noexcept;
-	float getSpotInnerCone() const noexcept;
-	float getSpotOuterCone() const noexcept;
-	float getSpotCosInnerCone() const noexcept;
-	float getSpotCosOuterCone() const noexcept;
+	const float2& getSpotInnerCone() const noexcept;
+	const float2& getSpotOuterCone() const noexcept;
 
-	void setShadow(bool enable) noexcept;
-	bool getShadow() const noexcept;
+	void setShadowType(LightShadowType shadowType) noexcept;
+	LightShadowType getShadowType() const noexcept;
 
 	void setSoftShadow(bool enable) noexcept;
 	bool getSoftShadow() const noexcept;
@@ -82,11 +80,17 @@ public:
 	void setShadowBias(float bias) noexcept;
 	float getShadowBias() const noexcept;
 
+	void setShadowMap(GraphicsTexturePtr texture) noexcept;
+	GraphicsTexturePtr getShadowMap() const noexcept;
+
 	CameraPtr getShadowCamera(std::uint8_t i = 0) const noexcept;
 
 	RenderObjectPtr clone() const noexcept;
 
 private:
+	bool setupShadowMap(LightShadowType type) noexcept;
+	void destroyShadowMap() noexcept;
+
 	void _updateShadow() noexcept;
 	void _updateBoundingBox() noexcept;
 
@@ -107,6 +111,7 @@ private:
 
 private:
 	LightType _lightType;
+	LightShadowType _shadowType;
 
 	float _lightRange;
 	float _lightIntensity;
@@ -116,12 +121,15 @@ private:
 
 	float2 _spotInnerCone;
 	float2 _spotOuterCone;
-
-	bool _shadow;
+	
 	bool _shadowSoftEnable;
 	bool _subsurfaceScattering;
-	float _shaodwBias;
+	float _shadowBias;
+	GraphicsFormat _shadowFormat;
 	CameraPtr _shadowCamera[6];
+	GraphicsTexturePtr _shadowMap;
+	GraphicsFramebufferPtr _shadowView;
+	GraphicsFramebufferLayoutPtr _shadowViewLayout;
 	RenderSceneWeakPtr _renderScene;
 };
 

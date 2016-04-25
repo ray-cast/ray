@@ -43,6 +43,10 @@
 
 _NAME_BEGIN
 
+#define SAMPLE_COUNT 6
+#define SAMPLE_LOG_SIZE 32
+#define SAMPLE_LOG_COUNT SAMPLE_LOG_SIZE * SAMPLE_LOG_SIZE
+
 float EyeAdaption(float lum)
 {
 	return math::lerp(0.2f, lum, 0.5f);
@@ -243,38 +247,23 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 
 	_timer = std::make_shared<Timer>();
 
-	std::vector<float> offset1;
-	std::vector<float> weight1;
-	math::GaussianKernel(weight1, offset1, 5.0f, 1.0f, 1.f);
-
-	std::vector<float2> offset;
-	std::vector<float> weight;
-	offset.push_back(float2(-5.0f / (width / 4.0f), -5.0f / (height / 4.0f)));
-	offset.push_back(float2(-4.0f / (width / 4.0f), -4.0f / (height / 4.0f)));
-	offset.push_back(float2(-3.0f / (width / 4.0f), -3.0f / (height / 4.0f)));
-	offset.push_back(float2(-2.0f / (width / 4.0f), -2.0f / (height / 4.0f)));
-	offset.push_back(float2(-1.0f / (width / 4.0f), -1.0f / (height / 4.0f)));
-	offset.push_back(float2(1.0f / (width / 4.0f), 1.0f / (height / 4.0f)));
-	offset.push_back(float2(2.0f / (width / 4.0f), 2.0f / (height / 4.0f)));
-	offset.push_back(float2(3.0f / (width / 4.0f), 3.0f / (height / 4.0f)));
-	offset.push_back(float2(4.0f / (width / 4.0f), 4.0f / (height / 4.0f)));
-	offset.push_back(float2(5.0f / (width / 4.0f), 5.0f / (height / 4.0f)));
-	_bloomOffset->uniform2fv(offset);
-
+	float2 offset[] = {
+		float2(-5.0f / (width / 4.0f), -5.0f / (height / 4.0f)),
+		float2(-4.0f / (width / 4.0f), -4.0f / (height / 4.0f)),
+		float2(-3.0f / (width / 4.0f), -3.0f / (height / 4.0f)),
+		float2(-2.0f / (width / 4.0f), -2.0f / (height / 4.0f)),
+		float2(-1.0f / (width / 4.0f), -1.0f / (height / 4.0f)),
+		float2(1.0f / (width / 4.0f), 1.0f / (height / 4.0f)),
+		float2(2.0f / (width / 4.0f), 2.0f / (height / 4.0f)),
+		float2(3.0f / (width / 4.0f), 3.0f / (height / 4.0f)),
+		float2(4.0f / (width / 4.0f), 4.0f / (height / 4.0f)),
+		float2(5.0f / (width / 4.0f), 5.0f / (height / 4.0f)),
+	};
 	
-	weight.push_back(0.2);
-	weight.push_back(0.02);
-	weight.push_back(0.044);
-	weight.push_back(0.0716);
-	weight.push_back(0.1046);
-	weight.push_back(0.1686);
-	weight.push_back(0.1686);
-	weight.push_back(0.1046);
-	weight.push_back(0.0716);
-	weight.push_back(0.044);
-	weight.push_back(0.02);
+	float weight[] = { 0.2,0.02,0.044,0.0716,0.1046,0.1686,0.1686,0.1046,0.0716,0.044,0.02 };
 
-	_bloomWeight->uniform1fv(weight);
+	_bloomOffset->uniform2fv(sizeof(offset) / sizeof(offset[0]), (float*)offset);
+	_bloomWeight->uniform1fv(sizeof(weight) / sizeof(weight[0]), weight);
 
 	this->setSetting(_setting);
 }

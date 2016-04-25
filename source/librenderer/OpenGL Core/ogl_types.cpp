@@ -835,6 +835,21 @@ OGLTypes::asCullMode(GraphicsCullMode mode) noexcept
 	}
 }
 
+GLenum 
+OGLTypes::asFrontFace(GraphicsFrontFace face) noexcept
+{
+	switch (face)
+	{
+	case ray::GraphicsFrontFaceCW:
+		return GL_CW;
+	case ray::GraphicsFrontFaceCCW:
+		return GL_CCW;
+	default:
+		GL_PLATFORM_ASSERT(false, "Invalid front face");
+		return GL_INVALID_ENUM;
+	}
+}
+
 GLenum
 OGLTypes::asFillMode(GraphicsPolygonMode mode) noexcept
 {

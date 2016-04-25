@@ -34,8 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_EGL2_LAYOUT_H_
-#define _H_EGL2_LAYOUT_H_
+#ifndef _H_EGL2_INPUT_LAYOUT_H_
+#define _H_EGL2_INPUT_LAYOUT_H_
 
 #include "egl2_types.h"
 
@@ -51,10 +51,6 @@ public:
 	bool setup(const GraphicsInputLayoutDesc& desc) noexcept;
 	void close() noexcept;
 
-	void bindLayout(const EGL2ProgramPtr& program) noexcept;
-	void bindVbo(const EGL2GraphicsDataPtr& vbo) noexcept;
-	void bindIbo(const EGL2GraphicsDataPtr& ibo) noexcept;
-
 	const GraphicsInputLayoutDesc& getGraphicsInputLayoutDesc() const noexcept;
 
 private:
@@ -67,11 +63,6 @@ private:
 	EGL2InputLayout& operator=(const EGL2InputLayout&) noexcept = delete;
 
 private:
-	GLenum _indexType;
-	GLuint _vao;
-	GLsizei _indexSize;
-	GLsizei _vertexSize;
-	GraphicsProgramPtr _program;
 	GraphicsInputLayoutDesc _inputLayoutDesc;
 	GraphicsDeviceWeakPtr _device;
 };

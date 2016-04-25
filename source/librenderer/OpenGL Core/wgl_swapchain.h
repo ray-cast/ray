@@ -89,6 +89,8 @@ private:
 
 	GraphicsSwapchainDesc _swapchainDesc;
 	GraphicsDeviceWeakPtr _device;
+
+	static WGLSwapchain* _swapchain;
 };
 
 _NAME_END

@@ -135,13 +135,14 @@ private:
 
 	bool _needUpdateState;
 	bool _needUpdateLayout;
+	GLsizei _startVertices;
 
 	EGL2GraphicsDataPtr _vbo;
 	EGL2GraphicsDataPtr _ibo;
 	EGL2InputLayoutPtr _inputLayout;
 	EGL2ProgramPtr _shaderObject;
 	EGL2DescriptorSetPtr _descriptorSet;
-	EGL2RenderPipelinePtr _pipeline;
+	EGL2PipelinePtr _pipeline;
 
 	EGL2SwapchainPtr _glcontext;
 

@@ -35,17 +35,12 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "egl2_input_layout.h"
-#include "egl2_shader.h"
-#include "egl2_graphics_data.h"
 
 _NAME_BEGIN
 
 __ImplementSubClass(EGL2InputLayout, GraphicsInputLayout, "EGL2InputLayout")
 
 EGL2InputLayout::EGL2InputLayout() noexcept
-	: _vao(GL_NONE)
-	, _indexType(GL_NONE)
-	, _indexSize(0)
 {
 }
 
@@ -57,18 +52,6 @@ EGL2InputLayout::~EGL2InputLayout() noexcept
 bool
 EGL2InputLayout::setup(const GraphicsInputLayoutDesc& inputLayoutDesc) noexcept
 {
-#ifndef __AMD__
-	if (EGL2Types::isSupportFeature(EGL2Features::EGL2_OES_vertex_array_object))
-	{
-		glGenVertexArraysOES(1, &_vao);
-		if (_vao == GL_NONE)
-		{
-			GL_PLATFORM_LOG("glCreateVertexArrays() fail");
-			return false;
-		}
-	}
-#endif
-
 	_inputLayoutDesc = inputLayoutDesc;
 	return true;
 }
@@ -76,61 +59,6 @@ EGL2InputLayout::setup(const GraphicsInputLayoutDesc& inputLayoutDesc) noexcept
 void
 EGL2InputLayout::close() noexcept
 {
-}
-
-void
-EGL2InputLayout::bindLayout(const EGL2ProgramPtr& program) noexcept
-{
-#ifndef __AMD__
-	if (EGL2Types::isSupportFeature(EGL2Features::EGL2_OES_vertex_array_object))
-	{
-		glBindVertexArrayOES(_vao);
-	}
-#endif
-
-	if (_program != program)
-	{
-		GLuint offset = 0;
-
-		auto& components = _inputLayoutDesc.getGraphicsVertexLayouts();
-		for (auto& it : components)
-		{
-			GLuint attribIndex = GL_INVALID_ENUM;
-			GLenum type = EGL2Types::asVertexFormat(it.getVertexFormat());
-
-			auto& attributes = program->getActiveAttributes();
-			for (auto& attrib : attributes)
-			{
-				if (attrib->getSemanticIndex() == it.getSemanticIndex() && attrib->getSemantic() == it.getSemantic())
-				{
-					attribIndex = attrib->downcast<EGL2GraphicsAttribute>()->getBindingPoint();
-					break;
-				}
-			}
-
-			if (attribIndex != GL_INVALID_ENUM)
-			{
-				glEnableVertexAttribArray(attribIndex);
-				glVertexAttribPointer(attribIndex, it.getVertexCount(), type, GL_FALSE, _vertexSize, (GLchar*)nullptr + offset);
-			}
-
-			offset += it.getVertexSize();
-		}
-
-		_program = program;
-	}
-}
-
-void
-EGL2InputLayout::bindVbo(const EGL2GraphicsDataPtr& vbo) noexcept
-{
-	glBindBuffer(GL_ARRAY_BUFFER, vbo->getInstanceID());
-}
-
-void
-EGL2InputLayout::bindIbo(const EGL2GraphicsDataPtr& ibo) noexcept
-{
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID());
 }
 
 const GraphicsInputLayoutDesc&

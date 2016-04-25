@@ -35,9 +35,11 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "ogl_pipeline.h"
+#include "ogl_descriptor_set.h"
+#include "ogl_graphics_data.h"
+#include "ogl_input_layout.h"
 #include "ogl_state.h"
 #include "ogl_shader.h"
-#include "ogl_input_layout.h"
 #include "ogl_descriptor_set.h"
 
 _NAME_BEGIN
@@ -64,6 +66,55 @@ OGLPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 	assert(pipelineDesc.getGraphicsProgram()->isInstanceOf<OGLProgram>());
 	assert(pipelineDesc.getGraphicsInputLayout()->isInstanceOf<OGLInputLayout>());
 	assert(pipelineDesc.getGraphicsDescriptorSetLayout()->isInstanceOf<OGLDescriptorSetLayout>());
+
+	GLuint offset = 0;
+
+	auto& components = pipelineDesc.getGraphicsInputLayout()->getGraphicsInputLayoutDesc().getGraphicsVertexLayouts();
+	for (auto& it : components)
+	{
+		GLuint attribIndex = GL_INVALID_INDEX;
+		GLenum type = OGLTypes::asVertexFormat(it.getVertexFormat());
+
+		auto& semantic = it.getSemantic();
+		if (semantic.empty())
+		{
+			GL_PLATFORM_LOG("Empty semantic");
+			return false;
+		}
+
+		for (auto& ch : semantic)
+		{
+			if (ch < 'a' && ch > 'z')
+			{
+				GL_PLATFORM_LOG("Error semantic describe : %s", semantic);
+				return false;
+			}
+		}
+
+		auto& attributes = pipelineDesc.getGraphicsProgram()->getActiveAttributes();
+		for (auto& attrib : attributes)
+		{
+			if (attrib->getSemanticIndex() == it.getSemanticIndex() && attrib->getSemantic() == it.getSemantic())
+			{
+				attribIndex = attrib->downcast<OGLGraphicsAttribute>()->getBindingPoint();
+				break;
+			}
+		}
+
+		if (attribIndex != GL_INVALID_INDEX)
+		{
+			VertexAttrib attrib;
+			attrib.index = attribIndex;
+			attrib.count = it.getVertexCount();
+			attrib.type = type;
+			attrib.offset = offset;
+
+			_attributes.push_back(attrib);
+
+			offset += it.getVertexSize();
+		}
+	}
+
 	_pipelineDesc = pipelineDesc;
 	return true;
 }
@@ -71,12 +122,38 @@ OGLPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 void
 OGLPipeline::close() noexcept
 {
+	_attributes.clear();
 }
 
 const GraphicsPipelineDesc&
 OGLPipeline::getGraphicsPipelineDesc() const noexcept
 {
 	return _pipelineDesc;
+}
+
+void
+OGLPipeline::apply() noexcept
+{
+}
+
+void
+OGLPipeline::bindVbo(const OGLGraphicsDataPtr& vbo) noexcept
+{
+	glBindBuffer(GL_ARRAY_BUFFER, vbo->getInstanceID());
+
+	GLuint stride = vbo->getGraphicsDataDesc().getStride();
+	for (auto& attrib : _attributes)
+	{
+		glEnableVertexAttribArray(attrib.index);
+		glVertexAttribPointer(attrib.index, attrib.count, attrib.type, GL_FALSE, stride, (GLbyte*)nullptr + attrib.offset);
+	}
+}
+
+void
+OGLPipeline::bindIbo(const OGLGraphicsDataPtr& ibo) noexcept
+{
+	assert(ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->getInstanceID());
 }
 
 void

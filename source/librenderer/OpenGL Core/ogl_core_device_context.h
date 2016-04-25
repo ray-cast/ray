@@ -155,7 +155,6 @@ private:
 
 	OGLCoreGraphicsDataPtr _vbo;
 	OGLCoreGraphicsDataPtr _ibo;
-	OGLCoreInputLayoutPtr _inputLayout;
 
 	Viewport _viewport;
 	Scissor _scissor;

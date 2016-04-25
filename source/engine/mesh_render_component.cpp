@@ -58,8 +58,7 @@ MeshRenderComponent::MeshRenderComponent() noexcept
 
 MeshRenderComponent::~MeshRenderComponent() noexcept
 {
-	if (_renderObject)
-		_renderObject->setRenderScene(nullptr);
+	this->_dettachRenderhObjects();
 }
 
 void
@@ -110,35 +109,16 @@ MeshRenderComponent::_attacRenderObjects() noexcept
 	auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
 	if (!renderScene) { assert(renderScene); return; }
 
-	if (_renderObject)
-		_renderObject->setRenderScene(renderScene);
+	for (auto& it : _renderObjects)
+		it->setRenderScene(renderScene);
 }
 
 void
 MeshRenderComponent::_dettachRenderhObjects() noexcept
 {
-	if (_renderObject)
-	{
-		_renderObject->setRenderScene(nullptr);
-		_renderObject = nullptr;
-	}
-}
-
-void
-MeshRenderComponent::_setRenderObject(RenderObjectPtr object) noexcept
-{
-	this->_dettachRenderhObjects();
-
-	_renderObject = object;
-	_renderObject->setOwnerListener(this);
-
-	this->_attacRenderObjects();
-}
-
-RenderObjectPtr
-MeshRenderComponent::_getRenderObject() noexcept
-{
-	return _renderObject;
+	for (auto& it : _renderObjects)
+		it->setRenderScene(nullptr);
+	_renderObjects.clear();
 }
 
 void 
@@ -193,38 +173,42 @@ MeshRenderComponent::onDetachComponent(GameComponentPtr& component) except
 void
 MeshRenderComponent::onMoveAfter() noexcept
 {
-	_renderObject->setTransform(
-		this->getGameObject()->getTransform(),
-		this->getGameObject()->getTransformInverse(),
-		this->getGameObject()->getTransformInverseTranspose()
-		);
+	for (auto& it : _renderObjects)
+	{
+		it->setTransform(
+			this->getGameObject()->getTransform(),
+			this->getGameObject()->getTransformInverse(),
+			this->getGameObject()->getTransformInverseTranspose()
+			);
+	}
 }
 
 void
 MeshRenderComponent::onLayerChangeAfter() noexcept
 {
-	_renderObject->setLayer(this->getGameObject()->getLayer());
+	for (auto& it : _renderObjects)
+	{
+		it->setLayer(this->getGameObject()->getLayer());
+	}	
 }
 
 void
 MeshRenderComponent::onActivate() except
 {
 	if (!_material)
-	{
-		buildMaterials();
-	}
+		_buildMaterials();
 
-	if (!_renderObject)
+	if (_renderObjects.empty())
 	{
 		auto component = this->getGameObject()->getComponent<MeshComponent>();
-		if (component)
-		{
-			auto mesh = component->getMesh();
-			if (mesh)
-			{
-				buildRenderObjects(mesh);
-			}
-		}
+		if (!component)
+			return;
+
+		auto mesh = component->getMesh();
+		if (!mesh)
+			return;
+
+		_buildRenderObjects(mesh);
 	}
 	
 	_attacRenderObjects();
@@ -248,120 +232,100 @@ MeshRenderComponent::onMeshChange() except
 			if (!mesh)
 				return;
 
-			buildMaterials();
-			buildRenderObjects(mesh);
+			_buildMaterials();
+			_buildRenderObjects(mesh);
 		}
 	}
 }
 
-void
-MeshRenderComponent::buildMaterials() except
+bool
+MeshRenderComponent::_buildMaterials() except
 {
-	if (!this->hasMaterial())
-	{
-		if (!this->getName().empty())
-		{
-			auto material = RenderSystem::instance()->createMaterial(this->getName());
-			if (material)
-			{
-				this->setMaterial(material);
-				this->setSharedMaterial(material);
-			}
-		}
-	}
-}
+	if (this->hasMaterial())
+		return true;
 
-void
-MeshRenderComponent::buildRenderObjects(MeshPropertyPtr mesh) noexcept
-{
-	auto children = mesh->getChildren();
+	if (this->getName().empty())
+		return true;
 
-	std::vector<MeshPropertyPtr> meshes;
-	meshes.push_back(mesh);
-	meshes.insert(meshes.end(), children.begin(), children.end());
-
-	auto renderBuffer = RenderSystem::instance()->createRenderMesh(meshes);
-	if (children.empty())
-	{
-		auto renderObject = this->buildRenderObject(mesh, renderBuffer);
-		if (renderObject)
-		{
-			this->_setRenderObject(renderObject);
-		}
-	}
-	else
-	{
-		std::size_t startVertice = 0;
-		std::size_t startIndice = 0;
-
-		RenderObjectPtr root = std::make_shared<Geometry>();
-		root->setBoundingBox(mesh->getBoundingBoxDownwards());
-
-		for (auto& it : meshes)
-		{
-			auto submesh = this->buildRenderObject(it, renderBuffer);
-			if (submesh)
-			{
-				auto renderable = submesh->getGraphicsIndirect();
-
-				renderable->startVertice = startVertice;
-				renderable->startIndice = startIndice;
-				renderable->numVertices = it->getNumVertices();
-				renderable->numIndices = it->getNumIndices();
-
-				startVertice += it->getNumVertices();
-				startIndice += it->getNumIndices();
-
-				root->addSubRenderObject(submesh);
-			}
-		};
-
-		this->_setRenderObject(root);
-	}
-}
-
-GeometryPtr
-MeshRenderComponent::buildRenderObject(MeshPropertyPtr mesh, RenderMeshPtr buffer) noexcept
-{
-	auto material = this->getMaterial();
+	auto material = RenderSystem::instance()->createMaterial(this->getName());
 	if (material)
 	{
-		auto renderObject = std::make_shared<Geometry>();
-		renderObject->setRenderMesh(buffer);
-		renderObject->setBoundingBox(mesh->getBoundingBox());
-		renderObject->setOwnerListener(this);
-
-		renderObject->setMaterial(material);
-
-		renderObject->setCastShadow(this->getCastShadow());
-		renderObject->setReceiveShadow(this->getReceiveShadow());
-
-		renderObject->setLayer(this->getGameObject()->getLayer());
-
-		renderObject->setTransform(
-			this->getGameObject()->getTransform(),
-			this->getGameObject()->getTransformInverse(),
-			this->getGameObject()->getTransformInverseTranspose()
-			);
-
-		auto renderable = std::make_shared<GraphicsIndirect>();
-		renderable->startVertice = 0;
-		renderable->startIndice = 0;
-		renderable->numVertices = mesh->getNumVertices();
-		renderable->numIndices = mesh->getNumIndices();
-		renderable->numInstances = 0;
-		renderable->indexType = GraphicsIndexType::GraphicsIndexTypeUInt32;
-
-		renderObject->setGraphicsIndirect(renderable);
-
-		return renderObject;
+		this->setMaterial(material);
+		this->setSharedMaterial(material);
+		return true;
 	}
-	else
+
+	return false;
+}
+
+bool
+MeshRenderComponent::_buildRenderObjects(MeshPropertyPtr mesh) noexcept
+{
+	auto material = this->getMaterial();
+	if (!material)
+		return false;
+
+	MeshPropertys meshes;
+	meshes.push_back(mesh);
+	meshes.insert(meshes.end(), mesh->getChildren().begin(), mesh->getChildren().end());
+
+	auto renderMeshes = RenderSystem::instance()->createRenderMesh(meshes);
+
+	std::size_t startVertice = 0;
+	std::size_t startIndice = 0;
+
+	for (auto& it : meshes)
 	{
-		assert(false);
-	}
+		auto renderObject = std::make_shared<Geometry>();
 
-	return nullptr;
+		if (this->_buildRenderObject(renderObject, it, renderMeshes))
+		{
+			auto renderable = renderObject->getGraphicsIndirect();
+
+			renderable->startVertice = startVertice;
+			renderable->startIndice = startIndice;
+			renderable->numVertices = it->getNumVertices();
+			renderable->numIndices = it->getNumIndices();
+
+			startVertice += it->getNumVertices();
+			startIndice += it->getNumIndices();
+
+			_renderObjects.push_back(renderObject);
+		}
+	};
+}
+
+bool
+MeshRenderComponent::_buildRenderObject(GeometryPtr renderObject, MeshPropertyPtr mesh, RenderMeshPtr buffer) noexcept
+{
+	renderObject->setRenderMesh(buffer);
+	renderObject->setBoundingBox(mesh->getBoundingBox());
+	renderObject->setOwnerListener(this);
+
+	renderObject->setMaterial(this->getMaterial());
+
+	renderObject->setCastShadow(this->getCastShadow());
+	renderObject->setReceiveShadow(this->getReceiveShadow());
+
+	renderObject->setLayer(this->getGameObject()->getLayer());
+
+	renderObject->setTransform(
+		this->getGameObject()->getTransform(),
+		this->getGameObject()->getTransformInverse(),
+		this->getGameObject()->getTransformInverseTranspose()
+		);
+
+	auto renderable = std::make_shared<GraphicsIndirect>();
+	renderable->startVertice = 0;
+	renderable->startIndice = 0;
+	renderable->numVertices = mesh->getNumVertices();
+	renderable->numIndices = mesh->getNumIndices();
+	renderable->numInstances = 0;
+	renderable->indexType = GraphicsIndexType::GraphicsIndexTypeUInt32;
+
+	renderObject->setGraphicsIndirect(renderable);
+
+	return true;
 }
 
 _NAME_END

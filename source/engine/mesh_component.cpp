@@ -38,6 +38,7 @@
 #include <ray/resource.h>
 #include <ray/ioserver.h>
 #include <ray/mstream.h>
+#include <ray/utf8.h>
 
 _NAME_BEGIN
 
@@ -153,8 +154,11 @@ MeshComponent::load(iarchive& reader) noexcept
 	model.load(this->getName(),
 		[&](ray::ModelPtr model, const std::string& filename)
 	{
+		char buffer[4096];
+		auto size = UTF8toGBK(buffer, 4096, filename.c_str(), filename.size());
+
 		StreamReaderPtr stream;
-		if (IoServer::instance()->openFile(stream, filename))
+		if (IoServer::instance()->openFile(stream, std::string(buffer, size)))
 			return model->load(*stream);
 		return false;
 	},

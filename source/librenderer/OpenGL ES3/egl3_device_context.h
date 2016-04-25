@@ -134,7 +134,7 @@ private:
 
 	GLuint _maxViewports;
 	
-	EGL3RenderPipelinePtr _pipeline;
+	EGL3PipelinePtr _pipeline;
 	EGL3DescriptorSetPtr _descriptorSet;
 
 	EGL3FramebufferPtr _renderTexture;
@@ -152,6 +152,7 @@ private:
 
 	bool _needUpdateLayout;
 	bool _needUpdateState;
+	GLsizei _startVertices;
 
 	std::vector<GraphicsFormat> _supportTextures;
 	std::vector<GraphicsTextureDim> _supportTextureDims;

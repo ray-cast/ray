@@ -127,6 +127,12 @@ OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 		}
 	}
 
+	if (lastStateDesc.getFrontFace() != _stateDesc.getFrontFace())
+	{
+		GLenum face = OGLTypes::asFrontFace(_stateDesc.getFrontFace());
+		glFrontFace(face);
+	}
+
 	if (lastStateDesc.getPolygonMode() != _stateDesc.getPolygonMode())
 	{
 		GLenum mode = OGLTypes::asFillMode(_stateDesc.getPolygonMode());

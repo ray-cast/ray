@@ -43,7 +43,7 @@
 #include "egl3_framebuffer.h"
 #include "egl3_input_layout.h"
 #include "egl3_sampler.h"
-#include "egl3_render_pipeline.h"
+#include "egl3_pipeline.h"
 #include "egl3_descriptor.h"
 #include "egl3_graphics_data.h"
 
@@ -185,7 +185,7 @@ EGL3Device::createProgram(const GraphicsProgramDesc& desc) noexcept
 GraphicsPipelinePtr
 EGL3Device::createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept
 {
-	auto pipeline = std::make_shared<EGL3RenderPipeline>();
+	auto pipeline = std::make_shared<EGL3Pipeline>();
 	pipeline->setDevice(this->downcast<EGL3Device>());
 	if (pipeline->setup(desc))
 		return pipeline;

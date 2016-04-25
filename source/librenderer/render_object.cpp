@@ -216,32 +216,6 @@ RenderObject::getTransformInverseTranspose() const noexcept
 }
 
 void 
-RenderObject::addSubRenderObject(RenderObjectPtr object) noexcept
-{
-	auto it = std::find(_renderObjects.begin(), _renderObjects.end(), object);
-	if (it == _renderObjects.end())
-	{
-		_renderObjects.push_back(object);
-	}
-}
-
-void 
-RenderObject::removeSubRenderObject(RenderObjectPtr object) noexcept
-{
-	auto it = std::find(_renderObjects.begin(), _renderObjects.end(), object);
-	if (it != _renderObjects.end())
-	{
-		_renderObjects.erase(it);
-	}
-}
-
-RenderObjects& 
-RenderObject::getSubeRenderObjects() noexcept
-{
-	return _renderObjects;
-}
-
-void 
 RenderObject::addRenderData(RenderDataManager& manager) noexcept
 {
 	this->onAddRenderData(manager);

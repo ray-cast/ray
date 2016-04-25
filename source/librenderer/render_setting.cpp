@@ -55,8 +55,8 @@ RenderSetting::RenderSetting() noexcept
 	, enableMotionBlur(false)
 	, enableLightShaft(false)
 	, enableFimic(true)
-	, enableFXAA(true)
 	, enableColorGrading(true)
+	, enableFXAA(true)
 {
 }
 

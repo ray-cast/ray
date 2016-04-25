@@ -20,19 +20,19 @@
         <attribute scale="1,1,1"/>
         <attribute active="true"/>
         <component class="Mesh">
-            <attribute name="dlc:skinning/models/miku/YYB式初音ミク水着 PDF Ver.pmx"/>
+            <attribute name="dlc:skinning/models/miku/miku.pmx"/>
         </component>
         <component class="MeshRender">
             <attribute castshadow="true"/>
             <attribute receiveshadow="false"/>
-            <attribute material="dlc:sssss/materials/sssss.mat"/>
+            <attribute material="dlc:sssss/materials/plane.mat"/>
         </component>
     </object>
     <object>
         <attribute name="plane"/>
         <attribute position="0,-2,0"/>
         <attribute scale="40,1,40"/>
-        <attribute active="true"/>
+        <attribute active="false"/>
         <component class="Mesh">
             <attribute name="dlc:sssss/models/cube.pmx"/>
         </component>
@@ -42,13 +42,13 @@
     </object>
     <object>
         <attribute name="sun"/>
-        <attribute position="0,5,0"/>
+        <attribute position="0,20,0"/>
         <attribute rotate="90,0,0"/>
         <attribute active="true"/>
         <component class="Light">
-            <attribute type="spot"/>
+            <attribute type="sun"/>
             <attribute color="1.0,1.0,1.0"/>
-            <attribute range="10.0"/>
+            <attribute range="30.0"/>
             <attribute intensity="1.0"/>
             <attribute shadow="true"/>
             <attribute soft="true"/>

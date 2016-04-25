@@ -141,7 +141,6 @@ private:
 
 	OGLGraphicsDataPtr _vbo;
 	OGLGraphicsDataPtr _ibo;
-	OGLInputLayoutPtr _inputLayout;
 	OGLProgramPtr _shaderObject;
 
 	OGLSwapchainPtr _glcontext;

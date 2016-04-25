@@ -241,20 +241,6 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 		}
 	}
 
-	if (_setting.enableFXAA != setting.enableFXAA)
-	{
-		if (setting.enableFXAA)
-		{
-			_FXAA = std::make_shared<FXAA>();
-			this->addPostProcess(_FXAA);
-		}
-		else if (_FXAA)
-		{
-			this->removePostProcess(_FXAA);
-			_FXAA.reset();
-		}
-	}
-
 	if (_setting.enableColorGrading != setting.enableColorGrading)
 	{
 		if (setting.enableColorGrading)
@@ -266,6 +252,20 @@ RenderPipelineManager::setRenderSetting(const RenderSetting& setting) noexcept
 		{
 			this->removePostProcess(_colorGrading);
 			_colorGrading.reset();
+		}
+	}
+
+	if (_setting.enableFXAA != setting.enableFXAA)
+	{
+		if (setting.enableFXAA)
+		{
+			_FXAA = std::make_shared<FXAA>();
+			this->addPostProcess(_FXAA);
+		}
+		else if (_FXAA)
+		{
+			this->removePostProcess(_FXAA);
+			_FXAA.reset();
 		}
 	}
 

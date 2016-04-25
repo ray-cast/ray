@@ -44,7 +44,7 @@
 #include "egl2_input_layout.h"
 #include "egl2_graphics_data.h"
 #include "egl2_sampler.h"
-#include "egl2_render_pipeline.h"
+#include "egl2_pipeline.h"
 #include "egl2_descriptor.h"
 
 _NAME_BEGIN
@@ -184,7 +184,7 @@ EGL2Device::createProgram(const GraphicsProgramDesc& desc) noexcept
 GraphicsPipelinePtr
 EGL2Device::createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept
 {
-	auto pipeline = std::make_shared<EGL2RenderPipeline>();
+	auto pipeline = std::make_shared<EGL2Pipeline>();
 	pipeline->setDevice(this->downcast<EGL2Device>());
 	if (pipeline->setup(desc))
 		return pipeline;

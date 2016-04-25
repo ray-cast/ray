@@ -51,12 +51,7 @@ public:
 	bool setup(const GraphicsInputLayoutDesc& desc) noexcept;
 	void close() noexcept;
 
-	void bindVbo(const OGLGraphicsDataPtr& vbo) noexcept;
-	void bindIbo(const OGLGraphicsDataPtr& ibo) noexcept;
-	void bindLayout(const OGLProgramPtr& program) noexcept;
-
 	const GraphicsInputLayoutDesc& getGraphicsInputLayoutDesc() const noexcept;
-
 private:
 	friend class OGLDevice;
 	void setDevice(GraphicsDevicePtr device) noexcept;
@@ -67,9 +62,6 @@ private:
 	OGLInputLayout& operator=(const OGLInputLayout&) noexcept = delete;
 
 private:
-	GLuint _vao;
-	GLuint _ibo;
-	GraphicsProgramPtr _program;
 	GraphicsInputLayoutDesc _inputLayoutDesc;
 	GraphicsDeviceWeakPtr _device;
 };

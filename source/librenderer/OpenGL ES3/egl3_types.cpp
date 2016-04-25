@@ -910,6 +910,21 @@ EGL3Types::asCullMode(GraphicsCullMode mode) noexcept
 }
 
 GLenum
+EGL3Types::asFrontFace(GraphicsFrontFace face) noexcept
+{
+	switch (face)
+	{
+	case GraphicsFrontFace::GraphicsFrontFaceCW:
+		return GL_CW;
+	case GraphicsFrontFace::GraphicsFrontFaceCCW:
+		return GL_CCW;
+	default:
+		GL_PLATFORM_ASSERT(false, "Invalid front face");
+		return GL_INVALID_ENUM;
+	}
+}
+
+GLenum
 EGL3Types::asFillMode(GraphicsPolygonMode mode) noexcept
 {
 	switch (mode)

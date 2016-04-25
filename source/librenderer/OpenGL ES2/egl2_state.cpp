@@ -126,6 +126,12 @@ EGL2GraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 		}
 	}
 
+	if (lastStateDesc.getFrontFace() != _stateDesc.getFrontFace())
+	{
+		GLenum face = EGL2Types::asFrontFace(_stateDesc.getFrontFace());
+		glFrontFace(face);
+	}
+
 	if (lastStateDesc.getScissorTestEnable() != _stateDesc.getScissorTestEnable())
 	{
 		if (_stateDesc.getScissorTestEnable())

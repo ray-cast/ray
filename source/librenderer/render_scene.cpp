@@ -227,14 +227,6 @@ RenderScene::computVisiable(const Matrix4x4& viewProject, OcclusionCullList& lis
 			continue;
 
 		list.insert(it, math::sqrDistance(eyePosition, it->getTransform().getTranslate()));
-
-		for (auto& child : it->getSubeRenderObjects())
-		{
-			if (fru.contains(child->getBoundingBoxInWorld().aabb()))
-			{
-				list.insert(it, math::sqrDistance(eyePosition, it->getBoundingBoxInWorld().center()));
-			}
-		}
 	}
 }
 
@@ -255,14 +247,6 @@ RenderScene::computVisiableObject(const Matrix4x4& viewProject, OcclusionCullLis
 			continue;
 
 		list.insert(it, math::sqrDistance(eyePosition, it->getTransform().getTranslate()));
-
-		for (auto& child : it->getSubeRenderObjects())
-		{
-			if (fru.contains(child->getBoundingBoxInWorld().aabb()))
-			{
-				list.insert(it, math::sqrDistance(eyePosition, it->getBoundingBoxInWorld().center()));
-			}
-		}
 	}
 }
 
@@ -283,14 +267,6 @@ RenderScene::computVisiableLight(const Matrix4x4& viewProject, OcclusionCullList
 			continue;
 
 		list.insert(it, math::sqrDistance(eyePosition, it->getTransform().getTranslate()));
-
-		for (auto& child : it->getSubeRenderObjects())
-		{
-			if (fru.contains(child->getBoundingBoxInWorld().aabb()))
-			{
-				list.insert(it, math::sqrDistance(eyePosition, it->getBoundingBoxInWorld().center()));
-			}
-		}
 	}
 }
 

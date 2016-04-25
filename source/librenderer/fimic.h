@@ -42,10 +42,6 @@
 
 _NAME_BEGIN
 
-#define SAMPLE_COUNT 6
-#define SAMPLE_LOG_SIZE 32
-#define SAMPLE_LOG_COUNT SAMPLE_LOG_SIZE * SAMPLE_LOG_SIZE
-
 class EXPORT FimicToneMapping final : public RenderPostProcess
 {
 public:
@@ -120,7 +116,6 @@ private:
 	MaterialParamPtr _texSource;
 	MaterialParamPtr _texSourceSizeInv;
 
-	GraphicsTexturePtr _texBloomMap[SAMPLE_COUNT];
 	GraphicsTexturePtr _texSample4Map;
 	GraphicsTexturePtr _texSample8Map;
 	GraphicsTexturePtr _texSampleLogMap;
@@ -129,7 +124,6 @@ private:
 	GraphicsFramebufferLayoutPtr _sampleViewLayout;
 	GraphicsFramebufferLayoutPtr _sampleLogViewLayout;
 
-	GraphicsFramebufferPtr _texBloomView[SAMPLE_COUNT];
 	GraphicsFramebufferPtr _texSample4View;
 	GraphicsFramebufferPtr _texSample8View;
 	GraphicsFramebufferPtr _texSampleLogView;

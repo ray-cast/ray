@@ -24,16 +24,16 @@
                 return texColorGrading.Sample(LinearClamp, (rgb * (DIM - 1) + 0.5f) / DIM).xyz;
             }
 
-            float3 ColorGradingPS(in float4 coord : TEXCOORD0) : SV_Target
+            float4 ColorGradingPS(in float4 coord : TEXCOORD0) : SV_Target
             {
-                float3 rgb = texSource.Sample(PointClamp, coord.xy).rgb;
-                rgb = saturate(rgb);
+                float4 rgba = texSource.Sample(PointClamp, coord.xy);
+                float3 rgb = saturate(rgba.rgb);
 
                 if (colorGrading.x > 0)
                     rgb = linear2srgb(rgb);
                 if (colorGrading.y > 0)
                     rgb = ColorGrading(rgb);
-                return rgb;
+                return float4(rgb, rgba.a);
             }
         ]]>
     </shader>

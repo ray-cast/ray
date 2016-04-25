@@ -61,8 +61,8 @@ SkinnedMeshRenderComponent::onActivate() except
 		if (!mesh)
 			return;
 
-		this->buildMaterials();
-		this->buildRenderObjects(mesh);
+		this->_buildMaterials();
+		this->_buildRenderObjects(mesh);
 
 		this->_attacRenderObjects();
 	}

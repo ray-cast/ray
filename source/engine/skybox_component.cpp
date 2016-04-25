@@ -76,4 +76,5 @@ SkyBoxComponent::clone() const noexcept
 }
 
 _NAME_END
+
 #endif

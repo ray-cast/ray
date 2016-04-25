@@ -120,7 +120,6 @@ typedef std::shared_ptr<class OGLGraphicsUniformBlock> OGLGraphicsUniformBlockPt
 typedef std::shared_ptr<class OGLCoreDeviceContext> OGLCoreDeviceContextPtr;
 typedef std::shared_ptr<class OGLCoreFramebuffer> OGLCoreFramebufferPtr;
 typedef std::shared_ptr<class OGLCoreGraphicsData> OGLCoreGraphicsDataPtr;
-typedef std::shared_ptr<class OGLCoreInputLayout> OGLCoreInputLayoutPtr;
 typedef std::shared_ptr<class OGLCoreTexture> OGLCoreTexturePtr;
 typedef std::shared_ptr<class OGLCorePipeline> OGLCorePipelinePtr;
 typedef std::shared_ptr<class OGLCoreDescriptorSet> OGLCoreDescriptorSetPtr;
@@ -163,6 +162,7 @@ public:
 	static GLenum asBlendFactor(GraphicsBlendFactor func) noexcept;
 	static GLenum asBlendOperation(GraphicsBlendOp op) noexcept;
 	static GLenum asCullMode(GraphicsCullMode mode) noexcept;
+	static GLenum asFrontFace(GraphicsFrontFace face) noexcept;
 	static GLenum asFillMode(GraphicsPolygonMode mode) noexcept;
 	static GLenum asStencilOperation(GraphicsStencilOp stencilop) noexcept;
 	static GLenum asSamplerWrap(GraphicsSamplerWrap wrap) noexcept;

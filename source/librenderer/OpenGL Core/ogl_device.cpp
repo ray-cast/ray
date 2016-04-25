@@ -50,7 +50,6 @@
 #include "ogl_core_device_context.h"
 #include "ogl_core_texture.h"
 #include "ogl_core_framebuffer.h"
-#include "ogl_core_input_layout.h"
 #include "ogl_core_descriptor.h"
 #include "ogl_core_graphics_data.h"
 #include "ogl_core_pipeline.h"
@@ -114,20 +113,10 @@ OGLDevice::createDeviceContext(const GraphicsContextDesc& desc) noexcept
 GraphicsInputLayoutPtr
 OGLDevice::createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept
 {
-	if (_deviceDesc.getDeviceType() == GraphicsDeviceType::GraphicsDeviceTypeOpenGL)
-	{
-		auto inputLayout = std::make_shared<OGLInputLayout>();
-		inputLayout->setDevice(this->downcast<OGLDevice>());
-		if (inputLayout->setup(desc))
-			return inputLayout;
-	}
-	else
-	{
-		auto inputLayout = std::make_shared<OGLCoreInputLayout>();
-		inputLayout->setDevice(this->downcast<OGLDevice>());
-		if (inputLayout->setup(desc))
-			return inputLayout;
-	}
+	auto inputLayout = std::make_shared<OGLInputLayout>();
+	inputLayout->setDevice(this->downcast<OGLDevice>());
+	if (inputLayout->setup(desc))
+		return inputLayout;
 	return nullptr;
 }
 

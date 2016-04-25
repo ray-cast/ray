@@ -42,7 +42,7 @@
 #include "egl3_input_layout.h"
 #include "egl3_sampler.h"
 #include "egl3_descriptor.h"
-#include "egl3_render_pipeline.h"
+#include "egl3_pipeline.h"
 #include "egl3_swapchain.h"
 #include "egl3_graphics_data.h"
 
@@ -55,6 +55,7 @@ EGL3DeviceContext::EGL3DeviceContext() noexcept
 	, _clearDepth(1.0)
 	, _clearStencil(0)
 	, _viewport(0, 0, 0, 0)
+	, _startVertices(0)
 	, _needUpdateLayout(true)
 	, _needUpdateState(true)
 	, _stateDefault(std::make_shared<EGL3GraphicsState>())
@@ -278,7 +279,7 @@ void
 EGL3DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
 	assert(pipeline);
-	assert(pipeline->isInstanceOf<EGL3RenderPipeline>());
+	assert(pipeline->isInstanceOf<EGL3Pipeline>());
 	assert(_glcontext->getActive());
 
 	if (_pipeline != pipeline)
@@ -301,7 +302,7 @@ EGL3DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 			_shaderObject->apply();
 		}
 
-		_pipeline = pipeline->downcast<EGL3RenderPipeline>();
+		_pipeline = pipeline->downcast<EGL3Pipeline>();
 		_pipeline->apply();
 
 		_needUpdateLayout = true;
@@ -425,13 +426,15 @@ EGL3DeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 	assert(_pipeline);
 	assert(_glcontext->getActive());
 
-	if (_needUpdateLayout)
+	if (_needUpdateLayout || _startVertices != renderable.startVertice)
 	{
 		if (_vbo)
-			_pipeline->bindVbo(_vbo, 0);
+			_pipeline->bindVbo(_vbo, renderable.startVertice);
 
 		if (_ibo)
 			_pipeline->bindIbo(_ibo);
+
+		_startVertices = renderable.startVertice;
 
 		_needUpdateLayout = false;
 	}
@@ -448,7 +451,7 @@ EGL3DeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 	{
 		GLsizei numInstance = std::max(1, renderable.numInstances);
 		GLenum drawType = EGL3Types::asVertexType(_stateCaptured.getPrimitiveType());
-		GL_CHECK(glDrawArraysInstanced(drawType, renderable.startVertice, renderable.numVertices, numInstance));
+		GL_CHECK(glDrawArraysInstanced(drawType, 0, renderable.numVertices, numInstance));
 	}
 }
 
@@ -822,10 +825,7 @@ EGL3DeviceContext::initTextureSupports() noexcept
 	if (EGL3Types::isSupportFeature(EGL3Features::EGL3_OES_texture_stencil8))
 	{
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatS8UInt);
-	}
-
-	if (EGL3Types::isSupportFeature(EGL3Features::EGL3_OES_packed_depth_stencil))
-	{
+		_supportTextures.push_back(GraphicsFormat::GraphicsFormatD16UNorm_S8UInt);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatD24UNorm_S8UInt);
 	}
 

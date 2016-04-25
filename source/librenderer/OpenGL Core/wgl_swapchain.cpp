@@ -41,6 +41,8 @@ _NAME_BEGIN
 
 __ImplementSubClass(WGLSwapchain, GraphicsSwapchain, "WGLSwapchain")
 
+WGLSwapchain* WGLSwapchain::_swapchain = nullptr;
+
 WGLSwapchain::WGLSwapchain() noexcept
 	: _hdc(nullptr)
 	, _context(nullptr)
@@ -88,6 +90,8 @@ WGLSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 void
 WGLSwapchain::close() noexcept
 {
+	this->setActive(false);
+
 	if (_hdc)
 	{
 		::ReleaseDC((HWND)_swapchainDesc.getWindHandle(), _hdc);
@@ -110,11 +114,19 @@ WGLSwapchain::setActive(bool active) noexcept
 		{
 			if (!::wglMakeCurrent(_hdc, _context))
 				GL_PLATFORM_LOG("wglMakeCurrent() fail");
+
+			if (_swapchain)
+				_swapchain->setActive(false);
+			
+			_swapchain = this;
 		}
 		else
 		{
 			if (!::wglMakeCurrent(0, 0))
 				GL_PLATFORM_LOG("wglMakeCurrent() fail");
+
+			if (_swapchain == this)
+				_swapchain = nullptr;
 		}
 
 		_isActive = active;
@@ -347,7 +359,7 @@ bool
 WGLSwapchain::initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 {
 	int index = 0;
-	int mask = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
+	int mask = WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
 	int flags = 0;
 
 #if _DEBUG
@@ -362,6 +374,7 @@ WGLSwapchain::initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 	{
 		major = 4;
 		minor = 5;
+		mask = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
 	}
 	else
 	{

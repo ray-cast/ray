@@ -88,10 +88,6 @@ public:
 	Vector3 getUpVector() const noexcept;
 	Vector3 getForward() const noexcept;
 
-	void addSubRenderObject(RenderObjectPtr object) noexcept;
-	void removeSubRenderObject(RenderObjectPtr object) noexcept;
-	RenderObjects& getSubeRenderObjects() noexcept;
-
 	void addRenderData(RenderDataManager& manager) noexcept;
 	void render(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTechPtr tech) noexcept;
 
@@ -119,7 +115,6 @@ private:
 	Matrix4x4 _transformInverse;
 	Matrix4x4 _transformInverseTranspose;
 
-	RenderObjects _renderObjects;
 	RenderListener* _renderListener;
 	RenderSceneWeakPtr  _renderScene;
 };

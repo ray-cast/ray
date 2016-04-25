@@ -51,6 +51,11 @@ public:
 	bool setup(const GraphicsPipelineDesc& pipelineDesc) noexcept;
 	void close() noexcept;
 
+	void bindVbo(const OGLGraphicsDataPtr& vbo) noexcept;
+	void bindIbo(const OGLGraphicsDataPtr& ibo) noexcept;
+
+	void apply() noexcept;
+
 	const GraphicsPipelineDesc& getGraphicsPipelineDesc() const noexcept;
 
 private:
@@ -63,6 +68,16 @@ private:
 	OGLPipeline& operator=(const OGLPipeline&) noexcept = delete;
 
 private:
+	struct VertexAttrib
+	{
+		GLuint index;
+		GLuint count;
+		GLenum type;
+		GLsizei offset;
+	};
+
+	std::vector<VertexAttrib> _attributes;
+
 	GraphicsPipelineDesc _pipelineDesc;
 	GraphicsDeviceWeakPtr _device;
 };

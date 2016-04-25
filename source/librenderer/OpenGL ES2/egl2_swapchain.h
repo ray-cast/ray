@@ -85,6 +85,8 @@ private:
 
 	GraphicsSwapchainDesc _swapchainDesc;
 	GraphicsDeviceWeakPtr _device;
+
+	static EGL2Swapchain* _swapchain;
 };
 
 _NAME_END

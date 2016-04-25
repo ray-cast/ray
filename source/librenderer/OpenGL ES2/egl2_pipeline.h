@@ -34,22 +34,27 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#ifndef _H_EGL2_RENDER_PIPELINE_H_
-#define _H_EGL2_RENDER_PIPELINE_H_
+#ifndef _H_EGL2_PIPELINE_H_
+#define _H_EGL2_PIPELINE_H_
 
 #include "egl2_types.h"
 
 _NAME_BEGIN
 
-class EGL2RenderPipeline final : public GraphicsPipeline
+class EGL2Pipeline final : public GraphicsPipeline
 {
-	__DeclareSubClass(EGL2RenderPipeline, GraphicsPipeline)
+	__DeclareSubClass(EGL2Pipeline, GraphicsPipeline)
 public:
-	EGL2RenderPipeline() noexcept;
-	virtual ~EGL2RenderPipeline() noexcept;
+	EGL2Pipeline() noexcept;
+	virtual ~EGL2Pipeline() noexcept;
 
 	bool setup(const GraphicsPipelineDesc& pipelineDesc) noexcept;
 	void close() noexcept;
+
+	void bindVbo(const EGL2GraphicsDataPtr& vbo, GLsizei startVertices) noexcept;
+	void bindIbo(const EGL2GraphicsDataPtr& ibo) noexcept;
+
+	void apply() noexcept;
 
 	const GraphicsPipelineDesc& getGraphicsPipelineDesc() const noexcept;
 
@@ -59,10 +64,21 @@ private:
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
-	EGL2RenderPipeline(const EGL2RenderPipeline&) noexcept = delete;
-	EGL2RenderPipeline& operator=(const EGL2RenderPipeline&) noexcept = delete;
+	EGL2Pipeline(const EGL2Pipeline&) noexcept = delete;
+	EGL2Pipeline& operator=(const EGL2Pipeline&) noexcept = delete;
 
 private:
+	struct VertexAttrib
+	{
+		GLuint index;
+		GLuint count;
+		GLenum type;
+		GLsizei offset;
+	};
+
+	std::vector<VertexAttrib> _attributes;
+
+	GraphicsProgramPtr _program;
 	GraphicsPipelineDesc _pipelineDesc;
 	GraphicsDeviceWeakPtr _device;
 };

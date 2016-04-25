@@ -43,7 +43,7 @@
 #include "egl2_framebuffer.h"
 #include "egl2_graphics_data.h"
 #include "egl2_swapchain.h"
-#include "egl2_render_pipeline.h"
+#include "egl2_pipeline.h"
 #include "egl2_descriptor.h"
 
 _NAME_BEGIN
@@ -59,6 +59,7 @@ EGL2DeviceContext::EGL2DeviceContext() noexcept
 	, _renderTexture(GL_NONE)
 	, _needUpdateState(false)
 	, _needUpdateLayout(false)
+	, _startVertices(0)
 	, _stateDefault(std::make_shared<EGL2GraphicsState>())
 {
 }
@@ -295,14 +296,10 @@ EGL2DeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 			_shaderObject->apply();
 		}
 
-		auto inputLayout = pipelineDesc.getGraphicsInputLayout()->downcast<EGL2InputLayout>();
-		if (_inputLayout != inputLayout)
-		{
-			_inputLayout = inputLayout;
-			_inputLayout->bindLayout(_shaderObject);
+		_pipeline = pipeline->downcast<EGL2Pipeline>();
+		_pipeline->apply();
 
-			_needUpdateLayout = true;
-		}
+		_needUpdateLayout = true;
 	}
 }
 
@@ -415,14 +412,15 @@ EGL2DeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 	if (!_inputLayout || !_vbo)
 		return;
 
-	if (_needUpdateLayout)
+	if (_needUpdateLayout || _startVertices != renderable.startVertice)
 	{
 		if (_vbo)
-			_inputLayout->bindVbo(_vbo);
+			_pipeline->bindVbo(_vbo, renderable.startVertice);
 
 		if (_ibo)
-			_inputLayout->bindIbo(_ibo);
+			_pipeline->bindIbo(_ibo);
 
+		_startVertices = renderable.startVertice;
 		_needUpdateLayout = false;
 	}
 
@@ -437,7 +435,7 @@ EGL2DeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 	else
 	{
 		GLenum drawType = EGL2Types::asVertexType(primitiveType);
-		GL_CHECK(glDrawArrays(drawType, renderable.startVertice, renderable.numVertices));
+		GL_CHECK(glDrawArrays(drawType, 0, renderable.numVertices));
 	}
 }
 

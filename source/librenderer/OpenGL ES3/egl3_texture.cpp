@@ -131,6 +131,13 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 			GLsizei offset = 0;
 			GLsizei pixelSize = EGL3Types::getFormatNum(format);
 
+			GLenum cubeFace[] =
+			{
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+				GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+				GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+			};
+
 			for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
 			{
 				GLsizei mipSize = w * h * pixelSize;
@@ -141,19 +148,25 @@ EGL3Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 				{
 					if (target == GL_TEXTURE_2D || target == GL_TEXTURE_2D_MULTISAMPLE)
 					{
-						glTexSubImage2D(target, mip, 0, 0, w, h, format, type, (char*)stream + offset);
+						GL_CHECK(glTexSubImage2D(target, mip, 0, 0, w, h, format, type, (char*)stream + offset));
 						offset += mipSize;
 					}
 					else
 					{
 						if (target == GL_TEXTURE_CUBE_MAP || target == GL_TEXTURE_CUBE_MAP_ARRAY_EXT)
 						{
-							glTexSubImage3D(target, mip, 0, 0, 0, w, h, 6 * layer, format, type, (char*)stream + offset);
-							offset += mipSize * 6;
+							for (std::size_t i = 0; i < 6; i++)
+							{
+								if (target == GL_TEXTURE_CUBE_MAP)
+									GL_CHECK(glTexSubImage2D(cubeFace[i], mip, 0, 0, w, h, format, type, (char*)stream + offset));
+								else
+									GL_CHECK(glTexSubImage3D(cubeFace[i], mip, 0, 0, 0, w, h, layer, format, type, (char*)stream + offset));
+								offset += mipSize;
+							}
 						}
 						else
 						{
-							glTexSubImage3D(target, mip, 0, 0, 0, w, h, depth * layer, format, type, (char*)stream + offset);
+							GL_CHECK(glTexSubImage3D(target, mip, 0, 0, 0, w, h, depth * layer, format, type, (char*)stream + offset));
 							offset += mipSize * depth;
 						}
 					}

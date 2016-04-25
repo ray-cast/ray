@@ -115,7 +115,6 @@ OGLDeviceContext::close() noexcept
 	_stateDefault.reset();
 	_vbo.reset();
 	_ibo.reset();
-	_inputLayout.reset();
 	_supportTextures.clear();
 	_supportAttribute.clear();
 	_glcontext.reset();
@@ -301,14 +300,10 @@ OGLDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 			_shaderObject->apply();
 		}
 
-		auto inputLayout = pipelineDesc.getGraphicsInputLayout()->downcast<OGLInputLayout>();
-		if (_inputLayout != inputLayout)
-		{
-			_inputLayout = inputLayout;
-			_inputLayout->bindLayout(_shaderObject);
+		_pipeline = pipeline->downcast<OGLPipeline>();
+		_pipeline->apply();
 
-			_needUpdateLayout = true;
-		}
+		_needUpdateLayout = true;
 	}
 }
 
@@ -426,16 +421,16 @@ void
 OGLDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 {
 	assert(_vbo);
-	assert(_inputLayout);
+	assert(_pipeline);
 	assert(_glcontext->getActive());
 
 	if (_needUpdateLayout)
 	{
 		if (_vbo)
-			_inputLayout->bindVbo(_vbo);
+			_pipeline->bindVbo(_vbo);
 
 		if (_ibo)
-			_inputLayout->bindIbo(_ibo);
+			_pipeline->bindIbo(_ibo);
 
 		_needUpdateLayout = false;
 	}
@@ -446,7 +441,7 @@ OGLDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 		GLenum indexType = OGLTypes::asIndexType(renderable.indexType);
 		GLsizei numInstance = std::max(1, renderable.numInstances);
 		GLvoid* offsetIndices = (GLchar*)(nullptr) + (_ibo->getGraphicsDataDesc().getStride() * renderable.startIndice);
-		glDrawElementsInstanced(drawType, renderable.numIndices, indexType, offsetIndices, numInstance);
+		glDrawElementsInstancedBaseVertex(drawType, renderable.numIndices, indexType, offsetIndices, numInstance, renderable.startVertice);
 	}
 	else
 	{
@@ -633,55 +628,55 @@ OGLDeviceContext::checkSupport() noexcept
 {
 	if (!GLEW_EXT_texture_object)
 	{
-		GL_PLATFORM_LOG("Can't support texture object");
+		GL_PLATFORM_LOG("Can't support GL_EXT_texture_object.");
 		return false;
 	}
 
 	if (!GLEW_EXT_packed_pixels)
 	{
-		GL_PLATFORM_LOG("Can't support packed pixels");
+		GL_PLATFORM_LOG("Can't support GL_EXT_packed_pixels.");
 		return false;
 	}
 
-	if (!GLEW_ARB_vertex_array_object)
+	if (!GLEW_ARB_draw_elements_base_vertex)
 	{
-		GL_PLATFORM_LOG("Can't support vertex array object");
+		GL_PLATFORM_LOG("Can't support GL_ARB_draw_elements_base_vertex.");
 		return false;
 	}
 
 	if (!GLEW_ARB_uniform_buffer_object)
 	{
-		GL_PLATFORM_LOG("Can't support uniform buffer object");
+		GL_PLATFORM_LOG("Can't support GL_ARB_uniform_buffer_object.");
 		return false;
 	}
 
 	if (!GLEW_ARB_texture_buffer_object)
 	{
-		GL_PLATFORM_LOG("Can't support texture buffer object");
+		GL_PLATFORM_LOG("Can't support GL_ARB_texture_buffer_object.");
 		return false;
 	}
 
 	if (!GLEW_ARB_sampler_objects)
 	{
-		GL_PLATFORM_LOG("Can't support sampler object");
+		GL_PLATFORM_LOG("Can't support GL_ARB_sampler_objects.");
 		return false;
 	}
 
 	if (!GLEW_ARB_framebuffer_object)
 	{
-		GL_PLATFORM_LOG("Can't support framebuffer object");
+		GL_PLATFORM_LOG("Can't support GL_ARB_framebuffer_object.");
 		return false;
 	}
 
 	if (!GLEW_EXT_texture_filter_anisotropic)
 	{
-		GL_PLATFORM_LOG("Can't support anisotropic sampler");
+		GL_PLATFORM_LOG("Can't support GL_EXT_texture_filter_anisotropic.");
 		return false;
 	}
 
 	if (!GLEW_ARB_separate_shader_objects)
 	{
-		GL_PLATFORM_LOG("Can't support separate shader objects");
+		GL_PLATFORM_LOG("Can't support GL_ARB_separate_shader_objects.");
 		return false;
 	}
 

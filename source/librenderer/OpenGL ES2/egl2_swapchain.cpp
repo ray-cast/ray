@@ -40,6 +40,8 @@ _NAME_BEGIN
 
 __ImplementSubClass(EGL2Swapchain, GraphicsSwapchain, "EGL2Swapchain")
 
+EGL2Swapchain* EGL2Swapchain::_swapchain = nullptr;
+
 EGL2Swapchain::EGL2Swapchain() noexcept
 	: _display(EGL_NO_DISPLAY)
 	, _surface(EGL_NO_SURFACE)
@@ -104,6 +106,11 @@ EGL2Swapchain::setActive(bool active) noexcept
 				GL_PLATFORM_LOG("eglMakeCurrent() fail : %d", eglGetError());
 				return;
 			}
+
+			if (_swapchain)
+				_swapchain->setActive(false);
+
+			_swapchain = this;
 		}
 		else
 		{
@@ -112,6 +119,9 @@ EGL2Swapchain::setActive(bool active) noexcept
 				GL_PLATFORM_LOG("eglMakeCurrent() fail : %d", eglGetError());
 				return;
 			}
+
+			if (_swapchain == this)
+				_swapchain = nullptr;
 		}
 
 		_isActive = active;

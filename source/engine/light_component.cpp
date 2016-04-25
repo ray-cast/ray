@@ -105,7 +105,10 @@ LightComponent::getSpotOuterCone() const noexcept
 void
 LightComponent::setShadow(bool shadow) noexcept
 {
-	_light->setShadowType(LightShadowType::LightShadowTypeMedium);
+	if (shadow)
+		_light->setShadowType(LightShadowType::LightShadowTypeMedium);
+	else
+		_light->setShadowType(LightShadowType::LightShadowTypeNone);
 }
 
 bool

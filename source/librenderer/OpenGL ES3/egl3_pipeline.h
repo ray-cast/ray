@@ -41,17 +41,17 @@
 
 _NAME_BEGIN
 
-class EGL3RenderPipeline final : public GraphicsPipeline
+class EGL3Pipeline final : public GraphicsPipeline
 {
-	__DeclareSubClass(EGL3RenderPipeline, GraphicsPipeline)
+	__DeclareSubClass(EGL3Pipeline, GraphicsPipeline)
 public:
-	EGL3RenderPipeline() noexcept;
-	virtual ~EGL3RenderPipeline() noexcept;
+	EGL3Pipeline() noexcept;
+	virtual ~EGL3Pipeline() noexcept;
 
 	bool setup(const GraphicsPipelineDesc& pipelineDesc) noexcept;
 	void close() noexcept;
 
-	void bindVbo(const EGL3GraphicsDataPtr& vbo, GLuint bindingPoint) noexcept;
+	void bindVbo(const EGL3GraphicsDataPtr& vbo, GLsizei startVertices) noexcept;
 	void bindIbo(const EGL3GraphicsDataPtr& ibo) noexcept;
 
 	void apply() noexcept;
@@ -64,8 +64,8 @@ private:
 	GraphicsDevicePtr getDevice() noexcept;
 
 private:
-	EGL3RenderPipeline(const EGL3RenderPipeline&) noexcept = delete;
-	EGL3RenderPipeline& operator=(const EGL3RenderPipeline&) noexcept = delete;
+	EGL3Pipeline(const EGL3Pipeline&) noexcept = delete;
+	EGL3Pipeline& operator=(const EGL3Pipeline&) noexcept = delete;
 
 private:
 	GLuint _vao;

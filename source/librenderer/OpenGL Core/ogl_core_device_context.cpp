@@ -37,10 +37,10 @@
 #include "ogl_core_device_context.h"
 #include "ogl_core_texture.h"
 #include "ogl_core_framebuffer.h"
-#include "ogl_core_input_layout.h"
 #include "ogl_core_graphics_data.h"
 #include "ogl_core_descriptor.h"
 #include "ogl_core_pipeline.h"
+#include "ogl_input_layout.h"
 #include "ogl_state.h"
 #include "ogl_shader.h"
 #include "ogl_sampler.h"
@@ -116,7 +116,6 @@ OGLCoreDeviceContext::close() noexcept
 	_stateDefault.reset();
 	_vbo.reset();
 	_ibo.reset();
-	_inputLayout.reset();
 	_supportTextures.clear();
 	_supportAttribute.clear();
 	_glcontext.reset();

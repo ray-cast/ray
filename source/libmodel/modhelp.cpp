@@ -1394,6 +1394,7 @@ MeshProperty::computeVertexNormals() noexcept
 
 	Float3Array normal;
 	normal.resize(_vertices.size());
+	std::memset(normal.data(), 0, normal.size() * sizeof(float3));
 
 	if (!_facesNormal.empty())
 	{
@@ -1422,8 +1423,8 @@ MeshProperty::computeVertexNormals() noexcept
 			Vector3& vb = _vertices.at(f2);
 			Vector3& vc = _vertices.at(f3);
 
-			Vector3 edge1 = vc - vb;
-			Vector3 edge2 = va - vb;
+			Vector3 edge1 = vb - va;
+			Vector3 edge2 = vc - va;
 
 			Vector3 n = math::normalize(math::cross(edge1, edge2));
 

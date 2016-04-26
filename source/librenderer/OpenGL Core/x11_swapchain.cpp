@@ -119,21 +119,21 @@ XGLSwapchain::open(WindHandle window) noexcept
 	attribs[index++] = GL_NONE;
 	attribs[index++] = GL_NONE;
 
-    static int att[] =
-    {
-        GLX_X_RENDERABLE    , GL_TRUE,
-        GLX_DRAWABLE_TYPE   , GLX_WINDOW_BIT,
-        GLX_RENDER_TYPE     , GLX_RGBA_BIT,
-        GLX_X_VISUAL_TYPE   , GLX_TRUE_COLOR,
-        GLX_RED_SIZE        , fbconfig.red_size,
-        GLX_GREEN_SIZE      , fbconfig.greeen_size,
-        GLX_BLUE_SIZE       , fbconfig.blue_size,
-        GLX_ALPHA_SIZE      , fbconfig.alpha_size,
-        GLX_DEPTH_SIZE      , fbconfig.depth_size,
-        GLX_STENCIL_SIZE    , fbconfig.stencil_size,
-        GLX_DOUBLEBUFFER    , GL_TRUE,
-        GL_NONE
-    };
+	static int att[] =
+	{
+		GLX_X_RENDERABLE    , GL_TRUE,
+		GLX_DRAWABLE_TYPE   , GLX_WINDOW_BIT,
+		GLX_RENDER_TYPE     , GLX_RGBA_BIT,
+		GLX_X_VISUAL_TYPE   , GLX_TRUE_COLOR,
+		GLX_RED_SIZE        , fbconfig.red_size,
+		GLX_GREEN_SIZE      , fbconfig.greeen_size,
+		GLX_BLUE_SIZE       , fbconfig.blue_size,
+		GLX_ALPHA_SIZE      , fbconfig.alpha_size,
+		GLX_DEPTH_SIZE      , fbconfig.depth_size,
+		GLX_STENCIL_SIZE    , fbconfig.stencil_size,
+		GLX_DOUBLEBUFFER    , GL_TRUE,
+		GL_NONE
+	};
 
 	_display = ::XOpenDisplay(NULL);
 	if (_display == nullptr)
@@ -142,33 +142,33 @@ XGLSwapchain::open(WindHandle window) noexcept
 		return false;
 	}
 
-    int glx_major, glx_minor;
-    if (!glXQueryVersion(_display, &glx_major, &glx_minor))
+	int glx_major, glx_minor;
+	if (!glXQueryVersion(_display, &glx_major, &glx_minor))
 	{
 		GL_PLATFORM_LOG("Cannot query GLX version");
 		return false;
 	}
 
-    if (( glx_major == 1 ) && ( glx_minor < 3 ) || ( glx_major < 1))
-    {
+	if ((glx_major == 1) && (glx_minor < 3) || (glx_major < 1))
+	{
 		GL_PLATFORM_LOG("GLX version 1.3 is required");
 		return false;
-    }
+	}
 
-    int fbcount = 0;
-    _cfg = glXChooseFBConfig(_display, 0, att, &fbcount);
-    if (!_cfg)
-    {
+	int fbcount = 0;
+	_cfg = glXChooseFBConfig(_display, 0, att, &fbcount);
+	if (!_cfg)
+	{
 		GL_PLATFORM_LOG("Failed to retrieve a framebuffer config.");
 		return false;
-    }
+	}
 
 	_window = window;
 
-    GLXCREATECONTEXTATTRIBSARB glXCreateContextAttribsARB = nullptr;
-    glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARB)glXGetProcAddressARB((const GLubyte *)"glXCreateContextAttribsARB");
-    if (glXCreateContextAttribsARB)
-    {
+	GLXCREATECONTEXTATTRIBSARB glXCreateContextAttribsARB = nullptr;
+	glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARB)glXGetProcAddressARB((const GLubyte *)"glXCreateContextAttribsARB");
+	if (glXCreateContextAttribsARB)
+	{
 		_glc = glXCreateContextAttribsARB(_display, _cfg, _ctxconfig.share, true, attribs);
 		if (!_glc)
 		{
@@ -179,11 +179,11 @@ XGLSwapchain::open(WindHandle window) noexcept
 				_glc = glXCreateNewContext(_display, _cfg, GLX_RGBA_TYPE, _ctxconfig.share, GL_TRUE);
 			}
 		}
-    }
-    else
-    {
+	}
+	else
+	{
 		_glc = glXCreateNewContext(_display, _cfg, GLX_RGBA_TYPE, _ctxconfig.share, GL_TRUE);
-    }
+	}
 
 	if (!_glc)
 	{
@@ -193,11 +193,11 @@ XGLSwapchain::open(WindHandle window) noexcept
 
 	glXMakeContextCurrent(_display, _window, _window, _glc);
 
-    if (GLEW_OK != glewInit())
-    {
+	if (GLEW_OK != glewInit())
+	{
 		GL_PLATFORM_LOG("Unable to initialize glext");
 		return false;
-    }
+	}
 }
 
 void
@@ -219,11 +219,11 @@ XGLSwapchain::close(WindHandle wx) noexcept
 void
 XGLSwapchain::setSwapInterval(SwapInterval interval) noexcept
 {
-    if (_interval != interval)
-    {
-        glXSwapIntervalEXT(_display, _window, (int)interval);
-        _interval = interval;
-    }
+	if (_interval != interval)
+	{
+		glXSwapIntervalEXT(_display, _window, (int)interval);
+		_interval = interval;
+	}
 }
 
 SwapInterval
@@ -255,7 +255,7 @@ bool
 XGLSwapchain::present() noexcept
 {
 	glXSwapBuffers(_display, _window);
-    return true;
+	return true;
 }
 
 void

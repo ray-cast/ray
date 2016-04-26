@@ -292,7 +292,7 @@ MyGuiSystem::close() noexcept
 	}
 }
 
-void 
+void
 MyGuiSystem::setCoreProfile(const std::string& core) except
 {
 	if (_coreProfile != core)
@@ -380,7 +380,7 @@ MyGuiSystem::setViewport(int w, int h) noexcept
 	_renderer->setViewport(w, h);
 }
 
-void 
+void
 MyGuiSystem::getViewport(int& w, int& h) noexcept
 {
 	assert(_renderer);

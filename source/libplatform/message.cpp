@@ -52,13 +52,13 @@ Message::~Message() noexcept
 {
 }
 
-void 
+void
 Message::setInstanceID(std::uint32_t instance) noexcept
 {
 	_instanceID = instance;
 }
 
-std::uint32_t 
+std::uint32_t
 Message::getInstanceID() const noexcept
 {
 	return _instanceID;
@@ -84,13 +84,13 @@ MessageBatch::~MessageBatch() noexcept
 {
 }
 
-void 
+void
 MessageBatch::addMessage(MessagePtr message) noexcept
 {
 	_message.push_back(message);
 }
 
-const Messages& 
+const Messages&
 MessageBatch::getMessage() const noexcept
 {
 	return _message;

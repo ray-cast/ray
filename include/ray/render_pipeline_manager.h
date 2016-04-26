@@ -46,7 +46,7 @@ class RenderPipelineManager final : public rtti::Interface
 	__DeclareSubClass(RenderPipelineManager, rtti::Interface)
 public:
 	RenderPipelineManager() noexcept;
-    ~RenderPipelineManager() noexcept;
+	~RenderPipelineManager() noexcept;
 
 	bool setup(const RenderSetting& setting) noexcept;
 	void close() noexcept;

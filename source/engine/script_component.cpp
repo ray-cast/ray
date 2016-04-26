@@ -59,13 +59,13 @@ ScriptComponent::~ScriptComponent() noexcept
 {
 }
 
-void 
+void
 ScriptComponent::load(iarchive& reader) noexcept
 {
 	GameComponent::load(reader);
 }
 
-void 
+void
 ScriptComponent::save(oarchive& write) noexcept
 {
 }
@@ -83,7 +83,7 @@ ScriptComponent::onActivate()
 
 	if (!_scriptObject->setInterface("IController"))
 	{
-		ScriptSystem::instance()->print("Couldn't find the interface class for the script" + this->getName() +"\n");
+		ScriptSystem::instance()->print("Couldn't find the interface class for the script" + this->getName() + "\n");
 		return;
 	}
 

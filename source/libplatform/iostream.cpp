@@ -39,28 +39,28 @@
 _NAME_BEGIN
 
 Stream::iosentry::iosentry(Stream* _istr)
-    : _ok(true)
+	: _ok(true)
 	, _myIostr(_istr)
 {
-    if (_myIostr->rdbuf() != 0)
-        _myIostr->rdbuf()->lock();
+	if (_myIostr->rdbuf() != 0)
+		_myIostr->rdbuf()->lock();
 }
 
 Stream::iosentry::~iosentry() noexcept
 {
-    if (_myIostr->rdbuf() != 0)
-        _myIostr->rdbuf()->unlock();
+	if (_myIostr->rdbuf() != 0)
+		_myIostr->rdbuf()->unlock();
 };
 
 Stream::iosentry::operator bool() const noexcept
 {
-    return _ok ? true : false;
+	return _ok ? true : false;
 }
 
 Stream::Stream(StreamBuf* buf) noexcept
-    : StreamReader(buf)
-    , StreamWrite(buf)
-    , _count(0)
+	: StreamReader(buf)
+	, StreamWrite(buf)
+	, _count(0)
 {
 	StreamBase::_init(buf, ios_base::in | ios_base::out);
 }
@@ -72,141 +72,141 @@ Stream::~Stream() noexcept
 Stream&
 Stream::read(char* str, std::streamsize cnt) noexcept
 {
-    assert(cnt != 0);
+	assert(cnt != 0);
 
-    try
-    {
-        ios_base::iostate state = ios_base::goodbit;
+	try
+	{
+		ios_base::iostate state = ios_base::goodbit;
 
-        const iosentry ok(this);
+		const iosentry ok(this);
 
-        if (ok)
-        {
-            _count = this->rdbuf()->read(str, cnt);
+		if (ok)
+		{
+			_count = this->rdbuf()->read(str, cnt);
 
-            if (_count != cnt)
-                state |= ios_base::badbit;
-        }
+			if (_count != cnt)
+				state |= ios_base::badbit;
+		}
 
-        this->setstate(state);
-    }
-    catch (...)
-    {
-        this->setstate(ios_base::badbit, true);
-    }
+		this->setstate(state);
+	}
+	catch (...)
+	{
+		this->setstate(ios_base::badbit, true);
+	}
 
-    return (*this);
+	return (*this);
 }
 
 Stream&
 Stream::read(char* str, streamsize size, streamsize cnt) noexcept
 {
-    return this->read(str, size * cnt);
+	return this->read(str, size * cnt);
 }
 
 Stream&
 Stream::write(const char* str, std::streamsize cnt) noexcept
 {
-    assert(cnt != 0);
+	assert(cnt != 0);
 
-    try
-    {
-        ios_base::iostate state = ios_base::goodbit;
+	try
+	{
+		ios_base::iostate state = ios_base::goodbit;
 
-        const iosentry ok(this);
+		const iosentry ok(this);
 
-        if (ok)
-        {
-            if (this->rdbuf()->write(str, cnt) != cnt)
-                state |= ios_base::badbit;
-        }
+		if (ok)
+		{
+			if (this->rdbuf()->write(str, cnt) != cnt)
+				state |= ios_base::badbit;
+		}
 
-        this->setstate(state);
-    }
-    catch (...)
-    {
-        this->setstate(ios_base::badbit, true);
-    }
+		this->setstate(state);
+	}
+	catch (...)
+	{
+		this->setstate(ios_base::badbit, true);
+	}
 
-    return (*this);
+	return (*this);
 }
 
 Stream&
 Stream::write(const char* str, streamsize size, streamsize cnt) noexcept
 {
-    return this->write(str, size * cnt);
+	return this->write(str, size * cnt);
 }
 
 Stream&
 Stream::flush() noexcept
 {
-    if (this->rdbuf() != 0)
-    {
-        const iosentry ok(this);
-        if (ok)
-        {
-            if (ok && this->rdbuf()->flush() == -1)
-                this->setstate(ios_base::badbit, true);
-        }
-    }
+	if (this->rdbuf() != 0)
+	{
+		const iosentry ok(this);
+		if (ok)
+		{
+			if (ok && this->rdbuf()->flush() == -1)
+				this->setstate(ios_base::badbit, true);
+		}
+	}
 
-    return (*this);
+	return (*this);
 }
 
 Stream&
 Stream::seekg(ios_base::off_type pos) noexcept
 {
-    const iosentry ok(this);
-    if (ok)
-    {
-        if (!this->fail() && (ios_base::off_type)this->rdbuf()->seekg(pos, ios_base::out) == ios_base::_BADOFF)
-            this->setstate(ios_base::failbit);
-    }
+	const iosentry ok(this);
+	if (ok)
+	{
+		if (!this->fail() && (ios_base::off_type)this->rdbuf()->seekg(pos, ios_base::out) == ios_base::_BADOFF)
+			this->setstate(ios_base::failbit);
+	}
 
-    return (*this);
+	return (*this);
 }
 
 Stream&
 Stream::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
 {
-    const iosentry ok(this);
-    if (ok)
-    {
-        if (!this->fail() && (ios_base::off_type)this->rdbuf()->seekg(pos, dir) == ios_base::_BADOFF)
-            this->setstate(ios_base::failbit);
-    }
+	const iosentry ok(this);
+	if (ok)
+	{
+		if (!this->fail() && (ios_base::off_type)this->rdbuf()->seekg(pos, dir) == ios_base::_BADOFF)
+			this->setstate(ios_base::failbit);
+	}
 
-    return (*this);
+	return (*this);
 }
 
 streamsize
 Stream::size() noexcept
 {
-    const iosentry ok(this);
-    if (ok)
-    {
-        if (!this->fail())
-            return this->rdbuf()->size();
-    }
+	const iosentry ok(this);
+	if (ok)
+	{
+		if (!this->fail())
+			return this->rdbuf()->size();
+	}
 
-    return (streamsize)ios_base::_BADOFF;
+	return (streamsize)ios_base::_BADOFF;
 }
 
 streamsize
 Stream::gcount() const noexcept
 {
-    return _count;
+	return _count;
 }
 
 streampos
 Stream::tellg() noexcept
 {
-    const iosentry ok(this);
+	const iosentry ok(this);
 
-    if (!this->fail())
-        return (this->rdbuf()->tellg());
-    else
-        return (ios_base::pos_type(ios_base::_BADOFF));
+	if (!this->fail())
+		return (this->rdbuf()->tellg());
+	else
+		return (ios_base::pos_type(ios_base::_BADOFF));
 }
 
 _NAME_END

@@ -69,7 +69,6 @@ EGL3Types::setup() noexcept
 
 			pos = offset + length;
 		}
-	
 
 		std::intptr_t length = pos - offset;
 		if (length < 0)
@@ -105,7 +104,7 @@ EGL3Types::setup() noexcept
 		else if (strncmp(src, "GL_OES_vertex_half_float", length) == 0)            _egl3Features[EGL3Features::EGL3_OES_vertex_half_float] = GL_TRUE;
 		else if (strncmp(src, "GL_EXT_texture_filter_anisotropic", length) == 0)   _egl3Features[EGL3Features::EGL3_EXT_texture_filter_anisotropic] = GL_TRUE;
 		else if (strncmp(src, "GL_OES_compressed_ETC1_RGB8_texture", length) == 0) _egl3Features[EGL3Features::EGL3_OES_compressed_ETC1_RGB8_texture] = GL_TRUE;
-		else if (strncmp(src, "GL_EXT_texture_cube_map_array", length) == 0)	   _egl3Features[EGL3Features::EGL3_EXT_texture_cube_map_array] = GL_TRUE;	
+		else if (strncmp(src, "GL_EXT_texture_cube_map_array", length) == 0)	   _egl3Features[EGL3Features::EGL3_EXT_texture_cube_map_array] = GL_TRUE;
 		else if (strncmp(src, "GL_KHR_debug", length) == 0)                        _egl3Features[EGL3Features::EGL3_KHR_debug] = GL_TRUE;
 
 		offset = pos + 1;
@@ -831,7 +830,7 @@ EGL3Types::asTextureInternalFormat(GraphicsFormat format) noexcept
 	}
 
 	GL_PLATFORM_ASSERT(internalFormat != GL_INVALID_ENUM, "Invalid texture internal format.")
-	return internalFormat;
+		return internalFormat;
 }
 
 GLenum
@@ -1024,7 +1023,7 @@ EGL3Types::getFormatNum(GLenum format) noexcept
 	}
 }
 
-GLboolean 
+GLboolean
 EGL3Types::isSupportFeature(EGL3Features features) noexcept
 {
 	assert(features >= EGL3Features::EGL3_BeginRange && features <= EGL3Features::EGL3_EndRange);

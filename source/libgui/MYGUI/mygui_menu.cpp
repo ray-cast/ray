@@ -200,7 +200,7 @@ MyGuiMenuImpl::getVerticalAlignment() const noexcept
 	return _menuBar->getVerticalAlignment();
 }
 
-void 
+void
 MyGuiMenuImpl::addMenuCtrlCloseListener(std::function<void()>& func) noexcept
 {
 	assert(_menuBar);
@@ -210,7 +210,7 @@ MyGuiMenuImpl::addMenuCtrlCloseListener(std::function<void()>& func) noexcept
 	_onMenuCtrlClose.attach(func);
 }
 
-void 
+void
 MyGuiMenuImpl::addMenuCtrlAcceptListener(std::function<void()>& func) noexcept
 {
 	assert(_menuBar);
@@ -220,27 +220,27 @@ MyGuiMenuImpl::addMenuCtrlAcceptListener(std::function<void()>& func) noexcept
 	_onMenuCtrlAccept.attach(func);
 }
 
-void 
+void
 MyGuiMenuImpl::removeMenuCtrlCloseListener(std::function<void()>& func) noexcept
 {
 	assert(_onMenuCtrlClose.find(func));
 	_onMenuCtrlClose.remove(func);
 }
 
-void 
+void
 MyGuiMenuImpl::removeMenuCtrlAcceptListener(std::function<void()>& func) noexcept
 {
 	assert(_onMenuCtrlAccept.find(func));
 	_onMenuCtrlAccept.remove(func);
 }
 
-void 
+void
 MyGuiMenuImpl::onMenuCtrlClose(MyGUI::MenuControl*) noexcept
 {
 	_onMenuCtrlClose.run();
 }
 
-void 
+void
 MyGuiMenuImpl::onMenuCtrlAccept(MyGUI::MenuControl*, MyGUI::MenuItem*) noexcept
 {
 	_onMenuCtrlAccept.run();
@@ -375,19 +375,19 @@ MyGuiMenu::addMenuCtrlCloseListener(std::function<void()>& func) noexcept
 	_impl.addMenuCtrlCloseListener(func);
 }
 
-void 
+void
 MyGuiMenu::addMenuCtrlAcceptListener(std::function<void()>& func) noexcept
 {
 	_impl.addMenuCtrlAcceptListener(func);
 }
 
-void 
+void
 MyGuiMenu::removeMenuCtrlCloseListener(std::function<void()>& func) noexcept
 {
 	_impl.removeMenuCtrlCloseListener(func);
 }
 
-void 
+void
 MyGuiMenu::removeMenuCtrlAcceptListener(std::function<void()>& func) noexcept
 {
 	_impl.removeMenuCtrlAcceptListener(func);

@@ -70,7 +70,7 @@ MyGuiMenuItemImpl::create() except
 	return _menuItem ? true : false;
 }
 
-GuiButtonPtr 
+GuiButtonPtr
 MyGuiMenuItemImpl::getGuiButton() const noexcept
 {
 	return _button;

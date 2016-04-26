@@ -39,164 +39,164 @@
 _NAME_BEGIN
 
 ThreadLambda::ThreadLambda() noexcept
-    : _isQuitRequest(false)
-    , _isFlushRequest(false)
+	: _isQuitRequest(false)
+	, _isFlushRequest(false)
 {
 }
 
 ThreadLambda::~ThreadLambda() noexcept
 {
-    this->stop();
+	this->stop();
 }
 
 void
 ThreadLambda::start() noexcept
 {
-    if (!_thread)
-        _thread = std::make_unique<std::thread>(std::bind(&ThreadLambda::dispose, this));
+	if (!_thread)
+		_thread = std::make_unique<std::thread>(std::bind(&ThreadLambda::dispose, this));
 }
 
 void
 ThreadLambda::stop() noexcept
 {
-    this->flush();
-    this->signalQuitCond();
-    this->join();
+	this->flush();
+	this->signalQuitCond();
+	this->join();
 }
 
 void
 ThreadLambda::exce(std::function<void(void)> func) noexcept
 {
-    _mutex.lock();
-    _taskUpdate.push_back(func);
-    _mutex.unlock();
+	_mutex.lock();
+	_taskUpdate.push_back(func);
+	_mutex.unlock();
 }
 
 void
 ThreadLambda::join() noexcept
 {
-    if (_thread)
-    {
-        _thread->join();
-        _thread = nullptr;
-    }
+	if (_thread)
+	{
+		_thread->join();
+		_thread = nullptr;
+	}
 }
 
 void
 ThreadLambda::flush() noexcept
 {
-    if (!_isQuitRequest)
-    {
-        this->waitFlushFinishedCond();
+	if (!_isQuitRequest)
+	{
+		this->waitFlushFinishedCond();
 
-        _mutex.lock();
-        _taskUpdate.swap(_taskDispose);
-        _mutex.unlock();
+		_mutex.lock();
+		_taskUpdate.swap(_taskDispose);
+		_mutex.unlock();
 
-        this->signalFlushCond();
-    }
+		this->signalFlushCond();
+	}
 }
 
 void
 ThreadLambda::finish() noexcept
 {
-    if (!_isQuitRequest)
-    {
-        this->flush();
-        this->waitFlushFinishedCond();
-    }
+	if (!_isQuitRequest)
+	{
+		this->flush();
+		this->waitFlushFinishedCond();
+	}
 }
 
 std::exception_ptr
 ThreadLambda::exception() const noexcept
 {
-    return _exception;
+	return _exception;
 }
 
 void
 ThreadLambda::signalQuitCond() noexcept
 {
-    _mutex.lock();
-    _isQuitRequest = true;
-    _flushRequest.notify_one();
-    _mutex.unlock();
+	_mutex.lock();
+	_isQuitRequest = true;
+	_flushRequest.notify_one();
+	_mutex.unlock();
 }
 
 void
 ThreadLambda::signalFlushCond() noexcept
 {
-    _mutex.lock();
-    _isFlushRequest = true;
-    _flushRequest.notify_one();
-    _mutex.unlock();
+	_mutex.lock();
+	_isFlushRequest = true;
+	_flushRequest.notify_one();
+	_mutex.unlock();
 }
 
 void
 ThreadLambda::signalFlushFinishCond() noexcept
 {
-    _mutex.lock();
-    _isFlushRequest = false;
-    _finishRequest.notify_all();
-    _mutex.unlock();
+	_mutex.lock();
+	_isFlushRequest = false;
+	_finishRequest.notify_all();
+	_mutex.unlock();
 }
 
 void
 ThreadLambda::waitFlushCond() noexcept
 {
-    std::unique_lock<std::mutex> lock(_mutex);
-    if (lock)
-    {
-        if (_isQuitRequest)
-            return;
+	std::unique_lock<std::mutex> lock(_mutex);
+	if (lock)
+	{
+		if (_isQuitRequest)
+			return;
 
-        while (!_isFlushRequest)
-        {
-            _flushRequest.wait(lock);
-        }
-    }
+		while (!_isFlushRequest)
+		{
+			_flushRequest.wait(lock);
+		}
+	}
 }
 
 void
 ThreadLambda::waitFlushFinishedCond() noexcept
 {
-    std::unique_lock<std::mutex> lock(_mutex);
-    if (lock)
-    {
-        if (_isQuitRequest)
-            return;
+	std::unique_lock<std::mutex> lock(_mutex);
+	if (lock)
+	{
+		if (_isQuitRequest)
+			return;
 
-        while (_isFlushRequest)
-        {
-            _finishRequest.wait(lock);
-        }
-    }
+		while (_isFlushRequest)
+		{
+			_finishRequest.wait(lock);
+		}
+	}
 }
 
 void
 ThreadLambda::dispose() noexcept
 {
-    try
-    {
-        while (!_isQuitRequest)
-        {
-            this->waitFlushCond();
+	try
+	{
+		while (!_isQuitRequest)
+		{
+			this->waitFlushCond();
 
-            for (auto& it : _taskDispose)
-            {
-                it();
-            }
+			for (auto& it : _taskDispose)
+			{
+				it();
+			}
 
-            _taskDispose.clear();
+			_taskDispose.clear();
 
-            this->signalFlushFinishCond();
-        }
-    }
-    catch (...)
-    {
-        _isQuitRequest = true;
+			this->signalFlushFinishCond();
+		}
+	}
+	catch (...)
+	{
+		_isQuitRequest = true;
 
-        _exception = std::current_exception();
-    }
+		_exception = std::current_exception();
+	}
 }
 
 _NAME_END

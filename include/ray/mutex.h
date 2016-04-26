@@ -48,63 +48,63 @@ template<typename _Mutex>
 class reentrant_lock
 {
 public:
-    typedef typename _Mutex::native_handle_type native_handle_type;
+	typedef typename _Mutex::native_handle_type native_handle_type;
 
-    reentrant_lock(_Mutex& mutex, bool is_lock = true)
-        :_mutex(&mutex)
-        , _count(0)
-    {
-        if (is_lock)
-        {
-            this->lock();
-        }
-    }
+	reentrant_lock(_Mutex& mutex, bool is_lock = true)
+		:_mutex(&mutex)
+		, _count(0)
+	{
+		if (is_lock)
+		{
+			this->lock();
+		}
+	}
 
-    ~reentrant_lock()
-    {
-        this->unlock();
-    }
+	~reentrant_lock()
+	{
+		this->unlock();
+	}
 
-    bool try_lock()
-    {
-        return _mutex->try_lock();
-    }
+	bool try_lock()
+	{
+		return _mutex->try_lock();
+	}
 
-    native_handle_type native_handle()
-    {
-        return _mutex->native_handle();
-    }
+	native_handle_type native_handle()
+	{
+		return _mutex->native_handle();
+	}
 
-    void lock()
-    {
-        std::thread::id hash = std::this_thread::get_id();
-        if (_thread_id == hash && _count > 0)
-            ++_count;
-        else
-        {
-            _mutex->lock();
-            _thread_id = hash;
-            _count = 1;
-        }
-    }
+	void lock()
+	{
+		std::thread::id hash = std::this_thread::get_id();
+		if (_thread_id == hash && _count > 0)
+			++_count;
+		else
+		{
+			_mutex->lock();
+			_thread_id = hash;
+			_count = 1;
+		}
+	}
 
-    void unlock()
-    {
-        if (_count > 0)
-        {
-            --_count;
-            if (_count == 0)
-            {
-                _thread_id = 0;
-                _mutex->unlock();
-            }
-        }
-    }
+	void unlock()
+	{
+		if (_count > 0)
+		{
+			--_count;
+			if (_count == 0)
+			{
+				_thread_id = 0;
+				_mutex->unlock();
+			}
+		}
+	}
 
 private:
-    _Mutex* _mutex;
-    std::size_t _thread_id;
-    std::size_t _count;
+	_Mutex* _mutex;
+	std::size_t _thread_id;
+	std::size_t _count;
 };
 
 _NAME_END

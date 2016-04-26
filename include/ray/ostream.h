@@ -44,36 +44,36 @@ _NAME_BEGIN
 class EXPORT StreamWrite : public virtual StreamBase
 {
 public:
-    StreamWrite(StreamBuf* buf) noexcept;
-    virtual ~StreamWrite() noexcept;
+	StreamWrite(StreamBuf* buf) noexcept;
+	virtual ~StreamWrite() noexcept;
 
-    StreamWrite& write(const char* str, std::streamsize cnt) noexcept;
-    StreamWrite& write(const char* str, streamsize size, streamsize cnt) noexcept;
+	StreamWrite& write(const char* str, std::streamsize cnt) noexcept;
+	StreamWrite& write(const char* str, streamsize size, streamsize cnt) noexcept;
 
-    StreamWrite& seekg(ios_base::off_type pos) noexcept;
-    StreamWrite& seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
+	StreamWrite& seekg(ios_base::off_type pos) noexcept;
+	StreamWrite& seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
 
-    StreamWrite& flush() noexcept;
+	StreamWrite& flush() noexcept;
 
-    streamsize gcount() const noexcept;
+	streamsize gcount() const noexcept;
 
-    ios_base::pos_type tellg() noexcept;
+	ios_base::pos_type tellg() noexcept;
 
-    StreamWrite& operator << (const char* str) noexcept;
-    StreamWrite& operator << (const std::string& str) noexcept;
-    StreamWrite& operator << (char value) noexcept;
-    StreamWrite& operator << (short value) noexcept;
-    StreamWrite& operator << (int value) noexcept;
-    StreamWrite& operator << (long long value) noexcept;
-    StreamWrite& operator << (unsigned char value) noexcept;
-    StreamWrite& operator << (unsigned short value) noexcept;
-    StreamWrite& operator << (unsigned int value) noexcept;
-    StreamWrite& operator << (unsigned long value) noexcept;
-    StreamWrite& operator << (unsigned long long value) noexcept;
-    StreamWrite& operator << (float value) noexcept;
-    StreamWrite& operator << (double value) noexcept;
-    StreamWrite& operator << (ios_base& (*function)(ios_base&)) noexcept;
-    StreamWrite& operator << (StreamWrite& (*function)(StreamWrite&)) noexcept;
+	StreamWrite& operator << (const char* str) noexcept;
+	StreamWrite& operator << (const std::string& str) noexcept;
+	StreamWrite& operator << (char value) noexcept;
+	StreamWrite& operator << (short value) noexcept;
+	StreamWrite& operator << (int value) noexcept;
+	StreamWrite& operator << (long long value) noexcept;
+	StreamWrite& operator << (unsigned char value) noexcept;
+	StreamWrite& operator << (unsigned short value) noexcept;
+	StreamWrite& operator << (unsigned int value) noexcept;
+	StreamWrite& operator << (unsigned long value) noexcept;
+	StreamWrite& operator << (unsigned long long value) noexcept;
+	StreamWrite& operator << (float value) noexcept;
+	StreamWrite& operator << (double value) noexcept;
+	StreamWrite& operator << (ios_base& (*function)(ios_base&)) noexcept;
+	StreamWrite& operator << (StreamWrite& (*function)(StreamWrite&)) noexcept;
 
 protected:
 	class osentry
@@ -93,12 +93,12 @@ protected:
 	};
 
 private:
-    StreamWrite& operator=(const StreamWrite&) = delete;
-    StreamWrite(const StreamWrite&) = delete;
+	StreamWrite& operator=(const StreamWrite&) = delete;
+	StreamWrite(const StreamWrite&) = delete;
 
 private:
 
-    streamsize _count;
+	streamsize _count;
 };
 
 _NAME_END

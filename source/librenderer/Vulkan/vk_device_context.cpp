@@ -86,7 +86,7 @@ VulkanDeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 	return true;
 }
 
-void 
+void
 VulkanDeviceContext::close() noexcept
 {
 	_commandQueue.reset();
@@ -94,7 +94,7 @@ VulkanDeviceContext::close() noexcept
 	_commandPool.reset();
 }
 
-void 
+void
 VulkanDeviceContext::renderBegin() noexcept
 {
 	auto swapchaic = _swapchain->downcast<VulkanSwapchain>();
@@ -104,31 +104,31 @@ VulkanDeviceContext::renderBegin() noexcept
 	_commandList->setFramebuffer(swapchaic->getSwapchainFramebuffers()[swapchaic->getSwapchainImageIndex()]);
 }
 
-void 
+void
 VulkanDeviceContext::renderEnd() noexcept
 {
 	_commandList->renderEnd();
 }
 
-void 
+void
 VulkanDeviceContext::setViewport(const Viewport& viewport) noexcept
 {
 	_commandList->setViewport(&viewport, 0, 1);
 }
 
-const Viewport& 
+const Viewport&
 VulkanDeviceContext::getViewport() const noexcept
 {
 	return _viewports[0];
 }
 
-void 
+void
 VulkanDeviceContext::setScissor(const Scissor& scissor) noexcept
 {
 	_commandList->setScissor(&scissor, 0, 1);
 }
 
-const Scissor& 
+const Scissor&
 VulkanDeviceContext::getScissor() const noexcept
 {
 	return _scissor[0];
@@ -139,7 +139,7 @@ VulkanDeviceContext::setStencilCompare(GraphicsStencilFace face, GraphicsCompare
 {
 }
 
-GraphicsCompareFunc 
+GraphicsCompareFunc
 VulkanDeviceContext::getStencilCompare(GraphicsStencilFace face) noexcept
 {
 	return GraphicsCompareFunc::GraphicsCompareFuncNone;
@@ -150,7 +150,7 @@ VulkanDeviceContext::setStencilReference(GraphicsStencilFace face, std::uint32_t
 {
 }
 
-std::uint32_t 
+std::uint32_t
 VulkanDeviceContext::getStencilReference(GraphicsStencilFace face) noexcept
 {
 	return 0;
@@ -161,13 +161,13 @@ VulkanDeviceContext::setStencilFrontWriteMask(GraphicsStencilFace face, std::uin
 {
 }
 
-std::uint32_t 
+std::uint32_t
 VulkanDeviceContext::getStencilFrontWriteMask(GraphicsStencilFace face) noexcept
 {
 	return 0;
 }
 
-void 
+void
 VulkanDeviceContext::setFramebuffer(GraphicsFramebufferPtr framebuffer) noexcept
 {
 	if (_framebuffer != framebuffer)
@@ -187,40 +187,40 @@ VulkanDeviceContext::setFramebuffer(GraphicsFramebufferPtr framebuffer, const fl
 	}
 }
 
-void 
+void
 VulkanDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	_commandList->clearFramebuffer(flags, color, depth, stencil);
 }
 
-void 
+void
 VulkanDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil, std::size_t i) noexcept
 {
 	_commandList->clearFramebuffer(flags, color, depth, stencil, i);
 }
 
-void 
+void
 VulkanDeviceContext::discardFramebuffer() noexcept
 {
 }
 
-void 
+void
 VulkanDeviceContext::blitFramebuffer(GraphicsFramebufferPtr src, const Viewport& v1, GraphicsFramebufferPtr dest, const Viewport& v2) noexcept
 {
 }
 
-void 
+void
 VulkanDeviceContext::readFramebuffer(GraphicsFramebufferPtr source, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept
 {
 }
 
-GraphicsFramebufferPtr 
+GraphicsFramebufferPtr
 VulkanDeviceContext::getFramebuffer() const noexcept
 {
 	return _framebuffer;
 }
 
-void 
+void
 VulkanDeviceContext::setRenderPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
 	assert(pipeline);
@@ -235,7 +235,7 @@ VulkanDeviceContext::getRenderPipeline() const noexcept
 	return _pipeline;
 }
 
-void 
+void
 VulkanDeviceContext::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
 {
 	assert(descriptorSet);
@@ -251,7 +251,7 @@ VulkanDeviceContext::getDescriptorSet() const noexcept
 	return _descriptorSet;
 }
 
-void 
+void
 VulkanDeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 {
 	assert(data);
@@ -268,7 +268,7 @@ VulkanDeviceContext::getVertexBufferData() const noexcept
 	return _vertexBuffer;
 }
 
-void 
+void
 VulkanDeviceContext::setIndexBufferData(GraphicsDataPtr data) noexcept
 {
 	assert(data);
@@ -330,13 +330,13 @@ VulkanDeviceContext::unmapBuffer(GraphicsDataPtr data) noexcept
 	vkUnmapMemory(device->getDevice(), memory->getDeviceMemory());
 }
 
-void 
+void
 VulkanDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 {
 	_commandList->drawRenderMesh(renderable);
 }
 
-void 
+void
 VulkanDeviceContext::drawRenderMesh(const GraphicsIndirect renderable[], std::size_t first, std::size_t count) noexcept
 {
 	_commandList->drawRenderMesh(renderable + first, count);
@@ -545,7 +545,7 @@ VulkanDeviceContext::initTextureSupports() noexcept
 	return true;
 }
 
-bool 
+bool
 VulkanDeviceContext::initTextureDimSupports() noexcept
 {
 	_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDim2D);

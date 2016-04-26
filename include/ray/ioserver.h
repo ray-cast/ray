@@ -44,19 +44,19 @@ _NAME_BEGIN
 
 class EXPORT IoServer : public ios_base
 {
-    __DeclareSingleton(IoServer)
+	__DeclareSingleton(IoServer)
 public:
-    IoServer() noexcept;
-    ~IoServer() noexcept;
+	IoServer() noexcept;
+	~IoServer() noexcept;
 
-    IoServer& mountArchives() noexcept;
-    IoServer& mountArchives(std::shared_ptr<Package> package) noexcept;
-    IoServer& unmountArchives() noexcept;
+	IoServer& mountArchives() noexcept;
+	IoServer& mountArchives(std::shared_ptr<Package> package) noexcept;
+	IoServer& unmountArchives() noexcept;
 
-    IoServer& addAssign(const IoAssign& assign) noexcept;
-    IoServer& removeAssign(const std::string& name) noexcept;
-    IoServer& getAssign(const std::string& name, std::string& path) noexcept;
-    IoServer& getResolveAssign(const std::string& url, std::string& resolvePath) noexcept;
+	IoServer& addAssign(const IoAssign& assign) noexcept;
+	IoServer& removeAssign(const std::string& name) noexcept;
+	IoServer& getAssign(const std::string& name, std::string& path) noexcept;
+	IoServer& getResolveAssign(const std::string& url, std::string& resolvePath) noexcept;
 
 	IoServer& openFile(StreamReaderPtr& stream, const std::string& path, open_mode mode = ios_base::in) noexcept;
 	IoServer& openFileFromFileSystem(StreamReaderPtr& stream, const std::string& path, open_mode mode = ios_base::in) noexcept;
@@ -66,27 +66,27 @@ public:
 	IoServer& openFileFromFileSystem(StreamWritePtr& stream, const std::string& path, open_mode mode = ios_base::out) noexcept;
 	IoServer& openFileFromDisk(StreamWritePtr& stream, const std::string& path, open_mode mode = ios_base::out) noexcept;
 
-    IoServer& openFile(StreamPtr& stream, const std::string& path, open_mode mode = ios_base::in) noexcept;
-    IoServer& openFileFromFileSystem(StreamPtr& stream, const std::string& path, open_mode mode = ios_base::in) noexcept;
-    IoServer& openFileFromDisk(StreamPtr& stream, const std::string& path, open_mode mode = ios_base::in) noexcept;
+	IoServer& openFile(StreamPtr& stream, const std::string& path, open_mode mode = ios_base::in) noexcept;
+	IoServer& openFileFromFileSystem(StreamPtr& stream, const std::string& path, open_mode mode = ios_base::in) noexcept;
+	IoServer& openFileFromDisk(StreamPtr& stream, const std::string& path, open_mode mode = ios_base::in) noexcept;
 
-    IoServer& deleteFile(const std::string& path) noexcept;
+	IoServer& deleteFile(const std::string& path) noexcept;
 
-    IoServer& existsFile(const std::string& path) noexcept;
+	IoServer& existsFile(const std::string& path) noexcept;
 	IoServer& existsFileFromFileSystem(const std::string& path) noexcept;
 	IoServer& existsFileFromDisk(const std::string& path) noexcept;
 
-    IoServer& copyFile(const std::string& path, const std::string& to) noexcept;
+	IoServer& copyFile(const std::string& path, const std::string& to) noexcept;
 
-    IoServer& createDirectory(const std::string& path) noexcept;
-    IoServer& deleteDirectory(const std::string& path) noexcept;
-    IoServer& existsDirectory(const std::string& path) noexcept;
+	IoServer& createDirectory(const std::string& path) noexcept;
+	IoServer& deleteDirectory(const std::string& path) noexcept;
+	IoServer& existsDirectory(const std::string& path) noexcept;
 
 private:
 
-    bool _enablePackage;
+	bool _enablePackage;
 
-    std::map<std::string, std::string> _assignTable;
+	std::map<std::string, std::string> _assignTable;
 };
 
 _NAME_END

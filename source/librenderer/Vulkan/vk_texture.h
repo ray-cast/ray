@@ -50,7 +50,7 @@ public:
 
 	bool setup(const GraphicsTextureDesc& textureDesc) noexcept;
 	void close() noexcept;
-	
+
 	void setSwapchainImage(VkImage image) noexcept;
 	bool getSwapchainImage() const noexcept;
 

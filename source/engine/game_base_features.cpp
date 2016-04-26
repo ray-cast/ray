@@ -50,21 +50,21 @@ GameBaseFeatures::~GameBaseFeatures() noexcept
 {
 }
 
-void 
+void
 GameBaseFeatures::onFrameBegin() noexcept
 {
 	GameSceneManager::instance()->onFrameBegin();
 	GameObjectManager::instance()->onFrameBegin();
 }
 
-void 
+void
 GameBaseFeatures::onFrame() noexcept
 {
 	GameSceneManager::instance()->onFrame();
 	GameObjectManager::instance()->onFrame();
 }
 
-void 
+void
 GameBaseFeatures::onFrameEnd() noexcept
 {
 	GameSceneManager::instance()->onFrameEnd();

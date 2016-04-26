@@ -58,165 +58,165 @@ _NAME_BEGIN
 
 namespace trait
 {
-    template<>
-    struct _typeaddition<float>
-    {
-        typedef float            value_type;
-        typedef float*           pointer;
-        typedef float&           reference;
-        typedef const float*     const_pointer;
-        typedef const float&     const_reference;
+	template<>
+	struct _typeaddition<float>
+	{
+		typedef float            value_type;
+		typedef float*           pointer;
+		typedef float&           reference;
+		typedef const float*     const_pointer;
+		typedef const float&     const_reference;
 #ifdef __SSE__
-        typedef __m64            xmm64;
-        typedef __m128           xmm128;
+		typedef __m64            xmm64;
+		typedef __m128           xmm128;
 #endif
 #if   __AVX__
-        typedef __m256           xmm256;
+		typedef __m256           xmm256;
 #endif
-    };
+	};
 
-    template <>
-    struct _typeaddition<double>
-    {
-        typedef double           value_type;
-        typedef double*          pointer;
-        typedef double&          reference;
-        typedef const double*     const_pointer;
-        typedef const double&    const_reference;
+	template <>
+	struct _typeaddition<double>
+	{
+		typedef double           value_type;
+		typedef double*          pointer;
+		typedef double&          reference;
+		typedef const double*     const_pointer;
+		typedef const double&    const_reference;
 #ifdef __SSE__
-        typedef __m64             xmm64;
-        typedef __m128d           xmm128;
+		typedef __m64             xmm64;
+		typedef __m128d           xmm128;
 #endif
 #if   __AVX__
-        typedef __m256d           xmm256;
+		typedef __m256d           xmm256;
 #endif
-    };
+	};
 }
 
 inline __m128 _mm_dot_p(__m128 v1, __m128 v2)
 {
 #if  defined(__SSE4__)
-    return _mm_dp_ps(v1, v2, 0xFF);
+	return _mm_dp_ps(v1, v2, 0xFF);
 #elif defined(__SSE3__)
-    __m128 v3;
+	__m128 v3;
 
-    v3 = _mm_mul_ps(v1, v2);
-    v3 = _mm_hadd_ps(v3, v3);
+	v3 = _mm_mul_ps(v1, v2);
+	v3 = _mm_hadd_ps(v3, v3);
 
-    return _mm_hadd_ps(v3, v3);
+	return _mm_hadd_ps(v3, v3);
 #else
-    __m128 s, r;
-    s = _mm_mul_ps(v1, v2);
-    r = _mm_add_ss(s, _mm_movehl_ps(s, s));
-    r = _mm_add_ss(r, _mm_shuffle_ps(r, r, 1));
-    return r;
+	__m128 s, r;
+	s = _mm_mul_ps(v1, v2);
+	r = _mm_add_ss(s, _mm_movehl_ps(s, s));
+	r = _mm_add_ss(r, _mm_shuffle_ps(r, r, 1));
+	return r;
 #endif
 }
 
 inline __m128d _mm_dot_p(__m128d v1, __m128d v2)
 {
 #if  defined(__SSE4__)
-    return _mm_dp_pd(v1, v2, 0xFF);
+	return _mm_dp_pd(v1, v2, 0xFF);
 #elif defined(__SSE3__)
-    __m128d v3;
+	__m128d v3;
 
-    v3 = _mm_mul_pd(v1, v2);
-    v3 = _mm_hadd_pd(v3, v3);
+	v3 = _mm_mul_pd(v1, v2);
+	v3 = _mm_hadd_pd(v3, v3);
 
-    return _mm_hadd_pd(v3, v3);
+	return _mm_hadd_pd(v3, v3);
 #else
-    __m128d s, r;
-    s = _mm_mul_pd(v1, v2);
-    //r = _mm_add_sd(s , _mm_movehl_ps(s , s));
-    r = _mm_add_sd(r, _mm_shuffle_pd(r, r, 1));
-    return r;
+	__m128d s, r;
+	s = _mm_mul_pd(v1, v2);
+	//r = _mm_add_sd(s , _mm_movehl_ps(s , s));
+	r = _mm_add_sd(r, _mm_shuffle_pd(r, r, 1));
+	return r;
 #endif
 }
 
 inline __m128 _mm_cross_p(__m128 a, __m128 b)
 {
-    __m128 ea, eb;
+	__m128 ea, eb;
 
-    ea = _mm_shuffle_ps(a, a, _MM_SHUFFLE(3, 0, 2, 1));
-    eb = _mm_shuffle_ps(b, b, _MM_SHUFFLE(3, 1, 0, 2));
+	ea = _mm_shuffle_ps(a, a, _MM_SHUFFLE(3, 0, 2, 1));
+	eb = _mm_shuffle_ps(b, b, _MM_SHUFFLE(3, 1, 0, 2));
 
-    __m128 xa = _mm_mul_ps(ea, eb);
+	__m128 xa = _mm_mul_ps(ea, eb);
 
-    a = _mm_shuffle_ps(a, a, _MM_SHUFFLE(3, 1, 0, 2));
-    b = _mm_shuffle_ps(b, b, _MM_SHUFFLE(3, 0, 2, 1));
+	a = _mm_shuffle_ps(a, a, _MM_SHUFFLE(3, 1, 0, 2));
+	b = _mm_shuffle_ps(b, b, _MM_SHUFFLE(3, 0, 2, 1));
 
-    __m128 xb = _mm_mul_ps(a, b);
+	__m128 xb = _mm_mul_ps(a, b);
 
-    return _mm_sub_ps(xa, xb);
+	return _mm_sub_ps(xa, xb);
 }
 
 inline __m128d _mm_cross_p(__m128d a, __m128d b)
 {
-    __m128d a1, b1, a2, b2, v1, v2;
+	__m128d a1, b1, a2, b2, v1, v2;
 
-    a1 = _mm_shuffle_pd(a, a, _MM_SHUFFLE(3, 0, 2, 1));
-    b1 = _mm_shuffle_pd(b, b, _MM_SHUFFLE(3, 1, 0, 2));
+	a1 = _mm_shuffle_pd(a, a, _MM_SHUFFLE(3, 0, 2, 1));
+	b1 = _mm_shuffle_pd(b, b, _MM_SHUFFLE(3, 1, 0, 2));
 
-    v1 = _mm_mul_pd(a1, b1);
+	v1 = _mm_mul_pd(a1, b1);
 
-    a2 = _mm_shuffle_pd(a, a, _MM_SHUFFLE(3, 1, 0, 2));
-    b2 = _mm_shuffle_pd(b, b, _MM_SHUFFLE(3, 0, 2, 1));
+	a2 = _mm_shuffle_pd(a, a, _MM_SHUFFLE(3, 1, 0, 2));
+	b2 = _mm_shuffle_pd(b, b, _MM_SHUFFLE(3, 0, 2, 1));
 
-    v2 = _mm_mul_pd(a2, b2);
+	v2 = _mm_mul_pd(a2, b2);
 
-    return _mm_sub_pd(v1, v2);
+	return _mm_sub_pd(v1, v2);
 }
 
 inline __m128 _mm_rsqrt(const __m128 a)
 {
-    static const __m128 _05 = _mm_set1_ps(0.5f);
-    static const __m128 _3 = _mm_set1_ps(3.f);
-    __m128 rsqrt = _mm_rsqrt_ss(a);
+	static const __m128 _05 = _mm_set1_ps(0.5f);
+	static const __m128 _3 = _mm_set1_ps(3.f);
+	__m128 rsqrt = _mm_rsqrt_ss(a);
 
-    rsqrt =
-        _mm_mul_ss(
-            _mm_mul_ss(_05, rsqrt),
-            _mm_sub_ss(_3, _mm_mul_ss(a, _mm_mul_ss(rsqrt, rsqrt))));
-    return rsqrt;
+	rsqrt =
+		_mm_mul_ss(
+			_mm_mul_ss(_05, rsqrt),
+			_mm_sub_ss(_3, _mm_mul_ss(a, _mm_mul_ss(rsqrt, rsqrt))));
+	return rsqrt;
 }
 
 inline __m128d _mm_rsqrt(const __m128d a)
 {
-    static const __m128d _05 = _mm_set1_pd(0.5f);
-    static const __m128d _3 = _mm_set1_pd(3.f);
-    static const __m128d _1 = _mm_set1_pd(1.0);
+	static const __m128d _05 = _mm_set1_pd(0.5f);
+	static const __m128d _3 = _mm_set1_pd(3.f);
+	static const __m128d _1 = _mm_set1_pd(1.0);
 
-    __m128d rsqrt = _mm_div_sd(_1, _mm_sqrt_sd(a, a));
+	__m128d rsqrt = _mm_div_sd(_1, _mm_sqrt_sd(a, a));
 
-    rsqrt =
-        _mm_mul_sd(
-            _mm_mul_sd(_05, rsqrt),
-            _mm_sub_sd(_3, _mm_mul_sd(a, _mm_mul_sd(rsqrt, rsqrt))));
-    return rsqrt;
+	rsqrt =
+		_mm_mul_sd(
+			_mm_mul_sd(_05, rsqrt),
+			_mm_sub_sd(_3, _mm_mul_sd(a, _mm_mul_sd(rsqrt, rsqrt))));
+	return rsqrt;
 }
 
 inline __m128 _mm_normalize(__m128 a)
 {
-    __m128 v1 = _mm_dot_p(a, a);
+	__m128 v1 = _mm_dot_p(a, a);
 
-    __m128 v2;
+	__m128 v2;
 
-    v2 = _mm_rsqrt(v1);
-    v2 = _mm_shuffle_ps(v2, v2, 0);
+	v2 = _mm_rsqrt(v1);
+	v2 = _mm_shuffle_ps(v2, v2, 0);
 
-    return _mm_div_ps(a, v2);
+	return _mm_div_ps(a, v2);
 }
 
 inline __m128d _mm_normalize(__m128d a)
 {
-    __m128d v1 = _mm_dot_p(a, a);
+	__m128d v1 = _mm_dot_p(a, a);
 
-    __m128d v2;
+	__m128d v2;
 
-    v2 = _mm_rsqrt(v1);
-    v2 = _mm_shuffle_pd(v2, v2, 0);
+	v2 = _mm_rsqrt(v1);
+	v2 = _mm_shuffle_pd(v2, v2, 0);
 
-    return _mm_div_pd(a, v2);
+	return _mm_div_pd(a, v2);
 }
 
 //inline __m128 operator+(__m128 a, __m128 b)

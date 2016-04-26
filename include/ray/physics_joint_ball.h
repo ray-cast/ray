@@ -44,26 +44,26 @@ _NAME_BEGIN
 class JointBall final : public Joint
 {
 public:
-    JointBall() noexcept;
-    virtual ~JointBall() noexcept;
+	JointBall() noexcept;
+	virtual ~JointBall() noexcept;
 
-    void setLinearLowerLimit(const Vector3& limit) noexcept;
-    void setLinearHighLimit(const Vector3& limit) noexcept;
-    void setAngularLowerLimit(const Vector3& limit) noexcept;
-    void setAngularHighLimit(const Vector3& limit) noexcept;
+	void setLinearLowerLimit(const Vector3& limit) noexcept;
+	void setLinearHighLimit(const Vector3& limit) noexcept;
+	void setAngularLowerLimit(const Vector3& limit) noexcept;
+	void setAngularHighLimit(const Vector3& limit) noexcept;
 
-    const Vector3& getLinearLowerLimit() const noexcept;
-    const Vector3& getLinearHighLimit() const noexcept;
-    const Vector3& getAngularLowerLimit() const noexcept;
-    const Vector3& getAngularHighLimit() const noexcept;
+	const Vector3& getLinearLowerLimit() const noexcept;
+	const Vector3& getLinearHighLimit() const noexcept;
+	const Vector3& getAngularLowerLimit() const noexcept;
+	const Vector3& getAngularHighLimit() const noexcept;
 
 protected:
 
-    Vector3 _lowLimit;
-    Vector3 _highLimit;
+	Vector3 _lowLimit;
+	Vector3 _highLimit;
 
-    Vector3 _angularLowLimit;
-    Vector3 _angularHighLimit;
+	Vector3 _angularLowLimit;
+	Vector3 _angularHighLimit;
 };
 
 _NAME_END

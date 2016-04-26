@@ -45,8 +45,8 @@ class EXPORT SoundSystem final
 {
 	__DeclareSingleton(SoundSystem)
 public:
-    SoundSystem() noexcept;
-    ~SoundSystem() noexcept;
+	SoundSystem() noexcept;
+	~SoundSystem() noexcept;
 
 	bool open() noexcept;
 	void close() noexcept;

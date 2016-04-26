@@ -842,7 +842,7 @@ EGL2DeviceContext::initTextureDimSupports() noexcept
 	_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDim2D);
 	_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDim2DArray);
 	_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDimCube);
-	
+
 	if (EGL2Types::isSupportFeature(EGL2Features::EGL2_EXT_texture_cube_map_array))
 		_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDimCubeArray);
 

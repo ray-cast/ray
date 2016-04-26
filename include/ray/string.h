@@ -53,20 +53,19 @@ _NAME_BEGIN
 
 namespace util
 {
-
 #ifdef _UNICODE
-typedef wchar_t char_type;
+	typedef wchar_t char_type;
 #else
-typedef char char_type;
+	typedef char char_type;
 #endif
 
 #if _UNICODE
-typedef std::wstring string;
+	typedef std::wstring string;
 #else
-typedef std::string string;
+	typedef std::string string;
 #endif
 
-// the operation specific directory separator
+	// the operation specific directory separator
 #ifndef __WINDOWS__
 #   define SEPARATOR '/'
 #else
@@ -90,133 +89,132 @@ typedef std::string string;
 #	ifdef  __UNICODE__
 #		define __TEXT(quote) L##quote
 #	else
-#		define __TEXT(quote) quote         
-#	endif  
-#endif 
-
-#if defined(__WINDOWS__)
-EXPORT char* fullpath(char * out, const char * in, std::size_t size);
-EXPORT wchar_t* fullpath(wchar_t * out, const wchar_t * in, std::size_t size);
+#		define __TEXT(quote) quote
+#	endif
 #endif
 
-EXPORT int stricmp(const std::string& a, const std::string& b);
-EXPORT int stricmp(const std::wstring& a, const std::wstring& b);
-EXPORT int stricmp(const char *s1, const char *s2);
-EXPORT int stricmp(const wchar_t *s1, const wchar_t *s2);
-EXPORT int strnicmp(const char *s1, const char *s2, std::size_t n);
-EXPORT int strnicmp(const wchar_t *s1, const wchar_t *s2, std::size_t n);
+#if defined(__WINDOWS__)
+	EXPORT char* fullpath(char * out, const char * in, std::size_t size);
+	EXPORT wchar_t* fullpath(wchar_t * out, const wchar_t * in, std::size_t size);
+#endif
 
-EXPORT char* strstr(char* dest, const char * source);
-EXPORT char* strcpy(char* dest, const char* source);
-EXPORT char* strncpy(char* s1, const char* s2, std::size_t cnt);
-EXPORT wchar_t* strcpy(wchar_t* dest, const wchar_t* source);
-EXPORT wchar_t* strncpy(wchar_t* s1, const wchar_t* s2, std::size_t cnt);
-EXPORT wchar_t* strstr(wchar_t * dest, const wchar_t * source);
-EXPORT std::size_t strlen(const char* str);
-EXPORT std::size_t strlen(const wchar_t* str);
-EXPORT int strncmp(const char* s1, const char* s2, std::size_t cnt);
-EXPORT int strncmp(const wchar_t* s1, const wchar_t* s2, std::size_t cnt);
+	EXPORT int stricmp(const std::string& a, const std::string& b);
+	EXPORT int stricmp(const std::wstring& a, const std::wstring& b);
+	EXPORT int stricmp(const char *s1, const char *s2);
+	EXPORT int stricmp(const wchar_t *s1, const wchar_t *s2);
+	EXPORT int strnicmp(const char *s1, const char *s2, std::size_t n);
+	EXPORT int strnicmp(const wchar_t *s1, const wchar_t *s2, std::size_t n);
 
-EXPORT std::size_t itoa10(char* out, std::size_t max, char number);
-EXPORT std::size_t itoa10(char* out, std::size_t max, unsigned char number);
-EXPORT std::size_t itoa10(char* out, std::size_t max, short number);
-EXPORT std::size_t itoa10(char* out, std::size_t max, unsigned short number);
-EXPORT std::size_t itoa10(char* out, std::size_t max, int number);
-EXPORT std::size_t itoa10(char* out, std::size_t max, unsigned int number);
-EXPORT std::size_t itoa10(wchar_t* out, std::size_t max, int number);
-EXPORT std::size_t itoa10(wchar_t* out, std::size_t max, unsigned int number);
-EXPORT std::size_t itoa10(char* out, std::size_t max, long number);
-EXPORT std::size_t itoa10(char* out, std::size_t max, unsigned long number);
-EXPORT std::size_t itoa10(wchar_t* out, std::size_t max, long number);
-EXPORT std::size_t itoa10(wchar_t* out, std::size_t max, unsigned long number);
-EXPORT std::size_t itoa10(char* out, std::size_t max, long long number);
-EXPORT std::size_t itoa10(char* out, std::size_t max, unsigned long long number);
-EXPORT std::size_t itoa10(wchar_t* out, std::size_t max, long long number);
-EXPORT std::size_t itoa10(wchar_t* out, std::size_t max, unsigned long long number);
+	EXPORT char* strstr(char* dest, const char * source);
+	EXPORT char* strcpy(char* dest, const char* source);
+	EXPORT char* strncpy(char* s1, const char* s2, std::size_t cnt);
+	EXPORT wchar_t* strcpy(wchar_t* dest, const wchar_t* source);
+	EXPORT wchar_t* strncpy(wchar_t* s1, const wchar_t* s2, std::size_t cnt);
+	EXPORT wchar_t* strstr(wchar_t * dest, const wchar_t * source);
+	EXPORT std::size_t strlen(const char* str);
+	EXPORT std::size_t strlen(const wchar_t* str);
+	EXPORT int strncmp(const char* s1, const char* s2, std::size_t cnt);
+	EXPORT int strncmp(const wchar_t* s1, const wchar_t* s2, std::size_t cnt);
 
-EXPORT std::size_t ftoa10(char* out, std::size_t max, float number);
-EXPORT std::size_t dtoa10(char* out, std::size_t max, double number);
+	EXPORT std::size_t itoa10(char* out, std::size_t max, char number);
+	EXPORT std::size_t itoa10(char* out, std::size_t max, unsigned char number);
+	EXPORT std::size_t itoa10(char* out, std::size_t max, short number);
+	EXPORT std::size_t itoa10(char* out, std::size_t max, unsigned short number);
+	EXPORT std::size_t itoa10(char* out, std::size_t max, int number);
+	EXPORT std::size_t itoa10(char* out, std::size_t max, unsigned int number);
+	EXPORT std::size_t itoa10(wchar_t* out, std::size_t max, int number);
+	EXPORT std::size_t itoa10(wchar_t* out, std::size_t max, unsigned int number);
+	EXPORT std::size_t itoa10(char* out, std::size_t max, long number);
+	EXPORT std::size_t itoa10(char* out, std::size_t max, unsigned long number);
+	EXPORT std::size_t itoa10(wchar_t* out, std::size_t max, long number);
+	EXPORT std::size_t itoa10(wchar_t* out, std::size_t max, unsigned long number);
+	EXPORT std::size_t itoa10(char* out, std::size_t max, long long number);
+	EXPORT std::size_t itoa10(char* out, std::size_t max, unsigned long long number);
+	EXPORT std::size_t itoa10(wchar_t* out, std::size_t max, long long number);
+	EXPORT std::size_t itoa10(wchar_t* out, std::size_t max, unsigned long long number);
 
-EXPORT float fast_atof(const char* c);
-EXPORT float fast_atof(const char* c, const char** cout);
-EXPORT float fast_atof(const char** inout);
-EXPORT double fast_atod(const char* c);
-EXPORT double fast_atod(const char* c, const char** cout);
-EXPORT double fast_atod(const char** inout);
+	EXPORT std::size_t ftoa10(char* out, std::size_t max, float number);
+	EXPORT std::size_t dtoa10(char* out, std::size_t max, double number);
 
-EXPORT std::size_t strtoul10(const char* in, const char** out);
-EXPORT std::size_t strtoul8(const char* in, const char** out);
-EXPORT std::size_t strtoul16(const char* in, const char** out);
-EXPORT std::size_t HexDigitToDecimal(char in);
-EXPORT std::uint8_t HexOctetToDecimal(const char* in);
-EXPORT int strtol10(const char* in, const char** out);
-EXPORT std::size_t strtoul_cppstyle(const char* in, const char** out);
-EXPORT std::uint64_t strtoul10_64(const char* in, const char** out, unsigned int* max_inout);
+	EXPORT float fast_atof(const char* c);
+	EXPORT float fast_atof(const char* c, const char** cout);
+	EXPORT float fast_atof(const char** inout);
+	EXPORT double fast_atod(const char* c);
+	EXPORT double fast_atod(const char* c, const char** cout);
+	EXPORT double fast_atod(const char** inout);
 
-EXPORT char tolower(char in);
-EXPORT char toUpper(char in);
-EXPORT bool isHex(char in);
-EXPORT bool isUpper(char in);
-EXPORT bool isLower(char in);
-EXPORT bool isSpace(char in);
-EXPORT bool isSeparator(char in);
-EXPORT bool isNewLine(char in);
-EXPORT bool isLineEnd(char in);
-EXPORT bool isNumeric(char in);
-EXPORT bool isSpaceOrNewLine(char in);
-EXPORT bool isEndOfStream(char* it, char* end);
+	EXPORT std::size_t strtoul10(const char* in, const char** out);
+	EXPORT std::size_t strtoul8(const char* in, const char** out);
+	EXPORT std::size_t strtoul16(const char* in, const char** out);
+	EXPORT std::size_t HexDigitToDecimal(char in);
+	EXPORT std::uint8_t HexOctetToDecimal(const char* in);
+	EXPORT int strtol10(const char* in, const char** out);
+	EXPORT std::size_t strtoul_cppstyle(const char* in, const char** out);
+	EXPORT std::uint64_t strtoul10_64(const char* in, const char** out, unsigned int* max_inout);
 
-EXPORT wchar_t tolower(wchar_t in);
-EXPORT wchar_t toUpper(wchar_t in);
-EXPORT bool isHex(wchar_t in);
-EXPORT bool isUpper(wchar_t in);
-EXPORT bool isLower(wchar_t in);
-EXPORT bool isSpace(wchar_t in);
-EXPORT bool isSeparator(wchar_t in);
-EXPORT bool isNewLine(wchar_t in);
-EXPORT bool isLineEnd(wchar_t in);
-EXPORT bool isNumeric(wchar_t in);
-EXPORT bool isSpaceOrNewLine(wchar_t in);
-EXPORT bool isEndOfStream(wchar_t* it, wchar_t* end);
+	EXPORT char tolower(char in);
+	EXPORT char toUpper(char in);
+	EXPORT bool isHex(char in);
+	EXPORT bool isUpper(char in);
+	EXPORT bool isLower(char in);
+	EXPORT bool isSpace(char in);
+	EXPORT bool isSeparator(char in);
+	EXPORT bool isNewLine(char in);
+	EXPORT bool isLineEnd(char in);
+	EXPORT bool isNumeric(char in);
+	EXPORT bool isSpaceOrNewLine(char in);
+	EXPORT bool isEndOfStream(char* it, char* end);
 
-EXPORT bool skipSpaces(const char* in, const char** out);
-EXPORT bool skipSpaces(const char** inout);
-EXPORT char* skipSpaces(char* it, char* end, std::size_t& num);
-EXPORT char* skipLine(char* it, char* end, std::size_t& num);
-EXPORT char* skipSeparator(char* in);
-EXPORT bool skipSpacesAndLineEnd(const char* in, const char** out);
-EXPORT bool skipSpacesAndLineEnd(const wchar_t* in, const wchar_t** out);
-EXPORT bool skipSpacesAndLineEnd(const char** inout);
-EXPORT bool skipSpacesAndLineEnd(const wchar_t** inout);
+	EXPORT wchar_t tolower(wchar_t in);
+	EXPORT wchar_t toUpper(wchar_t in);
+	EXPORT bool isHex(wchar_t in);
+	EXPORT bool isUpper(wchar_t in);
+	EXPORT bool isLower(wchar_t in);
+	EXPORT bool isSpace(wchar_t in);
+	EXPORT bool isSeparator(wchar_t in);
+	EXPORT bool isNewLine(wchar_t in);
+	EXPORT bool isLineEnd(wchar_t in);
+	EXPORT bool isNumeric(wchar_t in);
+	EXPORT bool isSpaceOrNewLine(wchar_t in);
+	EXPORT bool isEndOfStream(wchar_t* it, wchar_t* end);
 
-EXPORT void skipToken(const char*& in);
-EXPORT bool getNextLine(const char*& buffer, char out[4096]);
-EXPORT bool tokenMatch(char*& in, const char* token, std::size_t len);
-EXPORT bool tokenMatchI(const char*& in, const char* token, std::size_t len);
-EXPORT std::string getNextToken(const char*& in);
-EXPORT std::wstring getNextToken(const wchar_t*& in);
+	EXPORT bool skipSpaces(const char* in, const char** out);
+	EXPORT bool skipSpaces(const char** inout);
+	EXPORT char* skipSpaces(char* it, char* end, std::size_t& num);
+	EXPORT char* skipLine(char* it, char* end, std::size_t& num);
+	EXPORT char* skipSeparator(char* in);
+	EXPORT bool skipSpacesAndLineEnd(const char* in, const char** out);
+	EXPORT bool skipSpacesAndLineEnd(const wchar_t* in, const wchar_t** out);
+	EXPORT bool skipSpacesAndLineEnd(const char** inout);
+	EXPORT bool skipSpacesAndLineEnd(const wchar_t** inout);
 
-EXPORT std::string directory(const std::string& path);
-EXPORT std::wstring directory(const std::wstring& path);
+	EXPORT void skipToken(const char*& in);
+	EXPORT bool getNextLine(const char*& buffer, char out[4096]);
+	EXPORT bool tokenMatch(char*& in, const char* token, std::size_t len);
+	EXPORT bool tokenMatchI(const char*& in, const char* token, std::size_t len);
+	EXPORT std::string getNextToken(const char*& in);
+	EXPORT std::wstring getNextToken(const wchar_t*& in);
 
-EXPORT std::string toLower(const std::string& _input);
-EXPORT std::wstring toLower(const std::wstring& _input);
+	EXPORT std::string directory(const std::string& path);
+	EXPORT std::wstring directory(const std::wstring& path);
 
-EXPORT void split(std::vector<std::string>& result, const std::string& _source, const std::string& _delims = "\t\n ");
-EXPORT void split(std::vector<std::wstring>& result, const std::wstring& _source, const std::wstring& _delims = L"\t\n ");
+	EXPORT std::string toLower(const std::string& _input);
+	EXPORT std::wstring toLower(const std::wstring& _input);
 
-EXPORT std::string ltrim(const std::string& str, char ch);
-EXPORT std::wstring ltrim(const std::wstring& str, wchar_t ch);
+	EXPORT void split(std::vector<std::string>& result, const std::string& _source, const std::string& _delims = "\t\n ");
+	EXPORT void split(std::vector<std::wstring>& result, const std::wstring& _source, const std::wstring& _delims = L"\t\n ");
 
-EXPORT std::string rtrim(const std::string& str, char ch);
-EXPORT std::wstring rtrim(const std::wstring& str, wchar_t ch);
+	EXPORT std::string ltrim(const std::string& str, char ch);
+	EXPORT std::wstring ltrim(const std::wstring& str, wchar_t ch);
 
-EXPORT std::string trim(const std::string& str, char ch);
-EXPORT std::wstring trim(const std::wstring& str, wchar_t ch);
+	EXPORT std::string rtrim(const std::string& str, char ch);
+	EXPORT std::wstring rtrim(const std::wstring& str, wchar_t ch);
 
-EXPORT std::size_t hex2str(std::string& out, const char* in, std::size_t size, std::size_t split);
-EXPORT std::size_t str2hex(std::vector<char>& out, const char* in, std::size_t size);
+	EXPORT std::string trim(const std::string& str, char ch);
+	EXPORT std::wstring trim(const std::wstring& str, wchar_t ch);
 
+	EXPORT std::size_t hex2str(std::string& out, const char* in, std::size_t size, std::size_t split);
+	EXPORT std::size_t str2hex(std::vector<char>& out, const char* in, std::size_t size);
 }
 
 _NAME_END

@@ -74,7 +74,7 @@ MaterialMaker::instanceInputLayout(MaterialManager& manager, MaterialPtr& materi
 	GraphicsInputLayoutDesc inputLayoutDesc;
 
 	std::string inputLayoutName = reader.getValue<std::string>("name");
-	
+
 	auto inputLayout = manager.getInputLayout(inputLayoutName);
 	if (inputLayout)
 		return;
@@ -99,7 +99,6 @@ MaterialMaker::instanceInputLayout(MaterialManager& manager, MaterialPtr& materi
 
 			inputLayoutDesc.addComponent(GraphicsVertexLayout(layoutName, 0, format));
 		}
-
 	} while (reader.setToNextChild());
 
 	inputLayout = manager.createInputLayout(inputLayoutName, inputLayoutDesc);
@@ -205,7 +204,7 @@ MaterialMaker::instanceShader(MaterialManager& manager, MaterialPtr& material, G
 				glslopt_shader_type glslopt_type = glslopt_shader_type::kGlslOptShaderVertex;
 				if (shaderStage == GraphicsShaderStage::GraphicsShaderStageFragment)
 					glslopt_type = glslopt_shader_type::kGlslOptShaderFragment;
-				
+
 				glslopt_target glslopt_target_type = glslopt_target::kGlslTargetOpenGLES20;
 				if (hlsl2glslLangType == GLLang::LANG_ES_300 || hlsl2glslLangType == GLLang::LANG_ES_310)
 					glslopt_target_type = glslopt_target::kGlslTargetOpenGLES30;
@@ -249,7 +248,7 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialPtr& material, Mat
 
 	if (!reader.setToFirstChild())
 		throw failure(__TEXT("Empty child : ") + reader.getCurrentNodePath());
-	
+
 	GraphicsStateDesc stateDesc;
 	GraphicsProgramDesc programDesc;
 	GraphicsInputLayoutPtr inputLayout;
@@ -345,7 +344,6 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialPtr& material, Mat
 		{
 			throw failure(__TEXT("Unkonwn node name : ") + nodeName + reader.getCurrentNodePath());
 		}
-
 	} while (reader.setToNextChild());
 
 	auto state = manager.createRenderState(stateDesc);
@@ -513,7 +511,7 @@ MaterialMaker::instanceSampler(MaterialManager& manager, MaterialPtr& material, 
 
 	std::string stateName;
 	std::string stateValue;
-	
+
 	do
 	{
 		if (!reader.getValue("name", stateName))
@@ -538,7 +536,6 @@ MaterialMaker::instanceSampler(MaterialManager& manager, MaterialPtr& material, 
 				samplerDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear);
 			else
 				throw failure(__TEXT("Unknown sampler filter type") + reader.getCurrentNodePath());
-
 		}
 		else if (stateName == "wrap")
 		{
@@ -570,9 +567,8 @@ MaterialMaker::instanceSampler(MaterialManager& manager, MaterialPtr& material, 
 			else
 				throw failure(__TEXT("Unknown sampler anis level ") + reader.getCurrentNodePath());
 		}
-
 	} while (reader.setToNextChild());
-	
+
 	sampler = manager.createSampler(samplerName, samplerDesc);
 	if (!sampler)
 		throw failure(__TEXT("Can't create sampler ") + reader.getCurrentNodePath());
@@ -719,7 +715,6 @@ MaterialMaker::load(MaterialManager& manager, iarchive& reader) except
 				instanceTech(manager, material, reader);
 			else if (name == "inputlayout")
 				instanceInputLayout(manager, material, reader);
-
 		} while (reader.setToNextChild());
 
 		if (material->setup())

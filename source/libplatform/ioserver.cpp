@@ -42,7 +42,7 @@ _NAME_BEGIN
 __ImplementSingleton(IoServer)
 
 IoServer::IoServer() noexcept
-    : _enablePackage(false)
+	: _enablePackage(false)
 {
 }
 
@@ -53,94 +53,94 @@ IoServer::~IoServer() noexcept
 IoServer&
 IoServer::mountArchives() noexcept
 {
-    _enablePackage = true;
+	_enablePackage = true;
 
-    this->setstate(ios_base::goodbit);
-    return *this;
+	this->setstate(ios_base::goodbit);
+	return *this;
 }
 
 IoServer&
 IoServer::unmountArchives() noexcept
 {
-    _enablePackage = false;
+	_enablePackage = false;
 
-    this->setstate(ios_base::goodbit);
-    return *this;
+	this->setstate(ios_base::goodbit);
+	return *this;
 }
 
 IoServer&
 IoServer::addAssign(const IoAssign& assign) noexcept
 {
-    auto path = assign.getPath();
-    if (*path.rbegin() != '\\' &&
-        *path.rbegin() != '/')
-    {
-        path += SEPARATOR;
-    }
+	auto path = assign.getPath();
+	if (*path.rbegin() != '\\' &&
+		*path.rbegin() != '/')
+	{
+		path += SEPARATOR;
+	}
 
-    if (_assignTable[assign.getName()].empty())
-    {
-        _assignTable[assign.getName()] = path;
+	if (_assignTable[assign.getName()].empty())
+	{
+		_assignTable[assign.getName()] = path;
 
-        this->setstate(ios_base::goodbit);
-        return *this;
-    }
+		this->setstate(ios_base::goodbit);
+		return *this;
+	}
 
-    this->setstate(ios_base::failbit);
-    return *this;
+	this->setstate(ios_base::failbit);
+	return *this;
 }
 
 IoServer&
 IoServer::removeAssign(const std::string& name) noexcept
 {
-    auto it = _assignTable.find(name);
-    if (it != _assignTable.end())
-    {
-        _assignTable.erase(it);
+	auto it = _assignTable.find(name);
+	if (it != _assignTable.end())
+	{
+		_assignTable.erase(it);
 
-        this->setstate(ios_base::goodbit);
-        return *this;
-    }
+		this->setstate(ios_base::goodbit);
+		return *this;
+	}
 
-    this->setstate(ios_base::failbit);
-    return *this;
+	this->setstate(ios_base::failbit);
+	return *this;
 }
 
 IoServer&
 IoServer::getAssign(const std::string& name, std::string& path) noexcept
 {
-    path = _assignTable.at(name);
-    if (path.empty())
-        this->setstate(ios_base::failbit);
-    else
-        this->setstate(ios_base::goodbit);
-    return *this;
+	path = _assignTable.at(name);
+	if (path.empty())
+		this->setstate(ios_base::failbit);
+	else
+		this->setstate(ios_base::goodbit);
+	return *this;
 }
 
 IoServer&
 IoServer::getResolveAssign(const std::string& url, std::string& resolvePath) noexcept
 {
-    std::string result = url;
+	std::string result = url;
 
-    int index = url.find_first_of(":", 0);
-    if (index > 1)
-    {
-        std::string path;
-        std::string assign = url.substr(0, index);
+	int index = url.find_first_of(":", 0);
+	if (index > 1)
+	{
+		std::string path;
+		std::string assign = url.substr(0, index);
 
-        bool success = this->getAssign(assign, path);
-        if (success)
-        {
-            result.replace(result.begin(), result.begin() + index + 1, path);
-            resolvePath = result;
+		bool success = this->getAssign(assign, path);
+		if (success)
+		{
+			result.replace(result.begin(), result.begin() + index + 1, path);
+			resolvePath = result;
 
-            this->setstate(ios_base::goodbit);
-            return *this;
-        }
-    }
+			this->setstate(ios_base::goodbit);
+			return *this;
+		}
+	}
 
-    this->setstate(ios_base::failbit);
-    return *this;
+	this->setstate(ios_base::failbit);
+	return *this;
 }
 
 IoServer&
@@ -286,8 +286,8 @@ IoServer::openFileFromDisk(StreamPtr& result, const std::string& path, open_mode
 IoServer&
 IoServer::deleteFile(const std::string& path) noexcept
 {
-    this->setstate(ios_base::failbit);
-    return *this;
+	this->setstate(ios_base::failbit);
+	return *this;
 }
 
 IoServer&
@@ -302,14 +302,14 @@ IoServer::existsFile(const std::string& path) noexcept
 	return *this;
 }
 
-IoServer& 
+IoServer&
 IoServer::existsFileFromFileSystem(const std::string& path) noexcept
 {
 	this->setstate(ios_base::failbit);
 	return *this;
 }
 
-IoServer& 
+IoServer&
 IoServer::existsFileFromDisk(const std::string& path) noexcept
 {
 	std::string resolvePath;
@@ -322,7 +322,7 @@ IoServer::existsFileFromDisk(const std::string& path) noexcept
 	{
 		this->clear(ios_base::goodbit);
 		return *this;
-	}		
+	}
 
 	for (auto& assign : _assignTable)
 	{
@@ -332,15 +332,14 @@ IoServer::existsFileFromDisk(const std::string& path) noexcept
 		{
 			this->clear(ios_base::goodbit);
 			return *this;
-		}		
-		
+		}
 	}
 
 	this->setstate(ios_base::failbit);
 	return *this;
 }
 
-IoServer& 
+IoServer&
 IoServer::copyFile(const std::string& path, const std::string& to) noexcept
 {
 	return *this;
@@ -349,22 +348,22 @@ IoServer::copyFile(const std::string& path, const std::string& to) noexcept
 IoServer&
 IoServer::createDirectory(const std::string& path) noexcept
 {
-    this->setstate(ios_base::failbit);
-    return *this;
+	this->setstate(ios_base::failbit);
+	return *this;
 }
 
 IoServer&
 IoServer::deleteDirectory(const std::string& path) noexcept
 {
-    this->setstate(ios_base::failbit);
-    return *this;
+	this->setstate(ios_base::failbit);
+	return *this;
 }
 
 IoServer&
 IoServer::existsDirectory(const std::string& path) noexcept
 {
-    this->setstate(ios_base::failbit);
-    return *this;
+	this->setstate(ios_base::failbit);
+	return *this;
 }
 
 _NAME_END

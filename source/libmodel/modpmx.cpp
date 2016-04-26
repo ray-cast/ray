@@ -600,7 +600,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 				IKAttr attr;
 				attr.IKBoneIndex = boneIndex;
 				attr.IKTargetBoneIndex = it.IKTargetBoneIndex;
-				attr.IKLimitedRadian = it.IKLimitedRadian;
+				attr.IKWeight = it.IKLimitedRadian;
 				attr.IKLinkCount = it.IKLinkCount;
 				attr.IKLoopCount = it.IKLoopCount;
 				for (auto& bone : it.IKList)

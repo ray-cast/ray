@@ -45,197 +45,197 @@ Model::Model() noexcept
 
 Model::~Model() noexcept
 {
-    this->clear();
+	this->clear();
 }
 
 bool
 Model::load(StreamReader& stream, ModelType type) noexcept
 {
-    if (emptyHandler())
-        GetModelInstanceList(*this);
+	if (emptyHandler())
+		GetModelInstanceList(*this);
 
-    _Myhandler impl;
-    if (this->find(stream, type, impl))
-    {
-        if (impl->doLoad(*this, stream))
-        {
-            for (auto& it : _meshes)
-            {
-                it->computeBoundingBox();
-            }
-            return true;
-        }
-    }
+	_Myhandler impl;
+	if (this->find(stream, type, impl))
+	{
+		if (impl->doLoad(*this, stream))
+		{
+			for (auto& it : _meshes)
+			{
+				it->computeBoundingBox();
+			}
+			return true;
+		}
+	}
 
-    return false;
+	return false;
 }
 
 void
 Model::clear() noexcept
 {
-    _name.clear();
-    _meshes.clear();
-    _textures.clear();
-    _materials.clear();
-    _animations.clear();
-    _lights.clear();
-    _cameras.clear();
+	_name.clear();
+	_meshes.clear();
+	_textures.clear();
+	_materials.clear();
+	_animations.clear();
+	_lights.clear();
+	_cameras.clear();
 }
 
 void
 Model::addMesh(MeshPropertyPtr mesh) noexcept
 {
-    _meshes.push_back(mesh);
+	_meshes.push_back(mesh);
 }
 
 void
 Model::addTexture(TexturePropertyPtr texture) noexcept
 {
-    _textures.push_back(texture);
+	_textures.push_back(texture);
 }
 
 void
 Model::addMaterial(MaterialPropertyPtr mat) noexcept
 {
-    _materials.push_back(mat);
+	_materials.push_back(mat);
 }
 
 void
 Model::addAnimtion(AnimationPropertyPtr anim) noexcept
 {
-    _animations.push_back(anim);
+	_animations.push_back(anim);
 }
 
 void
 Model::addLight(LightPropertyPtr light) noexcept
 {
-    _lights.push_back(light);
+	_lights.push_back(light);
 }
 
 void
 Model::addCamera(CameraPropertyPtr camera) noexcept
 {
-    _cameras.push_back(camera);
+	_cameras.push_back(camera);
 }
 
 Model::MeshList&
 Model::getMeshsList() noexcept
 {
-    return _meshes;
+	return _meshes;
 }
 
 Model::TextureList&
 Model::getTexturesList() noexcept
 {
-    return _textures;
+	return _textures;
 }
 
 Model::MaterialList&
 Model::getMaterialsList() noexcept
 {
-    return _materials;
+	return _materials;
 }
 
 Model::AnimList&
 Model::getAnimationList() noexcept
 {
-    return _animations;
+	return _animations;
 }
 
 Model::LightList&
 Model::getLightList() noexcept
 {
-    return _lights;
+	return _lights;
 }
 
 Model::CameraList&
 Model::getCameraList() noexcept
 {
-    return _cameras;
+	return _cameras;
 }
 
 const std::string&
 Model::getName() const noexcept
 {
-    return _name;
+	return _name;
 }
 
 const std::string&
 Model::getDirectory() const noexcept
 {
-    return _directory;
+	return _directory;
 }
 
 const Model::MeshList&
 Model::getMeshsList() const noexcept
 {
-    return _meshes;
+	return _meshes;
 }
 
 const Model::TextureList&
 Model::getTexturesList() const noexcept
 {
-    return _textures;
+	return _textures;
 }
 
 const Model::MaterialList&
 Model::getMaterialsList() const noexcept
 {
-    return _materials;
+	return _materials;
 }
 
 const Model::AnimList&
 Model::getAnimationList() const noexcept
 {
-    return _animations;
+	return _animations;
 }
 
 const Model::LightList&
 Model::getLightList() const noexcept
 {
-    return _lights;
+	return _lights;
 }
 
 const Model::CameraList&
 Model::getCameraList() const noexcept
 {
-    return _cameras;
+	return _cameras;
 }
 
 bool
 Model::hasMeshes() const noexcept
 {
-    return !_meshes.empty();
+	return !_meshes.empty();
 }
 
 bool
 Model::hasMaterials() const noexcept
 {
-    return !_materials.empty();
+	return !_materials.empty();
 }
 
 bool
 Model::hasLights() const noexcept
 {
-    return !_lights.empty();
+	return !_lights.empty();
 }
 
 bool
 Model::hasTextures() const noexcept
 {
-    return !_textures.empty();
+	return !_textures.empty();
 }
 
 bool
 Model::hasCameras() const noexcept
 {
-    return !_cameras.empty();
+	return !_cameras.empty();
 }
 
 bool
 Model::hasAnimations() const noexcept
 {
-    return !_animations.empty();
+	return !_animations.empty();
 }
 
 void
@@ -246,58 +246,58 @@ Model::applyProcess(int) noexcept
 bool
 Model::emptyHandler() const noexcept
 {
-    return _handlers.empty();
+	return _handlers.empty();
 }
 
 bool
 Model::addHandler(_Myhandler handler) noexcept
 {
-    assert(handler);
+	assert(handler);
 
-    std::string baked;
+	std::string baked;
 
-    for (auto it : _handlers)
-    {
-        if (it == handler)
-        {
-            return false;
-        }
-    }
+	for (auto it : _handlers)
+	{
+		if (it == handler)
+		{
+			return false;
+		}
+	}
 
-    _handlers.push_back(handler);
+	_handlers.push_back(handler);
 
-    return true;
+	return true;
 }
 
 bool
 Model::removeHandler(_Myhandler handler) noexcept
 {
-    assert(handler);
+	assert(handler);
 
-    auto it = std::find(_handlers.begin(), _handlers.end(), handler);
-    if (it != _handlers.end())
-    {
-        if (*it == handler)
-        {
-            _handlers.erase(it);
-            return true;
-        }
-    }
+	auto it = std::find(_handlers.begin(), _handlers.end(), handler);
+	if (it != _handlers.end())
+	{
+		if (*it == handler)
+		{
+			_handlers.erase(it);
+			return true;
+		}
+	}
 
-    return false;
+	return false;
 }
 
 bool
 Model::find(ModelType type, _Myhandler& out) const noexcept
 {
-    std::size_t index = (std::size_t)type;
-    if (_handlers.size() < index)
-    {
-        out = _handlers[index];
-        return true;
-    }
+	std::size_t index = (std::size_t)type;
+	if (_handlers.size() < index)
+	{
+		out = _handlers[index];
+		return true;
+	}
 
-    return false;
+	return false;
 }
 
 bool
@@ -307,33 +307,33 @@ Model::find(StreamReader& stream, _Myhandler& out) const noexcept
 		return false;
 
 	for (auto& it : _handlers)
-    {
-        stream.seekg(0, std::ios_base::beg);
+	{
+		stream.seekg(0, std::ios_base::beg);
 
-        if (it->doCanRead(stream))
-        {
-            stream.seekg(0, std::ios_base::beg);
+		if (it->doCanRead(stream))
+		{
+			stream.seekg(0, std::ios_base::beg);
 
-            out = it;
-            return true;
-        }
-    }
+			out = it;
+			return true;
+		}
+	}
 
-    return false;
+	return false;
 }
 
 bool
 Model::find(StreamReader& stream, ModelType type, _Myhandler& out) const noexcept
 {
-    if (type != MT_UNKNOWN)
-    {
-        if (this->find(type, out))
-        {
-            return true;
-        }
-    }
+	if (type != MT_UNKNOWN)
+	{
+		if (this->find(type, out))
+		{
+			return true;
+		}
+	}
 
-    return this->find(stream, out);
+	return this->find(stream, out);
 }
 
 _NAME_END

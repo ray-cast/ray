@@ -49,35 +49,35 @@ public:
 	SoundComponent() noexcept;
 	~SoundComponent() noexcept;
 
-    void setSoundBuffer(const std::string& name) noexcept;
+	void setSoundBuffer(const std::string& name) noexcept;
 	const std::string& getSoundBuffer() const noexcept;
 
-    void setVolume(float volume) noexcept;
-    void setMinVolume(float volume) noexcept;
-    void setMaxVolume(float volume) noexcept;
-    void setPitch(float pitch) noexcept;
-    void setMaxDistance(float maxdis) noexcept;
-    void setMinDistance(float mindis) noexcept;
+	void setVolume(float volume) noexcept;
+	void setMinVolume(float volume) noexcept;
+	void setMaxVolume(float volume) noexcept;
+	void setPitch(float pitch) noexcept;
+	void setMaxDistance(float maxdis) noexcept;
+	void setMinDistance(float mindis) noexcept;
 
-    float getVolume() const noexcept;
-    float getMinVolume() const noexcept;
-    float getMaxVolume() const noexcept;
-    float getPitch() const noexcept;
-    float getMaxDistance() const noexcept;
-    float getMinDistance() const noexcept;
+	float getVolume() const noexcept;
+	float getMinVolume() const noexcept;
+	float getMaxVolume() const noexcept;
+	float getPitch() const noexcept;
+	float getMaxDistance() const noexcept;
+	float getMinDistance() const noexcept;
 
 	void setSoundClip(const SoundClip& clip) noexcept;
 	void getSoundClip(SoundClip& clip) const noexcept;
 
-    void play() noexcept;
-    void stop() noexcept;
-    void pause() noexcept;
-    void loop(bool loop) noexcept;
+	void play() noexcept;
+	void stop() noexcept;
+	void pause() noexcept;
+	void loop(bool loop) noexcept;
 
-    bool isPlaying() const noexcept;
-    bool isStopped() const noexcept;
-    bool isPaused() const noexcept;
-    bool isLooping() const noexcept;
+	bool isPlaying() const noexcept;
+	bool isStopped() const noexcept;
+	bool isPaused() const noexcept;
+	bool isLooping() const noexcept;
 
 	void addPlayEndListener(std::function<void()> func) noexcept;
 	void removePlayEndListener(std::function<void()> func) noexcept;

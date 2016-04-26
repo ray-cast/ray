@@ -44,58 +44,58 @@ _NAME_BEGIN
 class EXPORT PhysicsScene
 {
 public:
-    struct EXPORT Setting
-    {
-        float length;
-        float mass;
-        float speed;
-        float skinWidth;
-        Vector3 gravity;
+	struct EXPORT Setting
+	{
+		float length;
+		float mass;
+		float speed;
+		float skinWidth;
+		Vector3 gravity;
 
-        AABB aabb;
+		AABB aabb;
 
-        Setting() noexcept;
-    };
+		Setting() noexcept;
+	};
 
 public:
-    PhysicsScene() noexcept;
-    virtual ~PhysicsScene() noexcept;
+	PhysicsScene() noexcept;
+	virtual ~PhysicsScene() noexcept;
 
-    void setup(const Setting& setting) noexcept;
-    void close() noexcept;
+	void setup(const Setting& setting) noexcept;
+	void close() noexcept;
 
-    void setLength(float length) noexcept;
-    void setMass(float mass) noexcept;
-    void setSpeed(float speed) noexcept;
-    void setSkitWindow(float width) noexcept;
-    void setGravity(const Vector3& gravity) noexcept;
+	void setLength(float length) noexcept;
+	void setMass(float mass) noexcept;
+	void setSpeed(float speed) noexcept;
+	void setSkitWindow(float width) noexcept;
+	void setGravity(const Vector3& gravity) noexcept;
 
-    float getLength() const noexcept;
-    float getMass() const noexcept;
-    float getSpeed() const noexcept;
-    float getSkitWindow() const noexcept;
-    const Vector3& getGravity() const noexcept;
+	float getLength() const noexcept;
+	float getMass() const noexcept;
+	float getSpeed() const noexcept;
+	float getSkitWindow() const noexcept;
+	const Vector3& getGravity() const noexcept;
 
-    void addRigidbody(btRigidBody* body) noexcept;
-    void removeRigidbody(btRigidBody* body) noexcept;
+	void addRigidbody(btRigidBody* body) noexcept;
+	void removeRigidbody(btRigidBody* body) noexcept;
 
-    void addCharacter(btCollisionObject* object) noexcept;
-    void removeCharacter(btCollisionObject* object) noexcept;
+	void addCharacter(btCollisionObject* object) noexcept;
+	void removeCharacter(btCollisionObject* object) noexcept;
 
-    void addAction(btActionInterface* action) noexcept;
-    void removeAction(btActionInterface* action) noexcept;
+	void addAction(btActionInterface* action) noexcept;
+	void removeAction(btActionInterface* action) noexcept;
 
-    void simulation(float delta) noexcept;
+	void simulation(float delta) noexcept;
 
 private:
 
-    Setting _setting;
+	Setting _setting;
 
-    btBroadphaseInterface* _broadphase;
-    btCollisionDispatcher* _dispatcher;
-    btDefaultCollisionConfiguration* _collisionConfiguration;
-    btSequentialImpulseConstraintSolver* _solver;
-    btDiscreteDynamicsWorld* _dynamicsWorld;
+	btBroadphaseInterface* _broadphase;
+	btCollisionDispatcher* _dispatcher;
+	btDefaultCollisionConfiguration* _collisionConfiguration;
+	btSequentialImpulseConstraintSolver* _solver;
+	btDiscreteDynamicsWorld* _dynamicsWorld;
 };
 
 _NAME_END

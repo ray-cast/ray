@@ -56,8 +56,8 @@ ALSoundSource::~ALSoundSource() noexcept
 void
 ALSoundSource::open() noexcept
 {
-    assert(_alSource == AL_NONE);
-    ::alGenSources(1, &_alSource);
+	assert(_alSource == AL_NONE);
+	::alGenSources(1, &_alSource);
 	::alSourcei(_alSource, AL_SOURCE_TYPE, AL_STREAMING);
 	::alSourcei(_alSource, AL_LOOPING, AL_FALSE);
 	::alSourcei(_alSource, AL_SOURCE_RELATIVE, AL_TRUE);
@@ -89,14 +89,14 @@ ALSoundSource::close() noexcept
 	_soundReader = nullptr;
 }
 
-void 
+void
 ALSoundSource::addSoundSourceListener(SoundSourceListener* listener) noexcept
 {
 	assert(std::find(_listeners.begin(), _listeners.end(), listener) == _listeners.end());
 	_listeners.push_back(listener);
 }
 
-void 
+void
 ALSoundSource::removeSoundSourceListener(SoundSourceListener* listener) noexcept
 {
 	auto it = std::find(_listeners.begin(), _listeners.end(), listener);
@@ -345,7 +345,7 @@ ALSoundSource::getMinDistance() const noexcept
 	return distance;
 }
 
-void 
+void
 ALSoundSource::getSoundClip(SoundClip& clip) const noexcept
 {
 	clip = _soundClip;
@@ -394,8 +394,8 @@ ALSoundSource::loop(bool loop) noexcept
 void
 ALSoundSource::pause() noexcept
 {
-    assert(_alSource != AL_NONE);
-    ::alSourcePause(_alSource);
+	assert(_alSource != AL_NONE);
+	::alSourcePause(_alSource);
 }
 
 bool
@@ -437,13 +437,13 @@ ALSoundSource::isPaused() const noexcept
 	return false;
 }
 
-bool 
+bool
 ALSoundSource::isLoop() const noexcept
 {
 	return _isLoop;
 }
 
-void 
+void
 ALSoundSource::_initSoundStream() noexcept
 {
 	_alSampleLengthTotal = _soundClip.length;
@@ -486,7 +486,7 @@ ALSoundSource::_playEnd() noexcept
 	_isPlaying = false;
 }
 
-void 
+void
 ALSoundSource::_clearSoundQueue() noexcept
 {
 	ALint processed = 0;

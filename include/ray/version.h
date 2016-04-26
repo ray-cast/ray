@@ -46,7 +46,7 @@ _NAME_BEGIN
  *  about Assimp. The string may include multiple lines.
  *  @return Pointer to static string.
  */
-    EXPORT const char*  GetLegalString(void);
+	EXPORT const char*  GetLegalString(void);
 
 // ---------------------------------------------------------------------------
 /** @brief Returns the current minor version number of Assimp.

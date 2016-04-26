@@ -212,7 +212,6 @@ ScriptBindActor::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectMethod("MeshFilter", "void setCombieInstnace(const CombineInstance& in)", CALLER(MeshComponent, setCombieInstnace), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("MeshFilter", "const BoundingBox& getBoundingBox() const", CALLER(MeshComponent, getBoundingBox), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("MeshFilter", "const BoundingBox& getBoundingBoxDownwards() const", CALLER(MeshComponent, getBoundingBoxDownwards), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	
 
 	r = engine->RegisterObjectType("PhysicsRigidbody", sizeof(PhysicsBodyComponentPtr), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("PhysicsRigidbody", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<PhysicsBodyComponentPtr>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
@@ -333,13 +332,13 @@ ScriptBindActor::getActive() const noexcept
 	return _object.lock()->getActive();
 }
 
-void 
+void
 ScriptBindActor::setTranslate(const Vector3& translate) noexcept
 {
 	_object.lock()->setTranslate(translate);
 }
 
-const Vector3& 
+const Vector3&
 ScriptBindActor::getTranslate() const noexcept
 {
 	return _object.lock()->getTranslate();
@@ -351,37 +350,37 @@ ScriptBindActor::setLookat(const Vector3& lookat) noexcept
 	_object.lock()->setLookAt(lookat);
 }
 
-const Vector3& 
+const Vector3&
 ScriptBindActor::getLookat() const noexcept
 {
 	return _object.lock()->getLookAt();
 }
 
-void 
+void
 ScriptBindActor::setUp(const Vector3& up) noexcept
 {
 	_object.lock()->setUpVector(up);
 }
 
-const Vector3& 
+const Vector3&
 ScriptBindActor::getUp() const noexcept
 {
 	return _object.lock()->getUpVector();
 }
 
-MeshComponentPtr 
+MeshComponentPtr
 ScriptBindActor::getMeshFilter() noexcept
 {
 	return _object.lock()->getComponent<MeshComponent>();
 }
 
-PhysicsBodyComponentPtr 
+PhysicsBodyComponentPtr
 ScriptBindActor::getPhysicsRigidbody() noexcept
 {
 	return _object.lock()->getComponent<PhysicsBodyComponent>();
 }
 
-PhysicsCharacterComponentPtr 
+PhysicsCharacterComponentPtr
 ScriptBindActor::getPhysicsCharacter() noexcept
 {
 	return _object.lock()->getComponent<PhysicsCharacterComponent>();

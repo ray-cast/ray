@@ -54,7 +54,7 @@ public:
 
 	Line2t(const Vector2t<T>& pt0, const Vector2t<T> pt1)
 		: pos0(pt0)
-		, pos1(pt1) 
+		, pos1(pt1)
 	{
 	}
 
@@ -111,131 +111,131 @@ template<typename T>
 class Line3t
 {
 public:
-    Vector3t<T> pos0;
-    Vector3t<T> pos1;
+	Vector3t<T> pos0;
+	Vector3t<T> pos1;
 
-    Line3t() {}
+	Line3t() {}
 
-    Line3t(const Vector3t<T>& pt0, const Vector3t<T>& pt1)
-        :pos0(pt0)
-        , pos1(pt1)
-    {
-    }
+	Line3t(const Vector3t<T>& pt0, const Vector3t<T>& pt1)
+		:pos0(pt0)
+		, pos1(pt1)
+	{
+	}
 
-    Vector3t<T> size() const { return pos1 - pos0; }
+	Vector3t<T> size() const { return pos1 - pos0; }
 
-    Vector3t<T> closestPoint(const Vector3t<T>& pt) const
-    {
-        Vector3t<T> ab = pos1 - pos0;
+	Vector3t<T> closestPoint(const Vector3t<T>& pt) const
+	{
+		Vector3t<T> ab = pos1 - pos0;
 
-        Vector3t<T> ac = pt - pos0;
+		Vector3t<T> ac = pt - pos0;
 
-        float t = ac * ab;
+		float t = ac * ab;
 
-        if (t <= static_cast<T>(0.0)) { return pos0; }
+		if (t <= static_cast<T>(0.0)) { return pos0; }
 
-        float denom = ab.dot();
+		float denom = ab.dot();
 
-        if (t >= denom) { return pos1; }
+		if (t >= denom) { return pos1; }
 
-        t = t / ab.dot();
+		t = t / ab.dot();
 
-        return pos0 + t * ab;
-    }
+		return pos0 + t * ab;
+	}
 
-    Vector3t<T> closest(const Line3t<T>& line) const
-    {
-        Vector3t<T> p1 = pos0;
-        Vector3t<T> q1 = pos1;
-        Vector3t<T> p2 = line.pos0;
-        Vector3t<T> q2 = line.pos1;
+	Vector3t<T> closest(const Line3t<T>& line) const
+	{
+		Vector3t<T> p1 = pos0;
+		Vector3t<T> q1 = pos1;
+		Vector3t<T> p2 = line.pos0;
+		Vector3t<T> q2 = line.pos1;
 
-        Vector3t<T> d1 = q1 - p1;
-        Vector3t<T> d2 = q2 = q2;
-        Vector3t<T> r = p1 - p2;
+		Vector3t<T> d1 = q1 - p1;
+		Vector3t<T> d2 = q2 = q2;
+		Vector3t<T> r = p1 - p2;
 
-        T a = d1.length();
-        T e = d2.length();
+		T a = d1.length();
+		T e = d2.length();
 
-        T f = d2 * r;
+		T f = d2 * r;
 
-        T s = 0.0, t = 0.0;
+		T s = 0.0, t = 0.0;
 
-        Vector3t<T> c1, c2;
+		Vector3t<T> c1, c2;
 
-        if (a <= EPSILON && e <= EPSILON)
-        {
-            s = t = 0.0;
-            c1 = p1;
-            c2 = p2;
-            return (c1 - c2) * (c1 - c2);
-        }
+		if (a <= EPSILON && e <= EPSILON)
+		{
+			s = t = 0.0;
+			c1 = p1;
+			c2 = p2;
+			return (c1 - c2) * (c1 - c2);
+		}
 
-        if (a < EPSILON)
-        {
-            s = 0.0;
-            t = f / e;
-            t = clamp(t, (T)0.0, (T)1.0);
-        }
-        else
-        {
-            T c = d1 * r;
-            if (e <= EPSILON)
-            {
-                t = 0.0;
-                s = clamp(-c / a, (T)0.0, (T)1.0);
-            }
-            else
-            {
-                T b = d1 * d2;
-                T denom = a * e - b * b;
+		if (a < EPSILON)
+		{
+			s = 0.0;
+			t = f / e;
+			t = clamp(t, (T)0.0, (T)1.0);
+		}
+		else
+		{
+			T c = d1 * r;
+			if (e <= EPSILON)
+			{
+				t = 0.0;
+				s = clamp(-c / a, (T)0.0, (T)1.0);
+			}
+			else
+			{
+				T b = d1 * d2;
+				T denom = a * e - b * b;
 
-                if (denom != 0.0)
-                    s = clamp((b*f - e*e) / denom, 0.0, 1.0);
-                else
-                    s = 0.0;
+				if (denom != 0.0)
+					s = clamp((b*f - e*e) / denom, 0.0, 1.0);
+				else
+					s = 0.0;
 
-                t = (b * s + f) / e;
+				t = (b * s + f) / e;
 
-                if (t < 0.0)
-                {
-                    t = 0.0;
-                    s = clamp(-c / a, 0.0, 1.0);
-                }
-                else if (t > 1.0)
-                {
-                    t = 1.0;
-                }
+				if (t < 0.0)
+				{
+					t = 0.0;
+					s = clamp(-c / a, 0.0, 1.0);
+				}
+				else if (t > 1.0)
+				{
+					t = 1.0;
+				}
 
-                s = clamp((b - c) / a, 0.0, 1.0);
-            }
-        }
+				s = clamp((b - c) / a, 0.0, 1.0);
+			}
+		}
 
-        c1 = p1 + d1 * s;
-        c2 = p2 + d2 * t;
-    }
+		c1 = p1 + d1 * s;
+		c2 = p2 + d2 * t;
+	}
 
-    float sqrDistance(const Vector3t<T>& pt) const
-    {
-        Vector3t<T> ab = pos1 - pos0;
+	float sqrDistance(const Vector3t<T>& pt) const
+	{
+		Vector3t<T> ab = pos1 - pos0;
 
-        Vector3t<T> ac = pt - pos0;
+		Vector3t<T> ac = pt - pos0;
 
-        float t = ac.dot(ab);
+		float t = ac.dot(ab);
 
-        if (t <= static_cast<T>(0.0)) return ac.dot();
+		if (t <= static_cast<T>(0.0)) return ac.dot();
 
-        float denom = ab.dot();
+		float denom = ab.dot();
 
-        if (t >= denom)
-        {
-            Vector3t<T> bc = pt - pos1;
+		if (t >= denom)
+		{
+			Vector3t<T> bc = pt - pos1;
 
-            return bc.dot();
-        }
+			return bc.dot();
+		}
 
-        return ac.dot() - t * t / denom;
-    }
+		return ac.dot() - t * t / denom;
+	}
 };
 
 _NAME_END

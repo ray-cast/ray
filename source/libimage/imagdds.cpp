@@ -47,7 +47,7 @@ typedef unsigned long   dds_ulong;
 typedef void            dds_void;
 typedef void*           dds_ptr;
 
-enum dds_bool 
+enum dds_bool
 {
 	DDS_FALSE = 0,
 	DDS_TRUE
@@ -55,7 +55,7 @@ enum dds_bool
 
 typedef dds_uint DDSCaps[4];
 
-struct DDPixelFormat 
+struct DDPixelFormat
 {
 	dds_uint    size;
 	dds_uint    flags;
@@ -67,13 +67,13 @@ struct DDPixelFormat
 	dds_uint    alpha_mask;
 };
 
-struct DDColorKey 
+struct DDColorKey
 {
 	dds_uint    low;
 	dds_uint    high;
 };
 
-struct DDSTextureInfo 
+struct DDSTextureInfo
 {
 	dds_ubyte   header[4];
 	dds_uint    size;
@@ -95,7 +95,7 @@ struct DDSTextureInfo
 	dds_uint    texture_stage;
 };
 
-struct DDSRawPixelData 
+struct DDSRawPixelData
 {
 	dds_uint        height;
 	dds_uint        width;
@@ -192,7 +192,7 @@ DDSHandler::~DDSHandler() noexcept
 {
 }
 
-bool 
+bool
 DDSHandler::doCanRead(StreamReader& stream) const noexcept
 {
 	static const std::uint8_t magic[] = { 'D', 'D', 'S', ' ' };
@@ -205,7 +205,7 @@ DDSHandler::doCanRead(StreamReader& stream) const noexcept
 	return false;
 }
 
-bool 
+bool
 DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 {
 	DDSTextureInfo info;
@@ -214,7 +214,7 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 		return false;
 
 	auto size = stream.size() - sizeof(info);
-	auto data = make_scope<char[]>(size);	
+	auto data = make_scope<char[]>(size);
 	if (!stream.read((char*)data.get(), size))
 		return false;
 
@@ -302,7 +302,7 @@ DDSHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	return true;
 }
 
-bool 
+bool
 DDSHandler::doSave(Image& image, StreamWrite& stream) noexcept
 {
 	return false;

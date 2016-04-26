@@ -109,7 +109,7 @@ private:
 
 	InputDevicePtr _inputDevice;
 	InputMousePtr _mouseCaptureDevice;
-	InputKeyboardPtr _keyboardCaptureDevice;	
+	InputKeyboardPtr _keyboardCaptureDevice;
 };
 
 _NAME_END

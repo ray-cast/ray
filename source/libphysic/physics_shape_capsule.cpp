@@ -41,9 +41,9 @@
 _NAME_BEGIN
 
 PhysicsShapeCapsule::PhysicsShapeCapsule() noexcept
-    : _shape(nullptr)
-    , _width(1)
-    , _height(1)
+	: _shape(nullptr)
+	, _width(1)
+	, _height(1)
 {
 }
 
@@ -54,50 +54,50 @@ PhysicsShapeCapsule::~PhysicsShapeCapsule() noexcept
 void
 PhysicsShapeCapsule::setup() noexcept
 {
-    assert(!_shape);
+	assert(!_shape);
 
-    _shape = new btCapsuleShape(_width, _height);
-    _shape->setUserPointer(this);
+	_shape = new btCapsuleShape(_width, _height);
+	_shape->setUserPointer(this);
 }
 
 void
 PhysicsShapeCapsule::close() noexcept
 {
-    if (_shape)
-    {
-        delete _shape;
-        _shape = nullptr;
-    }
+	if (_shape)
+	{
+		delete _shape;
+		_shape = nullptr;
+	}
 }
 
 void
 PhysicsShapeCapsule::setWidth(float width) noexcept
 {
-    _width = width;
+	_width = width;
 }
 
 void
 PhysicsShapeCapsule::setHeight(float height) noexcept
 {
-    _height = height;
+	_height = height;
 }
 
 float
 PhysicsShapeCapsule::getWidth() const noexcept
 {
-    return _width;
+	return _width;
 }
 
 float
 PhysicsShapeCapsule::getHeight() const noexcept
 {
-    return _height;
+	return _height;
 }
 
 btCollisionShape*
 PhysicsShapeCapsule::getCollisionShape() noexcept
 {
-    return _shape;
+	return _shape;
 }
 
 _NAME_END

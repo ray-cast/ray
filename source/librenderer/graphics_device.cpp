@@ -50,13 +50,13 @@ GraphicsDeviceDesc::~GraphicsDeviceDesc() noexcept
 {
 }
 
-void 
+void
 GraphicsDeviceDesc::setDeviceType(GraphicsDeviceType type) noexcept
 {
 	_deviceType = type;
 }
 
-GraphicsDeviceType 
+GraphicsDeviceType
 GraphicsDeviceDesc::getDeviceType() const noexcept
 {
 	return _deviceType;

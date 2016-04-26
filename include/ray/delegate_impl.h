@@ -61,52 +61,52 @@ public:
 	typedef delegate<Result(DELEGATE_TEMPLATE_ARGS)> _Myt;
 
 	typedef std::function<Result(DELEGATE_TEMPLATE_ARGS)> _MyFunction;
-    typedef std::vector<_MyFunction> DELEGATES;
-    typedef typename DELEGATES::iterator iterator;
-    typedef typename DELEGATES::const_iterator const_iterator;
-    typedef typename DELEGATES::size_type size_type;
+	typedef std::vector<_MyFunction> DELEGATES;
+	typedef typename DELEGATES::iterator iterator;
+	typedef typename DELEGATES::const_iterator const_iterator;
+	typedef typename DELEGATES::size_type size_type;
 
 public:
-    delegate() noexcept
-        : _functions(nullptr)
-    {
-    }
+	delegate() noexcept
+		: _functions(nullptr)
+	{
+	}
 
-    delegate(const _Myt& copy) noexcept
-        : _functions(nullptr)
-    {
-        this->assign(copy);
-    }
+	delegate(const _Myt& copy) noexcept
+		: _functions(nullptr)
+	{
+		this->assign(copy);
+	}
 
-    ~delegate() noexcept
-    {
-        this->clear();
-        delete _functions;
-    }
+	~delegate() noexcept
+	{
+		this->clear();
+		delete _functions;
+	}
 
-    template<typename _Function>
-    void attach(typename std::enable_if<std::is_function<_Function>::value, const _Function&>::type t1)
-    {
-        if (!_functions)
-            _functions = new DELEGATES;
+	template<typename _Function>
+	void attach(typename std::enable_if<std::is_function<_Function>::value, const _Function&>::type t1)
+	{
+		if (!_functions)
+			_functions = new DELEGATES;
 
-        _functions->push_back(_MyFunction(t1));
-    }
+		_functions->push_back(_MyFunction(t1));
+	}
 
-    template<typename _Functor, typename _This>
-    void attach(typename std::enable_if<std::is_function<_Functor>::value, _Functor>::type t1, const _This& t2)
-    {
-        this->attach(std::make_pair(t1, t2));
-    }
+	template<typename _Functor, typename _This>
+	void attach(typename std::enable_if<std::is_function<_Functor>::value, _Functor>::type t1, const _This& t2)
+	{
+		this->attach(std::make_pair(t1, t2));
+	}
 
-    template<typename _Functor, typename _This>
-    void attach(const std::pair<_Functor, _This>& pair)
-    {
-        if (!_functions)
-            _functions = new DELEGATES;
+	template<typename _Functor, typename _This>
+	void attach(const std::pair<_Functor, _This>& pair)
+	{
+		if (!_functions)
+			_functions = new DELEGATES;
 
-        _functions->push_back(std::bind(pair.second, pair.first));
-    }
+		_functions->push_back(std::bind(pair.second, pair.first));
+	}
 
 	void attach(const _MyFunction& callback)
 	{
@@ -116,8 +116,8 @@ public:
 		_functions->push_back(callback);
 	}
 
-    void attach(const _Myt& other)
-    {
+	void attach(const _Myt& other)
+	{
 		if (other._functions)
 		{
 			if (!_functions)
@@ -126,48 +126,48 @@ public:
 			for (auto& it : *other._functions)
 				_functions->push_back(it->clone());
 		}
-    }
+	}
 
-    template<typename T>
-    void assign(const T& t1)
-    {
-        this->clear();
-        this->attach(t1);
-    }
+	template<typename T>
+	void assign(const T& t1)
+	{
+		this->clear();
+		this->attach(t1);
+	}
 
-    template<typename _Functor, typename _This>
-    void assign(const _Functor& t1, const _This& t2)
-    {
-        this->clear();
-        this->attach(std::make_pair(t1, t2));
-    }
+	template<typename _Functor, typename _This>
+	void assign(const _Functor& t1, const _This& t2)
+	{
+		this->clear();
+		this->attach(std::make_pair(t1, t2));
+	}
 
-    template<typename _Functor, typename _This>
-    void assign(const std::pair<_This, _Functor>& pair)
-    {
-        this->clear();
-        this->attach(pair);
-    }
+	template<typename _Functor, typename _This>
+	void assign(const std::pair<_This, _Functor>& pair)
+	{
+		this->clear();
+		this->attach(pair);
+	}
 
-    void assign(const _Myt& copy)
-    {
-        assert(this != &copy);
-        this->clear();
-        this->attach(copy);
-    }
+	void assign(const _Myt& copy)
+	{
+		assert(this != &copy);
+		this->clear();
+		this->attach(copy);
+	}
 
-    Result run(DELEGATE_FUNCTION_PARAMS)
-    {
-        if (!_functions || _functions->empty())
-            return InvalidCall<Result>();
+	Result run(DELEGATE_FUNCTION_PARAMS)
+	{
+		if (!_functions || _functions->empty())
+			return InvalidCall<Result>();
 
-        return Partial<Result>::run(*this DELEGATE_COMMA DELEGATE_FUNCTION_ARGS);
-    }
+		return Partial<Result>::run(*this DELEGATE_COMMA DELEGATE_FUNCTION_ARGS);
+	}
 
-    size_type size() const noexcept
-    {
-        return (_functions ? _functions->size() : 0);
-    }
+	size_type size() const noexcept
+	{
+		return (_functions ? _functions->size() : 0);
+	}
 
 	bool find(const _MyFunction& callback) const
 	{
@@ -183,25 +183,25 @@ public:
 		return false;
 	}
 
-    template<typename _Functor>
-    void remove(const _Functor& t1)
-    {
-        if (!_functions) { return; }
+	template<typename _Functor>
+	void remove(const _Functor& t1)
+	{
+		if (!_functions) { return; }
 
-        auto it = _functions->begin();
-        auto end = _functions->end();
+		auto it = _functions->begin();
+		auto end = _functions->end();
 
 		_MyFunction func(t1);
 
-        for (; it != end; ++it)
-        {
-            if ((*it).target_type() == func.target_type())
-            {
-                _functions->erase(it);
-                break;
-            }
-        }
-    }
+		for (; it != end; ++it)
+		{
+			if ((*it).target_type() == func.target_type())
+			{
+				_functions->erase(it);
+				break;
+			}
+		}
+	}
 
 	template<typename _Functor, typename _This>
 	void remove(const _Functor& t1, const _This& t2)
@@ -246,16 +246,16 @@ public:
 		}
 	}
 
-    bool empty() noexcept
-    {
-        return (_functions && !_functions->empty() ? false : true);
-    }
+	bool empty() noexcept
+	{
+		return (_functions && !_functions->empty() ? false : true);
+	}
 
-    void clear() noexcept
-    {
-        if (!_functions) { return; }
-        _functions->clear();
-    }
+	void clear() noexcept
+	{
+		if (!_functions) { return; }
+		_functions->clear();
+	}
 
 	Result operator()(DELEGATE_FUNCTION_PARAMS)
 	{
@@ -316,19 +316,19 @@ private:
 	};
 
 private:
-    DELEGATES* _functions;
+	DELEGATES* _functions;
 };
 
 template <typename Result DELEGATE_COMMA DELEGATE_TEMPLATE_PARAMS>
 bool operator==(const delegate<Result(DELEGATE_TEMPLATE_ARGS)>& lhs, const delegate<Result(DELEGATE_TEMPLATE_ARGS)>& rhs) noexcept
 {
-    if (lhs._functions && rhs._functions)
-    {
-        if (lhs._function == rhs.function)
-            return true;
-        else
-            return *lhs._functions == *rhs._functions;
-    }
+	if (lhs._functions && rhs._functions)
+	{
+		if (lhs._function == rhs.function)
+			return true;
+		else
+			return *lhs._functions == *rhs._functions;
+	}
 }
 
 #undef DELEGATE_TEMPLATE_PARAMS

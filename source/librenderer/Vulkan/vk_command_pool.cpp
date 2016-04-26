@@ -114,7 +114,7 @@ VulkanCommandPool::setup(const GraphicsCommandPoolDesc& commandPooldesc) noexcep
 	return true;
 }
 
-void 
+void
 VulkanCommandPool::close() noexcept
 {
 	if (_vkCommandPool != VK_NULL_HANDLE)
@@ -124,7 +124,7 @@ VulkanCommandPool::close() noexcept
 	}
 }
 
-VkCommandPool 
+VkCommandPool
 VulkanCommandPool::getInstance() const noexcept
 {
 	return _vkCommandPool;

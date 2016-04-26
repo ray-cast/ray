@@ -48,33 +48,33 @@ public:
 	GuiMenuComponent() noexcept;
 	virtual ~GuiMenuComponent() noexcept;
 
-    void setVisibleSmooth(bool value) noexcept;
-    std::size_t getItemCount() const noexcept;
+	void setVisibleSmooth(bool value) noexcept;
+	std::size_t getItemCount() const noexcept;
 
-    void removeItemAt(std::size_t index) noexcept;
-    void removeAllItems() noexcept;
+	void removeItemAt(std::size_t index) noexcept;
+	void removeAllItems() noexcept;
 
-    void setItemDataAt(std::size_t index, const std::string& data) noexcept;
-    void clearItemDataAt(std::size_t index) noexcept;
-    void setItemIdAt(std::size_t index, const std::string& _id) noexcept;
-    std::string getItemIdAt(std::size_t index) noexcept;
+	void setItemDataAt(std::size_t index, const std::string& data) noexcept;
+	void clearItemDataAt(std::size_t index) noexcept;
+	void setItemIdAt(std::size_t index, const std::string& _id) noexcept;
+	std::string getItemIdAt(std::size_t index) noexcept;
 
-    void setItemNameAt(std::size_t index, const std::string& name) noexcept;
-    std::string getItemNameAt(size_t index) noexcept;
+	void setItemNameAt(std::size_t index, const std::string& name) noexcept;
+	std::string getItemNameAt(size_t index) noexcept;
 
-    std::size_t findItemIndexWith(const std::string& name) noexcept;
-    void setItemChildVisibleAt(std::size_t index, bool visible) noexcept;
+	std::size_t findItemIndexWith(const std::string& name) noexcept;
+	void setItemChildVisibleAt(std::size_t index, bool visible) noexcept;
 
-    void removeItemChildAt(std::size_t index) noexcept;
+	void removeItemChildAt(std::size_t index) noexcept;
 
-    void setItemTypeAt(std::size_t index, GuiMenuItemType type) noexcept;
-    GuiMenuItemType getItemTypeAt(std::size_t index) noexcept;
+	void setItemTypeAt(std::size_t index, GuiMenuItemType type) noexcept;
+	GuiMenuItemType getItemTypeAt(std::size_t index) noexcept;
 
-    void setPopupAccept(bool value) noexcept;
-    bool getPopupAccept() const noexcept;
+	void setPopupAccept(bool value) noexcept;
+	bool getPopupAccept() const noexcept;
 
-    void setVerticalAlignment(bool value) noexcept;
-    bool getVerticalAlignment() const noexcept;
+	void setVerticalAlignment(bool value) noexcept;
+	bool getVerticalAlignment() const noexcept;
 
 	void addMenuCtrlCloseListener(std::function<void()> func) noexcept;
 	void addMenuCtrlAcceptListener(std::function<void()> func) noexcept;

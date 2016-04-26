@@ -70,7 +70,6 @@ EGL2Types::setup() noexcept
 			pos = offset + length;
 		}
 
-
 		std::intptr_t length = pos - offset;
 		if (length < 0)
 			return false;
@@ -838,7 +837,7 @@ EGL2Types::asTextureInternalFormat(GraphicsFormat format) noexcept
 	}
 
 	GL_PLATFORM_ASSERT(internalFormat != GL_INVALID_ENUM, "Invalid texture internal format.")
-	return internalFormat;
+		return internalFormat;
 }
 
 GLenum

@@ -44,36 +44,36 @@ _NAME_BEGIN
 class EXPORT MemoryBuf : public StreamBuf
 {
 public:
-    MemoryBuf() noexcept;
-    ~MemoryBuf() noexcept;
+	MemoryBuf() noexcept;
+	~MemoryBuf() noexcept;
 
-    bool open(ios_base::openmode mode) noexcept;
-    bool close() noexcept;
+	bool open(ios_base::openmode mode) noexcept;
+	bool close() noexcept;
 
-    streamsize read(char* str, std::streamsize cnt) noexcept;
-    streamsize write(const char* str, std::streamsize cnt) noexcept;
+	streamsize read(char* str, std::streamsize cnt) noexcept;
+	streamsize write(const char* str, std::streamsize cnt) noexcept;
 
-    streamoff seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
-    streamoff tellg() noexcept;
+	streamoff seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
+	streamoff tellg() noexcept;
 
-    streamsize size() const noexcept;
-    void resize(streamsize size) noexcept;
+	streamsize size() const noexcept;
+	void resize(streamsize size) noexcept;
 
-    char* map() noexcept;
-    void unmap() noexcept;
-    bool isMapping() const noexcept;
+	char* map() noexcept;
+	void unmap() noexcept;
+	bool isMapping() const noexcept;
 
-    bool is_open() const noexcept;
+	bool is_open() const noexcept;
 
-    int flush() noexcept;
+	int flush() noexcept;
 
 private:
 
-    bool _isMappinged;
+	bool _isMappinged;
 
 	streamoff _next;
 
-    std::vector<char> _data;
+	std::vector<char> _data;
 };
 
 class EXPORT MemoryReader final : public StreamReader
@@ -112,17 +112,17 @@ private:
 class EXPORT MemoryStream final : public Stream
 {
 public:
-    MemoryStream() noexcept;
-    ~MemoryStream() noexcept;
+	MemoryStream() noexcept;
+	~MemoryStream() noexcept;
 
-    void resize(streamsize size) noexcept;
+	void resize(streamsize size) noexcept;
 
-    char* map() noexcept;
-    void unmap() noexcept;
-    bool isMapping() const noexcept;
+	char* map() noexcept;
+	void unmap() noexcept;
+	bool isMapping() const noexcept;
 
 private:
-    MemoryBuf _buf;
+	MemoryBuf _buf;
 };
 
 _NAME_END

@@ -52,7 +52,7 @@ SoundListenerComponent::~SoundListenerComponent() noexcept
 {
 }
 
-void 
+void
 SoundListenerComponent::setVolume(float volume) noexcept
 {
 	if (_volume != volume)
@@ -60,16 +60,16 @@ SoundListenerComponent::setVolume(float volume) noexcept
 		if (_listener)
 			_listener->setVolume(volume);
 		_volume = volume;
-	}	
+	}
 }
 
-float 
+float
 SoundListenerComponent::getVolume() const noexcept
 {
 	return _volume;
 }
 
-void 
+void
 SoundListenerComponent::load(iarchive& reader) noexcept
 {
 	GameComponent::load(reader);
@@ -77,7 +77,7 @@ SoundListenerComponent::load(iarchive& reader) noexcept
 	reader >> make_archive(_volume, "volume");
 }
 
-void 
+void
 SoundListenerComponent::save(oarchive& write) noexcept
 {
 	GameComponent::save(write);
@@ -85,7 +85,7 @@ SoundListenerComponent::save(oarchive& write) noexcept
 	write << make_archive(_volume, "volume");
 }
 
-GameComponentPtr 
+GameComponentPtr
 SoundListenerComponent::clone() const noexcept
 {
 	auto component = std::make_shared<SoundListenerComponent>();

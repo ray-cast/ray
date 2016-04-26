@@ -210,7 +210,7 @@ ScriptBindMath::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectMethod("float4", "float length2() const", asMETHOD(float4, length2), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("float4", "void cross(const float4& in) const", asMETHODPR(float4, cross, (const float4&), void), asCALL_THISCALL); assert(r >= 0);
 	r = engine->RegisterObjectMethod("float4", "void cross(const float4& in, const float4& in) const", asMETHODPR(float4, cross, (const float4&, const float4&), void), asCALL_THISCALL); assert(r >= 0);
-	
+
 	// float3x3
 	r = engine->RegisterObjectType("float3x3", sizeof(float3x3), asOBJ_VALUE | asGetTypeTraits<float3x3>()); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("float3x3", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<float3x3>), asCALL_CDECL_OBJFIRST); assert(r >= 0);

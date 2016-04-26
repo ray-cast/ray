@@ -44,11 +44,11 @@ _NAME_BEGIN
 class EXPORT ALSoundSource final : public SoundSource
 {
 public:
-    ALSoundSource() noexcept;
-    virtual ~ALSoundSource() noexcept;
+	ALSoundSource() noexcept;
+	virtual ~ALSoundSource() noexcept;
 
-    virtual void open() noexcept;
-    virtual void close() noexcept;
+	virtual void open() noexcept;
+	virtual void close() noexcept;
 
 	virtual void setSoundReader(SoundReaderPtr ptr) noexcept;
 	virtual SoundReaderPtr getSoundBuffer() const noexcept;
@@ -79,9 +79,9 @@ public:
 	virtual float getMaxDistance() const noexcept;
 	virtual float getMinDistance() const noexcept;
 
-    virtual void play(bool play) noexcept;
+	virtual void play(bool play) noexcept;
 	virtual void loop(bool loop) noexcept;
-    virtual void pause() noexcept;
+	virtual void pause() noexcept;
 
 	virtual bool isPlaying() const noexcept;
 	virtual bool isStopped() const noexcept;
@@ -103,7 +103,7 @@ private:
 	bool _isPlaying;
 	bool _isPlayEnd;
 
-    ALuint  _alSource;
+	ALuint  _alSource;
 	ALuint  _alBuffer[2];
 	ALsizei _alBufferSize;
 	ALenum  _alFormat;

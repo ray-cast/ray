@@ -47,7 +47,7 @@ public:
 	GraphicsDataDesc() noexcept;
 	GraphicsDataDesc(GraphicsDataType type, std::uint32_t usage, const void* data, std::uint32_t size, std::uint32_t stride) noexcept;
 	~GraphicsDataDesc() noexcept;
-	
+
 	void setType(GraphicsDataType type) noexcept;
 	GraphicsDataType getType() const noexcept;
 

@@ -310,7 +310,7 @@ struct GuiMenuItemType
 		MAX
 	};
 
-	GuiMenuItemType(Enum value = MAX) 
+	GuiMenuItemType(Enum value = MAX)
 		: _value(value)
 	{
 	}
@@ -349,7 +349,6 @@ struct GuiMenuItemType
 private:
 	Enum _value;
 };
-
 
 inline bool operator == (GuiMenuItemType const& a, GuiMenuItemType const& b)
 {

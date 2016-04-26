@@ -45,57 +45,57 @@ _NAME_BEGIN
 
 enum PHYDataType
 {
-    UCHAR,
-    SHORT,
-    INTEGER,
-    FLOAT,
+	UCHAR,
+	SHORT,
+	INTEGER,
+	FLOAT,
 };
 
 class EXPORT PhysicsShapeTerrain : public PhysicsShape
 {
 public:
-    PhysicsShapeTerrain() noexcept;
-    ~PhysicsShapeTerrain() noexcept;
+	PhysicsShapeTerrain() noexcept;
+	~PhysicsShapeTerrain() noexcept;
 
-    void setup() noexcept;
-    void close() noexcept;
+	void setup() noexcept;
+	void close() noexcept;
 
-    void setHeightMap(std::size_t w, std::size_t z, PHYDataType type, const char* data) noexcept;
+	void setHeightMap(std::size_t w, std::size_t z, PHYDataType type, const char* data) noexcept;
 
-    void setSize(const Vector3& size) noexcept;
-    const Vector3& getSize() const noexcept;
+	void setSize(const Vector3& size) noexcept;
+	const Vector3& getSize() const noexcept;
 
-    void setMinHeight(float min);
-    void setMaxHeight(float max);
-    void setScaleHeight(float scale) noexcept;
+	void setMinHeight(float min);
+	void setMaxHeight(float max);
+	void setScaleHeight(float scale) noexcept;
 
-    float getMinHeight() const noexcept;
-    float getMaxHeight() const noexcept;
-    float getScaleHeight() const noexcept;
+	float getMinHeight() const noexcept;
+	float getMaxHeight() const noexcept;
+	float getScaleHeight() const noexcept;
 
 protected:
 
-    btCollisionShape* getCollisionShape() noexcept;
+	btCollisionShape* getCollisionShape() noexcept;
 
 private:
 
-    std::size_t _width;
-    std::size_t _depth;
+	std::size_t _width;
+	std::size_t _depth;
 
-    Vector3 _size;
+	Vector3 _size;
 
-    float _minHeight;
-    float _maxHeight;
+	float _minHeight;
+	float _maxHeight;
 
-    float _scaleHeight;
+	float _scaleHeight;
 
-    bool _flipQuadEdges;
+	bool _flipQuadEdges;
 
-    PHYDataType _type;
+	PHYDataType _type;
 
-    std::vector<char> _data;
+	std::vector<char> _data;
 
-    btHeightfieldTerrainShape* _shape;
+	btHeightfieldTerrainShape* _shape;
 };
 
 _NAME_END

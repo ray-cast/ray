@@ -40,94 +40,94 @@ template<>
 class basic_format<_FORMAT_TYPE_>
 {
 public:
-    typedef _FORMAT_TYPE_ _Elem;
-    typedef std::char_traits<_Elem> _Traits;
+	typedef _FORMAT_TYPE_ _Elem;
+	typedef std::char_traits<_Elem> _Traits;
 
-    typedef basic_format<_Elem, _Traits> _Myt;
-    typedef std::basic_string<_Elem, _Traits> _Mystr;
-    typedef std::basic_ostringstream<_Elem, std::char_traits<_Elem>, std::allocator<_Elem>> _Myosstr;
-    typedef std::basic_istringstream<_Elem, std::char_traits<_Elem>, std::allocator<_Elem>> _Myisstr;
+	typedef basic_format<_Elem, _Traits> _Myt;
+	typedef std::basic_string<_Elem, _Traits> _Mystr;
+	typedef std::basic_ostringstream<_Elem, std::char_traits<_Elem>, std::allocator<_Elem>> _Myosstr;
+	typedef std::basic_istringstream<_Elem, std::char_traits<_Elem>, std::allocator<_Elem>> _Myisstr;
 
-    basic_format(const _Mystr& _d) noexcept
-        : _str(_d)
-    {
-    }
+	basic_format(const _Mystr& _d) noexcept
+		: _str(_d)
+	{
+	}
 
-    template <typename T>
+	template <typename T>
 	_Myt& operator % (T in) noexcept
-    {
-        _Myosstr ss;
-        ss << in;
-        _chunks.push_back(ss.str());
-        return *this;
-    }
+	{
+		_Myosstr ss;
+		ss << in;
+		_chunks.push_back(ss.str());
+		return *this;
+	}
 
-    // no explicit
-    operator _Mystr() const noexcept
-    {
-        _Mystr res;
+	// no explicit
+	operator _Mystr() const noexcept
+	{
+		_Mystr res;
 
-        std::size_t start = 0, last = 0;
+		std::size_t start = 0, last = 0;
 
-        std::vector<_Mystr>::const_iterator chunkin = _chunks.begin();
+		std::vector<_Mystr>::const_iterator chunkin = _chunks.begin();
 
-        for (start = _str.find('%'); start != _Mystr::npos; start = _str.find('%', last))
-        {
-            res += _str.substr(last, start - last);
+		for (start = _str.find('%'); start != _Mystr::npos; start = _str.find('%', last))
+		{
+			res += _str.substr(last, start - last);
 
-            last = start + 2;
+			last = start + 2;
 
-            if (_str[start + 1] == '%')
-            {
-                res += '%';
-                continue;
-            }
+			if (_str[start + 1] == '%')
+			{
+				res += '%';
+				continue;
+			}
 
-            if (chunkin == _chunks.end())
-                break;
+			if (chunkin == _chunks.end())
+				break;
 
-            _Mystr str = *chunkin++;
+			_Mystr str = *chunkin++;
 
-            if (_str[start + 1] == 'p')
-            {
-                std::intptr_t ptr;
-                _Myisstr is(str);
-                is >> ptr;
+			if (_str[start + 1] == 'p')
+			{
+				std::intptr_t ptr;
+				_Myisstr is(str);
+				is >> ptr;
 
-                _Myosstr ss;
-
-#ifdef _FORMAT_UNICODE_
-                ss << L"0x" << std::hex << ptr;
-#else
-                ss << "0x" << std::hex << ptr;
-#endif
-                str = ss.str();
-            }
-            else if (_str[start + 1] == 'P')
-            {
-                std::intptr_t ptr;
-                _Myisstr is(str);
-                is >> ptr;
-
-                _Myosstr ss;
+				_Myosstr ss;
 
 #ifdef _FORMAT_UNICODE_
-                ss << L"0x" << std::hex << std::uppercase << ptr;
+				ss << L"0x" << std::hex << ptr;
 #else
-                ss << "0x" << std::hex << std::uppercase << ptr;
+				ss << "0x" << std::hex << ptr;
 #endif
-                str = ss.str();
-            }
+				str = ss.str();
+			}
+			else if (_str[start + 1] == 'P')
+			{
+				std::intptr_t ptr;
+				_Myisstr is(str);
+				is >> ptr;
 
-            res += str;
-        }
+				_Myosstr ss;
 
-        return (res += _str.substr(last));
-    }
+#ifdef _FORMAT_UNICODE_
+				ss << L"0x" << std::hex << std::uppercase << ptr;
+#else
+				ss << "0x" << std::hex << std::uppercase << ptr;
+#endif
+				str = ss.str();
+			}
+
+			res += str;
+		}
+
+		return (res += _str.substr(last));
+	}
 
 private:
-    _Mystr _str;
-    std::vector<_Mystr> _chunks;
+	_Mystr _str;
+	std::vector<_Mystr> _chunks;
 };
 
 #endif

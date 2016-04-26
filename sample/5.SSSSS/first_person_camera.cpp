@@ -197,7 +197,7 @@ FirstPersonCameraComponent::rotateCamera(float mouseX, float mouseY, float lastX
 
 	if (angle > -90.0 && angle < 90.0)
 		rotateCamera(angleX, this->getGameObject()->getRight());
-		
+
 	rotateCamera(angleY, ray::float3::UnitY);
 }
 

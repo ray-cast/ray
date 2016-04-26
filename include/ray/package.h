@@ -44,12 +44,12 @@ _NAME_BEGIN
 class EXPORT Package
 {
 public:
-    Package() noexcept;
-    virtual ~Package() noexcept;
+	Package() noexcept;
+	virtual ~Package() noexcept;
 
 private:
-    Package(const Package&) noexcept = delete;
-    Package& operator=(const Package&) noexcept = delete;
+	Package(const Package&) noexcept = delete;
+	Package& operator=(const Package&) noexcept = delete;
 };
 
 _NAME_END

@@ -358,42 +358,42 @@ GuiFeature::~GuiFeature() noexcept
 {
 }
 
-void 
+void
 GuiFeature::setCoreProfile(const std::string& core) except
 {
 	assert(_platform);
 	_platform->setCoreProfile(core);
 }
 
-const std::string& 
+const std::string&
 GuiFeature::getCoreProfile() const noexcept
 {
 	assert(_platform);
 	return _platform->getCoreProfile();
 }
 
-void 
+void
 GuiFeature::setImageLoader(GuiImageLoaderPtr loader) noexcept
 {
 	assert(_platform);
 	_platform->setImageLoader(loader);
 }
 
-GuiImageLoaderPtr 
+GuiImageLoaderPtr
 GuiFeature::getImageLoader() const noexcept
 {
 	assert(_platform);
 	return _platform->getImageLoader();
 }
 
-void 
+void
 GuiFeature::setViewport(int w, int h) noexcept
 {
 	assert(_platform);
 	_platform->setViewport(w, h);
 }
 
-void 
+void
 GuiFeature::getViewport(int& w, int& h) noexcept
 {
 	assert(_platform);

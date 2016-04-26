@@ -46,14 +46,14 @@ class EXPORT MSWInputKeyboard : public InputKeyboard
 {
 	__DeclareSubInterface(MSWInputKeyboard, InputKeyboard)
 public:
-    MSWInputKeyboard() noexcept;
-    virtual ~MSWInputKeyboard() noexcept;
+	MSWInputKeyboard() noexcept;
+	virtual ~MSWInputKeyboard() noexcept;
 
-    virtual bool getKeyState(InputKey::Code key) const noexcept;
+	virtual bool getKeyState(InputKey::Code key) const noexcept;
 
 private:
-    MSWInputKeyboard(const MSWInputKeyboard&) noexcept = delete;
-    MSWInputKeyboard& operator=(const MSWInputKeyboard&) noexcept = delete;
+	MSWInputKeyboard(const MSWInputKeyboard&) noexcept = delete;
+	MSWInputKeyboard& operator=(const MSWInputKeyboard&) noexcept = delete;
 };
 
 _NAME_END

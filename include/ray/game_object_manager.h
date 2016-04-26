@@ -46,8 +46,8 @@ class EXPORT GameObjectManager final : public GameFeature
 	__DeclareSubClass(GameObjectManager, GameFeature)
 	__DeclareSingleton(GameObjectManager)
 public:
-    GameObjectManager() noexcept;
-    ~GameObjectManager() noexcept;
+	GameObjectManager() noexcept;
+	~GameObjectManager() noexcept;
 
 	GameObjectPtr findObject(const std::string& name) noexcept;
 	GameObjectPtr findActiveObject(const std::string& name) noexcept;
@@ -71,7 +71,7 @@ private:
 
 	bool _hasEmptyActors;
 
-    std::vector<std::size_t> _emptyLists;
+	std::vector<std::size_t> _emptyLists;
 	std::vector<GameObject*> _instanceLists;
 	std::vector<GameObject*> _activeActors;
 };

@@ -44,85 +44,85 @@ _NAME_BEGIN
 class CombineInstance
 {
 public:
-    struct Instance
-    {
-        Matrix4x4 transform;
-        MeshPropertyPtr mesh;
+	struct Instance
+	{
+		Matrix4x4 transform;
+		MeshPropertyPtr mesh;
 
-        void setMesh(MeshPropertyPtr other)
-        {
-            mesh = other;
-        }
+		void setMesh(MeshPropertyPtr other)
+		{
+			mesh = other;
+		}
 
-        MeshPropertyPtr getMesh() const
-        {
-            return mesh;
-        }
+		MeshPropertyPtr getMesh() const
+		{
+			return mesh;
+		}
 
-        void setTransform(const float4x4& m)
-        {
-            transform = m;
-        }
+		void setTransform(const float4x4& m)
+		{
+			transform = m;
+		}
 
 		void makeTransform(const float3& translate, const EulerAngles& euler, const float3& scale)
 		{
 			transform.makeTransform(translate, Quaternion().makeRotate(euler), scale);
 		}
 
-        const Matrix4x4& getTransform() const
-        {
-            return transform;
-        }
-    };
+		const Matrix4x4& getTransform() const
+		{
+			return transform;
+		}
+	};
 
 public:
-    CombineInstance() noexcept
-    {
-    }
+	CombineInstance() noexcept
+	{
+	}
 
-    CombineInstance(std::size_t size)
-    {
-        _instances.resize(size);
-        for (auto& it : _instances)
-            it.transform.loadIdentity();
-    }
+	CombineInstance(std::size_t size)
+	{
+		_instances.resize(size);
+		for (auto& it : _instances)
+			it.transform.loadIdentity();
+	}
 
-    ~CombineInstance() noexcept
-    {
-    }
+	~CombineInstance() noexcept
+	{
+	}
 
-    void resize(std::size_t size)
-    {
-        _instances.resize(size);
-    }
+	void resize(std::size_t size)
+	{
+		_instances.resize(size);
+	}
 
-    bool empty() const noexcept
-    {
-        return _instances.empty();
-    }
+	bool empty() const noexcept
+	{
+		return _instances.empty();
+	}
 
-    Instance& at(std::size_t i)
-    {
-        return _instances[i];
-    }
+	Instance& at(std::size_t i)
+	{
+		return _instances[i];
+	}
 
-    Instance& operator[](std::size_t i)
-    {
-        return _instances[i];
-    }
+	Instance& operator[](std::size_t i)
+	{
+		return _instances[i];
+	}
 
-    const std::vector<Instance>& getInstances() const noexcept
-    {
-        return _instances;
-    }
+	const std::vector<Instance>& getInstances() const noexcept
+	{
+		return _instances;
+	}
 
-    void push_back(Instance& instance)
-    {
-        _instances.push_back(instance);
-    }
+	void push_back(Instance& instance)
+	{
+		_instances.push_back(instance);
+	}
 
 private:
-    std::vector<Instance> _instances;
+	std::vector<Instance> _instances;
 };
 
 _NAME_END

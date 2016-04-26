@@ -56,21 +56,21 @@ private:
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 
-    void setActive(bool active) noexcept;
-    bool getActive() const noexcept;
+	void setActive(bool active) noexcept;
+	bool getActive() const noexcept;
 
-    void setTranslate(const Vector3& translate) noexcept;
-    const Vector3& getTranslate() const noexcept;
+	void setTranslate(const Vector3& translate) noexcept;
+	const Vector3& getTranslate() const noexcept;
 
-    void setLookat(const Vector3& lookat) noexcept;
-    const Vector3& getLookat() const noexcept;
+	void setLookat(const Vector3& lookat) noexcept;
+	const Vector3& getLookat() const noexcept;
 
-    void setUp(const Vector3& up) noexcept;
-    const Vector3& getUp() const noexcept;
+	void setUp(const Vector3& up) noexcept;
+	const Vector3& getUp() const noexcept;
 
 	MeshComponentPtr getMeshFilter() noexcept;
 	PhysicsBodyComponentPtr getPhysicsRigidbody() noexcept;
-	PhysicsCharacterComponentPtr getPhysicsCharacter() noexcept;	
+	PhysicsCharacterComponentPtr getPhysicsCharacter() noexcept;
 
 private:
 

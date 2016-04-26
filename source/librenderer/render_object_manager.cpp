@@ -87,7 +87,7 @@ DefaultRenderDataManager::assginVisiableLight(CameraPtr camera) noexcept
 	}
 }
 
-void 
+void
 DefaultRenderDataManager::assginVisiableObject(CameraPtr camera) noexcept
 {
 	_visiable.clear();
@@ -104,7 +104,7 @@ DefaultRenderDataManager::assginVisiableObject(CameraPtr camera) noexcept
 	}
 }
 
-void 
+void
 DefaultRenderDataManager::assginVisiable(CameraPtr camera) noexcept
 {
 	assert(camera);
@@ -135,13 +135,13 @@ DefaultRenderDataManager::assginVisiable(CameraPtr camera) noexcept
 	}
 }
 
-void 
+void
 DefaultRenderDataManager::sortMaterial(RenderObjects& list) noexcept
 {
 	std::sort(list.begin(), list.end(),
 		[](RenderObjectPtr& lh, RenderObjectPtr& rh)
 	{
-		MaterialPtr m1, m2; 
+		MaterialPtr m1, m2;
 		if (lh->isInstanceOf<Geometry>())
 			m1 = lh->downcast<Geometry>()->getMaterial();
 
@@ -152,7 +152,7 @@ DefaultRenderDataManager::sortMaterial(RenderObjects& list) noexcept
 	});
 }
 
-void 
+void
 DefaultRenderDataManager::sortDistance(OcclusionCullList& list) noexcept
 {
 	auto& iter = list.iter();
@@ -185,7 +185,7 @@ DefaultRenderDataManager::sortDistance(OcclusionCullList& list) noexcept
 		std::size_t count = it2 - it1;
 		if (count > 1)
 			list.sort(it1, it2);
-		
+
 		if (it2 != end)
 			it1 = it2++;
 	}

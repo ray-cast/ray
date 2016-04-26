@@ -121,7 +121,7 @@ private:
 
 	float2 _spotInnerCone;
 	float2 _spotOuterCone;
-	
+
 	bool _shadowSoftEnable;
 	bool _subsurfaceScattering;
 	float _shadowBias;

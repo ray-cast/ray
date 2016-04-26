@@ -43,17 +43,17 @@ _NAME_BEGIN
 
 class OGLGraphicsState final : public GraphicsState
 {
-    __DeclareSubClass(OGLGraphicsState, RenderState)
+	__DeclareSubClass(OGLGraphicsState, RenderState)
 public:
 	OGLGraphicsState() noexcept;
 	~OGLGraphicsState() noexcept;
 
-    bool setup(const GraphicsStateDesc& desc) noexcept;
-    void close() noexcept;
+	bool setup(const GraphicsStateDesc& desc) noexcept;
+	void close() noexcept;
 
 	void apply(GraphicsStateDesc& last) noexcept;
 
-    const GraphicsStateDesc& getGraphicsStateDesc() const noexcept;
+	const GraphicsStateDesc& getGraphicsStateDesc() const noexcept;
 
 private:
 	friend class OGLDevice;
@@ -65,7 +65,7 @@ private:
 	OGLGraphicsState& operator=(const OGLGraphicsState&) = delete;
 
 private:
-    GraphicsStateDesc _stateDesc;
+	GraphicsStateDesc _stateDesc;
 	GraphicsDeviceWeakPtr _device;
 };
 

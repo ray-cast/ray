@@ -43,80 +43,80 @@ _NAME_BEGIN
 
 enum STACKWALKOPTIONS
 {
-    SWO_NONE = 1 << 0,
-    SWO_SYMBOL = 1 << 1,
-    SWO_LINE = 1 << 2,
-    SWO_MODULE_INFO = 1 << 3,
-    SWO_FILE_VERSION = 1 << 4,
-    SWO_ENTRY = 1 << 5,
-    SWO_SYM_BUILD_PATH = 1 << 6,
-    SWO_SYM_USE_SYM_SERVER = 1 << 7
+	SWO_NONE = 1 << 0,
+	SWO_SYMBOL = 1 << 1,
+	SWO_LINE = 1 << 2,
+	SWO_MODULE_INFO = 1 << 3,
+	SWO_FILE_VERSION = 1 << 4,
+	SWO_ENTRY = 1 << 5,
+	SWO_SYM_BUILD_PATH = 1 << 6,
+	SWO_SYM_USE_SYM_SERVER = 1 << 7
 };
 
 class EXPORT WalkerBase
 {
 public:
-    enum _Options : std::uint8_t {};
-    static const _Options none = (_Options)SWO_NONE;
-    static const _Options symbol = (_Options)SWO_SYMBOL;
-    static const _Options line = (_Options)SWO_LINE;
-    static const _Options module_info = (_Options)SWO_MODULE_INFO;
-    static const _Options file_version = (_Options)SWO_FILE_VERSION;
-    static const _Options sym_build_path = (_Options)SWO_SYM_BUILD_PATH;
-    static const _Options sym_use_sym_server = (_Options)SWO_SYM_USE_SYM_SERVER;
-    static const _Options options_all = (_Options)(symbol | line | module_info | file_version | sym_build_path | sym_use_sym_server);
-    static const _Options normal = (_Options)(options_all ^ module_info ^ symbol);
+	enum _Options : std::uint8_t {};
+	static const _Options none = (_Options)SWO_NONE;
+	static const _Options symbol = (_Options)SWO_SYMBOL;
+	static const _Options line = (_Options)SWO_LINE;
+	static const _Options module_info = (_Options)SWO_MODULE_INFO;
+	static const _Options file_version = (_Options)SWO_FILE_VERSION;
+	static const _Options sym_build_path = (_Options)SWO_SYM_BUILD_PATH;
+	static const _Options sym_use_sym_server = (_Options)SWO_SYM_USE_SYM_SERVER;
+	static const _Options options_all = (_Options)(symbol | line | module_info | file_version | sym_build_path | sym_use_sym_server);
+	static const _Options normal = (_Options)(options_all ^ module_info ^ symbol);
 
-    static const int STACKWALK_MAX_NAMELEN = 2048;
-    static const int MAX_BUFFER_LENGTH = 2048;
+	static const int STACKWALK_MAX_NAMELEN = 2048;
+	static const int MAX_BUFFER_LENGTH = 2048;
 
-    struct CallStackVariable
-    {
-        DWORD size;
-        DWORD typeID;
-        ULONG64 modBase;
-        DWORD64 address;
-        util::string typeName;
+	struct CallStackVariable
+	{
+		DWORD size;
+		DWORD typeID;
+		ULONG64 modBase;
+		DWORD64 address;
+		util::string typeName;
 		util::string varName;
 		util::string valueName;
-    };
+	};
 
-    struct VariableList
-    {
-        std::vector<CallStackVariable> list;
-    };
+	struct VariableList
+	{
+		std::vector<CallStackVariable> list;
+	};
 
-    struct CallStackEntry
-    {
-        DWORD64 offset;  // if 0, we have no valid entry
-        DWORD64 offsetFromSmybol;
-        DWORD offsetFromLine;
-        DWORD lineNumber;
-        DWORD64 baseOfImage;
+	struct CallStackEntry
+	{
+		DWORD64 offset;  // if 0, we have no valid entry
+		DWORD64 offsetFromSmybol;
+		DWORD offsetFromLine;
+		DWORD lineNumber;
+		DWORD64 baseOfImage;
 		util::string name;
 		util::string lineFileName;
 		util::string moduleName;
 		util::string imageName;
 		util::string loadedImageName;
-        VariableList variable;
-    };
+		VariableList variable;
+	};
 
-    enum _CallstackEntryType { _EntryMask = 256 };
-    static const _CallstackEntryType first = (_CallstackEntryType)0x0;
-    static const _CallstackEntryType next = (_CallstackEntryType)0x1;
-    static const _CallstackEntryType last = (_CallstackEntryType)0x2;
+	enum _CallstackEntryType { _EntryMask = 256 };
+	static const _CallstackEntryType first = (_CallstackEntryType)0x0;
+	static const _CallstackEntryType next = (_CallstackEntryType)0x1;
+	static const _CallstackEntryType last = (_CallstackEntryType)0x2;
 
 	typedef std::basic_ostringstream<util::char_type> ostringstream;
 
-    _INT_BITMASK(_Options, Options);
-    _INT_BITMASK(_CallstackEntryType, EntryType);
+	_INT_BITMASK(_Options, Options);
+	_INT_BITMASK(_CallstackEntryType, EntryType);
 
 protected:
 
-    static util::string GetCurrentDirectory() noexcept;
-    static util::string GetModuleFileName(HMODULE hModule = 0) noexcept;
-    static util::string GetModuleDirectory(HMODULE hModule = 0) noexcept;
-    static util::string GetEnvironmentVariable(const util::string& name) noexcept;
+	static util::string GetCurrentDirectory() noexcept;
+	static util::string GetModuleFileName(HMODULE hModule = 0) noexcept;
+	static util::string GetModuleDirectory(HMODULE hModule = 0) noexcept;
+	static util::string GetEnvironmentVariable(const util::string& name) noexcept;
 };
 
 _NAME_END

@@ -135,25 +135,25 @@ GraphicsFramebufferDesc::~GraphicsFramebufferDesc() noexcept
 {
 }
 
-void 
+void
 GraphicsFramebufferDesc::setWidth(std::uint32_t w) noexcept
 {
 	_width = w;
 }
 
-void 
+void
 GraphicsFramebufferDesc::setHeight(std::uint32_t h) noexcept
 {
 	_height = h;
 }
 
-std::uint32_t 
+std::uint32_t
 GraphicsFramebufferDesc::getWidth() const noexcept
 {
 	return _width;
 }
 
-std::uint32_t 
+std::uint32_t
 GraphicsFramebufferDesc::getHeight() const noexcept
 {
 	return _height;
@@ -206,7 +206,7 @@ GraphicsFramebufferDesc::setGraphicsFramebufferLayout(GraphicsFramebufferLayoutP
 	_framebufferLayout = layout;
 }
 
-GraphicsFramebufferLayoutPtr 
+GraphicsFramebufferLayoutPtr
 GraphicsFramebufferDesc::getGraphicsFramebufferLayout() const noexcept
 {
 	return _framebufferLayout;

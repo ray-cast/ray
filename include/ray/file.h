@@ -74,41 +74,41 @@ extern streamoff fsetpos(FILE* stream);
 class EXPORT IOFILE
 {
 public:
-    IOFILE() noexcept;
-    ~IOFILE() noexcept;
+	IOFILE() noexcept;
+	~IOFILE() noexcept;
 
-    IOFILE* open(const char* filename, ios_base::openmode mode) noexcept;
-    IOFILE* open(const wchar_t* filename, ios_base::openmode mode) noexcept;
-    IOFILE* open(const char* filename, ios_base::open_mode mode) noexcept;
-    IOFILE* open(const wchar_t* filename, ios_base::open_mode mode) noexcept;
-    IOFILE* open(const std::string& filename, ios_base::openmode mode) noexcept;
-    IOFILE* open(const std::string& filename, ios_base::open_mode mode) noexcept;
-    IOFILE* open(const std::wstring& filename, ios_base::openmode mode) noexcept;
-    IOFILE* open(const std::wstring& filename, ios_base::open_mode mode) noexcept;
+	IOFILE* open(const char* filename, ios_base::openmode mode) noexcept;
+	IOFILE* open(const wchar_t* filename, ios_base::openmode mode) noexcept;
+	IOFILE* open(const char* filename, ios_base::open_mode mode) noexcept;
+	IOFILE* open(const wchar_t* filename, ios_base::open_mode mode) noexcept;
+	IOFILE* open(const std::string& filename, ios_base::openmode mode) noexcept;
+	IOFILE* open(const std::string& filename, ios_base::open_mode mode) noexcept;
+	IOFILE* open(const std::wstring& filename, ios_base::openmode mode) noexcept;
+	IOFILE* open(const std::wstring& filename, ios_base::open_mode mode) noexcept;
 
-    bool is_open() const noexcept;
-    bool close() noexcept;
+	bool is_open() const noexcept;
+	bool close() noexcept;
 
 	int getc() noexcept;
 
-    streamoff seek(streamoff _off, ios_base::seekdir seek) noexcept;
-    streamoff tell() const noexcept;
+	streamoff seek(streamoff _off, ios_base::seekdir seek) noexcept;
+	streamoff tell() const noexcept;
 
 	streamsize size() const noexcept;
 
-    streamsize read(void* buf, streamsize size) noexcept;
-    streamsize write(const void* buf, streamsize size) noexcept;
+	streamsize read(void* buf, streamsize size) noexcept;
+	streamsize write(const void* buf, streamsize size) noexcept;
 
-    int    flag() noexcept;
-    char*& ptr()  noexcept;
-    char*& base() noexcept;
-    streamsize&   cnt()  noexcept;
+	int    flag() noexcept;
+	char*& ptr()  noexcept;
+	char*& base() noexcept;
+	streamsize&   cnt()  noexcept;
 
-    void swap(IOFILE& other) noexcept;
+	void swap(IOFILE& other) noexcept;
 
 private:
 
-    FILE* _stream;
+	FILE* _stream;
 };
 
 _NAME_END

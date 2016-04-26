@@ -52,22 +52,22 @@ MSWInputMouse::~MSWInputMouse() noexcept
 void
 MSWInputMouse::showMouse() noexcept
 {
-    ::ShowCursor(TRUE);
+	::ShowCursor(TRUE);
 }
 
 void
 MSWInputMouse::hideMouse() noexcept
 {
-    ::ShowCursor(FALSE);
+	::ShowCursor(FALSE);
 }
 
 void
 MSWInputMouse::setPosition(int x, int y) noexcept
 {
-    ::SetCursorPos(x, y);
+	::SetCursorPos(x, y);
 }
 
-int 
+int
 MSWInputMouse::getPositionX() const noexcept
 {
 	POINT pt;
@@ -75,7 +75,7 @@ MSWInputMouse::getPositionX() const noexcept
 	return pt.x;
 }
 
-int 
+int
 MSWInputMouse::getPositionY() const noexcept
 {
 	POINT pt;

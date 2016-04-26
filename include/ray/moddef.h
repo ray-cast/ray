@@ -43,78 +43,78 @@ _NAME_BEGIN
 
 enum ModelType
 {
-    MT_UNKNOWN,
+	MT_UNKNOWN,
 #if _BUILD_3DS_HANDLER
-    MT_3DS,
+	MT_3DS,
 #endif
 #if _BUILD_ASE_HANDLER
-    MT_ASE,
+	MT_ASE,
 #endif
 #if _BUILD_B3D_HANDLER
-    MT_B3D,
+	MT_B3D,
 #endif
 #if _BUILD_BLEND_HANDLER
-    MT_BLEND,
+	MT_BLEND,
 #endif
 #if _BUILD_DXF_HANDLER
-    MT_DXF,
+	MT_DXF,
 #endif
 #if _BUILD_HMP_HANDLER
-    MT_HMP,
+	MT_HMP,
 #endif
 #if _BUILD_IFC_HANDLER
-    MT_IFC,
+	MT_IFC,
 #endif
 #if _BUILD_IRR_HANDLER
-    MT_IRR,
+	MT_IRR,
 #endif
 #if _BUILD_LWO_HANDLER
-    MT_LWO,
+	MT_LWO,
 #endif
 #if _BUILD_LWS_HANDLER
-    MT_LWS,
+	MT_LWS,
 #endif
 #if _BUILD_M3_HANDLER
-    MT_M3,
+	MT_M3,
 #endif
 #if _BUILD_MD2_HANDLER
-    MT_MD2,
+	MT_MD2,
 #endif
 #if _BUILD_MD3_HANDLER
-    MT_MD3,
+	MT_MD3,
 #endif
 #if _BUILD_MD4_HANDLER
-    MT_MD4,
+	MT_MD4,
 #endif
 #if _BUILD_MD5_HANDLER
-    MT_MD5,
+	MT_MD5,
 #endif
 #if _BUILD_MDL_HANDLER
-    MT_MDL,
+	MT_MDL,
 #endif
 #if _BUILD_MESH_HANDLER
-    MT_MESH,
+	MT_MESH,
 #endif
 #if _BUILD_NFF_HANDLER
-    MT_NFF,
+	MT_NFF,
 #endif
 #if _BUILD_OBJ_HANDLER
-    MT_OBJ,
+	MT_OBJ,
 #endif
 #if _BUILD_OGRE_HANDLER
-    MT_OGRE,
+	MT_OGRE,
 #endif
 #if _BUILD_PK3_HANDLER
-    MT_PK3,
+	MT_PK3,
 #endif
 #if _BUILD_PMD_HANDLER
-    MT_PMD,
+	MT_PMD,
 #endif
 #if _BUILD_PMX_HANDLER
-    MT_PMX,
+	MT_PMX,
 #endif
 #if _BUILD_X_HANDLER
-    MT_XFILE,
+	MT_XFILE,
 #endif
 };
 

@@ -129,7 +129,7 @@ public:
 	virtual void endEvent() noexcept = 0;
 
 	virtual void wait() noexcept = 0;
-	
+
 	virtual void executeCommandLists(GraphicsCommandListPtr commandLists[], std::uint32_t count) noexcept = 0;
 
 	virtual void present(GraphicsSwapchainPtr canvas[], std::uint32_t count) noexcept = 0;

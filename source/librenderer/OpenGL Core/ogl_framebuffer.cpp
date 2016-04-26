@@ -218,7 +218,7 @@ OGLFramebuffer::discard() noexcept
 		attachment++;
 	}
 
-	glInvalidateFramebuffer(GL_FRAMEBUFFER, size, attachments);	
+	glInvalidateFramebuffer(GL_FRAMEBUFFER, size, attachments);
 }
 
 GLuint

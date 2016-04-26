@@ -281,7 +281,7 @@ OGLDevice::createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& desc
 	return nullptr;
 }
 
-GraphicsDescriptorPoolPtr 
+GraphicsDescriptorPoolPtr
 OGLDevice::createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept
 {
 	auto descriptorPool = std::make_shared<OGLDescriptorPool>();

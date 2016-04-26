@@ -47,21 +47,21 @@ public:
 	typedef std::size_t int_type;
 	enum : int_type { none = 0 };
 
-    error_code() noexcept;
-    error_code(int_type code) noexcept;
+	error_code() noexcept;
+	error_code(int_type code) noexcept;
 
-    error_code& assign(int_type value) noexcept;
+	error_code& assign(int_type value) noexcept;
 
-    int_type value() const noexcept;
+	int_type value() const noexcept;
 
 private:
 
-    int_type _Myval;
+	int_type _Myval;
 };
 
 inline error_code make_error_code(error_code::int_type _Errno) noexcept
 {    // make an error_code
-    return (error_code(_Errno));
+	return (error_code(_Errno));
 }
 
 _NAME_END

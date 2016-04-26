@@ -52,7 +52,7 @@ XmlBuf::~XmlBuf() noexcept
 	this->close();
 }
 
-bool 
+bool
 XmlBuf::open() noexcept
 {
 	assert(0 == _document);
@@ -67,7 +67,7 @@ XmlBuf::open() noexcept
 	return true;
 }
 
-void 
+void
 XmlBuf::close() noexcept
 {
 	if (_currentNode)
@@ -83,7 +83,7 @@ XmlBuf::close() noexcept
 	}
 }
 
-bool 
+bool
 XmlBuf::is_open() const noexcept
 {
 	return _document.get() ? true : false;
@@ -113,7 +113,7 @@ XmlBuf::load(StreamReader& stream) noexcept
 	return false;
 }
 
-bool 
+bool
 XmlBuf::save(StreamWrite& stream) noexcept
 {
 	TiXmlPrinter printer;
@@ -126,7 +126,7 @@ XmlBuf::save(StreamWrite& stream) noexcept
 	return false;
 }
 
-std::string 
+std::string
 XmlBuf::getCurrentNodeName() const noexcept
 {
 	if (_currentNode)
@@ -135,7 +135,7 @@ XmlBuf::getCurrentNodeName() const noexcept
 		return "";
 }
 
-std::string 
+std::string
 XmlBuf::getCurrentNodePath() const noexcept
 {
 	if (!_currentNode)
@@ -167,7 +167,7 @@ XmlBuf::getCurrentNodePath() const noexcept
 	return path;
 }
 
-bool 
+bool
 XmlBuf::addAttribute(const std::string& key, const std::string& value) noexcept
 {
 	auto element = _currentNode->ToElement();
@@ -191,11 +191,11 @@ XmlBuf::addAttribute(const std::string& key, const std::string& value) noexcept
 			return element->InsertEndChild(text) ? true : false;
 		}
 	}
-	
+
 	return false;
 }
 
-void 
+void
 XmlBuf::setAttribute(const std::string& key, const std::string& value) noexcept
 {
 	auto element = _currentNode->ToElement();
@@ -203,7 +203,7 @@ XmlBuf::setAttribute(const std::string& key, const std::string& value) noexcept
 		element->SetAttribute(key.c_str(), value.c_str());
 }
 
-void 
+void
 XmlBuf::removeAttribute(const std::string& key) noexcept
 {
 	auto element = _currentNode->ToElement();
@@ -382,7 +382,7 @@ XmlBuf::setToParent() noexcept
 	return false;
 }
 
-bool 
+bool
 XmlBuf::setToRoot() noexcept
 {
 	assert(_currentNode);
@@ -454,7 +454,6 @@ XmlBuf::addAttrsInChildren() noexcept
 			} while (attr);
 
 			child = child->NextSiblingElement();
-
 		} while (child);
 
 		return true;
@@ -486,7 +485,6 @@ XmlBuf::addAttrsInChildren(const std::string& key) noexcept
 			}
 
 			child = child->NextSiblingElement();
-
 		} while (child);
 
 		return true;
@@ -728,7 +726,6 @@ XmlBuf::getValue(const std::string& name, uint4& result) const noexcept
 
 	return false;
 }
-
 
 bool
 XmlBuf::getValue(const std::string& name, float1& result) const noexcept

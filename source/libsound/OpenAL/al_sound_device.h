@@ -44,13 +44,13 @@ _NAME_BEGIN
 class EXPORT ALSoundDevice final : public SoundDevice
 {
 public:
-    ALSoundDevice() noexcept;
-    virtual ~ALSoundDevice() noexcept;
+	ALSoundDevice() noexcept;
+	virtual ~ALSoundDevice() noexcept;
 
-    virtual bool open() noexcept;
-    virtual void close() noexcept;
+	virtual bool open() noexcept;
+	virtual void close() noexcept;
 
-    virtual bool isOpen() const noexcept;
+	virtual bool isOpen() const noexcept;
 
 	virtual void setDistanceModel(bool enable) noexcept;
 	virtual bool getDistanceModel() const noexcept;
@@ -61,10 +61,10 @@ public:
 private:
 	bool _distanceModel;
 
-    ALCdevice*      _device;
-    ALCcontext*     _context;
+	ALCdevice*      _device;
+	ALCcontext*     _context;
 };
 
 _NAME_END
 
-#endif 
+#endif

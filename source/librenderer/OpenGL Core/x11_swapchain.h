@@ -67,10 +67,10 @@ private:
 private:
 	bool _isActive;
 
-    XWindow _window;
-    XDisplay* _display;
+	XWindow _window;
+	XDisplay* _display;
 
-    GLXContext _glc;
+	GLXContext _glc;
 	GLXFBConfig* _cfg;
 
 	GPUfbconfig _fbconfig;
@@ -78,6 +78,5 @@ private:
 };
 
 _NAME_END
-
 
 #endif

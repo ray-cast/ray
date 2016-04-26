@@ -62,28 +62,28 @@ class EXPORT InputController : public InputListener
 {
 	__DeclareSubInterface(InputController, InputListener)
 public:
-    InputController() noexcept;
-    virtual ~InputController() noexcept;
+	InputController() noexcept;
+	virtual ~InputController() noexcept;
 
-    virtual void obtainCapture() noexcept;
-    virtual void releaseCapture() noexcept;
-    virtual bool capture() const noexcept;
+	virtual void obtainCapture() noexcept;
+	virtual void releaseCapture() noexcept;
+	virtual bool capture() const noexcept;
 
-    virtual void onFrameBegin() noexcept;
-    virtual void onFrameEnd() noexcept;
+	virtual void onFrameBegin() noexcept;
+	virtual void onFrameEnd() noexcept;
 
-    virtual void onReset() noexcept;
+	virtual void onReset() noexcept;
 
-    virtual void onObtainCapture() noexcept;
-    virtual void onReleaseCapture() noexcept;
-
-private:
-    InputController(const InputController&) noexcept = delete;
-    InputController& operator=(const InputController&) noexcept = delete;
+	virtual void onObtainCapture() noexcept;
+	virtual void onReleaseCapture() noexcept;
 
 private:
+	InputController(const InputController&) noexcept = delete;
+	InputController& operator=(const InputController&) noexcept = delete;
 
-    bool _capture;
+private:
+
+	bool _capture;
 };
 
 _NAME_END

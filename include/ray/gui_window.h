@@ -50,14 +50,14 @@ public:
 
 	virtual GuiTextBoxPtr getGuiTextBox() const noexcept = 0;
 
-	virtual void setVisibleSmooth(bool _value) noexcept  = 0;
+	virtual void setVisibleSmooth(bool _value) noexcept = 0;
 	virtual void destroySmooth() noexcept = 0;
 
 	virtual void setAutoAlpha(bool _value) noexcept = 0;
 	virtual bool getAutoAlpha() const noexcept = 0;
 
-	virtual void setMinSize(int _width, int _height) noexcept  = 0;
-	virtual void getMinSize(int& w, int& h) const noexcept  = 0;
+	virtual void setMinSize(int _width, int _height) noexcept = 0;
+	virtual void getMinSize(int& w, int& h) const noexcept = 0;
 
 	virtual void setMaxSize(int _width, int _height) noexcept = 0;
 	virtual void getMaxSize(int& w, int& h) const noexcept = 0;

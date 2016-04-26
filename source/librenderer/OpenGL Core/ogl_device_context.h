@@ -133,7 +133,7 @@ private:
 	Scissor _scissor;
 
 	GLuint _maxViewports;
-	
+
 	OGLPipelinePtr _pipeline;
 	OGLDescriptorSetPtr _descriptorSet;
 

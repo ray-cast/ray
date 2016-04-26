@@ -420,7 +420,7 @@ EGL3Program::getActiveUniforms() const noexcept
 	return _activeUniforms;
 }
 
-const GraphicsUniformBlocks& 
+const GraphicsUniformBlocks&
 EGL3Program::getActiveUniformBlocks() const noexcept
 {
 	return _activeUniformBlocks;

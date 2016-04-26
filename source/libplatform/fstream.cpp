@@ -39,37 +39,37 @@
 _NAME_BEGIN
 
 ifstream::ifstream() noexcept
-    : StreamReader(&_file)
+	: StreamReader(&_file)
 {
 }
 
 ifstream::ifstream(FILE* file) noexcept
-    : StreamReader(&_file)
+	: StreamReader(&_file)
 {
 }
 
 ifstream::ifstream(const char* filename) noexcept
-    : StreamReader(&_file)
+	: StreamReader(&_file)
 {
-    this->open(filename);
+	this->open(filename);
 }
 
 ifstream::ifstream(const wchar_t* filename) noexcept
-    : StreamReader(&_file)
+	: StreamReader(&_file)
 {
-    this->open(filename);
+	this->open(filename);
 }
 
 ifstream::ifstream(const std::string& filename) noexcept
-    : StreamReader(&_file)
+	: StreamReader(&_file)
 {
-    this->open(filename);
+	this->open(filename);
 }
 
 ifstream::ifstream(const std::wstring& filename) noexcept
-    : StreamReader(&_file)
+	: StreamReader(&_file)
 {
-    this->open(filename);
+	this->open(filename);
 }
 
 bool
@@ -133,43 +133,42 @@ ifstream::close() noexcept
 	return (*this);
 }
 
-
 ifstream::~ifstream() noexcept
 {
 }
 
 ofstream::ofstream() noexcept
-    : StreamWrite(&_file)
+	: StreamWrite(&_file)
 {
 }
 
 ofstream::ofstream(FILE* file) noexcept
-    : StreamWrite(&_file)
+	: StreamWrite(&_file)
 {
 }
 
 ofstream::ofstream(const char* filename) noexcept
-    : StreamWrite(&_file)
+	: StreamWrite(&_file)
 {
-    this->open(filename);
+	this->open(filename);
 }
 
 ofstream::ofstream(const wchar_t* filename) noexcept
-    : StreamWrite(&_file)
+	: StreamWrite(&_file)
 {
-    this->open(filename);
+	this->open(filename);
 }
 
 ofstream::ofstream(const std::string& filename) noexcept
-    : StreamWrite(&_file)
+	: StreamWrite(&_file)
 {
-    this->open(filename);
+	this->open(filename);
 }
 
 ofstream::ofstream(const std::wstring& filename) noexcept
-    : StreamWrite(&_file)
+	: StreamWrite(&_file)
 {
-    this->open(filename);
+	this->open(filename);
 }
 
 ofstream::~ofstream() noexcept
@@ -238,37 +237,37 @@ ofstream::close() noexcept
 }
 
 fstream::fstream() noexcept
-    : Stream(&_file)
+	: Stream(&_file)
 {
 }
 
 fstream::fstream(FILE* file) noexcept
-    : Stream(&_file)
+	: Stream(&_file)
 {
 }
 
 fstream::fstream(const char* filename) noexcept
-    : Stream(&_file)
+	: Stream(&_file)
 {
-    this->open(filename);
+	this->open(filename);
 }
 
 fstream::fstream(const wchar_t* filename) noexcept
-    : Stream(&_file)
+	: Stream(&_file)
 {
-    this->open(filename);
+	this->open(filename);
 }
 
 fstream::fstream(const std::string& filename) noexcept
-    : Stream(&_file)
+	: Stream(&_file)
 {
-    this->open(filename);
+	this->open(filename);
 }
 
 fstream::fstream(const std::wstring& filename) noexcept
-    : Stream(&_file)
+	: Stream(&_file)
 {
-    this->open(filename);
+	this->open(filename);
 }
 
 fstream::~fstream() noexcept

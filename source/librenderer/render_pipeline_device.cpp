@@ -67,7 +67,7 @@ __ImplementSubClass(RenderPipelineDevice, rtti::Interface, "RenderPipelineDevice
 
 RenderPipelineDevice::RenderPipelineDevice() noexcept
 {
-}	
+}
 
 RenderPipelineDevice::~RenderPipelineDevice() noexcept
 {
@@ -98,7 +98,7 @@ RenderPipelineDevice::close() noexcept
 	_graphicsDevice.reset();
 }
 
-GraphicsDeviceType 
+GraphicsDeviceType
 RenderPipelineDevice::getDeviceType() const noexcept
 {
 	return _graphicsDevice->getGraphicsDeviceDesc().getDeviceType();
@@ -351,7 +351,7 @@ RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh, std::uint32_t f
 				*(float3*)data = it;
 				data += inputSize;
 			}
-			
+
 			offset += sizeof(float3);
 		}
 
@@ -554,7 +554,7 @@ RenderPipelineDevice::createInputLayout(const GraphicsInputLayoutDesc& desc) noe
 	return _graphicsDevice->createInputLayout(desc);
 }
 
-GraphicsPipelinePtr 
+GraphicsPipelinePtr
 RenderPipelineDevice::createGraphicsPipeline(const GraphicsPipelineDesc& desc) noexcept
 {
 	assert(_graphicsDevice);

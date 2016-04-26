@@ -48,7 +48,7 @@ DepthOfField::~DepthOfField() noexcept
 {
 }
 
-void 
+void
 DepthOfField::onActivate(RenderPipeline& pipeline) noexcept
 {
 	_dof = pipeline.createMaterial("sys:fx/dof.glsl");
@@ -69,7 +69,7 @@ DepthOfField::onActivate(RenderPipeline& pipeline) noexcept
 	_texLarge = _dof->getParameter("texLarge");
 }
 
-void 
+void
 DepthOfField::onDeactivate(RenderPipeline& pipeline) noexcept
 {
 }

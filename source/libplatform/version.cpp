@@ -50,45 +50,45 @@ static const char* LEGAL_INFORMATION =
 
 const char* GetLegalString()
 {
-    return LEGAL_INFORMATION;
+	return LEGAL_INFORMATION;
 }
 
 unsigned int GetVersionMinor()
 {
-    return 0;
+	return 0;
 }
 
 unsigned int GetVersionMajor()
 {
-    return 3;
+	return 3;
 }
 
 unsigned int GetCompileFlags()
 {
-    unsigned int flags = 0;
+	unsigned int flags = 0;
 
 #ifdef _BUILD_BOOST_WORKAROUND
-    flags |= CFLAGS_NOBOOST;
+	flags |= CFLAGS_NOBOOST;
 #endif
 #ifdef _BUILD_SINGLETHREADED
-    flags |= CFLAGS_SINGLETHREADED;
+	flags |= CFLAGS_SINGLETHREADED;
 #endif
 #ifdef _BUILD_DEBUG
-    flags |= CFLAGS_DEBUG;
+	flags |= CFLAGS_DEBUG;
 #endif
 #ifdef _BUILD_DLL_EXPORT
-    flags |= CFLAGS_SHARED;
+	flags |= CFLAGS_SHARED;
 #endif
 #ifdef _STLPORT_VERSION
-    flags |= CFLAGS_STLPORT;
+	flags |= CFLAGS_STLPORT;
 #endif
 
-    return flags;
+	return flags;
 }
 
 unsigned int GetVersionRevision()
 {
-    return GITRevision;
+	return GITRevision;
 }
 
 _NAME_END

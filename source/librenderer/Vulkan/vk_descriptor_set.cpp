@@ -834,7 +834,7 @@ VulkanDescriptorSet::close() noexcept
 	if (_vkDescriptorSet != VK_NULL_HANDLE)
 	{
 		vkFreeDescriptorSets(
-			this->getDevice()->downcast<VulkanDevice>()->getDevice(), 
+			this->getDevice()->downcast<VulkanDevice>()->getDevice(),
 			_descriptorSetDesc.getGraphicsDescriptorPool()->downcast<VulkanDescriptorPool>()->getDescriptorPool(),
 			1,
 			&_vkDescriptorSet);
@@ -843,7 +843,7 @@ VulkanDescriptorSet::close() noexcept
 	}
 }
 
-void 
+void
 VulkanDescriptorSet::update() noexcept
 {
 	if (_globalUniformBlock)
@@ -993,7 +993,7 @@ VulkanDescriptorSet::getGraphicsDescriptorSetDesc() const noexcept
 	return _descriptorSetDesc;
 }
 
-void 
+void
 VulkanDescriptorSet::setDevice(GraphicsDevicePtr device) noexcept
 {
 	_device = device;

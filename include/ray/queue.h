@@ -50,88 +50,88 @@ template<typename T>
 class threadsafe_queue
 {
 public:
-    threadsafe_queue() noexcept
-    {
-    }
+	threadsafe_queue() noexcept
+	{
+	}
 
-    threadsafe_queue(threadsafe_queue const& other) noexcept
-    {
-        std::unique_lock<std::mutex> lock(other._mutex);
-        if (lock)
-        {
-            _queue = other._queue;
-        }
-    }
+	threadsafe_queue(threadsafe_queue const& other) noexcept
+	{
+		std::unique_lock<std::mutex> lock(other._mutex);
+		if (lock)
+		{
+			_queue = other._queue;
+		}
+	}
 
-    void push(T data) noexcept
-    {
-        std::unique_lock<std::mutex> lock(_mutex);
-        if (lock)
-        {
-            _queue.push(data);
-            _dispose.notify_one();
-        }
-    }
+	void push(T data) noexcept
+	{
+		std::unique_lock<std::mutex> lock(_mutex);
+		if (lock)
+		{
+			_queue.push(data);
+			_dispose.notify_one();
+		}
+	}
 
-    T pop() noexcept
-    {
-        std::unique_lock<std::mutex> lock(_mutex);
-        if (lock)
-        {
-            if (_queue.empty())
-                return T();
+	T pop() noexcept
+	{
+		std::unique_lock<std::mutex> lock(_mutex);
+		if (lock)
+		{
+			if (_queue.empty())
+				return T();
 
-            auto result = _queue.front();
-            _queue.pop();
-            return result;
-        }
+			auto result = _queue.front();
+			_queue.pop();
+			return result;
+		}
 
-        return T();
-    }
+		return T();
+	}
 
-    T wait_and_pop() noexcept
-    {
-        std::unique_lock<std::mutex> lock(_mutex);
-        if (lock)
-        {
-            _dispose.wait(lock, [this] { return !_queue.empty(); });
-            T value = _queue.front();
-            _queue.pop();
-            return value;
-        }
-    }
+	T wait_and_pop() noexcept
+	{
+		std::unique_lock<std::mutex> lock(_mutex);
+		if (lock)
+		{
+			_dispose.wait(lock, [this] { return !_queue.empty(); });
+			T value = _queue.front();
+			_queue.pop();
+			return value;
+		}
+	}
 
-    bool try_pop(T& value) noexcept
-    {
-        std::unique_lock<std::mutex> lock(_mutex);
-        if (lock)
-        {
-            if (_queue.empty())
-                return false;
+	bool try_pop(T& value) noexcept
+	{
+		std::unique_lock<std::mutex> lock(_mutex);
+		if (lock)
+		{
+			if (_queue.empty())
+				return false;
 
-            value = _queue.front();
-            _queue.pop();
-            return true;
-        }
-    }
+			value = _queue.front();
+			_queue.pop();
+			return true;
+		}
+	}
 
-    bool empty() const noexcept
-    {
-        std::unique_lock<std::mutex> lock(_mutex);
-        if (lock)
-        {
-            return _queue.empty();
-        }
+	bool empty() const noexcept
+	{
+		std::unique_lock<std::mutex> lock(_mutex);
+		if (lock)
+		{
+			return _queue.empty();
+		}
 
-        return true;
-    }
+		return true;
+	}
 
 private:
 
-    std::queue<T> _queue;
+	std::queue<T> _queue;
 
-    mutable std::mutex _mutex;
-    mutable std::condition_variable _dispose;
+	mutable std::mutex _mutex;
+	mutable std::condition_variable _dispose;
 };
 
 _NAME_END

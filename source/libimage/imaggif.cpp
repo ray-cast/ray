@@ -41,28 +41,28 @@ _NAME_BEGIN
 bool
 GIFHandler::doCanRead(StreamReader& stream) const noexcept
 {
-    static const std::uint8_t magic[] = { 'G', 'I', 'F' };
+	static const std::uint8_t magic[] = { 'G', 'I', 'F' };
 
-    std::uint8_t hdr[sizeof(magic)];
+	std::uint8_t hdr[sizeof(magic)];
 
-    if (stream.read((char*)hdr, sizeof(hdr)))
-    {
-        return std::memcmp(hdr, magic, sizeof(magic)) == 0;
-    }
+	if (stream.read((char*)hdr, sizeof(hdr)))
+	{
+		return std::memcmp(hdr, magic, sizeof(magic)) == 0;
+	}
 
-    return false;
+	return false;
 }
 
 bool
 GIFHandler::doLoad(Image&, StreamReader&) noexcept
 {
-    return true;
+	return true;
 }
 
 bool
 GIFHandler::doSave(Image&, StreamWrite&) noexcept
 {
-    return true;
+	return true;
 }
 
 _NAME_END

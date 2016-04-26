@@ -100,7 +100,7 @@ VulkanCommandQueue::setup(const GraphicsCommandQueueDesc& commandQueueDesc) noex
 	return true;
 }
 
-void 
+void
 VulkanCommandQueue::close() noexcept
 {
 }
@@ -121,7 +121,7 @@ VulkanCommandQueue::wait() noexcept
 	vkQueueWaitIdle(_vkQueue);
 }
 
-void 
+void
 VulkanCommandQueue::executeCommandLists(GraphicsCommandListPtr commandLists[], std::uint32_t count) noexcept
 {
 	VkSubmitInfo submit[VK_MAX_SUBMIT_BUFFER];
@@ -216,7 +216,7 @@ VulkanCommandQueue::getDevice() noexcept
 	return _device.lock();
 }
 
-const GraphicsCommandQueueDesc& 
+const GraphicsCommandQueueDesc&
 VulkanCommandQueue::getGraphicsCommandQueueDesc() const noexcept
 {
 	return _commandQueueDesc;

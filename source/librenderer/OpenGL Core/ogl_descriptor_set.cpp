@@ -714,7 +714,6 @@ OGLDescriptorSetLayout::getDevice() noexcept
 	return _device.lock();
 }
 
-
 OGLDescriptorSet::OGLDescriptorSet() noexcept
 {
 }

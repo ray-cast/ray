@@ -96,16 +96,24 @@ public:
 		}
 	}
 	bool operator==(const shared_ptr<T>& rhs) const noexcept
-		{ return _ptr == rhs._ptr; }
+	{
+		return _ptr == rhs._ptr;
+	}
 
 	bool operator!=(const shared_ptr<T>& rhs) const noexcept
-		{ return _ptr != rhs._ptr; }
+	{
+		return _ptr != rhs._ptr;
+	}
 
 	bool operator==(const T* rhs) const noexcept
-		{ return _ptr == rhs; }
+	{
+		return _ptr == rhs;
+	}
 
 	bool operator!=(const T* rhs) const noexcept
-		{ return _ptr != rhs; }
+	{
+		return _ptr != rhs;
+	}
 
 	T* operator->() const noexcept
 	{
@@ -160,14 +168,13 @@ private:
 	T* _ptr;
 };
 
-template<class _Ty, class... _Types> 
+template<class _Ty, class... _Types>
 inline typename std::enable_if<!std::is_array<_Ty>::value, std::unique_ptr<_Ty> >::type make_shared(_Types&&... _Args)
 {
-    return (shared_ptr<_Ty>(new _Ty(std::forward<_Types>(_Args)...)));
+	return (shared_ptr<_Ty>(new _Ty(std::forward<_Types>(_Args)...)));
 }
 
-
-template<class _Ty> 
+template<class _Ty>
 inline typename std::enable_if<std::is_array<_Ty>::value && std::extent<_Ty>::value == 0, std::unique_ptr<_Ty> >::type make_shared(std::size_t _Size)
 {
 	typedef typename std::remove_extent<_Ty>::type _Elem;

@@ -106,13 +106,13 @@ MaterialManager::createRenderState(const GraphicsStateDesc& shaderDesc) noexcept
 	return _graphicsDevice->createRenderState(shaderDesc);
 }
 
-GraphicsShaderPtr 
+GraphicsShaderPtr
 MaterialManager::createShader(const GraphicsShaderDesc& shaderDesc) noexcept
 {
 	return _graphicsDevice->createShader(shaderDesc);
 }
 
-GraphicsProgramPtr 
+GraphicsProgramPtr
 MaterialManager::createProgram(const GraphicsProgramDesc& programDesc) noexcept
 {
 	return _graphicsDevice->createProgram(programDesc);
@@ -131,7 +131,7 @@ MaterialManager::createSampler(const std::string& name, const GraphicsSamplerDes
 	sampler = _graphicsDevice->createSampler(samplerDesc);
 	if (!sampler)
 		return nullptr;
-			
+
 	_samplers[name] = sampler;
 	return sampler;
 }
@@ -290,7 +290,7 @@ MaterialManager::getMaterial(const std::string& name) noexcept
 	return _materials[name];
 }
 
-void 
+void
 MaterialManager::destroyMaterial(MaterialPtr material) noexcept
 {
 	auto it = std::find_if(_materials.begin(), _materials.end(), [material](const std::pair<std::string, MaterialPtr>& pair) { return pair.second == material; });

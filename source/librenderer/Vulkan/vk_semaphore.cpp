@@ -52,7 +52,7 @@ VulkanSemaphore::~VulkanSemaphore() noexcept
 	this->close();
 }
 
-bool 
+bool
 VulkanSemaphore::setup(const GraphicsSemaphoreDesc& semaphoreDesc) noexcept
 {
 	VkSemaphoreCreateInfo semaphoreCreateInfo;
@@ -70,7 +70,7 @@ VulkanSemaphore::setup(const GraphicsSemaphoreDesc& semaphoreDesc) noexcept
 	return true;
 }
 
-void 
+void
 VulkanSemaphore::close() noexcept
 {
 	if (_vkSemaphore != VK_NULL_HANDLE)
@@ -80,7 +80,7 @@ VulkanSemaphore::close() noexcept
 	}
 }
 
-VkSemaphore 
+VkSemaphore
 VulkanSemaphore::getSemaphore() const noexcept
 {
 	return _vkSemaphore;

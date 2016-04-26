@@ -130,7 +130,7 @@ ScriptSystem::setInput(InputPtr input) noexcept
 	_bindInput->setInput(input);
 }
 
-void 
+void
 ScriptSystem::setGameObject(GameObjectPtr object) noexcept
 {
 	_bindActor->setGameObject(object);

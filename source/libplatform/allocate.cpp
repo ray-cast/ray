@@ -43,51 +43,51 @@ _NAME_BEGIN
 void*
 AllocateFromHeap::operator new (std::size_t num_bytes)
 {
-    return ::operator new(num_bytes);
+	return ::operator new(num_bytes);
 }
 
 void*
 AllocateFromHeap::operator new (std::size_t num_bytes, const std::nothrow_t&) noexcept
 {
-    try
-    {
-        return AllocateFromHeap::operator new(num_bytes);
-    }
-    catch (...)
-    {
-        return nullptr;
-    }
+	try
+	{
+		return AllocateFromHeap::operator new(num_bytes);
+	}
+	catch (...)
+	{
+		return nullptr;
+	}
 }
 
 void
 AllocateFromHeap::operator delete (void* data)
 {
-    return ::operator delete(data);
+	return ::operator delete(data);
 }
 
 void*
 AllocateFromHeap::operator new[](std::size_t num_bytes)
 {
-    return ::operator new[](num_bytes);
+	return ::operator new[](num_bytes);
 }
 
 void*
 AllocateFromHeap::operator new[](std::size_t num_bytes, const std::nothrow_t&) noexcept
 {
-    try
-    {
-        return AllocateFromHeap::operator new[](num_bytes);
-    }
-    catch (...)
-    {
-        return nullptr;
-    }
+	try
+	{
+		return AllocateFromHeap::operator new[](num_bytes);
+	}
+	catch (...)
+	{
+		return nullptr;
+	}
 }
 
 void
 AllocateFromHeap::operator delete[](void* data)
 {
-    return ::operator delete[](data);
+	return ::operator delete[](data);
 }
 
 _NAME_END

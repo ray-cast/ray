@@ -434,7 +434,7 @@ OGLDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 
 		_needUpdateLayout = false;
 	}
-	
+
 	if (_ibo)
 	{
 		GLenum drawType = OGLTypes::asVertexType(_stateCaptured.getPrimitiveType());

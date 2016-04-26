@@ -59,25 +59,25 @@ OcclusionCullNode::~OcclusionCullNode() noexcept
 {
 }
 
-void 
+void
 OcclusionCullNode::setOcclusionCullNode(RenderObjectPtr node) noexcept
 {
 	_item = node;
 }
 
-RenderObjectPtr 
+RenderObjectPtr
 OcclusionCullNode::getOcclusionCullNode() noexcept
 {
 	return _item;
 }
 
-void 
+void
 OcclusionCullNode::setDistanceSqrt(float distSq) noexcept
 {
 	_distanceSqrt = distSq;
 }
 
-float 
+float
 OcclusionCullNode::getDistanceSqrt() const noexcept
 {
 	return _distanceSqrt;
@@ -91,7 +91,7 @@ OcclusionCullList::~OcclusionCullList() noexcept
 {
 }
 
-void 
+void
 OcclusionCullList::clear() noexcept
 {
 	_iter.clear();
@@ -109,13 +109,13 @@ OcclusionCullList::iter() const noexcept
 	return _iter;
 }
 
-void 
+void
 OcclusionCullList::insert(RenderObjectPtr item, float distanceSqrt) noexcept
 {
 	_iter.push_back(OcclusionCullNode(item, distanceSqrt));
 }
 
-void 
+void
 OcclusionCullList::sort() noexcept
 {
 	this->sort(_iter.begin(), _iter.end());
@@ -197,7 +197,7 @@ RenderScene::addRenderObject(RenderObjectPtr object) noexcept
 	{
 		this->addCamera(object->downcast<Camera>());
 	}
-	else 
+	else
 	{
 		_renderObjectList.push_back(object);
 	}
@@ -230,7 +230,7 @@ RenderScene::computVisiable(const Matrix4x4& viewProject, OcclusionCullList& lis
 	}
 }
 
-void 
+void
 RenderScene::computVisiableObject(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept
 {
 	Frustum fru;
@@ -250,7 +250,7 @@ RenderScene::computVisiableObject(const Matrix4x4& viewProject, OcclusionCullLis
 	}
 }
 
-void 
+void
 RenderScene::computVisiableLight(const Matrix4x4& viewProject, OcclusionCullList& list) noexcept
 {
 	Frustum fru;

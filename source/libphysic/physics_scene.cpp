@@ -44,315 +44,315 @@
 _NAME_BEGIN
 
 PhysicsScene::Setting::Setting() noexcept
-    : length(1.0f)
-    , mass(1000.0f)
-    , speed(10.0f)
-    , skinWidth(0.0001f)
+	: length(1.0f)
+	, mass(1000.0f)
+	, speed(10.0f)
+	, skinWidth(0.0001f)
 	, gravity(0.0f, 9.81f, 0.0f)
 {
-    aabb.min = Vector3(-1000, -1000, -1000);
-    aabb.max = Vector3(1000, 1000, 1000);
+	aabb.min = Vector3(-1000, -1000, -1000);
+	aabb.max = Vector3(1000, 1000, 1000);
 }
 
 PhysicsScene::PhysicsScene() noexcept
-    : _collisionConfiguration(nullptr)
-    , _dispatcher(nullptr)
-    , _broadphase(nullptr)
-    , _solver(nullptr)
-    , _dynamicsWorld(nullptr)
+	: _collisionConfiguration(nullptr)
+	, _dispatcher(nullptr)
+	, _broadphase(nullptr)
+	, _solver(nullptr)
+	, _dynamicsWorld(nullptr)
 {
 }
 
 PhysicsScene::~PhysicsScene() noexcept
 {
-    this->close();
+	this->close();
 }
 
 void
 PhysicsScene::setup(const Setting& setting) noexcept
 {
-    _setting = setting;
+	_setting = setting;
 
-    _collisionConfiguration = new btDefaultCollisionConfiguration();
-    _dispatcher = new btCollisionDispatcher(_collisionConfiguration);
+	_collisionConfiguration = new btDefaultCollisionConfiguration();
+	_dispatcher = new btCollisionDispatcher(_collisionConfiguration);
 
-    btVector3 min;
-    min.setX(setting.aabb.min.x);
-    min.setY(setting.aabb.min.y);
-    min.setZ(setting.aabb.min.z);
+	btVector3 min;
+	min.setX(setting.aabb.min.x);
+	min.setY(setting.aabb.min.y);
+	min.setZ(setting.aabb.min.z);
 
-    btVector3 max;
-    max.setX(setting.aabb.max.x);
-    max.setY(setting.aabb.max.y);
-    max.setZ(setting.aabb.max.z);
+	btVector3 max;
+	max.setX(setting.aabb.max.x);
+	max.setY(setting.aabb.max.y);
+	max.setZ(setting.aabb.max.z);
 
-    _broadphase = new btAxisSweep3(min, max);
-    _broadphase->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
+	_broadphase = new btAxisSweep3(min, max);
+	_broadphase->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
 
-    _solver = new btSequentialImpulseConstraintSolver;
+	_solver = new btSequentialImpulseConstraintSolver;
 
-    _dynamicsWorld = new btDiscreteDynamicsWorld(_dispatcher, _broadphase, _solver, _collisionConfiguration);
-    _dynamicsWorld->getDispatchInfo().m_allowedCcdPenetration = setting.skinWidth;
+	_dynamicsWorld = new btDiscreteDynamicsWorld(_dispatcher, _broadphase, _solver, _collisionConfiguration);
+	_dynamicsWorld->getDispatchInfo().m_allowedCcdPenetration = setting.skinWidth;
 
-    this->setGravity(setting.gravity);
+	this->setGravity(setting.gravity);
 }
 
 void
 PhysicsScene::close() noexcept
 {
-    if (_collisionConfiguration)
-    {
-        delete _collisionConfiguration;
-        _collisionConfiguration = nullptr;
-    }
+	if (_collisionConfiguration)
+	{
+		delete _collisionConfiguration;
+		_collisionConfiguration = nullptr;
+	}
 
-    if (_dispatcher)
-    {
-        delete _dispatcher;
-        _dispatcher = nullptr;
-    }
+	if (_dispatcher)
+	{
+		delete _dispatcher;
+		_dispatcher = nullptr;
+	}
 
-    if (_solver)
-    {
-        delete _solver;
-        _solver = nullptr;
-    }
+	if (_solver)
+	{
+		delete _solver;
+		_solver = nullptr;
+	}
 
-    if (_broadphase)
-    {
-        delete _broadphase;
-        _broadphase = nullptr;
-    }
+	if (_broadphase)
+	{
+		delete _broadphase;
+		_broadphase = nullptr;
+	}
 
-    if (_dynamicsWorld)
-    {
-        delete _dynamicsWorld;
-        _dynamicsWorld = nullptr;
-    }
+	if (_dynamicsWorld)
+	{
+		delete _dynamicsWorld;
+		_dynamicsWorld = nullptr;
+	}
 }
 
 void
 PhysicsScene::setLength(float length) noexcept
 {
-    _setting.length = length;
+	_setting.length = length;
 }
 
 void
 PhysicsScene::setMass(float mass) noexcept
 {
-    _setting.mass = mass;
+	_setting.mass = mass;
 }
 
 void
 PhysicsScene::setSpeed(float speed) noexcept
 {
-    _setting.speed = speed;
+	_setting.speed = speed;
 }
 
 void
 PhysicsScene::setSkitWindow(float width) noexcept
 {
-    _setting.skinWidth = width;
+	_setting.skinWidth = width;
 }
 
 void
 PhysicsScene::setGravity(const Vector3& v) noexcept
 {
-    if (_dynamicsWorld)
-        _dynamicsWorld->setGravity(btVector3(v.x, v.y, v.z));
+	if (_dynamicsWorld)
+		_dynamicsWorld->setGravity(btVector3(v.x, v.y, v.z));
 
-    _setting.gravity = v;
+	_setting.gravity = v;
 }
 
 float
 PhysicsScene::getLength() const noexcept
 {
-    return _setting.length;
+	return _setting.length;
 }
 
 float
 PhysicsScene::getMass() const noexcept
 {
-    return _setting.mass;
+	return _setting.mass;
 }
 
 float
 PhysicsScene::getSpeed() const noexcept
 {
-    return _setting.speed;
+	return _setting.speed;
 }
 
 float
 PhysicsScene::getSkitWindow() const noexcept
 {
-    return _setting.skinWidth;
+	return _setting.skinWidth;
 }
 
 const Vector3&
 PhysicsScene::getGravity() const noexcept
 {
-    return _setting.gravity;
+	return _setting.gravity;
 }
 
 /*int
 PhysicsScene::raycast(const Vector3& rayFromWorld, const Vector3& rayToWorld, RaycastHit& hit)
 {
-    btVector3 from(rayFromWorld.x, rayFromWorld.y, rayFromWorld.z);
-    btVector3 to(rayToWorld.x, rayToWorld.y, rayToWorld.z);
+	btVector3 from(rayFromWorld.x, rayFromWorld.y, rayFromWorld.z);
+	btVector3 to(rayToWorld.x, rayToWorld.y, rayToWorld.z);
 
-    btCollisionWorld::ClosestRayResultCallback callback(from, to);
-    _dynamicsWorld->rayTest(from, to, callback);
-    if (callback.hasHit())
-    {
-        const btRigidBody* body = btRigidBody::upcast(callback.m_collisionObject);
-        if (body)
-        {
-            hit.point.x = callback.m_hitPointWorld.x();
-            hit.point.y = callback.m_hitPointWorld.y();
-            hit.point.z = callback.m_hitPointWorld.z();
+	btCollisionWorld::ClosestRayResultCallback callback(from, to);
+	_dynamicsWorld->rayTest(from, to, callback);
+	if (callback.hasHit())
+	{
+		const btRigidBody* body = btRigidBody::upcast(callback.m_collisionObject);
+		if (body)
+		{
+			hit.point.x = callback.m_hitPointWorld.x();
+			hit.point.y = callback.m_hitPointWorld.y();
+			hit.point.z = callback.m_hitPointWorld.z();
 
-            hit.normal.x = callback.m_hitNormalWorld.x();
-            hit.normal.y = callback.m_hitNormalWorld.y();
-            hit.normal.z = callback.m_hitNormalWorld.z();
+			hit.normal.x = callback.m_hitNormalWorld.x();
+			hit.normal.y = callback.m_hitNormalWorld.y();
+			hit.normal.z = callback.m_hitNormalWorld.z();
 
-            hit.distance = callback.m_closestHitFraction;
+			hit.distance = callback.m_closestHitFraction;
 
-            auto rigidbody = Rigidbody::find((InstanceID)body->getUserIndex());
-            assert(rigidbody);
+			auto rigidbody = Rigidbody::find((InstanceID)body->getUserIndex());
+			assert(rigidbody);
 
-            hit.collider = rigidbody->getComponent<Collider>();
-            hit.rigidbody = rigidbody->getComponent<Rigidbody>();
-            hit.transform = rigidbody->getComponent<Transform>();
+			hit.collider = rigidbody->getComponent<Collider>();
+			hit.rigidbody = rigidbody->getComponent<Rigidbody>();
+			hit.transform = rigidbody->getComponent<Transform>();
 
-            return 1;
-        }
-    }
+			return 1;
+		}
+	}
 
-    return 0;
+	return 0;
 }
 
 int
 PhysicsScene::raycastAll(const Vector3& rayFromWorld, const Vector3& rayToWorld, RaycastHits& hits)
 {
-    btVector3 from(rayFromWorld.x, rayFromWorld.y, rayFromWorld.z);
-    btVector3 to(rayToWorld.x, rayToWorld.y, rayToWorld.z);
+	btVector3 from(rayFromWorld.x, rayFromWorld.y, rayFromWorld.z);
+	btVector3 to(rayToWorld.x, rayToWorld.y, rayToWorld.z);
 
-    btCollisionWorld::AllHitsRayResultCallback callback(from, to);
-    _dynamicsWorld->rayTest(from, to, callback);
-    if (callback.hasHit())
-    {
-        for (int i = 0; i < callback.m_collisionObjects.size(); i++)
-        {
-            const btCollisionObject* collision = callback.m_collisionObjects[i];
-            const btRigidBody* body = btRigidBody::upcast(collision);
-            if (body)
-            {
-                RaycastHit hit;
+	btCollisionWorld::AllHitsRayResultCallback callback(from, to);
+	_dynamicsWorld->rayTest(from, to, callback);
+	if (callback.hasHit())
+	{
+		for (int i = 0; i < callback.m_collisionObjects.size(); i++)
+		{
+			const btCollisionObject* collision = callback.m_collisionObjects[i];
+			const btRigidBody* body = btRigidBody::upcast(collision);
+			if (body)
+			{
+				RaycastHit hit;
 
-                hit.point.x = callback.m_hitPointWorld[i].x();
-                hit.point.y = callback.m_hitPointWorld[i].y();
-                hit.point.z = callback.m_hitPointWorld[i].z();
+				hit.point.x = callback.m_hitPointWorld[i].x();
+				hit.point.y = callback.m_hitPointWorld[i].y();
+				hit.point.z = callback.m_hitPointWorld[i].z();
 
-                hit.normal.x = callback.m_hitNormalWorld[i].x();
-                hit.normal.y = callback.m_hitNormalWorld[i].y();
-                hit.normal.z = callback.m_hitNormalWorld[i].z();
+				hit.normal.x = callback.m_hitNormalWorld[i].x();
+				hit.normal.y = callback.m_hitNormalWorld[i].y();
+				hit.normal.z = callback.m_hitNormalWorld[i].z();
 
-                hit.distance = callback.m_hitFractions[i];
+				hit.distance = callback.m_hitFractions[i];
 
-                auto gameobj = Entity::find(body->getUserIndex());
-                assert(gameobj);
+				auto gameobj = Entity::find(body->getUserIndex());
+				assert(gameobj);
 
-                hit.collider = gameobj->getComponent<Collider>();
-                hit.rigidbody = gameobj->getComponent<Rigidbody>();
-                hit.transform = gameobj->getComponent<Transform>();
+				hit.collider = gameobj->getComponent<Collider>();
+				hit.rigidbody = gameobj->getComponent<Rigidbody>();
+				hit.transform = gameobj->getComponent<Transform>();
 
-                hits.push_back(hit);
-            }
-        }
+				hits.push_back(hit);
+			}
+		}
 
-        return hits.size();
-    }
+		return hits.size();
+	}
 
-    return 0;
+	return 0;
 }
 */
 
 void
 PhysicsScene::addRigidbody(btRigidBody* body) noexcept
 {
-    _dynamicsWorld->addRigidBody(body);
+	_dynamicsWorld->addRigidBody(body);
 }
 
 void
 PhysicsScene::removeRigidbody(btRigidBody* body) noexcept
 {
-    _dynamicsWorld->removeRigidBody(body);
+	_dynamicsWorld->removeRigidBody(body);
 }
 
 void
 PhysicsScene::addCharacter(btCollisionObject* object) noexcept
 {
-    _dynamicsWorld->addCollisionObject(object, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::StaticFilter | btBroadphaseProxy::DefaultFilter);
+	_dynamicsWorld->addCollisionObject(object, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::StaticFilter | btBroadphaseProxy::DefaultFilter);
 }
 
 void
 PhysicsScene::removeCharacter(btCollisionObject* object) noexcept
 {
-    _dynamicsWorld->removeCollisionObject(object);
+	_dynamicsWorld->removeCollisionObject(object);
 }
 
 void
 PhysicsScene::addAction(btActionInterface* action) noexcept
 {
-    _dynamicsWorld->addAction(action);
+	_dynamicsWorld->addAction(action);
 }
 
 void
 PhysicsScene::removeAction(btActionInterface* action) noexcept
 {
-    _dynamicsWorld->removeAction(action);
+	_dynamicsWorld->removeAction(action);
 }
 
 void
 PhysicsScene::simulation(float delta) noexcept
 {
-    _dynamicsWorld->stepSimulation(delta);
+	_dynamicsWorld->stepSimulation(delta);
 
-    auto dispatcher = _dynamicsWorld->getDispatcher();
-    if (dispatcher)
-    {
-        auto numManifolds = _dispatcher->getNumManifolds();
-        for (std::size_t i = 0; i < numManifolds; i++)
-        {
-            auto contactManifold = _dispatcher->getManifoldByIndexInternal(i);
-            if (contactManifold->getNumContacts() == 0)
-                continue;
+	auto dispatcher = _dynamicsWorld->getDispatcher();
+	if (dispatcher)
+	{
+		auto numManifolds = _dispatcher->getNumManifolds();
+		for (std::size_t i = 0; i < numManifolds; i++)
+		{
+			auto contactManifold = _dispatcher->getManifoldByIndexInternal(i);
+			if (contactManifold->getNumContacts() == 0)
+				continue;
 
-            auto objA = contactManifold->getBody0();
-            auto objB = contactManifold->getBody1();
+			auto objA = contactManifold->getBody0();
+			auto objB = contactManifold->getBody1();
 
-            auto objAPointer = objA->getUserPointer();
-            auto objBPointer = objB->getUserPointer();
+			auto objAPointer = objA->getUserPointer();
+			auto objBPointer = objB->getUserPointer();
 
-            if (objAPointer)
-            {
-                PhysicsRigidbody* bodyA = (PhysicsRigidbody*)objAPointer;
+			if (objAPointer)
+			{
+				PhysicsRigidbody* bodyA = (PhysicsRigidbody*)objAPointer;
 
-                auto listenerA = bodyA->getRigidbodyListener();
-                if (listenerA)
-                    listenerA->onCollisionStay();
-            }
+				auto listenerA = bodyA->getRigidbodyListener();
+				if (listenerA)
+					listenerA->onCollisionStay();
+			}
 
-            if (objBPointer)
-            {
-                PhysicsRigidbody* bodyB = (PhysicsRigidbody*)objBPointer;
+			if (objBPointer)
+			{
+				PhysicsRigidbody* bodyB = (PhysicsRigidbody*)objBPointer;
 
-                auto listenerB = bodyB->getRigidbodyListener();
-                if (listenerB)
-                    listenerB->onCollisionStay();
-            }
-        }
-    }
+				auto listenerB = bodyB->getRigidbodyListener();
+				if (listenerB)
+					listenerB->onCollisionStay();
+			}
+		}
+	}
 }
 
 _NAME_END

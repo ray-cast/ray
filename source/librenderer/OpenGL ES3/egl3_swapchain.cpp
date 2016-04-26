@@ -43,17 +43,17 @@ __ImplementSubClass(EGL3Swapchain, GraphicsSwapchain, "EGL3Swapchain")
 EGL3Swapchain* EGL3Swapchain::_swapchain = nullptr;
 
 EGL3Swapchain::EGL3Swapchain() noexcept
-    : _display(EGL_NO_DISPLAY)
-    , _surface(EGL_NO_SURFACE)
-    , _context(EGL_NO_CONTEXT)
-    , _config(0)
+	: _display(EGL_NO_DISPLAY)
+	, _surface(EGL_NO_SURFACE)
+	, _context(EGL_NO_CONTEXT)
+	, _config(0)
 	, _isActive(false)
 {
 }
 
 EGL3Swapchain::~EGL3Swapchain() noexcept
 {
-    this->close();
+	this->close();
 }
 
 bool
@@ -67,7 +67,7 @@ EGL3Swapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 
 	if (!initSwapchain(swapchainDesc))
 		return false;
-	
+
 	_swapchainDesc = swapchainDesc;
 	return true;
 }
@@ -75,17 +75,17 @@ EGL3Swapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 void
 EGL3Swapchain::close() noexcept
 {
-    if (_surface != EGL_NO_SURFACE)
-    {
-        ::eglDestroySurface(_display, _surface);
-        _surface = EGL_NO_SURFACE;
-    }
+	if (_surface != EGL_NO_SURFACE)
+	{
+		::eglDestroySurface(_display, _surface);
+		_surface = EGL_NO_SURFACE;
+	}
 
-    if (_context != EGL_NO_CONTEXT)
-    {
-        ::eglDestroyContext(_display, _context);
-        _context = EGL_NO_CONTEXT;
-    }
+	if (_context != EGL_NO_CONTEXT)
+	{
+		::eglDestroyContext(_display, _context);
+		_context = EGL_NO_CONTEXT;
+	}
 
 	if (_display != EGL_NO_DISPLAY)
 	{
@@ -137,7 +137,7 @@ EGL3Swapchain::getActive() const noexcept
 void
 EGL3Swapchain::setSwapInterval(GraphicsSwapInterval interval) noexcept
 {
-    assert(_display != EGL_NO_DISPLAY);
+	assert(_display != EGL_NO_DISPLAY);
 
 	switch (interval)
 	{
@@ -175,8 +175,8 @@ void
 EGL3Swapchain::present() noexcept
 {
 	assert(_isActive);
-    assert(_display != EGL_NO_DISPLAY);
-    assert(_surface != EGL_NO_SURFACE);
+	assert(_display != EGL_NO_DISPLAY);
+	assert(_surface != EGL_NO_SURFACE);
 
 	if (::eglSwapBuffers(_display, _surface) == EGL_FALSE)
 		GL_PLATFORM_LOG("eglSwapBuffers() fail : %d", eglGetError());
@@ -196,7 +196,7 @@ EGL3Swapchain::initSurface(const GraphicsSwapchainDesc& swapchainDesc)
 	return true;
 }
 
-bool 
+bool
 EGL3Swapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 {
 	EGLint pixelFormat[80];
@@ -237,7 +237,7 @@ EGL3Swapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexc
 		GL_PLATFORM_LOG("Can't support color format");
 		return false;
 	}
-	
+
 	auto depthStencilFormat = swapchainDesc.getDepthStencilFormat();
 	if (depthStencilFormat == GraphicsFormat::GraphicsFormatD16UNorm)
 	{
@@ -324,7 +324,7 @@ EGL3Swapchain::initPixelFormat(const GraphicsSwapchainDesc& swapchainDesc) noexc
 	return true;
 }
 
-bool 
+bool
 EGL3Swapchain::initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 {
 	EGLint attribs[80];

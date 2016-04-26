@@ -41,22 +41,22 @@
 
 void* operator new(std::size_t num_bytes, const char* file, const std::size_t line)
 {
-    return ::operator new(num_bytes);
+	return ::operator new(num_bytes);
 }
 
 void* operator new[](std::size_t num_bytes, const char* file, const std::size_t line)
 {
-    return ::operator new(num_bytes);
+	return ::operator new(num_bytes);
 }
 
 void operator delete(void* pointer, const char* file, const std::size_t line)
 {
-    ::operator delete(pointer);
+	::operator delete(pointer);
 }
 
 void operator delete[](void* pointer, const char* file, const std::size_t line)
 {
-    delete[] pointer;
+	delete[] pointer;
 }
 
 #pragma pop_macro("new")

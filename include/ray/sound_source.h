@@ -52,8 +52,8 @@ struct EXPORT SoundClip
 class EXPORT SoundSource
 {
 public:
-    SoundSource() noexcept;
-    virtual ~SoundSource() noexcept;
+	SoundSource() noexcept;
+	virtual ~SoundSource() noexcept;
 
 	virtual void open() noexcept = 0;
 	virtual void close() noexcept = 0;

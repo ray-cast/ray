@@ -44,25 +44,25 @@ _NAME_BEGIN
 class EXPORT Stream : public StreamReader, public StreamWrite
 {
 public:
-    Stream(StreamBuf* buf) noexcept;
-    virtual ~Stream() noexcept;
+	Stream(StreamBuf* buf) noexcept;
+	virtual ~Stream() noexcept;
 
-    Stream& read(char* str, std::streamsize cnt) noexcept;
-    Stream& read(char* str, streamsize size, streamsize cnt) noexcept;
+	Stream& read(char* str, std::streamsize cnt) noexcept;
+	Stream& read(char* str, streamsize size, streamsize cnt) noexcept;
 
-    Stream& write(const char* str, std::streamsize cnt) noexcept;
-    Stream& write(const char* str, streamsize size, streamsize cnt) noexcept;
+	Stream& write(const char* str, std::streamsize cnt) noexcept;
+	Stream& write(const char* str, streamsize size, streamsize cnt) noexcept;
 
-    Stream& seekg(ios_base::off_type pos) noexcept;
-    Stream& seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
+	Stream& seekg(ios_base::off_type pos) noexcept;
+	Stream& seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
 
-    Stream& flush() noexcept;
+	Stream& flush() noexcept;
 
-    streamsize size() noexcept;
+	streamsize size() noexcept;
 
-    streamsize gcount() const noexcept;
+	streamsize gcount() const noexcept;
 
-    streampos tellg() noexcept;
+	streampos tellg() noexcept;
 
 protected:
 	class iosentry final
@@ -83,12 +83,12 @@ protected:
 	};
 
 private:
-    Stream& operator=(const Stream&) noexcept = delete;
-    Stream(const Stream&) noexcept = delete;
+	Stream& operator=(const Stream&) noexcept = delete;
+	Stream(const Stream&) noexcept = delete;
 
 private:
 
-    streamsize _count;
+	streamsize _count;
 };
 
 _NAME_END

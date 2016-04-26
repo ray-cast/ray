@@ -44,20 +44,20 @@ _NAME_BEGIN
 class EXPORT PhysicsSystem
 {
 public:
-    PhysicsSystem() noexcept;
-    ~PhysicsSystem() noexcept;
+	PhysicsSystem() noexcept;
+	~PhysicsSystem() noexcept;
 
-    void open() noexcept;
-    void close() noexcept;
+	void open() noexcept;
+	void close() noexcept;
 
-    void addPhysicsScene(PhysicsScenePtr scene) noexcept;
-    void removePhysicsScene(PhysicsScenePtr scene) noexcept;
+	void addPhysicsScene(PhysicsScenePtr scene) noexcept;
+	void removePhysicsScene(PhysicsScenePtr scene) noexcept;
 
-    void simulation(float delta) noexcept;
+	void simulation(float delta) noexcept;
 
 private:
 
-    PhysicsScenes _sceneList;
+	PhysicsScenes _sceneList;
 };
 
 _NAME_END

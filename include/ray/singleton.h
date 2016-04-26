@@ -45,21 +45,21 @@ template<typename T>
 class Singleton
 {
 public:
-    static T* instance() noexcept
-    {
-        return &_instance;
-    }
+	static T* instance() noexcept
+	{
+		return &_instance;
+	}
 
 protected:
-    Singleton(void) noexcept {}
-    virtual ~Singleton(void) noexcept {}
+	Singleton(void) noexcept {}
+	virtual ~Singleton(void) noexcept {}
 
 private:
-    Singleton(const Singleton&) = delete;
-    Singleton& operator=(const Singleton&) = delete;
+	Singleton(const Singleton&) = delete;
+	Singleton& operator=(const Singleton&) = delete;
 
 private:
-    static T _instance;
+	static T _instance;
 };
 
 template<typename T> T Singleton<T>::_instance;

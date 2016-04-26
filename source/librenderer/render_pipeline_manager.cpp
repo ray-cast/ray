@@ -77,6 +77,12 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 	assert(setting.window);
 	assert(setting.width > 0 && setting.height > 0);
 
+	if (setting.deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES2)
+	{
+		if (setting.enableDeferredLighting)
+			return false;
+	}
+
 	_pipelineDevice = std::make_shared<RenderPipelineDevice>();
 	if (!_pipelineDevice->open(setting.deviceType))
 		return false;
@@ -107,7 +113,7 @@ RenderPipelineManager::setup(const RenderSetting& setting) noexcept
 	return true;
 }
 
-void 
+void
 RenderPipelineManager::close() noexcept
 {
 	this->destroyShadowRenderer();
@@ -291,7 +297,7 @@ RenderPipelineManager::renderBegin() noexcept
 	_pipeline->renderBegin();
 }
 
-void 
+void
 RenderPipelineManager::render(const RenderScene& scene) noexcept
 {
 	assert(_pipeline);
@@ -335,7 +341,7 @@ RenderPipelineManager::render(const RenderScene& scene) noexcept
 	}
 }
 
-void 
+void
 RenderPipelineManager::renderEnd() noexcept
 {
 	_pipeline->present();
@@ -531,7 +537,7 @@ RenderPipelineManager::destroyPostProcess() noexcept
 	_pipeline->destroyPostProcess();
 }
 
-bool 
+bool
 RenderPipelineManager::isTextureSupport(GraphicsFormat format) noexcept
 {
 	assert(_pipeline);
@@ -545,7 +551,7 @@ RenderPipelineManager::isTextureDimSupport(GraphicsTextureDim format) noexcept
 	return _pipeline->isTextureDimSupport(format);
 }
 
-bool 
+bool
 RenderPipelineManager::isVertexSupport(GraphicsFormat format) noexcept
 {
 	assert(_pipeline);
@@ -559,35 +565,35 @@ RenderPipelineManager::isShaderSupport(GraphicsShaderStage stage) noexcept
 	return _pipeline->isShaderSupport(stage);
 }
 
-GraphicsSwapchainPtr 
+GraphicsSwapchainPtr
 RenderPipelineManager::createSwapchain(const GraphicsSwapchainDesc& desc) noexcept
 {
 	assert(_pipelineDevice);
 	return _pipelineDevice->createSwapchain(desc);
 }
 
-GraphicsContextPtr 
+GraphicsContextPtr
 RenderPipelineManager::createDeviceContext(const GraphicsContextDesc& desc) noexcept
 {
 	assert(_pipelineDevice);
 	return _pipelineDevice->createDeviceContext(desc);
 }
 
-GraphicsFramebufferPtr 
+GraphicsFramebufferPtr
 RenderPipelineManager::createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept
 {
 	assert(_pipelineDevice);
 	return _pipelineDevice->createFramebuffer(desc);
 }
 
-GraphicsFramebufferLayoutPtr 
+GraphicsFramebufferLayoutPtr
 RenderPipelineManager::createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc) noexcept
 {
 	assert(_pipelineDevice);
 	return _pipelineDevice->createFramebufferLayout(desc);
 }
 
-GraphicsTexturePtr 
+GraphicsTexturePtr
 RenderPipelineManager::createTexture(const GraphicsTextureDesc& desc) noexcept
 {
 	assert(_pipelineDevice);
@@ -601,14 +607,14 @@ RenderPipelineManager::createTexture(std::uint32_t w, std::uint32_t h, GraphicsT
 	return _pipelineDevice->createTexture(w, h, dim, format);
 }
 
-GraphicsTexturePtr 
+GraphicsTexturePtr
 RenderPipelineManager::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter) noexcept
 {
 	assert(_pipelineDevice);
 	return _pipelineDevice->createTexture(name, dim, filter);
 }
 
-MaterialPtr 
+MaterialPtr
 RenderPipelineManager::createMaterial(const std::string& name) noexcept
 {
 	assert(_pipelineDevice);
@@ -622,7 +628,7 @@ RenderPipelineManager::destroyMaterial(MaterialPtr material) noexcept
 	_pipelineDevice->destroyMaterial(material);
 }
 
-GraphicsInputLayoutPtr 
+GraphicsInputLayoutPtr
 RenderPipelineManager::createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept
 {
 	assert(_pipelineDevice);
@@ -636,14 +642,14 @@ RenderPipelineManager::createGraphicsPipeline(const GraphicsPipelineDesc& desc) 
 	return _pipelineDevice->createGraphicsPipeline(desc);
 }
 
-GraphicsDataPtr 
+GraphicsDataPtr
 RenderPipelineManager::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
 	assert(_pipelineDevice);
 	return _pipelineDevice->createGraphicsData(desc);
 }
 
-RenderMeshPtr 
+RenderMeshPtr
 RenderPipelineManager::createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
 {
 	assert(_pipelineDevice);

@@ -62,7 +62,7 @@ GraphicsSystem::~GraphicsSystem() noexcept
 {
 }
 
-GraphicsDevicePtr 
+GraphicsDevicePtr
 GraphicsSystem::createDevice(const GraphicsDeviceDesc& desc) noexcept
 {
 	auto deviceType = desc.getDeviceType();
@@ -76,7 +76,7 @@ GraphicsSystem::createDevice(const GraphicsDeviceDesc& desc) noexcept
 			return device;
 		return nullptr;
 	}
-		
+
 #endif
 #if defined(_BUILD_OPENGL_ES2)
 	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES2)

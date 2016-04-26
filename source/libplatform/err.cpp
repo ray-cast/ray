@@ -44,20 +44,20 @@ error_code::error_code() noexcept
 
 error_code::error_code(int_type code) noexcept
 {
-    this->assign(code);
+	this->assign(code);
 }
 
 error_code&
 error_code::assign(int_type value) noexcept
 {
-    _Myval = value;
-    return *this;
+	_Myval = value;
+	return *this;
 }
 
 error_code::int_type
 error_code::value() const noexcept
 {
-    return _Myval;
+	return _Myval;
 }
 
 _NAME_END

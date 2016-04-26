@@ -163,7 +163,7 @@ private:
 	std::vector<GraphicsTextureDim> _supportTextureDims;
 	std::vector<GraphicsFormat> _supportAttribute;
 	std::vector<GraphicsShaderStage> _supportShaders;
-	
+
 	GraphicsDeviceWeakPtr _device;
 };
 

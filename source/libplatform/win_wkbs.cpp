@@ -43,37 +43,37 @@ _NAME_BEGIN
 util::string
 WalkerBase::GetCurrentDirectory(void) noexcept
 {
-    DWORD length = MAX_BUFFER_LENGTH;
+	DWORD length = MAX_BUFFER_LENGTH;
 
-    for (std::size_t i = 0; i < 5; i++)
-    {
-        std::unique_ptr<TCHAR[]> buffer(new TCHAR[length]);
+	for (std::size_t i = 0; i < 5; i++)
+	{
+		std::unique_ptr<TCHAR[]> buffer(new TCHAR[length]);
 
-        DWORD size = ::GetCurrentDirectory(length, buffer.get());
+		DWORD size = ::GetCurrentDirectory(length, buffer.get());
 
-        if (length > size)
-            return util::string(buffer.get(), size);
-    }
+		if (length > size)
+			return util::string(buffer.get(), size);
+	}
 
-    return __TEXT("");
+	return __TEXT("");
 }
 
 util::string
 WalkerBase::GetModuleFileName(HMODULE hModule) noexcept
 {
-    DWORD length = MAX_BUFFER_LENGTH;
+	DWORD length = MAX_BUFFER_LENGTH;
 
-    for (DWORD i = 0; i < 5; i++)
-    {
-        std::unique_ptr<TCHAR[]> buffer(new TCHAR[length]);
+	for (DWORD i = 0; i < 5; i++)
+	{
+		std::unique_ptr<TCHAR[]> buffer(new TCHAR[length]);
 
-        DWORD size = ::GetModuleFileName(hModule, buffer.get(), length);
+		DWORD size = ::GetModuleFileName(hModule, buffer.get(), length);
 
-        if (length > size)
-            return util::string(buffer.get(), size);
-    }
+		if (length > size)
+			return util::string(buffer.get(), size);
+	}
 
-    return __TEXT("");
+	return __TEXT("");
 }
 
 util::string
@@ -81,34 +81,34 @@ WalkerBase::GetModuleDirectory(HMODULE hModule) noexcept
 {
 	util::string dir = GetModuleFileName(hModule);
 	util::string::size_type pos = dir.find_last_of(__TEXT("\\/:"));
-    if (pos != std::string::npos)
-    {
-        dir.erase(pos, dir.length() - pos);
-        return dir;
-    }
+	if (pos != std::string::npos)
+	{
+		dir.erase(pos, dir.length() - pos);
+		return dir;
+	}
 
-    return __TEXT("");
+	return __TEXT("");
 }
 
 util::string
 WalkerBase::GetEnvironmentVariable(const util::string& name) noexcept
 {
-    DWORD length = MAX_BUFFER_LENGTH;
+	DWORD length = MAX_BUFFER_LENGTH;
 
-    for (DWORD i = 0; i < 5; i++)
-    {
-        std::unique_ptr<util::char_type[]> buffer(new util::char_type[length]);
+	for (DWORD i = 0; i < 5; i++)
+	{
+		std::unique_ptr<util::char_type[]> buffer(new util::char_type[length]);
 
-        DWORD size = ::GetEnvironmentVariable(name.data(), buffer.get(), length);
+		DWORD size = ::GetEnvironmentVariable(name.data(), buffer.get(), length);
 
-        if (0 == size)
-            break;
+		if (0 == size)
+			break;
 
-        if (length > size)
-            return util::string(buffer.get(), size);
-    }
+		if (length > size)
+			return util::string(buffer.get(), size);
+	}
 
-    return __TEXT("");
+	return __TEXT("");
 }
 
 _NAME_END

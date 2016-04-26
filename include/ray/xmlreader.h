@@ -123,8 +123,8 @@ private:
 class EXPORT XMLReader final : public iarchive
 {
 public:
-    XMLReader() noexcept;
-    ~XMLReader() noexcept;
+	XMLReader() noexcept;
+	~XMLReader() noexcept;
 
 	XMLReader& open(StreamReader& stream) noexcept;
 	XMLReader& close() noexcept;

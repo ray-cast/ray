@@ -51,7 +51,7 @@ RenderPostProcess::~RenderPostProcess() noexcept
 {
 }
 
-void 
+void
 RenderPostProcess::setActive(bool active) noexcept
 {
 	if (_active != active)
@@ -65,7 +65,7 @@ RenderPostProcess::setActive(bool active) noexcept
 	}
 }
 
-bool 
+bool
 RenderPostProcess::getActive() const noexcept
 {
 	return _active;
@@ -119,7 +119,7 @@ RenderPostProcess::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr sou
 	return false;
 }
 
-void 
+void
 RenderPostProcess::_setRenderPipeline(RenderPipeline* pipeline) noexcept
 {
 	_renderPipeline = pipeline;

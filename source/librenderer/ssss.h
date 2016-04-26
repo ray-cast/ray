@@ -80,7 +80,7 @@ private:
 	MaterialParamPtr _lightColor;
 	MaterialParamPtr _lightEyePosition;
 	MaterialParamPtr _lightEyeProjInfo;
-	
+
 	MaterialParamPtr _shadowMap;
 	MaterialParamPtr _shadowFactor;
 	MaterialParamPtr _shadowEye2LightView;

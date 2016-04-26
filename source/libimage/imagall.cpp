@@ -76,16 +76,16 @@ std::shared_ptr<ImageHandler> tga = std::make_shared<TGAHandler>();
 void GetImageInstanceList(Image& image)
 {
 #if _BUILD_PNG_HANDLER
-    image.add(png);
+	image.add(png);
 #endif
 #if _BUILD_TGA_HANDLER
-    image.add(tga);
+	image.add(tga);
 #endif
 #if _BUILD_JPEG_HANDLER
-    image.add(jpeg);
+	image.add(jpeg);
 #endif
 #if _BUILD_BMP_HANDLER
-    image.add(bmp);
+	image.add(bmp);
 #endif
 #if _BUILD_DDS_HANDLER
 	image.add(dds);

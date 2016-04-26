@@ -45,13 +45,13 @@ template<typename T>
 class EulerAnglest
 {
 public:
-    T x, y, z;
+	T x, y, z;
 
-    EulerAnglest() noexcept {};
-    EulerAnglest(T xx, T yy, T zz) noexcept : x(xx), y(yy), z(zz) {}
+	EulerAnglest() noexcept {};
+	EulerAnglest(T xx, T yy, T zz) noexcept : x(xx), y(yy), z(zz) {}
 	EulerAnglest(const EulerAnglest<T>& e) noexcept : x(e.x), y(e.y), z(e.z) {}
 
-	explicit EulerAnglest(const Vector3t<T>& v) noexcept : x(v.x) , y(v.y), z(v.z) {}
+	explicit EulerAnglest(const Vector3t<T>& v) noexcept : x(v.x), y(v.y), z(v.z) {}
 	explicit EulerAnglest(const Quaterniont<T>& q) noexcept { this->makeRotate(q); }
 
 	EulerAnglest<T>& operator+=(const EulerAnglest<T>& e) { x += e.x; y += e.y; z += e.z; return *this; }
@@ -60,9 +60,9 @@ public:
 	EulerAnglest<T>& operator/=(const EulerAnglest<T>& e) { x /= e.x; y /= e.y; z /= e.z; return *this; }
 
 	EulerAnglest<T>& identity() noexcept
-    {
-        x = z = y = 0.0f;
-    }
+	{
+		x = z = y = 0.0f;
+	}
 
 	EulerAnglest<T>& makeRotate(const Quaterniont<T>& q) noexcept
 	{

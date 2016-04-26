@@ -129,60 +129,60 @@ static int32_t onInputEvent(struct android_app* app, AInputEvent* event)
 			break;
 		}
 	case AINPUT_EVENT_TYPE_KEY:
-		{
-			ray::InputEvent inputEvent;
-			inputEvent.event = ray::InputEvent::Character;
-			inputEvent.key.timestamp = ::AKeyEvent_getEventTime(event);
-			inputEvent.key.state = true;
+	{
+		ray::InputEvent inputEvent;
+		inputEvent.event = ray::InputEvent::Character;
+		inputEvent.key.timestamp = ::AKeyEvent_getEventTime(event);
+		inputEvent.key.state = true;
 
-			inputEvent.key.keysym.raw = AKeyEvent_getScanCode(event);
-			inputEvent.key.keysym.sym = AKeyEvent_getKeyCode(event);
-			inputEvent.key.keysym.unicode = AKeyEvent_getKeyCode(event);
-		}
+		inputEvent.key.keysym.raw = AKeyEvent_getScanCode(event);
+		inputEvent.key.keysym.sym = AKeyEvent_getKeyCode(event);
+		inputEvent.key.keysym.unicode = AKeyEvent_getKeyCode(event);
+	}
 	}
 
 	int32_t id = AMotionEvent_getAction(event);
 	switch (id)
 	{
 	case AMOTION_EVENT_ACTION_MOVE:
-		{
-			ray::InputEvent inputEvent;
-			inputEvent.event = ray::InputEvent::TouchMotionMove;
-			inputEvent.motion.x = ::AMotionEvent_getXOffset(event);
-			inputEvent.motion.y = ::AMotionEvent_getYOffset(event);
-			inputEvent.motion.xrel = inputEvent.motion.x;
-			inputEvent.motion.yrel = inputEvent.motion.y;
-			inputEvent.motion.state = ::AMotionEvent_getButtonState(event);
-			inputEvent.motion.timestamp = ::AMotionEvent_getEventTime(event);
-			inputEvent.button.button = ray::InputButton::MOUSE0;
-		}
-		break;
+	{
+		ray::InputEvent inputEvent;
+		inputEvent.event = ray::InputEvent::TouchMotionMove;
+		inputEvent.motion.x = ::AMotionEvent_getXOffset(event);
+		inputEvent.motion.y = ::AMotionEvent_getYOffset(event);
+		inputEvent.motion.xrel = inputEvent.motion.x;
+		inputEvent.motion.yrel = inputEvent.motion.y;
+		inputEvent.motion.state = ::AMotionEvent_getButtonState(event);
+		inputEvent.motion.timestamp = ::AMotionEvent_getEventTime(event);
+		inputEvent.button.button = ray::InputButton::MOUSE0;
+	}
+	break;
 	case AMOTION_EVENT_ACTION_DOWN:
-		{
-			ray::InputEvent inputEvent;
-			inputEvent.event = ray::InputEvent::TouchMotionDown;
-			inputEvent.motion.x = ::AMotionEvent_getXOffset(event);
-			inputEvent.motion.y = ::AMotionEvent_getYOffset(event);
-			inputEvent.motion.xrel = inputEvent.motion.x;
-			inputEvent.motion.yrel = inputEvent.motion.y;
-			inputEvent.motion.state = ::AMotionEvent_getButtonState(event);
-			inputEvent.motion.timestamp = ::AMotionEvent_getDownTime(event);
-			inputEvent.button.button = ray::InputButton::MOUSE0;
-		}
-		break;
+	{
+		ray::InputEvent inputEvent;
+		inputEvent.event = ray::InputEvent::TouchMotionDown;
+		inputEvent.motion.x = ::AMotionEvent_getXOffset(event);
+		inputEvent.motion.y = ::AMotionEvent_getYOffset(event);
+		inputEvent.motion.xrel = inputEvent.motion.x;
+		inputEvent.motion.yrel = inputEvent.motion.y;
+		inputEvent.motion.state = ::AMotionEvent_getButtonState(event);
+		inputEvent.motion.timestamp = ::AMotionEvent_getDownTime(event);
+		inputEvent.button.button = ray::InputButton::MOUSE0;
+	}
+	break;
 	case AMOTION_EVENT_ACTION_UP:
-		{
-			ray::InputEvent inputEvent;
-			inputEvent.event = ray::InputEvent::TouchMotionUp;
-			inputEvent.motion.x = ::AMotionEvent_getXOffset(event);
-			inputEvent.motion.y = ::AMotionEvent_getYOffset(event);
-			inputEvent.motion.xrel = inputEvent.motion.x;
-			inputEvent.motion.yrel = inputEvent.motion.y;
-			inputEvent.motion.state = ::AMotionEvent_getButtonState(event);
-			inputEvent.motion.timestamp = ::AMotionEvent_getEventTime(event);
-			inputEvent.button.button = ray::InputButton::MOUSE0;
-		}
-		break;
+	{
+		ray::InputEvent inputEvent;
+		inputEvent.event = ray::InputEvent::TouchMotionUp;
+		inputEvent.motion.x = ::AMotionEvent_getXOffset(event);
+		inputEvent.motion.y = ::AMotionEvent_getYOffset(event);
+		inputEvent.motion.xrel = inputEvent.motion.x;
+		inputEvent.motion.yrel = inputEvent.motion.y;
+		inputEvent.motion.state = ::AMotionEvent_getButtonState(event);
+		inputEvent.motion.timestamp = ::AMotionEvent_getEventTime(event);
+		inputEvent.button.button = ray::InputButton::MOUSE0;
+	}
+	break;
 	case AMOTION_EVENT_ACTION_CANCEL:
 	{
 		ray::InputEvent inputEvent;
@@ -193,7 +193,7 @@ static int32_t onInputEvent(struct android_app* app, AInputEvent* event)
 		inputEvent.motion.yrel = inputEvent.motion.y;
 		inputEvent.motion.state = ::AMotionEvent_getButtonState(event);
 		inputEvent.motion.timestamp = ::AMotionEvent_getEventTime(event);
-		inputEvent.button.button = ray::InputButton::MOUSE0;		
+		inputEvent.button.button = ray::InputButton::MOUSE0;
 	}
 	break;
 	}

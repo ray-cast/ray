@@ -65,7 +65,7 @@ public:
 	void addMeshChangeListener(std::function<void()> func) noexcept;
 	void removeMeshChangeListener(std::function<void()> func) noexcept;
 
-	void clear() noexcept;
+	void needUpdate() noexcept;
 
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
@@ -73,7 +73,6 @@ public:
 	GameComponentPtr clone() const noexcept;
 
 private:
-
 	void onActivate() noexcept;
 	void onDeactivate() noexcept;
 

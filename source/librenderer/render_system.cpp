@@ -108,21 +108,21 @@ RenderSystem::getRenderSetting() const noexcept
 	return _pipelineManager->getRenderSetting();
 }
 
-void 
+void
 RenderSystem::setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept
 {
 	assert(_pipelineManager);
 	_pipelineManager->setWindowResolution(w, h);
 }
 
-void 
+void
 RenderSystem::getWindowResolution(std::uint32_t& w, std::uint32_t& h) const noexcept
 {
 	assert(_pipelineManager);
 	_pipelineManager->getWindowResolution(w, h);
 }
 
-void 
+void
 RenderSystem::setViewport(const Viewport& view) noexcept
 {
 	assert(_pipelineManager);
@@ -143,28 +143,28 @@ RenderSystem::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 	_pipelineManager->setFramebuffer(target);
 }
 
-void 
+void
 RenderSystem::clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	assert(_pipelineManager);
 	_pipelineManager->clearFramebuffer(flags, color, depth, stencil);
 }
 
-void 
+void
 RenderSystem::discradRenderTexture() noexcept
 {
 	assert(_pipelineManager);
 	_pipelineManager->discradRenderTexture();
 }
 
-void 
+void
 RenderSystem::readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat format, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept
 {
 	assert(_pipelineManager);
 	_pipelineManager->readFramebuffer(target, format, w, h, bufsize, data);
 }
 
-void 
+void
 RenderSystem::blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept
 {
 	assert(_pipelineManager);
@@ -199,7 +199,7 @@ RenderSystem::drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsI
 	_pipelineManager->drawMesh(tech, mesh, renderable);
 }
 
-bool 
+bool
 RenderSystem::isTextureSupport(GraphicsFormat format) noexcept
 {
 	assert(_pipelineManager);
@@ -213,14 +213,14 @@ RenderSystem::isTextureDimSupport(GraphicsTextureDim dimension) noexcept
 	return _pipelineManager->isTextureDimSupport(dimension);
 }
 
-bool 
+bool
 RenderSystem::isVertexSupport(GraphicsFormat format) noexcept
 {
 	assert(_pipelineManager);
 	return _pipelineManager->isVertexSupport(format);
 }
 
-bool 
+bool
 RenderSystem::isShaderSupport(GraphicsShaderStage stage) noexcept
 {
 	assert(_pipelineManager);
@@ -255,7 +255,7 @@ RenderSystem::createMaterial(const std::string& name) noexcept
 	return _pipelineManager->createMaterial(name);
 }
 
-GraphicsFramebufferPtr 
+GraphicsFramebufferPtr
 RenderSystem::createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept
 {
 	assert(_pipelineManager);
@@ -269,7 +269,7 @@ RenderSystem::createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc)
 	return _pipelineManager->createFramebufferLayout(desc);
 }
 
-GraphicsPipelinePtr 
+GraphicsPipelinePtr
 RenderSystem::createGraphicsPipeline(const GraphicsPipelineDesc& desc) noexcept
 {
 	assert(_pipelineManager);
@@ -297,7 +297,7 @@ RenderSystem::mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept
 	return _pipelineManager->mapBuffer(data, access);
 }
 
-void 
+void
 RenderSystem::unmapBuffer(GraphicsDataPtr data) noexcept
 {
 	assert(_pipelineManager);
@@ -311,21 +311,21 @@ RenderSystem::createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept
 	return _pipelineManager->createInputLayout(desc);
 }
 
-RenderMeshPtr 
+RenderMeshPtr
 RenderSystem::createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept
 {
 	assert(_pipelineManager);
 	return _pipelineManager->createRenderMesh(vb, ib);
 }
 
-RenderMeshPtr 
+RenderMeshPtr
 RenderSystem::createRenderMesh(const MeshProperty& mesh) noexcept
 {
 	assert(_pipelineManager);
 	return _pipelineManager->createRenderMesh(mesh);
 }
 
-RenderMeshPtr 
+RenderMeshPtr
 RenderSystem::createRenderMesh(const MeshPropertys& meshes) noexcept
 {
 	assert(_pipelineManager);

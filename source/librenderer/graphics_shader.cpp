@@ -56,7 +56,6 @@ GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderSt
 	, _lang(lang)
 	, _stage(stage)
 {
-	
 }
 
 GraphicsShaderDesc::GraphicsShaderDesc(GraphicsShaderLang lang, GraphicsShaderStage stage, const std::vector<char>& code) noexcept
@@ -76,7 +75,7 @@ GraphicsShaderDesc::setLanguage(GraphicsShaderLang lang) noexcept
 	_lang = lang;
 }
 
-GraphicsShaderLang 
+GraphicsShaderLang
 GraphicsShaderDesc::getLanguage() const noexcept
 {
 	return _lang;
@@ -119,7 +118,7 @@ GraphicsProgramDesc::addShader(GraphicsShaderPtr shader) noexcept
 {
 	assert(shader);
 
-	auto comp = [&](const GraphicsShaderPtr& it) 
+	auto comp = [&](const GraphicsShaderPtr& it)
 	{
 		return it->getGraphicsShaderDesc().getStage() == shader->getGraphicsShaderDesc().getStage();
 	};

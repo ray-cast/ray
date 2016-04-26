@@ -78,7 +78,7 @@ public:
 
 	bool setup(Material& material) noexcept;
 	void close() noexcept;
-	
+
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 

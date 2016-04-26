@@ -47,7 +47,7 @@ class MyGuiWindowImpl final : public MyGuiWidget
 public:
 	MyGuiWindowImpl() noexcept;
 	~MyGuiWindowImpl() noexcept;
-	
+
 	bool create() except;
 
 	GuiTextBoxPtr getGuiTextBox() const noexcept;
@@ -86,7 +86,7 @@ private:
 	MyGUI::Window* _window;
 
 	GuiTextBoxPtr _textbox;
-	
+
 	delegate<void()> _onWindowButtonPress;
 	delegate<void()> _onWindowCoordChange;
 };
@@ -124,7 +124,7 @@ private:
 
 private:
 
-	MyGuiWindowImpl _impl;	
+	MyGuiWindowImpl _impl;
 };
 
 _NAME_END

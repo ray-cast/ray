@@ -44,16 +44,16 @@ _NAME_BEGIN
 class EXPORT JointFixed final : public Joint
 {
 public:
-    JointFixed() noexcept;
-    ~JointFixed() noexcept;
+	JointFixed() noexcept;
+	~JointFixed() noexcept;
 
-    void setPosition(const Vector3& position) noexcept;
+	void setPosition(const Vector3& position) noexcept;
 
-    const Vector3& getPosition() const noexcept;
+	const Vector3& getPosition() const noexcept;
 
 private:
 
-    Vector3 _position;
+	Vector3 _position;
 };
 
 _NAME_END

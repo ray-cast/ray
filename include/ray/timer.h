@@ -44,49 +44,49 @@ _NAME_BEGIN
 class EXPORT Timer final
 {
 public:
-    Timer() noexcept;
-    ~Timer() noexcept;
+	Timer() noexcept;
+	~Timer() noexcept;
 
-    bool open() noexcept;
+	bool open() noexcept;
 
-    float startTime() const noexcept;
+	float startTime() const noexcept;
 
-    float elapsed() const noexcept;
-    float elapsed_max() const noexcept;
-    float elapsed_min() const noexcept;
+	float elapsed() const noexcept;
+	float elapsed_max() const noexcept;
+	float elapsed_min() const noexcept;
 
-    float fps() const noexcept;
-    float averageFps() const noexcept;
-    float appTime() const noexcept;
-    float frameTime() const noexcept;
-    float delta() const noexcept;
-    float vsync() const noexcept;
+	float fps() const noexcept;
+	float averageFps() const noexcept;
+	float appTime() const noexcept;
+	float frameTime() const noexcept;
+	float delta() const noexcept;
+	float vsync() const noexcept;
 
-    void reset() noexcept;
+	void reset() noexcept;
 
-    void sleep(float fps) const noexcept;
+	void sleep(float fps) const noexcept;
 
-    void update() noexcept;
-
-private:
-    Timer(const Timer&) = delete;
-    Timer& operator=(const Timer&) = delete;
+	void update() noexcept;
 
 private:
+	Timer(const Timer&) = delete;
+	Timer& operator=(const Timer&) = delete;
 
-    float _fps;
+private:
+
+	float _fps;
 	float _averageFps;
 
-    float _appTime;
+	float _appTime;
 	float _startTime;
-    float _lastTime;
-    float _frameTime;
-    float _accumulateTime;
-    float _accumulateFps;
+	float _lastTime;
+	float _frameTime;
+	float _accumulateTime;
+	float _accumulateFps;
 
-    std::size_t _numFrames;
-    std::size_t _currentFramePerSecond;
-    float _framesPerSecondArray[10];
+	std::size_t _numFrames;
+	std::size_t _currentFramePerSecond;
+	float _framesPerSecondArray[10];
 };
 
 typedef std::shared_ptr<class Timer> TimerPtr;

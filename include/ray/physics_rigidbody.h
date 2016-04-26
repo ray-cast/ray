@@ -45,82 +45,82 @@ class EXPORT PhysicsRigidbodyListener
 {
 public:
 
-    virtual void onCollisionStay() noexcept = 0;
+	virtual void onCollisionStay() noexcept = 0;
 };
 
 class EXPORT PhysicsRigidbody
 {
 public:
-    PhysicsRigidbody() noexcept;
-    ~PhysicsRigidbody() noexcept;
+	PhysicsRigidbody() noexcept;
+	~PhysicsRigidbody() noexcept;
 
-    void setup(PhysicsShapePtr shape) noexcept;
-    void close() noexcept;
+	void setup(PhysicsShapePtr shape) noexcept;
+	void close() noexcept;
 
-    void setMass(float value) noexcept;
-    void setLinearVelocity(const Vector3& value) noexcept;
-    void setAngularVelocity(const Vector3& value) noexcept;
-    void setLinearDamping(float value)  noexcept;
-    void setAngularDamping(float value) noexcept;
-    void setGravity(const Vector3& value) noexcept;
-    void setMovePosition(const Vector3& value) noexcept;
-    void setMoveRotation(const Quaternion& value) noexcept;
+	void setMass(float value) noexcept;
+	void setLinearVelocity(const Vector3& value) noexcept;
+	void setAngularVelocity(const Vector3& value) noexcept;
+	void setLinearDamping(float value)  noexcept;
+	void setAngularDamping(float value) noexcept;
+	void setGravity(const Vector3& value) noexcept;
+	void setMovePosition(const Vector3& value) noexcept;
+	void setMoveRotation(const Quaternion& value) noexcept;
 
-    void sleep(bool sleep) noexcept;
-    bool isSleep() const noexcept;
+	void sleep(bool sleep) noexcept;
+	bool isSleep() const noexcept;
 
-    float getMass() const noexcept;
-    float getLinearDamping() const noexcept;
-    float getAngularDamping() const noexcept;
+	float getMass() const noexcept;
+	float getLinearDamping() const noexcept;
+	float getAngularDamping() const noexcept;
 
-    const Vector3& getGravity() const noexcept;
-    const Vector3& getLinearVelocity() const noexcept;
-    const Vector3& getAngularVelocity() const noexcept;
-    const Vector3& getMovePosition() const noexcept;
+	const Vector3& getGravity() const noexcept;
+	const Vector3& getLinearVelocity() const noexcept;
+	const Vector3& getAngularVelocity() const noexcept;
+	const Vector3& getMovePosition() const noexcept;
 
-    const Quaternion& getMoveRotation() const noexcept;
+	const Quaternion& getMoveRotation() const noexcept;
 
-    void addForce(const Vector3& force) noexcept;
-    void addRelativeForce(const Vector3& force, const Vector3& axis) noexcept;
+	void addForce(const Vector3& force) noexcept;
+	void addRelativeForce(const Vector3& force, const Vector3& axis) noexcept;
 
-    void addTorque(const Vector3& force) noexcept;
-    void addImpulse(const Vector3& force, const Vector3& axis) noexcept;
+	void addTorque(const Vector3& force) noexcept;
+	void addImpulse(const Vector3& force, const Vector3& axis) noexcept;
 
-    void setPhysicsScene(PhysicsScene* system) noexcept;
+	void setPhysicsScene(PhysicsScene* system) noexcept;
 
-    void setRigidbodyListener(PhysicsRigidbodyListener* listener) noexcept;
-    PhysicsRigidbodyListener* getRigidbodyListener() noexcept;
-
-private:
-    PhysicsRigidbody(const PhysicsRigidbody&) = delete;
-    PhysicsRigidbody& operator=(const PhysicsRigidbody&) = delete;
+	void setRigidbodyListener(PhysicsRigidbodyListener* listener) noexcept;
+	PhysicsRigidbodyListener* getRigidbodyListener() noexcept;
 
 private:
+	PhysicsRigidbody(const PhysicsRigidbody&) = delete;
+	PhysicsRigidbody& operator=(const PhysicsRigidbody&) = delete;
 
-    btRigidBody* _rigidbody;
-    btDefaultMotionState* _motionState;
+private:
 
-    bool _enablejointFather;
-    bool _enableGravity;
+	btRigidBody* _rigidbody;
+	btDefaultMotionState* _motionState;
 
-    mutable bool _sleep;
+	bool _enablejointFather;
+	bool _enableGravity;
 
-    mutable float _mass;
+	mutable bool _sleep;
 
-    mutable float _linearDamping;
-    mutable float _angularDamping;
+	mutable float _mass;
 
-    mutable Vector3 _position;
-    mutable Quaternion _rotate;
+	mutable float _linearDamping;
+	mutable float _angularDamping;
 
-    Vector3 _inertia;
-    Vector3 _gravity;
+	mutable Vector3 _position;
+	mutable Quaternion _rotate;
 
-    Vector3 _linearVelocity;
-    Vector3 _angularVelocity;
+	Vector3 _inertia;
+	Vector3 _gravity;
 
-    PhysicsScene* _scene;
-    PhysicsRigidbodyListener* _listener;
+	Vector3 _linearVelocity;
+	Vector3 _angularVelocity;
+
+	PhysicsScene* _scene;
+	PhysicsRigidbodyListener* _listener;
 };
 
 _NAME_END

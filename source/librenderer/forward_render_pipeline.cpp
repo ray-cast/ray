@@ -52,7 +52,7 @@ ForwardRenderPipeline::~ForwardRenderPipeline() noexcept
 	this->close();
 }
 
-bool 
+bool
 ForwardRenderPipeline::setup(RenderPipelinePtr pipeline) noexcept
 {
 	assert(pipeline);

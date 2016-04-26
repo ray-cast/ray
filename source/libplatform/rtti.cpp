@@ -62,16 +62,16 @@ Rtti::create() const except
 	return std::shared_ptr<Interface>(_construct());
 }
 
-const Rtti* 
+const Rtti*
 Rtti::getParent() const noexcept
 {
 	return _parent;
 }
 
-const std::string& 
+const std::string&
 Rtti::getName() const noexcept
 {
-	return _name; 
+	return _name;
 }
 
 bool
@@ -88,7 +88,7 @@ Rtti::isDerivedFrom(const Rtti* other) const
 	return false;
 }
 
-bool 
+bool
 Rtti::isDerivedFrom(const Rtti& other) const
 {
 	const Rtti* cur;
@@ -102,7 +102,7 @@ Rtti::isDerivedFrom(const Rtti& other) const
 	return false;
 }
 
-bool 
+bool
 Rtti::isDerivedFrom(const std::string& name) const
 {
 	const Rtti* cur;
@@ -159,6 +159,5 @@ Interface::isA(const std::string& rttiName) const noexcept
 {
 	return this->rtti()->isDerivedFrom(rttiName);
 }
-
 
 _NAME_END

@@ -39,11 +39,11 @@
 _NAME_BEGIN
 
 JointSpring::JointSpring() noexcept
-    : Joint(Joint::Spring)
-    , _spring(0)
-    , _damper(0)
-    , _minDistance(0)
-    , _maxDistance(10)
+	: Joint(Joint::Spring)
+	, _spring(0)
+	, _damper(0)
+	, _minDistance(0)
+	, _maxDistance(10)
 {
 }
 
@@ -54,49 +54,49 @@ JointSpring::~JointSpring() noexcept
 void
 JointSpring::setSpring(float spring) noexcept
 {
-    _spring = spring;
+	_spring = spring;
 }
 
 void
 JointSpring::setDamper(float damper) noexcept
 {
-    _damper = damper;
+	_damper = damper;
 }
 
 void
 JointSpring::setMinDistance(float distance) noexcept
 {
-    _minDistance = distance;
+	_minDistance = distance;
 }
 
 void
 JointSpring::setMaxDistance(float distance) noexcept
 {
-    _maxDistance = distance;
+	_maxDistance = distance;
 }
 
 float
 JointSpring::getSpring() const noexcept
 {
-    return _spring;
+	return _spring;
 }
 
 float
 JointSpring::getDamper() const noexcept
 {
-    return _damper;
+	return _damper;
 }
 
 float
 JointSpring::getMinDistance() const noexcept
 {
-    return _minDistance;
+	return _minDistance;
 }
 
 float
 JointSpring::getMaxDistance() const noexcept
 {
-    return _maxDistance;
+	return _maxDistance;
 }
 
 _NAME_END

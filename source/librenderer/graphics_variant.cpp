@@ -1086,7 +1086,6 @@ GraphicsVariant::getFloat4x4Array() const noexcept
 	return *_value.m4array;
 }
 
-
 GraphicsTexturePtr
 GraphicsVariant::getTexture() const noexcept
 {

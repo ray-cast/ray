@@ -44,26 +44,26 @@ _NAME_BEGIN
 class EXPORT PerlinNoise2
 {
 public:
-    enum table
-    {
-        size = 256,
-        mask = size - 1
-    };
+	enum table
+	{
+		size = 256,
+		mask = size - 1
+	};
 
-    PerlinNoise2() noexcept;
+	PerlinNoise2() noexcept;
 
-    //求得柏林噪声
-    float noise(float x, float y, float scale);
-    float noise(const Vector2 pos, float scale);
+	//求得柏林噪声
+	float noise(float x, float y, float scale);
+	float noise(const Vector2 pos, float scale);
 
 private:
-    //初始化伪随即表
-    void setup();
-    //获得梯度值
-    const Vector2& getVec(int x, int y) const;
+	//初始化伪随即表
+	void setup();
+	//获得梯度值
+	const Vector2& getVec(int x, int y) const;
 
 	Vector2 _table[size]; //梯度值表
-    std::uint8_t _lut[size]; //伪随机索引表
+	std::uint8_t _lut[size]; //伪随机索引表
 };
 
 void EXPORT simplex_seed(unsigned int x);

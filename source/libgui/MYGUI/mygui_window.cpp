@@ -69,13 +69,13 @@ MyGuiWindowImpl::create() except
 	return _window ? true : false;
 }
 
-GuiTextBoxPtr 
+GuiTextBoxPtr
 MyGuiWindowImpl::getGuiTextBox() const noexcept
 {
 	return _textbox;
 }
 
-void 
+void
 MyGuiWindowImpl::setVisibleSmooth(bool _value) noexcept
 {
 	_window->setVisibleSmooth(_value);
@@ -87,21 +87,21 @@ MyGuiWindowImpl::destroySmooth() noexcept
 	_window->destroySmooth();
 }
 
-void 
+void
 MyGuiWindowImpl::setAutoAlpha(bool _value) noexcept
 {
 	assert(_window);
 	_window->setAutoAlpha(_value);
 }
 
-bool 
+bool
 MyGuiWindowImpl::getAutoAlpha() const noexcept
 {
 	assert(_window);
 	return _window->getAutoAlpha();
 }
 
-void 
+void
 MyGuiWindowImpl::setMinSize(int _width, int _height) noexcept
 {
 	assert(_window);
@@ -117,7 +117,7 @@ MyGuiWindowImpl::getMinSize(int& w, int& h) const noexcept
 	h = size.height;
 }
 
-void 
+void
 MyGuiWindowImpl::setMaxSize(int _width, int _height) noexcept
 {
 	assert(_window);
@@ -143,7 +143,7 @@ MyGuiWindowImpl::addWindowButtonPressListener(std::function<void()>& func) noexc
 	_onWindowButtonPress.attach(func);
 }
 
-void 
+void
 MyGuiWindowImpl::addWindowCoordChangeListener(std::function<void()>& func) noexcept
 {
 	assert(_window);
@@ -153,7 +153,7 @@ MyGuiWindowImpl::addWindowCoordChangeListener(std::function<void()>& func) noexc
 	_onWindowCoordChange.attach(func);
 }
 
-void 
+void
 MyGuiWindowImpl::removeWindowButtonPressListener(std::function<void()>& func) noexcept
 {
 	assert(_window);
@@ -161,7 +161,7 @@ MyGuiWindowImpl::removeWindowButtonPressListener(std::function<void()>& func) no
 	_onWindowButtonPress.remove(func);
 }
 
-void 
+void
 MyGuiWindowImpl::removeWindowCoordChangeListener(std::function<void()>& func) noexcept
 {
 	assert(_window);
@@ -169,13 +169,13 @@ MyGuiWindowImpl::removeWindowCoordChangeListener(std::function<void()>& func) no
 	_onWindowCoordChange.remove(func);
 }
 
-void 
+void
 MyGuiWindowImpl::onWindowButtonPress(MyGUI::Widget*, const std::string&) except
 {
 	_onWindowButtonPress.run();
 }
 
-void 
+void
 MyGuiWindowImpl::onWindowCoordChange(MyGUI::Widget*) except
 {
 	_onWindowCoordChange.run();
@@ -196,73 +196,73 @@ MyGuiWindow::getGuiTextBox() const noexcept
 	return _impl.getGuiTextBox();
 }
 
-void 
+void
 MyGuiWindow::setVisibleSmooth(bool _value) noexcept
 {
 	_impl.setVisibleSmooth(_value);
 }
 
-void 
+void
 MyGuiWindow::destroySmooth() noexcept
 {
 	_impl.destroySmooth();
 }
 
-void 
+void
 MyGuiWindow::setAutoAlpha(bool _value) noexcept
 {
 	_impl.setAutoAlpha(_value);
 }
 
-bool 
+bool
 MyGuiWindow::getAutoAlpha() const noexcept
 {
 	return _impl.getAutoAlpha();
 }
 
-void 
+void
 MyGuiWindow::setMinSize(int _width, int _height) noexcept
 {
 	_impl.setMinSize(_width, _height);
 }
 
-void 
+void
 MyGuiWindow::getMinSize(int& w, int& h) const noexcept
 {
 	_impl.getMinSize(w, h);
 }
 
-void 
+void
 MyGuiWindow::setMaxSize(int _width, int _height) noexcept
 {
 	_impl.setMaxSize(_width, _height);
 }
 
-void 
+void
 MyGuiWindow::getMaxSize(int& w, int& h) const noexcept
 {
 	_impl.getMaxSize(w, h);
 }
 
-void 
+void
 MyGuiWindow::addWindowButtonPressListener(std::function<void()>& func) noexcept
 {
 	_impl.addWindowButtonPressListener(func);
 }
 
-void 
+void
 MyGuiWindow::addWindowCoordChangeListener(std::function<void()>& func) noexcept
 {
 	_impl.addWindowCoordChangeListener(func);
 }
 
-void 
+void
 MyGuiWindow::removeWindowButtonPressListener(std::function<void()>& func) noexcept
 {
 	_impl.removeWindowButtonPressListener(func);
 }
 
-void 
+void
 MyGuiWindow::removeWindowCoordChangeListener(std::function<void()>& func) noexcept
 {
 	_impl.removeWindowCoordChangeListener(func);

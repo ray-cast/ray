@@ -128,16 +128,16 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 			break;
 #ifndef __AMD__
 		case GL_TEXTURE_CUBE_MAP_ARRAY_EXT:
-			{
-				GLsizei depth = (GLsizei)textureDesc.getDepth();
-				GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_POSITIVE_X, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
-				GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
-				GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
-				GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
-				GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
-				GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
-			}
-			break;
+		{
+			GLsizei depth = (GLsizei)textureDesc.getDepth();
+			GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_POSITIVE_X, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
+			GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
+			GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
+			GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
+			GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
+			GL_CHECK(glTexImage3DOES(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, mipLevel, internalFormat, w, h, depth, 0, format, type, stream));
+		}
+		break;
 #endif
 		default:
 			assert(false);

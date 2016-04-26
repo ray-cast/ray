@@ -455,7 +455,7 @@ MyGuiWidget::convert(MyGUI::FlowDirection flow) noexcept
 	}
 }
 
-MyGUI::MenuItemType 
+MyGUI::MenuItemType
 MyGuiWidget::convert(GuiMenuItemType type) noexcept
 {
 	switch (type.getValue())
@@ -472,7 +472,7 @@ MyGuiWidget::convert(GuiMenuItemType type) noexcept
 	}
 }
 
-GuiMenuItemType 
+GuiMenuItemType
 MyGuiWidget::convert(MyGUI::MenuItemType type) noexcept
 {
 	switch (type.getValue())

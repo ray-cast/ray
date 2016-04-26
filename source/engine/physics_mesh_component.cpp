@@ -86,7 +86,7 @@ PhysicsMeshComponent::onDeactivate() noexcept
 		_shape->close();
 }
 
-void 
+void
 PhysicsMeshComponent::onMeshChange() noexcept
 {
 	if (this->getActive())

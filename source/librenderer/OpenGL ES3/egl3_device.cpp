@@ -212,7 +212,7 @@ EGL3Device::createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& des
 	return nullptr;
 }
 
-GraphicsDescriptorPoolPtr 
+GraphicsDescriptorPoolPtr
 EGL3Device::createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcept
 {
 	auto descriptorPool = std::make_shared<EGL3DescriptorPool>();

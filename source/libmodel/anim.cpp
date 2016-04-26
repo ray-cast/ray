@@ -91,19 +91,19 @@ BoneAnimation::setBoneIndex(const std::size_t bone) noexcept
 	_bone = bone;
 }
 
-std::int32_t
+std::size_t
 BoneAnimation::getBoneIndex() const noexcept
 {
 	return _bone;
 }
 
 void
-BoneAnimation::setFrameNo(std::int32_t frame) noexcept
+BoneAnimation::setFrameNo(std::size_t frame) noexcept
 {
 	_frame = frame;
 }
 
-std::int32_t
+std::size_t
 BoneAnimation::getFrameNo() const noexcept
 {
 	return _frame;
@@ -203,7 +203,7 @@ AnimationProperty::getNumMorphAnimation() const noexcept
 }
 
 void
-AnimationProperty::setBoneArray(Bones bones) noexcept
+AnimationProperty::setBoneArray(const Bones& bones) noexcept
 {
 	if (bones.empty())
 	{
@@ -212,22 +212,29 @@ AnimationProperty::setBoneArray(Bones bones) noexcept
 		return;
 	}
 
-	std::map<std::string, std::vector<std::size_t>> bindMap;
+	std::map<std::string, std::size_t> bindBoneMaps;
+	for (std::size_t i = 0; i < bones.size(); i++)
+	{
+		bindBoneMaps[bones[i].getName()] = i + 1;
+	}
 
+	std::size_t numFrame = 0;
 	std::size_t numAnimation = this->getNumBoneAnimation();
+
 	for (std::size_t i = 0; i < numAnimation; i++)
 	{
-		bindMap[this->getBoneAnimation(i).getName()].push_back(i);
+		numFrame = std::max(numFrame, _boneAnimation[i].getFrameNo());
 	}
 
 	_bindAnimation.resize(bones.size());
 
-	for (std::size_t i = 0; i < bones.size(); i++)
+	for (std::size_t i = 0; i < numAnimation; i++)
 	{
-		auto& motion = bindMap[bones[i].getName()];
-		if (!motion.empty())
+		auto& name = _boneAnimation[i].getName();
+		auto& bone = bindBoneMaps[name];
+		if (bone > 0)
 		{
-			_bindAnimation[i] = motion;
+			_bindAnimation[bone - 1].push_back(i);
 		}
 	}
 
@@ -240,7 +247,7 @@ AnimationProperty::getBoneArray() const noexcept
 	return _bones;
 }
 
-void 
+void
 AnimationProperty::setIKArray(InverseKinematics ik) noexcept
 {
 	_iks = ik;
@@ -266,76 +273,101 @@ AnimationProperty::clone() noexcept
 void
 AnimationProperty::update() noexcept
 {
-	for (std::size_t i = 0; i < _bones.size(); i++)
-	{
-		this->updateBoneMotion(_bones[i], i);
-	}
-
+	this->updateBoneMotion();
+	this->updateBoneMatrix();
 	this->updateIK();
-
-	for (auto& bone : _bones)
-	{
-		this->updateBoneMatrix(bone);
-	}
-
 	_frame++;
 }
 
 void
-AnimationProperty::updateBoneMotion(Bone& bone, int index)
+AnimationProperty::updateBoneMotion() noexcept
 {
-	assert(bone.getParent() < index);
-
-	const auto& motion = _bindAnimation[index];
-
-	if (motion.empty())
+	for (std::size_t i = 0; i < _bones.size(); i++)
 	{
-		bone.setRotation(Quaternion(0, 0, 0, 1));
+		auto& bone = _bones[i];
+		const auto& motion = _bindAnimation[i];
 
-		if (bone.getParent() != (-1))
+		if (motion.empty())
 		{
-			auto& parent = _bones[bone.getParent()];
-			auto position = (bone.getPosition() - parent.getPosition());
-			Matrix4x4 m;
-			m.makeTranslate(position);
-			bone.setLocalTransform(m);
+			bone.setRotation(Quaternion(0, 0, 0, 1));
+
+			if (bone.getParent() != (-1))
+			{
+				auto& parent = _bones[bone.getParent()];
+				auto position = (bone.getPosition() - parent.getPosition());
+				Matrix4x4 m;
+				m.makeTranslate(position);
+				bone.setLocalTransform(m);
+			}
+			else
+			{
+				Matrix4x4 m;
+				m.makeTranslate(bone.getPosition());
+				bone.setLocalTransform(m);
+			}
 		}
 		else
 		{
-			Matrix4x4 m;
-			m.makeTranslate(bone.getPosition());
-			bone.setLocalTransform(m);
-		}
-	}
-	else
-	{
-		Vector3 position;
-		Quaternion rotate;
-		this->interpolateMotion(rotate, position, motion, _frame);
+			Vector3 position;
+			Quaternion rotate;
+			this->interpolateMotion(rotate, position, motion, _frame);
 
-		if (bone.getParent() == (-1))
-		{
-			Matrix4x4 m;
-			m.makeRotate(rotate);
-			m.setTranslate(bone.getPosition() + position);	
+			if (bone.getParent() == (-1))
+			{
+				Matrix4x4 m;
+				m.makeRotate(rotate);
+				m.setTranslate(bone.getPosition() + position);
 
-			bone.setRotation(rotate);
-			bone.setLocalTransform(m);
-		}
-		else
-		{
-			Matrix4x4 m;
-			m.makeRotate(rotate);
-			m.setTranslate(bone.getPosition() + position - _bones[bone.getParent()].getPosition());
+				bone.setRotation(rotate);
+				bone.setLocalTransform(m);
+			}
+			else
+			{
+				Matrix4x4 m;
+				m.makeRotate(rotate);
+				m.setTranslate(bone.getPosition() + position - _bones[bone.getParent()].getPosition());
 
-			bone.setRotation(rotate);
-			bone.setLocalTransform(m);
+				bone.setRotation(rotate);
+				bone.setLocalTransform(m);
+			}
 		}
 	}
 }
 
 void
-AnimationProperty::updateBoneMatrix(Bone& bone)
+AnimationProperty::updateBoneMatrix() noexcept
+{
+	std::vector<std::int16_t> bones;
+
+	std::size_t size = _bones.size();
+	for (std::intptr_t i = 0; i < size; i++)
+	{
+		std::intptr_t  parent = _bones[i].getParent();
+		if (parent > i)
+		{
+			bones.push_back(i);
+		}
+		else
+		{
+			if ((std::size_t)parent > size)
+				_bones[i].setTransform(_bones[i].getLocalTransform());
+			else
+				_bones[i].setTransform(_bones[i].getLocalTransform() * _bones[parent].getTransform());
+		}
+	}
+
+	for (std::size_t i = 0; i < bones.size(); i++)
+	{
+		std::size_t parent = _bones[i].getParent();
+		if (parent > size)
+			_bones[i].setTransform(_bones[i].getLocalTransform());
+		else
+			_bones[i].setTransform(_bones[i].getLocalTransform() * _bones[parent].getTransform());
+	}
+}
+
+void
+AnimationProperty::updateBoneMatrix(Bone& bone) noexcept
 {
 	if (bone.getParent() != (-1))
 	{
@@ -350,40 +382,43 @@ AnimationProperty::updateBoneMatrix(Bone& bone)
 }
 
 void
-AnimationProperty::getCurrentBoneMatrix(Matrix4x4& mat, Bone& bone)
+AnimationProperty::getCurrentBoneMatrix(Matrix4x4& mat, Bone& bone) noexcept
 {
-	updateBoneMatrix(bone);
 	mat = bone.getTransform();
 }
 
 void
-AnimationProperty::getCurrentBonePosition(Vector3& v, Bone& bone)
+AnimationProperty::getCurrentBonePosition(Vector3& v, Bone& bone) noexcept
 {
-	updateBoneMatrix(bone);
 	v = bone.getTransform().getTranslate();
 }
 
 void
 AnimationProperty::updateIK() noexcept
 {
-	for (auto& ik : _iks)
-		this->updateIK(ik);
+	if (!_iks.empty())
+	{
+		for (auto& ik : _iks)
+			this->updateIK(ik);
+
+		this->updateBoneMatrix();
+	}
 }
 
 void
 AnimationProperty::updateIK(const IKAttr& ik) noexcept
 {
-	auto effector = _bones.at(ik.IKBoneIndex);
-	auto target = _bones.at(ik.IKTargetBoneIndex);
+	auto& effector = _bones.at(ik.IKBoneIndex);
+	auto& target = _bones.at(ik.IKTargetBoneIndex);
 
 	Vector3 effectorPos;
 	getCurrentBonePosition(effectorPos, effector);
 
 	for (std::uint32_t i = 0; i < ik.IKLoopCount; i++)
 	{
-		for (std::uint32_t j = 0; j < ik.IKLinkCount; j++)
+		for (std::uint32_t nodeIndex = 0; nodeIndex < ik.IKLinkCount; nodeIndex++)
 		{
-			auto bone = _bones[ik.IKList[j].BoneIndex];
+			auto& bone = _bones[ik.IKList[nodeIndex].BoneIndex];
 
 			Vector3 targetPos;
 			getCurrentBonePosition(targetPos, target);
@@ -398,11 +433,9 @@ AnimationProperty::updateIK(const IKAttr& ik) noexcept
 			basis2Effector = math::normalize(basis2Effector);
 			basis2Target = math::normalize(basis2Target);
 
-			float rotationDotProduct = math::dot(basis2Effector, basis2Target);
-			rotationDotProduct = math::clamp(rotationDotProduct, -1.0f, 1.0f);
-
-			float rotationAngle = acosf(rotationDotProduct);
-			rotationAngle /= ik.IKLinkCount;
+			float rotationDotProduct = math::saturate(math::dot(basis2Effector, basis2Target));
+			float rotationAngle = std::acos(rotationDotProduct);
+			rotationAngle *= ik.IKWeight;
 
 			Vector3 rotationAxis = math::cross(basis2Target, basis2Effector);
 			rotationAxis = math::normalize(rotationAxis);
@@ -422,7 +455,7 @@ AnimationProperty::updateIK(const IKAttr& ik) noexcept
 }
 
 MotionSegment
-AnimationProperty::findMotionSegment(int frame, const std::vector<std::size_t>& motions)
+AnimationProperty::findMotionSegment(int frame, const std::vector<std::size_t>& motions) noexcept
 {
 	MotionSegment ms;
 	ms.m0 = 0;
@@ -459,38 +492,38 @@ AnimationProperty::findMotionSegment(int frame, const std::vector<std::size_t>& 
 	}
 }
 
-static double BezierEval(const std::uint8_t* ip, float t)
+static float BezierEval(const std::uint8_t* ip, float t) noexcept
 {
-	double xa = ip[0] / 256.0;
-	double xb = ip[2] / 256.0;
-	double ya = ip[1] / 256.0;
-	double yb = ip[3] / 256.0;
+	float xa = ip[0] / 256.0;
+	float xb = ip[2] / 256.0;
+	float ya = ip[1] / 256.0;
+	float yb = ip[3] / 256.0;
 
-	double min = 0;
-	double max = 1;
+	float min = 0;
+	float max = 1;
 
-	double ct = t;
+	float ct = t;
 	for (;;)
 	{
-		double x11 = xa * ct;
-		double x12 = xa + (xb - xa) * ct;
-		double x13 = xb + (1.0 - xb) * ct;
+		float x11 = xa * ct;
+		float x12 = xa + (xb - xa) * ct;
+		float x13 = xb + (1.0 - xb) * ct;
 
-		double x21 = x11 + (x12 - x11) * ct;
-		double x22 = x12 + (x13 - x12) * ct;
+		float x21 = x11 + (x12 - x11) * ct;
+		float x22 = x12 + (x13 - x12) * ct;
 
-		double x3 = x21 + (x22 - x21) * ct;
+		float x3 = x21 + (x22 - x21) * ct;
 
 		if (std::fabs(x3 - t) < 0.0001)
 		{
-			double y11 = ya * ct;
-			double y12 = ya + (yb - ya) * ct;
-			double y13 = yb + (1.0 - yb) * ct;
+			float y11 = ya * ct;
+			float y12 = ya + (yb - ya) * ct;
+			float y13 = yb + (1.0 - yb) * ct;
 
-			double y21 = y11 + (y12 - y11) * ct;
-			double y22 = y12 + (y13 - y12) * ct;
+			float y21 = y11 + (y12 - y11) * ct;
+			float y22 = y12 + (y13 - y12) * ct;
 
-			double y3 = y21 + (y22 - y21) * ct;
+			float y3 = y21 + (y22 - y21) * ct;
 
 			return y3;
 		}
@@ -508,7 +541,7 @@ static double BezierEval(const std::uint8_t* ip, float t)
 }
 
 void
-AnimationProperty::interpolateMotion(Quaternion& rotation, Vector3& position, const std::vector<std::size_t>& motions, float frame)
+AnimationProperty::interpolateMotion(Quaternion& rotation, Vector3& position, const std::vector<std::size_t>& motions, float frame) noexcept
 {
 	auto ms = findMotionSegment(_frame, motions);
 

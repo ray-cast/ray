@@ -138,7 +138,7 @@ OggStreamBuffer::open(StreamReaderPtr stream) noexcept
 	return true;
 }
 
-streamsize 
+streamsize
 OggStreamBuffer::read(char* str, std::streamsize cnt) noexcept
 {
 	assert(_oggVorbisFile);
@@ -171,14 +171,14 @@ OggStreamBuffer::read(char* str, std::streamsize cnt) noexcept
 	return offset;
 }
 
-streamsize 
+streamsize
 OggStreamBuffer::write(const char* str, std::streamsize cnt) noexcept
 {
 	assert(false);
 	return 0;
 }
 
-streamoff 
+streamoff
 OggStreamBuffer::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
 {
 	assert(dir == ios_base::beg || dir == ios_base::cur || dir == ios_base::end);
@@ -218,14 +218,14 @@ OggStreamBuffer::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
 	return 0;
 }
 
-streamoff 
+streamoff
 OggStreamBuffer::tellg() noexcept
 {
 	assert(this->is_open());
 	return ::ov_pcm_tell(_oggVorbisFile);
 }
 
-streamsize 
+streamsize
 OggStreamBuffer::size() const noexcept
 {
 	assert(this->is_open());
@@ -233,13 +233,13 @@ OggStreamBuffer::size() const noexcept
 	return ::ov_pcm_total(_oggVorbisFile, -1) * info->channels * 2;
 }
 
-bool 
+bool
 OggStreamBuffer::is_open() const noexcept
 {
 	return _oggVorbisFile ? true : false;
 }
 
-int 
+int
 OggStreamBuffer::flush() noexcept
 {
 	if (_stream->flush())

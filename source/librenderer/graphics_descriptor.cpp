@@ -120,7 +120,6 @@ GraphicsDescriptorSetLayoutDesc::removeUniformBlockComponent(GraphicsUniformBloc
 		_uniformBlocks.erase(it);
 }
 
-
 GraphicsDescriptorPoolComponent::GraphicsDescriptorPoolComponent() noexcept
 	: _type(GraphicsUniformType::GraphicsUniformTypeNone)
 	, _descriptorNums(0)

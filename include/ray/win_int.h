@@ -62,90 +62,90 @@ class StackWalker;
 class EXPORT StackWalkerInternal : public WalkerBase
 {
 private:
-    enum SymBaseType
-    {
-        SymNone,
-        SymVoid,
-        SymChar,
-        SymWChar,
-        SymInt,
-        SymUInt,
-        SymFloat,
-        SymLong,
-        SymBool,
-        SymLongLong,
-        SymULongLong,
-        SymULong,
-        SymUChar,
-        SymDouble,
-        SymShort,
-        SymUShort,
-        SymEnd,
-    };
+	enum SymBaseType
+	{
+		SymNone,
+		SymVoid,
+		SymChar,
+		SymWChar,
+		SymInt,
+		SymUInt,
+		SymFloat,
+		SymLong,
+		SymBool,
+		SymLongLong,
+		SymULongLong,
+		SymULong,
+		SymUChar,
+		SymDouble,
+		SymShort,
+		SymUShort,
+		SymEnd,
+	};
 
-    enum SymTagEnum
-    {
-        SymTagNull,
-        SymTagExe,
-        SymTagCompiland,
-        SymTagCompilandDetails,
-        SymTagCompilandEnv,
-        SymTagFunction,
-        SymTagBlock,
-        SymTagData,
-        SymTagAnnotation,
-        SymTagLabel,
-        SymTagPublicSymbol,
-        SymTagUDT,
-        SymTagEnum,
-        SymTagFunctionType,
-        SymTagPointerType,
-        SymTagArrayType,
-        SymTagBaseType,
-        SymTagTypedef,
-        SymTagBaseClass,
-        SymTagFriend,
-        SymTagFunctionArgType,
-        SymTagFuncDebugStart,
-        SymTagFuncDebugEnd,
-        SymTagUsingNamespace,
-        SymTagVTableShape,
-        SymTagVTable,
-        SymTagCustom,
-        SymTagThunk,
-        SymTagCustomType,
-        SymTagManagedType,
-        SymTagDimension,
-        SymTagCallSite,
-        SymTagMax
-    };
+	enum SymTagEnum
+	{
+		SymTagNull,
+		SymTagExe,
+		SymTagCompiland,
+		SymTagCompilandDetails,
+		SymTagCompilandEnv,
+		SymTagFunction,
+		SymTagBlock,
+		SymTagData,
+		SymTagAnnotation,
+		SymTagLabel,
+		SymTagPublicSymbol,
+		SymTagUDT,
+		SymTagEnum,
+		SymTagFunctionType,
+		SymTagPointerType,
+		SymTagArrayType,
+		SymTagBaseType,
+		SymTagTypedef,
+		SymTagBaseClass,
+		SymTagFriend,
+		SymTagFunctionArgType,
+		SymTagFuncDebugStart,
+		SymTagFuncDebugEnd,
+		SymTagUsingNamespace,
+		SymTagVTableShape,
+		SymTagVTable,
+		SymTagCustom,
+		SymTagThunk,
+		SymTagCustomType,
+		SymTagManagedType,
+		SymTagDimension,
+		SymTagCallSite,
+		SymTagMax
+	};
 
-    struct VariableCall
-    {
-        StackWalkerInternal* self;
-        PCONTEXT context;
-        VariableList* variable;
-    };
+	struct VariableCall
+	{
+		StackWalkerInternal* self;
+		PCONTEXT context;
+		VariableList* variable;
+	};
 
 public:
-    typedef WalkerBase _Mybase;
+	typedef WalkerBase _Mybase;
 
-    StackWalkerInternal(StackWalker* walker, HANDLE process) noexcept;
-    ~StackWalkerInternal() noexcept;
+	StackWalkerInternal(StackWalker* walker, HANDLE process) noexcept;
+	~StackWalkerInternal() noexcept;
 
-    bool loadModules() noexcept;
-    bool loadModules(HANDLE process, DWORD dwProcessId) noexcept;
-    bool loadModule(HANDLE process, const util::string& img, const util::string& mod, DWORD64 baseAddr, DWORD size) noexcept;
+	bool loadModules() noexcept;
+	bool loadModules(HANDLE process, DWORD dwProcessId) noexcept;
+	bool loadModule(HANDLE process, const util::string& img, const util::string& mod, DWORD64 baseAddr, DWORD size) noexcept;
 
-    bool firstStackFrame(PDWORD imageType, HANDLE thread, LPSTACKFRAME64 StackFrame, PCONTEXT context) noexcept;
-    bool nextStackFrame(DWORD imageType, HANDLE thread, LPSTACKFRAME64 StackFrame, PCONTEXT context) noexcept;
+	bool firstStackFrame(PDWORD imageType, HANDLE thread, LPSTACKFRAME64 StackFrame, PCONTEXT context) noexcept;
+	bool nextStackFrame(DWORD imageType, HANDLE thread, LPSTACKFRAME64 StackFrame, PCONTEXT context) noexcept;
 
-    bool isModuleLoaded() const noexcept;
+	bool isModuleLoaded() const noexcept;
 
-    bool getModuleInfo(DWORD64 baseAddr, IMAGEHLPMODULE& info) noexcept;
-    bool getSymFromAddr(DWORD64 address, PDWORD64 displacement, PSYMBOLINFO symbol) noexcept;
-    bool getLineFromAddr(DWORD64 qwAddr, PDWORD pdwDisplacement, IMAGEHLPLINE& Line64) noexcept;
-    bool getLocalVariable(const PCONTEXT context, VariableList& variable) noexcept;
+	bool getModuleInfo(DWORD64 baseAddr, IMAGEHLPMODULE& info) noexcept;
+	bool getSymFromAddr(DWORD64 address, PDWORD64 displacement, PSYMBOLINFO symbol) noexcept;
+	bool getLineFromAddr(DWORD64 qwAddr, PDWORD pdwDisplacement, IMAGEHLPLINE& Line64) noexcept;
+	bool getLocalVariable(const PCONTEXT context, VariableList& variable) noexcept;
 
 	util::string getTypeName(PSYMBOLINFO syminfo) noexcept;
 	util::string getTypeName(DWORD typeID, DWORD64 modBase) noexcept;
@@ -154,12 +154,12 @@ public:
 
 private:
 
-    bool loadSymbol(const util::string& filepath) noexcept;
+	bool loadSymbol(const util::string& filepath) noexcept;
 
-    bool loadModulesFromTH32(HANDLE process, DWORD pid) noexcept;
-    bool loadModulesFromPSAPI(HANDLE process) noexcept;
+	bool loadModulesFromTH32(HANDLE process, DWORD pid) noexcept;
+	bool loadModulesFromPSAPI(HANDLE process) noexcept;
 
-    SymBaseType getBaseType(DWORD typeID, DWORD64 modBase) noexcept;
+	SymBaseType getBaseType(DWORD typeID, DWORD64 modBase) noexcept;
 
 	util::string getSymTypeName(SYM_TYPE type) noexcept;
 	util::string getBaseTypeName(DWORD typeID, DWORD64 modBase) noexcept;
@@ -169,11 +169,11 @@ private:
 	util::string getEnumTypeName(DWORD typeID, DWORD64 modBase) noexcept;
 	util::string getFuncTypeName(DWORD typeID, DWORD64 modBase) noexcept;
 
-    BOOL isSimpleType(DWORD typeID, DWORD64 modBase) noexcept;
-    BOOL getDataMemberInfo(DWORD memberID, DWORD64 modBase, DWORD64 address, const BYTE* pData, ostringstream& stream) noexcept;
-    BOOL VariantEqual(VARIANT var, DWORD baseType, const BYTE* pData) noexcept;
+	BOOL isSimpleType(DWORD typeID, DWORD64 modBase) noexcept;
+	BOOL getDataMemberInfo(DWORD memberID, DWORD64 modBase, DWORD64 address, const BYTE* pData, ostringstream& stream) noexcept;
+	BOOL VariantEqual(VARIANT var, DWORD baseType, const BYTE* pData) noexcept;
 
-    DWORD64 getTypeAddress(PSYMBOLINFO syminfo, const PCONTEXT context) noexcept;
+	DWORD64 getTypeAddress(PSYMBOLINFO syminfo, const PCONTEXT context) noexcept;
 
 	util::string getTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept;
 	util::string getBaseTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept;
@@ -182,15 +182,15 @@ private:
 	util::string getUDTTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept;
 	util::string getEnumTypeValue(DWORD typeID, DWORD64 modBase, DWORD64 address, const BYTE* pData) noexcept;
 
-    static BOOL CALL EnumSymCallBack(PSYMBOLINFO syminfo, ULONG symsize, PVOID data) noexcept;
+	static BOOL CALL EnumSymCallBack(PSYMBOLINFO syminfo, ULONG symsize, PVOID data) noexcept;
 
 private:
-    StackWalker* _walker;
+	StackWalker* _walker;
 
-    HANDLE _process;
-    DWORD  _process_id;
+	HANDLE _process;
+	DWORD  _process_id;
 
-    bool _module_loaded;
+	bool _module_loaded;
 };
 
 _NAME_END

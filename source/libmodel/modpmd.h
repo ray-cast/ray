@@ -173,7 +173,7 @@ struct PMD_IK
 
 	PMD_uint16_t LoopCount;
 
-	PMD_Float    LimitOnce;
+	PMD_Float    Weight;
 
 	std::vector<PMD_Link> LinkList; // LinkList[LinkCount];
 };

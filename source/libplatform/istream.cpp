@@ -39,28 +39,28 @@
 _NAME_BEGIN
 
 StreamReader::isentry::isentry(StreamReader* _istr)
-    : _ok(true)
+	: _ok(true)
 	, _my_istr(_istr)
 {
-    if (_my_istr->rdbuf() != 0)
-        _my_istr->rdbuf()->lock();
+	if (_my_istr->rdbuf() != 0)
+		_my_istr->rdbuf()->lock();
 }
 
 StreamReader::isentry::~isentry() noexcept
 {
-    if (_my_istr->rdbuf() != 0)
-        _my_istr->rdbuf()->unlock();
+	if (_my_istr->rdbuf() != 0)
+		_my_istr->rdbuf()->unlock();
 };
 
 StreamReader::isentry::operator bool() const noexcept
 {
-    return _ok ? true : false;
+	return _ok ? true : false;
 }
 
 StreamReader::StreamReader(StreamBuf* buf) noexcept
 	: _count(0)
 {
-    StreamBase::_init(buf, ios_base::in);
+	StreamBase::_init(buf, ios_base::in);
 }
 
 StreamReader::~StreamReader() noexcept
@@ -70,107 +70,107 @@ StreamReader::~StreamReader() noexcept
 StreamReader&
 StreamReader::read(char* str, std::streamsize cnt) noexcept
 {
-    assert(cnt != 0);
+	assert(cnt != 0);
 
-    try
-    {
-        ios_base::iostate state = ios_base::goodbit;
+	try
+	{
+		ios_base::iostate state = ios_base::goodbit;
 
-        const isentry ok(this);
+		const isentry ok(this);
 
-        if (ok)
-        {
-            _count = this->rdbuf()->read(str, cnt);
+		if (ok)
+		{
+			_count = this->rdbuf()->read(str, cnt);
 
-            if (_count != cnt)
-                state |= ios_base::eofbit;
-        }
+			if (_count != cnt)
+				state |= ios_base::eofbit;
+		}
 
-        this->setstate(state);
-    }
-    catch (...)
-    {
-        this->setstate(ios_base::badbit, true);
-    }
+		this->setstate(state);
+	}
+	catch (...)
+	{
+		this->setstate(ios_base::badbit, true);
+	}
 
-    return (*this);
+	return (*this);
 }
 
 StreamReader&
 StreamReader::read(char* str, streamsize size, streamsize cnt) noexcept
 {
-    return this->read(str, size * cnt);
+	return this->read(str, size * cnt);
 }
 
 StreamReader&
 StreamReader::flush() noexcept
 {
-    assert (this->rdbuf() != 0);
+	assert(this->rdbuf() != 0);
 
-    const isentry ok(this);
-    if (ok)
-    {
-        if (ok && this->rdbuf()->flush() == -1)
-            this->setstate(ios_base::badbit, true);
-    }
+	const isentry ok(this);
+	if (ok)
+	{
+		if (ok && this->rdbuf()->flush() == -1)
+			this->setstate(ios_base::badbit, true);
+	}
 
-    return (*this);
+	return (*this);
 }
 
 StreamReader&
 StreamReader::seekg(ios_base::off_type pos) noexcept
 {
-    const isentry ok(this);
-    if (ok)
-    {
-        if (!this->fail() && (ios_base::off_type)this->rdbuf()->seekg(pos, ios_base::out) == ios_base::_BADOFF)
-            this->setstate(ios_base::failbit);
-    }
+	const isentry ok(this);
+	if (ok)
+	{
+		if (!this->fail() && (ios_base::off_type)this->rdbuf()->seekg(pos, ios_base::out) == ios_base::_BADOFF)
+			this->setstate(ios_base::failbit);
+	}
 
-    return (*this);
+	return (*this);
 }
 
 StreamReader&
 StreamReader::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
 {
-    const isentry ok(this);
-    if (ok)
-    {
-        if (!this->fail() && (ios_base::off_type)this->rdbuf()->seekg(pos, dir) == ios_base::_BADOFF)
-            this->setstate(ios_base::failbit);
-    }
+	const isentry ok(this);
+	if (ok)
+	{
+		if (!this->fail() && (ios_base::off_type)this->rdbuf()->seekg(pos, dir) == ios_base::_BADOFF)
+			this->setstate(ios_base::failbit);
+	}
 
-    return (*this);
+	return (*this);
 }
 
 streamsize
 StreamReader::size() noexcept
 {
-    const isentry ok(this);
-    if (ok)
-    {
-        if (!this->fail())
-            return this->rdbuf()->size();
-    }
+	const isentry ok(this);
+	if (ok)
+	{
+		if (!this->fail())
+			return this->rdbuf()->size();
+	}
 
-    return (streamsize)ios_base::_BADOFF;
+	return (streamsize)ios_base::_BADOFF;
 }
 
 streamoff
 StreamReader::tellg() noexcept
 {
-    const isentry ok(this);
+	const isentry ok(this);
 
-    if (!this->fail())
-        return (this->rdbuf()->tellg());
-    else
-        return (ios_base::pos_type(ios_base::_BADOFF));
+	if (!this->fail())
+		return (this->rdbuf()->tellg());
+	else
+		return (ios_base::pos_type(ios_base::_BADOFF));
 }
 
 streamsize
 StreamReader::gcount() const noexcept
 {
-    return _count;
+	return _count;
 }
 
 _NAME_END

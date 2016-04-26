@@ -57,49 +57,49 @@ CameraComponent::~CameraComponent() noexcept
 	_camera->setRenderScene(nullptr);
 }
 
-void 
+void
 CameraComponent::setAperture(float aspect) noexcept
 {
 	_camera->setAperture(aspect);
 }
 
-float 
+float
 CameraComponent::getAperture() const noexcept
 {
 	return _camera->getAperture();
 }
 
-void 
+void
 CameraComponent::setNear(float znear) noexcept
 {
 	_camera->setNear(znear);
 }
 
-float 
+float
 CameraComponent::getNear() const noexcept
 {
 	return _camera->getNear();
 }
 
-void 
+void
 CameraComponent::setFar(float zfar) noexcept
 {
 	_camera->setFar(zfar);
 }
 
-float 
+float
 CameraComponent::getFar() const noexcept
 {
 	return _camera->getFar();
 }
 
-void 
+void
 CameraComponent::setRatio(float ratio) noexcept
 {
 	_camera->setRatio(ratio);
 }
 
-float 
+float
 CameraComponent::getRatio() const noexcept
 {
 	return _camera->getRatio();
@@ -111,7 +111,7 @@ CameraComponent::setOrtho(float left, float right, float bottom, float top) noex
 	_camera->setOrtho(left, right, bottom, top);
 }
 
-void 
+void
 CameraComponent::getOrtho(float& left, float& right, float& bottom, float& top) noexcept
 {
 	_camera->getOrtho(left, right, bottom, top);
@@ -123,7 +123,7 @@ CameraComponent::getView() const noexcept
 	return _camera->getView();
 }
 
-const Matrix4x4& 
+const Matrix4x4&
 CameraComponent::getViewInverse() const noexcept
 {
 	return _camera->getViewInverse();
@@ -207,7 +207,7 @@ CameraComponent::getCameraOrder() const noexcept
 	return _camera->getCameraOrder();
 }
 
-void 
+void
 CameraComponent::setCameraRenderFlags(CameraRenderFlags flags) noexcept
 {
 	_camera->setCameraRenderFlags(flags);
@@ -379,9 +379,9 @@ CameraComponent::save(oarchive& write) noexcept
 {
 }
 
-bool 
+bool
 CameraComponent::_loadSkybox(const std::string& texture) noexcept
-{	
+{
 	if (texture.empty())
 	{
 		_camera->setSkyLightMap(nullptr);
@@ -401,7 +401,7 @@ CameraComponent::_loadSkybox(const std::string& texture) noexcept
 	return false;
 }
 
-bool 
+bool
 CameraComponent::_loadSkyDiffuse(const std::string& texture) noexcept
 {
 	if (texture.empty())
@@ -423,7 +423,7 @@ CameraComponent::_loadSkyDiffuse(const std::string& texture) noexcept
 	return false;
 }
 
-bool 
+bool
 CameraComponent::_loadSkySpecular(const std::string& texture) noexcept
 {
 	if (texture.empty())
@@ -431,9 +431,9 @@ CameraComponent::_loadSkySpecular(const std::string& texture) noexcept
 		_camera->setSkyLightSpecular(nullptr);
 		return true;
 	}
-	
-	auto specular = RenderSystem::instance()->createTexture(texture, 
-		GraphicsTextureDim::GraphicsTextureDimCube, 
+
+	auto specular = RenderSystem::instance()->createTexture(texture,
+		GraphicsTextureDim::GraphicsTextureDimCube,
 		GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear);
 
 	if (specular)
@@ -441,7 +441,7 @@ CameraComponent::_loadSkySpecular(const std::string& texture) noexcept
 		_camera->setSkyLightSpecular(specular);
 		return true;
 	}
-		
+
 	return false;
 }
 

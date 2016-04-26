@@ -44,54 +44,54 @@ _NAME_BEGIN
 class consolebuf final : public StreamBuf
 {
 public:
-    consolebuf() noexcept;
-    virtual ~consolebuf() noexcept;
+	consolebuf() noexcept;
+	virtual ~consolebuf() noexcept;
 
-    bool open(const char* filename, ios_base::openmode mode) noexcept;
-    bool open(const wchar_t* filename, ios_base::openmode mode) noexcept;
+	bool open(const char* filename, ios_base::openmode mode) noexcept;
+	bool open(const wchar_t* filename, ios_base::openmode mode) noexcept;
 
-    streamsize read(char* str, std::streamsize cnt) noexcept;
-    streamsize write(const char* str, std::streamsize cnt) noexcept;
+	streamsize read(char* str, std::streamsize cnt) noexcept;
+	streamsize write(const char* str, std::streamsize cnt) noexcept;
 
-    streamoff seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
-    streamoff tellg() noexcept;
+	streamoff seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
+	streamoff tellg() noexcept;
 
-    streamsize size() const noexcept;
+	streamsize size() const noexcept;
 
-    bool is_open() const noexcept;
+	bool is_open() const noexcept;
 
-    int flush() noexcept;
+	int flush() noexcept;
 
-    bool close() noexcept;
+	bool close() noexcept;
 
-    void lock() noexcept;
-    void unlock() noexcept;
+	void lock() noexcept;
+	void unlock() noexcept;
 };
 
 class EXPORT icstream final : public StreamReader
 {
 public:
-    icstream() noexcept;
-    ~icstream() noexcept;
+	icstream() noexcept;
+	~icstream() noexcept;
 
-    virtual StreamReaderPtr clone() const noexcept;
+	virtual StreamReaderPtr clone() const noexcept;
 
 private:
 
-    consolebuf _console;
+	consolebuf _console;
 };
 
 class EXPORT ocstream final : public StreamWrite
 {
 public:
-    ocstream() noexcept;
-    ~ocstream() noexcept;
+	ocstream() noexcept;
+	~ocstream() noexcept;
 
-    virtual StreamWrite* clone() const;
+	virtual StreamWrite* clone() const;
 
 private:
 
-    consolebuf _console;
+	consolebuf _console;
 };
 
 extern EXPORT icstream cin;

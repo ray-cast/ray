@@ -44,52 +44,52 @@ _NAME_BEGIN
 
 struct InputKeysym
 {
-    std::uint16_t sym;
-    std::uint16_t raw;
-    std::uint16_t mod;
-    std::uint16_t unicode;
+	std::uint16_t sym;
+	std::uint16_t raw;
+	std::uint16_t mod;
+	std::uint16_t unicode;
 };
 
 struct KeyboardEvent
 {
-    std::uint32_t timestamp;
-    std::uint32_t windowID;
-    std::uint8_t state;
-    std::uint8_t repeat;
-    std::uint8_t padding2;
-    std::uint8_t padding3;
-    InputKeysym keysym;
+	std::uint32_t timestamp;
+	std::uint32_t windowID;
+	std::uint8_t state;
+	std::uint8_t repeat;
+	std::uint8_t padding2;
+	std::uint8_t padding3;
+	InputKeysym keysym;
 };
 
 struct MouseMotionEvent
 {
-    std::uint32_t timestamp;
-    std::uint8_t state;
-    int x;
-    int y;
-    int xrel;
-    int yrel;
+	std::uint32_t timestamp;
+	std::uint8_t state;
+	int x;
+	int y;
+	int xrel;
+	int yrel;
 };
 
 struct MouseButtonEvent
 {
-    std::uint32_t timestamp;
-    std::uint32_t windowID;
-    std::uint32_t which;
-    std::uint8_t button;
-    std::uint8_t state;
-    std::uint8_t clicks;
-    std::uint8_t padding1;
-    std::uint32_t x;
-    std::uint32_t y;
+	std::uint32_t timestamp;
+	std::uint32_t windowID;
+	std::uint32_t which;
+	std::uint8_t button;
+	std::uint8_t state;
+	std::uint8_t clicks;
+	std::uint8_t padding1;
+	std::uint32_t x;
+	std::uint32_t y;
 };
 
 struct MouseWheelEvent
 {
-    std::uint32_t timestamp;
-    std::uint8_t _state;
-    int x;
-    int y;
+	std::uint32_t timestamp;
+	std::uint8_t _state;
+	int x;
+	int y;
 };
 
 struct JoyAxisEvent {};
@@ -101,26 +101,26 @@ struct JoyDeviceEvent {};
 class EXPORT InputEvent final
 {
 public:
-    enum Type
-    {
-        KeyDown,
-        KeyUp,
-        Character,
+	enum Type
+	{
+		KeyDown,
+		KeyUp,
+		Character,
 
-        MouseMotion,
-        MouseButtonDown,
-        MouseButtonUp,
-        MouseButtonDoubleClick,
-        MouseWheelUp,
-        MouseWheelDown,
+		MouseMotion,
+		MouseButtonDown,
+		MouseButtonUp,
+		MouseButtonDoubleClick,
+		MouseWheelUp,
+		MouseWheelDown,
 
-        GamePadButtonDown,
-        GamePadButtonUp,
+		GamePadButtonDown,
+		GamePadButtonUp,
 
-        TouchMotionMove,
-        TouchMotionDown,
-        TouchMotionUp,
-        TouchMotionCancel,
+		TouchMotionMove,
+		TouchMotionDown,
+		TouchMotionUp,
+		TouchMotionCancel,
 
 		GetFocus,
 		LostFocus,
@@ -128,18 +128,18 @@ public:
 		Reset,
 
 		AppQuit
-    };
+	};
 
-    Type event;
-    KeyboardEvent key;
-    MouseMotionEvent motion;
-    MouseButtonEvent button;
-    MouseWheelEvent wheel;
-    JoyAxisEvent jaxis;
-    JoyBallEvent jball;
-    JoyHatEvent  jhat;
-    JoyButtonEvent jbutton;
-    JoyDeviceEvent jdevice;
+	Type event;
+	KeyboardEvent key;
+	MouseMotionEvent motion;
+	MouseButtonEvent button;
+	MouseWheelEvent wheel;
+	JoyAxisEvent jaxis;
+	JoyBallEvent jball;
+	JoyHatEvent  jhat;
+	JoyButtonEvent jbutton;
+	JoyDeviceEvent jdevice;
 };
 
 _NAME_END

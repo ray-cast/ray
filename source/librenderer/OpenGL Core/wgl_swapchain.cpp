@@ -117,7 +117,7 @@ WGLSwapchain::setActive(bool active) noexcept
 
 			if (_swapchain)
 				_swapchain->setActive(false);
-			
+
 			_swapchain = this;
 		}
 		else
@@ -355,7 +355,7 @@ WGLSwapchain::initWGLExtensions() noexcept
 	return true;
 }
 
-bool 
+bool
 WGLSwapchain::initSwapchain(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 {
 	int index = 0;

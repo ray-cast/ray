@@ -257,7 +257,7 @@ ScriptArray::init(asIObjectType* type) noexcept
 	}
 }
 
-void 
+void
 ScriptArray::initData(asIObjectType* type, asUINT length, void* defaultValue) noexcept
 {
 	assert(CheckMaxSize(length));
@@ -333,7 +333,7 @@ ScriptArray::assgin(const ScriptArray& other)
 	this->CopyBuffer(buffer, other.buffer);
 }
 
-void 
+void
 ScriptArray::assgin(asUINT index, void* value)
 {
 	void* ptr = this->at(index);
@@ -379,25 +379,25 @@ ScriptArray::swap(ScriptArray& other)
 	buffer.data.swap(other.buffer.data);
 }
 
-asUINT 
+asUINT
 ScriptArray::count() const
 {
 	return buffer.numElements;
 }
 
-asUINT 
+asUINT
 ScriptArray::size() const
 {
 	return _elementSize;
 }
 
-bool 
+bool
 ScriptArray::empty() const
 {
 	return buffer.numElements == 0;
 }
 
-void 
+void
 ScriptArray::reserve(asUINT numElements)
 {
 	assert(CheckMaxSize(numElements));
@@ -412,7 +412,7 @@ ScriptArray::reserve(asUINT numElements)
 	}
 }
 
-void 
+void
 ScriptArray::resize(asUINT numElements)
 {
 	assert(CheckMaxSize(numElements));
@@ -433,7 +433,7 @@ ScriptArray::resize(asUINT numElements)
 	}
 }
 
-void 
+void
 ScriptArray::insert(asUINT begin, asUINT end, void* value)
 {
 	assert(begin != end);
@@ -451,7 +451,7 @@ ScriptArray::insert(asUINT begin, asUINT end, void* value)
 		ArrayBuffer newBuffer;
 		newBuffer.data.resize(_elementSize * maxElements);
 		newBuffer.maxElements = maxElements;
-		newBuffer.numElements = buffer.numElements + delta;		
+		newBuffer.numElements = buffer.numElements + delta;
 
 		std::memcpy(newBuffer.data.data(), buffer.data.data(), begin * _elementSize);
 		if (begin < buffer.numElements)
@@ -478,26 +478,26 @@ ScriptArray::insert(asUINT begin, asUINT end, void* value)
 	}
 }
 
-void 
+void
 ScriptArray::insert(asUINT index, void* value)
 {
 	assert(CheckIndex(index));
 	this->insert(index, index + 1, value);
 }
 
-void 
+void
 ScriptArray::insertLast(void* value)
 {
 	this->insert(buffer.numElements, buffer.numElements + 1, value);
 }
 
-void 
+void
 ScriptArray::remove(asUINT index)
 {
 	remove(index, index + 1);
 }
 
-void 
+void
 ScriptArray::remove(asUINT begin, asUINT end)
 {
 	assert(begin != end);
@@ -522,7 +522,7 @@ ScriptArray::removeLast()
 	remove(buffer.numElements - 1);
 }
 
-const void* 
+const void*
 ScriptArray::at(asUINT index) const
 {
 	if (index >= buffer.numElements)
@@ -539,7 +539,7 @@ ScriptArray::at(asUINT index) const
 		return buffer.data.data() + _elementSize*index;
 }
 
-void* 
+void*
 ScriptArray::at(asUINT index)
 {
 	return const_cast<void*>(const_cast<const ScriptArray*>(this)->at(index));
@@ -552,7 +552,7 @@ ScriptArray::clear()
 	buffer.data.clear();
 }
 
-bool 
+bool
 ScriptArray::Less(const void *a, const void *b, bool asc, asIScriptContext *ctx, SArrayCache *cache)
 {
 	if (!asc)
@@ -640,7 +640,7 @@ ScriptArray::reverse()
 	}
 }
 
-bool 
+bool
 ScriptArray::operator==(const ScriptArray &other) const
 {
 	if (objType != other.objType)
@@ -698,7 +698,7 @@ ScriptArray::operator==(const ScriptArray &other) const
 	return isEqual;
 }
 
-bool 
+bool
 ScriptArray::Equals(const void *a, const void *b, asIScriptContext *ctx, SArrayCache *cache) const
 {
 	if (!(_subTypeId & ~asTYPEID_MASK_SEQNBR))
@@ -790,7 +790,7 @@ ScriptArray::findByRef(void *ref) const
 	return findByRef(0, ref);
 }
 
-int 
+int
 ScriptArray::findByRef(asUINT startAt, void *ref) const
 {
 	// Find the matching element by its reference
@@ -818,13 +818,13 @@ ScriptArray::findByRef(asUINT startAt, void *ref) const
 	return -1;
 }
 
-int 
+int
 ScriptArray::find(void *value) const
 {
 	return find(0, value);
 }
 
-int 
+int
 ScriptArray::find(asUINT startAt, void *value) const
 {
 	// Check if the subtype really supports find()
@@ -915,7 +915,7 @@ ScriptArray::find(asUINT startAt, void *value) const
 	return ret;
 }
 
-void* 
+void*
 ScriptArray::GetArrayItemPointer(int index)
 {
 	return &buffer.data[index * _elementSize];
@@ -930,31 +930,31 @@ ScriptArray::GetDataPointer(void *buffer)
 		return buffer;
 }
 
-void 
+void
 ScriptArray::sortAsc()
 {
 	this->sort(0, this->count(), true);
 }
 
-void 
+void
 ScriptArray::sortAsc(asUINT startAt, asUINT count)
 {
 	this->sort(startAt, count, true);
 }
 
-void 
+void
 ScriptArray::sortDesc()
 {
 	this->sort(0, this->count(), false);
 }
 
-void 
+void
 ScriptArray::sortDesc(asUINT startAt, asUINT count)
 {
 	this->sort(startAt, count, false);
 }
 
-void 
+void
 ScriptArray::sort(asUINT startAt, asUINT count, bool asc)
 {
 	// Subtype isn't primitive and doesn't have opCmp
@@ -1115,7 +1115,7 @@ ScriptArray::CreateBuffer(ArrayBuffer& buf, asUINT numElements)
 	this->construct(buf, 0, numElements);
 }
 
-void 
+void
 ScriptArray::CopyBuffer(ArrayBuffer& dst, const ArrayBuffer& src)
 {
 	asIScriptEngine *engine = objType->GetEngine();
@@ -1163,7 +1163,7 @@ ScriptArray::CopyBuffer(ArrayBuffer& dst, const ArrayBuffer& src)
 	}
 }
 
-void 
+void
 ScriptArray::Precache()
 {
 	_subTypeId = objType->GetSubTypeId();
@@ -1281,7 +1281,7 @@ ScriptArray::Precache()
 	asReleaseExclusiveLock();
 }
 
-void 
+void
 ScriptArray::EnumReferences(asIScriptEngine *engine)
 {
 	if (_subTypeId & asTYPEID_MASK_OBJECT)
@@ -1295,7 +1295,7 @@ ScriptArray::EnumReferences(asIScriptEngine *engine)
 	}
 }
 
-void 
+void
 ScriptArray::ReleaseAllHandles(asIScriptEngine *)
 {
 	resize(0);

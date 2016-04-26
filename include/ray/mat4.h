@@ -123,9 +123,9 @@ public:
 	}
 
 	T* ptr() noexcept { return (T*)&a1; }
-	const T* ptr() const noexcept  { return (const T*)&a1; }
+	const T* ptr() const noexcept { return (const T*)&a1; }
 	T* data() noexcept { return (T*)&a1; }
-	const T* data() const noexcept  { return (const T*)&a1; }
+	const T* data() const noexcept { return (const T*)&a1; }
 
 	Matrix4x4t<T>& set(T mt00, T mt01, T mt02, T mt03, T mt10, T mt11, T mt12, T mt13, T mt20, T mt21, T mt22, T mt23, T mt30, T mt31, T mt32, T mt33) noexcept
 	{
@@ -197,7 +197,7 @@ public:
 	T determinant() const noexcept
 	{
 		return
-			  a1*b2*c3*d4 - a1*b2*c4*d3 + a1*b3*c4*d2 - a1*b3*c2*d4
+			a1*b2*c3*d4 - a1*b2*c4*d3 + a1*b3*c4*d2 - a1*b3*c2*d4
 			+ a1*b4*c2*d3 - a1*b4*c3*d2 - a2*b3*c4*d1 + a2*b3*c1*d4
 			- a2*b4*c1*d3 + a2*b4*c3*d1 - a2*b1*c3*d4 + a2*b1*c4*d3
 			+ a3*b4*c1*d2 - a3*b4*c2*d1 + a3*b1*c2*d4 - a3*b1*c4*d2
@@ -262,7 +262,7 @@ public:
 	}
 
 	Matrix4x4t<T>& makeTranslate(const Vector2t<T>& pt) noexcept { return makeTranslate(pt.x, pt.y, 0); }
-	Matrix4x4t<T>& makeTranslate(const Vector3t<T>& pt) noexcept  { return makeTranslate(pt.x, pt.y, pt.z); }
+	Matrix4x4t<T>& makeTranslate(const Vector3t<T>& pt) noexcept { return makeTranslate(pt.x, pt.y, pt.z); }
 	Matrix4x4t<T>& makeTranslate(T x, T y) noexcept { return makeTranslate(x, y, 0); }
 	Matrix4x4t<T>& makeTranslate(T x, T y, T z) noexcept
 	{
@@ -274,8 +274,8 @@ public:
 	}
 
 	Matrix4x4t<T>& setTranslate(const Vector2t<T>& pt) noexcept { return setTranslate(pt.x, pt.y, 0); }
-	Matrix4x4t<T>& setTranslate(const Vector3t<T>& pt) noexcept  { return setTranslate(pt.x, pt.y, pt.z); }
-	Matrix4x4t<T>& setTranslate(T x, T y) noexcept  { return setTranslate(x, y); }
+	Matrix4x4t<T>& setTranslate(const Vector3t<T>& pt) noexcept { return setTranslate(pt.x, pt.y, pt.z); }
+	Matrix4x4t<T>& setTranslate(T x, T y) noexcept { return setTranslate(x, y); }
 	Matrix4x4t<T>& setTranslate(T x, T y, T z) noexcept
 	{
 		a4 = x;
@@ -300,8 +300,8 @@ public:
 		return Vector3t<T>(a4, b4, c4);
 	}
 
-	Matrix4x4t<T>& makeScale(const Vector2t<T>& sz) noexcept  { return makeScale(sz.x, sz.y, 1.0f); }
-	Matrix4x4t<T>& makeScale(const Vector3t<T>& sz) noexcept  { return makeScale(sz.x, sz.y, sz.z); }
+	Matrix4x4t<T>& makeScale(const Vector2t<T>& sz) noexcept { return makeScale(sz.x, sz.y, 1.0f); }
+	Matrix4x4t<T>& makeScale(const Vector3t<T>& sz) noexcept { return makeScale(sz.x, sz.y, sz.z); }
 	Matrix4x4t<T>& makeScale(T cx, T cy) noexcept { return makeScale(cx, cy, 1.0f); }
 	Matrix4x4t<T>& makeScale(T x, T y, T z) noexcept
 	{
@@ -313,9 +313,9 @@ public:
 		return *this;
 	}
 
-	Matrix4x4t<T>& scale(const Vector2t<T>& sz) noexcept  { return scale(sz.x, sz.y, 1.0f); }
+	Matrix4x4t<T>& scale(const Vector2t<T>& sz) noexcept { return scale(sz.x, sz.y, 1.0f); }
 	Matrix4x4t<T>& scale(const Vector3t<T>& sz) noexcept { return scale(sz.x, sz.y, sz.z); }
-	Matrix4x4t<T>& scale(T v) noexcept  { return scale(v, v, v); }
+	Matrix4x4t<T>& scale(T v) noexcept { return scale(v, v, v); }
 	Matrix4x4t<T>& scale(T cx, T cy) noexcept { return scale(cx, cy, 1.0f); }
 	Matrix4x4t<T>& scale(T x, T y, T z) noexcept
 	{

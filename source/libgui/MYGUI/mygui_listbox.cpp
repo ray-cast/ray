@@ -253,7 +253,6 @@ MyGuiListBoxImpl::addListChangeScrollListener(std::function<void()>& func) noexc
 	_onListChangeScroll.attach(func);
 }
 
-
 void
 MyGuiListBoxImpl::removeListSelectAcceptListener(std::function<void()>& func) noexcept
 {
@@ -323,7 +322,6 @@ MyGuiListBoxImpl::onListChangeScroll(MyGUI::Widget*, std::size_t) except
 {
 	_onListChangeScroll.run();
 }
-
 
 MyGuiListBox::MyGuiListBox() noexcept
 	: GuiListBox(_impl)
@@ -531,7 +529,6 @@ MyGuiListBox::removeListChangeScrollListener(std::function<void()>& func) noexce
 {
 	_impl.removeListChangeScrollListener(func);
 }
-
 
 _NAME_END
 

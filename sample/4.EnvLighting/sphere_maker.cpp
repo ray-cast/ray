@@ -257,7 +257,7 @@ SphereMakerComponent::~SphereMakerComponent() noexcept
 {
 }
 
-void 
+void
 SphereMakerComponent::onActivate() except
 {
 	auto gameObject = ray::GameObjectManager::instance()->findObject("sphere");
@@ -284,12 +284,12 @@ SphereMakerComponent::onActivate() except
 	}
 }
 
-void 
+void
 SphereMakerComponent::onDeactivate() except
 {
 }
 
-ray::GameComponentPtr 
+ray::GameComponentPtr
 SphereMakerComponent::clone() const noexcept
 {
 	return std::make_shared<SphereMakerComponent>();

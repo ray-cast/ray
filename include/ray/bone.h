@@ -241,12 +241,12 @@ public:
 	std::uint32_t IKLoopCount;
 	std::uint32_t IKLinkCount;
 
-	float IKLimitedRadian;
+	float IKWeight;
 
 	std::vector<IKChild> IKList;
 };
 
-class EXPORT Bone
+class EXPORT Bone final
 {
 public:
 	Bone() noexcept;
@@ -271,9 +271,6 @@ public:
 	void setScaling(const Vector3& scale) noexcept;
 	const Vector3& getScaling() const noexcept;
 
-	void setWorldTransform(const Matrix4x4& transform) noexcept;
-	const Matrix4x4& getWorldTransform() const noexcept;
-
 	void setLocalTransform(const Matrix4x4& transform) noexcept;
 	const Matrix4x4& getLocalTransform() const noexcept;
 
@@ -290,9 +287,8 @@ private:
 	AnimeRotation  _rotation;
 	AnimeScaling   _scaling;
 
-	mutable Matrix4x4 _transform;
-	mutable Matrix4x4 _worldTransform;
-	mutable Matrix4x4 _localTransform;
+	Matrix4x4 _transform;
+	Matrix4x4 _localTransform;
 };
 
 _NAME_END

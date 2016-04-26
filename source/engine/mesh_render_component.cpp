@@ -121,7 +121,7 @@ MeshRenderComponent::_dettachRenderhObjects() noexcept
 	_renderObjects.clear();
 }
 
-void 
+void
 MeshRenderComponent::load(iarchive& reader) noexcept
 {
 	RenderComponent::load(reader);
@@ -156,14 +156,14 @@ MeshRenderComponent::clone() const noexcept
 	return result;
 }
 
-void 
+void
 MeshRenderComponent::onAttachComponent(GameComponentPtr& component) except
 {
 	if (component->isInstanceOf<MeshComponent>())
 		component->downcast<MeshComponent>()->addMeshChangeListener(std::bind(&MeshRenderComponent::onMeshChange, this));
 }
 
-void 
+void
 MeshRenderComponent::onDetachComponent(GameComponentPtr& component) except
 {
 	if (component->isInstanceOf<MeshComponent>())
@@ -189,7 +189,7 @@ MeshRenderComponent::onLayerChangeAfter() noexcept
 	for (auto& it : _renderObjects)
 	{
 		it->setLayer(this->getGameObject()->getLayer());
-	}	
+	}
 }
 
 void
@@ -210,7 +210,7 @@ MeshRenderComponent::onActivate() except
 
 		_buildRenderObjects(mesh);
 	}
-	
+
 	_attacRenderObjects();
 }
 
@@ -220,9 +220,11 @@ MeshRenderComponent::onDeactivate() except
 	this->_dettachRenderhObjects();
 }
 
-void 
+void
 MeshRenderComponent::onMeshChange() except
 {
+	this->_dettachRenderhObjects();
+
 	if (this->getGameObject()->getActive())
 	{
 		auto component = this->getGameObject()->getComponent<MeshComponent>();
@@ -234,6 +236,7 @@ MeshRenderComponent::onMeshChange() except
 
 			_buildMaterials();
 			_buildRenderObjects(mesh);
+			_attacRenderObjects();
 		}
 	}
 }
@@ -265,6 +268,8 @@ MeshRenderComponent::_buildRenderObjects(MeshPropertyPtr mesh) noexcept
 	if (!material)
 		return false;
 
+	_renderObjects.clear();
+
 	MeshPropertys meshes;
 	meshes.push_back(mesh);
 	meshes.insert(meshes.end(), mesh->getChildren().begin(), mesh->getChildren().end());
@@ -293,6 +298,8 @@ MeshRenderComponent::_buildRenderObjects(MeshPropertyPtr mesh) noexcept
 			_renderObjects.push_back(renderObject);
 		}
 	};
+
+	return true;
 }
 
 bool

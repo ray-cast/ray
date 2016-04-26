@@ -65,292 +65,292 @@ GuiEditBoxComponent::~GuiEditBoxComponent() noexcept
 void
 GuiEditBoxComponent::setTextIntervalColour(std::size_t start, std::size_t count, const float4& colour)
 {
-    _editBox->setTextIntervalColour(start, count, colour);
+	_editBox->setTextIntervalColour(start, count, colour);
 }
 
 std::size_t
 GuiEditBoxComponent::getTextSelectionStart() const
 {
-    return _editBox->getTextSelectionStart();
+	return _editBox->getTextSelectionStart();
 }
 
 std::size_t
 GuiEditBoxComponent::getTextSelectionEnd() const
 {
-    return _editBox->getTextSelectionEnd();
+	return _editBox->getTextSelectionEnd();
 }
 
 std::size_t
 GuiEditBoxComponent::getTextSelectionLength() const
 {
-    return _editBox->getTextSelectionLength();
+	return _editBox->getTextSelectionLength();
 }
 
 std::string
 GuiEditBoxComponent::getTextInterval(std::size_t start, std::size_t count)
 {
-    return _editBox->getTextInterval(start, count);
+	return _editBox->getTextInterval(start, count);
 }
 
 void
 GuiEditBoxComponent::setTextSelection(std::size_t start, std::size_t end)
 {
-    return _editBox->setTextSelection(start, end);
+	return _editBox->setTextSelection(start, end);
 }
 
 void
 GuiEditBoxComponent::deleteTextSelection()
 {
-    _editBox->deleteTextSelection();
+	_editBox->deleteTextSelection();
 }
 
 std::string
 GuiEditBoxComponent::getTextSelection()
 {
-    return _editBox->getTextSelection();
+	return _editBox->getTextSelection();
 }
 
 bool
 GuiEditBoxComponent::isTextSelection() const
 {
-    return _editBox->isTextSelection();
+	return _editBox->isTextSelection();
 }
 
 void
 GuiEditBoxComponent::setTextSelectionColour(const float4& value)
 {
-    _editBox->setTextSelectionColour(value);
+	_editBox->setTextSelectionColour(value);
 }
 
 void
 GuiEditBoxComponent::setTextCursor(std::size_t index)
 {
-    _editBox->setTextCursor(index);
+	_editBox->setTextCursor(index);
 }
 
 std::size_t
 GuiEditBoxComponent::getTextCursor() const
 {
-    return _editBox->getTextCursor();
+	return _editBox->getTextCursor();
 }
 
 void
 GuiEditBoxComponent::setOnlyText(const std::string& value)
 {
-    _editBox->setOnlyText(value);
+	_editBox->setOnlyText(value);
 }
 
 std::string
 GuiEditBoxComponent::getOnlyText()
 {
-    return _editBox->getOnlyText();
+	return _editBox->getOnlyText();
 }
 
 std::size_t
 GuiEditBoxComponent::getTextLength() const
 {
-    return _editBox->getTextLength();
+	return _editBox->getTextLength();
 }
 
 void
 GuiEditBoxComponent::setOverflowToTheLeft(bool value)
 {
-    _editBox->setOverflowToTheLeft(value);
+	_editBox->setOverflowToTheLeft(value);
 }
 
 bool
 GuiEditBoxComponent::getOverflowToTheLeft() const
 {
-    return _editBox->getOverflowToTheLeft();
+	return _editBox->getOverflowToTheLeft();
 }
 
 void
 GuiEditBoxComponent::setMaxTextLength(std::size_t value)
 {
-    _editBox->setMaxTextLength(value);
+	_editBox->setMaxTextLength(value);
 }
 
 std::size_t
 GuiEditBoxComponent::getMaxTextLength() const
 {
-    return _editBox->getMaxTextLength();
+	return _editBox->getMaxTextLength();
 }
 
 void
 GuiEditBoxComponent::insertText(const std::string& text, std::size_t index)
 {
-    _editBox->insertText(text, index);
+	_editBox->insertText(text, index);
 }
 
 void
 GuiEditBoxComponent::addText(const std::string& text)
 {
-    _editBox->addText(text);
+	_editBox->addText(text);
 }
 
 void
 GuiEditBoxComponent::eraseText(std::size_t start, std::size_t count)
 {
-    _editBox->eraseText(start, count);
+	_editBox->eraseText(start, count);
 }
 
 void
 GuiEditBoxComponent::setEditReadOnly(bool value)
 {
-    _editBox->setEditReadOnly(value);
+	_editBox->setEditReadOnly(value);
 }
 
 bool
 GuiEditBoxComponent::getEditReadOnly() const
 {
-    return _editBox->getEditReadOnly();
+	return _editBox->getEditReadOnly();
 }
 
 void
 GuiEditBoxComponent::setEditPassword(bool value)
 {
-    _editBox->setEditPassword(value);
+	_editBox->setEditPassword(value);
 }
 
 bool
 GuiEditBoxComponent::getEditPassword() const
 {
-    return _editBox->getEditPassword();
+	return _editBox->getEditPassword();
 }
 
 void
 GuiEditBoxComponent::setEditMultiLine(bool value)
 {
-    _editBox->setEditMultiLine(value);
+	_editBox->setEditMultiLine(value);
 }
 
 bool
 GuiEditBoxComponent::getEditMultiLine() const
 {
-    return _editBox->getEditMultiLine();
+	return _editBox->getEditMultiLine();
 }
 
 void
 GuiEditBoxComponent::setEditStatic(bool value)
 {
-    _editBox->setEditStatic(value);
+	_editBox->setEditStatic(value);
 }
 
 bool
 GuiEditBoxComponent::getEditStatic() const
 {
-    return _editBox->getEditStatic();
+	return _editBox->getEditStatic();
 }
 
 void
 GuiEditBoxComponent::setPasswordChar(GuiInputChar value)
 {
-    _editBox->setPasswordChar(value);
+	_editBox->setPasswordChar(value);
 }
 
 void
 GuiEditBoxComponent::setPasswordChar(const std::string& value)
 {
-    _editBox->setPasswordChar(value);
+	_editBox->setPasswordChar(value);
 }
 
 GuiInputChar
 GuiEditBoxComponent::getPasswordChar() const
 {
-    return _editBox->getPasswordChar();
+	return _editBox->getPasswordChar();
 }
 
 void
 GuiEditBoxComponent::setEditWordWrap(bool value)
 {
-    _editBox->setEditWordWrap(value);
+	_editBox->setEditWordWrap(value);
 }
 
 bool
 GuiEditBoxComponent::getEditWordWrap() const
 {
-    return _editBox->getEditWordWrap();
+	return _editBox->getEditWordWrap();
 }
 
 void
 GuiEditBoxComponent::setTabPrinting(bool value)
 {
-    _editBox->setTabPrinting(value);
+	_editBox->setTabPrinting(value);
 }
 
 bool
 GuiEditBoxComponent::getTabPrinting() const
 {
-    return _editBox->getTabPrinting();
+	return _editBox->getTabPrinting();
 }
 
 bool
 GuiEditBoxComponent::getInvertSelected()
 {
-    return _editBox->getInvertSelected();
+	return _editBox->getInvertSelected();
 }
 
 void
 GuiEditBoxComponent::setInvertSelected(bool value)
 {
-    _editBox->setInvertSelected(value);
+	_editBox->setInvertSelected(value);
 }
 
 std::size_t
 GuiEditBoxComponent::getVScrollRange() const
 {
-    return _editBox->getVScrollRange();
+	return _editBox->getVScrollRange();
 }
 
 std::size_t
 GuiEditBoxComponent::getVScrollPosition()
 {
-    return _editBox->getVScrollPosition();
+	return _editBox->getVScrollPosition();
 }
 
 void
 GuiEditBoxComponent::setVScrollPosition(std::size_t index)
 {
-    _editBox->setVScrollPosition(index);
+	_editBox->setVScrollPosition(index);
 }
 
 std::size_t
 GuiEditBoxComponent::getHScrollRange() const
 {
-    return _editBox->getHScrollRange();
+	return _editBox->getHScrollRange();
 }
 
 std::size_t
 GuiEditBoxComponent::getHScrollPosition()
 {
-    return _editBox->getHScrollPosition();
+	return _editBox->getHScrollPosition();
 }
 
 void
 GuiEditBoxComponent::setHScrollPosition(std::size_t index)
 {
-    _editBox->setHScrollPosition(index);
+	_editBox->setHScrollPosition(index);
 }
 
-void 
+void
 GuiEditBoxComponent::addTextChangeListener(std::function<void()> func) noexcept
 {
 	_editBox->addTextChangeListener(func);
 }
 
-void 
+void
 GuiEditBoxComponent::removeTextChangeListener(std::function<void()> func) noexcept
 {
 	_editBox->removeTextChangeListener(func);
 }
 
-void 
+void
 GuiEditBoxComponent::addSelectAccept(std::function<void()> func) noexcept
 {
 	_editBox->addSelectAccept(func);
 }
 
-void 
+void
 GuiEditBoxComponent::removeSelectAccept(std::function<void()> func) noexcept
 {
 	_editBox->removeSelectAccept(func);

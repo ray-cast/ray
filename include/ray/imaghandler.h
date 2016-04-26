@@ -46,16 +46,16 @@ class EXPORT ImageHandler : public ImageBase
 {
 public:
 	ImageHandler() noexcept {};
-    virtual ~ImageHandler() noexcept {};
+	virtual ~ImageHandler() noexcept {};
 
-    virtual bool doCanRead(StreamReader& stream) const noexcept = 0;
+	virtual bool doCanRead(StreamReader& stream) const noexcept = 0;
 
-    virtual bool doLoad(Image& image, StreamReader& stream) except = 0;
-    virtual bool doSave(Image& image, StreamWrite& stream) except = 0;
+	virtual bool doLoad(Image& image, StreamReader& stream) except = 0;
+	virtual bool doSave(Image& image, StreamWrite& stream) except = 0;
 
 private:
-    ImageHandler(const ImageHandler&) noexcept = delete;
-    const ImageHandler& operator=(const ImageHandler&) noexcept = delete;
+	ImageHandler(const ImageHandler&) noexcept = delete;
+	const ImageHandler& operator=(const ImageHandler&) noexcept = delete;
 };
 
 _NAME_END

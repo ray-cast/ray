@@ -45,8 +45,8 @@ _NAME_BEGIN
 
 namespace trait
 {
-    template<typename T>
-    struct functor {};
+	template<typename T>
+	struct functor {};
 
 	template<typename Result>
 	struct functor<Result(*)()>
@@ -62,147 +62,147 @@ namespace trait
 		typedef Args arg_type;
 	};
 
-    template<typename Result, typename Class>
-    struct functor<Result(Class::*)()>
-    {
-        typedef Result result_type;
-        typedef Class class_type;
-        typedef void arg_type;
-    };
+	template<typename Result, typename Class>
+	struct functor<Result(Class::*)()>
+	{
+		typedef Result result_type;
+		typedef Class class_type;
+		typedef void arg_type;
+	};
 
-    template<typename Result, typename Class, typename Args>
-    struct functor<Result(Class::*)(Args)>
-    {
-        typedef Result result_type;
-        typedef Class class_type;
-        typedef Args arg_type;
-    };
+	template<typename Result, typename Class, typename Args>
+	struct functor<Result(Class::*)(Args)>
+	{
+		typedef Result result_type;
+		typedef Class class_type;
+		typedef Args arg_type;
+	};
 
-    template<typename T>
-    struct _typeaddition
-    {
-        typedef T                value_type;
-        typedef T*               pointer;
-        typedef T&               reference;
-        typedef const T          const_type;
-        typedef const T*         const_pointer;
-        typedef const T&         const_reference;
-    };
+	template<typename T>
+	struct _typeaddition
+	{
+		typedef T                value_type;
+		typedef T*               pointer;
+		typedef T&               reference;
+		typedef const T          const_type;
+		typedef const T*         const_pointer;
+		typedef const T&         const_reference;
+	};
 
-    template<>
-    struct _typeaddition<void>
-    {
-        typedef void             value_type;
-        typedef void*            pointer;
-        typedef const void*      const_pointer;
-    };
+	template<>
+	struct _typeaddition<void>
+	{
+		typedef void             value_type;
+		typedef void*            pointer;
+		typedef const void*      const_pointer;
+	};
 
-    template<typename T>
-    struct _typeaddition<T*>
-    {
-        typedef T                value_type;
-        typedef T*               pointer;
-        typedef T&               reference;
-        typedef const T*         const_type;
-        typedef const T*         const_pointer;
-        typedef const T&         const_reference;
-    };
+	template<typename T>
+	struct _typeaddition<T*>
+	{
+		typedef T                value_type;
+		typedef T*               pointer;
+		typedef T&               reference;
+		typedef const T*         const_type;
+		typedef const T*         const_pointer;
+		typedef const T&         const_reference;
+	};
 
-    template<typename T>
-    struct _typeaddition<T&>
-    {
-        typedef T                value_type;
-        typedef T*               pointer;
-        typedef T&               reference;
-        typedef const T&         const_type;
-        typedef const T*         const_pointer;
-        typedef const T&         const_reference;
-    };
+	template<typename T>
+	struct _typeaddition<T&>
+	{
+		typedef T                value_type;
+		typedef T*               pointer;
+		typedef T&               reference;
+		typedef const T&         const_type;
+		typedef const T*         const_pointer;
+		typedef const T&         const_reference;
+	};
 
-    template<typename T>
-    struct _typeaddition<const T*>
-    {
-        typedef T                value_type;
-        typedef T*               pointer;
-        typedef T&               reference;
-        typedef const T*         const_type;
-        typedef const T*         const_pointer;
-        typedef const T&         const_reference;
-    };
+	template<typename T>
+	struct _typeaddition<const T*>
+	{
+		typedef T                value_type;
+		typedef T*               pointer;
+		typedef T&               reference;
+		typedef const T*         const_type;
+		typedef const T*         const_pointer;
+		typedef const T&         const_reference;
+	};
 
-    template<typename _Elem, typename _Int_type>
-    struct _Char_traits
-    {
-        typedef _Elem            char_type;
-        typedef _Elem*           pointer;
-        typedef _Elem&           reference;
-        typedef const _Elem      const_type;
-        typedef const _Elem*     const_pointer;
-        typedef const _Elem&     const_reference;
-        typedef _Int_type        int_type;
+	template<typename _Elem, typename _Int_type>
+	struct _Char_traits
+	{
+		typedef _Elem            char_type;
+		typedef _Elem*           pointer;
+		typedef _Elem&           reference;
+		typedef const _Elem      const_type;
+		typedef const _Elem*     const_pointer;
+		typedef const _Elem&     const_reference;
+		typedef _Int_type        int_type;
 
-        static int compare(const char_type* str1, const char_type* str2, std::size_t cnt) noexcept
-        {
-            for (; 0 < cnt; --cnt, ++str1, ++str2)
-            {
-                if (!eq(*str1, *str2))
-                    return (lt(*str1, *str2) ? -1 : 1);
-            }
+		static int compare(const char_type* str1, const char_type* str2, std::size_t cnt) noexcept
+		{
+			for (; 0 < cnt; --cnt, ++str1, ++str2)
+			{
+				if (!eq(*str1, *str2))
+					return (lt(*str1, *str2) ? -1 : 1);
+			}
 
-            return (0);
-        }
+			return (0);
+		}
 
-        static bool eq(const char_type& lhs, const char_type& rhs) noexcept
-        {
-            return (lhs == rhs);
-        }
+		static bool eq(const char_type& lhs, const char_type& rhs) noexcept
+		{
+			return (lhs == rhs);
+		}
 
-        static bool lt(const char_type& lhs, const char_type& rhs) noexcept
-        {
-            return (lhs < rhs);
-        }
-    };
+		static bool lt(const char_type& lhs, const char_type& rhs) noexcept
+		{
+			return (lhs < rhs);
+		}
+	};
 
-    template<typename T>
-    struct erase_const
-    {
-        typedef T value_type;
-    };
+	template<typename T>
+	struct erase_const
+	{
+		typedef T value_type;
+	};
 
-    template<typename T>
-    struct erase_const<const T>
-    {
-        typedef T value_type;
-    };
+	template<typename T>
+	struct erase_const<const T>
+	{
+		typedef T value_type;
+	};
 
-    template<typename T>
-    struct erase_const<const T*>
-    {
-        typedef T* value_type;
-    };
+	template<typename T>
+	struct erase_const<const T*>
+	{
+		typedef T* value_type;
+	};
 
-    template<typename T>
-    struct erase_const<const T&>
-    {
-        typedef T& value_type;
-    };
+	template<typename T>
+	struct erase_const<const T&>
+	{
+		typedef T& value_type;
+	};
 
-    template<typename _Ty>
-    class char_traits;
+	template<typename _Ty>
+	class char_traits;
 
-    template<>
-    class char_traits<char> : public _Char_traits<char, long>
-    {
-    public:
-        static const std::string towcs(const wchar_t* str) noexcept
-        {
-            std::string _format;
-            _format.resize(wcslen(str));
-            wcstombs((char*)_format.c_str(), str, _format.size());
-            return _format;
-        }
+	template<>
+	class char_traits<char> : public _Char_traits<char, long>
+	{
+	public:
+		static const std::string towcs(const wchar_t* str) noexcept
+		{
+			std::string _format;
+			_format.resize(wcslen(str));
+			wcstombs((char*)_format.c_str(), str, _format.size());
+			return _format;
+		}
 
-        static const_pointer towcs(const char* str) noexcept
+		static const_pointer towcs(const char* str) noexcept
 		{
 			return (str);
 		}
@@ -226,22 +226,22 @@ namespace trait
 		{
 			return nullptr == str;
 		}
-    };
+	};
 
-    template<>
-    class char_traits<wchar_t> : public _Char_traits<wchar_t, long>
-    {
-    public:
-        static const std::wstring towcs(const char* str) noexcept
-        {
-            std::wstring _format;
-            _format.resize(strlen(str));
-            mbstowcs((wchar_t*)_format.c_str(), str, _format.size());
-            return _format;
-        }
+	template<>
+	class char_traits<wchar_t> : public _Char_traits<wchar_t, long>
+	{
+	public:
+		static const std::wstring towcs(const char* str) noexcept
+		{
+			std::wstring _format;
+			_format.resize(strlen(str));
+			mbstowcs((wchar_t*)_format.c_str(), str, _format.size());
+			return _format;
+		}
 
-        static const_pointer towcs(const wchar_t* str) noexcept
-        {
+		static const_pointer towcs(const wchar_t* str) noexcept
+		{
 			return str;
 		}
 
@@ -264,13 +264,13 @@ namespace trait
 		{
 			return nullptr == str;
 		}
-    };
+	};
 
-    template<>
-    class char_traits<std::string> : public _Char_traits<char, long>
-    {
-    public:
-        static const_pointer get_pointer(const std::string& name) noexcept  
+	template<>
+	class char_traits<std::string> : public _Char_traits<char, long>
+	{
+	public:
+		static const_pointer get_pointer(const std::string& name) noexcept
 		{
 			return name.c_str();
 		}
@@ -292,12 +292,12 @@ namespace trait
 		{
 			return str.empty();
 		}
-    };
+	};
 
-    template<>
-    class char_traits<std::wstring> : public _Char_traits<wchar_t, long>
-    {
-    public:
+	template<>
+	class char_traits<std::wstring> : public _Char_traits<wchar_t, long>
+	{
+	public:
 		static const_pointer get_pointer(const std::wstring& str) noexcept
 		{
 			return str.c_str();

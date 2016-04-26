@@ -55,40 +55,40 @@ TerrainLod::setMap(HeightMap* map) noexcept
 	_maxDepth = (std::uint8_t)math::bitScanReverse(_size - 1);
 }
 
-void 
-TerrainLod::setFrustum(Frustum* fru) 
+void
+TerrainLod::setFrustum(Frustum* fru)
 {
-	_frustum = fru; 
+	_frustum = fru;
 }
 
-float 
+float
 TerrainLod::getHeight(std::uint32_t x, std::uint32_t y) const
 {
-	return _map->getHeight(x, y); 
+	return _map->getHeight(x, y);
 }
 
 const Vector3&
-TerrainLod::getVertex(std::uint32_t x, std::uint32_t y) const 
+TerrainLod::getVertex(std::uint32_t x, std::uint32_t y) const
 {
-	return _map->getVertex(x, y); 
+	return _map->getVertex(x, y);
 }
 
-std::size_t 
-TerrainLod::getScale() const 
+std::size_t
+TerrainLod::getScale() const
 {
-	return _scale; 
+	return _scale;
 }
 
-std::uint32_t 
-TerrainLod::getSize() const 
+std::uint32_t
+TerrainLod::getSize() const
 {
-	return _size; 
+	return _size;
 }
 
-std::uint8_t 
-TerrainLod::getDepth() const 
+std::uint8_t
+TerrainLod::getDepth() const
 {
-	return _maxDepth; 
+	return _maxDepth;
 }
 
 bool

@@ -46,7 +46,7 @@ class EXPORT GraphicsTextureDesc final
 public:
 	GraphicsTextureDesc() noexcept;
 	~GraphicsTextureDesc() noexcept;
-	
+
 	void setWidth(std::uint32_t w) noexcept;
 	void setHeight(std::uint32_t h) noexcept;
 	void setDepth(std::uint32_t d) noexcept;

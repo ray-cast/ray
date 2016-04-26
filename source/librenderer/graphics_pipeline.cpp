@@ -69,7 +69,7 @@ GraphicsPipelineLayoutDesc::addGraphicsDescriptorSetLayout(GraphicsDescriptorSet
 		_descriptorSetLayouts.push_back(descriptorSetLayout);
 }
 
-void 
+void
 GraphicsPipelineLayoutDesc::removeGraphicsDescriptorSetLayout(GraphicsDescriptorSetLayoutPtr& descriptorSetLayout) noexcept
 {
 	auto it = std::find(_descriptorSetLayouts.begin(), _descriptorSetLayouts.end(), descriptorSetLayout);
@@ -121,7 +121,7 @@ GraphicsPipelineDesc::getGraphicsDescriptorSetLayout() const noexcept
 	return _descriptorSetLayout;
 }
 
-void 
+void
 GraphicsPipelineDesc::setGraphicsFramebufferLayout(GraphicsFramebufferLayoutPtr framebufferLayout) noexcept
 {
 	_framebufferLayout = framebufferLayout;

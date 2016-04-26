@@ -295,7 +295,7 @@ Mipmapping::split(const Quadnode& node, std::uint8_t depth)
 std::size_t
 Mipmapping::buildTrianlges()
 {
-	return _buildTrianlges; 
+	return _buildTrianlges;
 }
 
 void

@@ -44,16 +44,16 @@ _NAME_BEGIN
 class EXPORT IoAssign final
 {
 public:
-    IoAssign() noexcept;
-    IoAssign(const std::string& name, const std::string& path) noexcept;
+	IoAssign() noexcept;
+	IoAssign(const std::string& name, const std::string& path) noexcept;
 
-    const std::string& getName() const noexcept;
-    const std::string& getPath() const noexcept;
+	const std::string& getName() const noexcept;
+	const std::string& getPath() const noexcept;
 
 private:
 
-    std::string _name;
-    std::string _path;
+	std::string _name;
+	std::string _path;
 };
 
 _NAME_END

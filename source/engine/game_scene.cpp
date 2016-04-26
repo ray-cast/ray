@@ -88,7 +88,7 @@ GameScene::GameScene() noexcept
 }
 
 GameScene::GameScene(const std::string& name) noexcept
-	:_name(name)
+	: _name(name)
 {
 	GameSceneManager::instance()->_instanceScene(this, _instanceID);
 }
@@ -127,7 +127,7 @@ GameScene::getName() const noexcept
 	return _name;
 }
 
-std::uint32_t 
+std::uint32_t
 GameScene::getInstanceID() const noexcept
 {
 	return _instanceID;
@@ -159,7 +159,7 @@ GameScene::setGameServer(GameServerPtr server) noexcept
 	{
 		if (gameServer)
 			gameServer->removeScene(this->downcast<GameScene>());
-		
+
 		_gameServer = server;
 
 		if (server)
@@ -275,7 +275,7 @@ GameScene::load(iarchive& reader) except
 	}
 }
 
-void 
+void
 GameScene::save(oarchive& reader) except
 {
 }

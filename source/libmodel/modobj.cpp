@@ -52,209 +52,209 @@ ObjHandler::~ObjHandler() noexcept
 bool
 ObjHandler::SearchFileHeaderForToken(StreamReader* stream, const char** tokens, unsigned int numTokens, unsigned int searchBytes, bool tokensSol)
 {
-    assert(nullptr != stream && nullptr != tokens && 0 != numTokens && 0 != searchBytes);
+	assert(nullptr != stream && nullptr != tokens && 0 != numTokens && 0 != searchBytes);
 
-    if (stream->good())
-    {
-        // read 200 characters from the file
-        std::unique_ptr<char[]> _buffer(new char[searchBytes + 1 /* for the '\0' */]);
-        char* buffer = _buffer.get();
+	if (stream->good())
+	{
+		// read 200 characters from the file
+		std::unique_ptr<char[]> _buffer(new char[searchBytes + 1 /* for the '\0' */]);
+		char* buffer = _buffer.get();
 
-        const std::streamsize read = stream->read(buffer, searchBytes).gcount();
-        if (!read)
-            return false;
+		const std::streamsize read = stream->read(buffer, searchBytes).gcount();
+		if (!read)
+			return false;
 
-        for (std::streamsize i = 0; i < read; ++i)
-            buffer[i] = static_cast<char>(::tolower(buffer[i]));
+		for (std::streamsize i = 0; i < read; ++i)
+			buffer[i] = static_cast<char>(::tolower(buffer[i]));
 
-        // It is not a proper handling of unicode files here ...
-        // ehm ... but it works in most cases.
-        char* cur = buffer, *cur2 = buffer, *end = &buffer[read];
-        while (cur != end)
-        {
-            if (*cur)
-                *cur2++ = *cur;
-            ++cur;
-        }
-        *cur2 = '\0';
+		// It is not a proper handling of unicode files here ...
+		// ehm ... but it works in most cases.
+		char* cur = buffer, *cur2 = buffer, *end = &buffer[read];
+		while (cur != end)
+		{
+			if (*cur)
+				*cur2++ = *cur;
+			++cur;
+		}
+		*cur2 = '\0';
 
-        for (unsigned int i = 0; i < numTokens; ++i)
-        {
-            assert(nullptr != tokens[i]);
+		for (unsigned int i = 0; i < numTokens; ++i)
+		{
+			assert(nullptr != tokens[i]);
 
-            const char* r = strstr(buffer, tokens[i]);
-            if (!r)
-                continue;
-            // We got a match, either we don't care where it is, or it happens to
-            // be in the beginning of the file / line
-            if (!tokensSol || r == buffer || r[-1] == '\r' || r[-1] == '\n')
-            {
-                return true;
-            }
-        }
-    }
-    return false;
+			const char* r = strstr(buffer, tokens[i]);
+			if (!r)
+				continue;
+			// We got a match, either we don't care where it is, or it happens to
+			// be in the beginning of the file / line
+			if (!tokensSol || r == buffer || r[-1] == '\r' || r[-1] == '\n')
+			{
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 bool
 ObjHandler::doCanRead(StreamReader& stream) const noexcept
 {
-    static const char *pTokens[] = { "mtllib", "usemtl" };
-    return SearchFileHeaderForToken(&stream, pTokens, 2);
+	static const char *pTokens[] = { "mtllib", "usemtl" };
+	return SearchFileHeaderForToken(&stream, pTokens, 2);
 }
 
 bool
 ObjHandler::doLoad(Model& model, StreamReader& stream) noexcept
 {
-    streamsize size = stream.gcount();
-    if (size < 16)
-        return false;
+	streamsize size = stream.gcount();
+	if (size < 16)
+		return false;
 
-    std::unique_ptr<char> data(new char[(std::size_t)size]);
-    stream.read(data.get(), size);
+	std::unique_ptr<char> data(new char[(std::size_t)size]);
+	stream.read(data.get(), size);
 
-    _model = &model;
+	_model = &model;
 
-    return this->parser(data.get(), (std::size_t)size);
+	return this->parser(data.get(), (std::size_t)size);
 }
 
 bool
 ObjHandler::doSave(Model& model, StreamWrite& stream) noexcept
 {
-    return false;
+	return false;
 }
 
 bool
 ObjHandler::parser(char* data, std::size_t)
 {
-    std::ifstream infile(data);
-    std::string line;
+	std::ifstream infile(data);
+	std::string line;
 
-    std::string s1;
+	std::string s1;
 
-    Float3Array _vn;
-    Float2Array _vt;
-    Float3Array _v;
+	Float3Array _vn;
+	Float2Array _vt;
+	Float3Array _v;
 
-    std::vector<float> _fv;
-    std::vector<float> _ft;
-    std::vector<float> _fn;
+	std::vector<float> _fv;
+	std::vector<float> _ft;
+	std::vector<float> _fn;
 
-    while (std::getline(infile, line))
-    {
-        switch (line[0])
-        {
-        case 'v':
-        {
-            if (line[1] == ' ')
-            {
-                _v.push_back(this->parseVector3(line));
-                continue;
-            }
-            if (line[1] == 't')
-            {
-                _vt.push_back(this->parseVector2(line));
-                continue;
-            }
-            if (line[1] == 'n')
-            {
-                _vn.push_back(this->parseVector3(line));
-                continue;
-            }
-        }
-        case 'p':
-        case 'l':
-        case 'f':
-        {
-            std::istringstream in(line);
-            float a;
+	while (std::getline(infile, line))
+	{
+		switch (line[0])
+		{
+		case 'v':
+		{
+			if (line[1] == ' ')
+			{
+				_v.push_back(this->parseVector3(line));
+				continue;
+			}
+			if (line[1] == 't')
+			{
+				_vt.push_back(this->parseVector2(line));
+				continue;
+			}
+			if (line[1] == 'n')
+			{
+				_vn.push_back(this->parseVector3(line));
+				continue;
+			}
+		}
+		case 'p':
+		case 'l':
+		case 'f':
+		{
+			std::istringstream in(line);
+			float a;
 
-            for (std::size_t i = 0; i < 3; i++)
-            {
-                in >> s1;
-                a = 0;
-                std::size_t k;
+			for (std::size_t i = 0; i < 3; i++)
+			{
+				in >> s1;
+				a = 0;
+				std::size_t k;
 
-                for (k = 0; s1[k] != '/'; k++)
-                    a = a * 10 + (s1[k] - 48);
+				for (k = 0; s1[k] != '/'; k++)
+					a = a * 10 + (s1[k] - 48);
 
-                _fv.push_back(a);
+				_fv.push_back(a);
 
-                for (k = k + 1; s1[k] != '/'; k++)
-                    a = a * 10 + (s1[k] - 48);
+				for (k = k + 1; s1[k] != '/'; k++)
+					a = a * 10 + (s1[k] - 48);
 
-                _ft.push_back(a);
+				_ft.push_back(a);
 
-                a = 0;
-                for (k = k + 2; s1[k]; k++)
-                    a = a * 10 + (s1[k] - 48);
+				a = 0;
+				for (k = k + 2; s1[k]; k++)
+					a = a * 10 + (s1[k] - 48);
 
-                _fn.push_back(a);
-            }
-        }
-        continue;
-        case '#':
-        {
-        }
-        break;
-        case 'u':
-        {
-        }
-        break;
-        case 'g':
-        {
-        }
-        break;
-        case 's':
-        {
-        }
-        break;
-        case 'o':
-        {
-        }
-        break;
-        default:
-            break;
-        }
-    }
+				_fn.push_back(a);
+			}
+		}
+		continue;
+		case '#':
+		{
+		}
+		break;
+		case 'u':
+		{
+		}
+		break;
+		case 'g':
+		{
+		}
+		break;
+		case 's':
+		{
+		}
+		break;
+		case 'o':
+		{
+		}
+		break;
+		default:
+			break;
+		}
+	}
 
-    return true;
+	return true;
 }
 
 Vector2
 ObjHandler::parseVector2(const std::string& line)
 {
-    std::string s1;
-    float f1, f2;
+	std::string s1;
+	float f1, f2;
 
-    std::istringstream sin(line);
-    sin >> s1 >> f1 >> f2;
+	std::istringstream sin(line);
+	sin >> s1 >> f1 >> f2;
 
-    return Vector2(f1, f2);
+	return Vector2(f1, f2);
 }
 
 Vector3
 ObjHandler::parseVector3(const std::string& line)
 {
-    std::string s1;
-    float f1, f2, f3;
+	std::string s1;
+	float f1, f2, f3;
 
-    std::istringstream sin(line);
-    sin >> s1 >> f1 >> f2 >> f3;
+	std::istringstream sin(line);
+	sin >> s1 >> f1 >> f2 >> f3;
 
-    return Vector3(f1, f2, f3);
+	return Vector3(f1, f2, f3);
 }
 
 Vector4
 ObjHandler::parseVector4(const std::string& line)
 {
-    std::string s1;
-    float f1, f2, f3, f4;
+	std::string s1;
+	float f1, f2, f3, f4;
 
-    std::istringstream sin(line);
-    sin >> s1 >> f1 >> f2 >> f3 >> f4;
+	std::istringstream sin(line);
+	sin >> s1 >> f1 >> f2 >> f3 >> f4;
 
-    return Vector4(f1, f2, f3, f4);
+	return Vector4(f1, f2, f3, f4);
 }
 
 _NAME_END

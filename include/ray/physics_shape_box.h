@@ -46,24 +46,24 @@ _NAME_BEGIN
 class EXPORT PhysicsShapeBox final : public PhysicsShape
 {
 public:
-    PhysicsShapeBox() noexcept;
-    virtual ~PhysicsShapeBox() noexcept;
+	PhysicsShapeBox() noexcept;
+	virtual ~PhysicsShapeBox() noexcept;
 
-    void setup() noexcept;
-    void close() noexcept;
+	void setup() noexcept;
+	void close() noexcept;
 
-    void setSize(const Vector3& size) noexcept;
-    const Vector3& getSize() const noexcept;
-
-private:
-
-    virtual btCollisionShape* getCollisionShape() noexcept;
+	void setSize(const Vector3& size) noexcept;
+	const Vector3& getSize() const noexcept;
 
 private:
 
-    Vector3 _size;
+	virtual btCollisionShape* getCollisionShape() noexcept;
 
-    btBoxShape* _shape;
+private:
+
+	Vector3 _size;
+
+	btBoxShape* _shape;
 };
 
 _NAME_END

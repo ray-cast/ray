@@ -62,13 +62,13 @@ GraphicsDataDesc::~GraphicsDataDesc() noexcept
 {
 }
 
-void 
+void
 GraphicsDataDesc::setUsage(std::uint32_t usage) noexcept
 {
 	_usage = usage;
 }
 
-std::uint32_t 
+std::uint32_t
 GraphicsDataDesc::getUsage() const noexcept
 {
 	return _usage;
@@ -92,31 +92,31 @@ GraphicsDataDesc::setStride(std::uint32_t stride) noexcept
 	_stride = stride;
 }
 
-std::uint32_t 
+std::uint32_t
 GraphicsDataDesc::getStride() const noexcept
 {
 	return _stride;
 }
 
-void 
+void
 GraphicsDataDesc::setStream(std::uint8_t* data) noexcept
 {
 	_data = data;
 }
 
-std::uint8_t* 
+std::uint8_t*
 GraphicsDataDesc::getStream() const noexcept
 {
 	return _data;
 }
 
-void 
+void
 GraphicsDataDesc::setStreamSize(std::uint32_t size) noexcept
 {
 	_dataSize = size;
 }
 
-std::uint32_t 
+std::uint32_t
 GraphicsDataDesc::getStreamSize() const noexcept
 {
 	return _dataSize;

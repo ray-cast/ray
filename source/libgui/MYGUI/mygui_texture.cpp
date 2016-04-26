@@ -63,19 +63,19 @@ MyGuiTexture::~MyGuiTexture() noexcept
 	this->destroy();
 }
 
-const std::string& 
+const std::string&
 MyGuiTexture::getName() const noexcept
 {
 	return _name;
 }
 
-void 
+void
 MyGuiTexture::setUsage(TextureUsage usage) noexcept
 {
 	_originalUsage = usage;
 }
 
-MyGUI::TextureUsage 
+MyGUI::TextureUsage
 MyGuiTexture::getUsage() const noexcept
 {
 	return _originalUsage;
@@ -87,7 +87,7 @@ MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::Pix
 	createManual(width, height, usage, format, 0);
 }
 
-void 
+void
 MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::PixelFormat _format, void* _data) except
 {
 	MYGUI_PLATFORM_ASSERT(!_texture, "Texture already exist");
@@ -127,7 +127,7 @@ MyGuiTexture::createManual(int width, int height, TextureUsage usage, MyGUI::Pix
 	_texture = RenderSystem::instance()->createTexture(textureDesc);
 }
 
-void 
+void
 MyGuiTexture::destroy() noexcept
 {
 	if (_renderTarget != nullptr)
@@ -147,7 +147,7 @@ MyGuiTexture::destroy() noexcept
 	_originalUsage = MyGUI::TextureUsage::Default;
 }
 
-void* 
+void*
 MyGuiTexture::lock(TextureUsage _access) noexcept
 {
 	MYGUI_PLATFORM_ASSERT(!_lock, "Texture is locked");
@@ -172,7 +172,7 @@ MyGuiTexture::loadFromFile(const std::string& _filename)
 	{
 		int width = 0;
 		int height = 0;
-		
+
 		auto format = GuiImageLoader::PixelFormat::Unknow;
 
 		if (_imageLoader->loadImage(width, height, format, _filename, _stream))
@@ -194,7 +194,7 @@ MyGuiTexture::loadFromFile(const std::string& _filename)
 	}
 }
 
-void 
+void
 MyGuiTexture::saveToFile(const std::string& _filename)
 {
 	if (_imageLoader)
@@ -219,12 +219,12 @@ MyGuiTexture::saveToFile(const std::string& _filename)
 	}
 }
 
-IRenderTarget* 
+IRenderTarget*
 MyGuiTexture::getRenderTarget()
 {
 	assert(_texture);
 	if (_renderTarget == nullptr)
-		_renderTarget = new MyGuiRenderTexture(_texture);		
+		_renderTarget = new MyGuiRenderTexture(_texture);
 	return _renderTarget;
 }
 
@@ -235,25 +235,25 @@ MyGuiTexture::getTexture() const noexcept
 	return _texture;
 }
 
-int 
+int
 MyGuiTexture::getWidth() noexcept
 {
 	return _width;
 }
 
-int 
+int
 MyGuiTexture::getHeight() noexcept
 {
 	return _height;
 }
 
-bool 
+bool
 MyGuiTexture::isLocked() noexcept
 {
 	return _lock;
 }
 
-MyGUI::PixelFormat 
+MyGUI::PixelFormat
 MyGuiTexture::getFormat() noexcept
 {
 	return _originalFormat;
@@ -303,19 +303,19 @@ MyGuiRenderTexture::begin() noexcept
 	RenderSystem::instance()->clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsAll, Vector4::Zero, 1.0, 0);
 }
 
-void 
+void
 MyGuiRenderTexture::end() noexcept
 {
 	RenderSystem::instance()->setFramebuffer(nullptr);
 }
 
-void 
+void
 MyGuiRenderTexture::doRender(IVertexBuffer* _buffer, ITexture* _texture, size_t _count) noexcept
 {
 	MyGuiRenderer::getInstance().doRenderRTT(_buffer, _texture, _count);
 }
 
-const MyGUI::RenderTargetInfo& 
+const MyGUI::RenderTargetInfo&
 MyGuiRenderTexture::getInfo() noexcept
 {
 	return _renderTargetInfo;

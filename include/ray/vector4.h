@@ -676,6 +676,60 @@ namespace math
 	}
 
 	template<typename T>
+	inline Vector4t<T> cos(const Vector4t<T>& v)
+	{
+		return Vector4t<T>(std::cos(v.x), std::cos(v.y), std::cos(v.z), std::cos(v.w));
+	}
+
+	template<typename T>
+	inline Vector4t<T> sin(const Vector4t<T>& v)
+	{
+		return Vector4t<T>(std::sin(v.x), std::sin(v.y), std::sin(v.z), std::sin(v.w));
+	}
+
+	template<typename T>
+	inline Vector4t<T> tan(const Vector4t<T>& v)
+	{
+		return Vector4t<T>(std::tan(v.x), std::tan(v.y), std::tan(v.z), std::tan(v.w));
+	}
+
+	template<typename T>
+	inline Vector4t<T> acos(const Vector4t<T>& v)
+	{
+		return Vector4t<T>(std::acos(v.x), std::acos(v.y), std::acos(v.z), std::acos(v.w));
+	}
+
+	template<typename T>
+	inline Vector4t<T> asin(const Vector4t<T>& v)
+	{
+		return Vector4t<T>(std::asin(v.x), std::asin(v.y), std::asin(v.z), std::asin(v.w));
+	}
+
+	template<typename T>
+	inline Vector4t<T> atan(const Vector4t<T>& v)
+	{
+		return Vector4t<T>(std::atan(v.x), std::atan(v.y), std::atan(v.z), std::atan(v.w));
+	}
+
+	template<typename T>
+	inline Vector4t<T> exp(const Vector4t<T>& v)
+	{
+		return Vector4t<T>(std::exp(v.x), std::exp(v.y), std::exp(v.z), std::exp(v.w));
+	}
+
+	template<typename T>
+	inline Vector4t<T> log(const Vector4t<T>& v)
+	{
+		return Vector4t<T>(std::log(v.x), std::log(v.y), std::log(v.z), std::log(v.w));
+	}
+
+	template<typename T>
+	inline Vector4t<T> log10(const Vector4t<T>& v)
+	{
+		return Vector4t<T>(std::log10(v.x), std::log10(v.y), std::log10(v.z), std::log10(v.w));
+	}
+
+	template<typename T>
 	inline Vector4t<T> pow(const Vector4t<T>& v1, const Vector4t<T>& v2)
 	{
 		return Vector4t<T>(std::pow(v1.x, v2.x), std::pow(v1.y, v2.y), std::pow(v1.z, v2.z), std::pow(v1.w, v2.w));

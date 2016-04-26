@@ -114,15 +114,15 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	{
 		GLenum format = OGLTypes::asTextureFormat(textureDesc.getTexFormat());
 		GLenum type = OGLTypes::asTextureType(textureDesc.getTexFormat());
-		
+
 		GLsizei offset = 0;
 		GLsizei pixelSize = stream ? OGLTypes::getFormatNum(format) : 1;
 
-		GLenum cubeFace[] = 
+		GLenum cubeFace[] =
 		{
 			GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
 			GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-			GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z 
+			GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
 		};
 
 		for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)

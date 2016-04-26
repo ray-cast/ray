@@ -43,7 +43,6 @@ _NAME_BEGIN
 
 namespace rtti
 {
-
 #define __DeclareInterface(Base)\
 public:\
 	static _NAME rtti::Rtti RTTI;\

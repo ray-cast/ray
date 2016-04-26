@@ -122,7 +122,6 @@ MyGuiTextBoxImpl::setFontName(const std::string& value) noexcept
 	_table->setFontName(value);
 }
 
-
 const std::string&
 MyGuiTextBoxImpl::getFontName() noexcept
 {

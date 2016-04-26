@@ -58,8 +58,10 @@ public:
 	GameServerPtr getGameServer() const noexcept;
 
 	template<typename T>
-	std::shared_ptr<T> getComponent() const noexcept 
-		{ return std::dynamic_pointer_cast<T>(this->getComponent(T::RTTI)); }
+	std::shared_ptr<T> getComponent() const noexcept
+	{
+		return std::dynamic_pointer_cast<T>(this->getComponent(T::RTTI));
+	}
 
 	GameComponentPtr getComponent(const rtti::Rtti* type) const noexcept;
 	GameComponentPtr getComponent(const rtti::Rtti& type) const noexcept;

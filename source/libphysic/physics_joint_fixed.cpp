@@ -39,7 +39,7 @@
 _NAME_BEGIN
 
 JointFixed::JointFixed() noexcept
-    : Joint(Joint::Fixed)
+	: Joint(Joint::Fixed)
 {
 }
 
@@ -50,13 +50,13 @@ JointFixed::~JointFixed() noexcept
 void
 JointFixed::setPosition(const Vector3& position) noexcept
 {
-    _position = position;
+	_position = position;
 }
 
 const Vector3&
 JointFixed::getPosition() const noexcept
 {
-    return _position;
+	return _position;
 }
 
 _NAME_END

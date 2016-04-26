@@ -73,7 +73,7 @@ VulkanSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 
 	if (!initSwapchainColorImageView())
 		return false;
-	
+
 	if (!initSwapchainDepthView())
 		return false;
 
@@ -83,7 +83,7 @@ VulkanSwapchain::setup(const GraphicsSwapchainDesc& swapchainDesc) noexcept
 	return true;
 }
 
-void 
+void
 VulkanSwapchain::close() noexcept
 {
 	auto device = this->getDevice()->downcast<VulkanDevice>();
@@ -107,19 +107,19 @@ VulkanSwapchain::close() noexcept
 	}
 }
 
-void 
+void
 VulkanSwapchain::setSwapInterval(GraphicsSwapInterval interval) noexcept
 {
 	_swapchainDesc.setSwapInterval(interval);
 }
 
-GraphicsSwapInterval 
+GraphicsSwapInterval
 VulkanSwapchain::getSwapInterval() const noexcept
 {
 	return _swapchainDesc.getSwapInterval();
 }
 
-bool 
+bool
 VulkanSwapchain::initSurface() noexcept
 {
 	VkWin32SurfaceCreateInfoKHR info;
@@ -144,7 +144,7 @@ VulkanSwapchain::initSurface() noexcept
 	return true;
 }
 
-bool 
+bool
 VulkanSwapchain::initSemaphore() noexcept
 {
 	GraphicsSemaphoreDesc semaphoreDesc;
@@ -152,7 +152,7 @@ VulkanSwapchain::initSemaphore() noexcept
 	return _swapchainSemaphore ? true : false;
 }
 
-bool 
+bool
 VulkanSwapchain::initSwapchain() noexcept
 {
 	std::uint32_t formatCount = 0;
@@ -196,7 +196,6 @@ VulkanSwapchain::initSwapchain() noexcept
 		VK_PLATFORM_LOG("vkGetPhysicalDeviceSurfaceCapabilitiesKHR() fail.");
 		return false;
 	}
-		
 
 	VkSurfaceTransformFlagBitsKHR preTransform;
 	if (surfCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
@@ -290,7 +289,7 @@ VulkanSwapchain::initSwapchain() noexcept
 	return _vkSwapchain != VK_NULL_HANDLE;
 }
 
-bool 
+bool
 VulkanSwapchain::initSwapchainColorImageView() noexcept
 {
 	std::uint32_t swapchainImageCount = 0;
@@ -322,7 +321,7 @@ VulkanSwapchain::initSwapchainColorImageView() noexcept
 	return true;
 }
 
-bool 
+bool
 VulkanSwapchain::initSwapchainDepthView() noexcept
 {
 	GraphicsTextureDesc textureDesc;
@@ -337,7 +336,7 @@ VulkanSwapchain::initSwapchainDepthView() noexcept
 	return true;
 }
 
-bool 
+bool
 VulkanSwapchain::initFramebuffer() noexcept
 {
 	GraphicsFramebufferLayoutDesc framebufferLayoutDesc;
@@ -379,7 +378,7 @@ VulkanSwapchain::acquireNextImage() noexcept
 	vkAcquireNextImageKHR(this->getDevice()->downcast<VulkanDevice>()->getDevice(), _vkSwapchain, UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &_swapImageIndex);
 }
 
-std::uint32_t 
+std::uint32_t
 VulkanSwapchain::getSwapchainImageIndex() noexcept
 {
 	return _swapImageIndex;
@@ -391,7 +390,7 @@ VulkanSwapchain::getSwapchainImages() const noexcept
 	return _swapchainImageViews;
 }
 
-const GraphicsFramebuffers& 
+const GraphicsFramebuffers&
 VulkanSwapchain::getSwapchainFramebuffers() const noexcept
 {
 	return _swapchainFramebuffers;
@@ -409,7 +408,7 @@ VulkanSwapchain::setDevice(GraphicsDevicePtr device) noexcept
 	_device = device;
 }
 
-GraphicsDevicePtr 
+GraphicsDevicePtr
 VulkanSwapchain::getDevice() noexcept
 {
 	return _device.lock();

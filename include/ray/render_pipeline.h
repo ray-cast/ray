@@ -86,7 +86,7 @@ public:
 	bool updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept;
 	void* mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept;
 	void unmapBuffer(GraphicsDataPtr data) noexcept;
-	
+
 	void drawCone(MaterialTechPtr tech, std::uint32_t layer = 0) noexcept;
 	void drawSphere(MaterialTechPtr tech, std::uint32_t layer = 0) noexcept;
 	void drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept;

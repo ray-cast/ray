@@ -44,84 +44,84 @@ _NAME_BEGIN
 /*
 enum DATATYPE
 {
-    BYTE,
-    SHORT,
-    INT,
-    SIZE_T,
-    UNSIGNED_BYTE,
-    UNSIGNED_SHORT,
-    UNSIGNED_INT,
-    UINT32,
-    FLOAT,
-    DOUBLE,
-    COLOR3,
-    COLOR3F,
-    COLOR3D,
-    COLOR4,
-    COLOR4F,
-    COLOR4D,
-    VECTOR2,
-    VECTOR2F,
-    VECTOR2D,
-    VECTOR2I,
-    VECTOR2UB,
-    VECTOR3,
-    VECTOR3F,
-    VECTOR3D,
-    VECTOR3I,
-    VECTOR3UB,
-    VECTOR4,
-    VECTOR4F,
-    VECTOR4D,
-    VECTOR4UB,
-    MATRIX2X2,
-    MATRIX3X3,
-    MATRIX4X4
+	BYTE,
+	SHORT,
+	INT,
+	SIZE_T,
+	UNSIGNED_BYTE,
+	UNSIGNED_SHORT,
+	UNSIGNED_INT,
+	UINT32,
+	FLOAT,
+	DOUBLE,
+	COLOR3,
+	COLOR3F,
+	COLOR3D,
+	COLOR4,
+	COLOR4F,
+	COLOR4D,
+	VECTOR2,
+	VECTOR2F,
+	VECTOR2D,
+	VECTOR2I,
+	VECTOR2UB,
+	VECTOR3,
+	VECTOR3F,
+	VECTOR3D,
+	VECTOR3I,
+	VECTOR3UB,
+	VECTOR4,
+	VECTOR4F,
+	VECTOR4D,
+	VECTOR4UB,
+	MATRIX2X2,
+	MATRIX3X3,
+	MATRIX4X4
 };
 
 class IArray
 {
 public:
-    virtual DATATYPE getArrayType() const = 0;
-    virtual std::uint8_t getDataSize()  const = 0;
-    virtual DATATYPE  getDataType()  const = 0;
-    virtual std::size_t getDataByte() const = 0;
+	virtual DATATYPE getArrayType() const = 0;
+	virtual std::uint8_t getDataSize()  const = 0;
+	virtual DATATYPE  getDataType()  const = 0;
+	virtual std::size_t getDataByte() const = 0;
 
-    virtual const void* data() const = 0;
+	virtual const void* data() const = 0;
 
-    virtual std::size_t size() const = 0;
+	virtual std::size_t size() const = 0;
 };
 
 template<typename T, DATATYPE arrayType, std::uint8_t dataSize, DATATYPE dataType>
 class Array : public IArray, public std::vector<T>
 {
 public:
-    virtual ~Array() noexcept
-        {}
+	virtual ~Array() noexcept
+		{}
 
-    DATATYPE getArrayType() const  noexcept
-        { return arrayType; }
+	DATATYPE getArrayType() const  noexcept
+		{ return arrayType; }
 
-    std::uint8_t getDataSize()  const noexcept
-        { return dataSize; }
+	std::uint8_t getDataSize()  const noexcept
+		{ return dataSize; }
 
-    DATATYPE  getDataType()  const noexcept
-        { return dataType; }
+	DATATYPE  getDataType()  const noexcept
+		{ return dataType; }
 
-    std::size_t getDataByte() const noexcept
-        { return sizeof(T)* this->size(); }
+	std::size_t getDataByte() const noexcept
+		{ return sizeof(T)* this->size(); }
 
-    const T* getDataPointer() const noexcept
-        { return (const T*)std::vector<T>::data(); }
+	const T* getDataPointer() const noexcept
+		{ return (const T*)std::vector<T>::data(); }
 
-    const void* data() const noexcept
-        { return std::vector<T>::data(); }
+	const void* data() const noexcept
+		{ return std::vector<T>::data(); }
 
-    std::size_t size() const noexcept
-        { return std::vector<T>::size(); }
+	std::size_t size() const noexcept
+		{ return std::vector<T>::size(); }
 
-    void resize(std::size_t size) noexcept
-        { std::vector<T>::resize(size); }
+	void resize(std::size_t size) noexcept
+		{ std::vector<T>::resize(size); }
 };
 
 typedef Array<char, BYTE, 1, BYTE>                      ByteArray;

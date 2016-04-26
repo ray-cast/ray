@@ -186,7 +186,7 @@ SoundComponent::getMinDistance() const noexcept
 	return _distanceMin;
 }
 
-void 
+void
 SoundComponent::setSoundClip(const SoundClip& clip) noexcept
 {
 	if (_sound)
@@ -194,7 +194,7 @@ SoundComponent::setSoundClip(const SoundClip& clip) noexcept
 	_clip = clip;
 }
 
-void 
+void
 SoundComponent::getSoundClip(SoundClip& clip) const noexcept
 {
 	clip = _clip;
@@ -300,14 +300,14 @@ SoundComponent::isLooping() const noexcept
 	return _isLoop;
 }
 
-void 
+void
 SoundComponent::addPlayEndListener(std::function<void()> func) noexcept
 {
 	assert(!_onPlayEnd.find(func));
 	_onPlayEnd.attach(func);
 }
 
-void 
+void
 SoundComponent::removePlayEndListener(std::function<void()> func) noexcept
 {
 	assert(_onPlayEnd.find(func));
@@ -332,7 +332,7 @@ SoundComponent::load(iarchive& reader) noexcept
 	reader >> make_archive(_sourceName, "source");
 }
 
-void 
+void
 SoundComponent::save(oarchive& write) noexcept
 {
 	write << make_archive(_volume, "volume");
@@ -364,7 +364,7 @@ SoundComponent::clone() const noexcept
 	return component;
 }
 
-void 
+void
 SoundComponent::onMoveAfter() noexcept
 {
 	auto actor = this->getGameObject();
@@ -374,7 +374,7 @@ SoundComponent::onMoveAfter() noexcept
 	_sound->setOrientation(actor->getForward(), actor->getUpVector());
 }
 
-void 
+void
 SoundComponent::onPlayEnd() noexcept
 {
 	_onPlayEnd.run();

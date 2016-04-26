@@ -47,9 +47,9 @@ public:
 	JPEGHandler() noexcept;
 	~JPEGHandler() noexcept;
 
-    bool doCanRead(StreamReader& stream) const noexcept;
-    bool doLoad(Image& image, StreamReader& stream) noexcept;
-    bool doSave(Image& image, StreamWrite& stream) noexcept;
+	bool doCanRead(StreamReader& stream) const noexcept;
+	bool doLoad(Image& image, StreamReader& stream) noexcept;
+	bool doSave(Image& image, StreamWrite& stream) noexcept;
 
 private:
 	JPEGHandler(const JPEGHandler&) noexcept = delete;

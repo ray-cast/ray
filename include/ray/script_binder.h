@@ -41,7 +41,7 @@
 
 _NAME_BEGIN
 
-namespace spw 
+namespace spw
 {
 	template <typename T> struct Default {
 		static T f(void) { return T(); }
@@ -682,7 +682,6 @@ namespace spw
 #define     CALLER_PR(ClassName, member_name, Args, Return) asFUNCTION((spw::Caller<Return (ClassName::*)Args>::f< &ClassName::member_name >))
 #define GEN_CALLER_PR(ClassName, member_name, Args, Return) asFUNCTION((spw::GenCaller<Return (ClassName::*)Args>::f< &ClassName::member_name >))
 } // end namespace spw
-
 
 namespace gw {
 	template <typename T> class Proxy {

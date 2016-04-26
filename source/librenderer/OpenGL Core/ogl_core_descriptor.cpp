@@ -180,32 +180,32 @@ OGLCoreDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 			glBindSampler(location, uniform->getTextureSampler()->downcast<OGLSampler>()->getInstanceID());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSamplerImage:
+		{
+			auto texture = uniform->getTexture();
+			if (texture)
 			{
-				auto texture = uniform->getTexture();
-				if (texture)
-				{
-					glBindTextureUnit(location, texture->downcast<OGLCoreTexture>()->getInstanceID());
-				}
+				glBindTextureUnit(location, texture->downcast<OGLCoreTexture>()->getInstanceID());
 			}
-			break;
+		}
+		break;
 		case GraphicsUniformType::GraphicsUniformTypeCombinedImageSampler:
+		{
+			auto texture = uniform->getTexture();
+			if (texture)
 			{
-				auto texture = uniform->getTexture();
-				if (texture)
-				{
-					glBindTextureUnit(location, texture->downcast<OGLCoreTexture>()->getInstanceID());
-				}
+				glBindTextureUnit(location, texture->downcast<OGLCoreTexture>()->getInstanceID());
 			}
-			break;
+		}
+		break;
 		case GraphicsUniformType::GraphicsUniformTypeStorageImage:
+		{
+			auto texture = uniform->getTexture();
+			if (texture)
 			{
-				auto texture = uniform->getTexture();
-				if (texture)
-				{
-					glBindTextureUnit(location, texture->downcast<OGLCoreTexture>()->getInstanceID());
-				}
+				glBindTextureUnit(location, texture->downcast<OGLCoreTexture>()->getInstanceID());
 			}
-			break;
+		}
+		break;
 		case GraphicsUniformType::GraphicsUniformTypeStorageTexelBuffer:
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeStorageBuffer:

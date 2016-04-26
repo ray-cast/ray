@@ -100,7 +100,7 @@ ScriptObject::setInterface(const std::string& controller) noexcept
 	return true;
 }
 
-std::string 
+std::string
 ScriptObject::getName() const noexcept
 {
 	return _interface->GetName();
@@ -126,7 +126,7 @@ ScriptObject::construct() noexcept
 	return false;
 }
 
-std::size_t 
+std::size_t
 ScriptObject::getFactoryByDecl(const std::string& decl) noexcept
 {
 	assert(_interface);
@@ -258,7 +258,7 @@ ScriptObject::exce(std::size_t index) noexcept
 	auto ctx = ScriptSystem::instance()->getScriptContext();
 	if (ctx)
 	{
-		if (ctx->Prepare(_functions[index-1]) != asSUCCESS)
+		if (ctx->Prepare(_functions[index - 1]) != asSUCCESS)
 		{
 			ScriptSystem::instance()->print("fail to prepare function");
 			return false;

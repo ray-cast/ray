@@ -145,7 +145,7 @@ EGL2Framebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 		if (!this->bindRenderTexture(framebufferDesc.getTextures().front(), GL_COLOR_ATTACHMENT0))
 			return false;
 	}
-	
+
 	_framebufferDesc = framebufferDesc;
 
 	return EGL2Check::checkError();

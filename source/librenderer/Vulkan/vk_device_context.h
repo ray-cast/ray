@@ -59,7 +59,7 @@ public:
 
 	void setScissor(const Scissor& scissor) noexcept;
 	const Scissor& getScissor() const noexcept;
-	
+
 	void setStencilCompare(GraphicsStencilFace face, GraphicsCompareFunc func) noexcept;
 	GraphicsCompareFunc getStencilCompare(GraphicsStencilFace face) noexcept;
 

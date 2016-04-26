@@ -101,7 +101,7 @@ public:
 
 	void setGraphicsFramebufferLayout(GraphicsFramebufferLayoutPtr layout) noexcept;
 	GraphicsFramebufferLayoutPtr getGraphicsFramebufferLayout() const noexcept;
-	
+
 private:
 	std::uint32_t _width;
 	std::uint32_t _height;

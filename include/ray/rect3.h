@@ -46,64 +46,64 @@ class Rect3t
 {
 public:
 
-    Vector3t<T> pos0;
-    Vector3t<T> pos1;
+	Vector3t<T> pos0;
+	Vector3t<T> pos1;
 
-    Rect3t() {};
-    Rect3t(const Rect3t& copy) :pos0(copy.pos0), pos1(copy.pos1) {}
-    Rect3t(float x0, float x1, float y0, float y1, float z)
-    {
-        pos0.x = x0; pos0.y = y0; pos0.z = z;
-        pos1.x = x1; pos1.y = y1; pos1.z = z;
-    }
+	Rect3t() {};
+	Rect3t(const Rect3t& copy) :pos0(copy.pos0), pos1(copy.pos1) {}
+	Rect3t(float x0, float x1, float y0, float y1, float z)
+	{
+		pos0.x = x0; pos0.y = y0; pos0.z = z;
+		pos1.x = x1; pos1.y = y1; pos1.z = z;
+	}
 
-    Rect3t(const Vector2t<T>& pt0, const Vector2t<T>& pt1, float z)
-    {
-        pos0.x = pt0.x; pos0.y = pt0.y; pos0.z = z;
-        pos1.x = pt1.x; pos1.y = pt1.y; pos1.z = z;
-    }
+	Rect3t(const Vector2t<T>& pt0, const Vector2t<T>& pt1, float z)
+	{
+		pos0.x = pt0.x; pos0.y = pt0.y; pos0.z = z;
+		pos1.x = pt1.x; pos1.y = pt1.y; pos1.z = z;
+	}
 
-    Rect3t(float cx, float cy)
-    {
-        pos0.x = pos0.y = pos0.z = pos1.z = static_cast<T>(0.0);
-        pos1.x = cx; pos1.y = cy;
-    }
+	Rect3t(float cx, float cy)
+	{
+		pos0.x = pos0.y = pos0.z = pos1.z = static_cast<T>(0.0);
+		pos1.x = cx; pos1.y = cy;
+	}
 
-    Rect3t(const Vector3t<T>& pos, float cx, float cy)
-    {
-        pos0 = pos;
-        pos1.x = pos0.x + cx;
-        pos1.y = pos0.y + cy;
-        pos1.z = pos0.z;
-    }
+	Rect3t(const Vector3t<T>& pos, float cx, float cy)
+	{
+		pos0 = pos;
+		pos1.x = pos0.x + cx;
+		pos1.y = pos0.y + cy;
+		pos1.z = pos0.z;
+	}
 
-    Rect3t(const Vector2t<T>& sz)
-    {
-        pos0.x = pos0.y = pos0.z = pos1.z = static_cast<T>(0.0);
-        pos1.x = sz.x; pos1.y = sz.y;
-    }
+	Rect3t(const Vector2t<T>& sz)
+	{
+		pos0.x = pos0.y = pos0.z = pos1.z = static_cast<T>(0.0);
+		pos1.x = sz.x; pos1.y = sz.y;
+	}
 
-    void set(const Rect3t& src)
-    {
-        pos0 = src.pos0;
-        pos1 = src.pos1;
-    }
+	void set(const Rect3t& src)
+	{
+		pos0 = src.pos0;
+		pos1 = src.pos1;
+	}
 
-    void set(float _x0, float _x1, float _y0, float _y1, float _z)
-    {
-        pos0.x = _x0;
-        pos0.y = _y0;
-        pos0.z = _z;
-        pos1.x = _x1;
-        pos1.y = _y1;
-        pos1.z = _z;
-    }
+	void set(float _x0, float _x1, float _y0, float _y1, float _z)
+	{
+		pos0.x = _x0;
+		pos0.y = _y0;
+		pos0.z = _z;
+		pos1.x = _x1;
+		pos1.y = _y1;
+		pos1.z = _z;
+	}
 
-    void setSize(float cx, float cy) { pos1.x = cx; pos1.y = cy; }
-    void setSize(const Vector2t<T>& size) { pos1 = size; }
-    void setPos(const Vector3t<T>& pos) { pos1 = pos1 - pos0 + pos; pos0 = pos; }
+	void setSize(float cx, float cy) { pos1.x = cx; pos1.y = cy; }
+	void setSize(const Vector2t<T>& size) { pos1 = size; }
+	void setPos(const Vector3t<T>& pos) { pos1 = pos1 - pos0 + pos; pos0 = pos; }
 
-    Vector3t<T> size()const { return pos1 - pos0; }
+	Vector3t<T> size()const { return pos1 - pos0; }
 };
 
 _NAME_END

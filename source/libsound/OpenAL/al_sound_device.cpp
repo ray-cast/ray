@@ -42,7 +42,7 @@
 _NAME_BEGIN
 
 ALSoundDevice::ALSoundDevice() noexcept
-    : _device(nullptr)
+	: _device(nullptr)
 	, _context(nullptr)
 {
 }
@@ -52,13 +52,13 @@ ALSoundDevice::~ALSoundDevice() noexcept
 	this->close();
 }
 
-bool 
+bool
 ALSoundDevice::open() noexcept
 {
-    _device = ::alcOpenDevice(nullptr);
-    if (!_device)
-        return false;
-	
+	_device = ::alcOpenDevice(nullptr);
+	if (!_device)
+		return false;
+
 	_context = ::alcCreateContext(_device, nullptr);
 	if (!::alcMakeContextCurrent(_context))
 		return false;
@@ -66,7 +66,7 @@ ALSoundDevice::open() noexcept
 	return true;
 }
 
-void 
+void
 ALSoundDevice::close() noexcept
 {
 	::alcMakeContextCurrent(AL_NONE);
@@ -76,7 +76,7 @@ ALSoundDevice::close() noexcept
 		::alcDestroyContext(_context);
 		_context = nullptr;
 	}
-		
+
 	if (_device)
 	{
 		::alcCloseDevice(_device);
@@ -87,7 +87,7 @@ ALSoundDevice::close() noexcept
 bool
 ALSoundDevice::isOpen() const noexcept
 {
-    return _device ? true : false;
+	return _device ? true : false;
 }
 
 void
@@ -115,7 +115,7 @@ ALSoundDevice::createSoundSource()
 	return std::make_shared<ALSoundSource>();
 }
 
-SoundListenerPtr 
+SoundListenerPtr
 ALSoundDevice::createSoundListener() noexcept
 {
 	return std::make_shared<ALSoundListener>();

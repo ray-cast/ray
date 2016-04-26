@@ -102,7 +102,7 @@ GameObject::setActive(bool active) except
 	}
 }
 
-void 
+void
 GameObject::setActiveUpwards(bool active) except
 {
 	if (_active != active)
@@ -129,7 +129,7 @@ GameObject::setActiveUpwards(bool active) except
 	}
 }
 
-void 
+void
 GameObject::setActiveDownwards(bool active) except
 {
 	if (_active != active)
@@ -188,7 +188,7 @@ GameObject::getLayer() const noexcept
 	return _layer;
 }
 
-std::uint32_t 
+std::uint32_t
 GameObject::getInstanceID() const noexcept
 {
 	return _instanceID;
@@ -600,7 +600,7 @@ GameObject::getComponentInChildren(const rtti::Rtti* type) const noexcept
 	return nullptr;
 }
 
-GameComponentPtr 
+GameComponentPtr
 GameObject::getComponentInChildren(const rtti::Rtti& type) const noexcept
 {
 	return this->getComponentInChildren(&type);
@@ -690,7 +690,7 @@ GameObject::getGameScene() noexcept
 	return nullptr;
 }
 
-void 
+void
 GameObject::load(iarchive& reader) noexcept
 {
 	std::string name;
@@ -721,7 +721,7 @@ GameObject::load(iarchive& reader) noexcept
 		this->setEulerAngles(EulerAngles(rotate));
 }
 
-void 
+void
 GameObject::save(oarchive& write) noexcept
 {
 }
@@ -779,7 +779,7 @@ GameObject::_onFrameEnd() except
 	{
 		if (it->getActive())
 			it->onFrameEnd();
-	}		
+	}
 }
 
 void

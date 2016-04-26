@@ -54,7 +54,7 @@ RenderMesh::setVertexBuffer(GraphicsDataPtr vbo) noexcept
 	_vbo = vbo;
 }
 
-void 
+void
 RenderMesh::setIndexBuffer(GraphicsDataPtr ibo) noexcept
 {
 	_ibo = ibo;
@@ -66,7 +66,7 @@ RenderMesh::getVertexBuffer() noexcept
 	return _vbo;
 }
 
-GraphicsDataPtr 
+GraphicsDataPtr
 RenderMesh::getIndexBuffer() noexcept
 {
 	return _ibo;

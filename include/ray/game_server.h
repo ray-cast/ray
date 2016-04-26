@@ -59,7 +59,7 @@ public:
 
 	void setTimer(TimerPtr timer) noexcept;
 	TimerPtr getTimer() const noexcept;
-	
+
 	bool openScene(const std::string& sceneName) except;
 	bool addScene(GameScenePtr scene) except;
 	void closeScene(const std::string& sceneName) noexcept;
@@ -74,16 +74,18 @@ public:
 
 	template<typename T>
 	std::shared_ptr<T> getFeature() const noexcept
-		{ return std::dynamic_pointer_cast<T>(this->getFeature(T::getRtti())); }
+		{
+ return std::dynamic_pointer_cast<T>(this->getFeature(T::getRtti()));
+}
 
-	const GameFeatures& getGameFeatures() const noexcept;
+const GameFeatures& getGameFeatures() const noexcept;
 
-	GameApplication* getGameApp() noexcept;
+GameApplication* getGameApp() noexcept;
 
-	void sendMessage(const MessagePtr& message) except;
-	void postMessage(const MessagePtr& message) except;
+void sendMessage(const MessagePtr& message) except;
+void postMessage(const MessagePtr& message) except;
 
-	void update() except;
+void update() except;
 
 private:
 	void onWindowSizeChange() noexcept;

@@ -302,7 +302,7 @@ FxmlCompile::load(ray::iarchive& reader) except
 			parameter.type = reader.getValue<std::string>("type");
 			parameter.semantic = reader.getValue<std::string>("semantic");
 			parameter.value = reader.getValue<std::string>("value");
-			
+
 			auto type = parameter.type.substr(0, parameter.type.find_first_of('['));
 			_hlslCodes += "uniform " + type + " " + parameter.name + ";\n";
 
@@ -354,7 +354,7 @@ FxmlCompile::load(ray::iarchive& reader) except
 							_hlslCodes += "AddressU = Wrap; AddressV = Wrap;";
 					}
 				}
-					
+
 				_hlslCodes += "};\n";
 				_samplers.push_back(sampler);
 			}
@@ -386,7 +386,6 @@ FxmlCompile::load(ray::iarchive& reader) except
 					}
 
 					technique.pass.push_back(pass);
-
 				} while (reader.setToNextChild());
 			}
 

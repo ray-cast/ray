@@ -59,33 +59,33 @@ PhysicsSystem::close() noexcept
 void
 PhysicsSystem::addPhysicsScene(PhysicsScenePtr scene) noexcept
 {
-    auto it = std::find(_sceneList.begin(), _sceneList.end(), scene);
-    if (it == _sceneList.end())
-    {
-        _sceneList.push_back(scene);
-    }
+	auto it = std::find(_sceneList.begin(), _sceneList.end(), scene);
+	if (it == _sceneList.end())
+	{
+		_sceneList.push_back(scene);
+	}
 }
 
 void
 PhysicsSystem::removePhysicsScene(PhysicsScenePtr scene) noexcept
 {
-    auto it = std::find(_sceneList.begin(), _sceneList.end(), scene);
-    if (it != _sceneList.end())
-    {
-        _sceneList.erase(it);
-    }
+	auto it = std::find(_sceneList.begin(), _sceneList.end(), scene);
+	if (it != _sceneList.end())
+	{
+		_sceneList.erase(it);
+	}
 }
 
 void
 PhysicsSystem::simulation(float delta) noexcept
 {
-    for (auto& scene : _sceneList)
-    {
-        if (scene)
-        {
-            scene->simulation(delta);
-        }
-    }
+	for (auto& scene : _sceneList)
+	{
+		if (scene)
+		{
+			scene->simulation(delta);
+		}
+	}
 }
 
 _NAME_END

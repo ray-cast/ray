@@ -45,13 +45,13 @@ class EXPORT MSWInputMouse : public InputMouse
 {
 	__DeclareSubInterface(MSWInputMouse, InputMouse)
 public:
-    MSWInputMouse() noexcept;
-    virtual ~MSWInputMouse() noexcept;
+	MSWInputMouse() noexcept;
+	virtual ~MSWInputMouse() noexcept;
 
-    virtual void showMouse() noexcept;
-    virtual void hideMouse() noexcept;
+	virtual void showMouse() noexcept;
+	virtual void hideMouse() noexcept;
 
-    virtual void setPosition(int x, int y) noexcept;
+	virtual void setPosition(int x, int y) noexcept;
 
 	virtual int getPositionX() const noexcept;
 	virtual int getPositionY() const noexcept;

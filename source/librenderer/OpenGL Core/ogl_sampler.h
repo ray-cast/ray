@@ -62,7 +62,7 @@ private:
 
 private:
 	GLuint _sampler;
-    GraphicsSamplerDesc _sampleDesc;
+	GraphicsSamplerDesc _sampleDesc;
 	GraphicsDeviceWeakPtr _device;
 };
 

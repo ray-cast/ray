@@ -65,7 +65,7 @@ GameObjectManager::_instanceObject(GameObject* entity, std::uint32_t& instanceID
 	instanceID = _instanceLists.size();
 }
 
-void 
+void
 GameObjectManager::_unsetObject(GameObject* entity) noexcept
 {
 	auto instanceID = entity->getInstanceID();
@@ -74,7 +74,7 @@ GameObjectManager::_unsetObject(GameObject* entity) noexcept
 	this->_activeObject(entity, false);
 }
 
-void 
+void
 GameObjectManager::_activeObject(GameObject* entity, bool active) noexcept
 {
 	if (active)
@@ -111,7 +111,7 @@ GameObjectManager::findObject(const std::string& name) noexcept
 	return nullptr;
 }
 
-GameObjectPtr 
+GameObjectPtr
 GameObjectManager::findActiveObject(const std::string& name) noexcept
 {
 	for (auto& it : _activeActors)
@@ -126,16 +126,16 @@ GameObjectManager::findActiveObject(const std::string& name) noexcept
 	return nullptr;
 }
 
-GameObjectPtr 
+GameObjectPtr
 GameObjectManager::instantiate(const std::string& name) except
 {
-	auto object =this->findObject(name);
+	auto object = this->findObject(name);
 	if (object)
 		return object->clone();
 	return nullptr;
 }
 
-bool 
+bool
 GameObjectManager::activeObject(const std::string& name) noexcept
 {
 	for (auto& it : _instanceLists)
@@ -153,7 +153,7 @@ GameObjectManager::activeObject(const std::string& name) noexcept
 	return false;
 }
 
-void 
+void
 GameObjectManager::onFrameBegin() noexcept
 {
 	for (std::size_t i = 0; i < _activeActors.size(); i++)
@@ -163,7 +163,7 @@ GameObjectManager::onFrameBegin() noexcept
 	}
 }
 
-void 
+void
 GameObjectManager::onFrame() noexcept
 {
 	for (std::size_t i = 0; i < _activeActors.size(); i++)
@@ -173,7 +173,7 @@ GameObjectManager::onFrame() noexcept
 	}
 }
 
-void 
+void
 GameObjectManager::onFrameEnd() noexcept
 {
 	for (std::size_t i = 0; i < _activeActors.size(); i++)

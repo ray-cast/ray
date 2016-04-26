@@ -134,7 +134,7 @@ private:
 
 	std::string _conv;
 	std::string _hlslCodes;
-	
+
 	std::map<std::string, bool> _onceInclude;
 	std::map<std::string, FxmlOptions> _shaders;
 

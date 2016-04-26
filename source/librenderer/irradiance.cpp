@@ -129,7 +129,7 @@ EnvironmentIrradiance::~EnvironmentIrradiance() noexcept
 	this->close();
 }
 
-bool 
+bool
 EnvironmentIrradiance::setup(RenderPipeline& pipeline) noexcept
 {
 	_irradiance = pipeline.createMaterial("sys:fx/irradiance.fxml"); if (!_irradiance) return false;
@@ -173,7 +173,7 @@ EnvironmentIrradiance::setup(RenderPipeline& pipeline) noexcept
 	return _buildDualParaboloidWeightTextures(pipeline, _paraboloidSHWeights, NUM_ORDER, NUM_RADIANCE_SAMPLES);
 }
 
-void 
+void
 EnvironmentIrradiance::close() noexcept
 {
 	_irradiance.reset();

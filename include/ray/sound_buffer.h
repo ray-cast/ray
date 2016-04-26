@@ -44,8 +44,8 @@ _NAME_BEGIN
 class EXPORT SoundBuffer : public StreamBuf
 {
 public:
-    SoundBuffer() noexcept;
-    virtual ~SoundBuffer() noexcept;
+	SoundBuffer() noexcept;
+	virtual ~SoundBuffer() noexcept;
 
 	virtual bool open(StreamReaderPtr stream) noexcept = 0;
 
@@ -81,4 +81,4 @@ private:
 
 _NAME_END
 
-#endif 
+#endif

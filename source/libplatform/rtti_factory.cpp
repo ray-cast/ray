@@ -50,7 +50,7 @@ Factory::~Factory() noexcept
 {
 }
 
-bool 
+bool
 Factory::open() noexcept
 {
 	for (auto& it : _rttis)
@@ -61,20 +61,20 @@ Factory::open() noexcept
 	return true;
 }
 
-bool 
+bool
 Factory::add(Rtti* rtti) noexcept
 {
 	_rttis.push_back(rtti);
 	return true;
 }
 
-Rtti* 
+Rtti*
 Factory::getRTTI(const std::string& name) noexcept
 {
 	return _rtti_lists[name];
 }
 
-Rtti* 
+Rtti*
 Factory::getRTTI(const char* name) noexcept
 {
 	return _rtti_lists[name];

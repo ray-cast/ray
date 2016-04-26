@@ -135,7 +135,7 @@ LightComponent::setShadowBias(float bias) noexcept
 	_light->setShadowBias(bias);
 }
 
-float 
+float
 LightComponent::getShadowBias() const noexcept
 {
 	return _light->getShadowBias();

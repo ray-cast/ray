@@ -168,7 +168,7 @@ MyGuiComboBoxImpl::setItemNameAt(std::size_t index, const std::string& name) noe
 }
 
 std::string
-MyGuiComboBoxImpl:: getItemNameAt(std::size_t index) const noexcept
+MyGuiComboBoxImpl::getItemNameAt(std::size_t index) const noexcept
 {
 	assert(_comboBox);
 	return _comboBox->getItemNameAt(index);
@@ -398,7 +398,7 @@ MyGuiComboBox::setItemNameAt(std::size_t index, const std::string& name) noexcep
 }
 
 std::string
-MyGuiComboBox:: getItemNameAt(std::size_t index) const noexcept
+MyGuiComboBox::getItemNameAt(std::size_t index) const noexcept
 {
 	return _impl.getItemNameAt(index);
 }

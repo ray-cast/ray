@@ -70,7 +70,7 @@ FontPointBitmap::~FontPointBitmap() noexcept
 	this->clear();
 }
 
-void 
+void
 FontPointBitmap::createFontMapping(StreamReader& stream, const std::wstring& charsets, std::size_t fontSize, std::size_t distanceSize, std::size_t numThreads)
 {
 	std::vector<std::unique_ptr<std::thread>> _threads;
@@ -180,7 +180,7 @@ FontPointBitmap::createFontMapping(StreamReader& stream, const std::wstring& cha
 	}
 }
 
-void 
+void
 FontPointBitmap::createFontMapping(const std::string& fontpath, const std::wstring& charsets, std::size_t fontSize, std::size_t distanceSize, std::size_t numThreads)
 {
 	StreamReaderPtr stream;
@@ -270,13 +270,13 @@ FontPointBitmap::getBitmapData() const noexcept
 	return _bitmap;
 }
 
-std::size_t 
+std::size_t
 FontPointBitmap::getBitmapSize() const noexcept
 {
 	return _bitmapSize;
 }
 
-std::size_t 
+std::size_t
 FontPointBitmap::getFontSize() const noexcept
 {
 	return _fontSize;
@@ -361,7 +361,7 @@ FontDistanceField::~FontDistanceField() noexcept
 {
 }
 
-void 
+void
 FontDistanceField::computeBitmaps(FT_Library library, FT_Face face, std::size_t internalSize, std::size_t startCode, std::size_t endCode)
 {
 	assert(library && face);
@@ -410,7 +410,7 @@ FontDistanceField::computeBitmaps(FT_Library library, FT_Face face, std::size_t 
 	}
 }
 
-void 
+void
 FontDistanceField::computeEdge(const FT_BitmapGlyph bitmapGlyph, std::size_t fontSize, std::size_t internalSize, KdimensionTree<short2>& nodes)
 {
 	std::size_t height = bitmapGlyph->bitmap.rows;
@@ -469,7 +469,7 @@ FontDistanceField::computeDistance(const FT_BitmapGlyph bitmapGlyph, KdimensionT
 	}
 }
 
-void 
+void
 FontDistanceField::computeDistanceField(const std::vector<float>& distanceArray, std::vector<std::uint8_t>& bitmap, std::size_t bitmapSize, std::size_t distanceSize, std::size_t offsetX, std::size_t offsetY)
 {
 	float total = 0;

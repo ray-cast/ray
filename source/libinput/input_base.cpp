@@ -48,12 +48,12 @@ InputListener::~InputListener() noexcept
 {
 }
 
-void 
+void
 InputListener::onAttach() noexcept
 {
 }
 
-void 
+void
 InputListener::onDetach() noexcept
 {
 }

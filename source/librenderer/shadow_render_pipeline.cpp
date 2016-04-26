@@ -285,7 +285,7 @@ void
 ShadowRenderPipeline::onRenderPipeline(const CameraPtr& camera) noexcept
 {
 	assert(camera);
-	assert(camera->getCameraOrder() == CameraOrder::CameraOrder3D);	
+	assert(camera->getCameraOrder() == CameraOrder::CameraOrder3D);
 	this->renderShadowMaps(camera);
 }
 

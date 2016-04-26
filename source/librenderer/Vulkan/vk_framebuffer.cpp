@@ -172,7 +172,7 @@ VulkanFramebuffer::~VulkanFramebuffer() noexcept
 	this->close();
 }
 
-bool 
+bool
 VulkanFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcept
 {
 	assert(framebufferDesc.getGraphicsFramebufferLayout());
@@ -226,7 +226,7 @@ VulkanFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcep
 	{
 		const auto texture = renderTextures[i]->downcast<VulkanTexture>();
 		const auto& textureDesc = texture->getGraphicsTextureDesc();
-		
+
 		if (textureDesc.getWidth() < framebufferDesc.getWidth() &&
 			textureDesc.getHeight() < framebufferDesc.getHeight() &&
 			textureDesc.getTexFormat() != framebufferAttachments[i].getFormat())
@@ -264,7 +264,7 @@ VulkanFramebuffer::setup(const GraphicsFramebufferDesc& framebufferDesc) noexcep
 	return true;
 }
 
-void 
+void
 VulkanFramebuffer::close() noexcept
 {
 	if (_vkFramebuffer != VK_NULL_HANDLE)
@@ -280,7 +280,7 @@ VulkanFramebuffer::getGraphicsFramebufferDesc() const noexcept
 	return _framebufferDesc;
 }
 
-VkFramebuffer 
+VkFramebuffer
 VulkanFramebuffer::getFramebuffer() const noexcept
 {
 	return _vkFramebuffer;

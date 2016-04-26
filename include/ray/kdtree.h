@@ -114,7 +114,7 @@ class KdimensionNearest final
 public:
 	KdimensionNearest() noexcept
 		: _distanceSqrt(0)
-		,_item(nullptr)
+		, _item(nullptr)
 	{
 	}
 
@@ -379,7 +379,7 @@ private:
 			nearerCoord = split;
 		}
 		float distSq = distanceSqrt(node->pos, _serachPoint);
-		if (distSq < result.getDistanceSqrt() && distSq  < SQ(_serachRange))
+		if (distSq < result.getDistanceSqrt() && distSq < SQ(_serachRange))
 		{
 			result.setKdimensionNode(node);
 			result.setDistanceSqrt(distSq);
@@ -415,13 +415,13 @@ private:
 public:
 	_Tx _min;
 	_Tx _max;
-	
+
 	_Tx _serachPoint;
-	
+
 	float _serachRange;
 	std::size_t _count;
 	std::uint8_t _dimension;
-	
+
 	KdimensionNode<_Tx, _Ty>* _root;
 };
 

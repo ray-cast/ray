@@ -143,7 +143,7 @@ VulkanSystem::startDebugControl() noexcept
 	return true;
 }
 
-void 
+void
 VulkanSystem::stopDebugControl() noexcept
 {
 	if (_debugHandle != VK_NULL_HANDLE)
@@ -159,10 +159,10 @@ VulkanSystem::stopDebugControl() noexcept
 		fpDestroyDebugReportCallbackEXT(_instance, _debugHandle, nullptr);
 
 		_debugHandle = VK_NULL_HANDLE;
-	}	
+	}
 }
 
-VkInstance 
+VkInstance
 VulkanSystem::getInstance() const noexcept
 {
 	return _instance;

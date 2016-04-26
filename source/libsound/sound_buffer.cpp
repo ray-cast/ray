@@ -56,7 +56,7 @@ SoundReader::~SoundReader() noexcept
 {
 }
 
-bool 
+bool
 SoundReader::open(StreamReaderPtr stream) noexcept
 {
 	return this->_buf->open(stream);
@@ -68,7 +68,7 @@ SoundReader::access(StreamReader& stream) const noexcept
 	return this->_buf->access(stream);
 }
 
-std::uint8_t 
+std::uint8_t
 SoundReader::getBufferChannelCount() const noexcept
 {
 	return this->_buf->getBufferChannelCount();
@@ -86,7 +86,7 @@ SoundReader::getBufferType() const noexcept
 	return this->_buf->getBufferType();
 }
 
-SoundFrequency 
+SoundFrequency
 SoundReader::getBufferFrequency() const noexcept
 {
 	return this->_buf->getBufferFrequency();

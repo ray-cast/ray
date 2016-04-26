@@ -41,66 +41,66 @@
 _NAME_BEGIN
 
 PhysicsShapeBox::PhysicsShapeBox() noexcept
-    : _size(Vector3::One)
-    , _shape(nullptr)
+	: _size(Vector3::One)
+	, _shape(nullptr)
 {
 }
 
 PhysicsShapeBox::~PhysicsShapeBox() noexcept
 {
-    this->close();
+	this->close();
 }
 
 void
 PhysicsShapeBox::setup() noexcept
 {
-    assert(!_shape);
+	assert(!_shape);
 
-    btVector3 margin;
-    margin.setX(_size.x * 0.5f);
-    margin.setY(_size.y * 0.5f);
-    margin.setZ(_size.z * 0.5f);
+	btVector3 margin;
+	margin.setX(_size.x * 0.5f);
+	margin.setY(_size.y * 0.5f);
+	margin.setZ(_size.z * 0.5f);
 
-    _shape = new btBoxShape(margin);
-    _shape->setUserPointer(this);
+	_shape = new btBoxShape(margin);
+	_shape->setUserPointer(this);
 }
 
 void
 PhysicsShapeBox::close() noexcept
 {
-    if (_shape)
-    {
-        delete _shape;
-        _shape = nullptr;
-    }
+	if (_shape)
+	{
+		delete _shape;
+		_shape = nullptr;
+	}
 }
 
 void
 PhysicsShapeBox::setSize(const Vector3& size) noexcept
 {
-    if (_shape)
-    {
-        btVector3 margin;
-        margin.setX(size.x);
-        margin.setY(size.y);
-        margin.setZ(size.z);
+	if (_shape)
+	{
+		btVector3 margin;
+		margin.setX(size.x);
+		margin.setY(size.y);
+		margin.setZ(size.z);
 
-        _shape->setSafeMargin(margin);
-    }
+		_shape->setSafeMargin(margin);
+	}
 
-    _size = size;
+	_size = size;
 }
 
 const Vector3&
 PhysicsShapeBox::getSize() const noexcept
 {
-    return _size;
+	return _size;
 }
 
 btCollisionShape*
 PhysicsShapeBox::getCollisionShape() noexcept
 {
-    return _shape;
+	return _shape;
 }
 
 _NAME_END

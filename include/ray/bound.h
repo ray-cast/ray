@@ -45,125 +45,125 @@ template<typename T>
 class Boundt
 {
 public:
-    Boundt() noexcept
-    {
-        this->reset();
-    }
+	Boundt() noexcept
+	{
+		this->reset();
+	}
 
 	Boundt(const Vector3t<T>& min, const Vector3t<T>& max) noexcept
 		: _sp(min, max)
 	{
 	}
 
-    Boundt(const Vector3t<T> pt[], int n) noexcept
-    {
-        this->reset();
-        this->encapsulate(pt, n);
-    }
+	Boundt(const Vector3t<T> pt[], int n) noexcept
+	{
+		this->reset();
+		this->encapsulate(pt, n);
+	}
 
-    Vector3t<T> size() const noexcept
-    {
-        return _sp.aabb().size();
-    }
+	Vector3t<T> size() const noexcept
+	{
+		return _sp.aabb().size();
+	}
 
-    Vector3t<T> extents() const noexcept
-    {
-        return _sp.aabb().extents();
-    }
+	Vector3t<T> extents() const noexcept
+	{
+		return _sp.aabb().extents();
+	}
 
-    const Vector3t<T>& center() const noexcept
-    {
-        return _sp.center();
-    }
+	const Vector3t<T>& center() const noexcept
+	{
+		return _sp.center();
+	}
 
-    void center(const Vector3t<T>& center) noexcept
-    {
-        _sp.center(center);
-    }
+	void center(const Vector3t<T>& center) noexcept
+	{
+		_sp.center(center);
+	}
 
-    Vector3t<T>& min() noexcept
-    {
-        return this->aabb().min;
-    }
+	Vector3t<T>& min() noexcept
+	{
+		return this->aabb().min;
+	}
 
-    Vector3t<T>& max() noexcept
-    {
-        return this->aabb().max;
-    }
+	Vector3t<T>& max() noexcept
+	{
+		return this->aabb().max;
+	}
 
-    const Vector3t<T>& min() const noexcept
-    {
-        return this->aabb().min;
-    }
+	const Vector3t<T>& min() const noexcept
+	{
+		return this->aabb().min;
+	}
 
-    const Vector3t<T>& max() const noexcept
-    {
-        return this->aabb().max;
-    }
+	const Vector3t<T>& max() const noexcept
+	{
+		return this->aabb().max;
+	}
 
-    bool empty() const noexcept
-    {
-        return _sp.empty();
-    }
+	bool empty() const noexcept
+	{
+		return _sp.empty();
+	}
 
-    void reset() noexcept
-    {
-        _sp.reset();
-    }
+	void reset() noexcept
+	{
+		_sp.reset();
+	}
 
-    T radius() const noexcept
-    {
-        return _sp.radius();
-    }
+	T radius() const noexcept
+	{
+		return _sp.radius();
+	}
 
-    Spheret<T>& sphere() noexcept
-    {
-        return _sp;
-    }
+	Spheret<T>& sphere() noexcept
+	{
+		return _sp;
+	}
 
-    const Spheret<T>& sphere() const noexcept
-    {
-        return _sp;
-    }
+	const Spheret<T>& sphere() const noexcept
+	{
+		return _sp;
+	}
 
-    AABBt<T>& aabb() noexcept
-    {
-        return _sp.aabb();
-    }
+	AABBt<T>& aabb() noexcept
+	{
+		return _sp.aabb();
+	}
 
-    const AABBt<T>& aabb() const noexcept
-    {
-        return _sp.aabb();
-    }
+	const AABBt<T>& aabb() const noexcept
+	{
+		return _sp.aabb();
+	}
 
-    void encapsulate(const Vector3t<T>& pt) noexcept
-    {
-        _sp.encapsulate(pt);
-    }
+	void encapsulate(const Vector3t<T>& pt) noexcept
+	{
+		_sp.encapsulate(pt);
+	}
 
-    void encapsulate(const Vector3t<T> pt[], std::size_t n) noexcept
-    {
-        _sp.encapsulate(pt, n);
-    }
+	void encapsulate(const Vector3t<T> pt[], std::size_t n) noexcept
+	{
+		_sp.encapsulate(pt, n);
+	}
 
-    void encapsulate(const Boundt<T>& bound) noexcept
-    {
-        _sp.encapsulate(bound._sp);
-    }
+	void encapsulate(const Boundt<T>& bound) noexcept
+	{
+		_sp.encapsulate(bound._sp);
+	}
 
-    bool intersects(const Raycast3t<T>& ray) const noexcept
-    {
-        return _sp.intersects(ray);
-    }
+	bool intersects(const Raycast3t<T>& ray) const noexcept
+	{
+		return _sp.intersects(ray);
+	}
 
-    void applyMatrix(const Matrix4x4t<T>& m) noexcept
-    {
-        _sp.applyMatrix(m);
-    }
+	void applyMatrix(const Matrix4x4t<T>& m) noexcept
+	{
+		_sp.applyMatrix(m);
+	}
 
 private:
 
-    Spheret<T> _sp;
+	Spheret<T> _sp;
 };
 
 _NAME_END

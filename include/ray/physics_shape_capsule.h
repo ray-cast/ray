@@ -46,27 +46,27 @@ _NAME_BEGIN
 class EXPORT PhysicsShapeCapsule final : public PhysicsShape
 {
 public:
-    PhysicsShapeCapsule() noexcept;
-    ~PhysicsShapeCapsule() noexcept;
+	PhysicsShapeCapsule() noexcept;
+	~PhysicsShapeCapsule() noexcept;
 
-    void setup() noexcept;
-    void close() noexcept;
+	void setup() noexcept;
+	void close() noexcept;
 
-    void setWidth(float radius) noexcept;
-    void setHeight(float height) noexcept;
+	void setWidth(float radius) noexcept;
+	void setHeight(float height) noexcept;
 
-    float getWidth() const noexcept;
-    float getHeight() const noexcept;
-
-private:
-    btCollisionShape* getCollisionShape() noexcept;
+	float getWidth() const noexcept;
+	float getHeight() const noexcept;
 
 private:
+	btCollisionShape* getCollisionShape() noexcept;
 
-    float _width;
-    float _height;
+private:
 
-    btCapsuleShape* _shape;
+	float _width;
+	float _height;
+
+	btCapsuleShape* _shape;
 };
 
 _NAME_END

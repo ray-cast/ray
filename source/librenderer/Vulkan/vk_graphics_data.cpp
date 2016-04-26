@@ -52,7 +52,7 @@ VulkanGraphicsData::~VulkanGraphicsData() noexcept
 	this->close();
 }
 
-bool 
+bool
 VulkanGraphicsData::setup(const GraphicsDataDesc& dataDesc) noexcept
 {
 	assert(_vkBuffer == VK_NULL_HANDLE);
@@ -93,7 +93,7 @@ VulkanGraphicsData::setup(const GraphicsDataDesc& dataDesc) noexcept
 	if (!_memory.setup(nullptr, memReq.size, memReq.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT))
 		return false;
 
-	auto stream = dataDesc.getStream();	
+	auto stream = dataDesc.getStream();
 	if (stream != nullptr)
 	{
 		void* data = _memory.map(0, streamSize, GraphicsAccessFlagsBits::GraphicsAccessFlagsMapReadBit);
@@ -114,7 +114,7 @@ VulkanGraphicsData::setup(const GraphicsDataDesc& dataDesc) noexcept
 	return true;
 }
 
-void 
+void
 VulkanGraphicsData::close() noexcept
 {
 	if (_vkBuffer != VK_NULL_HANDLE)

@@ -45,23 +45,23 @@ class EXPORT StreamBase : public ios_base
 {
 public:
 	StreamBase() noexcept;
-    virtual ~StreamBase() noexcept;
+	virtual ~StreamBase() noexcept;
 
 	void setOpenMode(ios_base::openmode mode) noexcept;
 	ios_base::openmode getOpenMode() const noexcept;
 
-    StreamBuf* rdbuf() const noexcept;
-    void set_rdbuf(StreamBuf* buf) noexcept;
+	StreamBuf* rdbuf() const noexcept;
+	void set_rdbuf(StreamBuf* buf) noexcept;
 
 protected:
-    void _init(StreamBuf* _buf, ios_base::openmode mode) noexcept;
+	void _init(StreamBuf* _buf, ios_base::openmode mode) noexcept;
 
 private:
 	StreamBase& operator=(const StreamBase&) = delete;
 	StreamBase(const StreamBase&) = delete;
 
 private:
-    StreamBuf* _strbuf;
+	StreamBuf* _strbuf;
 	ios_base::openmode _mode;
 };
 

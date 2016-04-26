@@ -39,7 +39,7 @@
 _NAME_BEGIN
 
 MemoryBuf::MemoryBuf() noexcept
-    : _isMappinged(false)
+	: _isMappinged(false)
 	, _next(0)
 {
 }
@@ -53,55 +53,55 @@ MemoryBuf::open(ios_base::openmode mode) noexcept
 {
 	_next = 0;
 	_isMappinged = false;
-    return true;
+	return true;
 }
 
 bool
 MemoryBuf::close() noexcept
 {
-    _data.clear();
+	_data.clear();
 	return true;
 }
 
 streamsize
 MemoryBuf::read(char* src, std::streamsize cnt) noexcept
 {
-    if (_data.size() < _next + cnt)
-    {
-        cnt = _data.size() - _next;
-        if (cnt == 0)
-            return 0;
-    }
+	if (_data.size() < _next + cnt)
+	{
+		cnt = _data.size() - _next;
+		if (cnt == 0)
+			return 0;
+	}
 
-    std::memcpy(src, _data.data() + _next, cnt);
-    _next += cnt;
+	std::memcpy(src, _data.data() + _next, cnt);
+	_next += cnt;
 
-    return cnt;
+	return cnt;
 }
 
 streamsize
 MemoryBuf::write(const char* src, std::streamsize cnt) noexcept
 {
-    if (_data.size() < _next + cnt)
+	if (_data.size() < _next + cnt)
 		_data.resize(_next + cnt);
 
-    std::memcpy(_data.data() + _next, src, cnt);
-    _next += cnt;
-    return cnt;
+	std::memcpy(_data.data() + _next, src, cnt);
+	_next += cnt;
+	return cnt;
 }
 
 streamoff
 MemoryBuf::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
 {
-    assert(dir == ios_base::beg || dir == ios_base::cur || dir == ios_base::end);
+	assert(dir == ios_base::beg || dir == ios_base::cur || dir == ios_base::end);
 
-    if (dir == ios_base::beg)
-    {
-        _next = pos;
-        return pos;
-    }
-    else if (dir == ios_base::cur)
-    {
+	if (dir == ios_base::beg)
+	{
+		_next = pos;
+		return pos;
+	}
+	else if (dir == ios_base::cur)
+	{
 		_next = _next + pos;
 		if (_next > _data.size())
 		{
@@ -109,76 +109,76 @@ MemoryBuf::seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept
 			_next = _data.size();
 		}
 
-        return pos;
-    }
-    else if (dir == ios_base::end)
-    {
+		return pos;
+	}
+	else if (dir == ios_base::end)
+	{
 		std::size_t size = _data.size();
-        pos = size + pos;
+		pos = size + pos;
 		if (pos > size)
 			_next = size;
 		else
 			_next = pos;
-        return pos;
-    }
+		return pos;
+	}
 
-    return 0;
+	return 0;
 }
 
 streamoff
 MemoryBuf::tellg() noexcept
 {
-    return _next;
+	return _next;
 }
 
 streamsize
 MemoryBuf::size() const noexcept
 {
-    return _data.size();
+	return _data.size();
 }
 
 bool
 MemoryBuf::is_open() const noexcept
 {
-    return !_data.empty();
+	return !_data.empty();
 }
 
 int
 MemoryBuf::flush() noexcept
 {
-    return 0;
+	return 0;
 }
 
 void
 MemoryBuf::resize(streamsize size) noexcept
 {
-    _data.resize(size);
+	_data.resize(size);
 }
 
 char*
 MemoryBuf::map() noexcept
 {
 	assert(!_isMappinged);
-    if (_data.size())
-    {
-        _isMappinged = true;
-        return _data.data();
-    }
+	if (_data.size())
+	{
+		_isMappinged = true;
+		return _data.data();
+	}
 
-    return nullptr;
+	return nullptr;
 }
 
 void
 MemoryBuf::unmap() noexcept
 {
 	assert(_isMappinged);
-    _isMappinged = false;
+	_isMappinged = false;
 }
 
 bool
 MemoryBuf::isMapping() const noexcept
 {
-    return _isMappinged;
+	return _isMappinged;
 }
 
 MemoryReader::MemoryReader() noexcept
@@ -223,7 +223,7 @@ MemoryWrite::~MemoryWrite() noexcept
 {
 }
 
-streamsize 
+streamsize
 MemoryWrite::size() const noexcept
 {
 	return _buf.size();
@@ -254,7 +254,7 @@ MemoryWrite::isMapping() const noexcept
 }
 
 MemoryStream::MemoryStream() noexcept
-    : Stream(&_buf)
+	: Stream(&_buf)
 {
 }
 
@@ -265,25 +265,25 @@ MemoryStream::~MemoryStream() noexcept
 void
 MemoryStream::resize(streamsize size) noexcept
 {
-    _buf.resize(size);
+	_buf.resize(size);
 }
 
 char*
 MemoryStream::map() noexcept
 {
-    return _buf.map();
+	return _buf.map();
 }
 
 void
 MemoryStream::unmap() noexcept
 {
-    _buf.unmap();
+	_buf.unmap();
 }
 
 bool
 MemoryStream::isMapping() const noexcept
 {
-    return _buf.isMapping();
+	return _buf.isMapping();
 }
 
 _NAME_END

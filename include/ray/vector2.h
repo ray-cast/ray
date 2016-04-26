@@ -305,6 +305,60 @@ namespace math
 	}
 
 	template<typename T>
+	inline Vector2t<T> cos(const Vector2t<T>& v)
+	{
+		return Vector2t<T>(std::cos(v.x), std::cos(v.y));
+	}
+
+	template<typename T>
+	inline Vector2t<T> sin(const Vector2t<T>& v)
+	{
+		return Vector2t<T>(std::sin(v.x), std::sin(v.y));
+	}
+
+	template<typename T>
+	inline Vector2t<T> tan(const Vector2t<T>& v)
+	{
+		return Vector2t<T>(std::tan(v.x), std::tan(v.y));
+	}
+
+	template<typename T>
+	inline Vector2t<T> acos(const Vector2t<T>& v)
+	{
+		return Vector2t<T>(std::acos(v.x), std::acos(v.y));
+	}
+
+	template<typename T>
+	inline Vector2t<T> asin(const Vector2t<T>& v)
+	{
+		return Vector2t<T>(std::asin(v.x), std::asin(v.y));
+	}
+
+	template<typename T>
+	inline Vector2t<T> atan(const Vector2t<T>& v)
+	{
+		return Vector2t<T>(std::atan(v.x), std::atan(v.y));
+	}
+
+	template<typename T>
+	inline Vector2t<T> exp(const Vector2t<T>& v)
+	{
+		return Vector2t<T>(std::exp(v.x), std::exp(v.y));
+	}
+
+	template<typename T>
+	inline Vector2t<T> log(const Vector2t<T>& v)
+	{
+		return Vector2t<T>(std::log(v.x), std::log(v.y));
+	}
+
+	template<typename T>
+	inline Vector2t<T> log10(const Vector2t<T>& v)
+	{
+		return Vector2t<T>(std::log10(v.x), std::log10(v.y));
+	}
+
+	template<typename T>
 	inline Vector2t<T> pow(const Vector2t<T>& v1, const Vector2t<T>& v2)
 	{
 		return Vector2t<T>(std::pow(v1.x, v2.x), std::pow(v1.y, v2.y));

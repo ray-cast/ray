@@ -46,21 +46,21 @@ typedef std::shared_ptr<class ImageHandler> ImageHandlerPtr;
 class EXPORT ImageBase
 {
 public:
-    typedef unsigned int color_type;
+	typedef unsigned int color_type;
 
-    typedef std::uint8_t pass_val;
-    typedef std::uint8_t* image_buf;
-    typedef std::uint16_t bpp_type;
+	typedef std::uint8_t pass_val;
+	typedef std::uint8_t* image_buf;
+	typedef std::uint16_t bpp_type;
 
-    typedef int size_type;
-    typedef std::uint32_t flag_type;
-    typedef std::uint32_t delay_type;
+	typedef int size_type;
+	typedef std::uint32_t flag_type;
+	typedef std::uint32_t delay_type;
 
-    ImageBase() noexcept {}
+	ImageBase() noexcept {}
 
 private:
-    ImageBase(const ImageBase&) noexcept = delete;
-    const ImageBase& operator=(const ImageBase&) noexcept = delete;
+	ImageBase(const ImageBase&) noexcept = delete;
+	const ImageBase& operator=(const ImageBase&) noexcept = delete;
 };
 
 enum ImageType

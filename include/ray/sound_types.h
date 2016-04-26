@@ -48,11 +48,11 @@ typedef int SoundFrequency;
 
 enum class SoundFormat : SOUND_FORMAT_TYPE
 {
-    None,
-    Mono8,
-    Mono16,
-    Stereo8,
-    Stereo16,
+	None,
+	Mono8,
+	Mono16,
+	Stereo8,
+	Stereo16,
 	Quad16,
 	Chn16
 };

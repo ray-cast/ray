@@ -35,6 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/game_component.h>
+#include <ray/utf8.h>
 
 _NAME_BEGIN
 
@@ -50,7 +51,7 @@ GameComponent::~GameComponent() noexcept
 {
 }
 
-GameComponentPtr 
+GameComponentPtr
 GameComponent::getComponent(const rtti::Rtti* type) const noexcept
 {
 	assert(this->rtti() != type);
@@ -64,7 +65,7 @@ GameComponent::getComponent(const rtti::Rtti& type) const noexcept
 	return this->getGameObject()->getComponent(type);
 }
 
-const GameComponents& 
+const GameComponents&
 GameComponent::getComponents() const noexcept
 {
 	return this->getGameObject()->getComponents();
@@ -90,7 +91,7 @@ GameComponent::getGameServer() const noexcept
 	return _gameObject->getGameServer();
 }
 
-void 
+void
 GameComponent::setActive(bool active) except
 {
 	if (_active != active)
@@ -104,7 +105,7 @@ GameComponent::setActive(bool active) except
 	}
 }
 
-bool 
+bool
 GameComponent::getActive() const noexcept
 {
 	return _active;
@@ -127,9 +128,14 @@ GameComponent::load(iarchive& reader) noexcept
 {
 	bool active;
 	std::string name;
-	
+
 	if (reader.getValue("name", name))
-		this->setName(name);
+	{
+		char buffer[4096];
+		auto size = UTF8toGBK(buffer, 4096, name.c_str(), name.size());
+		this->setName(std::string(buffer, size));
+	}
+
 	if (reader.getValue("active", active))
 		this->setActive(active);
 }
@@ -186,12 +192,12 @@ GameComponent::sendMessageDownwards(const MessagePtr& message) except
 	}
 }
 
-void 
+void
 GameComponent::onAttach() except
 {
 }
 
-void 
+void
 GameComponent::onDetach() except
 {
 }
@@ -231,12 +237,12 @@ GameComponent::onMoveAfter() except
 {
 }
 
-void 
+void
 GameComponent::onParentChangeBefore() except
 {
 }
 
-void 
+void
 GameComponent::onParentChangeAfter() except
 {
 }

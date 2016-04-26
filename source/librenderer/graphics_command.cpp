@@ -54,13 +54,13 @@ GraphicsCommandQueueDesc::~GraphicsCommandQueueDesc() noexcept
 {
 }
 
-void 
+void
 GraphicsCommandQueueDesc::setCommandQueueMask(std::uint32_t mask) noexcept
 {
 	_mask = mask;
 }
 
-std::uint32_t 
+std::uint32_t
 GraphicsCommandQueueDesc::getCommandQueueMask() const noexcept
 {
 	return _mask;
@@ -78,25 +78,25 @@ GraphicsCommandQueueDesc::getCommandQueueType() const noexcept
 	return _type;
 }
 
-void 
+void
 GraphicsCommandQueueDesc::setCommandQueueFlags(GraphicsCommandQueueFlags flags) noexcept
 {
 	_flags = flags;
 }
 
-GraphicsCommandQueueFlags 
+GraphicsCommandQueueFlags
 GraphicsCommandQueueDesc::getCommandQueueFlags() const noexcept
 {
 	return _flags;
 }
 
-void 
+void
 GraphicsCommandQueueDesc::setCommandQueuePriority(GraphicsCommandQueuePriority priority) noexcept
 {
 	_priority = priority;
 }
 
-GraphicsCommandQueuePriority 
+GraphicsCommandQueuePriority
 GraphicsCommandQueueDesc::getCommandQueuePriority() const noexcept
 {
 	return _priority;

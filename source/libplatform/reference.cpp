@@ -65,7 +65,7 @@ Reference::addRef() noexcept
 	++_count;
 }
 
-void 
+void
 Reference::release() noexcept
 {
 	assert(_count > 0);
@@ -75,7 +75,7 @@ Reference::release() noexcept
 		delete this;
 }
 
-int 
+int
 Reference::refCount() const noexcept
 {
 	return _count;
@@ -93,13 +93,13 @@ Reference::isDestroy() const noexcept
 	return _gc;
 }
 
-void 
+void
 Reference::setUserPointer(std::intptr_t* pointer) noexcept
 {
 	_pointer = pointer;
 }
 
-std::intptr_t* 
+std::intptr_t*
 Reference::getUserPointer() const noexcept
 {
 	return _pointer;

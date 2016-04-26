@@ -62,25 +62,26 @@ MeshComponent::setMesh(MeshPropertyPtr mesh) noexcept
 
 		_mesh = mesh;
 
-		_onMeshChange.run();
+		this->needUpdate();
 	}
 }
 
-void 
+void
 MeshComponent::setCombieInstnace(const CombineInstance& instances) noexcept
 {
-	if (_mesh == nullptr)
-		_mesh = std::make_shared<MeshProperty>();
-	
-	_mesh->mergeMeshes(instances);
+	if (!instances.empty())
+	{
+		if (_mesh == nullptr)
+			_mesh = std::make_shared<MeshProperty>();
 
-	_onMeshChange.run();
-}
+		_mesh->mergeMeshes(instances);
 
-void
-MeshComponent::clear() noexcept
-{
-	_mesh->clear();
+		this->needUpdate();
+	}
+	else
+	{
+		this->setMesh(nullptr);
+	}
 }
 
 MeshPropertyPtr
@@ -124,24 +125,30 @@ MeshComponent::getBoundingBox() const noexcept
 	return _mesh->getBoundingBox();
 }
 
-const Bound& 
+const Bound&
 MeshComponent::getBoundingBoxDownwards() const noexcept
 {
 	return _mesh->getBoundingBoxDownwards();
 }
 
-void 
+void
 MeshComponent::addMeshChangeListener(std::function<void()> func) noexcept
 {
 	assert(!_onMeshChange.find(func));
 	_onMeshChange.attach(func);
 }
 
-void 
+void
 MeshComponent::removeMeshChangeListener(std::function<void()> func) noexcept
 {
 	assert(_onMeshChange.find(func));
 	_onMeshChange.remove(func);
+}
+
+void
+MeshComponent::needUpdate() noexcept
+{
+	_onMeshChange.run();
 }
 
 void
@@ -154,15 +161,12 @@ MeshComponent::load(iarchive& reader) noexcept
 	model.load(this->getName(),
 		[&](ray::ModelPtr model, const std::string& filename)
 	{
-		char buffer[4096];
-		auto size = UTF8toGBK(buffer, 4096, filename.c_str(), filename.size());
-
 		StreamReaderPtr stream;
-		if (IoServer::instance()->openFile(stream, std::string(buffer, size)))
+		if (IoServer::instance()->openFile(stream, filename))
 			return model->load(*stream);
 		return false;
 	},
-		[&](ray::ModelPtr model) 
+		[&](ray::ModelPtr model)
 	{
 		if (model->hasMeshes())
 		{

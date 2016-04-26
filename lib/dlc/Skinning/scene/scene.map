@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <scene>
-    <attribute name="SSSSS"/>
+    <attribute name="Skinning"/>
     <object>
         <attribute name="first_person_camera"/>
-        <attribute position="0,0,-3"/>
+        <attribute position="0,22,-22"/>
+        <attribute rotate="25,0,0"/>
         <attribute active="true"/>
         <component class="Camera">
             <attribute aperture="45.0"/>
@@ -20,7 +21,10 @@
         <attribute scale="1,1,1"/>
         <attribute active="true"/>
         <component class="Mesh">
-            <attribute name="dlc:skinning/models/miku/miku.pmx"/>
+            <attribute name="dlc:skinning/models/miku/miku.pmd"/>
+        </component>
+        <component class="Animotion">
+            <attribute name="dlc:skinning/animotion/愛言葉.vmd"/>
         </component>
         <component class="MeshRender">
             <attribute castshadow="true"/>
@@ -32,7 +36,7 @@
         <attribute name="plane"/>
         <attribute position="0,-2,0"/>
         <attribute scale="40,1,40"/>
-        <attribute active="false"/>
+        <attribute active="true"/>
         <component class="Mesh">
             <attribute name="dlc:sssss/models/cube.pmx"/>
         </component>

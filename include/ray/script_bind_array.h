@@ -99,7 +99,7 @@ public:
 	void sort(asUINT startAt, asUINT count, bool asc);
 
 	void reverse();
-	
+
 	int find(void *value) const;
 	int find(asUINT startAt, void *value) const;
 	int findByRef(void *ref) const;

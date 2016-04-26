@@ -241,14 +241,14 @@ RenderPipeline::getViewport() const noexcept
 	return _graphicsContext->getViewport();
 }
 
-void 
+void
 RenderPipeline::setScissor(const Scissor& scissor) noexcept
 {
 	assert(_graphicsContext);
 	_graphicsContext->setScissor(scissor);
 }
 
-const Scissor& 
+const Scissor&
 RenderPipeline::getScissor() const noexcept
 {
 	assert(_graphicsContext);
@@ -452,13 +452,13 @@ RenderPipeline::present() noexcept
 	_graphicsContext->present();
 }
 
-bool 
+bool
 RenderPipeline::isTextureSupport(GraphicsFormat format) noexcept
 {
 	return _graphicsContext->isTextureSupport(format);
 }
 
-bool 
+bool
 RenderPipeline::isTextureDimSupport(GraphicsTextureDim dimension) noexcept
 {
 	return _graphicsContext->isTextureDimSupport(dimension);
@@ -476,7 +476,7 @@ RenderPipeline::isShaderSupport(GraphicsShaderStage stage) noexcept
 	return _graphicsContext->isShaderSupport(stage);
 }
 
-GraphicsDataPtr 
+GraphicsDataPtr
 RenderPipeline::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
 	assert(_pipelineDevice);
@@ -518,7 +518,7 @@ RenderPipeline::createTexture(const std::string& name, GraphicsTextureDim dim, G
 	return _pipelineDevice->createTexture(name, dim, filter);
 }
 
-GraphicsTexturePtr 
+GraphicsTexturePtr
 RenderPipeline::createTexture(std::uint32_t w, std::uint32_t h, GraphicsTextureDim dim, GraphicsFormat format) noexcept
 {
 	assert(_pipelineDevice);
@@ -560,21 +560,21 @@ RenderPipeline::createRenderMesh(const MeshPropertys& mesh, std::uint32_t flags)
 	return _pipelineDevice->createRenderMesh(mesh, flags);
 }
 
-MaterialParamPtr 
+MaterialParamPtr
 RenderPipeline::createSemantic(const std::string& name, GraphicsUniformType type) noexcept
 {
 	assert(_pipelineDevice);
 	return _pipelineDevice->createSemantic(name, type);
 }
 
-void 
+void
 RenderPipeline::destroySemantic(MaterialParamPtr semantic) const noexcept
 {
 	assert(_pipelineDevice);
 	return _pipelineDevice->destroySemantic(semantic);
 }
 
-MaterialParamPtr 
+MaterialParamPtr
 RenderPipeline::getSemantic(const std::string& semantic) const noexcept
 {
 	assert(_pipelineDevice);
@@ -716,7 +716,7 @@ RenderPipeline::setupMaterialSemantic() noexcept
 	return true;
 }
 
-bool 
+bool
 RenderPipeline::setupBaseMeshes() noexcept
 {
 	MeshProperty mesh;
@@ -725,7 +725,7 @@ RenderPipeline::setupBaseMeshes() noexcept
 	_renderScreenQuad = this->createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex | ModelMakerFlagBits::ModelMakerFlagBitFace);
 	if (!_renderScreenQuad)
 		return false;
-	
+
 	_renderScreenQuadIndirect.startVertice = 0;
 	_renderScreenQuadIndirect.numVertices = mesh.getNumVertices();
 	_renderScreenQuadIndirect.startIndice = 0;

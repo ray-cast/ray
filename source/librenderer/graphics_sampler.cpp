@@ -76,7 +76,7 @@ GraphicsSamplerDesc::setSamplerAnis(GraphicsSamplerAnis anis) noexcept
 	_anis = anis;
 }
 
-GraphicsSamplerOp 
+GraphicsSamplerOp
 GraphicsSamplerDesc::getSamplerOp() const noexcept
 {
 	return _texop;

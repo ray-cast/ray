@@ -215,7 +215,7 @@ RenderObject::getTransformInverseTranspose() const noexcept
 	return _transformInverseTranspose;
 }
 
-void 
+void
 RenderObject::addRenderData(RenderDataManager& manager) noexcept
 {
 	this->onAddRenderData(manager);
@@ -234,32 +234,32 @@ RenderObject::render(RenderPipeline& pipelineContext, RenderQueue queue, Materia
 		listener->onRenderObjectPost(pipelineContext);
 }
 
-void 
+void
 RenderObject::onMoveBefor() noexcept
 {
 }
 
-void 
+void
 RenderObject::onMoveAfter() noexcept
 {
 }
 
-void 
+void
 RenderObject::onSceneChangeBefor() noexcept
 {
 }
 
-void 
+void
 RenderObject::onSceneChangeAfter() noexcept
 {
 }
 
-void 
+void
 RenderObject::onAddRenderData(RenderDataManager& manager) noexcept
 {
 }
 
-void 
+void
 RenderObject::onRenderObject(RenderPipeline& pipelineContext, RenderQueue queue, MaterialTechPtr tech) noexcept
 {
 }

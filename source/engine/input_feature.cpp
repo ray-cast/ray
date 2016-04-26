@@ -93,7 +93,7 @@ private:
 InputFeature::InputFeature() noexcept
 {
 	auto inputDevice = std::make_shared<DefaultInputDevice>();
-	
+
 	_input = std::make_shared<DefaultInput>();
 	_input->open(inputDevice);
 	_input->addInputListener(std::make_shared<InputEventListener>(*this));
@@ -102,11 +102,11 @@ InputFeature::InputFeature() noexcept
 	auto inputKeyboard = std::make_shared<DefaultInputKeyboard>();
 	_input->obtainKeyboardCapture(inputKeyboard);
 #endif
-	
+
 #if defined(ToplevelInputMouse)
 	auto inputMouse = std::make_shared<DefaultInputMouse>();
 	_input->obtainMouseCapture(inputMouse);
-#endif	
+#endif
 }
 
 InputFeature::InputFeature(CaptureObject hwnd) noexcept
@@ -126,7 +126,7 @@ InputFeature::InputFeature(CaptureObject hwnd) noexcept
 #if defined(ToplevelInputMouse)
 	auto inputMouse = std::make_shared<DefaultInputMouse>();
 	_input->obtainMouseCapture(inputMouse);
-#endif	
+#endif
 }
 
 InputFeature::~InputFeature() noexcept
@@ -182,7 +182,7 @@ InputFeature::onReset() noexcept
 	_input->reset();
 }
 
-void 
+void
 InputFeature::onMessage(const MessagePtr& message) except
 {
 	assert(_input);

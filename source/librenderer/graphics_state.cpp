@@ -79,7 +79,7 @@ GraphicsStateDesc::GraphicsStateDesc() noexcept
 	, _stencilBackFunc(GraphicsCompareFunc::GraphicsCompareFuncAlways)
 	, _stencilFrontFail(GraphicsStencilOp::GraphicsStencilOpKeep)
 	, _stencilFrontZFail(GraphicsStencilOp::GraphicsStencilOpKeep)
-	, _stencilFrontPass(GraphicsStencilOp::GraphicsStencilOpKeep)	
+	, _stencilFrontPass(GraphicsStencilOp::GraphicsStencilOpKeep)
 	, _stencilBackFail(GraphicsStencilOp::GraphicsStencilOpKeep)
 	, _stencilBackZFail(GraphicsStencilOp::GraphicsStencilOpKeep)
 	, _stencilBackPass(GraphicsStencilOp::GraphicsStencilOpKeep)

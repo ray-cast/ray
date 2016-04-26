@@ -126,9 +126,9 @@ enum CameraOrder
 
 enum CameraRenderFlagBits
 {
-	CameraRenderScreenBit  = 0x00000001,
+	CameraRenderScreenBit = 0x00000001,
 	CameraRenderTextureBit = 0x00000002,
-	CameraRenderSkyboxBit  = 0x00000004,
+	CameraRenderSkyboxBit = 0x00000004,
 	CameraRenderSkyLightingBit = 0x00000004,
 	CameraRenderGbufferDiffuseBit = 0x00000008,
 	CameraRenderGbufferNormalBit = 0x00000010,

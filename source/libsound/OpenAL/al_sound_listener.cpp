@@ -47,13 +47,13 @@ ALSoundListener::~ALSoundListener() noexcept
 	this->close();
 }
 
-bool 
+bool
 ALSoundListener::open() noexcept
 {
 	return true;
 }
 
-void 
+void
 ALSoundListener::close() noexcept
 {
 }
@@ -72,28 +72,28 @@ ALSoundListener::getVolume() const noexcept
 	return volume;
 }
 
-void 
+void
 ALSoundListener::setTranslate(const float3& translate) noexcept
 {
 	ALfloat pos[] = { translate.x, translate.y, translate.z };
 	alListenerfv(AL_POSITION, pos);
 }
 
-void 
+void
 ALSoundListener::setVelocity(const float3& velocity) noexcept
 {
 	ALfloat vel[] = { velocity.x, velocity.y, velocity.z };
 	alListenerfv(AL_VELOCITY, vel);
 }
 
-void 
+void
 ALSoundListener::setOrientation(const float3& forward, const float3& up) noexcept
 {
 	ALfloat dir[] = { forward.x, forward.y, forward.z, up.x, up.y, up.z };
 	alListenerfv(AL_ORIENTATION, dir);
 }
 
-void 
+void
 ALSoundListener::getTranslate(float3& translate) noexcept
 {
 	ALfloat pos[3];
@@ -103,7 +103,7 @@ ALSoundListener::getTranslate(float3& translate) noexcept
 	translate.z = pos[2];
 }
 
-void 
+void
 ALSoundListener::getVelocity(float3& velocity) noexcept
 {
 	ALfloat pos[3];
@@ -113,7 +113,7 @@ ALSoundListener::getVelocity(float3& velocity) noexcept
 	velocity.z = pos[2];
 }
 
-void 
+void
 ALSoundListener::getOrientation(float3& forward, float3& up) noexcept
 {
 	ALfloat dir[6];

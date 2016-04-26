@@ -43,21 +43,21 @@
 namespace std
 {
 #if defined(__MINGW64__) || defined(__MINGW32__) || defined(__LINUX__) || defined(__ANDROID__)
-    template<class _Ty,
-    class... _Types> inline
-        typename std::enable_if<!std::is_array<_Ty>::value,
-        std::unique_ptr<_Ty> >::type make_unique(_Types&&... _Args)
-    {    // make a unique_ptr
-        return (std::unique_ptr<_Ty>(new _Ty(std::forward<_Types>(_Args)...)));
-    }
+	template<class _Ty,
+	class... _Types> inline
+		typename std::enable_if<!std::is_array<_Ty>::value,
+		std::unique_ptr<_Ty> >::type make_unique(_Types&&... _Args)
+	{    // make a unique_ptr
+		return (std::unique_ptr<_Ty>(new _Ty(std::forward<_Types>(_Args)...)));
+	}
 
-    template<class _Ty> inline
-        typename std::enable_if<std::is_array<_Ty>::value && std::extent<_Ty>::value == 0,
-        std::unique_ptr<_Ty> >::type make_unique(std::size_t _Size)
-    {    // make a unique_ptr
-        typedef typename std::remove_extent<_Ty>::type _Elem;
-        return (std::unique_ptr<_Ty>(new _Elem[_Size]()));
-    }
+	template<class _Ty> inline
+		typename std::enable_if<std::is_array<_Ty>::value && std::extent<_Ty>::value == 0,
+		std::unique_ptr<_Ty> >::type make_unique(std::size_t _Size)
+	{    // make a unique_ptr
+		typedef typename std::remove_extent<_Ty>::type _Elem;
+		return (std::unique_ptr<_Ty>(new _Elem[_Size]()));
+	}
 #endif
 }
 

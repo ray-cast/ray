@@ -80,7 +80,7 @@ DefaultInput::close() noexcept
 	}
 }
 
-void 
+void
 DefaultInput::setCaptureObject(CaptureObject window) noexcept
 {
 	if (_inputDevice)
@@ -324,14 +324,14 @@ DefaultInput::removeInputListener(InputListenerPtr listener) noexcept
 		_inputDevice->removeInputListener(listener);
 }
 
-void 
+void
 DefaultInput::clearInputListener() noexcept
 {
 	if (_inputDevice)
 		_inputDevice->clearInputListener();
 }
 
-void 
+void
 DefaultInput::sendInputEvent(const InputEvent& event) noexcept
 {
 	if (_inputDevice)

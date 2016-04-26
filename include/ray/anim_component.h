@@ -57,21 +57,28 @@ public:
 	GameComponentPtr clone() const noexcept;
 
 private:
-
+	bool _buildAnimotion(const std::string& filename) noexcept;
 	void _updateVertex(MeshPropertyPtr mesh, MeshPropertyPtr model);
 
+private:
 	virtual void onActivate() except;
 	virtual void onDeactivate() except;
+
+	virtual void onAttach() noexcept;
+	virtual void onDetach() noexcept;
+
+	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
+	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
 
 	virtual void onFrameBegin() except;
 	virtual void onFrame() except;
 	virtual void onFrameEnd() except;
 
 private:
-	
-	MeshPropertyPtr _mesh;
-	MeshPropertyPtr _sharedMesh;
 
+	bool _playing;
+
+	GameComponentWeakPtr _meshComponent;
 	AnimationPropertyPtr _animtion;
 	AnimationPropertyPtr _sharedAnimtion;
 };

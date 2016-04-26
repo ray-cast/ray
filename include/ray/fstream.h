@@ -45,13 +45,13 @@ _NAME_BEGIN
 class EXPORT ifstream final : public StreamReader
 {
 public:
-    ifstream() noexcept;
-    ifstream(FILE* file) noexcept;
-    ifstream(const char* filename) noexcept;
-    ifstream(const wchar_t* filename) noexcept;
-    ifstream(const std::string& filename) noexcept;
-    ifstream(const std::wstring& filename) noexcept;
-    ~ifstream() noexcept;
+	ifstream() noexcept;
+	ifstream(FILE* file) noexcept;
+	ifstream(const char* filename) noexcept;
+	ifstream(const wchar_t* filename) noexcept;
+	ifstream(const std::string& filename) noexcept;
+	ifstream(const std::wstring& filename) noexcept;
+	~ifstream() noexcept;
 
 	ifstream& open(const char* filename) noexcept;
 	ifstream& open(const wchar_t* filename) noexcept;
@@ -64,19 +64,19 @@ public:
 
 private:
 
-    filebuf _file;
+	filebuf _file;
 };
 
 class EXPORT ofstream final : public StreamWrite
 {
 public:
-    ofstream() noexcept;
-    ofstream(FILE* file) noexcept;
-    ofstream(const char* filename) noexcept;
-    ofstream(const wchar_t* filename) noexcept;
-    ofstream(const std::string& filename) noexcept;
-    ofstream(const std::wstring& filename) noexcept;
-    ~ofstream() noexcept;
+	ofstream() noexcept;
+	ofstream(FILE* file) noexcept;
+	ofstream(const char* filename) noexcept;
+	ofstream(const wchar_t* filename) noexcept;
+	ofstream(const std::string& filename) noexcept;
+	ofstream(const std::wstring& filename) noexcept;
+	~ofstream() noexcept;
 
 	ofstream& open(const char* filename) noexcept;
 	ofstream& open(const wchar_t* filename) noexcept;
@@ -89,19 +89,19 @@ public:
 
 private:
 
-    filebuf _file;
+	filebuf _file;
 };
 
 class EXPORT fstream final : public Stream
 {
 public:
-    fstream() noexcept;
-    fstream(FILE* file) noexcept;
-    fstream(const char* filename) noexcept;
-    fstream(const wchar_t* filename) noexcept;
-    fstream(const std::string& filename) noexcept;
-    fstream(const std::wstring& filename) noexcept;
-    ~fstream() noexcept;
+	fstream() noexcept;
+	fstream(FILE* file) noexcept;
+	fstream(const char* filename) noexcept;
+	fstream(const wchar_t* filename) noexcept;
+	fstream(const std::string& filename) noexcept;
+	fstream(const std::wstring& filename) noexcept;
+	~fstream() noexcept;
 
 	fstream& open(const char* filename) noexcept;
 	fstream& open(const wchar_t* filename) noexcept;
@@ -114,7 +114,7 @@ public:
 
 private:
 
-    filebuf _file;
+	filebuf _file;
 };
 
 _NAME_END

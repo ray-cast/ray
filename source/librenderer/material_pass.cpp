@@ -54,31 +54,31 @@ MaterialParamBinding::~MaterialParamBinding() noexcept
 {
 }
 
-void 
+void
 MaterialParamBinding::setMaterialParam(MaterialParamPtr param) noexcept
 {
 	_param = param;
 }
 
-MaterialParamPtr 
+MaterialParamPtr
 MaterialParamBinding::getMaterialParam() const noexcept
 {
 	return _param;
 }
 
-void 
+void
 MaterialParamBinding::setGraphicsUniformSet(GraphicsUniformSetPtr uniformSet) noexcept
 {
 	_uniformSet = uniformSet;
 }
 
-GraphicsUniformSetPtr 
+GraphicsUniformSetPtr
 MaterialParamBinding::getGraphicsUniformSet() const noexcept
 {
 	return _uniformSet;
 }
 
-void 
+void
 MaterialParamBinding::needUpdate(bool needUpdate) noexcept
 {
 	_needUpdate = needUpdate;
@@ -183,7 +183,7 @@ MaterialPass::setup(Material& material) noexcept
 			if (pos != std::string::npos)
 				uniformName = uniformName.substr(0, pos);
 		}
-		
+
 		auto param = material.getParameter(uniformName);
 		if (!param)
 			continue;
@@ -202,7 +202,7 @@ MaterialPass::setup(Material& material) noexcept
 			{
 				param->addParamListener(binding.get());
 				binding->setMaterialParam(param);
-			}				
+			}
 
 			_bindings.push_back(std::move(binding));
 		}
@@ -303,13 +303,13 @@ MaterialPass::getRenderPipeline() const noexcept
 	return _pipeline;
 }
 
-GraphicsDescriptorSetPtr 
+GraphicsDescriptorSetPtr
 MaterialPass::getDescriptorSet() const noexcept
 {
 	return _descriptorSet;
 }
 
-MaterialPassPtr 
+MaterialPassPtr
 MaterialPass::clone() noexcept
 {
 	auto pass = std::make_shared<MaterialPass>();
@@ -322,7 +322,7 @@ MaterialPass::clone() noexcept
 	return pass;
 }
 
-void 
+void
 MaterialPass::update() noexcept
 {
 	for (auto& it : _bindings)

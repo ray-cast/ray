@@ -54,7 +54,7 @@ VulkanTexture::~VulkanTexture() noexcept
 	this->close();
 }
 
-bool 
+bool
 VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 {
 	assert(_vkImageView == VK_NULL_HANDLE);
@@ -118,7 +118,7 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		{
 			VK_PLATFORM_LOG("vkBindImageMemory() fail");
 			return false;
-		}			
+		}
 	}
 
 	VkImageViewType viewType = VulkanTypes::asImageViewType(textureDesc.getTexDim());
@@ -160,7 +160,7 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	return true;
 }
 
-void 
+void
 VulkanTexture::close() noexcept
 {
 	auto device = this->getDevice()->downcast<VulkanDevice>();
@@ -188,7 +188,7 @@ VulkanTexture::setSwapchainImage(VkImage image) noexcept
 	_swapchainImage = true;
 }
 
-bool 
+bool
 VulkanTexture::getSwapchainImage() const noexcept
 {
 	return _swapchainImage;
@@ -219,7 +219,7 @@ VulkanTexture::setDevice(GraphicsDevicePtr device) noexcept
 	_vkMemory.setDevice(device);
 }
 
-GraphicsDevicePtr 
+GraphicsDevicePtr
 VulkanTexture::getDevice() noexcept
 {
 	return _device.lock();

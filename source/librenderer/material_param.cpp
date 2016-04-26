@@ -714,7 +714,7 @@ MaterialParam::getTextureSampler() const noexcept
 	return _variant.getTextureSampler();
 }
 
-GraphicsDataPtr 
+GraphicsDataPtr
 MaterialParam::getBuffer() const noexcept
 {
 	return _variant.getBuffer();
@@ -728,7 +728,7 @@ MaterialParam::addParamListener(MaterialParamListener* listener) noexcept
 		_listeners.push_back(listener);
 }
 
-void 
+void
 MaterialParam::removeParamListener(MaterialParamListener* listener) noexcept
 {
 	auto it = std::find(_listeners.begin(), _listeners.end(), listener);

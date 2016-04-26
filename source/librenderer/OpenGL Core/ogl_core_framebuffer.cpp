@@ -193,7 +193,7 @@ OGLCoreFramebuffer::bindRenderTexture(GraphicsTexturePtr texture, GLenum attachm
 	auto gltexture = texture->downcast<OGLCoreTexture>();
 	auto handle = gltexture->getInstanceID();
 	auto target = gltexture->getTarget();
-	
+
 	if (target != GL_TEXTURE_2D && target != GL_TEXTURE_2D_MULTISAMPLE && target != GL_TEXTURE_2D_ARRAY && target != GL_TEXTURE_CUBE_MAP)
 	{
 		GL_PLATFORM_LOG("Invalid texture target");

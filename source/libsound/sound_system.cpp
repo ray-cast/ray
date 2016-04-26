@@ -70,7 +70,7 @@ SoundSystem::open() noexcept
 	return _soundDevice->open();
 }
 
-void 
+void
 SoundSystem::close() noexcept
 {
 	if (!_soundReaders.empty())
@@ -96,14 +96,14 @@ SoundSystem::isOpened() noexcept
 	return (_soundDevice != nullptr) ? true : false;
 }
 
-void 
+void
 SoundSystem::setDistanceModel(bool enable) noexcept
 {
 	assert(_soundDevice);
 	_soundDevice->setDistanceModel(enable);
 }
 
-bool 
+bool
 SoundSystem::getDistanceModel() const noexcept
 {
 	assert(_soundDevice);
@@ -172,7 +172,7 @@ SoundSystem::createSoundReader(StreamReaderPtr stream, SoundFile::Type type) noe
 		GetSoundInstanceList(*this);
 
 	SoundReaderPtr impl;
-	
+
 	if (this->find(*stream, type, impl))
 	{
 		auto reader = impl->clone();

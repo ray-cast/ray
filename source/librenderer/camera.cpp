@@ -52,7 +52,7 @@ Camera::Camera() noexcept
 	, _znear(1.0f)
 	, _zfar(100.0f)
 	, _viewport(0, 0, 0, 0)
-	, _clearColor(float4(0.1,0.1,0.1,1.0))
+	, _clearColor(float4(0.1, 0.1, 0.1, 1.0))
 	, _cameraType(CameraType::CameraTypePerspective)
 	, _cameraOrder(CameraOrder::CameraOrder3D)
 	, _cameraRenderFlags(CameraRenderFlagBits::CameraRenderScreenBit | CameraRenderFlagBits::CameraRenderShadingBit)
@@ -283,7 +283,7 @@ Camera::getSkyLightMap() const noexcept
 	return _envMap;
 }
 
-void 
+void
 Camera::setSkyLightDiffuse(GraphicsTexturePtr diffuse) noexcept
 {
 	assert(!diffuse || diffuse->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube);
@@ -296,14 +296,14 @@ Camera::getSkyLightDiffuse() const noexcept
 	return _envDiffuse;
 }
 
-void 
+void
 Camera::setSkyLightSpecular(GraphicsTexturePtr specular) noexcept
 {
 	assert(!specular || specular->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube);
 	_envSpecular = specular;
 }
 
-GraphicsTexturePtr 
+GraphicsTexturePtr
 Camera::getSkyLightSpecular() const noexcept
 {
 	return _envSpecular;
@@ -370,7 +370,7 @@ Camera::getFramebuffer() const noexcept
 	return _renderTexture;
 }
 
-void 
+void
 Camera::setRenderDataManager(RenderDataManagerPtr manager) noexcept
 {
 	assert(manager);
@@ -408,7 +408,7 @@ Camera::_updatePerspective() const noexcept
 {
 	_project.makePerspective_fov_lh(_aperture, _ratio, _znear, _zfar);
 	_projectInverse = math::inverse(_project);
-	
+
 	_projLength.x = _project.a1;
 	_projLength.y = _project.b2;
 
@@ -451,7 +451,7 @@ Camera::_updateViewProject() const noexcept
 	}
 }
 
-void 
+void
 Camera::onMoveAfter() noexcept
 {
 	_needUpdateViewProject = true;

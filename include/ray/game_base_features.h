@@ -52,7 +52,6 @@ protected:
 	void onFrameBegin() noexcept;
 	void onFrame() noexcept;
 	void onFrameEnd() noexcept;
-
 };
 
 _NAME_END

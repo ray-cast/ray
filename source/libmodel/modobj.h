@@ -44,25 +44,25 @@ _NAME_BEGIN
 class ObjHandler : public ModelHandler
 {
 public:
-    ObjHandler() noexcept;
-    ~ObjHandler() noexcept;
+	ObjHandler() noexcept;
+	~ObjHandler() noexcept;
 
-    bool doCanRead(StreamReader& stream) const noexcept;
+	bool doCanRead(StreamReader& stream) const noexcept;
 
-    bool doLoad(Model& model, StreamReader& stream) noexcept;
-    bool doSave(Model& model, StreamWrite& stream) noexcept;
+	bool doLoad(Model& model, StreamReader& stream) noexcept;
+	bool doSave(Model& model, StreamWrite& stream) noexcept;
 
 private:
 
-    static bool SearchFileHeaderForToken(StreamReader* stream, const char** tokens, unsigned int numTokens, unsigned int searchBytes = 200, bool tokensSol = false);
+	static bool SearchFileHeaderForToken(StreamReader* stream, const char** tokens, unsigned int numTokens, unsigned int searchBytes = 200, bool tokensSol = false);
 
-    bool parser(char* data, std::size_t size);
+	bool parser(char* data, std::size_t size);
 
-    static Vector2 parseVector2(const std::string& line);
-    static Vector3 parseVector3(const std::string& line);
-    static Vector4 parseVector4(const std::string& line);
+	static Vector2 parseVector2(const std::string& line);
+	static Vector3 parseVector3(const std::string& line);
+	static Vector4 parseVector4(const std::string& line);
 
-    Model* _model;
+	Model* _model;
 };
 
 _NAME_END

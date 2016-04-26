@@ -77,7 +77,7 @@ VulkanDevice::~VulkanDevice() noexcept
 	this->close();
 }
 
-bool 
+bool
 VulkanDevice::setup(const GraphicsDeviceDesc& deviceDesc) noexcept
 {
 	if (!initInstance())
@@ -85,7 +85,7 @@ VulkanDevice::setup(const GraphicsDeviceDesc& deviceDesc) noexcept
 
 	if (!initPhysicalDevice())
 		return false;
-	
+
 	if (!initPhysicalDeviceLayer())
 		return false;
 
@@ -97,7 +97,7 @@ VulkanDevice::setup(const GraphicsDeviceDesc& deviceDesc) noexcept
 
 	std::vector<VkQueueFamilyProperties> props(queueCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice, &queueCount, &props[0]);
-	
+
 	std::uint32_t graphicsQueueNodeIndex = UINT32_MAX;
 	for (std::uint32_t i = 0; i < queueCount; i++)
 	{
@@ -110,7 +110,7 @@ VulkanDevice::setup(const GraphicsDeviceDesc& deviceDesc) noexcept
 
 	const float queuePriorities[1] = { 0.0 };
 	const char* extensionNames = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-	
+
 	VkDeviceQueueCreateInfo queue;
 	queue.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 	queue.pNext = 0;
@@ -147,7 +147,7 @@ VulkanDevice::setup(const GraphicsDeviceDesc& deviceDesc) noexcept
 	return true;
 }
 
-void 
+void
 VulkanDevice::close() noexcept
 {
 	if (_device != VK_NULL_HANDLE)
@@ -159,7 +159,7 @@ VulkanDevice::close() noexcept
 	VulkanSystem::instance()->stopDebugControl();
 }
 
-GraphicsSwapchainPtr 
+GraphicsSwapchainPtr
 VulkanDevice::createSwapchain(const GraphicsSwapchainDesc& desc) noexcept
 {
 	auto swapchain = std::make_shared<VulkanSwapchain>();
@@ -169,7 +169,7 @@ VulkanDevice::createSwapchain(const GraphicsSwapchainDesc& desc) noexcept
 	return nullptr;
 }
 
-GraphicsContextPtr 
+GraphicsContextPtr
 VulkanDevice::createDeviceContext(const GraphicsContextDesc& desc) noexcept
 {
 	auto context = std::make_shared<VulkanDeviceContext>();
@@ -179,7 +179,7 @@ VulkanDevice::createDeviceContext(const GraphicsContextDesc& desc) noexcept
 	return nullptr;
 }
 
-GraphicsTexturePtr 
+GraphicsTexturePtr
 VulkanDevice::createTexture(const GraphicsTextureDesc& desc) noexcept
 {
 	auto texture = std::make_shared<VulkanTexture>();
@@ -189,7 +189,7 @@ VulkanDevice::createTexture(const GraphicsTextureDesc& desc) noexcept
 	return nullptr;
 }
 
-GraphicsSamplerPtr 
+GraphicsSamplerPtr
 VulkanDevice::createSampler(const GraphicsSamplerDesc& desc) noexcept
 {
 	auto sampler = std::make_shared<VulkanSampler>();
@@ -209,7 +209,7 @@ VulkanDevice::createFramebufferLayout(const GraphicsFramebufferLayoutDesc& desc)
 	return nullptr;
 }
 
-GraphicsFramebufferPtr 
+GraphicsFramebufferPtr
 VulkanDevice::createFramebuffer(const GraphicsFramebufferDesc& desc) noexcept
 {
 	auto framebuffer = std::make_shared<VulkanFramebuffer>();
@@ -239,7 +239,7 @@ VulkanDevice::createProgram(const GraphicsProgramDesc& desc) noexcept
 	return nullptr;
 }
 
-GraphicsPipelinePtr 
+GraphicsPipelinePtr
 VulkanDevice::createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept
 {
 	auto pipeline = std::make_shared<VulkanRenderPipeline>();
@@ -249,7 +249,7 @@ VulkanDevice::createRenderPipeline(const GraphicsPipelineDesc& desc) noexcept
 	return nullptr;
 }
 
-GraphicsDataPtr 
+GraphicsDataPtr
 VulkanDevice::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
 	auto buffer = std::make_shared<VulkanGraphicsData>();
@@ -259,7 +259,7 @@ VulkanDevice::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 	return nullptr;
 }
 
-GraphicsInputLayoutPtr 
+GraphicsInputLayoutPtr
 VulkanDevice::createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept
 {
 	auto inputLayout = std::make_shared<VulkanInputLayout>();
@@ -269,7 +269,7 @@ VulkanDevice::createInputLayout(const GraphicsInputLayoutDesc& desc) noexcept
 	return nullptr;
 }
 
-GraphicsStatePtr 
+GraphicsStatePtr
 VulkanDevice::createRenderState(const GraphicsStateDesc& desc) noexcept
 {
 	auto renderState = std::make_shared<VulkanRenderState>();
@@ -289,7 +289,7 @@ VulkanDevice::createDescriptorSetLayout(const GraphicsDescriptorSetLayoutDesc& d
 	return nullptr;
 }
 
-GraphicsDescriptorSetPtr 
+GraphicsDescriptorSetPtr
 VulkanDevice::createDescriptorSet(const GraphicsDescriptorSetDesc& desc) noexcept
 {
 	auto descriptorSet = std::make_shared<VulkanDescriptorSet>();
@@ -349,7 +349,7 @@ VulkanDevice::createSemaphore(const GraphicsSemaphoreDesc& desc) noexcept
 	return nullptr;
 }
 
-const GraphicsDeviceDesc& 
+const GraphicsDeviceDesc&
 VulkanDevice::getGraphicsDeviceDesc() const noexcept
 {
 	return _deviceDesc;
@@ -364,7 +364,7 @@ VulkanDevice::getDeviceName(std::string& deviceName) const noexcept
 	return true;
 }
 
-VkInstance 
+VkInstance
 VulkanDevice::getInstance() const noexcept
 {
 	return VulkanSystem::instance()->getInstance();
@@ -376,7 +376,7 @@ VulkanDevice::getDevice() const noexcept
 	return _device;
 }
 
-VkPhysicalDevice 
+VkPhysicalDevice
 VulkanDevice::getPhysicsDevice() const noexcept
 {
 	return _physicalDevice;
@@ -390,7 +390,7 @@ VulkanDevice::initInstance() noexcept
 	return VulkanSystem::instance()->startDebugControl();
 }
 
-bool 
+bool
 VulkanDevice::initPhysicalDevice() noexcept
 {
 	std::uint32_t deviceCount = 0;
@@ -428,7 +428,7 @@ VulkanDevice::initPhysicalDeviceLayer() noexcept
 		return false;
 	}
 
-	if (deviceLayerCount > 0) 
+	if (deviceLayerCount > 0)
 	{
 		std::vector<VkLayerProperties> deviceLayers(deviceLayerCount);
 		if (vkEnumerateDeviceLayerProperties(_physicalDevice, &deviceLayerCount, &deviceLayers[0]) != VK_SUCCESS)
@@ -474,7 +474,7 @@ VulkanDevice::initPhysicalDeviceExtension() noexcept
 	}
 
 	bool swapchainExtFound = false;
-	if (deviceExtensionCount > 0) 
+	if (deviceExtensionCount > 0)
 	{
 		std::vector<VkExtensionProperties> deviceExtensions(deviceExtensionCount);
 
@@ -482,18 +482,18 @@ VulkanDevice::initPhysicalDeviceExtension() noexcept
 		{
 			VK_PLATFORM_LOG("vkEnumerateDeviceExtensionProperties fail.");
 			return false;
-		}		
+		}
 
 		for (uint32_t i = 0; i < deviceExtensionCount; i++)
 		{
-			if (!strcmp(VK_KHR_SWAPCHAIN_EXTENSION_NAME, deviceExtensions[i].extensionName)) 
+			if (!strcmp(VK_KHR_SWAPCHAIN_EXTENSION_NAME, deviceExtensions[i].extensionName))
 			{
 				swapchainExtFound = true;
 			}
 		}
 	}
 
-	if (!swapchainExtFound) 
+	if (!swapchainExtFound)
 	{
 		VK_PLATFORM_LOG("vkEnumerateDeviceExtensionProperties failed to find "
 			"the " VK_KHR_SWAPCHAIN_EXTENSION_NAME

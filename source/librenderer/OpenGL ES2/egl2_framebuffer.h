@@ -100,7 +100,6 @@ private:
 	GraphicsFramebufferDesc _framebufferDesc;
 };
 
-
 _NAME_END
 
 #endif

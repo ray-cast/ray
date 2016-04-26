@@ -112,7 +112,7 @@ MyGuiResManager::open() noexcept
 	_isInitialise = true;
 }
 
-void 
+void
 MyGuiResManager::close() noexcept
 {
 	assert(_isInitialise);
@@ -131,7 +131,7 @@ MyGuiResManager::getData(const std::string& _name)
 	return nullptr;
 }
 
-void 
+void
 MyGuiResManager::freeData(MyGUI::IDataStream* _data)
 {
 	delete _data;
@@ -150,7 +150,7 @@ MyGuiResManager::getDataListNames(const std::string& _pattern)
 	return _string;
 }
 
-const std::string& 
+const std::string&
 MyGuiResManager::getDataPath(const std::string& _name)
 {
 	IoServer::instance()->getResolveAssign(_name, _resolvePath);

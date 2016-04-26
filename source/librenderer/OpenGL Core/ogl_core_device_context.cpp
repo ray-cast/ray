@@ -648,13 +648,13 @@ OGLCoreDeviceContext::isVertexSupport(GraphicsFormat format) noexcept
 	return std::find(_supportAttribute.begin(), _supportAttribute.end(), format) != _supportAttribute.end();
 }
 
-bool 
+bool
 OGLCoreDeviceContext::isShaderSupport(GraphicsShaderStage stage) noexcept
 {
 	return std::find(_supportShaders.begin(), _supportShaders.end(), stage) != _supportShaders.end();
 }
 
-bool 
+bool
 OGLCoreDeviceContext::checkSupport() noexcept
 {
 	if (!GLEW_ARB_vertex_array_object)
@@ -673,7 +673,7 @@ OGLCoreDeviceContext::checkSupport() noexcept
 	{
 		GL_PLATFORM_LOG("Can't support sampler object");
 		return false;
-	}		
+	}
 
 	if (!GLEW_ARB_framebuffer_object)
 	{
@@ -737,7 +737,7 @@ OGLCoreDeviceContext::initTextureSupports() noexcept
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR8G8B8A8UNorm);
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatR16G16B16A16UNorm);
 	}
-	
+
 	if (GLEW_VERSION_2_0 || GLEW_EXT_texture || GLEW_EXT_bgra)
 	{
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatB8G8R8UNorm);
@@ -965,7 +965,7 @@ OGLCoreDeviceContext::initTextureSupports() noexcept
 	return true;
 }
 
-bool 
+bool
 OGLCoreDeviceContext::initTextureDimSupports() noexcept
 {
 	_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDim2D);
@@ -974,7 +974,7 @@ OGLCoreDeviceContext::initTextureDimSupports() noexcept
 
 	if (GLEW_ARB_texture_cube_map_array)
 		_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDimCubeArray);
-		
+
 	if (GLEW_ARB_texture_storage)
 		_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDim3D);
 
@@ -1075,7 +1075,7 @@ OGLCoreDeviceContext::initVertexSupports() noexcept
 	return true;
 }
 
-bool 
+bool
 OGLCoreDeviceContext::initShaderSupports() noexcept
 {
 	_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageVertex);

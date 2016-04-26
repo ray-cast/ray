@@ -89,7 +89,7 @@ MaterialTech::setName(const std::string& name) noexcept
 	_name = name;
 }
 
-const std::string& 
+const std::string&
 MaterialTech::getName() const noexcept
 {
 	return _name;

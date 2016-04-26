@@ -45,28 +45,28 @@ _NAME_BEGIN
 class filebuf : public StreamBuf
 {
 public:
-    filebuf() noexcept;
-    virtual ~filebuf() noexcept;
+	filebuf() noexcept;
+	virtual ~filebuf() noexcept;
 
-    bool is_open() const noexcept;
+	bool is_open() const noexcept;
 
-    bool open(const char* filename, ios_base::openmode mode) noexcept;
-    bool open(const wchar_t* filename, ios_base::openmode mode) noexcept;
+	bool open(const char* filename, ios_base::openmode mode) noexcept;
+	bool open(const wchar_t* filename, ios_base::openmode mode) noexcept;
 
 	bool close() noexcept;
 
-    streamsize read(char* str, std::streamsize cnt) noexcept;
-    streamsize write(const char* str, std::streamsize cnt) noexcept;
+	streamsize read(char* str, std::streamsize cnt) noexcept;
+	streamsize write(const char* str, std::streamsize cnt) noexcept;
 
-    streamoff seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
-    streamoff tellg() noexcept;
+	streamoff seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
+	streamoff tellg() noexcept;
 
-    streamsize size() const noexcept;
+	streamsize size() const noexcept;
 
-    int flush() noexcept;
+	int flush() noexcept;
 private:
 
-    IOFILE _file;
+	IOFILE _file;
 };
 
 _NAME_END

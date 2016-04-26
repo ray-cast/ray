@@ -52,7 +52,7 @@ public:
 	void release() noexcept;
 
 	int refCount() const noexcept;
-	
+
 	void destroy() noexcept;
 	bool isDestroy() const noexcept;
 
@@ -67,7 +67,7 @@ private:
 	mutable std::atomic_bool _gc;
 	mutable std::atomic_int _count;
 
-    std::intptr_t* _pointer;
+	std::intptr_t* _pointer;
 };
 
 _NAME_END

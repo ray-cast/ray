@@ -150,7 +150,7 @@ TerrainGrass::setActive(bool active) noexcept
 		if (active)
 		{
 			_object->setActive(true);
-			_object->getComponent<ray::MeshComponent>()->clear();
+			_object->getComponent<ray::MeshComponent>()->setMesh(nullptr);
 		}
 		else
 		{
@@ -346,7 +346,7 @@ TerrainTree::setActive(bool active) noexcept
 		if (active)
 		{
 			it->setActive(true);
-			it->getComponent<ray::MeshComponent>()->clear();
+			it->getComponent<ray::MeshComponent>()->setMesh(nullptr);
 		}
 		else
 		{
@@ -482,7 +482,7 @@ TerrainClound::setActive(bool active) noexcept
 		if (active)
 		{
 			_object->setActive(true);
-			_object->getComponent<ray::MeshComponent>()->clear();
+			_object->getComponent<ray::MeshComponent>()->setMesh(nullptr);
 		}
 		else
 		{
@@ -623,7 +623,7 @@ TerrainWater::setActive(bool active) noexcept
 		if (active)
 		{
 			_object->setActive(true);
-			_object->getComponent<ray::MeshComponent>()->clear();
+			_object->getComponent<ray::MeshComponent>()->setMesh(nullptr);
 		}
 		else
 		{

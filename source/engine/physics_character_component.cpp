@@ -142,7 +142,7 @@ PhysicsCharacterComponent::load(iarchive& reader) noexcept
 	this->setHeight(height);
 }
 
-void 
+void
 PhysicsCharacterComponent::save(oarchive& write) noexcept
 {
 }

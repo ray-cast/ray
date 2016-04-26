@@ -58,190 +58,190 @@ GuiImageComponent::~GuiImageComponent() noexcept
 void
 GuiImageComponent::setImageInfo(const std::string& texture, const Rect& coord, const Size& tile)
 {
-    assert(_imagebox);
-    _imagebox->setImageInfo(texture, coord, tile);
+	assert(_imagebox);
+	_imagebox->setImageInfo(texture, coord, tile);
 }
 
 void
 GuiImageComponent::setImageTexture(const std::string& value)
 {
-    assert(_imagebox);
-    _imagebox->setImageTexture(value);
+	assert(_imagebox);
+	_imagebox->setImageTexture(value);
 }
 
 void
 GuiImageComponent::setImageCoord(const Rect& value)
 {
-    assert(_imagebox);
-    _imagebox->setImageCoord(value);
+	assert(_imagebox);
+	_imagebox->setImageCoord(value);
 }
 
 void
 GuiImageComponent::setImageTile(const Size& value)
 {
-    assert(_imagebox);
-    _imagebox->setImageTile(value);
+	assert(_imagebox);
+	_imagebox->setImageTile(value);
 }
 
 void
 GuiImageComponent::setImageIndex(std::size_t index)
 {
-    assert(_imagebox);
-    _imagebox->setImageIndex(index);
+	assert(_imagebox);
+	_imagebox->setImageIndex(index);
 }
 
 std::size_t
 GuiImageComponent::getImageIndex() const
 {
-    assert(_imagebox);
-    return _imagebox->getImageIndex();
+	assert(_imagebox);
+	return _imagebox->getImageIndex();
 }
 
 Size
 GuiImageComponent::getImageSize() const
 {
-    assert(_imagebox);
-    return _imagebox->getImageSize();
+	assert(_imagebox);
+	return _imagebox->getImageSize();
 }
 
 std::size_t
 GuiImageComponent::getItemCount() const
 {
-    assert(_imagebox);
-    return _imagebox->getItemCount();
+	assert(_imagebox);
+	return _imagebox->getItemCount();
 }
 
 void
 GuiImageComponent::setItemSelect(std::size_t index)
 {
-    assert(_imagebox);
-    _imagebox->setItemSelect(index);
+	assert(_imagebox);
+	_imagebox->setItemSelect(index);
 }
 
 std::size_t
 GuiImageComponent::getItemSelect() const
 {
-    assert(_imagebox);
-    return _imagebox->getItemSelect();
+	assert(_imagebox);
+	return _imagebox->getItemSelect();
 }
 
 void
 GuiImageComponent::resetItemSelect()
 {
-    assert(_imagebox);
-    _imagebox->resetItemSelect();
+	assert(_imagebox);
+	_imagebox->resetItemSelect();
 }
 
 void
 GuiImageComponent::insertItem(std::size_t index, const Rect& item)
 {
-    assert(_imagebox);
-    _imagebox->insertItem(index, item);
+	assert(_imagebox);
+	_imagebox->insertItem(index, item);
 }
 
 void
 GuiImageComponent::addItem(const Rect& item)
 {
-    assert(_imagebox);
-    _imagebox->addItem(item);
+	assert(_imagebox);
+	_imagebox->addItem(item);
 }
 
 void
 GuiImageComponent::setItem(std::size_t index, const Rect& item)
 {
-    assert(_imagebox);
-    _imagebox->setItem(index, item);
+	assert(_imagebox);
+	_imagebox->setItem(index, item);
 }
 
 void
 GuiImageComponent::deleteAllItems()
 {
-    assert(_imagebox);
-    _imagebox->deleteAllItems();
+	assert(_imagebox);
+	_imagebox->deleteAllItems();
 }
 
 void
 GuiImageComponent::addItemFrame(std::size_t index, const Rect& item)
 {
-    assert(_imagebox);
-    _imagebox->addItemFrame(index, item);
+	assert(_imagebox);
+	_imagebox->addItemFrame(index, item);
 }
 
 void
 GuiImageComponent::insertItemFrame(std::size_t index, std::size_t indexFrame, const Rect& item)
 {
-    assert(_imagebox);
-    _imagebox->insertItemFrame(index, indexFrame, item);
+	assert(_imagebox);
+	_imagebox->insertItemFrame(index, indexFrame, item);
 }
 
 void
 GuiImageComponent::addItemFrameDuplicate(std::size_t index, std::size_t indexSourceFrame)
 {
-    assert(_imagebox);
-    _imagebox->addItemFrameDuplicate(index, indexSourceFrame);
+	assert(_imagebox);
+	_imagebox->addItemFrameDuplicate(index, indexSourceFrame);
 }
 
 void
 GuiImageComponent::insertItemFrameDuplicate(std::size_t index, std::size_t indexFrame, std::size_t indexSourceFrame)
 {
-    assert(_imagebox);
-    _imagebox->insertItemFrameDuplicate(index, indexFrame, indexSourceFrame);
+	assert(_imagebox);
+	_imagebox->insertItemFrameDuplicate(index, indexFrame, indexSourceFrame);
 }
 
 void
 GuiImageComponent::setItemFrame(std::size_t index, std::size_t indexFrame, const Rect& item)
 {
-    assert(_imagebox);
-    _imagebox->setItemFrame(index, indexFrame, item);
+	assert(_imagebox);
+	_imagebox->setItemFrame(index, indexFrame, item);
 }
 
 void
 GuiImageComponent::deleteItemFrame(std::size_t index, std::size_t indexFrame)
 {
-    assert(_imagebox);
-    _imagebox->deleteItemFrame(index, indexFrame);
+	assert(_imagebox);
+	_imagebox->deleteItemFrame(index, indexFrame);
 }
 
 void
 GuiImageComponent::deleteAllItemFrames(std::size_t index)
 {
-    assert(_imagebox);
-    _imagebox->deleteAllItemFrames(index);
+	assert(_imagebox);
+	_imagebox->deleteAllItemFrames(index);
 }
 
 void
 GuiImageComponent::setItemFrameRate(std::size_t index, float rate)
 {
-    assert(_imagebox);
-    _imagebox->setItemFrameRate(index, rate);
+	assert(_imagebox);
+	_imagebox->setItemFrameRate(index, rate);
 }
 
 float
 GuiImageComponent::getItemFrameRate(std::size_t index)
 {
-    assert(_imagebox);
-    return _imagebox->getItemFrameRate(index);
+	assert(_imagebox);
+	return _imagebox->getItemFrameRate(index);
 }
 
 bool
 GuiImageComponent::setItemResource(const std::string& name)
 {
-    assert(_imagebox);
-    return _imagebox->setItemResource(name);
+	assert(_imagebox);
+	return _imagebox->setItemResource(name);
 }
 
 void
 GuiImageComponent::setItemGroup(const std::string& value)
 {
-    assert(_imagebox);
-    _imagebox->setItemGroup(value);
+	assert(_imagebox);
+	_imagebox->setItemGroup(value);
 }
 
 void
 GuiImageComponent::setItemName(const std::string& value)
 {
-    assert(_imagebox);
-    _imagebox->setItemName(value);
+	assert(_imagebox);
+	_imagebox->setItemName(value);
 }
 
 void

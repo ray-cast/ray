@@ -494,7 +494,7 @@ ScriptBindString::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterGlobalFunction("string formatFloat(double val, const string &in options, uint width = 0, uint precision = 0)", asFUNCTION(formatFloat), asCALL_CDECL); assert(r >= 0);
 	r = engine->RegisterGlobalFunction("int64 parseInt(const string &in, uint base = 10, uint &out byteCount = 0)", asFUNCTION(parseInt), asCALL_CDECL); assert(r >= 0);
 	r = engine->RegisterGlobalFunction("double parseFloat(const string &in, uint &out byteCount = 0)", asFUNCTION(parseFloat), asCALL_CDECL); assert(r >= 0);
-	
+
 	r = engine->RegisterGlobalFunction("void print(int& in)", asFUNCTION(printString<int>), asCALL_CDECL); assert(r >= 0);
 	r = engine->RegisterGlobalFunction("void print(uint& in)", asFUNCTION(printString<int>), asCALL_CDECL); assert(r >= 0);
 	r = engine->RegisterGlobalFunction("void print(float& in)", asFUNCTION(printString<float>), asCALL_CDECL); assert(r >= 0);

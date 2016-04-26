@@ -41,14 +41,14 @@ _NAME_BEGIN
 bool
 Palette::create(PaletteData* pal)
 {
-    assert(pal);
+	assert(pal);
 
 #ifdef _WIN32
-    _paltte = ::CreatePalette((LOGPALETTE*)pal);
-    free(pal);
+	_paltte = ::CreatePalette((LOGPALETTE*)pal);
+	free(pal);
 #endif
 
-    return true;
+	return true;
 }
 
 _NAME_END

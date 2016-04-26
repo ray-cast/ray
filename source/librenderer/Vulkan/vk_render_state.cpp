@@ -57,12 +57,12 @@ VulkanRenderState::setup(const GraphicsStateDesc& stateDesc) noexcept
 	return true;
 }
 
-void 
+void
 VulkanRenderState::close() noexcept
 {
 }
 
-const GraphicsStateDesc& 
+const GraphicsStateDesc&
 VulkanRenderState::getGraphicsStateDesc() const noexcept
 {
 	return _stateDesc;

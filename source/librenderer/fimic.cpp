@@ -109,7 +109,7 @@ FimicToneMapping::measureLuminance(RenderPipeline& pipeline, GraphicsFramebuffer
 	lum /= SAMPLE_LOG_COUNT;
 	lum = std::exp(lum);
 
-	_lumAdapt = _lumAdapt +((lum - _lumAdapt) * (1.0f - pow(_setting.lumKey, _setting.lumDelta * delta)));
+	_lumAdapt = _lumAdapt + ((lum - _lumAdapt) * (1.0f - pow(_setting.lumKey, _setting.lumDelta * delta)));
 
 	_toneLumExposure->uniform1f(_setting.lumExposure * ToneExposure(_lumAdapt));
 }
@@ -259,7 +259,7 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 		float2(4.0f / (width / 4.0f), 4.0f / (height / 4.0f)),
 		float2(5.0f / (width / 4.0f), 5.0f / (height / 4.0f)),
 	};
-	
+
 	float weight[] = { 0.2,0.02,0.044,0.0716,0.1046,0.1686,0.1686,0.1046,0.0716,0.044,0.02 };
 
 	_bloomOffset->uniform2fv(sizeof(offset) / sizeof(offset[0]), (float*)offset);

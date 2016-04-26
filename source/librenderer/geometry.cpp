@@ -97,7 +97,7 @@ Geometry::getRenderMesh() noexcept
 	return _mesh;
 }
 
-void 
+void
 Geometry::setGraphicsIndirect(GraphicsIndirectPtr renderable) noexcept
 {
 	_renderable = renderable;
@@ -109,12 +109,11 @@ Geometry::getGraphicsIndirect() noexcept
 	return _renderable;
 }
 
-void 
+void
 Geometry::_updatePipeline() noexcept
 {
 	if (!_pipeline)
 	{
-		
 	}
 }
 
@@ -140,7 +139,7 @@ Geometry::onAddRenderData(RenderDataManager& manager) noexcept
 	}
 }
 
-void 
+void
 Geometry::onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTechPtr _tech) noexcept
 {
 	auto tech = _tech ? _tech : _techniques[queue];

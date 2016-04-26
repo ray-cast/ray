@@ -46,149 +46,149 @@ template<typename T>
 class Matrix2x2t
 {
 public:
-    Matrix2x2t() noexcept
-    {
-    }
+	Matrix2x2t() noexcept
+	{
+	}
 
-    Matrix2x2t(T mt00, T mt01, T mt10, T mt11)
-    {
-        set(mt00, mt01, mt10, mt11);
-    }
+	Matrix2x2t(T mt00, T mt01, T mt10, T mt11)
+	{
+		set(mt00, mt01, mt10, mt11);
+	}
 
-    Matrix2x2t& set(T mt00, T mt01, T mt10, T mt11)
-    {
-        this->a1 = mt00; this->a2 = mt01;
-        this->b1 = mt10; this->b2 = mt11;
-        return *this;
-    }
+	Matrix2x2t& set(T mt00, T mt01, T mt10, T mt11)
+	{
+		this->a1 = mt00; this->a2 = mt01;
+		this->b1 = mt10; this->b2 = mt11;
+		return *this;
+	}
 
-    void setScale(const Vector2t<T>& sz)
-    {
-        setScale(sz.x, sz.y);
-    }
+	void setScale(const Vector2t<T>& sz)
+	{
+		setScale(sz.x, sz.y);
+	}
 
-    void setScale(T x, T y)
-    {
-        this->a1 *= x;
-        this->a2 *= x;
-        this->b1 *= y;
-        this->b2 *= y;
-    }
+	void setScale(T x, T y)
+	{
+		this->a1 *= x;
+		this->a2 *= x;
+		this->b1 *= y;
+		this->b2 *= y;
+	}
 
-    void makeScale(const Vector2t<T>& sz)
-    {
-        makeScale(sz.x, sz.y);
-    }
+	void makeScale(const Vector2t<T>& sz)
+	{
+		makeScale(sz.x, sz.y);
+	}
 
-    void makeScale(T x, T y)
-    {
-        set(x, 0,
-            0, y);
-    }
+	void makeScale(T x, T y)
+	{
+		set(x, 0,
+			0, y);
+	}
 
-    void scale(const Vector2t<T>& sz)
-    {
-        scale(sz.x, sz.y);
-    }
+	void scale(const Vector2t<T>& sz)
+	{
+		scale(sz.x, sz.y);
+	}
 
-    void scale(T x, T y)
-    {
-        this->a1 *= x;
-        this->b2 *= y;
-    }
+	void scale(T x, T y)
+	{
+		this->a1 *= x;
+		this->b2 *= y;
+	}
 
-    void setRotate(const Quaterniont<T>& q)
-    {
-        setRotate(q.w, q.x, q.y, q.z);
-    }
+	void setRotate(const Quaterniont<T>& q)
+	{
+		setRotate(q.w, q.x, q.y, q.z);
+	}
 
-    void setRotate(T angle, const Vector3t<T>& axis)
-    {
-        setRotate(angle, axis.x, axis.y, axis.z);
-    }
+	void setRotate(T angle, const Vector3t<T>& axis)
+	{
+		setRotate(angle, axis.x, axis.y, axis.z);
+	}
 
-    void setRotate(T angle, T x, T y, T z)
-    {
-        makeRotate(angle, x, y, z);
-    }
+	void setRotate(T angle, T x, T y, T z)
+	{
+		makeRotate(angle, x, y, z);
+	}
 
-    void makeRotate(const Quaterniont<T>& q)
-    {
-        makeRotate(q.w, q.x, q.y, q.z);
-    }
+	void makeRotate(const Quaterniont<T>& q)
+	{
+		makeRotate(q.w, q.x, q.y, q.z);
+	}
 
-    void makeRotate(T angle, const Vector3t<T>& axis)
-    {
-        T c, s;
+	void makeRotate(T angle, const Vector3t<T>& axis)
+	{
+		T c, s;
 
-        sinCos(&s, &c, degrees(angle));
+		sinCos(&s, &c, degrees(angle));
 
-        Vector3t<T> v = axis;
-        v.normalize();
+		Vector3t<T> v = axis;
+		v.normalize();
 
-        T x = v.x;
-        T y = v.y;
-        T z = v.z;
+		T x = v.x;
+		T y = v.y;
+		T z = v.z;
 
-        T t = 1 - c;
-        T tx = t*x, ty = t*y;
+		T t = 1 - c;
+		T tx = t*x, ty = t*y;
 
-        this->a1 = (tx * x + c);
-        this->a2 = (tx * y + s * z);
+		this->a1 = (tx * x + c);
+		this->a2 = (tx * y + s * z);
 
-        this->b1 = (tx * y - s * z);
-        this->b2 = (ty * y + c);
-    }
+		this->b1 = (tx * y - s * z);
+		this->b2 = (ty * y + c);
+	}
 
-    void makeRotate(T angle, T x, T y, T z)
-    {
-        makeRotate(angle, Vector3t<T>(x, y, z));
-    }
+	void makeRotate(T angle, T x, T y, T z)
+	{
+		makeRotate(angle, Vector3t<T>(x, y, z));
+	}
 
-    void makeRotationX(T theta)
-    {
-        T ang = degrees(theta);
-        T c, s;
+	void makeRotationX(T theta)
+	{
+		T ang = degrees(theta);
+		T c, s;
 
-        sinCos(&s, &c, ang);
+		sinCos(&s, &c, ang);
 
-        set(
-            1, 0,
-            0, c);
-    }
+		set(
+			1, 0,
+			0, c);
+	}
 
-    void makeRotationY(T theta)
-    {
-        T ang = degrees(theta);
-        T c, s;
+	void makeRotationY(T theta)
+	{
+		T ang = degrees(theta);
+		T c, s;
 
-        sinCos(&s, &c, ang);
+		sinCos(&s, &c, ang);
 
-        set(
-            c, 0,
-            0, 1);
-    }
+		set(
+			c, 0,
+			0, 1);
+	}
 
-    void makeRotationZ(T theta)
-    {
-        T ang = degrees(theta);
-        T c, s;
+	void makeRotationZ(T theta)
+	{
+		T ang = degrees(theta);
+		T c, s;
 
-        sinCos(&s, &c, ang);
+		sinCos(&s, &c, ang);
 
-        set(
-            c, -s,
-            s, c);
-    }
+		set(
+			c, -s,
+			s, c);
+	}
 
-    T* ptr() { return (T*)this; }
-    const T* ptr() const { return (const T*)this; }
-    T* data() { return (T*)&a1; }
-    const T* data() const { return (const T*)this; }
+	T* ptr() { return (T*)this; }
+	const T* ptr() const { return (const T*)this; }
+	T* data() { return (T*)&a1; }
+	const T* data() const { return (const T*)this; }
 
 private:
-    T a1, a2;
-    T b1, b2;
+	T a1, a2;
+	T b1, b2;
 };
 
 _NAME_END

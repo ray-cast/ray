@@ -430,6 +430,60 @@ namespace math
 	}
 
 	template<typename T>
+	inline Vector3t<T> cos(const Vector3t<T>& v)
+	{
+		return Vector3t<T>(std::cos(v.x), std::cos(v.y), std::cos(v.z));
+	}
+
+	template<typename T>
+	inline Vector3t<T> sin(const Vector3t<T>& v)
+	{
+		return Vector3t<T>(std::sin(v.x), std::sin(v.y), std::sin(v.z));
+	}
+
+	template<typename T>
+	inline Vector3t<T> tan(const Vector3t<T>& v)
+	{
+		return Vector3t<T>(std::tan(v.x), std::tan(v.y), std::tan(v.z));
+	}
+
+	template<typename T>
+	inline Vector3t<T> acos(const Vector3t<T>& v)
+	{
+		return Vector3t<T>(std::acos(v.x), std::acos(v.y), std::acos(v.z));
+	}
+
+	template<typename T>
+	inline Vector3t<T> asin(const Vector3t<T>& v)
+	{
+		return Vector3t<T>(std::asin(v.x), std::asin(v.y), std::asin(v.z));
+	}
+
+	template<typename T>
+	inline Vector3t<T> atan(const Vector3t<T>& v)
+	{
+		return Vector3t<T>(std::atan(v.x), std::atan(v.y), std::atan(v.z));
+	}
+
+	template<typename T>
+	inline Vector3t<T> exp(const Vector3t<T>& v)
+	{
+		return Vector3t<T>(std::exp(v.x), std::exp(v.y), std::exp(v.z));
+	}
+
+	template<typename T>
+	inline Vector3t<T> log(const Vector3t<T>& v)
+	{
+		return Vector3t<T>(std::log(v.x), std::log(v.y), std::log(v.z));
+	}
+
+	template<typename T>
+	inline Vector3t<T> log10(const Vector3t<T>& v)
+	{
+		return Vector3t<T>(std::log10(v.x), std::log10(v.y), std::log10(v.z));
+	}
+
+	template<typename T>
 	inline Vector3t<T> pow(const Vector3t<T>& v1, const Vector3t<T>& v2)
 	{
 		return Vector3t<T>(std::pow(v1.x, v2.x), std::pow(v1.y, v2.y), std::pow(v1.z, v2.z));

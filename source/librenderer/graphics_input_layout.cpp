@@ -111,7 +111,7 @@ GraphicsVertexLayout::setVertexOffset(std::uint16_t offset) noexcept
 	_offset = offset;
 }
 
-std::uint16_t 
+std::uint16_t
 GraphicsVertexLayout::getVertexOffset() const noexcept
 {
 	return _offset;
@@ -267,7 +267,7 @@ GraphicsVertexLayout::getVertexCount(GraphicsFormat format) noexcept
 	case GraphicsFormat::GraphicsFormatR64G64B64A64UInt:
 	case GraphicsFormat::GraphicsFormatR64G64B64A64SInt:
 	case GraphicsFormat::GraphicsFormatR64G64B64A64SFloat:
-		return 4;	
+		return 4;
 	case GraphicsFormat::GraphicsFormatBC1RGBUNormBlock:
 	case GraphicsFormat::GraphicsFormatBC1RGBSRGBBlock:
 	case GraphicsFormat::GraphicsFormatBC1RGBAUNormBlock:

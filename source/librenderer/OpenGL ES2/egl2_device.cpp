@@ -223,7 +223,7 @@ EGL2Device::createDescriptorPool(const GraphicsDescriptorPoolDesc& desc) noexcep
 
 bool
 EGL2Device::isTextureSupport(GraphicsFormat format) noexcept
-{	
+{
 	return true;
 }
 

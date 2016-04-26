@@ -43,17 +43,17 @@ _NAME_BEGIN
 
 class EGL3GraphicsState final : public GraphicsState
 {
-    __DeclareSubClass(EGL3GraphicsState, RenderState)
+	__DeclareSubClass(EGL3GraphicsState, RenderState)
 public:
 	EGL3GraphicsState() noexcept;
 	~EGL3GraphicsState() noexcept;
 
-    bool setup(const GraphicsStateDesc& desc) noexcept;
-    void close() noexcept;
+	bool setup(const GraphicsStateDesc& desc) noexcept;
+	void close() noexcept;
 
 	void apply(GraphicsStateDesc& last) noexcept;
 
-    const GraphicsStateDesc& getGraphicsStateDesc() const noexcept;
+	const GraphicsStateDesc& getGraphicsStateDesc() const noexcept;
 
 private:
 	friend class EGL3Device;
@@ -65,7 +65,7 @@ private:
 	EGL3GraphicsState& operator=(const EGL3GraphicsState&) = delete;
 
 private:
-    GraphicsStateDesc _stateDesc;
+	GraphicsStateDesc _stateDesc;
 	GraphicsDeviceWeakPtr _device;
 };
 

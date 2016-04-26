@@ -233,9 +233,9 @@ DeferredLightingPipeline::renderSunLight(RenderPipeline& pipeline, const Light& 
 	_lightColor->uniform3f(light.getLightColor() * light.getIntensity());
 	_lightEyeDirection->uniform3f(light.getForward() * float3x3(pipeline.getCamera()->getView()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
-	
+
 	if (shadowMap)
-	{	
+	{
 		float shadowFactor = _shadowEsmFactor / (light.getShadowCamera()->getFar() - light.getShadowCamera()->getNear());
 		float shaodwBias = light.getShadowBias();
 
@@ -300,7 +300,7 @@ DeferredLightingPipeline::renderSpotLight(RenderPipeline& pipeline, const Light&
 	_lightEyeDirection->uniform3f(light.getForward() * float3x3(pipeline.getCamera()->getView()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
 	_lightOuterInner->uniform2f(float2(light.getSpotOuterCone().y, light.getSpotInnerCone().y));
-	
+
 	auto transform = light.getTransform();
 	transform.translate(light.getForward() * light.getRange());
 	transform.scale(light.getRange());
@@ -333,7 +333,7 @@ DeferredLightingPipeline::renderAmbientLight(RenderPipeline& pipeline, const Lig
 	_lightEyePosition->uniform3f(light.getTransform().getTranslate());
 	_lightEyeDirection->uniform3f(light.getForward() * float3x3(pipeline.getCamera()->getView()));
 	_lightAttenuation->uniform3f(light.getLightAttenuation());
-	
+
 	pipeline.drawScreenQuadLayer(_deferredAmbientLight, light.getLayer());
 }
 
@@ -752,12 +752,12 @@ DeferredLightingPipeline::destroyDeferredRenderTextures() noexcept
 	_deferredGraphicsViews.reset();
 }
 
-void 
+void
 DeferredLightingPipeline::onResolutionChangeBefore() noexcept
 {
 }
 
-void 
+void
 DeferredLightingPipeline::onResolutionChangeAfter() noexcept
 {
 	destroyDeferredTextures();

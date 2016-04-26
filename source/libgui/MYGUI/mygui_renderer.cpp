@@ -67,7 +67,7 @@ MyGuiRenderer::getInstancePtr() noexcept
 	return static_cast<MyGuiRenderer*>(RenderManager::getInstancePtr());
 }
 
-void 
+void
 MyGuiRenderer::open() except
 {
 	MYGUI_PLATFORM_ASSERT(!_isInitialise, getClassTypeName() << " initialised twice");
@@ -84,7 +84,7 @@ MyGuiRenderer::open() except
 	MYGUI_PLATFORM_LOG(Info, getClassTypeName() << " successfully initialized");
 }
 
-void 
+void
 MyGuiRenderer::close() noexcept
 {
 	if (_isInitialise)
@@ -111,13 +111,13 @@ MyGuiRenderer::getImageLoader() const noexcept
 	return _imageLoader;
 }
 
-MyGUI::IVertexBuffer* 
+MyGUI::IVertexBuffer*
 MyGuiRenderer::createVertexBuffer() noexcept
 {
 	return new MyGuiVertexBuffer();
 }
 
-void 
+void
 MyGuiRenderer::destroyVertexBuffer(MyGUI::IVertexBuffer* _buffer) noexcept
 {
 	delete _buffer;
@@ -175,7 +175,7 @@ MyGuiRenderer::destroyAllResources() noexcept
 	_material.reset();
 }
 
-void 
+void
 MyGuiRenderer::doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept
 {
 	_materialScaleY->uniform1i(-1);
@@ -183,7 +183,7 @@ MyGuiRenderer::doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _text
 	_materialScaleY->uniform1i(1);
 }
 
-void 
+void
 MyGuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept
 {
 	MyGuiVertexBuffer* buffer = static_cast<MyGuiVertexBuffer*>(_buffer);
@@ -214,7 +214,7 @@ MyGuiRenderer::doRender(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture
 	}
 }
 
-void 
+void
 MyGuiRenderer::begin() noexcept
 {
 }
@@ -224,25 +224,25 @@ MyGuiRenderer::end() noexcept
 {
 }
 
-const MyGUI::RenderTargetInfo& 
+const MyGUI::RenderTargetInfo&
 MyGuiRenderer::getInfo() noexcept
 {
 	return _info;
 }
 
-const MyGUI::IntSize& 
+const MyGUI::IntSize&
 MyGuiRenderer::getViewSize() const noexcept
 {
 	return _viewport;
 }
 
-MyGUI::VertexColourType 
+MyGUI::VertexColourType
 MyGuiRenderer::getVertexFormat() noexcept
 {
 	return _vertexFormat;
 }
 
-bool 
+bool
 MyGuiRenderer::isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage _usage) noexcept
 {
 	if (_format == MyGUI::PixelFormat::R8G8B8 ||
@@ -252,10 +252,10 @@ MyGuiRenderer::isFormatSupported(MyGUI::PixelFormat _format, MyGUI::TextureUsage
 	return false;
 }
 
-void 
+void
 MyGuiRenderer::drawOneFrame(float delta) noexcept
 {
-	RenderSystem::instance()->setViewport(Viewport(0,0, _viewport.width, _viewport.height));
+	RenderSystem::instance()->setViewport(Viewport(0, 0, _viewport.width, _viewport.height));
 
 	onFrameEvent(delta);
 	onRenderToTarget(this, _isUpdate);
@@ -263,7 +263,7 @@ MyGuiRenderer::drawOneFrame(float delta) noexcept
 	_isUpdate = false;
 }
 
-void 
+void
 MyGuiRenderer::setViewport(int _width, int _height) noexcept
 {
 	if (_height == 0)
@@ -285,7 +285,7 @@ MyGuiRenderer::setViewport(int _width, int _height) noexcept
 	_isUpdate = true;
 }
 
-void 
+void
 MyGuiRenderer::getViewport(int& w, int& h) noexcept
 {
 	w = _viewport.width;

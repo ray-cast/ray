@@ -65,7 +65,7 @@ class EXPORT MessageBatch : public Message
 public:
 	MessageBatch() noexcept;
 	virtual ~MessageBatch() noexcept;
-	
+
 	void addMessage(MessagePtr message) noexcept;
 	const Messages& getMessage() const noexcept;
 private:
@@ -127,7 +127,7 @@ private:
 	std::vector<MessageListenerPtr> _MessageListener;
 };
 
-template<class _Ty, class... _Types> 
+template<class _Ty, class... _Types>
 inline typename std::enable_if<!std::is_array<_Ty>::value, std::shared_ptr<_Ty> >::type make_message(_Types&&... _Args)
 {
 	return std::make_shared<_Ty>(std::forward<_Types>(_Args)...);

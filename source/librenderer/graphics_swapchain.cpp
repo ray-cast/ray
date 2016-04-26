@@ -89,7 +89,7 @@ GraphicsSwapchainDesc::getHeight() const noexcept
 	return _height;
 }
 
-void 
+void
 GraphicsSwapchainDesc::setSwapInterval(GraphicsSwapInterval interval) noexcept
 {
 	_interval = interval;
@@ -116,12 +116,12 @@ GraphicsSwapchainDesc::getColorFormat() const noexcept
 void
 GraphicsSwapchainDesc::setDepthStencilFormat(GraphicsFormat format) noexcept
 {
-	assert( format == GraphicsFormat::GraphicsFormatD16UNorm || 
-			format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 || 
-			format == GraphicsFormat::GraphicsFormatD32_SFLOAT ||
-			format == GraphicsFormat::GraphicsFormatD16UNorm_S8UInt ||
-			format == GraphicsFormat::GraphicsFormatD24UNorm_S8UInt ||
-			format == GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt);
+	assert(format == GraphicsFormat::GraphicsFormatD16UNorm ||
+		format == GraphicsFormat::GraphicsFormatX8_D24UNormPack32 ||
+		format == GraphicsFormat::GraphicsFormatD32_SFLOAT ||
+		format == GraphicsFormat::GraphicsFormatD16UNorm_S8UInt ||
+		format == GraphicsFormat::GraphicsFormatD24UNorm_S8UInt ||
+		format == GraphicsFormat::GraphicsFormatD32_SFLOAT_S8UInt);
 	_depthStencilFormat = format;
 }
 

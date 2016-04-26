@@ -71,9 +71,9 @@ MyGuiEditBoxImpl::create() except
 		_editBox = _parent->createWidget<MyGUI::EditBox>("", 0, 0, 0, 0, MyGUI::Align::Default, "");
 	else
 		_editBox = MyGUI::Gui::getInstance().createWidget<MyGUI::EditBox>("", 0, 0, 0, 0, MyGUI::Align::Default, "Main", "");
-	
+
 	_textbox = std::make_shared<MyGuiTextBox>(_editBox, false);
-	
+
 	this->setWidget(_editBox);
 
 	return _editBox ? true : false;
@@ -181,7 +181,6 @@ MyGuiEditBoxImpl::getOnlyText()
 {
 	return _editBox->getOnlyText();
 }
-
 
 std::size_t
 MyGuiEditBoxImpl::getTextLength() const
@@ -369,7 +368,7 @@ MyGuiEditBoxImpl::setHScrollPosition(std::size_t index)
 	_editBox->setHScrollPosition(index);
 }
 
-void 
+void
 MyGuiEditBoxImpl::addTextChangeListener(std::function<void()>& func) noexcept
 {
 	assert(!_onTextChange.find(func));
@@ -378,14 +377,14 @@ MyGuiEditBoxImpl::addTextChangeListener(std::function<void()>& func) noexcept
 	_onTextChange.attach(func);
 }
 
-void 
+void
 MyGuiEditBoxImpl::removeTextChangeListener(std::function<void()>& func) noexcept
 {
 	assert(_onTextChange.find(func));
 	_onTextChange.remove(func);
 }
 
-void 
+void
 MyGuiEditBoxImpl::addSelectAccept(std::function<void()>& func) noexcept
 {
 	assert(!_onSelectAccept.find(func));
@@ -394,20 +393,20 @@ MyGuiEditBoxImpl::addSelectAccept(std::function<void()>& func) noexcept
 	_onSelectAccept.attach(func);
 }
 
-void 
+void
 MyGuiEditBoxImpl::removeSelectAccept(std::function<void()>& func) noexcept
 {
 	assert(_onSelectAccept.find(func));
 	_onSelectAccept.remove(func);
 }
 
-void 
+void
 MyGuiEditBoxImpl::onTextChange(MyGUI::Widget*) noexcept
 {
 	_onTextChange();
 }
 
-void 
+void
 MyGuiEditBoxImpl::onSelectAccept(MyGUI::Widget*) noexcept
 {
 	_onSelectAccept();
@@ -710,19 +709,19 @@ MyGuiEditBox::addTextChangeListener(std::function<void()>& func) noexcept
 	_impl.addTextChangeListener(func);
 }
 
-void 
+void
 MyGuiEditBox::removeTextChangeListener(std::function<void()>& func) noexcept
 {
 	_impl.removeTextChangeListener(func);
 }
 
-void 
+void
 MyGuiEditBox::addSelectAccept(std::function<void()>& func) noexcept
 {
 	_impl.addSelectAccept(func);
 }
 
-void 
+void
 MyGuiEditBox::removeSelectAccept(std::function<void()>& func) noexcept
 {
 	_impl.removeSelectAccept(func);

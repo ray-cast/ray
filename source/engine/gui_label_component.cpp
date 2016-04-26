@@ -68,112 +68,112 @@ GuiLabelComponent::getTextRegion() noexcept
 	return _label->getTextRegion();
 }
 
-void 
+void
 GuiLabelComponent::getTextSize(int& w, int& h) noexcept
 {
 	assert(_label);
 	return _label->getTextSize(w, h);
 }
 
-void 
+void
 GuiLabelComponent::setText(const std::string& value) noexcept
 {
 	assert(_label);
 	_label->setText(value);
 }
 
-const std::string& 
+const std::string&
 GuiLabelComponent::getText() const noexcept
 {
 	assert(_label);
 	return _label->getText();
 }
 
-void 
+void
 GuiLabelComponent::setFontName(const std::string& value) noexcept
 {
 	assert(_label);
 	_label->setFontName(value);
 }
 
-const std::string& 
+const std::string&
 GuiLabelComponent::getFontName() noexcept
 {
 	assert(_label);
 	return _label->getFontName();
 }
 
-void 
+void
 GuiLabelComponent::setFontHeight(int value) noexcept
 {
 	assert(_label);
 	_label->setFontHeight(value);
 }
 
-int 
+int
 GuiLabelComponent::getFontHeight() noexcept
 {
 	assert(_label);
 	return _label->getFontHeight();
 }
 
-void 
+void
 GuiLabelComponent::setTextAlign(GuiWidgetAlign value) noexcept
 {
 	assert(_label);
 	_label->setTextAlign(value);
 }
 
-GuiWidgetAlign 
+GuiWidgetAlign
 GuiLabelComponent::getTextAlign() noexcept
 {
 	assert(_label);
 	return _label->getTextAlign();
 }
 
-void 
+void
 GuiLabelComponent::setTextColour(const float4& value) noexcept
 {
 	assert(_label);
 	_label->setTextColour(value);
 }
 
-float4 
+float4
 GuiLabelComponent::getTextColour() noexcept
 {
 	assert(_label);
 	return _label->getTextColour();
 }
 
-void 
+void
 GuiLabelComponent::setTextWithReplacing(const std::string& value) noexcept
 {
 	assert(_label);
 	_label->setTextWithReplacing(value);
 }
 
-void 
+void
 GuiLabelComponent::setTextShadowColour(const float4& value) noexcept
 {
 	assert(_label);
 	_label->setTextShadowColour(value);
 }
 
-float4 
+float4
 GuiLabelComponent::getTextShadowColour() noexcept
 {
 	assert(_label);
 	return _label->getTextShadowColour();
 }
 
-void 
+void
 GuiLabelComponent::setTextShadow(bool value) noexcept
 {
 	assert(_label);
 	_label->setTextShadow(value);
 }
 
-bool 
+bool
 GuiLabelComponent::getTextShadow() const noexcept
 {
 	assert(_label);
@@ -215,12 +215,12 @@ GuiLabelComponent::load(iarchive& reader) noexcept
 	this->setFontHeight(fontSize);
 }
 
-void 
+void
 GuiLabelComponent::save(oarchive& write) noexcept
 {
 }
 
-GameComponentPtr 
+GameComponentPtr
 GuiLabelComponent::clone() const noexcept
 {
 	auto other = std::make_shared<GuiLabelComponent>();

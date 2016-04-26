@@ -835,7 +835,7 @@ OGLTypes::asCullMode(GraphicsCullMode mode) noexcept
 	}
 }
 
-GLenum 
+GLenum
 OGLTypes::asFrontFace(GraphicsFrontFace face) noexcept
 {
 	switch (face)
@@ -930,7 +930,7 @@ OGLTypes::asSamplerMagFilter(GraphicsSamplerFilter filter) noexcept
 	}
 }
 
-GLsizei 
+GLsizei
 OGLTypes::getFormatNum(GLenum format) noexcept
 {
 	if (format == GL_RED)

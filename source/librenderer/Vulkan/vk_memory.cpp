@@ -88,7 +88,7 @@ VulkanMemory::setup(const char* stream, std::uint32_t streamSize, std::uint32_t 
 	return true;
 }
 
-void 
+void
 VulkanMemory::close() noexcept
 {
 	if (_vkMemory != VK_NULL_HANDLE)
@@ -99,7 +99,7 @@ VulkanMemory::close() noexcept
 	}
 }
 
-std::uint32_t 
+std::uint32_t
 VulkanMemory::size() const noexcept
 {
 	return _size;
@@ -125,7 +125,7 @@ VulkanMemory::map(std::uint32_t offset, std::uint32_t cnt, std::uint32_t access)
 	return data;
 }
 
-void 
+void
 VulkanMemory::unmap() noexcept
 {
 	assert(_isMapping);

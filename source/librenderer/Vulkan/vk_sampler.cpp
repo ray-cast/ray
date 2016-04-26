@@ -57,7 +57,7 @@ VulkanSampler::setup(const GraphicsSamplerDesc& samplerDesc) noexcept
 	return false;
 }
 
-void 
+void
 VulkanSampler::close() noexcept
 {
 	if (_vkSampler != VK_NULL_HANDLE)
@@ -73,7 +73,7 @@ VulkanSampler::getSampler() const noexcept
 	return _vkSampler;
 }
 
-const GraphicsSamplerDesc& 
+const GraphicsSamplerDesc&
 VulkanSampler::getGraphicsSamplerDesc() const noexcept
 {
 	return _samplerDesc;
@@ -85,7 +85,7 @@ VulkanSampler::setDevice(GraphicsDevicePtr device) noexcept
 	_device = device;
 }
 
-GraphicsDevicePtr 
+GraphicsDevicePtr
 VulkanSampler::getDevice() noexcept
 {
 	return _device.lock();

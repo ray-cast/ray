@@ -63,7 +63,7 @@ RenderPipelineController::onRenderPre() noexcept
 {
 }
 
-void 
+void
 RenderPipelineController::onRenderPipeline(const CameraPtr& camera) noexcept
 {
 }

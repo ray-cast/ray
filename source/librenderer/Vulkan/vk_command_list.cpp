@@ -84,13 +84,13 @@ VulkanCommandList::setup(const GraphicsCommandListDesc& commandListDesc) noexcep
 	return true;
 }
 
-void 
+void
 VulkanCommandList::close() noexcept
 {
 	if (_vkCommandBuffer != VK_NULL_HANDLE)
 	{
 		vkFreeCommandBuffers(
-			this->getDevice()->downcast<VulkanDevice>()->getDevice(), 
+			this->getDevice()->downcast<VulkanDevice>()->getDevice(),
 			_commandListDesc.getGraphicsCommandPool()->downcast<VulkanCommandPool>()->getInstance(), 1, &_vkCommandBuffer);
 		_vkCommandBuffer = VK_NULL_HANDLE;
 	}
@@ -114,8 +114,8 @@ VulkanCommandList::renderBegin() noexcept
 	cmd_buf_info.pNext = NULL;
 	cmd_buf_info.flags = 0;
 	cmd_buf_info.pInheritanceInfo = &cmd_buf_hinfo;
-	
-	vkBeginCommandBuffer(_vkCommandBuffer, &cmd_buf_info);	
+
+	vkBeginCommandBuffer(_vkCommandBuffer, &cmd_buf_info);
 }
 
 void
@@ -152,7 +152,7 @@ VulkanCommandList::setViewport(const Viewport viewport[], std::uint32_t first, s
 			viewportCount = 0;
 		}
 	}
-	
+
 	if (viewportCount > 0)
 	{
 		vkCmdSetViewport(_vkCommandBuffer, first, viewportCount, cmd);
@@ -186,7 +186,7 @@ VulkanCommandList::setScissor(const Scissor scissor[], std::uint32_t first, std:
 	}
 }
 
-void 
+void
 VulkanCommandList::clearTexture(GraphicsTexturePtr texture, const ClearValue& value) noexcept
 {
 	auto _vktexture = std::dynamic_pointer_cast<VulkanTexture>(texture);
@@ -455,7 +455,7 @@ VulkanCommandList::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 	vkCmdClearAttachments(_vkCommandBuffer, usageCount, attachment, usageCount, rects);
 }
 
-void 
+void
 VulkanCommandList::setPipeline(GraphicsPipelinePtr pipeline) noexcept
 {
 	assert(pipeline);
@@ -465,7 +465,7 @@ VulkanCommandList::setPipeline(GraphicsPipelinePtr pipeline) noexcept
 	vkCmdBindPipeline(_vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline->getPipeline());
 }
 
-void 
+void
 VulkanCommandList::setDescriptorSet(GraphicsDescriptorSetPtr descriptorSet) noexcept
 {
 	assert(descriptorSet);
@@ -486,7 +486,7 @@ VulkanCommandList::setVertexBuffers(GraphicsDataPtr data[], std::uint32_t first,
 		_vkVertexBuffers[i] = data[i]->downcast<VulkanGraphicsData>()->getBuffer();
 		_vkVertexOffsets[i] = 0;
 	}
-	
+
 	vkCmdBindVertexBuffers(_vkCommandBuffer, first, count, _vkVertexBuffers.data(), _vkVertexOffsets.data());
 }
 
@@ -497,7 +497,7 @@ VulkanCommandList::setIndexBuffer(GraphicsDataPtr data) noexcept
 	vkCmdBindIndexBuffer(_vkCommandBuffer, buffer, 0, VkIndexType::VK_INDEX_TYPE_UINT32);
 }
 
-void 
+void
 VulkanCommandList::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 {
 	if (renderable.numIndices > 0)
@@ -506,7 +506,7 @@ VulkanCommandList::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 		vkCmdDraw(_vkCommandBuffer, renderable.numVertices, renderable.numInstances, renderable.startVertice, renderable.startInstances);
 }
 
-void 
+void
 VulkanCommandList::drawRenderMesh(const GraphicsIndirect renderable[], std::size_t count) noexcept
 {
 	for (std::size_t i = 0; i < count; i++)
@@ -538,7 +538,7 @@ VulkanCommandList::getDevice() noexcept
 	return _device.lock();
 }
 
-const GraphicsCommandListDesc& 
+const GraphicsCommandListDesc&
 VulkanCommandList::getGraphicsCommandListDesc() const noexcept
 {
 	return _commandListDesc;

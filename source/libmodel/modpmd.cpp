@@ -119,7 +119,7 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			if (!stream.read((char*)&_pmd.IkList[i].Target, sizeof(_pmd.IkList[i].Target))) return false;
 			if (!stream.read((char*)&_pmd.IkList[i].LinkCount, sizeof(_pmd.IkList[i].LinkCount))) return false;
 			if (!stream.read((char*)&_pmd.IkList[i].LoopCount, sizeof(_pmd.IkList[i].LoopCount))) return false;
-			if (!stream.read((char*)&_pmd.IkList[i].LimitOnce, sizeof(_pmd.IkList[i].LimitOnce))) return false;
+			if (!stream.read((char*)&_pmd.IkList[i].Weight, sizeof(_pmd.IkList[i].Weight))) return false;
 
 			_pmd.IkList[i].LinkList.resize(_pmd.IkList[i].LinkCount);
 
@@ -320,7 +320,6 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		last = mesh;
 	}
 
-
 	if (_pmd.BoneCount > 0)
 	{
 		Bones bones;
@@ -356,9 +355,10 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			IKAttr attr;
 			attr.IKBoneIndex = it.IK;
 			attr.IKTargetBoneIndex = it.Target;
-			attr.IKLimitedRadian = it.LimitOnce;
 			attr.IKLinkCount = it.LinkCount;
 			attr.IKLoopCount = it.LoopCount;
+			attr.IKWeight = it.Weight;
+
 			for (auto& bone : it.LinkList)
 			{
 				IKChild child;

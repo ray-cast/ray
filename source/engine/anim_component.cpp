@@ -40,12 +40,14 @@
 #include <ray/model.h>
 #include <ray/mstream.h>
 #include <ray/ioserver.h>
+#include <ray/utf8.h>
 
 _NAME_BEGIN
 
-__ImplementSubClass(AnimotionComponent, GameComponent, "Animation")
+__ImplementSubClass(AnimotionComponent, GameComponent, "Animotion")
 
 AnimotionComponent::AnimotionComponent() noexcept
+	: _playing(true)
 {
 }
 
@@ -56,49 +58,14 @@ AnimotionComponent::~AnimotionComponent() noexcept
 bool
 AnimotionComponent::play(const std::string& filename) noexcept
 {
-	if (!filename.empty())
+	if (this->getName() != filename)
 	{
+		_buildAnimotion(filename);
 		this->setName(filename);
-
-		ResLoader<Model> loader;
-
-		loader.load(filename,
-			[&](ray::ModelPtr model, const std::string& name) {
-			
-			StreamReaderPtr stream;
-			if (IoServer::instance()->openFile(stream, filename))
-				return model->load(*stream);
-			return false;
-		}
-		);
-
-		auto model = loader.data();
-		if (model && model->hasAnimations())
-		{
-			_sharedAnimtion = model->getAnimationList().back();
-			_animtion = _sharedAnimtion->clone();
-		}
-
-		auto component = this->getGameObject()->getComponent<MeshComponent>();
-		if (component && _animtion)
-		{
-			_mesh = component->getMesh();
-
-			if (_mesh)
-			{				
-				_sharedMesh = component->getSharedMesh();
-
-				_animtion->setBoneArray(_mesh->getBoneArray());
-				_animtion->setIKArray(_mesh->getInverseKinematics());
-				_animtion->setCurrentFrame(240);
-				_animtion->update();
-			}
-		}
-
-		return true;
 	}
 
-	return false;
+	_playing = _animtion ? true : false;
+	return _playing;
 }
 
 void
@@ -123,7 +90,7 @@ AnimotionComponent::clone() const noexcept
 void
 AnimotionComponent::onActivate() except
 {
-	this->play(this->getName());
+	_playing = _buildAnimotion(this->getName());
 }
 
 void
@@ -134,6 +101,34 @@ AnimotionComponent::onDeactivate() except
 		_animtion.reset();
 		_animtion = nullptr;
 	}
+
+	_playing = false;
+}
+
+void
+AnimotionComponent::onAttach() noexcept
+{
+	_meshComponent = this->getComponent<MeshComponent>();
+}
+
+void
+AnimotionComponent::onDetach() noexcept
+{
+	_meshComponent.reset();
+}
+
+void
+AnimotionComponent::onAttachComponent(GameComponentPtr& component) noexcept
+{
+	if (component->isInstanceOf<MeshComponent>())
+		_meshComponent = component;
+}
+
+void
+AnimotionComponent::onDetachComponent(GameComponentPtr& component) noexcept
+{
+	if (component->isInstanceOf<MeshComponent>())
+		_meshComponent.reset();
 }
 
 void
@@ -144,10 +139,18 @@ AnimotionComponent::onFrameBegin() except
 void
 AnimotionComponent::onFrame() except
 {
-	/*if (_animtion)
-		_animtion->update();*/
-
-	//this->_updateVertex(_mesh, _sharedMesh);
+	if (_animtion && _playing)
+	{
+		auto component = _meshComponent.lock();
+		if (component)
+		{
+			_animtion->update();
+			/*_updateVertex(
+				_meshComponent.lock()->downcast<MeshComponent>()->getMesh(),
+				_meshComponent.lock()->downcast<MeshComponent>()->getSharedMesh());
+			component->downcast<MeshComponent>()->needUpdate();*/
+		}
+	}
 }
 
 void
@@ -155,12 +158,60 @@ AnimotionComponent::onFrameEnd() except
 {
 }
 
+bool
+AnimotionComponent::_buildAnimotion(const std::string& filename) noexcept
+{
+	if (filename.empty())
+		return false;
+
+	if (!_meshComponent.lock())
+		return false;
+
+	ResLoader<Model> loader;
+	loader.load(filename,
+		[&](ray::ModelPtr model, const std::string& name)
+	{
+		StreamReaderPtr stream;
+		if (IoServer::instance()->openFile(stream, name))
+			return model->load(*stream);
+		return false;
+	}
+	);
+
+	auto model = loader.data();
+	if (!model && !model->hasAnimations())
+	{
+		return false;
+	}
+
+	_sharedAnimtion = model->getAnimationList().back();
+	_animtion = _sharedAnimtion->clone();
+
+	auto component = _meshComponent.lock()->downcast<MeshComponent>();
+	if (component && _animtion)
+	{
+		auto mesh = component->getMesh();
+		if (mesh)
+		{
+			_animtion->setBoneArray(mesh->getBoneArray());
+			_animtion->setIKArray(mesh->getInverseKinematics());
+			_animtion->setCurrentFrame(240);
+			_animtion->update();
+		}
+
+		this->_updateVertex(mesh, component->getSharedMesh());
+
+		_meshComponent = component;
+	}
+
+	return true;
+}
+
 void
 AnimotionComponent::_updateVertex(MeshPropertyPtr mesh, MeshPropertyPtr model)
 {
 	const auto& bonesWeight = model->getWeightArray();
 	const auto& vertices = model->getVertexArray();
-
 	const auto& bones = _animtion->getBoneArray();
 
 	for (std::size_t i = 0; i < vertices.size(); i++)
@@ -193,6 +244,5 @@ AnimotionComponent::_updateVertex(MeshPropertyPtr mesh, MeshPropertyPtr model)
 
 	mesh->computeBoundingBox();
 }
-
 
 _NAME_END

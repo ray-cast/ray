@@ -89,7 +89,7 @@ private:
 
 	typedef std::queue<InputEvent>  InputEvents;
 	typedef std::vector<InputListenerPtr> InputListeners;
-	
+
 	InputEvents _events;
 	InputListeners _inputListeners;
 

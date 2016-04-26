@@ -74,7 +74,7 @@ class Raycast2
 
 		float t = normal.dot(vector);
 
-		if (t <static_cast<T>(0.0)) return origin;
+		if (t < static_cast<T>(0.0)) return origin;
 
 		return origin + t * normal;
 	}
@@ -97,67 +97,67 @@ template<typename T>
 class Raycast3t
 {
 public:
-    Vector3t<T> origin;
-    Vector3t<T> normal;
+	Vector3t<T> origin;
+	Vector3t<T> normal;
 
-    Vector3t<T> min, max;
+	Vector3t<T> min, max;
 
-    Raycast3t()
-    {
-    }
+	Raycast3t()
+	{
+	}
 
-    Raycast3t(const Vector3t<T>& pt1, const Vector3t<T>& pt2)
-    {
-        origin = pt1;
-        normal = ~(pt2 - pt1);
-        this->min = pt1.z < pt2.z ? pt1 : pt2;
-        this->max = pt1.z > pt2.z ? pt1 : pt2;
-    }
+	Raycast3t(const Vector3t<T>& pt1, const Vector3t<T>& pt2)
+	{
+		origin = pt1;
+		normal = ~(pt2 - pt1);
+		this->min = pt1.z < pt2.z ? pt1 : pt2;
+		this->max = pt1.z > pt2.z ? pt1 : pt2;
+	}
 
-    Raycast3t(const Raycast3t& o)
-        :origin(o.origin)
-        , normal(o.normal)
-    {
-    }
+	Raycast3t(const Raycast3t& o)
+		:origin(o.origin)
+		, normal(o.normal)
+	{
+	}
 
-    void setNormal(const Vector3t<T>& n)
-    {
-        normal = n;
-        normal.normalize();
-    }
+	void setNormal(const Vector3t<T>& n)
+	{
+		normal = n;
+		normal.normalize();
+	}
 
-    Vector3t<T> getPoint(float distance) const
-    {
-        return origin + normal * distance;
-    }
+	Vector3t<T> getPoint(float distance) const
+	{
+		return origin + normal * distance;
+	}
 
-    Vector3t<T> closestPoint(const Vector3t<T>& pt) const
-    {
-        Vector3t<T> vector = pt - origin;
+	Vector3t<T> closestPoint(const Vector3t<T>& pt) const
+	{
+		Vector3t<T> vector = pt - origin;
 
-        float t = normal.dot(vector);
+		float t = normal.dot(vector);
 
-        if (t < static_cast<T>(0.0)) return origin;
+		if (t < static_cast<T>(0.0)) return origin;
 
-        return origin + t * normal;
-    }
+		return origin + t * normal;
+	}
 
-    Vector3t<T> closest(const Raycast3t<T> ray) const
-    {
-    }
+	Vector3t<T> closest(const Raycast3t<T> ray) const
+	{
+	}
 
-    float sqrDistance(const Vector3t<T>& pt) const
-    {
-        Vector3t<T> ac = pt - origin;
+	float sqrDistance(const Vector3t<T>& pt) const
+	{
+		Vector3t<T> ac = pt - origin;
 
-        float t = normal.dot(ac);
+		float t = normal.dot(ac);
 
-        if (t <= static_cast<T>(0.0)) return ac.dot();
+		if (t <= static_cast<T>(0.0)) return ac.dot();
 
-        float denom = normal.dot();
+		float denom = normal.dot();
 
-        return ac.dot() - t * t / denom;
-    }
+		return ac.dot() - t * t / denom;
+	}
 };
 
 _NAME_END

@@ -42,7 +42,6 @@ Bone::Bone() noexcept
 	: _parent(-1)
 	, _child(-1)
 {
-	_worldTransform.loadIdentity();
 	_localTransform.loadIdentity();
 	_transform.loadIdentity();
 }
@@ -126,18 +125,6 @@ const Vector3&
 Bone::getScaling() const noexcept
 {
 	return _scaling._scale;
-}
-
-void
-Bone::setWorldTransform(const Matrix4x4& transform) noexcept
-{
-	_worldTransform = transform;
-}
-
-const Matrix4x4&
-Bone::getWorldTransform() const noexcept
-{
-	return _worldTransform;
 }
 
 void

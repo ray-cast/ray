@@ -44,14 +44,14 @@ _NAME_BEGIN
 class EXPORT PhysicsShape
 {
 public:
-    PhysicsShape() noexcept;
-    ~PhysicsShape() noexcept;
+	PhysicsShape() noexcept;
+	~PhysicsShape() noexcept;
 
-    virtual btCollisionShape* getCollisionShape() noexcept = 0;
+	virtual btCollisionShape* getCollisionShape() noexcept = 0;
 
 private:
-    PhysicsShape(const PhysicsShape&) = delete;
-    PhysicsShape& operator=(const PhysicsShape&) = delete;
+	PhysicsShape(const PhysicsShape&) = delete;
+	PhysicsShape& operator=(const PhysicsShape&) = delete;
 };
 
 _NAME_END

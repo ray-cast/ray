@@ -45,99 +45,99 @@ class Model;
 class EXPORT ModelHandler
 {
 public:
-    virtual ~ModelHandler() noexcept {};
+	virtual ~ModelHandler() noexcept {};
 
-    virtual bool doCanRead(StreamReader& stream) const noexcept = 0;
+	virtual bool doCanRead(StreamReader& stream) const noexcept = 0;
 
-    virtual bool doLoad(Model& image, StreamReader& stream) noexcept = 0;
-    virtual bool doSave(Model& image, StreamWrite& stream) noexcept = 0;
+	virtual bool doLoad(Model& image, StreamReader& stream) noexcept = 0;
+	virtual bool doSave(Model& image, StreamWrite& stream) noexcept = 0;
 };
 
 class EXPORT Model final
 {
 public:
-    typedef std::shared_ptr<ModelHandler> _Myhandler;
+	typedef std::shared_ptr<ModelHandler> _Myhandler;
 
-    typedef std::vector<MeshPropertyPtr>      MeshList;
-    typedef std::vector<MaterialPropertyPtr>  MaterialList;
-    typedef std::vector<TexturePropertyPtr>   TextureList;
-    typedef std::vector<AnimationPropertyPtr> AnimList;
-    typedef std::vector<LightPropertyPtr>     LightList;
-    typedef std::vector<CameraPropertyPtr>    CameraList;
+	typedef std::vector<MeshPropertyPtr>      MeshList;
+	typedef std::vector<MaterialPropertyPtr>  MaterialList;
+	typedef std::vector<TexturePropertyPtr>   TextureList;
+	typedef std::vector<AnimationPropertyPtr> AnimList;
+	typedef std::vector<LightPropertyPtr>     LightList;
+	typedef std::vector<CameraPropertyPtr>    CameraList;
 
 public:
-    Model() noexcept;
-    ~Model() noexcept;
+	Model() noexcept;
+	~Model() noexcept;
 
-    void addMesh(MeshPropertyPtr mesh)          noexcept;
-    void addTexture(TexturePropertyPtr texture) noexcept;
-    void addMaterial(MaterialPropertyPtr mat)   noexcept;
-    void addAnimtion(AnimationPropertyPtr anim) noexcept;
-    void addLight(LightPropertyPtr light)       noexcept;
-    void addCamera(CameraPropertyPtr camera)    noexcept;
+	void addMesh(MeshPropertyPtr mesh)          noexcept;
+	void addTexture(TexturePropertyPtr texture) noexcept;
+	void addMaterial(MaterialPropertyPtr mat)   noexcept;
+	void addAnimtion(AnimationPropertyPtr anim) noexcept;
+	void addLight(LightPropertyPtr light)       noexcept;
+	void addCamera(CameraPropertyPtr camera)    noexcept;
 
-    MeshList&     getMeshsList()     noexcept;
-    TextureList&  getTexturesList()  noexcept;
-    MaterialList& getMaterialsList() noexcept;
-    AnimList&     getAnimationList() noexcept;
-    LightList&    getLightList()     noexcept;
-    CameraList&   getCameraList()    noexcept;
+	MeshList&     getMeshsList()     noexcept;
+	TextureList&  getTexturesList()  noexcept;
+	MaterialList& getMaterialsList() noexcept;
+	AnimList&     getAnimationList() noexcept;
+	LightList&    getLightList()     noexcept;
+	CameraList&   getCameraList()    noexcept;
 
-    const std::string&  getName()          const noexcept;
-    const std::string&  getDirectory()     const noexcept;
-    const MeshList&     getMeshsList()     const noexcept;
-    const TextureList&  getTexturesList()  const noexcept;
-    const MaterialList& getMaterialsList() const noexcept;
-    const AnimList&     getAnimationList() const noexcept;
-    const LightList&    getLightList()     const noexcept;
-    const CameraList&   getCameraList()    const noexcept;
+	const std::string&  getName()          const noexcept;
+	const std::string&  getDirectory()     const noexcept;
+	const MeshList&     getMeshsList()     const noexcept;
+	const TextureList&  getTexturesList()  const noexcept;
+	const MaterialList& getMaterialsList() const noexcept;
+	const AnimList&     getAnimationList() const noexcept;
+	const LightList&    getLightList()     const noexcept;
+	const CameraList&   getCameraList()    const noexcept;
 
-    bool hasMeshes()     const noexcept;
-    bool hasMaterials()  const noexcept;
-    bool hasLights()     const noexcept;
-    bool hasTextures()   const noexcept;
-    bool hasCameras()    const noexcept;
-    bool hasAnimations() const noexcept;
+	bool hasMeshes()     const noexcept;
+	bool hasMaterials()  const noexcept;
+	bool hasLights()     const noexcept;
+	bool hasTextures()   const noexcept;
+	bool hasCameras()    const noexcept;
+	bool hasAnimations() const noexcept;
 
-    void applyProcess(int flags) noexcept;
+	void applyProcess(int flags) noexcept;
 
 	void clear() noexcept;
 
 	bool load(StreamReader& stream, ModelType type = MT_UNKNOWN) noexcept;
 	bool save(StreamWrite& stream, ModelType type = MT_OBJ) noexcept;
 
-    bool emptyHandler() const noexcept;
-    bool addHandler(_Myhandler handler) noexcept;
-    bool removeHandler(_Myhandler handler) noexcept;
-    bool find(ModelType type, _Myhandler& handler) const noexcept;
-    bool find(StreamReader& stream, _Myhandler& handler) const noexcept;
-    bool find(StreamReader& stream, ModelType type, _Myhandler& handler) const noexcept;
+	bool emptyHandler() const noexcept;
+	bool addHandler(_Myhandler handler) noexcept;
+	bool removeHandler(_Myhandler handler) noexcept;
+	bool find(ModelType type, _Myhandler& handler) const noexcept;
+	bool find(StreamReader& stream, _Myhandler& handler) const noexcept;
+	bool find(StreamReader& stream, ModelType type, _Myhandler& handler) const noexcept;
 
 private:
-    Model& operator=(const Model&) noexcept = delete;
-    Model(const Model&) noexcept = delete;
+	Model& operator=(const Model&) noexcept = delete;
+	Model(const Model&) noexcept = delete;
 
 private:
 
-    std::string _name;
+	std::string _name;
 
-    std::string _directory;
+	std::string _directory;
 
-    std::uint32_t _flags;
+	std::uint32_t _flags;
 
-    MeshList _meshes;
+	MeshList _meshes;
 
-    TextureList _textures;
+	TextureList _textures;
 
-    MaterialList _materials;
+	MaterialList _materials;
 
-    AnimList _animations;
+	AnimList _animations;
 
-    LightList _lights;
+	LightList _lights;
 
-    CameraList _cameras;
+	CameraList _cameras;
 
-    std::vector<_Myhandler> _handlers;
+	std::vector<_Myhandler> _handlers;
 };
 
 _NAME_END

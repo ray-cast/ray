@@ -57,19 +57,19 @@ ColorGrading::setGammaGrading(bool enable) noexcept
 	_enableGammaGrading = enable;
 }
 
-void 
+void
 ColorGrading::setColorGrading(bool enable) noexcept
 {
 	_enableColorGrading = enable;
 }
 
-bool 
+bool
 ColorGrading::getGammaGrading() const noexcept
 {
 	return _enableGammaGrading;
 }
 
-bool 
+bool
 ColorGrading::getColorGrading() const noexcept
 {
 	return _enableColorGrading;

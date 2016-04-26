@@ -97,7 +97,6 @@ struct SDKMESH_HEADER
 	std::uint64_t MaterialDataOffset;
 };
 
-
 struct SDKMESH_VERTEX_BUFFER_HEADER
 {
 	std::uint64_t NumVertices;
@@ -139,7 +138,6 @@ struct SDKMESH_MESH
 	};
 };
 
-
 struct SDKMESH_MATERIAL
 {
 	char    Name[MAX_MATERIAL_NAME];
@@ -164,7 +162,6 @@ struct SDKMESH_MATERIAL
 	std::uint64_t Force64_4;			//Force the union to 64bits
 	std::uint64_t Force64_5;		    //Force the union to 64bits
 	std::uint64_t Force64_6;			//Force the union to 64bits
-
 };
 
 SDKMeshHandler::SDKMeshHandler() noexcept
@@ -232,7 +229,7 @@ SDKMeshHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		material->set(MATKEY_NAME, it.Name);
 		material->set(MATKEY_COLOR_DIFFUSE, it.Diffuse);
 		material->set(MATKEY_COLOR_AMBIENT, it.Ambient);
-		material->set(MATKEY_COLOR_SPECULAR, Vector3(0.5,0.5,0.5));
+		material->set(MATKEY_COLOR_SPECULAR, Vector3(0.5, 0.5, 0.5));
 		material->set(MATKEY_SHININESS, it.Power);
 
 		if (it.DiffuseTexture[0] != 0)

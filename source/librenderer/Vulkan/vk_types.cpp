@@ -486,7 +486,7 @@ VulkanTypes::asTextureSample(GraphicsSampleFlagBits sample) noexcept
 	}
 }
 
-VkSampleCountFlagBits 
+VkSampleCountFlagBits
 VulkanTypes::asTextureSample(GraphicsSamplerAnis anis) noexcept
 {
 	switch (anis)
@@ -794,7 +794,7 @@ VulkanTypes::isStencilFormat(GraphicsFormat format) noexcept
 	return false;
 }
 
-bool 
+bool
 VulkanTypes::isDepthFormat(GraphicsFormat format) noexcept
 {
 	if (format == GraphicsFormat::GraphicsFormatD16UNorm ||
@@ -807,7 +807,7 @@ VulkanTypes::isDepthFormat(GraphicsFormat format) noexcept
 	return false;
 }
 
-bool 
+bool
 VulkanTypes::isDepthStencilFormat(GraphicsFormat format) noexcept
 {
 	if (format == GraphicsFormat::GraphicsFormatD16UNorm_S8UInt ||

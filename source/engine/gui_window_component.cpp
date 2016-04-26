@@ -45,7 +45,7 @@ _NAME_BEGIN
 __ImplementSubClass(GuiWindowComponent, GuiWidgetComponent, "GuiWindow")
 
 GuiWindowComponent::GuiWindowComponent() noexcept
-{	
+{
 	_window = GuiSystem::instance()->createWidget<GuiWindow>();
 	_window->create();
 
@@ -60,49 +60,49 @@ GuiWindowComponent::~GuiWindowComponent() noexcept
 {
 }
 
-void 
+void
 GuiWindowComponent::setVisibleSmooth(bool value) noexcept
 {
 	assert(_window);
 	_window->setVisibleSmooth(value);
 }
 
-void 
+void
 GuiWindowComponent::destroySmooth() noexcept
 {
 	assert(_window);
 	_window->destroySmooth();
 }
 
-void 
+void
 GuiWindowComponent::setAutoAlpha(bool value) noexcept
 {
 	assert(_window);
 	_window->setAutoAlpha(value);
 }
 
-bool 
+bool
 GuiWindowComponent::getAutoAlpha() const noexcept
 {
 	assert(_window);
 	return _window->getAutoAlpha();
 }
 
-void 
+void
 GuiWindowComponent::setMinSize(int width, int height) noexcept
 {
 	assert(_window);
 	_window->setMinSize(width, height);
 }
 
-void 
+void
 GuiWindowComponent::getMinSize(int& w, int& h) const noexcept
 {
 	assert(_window);
 	_window->getMinSize(w, h);
 }
 
-void 
+void
 GuiWindowComponent::setMaxSize(int width, int height) noexcept
 {
 	assert(_window);
@@ -158,7 +158,7 @@ GuiWindowComponent::onDetach() except
 	_labelObject->setParent(nullptr);
 }
 
-void 
+void
 GuiWindowComponent::load(iarchive& reader) noexcept
 {
 	_label->load(reader);
@@ -167,7 +167,7 @@ GuiWindowComponent::load(iarchive& reader) noexcept
 	bool autoAlpha = false;
 	int minWidth = 0, maxWidth = 10000;
 	int minHeight = 0, maxHeight = 10000;
-	
+
 	reader >> make_archive(smooth, "smooth");
 	reader >> make_archive(autoAlpha, "autoAlpha");
 	reader >> make_archive(minWidth, "minWidth");
@@ -181,7 +181,7 @@ GuiWindowComponent::load(iarchive& reader) noexcept
 	this->setMaxSize(maxWidth, maxHeight);
 }
 
-void 
+void
 GuiWindowComponent::save(oarchive& write) noexcept
 {
 	_label->save(write);

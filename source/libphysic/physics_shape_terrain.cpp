@@ -41,140 +41,140 @@
 _NAME_BEGIN
 
 PhysicsShapeTerrain::PhysicsShapeTerrain() noexcept
-    : _shape(nullptr)
-    , _width(0)
-    , _depth(0)
-    , _type(PHYDataType::UCHAR)
-    , _minHeight(0.0)
-    , _maxHeight(1.0)
-    , _scaleHeight(1.0)
-    , _flipQuadEdges(false)
+	: _shape(nullptr)
+	, _width(0)
+	, _depth(0)
+	, _type(PHYDataType::UCHAR)
+	, _minHeight(0.0)
+	, _maxHeight(1.0)
+	, _scaleHeight(1.0)
+	, _flipQuadEdges(false)
 {
 }
 
 PhysicsShapeTerrain::~PhysicsShapeTerrain() noexcept
 {
-    this->close();
+	this->close();
 }
 
 void
 PhysicsShapeTerrain::setup() noexcept
 {
-    assert(_type == PHYDataType::UCHAR && _type == _type == PHYDataType::SHORT && _type == PHYDataType::INTEGER && _type == PHYDataType::FLOAT);
+	assert(_type == PHYDataType::UCHAR && _type == _type == PHYDataType::SHORT && _type == PHYDataType::INTEGER && _type == PHYDataType::FLOAT);
 
-    PHY_ScalarType _scalarType;
+	PHY_ScalarType _scalarType;
 
-    if (_type == PHYDataType::UCHAR)
-        _scalarType = PHY_UCHAR;
-    else if (_type == PHYDataType::SHORT)
-        _scalarType = PHY_SHORT;
-    else if (_type == PHYDataType::INTEGER)
-        _scalarType = PHY_INTEGER;
-    else if (_type == PHYDataType::FLOAT)
-        _scalarType = PHY_FLOAT;
-    else
-        _scalarType = PHY_UCHAR;
+	if (_type == PHYDataType::UCHAR)
+		_scalarType = PHY_UCHAR;
+	else if (_type == PHYDataType::SHORT)
+		_scalarType = PHY_SHORT;
+	else if (_type == PHYDataType::INTEGER)
+		_scalarType = PHY_INTEGER;
+	else if (_type == PHYDataType::FLOAT)
+		_scalarType = PHY_FLOAT;
+	else
+		_scalarType = PHY_UCHAR;
 
-    _shape = new btHeightfieldTerrainShape(_width, _depth, _data.data(), _scaleHeight, _minHeight, _maxHeight, 1, _scalarType, _flipQuadEdges);
-    _shape->setUserPointer(this);
+	_shape = new btHeightfieldTerrainShape(_width, _depth, _data.data(), _scaleHeight, _minHeight, _maxHeight, 1, _scalarType, _flipQuadEdges);
+	_shape->setUserPointer(this);
 
-    this->setSize(_size);
+	this->setSize(_size);
 }
 
 void
 PhysicsShapeTerrain::close() noexcept
 {
-    if (_shape)
-    {
-        delete _shape;
-        _shape = nullptr;
-    }
+	if (_shape)
+	{
+		delete _shape;
+		_shape = nullptr;
+	}
 }
 
 void
 PhysicsShapeTerrain::setHeightMap(std::size_t w, std::size_t z, PHYDataType type, const char* data) noexcept
 {
-    assert(type == PHYDataType::UCHAR || type == PHYDataType::SHORT || type == PHYDataType::INTEGER || type == PHYDataType::FLOAT);
+	assert(type == PHYDataType::UCHAR || type == PHYDataType::SHORT || type == PHYDataType::INTEGER || type == PHYDataType::FLOAT);
 
-    _width = w;
-    _depth = z;
+	_width = w;
+	_depth = z;
 
-    _type = type;
+	_type = type;
 
-    if (type == PHYDataType::UCHAR)
-        _data.resize(_width * _depth * sizeof(char));
-    else if (type == PHYDataType::SHORT)
-        _data.resize(_width * _depth * sizeof(short));
-    else if (type == PHYDataType::INTEGER)
-        _data.resize(_width * _depth * sizeof(int));
-    else if (type == PHYDataType::FLOAT)
-        _data.resize(_width * _depth * sizeof(float));
+	if (type == PHYDataType::UCHAR)
+		_data.resize(_width * _depth * sizeof(char));
+	else if (type == PHYDataType::SHORT)
+		_data.resize(_width * _depth * sizeof(short));
+	else if (type == PHYDataType::INTEGER)
+		_data.resize(_width * _depth * sizeof(int));
+	else if (type == PHYDataType::FLOAT)
+		_data.resize(_width * _depth * sizeof(float));
 
-    std::memcpy(_data.data(), data, _data.size());
+	std::memcpy(_data.data(), data, _data.size());
 }
 
 void
 PhysicsShapeTerrain::setSize(const Vector3& size) noexcept
 {
-    if (_shape)
-    {
-        btVector3 sz;
-        sz.setX(size.x);
-        sz.setY(size.y);
-        sz.setZ(size.z);
+	if (_shape)
+	{
+		btVector3 sz;
+		sz.setX(size.x);
+		sz.setY(size.y);
+		sz.setZ(size.z);
 
-        _shape->setLocalScaling(sz);
-    }
+		_shape->setLocalScaling(sz);
+	}
 
-    _size = size;
+	_size = size;
 }
 
 const Vector3&
 PhysicsShapeTerrain::getSize() const noexcept
 {
-    return _size;
+	return _size;
 }
 
 void
 PhysicsShapeTerrain::setMinHeight(float min)
 {
-    _minHeight = min;
+	_minHeight = min;
 }
 
 void
 PhysicsShapeTerrain::setMaxHeight(float max)
 {
-    _maxHeight = max;
+	_maxHeight = max;
 }
 
 void
 PhysicsShapeTerrain::setScaleHeight(float scale) noexcept
 {
-    _scaleHeight = scale;
+	_scaleHeight = scale;
 }
 
 float
 PhysicsShapeTerrain::getMinHeight() const noexcept
 {
-    return _minHeight;
+	return _minHeight;
 }
 
 float
 PhysicsShapeTerrain::getMaxHeight() const noexcept
 {
-    return _maxHeight;
+	return _maxHeight;
 }
 
 float
 PhysicsShapeTerrain::getScaleHeight() const noexcept
 {
-    return _scaleHeight;
+	return _scaleHeight;
 }
 
 btCollisionShape*
 PhysicsShapeTerrain::getCollisionShape() noexcept
 {
-    return _shape;
+	return _shape;
 }
 
 _NAME_END

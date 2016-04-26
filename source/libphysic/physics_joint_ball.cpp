@@ -39,11 +39,11 @@
 _NAME_BEGIN
 
 JointBall::JointBall() noexcept
-    : Joint(Joint::Ball)
-    , _lowLimit(Vector3::Zero)
-    , _highLimit(Vector3::Zero)
-    , _angularLowLimit(Vector3::Zero)
-    , _angularHighLimit(Vector3::Zero)
+	: Joint(Joint::Ball)
+	, _lowLimit(Vector3::Zero)
+	, _highLimit(Vector3::Zero)
+	, _angularLowLimit(Vector3::Zero)
+	, _angularHighLimit(Vector3::Zero)
 {
 }
 
@@ -54,49 +54,49 @@ JointBall::~JointBall() noexcept
 void
 JointBall::setLinearLowerLimit(const Vector3& limit) noexcept
 {
-    _lowLimit = limit;
+	_lowLimit = limit;
 }
 
 void
 JointBall::setLinearHighLimit(const Vector3& limit) noexcept
 {
-    _highLimit = limit;
+	_highLimit = limit;
 }
 
 void
 JointBall::setAngularLowerLimit(const Vector3& limit) noexcept
 {
-    _angularLowLimit = limit;
+	_angularLowLimit = limit;
 }
 
 void
 JointBall::setAngularHighLimit(const Vector3& limit) noexcept
 {
-    _angularHighLimit = limit;
+	_angularHighLimit = limit;
 }
 
 const Vector3&
 JointBall::getLinearLowerLimit() const noexcept
 {
-    return _lowLimit;
+	return _lowLimit;
 }
 
 const Vector3&
 JointBall::getLinearHighLimit() const noexcept
 {
-    return _highLimit;
+	return _highLimit;
 }
 
 const Vector3&
 JointBall::getAngularLowerLimit() const noexcept
 {
-    return _angularLowLimit;
+	return _angularLowLimit;
 }
 
 const Vector3&
 JointBall::getAngularHighLimit() const noexcept
 {
-    return _angularHighLimit;
+	return _angularHighLimit;
 }
 
 _NAME_END

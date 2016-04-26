@@ -44,47 +44,47 @@ _NAME_BEGIN
 class EXPORT Joint
 {
 public:
-    enum JointType
-    {
-        Ball,
-        Fixed,
-        Hinge,
-        Spring,
-        Universal,
-    };
+	enum JointType
+	{
+		Ball,
+		Fixed,
+		Hinge,
+		Spring,
+		Universal,
+	};
 public:
-    Joint(JointType type) noexcept;
-    virtual ~Joint() noexcept;
+	Joint(JointType type) noexcept;
+	virtual ~Joint() noexcept;
 
-    JointType getType() const noexcept;
+	JointType getType() const noexcept;
 
-    void setRigidbody(PhysicsRigidbody* body) noexcept;
-    void setBreakForce(float force) noexcept;
-    void setBreakTorque(float torque) noexcept;
-    void setAxis(const Vector3& axis) noexcept;
-    void setAnchor(const Vector3& axis) noexcept;
+	void setRigidbody(PhysicsRigidbody* body) noexcept;
+	void setBreakForce(float force) noexcept;
+	void setBreakTorque(float torque) noexcept;
+	void setAxis(const Vector3& axis) noexcept;
+	void setAnchor(const Vector3& axis) noexcept;
 
-    PhysicsRigidbody* getRigidbody() const noexcept;
-    float getBreakForce() const noexcept;
-    float getBreakTorque() const noexcept;
-    const Vector3& getAxis() const noexcept;
-    const Vector3& getAnchor() const noexcept;
-
-private:
-    Joint(const Joint&) = delete;
-    Joint& operator=(const Joint&) = delete;
+	PhysicsRigidbody* getRigidbody() const noexcept;
+	float getBreakForce() const noexcept;
+	float getBreakTorque() const noexcept;
+	const Vector3& getAxis() const noexcept;
+	const Vector3& getAnchor() const noexcept;
 
 private:
+	Joint(const Joint&) = delete;
+	Joint& operator=(const Joint&) = delete;
 
-    JointType _type;
+private:
 
-    PhysicsRigidbody* _rigidbody;
+	JointType _type;
 
-    float _breakForce;
-    float _breakTorque;
+	PhysicsRigidbody* _rigidbody;
 
-    Vector3 _axis;
-    Vector3 _anchor;
+	float _breakForce;
+	float _breakTorque;
+
+	Vector3 _axis;
+	Vector3 _anchor;
 };
 
 _NAME_END

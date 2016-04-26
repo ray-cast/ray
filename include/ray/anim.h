@@ -71,10 +71,10 @@ public:
 	const Quaternion& getRotation() const noexcept;
 
 	void setBoneIndex(const std::size_t) noexcept;
-	std::int32_t getBoneIndex() const noexcept;
+	std::size_t getBoneIndex() const noexcept;
 
-	void setFrameNo(std::int32_t frame) noexcept;
-	std::int32_t getFrameNo() const noexcept;
+	void setFrameNo(std::size_t frame) noexcept;
+	std::size_t getFrameNo() const noexcept;
 
 	void setInterpolation(const Interpolation& interp) noexcept;
 	const Interpolation& getInterpolation() const noexcept;
@@ -82,8 +82,8 @@ public:
 private:
 	std::string _name;
 
-	std::int32_t _bone;
-	std::int32_t _frame;
+	std::size_t _bone;
+	std::size_t _frame;
 
 	Vector3 _position;
 	Quaternion _rotation;
@@ -107,7 +107,7 @@ public:
 	void setCurrentFrame(std::size_t frame) noexcept;
 	std::size_t getCurrentFrame() const noexcept;
 
-	void setBoneArray(Bones bone) noexcept;
+	void setBoneArray(const Bones& bone) noexcept;
 	const Bones& getBoneArray() const noexcept;
 
 	void setIKArray(InverseKinematics ik) noexcept;
@@ -125,19 +125,24 @@ public:
 
 	AnimationPropertyPtr clone() noexcept;
 
-	void updateIK() noexcept;
-	void updateIK(const IKAttr& ik) noexcept;
-
-	void updateBoneMotion(Bone& bone, int index);
-	void updateBoneMatrix(Bone& bone);
-
 	void update() noexcept;
 
-	void getCurrentBoneMatrix(Matrix4x4& mat, Bone& bone);
-	void getCurrentBonePosition(Vector3& v, Bone& bone);
+	void getCurrentBoneMatrix(Matrix4x4& mat, Bone& bone) noexcept;
+	void getCurrentBonePosition(Vector3& v, Bone& bone) noexcept;
 
-	MotionSegment findMotionSegment(int frame, const std::vector<std::size_t>& motions);
-	void interpolateMotion(Quaternion& rotation, Vector3& position, const std::vector<std::size_t>& motions, float frame);
+	MotionSegment findMotionSegment(int frame, const std::vector<std::size_t>& motions) noexcept;
+	void interpolateMotion(Quaternion& rotation, Vector3& position, const std::vector<std::size_t>& motions, float frame) noexcept;
+
+private:
+	AnimationProperty(const AnimationProperty&) = delete;
+	AnimationProperty& operator=(const AnimationProperty&) = delete;
+
+private:
+	void updateIK() noexcept;
+	void updateIK(const IKAttr& ik) noexcept;
+	void updateBoneMotion() noexcept;
+	void updateBoneMatrix() noexcept;
+	void updateBoneMatrix(Bone& bone) noexcept;
 
 private:
 
@@ -150,6 +155,7 @@ private:
 	std::vector<BoneAnimation> _boneAnimation;
 	std::vector<MorphAnimation> _morphAnimation;
 	std::vector<std::vector<std::size_t>> _bindAnimation;
+	std::vector<std::vector<std::size_t>> _bindAnimations;
 };
 
 _NAME_END

@@ -47,17 +47,17 @@ _NAME_BEGIN
 class EXPORT AllocateFromHeap
 {
 public:
-    // http://www.gotw.ca/publications/mill15.htm
+	// http://www.gotw.ca/publications/mill15.htm
 
-    // new/delete overload
-    void* operator new    (std::size_t num_bytes) /* throw(std::bad_alloc) */;
-    void* operator new    (std::size_t num_bytes, const std::nothrow_t&) noexcept;
-    void  operator delete (void* data);
+	// new/delete overload
+	void* operator new    (std::size_t num_bytes) /* throw(std::bad_alloc) */;
+	void* operator new    (std::size_t num_bytes, const std::nothrow_t&) noexcept;
+	void  operator delete (void* data);
 
-    // array new/delete overload
-    void* operator new[](std::size_t num_bytes) /* throw(std::bad_alloc) */;
-    void* operator new[](std::size_t num_bytes, const std::nothrow_t&)  noexcept;
-    void  operator delete[](void* data);
+	// array new/delete overload
+	void* operator new[](std::size_t num_bytes) /* throw(std::bad_alloc) */;
+	void* operator new[](std::size_t num_bytes, const std::nothrow_t&)  noexcept;
+	void  operator delete[](void* data);
 };
 
 _NAME_END

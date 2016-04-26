@@ -59,7 +59,7 @@ Light::Light() noexcept
 	, _shadowBias(0.001)
 	, _shadowFormat(GraphicsFormat::GraphicsFormatR32SFloat)
 {
-	_shadowCamera[0]= std::make_shared<Camera>();
+	_shadowCamera[0] = std::make_shared<Camera>();
 	_shadowCamera[0]->setOwnerListener(this);
 	_shadowCamera[0]->setCameraOrder(CameraOrder::CameraOrderShadow);
 	_shadowCamera[0]->setCameraRenderFlags(CameraRenderFlagBits::CameraRenderTextureBit);
@@ -181,13 +181,13 @@ Light::getShadowType() const noexcept
 	return _shadowType;
 }
 
-void 
+void
 Light::setSoftShadow(bool enable) noexcept
 {
 	_shadowSoftEnable = enable;
 }
 
-bool 
+bool
 Light::getSoftShadow() const noexcept
 {
 	return _shadowSoftEnable;
@@ -199,7 +199,7 @@ Light::setSubsurfaceScattering(bool enable) noexcept
 	_subsurfaceScattering = enable;
 }
 
-bool 
+bool
 Light::getSubsurfaceScattering() const noexcept
 {
 	return _subsurfaceScattering;
@@ -212,25 +212,25 @@ Light::getShadowCamera(std::uint8_t i) const noexcept
 	return _shadowCamera[i];
 }
 
-void 
+void
 Light::setShadowBias(float bias) noexcept
 {
 	_shadowBias = bias;
 }
 
-float 
+float
 Light::getShadowBias() const noexcept
 {
 	return _shadowBias;
 }
 
-void 
+void
 Light::setShadowMap(GraphicsTexturePtr texture) noexcept
 {
 	_shadowMap = texture;
 }
 
-GraphicsTexturePtr 
+GraphicsTexturePtr
 Light::getShadowMap() const noexcept
 {
 	return _shadowMap;
@@ -310,7 +310,7 @@ void
 Light::_updateBoundingBox() noexcept
 {
 	Bound bound;
-	
+
 	auto lightRange = this->getRange();
 
 	if (_lightType == LightType::LightTypeSun ||
@@ -373,7 +373,7 @@ Light::_updateBoundingBox() noexcept
 	this->setBoundingBox(bound);
 }
 
-void 
+void
 Light::onSceneChangeBefor() noexcept
 {
 	auto renderScene = this->getRenderScene();
@@ -388,7 +388,7 @@ Light::onSceneChangeBefor() noexcept
 	}
 }
 
-void 
+void
 Light::onSceneChangeAfter() noexcept
 {
 	auto renderScene = this->getRenderScene();
@@ -412,7 +412,7 @@ Light::onAddRenderData(RenderDataManager& manager) noexcept
 	manager.addRenderData(RenderQueue::RenderQueueLighting, this->upcast<RenderObject>());
 }
 
-void 
+void
 Light::onRenderObjectPre(RenderPipeline& pipeline) noexcept
 {
 	auto listener = this->getOwnerListener();
@@ -420,7 +420,7 @@ Light::onRenderObjectPre(RenderPipeline& pipeline) noexcept
 		listener->onRenderObjectPre(pipeline);
 }
 
-void 
+void
 Light::onRenderObjectPost(RenderPipeline& pipeline) noexcept
 {
 	auto listener = this->getOwnerListener();
@@ -428,7 +428,7 @@ Light::onRenderObjectPost(RenderPipeline& pipeline) noexcept
 		listener->onRenderObjectPost(pipeline);
 }
 
-void 
+void
 Light::onMoveAfter() noexcept
 {
 	_updateShadow();

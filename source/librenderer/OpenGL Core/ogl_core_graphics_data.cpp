@@ -296,7 +296,7 @@ OGLCoreGraphicsData::getGraphicsDataDesc() const noexcept
 	return _desc;
 }
 
-void 
+void
 OGLCoreGraphicsData::setDevice(GraphicsDevicePtr device) noexcept
 {
 	_device = device;

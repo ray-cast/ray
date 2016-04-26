@@ -52,7 +52,7 @@ GuiSystem::~GuiSystem() noexcept
 {
 }
 
-bool 
+bool
 GuiSystem::open(GuiSystemBasePtr impl) except
 {
 	assert(!_system);
@@ -67,7 +67,7 @@ GuiSystem::open(GuiSystemBasePtr impl) except
 	return _system->open();
 }
 
-void 
+void
 GuiSystem::close() noexcept
 {
 	if (_system)
@@ -93,112 +93,112 @@ GuiSystem::getGuiSystem() const noexcept
 	return _system;
 }
 
-void 
+void
 GuiSystem::setCoreProfile(const std::string& core) except
 {
 	assert(_system);
 	return _system->setCoreProfile(core);
 }
 
-const std::string& 
+const std::string&
 GuiSystem::getCoreProfile() const noexcept
 {
 	assert(_system);
 	return _system->getCoreProfile();
 }
 
-void 
+void
 GuiSystem::setImageLoader(GuiImageLoaderPtr loader) noexcept
 {
 	assert(_system);
 	return _system->setImageLoader(loader);
 }
 
-GuiImageLoaderPtr 
+GuiImageLoaderPtr
 GuiSystem::getImageLoader() const noexcept
 {
 	assert(_system);
 	return _system->getImageLoader();
 }
 
-bool 
+bool
 GuiSystem::injectMouseMove(int _absx, int _absy, int _absz) noexcept
 {
 	assert(_system);
 	return _system->injectMouseMove(_absx, _absy, _absz);
 }
 
-bool 
+bool
 GuiSystem::injectMousePress(int _absx, int _absy, GuiInputButton::Code _id) noexcept
 {
 	assert(_system);
 	return _system->injectMousePress(_absx, _absy, _id);
 }
 
-bool 
+bool
 GuiSystem::injectMouseRelease(int _absx, int _absy, GuiInputButton::Code _id) noexcept
 {
 	assert(_system);
 	return _system->injectMouseRelease(_absx, _absy, _id);
 }
 
-bool 
+bool
 GuiSystem::injectKeyPress(GuiInputKey::Code _key, GuiInputChar _char) noexcept
 {
 	assert(_system);
 	return _system->injectKeyPress(_key, _char);
 }
 
-bool 
+bool
 GuiSystem::injectKeyRelease(GuiInputKey::Code _key) noexcept
 {
 	assert(_system);
 	return _system->injectKeyRelease(_key);
 }
 
-bool 
+bool
 GuiSystem::isFocusMouse() const noexcept
 {
 	assert(_system);
 	return _system->isFocusMouse();
 }
 
-bool 
+bool
 GuiSystem::isFocusKey() const noexcept
 {
 	assert(_system);
 	return _system->isFocusKey();
 }
 
-bool 
+bool
 GuiSystem::isCaptureMouse() const noexcept
 {
 	assert(_system);
 	return _system->isCaptureMouse();
 }
 
-void 
+void
 GuiSystem::setViewport(int w, int h) noexcept
 {
 	assert(_system);
 	_system->setViewport(w, h);
 }
 
-void 
+void
 GuiSystem::getViewport(int& w, int& h) noexcept
 {
 	assert(_system);
 	_system->getViewport(w, h);
 }
 
-GuiWidgetPtr 
+GuiWidgetPtr
 GuiSystem::createWidget(const rtti::Rtti* rtti)
 {
 	assert(_system);
 	return _system->createWidget(rtti);
 }
 
-void 
+void
 GuiSystem::render(float delta) except
 {
 	assert(_system);

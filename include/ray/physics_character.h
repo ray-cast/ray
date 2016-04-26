@@ -45,41 +45,41 @@ class CharacterController;
 class EXPORT PhysicsCharacter final
 {
 public:
-    PhysicsCharacter() noexcept;
-    ~PhysicsCharacter() noexcept;
+	PhysicsCharacter() noexcept;
+	~PhysicsCharacter() noexcept;
 
-    void setup() noexcept;
-    void close() noexcept;
+	void setup() noexcept;
+	void close() noexcept;
 
-    void setRadius(float radius) noexcept;
-    void setHeight(float height) noexcept;
+	void setRadius(float radius) noexcept;
+	void setHeight(float height) noexcept;
 
-    void setMovePosition(const Vector3& pos) noexcept;
-    void setWalkDirection(const Vector3& direction) noexcept;
+	void setMovePosition(const Vector3& pos) noexcept;
+	void setWalkDirection(const Vector3& direction) noexcept;
 
-    const Vector3& getWalkDirection() const noexcept;
-    const Vector3& getMovePosition() const noexcept;
+	const Vector3& getWalkDirection() const noexcept;
+	const Vector3& getMovePosition() const noexcept;
 
-    bool canJumping() const noexcept;
-    bool wasJumping() const noexcept;
-    void jump(float speed) noexcept;
+	bool canJumping() const noexcept;
+	bool wasJumping() const noexcept;
+	void jump(float speed) noexcept;
 
-    void setPhysicsScene(PhysicsScene* system) noexcept;
+	void setPhysicsScene(PhysicsScene* system) noexcept;
 
 private:
 
-    mutable Vector3 _translate;
+	mutable Vector3 _translate;
 
-    Vector3 _walkDirection;
+	Vector3 _walkDirection;
 
-    float _radius;
-    float _height;
-    float _stepHeight;
+	float _radius;
+	float _height;
+	float _stepHeight;
 
-    btConvexShape* _capsule;
-    btPairCachingGhostObject* _ghostObject;
-    CharacterController* _character;
-    PhysicsScene* _scene;
+	btConvexShape* _capsule;
+	btPairCachingGhostObject* _ghostObject;
+	CharacterController* _character;
+	PhysicsScene* _scene;
 };
 
 _NAME_END

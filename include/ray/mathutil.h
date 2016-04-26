@@ -107,7 +107,7 @@ inline bool equals(float a, float b)
 }
 
 template<typename T>
-inline T wrapPI(T theta)
+inline T wrapPI(const T& theta)
 {
     theta += M_PI;
     theta -= floor(theta * M_PI_2);
@@ -116,19 +116,19 @@ inline T wrapPI(T theta)
 }
 
 template<typename T>
-inline T max(T t1, T t2)
+inline T max(const T& t1, const T& t2)
 {
     return t1 > t2 ? t1 : t2;
 }
 
 template<typename T>
-inline T min(T t1, T t2)
+inline T min(const T& t1, const T& t2)
 {
     return t1 < t2 ? t1 : t2;
 }
 
 template<typename T>
-inline T middle(T t1, T t2, T t3)
+inline T middle(const T& t1, const T& t2, const T& t3)
 {
     if (t1 < t2)
     {
@@ -147,7 +147,7 @@ inline T middle(T t1, T t2, T t3)
 }
 
 template<typename T>
-inline T abs(T t)
+inline T abs(const T& t)
 {
     return t >= 0 ? t : -t;
 }
@@ -203,7 +203,7 @@ inline void sinCos(_Tx* returnSin, _Tx* returnCos, _Ty theta)
 }
 
 template<typename T>
-inline T safeAcos(T x)
+inline T safeAcos(const T& x)
 {
     if (x <= -1.0) { return M_PI; }
     if (x >= 1.0) { return 0; }
@@ -211,37 +211,43 @@ inline T safeAcos(T x)
 }
 
 template<typename T>
-inline T radians(T angle)
+inline T radians(const T& angle)
 {
     return angle / M_PI * static_cast<T>(180.0);
 }
 
 template<typename T>
-inline T degrees(T angle)
+inline T degrees(const T& angle)
 {
     return angle * M_PI / static_cast<T>(180.0);
 }
 
 template<typename T>
-inline T clamp(T t, T min, T max)
+inline T clamp(const T& t, const T& min, const T& max)
 {
     return std::max(min, std::min(max, t));
 }
 
+template<typename T>
+inline T saturate(const T& v) noexcept
+{
+	return clamp(v, 0.0f, 1.0f);
+}
+
 template<typename T1, typename T2>
-inline T1 lerp(T1 t1, T1 t2, T2 t3)
+inline T1 lerp(const T1& t1, const T1& t2, const T2& t3)
 {
     return t1 + (t2 - t1) * t3;
 }
 
 template<typename T>
-inline T smothlerp(T x, T x1, T x2, T q00, T q01)
+inline T smothlerp(const T& x, const T& x1, const T& x2, const T& q00, const T& q01)
 {
     return ((x2 - x) / (x2 - x1)) * q00 + ((x - x1) / (x2 - x1)) * q01;
 }
 
 template<typename T>
-inline T biLerp(T x, T y, T q11, T q12, T q21, T q22, T x1, T x2, T y1, T y2)
+inline T biLerp(const T& x, const T& y, const T& q11, const T& q12, const T& q21, const T& q22, const T& x1, const T& x2, const T& y1, const T& y2)
 {
     float r1 = smothlerp(x, x1, x2, q11, q21);
     float r2 = smothlerp(x, x1, x2, q12, q22);
@@ -250,7 +256,7 @@ inline T biLerp(T x, T y, T q11, T q12, T q21, T q22, T x1, T x2, T y1, T y2)
 }
 
 template<typename T>
-inline T triLerp(T x, T y, T z, T q000, T q001, T q010, T q011, T q100, T q101, T q110, T q111, T x1, T x2, T y1, T y2, T z1, T z2)
+inline T triLerp(const T& x, const T& y, const T& z, const T& q000, const T& q001, const T& q010, const T& q011, const T& q100, const T& q101, const T& q110, const T& q111, const T& x1, const T& x2, const T& y1, const T& y2, const T& z1, const T& z2)
 {
     float x00 = smothlerp(x, x1, x2, q000, q100);
     float x10 = smothlerp(x, x1, x2, q010, q110);

@@ -56,7 +56,7 @@ SSSS::~SSSS() noexcept
 {
 }
 
-bool 
+bool
 SSSS::setup(RenderPipeline& pipeline) noexcept
 {
 	std::uint32_t width, height;
@@ -99,31 +99,31 @@ SSSS::setScale(float scale) noexcept
 	_sssScale = scale;
 }
 
-void 
+void
 SSSS::setStrength(float strength) noexcept
 {
 	_sssStrength = strength;
 }
 
-void 
+void
 SSSS::setCorrection(float correction) noexcept
 {
 	_sssCorrection = correction;
 }
 
-float 
+float
 SSSS::getScale() const noexcept
 {
 	return _sssScale;
 }
 
-float 
+float
 SSSS::getStrength() const noexcept
 {
 	return _sssStrength;
 }
 
-float 
+float
 SSSS::getCorrection() const noexcept
 {
 	return _sssCorrection;

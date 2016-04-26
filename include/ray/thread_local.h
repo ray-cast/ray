@@ -46,102 +46,102 @@ template<typename T>
 class ThreadLocal
 {
 public:
-    typedef ThreadLocal<T> _Myt;
-    typedef typename trait::_typeaddition<T>::pointer pointer;
-    typedef typename trait::_typeaddition<T>::const_pointer const_pointer;
-    typedef typename trait::_typeaddition<T>::reference reference;
-    typedef typename trait::_typeaddition<T>::const_reference const_reference;
+	typedef ThreadLocal<T> _Myt;
+	typedef typename trait::_typeaddition<T>::pointer pointer;
+	typedef typename trait::_typeaddition<T>::const_pointer const_pointer;
+	typedef typename trait::_typeaddition<T>::reference reference;
+	typedef typename trait::_typeaddition<T>::const_reference const_reference;
 
-    ThreadLocal() noexcept
-    {
-    }
+	ThreadLocal() noexcept
+	{
+	}
 
-    ThreadLocal(pointer local) noexcept
-    {
-        this->reset(local);
-    }
+	ThreadLocal(pointer local) noexcept
+	{
+		this->reset(local);
+	}
 
-    ThreadLocal(const ThreadLocal& local) noexcept
-    {
-        if (&local == this)
-            return;
-        *this = local;
-    }
+	ThreadLocal(const ThreadLocal& local) noexcept
+	{
+		if (&local == this)
+			return;
+		*this = local;
+	}
 
-    ~ThreadLocal() noexcept
-    {
-        this->release();
-    }
+	~ThreadLocal() noexcept
+	{
+		this->release();
+	}
 
-    explicit operator bool() noexcept
-    {
-        return (this->get() != nullptr);
-    }
+	explicit operator bool() noexcept
+	{
+		return (this->get() != nullptr);
+	}
 
-    _Myt& operator=(const _Myt& other) noexcept
-    {
-        this->_Reset(other);
-        return *this;
-    }
+	_Myt& operator=(const _Myt& other) noexcept
+	{
+		this->_Reset(other);
+		return *this;
+	}
 
-    pointer get() noexcept
-    {
-        return this->_Get();
-    }
+	pointer get() noexcept
+	{
+		return this->_Get();
+	}
 
-    void reset(pointer local) noexcept
-    {
-        this->_Reset(local);
-    }
+	void reset(pointer local) noexcept
+	{
+		this->_Reset(local);
+	}
 
-    void release(bool force = false) noexcept
-    {
-        --_cnt;
-        if (0 == _cnt || force)
-        {
-            delete _Myptr;
-            _Myptr = nullptr;
-        }
-    }
+	void release(bool force = false) noexcept
+	{
+		--_cnt;
+		if (0 == _cnt || force)
+		{
+			delete _Myptr;
+			_Myptr = nullptr;
+		}
+	}
 
-    pointer operator->() noexcept
-    {
-        return this->_Get();
-    }
+	pointer operator->() noexcept
+	{
+		return this->_Get();
+	}
 
 private:
 
-    void _Reset(pointer ptr) noexcept
-    {
-        if (ptr == _Myptr && _Myptr == nullptr)
-            return;
+	void _Reset(pointer ptr) noexcept
+	{
+		if (ptr == _Myptr && _Myptr == nullptr)
+			return;
 
-        if (_Myptr)
-            this->release(true);
+		if (_Myptr)
+			this->release(true);
 
-        _Myptr = ptr;
-        ++_cnt;
-    }
+		_Myptr = ptr;
+		++_cnt;
+	}
 
-    void _Reset(const _Myt& other)
-    {
-        _Myptr = other._Myptr;
-        _cnt = other._cnt;
-        ++_cnt;
-    }
+	void _Reset(const _Myt& other)
+	{
+		_Myptr = other._Myptr;
+		_cnt = other._cnt;
+		++_cnt;
+	}
 
-    pointer _Get() noexcept
-    {
-        return (_Myptr);
-    }
+	pointer _Get() noexcept
+	{
+		return (_Myptr);
+	}
 
-    const_pointer _Get() const noexcept
-    {
-        return (_Myptr);
-    }
+	const_pointer _Get() const noexcept
+	{
+		return (_Myptr);
+	}
 
-    static __declspec(thread) T* _Myptr;
-    static __declspec(thread) std::size_t _cnt;
+	static __declspec(thread) T* _Myptr;
+	static __declspec(thread) std::size_t _cnt;
 };
 
 template<typename T> __declspec(thread) T* ThreadLocal<T>::_Myptr;

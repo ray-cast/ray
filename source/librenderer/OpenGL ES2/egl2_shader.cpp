@@ -416,7 +416,7 @@ EGL2Program::getActiveUniforms() const noexcept
 	return _activeUniforms;
 }
 
-const GraphicsUniformBlocks& 
+const GraphicsUniformBlocks&
 EGL2Program::getActiveUniformBlocks() const noexcept
 {
 	return _activeUniformBlocks;
@@ -531,7 +531,7 @@ EGL2Program::toGraphicsUniformType(const std::string& name, GLenum type) noexcep
 
 		if (type == GL_BOOL)
 		{
-				return GraphicsUniformType::GraphicsUniformTypeBool;
+			return GraphicsUniformType::GraphicsUniformTypeBool;
 		}
 		else if (type == GL_INT)
 		{

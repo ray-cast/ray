@@ -72,7 +72,7 @@ EGL3DeviceContext::setup(const GraphicsContextDesc& desc) noexcept
 {
 	assert(desc.getSwapchain());
 	assert(desc.getSwapchain()->isInstanceOf<EGL3Swapchain>());
-	
+
 	_glcontext = desc.getSwapchain()->downcast<EGL3Swapchain>();
 	_glcontext->setActive(true);
 
@@ -680,11 +680,11 @@ EGL3DeviceContext::initDebugControl(const GraphicsContextDesc& desc) noexcept
 bool
 EGL3DeviceContext::initStateSystem() noexcept
 {
-    GL_CHECK(glClearDepthf(1.0));
-    GL_CHECK(glClearColor(0.0, 0.0, 0.0, 0.0));
-    GL_CHECK(glClearStencil(0));
+	GL_CHECK(glClearDepthf(1.0));
+	GL_CHECK(glClearColor(0.0, 0.0, 0.0, 0.0));
+	GL_CHECK(glClearStencil(0));
 
-    GL_CHECK(glViewport(0, 0, 0, 0));
+	GL_CHECK(glViewport(0, 0, 0, 0));
 
 	GL_CHECK(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
 
@@ -816,7 +816,7 @@ EGL3DeviceContext::initTextureSupports() noexcept
 	{
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatX8_D24UNormPack32);
 	}
-	
+
 	if (EGL3Types::isSupportFeature(EGL3Features::EGL3_OES_depth32))
 	{
 		_supportTextures.push_back(GraphicsFormat::GraphicsFormatD32_SFLOAT);
@@ -885,7 +885,7 @@ EGL3DeviceContext::initTextureDimSupports() noexcept
 
 	if (EGL3Types::isSupportFeature(EGL3Features::EGL3_EXT_texture_cube_map_array))
 		_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDimCubeArray);
-	
+
 	if (EGL3Types::isSupportFeature(EGL3Features::EGL3_OES_texture_3D))
 		_supportTextureDims.push_back(GraphicsTextureDim::GraphicsTextureDim3D);
 
@@ -939,7 +939,7 @@ EGL3DeviceContext::initVertexSupports() noexcept
 	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32SFloat);
 	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
 	_supportAttribute.push_back(GraphicsFormat::GraphicsFormatR32G32B32A32SFloat);
-	
+
 	if (EGL3Types::isSupportFeature(EGL3Features::EGL3_OES_vertex_type_10_10_10_2))
 	{
 		_supportAttribute.push_back(GraphicsFormat::GraphicsFormatA2R10G10B10SIntPack32);
@@ -964,7 +964,7 @@ EGL3DeviceContext::initShaderSupports() noexcept
 
 	if (EGL3Types::isSupportFeature(EGL3Features::EGL3_EXT_geometry_shader))
 		_supportShaders.push_back(GraphicsShaderStage::GraphicsShaderStageGeometry);
-	
+
 	return true;
 }
 

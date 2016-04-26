@@ -917,7 +917,6 @@ MaterialVariant::getFloat4x4Array() const noexcept
 	return *_value.m4array;
 }
 
-
 GraphicsTexturePtr
 MaterialVariant::getTexture() const noexcept
 {
@@ -939,7 +938,7 @@ MaterialVariant::getBuffer() const noexcept
 	return *_value.buffer;
 }
 
-void 
+void
 MaterialVariant::copy(const MaterialVariant& other) noexcept
 {
 	this->setType(other.getType());

@@ -66,97 +66,97 @@ MyGuiScrollBarImpl::create() except
 void
 MyGuiScrollBarImpl::setVerticalAlignment(bool value) noexcept
 {
-    _scrollBar->setVerticalAlignment(value);
+	_scrollBar->setVerticalAlignment(value);
 }
 
 bool
 MyGuiScrollBarImpl::getVerticalAlignment() const noexcept
 {
-    return _scrollBar->getVerticalAlignment();
+	return _scrollBar->getVerticalAlignment();
 }
 
 void
 MyGuiScrollBarImpl::setScrollRange(std::size_t value) noexcept
 {
-    _scrollBar->setScrollRange(value);
+	_scrollBar->setScrollRange(value);
 }
 
 std::size_t
 MyGuiScrollBarImpl::getScrollRange() const noexcept
 {
-    return _scrollBar->getScrollRange();
+	return _scrollBar->getScrollRange();
 }
 
 void
 MyGuiScrollBarImpl::setScrollPosition(std::size_t value) noexcept
 {
-    _scrollBar->setScrollPosition(value);
+	_scrollBar->setScrollPosition(value);
 }
 
 std::size_t
 MyGuiScrollBarImpl::getScrollPosition() const noexcept
 {
-    return _scrollBar->getScrollPosition();
+	return _scrollBar->getScrollPosition();
 }
 
 void
 MyGuiScrollBarImpl::setScrollPage(std::size_t value) noexcept
 {
-    _scrollBar->setScrollPage(value);
+	_scrollBar->setScrollPage(value);
 }
 
 std::size_t
 MyGuiScrollBarImpl::getScrollPage() const noexcept
 {
-    return _scrollBar->getScrollPage();
+	return _scrollBar->getScrollPage();
 }
 
 void
 MyGuiScrollBarImpl::setScrollViewPage(std::size_t value) noexcept
 {
-    _scrollBar->setScrollViewPage(value);
+	_scrollBar->setScrollViewPage(value);
 }
 
 std::size_t
 MyGuiScrollBarImpl::getScrollViewPage() const noexcept
 {
-    return _scrollBar->getScrollViewPage();
+	return _scrollBar->getScrollViewPage();
 }
 
 void
 MyGuiScrollBarImpl::setScrollWheelPage(std::size_t value) noexcept
 {
-    _scrollBar->setScrollWheelPage(value);
+	_scrollBar->setScrollWheelPage(value);
 }
 
 std::size_t
 MyGuiScrollBarImpl::getScrollWheelPage() const noexcept
 {
-    return _scrollBar->getScrollWheelPage();
+	return _scrollBar->getScrollWheelPage();
 }
 
 int
 MyGuiScrollBarImpl::getLineSize() const noexcept
 {
-    return _scrollBar->getLineSize();
+	return _scrollBar->getLineSize();
 }
 
 void
 MyGuiScrollBarImpl::setTrackSize(int value) noexcept
 {
-    _scrollBar->setTrackSize(value);
+	_scrollBar->setTrackSize(value);
 }
 
 int
 MyGuiScrollBarImpl::getTrackSize() const noexcept
 {
-    return _scrollBar->getTrackSize();
+	return _scrollBar->getTrackSize();
 }
 
 void
 MyGuiScrollBarImpl::setMinTrackSize(int value) noexcept
 {
-    _scrollBar->setMinTrackSize(value);
+	_scrollBar->setMinTrackSize(value);
 }
 
 int
@@ -168,7 +168,7 @@ MyGuiScrollBarImpl::getMinTrackSize() const noexcept
 void
 MyGuiScrollBarImpl::setMoveToClick(bool value) noexcept
 {
-    _scrollBar->setMoveToClick(value);
+	_scrollBar->setMoveToClick(value);
 }
 
 bool
@@ -180,7 +180,7 @@ MyGuiScrollBarImpl::getMoveToClick() const noexcept
 void
 MyGuiScrollBarImpl::setRepeatEnabled(bool enabled) noexcept
 {
-    _scrollBar->setRepeatEnabled(enabled);
+	_scrollBar->setRepeatEnabled(enabled);
 }
 
 bool
@@ -192,7 +192,7 @@ MyGuiScrollBarImpl::getRepeatEnabled() const noexcept
 void
 MyGuiScrollBarImpl::setRepeatTriggerTime(float time) noexcept
 {
-    _scrollBar->setRepeatTriggerTime(time);
+	_scrollBar->setRepeatTriggerTime(time);
 }
 
 float
@@ -249,109 +249,109 @@ MyGuiScrollBar::~MyGuiScrollBar() noexcept
 void
 MyGuiScrollBar::setVerticalAlignment(bool value) noexcept
 {
-    _impl.setVerticalAlignment(value);
+	_impl.setVerticalAlignment(value);
 }
 
 bool
 MyGuiScrollBar::getVerticalAlignment() const noexcept
 {
-    return _impl.getVerticalAlignment();
+	return _impl.getVerticalAlignment();
 }
 
 void
 MyGuiScrollBar::setScrollRange(std::size_t value) noexcept
 {
-    _impl.setScrollRange(value);
+	_impl.setScrollRange(value);
 }
 
 std::size_t
 MyGuiScrollBar::getScrollRange() const noexcept
 {
-    return _impl.getScrollRange();
+	return _impl.getScrollRange();
 }
 
 void
 MyGuiScrollBar::setScrollPosition(std::size_t value) noexcept
 {
-    _impl.setScrollPosition(value);
+	_impl.setScrollPosition(value);
 }
 
 std::size_t
 MyGuiScrollBar::getScrollPosition() const noexcept
 {
-    return _impl.getScrollPosition();
+	return _impl.getScrollPosition();
 }
 
 void
 MyGuiScrollBar::setScrollPage(std::size_t value) noexcept
 {
-    _impl.setScrollPage(value);
+	_impl.setScrollPage(value);
 }
 
 std::size_t
 MyGuiScrollBar::getScrollPage() const noexcept
 {
-    return _impl.getScrollPage();
+	return _impl.getScrollPage();
 }
 
 void
 MyGuiScrollBar::setScrollViewPage(std::size_t value) noexcept
 {
-    _impl.setScrollViewPage(value);
+	_impl.setScrollViewPage(value);
 }
 
 std::size_t
 MyGuiScrollBar::getScrollViewPage() const noexcept
 {
-    return _impl.getScrollViewPage();
+	return _impl.getScrollViewPage();
 }
 
 void
 MyGuiScrollBar::setScrollWheelPage(std::size_t value) noexcept
 {
-    _impl.setScrollWheelPage(value);
+	_impl.setScrollWheelPage(value);
 }
 
 std::size_t
 MyGuiScrollBar::getScrollWheelPage() const noexcept
 {
-    return _impl.getScrollWheelPage();
+	return _impl.getScrollWheelPage();
 }
 
 int
 MyGuiScrollBar::getLineSize() const noexcept
 {
-    return _impl.getLineSize();
+	return _impl.getLineSize();
 }
 
 void
 MyGuiScrollBar::setTrackSize(int value) noexcept
 {
-    _impl.setTrackSize(value);
+	_impl.setTrackSize(value);
 }
 
 int
 MyGuiScrollBar::getTrackSize() const noexcept
 {
-    return _impl.getTrackSize();
+	return _impl.getTrackSize();
 }
 
 void
 MyGuiScrollBar::setMinTrackSize(int value) noexcept
 {
-    _impl.setMinTrackSize(value);
+	_impl.setMinTrackSize(value);
 }
 
 int
 MyGuiScrollBar::getMinTrackSize() const noexcept
 {
-    return _impl.getMinTrackSize();
+	return _impl.getMinTrackSize();
 }
 
 void
 MyGuiScrollBar::setMoveToClick(bool value) noexcept
 {
-    _impl.setMoveToClick(value);
+	_impl.setMoveToClick(value);
 }
 
 bool
@@ -363,7 +363,7 @@ MyGuiScrollBar::getMoveToClick() const noexcept
 void
 MyGuiScrollBar::setRepeatEnabled(bool enabled) noexcept
 {
-    _impl.setRepeatEnabled(enabled);
+	_impl.setRepeatEnabled(enabled);
 }
 
 bool
@@ -375,7 +375,7 @@ MyGuiScrollBar::getRepeatEnabled() const noexcept
 void
 MyGuiScrollBar::setRepeatTriggerTime(float time) noexcept
 {
-    _impl.setRepeatTriggerTime(time);
+	_impl.setRepeatTriggerTime(time);
 }
 
 float
@@ -387,7 +387,7 @@ MyGuiScrollBar::getRepeatTriggerTime(float time) const noexcept
 void
 MyGuiScrollBar::setRepeatStepTime(float time) noexcept
 {
-    _impl.setRepeatStepTime(time);
+	_impl.setRepeatStepTime(time);
 }
 
 float

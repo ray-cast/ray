@@ -57,13 +57,13 @@ MyGuiVertexBuffer::setVertexCount(std::size_t _count)
 	_needVertexCount = _count;
 }
 
-std::size_t 
+std::size_t
 MyGuiVertexBuffer::getVertexCount() noexcept
 {
 	return _needVertexCount;
 }
 
-MyGUI::Vertex* 
+MyGUI::Vertex*
 MyGuiVertexBuffer::lock() noexcept
 {
 	if (!_vb || _needVertexCount != _vertexCount)
@@ -72,7 +72,7 @@ MyGuiVertexBuffer::lock() noexcept
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32B32SFloat);
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR8G8B8A8UInt);
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32SFloat);
-		
+
 		if (!_vb)
 		{
 			GraphicsDataDesc vb;
@@ -96,7 +96,7 @@ MyGuiVertexBuffer::lock() noexcept
 	return (MyGUI::Vertex*)RenderSystem::instance()->mapBuffer(_vb, GraphicsAccessFlagsBits::GraphicsAccessFlagsMapReadBit | GraphicsAccessFlagsBits::GraphicsAccessFlagsMapWriteBit);
 }
 
-void 
+void
 MyGuiVertexBuffer::unlock() noexcept
 {
 	RenderSystem::instance()->unmapBuffer(_vb);

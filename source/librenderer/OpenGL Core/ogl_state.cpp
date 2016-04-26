@@ -98,7 +98,6 @@ OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 			lastStateDesc.setBlendOp(_stateDesc.getBlendOp());
 			lastStateDesc.setBlendAlphaOp(_stateDesc.getBlendAlphaOp());
 		}
-
 	}
 	else
 	{

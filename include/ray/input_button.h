@@ -44,29 +44,29 @@ _NAME_BEGIN
 class InputButton
 {
 public:
-    enum Code
-    {
+	enum Code
+	{
 		LEFT,
 		RIGHT,
 		MIDDLE,
 
-        MOUSE0 = 0,
-        MOUSE1,
-        MOUSE2,
-        MOUSE3,
-        MOUSE4,
-        MOUSE5,
-        MOUSE6,
-        MOUSE7,
-        MOUSE8,
-        MOUSEWHEEL,
-        MOUSEX,
-        MOUSEY,
-        MOUSEZ,
-        MOUSELAST,
+		MOUSE0 = 0,
+		MOUSE1,
+		MOUSE2,
+		MOUSE3,
+		MOUSE4,
+		MOUSE5,
+		MOUSE6,
+		MOUSE7,
+		MOUSE8,
+		MOUSEWHEEL,
+		MOUSEX,
+		MOUSEY,
+		MOUSEZ,
+		MOUSELAST,
 
-        NumButtonCodes,
-    };
+		NumButtonCodes,
+	};
 };
 
 _NAME_END

@@ -132,7 +132,7 @@ RenderFeature::onCloseScene(GameScenePtr scene) except
 	}
 }
 
-void 
+void
 RenderFeature::onWindowSizeChange() except
 {
 	std::uint32_t w, h;

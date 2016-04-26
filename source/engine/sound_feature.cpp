@@ -48,14 +48,14 @@ SoundFeature::~SoundFeature() noexcept
 {
 }
 
-void 
+void
 SoundFeature::onActivate() except
 {
 	SoundSystem::instance()->open();
 	SoundSystem::instance()->setDistanceModel(true);
 }
 
-void 
+void
 SoundFeature::onDeactivate() except
 {
 	SoundSystem::instance()->close();

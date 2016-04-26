@@ -56,7 +56,7 @@ std::size_t UTF8toGBK(char* dest, std::size_t maxLength, const char* data, std::
 	iconv_close(ic);
 
 	out_size = PATHLIMIT - out_size;
-	memcpy(dest, outbuf, out_size);
+	memcpy(dest, outbuf, out_size + 1);
 
 	return out_size;
 }

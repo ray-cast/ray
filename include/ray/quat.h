@@ -78,7 +78,7 @@ public:
 		y = yy;
 		z = zz;
 		w = 1.0;
-		
+
 		this->normalize();
 
 		const T t = static_cast<T>(1.0) - (x*x) - (y*y) - (z*z);

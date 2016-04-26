@@ -58,7 +58,7 @@ public:
 
 	void doRenderRTT(MyGUI::IVertexBuffer* _buffer, MyGUI::ITexture* _texture, size_t _count) noexcept;
 	void drawOneFrame(float delta) noexcept;
-		
+
 	void setViewport(int _width, int _height) noexcept;
 	void getViewport(int& w, int& h) noexcept;
 

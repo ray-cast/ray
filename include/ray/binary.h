@@ -45,97 +45,97 @@ template<typename T>
 class Binaryt
 {
 private:
-    T* bits_;
-    T col_;
-    T row_;
+	T* bits_;
+	T col_;
+	T row_;
 
-    enum
-    {
-        bit_size = sizeof(T) * 8
-    };
+	enum
+	{
+		bit_size = sizeof(T) * 8
+	};
 
 public:
-    Binaryt() noexcept
-        : bits_(0)
-    {
-    }
+	Binaryt() noexcept
+		: bits_(0)
+	{
+	}
 
-    Binaryt(std::uint32_t x, std::uint32_t y) noexcept
-        : bits_(0)
-    {
-        this->create(x, y);
-    }
+	Binaryt(std::uint32_t x, std::uint32_t y) noexcept
+		: bits_(0)
+	{
+		this->create(x, y);
+	}
 
-    ~Binaryt() noexcept
-    {
-        if (bits_)
-        {
-            delete[] bits_;
-            bits_ = 0;
-        }
-    }
+	~Binaryt() noexcept
+	{
+		if (bits_)
+		{
+			delete[] bits_;
+			bits_ = 0;
+		}
+	}
 
-    bool create(std::uint32_t x, std::uint32_t y)
-    {
-        assert(!bits_);
+	bool create(std::uint32_t x, std::uint32_t y)
+	{
+		assert(!bits_);
 
-        col_ = x;
-        row_ = y;
+		col_ = x;
+		row_ = y;
 
-        std::size_t size = row_ * col_ / 32;
-        if (size < std::numeric_limits<std::uint32_t>::max())
-        {
-            std::uint32_t sz = (std::uint32_t)size;
+		std::size_t size = row_ * col_ / 32;
+		if (size < std::numeric_limits<std::uint32_t>::max())
+		{
+			std::uint32_t sz = (std::uint32_t)size;
 
-            if (row_ * col_ % bit_size)
-                sz++;
+			if (row_ * col_ % bit_size)
+				sz++;
 
-            bits_ = new T[sz];
+			bits_ = new T[sz];
 
-            if (bits_)
-            {
-                memset(bits_, 0, sz * 4);
+			if (bits_)
+			{
+				memset(bits_, 0, sz * 4);
 
-                return true;
-            }
-        }
+				return true;
+			}
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    // 标志清零
-    void reset()
-    {
-        assert(bits_);
+	// 标志清零
+	void reset()
+	{
+		assert(bits_);
 
-        std::uint32_t size = row_ * col_ / 32;
+		std::uint32_t size = row_ * col_ / 32;
 
-        if (row_ * col_ % bit_size)
-            size++;
+		if (row_ * col_ % bit_size)
+			size++;
 
-        memset(bits_, 0, size * 4);
-    }
+		memset(bits_, 0, size * 4);
+	}
 
-    // 设置标志位
-    void set(std::uint32_t x, std::uint32_t y, bool bFlog = true)
-    {
-        assert(bits_);
-        assert(x < col_ && y < row_);
+	// 设置标志位
+	void set(std::uint32_t x, std::uint32_t y, bool bFlog = true)
+	{
+		assert(bits_);
+		assert(x < col_ && y < row_);
 
-        if (bFlog)
-        {
-            bits_[(y*col_ + x) / bit_size] |= (1 << (y*col_ + x) % bit_size);
-        }
-        else
-        {
-            bits_[(y*col_ + x) / 32] &= ~(1 << (y*col_ + x) % 32);
-        }
-    }
+		if (bFlog)
+		{
+			bits_[(y*col_ + x) / bit_size] |= (1 << (y*col_ + x) % bit_size);
+		}
+		else
+		{
+			bits_[(y*col_ + x) / 32] &= ~(1 << (y*col_ + x) % 32);
+		}
+	}
 
-    bool isTrue(std::uint32_t x, std::uint32_t y) const //查询该标志
-    {
-        return  (bits_[(y*col_ + x) / bit_size] & (1 << (y*col_ + x) % bit_size)) != 0;
-    }
+	bool isTrue(std::uint32_t x, std::uint32_t y) const //查询该标志
+	{
+		return  (bits_[(y*col_ + x) / bit_size] & (1 << (y*col_ + x) % bit_size)) != 0;
+	}
 };
 
 _NAME_END

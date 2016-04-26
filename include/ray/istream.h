@@ -44,22 +44,22 @@ _NAME_BEGIN
 class EXPORT StreamReader : public virtual StreamBase
 {
 public:
-    StreamReader(StreamBuf* buf) noexcept;
-    virtual ~StreamReader() noexcept;
+	StreamReader(StreamBuf* buf) noexcept;
+	virtual ~StreamReader() noexcept;
 
-    StreamReader& read(char* str, std::streamsize cnt) noexcept;
-    StreamReader& read(char* str, streamsize size, streamsize cnt) noexcept;
+	StreamReader& read(char* str, std::streamsize cnt) noexcept;
+	StreamReader& read(char* str, streamsize size, streamsize cnt) noexcept;
 
-    StreamReader& seekg(ios_base::off_type pos) noexcept;
-    StreamReader& seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
+	StreamReader& seekg(ios_base::off_type pos) noexcept;
+	StreamReader& seekg(ios_base::off_type pos, ios_base::seekdir dir) noexcept;
 
-    StreamReader& flush() noexcept;
+	StreamReader& flush() noexcept;
 
-    streamsize size() noexcept;
+	streamsize size() noexcept;
 
-    streamoff tellg() noexcept;
+	streamoff tellg() noexcept;
 
-    streamsize gcount() const noexcept;
+	streamsize gcount() const noexcept;
 
 protected:
 	class isentry final
@@ -80,12 +80,12 @@ protected:
 	};
 
 private:
-    StreamReader& operator=(const StreamReader&) = delete;
-    StreamReader(const StreamReader&) = delete;
+	StreamReader& operator=(const StreamReader&) = delete;
+	StreamReader(const StreamReader&) = delete;
 
 private:
 
-    streamsize _count;
+	streamsize _count;
 };
 
 _NAME_END

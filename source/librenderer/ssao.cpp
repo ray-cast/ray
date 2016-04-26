@@ -204,7 +204,6 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 	_blurDirection = _ambientOcclusion->getParameter("blurDirection");
 	_blurGaussian = _ambientOcclusion->getParameter("blurGaussian");
 	_blurRadius = _ambientOcclusion->getMacro("BLUR_RADIUS");
-	
 
 	_setting.blurRadius = _blurRadius->getInt();
 
@@ -223,7 +222,7 @@ SSAO::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Graphics
 {
 	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
 
-	this->computeRawAO(pipeline, texture, _texAmbientView);	
+	this->computeRawAO(pipeline, texture, _texAmbientView);
 	this->blurHorizontal(pipeline, _texAmbientMap, _texBlurView);
 	this->blurVertical(pipeline, _texBlurMap, dest);
 	return true;

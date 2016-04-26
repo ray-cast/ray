@@ -160,7 +160,7 @@ TerrainChunk::setActive(bool active) noexcept
 	}
 }
 
-bool 
+bool
 TerrainChunk::getActive() const noexcept
 {
 	return _active;

@@ -133,7 +133,7 @@ private:
 	Scissor _scissor;
 
 	GLuint _maxViewports;
-	
+
 	EGL3PipelinePtr _pipeline;
 	EGL3DescriptorSetPtr _descriptorSet;
 

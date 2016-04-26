@@ -57,12 +57,12 @@ VulkanInputLayout::setup(const GraphicsInputLayoutDesc& layoutDesc) noexcept
 	return true;
 }
 
-void 
+void
 VulkanInputLayout::close() noexcept
 {
 }
 
-const GraphicsInputLayoutDesc& 
+const GraphicsInputLayoutDesc&
 VulkanInputLayout::getGraphicsInputLayoutDesc() const noexcept
 {
 	return _inputLayoutDesc;

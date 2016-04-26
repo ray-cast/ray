@@ -52,7 +52,7 @@ public:
 	void close() noexcept;
 
 	void apply(GraphicsProgramPtr program) noexcept;
-	
+
 	const GraphicsUniformSets& getGraphicsUniformSets() const noexcept;
 	const GraphicsDescriptorSetDesc& getGraphicsDescriptorSetDesc() const noexcept;
 

@@ -44,26 +44,26 @@ _NAME_BEGIN
 class JointSpring : public Joint
 {
 public:
-    JointSpring() noexcept;
-    ~JointSpring() noexcept;
+	JointSpring() noexcept;
+	~JointSpring() noexcept;
 
-    void setSpring(float spring) noexcept;
-    void setDamper(float damper) noexcept;
-    void setMinDistance(float distance) noexcept;
-    void setMaxDistance(float distance) noexcept;
+	void setSpring(float spring) noexcept;
+	void setDamper(float damper) noexcept;
+	void setMinDistance(float distance) noexcept;
+	void setMaxDistance(float distance) noexcept;
 
-    float getSpring() const noexcept;
-    float getDamper() const noexcept;
-    float getMinDistance() const noexcept;
-    float getMaxDistance() const noexcept;
+	float getSpring() const noexcept;
+	float getDamper() const noexcept;
+	float getMinDistance() const noexcept;
+	float getMaxDistance() const noexcept;
 
 private:
 
-    float _spring;
-    float _damper;
+	float _spring;
+	float _damper;
 
-    float _minDistance;
-    float _maxDistance;
+	float _minDistance;
+	float _maxDistance;
 };
 
 _NAME_END

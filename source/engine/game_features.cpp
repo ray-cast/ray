@@ -136,7 +136,7 @@ GameFeature::onReset() except
 {
 }
 
-void 
+void
 GameFeature::onWindowSizeChange() except
 {
 }

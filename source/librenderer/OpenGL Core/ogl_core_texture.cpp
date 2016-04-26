@@ -63,7 +63,7 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 	GLenum internalFormat = OGLTypes::asTextureInternalFormat(textureDesc.getTexFormat());
 	if (internalFormat == GL_INVALID_ENUM)
 		return false;
-	
+
 	glCreateTextures(target, 1, &_texture);
 	if (_texture == GL_NONE)
 	{
@@ -104,7 +104,7 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		glTextureStorage2D(_texture, mipLevel, internalFormat, w, h);
 	else if (target == GL_TEXTURE_CUBE_MAP_ARRAY)
 		glTextureStorage3D(_texture, mipLevel, internalFormat, w, h, depth);
-	
+
 	auto stream = textureDesc.getStream();
 	if (stream)
 	{
@@ -129,7 +129,7 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		{
 			GLenum format = OGLTypes::asTextureFormat(textureDesc.getTexFormat());
 			GLenum type = OGLTypes::asTextureType(textureDesc.getTexFormat());
-			
+
 			GLsizei offset = 0;
 			GLsizei pixelSize = OGLTypes::getFormatNum(format);
 
@@ -166,7 +166,7 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 			}
 		}
 	}
-	
+
 	_target = target;
 	_textureDesc = textureDesc;
 
@@ -195,7 +195,7 @@ OGLCoreTexture::getInstanceID() const noexcept
 	return _texture;
 }
 
-bool 
+bool
 OGLCoreTexture::applyMipmapLimit(std::uint32_t min, std::uint32_t count) noexcept
 {
 	glTextureParameteri(_texture, GL_TEXTURE_BASE_LEVEL, min);

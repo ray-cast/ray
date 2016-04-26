@@ -636,20 +636,6 @@ enum GraphicsSamplerAnis
 	GraphicsSamplerAnisMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsSamplerOp
-{
-	GraphicsSamplerOpMultiply = 0,    //* T = T1 * T2
-	GraphicsSamplerOpAdd = 1,         //* T = T1 + T2
-	GraphicsSamplerOpSubtract = 2,    //* T = T1 - T2
-	GraphicsSamplerOpDivide = 3,      //* T = T1 / T2
-	GraphicsSamplerOpSmoothAdd = 4,   //* T = (T1 + T2) - (T1 * T2)
-	GraphicsSamplerOpSignedAdd = 5,   //* T = T1 + (T2-0.5)
-	GraphicsSamplerOpBeginRange = GraphicsSamplerOpMultiply,
-	GraphicsSamplerOpEndRange = GraphicsSamplerOpSignedAdd,
-	GraphicsSamplerOpRangeSize = (GraphicsSamplerOpEndRange - GraphicsSamplerOpBeginRange + 1),
-	GraphicsSamplerOpMaxEnum = 0x7FFFFFFF
-};
-
 enum GraphicsSamplerWrap
 {
 	GraphicsSamplerWrapNone = 0,

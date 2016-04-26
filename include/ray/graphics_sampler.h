@@ -47,19 +47,15 @@ public:
 	GraphicsSamplerDesc() noexcept;
 	~GraphicsSamplerDesc() noexcept;
 
-	void setSamplerOp(GraphicsSamplerOp op) noexcept;
 	void setSamplerWrap(GraphicsSamplerWrap wrap) noexcept;
 	void setSamplerFilter(GraphicsSamplerFilter filter) noexcept;
 	void setSamplerAnis(GraphicsSamplerAnis anis) noexcept;
 
-	GraphicsSamplerOp getSamplerOp() const noexcept;
 	GraphicsSamplerWrap getSamplerWrap() const noexcept;
 	GraphicsSamplerFilter getSamplerFilter() const noexcept;
 	GraphicsSamplerAnis getSamplerAnis() const noexcept;
 
 private:
-	std::string _name;
-	GraphicsSamplerOp _texop;
 	GraphicsSamplerWrap _wrap;
 	GraphicsSamplerAnis _anis;
 	GraphicsSamplerFilter _filter;

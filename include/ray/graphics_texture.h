@@ -105,7 +105,6 @@ private:
 
 	GraphicsFormat _format;
 	GraphicsTextureDim _dim;
-	GraphicsSamplerOp _texop;
 	GraphicsSamplerFilter _filter;
 	GraphicsSamplerWrap _wrap;
 	GraphicsSamplerAnis _anis;

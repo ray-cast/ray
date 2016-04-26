@@ -41,21 +41,14 @@ _NAME_BEGIN
 __ImplementSubInterface(GraphicsSampler, GraphicsChild, "GraphicsSampler")
 
 GraphicsSamplerDesc::GraphicsSamplerDesc() noexcept
-	: _filter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest)
-	, _wrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat)
-	, _texop(GraphicsSamplerOp::GraphicsSamplerOpAdd)
+	: _wrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat)
 	, _anis(GraphicsSamplerAnis::GraphicsSamplerAnis1)
+	, _filter(GraphicsSamplerFilter::GraphicsSamplerFilterNearest)
 {
 }
 
 GraphicsSamplerDesc::~GraphicsSamplerDesc() noexcept
 {
-}
-
-void
-GraphicsSamplerDesc::setSamplerOp(GraphicsSamplerOp op) noexcept
-{
-	_texop = op;
 }
 
 void
@@ -74,12 +67,6 @@ void
 GraphicsSamplerDesc::setSamplerAnis(GraphicsSamplerAnis anis) noexcept
 {
 	_anis = anis;
-}
-
-GraphicsSamplerOp
-GraphicsSamplerDesc::getSamplerOp() const noexcept
-{
-	return _texop;
 }
 
 GraphicsSamplerWrap

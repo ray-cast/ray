@@ -117,7 +117,7 @@ GameFeature::onActivate() except
 }
 
 void
-GameFeature::onDeactivate() except
+GameFeature::onDeactivate() noexcept
 {
 }
 
@@ -127,7 +127,7 @@ GameFeature::onOpenScene(GameScenePtr scene) except
 }
 
 void
-GameFeature::onCloseScene(GameScenePtr scene) except
+GameFeature::onCloseScene(GameScenePtr scene) noexcept
 {
 }
 

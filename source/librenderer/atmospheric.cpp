@@ -76,7 +76,7 @@ Atmospheric::onActivate(RenderPipeline& pipeline) noexcept
 	_renderable.numVertices = mesh.getNumVertices();
 	_renderable.numIndices = mesh.getNumIndices();
 
-	_sphere = pipeline.createRenderMesh(mesh);
+	_sphere = pipeline.createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
 
 	_sat = pipeline.createMaterial("sys:fx/atmospheric.fxml.o");
 

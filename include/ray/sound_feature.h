@@ -49,7 +49,7 @@ public:
 
 private:
 	virtual void onActivate() except;
-	virtual void onDeactivate() except;
+	virtual void onDeactivate() noexcept;
 
 private:
 	SoundFeature(const SoundFeature&) noexcept = delete;

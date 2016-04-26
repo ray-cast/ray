@@ -56,7 +56,7 @@ SoundFeature::onActivate() except
 }
 
 void
-SoundFeature::onDeactivate() except
+SoundFeature::onDeactivate() noexcept
 {
 	SoundSystem::instance()->close();
 }

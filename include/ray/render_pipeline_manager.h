@@ -113,8 +113,8 @@ public:
 
 	GraphicsDataPtr createGraphicsData(const GraphicsDataDesc& desc) noexcept;
 	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
-	RenderMeshPtr createRenderMesh(const MeshProperty& mesh) noexcept;
-	RenderMeshPtr createRenderMesh(const MeshPropertys& mesh) noexcept;
+	RenderMeshPtr createRenderMesh(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
+	RenderMeshPtr createRenderMesh(const MeshPropertys& mesh, ModelMakerFlags flags) noexcept;
 
 	void render(const RenderScene& scene) noexcept;
 

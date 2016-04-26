@@ -65,7 +65,7 @@ public:
 protected:
 
 	virtual void onActivate() except;
-	virtual void onDeactivate() except;
+	virtual void onDeactivate() noexcept;
 
 	virtual void onMeshChange() except;
 
@@ -73,7 +73,7 @@ protected:
 	virtual void onLayerChangeAfter() noexcept;
 
 	virtual void onAttachComponent(GameComponentPtr& component) except;
-	virtual void onDetachComponent(GameComponentPtr& component) except;
+	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
 
 protected:
 	void _attacRenderObjects() noexcept;

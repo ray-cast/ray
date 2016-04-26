@@ -100,11 +100,12 @@ RenderFeature::clone() const noexcept
 void
 RenderFeature::onActivate() except
 {
-	RenderSystem::instance()->setup(_renderSetting);
+	if (!RenderSystem::instance()->setup(_renderSetting))
+		throw failure("RenderSystem::instance() fail.");
 }
 
 void
-RenderFeature::onDeactivate() except
+RenderFeature::onDeactivate() noexcept
 {
 	RenderSystem::instance()->close();
 }
@@ -122,7 +123,7 @@ RenderFeature::onOpenScene(GameScenePtr scene) except
 }
 
 void
-RenderFeature::onCloseScene(GameScenePtr scene) except
+RenderFeature::onCloseScene(GameScenePtr scene) noexcept
 {
 	auto renderScene = _renderScenes[scene->getInstanceID()];
 	if (renderScene)

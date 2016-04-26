@@ -62,10 +62,10 @@ public:
 private:
 
 	void onActivate() except;
-	void onDeactivate() except;
+	void onDeactivate() noexcept;
 
 	void onOpenScene(GameScenePtr scene) except;
-	void onCloseScene(GameScenePtr scene) except;
+	void onCloseScene(GameScenePtr scene) noexcept;
 
 	void onWindowSizeChange() except;
 

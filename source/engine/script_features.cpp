@@ -60,7 +60,7 @@ ScriptFeatures::onActivate() except
 }
 
 void
-ScriptFeatures::onDeactivate() except
+ScriptFeatures::onDeactivate() noexcept
 {
 	ScriptSystem::instance()->close();
 }

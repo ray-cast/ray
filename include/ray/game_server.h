@@ -49,43 +49,44 @@ public:
 	GameServer() noexcept;
 	~GameServer() noexcept;
 
-	bool open() except;
+	bool open() noexcept;
 	void close() noexcept;
 
 	bool isQuitRequest() const noexcept;
 
-	void setActive(bool active) except;
-	bool getActive() const noexcept;
+	bool start() noexcept;
+	bool active() const noexcept;
+	void stop() noexcept;
 
 	void setTimer(TimerPtr timer) noexcept;
 	TimerPtr getTimer() const noexcept;
 
-	bool openScene(const std::string& sceneName) except;
-	bool addScene(GameScenePtr scene) except;
+	bool openScene(const std::string& sceneName) noexcept;
+	bool addScene(GameScenePtr scene) noexcept;
 	void closeScene(const std::string& sceneName) noexcept;
 	void removeScene(GameScenePtr scene) noexcept;
 	GameScenePtr findScene(const std::string& sceneName) noexcept;
 	const GameScenes& getScenes() const noexcept;
 
-	void addFeature(GameFeaturePtr features) except;
+	bool addFeature(GameFeaturePtr features) noexcept;
 	void removeFeature(GameFeaturePtr features) noexcept;
 	GameFeaturePtr getFeature(const rtti::Rtti& rtti) const noexcept;
 	GameFeaturePtr getFeature(const rtti::Rtti* rtti) const noexcept;
 
 	template<typename T>
 	std::shared_ptr<T> getFeature() const noexcept
-		{
- return std::dynamic_pointer_cast<T>(this->getFeature(T::getRtti()));
-}
+		{ return std::dynamic_pointer_cast<T>(this->getFeature(T::getRtti())); }
 
-const GameFeatures& getGameFeatures() const noexcept;
+	const GameFeatures& getGameFeatures() const noexcept;
 
-GameApplication* getGameApp() noexcept;
+	GameApplication* getGameApp() noexcept;
 
-void sendMessage(const MessagePtr& message) except;
-void postMessage(const MessagePtr& message) except;
+	bool sendMessage(const MessagePtr& message) noexcept;
+	bool postMessage(const MessagePtr& message) noexcept;
 
-void update() except;
+	void print(const std::string& name) noexcept;
+
+	void update() noexcept;
 
 private:
 	void onWindowSizeChange() noexcept;

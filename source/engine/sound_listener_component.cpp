@@ -102,7 +102,7 @@ SoundListenerComponent::onActivate() except
 }
 
 void
-SoundListenerComponent::onDeactivate() except
+SoundListenerComponent::onDeactivate() noexcept
 {
 	if (_listener)
 	{

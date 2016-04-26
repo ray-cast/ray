@@ -125,7 +125,7 @@ public:
 
 protected:
 	virtual void onAttach() except;
-	virtual void onDetach() except;
+	virtual void onDetach() noexcept;
 
 private:
 	GuiEditBoxComponent(const GuiEditBoxComponent&) noexcept = delete;

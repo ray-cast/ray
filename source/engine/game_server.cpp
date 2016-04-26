@@ -60,7 +60,7 @@ GameServer::~GameServer() noexcept
 }
 
 bool
-GameServer::open() except
+GameServer::open() noexcept
 {
 	_timer = std::make_shared<Timer>();
 	_timer->open();
@@ -73,14 +73,12 @@ GameServer::open() except
 void
 GameServer::close() noexcept
 {
+	this->stop();
+
 	_isQuitRequest = true;
 
 	_scenes.clear();
-	for (auto& it : _features)
-	{
-		it->setActive(false);
-		it.reset();
-	}
+	_features.clear();
 }
 
 bool
@@ -89,34 +87,50 @@ GameServer::isQuitRequest() const noexcept
 	return _isQuitRequest;
 }
 
-void
-GameServer::setActive(bool active) except
+bool
+GameServer::start() noexcept
 {
-	if (_isActive != active)
+	try
 	{
-		if (active)
+		if (!_isActive)
 		{
 			for (auto& it : _features)
 				it->setActive(true);
 
 			for (auto& it : _scenes)
 				it->setActive(true);
-		}
-		else
-		{
-			for (auto& it : _scenes)
-				it->setActive(false);
 
-			for (auto& it : _features)
-				it->setActive(false);
+			_isActive = true;
 		}
 
-		_isActive = active;
+		return true;
+	}
+	catch (const ray::exception& e)
+	{
+		this->print(e.what());
+
+		_isQuitRequest = true;
+		return false;
 	}
 }
 
-bool
-GameServer::getActive() const noexcept
+void
+GameServer::stop() noexcept
+{
+	if (_isActive)
+	{
+		for (auto& it : _features)
+			it->setActive(false);
+
+		for (auto& it : _scenes)
+			it->setActive(false);
+
+		_isActive = false;
+	}
+}
+
+bool 
+GameServer::active() const noexcept
 {
 	return _isActive;
 }
@@ -135,10 +149,13 @@ GameServer::getTimer() const noexcept
 }
 
 bool
-GameServer::openScene(const std::string& filename) except
+GameServer::openScene(const std::string& filename) noexcept
 {
 	StreamReaderPtr stream;
-	if (IoServer::instance()->openFile(stream, filename, ios_base::in))
+	if (!IoServer::instance()->openFile(stream, filename, ios_base::in))
+		return false;
+
+	try
 	{
 		XMLReader xml;
 		if (xml.open(*stream))
@@ -148,6 +165,12 @@ GameServer::openScene(const std::string& filename) except
 			scene->load(xml);
 			return true;
 		}
+
+		return false;
+	}
+	catch (const ray::exception& e)
+	{
+		this->print(e.what());
 	}
 
 	return false;
@@ -187,20 +210,26 @@ GameServer::getScenes() const noexcept
 }
 
 bool
-GameServer::addScene(GameScenePtr scene) except
+GameServer::addScene(GameScenePtr scene) noexcept
 {
-	auto it = std::find(_scenes.begin(), _scenes.end(), scene);
-	if (it == _scenes.end())
+	assert(std::find(_scenes.begin(), _scenes.end(), scene) == _scenes.end());
+
+	try
 	{
 		for (auto& feature : _features)
 			feature->onOpenScene(scene);
 
-		if (this->getActive())
+		if (this->active())
 			scene->setActive(true);
 
 		_scenes.push_back(scene);
 
 		return true;
+	}
+	catch (const ray::exception& e)
+	{
+		this->print(e.what());
+		return false;
 	}
 
 	return false;
@@ -223,20 +252,30 @@ GameServer::removeScene(GameScenePtr scene) noexcept
 	}
 }
 
-void
-GameServer::addFeature(GameFeaturePtr features) except
+bool
+GameServer::addFeature(GameFeaturePtr features) noexcept
 {
 	assert(features);
 
-	auto it = std::find_if(_features.begin(), _features.end(), [features](GameFeaturePtr it) { return features->isInstanceOf(it->rtti()); });
-	if (it == _features.end())
+	try
 	{
-		features->_setGameServer(this);
+		auto it = std::find_if(_features.begin(), _features.end(), [features](GameFeaturePtr it) { return features->isInstanceOf(it->rtti()); });
+		if (it == _features.end())
+		{
+			features->_setGameServer(this);
 
-		if (this->getActive())
-			features->onActivate();
+			if (this->active())
+				features->onActivate();
 
-		_features.push_back(features);
+			_features.push_back(features);
+		}
+
+		return true;
+	}
+	catch (const ray::exception& e)
+	{
+		this->print(e.what());
+		return false;
 	}
 }
 
@@ -298,10 +337,13 @@ GameServer::getGameApp() noexcept
 	return _gameApp;
 }
 
-void
-GameServer::sendMessage(const MessagePtr& message) except
+bool
+GameServer::sendMessage(const MessagePtr& message) noexcept
 {
-	if (!_isQuitRequest)
+	if (_isQuitRequest)
+		return false;
+
+	try
 	{
 		for (auto& it : _features)
 			it->onMessage(message);
@@ -310,36 +352,60 @@ GameServer::sendMessage(const MessagePtr& message) except
 			it->sendMessage(message);
 
 		_dispatcher.sendMessage(message);
+
+		return true;
+	}
+	catch (const ray::exception& e)
+	{
+		this->print(e.what());
+		return false;
 	}
 }
 
-void
-GameServer::postMessage(const MessagePtr& event) except
+bool
+GameServer::postMessage(const MessagePtr& event) noexcept
 {
 	_dispatcher.postMessage(event);
+	return true;
+}
+
+void 
+GameServer::print(const std::string& name) noexcept
+{
+	this->getGameApp()->print(name);
 }
 
 void
-GameServer::update() except
+GameServer::update() noexcept
 {
-	if (!_isQuitRequest)
+	try
 	{
+		_timer->update();
+
 		MessagePtr event;
 		while (_dispatcher.pollMessages(event))
 		{
-			this->sendMessage(event);
+			if (!this->sendMessage(event))
+				_isQuitRequest = true;
+		}			
+
+		if (!_isQuitRequest)
+		{
+			for (auto& it : _features)
+				it->onFrameBegin();
+
+			for (auto& it : _features)
+				it->onFrame();
+
+			for (auto& it : _features)
+				it->onFrameEnd();
 		}
+	}
+	catch (const ray::exception& e)
+	{
+		this->print(e.what());
 
-		_timer->update();
-
-		for (auto& it : _features)
-			it->onFrameBegin();
-
-		for (auto& it : _features)
-			it->onFrame();
-
-		for (auto& it : _features)
-			it->onFrameEnd();
+		_isQuitRequest = true;
 	}
 }
 

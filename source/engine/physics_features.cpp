@@ -103,10 +103,9 @@ PhysicFeatures::onOpenScene(GameScenePtr scene) except
 }
 
 void
-PhysicFeatures::onCloseScene(GameScenePtr scene) except
+PhysicFeatures::onCloseScene(GameScenePtr scene) noexcept
 {
 	_physics->removePhysicsScene(this->getPhysicsScene(scene));
-
 	_physicsScenes[scene->getInstanceID()] = nullptr;
 }
 

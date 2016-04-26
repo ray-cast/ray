@@ -341,7 +341,7 @@ GuiWidgetComponent::onActivate() except
 }
 
 void
-GuiWidgetComponent::onDeactivate() except
+GuiWidgetComponent::onDeactivate() noexcept
 {
 }
 

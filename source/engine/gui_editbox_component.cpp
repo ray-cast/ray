@@ -364,7 +364,7 @@ GuiEditBoxComponent::onAttach() except
 }
 
 void
-GuiEditBoxComponent::onDetach() except
+GuiEditBoxComponent::onDetach() noexcept
 {
 	if (_label)
 		_label->setParent(nullptr);

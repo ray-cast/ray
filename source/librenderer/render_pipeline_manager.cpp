@@ -657,17 +657,17 @@ RenderPipelineManager::createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) 
 }
 
 RenderMeshPtr
-RenderPipelineManager::createRenderMesh(const MeshProperty& mesh) noexcept
+RenderPipelineManager::createRenderMesh(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderMesh(mesh);
+	return _pipelineDevice->createRenderMesh(mesh, flags);
 }
 
 RenderMeshPtr
-RenderPipelineManager::createRenderMesh(const MeshPropertys& mesh) noexcept
+RenderPipelineManager::createRenderMesh(const MeshPropertys& mesh, ModelMakerFlags flags) noexcept
 {
 	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderMesh(mesh);
+	return _pipelineDevice->createRenderMesh(mesh, flags);
 }
 
 bool

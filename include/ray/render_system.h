@@ -90,8 +90,8 @@ public:
 	GraphicsPipelinePtr createGraphicsPipeline(const GraphicsPipelineDesc& desc) noexcept;
 	MaterialPtr createMaterial(const std::string& name) noexcept;
 
-	RenderMeshPtr createRenderMesh(const MeshProperty& mesh) noexcept;
-	RenderMeshPtr createRenderMesh(const MeshPropertys& meshes) noexcept;
+	RenderMeshPtr createRenderMesh(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
+	RenderMeshPtr createRenderMesh(const MeshPropertys& meshes, ModelMakerFlags flags) noexcept;
 	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
 
 	bool updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept;

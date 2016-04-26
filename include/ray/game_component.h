@@ -57,15 +57,13 @@ public:
 	GameObjectPtr getGameObject() const noexcept;
 	GameServerPtr getGameServer() const noexcept;
 
-	template<typename T>
-	std::shared_ptr<T> getComponent() const noexcept
-	{
-		return std::dynamic_pointer_cast<T>(this->getComponent(T::RTTI));
-	}
-
 	GameComponentPtr getComponent(const rtti::Rtti* type) const noexcept;
 	GameComponentPtr getComponent(const rtti::Rtti& type) const noexcept;
 	const GameComponents& getComponents() const noexcept;
+
+	template<typename T>
+	std::shared_ptr<T> getComponent() const noexcept
+		{ return std::dynamic_pointer_cast<T>(this->getComponent(T::RTTI)); }
 
 	virtual void load(iarchive& reader) noexcept;
 	virtual void save(oarchive& write) noexcept;
@@ -73,19 +71,18 @@ public:
 	virtual GameComponentPtr clone() const noexcept = 0;
 
 protected:
-
 	virtual void sendMessage(const MessagePtr& message) except;
 	virtual void sendMessageUpwards(const MessagePtr& message) except;
 	virtual void sendMessageDownwards(const MessagePtr& message) except;
 
 	virtual void onAttach() except;
-	virtual void onDetach() except;
+	virtual void onDetach() noexcept;
 
 	virtual void onAttachComponent(GameComponentPtr& component) except;
-	virtual void onDetachComponent(GameComponentPtr& component) except;
+	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
 
 	virtual void onActivate() except;
-	virtual void onDeactivate() except;
+	virtual void onDeactivate() noexcept;
 
 	virtual void onFrameBegin() except;
 	virtual void onFrame() except;

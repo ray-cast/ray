@@ -164,7 +164,7 @@ MeshRenderComponent::onAttachComponent(GameComponentPtr& component) except
 }
 
 void
-MeshRenderComponent::onDetachComponent(GameComponentPtr& component) except
+MeshRenderComponent::onDetachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<MeshComponent>())
 		component->downcast<MeshComponent>()->removeMeshChangeListener(std::bind(&MeshRenderComponent::onMeshChange, this));
@@ -215,7 +215,7 @@ MeshRenderComponent::onActivate() except
 }
 
 void
-MeshRenderComponent::onDeactivate() except
+MeshRenderComponent::onDeactivate() noexcept
 {
 	this->_dettachRenderhObjects();
 }
@@ -274,7 +274,8 @@ MeshRenderComponent::_buildRenderObjects(MeshPropertyPtr mesh) noexcept
 	meshes.push_back(mesh);
 	meshes.insert(meshes.end(), mesh->getChildren().begin(), mesh->getChildren().end());
 
-	auto renderMeshes = RenderSystem::instance()->createRenderMesh(meshes);
+	auto flags = ModelMakerFlagBits::ModelMakerFlagBitVertex | ModelMakerFlagBits::ModelMakerFlagBitNormal | ModelMakerFlagBits::ModelMakerFlagBitTexcoord | ModelMakerFlagBits::ModelMakerFlagBitFace;
+	auto renderMeshes = RenderSystem::instance()->createRenderMesh(meshes, flags);
 
 	std::size_t startVertice = 0;
 	std::size_t startIndice = 0;

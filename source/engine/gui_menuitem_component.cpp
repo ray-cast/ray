@@ -159,7 +159,7 @@ GuiMenuItemComponent::onAttach() except
 }
 
 void
-GuiMenuItemComponent::onDetach() except
+GuiMenuItemComponent::onDetach() noexcept
 {
 	assert(_buttonObject);
 	_buttonObject->setParent(nullptr);

@@ -152,7 +152,7 @@ GuiWindowComponent::onAttach() except
 }
 
 void
-GuiWindowComponent::onDetach() except
+GuiWindowComponent::onDetach() noexcept
 {
 	assert(_labelObject);
 	_labelObject->setParent(nullptr);

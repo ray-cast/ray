@@ -58,10 +58,10 @@ public:
 protected:
 
 	virtual void onActivate() except;
-	virtual void onDeactivate() except;
+	virtual void onDeactivate() noexcept;
 
 	virtual void onOpenScene(GameScenePtr scene) except;
-	virtual void onCloseScene(GameScenePtr scene) except;
+	virtual void onCloseScene(GameScenePtr scene) noexcept;
 
 	virtual void onReset() except;
 

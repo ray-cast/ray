@@ -94,7 +94,7 @@ AnimotionComponent::onActivate() except
 }
 
 void
-AnimotionComponent::onDeactivate() except
+AnimotionComponent::onDeactivate() noexcept
 {
 	if (_animtion)
 	{

@@ -86,12 +86,13 @@ GameApplication::~GameApplication() noexcept
 }
 
 bool
-GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) except
+GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) noexcept
 {
 	if (_isInitialize)
 		return false;
 
-	rtti::Factory::instance()->open();
+	if (!rtti::Factory::instance()->open())
+		return false;
 
 	_ioInterface->open();
 
@@ -147,9 +148,8 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) ex
 #if defined(_BUILD_GUI)
 	this->addFeatures(_guiFeature);
 #endif
-	this->start();
-
-	_isInitialize = true;
+	
+	_isInitialize = this->start();
 	return _isInitialize;
 }
 
@@ -169,18 +169,18 @@ GameApplication::close() noexcept
 	}
 }
 
-void
-GameApplication::start() except
+bool
+GameApplication::start() noexcept
 {
 	assert(_gameServer);
-	_gameServer->setActive(true);
+	return _gameServer->start();
 }
 
 void
 GameApplication::stop() noexcept
 {
 	assert(_gameServer);
-	_gameServer->setActive(false);
+	_gameServer->stop();
 }
 
 bool
@@ -191,14 +191,14 @@ GameApplication::isQuitRequest() const noexcept
 }
 
 bool
-GameApplication::openScene(GameScenePtr scene) except
+GameApplication::openScene(GameScenePtr scene) noexcept
 {
 	assert(_gameServer);
 	return _gameServer->addScene(scene);
 }
 
 bool
-GameApplication::openScene(const std::string& name) except
+GameApplication::openScene(const std::string& name) noexcept
 {
 	assert(_gameServer);
 	return _gameServer->openScene(name);
@@ -225,11 +225,11 @@ GameApplication::findScene(const std::string& name) noexcept
 	return _gameServer->findScene(name);
 }
 
-void
-GameApplication::addFeatures(GameFeaturePtr feature) except
+bool
+GameApplication::addFeatures(GameFeaturePtr feature) noexcept
 {
 	assert(_gameServer);
-	_gameServer->addFeature(feature);
+	return _gameServer->addFeature(feature);
 }
 
 void
@@ -283,18 +283,18 @@ GameApplication::setResDownloadURL(const std::string& path) noexcept
 	}
 }
 
-void
+bool
 GameApplication::sendMessage(const MessagePtr& message) noexcept
 {
 	assert(_gameServer);
-	_gameServer->sendMessage(message);
+	return _gameServer->sendMessage(message);
 }
 
-void
+bool
 GameApplication::postMessage(const MessagePtr& message) noexcept
 {
 	assert(_gameServer);
-	_gameServer->postMessage(message);
+	return _gameServer->postMessage(message);
 }
 
 void
@@ -331,7 +331,13 @@ GameApplication::removeWindowSizeChangeCallback(std::function<void()> func) noex
 }
 
 void
-GameApplication::update() except
+GameApplication::print(const std::string& message) noexcept
+{
+	std::cout << message;
+}
+
+void
+GameApplication::update() noexcept
 {
 	assert(_gameServer);
 	_gameServer->update();

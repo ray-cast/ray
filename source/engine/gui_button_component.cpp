@@ -127,7 +127,7 @@ GuiButtonComponent::onAttach() except
 }
 
 void
-GuiButtonComponent::onDetach() except
+GuiButtonComponent::onDetach() noexcept
 {
 	assert(_labelObject);
 	_labelObject->setParent(nullptr);

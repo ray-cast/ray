@@ -60,7 +60,7 @@ private:
 	void onDeactivate() noexcept;
 
 	void onOpenScene(GameScenePtr scene) except;
-	void onCloseScene(GameScenePtr scene) except;
+	void onCloseScene(GameScenePtr scene) noexcept;
 
 	void onFrameBegin() noexcept;
 

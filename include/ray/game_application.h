@@ -47,36 +47,38 @@ public:
 	GameApplication() noexcept;
 	virtual ~GameApplication() noexcept;
 
-	bool open(WindHandle hwnd, std::size_t width, std::size_t height) except;
+	bool open(WindHandle hwnd, std::size_t width, std::size_t height) noexcept;
 	void close() noexcept;
 
-	void start() except;
+	bool start() noexcept;
 	void stop() noexcept;
 
 	bool isQuitRequest() const noexcept;
 
-	bool openScene(GameScenePtr scene) except;
-	bool openScene(const std::string& name) except;
+	bool openScene(GameScenePtr scene) noexcept;
+	bool openScene(const std::string& name) noexcept;
 	void closeScene(GameScenePtr name) noexcept;
 	void closeScene(const std::string& name) noexcept;
 	GameScenePtr findScene(const std::string& name) noexcept;
 
-	void addFeatures(GameFeaturePtr feature) except;
+	bool addFeatures(GameFeaturePtr feature) noexcept;
 	void removeFeatures(GameFeaturePtr feature) noexcept;
 
 	void setFileService(bool enable) noexcept;
 	void setFileServicePath(const std::string& path) noexcept;
 	void setResDownloadURL(const std::string& path) noexcept;
 
-	void sendMessage(const MessagePtr& message) noexcept;
-	void postMessage(const MessagePtr& message) noexcept;
+	bool sendMessage(const MessagePtr& message) noexcept;
+	bool postMessage(const MessagePtr& message) noexcept;
 
 	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) noexcept;
 	void addWindowSizeChangeCallback(std::function<void()> func) noexcept;
 	void removeWindowSizeChangeCallback(std::function<void()> func) noexcept;
+	
+	void print(const std::string& message) noexcept;
 
-	void update() except;
+	void update() noexcept;
 
 private:
 	GameApplication(const GameApplication&) noexcept = delete;

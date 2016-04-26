@@ -172,7 +172,9 @@ void rayCloseWindow() noexcept
 
 bool rayIsQuitRequest() noexcept
 {
-	return ::glfwWindowShouldClose(_window) ? true : false;
+	if (::glfwWindowShouldClose(_window) || _gameApp->isQuitRequest())
+		return true;
+	return false;
 }
 
 void rayUpdate() noexcept

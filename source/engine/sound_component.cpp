@@ -387,7 +387,7 @@ SoundComponent::onActivate() except
 }
 
 void
-SoundComponent::onDeactivate() except
+SoundComponent::onDeactivate() noexcept
 {
 	this->stop();
 }

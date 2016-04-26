@@ -66,7 +66,7 @@ public:
 
 protected:
 	virtual void onAttach() except;
-	virtual void onDetach() except;
+	virtual void onDetach() noexcept;
 
 private:
 	GuiButtonComponent(const GuiButtonComponent&) noexcept = delete;

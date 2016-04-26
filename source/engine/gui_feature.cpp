@@ -405,7 +405,7 @@ GuiFeature::onActivate() except
 {
 	_platform = GuiSystem::instance();
 	if (!_platform->open())
-		throw failure("GuiSystem::open() fail");
+		throw failure("GuiSystem::instance() fail");
 
 	_platform->setImageLoader(std::make_shared<ImageLoader>());
 	_platform->setCoreProfile("sys:media/ui/MyGUI_Core.xml");
@@ -413,7 +413,7 @@ GuiFeature::onActivate() except
 }
 
 void
-GuiFeature::onDeactivate() except
+GuiFeature::onDeactivate() noexcept
 {
 	if (_platform)
 		_platform = nullptr;

@@ -154,7 +154,7 @@ InputFeature::onActivate() except
 }
 
 void
-InputFeature::onDeactivate() except
+InputFeature::onDeactivate() noexcept
 {
 	assert(_input);
 	_input->releaseCapture();

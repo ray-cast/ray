@@ -208,6 +208,8 @@ enum ModelMakerFlagBits
 	ModelMakerFlagBitALL = 0x7FFFFFFF,
 };
 
+typedef std::uint32_t ModelMakerFlags;
+
 _NAME_END
 
 #endif

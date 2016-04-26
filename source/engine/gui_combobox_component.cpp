@@ -248,7 +248,7 @@ GuiComboBoxComponent::onAttach() except
 }
 
 void
-GuiComboBoxComponent::onDetach() except
+GuiComboBoxComponent::onDetach() noexcept
 {
 	assert(_editObject);
 	_editObject->setParent(nullptr);

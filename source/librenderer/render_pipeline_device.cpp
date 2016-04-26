@@ -277,7 +277,7 @@ RenderPipelineDevice::createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) n
 }
 
 RenderMeshPtr
-RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh, std::uint32_t flags) noexcept
+RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
 {
 	auto numVertex = mesh.getNumVertices();
 	auto numIndices = mesh.getNumIndices();
@@ -396,7 +396,7 @@ RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh, std::uint32_t f
 }
 
 RenderMeshPtr
-RenderPipelineDevice::createRenderMesh(const MeshPropertys& meshes, std::uint32_t flags) noexcept
+RenderPipelineDevice::createRenderMesh(const MeshPropertys& meshes, ModelMakerFlags flags) noexcept
 {
 	auto numVertex = 0;
 	auto numIndices = 0;

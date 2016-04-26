@@ -198,7 +198,7 @@ GameComponent::onAttach() except
 }
 
 void
-GameComponent::onDetach() except
+GameComponent::onDetach() noexcept
 {
 }
 
@@ -208,7 +208,7 @@ GameComponent::onActivate() except
 }
 
 void
-GameComponent::onDeactivate() except
+GameComponent::onDeactivate() noexcept
 {
 }
 
@@ -263,7 +263,7 @@ GameComponent::onAttachComponent(GameComponentPtr& component) except
 }
 
 void
-GameComponent::onDetachComponent(GameComponentPtr& component) except
+GameComponent::onDetachComponent(GameComponentPtr& component) noexcept
 {
 }
 

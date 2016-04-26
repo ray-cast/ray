@@ -50,7 +50,7 @@ public:
 
 private:
 	virtual void onActivate() except;
-	virtual void onDeactivate() except;
+	virtual void onDeactivate() noexcept;
 
 private:
 	SphereMakerComponent(const SphereMakerComponent&) = delete;

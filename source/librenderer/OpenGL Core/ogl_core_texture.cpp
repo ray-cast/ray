@@ -113,6 +113,10 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 			GLsizei offset = 0;
 			GLsizei blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;
 
+			GLint oldPackStore = 1;
+			glGetIntegerv(GL_UNPACK_ALIGNMENT, &oldPackStore);
+			glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
+
 			for (GLint mip = mipBase; mip < mipBase + mipLevel; mip++)
 			{
 				GLsizei mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
@@ -124,6 +128,8 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 				offset += mipSize;
 			}
+
+			glPixelStorei(GL_UNPACK_ALIGNMENT, oldPackStore);
 		}
 		else
 		{
@@ -132,6 +138,10 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 			GLsizei offset = 0;
 			GLsizei pixelSize = OGLTypes::getFormatNum(format);
+
+			GLint oldPackStore = 1;
+			glGetIntegerv(GL_UNPACK_ALIGNMENT, &oldPackStore);
+			glPixelStorei(GL_UNPACK_ALIGNMENT, pixelSize);
 
 			for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
 			{
@@ -164,6 +174,8 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 					h = std::max(h >> 1, 1);
 				}
 			}
+
+			glPixelStorei(GL_UNPACK_ALIGNMENT, oldPackStore);
 		}
 	}
 

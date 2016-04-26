@@ -98,6 +98,10 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		std::size_t offset = 0;
 		std::size_t blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;
 
+		GLint oldPackStore = 1;
+		glGetIntegerv(GL_UNPACK_ALIGNMENT, &oldPackStore);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
+
 		for (GLint mip = mipBase; mip < mipBase + mipLevel; mip++)
 		{
 			auto mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
@@ -109,6 +113,8 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 			offset += stream ? mipSize : 0;
 		}
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, oldPackStore);
 	}
 	else
 	{
@@ -117,6 +123,10 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 		GLsizei offset = 0;
 		GLsizei pixelSize = stream ? OGLTypes::getFormatNum(format) : 1;
+
+		GLint oldPackStore = 1;
+		glGetIntegerv(GL_UNPACK_ALIGNMENT, &oldPackStore);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, pixelSize);
 
 		GLenum cubeFace[] =
 		{
@@ -164,6 +174,8 @@ OGLTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 			w = std::max(w >> 1, 1);
 			h = std::max(h >> 1, 1);
 		}
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, oldPackStore);
 	}
 
 	glBindTexture(target, GL_NONE);

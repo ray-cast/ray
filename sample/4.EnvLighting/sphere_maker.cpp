@@ -285,7 +285,7 @@ SphereMakerComponent::onActivate() except
 }
 
 void
-SphereMakerComponent::onDeactivate() except
+SphereMakerComponent::onDeactivate() noexcept
 {
 }
 

@@ -95,6 +95,10 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		std::size_t offset = 0;
 		std::size_t blockSize = internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT ? 8 : 16;
 
+		GLint oldPackStore = 1;
+		glGetIntegerv(GL_UNPACK_ALIGNMENT, &oldPackStore);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
+
 		for (GLint mip = mipBase; mip < mipBase + mipLevel; mip++)
 		{
 			auto mipSize = ((w + 3) / 4) * ((h + 3) / 4) * blockSize;
@@ -106,6 +110,8 @@ EGL2Texture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 			offset += stream ? mipSize : 0;
 		}
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, oldPackStore);
 	}
 	else
 	{

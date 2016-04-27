@@ -34,10 +34,7 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if defined(_BUILD_RENDERER)
 #include <ray/skinned_mesh_render_component.h>
-#include <ray/mesh_component.h>
-#include <ray/resource.h>
 
 _NAME_BEGIN
 
@@ -45,50 +42,11 @@ __ImplementSubClass(SkinnedMeshRenderComponent, MeshRenderComponent, "SkinnedMes
 
 SkinnedMeshRenderComponent::SkinnedMeshRenderComponent() noexcept
 {
+	_setModelMakerFlags(ModelMakerFlagBits::ModelMakerFlagBit_VER_TEX_NORMAL_WEIGHT);
 }
 
 SkinnedMeshRenderComponent::~SkinnedMeshRenderComponent() noexcept
 {
 }
 
-void
-SkinnedMeshRenderComponent::onActivate() except
-{
-	auto component = this->getGameObject()->getComponent<MeshComponent>();
-	if (component)
-	{
-		auto mesh = component->getMesh();
-		if (!mesh)
-			return;
-
-		this->_buildMaterials();
-		this->_buildRenderObjects(mesh);
-
-		this->_attacRenderObjects();
-	}
-}
-
-void
-SkinnedMeshRenderComponent::onDeactivate() noexcept
-{
-	MeshRenderComponent::onDeactivate();
-}
-
-void
-SkinnedMeshRenderComponent::onFrameBegin() except
-{
-}
-
-void
-SkinnedMeshRenderComponent::onFrame() except
-{
-}
-
-void
-SkinnedMeshRenderComponent::onFrameEnd() except
-{
-}
-
 _NAME_END
-
-#endif

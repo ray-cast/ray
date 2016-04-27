@@ -83,8 +83,10 @@ public:
 	LightList&    getLightList()     noexcept;
 	CameraList&   getCameraList()    noexcept;
 
+	void setDirectory(const std::string& name) noexcept;
+	const std::string&  getDirectory() const noexcept;
+
 	const std::string&  getName()          const noexcept;
-	const std::string&  getDirectory()     const noexcept;
 	const MeshList&     getMeshsList()     const noexcept;
 	const TextureList&  getTexturesList()  const noexcept;
 	const MaterialList& getMaterialsList() const noexcept;
@@ -122,8 +124,6 @@ private:
 	std::string _name;
 
 	std::string _directory;
-
-	std::uint32_t _flags;
 
 	MeshList _meshes;
 

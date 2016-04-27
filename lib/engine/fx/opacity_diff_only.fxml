@@ -5,7 +5,7 @@
     <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />
     <parameter name="matModelInverseTranspose" type="float4x4" semantic="matModelInverseTranspose" />
     <parameter name="matView" type="float4x4" semantic="matView"/>
-    <parameter name="diffuse" type="float3"/>
+    <parameter name="diffuse" type="texture2D"/>
     <parameter name="specular" type="float"/>
     <parameter name="shininess" type="float"/>
     <shader>
@@ -13,30 +13,31 @@
             void OpaqueVS(
                 in float4 Position : POSITION,
                 in float4 Normal : NORMAL,
+                in float2 Texcoord : TEXCOORD,
                 out float4 oNormal : TEXCOORD0,
-                out float3 oDiffuse : TEXCOORD1,
+                out float2 oTexcoord : TEXCOORD1,
                 out float4 oPosition : SV_Position)
             {
-                oDiffuse = srgb2linear(diffuse);
                 oNormal = mul(Normal, matModelInverseTranspose);
                 oNormal = mul(float4(oNormal.xyz, 0.0), matView);
+                oTexcoord = Texcoord;
                 oPosition = mul(Position, matModelViewProject);
             }
 
             void OpaquePS(
                 in float4 normal : TEXCOORD0,
-                in float3 diffuse : TEXCOORD1,
+                in float3 coord : TEXCOORD1,
                 out float4 fragData0 : SV_Target0,
                 out float4 fragData1 : SV_Target1)
             {
-                fragData0 = StoreGBufferRT0(diffuse, specular);
+                fragData0 = StoreGBufferRT0(srgb2linear(diffuse.Sample(PointClamp, coord)).rgb, specular);
                 fragData1 = StoreGBufferRT1(normalize(normal.xyz), shininess);
             }
         ]]>
     </shader>
     <technique name="opaque">
         <pass name="p0">
-            <state name="inputlayout" value="POS3F_N3F"/>
+            <state name="inputlayout" value="POS3F_N3F_UV2F"/>
             <state name="vertex" value="OpaqueVS"/>
             <state name="fragment" value="OpaquePS"/>
             <state name="primitive" value="triangle" />

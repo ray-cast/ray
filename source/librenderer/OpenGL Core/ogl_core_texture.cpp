@@ -141,7 +141,7 @@ OGLCoreTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 
 			GLint oldPackStore = 1;
 			glGetIntegerv(GL_UNPACK_ALIGNMENT, &oldPackStore);
-			glPixelStorei(GL_UNPACK_ALIGNMENT, pixelSize);
+			glPixelStorei(GL_UNPACK_ALIGNMENT, pixelSize == 3 ? 1 : pixelSize);
 
 			for (GLsizei mip = mipBase; mip < mipBase + mipLevel; mip++)
 			{

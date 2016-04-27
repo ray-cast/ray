@@ -204,7 +204,13 @@ enum ModelMakerFlagBits
 	ModelMakerFlagBitBitangent = 0x00000016,
 	ModelMakerFlagBitWeight = 0x00000032,
 	ModelMakerFlagBitColor = 0x00000064,
-	ModelMakerFlagBitFace = 0x00000128,
+	ModelMakerFlagBit_VER_TEX = ModelMakerFlagBitVertex | ModelMakerFlagBitTexcoord,
+	ModelMakerFlagBit_VER_TEX_NORMAL = ModelMakerFlagBitVertex | ModelMakerFlagBitTexcoord | ModelMakerFlagBitNormal,
+	ModelMakerFlagBit_VER_TEX_NORMAL_WEIGHT = ModelMakerFlagBitVertex | ModelMakerFlagBitTexcoord | ModelMakerFlagBitNormal | ModelMakerFlagBitWeight,
+	ModelMakerFlagBit_VER_NORMAL = ModelMakerFlagBitVertex | ModelMakerFlagBitNormal,
+	ModelMakerFlagBit_VER_NORMAL_TANGENT = ModelMakerFlagBitVertex | ModelMakerFlagBitNormal | ModelMakerFlagBitTangent,
+	ModelMakerFlagBit_VER_NORMAL_WEIGHT = ModelMakerFlagBitVertex | ModelMakerFlagBitTexcoord | ModelMakerFlagBitNormal | ModelMakerFlagBitWeight,
+	ModelMakerFlagBit_VER_NORMAL_TANGENT_WEIGHT = ModelMakerFlagBitVertex | ModelMakerFlagBitTexcoord | ModelMakerFlagBitNormal | ModelMakerFlagBitTangent | ModelMakerFlagBitWeight,
 	ModelMakerFlagBitALL = 0x7FFFFFFF,
 };
 

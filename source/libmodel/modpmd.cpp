@@ -288,7 +288,7 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 
 			points.push_back(v.Position);
 			normals.push_back(v.Normal);
-			texcoords.push_back(v.UV);
+			texcoords.push_back(float2(v.UV.x, 1.0f - v.UV.y));
 			faces.push_back(i);
 
 			VertexWeight weight;

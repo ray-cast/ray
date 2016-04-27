@@ -51,7 +51,6 @@ public:
 
 	void setMesh(MeshPropertyPtr mesh) noexcept;
 	void setSharedMesh(MeshPropertyPtr mesh) noexcept;
-	void setCombieInstnace(const CombineInstance& instances) noexcept;
 
 	MeshPropertyPtr getMesh() const noexcept;
 	MeshPropertyPtr getSharedMesh() const noexcept;

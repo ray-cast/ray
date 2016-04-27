@@ -59,10 +59,10 @@ float ToneExposure(float avgLum)
 
 FimicToneMapping::Setting::Setting() noexcept
 	: bloomThreshold(0.4)
-	, bloomIntensity(10.0)
+	, bloomIntensity(1.0)
 	, lumKey(0.98)
 	, lumDelta(50.0)
-	, lumExposure(1.6)
+	, lumExposure(1.5)
 {
 }
 

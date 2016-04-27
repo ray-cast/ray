@@ -46,90 +46,102 @@
 
 #include <ray/game_server.h>
 #include <ray/graphics_context.h>
-#include <ray/resource.h>
+
+#include <ray/res_manager.h>
 
 _NAME_BEGIN
 
 __ImplementSubClass(MeshRenderComponent, GameComponent, "MeshRender")
 
 MeshRenderComponent::MeshRenderComponent() noexcept
+	: _flags(ModelMakerFlagBits::ModelMakerFlagBit_VER_TEX_NORMAL)
+	, _defaultMaterial("sys:fx/opacity.fxml.o")
 {
 }
 
 MeshRenderComponent::~MeshRenderComponent() noexcept
 {
-	this->_dettachRenderhObjects();
+	this->_cleanupMaterials();
+	this->_cleanupRenderhObjects();
 }
 
 void
 MeshRenderComponent::setMaterial(MaterialPtr material) noexcept
 {
-	_material = material;
+	if (_materials.empty())
+		_materials.push_back(material);
+	else
+		_materials[0] = material;
+
+	this->_updateMaterial(0);
 }
 
 void
 MeshRenderComponent::setSharedMaterial(MaterialPtr material) noexcept
 {
-	_sharedMaterial = material;
+	if (_sharedMaterials.empty())
+		_sharedMaterials.push_back(material);
+	else
+		_sharedMaterials[0] = material;
+
+	this->_updateMaterial(0);
 }
 
 MaterialPtr
 MeshRenderComponent::getMaterial() const noexcept
 {
-	return _material;
+	return _materials.empty() ? nullptr : _materials.front();
 }
 
 MaterialPtr
 MeshRenderComponent::getSharedMaterial() const noexcept
 {
-	return _sharedMaterial;
+	return _sharedMaterials.empty() ? nullptr : _sharedMaterials.front();
+}
+
+void
+MeshRenderComponent::setMaterials(const Materials& materials) noexcept
+{
+	_materials = materials;
+	this->_updateMaterials();
+}
+
+void
+MeshRenderComponent::setSharedMaterials(const Materials& materials) noexcept
+{
+	_sharedMaterials = materials;
+	this->_updateMaterials();
+}
+
+const Materials&
+MeshRenderComponent::getMaterials() const noexcept
+{
+	return _materials;
+}
+
+const Materials&
+MeshRenderComponent::getSharedMaterials() const noexcept
+{
+	return _sharedMaterials;
 }
 
 bool
 MeshRenderComponent::hasMaterial() const noexcept
 {
-	return _material != nullptr;
+	return !_materials.empty();
 }
 
 bool
 MeshRenderComponent::hasSharedMaterial() const noexcept
 {
-	return _sharedMaterial != nullptr;
-}
-
-void
-MeshRenderComponent::_attacRenderObjects() noexcept
-{
-	auto gameServer = this->getGameObject()->getGameServer();
-	if (!gameServer) { assert(gameServer); return; }
-
-	auto renderer = gameServer->getFeature<RenderFeature>();
-	if (!renderer) { assert(renderer); return; }
-
-	auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
-	if (!renderScene) { assert(renderScene); return; }
-
-	for (auto& it : _renderObjects)
-		it->setRenderScene(renderScene);
-}
-
-void
-MeshRenderComponent::_dettachRenderhObjects() noexcept
-{
-	for (auto& it : _renderObjects)
-		it->setRenderScene(nullptr);
-	_renderObjects.clear();
+	return !_sharedMaterials.empty();
 }
 
 void
 MeshRenderComponent::load(iarchive& reader) noexcept
 {
 	RenderComponent::load(reader);
-
-	std::string material;
-	reader >> make_archive(material, "material");
-
-	this->setName(material);
+	reader.getValue("material", _material);
 }
 
 void
@@ -142,22 +154,22 @@ GameComponentPtr
 MeshRenderComponent::clone() const noexcept
 {
 	auto result = std::make_shared<MeshRenderComponent>();
-	result->setName(this->getName());
 	result->setActive(this->getActive());
 	result->setCastShadow(this->getCastShadow());
 	result->setReceiveShadow(this->getReceiveShadow());
+	result->setSharedMaterials(this->getSharedMaterials());
+	result->_setDefaultMaterial(this->_getDefaultMaterial());
 
-	if (_sharedMaterial)
+	if (this->hasSharedMaterial())
 	{
-		result->setMaterial(_sharedMaterial->clone());
-		result->setSharedMaterial(_sharedMaterial);
+		result->setMaterial(this->getSharedMaterial()->clone());
 	}
 
 	return result;
 }
 
 void
-MeshRenderComponent::onAttachComponent(GameComponentPtr& component) except
+MeshRenderComponent::onAttachComponent(GameComponentPtr& component) noexcept
 {
 	if (component->isInstanceOf<MeshComponent>())
 		component->downcast<MeshComponent>()->addMeshChangeListener(std::bind(&MeshRenderComponent::onMeshChange, this));
@@ -195,62 +207,96 @@ MeshRenderComponent::onLayerChangeAfter() noexcept
 void
 MeshRenderComponent::onActivate() except
 {
-	if (!_material)
-		_buildMaterials();
+	auto component = this->getGameObject()->getComponent<MeshComponent>();
+	if (!component)
+		return;
 
-	if (_renderObjects.empty())
+	auto mesh = component->getMesh();
+	if (!mesh)
+		return;
+
+	if (!this->hasMaterial())
 	{
-		auto component = this->getGameObject()->getComponent<MeshComponent>();
-		if (!component)
-			return;
-
-		auto mesh = component->getMesh();
-		if (!mesh)
-			return;
-
-		_buildRenderObjects(mesh);
+		if (!_material.empty())
+			_buildMaterials(_material);
+		else
+			_buildDefaultMaterials(_defaultMaterial);
 	}
 
+	_buildRenderObjects(mesh, _flags);
 	_attacRenderObjects();
 }
 
 void
 MeshRenderComponent::onDeactivate() noexcept
 {
-	this->_dettachRenderhObjects();
+	this->_cleanupMaterials();
+	this->_cleanupRenderhObjects();
 }
 
 void
 MeshRenderComponent::onMeshChange() except
 {
-	this->_dettachRenderhObjects();
+	if (!this->getGameObject()->getActive())
+		return;
 
-	if (this->getGameObject()->getActive())
+	auto component = this->getGameObject()->getComponent<MeshComponent>();
+	if (component)
 	{
-		auto component = this->getGameObject()->getComponent<MeshComponent>();
-		if (component)
+		auto mesh = component->getMesh();
+		if (!mesh)
 		{
-			auto mesh = component->getMesh();
-			if (!mesh)
-				return;
-
-			_buildMaterials();
-			_buildRenderObjects(mesh);
-			_attacRenderObjects();
+			this->_cleanupRenderhObjects();
+			return;
 		}
+
+		_buildRenderObjects(mesh, _flags);
+		_attacRenderObjects();
 	}
 }
 
-bool
-MeshRenderComponent::_buildMaterials() except
+void
+MeshRenderComponent::_attacRenderObjects() noexcept
 {
-	if (this->hasMaterial())
-		return true;
+	auto gameServer = this->getGameObject()->getGameServer();
+	if (!gameServer) { assert(gameServer); return; }
 
-	if (this->getName().empty())
-		return true;
+	auto renderer = gameServer->getFeature<RenderFeature>();
+	if (!renderer) { assert(renderer); return; }
 
-	auto material = RenderSystem::instance()->createMaterial(this->getName());
+	auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
+	if (!renderScene) { assert(renderScene); return; }
+
+	for (auto& it : _renderObjects)
+	{
+		if (it->getRenderMesh() && it->getMaterial())
+			it->setRenderScene(renderScene);
+	}		
+}
+
+void
+MeshRenderComponent::_cleanupRenderhObjects() noexcept
+{
+	for (auto& it : _renderObjects)
+		it->setRenderScene(nullptr);
+
+	_renderObjects.clear();
+	_renderMesh.reset();
+}
+
+void
+MeshRenderComponent::_cleanupMaterials() noexcept
+{
+	_materials.clear();
+	_sharedMaterials.clear();
+}
+
+bool
+MeshRenderComponent::_buildMaterials(const std::string& filename) noexcept
+{
+	assert(!filename.empty());
+
+	auto material = RenderSystem::instance()->createMaterial(filename);
 	if (material)
 	{
 		this->setMaterial(material);
@@ -261,46 +307,138 @@ MeshRenderComponent::_buildMaterials() except
 	return false;
 }
 
-bool
-MeshRenderComponent::_buildRenderObjects(MeshPropertyPtr mesh) noexcept
+bool 
+MeshRenderComponent::_buildDefaultMaterials(const std::string& filename) noexcept
 {
-	auto material = this->getMaterial();
-	if (!material)
+	assert(!filename.empty());
+
+	auto component = this->getGameObject()->getComponent<MeshComponent>();
+	if (!component)
 		return false;
 
-	_renderObjects.clear();
+	auto model = ResManager::instance()->find<Model>(component->getName());
+	if (!model)
+		return false;
 
-	MeshPropertys meshes;
-	meshes.push_back(mesh);
-	meshes.insert(meshes.end(), mesh->getChildren().begin(), mesh->getChildren().end());
+	auto& materials = model->getMaterialsList();
+	if (materials.empty())
+		return false;
 
-	auto flags = ModelMakerFlagBits::ModelMakerFlagBitVertex | ModelMakerFlagBits::ModelMakerFlagBitNormal | ModelMakerFlagBits::ModelMakerFlagBitTexcoord | ModelMakerFlagBits::ModelMakerFlagBitFace;
-	auto renderMeshes = RenderSystem::instance()->createRenderMesh(meshes, flags);
+	for (auto& material : materials)
+	{
+		float3 specular(0.5f);
+		float3 diffuseColor(1.0f);
+		float shininess(0.5);
+		std::string diffuseTexture;
+		
+		if (!material->get(MATKEY_TEXTURE_DIFFUSE(0), diffuseTexture))
+		{
+			material->get(MATKEY_COLOR_DIFFUSE, diffuseColor);
+		}
+		
+		material->get(MATKEY_COLOR_SPECULAR, specular);
+		material->get(MATKEY_SHININESS, shininess);
+
+		MaterialPtr effect;
+		if (diffuseTexture.empty())
+		{
+			effect = RenderSystem::instance()->createMaterial(filename);
+			if (effect)
+			{
+				auto luminance = [](float3 rgb)
+				{
+					const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
+					return math::dot(rgb, lumfact);
+				};
+
+				effect->getParameter("diffuse")->uniform3f(diffuseColor);
+				effect->getParameter("specular")->uniform1f(luminance(specular));
+				effect->getParameter("shininess")->uniform1f(shininess);
+
+				_materials.push_back(effect);
+			}
+		}
+		else
+		{
+			effect = RenderSystem::instance()->createMaterial("sys:fx/opacity_diff_only.fxml.o");
+			if (effect)
+			{
+				auto luminance = [](float3 rgb)
+				{
+					const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
+					return math::dot(rgb, lumfact);
+				};
+
+				auto texture = RenderSystem::instance()->createTexture(model->getDirectory() + diffuseTexture, GraphicsTextureDim::GraphicsTextureDim2D);
+				if (texture)
+				{
+					effect->getParameter("diffuse")->uniformTexture(texture);
+					effect->getParameter("specular")->uniform1f(luminance(specular));
+					effect->getParameter("shininess")->uniform1f(shininess);
+
+					_materials.push_back(effect);
+				}
+				else 
+				{
+					_materials.push_back(nullptr);
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+bool
+MeshRenderComponent::_buildRenderObjects(MeshPropertyPtr mesh, ModelMakerFlags flags) noexcept
+{
+	assert(mesh);
+
+	_cleanupRenderhObjects();
+
+	_renderMesh = RenderSystem::instance()->createRenderMesh(*mesh, flags);
+	if (!_renderMesh)
+		return false;
 
 	std::size_t startVertice = 0;
 	std::size_t startIndice = 0;
 
+	if (!_buildRenderObject(mesh, startVertice, startIndice))
+		return false;
+
+	auto& meshes = mesh->getChildren();
 	for (auto& it : meshes)
 	{
-		auto renderObject = std::make_shared<Geometry>();
-
-		if (this->_buildRenderObject(renderObject, it, renderMeshes))
-		{
-			auto renderable = renderObject->getGraphicsIndirect();
-
-			renderable->startVertice = startVertice;
-			renderable->startIndice = startIndice;
-			renderable->numVertices = it->getNumVertices();
-			renderable->numIndices = it->getNumIndices();
-
-			startVertice += it->getNumVertices();
-			startIndice += it->getNumIndices();
-
-			_renderObjects.push_back(renderObject);
-		}
+		if (!_buildRenderObject(it, startVertice, startIndice))
+			return false;
 	};
 
+	_updateMaterials();
 	return true;
+}
+
+bool
+MeshRenderComponent::_buildRenderObject(MeshPropertyPtr mesh, std::size_t& startVertice, std::size_t& startIndice) noexcept
+{
+	auto renderObject = std::make_shared<Geometry>();
+
+	if (this->_buildRenderObject(renderObject, mesh, _renderMesh))
+	{
+		auto renderable = renderObject->getGraphicsIndirect();
+
+		renderable->startVertice = startVertice;
+		renderable->startIndice = startIndice;
+		renderable->numVertices = mesh->getNumVertices();
+		renderable->numIndices = mesh->getNumIndices();
+
+		startVertice += mesh->getNumVertices();
+		startIndice += mesh->getNumIndices();
+
+		_renderObjects.push_back(renderObject);
+		return true;
+	}
+
+	return false;
 }
 
 bool
@@ -309,8 +447,6 @@ MeshRenderComponent::_buildRenderObject(GeometryPtr renderObject, MeshPropertyPt
 	renderObject->setRenderMesh(buffer);
 	renderObject->setBoundingBox(mesh->getBoundingBox());
 	renderObject->setOwnerListener(this);
-
-	renderObject->setMaterial(this->getMaterial());
 
 	renderObject->setCastShadow(this->getCastShadow());
 	renderObject->setReceiveShadow(this->getReceiveShadow());
@@ -334,6 +470,63 @@ MeshRenderComponent::_buildRenderObject(GeometryPtr renderObject, MeshPropertyPt
 	renderObject->setGraphicsIndirect(renderable);
 
 	return true;
+}
+
+void 
+MeshRenderComponent::_updateMaterial(std::size_t n) noexcept
+{
+	if (_renderObjects.size() <= n)
+		return;
+	
+	if (_renderObjects.size() == _materials.size())
+	{
+		_renderObjects[n]->setMaterial(_materials[n]);
+		return;
+	}
+
+	this->_updateMaterials();
+}
+
+void
+MeshRenderComponent::_updateMaterials() noexcept
+{
+	std::size_t objectCount = _renderObjects.size();
+	for (std::size_t i = 0; i < objectCount; i++)
+	{
+		if (_materials.empty())
+			_renderObjects[i]->setMaterial(nullptr);
+		else
+		{
+			if (_materials.size() > i)
+				_renderObjects[i]->setMaterial(_materials[i] ? _materials[i] : _materials[0]);
+			else
+				_renderObjects[i]->setMaterial(_materials[0]);
+		}
+	}
+}
+
+void
+MeshRenderComponent::_setModelMakerFlags(ModelMakerFlags flags) noexcept
+{
+	_flags = flags;
+}
+
+ModelMakerFlags 
+MeshRenderComponent::_getModelMakerFlags() const noexcept
+{
+	return _flags;
+}
+
+void 
+MeshRenderComponent::_setDefaultMaterial(const std::string& material) noexcept
+{
+	_defaultMaterial = material;
+}
+
+const std::string&
+MeshRenderComponent::_getDefaultMaterial() const noexcept
+{
+	return _defaultMaterial;
 }
 
 _NAME_END

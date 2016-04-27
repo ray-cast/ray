@@ -35,10 +35,9 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/mesh_component.h>
-#include <ray/resource.h>
+#include <ray/res_loader.h>
 #include <ray/ioserver.h>
 #include <ray/mstream.h>
-#include <ray/utf8.h>
 
 _NAME_BEGIN
 
@@ -63,24 +62,6 @@ MeshComponent::setMesh(MeshPropertyPtr mesh) noexcept
 		_mesh = mesh;
 
 		this->needUpdate();
-	}
-}
-
-void
-MeshComponent::setCombieInstnace(const CombineInstance& instances) noexcept
-{
-	if (!instances.empty())
-	{
-		if (_mesh == nullptr)
-			_mesh = std::make_shared<MeshProperty>();
-
-		_mesh->mergeMeshes(instances);
-
-		this->needUpdate();
-	}
-	else
-	{
-		this->setMesh(nullptr);
 	}
 }
 
@@ -165,16 +146,20 @@ MeshComponent::load(iarchive& reader) noexcept
 		if (IoServer::instance()->openFile(stream, filename))
 			return model->load(*stream);
 		return false;
-	},
-		[&](ray::ModelPtr model)
+	});
+
+	if (model.isLoaded())
 	{
-		if (model->hasMeshes())
+		auto instance = model.getInstance();
+		if (instance->hasMeshes())
 		{
-			auto mesh = model->getMeshsList().back();
+			instance->setDirectory(util::directory(this->getName()));
+
+			auto mesh = instance->getMeshsList().front();
 			this->setMesh(mesh->clone());
 			this->setSharedMesh(mesh);
 		}
-	});
+	}
 }
 
 void

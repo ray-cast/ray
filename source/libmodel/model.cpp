@@ -160,6 +160,12 @@ Model::getName() const noexcept
 	return _name;
 }
 
+void 
+Model::setDirectory(const std::string& name) noexcept
+{
+	_directory = name;
+}
+
 const std::string&
 Model::getDirectory() const noexcept
 {

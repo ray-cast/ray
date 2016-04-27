@@ -160,6 +160,7 @@ public:
 
 	std::size_t getChildCount() const noexcept;
 	MeshPropertys& getChildren() noexcept;
+	const MeshPropertys& getChildren() const noexcept;
 
 	void setMaterialID(std::size_t index) noexcept;
 	std::size_t getMaterialID() const noexcept;
@@ -207,7 +208,9 @@ public:
 	void makeVolumes(float fovy, float znear, float zfar) noexcept;
 	void makeCone(float radius, float height, std::uint32_t segments, float thetaStart = 0, float thetaLength = M_TWO_PI) noexcept;
 
-	void mergeMeshes(const CombineInstance& instance) noexcept;
+	void combineMeshes(const CombineMesh instances[], std::size_t numInstance, bool merge) noexcept;
+	void combineMeshes(const CombineMeshes& instances, bool merge) noexcept;
+
 	void mergeVertices() noexcept;
 
 	void computeFaceNormals() noexcept;

@@ -13,6 +13,8 @@
             void OpaqueVS(
                 in float4 Position : POSITION,
                 in float4 Normal : NORMAL,
+                in float4 BlendWeight : BLENDWEIGHT,
+                in float4 BlnedIndices : BLENDINDICE,
                 out float4 oNormal : TEXCOORD0,
                 out float3 oDiffuse : TEXCOORD1,
                 out float4 oPosition : SV_Position)
@@ -36,7 +38,7 @@
     </shader>
     <technique name="opaque">
         <pass name="p0">
-            <state name="inputlayout" value="POS3F_N3F"/>
+            <state name="inputlayout" value="POS3F_N3F_W4F_B4UI"/>
             <state name="vertex" value="OpaqueVS"/>
             <state name="fragment" value="OpaquePS"/>
             <state name="primitive" value="triangle" />

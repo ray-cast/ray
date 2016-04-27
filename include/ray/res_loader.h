@@ -82,7 +82,7 @@ public:
 				if (!IoLoader::load())
 					return false;
 
-				if (this->getCache())
+				if (this->isCache())
 					this->doCache();
 			}
 		}
@@ -112,7 +112,7 @@ public:
 				if (!IoLoader::load())
 					return false;
 
-				if (this->getCache())
+				if (this->isCache())
 					this->doCache();
 			}
 		}
@@ -127,6 +127,16 @@ public:
 	static ResourcePtr find(const std::string& path)
 	{
 		return _cacheResources[path];
+	}
+
+	bool isLoaded() const
+	{
+		return _resource ? true : false;
+	}
+
+	ResourcePtr getInstance() const noexcept
+	{
+		return _resource;
 	}
 
 private:

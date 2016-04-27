@@ -325,13 +325,6 @@ RenderSystem::createRenderMesh(const MeshProperty& mesh, ModelMakerFlags flags) 
 	return _pipelineManager->createRenderMesh(mesh, flags);
 }
 
-RenderMeshPtr
-RenderSystem::createRenderMesh(const MeshPropertys& meshes, ModelMakerFlags flags) noexcept
-{
-	assert(_pipelineManager);
-	return _pipelineManager->createRenderMesh(meshes, flags);
-}
-
 void
 RenderSystem::renderBegin() noexcept
 {

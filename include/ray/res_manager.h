@@ -2,7 +2,7 @@
 // | Project : ray.
 // | All rights reserved.
 // +----------------------------------------------------------------------
-// | Copyright (c) 2013-2014.
+// | Copyright (c) 2013-2015.
 // +----------------------------------------------------------------------
 // | * Redistribution and use of this software in source and binary forms,
 // |   with or without modification, are permitted provided that the following
@@ -34,171 +34,31 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#include <ray/iointerface.h>
+#ifndef _H_RES_MANAGER_H_
+#define _H_RES_MANAGER_H_
+
+#include <ray/res_loader.h>
 
 _NAME_BEGIN
 
-__ImplementSingleton(IoInterface)
-
-IoLoader::IoLoader() noexcept
-	: _loaded(false)
-	, _cached(true)
+class EXPORT ResManager final
 {
-}
+	__DeclareSingleton(ResManager)
+public:
+	ResManager() noexcept;
+	~ResManager() noexcept;
 
-IoLoader::~IoLoader() noexcept
-{
-}
-
-void
-IoLoader::setCache(bool _cache) noexcept
-{
-	if (_cached != _cache)
+	template<typename T>
+	std::shared_ptr<T> find(const std::string& name) noexcept
 	{
-		if (!_name.empty())
-		{
-			if (_cache)
-				this->doCache();
-			else
-				this->doUnCache();
-		}
-
-		_cached = _cache;
-	}
-}
-
-bool
-IoLoader::isCache() const noexcept
-{
-	return _cached;
-}
-
-bool
-IoLoader::load()
-{
-	if (!_loaded)
-	{
-		if (this->doLoad())
-			_loaded = true;
+		return ResLoader<T>::find(name);
 	}
 
-	if (_loaded)
-		this->doLoaded();
-
-	return _loaded;
-}
-
-bool
-IoLoader::loaded() const noexcept
-{
-	return _loaded;
-}
-
-void
-IoLoader::setName(const std::string& str) noexcept
-{
-	_name = str;
-}
-
-const std::string&
-IoLoader::getName() const noexcept
-{
-	return _name;
-}
-
-IoInterface::IoInterface() noexcept
-	: _isQuit(false)
-	, _isPause(false)
-{
-}
-
-IoInterface::~IoInterface() noexcept
-{
-	this->close();
-}
-
-void
-IoInterface::pause() noexcept
-{
-	_isPause = true;
-}
-
-void
-IoInterface::resume() noexcept
-{
-	_isPause = false;
-}
-
-bool
-IoInterface::running() noexcept
-{
-	return _isPause;
-}
-
-void
-IoInterface::load(IoLoader& resource, bool async)
-{
-	if (async)
-	{
-		_queue.push(resource.clone());
-		_dispose.notify_one();
-	}
-	else
-	{
-		resource.load();
-	}
-}
-
-void
-IoInterface::open() noexcept
-{
-	if (!_disposeThread)
-	{
-		_disposeThread = std::make_unique<std::thread>(std::bind(&IoInterface::dispose, this));
-	}
-}
-
-void
-IoInterface::close() noexcept
-{
-	_isQuit = true;
-	if (_disposeThread)
-	{
-		_dispose.notify_one();
-		_disposeThread->join();
-		_disposeThread.reset();
-	}
-}
-
-void
-IoInterface::dispose()
-{
-	try
-	{
-		while (!_isQuit)
-		{
-			std::unique_lock<std::mutex> _lock(_mutex);
-			if (_queue.empty())
-			{
-				_dispose.wait(_lock);
-			}
-
-			if (!_queue.empty())
-			{
-				auto res = _queue.front();
-				_queue.pop();
-
-				if (res)
-				{
-					res->load();
-				}
-			}
-		}
-	}
-	catch (...)
-	{
-		_isQuit = true;
-	}
-}
+private:
+	ResManager(const ResManager&) = delete;
+	ResManager& operator=(const ResManager&) = delete;
+};
 
 _NAME_END
+
+#endif

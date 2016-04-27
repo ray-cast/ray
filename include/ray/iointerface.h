@@ -61,7 +61,7 @@ public:
 	bool load() except;
 
 	void setCache(bool cache) noexcept;
-	bool getCache() const noexcept;
+	bool isCache() const noexcept;
 
 	virtual std::shared_ptr<IoLoader> clone() const = 0;
 

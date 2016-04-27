@@ -36,7 +36,7 @@
 // +----------------------------------------------------------------------
 #include <ray/anim_component.h>
 #include <ray/mesh_component.h>
-#include <ray/resource.h>
+#include <ray/res_loader.h>
 #include <ray/model.h>
 #include <ray/mstream.h>
 #include <ray/ioserver.h>

@@ -54,6 +54,12 @@ public:
 	MaterialPtr getMaterial() const noexcept;
 	MaterialPtr getSharedMaterial() const noexcept;
 
+	void setMaterials(const Materials& material) noexcept;
+	void setSharedMaterials(const Materials& material) noexcept;
+
+	const Materials& getMaterials() const noexcept;
+	const Materials& getSharedMaterials() const noexcept;
+
 	bool hasMaterial() const noexcept;
 	bool hasSharedMaterial() const noexcept;
 
@@ -63,7 +69,6 @@ public:
 	GameComponentPtr clone() const noexcept;
 
 protected:
-
 	virtual void onActivate() except;
 	virtual void onDeactivate() noexcept;
 
@@ -72,15 +77,30 @@ protected:
 	virtual void onMoveAfter() noexcept;
 	virtual void onLayerChangeAfter() noexcept;
 
-	virtual void onAttachComponent(GameComponentPtr& component) except;
+	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
 	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
 
 protected:
 	void _attacRenderObjects() noexcept;
-	void _dettachRenderhObjects() noexcept;
 
-	bool _buildMaterials() except;
-	bool _buildRenderObjects(MeshPropertyPtr mesh) noexcept;
+	void _cleanupRenderhObjects() noexcept;
+	void _cleanupMaterials() noexcept;
+
+	bool _buildMaterials(const std::string& filename) noexcept;
+	bool _buildDefaultMaterials(const std::string& filename) noexcept;
+	bool _buildRenderObjects(MeshPropertyPtr mesh, ModelMakerFlags flags) noexcept;
+
+	void _updateMaterial(std::size_t n) noexcept;
+	void _updateMaterials() noexcept;
+
+	void _setModelMakerFlags(ModelMakerFlags flags) noexcept;
+	ModelMakerFlags _getModelMakerFlags() const noexcept;
+
+	void _setDefaultMaterial(const std::string& material) noexcept;
+	const std::string& _getDefaultMaterial() const noexcept;
+
+private:
+	bool _buildRenderObject(MeshPropertyPtr mesh, std::size_t& startVertice, std::size_t& startIndice) noexcept;
 	bool _buildRenderObject(GeometryPtr geometry, MeshPropertyPtr mesh, RenderMeshPtr buffer) noexcept;
 
 private:
@@ -89,9 +109,16 @@ private:
 
 private:
 
-	MaterialPtr _material;
-	MaterialPtr _sharedMaterial;
-	RenderObjects _renderObjects;
+	Materials _materials;
+	Materials _sharedMaterials;
+
+	RenderMeshPtr _renderMesh;
+	Geometryes _renderObjects;
+
+	ModelMakerFlags _flags;
+
+	std::string _material;
+	std::string _defaultMaterial;
 };
 
 _NAME_END

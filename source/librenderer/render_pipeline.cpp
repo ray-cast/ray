@@ -553,13 +553,6 @@ RenderPipeline::createRenderMesh(const MeshProperty& mesh, ModelMakerFlags flags
 	return _pipelineDevice->createRenderMesh(mesh, flags);
 }
 
-RenderMeshPtr
-RenderPipeline::createRenderMesh(const MeshPropertys& mesh, ModelMakerFlags flags) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderMesh(mesh, flags);
-}
-
 MaterialParamPtr
 RenderPipeline::createSemantic(const std::string& name, GraphicsUniformType type) noexcept
 {
@@ -722,7 +715,7 @@ RenderPipeline::setupBaseMeshes() noexcept
 	MeshProperty mesh;
 	mesh.makePlane(2, 2, 1, 1);
 
-	_renderScreenQuad = this->createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex | ModelMakerFlagBits::ModelMakerFlagBitFace);
+	_renderScreenQuad = this->createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
 	if (!_renderScreenQuad)
 		return false;
 
@@ -734,7 +727,7 @@ RenderPipeline::setupBaseMeshes() noexcept
 
 	mesh.makeSphere(1, 24, 18);
 
-	_renderSphere = this->createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex | ModelMakerFlagBits::ModelMakerFlagBitFace);
+	_renderSphere = this->createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
 	if (!_renderSphere)
 		return false;
 
@@ -746,7 +739,7 @@ RenderPipeline::setupBaseMeshes() noexcept
 
 	mesh.makeCone(1, 1, 16);
 
-	_renderCone = this->createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex | ModelMakerFlagBits::ModelMakerFlagBitFace);
+	_renderCone = this->createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
 	if (!_renderCone)
 		return false;
 

@@ -120,7 +120,6 @@ public:
 
 	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
 	RenderMeshPtr createRenderMesh(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
-	RenderMeshPtr createRenderMesh(const MeshPropertys& mesh, ModelMakerFlags flags) noexcept;
 
 	MaterialParamPtr createSemantic(const std::string& name, GraphicsUniformType type) noexcept;
 	void destroySemantic(MaterialParamPtr semantic) const noexcept;

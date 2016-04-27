@@ -663,13 +663,6 @@ RenderPipelineManager::createRenderMesh(const MeshProperty& mesh, ModelMakerFlag
 	return _pipelineDevice->createRenderMesh(mesh, flags);
 }
 
-RenderMeshPtr
-RenderPipelineManager::createRenderMesh(const MeshPropertys& mesh, ModelMakerFlags flags) noexcept
-{
-	assert(_pipelineDevice);
-	return _pipelineDevice->createRenderMesh(mesh, flags);
-}
-
 bool
 RenderPipelineManager::setupShadowRenderer(RenderPipelinePtr pipeline) noexcept
 {

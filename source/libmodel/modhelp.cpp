@@ -513,6 +513,12 @@ MeshProperty::getChildren() noexcept
 	return _children;
 }
 
+const MeshPropertys&
+MeshProperty::getChildren() const noexcept
+{
+	return _children;
+}
+
 void
 MeshProperty::setMaterialID(std::size_t index) noexcept
 {
@@ -1208,7 +1214,7 @@ MeshProperty::makeCone(float radius, float height, std::uint32_t segments, float
 }
 
 void
-MeshProperty::mergeMeshes(const CombineInstance& instance) noexcept
+MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstance, bool merge) noexcept
 {
 	this->clear();
 
@@ -1223,10 +1229,9 @@ MeshProperty::mergeMeshes(const CombineInstance& instance) noexcept
 	bool hasTexcoord = false;
 	bool hasFace = false;
 
-	auto& meshes = instance.getInstances();
-	for (auto& it : meshes)
+	for (std::size_t i = 0; i < numInstance; i++)
 	{
-		auto mesh = it.getMesh();
+		auto mesh = instances[i].getMesh();
 		if (mesh)
 		{
 			maxVertices += mesh->getNumVertices();
@@ -1251,15 +1256,15 @@ MeshProperty::mergeMeshes(const CombineInstance& instance) noexcept
 	if (hasFace)
 		this->_faces.resize(maxIndices);
 
-	for (auto& it : meshes)
+	for (std::size_t i = 0; i < numInstance; i++)
 	{
-		auto mesh = it.getMesh();
+		auto mesh = instances[i].getMesh();
 		if (mesh)
 		{
 			std::size_t numVertex = mesh->getNumVertices();
 			std::size_t numIndex = mesh->getNumIndices();
 
-			auto transform = it.getTransform();
+			auto transform = instances[i].getTransform();
 
 			if (numVertex)
 			{
@@ -1268,8 +1273,8 @@ MeshProperty::mergeMeshes(const CombineInstance& instance) noexcept
 					auto translate = transform.getTranslate();
 
 					auto& vertices = mesh->getVertexArray();
-					for (std::size_t i = 0; i < vertices.size(); i++)
-						_vertices[i + offsetIndices] = (vertices[i] + translate);
+					for (std::size_t j = 0; j < vertices.size(); j++)
+						_vertices[j + offsetIndices] = (vertices[j] + translate);
 
 					auto& normals = mesh->getNormalArray();
 					if (!normals.empty())
@@ -1312,6 +1317,12 @@ MeshProperty::mergeMeshes(const CombineInstance& instance) noexcept
 	}
 
 	this->computeBoundingBox();
+}
+
+void 
+MeshProperty::combineMeshes(const CombineMeshes& instances, bool merge) noexcept
+{
+	this->combineMeshes(instances.data(), instances.size(), merge);
 }
 
 void

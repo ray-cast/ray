@@ -61,6 +61,7 @@ typedef std::vector<VertexWeight> VertexWeights;
 typedef std::vector<MeshPropertyPtr> MeshPropertys;
 typedef std::vector<Bone> Bones;
 typedef std::vector<IKAttr> InverseKinematics;
+typedef std::vector<class CombineMesh> CombineMeshes;
 
 enum TextureType
 {

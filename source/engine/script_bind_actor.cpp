@@ -179,23 +179,23 @@ ScriptBindActor::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectMethod("Mesh", "void setTexcoordArray(const vector<float2>& in)", asFUNCTION(setTexcoordArray), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("Mesh", "void setFaceArray(const vector<uint>& in)", asFUNCTION(setFaceArray), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 
-	r = engine->RegisterObjectType("CombineMesh", sizeof(CombineInstance::Instance), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("CombineMesh", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<CombineInstance::Instance>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("CombineMesh", asBEHAVE_CONSTRUCT, "void f(const CombineMesh& in)", asFUNCTION(copy_construct<CombineInstance::Instance>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("CombineMesh", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(destroy<CombineInstance::Instance>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectMethod("CombineMesh", "void setMesh(Mesh& in)", asMETHOD(CombineInstance::Instance, setMesh), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("CombineMesh", "void setTransform(const float4x4& in)", asMETHOD(CombineInstance::Instance, setTransform), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("CombineMesh", "void setTransform(const float3& in, const float3& in = float3(0,0,0), const float3& in = float3(1,1,1))", asMETHOD(CombineInstance::Instance, makeTransform), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("CombineMesh", "Mesh getMesh()", asMETHOD(CombineInstance::Instance, getMesh), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("CombineMesh", "const float4x4& getTransform()", asMETHOD(CombineInstance::Instance, getTransform), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectType("CombineMesh", sizeof(CombineMesh), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("CombineMesh", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<CombineMesh>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("CombineMesh", asBEHAVE_CONSTRUCT, "void f(const CombineMesh& in)", asFUNCTION(copy_construct<CombineMesh>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("CombineMesh", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(destroy<CombineMesh>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("CombineMesh", "void setMesh(Mesh& in)", asMETHOD(CombineMesh, setMesh), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("CombineMesh", "void setTransform(const float4x4& in)", asMETHOD(CombineMesh, setTransform), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("CombineMesh", "void setTransform(const float3& in, const float3& in = float3(0,0,0), const float3& in = float3(1,1,1))", asMETHOD(CombineMesh, makeTransform), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("CombineMesh", "Mesh getMesh()", asMETHOD(CombineMesh, getMesh), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("CombineMesh", "const float4x4& getTransform()", asMETHOD(CombineMesh, getTransform), asCALL_THISCALL); assert(r >= 0);
 
-	r = engine->RegisterObjectType("CombineInstance", sizeof(CombineInstance), asOBJ_VALUE | asOBJ_APP_CLASS_CDK); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("CombineInstance", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<CombineInstance>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("CombineInstance", asBEHAVE_CONSTRUCT, "void f(int i)", asFUNCTION((construct_1<CombineInstance, int>)), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("CombineInstance", asBEHAVE_CONSTRUCT, "void f(const CombineInstance& in)", asFUNCTION(copy_construct<CombineInstance>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectBehaviour("CombineInstance", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(destroy<CombineInstance>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectMethod("CombineInstance", "CombineMesh& opIndex(uint)", asMETHOD(CombineInstance, at), asCALL_THISCALL); assert(r >= 0);
-	r = engine->RegisterObjectMethod("CombineInstance", "const CombineMesh& opIndex(uint) const", asMETHOD(CombineInstance, at), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectType("CombineMeshes", sizeof(CombineMeshes), asOBJ_VALUE | asOBJ_APP_CLASS_CDK); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("CombineMeshes", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<CombineMeshes>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("CombineMeshes", asBEHAVE_CONSTRUCT, "void f(int i)", asFUNCTION((construct_1<CombineMeshes, int>)), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("CombineMeshes", asBEHAVE_CONSTRUCT, "void f(const CombineMeshes& in)", asFUNCTION(copy_construct<CombineMeshes>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectBehaviour("CombineMeshes", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(destroy<CombineMeshes>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("CombineMeshes", "CombineMesh& opIndex(uint)", asMETHOD(CombineMeshes, at), asCALL_THISCALL); assert(r >= 0);
+	r = engine->RegisterObjectMethod("CombineMeshes", "const CombineMesh& opIndex(uint) const", asMETHOD(CombineMeshes, at), asCALL_THISCALL); assert(r >= 0);
 
 	r = engine->RegisterObjectType("MeshFilter", sizeof(MeshComponentPtr), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK); assert(r >= 0);
 	r = engine->RegisterObjectBehaviour("MeshFilter", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(construct<MeshComponentPtr>), asCALL_CDECL_OBJFIRST); assert(r >= 0);
@@ -209,7 +209,7 @@ ScriptBindActor::setup(asIScriptEngine* engine) noexcept
 	r = engine->RegisterObjectMethod("MeshFilter", "const string& getName() const", CALLER(MeshComponent, getName), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("MeshFilter", "void setMesh(Mesh)", CALLER(MeshComponent, setMesh), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("MeshFilter", "Mesh getMesh() const", CALLER(MeshComponent, getMesh), asCALL_CDECL_OBJFIRST); assert(r >= 0);
-	r = engine->RegisterObjectMethod("MeshFilter", "void setCombieInstnace(const CombineInstance& in)", CALLER(MeshComponent, setCombieInstnace), asCALL_CDECL_OBJFIRST); assert(r >= 0);
+	r = engine->RegisterObjectMethod("MeshFilter", "void setCombieInstnace(const CombineMeshes& in)", CALLER(MeshComponent, setCombieInstnace), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("MeshFilter", "const BoundingBox& getBoundingBox() const", CALLER(MeshComponent, getBoundingBox), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 	r = engine->RegisterObjectMethod("MeshFilter", "const BoundingBox& getBoundingBoxDownwards() const", CALLER(MeshComponent, getBoundingBoxDownwards), asCALL_CDECL_OBJFIRST); assert(r >= 0);
 

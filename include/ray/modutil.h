@@ -41,88 +41,47 @@
 
 _NAME_BEGIN
 
-class CombineInstance
+class CombineMesh
 {
 public:
-	struct Instance
-	{
-		Matrix4x4 transform;
-		MeshPropertyPtr mesh;
-
-		void setMesh(MeshPropertyPtr other)
-		{
-			mesh = other;
-		}
-
-		MeshPropertyPtr getMesh() const
-		{
-			return mesh;
-		}
-
-		void setTransform(const float4x4& m)
-		{
-			transform = m;
-		}
-
-		void makeTransform(const float3& translate, const EulerAngles& euler, const float3& scale)
-		{
-			transform.makeTransform(translate, Quaternion().makeRotate(euler), scale);
-		}
-
-		const Matrix4x4& getTransform() const
-		{
-			return transform;
-		}
-	};
-
-public:
-	CombineInstance() noexcept
+	CombineMesh() noexcept
 	{
 	}
 
-	CombineInstance(std::size_t size)
-	{
-		_instances.resize(size);
-		for (auto& it : _instances)
-			it.transform.loadIdentity();
-	}
-
-	~CombineInstance() noexcept
+	CombineMesh(const MeshPropertyPtr mesh, const float4x4& transform = float4x4::One) noexcept
+		: transform(transform)
+		, mesh(mesh)
 	{
 	}
 
-	void resize(std::size_t size)
+	void setMesh(MeshPropertyPtr other) noexcept
 	{
-		_instances.resize(size);
+		mesh = other;
 	}
 
-	bool empty() const noexcept
+	MeshPropertyPtr getMesh() const noexcept
 	{
-		return _instances.empty();
+		return mesh;
 	}
 
-	Instance& at(std::size_t i)
+	void setTransform(const float4x4& m) noexcept
 	{
-		return _instances[i];
+		transform = m;
 	}
 
-	Instance& operator[](std::size_t i)
+	void makeTransform(const float3& translate, const EulerAngles& euler, const float3& scale) noexcept
 	{
-		return _instances[i];
+		transform.makeTransform(translate, Quaternion().makeRotate(euler), scale);
 	}
 
-	const std::vector<Instance>& getInstances() const noexcept
+	const float4x4& getTransform() const noexcept
 	{
-		return _instances;
-	}
-
-	void push_back(Instance& instance)
-	{
-		_instances.push_back(instance);
+		return transform;
 	}
 
 private:
-	std::vector<Instance> _instances;
+	float4x4 transform;
+	MeshPropertyPtr mesh;
 };
 
 _NAME_END

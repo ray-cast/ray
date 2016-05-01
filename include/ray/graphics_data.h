@@ -78,6 +78,9 @@ public:
 	GraphicsData() noexcept;
 	virtual ~GraphicsData() noexcept;
 
+	virtual bool map(std::uint32_t offset, std::uint32_t count, void** data) noexcept = 0;
+	virtual void unmap() noexcept = 0;
+
 	virtual const GraphicsDataDesc& getGraphicsDataDesc() const noexcept = 0;
 
 private:

@@ -116,10 +116,10 @@ enum CameraOrder
 {
 	CameraOrderCustom,
 	CameraOrderShadow,
-	CameraOrder2D,
 	CameraOrder3D,
+	CameraOrder2D,
 	CameraOrderBeginRange = CameraOrderCustom,
-	CameraOrderEndRange = CameraOrder3D,
+	CameraOrderEndRange = CameraOrder2D,
 	CameraOrderRangeSize = (CameraOrderEndRange - CameraOrderBeginRange + 1),
 	CameraOrderMaxEnum = 0x7FFFFFFF
 };
@@ -128,14 +128,12 @@ enum CameraRenderFlagBits
 {
 	CameraRenderScreenBit = 0x00000001,
 	CameraRenderTextureBit = 0x00000002,
-	CameraRenderSkyboxBit = 0x00000004,
-	CameraRenderSkyLightingBit = 0x00000004,
-	CameraRenderGbufferDiffuseBit = 0x00000008,
-	CameraRenderGbufferNormalBit = 0x00000010,
-	CameraRenderLightingBit = 0x00000020,
-	CameraRenderShadingBit = 0x00000040,
+	CameraRenderGbufferDiffuseBit = 0x00000004,
+	CameraRenderGbufferNormalBit = 0x0000008,
+	CameraRenderLightingBit = 0x00000010,
+	CameraRenderShadingBit = 0x00000020,
 	CameraOrderBeginBit = CameraRenderScreenBit,
-	CameraOrderEndBit = CameraRenderSkyLightingBit,
+	CameraOrderEndBit = CameraRenderShadingBit,
 	CameraOrderMaxBit = 0x7FFFFFFF
 };
 
@@ -183,6 +181,7 @@ enum RenderQueue
 	RenderQueueOpaqueBatch,
 	RenderQueueOpaqueSpecific,
 	RenderQueueOpaqueSpecificBatch,
+	RenderQueueOpaqueShading,
 	RenderQueueTransparent,
 	RenderQueueTransparentBatch,
 	RenderQueueTransparentSpecific,

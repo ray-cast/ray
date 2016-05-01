@@ -40,6 +40,7 @@
 #include <ray/graphics_shader.h>
 #include <ray/graphics_pipeline.h>
 #include <ray/graphics_descriptor.h>
+#include <ray/graphics_input_layout.h>
 
 _NAME_BEGIN
 
@@ -111,6 +112,26 @@ MaterialPass::setup(Material& material) noexcept
 	assert(_state);
 	assert(_program);
 	assert(_inputLayout);
+
+	if (!_inputLayout)
+	{
+		GraphicsInputLayoutDesc inputLayoutDesc;
+
+		std::size_t offset = 0;
+		std::size_t location = 0;
+		const auto& attributes = _program->getActiveAttributes();
+		for (auto& attrib : attributes)
+		{
+			const auto& semantic = attrib->getSemantic();
+			inputLayoutDesc.addComponent(GraphicsVertexLayout(semantic, attrib->getType(), offset));
+			location++;
+			offset += GraphicsVertexLayout::getVertexSize(attrib->getType());
+		}
+		
+		_inputLayout = _program->getDevice()->createInputLayout(inputLayoutDesc);
+		if (!_inputLayout)
+			return false;
+	}
 
 	if (!_descriptorSetLayout)
 	{

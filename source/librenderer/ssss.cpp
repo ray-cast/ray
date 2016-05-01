@@ -62,7 +62,7 @@ SSSS::setup(RenderPipeline& pipeline) noexcept
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);
 
-	_material = pipeline.createMaterial("sys:fx/ssss.fxml.o");
+	_material = pipeline.createMaterial("sys:fx/ssss.fxml");
 	if (!_material)
 		return false;
 

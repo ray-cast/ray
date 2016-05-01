@@ -122,40 +122,66 @@ struct PMX_Description
 	std::vector<PMX_char> EnglishCommentName;
 };
 
-struct PMX_BoneWeight
+struct PMX_BONE_BDEF1
 {
-	PMX_BoneWeight()
-		: Bone1(0)
-		, Bone2(0)
-		, Bone3(0)
-		, Bone4(0)
-		, Weight1(0)
-		, Weight2(0)
-		, Weight3(0)
-		, Weight4(0)
-	{
-	}
+	PMX_uint16_t Bone1;
+};
 
-	PMX_uint16_t Bone1;    // 骨骼索引
+struct PMX_BONE_BDEF2
+{
+	PMX_uint16_t Bone1;
+	PMX_uint16_t Bone2;
 
-	PMX_uint16_t Bone2;    // 骨骼索引
+	PMX_Float Weight1;
+};
 
-	PMX_uint16_t Bone3;    // 骨骼索引
+struct PMX_BONE_BDEF4
+{
+	PMX_uint16_t Bone1;
+	PMX_uint16_t Bone2;
+	PMX_uint16_t Bone3;
+	PMX_uint16_t Bone4;
 
-	PMX_uint16_t Bone4;    // 骨骼索引
+	PMX_Float Weight1;
+	PMX_Float Weight2;
+	PMX_Float Weight3;
+	PMX_Float Weight4;
+};
 
-	PMX_Float Weight1;     // 权重
+struct PMX_BONE_SDEF
+{
+	PMX_uint16_t Bone1;
+	PMX_uint16_t Bone2;
 
-	PMX_Float Weight2;     // 权重
-
-	PMX_Float Weight3;     // 权重
-
-	PMX_Float Weight4;     // 权重
+	PMX_Float Weight1;
 
 	PMX_Vector3 SDEF_C;
-
 	PMX_Vector3 SDEF_R0;
+	PMX_Vector3 SDEF_R1;
+};
 
+struct PMX_BONE_QDEF
+{
+	PMX_uint16_t Bone1;
+	PMX_uint16_t Bone2;
+
+	PMX_Float Weight1;
+};
+
+struct PMX_BoneWeight
+{
+	PMX_uint16_t Bone1;
+	PMX_uint16_t Bone2;
+	PMX_uint16_t Bone3;
+	PMX_uint16_t Bone4;
+
+	PMX_Float Weight1;
+	PMX_Float Weight2;
+	PMX_Float Weight3;
+	PMX_Float Weight4;
+
+	PMX_Vector3 SDEF_C;
+	PMX_Vector3 SDEF_R0;
 	PMX_Vector3 SDEF_R1;
 };
 
@@ -180,7 +206,7 @@ struct PMX_Vertex
 
 typedef PMX_uint32_t PMX_IndexCount;
 
-typedef PMX_uint32_t PMX_Index; //顶点索引
+typedef PMX_uint8_t PMX_Index; //顶点索引
 
 typedef PMX_uint32_t PMX_TextureCount;
 

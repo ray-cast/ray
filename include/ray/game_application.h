@@ -71,6 +71,9 @@ public:
 	bool sendMessage(const MessagePtr& message) noexcept;
 	bool postMessage(const MessagePtr& message) noexcept;
 
+	bool sendInputEvent(const InputEvent& event) noexcept;
+	bool postInputEvent(const InputEvent& event) noexcept;
+
 	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
 	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) noexcept;
 	void addWindowSizeChangeCallback(std::function<void()> func) noexcept;

@@ -39,6 +39,10 @@
 #include "vk_system.h"
 
 #include <GL/glew.h>
+
+#define EXCLUDE_PSTDINT
+#include <hlslcc.hpp>
+
 #include <SPIRV/GlslangToSpv.h>
 
 _NAME_BEGIN
@@ -52,7 +56,7 @@ __ImplementSubClass(VulkanGraphicsUniformBlock, GraphicsUniformBlock, "VulkanGra
 VulkanGraphicsAttribute::VulkanGraphicsAttribute() noexcept
 	: _index(0)
 	, _bindingPoint(GL_INVALID_INDEX)
-	, _type(GraphicsUniformType::GraphicsUniformTypeNone)
+	, _type(GraphicsFormat::GraphicsFormatUndefined)
 {
 }
 
@@ -73,12 +77,12 @@ VulkanGraphicsAttribute::getName() const noexcept
 }
 
 void
-VulkanGraphicsAttribute::setType(GraphicsUniformType type) noexcept
+VulkanGraphicsAttribute::setType(GraphicsFormat type) noexcept
 {
 	_type = type;
 }
 
-GraphicsUniformType
+GraphicsFormat
 VulkanGraphicsAttribute::getType() const noexcept
 {
 	return _type;
@@ -273,14 +277,20 @@ VulkanShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 {
 	assert(_vkShader == VK_NULL_HANDLE);
 
-	if (shaderDesc.getLanguage() != GraphicsShaderLang::GraphicsShaderLangGLSL)
-	{
-		VK_PLATFORM_LOG("Can't support shader language.");
+	if (shaderDesc.getByteCodes().empty())
 		return false;
+
+	const char* codes = shaderDesc.getByteCodes().data();
+
+	std::string conv;
+	if (shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangHLSLbytecodes)
+	{
+		HlslByteCodes2GLSL(shaderDesc.getStage(), shaderDesc.getByteCodes().data(), conv);
+		codes = conv.data();
 	}
 
 	std::vector<std::uint32_t> bytecodes;
-	if (!GLSLtoSPV(VulkanTypes::asShaderStage(shaderDesc.getStage()), shaderDesc.getByteCodes().data(), bytecodes))
+	if (!GLSLtoSPV(VulkanTypes::asShaderStage(shaderDesc.getStage()), codes, bytecodes))
 	{
 		VK_PLATFORM_LOG("Can't conv glsl to spv.");
 		return false;
@@ -300,6 +310,8 @@ VulkanShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 	}
 
 	_shaderDesc = shaderDesc;
+	_shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangGLSL);
+	_shaderDesc.setByteCodes(codes);
 	return true;
 }
 
@@ -336,6 +348,31 @@ VulkanShader::getGraphicsShaderDesc() const noexcept
 {
 	return _shaderDesc;
 }
+
+bool
+VulkanShader::HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, std::string& out)
+{
+	std::uint32_t flags = HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES | HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT;
+	if (stage == GraphicsShaderStage::GraphicsShaderStageGeometry)
+		flags = HLSLCC_FLAG_GS_ENABLED;
+	else if (stage == GraphicsShaderStage::GraphicsShaderStageTessControl)
+		flags = HLSLCC_FLAG_TESS_ENABLED;
+	else if (stage == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
+		flags = HLSLCC_FLAG_TESS_ENABLED;
+
+	GLSLShader shader;
+	GLSLCrossDependencyData dependency;
+	if (!TranslateHLSLFromMem(codes, flags, GLLang::LANG_DEFAULT, nullptr, &dependency, &shader))
+	{
+		FreeGLSLShader(&shader);
+		return false;
+	}
+
+	out = shader.sourceCode;
+	FreeGLSLShader(&shader);
+	return true;
+}
+
 
 bool
 VulkanShader::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *pshader, std::vector<unsigned int> &spirv)

@@ -54,15 +54,19 @@ _NAME_BEGIN
 __ImplementSubClass(MeshRenderComponent, GameComponent, "MeshRender")
 
 MeshRenderComponent::MeshRenderComponent() noexcept
-	: _flags(ModelMakerFlagBits::ModelMakerFlagBit_VER_TEX_NORMAL)
-	, _defaultMaterial("sys:fx/opacity.fxml.o")
+	: _flags(ModelMakerFlagBits::ModelMakerFlagBitALL)
 {
+}
+
+MeshRenderComponent::MeshRenderComponent(MaterialPtr material) noexcept
+{
+	this->setMaterial(material);
 }
 
 MeshRenderComponent::~MeshRenderComponent() noexcept
 {
-	this->_cleanupMaterials();
-	this->_cleanupRenderhObjects();
+	this->_destroyMaterials();
+	this->_destroyRenderhObjects();
 }
 
 void
@@ -157,13 +161,11 @@ MeshRenderComponent::clone() const noexcept
 	result->setActive(this->getActive());
 	result->setCastShadow(this->getCastShadow());
 	result->setReceiveShadow(this->getReceiveShadow());
-	result->setSharedMaterials(this->getSharedMaterials());
-	result->_setDefaultMaterial(this->_getDefaultMaterial());
+	result->setSharedMaterials(this->getMaterials());
+	result->_material = this->_material;
 
-	if (this->hasSharedMaterial())
-	{
-		result->setMaterial(this->getSharedMaterial()->clone());
-	}
+	for (auto& material : this->_materials)
+		result->_materials.push_back(material->clone());
 
 	return result;
 }
@@ -220,18 +222,18 @@ MeshRenderComponent::onActivate() except
 		if (!_material.empty())
 			_buildMaterials(_material);
 		else
-			_buildDefaultMaterials(_defaultMaterial);
+			_buildDefaultMaterials("sys:fx/opacity.fxml");
 	}
 
-	_buildRenderObjects(mesh, _flags);
+	_buildRenderObjects(*mesh, _flags);
 	_attacRenderObjects();
 }
 
 void
 MeshRenderComponent::onDeactivate() noexcept
 {
-	this->_cleanupMaterials();
-	this->_cleanupRenderhObjects();
+	this->_destroyMaterials();
+	this->_destroyRenderhObjects();
 }
 
 void
@@ -246,13 +248,20 @@ MeshRenderComponent::onMeshChange() except
 		auto mesh = component->getMesh();
 		if (!mesh)
 		{
-			this->_cleanupRenderhObjects();
+			this->_destroyRenderhObjects();
 			return;
 		}
 
-		_buildRenderObjects(mesh, _flags);
+		_buildRenderObjects(*mesh, _flags);
 		_attacRenderObjects();
 	}
+}
+
+void
+MeshRenderComponent::_attacRenderObject(GeometryPtr object) noexcept
+{
+	if (object)
+		_renderObjects.push_back(object);
 }
 
 void
@@ -269,13 +278,25 @@ MeshRenderComponent::_attacRenderObjects() noexcept
 
 	for (auto& it : _renderObjects)
 	{
-		if (it->getRenderMesh() && it->getMaterial())
-			it->setRenderScene(renderScene);
-	}		
+		it->setRenderScene(renderScene);
+	}
+}
+
+void 
+MeshRenderComponent::_destroyRenderhObject(GeometryPtr object) noexcept
+{
+	assert(object);
+
+	auto it = std::find(_renderObjects.begin(), _renderObjects.end(), object);
+	if (it != _renderObjects.end())
+	{
+		(*it)->setRenderScene(nullptr);
+		_renderObjects.erase(it);
+	}
 }
 
 void
-MeshRenderComponent::_cleanupRenderhObjects() noexcept
+MeshRenderComponent::_destroyRenderhObjects() noexcept
 {
 	for (auto& it : _renderObjects)
 		it->setRenderScene(nullptr);
@@ -285,7 +306,7 @@ MeshRenderComponent::_cleanupRenderhObjects() noexcept
 }
 
 void
-MeshRenderComponent::_cleanupMaterials() noexcept
+MeshRenderComponent::_destroyMaterials() noexcept
 {
 	_materials.clear();
 	_sharedMaterials.clear();
@@ -328,61 +349,42 @@ MeshRenderComponent::_buildDefaultMaterials(const std::string& filename) noexcep
 	{
 		float3 specular(0.5f);
 		float3 diffuseColor(1.0f);
-		float shininess(0.5);
+		float4 quality(0.0f);
+		float shininess = 0.0;
+		float opacity = 1.0;
 		std::string diffuseTexture;
 		
-		if (!material->get(MATKEY_TEXTURE_DIFFUSE(0), diffuseTexture))
-		{
-			material->get(MATKEY_COLOR_DIFFUSE, diffuseColor);
-		}
-		
-		material->get(MATKEY_COLOR_SPECULAR, specular);
+		material->get(MATKEY_OPACITY, opacity);
 		material->get(MATKEY_SHININESS, shininess);
+		material->get(MATKEY_COLOR_DIFFUSE, diffuseColor);
+		material->get(MATKEY_COLOR_SPECULAR, specular);
+		material->get(MATKEY_TEXTURE_DIFFUSE(0), diffuseTexture);
 
 		MaterialPtr effect;
-		if (diffuseTexture.empty())
-		{
-			effect = RenderSystem::instance()->createMaterial(filename);
-			if (effect)
-			{
-				auto luminance = [](float3 rgb)
-				{
-					const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
-					return math::dot(rgb, lumfact);
-				};
-
-				effect->getParameter("diffuse")->uniform3f(diffuseColor);
-				effect->getParameter("specular")->uniform1f(luminance(specular));
-				effect->getParameter("shininess")->uniform1f(shininess);
-
-				_materials.push_back(effect);
-			}
-		}
+		effect = RenderSystem::instance()->createMaterial("sys:fx/opacity_skinning0.fxml");
+		if (!effect)
+			_materials.push_back(nullptr);
 		else
 		{
-			effect = RenderSystem::instance()->createMaterial("sys:fx/opacity_diff_only.fxml.o");
-			if (effect)
+			auto luminance = [](const float3& rgb)
 			{
-				auto luminance = [](float3 rgb)
-				{
-					const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
-					return math::dot(rgb, lumfact);
-				};
+				const float3 lumfact = float3(0.2126f, 0.7152f, 0.0722f);
+				return math::dot(rgb, lumfact);
+			};
 
-				auto texture = RenderSystem::instance()->createTexture(model->getDirectory() + diffuseTexture, GraphicsTextureDim::GraphicsTextureDim2D);
-				if (texture)
-				{
-					effect->getParameter("diffuse")->uniformTexture(texture);
-					effect->getParameter("specular")->uniform1f(luminance(specular));
-					effect->getParameter("shininess")->uniform1f(shininess);
-
-					_materials.push_back(effect);
-				}
-				else 
-				{
-					_materials.push_back(nullptr);
-				}
+			auto texture = RenderSystem::instance()->createTexture(model->getDirectory() + diffuseTexture, GraphicsTextureDim::GraphicsTextureDim2D);
+			if (texture)
+			{
+				quality.x = 1.0f;
+				effect->getParameter("texDiffuse")->uniformTexture(texture);
 			}
+
+			effect->getParameter("quality")->uniform4f(quality);
+			effect->getParameter("diffuse")->uniform3f(diffuseColor);
+			effect->getParameter("specular")->uniform1f(luminance(specular));
+			effect->getParameter("shininess")->uniform1f(shininess);
+
+			_materials.push_back(effect);
 		}
 	}
 
@@ -390,13 +392,11 @@ MeshRenderComponent::_buildDefaultMaterials(const std::string& filename) noexcep
 }
 
 bool
-MeshRenderComponent::_buildRenderObjects(MeshPropertyPtr mesh, ModelMakerFlags flags) noexcept
+MeshRenderComponent::_buildRenderObjects(const MeshProperty& mesh, ModelMakerFlags flags) noexcept
 {
-	assert(mesh);
+	_destroyRenderhObjects();
 
-	_cleanupRenderhObjects();
-
-	_renderMesh = RenderSystem::instance()->createRenderMesh(*mesh, flags);
+	_renderMesh = RenderSystem::instance()->createRenderMesh(mesh, flags);
 	if (!_renderMesh)
 		return false;
 
@@ -406,10 +406,10 @@ MeshRenderComponent::_buildRenderObjects(MeshPropertyPtr mesh, ModelMakerFlags f
 	if (!_buildRenderObject(mesh, startVertice, startIndice))
 		return false;
 
-	auto& meshes = mesh->getChildren();
+	auto& meshes = mesh.getChildren();
 	for (auto& it : meshes)
 	{
-		if (!_buildRenderObject(it, startVertice, startIndice))
+		if (!_buildRenderObject(*it, startVertice, startIndice))
 			return false;
 	};
 
@@ -418,7 +418,7 @@ MeshRenderComponent::_buildRenderObjects(MeshPropertyPtr mesh, ModelMakerFlags f
 }
 
 bool
-MeshRenderComponent::_buildRenderObject(MeshPropertyPtr mesh, std::size_t& startVertice, std::size_t& startIndice) noexcept
+MeshRenderComponent::_buildRenderObject(const MeshProperty& mesh, std::size_t& startVertice, std::size_t& startIndice) noexcept
 {
 	auto renderObject = std::make_shared<Geometry>();
 
@@ -428,11 +428,11 @@ MeshRenderComponent::_buildRenderObject(MeshPropertyPtr mesh, std::size_t& start
 
 		renderable->startVertice = startVertice;
 		renderable->startIndice = startIndice;
-		renderable->numVertices = mesh->getNumVertices();
-		renderable->numIndices = mesh->getNumIndices();
+		renderable->numVertices = mesh.getNumVertices();
+		renderable->numIndices = mesh.getNumIndices();
 
-		startVertice += mesh->getNumVertices();
-		startIndice += mesh->getNumIndices();
+		startVertice += mesh.getNumVertices();
+		startIndice += mesh.getNumIndices();
 
 		_renderObjects.push_back(renderObject);
 		return true;
@@ -442,10 +442,10 @@ MeshRenderComponent::_buildRenderObject(MeshPropertyPtr mesh, std::size_t& start
 }
 
 bool
-MeshRenderComponent::_buildRenderObject(GeometryPtr renderObject, MeshPropertyPtr mesh, RenderMeshPtr buffer) noexcept
+MeshRenderComponent::_buildRenderObject(GeometryPtr renderObject, const MeshProperty& mesh, RenderMeshPtr buffer) noexcept
 {
 	renderObject->setRenderMesh(buffer);
-	renderObject->setBoundingBox(mesh->getBoundingBox());
+	renderObject->setBoundingBox(mesh.getBoundingBox());
 	renderObject->setOwnerListener(this);
 
 	renderObject->setCastShadow(this->getCastShadow());
@@ -462,8 +462,8 @@ MeshRenderComponent::_buildRenderObject(GeometryPtr renderObject, MeshPropertyPt
 	auto renderable = std::make_shared<GraphicsIndirect>();
 	renderable->startVertice = 0;
 	renderable->startIndice = 0;
-	renderable->numVertices = mesh->getNumVertices();
-	renderable->numIndices = mesh->getNumIndices();
+	renderable->numVertices = mesh.getNumVertices();
+	renderable->numIndices = mesh.getNumIndices();
 	renderable->numInstances = 0;
 	renderable->indexType = GraphicsIndexType::GraphicsIndexTypeUInt32;
 
@@ -515,18 +515,6 @@ ModelMakerFlags
 MeshRenderComponent::_getModelMakerFlags() const noexcept
 {
 	return _flags;
-}
-
-void 
-MeshRenderComponent::_setDefaultMaterial(const std::string& material) noexcept
-{
-	_defaultMaterial = material;
-}
-
-const std::string&
-MeshRenderComponent::_getDefaultMaterial() const noexcept
-{
-	return _defaultMaterial;
 }
 
 _NAME_END

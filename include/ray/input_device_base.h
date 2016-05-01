@@ -58,8 +58,8 @@ public:
 	virtual void enableEventPosting(bool enable) noexcept = 0;
 	virtual bool enableEventPosting() const noexcept = 0;
 
-	virtual void sendEvent(const InputEvent& event) noexcept = 0;
-	virtual void postEvent(const InputEvent& event) noexcept = 0;
+	virtual bool sendEvent(const InputEvent& event) noexcept = 0;
+	virtual bool postEvent(const InputEvent& event) noexcept = 0;
 
 	virtual bool peekEvents(InputEvent& event) noexcept = 0;
 	virtual bool pollEvents(InputEvent& event) noexcept = 0;

@@ -67,9 +67,11 @@ public:
 	void setInput(InputPtr input) noexcept;
 	InputPtr getInput() const noexcept;
 
-private:
+	bool sendInputEvent(const InputEvent& event) noexcept;
+	bool postInputEvent(const InputEvent& event) noexcept;
 
-	virtual void onActivate() except;
+private:
+	virtual void onActivate() noexcept;
 	virtual void onDeactivate() noexcept;
 
 	virtual void onReset() noexcept;
@@ -77,15 +79,13 @@ private:
 	virtual void onFrameBegin() noexcept;
 	virtual void onFrameEnd() noexcept;
 
-	virtual void onMessage(const MessagePtr& message) except;
-
 private:
 	InputFeature(const InputFeature&) = delete;
 	InputFeature& operator=(const InputFeature&) = delete;
 
 private:
-
 	InputPtr _input;
+	CaptureObject _window;
 };
 
 _NAME_END

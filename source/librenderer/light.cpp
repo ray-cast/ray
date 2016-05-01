@@ -443,11 +443,11 @@ Light::clone() const noexcept
 	light->setIntensity(this->getIntensity());
 	light->setRange(this->getRange());
 	light->setCastShadow(this->getCastShadow());
-	light->setSpotInnerCone(this->getSpotInnerCone().x);
-	light->setSpotOuterCone(this->getSpotOuterCone().x);
 	light->setTransform(this->getTransform(), this->getTransformInverse(), this->getTransformInverseTranspose());
 	light->setBoundingBox(this->getBoundingBox());
 
+	light->_spotInnerCone = _spotInnerCone;
+	light->_spotOuterCone = _spotOuterCone;
 	return light;
 }
 

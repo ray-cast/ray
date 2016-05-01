@@ -45,14 +45,11 @@ class EXPORT GraphicsVertexLayout final
 {
 public:
 	GraphicsVertexLayout() noexcept;
-	GraphicsVertexLayout(const std::string& semantic, std::uint8_t index, GraphicsFormat format, std::uint16_t offset = 0, std::uint8_t slot = 0) noexcept;
+	GraphicsVertexLayout(const std::string& semantic, GraphicsFormat format, std::uint16_t offset = 0, std::uint8_t slot = 0) noexcept;
 	~GraphicsVertexLayout() noexcept;
 
 	void setSemantic(const std::string& semantic) noexcept;
 	const std::string& getSemantic() const noexcept;
-
-	void setSemanticIndex(std::uint8_t index) noexcept;
-	std::uint8_t getSemanticIndex() const noexcept;
 
 	void setVertexFormat(GraphicsFormat format) noexcept;
 	GraphicsFormat getVertexFormat() const noexcept;
@@ -68,7 +65,6 @@ public:
 
 private:
 	std::string _semantic;
-	std::uint8_t _index;
 	std::uint8_t _count;
 	std::uint8_t _size;
 	std::uint16_t _offset;

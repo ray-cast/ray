@@ -331,38 +331,6 @@ OGLCoreDeviceContext::getDescriptorSet() const noexcept
 	return _descriptorSet;
 }
 
-bool
-OGLCoreDeviceContext::updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept
-{
-	assert(data);
-	assert(data->isInstanceOf<OGLCoreGraphicsData>());
-	assert(_glcontext->getActive());
-
-	auto _data = data->cast<OGLCoreGraphicsData>();
-	_data->resize((const char*)str, cnt);
-	return true;
-}
-
-void*
-OGLCoreDeviceContext::mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept
-{
-	assert(data);
-	assert(data->isInstanceOf<OGLCoreGraphicsData>());
-	assert(_glcontext->getActive());
-
-	return data->downcast<OGLCoreGraphicsData>()->map(access);
-}
-
-void
-OGLCoreDeviceContext::unmapBuffer(GraphicsDataPtr data) noexcept
-{
-	assert(data);
-	assert(data->isInstanceOf<OGLCoreGraphicsData>());
-	assert(_glcontext->getActive());
-
-	data->downcast<OGLCoreGraphicsData>()->unmap();
-}
-
 void
 OGLCoreDeviceContext::setVertexBufferData(GraphicsDataPtr data) noexcept
 {
@@ -484,7 +452,7 @@ void
 OGLCoreDeviceContext::setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	this->setFramebuffer(target);
-	this->clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsAll, color, depth, stencil);
+	this->clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsAll, color, depth, stencil);
 }
 
 void
@@ -514,7 +482,7 @@ OGLCoreDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& c
 
 	GLbitfield mode = 0;
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsColor)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsColor)
 	{
 		mode |= GL_COLOR_BUFFER_BIT;
 
@@ -525,7 +493,7 @@ OGLCoreDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& c
 		}
 	}
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 	{
 		mode |= GL_DEPTH_BUFFER_BIT;
 
@@ -536,7 +504,7 @@ OGLCoreDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& c
 		}
 	}
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsStencil)
 	{
 		mode |= GL_STENCIL_BUFFER_BIT;
 
@@ -550,14 +518,14 @@ OGLCoreDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& c
 	if (mode != 0)
 	{
 		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
-		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_TRUE);
 		}
 
 		glClear(mode);
 
-		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_FALSE);
 		}
@@ -569,10 +537,10 @@ OGLCoreDeviceContext::clearFramebufferIndexed(GraphicsClearFlags flags, const fl
 {
 	assert(_glcontext->getActive());
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 	{
 		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
-		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_TRUE);
 		}
@@ -580,19 +548,19 @@ OGLCoreDeviceContext::clearFramebufferIndexed(GraphicsClearFlags flags, const fl
 		GLfloat f = depth;
 		glClearBufferfv(GL_DEPTH, 0, &f);
 
-		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_FALSE);
 		}
 	}
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsStencil)
 	{
 		GLint s = stencil;
 		glClearBufferiv(GL_STENCIL, 0, &s);
 	}
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsColor)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsColor)
 	{
 		glClearBufferfv(GL_COLOR, i, color.ptr());
 	}

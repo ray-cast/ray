@@ -63,7 +63,7 @@ public:
 	Vector4t(T xx, const Vector3t<T>& yzw) noexcept : x(xx), y(yzw.x), z(yzw.y), w(yzw.z) {}
 	Vector4t(T xx, T yy, const Vector2t<T>& zw) noexcept : x(xx), y(yy), z(zw.x), w(zw.y) {}
 
-	explicit Vector4t(T xyzw) noexcept : x(xyz), y(xyz), z(xyz), w(xyzw) {}
+	explicit Vector4t(T xyzw) noexcept : x(xyzw), y(xyzw), z(xyzw), w(xyzw) {}
 
 	Vector4t<T>& operator+=(T scale) noexcept { x += scale; y += scale; z += scale; w += scale; return *this; }
 	Vector4t<T>& operator-=(T scale) noexcept { x -= scale; y -= scale; z -= scale; w -= scale; return *this; }

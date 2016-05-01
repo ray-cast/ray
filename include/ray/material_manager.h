@@ -69,7 +69,7 @@ public:
 	void destroySampler(const std::string& name) noexcept;
 	GraphicsSamplerPtr getSampler(const std::string& name) noexcept;
 
-	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDesc& textureDesc) noexcept;
+	GraphicsTexturePtr createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter) noexcept;
 	void destroyTexture(GraphicsTexturePtr texture) noexcept;
 	void destroyTexture(const std::string& name) noexcept;
 	GraphicsTexturePtr getTexture(const std::string& name) noexcept;

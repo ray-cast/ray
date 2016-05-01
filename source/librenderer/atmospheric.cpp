@@ -78,7 +78,7 @@ Atmospheric::onActivate(RenderPipeline& pipeline) noexcept
 
 	_sphere = pipeline.createRenderMesh(mesh, ModelMakerFlagBits::ModelMakerFlagBitVertex);
 
-	_sat = pipeline.createMaterial("sys:fx/atmospheric.fxml.o");
+	_sat = pipeline.createMaterial("sys:fx/atmospheric.fxml");
 
 	_sky = _sat->getTech("sky");
 	_ground = _sat->getTech("ground");

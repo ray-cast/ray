@@ -37,12 +37,11 @@
 #ifndef _H_IMAGHANDLER_H_
 #define _H_IMAGHANDLER_H_
 
-#include <ray/imagbase.h>
+#include <ray/imagtypes.h>
 
 _NAME_BEGIN
 
-class Image;
-class EXPORT ImageHandler : public ImageBase
+class EXPORT ImageHandler
 {
 public:
 	ImageHandler() noexcept {};
@@ -50,8 +49,8 @@ public:
 
 	virtual bool doCanRead(StreamReader& stream) const noexcept = 0;
 
-	virtual bool doLoad(Image& image, StreamReader& stream) except = 0;
-	virtual bool doSave(Image& image, StreamWrite& stream) except = 0;
+	virtual bool doLoad(class Image& image, StreamReader& stream) except = 0;
+	virtual bool doSave(class Image& image, StreamWrite& stream) except = 0;
 
 private:
 	ImageHandler(const ImageHandler&) noexcept = delete;

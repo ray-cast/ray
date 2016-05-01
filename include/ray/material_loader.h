@@ -47,7 +47,9 @@ public:
 	MaterialLoader() noexcept;
 	virtual ~MaterialLoader() noexcept;
 
-	virtual MaterialPtr load(MaterialManager& manager, const std::string& filename) noexcept = 0;
+	virtual bool doCanRead(StreamReader& stream) const noexcept = 0;
+
+	virtual bool load(MaterialManager& manager, Material& material, StreamReader& stream) noexcept = 0;
 
 private:
 	MaterialLoader(const MaterialLoader&) = delete;

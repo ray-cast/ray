@@ -144,10 +144,11 @@ AnimotionComponent::onFrame() except
 		auto component = _meshComponent.lock();
 		if (component)
 		{
-			_animtion->update();
-			/*_updateVertex(
-				_meshComponent.lock()->downcast<MeshComponent>()->getMesh(),
-				_meshComponent.lock()->downcast<MeshComponent>()->getSharedMesh());
+			_animtion->updateBone(component->downcast<MeshComponent>()->getMesh()->getBoneArray());
+			_animtion->updateBonePose(component->downcast<MeshComponent>()->getMesh()->getBoneArray());
+			/*_updateVertex(component->downcast<MeshComponent>()->getMesh()->getBoneArray(),
+				component->downcast<MeshComponent>()->getMesh(),
+				component->downcast<MeshComponent>()->getSharedMesh());
 			component->downcast<MeshComponent>()->needUpdate();*/
 		}
 	}
@@ -195,11 +196,12 @@ AnimotionComponent::_buildAnimotion(const std::string& filename) noexcept
 		{
 			_animtion->setBoneArray(mesh->getBoneArray());
 			_animtion->setIKArray(mesh->getInverseKinematics());
-			_animtion->setCurrentFrame(240);
-			_animtion->update();
-		}
+			_animtion->setCurrentFrame(1399);
+			_animtion->updateBone(mesh->getBoneArray());
+			_animtion->updateBonePose(mesh->getBoneArray());
 
-		this->_updateVertex(mesh, component->getSharedMesh());
+			this->_updateVertex(mesh->getBoneArray(), mesh, component->getSharedMesh());
+		}
 
 		_meshComponent = component;
 	}
@@ -208,14 +210,17 @@ AnimotionComponent::_buildAnimotion(const std::string& filename) noexcept
 }
 
 void
-AnimotionComponent::_updateVertex(MeshPropertyPtr mesh, MeshPropertyPtr model)
+AnimotionComponent::_updateVertex(const Bones& bones, MeshPropertyPtr mesh, MeshPropertyPtr model)
 {
 	const auto& bonesWeight = model->getWeightArray();
 	const auto& vertices = model->getVertexArray();
-	const auto& bones = _animtion->getBoneArray();
+	const auto& normals = model->getNormalArray();
 
 	for (std::size_t i = 0; i < vertices.size(); i++)
 	{
+		const auto& v = vertices[i];
+		const auto& n = normals[i];
+
 		const auto& weight = bonesWeight[i];
 
 		const auto& b1 = bones[weight.bone1];
@@ -223,23 +228,24 @@ AnimotionComponent::_updateVertex(MeshPropertyPtr mesh, MeshPropertyPtr model)
 		const auto& b3 = bones[weight.bone3];
 		const auto& b4 = bones[weight.bone4];
 
-		auto p1 = vertices[i] - b1.getPosition();
-		auto p2 = vertices[i] - b2.getPosition();
-		auto p3 = vertices[i] - b3.getPosition();
-		auto p4 = vertices[i] - b4.getPosition();
+		auto v1 = v * b1.getLocalTransform();
+		auto v2 = v * b2.getLocalTransform();
+		auto v3 = v * b3.getLocalTransform();
+		auto v4 = v * b4.getLocalTransform();
 
-		auto v1 = p1 * b1.getTransform();
-		auto v2 = p2 * b2.getTransform();
-		auto v3 = p3 * b3.getTransform();
-		auto v4 = p4 * b4.getTransform();
+		auto n1 = n * float3x3(b1.getLocalTransform());
+		auto n2 = n * float3x3(b2.getLocalTransform());
+		auto n3 = n * float3x3(b3.getLocalTransform());
+		auto n4 = n * float3x3(b4.getLocalTransform());
 
 		mesh->getVertexArray()[i] = weight.weight1 * v1 + weight.weight2 * v2 + weight.weight3 * v3 + weight.weight4 * v4;
+		mesh->getNormalArray()[i] = math::normalize(weight.weight1 * n1 + weight.weight2 * n2 + weight.weight3 * n3 + weight.weight4 * n4);
 	}
 
 	auto meshes = mesh->getChildren();
 	for (std::size_t i = 0; i < meshes.size(); i++)
 	{
-		this->_updateVertex(meshes[i], model->getChildren()[i]);
+		this->_updateVertex(bones, meshes[i], model->getChildren()[i]);
 	};
 
 	mesh->computeBoundingBox();

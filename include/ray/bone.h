@@ -41,174 +41,6 @@
 
 _NAME_BEGIN
 
-struct EXPORT AnimeTranslate
-{
-	double _time;
-	Vector3 _translate;
-
-	AnimeTranslate()
-		: _time(0)
-		, _translate(0, 0, 0)
-	{
-	}
-
-	AnimeTranslate(double time, const Vector3& value)
-		: _time(time)
-		, _translate(value)
-	{}
-
-	bool operator == (const AnimeTranslate& o) const
-	{
-		return o._translate == this->_translate;
-	}
-
-	bool operator != (const AnimeTranslate& o) const
-	{
-		return o._translate != this->_translate;
-	}
-
-	bool operator <(const AnimeTranslate& o) const
-	{
-		return _time < o._time;
-	}
-
-	bool operator >(const AnimeTranslate& o) const
-	{
-		return _time > o._time;
-	}
-};
-
-struct EXPORT AnimeRotation
-{
-	double _time;
-	Quaternion _rotate;
-
-	AnimeRotation()
-		: _time(0)
-		, _rotate(0, 0, 0, 1)
-	{
-	}
-
-	AnimeRotation(double time, const Quaternion& value)
-		: _time(time)
-		, _rotate(value)
-	{}
-
-	typedef Quaternion elem_type;
-
-	bool operator == (const AnimeRotation& o) const
-	{
-		return o._rotate == this->_rotate;
-	}
-
-	bool operator != (const AnimeRotation& o) const
-	{
-		return o._rotate != this->_rotate;
-	}
-
-	bool operator <(const AnimeRotation& o) const
-	{
-		return _time < o._time;
-	}
-
-	bool operator >(const AnimeRotation& o) const
-	{
-		return _time > o._time;
-	}
-};
-
-class EXPORT AnimeScaling
-{
-public:
-	double _time;
-	Vector3 _scale;
-
-	AnimeScaling()
-		: _time(0)
-		, _scale(1, 1, 1)
-	{
-	}
-
-	AnimeScaling(const AnimeScaling& copy)
-		: _time(copy._time)
-		, _scale(copy._scale)
-	{
-	}
-
-	AnimeScaling(double time, const Vector3& v)
-		:_time(time)
-		, _scale(v)
-	{
-	}
-
-	void loadIdentity()
-	{
-		_scale = Vector3::UnitX;
-		_time = 0;
-	}
-
-	bool operator == (const AnimeScaling& o) const
-	{
-		return o._scale == this->_scale;
-	}
-
-	bool operator != (const AnimeScaling& o) const
-	{
-		return o._scale != this->_scale;
-	}
-
-	bool operator < (const AnimeScaling& o) const
-	{
-		return _time < o._time;
-	}
-
-	bool operator >(const AnimeScaling& o) const
-	{
-		return _time > o._time;
-	}
-};
-
-class EXPORT AnimeFrame
-{
-public:
-	double _time;
-	std::size_t _key_frame;
-
-	AnimeFrame() { }
-
-	AnimeFrame(double time, unsigned key)
-		: _time(time)
-		, _key_frame(key)
-	{
-	}
-
-	void loadIdentity()
-	{
-		_key_frame = 0;
-		_time = 0;
-	}
-
-	bool operator == (const AnimeFrame& o) const
-	{
-		return o._key_frame == this->_key_frame;
-	}
-
-	bool operator != (const AnimeFrame& o) const
-	{
-		return o._key_frame != this->_key_frame;
-	}
-
-	bool operator < (const AnimeFrame& o) const
-	{
-		return _time < o._time;
-	}
-
-	bool operator >(const AnimeFrame& o) const
-	{
-		return _time > o._time;
-	}
-};
-
 class EXPORT VertexWeight
 {
 public:
@@ -229,8 +61,8 @@ public:
 	std::uint16_t BoneIndex;
 	std::uint8_t RotateLimited;
 
-	Vector3 MinimumRadian;
-	Vector3 MaximumRadian;
+	float3 MinimumRadian;
+	float3 MaximumRadian;
 };
 
 class EXPORT IKAttr
@@ -241,7 +73,7 @@ public:
 	std::uint32_t IKLoopCount;
 	std::uint32_t IKLinkCount;
 
-	float IKWeight;
+	float IKAngleLimit;
 
 	std::vector<IKChild> IKList;
 };
@@ -262,14 +94,14 @@ public:
 	void setChild(std::int16_t child) noexcept;
 	std::int16_t getChild() const noexcept;
 
-	void setPosition(const Vector3& position) noexcept;
-	const Vector3& getPosition() const noexcept;
+	void setPosition(const float3& position) noexcept;
+	const float3& getPosition() const noexcept;
 
-	void setRotation(const Quaternion& position) noexcept;
+	void setRotation(const Quaternion& rotate) noexcept;
 	const Quaternion& getRotation() const noexcept;
 
-	void setScaling(const Vector3& scale) noexcept;
-	const Vector3& getScaling() const noexcept;
+	void setScaling(const float3& scale) noexcept;
+	const float3& getScaling() const noexcept;
 
 	void setLocalTransform(const Matrix4x4& transform) noexcept;
 	const Matrix4x4& getLocalTransform() const noexcept;
@@ -277,18 +109,21 @@ public:
 	void setTransform(const Matrix4x4& transform) noexcept;
 	const Matrix4x4& getTransform() const noexcept;
 
+	void update() noexcept;
+	void updateTransform(const float3& translate, const Quaternion& rotate);
+
 private:
 	std::string _name;
 
 	std::int16_t _parent;
 	std::int16_t _child;
 
-	AnimeTranslate _position;
-	AnimeRotation  _rotation;
-	AnimeScaling   _scaling;
+	float3 _translate;
+	float3 _scaling;
+	Quaternion _rotation;
 
-	Matrix4x4 _transform;
-	Matrix4x4 _localTransform;
+	float4x4 _transform;
+	float4x4 _localTransform;
 };
 
 _NAME_END

@@ -445,13 +445,16 @@ XmlBuf::addAttrsInChildren() noexcept
 		do
 		{
 			TiXmlAttribute* attr = child->FirstAttribute();
-			do
+			if (attr)
 			{
-				_attrNames.push_back(attr->Name());
-				_attrLists.push_back(attr);
+				do
+				{
+					_attrNames.push_back(attr->Name());
+					_attrLists.push_back(attr);
 
-				attr = attr->Next();
-			} while (attr);
+					attr = attr->Next();
+				} while (attr);
+			}
 
 			child = child->NextSiblingElement();
 		} while (child);

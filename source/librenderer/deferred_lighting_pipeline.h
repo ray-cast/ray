@@ -109,7 +109,6 @@ private:
 	MaterialTechPtr _deferredAmbientLight;
 	MaterialTechPtr _deferredShadingOpaques;
 	MaterialTechPtr _deferredShadingTransparents;
-	MaterialTechPtr _deferredSkyLighting;
 	MaterialTechPtr _deferredDebugLayer;
 	MaterialTechPtr _deferredCopyOnly;
 
@@ -118,9 +117,6 @@ private:
 	MaterialParamPtr _texDepth;
 	MaterialParamPtr _texLight;
 	MaterialParamPtr _texSource;
-	MaterialParamPtr _texEnvDiffuse;
-	MaterialParamPtr _texEnvSpecular;
-	MaterialParamPtr _texEnvMipNumber;
 
 	MaterialParamPtr _eyePosition;
 	MaterialParamPtr _clipInfo;

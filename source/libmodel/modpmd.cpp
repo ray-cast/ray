@@ -250,7 +250,7 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		material->set(MATKEY_COLOR_AMBIENT, it.Ambient);
 		material->set(MATKEY_COLOR_SPECULAR, it.Specular);
 		material->set(MATKEY_OPACITY, it.Opacity);
-		material->set(MATKEY_SHININESS, it.Shininess);
+		material->set(MATKEY_SHININESS, it.Shininess / 255.0f);
 
 		std::string name = it.TextureName;
 		std::string::size_type substr = name.find_first_of("*");
@@ -288,7 +288,7 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 
 			points.push_back(v.Position);
 			normals.push_back(v.Normal);
-			texcoords.push_back(float2(v.UV.x, 1.0f - v.UV.y));
+			texcoords.push_back(v.UV);
 			faces.push_back(i);
 
 			VertexWeight weight;
@@ -357,7 +357,7 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			attr.IKTargetBoneIndex = it.Target;
 			attr.IKLinkCount = it.LinkCount;
 			attr.IKLoopCount = it.LoopCount;
-			attr.IKWeight = it.Weight;
+			attr.IKAngleLimit = DEG_TO_RAD(229.1831f * it.Weight);
 
 			for (auto& bone : it.LinkList)
 			{

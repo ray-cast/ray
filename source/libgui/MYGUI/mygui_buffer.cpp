@@ -73,33 +73,28 @@ MyGuiVertexBuffer::lock() noexcept
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR8G8B8A8UInt);
 		inputSize += GraphicsVertexLayout::getVertexSize(GraphicsFormat::GraphicsFormatR32G32SFloat);
 
-		if (!_vb)
-		{
-			GraphicsDataDesc vb;
-			vb.setUsage(GraphicsUsageFlags::GraphicsUsageFlagsReadBit | GraphicsUsageFlags::GraphicsUsageFlagsWriteBit);
-			vb.setStride(inputSize);
-			vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
-			vb.setStreamSize(inputSize * _needVertexCount);
+		GraphicsDataDesc vb;
+		vb.setUsage(GraphicsUsageFlags::GraphicsUsageFlagsReadBit | GraphicsUsageFlags::GraphicsUsageFlagsWriteBit);
+		vb.setStride(inputSize);
+		vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
+		vb.setStreamSize(inputSize * _needVertexCount);
 
-			_vb = RenderSystem::instance()->createGraphicsData(vb);
+		_vb = RenderSystem::instance()->createGraphicsData(vb);
+		_buffer = RenderSystem::instance()->createRenderMesh(_vb, nullptr);
 
-			_buffer = RenderSystem::instance()->createRenderMesh(_vb, nullptr);
-
-			_vertexCount = _needVertexCount;
-		}
-		else
-		{
-			RenderSystem::instance()->updateBuffer(_vb, nullptr, inputSize * _needVertexCount);
-		}
+		_vertexCount = _needVertexCount;
 	}
 
-	return (MyGUI::Vertex*)RenderSystem::instance()->mapBuffer(_vb, GraphicsAccessFlagsBits::GraphicsAccessFlagsMapReadBit | GraphicsAccessFlagsBits::GraphicsAccessFlagsMapWriteBit);
+	MyGUI::Vertex* data;
+	if (_vb->map(0, _vb->getGraphicsDataDesc().getStreamSize(), (void**)&data))
+		return data;
+	return nullptr;
 }
 
 void
 MyGuiVertexBuffer::unlock() noexcept
 {
-	RenderSystem::instance()->unmapBuffer(_vb);
+	_vb->unmap();
 }
 
 RenderMeshPtr

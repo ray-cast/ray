@@ -83,10 +83,6 @@ public:
 	void readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
 
-	bool updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept;
-	void* mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept;
-	void unmapBuffer(GraphicsDataPtr data) noexcept;
-
 	void drawCone(MaterialTechPtr tech, std::uint32_t layer = 0) noexcept;
 	void drawSphere(MaterialTechPtr tech, std::uint32_t layer = 0) noexcept;
 	void drawMesh(MaterialTechPtr tech, RenderMeshPtr mesh, const GraphicsIndirect& renderable) noexcept;

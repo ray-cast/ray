@@ -821,7 +821,7 @@ GameObject::_updateTransform() const noexcept
 		_transform.scale(_scaling);
 		_transform.setTranslate(_translate);
 
-		_transformInverse = math::inverse(_transform);
+		_transformInverse = math::transformInverse(_transform);
 		_transformInverseTranspose = math::transpose(_transformInverse);
 
 		_needUpdates = false;

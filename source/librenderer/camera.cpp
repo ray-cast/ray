@@ -52,6 +52,7 @@ Camera::Camera() noexcept
 	, _znear(1.0f)
 	, _zfar(100.0f)
 	, _viewport(0, 0, 0, 0)
+	, _clearFlags(GraphicsClearFlagBits::GraphicsClearFlagsAll)
 	, _clearColor(float4(0.1, 0.1, 0.1, 1.0))
 	, _cameraType(CameraType::CameraTypePerspective)
 	, _cameraOrder(CameraOrder::CameraOrder3D)
@@ -271,42 +272,16 @@ Camera::getClearColor() const noexcept
 	return _clearColor;
 }
 
-void
-Camera::setSkyLightMap(GraphicsTexturePtr texture) noexcept
+void 
+Camera::setClearFlags(GraphicsClearFlags flags) noexcept
 {
-	_envMap = texture;
+	_clearFlags = flags;
 }
 
-GraphicsTexturePtr
-Camera::getSkyLightMap() const noexcept
+GraphicsClearFlags
+Camera::getClearFlags() const noexcept
 {
-	return _envMap;
-}
-
-void
-Camera::setSkyLightDiffuse(GraphicsTexturePtr diffuse) noexcept
-{
-	assert(!diffuse || diffuse->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube);
-	_envDiffuse = diffuse;
-}
-
-GraphicsTexturePtr
-Camera::getSkyLightDiffuse() const noexcept
-{
-	return _envDiffuse;
-}
-
-void
-Camera::setSkyLightSpecular(GraphicsTexturePtr specular) noexcept
-{
-	assert(!specular || specular->getGraphicsTextureDesc().getTexDim() == GraphicsTextureDim::GraphicsTextureDimCube);
-	_envSpecular = specular;
-}
-
-GraphicsTexturePtr
-Camera::getSkyLightSpecular() const noexcept
-{
-	return _envSpecular;
+	return _clearFlags;
 }
 
 void

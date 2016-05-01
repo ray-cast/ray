@@ -297,6 +297,22 @@ GameApplication::postMessage(const MessagePtr& message) noexcept
 	return _gameServer->postMessage(message);
 }
 
+bool 
+GameApplication::sendInputEvent(const InputEvent& event) noexcept
+{
+	if (_inputFeature)
+		return _inputFeature->downcast<InputFeature>()->sendInputEvent(event);
+	return false;
+}
+
+bool
+GameApplication::postInputEvent(const InputEvent& event) noexcept
+{
+	if (_inputFeature)
+		return _inputFeature->downcast<InputFeature>()->postInputEvent(event);
+	return false;
+}
+
 void
 GameApplication::setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept
 {

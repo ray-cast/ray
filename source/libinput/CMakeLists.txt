@@ -31,21 +31,21 @@ SET(INPUT_CORE_LIST
 SOURCE_GROUP("input\\core" FILES ${INPUT_CORE_LIST})
 
 SET(INPUT_MSW_LIST
-    ${HEADER_PATH}/msw_input_device.h
+    ${SOURCE_PATH}/msw_input_device.h
     ${SOURCE_PATH}/msw_input_device.cpp
-    ${HEADER_PATH}/msw_input_keyboard.h
+    ${SOURCE_PATH}/msw_input_keyboard.h
     ${SOURCE_PATH}/msw_input_keyboard.cpp
-    ${HEADER_PATH}/msw_input_mouse.h
+    ${SOURCE_PATH}/msw_input_mouse.h
     ${SOURCE_PATH}/msw_input_mouse.cpp
 )
 SOURCE_GROUP("input\\msw" FILES ${INPUT_MSW_LIST})
 
 SET(INPUT_NDK_LIST
-    ${HEADER_PATH}/ndk_input_device.h
+    ${SOURCE_PATH}/ndk_input_device.h
     ${SOURCE_PATH}/ndk_input_device.cpp
-    ${HEADER_PATH}/ndk_input_keyboard.h
+    ${SOURCE_PATH}/ndk_input_keyboard.h
     ${SOURCE_PATH}/ndk_input_keyboard.cpp
-    ${HEADER_PATH}/ndk_input_mouse.h
+    ${SOURCE_PATH}/ndk_input_mouse.h
     ${SOURCE_PATH}/ndk_input_mouse.cpp
 )
 SOURCE_GROUP("input\\ndk" FILES ${INPUT_NDK_LIST})

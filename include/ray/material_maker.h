@@ -48,20 +48,23 @@ public:
 	MaterialMaker() noexcept;
 	~MaterialMaker() noexcept;
 
-	MaterialPtr load(MaterialManager& manager, iarchive& reader) except;
-	MaterialPtr load(MaterialManager& manager, const std::string& filename) noexcept;
+	bool doCanRead(StreamReader& stream) const noexcept;
+
+	bool load(MaterialManager& manager, Material& material, StreamReader& stream) noexcept;
+	bool load(MaterialManager& manager, Material& material, iarchive& reader) except;
+	bool load(MaterialManager& manager, Material& material, const std::string& filename) noexcept;
 
 private:
-	void instanceInclude(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
-	void instancePass(MaterialManager& manager, MaterialPtr& material, MaterialTechPtr& tech, iarchive& reader) except;
-	void instanceTech(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
-	void instanceSampler(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
-	void instanceParameter(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
-	void instanceMacro(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
-	void instanceBuffer(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
+	void instanceInclude(MaterialManager& manager, Material& material, iarchive& reader) except;
+	void instancePass(MaterialManager& manager, Material& material, MaterialTechPtr& tech, iarchive& reader) except;
+	void instanceTech(MaterialManager& manager, Material& material, iarchive& reader) except;
+	void instanceSampler(MaterialManager& manager, Material& material, iarchive& reader) except;
+	void instanceParameter(MaterialManager& manager, Material& material, iarchive& reader) except;
+	void instanceMacro(MaterialManager& manager, Material& material, iarchive& reader) except;
+	void instanceBuffer(MaterialManager& manager, Material& material, iarchive& reader) except;
 	void instanceCodes(MaterialManager& manager, iarchive& reader) except;
-	void instanceShader(MaterialManager& manager, MaterialPtr& material, GraphicsProgramDesc& programDesc, iarchive& reader) except;
-	void instanceInputLayout(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except;
+	void instanceShader(MaterialManager& manager, Material& material, GraphicsProgramDesc& programDesc, iarchive& reader) except;
+	void instanceInputLayout(MaterialManager& manager, Material& material, iarchive& reader) except;
 
 	static GraphicsShaderStage stringToShaderStage(const std::string& stage) noexcept;
 	static GraphicsUniformType stringToUniformType(const std::string& type) noexcept;
@@ -80,6 +83,9 @@ private:
 	MaterialMaker& operator=(const MaterialMaker&) noexcept = delete;
 
 private:
+	bool _isHlsl;
+	std::string _hlslCodes;
+	std::map<std::string, bool> _onceInclude;
 	std::map<std::string, std::vector<char>> _shaderCodes;
 };
 

@@ -52,8 +52,8 @@ public:
 
 	std::uint32_t size() const noexcept;
 
-	void* map(std::uint32_t access) noexcept;
-	void* map(std::uint32_t offset, std::uint32_t cnt, std::uint32_t access) noexcept;
+	void* map(GraphicsAccessFlags flags) noexcept;
+	void* map(std::uint32_t offset, std::uint32_t cnt, GraphicsAccessFlags flags) noexcept;
 
 	void unmap() noexcept;
 

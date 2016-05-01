@@ -333,7 +333,7 @@ VulkanCommandList::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 	std::uint32_t usageCount = 0;
 	auto& framebufferDesc = _framebuffer->downcast<VulkanFramebuffer>()->getGraphicsFramebufferDesc();
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsColor)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsColor)
 	{
 		auto& textures = framebufferDesc.getTextures();
 		for (auto& texture : textures)
@@ -358,8 +358,8 @@ VulkanCommandList::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 		}
 	}
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth ||
-		flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth ||
+		flags & GraphicsClearFlagBits::GraphicsClearFlagsStencil)
 	{
 		auto depthStencil = framebufferDesc.getSharedDepthStencilTexture();
 		if (depthStencil)
@@ -373,9 +373,9 @@ VulkanCommandList::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 			rects[usageCount].rect.extent.width = framebufferDesc.getWidth();
 			rects[usageCount].rect.extent.height = framebufferDesc.getHeight();
 
-			if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+			if (flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 				attachment[usageCount].aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-			if (flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
+			if (flags & GraphicsClearFlagBits::GraphicsClearFlagsStencil)
 				attachment[usageCount].aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
 
 			attachment[usageCount].clearValue.depthStencil.depth = depth;
@@ -398,7 +398,7 @@ VulkanCommandList::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 	std::uint32_t usageCount = 0;
 	auto& framebufferDesc = _framebuffer->downcast<VulkanFramebuffer>()->getGraphicsFramebufferDesc();
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsColor)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsColor)
 	{
 		auto& textures = framebufferDesc.getTextures();
 		if (i < textures.size())
@@ -424,8 +424,8 @@ VulkanCommandList::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 		}
 	}
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth ||
-		flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth ||
+		flags & GraphicsClearFlagBits::GraphicsClearFlagsStencil)
 	{
 		auto depthStencil = framebufferDesc.getSharedDepthStencilTexture();
 		if (depthStencil)
@@ -439,9 +439,9 @@ VulkanCommandList::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 			rects[usageCount].rect.extent.width = framebufferDesc.getWidth();
 			rects[usageCount].rect.extent.height = framebufferDesc.getHeight();
 
-			if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+			if (flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 				attachment[usageCount].aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-			if (flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
+			if (flags & GraphicsClearFlagBits::GraphicsClearFlagsStencil)
 				attachment[usageCount].aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
 
 			attachment[usageCount].clearValue.depthStencil.depth = depth;

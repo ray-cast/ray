@@ -9,39 +9,16 @@
             <attribute aperture="45.0"/>
             <attribute znear="0.1"/>
             <attribute zfar="1000.0"/>
-            <attribute flags="screen|skylighting|shading"/>
-            <attribute skydiffuse="dlc:EnvLighting/texture/sky_diff.dds"/>
-            <attribute skyspecular="dlc:EnvLighting/texture/sky_spec.dds"/>
         </component>
         <component class="FirstPersonCamera">
         </component>
-    </object>
-    <object>
-        <attribute name="sky"/>
-        <attribute position="0,0,0" />
-        <attribute scale="1,1,1" />
-        <attribute active="true"/>
-        <component class="Mesh">
-            <attribute name="dlc:EnvLighting/models/sphere.pmx"/>
-        </component>
-        <component class="MeshRender">
+        <component class="Skybox">
             <attribute castshadow="false"/>
             <attribute receiveshadow="false"/>
-            <attribute material="dlc:EnvLighting/materials/sky.mat"/>
-        </component>
-    </object>
-    <object>
-        <attribute name="sphere"/>
-        <attribute position="0,0,0"/>
-        <attribute scale="0.001,0.001,0.001" />
-        <attribute active="false"/>
-        <component class="Mesh">
-            <attribute name="dlc:EnvLighting/models/sphere.pmx"/>
-        </component>
-        <component class="MeshRender">
-            <attribute castshadow="false"/>
-            <attribute receiveshadow="false"/>
-            <attribute material="dlc:EnvLighting/materials/sphere.mat"/>
+            <attribute flags="skybox|skylighting"/>
+            <attribute skymap="dlc:EnvLighting/texture/skybox.dds"/>
+            <attribute skydiffuse="dlc:EnvLighting/texture/sky_diff.dds"/>
+            <attribute skyspecular="dlc:EnvLighting/texture/sky_spec.dds"/>
         </component>
     </object>
     <object>
@@ -73,4 +50,32 @@
         <attribute active="true"/>
         <component class="SphereMaker"/>
     </object>
+    <!--object name="UIRoot">
+        <attribute position="0,0,-1"/>
+        <attribute active="true"/>
+        <component class="Camera">
+            <attribute type="ortho"/>
+            <attribute order="2D"/>
+            <attribute clearflags="depth"/>
+        </component>
+        <component class="GuiCamera"/>
+    </object>
+    <object>
+        <attribute position="0,0,0"/>
+        <attribute scale="300, 760, 0"/>
+        <attribute active="true"/>
+        <component class="GuiWindow">
+            <attribute skin="WindowCS"/>
+            <attribute text="Setting"/>
+        </component>
+        <object>
+            <attribute position="0,0,0"/>
+            <attribute scale="300,768,0"/>
+            <attribute active="true"/>
+            <component class="GuiScrollView" skin="ScrollViewEmpty" canvasSize="256,256" align="Stretch"/>
+            <object active="true" position="0,0,0" scale="256, 256, 0">
+                <component class="GuiImage" skin="ImageBox" texture="dlc:ui/textures/Crystal_Clear_View.png"/>
+            </object>
+        </object>
+    </object-->
 </scene>

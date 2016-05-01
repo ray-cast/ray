@@ -3,9 +3,9 @@
     <include name="sys:fx/sampler.fxml"/>
     <include name="sys:fx/gbuffer.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
-    <macro name="NUM_SAMPLE" type="int" value="8"/>
+    <macro name="NUM_SAMPLE" type="int" value="10"/>
     <macro name="NUM_SAMPLE_INV" type="float" value="0.125"/>
-    <macro name="BLUR_RADIUS" type="int" value="6"/>
+    <macro name="BLUR_RADIUS" type="int" value="8"/>
     <parameter name="projScale" type="float"/>
     <parameter name="projInfo" type="float4"/>
     <parameter name="radius" type="float"/>
@@ -72,9 +72,8 @@
                 float3 viewNormal = GetNormal(coord.xy);
 
                 int2 ssC = int2(screenSpace.xy);
-                float sampleAngle = float(3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10.0f;
+                float sampleAngle = float(30 * ssC.x ^ ssC.y + 10 * ssC.x * ssC.y);
                 float sampleRadius = projScale / viewPosition.z;
-                float sampleRadius2 = sampleRadius * sampleRadius;
                 float sampleAmbient = 0.0f;
 
                 float2 sampleNoise;
@@ -90,7 +89,7 @@
                     float sampleLength2 = dot(sampleDirection, sampleDirection);
 
                     float epsilon = 0.0001f;
-                    sampleAmbient += saturate((sampleAngle - viewPosition.z * bias) / (sampleLength2 + epsilon));
+                    sampleAmbient += max(0.0f, (sampleAngle - viewPosition.z * bias) * rsqrt(sampleLength2));
                 }
 
                 return max(0.0f, 1.0f - sampleAmbient * intensity * NUM_SAMPLE_INV);
@@ -100,12 +99,22 @@
             {
                 float center_d = linearizeDepth(coord.xy);
 
-                float total_c = 0.f;
-                float total_w = 0.f;
+                float total_c = texSource.Sample(PointClamp, coord.xy).r;
+                float total_w = 1.0f;
 
-                for (float r = -BLUR_RADIUS; r < BLUR_RADIUS; r++)
+                for (int r = 1; r < BLUR_RADIUS; r++)
                 {
                     float2 offset = coord.xy + blurDirection * r;
+
+                    float bilateralWeight = bilateralfilter(offset, r, center_d);
+
+                    total_c += texSource.Sample(PointClamp, offset).r * bilateralWeight;
+                    total_w += bilateralWeight;
+                }
+
+                for (int r = 1; r < BLUR_RADIUS; r++)
+                {
+                    float2 offset = coord.xy - blurDirection * r;
 
                     float bilateralWeight = bilateralfilter(offset, r, center_d);
 

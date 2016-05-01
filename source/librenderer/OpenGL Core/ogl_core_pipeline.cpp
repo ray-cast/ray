@@ -107,7 +107,7 @@ OGLCorePipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 		auto& attributes = pipelineDesc.getGraphicsProgram()->getActiveAttributes();
 		for (auto& attrib : attributes)
 		{
-			if (attrib->getSemanticIndex() == it.getSemanticIndex() && attrib->getSemantic() == it.getSemantic())
+			if (attrib->getSemantic() == it.getSemantic())
 			{
 				attribIndex = attrib->downcast<OGLGraphicsAttribute>()->getBindingPoint();
 

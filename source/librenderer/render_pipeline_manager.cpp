@@ -388,6 +388,20 @@ RenderPipelineManager::getViewport() const noexcept
 	return _pipeline->getViewport();
 }
 
+void 
+RenderPipelineManager::setScissor(const Scissor& scissor) noexcept
+{
+	assert(_pipeline);
+	_pipeline->setScissor(scissor);
+}
+
+const Scissor&
+RenderPipelineManager::getScissor() const noexcept
+{
+	assert(_pipeline);
+	return _pipeline->getScissor();
+}
+
 void
 RenderPipelineManager::setTransform(const float4x4& transform) noexcept
 {
@@ -440,27 +454,6 @@ RenderPipelineManager::blitFramebuffer(GraphicsFramebufferPtr srcTarget, const V
 {
 	assert(_pipeline);
 	_pipeline->blitFramebuffer(srcTarget, src, destTarget, dest);
-}
-
-bool
-RenderPipelineManager::updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept
-{
-	assert(_pipeline);
-	return _pipeline->updateBuffer(data, str, cnt);
-}
-
-void*
-RenderPipelineManager::mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept
-{
-	assert(_pipeline);
-	return _pipeline->mapBuffer(data, access);
-}
-
-void
-RenderPipelineManager::unmapBuffer(GraphicsDataPtr data) noexcept
-{
-	assert(_pipeline);
-	return _pipeline->unmapBuffer(data);
 }
 
 void

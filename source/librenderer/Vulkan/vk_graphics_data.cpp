@@ -96,7 +96,7 @@ VulkanGraphicsData::setup(const GraphicsDataDesc& dataDesc) noexcept
 	auto stream = dataDesc.getStream();
 	if (stream != nullptr)
 	{
-		void* data = _memory.map(0, streamSize, GraphicsAccessFlagsBits::GraphicsAccessFlagsMapReadBit);
+		void* data = _memory.map(0, streamSize, GraphicsAccessFlagBits::GraphicsAccessFlagMapReadBit);
 		if (data)
 		{
 			std::memcpy(data, stream, streamSize);
@@ -134,6 +134,23 @@ VkDeviceMemory
 VulkanGraphicsData::getDeviceMemory() const noexcept
 {
 	return _memory.getDeviceMemory();
+}
+
+bool
+VulkanGraphicsData::map(std::uint32_t offset, std::uint32_t count, void** data) noexcept
+{
+	auto device = this->getDevice()->downcast<VulkanDevice>();
+
+	void* buffer = nullptr;
+	vkMapMemory(device->getDevice(), this->getDeviceMemory(), offset, count, 0, &buffer);
+	return buffer ? true : false;
+}
+
+void
+VulkanGraphicsData::unmap() noexcept
+{
+	auto device = this->getDevice()->downcast<VulkanDevice>();
+	vkUnmapMemory(device->getDevice(), this->getDeviceMemory());
 }
 
 void

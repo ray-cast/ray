@@ -51,14 +51,14 @@ public:
 	void setMaterial(MaterialPtr material) noexcept;
 	MaterialPtr getMaterial() noexcept;
 
+	void setMaterialTech(RenderQueue queue, MaterialTechPtr materialTech) noexcept;
+	MaterialTechPtr getMaterialTech(RenderQueue queue) noexcept;
+
 	void setRenderMesh(RenderMeshPtr mesh) noexcept;
 	RenderMeshPtr getRenderMesh() noexcept;
 
 	void setGraphicsIndirect(GraphicsIndirectPtr renderable) noexcept;
 	GraphicsIndirectPtr getGraphicsIndirect() noexcept;
-
-private:
-	void _updatePipeline() noexcept;
 
 private:
 	void onAddRenderData(RenderDataManager& manager) noexcept;

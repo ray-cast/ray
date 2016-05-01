@@ -64,6 +64,7 @@ public:
 	void setLinear2sRGBEnable(bool enable) noexcept;
 	void setMultisampleEnable(bool enable) noexcept;
 	void setRasterizerDiscardEnable(bool enable) noexcept;
+	void setLineWidth(float width) noexcept;
 
 	void setDepthEnable(bool enable) noexcept;
 	void setDepthWriteEnable(bool enable) noexcept;
@@ -110,6 +111,7 @@ public:
 	bool getLinear2sRGBEnable() const noexcept;
 	bool getMultisampleEnable() const noexcept;
 	bool getRasterizerDiscardEnable() const noexcept;
+	float getLineWidth() const noexcept;
 
 	bool getDepthEnable() const noexcept;
 	bool getDepthWriteEnable() const noexcept;
@@ -152,6 +154,8 @@ private:
 	bool _depthBiasEnable;
 	bool _depthBiasClamp;
 	bool _stencilEnable;
+
+	float _lineWidth;
 
 	GraphicsBlendOp _blendOp;
 	GraphicsBlendOp _blendAlphaOp;

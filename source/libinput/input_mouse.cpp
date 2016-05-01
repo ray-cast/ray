@@ -35,22 +35,23 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/input_mouse.h>
-#if defined(ToplevelInputMouse)
 
 _NAME_BEGIN
 
-__ImplementSubClass(DefaultInputMouse, ToplevelInputMouse, "DefaultInputMouse")
+__ImplementSubInterface(DefaultInputMouse, InputMouse, "DefaultInputMouse")
 
 DefaultInputMouse::DefaultInputMouse() noexcept
 	: _mouseX(0)
 	, _mouseY(0)
-	, _mouseOffsetX(0)
-	, _mouseOffsetY(0)
 	, _isMouseLock(false)
 	, _isMouseLocked(false)
 	, _isMouseHide(false)
 {
 	std::memset(_buttonState, 0, sizeof(_buttonState));
+}
+
+DefaultInputMouse::~DefaultInputMouse() noexcept
+{
 }
 
 void
@@ -91,7 +92,7 @@ DefaultInputMouse::showMouse() noexcept
 {
 	if (_isMouseHide)
 	{
-		ToplevelInputMouse::showMouse();
+		this->onShowMouse();
 		_isMouseHide = false;
 	}
 }
@@ -101,7 +102,7 @@ DefaultInputMouse::hideMouse() noexcept
 {
 	if (!_isMouseHide)
 	{
-		ToplevelInputMouse::hideMouse();
+		this->onHideMouse();
 		_isMouseHide = true;
 	}
 }
@@ -117,33 +118,14 @@ DefaultInputMouse::setPosition(int x, int y) noexcept
 {
 	_mouseX = x;
 	_mouseY = y;
-	ToplevelInputMouse::setPosition(_mouseOffsetX + _mouseX, _mouseOffsetY + _mouseY);
+	this->onChangePosition(x, y);
 }
 
 void
-DefaultInputMouse::setPositionX(int x) noexcept
+DefaultInputMouse::getPosition(int& x, int& y) const noexcept
 {
-	_mouseX = x;
-	ToplevelInputMouse::setPosition(_mouseOffsetX + _mouseX, _mouseOffsetY + _mouseY);
-}
-
-void
-DefaultInputMouse::setPositionY(int y) noexcept
-{
-	_mouseY = y;
-	ToplevelInputMouse::setPosition(_mouseOffsetX + _mouseX, _mouseOffsetY + _mouseY);
-}
-
-int
-DefaultInputMouse::getPositionX() const noexcept
-{
-	return _mouseX;
-}
-
-int
-DefaultInputMouse::getPositionY() const noexcept
-{
-	return _mouseY;
+	x = _mouseX;
+	y = _mouseY;
 }
 
 bool
@@ -217,8 +199,6 @@ DefaultInputMouse::onInputEvent(const InputEvent& event) noexcept
 	{
 		_mouseX = event.motion.x;
 		_mouseY = event.motion.y;
-		_mouseOffsetX = event.motion.xrel - event.motion.x;
-		_mouseOffsetY = event.motion.yrel - event.motion.y;
 	}
 	break;
 	case InputEvent::MouseWheelDown:
@@ -261,11 +241,4 @@ DefaultInputMouse::onInputEvent(const InputEvent& event) noexcept
 	}
 }
 
-InputMousePtr
-DefaultInputMouse::clone() const noexcept
-{
-	return std::make_shared<DefaultInputMouse>();
-}
-
 _NAME_END
-#endif

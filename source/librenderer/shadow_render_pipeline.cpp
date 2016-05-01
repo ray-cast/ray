@@ -107,7 +107,7 @@ ShadowRenderPipeline::renderShadowMaps(const CameraPtr& camera) noexcept
 
 		_pipeline->setCamera(light->getShadowCamera());
 		_pipeline->setFramebuffer(_softShadowDepthViewTemp[lightShadowType]);
-		_pipeline->clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsDepth, float4::Zero, 1.0, 0);
+		_pipeline->clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsDepth, float4::Zero, 1.0, 0);
 		_pipeline->drawRenderQueue(RenderQueue::RenderQueueOpaque, _softGenShadowMap);
 
 		if (light->getSoftShadow())
@@ -178,7 +178,7 @@ ShadowRenderPipeline::initTextureFormat(RenderPipeline& pipeline) noexcept
 bool
 ShadowRenderPipeline::setupShadowMaterial(RenderPipeline& pipeline) noexcept
 {
-	_softBlur = pipeline.createMaterial("sys:fx/shadowmap.fxml.o");
+	_softBlur = pipeline.createMaterial("sys:fx/shadowmap.fxml");
 	_softGenShadowMap = _softBlur->getTech("GenShadowMap");
 	_softConvOrthoLinearDepth = _softBlur->getTech("ConvOrthoLinearDepth");
 	_softConvPerspectiveFovLinearDepth = _softBlur->getTech("ConvPerspectiveFovLinearDepth");

@@ -15,6 +15,7 @@
         </component>
         <component class="PhysicsBody">
         </component>
+
     </object>
     <object>
         <attribute name="wood"/>
@@ -105,7 +106,7 @@
         <component class="Camera">
             <attribute aperture="75.0"/>
             <attribute znear="0.1"/>
-            <attribute zfar="65535.0"/>
+            <attribute zfar="1000.0"/>
             <attribute w="1376"/>
             <attribute h="768"/>
         </component>
@@ -116,6 +117,12 @@
         <component class="PhysicsCharacter">
             <attribute radius="1"/>
             <attribute height="4"/>
+        </component>
+        <component class="Skybox">
+            <attribute castshadow="false"/>
+            <attribute receiveshadow="false"/>
+            <attribute flags="skybox"/>
+            <attribute skymap="dlc:EnvLighting/texture/skybox.dds"/>
         </component>
     </object>
 </scene>

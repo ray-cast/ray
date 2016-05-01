@@ -58,7 +58,7 @@ float ToneExposure(float avgLum)
 }
 
 FimicToneMapping::Setting::Setting() noexcept
-	: bloomThreshold(0.4)
+	: bloomThreshold(0.5)
 	, bloomIntensity(1.0)
 	, lumKey(0.98)
 	, lumDelta(50.0)
@@ -225,7 +225,7 @@ FimicToneMapping::onActivate(RenderPipeline& pipeline) noexcept
 	sampleCombieViewDesc.setGraphicsFramebufferLayout(_sampleViewLayout);
 	_texCombieView = pipeline.createFramebuffer(sampleCombieViewDesc);
 
-	_fimic = pipeline.createMaterial("sys:fx/fimic.fxml.o");
+	_fimic = pipeline.createMaterial("sys:fx/fimic.fxml");
 
 	_sunLum = _fimic->getTech("SumLum");
 	_sunLumLog = _fimic->getTech("SumLumLog");

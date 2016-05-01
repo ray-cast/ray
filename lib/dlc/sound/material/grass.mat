@@ -3,5 +3,5 @@
     <attribute diffuse="0.3, 0.75, 0.0"/>
     <attribute specular="0.1" />
     <attribute shininess="0.1" />
-    <attribute shader="sys:fx/opacity.fxml.o"/>
+    <attribute shader="sys:fx/opacity_skinning0.fxml"/>
 </material>

@@ -44,6 +44,7 @@
 #include <ray/message.h>
 #include <ray/timer.h>
 #include <ray/delegate.h>
+#include <ray/input.h>
 
 _NAME_BEGIN
 

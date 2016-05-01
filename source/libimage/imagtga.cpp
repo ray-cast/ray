@@ -72,30 +72,31 @@ TGAHandler::doCanRead(StreamReader& stream) const noexcept
 {
 	TGAHeader hdr;
 
-	if (stream.read((char*)&hdr, sizeof(hdr)))
+	if (!stream.read((char*)&hdr, sizeof(hdr)))
+		return false;
+
+	if (hdr.image_type != 0 &&
+		hdr.image_type != 2 &&
+		hdr.image_type != 3 &&
+		hdr.image_type != 10)
 	{
-		if (hdr.id_length != 0)
-		{
-			return false;
-		}
-
-		if (hdr.image_type != 0 &&
-			hdr.image_type != 2 &&
-			hdr.image_type != 3 &&
-			hdr.image_type != 10)
-		{
-			return false;
-		}
-
-		if (hdr.colormap_type != 0)
-		{
-			return false;
-		}
-
-		return true;
+		return false;
 	}
 
-	return false;
+	if (hdr.colormap_type != 0)
+		return false;
+
+	if (hdr.id_length != 0)
+		return false;
+
+	if (hdr.pixel_size != 32 &&
+		hdr.pixel_size != 24 &&
+		hdr.pixel_size != 16)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 bool
@@ -109,21 +110,10 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 
 	stream.read((char*)&hdr, sizeof(hdr));
 
-	if (hdr.attributes & 0x20)
-	{
-	}
-
-	if (hdr.pixel_size != 32 &&
-		hdr.pixel_size != 24 &&
-		hdr.pixel_size != 16)
-	{
-		return false;
-	}
-
-	size_type columns = hdr.width;
-	size_type rows = hdr.height;
-	size_type nums = columns * rows;
-	size_type length = nums * hdr.pixel_size / 8;
+	std::uint32_t columns = hdr.width;
+	std::uint32_t rows = hdr.height;
+	std::uint32_t nums = columns * rows;
+	std::uint32_t length = nums * hdr.pixel_size / 8;
 
 	if (!image.create(columns, rows, hdr.pixel_size))
 		return false;
@@ -137,8 +127,8 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	{
 	case 2:
 	{
-		std::vector<pass_val> buffers((std::size_t)length);
-		image_buf buf = (image_buf)buffers.data();
+		std::vector<std::uint8_t> buffers((std::size_t)length);
+		std::uint8_t* buf = (std::uint8_t*)buffers.data();
 
 		if (!stream.read((char*)buf, length))
 			return false;
@@ -187,8 +177,8 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	break;
 	case 10:
 	{
-		std::vector<pass_val> buffers(size - sizeof(TGAHeader));
-		image_buf buf = (image_buf)buffers.data();
+		std::vector<std::uint8_t> buffers(size - sizeof(TGAHeader));
+		std::uint8_t* buf = (std::uint8_t*)buffers.data();
 
 		if (!stream.read((char*)buf, buffers.size()))
 			return false;
@@ -207,17 +197,17 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 
 			while (rgb != end)
 			{
-				pass_val packe = *buf++;
+				std::uint8_t packe = *buf++;
 				if (packe & 0x80)
 				{
-					pass_val length = (pass_val)(1 + (packe & 0x7f));
+					std::uint8_t length = (std::uint8_t)(1 + (packe & 0x7f));
 
 					BGR bgr;
 					bgr.b = *buf++;
 					bgr.g = *buf++;
 					bgr.r = *buf++;
 
-					for (pass_val i = 0; i < length; i++)
+					for (std::uint8_t i = 0; i < length; i++)
 					{
 						rgb->r = bgr.r;
 						rgb->g = bgr.g;
@@ -227,9 +217,9 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 				}
 				else
 				{
-					pass_val length = ++packe;
+					std::uint8_t length = ++packe;
 
-					for (pass_val i = 0; i < length; i++)
+					for (std::uint8_t i = 0; i < length; i++)
 					{
 						rgb->b = *buf++;
 						rgb->g = *buf++;
@@ -247,10 +237,10 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 
 			while (rgba != end)
 			{
-				pass_val packe = *buf++;
+				std::uint8_t packe = *buf++;
 				if (packe & 0x80)
 				{
-					pass_val length = (pass_val)(1 + (packe & 0x7f));
+					std::uint8_t length = (std::uint8_t)(1 + (packe & 0x7f));
 
 					BGRA bgra;
 					bgra.b = *buf++;
@@ -258,7 +248,7 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 					bgra.r = *buf++;
 					bgra.a = *buf++;
 
-					for (pass_val i = 0; i < length; i++)
+					for (std::uint8_t i = 0; i < length; i++)
 					{
 						rgba->r = bgra.r;
 						rgba->g = bgra.g;
@@ -269,9 +259,9 @@ TGAHandler::doLoad(Image& image, StreamReader& stream) noexcept
 				}
 				else
 				{
-					pass_val length = ++packe;
+					std::uint8_t length = ++packe;
 
-					for (pass_val i = 0; i < length; i++)
+					for (std::uint8_t i = 0; i < length; i++)
 					{
 						rgba->b = *buf++;
 						rgba->g = *buf++;

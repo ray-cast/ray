@@ -295,6 +295,14 @@ OGLGraphicsState::apply(GraphicsStateDesc& lastStateDesc) noexcept
 			lastStateDesc.setStencilEnable(false);
 		}
 	}
+
+	if (lastStateDesc.getLineWidth() != _stateDesc.getLineWidth())
+	{
+		glLineWidth(_stateDesc.getLineWidth());
+		lastStateDesc.setLineWidth(_stateDesc.getLineWidth());
+	}
+
+	lastStateDesc.setPrimitiveType(_stateDesc.getPrimitiveType());
 }
 
 const GraphicsStateDesc&

@@ -34,7 +34,6 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if defined(_BUILD_RENDERER)
 #include <ray/render_component.h>
 
 _NAME_BEGIN
@@ -134,5 +133,3 @@ RenderComponent::onRenderObjectPost(RenderPipeline& pipeline) noexcept
 }
 
 _NAME_END
-
-#endif

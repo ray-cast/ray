@@ -81,10 +81,6 @@ public:
 	void setIndexBufferData(GraphicsDataPtr data) noexcept;
 	GraphicsDataPtr getIndexBufferData() const noexcept;
 
-	bool updateBuffer(GraphicsDataPtr data, void* buf, std::size_t cnt) noexcept;
-	void* mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept;
-	void unmapBuffer(GraphicsDataPtr data) noexcept;
-
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;

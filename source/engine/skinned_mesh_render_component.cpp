@@ -35,6 +35,13 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/skinned_mesh_render_component.h>
+#include <ray/mesh_component.h>
+#include <ray/render_system.h>
+#include <ray/material.h>
+#include <ray/geometry.h>
+#include <ray/render_mesh.h>
+#include <ray/render_feature.h>
+#include <ray/game_server.h>
 
 _NAME_BEGIN
 
@@ -42,11 +49,22 @@ __ImplementSubClass(SkinnedMeshRenderComponent, MeshRenderComponent, "SkinnedMes
 
 SkinnedMeshRenderComponent::SkinnedMeshRenderComponent() noexcept
 {
-	_setModelMakerFlags(ModelMakerFlagBits::ModelMakerFlagBit_VER_TEX_NORMAL_WEIGHT);
 }
 
 SkinnedMeshRenderComponent::~SkinnedMeshRenderComponent() noexcept
 {
+}
+
+void 
+SkinnedMeshRenderComponent::onActivate() except
+{
+	MeshRenderComponent::onActivate();
+}
+
+void 
+SkinnedMeshRenderComponent::onDeactivate() noexcept
+{
+	MeshRenderComponent::onDeactivate();
 }
 
 _NAME_END

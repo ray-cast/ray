@@ -221,6 +221,17 @@ EGL3Texture::getInstanceID() const noexcept
 }
 
 bool
+EGL3Texture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, GraphicsFormat format, void** data) noexcept
+{
+	return false;
+}
+
+void
+EGL3Texture::unmap() noexcept
+{
+}
+
+bool
 EGL3Texture::applyMipmapLimit(GLenum target, std::uint32_t min, std::uint32_t count) noexcept
 {
 	GL_CHECK(glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, min));

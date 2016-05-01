@@ -47,6 +47,14 @@ class SkinnedMeshRenderComponent : public MeshRenderComponent
 public:
 	SkinnedMeshRenderComponent() noexcept;
 	~SkinnedMeshRenderComponent() noexcept;
+
+private:
+	void onActivate() except;
+	void onDeactivate() noexcept;
+
+private:
+	GeometryPtr _geometry;
+	RenderMeshPtr _renderBuffer;
 };
 
 _NAME_END

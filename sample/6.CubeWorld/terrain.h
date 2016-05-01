@@ -117,7 +117,7 @@ private:
 	void dispose(std::shared_ptr<TerrainThread> ctx) noexcept;
 
 	void onActivate() except;
-	void onDeactivate() except;
+	void onDeactivate() noexcept;
 
 	void onFrameEnd() except;
 

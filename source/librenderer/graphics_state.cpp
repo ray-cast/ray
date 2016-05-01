@@ -53,6 +53,7 @@ GraphicsStateDesc::GraphicsStateDesc() noexcept
 	, _depthClampEnable(false)
 	, _depthBiasClamp(false)
 	, _stencilEnable(false)
+	, _lineWidth(1.0f)
 	, _blendOp(GraphicsBlendOp::GraphicsBlendOpAdd)
 	, _blendAlphaOp(GraphicsBlendOp::GraphicsBlendOpAdd)
 	, _blendSrc(GraphicsBlendFactor::GraphicsBlendFactorSrcAlpha)
@@ -184,6 +185,12 @@ void
 GraphicsStateDesc::setRasterizerDiscardEnable(bool enable) noexcept
 {
 	_rasterizerDiscardEnable = enable;
+}
+
+void 
+GraphicsStateDesc::setLineWidth(float width) noexcept
+{
+	_lineWidth = width;
 }
 
 void
@@ -436,6 +443,12 @@ bool
 GraphicsStateDesc::getRasterizerDiscardEnable() const noexcept
 {
 	return _rasterizerDiscardEnable;
+}
+
+float
+GraphicsStateDesc::getLineWidth() const noexcept
+{
+	return _lineWidth;
 }
 
 bool

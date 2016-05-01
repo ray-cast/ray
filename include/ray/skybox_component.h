@@ -41,20 +41,100 @@
 
 _NAME_BEGIN
 
-class EXPORT SkyBoxComponent : public MeshRenderComponent
+class EXPORT SkyboxComponent final : public MeshRenderComponent
 {
-	__DeclareSubClass(SkyBoxComponent, MeshRenderComponent)
+	__DeclareSubClass(SkyboxComponent, MeshRenderComponent)
 public:
-	SkyBoxComponent() noexcept;
-	SkyBoxComponent(MaterialPtr material) noexcept;
-	~SkyBoxComponent() noexcept;
+	SkyboxComponent() noexcept;
+	SkyboxComponent(MaterialPtr material) noexcept;
+	~SkyboxComponent() noexcept;
+
+	void setSkyLightMap(const std::string& texture) noexcept;
+	const std::string& getSkyLightMap() const noexcept;
+
+	void setSkyLightDiffuse(const std::string& diffuse) noexcept;
+	const std::string& getSkyLightDiffuse() const noexcept;
+
+	void setSkyLightSpecular(const std::string& specular) noexcept;
+	const std::string& getSkyLightSpecular() const noexcept;
+
+	void setSkyboxEnable(bool enable) noexcept;
+	bool getSkyboxEnable() const noexcept;
+
+	void setSkyLightingEnable(bool enable) noexcept;
+	bool getSkyLightingEnable() const noexcept;
+
+	void setSkyLightingIntensity(const float2& intensity) noexcept;
+	const float2& getSkyLightingIntensity() const noexcept;
+
+	void load(iarchive& reader) noexcept;
+	void save(oarchive& write) noexcept;
+
+	GameComponentPtr clone() const noexcept;
 
 private:
+	bool _loadSkybox(const std::string& texture) noexcept;
+	bool _loadSkyDiffuse(const std::string& texture) noexcept;
+	bool _loadSkySpecular(const std::string& texture) noexcept;
 
+	bool _buildQuadMesh(MeshProperty& mesh) noexcept;
+	bool _buildQuadRenderMesh(const MeshProperty& mesh) noexcept;
+	bool _buildQuadRenderObject(const MeshProperty& mesh, MaterialTechPtr technique) noexcept;
+
+	bool _buildSphereMesh(MeshProperty& mesh) noexcept;
+	bool _buildSphereRenderMesh(const MeshProperty& mesh) noexcept;
+	bool _buildSphereRenderObject(const MeshProperty& mesh, MaterialTechPtr technique) noexcept;
+
+	bool _setupSkybox() noexcept;
+	bool _setupSkyLighting() noexcept;
+	bool _setupMaterial() noexcept;
+
+	void _destroySkybox() noexcept;
+	void _destroySkyLighting() noexcept;
+	void _destroyMaterial() noexcept;
+
+	void _reloadSkybox(const std::string& texture) noexcept;
+	void _reloadSkyDiffuse(const std::string& texture) noexcept;
+	void _reloadSkySpecular(const std::string& texture) noexcept;
+
+	void _updateMaterial() noexcept;
+	void _updateTransform() noexcept;
+
+private:
 	void onActivate() noexcept;
 	void onDeactivate() noexcept;
 
-	GameComponentPtr clone() const noexcept;
+	void onFrameEnd() noexcept;
+
+	void onMoveAfter() noexcept;
+
+private:
+	SkyboxComponent(const SkyboxComponent&) = delete;
+	SkyboxComponent& operator=(const SkyboxComponent&) = delete;
+
+private:
+	bool _enableSkyBox;
+	bool _enableSkyLighting;
+
+	bool _needUpdateSkybox;
+	bool _needUpdateSkyDiffuse;
+	bool _needUpdateSkySpecular;
+
+	float2 _skyLightingIntensity;
+
+	std::string _skyMap;
+	std::string _skyDiffuse;
+	std::string _skySpecular;
+
+	GraphicsTexturePtr _skyTexture;
+	GraphicsTexturePtr _skyDiffTexture;
+	GraphicsTexturePtr _skySpecTexture;
+
+	RenderMeshPtr _renderScreenQuad;
+	RenderMeshPtr _renderSphere;
+
+	GeometryPtr _quadObject;
+	GeometryPtr _sphereObject;
 };
 
 _NAME_END

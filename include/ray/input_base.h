@@ -50,18 +50,14 @@ public:
 	Input() noexcept;
 	virtual ~Input() noexcept;
 
-	virtual void open(InputDevicePtr device) noexcept = 0;
+	virtual bool open(InputDevicePtr device) noexcept = 0;
 	virtual void close() noexcept = 0;
 
 	virtual void setCaptureObject(CaptureObject window) noexcept = 0;
 	virtual CaptureObject getCaptureObject() const noexcept = 0;
 
-	virtual void setMousePosX(int x) noexcept = 0;
-	virtual void setMousePosY(int y) noexcept = 0;
 	virtual void setMousePos(int x, int y) noexcept = 0;
-
-	virtual int getMousePosX() const noexcept = 0;
-	virtual int getMousePosY() const noexcept = 0;
+	virtual void getMousePos(int& x, int& y) const noexcept = 0;
 
 	virtual bool getKeyDown(InputKey::Code key) const noexcept = 0;
 	virtual bool getKeyUp(InputKey::Code key) const noexcept = 0;
@@ -94,7 +90,8 @@ public:
 	virtual void removeInputListener(InputListenerPtr listener) noexcept = 0;
 	virtual void clearInputListener() noexcept = 0;
 
-	virtual void sendInputEvent(const InputEvent& event) noexcept = 0;
+	virtual bool sendInputEvent(const InputEvent& event) noexcept = 0;
+	virtual bool postInputEvent(const InputEvent& event) noexcept = 0;
 
 	virtual void updateBegin() noexcept = 0;
 	virtual void update() noexcept = 0;

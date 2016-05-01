@@ -35,11 +35,11 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #if defined(_BUILD_PLATFORM_WINDOWS)
-#include <ray/msw_input_keyboard.h>
+#include "msw_input_keyboard.h"
 
 _NAME_BEGIN
 
-__ImplementSubInterface(MSWInputKeyboard, InputKeyboard, "MSWInputKeyboard")
+__ImplementSubClass(MSWInputKeyboard, DefaultInputKeyboard, "MSWInputKeyboard")
 
 MSWInputKeyboard::MSWInputKeyboard() noexcept
 {
@@ -205,6 +205,12 @@ MSWInputKeyboard::getKeyState(InputKey::Code key) const noexcept
 		//return ::GetAsyncKeyState(virtualKey) && 0x8000;
 
 	return true;
+}
+
+InputKeyboardPtr
+MSWInputKeyboard::clone() const noexcept
+{
+	return std::make_shared<MSWInputKeyboard>();
 }
 
 _NAME_END

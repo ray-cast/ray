@@ -43,7 +43,6 @@ __ImplementSubClass(OGLGraphicsData, GraphicsData, "OGLGraphicsData")
 OGLGraphicsData::OGLGraphicsData() noexcept
 	: _buffer(GL_NONE)
 	, _isMapping(GL_FALSE)
-	, _data(nullptr)
 {
 }
 
@@ -58,7 +57,6 @@ OGLGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 	assert(!_buffer);
 	assert(desc.getStride() > 0);
 
-	_data = nullptr;
 	_dataOffset = 0;
 	_dataSize = desc.getStreamSize();
 	_usage = desc.getUsage();
@@ -146,20 +144,6 @@ OGLGraphicsData::resize(const char* data, GLsizeiptr datasize) noexcept
 	_dataSize = datasize;
 }
 
-int
-OGLGraphicsData::flush() noexcept
-{
-	return this->flush(0, _dataSize);
-}
-
-int
-OGLGraphicsData::flush(GLintptr offset, GLsizeiptr cnt) noexcept
-{
-	glBindBuffer(_target, _buffer);
-	glFlushMappedBufferRange(_buffer, offset, cnt);
-	return cnt;
-}
-
 GLsizeiptr
 OGLGraphicsData::read(char* str, GLsizeiptr cnt) noexcept
 {
@@ -170,7 +154,9 @@ OGLGraphicsData::read(char* str, GLsizeiptr cnt) noexcept
 			return 0;
 	}
 
-	void* data = this->map(_dataOffset, cnt, GraphicsAccessFlagsBits::GraphicsAccessFlagsMapReadBit);
+	void* data;
+
+	this->map(_dataOffset, cnt, &data);
 	if (data)
 	{
 		std::memcpy(str, data, cnt);
@@ -191,7 +177,9 @@ OGLGraphicsData::write(const char* str, GLsizeiptr cnt) noexcept
 			return 0;
 	}
 
-	void* data = this->map(_dataOffset, cnt, GraphicsAccessFlagsBits::GraphicsAccessFlagsMapWriteBit);
+	void* data;
+
+	this->map(_dataOffset, cnt, &data);
 	if (data)
 	{
 		std::memcpy(data, str, cnt);
@@ -204,55 +192,23 @@ OGLGraphicsData::write(const char* str, GLsizeiptr cnt) noexcept
 	return 0;
 }
 
-void*
-OGLGraphicsData::map(std::uint32_t access) noexcept
+bool 
+OGLGraphicsData::map(std::uint32_t offset, std::uint32_t count, void** data) noexcept
 {
-	return this->map(0, _dataSize, access);
-}
-
-void*
-OGLGraphicsData::map(GLintptr offset, GLsizeiptr cnt, std::uint32_t access) noexcept
-{
-	if (!_data)
-	{
-		GLbitfield flags = GL_MAP_READ_BIT;
-		if (access & GraphicsAccessFlagsBits::GraphicsAccessFlagsMapReadBit)
-			flags |= GL_MAP_READ_BIT;
-		if (access & GraphicsAccessFlagsBits::GraphicsAccessFlagsMapWriteBit)
-			flags |= GL_MAP_WRITE_BIT;
-		if (access & GraphicsAccessFlagsBits::GraphicsAccessFlagsUnsynchronizedBit)
-			flags |= GL_MAP_UNSYNCHRONIZED_BIT;
-		if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsFlushExplicitBit)
-			flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
-
-		glBindBuffer(_target, _buffer);
-		_data = glMapBufferRange(_target, offset, cnt, flags);
-		_data;
-	}
-
-	if (_data)
-	{
-		_isMapping = GL_TRUE;
-		return _data;
-	}
-
-	return _data;
+	assert(data);
+	assert(!_isMapping);
+	glBindBuffer(_target, _buffer);
+	*data = glMapBufferRange(_target, offset, count, GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+	_isMapping = GL_TRUE;
+	return true;
 }
 
 void
 OGLGraphicsData::unmap() noexcept
 {
 	assert(_isMapping);
-
-	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsPersistentBit)
-	{
-		_isMapping = GL_FALSE;
-		return;
-	}
-
 	glBindBuffer(_target, _buffer);
 	glUnmapBuffer(_target);
-	_data = nullptr;
 	_isMapping = GL_FALSE;
 }
 

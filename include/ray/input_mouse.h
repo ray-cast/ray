@@ -37,57 +37,47 @@
 #ifndef _H_INPUT_MOUSE_H_
 #define _H_INPUT_MOUSE_H_
 
-#if defined(_BUILD_PLATFORM_SDL2)
-#   include <ray/sdl_input_mouse.h>
-#   define ToplevelInputMouse SDLInputMouse
-#elif defined(_BUILD_PLATFORM_WINDOWS)
-#	include <ray/msw_input_mouse.h>
-#   define ToplevelInputMouse MSWInputMouse
-#elif defined(_BUILD_PLATFORM_ANDROID)
-#	include <ray/ndk_input_touch.h>
-#   define ToplevelInputMouse NDKInputTouch
-#endif
-
-#if defined(ToplevelInputMouse)
+#include <ray/input_mouse_base.h>
 
 _NAME_BEGIN
 
-class EXPORT DefaultInputMouse : public ToplevelInputMouse
+class EXPORT DefaultInputMouse : public InputMouse
 {
-	__DeclareSubClass(DefaultInputMouse, ToplevelInputMouse)
+	__DeclareSubClass(DefaultInputMouse, InputMouse)
 public:
 	DefaultInputMouse() noexcept;
+	virtual ~DefaultInputMouse() noexcept;
 
-	virtual void lockMouse() noexcept;
-	virtual void unlockMouse() noexcept;
-	virtual bool isLockedMouse() const noexcept;
+	void lockMouse() noexcept;
+	void unlockMouse() noexcept;
+	bool isLockedMouse() const noexcept;
 
-	virtual void showMouse() noexcept;
-	virtual void hideMouse() noexcept;
-	virtual bool isShowMouse() noexcept;
+	void showMouse() noexcept;
+	void hideMouse() noexcept;
+	bool isShowMouse() noexcept;
 
-	virtual void setPosition(int x, int y) noexcept;
-	virtual void setPositionX(int x) noexcept;
-	virtual void setPositionY(int y) noexcept;
+	void setPosition(int x, int y) noexcept;
+	void getPosition(int& x, int& y) const noexcept;
 
-	virtual int getPositionX() const noexcept;
-	virtual int getPositionY() const noexcept;
+	bool getButtonDown(InputButton::Code key) const noexcept;
+	bool getButtonUp(InputButton::Code key) const noexcept;
 
-	virtual bool getButtonDown(InputButton::Code key) const noexcept;
-	virtual bool getButtonUp(InputButton::Code key) const noexcept;
+	bool getButton(InputButton::Code key) const noexcept;
 
-	virtual bool getButton(InputButton::Code key) const noexcept;
+protected:
+	void onFrameBegin() noexcept;
+	void onFrameEnd() noexcept;
 
-	virtual InputMousePtr clone() const noexcept;
+	void onObtainCapture() noexcept;
+	void onReleaseCapture() noexcept;
+
+	void onInputEvent(const InputEvent& event) noexcept;
 
 private:
-	virtual void onFrameBegin() noexcept;
-	virtual void onFrameEnd() noexcept;
+	virtual void onShowMouse() noexcept = 0;
+	virtual void onHideMouse() noexcept = 0;
 
-	virtual void onObtainCapture() noexcept;
-	virtual void onReleaseCapture() noexcept;
-
-	virtual void onInputEvent(const InputEvent& event) noexcept;
+	virtual void onChangePosition(int x, int y) noexcept = 0;
 
 private:
 	DefaultInputMouse(const DefaultInputMouse&) noexcept = delete;
@@ -106,9 +96,6 @@ private:
 	int _mouseX;
 	int _mouseY;
 
-	int _mouseOffsetX;
-	int _mouseOffsetY;
-
 	struct ButtonState
 	{
 		bool down;
@@ -122,5 +109,4 @@ private:
 
 _NAME_END
 
-#endif
 #endif

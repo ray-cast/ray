@@ -52,8 +52,8 @@ struct InputKeysym
 
 struct KeyboardEvent
 {
-	std::uint32_t timestamp;
-	std::uint32_t windowID;
+	std::uint64_t timestamp;
+	std::uint64_t windowID;
 	std::uint8_t state;
 	std::uint8_t repeat;
 	std::uint8_t padding2;
@@ -63,7 +63,8 @@ struct KeyboardEvent
 
 struct MouseMotionEvent
 {
-	std::uint32_t timestamp;
+	std::uint64_t timestamp;
+	std::uint64_t windowID;
 	std::uint8_t state;
 	int x;
 	int y;
@@ -73,8 +74,8 @@ struct MouseMotionEvent
 
 struct MouseButtonEvent
 {
-	std::uint32_t timestamp;
-	std::uint32_t windowID;
+	std::uint64_t timestamp;
+	std::uint64_t windowID;
 	std::uint32_t which;
 	std::uint8_t button;
 	std::uint8_t state;
@@ -86,7 +87,8 @@ struct MouseButtonEvent
 
 struct MouseWheelEvent
 {
-	std::uint32_t timestamp;
+	std::uint64_t timestamp;
+	std::uint32_t windowID;
 	std::uint8_t _state;
 	int x;
 	int y;

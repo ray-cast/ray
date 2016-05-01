@@ -37,18 +37,7 @@
 #ifndef _H_INPUT_DEVICE_H_
 #define _H_INPUT_DEVICE_H_
 
-#if defined(_BUILD_PLATFORM_SDL2)
-#   include <ray/sdl_input_device.h>
-#   define ToplevelInputDevice SDLInputDevice
-#elif defined(_BUILD_PLATFORM_WINDOWS)
-#	include <ray/msw_input_device.h>
-#   define ToplevelInputDevice MSWInputDevice
-#elif defined(_BUILD_PLATFORM_ANDROID)
-#	include <ray/ndk_input_device.h>
-#   define ToplevelInputDevice NDKInputDevice
-#endif
-
-#if defined(ToplevelInputDevice)
+#include <ray/input_device_base.h>
 
 #include <queue>
 #include <thread>
@@ -56,12 +45,12 @@
 
 _NAME_BEGIN
 
-class EXPORT DefaultInputDevice final : public ToplevelInputDevice
+class EXPORT DefaultInputDevice : public InputDevice
 {
-	__DeclareSubClass(DefaultInputDevice, ToplevelInputDevice)
+	__DeclareSubInterface(DefaultInputDevice, InputDevice)
 public:
 	DefaultInputDevice() noexcept;
-	~DefaultInputDevice() noexcept;
+	virtual ~DefaultInputDevice() noexcept;
 
 	virtual void enableEventPosting(bool enable) noexcept;
 	virtual bool enableEventPosting() const noexcept;
@@ -70,16 +59,14 @@ public:
 	virtual void removeInputListener(InputListenerPtr listener) noexcept;
 	virtual void clearInputListener() noexcept;
 
-	virtual void sendEvent(const InputEvent& event) noexcept;
-	virtual void postEvent(const InputEvent& event) noexcept;
+	virtual bool sendEvent(const InputEvent& event) noexcept;
+	virtual bool postEvent(const InputEvent& event) noexcept;
 
 	virtual bool peekEvents(InputEvent& event) noexcept;
 	virtual bool pollEvents(InputEvent& event) noexcept;
 	virtual bool waitEvents(InputEvent& event) noexcept;
 	virtual bool waitEvents(InputEvent& event, int timeout) noexcept;
 	virtual void flushEvent() noexcept;
-
-	virtual InputDevicePtr clone() const noexcept;
 
 private:
 	DefaultInputDevice(const DefaultInputDevice&) noexcept = delete;
@@ -100,7 +87,5 @@ private:
 };
 
 _NAME_END
-
-#endif
 
 #endif

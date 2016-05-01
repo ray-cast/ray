@@ -111,6 +111,7 @@ DefaultRenderDataManager::assginVisiable(CameraPtr camera) noexcept
 
 	_renderQueue[RenderQueue::RenderQueueShadow].clear();
 	_renderQueue[RenderQueue::RenderQueueOpaque].clear();
+	_renderQueue[RenderQueue::RenderQueueOpaqueShading].clear();
 	_renderQueue[RenderQueue::RenderQueueOpaqueSpecific].clear();
 	_renderQueue[RenderQueue::RenderQueueTransparent].clear();
 	_renderQueue[RenderQueue::RenderQueueTransparentSpecific].clear();
@@ -118,20 +119,25 @@ DefaultRenderDataManager::assginVisiable(CameraPtr camera) noexcept
 
 	_visiable.clear();
 
-	auto scene = camera->getRenderScene();
-	scene->computVisiable(camera->getViewProject(), _visiable);
-
-	for (auto& it : _visiable.iter())
+	auto cameraOrder = camera->getCameraOrder();
+	if (cameraOrder == CameraOrder::CameraOrder3D ||
+		cameraOrder == CameraOrder::CameraOrderShadow)
 	{
-		auto object = it.getOcclusionCullNode();
+		auto scene = camera->getRenderScene();
+		scene->computVisiable(camera->getViewProject(), _visiable);
 
-		if (camera->getCameraOrder() == CameraOrder::CameraOrderShadow)
+		for (auto& it : _visiable.iter())
 		{
-			if (!object->getCastShadow())
-				return;
-		}
+			auto object = it.getOcclusionCullNode();
 
-		object->addRenderData(*this);
+			if (camera->getCameraOrder() == CameraOrder::CameraOrderShadow)
+			{
+				if (!object->getCastShadow())
+					return;
+			}
+
+			object->addRenderData(*this);
+		}
 	}
 }
 

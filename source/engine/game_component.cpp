@@ -127,12 +127,11 @@ void
 GameComponent::load(iarchive& reader) noexcept
 {
 	bool active;
-	std::string name;
 
-	if (reader.getValue("name", name))
+	if (reader.getValue("name", _name))
 	{
 		char buffer[4096];
-		auto size = UTF8toGBK(buffer, 4096, name.c_str(), name.size());
+		auto size = UTF8toGBK(buffer, 4096, _name.c_str(), _name.size());
 		this->setName(std::string(buffer, size));
 	}
 

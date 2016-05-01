@@ -255,27 +255,6 @@ RenderPipeline::getScissor() const noexcept
 	return _graphicsContext->getScissor();
 }
 
-bool
-RenderPipeline::updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept
-{
-	assert(_graphicsContext);
-	return _graphicsContext->updateBuffer(data, str, cnt);
-}
-
-void*
-RenderPipeline::mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept
-{
-	assert(_graphicsContext);
-	return _graphicsContext->mapBuffer(data, access);
-}
-
-void
-RenderPipeline::unmapBuffer(GraphicsDataPtr data) noexcept
-{
-	assert(_graphicsContext);
-	return _graphicsContext->unmapBuffer(data);
-}
-
 void
 RenderPipeline::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 {

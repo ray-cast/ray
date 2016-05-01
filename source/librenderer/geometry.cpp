@@ -37,7 +37,6 @@
 #include <ray/geometry.h>
 #include <ray/render_pipeline.h>
 #include <ray/render_object_manager.h>
-#include <ray/render_system.h>
 #include <ray/material.h>
 
 _NAME_BEGIN
@@ -86,6 +85,19 @@ Geometry::getMaterial() noexcept
 }
 
 void
+Geometry::setMaterialTech(RenderQueue queue, MaterialTechPtr materialTech) noexcept
+{
+	assert(queue >= RenderQueue::RenderQueueBeginRange && queue <= RenderQueue::RenderQueueEndRange);
+	_techniques[queue] = materialTech;
+}
+
+MaterialTechPtr 
+Geometry::getMaterialTech(RenderQueue queue) noexcept
+{
+	return _techniques[queue];
+}
+
+void
 Geometry::setRenderMesh(RenderMeshPtr mesh) noexcept
 {
 	_mesh = mesh;
@@ -110,33 +122,25 @@ Geometry::getGraphicsIndirect() noexcept
 }
 
 void
-Geometry::_updatePipeline() noexcept
-{
-	if (!_pipeline)
-	{
-	}
-}
-
-void
 Geometry::onAddRenderData(RenderDataManager& manager) noexcept
 {
-	if (_material)
-	{
-		if (_techniques[RenderQueue::RenderQueueShadow] && this->getCastShadow())
-			manager.addRenderData(RenderQueue::RenderQueueShadow, this->upcast<RenderObject>());
+	if (_techniques[RenderQueue::RenderQueueShadow] && this->getCastShadow())
+		manager.addRenderData(RenderQueue::RenderQueueShadow, this->upcast<RenderObject>());
 
-		if (_techniques[RenderQueue::RenderQueueOpaque])
-			manager.addRenderData(RenderQueue::RenderQueueOpaque, this->upcast<RenderObject>());
+	if (_techniques[RenderQueue::RenderQueueOpaque])
+		manager.addRenderData(RenderQueue::RenderQueueOpaque, this->upcast<RenderObject>());
 
-		if (_techniques[RenderQueue::RenderQueueOpaqueSpecific])
-			manager.addRenderData(RenderQueue::RenderQueueOpaqueSpecific, this->upcast<RenderObject>());
+	if (_techniques[RenderQueue::RenderQueueOpaqueShading])
+		manager.addRenderData(RenderQueue::RenderQueueOpaqueShading, this->upcast<RenderObject>());
 
-		if (_techniques[RenderQueue::RenderQueueTransparent])
-			manager.addRenderData(RenderQueue::RenderQueueTransparent, this->upcast<RenderObject>());
+	if (_techniques[RenderQueue::RenderQueueOpaqueSpecific])
+		manager.addRenderData(RenderQueue::RenderQueueOpaqueSpecific, this->upcast<RenderObject>());
 
-		if (_techniques[RenderQueue::RenderQueueTransparentSpecific])
-			manager.addRenderData(RenderQueue::RenderQueueTransparentSpecific, this->upcast<RenderObject>());
-	}
+	if (_techniques[RenderQueue::RenderQueueTransparent])
+		manager.addRenderData(RenderQueue::RenderQueueTransparent, this->upcast<RenderObject>());
+
+	if (_techniques[RenderQueue::RenderQueueTransparentSpecific])
+		manager.addRenderData(RenderQueue::RenderQueueTransparentSpecific, this->upcast<RenderObject>());
 }
 
 void

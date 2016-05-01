@@ -35,13 +35,15 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #if defined(_BUILD_PLATFORM_WINDOWS)
-#include <ray/msw_input_mouse.h>
+#include "msw_input_mouse.h"
 
 _NAME_BEGIN
 
-__ImplementSubInterface(MSWInputMouse, InputMouse, "MSWInputMouse")
+__ImplementSubInterface(MSWInputMouse, DefaultInputMouse, "MSWInputMouse")
 
 MSWInputMouse::MSWInputMouse() noexcept
+	: _mouseOffsetX(0)
+	, _mouseOffsetY(0)
 {
 }
 
@@ -50,37 +52,44 @@ MSWInputMouse::~MSWInputMouse() noexcept
 }
 
 void
-MSWInputMouse::showMouse() noexcept
+MSWInputMouse::onShowMouse() noexcept
 {
 	::ShowCursor(TRUE);
 }
 
 void
-MSWInputMouse::hideMouse() noexcept
+MSWInputMouse::onHideMouse() noexcept
 {
 	::ShowCursor(FALSE);
 }
 
+void 
+MSWInputMouse::onChangePosition(int x, int y) noexcept
+{
+	::SetCursorPos(_mouseOffsetX + x, _mouseOffsetY + y);
+}
+
 void
-MSWInputMouse::setPosition(int x, int y) noexcept
+MSWInputMouse::onInputEvent(const InputEvent& event) noexcept
 {
-	::SetCursorPos(x, y);
+	switch (event.event)
+	{
+	case InputEvent::MouseMotion:
+	{
+		_mouseOffsetX = event.motion.xrel - event.motion.x;
+		_mouseOffsetY = event.motion.yrel - event.motion.y;
+		DefaultInputMouse::onInputEvent(event);
+		break;
+	default:
+		DefaultInputMouse::onInputEvent(event);
+	}
+	}
 }
 
-int
-MSWInputMouse::getPositionX() const noexcept
+InputMousePtr
+MSWInputMouse::clone() const noexcept
 {
-	POINT pt;
-	::GetCursorPos(&pt);
-	return pt.x;
-}
-
-int
-MSWInputMouse::getPositionY() const noexcept
-{
-	POINT pt;
-	::GetCursorPos(&pt);
-	return pt.y;
+	return std::make_shared<MSWInputMouse>();
 }
 
 _NAME_END

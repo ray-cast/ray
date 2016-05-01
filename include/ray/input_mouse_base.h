@@ -58,11 +58,7 @@ public:
 	virtual bool isShowMouse() noexcept = 0;
 
 	virtual void setPosition(int x, int y) noexcept = 0;
-	virtual void setPositionX(int x) noexcept = 0;
-	virtual void setPositionY(int y) noexcept = 0;
-
-	virtual int getPositionX() const noexcept = 0;
-	virtual int getPositionY() const noexcept = 0;
+	virtual void getPosition(int& x, int& y) const noexcept = 0;
 
 	virtual bool getButtonDown(InputButton::Code key) const noexcept = 0;
 	virtual bool getButtonUp(InputButton::Code key) const noexcept = 0;

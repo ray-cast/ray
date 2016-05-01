@@ -6,5 +6,5 @@
     <attribute texDiffuse="dlc:sssss/models/head/DiffuseMap.dds"/>
     <attribute texNormal="dlc:sssss/models/head/NormalMap.dds"/>
     <attribute texSpecular="dlc:sssss/models/head/SpecularAOMap.dds"/>
-    <attribute shader="sys:/fx/opacity_normal.fxml.o"/>
+    <attribute shader="sys:/fx/opacity_normal.fxml"/>
 </material>

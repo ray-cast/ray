@@ -51,8 +51,8 @@ public:
 	void setName(const std::string& name) noexcept;
 	const std::string& getName() const noexcept;
 
-	void setType(GraphicsUniformType type) noexcept;
-	GraphicsUniformType getType() const noexcept;
+	void setType(GraphicsFormat type) noexcept;
+	GraphicsFormat getType() const noexcept;
 
 	void setSemantic(const std::string& semantic) noexcept;
 	const std::string& getSemantic() const noexcept;
@@ -72,7 +72,7 @@ private:
 	std::string _semantic;
 	std::uint8_t _index;
 	std::uint32_t _bindingPoint;
-	GraphicsUniformType _type;
+	GraphicsFormat _type;
 };
 
 class VulkanGraphicsUniform final : public GraphicsUniform
@@ -155,7 +155,8 @@ public:
 	const GraphicsShaderDesc& getGraphicsShaderDesc() const noexcept;
 
 private:
-	bool GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *pshader, std::vector<unsigned int> &spirv);
+	static bool HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, std::string& out);
+	static bool GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *pshader, std::vector<unsigned int> &spirv);
 
 private:
 	friend class VulkanDevice;

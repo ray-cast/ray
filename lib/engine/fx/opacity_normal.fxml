@@ -1,5 +1,5 @@
 <?xml version='1.0'?>
-<effect language="glsl">
+<effect language="hlsl">
     <include name="sys:fx/Gbuffer.fxml"/>
     <include name="sys:fx/inputlayout.fxml"/>
     <parameter name="matModelViewProject" type="float4x4" semantic="matModelViewProject" />
@@ -26,8 +26,12 @@
                 in float4 Normal : NORMAL0,
                 in float4 Tangent : TANGENT0,
                 in float4 Texcoord : TEXCOORD0,
-                out float2 oCoord  : TEXCOORD0,
-                out float4 oNormal : TEXCOORD1,
+#if SKINNING > 0
+                in float4 BlendWeight : BLENDWEIGHT,
+                in float4 BlendIndice : BLENDINDICES,
+#endif
+                out float4 oNormal : TEXCOORD0,
+                out float2 oCoord  : TEXCOORD1,
                 out float4 oTangent : TEXCOORD2,
                 out float4 oPosition : SV_Position)
             {
@@ -39,8 +43,8 @@
             }
 
             void OpaqueNormalPS(
-                in float2 coord  : TEXCOORD0,
-                in float4 normal : TEXCOORD1,
+                in float4 normal : TEXCOORD0,
+                in float2 coord  : TEXCOORD1,
                 in float4 tangent : TEXCOORD2,
                 out float4 FragData0 : SV_Target0,
                 out float4 FragData1 : SV_Target1)

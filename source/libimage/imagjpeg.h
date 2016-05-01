@@ -53,7 +53,7 @@ public:
 
 private:
 	JPEGHandler(const JPEGHandler&) noexcept = delete;
-	const JPEGHandler& operator=(const JPEGHandler&) noexcept = delete;
+	JPEGHandler& operator=(const JPEGHandler&) noexcept = delete;
 };
 
 _NAME_END

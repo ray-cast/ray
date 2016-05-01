@@ -37,7 +37,6 @@
 #include "imagpng.h"
 
 #include <png.h>
-#include <fstream>
 
 _NAME_BEGIN
 
@@ -55,25 +54,18 @@ struct PNGInfoStruct
 void PNGAPI png_err(png_structp png_ptr, png_const_charp message)
 {
 	PNGInfoStruct* info = (PNGInfoStruct*)png_get_io_ptr(png_ptr);
-	//if (!info)
-		//DefaultLogger::get()->warn(message);
-
 	longjmp(info->jmpbuf, 1);
 }
 
 void PNGAPI png_warn(png_structp png_ptr, png_const_charp message)
 {
 	PNGInfoStruct* info = (PNGInfoStruct*)png_get_io_ptr(png_ptr);
-	//if (!info)
-		//DefaultLogger::get()->warn(message);
-
 	longjmp(info->jmpbuf, 1);
 }
 
 void PNGAPI PNG_stream_reader(png_structp png_ptr, png_bytep data, png_size_t length)
 {
 	PNGInfoStruct* info = (PNGInfoStruct*)png_get_io_ptr(png_ptr);
-
 	info->stream.in->read((char*)data, (std::streamsize)length);
 }
 
@@ -88,14 +80,12 @@ PNGHandler::~PNGHandler() noexcept
 bool
 PNGHandler::doCanRead(StreamReader& stream) const noexcept
 {
-	static const std::uint8_t magic[] = { 0x89, 'P', 'N', 'G' };
+	static constexpr std::uint8_t magic[] = { 0x89, 'P', 'N', 'G' };
 
 	std::uint8_t hdr[sizeof(magic)];
 
 	if (stream.read((char*)hdr, sizeof(hdr)))
-	{
 		return std::memcmp(hdr, magic, sizeof(magic)) == 0;
-	}
 
 	return false;
 }
@@ -149,92 +139,39 @@ PNGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	if (png_get_sRGB(png_ptr, info_ptr, &intent))
 		png_set_sRGB(png_ptr, info_ptr, intent);
 
-	/*if (color_type == PNG_COLOR_TYPE_PALETTE)
+	if (color_type & PNG_COLOR_TYPE_RGBA ||
+		color_type & PNG_COLOR_TYPE_RGB)
 	{
-		png_colorp palette = nullptr;
-
-		int numPalette = 0;
-		::png_get_PLTE(png_ptr, info_ptr, &palette, &numPalette);
-
-		std::vector<std::uint8_t> data(sizeof(PaletteData) + numPalette * sizeof(PaletteEntry));
-		PaletteData* pal = (PaletteData*)data.data();
-
-		pal->palVersion = 0x300;
-		pal->palNumEntries = numPalette;
-
-		for (int j = 0; j < numPalette; j++)
+		png_uint_32 pixelSize;
+		ImageFormat format;
+		if (color_type & PNG_COLOR_TYPE_RGBA)
 		{
-			pal->palPalEntry[j].red = palette[j].red;
-			pal->palPalEntry[j].green = palette[j].green;
-			pal->palPalEntry[j].blue = palette[j].blue;
-			pal->palPalEntry[j].alpha = 0;
+			format = ImageFormat::ImageFormatR8G8B8A8;
+			pixelSize = 4;
+		}
+		else if (color_type & PNG_COLOR_TYPE_RGB)
+		{
+			format = ImageFormat::ImageFormatR8G8B8;
+			pixelSize = 3;
 		}
 
-		image.setPalette(pal);
-	}*/
+		if (!image.create(width, height, ImageType::ImageTypePNG, format))
+			return false;
 
-	std::vector<png_bytep> pointers(height, 0);
-	for (auto& it : pointers)
-		it = new png_byte[width * 4];
+		std::size_t columnLength = width * pixelSize;
+		std::uint8_t* pixel = (std::uint8_t*)image.data();
 
-	::png_start_read_image(png_ptr);
-	::png_read_image(png_ptr, pointers.data());
-	::png_read_end(png_ptr, info_ptr);
+		std::vector<png_bytep> pointers(height, 0);
+		for (std::size_t i = 0; i < height; i++)
+			pointers[i] = pixel + i * columnLength;
 
-	bool result = false;
-
-	if (color_type & PNG_COLOR_TYPE_RGBA)
-	{
-		if (image.create(width, height, sizeof(RGBA) << 3))
-		{
-			RGBA* pixel = (RGBA*)image.data();
-
-			std::size_t pos = 0;
-
-			for (size_t i = 0; i < height; i++)
-			{
-				for (size_t j = 0; j < (4 * width); j += 4)
-				{
-					pixel[pos].r = pointers[i][j];   // red
-					pixel[pos].g = pointers[i][j + 1]; // green
-					pixel[pos].b = pointers[i][j + 2]; // blue
-					pixel[pos].a = pointers[i][j + 3]; // alpha
-					pos++;
-				}
-			}
-
-			result = true;
-		}
+		::png_start_read_image(png_ptr);
+		::png_read_image(png_ptr, pointers.data());
+		::png_read_end(png_ptr, info_ptr);
 	}
-	else if (color_type & PNG_COLOR_TYPE_RGB)
-	{
-		if (image.create(width, height, sizeof(RGB) << 3))
-		{
-			RGB* pixel = (RGB*)image.data();
-
-			std::size_t pos = 0;
-
-			for (size_t i = 0; i < height; i++)
-			{
-				for (size_t j = 0; j < (4 * width); j += 4)
-				{
-					pixel[pos].r = pointers[i][j];   // red
-					pixel[pos].g = pointers[i][j + 1]; // green
-					pixel[pos].b = pointers[i][j + 2]; // blue
-					pos++;
-				}
-			}
-		}
-	}
-
-	for (auto& it : pointers)
-		delete[] it;
 
 	::png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
-
-	if (result)
-		image.setImageType(ImageType::ImageTypePNG);
-	return result;
+	return true;
 }
 
 bool

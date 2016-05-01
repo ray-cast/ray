@@ -51,6 +51,9 @@ public:
 	bool setup(const GraphicsTextureDesc& textureDesc) noexcept;
 	void close() noexcept;
 
+	bool map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, GraphicsFormat format, void** data) noexcept;
+	void unmap() noexcept;
+
 	GLenum getTarget() const noexcept;
 	GLuint getInstanceID() const noexcept;
 
@@ -69,7 +72,11 @@ private:
 
 private:
 	GLenum _target;
+	GLuint _pbo;
+	GLuint _upbo;
 	GLuint _texture;
+	GLsizei _pboSize;
+	GLsizei _upboSize;
 	GraphicsTextureDesc _textureDesc;
 	GraphicsDeviceWeakPtr _device;
 };

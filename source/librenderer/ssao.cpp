@@ -50,7 +50,7 @@ SSAO::Setting::Setting() noexcept
 	, blur(true)
 	, blurRadius(6)
 	, blurScale(1.0)
-	, blurSharpness(1)
+	, blurSharpness(4)
 {
 }
 
@@ -182,7 +182,7 @@ SSAO::onActivate(RenderPipeline& pipeline) noexcept
 	blurViewDesc.setGraphicsFramebufferLayout(_framebufferLayout);
 	_texBlurView = pipeline.createFramebuffer(blurViewDesc);
 
-	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssao.fxml.o");
+	_ambientOcclusion = pipeline.createMaterial("sys:fx\\ssao.fxml");
 	_ambientOcclusionPass = _ambientOcclusion->getTech("ComputeAO");
 	_ambientOcclusionBlurXPass = _ambientOcclusion->getTech("BlurXAO");
 	_ambientOcclusionBlurYPass = _ambientOcclusion->getTech("BlurYAO");

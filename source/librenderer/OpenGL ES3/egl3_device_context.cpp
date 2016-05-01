@@ -332,38 +332,15 @@ EGL3DeviceContext::getDescriptorSet() const noexcept
 	return _descriptorSet;
 }
 
-bool
-EGL3DeviceContext::updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept
-{
-	assert(data);
-	assert(data->isInstanceOf<EGL3GraphicsData>());
-	assert(_glcontext->getActive());
-
-	_needUpdateLayout = true;
-	data->downcast<EGL3GraphicsData>()->resize((const char*)str, cnt);
-	return true;
-}
-
 void*
-EGL3DeviceContext::mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept
+EGL3DeviceContext::mapTexture(GraphicsTexturePtr texture, std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, GraphicsFormat format, GraphicsAccessFlags flags) noexcept
 {
-	assert(data);
-	assert(data->isInstanceOf<EGL3GraphicsData>());
-	assert(_glcontext->getActive());
-
-	_needUpdateLayout = true;
-	return data->downcast<EGL3GraphicsData>()->map(access);
+	return nullptr;
 }
 
-void
-EGL3DeviceContext::unmapBuffer(GraphicsDataPtr data) noexcept
+void 
+EGL3DeviceContext::unmapTexture(GraphicsTexturePtr texture) noexcept
 {
-	assert(data);
-	assert(data->isInstanceOf<EGL3GraphicsData>());
-	assert(_glcontext->getActive());
-
-	_needUpdateLayout = true;
-	data->downcast<EGL3GraphicsData>()->unmap();
 }
 
 GraphicsDataPtr
@@ -488,7 +465,7 @@ void
 EGL3DeviceContext::setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	this->setFramebuffer(target);
-	this->clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsAll, color, depth, stencil);
+	this->clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsAll, color, depth, stencil);
 }
 
 void
@@ -525,7 +502,7 @@ EGL3DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 
 	GLbitfield mode = 0;
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsColor)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsColor)
 	{
 		mode |= GL_COLOR_BUFFER_BIT;
 
@@ -536,7 +513,7 @@ EGL3DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 		}
 	}
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 	{
 		mode |= GL_DEPTH_BUFFER_BIT;
 
@@ -547,7 +524,7 @@ EGL3DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 		}
 	}
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsStencil)
 	{
 		mode |= GL_STENCIL_BUFFER_BIT;
 
@@ -561,14 +538,14 @@ EGL3DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 	if (mode != 0)
 	{
 		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
-		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_TRUE);
 		}
 
 		GL_CHECK(glClear(mode));
 
-		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_FALSE);
 		}

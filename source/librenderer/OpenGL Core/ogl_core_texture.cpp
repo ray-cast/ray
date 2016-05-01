@@ -195,6 +195,47 @@ OGLCoreTexture::close() noexcept
 	}
 }
 
+bool
+OGLCoreTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, GraphicsFormat pixelFormat, void** data) noexcept
+{
+	assert(pixelFormat);
+
+	GLenum format = OGLTypes::asTextureFormat(pixelFormat);
+	if (format == GL_INVALID_ENUM)
+		return false;
+
+	GLenum type = OGLTypes::asTextureType(pixelFormat);
+	if (type == GL_INVALID_ENUM)
+		return false;
+
+	GLsizei num = OGLTypes::getFormatNum(format);
+	if (num == 0)
+		return false;
+
+	if (_pbo == GL_NONE)
+		glGenBuffers(1, &_pbo);
+
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, _pbo);
+
+	if (_pboSize < w * h * num)
+	{
+		glBufferData(GL_PIXEL_PACK_BUFFER, w * h * num, nullptr, GL_STATIC_DRAW);
+		_pboSize = w * h * num;
+	}
+	
+	glGetTextureSubImage(_texture, 0, x, y, 0, w, h, 0, format, type, w * h * num, 0);
+	*data = glMapBufferARB(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY_ARB);
+
+	return *data ? true : false;
+}
+
+void
+OGLCoreTexture::unmap() noexcept
+{
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, _pbo);
+	glUnmapBufferARB(GL_PIXEL_PACK_BUFFER_ARB);
+}
+
 GLenum
 OGLCoreTexture::getTarget() const noexcept
 {

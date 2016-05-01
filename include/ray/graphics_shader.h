@@ -87,7 +87,6 @@ public:
 	virtual ~GraphicsParam() noexcept;
 
 	virtual const std::string& getName() const noexcept = 0;
-	virtual GraphicsUniformType getType() const noexcept = 0;
 
 private:
 	GraphicsParam(const GraphicsParam&) noexcept = delete;
@@ -103,6 +102,7 @@ public:
 
 	virtual const std::string& getSemantic() const noexcept = 0;
 	virtual std::uint8_t getSemanticIndex() const noexcept = 0;
+	virtual GraphicsFormat getType() const noexcept = 0;
 
 private:
 	GraphicsAttribute(const GraphicsAttribute&) noexcept = delete;
@@ -117,6 +117,7 @@ public:
 	virtual ~GraphicsUniform() noexcept;
 
 	virtual std::uint32_t getOffset() const noexcept = 0;
+	virtual GraphicsUniformType getType() const noexcept = 0;
 
 private:
 	GraphicsUniform(const GraphicsUniform&) noexcept = delete;
@@ -132,6 +133,7 @@ public:
 
 	virtual std::uint32_t getBlockSize() const noexcept = 0;
 	virtual const GraphicsUniforms& getGraphicsUniforms() const noexcept = 0;
+	virtual GraphicsUniformType getType() const noexcept = 0;
 
 private:
 	GraphicsUniformBlock(const GraphicsUniformBlock&) noexcept = delete;

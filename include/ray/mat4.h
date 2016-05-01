@@ -1073,9 +1073,9 @@ namespace math
 	template<typename T>
 	Matrix4x4t<T> inverse(const Matrix4x4t<T>& _m) noexcept
 	{
-		Matrix4x4t<T> m = _m;
+		Matrix4x4t<T> m;
 
-		const T det = m.determinant();
+		const T det = _m.determinant();
 		if (det == static_cast<T>(0.0))
 		{
 			const T nan = std::numeric_limits<T>::quiet_NaN();
@@ -1106,6 +1106,102 @@ namespace math
 		m.d1 = -invdet * (_m.b1 * (_m.c2 * _m.d3 - _m.c3 * _m.d2) + _m.b2 * (_m.c3 * _m.d1 - _m.c1 * _m.d3) + _m.b3 * (_m.c1 * _m.d2 - _m.c2 * _m.d1));
 		m.d2 = invdet * (_m.a1 * (_m.c2 * _m.d3 - _m.c3 * _m.d2) + _m.a2 * (_m.c3 * _m.d1 - _m.c1 * _m.d3) + _m.a3 * (_m.c1 * _m.d2 - _m.c2 * _m.d1));
 		m.d3 = -invdet * (_m.a1 * (_m.b2 * _m.d3 - _m.b3 * _m.d2) + _m.a2 * (_m.b3 * _m.d1 - _m.b1 * _m.d3) + _m.a3 * (_m.b1 * _m.d2 - _m.b2 * _m.d1));
+		m.d4 = invdet * (_m.a1 * (_m.b2 * _m.c3 - _m.b3 * _m.c2) + _m.a2 * (_m.b3 * _m.c1 - _m.b1 * _m.c3) + _m.a3 * (_m.b1 * _m.c2 - _m.b2 * _m.c1));
+
+		return m;
+	}
+
+	template<typename T>
+	inline Vector3t<T> invTranslateVector3(const Matrix4x4t<T>& m, const Vector3t<T>& v)
+	{
+		Vector3t<T> temp, result;
+		temp.x = v.x - m.a4;
+		temp.y = v.y - m.b4;
+		temp.z = v.z - m.c4;
+
+		result.x = temp.x * m.a1 + temp.y * m.b1 + temp.z * m.c1;
+		result.y = temp.x * m.a2 + temp.y * m.b2 + temp.z * m.c2;
+		result.z = temp.x * m.a3 + temp.y * m.b3 + temp.z * m.c3;
+		return result;
+	}
+
+	template<typename T>
+	inline Vector3t<T> invRotateVector3(const Matrix4x4t<T>& m, const Vector3t<T>& v)
+	{
+		Vector3t<T> result;
+
+		result.x = v.x * m.a1 + v.y * m.b1 + v.z * m.c1;
+		result.y = v.x * m.a2 + v.y * m.b2 + v.z * m.c2;
+		result.z = v.x * m.a3 + v.y * m.b3 + v.z * m.c3;
+
+		return result;
+	}
+
+	template<typename T>
+	inline Matrix4x4t<T> transformMultiply(const Matrix4x4t<T>& m1, const Matrix4x4t<T>& m2)
+	{
+		Matrix4x4t<T> out;
+		out.a1 = m1.a1 * m2.a1 + m1.b1 * m2.a2 + m1.c1 * m2.a3;
+		out.a2 = m1.a2 * m2.a1 + m1.b2 * m2.a2 + m1.c2 * m2.a3;
+		out.a3 = m1.a3 * m2.a1 + m1.b3 * m2.a2 + m1.c3 * m2.a3;
+		out.a4 = m1.a4 * m2.a1 + m1.b4 * m2.a2 + m1.c4 * m2.a3 + m1.d4 * m2.a4;
+
+		out.b1 = m1.a1 * m2.b1 + m1.b1 * m2.b2 + m1.c1 * m2.b3;
+		out.b2 = m1.a2 * m2.b1 + m1.b2 * m2.b2 + m1.c2 * m2.b3;
+		out.b3 = m1.a3 * m2.b1 + m1.b3 * m2.b2 + m1.c3 * m2.b3;
+		out.b4 = m1.a4 * m2.b1 + m1.b4 * m2.b2 + m1.c4 * m2.b3 + m1.d4 * m2.b4;
+
+		out.c1 = m1.a1 * m2.c1 + m1.b1 * m2.c2 + m1.c1 * m2.c3;
+		out.c2 = m1.a2 * m2.c1 + m1.b2 * m2.c2 + m1.c2 * m2.c3;
+		out.c3 = m1.a3 * m2.c1 + m1.b3 * m2.c2 + m1.c3 * m2.c3;
+		out.c4 = m1.a4 * m2.c1 + m1.b4 * m2.c2 + m1.c4 * m2.c3 + m1.d4 * m2.c4;
+
+		out.d1 = 0.0f;
+		out.d2 = 0.0f;
+		out.d3 = 0.0f;
+		out.d4 = 1.0f;
+		return out;
+	}
+
+	template<typename T>
+	inline Matrix4x4t<T> transformInverse(const Matrix4x4t<T>& _m) noexcept
+	{
+		Matrix4x4t<T> m;
+
+		const T det = (_m.a1 * _m.b2 - _m.a2 * _m.b1) * _m.c3 - 
+			          (_m.a1 * _m.b3 + _m.a3 * _m.b1) * _m.c2 + 
+			          (_m.a2 * _m.b3 - _m.a3 * _m.b2) * _m.c1;
+
+		if (det == static_cast<T>(0.0))
+		{
+			const T nan = std::numeric_limits<T>::quiet_NaN();
+			m.set
+				(
+					nan, nan, nan, nan,
+					nan, nan, nan, nan,
+					nan, nan, nan, nan,
+					nan, nan, nan, nan
+					);
+
+			return m;
+		}
+
+		const T invdet = static_cast<T>(1.0) / det;
+		m.a1 = invdet * (_m.b2 * _m.c3 + _m.b3 * -_m.c2);
+		m.a2 = -invdet * (_m.a2 * _m.c3 + _m.a3 * -_m.c2);
+		m.a3 = invdet * (_m.a2 * _m.b3 + _m.a3 * -_m.b2);
+		m.a4 = -invdet * (_m.a2 * (_m.b3 * _m.c4 - _m.b4 * _m.c3) + _m.a3 * (_m.b4 * _m.c2 - _m.b2 * _m.c4) + _m.a4 * (_m.b2 * _m.c3 - _m.b3 * _m.c2));
+		m.b1 = -invdet * (_m.b1 * _m.c3 + _m.b3 * -_m.c1);
+		m.b2 = invdet * (_m.a1 * _m.c3 + _m.a3 * -_m.c1);
+		m.b3 = -invdet * (_m.a1 * _m.b3 + _m.a3 * -_m.b1);
+		m.b4 = invdet * (_m.a1 * (_m.b3 * _m.c4 - _m.b4 * _m.c3) + _m.a3 * (_m.b4 * _m.c1 - _m.b1 * _m.c4) + _m.a4 * (_m.b1 * _m.c3 - _m.b3 * _m.c1));
+		m.c1 = invdet * (_m.b1 * _m.c2 + _m.b2 * -_m.c1);
+		m.c2 = -invdet * (_m.a1 * _m.c2 + _m.a2 * -_m.c1);
+		m.c3 = invdet * (_m.a1 * _m.b2 + _m.a2 * -_m.b1);
+		m.c4 = -invdet * (_m.a1 * (_m.b2 * _m.c4 - _m.b4 * _m.c2) + _m.a2 * (_m.b4 * _m.c1 - _m.b1 * _m.c4) + _m.a4 * (_m.b1 * _m.c2 - _m.b2 * _m.c1));
+		m.d1 = 0.0f;
+		m.d2 = 0.0f;
+		m.d3 = 0.0f;
 		m.d4 = invdet * (_m.a1 * (_m.b2 * _m.c3 - _m.b3 * _m.c2) + _m.a2 * (_m.b3 * _m.c1 - _m.b1 * _m.c3) + _m.a3 * (_m.b1 * _m.c2 - _m.b2 * _m.c1));
 
 		return m;

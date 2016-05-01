@@ -73,28 +73,47 @@ void onWindowClose(GLFWwindow* glfwWindow)
 	_gameApp->sendMessage(event);
 }
 
-void onWindowFocus(GLFWwindow* glfwWindow, int focus)
+void onWindowFocus(GLFWwindow* window, int focus)
 {
 	if (focus)
 	{
 		ray::InputEvent inputEvent;
 		inputEvent.event = ray::InputEvent::GetFocus;
-
-		auto event = ray::make_message<ray::InputMessage>();
-		event->setEvent(inputEvent);
-
-		_gameApp->sendMessage(event);
+		_gameApp->sendInputEvent(inputEvent);
 	}
 	else
 	{
 		ray::InputEvent inputEvent;
 		inputEvent.event = ray::InputEvent::LostFocus;
-
-		auto event = ray::make_message<ray::InputMessage>();
-		event->setEvent(inputEvent);
-
-		_gameApp->sendMessage(event);
+		_gameApp->sendInputEvent(inputEvent);
 	}
+}
+
+void onWindowMouseButton(GLFWwindow* window, int button, int state, int)
+{
+	double mouseX, mouseY;
+	::glfwGetCursorPos(window, &mouseX, &mouseY);
+
+	ray::InputEvent event;
+	event.event = state == GLFW_PRESS ? ray::InputEvent::MouseButtonDown : ray::InputEvent::MouseButtonUp;
+	event.button.button = ray::InputButton::MOUSE0 + button;
+	event.button.clicks = true;
+	event.button.x = mouseX;
+	event.button.y = mouseY;
+	event.button.timestamp = glfwGetTimerFrequency();
+
+	_gameApp->sendInputEvent(event);
+}
+
+void onWindowMouseMotion(GLFWwindow* window, double x, double y)
+{
+	ray::InputEvent event;
+	event.event = ray::InputEvent::MouseMotion;
+	event.motion.x = event.motion.xrel = x;
+	event.motion.x = event.motion.yrel = y;
+	event.motion.timestamp = glfwGetTimerFrequency();
+
+	_gameApp->sendInputEvent(event);
 }
 
 void rayInit(const char* gamedir, const char* scenename) noexcept
@@ -123,7 +142,7 @@ bool rayOpenWindow(const char* title, int w, int h) noexcept
 		return false;
 
 	::glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
+	
 	_window = ::glfwCreateWindow(w, h, title, nullptr, nullptr);
 	if (_window)
 	{
@@ -131,6 +150,8 @@ bool rayOpenWindow(const char* title, int w, int h) noexcept
 		::glfwSetWindowFocusCallback(_window, &onWindowFocus);
 		::glfwSetWindowCloseCallback(_window, &onWindowClose);
 		::glfwSetWindowSizeCallback(_window, &onWindowResize);
+		//::glfwSetMouseButtonCallback(_window, &onWindowMouseButton);
+		//::glfwSetCursorPosCallback(_window, &onWindowMouseMotion);
 
 		HWND hwnd = ::glfwGetWin32Window(_window);
 

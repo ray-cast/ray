@@ -1051,9 +1051,7 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 {
 	this->clear();
 
-	std::vector<std::uint32_t> row;
-	std::vector<std::vector<std::uint32_t>> vertices;
-	std::vector<std::vector<std::uint32_t>> uvs;
+	std::vector<std::uint32_t> vertices;
 
 	for (std::uint32_t y = 0; y <= heightSegments; y++)
 	{
@@ -1068,25 +1066,21 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 			vertex.z = radius * sin(phiStart + u * phiLength) * sin(thetaStart + v * thetaLength);
 
 			_vertices.push_back(vertex);
-
-			row.push_back((std::uint32_t)_vertices.size() - 1);
-
+			_normals.push_back(math::normalize(vertex));
 			_texcoords.push_back(Vector2(u, 1 - v));
+
+			vertices.push_back((std::uint32_t)_vertices.size() - 1);
 		}
-
-		vertices.push_back(row);
-
-		row.clear();
 	}
-
+	
 	for (std::uint32_t y = 0; y < heightSegments; y++)
 	{
 		for (std::uint32_t x = 0; x < widthSegments; x++)
 		{
-			std::uint32_t v1 = vertices[y][(x + 1)];
-			std::uint32_t v2 = vertices[y][x];
-			std::uint32_t v3 = vertices[(y + 1)][x];
-			std::uint32_t v4 = vertices[(y + 1)][(x + 1)];
+			std::uint32_t v1 = vertices[y * (widthSegments + 1) + x + 1];
+			std::uint32_t v2 = vertices[y * (widthSegments + 1) + x];
+			std::uint32_t v3 = vertices[(y + 1) * (widthSegments + 1) + x];
+			std::uint32_t v4 = vertices[(y + 1) * (widthSegments + 1) + x + 1];
 
 			if (math::abs((_vertices)[v1].y) == radius)
 			{
@@ -1113,7 +1107,6 @@ MeshProperty::makeSphere(float radius, std::uint32_t widthSegments, std::uint32_
 		}
 	}
 
-	this->computeVertexNormals();
 	this->computeBoundingBox();
 }
 
@@ -1319,7 +1312,7 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 	this->computeBoundingBox();
 }
 
-void 
+void
 MeshProperty::combineMeshes(const CombineMeshes& instances, bool merge) noexcept
 {
 	this->combineMeshes(instances.data(), instances.size(), merge);

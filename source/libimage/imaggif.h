@@ -41,12 +41,19 @@
 
 _NAME_BEGIN
 
-class GIFHandler : public ImageHandler
+class GIFHandler final : public ImageHandler
 {
-private:
+public:
+	GIFHandler() noexcept;
+	~GIFHandler() noexcept;
+
 	bool doCanRead(StreamReader& stream) const noexcept;
 	bool doLoad(Image& image, StreamReader& stream) noexcept;
 	bool doSave(Image& image, StreamWrite& stream) noexcept;
+
+private:
+	GIFHandler(const GIFHandler&) = delete;
+	GIFHandler& operator=(const GIFHandler&) = delete;
 };
 
 _NAME_END

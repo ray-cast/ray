@@ -36,9 +36,6 @@
 // +----------------------------------------------------------------------
 #if defined(_BUILD_INPUT)
 #include <ray/input_feature.h>
-#include <ray/input_device.h>
-#include <ray/input_keyboard.h>
-#include <ray/input_mouse.h>
 #include <ray/input.h>
 
 _NAME_BEGIN
@@ -70,16 +67,15 @@ class InputEventListener : public InputListener
 {
 public:
 	InputEventListener(InputFeature& input)
-		:_input(input)
+		: _input(input)
+		, _message(std::make_shared<InputMessage>())
 	{
 	}
 
 	void onInputEvent(const InputEvent& event) noexcept
 	{
-		auto message = std::make_shared<InputMessage>();
-		message->setEvent(event);
-
-		_input.sendMessage(message);
+		_message->setEvent(event);
+		_input.sendMessage(_message);
 	}
 
 private:
@@ -88,45 +84,17 @@ private:
 
 private:
 	InputFeature& _input;
+	std::shared_ptr<InputMessage> _message;
 };
 
 InputFeature::InputFeature() noexcept
+	: _window(0)
 {
-	auto inputDevice = std::make_shared<DefaultInputDevice>();
-
-	_input = std::make_shared<DefaultInput>();
-	_input->open(inputDevice);
-	_input->addInputListener(std::make_shared<InputEventListener>(*this));
-
-#if defined(ToplevelInputKeyboard)
-	auto inputKeyboard = std::make_shared<DefaultInputKeyboard>();
-	_input->obtainKeyboardCapture(inputKeyboard);
-#endif
-
-#if defined(ToplevelInputMouse)
-	auto inputMouse = std::make_shared<DefaultInputMouse>();
-	_input->obtainMouseCapture(inputMouse);
-#endif
 }
 
 InputFeature::InputFeature(CaptureObject hwnd) noexcept
+	: _window(hwnd)
 {
-	auto inputDevice = std::make_shared<DefaultInputDevice>();
-
-	_input = std::make_shared<DefaultInput>();
-	_input->open(inputDevice);
-	_input->addInputListener(std::make_shared<InputEventListener>(*this));
-	_input->setCaptureObject(hwnd);
-
-#if defined(ToplevelInputKeyboard)
-	auto inputKeyboard = std::make_shared<DefaultInputKeyboard>();
-	_input->obtainKeyboardCapture(inputKeyboard);
-#endif
-
-#if defined(ToplevelInputMouse)
-	auto inputMouse = std::make_shared<DefaultInputMouse>();
-	_input->obtainMouseCapture(inputMouse);
-#endif
 }
 
 InputFeature::~InputFeature() noexcept
@@ -146,18 +114,36 @@ InputFeature::getInput() const noexcept
 	return _input;
 }
 
-void
-InputFeature::onActivate() except
+bool
+InputFeature::sendInputEvent(const InputEvent& event) noexcept
 {
-	assert(_input);
+	if (_input)
+		return _input->sendInputEvent(event);
+	return false;
+}
+
+bool 
+InputFeature::postInputEvent(const InputEvent& event) noexcept
+{
+	if (_input)
+		return _input->postInputEvent(event);
+	return false;
+}
+
+void
+InputFeature::onActivate() noexcept
+{
+	_input = std::make_shared<DefaultInput>();
+	_input->open(nullptr);
+	_input->addInputListener(std::make_shared<InputEventListener>(*this));
+	_input->setCaptureObject(_window);
 	_input->obtainCapture();
 }
 
 void
 InputFeature::onDeactivate() noexcept
 {
-	assert(_input);
-	_input->releaseCapture();
+	_input.reset();
 }
 
 void
@@ -180,18 +166,6 @@ InputFeature::onReset() noexcept
 {
 	assert(_input);
 	_input->reset();
-}
-
-void
-InputFeature::onMessage(const MessagePtr& message) except
-{
-	assert(_input);
-
-	if (message->isInstanceOf<InputMessage>())
-	{
-		auto inputMessage = message->downcast<InputMessage>();
-		_input->sendInputEvent(inputMessage->getEvent());
-	}
 }
 
 _NAME_END

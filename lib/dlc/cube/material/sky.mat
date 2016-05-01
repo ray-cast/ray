@@ -1,5 +1,0 @@
-<?xml version='1.0'?>
-<material>
-    <attribute decal="dlc:cube\\texture\\sky.png"/>
-    <attribute shader="dlc:cube/fx/sky.fxml.o"/>
-</material>

@@ -300,7 +300,7 @@ void
 MyGuiRenderTexture::begin() noexcept
 {
 	RenderSystem::instance()->setFramebuffer(_framebuffer);
-	RenderSystem::instance()->clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsAll, Vector4::Zero, 1.0, 0);
+	RenderSystem::instance()->clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsAll, Vector4::Zero, 1.0, 0);
 }
 
 void

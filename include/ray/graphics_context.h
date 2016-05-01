@@ -109,10 +109,6 @@ public:
 	virtual void setIndexBufferData(GraphicsDataPtr data) noexcept = 0;
 	virtual GraphicsDataPtr getIndexBufferData() const noexcept = 0;
 
-	virtual bool updateBuffer(GraphicsDataPtr data, void* buf, std::size_t cnt) noexcept = 0;
-	virtual void* mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept = 0;
-	virtual void unmapBuffer(GraphicsDataPtr data) noexcept = 0;
-
 	virtual void setFramebuffer(GraphicsFramebufferPtr target) noexcept = 0;
 	virtual void setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept = 0;
 	virtual void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept = 0;

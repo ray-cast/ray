@@ -46,6 +46,7 @@ class EXPORT MeshRenderComponent : public RenderComponent
 	__DeclareSubClass(MeshRenderComponent, RenderComponent)
 public:
 	MeshRenderComponent() noexcept;
+	MeshRenderComponent(MaterialPtr material) noexcept;
 	~MeshRenderComponent() noexcept;
 
 	void setMaterial(MaterialPtr material) noexcept;
@@ -81,27 +82,26 @@ protected:
 	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
 
 protected:
+	void _attacRenderObject(GeometryPtr object) noexcept;
 	void _attacRenderObjects() noexcept;
 
-	void _cleanupRenderhObjects() noexcept;
-	void _cleanupMaterials() noexcept;
+	void _destroyRenderhObject(GeometryPtr object) noexcept;
+	void _destroyRenderhObjects() noexcept;
+
+	void _destroyMaterials() noexcept;
 
 	bool _buildMaterials(const std::string& filename) noexcept;
 	bool _buildDefaultMaterials(const std::string& filename) noexcept;
-	bool _buildRenderObjects(MeshPropertyPtr mesh, ModelMakerFlags flags) noexcept;
+
+	bool _buildRenderObjects(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
+	bool _buildRenderObject(const MeshProperty& mesh, std::size_t& startVertice, std::size_t& startIndice) noexcept;
+	bool _buildRenderObject(GeometryPtr geometry, const MeshProperty& mesh, RenderMeshPtr buffer) noexcept;
 
 	void _updateMaterial(std::size_t n) noexcept;
 	void _updateMaterials() noexcept;
 
 	void _setModelMakerFlags(ModelMakerFlags flags) noexcept;
 	ModelMakerFlags _getModelMakerFlags() const noexcept;
-
-	void _setDefaultMaterial(const std::string& material) noexcept;
-	const std::string& _getDefaultMaterial() const noexcept;
-
-private:
-	bool _buildRenderObject(MeshPropertyPtr mesh, std::size_t& startVertice, std::size_t& startIndice) noexcept;
-	bool _buildRenderObject(GeometryPtr geometry, MeshPropertyPtr mesh, RenderMeshPtr buffer) noexcept;
 
 private:
 	MeshRenderComponent(const MeshRenderComponent&) noexcept = delete;
@@ -118,7 +118,6 @@ private:
 	ModelMakerFlags _flags;
 
 	std::string _material;
-	std::string _defaultMaterial;
 };
 
 _NAME_END

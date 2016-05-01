@@ -337,7 +337,7 @@ enum GraphicsStencilFace
 	GraphicsStencilFaceMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsClearFlags
+enum GraphicsClearFlagBits
 {
 	GraphicsClearFlagsColor = 1UL << 0,
 	GraphicsClearFlagsDepth = 1UL << 1,
@@ -347,6 +347,8 @@ enum GraphicsClearFlags
 	GraphicsClearFlagsDepthStencil = GraphicsClearFlagsDepth | GraphicsClearFlagsStencil,
 	GraphicsClearFlagsAll = GraphicsClearFlagsColor | GraphicsClearFlagsDepth | GraphicsClearFlagsStencil
 };
+
+typedef std::uint32_t GraphicsClearFlags;
 
 enum GraphicsFormatType
 {
@@ -850,12 +852,14 @@ enum GraphicsUsageFlags
 	GraphicsUsageFlagsImmutableStorage = 0x00000080
 };
 
-enum GraphicsAccessFlagsBits
+enum GraphicsAccessFlagBits
 {
-	GraphicsAccessFlagsMapReadBit = 0x00000001,
-	GraphicsAccessFlagsMapWriteBit = 0x00000002,
-	GraphicsAccessFlagsUnsynchronizedBit = 0x00000004
+	GraphicsAccessFlagMapReadBit = 0x00000001,
+	GraphicsAccessFlagMapWriteBit = 0x00000002,
+	GraphicsAccessFlagUnsynchronizedBit = 0x00000004
 };
+
+typedef std::uint32_t GraphicsAccessFlags;
 
 enum GraphicsCommandType
 {

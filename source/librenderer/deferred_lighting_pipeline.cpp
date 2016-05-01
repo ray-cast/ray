@@ -122,7 +122,7 @@ void
 DeferredLightingPipeline::renderOpaques(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsAll, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsAll, float4::Zero, 1.0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
 }
 
@@ -136,21 +136,10 @@ DeferredLightingPipeline::renderOpaquesDepthLinear(RenderPipeline& pipeline, Gra
 void
 DeferredLightingPipeline::renderOpaquesShading(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept
 {
-	auto camera = pipeline.getCamera();
-	auto flags = pipeline.getCamera()->getCameraRenderFlags();
-
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsColor, camera->getClearColor(), 1.0, 0);
+	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsColor, pipeline.getCamera()->getClearColor(), 1.0, 0);
 	pipeline.drawScreenQuad(_deferredShadingOpaques);
-
-	if (flags & CameraRenderFlagBits::CameraRenderSkyLightingBit && camera->getSkyLightDiffuse() && camera->getSkyLightSpecular())
-	{
-		_texEnvDiffuse->uniformTexture(camera->getSkyLightDiffuse());
-		_texEnvSpecular->uniformTexture(camera->getSkyLightSpecular());
-		_texEnvMipNumber->uniform1i(camera->getSkyLightSpecular()->getGraphicsTextureDesc().getMipLevel());
-
-		pipeline.drawScreenQuad(_deferredSkyLighting);
-	}
+	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaqueShading);
 }
 
 void
@@ -165,7 +154,7 @@ void
 DeferredLightingPipeline::renderTransparent(RenderPipeline& pipeline, GraphicsFramebufferPtr renderTexture) noexcept
 {
 	pipeline.setFramebuffer(renderTexture);
-	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsColorStencil, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsColorStencil, float4::Zero, 1.0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent);
 }
 
@@ -173,7 +162,7 @@ void
 DeferredLightingPipeline::renderTransparentDepthLinear(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
 	pipeline.drawScreenQuad(_deferredDepthLinear);
 }
 
@@ -196,7 +185,7 @@ void
 DeferredLightingPipeline::renderLights(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
 
 	auto& lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting);
 	for (auto& it : lights)
@@ -410,7 +399,7 @@ DeferredLightingPipeline::setupSemantic(RenderPipeline& pipeline) noexcept
 bool
 DeferredLightingPipeline::setupDeferredMaterials(RenderPipeline& pipeline) noexcept
 {
-	_deferredLighting = pipeline.createMaterial("sys:fx/deferred_lighting.fxml.o"); if (!_deferredLighting) return false;
+	_deferredLighting = pipeline.createMaterial("sys:fx/deferred_lighting.fxml"); if (!_deferredLighting) return false;
 	_deferredDepthOnly = _deferredLighting->getTech("DeferredDepthOnly"); if (!_deferredDepthOnly) return false;
 	_deferredDepthLinear = _deferredLighting->getTech("DeferredDepthLinear"); if (!_deferredDepthLinear) return false;
 	_deferredPointLight = _deferredLighting->getTech("DeferredPointLight"); if (!_deferredPointLight) return false;
@@ -423,7 +412,6 @@ DeferredLightingPipeline::setupDeferredMaterials(RenderPipeline& pipeline) noexc
 	_deferredSpotLightShadow = _deferredLighting->getTech("DeferredSpotLightShadow"); if (!_deferredSpotLightShadow) return false;
 	_deferredShadingOpaques = _deferredLighting->getTech("DeferredShadingOpaques"); if (!_deferredShadingOpaques) return false;
 	_deferredShadingTransparents = _deferredLighting->getTech("DeferredShadingTransparents"); if (!_deferredShadingTransparents) return false;
-	_deferredSkyLighting = _deferredLighting->getTech("DeferredSkyLighting"); if (!_deferredSkyLighting) return false;
 	_deferredCopyOnly = _deferredLighting->getTech("DeferredCopyOnly"); if (!_deferredCopyOnly) return false;
 
 	_texMRT0 = _deferredLighting->getParameter("texMRT0"); if (!_texMRT0) return false;
@@ -431,9 +419,6 @@ DeferredLightingPipeline::setupDeferredMaterials(RenderPipeline& pipeline) noexc
 	_texDepth = _deferredLighting->getParameter("texDepth"); if (!_texDepth) return false;
 	_texLight = _deferredLighting->getParameter("texLight"); if (!_texLight) return false;
 	_texSource = _deferredLighting->getParameter("texSource"); if (!_texSource) return false;
-	_texEnvDiffuse = _deferredLighting->getParameter("texEnvDiffuse"); if (!_texEnvDiffuse) return false;
-	_texEnvSpecular = _deferredLighting->getParameter("texEnvSpecular"); if (!_texEnvSpecular) return false;
-	_texEnvMipNumber = _deferredLighting->getParameter("texEnvMipNumber"); if (!_texEnvMipNumber) return false;
 
 	_clipInfo = _deferredLighting->getParameter("clipInfo"); if (!_clipInfo) return false;
 	_projInfo = _deferredLighting->getParameter("projInfo"); if (!_projInfo) return false;
@@ -696,8 +681,6 @@ DeferredLightingPipeline::destroyDeferredMaterials() noexcept
 	_texDepth.reset();
 	_texLight.reset();
 	_texSource.reset();
-	_texEnvDiffuse.reset();
-	_texEnvSpecular.reset();
 
 	_clipInfo.reset();
 	_projInfo.reset();

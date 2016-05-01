@@ -52,7 +52,7 @@
 #endif
 
 #if defined(RAY_MAIN_NEEDED) || defined(RAY_MAIN_AVAILABLE)
-#define main ray_main
+#	define main ray_main
 #endif
 
 RAY_C_LINKAGE int RAY_CALL ray_main(int argc, const char* argv[]);

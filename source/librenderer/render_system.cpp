@@ -136,6 +136,20 @@ RenderSystem::getViewport() const noexcept
 	return _pipelineManager->getViewport();
 }
 
+void 
+RenderSystem::setScissor(const Scissor& scissor) noexcept
+{
+	assert(_pipelineManager);
+	_pipelineManager->setScissor(scissor);
+}
+
+const Scissor&
+RenderSystem::getScissor() const noexcept
+{
+	assert(_pipelineManager);
+	return _pipelineManager->getScissor();
+}
+
 void
 RenderSystem::setFramebuffer(GraphicsFramebufferPtr target) noexcept
 {
@@ -281,27 +295,6 @@ RenderSystem::createGraphicsData(const GraphicsDataDesc& desc) noexcept
 {
 	assert(_pipelineManager);
 	return _pipelineManager->createGraphicsData(desc);
-}
-
-bool
-RenderSystem::updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept
-{
-	assert(_pipelineManager);
-	return _pipelineManager->updateBuffer(data, str, cnt);
-}
-
-void*
-RenderSystem::mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept
-{
-	assert(_pipelineManager);
-	return _pipelineManager->mapBuffer(data, access);
-}
-
-void
-RenderSystem::unmapBuffer(GraphicsDataPtr data) noexcept
-{
-	assert(_pipelineManager);
-	_pipelineManager->unmapBuffer(data);
 }
 
 GraphicsInputLayoutPtr

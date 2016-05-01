@@ -330,40 +330,6 @@ OGLDeviceContext::getDescriptorSet() const noexcept
 	return _descriptorSet;
 }
 
-bool
-OGLDeviceContext::updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept
-{
-	assert(data);
-	assert(data->isInstanceOf<OGLGraphicsData>());
-	assert(_glcontext->getActive());
-
-	_needUpdateLayout = true;
-	data->downcast<OGLGraphicsData>()->resize((const char*)str, cnt);
-	return true;
-}
-
-void*
-OGLDeviceContext::mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept
-{
-	assert(data);
-	assert(data->isInstanceOf<OGLGraphicsData>());
-	assert(_glcontext->getActive());
-
-	_needUpdateLayout = true;
-	return data->downcast<OGLGraphicsData>()->map(access);
-}
-
-void
-OGLDeviceContext::unmapBuffer(GraphicsDataPtr data) noexcept
-{
-	assert(data);
-	assert(data->isInstanceOf<OGLGraphicsData>());
-	assert(_glcontext->getActive());
-
-	_needUpdateLayout = true;
-	data->downcast<OGLGraphicsData>()->unmap();
-}
-
 GraphicsDataPtr
 OGLDeviceContext::getIndexBufferData() const noexcept
 {
@@ -424,16 +390,11 @@ OGLDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 	assert(_pipeline);
 	assert(_glcontext->getActive());
 
-	if (_needUpdateLayout)
-	{
-		if (_vbo)
-			_pipeline->bindVbo(_vbo);
+	if (_vbo)
+		_pipeline->bindVbo(_vbo);
 
-		if (_ibo)
-			_pipeline->bindIbo(_ibo);
-
-		_needUpdateLayout = false;
-	}
+	if (_ibo)
+		_pipeline->bindIbo(_ibo);
 
 	if (_ibo)
 	{
@@ -484,7 +445,7 @@ void
 OGLDeviceContext::setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	this->setFramebuffer(target);
-	this->clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsAll, color, depth, stencil);
+	this->clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsAll, color, depth, stencil);
 }
 
 void
@@ -494,7 +455,7 @@ OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color
 
 	GLbitfield mode = 0;
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsColor)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsColor)
 	{
 		mode |= GL_COLOR_BUFFER_BIT;
 
@@ -505,7 +466,7 @@ OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color
 		}
 	}
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 	{
 		mode |= GL_DEPTH_BUFFER_BIT;
 
@@ -516,7 +477,7 @@ OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color
 		}
 	}
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsStencil)
 	{
 		mode |= GL_STENCIL_BUFFER_BIT;
 
@@ -530,14 +491,14 @@ OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color
 	if (mode != 0)
 	{
 		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
-		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_TRUE);
 		}
 
 		glClear(mode);
 
-		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 		{
 			glDepthMask(GL_FALSE);
 		}

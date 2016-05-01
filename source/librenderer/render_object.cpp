@@ -168,6 +168,7 @@ RenderObject::setTransform(const Matrix4x4& transform, const Matrix4x4& inverse,
 	_transformInverse = inverse;
 	_transformInverseTranspose = inverseTranspose;
 
+	_worldBoundingxBox = _boundingBox;
 	_worldBoundingxBox.applyMatrix(_transform);
 
 	this->onMoveAfter();

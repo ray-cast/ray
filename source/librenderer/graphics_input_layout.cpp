@@ -41,17 +41,15 @@ _NAME_BEGIN
 __ImplementSubInterface(GraphicsInputLayout, GraphicsChild, "GraphicsInputLayoutDesc")
 
 GraphicsVertexLayout::GraphicsVertexLayout() noexcept
-	: _index(0)
-	, _count(0)
+	: _count(0)
 	, _size(0)
 	, _offset(0)
 	, _format(GraphicsFormat::GraphicsFormatUndefined)
 {
 }
 
-GraphicsVertexLayout::GraphicsVertexLayout(const std::string& semantic, std::uint8_t semanticIndex, GraphicsFormat format, std::uint16_t offset, std::uint8_t slot) noexcept
+GraphicsVertexLayout::GraphicsVertexLayout(const std::string& semantic, GraphicsFormat format, std::uint16_t offset, std::uint8_t slot) noexcept
 	: _semantic(semantic)
-	, _index(semanticIndex)
 	, _offset(offset)
 	, _format(format)
 {
@@ -85,18 +83,6 @@ const std::string&
 GraphicsVertexLayout::getSemantic() const noexcept
 {
 	return _semantic;
-}
-
-void
-GraphicsVertexLayout::setSemanticIndex(std::uint8_t index) noexcept
-{
-	_index = index;
-}
-
-std::uint8_t
-GraphicsVertexLayout::getSemanticIndex() const noexcept
-{
-	return _index;
 }
 
 GraphicsFormat

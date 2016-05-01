@@ -332,40 +332,6 @@ EGL2DeviceContext::getViewport() const noexcept
 	return _viewport;
 }
 
-bool
-EGL2DeviceContext::updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept
-{
-	assert(data);
-	assert(data->isInstanceOf<EGL2GraphicsData>());
-	assert(_glcontext->getActive());
-
-	_needUpdateLayout = true;
-	data->downcast<EGL2GraphicsData>()->resize((const char*)str, cnt);
-	return true;
-}
-
-void*
-EGL2DeviceContext::mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept
-{
-	assert(data);
-	assert(data->isInstanceOf<EGL2GraphicsData>());
-	assert(_glcontext->getActive());
-
-	_needUpdateLayout = true;
-	return data->downcast<EGL2GraphicsData>()->map(access);
-}
-
-void
-EGL2DeviceContext::unmapBuffer(GraphicsDataPtr data) noexcept
-{
-	assert(data);
-	assert(data->isInstanceOf<EGL2GraphicsData>());
-	assert(_glcontext->getActive());
-
-	_needUpdateLayout = true;
-	data->downcast<EGL2GraphicsData>()->unmap();
-}
-
 GraphicsDataPtr
 EGL2DeviceContext::getIndexBufferData() const noexcept
 {
@@ -472,7 +438,7 @@ void
 EGL2DeviceContext::setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	this->setFramebuffer(target);
-	this->clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsAll, color, depth, stencil);
+	this->clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsAll, color, depth, stencil);
 }
 
 void
@@ -492,7 +458,7 @@ EGL2DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 {
 	GLbitfield mode = 0;
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsColor)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsColor)
 	{
 		mode |= GL_COLOR_BUFFER_BIT;
 
@@ -503,7 +469,7 @@ EGL2DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 		}
 	}
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 	{
 		mode |= GL_DEPTH_BUFFER_BIT;
 
@@ -514,7 +480,7 @@ EGL2DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 		}
 	}
 
-	if (flags & GraphicsClearFlags::GraphicsClearFlagsStencil)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsStencil)
 	{
 		mode |= GL_STENCIL_BUFFER_BIT;
 
@@ -528,14 +494,14 @@ EGL2DeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& colo
 	if (mode != 0)
 	{
 		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
-		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 		{
 			GL_CHECK(glDepthMask(GL_TRUE));
 		}
 
 		GL_CHECK(glClear(mode));
 
-		if (!depthWriteEnable && flags & GraphicsClearFlags::GraphicsClearFlagsDepth)
+		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
 		{
 			GL_CHECK(glDepthMask(GL_FALSE));
 		}

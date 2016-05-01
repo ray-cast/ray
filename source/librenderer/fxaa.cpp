@@ -53,7 +53,7 @@ FXAA::~FXAA() noexcept
 void
 FXAA::onActivate(RenderPipeline& pipeline) noexcept
 {
-	_fxaa = pipeline.createMaterial("sys:fx/fxaa.fxml.o");
+	_fxaa = pipeline.createMaterial("sys:fx/fxaa.fxml");
 	_fxaaTech = _fxaa->getTech("fxaa");
 
 	_texelStep = _fxaa->getParameter("texelStep");

@@ -89,14 +89,8 @@ public:
 	void setClearColor(const float4& color) noexcept;
 	const float4& getClearColor() const noexcept;
 
-	void setSkyLightMap(GraphicsTexturePtr texture) noexcept;
-	GraphicsTexturePtr getSkyLightMap() const noexcept;
-
-	void setSkyLightDiffuse(GraphicsTexturePtr diffuse) noexcept;
-	GraphicsTexturePtr getSkyLightDiffuse() const noexcept;
-
-	void setSkyLightSpecular(GraphicsTexturePtr specular) noexcept;
-	GraphicsTexturePtr getSkyLightSpecular() const noexcept;
+	void setClearFlags(GraphicsClearFlags flags) noexcept;
+	GraphicsClearFlags getClearFlags() const noexcept;
 
 	void setCameraType(CameraType type) noexcept;
 	CameraType getCameraType() const noexcept;
@@ -138,14 +132,11 @@ private:
 	Viewport _viewport;
 
 	float4 _clearColor;
+	GraphicsClearFlags _clearFlags;
 
 	CameraType   _cameraType;
 	CameraOrder  _cameraOrder;
 	CameraRenderFlags _cameraRenderFlags;
-
-	GraphicsTexturePtr _envMap;
-	GraphicsTexturePtr _envDiffuse;
-	GraphicsTexturePtr _envSpecular;
 
 	GraphicsFramebufferPtr _renderTexture;
 

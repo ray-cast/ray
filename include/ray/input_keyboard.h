@@ -37,33 +37,20 @@
 #ifndef _H_INPUT_KEYBOARD_H_
 #define _H_INPUT_KEYBOARD_H_
 
-#if defined(_BUILD_PLATFORM_SDL2)
-#   include <ray/sdl_input_keyboard.h>
-#   define ToplevelInputKeyboard SDLInputKeyboard
-#elif defined(_BUILD_PLATFORM_WINDOWS)
-#	include <ray/msw_input_keyboard.h>
-#   define ToplevelInputKeyboard MSWInputKeyboard
-#elif defined(_BUILD_PLATFORM_ANDROID)
-#	include <ray/ndk_input_keyboard.h>
-#   define ToplevelInputKeyboard NDKInputKeyboard
-#endif
-
-#if defined(ToplevelInputKeyboard)
+#include <ray/input_keyboard_base.h>
 
 _NAME_BEGIN
 
-class EXPORT DefaultInputKeyboard final : public ToplevelInputKeyboard
+class EXPORT DefaultInputKeyboard : public InputKeyboard
 {
-	__DeclareSubClass(DefaultInputKeyboard, ToplevelInputKeyboard)
+	__DeclareSubInterface(DefaultInputKeyboard, InputKeyboard)
 public:
 	DefaultInputKeyboard() noexcept;
-	~DefaultInputKeyboard() noexcept;
+	virtual ~DefaultInputKeyboard() noexcept;
 
 	virtual bool getKeyDown(InputKey::Code key) const noexcept;
 	virtual bool getKeyUp(InputKey::Code key) const noexcept;
 	virtual bool getKey(InputKey::Code key) const noexcept;
-
-	virtual InputKeyboardPtr clone() const noexcept;
 
 private:
 	virtual void onFrameEnd() noexcept;
@@ -88,7 +75,5 @@ private:
 };
 
 _NAME_END
-
-#endif
 
 #endif

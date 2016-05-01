@@ -220,57 +220,6 @@ CameraComponent::getCameraRenderFlags() const noexcept
 }
 
 void
-CameraComponent::setSkyLightMap(const std::string& texture) noexcept
-{
-	if (_skyMap != texture)
-	{
-		if (this->getCameraRenderFlags() & CameraRenderFlagBits::CameraRenderSkyboxBit)
-			_loadSkybox(texture);
-		_skyMap = texture;
-	}
-}
-
-const std::string&
-CameraComponent::getSkyLightMap() const noexcept
-{
-	return _skyMap;
-}
-
-void
-CameraComponent::setSkyLightDiffuse(const std::string& diffuse) noexcept
-{
-	if (_skyDiffuse != diffuse)
-	{
-		if (this->getCameraRenderFlags() & CameraRenderFlagBits::CameraRenderSkyLightingBit)
-			_loadSkyDiffuse(diffuse);
-		_skyDiffuse = diffuse;
-	}
-}
-
-const std::string&
-CameraComponent::getSkyLightDiffuse() const noexcept
-{
-	return _skyDiffuse;
-}
-
-void
-CameraComponent::setSkyLightSpecular(const std::string& specular) noexcept
-{
-	if (_skySpecular != specular)
-	{
-		if (this->getCameraRenderFlags() & CameraRenderFlagBits::CameraRenderSkyLightingBit)
-			_loadSkySpecular(specular);
-		_skySpecular = specular;
-	}
-}
-
-const std::string&
-CameraComponent::getSkyLightSpecular() const noexcept
-{
-	return _skySpecular;
-}
-
-void
 CameraComponent::load(iarchive& reader) noexcept
 {
 	GameComponent::load(reader);
@@ -332,16 +281,29 @@ CameraComponent::load(iarchive& reader) noexcept
 			this->setCameraOrder(CameraOrder::CameraOrder3D);
 	}
 
-	if (reader.getValue("skymap", skymap))
-		this->setSkyLightMap(skymap);
+	if (reader.getValue("clearflags", flagsString))
+	{
+		GraphicsClearFlags flags = 0;
 
-	if (reader.getValue("skydiffuse", skydiffuse))
-		this->setSkyLightDiffuse(skydiffuse);
+		std::vector<std::string> args;
+		util::split(args, flagsString, "|");
 
-	if (reader.getValue("skyspecular", skyspecular))
-		this->setSkyLightSpecular(skyspecular);
+		for (auto& flag : args)
+		{
+			flag = util::trim(flag, ' ');
 
-	if (reader.getValue("flags", flagsString))
+			if (flag == "color")
+				flags |= GraphicsClearFlagBits::GraphicsClearFlagsColor;
+			else if (flag == "depth")
+				flags |= GraphicsClearFlagBits::GraphicsClearFlagsDepth;
+			else if (flag == "stencil")
+				flags |= GraphicsClearFlagBits::GraphicsClearFlagsStencil;
+		}
+
+		this->setCameraRenderFlags(flags);
+	}
+
+	if (reader.getValue("renderflags", flagsString))
 	{
 		CameraRenderFlags flags = 0;
 
@@ -356,10 +318,6 @@ CameraComponent::load(iarchive& reader) noexcept
 				flags |= CameraRenderFlagBits::CameraRenderScreenBit;
 			else if (flag == "render_to_texture")
 				flags |= CameraRenderFlagBits::CameraRenderTextureBit;
-			else if (flag == "skybox")
-				flags |= CameraRenderFlagBits::CameraRenderSkyboxBit;
-			else if (flag == "skylighting")
-				flags |= CameraRenderFlagBits::CameraRenderSkyLightingBit;
 			else if (flag == "gbuffer_diffuse")
 				flags |= CameraRenderFlagBits::CameraRenderGbufferDiffuseBit;
 			else if (flag == "gbuffer_normal")
@@ -377,72 +335,6 @@ CameraComponent::load(iarchive& reader) noexcept
 void
 CameraComponent::save(oarchive& write) noexcept
 {
-}
-
-bool
-CameraComponent::_loadSkybox(const std::string& texture) noexcept
-{
-	if (texture.empty())
-	{
-		_camera->setSkyLightMap(nullptr);
-		return true;
-	}
-
-	auto skymap = RenderSystem::instance()->createTexture(texture,
-		GraphicsTextureDim::GraphicsTextureDimCube,
-		GraphicsSamplerFilter::GraphicsSamplerFilterNearest);
-
-	if (skymap)
-	{
-		_camera->setSkyLightMap(skymap);
-		return true;
-	}
-
-	return false;
-}
-
-bool
-CameraComponent::_loadSkyDiffuse(const std::string& texture) noexcept
-{
-	if (texture.empty())
-	{
-		_camera->setSkyLightDiffuse(nullptr);
-		return true;
-	}
-
-	auto diffuse = RenderSystem::instance()->createTexture(texture,
-		GraphicsTextureDim::GraphicsTextureDimCube,
-		GraphicsSamplerFilter::GraphicsSamplerFilterLinear);
-
-	if (diffuse)
-	{
-		_camera->setSkyLightDiffuse(diffuse);
-		return true;
-	}
-
-	return false;
-}
-
-bool
-CameraComponent::_loadSkySpecular(const std::string& texture) noexcept
-{
-	if (texture.empty())
-	{
-		_camera->setSkyLightSpecular(nullptr);
-		return true;
-	}
-
-	auto specular = RenderSystem::instance()->createTexture(texture,
-		GraphicsTextureDim::GraphicsTextureDimCube,
-		GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear);
-
-	if (specular)
-	{
-		_camera->setSkyLightSpecular(specular);
-		return true;
-	}
-
-	return false;
 }
 
 void
@@ -466,22 +358,6 @@ CameraComponent::onActivate() noexcept
 				this->getGameObject()->getTransformInverse(),
 				this->getGameObject()->getTransformInverseTranspose()
 				);
-
-			auto flags = _camera->getCameraRenderFlags();
-			if (flags & CameraRenderFlagBits::CameraRenderSkyboxBit)
-			{
-				if (!_camera->getSkyLightMap())
-					_loadSkybox(_skyMap);
-			}
-
-			if (flags & CameraRenderFlagBits::CameraRenderSkyLightingBit)
-			{
-				if (!_camera->getSkyLightDiffuse())
-					_loadSkyDiffuse(_skyDiffuse);
-
-				if (!_camera->getSkyLightSpecular())
-					_loadSkySpecular(_skySpecular);
-			}
 		}
 	}
 }
@@ -495,11 +371,19 @@ CameraComponent::onDeactivate() noexcept
 void
 CameraComponent::onMoveAfter() noexcept
 {
-	_camera->setTransform(
-		this->getGameObject()->getTransform(),
-		this->getGameObject()->getTransformInverse(),
-		this->getGameObject()->getTransformInverseTranspose()
-		);
+	float4x4 transform;
+	float4x4 transformInverse;
+	float4x4 transformInverseTranspose;
+
+	auto gameObject = this->getGameObject();
+
+	transform.makeRotate(gameObject->getForward(), gameObject->getUpVector(), gameObject->getRight());
+	transform.setTranslate(gameObject->getTranslate());
+
+	transformInverse = math::transformInverse(transform);
+	transformInverseTranspose = math::transpose(transformInverse);
+
+	_camera->setTransform(transform, transformInverse, transformInverseTranspose);
 }
 
 GameComponentPtr

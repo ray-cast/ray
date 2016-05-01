@@ -43,7 +43,6 @@ __ImplementSubInterface(OGLCoreGraphicsData, GraphicsData, "OGLCoreGraphicsData"
 OGLCoreGraphicsData::OGLCoreGraphicsData() noexcept
 	: _buffer(GL_NONE)
 	, _isMapping(GL_FALSE)
-	, _data(nullptr)
 {
 }
 
@@ -58,7 +57,6 @@ OGLCoreGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 	assert(!_buffer);
 	assert(desc.getStride() > 0);
 
-	_data = nullptr;
 	_dataOffset = 0;
 	_dataSize = desc.getStreamSize();
 	_usage = desc.getUsage();
@@ -191,7 +189,8 @@ OGLCoreGraphicsData::read(char* str, GLsizeiptr cnt) noexcept
 			return 0;
 	}
 
-	void* data = this->map(_dataOffset, cnt, GraphicsAccessFlagsBits::GraphicsAccessFlagsMapReadBit);
+	void* data;
+	this->map(_dataOffset, cnt, &data);
 	if (data)
 	{
 		std::memcpy(str, data, cnt);
@@ -212,7 +211,8 @@ OGLCoreGraphicsData::write(const char* str, GLsizeiptr cnt) noexcept
 			return 0;
 	}
 
-	void* data = this->map(_dataOffset, cnt, GraphicsAccessFlagsBits::GraphicsAccessFlagsMapWriteBit);
+	void* data;
+	this->map(_dataOffset, cnt, &data);
 	if (data)
 	{
 		std::memcpy(data, str, cnt);
@@ -225,56 +225,21 @@ OGLCoreGraphicsData::write(const char* str, GLsizeiptr cnt) noexcept
 	return 0;
 }
 
-void*
-OGLCoreGraphicsData::map(std::uint32_t access) noexcept
+bool
+OGLCoreGraphicsData::map(std::uint32_t offset, std::uint32_t count, void** data) noexcept
 {
-	return this->map(0, _dataSize, access);
-}
-
-void*
-OGLCoreGraphicsData::map(GLintptr offset, GLsizeiptr cnt, std::uint32_t access) noexcept
-{
-	if (!_data)
-	{
-		GLbitfield flags = GL_MAP_READ_BIT;
-		if (access & GraphicsAccessFlagsBits::GraphicsAccessFlagsMapReadBit)
-			flags |= GL_MAP_READ_BIT;
-		if (access & GraphicsAccessFlagsBits::GraphicsAccessFlagsMapWriteBit)
-			flags |= GL_MAP_WRITE_BIT;
-		if (access & GraphicsAccessFlagsBits::GraphicsAccessFlagsUnsynchronizedBit)
-			flags |= GL_MAP_UNSYNCHRONIZED_BIT;
-		if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsPersistentBit)
-			flags |= GL_MAP_PERSISTENT_BIT;
-		if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsCoherentBit)
-			flags |= GL_MAP_COHERENT_BIT;
-		if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsFlushExplicitBit)
-			flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
-
-		_data = glMapNamedBufferRange(_buffer, offset, cnt, flags);
-	}
-
-	if (_data)
-	{
-		_isMapping = GL_TRUE;
-		return _data;
-	}
-
-	return _data;
+	assert(data);
+	assert(!_isMapping);
+	*data = glMapNamedBufferRange(_buffer, offset, count, GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+	_isMapping = GL_TRUE;
+	return true;
 }
 
 void
 OGLCoreGraphicsData::unmap() noexcept
 {
 	assert(_isMapping);
-
-	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsPersistentBit)
-	{
-		_isMapping = GL_FALSE;
-		return;
-	}
-
 	glUnmapNamedBuffer(_buffer);
-	_data = nullptr;
 	_isMapping = GL_FALSE;
 }
 

@@ -35,11 +35,11 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #if defined(_BUILD_PLATFORM_WINDOWS)
-#include <ray/msw_input_device.h>
+#include "msw_input_device.h"
 
 _NAME_BEGIN
 
-__ImplementSubInterface(MSWInputDevice, InputDevice, "MSWInputDevice")
+__ImplementSubClass(MSWInputDevice, InputDevice, "MSWInputDevice")
 
 InputKey::Code VirtualKeyToScanCode(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
@@ -272,6 +272,10 @@ MSWInputDevice::MSWInputDevice() noexcept
 {
 }
 
+MSWInputDevice::~MSWInputDevice() noexcept
+{
+}
+
 void
 MSWInputDevice::setCaptureObject(CaptureObject window) noexcept
 {
@@ -299,6 +303,7 @@ MSWInputDevice::update() noexcept
 		{
 			InputEvent inputEvent;
 			inputEvent.event = (msg.message == WM_KEYDOWN) ? InputEvent::KeyDown : InputEvent::KeyUp;
+			inputEvent.key.windowID = (std::uint64_t)msg.hwnd;
 			inputEvent.key.timestamp = ::timeGetTime();
 			inputEvent.key.state = (msg.message == WM_KEYDOWN) ? true : false;
 
@@ -325,7 +330,7 @@ MSWInputDevice::update() noexcept
 					inputEvent.key.keysym.unicode = 0;
 			}
 
-			this->postEvent(inputEvent);
+			this->sendEvent(inputEvent);
 		}
 		break;
 		case WM_MOUSEMOVE:
@@ -335,6 +340,7 @@ MSWInputDevice::update() noexcept
 
 			InputEvent inputEvent;
 			inputEvent.event = InputEvent::MouseMotion;
+			inputEvent.motion.windowID = (std::uint64_t)msg.hwnd;
 			inputEvent.motion.x = LOWORD(msg.lParam);
 			inputEvent.motion.y = HIWORD(msg.lParam);
 			inputEvent.motion.xrel = pt.x;
@@ -346,7 +352,7 @@ MSWInputDevice::update() noexcept
 			_mouseX = LOWORD(msg.lParam);
 			_mouseY = HIWORD(msg.lParam);
 
-			this->postEvent(inputEvent);
+			this->sendEvent(inputEvent);
 		}
 		break;
 		case WM_LBUTTONDOWN:
@@ -357,6 +363,7 @@ MSWInputDevice::update() noexcept
 
 			InputEvent inputEvent;
 			inputEvent.event = InputEvent::MouseButtonDown;
+			inputEvent.button.windowID = (std::uint64_t)msg.hwnd;
 			inputEvent.button.clicks = _isButtonPress = true;
 			inputEvent.button.x = _mouseX;
 			inputEvent.button.y = _mouseY;
@@ -374,7 +381,7 @@ MSWInputDevice::update() noexcept
 				break;
 			}
 
-			this->postEvent(inputEvent);
+			this->sendEvent(inputEvent);
 		}
 		break;
 		case WM_LBUTTONUP:
@@ -404,7 +411,7 @@ MSWInputDevice::update() noexcept
 				assert(false);
 			}
 
-			this->postEvent(inputEvent);
+			this->sendEvent(inputEvent);
 		}
 		break;
 		}
@@ -415,37 +422,44 @@ MSWInputDevice::update() noexcept
 }
 
 bool
-MSWInputDevice::peekEvents(InputEvent&) noexcept
+MSWInputDevice::peekEvents(InputEvent& event) noexcept
 {
 	this->update();
-	return true;
+	return DefaultInputDevice::peekEvents(event);
 }
 
 bool
-MSWInputDevice::pollEvents(InputEvent&) noexcept
+MSWInputDevice::pollEvents(InputEvent& event) noexcept
 {
 	this->update();
-	return true;
+	return DefaultInputDevice::pollEvents(event);
 }
 
 bool
-MSWInputDevice::waitEvents(InputEvent&) noexcept
+MSWInputDevice::waitEvents(InputEvent& event) noexcept
 {
 	this->update();
-	return true;
+	return DefaultInputDevice::pollEvents(event);
 }
 
 bool
-MSWInputDevice::waitEvents(InputEvent&, int) noexcept
+MSWInputDevice::waitEvents(InputEvent& event, int time) noexcept
 {
 	this->update();
-	return true;
+	return DefaultInputDevice::waitEvents(event, time);
 }
 
 void
 MSWInputDevice::flushEvent() noexcept
 {
 	this->update();
+	DefaultInputDevice::flushEvent();
+}
+
+InputDevicePtr
+MSWInputDevice::clone() const noexcept
+{
+	return std::make_shared<MSWInputDevice>();
 }
 
 _NAME_END

@@ -92,15 +92,4 @@ void GetImageInstanceList(Image& image)
 #endif
 }
 
-/*"Unable to remove custom importer: I can't find you ...",
-"No suitable reader found for the file format of stream .",
-"Unknown bitdepth in file.",
-"Unknown encoding in file.",
-"The file extension is already in use",
-"Encoding doesn't match bitdepth.",
-"invalid image",
-"Image width too large",
-"Image height too large",
-"File size too large"*/
-
 _NAME_END

@@ -78,7 +78,7 @@ ColorGrading::getColorGrading() const noexcept
 void
 ColorGrading::onActivate(RenderPipeline& pipeline) noexcept
 {
-	_material = pipeline.createMaterial("sys:fx/color_grading.fxml.o");
+	_material = pipeline.createMaterial("sys:fx/color_grading.fxml");
 	_colorGrading = _material->getTech("ColorGrading");
 	_texGrading = _material->getParameter("texColorGrading");
 	_texSource = _material->getParameter("texSource");

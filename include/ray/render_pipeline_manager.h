@@ -69,6 +69,9 @@ public:
 	void setViewport(const Viewport& view) noexcept;
 	const Viewport& getViewport() const noexcept;
 
+	void setScissor(const Scissor& scissor) noexcept;
+	const Scissor& getScissor() const noexcept;
+
 	void setTransform(const float4x4& transform) noexcept;
 	void setTransformInverse(const float4x4& transform) noexcept;
 	void setTransformInverseTranspose(const float4x4& transform) noexcept;
@@ -78,10 +81,6 @@ public:
 	void discradRenderTexture() noexcept;
 	void readFramebuffer(GraphicsFramebufferPtr target, GraphicsFormat pfd, std::size_t w, std::size_t h, std::size_t bufsize, void* data) noexcept;
 	void blitFramebuffer(GraphicsFramebufferPtr srcTarget, const Viewport& src, GraphicsFramebufferPtr destTarget, const Viewport& dest) noexcept;
-
-	bool updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept;
-	void* mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept;
-	void unmapBuffer(GraphicsDataPtr data) noexcept;
 
 	void drawCone(MaterialTechPtr tech) noexcept;
 	void drawSphere(MaterialTechPtr tech) noexcept;

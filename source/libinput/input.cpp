@@ -36,6 +36,12 @@
 // +----------------------------------------------------------------------
 #include <ray/input.h>
 
+#if defined(_BUILD_PLATFORM_WINDOWS)
+#	include "msw_input_device.h"
+#	include "msw_input_keyboard.h"
+#	include "msw_input_mouse.h"
+#endif
+
 _NAME_BEGIN
 
 __ImplementSubClass(DefaultInput, Input, "DefaultInput")
@@ -49,11 +55,18 @@ DefaultInput::~DefaultInput() noexcept
 	this->close();
 }
 
-void
+bool
 DefaultInput::open(InputDevicePtr device) noexcept
 {
-	assert(device);
-	_inputDevice = device;
+	_inputDevice = device ? device : std::make_shared<MSWInputDevice>();
+
+	auto inputKeyboard = std::make_shared<MSWInputKeyboard>();
+	this->obtainKeyboardCapture(inputKeyboard);
+
+	auto inputMouse = std::make_shared<MSWInputMouse>();
+	this->obtainMouseCapture(inputMouse);
+
+	return true;
 }
 
 void
@@ -96,42 +109,17 @@ DefaultInput::getCaptureObject() const noexcept
 }
 
 void
-DefaultInput::setMousePosX(int x) noexcept
-{
-	if (_mouseCaptureDevice)
-		_mouseCaptureDevice->setPositionX(x);
-}
-
-void
-DefaultInput::setMousePosY(int y) noexcept
-{
-	if (_mouseCaptureDevice)
-		_mouseCaptureDevice->setPositionY(y);
-}
-
-void
 DefaultInput::setMousePos(int x, int y) noexcept
 {
 	if (_mouseCaptureDevice)
 		_mouseCaptureDevice->setPosition(x, y);
 }
 
-int
-DefaultInput::getMousePosX() const noexcept
+void
+DefaultInput::getMousePos(int& x, int& y) const noexcept
 {
 	if (_mouseCaptureDevice)
-		return _mouseCaptureDevice->getPositionX();
-
-	return 0;
-}
-
-int
-DefaultInput::getMousePosY() const noexcept
-{
-	if (_mouseCaptureDevice)
-		return _mouseCaptureDevice->getPositionY();
-
-	return 0;
+		_mouseCaptureDevice->getPosition(x, y);
 }
 
 bool
@@ -248,12 +236,22 @@ DefaultInput::obtainMouseCapture(InputMousePtr mouse) noexcept
 	if (_mouseCaptureDevice != mouse)
 	{
 		if (_mouseCaptureDevice)
+		{
 			_mouseCaptureDevice->releaseCapture();
+
+			if (_inputDevice)
+				_inputDevice->removeInputListener(_mouseCaptureDevice);
+		}
 
 		_mouseCaptureDevice = mouse;
 
 		if (_mouseCaptureDevice)
+		{
 			_mouseCaptureDevice->obtainCapture();
+
+			if (_inputDevice)
+				_inputDevice->addInputListener(_mouseCaptureDevice);
+		}			
 	}
 }
 
@@ -263,12 +261,22 @@ DefaultInput::obtainKeyboardCapture(InputKeyboardPtr keyboard) noexcept
 	if (_keyboardCaptureDevice != keyboard)
 	{
 		if (_keyboardCaptureDevice)
+		{
 			_keyboardCaptureDevice->releaseCapture();
+
+			if (_inputDevice)
+				_inputDevice->removeInputListener(keyboard);
+		}
 
 		_keyboardCaptureDevice = keyboard;
 
 		if (_keyboardCaptureDevice)
+		{
 			_keyboardCaptureDevice->obtainCapture();
+
+			if (_inputDevice)
+				_inputDevice->addInputListener(_keyboardCaptureDevice);
+		}			
 	}
 }
 
@@ -331,18 +339,20 @@ DefaultInput::clearInputListener() noexcept
 		_inputDevice->clearInputListener();
 }
 
-void
+bool
 DefaultInput::sendInputEvent(const InputEvent& event) noexcept
 {
 	if (_inputDevice)
-		_inputDevice->sendEvent(event);
+		return _inputDevice->sendEvent(event);
+	return false;
 }
 
-void
+bool
 DefaultInput::postInputEvent(const InputEvent& event) noexcept
 {
 	if (_inputDevice)
-		_inputDevice->postEvent(event);
+		return _inputDevice->postEvent(event);
+	return true;
 }
 
 void
@@ -364,12 +374,6 @@ DefaultInput::update() noexcept
 	InputEvent event;
 	while (_inputDevice->pollEvents(event))
 	{
-		if (_keyboardCaptureDevice)
-			_keyboardCaptureDevice->onInputEvent(event);
-
-		if (_mouseCaptureDevice)
-			_mouseCaptureDevice->onInputEvent(event);
-
 		this->sendInputEvent(event);
 	}
 }

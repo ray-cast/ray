@@ -47,6 +47,7 @@ class EXPORT MeshComponent final : public GameComponent
 	__DeclareSubClass(MeshComponent, GameComponent)
 public:
 	MeshComponent() noexcept;
+	MeshComponent(MeshPropertyPtr mesh) noexcept;
 	~MeshComponent() noexcept;
 
 	void setMesh(MeshPropertyPtr mesh) noexcept;

@@ -63,6 +63,9 @@ public:
 	void setViewport(const Viewport& view) noexcept;
 	const Viewport& getViewport() const noexcept;
 
+	void setScissor(const Scissor& scissor) noexcept;
+	const Scissor& getScissor() const noexcept;
+
 	void setFramebuffer(GraphicsFramebufferPtr target) noexcept;
 	void clearFramebuffer(GraphicsClearFlags flags, const float4& color, float depth, std::int32_t stencil) noexcept;
 	void discradRenderTexture() noexcept;
@@ -92,10 +95,6 @@ public:
 
 	RenderMeshPtr createRenderMesh(const MeshProperty& mesh, ModelMakerFlags flags) noexcept;
 	RenderMeshPtr createRenderMesh(GraphicsDataPtr vb, GraphicsDataPtr ib) noexcept;
-
-	bool updateBuffer(GraphicsDataPtr data, void* str, std::size_t cnt) noexcept;
-	void* mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept;
-	void unmapBuffer(GraphicsDataPtr data) noexcept;
 
 	void renderBegin() noexcept;
 	void render() noexcept;

@@ -47,6 +47,11 @@ MeshComponent::MeshComponent() noexcept
 {
 }
 
+MeshComponent::MeshComponent(MeshPropertyPtr mesh) noexcept
+{
+	this->setMesh(mesh);
+}
+
 MeshComponent::~MeshComponent() noexcept
 {
 }
@@ -115,14 +120,12 @@ MeshComponent::getBoundingBoxDownwards() const noexcept
 void
 MeshComponent::addMeshChangeListener(std::function<void()> func) noexcept
 {
-	assert(!_onMeshChange.find(func));
 	_onMeshChange.attach(func);
 }
 
 void
 MeshComponent::removeMeshChangeListener(std::function<void()> func) noexcept
 {
-	assert(_onMeshChange.find(func));
 	_onMeshChange.remove(func);
 }
 
@@ -174,13 +177,10 @@ MeshComponent::clone() const noexcept
 	result->setName(this->getName());
 	result->setActive(this->getActive());
 
-	auto mesh = this->getSharedMesh();
-	if (mesh)
-	{
-		result->setMesh(mesh->clone());
-		result->setSharedMesh(mesh);
-	}
+	if (this->getMesh())
+		result->setMesh(this->getMesh()->clone());
 
+	result->setSharedMesh(this->getMesh());
 	return result;
 }
 

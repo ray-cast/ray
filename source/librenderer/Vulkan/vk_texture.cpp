@@ -106,7 +106,7 @@ VulkanTexture::setup(const GraphicsTextureDesc& textureDesc) noexcept
 		auto streamSize = textureDesc.getStreamSize();
 		if (stream != nullptr && streamSize > 0)
 		{
-			void* data = _vkMemory.map(GraphicsAccessFlagsBits::GraphicsAccessFlagsMapReadBit);
+			void* data = _vkMemory.map(GraphicsAccessFlagBits::GraphicsAccessFlagMapReadBit);
 			if (data)
 			{
 				std::memcpy(data, stream, streamSize);
@@ -179,6 +179,17 @@ VulkanTexture::close() noexcept
 		vkDestroyImageView(device->getDevice(), _vkImageView, nullptr);
 		_vkImageView = VK_NULL_HANDLE;
 	}
+}
+
+bool
+VulkanTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, GraphicsFormat format, void** data) noexcept
+{
+	return false;
+}
+
+void
+VulkanTexture::unmap() noexcept
+{
 }
 
 void

@@ -35,11 +35,10 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/input_keyboard.h>
-#if defined(ToplevelInputKeyboard)
 
 _NAME_BEGIN
 
-__ImplementSubClass(DefaultInputKeyboard, ToplevelInputKeyboard, "DefaultInputKeyboard")
+__ImplementSubInterface(DefaultInputKeyboard, InputKeyboard, "DefaultInputKeyboard")
 
 DefaultInputKeyboard::DefaultInputKeyboard() noexcept
 {
@@ -53,18 +52,21 @@ DefaultInputKeyboard::~DefaultInputKeyboard() noexcept
 bool
 DefaultInputKeyboard::getKeyDown(InputKey::Code key) const noexcept
 {
+	assert(key < InputKey::Code::NumKeyCodes);
 	return _keyState[key].down;
 }
 
 bool
 DefaultInputKeyboard::getKeyUp(InputKey::Code key) const noexcept
 {
+	assert(key < InputKey::Code::NumKeyCodes);
 	return _keyState[key].up;
 }
 
 bool
 DefaultInputKeyboard::getKey(InputKey::Code key) const noexcept
 {
+	assert(key < InputKey::Code::NumKeyCodes);
 	return _keyState[key].pressed;
 }
 
@@ -151,11 +153,4 @@ DefaultInputKeyboard::onInputEvent(const InputEvent& event) noexcept
 	}
 }
 
-InputKeyboardPtr
-DefaultInputKeyboard::clone() const noexcept
-{
-	return std::make_shared<DefaultInputKeyboard>();
-}
-
 _NAME_END
-#endif

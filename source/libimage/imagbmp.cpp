@@ -38,6 +38,110 @@
 
 _NAME_BEGIN
 
+#ifndef __WINDOWS__
+/* constants for the biCompression field */
+#   define BI_RGB        0L
+#   define BI_RLE8       1L
+#   define BI_RLE4       2L
+#   define BI_BITFIELDS  3L
+#   define BI_JPEG       4L
+#   define BI_PNG        5L
+#endif // __WINDOWS__
+
+#ifndef __WINDOWS__
+typedef std::uint16_t WORD;
+typedef std::uint32_t DWORD;
+typedef std::int32_t LONG;
+#endif
+
+enum
+{
+	BMP_32BPP = 32,
+
+	// default, do not need to set
+	BMP_24BPP = 24,
+
+	BMP_16BPP = 16,
+
+	// 8bpp, quantized colors
+	BMP_8BPP = 8,
+
+	// 8bpp, rgb averaged to greys
+	BMP_8BPP_GREY = 9,
+
+	// 8bpp, rgb averaged to grays
+	BMP_8BPP_GRAY = 9,
+
+	// 8bpp, red used as greyscale
+	BMP_8BPP_RED = 10,
+
+	// 8bpp, use the wxImage's palette
+	BMP_8BPP_PALETTE = 11,
+
+	// 4bpp, quantized colors
+	BMP_4BPP = 4,
+
+	// 1bpp, quantized "colors"
+	BMP_1BPP = 1,
+
+	// 1bpp, black & white from red
+	BMP_1BPP_BW = 2
+};
+
+#define BI_RGB5_MASK_R 0x7C00
+#define BI_RGB5_MASK_G 0x03E0
+#define BI_RGB5_MASK_B 0x001F
+#define BI_RGB5_SHIFT_R 0xA
+#define BI_RGB5_SHIFT_G 0x5
+#define BI_RGB5_SHIFT_B 0x0
+#define BI_RGB5_BIT_R 0x3
+#define BI_RGB5_BIT_G 0x3
+#define BI_RGB5_BIT_B 0x3
+
+#pragma pack(push)
+#pragma pack(1)
+
+struct BITMAPFILEHEADER
+{
+	WORD type;
+	DWORD size;
+	WORD reserved1;
+	WORD reserved2;
+	DWORD off_bits;
+};
+
+struct BITMAPINFOHEADER
+{
+	DWORD size;
+	LONG width;
+	LONG height;
+	WORD planes;
+	WORD bpp;
+	DWORD comp;
+	DWORD size_image;
+	LONG pels_per_mater_x;
+	LONG pels_per_mater_y;
+	DWORD clr_used;
+	DWORD clr_important;
+};
+
+struct BITMAPMASK
+{
+	DWORD r;
+	DWORD g;
+	DWORD b;
+};
+
+struct BITMAPINFO
+{
+	BITMAPFILEHEADER header;
+	BITMAPINFOHEADER info;
+};
+
+#pragma pack(pop)
+
+typedef RGB BMPPalette;
+
 BMPHandler::BMPHandler() noexcept
 {
 }
@@ -52,10 +156,7 @@ BMPHandler::doCanRead(StreamReader& stream) const noexcept
 	std::uint8_t hdr[2];
 
 	if (stream.read((char*)hdr, sizeof(hdr)))
-	{
 		return hdr[0] == 'B' && hdr[1] == 'M';
-	}
-
 	return false;
 }
 
@@ -92,7 +193,7 @@ BMPHandler::doLoad(Image& image, StreamReader& stream) except
 			info.info.comp == BI_RLE8 && info.info.bpp != 8 ||
 			info.info.comp == BI_BITFIELDS && info.info.bpp != 16 && info.info.bpp != 32)
 		{
-			throw ray::failure("Encoding doesn't match bitdepth.");
+			throw failure("Encoding doesn't match bitdepth.");
 		}
 
 		return this->decode(image, stream, info);
@@ -120,65 +221,57 @@ BMPHandler::encode(Image&, StreamReader&, const BITMAPINFO&)
 bool
 BMPHandler::loadDIB(Image& image, StreamReader& stream, const BITMAPINFO& info)
 {
-	size_type columns = (size_type)info.info.width;
-	size_type rows = (size_type)(info.info.height < 0 ? -info.info.height : info.info.height);
-	size_type nums = columns * rows;
+	std::uint32_t columns = (std::uint32_t)info.info.width;
+	std::uint32_t rows = (std::uint32_t)(info.info.height < 0 ? -info.info.height : info.info.height);
+	std::uint32_t nums = columns * rows;
 
 	std::size_t length = (std::size_t)(nums * info.info.bpp / 8);
 
-	std::vector<pass_val> buffers(length);
-	image_buf buf = (image_buf)buffers.data();
+	std::vector<std::uint8_t> buffers(length);
+	std::uint8_t* buf = (std::uint8_t*)buffers.data();
 
 	if (!stream.read((char*)buf, (std::streamsize)length))
-		return false;
-
-	if (!image.create(columns, rows, (bpp_type)info.info.bpp))
 		return false;
 
 	image.setImageType(ImageType::ImageTypeBMP);
 
 	if (info.info.bpp == BMP_32BPP)
-	{
-		RGBA* rgba = (RGBA*)image.data();
-
-		for (size_type i = 0; i < nums; i++)
-		{
-			rgba->b = *buf++;
-			rgba->g = *buf++;
-			rgba->r = *buf++;
-			rgba->a = *buf++;
-			rgba++;
-		}
-	}
+		image.setImageFormat(ImageFormat::ImageFormatB8G8R8A8);
 	else if (info.info.bpp == BMP_24BPP)
-	{
-		RGB* rgb = (RGB*)image.data();
+		image.setImageFormat(ImageFormat::ImageFormatB8G8R8);
+	else
+		image.setImageFormat(ImageFormat::ImageFormatR8G8B8);
 
-		for (size_type i = 0; i < nums; i++)
+	if (!image.create(columns, rows, (std::uint16_t)info.info.bpp))
+		return false;
+
+	if (info.info.bpp == BMP_32BPP || info.info.bpp == BMP_24BPP)
+	{
+		std::uint8_t* rgb = (std::uint8_t*)image.data();
+		std::size_t columnsLength = columns * info.info.bpp / 8;
+
+		for (std::size_t i = 0; i < rows; i++)
 		{
-			rgb->b = *buf++;
-			rgb->g = *buf++;
-			rgb->r = *buf++;
-			rgb++;
-		}
+			std::memcpy(rgb + ((rows - i - 1) * columnsLength), buf + (i * columnsLength), columnsLength);
+		}			
 	}
 	else if (info.info.bpp == BMP_16BPP)
 	{
-		image_buf data = image.data();
+		std::uint8_t* data = image.data();
 		switch (info.info.comp)
 		{
 		case BI_RGB:
 		{
 			std::size_t pos = 0;
-			for (size_type i = 0; i < nums; i++)
+			for (std::uint32_t i = 0; i < nums; i++)
 			{
 				WORD word = *buf;
 
 				buf += sizeof(WORD);
 
-				data[pos++] = (pass_val)(((word & BI_RGB5_MASK_R) >> BI_RGB5_SHIFT_R) << BI_RGB5_BIT_R);
-				data[pos++] = (pass_val)(((word & BI_RGB5_MASK_G) >> BI_RGB5_SHIFT_G) << BI_RGB5_BIT_G);
-				data[pos++] = (pass_val)(((word & BI_RGB5_MASK_B) >> BI_RGB5_SHIFT_B) << BI_RGB5_BIT_B);
+				data[pos++] = (std::uint8_t)(((word & BI_RGB5_MASK_R) >> BI_RGB5_SHIFT_R) << BI_RGB5_BIT_R);
+				data[pos++] = (std::uint8_t)(((word & BI_RGB5_MASK_G) >> BI_RGB5_SHIFT_G) << BI_RGB5_BIT_G);
+				data[pos++] = (std::uint8_t)(((word & BI_RGB5_MASK_B) >> BI_RGB5_SHIFT_B) << BI_RGB5_BIT_B);
 			}
 		}
 		break;
@@ -211,14 +304,14 @@ BMPHandler::loadDIB(Image& image, StreamReader& stream, const BITMAPINFO& info)
 			}
 
 			std::size_t pos = 0;
-			for (size_type i = 0; i < nums; i++)
+			for (std::uint32_t i = 0; i < nums; i++)
 			{
 				WORD word;
 				stream.read((char*)&word, sizeof(word));
 
-				data[pos++] = (pass_val)(((word & mask.r) >> shift.r) << (8 - bits.r));
-				data[pos++] = (pass_val)(((word & mask.g) >> shift.g) << (8 - bits.g));
-				data[pos++] = (pass_val)(((word & mask.b) >> shift.b) << (8 - bits.b));
+				data[pos++] = (std::uint8_t)(((word & mask.r) >> shift.r) << (8 - bits.r));
+				data[pos++] = (std::uint8_t)(((word & mask.g) >> shift.g) << (8 - bits.g));
+				data[pos++] = (std::uint8_t)(((word & mask.b) >> shift.b) << (8 - bits.b));
 			}
 		}
 		break;
@@ -234,12 +327,12 @@ BMPHandler::loadDIB(Image& image, StreamReader& stream, const BITMAPINFO& info)
 			if (colors == 0)
 				colors = (DWORD)1 << info.info.bpp;
 
-			//std::shared_ptr<BMPPalette[]> cmap = std::make_shared<BMPPalette[]>(colors);
-
 			for (std::size_t i = 0; i < colors; i++)
 			{
 			}
 		}
+
+		return false;
 	}
 
 	return true;

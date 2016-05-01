@@ -51,13 +51,13 @@ Image::Image(StreamReader& stream, ImageType type) noexcept
 	this->load(stream, type);
 }
 
-Image::Image(size_type width, size_type height, bpp_type bpp, bool clear) noexcept
+Image::Image(std::uint32_t width, std::uint32_t height, std::uint16_t bpp, bool clear) noexcept
 {
 	this->_init();
 	this->create(width, height, bpp, clear);
 }
 
-Image::Image(size_type width, size_type height, bpp_type bpp, std::size_t dataSize, image_buf data, bool staticData, bool clear) noexcept
+Image::Image(std::uint32_t width, std::uint32_t height, std::uint16_t bpp, std::size_t dataSize, std::uint8_t* data, bool staticData, bool clear) noexcept
 {
 	this->_init();
 	this->create(width, height, bpp, dataSize, data, staticData, clear);
@@ -69,7 +69,7 @@ Image::~Image() noexcept
 }
 
 bool
-Image::create(size_type width, size_type height, bpp_type bpp, bool clear) noexcept
+Image::create(std::uint32_t width, std::uint32_t height, std::uint16_t bpp, bool clear) noexcept
 {
 	std::size_t destLength = (width * height * bpp) >> 3;
 
@@ -81,7 +81,7 @@ Image::create(size_type width, size_type height, bpp_type bpp, bool clear) noexc
 	_bpp = bpp;
 	_size = destLength;
 	_isStatic = false;
-	_data = new pass_val[destLength];
+	_data = new std::uint8_t[destLength];
 
 	this->setImageType(ImageType::ImageTypeUnknown);
 
@@ -91,13 +91,13 @@ Image::create(size_type width, size_type height, bpp_type bpp, bool clear) noexc
 }
 
 bool
-Image::create(size_type width, size_type height, bpp_type bpp, std::size_t dataSize, image_buf data, bool staticData, bool clear) noexcept
+Image::create(std::uint32_t width, std::uint32_t height, std::uint16_t bpp, std::size_t dataSize, std::uint8_t* data, bool staticData, bool clear) noexcept
 {
 	return this->create(width, height, 0, bpp, dataSize, data, staticData, clear);
 }
 
 bool
-Image::create(size_type width, size_type height, size_type depth, bpp_type bpp, std::size_t dataSize, image_buf data, bool staticData, bool clear) noexcept
+Image::create(std::uint32_t width, std::uint32_t height, std::uint32_t depth, std::uint16_t bpp, std::size_t dataSize, std::uint8_t* data, bool staticData, bool clear) noexcept
 {
 	assert(data);
 
@@ -116,6 +116,26 @@ Image::create(size_type width, size_type height, size_type depth, bpp_type bpp, 
 	return true;
 }
 
+bool 
+Image::create(std::uint32_t width, std::uint32_t height, ImageType type, ImageFormat format, bool clear) noexcept
+{
+	std::uint16_t bpp = 0;
+	if (format == ImageFormat::ImageFormatR8)
+		bpp = 8;
+	else if (format == ImageFormat::ImageFormatR8G8)
+		bpp = 16;
+	else if (format == ImageFormat::ImageFormatR8G8B8 || format == ImageFormat::ImageFormatB8G8R8)
+		bpp = 24;
+	else if (format == ImageFormat::ImageFormatR8G8B8A8 || format == ImageFormat::ImageFormatB8G8R8A8)
+		bpp = 32;
+	else
+		return false;
+
+	this->setImageType(type);
+
+	return this->create(width, height, bpp, clear);
+}
+
 bool
 Image::create(const Image& copy) noexcept
 {
@@ -125,6 +145,16 @@ Image::create(const Image& copy) noexcept
 void
 Image::_init() noexcept
 {
+	_isStatic = false;
+
+	_width = 0;
+	_height = 0;
+	_depth = 0;
+
+	_bpp = 0;
+
+	_size = 0;
+
 	_imageFormat = ImageFormat::ImageFormatUnknow;
 	_imageType = ImageType::ImageTypeUnknown;
 	_data = nullptr;
@@ -177,14 +207,14 @@ Image::getMipLevel() const noexcept
 	return _mipLevel;
 }
 
-Image::delay_type
+std::uint32_t
 Image::getFrameDelay() const noexcept
 {
 	return 0;
 }
 
 void
-Image::setFrameDelay(delay_type /*delay*/) const noexcept
+Image::setFrameDelay(std::uint32_t /*delay*/) const noexcept
 {
 }
 
@@ -326,43 +356,43 @@ Image::find(StreamReader& stream, ImageType type, ImageHandlerPtr& out) const no
 }
 
 void
-Image::cmyk_to_rgb(image_buf rgb, const image_buf cmyk) noexcept
+Image::cmyk_to_rgb(std::uint8_t* rgb, const std::uint8_t* cmyk) noexcept
 {
 	int k = 255 - cmyk[3];
 	int k2 = cmyk[3];
 	int c;
 
 	c = k + k2 * (255 - cmyk[0]) / 255;
-	rgb[0] = (pass_val)((c > 255) ? 0 : (255 - c));
+	rgb[0] = (std::uint8_t)((c > 255) ? 0 : (255 - c));
 
 	c = k + k2 * (255 - cmyk[1]) / 255;
-	rgb[1] = (pass_val)((c > 255) ? 0 : (255 - c));
+	rgb[1] = (std::uint8_t)((c > 255) ? 0 : (255 - c));
 
 	c = k + k2 * (255 - cmyk[2]) / 255;
-	rgb[2] = (pass_val)((c > 255) ? 0 : (255 - c));
+	rgb[2] = (std::uint8_t)((c > 255) ? 0 : (255 - c));
 }
 
 void
-Image::cmyk_to_rgba(image_buf rgba, const image_buf cmyk) noexcept
+Image::cmyk_to_rgba(std::uint8_t* rgba, const std::uint8_t* cmyk) noexcept
 {
 	int k = 255 - cmyk[3];
 	int k2 = cmyk[3];
 	int c;
 
 	c = k + k2 * (255 - cmyk[0]) / 255;
-	rgba[0] = (pass_val)((c > 255) ? 0 : (255 - c));
+	rgba[0] = (std::uint8_t)((c > 255) ? 0 : (255 - c));
 
 	c = k + k2 * (255 - cmyk[1]) / 255;
-	rgba[1] = (pass_val)((c > 255) ? 0 : (255 - c));
+	rgba[1] = (std::uint8_t)((c > 255) ? 0 : (255 - c));
 
 	c = k + k2 * (255 - cmyk[2]) / 255;
-	rgba[2] = (pass_val)((c > 255) ? 0 : (255 - c));
+	rgba[2] = (std::uint8_t)((c > 255) ? 0 : (255 - c));
 
 	rgba[3] = 255;
 }
 
 void
-Image::cmyk_to_rgb(RGB* texel, const image_buf cmyk) noexcept
+Image::cmyk_to_rgb(RGB* texel, const std::uint8_t* cmyk) noexcept
 {
 	int k = 255 - cmyk[3];
 	int k2 = cmyk[3];
@@ -379,7 +409,7 @@ Image::cmyk_to_rgb(RGB* texel, const image_buf cmyk) noexcept
 }
 
 void
-Image::cmyk_to_rgba(RGBA* texel, const image_buf cmyk) noexcept
+Image::cmyk_to_rgba(RGBA* texel, const std::uint8_t* cmyk) noexcept
 {
 	int k = 255 - cmyk[3];
 	int k2 = cmyk[3];

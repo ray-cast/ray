@@ -43,6 +43,9 @@
 #include <ray/graphics_texture.h>
 #include <ray/graphics_device.h>
 
+#include <ray/image.h>
+#include <ray/ioserver.h>
+
 _NAME_BEGIN
 
 MaterialManager::MaterialManager() noexcept
@@ -164,14 +167,99 @@ MaterialManager::getSampler(const std::string& name) noexcept
 }
 
 GraphicsTexturePtr
-MaterialManager::createTexture(const std::string& name, GraphicsTextureDesc& textureDesc) noexcept
+MaterialManager::createTexture(const std::string& name, GraphicsTextureDim dim, GraphicsSamplerFilter filter) noexcept
 {
 	if (name.empty())
 		return nullptr;
 
 	auto texture = _textures[name];
 	if (texture)
+		return texture;
+
+	StreamReaderPtr stream;
+	if (!IoServer::instance()->openFile(stream, name))
 		return nullptr;
+
+	Image image;
+	if (!image.load(*stream))
+		return nullptr;
+
+	ImageType type = image.getImageType();
+	GraphicsFormat format = GraphicsFormat::GraphicsFormatUndefined;
+
+	if (type == ImageType::ImageTypeBC1RGBU)
+		format = GraphicsFormat::GraphicsFormatBC1RGBUNormBlock;
+	else if (type == ImageType::ImageTypeBC1RGBAU)
+		format = GraphicsFormat::GraphicsFormatBC1RGBAUNormBlock;
+	else if (type == ImageType::ImageTypeBC1RGBSRGB)
+		format = GraphicsFormat::GraphicsFormatBC1RGBSRGBBlock;
+	else if (type == ImageType::ImageTypeBC1RGBASRGB)
+		format = GraphicsFormat::GraphicsFormatBC1RGBASRGBBlock;
+	else if (type == ImageType::ImageTypeBC3U)
+		format = GraphicsFormat::GraphicsFormatBC3UNormBlock;
+	else if (type == ImageType::ImageTypeBC3SRGB)
+		format = GraphicsFormat::GraphicsFormatBC3SRGBBlock;
+	else if (type == ImageType::ImageTypeBC4U)
+		format = GraphicsFormat::GraphicsFormatBC4UNormBlock;
+	else if (type == ImageType::ImageTypeBC4S)
+		format = GraphicsFormat::GraphicsFormatBC4SNormBlock;
+	else if (type == ImageType::ImageTypeBC5U)
+		format = GraphicsFormat::GraphicsFormatBC3UNormBlock;
+	else if (type == ImageType::ImageTypeBC5S)
+		format = GraphicsFormat::GraphicsFormatBC5SNormBlock;
+	else if (type == ImageType::ImageTypeBC6HUFloat)
+		format = GraphicsFormat::GraphicsFormatBC6HUFloatBlock;
+	else if (type == ImageType::ImageTypeBC6HSFloat)
+		format = GraphicsFormat::GraphicsFormatBC6HSFloatBlock;
+	else if (type == ImageType::ImageTypeBC7U)
+		format = GraphicsFormat::GraphicsFormatBC7UNormBlock;
+	else if (type == ImageType::ImageTypeBC7SRGB)
+		format = GraphicsFormat::GraphicsFormatBC7SRGBBlock;
+	else
+	{
+		auto imageFormat = image.getImageFormat();
+		if (imageFormat != ImageFormat::ImageFormatUnknow)
+		{
+			if (imageFormat == ImageFormat::ImageFormatR8G8B8)
+				format = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
+			else if (imageFormat == ImageFormat::ImageFormatR8G8B8A8)
+				format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
+			else if (imageFormat == ImageFormat::ImageFormatB8G8R8)
+				format = GraphicsFormat::GraphicsFormatB8G8R8UNorm;
+			else if (imageFormat == ImageFormat::ImageFormatB8G8R8A8)
+				format = GraphicsFormat::GraphicsFormatB8G8R8A8UNorm;
+			else if (imageFormat == ImageFormat::ImageFormatR8)
+				format = GraphicsFormat::GraphicsFormatR8UNorm;
+			else if (imageFormat == ImageFormat::ImageFormatR8G8)
+				format = GraphicsFormat::GraphicsFormatR8G8UNorm;
+			else
+			{
+				assert(false);
+				return nullptr;
+			}
+		}
+		else
+		{
+			if (image.bpp() == 24)
+				format = GraphicsFormat::GraphicsFormatR8G8B8UNorm;
+			else if (image.bpp() == 32)
+				format = GraphicsFormat::GraphicsFormatR8G8B8A8UNorm;
+			else
+			{
+				assert(false);
+				return nullptr;
+			}
+		}
+	}
+
+	GraphicsTextureDesc textureDesc;
+	textureDesc.setSize(image.width(), image.height(), image.depth());
+	textureDesc.setTexDim(dim);
+	textureDesc.setTexFormat(format);
+	textureDesc.setStream(image.data());
+	textureDesc.setStreamSize(image.size());
+	textureDesc.setMipLevel(std::max(image.getMipLevel(), (std::uint8_t)1));
+	textureDesc.setSamplerFilter(filter);
 
 	texture = _graphicsDevice->createTexture(textureDesc);
 	if (!texture)
@@ -278,7 +366,11 @@ MaterialManager::createMaterial(const std::string& name) noexcept
 	if (!material)
 	{
 		MaterialMaker materialLoader;
-		_materials[name] = materialLoader.load(*this, name);
+		auto material = std::make_shared<Material>();
+		if (!materialLoader.load(*this, *material, name))
+			return nullptr;
+		
+		_materials[name] = material;
 	}
 
 	return material;

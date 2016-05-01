@@ -24,7 +24,7 @@
             in float4 Diffuse : TEXCOORD0,
             in float2 Coord   : TEXCOORD1) : SV_Target
         {
-            return decal.Sample(samLinear, Coord) * Diffuse;
+            return decal.Sample(LinearClamp, Coord) * Diffuse;
         }
         ]]>
     </shader>

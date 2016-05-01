@@ -36,7 +36,6 @@
 // +----------------------------------------------------------------------
 #include "imagjpeg.h"
 
-#include <iostream>
 #include <setjmp.h>
 #include <jpeglib.h>
 
@@ -158,17 +157,13 @@ JPEGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	jerrmgr.output_message = jpeg_output_message;
 
 	if (::setjmp(jerrmgr.setjmp_buffer))
-	{
 		return false;
-	}
 
 	::jpeg_create_decompress(&cinfo);
 
 	// allocate memory for the buffer
 	if (cinfo.src == nullptr)
-	{
 		cinfo.src = (jpeg_source_mgr *)(cinfo.mem->alloc_small)((j_common_ptr)&cinfo, JPOOL_PERMANENT, sizeof(jpeg_source_manager));
-	}
 
 	/* forces fill_input_buffer on first read */
 	jpeg_source_manager* src = (jpeg_source_manager*)cinfo.src;
@@ -189,9 +184,10 @@ JPEGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 	// read jpeg handle parameters*/
 	::jpeg_read_header(&cinfo, TRUE);
 
-	if (image.create(cinfo.image_width, cinfo.image_height, (bpp_type)(cinfo.num_components << 3)))
+	if (image.create(cinfo.image_width, cinfo.image_height, (std::uint16_t)(cinfo.num_components << 3)))
 	{
 		image.setImageType(ImageType::ImageTypeJPEG);
+		image.setImageFormat(ImageFormat::ImageFormatR8G8B8);
 
 		RGB* data = (RGB*)image.data();
 		JDIMENSION stride = cinfo.image_width * cinfo.num_components;
@@ -212,7 +208,7 @@ JPEGHandler::doLoad(Image& image, StreamReader& stream) noexcept
 			break;
 			case JCS_CMYK:
 			{
-				image_buf inptr = (image_buf)row_pointer[0];
+				std::uint8_t* inptr = (std::uint8_t*)row_pointer[0];
 				for (size_t i = 0; i < cinfo.output_width; i++)
 				{
 					Image::cmyk_to_rgb(data, inptr);

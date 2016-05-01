@@ -89,24 +89,10 @@ public:
 	void setCameraRenderFlags(CameraRenderFlags flags) noexcept;
 	CameraRenderFlags getCameraRenderFlags() const noexcept;
 
-	void setSkyLightMap(const std::string& texture) noexcept;
-	const std::string& getSkyLightMap() const noexcept;
-
-	void setSkyLightDiffuse(const std::string& diffuse) noexcept;
-	const std::string& getSkyLightDiffuse() const noexcept;
-
-	void setSkyLightSpecular(const std::string& specular) noexcept;
-	const std::string& getSkyLightSpecular() const noexcept;
-
 	void load(iarchive& reader) noexcept;
 	void save(oarchive& write) noexcept;
 
 	virtual GameComponentPtr clone() const noexcept;
-
-private:
-	bool _loadSkybox(const std::string& texture) noexcept;
-	bool _loadSkyDiffuse(const std::string& texture) noexcept;
-	bool _loadSkySpecular(const std::string& texture) noexcept;
 
 private:
 	virtual void onActivate() noexcept;
@@ -120,10 +106,6 @@ private:
 
 private:
 	CameraPtr _camera;
-
-	std::string _skyMap;
-	std::string _skyDiffuse;
-	std::string _skySpecular;
 };
 
 _NAME_END

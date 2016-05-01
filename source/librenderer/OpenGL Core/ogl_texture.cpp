@@ -41,8 +41,12 @@ _NAME_BEGIN
 __ImplementSubClass(OGLTexture, GraphicsTexture, "OGLTexture")
 
 OGLTexture::OGLTexture() noexcept
-	: _texture(GL_NONE)
-	, _target(GL_INVALID_ENUM)
+	: _target(GL_INVALID_ENUM)
+	, _pbo(GL_NONE)
+	, _pboSize(0)
+	, _upbo(GL_NONE)
+	, _upboSize(0)
+	, _texture(GL_NONE)
 {
 }
 
@@ -194,6 +198,62 @@ OGLTexture::close() noexcept
 		glDeleteTextures(1, &_texture);
 		_texture = GL_NONE;
 	}
+
+	if (_pbo != GL_NONE)
+	{
+		glDeleteBuffers(1, &_pbo);
+		_pbo = GL_NONE;
+	}
+
+	if (_upbo != GL_NONE)
+	{
+		glDeleteBuffers(1, &_upbo);
+		_upbo = GL_NONE;
+	}
+}
+
+bool 
+OGLTexture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, GraphicsFormat pixelFormat, void** data) noexcept
+{
+	assert(data);
+
+	GLenum format = OGLTypes::asTextureFormat(pixelFormat);
+	if (format == GL_INVALID_ENUM)
+		return false;
+
+	GLenum type = OGLTypes::asTextureType(pixelFormat);
+	if (type == GL_INVALID_ENUM)
+		return false;
+
+	GLsizei num = OGLTypes::getFormatNum(format);
+	if (num == 0)
+		return false;
+
+	if (_pbo == GL_NONE)
+		glGenBuffers(1, &_pbo);
+
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, _pbo);
+
+	if (_pboSize < w * h * num)
+	{
+		glBufferData(GL_PIXEL_PACK_BUFFER, w * h * num, nullptr, GL_STREAM_READ);
+		_pboSize = w * h * num;
+	}
+
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, _pbo);
+	glBindTexture(_target, _texture);
+	glReadPixels(x, y, w, h, format, type, 0);
+
+	*data = glMapBufferARB(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+
+	return *data ? true : false;
+}
+
+void 
+OGLTexture::unmap() noexcept
+{
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, _pbo);
+	glUnmapBufferARB(GL_PIXEL_PACK_BUFFER);
 }
 
 GLenum

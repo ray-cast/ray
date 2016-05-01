@@ -35,11 +35,10 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/input_device.h>
-#if defined(ToplevelInputDevice)
 
 _NAME_BEGIN
 
-__ImplementSubClass(DefaultInputDevice, ToplevelInputDevice, "DefaultInputDevice")
+__ImplementSubInterface(DefaultInputDevice, InputDevice, "DefaultInputDevice")
 
 DefaultInputDevice::DefaultInputDevice() noexcept
 	: _enableEventPosting(true)
@@ -95,14 +94,22 @@ DefaultInputDevice::clearInputListener() noexcept
 	_inputListeners.clear();
 }
 
-void
+bool
 DefaultInputDevice::sendEvent(const InputEvent& event) noexcept
 {
-	for (auto& it : _inputListeners)
-		it->onInputEvent(event);
+	try
+	{
+		for (auto& it : _inputListeners)
+			it->onInputEvent(event);
+		return true;
+	}
+	catch (...)
+	{
+		return false;
+	}
 }
 
-void
+bool
 DefaultInputDevice::postEvent(const InputEvent& event) noexcept
 {
 	if (_enableEventPosting)
@@ -113,20 +120,19 @@ DefaultInputDevice::postEvent(const InputEvent& event) noexcept
 
 		_dispose.notify_one();
 	}
+
+	return true;
 }
 
 bool
 DefaultInputDevice::peekEvents(InputEvent& event) noexcept
 {
-	ToplevelInputDevice::peekEvents(event);
 	return true;
 }
 
 bool
 DefaultInputDevice::pollEvents(InputEvent& event) noexcept
 {
-	ToplevelInputDevice::pollEvents(event);
-
 	std::unique_lock<std::mutex> lock(_mutex);
 	if (lock)
 	{
@@ -144,8 +150,6 @@ DefaultInputDevice::pollEvents(InputEvent& event) noexcept
 bool
 DefaultInputDevice::waitEvents(InputEvent& event) noexcept
 {
-	ToplevelInputDevice::waitEvents(event);
-
 	std::unique_lock<std::mutex> lock(_mutex);
 	if (_events.empty())
 	{
@@ -158,8 +162,6 @@ DefaultInputDevice::waitEvents(InputEvent& event) noexcept
 bool
 DefaultInputDevice::waitEvents(InputEvent& event, int timeout) noexcept
 {
-	ToplevelInputDevice::waitEvents(event, timeout);
-
 	std::unique_lock<std::mutex> lock(_mutex);
 	if (_events.empty())
 	{
@@ -172,19 +174,9 @@ DefaultInputDevice::waitEvents(InputEvent& event, int timeout) noexcept
 void
 DefaultInputDevice::flushEvent() noexcept
 {
-	ToplevelInputDevice::flushEvent();
-
 	_mutex.lock();
 	_events = std::queue<InputEvent>();
 	_mutex.unlock();
 }
 
-InputDevicePtr
-DefaultInputDevice::clone() const noexcept
-{
-	return std::make_shared<DefaultInputDevice>();
-}
-
 _NAME_END
-
-#endif

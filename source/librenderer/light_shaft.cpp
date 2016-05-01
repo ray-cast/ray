@@ -106,7 +106,7 @@ LightShaft::onRender(RenderPipeline& pipeline, GraphicsFramebufferPtr source, Gr
 	auto texture = source->getGraphicsFramebufferDesc().getTextures().front();
 
 	pipeline.setFramebuffer(_sampleView);
-	pipeline.clearFramebuffer(GraphicsClearFlags::GraphicsClearFlagsAll, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsAll, float4::Zero, 1.0, 0);
 
 	std::uint32_t width, height;
 	pipeline.getWindowResolution(width, height);

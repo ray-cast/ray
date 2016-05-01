@@ -1,0 +1,6 @@
+<?xml version='1.0'?>
+<effect language="hlsl">
+    <macro name="SKINNING" value="0" type="int"/>
+    <macro name="NUM_JOINT" value="64" type="int"/>
+    <include name="sys:fx/opacity.fxml"/>
+</effect>

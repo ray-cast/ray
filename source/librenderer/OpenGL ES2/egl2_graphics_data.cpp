@@ -43,7 +43,6 @@ __ImplementSubInterface(EGL2GraphicsData, GraphicsData, "EGL2GraphicsData")
 EGL2GraphicsData::EGL2GraphicsData() noexcept
 	: _buffer(GL_NONE)
 	, _isMapping(GL_FALSE)
-	, _data(nullptr)
 {
 }
 
@@ -58,7 +57,6 @@ EGL2GraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 	assert(!_buffer);
 	assert(desc.getStride() > 0);
 
-	_data = nullptr;
 	_dataOffset = 0;
 	_dataSize = desc.getStreamSize();
 	_usage = desc.getUsage();
@@ -162,7 +160,8 @@ EGL2GraphicsData::read(char* str, GLsizeiptr cnt) noexcept
 			return 0;
 	}
 
-	void* data = this->map(_dataOffset, cnt, GraphicsAccessFlagsBits::GraphicsAccessFlagsMapReadBit);
+	void* data;
+	this->map(_dataOffset, cnt, &data);
 	if (data)
 	{
 		std::memcpy(str, data, cnt);
@@ -183,7 +182,8 @@ EGL2GraphicsData::write(const char* str, GLsizeiptr cnt) noexcept
 			return 0;
 	}
 
-	void* data = this->map(_dataOffset, cnt, GraphicsAccessFlagsBits::GraphicsAccessFlagsMapWriteBit);
+	void* data;
+	this->map(_dataOffset, cnt, &data);
 	if (data)
 	{
 		std::memcpy(data, str, cnt);
@@ -196,40 +196,20 @@ EGL2GraphicsData::write(const char* str, GLsizeiptr cnt) noexcept
 	return 0;
 }
 
-void*
-EGL2GraphicsData::map(std::uint32_t access) noexcept
-{
-	return this->map(0, _dataSize, access);
-}
-
-void*
-EGL2GraphicsData::map(GLintptr offset, GLsizeiptr cnt, std::uint32_t access) noexcept
+bool
+EGL2GraphicsData::map(std::uint32_t offset, std::uint32_t count, void** data) noexcept
 {
 #ifndef __AMD__
-	if (!_data)
+	if (!_isMapping)
 	{
-		GLbitfield flags = GL_MAP_READ_BIT_EXT;
-		if (access & GraphicsAccessFlagsBits::GraphicsAccessFlagsMapReadBit)
-			flags |= GL_MAP_READ_BIT_EXT;
-		if (access & GraphicsAccessFlagsBits::GraphicsAccessFlagsMapWriteBit)
-			flags |= GL_MAP_WRITE_BIT_EXT;
-		if (access & GraphicsAccessFlagsBits::GraphicsAccessFlagsUnsynchronizedBit)
-			flags |= GL_MAP_UNSYNCHRONIZED_BIT_EXT;
-		if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsFlushExplicitBit)
-			flags |= GL_MAP_FLUSH_EXPLICIT_BIT_EXT;
-
 		GL_CHECK(glBindBuffer(_target, _buffer));
-		_data = glMapBufferRangeEXT(_target, offset, cnt, flags);
-		GL_CHECK(_data);
-	}
-
-	if (_data)
-	{
+		*data = glMapBufferRangeEXT(_target, offset, count, GL_MAP_READ_BIT_EXT | GL_MAP_WRITE_BIT_EXT);
+		GL_CHECK(data);
 		_isMapping = GL_TRUE;
-		return _data;
+		return true;
 	}
 
-	return _data;
+	return false;
 #else
 	return nullptr;
 #endif
@@ -249,7 +229,6 @@ EGL2GraphicsData::unmap() noexcept
 
 	GL_CHECK(glBindBuffer(_target, _buffer));
 	GL_CHECK(glUnmapBufferOES(_target));
-	_data = nullptr;
 	_isMapping = GL_FALSE;
 #endif
 }

@@ -207,7 +207,6 @@ AnimationProperty::setBoneArray(const Bones& bones) noexcept
 {
 	if (bones.empty())
 	{
-		_bones.clear();
 		_bindAnimation.clear();
 		return;
 	}
@@ -237,14 +236,6 @@ AnimationProperty::setBoneArray(const Bones& bones) noexcept
 			_bindAnimation[bone - 1].push_back(i);
 		}
 	}
-
-	_bones = bones;
-}
-
-const Bones&
-AnimationProperty::getBoneArray() const noexcept
-{
-	return _bones;
 }
 
 void
@@ -271,16 +262,16 @@ AnimationProperty::clone() noexcept
 }
 
 void
-AnimationProperty::update() noexcept
+AnimationProperty::updateBone(Bones& bones) noexcept
 {
-	this->updateBoneMotion();
-	this->updateBoneMatrix();
-	this->updateIK();
+	this->updateBoneMotion(bones);
+	this->updateBoneMatrix(bones);
+	this->updateIK(bones);
 	_frame++;
 }
 
 void
-AnimationProperty::updateBoneMotion() noexcept
+AnimationProperty::updateBoneMotion(Bones& _bones) noexcept
 {
 	for (std::size_t i = 0; i < _bones.size(); i++)
 	{
@@ -295,13 +286,13 @@ AnimationProperty::updateBoneMotion() noexcept
 			{
 				auto& parent = _bones[bone.getParent()];
 				auto position = (bone.getPosition() - parent.getPosition());
-				Matrix4x4 m;
+				float4x4 m;
 				m.makeTranslate(position);
 				bone.setLocalTransform(m);
 			}
 			else
 			{
-				Matrix4x4 m;
+				float4x4 m;
 				m.makeTranslate(bone.getPosition());
 				bone.setLocalTransform(m);
 			}
@@ -314,28 +305,18 @@ AnimationProperty::updateBoneMotion() noexcept
 
 			if (bone.getParent() == (-1))
 			{
-				Matrix4x4 m;
-				m.makeRotate(rotate);
-				m.setTranslate(bone.getPosition() + position);
-
-				bone.setRotation(rotate);
-				bone.setLocalTransform(m);
+				bone.updateTransform(bone.getPosition() + position, rotate);
 			}
 			else
 			{
-				Matrix4x4 m;
-				m.makeRotate(rotate);
-				m.setTranslate(bone.getPosition() + position - _bones[bone.getParent()].getPosition());
-
-				bone.setRotation(rotate);
-				bone.setLocalTransform(m);
+				bone.updateTransform(bone.getPosition() + position - _bones[bone.getParent()].getPosition(), rotate);
 			}
 		}
 	}
 }
 
 void
-AnimationProperty::updateBoneMatrix() noexcept
+AnimationProperty::updateBoneMatrix(Bones& _bones) noexcept
 {
 	std::vector<std::int16_t> bones;
 
@@ -352,7 +333,7 @@ AnimationProperty::updateBoneMatrix() noexcept
 			if ((std::size_t)parent > size)
 				_bones[i].setTransform(_bones[i].getLocalTransform());
 			else
-				_bones[i].setTransform(_bones[i].getLocalTransform() * _bones[parent].getTransform());
+				_bones[i].setTransform(math::transformMultiply(_bones[i].getLocalTransform(), _bones[parent].getTransform()));
 		}
 	}
 
@@ -362,18 +343,38 @@ AnimationProperty::updateBoneMatrix() noexcept
 		if (parent > size)
 			_bones[i].setTransform(_bones[i].getLocalTransform());
 		else
-			_bones[i].setTransform(_bones[i].getLocalTransform() * _bones[parent].getTransform());
+			_bones[i].setTransform(math::transformMultiply(_bones[i].getLocalTransform(), _bones[parent].getTransform()));
 	}
 }
 
 void
-AnimationProperty::updateBoneMatrix(Bone& bone) noexcept
+AnimationProperty::updateBoneChild(Bones& _bones, Bone& bone) noexcept
 {
 	if (bone.getParent() != (-1))
 	{
-		auto parent = _bones.at(bone.getParent());
-		updateBoneMatrix(parent);
-		bone.setTransform(bone.getLocalTransform() * parent.getTransform());
+		auto& parent = _bones.at(bone.getParent());
+		bone.setTransform(math::transformMultiply(bone.getLocalTransform(), parent.getTransform()));
+	}
+	else
+	{
+		bone.setTransform(bone.getLocalTransform());
+	}
+
+	if (bone.getChild() != 0)
+	{
+		auto& child = _bones.at(bone.getChild());
+		updateBoneMatrix(_bones, child);
+	}
+}
+
+void
+AnimationProperty::updateBoneMatrix(Bones& _bones, Bone& bone) noexcept
+{
+	if (bone.getParent() != (-1))
+	{
+		auto& parent = _bones.at(bone.getParent());
+		updateBoneMatrix(_bones, parent);
+		bone.setTransform(math::transformMultiply(bone.getLocalTransform(), parent.getTransform()));
 	}
 	else
 	{
@@ -381,75 +382,59 @@ AnimationProperty::updateBoneMatrix(Bone& bone) noexcept
 	}
 }
 
-void
-AnimationProperty::getCurrentBoneMatrix(Matrix4x4& mat, Bone& bone) noexcept
+void 
+AnimationProperty::updateBonePose(Bones& _bones) noexcept
 {
-	mat = bone.getTransform();
-}
-
-void
-AnimationProperty::getCurrentBonePosition(Vector3& v, Bone& bone) noexcept
-{
-	v = bone.getTransform().getTranslate();
-}
-
-void
-AnimationProperty::updateIK() noexcept
-{
-	if (!_iks.empty())
+	for (auto& bone : _bones)
 	{
-		for (auto& ik : _iks)
-			this->updateIK(ik);
-
-		this->updateBoneMatrix();
+		float4x4 invbindpose;
+		invbindpose.makeTranslate(-bone.getPosition());
+		bone.setLocalTransform(math::transformMultiply(invbindpose, bone.getTransform()));
 	}
 }
 
 void
-AnimationProperty::updateIK(const IKAttr& ik) noexcept
+AnimationProperty::updateIK(Bones& _bones) noexcept
+{
+	for (auto& ik : _iks)
+		this->updateIK(_bones, ik);
+}
+
+void
+AnimationProperty::updateIK(Bones& _bones, const IKAttr& ik) noexcept
 {
 	auto& effector = _bones.at(ik.IKBoneIndex);
 	auto& target = _bones.at(ik.IKTargetBoneIndex);
 
-	Vector3 effectorPos;
-	getCurrentBonePosition(effectorPos, effector);
+	const Vector3& targetPos = target.getTransform().getTranslate();
+	const Vector3& effectPos = effector.getTransform().getTranslate();
 
 	for (std::uint32_t i = 0; i < ik.IKLoopCount; i++)
 	{
-		for (std::uint32_t nodeIndex = 0; nodeIndex < ik.IKLinkCount; nodeIndex++)
+		for (std::uint32_t j = 0; j < ik.IKLinkCount; j++)
 		{
-			auto& bone = _bones[ik.IKList[nodeIndex].BoneIndex];
+			auto& bone = _bones[ik.IKList[j].BoneIndex];
 
-			Vector3 targetPos;
-			getCurrentBonePosition(targetPos, target);
+			Vector3 dstLocal = math::invTranslateVector3(bone.getTransform(), targetPos);
+			Vector3 srcLocal = math::invTranslateVector3(bone.getTransform(), effectPos);
 
-			Matrix4x4 worldInverse;
-			getCurrentBoneMatrix(worldInverse, bone);
-			worldInverse = math::inverse(worldInverse);
+			srcLocal = math::normalize(srcLocal);
+			dstLocal = math::normalize(dstLocal);
 
-			Vector3 basis2Effector = effectorPos * worldInverse;
-			Vector3 basis2Target = targetPos * worldInverse;
-
-			basis2Effector = math::normalize(basis2Effector);
-			basis2Target = math::normalize(basis2Target);
-
-			float rotationDotProduct = math::saturate(math::dot(basis2Effector, basis2Target));
+			float rotationDotProduct = math::dot(srcLocal, dstLocal);
 			float rotationAngle = std::acos(rotationDotProduct);
-			rotationAngle *= ik.IKWeight;
+			rotationAngle = std::min(rotationAngle, ik.IKAngleLimit);
 
-			Vector3 rotationAxis = math::cross(basis2Target, basis2Effector);
+			Vector3 rotationAxis = math::cross(dstLocal, srcLocal);
 			rotationAxis = math::normalize(rotationAxis);
 
 			Quaternion q0(rotationAxis, rotationAngle);
-			Quaternion q1 = bone.getRotation();
-			Quaternion qq = math::cross(q1, q0);
+			Quaternion qq = math::cross(bone.getRotation(), q0);
 
-			Matrix4x4 m;
-			m.makeRotate(qq);
-			m.setTranslate(bone.getLocalTransform().getTranslate());
+			bone.updateTransform(bone.getLocalTransform().getTranslate(), qq);
 
-			bone.setRotation(qq);
-			bone.setLocalTransform(m);
+			this->updateBoneMatrix(_bones, bone);
+			this->updateBoneChild(_bones, bone);
 		}
 	}
 }

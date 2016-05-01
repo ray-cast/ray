@@ -51,7 +51,7 @@ public:
 	virtual void onAttach() noexcept;
 	virtual void onDetach() noexcept;
 
-	virtual void onInputEvent(const InputEvent& event) noexcept = 0;
+	virtual void onInputEvent(const InputEvent& event) except = 0;
 
 private:
 	InputListener(const InputListener&) noexcept = delete;

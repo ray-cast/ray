@@ -71,6 +71,8 @@ SET(RENDER_FEATURES_LIST
     ${SOURCE_PATH}/anim_component.cpp
     ${HEADER_PATH}/skinned_mesh_render_component.h
     ${SOURCE_PATH}/skinned_mesh_render_component.cpp
+    ${HEADER_PATH}/skinned_joint_render_component.h
+    ${SOURCE_PATH}/skinned_joint_render_component.cpp
     ${HEADER_PATH}/skybox_component.h
     ${SOURCE_PATH}/skybox_component.cpp
     ${HEADER_PATH}/sprite_component.h

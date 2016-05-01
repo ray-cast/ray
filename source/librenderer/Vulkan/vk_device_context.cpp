@@ -285,51 +285,6 @@ VulkanDeviceContext::getIndexBufferData() const noexcept
 	return _indexBuffer;
 }
 
-bool
-VulkanDeviceContext::updateBuffer(GraphicsDataPtr data, void* buf, std::size_t cnt) noexcept
-{
-	assert(data);
-	assert(data->isInstanceOf<VulkanGraphicsData>());
-
-	auto memory = data->downcast<VulkanGraphicsData>();
-	void* buffer = nullptr;
-	vkMapMemory(this->getDevice()->downcast<VulkanDevice>()->getDevice(), memory->getDeviceMemory(), 0, cnt, 0, &buffer);
-	if (buffer)
-	{
-		std::memcpy(buffer, buf, cnt);
-		vkUnmapMemory(this->getDevice()->downcast<VulkanDevice>()->getDevice(), memory->getDeviceMemory());
-		return true;
-	}
-
-	return false;
-}
-
-void*
-VulkanDeviceContext::mapBuffer(GraphicsDataPtr data, std::uint32_t access) noexcept
-{
-	assert(data);
-	assert(data->isInstanceOf<VulkanGraphicsData>());
-
-	auto memory = data->downcast<VulkanGraphicsData>();
-	auto device = this->getDevice()->downcast<VulkanDevice>();
-
-	void* buffer = nullptr;
-	vkMapMemory(device->getDevice(), memory->getDeviceMemory(), 0, memory->getGraphicsDataDesc().getStreamSize(), 0, &buffer);
-	return buffer;
-}
-
-void
-VulkanDeviceContext::unmapBuffer(GraphicsDataPtr data) noexcept
-{
-	assert(data);
-	assert(data->isInstanceOf<VulkanGraphicsData>());
-
-	auto memory = data->downcast<VulkanGraphicsData>();
-	auto device = this->getDevice()->downcast<VulkanDevice>();
-
-	vkUnmapMemory(device->getDevice(), memory->getDeviceMemory());
-}
-
 void
 VulkanDeviceContext::drawRenderMesh(const GraphicsIndirect& renderable) noexcept
 {

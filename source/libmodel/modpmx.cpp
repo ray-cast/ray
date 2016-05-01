@@ -113,23 +113,23 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		{
 			PMX_Vertex& vertex = pmx.VertexList[i];
 
-			if (!stream.read((char*)&vertex.Position, sizeof(vertex.Position))) return false;
-			if (!stream.read((char*)&vertex.Normal, sizeof(vertex.Normal))) return false;
-			if (!stream.read((char*)&vertex.UV, sizeof(vertex.UV))) return false;
-
-			if (pmx.Header.UVCount != 0)
+			if (pmx.Header.UVCount == 0)
 			{
-				if (!stream.read((char*)&vertex.addUV, (std::streamsize)pmx.Header.UVCount)) return false;
+				std::streamsize size = sizeof(vertex.Position) + sizeof(vertex.Normal) + sizeof(vertex.UV);
+				if (!stream.read((char*)&vertex.Position, size)) return false;
+			}
+			else
+			{
+				std::streamsize size = sizeof(vertex.Position) + sizeof(vertex.Normal) + sizeof(vertex.UV) + pmx.Header.UVCount;
+				if (!stream.read((char*)&vertex.Position, size)) return false;
 			}
 
 			if (!stream.read((char*)&vertex.Type, sizeof(vertex.Type))) return false;
-
 			switch (vertex.Type)
 			{
 			case PMX_BDEF1:
 			{
 				if (!stream.read((char*)&vertex.BoneWeight.Bone1, pmx.Header.BoneIndexSize)) return false;
-
 				vertex.BoneWeight.Weight1 = 1.0f;
 			}
 			break;
@@ -138,7 +138,6 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 				if (!stream.read((char*)&vertex.BoneWeight.Bone1, pmx.Header.BoneIndexSize)) return false;
 				if (!stream.read((char*)&vertex.BoneWeight.Bone2, pmx.Header.BoneIndexSize)) return false;
 				if (!stream.read((char*)&vertex.BoneWeight.Weight1, sizeof(vertex.BoneWeight.Weight2))) return false;
-
 				vertex.BoneWeight.Weight2 = 1.0f - vertex.BoneWeight.Weight1;
 			}
 			break;
@@ -186,19 +185,8 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 
 	if (pmx.IndexCount > 0)
 	{
-		pmx.IndexList.resize(pmx.IndexCount);
-
-		if (pmx.Header.VertexIndexSize != sizeof(PMX_Index))
-		{
-			for (std::size_t i = 0; i < pmx.IndexCount; i++)
-			{
-				if (!stream.read((char*)&pmx.IndexList[i], (std::streamsize)pmx.Header.VertexIndexSize)) return false;
-			}
-		}
-		else
-		{
-			if (!stream.read((char*)&pmx.IndexList[0], (std::streamsize)(sizeof(PMX_Index) * pmx.IndexCount))) return false;
-		}
+		pmx.IndexList.resize(pmx.IndexCount * pmx.Header.VertexIndexSize);
+		if (!stream.read((char*)&pmx.IndexList[0], pmx.IndexList.size())) return false;
 	}
 
 	if (!stream.read((char*)&pmx.TextureCount, sizeof(pmx.TextureCount))) return false;
@@ -250,20 +238,22 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 				if (!stream.read((char*)&material.EnglishName.name[0], material.EnglishName.length)) return false;
 			}
 
-			if (!stream.read((char*)&material.Diffuse, sizeof(material.Diffuse))) return false;
-			if (!stream.read((char*)&material.Opacity, sizeof(material.Opacity))) return false;
-			if (!stream.read((char*)&material.Specular, sizeof(material.Specular))) return false;
-			if (!stream.read((char*)&material.Shininess, sizeof(material.Shininess))) return false;
-			if (!stream.read((char*)&material.Ambient, sizeof(material.Ambient))) return false;
-			if (!stream.read((char*)&material.Flag, sizeof(material.Flag))) return false;
-			if (!stream.read((char*)&material.EdgeColor, sizeof(material.EdgeColor))) return false;
-			if (!stream.read((char*)&material.EdgeSize, sizeof(material.EdgeSize))) return false;
-			if (!stream.read((char*)&material.TextureIndex, sizeof(material.TextureIndex))) return false;
-			if (!stream.read((char*)&material.SphereTextureIndex, sizeof(material.SphereTextureIndex))) return false;
-			if (!stream.read((char*)&material.ToonIndex, sizeof(material.ToonIndex))) return false;
-			if (!stream.read((char*)&material.ToonFlag, sizeof(material.ToonFlag))) return false;
-			if (!stream.read((char*)&material.SphereMode, sizeof(material.SphereMode))) return false;
-			if (!stream.read((char*)&material.FaceVertexCount, sizeof(material.FaceVertexCount))) return false;
+			constexpr std::streamsize size = sizeof(material.Diffuse)
+				+ sizeof(material.Opacity)
+				+ sizeof(material.Specular)
+				+ sizeof(material.Shininess)
+				+ sizeof(material.Ambient)
+				+ sizeof(material.Flag)
+				+ sizeof(material.EdgeColor)
+				+ sizeof(material.EdgeSize)
+				+ sizeof(material.TextureIndex)
+				+ sizeof(material.SphereTextureIndex)
+				+ sizeof(material.ToonIndex)
+				+ sizeof(material.ToonFlag)
+				+ sizeof(material.SphereMode)
+				+ sizeof(material.FaceVertexCount);
+
+			if (!stream.read((char*)&material.Diffuse, size)) return false;
 		}
 	}
 
@@ -352,7 +342,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		}
 	}
 
-	if (!stream.read((char*)&pmx.MorphCount, sizeof(pmx.MorphCount))) return false;
+	/*if (!stream.read((char*)&pmx.MorphCount, sizeof(pmx.MorphCount))) return false;
 
 	if (pmx.MorphCount > 0)
 	{
@@ -420,11 +410,11 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 				}
 			}
 		}
-	}
+	}*/
 
-	if (!stream.read((char*)&pmx.DisplaySlot.DisplayCount, sizeof(pmx.DisplaySlot.DisplayCount))) return false;
+	/*if (!stream.read((char*)&pmx.DisplaySlot.DisplayCount, sizeof(pmx.DisplaySlot.DisplayCount))) return false;
 
-	/*if (pmx.DisplaySlot.DisplayCount > 0)
+	if (pmx.DisplaySlot.DisplayCount > 0)
 	{
 		pmx.DisplaySlot.Slots.resize(pmx.DisplaySlot.DisplayCount);
 
@@ -472,7 +462,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		material->set(MATKEY_COLOR_AMBIENT, it.Ambient);
 		material->set(MATKEY_COLOR_SPECULAR, it.Specular);
 		material->set(MATKEY_OPACITY, it.Opacity);
-		material->set(MATKEY_SHININESS, it.Shininess);
+		material->set(MATKEY_SHININESS, it.Shininess / 255.0f);
 
 		if (it.TextureIndex != std::numeric_limits<PMX_uint8_t>::max())
 		{
@@ -533,9 +523,18 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		VertexWeights weights;
 		UintArray faces;
 
-		for (PMX_IndexCount i = 0; i < it.FaceVertexCount; i++, indices++)
+		for (PMX_IndexCount i = 0; i < it.FaceVertexCount; i++, indices += pmx.Header.VertexIndexSize)
 		{
-			PMX_Vertex& v = vertices[*indices];
+			std::uint32_t index;
+
+			if (pmx.Header.VertexIndexSize == 1)
+				index = *(std::uint8_t*)indices;
+			else if (pmx.Header.VertexIndexSize == 2)
+				index = *(std::uint16_t*)indices;
+			else if (pmx.Header.VertexIndexSize == 4)
+				index = *(std::uint32_t*)indices;
+
+			PMX_Vertex& v = vertices[index];
 
 			points.push_back(v.Position);
 			normals.push_back(v.Normal);
@@ -600,7 +599,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 				IKAttr attr;
 				attr.IKBoneIndex = boneIndex;
 				attr.IKTargetBoneIndex = it.IKTargetBoneIndex;
-				attr.IKWeight = it.IKLimitedRadian;
+				attr.IKAngleLimit = it.IKLimitedRadian;
 				attr.IKLinkCount = it.IKLinkCount;
 				attr.IKLoopCount = it.IKLoopCount;
 				for (auto& bone : it.IKList)

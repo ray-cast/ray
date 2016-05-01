@@ -5,11 +5,10 @@ INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/libjpeg)
 INCLUDE_DIRECTORIES(${DEPENDENCIES_PATH}/libpng)
 
 SET(COMMON_LIST
-    ${HEADER_PATH}/imagbase.h
+    ${HEADER_PATH}/imagtypes.h
     ${HEADER_PATH}/imagdef.h
     ${HEADER_PATH}/imaghandler.h
     ${HEADER_PATH}/image.h
-    ${HEADER_PATH}/imagfwd.h
 )
 SOURCE_GROUP("image" FILES ${COMMON_LIST})
 

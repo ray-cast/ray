@@ -73,7 +73,7 @@ MyGuiRenderer::open() except
 	MYGUI_PLATFORM_ASSERT(!_isInitialise, getClassTypeName() << " initialised twice");
 	MYGUI_PLATFORM_LOG(Info, "* Initialise: " << getClassTypeName());
 
-	_material = RenderSystem::instance()->createMaterial("sys:fx/uilayout.fxml.o");
+	_material = RenderSystem::instance()->createMaterial("sys:fx/uilayout.fxml");
 	_materialTech = _material->getTech("ui");
 	_materialDecal = _material->getParameter("decal");
 	_materialScaleY = _material->getParameter("scaleY");

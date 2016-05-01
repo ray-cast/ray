@@ -58,7 +58,7 @@ public:
 
 private:
 	bool _buildAnimotion(const std::string& filename) noexcept;
-	void _updateVertex(MeshPropertyPtr mesh, MeshPropertyPtr model);
+	void _updateVertex(const Bones& bones, MeshPropertyPtr mesh, MeshPropertyPtr model);
 
 private:
 	virtual void onActivate() except;

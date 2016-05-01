@@ -53,14 +53,14 @@
 #include <ray/parse.h>
 #include <ray/except.h>
 
-#define EXCLUDE_PSTDINT
-#include <hlslcc.hpp>
-
-#include <glsl/glsl_optimizer.h>
+#if !defined(_BUILD_OPENGL_ES) || defined(__WINDOWS__)
+#	include <d3dcompiler.h>
+#endif
 
 _NAME_BEGIN
 
 MaterialMaker::MaterialMaker() noexcept
+	: _isHlsl(false)
 {
 }
 
@@ -68,8 +68,29 @@ MaterialMaker::~MaterialMaker() noexcept
 {
 }
 
+bool
+MaterialMaker::doCanRead(StreamReader& stream) const noexcept
+{
+	XMLReader reader;
+	if (!reader.open(stream))
+		return false;
+
+	reader.setToFirstChild();
+		
+	std::string nodeName;
+	nodeName = reader.getCurrentNodeName();
+	if (nodeName != "material" && nodeName != "effect")
+		return false;
+
+	std::string language = reader.getValue<std::string>("language");
+	if (language == "bytecodes")
+		return false;
+
+	return true;
+}
+
 void
-MaterialMaker::instanceInputLayout(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+MaterialMaker::instanceInputLayout(MaterialManager& manager, Material& material, iarchive& reader) except
 {
 	GraphicsInputLayoutDesc inputLayoutDesc;
 
@@ -97,7 +118,7 @@ MaterialMaker::instanceInputLayout(MaterialManager& manager, MaterialPtr& materi
 			if (format == GraphicsFormat::GraphicsFormatMaxEnum)
 				throw failure(__TEXT("Undefined format: ") + reader.getCurrentNodePath());
 
-			inputLayoutDesc.addComponent(GraphicsVertexLayout(layoutName, 0, format));
+			inputLayoutDesc.addComponent(GraphicsVertexLayout(layoutName, format));
 		}
 	} while (reader.setToNextChild());
 
@@ -110,15 +131,22 @@ void
 MaterialMaker::instanceCodes(MaterialManager& manager, iarchive& reader) except
 {
 	std::string name = reader.getValue<std::string>("name");
-	if (name.empty())
+
+	if (!_isHlsl && name.empty())
 		throw failure(__TEXT("Empty shader name : ") + reader.getCurrentNodePath());
 
-	std::string str = reader.getText();
-	util::str2hex(_shaderCodes[name], str.c_str(), str.size());
+	std::string codes = reader.getText();
+	if (codes.empty())
+		return;
+
+	if (!_isHlsl)
+		util::str2hex(_shaderCodes[name], codes.c_str(), codes.size());
+	else
+		_hlslCodes.append(codes.begin(), codes.end());
 }
 
 void
-MaterialMaker::instanceShader(MaterialManager& manager, MaterialPtr& material, GraphicsProgramDesc& programDesc, iarchive& reader) except
+MaterialMaker::instanceShader(MaterialManager& manager, Material& material, GraphicsProgramDesc& programDesc, iarchive& reader) except
 {
 	std::string type = reader.getValue<std::string>("name");
 	std::string value = reader.getValue<std::string>("value");
@@ -133,102 +161,65 @@ MaterialMaker::instanceShader(MaterialManager& manager, MaterialPtr& material, G
 	if (shaderStage == GraphicsShaderStage::GraphicsShaderStageMaxEnum)
 		throw failure(__TEXT("Unknown shader type : ") + type + reader.getCurrentNodePath());
 
-	std::vector<char>& bytecodes = _shaderCodes[value];
-	if (bytecodes.empty())
-		throw failure(__TEXT("Empty shader code : ") + value + reader.getCurrentNodePath());
-
 	GraphicsShaderDesc shaderDesc;
-	shaderDesc.setStage(shaderStage);
-
-	GraphicsDeviceType deviceType = manager.getDeviceType();
-	if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES2 ||
-		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES3 ||
-		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES31 ||
-		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGL ||
-		deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLCore ||
-		deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
+	if (!_isHlsl)
 	{
-		std::uint32_t flags = HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES;
-		if (shaderStage == GraphicsShaderStage::GraphicsShaderStageGeometry)
-			flags = HLSLCC_FLAG_GS_ENABLED;
-		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessControl)
-			flags = HLSLCC_FLAG_TESS_ENABLED;
-		else if (shaderStage == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
-			flags = HLSLCC_FLAG_TESS_ENABLED;
+		std::vector<char> codes = _shaderCodes[value];
+		if (codes.empty())
+			throw failure(__TEXT("Empty shader code : ") + value + reader.getCurrentNodePath());
 
-		GlExtensions extensions;
-		std::memset(&extensions, 0, sizeof(extensions));
-		if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeVulkan)
-		{
-			extensions.ARB_shading_language_420pack = true;
-			extensions.ARB_explicit_attrib_location = false;
-			extensions.ARB_explicit_uniform_location = true;
-			flags |= HLSLCC_FLAG_UNIFORM_BUFFER_OBJECT;
-		}
-		else
-		{
-			flags |= HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT;
-		}
-
-		GLLang hlsl2glslLangType;
-		if (deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES2 ||
-			deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES3 ||
-			deviceType == GraphicsDeviceType::GraphicsDeviceTypeOpenGLES31)
-		{
-			hlsl2glslLangType = GLLang::LANG_ES_300;
-		}
-		else
-		{
-			hlsl2glslLangType = GLLang::LANG_DEFAULT;
-		}
-
-		GLSLShader shader;
-		GLSLCrossDependencyData dependency;
-		if (!TranslateHLSLFromMem(bytecodes.data(), flags, hlsl2glslLangType, &extensions, &dependency, &shader))
-		{
-			FreeGLSLShader(&shader);
-			throw failure(__TEXT("Can't conv hlsl bytecodes to glsl.") + value);
-		}
-
-		shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangGLSL);
-		shaderDesc.setByteCodes(shader.sourceCode);
-
-		FreeGLSLShader(&shader);
-
-		/*if (hlsl2glslLangType == GLLang::LANG_ES_100 ||
-			hlsl2glslLangType == GLLang::LANG_ES_300 ||
-			hlsl2glslLangType == GLLang::LANG_ES_310)
-		{
-			if (shaderStage == GraphicsShaderStage::GraphicsShaderStageVertex || shaderStage == GraphicsShaderStage::GraphicsShaderStageFragment)
-			{
-				glslopt_shader_type glslopt_type = glslopt_shader_type::kGlslOptShaderVertex;
-				if (shaderStage == GraphicsShaderStage::GraphicsShaderStageFragment)
-					glslopt_type = glslopt_shader_type::kGlslOptShaderFragment;
-
-				glslopt_target glslopt_target_type = glslopt_target::kGlslTargetOpenGLES20;
-				if (hlsl2glslLangType == GLLang::LANG_ES_300 || hlsl2glslLangType == GLLang::LANG_ES_310)
-					glslopt_target_type = glslopt_target::kGlslTargetOpenGLES30;
-
-				auto ctx = glslopt_initialize(glslopt_target_type);
-				if (ctx)
-				{
-					glslopt_shader* glslopt_shader = glslopt_optimize(ctx, glslopt_type, shaderDesc.getByteCodes().c_str(), 0);
-					bool optimizeOk = glslopt_get_status(glslopt_shader);
-					if (optimizeOk)
-					{
-						std::string textOpt = glslopt_get_output(glslopt_shader);
-						shaderDesc.setByteCodes(textOpt);
-					}
-
-					glslopt_cleanup(ctx);
-				}
-			}
-		}*/
+		shaderDesc.setStage(shaderStage);
+		shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangHLSLbytecodes);
+		shaderDesc.setByteCodes(std::string(codes.data(), codes.size()));
 	}
 	else
 	{
-		shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangHLSL);
-		shaderDesc.setByteCodes(std::string(bytecodes.data(), bytecodes.size()));
+		std::string profile;
+		if (type == "vertex")
+			profile = "vs_4_0";
+		else if (type == "fragment")
+			profile = "ps_4_0";
+
+		ID3DBlob* binary = nullptr;
+		ID3DBlob* error = nullptr;
+
+		D3DCreateBlob(4096, &binary);
+		D3DCreateBlob(4096, &error);
+
+		HRESULT hr = D3DCompile(
+			_hlslCodes.data(),
+			_hlslCodes.size(),
+			nullptr,
+			nullptr,
+			nullptr,
+			value.c_str(),
+			profile.c_str(),
+			D3DCOMPILE_OPTIMIZATION_LEVEL3,
+			0,
+			&binary,
+			&error
+			);
+
+		if (hr != S_OK)
+		{
+			std::string line;
+			std::size_t index = 1;
+			std::ostringstream ostream;
+			std::istringstream istream(_hlslCodes);
+
+			ostream << (const char*)error->GetBufferPointer() << std::endl;
+			while (std::getline(istream, line))
+			{
+				ostream << index << '\t' << line << std::endl;
+				index++;
+			}
+
+			throw ray::failure(ostream.str().c_str());
+		}
+
+		shaderDesc.setStage(shaderStage);
+		shaderDesc.setLanguage(GraphicsShaderLang::GraphicsShaderLangHLSLbytecodes);
+		shaderDesc.setByteCodes(std::string((char*)binary->GetBufferPointer(), binary->GetBufferSize()));
 	}
 
 	auto shaderModule = manager.createShader(shaderDesc);
@@ -239,7 +230,7 @@ MaterialMaker::instanceShader(MaterialManager& manager, MaterialPtr& material, G
 }
 
 void
-MaterialMaker::instancePass(MaterialManager& manager, MaterialPtr& material, MaterialTechPtr& tech, iarchive& reader) except
+MaterialMaker::instancePass(MaterialManager& manager, Material& material, MaterialTechPtr& tech, iarchive& reader) except
 {
 	std::string passName;
 	reader.getValue("name", passName);
@@ -282,6 +273,8 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialPtr& material, Mat
 			stateDesc.setMultisampleEnable(reader.getValue<bool>("value"));
 		else if (name == "linear2srgb")
 			stateDesc.setLinear2sRGBEnable(reader.getValue<bool>("value"));
+		else if (name == "linewidth")
+			stateDesc.setLineWidth(reader.getValue<float>("value"));
 		else if (name == "blend")
 			stateDesc.setBlendEnable(reader.getValue<bool>("value"));
 		else if (name == "blendOp")
@@ -364,7 +357,7 @@ MaterialMaker::instancePass(MaterialManager& manager, MaterialPtr& material, Mat
 }
 
 void
-MaterialMaker::instanceTech(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+MaterialMaker::instanceTech(MaterialManager& manager, Material& material, iarchive& reader) except
 {
 	std::string techName = reader.getValue<std::string>("name");
 	if (techName.empty())
@@ -385,11 +378,11 @@ MaterialMaker::instanceTech(MaterialManager& manager, MaterialPtr& material, iar
 		}
 	} while (reader.setToNextChild());
 
-	material->addTech(tech);
+	material.addTech(tech);
 }
 
 void
-MaterialMaker::instanceParameter(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+MaterialMaker::instanceParameter(MaterialManager& manager, Material& material, iarchive& reader) except
 {
 	auto name = reader.getValue<std::string>("name");
 	auto type = reader.getValue<std::string>("type");
@@ -402,6 +395,12 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialPtr& material
 	auto uniformType = stringToUniformType(type);
 	if (uniformType == GraphicsUniformType::GraphicsUniformTypeMaxEnum)
 		throw failure(__TEXT("Unknown parameter type : ") + type);
+
+	if (_isHlsl)
+	{
+		type = type.substr(0, type.find_first_of('['));
+		_hlslCodes += "uniform " + type + " " + name + ";\n";
+	}
 
 	auto pos = name.find_first_of('[');
 	if (pos != std::string::npos)
@@ -420,11 +419,11 @@ MaterialMaker::instanceParameter(MaterialManager& manager, MaterialPtr& material
 		param->setSemantic(materialSemantic);
 	}
 
-	material->addParameter(param);
+	material.addParameter(param);
 }
 
 void
-MaterialMaker::instanceMacro(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+MaterialMaker::instanceMacro(MaterialManager& manager, Material& material, iarchive& reader) except
 {
 	auto name = reader.getValue<std::string>("name");
 	auto type = reader.getValue<std::string>("type");
@@ -433,6 +432,11 @@ MaterialMaker::instanceMacro(MaterialManager& manager, MaterialPtr& material, ia
 
 	if (name.empty())
 		throw failure(__TEXT("The parameter name can not be empty"));
+
+	if (_isHlsl)
+	{
+		_hlslCodes += "#define " + name + " " + value + "\n";
+	}
 
 	if (!type.empty())
 	{
@@ -489,20 +493,16 @@ MaterialMaker::instanceMacro(MaterialManager& manager, MaterialPtr& material, ia
 			throw failure(__TEXT("Unknown macro type : ") + name);
 		}
 
-		material->addMacro(macro);
+		material.addMacro(macro);
 	}
 }
 
 void
-MaterialMaker::instanceSampler(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+MaterialMaker::instanceSampler(MaterialManager& manager, Material& material, iarchive& reader) except
 {
 	std::string samplerName = reader.getValue<std::string>("name");
 	if (samplerName.empty())
 		throw failure(__TEXT("Empty sampler empty"));
-
-	auto sampler = manager.getSampler(samplerName);
-	if (sampler)
-		return;
 
 	if (!reader.setToFirstChild())
 		throw failure(__TEXT("Empty child : ") + reader.getCurrentNodePath());
@@ -511,6 +511,9 @@ MaterialMaker::instanceSampler(MaterialManager& manager, MaterialPtr& material, 
 
 	std::string stateName;
 	std::string stateValue;
+
+	if (_isHlsl)
+		_hlslCodes += "SamplerState " + samplerName + "{";
 
 	do
 	{
@@ -536,6 +539,9 @@ MaterialMaker::instanceSampler(MaterialManager& manager, MaterialPtr& material, 
 				samplerDesc.setSamplerFilter(GraphicsSamplerFilter::GraphicsSamplerFilterLinearMipmapLinear);
 			else
 				throw failure(__TEXT("Unknown sampler filter type") + reader.getCurrentNodePath());
+
+			if (_isHlsl)
+				_hlslCodes += "filter = " + stateValue + ";";
 		}
 		else if (stateName == "wrap")
 		{
@@ -547,6 +553,16 @@ MaterialMaker::instanceSampler(MaterialManager& manager, MaterialPtr& material, 
 				samplerDesc.setSamplerWrap(GraphicsSamplerWrap::GraphicsSamplerWrapRepeat);
 			else
 				throw failure(__TEXT("Unknown sampler wrap type ") + reader.getCurrentNodePath());
+
+			if (_isHlsl)
+			{
+				if (stateValue == "clamp")
+					_hlslCodes += "AddressU = Clamp; AddressV = Clamp;";
+				else if (stateValue == "mirror")
+					_hlslCodes += "AddressU = Mirror; AddressV = Mirror;";
+				else if (stateValue == "repeat")
+					_hlslCodes += "AddressU = Wrap; AddressV = Wrap;";
+			}
 		}
 		else if (stateName == "anis")
 		{
@@ -569,13 +585,20 @@ MaterialMaker::instanceSampler(MaterialManager& manager, MaterialPtr& material, 
 		}
 	} while (reader.setToNextChild());
 
+	if (_isHlsl)
+		_hlslCodes += "};\n";
+
+	auto sampler = manager.getSampler(samplerName);
+	if (sampler)
+		return;
+
 	sampler = manager.createSampler(samplerName, samplerDesc);
 	if (!sampler)
 		throw failure(__TEXT("Can't create sampler ") + reader.getCurrentNodePath());
 }
 
 void
-MaterialMaker::instanceBuffer(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+MaterialMaker::instanceBuffer(MaterialManager& manager, Material& material, iarchive& reader) except
 {
 	auto buffer = std::make_shared<MaterialParam>();
 	buffer->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
@@ -590,17 +613,21 @@ MaterialMaker::instanceBuffer(MaterialManager& manager, MaterialPtr& material, i
 }
 
 void
-MaterialMaker::instanceInclude(MaterialManager& manager, MaterialPtr& material, iarchive& reader) except
+MaterialMaker::instanceInclude(MaterialManager& manager, Material& material, iarchive& reader) except
 {
 	auto path = reader.getValue<std::string>("name");
 	if (!path.empty())
 	{
-		this->load(manager, path);
+		if (!_onceInclude[path])
+		{
+			this->load(manager, material, path);
+			_onceInclude[path] = true;
+		}			
 	}
 }
 
-MaterialPtr
-MaterialMaker::load(MaterialManager& manager, const std::string& filename) noexcept
+bool
+MaterialMaker::load(MaterialManager& manager, Material& material, const std::string& filename) noexcept
 {
 	try
 	{
@@ -612,20 +639,41 @@ MaterialMaker::load(MaterialManager& manager, const std::string& filename) noexc
 		if (reader.open(*stream))
 		{
 			reader.setToFirstChild();
-			return this->load(manager, reader);
+			return this->load(manager, material, reader);
 		}
 
-		return nullptr;
+		return false;
 	}
 	catch (const failure& e)
 	{
 		std::cout << __TEXT("in ") + filename + __TEXT(" ") + e.message() + e.stack();
-		return nullptr;
+		return false;
 	}
 }
 
-MaterialPtr
-MaterialMaker::load(MaterialManager& manager, iarchive& reader) except
+bool
+MaterialMaker::load(MaterialManager& manager, Material& material, StreamReader& stream) noexcept
+{
+	try
+	{
+		XMLReader reader;
+		if (reader.open(stream))
+		{
+			reader.setToFirstChild();
+			return this->load(manager, material, reader);
+		}
+
+		return false;
+	}
+	catch (const failure& e)
+	{
+		std::cout << e.message() << e.stack();
+		return false;
+	}
+}
+
+bool
+MaterialMaker::load(MaterialManager& manager, Material& material, iarchive& reader) except
 {
 	std::string nodeName;
 	nodeName = reader.getCurrentNodeName();
@@ -651,12 +699,11 @@ MaterialMaker::load(MaterialManager& manager, iarchive& reader) except
 		if (!name.empty())
 		{
 			MaterialMaker maker;
-			auto material = maker.load(manager, name);
-			if (material)
+			if (maker.load(manager, material, name))
 			{
 				for (auto& arg : args)
 				{
-					auto param = material->getParameter(arg.first);
+					auto param = material.getParameter(arg.first);
 					if (!param)
 						continue;
 
@@ -682,15 +729,19 @@ MaterialMaker::load(MaterialManager& manager, iarchive& reader) except
 					}
 				}
 
-				return material;
+				return true;
 			}
 		}
 	}
 	else if (nodeName == "effect")
 	{
-		auto material = std::make_shared<Material>();
 		std::string language = reader.getValue<std::string>("language");
-		if (language != "bytecodes")
+		
+		if (language == "hlsl")
+			_isHlsl = true;
+		else if (language == "bytecodes")
+			_isHlsl = false;
+		else
 			throw failure("Can't support language : " + language + ", so I can't open it");
 
 		if (!reader.setToFirstChild())
@@ -717,11 +768,10 @@ MaterialMaker::load(MaterialManager& manager, iarchive& reader) except
 				instanceInputLayout(manager, material, reader);
 		} while (reader.setToNextChild());
 
-		if (material->setup())
-			return material;
+		return material.setup();
 	}
 
-	return nullptr;
+	return false;
 }
 
 GraphicsShaderStage

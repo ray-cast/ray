@@ -36,6 +36,9 @@
 // +----------------------------------------------------------------------
 #include "ogl_shader.h"
 
+#define EXCLUDE_PSTDINT
+#include <hlslcc.hpp>
+
 _NAME_BEGIN
 
 __ImplementSubClass(OGLShader, GraphicsShader, "OGLShader")
@@ -47,7 +50,7 @@ __ImplementSubClass(OGLGraphicsUniformBlock, GraphicsUniformBlock, "OGLGraphicsU
 OGLGraphicsAttribute::OGLGraphicsAttribute() noexcept
 	: _index(0)
 	, _bindingPoint(GL_INVALID_INDEX)
-	, _type(GraphicsUniformType::GraphicsUniformTypeNone)
+	, _type(GraphicsFormat::GraphicsFormatUndefined)
 {
 }
 
@@ -68,12 +71,12 @@ OGLGraphicsAttribute::getName() const noexcept
 }
 
 void
-OGLGraphicsAttribute::setType(GraphicsUniformType type) noexcept
+OGLGraphicsAttribute::setType(GraphicsFormat type) noexcept
 {
 	_type = type;
 }
 
-GraphicsUniformType
+GraphicsFormat
 OGLGraphicsAttribute::getType() const noexcept
 {
 	return _type;
@@ -267,7 +270,6 @@ bool
 OGLShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 {
 	assert(_instance == GL_NONE);
-	assert(shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangGLSL);
 	assert(shaderDesc.getByteCodes().size() > 0);
 	assert(OGLTypes::asShaderStage(shaderDesc.getStage()) != GL_INVALID_ENUM);
 
@@ -279,6 +281,14 @@ OGLShader::setup(const GraphicsShaderDesc& shaderDesc) noexcept
 	}
 
 	const char* codes = shaderDesc.getByteCodes().data();
+
+	std::string conv;
+	if (shaderDesc.getLanguage() == GraphicsShaderLang::GraphicsShaderLangHLSLbytecodes)
+	{
+		HlslByteCodes2GLSL(shaderDesc.getStage(), codes, conv);
+		codes = conv.data();
+	}
+
 	glShaderSource(_instance, 1, &codes, 0);
 	glCompileShader(_instance);
 
@@ -314,6 +324,30 @@ GLuint
 OGLShader::getInstanceID() const noexcept
 {
 	return _instance;
+}
+
+bool
+OGLShader::HlslByteCodes2GLSL(GraphicsShaderStage stage, const char* codes, std::string& out)
+{
+	std::uint32_t flags = HLSLCC_FLAG_COMBINE_TEXTURE_SAMPLERS | HLSLCC_FLAG_INOUT_APPEND_SEMANTIC_NAMES | HLSLCC_FLAG_DISABLE_GLOBALS_STRUCT;
+	if (stage == GraphicsShaderStage::GraphicsShaderStageGeometry)
+		flags = HLSLCC_FLAG_GS_ENABLED;
+	else if (stage == GraphicsShaderStage::GraphicsShaderStageTessControl)
+		flags = HLSLCC_FLAG_TESS_ENABLED;
+	else if (stage == GraphicsShaderStage::GraphicsShaderStageTessEvaluation)
+		flags = HLSLCC_FLAG_TESS_ENABLED;
+
+	GLSLShader shader;
+	GLSLCrossDependencyData dependency;
+	if (!TranslateHLSLFromMem(codes, flags, GLLang::LANG_DEFAULT, nullptr, &dependency, &shader))
+	{
+		FreeGLSLShader(&shader);
+		return false;
+	}
+
+	out = shader.sourceCode;
+	FreeGLSLShader(&shader);
+	return true;
 }
 
 const GraphicsShaderDesc&
@@ -479,7 +513,7 @@ OGLProgram::_initActiveAttribute() noexcept
 			attrib->setBindingPoint(location);
 			attrib->setSemantic(semantic);
 			attrib->setSemanticIndex(semanticIndex);
-			attrib->setType(toGraphicsUniformType(name, type));
+			attrib->setType(toGraphicsFormat(type));
 
 			_activeAttributes.push_back(attrib);
 		}
@@ -596,6 +630,48 @@ OGLProgram::_initActiveUniformBlock() noexcept
 		}
 
 		_activeUniformBlocks.push_back(uniformblock);
+	}
+}
+
+GraphicsFormat 
+OGLProgram::toGraphicsFormat(GLenum type) noexcept
+{
+	if (type == GL_BOOL)
+		return GraphicsFormat::GraphicsFormatR8UInt;
+	else if (type == GL_UNSIGNED_INT)
+		return GraphicsFormat::GraphicsFormatR8UInt;
+	else if (type == GL_UNSIGNED_INT_VEC2)
+		return GraphicsFormat::GraphicsFormatR8G8UInt;
+	else if (type == GL_UNSIGNED_INT_VEC3)
+		return GraphicsFormat::GraphicsFormatR8G8B8UInt;
+	else if (type == GL_UNSIGNED_INT_VEC4)
+		return GraphicsFormat::GraphicsFormatR8G8B8A8UInt;
+	else if (type == GL_INT)
+		return GraphicsFormat::GraphicsFormatR8SInt;
+	else if (type == GL_INT_VEC2)
+		return GraphicsFormat::GraphicsFormatR8G8SInt;
+	else if (type == GL_INT_VEC3)
+		return GraphicsFormat::GraphicsFormatR8G8B8SInt;
+	else if (type == GL_INT_VEC4)
+		return GraphicsFormat::GraphicsFormatR8G8B8A8SInt;
+	else if (type == GL_FLOAT)
+		return GraphicsFormat::GraphicsFormatR32SFloat;
+	else if (type == GL_FLOAT_VEC2)
+		return GraphicsFormat::GraphicsFormatR32G32SFloat;
+	else if (type == GL_FLOAT_VEC3)
+		return GraphicsFormat::GraphicsFormatR32G32B32SFloat;
+	else if (type == GL_FLOAT_VEC4)
+		return GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
+	else if (type == GL_FLOAT_MAT2)
+		return GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
+	else if (type == GL_FLOAT_MAT3)
+		return GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
+	else if (type == GL_FLOAT_MAT4)
+		return GraphicsFormat::GraphicsFormatR32G32B32A32SFloat;
+	else
+	{
+		GL_PLATFORM_ASSERT(false, "Invlid uniform type");
+		return GraphicsFormat::GraphicsFormatUndefined;
 	}
 }
 

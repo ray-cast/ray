@@ -63,8 +63,7 @@ public:
 	GLsizeiptr read(char* data, GLsizeiptr cnt) noexcept;
 	GLsizeiptr write(const char* data, GLsizeiptr cnt) noexcept;
 
-	void* map(std::uint32_t access) noexcept;
-	void* map(GLintptr offset, GLsizeiptr cnt, std::uint32_t access) noexcept;
+	bool map(std::uint32_t offset, std::uint32_t count, void** data) noexcept;
 	void unmap() noexcept;
 	bool isMapping() const noexcept;
 
@@ -86,7 +85,6 @@ private:
 private:
 	GLuint _buffer;
 	GLenum _target;
-	GLvoid* _data;
 	GLsizeiptr _dataSize;
 	GLintptr _dataOffset;
 	GLboolean _isMapping;

@@ -183,6 +183,17 @@ EGL2Texture::getInstanceID() const noexcept
 }
 
 bool
+EGL2Texture::map(std::uint32_t x, std::uint32_t y, std::uint32_t w, std::uint32_t h, GraphicsFormat format, void** data) noexcept
+{
+	return false;
+}
+
+void
+EGL2Texture::unmap() noexcept
+{
+}
+
+bool
 EGL2Texture::applySamplerWrap(GLenum target, GraphicsSamplerWrap wrap) noexcept
 {
 	GLenum glwrap = EGL2Types::asSamplerWrap(wrap);

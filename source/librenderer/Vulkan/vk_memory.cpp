@@ -77,7 +77,7 @@ VulkanMemory::setup(const char* stream, std::uint32_t streamSize, std::uint32_t 
 	_size = streamSize;
 	if (stream)
 	{
-		void* data = this->map(GraphicsAccessFlagsBits::GraphicsAccessFlagsMapReadBit);
+		void* data = this->map(GraphicsAccessFlagBits::GraphicsAccessFlagMapReadBit);
 		if (data)
 		{
 			std::memcpy(data, stream, streamSize);
@@ -106,13 +106,13 @@ VulkanMemory::size() const noexcept
 }
 
 void*
-VulkanMemory::map(std::uint32_t access) noexcept
+VulkanMemory::map(GraphicsAccessFlags flags) noexcept
 {
-	return this->map(0, this->size(), access);
+	return this->map(0, this->size(), flags);
 }
 
 void*
-VulkanMemory::map(std::uint32_t offset, std::uint32_t cnt, std::uint32_t access) noexcept
+VulkanMemory::map(std::uint32_t offset, std::uint32_t cnt, GraphicsAccessFlags flags) noexcept
 {
 	assert(!_isMapping);
 	assert(_vkMemory != VK_NULL_HANDLE);

@@ -497,7 +497,7 @@ TerrainComponent::onActivate() except
 }
 
 void
-TerrainComponent::onDeactivate() except
+TerrainComponent::onDeactivate() noexcept
 {
 	_chunks.clear();
 	_itmes.clear();

@@ -38,6 +38,14 @@
 
 _NAME_BEGIN
 
+GIFHandler::GIFHandler() noexcept
+{
+}
+
+GIFHandler::~GIFHandler() noexcept
+{
+}
+
 bool
 GIFHandler::doCanRead(StreamReader& stream) const noexcept
 {
@@ -56,13 +64,13 @@ GIFHandler::doCanRead(StreamReader& stream) const noexcept
 bool
 GIFHandler::doLoad(Image&, StreamReader&) noexcept
 {
-	return true;
+	return false;
 }
 
 bool
 GIFHandler::doSave(Image&, StreamWrite&) noexcept
 {
-	return true;
+	return false;
 }
 
 _NAME_END

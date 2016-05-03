@@ -10,6 +10,7 @@ $RECYCLE.BIN/
 
 lib/_redist
 lib/binaries/
+contrib/gles/lib
 
 # Windows Installer files
 *.cab

@@ -6,10 +6,10 @@ ELSE()
     SET(RENDERSYSTEM 3)
 ENDIF()
 
-OPTION(BUILD_OPENGL_ES2 "ON for debug or OFF for release" ON)
-OPTION(BUILD_OPENGL_ES3 "ON for debug or OFF for release" ON)
+OPTION(BUILD_OPENGL_ES2 "ON for debug or OFF for release" OFF)
+OPTION(BUILD_OPENGL_ES3 "ON for debug or OFF for release" OFF)
 OPTION(BUILD_OPENGL_CORE "ON for debug or OFF for release" ON)
-OPTION(BUILD_VULKAN "ON for debug or OFF for release" ON)
+OPTION(BUILD_VULKAN "ON for debug or OFF for release" OFF)
 
 IF(LIBRARY_OUT_NAME MATCHES "64")
     SET(DEFAULT_LINK_LIBRARY 2)

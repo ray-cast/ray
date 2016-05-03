@@ -1261,7 +1261,17 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 
 			if (numVertex)
 			{
-				if (transform.isOnlyTranslate())
+				if (transform.isIdentity())
+				{
+					auto& vertices = mesh->getVertexArray();
+					if (!vertices.empty())
+						std::memcpy(_vertices.data() + offsetVertices, vertices.data(), numVertex * sizeof(Vector3));
+
+					auto& normals = mesh->getNormalArray();
+					if (!normals.empty())
+						std::memcpy(_normals.data() + offsetVertices, normals.data(), numVertex * sizeof(Vector3));
+				}
+				else if (transform.isOnlyTranslate())
 				{
 					auto translate = transform.getTranslate();
 
@@ -1294,6 +1304,10 @@ MeshProperty::combineMeshes(const CombineMesh instances[], std::size_t numInstan
 				auto& texcoords = mesh->getTexcoordArray();
 				if (!texcoords.empty())
 					std::memcpy(_texcoords[0].data() + offsetVertices, texcoords.data(), numVertex * sizeof(Vector2));
+
+				auto& weights = mesh->getWeightArray();
+				if (!weights.empty())
+					std::memcpy(_weights.data() + offsetVertices, weights.data(), numVertex * sizeof(Vector3));
 			}
 
 			if (numIndex)
@@ -1595,6 +1609,22 @@ MeshProperty::computeBoundingBox() noexcept
 
 		_boundingBoxChildren.encapsulate(it->getBoundingBox());
 	}
+}
+
+void 
+MeshProperty::computeBoundingBoxSkeleton() noexcept
+{
+	AABB aabb;
+
+	if (!_bones.empty())
+	{
+		for (auto& bone : _bones)
+		{
+			aabb.encapsulate(bone.getTransform().getTranslate());
+		}
+	}
+
+	_boundingBox.set(aabb);
 }
 
 _NAME_END

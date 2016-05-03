@@ -64,9 +64,6 @@ GameServer::open() noexcept
 {
 	_timer = std::make_shared<Timer>();
 	_timer->open();
-
-	this->getGameApp()->addWindowSizeChangeCallback(std::bind(&GameServer::onWindowSizeChange, this));
-
 	return true;
 }
 
@@ -99,6 +96,8 @@ GameServer::start() noexcept
 
 			for (auto& it : _scenes)
 				it->setActive(true);
+
+			_timer->reset();
 
 			_isActive = true;
 		}
@@ -407,13 +406,6 @@ GameServer::update() noexcept
 
 		_isQuitRequest = true;
 	}
-}
-
-void
-GameServer::onWindowSizeChange() noexcept
-{
-	for (auto& it : _features)
-		it->onWindowSizeChange();
 }
 
 _NAME_END

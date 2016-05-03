@@ -88,10 +88,18 @@ struct MouseButtonEvent
 struct MouseWheelEvent
 {
 	std::uint64_t timestamp;
-	std::uint32_t windowID;
+	std::uint64_t windowID;
 	std::uint8_t _state;
 	int x;
 	int y;
+};
+
+struct SizeChangeEvent
+{
+	std::uint64_t timestamp;
+	std::uint64_t windowID;
+	std::uint32_t w;
+	std::uint32_t h;
 };
 
 struct JoyAxisEvent {};
@@ -124,6 +132,8 @@ public:
 		TouchMotionUp,
 		TouchMotionCancel,
 
+		SizeChange,
+
 		GetFocus,
 		LostFocus,
 
@@ -142,6 +152,7 @@ public:
 	JoyHatEvent  jhat;
 	JoyButtonEvent jbutton;
 	JoyDeviceEvent jdevice;
+	SizeChangeEvent change;
 };
 
 _NAME_END

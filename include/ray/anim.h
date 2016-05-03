@@ -123,7 +123,7 @@ public:
 
 	AnimationPropertyPtr clone() noexcept;
 
-	void updateBone(Bones& _bones) noexcept;
+	void updateBone(Bones& _bones, float delta) noexcept;
 	void updateBonePose(Bones& _bones) noexcept;
 
 	MotionSegment findMotionSegment(int frame, const std::vector<std::size_t>& motions) noexcept;
@@ -144,7 +144,11 @@ private:
 private:
 
 	std::string _name;
+
+	std::size_t _fps;
 	std::size_t _frame;
+
+	float _delta;
 
 	InverseKinematics _iks;
 

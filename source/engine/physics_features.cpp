@@ -99,13 +99,16 @@ PhysicFeatures::onOpenScene(GameScenePtr scene) except
 	_physicsScenes[instance] = std::make_shared<PhysicsScene>();
 	_physicsScenes[instance]->setup(setting);
 
-	_physics->addPhysicsScene(_physicsScenes[instance]);
+	if (_physics)
+		_physics->addPhysicsScene(_physicsScenes[instance]);
 }
 
 void
 PhysicFeatures::onCloseScene(GameScenePtr scene) noexcept
 {
-	_physics->removePhysicsScene(this->getPhysicsScene(scene));
+	if (_physics)
+		_physics->removePhysicsScene(this->getPhysicsScene(scene));
+
 	_physicsScenes[scene->getInstanceID()] = nullptr;
 }
 

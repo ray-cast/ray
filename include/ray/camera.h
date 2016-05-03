@@ -60,8 +60,9 @@ public:
 	void setRatio(float ratio) noexcept;
 	float getRatio() const noexcept;
 
-	void setViewport(const Viewport& viewport) noexcept;
-	const Viewport&  getViewport() const noexcept;
+	void setViewport(const float4& viewport) noexcept;
+	const float4& getViewport() const noexcept;
+	float4 getPixelViewport() const noexcept;
 
 	void setOrtho(float left, float right, float top, float bottom) noexcept;
 	void getOrtho(float& left, float& right, float& top, float& bottom) noexcept;
@@ -101,6 +102,9 @@ public:
 	void setCameraOrder(CameraOrder order) noexcept;
 	CameraOrder getCameraOrder() const noexcept;
 
+	void setGraphicsSwapchain(GraphicsSwapchainPtr swapchin) noexcept;
+	GraphicsSwapchainPtr getGraphicsSwapchain() const noexcept;
+
 	void setFramebuffer(GraphicsFramebufferPtr texture) noexcept;
 	GraphicsFramebufferPtr getFramebuffer() const noexcept;
 
@@ -129,8 +133,7 @@ private:
 	float _znear;
 	float _zfar;
 
-	Viewport _viewport;
-
+	float4 _viewport;
 	float4 _clearColor;
 	GraphicsClearFlags _clearFlags;
 
@@ -138,6 +141,7 @@ private:
 	CameraOrder  _cameraOrder;
 	CameraRenderFlags _cameraRenderFlags;
 
+	GraphicsSwapchainPtr _swapchain;
 	GraphicsFramebufferPtr _renderTexture;
 
 	RenderDataManagerPtr _dataManager;

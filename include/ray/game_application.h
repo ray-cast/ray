@@ -73,11 +73,6 @@ public:
 
 	bool sendInputEvent(const InputEvent& event) noexcept;
 	bool postInputEvent(const InputEvent& event) noexcept;
-
-	void setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept;
-	void getWindowResolution(std::uint32_t& w, std::uint32_t& h) noexcept;
-	void addWindowSizeChangeCallback(std::function<void()> func) noexcept;
-	void removeWindowSizeChangeCallback(std::function<void()> func) noexcept;
 	
 	void print(const std::string& message) noexcept;
 
@@ -90,9 +85,6 @@ private:
 private:
 
 	bool _isInitialize;
-
-	std::uint32_t _width;
-	std::uint32_t _height;
 
 	std::string _workDir;
 	std::string _engineDir;

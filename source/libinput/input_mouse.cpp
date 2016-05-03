@@ -43,6 +43,8 @@ __ImplementSubInterface(DefaultInputMouse, InputMouse, "DefaultInputMouse")
 DefaultInputMouse::DefaultInputMouse() noexcept
 	: _mouseX(0)
 	, _mouseY(0)
+	, _centerX(0)
+	, _centerY(0)
 	, _isMouseLock(false)
 	, _isMouseLocked(false)
 	, _isMouseHide(false)
@@ -59,10 +61,7 @@ DefaultInputMouse::lockMouse() noexcept
 {
 	if (!isLockedMouse())
 	{
-		this->hideMouse();
-
-		_lockX = _mouseX;
-		_lockY = _mouseY;
+		this->onHideMouse();
 
 		_isMouseLock = true;
 		_isMouseLocked = true;
@@ -74,7 +73,7 @@ DefaultInputMouse::unlockMouse() noexcept
 {
 	if (isLockedMouse())
 	{
-		this->showMouse();
+		this->onShowMouse();
 
 		_isMouseLock = false;
 		_isMouseLocked = false;
@@ -111,6 +110,18 @@ bool
 DefaultInputMouse::isShowMouse() noexcept
 {
 	return !_isMouseHide;
+}
+
+float
+DefaultInputMouse::getAxisX() const noexcept
+{
+	return _axisX;
+}
+
+float
+DefaultInputMouse::getAxisY() const noexcept
+{
+	return _axisY;
 }
 
 void
@@ -164,10 +175,8 @@ DefaultInputMouse::onFrameBegin() noexcept
 void
 DefaultInputMouse::onFrameEnd() noexcept
 {
-	if (_isMouseLocked)
-	{
-		this->setPosition(_lockX, _lockY);
-	}
+	if (this->isLockedMouse())
+		this->setPosition(_centerX, _centerY);
 }
 
 void
@@ -199,6 +208,8 @@ DefaultInputMouse::onInputEvent(const InputEvent& event) noexcept
 	{
 		_mouseX = event.motion.x;
 		_mouseY = event.motion.y;
+		_axisX = (float)(_mouseX - _centerX) / _centerX;
+		_axisY = (float)(_mouseY - _centerY) / _centerY;
 	}
 	break;
 	case InputEvent::MouseWheelDown:
@@ -236,6 +247,11 @@ DefaultInputMouse::onInputEvent(const InputEvent& event) noexcept
 	case InputEvent::Reset:
 		this->onReset();
 		break;
+	case InputEvent::SizeChange:
+	{
+		_centerX = event.change.w >> 1;
+		_centerY = event.change.h >> 1;
+	}
 	default:
 		break;
 	}

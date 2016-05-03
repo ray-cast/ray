@@ -54,6 +54,9 @@ public:
 	virtual void setCaptureObject(CaptureObject window) noexcept;
 	virtual CaptureObject getCaptureObject() const noexcept;
 
+	virtual float getAxisX() const noexcept;
+	virtual float getAxisY() const noexcept;
+
 	virtual void setMousePos(int x, int y) noexcept;
 	virtual void getMousePos(int& x, int& y) const noexcept;
 

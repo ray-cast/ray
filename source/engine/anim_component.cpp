@@ -41,6 +41,7 @@
 #include <ray/mstream.h>
 #include <ray/ioserver.h>
 #include <ray/utf8.h>
+#include <ray/game_server.h>
 
 _NAME_BEGIN
 
@@ -140,10 +141,13 @@ AnimotionComponent::onFrameEnd() noexcept
 		if (!component)
 			return;
 
+		auto mesh = component->downcast<MeshComponent>()->getMesh();
 		if (component->downcast<MeshComponent>()->getMesh())
 		{
-			_animtion->updateBone(component->downcast<MeshComponent>()->getMesh()->getBoneArray());
-			_animtion->updateBonePose(component->downcast<MeshComponent>()->getMesh()->getBoneArray());
+			_animtion->updateBone(mesh->getBoneArray(), this->getGameServer()->getTimer()->delta());
+			_animtion->updateBonePose(mesh->getBoneArray());
+
+			mesh->computeBoundingBoxSkeleton();
 		}
 	}
 }
@@ -186,7 +190,7 @@ AnimotionComponent::_buildAnimotion(const std::string& filename) noexcept
 			_animtion->setBoneArray(mesh->getBoneArray());
 			_animtion->setIKArray(mesh->getInverseKinematics());
 			_animtion->setCurrentFrame(0);
-			_animtion->updateBone(mesh->getBoneArray());
+			_animtion->updateBone(mesh->getBoneArray(), 0);
 			_animtion->updateBonePose(mesh->getBoneArray());
 		}
 

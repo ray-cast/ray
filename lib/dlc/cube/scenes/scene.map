@@ -107,8 +107,6 @@
             <attribute aperture="75.0"/>
             <attribute znear="0.1"/>
             <attribute zfar="1000.0"/>
-            <attribute w="1376"/>
-            <attribute h="768"/>
         </component>
         <component class="FirstPersonCamera">
         </component>

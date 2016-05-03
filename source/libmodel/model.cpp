@@ -56,16 +56,7 @@ Model::load(StreamReader& stream, ModelType type) noexcept
 
 	_Myhandler impl;
 	if (this->find(stream, type, impl))
-	{
-		if (impl->doLoad(*this, stream))
-		{
-			for (auto& it : _meshes)
-			{
-				it->computeBoundingBox();
-			}
-			return true;
-		}
-	}
+		return impl->doLoad(*this, stream);
 
 	return false;
 }

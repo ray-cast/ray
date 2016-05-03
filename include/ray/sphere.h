@@ -68,6 +68,13 @@ public:
 		return _box.empty();
 	}
 
+	void set(const AABBt<T>& aabb) noexcept
+	{
+		_box = aabb;
+		_center = _box.center();
+		_radius = math::length(_box.size()) * 0.5f;
+	}
+
 	void reset() noexcept
 	{
 		_radius = 0;

@@ -56,7 +56,7 @@ private:
 	void yawCamera(float speed) noexcept;
 	void moveCamera(float speed) noexcept;
 	void rotateCamera(float angle, const ray::float3& axis) noexcept;
-	void rotateCamera(float mouseX, float mouseY, float lastX, float lastY) noexcept;
+	void rotateCamera(float axisX, float axisY) noexcept;
 
 	ray::GameComponentPtr clone() const noexcept;
 
@@ -66,11 +66,9 @@ private:
 	float _gravity;
 	float _maxVelocityChange;
 	float _jumpHeight;
-	float _lastX;
-	float _lastY;
 
-	std::uint32_t _centerX;
-	std::uint32_t _centerY;
+	float _sensitivityX;
+	float _sensitivityY;
 };
 
 #endif

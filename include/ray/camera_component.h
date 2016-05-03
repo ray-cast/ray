@@ -77,8 +77,9 @@ public:
 	Vector3 screenToWorld(const Vector3& pos) const noexcept;
 	Vector3 screenToDirection(const Vector2& pos) const noexcept;
 
-	void setViewport(const Viewport& viewport) noexcept;
-	const Viewport&  getViewport() const noexcept;
+	void setViewport(const float4& viewport) noexcept;
+	const float4& getViewport() const noexcept;
+	float4 getPixelViewport() const noexcept;
 
 	void setCameraType(CameraType type) noexcept;
 	CameraType getCameraType() const noexcept;

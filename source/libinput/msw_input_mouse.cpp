@@ -72,17 +72,12 @@ MSWInputMouse::onChangePosition(int x, int y) noexcept
 void
 MSWInputMouse::onInputEvent(const InputEvent& event) noexcept
 {
-	switch (event.event)
-	{
-	case InputEvent::MouseMotion:
+	DefaultInputMouse::onInputEvent(event);
+
+	if (event.event == InputEvent::MouseMotion)
 	{
 		_mouseOffsetX = event.motion.xrel - event.motion.x;
 		_mouseOffsetY = event.motion.yrel - event.motion.y;
-		DefaultInputMouse::onInputEvent(event);
-		break;
-	default:
-		DefaultInputMouse::onInputEvent(event);
-	}
 	}
 }
 

@@ -35,9 +35,7 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include "first_person_camera.h"
-
 #include <ray/game_server.h>
-#include <ray/render_system.h>
 #include <ray/input_feature.h>
 #include <ray/physics_character_component.h>
 #include <ray/camera_component.h>
@@ -49,8 +47,8 @@ FirstPersonCameraComponent::FirstPersonCameraComponent() noexcept
 	, _gravity(15)
 	, _maxVelocityChange(1.0)
 	, _jumpHeight(10)
-	, _lastX(0)
-	, _lastY(0)
+	, _sensitivityX(150)
+	, _sensitivityY(150)
 {
 }
 
@@ -61,10 +59,9 @@ FirstPersonCameraComponent::~FirstPersonCameraComponent() noexcept
 void
 FirstPersonCameraComponent::onActivate() noexcept
 {
-	ray::RenderSystem::instance()->getWindowResolution(_centerX, _centerY);
-
-	_centerX *= 0.5;
-	_centerY *= 0.5;
+	auto cameraComponent = this->getComponent<ray::CameraComponent>();
+	if (cameraComponent)
+		_sensitivityX = _sensitivityY * cameraComponent->getRatio();
 }
 
 void
@@ -149,16 +146,13 @@ FirstPersonCameraComponent::onFrame() noexcept
 
 		if (input->isLockedCursor())
 		{
-			int mouseX, mouseY;
-			input->getMousePos(mouseX, mouseY);
-			rotateCamera(mouseX, mouseY, _centerX, _centerY);
+			rotateCamera(input->getAxisX(), input->getAxisY());
 		}
 		else
 		{
 			if (input->getButtonDown(ray::InputButton::Code::LEFT) &&
 				!input->getKey(ray::InputKey::Code::LCTRL))
 			{
-				input->setMousePos(_centerX, _centerY);
 				input->lockCursor(true);
 			}
 		}
@@ -187,16 +181,13 @@ FirstPersonCameraComponent::rotateCamera(float angle, const ray::float3& axis) n
 }
 
 void
-FirstPersonCameraComponent::rotateCamera(float mouseX, float mouseY, float lastX, float lastY) noexcept
+FirstPersonCameraComponent::rotateCamera(float axisX, float axisY) noexcept
 {
-	if (mouseX == lastX && mouseY == lastY)
-		return;
-
-	float angleY = -(lastX - mouseX);
-	float angleX = -(lastY - mouseY);
+	float angleY = axisX * _sensitivityX;
+	float angleX = axisY * _sensitivityY;
 
 	float angle = angleX + this->getGameObject()->getEulerAngles().x;
-	if (angle > -90.0 && angle < 90.0 || std::isinf(angle))
+	if (angle > -89.0f && angle < 89.0f && !std::isinf(angle))
 		rotateCamera(angleX, this->getGameObject()->getRight());
 
 	rotateCamera(angleY, ray::float3::UnitY);

@@ -122,7 +122,9 @@ BoneAnimation::getInterpolation() const noexcept
 }
 
 AnimationProperty::AnimationProperty() noexcept
-	:_frame(0)
+	: _frame(0)
+	, _fps(30)
+	, _delta(0)
 {
 }
 
@@ -262,12 +264,19 @@ AnimationProperty::clone() noexcept
 }
 
 void
-AnimationProperty::updateBone(Bones& bones) noexcept
+AnimationProperty::updateBone(Bones& bones, float delta) noexcept
 {
 	this->updateBoneMotion(bones);
 	this->updateBoneMatrix(bones);
 	this->updateIK(bones);
-	_frame++;
+
+	_delta += delta;
+
+	while (_delta > (1.0f / _fps))
+	{
+		_frame++;
+		_delta -= 1.0f / _fps;
+	}
 }
 
 void
@@ -301,7 +310,7 @@ AnimationProperty::updateBoneMotion(Bones& _bones) noexcept
 		{
 			Vector3 position;
 			Quaternion rotate;
-			this->interpolateMotion(rotate, position, motion, _frame / 2);
+			this->interpolateMotion(rotate, position, motion, _frame);
 
 			if (bone.getParent() == (-1))
 			{

@@ -420,14 +420,6 @@ GuiFeature::onDeactivate() noexcept
 }
 
 void
-GuiFeature::onWindowSizeChange() except
-{
-	std::uint32_t w, h;
-	this->getGameServer()->getGameApp()->getWindowResolution(w, h);
-	_platform->setViewport(w, h);
-}
-
-void
 GuiFeature::onMessage(const MessagePtr& message) except
 {
 	assert(_platform);
@@ -458,6 +450,8 @@ GuiFeature::onMessage(const MessagePtr& message) except
 			case InputEvent::Character:
 				_platform->injectKeyPress(KeyCodetoGuiKey(InputKey::Code::None), event.key.keysym.unicode);
 				break;
+			case InputEvent::SizeChange:
+				_platform->setViewport(event.change.w, event.change.h);
 			default:
 				return;
 			}

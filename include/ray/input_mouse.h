@@ -56,6 +56,9 @@ public:
 	void hideMouse() noexcept;
 	bool isShowMouse() noexcept;
 
+	float getAxisX() const noexcept;
+	float getAxisY() const noexcept;
+
 	void setPosition(int x, int y) noexcept;
 	void getPosition(int& x, int& y) const noexcept;
 
@@ -83,15 +86,18 @@ private:
 	DefaultInputMouse(const DefaultInputMouse&) noexcept = delete;
 	DefaultInputMouse& operator=(const DefaultInputMouse&) noexcept = delete;
 
-private:
+protected:
 
 	bool _isMouseLock;
 	bool _isMouseLocked;
 
 	bool _isMouseHide;
 
-	int _lockX;
-	int _lockY;
+	float _axisX;
+	float _axisY;
+
+	int _centerX;
+	int _centerY;
 
 	int _mouseX;
 	int _mouseY;

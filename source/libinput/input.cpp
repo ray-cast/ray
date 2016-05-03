@@ -108,6 +108,22 @@ DefaultInput::getCaptureObject() const noexcept
 	return nullptr;
 }
 
+float 
+DefaultInput::getAxisX() const noexcept
+{
+	if (_mouseCaptureDevice)
+		return _mouseCaptureDevice->getAxisX();
+	return 0.0f;
+}
+
+float 
+DefaultInput::getAxisY() const noexcept
+{
+	if (_mouseCaptureDevice)
+		return _mouseCaptureDevice->getAxisY();
+	return 0.0f;
+}
+
 void
 DefaultInput::setMousePos(int x, int y) noexcept
 {

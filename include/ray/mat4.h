@@ -205,23 +205,42 @@ public:
 			- a4*b2*c3*d1 + a4*b2*c1*d3 - a4*b3*c1*d2 + a4*b3*c2*d1;
 	}
 
+	bool isIdentity() const noexcept
+	{
+		const static T epsilon = 10e-3f;
+
+		return (
+			a2 <= epsilon && a2 >= -epsilon &&
+			a3 <= epsilon && a3 >= -epsilon &&
+			b1 <= epsilon && b1 >= -epsilon &&
+			b3 <= epsilon && b3 >= -epsilon &&
+			c1 <= epsilon && c1 >= -epsilon &&
+			c2 <= epsilon && c2 >= -epsilon &&
+			a4 <= epsilon && a4 >= -epsilon &&
+			b4 <= epsilon && b4 >= -epsilon &&
+			c4 <= epsilon && c4 >= -epsilon &&
+			a1 <= 1.f + epsilon && a1 >= 1.f - epsilon &&
+			b2 <= 1.f + epsilon && b2 >= 1.f - epsilon &&
+			c3 <= 1.f + epsilon && c3 >= 1.f - epsilon);
+	}
+
 	bool isOnlyTranslate() const noexcept
 	{
 		const static T epsilon = 10e-3f;
 
 		return (
-			a1 <= epsilon && a1 >= -epsilon &&
 			a2 <= epsilon && a2 >= -epsilon &&
 			a3 <= epsilon && a3 >= -epsilon &&
 			b1 <= epsilon && b1 >= -epsilon &&
-			b2 <= epsilon && b2 >= -epsilon &&
 			b3 <= epsilon && b3 >= -epsilon &&
 			c1 <= epsilon && c1 >= -epsilon &&
 			c2 <= epsilon && c2 >= -epsilon &&
-			c3 <= epsilon && c3 >= -epsilon &&
-			a4 <= 1.f + epsilon && a4 >= 1.f - epsilon &&
-			b4 <= 1.f + epsilon && b4 >= 1.f - epsilon &&
-			c4 <= 1.f + epsilon && c4 >= 1.f - epsilon);
+			a4 >= epsilon &&
+			b4 >= epsilon &&
+			c4 >= epsilon &&
+			a1 <= 1.f + epsilon && a1 >= 1.f - epsilon &&
+			b2 <= 1.f + epsilon && b2 >= 1.f - epsilon &&
+			c3 <= 1.f + epsilon && c3 >= 1.f - epsilon);
 	}
 
 	Matrix4x4t<T>& applyMatrix(const Matrix4x4t<T>& m) noexcept

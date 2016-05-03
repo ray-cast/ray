@@ -45,11 +45,11 @@ _NAME_BEGIN
 
 SSAO::Setting::Setting() noexcept
 	: radius(1.0)
-	, bias(0.002)
+	, bias(0.02)
 	, intensity(2)
 	, blur(true)
 	, blurRadius(6)
-	, blurScale(1.0)
+	, blurScale(1.5)
 	, blurSharpness(4)
 {
 }

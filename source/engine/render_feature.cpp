@@ -42,6 +42,7 @@
 #include <ray/game_scene.h>
 #include <ray/game_server.h>
 #include <ray/game_application.h>
+#include <ray/input_feature.h>
 
 _NAME_BEGIN
 
@@ -133,12 +134,17 @@ RenderFeature::onCloseScene(GameScenePtr scene) noexcept
 	}
 }
 
-void
-RenderFeature::onWindowSizeChange() except
+void 
+RenderFeature::onMessage(const MessagePtr& message) except
 {
-	std::uint32_t w, h;
-	this->getGameServer()->getGameApp()->getWindowResolution(w, h);
-	RenderSystem::instance()->setWindowResolution(w, h);
+	if (message->isInstanceOf<InputMessage>())
+	{
+		auto inputMessage = message->downcast<InputMessage>();
+		auto& inputEvent = inputMessage->getEvent();
+
+		if (InputEvent::SizeChange == inputEvent.event)
+			RenderSystem::instance()->setWindowResolution(inputEvent.change.w, inputEvent.change.h);
+	}
 }
 
 void

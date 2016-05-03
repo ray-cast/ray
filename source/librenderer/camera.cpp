@@ -35,7 +35,9 @@
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
 #include <ray/camera.h>
+#include <ray/graphics_swapchain.h>
 #include <ray/graphics_texture.h>
+#include <ray/render_system.h>
 #include <ray/render_object_manager.h>
 
 _NAME_BEGIN
@@ -51,7 +53,7 @@ Camera::Camera() noexcept
 	, _ratio(1.0f)
 	, _znear(1.0f)
 	, _zfar(100.0f)
-	, _viewport(0, 0, 0, 0)
+	, _viewport(0.0f, 0.0f, 1.0f, 1.0f)
 	, _clearFlags(GraphicsClearFlagBits::GraphicsClearFlagAllBit)
 	, _clearColor(float4(0.1, 0.1, 0.1, 1.0))
 	, _cameraType(CameraType::CameraTypePerspective)
@@ -60,6 +62,10 @@ Camera::Camera() noexcept
 	, _needUpdateProject(true)
 	, _needUpdateViewProject(true)
 {
+	std::uint32_t width, height;
+	RenderSystem::instance()->getWindowResolution(width, height);
+
+	_ratio = (float)width / height;
 	_dataManager = std::make_shared<DefaultRenderDataManager>();
 }
 
@@ -202,15 +208,17 @@ Camera::getClipConstant() const noexcept
 float3
 Camera::worldToScreen(const float3& pos) const noexcept
 {
-	int w = (int)_viewport.width >> 1;
-	int h = (int)_viewport.height >> 1;
+	float4 viewport = this->getPixelViewport();
+
+	float w = viewport.z * 0.5f;
+	float h = viewport.w * 0.5f;
 
 	float4 v = float4(pos, 1.0) * this->getViewProject();
 	if (v.w != 0)
 		v /= v.w;
 
-	v.x = v.x * w + w + _viewport.left;
-	v.y = v.y * h + h + _viewport.top;
+	v.x = v.x * w + w + viewport.x;
+	v.y = v.y * h + h + viewport.y;
 
 	return float3(v.x, v.y, v.z);
 }
@@ -230,14 +238,16 @@ Camera::worldToProject(const float3& pos) const noexcept
 float3
 Camera::screenToWorld(const float3& pos) const noexcept
 {
-	int w = (int)_viewport.width >> 1;
-	int h = (int)_viewport.height >> 1;
+	float4 viewport = this->getPixelViewport();
+
+	float w = viewport.z * 0.5f;
+	float h = viewport.w * 0.5f;
 
 	float4 v(pos, 1.0);
-	v.y = _viewport.height - pos.y;
+	v.y = viewport.w - pos.y;
 
-	v.x = v.x / w - 1.0f - _viewport.left;
-	v.y = v.y / h - 1.0f - _viewport.top;
+	v.x = v.x / w - 1.0f - viewport.x;
+	v.y = v.y / h - 1.0f - viewport.y;
 
 	v = v * this->getViewProjectInverse();
 	if (v.w != 0)
@@ -249,13 +259,15 @@ Camera::screenToWorld(const float3& pos) const noexcept
 float3
 Camera::screenToDirection(const float2& pos) const noexcept
 {
-	int w = (int)_viewport.width >> 1;
-	int h = (int)_viewport.height >> 1;
+	float4 viewport = this->getPixelViewport();
+
+	float w = viewport.z * 0.5f;
+	float h = viewport.w * 0.5f;
 
 	float4 v(pos, 1.0, 1.0);
 
-	v.x = v.x / w - 1.0f - _viewport.left;
-	v.y = v.y / h - 1.0f - _viewport.top;
+	v.x = v.x / w - 1.0f - viewport.x;
+	v.y = v.y / h - 1.0f - viewport.y;
 
 	return (v * this->getProjectInverse()).xyz();
 }
@@ -285,9 +297,37 @@ Camera::getClearFlags() const noexcept
 }
 
 void
-Camera::setViewport(const Viewport& viewport) noexcept
+Camera::setViewport(const float4& viewport) noexcept
 {
 	_viewport = viewport;
+}
+
+const float4&
+Camera::getViewport() const noexcept
+{
+	return _viewport;
+}
+
+float4
+Camera::getPixelViewport() const noexcept
+{
+	std::uint32_t width, height;
+	if (_swapchain)
+	{
+		width = _swapchain->getGraphicsSwapchainDesc().getWidth();
+		height = _swapchain->getGraphicsSwapchainDesc().getHeight();
+	}
+	else
+	{
+		RenderSystem::instance()->getWindowResolution(width, height);
+	}
+
+	float4 result;
+	result.x = _viewport.x * width;
+	result.y = _viewport.y * height;
+	result.z = _viewport.z * width;
+	result.w = _viewport.w * height;
+	return result;
 }
 
 void
@@ -309,12 +349,6 @@ Camera::setCameraRenderFlags(CameraRenderFlags flags) noexcept
 	_cameraRenderFlags = flags;
 }
 
-const Viewport&
-Camera::getViewport() const noexcept
-{
-	return _viewport;
-}
-
 CameraType
 Camera::getCameraType() const noexcept
 {
@@ -331,6 +365,18 @@ CameraRenderFlags
 Camera::getCameraRenderFlags() const noexcept
 {
 	return _cameraRenderFlags;
+}
+
+void
+Camera::setGraphicsSwapchain(GraphicsSwapchainPtr swapchin) noexcept
+{
+	_swapchain = swapchin;
+}
+
+GraphicsSwapchainPtr
+Camera::getGraphicsSwapchain() const noexcept
+{
+	return _swapchain;
 }
 
 void

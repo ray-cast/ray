@@ -34,10 +34,8 @@
 // | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // | OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // +----------------------------------------------------------------------
-#if defined(_BUILD_RENDERER)
 #include <ray/camera_component.h>
 #include <ray/render_feature.h>
-#include <ray/render_system.h>
 #include <ray/game_server.h>
 #include <ray/game_application.h>
 
@@ -172,15 +170,21 @@ CameraComponent::screenToDirection(const Vector2& pos) const noexcept
 }
 
 void
-CameraComponent::setViewport(const Viewport& viewport) noexcept
+CameraComponent::setViewport(const float4& viewport) noexcept
 {
 	_camera->setViewport(viewport);
 }
 
-const Viewport&
+const float4&
 CameraComponent::getViewport() const noexcept
 {
 	return _camera->getViewport();
+}
+
+float4
+CameraComponent::getPixelViewport() const noexcept
+{
+	return _camera->getPixelViewport();
 }
 
 void
@@ -254,13 +258,7 @@ CameraComponent::load(iarchive& reader) noexcept
 		this->setOrtho(ortho.x, ortho.y, ortho.z, ortho.w);
 
 	if (reader.getValue("viewport", viewport))
-		this->setViewport(Viewport(viewport.x, viewport.y, viewport.z, viewport.w));
-	else
-	{
-		std::uint32_t w, h;
-		RenderSystem::instance()->getWindowResolution(w, h);
-		this->setViewport(Viewport(0, 0, w, h));
-	}
+		this->setViewport(float4(viewport.x, viewport.y, viewport.z, viewport.w));
 
 	if (reader.getValue("color", clearColor))
 		_camera->setClearColor(clearColor);
@@ -346,13 +344,7 @@ CameraComponent::onActivate() noexcept
 		auto renderScene = renderer->getRenderScene(this->getGameObject()->getGameScene());
 		if (renderScene)
 		{
-			std::uint32_t w, h;
-			this->getGameServer()->getGameApp()->getWindowResolution(w, h);
-
-			_camera->setRatio((float)w / h);
-			_camera->setViewport(Viewport(0, 0, w, h));
 			_camera->setRenderScene(renderScene);
-
 			_camera->setTransform(
 				this->getGameObject()->getTransform(),
 				this->getGameObject()->getTransformInverse(),
@@ -403,5 +395,3 @@ CameraComponent::clone() const noexcept
 }
 
 _NAME_END
-
-#endif

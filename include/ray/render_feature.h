@@ -60,18 +60,17 @@ public:
 	GameFeaturePtr clone() const noexcept;
 
 private:
-
 	void onActivate() except;
 	void onDeactivate() noexcept;
 
 	void onOpenScene(GameScenePtr scene) except;
 	void onCloseScene(GameScenePtr scene) noexcept;
 
-	void onWindowSizeChange() except;
-
 	void onFrameBegin() except;
 	void onFrame() except;
 	void onFrameEnd() except;
+
+	void onMessage(const MessagePtr& message) except;
 
 private:
 	RenderFeature(const RenderFeature&) = delete;

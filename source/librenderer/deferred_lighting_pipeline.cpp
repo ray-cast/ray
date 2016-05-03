@@ -778,17 +778,13 @@ DeferredLightingPipeline::onRenderPost() noexcept
 	if (!camera)
 		return;
 
-	auto viewport = camera->getViewport();
-	if (viewport.width == 0 || viewport.height == 0)
-	{
-		std::uint32_t width, height;
-		_pipeline->getWindowResolution(width, height);
+	float4 pixel = camera->getPixelViewport();
 
-		viewport.left = 0;
-		viewport.top = 0;
-		viewport.width = width;
-		viewport.height = height;
-	}
+	Viewport viewport;
+	viewport.left = pixel.x;
+	viewport.top = pixel.y;
+	viewport.width = pixel.z;
+	viewport.height = pixel.w;
 
 	auto flags = camera->getCameraRenderFlags();
 	if (flags & CameraRenderFlagBits::CameraRenderTextureBit)

@@ -159,6 +159,12 @@ MeshComponent::load(iarchive& reader) noexcept
 			instance->setDirectory(util::directory(this->getName()));
 
 			auto mesh = instance->getMeshsList().front();
+
+			if (mesh->getBoneArray().empty())
+				mesh->computeBoundingBox();
+			else
+				mesh->computeBoundingBoxSkeleton();
+
 			this->setMesh(mesh->clone());
 			this->setSharedMesh(mesh);
 		}

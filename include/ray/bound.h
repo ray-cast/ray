@@ -61,6 +61,11 @@ public:
 		this->encapsulate(pt, n);
 	}
 
+	void set(const AABBt<T>& aabb) noexcept
+	{
+		_sp.set(aabb);
+	}
+
 	Vector3t<T> size() const noexcept
 	{
 		return _sp.aabb().size();

@@ -219,6 +219,7 @@ public:
 	void computeMorphNormals() noexcept;
 	void computeTangents() noexcept;
 	void computeBoundingBox() noexcept;
+	void computeBoundingBoxSkeleton() noexcept;
 
 	const Bound& getBoundingBox() const noexcept;
 	const Bound& getBoundingBoxDownwards() const noexcept;

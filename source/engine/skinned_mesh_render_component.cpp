@@ -43,6 +43,7 @@
 #include <ray/game_server.h>
 #include <ray/res_manager.h>
 #include <ray/graphics_data.h>
+#include <ray/geometry.h>
 
 _NAME_BEGIN
 
@@ -206,6 +207,9 @@ SkinnedMeshRenderComponent::onFrameEnd() noexcept
 	}
 
 	_jointData->unmap();
+
+	for (auto& renderObject : _renderObjects)
+		renderObject->setBoundingBox(mesh->getBoundingBox());
 }
 
 _NAME_END

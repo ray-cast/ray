@@ -59,18 +59,20 @@ ray::util::string _gameScenePath;
 
 void onWindowResize(GLFWwindow* glfwWindow, int w, int h)
 {
-	_gameApp->setWindowResolution(w, h);
+	ray::InputEvent inputEvent;
+	inputEvent.event = ray::InputEvent::SizeChange;
+	inputEvent.change.w = w;
+	inputEvent.change.h = h;
+	inputEvent.change.windowID = (std::uint64_t)::glfwGetWin32Window(_window);
+	inputEvent.change.timestamp = ::glfwGetTimerFrequency();
+	_gameApp->sendInputEvent(inputEvent);
 }
 
 void onWindowClose(GLFWwindow* glfwWindow)
 {
 	ray::InputEvent inputEvent;
 	inputEvent.event = ray::InputEvent::AppQuit;
-
-	auto event = ray::make_message<ray::InputMessage>();
-	event->setEvent(inputEvent);
-
-	_gameApp->sendMessage(event);
+	_gameApp->sendInputEvent(inputEvent);
 }
 
 void onWindowFocus(GLFWwindow* window, int focus)
@@ -168,7 +170,7 @@ bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 				return false;
 		}
 
-		return true;
+		return _gameApp->start();
 	}
 
 	return false;

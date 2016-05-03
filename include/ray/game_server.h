@@ -89,9 +89,6 @@ public:
 	void update() noexcept;
 
 private:
-	void onWindowSizeChange() noexcept;
-
-private:
 	friend GameApplication;
 	void _setGameApp(GameApplication* app) noexcept;
 

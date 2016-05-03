@@ -73,8 +73,6 @@ GameApplication::GameApplication() noexcept
 	, _workDir("")
 	, _engineDir("..\\..\\engine\\")
 	, _resourceBaseDir("..\\..\\dlc\\")
-	, _width(0)
-	, _height(0)
 {
 	_ioServer = IoServer::instance();
 	_ioInterface = IoInterface::instance();
@@ -95,9 +93,6 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) no
 		return false;
 
 	_ioInterface->open();
-
-	_width = width;
-	_height = height;
 
 	_gameServer = std::make_shared<GameServer>();
 	_gameServer->_setGameApp(this);
@@ -150,6 +145,17 @@ GameApplication::open(WindHandle hwnd, std::size_t width, std::size_t height) no
 #endif
 	
 	_isInitialize = this->start();
+	if (_isInitialize)
+	{
+		InputEvent inputEvent;
+		inputEvent.event = InputEvent::SizeChange;
+		inputEvent.change.windowID = (std::uint64_t)hwnd;
+		inputEvent.change.w = width;
+		inputEvent.change.h = height;
+		inputEvent.change.timestamp = 0;
+		this->sendInputEvent(inputEvent);
+	}
+
 	return _isInitialize;
 }
 
@@ -311,39 +317,6 @@ GameApplication::postInputEvent(const InputEvent& event) noexcept
 	if (_inputFeature)
 		return _inputFeature->downcast<InputFeature>()->postInputEvent(event);
 	return false;
-}
-
-void
-GameApplication::setWindowResolution(std::uint32_t w, std::uint32_t h) noexcept
-{
-	if (_width != w || _height != h)
-	{
-		_width = w;
-		_height = h;
-
-		_onWindowSizeChange.run();
-	}
-}
-
-void
-GameApplication::getWindowResolution(std::uint32_t& w, std::uint32_t& h) noexcept
-{
-	w = _width;
-	h = _height;
-}
-
-void
-GameApplication::addWindowSizeChangeCallback(std::function<void()> func) noexcept
-{
-	assert(!_onWindowSizeChange.find(func));
-	_onWindowSizeChange.attach(func);
-}
-
-void
-GameApplication::removeWindowSizeChangeCallback(std::function<void()> func) noexcept
-{
-	assert(_onWindowSizeChange.find(func));
-	_onWindowSizeChange.remove(func);
 }
 
 void

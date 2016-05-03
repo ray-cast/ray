@@ -57,6 +57,9 @@ public:
 	virtual void hideMouse() noexcept = 0;
 	virtual bool isShowMouse() noexcept = 0;
 
+	virtual float getAxisX() const noexcept = 0;
+	virtual float getAxisY() const noexcept = 0;
+
 	virtual void setPosition(int x, int y) noexcept = 0;
 	virtual void getPosition(int& x, int& y) const noexcept = 0;
 

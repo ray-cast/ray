@@ -591,17 +591,19 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			bone.setPosition(it.Position);
 			bone.setParent(it.Parent);
 			bone.setChild(it.ConnectedBoneIndex);
+			bone.setLeg(strstr(name, "¤Ò¤¶") ? true : false);
 
 			bones.push_back(bone);
 
 			if (it.Flag & PMX_BONE_IK)
 			{
 				IKAttr attr;
-				attr.IKBoneIndex = boneIndex;
-				attr.IKTargetBoneIndex = it.IKTargetBoneIndex;
-				attr.IKAngleLimit = it.IKLimitedRadian;
-				attr.IKLinkCount = it.IKLinkCount;
-				attr.IKLoopCount = it.IKLoopCount;
+				attr.boneIndex = boneIndex;
+				attr.targetBoneIndex = it.IKTargetBoneIndex;
+				attr.weight = RAD_TO_DEG(it.IKLimitedRadian) / 229.1831f;
+				attr.chainLength = it.IKLinkCount;
+				attr.iterations = it.IKLoopCount;
+
 				for (auto& bone : it.IKList)
 				{
 					IKChild child;
@@ -610,7 +612,7 @@ PMXHandler::doLoad(Model& model, StreamReader& stream) noexcept
 					child.MaximumRadian = bone.MaximumRadian;
 					child.RotateLimited = bone.RotateLimited;
 
-					attr.IKList.push_back(child);
+					attr.child.push_back(child);
 				}
 
 				iks.push_back(attr);

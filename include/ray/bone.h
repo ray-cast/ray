@@ -68,14 +68,14 @@ public:
 class EXPORT IKAttr
 {
 public:
-	std::uint16_t IKBoneIndex;
-	std::uint16_t IKTargetBoneIndex;
-	std::uint32_t IKLoopCount;
-	std::uint32_t IKLinkCount;
+	std::uint16_t boneIndex;
+	std::uint16_t targetBoneIndex;
+	std::uint32_t iterations;
+	std::uint32_t chainLength;
 
-	float IKAngleLimit;
+	float weight;
 
-	std::vector<IKChild> IKList;
+	std::vector<IKChild> child;
 };
 
 class EXPORT Bone final
@@ -103,6 +103,9 @@ public:
 	void setScaling(const float3& scale) noexcept;
 	const float3& getScaling() const noexcept;
 
+	void setLeg(bool leg) noexcept;
+	bool getLeg() const noexcept;
+
 	void setLocalTransform(const Matrix4x4& transform) noexcept;
 	const Matrix4x4& getLocalTransform() const noexcept;
 
@@ -114,6 +117,8 @@ public:
 
 private:
 	std::string _name;
+
+	bool _isLeg;
 
 	std::int16_t _parent;
 	std::int16_t _child;

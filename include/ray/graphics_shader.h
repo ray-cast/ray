@@ -124,16 +124,15 @@ private:
 	GraphicsUniform& operator=(const GraphicsUniform&) noexcept = delete;
 };
 
-class EXPORT GraphicsUniformBlock : public GraphicsParam
+class EXPORT GraphicsUniformBlock : public GraphicsUniform
 {
-	__DeclareSubInterface(GraphicsUniformBlock, GraphicsParam)
+	__DeclareSubInterface(GraphicsUniformBlock, GraphicsUniform)
 public:
 	GraphicsUniformBlock() noexcept;
 	~GraphicsUniformBlock() noexcept;
 
 	virtual std::uint32_t getBlockSize() const noexcept = 0;
 	virtual const GraphicsUniforms& getGraphicsUniforms() const noexcept = 0;
-	virtual GraphicsUniformType getType() const noexcept = 0;
 
 private:
 	GraphicsUniformBlock(const GraphicsUniformBlock&) noexcept = delete;

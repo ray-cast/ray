@@ -270,10 +270,10 @@ enum GraphicsBlendOp
 
 enum GraphicsColorMask
 {
-	GraphicsColorMaskR = 1UL << 0,
-	GraphicsColorMaskG = 1UL << 1,
-	GraphicsColorMaskB = 1UL << 2,
-	GraphicsColorMaskA = 1UL << 3,
+	GraphicsColorMaskR = 1,
+	GraphicsColorMaskG = 2,
+	GraphicsColorMaskB = 4,
+	GraphicsColorMaskA = 8,
 	GraphicsColorMaskRGB = GraphicsColorMaskR | GraphicsColorMaskG | GraphicsColorMaskB,
 	GraphicsColorMaskRGBA = GraphicsColorMaskR | GraphicsColorMaskG | GraphicsColorMaskB | GraphicsColorMaskA
 };
@@ -339,13 +339,13 @@ enum GraphicsStencilFace
 
 enum GraphicsClearFlagBits
 {
-	GraphicsClearFlagsColor = 1UL << 0,
-	GraphicsClearFlagsDepth = 1UL << 1,
-	GraphicsClearFlagsStencil = 1UL << 2,
-	GraphicsClearFlagsColorDepth = GraphicsClearFlagsColor | GraphicsClearFlagsDepth,
-	GraphicsClearFlagsColorStencil = GraphicsClearFlagsColor | GraphicsClearFlagsStencil,
-	GraphicsClearFlagsDepthStencil = GraphicsClearFlagsDepth | GraphicsClearFlagsStencil,
-	GraphicsClearFlagsAll = GraphicsClearFlagsColor | GraphicsClearFlagsDepth | GraphicsClearFlagsStencil
+	GraphicsClearFlagColorBit = 1,
+	GraphicsClearFlagDepthBit = 2,
+	GraphicsClearFlagStencilBit = 4,
+	GraphicsClearFlagColorDepthBit = GraphicsClearFlagColorBit | GraphicsClearFlagDepthBit,
+	GraphicsClearFlagColorStencilBit = GraphicsClearFlagColorBit | GraphicsClearFlagStencilBit,
+	GraphicsClearFlagDepthStencilBit = GraphicsClearFlagDepthBit | GraphicsClearFlagStencilBit,
+	GraphicsClearFlagAllBit = GraphicsClearFlagColorBit | GraphicsClearFlagDepthBit | GraphicsClearFlagStencilBit
 };
 
 typedef std::uint32_t GraphicsClearFlags;
@@ -666,14 +666,16 @@ enum GraphicsSamplerFilter
 
 enum GraphicsSampleFlagBits
 {
-	GraphicsSampleFlagBits1Bit = 0x00000001,
-	GraphicsSampleFlagBits2Bit = 0x00000002,
-	GraphicsSampleFlagBits4Bit = 0x00000004,
-	GraphicsSampleFlagBits8Bit = 0x00000008,
-	GraphicsSampleFlagBits16Bit = 0x00000010,
-	GraphicsSampleFlagBits32Bit = 0x00000020,
-	GraphicsSampleFlagBits64Bit = 0x00000040,
+	GraphicsSampleFlag1Bit = 0x00000001,
+	GraphicsSampleFlag2Bit = 0x00000002,
+	GraphicsSampleFlag4Bit = 0x00000004,
+	GraphicsSampleFlag8Bit = 0x00000008,
+	GraphicsSampleFlag16Bit = 0x00000010,
+	GraphicsSampleFlag32Bit = 0x00000020,
+	GraphicsSampleFlag64Bit = 0x00000040,
 };
+
+typedef std::uint32_t GraphicsSampleFlags;
 
 enum GraphicsDataType
 {
@@ -840,17 +842,20 @@ enum GraphicsViewUsageFlagBits
 	GraphicsViewUsageFlagBitsInputAttachmentBit = 0x00000080,
 };
 
-enum GraphicsUsageFlags
+typedef std::uint32_t GraphicsViewUsageFlags;
+
+enum GraphicsUsageFlagBits
 {
-	GraphicsUsageFlagsReadBit = 0x00000001,
-	GraphicsUsageFlagsWriteBit = 0x00000002,
-	GraphicsUsageFlagsPersistentBit = 0x00000004,
-	GraphicsUsageFlagsCoherentBit = 0x00000008,
-	GraphicsUsageFlagsFlushExplicitBit = 0x00000010,
-	GraphicsUsageFlagsDynamicStorageBit = 0x00000020,
-	GraphicsUsageFlagsClientStorageBit = 0x00000040,
-	GraphicsUsageFlagsImmutableStorage = 0x00000080
+	GraphicsUsageFlagReadBit = 0x00000001,
+	GraphicsUsageFlagWriteBit = 0x00000002,
+	GraphicsUsageFlagPersistentBit = 0x00000004,
+	GraphicsUsageFlagCoherentBit = 0x00000008,
+	GraphicsUsageFlagFlushExplicitBit = 0x00000010,
+	GraphicsUsageFlagDynamicStorageBit = 0x00000020,
+	GraphicsUsageFlagClientStorageBit = 0x00000040
 };
+
+typedef std::uint32_t GraphicsUsageFlags;
 
 enum GraphicsAccessFlagBits
 {
@@ -873,11 +878,13 @@ enum GraphicsCommandType
 	GraphicsCommandTypeMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsCommandQueueFlags
+enum GraphicsCommandQueueFlagBits
 {
-	GraphicsCommandQueueFlagsNone = 0,
-	GraphicsCommandQueueFlagsDisableGpuTimeOut = 0x1
+	GraphicsCommandQueueFlagNoneBit = 0,
+	GraphicsCommandQueueFlagDisableGpuTimeOutBit = 0x1
 };
+
+typedef std::uint32_t GraphicsCommandQueueFlags;
 
 enum GraphicsCommandQueuePriority
 {
@@ -889,11 +896,13 @@ enum GraphicsCommandQueuePriority
 	GraphicsCommandQueuePriorityMaxEnum = 0x7FFFFFFF
 };
 
-enum GraphicsCommandPoolFlags
+enum GraphicsCommandPoolFlagBits
 {
-	GraphicsCommandPoolTransientBit = 0x00000001,
-	GraphicsCommandPoolResetCommandBuffer = 0x00000002
+	GraphicsCommandPoolFlagTransientBit = 0x00000001,
+	GraphicsCommandPoolFlagResetCommandBufferBit = 0x00000002
 };
+
+typedef std::uint32_t GraphicsCommandPoolFlags;
 
 _NAME_END
 

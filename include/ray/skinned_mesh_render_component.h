@@ -49,12 +49,16 @@ public:
 	~SkinnedMeshRenderComponent() noexcept;
 
 private:
+	bool _buildDefaultMaterials(const std::string& filename) noexcept;
+
+private:
 	void onActivate() except;
 	void onDeactivate() noexcept;
 
+	void onFrameEnd() noexcept;
+
 private:
-	GeometryPtr _geometry;
-	RenderMeshPtr _renderBuffer;
+	GraphicsDataPtr _jointData;
 };
 
 _NAME_END

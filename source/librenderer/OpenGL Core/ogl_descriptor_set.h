@@ -145,6 +145,7 @@ public:
 	const std::vector<float4x4>& getFloat4x4Array() const noexcept;
 	GraphicsTexturePtr getTexture() const noexcept;
 	GraphicsSamplerPtr getTextureSampler() const noexcept;
+	GraphicsDataPtr getBuffer() const noexcept;
 
 	void setGraphicsUniform(GraphicsUniformPtr uniform) noexcept;
 	GraphicsUniformPtr getGraphicsUniform() const noexcept;

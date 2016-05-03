@@ -122,6 +122,7 @@
             <attribute castshadow="false"/>
             <attribute receiveshadow="false"/>
             <attribute flags="skybox"/>
+            <attribute skysize="1000"/>
             <attribute skymap="dlc:EnvLighting/texture/skybox.dds"/>
         </component>
     </object>

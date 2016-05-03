@@ -58,7 +58,6 @@ public:
 
 private:
 	bool _buildAnimotion(const std::string& filename) noexcept;
-	void _updateVertex(const Bones& bones, MeshPropertyPtr mesh, MeshPropertyPtr model);
 
 private:
 	virtual void onActivate() except;
@@ -70,9 +69,7 @@ private:
 	virtual void onAttachComponent(GameComponentPtr& component) noexcept;
 	virtual void onDetachComponent(GameComponentPtr& component) noexcept;
 
-	virtual void onFrameBegin() except;
-	virtual void onFrame() except;
-	virtual void onFrameEnd() except;
+	virtual void onFrameEnd() noexcept;
 
 private:
 

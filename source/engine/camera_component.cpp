@@ -293,11 +293,11 @@ CameraComponent::load(iarchive& reader) noexcept
 			flag = util::trim(flag, ' ');
 
 			if (flag == "color")
-				flags |= GraphicsClearFlagBits::GraphicsClearFlagsColor;
+				flags |= GraphicsClearFlagBits::GraphicsClearFlagColorBit;
 			else if (flag == "depth")
-				flags |= GraphicsClearFlagBits::GraphicsClearFlagsDepth;
+				flags |= GraphicsClearFlagBits::GraphicsClearFlagDepthBit;
 			else if (flag == "stencil")
-				flags |= GraphicsClearFlagBits::GraphicsClearFlagsStencil;
+				flags |= GraphicsClearFlagBits::GraphicsClearFlagStencilBit;
 		}
 
 		this->setCameraRenderFlags(flags);

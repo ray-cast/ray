@@ -51,7 +51,7 @@ public:
 	bool setup(const GraphicsDataDesc& dataDesc) noexcept;
 	void close() noexcept;
 
-	bool map(std::uint32_t offset, std::uint32_t count, void** data) noexcept;
+	bool map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept;
 	void unmap() noexcept;
 
 	VkBuffer getBuffer() const noexcept;

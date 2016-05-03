@@ -42,7 +42,6 @@ __ImplementSubInterface(OGLCoreGraphicsData, GraphicsData, "OGLCoreGraphicsData"
 
 OGLCoreGraphicsData::OGLCoreGraphicsData() noexcept
 	: _buffer(GL_NONE)
-	, _isMapping(GL_FALSE)
 {
 }
 
@@ -61,7 +60,6 @@ OGLCoreGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 	_dataSize = desc.getStreamSize();
 	_usage = desc.getUsage();
 	_desc = desc;
-	_isMapping = false;
 
 	auto type = desc.getType();
 	if (type == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer)
@@ -87,36 +85,24 @@ OGLCoreGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 	}
 
 	auto usage = desc.getUsage();
-	if (usage & GraphicsUsageFlags::GraphicsUsageFlagsImmutableStorage)
-	{
-		GLbitfield flags = GL_MAP_READ_BIT;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsReadBit)
-			flags |= GL_MAP_READ_BIT;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsWriteBit)
-			flags |= GL_MAP_WRITE_BIT;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsPersistentBit)
-			flags |= GL_MAP_PERSISTENT_BIT;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsCoherentBit)
-			flags |= GL_MAP_COHERENT_BIT;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsFlushExplicitBit)
-			flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsDynamicStorageBit)
-			flags |= GL_DYNAMIC_STORAGE_BIT;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsClientStorageBit)
-			flags |= GL_CLIENT_STORAGE_BIT;
 
-		glNamedBufferStorage(_buffer, _dataSize, desc.getStream(), flags);
-	}
-	else
-	{
-		GLenum flags = GL_STATIC_DRAW;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsReadBit)
-			flags = GL_STATIC_DRAW;
-		if (usage & GraphicsUsageFlags::GraphicsUsageFlagsWriteBit)
-			flags = GL_DYNAMIC_READ;
+	GLbitfield flags = GL_MAP_READ_BIT;
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagReadBit)
+		flags |= GL_MAP_READ_BIT;
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit)
+		flags |= GL_MAP_WRITE_BIT;
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagPersistentBit)
+		flags |= GL_MAP_PERSISTENT_BIT;
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagCoherentBit)
+		flags |= GL_MAP_COHERENT_BIT;
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagFlushExplicitBit)
+		flags |= GL_MAP_FLUSH_EXPLICIT_BIT;
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagDynamicStorageBit)
+		flags |= GL_DYNAMIC_STORAGE_BIT;
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagClientStorageBit)
+		flags |= GL_CLIENT_STORAGE_BIT;
 
-		glNamedBufferData(_buffer, _dataSize, desc.getStream(), flags);
-	}
+	glNamedBufferStorage(_buffer, _dataSize, desc.getStream(), flags);
 
 	return true;
 }
@@ -130,13 +116,6 @@ OGLCoreGraphicsData::is_open() const noexcept
 void
 OGLCoreGraphicsData::close() noexcept
 {
-	assert(!_isMapping);
-
-	if (_isMapping)
-	{
-		this->unmap();
-	}
-
 	if (_buffer)
 	{
 		glDeleteBuffers(1, &_buffer);
@@ -148,22 +127,6 @@ GLsizeiptr
 OGLCoreGraphicsData::size() const noexcept
 {
 	return _dataSize;
-}
-
-void
-OGLCoreGraphicsData::resize(const char* data, GLsizeiptr datasize) noexcept
-{
-	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsImmutableStorage)
-		return;
-
-	GLenum flags = GL_STATIC_DRAW;
-	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsReadBit)
-		flags = GL_STATIC_DRAW;
-	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsWriteBit)
-		flags = GL_DYNAMIC_READ;
-
-	glNamedBufferData(_buffer, datasize, data, flags);
-	_dataSize = datasize;
 }
 
 int
@@ -226,27 +189,17 @@ OGLCoreGraphicsData::write(const char* str, GLsizeiptr cnt) noexcept
 }
 
 bool
-OGLCoreGraphicsData::map(std::uint32_t offset, std::uint32_t count, void** data) noexcept
+OGLCoreGraphicsData::map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept
 {
 	assert(data);
-	assert(!_isMapping);
 	*data = glMapNamedBufferRange(_buffer, offset, count, GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
-	_isMapping = GL_TRUE;
-	return true;
+	return *data ? true : false;
 }
 
 void
 OGLCoreGraphicsData::unmap() noexcept
 {
-	assert(_isMapping);
 	glUnmapNamedBuffer(_buffer);
-	_isMapping = GL_FALSE;
-}
-
-bool
-OGLCoreGraphicsData::isMapping() const noexcept
-{
-	return _isMapping ? GL_TRUE : GL_FALSE;
 }
 
 GLuint

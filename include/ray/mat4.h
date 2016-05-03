@@ -422,14 +422,6 @@ public:
 		return makeRotate(angle, Vector3t<T>(x, y, z));
 	}
 
-	Matrix4x4t<T>& makeRotate(const Vector3t<T>& from, const Vector3t<T>& to) noexcept
-	{
-		Matrix3x3t<T> m3;
-		Matrix3x3t<T>::fromToMatrix(from, to, m3);
-		*this = Matrix4x4t<T>(m3);
-		return *this;
-	}
-
 	Matrix4x4t<T>& makeRotate(const Quaterniont<T>& q) noexcept
 	{
 		a1 = 1.0f - 2.0f * (q.y * q.y + q.z * q.z);
@@ -458,14 +450,11 @@ public:
 	Matrix4x4t<T>& makeRotate(T angle, const Vector3t<T>& axis) noexcept
 	{
 		T c, s;
-
 		math::sinCos(&s, &c, DEG_TO_RAD(angle));
 
-		Vector3t<T> v = ~axis;
-
-		T x = v.x;
-		T y = v.y;
-		T z = v.z;
+		T x = axis.x;
+		T y = axis.y;
+		T z = axis.z;
 
 		T t = 1 - c;
 		T tx = t*x, ty = t*y;

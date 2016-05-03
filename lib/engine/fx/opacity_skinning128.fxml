@@ -2,5 +2,5 @@
 <effect language="hlsl">
     <macro name="SKINNING" value="0" type="int"/>
     <macro name="NUM_JOINT" value="128" type="int"/>
-    <include name="sys:fx/opacity.fxml"/>
+    <include name="sys:fx/opacity_skinning.fxml"/>
 </effect>

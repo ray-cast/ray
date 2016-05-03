@@ -116,7 +116,7 @@ void onWindowMouseMotion(GLFWwindow* window, double x, double y)
 	_gameApp->sendInputEvent(event);
 }
 
-void rayInit(const char* gamedir, const char* scenename) noexcept
+void RAY_CALL rayInit(const char* gamedir, const char* scenename) noexcept
 {
 	if (gamedir)
 	{
@@ -128,13 +128,13 @@ void rayInit(const char* gamedir, const char* scenename) noexcept
 		_gameScenePath = scenename;
 }
 
-void rayTerminate() noexcept
+void RAY_CALL rayTerminate() noexcept
 {
 	rayCloseWindow();
 	::glfwTerminate();
 }
 
-bool rayOpenWindow(const char* title, int w, int h) noexcept
+bool RAY_CALL rayOpenWindow(const char* title, int w, int h) noexcept
 {
 	assert(!_gameApp && !_window);
 
@@ -174,7 +174,7 @@ bool rayOpenWindow(const char* title, int w, int h) noexcept
 	return false;
 }
 
-void rayCloseWindow() noexcept
+void RAY_CALL rayCloseWindow() noexcept
 {
 	if (_gameApp)
 	{
@@ -191,14 +191,14 @@ void rayCloseWindow() noexcept
 	::glfwTerminate();
 }
 
-bool rayIsQuitRequest() noexcept
+bool RAY_CALL rayIsQuitRequest() noexcept
 {
 	if (::glfwWindowShouldClose(_window) || _gameApp->isQuitRequest())
 		return true;
 	return false;
 }
 
-void rayUpdate() noexcept
+void RAY_CALL rayUpdate() noexcept
 {
 	if (_gameApp)
 		_gameApp->update();

@@ -212,6 +212,12 @@ OGLGraphicsUniformBlock::getType() const noexcept
 	return _type;
 }
 
+std::uint32_t 
+OGLGraphicsUniformBlock::getOffset() const noexcept
+{
+	return 0;
+}
+
 void
 OGLGraphicsUniformBlock::setBlockSize(std::uint32_t size) noexcept
 {
@@ -590,6 +596,8 @@ OGLProgram::_initActiveUniformBlock() noexcept
 		GLuint location = glGetUniformBlockIndex(_program, nameUniformBlock.get());
 		if (location == GL_INVALID_INDEX)
 			continue;
+
+		glUniformBlockBinding(_program, location, i);
 
 		GLint count = 0;
 		glGetActiveUniformBlockiv(_program, location, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &count);

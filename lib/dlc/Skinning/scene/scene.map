@@ -13,14 +13,19 @@
         </component>
         <component class="FirstPersonCamera">
         </component>
-        <component class="Skybox">
-            <attribute castshadow="false"/>
+    </object>
+   <object>
+        <attribute name="stage"/>
+        <attribute position="0,0,0"/>
+        <attribute rotate="0,0,0"/>
+        <attribute scale="1,1,1"/>
+        <attribute active="true"/>
+        <component class="Mesh">
+            <attribute name="dlc:skinning/models/PDF 活动小丑/stage.pmx"/>
+        </component>
+        <component class="MeshRender">
+            <attribute castshadow="true"/>
             <attribute receiveshadow="false"/>
-            <attribute flags="skybox|skylighting"/>
-            <attribute skyIntensity="0.0,1.0"/>
-            <attribute skymap="dlc:EnvLighting/texture/skybox.dds"/>
-            <attribute skydiffuse="dlc:EnvLighting/texture/sky_diff.dds"/>
-            <attribute skyspecular="dlc:EnvLighting/texture/sky_spec.dds"/>
         </component>
     </object>
     <object>
@@ -30,7 +35,7 @@
         <attribute scale="1,1,1"/>
         <attribute active="true"/>
         <component class="Mesh">
-            <attribute name="dlc:skinning/models/YYB/YYB Miku v1.02.pmd"/>
+            <attribute name="dlc:skinning/models/PDF 活动小丑/活动小丑.pmx"/>
         </component>
         <component class="Animotion">
             <attribute name="dlc:skinning/animotion/愛言葉.vmd"/>
@@ -38,18 +43,6 @@
         <component class="SkinnedMeshRender">
             <attribute castshadow="true"/>
             <attribute receiveshadow="false"/>
-        </component>
-    </object>
-    <object>
-        <attribute name="plane"/>
-        <attribute position="0,-1,0"/>
-        <attribute scale="40,1,40"/>
-        <attribute active="true"/>
-        <component class="Mesh">
-            <attribute name="dlc:sssss/models/cube.pmx"/>
-        </component>
-        <component class="MeshRender">
-            <attribute material="dlc:sssss/materials/plane.mat"/>
         </component>
     </object>
     <object>

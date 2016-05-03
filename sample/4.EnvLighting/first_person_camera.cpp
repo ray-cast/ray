@@ -149,7 +149,9 @@ FirstPersonCameraComponent::onFrame() noexcept
 
 		if (input->isLockedCursor())
 		{
-			rotateCamera(input->getMousePosX(), input->getMousePosY(), _centerX, _centerY);
+			int mouseX, mouseY;
+			input->getMousePos(mouseX, mouseY);
+			rotateCamera(mouseX, mouseY, _centerX, _centerY);
 		}
 		else
 		{

@@ -137,7 +137,7 @@ VulkanGraphicsData::getDeviceMemory() const noexcept
 }
 
 bool
-VulkanGraphicsData::map(std::uint32_t offset, std::uint32_t count, void** data) noexcept
+VulkanGraphicsData::map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept
 {
 	auto device = this->getDevice()->downcast<VulkanDevice>();
 

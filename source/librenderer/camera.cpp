@@ -52,7 +52,7 @@ Camera::Camera() noexcept
 	, _znear(1.0f)
 	, _zfar(100.0f)
 	, _viewport(0, 0, 0, 0)
-	, _clearFlags(GraphicsClearFlagBits::GraphicsClearFlagsAll)
+	, _clearFlags(GraphicsClearFlagBits::GraphicsClearFlagAllBit)
 	, _clearColor(float4(0.1, 0.1, 0.1, 1.0))
 	, _cameraType(CameraType::CameraTypePerspective)
 	, _cameraOrder(CameraOrder::CameraOrder3D)

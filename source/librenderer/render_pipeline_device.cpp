@@ -335,7 +335,7 @@ RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh, ModelMakerFlags
 
 		GraphicsDataDesc _vb;
 		_vb.setType(GraphicsDataType::GraphicsDataTypeStorageVertexBuffer);
-		_vb.setUsage(GraphicsUsageFlags::GraphicsUsageFlagsReadBit);
+		_vb.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
 		_vb.setStream((std::uint8_t*)_data.data());
 		_vb.setStreamSize(_data.size());
 		_vb.setStride(inputSize);
@@ -359,7 +359,7 @@ RenderPipelineDevice::createRenderMesh(const MeshProperty& mesh, ModelMakerFlags
 
 		GraphicsDataDesc _ib;
 		_ib.setType(GraphicsDataType::GraphicsDataTypeStorageIndexBuffer);
-		_ib.setUsage(GraphicsUsageFlags::GraphicsUsageFlagsReadBit);
+		_ib.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit);
 		_ib.setStream((std::uint8_t*)faces.data());
 		_ib.setStride(sizeof(std::uint32_t));
 		_ib.setStreamSize(faces.size());

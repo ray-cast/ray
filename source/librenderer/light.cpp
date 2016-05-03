@@ -406,9 +406,6 @@ Light::onSceneChangeAfter() noexcept
 void
 Light::onAddRenderData(RenderDataManager& manager) noexcept
 {
-	if (this->getShadowType() != LightShadowType::LightShadowTypeNone)
-		manager.addRenderData(RenderQueue::RenderQueueShadow, this->upcast<RenderObject>());
-
 	manager.addRenderData(RenderQueue::RenderQueueLighting, this->upcast<RenderObject>());
 }
 

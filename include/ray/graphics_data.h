@@ -45,14 +45,14 @@ class EXPORT GraphicsDataDesc final
 {
 public:
 	GraphicsDataDesc() noexcept;
-	GraphicsDataDesc(GraphicsDataType type, std::uint32_t usage, const void* data, std::uint32_t size, std::uint32_t stride) noexcept;
+	GraphicsDataDesc(GraphicsDataType type, GraphicsUsageFlags usage, const void* data, std::uint32_t size, std::uint32_t stride) noexcept;
 	~GraphicsDataDesc() noexcept;
 
 	void setType(GraphicsDataType type) noexcept;
 	GraphicsDataType getType() const noexcept;
 
-	void setUsage(std::uint32_t usage) noexcept;
-	std::uint32_t getUsage() const noexcept;
+	void setUsage(GraphicsUsageFlags usage) noexcept;
+	GraphicsUsageFlags getUsage() const noexcept;
 
 	void setStride(std::uint32_t stride) noexcept;
 	std::uint32_t getStride() const noexcept;
@@ -64,10 +64,10 @@ public:
 	std::uint32_t getStreamSize() const noexcept;
 
 private:
-	std::uint32_t _usage;
 	std::uint32_t _stride;
 	std::uint8_t* _data;
 	std::uint32_t _dataSize;
+	GraphicsUsageFlags _usage;
 	GraphicsDataType _type;
 };
 
@@ -78,7 +78,7 @@ public:
 	GraphicsData() noexcept;
 	virtual ~GraphicsData() noexcept;
 
-	virtual bool map(std::uint32_t offset, std::uint32_t count, void** data) noexcept = 0;
+	virtual bool map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept = 0;
 	virtual void unmap() noexcept = 0;
 
 	virtual const GraphicsDataDesc& getGraphicsDataDesc() const noexcept = 0;

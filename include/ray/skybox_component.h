@@ -49,6 +49,9 @@ public:
 	SkyboxComponent(MaterialPtr material) noexcept;
 	~SkyboxComponent() noexcept;
 
+	void setSkyboxSize(float size) noexcept;
+	float getSkyboxSize() const noexcept;
+
 	void setSkyLightMap(const std::string& texture) noexcept;
 	const std::string& getSkyLightMap() const noexcept;
 
@@ -119,6 +122,8 @@ private:
 	bool _needUpdateSkybox;
 	bool _needUpdateSkyDiffuse;
 	bool _needUpdateSkySpecular;
+
+	float _skyboxSize;
 
 	float2 _skyLightingIntensity;
 

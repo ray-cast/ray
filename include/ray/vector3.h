@@ -364,11 +364,10 @@ namespace math
 	}
 
 	template<typename T>
-	inline T distance(const Vector3t<T>& v) noexcept
+	inline T distance(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept
 	{
-		return length(v - *this);
+		return length(v1 - v2);
 	}
-
 
 	template<typename T>
 	inline T sqrDistance(const Vector3t<T>& v1, const Vector3t<T>& v2) noexcept

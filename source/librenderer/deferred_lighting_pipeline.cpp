@@ -122,7 +122,7 @@ void
 DeferredLightingPipeline::renderOpaques(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsAll, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagAllBit, float4::Zero, 1.0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaque);
 }
 
@@ -137,7 +137,7 @@ void
 DeferredLightingPipeline::renderOpaquesShading(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsColor, pipeline.getCamera()->getClearColor(), 1.0, 0);
+	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagColorBit, pipeline.getCamera()->getClearColor(), 1.0, 0);
 	pipeline.drawScreenQuad(_deferredShadingOpaques);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueOpaqueShading);
 }
@@ -154,7 +154,7 @@ void
 DeferredLightingPipeline::renderTransparent(RenderPipeline& pipeline, GraphicsFramebufferPtr renderTexture) noexcept
 {
 	pipeline.setFramebuffer(renderTexture);
-	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsColorStencil, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagColorStencilBit, float4::Zero, 1.0, 0);
 	pipeline.drawRenderQueue(RenderQueue::RenderQueueTransparent);
 }
 
@@ -162,7 +162,7 @@ void
 DeferredLightingPipeline::renderTransparentDepthLinear(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 	pipeline.drawScreenQuad(_deferredDepthLinear);
 }
 
@@ -185,7 +185,7 @@ void
 DeferredLightingPipeline::renderLights(RenderPipeline& pipeline, GraphicsFramebufferPtr target) noexcept
 {
 	pipeline.setFramebuffer(target);
-	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsColor, float4::Zero, 1.0, 0);
+	pipeline.clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagColorBit, float4::Zero, 1.0, 0);
 
 	auto& lights = pipeline.getRenderData(RenderQueue::RenderQueueLighting);
 	for (auto& it : lights)

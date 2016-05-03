@@ -118,7 +118,10 @@ MaterialMaker::instanceInputLayout(MaterialManager& manager, Material& material,
 			if (format == GraphicsFormat::GraphicsFormatMaxEnum)
 				throw failure(__TEXT("Undefined format: ") + reader.getCurrentNodePath());
 
-			inputLayoutDesc.addComponent(GraphicsVertexLayout(layoutName, format));
+			int offset = 0;
+			reader.getValue("offset", offset);
+
+			inputLayoutDesc.addComponent(GraphicsVertexLayout(layoutName, format, offset));
 		}
 	} while (reader.setToNextChild());
 
@@ -600,16 +603,50 @@ MaterialMaker::instanceSampler(MaterialManager& manager, Material& material, iar
 void
 MaterialMaker::instanceBuffer(MaterialManager& manager, Material& material, iarchive& reader) except
 {
+	std::string name;
+	if (!reader.getValue("name", name))
+		throw failure(__TEXT("Empty cbuffer name") + reader.getCurrentNodePath());
+
 	auto buffer = std::make_shared<MaterialParam>();
 	buffer->setType(GraphicsUniformType::GraphicsUniformTypeUniformBuffer);
-	buffer->setName(reader.getValue<std::string>("name"));
+	buffer->setName(name);
 
 	if (!reader.setToFirstChild())
 		throw failure(__TEXT("Empty child : ") + reader.getCurrentNodePath());
 
+	if (_isHlsl)
+	{
+		_hlslCodes += "cbuffer " + name + " {";
+	}
+
 	do
 	{
+		auto nodename = reader.getCurrentNodeName();
+		if (nodename == "parameter")
+		{
+			auto parmName = reader.getValue<std::string>("name");
+			auto parmType = reader.getValue<std::string>("type");
+
+			if (parmName.empty())
+				continue;
+			if (parmType.empty())
+				continue;
+
+			if (_isHlsl)
+			{
+				parmType = parmType.substr(0, parmType.find_first_of('['));
+				_hlslCodes += "uniform " + parmType + " " + parmName + ";\n";
+			}
+		}
+
 	} while (reader.setToNextChild());
+
+	if (_isHlsl)
+	{
+		_hlslCodes += "}";
+	}
+	
+	material.addParameter(buffer);
 }
 
 void
@@ -756,6 +793,8 @@ MaterialMaker::load(MaterialManager& manager, Material& material, iarchive& read
 				instanceInclude(manager, material, reader);
 			else if (name == "parameter")
 				instanceParameter(manager, material, reader);
+			else if (name == "buffer")
+				instanceBuffer(manager, material, reader);
 			else if (name == "macro")
 				instanceMacro(manager, material, reader);
 			else if (name == "sampler")
@@ -768,7 +807,7 @@ MaterialMaker::load(MaterialManager& manager, Material& material, iarchive& read
 				instanceInputLayout(manager, material, reader);
 		} while (reader.setToNextChild());
 
-		return material.setup();
+		return true;
 	}
 
 	return false;

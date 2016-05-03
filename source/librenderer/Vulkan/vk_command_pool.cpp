@@ -98,10 +98,10 @@ VulkanCommandPool::setup(const GraphicsCommandPoolDesc& commandPooldesc) noexcep
 	info.flags = 0;
 
 	auto poolFlags = commandPooldesc.getCommandFlags();
-	if (poolFlags & GraphicsCommandPoolFlags::GraphicsCommandPoolTransientBit)
+	if (poolFlags & GraphicsCommandPoolFlagBits::GraphicsCommandPoolFlagTransientBit)
 		info.flags |= VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
 
-	if (poolFlags & GraphicsCommandPoolFlags::GraphicsCommandPoolResetCommandBuffer)
+	if (poolFlags & GraphicsCommandPoolFlagBits::GraphicsCommandPoolFlagResetCommandBufferBit)
 		info.flags |= VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 	if (vkCreateCommandPool(this->getDevice()->downcast<VulkanDevice>()->getDevice(), &info, nullptr, &_vkCommandPool) > 0)

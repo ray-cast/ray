@@ -100,22 +100,17 @@ protected:
 	void _updateMaterial(std::size_t n) noexcept;
 	void _updateMaterials() noexcept;
 
-	void _setModelMakerFlags(ModelMakerFlags flags) noexcept;
-	ModelMakerFlags _getModelMakerFlags() const noexcept;
-
 private:
 	MeshRenderComponent(const MeshRenderComponent&) noexcept = delete;
 	MeshRenderComponent& operator=(const MeshRenderComponent&) noexcept = delete;
 
-private:
+protected:
 
 	Materials _materials;
 	Materials _sharedMaterials;
 
 	RenderMeshPtr _renderMesh;
 	Geometryes _renderObjects;
-
-	ModelMakerFlags _flags;
 
 	std::string _material;
 };

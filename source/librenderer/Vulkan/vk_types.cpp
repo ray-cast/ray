@@ -466,19 +466,19 @@ VulkanTypes::asTextureSample(GraphicsSampleFlagBits sample) noexcept
 {
 	switch (sample)
 	{
-	case GraphicsSampleFlagBits::GraphicsSampleFlagBits1Bit:
+	case GraphicsSampleFlagBits::GraphicsSampleFlag1Bit:
 		return VK_SAMPLE_COUNT_1_BIT;
-	case GraphicsSampleFlagBits::GraphicsSampleFlagBits2Bit:
+	case GraphicsSampleFlagBits::GraphicsSampleFlag2Bit:
 		return VK_SAMPLE_COUNT_2_BIT;
-	case GraphicsSampleFlagBits::GraphicsSampleFlagBits4Bit:
+	case GraphicsSampleFlagBits::GraphicsSampleFlag4Bit:
 		return VK_SAMPLE_COUNT_4_BIT;
-	case GraphicsSampleFlagBits::GraphicsSampleFlagBits8Bit:
+	case GraphicsSampleFlagBits::GraphicsSampleFlag8Bit:
 		return VK_SAMPLE_COUNT_8_BIT;
-	case GraphicsSampleFlagBits::GraphicsSampleFlagBits16Bit:
+	case GraphicsSampleFlagBits::GraphicsSampleFlag16Bit:
 		return VK_SAMPLE_COUNT_16_BIT;
-	case GraphicsSampleFlagBits::GraphicsSampleFlagBits32Bit:
+	case GraphicsSampleFlagBits::GraphicsSampleFlag32Bit:
 		return VK_SAMPLE_COUNT_32_BIT;
-	case GraphicsSampleFlagBits::GraphicsSampleFlagBits64Bit:
+	case GraphicsSampleFlagBits::GraphicsSampleFlag64Bit:
 		return VK_SAMPLE_COUNT_64_BIT;
 	default:
 		assert(false);

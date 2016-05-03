@@ -839,7 +839,7 @@ EGL3DescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 			GL_CHECK(glProgramUniformMatrix3fv(program, location, uniform->getFloat3x3Array().size(), GL_FALSE, (GLfloat*)uniform->getFloat3x3Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4x4Array:
-			GL_CHECK(glProgramUniformMatrix4fv(program, location, uniform->getFloat3x3Array().size(), GL_FALSE, (GLfloat*)uniform->getFloat4x4Array().data()));
+			GL_CHECK(glProgramUniformMatrix4fv(program, location, uniform->getFloat4x4Array().size(), GL_FALSE, (GLfloat*)uniform->getFloat4x4Array().data()));
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSampler:
 		{

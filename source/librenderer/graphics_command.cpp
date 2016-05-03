@@ -45,7 +45,7 @@ __ImplementSubInterface(GraphicsCommandPool, GraphicsChild, "GraphicsCommandPool
 GraphicsCommandQueueDesc::GraphicsCommandQueueDesc() noexcept
 	: _mask(0)
 	, _type(GraphicsCommandType::GraphicsCommandTypeGraphics)
-	, _flags(GraphicsCommandQueueFlags::GraphicsCommandQueueFlagsNone)
+	, _flags(GraphicsCommandQueueFlagBits::GraphicsCommandQueueFlagNoneBit)
 	, _priority(GraphicsCommandQueuePriority::GraphicsCommandQueuePriorityNormal)
 {
 }
@@ -103,7 +103,7 @@ GraphicsCommandQueueDesc::getCommandQueuePriority() const noexcept
 }
 
 GraphicsCommandPoolDesc::GraphicsCommandPoolDesc() noexcept
-	: _flags(GraphicsCommandPoolFlags::GraphicsCommandPoolResetCommandBuffer)
+	: _flags(GraphicsCommandPoolFlagBits::GraphicsCommandPoolFlagResetCommandBufferBit)
 	, _type(GraphicsCommandType::GraphicsCommandTypeGraphics)
 {
 }

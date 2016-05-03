@@ -768,7 +768,7 @@ VulkanDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) n
 			GraphicsDataDesc uniformBufferDesc;
 			uniformBufferDesc.setType(GraphicsDataType::GraphicsDataTypeUniformBuffer);
 			uniformBufferDesc.setStreamSize(uniformBlock->getBlockSize());
-			uniformBufferDesc.setUsage(GraphicsUsageFlags::GraphicsUsageFlagsReadBit | GraphicsUsageFlags::GraphicsUsageFlagsWriteBit | GraphicsUsageFlags::GraphicsUsageFlagsImmutableStorage);
+			uniformBufferDesc.setUsage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit | GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit);
 			auto ubo = this->getDevice()->createGraphicsData(uniformBufferDesc);
 			if (!ubo)
 			{

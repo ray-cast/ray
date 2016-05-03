@@ -218,6 +218,12 @@ VulkanGraphicsUniformBlock::getType() const noexcept
 	return _type;
 }
 
+std::uint32_t
+VulkanGraphicsUniformBlock::getOffset() const noexcept
+{
+	return 0;
+}
+
 void
 VulkanGraphicsUniformBlock::setBlockSize(std::uint32_t size) noexcept
 {

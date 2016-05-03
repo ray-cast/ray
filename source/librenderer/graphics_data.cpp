@@ -44,12 +44,12 @@ GraphicsDataDesc::GraphicsDataDesc() noexcept
 	: _data(nullptr)
 	, _dataSize(0)
 	, _stride(0)
-	, _usage(GraphicsUsageFlags::GraphicsUsageFlagsReadBit | GraphicsUsageFlags::GraphicsUsageFlagsImmutableStorage)
+	, _usage(GraphicsUsageFlagBits::GraphicsUsageFlagReadBit)
 	, _type(GraphicsDataType::GraphicsDataTypeNone)
 {
 }
 
-GraphicsDataDesc::GraphicsDataDesc(GraphicsDataType type, std::uint32_t usage, const void* data, std::uint32_t size, std::uint32_t stride) noexcept
+GraphicsDataDesc::GraphicsDataDesc(GraphicsDataType type, GraphicsUsageFlags usage, const void* data, std::uint32_t size, std::uint32_t stride) noexcept
 	: _data((std::uint8_t*)data)
 	, _dataSize(size)
 	, _stride(stride)

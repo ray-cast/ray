@@ -335,7 +335,7 @@ VulkanDeviceContext::initCommandList() noexcept
 	auto device = this->getDevice()->downcast<VulkanDevice>();
 
 	GraphicsCommandQueueDesc queueDesc;
-	queueDesc.setCommandQueueFlags(GraphicsCommandQueueFlags::GraphicsCommandQueueFlagsNone);
+	queueDesc.setCommandQueueFlags(GraphicsCommandQueueFlagBits::GraphicsCommandQueueFlagNoneBit);
 	queueDesc.setCommandQueueType(GraphicsCommandType::GraphicsCommandTypeGraphics);
 	queueDesc.setCommandQueuePriority(GraphicsCommandQueuePriority::GraphicsCommandQueuePriorityNormal);
 	queueDesc.setCommandQueueMask(0);
@@ -348,7 +348,7 @@ VulkanDeviceContext::initCommandList() noexcept
 
 	GraphicsCommandPoolDesc poolDesc;
 	poolDesc.setCommandListType(GraphicsCommandType::GraphicsCommandTypeGraphics);
-	poolDesc.setCommandFlags(GraphicsCommandPoolFlags::GraphicsCommandPoolResetCommandBuffer);
+	poolDesc.setCommandFlags(GraphicsCommandPoolFlagBits::GraphicsCommandPoolFlagResetCommandBufferBit);
 	_commandPool = device->createCommandPool(poolDesc);
 	if (!_commandPool)
 	{

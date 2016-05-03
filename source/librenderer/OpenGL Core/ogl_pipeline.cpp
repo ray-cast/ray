@@ -107,7 +107,7 @@ OGLPipeline::setup(const GraphicsPipelineDesc& pipelineDesc) noexcept
 			attrib.index = attribIndex;
 			attrib.count = it.getVertexCount();
 			attrib.type = type;
-			attrib.offset = offset;
+			attrib.offset = it.getVertexOffset() > 0 ? it.getVertexOffset() : offset;
 
 			_attributes.push_back(attrib);
 

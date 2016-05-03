@@ -424,20 +424,26 @@ void
 TerrainComponent::hitChunks() noexcept
 {
 	auto inputFeatures = this->getGameServer()->getFeature<ray::InputFeature>();
-	if (inputFeatures)
+	if (!inputFeatures)
+		return;
+
+	auto input = inputFeatures->getInput();
+	if (!input)
+		return;
+
+	int mouseX, mouseY;
+	input->getMousePos(mouseX, mouseY);
+
+	if (input->getButtonDown(ray::InputButton::LEFT))
 	{
-		auto input = inputFeatures->getInput();
-		if (input->getButtonDown(ray::InputButton::LEFT))
+		if (input->getKey(ray::InputKey::LCTRL) || input->isLockedCursor())
 		{
-			if (input->getKey(ray::InputKey::LCTRL) || input->isLockedCursor())
-			{
-				this->removeBlockByMousePos(input->getMousePosX(), input->getMousePosY());
-			}
+			this->removeBlockByMousePos(mouseX, mouseY);
 		}
-		else if (input->getButtonDown(ray::InputButton::RIGHT))
-		{
-			this->addBlockByMousePos(input->getMousePosX(), input->getMousePosY());
-		}
+	}
+	else if (input->getButtonDown(ray::InputButton::RIGHT))
+	{
+		this->addBlockByMousePos(mouseX, mouseY);
 	}
 }
 

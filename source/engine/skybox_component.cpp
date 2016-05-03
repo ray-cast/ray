@@ -52,6 +52,7 @@ SkyboxComponent::SkyboxComponent() noexcept
 	, _needUpdateSkybox(true)
 	, _needUpdateSkyDiffuse(true)
 	, _needUpdateSkySpecular(true)
+	, _skyboxSize(100.0f)
 	, _skyLightingIntensity(1.0f, 1.0f)
 {
 }
@@ -63,6 +64,19 @@ SkyboxComponent::SkyboxComponent(MaterialPtr material) noexcept
 
 SkyboxComponent::~SkyboxComponent() noexcept
 {
+}
+
+void
+SkyboxComponent::setSkyboxSize(float size) noexcept
+{
+	_skyboxSize = size;
+	_updateTransform();
+}
+
+float
+SkyboxComponent::getSkyboxSize() const noexcept
+{
+	return _skyboxSize;
 }
 
 void
@@ -179,6 +193,7 @@ SkyboxComponent::load(iarchive& reader) noexcept
 	reader.getValue("skydiffuse", _skyDiffuse);
 	reader.getValue("skyspecular", _skySpecular);
 	reader.getValue("skyIntensity", _skyLightingIntensity);
+	reader.getValue("skysize", _skyboxSize);
 
 	std::string flagsString;
 	if (reader.getValue("flags", flagsString))
@@ -412,7 +427,7 @@ void
 SkyboxComponent::_updateTransform() noexcept
 {
 	float4x4 transforam;
-	transforam.makeScale(100, 100, 100);
+	transforam.makeScale(_skyboxSize, _skyboxSize, _skyboxSize);
 	transforam.setTranslate(this->getGameObject()->getTranslate());
 	
 	if (_sphereObject)

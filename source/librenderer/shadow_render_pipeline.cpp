@@ -97,18 +97,21 @@ ShadowRenderPipeline::renderShadowMaps(const CameraPtr& camera) noexcept
 {
 	_pipeline->setCamera(camera);
 
-	const auto& lights = _pipeline->getRenderData(RenderQueue::RenderQueueShadow);
+	const auto& lights = _pipeline->getRenderData(RenderQueue::RenderQueueLighting);
 	for (auto& it : lights)
 	{
 		auto light = it->downcast<Light>();
+		if (light->getShadowType() == LightShadowType::LightShadowTypeNone)
+			continue;
+
 		auto lightType = light->getLightType();
 		auto lightShadowView = light->getShadowCamera()->getFramebuffer();
 		auto lightShadowType = light->getShadowType();
 
 		_pipeline->setCamera(light->getShadowCamera());
 		_pipeline->setFramebuffer(_softShadowDepthViewTemp[lightShadowType]);
-		_pipeline->clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsDepth, float4::Zero, 1.0, 0);
-		_pipeline->drawRenderQueue(RenderQueue::RenderQueueOpaque, _softGenShadowMap);
+		_pipeline->clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagDepthBit, float4::Zero, 1.0, 0);
+		_pipeline->drawRenderQueue(RenderQueue::RenderQueueShadow, _softGenShadowMap);
 
 		if (light->getSoftShadow())
 		{

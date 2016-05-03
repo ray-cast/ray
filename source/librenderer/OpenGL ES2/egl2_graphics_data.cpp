@@ -61,7 +61,7 @@ EGL2GraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 	_dataSize = desc.getStreamSize();
 	_usage = desc.getUsage();
 	_desc = desc;
-	_isMapping = false;
+	_isMapping = GL_FALSE;
 
 	auto type = desc.getType();
 	if (type == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer)
@@ -74,9 +74,9 @@ EGL2GraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 	GLenum flags = GL_STATIC_DRAW;
 
 	auto usage = desc.getUsage();
-	if (usage & GraphicsUsageFlags::GraphicsUsageFlagsReadBit)
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagReadBit)
 		flags = GL_STATIC_DRAW;
-	if (usage & GraphicsUsageFlags::GraphicsUsageFlagsWriteBit)
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit)
 		flags = GL_DYNAMIC_DRAW;
 
 	GL_CHECK(glGenBuffers(1, &_buffer));
@@ -113,23 +113,6 @@ GLsizeiptr
 EGL2GraphicsData::size() const noexcept
 {
 	return _dataSize;
-}
-
-void
-EGL2GraphicsData::resize(const char* data, GLsizeiptr datasize) noexcept
-{
-	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsImmutableStorage)
-		return;
-
-	GLenum flags = GL_STATIC_DRAW;
-	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsReadBit)
-		flags = GL_STATIC_DRAW;
-	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsWriteBit)
-		flags = GL_DYNAMIC_DRAW;
-
-	GL_CHECK(glBindBuffer(_target, _buffer));
-	GL_CHECK(glBufferData(_target, datasize, data, flags));
-	_dataSize = datasize;
 }
 
 int
@@ -197,46 +180,15 @@ EGL2GraphicsData::write(const char* str, GLsizeiptr cnt) noexcept
 }
 
 bool
-EGL2GraphicsData::map(std::uint32_t offset, std::uint32_t count, void** data) noexcept
+EGL2GraphicsData::map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept
 {
-#ifndef __AMD__
-	if (!_isMapping)
-	{
-		GL_CHECK(glBindBuffer(_target, _buffer));
-		*data = glMapBufferRangeEXT(_target, offset, count, GL_MAP_READ_BIT_EXT | GL_MAP_WRITE_BIT_EXT);
-		GL_CHECK(data);
-		_isMapping = GL_TRUE;
-		return true;
-	}
-
 	return false;
-#else
-	return nullptr;
-#endif
 }
 
 void
 EGL2GraphicsData::unmap() noexcept
 {
-#ifndef __AMD__
-	assert(_isMapping);
-
-	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsPersistentBit)
-	{
-		_isMapping = GL_FALSE;
-		return;
-	}
-
-	GL_CHECK(glBindBuffer(_target, _buffer));
-	GL_CHECK(glUnmapBufferOES(_target));
-	_isMapping = GL_FALSE;
-#endif
-}
-
-bool
-EGL2GraphicsData::isMapping() const noexcept
-{
-	return _isMapping ? GL_TRUE : GL_FALSE;
+	return;
 }
 
 GLuint

@@ -55,17 +55,14 @@ public:
 
 	GLsizeiptr size() const noexcept;
 
-	void resize(const char* data, GLsizeiptr datasize) noexcept;
-
 	int flush() noexcept;
 	int flush(GLintptr offset, GLsizeiptr cnt) noexcept;
 
 	GLsizeiptr read(char* data, GLsizeiptr cnt) noexcept;
 	GLsizeiptr write(const char* data, GLsizeiptr cnt) noexcept;
 
-	bool map(std::uint32_t offset, std::uint32_t count, void** data) noexcept;
+	bool map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept;
 	void unmap() noexcept;
-	bool isMapping() const noexcept;
 
 	GLuint getInstanceID() noexcept;
 
@@ -87,7 +84,6 @@ private:
 	GLenum _target;
 	GLsizeiptr _dataSize;
 	GLintptr _dataOffset;
-	GLboolean _isMapping;
 	std::uint32_t _usage;
 	GraphicsDataDesc _desc;
 	GraphicsDeviceWeakPtr _device;

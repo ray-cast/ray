@@ -124,7 +124,7 @@ Geometry::getGraphicsIndirect() noexcept
 void
 Geometry::onAddRenderData(RenderDataManager& manager) noexcept
 {
-	if (_techniques[RenderQueue::RenderQueueShadow] && this->getCastShadow())
+	if (this->getCastShadow())
 		manager.addRenderData(RenderQueue::RenderQueueShadow, this->upcast<RenderObject>());
 
 	if (_techniques[RenderQueue::RenderQueueOpaque])
@@ -146,7 +146,7 @@ Geometry::onAddRenderData(RenderDataManager& manager) noexcept
 void
 Geometry::onRenderObject(RenderPipeline& pipeline, RenderQueue queue, MaterialTechPtr _tech) noexcept
 {
-	auto tech = _tech ? _tech : _techniques[queue];
+	auto tech = _techniques[queue] ? _techniques[queue] : _tech;
 	if (tech)
 	{
 		pipeline.setTransform(this->getTransform());
@@ -161,6 +161,7 @@ RenderQueue
 Geometry::stringToRenderQueue(const std::string& techName) noexcept
 {
 	if (techName == "custom")			return RenderQueue::RenderQueueCustom;
+	if (techName == "shadow")			return RenderQueue::RenderQueueShadow;
 	if (techName == "opaque")			return RenderQueue::RenderQueueOpaque;
 	if (techName == "opaquespecific")   return RenderQueue::RenderQueueOpaqueSpecific;
 	if (techName == "transparent")		return RenderQueue::RenderQueueTransparent;

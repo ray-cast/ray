@@ -54,7 +54,6 @@ _NAME_BEGIN
 __ImplementSubClass(MeshRenderComponent, GameComponent, "MeshRender")
 
 MeshRenderComponent::MeshRenderComponent() noexcept
-	: _flags(ModelMakerFlagBits::ModelMakerFlagBitALL)
 {
 }
 
@@ -225,7 +224,7 @@ MeshRenderComponent::onActivate() except
 			_buildDefaultMaterials("sys:fx/opacity.fxml");
 	}
 
-	_buildRenderObjects(*mesh, _flags);
+	_buildRenderObjects(*mesh, ModelMakerFlagBits::ModelMakerFlagBitALL);
 	_attacRenderObjects();
 }
 
@@ -252,7 +251,7 @@ MeshRenderComponent::onMeshChange() except
 			return;
 		}
 
-		_buildRenderObjects(*mesh, _flags);
+		_buildRenderObjects(*mesh, ModelMakerFlagBits::ModelMakerFlagBitALL);
 		_attacRenderObjects();
 	}
 }
@@ -503,18 +502,6 @@ MeshRenderComponent::_updateMaterials() noexcept
 				_renderObjects[i]->setMaterial(_materials[0]);
 		}
 	}
-}
-
-void
-MeshRenderComponent::_setModelMakerFlags(ModelMakerFlags flags) noexcept
-{
-	_flags = flags;
-}
-
-ModelMakerFlags 
-MeshRenderComponent::_getModelMakerFlags() const noexcept
-{
-	return _flags;
 }
 
 _NAME_END

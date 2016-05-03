@@ -366,11 +366,12 @@ MaterialManager::createMaterial(const std::string& name) noexcept
 	if (!material)
 	{
 		MaterialMaker materialLoader;
-		auto material = std::make_shared<Material>();
-		if (!materialLoader.load(*this, *material, name))
+		auto newMaterial = std::make_shared<Material>();
+		if (!materialLoader.load(*this, *newMaterial, name))
 			return nullptr;
-		
-		_materials[name] = material;
+
+		if (newMaterial->setup())
+			_materials[name] = newMaterial;
 	}
 
 	return material;

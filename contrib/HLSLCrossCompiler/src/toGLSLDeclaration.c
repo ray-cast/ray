@@ -1242,12 +1242,15 @@ void DeclareStructConstants(HLSLCrossCompilerContext* psContext, const uint32_t 
     /* [layout (location = X)] uniform vec4 HLSLConstantBufferName[numConsts]; */
 	if (HaveUniformBindingsAndLocations(psContext->psShader->eTargetLanguage, psContext->psShader->extensions, psContext->flags))
         bformata(glsl, "layout(location = %d) ", ui32BindingPoint);
+	else if (useGlobalsStruct)
+		bcatcstr(glsl, "layout(std140) ");
+
 	if(useGlobalsStruct)
 	{
-    bcatcstr(glsl, "uniform struct ");
-    TranslateOperand(psContext, psOperand, TO_FLAG_DECLARATION_NAME);
-
-    bcatcstr(glsl, "_Type {\n");
+		bcatcstr(glsl, "uniform ");
+		TranslateOperand(psContext, psOperand, TO_FLAG_DECLARATION_NAME);
+		bcatcstr(glsl, psCBuf->Name);
+		bcatcstr(glsl, " {\n");
 	}
 
     for(i=0; i < psCBuf->ui32NumVars; ++i)

@@ -39,6 +39,7 @@
 #include "ogl_texture.h"
 #include "ogl_shader.h"
 #include "ogl_sampler.h"
+#include "ogl_graphics_data.h"
 
 _NAME_BEGIN
 
@@ -625,6 +626,12 @@ OGLGraphicsUniformSet::getTextureSampler() const noexcept
 	return _variant.getTextureSampler();
 }
 
+GraphicsDataPtr 
+OGLGraphicsUniformSet::getBuffer() const noexcept
+{
+	return _variant.getBuffer();
+}
+
 void
 OGLGraphicsUniformSet::setGraphicsUniform(GraphicsUniformPtr uniform) noexcept
 {
@@ -729,12 +736,23 @@ OGLDescriptorSet::setup(const GraphicsDescriptorSetDesc& descriptorSetDesc) noex
 	assert(descriptorSetDesc.getGraphicsDescriptorSetLayout());
 
 	auto& descriptorSetLayoutDesc = descriptorSetDesc.getGraphicsDescriptorSetLayout()->getGraphicsDescriptorSetLayoutDesc();
-	auto& components = descriptorSetLayoutDesc.getUniformComponents();
-	for (auto& component : components)
+
+	auto& uniforms = descriptorSetLayoutDesc.getUniformComponents();
+	for (auto& unniform : uniforms)
 	{
 		auto uniformSet = std::make_shared<OGLGraphicsUniformSet>();
-		uniformSet->setGraphicsUniform(component);
-		uniformSet->setType(component->getType());
+		uniformSet->setGraphicsUniform(unniform);
+		uniformSet->setType(unniform->getType());
+
+		_activeUniformSets.push_back(uniformSet);
+	}
+
+	auto& uniformBlocks = descriptorSetLayoutDesc.getUniformBlockComponents();
+	for (auto& uniformBlock : uniformBlocks)
+	{
+		auto uniformSet = std::make_shared<OGLGraphicsUniformSet>();
+		uniformSet->setGraphicsUniform(uniformBlock);
+		uniformSet->setType(uniformBlock->getType());
 
 		_activeUniformSets.push_back(uniformSet);
 	}
@@ -756,7 +774,13 @@ OGLDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 	{
 		auto uniform = it->downcast<OGLGraphicsUniformSet>();
 		auto type = it->getGraphicsUniform()->getType();
-		auto location = it->getGraphicsUniform()->downcast<OGLGraphicsUniform>()->getBindingPoint();
+
+		GLint location = 0;
+		if (it->getGraphicsUniform()->isInstanceOf<OGLGraphicsUniform>())
+			location = it->getGraphicsUniform()->downcast<OGLGraphicsUniform>()->getBindingPoint();
+		else
+			location = it->getGraphicsUniform()->downcast<OGLGraphicsUniformBlock>()->getBindingPoint();
+
 		switch (type)
 		{
 		case GraphicsUniformType::GraphicsUniformTypeBool:
@@ -844,7 +868,7 @@ OGLDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 			glProgramUniformMatrix3fv(program, location, uniform->getFloat3x3Array().size(), GL_FALSE, (GLfloat*)uniform->getFloat3x3Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeFloat4x4Array:
-			glProgramUniformMatrix4fv(program, location, uniform->getFloat3x3Array().size(), GL_FALSE, (GLfloat*)uniform->getFloat4x4Array().data());
+			glProgramUniformMatrix4fv(program, location, uniform->getFloat4x4Array().size(), GL_FALSE, (GLfloat*)uniform->getFloat4x4Array().data());
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeSampler:
 			glBindSampler(location, uniform->getTextureSampler()->downcast<OGLSampler>()->getInstanceID());
@@ -891,6 +915,14 @@ OGLDescriptorSet::apply(GraphicsProgramPtr shaderObject) noexcept
 		case GraphicsUniformType::GraphicsUniformTypeUniformTexelBuffer:
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUniformBuffer:
+		{
+			auto buffer = uniform->getBuffer();
+			if (buffer)
+			{
+				auto ubo = buffer->downcast<OGLGraphicsData>();
+				glBindBufferBase(GL_UNIFORM_BUFFER, location, ubo->getInstanceID());
+			}
+		}
 			break;
 		case GraphicsUniformType::GraphicsUniformTypeUniformBufferDynamic:
 			break;

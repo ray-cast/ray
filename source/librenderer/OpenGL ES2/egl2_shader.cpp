@@ -214,6 +214,12 @@ EGL2GraphicsUniformBlock::getType() const noexcept
 	return _type;
 }
 
+std::uint32_t
+EGL2GraphicsUniformBlock::getOffset() const noexcept
+{
+	return 0;
+}
+
 void
 EGL2GraphicsUniformBlock::setBlockSize(std::uint32_t size) noexcept
 {

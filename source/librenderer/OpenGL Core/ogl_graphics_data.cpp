@@ -42,7 +42,7 @@ __ImplementSubClass(OGLGraphicsData, GraphicsData, "OGLGraphicsData")
 
 OGLGraphicsData::OGLGraphicsData() noexcept
 	: _buffer(GL_NONE)
-	, _isMapping(GL_FALSE)
+	, _data(nullptr)
 {
 }
 
@@ -61,7 +61,7 @@ OGLGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 	_dataSize = desc.getStreamSize();
 	_usage = desc.getUsage();
 	_desc = desc;
-	_isMapping = false;
+	_data = nullptr;
 
 	auto type = desc.getType();
 	if (type == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer)
@@ -86,9 +86,9 @@ OGLGraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 	GLenum flags = GL_STATIC_DRAW;
 
 	auto usage = desc.getUsage();
-	if (usage & GraphicsUsageFlags::GraphicsUsageFlagsReadBit)
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagReadBit)
 		flags = GL_STATIC_DRAW;
-	if (usage & GraphicsUsageFlags::GraphicsUsageFlagsWriteBit)
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit)
 		flags = GL_DYNAMIC_READ;
 
 	glGenBuffers(1, &_buffer);
@@ -107,9 +107,9 @@ OGLGraphicsData::is_open() const noexcept
 void
 OGLGraphicsData::close() noexcept
 {
-	assert(!_isMapping);
+	assert(!_data);
 
-	if (_isMapping)
+	if (_data)
 	{
 		this->unmap();
 	}
@@ -125,23 +125,6 @@ GLsizeiptr
 OGLGraphicsData::size() const noexcept
 {
 	return _dataSize;
-}
-
-void
-OGLGraphicsData::resize(const char* data, GLsizeiptr datasize) noexcept
-{
-	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsImmutableStorage)
-		return;
-
-	GLenum flags = GL_STATIC_DRAW;
-	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsReadBit)
-		flags = GL_STATIC_DRAW;
-	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsWriteBit)
-		flags = GL_DYNAMIC_READ;
-
-	glBindBuffer(_target, _buffer);
-	glBufferData(_target, datasize, data, flags);
-	_dataSize = datasize;
 }
 
 GLsizeiptr
@@ -193,29 +176,24 @@ OGLGraphicsData::write(const char* str, GLsizeiptr cnt) noexcept
 }
 
 bool 
-OGLGraphicsData::map(std::uint32_t offset, std::uint32_t count, void** data) noexcept
+OGLGraphicsData::map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept
 {
 	assert(data);
-	assert(!_isMapping);
+	assert(!_data);
 	glBindBuffer(_target, _buffer);
-	*data = glMapBufferRange(_target, offset, count, GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
-	_isMapping = GL_TRUE;
-	return true;
+	_data = *data = glMapBufferRange(_target, offset, count, GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+	return _data ? true : false;
 }
 
 void
 OGLGraphicsData::unmap() noexcept
 {
-	assert(_isMapping);
-	glBindBuffer(_target, _buffer);
-	glUnmapBuffer(_target);
-	_isMapping = GL_FALSE;
-}
-
-bool
-OGLGraphicsData::isMapping() const noexcept
-{
-	return _isMapping ? GL_TRUE : GL_FALSE;
+	if (_data)
+	{
+		glBindBuffer(_target, _buffer);
+		glUnmapBuffer(_target);
+		_data = nullptr;
+	}
 }
 
 GLuint

@@ -42,7 +42,6 @@ __ImplementSubClass(EGL3GraphicsData, GraphicsData, "EGL3GraphicsData")
 
 EGL3GraphicsData::EGL3GraphicsData() noexcept
 	: _buffer(GL_NONE)
-	, _isMapping(GL_FALSE)
 {
 }
 
@@ -61,7 +60,6 @@ EGL3GraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 	_dataSize = desc.getStreamSize();
 	_usage = desc.getUsage();
 	_desc = desc;
-	_isMapping = false;
 
 	auto type = desc.getType();
 	if (type == GraphicsDataType::GraphicsDataTypeStorageVertexBuffer)
@@ -82,9 +80,9 @@ EGL3GraphicsData::setup(const GraphicsDataDesc& desc) noexcept
 	GLenum flags = GL_STATIC_DRAW;
 
 	auto usage = desc.getUsage();
-	if (usage & GraphicsUsageFlags::GraphicsUsageFlagsReadBit)
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagReadBit)
 		flags = GL_STATIC_DRAW;
-	if (usage & GraphicsUsageFlags::GraphicsUsageFlagsWriteBit)
+	if (usage & GraphicsUsageFlagBits::GraphicsUsageFlagWriteBit)
 		flags = GL_DYNAMIC_READ;
 
 	GL_CHECK(glGenBuffers(1, &_buffer));
@@ -103,13 +101,6 @@ EGL3GraphicsData::is_open() const noexcept
 void
 EGL3GraphicsData::close() noexcept
 {
-	assert(!_isMapping);
-
-	if (_isMapping)
-	{
-		this->unmap();
-	}
-
 	if (_buffer)
 	{
 		glDeleteBuffers(1, &_buffer);
@@ -121,23 +112,6 @@ GLsizeiptr
 EGL3GraphicsData::size() const noexcept
 {
 	return _dataSize;
-}
-
-void
-EGL3GraphicsData::resize(const char* data, GLsizeiptr datasize) noexcept
-{
-	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsImmutableStorage)
-		return;
-
-	GLenum flags = GL_STATIC_DRAW;
-	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsReadBit)
-		flags = GL_STATIC_DRAW;
-	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsWriteBit)
-		flags = GL_DYNAMIC_READ;
-
-	GL_CHECK(glBindBuffer(_target, _buffer));
-	GL_CHECK(glBufferData(_target, datasize, data, flags));
-	_dataSize = datasize;
 }
 
 int
@@ -201,39 +175,19 @@ EGL3GraphicsData::write(const char* str, GLsizeiptr cnt) noexcept
 }
 
 bool
-EGL3GraphicsData::map(std::uint32_t offset, std::uint32_t count, void** data) noexcept
+EGL3GraphicsData::map(std::ptrdiff_t offset, std::ptrdiff_t count, void** data) noexcept
 {
 	assert(data);
-	assert(!_isMapping);
-
 	GL_CHECK(glBindBuffer(_target, _buffer));
-	*data = glMapBufferRange(_target, offset, count, GL_MAP_READ_BIT_EXT | GL_MAP_WRITE_BIT_EXT);
-	GL_CHECK(data);
-	_isMapping = GL_TRUE;
-	return true;
+	*data = glMapBufferRange(_target, offset, count, GL_MAP_READ_BIT);
+	return *data ? true : false;
 }
 
 void
 EGL3GraphicsData::unmap() noexcept
 {
-	assert(_isMapping);
-
-	if (_usage & GraphicsUsageFlags::GraphicsUsageFlagsPersistentBit)
-	{
-		_isMapping = GL_FALSE;
-		return;
-	}
-
 	GL_CHECK(glBindBuffer(_target, _buffer));
 	GL_CHECK(glUnmapBuffer(_target));
-	_isMapping = GL_FALSE;
-}
-
-
-bool
-EGL3GraphicsData::isMapping() const noexcept
-{
-	return _isMapping ? GL_TRUE : GL_FALSE;
 }
 
 GLuint

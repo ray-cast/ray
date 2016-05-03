@@ -342,10 +342,11 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 			iconv(ic, &in, &in_size, &out, &out_size);
 			iconv_close(ic);
 
-			bone.setName(std::string(outbuf));
+			bone.setName(outbuf);
 			bone.setPosition(it.Position);
 			bone.setParent(it.Parent);
 			bone.setChild(it.Child);
+			bone.setLeg(strstr(outbuf, "¤Ò¤¶") ? true : false);
 
 			bones.push_back(bone);
 		}
@@ -353,11 +354,11 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 		for (auto& it : _pmd.IkList)
 		{
 			IKAttr attr;
-			attr.IKBoneIndex = it.IK;
-			attr.IKTargetBoneIndex = it.Target;
-			attr.IKLinkCount = it.LinkCount;
-			attr.IKLoopCount = it.LoopCount;
-			attr.IKAngleLimit = DEG_TO_RAD(229.1831f * it.Weight);
+			attr.boneIndex = it.IK;
+			attr.targetBoneIndex = it.Target;
+			attr.chainLength = it.LinkCount;
+			attr.iterations = it.LoopCount;
+			attr.weight = it.Weight;
 
 			for (auto& bone : it.LinkList)
 			{
@@ -367,7 +368,7 @@ PMDHandler::doLoad(Model& model, StreamReader& stream) noexcept
 				child.MaximumRadian = Vector3(3.14, 3.14, 3.14);
 				child.RotateLimited = 1;
 
-				attr.IKList.push_back(child);
+				attr.child.push_back(child);
 			}
 
 			iks.push_back(attr);

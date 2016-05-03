@@ -118,6 +118,8 @@ public:
 	void setType(GraphicsUniformType type) noexcept;
 	GraphicsUniformType getType() const noexcept;
 
+	std::uint32_t getOffset() const noexcept;
+
 	void setBlockSize(std::uint32_t size) noexcept;
 	std::uint32_t getBlockSize() const noexcept;
 

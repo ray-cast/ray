@@ -301,7 +301,7 @@ AnimationProperty::updateBoneMotion(Bones& _bones) noexcept
 		{
 			Vector3 position;
 			Quaternion rotate;
-			this->interpolateMotion(rotate, position, motion, _frame);
+			this->interpolateMotion(rotate, position, motion, _frame / 2);
 
 			if (bone.getParent() == (-1))
 			{
@@ -403,38 +403,76 @@ AnimationProperty::updateIK(Bones& _bones) noexcept
 void
 AnimationProperty::updateIK(Bones& _bones, const IKAttr& ik) noexcept
 {
-	auto& effector = _bones.at(ik.IKBoneIndex);
-	auto& target = _bones.at(ik.IKTargetBoneIndex);
+	auto& effector = _bones.at(ik.boneIndex);
+	auto& target = _bones.at(ik.targetBoneIndex);
 
-	const Vector3& targetPos = target.getTransform().getTranslate();
-	const Vector3& effectPos = effector.getTransform().getTranslate();
+	Vector3 targetPos = target.getTransform().getTranslate();
 
-	for (std::uint32_t i = 0; i < ik.IKLoopCount; i++)
+	for (std::uint32_t i = 0; i < ik.iterations; i++)
 	{
-		for (std::uint32_t j = 0; j < ik.IKLinkCount; j++)
+		for (std::uint32_t j = 0; j < ik.chainLength; j++)
 		{
-			auto& bone = _bones[ik.IKList[j].BoneIndex];
+			auto& bone = _bones[ik.child[j].BoneIndex];
 
-			Vector3 dstLocal = math::invTranslateVector3(bone.getTransform(), targetPos);
-			Vector3 srcLocal = math::invTranslateVector3(bone.getTransform(), effectPos);
+			if (bone.getLeg())
+			{
+				if (i == 0)
+				{
+					auto& base = _bones[ik.child[ik.chainLength - 1].BoneIndex];
 
-			srcLocal = math::normalize(srcLocal);
-			dstLocal = math::normalize(dstLocal);
+					Vector3 localTargetPos = bone.getTransform().getTranslate();
+					Vector3 localEffectPos = base.getTransform().getTranslate();
 
-			float rotationDotProduct = math::dot(srcLocal, dstLocal);
-			float rotationAngle = std::acos(rotationDotProduct);
-			rotationAngle = std::min(rotationAngle, ik.IKAngleLimit);
+					Vector3 effectVec = effector.getTransform().getTranslate() - localEffectPos;
+					Vector3 boneVec = localTargetPos - localEffectPos;
+					Vector3 targetVec = targetPos - localTargetPos;
 
-			Vector3 rotationAxis = math::cross(dstLocal, srcLocal);
-			rotationAxis = math::normalize(rotationAxis);
+					float el = math::length(effectVec);
+					float bl = math::length(boneVec);
+					float tl = math::length(targetVec);
+					float c = math::clamp((el * el - bl * bl - tl * tl) / (2.0f * bl * tl), -1.0f, 1.0f);
 
-			Quaternion q0(rotationAxis, rotationAngle);
-			Quaternion qq = math::cross(bone.getRotation(), q0);
+					float rotationAngle = acos(c);
+					Vector3 rotationAxis(-1.0f, 0.0f, 0.0f);
 
-			bone.updateTransform(bone.getLocalTransform().getTranslate(), qq);
+					Quaternion q0(rotationAxis, RAD_TO_DEG(rotationAngle));
+					Quaternion qq = math::cross(bone.getRotation(), q0);
+					bone.updateTransform(bone.getLocalTransform().getTranslate(), qq);
 
-			this->updateBoneMatrix(_bones, bone);
-			this->updateBoneChild(_bones, bone);
+					this->updateBoneMatrix(_bones, bone);
+					this->updateBoneMatrix(_bones, target);
+				}
+			}
+			else
+			{
+				Vector3 effectPos = effector.getTransform().getTranslate();
+				if (math::distance(effectPos, targetPos) < 0.001)
+					return;
+
+				Vector3 dstLocal = math::invTranslateVector3(bone.getTransform(), target.getTransform().getTranslate());
+				Vector3 srcLocal = math::invTranslateVector3(bone.getTransform(), effectPos);
+
+				srcLocal = math::normalize(srcLocal);
+				dstLocal = math::normalize(dstLocal);
+
+				float rotationDotProduct = math::clamp(math::dot(dstLocal, srcLocal), -1.0f, 1.0f);
+				float rotationAngle = std::acos(rotationDotProduct);
+				rotationAngle *= ik.weight;
+
+				if (rotationAngle > 1.0e-5f)
+				{
+					Vector3 rotationAxis = math::cross(dstLocal, srcLocal);
+					rotationAxis = math::normalize(rotationAxis);
+
+					Quaternion q0(rotationAxis, RAD_TO_DEG(rotationAngle));
+					Quaternion qq = math::cross(bone.getRotation(), q0);
+
+					bone.updateTransform(bone.getLocalTransform().getTranslate(), qq);
+				}
+
+				this->updateBoneMatrix(_bones, bone);
+				this->updateBoneMatrix(_bones, target);
+			}
 		}
 	}
 }
@@ -528,7 +566,7 @@ static float BezierEval(const std::uint8_t* ip, float t) noexcept
 void
 AnimationProperty::interpolateMotion(Quaternion& rotation, Vector3& position, const std::vector<std::size_t>& motions, float frame) noexcept
 {
-	auto ms = findMotionSegment(_frame, motions);
+	auto ms = findMotionSegment(frame, motions);
 
 	if (ms.m1 == -1)
 	{

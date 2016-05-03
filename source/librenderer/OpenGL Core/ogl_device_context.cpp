@@ -445,7 +445,7 @@ void
 OGLDeviceContext::setFramebuffer(GraphicsFramebufferPtr target, const float4& color, float depth, std::int32_t stencil) noexcept
 {
 	this->setFramebuffer(target);
-	this->clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagsAll, color, depth, stencil);
+	this->clearFramebuffer(GraphicsClearFlagBits::GraphicsClearFlagAllBit, color, depth, stencil);
 }
 
 void
@@ -455,7 +455,7 @@ OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color
 
 	GLbitfield mode = 0;
 
-	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsColor)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagColorBit)
 	{
 		mode |= GL_COLOR_BUFFER_BIT;
 
@@ -466,7 +466,7 @@ OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color
 		}
 	}
 
-	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
 	{
 		mode |= GL_DEPTH_BUFFER_BIT;
 
@@ -477,7 +477,7 @@ OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color
 		}
 	}
 
-	if (flags & GraphicsClearFlagBits::GraphicsClearFlagsStencil)
+	if (flags & GraphicsClearFlagBits::GraphicsClearFlagStencilBit)
 	{
 		mode |= GL_STENCIL_BUFFER_BIT;
 
@@ -491,14 +491,14 @@ OGLDeviceContext::clearFramebuffer(GraphicsClearFlags flags, const float4& color
 	if (mode != 0)
 	{
 		auto depthWriteEnable = _stateCaptured.getDepthWriteEnable();
-		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
+		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
 		{
 			glDepthMask(GL_TRUE);
 		}
 
 		glClear(mode);
 
-		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagsDepth)
+		if (!depthWriteEnable && flags & GraphicsClearFlagBits::GraphicsClearFlagDepthBit)
 		{
 			glDepthMask(GL_FALSE);
 		}

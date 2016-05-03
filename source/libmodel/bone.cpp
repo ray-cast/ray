@@ -42,6 +42,7 @@ Bone::Bone() noexcept
 	: _parent(-1)
 	, _child(-1)
 	, _scaling(float3::One)
+	, _isLeg(false)
 {
 	_localTransform.loadIdentity();
 	_transform.loadIdentity();
@@ -114,6 +115,18 @@ const Vector3&
 Bone::getScaling() const noexcept
 {
 	return _scaling;
+}
+
+void 
+Bone::setLeg(bool leg) noexcept
+{
+	_isLeg = leg;
+}
+
+bool 
+Bone::getLeg() const noexcept
+{
+	return _isLeg;
 }
 
 void

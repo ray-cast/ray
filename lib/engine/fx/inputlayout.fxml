@@ -27,10 +27,22 @@
         <layout name="NORMAL" format="R32G32B32SFloat" />
         <layout name="TEXCOORD" format="R32G32SFloat" />
     </inputlayout>
+    <inputlayout name="POS3F_W4F_B4UI">
+        <layout name="POSITION" format="R32G32B32SFloat" offset="0"/>
+        <layout name="BLENDWEIGHT" format="R32G32B32A32SFloat" offset="32"/>
+        <layout name="BLENDINDICES" format="R16G16B16A16UInt" offset="48"/>
+    </inputlayout>
     <inputlayout name="POS3F_N3F_W4F_B4UI">
         <layout name="POSITION" format="R32G32B32SFloat" />
         <layout name="NORMAL" format="R32G32B32SFloat" />
         <layout name="BLENDWEIGHT" format="R32G32B32A32SFloat" />
-        <layout name="BLENDINDICES" format="R32G32B32A32UInt" />
+        <layout name="BLENDINDICES" format="R16G16B16A16UInt" />
+    </inputlayout>
+    <inputlayout name="POS3F_N3F_UV2F_W4F_B4UI">
+        <layout name="POSITION" format="R32G32B32SFloat" />
+        <layout name="NORMAL" format="R32G32B32SFloat" />
+        <layout name="TEXCOORD" format="R32G32SFloat" />
+        <layout name="BLENDWEIGHT" format="R32G32B32A32SFloat" />
+        <layout name="BLENDINDICES" format="R16G16B16A16UInt" />
     </inputlayout>
 </effect>
